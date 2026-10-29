@@ -1,10 +1,10 @@
 // beat-three.js L-P1: pick the render path for one mount (direct canvas MSAA vs HDR multisampled target).
 
-import { isQualityMode, qrCoreOutputOn, resolveBloomFusionConfig, resolveRenderPath, withDirectPath, type AuraQualityMode, type BloomFusionConfig, type RenderPathDecision } from "@aura3d/rendering";
+import { directPathItemBlockers, isQualityMode, qrCoreOutputOn, resolveBloomFusionConfig, resolveRenderPath, withDirectPath, type AuraQualityMode, type BloomFusionConfig, type DirectPathItemLike, type RenderPathDecision } from "@aura3d/rendering";
 import type { AuraBloomFusion, QrFlags } from "@aura3d/rendering/contracts";
-import type { AuraCreateAppOptions, AuraSceneSnapshot } from "../nodes/types.js";
+import type { AuraCreateAppOptions, AuraModelNode, AuraSceneSnapshot } from "../nodes/types.js";
 import { groups } from "../nodes/groups.js";
-import { parseBloomFusionOption } from "./rendererOptions.js";
+import { ignoreInvalidUrlValue, parseBloomFusionOption, type UrlOptionPolicy } from "./rendererOptions.js";
 
 /** What `app.diagnostics().renderPath` reports. */
 export interface AuraRenderPathReport {
@@ -30,8 +30,8 @@ export function bloomFusionAllowed(quality: AuraQualityMode): boolean {
  * effect (the only source of a bloom pass), so every other combination reports `"off"`. The option is validated first so a
  * typo throws whatever the quality.
  */
-function reportedBloomFusion(quality: AuraQualityMode, path: RenderPathDecision["path"], legacyLdrRoute: boolean, snapshot: AuraSceneSnapshot, options: AuraCreateAppOptions): AuraBloomFusion | "off" {
-  const mode = parseBloomFusionOption(options.renderer);
+function reportedBloomFusion(quality: AuraQualityMode, path: RenderPathDecision["path"], legacyLdrRoute: boolean, snapshot: AuraSceneSnapshot, options: AuraCreateAppOptions, search: string | null, policy: UrlOptionPolicy): AuraBloomFusion | "off" {
+  const mode = parseBloomFusionOption(options.renderer, search, policy);
   if (!bloomFusionAllowed(quality) || path !== "hdr-msaa" || legacyLdrRoute) return "off";
   const hasBloom = groups.flatten(snapshot.nodes).some((node) => node.kind === "effect" && node.effect === "bloom");
   return hasBloom ? mode : "off";
@@ -47,6 +47,11 @@ export interface AppRenderPath {
    * the canvas framebuffer and encodes in-shader.
    */
   readonly direct: boolean;
+  /**
+   * Warnings for `diagnostics().warnings`: ignored URL switches (RP-04, `QUALITY_URL_IGNORED:`) and what `safe-basic` does not
+   * render (RP-06, `SAFE_BASIC_DROPS:`).
+   */
+  readonly warnings: readonly string[];
 }
 
 const directPathCanvases = new WeakSet<object>();
@@ -95,6 +100,60 @@ export function isDirectRenderPath(canvas: object | undefined): boolean {
   return canvas !== undefined && directPathCanvases.has(canvas);
 }
 
+/*
+ * RP-01 / RP-03: reasons, found after the path was chosen, why this canvas must leave the direct path. The direct-path decision
+ * reads the authored snapshot, so it cannot see a GLB's own BLEND or transmission materials (known only once decoded) or a custom
+ * post pass registered after mount. Each mount on the canvas reads these as extra blockers, so the re-mount takes the HDR target.
+ */
+const directPathVetoes = new WeakMap<object, Map<string, number>>();
+
+/** Add a reason that keeps `canvas` off the direct path; returns a release function (reference counted per reason). */
+export function vetoDirectPath(canvas: object, reason: string): () => void {
+  let reasons = directPathVetoes.get(canvas);
+  if (!reasons) directPathVetoes.set(canvas, (reasons = new Map()));
+  reasons.set(reason, (reasons.get(reason) ?? 0) + 1);
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    const count = (reasons!.get(reason) ?? 1) - 1;
+    if (count > 0) reasons!.set(reason, count);
+    else reasons!.delete(reason);
+  };
+}
+
+export function directPathVetoReasons(canvas: object | undefined): string[] {
+  return canvas === undefined ? [] : [...(directPathVetoes.get(canvas)?.keys() ?? [])];
+}
+
+/** RP-01: decoded-material blockers of a mounted scene's GLB actors (their render items at the default placement). */
+export function decodedModelDirectPathBlockers(actors: readonly { readonly actor: { collectRenderItems(): readonly DirectPathItemLike[] } }[]): string[] {
+  if (actors.length === 0) return [];
+  const items: DirectPathItemLike[] = [];
+  for (const entry of actors) {
+    try {
+      items.push(...entry.actor.collectRenderItems());
+    } catch {
+      // An actor that cannot collect here is not evidence either way; the frame loop reports its own errors.
+    }
+  }
+  return directPathItemBlockers(items);
+}
+
+const decodedBlockers = new WeakMap<object, readonly string[]>();
+
+/** Called by the mount once its GLBs are decoded (direct path only); read once by the frame loop through {@link takeDecodedDirectPathBlockers}. */
+export function recordDecodedDirectPathBlockers(canvas: object, blockers: readonly string[]): void {
+  if (blockers.length > 0) decodedBlockers.set(canvas, blockers);
+  else decodedBlockers.delete(canvas);
+}
+
+export function takeDecodedDirectPathBlockers(canvas: object): readonly string[] {
+  const blockers = decodedBlockers.get(canvas) ?? [];
+  decodedBlockers.delete(canvas);
+  return blockers;
+}
+
 /** Effects the forward pass draws itself; every other effect is a post pass or a frame contributor that reads the HDR target. */
 const FORWARD_ONLY_EFFECTS: ReadonlySet<string> = new Set(["fog"]);
 const DIRECT_SAFE_NODE_KINDS: ReadonlySet<string> = new Set(["model", "primitive", "group", "light", "environment", "interaction", "label"]);
@@ -106,13 +165,27 @@ export function renderPathBlockers(snapshot: AuraSceneSnapshot, options: AuraCre
   if (options.renderer?.backend !== undefined && options.renderer.backend !== "webgl2") blockers.push(`backend ${String(options.renderer.backend)}`);
   if (typeof location !== "undefined" && /[?&](aura3d-tonemap|tm|aura3d-exp|exp)=/.test(location.search)) blockers.push("URL tone-mapping or exposure override");
   if (snapshot.backgroundToneMapped === false) blockers.push("background opts out of tone mapping");
+  // RP-02: the background-image shader encodes with its own ACES fit (Narkowicz), not the r185 curve the direct path's forward
+  // shader uses, so on the direct path the backdrop and the scene would be tone-mapped differently (linear 0.18 grey: 141 vs 127).
+  if (snapshot.backgroundImage !== undefined) blockers.push("background image");
+  for (const reason of nodeDirectPathBlockers(snapshot.nodes)) blockers.push(reason);
+  return blockers;
+}
+
+/**
+ * The node-level part of {@link renderPathBlockers}: effects other than fog, node kinds the direct path does not draw, HDRI
+ * environments, and custom, transmissive or transparent materials (authored, from the asset manifest, or overrides). Also used for
+ * nodes added at runtime (RP-03).
+ */
+export function nodeDirectPathBlockers(nodes: AuraSceneSnapshot["nodes"]): string[] {
+  const blockers: string[] = [];
   const seen = new Set<string>();
   const note = (message: string): void => {
     if (seen.has(message)) return;
     seen.add(message);
     blockers.push(message);
   };
-  for (const node of groups.flatten(snapshot.nodes)) {
+  for (const node of groups.flatten(nodes)) {
     if (node.kind === "effect") {
       if (!FORWARD_ONLY_EFFECTS.has(node.effect)) note(`effect "${node.effect}"`);
       continue;
@@ -124,6 +197,7 @@ export function renderPathBlockers(snapshot: AuraSceneSnapshot, options: AuraCre
     // A visible HDRI background is encoded by the environment-background shader's own (different) filmic curve.
     if (node.kind === "environment" && node.environment === "hdri") note("hdri environment");
     if (node.kind !== "model" && node.kind !== "primitive") continue;
+    if (node.kind === "model") for (const reason of modelAssetBlockers(node)) note(reason);
     const material = node.material;
     if (!material) continue;
     if (material.kind !== undefined) note(`${material.kind} material`);
@@ -135,41 +209,81 @@ export function renderPathBlockers(snapshot: AuraSceneSnapshot, options: AuraCre
   return blockers;
 }
 
-function requestedQuality(options: AuraCreateAppOptions): AuraQualityMode | undefined {
-  // `?aura3d-render=<mode>` wins over the option (like `?aura3d-quality=`): compare a page's two render paths without a rebuild.
-  const fromUrl = typeof location !== "undefined" ? new URLSearchParams(location.search).get("aura3d-render") : null;
-  if (fromUrl !== null) {
-    if (!isQualityMode(fromUrl)) throw new Error(`QUALITY_OPTION_INVALID:?aura3d-render=${fromUrl} (expected auto|production|safe-basic|cinematic)`);
-    return fromUrl;
+/**
+ * RP-01: material facts the asset manifest records for a typed GLB (`metadata.materialMetadata`, written by `aura3d assets add`
+ * and `assets typegen`), plus `materialOverrides` opacity. A BLEND or partly transparent material blends after the in-shader encode
+ * on the direct path. Transmission is not in the manifest; the mount catches it after decode (`decodedModelDirectPathBlockers`).
+ */
+function modelAssetBlockers(node: AuraModelNode): string[] {
+  const reasons: string[] = [];
+  const facts = (node.asset?.metadata as { readonly materialMetadata?: unknown } | undefined)?.materialMetadata;
+  if (Array.isArray(facts)) {
+    const transparent = facts.some((fact: { alphaMode?: unknown; opacity?: unknown } | null) =>
+      fact !== null && typeof fact === "object"
+      // glTF ignores base-colour alpha on OPAQUE and MASK materials, so opacity counts only when no alpha mode was recorded.
+      && (typeof fact.alphaMode === "string" ? fact.alphaMode.toUpperCase() === "BLEND" : typeof fact.opacity === "number" && fact.opacity < 1));
+    if (transparent) reasons.push("model asset has a transparent (BLEND) material");
   }
+  if (node.materialOverrides?.some((override) => typeof override.opacity === "number" && override.opacity < 1)) reasons.push("transparent material override");
+  return reasons;
+}
+
+function requestedQuality(options: AuraCreateAppOptions, search: string | null, policy: UrlOptionPolicy): AuraQualityMode | undefined {
+  let fromOptions: AuraQualityMode | undefined;
   if (options.quality !== undefined) {
     if (!isQualityMode(options.quality)) {
       throw new Error(`QUALITY_OPTION_INVALID:quality=${String(options.quality)} (expected auto|production|safe-basic|cinematic)`);
     }
-    return options.quality;
+    fromOptions = options.quality;
+  }
+  // `?aura3d-render=<mode>` wins over the option (like `?aura3d-quality=`): compare a page's two render paths without a rebuild.
+  // RP-04: a typo there warns and keeps the code option (strict apps still throw).
+  const fromUrl = search ? new URLSearchParams(search).get("aura3d-render") : null;
+  if (fromUrl !== null) {
+    if (isQualityMode(fromUrl)) return fromUrl;
+    ignoreInvalidUrlValue(`?aura3d-render=${fromUrl} (expected auto|production|safe-basic|cinematic); using "${fromOptions ?? "auto"}"`, policy);
   }
   // `renderer.qualityProfile` is a deprecated pixel-ratio/draw-budget preset, not a pipeline request.
-  return undefined;
+  return fromOptions;
 }
 
-export function resolveAppRenderPath(snapshot: AuraSceneSnapshot, options: AuraCreateAppOptions, flags: QrFlags): AppRenderPath {
-  const quality = requestedQuality(options) ?? "auto";
+export interface ResolveAppRenderPathContext {
+  /** URL query to read the debug switches from; defaults to `location.search`. */
+  readonly search?: string | null;
+  /** Reasons found after mount that keep this canvas off the direct path (see {@link vetoDirectPath}). */
+  readonly extraBlockers?: readonly string[];
+}
+
+export function resolveAppRenderPath(snapshot: AuraSceneSnapshot, options: AuraCreateAppOptions, flags: QrFlags, context: ResolveAppRenderPathContext = {}): AppRenderPath {
+  const search = context.search !== undefined ? context.search : typeof location !== "undefined" ? location.search : null;
+  const warnings: string[] = [];
+  const policy: UrlOptionPolicy = { strict: options.strict ?? flags.on("A3D_QR_STRICT"), warnings };
+  const quality = requestedQuality(options, search, policy) ?? "auto";
   if (!qrCoreOutputOn(flags)) {
     const explicit = flags.values.A3D_QR_CORE_OUTPUT !== undefined;
     return {
-      report: { path: "direct", quality, reason: explicit ? "A3D_QR_CORE_OUTPUT is off: legacy LDR route" : "A3D_QR_CORE is off: legacy LDR route (its own post chain is kept)", bloomFusion: reportedBloomFusion(quality, "direct", true, snapshot, options) },
+      report: { path: "direct", quality, reason: explicit ? "A3D_QR_CORE_OUTPUT is off: legacy LDR route" : "A3D_QR_CORE is off: legacy LDR route (its own post chain is kept)", bloomFusion: reportedBloomFusion(quality, "direct", true, snapshot, options, search, policy) },
       flags,
-      direct: false
+      direct: false,
+      warnings
     };
   }
   if (flags.values.A3D_QR_CORE_OUTPUT !== undefined) {
-    return { report: { path: "hdr-msaa", quality, reason: "A3D_QR_CORE_OUTPUT is set explicitly", bloomFusion: reportedBloomFusion(quality, "hdr-msaa", false, snapshot, options) }, flags, direct: false };
+    return { report: { path: "hdr-msaa", quality, reason: "A3D_QR_CORE_OUTPUT is set explicitly", bloomFusion: reportedBloomFusion(quality, "hdr-msaa", false, snapshot, options, search, policy) }, flags, direct: false, warnings };
   }
-  const decision = resolveRenderPath({ quality, blockers: quality === "auto" ? renderPathBlockers(snapshot, options) : [] });
+  // RP-06: blockers are computed for safe-basic too, so what it does not render is named instead of dropped silently.
+  const blockers = quality === "auto" || quality === "safe-basic"
+    ? [...new Set([...renderPathBlockers(snapshot, options), ...(context.extraBlockers ?? [])])]
+    : [];
+  const decision = resolveRenderPath({ quality, blockers });
+  if (quality === "safe-basic" && blockers.length > 0) {
+    warnings.push(`SAFE_BASIC_DROPS: quality "safe-basic" renders on the direct path, which has no post chain or HDR target, so these are not rendered: ${blockers.join("; ")}. Use quality "auto" or "production" to keep them.`);
+  }
   return {
-    report: { path: decision.path, quality: decision.quality, reason: decision.reason, bloomFusion: reportedBloomFusion(decision.quality, decision.path, false, snapshot, options) },
+    report: { path: decision.path, quality: decision.quality, reason: decision.reason, bloomFusion: reportedBloomFusion(decision.quality, decision.path, false, snapshot, options, search, policy) },
     flags: decision.path === "direct" ? withDirectPath(flags) : flags,
-    direct: decision.path === "direct"
+    direct: decision.path === "direct",
+    warnings
   };
 }
 

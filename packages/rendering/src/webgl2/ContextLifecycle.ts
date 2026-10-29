@@ -115,7 +115,10 @@ export class WebGL2ContextLifecycle {
   }
 
   isDeviceLost(): boolean {
-    return this.host.contextLost;
+    // The context can be gone before the webglcontextlost event is dispatched; WebGL reports that synchronously.
+    if (this.host.contextLost) return true;
+    const gl = this.host.gl as WebGL2RenderingContext & { isContextLost?: () => boolean };
+    return typeof gl?.isContextLost === "function" && gl.isContextLost();
   }
 
   /** SC-01: viewport/scissor override and the render target it was set on (override applies only while that target is bound). */
@@ -360,6 +363,13 @@ export class WebGL2ContextLifecycle {
 
   readError(): string | null {
     const error = this.host.gl.getError();
-    return error === this.host.gl.NO_ERROR ? null : `0x${error.toString(16)}`;
+    if (error === this.host.gl.NO_ERROR) return null;
+    // CONTEXT_LOST_WEBGL (0x9242) is the loss signal, not a GL fault: the lost/restored events own that state. Treating it as
+    // a fault threw "LDR postprocess presentation failed: 0x9242" from the frame in which the context went (top-tennis C8).
+    if (error === CONTEXT_LOST_WEBGL) return null;
+    return `0x${error.toString(16)}`;
   }
 }
+
+/** WebGL's context-lost error code (`WEBGL_lose_context` and real GPU resets). */
+const CONTEXT_LOST_WEBGL = 0x9242;

@@ -1,0 +1,46 @@
+{
+ "fit": [],
+ "hop": [
+  {
+   "theme0": {
+    "w": 1280,
+    "h": 720,
+    "mean": 107.94,
+    "darkFrac": 0.0033
+   },
+   "theme3-after-swap": {
+    "clicked": true,
+    "label": "EMBERLINE",
+    "luma": {
+     "w": 1280,
+     "h": 720,
+     "mean": 65.76,
+     "darkFrac": 0.0276
+    }
+   },
+   "theme4-after-swap": {
+    "clicked": true,
+    "label": "NEON DISTRICT",
+    "luma": {
+     "w": 1280,
+     "h": 720,
+     "mean": 65.69,
+     "darkFrac": 0.057
+    }
+   },
+   "theme0-after-swap": {
+    "clicked": true,
+    "label": "MEADOW ROADS",
+    "luma": {
+     "w": 1280,
+     "h": 720,
+     "mean": 108.45,
+     "darkFrac": 0.0028
+    }
+   }
+  }
+ ],
+ "loss": [],
+ "loss2": [],
+ "errors": []
+}

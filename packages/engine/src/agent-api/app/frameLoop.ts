@@ -10,7 +10,7 @@ import { camera } from "../nodes/camera.js";
 import { collectAuraSceneEvidence } from "../sceneEvidence.js";
 import { collectLabelTelemetry, summarizeTextBuckets } from "../LabelTelemetry.js";
 import { createProductionSceneRenderer } from "./mountRenderer.js";
-import { applyRenderPathToCanvas, resolveAppRenderPath, wantsPreservedDrawingBuffer } from "./renderPath.js";
+import { applyRenderPathToCanvas, directPathVetoReasons, resolveAppRenderPath, takeDecodedDirectPathBlockers, wantsPreservedDrawingBuffer } from "./renderPath.js";
 import { appTierMaxPixelRatio, currentDevicePixelRatio, minimumBackingSize, resolveAppPixelRatio } from "./pixelRatio.js";
 import { resolveMountQuality } from "../compiler/renderer.js";
 import { devicePixelRatioSafe, markTiming, performanceNow } from "../platform.js";
@@ -27,7 +27,7 @@ import { text3D } from "../nodes/text3d.js";
 import { timeline } from "../nodes/timeline.js";
 import { worldLabelsFromSnapshot, createSceneLabelLayer, createSceneLabelOcclusionTest } from "../compiler/labels.js";
 import { round } from "../GameRuntime.js";
-import { authoredBackingResize } from "./canvas.js";
+import { authoredBackingResize, canvasContentBox, noteEngineCanvasSize, ownSizedCanvasAxes, refreshOwnSizedAxes } from "./canvas.js";
 
 export async function startProductionRender(
   canvas: HTMLCanvasElement,
@@ -82,10 +82,12 @@ export async function startProductionRender(
   );
   // beat-three.js L-P1: decided per mount (setScene re-mounts re-decide). `direct` pins the
   // HDR-target route off for this renderer only; the app's own flags are untouched.
-  const renderPath = resolveAppRenderPath(snapshot, options, qrFlags);
+  // RP-01/RP-03: reasons found after an earlier mount on this canvas (a custom post pass) keep it off the direct path.
+  let renderPath = resolveAppRenderPath(snapshot, options, qrFlags, { extraBlockers: directPathVetoReasons(canvas) });
   diagnosticsState.renderPath = renderPath.report;
+  pushWarnings(diagnosticsState, renderPath.warnings);
   applyRenderPathToCanvas(canvas, renderPath);
-  const renderer = await createProductionSceneRenderer(
+  const mountRenderer = () => createProductionSceneRenderer(
     canvas,
     snapshot,
     options.renderer,
@@ -94,6 +96,21 @@ export async function startProductionRender(
     { strict: options.strict, onDegradation: options.onDegradation },
     { preserveDrawingBuffer: wantsPreservedDrawingBuffer(options) }
   );
+  let renderer = await mountRenderer();
+  /*
+   * RP-01: the direct-path decision reads the authored snapshot, which cannot show a GLB's own BLEND or transmission materials.
+   * The mount records them once the GLBs are decoded; if there are any, mount again on the HDR target before the first frame,
+   * so the blended or refracted surfaces are composited in linear space as on the HDR path.
+   */
+  const decoded = renderPath.direct && !isCancelled() ? takeDecodedDirectPathBlockers(canvas) : [];
+  if (decoded.length > 0) {
+    renderer.dispose();
+    renderPath = resolveAppRenderPath(snapshot, options, qrFlags, { extraBlockers: [...directPathVetoReasons(canvas), ...decoded] });
+    diagnosticsState.renderPath = renderPath.report;
+    pushWarnings(diagnosticsState, [`DIRECT_PATH_REDECIDED: ${decoded.join("; ")}; mounted on the HDR target instead of the direct path.`]);
+    applyRenderPathToCanvas(canvas, renderPath);
+    renderer = await mountRenderer();
+  }
   if (isCancelled()) {
     renderer.dispose();
     return {
@@ -131,6 +148,8 @@ export async function startProductionRender(
   let disposed = false;
   let animationHandle = 0;
   let lastTime = 0;
+  // ENG-FPS: measured over the presented rAF frames of the last second, not a 60 placeholder.
+  const frameRate = createFrameRateMeter();
   let pendingFrames = 0;
   let frameTail: Promise<void> = Promise.resolve();
   const lazyFrameDiagnostics = bindLazyFrameDiagnostics(diagnosticsState, {
@@ -149,12 +168,18 @@ export async function startProductionRender(
     labelLayer?.dispose();
     renderer.dispose();
   };
-  const parentFit = createParentFit(canvas);
+  const ownAxes = ownSizedCanvasAxes(canvas);
+  const parentFit = createParentFit(canvas, {
+    get width() { return ownAxes.width; },
+    get height() { return ownAxes.height; },
+    box: () => canvasContentBox(canvas)
+  });
   const resizeRenderer = (): void => {
     if (disposed) return;
     if (pendingFrames > 0) { resourceOwner.requestResize(); return; }
     if (options.resize === false) return;
-    const { cssWidth, cssHeight } = parentFit.measure(
+    refreshOwnSizedAxes(canvas);
+    const { cssWidth, cssHeight, ownWidth, ownHeight } = parentFit.measure(
       (typeof window !== "undefined" ? window.innerWidth : 960) || 960,
       (typeof window !== "undefined" ? window.innerHeight : 540) || 540
     );
@@ -162,8 +187,10 @@ export async function startProductionRender(
     const width = Math.max(1, Math.round(Math.max(backingMinimum.width, cssWidth * pixelRatio) * (getRootPerformanceQuality(canvas)?.resolutionScale ?? 1)));
     const height = Math.max(1, Math.round(Math.max(backingMinimum.height, cssHeight * pixelRatio) * (getRootPerformanceQuality(canvas)?.resolutionScale ?? 1)));
     if (canvas.width === width && canvas.height === height) return;
-    canvas.style.width = `${cssWidth}px`;
-    canvas.style.height = `${cssHeight}px`;
+    // top-tennis C2: an axis the page's CSS sizes (smaller than the parent) keeps that CSS; only the backing store follows it.
+    if (!ownWidth) canvas.style.width = `${cssWidth}px`;
+    if (!ownHeight) canvas.style.height = `${cssHeight}px`;
+    noteEngineCanvasSize(canvas);
     canvas.width = width;
     canvas.height = height;
     renderer.resize?.(width, height);
@@ -176,6 +203,8 @@ export async function startProductionRender(
     ? new ResizeObserver(resizeRenderer)
     : undefined;
   resizeObserver?.observe(canvas.parentElement!);
+  // A CSS-sized canvas can change size without its parent moving (a media query changes the reserved bands).
+  resizeObserver?.observe(canvas as unknown as Element);
   if (options.resize !== false && typeof window !== "undefined") window.addEventListener("resize", resizeRenderer);
 
   let firstFrameEndMarked = false;
@@ -186,6 +215,9 @@ export async function startProductionRender(
     if (lastTime === 0) markTiming("a3d:mount:first-renderFrame");
     const delta = lastTime > 0 ? Math.max(1, time - lastTime) : 16.67;
     lastTime = time;
+    // Explicit renders (`app.step()` loops, which most games drive themselves) are sampled on the wall clock, since `time` is then
+    // simulated time; the meter counts one frame per task, so several steps inside one rAF callback count once.
+    frameRate.sample(explicit ? performanceNow() : time);
     if (!explicit && !isPaused()) beforeRender?.(delta / 1000, "raf");
     /*
      * A paused app must not keep advancing time-driven rendering.
@@ -211,12 +243,16 @@ export async function startProductionRender(
     }
     let drawCalls: number;
     try {
-      drawCalls = submittedDrawCalls ?? renderer.render(renderTime);
+      // top-tennis C8: while the WebGL context is lost nothing can be presented; skip the frame instead of throwing, keep the
+      // loop alive, and let the app's onDeviceRestored handler remount (the documented recovery contract).
+      drawCalls = submittedDrawCalls === undefined && renderer.deviceLost?.() ? 0 : submittedDrawCalls ?? renderer.render(renderTime);
     } catch (error) {
-      rethrowShaderFailure(error);
+      // A loss in the middle of a frame (the context goes before the webglcontextlost event arrives) is not a render failure.
+      if (renderer.deviceLost?.()) drawCalls = 0;
+      else rethrowShaderFailure(error);
     }
     diagnosticsState.backend = renderer.backend;
-    diagnosticsState.fps = diagnosticsState.fps || 60;
+    diagnosticsState.fps = frameRate.fps();
     diagnosticsState.drawCalls = drawCalls;
     // Same size as last frame: keep the existing tuple instead of allocating a new one every frame.
     const previousSize = diagnosticsState.renderSize;
@@ -274,7 +310,10 @@ export async function startProductionRender(
       // that callback; pending ownership still defers cleanup until this settles.
       if (disposed) throw new Error("Aura3D renderer is disposed.");
       const renderTime = resolveRootRenderTime(time, !automatic, isPaused, pausedRenderTime);
-      const drawCalls = await renderer.renderAsync!(renderTime);
+      const drawCalls = renderer.deviceLost?.() ? 0 : await renderer.renderAsync!(renderTime).catch((error: unknown) => {
+        if (renderer.deviceLost?.()) return 0;
+        throw error;
+      });
       if (!disposed) {
         const previousLastTime = lastTime;
         renderFrame(renderTime, drawCalls, true);
@@ -386,6 +425,46 @@ export async function startProductionRender(
       resizeObserver?.disconnect();
       if (typeof window !== "undefined") window.removeEventListener("resize", resizeRenderer);
       resourceOwner.dispose();
+    }
+  };
+}
+
+function pushWarnings(state: MutableDiagnostics, warnings: readonly string[]): void {
+  for (const warning of warnings) if (!state.warnings.includes(warning)) state.warnings.push(warning);
+}
+
+export interface FrameRateMeter {
+  /** Record one presented frame at `time` (ms, the rAF timestamp). */
+  sample(time: number): void;
+  /** Frames per second over the window, to 0.01; 0 until two frames were sampled. */
+  fps(): number;
+}
+
+/**
+ * ENG-FPS: frame rate averaged over the presented frames of the last `windowMs` (default 1 s). `diagnostics().fps` used to be the constant
+ * 60 on the WebGL path (`fps || 60`) and `1000 / delta` of the single last frame on the canvas path, so it read 60 while a
+ * measured rAF loop ran at 0.4-0.85 fps. The window keeps the newest frame older than `windowMs` as well, so a loop slower than
+ * one frame per window still reports its real rate (two frames 2.5 s apart: 0.4).
+ */
+export function createFrameRateMeter(windowMs = 1000): FrameRateMeter {
+  const times: number[] = [];
+  // A canvas is presented once per task, so renders issued in the same task (a loop of `app.step()` calls) are one frame.
+  let sampledThisTask = false;
+  return {
+    sample(time) {
+      if (!Number.isFinite(time) || sampledThisTask) return;
+      if (times.length > 0 && time <= times[times.length - 1]!) return;
+      sampledThisTask = true;
+      queueMicrotask(() => { sampledThisTask = false; });
+      times.push(time);
+      // Drop frames older than the window, keeping one before it so the span always covers at least one interval.
+      while (times.length > 2 && time - times[1]! >= windowMs) times.shift();
+    },
+    fps() {
+      if (times.length < 2) return 0;
+      const span = times[times.length - 1]! - times[0]!;
+      // Two decimals, so a software-GL loop at one frame every 20 s reads 0.05, not 0.
+      return span > 0 ? Math.round(((times.length - 1) * 1000 / span) * 100) / 100 : 0;
     }
   };
 }

@@ -1,0 +1,76 @@
+{
+ "fit": [],
+ "hop": [],
+ "loss": [],
+ "loss2": [
+  {
+   "game": "top-tennis",
+   "ready": true,
+   "lost": true,
+   "before": {
+    "w": 1280,
+    "h": 720,
+    "mean": 50.35,
+    "darkFrac": 0.0606
+   },
+   "during": {
+    "drawCalls": null,
+    "warnings": [],
+    "errors": []
+   },
+   "errorsWhileLost": [
+    "WebGL2 LDR postprocess presentation failed: 0x9242"
+   ],
+   "pageErrorsTotal": 1,
+   "afterState": {
+    "drawCalls": null,
+    "warnings": [],
+    "errors": []
+   },
+   "after": {
+    "w": 1280,
+    "h": 720,
+    "mean": 255,
+    "darkFrac": 0
+   },
+   "navigations": 2,
+   "blockedNavigations": 1
+  },
+  {
+   "game": "cross-hop",
+   "ready": true,
+   "lost": true,
+   "before": {
+    "w": 1280,
+    "h": 720,
+    "mean": 109.67,
+    "darkFrac": 0.0029
+   },
+   "during": {
+    "deviceLost": true,
+    "drawCalls": 153,
+    "warnings": [],
+    "errors": []
+   },
+   "errorsWhileLost": [
+    "WebGL2 LDR postprocess presentation failed: 0x9242"
+   ],
+   "pageErrorsTotal": 1,
+   "afterState": {
+    "deviceLost": false,
+    "drawCalls": 153,
+    "warnings": [],
+    "errors": []
+   },
+   "after": {
+    "w": 1280,
+    "h": 720,
+    "mean": 0,
+    "darkFrac": 1
+   },
+   "navigations": 1,
+   "blockedNavigations": 0
+  }
+ ],
+ "errors": []
+}

@@ -1,0 +1,1310 @@
+{
+ "meta": [
+  {
+   "game": "top-tennis",
+   "ready": true,
+   "loadMs": 12039,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 50.37,
+    "p5": 3,
+    "p50": 54,
+    "p95": 123
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: effect \"bloom\"; effect \"vignette\"; effect \"color-grade\"",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 119,
+    "fps": 60,
+    "rafFps": 0.31,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "roadster-rush",
+   "ready": true,
+   "loadMs": 34741,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 78.43,
+    "p5": 24,
+    "p50": 68,
+    "p95": 166
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: hdri environment; effect \"color-grade\"; effect \"ambient-occlusion\"; effect \"bloom\"; effect \"vignette\"; custom material",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 865,
+    "fps": 60,
+    "rafFps": 0.18,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "heatsink",
+   "ready": true,
+   "loadMs": 31942,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 84.88,
+    "p5": 18,
+    "p50": 93,
+    "p95": 155
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: hdri environment; effect \"color-grade\"; effect \"ambient-occlusion\"; effect \"bloom\"; effect \"vignette\"",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 1219,
+    "fps": 60,
+    "rafFps": 0.22,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "teleoperator",
+   "ready": true,
+   "loadMs": 57207,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 106.26,
+    "p5": 43,
+    "p50": 97,
+    "p95": 194
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: hdri environment; effect \"color-grade\"; effect \"ambient-occlusion\"; effect \"bloom\"; effect \"vignette\"",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 608,
+    "fps": 60,
+    "rafFps": 0.06,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "iron-crown",
+   "ready": false
+  },
+  {
+   "game": "pips-big-leap",
+   "ready": false
+  },
+  {
+   "game": "aura-hoops-3d",
+   "ready": true,
+   "loadMs": 26256,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 79.12,
+    "p5": 27,
+    "p50": 49,
+    "p95": 180
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: hdri environment; effect \"color-grade\"; effect \"ambient-occlusion\"; effect \"bloom\"; effect \"contact-shadows\"; effect \"vignette\"; transparent material",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 322,
+    "fps": 60,
+    "rafFps": 0.22,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "aura-diamond-3d",
+   "ready": true,
+   "loadMs": 32846,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 84.03,
+    "p5": 49,
+    "p50": 81,
+    "p95": 153
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: hdri environment; effect \"color-grade\"; effect \"ambient-occlusion\"; effect \"bloom\"; effect \"contact-shadows\"; effect \"vignette\"; transparent material; effect \"trail\"; effect \"particles\"",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 691,
+    "fps": 60,
+    "rafFps": 0.16,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "aura-fc-3d",
+   "ready": true,
+   "loadMs": 25945,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 113.45,
+    "p5": 44,
+    "p50": 109,
+    "p95": 228
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: hdri environment; effect \"color-grade\"; effect \"ambient-occlusion\"; effect \"bloom\"; transparent material; effect \"lightCone\"; effect \"particles\"; effect \"trail\"; effect \"contact-shadows\"; effect \"motion-blur\"",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 389,
+    "fps": 60,
+    "rafFps": 0.21,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "aura-links-3d",
+   "ready": true,
+   "loadMs": 29317,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 135.46,
+    "p5": 63,
+    "p50": 133,
+    "p95": 194
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: hdri environment; effect \"color-grade\"; effect \"ambient-occlusion\"; effect \"bloom\"; transparent material; effect \"trail\"; effect \"contact-shadows\"; effect \"vignette\"",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 143,
+    "fps": 60,
+    "rafFps": 0.12,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "bunker-zero",
+   "ready": false
+  },
+  {
+   "game": "slingshot-siege",
+   "ready": true,
+   "loadMs": 43539,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 111.93,
+    "p5": 25,
+    "p50": 122,
+    "p95": 184
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: background opts out of tone mapping; hdri environment; effect \"color-grade\"; effect \"ambient-occlusion\"; effect \"bloom\"; transparent material; effect \"vignette\"; effect \"anti-alias\"",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 395,
+    "fps": 60,
+    "rafFps": 0.11,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "dot-dash-3d",
+   "ready": true,
+   "loadMs": 7929,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 29.5,
+    "p5": 8,
+    "p50": 20,
+    "p95": 124
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: effect \"bloom\"; effect \"vignette\"; effect \"color-grade\"; effect \"ambient-occlusion\"; transparent material",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 39,
+    "fps": 60,
+    "rafFps": 0.37,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "splat-rush-port",
+   "ready": false
+  },
+  {
+   "game": "serpentine-sky-run-port",
+   "ready": false
+  },
+  {
+   "game": "drift-and-deliver-port",
+   "ready": false
+  },
+  {
+   "game": "heatsink-port",
+   "ready": false
+  },
+  {
+   "game": "ninja-runner-port",
+   "ready": true,
+   "loadMs": 93491,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 121.13,
+    "p5": 54,
+    "p50": 123,
+    "p95": 173
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: output options (tone mapping, exposure, dithering) are authored; hdri environment; effect \"ambient-occlusion\"; effect \"bloom\"; effect \"color-grade\"; effect \"vignette\"; effect \"anti-alias\"; batched node; custom material",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 93,
+    "fps": 60,
+    "rafFps": 0.05,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "last-train-port",
+   "ready": true,
+   "loadMs": 69243,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 83.83,
+    "p5": 38,
+    "p50": 77,
+    "p95": 143
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: output options (tone mapping, exposure, dithering) are authored; hdri environment; effect \"ambient-occlusion\"; effect \"bloom\"; effect \"color-grade\"; effect \"vignette\"; custom material",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 126,
+    "fps": 60,
+    "rafFps": 0.1,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "roadster-hours-port",
+   "ready": true,
+   "loadMs": 23588,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 76.29,
+    "p5": 11,
+    "p50": 77,
+    "p95": 155
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: output options (tone mapping, exposure, dithering) are authored; effect \"bloom\"; effect \"color-grade\"; effect \"vignette\"; effect \"anti-alias\"; custom material; batched node",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 152,
+    "fps": 60,
+    "rafFps": 0.33,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "iron-crown",
+   "ready": true,
+   "loadMs": 33925,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 56.65,
+    "p5": 3,
+    "p50": 46,
+    "p95": 145
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: hdri environment; effect \"color-grade\"; effect \"ambient-occlusion\"; effect \"bloom\"; effect \"contact-shadows\"; effect \"vignette\"; effect \"lightCone\"",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 186,
+    "fps": 60,
+    "rafFps": 0.15,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "pips-big-leap",
+   "ready": true,
+   "loadMs": 22398,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 165.2,
+    "p5": 33,
+    "p50": 170,
+    "p95": 215
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: hdri environment; effect \"color-grade\"; effect \"ambient-occlusion\"; effect \"bloom\"; effect \"contact-shadows\"",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 833,
+    "fps": 60,
+    "rafFps": 0.12,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "bunker-zero",
+   "ready": true,
+   "loadMs": 30769,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 74.99,
+    "p5": 31,
+    "p50": 74,
+    "p95": 102
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: effect \"color-grade\"; effect \"ambient-occlusion\"; effect \"bloom\"; effect \"contact-shadows\"; effect \"film-grain\"; effect \"vignette\"",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 217,
+    "fps": 60,
+    "rafFps": 0.11,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "strange-orbit-port",
+   "ready": true,
+   "loadMs": 19664,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 83.85,
+    "p5": 36,
+    "p50": 87,
+    "p95": 129
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: output options (tone mapping, exposure, dithering) are authored; effect \"bloom\"; effect \"color-grade\"; effect \"vignette\"; custom material",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 122,
+    "fps": 60,
+    "rafFps": 0.26,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "splat-rush-port",
+   "ready": true,
+   "loadMs": 18245,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 193.87,
+    "p5": 121,
+    "p50": 186,
+    "p95": 255
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: output options (tone mapping, exposure, dithering) are authored; custom material",
+     "bloomFusion": "off"
+    },
+    "drawCalls": 86,
+    "fps": 60,
+    "rafFps": 0.73,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "serpentine-sky-run-port",
+   "ready": true,
+   "loadMs": 18330,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 189.33,
+    "p5": 136,
+    "p50": 202,
+    "p95": 232
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: output options (tone mapping, exposure, dithering) are authored; custom material; effect \"bloom\"; effect \"anti-alias\"",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 39,
+    "fps": 60,
+    "rafFps": 0.36,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "drift-and-deliver-port",
+   "ready": true,
+   "loadMs": 61017,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 108.39,
+    "p5": 58,
+    "p50": 104,
+    "p95": 167
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: output options (tone mapping, exposure, dithering) are authored; hdri environment; effect \"bloom\"; effect \"color-grade\"; effect \"vignette\"; effect \"anti-alias\"; custom material; batched node",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 113,
+    "fps": 60,
+    "rafFps": 0.17,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "heatsink-port",
+   "ready": true,
+   "loadMs": 46334,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 48.8,
+    "p5": 13,
+    "p50": 30,
+    "p95": 154
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: output options (tone mapping, exposure, dithering) are authored; custom material; effect \"bloom\"; effect \"color-grade\"; effect \"vignette\"",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 70,
+    "fps": 60,
+    "rafFps": 0.13,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "where-the-wind-wanders-port",
+   "ready": true,
+   "loadMs": 26326,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 164.85,
+    "p5": 82,
+    "p50": 175,
+    "p95": 212
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: output options (tone mapping, exposure, dithering) are authored; custom material; effect \"bloom\"; effect \"color-grade\"; effect \"vignette\"",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 17,
+    "fps": 60,
+    "rafFps": 0.28,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "silt-and-signal-port",
+   "ready": true,
+   "loadMs": 29177,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 174.44,
+    "p5": 52,
+    "p50": 206,
+    "p95": 207
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: output options (tone mapping, exposure, dithering) are authored; effect \"bloom\"; effect \"color-grade\"; custom material",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 117,
+    "fps": 60,
+    "rafFps": 0.2,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "silt-and-signal-port",
+   "ready": true,
+   "loadMs": 26145,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 174.44,
+    "p5": 52,
+    "p50": 206,
+    "p95": 207
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: output options (tone mapping, exposure, dithering) are authored; effect \"bloom\"; effect \"color-grade\"; custom material",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 117,
+    "fps": 60,
+    "rafFps": 0.18,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "cloud-runner-port",
+   "ready": true,
+   "loadMs": 34740,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 118.67,
+    "p5": 41,
+    "p50": 124,
+    "p95": 190
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: output options (tone mapping, exposure, dithering) are authored; hdri environment; effect \"color-grade\"; effect \"ambient-occlusion\"; effect \"bloom\"; effect \"vignette\"; custom material",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 46,
+    "fps": 60,
+    "rafFps": 0.27,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "bunker-zero",
+   "ready": true,
+   "loadMs": 22349,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 74.99,
+    "p5": 31,
+    "p50": 74,
+    "p95": 102
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: effect \"color-grade\"; effect \"ambient-occlusion\"; effect \"bloom\"; effect \"contact-shadows\"; effect \"film-grain\"; effect \"vignette\"",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 217,
+    "fps": 60,
+    "rafFps": 0.11,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "cross-hop",
+   "ready": true,
+   "loadMs": 32741,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 108.31,
+    "p5": 42,
+    "p50": 114,
+    "p95": 152
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: hdri environment; effect \"color-grade\"; effect \"ambient-occlusion\"; effect \"contact-shadows\"; effect \"bloom\"; effect \"vignette\"",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 168,
+    "fps": 60,
+    "rafFps": 0.09,
+    "e1Warnings": []
+   }
+  },
+  {
+   "game": "ninja-runner-port",
+   "ready": true,
+   "loadMs": 84136,
+   "settleMs": 30000,
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 121.13,
+    "p5": 54,
+    "p50": 123,
+    "p95": 173
+   },
+   "info": {
+    "app": true,
+    "renderPath": {
+     "path": "hdr-msaa",
+     "quality": "auto",
+     "reason": "scene needs the HDR target: output options (tone mapping, exposure, dithering) are authored; hdri environment; effect \"ambient-occlusion\"; effect \"bloom\"; effect \"color-grade\"; effect \"vignette\"; effect \"anti-alias\"; batched node; custom material",
+     "bloomFusion": "separable"
+    },
+    "drawCalls": 93,
+    "fps": 60,
+    "rafFps": 0.05,
+    "e1Warnings": []
+   }
+  }
+ ],
+ "bloom": [
+  {
+   "game": "top-tennis",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 0.453,
+    "max": 143,
+    "over2Frac": 0.0014
+   },
+   "noiseFloor": {
+    "mean": 0.47,
+    "max": 116,
+    "over2Frac": 0.002
+   }
+  },
+  {
+   "game": "roadster-rush",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 9.558,
+    "max": 173,
+    "over2Frac": 0.4507
+   },
+   "noiseFloor": {
+    "mean": 13.56,
+    "max": 169,
+    "over2Frac": 0.4681
+   }
+  },
+  {
+   "game": "heatsink",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 2.701,
+    "max": 179,
+    "over2Frac": 0.1355
+   },
+   "noiseFloor": {
+    "mean": 4.513,
+    "max": 193,
+    "over2Frac": 0.2286
+   }
+  },
+  {
+   "game": "teleoperator",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 6.445,
+    "max": 143,
+    "over2Frac": 0.3907
+   },
+   "noiseFloor": {
+    "mean": 8.918,
+    "max": 165,
+    "over2Frac": 0.4662
+   }
+  },
+  {
+   "game": "aura-hoops-3d",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 0.633,
+    "max": 124,
+    "over2Frac": 0.0225
+   },
+   "noiseFloor": {
+    "mean": 0.745,
+    "max": 128,
+    "over2Frac": 0.0348
+   }
+  },
+  {
+   "game": "aura-diamond-3d",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 0.464,
+    "max": 92,
+    "over2Frac": 0.0022
+   },
+   "noiseFloor": {
+    "mean": 0.463,
+    "max": 135,
+    "over2Frac": 0.002
+   }
+  },
+  {
+   "game": "aura-fc-3d",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 0.149,
+    "max": 206,
+    "over2Frac": 0.0079
+   },
+   "noiseFloor": {
+    "mean": 0.166,
+    "max": 210,
+    "over2Frac": 0.0081
+   }
+  },
+  {
+   "game": "aura-links-3d",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 0.561,
+    "max": 118,
+    "over2Frac": 0.0115
+   },
+   "noiseFloor": {
+    "mean": 0.628,
+    "max": 118,
+    "over2Frac": 0.0169
+   }
+  },
+  {
+   "game": "slingshot-siege",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 3.324,
+    "max": 209,
+    "over2Frac": 0.2145
+   },
+   "noiseFloor": {
+    "mean": 4.63,
+    "max": 220,
+    "over2Frac": 0.2645
+   }
+  },
+  {
+   "game": "last-train-port",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 24.041,
+    "max": 183,
+    "over2Frac": 0.8254
+   },
+   "noiseFloor": {
+    "mean": 28.408,
+    "max": 187,
+    "over2Frac": 0.9071
+   }
+  },
+  {
+   "game": "roadster-hours-port",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 2.657,
+    "max": 134,
+    "over2Frac": 0.2294
+   },
+   "noiseFloor": {
+    "mean": 2.931,
+    "max": 121,
+    "over2Frac": 0.2643
+   }
+  },
+  {
+   "game": "iron-crown",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 2.159,
+    "max": 182,
+    "over2Frac": 0.05
+   },
+   "noiseFloor": {
+    "mean": 2.247,
+    "max": 180,
+    "over2Frac": 0.0514
+   }
+  },
+  {
+   "game": "pips-big-leap",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 0.61,
+    "max": 228,
+    "over2Frac": 0.025
+   },
+   "noiseFloor": {
+    "mean": 0.955,
+    "max": 228,
+    "over2Frac": 0.0286
+   }
+  },
+  {
+   "game": "strange-orbit-port",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 0.771,
+    "max": 88,
+    "over2Frac": 0.0461
+   },
+   "noiseFloor": {
+    "mean": 0.524,
+    "max": 87,
+    "over2Frac": 0.0183
+   }
+  },
+  {
+   "game": "splat-rush-port",
+   "bloomFusion": "off",
+   "skipped": "no fused bloom on this mount"
+  },
+  {
+   "game": "serpentine-sky-run-port",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 1.167,
+    "max": 223,
+    "over2Frac": 0.035
+   },
+   "noiseFloor": {
+    "mean": 1.202,
+    "max": 223,
+    "over2Frac": 0.0611
+   }
+  },
+  {
+   "game": "drift-and-deliver-port",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 0.429,
+    "max": 62,
+    "over2Frac": 0.0002
+   },
+   "noiseFloor": {
+    "mean": 0.429,
+    "max": 61,
+    "over2Frac": 0.0003
+   }
+  },
+  {
+   "game": "heatsink-port",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 1.915,
+    "max": 129,
+    "over2Frac": 0.2152
+   },
+   "noiseFloor": {
+    "mean": 1.097,
+    "max": 73,
+    "over2Frac": 0.1293
+   }
+  },
+  {
+   "game": "where-the-wind-wanders-port",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 13.485,
+    "max": 231,
+    "over2Frac": 0.4995
+   },
+   "noiseFloor": {
+    "mean": 14.349,
+    "max": 228,
+    "over2Frac": 0.5594
+   }
+  },
+  {
+   "game": "silt-and-signal-port",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 33.789,
+    "max": 227,
+    "over2Frac": 0.9222
+   },
+   "noiseFloor": {
+    "mean": 36.325,
+    "max": 217,
+    "over2Frac": 0.9421
+   }
+  },
+  {
+   "game": "cloud-runner-port",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 23.546,
+    "max": 167,
+    "over2Frac": 0.893
+   },
+   "noiseFloor": {
+    "mean": 32.831,
+    "max": 182,
+    "over2Frac": 0.9392
+   }
+  },
+  {
+   "game": "bunker-zero",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 1.767,
+    "max": 225,
+    "over2Frac": 0.2254
+   },
+   "noiseFloor": {
+    "mean": 1.81,
+    "max": 254,
+    "over2Frac": 0.226
+   }
+  },
+  {
+   "game": "cross-hop",
+   "bloomFusion": "separable",
+   "mounted": {
+    "bloomFusedPasses": true,
+    "skipUnusedShadowCascades": true
+   },
+   "production": {
+    "bloomFusedPasses": false,
+    "skipUnusedShadowCascades": false
+   },
+   "fusedVsProduction": {
+    "mean": 14.239,
+    "max": 231,
+    "over2Frac": 0.2641
+   },
+   "noiseFloor": {
+    "mean": 13.19,
+    "max": 219,
+    "over2Frac": 0.2478
+   }
+  }
+ ],
+ "url": [
+  {
+   "game": "dot-dash-3d",
+   "mounted": false,
+   "messages": [
+    "error: [aura3d] RENDERER_MOUNT_FAILED: Error: QUALITY_OPTION_INVALID:?aura3d-render=prodution (expected auto|production|safe-basic|cinematic) Nothing will draw. The same text is in app.diagnostics().errors; "
+   ]
+  },
+  {
+   "game": "heatsink-port",
+   "mounted": false,
+   "messages": [
+    "error: [aura3d] RENDERER_MOUNT_FAILED: Error: QUALITY_OPTION_INVALID:?aura3d-render=prodution (expected auto|production|safe-basic|cinematic) Nothing will draw. The same text is in app.diagnostics().errors; "
+   ]
+  },
+  {
+   "game": "dot-dash-3d",
+   "mounted": false,
+   "messages": [
+    "error: [aura3d] RENDERER_MOUNT_FAILED: Error: QUALITY_OPTION_INVALID:?aura3d-render=prodution (expected auto|production|safe-basic|cinematic) Nothing will draw. The same text is in app.diagnostics().errors; "
+   ]
+  },
+  {
+   "game": "heatsink-port",
+   "mounted": false,
+   "messages": [
+    "error: [aura3d] RENDERER_MOUNT_FAILED: Error: QUALITY_OPTION_INVALID:?aura3d-render=prodution (expected auto|production|safe-basic|cinematic) Nothing will draw. The same text is in app.diagnostics().errors; "
+   ]
+  }
+ ],
+ "errors": []
+}
