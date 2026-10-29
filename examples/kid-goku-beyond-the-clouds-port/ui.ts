@@ -5,12 +5,45 @@
  * Dense type scale, Regular/Medium weights, one Semibold title.
  */
 import type { Chapter } from "./chapter";
-import { FINALE_SECONDS, type Game } from "./game";
+import { FINALE_SECONDS, type Difficulty, type Game } from "./game";
 
 export interface UiHandlers {
   play(): void; retry(): void; menu(): void; pause(): void; resume(): void; restart(): void; toggleSound(): boolean;
+  /** Flip reduced motion (no camera shake, soft flashes, no hit blink); returns the new state. */
+  toggleMotion(): boolean;
+  /** Flip Normal / Easy on the title screen; returns the new difficulty. */
+  toggleDifficulty(): Difficulty;
   touch(key: "left" | "right" | "jump" | "pole" | "cloud", down: boolean): void;
 }
+
+/** Menu and result options the UI shows; `main.ts` owns the values and persists them. */
+export interface UiOptions { soundOn: boolean; reducedMotion: boolean; difficulty: Difficulty; best: number; bestTime: number; bestPearls: number }
+
+/**
+ * Prompt, hint and toast text for the current input mode. The sim and encounter layers write keyboard text; on a touch
+ * screen (coarse pointer) the same text names the on-screen buttons instead.
+ */
+export function forInput(text: string, touch: boolean): string {
+  if (!touch || !text) return text;
+  return text
+    .replace(/← → OR A D TO STEER/g, "TAP ◀ ▶ TO STEER")
+    .replace(/\bPRESS E\b/g, "TAP STAFF")
+    .replace(/^SPACE$/g, "TAP JUMP")
+    .replace(/\bSPACE\b/g, "JUMP")
+    .replace(/^Q · /, "TAP CLOUD · ")
+    .replace(/\bpress Q\b/g, "tap cloud");
+}
+
+/** Phases that show the in-play HUD (hearts, pearls, progress, score, gauge, combo, toast). The finale is a cutscene. */
+export function hudVisible(phase: Game["phase"]): boolean { return phase !== "menu" && phase !== "finale"; }
+
+/** Strength of the full-screen flash: capped lower when reduced motion is on. */
+export function flashOpacity(k: number | undefined, reducedMotion: boolean): number { return k ? Math.min(reducedMotion ? 0.15 : 0.6, k) : 0; }
+
+/** The result card's main button: a fresh run after a win, the last checkpoint after a loss. */
+export function retryLabel(won: boolean): string { return won ? "Run again" : "Continue from checkpoint"; }
+
+const clock = (t: number): string => `${Math.floor(t / 60)}:${Math.floor(t % 60).toString().padStart(2, "0")}`;
 
 const CSS = `
 #cr-ui{position:fixed;inset:0;pointer-events:none;font-family:"Graphik Web",ui-sans-serif,system-ui,sans-serif;font-weight:400;color:#fffaf0;-webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none;overflow:hidden}
@@ -27,11 +60,12 @@ const CSS = `
 #cr-ui .title h1 span{display:block;font-size:.42em;letter-spacing:.2em;text-transform:uppercase;color:#ffd75e;text-shadow:0 2px 6px rgba(0,0,0,.4);font-weight:500}
 #cr-ui .title p{margin:10px 0 0;font-size:15px;line-height:1.45;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.5);max-width:34ch}
 #cr-ui .menu{position:absolute;left:5vw;bottom:13vh;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
-#cr-ui .menu .row{display:flex;gap:10px}
+#cr-ui .menu .row{display:flex;flex-wrap:wrap;gap:10px;max-width:90vw}
 #cr-ui .keys{position:absolute;left:5vw;bottom:4vh;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.6)}
 #cr-ui kbd{display:inline-block;min-width:22px;padding:2px 6px;margin-right:4px;text-align:center;font:500 11px "Graphik Web",ui-monospace,monospace;color:#2a1a08;background:#fff1cf;border-radius:5px;box-shadow:0 1px 0 rgba(0,0,0,.35)}
 #cr-ui .best{font-size:12px;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.6)}
 #cr-ui .credit{position:absolute;right:14px;bottom:10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.7);text-shadow:0 1px 4px rgba(0,0,0,.5)}
+#cr-ui:not(.coarse) .credit{top:12px;bottom:auto}
 #cr-ui .hud-top{position:absolute;left:14px;right:14px;top:12px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 #cr-ui .left{display:flex;gap:10px;align-items:flex-start}
 #cr-ui .pausebtn{width:44px;height:44px;padding:0;border-radius:12px;font-size:13px;letter-spacing:-2px;color:#3a2410;background:#fff4dc;box-shadow:0 3px 0 rgba(0,0,0,.3)}
@@ -64,7 +98,7 @@ const CSS = `
 #cr-ui .prompt .tag{display:inline-block;padding:3px 12px;border-radius:6px;background:#d9341f;color:#fff;font-weight:500;font-size:13px;letter-spacing:.14em;text-transform:uppercase}
 #cr-ui .prompt .ttl{margin-top:6px;font-size:clamp(22px,3.4vw,34px);font-weight:500;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.45),0 0 18px rgba(0,0,0,.35)}
 #cr-ui .prompt .help{margin-top:2px;font-size:13px;letter-spacing:.1em;color:#ffe27a;text-shadow:0 1px 6px rgba(0,0,0,.6)}
-#cr-ui .toast{position:absolute;left:50%;bottom:11%;transform:translateX(-50%);padding:8px 16px;font-size:14px;opacity:0;transition:opacity .2s;text-align:center;max-width:min(560px,90vw)}
+#cr-ui .toast{position:absolute;left:50%;bottom:max(11%,68px);transform:translateX(-50%);padding:8px 16px;font-size:14px;opacity:0;transition:opacity .2s;text-align:center;max-width:min(560px,90vw)}
 #cr-ui .toast.on{opacity:1}
 #cr-ui .danger{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 120px 30px rgba(220,40,20,0);transition:box-shadow .1s}
 #cr-ui .flash{position:absolute;inset:0;pointer-events:none;background:#fff;opacity:0}
@@ -87,9 +121,16 @@ const CSS = `
 #cr-ui .bars.on.t,#cr-ui .bars.on.b{transform:none}
 #cr-ui .touch{position:absolute;inset:auto 0 0 0;height:150px;display:none}
 #cr-ui.coarse .touch{display:block}
+#cr-ui.coarse .keys,#cr-ui.coarse .gauge kbd{display:none}
+#cr-ui .hud-top,#cr-ui .gauge,#cr-ui .combo,#cr-ui .toast,#cr-ui .prompt{transition:opacity .4s}
+#cr-ui .scr.fin .hud-top,#cr-ui .scr.fin .gauge,#cr-ui .scr.fin .combo,#cr-ui .scr.fin .toast,#cr-ui .scr.fin .prompt,#cr-ui .scr.fin .touch{opacity:0 !important;pointer-events:none}
+#cr-ui .loading .fail{display:flex;flex-direction:column;align-items:center;gap:12px;max-width:min(520px,88vw);text-align:center;letter-spacing:.04em;text-transform:none}
+#cr-ui .loading .fail small{font-size:12px;opacity:.85;word-break:break-word}
 #cr-ui .touch button{position:absolute;width:64px;height:64px;border-radius:50%;padding:0;background:rgba(255,250,240,.28);color:#fff;border:2px solid rgba(255,255,255,.5);box-shadow:none;font-size:13px;touch-action:none}
 #cr-ui .loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(#78b4e8,#cfe3f0);font-size:15px;color:#fff;letter-spacing:.14em;text-transform:uppercase;transition:opacity .5s}
 @media (max-height:520px){#cr-ui .title{top:5vh}#cr-ui .menu{bottom:16vh}}
+#cr-ui .panel{max-height:calc(100% - 16px);overflow-y:auto;box-sizing:border-box}
+@media (max-height:420px){#cr-ui .panel{padding:10px 18px}#cr-ui .panel h2{font-size:20px;margin:0}#cr-ui .panel .sub{margin-bottom:6px}#cr-ui .stats{gap:4px;margin:6px 0 8px}#cr-ui .stats div{padding:3px 4px}#cr-ui .stats b{font-size:15px}#cr-ui .stats small{font-size:10px}#cr-ui .panel .btns{margin-top:8px}}
 `;
 
 const HEART = '<svg class="heart" viewBox="0 0 24 22"><path fill="#ff5a4a" d="M12 21s-9-5.6-9-12.2C3 5.2 5.3 3 8 3c1.8 0 3.4 1 4 2.4C12.6 4 14.2 3 16 3c2.7 0 5 2.2 5 5.8C21 15.4 12 21 12 21z"/></svg>';
@@ -101,17 +142,25 @@ export class Ui {
   private q: Record<string, HTMLElement> = {};
   private last: Record<string, string | number> = {};
   private soundOn = true;
+  private reducedMotion = false;
+  private difficulty: Difficulty = "normal";
+  private readonly touchMode: boolean;
+  private ticks: { el: HTMLElement; at: number }[] = [];
+  private failed = false;
 
-  constructor(private readonly ch: Chapter, private readonly handlers: UiHandlers, soundOn: boolean, best: number) {
-    this.soundOn = soundOn;
+  constructor(private readonly ch: Chapter, private readonly handlers: UiHandlers, opts: UiOptions) {
+    this.soundOn = opts.soundOn;
+    this.reducedMotion = opts.reducedMotion;
+    this.difficulty = opts.difficulty;
     this.root.id = "cr-ui";
-    if (matchMedia("(pointer: coarse)").matches) this.root.classList.add("coarse");
+    this.touchMode = matchMedia("(pointer: coarse)").matches;
+    if (this.touchMode) this.root.classList.add("coarse");
     const style = el("style"); style.textContent = CSS; this.root.appendChild(style);
     const loading = el("div", "scr on"); loading.appendChild(el("div", "loading", "Loading…")); this.q.loading = loading;
     const menu = el("div", "scr");
     menu.innerHTML = `<div class="title"><h1><span>Sky ridge run</span>Cumulus Dash</h1><p>Seven sky pearls. One long run home along the ridge.</p></div>
-      <div class="menu"><button class="primary" data-a="play">Play  ▸</button><div class="row"><button class="ghost" data-a="sound">Sound on</button><button class="ghost" data-a="how">How to play</button></div><div class="best" data-q="best"></div></div>
-      <div class="keys"><span><kbd>←</kbd><kbd>→</kbd>steer</span><span><kbd>Space</kbd>jump</span><span><kbd>E</kbd>staff</span><span><kbd>Q</kbd>sky cloud</span><span><kbd>↓</kbd>brake</span><span><kbd>P</kbd>pause</span></div>
+      <div class="menu"><button class="primary" data-a="play">Play  ▸</button><div class="row"><button class="ghost" data-a="sound">Sound on</button><button class="ghost" data-a="motion">Motion: full</button><button class="ghost" data-a="difficulty">Normal</button><button class="ghost" data-a="how">How to play</button></div><div class="best" data-q="best"></div></div>
+      <div class="keys"><span><kbd>←</kbd><kbd>→</kbd>steer</span><span><kbd>Space</kbd><kbd>W</kbd>jump</span><span><kbd>E</kbd><kbd>K</kbd>staff</span><span><kbd>Q</kbd>sky cloud</span><span><kbd>↓</kbd>brake</span><span><kbd>P</kbd>pause</span><span><kbd>M</kbd>sound</span></div>
       <div class="credit">Built with Aura3D</div>`;
     const hud = el("div", "scr");
     hud.innerHTML = `<div class="danger" data-q="danger"></div><div class="flash" data-q="flash"></div>
@@ -127,23 +176,26 @@ export class Ui {
       <div class="bars t" data-q="bt"></div><div class="bars b" data-q="bb"></div>
       <div class="touch"><button data-t="left" style="left:12px;bottom:40px">◀</button><button data-t="right" style="left:86px;bottom:40px">▶</button>
         <button data-t="cloud" style="right:172px;bottom:40px;width:52px;height:52px">cloud</button><button data-t="pole" style="right:100px;bottom:96px;width:52px;height:52px">staff</button><button data-t="jump" style="right:16px;bottom:40px;width:76px;height:76px">jump</button></div>`;
-    const pause = el("div", "scr"); pause.innerHTML = `<div class="panel glass"><h2>Paused</h2><div class="sub">Take a breath.</div><div class="btns"><button class="primary" data-a="resume">Resume</button><button data-a="restart">Restart run</button><button class="ghost" data-a="menu">Title</button></div></div>`;
-    const result = el("div", "scr"); result.innerHTML = `<div class="panel glass"><h2 data-q="rtitle"></h2><div class="sub" data-q="rsub"></div><div class="orbs" data-q="rorbs"></div><div class="stats" data-q="rstats"></div><div data-q="rbest"></div><div class="btns"><button class="primary" data-a="retry">Run it again</button><button class="ghost" data-a="menu">Title</button></div></div>`;
+    const pause = el("div", "scr"); pause.innerHTML = `<div class="panel glass"><h2>Paused</h2><div class="sub">Take a breath.</div><div class="btns"><button class="primary" data-a="resume">Resume</button><button data-a="restart">Restart run</button><button class="ghost" data-a="sound">Sound on</button><button class="ghost" data-a="menu">Title</button></div></div>`;
+    const result = el("div", "scr"); result.innerHTML = `<div class="panel glass"><h2 data-q="rtitle"></h2><div class="sub" data-q="rsub"></div><div class="orbs" data-q="rorbs"></div><div class="stats" data-q="rstats"></div><div data-q="rbest"></div><div class="btns"><button class="primary" data-a="retry" data-q="retry">Run again</button><button class="ghost" data-a="menu">Title</button></div></div>`;
     for (const s of [menu, hud, pause, result]) this.root.appendChild(s);
     this.root.appendChild(loading);
     this.screens = { loading, menu, hud, pause, result };
     for (const e of Array.from(this.root.querySelectorAll<HTMLElement>("[data-q]"))) this.q[e.dataset.q as string] = e;
-    this.q.best!.textContent = best > 0 ? `Best score ${best.toLocaleString()}` : "";
+    this.bestLine(opts.best, opts.bestTime, opts.bestPearls);
     (this.q.hearts as HTMLElement).innerHTML = HEART.repeat(3);
     (this.q.orbs as HTMLElement).innerHTML = Array.from({ length: 7 }, (_, i) => `<span class="orb">${i + 1}</span>`).join("");
     const bar = this.root.querySelector(".prog .bar") as HTMLElement;
-    for (const c of ch.checkpoints) { if (c <= 0) continue; const t = el("div", "tick"); t.style.left = `${(c / ch.length) * 100}%`; t.dataset.c = String(c); bar.appendChild(t); }
+    for (const c of ch.checkpoints) { if (c <= 0) continue; const t = el("div", "tick"); t.style.left = `${(c / ch.length) * 100}%`; t.dataset.c = String(c); bar.appendChild(t); this.ticks.push({ el: t, at: c }); }
     this.root.addEventListener("click", (ev) => {
       const a = (ev.target as HTMLElement).closest<HTMLElement>("[data-a]")?.dataset.a;
       if (!a) return;
       if (a === "play") handlers.play(); else if (a === "retry") handlers.retry(); else if (a === "menu") handlers.menu();
       else if (a === "pause") handlers.pause(); else if (a === "resume") handlers.resume(); else if (a === "restart") handlers.restart();
       else if (a === "sound") { this.soundOn = handlers.toggleSound(); this.sound(); }
+      else if (a === "motion") { this.reducedMotion = handlers.toggleMotion(); this.options(); }
+      else if (a === "difficulty") { this.difficulty = handlers.toggleDifficulty(); this.options(); }
+      else if (a === "reload") location.reload();
       else if (a === "how") this.say("Run, jump gaps, plant the staff over gorges, bonk creatures, ride the sky cloud, find all seven sky pearls.");
     });
     for (const b of Array.from(this.root.querySelectorAll<HTMLElement>("[data-t]"))) {
@@ -152,41 +204,70 @@ export class Ui {
       for (const t of ["pointerup", "pointercancel", "pointerleave"]) b.addEventListener(t, () => handlers.touch(key, false));
     }
     this.sound();
+    this.options();
     document.body.appendChild(this.root);
   }
 
-  private sound(): void { const b = this.root.querySelector<HTMLElement>('[data-a="sound"]'); if (b) b.textContent = this.soundOn ? "Sound on" : "Sound off"; }
+  /** Refresh every sound toggle label (title and pause panel); call after a keyboard toggle too. */
+  sound(on = this.soundOn): void { this.soundOn = on; for (const b of Array.from(this.root.querySelectorAll<HTMLElement>('[data-a="sound"]'))) b.textContent = on ? "Sound on" : "Sound off"; }
+  private options(): void {
+    const m = this.root.querySelector<HTMLElement>('[data-a="motion"]'); if (m) m.textContent = this.reducedMotion ? "Motion: reduced" : "Motion: full";
+    const d = this.root.querySelector<HTMLElement>('[data-a="difficulty"]'); if (d) d.textContent = this.difficulty === "easy" ? "Easy" : "Normal";
+  }
+  private bestLine(best: number, bestTime: number, bestPearls: number): void {
+    const parts = [best > 0 ? `Best score ${best.toLocaleString()}` : "", bestTime > 0 ? `best time ${clock(bestTime)}` : "", bestPearls > 0 ? `most pearls ${bestPearls}/7` : ""].filter(Boolean);
+    this.q.best!.textContent = parts.join(" · ");
+  }
+  /** A boot failure: replace the loader text with the error and a Reload button (the loader covers the whole page). */
+  fail(message: string): void {
+    this.failed = true;
+    const box = this.q.loading!.firstElementChild as HTMLElement;
+    box.style.opacity = "1";
+    this.q.loading!.classList.add("on");
+    box.innerHTML = "";
+    const inner = el("div", "fail");
+    inner.appendChild(el("div", "", "The game could not start."));
+    const detail = el("small"); detail.textContent = message; inner.appendChild(detail);
+    const reload = el("button", "primary", "Reload"); reload.dataset.a = "reload"; inner.appendChild(reload);
+    box.appendChild(inner);
+    box.style.pointerEvents = "auto";
+  }
   private say(text: string): void { const t = this.q.toast!; t.textContent = text; t.classList.add("on"); setTimeout(() => t.classList.remove("on"), 3600); }
-  ready(): void { const l = this.q.loading!.firstElementChild as HTMLElement; l.style.opacity = "0"; setTimeout(() => this.q.loading!.classList.remove("on"), 520); }
+  ready(): void { if (this.failed) return; const l = this.q.loading!.firstElementChild as HTMLElement; l.style.opacity = "0"; setTimeout(() => this.q.loading!.classList.remove("on"), 520); }
   private set(key: string, value: string | number, apply: () => void): void { if (this.last[key] !== value) { this.last[key] = value; apply(); } }
 
   update(g: Game): void {
     const s = g.state, ph = g.phase;
     this.screens.menu.classList.toggle("on", ph === "menu");
     this.screens.hud.classList.toggle("on", ph !== "menu");
+    this.screens.hud.classList.toggle("fin", !hudVisible(ph) && ph !== "menu");
     this.screens.hud.style.display = ph === "menu" ? "none" : "";
     this.screens.pause.classList.toggle("on", ph === "paused");
     this.screens.result.classList.toggle("on", ph === "result");
     if (ph === "menu") return;
-    this.set("hearts", s.hearts, () => { (this.q.hearts as HTMLElement).innerHTML = Array.from({ length: 3 }, (_, i) => HEART.replace('class="heart"', `class="heart${i < s.hearts ? "" : " off"}"`)).join(""); });
+    const cap = s.maxHearts ?? 3;
+    this.set("hearts", s.hearts * 10 + cap, () => { (this.q.hearts as HTMLElement).innerHTML = Array.from({ length: cap }, (_, i) => HEART.replace('class="heart"', `class="heart${i < s.hearts ? "" : " off"}"`)).join(""); });
     this.set("score", Math.round(s.score), () => { this.q.score!.textContent = Math.round(s.score).toLocaleString(); });
-    const pct = Math.min(1, Math.max(0, s.s / this.ch.length));
-    this.q.fill!.style.width = `${pct * 100}%`; this.q.me!.style.left = `${pct * 100}%`;
-    for (const t of Array.from(this.root.querySelectorAll<HTMLElement>(".prog .tick"))) t.classList.toggle("hit", s.s >= Number(t.dataset.c));
+    const pct = Math.round(Math.min(1, Math.max(0, s.s / g.chapter.length)) * 1000) / 10;
+    this.set("pct", pct, () => { this.q.fill!.style.width = `${pct}%`; this.q.me!.style.left = `${pct}%`; });
+    let passed = 0;
+    for (const t of this.ticks) if (s.s >= t.at) passed++;
+    this.set("ticks", passed, () => { this.ticks.forEach((t, i) => t.el.classList.toggle("hit", i < passed)); });
     this.set("orbs", s.balls.join(","), () => { Array.from(this.q.orbs!.children).forEach((c, i) => c.classList.toggle("got", s.balls.includes(i + 1))); });
     this.set("combo", s.combo, () => { this.q.combo!.textContent = s.combo >= 3 ? `${s.combo}× combo` : ""; this.q.combo!.classList.toggle("on", s.combo >= 3); });
     const charge = Math.round(s.glider.charge * 100);
     this.set("gauge", charge + (s.glider.active ? 1000 : 0), () => { this.q.gfill!.style.width = `${s.glider.active ? Math.max(0, (s.glider.time / 7) * 100) : charge}%`; this.q.gauge!.classList.toggle("ready", s.glider.charge >= 1 && !s.glider.active); });
     const p = g.prompt ?? g.hint;
-    this.set("prompt", p ? p.tag + p.title : "", () => { this.q.prompt!.classList.toggle("on", !!p); if (p) { this.q.tag!.textContent = p.tag; this.q.ttl!.textContent = p.title; this.q.help!.textContent = p.help; } });
-    const toast = g.toast?.text ?? "";
+    this.set("prompt", p ? p.tag + p.title + p.help : "", () => { this.q.prompt!.classList.toggle("on", !!p); if (p) { this.q.tag!.textContent = p.tag; this.q.ttl!.textContent = p.title; this.q.help!.textContent = forInput(p.help, this.touchMode); } });
+    const toast = forInput(g.toast?.text ?? "", this.touchMode);
     this.set("toast", toast, () => { this.q.toast!.textContent = toast; this.q.toast!.classList.toggle("on", !!toast); });
-    this.q.danger!.style.boxShadow = `inset 0 0 ${60 + g.danger * 90}px ${g.danger * 34}px rgba(220,40,20,${(g.danger * 0.55).toFixed(2)})`;
+    const danger = Math.round(g.danger * 50) / 50;
+    this.set("danger", danger, () => { this.q.danger!.style.boxShadow = `inset 0 0 ${60 + danger * 90}px ${danger * 34}px rgba(220,40,20,${(danger * 0.55).toFixed(2)})`; });
     const j = s.janken;
     const duel = j ? (j.t < 0.36 ? "ROCK…" : j.t < 0.74 ? "PAPER…" : ({ guu: "ROCK!", paa: "PAPER!", choki: "SCISSORS!" } as Record<string, string>)[j.hand ?? ""] ?? "!") : "";
     this.set("duel", duel, () => { this.q.duel!.textContent = duel; this.q.duel!.classList.toggle("on", !!duel); });
-    const fl = this.q.flash!;
-    fl.style.background = g.flash?.color ?? "#fff"; fl.style.opacity = String(g.flash ? Math.min(0.6, g.flash.k) : 0);
+    const fl = this.q.flash!, flash = Math.round(flashOpacity(g.flash?.k, g.reducedMotion) * 100) / 100, flashColor = g.flash?.color ?? "#fff";
+    this.set("flash", `${flashColor}${flash}`, () => { fl.style.background = flashColor; fl.style.opacity = String(flash); });
     const fin = ph === "finale";
     this.q.bt!.classList.toggle("on", fin); this.q.bb!.classList.toggle("on", fin);
     const ft = g.finale?.t ?? 0;
@@ -202,11 +283,13 @@ export class Ui {
     this.last.result = key;
     this.q.rtitle!.textContent = r.won ? "Run complete!" : "Out of hearts";
     this.q.rsub!.textContent = r.won ? "You made it home along the ridge." : "The ridge is long. Try again from the last checkpoint.";
+    this.q.retry!.textContent = retryLabel(r.won);
     this.q.rorbs!.innerHTML = Array.from({ length: 7 }, (_, i) => `<span class="orb${r.stars.includes(i + 1) ? " got" : ""}">${i + 1}</span>`).join("");
-    const mm = Math.floor(r.time / 60), ss = Math.floor(r.time % 60).toString().padStart(2, "0");
-    this.q.rstats!.innerHTML = [["Score", r.score.toLocaleString()], ["Time", `${mm}:${ss}`], ["Sky pearls", `${r.balls}/7`], ["Spirit orbs", String(r.orbs)], ["Hits taken", String(r.hits)], ["Best combo", `${r.maxCombo}×`]].map(([k, v]) => `<div><b>${v}</b><small>${k}</small></div>`).join("");
-    this.q.rbest!.innerHTML = r.best ? '<span class="badge">New best score</span>' : "";
-    this.q.best!.textContent = g.best > 0 ? `Best score ${g.best.toLocaleString()}` : "";
+    this.q.rstats!.innerHTML = [["Score", r.score.toLocaleString()], ["Time", clock(r.time)], ["Sky pearls", `${r.balls}/7`], ["Spirit orbs", String(r.orbs)], ["Hits taken", String(r.hits)], ["Best combo", `${r.maxCombo}×`],
+      ["Best time", r.bestTime > 0 ? clock(r.bestTime) : "–"], ["Most pearls", `${r.bestPearls}/7`], ["Mode", g.difficulty === "easy" ? "Easy" : "Normal"]].map(([k, v]) => `<div><b>${v}</b><small>${k}</small></div>`).join("");
+    const badges = [r.best ? "New best score" : "", r.newBestTime ? "New best time" : "", r.newBestPearls ? "Most pearls yet" : ""].filter(Boolean);
+    this.q.rbest!.innerHTML = badges.map((b) => `<span class="badge">${b}</span>`).join(" ");
+    this.bestLine(g.best, g.bestTime, g.bestPearls);
   }
 
 }

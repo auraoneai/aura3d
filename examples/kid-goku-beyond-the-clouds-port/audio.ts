@@ -59,7 +59,6 @@ export class GameAudio {
   private nextBeat = 0;
   private beat = 0;
   private musicOn = false;
-  private lastStep = 0;
   private orbPitch = 0;
 
   /** Must be called from a user gesture (key or click) the first time. */
@@ -114,6 +113,8 @@ export class GameAudio {
       return;
     }
     switch (name) {
+      /* one per visible foot touchdown (world.ts counts them from the gait), not per 2.4 m of distance */
+      case "footstep": this.noise(0.05, 0.1, 1400, 500, "bandpass"); break;
       case "land": this.noise(0.14, 0.3, 700, 120); this.tone(110, 0.12, "sine", 0.25, 0, 60); break;
       case "dismount": this.noise(0.25, 0.3, 900, 150); this.tone(220, 0.2, "triangle", 0.18, 0, 500); break;
       case "splash": this.noise(0.3, 0.3, 4200, 900, "bandpass"); break;
@@ -134,16 +135,12 @@ export class GameAudio {
     }
   }
 
-  /** Per-frame: schedule the theme, set wind from speed, footsteps from distance. */
+  /** Per-frame: schedule the theme and set the wind from speed (footsteps arrive as "footstep" events). */
   update(opts: { running: boolean; speed: number; s: number; grounded: boolean; playing: boolean; menu: boolean }): void {
     const ctx = this.ctx; if (!ctx || !this.enabled) return;
     const now = ctx.currentTime;
     this.wind.gain.setTargetAtTime(opts.running ? Math.min(0.2, 0.02 + opts.speed * 0.006) : 0.03, now, 0.2);
     this.windFilter.frequency.setTargetAtTime(380 + opts.speed * 30, now, 0.3);
-    if (opts.playing && opts.grounded && opts.running) {
-      const step = Math.floor(opts.s / 2.4);
-      if (step !== this.lastStep) { this.lastStep = step; this.noise(0.05, 0.1, 1400, 500, "bandpass"); }
-    }
     this.musicOn = opts.playing || opts.menu;
     if (!this.musicOn) return;
     const bpm = opts.playing ? 112 + Math.min(14, opts.speed) : 84, dur = 60 / bpm / 2;

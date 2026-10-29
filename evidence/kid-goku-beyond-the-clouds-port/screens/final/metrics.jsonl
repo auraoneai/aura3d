@@ -1,63 +1,76 @@
-{"kind":"SCSTATE","tag":"390x844","state":"title","ready":true}
-{"kind":"SCSTAT","tag":"390x844","name":"title","full":{"meanLuma":133.5,"darkFraction":0,"whiteFraction":0.0052},"center":{"meanLuma":122.4,"darkFraction":0,"whiteFraction":0.0046}}
-{"kind":"SCTEXT","tag":"390x844","name":"title","oldNames":null,"text":"SKY RIDGE RUN Cumulus Dash Seven sky pearls. One long run home along the ridge. Play ▸ Sound on How to play ←→steer Spacejump Estaff Qsky cloud ↓brake Ppause BUILT WITH AURA3D"}
-{"kind":"SCCANVAS","tag":"390x844","name":"title","inner":[390,844],"dpr":1,"canvases":[{"w":390,"h":844,"cw":390,"ch":844}]}
-{"kind":"SCSTATE","tag":"390x844","state":"play-ready","ready":true}
-{"kind":"SCSETTLE","tag":"390x844","seconds":166,"last":{"none":true}}
-{"kind":"SCSTAT","tag":"390x844","name":"gameplay-early","full":{"meanLuma":148.2,"darkFraction":0,"whiteFraction":0.0049},"center":{"meanLuma":151.3,"darkFraction":0,"whiteFraction":0.0041}}
-{"kind":"SCTEXT","tag":"390x844","name":"gameplay-early","oldNames":null,"text":"❚❚ 1 2 3 4 5 6 7 ⌂ 1 THE RUN BEGINS RIDE THE ROLLING LOG ← → OR A D TO STEER SKY CLOUD Q"}
-{"kind":"SCCANVAS","tag":"390x844","name":"gameplay-early","inner":[390,844],"dpr":1,"canvases":[{"w":390,"h":844,"cw":390,"ch":844}]}
-{"kind":"SCSTATE","tag":"390x844","state":"gameplay-early","snapshot":"{\"phase\":\"playing\",\"chapter\":0,\"name\":\"Cumulus Ridge\",\"s\":2.4,\"lane\":0,\"jump\":0,\"speed\":9.697704055175944,\"hearts\":3,\"score\":1,\"combo\":0,\"balls\":[],\"meat\":0,\"fallen\":0,\"pole\":null,\"finished\":false,\"nimbus\":{\"charge\":0,\"active\":false,\"call\":0,\"time\":0}}"}
-{"kind":"SCSTAT","tag":"390x844","name":"key-run","full":{"meanLuma":152.3,"darkFraction":0,"whiteFraction":0.0052},"center":{"meanLuma":159.3,"darkFraction":0,"whiteFraction":0.0044}}
-{"kind":"SCTEXT","tag":"390x844","name":"key-run","oldNames":null,"text":"❚❚ 1 2 3 4 5 6 7 ⌂ 18 THE RUN BEGINS RIDE THE ROLLING LOG ← → OR A D TO STEER SKY CLOUD Q"}
-{"kind":"SCCANVAS","tag":"390x844","name":"key-run","inner":[390,844],"dpr":1,"canvases":[{"w":390,"h":844,"cw":390,"ch":844}]}
-{"kind":"SCSTATE","tag":"390x844","state":"key-run","snapshot":"{\"phase\":\"playing\",\"chapter\":0,\"name\":\"Cumulus Ridge\",\"s\":29.7,\"lane\":0,\"jump\":0,\"speed\":14.480863896542125,\"hearts\":3,\"score\":18,\"combo\":0,\"balls\":[],\"meat\":0,\"fallen\":0,\"pole\":null,\"finished\":false,\"nimbus\":{\"charge\":0,\"active\":false,\"call\":0,\"time\":0}}"}
-{"kind":"SCERRORS","tag":"390x844","errors":[]}
 {"kind":"SCSTATE","tag":"640x360","state":"title","ready":true}
-{"kind":"SCSTAT","tag":"640x360","name":"title","full":{"meanLuma":121.2,"darkFraction":0,"whiteFraction":0.0052},"center":{"meanLuma":112.5,"darkFraction":0,"whiteFraction":0.0015}}
-{"kind":"SCTEXT","tag":"640x360","name":"title","oldNames":null,"text":"SKY RIDGE RUN Cumulus Dash Seven sky pearls. One long run home along the ridge. Play ▸ Sound on How to play ←→steer Spacejump Estaff Qsky cloud ↓brake Ppause BUILT WITH AURA3D"}
+{"kind":"SCSTAT","tag":"640x360","name":"title","full":{"meanLuma":125.1,"darkFraction":0,"whiteFraction":0.0087},"center":{"meanLuma":118.6,"darkFraction":0,"whiteFraction":0.0142}}
+{"kind":"SCTEXT","tag":"640x360","name":"title","oldNames":null,"text":"SKY RIDGE RUN Cumulus Dash Seven sky pearls. One long run home along the ridge. Play ▸ Sound on Motion: full Normal How to play ←→steer SpaceWjump EKstaff Qsky cloud ↓brake Ppause Msound BUILT WITH AURA3D"}
 {"kind":"SCCANVAS","tag":"640x360","name":"title","inner":[640,360],"dpr":1,"canvases":[{"w":640,"h":360,"cw":640,"ch":360}]}
 {"kind":"SCSTATE","tag":"640x360","state":"play-ready","ready":true}
-{"kind":"SCSETTLE","tag":"640x360","seconds":184,"last":{"none":true}}
-{"kind":"SCSTAT","tag":"640x360","name":"gameplay-early","full":{"meanLuma":123.4,"darkFraction":0.0001,"whiteFraction":0.0051},"center":{"meanLuma":129,"darkFraction":0,"whiteFraction":0.0011}}
+{"kind":"SCSETTLE","tag":"640x360","seconds":222,"last":{"none":true}}
+{"kind":"SCSTAT","tag":"640x360","name":"gameplay-early","full":{"meanLuma":126.7,"darkFraction":0,"whiteFraction":0.0074},"center":{"meanLuma":135.4,"darkFraction":0,"whiteFraction":0.0092}}
 {"kind":"SCTEXT","tag":"640x360","name":"gameplay-early","oldNames":null,"text":"❚❚ 1 2 3 4 5 6 7 ⌂ 1 THE RUN BEGINS RIDE THE ROLLING LOG ← → OR A D TO STEER SKY CLOUD Q"}
 {"kind":"SCCANVAS","tag":"640x360","name":"gameplay-early","inner":[640,360],"dpr":1,"canvases":[{"w":640,"h":360,"cw":640,"ch":360}]}
-{"kind":"SCSTATE","tag":"640x360","state":"gameplay-early","snapshot":"{\"phase\":\"playing\",\"chapter\":0,\"name\":\"Cumulus Ridge\",\"s\":2.4,\"lane\":0,\"jump\":0,\"speed\":9.697704055175944,\"hearts\":3,\"score\":1,\"combo\":0,\"balls\":[],\"meat\":0,\"fallen\":0,\"pole\":null,\"finished\":false,\"nimbus\":{\"charge\":0,\"active\":false,\"call\":0,\"time\":0}}"}
-{"kind":"SCSTAT","tag":"640x360","name":"key-run","full":{"meanLuma":128.6,"darkFraction":0,"whiteFraction":0.0057},"center":{"meanLuma":145.1,"darkFraction":0,"whiteFraction":0.0013}}
+{"kind":"SCSTATE","tag":"640x360","state":"gameplay-early","snapshot":"{\"phase\":\"playing\",\"chapter\":0,\"name\":\"Cumulus Ridge\",\"s\":2.4,\"lane\":0,\"jump\":0,\"speed\":9.697704055175944,\"hearts\":3,\"score\":1,\"combo\":0,\"balls\":[],\"meat\":0,\"fallen\":0,\"pole\":null,\"finished\":false,\"glider\":{\"charge\":0,\"active\":false,\"call\":0,\"time\":0}}"}
+{"kind":"SCSTAT","tag":"640x360","name":"key-run","full":{"meanLuma":131.2,"darkFraction":0,"whiteFraction":0.0075},"center":{"meanLuma":149.9,"darkFraction":0,"whiteFraction":0.0076}}
 {"kind":"SCTEXT","tag":"640x360","name":"key-run","oldNames":null,"text":"❚❚ 1 2 3 4 5 6 7 ⌂ 18 THE RUN BEGINS RIDE THE ROLLING LOG ← → OR A D TO STEER SKY CLOUD Q"}
 {"kind":"SCCANVAS","tag":"640x360","name":"key-run","inner":[640,360],"dpr":1,"canvases":[{"w":640,"h":360,"cw":640,"ch":360}]}
-{"kind":"SCSTATE","tag":"640x360","state":"key-run","snapshot":"{\"phase\":\"playing\",\"chapter\":0,\"name\":\"Cumulus Ridge\",\"s\":29.7,\"lane\":0,\"jump\":0,\"speed\":14.480863896542125,\"hearts\":3,\"score\":18,\"combo\":0,\"balls\":[],\"meat\":0,\"fallen\":0,\"pole\":null,\"finished\":false,\"nimbus\":{\"charge\":0,\"active\":false,\"call\":0,\"time\":0}}"}
-{"kind":"SCSTAT","tag":"640x360","name":"key-jump","full":{"meanLuma":125.6,"darkFraction":0,"whiteFraction":0.0054},"center":{"meanLuma":137.3,"darkFraction":0,"whiteFraction":0.0005}}
-{"kind":"SCTEXT","tag":"640x360","name":"key-jump","oldNames":null,"text":"❚❚ 1 2 3 4 5 6 7 ⌂ 20 THE RUN BEGINS RIDE THE ROLLING LOG ← → OR A D TO STEER SKY CLOUD Q"}
+{"kind":"SCSTATE","tag":"640x360","state":"key-run","snapshot":"{\"phase\":\"playing\",\"chapter\":0,\"name\":\"Cumulus Ridge\",\"s\":29.7,\"lane\":0,\"jump\":0,\"speed\":14.480863896542125,\"hearts\":3,\"score\":18,\"combo\":0,\"balls\":[],\"meat\":0,\"fallen\":0,\"pole\":null,\"finished\":false,\"glider\":{\"charge\":0,\"active\":false,\"call\":0,\"time\":0}}"}
+{"kind":"SCSTAT","tag":"640x360","name":"key-jump","full":{"meanLuma":130.4,"darkFraction":0,"whiteFraction":0.0132},"center":{"meanLuma":169.7,"darkFraction":0,"whiteFraction":0.049}}
+{"kind":"SCTEXT","tag":"640x360","name":"key-jump","oldNames":null,"text":"❚❚ 1 2 3 4 5 6 7 ⌂ 171 THE RUN BEGINS RIDE THE ROLLING LOG ← → OR A D TO STEER Checkpoint SKY CLOUD Q"}
 {"kind":"SCCANVAS","tag":"640x360","name":"key-jump","inner":[640,360],"dpr":1,"canvases":[{"w":640,"h":360,"cw":640,"ch":360}]}
-{"kind":"SCSTATE","tag":"640x360","state":"key-jump","snapshot":"{\"phase\":\"playing\",\"chapter\":0,\"name\":\"Cumulus Ridge\",\"s\":33.5,\"lane\":0,\"jump\":2.6538888888888894,\"speed\":14.490839747276716,\"hearts\":3,\"score\":20,\"combo\":0,\"balls\":[],\"meat\":0,\"fallen\":0,\"pole\":null,\"finished\":false,\"nimbus\":{\"charge\":0,\"active\":false,\"call\":0,\"time\":0}}"}
-{"kind":"SCSTAT","tag":"640x360","name":"mid-track","full":{"meanLuma":129.7,"darkFraction":0,"whiteFraction":0.0017},"center":{"meanLuma":166.6,"darkFraction":0,"whiteFraction":0.0049}}
+{"kind":"SCSTATE","tag":"640x360","state":"key-jump","snapshot":"{\"phase\":\"playing\",\"chapter\":0,\"name\":\"Cumulus Ridge\",\"s\":605.4,\"lane\":0,\"jump\":2.1633333333333336,\"speed\":15.618777072739077,\"hearts\":3,\"score\":171,\"combo\":1,\"balls\":[1,2,3],\"meat\":0,\"fallen\":0,\"pole\":null,\"finished\":false,\"glider\":{\"charge\":0,\"active\":false,\"call\":0,\"time\":0}}"}
+{"kind":"SCSTAT","tag":"640x360","name":"mid-track","full":{"meanLuma":131.5,"darkFraction":0,"whiteFraction":0.0159},"center":{"meanLuma":168.3,"darkFraction":0,"whiteFraction":0.0616}}
 {"kind":"SCTEXT","tag":"640x360","name":"mid-track","oldNames":null,"text":"❚❚ 1 2 3 4 5 6 7 ⌂ 4 THE RUN BEGINS RIDE THE ROLLING LOG ← → OR A D TO STEER Checkpoint SKY CLOUD Q"}
 {"kind":"SCCANVAS","tag":"640x360","name":"mid-track","inner":[640,360],"dpr":1,"canvases":[{"w":640,"h":360,"cw":640,"ch":360}]}
-{"kind":"SCSTATE","tag":"640x360","state":"mid-track","snapshot":"{\"phase\":\"playing\",\"chapter\":0,\"name\":\"Cumulus Ridge\",\"s\":607.3,\"lane\":0,\"jump\":0,\"speed\":14.5,\"hearts\":3,\"score\":4,\"combo\":0,\"balls\":[1,2,3],\"meat\":0,\"fallen\":0,\"pole\":null,\"finished\":false,\"nimbus\":{\"charge\":0,\"active\":false,\"call\":0,\"time\":0}}"}
-{"kind":"SCSTAT","tag":"640x360","name":"results","full":{"meanLuma":103,"darkFraction":0.1778,"whiteFraction":0.0015},"center":{"meanLuma":129,"darkFraction":0,"whiteFraction":0.0051}}
-{"kind":"SCTEXT","tag":"640x360","name":"results","oldNames":null,"text":"❚❚ 1 2 3 4 5 6 7 ⌂ 0 THE RUN BEGINS RIDE THE ROLLING LOG ← → OR A D TO STEER SKY CLOUD Q …the long way home."}
+{"kind":"SCSTATE","tag":"640x360","state":"mid-track","snapshot":"{\"phase\":\"playing\",\"chapter\":0,\"name\":\"Cumulus Ridge\",\"s\":607.3,\"lane\":0,\"jump\":0,\"speed\":14.5,\"hearts\":3,\"score\":4,\"combo\":0,\"balls\":[1,2,3],\"meat\":0,\"fallen\":0,\"pole\":null,\"finished\":false,\"glider\":{\"charge\":0,\"active\":false,\"call\":0,\"time\":0}}"}
+{"kind":"SCSTAT","tag":"640x360","name":"results","full":{"meanLuma":113.5,"darkFraction":0,"whiteFraction":0.0074},"center":{"meanLuma":122.5,"darkFraction":0,"whiteFraction":0.0109}}
+{"kind":"SCTEXT","tag":"640x360","name":"results","oldNames":null,"text":"❚❚ 1 2 3 4 5 6 7 ⌂ 5,406 THE RUN BEGINS RIDE THE ROLLING LOG ← → OR A D TO STEER SKY CLOUD Q Run complete! You made it home along the ridge. 1 2 3 4 5 6 7 5,406 SCORE 0:00 TIME 7/7 SKY PEARLS 0 SPIRIT ORBS 0 HITS TAKEN 0× BEST COMBO 0:00 BEST TIME 7/7 MOST PEARLS Normal MODE New best score New best time Most pearls yet Run again Title"}
 {"kind":"SCCANVAS","tag":"640x360","name":"results","inner":[640,360],"dpr":1,"canvases":[{"w":640,"h":360,"cw":640,"ch":360}]}
-{"kind":"SCSTATE","tag":"640x360","state":"results","snapshot":"{\"phase\":\"finale\",\"chapter\":0,\"name\":\"Cumulus Ridge\",\"s\":1991.9,\"lane\":0,\"jump\":0,\"speed\":0.034156326332013924,\"hearts\":3,\"score\":0,\"combo\":0,\"balls\":[1,2,3,5,6,7,4],\"meat\":0,\"fallen\":0,\"pole\":null,\"finished\":true,\"nimbus\":{\"charge\":0,\"active\":false,\"call\":0,\"time\":0}}"}
+{"kind":"SCSTATE","tag":"640x360","state":"results","snapshot":"{\"phase\":\"result\",\"chapter\":0,\"name\":\"Cumulus Ridge\",\"s\":1992,\"lane\":0,\"jump\":0,\"speed\":0.00001674404873734337,\"hearts\":3,\"score\":5406,\"combo\":0,\"balls\":[1,2,3,5,6,7,4],\"meat\":0,\"fallen\":0,\"pole\":null,\"finished\":true,\"glider\":{\"charge\":0,\"active\":false,\"call\":0,\"time\":0}}"}
+{"kind":"SCSTAT","tag":"640x360","name":"results-lost","full":{"meanLuma":74.8,"darkFraction":0,"whiteFraction":0.0058},"center":{"meanLuma":91.2,"darkFraction":0,"whiteFraction":0.007}}
+{"kind":"SCTEXT","tag":"640x360","name":"results-lost","oldNames":null,"text":"❚❚ 1 2 3 4 5 6 7 ⌂ 27 THE RUN BEGINS RIDE THE ROLLING LOG ← → OR A D TO STEER Jump or steer around the obstacles. SKY CLOUD Q Out of hearts The ridge is long. Try again from the last checkpoint. 1 2 3 4 5 6 7 27 SCORE 0:00 TIME 0/7 SKY PEARLS 1 SPIRIT ORBS 1 HITS TAKEN 0× BEST COMBO 0:00 BEST TIME 7/7 MOST PEARLS Normal MODE Continue from checkpoint Title"}
+{"kind":"SCCANVAS","tag":"640x360","name":"results-lost","inner":[640,360],"dpr":1,"canvases":[{"w":640,"h":360,"cw":640,"ch":360}]}
+{"kind":"SCSTATE","tag":"640x360","state":"results-lost","snapshot":"{\"phase\":\"result\",\"chapter\":0,\"name\":\"Cumulus Ridge\",\"s\":43.9,\"lane\":2.6,\"jump\":0,\"speed\":14.5,\"hearts\":0,\"score\":27,\"combo\":0,\"balls\":[],\"meat\":0,\"fallen\":0,\"pole\":null,\"finished\":false,\"glider\":{\"charge\":0.0045000000000000005,\"active\":false,\"call\":0,\"time\":0}}"}
 {"kind":"SCERRORS","tag":"640x360","errors":[]}
-{"kind":"SCSETTLE","tag":"card","seconds":84,"last":{"none":true}}
-{"kind":"SCSTAT","tag":"1440x900","name":"card.2x","full":{"meanLuma":132.5,"darkFraction":0.0011,"whiteFraction":0.0057},"center":{"meanLuma":142.3,"darkFraction":0,"whiteFraction":0.0009}}
+{"kind":"SCSTATE","tag":"390x844","state":"title","ready":true}
+{"kind":"SCSTAT","tag":"390x844","name":"title","full":{"meanLuma":136.5,"darkFraction":0,"whiteFraction":0.0259},"center":{"meanLuma":128.7,"darkFraction":0,"whiteFraction":0.0837}}
+{"kind":"SCTEXT","tag":"390x844","name":"title","oldNames":null,"text":"SKY RIDGE RUN Cumulus Dash Seven sky pearls. One long run home along the ridge. Play ▸ Sound on Motion: full Normal How to play BUILT WITH AURA3D"}
+{"kind":"SCCANVAS","tag":"390x844","name":"title","inner":[390,844],"dpr":1,"canvases":[{"w":390,"h":844,"cw":390,"ch":844}]}
+{"kind":"SCSTATE","tag":"390x844","state":"play-ready","ready":true}
+{"kind":"SCSETTLE","tag":"390x844","seconds":203,"last":{"none":true}}
+{"kind":"SCSTAT","tag":"390x844","name":"gameplay-early","full":{"meanLuma":166,"darkFraction":0,"whiteFraction":0.0302},"center":{"meanLuma":181.4,"darkFraction":0,"whiteFraction":0.0697}}
+{"kind":"SCTEXT","tag":"390x844","name":"gameplay-early","oldNames":null,"text":"❚❚ 1 2 3 4 5 6 7 ⌂ 1 THE RUN BEGINS RIDE THE ROLLING LOG TAP ◀ ▶ TO STEER SKY CLOUD ◀ ▶ cloud staff jump"}
+{"kind":"SCCANVAS","tag":"390x844","name":"gameplay-early","inner":[390,844],"dpr":1,"canvases":[{"w":390,"h":844,"cw":390,"ch":844}]}
+{"kind":"SCSTATE","tag":"390x844","state":"gameplay-early","touch":{"coarse":true,"touchShown":true,"help":"TAP ◀ ▶ TO STEER"}}
+{"kind":"SCSTAT","tag":"390x844","name":"key-run","full":{"meanLuma":168.9,"darkFraction":0,"whiteFraction":0.0289},"center":{"meanLuma":182.7,"darkFraction":0,"whiteFraction":0.0594}}
+{"kind":"SCTEXT","tag":"390x844","name":"key-run","oldNames":null,"text":"❚❚ 1 2 3 4 5 6 7 ⌂ 18 THE RUN BEGINS RIDE THE ROLLING LOG TAP ◀ ▶ TO STEER SKY CLOUD ◀ ▶ cloud staff jump"}
+{"kind":"SCCANVAS","tag":"390x844","name":"key-run","inner":[390,844],"dpr":1,"canvases":[{"w":390,"h":844,"cw":390,"ch":844}]}
+{"kind":"SCSTATE","tag":"390x844","state":"key-run","touch":{"coarse":true,"touchShown":true,"help":"TAP ◀ ▶ TO STEER"}}
+{"kind":"SCERRORS","tag":"390x844","errors":[]}
+{"kind":"SCSETTLE","tag":"card","seconds":107,"last":{"none":true}}
+{"kind":"SCSTAT","tag":"1440x900","name":"card.2x","full":{"meanLuma":135.1,"darkFraction":0.0011,"whiteFraction":0.0129},"center":{"meanLuma":147.5,"darkFraction":0,"whiteFraction":0.0294}}
 {"kind":"SCTEXT","tag":"1440x900","name":"card.2x","oldNames":null,"text":"❚❚ 1 2 3 4 5 6 7 ⌂ 147 THE RUN BEGINS RIDE THE ROLLING LOG ← → OR A D TO STEER SKY CLOUD Q"}
 {"kind":"SCCANVAS","tag":"1440x900","name":"card.2x","inner":[720,450],"dpr":2,"canvases":[{"w":1080,"h":675,"cw":720,"ch":450}]}
 {"kind":"SCSTATE","tag":"640x360@2x","state":"play-ready","ready":true}
-{"kind":"SCSETTLE","tag":"640x360@2x","seconds":71,"last":{"none":true}}
-{"kind":"SCSTAT","tag":"640x360@2x","name":"dsf2-key","full":{"meanLuma":128.5,"darkFraction":0,"whiteFraction":0.0062},"center":{"meanLuma":139.5,"darkFraction":0,"whiteFraction":0.0012}}
+{"kind":"SCSETTLE","tag":"640x360@2x","seconds":88,"last":{"none":true}}
+{"kind":"SCSTAT","tag":"640x360@2x","name":"dsf2-key","full":{"meanLuma":131,"darkFraction":0,"whiteFraction":0.0103},"center":{"meanLuma":144.4,"darkFraction":0,"whiteFraction":0.0156}}
 {"kind":"SCTEXT","tag":"640x360@2x","name":"dsf2-key","oldNames":null,"text":"❚❚ 1 2 3 4 5 6 7 ⌂ 147 THE RUN BEGINS RIDE THE ROLLING LOG ← → OR A D TO STEER SKY CLOUD Q"}
 {"kind":"SCCANVAS","tag":"640x360@2x","name":"dsf2-key","inner":[640,360],"dpr":2,"canvases":[{"w":960,"h":540,"cw":640,"ch":360}]}
-{"kind":"SCCROP","tag":"640x360@2x","topRight":{"meanLuma":130.8,"darkFraction":0,"whiteFraction":0.0128},"bottomRight":{"meanLuma":118.8,"darkFraction":0,"whiteFraction":0}}
+{"kind":"SCCROP","tag":"640x360@2x","topRight":{"meanLuma":132.2,"darkFraction":0,"whiteFraction":0.0134},"bottomRight":{"meanLuma":122.2,"darkFraction":0,"whiteFraction":0.0001}}
 {"kind":"SCSTATE","tag":"640x360","state":"title","ready":true}
-{"kind":"SCSTAT","tag":"640x360","name":"title","full":{"meanLuma":121.2,"darkFraction":0,"whiteFraction":0.0052},"center":{"meanLuma":112.5,"darkFraction":0,"whiteFraction":0.0015}}
-{"kind":"SCTEXT","tag":"640x360","name":"title","oldNames":null,"text":"SKY RIDGE RUN Cumulus Dash Seven sky pearls. One long run home along the ridge. Play ▸ Sound on How to play ←→steer Spacejump Estaff Qsky cloud ↓brake Ppause BUILT WITH AURA3D"}
+{"kind":"SCSTAT","tag":"640x360","name":"title","full":{"meanLuma":125.1,"darkFraction":0,"whiteFraction":0.0087},"center":{"meanLuma":118.6,"darkFraction":0,"whiteFraction":0.0142}}
+{"kind":"SCTEXT","tag":"640x360","name":"title","oldNames":null,"text":"SKY RIDGE RUN Cumulus Dash Seven sky pearls. One long run home along the ridge. Play ▸ Sound on Motion: full Normal How to play ←→steer SpaceWjump EKstaff Qsky cloud ↓brake Ppause Msound BUILT WITH AURA3D"}
 {"kind":"SCCANVAS","tag":"640x360","name":"title","inner":[640,360],"dpr":1,"canvases":[{"w":640,"h":360,"cw":640,"ch":360}]}
 {"kind":"SCSTATE","tag":"640x360","state":"play-ready","ready":true}
-{"kind":"SCSETTLE","tag":"640x360","seconds":81,"last":{"none":true}}
-{"kind":"SCSTAT","tag":"640x360","name":"key-jump","full":{"meanLuma":134.6,"darkFraction":0,"whiteFraction":0.0583},"center":{"meanLuma":176.7,"darkFraction":0,"whiteFraction":0.2284}}
-{"kind":"SCTEXT","tag":"640x360","name":"key-jump","oldNames":null,"text":"❚❚ 1 2 3 4 5 6 7 ⌂ 171 Checkpoint SKY CLOUD Q"}
-{"kind":"SCCANVAS","tag":"640x360","name":"key-jump","inner":[640,360],"dpr":1,"canvases":[{"w":640,"h":360,"cw":640,"ch":360}]}
-{"kind":"SCSTATE","tag":"640x360","state":"key-jump","snapshot":"{\"phase\":\"playing\",\"chapter\":0,\"name\":\"Cumulus Ridge\",\"s\":605.4,\"lane\":0,\"jump\":2.1633333333333336,\"speed\":15.618777072739077,\"hearts\":3,\"score\":171,\"combo\":1,\"balls\":[1,2,3],\"meat\":0,\"fallen\":0,\"pole\":null,\"finished\":false,\"nimbus\":{\"charge\":0,\"active\":false,\"call\":0,\"time\":0}}"}
+{"kind":"SCSETTLE","tag":"640x360","seconds":63,"last":{"none":true}}
+{"kind":"SCSTAT","tag":"640x360","name":"results","full":{"meanLuma":116.1,"darkFraction":0,"whiteFraction":0.0059},"center":{"meanLuma":126.2,"darkFraction":0,"whiteFraction":0.0073}}
+{"kind":"SCTEXT","tag":"640x360","name":"results","oldNames":null,"text":"❚❚ 1 2 3 4 5 6 7 ⌂ 5,406 SKY CLOUD Q Run complete! You made it home along the ridge. 1 2 3 4 5 6 7 5,406 SCORE 0:00 TIME 7/7 SKY PEARLS 0 SPIRIT ORBS 0 HITS TAKEN 0× BEST COMBO 0:00 BEST TIME 7/7 MOST PEARLS Normal MODE New best score New best time Most pearls yet Run again Title"}
+{"kind":"SCCANVAS","tag":"640x360","name":"results","inner":[640,360],"dpr":1,"canvases":[{"w":640,"h":360,"cw":640,"ch":360}]}
+{"kind":"SCSTATE","tag":"640x360","state":"results","snapshot":"{\"phase\":\"result\",\"chapter\":0,\"name\":\"Cumulus Ridge\",\"s\":1992,\"lane\":0,\"jump\":0,\"speed\":0.00001674404873734337,\"hearts\":3,\"score\":5406,\"combo\":0,\"balls\":[1,2,3,5,6,7,4],\"meat\":0,\"fallen\":0,\"pole\":null,\"finished\":true,\"glider\":{\"charge\":0,\"active\":false,\"call\":0,\"time\":0}}"}
+{"kind":"SCSTAT","tag":"640x360","name":"results-lost","full":{"meanLuma":77.5,"darkFraction":0,"whiteFraction":0.0039},"center":{"meanLuma":94.6,"darkFraction":0,"whiteFraction":0.0043}}
+{"kind":"SCTEXT","tag":"640x360","name":"results-lost","oldNames":null,"text":"❚❚ 1 2 3 4 5 6 7 ⌂ 27 THE RUN BEGINS RIDE THE ROLLING LOG ← → OR A D TO STEER Jump or steer around the obstacles. SKY CLOUD Q Out of hearts The ridge is long. Try again from the last checkpoint. 1 2 3 4 5 6 7 27 SCORE 0:00 TIME 0/7 SKY PEARLS 1 SPIRIT ORBS 1 HITS TAKEN 0× BEST COMBO 0:00 BEST TIME 7/7 MOST PEARLS Normal MODE Continue from checkpoint Title"}
+{"kind":"SCCANVAS","tag":"640x360","name":"results-lost","inner":[640,360],"dpr":1,"canvases":[{"w":640,"h":360,"cw":640,"ch":360}]}
+{"kind":"SCSTATE","tag":"640x360","state":"results-lost","snapshot":"{\"phase\":\"result\",\"chapter\":0,\"name\":\"Cumulus Ridge\",\"s\":43.9,\"lane\":2.6,\"jump\":0,\"speed\":14.5,\"hearts\":0,\"score\":27,\"combo\":0,\"balls\":[],\"meat\":0,\"fallen\":0,\"pole\":null,\"finished\":false,\"glider\":{\"charge\":0.0045000000000000005,\"active\":false,\"call\":0,\"time\":0}}"}
 {"kind":"SCERRORS","tag":"640x360","errors":[]}
+{"kind":"SCSTATE","tag":"640x360","state":"title-settled","ready":true}
+{"kind":"SCSETTLE","tag":"640x360","seconds":16,"last":{"none":true}}
+{"kind":"SCSTAT","tag":"640x360","name":"title","full":{"meanLuma":124.3,"darkFraction":0,"whiteFraction":0.0095},"center":{"meanLuma":120.6,"darkFraction":0,"whiteFraction":0.0177}}
+{"kind":"SCTEXT","tag":"640x360","name":"title","oldNames":null,"text":"SKY RIDGE RUN Cumulus Dash Seven sky pearls. One long run home along the ridge. Play ▸ Sound on Motion: full Normal How to play ←→steer SpaceWjump EKstaff Qsky cloud ↓brake Ppause Msound BUILT WITH AURA3D"}
+{"kind":"SCCANVAS","tag":"640x360","name":"title","inner":[640,360],"dpr":1,"canvases":[{"w":640,"h":360,"cw":640,"ch":360}]}

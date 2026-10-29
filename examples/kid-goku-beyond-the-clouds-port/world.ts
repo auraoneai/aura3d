@@ -2,18 +2,18 @@
  * Rendering for the Cloud Runner port: a sunlit sandstone-and-forest ridge in the sky. Sky dome with lit cumulus and hazy
  * ridges, lofted ground (textured PBR track and grass, banded sandstone cliffs), merged foliage, mesas and cloud banks,
  * a rigged GLB runner with skeletal animation, the sky cloud, star orbs, creatures, boulders, warning decals, pooled
- * particles and post (bloom, grade, vignette). Everything goes through the public `@aura3d/engine` surface; art is
+ * particles and post (bloom, grade and vignette on top of the outdoor-day look). Everything goes through the public `@aura3d/engine` surface; art is
  * original (procedural meshes, CC0 catalog model and textures).
  */
 import { camera, cameras, defineAuraAssets, effects, environments, geometry, instances, lights, looks, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
 import type { Chapter } from "./chapter";
 import { at, frameAt, type V3 } from "./course";
 import { meatChunk } from "./creatures";
-import { createLocomotion } from "@aura3d/engine/game";
+import { createCameraClearance, createLocomotion } from "@aura3d/engine/game";
 import { Fx } from "./fx";
 import type { Game } from "./game";
 import { ballSpec, glowSpec, LOOK, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, warnSpec } from "./materials";
-import { Mesh, cylinder, hex } from "./mesh";
+import { Mesh, box, cylinder, hex } from "./mesh";
 import { LEG_CLIPS } from "./legcycle";
 import { CLIP_FOOT_SPEED, MAX_RATE, touchdowns } from "./locomotion";
 import { CLIP_TOUCHDOWN_LEFT, advanceGaitPhase, gaitParams, gaitTouchdowns, gaitWeight, plantedGaitPose } from "./gait";
@@ -40,7 +40,62 @@ const plainGeometry = (m: Mesh) => geometry.dynamic({ positions: f32(m.positions
 export interface WorldStats { drawNodes: number; chunks: number; triangles: number }
 /** What the legs are doing this frame: the clip, its phase in cycles, cadence, stride gain and the share of ground speed the planted feet still slide. */
 export interface GaitReport { clip: string; phase: number; groundSpeed: number; rate: number; /** Share of the legs driven by the planted-foot IK gait (0 = clip only, 1 = fully planted). */ weight: number; /** Steps per second. */ cadence: number; /** Seconds a foot stays planted. */ stance: number; /** Forward lean of the hips (rad). */ lean: number; overspeed: boolean }
-export interface WorldRuntime { update(game: Game, dt: number, aspect: number, events: readonly string[]): void; cutCamera(): void; readonly stats: WorldStats; readonly gait: GaitReport; readonly camera: { eye: V3; target: V3 } }
+/** What the camera frames this frame: eye, target, vertical fov (deg) and the subjects' world positions (QA framing checks). */
+export interface WorldView { eye: V3; target: V3; fov: number; aspect: number; hero: V3; log: V3 | null; hut: V3 | null; culled: number }
+export interface WorldRuntime {
+  update(game: Game, dt: number, aspect: number, events: readonly string[]): void; cutCamera(): void;
+  readonly stats: WorldStats; readonly gait: GaitReport; readonly camera: { eye: V3; target: V3 }; readonly view: WorldView;
+  /** Grounded foot touchdowns while running (the footstep sound follows these, not distance). */
+  readonly footsteps: number;
+}
+/** A merged scenery chunk hidden past `range` metres from the camera (small detail is sub-pixel or fogged there). */
+interface Cullable { id: string; centre: V3; radius: number; range: number }
+/** Hide distances per scenery group (metres from the eye to the chunk's bounding sphere). */
+export const CULL_RANGE = { flowers: 150, bushes: 240, rocks: 240, trees: 400 } as const;
+/** Look sun angles that point the outdoor-day key light along `SUN_POS`, the authored shadow sun (one light direction for shading and shadows). */
+export function sunAnglesOf(p: V3): { azimuthDeg: number; elevationDeg: number } {
+  return { azimuthDeg: (Math.atan2(p[0], p[2]) * 180) / Math.PI, elevationDeg: (Math.atan2(p[1], Math.hypot(p[0], p[2])) * 180) / Math.PI };
+}
+function boundsOf(m: Mesh): { centre: V3; radius: number } {
+  let x0 = Infinity, y0 = Infinity, z0 = Infinity, x1 = -Infinity, y1 = -Infinity, z1 = -Infinity;
+  for (let i = 0; i < m.positions.length; i += 3) {
+    const x = m.positions[i]!, y = m.positions[i + 1]!, z = m.positions[i + 2]!;
+    if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; if (z < z0) z0 = z; if (z > z1) z1 = z;
+  }
+  return { centre: [(x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2], radius: Math.hypot(x1 - x0, y1 - y0, z1 - z0) / 2 };
+}
+/** Checkpoint markers: a post and a pennant on the road edge at every checkpoint after the start, merged into one mesh. */
+export function buildCheckpointFlags(ch: Chapter): Mesh {
+  const m = new Mesh();
+  const post = cylinder(8, 0.09, 0.07, 3.2, hex("#f3ead4"), hex("#ffffff"));
+  const pennant = box(1.3, 0.75, 0.05, hex("#ffcf4a"));
+  const band = box(1.3, 0.16, 0.06, hex("#d9341f"));
+  for (const c of ch.checkpoints) {
+    if (c <= 0) continue;
+    const f = frameAt(c, ROAD_HALF + 0.6);
+    const yaw = yawOf(f.forward);
+    const base: V3 = [f.point[0], f.point[1] + groundHeight(ch, c, ROAD_HALF + 0.6), f.point[2]];
+    m.append(post, base, 1, yaw, 0);
+    // the pennant hangs off the post toward the road, so it reads from the chase camera
+    const off = (k: number): V3 => [base[0] - f.right[0] * 0.65, base[1] + k, base[2] - f.right[2] * 0.65];
+    m.append(pennant, off(2.75), 1, yaw, 0);
+    m.append(band, off(2.4), 1, yaw, 0);
+  }
+  m.computeNormals();
+  return m;
+}
+/** The ride log: bark rings and pale cut ends (the log used the rock texture before). */
+export function buildLog(): Mesh {
+  const raw = new Mesh();
+  const ring = [hex("#6e4b2f"), hex("#82593a")];
+  for (let i = 0; i < 8; i++) raw.append(cylinder(14, 1.0, 1.0, 0.8, ring[i % 2]!, ring[(i + 1) % 2]!), [0, i * 0.8, 0]);
+  raw.append(cylinder(14, 0.9, 0.9, 0.02, hex("#d9b98a"), hex("#c9a273")), [0, 6.4, 0]);
+  raw.append(cylinder(14, 0.9, 0.9, 0.02, hex("#d9b98a"), hex("#c9a273")), [0, -0.02, 0]);
+  for (let i = 0; i < raw.vertexCount; i++) raw.positions[i * 3 + 1]! -= 3.2;
+  const logMesh = new Mesh();
+  logMesh.append(raw, [0, 0, 0], 1, Math.PI / 2, Math.PI / 2);
+  return logMesh;
+}
 export interface World { readonly scene: ReturnType<typeof scene>; bind(app: AuraApp): WorldRuntime }
 
 /* dev toggle for A/B frames: ?heroset=0 drops the instanced hero trees, rocks and mesas */
@@ -56,19 +111,27 @@ const mix = (a: number, b: number, k: number): number => a + (b - a) * k;
 
 export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): World {
   const b = scene().background(LOOK.fogHex).camera(camera.perspective({ position: [0, 74, 8], target: [0, 70, -20], fov: 55, near: 0.2, far: 4200 }));
-  b.add(looks.preset("outdoor-day", { sun: { azimuthDeg: 40, elevationDeg: 38 }, fogDensityScale: 0 }));
+  // The look's key light points along SUN_POS, the same direction as the authored shadow sun and the custom scenery shader's
+  // `LOOK.sunLight`, so shading and shadows agree (they were about 18 degrees apart). The authored sun stays: it carries the
+  // tuned cascades. The sky-fill hemisphere is kept: the engine fix (lane E2) makes it contribute again (+1.0% mean luma).
+  b.add(looks.preset("outdoor-day", { sun: sunAnglesOf(SUN_POS), fogDensityScale: 0 }));
   b.add(lights.directional({ name: "sun", position: SUN_POS, target: [0, 0, 0], intensity: 3.2, color: LOOK.sunHex, shadow: { cascades: 3, maxDistance: 120, blend: 0.14 } }));
   b.add(lights.hemisphere({ name: "sky-fill", skyColor: "#bcd6f2", groundColor: "#8a7448", intensity: 0.7 }));
   b.add(effects.fog({ name: "haze", color: LOOK.fogHex, density: LOOK.fogDensity }));
-  b.add(effects.bloom({ name: "bloom", intensity: 0.38, threshold: 0.88, radius: 0.5 }));
+  b.add(effects.bloom({ name: "bloom", intensity: 0.38, threshold: 0.88 }));
   b.add(effects.colorGrade({ name: "grade", exposure: 1.02, contrast: 1.07, saturation: 1.16 }));
+  // The vignette renders through the post-v2 bridge (postBridge.ts) even though the effects diagnostics list it with
+  // consumer "none". Removing it lifted mean luma from 131 to 199 with clipping (remote A/B run g25-abvig), so it stays.
   b.add(effects.vignette({ name: "vignette", intensity: 0.2, smoothness: 0.7 }));
 
   let triangles = 0, chunks = 0, drawNodes = 0;
+  const cullables: Cullable[] = [];
   /* only the cliff walls cast sun shadows: every caster is drawn once per cascade, and merged foliage, flowers, mesas and cloud banks are far or tiny */
-  const addMesh = (m: Mesh, name: string, spec: ReturnType<typeof scenerySpec>, id?: string, castShadow = false): void => {
+  const addMesh = (m: Mesh, name: string, spec: ReturnType<typeof scenerySpec>, id?: string, castShadow = false, range?: number): void => {
     const node = geometry.custom(meshGeometry(m), { name, material: material.custom(spec), castShadow });
-    b.add(id ? node.runtime({ id }) : node);
+    const runtimeId = id ?? (range !== undefined ? name : undefined);
+    b.add(runtimeId ? node.runtime({ id: runtimeId }) : node);
+    if (range !== undefined && runtimeId) cullables.push({ id: runtimeId, ...boundsOf(m), range });
     triangles += m.indices.length / 3; chunks++; drawNodes++;
   };
 
@@ -86,10 +149,10 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   ground.grass.forEach((m, i) => addMesh(m, `grass-${i}`, scenerySpec({ map: grassMap, mapMix: 0.7, mapScale: 0.9, rim: 0.12, sun: 1.2 })));
   ground.slope.forEach((m, i) => addMesh(m, `slope-${i}`, scenerySpec({ map: rockMap, mapMix: 0.55, mapScale: 0.5, rim: 0.22 }), undefined, true));
   const scatter = buildScatter(ch);
-  scatter.trees.forEach((m, i) => addMesh(m, `trees-${i}`, scenerySpec({ rim: 0.34 })));
-  scatter.bushes.forEach((m, i) => addMesh(m, `bushes-${i}`, scenerySpec({ rim: 0.3 })));
-  scatter.rocks.forEach((m, i) => addMesh(m, `rocks-${i}`, scenerySpec({ map: rockMap, mapMix: 0.5, mapScale: 1.2 })));
-  scatter.flowers.forEach((m, i) => addMesh(m, `flowers-${i}`, scenerySpec({ sun: 1.6, rim: 0.1 })));
+  scatter.trees.forEach((m, i) => addMesh(m, `trees-${i}`, scenerySpec({ rim: 0.34 }), undefined, false, CULL_RANGE.trees));
+  scatter.bushes.forEach((m, i) => addMesh(m, `bushes-${i}`, scenerySpec({ rim: 0.3 }), undefined, false, CULL_RANGE.bushes));
+  scatter.rocks.forEach((m, i) => addMesh(m, `rocks-${i}`, scenerySpec({ map: rockMap, mapMix: 0.5, mapScale: 1.2 }), undefined, false, CULL_RANGE.rocks));
+  scatter.flowers.forEach((m, i) => addMesh(m, `flowers-${i}`, scenerySpec({ sun: 1.6, rim: 0.1 }), undefined, false, CULL_RANGE.flowers));
   buildValleyForest(ch).forEach((m, i) => addMesh(m, `valley-forest-${i}`, scenerySpec({ rim: 0.2, sun: 1.0 })));
   const mesas = buildMesas(ch);
   mesas.meshes.forEach((m, i) => addMesh(m, `mesas-${i}`, scenerySpec({ map: rockMap, mapMix: 0.35, mapScale: 0.18, rim: 0.3 })));
@@ -106,6 +169,7 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   addMesh(buildGorgePosts(ch), "gorge-posts", scenerySpec({ rim: 0.25 }));
   const hut = buildHut(ch);
   if (hut) addMesh(hut, "home", scenerySpec({ rim: 0.2 }));
+  addMesh(buildCheckpointFlags(ch), "checkpoint-flags", scenerySpec({ rim: 0.3, sun: 1.3 }));
 
   /* water: a shallow stream across the track */
   ch.waters.forEach((w, i) => {
@@ -122,13 +186,7 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
 
   /* characters and set pieces */
   b.add(model(MESHY.hero, { name: "hero", targetHeight: 1.5, castShadow: true, receiveShadow: false }).runtime({ id: "hero" }));
-  if (ch.log) {
-    const raw = cylinder(14, 1.0, 1.0, 6.4, hex("#7d583a"), hex("#7d583a"));
-    for (let i = 0; i < raw.vertexCount; i++) raw.positions[i * 3 + 1]! -= 3.2;
-    const logMesh = new Mesh();
-    logMesh.append(raw, [0, 0, 0], 1, Math.PI / 2, Math.PI / 2);
-    b.add(geometry.custom(meshGeometry(logMesh), { name: "ride-log", material: material.custom(scenerySpec({ map: rockMap, mapMix: 0.7, mapScale: 1.4, rim: 0.3 })) }).runtime({ id: "ride-log" }));
-  }
+  if (ch.log) b.add(geometry.custom(meshGeometry(buildLog()), { name: "ride-log", material: material.custom(scenerySpec({ rim: 0.3 })) }).runtime({ id: "ride-log" }));
   const shadowQuad = new Mesh();
   shadowQuad.vertex([-0.5, 0, -0.5], [0, 1, 0], [0, 0], [1, 1, 1]); shadowQuad.vertex([0.5, 0, -0.5], [0, 1, 0], [1, 0], [1, 1, 1]); shadowQuad.vertex([0.5, 0, 0.5], [0, 1, 0], [1, 1], [1, 1, 1]); shadowQuad.vertex([-0.5, 0, 0.5], [0, 1, 0], [0, 1], [1, 1, 1]); shadowQuad.quad(0, 1, 2, 3);
   b.add(geometry.custom(plainGeometry(shadowQuad), { name: "hero-shadow", castShadow: false, material: material.custom(shadowSpec()) }).runtime({ id: "hero-shadow" }));
@@ -162,11 +220,11 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   const fx = new Fx();
   fx.addTo(b);
 
-  return { scene: b, bind: (app) => bindRuntime(app, ch, fx, { triangles, chunks, drawNodes }) };
+  return { scene: b, bind: (app) => bindRuntime(app, ch, fx, { triangles, chunks, drawNodes }, cullables) };
 }
 
 /* ------------------------------------------------------------------------------------- runtime */
-function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): WorldRuntime {
+function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, cullables: readonly Cullable[]): WorldRuntime {
   const cam = app.camera;
   if (!cam) throw new Error("cloud-runner port: the app exposes no camera controller");
   const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
@@ -182,6 +240,24 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
   let animClip = "", animT = 0, wispT = 0, clock = 0;
   let rexS = 0, rexInit = false;
   const camPos: { eye: V3; target: V3 } = { eye: [0, 0, 0], target: [0, 0, 0] };
+  const view: WorldView = { eye: [0, 0, 0], target: [0, 0, 0], fov: 55, aspect: 1, hero: [0, 0, 0], log: null, hut: null, culled: 0 };
+  const cullShown = new Map<string, boolean>();
+  let footsteps = 0;
+  /* finale camera: the hut and its mound are solid, and the eye stays above the ground around the home frame */
+  const finaleClear = createCameraClearance();
+  const homeFrame = ch.home ? frameAt(ch.home.s) : null;
+  const hutCentre: V3 | null = ch.home ? at(ch.home.s, 9.5, 2.4) : null;
+  const finaleBlocked = (x: number, y: number, z: number): boolean => {
+    if (!homeFrame || !ch.home) return false;
+    const d: V3 = [x - homeFrame.point[0], y - homeFrame.point[1], z - homeFrame.point[2]];
+    const sOff = d[0] * homeFrame.forward[0] + d[1] * homeFrame.forward[1] + d[2] * homeFrame.forward[2];
+    const lat = d[0] * homeFrame.right[0] + d[1] * homeFrame.right[1] + d[2] * homeFrame.right[2];
+    const up = d[0] * homeFrame.up[0] + d[1] * homeFrame.up[1] + d[2] * homeFrame.up[2];
+    if (up < groundHeight(ch, ch.home.s + sOff, lat) + 0.6) return true;
+    if (Math.hypot(sOff, lat - 9.5) < 3.9 && up < 6.4) return true;
+    const mx = (lat - 15.5) / 6.6, my = (up + 0.4) / 2.8, mz = sOff / 5.6;
+    return mx * mx + my * my + mz * mz < 1;
+  };
   const foot = (g: Game): V3 => at(g.state.s, g.state.lane, g.state.jump);
 
   const gait: GaitReport = { clip: "", phase: 0, groundSpeed: 0, rate: 1, weight: 0, cadence: 0, stance: 0, lean: 0, overspeed: false };
@@ -246,7 +322,9 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
     stats,
     gait,
     camera: camPos,
-    cutCamera() { eye = null; look = null; chase.reset(); },
+    view,
+    get footsteps() { return footsteps; },
+    cutCamera() { eye = null; look = null; chase.reset(); finaleClear.reset(); },
     update(g, dt, aspect, events) {
       clock += dt;
       const s = g.state, f = frameAt(s.s, s.lane), phase = g.phase;
@@ -287,11 +365,13 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
       else if (s.pole) { clip = "block"; rate = 0.35; }
       else if (s.jump > 0.12) { clip = "jump"; rate = 1.9; }
       else if (phase === "paused") { clip = animClip || "run"; rate = 0; }
-      if (phase === "playing" && s.invincible > 0 && Math.floor(clock * 14) % 2 === 0 && !riding) hero.setVisible(false); else hero.setVisible(true);
+      // the 7 Hz hit blink is skipped under reduced motion (the hearts row still shows the hit)
+      if (phase === "playing" && s.invincible > 0 && !g.reducedMotion && Math.floor(clock * 14) % 2 === 0 && !riding) hero.setVisible(false); else hero.setVisible(true);
       hero.setPosition(pos[0], pos[1], pos[2]);
       hero.setRotation(pitch, yaw, roll);
       const stepDust = (side: "left" | "right"): void => {
         if (phase !== "playing" || s.jump > 0.15 || riding) return;
+        footsteps++;
         const side2 = (side === "left" ? -1 : 1) * 0.28;
         const base = at(s.s, Math.max(-5.1, Math.min(5.1, s.lane + side2)), 0.1);
         fx.dust(base, f.up, 1, "#e5cf9f", 0.55, 0.7);
@@ -303,7 +383,8 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
         const sLog = s.s < ch.log ? s.s : ch.log + (s.s - ch.log) * 0.35;
         const show = sLog - s.s > -30 && phase !== "falling";
         lg.setVisible(show);
-        if (show) { const lp = at(sLog, s.s < ch.log ? s.lane : 0, 1.0); lg.setPosition(lp[0], lp[1], lp[2]); lg.setRotation(-(sLog * 1.0), yawOf(frameAt(sLog).forward), 0); }
+        if (show) { const lp = at(sLog, s.s < ch.log ? s.lane : 0, 1.0); lg.setPosition(lp[0], lp[1], lp[2]); lg.setRotation(-(sLog * 1.0), yawOf(frameAt(sLog).forward), 0); view.log = lp; }
+        else view.log = null;
       }
 
       const hs = node("hero-shadow");
@@ -490,13 +571,19 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
         wantEye = at(s.s + 7.2 * Math.cos(a) + 2.5, 5.0 * Math.sin(a) - 3.6, s.jump + logLift + 2.4);
         wantLook = at(s.s + 0.2, s.lane, s.jump + logLift + 1.2);
         fov = 40; cut = !eye;
-      } else if (phase === "finale" && ch.home) {
+      } else if (phase === "finale" && ch.home && hutCentre) {
+        // frame the runner and the hut together: aim midway between them and stand back far enough for both to fit the width
         const t = g.finale?.t ?? 0;
-        const home = ch.home.s;
-        const a = 0.9 + t * 0.12;
-        wantEye = at(home - 7 - 3 * Math.cos(a), -2 + 5 * Math.sin(a), 2.4 + t * 0.12);
-        wantLook = at(home - 0.5, 8.0, 2.0);
-        fov = 46;
+        const heroChest: V3 = [pos[0], pos[1] + 1.2, pos[2]];
+        const mid = lerp3(heroChest, hutCentre, 0.5);
+        fov = 48;
+        const halfW = Math.tan((fov * Math.PI) / 360) * Math.min(aspect, 16 / 9);
+        const dist = Math.max(11, Math.min(30, 7.5 / Math.max(0.05, halfW)));
+        const midS = (s.s + ch.home.s) / 2, midLane = (s.lane + 9.5) / 2;
+        const a = 0.55 + t * 0.03;
+        const raw = at(midS - dist * Math.cos(a), midLane - dist * Math.sin(a), 3.2 + t * 0.1);
+        wantEye = finaleClear.update(dt, { focus: mid, eye: raw, blocked: finaleBlocked, minDistance: 4 });
+        wantLook = mid;
       } else if (phase === "result") {
         const a = clock * 0.2;
         wantEye = at(s.s + 3.6 * Math.cos(a), 3.0 * Math.sin(a), s.jump + 1.8);
@@ -508,14 +595,16 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
         wantLook = [hp[0], hp[1] + 0.5, hp[2]];
         void fl;
       } else {
-        const back = frameAt(s.s - 7.4, s.lane * 0.65), ahead = frameAt(Math.min(ch.length + 20, s.s + 7), s.lane * 0.65);
-        const lift = 3.3 + s.jump * 0.35 + (riding ? 0.6 : 0) + logLift * 0.5;
+        // portrait start: the ride log fills the lower frame at fov 62, so the eye rises and pulls back until the log is left
+        const portraitLog = aspect < 1 && ch.log ? 1 - smooth(ch.log - 12, ch.log + 4, s.s) : 0;
+        const back = frameAt(s.s - 7.4 - 4 * portraitLog, s.lane * 0.65), ahead = frameAt(Math.min(ch.length + 20, s.s + 7), s.lane * 0.65);
+        const lift = 3.3 + s.jump * 0.35 + (riding ? 0.6 : 0) + logLift * 0.5 + 2.5 * portraitLog;
         wantEye = [back.point[0] + back.up[0] * lift, back.point[1] + back.up[1] * lift, back.point[2] + back.up[2] * lift];
         wantLook = [ahead.point[0] + ahead.up[0] * 1.5, ahead.point[1] + ahead.up[1] * 1.5, ahead.point[2] + ahead.up[2] * 1.5];
         if (g.chase) fov += 3;
         fov += g.danger * 3;
       }
-      const shake = g.impact * 0.28;
+      const shake = g.reducedMotion ? 0 : g.impact * 0.28;
       const pose = chase.step({
         wantEye, wantLook, fovTarget: fov, cut,
         lag: { eye: phase === "playing" ? 14 : 5, look: phase === "playing" ? 14 : 5 },
@@ -526,6 +615,16 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
       const shook: V3 = [pose.eye[0], pose.eye[1], pose.eye[2]];
       cam.setPose({ position: [shook[0], shook[1], shook[2]], target: [look[0], look[1], look[2]], up: [0, 1, 0], fov: pose.fov }, { cut: pose.cut });
       camPos.eye = shook; camPos.target = look;
+      view.eye = shook; view.target = look; view.fov = pose.fov; view.aspect = aspect; view.hero = pos; view.hut = hutCentre;
+
+      /* distance culling of the small merged scenery (frustum culling alone keeps every chunk ahead on the winding course) */
+      let culled = 0;
+      for (const c of cullables) {
+        const far = Math.hypot(c.centre[0] - shook[0], c.centre[1] - shook[1], c.centre[2] - shook[2]) - c.radius > c.range;
+        if (far) culled++;
+        if (cullShown.get(c.id) !== !far) { cullShown.set(c.id, !far); node(c.id).setVisible(!far); }
+      }
+      view.culled = culled;
 
       sky.setPosition(shook[0], shook[1], shook[2]);
       sky.setUniform?.("cloudPhase", clock);
