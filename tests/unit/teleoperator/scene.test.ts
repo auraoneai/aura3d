@@ -22,7 +22,7 @@ describe("grid dispatch scene", () => {
       for (const id of NODES) expect(app.nodes.has(id), id).toBe(true);
       const dashes = app.nodes.require("sf-dashes");
       dashes.setInstances([{ position: [1, 2, 3] }]);
-      expect(dashes.snapshot().instances?.length).toBe(1);
+      expect((dashes.snapshot() as { instances?: readonly unknown[] }).instances?.length).toBe(1);
       app.dispose?.();
     });
   }
