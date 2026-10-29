@@ -29,3 +29,5 @@ tests/reports/
 /.orchestrate/
 # evidence/ holds test and audit artifacts the site build never reads; keeps the deploy under the 15,000-file limit
 /evidence/
+# Wonder World is a private prototype outside the public site build (apps/veer-wonder-world/DEPLOYMENT.md: publishing is an owner decision)
+/apps/veer-wonder-world/
