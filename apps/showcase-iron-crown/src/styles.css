@@ -465,3 +465,56 @@
   .fh-clock { min-width: 76px; padding: 3px 10px 4px; }
   .fh-clock-label { display: none; }
 }
+
+/* Touch controls (audit IC-01). The engine's dpad-4btn preset places `.a3g-tc` elements with percent rects but ships no
+   stylesheet, so without these rules its buttons had no position, size or label on phones. */
+.a3g-touch,
+.ic-touch-extras { position: fixed; inset: 0; pointer-events: none; z-index: 55; }
+.a3g-tc {
+  position: absolute;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 215, 106, 0.45);
+  background: rgba(12, 13, 18, 0.58);
+  color: #f2f5ff;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.a3g-tc.a3g-tc-down { background: rgba(255, 215, 106, 0.32); border-color: #ffd76a; }
+.a3g-tc-stick { border-radius: 50%; }
+.a3g-tc[data-control]::after { content: attr(data-control); text-transform: capitalize; }
+.a3g-tc[data-control="left"]::after { content: "◀"; font-size: 18px; }
+.a3g-tc[data-control="right"]::after { content: "▶"; font-size: 18px; }
+.a3g-tc[data-control="block"]::after { content: "Block"; }
+.a3g-tc[data-control="light"]::after { content: "Light"; }
+.a3g-tc[data-control="heavy"]::after { content: "Heavy"; }
+.a3g-tc[data-control="special"]::after { content: "Super"; color: #ffd76a; }
+.a3g-tc[data-control="jump"]::after { content: "Jump"; }
+/* Keyboard hints hide while the touch layer is visible (the engine toggles a3g-hidden on [data-a3g-keyhint]). */
+.fh-hint.a3g-hidden { display: none; }
+
+/* Controls sheet (audit IC-14). */
+.ic-controls { display: grid; gap: 6px; min-width: min(420px, 88vw); }
+.ic-controls-row { display: grid; grid-template-columns: 1fr auto 92px; gap: 10px; align-items: center; text-align: left; font-size: 13px; color: #dfe6ff; }
+.ic-controls-row button {
+  min-width: 96px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.06);
+  color: #f2f5ff;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+.ic-controls-row button[aria-pressed="true"] { border-color: #ffd76a; color: #ffd76a; background: rgba(255, 215, 106, 0.12); }
+.ic-controls-row small { color: #9aa3bd; font-size: 11px; text-align: right; }

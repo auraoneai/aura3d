@@ -233,7 +233,7 @@
           <div class="fh-footer">
             <div class="fh-mode" id="fh-mode">QUICK BOUT · CROWN ARENA</div>
             <div class="fh-inputs" id="fh-inputs" aria-label="Input display"></div>
-            <p class="fh-hint aura3d-controls-hint" id="fh-hint">A/D move · S crouch-block · J light · K heavy · L special · U throw</p>
+            <p class="fh-hint aura3d-controls-hint" id="fh-hint" data-a3g-keyhint>A/D move · W jump · S crouch · Q or hold back to block · Shift dash · J light · K heavy · L special (full SUPER) · U throw</p>
           </div>
 
           <section class="fh-lab" id="fh-lab" hidden>
@@ -317,7 +317,18 @@
             <div class="ic-menu-col">
               <button type="button" id="pause-resume" class="ic-primary">Resume</button>
               <button type="button" id="pause-rematch">Rematch</button>
+              <button type="button" id="pause-controls">Controls</button>
               <button type="button" id="pause-quit">Quit to menu</button>
+            </div>
+          </section>
+
+          <section class="ic-menu ic-menu-sheet" id="menu-controls" hidden>
+            <h2>CONTROLS</h2>
+            <p class="ic-menu-tag">Click a key to rebind it, then press the new key. Esc cancels. Saved on this device.</p>
+            <div class="ic-controls" id="controls-list" role="list"></div>
+            <div class="ic-menu-actions">
+              <button type="button" id="controls-reset">Reset to defaults</button>
+              <button type="button" id="controls-back" class="ic-primary">Done</button>
             </div>
           </section>
 
