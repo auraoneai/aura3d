@@ -175,7 +175,9 @@ function buildScene(data: SimData, mode: "day" | "night", tex: TownTextures | nu
     .camera(camera.perspective({ position: [0, 30, 60], target: [0, 20, 0], fov: 58, near: 0.3, far: 7500 }));
 
   /* ---- lighting: HDRI IBL, cascaded-shadow sun, moon fill, fog, AO, bloom, grade, vignette ---- */
-  if (!FX.has("nohdri")) b.add(environments.hdri({ name: "env-sky", texture: ASSETS.skyHdr, intensity: night ? 0.2 : 0.8, background: false }));
+  // `?fx=nohdri` (look-dev) swaps the sky HDRI for the built-in neutral environment: since 4.5.0 a scene with lights and no
+  // environment node gets no implicit fill, so dropping the only environment would darken the frame instead of isolating the HDRI.
+  b.add(FX.has("nohdri") ? environments.neutral({ intensity: night ? 0.2 : 0.8 }) : environments.hdri({ name: "env-sky", texture: ASSETS.skyHdr, intensity: night ? 0.2 : 0.8, background: false }));
   if (night) b.add(lights.directional({ name: "moon", position: MOON_NIGHT, target: [0, 0, 0], intensity: 1.7, color: "#9db4ff", shadow: FX.has("noshadow") ? false : { cascades: 3, maxDistance: 190, blend: 0.12 } }));
   else b.add(lights.directional({ name: "sun", position: SUN_DAY, target: [0, 0, 0], intensity: 2.8, color: "#ffe8c0", shadow: FX.has("noshadow") ? false : { cascades: 3, maxDistance: 190, blend: 0.12 } }));
   if (!FX.has("nofog")) b.add(effects.fog({ name: "haze", color: night ? FOG_NIGHT : FOG_DAY, density: night ? 0.00018 : 0.00014 }));
