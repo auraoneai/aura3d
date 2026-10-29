@@ -647,6 +647,25 @@ describe("audio mixer: levels", () => {
     expect(clipGainOf(latest()).gain.value).toBeCloseTo(1, 6);
   });
 
+  it("evens songs out to the loudness of speech, on a bus level with the voice", async () => {
+    const { mixer, latest } = setup();
+    await mixer.unlock();
+    mixer.playSong("hello");
+    await flush();
+    const song = latest();
+    // The test song is a steady 0.1 tone: its own gain takes it to the song target.
+    expect(clipGainOf(song).gain.value).toBeCloseTo(CLIP_LEVELS.songTargetRms / Math.fround(0.1), 6);
+    expect(busOf(song).gain.value).toBe(AUDIO_LEVELS.voice);
+    expect(AUDIO_LEVELS.song).toBe(AUDIO_LEVELS.voice);
+    // A quiet song is raised and a loud one turned down, within the voice lines' gain and peak limits.
+    expect(clipGain(measureClipLevels(tone(1, 0.05)), "song")).toBeCloseTo(CLIP_LEVELS.songTargetRms / Math.fround(0.05), 6);
+    expect(clipGain(measureClipLevels(tone(1, 0.01)), "song")).toBe(CLIP_LEVELS.voiceMaxGain);
+    expect(clipGain(measureClipLevels(tone(1, 0.5)), "song")).toBe(CLIP_LEVELS.voiceMinGain);
+    const spiky = { peak: 0.6, loudestWindowRms: 0.3, gatedRms: 0.05 };
+    expect(clipGain(spiky, "song")).toBeCloseTo(CLIP_LEVELS.voicePeak / 0.6, 9);
+    expect(clipGain({ peak: 0, loudestWindowRms: 0, gatedRms: 0 }, "song")).toBe(1);
+  });
+
   it("measures clip levels and never boosts music", () => {
     const loud = measureClipLevels(tone(1, 0.5));
     expect(loud.peak).toBeCloseTo(0.5, 6);
