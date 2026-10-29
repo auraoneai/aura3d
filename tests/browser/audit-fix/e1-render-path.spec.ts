@@ -40,6 +40,15 @@ const FOLDERS: ReadonlyArray<readonly [string, string]> = [
 // Four games per group so one ACR run (1 h step limit) holds a group at software-GL speed.
 const GAMES: readonly Game[] = FOLDERS.map(([slug, folder], index) => ({ slug, folder, group: Math.floor(index / 4) + 1 }));
 const URL_GROUP = Math.ceil(FOLDERS.length / 4) + 1;
+/*
+ * Extra tags for the games that need the app-level asset route or a port example page. `az acr run` passes SPECS through a shell
+ * line, so a `--grep` with parentheses or `|` breaks the step; a plain tag selects each set. `@rc` also holds the URL-typo pair.
+ */
+const RERUN_TAG: Record<string, string> = {
+  "iron-crown": "@ra", "pips-big-leap": "@ra", "bunker-zero": "@ra", "cross-hop": "@ra",
+  "strange-orbit-port": "@rb", "splat-rush-port": "@rb", "serpentine-sky-run-port": "@rb", "drift-and-deliver-port": "@rb",
+  "heatsink-port": "@rc", "where-the-wind-wanders-port": "@rc", "silt-and-signal-port": "@rc", "cloud-runner-port": "@rc"
+};
 // Ports that wrap an example resolve their GLBs through import.meta.url, which the dev server's bundled app entry breaks (measured:
 // 404 on /apps/showcase-*-port/src/assets/models/*.glb), so every port loads its example page, the same game code the app mounts.
 const EXAMPLE_PAGE: Record<string, string> = {
@@ -222,7 +231,7 @@ test.describe("e1 render path", () => {
   test.afterAll(async () => { await server.close(); });
 
   for (const game of GAMES) {
-    test(`e1 ${game.slug} @g${game.group}`, async ({ page }) => {
+    test(`e1 ${game.slug} @g${game.group}${RERUN_TAG[game.slug] ? ` ${RERUN_TAG[game.slug]}` : ""}`, async ({ page }) => {
       page.on("pageerror", (e) => log(`E1_ERR ${game.slug} pageerror ${e.message.slice(0, 300)}`));
       page.on("console", (m) => { if (m.type() === "error") log(`E1_CONSOLE ${game.slug} ${m.text().slice(0, 200)}`); });
       await page.setViewportSize({ width: 1280, height: 720 });
@@ -247,7 +256,7 @@ test.describe("e1 render path", () => {
 
   // RP-04: debug URL typos. Before the fix the mount threw QUALITY_OPTION_INVALID and the game showed its WebGL error screen.
   for (const [slug, folder] of [["dot-dash-3d", "showcase-dot-dash-3d"], ["heatsink-port", "showcase-heatsink-port"]] as const) {
-    test(`e1 url-typo ${slug} @g${URL_GROUP}`, async ({ page }) => {
+    test(`e1 url-typo ${slug} @g${URL_GROUP} @rc`, async ({ page }) => {
       const errors: string[] = [];
       page.on("pageerror", (e) => errors.push(e.message.slice(0, 200)));
       page.on("console", (m) => { if (m.type() === "error" || m.type() === "warning") errors.push(`${m.type()}: ${m.text().slice(0, 200)}`); });
