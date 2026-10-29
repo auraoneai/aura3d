@@ -1,0 +1,2264 @@
+[
+ {
+  "target": "top-tennis--default",
+  "id": "settle-25s",
+  "slug": "top-tennis",
+  "variant": "default",
+  "sinceReadyMs": 25005,
+  "mean": 50.37,
+  "p5": 3,
+  "p50": 54,
+  "p95": 123,
+  "darkFrac": 0.0657,
+  "clipFrac": 0,
+  "grid": [
+   41.5,
+   69.9,
+   39.4,
+   37.6,
+   66.3,
+   41.6,
+   49.2,
+   60.8,
+   46.9
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 119
+  }
+ },
+ {
+  "target": "top-tennis--default",
+  "id": "settle-60s",
+  "slug": "top-tennis",
+  "variant": "default",
+  "sinceReadyMs": 138429,
+  "mean": 50.37,
+  "p5": 3,
+  "p50": 54,
+  "p95": 123,
+  "darkFrac": 0.0658,
+  "clipFrac": 0,
+  "grid": [
+   41.5,
+   69.9,
+   39.4,
+   37.7,
+   66.3,
+   41.6,
+   49.2,
+   60.8,
+   46.9
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 119
+  }
+ },
+ {
+  "target": "roadster-rush--default",
+  "id": "settle-25s",
+  "slug": "roadster-rush",
+  "variant": "default",
+  "sinceReadyMs": 25004,
+  "mean": 82.63,
+  "p5": 29,
+  "p50": 74,
+  "p95": 168,
+  "darkFrac": 0.0107,
+  "clipFrac": 0,
+  "grid": [
+   109,
+   149.2,
+   112.6,
+   62,
+   88.4,
+   40.8,
+   43,
+   92.7,
+   46
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 900
+  }
+ },
+ {
+  "target": "roadster-rush--default",
+  "id": "settle-60s",
+  "slug": "roadster-rush",
+  "variant": "default",
+  "sinceReadyMs": 333005,
+  "mean": 82.36,
+  "p5": 25,
+  "p50": 78,
+  "p95": 166,
+  "darkFrac": 0.013,
+  "clipFrac": 0,
+  "grid": [
+   103.9,
+   145.3,
+   107.1,
+   86.2,
+   88.1,
+   41.6,
+   51.7,
+   80.8,
+   36.3
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 898
+  }
+ },
+ {
+  "target": "heatsink--default",
+  "id": "settle-25s",
+  "slug": "heatsink",
+  "variant": "default",
+  "sinceReadyMs": 25018,
+  "mean": 81.68,
+  "p5": 18,
+  "p50": 83,
+  "p95": 156,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   95.8,
+   107.5,
+   77.1,
+   107.6,
+   123.8,
+   68.1,
+   74.6,
+   52.2,
+   28.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 1219
+  }
+ },
+ {
+  "target": "heatsink--default",
+  "id": "settle-60s",
+  "slug": "heatsink",
+  "variant": "default",
+  "sinceReadyMs": 239804,
+  "mean": 85.4,
+  "p5": 22,
+  "p50": 88,
+  "p95": 158,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   102.5,
+   117.1,
+   86.2,
+   94.7,
+   126.8,
+   75.3,
+   77.9,
+   56.2,
+   31.9
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 1140
+  }
+ },
+ {
+  "target": "teleoperator--noon",
+  "id": "settle-25s",
+  "slug": "teleoperator",
+  "variant": "noon",
+  "sinceReadyMs": 25024,
+  "mean": 106.32,
+  "p5": 43,
+  "p50": 98,
+  "p95": 194,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   138.5,
+   175.9,
+   91.6,
+   103.1,
+   140.1,
+   91.7,
+   46.9,
+   107,
+   61.9
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 609
+  }
+ },
+ {
+  "target": "teleoperator--noon",
+  "id": "settle-60s",
+  "slug": "teleoperator",
+  "variant": "noon",
+  "sinceReadyMs": 450683,
+  "mean": 108.04,
+  "p5": 44,
+  "p50": 100,
+  "p95": 194,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   127.8,
+   175.3,
+   90.3,
+   116.9,
+   141,
+   90.9,
+   57,
+   107.8,
+   65.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 600
+  }
+ },
+ {
+  "target": "teleoperator--golden",
+  "id": "settle-25s",
+  "slug": "teleoperator",
+  "variant": "golden",
+  "sinceReadyMs": 25002,
+  "mean": 106.08,
+  "p5": 43,
+  "p50": 98,
+  "p95": 192,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   138.9,
+   168.7,
+   95.1,
+   99.4,
+   138.1,
+   93.8,
+   46.4,
+   106.8,
+   67.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 609
+  }
+ },
+ {
+  "target": "teleoperator--golden",
+  "id": "settle-60s",
+  "slug": "teleoperator",
+  "variant": "golden",
+  "sinceReadyMs": 448895,
+  "mean": 106.65,
+  "p5": 45,
+  "p50": 99,
+  "p95": 192,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   127.1,
+   167.6,
+   90,
+   113,
+   139.1,
+   90.6,
+   61.3,
+   107.5,
+   63.5
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 607
+  }
+ },
+ {
+  "target": "iron-crown--bangkok-dock",
+  "id": "settle-25s",
+  "slug": "iron-crown",
+  "variant": "bangkok-dock",
+  "sinceReadyMs": 25012,
+  "mean": 102.03,
+  "p5": 47,
+  "p50": 96,
+  "p95": 169,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   121.8,
+   152.9,
+   113.1,
+   97.6,
+   132.5,
+   82.7,
+   68.8,
+   83.6,
+   65.1
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 2810
+  }
+ },
+ {
+  "target": "iron-crown--bangkok-dock",
+  "id": "settle-60s",
+  "slug": "iron-crown",
+  "variant": "bangkok-dock",
+  "sinceReadyMs": 461176,
+  "mean": 101.93,
+  "p5": 47,
+  "p50": 96,
+  "p95": 169,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   121.6,
+   152.9,
+   113,
+   97.2,
+   132.5,
+   82.4,
+   68.8,
+   83.6,
+   65.1
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 2810
+  }
+ },
+ {
+  "target": "iron-crown--colosseum-ruins",
+  "id": "settle-25s",
+  "slug": "iron-crown",
+  "variant": "colosseum-ruins",
+  "sinceReadyMs": 25009,
+  "mean": 115.07,
+  "p5": 58,
+  "p50": 113,
+  "p95": 179,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   125.5,
+   155.6,
+   114.9,
+   115.5,
+   149.6,
+   96.4,
+   87.3,
+   106,
+   84.8
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 174
+  }
+ },
+ {
+  "target": "iron-crown--colosseum-ruins",
+  "id": "settle-60s",
+  "slug": "iron-crown",
+  "variant": "colosseum-ruins",
+  "sinceReadyMs": 364566,
+  "mean": 115.14,
+  "p5": 58,
+  "p50": 113,
+  "p95": 179,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   125.5,
+   155.6,
+   115,
+   115.4,
+   149.6,
+   97,
+   87.3,
+   106,
+   84.9
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 174
+  }
+ },
+ {
+  "target": "iron-crown--desert-airbase",
+  "id": "settle-25s",
+  "slug": "iron-crown",
+  "variant": "desert-airbase",
+  "sinceReadyMs": 25013,
+  "mean": 104.65,
+  "p5": 55,
+  "p50": 107,
+  "p95": 163,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   126.2,
+   149.6,
+   122.5,
+   107.7,
+   123.2,
+   95.3,
+   68.4,
+   81.7,
+   67.1
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 154
+  }
+ },
+ {
+  "target": "iron-crown--desert-airbase",
+  "id": "settle-60s",
+  "slug": "iron-crown",
+  "variant": "desert-airbase",
+  "sinceReadyMs": 308223,
+  "mean": 104.68,
+  "p5": 55,
+  "p50": 107,
+  "p95": 163,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   126.2,
+   149.6,
+   122.4,
+   108,
+   123.2,
+   95.4,
+   68.4,
+   81.7,
+   67.1
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 154
+  }
+ },
+ {
+  "target": "iron-crown--himalayan-monastery",
+  "id": "settle-25s",
+  "slug": "iron-crown",
+  "variant": "himalayan-monastery",
+  "sinceReadyMs": 25004,
+  "mean": 115.59,
+  "p5": 67,
+  "p50": 117,
+  "p95": 171,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   130.3,
+   148,
+   124.2,
+   120.2,
+   148.1,
+   109.4,
+   81.1,
+   98.2,
+   80.6
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 2992
+  }
+ },
+ {
+  "target": "iron-crown--himalayan-monastery",
+  "id": "settle-60s",
+  "slug": "iron-crown",
+  "variant": "himalayan-monastery",
+  "sinceReadyMs": 460497,
+  "mean": 115.61,
+  "p5": 67,
+  "p50": 117,
+  "p95": 171,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   130.3,
+   148,
+   124.3,
+   119.9,
+   148.1,
+   109.7,
+   81.1,
+   98.2,
+   80.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 2992
+  }
+ },
+ {
+  "target": "pips-big-leap--w5",
+  "id": "settle-25s",
+  "slug": "pips-big-leap",
+  "variant": "w5",
+  "sinceReadyMs": 25008,
+  "mean": 181.57,
+  "p5": 48,
+  "p50": 213,
+  "p95": 233,
+  "darkFrac": 0.0007,
+  "clipFrac": 0,
+  "grid": [
+   155.1,
+   192.3,
+   169.4,
+   140.8,
+   205.7,
+   149.7,
+   203.9,
+   212.1,
+   205.1
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 697
+  }
+ },
+ {
+  "target": "pips-big-leap--w5",
+  "id": "settle-60s",
+  "slug": "pips-big-leap",
+  "variant": "w5",
+  "sinceReadyMs": 302647,
+  "mean": 181.6,
+  "p5": 48,
+  "p50": 213,
+  "p95": 233,
+  "darkFrac": 0.0007,
+  "clipFrac": 0,
+  "grid": [
+   155.1,
+   192.4,
+   169.4,
+   140.9,
+   206,
+   149.7,
+   203.9,
+   212,
+   205.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 697
+  }
+ },
+ {
+  "target": "pips-big-leap--w6",
+  "id": "settle-25s",
+  "slug": "pips-big-leap",
+  "variant": "w6",
+  "sinceReadyMs": 25003,
+  "mean": 109.04,
+  "p5": 23,
+  "p50": 131,
+  "p95": 188,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   41.7,
+   36.9,
+   24.3,
+   136.1,
+   104.3,
+   95.3,
+   176.1,
+   185.9,
+   180.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 529
+  }
+ },
+ {
+  "target": "pips-big-leap--w6",
+  "id": "settle-60s",
+  "slug": "pips-big-leap",
+  "variant": "w6",
+  "sinceReadyMs": 174913,
+  "mean": 109.2,
+  "p5": 23,
+  "p50": 133,
+  "p95": 188,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   41.7,
+   36.9,
+   24.3,
+   136.1,
+   105.6,
+   95.3,
+   176.1,
+   185.9,
+   180.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 529
+  }
+ },
+ {
+  "target": "aura-hoops-3d--rucker",
+  "id": "settle-25s",
+  "slug": "aura-hoops-3d",
+  "variant": "rucker",
+  "sinceReadyMs": 25002,
+  "mean": 77.89,
+  "p5": 28,
+  "p50": 47,
+  "p95": 179,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   119.4,
+   137.2,
+   109.2,
+   41.1,
+   88.8,
+   72.9,
+   37.1,
+   57.8,
+   37.5
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 322
+  }
+ },
+ {
+  "target": "aura-hoops-3d--rucker",
+  "id": "settle-60s",
+  "slug": "aura-hoops-3d",
+  "variant": "rucker",
+  "sinceReadyMs": 228003,
+  "mean": 88.22,
+  "p5": 24,
+  "p50": 62,
+  "p95": 181,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   139.5,
+   165.3,
+   140.4,
+   54.3,
+   84.6,
+   80,
+   36.5,
+   52.7,
+   40.6
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 322
+  }
+ },
+ {
+  "target": "aura-hoops-3d--venice",
+  "id": "settle-25s",
+  "slug": "aura-hoops-3d",
+  "variant": "venice",
+  "sinceReadyMs": 25007,
+  "mean": 117.61,
+  "p5": 66,
+  "p50": 115,
+  "p95": 182,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   128.5,
+   162.6,
+   127.9,
+   95.7,
+   138.3,
+   122.1,
+   91.4,
+   113.2,
+   78.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 325
+  }
+ },
+ {
+  "target": "aura-hoops-3d--venice",
+  "id": "settle-60s",
+  "slug": "aura-hoops-3d",
+  "variant": "venice",
+  "sinceReadyMs": 228101,
+  "mean": 123.53,
+  "p5": 68,
+  "p50": 125,
+  "p95": 181,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   133.6,
+   170.7,
+   139,
+   103.5,
+   139.8,
+   130.8,
+   107.7,
+   104.2,
+   82.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 325
+  }
+ },
+ {
+  "target": "aura-hoops-3d--athens",
+  "id": "settle-25s",
+  "slug": "aura-hoops-3d",
+  "variant": "athens",
+  "sinceReadyMs": 25006,
+  "mean": 105.73,
+  "p5": 55,
+  "p50": 91,
+  "p95": 170,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   117.5,
+   141.2,
+   115.8,
+   75.7,
+   132.5,
+   106.8,
+   77.3,
+   101.7,
+   83.1
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 306
+  }
+ },
+ {
+  "target": "aura-hoops-3d--athens",
+  "id": "settle-60s",
+  "slug": "aura-hoops-3d",
+  "variant": "athens",
+  "sinceReadyMs": 155220,
+  "mean": 111.72,
+  "p5": 54,
+  "p50": 99,
+  "p95": 179,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   133.8,
+   162.8,
+   138.8,
+   83.3,
+   124.3,
+   108.9,
+   72.9,
+   95.4,
+   85.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 306
+  }
+ },
+ {
+  "target": "aura-hoops-3d--manila",
+  "id": "settle-25s",
+  "slug": "aura-hoops-3d",
+  "variant": "manila",
+  "sinceReadyMs": 25008,
+  "mean": 86.81,
+  "p5": 40,
+  "p50": 66,
+  "p95": 173,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   111.6,
+   130.4,
+   114.3,
+   59.4,
+   100.1,
+   74.4,
+   60.7,
+   72,
+   58.5
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 276
+  }
+ },
+ {
+  "target": "aura-hoops-3d--manila",
+  "id": "settle-60s",
+  "slug": "aura-hoops-3d",
+  "variant": "manila",
+  "sinceReadyMs": 194092,
+  "mean": 94.07,
+  "p5": 38,
+  "p50": 72,
+  "p95": 175,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   125,
+   153,
+   137,
+   67.7,
+   96.3,
+   79.5,
+   57.3,
+   69.8,
+   61
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 278
+  }
+ },
+ {
+  "target": "aura-hoops-3d--shanghai",
+  "id": "settle-25s",
+  "slug": "aura-hoops-3d",
+  "variant": "shanghai",
+  "sinceReadyMs": 25002,
+  "mean": 57.78,
+  "p5": 1,
+  "p50": 46,
+  "p95": 154,
+  "darkFrac": 0.148,
+  "clipFrac": 0,
+  "grid": [
+   37.5,
+   53.3,
+   48,
+   57.4,
+   95.1,
+   81.1,
+   45.4,
+   63.3,
+   38.8
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 319
+  }
+ },
+ {
+  "target": "aura-hoops-3d--shanghai",
+  "id": "settle-60s",
+  "slug": "aura-hoops-3d",
+  "variant": "shanghai",
+  "sinceReadyMs": 279288,
+  "mean": 55.76,
+  "p5": 1,
+  "p50": 49,
+  "p95": 150,
+  "darkFrac": 0.2188,
+  "clipFrac": 0,
+  "grid": [
+   17.4,
+   47.6,
+   30.6,
+   67.1,
+   98.3,
+   88.3,
+   50.5,
+   57,
+   45
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 319
+  }
+ },
+ {
+  "target": "aura-hoops-3d--orbit",
+  "id": "settle-25s",
+  "slug": "aura-hoops-3d",
+  "variant": "orbit",
+  "sinceReadyMs": 25003,
+  "mean": 114.04,
+  "p5": 65,
+  "p50": 114,
+  "p95": 164,
+  "darkFrac": 0.0019,
+  "clipFrac": 0,
+  "grid": [
+   96.2,
+   116.8,
+   110.9,
+   102.8,
+   141.4,
+   127.6,
+   99,
+   105.8,
+   125.9
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 276
+  }
+ },
+ {
+  "target": "aura-diamond-3d--skyline",
+  "id": "settle-25s",
+  "slug": "aura-diamond-3d",
+  "variant": "skyline",
+  "sinceReadyMs": 25003,
+  "mean": 74.24,
+  "p5": 1,
+  "p50": 79,
+  "p95": 107,
+  "darkFrac": 0.0642,
+  "clipFrac": 0,
+  "grid": [
+   58.1,
+   76.7,
+   52,
+   81.3,
+   99,
+   77.5,
+   64.2,
+   95.7,
+   63.6
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 627
+  }
+ },
+ {
+  "target": "aura-diamond-3d--skyline",
+  "id": "settle-60s",
+  "slug": "aura-diamond-3d",
+  "variant": "skyline",
+  "sinceReadyMs": 304064,
+  "mean": 74.5,
+  "p5": 1,
+  "p50": 79,
+  "p95": 109,
+  "darkFrac": 0.0762,
+  "clipFrac": 0,
+  "grid": [
+   54,
+   76.5,
+   49.3,
+   82.9,
+   99.6,
+   78.6,
+   65.3,
+   98.9,
+   65.3
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 627
+  }
+ },
+ {
+  "target": "aura-diamond-3d--canyon",
+  "id": "settle-25s",
+  "slug": "aura-diamond-3d",
+  "variant": "canyon",
+  "sinceReadyMs": 25002,
+  "mean": 108.89,
+  "p5": 51,
+  "p50": 114,
+  "p95": 153,
+  "darkFrac": 0.0034,
+  "clipFrac": 0,
+  "grid": [
+   104.2,
+   110.9,
+   90.3,
+   104.4,
+   143.4,
+   110.2,
+   87,
+   135.9,
+   93.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 619
+  }
+ },
+ {
+  "target": "aura-diamond-3d--canyon",
+  "id": "settle-60s",
+  "slug": "aura-diamond-3d",
+  "variant": "canyon",
+  "sinceReadyMs": 237419,
+  "mean": 110.18,
+  "p5": 51,
+  "p50": 117,
+  "p95": 154,
+  "darkFrac": 0.0034,
+  "clipFrac": 0,
+  "grid": [
+   106.8,
+   112,
+   91.6,
+   105.8,
+   143.1,
+   111.6,
+   88,
+   136.7,
+   95.9
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 619
+  }
+ },
+ {
+  "target": "aura-diamond-3d--ivy",
+  "id": "settle-25s",
+  "slug": "aura-diamond-3d",
+  "variant": "ivy",
+  "sinceReadyMs": 25005,
+  "mean": 119.38,
+  "p5": 71,
+  "p50": 123,
+  "p95": 164,
+  "darkFrac": 0.0006,
+  "clipFrac": 0,
+  "grid": [
+   118.6,
+   126.8,
+   108.9,
+   114.6,
+   157.7,
+   120.6,
+   89.2,
+   141.7,
+   96.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 654
+  }
+ },
+ {
+  "target": "aura-diamond-3d--ivy",
+  "id": "settle-60s",
+  "slug": "aura-diamond-3d",
+  "variant": "ivy",
+  "sinceReadyMs": 353806,
+  "mean": 122.07,
+  "p5": 71,
+  "p50": 127,
+  "p95": 165,
+  "darkFrac": 0.0006,
+  "clipFrac": 0,
+  "grid": [
+   122.1,
+   129.9,
+   111,
+   117,
+   157.4,
+   122.7,
+   92.7,
+   144.4,
+   101.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 654
+  }
+ },
+ {
+  "target": "aura-diamond-3d--dome",
+  "id": "settle-25s",
+  "slug": "aura-diamond-3d",
+  "variant": "dome",
+  "sinceReadyMs": 25003,
+  "mean": 64.83,
+  "p5": 16,
+  "p50": 54,
+  "p95": 158,
+  "darkFrac": 0.0016,
+  "clipFrac": 0,
+  "grid": [
+   92.3,
+   96.5,
+   96.8,
+   51.6,
+   68.6,
+   60.4,
+   27.4,
+   52.4,
+   37.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 628
+  }
+ },
+ {
+  "target": "aura-diamond-3d--dome",
+  "id": "settle-60s",
+  "slug": "aura-diamond-3d",
+  "variant": "dome",
+  "sinceReadyMs": 406731,
+  "mean": 67.3,
+  "p5": 15,
+  "p50": 55,
+  "p95": 162,
+  "darkFrac": 0.0018,
+  "clipFrac": 0,
+  "grid": [
+   97.6,
+   103.4,
+   102.1,
+   50.8,
+   69.9,
+   61.1,
+   27.4,
+   55.9,
+   37.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 628
+  }
+ },
+ {
+  "target": "aura-diamond-3d--lunar",
+  "id": "settle-25s",
+  "slug": "aura-diamond-3d",
+  "variant": "lunar",
+  "sinceReadyMs": 25003,
+  "mean": 86.64,
+  "p5": 3,
+  "p50": 95,
+  "p95": 133,
+  "darkFrac": 0.1193,
+  "clipFrac": 0,
+  "grid": [
+   63.1,
+   67.3,
+   71.6,
+   94.6,
+   122.1,
+   92.7,
+   74.9,
+   116.9,
+   76.5
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 610
+  }
+ },
+ {
+  "target": "aura-diamond-3d--lunar",
+  "id": "settle-60s",
+  "slug": "aura-diamond-3d",
+  "variant": "lunar",
+  "sinceReadyMs": 297672,
+  "mean": 86.08,
+  "p5": 3,
+  "p50": 96,
+  "p95": 133,
+  "darkFrac": 0.1353,
+  "clipFrac": 0,
+  "grid": [
+   59,
+   63.6,
+   67.2,
+   95.9,
+   122.1,
+   93.8,
+   76.1,
+   118.5,
+   78.5
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 610
+  }
+ },
+ {
+  "target": "aura-fc-3d--uyuni",
+  "id": "settle-25s",
+  "slug": "aura-fc-3d",
+  "variant": "uyuni",
+  "sinceReadyMs": 25003,
+  "mean": 231.74,
+  "p5": 224,
+  "p50": 235,
+  "p95": 236,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   226.5,
+   224.6,
+   230.3,
+   233.1,
+   233.7,
+   231.6,
+   235,
+   235.8,
+   235.1
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 255
+  }
+ },
+ {
+  "target": "aura-fc-3d--uyuni",
+  "id": "settle-60s",
+  "slug": "aura-fc-3d",
+  "variant": "uyuni",
+  "sinceReadyMs": 193090,
+  "mean": 231.74,
+  "p5": 224,
+  "p50": 235,
+  "p95": 236,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   226.5,
+   224.8,
+   230,
+   233.1,
+   233.7,
+   231.6,
+   235,
+   235.8,
+   235.1
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 255
+  }
+ },
+ {
+  "target": "aura-fc-3d--glacier",
+  "id": "settle-25s",
+  "slug": "aura-fc-3d",
+  "variant": "glacier",
+  "sinceReadyMs": 25017,
+  "mean": 95.32,
+  "p5": 47,
+  "p50": 68,
+  "p95": 228,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   140.4,
+   134.3,
+   151,
+   76.7,
+   73.3,
+   77.3,
+   68.4,
+   69.8,
+   66.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 401
+  }
+ },
+ {
+  "target": "aura-fc-3d--glacier",
+  "id": "settle-60s",
+  "slug": "aura-fc-3d",
+  "variant": "glacier",
+  "sinceReadyMs": 296997,
+  "mean": 95.32,
+  "p5": 47,
+  "p50": 68,
+  "p95": 228,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   140.4,
+   134.3,
+   151,
+   76.7,
+   73.3,
+   77.3,
+   68.4,
+   69.8,
+   66.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 401
+  }
+ },
+ {
+  "target": "aura-links-3d--stAuroras",
+  "id": "settle-25s",
+  "slug": "aura-links-3d",
+  "variant": "stAuroras",
+  "sinceReadyMs": 25003,
+  "mean": 135.38,
+  "p5": 63,
+  "p50": 133,
+  "p95": 194,
+  "darkFrac": 0.0015,
+  "clipFrac": 0,
+  "grid": [
+   161.4,
+   171.7,
+   137.1,
+   121.7,
+   167.3,
+   116.4,
+   108.8,
+   125.7,
+   108.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 143
+  }
+ },
+ {
+  "target": "aura-links-3d--stAuroras",
+  "id": "settle-60s",
+  "slug": "aura-links-3d",
+  "variant": "stAuroras",
+  "sinceReadyMs": 273871,
+  "mean": 135.49,
+  "p5": 63,
+  "p50": 134,
+  "p95": 194,
+  "darkFrac": 0.0015,
+  "clipFrac": 0,
+  "grid": [
+   161.3,
+   171.3,
+   136.4,
+   120.8,
+   167.2,
+   116.6,
+   109.9,
+   127,
+   108.8
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 143
+  }
+ },
+ {
+  "target": "aura-links-3d--mapleHollow",
+  "id": "settle-25s",
+  "slug": "aura-links-3d",
+  "variant": "mapleHollow",
+  "sinceReadyMs": 25002,
+  "mean": 140.07,
+  "p5": 46,
+  "p50": 146,
+  "p95": 191,
+  "darkFrac": 0.0013,
+  "clipFrac": 0,
+  "grid": [
+   159.2,
+   169.1,
+   132.1,
+   119.9,
+   175.7,
+   121.8,
+   108.5,
+   146.8,
+   127.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 144
+  }
+ },
+ {
+  "target": "aura-links-3d--mapleHollow",
+  "id": "settle-60s",
+  "slug": "aura-links-3d",
+  "variant": "mapleHollow",
+  "sinceReadyMs": 137758,
+  "mean": 140.09,
+  "p5": 46,
+  "p50": 146,
+  "p95": 191,
+  "darkFrac": 0.0014,
+  "clipFrac": 0,
+  "grid": [
+   159.1,
+   168.9,
+   131.8,
+   119.1,
+   175.7,
+   122.3,
+   108.7,
+   147.3,
+   127.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 144
+  }
+ },
+ {
+  "target": "aura-links-3d--cinderRim",
+  "id": "settle-25s",
+  "slug": "aura-links-3d",
+  "variant": "cinderRim",
+  "sinceReadyMs": 25004,
+  "mean": 127.85,
+  "p5": 59,
+  "p50": 116,
+  "p95": 203,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   162.4,
+   193,
+   153.5,
+   133.5,
+   149.5,
+   104,
+   94.7,
+   95.4,
+   64.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 106
+  }
+ },
+ {
+  "target": "aura-links-3d--cinderRim",
+  "id": "settle-60s",
+  "slug": "aura-links-3d",
+  "variant": "cinderRim",
+  "sinceReadyMs": 115599,
+  "mean": 128.08,
+  "p5": 59,
+  "p50": 116,
+  "p95": 203,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   162.7,
+   193.1,
+   153.8,
+   133.8,
+   149.9,
+   104.1,
+   94.6,
+   96.1,
+   64.5
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 106
+  }
+ },
+ {
+  "target": "aura-links-3d--cloudTerrace",
+  "id": "settle-25s",
+  "slug": "aura-links-3d",
+  "variant": "cloudTerrace",
+  "sinceReadyMs": 25003,
+  "mean": 151.4,
+  "p5": 92,
+  "p50": 157,
+  "p95": 192,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   161.9,
+   172.1,
+   137.1,
+   140.8,
+   183.9,
+   127.8,
+   136.2,
+   165.5,
+   137.1
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 218
+  }
+ },
+ {
+  "target": "aura-links-3d--cloudTerrace",
+  "id": "settle-60s",
+  "slug": "aura-links-3d",
+  "variant": "cloudTerrace",
+  "sinceReadyMs": 540579,
+  "mean": 151.57,
+  "p5": 92,
+  "p50": 157,
+  "p95": 192,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   161.9,
+   171.4,
+   136.1,
+   139.7,
+   184.1,
+   128.4,
+   138.1,
+   166.6,
+   137.6
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 218
+  }
+ },
+ {
+  "target": "aura-links-3d--neonBay",
+  "id": "settle-25s",
+  "slug": "aura-links-3d",
+  "variant": "neonBay",
+  "sinceReadyMs": 25004,
+  "mean": 2.18,
+  "p5": 0,
+  "p50": 0,
+  "p95": 5,
+  "darkFrac": 0.9664,
+  "clipFrac": 0,
+  "grid": [
+   0.2,
+   0.4,
+   0.2,
+   1.8,
+   3,
+   0.3,
+   8.4,
+   5.2,
+   0.1
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 127
+  }
+ },
+ {
+  "target": "aura-links-3d--neonBay",
+  "id": "settle-60s",
+  "slug": "aura-links-3d",
+  "variant": "neonBay",
+  "sinceReadyMs": 302745,
+  "mean": 2.26,
+  "p5": 0,
+  "p50": 0,
+  "p95": 5,
+  "darkFrac": 0.9663,
+  "clipFrac": 0,
+  "grid": [
+   0.2,
+   0.4,
+   0.2,
+   2,
+   3.1,
+   0.3,
+   8,
+   5.9,
+   0.1
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 127
+  }
+ },
+ {
+  "target": "slingshot-siege--default",
+  "id": "settle-25s",
+  "slug": "slingshot-siege",
+  "variant": "default",
+  "sinceReadyMs": 25005,
+  "mean": 111.93,
+  "p5": 25,
+  "p50": 122,
+  "p95": 184,
+  "darkFrac": 0.0145,
+  "clipFrac": 0,
+  "grid": [
+   140.1,
+   147.5,
+   118.8,
+   104.2,
+   122.1,
+   77,
+   80.9,
+   104.4,
+   112.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 395
+  }
+ },
+ {
+  "target": "slingshot-siege--default",
+  "id": "settle-60s",
+  "slug": "slingshot-siege",
+  "variant": "default",
+  "sinceReadyMs": 470055,
+  "mean": 111.95,
+  "p5": 25,
+  "p50": 122,
+  "p95": 184,
+  "darkFrac": 0.0147,
+  "clipFrac": 0,
+  "grid": [
+   140.3,
+   147.7,
+   118.3,
+   104.8,
+   122.3,
+   76.1,
+   80.9,
+   104.5,
+   112.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 395
+  }
+ },
+ {
+  "target": "dot-dash-3d--default",
+  "id": "settle-25s",
+  "slug": "dot-dash-3d",
+  "variant": "default",
+  "sinceReadyMs": 25003,
+  "mean": 29.5,
+  "p5": 8,
+  "p50": 20,
+  "p95": 124,
+  "darkFrac": 0.057,
+  "clipFrac": 0,
+  "grid": [
+   21.6,
+   30.6,
+   18.9,
+   30.3,
+   44.7,
+   23.8,
+   29.9,
+   39,
+   26.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 39
+  }
+ },
+ {
+  "target": "dot-dash-3d--default",
+  "id": "settle-60s",
+  "slug": "dot-dash-3d",
+  "variant": "default",
+  "sinceReadyMs": 85744,
+  "mean": 29.48,
+  "p5": 8,
+  "p50": 20,
+  "p95": 124,
+  "darkFrac": 0.0571,
+  "clipFrac": 0,
+  "grid": [
+   21.6,
+   30.6,
+   18.9,
+   30.2,
+   44.7,
+   23.7,
+   29.9,
+   39,
+   26.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 39
+  }
+ },
+ {
+  "target": "cross-hop--theme0",
+  "id": "settle-25s",
+  "slug": "cross-hop",
+  "variant": "theme0",
+  "sinceReadyMs": 25003,
+  "mean": 106.34,
+  "p5": 32,
+  "p50": 114,
+  "p95": 154,
+  "darkFrac": 0.0051,
+  "clipFrac": 0,
+  "grid": [
+   119.7,
+   138,
+   112.5,
+   85.2,
+   107.8,
+   79.7,
+   98.8,
+   116.8,
+   98.6
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 157
+  }
+ },
+ {
+  "target": "cross-hop--theme0",
+  "id": "settle-60s",
+  "slug": "cross-hop",
+  "variant": "theme0",
+  "sinceReadyMs": 436087,
+  "mean": 106.23,
+  "p5": 34,
+  "p50": 114,
+  "p95": 152,
+  "darkFrac": 0.0036,
+  "clipFrac": 0,
+  "grid": [
+   117.8,
+   136.2,
+   115,
+   81.7,
+   103.3,
+   88.4,
+   98.8,
+   116.3,
+   98.6
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 153
+  }
+ },
+ {
+  "target": "cross-hop--theme1",
+  "id": "settle-25s",
+  "slug": "cross-hop",
+  "variant": "theme1",
+  "sinceReadyMs": 25007,
+  "mean": 110.93,
+  "p5": 40,
+  "p50": 118,
+  "p95": 157,
+  "darkFrac": 0.0016,
+  "clipFrac": 0,
+  "grid": [
+   111.7,
+   137,
+   93.5,
+   96,
+   133.8,
+   97.5,
+   103.4,
+   122.1,
+   103.3
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 161
+  }
+ },
+ {
+  "target": "cross-hop--theme1",
+  "id": "settle-60s",
+  "slug": "cross-hop",
+  "variant": "theme1",
+  "sinceReadyMs": 386191,
+  "mean": 111.62,
+  "p5": 45,
+  "p50": 119,
+  "p95": 157,
+  "darkFrac": 0.0016,
+  "clipFrac": 0,
+  "grid": [
+   113.4,
+   136.9,
+   95.7,
+   100.6,
+   127.8,
+   101,
+   103.5,
+   122.2,
+   103.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 165
+  }
+ },
+ {
+  "target": "cross-hop--theme2",
+  "id": "settle-25s",
+  "slug": "cross-hop",
+  "variant": "theme2",
+  "sinceReadyMs": 25002,
+  "mean": 118.02,
+  "p5": 63,
+  "p50": 123,
+  "p95": 160,
+  "darkFrac": 0.0009,
+  "clipFrac": 0,
+  "grid": [
+   124.8,
+   147,
+   122.7,
+   103.7,
+   135.6,
+   101.8,
+   102.7,
+   121.1,
+   102.6
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 163
+  }
+ },
+ {
+  "target": "cross-hop--theme2",
+  "id": "settle-60s",
+  "slug": "cross-hop",
+  "variant": "theme2",
+  "sinceReadyMs": 344569,
+  "mean": 117.63,
+  "p5": 62,
+  "p50": 123,
+  "p95": 159,
+  "darkFrac": 0.0013,
+  "clipFrac": 0,
+  "grid": [
+   124.8,
+   146.4,
+   122.9,
+   104.6,
+   131.6,
+   101.7,
+   102.8,
+   121,
+   102.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 167
+  }
+ },
+ {
+  "target": "splat-rush-port--default",
+  "id": "settle-25s",
+  "slug": "splat-rush-port",
+  "variant": "default",
+  "sinceReadyMs": 25004,
+  "mean": 195.44,
+  "p5": 121,
+  "p50": 187,
+  "p95": 255,
+  "darkFrac": 0,
+  "clipFrac": 0.2766,
+  "grid": [
+   149.2,
+   157.3,
+   155.4,
+   191.3,
+   234.5,
+   197.3,
+   210.9,
+   246.1,
+   217
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 85
+  }
+ },
+ {
+  "target": "splat-rush-port--default",
+  "id": "settle-60s",
+  "slug": "splat-rush-port",
+  "variant": "default",
+  "sinceReadyMs": 70718,
+  "mean": 192.6,
+  "p5": 121,
+  "p50": 186,
+  "p95": 255,
+  "darkFrac": 0,
+  "clipFrac": 0.2583,
+  "grid": [
+   151,
+   160,
+   158.6,
+   187.2,
+   234.1,
+   189.2,
+   206.3,
+   245.6,
+   201.3
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 81
+  }
+ },
+ {
+  "target": "serpentine-sky-run-port--default",
+  "id": "settle-25s",
+  "slug": "serpentine-sky-run-port",
+  "variant": "default",
+  "sinceReadyMs": 25002,
+  "mean": 189.42,
+  "p5": 136,
+  "p50": 202,
+  "p95": 232,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   168.8,
+   157.3,
+   159.8,
+   207.6,
+   197.8,
+   207.6,
+   192.1,
+   208.5,
+   205.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 39
+  }
+ },
+ {
+  "target": "serpentine-sky-run-port--default",
+  "id": "settle-60s",
+  "slug": "serpentine-sky-run-port",
+  "variant": "default",
+  "sinceReadyMs": 145131,
+  "mean": 189.26,
+  "p5": 136,
+  "p50": 202,
+  "p95": 232,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   168.8,
+   157.3,
+   159.7,
+   207.4,
+   196.8,
+   207.7,
+   192.2,
+   208.2,
+   205.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 39
+  }
+ },
+ {
+  "target": "drift-and-deliver-port--default",
+  "id": "settle-25s",
+  "slug": "drift-and-deliver-port",
+  "variant": "default",
+  "sinceReadyMs": 25012,
+  "mean": 108.44,
+  "p5": 58,
+  "p50": 104,
+  "p95": 167,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   101.3,
+   141.6,
+   113,
+   101.3,
+   134.3,
+   111.2,
+   86.6,
+   103.9,
+   82.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 113
+  }
+ },
+ {
+  "target": "drift-and-deliver-port--default",
+  "id": "settle-60s",
+  "slug": "drift-and-deliver-port",
+  "variant": "default",
+  "sinceReadyMs": 354957,
+  "mean": 108.21,
+  "p5": 57,
+  "p50": 104,
+  "p95": 168,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   101.6,
+   142,
+   113,
+   100.4,
+   134.2,
+   110.2,
+   85.9,
+   104.1,
+   82.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 113
+  }
+ },
+ {
+  "target": "heatsink-port--default",
+  "id": "settle-25s",
+  "slug": "heatsink-port",
+  "variant": "default",
+  "sinceReadyMs": 25010,
+  "mean": 46.81,
+  "p5": 6,
+  "p50": 29,
+  "p95": 152,
+  "darkFrac": 0.0721,
+  "clipFrac": 0,
+  "grid": [
+   37,
+   99.7,
+   58.8,
+   47.7,
+   62.6,
+   44.1,
+   22.9,
+   28.1,
+   20.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 70
+  }
+ },
+ {
+  "target": "heatsink-port--default",
+  "id": "settle-60s",
+  "slug": "heatsink-port",
+  "variant": "default",
+  "sinceReadyMs": 362972,
+  "mean": 49.34,
+  "p5": 13,
+  "p50": 31,
+  "p95": 159,
+  "darkFrac": 0.0309,
+  "clipFrac": 0,
+  "grid": [
+   42.4,
+   108.3,
+   63.8,
+   48.5,
+   64.4,
+   44.9,
+   23,
+   28.2,
+   20.5
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 70
+  }
+ },
+ {
+  "target": "ninja-runner-port--default",
+  "id": "settle-25s",
+  "slug": "ninja-runner-port",
+  "variant": "default",
+  "sinceReadyMs": 25003,
+  "mean": 121.15,
+  "p5": 52,
+  "p50": 124,
+  "p95": 173,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   109.3,
+   143.4,
+   115.3,
+   89.6,
+   158.5,
+   107,
+   113.3,
+   138.6,
+   115.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 93
+  }
+ },
+ {
+  "target": "cloud-runner-port--default",
+  "id": "settle-25s",
+  "slug": "cloud-runner-port",
+  "variant": "default",
+  "sinceReadyMs": 25013,
+  "mean": 119.19,
+  "p5": 42,
+  "p50": 125,
+  "p95": 188,
+  "darkFrac": 0.0001,
+  "clipFrac": 0,
+  "grid": [
+   111.2,
+   147.4,
+   118.8,
+   91.8,
+   166.1,
+   129.6,
+   112.6,
+   82.8,
+   112.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 46
+  }
+ },
+ {
+  "target": "cloud-runner-port--default",
+  "id": "settle-60s",
+  "slug": "cloud-runner-port",
+  "variant": "default",
+  "sinceReadyMs": 170742,
+  "mean": 112.44,
+  "p5": 29,
+  "p50": 117,
+  "p95": 202,
+  "darkFrac": 0.0001,
+  "clipFrac": 0,
+  "grid": [
+   104.6,
+   148,
+   110.6,
+   99.9,
+   185.6,
+   121.9,
+   92.8,
+   56.6,
+   92
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 49
+  }
+ }
+]
