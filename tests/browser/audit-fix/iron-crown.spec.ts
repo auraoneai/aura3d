@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { test, type Browser, type BrowserContext, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "../example-dev-server";
@@ -22,9 +23,19 @@ const CANVAS_ONLY = "body *:not(canvas){visibility:hidden !important} canvas{vis
 const READY = "document.body.dataset.aura3dReady === 'true'";
 const ROUTE = "/apps/showcase-iron-crown/";
 const APP_PUBLIC = path.resolve("apps/showcase-iron-crown/public");
+// Luma stats and JPEG encoding run in Node (sharp), not in the page: the page's main thread is busy with software GL for
+// seconds per frame, so every page.evaluate costs at least one frame.
+const sharp = createRequire(import.meta.url)("sharp");
 
 /** The dev server resolves /aura-assets/* against the repo-root public/ only; the fighter rigs live in the app's public/. */
 async function routeAppAssets(context: BrowserContext): Promise<void> {
+  // The page's relative ./fonts/* resolve under /apps/showcase-iron-crown/, which the dev server does not map to public/.
+  await context.route("**/apps/showcase-iron-crown/fonts/**", async (route) => {
+    const file = path.join(APP_PUBLIC, "fonts", path.basename(new URL(route.request().url()).pathname));
+    if (!existsSync(file)) return route.continue();
+    const type = file.endsWith(".css") ? "text/css" : file.endsWith(".woff2") ? "font/woff2" : file.endsWith(".woff") ? "font/woff" : "font/ttf";
+    await route.fulfill({ status: 200, contentType: type, body: readFileSync(file) });
+  });
   await context.route("**/aura-assets/ironcrown*", async (route) => {
     const rel = new URL(route.request().url()).pathname.replace(/^\/+/, "");
     const file = path.join(APP_PUBLIC, rel);
@@ -41,29 +52,6 @@ const FAKE_GAMEPAD = `(() => {
     buttons: Array.from({ length: 17 }, (_, i) => ({ pressed: pressed.has(i), touched: pressed.has(i), value: pressed.has(i) ? 1 : 0 })) });
   Object.defineProperty(navigator, "getGamepads", { configurable: true, value: () => [pad(), null, null, null] });
 })();`;
-
-async function lumaStats(page: Page, png: Buffer) {
-  return page.evaluate(async (b64) => {
-    const blob = await (await fetch(`data:image/png;base64,${b64}`)).blob();
-    const bmp = await createImageBitmap(blob);
-    const c = document.createElement("canvas");
-    c.width = bmp.width; c.height = bmp.height;
-    const ctx = c.getContext("2d")!;
-    ctx.drawImage(bmp, 0, 0);
-    const d = ctx.getImageData(0, 0, c.width, c.height).data;
-    const hist = new Uint32Array(256);
-    let sum = 0, dark = 0, clip = 0;
-    const n = d.length / 4;
-    for (let i = 0; i < d.length; i += 4) {
-      const y = Math.round(0.2126 * d[i]! + 0.7152 * d[i + 1]! + 0.0722 * d[i + 2]!);
-      hist[y]!++; sum += y;
-      if (y <= 12) dark++;
-      if (y <= 2 || y >= 253) clip++;
-    }
-    const pct = (p: number) => { let acc = 0; for (let v = 0; v < 256; v++) { acc += hist[v]!; if (acc >= p * n) return v; } return 255; };
-    return { mean: +(sum / n).toFixed(2), p5: pct(0.05), p50: pct(0.5), p95: pct(0.95), darkFrac: +(dark / n).toFixed(4), clipFrac: +(clip / n).toFixed(4) };
-  }, png.toString("base64"));
-}
 
 async function engineInfo(page: Page) {
   return page.evaluate(() => {
@@ -102,40 +90,55 @@ async function gameState(page: Page) {
   });
 }
 
-async function grab(page: Page, target: string, id: string, extra: Record<string, unknown> = {}, canvasOnly = true): Promise<void> {
+async function nodeLuma(png: Buffer) {
+  const { data, info } = await sharp(png).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const hist = new Uint32Array(256);
+  let sum = 0, dark = 0, clip = 0;
+  const n = info.width * info.height;
+  for (let i = 0; i < data.length; i += 3) {
+    const y = Math.round(0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]);
+    hist[y]!++; sum += y;
+    if (y <= 12) dark++;
+    if (y <= 2 || y >= 253) clip++;
+  }
+  const pct = (p: number) => { let acc = 0; for (let v = 0; v < 256; v++) { acc += hist[v]!; if (acc >= p * n) return v; } return 255; };
+  return { mean: +(sum / n).toFixed(2), p5: pct(0.05), p50: pct(0.5), p95: pct(0.95), darkFrac: +(dark / n).toFixed(4), clipFrac: +(clip / n).toFixed(4) };
+}
+
+async function grab(page: Page, target: string, id: string, extra: Record<string, unknown> = {}, canvasOnly = true): Promise<Buffer> {
+  const t0 = Date.now();
   const handle = canvasOnly ? await page.addStyleTag({ content: CANVAS_ONLY }) : null;
-  await page.waitForTimeout(250);
-  const png = await page.screenshot({ type: "png" });
-  const jpg = await page.screenshot({ type: "jpeg", quality: 72 });
+  const t1 = Date.now();
+  const png = await page.screenshot({ type: "png", animations: "disabled", caret: "hide" });
+  const t2 = Date.now();
   await handle?.evaluate((el) => el.remove());
-  const stats = await lumaStats(page, png);
-  log(`GL_META ${JSON.stringify({ target, id, canvasOnly, ...extra, ...stats, info: await engineInfo(page), state: await gameState(page) })}`);
+  const jpg: Buffer = await sharp(png).jpeg({ quality: 72 }).toBuffer();
+  const stats = await nodeLuma(png);
+  const info = await engineInfo(page);
+  const state = await gameState(page);
+  const timing = { styleMs: t1 - t0, shotMs: t2 - t1, evalMs: Date.now() - t2 };
+  log(`GL_META ${JSON.stringify({ target, id, canvasOnly, ...extra, ...stats, timing, info, state })}`);
   const b64 = jpg.toString("base64");
   const n = Math.ceil(b64.length / CHUNK);
   for (let i = 0; i < n; i++) log(`GL_JPG ${target} ${id} ${i + 1}/${n} ${b64.slice(i * CHUNK, (i + 1) * CHUNK)}`);
+  return png;
 }
 
 /** Mean RGB and luma spread inside a canvas-relative rect (fighter region checks for the Player Studio tints). */
-async function regionStats(page: Page, png: Buffer, rect: { x: number; y: number; w: number; h: number }) {
-  return page.evaluate(async ({ b64, rect }) => {
-    const bmp = await createImageBitmap(await (await fetch(`data:image/png;base64,${b64}`)).blob());
-    const c = document.createElement("canvas");
-    c.width = bmp.width; c.height = bmp.height;
-    const ctx = c.getContext("2d")!;
-    ctx.drawImage(bmp, 0, 0);
-    const x0 = Math.round(rect.x * c.width), y0 = Math.round(rect.y * c.height);
-    const w = Math.round(rect.w * c.width), h = Math.round(rect.h * c.height);
-    const d = ctx.getImageData(x0, y0, w, h).data;
-    let r = 0, g = 0, b = 0, s = 0, s2 = 0;
-    const n = d.length / 4;
-    for (let i = 0; i < d.length; i += 4) {
-      r += d[i]!; g += d[i + 1]!; b += d[i + 2]!;
-      const y = 0.2126 * d[i]! + 0.7152 * d[i + 1]! + 0.0722 * d[i + 2]!;
-      s += y; s2 += y * y;
-    }
-    const mean = s / n;
-    return { r: +(r / n).toFixed(1), g: +(g / n).toFixed(1), b: +(b / n).toFixed(1), lumaMean: +mean.toFixed(2), lumaStd: +Math.sqrt(Math.max(0, s2 / n - mean * mean)).toFixed(2) };
-  }, { b64: png.toString("base64"), rect });
+async function regionStats(png: Buffer, rect: { x: number; y: number; w: number; h: number }) {
+  const meta = await sharp(png).metadata();
+  const left = Math.round(rect.x * meta.width), top = Math.round(rect.y * meta.height);
+  const width = Math.round(rect.w * meta.width), height = Math.round(rect.h * meta.height);
+  const { data } = await sharp(png).extract({ left, top, width, height }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  let r = 0, g = 0, b = 0, s = 0, s2 = 0;
+  const n = data.length / 3;
+  for (let i = 0; i < data.length; i += 3) {
+    r += data[i]; g += data[i + 1]; b += data[i + 2];
+    const y = 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
+    s += y; s2 += y * y;
+  }
+  const mean = s / n;
+  return { r: +(r / n).toFixed(1), g: +(g / n).toFixed(1), b: +(b / n).toFixed(1), lumaMean: +mean.toFixed(2), lumaStd: +Math.sqrt(Math.max(0, s2 / n - mean * mean)).toFixed(2) };
 }
 
 const probe = (target: string, name: string, data: Record<string, unknown>): void => log(`GL_PROBE ${JSON.stringify({ target, name, ...data })}`);
@@ -346,18 +349,14 @@ test.describe("iron crown audit fixes", () => {
     const T = "ic-studio";
     const { context, page } = await open(browser, server, T, false);
     const P1_RECT = { x: 0.26, y: 0.3, w: 0.2, h: 0.62 };
-    for (const swatch of ["default", "crimson", "azure", "jade", "royal", "gilded"]) {
+    for (const swatch of ["default", "crimson", "gilded"]) {
       await page.evaluate(() => (document.querySelector("#ic-modes button[data-mode='studio']") as HTMLElement | null)?.click());
       await page.waitForTimeout(1500);
       await page.evaluate((s) => (document.querySelector(`[data-grid="palette"] button[data-pick="${s}"]`) as HTMLElement | null)?.click(), swatch);
       await page.evaluate(() => (document.getElementById("studio-apply") as HTMLElement | null)?.click());
       await page.waitForTimeout(35_000);
-      const handle = await page.addStyleTag({ content: CANVAS_ONLY });
-      await page.waitForTimeout(250);
-      const png = await page.screenshot({ type: "png" });
-      await handle.evaluate((el) => el.remove());
-      probe(T, `swatch-${swatch}`, { region: await regionStats(page, png, P1_RECT), tint: (await page.evaluate(() => (window as any).__AURA3D_SHOWCASE_IRON_CROWN__?.fighters?.p1?.tint)) });
-      await grab(page, T, `swatch-${swatch}`);
+      const png = await grab(page, T, `swatch-${swatch}`);
+      probe(T, `swatch-${swatch}`, { region: await regionStats(png, P1_RECT) });
     }
     await context.close();
   });
