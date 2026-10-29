@@ -25,6 +25,7 @@ import {
   effects,
   game,
   geometry,
+  installQaHooks,
   instances,
   lights,
   looks,
@@ -46,7 +47,7 @@ import {
   installGameBeacon
 } from "@aura3d/engine/game";
 import "../../showcase-port-shared/quickbar.css";
-import { assets } from "../../../src/aura-assets";
+import { assets } from "./aura-assets";
 import type {
   BallEvent,
   BallState,
@@ -66,7 +67,7 @@ import type {
   Vec3,
   WindState
 } from "./game/types";
-import { COURSES, buildHoleTerrain } from "./game/courses";
+import { COURSES, buildHoleTerrain, pondGeometry } from "./game/courses";
 import {
   CLUBS,
   CLUB_ORDER,
@@ -78,6 +79,7 @@ import {
   launchBall,
   liePenalty,
   makeRng,
+  PLAYER_NAME,
   recordHole,
   rollWind,
   scoreLabel,
@@ -88,9 +90,28 @@ import { defaultAimYaw, pinArrowDegrees, stepAimOffset, wrapAngle, yawToward } f
 import { applyGolferFit, buildGolferNodes, golferTelemetry, poseGolfer, resolveGolferRig, type GolferPhase } from "./game/rig";
 import { sweptClubContact, type ClubContact } from "./game/contact";
 import { commitStroke } from "./game/strokeCommit";
+import { contactShadowIntensity, courseFill } from "./game/lighting";
+import { clubForShot, planShot, puttRange, type ShotPlan } from "./game/autopilot";
+import {
+  bracketRows,
+  cameraModeFor,
+  menuCanOpen,
+  pickupScore,
+  scorePuttingLab,
+  shouldPickUp,
+  tourCourseFor,
+  tourFinished,
+  type CamMode,
+  type PlayPhase
+} from "./game/flow";
 import { installBlackFrameGuard } from "@aura3d/debug";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
+/** game-logic clock: wall time plus the simulated time a ?qa=1 advance() has stepped */
+let qaClockMs = 0;
+const nowMs = (): number => performance.now() + qaClockMs;
+let lastEvidence: Record<string, unknown> | null = null;
+
 const publishBeacon = (evidence: object): void => {
   gameBeacon ??= installGameBeacon({ route: "showcase-aura-links-3d", evidenceGlobals: ["__AURA3D_GAME_EVIDENCE__", "__AURA3D_SHOWCASE_AURA_LINKS_3D__"] });
   gameBeacon.publishEvidence(evidence);
@@ -108,7 +129,13 @@ const smoothstep = (t: number) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t)
 const mix3 = (a: Vec3, b: Vec3, t: number): Vec3 => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
 const HIDDEN_SCALE = 0.0001;
 const TRAIL_COUNT = 16;
-const BALL_R = 0.09;
+/**
+ * drawn ball radius (m): about 2.3x a real 21 mm ball, half the cup's 0.2 m width. At 0.035 the ball hid behind
+ * the 5.5 cm club head in the 1280x720 address frame (remote run g10w3-shots); the ground ring marks it at range.
+ */
+const BALL_R = 0.05;
+/** drawn cup radius (m), matching the sim capture radius so a ball that looks in drops in */
+const CUP_R = 0.1;
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
@@ -116,14 +143,8 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getEleme
  *  Game state                                                         *
  * ------------------------------------------------------------------ */
 
-type PlayPhase =
-  | "menu"        // menu overlay open
-  | "address"     // standing over the ball — aim/club/space
-  | "swing"       // meter running (power → accuracy)
-  | "flight"      // ball in the air or rolling
-  | "between"     // short pause after rest before next lie
-  | "card"        // hole card shown, transition to next hole
-  | "roundover";  // 9 holes done
+// PlayPhase (game/flow.ts): menu · address (aim/club/space) · swing (meter running) · flight (ball moving)
+// · between (pause after rest) · card (hole card, then next hole) · roundover (9 holes done)
 
 interface RoundState {
   holeIndex: number; // 0..8
@@ -768,14 +789,16 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
       scale: [1, 1, 1] as [number, number, number]
     };
   });
-  nodes.push(
-    instances.model(assets.linksGolferAthleteMeshy, {
-      name: "gallery-fans",
-      transforms: fanTransforms,
-      targetHeight: 1.8,
-      castShadow: true
-    })
-  );
+  // The athlete GLB is skinned, and instances.model falls back on skinned actors (audit C19), so each
+  // gallery fan is its own model node on a staggered idle loop.
+  fanTransforms.forEach((f, i) => {
+    nodes.push(
+      model(assets.linksGolferAthleteMeshy, { name: `gallery-fan-${i}`, targetHeight: 1.8, role: "setDressing", scaleMode: "fit" })
+        .position(f.position[0], f.position[1], f.position[2])
+        .rotate(0, f.rotation[1], 0)
+        .animate({ clip: "Idle_Loop", loop: true, speed: 0.8 + (i % 3) * 0.1 })
+    );
+  });
 
   return nodes;
 }
@@ -826,12 +849,13 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   // --- Tee box + surround + markers ---
   const teeMat = material.pbr({ color: pal.teeBox, roughness: 0.82 });
   const teeEdgeMat = material.pbr({ color: shade(pal.teeBox, 0.72), roughness: 0.92 });
-  const markMat = material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.85 });
+  // low red tee blocks: 22 cm spheres (white, then red) read as a second, larger ball in the address and card frames
+  const markMat = material.emissive({ color: "#c8402f", emissive: "#c8402f", emissiveIntensity: 0.25 });
   nodes.push(
     primitives.box({ name: "tee-surround", size: [9.3, 0.07, 7.3], material: teeEdgeMat }).position(terrain.tee[0], terrain.tee[1] - 0.025, terrain.tee[2]),
     primitives.box({ name: "tee-box", size: [8.4, 0.12, 6.4], material: teeMat }).position(terrain.tee[0], terrain.tee[1] - 0.03, terrain.tee[2]),
-    primitives.sphere({ name: "tee-marker-l", size: [0.22, 0.22, 0.22], material: markMat }).position(terrain.tee[0] - 3.2, terrain.tee[1] + 0.11, terrain.tee[2]),
-    primitives.sphere({ name: "tee-marker-r", size: [0.22, 0.22, 0.22], material: markMat }).position(terrain.tee[0] + 3.2, terrain.tee[1] + 0.11, terrain.tee[2])
+    primitives.box({ name: "tee-marker-l", size: [0.3, 0.1, 0.12], material: markMat }).position(terrain.tee[0] - 3.2, terrain.tee[1] + 0.05, terrain.tee[2]),
+    primitives.box({ name: "tee-marker-r", size: [0.3, 0.1, 0.12], material: markMat }).position(terrain.tee[0] + 3.2, terrain.tee[1] + 0.05, terrain.tee[2])
   );
 
   // --- Bunkers (bright sand bowls + dark, crisp grass lip) ---
@@ -846,7 +870,7 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
 
   // --- Water (dark wet bank, shadow rim, then a reflective pond surface) ---
   lay.water.forEach((w, i) => {
-    const y = terrain.height(w.center[0], w.center[1]) + 0.34;
+    const { surfaceY: y, pondDiameter, rimDiameter } = pondGeometry(terrain, w);
     const bank = discOnTerrain(terrain, w.center[0], w.center[1], w.radius + 1.5, 0.02, 32, w.radius * 0.94);
     const waterMat = material.pbr({
       color: shade(pal.water, 1.22),
@@ -857,22 +881,24 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
     });
     nodes.push(
       geometry.custom(bank, { name: `pond-bank-${i}`, material: material.pbr({ color: shade(pal.rough, 0.55), roughness: 0.96 }) }),
-      primitives.cylinder({ name: `pond-rim-${i}`, size: [w.radius * 0.99, 0.05, w.radius * 0.99], material: material.pbr({ color: shade(pal.water, 0.5), roughness: 0.34, metalness: 0.2 }) }).position(w.center[0], y - 0.03, w.center[1]),
-      primitives.cylinder({ name: `pond-${i}`, size: [w.radius * 0.92, 0.06, w.radius * 0.92], material: waterMat }).position(w.center[0], y, w.center[1])
+      primitives.cylinder({ name: `pond-rim-${i}`, size: [rimDiameter, 0.05, rimDiameter], material: material.pbr({ color: shade(pal.water, 0.5), roughness: 0.34, metalness: 0.2 }) }).position(w.center[0], y - 0.03, w.center[1]),
+      primitives.cylinder({ name: `pond-${i}`, size: [pondDiameter, 0.06, pondDiameter], material: waterMat }).position(w.center[0], y, w.center[1])
     );
   });
 
   // --- Flag + cup (linksPinFlagMeshy has minY = 0 grounded origin) ---
   nodes.push(
     model(assets.linksPinFlagMeshy, { name: "flagstick", targetHeight: 3.1 }).position(terrain.cup[0], terrain.cup[1], terrain.cup[2]).runtime(game.runtimeNode("flagstick")),
-    primitives.cylinder({ name: "cup-dark", size: [0.14, 0.06, 0.14], material: material.pbr({ color: "#05070a", roughness: 1 }) }).position(terrain.cup[0], terrain.cup[1] + 0.005, terrain.cup[2])
+    primitives.cylinder({ name: "cup-dark", size: [CUP_R * 2, 0.06, CUP_R * 2], material: material.pbr({ color: "#05070a", roughness: 1 }) }).position(terrain.cup[0], terrain.cup[1] + 0.005, terrain.cup[2])
   );
 
   // --- Ball + trail + shadow + aim aids ---
   nodes.push(
     model(assets.siegeGolfBall, { name: "golf-ball", targetHeight: BALL_R * 2 }).runtime(game.runtimeNode("golf-ball")),
-    primitives.cylinder({ name: "ball-shadow", size: [0.22, 0.008, 0.22], material: material.pbr({ color: "#000000", opacity: 0.38, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow")),
+    primitives.cylinder({ name: "ball-shadow", size: [BALL_R * 2.4, 0.008, BALL_R * 2.4], material: material.pbr({ color: "#000000", opacity: 0.38, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow")),
     effects.trail({ name: "ball-ribbon-trail", target: "golf-ball", color: "#ffffff", width: 0.07, maxPoints: 44, intensity: 0.9 } as any),
+    // ground ring that marks the ball when the camera is far from it (the ball itself is near real size)
+    primitives.torus({ name: "ball-marker", size: [0.5, 0.025, 0.025], material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.1, opacity: 0.8 }) }).scale(HIDDEN_SCALE).runtime(game.runtimeNode("ball-marker")),
     // Crisp white aim line + predicted landing ring (aim phase only)
     primitives.box({ name: "aim-line", size: [0.14, 0.03, 28], material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.35, opacity: 0.88 }) }).runtime(game.runtimeNode("aim-line")),
     primitives.torus({ name: "landing-ring", size: [1.5, 0.06, 0.06], material: material.emissive({ color: "#63e2ff", emissive: "#63e2ff", emissiveIntensity: 1.25 }) }).runtime(game.runtimeNode("landing-ring")),
@@ -915,23 +941,18 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   nodes.push(...buildDressingNodes(course, hole, terrain, rng));
 
   // --- Theme-aware fill: sky/ground bounce + a cool rim so shadow sides keep form ---
-  const theme = theme4(course);
-  const fill = course.look === "night-city"
-    ? { ambient: "#3b4a6e", ambientI: 0.32, sky: "#4269a8", ground: "#151a28", hemiI: 0.38, rim: "#7f9dff", rimI: 0.3, rimPos: [-22, 20, -30] as [number, number, number] }
-    : course.look === "space"
-      ? { ambient: "#3d4354", ambientI: 0.26, sky: "#7d8ba6", ground: "#191b20", hemiI: 0.34, rim: "#dbe7ff", rimI: 0.35, rimPos: [-18, 26, -34] as [number, number, number] }
-      : theme === "alpine"
-        ? { ambient: "#dce8f4", ambientI: 0.16, sky: "#cfe6f4", ground: "#697681", hemiI: 0.28, rim: "#d9ecff", rimI: 0.22, rimPos: [-24, 18, -30] as [number, number, number] }
-        : theme === "volcanic"
-          ? { ambient: "#6b4a3d", ambientI: 0.18, sky: "#a86a4e", ground: "#2a1e1a", hemiI: 0.26, rim: "#ff9a5c", rimI: 0.28, rimPos: [-26, 16, -28] as [number, number, number] }
-          : course.look === "golden-hour"
-            ? { ambient: "#e3bd91", ambientI: 0.14, sky: "#f0c28a", ground: "#4b3b2c", hemiI: 0.24, rim: "#9fb6ce", rimI: 0.24, rimPos: [-22, 15, -26] as [number, number, number] }
-            : { ambient: "#c9dcea", ambientI: 0.13, sky: "#b9d3e6", ground: "#3d5434", hemiI: 0.24, rim: "#d7e6f2", rimI: 0.22, rimPos: [-24, 18, -30] as [number, number, number] };
-  nodes.push(
-    lights.ambient({ name: "course ambient fill", color: fill.ambient, intensity: fill.ambientI }),
-    lights.hemisphere({ name: "course sky-ground fill", skyColor: fill.sky, groundColor: fill.ground, intensity: fill.hemiI, position: [0, 30, 0] }),
-    lights.directional({ name: "course rim fill", color: fill.rim, intensity: fill.rimI, position: fill.rimPos })
-  );
+  const fill = courseFill(course);
+  nodes.push(lights.ambient({ name: "course ambient fill", color: fill.ambient, intensity: fill.ambientI }));
+  // The hemisphere only lights the no-HDRI looks (Neon Bay, Mare): next to an HDRI environment the engine drops
+  // it (audit LIGHT-05), so it is not authored there and an engine fix cannot silently brighten those courses.
+  if (fill.hemiI > 0) {
+    nodes.push(lights.hemisphere({ name: "course sky-ground fill", skyColor: fill.sky, groundColor: fill.ground, intensity: fill.hemiI, position: [0, 30, 0] }));
+  }
+  nodes.push(lights.directional({ name: "course rim fill", color: fill.rim, intensity: fill.rimI, position: fill.rimPos }));
+  // Neon Bay's floodlight key (no shadow: the look's moon keeps the shadow and the contact-shadow mask)
+  if (fill.flood) {
+    nodes.push(lights.directional({ name: "course floodlight key", color: fill.flood.color, intensity: fill.flood.intensity, position: fill.flood.position }));
+  }
 
   // --- Atmosphere + grounding ---
   // Keep authored haze gentle: far fairways and tree belts recede toward the
@@ -947,7 +968,7 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
       density: isNight ? 0.0016 : 0.003,
       intensity: isNight ? 0.16 : 0.22
     }),
-    effects.contactShadows({ intensity: 0.62, length: 0.32, steps: 12, lights: "sun" }),
+    effects.contactShadows({ intensity: contactShadowIntensity(course), length: 0.32, steps: 12, lights: "sun" }),
     effects.vignette({ name: "course vignette", intensity: 0.15, smoothness: 0.72, roundness: 0.92, color: "#061019" })
   );
 
@@ -1002,11 +1023,26 @@ let ballShadowHandle: any = null;
 let aimLineHandle: any = null;
 let landingRingHandle: any = null;
 let cupPulseHandle: any = null;
+let ballMarkerHandle: any = null;
+let flagRotation: [number, number, number] = [0, 0, 0];
 let flagstickHandle: any = null;
 let trailHandles: any[] = [];
 let readArrowHandles: any[] = [];
 let rangeRingHandles: any[] = [];
 const tryReq = (id: string) => { try { return (auraApp as any)?.nodes?.require(id); } catch { return null; } };
+
+/** true while frame() runs inside the engine's onFrame callback (scene swaps are deferred until it returns) */
+let inEngineFrame = false;
+/** ?qa=1 hold: game logic advances only through the QA hook */
+let qaHold = false;
+let pendingHoleScene: unknown = null;
+function flushPendingHoleScene(): void {
+  const next = pendingHoleScene;
+  if (!next) return;
+  pendingHoleScene = null;
+  (auraApp as any)?.setScene(next);
+  resolveHoleHandles();
+}
 
 function resolveHoleHandles(): void {
   const req = (id: string) => (auraApp as any).nodes.require(id);
@@ -1016,6 +1052,7 @@ function resolveHoleHandles(): void {
   aimLineHandle = req("aim-line");
   landingRingHandle = req("landing-ring");
   cupPulseHandle = req("cup-pulse");
+  ballMarkerHandle = tryReq("ball-marker");
   flagstickHandle = tryReq("flagstick");
   trailHandles = Array.from({ length: TRAIL_COUNT }, (_, i) => req(`ball-trail-${i}`));
   readArrowHandles = Array.from({ length: 12 }, (_, i) => req(`read-arrow-${i}`));
@@ -1034,7 +1071,7 @@ let touchControls: any = null;
 let a11ySettings: any = null;
 
 function pushEvent(type: string, label: string, severity: "info" | "success" | "warning" = "info", value?: number): void {
-  const rec = eventLog.push({ type, label, severity, value, time: performance.now() / 1000, frame: framesRendered });
+  const rec = eventLog.push({ type, label, severity, value, time: nowMs() / 1000, frame: framesRendered });
   const ticker = $("h-ticker");
   if (ticker) {
     const item = document.createElement("span");
@@ -1052,7 +1089,7 @@ function showBanner(text: string, ms = 1700): void {
   if (!b) return;
   b.textContent = text;
   b.classList.add("show");
-  bannerTimer = performance.now() + ms;
+  bannerTimer = nowMs() + ms;
 }
 
 let msgTimer = 0;
@@ -1063,7 +1100,7 @@ function showMsg(big: string, small = "", ms = 2200): void {
   if (bt) bt.textContent = big;
   if (st) st.textContent = small;
   m.classList.add("show");
-  msgTimer = performance.now() + ms;
+  msgTimer = nowMs() + ms;
 }
 
 function setPrompt(text: string | null): void {
@@ -1082,18 +1119,21 @@ function updateCardHud(): void {
   $("h-strokes")!.textContent = String(r.strokes);
   const dist = Math.max(0, state.terrain.cupDistance(r.ballPos[0], r.ballPos[2]));
   $("h-dist")!.textContent = `${dist.toFixed(0)}M TO PIN`;
-  const tp = state.card ? state.card.toPar + Math.max(0, r.strokes - hole.par) : 0;
+  // once the round is over the card is final (the last hole is already recorded)
+  const over = state.phase === "roundover";
+  const tp = state.card ? state.card.toPar + (over ? 0 : Math.max(0, r.strokes - hole.par)) : 0;
   const el = $("h-topar")!;
   el.textContent = tp === 0 ? "E" : tp > 0 ? `+${tp}` : `${tp}`;
   el.classList.toggle("good", tp <= 0);
   el.classList.toggle("bad", tp > 0);
-  $("h-thru")!.textContent = `THRU ${r.holeIndex}`;
+  $("h-thru")!.textContent = over ? "FINAL" : `THRU ${r.holeIndex}`;
   // wind
   const arrow = $("h-wind-arrow");
   if (arrow) arrow.style.transform = `rotate(${(state.wind.yaw * 180) / Math.PI + 90}deg)`;
   $("h-wind-speed")!.textContent = state.wind.speed.toFixed(1);
   // club + lie
-  $("h-club")!.textContent = CLUB_ORDER[r.clubIdx]!.toUpperCase();
+  const clubId = CLUB_ORDER[r.clubIdx]!;
+  $("h-club")!.textContent = clubId === "putter" ? `PUTTER ${puttRange(dist)}M` : clubId.toUpperCase();
   const lieEl = $("h-lie")!;
   lieEl.textContent = r.lie.toUpperCase();
   lieEl.className = `v lie-${r.lie}`;
@@ -1126,7 +1166,6 @@ function updateModeChips(): void {
  *  Camera director                                                    *
  * ------------------------------------------------------------------ */
 
-type CamMode = "menu" | "address" | "aim" | "flight" | "green" | "celebrate" | "card";
 const cam = {
   mode: "menu" as CamMode,
   eye: [-2.0, 7.2, -8.2] as Vec3,
@@ -1145,9 +1184,18 @@ function updateCamera(dt: number): void {
   const t = state.terrain;
   const r = state.round;
   cam.t += dt;
+  if (qaPondView) {
+    // ?qa=1 pond check: straight down over the hazard, the zone radius filling about 70% of the frame height
+    const p = qaPondView;
+    cam.eye = [p.x + 0.01, p.y + p.r * 3.4, p.z - 0.01];
+    cam.target = [p.x, p.y, p.z];
+    cam.fov = 40;
+    camApply();
+    return;
+  }
   if (!t || !r) {
-    // menu orbit around the cup/tee midpoint
-    cam.orbit += dt * 0.14;
+    // menu orbit around the cup/tee midpoint (held still under reduced motion)
+    if (!state.reducedMotion) cam.orbit += dt * 0.14;
     const cc = t ? t.cup : [0, 0, 30] as unknown as Vec3;
     cam.eye = [cc[0] + Math.sin(cam.orbit) * 26, cc[1] + 11, cc[2] + Math.cos(cam.orbit) * 26];
     cam.target = [cc[0], cc[1] + 0.5, cc[2]];
@@ -1172,7 +1220,8 @@ function updateCamera(dt: number): void {
   // clubhead hit the ball), then the chase cam takes over.
   const strikeHold = state.phase === "flight" && inFlight && simTime - impactAt < 0.55;
 
-  if (state.phase === "flight" && inFlight && !strikeHold) {
+  const mode = cameraModeFor({ phase: state.phase, ballMoving: Boolean(inFlight), strikeHold: Boolean(strikeHold), lie: r.lie });
+  if (mode === "flight" && ball) {
     cam.mode = "flight";
     // chase cam: behind the ball along its velocity, ahead low
     const v = ball.vel;
@@ -1186,13 +1235,13 @@ function updateCamera(dt: number): void {
     ];
     cam.target = [ball.pos[0] + back[0] * 8, Math.max(t.height(ball.pos[0], ball.pos[2]) + 0.4, ball.pos[1] * 0.55), ball.pos[2] + back[1] * 8];
     cam.fov = ball.status === "roll" ? 38 : 34;
-  } else if (state.phase === "card" || state.phase === "roundover" || cam.mode === "celebrate") {
+  } else if (mode === "celebrate") {
     cam.mode = "celebrate";
-    cam.orbit += dt * 0.42;
+    if (!state.reducedMotion) cam.orbit += dt * 0.42;
     cam.eye = [t.cup[0] + Math.sin(cam.orbit) * 9.5, t.cup[1] + 2.4, t.cup[2] + Math.cos(cam.orbit) * 9.5];
     cam.target = [t.cup[0], t.cup[1] + 1.0, t.cup[2]];
     cam.fov = 30;
-  } else if (r.lie === "green" || r.lie === "fringe") {
+  } else if (mode === "green") {
     cam.mode = "green";
     // low read cam behind ball→cup line
     const dx = t.cup[0] - r.ballPos[0], dz = t.cup[2] - r.ballPos[2];
@@ -1202,7 +1251,7 @@ function updateCamera(dt: number): void {
     cam.eye = [r.ballPos[0] - ux * back, t.height(r.ballPos[0] - ux * back, r.ballPos[2] - uz * back) + 1.35 + d * 0.05, r.ballPos[2] - uz * back];
     cam.target = [t.cup[0], t.cup[1] + 0.15, t.cup[2]];
     cam.fov = 34;
-  } else if (state.phase === "swing" || strikeHold) {
+  } else if (mode === "address") {
     cam.mode = "address";
     const yaw = aimYaw();
     const bx = r.ballPos[0], bz = r.ballPos[2];
@@ -1229,7 +1278,9 @@ function updateCamera(dt: number): void {
     const lookAhead = 34 * cam.zoom;
     const tx2 = bx + Math.sin(yaw) * lookAhead, tz2 = bz + Math.cos(yaw) * lookAhead;
     cam.eye = lerp3(cam.eye, [ex, t.height(ex, ez) + h, ez], 1 - Math.pow(0.002, dt));
-    cam.target = lerp3(cam.target, [tx2, t.height(tx2, tz2) + 0.9, tz2], 1 - Math.pow(0.002, dt));
+    // aimed below the fairway so the ball sits in the lower third with the golfer instead of on the bottom edge
+    // (it projected to y 710 of 720 at 1280x720 with a +0.9 m target, remote run g10f-links-figures-neonBay)
+    cam.target = lerp3(cam.target, [tx2, t.height(tx2, tz2) - 2.2, tz2], 1 - Math.pow(0.002, dt));
     cam.fov = lerp(cam.fov, (cam.zoom > 1.5 ? 46 : 42) + 16 * portrait, 0.08);
   }
   camApply();
@@ -1446,6 +1497,8 @@ function beginAddress(): void {
   swingDrive.committed = false;
   pendingCommit = null;
   heroCelebrate = false;
+  autoPlan = null;
+  cam.mode = "aim";
   setPrompt("SPACE — SWING · A/D AIM (SHIFT FINE) · P PIN · Q/E CLUB");
   $("swing-meter")?.classList.remove("show");
   updateCardHud();
@@ -1459,6 +1512,8 @@ function beginAddress(): void {
 
 function startSwing(): void {
   state.phase = "swing";
+  // the difficulty sets the pure strip of the accuracy needle (amateur wide, legend narrow)
+  state.swing.setDeadZone(pureStrip(state.difficulty));
   state.swing.press(); // idle → power
   swingDrive.phase = "backswing";
   swingDrive.t = 0;
@@ -1481,14 +1536,18 @@ function commitSwing(): void {
   const r = state.round!;
   if (swingDrive.committed) return;
   const s = state.swing.state();
-  const club = currentClub();
-  pendingCommit = {
-    club,
-    power: s.power ?? 0.8,
-    accuracy: s.accuracy ?? 0.5,
-    spin: s.spin ?? 0,
-    aimYaw: aimYaw()
-  };
+  const club = shotClub();
+  // The player's presses decide the shot. The demo autopilot (?autoplay=1) plays its planned shot exactly.
+  const plan = autopilot ? autoPlan : null;
+  pendingCommit = plan
+    ? { club, power: plan.power, accuracy: 0, spin: 0, aimYaw: aimYaw() }
+    : {
+        club,
+        power: s.power ?? 0.8,
+        accuracy: s.accuracy ?? 0.5,
+        spin: s.spin ?? 0,
+        aimYaw: aimYaw()
+      };
   commitStroke(r, swingDrive, !!club.putter);
   updateCardHud();
 }
@@ -1521,8 +1580,7 @@ function fireImpact(): void {
   state.phase = "flight";
   $("swing-meter")?.classList.remove("show");
   const qual = Math.abs(commit.accuracy);
-  const spinTxt = commit.spin < -0.25 ? "DRAW" : commit.spin > 0.25 ? "FADE" : "PURE";
-  pushEvent("shot", `${clubLabel(commit.club.id)} · ${(commit.power * 100) | 0}% · ${qual < 0.14 ? "PURE" : qual < 0.4 ? "GOOD" : "OFF"} · ${spinTxt}`, qual < 0.4 ? "success" : "warning");
+  pushEvent("shot", `${clubLabel(commit.club.id)} · ${(commit.power * 100) | 0}% · ${contactLabel(qual)} · ${shapeLabel(commit.spin)}`, qual < 0.3 ? "success" : "warning");
   juiceFire("hit", { position: r.ballPos });
   void audio?.cue(commit.club.putter ? "putt" : "drive");
   updateCardHud();
@@ -1530,6 +1588,28 @@ function fireImpact(): void {
 
 function clubLabel(id: import("./game/types").ClubId): string {
   return CLUBS[id]?.label ?? id;
+}
+
+/** contact quality from the needle: 0 inside the pure strip */
+function contactLabel(accuracy: number): string {
+  return accuracy === 0 ? "PURE" : accuracy < 0.3 ? "GOOD" : "OFF";
+}
+
+/** ball flight shape from the spin: zero spin flies straight */
+function shapeLabel(spin: number): string {
+  return spin < -0.25 ? "DRAW" : spin > 0.25 ? "FADE" : "STRAIGHT";
+}
+
+/** accuracy-needle pure strip half-width for the difficulty, in needle units (the meter bar draws it as DIFF_GREEN_ZONE of the bar each side) */
+function pureStrip(d: DifficultyId): number {
+  return DIFF_GREEN_ZONE[d] * 2;
+}
+
+/** the club the next shot launches with: the putter range scales to the putt */
+function shotClub() {
+  const r = state.round!;
+  const t = state.terrain!;
+  return clubForShot(CLUB_ORDER[r.clubIdx]!, t.cupDistance(r.ballPos[0], r.ballPos[2]));
 }
 
 const trailPts: Vec3[] = [];
@@ -1571,14 +1651,21 @@ function onBallRest(pos: Vec3, zone: LieKind): void {
     return;
   }
   if (state.mode === "puttinglab") {
-    r.lie = "green";
-    reteeAfter(1400);
+    // a putt that stops out of the cup is a miss: count the attempt, reset the streak, move to the next spot
+    state.lab = scorePuttingLab(state.lab!, false);
+    pushEvent("lab", `putt misses — ${state.lab.hits}/${state.lab.attempts}, streak 0`, "info");
+    updateModeChips();
+    nextPuttingSpot();
     return;
   }
   if (zone === "water" || zone === "oob") return; // handled by events
-  pushEvent("lie", `lie: ${zone} · ${state.terrain!.cupDistance(pos[0], pos[2]).toFixed(0)}m out`, "info");
+  if (pickUpIfOver()) return;
+  // carry plus roll readout (audit C19)
+  const shot = Math.hypot(pos[0] - r.prevPos[0], pos[2] - r.prevPos[2]);
+  const air = Math.min(shot, state.ball?.carry ?? shot);
+  pushEvent("lie", `lie: ${zone} · ${air.toFixed(0)}m carry + ${(shot - air).toFixed(0)}m roll · ${state.terrain!.cupDistance(pos[0], pos[2]).toFixed(0)}m out`, "info");
   state.phase = "between";
-  betweenUntil = performance.now() + 850;
+  betweenUntil = nowMs() + 850;
 }
 
 function onHoled(): void {
@@ -1594,9 +1681,8 @@ function onHoled(): void {
   juiceFire("holed", { position: state.terrain!.cup });
   heroCelebrate = true;
   if (state.mode === "puttinglab") {
-    const lab = state.lab!;
-    state.lab = { ...lab, hits: lab.hits + 1, streak: lab.streak + 1, attempts: lab.attempts + 1, best: Math.max(lab.best, lab.streak + 1) };
-    pushEvent("lab", `putt drops — streak ${lab.streak}`, "success");
+    state.lab = scorePuttingLab(state.lab!, true);
+    pushEvent("lab", `putt drops — streak ${state.lab.streak}`, "success");
     updateModeChips();
     nextPuttingSpot();
     return;
@@ -1609,7 +1695,28 @@ function onHoled(): void {
   showBanner(label.toUpperCase());
   if (state.mode === "skins") resolveSkin();
   state.phase = "card";
-  betweenUntil = performance.now() + 2400;
+  betweenUntil = nowMs() + 2400;
+}
+
+/**
+ * Pickup at par+5 (audit C1): once the strokes reach par+5 without holing
+ * out, the hole is scored par+5 and play moves to the next hole.
+ */
+function pickUpIfOver(): boolean {
+  const r = state.round!;
+  if (state.lab || !shouldPickUp(r.strokes, state.hole.par)) return false;
+  const score = pickupScore(state.hole.par);
+  r.strokes = score;
+  state.ball = null;
+  trailPts.length = 0;
+  pushEvent("score", `picked up on ${state.hole.number} — scored ${score} (par ${state.hole.par} + ${score - state.hole.par})`, "warning");
+  state.card = recordHole(state.card ?? createScoreCard(state.course), state.hole, score, r.putts);
+  showBanner("PICKED UP");
+  if (state.mode === "skins") resolveSkin();
+  state.phase = "card";
+  betweenUntil = nowMs() + 2400;
+  updateCardHud();
+  return true;
 }
 
 function applyPenaltyDrop(fromPos: Vec3): void {
@@ -1619,14 +1726,15 @@ function applyPenaltyDrop(fromPos: Vec3): void {
   r.ballPos = [...r.prevPos] as Vec3;
   state.ball = null;
   trailPts.length = 0;
+  if (pickUpIfOver()) return;
   state.phase = "between";
-  betweenUntil = performance.now() + 1100;
+  betweenUntil = nowMs() + 1100;
   updateCardHud();
 }
 
 function reteeAfter(ms: number): void {
   state.phase = "between";
-  betweenUntil = performance.now() + ms;
+  betweenUntil = nowMs() + ms;
 }
 
 function nextPuttingSpot(): void {
@@ -1643,7 +1751,7 @@ function nextPuttingSpot(): void {
   state.ball = null;
   trailPts.length = 0;
   state.phase = "between";
-  betweenUntil = performance.now() + 700;
+  betweenUntil = nowMs() + 700;
 }
 
 function scoreRangeShot(pos: Vec3): void {
@@ -1657,14 +1765,17 @@ function scoreRangeShot(pos: Vec3): void {
     const dz = pos[2] - (t.tee[2] + d);
     best = Math.min(best, Math.hypot(dx, dz));
   }
-  const carry = Math.hypot(pos[0] - t.tee[0], pos[2] - t.tee[2]);
+  // carry is the air distance; total adds the roll to where the ball stopped (audit C17)
+  const total = Math.hypot(pos[0] - t.tee[0], pos[2] - t.tee[2]);
+  const carry = state.ball?.carry ?? total;
+  const dist = `${carry.toFixed(0)}m carry · ${total.toFixed(0)}m total`;
   if (best < 8) {
     l = { ...l, hits: l.hits + 1, streak: l.streak + 1, best: Math.max(l.best, l.streak + 1) };
-    pushEvent("lab", `on the ring — ${carry.toFixed(0)}m carry`, "success");
+    pushEvent("lab", `on the ring — ${dist}`, "success");
     void audio?.cue("parChime");
   } else {
     l = { ...l, streak: 0 };
-    pushEvent("lab", `${carry.toFixed(0)}m — off the rings by ${best.toFixed(0)}m`, "info");
+    pushEvent("lab", `${dist} — off the rings by ${best.toFixed(0)}m`, "info");
   }
   state.lab = l;
   updateModeChips();
@@ -1700,6 +1811,7 @@ function startRound(): void {
 }
 
 function startHole(idx: number): void {
+  hideFinalCard();
   const hole = state.course.holes[idx]!;
   state.hole = hole;
   state.terrain = buildHoleTerrain(state.course, hole);
@@ -1728,7 +1840,12 @@ function startHole(idx: number): void {
   const sig = `${state.course.id}|${hole.number}|${state.lab ? "lab" : "round"}`;
   if (sig !== mountedHoleSig) {
     mountedHoleSig = sig;
-    (auraApp as any)?.setScene(buildHoleScene(state.course, hole, t, state.lab));
+    const next = buildHoleScene(state.course, hole, t, state.lab);
+    // setScene disposes the mounted scene's GPU resources. Called from inside the engine's frame callback, the
+    // rest of that frame then draws disposed materials ("Material a3d-production-sdf-text-label is disposed"),
+    // so the swap waits until the frame has been submitted.
+    if (inEngineFrame) pendingHoleScene = next;
+    else (auraApp as any)?.setScene(next);
   }
   resolveHoleHandles();
   cam.t = 0;
@@ -1738,7 +1855,7 @@ function startHole(idx: number): void {
   const initTx = t.tee[0] + Math.sin(t.lineYaw) * 42;
   const initTz = t.tee[2] + Math.cos(t.lineYaw) * 42;
   cam.eye = [initEx, t.height(initEx, initEz) + 5.3, initEz];
-  cam.target = [initTx, t.height(initTx, initTz) + 0.6, initTz];
+  cam.target = [initTx, t.height(initTx, initTz) - 2.4, initTz];
   cam.fov = 40;
   if (framesRendered > 0 || idx > 0) {
     showMsg(`HOLE ${hole.number} — ${hole.name.toUpperCase()}`, `PAR ${hole.par} · ${hole.lengthM}M`, 2100);
@@ -1757,8 +1874,31 @@ function advanceHole(): void {
   startHole(next);
 }
 
+/** closing scorecard (audit C19): hole-by-hole strokes against par, totals, and the skins result in Skins mode */
+function renderFinalCard(title: string, foot: string): void {
+  const card = state.card;
+  const box = $("final-card");
+  if (!card || !box) return;
+  const holes = card.holes;
+  const cells = (pick: (h: (typeof holes)[number]) => string, cls?: (h: (typeof holes)[number]) => string) =>
+    holes.map((h) => `<td${cls ? ` class="${cls(h)}"` : ""}>${pick(h)}</td>`).join("");
+  const tp = card.toPar === 0 ? "E" : card.toPar > 0 ? `+${card.toPar}` : `${card.toPar}`;
+  $("fc-title")!.textContent = title;
+  $("fc-table")!.innerHTML =
+    `<tr><th>HOLE</th>${holes.map((h) => `<th>${h.hole}</th>`).join("")}<th>TOT</th></tr>` +
+    `<tr><td>PAR</td>${cells((h) => String(h.par))}<td>${card.totalPar}</td></tr>` +
+    `<tr><td>YOU</td>${cells((h) => String(h.strokes), (h) => (h.strokes < h.par ? "under" : h.strokes > h.par ? "over" : ""))}<td>${card.totalStrokes}</td></tr>`;
+  $("fc-foot")!.textContent = `${state.course.name.toUpperCase()} · ${tp} · ${foot}`;
+  box.classList.add("show");
+}
+
+function hideFinalCard(): void {
+  $("final-card")?.classList.remove("show");
+}
+
 function finishRound(): void {
   state.phase = "roundover";
+  updateCardHud();
   const card = state.card!;
   const toPar = card.toPar;
   if (state.mode === "tour" && state.tour) {
@@ -1778,12 +1918,16 @@ function finishRound(): void {
       state.tourHoleStart += 9;
     }
     updateModeChips();
-  } else if (state.mode === "skins") {
+    renderFinalCard(`PRO CIRCUIT · ${t.playerAlive ? (t.round === "champion" ? "CHAMPION" : t.round.toUpperCase()) : "CUT"}`, t.playerAlive && t.round !== "champion" ? "MENU — NEXT ROUND" : "MENU — NEW CIRCUIT");
     const r = state.round!;
-    showMsg("SKINS MATCH OVER", `${r.skinsWon} skins won · ${toPar >= 0 ? "+" : ""}${toPar}`, 4000);
-    pushEvent("skins", `match over — ${r.skinsWon} skins`, "info");
+    // a pot still carried after hole 9 is shown, not silently dropped (audit C19)
+    const pot = r.skinsPot > 0 ? ` · ${r.skinsPot} carried, unclaimed` : "";
+    showMsg("SKINS MATCH OVER", `${r.skinsWon} of 9 skins won${pot} · ${toPar >= 0 ? "+" : ""}${toPar}`, 4000);
+    renderFinalCard("SKINS MATCH OVER", `SKINS WON ${r.skinsWon} OF 9${r.skinsPot > 0 ? ` · ${r.skinsPot} UNCLAIMED` : ""}`);
+    pushEvent("skins", `match over — ${r.skinsWon} skins won${pot}`, "info");
   } else {
     showMsg("ROUND COMPLETE", `${card.totalStrokes} strokes · ${toPar >= 0 ? "+" : ""}${toPar} vs par ${card.totalPar}`, 4200);
+    renderFinalCard("ROUND COMPLETE", `${card.totalStrokes} STROKES · MENU FOR A NEW ROUND`);
     pushEvent("round", `round complete: ${toPar >= 0 ? "+" : ""}${toPar}`, toPar <= 0 ? "success" : "info");
     if (toPar < 0) void audio?.cue("win");
   }
@@ -1795,6 +1939,8 @@ function finishRound(): void {
  * ------------------------------------------------------------------ */
 
 function setMode(mode: GameModeId | "skins"): void {
+  // a Pro Circuit in progress survives a trip to the menu; a new one starts only when none is running
+  const keepTour = mode === "tour" && !tourFinished(state.tour) ? state.tour : null;
   state.mode = mode;
   state.lab = null;
   state.tour = null;
@@ -1807,10 +1953,11 @@ function setMode(mode: GameModeId | "skins"): void {
     startHole(2); // a par-3/4 hole with a real green
     nextPuttingSpot();
   } else if (mode === "tour") {
-    state.tour = createTour(0x4a32);
-    state.tourHoleStart = 0;
-    const courseForRound: CourseId[] = ["stAuroras", "mapleHollow", "cinderRim", "cloudTerrace", "mareCourse"];
-    selectCourse(courseForRound[0]!, false);
+    state.tour = keepTour ?? createTour(0x4a32);
+    if (!keepTour) state.tourHoleStart = 0;
+    // each round of the circuit is played on its own course (r32 St Auroras … final Mare)
+    selectCourse(tourCourseFor(state.tour.round), false);
+    renderBracket();
     startRound();
   } else {
     startRound();
@@ -1818,16 +1965,33 @@ function setMode(mode: GameModeId | "skins"): void {
   updateModeChips();
 }
 
-function selectCourse(id: CourseId, restart = true): void {
-  if (!COURSES[id]) return;
-  state.courseId = id;
-  state.course = COURSES[id]!;
+/**
+ * After a round: in a live Pro Circuit, play the next round on its course;
+ * otherwise (finished circuit, other modes) start a fresh round.
+ */
+function continueAfterRound(): void {
+  if (state.mode === "tour" && !tourFinished(state.tour)) setMode("tour");
+  else if (state.mode === "tour") { state.tour = null; setMode("tour"); }
+  else setMode(state.mode === "menu" ? "quick" : state.mode);
+}
+
+/** highlight the current course in the top bar and the menu (also on boot, so ?course= is reflected) */
+function syncCourseButtons(): void {
+  const id = state.courseId;
   for (const b of Array.from(document.querySelectorAll<HTMLButtonElement>("[data-course]"))) {
     b.classList.toggle("active", b.dataset.course === id);
+    b.setAttribute("aria-pressed", String(b.dataset.course === id));
   }
   for (const b of Array.from(document.querySelectorAll<HTMLButtonElement>("[data-course-menu]"))) {
     b.classList.toggle("active", b.dataset.courseMenu === id);
   }
+}
+
+function selectCourse(id: CourseId, restart = true): void {
+  if (!COURSES[id]) return;
+  state.courseId = id;
+  state.course = COURSES[id]!;
+  syncCourseButtons();
   if (restart) {
     startRound();
   }
@@ -1902,6 +2066,8 @@ let fxCtlRef: any = null;
  * ------------------------------------------------------------------ */
 
 let heroCelebrate = false;
+/** the demo autopilot's planned shot for the current stroke */
+let autoPlan: ShotPlan | null = null;
 let simTime = 0;
 let lastManualInputAt = -10;
 let addressEnteredAt = 0;
@@ -1928,9 +2094,8 @@ function frame(dt: number): void {
   if (!appReady) return;
   framesRendered += 1;
   simTime += dt;
-  if (framesRendered === 1) console.log("[links] first frame tick", dt);
-  publishEvidence();
-  const now = performance.now();
+  if (framesRendered === 1) diagLog("[links] first frame tick", dt);
+  const now = nowMs();
   const r = state.round;
   const t = state.terrain;
 
@@ -1948,7 +2113,7 @@ function frame(dt: number): void {
 
   // --- input edges ---
   if (state.phase !== "menu") {
-    if (justPressed.has("Escape")) {
+    if (justPressed.has("Escape") && menuCanOpen(state.phase)) {
       openMenu();
     }
     if (r && state.phase === "address") {
@@ -1972,11 +2137,21 @@ function frame(dt: number): void {
   // --- autopilot ONLY when explicitly enabled via ?autoplay=1 or ?demo=1 ---
   if (autopilot && state.phase !== "menu" && !isStillMode && simTime - lastManualInputAt > 2.2) {
     if (r && t && state.phase === "address" && simTime - addressEnteredAt > 1.35) {
-      const targetYaw = Math.atan2(t.cup[0] - r.ballPos[0], t.cup[2] - r.ballPos[2]);
-      r.aimOffset = wrapAngle(targetYaw - r.aimBase);
+      const lie: LieKind = r.strokes === 0 ? "tee" : t.zone(r.ballPos[0], r.ballPos[2]);
+      autoPlan = planShot({
+        terrain: t,
+        gravity: state.course.gravity,
+        airDensity: state.course.airDensity,
+        wind: state.wind,
+        ballPos: r.ballPos,
+        lie: lie === "water" || lie === "oob" ? "rough" : lie
+      });
+      r.clubIdx = CLUB_ORDER.indexOf(autoPlan.club);
+      r.aimOffset = wrapAngle(autoPlan.aimYaw - r.aimBase);
+      updateCardHud();
       startSwing();
     } else if (state.phase === "roundover" && simTime - roundOverEnteredAt > 3.2) {
-      startRound();
+      continueAfterRound();
     }
   }
 
@@ -1995,24 +2170,17 @@ function frame(dt: number): void {
   }
 
   // --- swing meter tick (sets shot params only; the swing drive animates) ---
+  // The meter runs in real time and only the player's presses set power and accuracy. The demo autopilot presses
+  // on its planned power and at the centre of the needle; its planned shot is what launches (commitSwing).
   if (state.phase === "swing" && r && t) {
-    const cupDist = t.cupDistance(r.ballPos[0], r.ballPos[2]);
-    const club = currentClub();
-    const targetPower = club.putter
-      ? clamp(cupDist / 22, 0.35, 0.88)
-      : clamp(cupDist / Math.max(12, club.carry * 0.94), 0.65, 0.92);
-    const s = state.swing.tick(dt * 3.0);
+    const s = state.swing.tick(dt);
     if (s.phase === "committed") {
       commitSwing();
-    } else {
-      const st = state.swing.state();
-      if (st.phase === "power" && st.meter >= targetPower) {
+    } else if (autopilot && autoPlan) {
+      if (s.phase === "power" && s.meter >= autoPlan.power) {
         state.swing.press();
-      } else if (st.phase === "accuracy" && st.meter <= 0.04) {
-        const committed = state.swing.press();
-        if (committed.phase === "committed") {
-          commitSwing();
-        }
+      } else if (s.phase === "accuracy" && Math.abs(s.meter) <= state.swing.deadZone() * 0.5) {
+        if (state.swing.press().phase === "committed") commitSwing();
       }
     }
     updateSwingMeter();
@@ -2071,19 +2239,46 @@ function frame(dt: number): void {
     const aiming = state.phase === "address" || state.phase === "swing";
     if (aiming) {
       const yaw = aimYaw();
-      const club = currentClub();
-      const lx = r.ballPos[0] + Math.sin(yaw) * 14.5;
-      const lz = r.ballPos[2] + Math.cos(yaw) * 14.5;
-      aimLineHandle?.setPosition(lx, t.height(lx, lz) + 0.06, lz).setRotation(0, yaw, 0).setScale([1, 1, 1]).setVisible(r.lie !== "green");
-      const carry = club.carry * 0.92;
-      const px = r.ballPos[0] + Math.sin(yaw) * carry;
-      const pz = r.ballPos[2] + Math.cos(yaw) * carry;
-      landingRingHandle?.setPosition(px, t.height(px, pz) + 0.12, pz).setRotation(Math.PI / 2, 0, 0).setScale([1, 1, 1]).setVisible(r.lie !== "green" && !club.putter);
-      cupPulseHandle?.setPosition(t.cup[0], t.cup[1] + 0.05, t.cup[2]).setRotation(Math.PI / 2, 0, now / 480).setScale([1.1, 1.1, 1.1]).setVisible(r.lie === "green" || r.lie === "fringe");
+      const club = shotClub();
+      const sw = state.swing.state();
+      if (club.putter) {
+        // putt pace line: the aim line spans the putter's full-power roll; the ring tracks the power meter
+        const range = club.carry;
+        const lx = r.ballPos[0] + Math.sin(yaw) * range * 0.5;
+        const lz = r.ballPos[2] + Math.cos(yaw) * range * 0.5;
+        aimLineHandle?.setPosition(lx, t.height(lx, lz) + 0.04, lz).setRotation(0, yaw, 0).setScale([0.45, 1, range / 28]).setVisible(true);
+        const pw = sw.phase === "power" ? sw.meter : sw.power ?? null;
+        if (pw !== null) {
+          const px = r.ballPos[0] + Math.sin(yaw) * range * pw;
+          const pz = r.ballPos[2] + Math.cos(yaw) * range * pw;
+          landingRingHandle?.setPosition(px, t.height(px, pz) + 0.05, pz).setRotation(Math.PI / 2, 0, 0).setScale([0.35, 0.35, 0.35]).setVisible(true);
+        } else {
+          landingRingHandle?.setScale(HIDDEN_SCALE).setVisible(false);
+        }
+      } else {
+        const lx = r.ballPos[0] + Math.sin(yaw) * 14.5;
+        const lz = r.ballPos[2] + Math.cos(yaw) * 14.5;
+        aimLineHandle?.setPosition(lx, t.height(lx, lz) + 0.06, lz).setRotation(0, yaw, 0).setScale([1, 1, 1]).setVisible(r.lie !== "green");
+        const carry = club.carry * 0.92;
+        const px = r.ballPos[0] + Math.sin(yaw) * carry;
+        const pz = r.ballPos[2] + Math.cos(yaw) * carry;
+        landingRingHandle?.setPosition(px, t.height(px, pz) + 0.12, pz).setRotation(Math.PI / 2, 0, 0).setScale([1, 1, 1]).setVisible(r.lie !== "green");
+      }
+      const pulse = state.reducedMotion ? 0 : now / 480;
+      cupPulseHandle?.setPosition(t.cup[0], t.cup[1] + 0.05, t.cup[2]).setRotation(Math.PI / 2, 0, pulse).setScale([1.1, 1.1, 1.1]).setVisible(r.lie === "green" || r.lie === "fringe");
     } else {
       aimLineHandle?.setScale(HIDDEN_SCALE).setVisible(false);
       landingRingHandle?.setScale(HIDDEN_SCALE).setVisible(false);
       cupPulseHandle?.setScale(HIDDEN_SCALE).setVisible(false);
+    }
+
+    // ground ring that marks the ball when the camera is far away
+    if (ballMarkerHandle) {
+      const camDist = Math.hypot(cam.eye[0] - bp[0], cam.eye[1] - bp[1], cam.eye[2] - bp[2]);
+      const show = camDist > 9 && state.phase !== "card" && state.ball?.status !== "holed";
+      const k = clamp(camDist * 0.03, 0.3, 3);
+      if (show) ballMarkerHandle.setPosition(bp[0], t.height(bp[0], bp[2]) + 0.03, bp[2]).setRotation(Math.PI / 2, 0, 0).setScale([k, k, k]).setVisible(true);
+      else ballMarkerHandle.setScale(HIDDEN_SCALE).setVisible(false);
     }
 
     // green read arrows on the green
@@ -2131,8 +2326,9 @@ function frame(dt: number): void {
       checkClubContact(dt, g.yaw);
     }
 
-    // flag flutter + cup pulse
-    flagstickHandle?.setRotation?.(0, Math.sin(now / 900) * 0.05, Math.sin(now / 700) * 0.03);
+    // flag flutter (held still under reduced motion)
+    flagRotation = state.reducedMotion ? [0, 0, 0] : [0, Math.sin(now / 900) * 0.05, Math.sin(now / 700) * 0.03];
+    flagstickHandle?.setRotation?.(flagRotation[0], flagRotation[1], flagRotation[2]);
   }
 
   updateCamera(dt);
@@ -2158,23 +2354,54 @@ function applyMulligan(): void {
  *  Menu / studio / bracket                                            *
  * ------------------------------------------------------------------ */
 
+/** the play state the menu was opened from, restored by menu-close (audit C8) */
+let menuReturn: { phase: PlayPhase; mode: typeof state.mode } | null = null;
+
 function openMenu(): void {
+  hideFinalCard();
+  if (state.phase !== "menu") menuReturn = { phase: state.phase, mode: state.mode };
   state.phase = "menu";
   state.mode = "menu";
-  $("menu-overlay")?.classList.add("open");
+  setMenuOverlay(true);
   setPrompt(null);
   $("swing-meter")?.classList.remove("show");
   for (const b of Array.from(document.querySelectorAll<HTMLButtonElement>("[data-mode-btn]"))) b.classList.remove("active");
   document.querySelector<HTMLButtonElement>('[data-mode-btn="menu"]')?.classList.add("active");
 }
 
+/** show or hide the menu overlay; a closed menu is inert and leaves the accessibility tree (audit P-1) */
+function setMenuOverlay(open: boolean): void {
+  const el = $("menu-overlay");
+  if (!el) return;
+  el.classList.toggle("open", open);
+  el.toggleAttribute("inert", !open);
+  el.setAttribute("aria-hidden", open ? "false" : "true");
+}
+
 function closeMenu(): void {
-  $("menu-overlay")?.classList.remove("open");
+  setMenuOverlay(false);
   $("studio-section")!.style.display = "none";
   $("tour-section")!.style.display = "none";
   // release focus from the clicked control — a focused button eats the next
   // Space keyup as a re-click, which would reset the round mid-press
   (document.activeElement as HTMLElement | null)?.blur?.();
+}
+
+/**
+ * Close the menu back into the hole exactly where it was: a ball in flight
+ * keeps flying, a running swing restarts from address, a finished round stays
+ * finished. Nothing re-enters address with the ball in the cup.
+ */
+function resumeFromMenu(): void {
+  const back = menuReturn;
+  menuReturn = null;
+  if (!state.round || !back) { setMode("quick"); return; }
+  state.mode = back.mode;
+  updateModeChips();
+  if (back.phase === "swing" || back.phase === "address") { beginAddress(); return; }
+  state.phase = back.phase;
+  if (back.phase === "between") betweenUntil = nowMs() + 300;
+  if (back.phase === "roundover") setPrompt("MENU — NEW ROUND");
 }
 
 function startModeFromMenu(mode: string): void {
@@ -2183,7 +2410,7 @@ function startModeFromMenu(mode: string): void {
     b.classList.toggle("active", b.dataset.modeBtn === (mode === "quick" ? "quick" : mode === "rangelab" ? "rangelab" : "menu"));
   }
   if (mode === "studio") {
-    $("menu-overlay")?.classList.add("open");
+    setMenuOverlay(true);
     $("studio-section")!.style.display = "";
     return;
   }
@@ -2200,11 +2427,14 @@ function renderBracket(): void {
   const rounds: ("r32" | "r16" | "qtr" | "semi" | "final")[] = ["r32", "r16", "qtr", "semi", "final"];
   const titles = ["ROUND 32", "ROUND 16", "QUARTER", "SEMI", "FINAL"];
   el.innerHTML = rounds.map((rd, i) => {
-    const cells = t.results.filter((x) => x.round === rd);
-    const rows = cells.length ? cells : [{ round: rd, name: "—", score: 0, advanced: false }];
-    return `<div class="bracket-round"><div class="br-title">${titles[i]}</div>${rows.slice(0, 8).map((c) => `<div class="bracket-cell ${c.name === "YOU" ? "you" : ""} ${c.advanced ? "alive" : "done"}">${c.name} ${c.score >= 0 ? "+" : ""}${c.score}</div>`).join("")}</div>`;
+    // the player row is pinned in every round it played (audit C9)
+    const picked = bracketRows(t.results, rd, 8, PLAYER_NAME);
+    const rows = picked.length ? picked : [{ name: "—", score: 0, advanced: false, you: false }];
+    return `<div class="bracket-round"><div class="br-title">${titles[i]}</div>${rows.map((c) => `<div class="bracket-cell ${c.you ? "you" : ""} ${c.advanced ? "alive" : "done"}">${c.name} ${c.score >= 0 ? "+" : ""}${c.score}</div>`).join("")}</div>`;
   }).join("");
 }
+
+const SWATCH_GROUP_LABEL: Partial<Record<keyof GolferFit, string>> = { polo: "Polo", cap: "Cap", skin: "Skin tone", trail: "Ball trail" };
 
 function buildStudioSwatches(): void {
   const mk = (rowId: string, colors: string[], key: keyof GolferFit) => {
@@ -2219,6 +2449,7 @@ function buildStudioSwatches(): void {
       b.style.width = "30px";
       b.style.height = "30px";
       b.title = c;
+      b.setAttribute("aria-label", `${SWATCH_GROUP_LABEL[key] ?? String(key)} colour ${c}`);
       b.addEventListener("click", () => {
         (state.fit as any)[key] = c;
         row.querySelectorAll(".swatch").forEach((x) => x.classList.remove("active"));
@@ -2270,8 +2501,8 @@ function bindUi(): void {
   for (const btn of Array.from(document.querySelectorAll<HTMLButtonElement>("[data-course-menu]"))) {
     btn.addEventListener("click", () => selectCourse(btn.dataset.courseMenu as CourseId));
   }
-  $("menu-close")?.addEventListener("click", () => { closeMenu(); if (!state.round) { setMode("quick"); } else state.phase = "address"; });
-  $("menu-run")?.addEventListener("click", () => { closeMenu(); setMode(state.tour ? "tour" : "quick"); });
+  $("menu-close")?.addEventListener("click", () => { closeMenu(); resumeFromMenu(); });
+  $("menu-run")?.addEventListener("click", () => { closeMenu(); menuReturn = null; setMode(!tourFinished(state.tour) ? "tour" : "quick"); });
 
   // keys
   window.addEventListener("keydown", (ev) => {
@@ -2353,7 +2584,7 @@ function setupFxAndTouch(): void {
 
   try {
     const keyFor = (b: string): string =>
-      ({ left: "KeyA", right: "KeyD", up: "KeyW", down: "KeyS", hit: "Space", light: "Space", jump: "Space", special: "KeyE", block: "KeyQ", heavy: "KeyM" } as Record<string, string>)[b] ?? b;
+      ({ left: "KeyA", right: "KeyD", up: "KeyW", down: "KeyS", hit: "Space", light: "Space", special: "KeyE", heavy: "KeyM", pin: "KeyP", fine: "ShiftLeft" } as Record<string, string>)[b] ?? b;
     const sink = {
       press: (b: string) => { lastManualInputAt = simTime; const c = keyFor(b); pressedKeys.add(c); justPressed.add(c); },
       release: (b: string) => pressedKeys.delete(keyFor(b)),
@@ -2361,7 +2592,8 @@ function setupFxAndTouch(): void {
     };
     touchControls = mountTouchControls(sink as any, {
       preset: "dpad-4btn",
-      bindings: { "stick.left": "left", "stick.right": "right", "stick.up": "up", "stick.down": "down", left: "left", right: "right", light: "hit", heavy: "special", special: "special", jump: "hit", block: "block" },
+      // touch: light = swing, heavy = mulligan, special = next club, jump = aim at the pin, hold block = fine aim (audit C14)
+      bindings: { "stick.left": "left", "stick.right": "right", "stick.up": "up", "stick.down": "down", left: "left", right: "right", light: "hit", heavy: "heavy", special: "special", jump: "pin", block: "fine" },
       haptics: { ms: 12 }
     } as any, {
       doc: document as any,
@@ -2377,6 +2609,28 @@ function setupFxAndTouch(): void {
  *  Evidence                                                           *
  * ------------------------------------------------------------------ */
 
+/** typed catalog keys the game shows in its evidence (hoisted: the evidence is built every 500 ms, not every frame, audit C13) */
+const CATALOG_ASSETS: readonly string[] = [
+  "linksGolferAthleteMeshy",
+  "linksGolfCartMeshy",
+  "linksPinFlagMeshy",
+  "siegeGolfBall",
+  "propPineTree",
+  "propRockA",
+  "propRockB",
+  "siegeWindmillTowerMeshy",
+  "siegeStoneBridgeMeshy",
+  "skylineCrystalShardMeshy",
+  "turboAlpineVenueBackdrop",
+  "neonStreetLampProp",
+  "showcaseModernBuildingOne",
+  "showcaseModernOfficeBuilding",
+  "showcaseVoxelBuilding",
+  "auroraHabitatDomeMeshy",
+  "lunarRoverMeshy",
+  "gravityOrbitalRelayMeshy"
+];
+
 function publishEvidence(): void {
   const r = state.round;
   const evidence = {
@@ -2387,6 +2641,8 @@ function publishEvidence(): void {
     mode: state.mode,
     phase: state.phase,
     cameraMode: cam.mode,
+    cameraEye: [...cam.eye],
+    flagRotation,
     course: state.courseId,
     hole: state.hole.number,
     par: state.hole.par,
@@ -2441,38 +2697,83 @@ function publishEvidence(): void {
     eventLog: eventLog.snapshot(),
     touch: touchControls?.evidence?.() ?? null,
     audio: audio?.evidence ? { unlocked: audio.evidence.unlocked, cueCount: audio.evidence.cueCount, playedCueCount: audio.evidence.playedCueCount } : null,
-    catalogAssets: [
-      "linksGolferAthleteMeshy",
-      "linksGolfCartMeshy",
-      "linksPinFlagMeshy",
-      "siegeGolfBall",
-      "propPineTree",
-      "propRockA",
-      "propRockB",
-      "siegeWindmillTowerMeshy",
-      "siegeStoneBridgeMeshy",
-      "skylineCrystalShardMeshy",
-      "turboAlpineVenueBackdrop",
-      "neonStreetLampProp",
-      "showcaseModernBuildingOne",
-      "showcaseModernOfficeBuilding",
-      "showcaseVoxelBuilding",
-      "auroraHabitatDomeMeshy",
-      "lunarRoverMeshy",
-      "gravityOrbitalRelayMeshy"
-    ],
+    catalogAssets: CATALOG_ASSETS,
     deterministic: { terrain: "buildHoleTerrain", ball: "stepBall", seed: "lcg" }
   };
+  lastEvidence = evidence;
   publishBeacon(evidence);
 }
+
+/**
+ * ?qa=1 hook for the remote gameplay probes (tests/browser/audit-fix/aura-links-3d.spec.ts). Software GL presents
+ * a frame every several seconds, so advance() steps the game's own frame() in simulated time (the logic clock moves
+ * with it) and the next presented frame shows the state the logic reached.
+ */
+function installQaHook(): void {
+  installQaHooks("links-qa", {
+    ready: () => document.body.dataset.aura3dReady === "true",
+    state: () => { publishEvidence(); return lastEvidence; },
+    app: () => auraApp as any,
+    extras: {
+    advance(seconds: number): Record<string, unknown> | null {
+      const step = 1 / 30;
+      for (let t = 0; t < seconds; t += step) {
+        qaClockMs += step * 1000;
+        frame(step);
+        justPressed.clear();
+      }
+      publishEvidence();
+      return lastEvidence;
+    },
+    evidence(): Record<string, unknown> | null {
+      publishEvidence();
+      return lastEvidence;
+    },
+    /** while held, only advance() moves game logic; the engine keeps presenting frames (deterministic screenshots) */
+    hold(on: boolean) {
+      qaHold = on;
+      return qaHold;
+    },
+    /** world positions of the people on the tee and by the green (framing checks) */
+    figures() {
+      const names = ["golfer-body", "caddy-body", "golfer-bag", "golfer-cart", ...Array.from({ length: 6 }, (_, i) => `gallery-fan-${i}`)];
+      const out: Record<string, unknown> = { ball: state.round?.ballPos ?? null, eye: cam.eye, target: cam.target };
+      for (const n of names) {
+        const h = tryReq(n);
+        out[n] = h ? { position: h.position ?? null, visible: h.visible ?? null } : null;
+      }
+      return out;
+    },
+    /** park the camera above pond i of the current hole (C6 check); returns the hazard and drawn sizes */
+    framePond(i: number) {
+      const t = state.terrain!;
+      const w = state.hole.layout.water[i];
+      if (!w) return null;
+      const g = pondGeometry(t, w);
+      state.phase = "menu";
+      $("menu-overlay")?.classList.remove("open");
+      cam.mode = "card";
+      qaPondView = { x: w.center[0], z: w.center[1], y: g.surfaceY, r: w.radius };
+      return { center: w.center, hazardRadius: w.radius, drawnRadius: g.pondDiameter / 2, rimRadius: g.rimDiameter / 2, surfaceY: g.surfaceY };
+    }
+    }
+  });
+}
+let qaPondView: { x: number; z: number; y: number; r: number } | null = null;
 
 /* ------------------------------------------------------------------ *
  *  Boot                                                               *
  * ------------------------------------------------------------------ */
 
+/** boot, RAF and fetch tracing run only with ?diag=1 or ?qa=1 (audit C18) */
+const DIAG = bootUrlParams.get("diag") === "1" || bootUrlParams.get("qa") === "1";
+function diagLog(...args: unknown[]): void {
+  if (DIAG) console.log(...args);
+}
+
 function bootStage(name: string): void {
   (window as any).__BOOT_STAGE__ = name;
-  console.log("[links] boot:", name);
+  diagLog("[links] boot:", name);
 }
 
 function boot(): void {
@@ -2481,7 +2782,7 @@ function boot(): void {
   // Trace every fetch — the SPA fallback serves index.html for missing files,
   // which surfaces as opaque JSON parse errors inside the renderer mount.
   const origFetch = window.fetch.bind(window);
-  window.fetch = (async (input: any, init?: any) => {
+  if (DIAG) window.fetch = (async (input: any, init?: any) => {
     const url = typeof input === "string" ? input : String(input?.url ?? input);
     try {
       const res = await origFetch(input, init);
@@ -2525,6 +2826,7 @@ function boot(): void {
   buildStudioSwatches();
   bootStage("resolve-handles");
   resolveHoleHandles();
+  syncCourseButtons();
 
   pushEvent("system", "aura links 3d online", "success");
 
@@ -2541,16 +2843,25 @@ function boot(): void {
     if (Number.isFinite(holeParam) && holeParam >= 1 && holeParam <= 9) startHole(holeParam - 1);
   }
   if (params.get("menu") !== "1") closeMenu();
+  if (params.get("qa") === "1") installQaHook();
 
-  console.log("[links] visibility:", document.visibilityState, "hidden:", document.hidden);
-  requestAnimationFrame(() => console.log("[links] raf tick — RAF is live"));
-  window.setTimeout(() => console.log("[links] raf after 2s:", (window as any).__rafFired ?? "none"), 2000);
-  requestAnimationFrame(() => { (window as any).__rafFired = true; });
+  if (DIAG) {
+    diagLog("[links] visibility:", document.visibilityState, "hidden:", document.hidden);
+    requestAnimationFrame(() => diagLog("[links] raf tick — RAF is live"));
+    window.setTimeout(() => diagLog("[links] raf after 2s:", (window as any).__rafFired ?? "none"), 2000);
+    requestAnimationFrame(() => { (window as any).__rafFired = true; });
+  }
   // Evidence pump: publishes state even when RAF is throttled (headless capture)
   window.setInterval(() => publishEvidence(), 500);
   (auraApp as any).onFrame(({ dt }: { dt: number }) => {
-    if (!appReady) return;
-    frame(clamp(dt, 0.001, 0.05));
+    if (!appReady || qaHold) return;
+    inEngineFrame = true;
+    try {
+      frame(clamp(dt, 0.001, 0.05));
+    } finally {
+      inEngineFrame = false;
+    }
+    if (pendingHoleScene) queueMicrotask(flushPendingHoleScene);
   });
   void (auraApp as any).ready?.()?.then(() => {
     appReady = true;
@@ -2559,7 +2870,7 @@ function boot(): void {
     bootStage("mounted");
     const rr = (window as any).__AURA3D_ROUTE_READY__;
     const diag = (auraApp as any).diagnostics?.() ?? rr?.diagnostics;
-    console.log("[links] route-state:", rr?.status ?? "?",
+    diagLog("[links] route-state:", rr?.status ?? "?",
       "backend:", (auraApp as any).backend ?? "?",
       "drawCalls:", diag?.drawCalls ?? "?",
       "errors:", JSON.stringify(diag?.errors ?? []),
@@ -2583,7 +2894,7 @@ function boot(): void {
       (auraApp as any).pause?.();
       for (let i = 0; i < n; i += 1) (auraApp as any).step?.(1 / 60);
       publishEvidence();
-      console.log(`[links] still: stepped ${n} frames, framesRendered=${framesRendered}`);
+      diagLog(`[links] still: stepped ${n} frames, framesRendered=${framesRendered}`);
     })();
   }
 }

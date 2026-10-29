@@ -1,20 +1,21 @@
-# Aura Links 3D: final screenshots (2026-10-25)
+# Aura Links 3D: final screenshots (retaken 2026-10-29)
 
-- **Build:** `origin/game-rework` head `8da9c05d3` (play-fix, sports UI fix and shared quick bar included). Hoops and Links 390x844 and card frames, and the Links cards, come from the same head plus commit `4d9546a03` (venue chip hidden on phones). Desktop frames of Hoops and Links predate that CSS change.
-- **Runner:** remote ACR task (`tools/remote-acr/run.sh`), headless Chromium on **software WebGL2 (SwiftShader), not real-GPU frames**. RUN_IDs `fina-*`. A frame costs about 3 s there, so game time runs slow and "late" states are far fewer than on a real GPU.
-- **Specs:** `tests/browser/shotsa-<slug>.spec.ts` (+ `finam-*.spec.ts` for the mobile and card re-captures); decoder `tools/shots/decode-frames.mjs`. `status.txt` holds the capture log lines.
-- **Layout:** `1280x720/`, `390x844/`, `card/` (720x450 at 1x and 2x).
-- **Reviewed:** I opened the frames listed under "Seen"; the rest were not opened.
-- **Results screens were not reached in any game.**
+- **Build:** branch `audit-fix/g10` at `f03ec0bd1` (4.5.0 engine plus the audit fixes: player-driven swing, holes that finish, closing scorecard, aim camera and tee-marker changes). The 2026-10-25 set this replaces came from `origin/game-rework` `8da9c05d3` on engine 4.0.2.
+- **Runner:** remote ACR task (`tools/remote-acr/run.sh`), headless Chromium on **software WebGL2 (SwiftShader), not real-GPU frames**.
+- **Spec:** `tests/browser/audit-fix/aura-links-3d.spec.ts`, tag `@shots` (screens and card) and `@round` (results). RUN_IDs `g10m-links-shots-*` (screens, card) and `g10final-round` (results). Frames are logged as base64 JPEG chunks and decoded locally, since the run has no artifact egress.
+- **How the sequence is driven:** `?course=stAuroras&qa=1`. Game logic is held (`__AURA_LINKS_QA__.hold(true)`) and stepped with `advance()`, so each frame shows the state it is named for; the three swing presses are real Space key presses.
+- **Layout:** same file names and sizes as before. `1280x720/`, `390x844/`, `card/` (720x450 at 1x and 2x). New: `04-results.jpg` in both sizes, the closing scorecard after a nine-hole `?autoplay=1` round. `card/flat-lighting-card-2x.jpg` is the old frame and was not retaken.
 
-## Seen
-- Golfer at address is upright with flexed knees (not the old whole-body slant), club in hand, ball on the tee (`03-action-01-address.jpg`); a second golfer stands by a plain green bag.
-- **Stroke counter verified from state, not only from pixels:** `strokes` is 0 before the swing, 1 right after the first swing (HUD `h-strokes` 1), and still 1 eleven seconds later (`status.txt`: `@@FINA links-state ...`, `@@FINA links-hud-strokes 1`). The old bug reached about 19.
-- The venue chip no longer covers the scoreboard on phones (`390x844/02-early.jpg`). Cards 1x and 2x render (the first 1x card was black and was re-captured).
-- Shared quick bar one row; no old names; 0 console errors.
+## Frames
 
-## Problems still visible
-- **Medium:** under the sky environment the golfer and the cart show a glossy blue-silver sheen with speckles. In flat lighting (captured before the environment map loaded, `card/flat-lighting-card-2x.jpg`) the golfer is clean and matte, so this comes from environment reflections on the mesh normals, not from the texture. The model material is already non-metallic (roughness 0.74); raising roughness or fixing normals would need a re-hashed asset.
-- **Medium:** on phones the golfer is cropped at the left edge (camera framing).
-- **Low:** the second golfer's club points horizontally in the swing frames.
-- Hole-out and the scorecard were not reached.
+- `01-title`: the menu (`?menu=1`).
+- `02-early`, `03-action-01-address`: hole 1 tee, aim camera, ball in the lower third beside the golfer.
+- `03-action-02-power`, `03-action-03-accuracy`: the meter after the first and second press (power about 52%).
+- `03-action-04-swing-0` to `-09-swing-5`: the swing and the ball flight on the chase camera.
+- `03-action-10-route-...-state-p`: the next address after the shot (strokes 1 in the HUD).
+- `04-results`: closing scorecard. Remote state: `ROUND COMPLETE`, par 36, 19 strokes, -17 (autopilot demo, not a human round).
+
+## Known limits
+
+- Software GL frames; colours and shadow detail on a GPU differ.
+- The golfer's glossy blue-silver sheen under the sky environment (noted in the 2026-10-25 set) is unchanged; it needs a re-hashed asset.

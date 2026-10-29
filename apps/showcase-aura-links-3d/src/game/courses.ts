@@ -1130,7 +1130,7 @@ export function buildHoleTerrain(course: CourseSpec, hole: HoleSpec): HoleTerrai
 
   const teePadH = elevAt(0) + 0.15; // flat pad height for the tee box
 
-  const height = (x: number, z: number): number => {
+  const surface = (x: number, z: number): number => {
     const p = project(x, z);
     const cupD = Math.hypot(x - cupX, z - cupZ);
     let h = elevAt(p.t);
@@ -1152,14 +1152,26 @@ export function buildHoleTerrain(course: CourseSpec, hole: HoleSpec): HoleTerrai
       h += ((layout.greenBreak[0] * (x - cupX) + layout.greenBreak[1] * (z - cupZ)) / greenR) * m;
     }
 
-    // Bunker bowls and pond depressions
+    // Bunker bowls
     for (const b of layout.bunkers) {
       const d = Math.hypot(x - b.center[0], z - b.center[1]);
       if (d < b.radius) h -= 0.3 * (1 - smoothstep(b.radius * 0.45, b.radius, d));
     }
-    for (const w of layout.water) {
+    return h;
+  };
+
+  // Ponds sit in a level basin: the ground inside 1.25x the hazard radius
+  // blends to one level (the turf height at the pond centre), so the flat
+  // water surface meets the bank at the hazard radius on every side.
+  const pondLevels = layout.water.map((w) => surface(w.center[0], w.center[1]));
+
+  const height = (x: number, z: number): number => {
+    let h = surface(x, z);
+    for (let i = 0; i < layout.water.length; i++) {
+      const w = layout.water[i]!;
       const d = Math.hypot(x - w.center[0], z - w.center[1]);
-      if (d < w.radius) h -= 0.7 * (1 - smoothstep(w.radius * 0.55, w.radius, d));
+      if (d < w.radius * POND_BASIN) h = lerp(pondLevels[i]!, h, smoothstep(w.radius, w.radius * POND_BASIN, d));
+      if (d < w.radius) h -= POND_DEPTH * (1 - smoothstep(w.radius * 0.55, w.radius, d));
     }
 
     // Tee box: flatten everything into a level pad
@@ -1224,4 +1236,29 @@ export function buildHoleTerrain(course: CourseSpec, hole: HoleSpec): HoleTerrai
   };
 
   return { height, zone, slope, cupDistance, cup, tee, lineYaw, bounds, grid };
+}
+
+/** ponds: depth of the bowl and the radius multiple of the level basin around it */
+export const POND_DEPTH = 0.7;
+export const POND_BASIN = 1.25;
+/** how far the drawn water surface sits below the bank level (m) */
+export const POND_SURFACE_DROP = 0.03;
+
+/**
+ * Drawn pond for a water hazard. Cylinder `size` is a diameter, so the water
+ * disc is 0.98 of the hazard diameter and the dark rim the full diameter; the
+ * surface sits just under the level bank, so the visible water edge lands at
+ * about 0.95 of the hazard radius on every side.
+ */
+export function pondGeometry(
+  terrain: HoleTerrain,
+  w: { readonly center: Vec2; readonly radius: number }
+): { surfaceY: number; pondDiameter: number; rimDiameter: number } {
+  let sum = 0;
+  const n = 16;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    sum += terrain.height(w.center[0] + Math.cos(a) * w.radius, w.center[1] + Math.sin(a) * w.radius);
+  }
+  return { surfaceY: sum / n - POND_SURFACE_DROP, pondDiameter: w.radius * 2 * 0.98, rimDiameter: w.radius * 2 };
 }

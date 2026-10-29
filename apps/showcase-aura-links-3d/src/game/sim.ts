@@ -38,8 +38,6 @@ import type {
 const TAU = Math.PI * 2;
 const DEG = Math.PI / 180;
 
-/** green-surface deceleration used for putt launch sizing (m/s²) */
-const GREEN_FRICTION = 1.9;
 /** metres beyond terrain.bounds that counts as out of bounds */
 const OOB_MARGIN = 15;
 /** max simulated seconds per stepBall call (frame hitch guard) */
@@ -70,6 +68,9 @@ const FRICTION: Record<LieKind, number> = {
   water: 0,
   oob: 4,
 };
+
+/** green-surface deceleration used for putt launch sizing (m/s²): the same value stepRoll applies, so a putt rolls the distance it was sized for */
+const GREEN_FRICTION = FRICTION.green;
 
 /** contact-quality multiplier on effective power by lie */
 const LIE_PENALTY: Record<LieKind, number> = {
@@ -110,16 +111,19 @@ export const CLUB_ORDER: readonly ClubId[] = ["driver", "wood", "hybrid", "iron"
  *  Phases used: idle → power → accuracy → committed.
  *  - power:    meter sweeps 0→1 over ~1.15s then HOLDS at 1 (no punish).
  *  - accuracy: meter IS the needle value, sweeping +1 → -1 over ~0.9s.
- *  - press 3 locks v = needle: accuracy = |v| (0 = perfect),
- *    spin = sign(v)·max(0,(|v|-0.12)/0.88) — dead-centre strip pure,
+ *  - press 3 locks v = needle. Inside the dead-centre strip |v| <= deadZone
+ *    the shot is pure: accuracy 0 and spin 0. Outside it,
+ *    accuracy = (|v|-deadZone)/(1-deadZone) and spin = sign(v)·accuracy:
  *    off-centre draws (-) / fades (+). Needle reaching -1 auto-commits
  *    (snap hook).
+ *  The dead zone is the difficulty's pure strip (wide for amateur, narrow
+ *  for legend); the meter never presses itself.
  */
 
 const POWER_SWEEP_S = 1.15;
 const ACC_SWEEP_S = 0.9;
-/** dead-centre strip of the accuracy needle that produces zero side spin */
-const ACC_DEAD_ZONE = 0.12;
+/** default dead-centre strip of the accuracy needle that produces a pure, zero-spin strike */
+export const ACC_DEAD_ZONE = 0.12;
 
 const idleSwing = (): SwingState => ({
   phase: "idle",
@@ -130,22 +134,32 @@ const idleSwing = (): SwingState => ({
   sweepDir: 1,
 });
 
-export function createSwingMeter(): {
+/** needle result → (accuracy, spin) for a given pure strip half-width */
+export function needleResult(v: number, deadZone: number = ACC_DEAD_ZONE): { accuracy: number; spin: number } {
+  const dz = Math.min(0.9, Math.max(0, deadZone));
+  const a = Math.min(1, Math.abs(v));
+  const off = a <= dz ? 0 : (a - dz) / (1 - dz);
+  return { accuracy: off, spin: off === 0 ? 0 : Math.sign(v) * off };
+}
+
+export function createSwingMeter(options: { deadZone?: number } = {}): {
   state(): SwingState;
   press(): SwingState;
   tick(dt: number): SwingState;
   reset(): void;
+  setDeadZone(deadZone: number): void;
+  deadZone(): number;
 } {
   let s: SwingState = idleSwing();
+  let deadZone = options.deadZone ?? ACC_DEAD_ZONE;
 
   const commit = (v: number): SwingState => {
-    const a = Math.abs(v);
-    const spin = Math.sign(v) * Math.max(0, (a - ACC_DEAD_ZONE) / (1 - ACC_DEAD_ZONE));
+    const { accuracy, spin } = needleResult(v, deadZone);
     s = {
       phase: "committed",
       meter: v,
       power: s.power ?? 1,
-      accuracy: a,
+      accuracy,
       spin,
       sweepDir: s.sweepDir,
     };
@@ -184,6 +198,12 @@ export function createSwingMeter(): {
     },
     reset(): void {
       s = idleSwing();
+    },
+    setDeadZone(dz: number): void {
+      deadZone = dz;
+    },
+    deadZone(): number {
+      return deadZone;
     },
   };
 }
@@ -334,8 +354,9 @@ function stepFlight(b: BallState, env: ShotEnv, h: number, events: BallEvent[]):
   const hs = Math.hypot(vx, vz);
   if (hs > 1e-6) {
     const aLat = b.curve * 2.2 * rho;
+    const vx0 = vx;
     vx += aLat * (vz / hs) * h;
-    vz += aLat * (-vx / hs) * h;
+    vz += aLat * (-vx0 / hs) * h;
   }
 
   // drag — horizontal bleeds harder than vertical
@@ -462,9 +483,11 @@ function stepRoll(b: BallState, env: ShotEnv, h: number, events: BallEvent[]): B
   }
 
   // integrate along the ground
+  const ox = px;
+  const oz = pz;
   px += vx * h;
   pz += vz * h;
-  const ground = env.terrain.height(px, pz);
+  let ground = env.terrain.height(px, pz);
   const zone2 = env.terrain.zone(px, pz);
 
   if (outOfBounds(env, px, pz) || zone2 === "oob") {
@@ -479,32 +502,38 @@ function stepRoll(b: BallState, env: ShotEnv, h: number, events: BallEvent[]): B
   }
 
   // --- cup logic ------------------------------------------------------
+  // Swept test: the closest approach of this step's segment to the cup, so
+  // the outcome does not depend on the frame rate.
   const cup = env.terrain.cup;
-  const cd = env.terrain.cupDistance(px, pz);
   let speed = Math.hypot(vx, vz);
+  const pass = closestApproach(ox, oz, px, pz, cup[0], cup[2]);
 
-  if (cd < 0.1 && speed < 2.6) {
+  if (pass.dist < CUP_CAPTURE_R && speed < CUP_CAPTURE_SPEED) {
     // capture — drop it in
     events.push({ kind: "holed", pos: cup });
     return nextBall(b, { pos: cup, vel: v3(0, 0, 0), status: "holed" });
   }
-  if (cd < 0.05 && speed >= 2.6) {
-    // lip-out — too hot: deflect past the cup and keep rolling
-    const ux = (cup[0] - px) / cd;
-    const uz = (cup[2] - pz) / cd;
-    let hx = vx / speed - ux * 1.4;
-    let hz = vz / speed - uz * 1.4;
-    const hl = Math.hypot(hx, hz);
-    if (hl > 1e-4) {
-      vx = (hx / hl) * speed;
-      vz = (hz / hl) * speed;
+  if (pass.dist < CUP_LIP_R && speed >= CUP_CAPTURE_SPEED && pass.inSegment) {
+    // lip-out — too hot: the ball catches the lip and is deflected sideways,
+    // never back toward the player. Dead centre deflects most and loses most.
+    const out = lipOutVelocity(vx, vz, pass.side, pass.dist / CUP_LIP_R);
+    vx = out[0];
+    vz = out[1];
+    // continue from the closest point with the time left in this step
+    const rest = (1 - pass.u) * h;
+    px = pass.x + vx * rest;
+    pz = pass.z + vz * rest;
+    ground = env.terrain.height(px, pz);
+    events.push({ kind: "lip", pos: v3(pass.x, cup[1], pass.z) });
+  } else {
+    const cd = env.terrain.cupDistance(px, pz);
+    if (cd < 0.35 && cd > 1e-6 && speed < 4.5 && zone2 === "green") {
+      // cup rattle — gentle pull toward the hole on close slow passes
+      const ux = (cup[0] - px) / cd;
+      const uz = (cup[2] - pz) / cd;
+      vx += ux * 3.0 * h;
+      vz += uz * 3.0 * h;
     }
-  } else if (cd < 0.35 && speed < 4.5 && zone2 === "green") {
-    // cup rattle — gentle pull toward the hole on close slow passes
-    const ux = (cup[0] - px) / cd;
-    const uz = (cup[2] - pz) / cd;
-    vx += ux * 3.0 * h;
-    vz += uz * 3.0 * h;
   }
 
   speed = Math.hypot(vx, vz);
@@ -517,6 +546,53 @@ function stepRoll(b: BallState, env: ShotEnv, h: number, events: BallEvent[]): B
   }
 
   return nextBall(b, { pos: v3(px, ground, pz), vel: v3(vx, 0, vz), status: "roll" });
+}
+
+/** cup capture radius (m): ball centre inside this at low speed drops */
+export const CUP_CAPTURE_R = 0.1;
+/** above this ground speed (m/s) a ball over the cup does not drop */
+export const CUP_CAPTURE_SPEED = 2.6;
+/** a fast ball whose path passes this close to the cup centre catches the lip */
+export const CUP_LIP_R = 0.05;
+const LIP_MIN_DEG = 25;
+const LIP_MAX_DEG = 60;
+
+/** closest approach of segment (ax,az)→(bx,bz) to point (cx,cz) */
+export function closestApproach(
+  ax: number, az: number, bx: number, bz: number, cx: number, cz: number
+): { dist: number; u: number; x: number; z: number; side: number; inSegment: boolean } {
+  const dx = bx - ax;
+  const dz = bz - az;
+  const l2 = dx * dx + dz * dz;
+  const raw = l2 > 1e-12 ? ((cx - ax) * dx + (cz - az) * dz) / l2 : 1;
+  const u = Math.max(0, Math.min(1, raw));
+  const x = ax + dx * u;
+  const z = az + dz * u;
+  // side: which side of the travel line the cup centre sits (+1 right, -1 left)
+  // dot of the cup vector with the right-of-travel normal (dz, -dx)
+  const right = (cx - ax) * dz - (cz - az) * dx;
+  return { dist: Math.hypot(cx - x, cz - z), u, x, z, side: right >= 0 ? 1 : -1, inSegment: raw > 0 && raw <= 1 };
+}
+
+/**
+ * Lip-out: rotate the travel direction away from the cup by 25° (grazing the
+ * lip) to 60° (dead centre) and keep 80% (grazing) to 60% (dead centre) of the
+ * speed. `offset` is the miss distance as a fraction of CUP_LIP_R (0..1).
+ * `cupSide` is the side of the travel line the cup is on; the ball turns the
+ * other way. Never reverses the ball.
+ */
+export function lipOutVelocity(vx: number, vz: number, cupSide: number, offset: number): [number, number] {
+  const o = Math.max(0, Math.min(1, offset));
+  const deg = LIP_MAX_DEG - (LIP_MAX_DEG - LIP_MIN_DEG) * o;
+  const keep = 0.6 + 0.2 * o;
+  // positive angle turns toward +right of travel: right-of-heading (hx,hz) is (hz,-hx)
+  const turn = -cupSide * deg * DEG; // away from the cup
+  const c = Math.cos(turn);
+  const s = Math.sin(turn);
+  // rotate heading by `turn` toward its right-hand side
+  const nx = vx * c + vz * s;
+  const nz = vz * c - vx * s;
+  return [nx * keep, nz * keep];
 }
 
 /* ------------------------------------------------------------------ *
@@ -588,7 +664,8 @@ export function makeRng(seed: number): () => number {
   let s = seed >>> 0;
   return () => {
     s = (s * 1664525 + 1013904223) >>> 0;
-    return s / 0xffffffff;
+    // divide by 2^32 so the result is in [0, 1): a shuffle index floor(rng()*n) never reaches n
+    return s / 4294967296;
   };
 }
 
@@ -623,7 +700,7 @@ export function aiHoleScore(par: number, skill: number, rng: () => number): numb
 const TOUR_PARS: readonly number[] = [4, 3, 4, 5, 4, 3, 4, 5, 4];
 const TOUR_PAR_TOTAL = TOUR_PARS.reduce((a, b) => a + b, 0); // 36
 const ROUND_ORDER: readonly TourRound[] = ["r32", "r16", "qtr", "semi", "final", "champion"];
-const PLAYER_NAME = "You";
+export const PLAYER_NAME = "You";
 
 const RIVAL_NAMES: readonly string[] = [
   "Alba MacDowell", "Sten Olafsson", "Kobe Tanigawa", "Viktor Halvorsen",
