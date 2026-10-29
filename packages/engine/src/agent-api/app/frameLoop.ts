@@ -419,7 +419,7 @@ function pushWarnings(state: MutableDiagnostics, warnings: readonly string[]): v
 export interface FrameRateMeter {
   /** Record one presented frame at `time` (ms, the rAF timestamp). */
   sample(time: number): void;
-  /** Frames per second over the window, to 0.1; 0 until two frames were sampled. */
+  /** Frames per second over the window, to 0.01; 0 until two frames were sampled. */
   fps(): number;
 }
 
@@ -446,7 +446,8 @@ export function createFrameRateMeter(windowMs = 1000): FrameRateMeter {
     fps() {
       if (times.length < 2) return 0;
       const span = times[times.length - 1]! - times[0]!;
-      return span > 0 ? Math.round(((times.length - 1) * 1000 / span) * 10) / 10 : 0;
+      // Two decimals, so a software-GL loop at one frame every 20 s reads 0.05, not 0.
+      return span > 0 ? Math.round(((times.length - 1) * 1000 / span) * 100) / 100 : 0;
     }
   };
 }

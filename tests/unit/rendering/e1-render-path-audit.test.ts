@@ -224,7 +224,9 @@ describe("ENG-FPS: windowed frame rate", () => {
     await frames(meter, [1000, 3500]);
     expect(meter.fps()).toBe(0.4);
     await frames(meter, [4676]);
-    expect(meter.fps()).toBe(0.9);
+    expect(meter.fps()).toBe(0.85);
+    await frames(meter, [24676]);
+    expect(meter.fps()).toBe(0.05);
   });
 
   it("smooths one long frame instead of reporting it alone", async () => {
