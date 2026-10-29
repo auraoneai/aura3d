@@ -643,16 +643,23 @@ export function quatToEuler(rotation: readonly [number, number, number, number])
 }
 
 /**
- * Collider for a capsule (or cylinder, approximated by a capsule) primitive whose
- * physics spec names no dimensions. The primitive's `size` is [diameter, total height,
- * diameter], so the collider must span exactly that: radius is half the diameter and the
- * cylindrical half-height is the total half-height minus one cap radius. A short, wide
- * body clamps its radius to half its height and degenerates to a sphere.
+ * Collider for a capsule or cylinder primitive whose physics spec names no dimensions. The
+ * primitive's `size` is [diameter, total height, diameter]. When the body is at least as tall
+ * as it is wide, a capsule spanning exactly that height fits it (radius half the diameter,
+ * cylindrical half-height the total half-height minus one cap radius). A short, wide body
+ * (a disc, a coin, a squat capsule) would degenerate to a sphere as small as its height, far
+ * inside the visible shape, so it gets a box with the visible radius and height (anim-phys-04).
  */
 function derivedCapsule(size: AuraVec3, scale: AuraVec3): PhysicsShape {
   const halfTotal = Math.max(0.02, size[1] * scale[1] * 0.5);
-  const radius = Math.min(Math.max(size[0] * scale[0], size[2] * scale[2]) * 0.5, halfTotal);
-  return PhysicsShapeFactory.capsule(Math.max(0.01, radius), Math.max(0, halfTotal - radius));
+  const halfX = Math.max(0.01, size[0] * scale[0] * 0.5);
+  const halfZ = Math.max(0.01, size[2] * scale[2] * 0.5);
+  const radius = Math.max(halfX, halfZ);
+  if (radius > halfTotal + 1e-6) return PhysicsShapeFactory.box(halfX, halfTotal, halfZ);
+  const halfHeight = halfTotal - radius;
+  // As tall as it is wide: the capsule has no cylindrical part (capsule() rejects 0).
+  if (halfHeight <= 1e-6) return PhysicsShapeFactory.sphere(radius);
+  return PhysicsShapeFactory.capsule(radius, halfHeight);
 }
 
 export function resolveNodePhysicsShape(node: AuraModelNode | AuraPrimitiveNode, spec: AuraNodePhysicsSpec): PhysicsShape {
