@@ -214,6 +214,31 @@ test.describe("g20 ninja-runner-port", () => {
     log(`GL_ERRORS action-shadow ${JSON.stringify(errors.slice(0, 8))}`);
   });
 
+  // Saved preferences across a reload (the long behaviour test runs out of time before this on software GL): mute and best
+  // score come back, and a page with saved values loads without errors.
+  test("g20-prefs-reload", async ({ browser }) => {
+    const errors: string[] = [];
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 1 });
+    const page = await ctx.newPage();
+    page.on("pageerror", (e) => errors.push(`pageerror ${e.message.slice(0, 300)}`));
+    page.on("console", (m) => { if (m.type() === "error") errors.push(`console ${m.text().slice(0, 200)}`); });
+    const check = (name: string, ok: boolean, detail: unknown): void => { log(`G20_CHECK ${JSON.stringify({ name, ok, detail })}`); expect.soft(ok, `${name}: ${JSON.stringify(detail)}`).toBe(true); };
+    await page.goto(`${server.origin}${APP}?quality=low&manual=1`, { waitUntil: "domcontentloaded" });
+    await page.waitForFunction((hook) => (window as unknown as Record<string, any>)[hook]?.ready?.() === true, HOOK, { timeout: 900_000, polling: 1000 });
+    await page.evaluate(() => { (window as unknown as { requestAnimationFrame: () => number }).requestAnimationFrame = () => 0; });
+    await page.click("#start");
+    await page.evaluate((hook) => { const h = (window as unknown as Record<string, any>)[hook]; h.begin(); h.setAutopilot(true); h.advanceTo(1e9, [], 60000); }, HOOK);
+    await page.click("#mute");
+    const saved = await page.evaluate(() => ({ muted: localStorage.getItem("shadowstep-gauntlet:muted"), best: localStorage.getItem("shadowstep-gauntlet:best:17") }));
+    check("a finished run and a mute click are saved", saved.muted === "1" && !!saved.best, saved);
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.waitForFunction((hook) => (window as unknown as Record<string, any>)[hook]?.ready?.() === true, HOOK, { timeout: 900_000, polling: 1000 });
+    const reloaded = await page.evaluate(() => ({ mute: document.getElementById("mute")!.textContent, best: document.getElementById("best")?.textContent ?? null }));
+    check("mute and best score survive a reload", /off/i.test(reloaded.mute ?? "") && /Best:/.test(reloaded.best ?? ""), reloaded);
+    check("no page errors", errors.filter((e) => !/favicon|Failed to load resource/i.test(e)).length === 0, errors.slice(0, 6));
+    await ctx.close();
+  });
+
   // Index card: the run state at the 1440x900 card viewport (screens/final/card@2x.jpg; card.jpg is its half-size copy).
   test("g20-card", async ({ browser }) => {
     const errors: string[] = [];
