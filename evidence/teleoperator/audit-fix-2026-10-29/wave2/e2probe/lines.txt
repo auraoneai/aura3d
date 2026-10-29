@@ -1,0 +1,3 @@
+GL_NAV weather /apps/showcase-teleoperator/
+GL_NOTE weather ready after 82534 ms
+GL_DONE weather
