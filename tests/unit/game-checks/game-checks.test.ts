@@ -314,6 +314,15 @@ describe("game-checks", () => {
     expect(run(fixture({ "apps/showcase-demo/src/core.ts": noAmbient }), ["lighting"])).toEqual([]);
   });
 
+  it("shared-catalog: warns when a game imports the repository-wide asset catalogue (RH-06)", () => {
+    const bad = fixture({ "apps/showcase-demo/src/main.ts": 'import { assets } from "../../../src/aura-assets";\nmodel(assets.ball);\n' });
+    const f = run(bad, ["shared-catalog"]);
+    expect(f).toHaveLength(1);
+    expect(f[0]).toMatchObject({ severity: "warn", line: 1 });
+    const ok = fixture({ "apps/showcase-demo/src/main.ts": 'import { assets } from "./aura-assets.route";\nmodel(assets.ball);\n' });
+    expect(run(ok, ["shared-catalog"])).toEqual([]);
+  });
+
   it("rejects an unknown game slug", () => {
     const root = fixture({ "apps/showcase-demo/index.html": "<p>x</p>" });
     expect(() => runChecks({ root, slugs: ["nope"], global: false, env: {} })).toThrow(/unknown game/);

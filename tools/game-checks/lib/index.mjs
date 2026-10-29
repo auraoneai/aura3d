@@ -620,6 +620,25 @@ function checkLighting({ game, src }) {
   return dedupe(out);
 }
 
+/**
+ * Root typed-asset catalogue (audit RH-06): `src/aura-assets.ts` lists every admitted asset in the repo (2.6 MB of JS live,
+ * 522 of its URLs not deployed). A game that imports it ships the whole catalogue. Generate the route's own catalogue
+ * (`aura3d assets typegen --route apps/<app>`, writes `src/aura-assets.route.ts`) and import that instead.
+ */
+function checkSharedCatalog({ game, src }) {
+  const out = [];
+  for (const f of src.files) {
+    if (!CODE_KIND.test(f.kind)) continue;
+    const lines = f.text.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      if (/from\s+["'](?:\.\.\/)+src\/aura-assets(?:\.ts)?["']|import\(\s*["'](?:\.\.\/)+src\/aura-assets(?:\.ts)?["']\s*\)/.test(lines[i]) && !okMarker(f, i + 1, "shared-catalog")) {
+        out.push(finding("shared-catalog", "warn", game, f.rel, i + 1, "imports the repository-wide asset catalogue (src/aura-assets.ts, 2.6 MB of JS): run `aura3d assets typegen --route apps/<app>` and import ./aura-assets.route"));
+      }
+    }
+  }
+  return out;
+}
+
 function dedupe(list) {
   const seen = new Set();
   return list.filter((f) => { const k = `${f.check}|${f.game}|${f.file}|${f.line}|${f.message}`; if (seen.has(k)) return false; seen.add(k); return true; });
@@ -642,7 +661,8 @@ export const GAME_CHECKS = {
   fonts: checkFonts,
   "screens-tracked": checkScreensTracked,
   "touch-input": checkTouchInput,
-  lighting: checkLighting
+  lighting: checkLighting,
+  "shared-catalog": checkSharedCatalog
 };
 export const GLOBAL_CHECKS = { vercelignore: checkVercelignore, counts: checkCounts, "meshy-cap": checkMeshyCap, skin: checkSkin };
 
