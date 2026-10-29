@@ -44,6 +44,7 @@ npx -y @aura3d/cli@4.5.0 check-deploy --dist dist --no-assets --browser --route 
 ## 3. Hosting requirements
 
 - **Serve `dist/` at an origin root** (for example `https://<private-preview-host>/`). The engine requests the look HDRIs at the absolute path `/hdri/` and `fonts/local.css` names its font files under `/fonts/`; everything else is relative. Under a sub-path the HDRIs fall back to the engine's procedural studio light and the text falls back to the next font in the stack.
+- **Neutral names.** No child's name in the host name, path, bucket prefix or alias: use `wonder-world` (for example `wonder-world/<commit-sha>/`). The source folder name is not part of any served URL.
 - **Same origin only.** The app fetches nothing from another origin; keep it that way (no CDN rewrite of asset URLs to another host unless that host serves the whole `dist/`).
 - **HTTPS**, and these content types: `.glb` `model/gltf-binary`, `.mp3` `audio/mpeg`, `.hdr` `application/octet-stream`, `.woff2` `font/woff2`, `.js` `text/javascript`, `.css` `text/css`.
 - **No SPA fallback is needed** (one `index.html`); a missing file should answer 404, as check-deploy's own server does.

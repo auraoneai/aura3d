@@ -167,7 +167,7 @@ These are the **other fourteen** entries in the canonical twenty of `05`; the P1
 | J06 | `tests/unit/content/letters-and-counts.test.ts` | [ ] Correct phoneme/name mapping, one-to-one counted visible items |
 | J07 | `tests/unit/privacy/no-child-data.test.ts` | [ ] No PII in logs/telemetry/prod bundles, raw mic handling absent P1 |
 | J08 | repo root `tests/browser/wonder-world-first-frame.spec.ts` | [ ] Non-black render on remote WebGL2, expected cast/object and screenshot |
-| J09 | repo root `tests/browser/wonder-world-episode-playback.spec.ts` | [ ] All 6 P1 watch modes and three interactive activities finish (then every one of the 20 episodes and 12 activities, owner decision 2026-10-29) |
+| J09 | repo root `tests/browser/wonder-world-playback-episodes.spec.ts` and `wonder-world-playback-activities.spec.ts` (2026-10-29: one spec per story kind, replacing `wonder-world-episode-playback.spec.ts`) | [ ] All 6 P1 watch modes and three interactive activities finish (then every one of the 20 episodes and 12 activities, owner decision 2026-10-29) |
 | J10 | repo root `tests/browser/wonder-world-touch-and-layout.spec.ts` | [ ] Touch on narrow/portrait tablet, orientation safe areas, no blocking overlay |
 | J11 | repo root `tests/browser/wonder-world-audio-and-pausing.spec.ts` | [ ] Start gesture, mute, background/foreground, skip, no overlapping voice |
 | J12 | repo root `tests/browser/wonder-world-no-speech-required.spec.ts` | [ ] Every story/activity completes with microphone disabled and zero child sounds |
