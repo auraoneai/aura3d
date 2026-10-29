@@ -47,7 +47,7 @@ function lcg(seed: number): () => number {
   return () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; };
 }
 
-function translation(x: number, y: number, z: number): Float32Array {
+function translation(x: number, y: number, z: number): Float32Array<ArrayBuffer> {
   const m = Float32Array.from(identityMat4());
   m[12] = x; m[13] = y; m[14] = z;
   return m;
