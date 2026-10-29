@@ -250,5 +250,7 @@ describe("Aura Hoops menu, prompt, trail, a11y (C14, C15, C16, C18)", () => {
     expect(HTML).not.toMatch(/\.touch-controls \{\s*display: none;/);
     expect(HTML).toMatch(/\.a3g-touch \{\s*position: fixed;/);
     expect(HTML).toMatch(/id="touch-stick"/);
+    // without HudKit on the page the hide rule must live here, or desktop shows the buttons
+    expect(HTML).toMatch(/\.a3g-touch\.a3g-hidden \{\s*display: none;/);
   });
 });

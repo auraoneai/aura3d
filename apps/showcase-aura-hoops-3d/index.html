@@ -765,6 +765,10 @@
         z-index: 30;
         pointer-events: none;
       }
+      /* the engine toggles a3g-hidden; this page does not mount HudKit, so it carries the hide rule itself */
+      .a3g-touch.a3g-hidden {
+        display: none;
+      }
       .a3g-tc {
         position: absolute;
         pointer-events: auto;
