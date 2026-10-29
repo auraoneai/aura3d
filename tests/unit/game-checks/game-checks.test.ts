@@ -344,6 +344,15 @@ describe("game-checks", () => {
     expect(run(root, ["screens-fresh"])).toEqual([]);
   });
 
+  it("brand-identifiers: warns on a real brand term inside a shipped identifier (RH-07)", () => {
+    const bad = fixture({ "apps/showcase-demo/src/main.ts": 'installQaHooks("kid-goku", api);\nconsole.log("[saiyan_snake] boot");\n' });
+    const f = run(bad, ["brand-identifiers"]);
+    expect(f.map((x: { line: number }) => x.line)).toEqual([1]);
+    expect(f[0].message).toMatch(/"kid-goku".*"Goku"/);
+    const ok = fixture({ "apps/showcase-demo/src/main.ts": 'installQaHooks("cumulus-dash", api);\nimport x from "../../examples/kid-goku-port/main";\n' });
+    expect(run(ok, ["brand-identifiers"])).toEqual([]);
+  });
+
   it("rejects an unknown game slug", () => {
     const root = fixture({ "apps/showcase-demo/index.html": "<p>x</p>" });
     expect(() => runChecks({ root, slugs: ["nope"], global: false, env: {} })).toThrow(/unknown game/);

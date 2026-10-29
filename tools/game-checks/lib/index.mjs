@@ -669,6 +669,32 @@ function checkScreensFresh({ game, root }) {
   return [finding("screens-fresh", "warn", game, rel, 0, `card frame last committed ${day(time)}, before ${release.tag} (${day(release.time)}): the index poster shows an older render. Retake the final screens on the current build, then run node tools/site/build-card-images.mjs`)];
 }
 
+/**
+ * Third-party names in identifiers that ship (audit RH-07): the `likeness` check reads visible text only, so QA hook ids,
+ * log prefixes and storage keys such as `installQaHooks("kid-goku")` or `"saiyan-snake-way"` reached the live bundles.
+ * Flags a real brand, product or lore term (terms.json `brandTerms`; former game names stay with `names`) inside any string literal of shipped code (case-insensitive, `-`/`_`/space folded),
+ * import lines excluded. Escape hatch: `// brand-identifier: ok` on the line.
+ */
+function checkBrandIdentifiers({ game, src, terms }) {
+  const out = [];
+  const fold = (t) => t.toLowerCase().replace(/[\s_-]+/g, "");
+  const brand = terms.brandTerms.filter((t) => fold(t).length >= 4).map((t) => ({ t, f: fold(t) }));
+  for (const f of src.files) {
+    if (!CODE_KIND.test(f.kind)) continue;
+    const lines = f.text.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      if (isImportLine(lines[i]) || /\bimport\(/.test(lines[i]) || okMarker(f, i + 1, "brand-identifier")) continue;
+      for (const lit of literals(lines[i])) {
+        if (!idLike(lit)) continue; // prose is the likeness check's job
+        const folded = fold(lit);
+        const hit = brand.find((b) => folded.includes(b.f));
+        if (hit) { out.push(finding("brand-identifiers", "warn", game, f.rel, i + 1, `identifier "${lit}" contains the third-party name "${hit.t}" and ships in the bundle (QA hook, log prefix or key): rename it to the game's own name`)); break; }
+      }
+    }
+  }
+  return dedupe(out);
+}
+
 function dedupe(list) {
   const seen = new Set();
   return list.filter((f) => { const k = `${f.check}|${f.game}|${f.file}|${f.line}|${f.message}`; if (seen.has(k)) return false; seen.add(k); return true; });
@@ -693,7 +719,8 @@ export const GAME_CHECKS = {
   "touch-input": checkTouchInput,
   lighting: checkLighting,
   "shared-catalog": checkSharedCatalog,
-  "screens-fresh": checkScreensFresh
+  "screens-fresh": checkScreensFresh,
+  "brand-identifiers": checkBrandIdentifiers
 };
 export const GLOBAL_CHECKS = { vercelignore: checkVercelignore, counts: checkCounts, "meshy-cap": checkMeshyCap, skin: checkSkin };
 
