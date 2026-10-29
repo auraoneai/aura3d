@@ -317,8 +317,9 @@ export class ForwardPass extends BaseRenderPass {
   // `shaderCaches`) and die with the device.
   private static readonly pipelineCaches = new WeakMap<RenderDevice, Map<string, RenderPipeline>>();
   private static readonly uniformPacketPools = new WeakMap<RenderDevice, { free: Map<string, UniformValue>[]; used: Map<string, UniformValue>[] }>();
-  private static readonly instanceSlotPools = new WeakMap<RenderDevice, { buffer: InstanceBufferLike; colors: boolean; capacity: number }[]>();
-  private instanceSlotCursor = 0;
+  // SI-3: one owner-keyed slot allocator per device, shared by every ForwardPass (opaque pass, interleaved
+  // transparent segments, mirror/probe views), so an instanced item keeps its buffer across passes and frames.
+  private static readonly instanceSlotAllocators = new WeakMap<RenderDevice, InstanceSlotAllocator<InstanceBufferLike>>();
   private static readonly vertexFormatIds = new WeakMap<VertexFormat, number>();
   private static nextVertexFormatId = 1;
   private static readonly renderStateIds = new WeakMap<RenderState, number>();
@@ -566,8 +567,7 @@ export class ForwardPass extends BaseRenderPass {
     const viewProjection = this.options.cameraViewProjectionMatrix;
     if (!(transforms instanceof Float32Array) || viewProjection === undefined || viewProjection.length < 16) return null;
     if (transforms.length < MIN_CULLED_INSTANCES * 16) return null;
-    if (item.frustumCulled === false || item.skinning || item.morphTargets || item.morphWeights || item.instanceAttributes || item.drawRange) return null;
-    if (baseMaterial instanceof PortableShaderMaterial) return null;
+    if (instanceCullExcluded(item, baseMaterial instanceof PortableShaderMaterial)) return null;
     const colors = item.instanceColors;
     if (colors !== undefined && !(colors instanceof Float32Array)) return null;
     return cullInstancesToFrustum({ viewProjection, modelMatrix: item.modelMatrix, bounds: item.geometry.bounds, transforms, ...(colors ? { colors } : {}) });
@@ -590,7 +590,7 @@ export class ForwardPass extends BaseRenderPass {
     if (!generated) return applyInstanceBinding(device, item, shader, uniforms);
     const source = validateInstanceTransformSource(item);
     const count = source.length / 16;
-    const slot = this.instanceSlotFor(device, count, item.instanceColors !== undefined);
+    const slot = this.instanceSlotFor(device, item.label, source, count, item.instanceColors !== undefined);
     slot.buffer.setMatrices(source instanceof Float32Array ? source : new Float32Array(source), count);
     if (item.instanceColors) {
       slot.buffer.setColors(item.instanceColors instanceof Float32Array ? item.instanceColors : new Float32Array(item.instanceColors));
@@ -796,7 +796,7 @@ export class ForwardPass extends BaseRenderPass {
       pool.free.push(...pool.used);
       pool.used = [];
     }
-    this.instanceSlotCursor = 0;
+    ForwardPass.instanceSlotAllocators.get(device)?.beginPass();
   }
 
   /** A cleared per-item scratch map; recycled after the next execute begins. */
@@ -861,30 +861,108 @@ export class ForwardPass extends BaseRenderPass {
   }
 
   /**
-   * Persistent attribute-matrix slot for the generated path (Phase 6): slots
-   * are reused in draw order; capacity/colors mismatches retire the old
-   * buffer (its VAOs are evicted by the §6.1 dispose fix).
+   * Persistent attribute-matrix slot for the generated path (Phase 6). SI-3: slots are keyed by the item's
+   * transform array (its owner), not by draw order inside one pass. The order-keyed cursor restarted at 0 in every
+   * ForwardPass, so the opaque pass and each transparent segment wrote different items into slot 0 and the
+   * content-compare upload skip never hit when several passes drew instanced items.
    */
-  private instanceSlotFor(device: RenderDevice, count: number, colors: boolean): { readonly buffer: InstanceBufferLike; readonly capacity: number } {
-    const index = this.instanceSlotCursor;
-    this.instanceSlotCursor += 1;
+  private instanceSlotFor(device: RenderDevice, label: string | undefined, transforms: object, count: number, colors: boolean): { readonly buffer: InstanceBufferLike; readonly capacity: number } {
+    let allocator = ForwardPass.instanceSlotAllocators.get(device);
+    if (!allocator) {
+      allocator = new InstanceSlotAllocator<InstanceBufferLike>(
+        (capacity, withColors) => instanceBufferSlot.get(rendererQrFlags(device))(device, capacity, { colors: withColors }),
+        (buffer) => buffer.dispose()
+      );
+      ForwardPass.instanceSlotAllocators.set(device, allocator);
+    }
+    return allocator.acquire(label ? allocator.labelKey(label) : transforms, count, colors);
+  }
+}
+
+/**
+ * SI-3: owner-keyed pool of persistent instance buffers. The owner is the item label (with its occurrence index in
+ * the pass, so two items sharing a label keep two slots), or the transform array when the item has no label; labels
+ * survive the per-frame RenderItem rebuilds that replace arrays. `acquire(owner)` returns the slot that owner used last
+ * (re-created only when its capacity or colour layout no longer fits); a new owner takes a slot idle for at least
+ * `staleAfterPasses` pass executions, then a new slot up to `maxSlots`, then the least recently used one. Sharing a
+ * slot between two draws is still correct (GL orders the uploads), it only costs a re-upload.
+ */
+export class InstanceSlotAllocator<B> {
+  private readonly slots: { buffer: B; colors: boolean; capacity: number; owner: object | string | null; lastUse: number }[] = [];
+  // Strong keys, bounded: an owner's entry is deleted when its slot is taken over, so it never exceeds maxSlots.
+  private readonly byOwner = new Map<object | string, number>();
+  private readonly labelCounts = new Map<string, number>();
+  private pass = 0;
+
+  constructor(
+    private readonly create: (capacity: number, colors: boolean) => B,
+    private readonly dispose: (buffer: B) => void,
+    private readonly maxSlots = 256,
+    private readonly staleAfterPasses = 16
+  ) {}
+
+  /** One pass execution started (the idle clock). */
+  beginPass(): void {
+    this.pass += 1;
+    this.labelCounts.clear();
+  }
+
+  /** `label#n`: the n-th draw with this label in the current pass. */
+  labelKey(label: string): string {
+    const n = this.labelCounts.get(label) ?? 0;
+    this.labelCounts.set(label, n + 1);
+    return `${label}#${n}`;
+  }
+
+  get size(): number {
+    return this.slots.length;
+  }
+
+  acquire(owner: object | string, count: number, colors: boolean): { readonly buffer: B; readonly capacity: number } {
     const capacity = Math.max(64, 2 ** Math.ceil(Math.log2(Math.max(1, count))));
-    let slots = ForwardPass.instanceSlotPools.get(device);
-    if (!slots) {
-      slots = [];
-      ForwardPass.instanceSlotPools.set(device, slots);
+    const owned = this.byOwner.get(owner);
+    let index = owned !== undefined && this.slots[owned]?.owner === owner ? owned : -1;
+    if (index < 0) {
+      index = this.slots.findIndex((slot) => slot.owner === null || slot.lastUse <= this.pass - this.staleAfterPasses);
+      if (index < 0 && this.slots.length >= this.maxSlots) {
+        index = 0;
+        for (let i = 1; i < this.slots.length; i += 1) if (this.slots[i]!.lastUse < this.slots[index]!.lastUse) index = i;
+      }
     }
-    const existing = slots[index];
-    if (existing && existing.colors === colors && existing.capacity >= count) {
-      return existing;
+    if (index < 0) {
+      this.slots.push({ buffer: this.create(capacity, colors), colors, capacity, owner, lastUse: this.pass });
+      index = this.slots.length - 1;
     }
-    existing?.buffer.dispose();
-    const buffer = instanceBufferSlot.get(rendererQrFlags(device))(device, capacity, { colors });
-    const slot = { buffer, colors, capacity };
-    slots[index] = slot;
-    if (slots.length > index + 64) slots.length = index + 64;
+    const slot = this.slots[index]!;
+    if (slot.colors !== colors || slot.capacity < count) {
+      this.dispose(slot.buffer);
+      slot.buffer = this.create(capacity, colors);
+      slot.colors = colors;
+      slot.capacity = capacity;
+    }
+    if (slot.owner !== owner) {
+      if (slot.owner) this.byOwner.delete(slot.owner);
+      slot.owner = owner;
+    }
+    slot.lastUse = this.pass;
+    this.byOwner.set(owner, index);
     return slot;
   }
+}
+
+/**
+ * Items the per-instance frustum cull must draw whole: three's `frustumCulled: false`, CPU-unknown vertex motion
+ * (skinning, morphs, custom attributes, custom shader materials), draw ranges, and SI-8 `prd10.wind` vegetation. Wind
+ * bends a plant's top by up to about 0.74 of its height while the cull sphere (1.15 x the bounds radius) covers about
+ * 0.625 of it, so a strongly bent plant at the view edge was culled while still on screen.
+ */
+export function instanceCullExcluded(
+  item: Pick<RenderItem, "frustumCulled" | "skinning" | "morphTargets" | "morphWeights" | "instanceAttributes" | "drawRange" | "label">,
+  customShaderMaterial: boolean
+): boolean {
+  if (item.frustumCulled === false || item.skinning || item.morphTargets || item.morphWeights || item.instanceAttributes || item.drawRange) return true;
+  if (customShaderMaterial) return true;
+  return item.label?.startsWith("prd10.wind:") === true;
 }
 
 function lightBucket(count: number, max: 4 | 8 = 8): 0 | 1 | 2 | 4 | 8 {
