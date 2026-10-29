@@ -1,0 +1,32 @@
+{
+ "g04b-desktop": [
+  "GL_NOTE desktop ready after 59645 ms",
+  "GL_NOTE desktop simulate45 \"__missing__\"",
+  "GL_CHECKS desktop {\"manual-idle\":\"__missing__\",\"kerb-stop\":\"__missing__\",\"skip-pays-nothing\":\"__missing__\",\"shift-results\":\"__missing__\"}"
+ ],
+ "g04b-phone": [
+  "GL_NOTE phone ready after 32546 ms",
+  "GL_NOTE phone pads []",
+  "GL_NOTE phone no touch pad throttle",
+  "GL_NOTE phone no touch pad right",
+  "GL_NOTE phone simulate \"__missing__\"",
+  "GL_CHECKS phone {\"shift\":\"__missing__\"}"
+ ],
+ "g04c-desktop": [
+  "GL_NOTE desktop ready after 102595 ms",
+  "GL_NOTE desktop simulate45 {\"route\":\"showcase-teleoperator\",\"engine\":\"@aura3d/engine\",\"ready\":true,\"framesRendered\":15,\"steps\":2778,\"phase\":\"driving\",\"vehicle\":\"cruiser\",\"autopilotLevel\":\"MAN\",\"weatherPreset\":\"noon\",\"remounting\":false,\"cameraMode\":0,\"rideState\":\"offer\",\"rideStyle\":\"comfort\",\"fareIndex\":0,\"totalEarningsUsd\":0,",
+  "GL_CHECKS desktop {\"manual-idle\":{\"pass\":true,\"ridesAdded\":0,\"missed\":2,\"rideState\":\"offer\"},\"kerb-stop\":{\"pass\":true,\"rideState\":\"ride\"},\"skip-pays-nothing\":{\"pass\":true,\"skipped\":1},\"shift-results\":{\"pass\":true,\"shift\":{\"faresDone\":5,\"skipped\":0,\"missed\":0,\"earnedUsd\":193.12,\"starsSum\":25,\"collisions\":0,\"redLights\":0,\"elapsedSec\":143.4500000000063,\"over\":true,\"reason\":\"fares\"},\"score\":218,\"best\":218,\"resultsVisible\":true}}"
+ ],
+ "g04d-phone": [
+  "GL_NOTE phone ready after 57169 ms",
+  "GL_NOTE phone pads [{\"id\":\"left\",\"r\":{\"x\":8,\"y\":768,\"width\":64,\"height\":64,\"top\":768,\"right\":72,\"bottom\":832,\"left\":8},\"visible\":true},{\"id\":\"right\",\"r\":{\"x\":80,\"y\":768,\"width\":64,\"height\":64,\"top\":768,\"right\":144,\"bottom\":832,\"left\":80},\"visible\":true},{\"id\":\"brake\",\"r\":{\"x\":318,\"y\":768,\"width\":64,\"height\":64,\"top\":768,\"right\":382,\"bottom\":832,\"left\":318},\"visible\":true},{\"id\":\"throttle\",\"r\":{\"x\":318,\"y\":696,\"width\":64,\"height\":64,\"top\":696,\"right\":382,\"bottom\":760,\"left\":318},\"visible\":true}]",
+  "GL_TOUCH phone throttle {\"before\":{\"position\":[3.4,0,-9.16],\"speedMps\":9.5,\"speedMph\":21},\"during\":{\"position\":[3.4,0,-14.46],\"speedMps\":16.7,\"speedMph\":37}}",
+  "GL_TOUCH phone right {\"before\":{\"position\":[3.4,0,-14.46],\"speedMps\":16.7,\"speedMph\":37},\"during\":{\"position\":[5.93,0,-20.87],\"speedMps\":15.42,\"speedMph\":34}}",
+  "GL_NOTE phone simulate {\"route\":\"showcase-teleoperator\",\"engine\":\"@aura3d/engine\",\"ready\":true,\"framesRendered\":19,\"steps\":2802,\"phase\":\"driving\",\"vehicle\":\"cruiser\",\"autopilotLevel\":\"L5\",\"weatherPreset\":\"noon\",\"remounting\"",
+  "GL_CHECKS phone {\"shift\":{\"pass\":true,\"shift\":{\"faresDone\":5,\"skipped\":0,\"missed\":0,\"earnedUsd\":192.37,\"starsSum\":25,\"collisions\":0,\"redLights\":0,\"elapsedSec\":142.30000000000538,\"over\":true,\"reason\":\"fares\"},\"score\":217,\"best\":217,\"resultsVisible\":true}}"
+ ],
+ "g04a-bloom": [
+  "GL_NOTE bloom ready after 87051 ms",
+  "GL_NOTE bloom ready after 81643 ms"
+ ]
+}

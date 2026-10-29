@@ -1,6 +1,18 @@
 # Grid Dispatch (`teleoperator`): upgrading to Aura3D 4.5.0
 
-**Verdict:** No change needed. The game uses post effects and an HDRI look (`looks.preset("outdoor-day")`), so it stays on the HDR chain and has an environment node. It makes no canvas read-backs and no animation, physics, instancing or interaction calls. The only 4.5.0 changes it picks up are rendering-internal. Re-capture it once to confirm the look.
+**Verdict:** No change needed. The game uses post effects and an HDRI look (`looks.preset("outdoor-day")`), so it stays on the HDR chain and has an environment node. It makes no canvas read-backs and no animation, physics, interaction or (before the audit fixes) instancing calls. The only 4.5.0 changes it picks up are rendering-internal. Re-capture it once to confirm the look.
+
+## Update after the 2026-10-29 audit fixes (lane G04)
+
+The audit-fix branch `audit-fix/g04` restructured the game. The analysis below describes the code before that work (one 3027-line `src/main.ts`); its 4.5.0 conclusions still hold, with these differences:
+
+- Source: `src/main.ts` (boot, presentation, QA hooks), `src/sim.ts` and `src/rules.ts` (fixed-step simulation, no DOM), `src/scene.ts` (scene builder), `src/hud.ts`, `src/touch.ts`, `src/audio.ts`, `src/collision.ts`, and `src/aura-assets.ts` (the game's own asset manifest; the root `src/aura-assets.ts` catalog is no longer imported).
+- Each sky preset builds its own scene: `outdoor-day` (noon), `golden-hour`, `overcast` (fog) or `night-city` (night). Changing the sky calls `app.setScene` and `warmPrograms`. Only `night-city` has no HDRI; it uses the look's neutral fill.
+- `lights.ambient` is gone (it blew out the white car). `lights.hemisphere`, the shadowed directional and the point light remain, with values per sky. The hemisphere is still dropped by the engine next to an environment (LIGHT-05, engine lane E2); when E2 feeds it into the explicit path the game gets brighter and needs a recapture.
+- Repeated street furniture (lane dashes, crossings, signal masts and lights, lamps, trees, route ribbon, impact sparks) is now `instances.*` nodes driven with `setInstances`. GL draw calls in the chase view at steady state: 610 before, 411 after (remote runs `g04b-desktop` and `g04a-desktop`, `app.diagnostics().drawCalls`).
+- The game now uses `createFixedStepLoop`, `createFixedStepPresenter`, `warmPrograms` (before the boot screen goes), `installQaHooks("grid-dispatch")` and `installSafetyNet` (panel on `?diag=1` only).
+
+The checklist below was run on the audit-fix branch. All captures are software WebGL2 (SwiftShader) on the remote ACR runner, not a real GPU.
 
 ## What this game uses
 
