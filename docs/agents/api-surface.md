@@ -30,7 +30,7 @@ React apps use `@aura3d/react` around the same root API.
 
 | Task | Names |
 |---|---|
-| Mount and run | `createAuraApp`, `createGameApp`, `createFrameLoop`, `app.diagnostics()`, `app.evidence()`, `app.screenshot()` |
+| Mount and run | `createAuraApp`, `createGameApp`, `createFrameLoop`, `app.diagnostics()`, `app.evidence()`, `app.screenshot()`, `app.screenshotAsync()` |
 | Scene structure | `scene`, `group`, `groups`, `model`, `primitives`, `text3D`, `geometry`, `line`, `points`, `sprite`, `texture` |
 | Look | `material`, `lights`, `environments`, `looks`, `effects`, `postPresets`, `shadows`, `camera`, `cameras` |
 | Many objects | `instances`, `batched`, `distanceLod`, `planScatterInstances` |
@@ -38,6 +38,8 @@ React apps use `@aura3d/react` around the same root API.
 | Motion | `AnimationController`, `cloneSkinned`, `characters`, `timeline`, `physics` |
 | Games | `game`, `games`, `racketSports`, `arcadeKart`, `carSoccer`, `gameFeel`, `createGameAudio`, `createVehicleChassis`, `createCombatAi`; the real HUD/touch/session kit is `@aura3d/engine/game` |
 | QA and replay | `installQaHooks`, `readQaParams`, `createFixedStepLoop`, `createCountedRng` |
+
+`app.diagnostics().fps` is the average over the frames presented in the last second, rounded to 0.01; renders issued in one task (a loop of `app.step()` calls) count as one frame. On software GL it reads well below 1. `app.screenshot()` is synchronous and re-renders before it reads; an app with `frameMode: "async"` uses `await app.screenshotAsync()`, which waits for the in-flight frame first (`screenshot()` during an async frame warns `SCREENSHOT_DURING_ASYNC_FRAME`).
 | Typed assets | `defineAuraAssets`, `defineModelAssets` |
 | Prompt to scene | `sceneKits`, `prefabs`, `definePromptPlan`, `promptPlanToScene`, `compilePromptPlanV2` |
 | Data and product scenes | `charts`, `city`, `product`, `solar` (each has `visualQA`) |
