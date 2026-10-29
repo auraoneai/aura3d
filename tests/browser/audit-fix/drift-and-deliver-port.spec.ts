@@ -26,7 +26,9 @@ const TARGETS: readonly Target[] = [
   { name: "g18-sf000", url: "/examples/drift-and-deliver-port/index.html?skyfill=0", rows: "no hemisphere (the 4.5.0 frame)" },
   { name: "g18-sf060", url: "/examples/drift-and-deliver-port/index.html?skyfill=0.6", rows: "sweep" },
   { name: "g18-sf170", url: "/examples/drift-and-deliver-port/index.html?skyfill=1.7", rows: "authored 1.7 next to the HDRI" },
-  { name: "g18-noenv", url: "/examples/drift-and-deliver-port/index.html?env=0", rows: "heal rung no-env (lights-only)" }
+  { name: "g18-noenv", url: "/examples/drift-and-deliver-port/index.html?env=0", rows: "heal rung no-env (lights-only)" },
+  { name: "g18-nn060", url: "/examples/drift-and-deliver-port/index.html?env=0&neutral=0.6", rows: "no-env neutral sweep" },
+  { name: "g18-nn000", url: "/examples/drift-and-deliver-port/index.html?env=0&neutral=0", rows: "no-env without the neutral fill (the 4.5.0 frame)" }
 ];
 // Pick targets with `--grep=g18-<name>`.
 

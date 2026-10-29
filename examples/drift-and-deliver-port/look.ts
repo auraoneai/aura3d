@@ -195,7 +195,22 @@ export function skyFillIntensity(env: boolean, override?: number): number {
   return env ? SKY_FILL.withEnv : SKY_FILL.lightsOnly;
 }
 
-export function buildLook(world: { blocks: readonly Block[]; buildings: readonly Building[]; traffic: readonly TrafficCar[]; pickups: readonly Pickup[] }, opts: { models: boolean; quality: "high" | "low"; ao: boolean; env: boolean; shadow: boolean; fog: boolean; post: boolean; aa?: boolean; sky: boolean; sun: number; skyFill?: number; roadCells?: number; start: { x: number; z: number } }): LookRig {
+/**
+ * Neutral-room fill for the lights-only path (`env=0`, the heal ladder's `no-env` rung). Up to 4.3.7 the engine added
+ * this room probe implicitly to a scene without an environment node; 4.5.0 stopped (`implicitFill: false`, LIGHT-01), and
+ * the rung read 39% darker (mean luma 123.5 on 4.3.7, 75.5 on 4.5.0, remote software GL). Authoring it restores the 4.3.7
+ * frame. It is generated in code, so the rung still loads no HDRI.
+ */
+export const LIGHTS_ONLY_NEUTRAL = 1;
+
+/** Neutral fill intensity for the light rig; `override` is the `neutral=` diagnostics switch. 0 next to the HDRI. */
+export function neutralFillIntensity(env: boolean, override?: number): number {
+  if (env) return 0;
+  if (override !== undefined && Number.isFinite(override) && override >= 0) return override;
+  return LIGHTS_ONLY_NEUTRAL;
+}
+
+export function buildLook(world: { blocks: readonly Block[]; buildings: readonly Building[]; traffic: readonly TrafficCar[]; pickups: readonly Pickup[] }, opts: { models: boolean; quality: "high" | "low"; ao: boolean; env: boolean; shadow: boolean; fog: boolean; post: boolean; aa?: boolean; sky: boolean; sun: number; skyFill?: number; neutral?: number; roadCells?: number; start: { x: number; z: number } }): LookRig {
   const high = opts.quality === "high";
   const tex = paintTextures(opts.quality);
   const city = buildCity(world.blocks, world.buildings);
@@ -222,6 +237,8 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
 
   // ---- light rig, atmosphere and post ----
   if (opts.env) b.add(environments.hdri({ name: "env-sky", texture: ASSETS.skyHdr, intensity: 1.0, background: false, color: "#ffc890" }));
+  const neutral = neutralFillIntensity(opts.env, opts.neutral);
+  if (neutral > 0) b.add(environments.neutral({ name: "env-room", intensity: neutral }));
   b.add(lights.directional({ name: "sun", position: [-88, 38, -50], target: [0, 0, 0], intensity: opts.sun, color: "#ffbf80", shadow: high && opts.shadow ? { cascades: 2, maxDistance: 150, blend: 0.12, mapSize: 2048 } : false }).runtime({ id: "sun" }));
   b.add(lights.hemisphere({ name: "sky-fill", skyColor: "#ffe0b0", groundColor: "#c9a070", intensity: skyFillIntensity(opts.env, opts.skyFill) }));
   if (opts.fog) b.add(effects.fog({ name: "haze", color: FOG.color, density: FOG.density }));

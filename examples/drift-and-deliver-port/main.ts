@@ -79,6 +79,8 @@ const config = {
   sun: Number(params.get("sun") ?? "4.4") || 4.4,
   /** `skyfill=N` overrides the hemisphere fill intensity (diagnostics for the LIGHT-05 retune; default from `SKY_FILL`) */
   skyFill: params.has("skyfill") ? Number(params.get("skyfill")) : undefined,
+  /** `neutral=N` overrides the neutral-room fill on the lights-only path (`env=0`; default `LIGHTS_ONLY_NEUTRAL`) */
+  neutral: params.has("neutral") ? Number(params.get("neutral")) : undefined,
   /** `shift=N`: shift length in seconds (default 180; probes shorten it to reach the results screen) */
   shiftSeconds: Math.max(5, Number(params.get("shift")) || 180),
   /** `props=0` leaves the street furniture without colliders (diagnostics) */
@@ -173,7 +175,7 @@ const shellGeometry = (m: LookRig["playerShell"]["paint"]) => {
 let look: LookRig;
 
 function buildScene() {
-  look = buildLook({ blocks, buildings, traffic, pickups }, { models: config.models, quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, skyFill: config.skyFill, roadCells: config.roadCells, start: { x: car.x, z: car.z } });
+  look = buildLook({ blocks, buildings, traffic, pickups }, { models: config.models, quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, skyFill: config.skyFill, neutral: config.neutral, roadCells: config.roadCells, start: { x: car.x, z: car.z } });
   const s = look.builder;
   if (config.models) {
     s.add(carModel("car-rig", "courier", true));
