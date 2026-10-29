@@ -60,8 +60,12 @@ const CONTROL_GAP_MS = 600;
 const SETTLE_MS = 15_000;
 /** The gate opens after a 2000 ms hold (src/ui/parent-gate.ts PARENT_GATE_HOLD_MS); the grown-up holds a little longer. */
 const PARENT_HOLD_MS = 2_600;
-/** A grown-up UI step that has not happened by then has failed (instead of waiting out the test timeout). */
-const UI_TIMEOUT_MS = 30_000;
+/**
+ * A grown-up UI step that has not happened by then has failed (instead of waiting out the test timeout). Software
+ * WebGL2 holds the page's main thread for long stretches even after boot, and a click waits until the page can take
+ * it, so a step gets two minutes.
+ */
+const UI_TIMEOUT_MS = 120_000;
 
 async function waitForPhase(page: Page, log: PageLog, label: string, accept: (state: WonderQaState) => boolean, timeoutMs = SETTLE_MS): Promise<WonderQaState> {
   return waitFor(page, log, label, timeoutMs, async () => {

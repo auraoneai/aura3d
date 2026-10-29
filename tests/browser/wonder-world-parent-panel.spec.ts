@@ -39,7 +39,9 @@ import {
 
 /** The gate opens after a 2000 ms hold (src/ui/parent-gate.ts PARENT_GATE_HOLD_MS); the grown-up holds a little longer. */
 const PARENT_HOLD_MS = 2_600;
-const UI_TIMEOUT_MS = 30_000;
+// Software WebGL2 holds the page's main thread for long stretches even after boot (a click waits until the page can
+// take it), so a step gets two minutes; a step that has not happened by then has failed.
+const UI_TIMEOUT_MS = 120_000;
 const VIEWPORT = { width: 800, height: 600 } as const;
 const QUERY = { autostart: 1, manual: 1, models: 0 } as const;
 
