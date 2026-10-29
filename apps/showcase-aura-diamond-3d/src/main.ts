@@ -819,7 +819,7 @@ function buildParkScene(park: ParkSpec): any {
   let lookNode: any = look;
   if (QA_FLAGS.noAo) {
     const g = look.toJSON() as any;
-    lookNode = { ...g, children: (g.children ?? []).filter((c: any) => c.type !== "ambientOcclusion" && c.name !== "look ambient occlusion") };
+    lookNode = { ...g, children: (g.children ?? []).filter((c: any) => c.effect !== "ambient-occlusion") };
   }
   const sc = scene().add(lookNode).background(backdrop[park.id]);
   if (!QA_FLAGS.noContact) sc.add(effects.contactShadows({ intensity: 0.75, length: 0.3 }));
