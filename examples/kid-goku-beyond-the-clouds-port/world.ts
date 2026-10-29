@@ -597,8 +597,8 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
       } else {
         // portrait start: the ride log fills the lower frame at fov 62, so the eye rises and pulls back until the log is left
         const portraitLog = aspect < 1 && ch.log ? 1 - smooth(ch.log - 12, ch.log + 4, s.s) : 0;
-        const back = frameAt(s.s - 7.4 - 3 * portraitLog, s.lane * 0.65), ahead = frameAt(Math.min(ch.length + 20, s.s + 7), s.lane * 0.65);
-        const lift = 3.3 + s.jump * 0.35 + (riding ? 0.6 : 0) + logLift * 0.5 + 1.5 * portraitLog;
+        const back = frameAt(s.s - 7.4 - 4 * portraitLog, s.lane * 0.65), ahead = frameAt(Math.min(ch.length + 20, s.s + 7), s.lane * 0.65);
+        const lift = 3.3 + s.jump * 0.35 + (riding ? 0.6 : 0) + logLift * 0.5 + 2.5 * portraitLog;
         wantEye = [back.point[0] + back.up[0] * lift, back.point[1] + back.up[1] * lift, back.point[2] + back.up[2] * lift];
         wantLook = [ahead.point[0] + ahead.up[0] * 1.5, ahead.point[1] + ahead.up[1] * 1.5, ahead.point[2] + ahead.up[2] * 1.5];
         if (g.chase) fov += 3;
