@@ -4,6 +4,63 @@ This audit covers the 25 live games listed in `docs/workflows/game-inventory.jso
 
 Totals across the 25 games: 8 P0, 98 P1, 215 P2, 190 P3. The release audit adds 1 P1 (LIGHT-01), 22 P2 and 29 P3; it found no P0. No game is black or crashes on load: all 25 pages answer 200 and render. Two games are rated broken because their core loop cannot be completed (Aura Diamond 3D, Aura Links 3D).
 
+## Outcome
+
+Status after the audit-fix program (lanes E1 to E5 and G01 to G25, merged on `audit-fix/integration`). Every row of the release tables and of each game's Fix and Enhance tables has a Status cell: `done <commit> [release]`, `not done: <reason>`, `not a defect: <reason>` or `withdrawn: <reason>`. Commits come from the lane reports in `docs/audits/lanes/` and, for G12 (no report file), from its commit messages. Engine rows that appear inside a game section carry the engine lane's outcome. The release in brackets is checked per commit against tag `v4.6.0`: 4.6.0 shipped E1 to E5, G01 to G09, G12 and G15 to G17; 4.6.1 carries the other twelve games (G10, G11, G13, G14, G18 to G25) and the wave-3 changes. A row whose commits are not all in `v4.6.0` is marked 4.6.1.
+
+Counts are per table row: 562 rows, 52 in the release tables and 510 in the game tables. 21 game-table rows repeat an engine row (for example RP-04 appears in seven games) and are counted in each place.
+
+| Status | P0 | P1 | P2 | P3 | No severity | Total |
+|---|---|---|---|---|---|---|
+| done | 8 | 99 | 232 | 212 | 0 | 551 |
+| not done | 0 | 0 | 3 | 4 | 0 | 7 |
+| not a defect | 0 | 0 | 0 | 2 | 0 | 2 |
+| withdrawn | 0 | 0 | 1 | 0 | 1 | 2 |
+| total | 8 | 99 | 236 | 218 | 1 | 562 |
+
+RH-01 is listed with no severity because the owner withdrew it. Of the 551 done rows, 327 shipped in 4.6.0 and 224 ship in 4.6.1.
+
+### Not done
+
+- **RH-13 (release audit)**, P3: owner action: deleting other people's remote branches and worktrees and moving local `main`; read-only counts and steps in 8f7f440e2 (`evidence/audit-fix/e5/rh13-branches.md`)
+- **IC-07 (Iron Crown)**, P2: needs a real-GPU check (`?vfx=on&vfxdebug=1`); the remote runner is software GL, so the override stays; owner runs `tools/real-gpu/run.sh`
+- **IC-12 (Iron Crown)**, P3: needs new Meshy `animate` clips; no Meshy credentials in the lane environment and agents may not log in (owner action)
+- **LIVE-1 (Aura Diamond 3D)**, P2: needs a 15-minute real-GPU session; the software-GL runner cannot reproduce a renderer crash (park-switch heap measured at 468 MB, no page errors)
+- **SO-6 (Craterline GP)**, P2: the sentence is in the E5-owned `evidence/exposure-parity/README.md:42`, which still does not name Craterline GP or Ion Circuit; the handoff from G15 has not been applied
+- **P-3 (Serpentine Sky Run)**, P3: the fix asks for a real-GPU re-judge first and the lane has only software GL; on software GL the runner crop is back at the 4.3.7 contrast (193.4 against 206.0)
+- **WW-16 (The Bellkeeper's Walk)**, P3: the public `effects.bloom` options have no `scatter` field, so the replacement for `radius` cannot be authored; engine handoff to E2
+
+### Withdrawn and not a defect
+
+- **RH-01 (release audit)**, withdrawn: the owner wants the three.js comparison claims; fix 93f374ffd was reverted in 4c2f6b2a1
+- **RH-02 (release audit)**, withdrawn: its fix 93f374ffd went out with the RH-01 revert (4c2f6b2a1); RESULTS.md stays the named comparison source by owner decision
+- **IC-09 (Iron Crown)**, not a defect: `model(asset, { material })` lowers to `baseColorMultiply`, which keeps the base-colour textures; `setTint` is a legacy seam this path does not use (remote swatches keep belt, skin and face detail)
+- **S-07 (Shadowstep Gauntlet)**, not a defect: the HDRI texture is a plain object, so the scene lights through the neutral room, which already counts the hemisphere; removing the light would remove fill (comment added in 4678c26df)
+
+### Done in part
+
+These rows count as done; the part named in the Status cell is still open (mostly owner-only real-GPU checks and handoffs to files lane E5 owns).
+
+- **LIGHT-02 (release audit)**: no real-GPU capture, owner runs `tools/real-gpu/run.sh`
+- **anim-phys-11 (release audit)**: the upper-body layer plays only with `?iclayer=1`; default playback is unchanged
+- **RH-07 (release audit)**: the `kid-goku-beyond-the-clouds-port` folder rename is an open handoff to E5
+- **RH-09 (release audit)**: the CHANGELOG states the gate result; editing the published GitHub release body is an owner action
+- **RR-E5 (Apex Overdrive)**: speed gauge and distance bar added; light still does not follow time of day, the game does not yet call `app.lighting.setEnvironmentIntensity`, which E2 made live in 7e3b36b5d
+- **DD-7 (Glint Courier)**: the CHANGELOG correction is an open handoff to E5
+- **DD-10 (Glint Courier)**: the A/B proves the shadow map renders; `diagnostics().renderer.shadows` still reports `mapRendered:false`, open handoff to E3
+- **C8 (Serpentine Sky Run)**: orbs, sparks and streaks are not instanced (custom GLSL has no per-instance matrix) and no KTX2 (no Basis encoder)
+- **C12 (Gridlock Courier)**: the route-health `qualityGate` needs a human reviewer
+- **HP-04 (Ion Circuit)**: the `evidence/exposure-parity/README.md:42` line is an open handoff to E5
+- **S-01 (Shadowstep Gauntlet)**: the sky dome no longer casts; the shadow-fit opt-in stays (measured) and no real-GPU frame was taken
+- **S-04 (Shadowstep Gauntlet)**: cache headers (`vercel.json`) are an open handoff to E5
+- **E-03 (Shadowstep Gauntlet)**: a low-quality link, not an automatic switch; no real low-end GPU measured
+- **C6 (Saltwind Highway)**: no person has listened to the new cues
+- **C9 (Saltwind Highway)**: `tools/site/games.catalog.json` and `names.json` copy is an open handoff to E5
+- **C11 (Saltwind Highway)**: `bloom.radius` stays because `effects.bloom` has no public `scatter` field (same as WW-16)
+- **C12 (Duneglide)**: no real-GPU or phone profile
+- **C14 (Duneglide)**: key remapping not added
+- **CR-8 (Cumulus Dash)**: the example and evidence folder rename is an open handoff to E5
+
 ## Scoreboard
 
 | # | Game | Slug | Health | P0 | P1 | P2 | P3 | Top issue |
