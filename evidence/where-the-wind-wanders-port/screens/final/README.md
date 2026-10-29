@@ -1,5 +1,7 @@
 # The Bellkeeper's Walk: final screenshots (after the UI and render fixes)
 
+**Retaken 2026-10-29 (audit lane G23, RH-05):** every frame below was taken again from `audit-fix/g23` at 1bde718d4 (4.5.0 render path `hdr-msaa`, quality `auto`, fused bloom), remote run `g23-after3-10292046`, spec `tests/browser/audit-fix/where-the-wind-wanders-port.spec.ts`, same file names and sizes. `results.1280x720` is now the epilogue reached by play (the original's recorded run rings the bell, then the game clock runs 9.5 + 6 s), not forced. Per-frame numbers: `evidence/where-the-wind-wanders-port/audit-fix/after/g23-after3-10292046/metrics.jsonl`. The notes below describe the earlier set from 2026-10-25.
+
 - **Build:** `origin/game-rework` at `0d965903c` (examples dev server, QA hooks). Capture: `tests/browser/finc-lib.ts` + `finc-games.ts` (`WIND`), decoder `tools/shots/decode-finc.mjs`; numbers in `metrics.jsonl`.
 - **Runner:** serverless ACR Chromium, **software WebGL2 (SwiftShader), not a GPU**. These frames are not real-GPU evidence.
 - **Method:** the route is the examples page (no quick bar or credit link), driven through `window.__AURA_WIND__`. The texture status table has 19 rows, 0 textured and 0 pending (scalar materials), so there was nothing to wait for. Every frame was opened and looked at.

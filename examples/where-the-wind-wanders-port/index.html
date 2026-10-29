@@ -21,7 +21,8 @@
         #quest { top: max(8px, env(safe-area-inset-top)); left: 8px; }
         #hint { top: calc(max(8px, env(safe-area-inset-top)) + 44px); left: 8px; right: 8px; }
       }
-      @media (pointer: coarse) { #hint { display: none; } }
+      /* touch: no keyboard hint; the toast sits above the touch pad, its buttons and the reach prompt (ui.ts) */
+      @media (pointer: coarse) { #hint { display: none; } #toast { bottom: calc(256px + env(safe-area-inset-bottom)); } }
       #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #c9dfe9; }
       .hidden { display: none !important; }
     </style>
