@@ -500,7 +500,7 @@
 .a3g-tc[data-control="special"]::after { content: "Super"; color: #ffd76a; }
 .a3g-tc[data-control="jump"]::after { content: "Jump"; }
 /* Keyboard hints hide while the touch layer is visible (the engine toggles a3g-hidden on [data-a3g-keyhint]). */
-.fh-hint.a3g-hidden { display: none; }
+.fh-footer.a3g-hidden { display: none; }
 
 /* Controls sheet (audit IC-14). */
 .ic-controls { display: grid; gap: 6px; min-width: min(420px, 88vw); }

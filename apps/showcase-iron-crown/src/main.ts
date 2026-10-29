@@ -434,11 +434,22 @@ app.camera?.use({
   ...baseFightingRig,
   update(ctx) {
     const pose = baseFightingRig.update(ctx);
-    return {
-      ...pose,
-      position: [pose.position[0], pose.position[1] + 0.82, pose.position[2] - 0.15],
-      target: [pose.target[0], pose.target[1] + 0.72, pose.target[2]]
-    };
+    const position: [number, number, number] = [pose.position[0], pose.position[1] + 0.82, pose.position[2] - 0.15];
+    const target: [number, number, number] = [pose.target[0], pose.target[1] + 0.72, pose.target[2]];
+    // Portrait phones: the rig frames by vertical FOV, so at 390x844 the fighters' start marks (x ±2.2) sat outside the
+    // frame. Pull the camera back along its view line until both fighters plus a margin fit the horizontal FOV.
+    const aspect = window.innerWidth / Math.max(1, window.innerHeight);
+    if (aspect < 1.2 && P1 && CPU) {
+      const halfWidth = Math.abs(CPU.body.position[0] - P1.body.position[0]) / 2 + 0.9;
+      const need = halfWidth / (Math.tan(((pose.fov ?? 40) * Math.PI) / 360) * aspect);
+      const off = [position[0] - target[0], position[1] - target[1], position[2] - target[2]];
+      const dist = Math.hypot(off[0]!, off[1]!, off[2]!);
+      if (dist > 0 && need > dist) {
+        const k = Math.min(need, 16) / dist;
+        return { ...pose, position: [target[0] + off[0]! * k, target[1] + off[1]! * k, target[2] + off[2]! * k], target };
+      }
+    }
+    return { ...pose, position, target };
   }
 });
 const feel = gameFeel.create({ app, time: app.time });
