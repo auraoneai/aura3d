@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   CONTACT_PLANE_T,
+  countAfterPitch,
   DRESSING,
   FOUL_DEG,
   GRASS_Y,
@@ -59,6 +60,19 @@ describe("called pitches (C1)", () => {
   it("a pitch with no swing outside the zone is a ball", () => {
     expect(calledPitch(path(2.2, 0))).toBe("ball");
     expect(calledPitch(path(0, -2.6, "curve"))).toBe("ball");
+  });
+});
+
+describe("ball-strike count", () => {
+  it("a third strike is a strikeout", () => {
+    expect(countAfterPitch({ balls: 3, strikes: 2 }, "strike")).toEqual({ balls: 3, strikes: 3, ends: "strikeout" });
+  });
+  it("a fourth ball is a walk", () => {
+    expect(countAfterPitch({ balls: 3, strikes: 2 }, "ball")).toEqual({ balls: 4, strikes: 2, ends: "walk" });
+  });
+  it("a foul is a strike below two strikes and never the third", () => {
+    expect(countAfterPitch({ balls: 0, strikes: 1 }, "foul")).toEqual({ balls: 0, strikes: 2, ends: null });
+    expect(countAfterPitch({ balls: 0, strikes: 2 }, "foul")).toEqual({ balls: 0, strikes: 2, ends: null });
   });
 });
 

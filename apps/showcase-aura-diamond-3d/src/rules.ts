@@ -287,6 +287,18 @@ export function calledPitch(p: PitchPath): "strike" | "ball" {
   return inZone(pitchPosAt(p, 1)) ? "strike" : "ball";
 }
 
+/** Ball-strike count after one pitch. A foul counts as a strike only below two strikes; three strikes or four balls end the at-bat. */
+export function countAfterPitch(
+  count: { readonly balls: number; readonly strikes: number },
+  call: "strike" | "ball" | "foul"
+): { balls: number; strikes: number; ends: "strikeout" | "walk" | null } {
+  let { balls, strikes } = count;
+  if (call === "ball") balls += 1;
+  else if (call === "strike") strikes += 1;
+  else if (strikes < 2) strikes += 1;
+  return { balls, strikes, ends: strikes >= 3 ? "strikeout" : balls >= 4 ? "walk" : null };
+}
+
 /**
  * Seconds until the ball reaches the contact plane, from either the windup (`phase = "windup"`, `phaseT` seconds in) or the
  * flight (`t` = pitch progress 0..1).

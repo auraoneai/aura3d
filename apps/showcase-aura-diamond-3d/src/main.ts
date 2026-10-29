@@ -94,6 +94,7 @@ import {
   shellPlacements,
   scoreboardPlacement,
   propSpot,
+  countAfterPitch,
   HARBOR_WATER,
   type Vec3,
   type ParkId,
@@ -2014,8 +2015,9 @@ function boot(): void {
       nextBatter();
       return;
     }
-    G.strikes += 1;
-    if (G.strikes >= 3) {
+    const next = countAfterPitch({ balls: G.balls, strikes: G.strikes }, "strike");
+    G.strikes = next.strikes;
+    if (next.ends === "strikeout") {
       recordOut(battingIsPlayer() ? "STRUCK OUT" : "STRIKEOUT — YOU GOT HIM");
       cue("strikeout");
       juiceFire("strikeout", {});
@@ -2032,8 +2034,9 @@ function boot(): void {
       // pitch rides to the mitt; cleanup happens in stepPitch
       return;
     }
-    G.balls += 1;
-    if (G.balls >= 4) {
+    const next = countAfterPitch({ balls: G.balls, strikes: G.strikes }, "ball");
+    G.balls = next.balls;
+    if (next.ends === "walk") {
       tick("ball four — take your base", "info");
       cue("walk");
       showBanner("WALK", 1.4);
@@ -2457,7 +2460,7 @@ function boot(): void {
         showBanner("FOUL", 1.1);
         cue("foul");
         juiceFire("foul", {});
-        if (G.strikes < 2) G.strikes += 1;
+        G.strikes = countAfterPitch({ balls: G.balls, strikes: G.strikes }, "foul").strikes;
         tick("fouled back", "warning");
         continueAtBat();
         break;
