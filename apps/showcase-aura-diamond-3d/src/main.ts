@@ -520,7 +520,7 @@ function buildStandsNodes(park: ParkSpec): any[] {
   void rng;
   for (const [i, c] of crowdPlacements(park).entries()) {
     nodes.push(
-      model(assets.diamondAthlete, {
+      model(assets.diamondCrowdAthlete, {
         name: `waver-${i}`,
         targetHeight: 1.88,
         role: "setDressing",
