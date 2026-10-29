@@ -225,7 +225,7 @@ export interface WorldRuntime {
   resetRun(): void;
   /** World translation of `joint` on every actor after posing each at a staggered clip phase (independence probe). */
   probeBones(joint?: string): { joint: string; translations: [number, number, number][]; distinct: number };
-  readonly stats: () => { visibleActors: number; actors: number; pickups: number; particles: number; debris: number };
+  readonly stats: () => { visibleActors: number; actors: number; pickups: number; particles: number; debris: number; threat: { target: number; from: number; to: number } | null };
   dispose(): void;
 }
 
@@ -409,6 +409,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
   const chase = cameras.chase({ lag: { eye: 7 } });
   let lastDamage = -10, lostAt = -1, lastFormShift = -10, dustClock = 0, auraClock = 0;
   let pieces: Piece[] = [];
+  let threatShown: { target: number; from: number; to: number } | null = null;
   const shake = options.shake;
   const POOL_CAP: Record<Piece["kind"], number> = { plank: PLANK_POOL, strap: STRAP_POOL, beam: BEAM_PIECE_POOL };
   const addPieces = (list: Piece[]): void => { pieces = pieces.concat(list); for (const k of ["plank", "strap", "beam"] as const) { let over = pieces.filter((q) => q.kind === k).length - POOL_CAP[k]; if (over > 0) pieces = pieces.filter((q) => (q.kind === k && over > 0 ? (over--, false) : true)); } };
@@ -622,6 +623,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
 
       /* threat marker: the hero's lane up to the next rival in it (the crosshair target), stronger as it closes in */
       const target = state.phase === "running" ? crosshairTarget(state) : null;
+      threatShown = null;
       const marker = node("threat-0");
       // A flat strip on the lane from 1.5 m ahead of the hero to just short of the rival (never under the hero).
       const near = s + 1.5, far = target ? target.s - 0.8 : 0;
@@ -631,6 +633,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
         marker.setPosition(f.x, f.y, f.z);
         marker.setRotation(0, Math.atan2(f.dx, f.dz), 0);
         marker.setScale([0.55, 1, far - near]);
+        threatShown = { target: target.id, from: +near.toFixed(2), to: +far.toFixed(2) };
         marker.setUniform?.("solidAlpha", 0.16 + 0.3 * (1 - Math.min(1, (target.s - s) / 26)));
       }
 
@@ -789,7 +792,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       });
       return { joint: name, translations, distinct: new Set(translations.map((t) => t.map((v) => v.toFixed(4)).join(","))).size };
     },
-    stats: () => ({ visibleActors: visible.filter(Boolean).length, actors: actors.length, pickups: pickups.length, particles: pool.filter((p) => p.life > 0).length, debris: pieces.length }),
+    stats: () => ({ visibleActors: visible.filter(Boolean).length, actors: actors.length, pickups: pickups.length, particles: pool.filter((p) => p.life > 0).length, debris: pieces.length, threat: threatShown }),
     dispose() { detach(); }
   };
 }

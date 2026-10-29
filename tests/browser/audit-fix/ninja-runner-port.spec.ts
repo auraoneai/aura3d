@@ -75,6 +75,7 @@ async function engine(page: Page) {
         drawCalls: dg?.drawCalls ?? null, shadows: dg?.shadows ? JSON.stringify(dg.shadows).slice(0, 400) : null,
         warnings: Array.isArray(dg?.warnings) ? dg.warnings.map((w: unknown) => String(typeof w === "object" && w && "message" in w ? (w as { message: string }).message : w).slice(0, 160)).slice(0, 8) : null,
         environment: dg?.environment ? JSON.stringify(dg.environment).slice(0, 300) : dg?.lighting ? JSON.stringify(dg.lighting).slice(0, 300) : null,
+        threat: (() => { try { return h?.stats?.().threat ?? null; } catch { return null; } })(),
         phase: snap?.phase ?? null, distance: snap?.distance ?? null, form: snap?.form ?? null, kills: snap?.kills ?? null
       };
     } catch (e) { return { err: String(e).slice(0, 200) }; }

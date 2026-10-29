@@ -476,7 +476,7 @@ const api = {
   runIdle: (maxSteps = 40000) => summary(runIdle(maxSteps)),
   courseDigest: () => courseDigest(createState(config.seed)),
   probeBones: () => runtime?.probeBones(),
-  stats: () => ({ ...(runtime?.stats() ?? { visibleActors: 0, actors: ACTOR_COUNT, pickups: 0, particles: 0, debris: 0 }), shared: actors ? { textureEntries: actors.sharedTextureEntries, refs: actors.sharedTextureRefs, clips: actors.clips, clip: actors.clip } : null }),
+  stats: () => ({ ...(runtime?.stats() ?? { visibleActors: 0, actors: ACTOR_COUNT, pickups: 0, particles: 0, debris: 0, threat: null }), shared: actors ? { textureEntries: actors.sharedTextureEntries, refs: actors.sharedTextureRefs, clips: actors.clips, clip: actors.clip } : null }),
   diagnostics: () => app?.diagnostics() ?? null,
   appInfo: () => app?.info ?? null,
   routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SG-03", "SG-05", "SH-02", "SH-01", "SA-04", "ST-02", "R-23", "R-26"] }) : null),
