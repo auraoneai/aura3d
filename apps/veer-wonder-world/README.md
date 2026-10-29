@@ -78,11 +78,12 @@ pnpm exec tsc -p apps/veer-wonder-world/tsconfig.json --noEmit
 node apps/veer-wonder-world/tools/gen-aura-assets.mjs && node apps/veer-wonder-world/tools/gen-audio-manifest.mjs && git diff --exit-code apps/veer-wonder-world/src
 ```
 
-Browser specs (J08-J13) and the production build with `aura3d check-deploy --browser` run only on the remote runner, never on a developer Mac. One run takes the spec files named by their stems; the runner stops a run at 60 minutes, so run one line of the list in `tests/browser/wonder-world-lib.ts` per run (21 spec files in 20 runs):
+Browser specs (J08-J13) and the production build with `aura3d check-deploy --browser` run only on the remote runner, never on a developer Mac. One run takes the spec files named by their stems; the runner stops a run at 60 minutes, so run one line of the list in `tests/browser/wonder-world-lib.ts` per run (22 spec files in 21 runs):
 
 ```bash
 apps/veer-wonder-world/tools/remote-run.sh first-frame build       # first frame, Vite build, served-bundle privacy scan, check-deploy --browser
 apps/veer-wonder-world/tools/remote-run.sh touch-and-layout
+apps/veer-wonder-world/tools/remote-run.sh start-screen            # the welcome fits and stays clear at 13 screen sizes
 apps/veer-wonder-world/tools/remote-run.sh look                    # look-dev frames of the six worlds (src/scenes/LOOK-BRIEF.md)
 ```
 

@@ -7,6 +7,7 @@
  * minutes come from the 2026-10-29 runs, "est." where no run has measured the file yet):
  *   apps/veer-wonder-world/tools/remote-run.sh first-frame build                     (10 min)
  *   apps/veer-wonder-world/tools/remote-run.sh touch-and-layout                      (26 min)
+ *   apps/veer-wonder-world/tools/remote-run.sh start-screen                          (the welcome at 13 sizes, est. 15 min)
  *   apps/veer-wonder-world/tools/remote-run.sh audio-and-pausing                     (est. 8 min)
  *   apps/veer-wonder-world/tools/remote-run.sh low-motion                            (URL flag, about 26 min)
  *   apps/veer-wonder-world/tools/remote-run.sh low-motion-2                          (parent setting, about 27 min)
