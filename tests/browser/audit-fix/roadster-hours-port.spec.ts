@@ -124,14 +124,15 @@ test.describe("roadster-hours-port audit fix (G22)", () => {
     const phone = async (): Promise<void> => {
       await cdp.send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
       await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 5 });
-      await page.evaluate(() => window.dispatchEvent(new Event("resize")));
+      // The page picks touch controls from (pointer: coarse) at load; a phone frame shows them (no effect on the base build).
+      await page.evaluate(() => { document.body.classList.add("touch"); window.dispatchEvent(new Event("resize")); });
       await page.waitForTimeout(800);
     };
     const desktop = async (): Promise<void> => {
       await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: false });
       await cdp.send("Emulation.clearDeviceMetricsOverride");
       await page.setViewportSize({ width: 1280, height: 720 });
-      await page.evaluate(() => window.dispatchEvent(new Event("resize")));
+      await page.evaluate(() => { document.body.classList.remove("touch"); window.dispatchEvent(new Event("resize")); });
       await page.waitForTimeout(800);
     };
 
@@ -199,6 +200,33 @@ test.describe("roadster-hours-port audit fix (G22)", () => {
     }
   }
 
+  test("finish fanfare and next route in place", async ({ page }) => {
+    page.on("pageerror", (e) => log(`RH_ERR pageerror ${e.message.slice(0, 300)}`));
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto(`${server.origin}/examples/roadster-hours-port/?manual=1&meshy=0&level=0`, { waitUntil: "domcontentloaded" });
+    await waitReady(page);
+    await beginAndStep(page, 0);
+    for (let i = 0; i < 40; i++) {
+      const phase = await page.evaluate(() => (window as unknown as { __AURA_ROADSTER_HOURS__: Hooks }).__AURA_ROADSTER_HOURS__.snapshot().phase);
+      if (phase === "complete") break;
+      await api(page, "stepSteps", 1000);
+    }
+    await api(page, "renderNow");
+    await page.waitForTimeout(1000);
+    const cues = await page.evaluate(() => (window as unknown as { __AURA_ROADSTER_HOURS__: Hooks }).__AURA_ROADSTER_HOURS__.cues?.() ?? null);
+    const results = await probe(page);
+    const best = await page.evaluate(() => ({ best: document.getElementById("result-best")?.textContent ?? null, stored: localStorage.getItem("saltwind-highway:results") }));
+    log(`RH_META ${JSON.stringify({ name: "finish-cues", cues, best, screen: results.screen })}`);
+    const t0 = Date.now();
+    await page.evaluate(() => (document.getElementById("next") as HTMLButtonElement | null)?.click());
+    await page.waitForFunction(() => { const h = (window as unknown as { __AURA_ROADSTER_HOURS__: Hooks }).__AURA_ROADSTER_HOURS__; return h.ready && h.snapshot().level === "redline"; }, undefined, { timeout: 600_000, polling: 1000 });
+    const reloaded = await page.evaluate(() => performance.getEntriesByType("navigation").length && (performance.timeOrigin < Date.now() - 60_000));
+    await api(page, "setAutopilot", true);
+    await api(page, "stepSteps", 330 + 600);
+    await shot(page, "next-route-redline", { switchMs: Date.now() - t0, url: page.url(), reloaded });
+    log("RH_DONE next-route");
+  });
+
   test.describe("touch", () => {
     test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 1 });
     test("touch controls drive the car", async ({ page }) => {
@@ -219,10 +247,10 @@ test.describe("roadster-hours-port audit fix (G22)", () => {
         await page.evaluate(() => document.getElementById("touch-throttle")!.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, pointerId: 7, pointerType: "touch" })));
         const v1 = await page.evaluate(() => (window as unknown as { __AURA_ROADSTER_HOURS__: Hooks }).__AURA_ROADSTER_HOURS__.snapshot().speed);
         const c0 = await page.evaluate(() => (window as unknown as { __AURA_ROADSTER_HOURS__: Hooks }).__AURA_ROADSTER_HOURS__.snapshot().crashes);
-        await page.evaluate(() => { const el = document.getElementById("touch-recover")!; el.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerId: 8, pointerType: "touch" })); });
+        // A real tap (touch events, then click): the recover button is a pulse bound to click.
+        await page.locator("#touch-recover").tap();
         await api(page, "stepSteps", 12);
-        await page.evaluate(() => { const el = document.getElementById("touch-recover")!; el.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, pointerId: 8, pointerType: "touch" })); });
-        await page.waitForTimeout(100);
+        await page.waitForTimeout(150);
         await api(page, "stepSteps", 2);
         const c1 = await page.evaluate(() => (window as unknown as { __AURA_ROADSTER_HOURS__: Hooks }).__AURA_ROADSTER_HOURS__.snapshot().crashes);
         drive = { hasThrottle, throttleBox: box, speedBefore: v0, speedAfter: v1, crashesBefore: c0, crashesAfterRecoverTap: c1 };
