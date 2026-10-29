@@ -69,8 +69,8 @@ export const MODEL_RIGHTS: readonly ModelRightsRecord[] = [
   },
   {
     "key": "lumi",
-    "file": "src/assets/models/lumi.911a1a6c.glb",
-    "sha256": "911a1a6c27e65f4f6c8aaa02ef2abcfbfacfa119ceb98e2c9c5e1734a07a532c",
+    "file": "src/assets/models/lumi.d65cb9e6.glb",
+    "sha256": "d65cb9e69abf3776bf02761f3cb4cf23ba38ad0c2d87a0c430172a5a0b5212b9",
     "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
     "generator": "Meshy text-to-3d (preview, refine 2k, remesh) via Kiro Prism",
     "owner": "AuraOne (project owner)",

@@ -18,7 +18,8 @@
   "status": "approved",
   "reviewer": "agent:claude-opus-5.5",
   "date": "2026-10-29",
-  "notes": "Warm yellow puffy star with a friendly face; matches brief."
+  "notes": "Warm yellow puffy star with a friendly face; matches brief. In the app's daylight the untinted texture read near-white against the learning cloud (remote character sheets, 2026-10-29), so it is tinted a soft warm yellow per brief, lighter than Peeko's.",
+  "tint": "#ffeb99"
  },
  "teddy": {
   "status": "approved",
