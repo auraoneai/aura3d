@@ -243,9 +243,13 @@ export async function startProductionRender(
     }
     let drawCalls: number;
     try {
-      drawCalls = submittedDrawCalls ?? renderer.render(renderTime);
+      // top-tennis C8: while the WebGL context is lost nothing can be presented; skip the frame instead of throwing, keep the
+      // loop alive, and let the app's onDeviceRestored handler remount (the documented recovery contract).
+      drawCalls = submittedDrawCalls === undefined && renderer.deviceLost?.() ? 0 : submittedDrawCalls ?? renderer.render(renderTime);
     } catch (error) {
-      rethrowShaderFailure(error);
+      // A loss in the middle of a frame (the context goes before the webglcontextlost event arrives) is not a render failure.
+      if (renderer.deviceLost?.()) drawCalls = 0;
+      else rethrowShaderFailure(error);
     }
     diagnosticsState.backend = renderer.backend;
     diagnosticsState.fps = frameRate.fps();
@@ -306,7 +310,10 @@ export async function startProductionRender(
       // that callback; pending ownership still defers cleanup until this settles.
       if (disposed) throw new Error("Aura3D renderer is disposed.");
       const renderTime = resolveRootRenderTime(time, !automatic, isPaused, pausedRenderTime);
-      const drawCalls = await renderer.renderAsync!(renderTime);
+      const drawCalls = renderer.deviceLost?.() ? 0 : await renderer.renderAsync!(renderTime).catch((error: unknown) => {
+        if (renderer.deviceLost?.()) return 0;
+        throw error;
+      });
       if (!disposed) {
         const previousLastTime = lastTime;
         renderFrame(renderTime, drawCalls, true);
