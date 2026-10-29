@@ -1266,6 +1266,10 @@ function checkDuration(ctx: Ctx): void {
     if (computed > 0 && Number.isFinite(declared) && Math.abs(declared - computed) > DURATION_TOLERANCE * computed) {
       errors.push(`estimatedDurationSec ${declared} is more than ${Math.round(DURATION_TOLERANCE * 100)}% away from the computed ${Math.round(computed)} s (lines + holds + waits, no taps)`);
     }
+    // Recorded speech runs faster than the text estimate, so the declared length alone can hide a short episode.
+    if (opts.audio && computed > 0 && computed < EPISODE_MIN_SEC) {
+      errors.push(`runs about ${Math.round(computed)} s with its recorded audio (no taps); an episode runs ${EPISODE_MIN_SEC}-${EPISODE_MAX_SEC} s (PRD 05), so lengthen its holds`);
+    }
   } else {
     const longest = estimateStoryMs(story, locale, { ...(opts.audio ? { audio: opts.audio } : {}), rounds: roundLimit(story) }) / 1000;
     if (longest > ACTIVITY_MAX_SEC) errors.push(`playing every round takes about ${Math.round(longest)} s; keep an activity under ${ACTIVITY_MAX_SEC} s`);

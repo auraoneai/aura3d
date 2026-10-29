@@ -65,7 +65,7 @@ export const episode: EpisodeSpec = {
     reviewer: "agent:claude-opus-5.5 (owner instruction 2026-10-29, no human sign-off)",
     date: "2026-10-29"
   },
-  estimatedDurationSec: 131,
+  estimatedDurationSec: 129,
   beats: [
     {
       // Morning (PRD 05 E19 hook): the toy sun rises in the bedroom while Momo still sleeps.

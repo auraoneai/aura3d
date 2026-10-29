@@ -46,7 +46,7 @@ export const episode: EpisodeSpec = {
     reviewer: "agent:claude-opus-5.5 (owner instruction 2026-10-29, no human sign-off)",
     date: "2026-10-29"
   },
-  estimatedDurationSec: 138,
+  estimatedDurationSec: 136,
   beats: [
     {
       id: "greet",

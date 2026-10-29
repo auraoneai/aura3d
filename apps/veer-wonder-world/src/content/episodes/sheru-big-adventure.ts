@@ -58,7 +58,7 @@ export const episode: EpisodeSpec = {
     reviewer: "agent:claude-opus-5.5 (owner instruction 2026-10-29, no human sign-off)",
     date: "2026-10-29"
   },
-  estimatedDurationSec: 133,
+  estimatedDurationSec: 123,
   beats: [
     {
       // 1. Momo waves "Hi!"; Sheru sits nearby; the ball rests at the back of the meadow.
@@ -82,7 +82,7 @@ export const episode: EpisodeSpec = {
         { wordId: "hi", objectId: "sheru" },
         { wordId: "dog", objectId: "sheru" }
       ],
-      holdMs: 5000
+      holdMs: 6500
     },
     {
       // 2. The ball rolls slowly into view; Sheru follows it with his eyes and
@@ -107,7 +107,7 @@ export const episode: EpisodeSpec = {
         { wordId: "look", objectId: "ball" },
         { wordId: "roll", objectId: "ball" }
       ],
-      holdMs: 7500
+      holdMs: 9000
     },
     {
       // 3. Momo points: "Ball." Sheru walks up to the ball and noses it (the stage
@@ -132,7 +132,7 @@ export const episode: EpisodeSpec = {
         { wordId: "ball", objectId: "ball" },
         { wordId: "red", objectId: "ball" }
       ],
-      holdMs: 7000
+      holdMs: 9000
     },
     {
       // 4. "Ready..." and a calm pause; the ball glows softly as the one big target.
@@ -146,7 +146,7 @@ export const episode: EpisodeSpec = {
         { do: "gesture", actor: "sheru", gesture: "wag" }
       ],
       lines: [{ speaker: "momo", key: "e17.invite.1" }],
-      holdMs: 2000,
+      holdMs: 3000,
       input: { type: "tap", targets: ["ball"] },
       waitMs: 5000,
       caregiverPromptKey: "e17.tip.1",
@@ -188,7 +188,7 @@ export const episode: EpisodeSpec = {
         { wordId: "go", objectId: "sheru" },
         { wordId: "ball", objectId: "ball" }
       ],
-      holdMs: 6500
+      holdMs: 9000
     },
     {
       // 6. Sheru brings the ball back, panting happily; "More ball?" and another
@@ -210,7 +210,7 @@ export const episode: EpisodeSpec = {
         { speaker: "momo", key: "e17.repeat.2" },
         { speaker: "momo", key: "e17.repeat.3" }
       ],
-      holdMs: 3000,
+      holdMs: 5500,
       input: { type: "tap", targets: ["ball"] },
       waitMs: 5000,
       caregiverPromptKey: "e17.tip.2",
@@ -284,7 +284,7 @@ export const episode: EpisodeSpec = {
         { wordId: "ball", objectId: "ball" },
         { wordId: "roll", objectId: "ball" }
       ],
-      holdMs: 7000
+      holdMs: 9500
     }
   ]
 };

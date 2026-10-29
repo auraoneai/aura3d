@@ -43,7 +43,7 @@ export const episode: EpisodeSpec = {
     reviewer: "agent:claude-opus-5.5 (owner instruction 2026-10-29, no human sign-off)",
     date: "2026-10-29"
   },
-  estimatedDurationSec: 129,
+  estimatedDurationSec: 124,
   beats: [
     {
       id: "hello",
@@ -72,7 +72,7 @@ export const episode: EpisodeSpec = {
         { speaker: "narrator", key: "e10.greet.2" }
       ],
       words: [{ wordId: "hi", objectId: "momo" }],
-      holdMs: 1500
+      holdMs: 3000
     },
     {
       id: "rumble",
@@ -83,7 +83,7 @@ export const episode: EpisodeSpec = {
         { do: "gesture", actor: "momo", gesture: "look" }
       ],
       lines: [],
-      holdMs: 2000
+      holdMs: 3000
     },
     {
       id: "tummy",
@@ -98,7 +98,7 @@ export const episode: EpisodeSpec = {
         { speaker: "momo", key: "e10.tummy.2" }
       ],
       words: [{ wordId: "tummy", objectId: "momo" }],
-      holdMs: 1500
+      holdMs: 3000
     },
     {
       id: "basket",
@@ -114,7 +114,7 @@ export const episode: EpisodeSpec = {
         { speaker: "momo", key: "e10.basket.2" }
       ],
       words: [{ wordId: "picnic", objectId: "basket" }],
-      holdMs: 1500
+      holdMs: 2500
     },
     {
       id: "sniff",
@@ -128,7 +128,7 @@ export const episode: EpisodeSpec = {
         { speaker: "momo", key: "e10.sniff.1" },
         { speaker: "momo", key: "e10.sniff.2" }
       ],
-      holdMs: 1000
+      holdMs: 2000
     },
     {
       id: "open",
@@ -144,7 +144,7 @@ export const episode: EpisodeSpec = {
         { speaker: "momo", key: "e10.open.2" }
       ],
       words: [{ wordId: "open", objectId: "basket" }],
-      holdMs: 1500
+      holdMs: 2500
     },
     {
       id: "apple",
@@ -162,7 +162,7 @@ export const episode: EpisodeSpec = {
         { speaker: "narrator", key: "e10.apple.2" }
       ],
       words: [{ wordId: "apple", objectId: "apple" }],
-      holdMs: 1500
+      holdMs: 3000
     },
     {
       id: "eat-apple",
@@ -182,7 +182,7 @@ export const episode: EpisodeSpec = {
         { wordId: "mmm", objectId: "momo" },
         { wordId: "apple", objectId: "apple" }
       ],
-      holdMs: 1500
+      holdMs: 3000
     },
     {
       id: "banana",
@@ -200,7 +200,7 @@ export const episode: EpisodeSpec = {
         { speaker: "narrator", key: "e10.banana.2" }
       ],
       words: [{ wordId: "banana", objectId: "banana" }],
-      holdMs: 1500
+      holdMs: 3000
     },
     {
       id: "eat-banana",
@@ -220,7 +220,7 @@ export const episode: EpisodeSpec = {
         { wordId: "mmm", objectId: "momo" },
         { wordId: "banana", objectId: "banana" }
       ],
-      holdMs: 1500
+      holdMs: 3000
     },
     {
       id: "yum",
@@ -232,7 +232,7 @@ export const episode: EpisodeSpec = {
       ],
       lines: [{ speaker: "momo", key: "e10.yum.1" }],
       words: [{ wordId: "tummy", objectId: "momo" }],
-      holdMs: 1000
+      holdMs: 2000
     },
     {
       id: "both",
@@ -248,7 +248,7 @@ export const episode: EpisodeSpec = {
         { wordId: "apple", objectId: "apple" },
         { wordId: "banana", objectId: "banana" }
       ],
-      holdMs: 1500
+      holdMs: 2500
     },
     {
       id: "invite",
@@ -325,7 +325,7 @@ export const episode: EpisodeSpec = {
         { speaker: "narrator", key: "e10.full.2" }
       ],
       words: [{ wordId: "tummy", objectId: "momo" }],
-      holdMs: 1500,
+      holdMs: 2500,
       caregiverPromptKey: "e10.tip.3"
     },
     {
@@ -359,7 +359,7 @@ export const episode: EpisodeSpec = {
         { wordId: "apple", objectId: "apple" },
         { wordId: "banana", objectId: "banana" }
       ],
-      holdMs: 3500
+      holdMs: 4500
     }
   ]
 };

@@ -39,7 +39,7 @@ export const episode: EpisodeSpec = {
     reviewer: "agent:claude-opus-5.5 (owner instruction 2026-10-29, no human sign-off)",
     date: "2026-10-29"
   },
-  estimatedDurationSec: 126,
+  estimatedDurationSec: 124,
   beats: [
     {
       id: "greet",
@@ -71,7 +71,7 @@ export const episode: EpisodeSpec = {
         { wordId: "hi", objectId: "momo" },
         { wordId: "hi", objectId: "peeko" }
       ],
-      holdMs: 3500
+      holdMs: 5000
     },
     {
       // A soft doorbell, heard on its own; the door wiggles gently.
@@ -84,7 +84,7 @@ export const episode: EpisodeSpec = {
         { do: "face", actor: "peeko", toward: "door" }
       ],
       lines: [],
-      holdMs: 3500
+      holdMs: 4500
     },
     {
       id: "who",
@@ -100,7 +100,7 @@ export const episode: EpisodeSpec = {
         { speaker: "narrator", key: "e18.who.4" }
       ],
       words: [{ wordId: "door", objectId: "door" }],
-      holdMs: 3000
+      holdMs: 4500
     },
     {
       // First visitor: the door opens slowly and Lulu is standing there.
@@ -123,7 +123,7 @@ export const episode: EpisodeSpec = {
         { wordId: "hello", objectId: "lulu" },
         { wordId: "hi", objectId: "lulu" }
       ],
-      holdMs: 3000
+      holdMs: 4500
     },
     {
       id: "lulu-in",
@@ -138,7 +138,7 @@ export const episode: EpisodeSpec = {
         { speaker: "peeko", key: "e18.lulu-in.2" }
       ],
       words: [{ wordId: "hi", objectId: "lulu" }],
-      holdMs: 2500
+      holdMs: 4000
     },
     {
       id: "lulu-hi",
@@ -156,7 +156,7 @@ export const episode: EpisodeSpec = {
         { wordId: "hi", objectId: "peeko" },
         { wordId: "door", objectId: "door" }
       ],
-      holdMs: 2500
+      holdMs: 4000
     },
     {
       // The bell again, heard on its own.
@@ -170,7 +170,7 @@ export const episode: EpisodeSpec = {
         { do: "face", actor: "lulu", toward: "door" }
       ],
       lines: [],
-      holdMs: 3500
+      holdMs: 4500
     },
     {
       // Child turn: tap the door (or the caregiver confirms). Silence opens it too.
@@ -226,7 +226,7 @@ export const episode: EpisodeSpec = {
         { wordId: "woof", objectId: "sheru" },
         { wordId: "hi", objectId: "sheru" }
       ],
-      holdMs: 2500
+      holdMs: 4000
     },
     {
       // Gentle humour: Sheru sniffs Peeko (a soft sniffing sound), who giggles.
@@ -245,7 +245,7 @@ export const episode: EpisodeSpec = {
         { speaker: "momo", key: "e18.sniff.3" }
       ],
       words: [{ wordId: "hello", objectId: "momo" }],
-      holdMs: 2000
+      holdMs: 3500
     },
     {
       // All four friends are on stage, so all four are the song's default
@@ -325,7 +325,7 @@ export const episode: EpisodeSpec = {
         { wordId: "door", objectId: "door" },
         { wordId: "bye", objectId: "peeko" }
       ],
-      holdMs: 3000
+      holdMs: 4500
     },
     {
       id: "outro",
@@ -350,7 +350,7 @@ export const episode: EpisodeSpec = {
         { wordId: "all-done", objectId: "momo" },
         { wordId: "bye", objectId: "peeko" }
       ],
-      holdMs: 4500
+      holdMs: 6000
     }
   ]
 };

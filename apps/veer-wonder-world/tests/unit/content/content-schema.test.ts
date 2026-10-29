@@ -711,6 +711,15 @@ describe("the content lint catches each rule (synthetic stories)", () => {
     expectProblem(errors, "no recorded audio for music bed meadowBed");
   });
 
+  it("measures an episode's length with its recorded audio, which can run shorter than the text estimate", () => {
+    const clip = (durationMs: number) => ({ url: "/clip.mp3", sha256: "0".repeat(64), durationMs });
+    const audioOf = (lineMs: number) => ({ lines: Object.fromEntries(Object.keys(baseLocale.lines).map((key) => [key, clip(lineMs)])), sfx: {}, songs: {}, beds: {} });
+    expectProblem(validateStory(base, baseLocale, { audio: audioOf(300) }), "with its recorded audio (no taps); an episode runs 120-240 s");
+    expect(validateStory(base, baseLocale, { audio: audioOf(2500) }).join("\n")).not.toContain("with its recorded audio");
+    // Without recorded audio the text estimate stands.
+    expect(validateStory(base, baseLocale).join("\n")).not.toContain("with its recorded audio");
+  });
+
   it("checks the catalog shape, line-key ownership and stray locale keys", () => {
     const missing = validateCatalog([base], baseLocale);
     expectProblem(missing, "catalog: e02 (peekaboo-palace) is missing from the catalog");

@@ -47,7 +47,7 @@ export const episode: EpisodeSpec = {
     reviewer: "agent:claude-opus-5.5 (owner instruction 2026-10-29, no human sign-off)",
     date: "2026-10-29"
   },
-  estimatedDurationSec: 126,
+  estimatedDurationSec: 124,
   beats: [
     {
       id: "greet",
@@ -71,7 +71,7 @@ export const episode: EpisodeSpec = {
         { wordId: "hello", objectId: "lumi" },
         { wordId: "look", objectId: "box" }
       ],
-      holdMs: 3000
+      holdMs: 4500
     },
     {
       // The one concrete thing: a magic story box that wiggles gently.
@@ -93,7 +93,7 @@ export const episode: EpisodeSpec = {
         { wordId: "box", objectId: "box" },
         { wordId: "in", objectId: "box" }
       ],
-      holdMs: 3000
+      holdMs: 4500
     },
     {
       id: "open",
@@ -111,7 +111,7 @@ export const episode: EpisodeSpec = {
         { wordId: "open", objectId: "box" },
         { wordId: "box", objectId: "box" }
       ],
-      holdMs: 2500
+      holdMs: 4000
     },
     {
       // Toy 1 hops out of the box.
@@ -131,7 +131,7 @@ export const episode: EpisodeSpec = {
         { wordId: "teddy", objectId: "teddy" },
         { wordId: "hi", objectId: "teddy" }
       ],
-      holdMs: 2500
+      holdMs: 4000
     },
     {
       // Toy 2 rolls out of the box.
@@ -150,7 +150,7 @@ export const episode: EpisodeSpec = {
         { wordId: "out", objectId: "ball" },
         { wordId: "ball", objectId: "ball" }
       ],
-      holdMs: 2500
+      holdMs: 4000
     },
     {
       // Toy 3 drives out of the box.
@@ -171,7 +171,7 @@ export const episode: EpisodeSpec = {
         { wordId: "car", objectId: "car" },
         { wordId: "beep", objectId: "car" }
       ],
-      holdMs: 2500
+      holdMs: 4000
     },
     {
       // Story A, child turn: tap Teddy or the ball (or wait). Both are in the story.
@@ -186,7 +186,7 @@ export const episode: EpisodeSpec = {
         { speaker: "lumi", key: "e20.pick-1.1" },
         { speaker: "momo", key: "e20.pick-1.2" }
       ],
-      holdMs: 1500,
+      holdMs: 2500,
       input: { type: "tap", targets: ["teddy", "ball"] },
       waitMs: 5000,
       caregiverPromptKey: "e20.tip.1",
@@ -227,7 +227,7 @@ export const episode: EpisodeSpec = {
         { wordId: "ball", objectId: "ball" },
         { wordId: "roll", objectId: "ball" }
       ],
-      holdMs: 3000
+      holdMs: 4500
     },
     {
       // Story B, child turn: tap the car or Teddy (or wait). Both are in the
@@ -243,7 +243,7 @@ export const episode: EpisodeSpec = {
         { speaker: "lumi", key: "e20.pick-2.1" },
         { speaker: "momo", key: "e20.pick-2.2" }
       ],
-      holdMs: 1500,
+      holdMs: 2500,
       input: { type: "tap", targets: ["car", "teddy"] },
       waitMs: 5000,
       caregiverPromptKey: "e20.tip.2",
@@ -286,7 +286,7 @@ export const episode: EpisodeSpec = {
         { wordId: "go", objectId: "car" },
         { wordId: "beep", objectId: "car" }
       ],
-      holdMs: 3500
+      holdMs: 5000
     },
     {
       // Resolution: the original "Ball Rolls" song while the ball rolls once more,
@@ -330,7 +330,7 @@ export const episode: EpisodeSpec = {
         { wordId: "all-done", objectId: "momo" },
         { wordId: "bye", objectId: "lumi" }
       ],
-      holdMs: 4500
+      holdMs: 6000
     }
   ]
 };

@@ -57,7 +57,7 @@ export const episode: EpisodeSpec = {
     reviewer: "agent:claude-opus-5.5 (owner instruction 2026-10-29, no human sign-off)",
     date: "2026-10-29"
   },
-  estimatedDurationSec: 128,
+  estimatedDurationSec: 125,
   beats: [
     {
       id: "greet",
@@ -80,7 +80,7 @@ export const episode: EpisodeSpec = {
         { wordId: "hi", objectId: "lulu" },
         { wordId: "hello", objectId: "momo" }
       ],
-      holdMs: 3500
+      holdMs: 5000
     },
     {
       // The one concrete thing: a little cake in the middle of the garden.
@@ -101,7 +101,7 @@ export const episode: EpisodeSpec = {
         { wordId: "look", objectId: "cake" },
         { wordId: "cake", objectId: "cake" }
       ],
-      holdMs: 4000
+      holdMs: 5500
     },
     {
       // Who the party is for: Teddy, sitting behind the cake.
@@ -122,7 +122,7 @@ export const episode: EpisodeSpec = {
         { wordId: "hi", objectId: "teddy" },
         { wordId: "cake", objectId: "cake" }
       ],
-      holdMs: 3500
+      holdMs: 5000
     },
     {
       // Counting 1: exactly one balloon is in view when "One" is spoken.
@@ -144,7 +144,7 @@ export const episode: EpisodeSpec = {
         { wordId: "balloon", objectId: "balloon1" },
         { wordId: "up", objectId: "balloon1" }
       ],
-      holdMs: 3000
+      holdMs: 4500
     },
     {
       // Counting 2: the second balloon appears in the same beat as "Two".
@@ -164,7 +164,7 @@ export const episode: EpisodeSpec = {
         { wordId: "two", objectId: "balloon2" },
         { wordId: "up", objectId: "balloon2" }
       ],
-      holdMs: 3000
+      holdMs: 4500
     },
     {
       // Counting 3 (child turn): the third balloon waits low and close, in front
@@ -220,7 +220,7 @@ export const episode: EpisodeSpec = {
         { speaker: "lulu", key: "e16.candle.2" }
       ],
       words: [{ wordId: "look", objectId: "flame" }],
-      holdMs: 2000
+      holdMs: 3500
     },
     {
       // Resolution song while the pretend candle glows, as at a real party: the
@@ -265,7 +265,7 @@ export const episode: EpisodeSpec = {
         { wordId: "blow", objectId: "cake" },
         { wordId: "out", objectId: "cake" }
       ],
-      holdMs: 2500
+      holdMs: 4000
     },
     {
       // Gentle surprise: the silly pretend candle lights again by itself.
@@ -339,7 +339,7 @@ export const episode: EpisodeSpec = {
         { wordId: "cake", objectId: "cake" },
         { wordId: "teddy", objectId: "teddy" }
       ],
-      holdMs: 3000
+      holdMs: 4500
     },
     {
       id: "outro",
@@ -362,7 +362,7 @@ export const episode: EpisodeSpec = {
         { wordId: "bye", objectId: "momo" },
         { wordId: "teddy", objectId: "teddy" }
       ],
-      holdMs: 4500
+      holdMs: 5500
     }
   ]
 };

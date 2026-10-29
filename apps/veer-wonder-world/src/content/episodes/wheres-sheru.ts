@@ -60,7 +60,7 @@ export const episode: EpisodeSpec = {
     reviewer: "agent:claude-opus-5.5 (owner instruction 2026-10-29, no human sign-off)",
     date: "2026-10-29"
   },
-  estimatedDurationSec: 139,
+  estimatedDurationSec: 125,
   beats: [
     {
       id: "hello",
@@ -91,7 +91,7 @@ export const episode: EpisodeSpec = {
         { speaker: "momo", key: "e08.greet.2" }
       ],
       words: [{ wordId: "hi", objectId: "momo" }],
-      holdMs: 1000
+      holdMs: 2000
     },
     {
       id: "where",
@@ -106,7 +106,7 @@ export const episode: EpisodeSpec = {
         { speaker: "momo", key: "e08.where.2" }
       ],
       words: [{ wordId: "where", objectId: "momo" }],
-      holdMs: 2000
+      holdMs: 3000
     },
     {
       // The hook (05 E08): a soft woof from beneath the table.
@@ -160,7 +160,7 @@ export const episode: EpisodeSpec = {
         { wordId: "under", objectId: "box" },
         { wordId: "box", objectId: "box" }
       ],
-      holdMs: 1500
+      holdMs: 2500
     },
     {
       id: "bench",
@@ -177,7 +177,7 @@ export const episode: EpisodeSpec = {
         { speaker: "narrator", key: "e08.bench.2" }
       ],
       words: [{ wordId: "under", objectId: "bench" }],
-      holdMs: 1500
+      holdMs: 2500
     },
     {
       id: "woof-2",
@@ -245,7 +245,7 @@ export const episode: EpisodeSpec = {
         { wordId: "there", objectId: "sheru" },
         { wordId: "under", objectId: "table" }
       ],
-      holdMs: 2000
+      holdMs: 3000
     },
     {
       // Found: a happy double woof.
@@ -288,7 +288,7 @@ export const episode: EpisodeSpec = {
         { speaker: "narrator", key: "e08.eyes.2" }
       ],
       words: [{ wordId: "again", objectId: "momo" }],
-      holdMs: 1500
+      holdMs: 2500
     },
     {
       id: "sneak",
@@ -360,7 +360,7 @@ export const episode: EpisodeSpec = {
         { wordId: "out", objectId: "sheru" },
         { wordId: "there", objectId: "sheru" }
       ],
-      holdMs: 1000
+      holdMs: 2000
     },
     {
       // "In": Sheru hops along the front row, in front of Momo, into the open
@@ -439,7 +439,7 @@ export const episode: EpisodeSpec = {
       ],
       lines: [{ speaker: "momo", key: "e08.peekaboo.1" }],
       words: [{ wordId: "peekaboo", objectId: "momo" }],
-      holdMs: 1000,
+      holdMs: 2000,
       caregiverPromptKey: "e08.tip.3"
     },
     {

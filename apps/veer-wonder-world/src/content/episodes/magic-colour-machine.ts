@@ -50,7 +50,7 @@ export const episode: EpisodeSpec = {
     reviewer: "agent:claude-opus-5.5 (owner instruction 2026-10-29, no human sign-off)",
     date: "2026-10-29"
   },
-  estimatedDurationSec: 134,
+  estimatedDurationSec: 124,
   beats: [
     {
       id: "hello",
@@ -84,7 +84,7 @@ export const episode: EpisodeSpec = {
         { wordId: "hi", objectId: "momo" },
         { wordId: "hello", objectId: "lumi" }
       ],
-      holdMs: 1000
+      holdMs: 2500
     },
     {
       id: "found",
@@ -101,7 +101,7 @@ export const episode: EpisodeSpec = {
         { speaker: "narrator", key: "e07.found.2" }
       ],
       words: [{ wordId: "look", objectId: "machine" }],
-      holdMs: 1500
+      holdMs: 3000
     },
     {
       id: "ball-rolls",
@@ -121,7 +121,7 @@ export const episode: EpisodeSpec = {
         { wordId: "ball", objectId: "red-ball" },
         { wordId: "roll", objectId: "red-ball" }
       ],
-      holdMs: 1000
+      holdMs: 2500
     },
     {
       id: "ball-in",
@@ -136,7 +136,7 @@ export const episode: EpisodeSpec = {
         { wordId: "in", objectId: "red-ball" },
         { wordId: "ball", objectId: "red-ball" }
       ],
-      holdMs: 1000
+      holdMs: 2000
     },
     {
       id: "whirr",
@@ -161,7 +161,7 @@ export const episode: EpisodeSpec = {
         { speaker: "narrator", key: "e07.whirr.1" },
         { speaker: "momo", key: "e07.whirr.2" }
       ],
-      holdMs: 1500
+      holdMs: 2500
     },
     {
       id: "red",
@@ -184,7 +184,7 @@ export const episode: EpisodeSpec = {
         { wordId: "red", objectId: "red-ball" },
         { wordId: "ball", objectId: "red-ball" }
       ],
-      holdMs: 2000
+      holdMs: 3000
     },
     {
       id: "lumi-ball",
@@ -198,7 +198,7 @@ export const episode: EpisodeSpec = {
       ],
       lines: [{ speaker: "lumi", key: "e07.lumi-ball.1" }],
       words: [{ wordId: "ball", objectId: "blue-ball" }],
-      holdMs: 1000
+      holdMs: 2000
     },
     {
       id: "lumi-ball-in",
@@ -217,7 +217,7 @@ export const episode: EpisodeSpec = {
         { wordId: "in", objectId: "blue-ball" },
         { wordId: "ball", objectId: "blue-ball" }
       ],
-      holdMs: 1000
+      holdMs: 2000
     },
     {
       id: "invite-machine",
@@ -268,7 +268,7 @@ export const episode: EpisodeSpec = {
         { wordId: "blue", objectId: "blue-ball" },
         { wordId: "ball", objectId: "blue-ball" }
       ],
-      holdMs: 2000
+      holdMs: 3000
     },
     {
       id: "both",
@@ -289,7 +289,7 @@ export const episode: EpisodeSpec = {
         { wordId: "blue", objectId: "blue-ball" },
         { wordId: "ball", objectId: "red-ball" }
       ],
-      holdMs: 1500
+      holdMs: 2500
     },
     {
       id: "invite-choose",
@@ -336,7 +336,7 @@ export const episode: EpisodeSpec = {
         { wordId: "red", objectId: "red-ball" },
         { wordId: "ball", objectId: "red-ball" }
       ],
-      holdMs: 1000
+      holdMs: 2000
     },
     {
       id: "play-blue",
@@ -353,7 +353,7 @@ export const episode: EpisodeSpec = {
         { wordId: "blue", objectId: "blue-ball" },
         { wordId: "ball", objectId: "blue-ball" }
       ],
-      holdMs: 1500
+      holdMs: 2500
     },
     {
       id: "song",
@@ -398,7 +398,7 @@ export const episode: EpisodeSpec = {
         { wordId: "blue", objectId: "blue-ball" },
         { wordId: "ball", objectId: "red-ball" }
       ],
-      holdMs: 3000
+      holdMs: 4000
     }
   ]
 };

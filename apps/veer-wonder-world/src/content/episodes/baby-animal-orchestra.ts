@@ -49,7 +49,7 @@ export const episode: EpisodeSpec = {
     reviewer: "agent:claude-opus-5.5 (owner instruction 2026-10-29, no human sign-off)",
     date: "2026-10-29"
   },
-  estimatedDurationSec: 144,
+  estimatedDurationSec: 124,
   beats: [
     {
       id: "hello",
@@ -80,7 +80,7 @@ export const episode: EpisodeSpec = {
         { speaker: "lulu", key: "e09.greet.2" }
       ],
       words: [{ wordId: "hi", objectId: "lulu" }],
-      holdMs: 1000
+      holdMs: 2000
     },
     {
       id: "peeko",
@@ -108,7 +108,7 @@ export const episode: EpisodeSpec = {
         { wordId: "hi", objectId: "peeko" },
         { wordId: "chick", objectId: "peeko" }
       ],
-      holdMs: 1000
+      holdMs: 2000
     },
     {
       id: "cow",
@@ -252,7 +252,7 @@ export const episode: EpisodeSpec = {
         { speaker: "peeko", key: "e09.ready.1" },
         { speaker: "lulu", key: "e09.ready.2" }
       ],
-      holdMs: 1000
+      holdMs: 2000
     },
     {
       id: "rhythm",
@@ -370,7 +370,7 @@ export const episode: EpisodeSpec = {
         { wordId: "look", objectId: "sheru" },
         { wordId: "hi", objectId: "sheru" }
       ],
-      holdMs: 1000
+      holdMs: 2000
     },
     {
       id: "woof",
@@ -399,7 +399,7 @@ export const episode: EpisodeSpec = {
         { wordId: "woof", objectId: "sheru" },
         { wordId: "dog", objectId: "sheru" }
       ],
-      holdMs: 1000
+      holdMs: 2000
     },
     {
       id: "song-intro",
@@ -416,7 +416,7 @@ export const episode: EpisodeSpec = {
         { wordId: "quack", objectId: "duck" },
         { wordId: "woof", objectId: "sheru" }
       ],
-      holdMs: 500
+      holdMs: 1000
     },
     {
       id: "song",
