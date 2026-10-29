@@ -1,0 +1,3 @@
+{"target":"1280","probe":"boot","readyMs":31687,"sharedCatalogRequests":[]}
+{"target":"1280","probe":"space-reclick","elimClicksAfterOneClickAndThreeSpaces":4,"focusedAfterClick":"elim"}
+{"target":"1280","probe":"blur","input":null}
