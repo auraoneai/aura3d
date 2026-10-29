@@ -116,9 +116,19 @@ test.describe("strange-orbit-port play", () => {
       expect(afterSteer.heading - afterHold.heading, "dragging right steers right").not.toBe(0);
       expect(boosted?.boostTime ?? 0, "Boost button boosts").toBeGreaterThan(0);
     }
-    // hold the pad again for a steady racing frame with the controls visible
+    // a fresh race held on the pad and steered along the racing line with the thumb: a steady frame with the controls visible
+    await call(page, "reset");
+    await call(page, "stepFrames", 200);
     await touch("touchStart", [{ ...pad, id: 1 }]);
-    await call(page, "stepFrames", 240);
+    for (let i = 0; i < 36; i++) {
+      const st = await state(page);
+      const want = Math.max(-1, Math.min(1, -st.lane * 0.6 - st.heading * 1.5));
+      await touch("touchMove", [{ x: pad.x + want * 70, y: pad.y, id: 1 }]);
+      await call(page, "stepFrames", 10);
+    }
+    const steady = await state(page);
+    log(`SOP_META ${JSON.stringify({ step: "touch-steady", s: steady.s, lane: steady.lane, speed: steady.speed, flight: steady.flight, place: steady.place })}`);
+    if (isAfter) expect(steady.flight, "steering by touch keeps the rider on the track").toBeNull();
     await shot(page, "race-touch-390");
     await touch("touchEnd", []);
 

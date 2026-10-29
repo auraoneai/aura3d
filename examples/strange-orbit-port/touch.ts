@@ -101,6 +101,8 @@ const CSS = /* css */ `
 #touch-buttons button { width: ${TOUCH_BUTTON_PX}px; height: ${TOUCH_BUTTON_PX}px; padding: 0; border-radius: 50%; font: 500 12px/1 "Graphik Web", sans-serif; color: #f4ead6; background: rgba(11, 28, 34, 0.62); border: 1px solid rgba(160, 222, 214, 0.38); pointer-events: auto; touch-action: none; }
 #touch-buttons button.down { background: rgba(243, 230, 203, 0.36); color: #14201f; }
 #touch-buttons button[data-touch="boost"] { border-color: rgba(240, 165, 107, 0.7); }
+/* keep the race notice clear of the buttons and the steer hint */
+body.touch-on #notice { bottom: calc(max(12px, env(safe-area-inset-bottom)) + 236px); max-width: 86vw; }
 `;
 
 export interface MountedTouchControls {
@@ -181,7 +183,7 @@ export function mountTouchControls(doc: Document, input: TouchInput, options: Mo
   doc.body.appendChild(root);
 
   let shown = options.visible;
-  const apply = () => root.classList.toggle("hidden", !shown);
+  const apply = () => { root.classList.toggle("hidden", !shown); doc.body.classList.toggle("touch-on", shown); };
   apply();
   return {
     el: root,

@@ -144,6 +144,12 @@ function sampleInput(dt: number): Input {
   };
 }
 
+/** Event text that names keys, reworded for the touch buttons. */
+function touchText(ev: RaceEvent): string {
+  if (ev.type === "launch") return "ZERO G · steer · Rise or Brake to change height · Gravity to sling back";
+  return ev.text!;
+}
+
 function toggleMute(): void {
   writeMuted(store, sound.toggleMute());
   syncMuteLabels();
@@ -208,7 +214,7 @@ function handleEvents(events: readonly RaceEvent[]): void {
       // free mode has no finish: keep the checkpoint log bounded (SO-10)
       if (race.mode === "free" && checkpointOrder.length > FREE_MODE_HISTORY * 5) checkpointOrder.splice(0, checkpointOrder.length - FREE_MODE_HISTORY * 5);
     }
-    if (ev.text) { notice = ev.text; noticeTime = 3; }
+    if (ev.text) { notice = touchWanted ? touchText(ev) : ev.text; noticeTime = 3; }
     if (ev.impact !== undefined) {
       if (ev.normal) runtime?.impact(ev.normal);
       impactFeedback.handle({ colliderId: ev.colliderId ?? "", tag: undefined, point: ev.point ?? [0, 0, 0], normal: ev.normal ?? [0, 1, 0], speed: ev.impact, impulse: ev.impact });
