@@ -1,0 +1,1365 @@
+/*
+ * Wonder World overlay styles (PRD 04 E06; PRD 01 section 9; PRD 02 section 4).
+ *
+ * Mobile-first, safe-area aware, portrait and landscape. Large touch targets
+ * (44 x 44 CSS px minimum, 48 px by default). Calm pastel palette; no
+ * flashing, no strobe, no shaking: the only motion is a short fade-in, the
+ * parent-gate progress ring and slowly breathing loading dots, and calm
+ * motion (.reduced-motion on <html> or prefers-reduced-motion) removes all
+ * of it except the gate ring, which is the hold's progress feedback.
+ * .high-contrast raises contrast and text size for parent mode.
+ *
+ * Type: licensed "Graphik Web" from /fonts/local.css, weights 400, 500 and
+ * 600 only (600 for the single title of a screen or dialog). Sentence case,
+ * no tracked capitals.
+ */
+
+:root {
+  color-scheme: light;
+  --ww-font: "Graphik Web", "Helvetica Neue", Arial, sans-serif;
+
+  --ww-bg: #f4efe6;
+  --ww-sky: #e3edf6;
+  --ww-meadow: #e5f0de;
+  --ww-surface: #fffdf9;
+  --ww-line: #ddd4e9;
+  --ww-line-strong: #a99dc4;
+  --ww-ink: #2a2638;
+  --ww-ink-soft: #565068;
+  --ww-primary: #5b46a3;
+  --ww-primary-hover: #4d3a90;
+  --ww-on-primary: #ffffff;
+  --ww-selected-bg: #e9e1fa;
+  --ww-selected-ink: #2a2638;
+  --ww-selected-line: #5b46a3;
+  --ww-switch-off: #8f86a6;
+  --ww-switch-on: #5b46a3;
+  --ww-switch-thumb: #ffffff;
+  --ww-focus: #2a62c9;
+  --ww-backdrop: rgba(42, 38, 56, 0.42);
+  --ww-control-bg: rgba(255, 253, 249, 0.94);
+  --ww-caption-bg: rgba(30, 27, 42, 0.86);
+  --ww-caption-ink: #ffffff;
+
+  --ww-tap: 48px;
+  --ww-radius: 20px;
+  --ww-radius-small: 14px;
+  --ww-fade: 160ms;
+
+  --ww-safe-top: env(safe-area-inset-top, 0px);
+  --ww-safe-right: env(safe-area-inset-right, 0px);
+  --ww-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --ww-safe-left: env(safe-area-inset-left, 0px);
+}
+
+/* High contrast and larger text (parent setting; class on <html>). */
+.high-contrast {
+  --ww-bg: #ffffff;
+  --ww-sky: #ffffff;
+  --ww-meadow: #ffffff;
+  --ww-surface: #ffffff;
+  --ww-line: #000000;
+  --ww-line-strong: #000000;
+  --ww-ink: #000000;
+  --ww-ink-soft: #000000;
+  --ww-primary: #000000;
+  --ww-primary-hover: #000000;
+  --ww-on-primary: #ffffff;
+  --ww-selected-bg: #000000;
+  --ww-selected-ink: #ffffff;
+  --ww-selected-line: #000000;
+  --ww-switch-off: #ffffff;
+  --ww-switch-on: #000000;
+  --ww-switch-thumb: #000000;
+  --ww-focus: #0040c0;
+  --ww-backdrop: rgba(0, 0, 0, 0.72);
+  --ww-control-bg: #ffffff;
+  --ww-caption-bg: #000000;
+  --ww-caption-ink: #ffffff;
+}
+
+html.high-contrast {
+  font-size: 112.5%;
+}
+
+/* Page ------------------------------------------------------------------- */
+
+html {
+  height: 100%;
+  font-synthesis: none;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: var(--ww-bg);
+  color: var(--ww-ink);
+  font-family: var(--ww-font);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+h1,
+h2,
+h3,
+legend,
+strong,
+b {
+  font-weight: 500;
+}
+
+.ww-app {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+#stage {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--ww-sky) 0%, var(--ww-meadow) 100%);
+}
+
+.ww-noscript {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 24px;
+  font-size: 1.125rem;
+  text-align: center;
+}
+
+#stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  outline: none;
+}
+
+/* The overlay root never takes taps itself; only its controls and screens do. */
+#ui {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  font-family: var(--ww-font);
+}
+
+#ui *,
+#ui *::before,
+#ui *::after {
+  box-sizing: border-box;
+}
+
+#ui [hidden] {
+  display: none !important;
+}
+
+#ui h1,
+#ui h2,
+#ui h3,
+#ui p,
+#ui ul,
+#ui fieldset {
+  margin: 0;
+}
+
+#ui button,
+#ui input {
+  font: inherit;
+  color: inherit;
+}
+
+#ui button {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#ui :focus-visible {
+  outline: 3px solid var(--ww-focus);
+  outline-offset: 2px;
+}
+
+/* Dialogs and screen headings take programmatic focus only (tabindex -1). */
+#ui [tabindex="-1"]:focus,
+#ui [tabindex="-1"]:focus-visible {
+  outline: none;
+}
+
+.ww-visually-hidden,
+.ww-caption-line.is-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+@keyframes ww-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Shared controls ------------------------------------------------------------ */
+
+.ww-icon {
+  width: 24px;
+  height: 24px;
+  flex: none;
+}
+
+.ww-icon-stroke {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ww-icon-fill {
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+.ww-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ww-tap);
+  height: var(--ww-tap);
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid var(--ww-line);
+  border-radius: var(--ww-radius-small);
+  background: var(--ww-control-bg);
+  color: var(--ww-ink);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.ww-icon-button:hover {
+  border-color: var(--ww-line-strong);
+}
+
+.ww-icon-button:disabled {
+  border-style: dashed;
+  color: var(--ww-ink-soft);
+  cursor: not-allowed;
+}
+
+.ww-pill-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 44px;
+  min-height: var(--ww-tap);
+  padding: 0 18px 0 14px;
+  border: 1px solid var(--ww-line);
+  border-radius: 999px;
+  background: var(--ww-control-bg);
+  color: var(--ww-ink);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.ww-pill-button:hover {
+  border-color: var(--ww-line-strong);
+}
+
+.ww-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 44px;
+  min-height: var(--ww-tap);
+  padding: 8px 22px;
+  border: 2px solid var(--ww-line-strong);
+  border-radius: 999px;
+  background: var(--ww-surface);
+  color: var(--ww-ink);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.25;
+  text-align: center;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.ww-button-primary {
+  border-color: var(--ww-primary);
+  background: var(--ww-primary);
+  color: var(--ww-on-primary);
+}
+
+.ww-button-primary:hover {
+  border-color: var(--ww-primary-hover);
+  background: var(--ww-primary-hover);
+}
+
+.ww-button-quiet {
+  border-color: transparent;
+  background: transparent;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Radios, checkboxes and switches keep their native input (focusable, labelled)
+   and draw a large face next to it. */
+.ww-choice-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ww-choice-input:focus-visible + .ww-segment-face,
+.ww-choice-input:focus-visible + .ww-chip-face,
+.ww-choice-input:focus-visible + .ww-switch-track {
+  outline: 3px solid var(--ww-focus);
+  outline-offset: 2px;
+}
+
+.ww-field {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.ww-legend {
+  float: left;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  margin: 0 0 8px;
+  padding: 0;
+  color: var(--ww-ink);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.ww-legend + * {
+  clear: both;
+}
+
+.ww-segmented-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ww-segment,
+.ww-chip {
+  position: relative;
+  display: block;
+}
+
+.ww-segment-face {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: var(--ww-tap);
+  height: 100%;
+  padding: 8px 12px;
+  border: 2px solid var(--ww-line);
+  border-radius: var(--ww-radius-small);
+  background: var(--ww-surface);
+  color: var(--ww-ink);
+  font-weight: 500;
+  line-height: 1.25;
+  text-align: center;
+  cursor: pointer;
+}
+
+.ww-chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ww-chip-face {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--ww-tap);
+  min-height: var(--ww-tap);
+  padding: 8px 16px;
+  border: 2px solid var(--ww-line);
+  border-radius: 999px;
+  background: var(--ww-surface);
+  color: var(--ww-ink);
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.ww-choice-input:checked + .ww-segment-face,
+.ww-choice-input:checked + .ww-chip-face {
+  border-color: var(--ww-selected-line);
+  background: var(--ww-selected-bg);
+  color: var(--ww-selected-ink);
+}
+
+.ww-choice-input:disabled + .ww-segment-face,
+.ww-choice-input:disabled + .ww-chip-face {
+  border-style: dashed;
+  background: transparent;
+  color: var(--ww-ink-soft);
+  cursor: not-allowed;
+}
+
+.ww-switch-list {
+  display: grid;
+  border-top: 1px solid var(--ww-line);
+}
+
+.ww-switch-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 56px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--ww-line);
+  cursor: pointer;
+}
+
+.ww-switch-label {
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.ww-switch-track {
+  position: relative;
+  flex: none;
+  width: 56px;
+  height: 34px;
+  border: 2px solid var(--ww-switch-off);
+  border-radius: 999px;
+  background: var(--ww-switch-off);
+  transition: background-color var(--ww-fade) ease, border-color var(--ww-fade) ease;
+}
+
+.ww-switch-track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--ww-switch-thumb);
+  transition: transform var(--ww-fade) ease;
+}
+
+.ww-choice-input:checked + .ww-switch-track {
+  border-color: var(--ww-switch-on);
+  background: var(--ww-switch-on);
+}
+
+.ww-choice-input:checked + .ww-switch-track::after {
+  transform: translateX(22px);
+  background: #ffffff;
+}
+
+.high-contrast .ww-switch-track {
+  border-color: #000000;
+}
+
+.ww-note-small {
+  color: var(--ww-ink-soft);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+/* Screens and overlays ---------------------------------------------------- */
+
+.ww-screen {
+  position: absolute;
+  inset: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: calc(16px + var(--ww-safe-top)) calc(16px + var(--ww-safe-right)) calc(24px + var(--ww-safe-bottom))
+    calc(16px + var(--ww-safe-left));
+  pointer-events: auto;
+  animation: ww-fade-in var(--ww-fade) ease-out both;
+}
+
+.ww-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: calc(16px + var(--ww-safe-top)) calc(16px + var(--ww-safe-right)) calc(16px + var(--ww-safe-bottom))
+    calc(16px + var(--ww-safe-left));
+  background: var(--ww-backdrop);
+  pointer-events: auto;
+  animation: ww-fade-in var(--ww-fade) ease-out both;
+}
+
+.ww-dialog {
+  position: relative;
+  width: min(100%, 30rem);
+  max-height: 100%;
+  padding: 24px;
+  border: 1px solid var(--ww-line);
+  border-radius: 24px;
+  background: var(--ww-surface);
+  color: var(--ww-ink);
+  box-shadow: 0 12px 40px rgba(42, 38, 56, 0.16);
+}
+
+.ww-dialog-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.ww-cast {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.ww-cast-dot {
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgba(42, 38, 56, 0.14);
+  border-radius: 50%;
+  background: var(--ww-dot, #d5d9e2);
+}
+
+/* Start screen ---------------------------------------------------------------- */
+
+.ww-start {
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(180deg, var(--ww-sky) 0%, var(--ww-meadow) 100%);
+}
+
+.ww-start-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: min(100%, 34rem);
+  text-align: center;
+}
+
+.ww-start-title {
+  color: var(--ww-ink);
+  font-size: clamp(2.25rem, 8vw, 3.25rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.ww-start-head,
+.ww-start-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.ww-prototype {
+  padding: 2px 12px;
+  border: 1px solid var(--ww-line-strong);
+  border-radius: 999px;
+  color: var(--ww-ink-soft);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.ww-start-hint {
+  color: var(--ww-ink-soft);
+  font-size: 0.9375rem;
+}
+
+.ww-start .ww-segmented {
+  width: min(100%, 26rem);
+}
+
+.ww-start .ww-legend {
+  justify-content: center;
+}
+
+.ww-start-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-width: min(100%, 18rem);
+  min-height: 76px;
+  padding: 0 32px;
+  border: 2px solid var(--ww-primary);
+  border-radius: 999px;
+  background: var(--ww-primary);
+  color: var(--ww-on-primary);
+  font-size: 1.375rem;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.ww-start-button:hover {
+  border-color: var(--ww-primary-hover);
+  background: var(--ww-primary-hover);
+}
+
+.ww-start-button .ww-icon {
+  width: 30px;
+  height: 30px;
+}
+
+.ww-start-note {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  padding: 16px 20px;
+  border: 1px solid var(--ww-line);
+  border-radius: var(--ww-radius);
+  background: var(--ww-surface);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  text-align: left;
+}
+
+/* Loading ---------------------------------------------------------------------- */
+
+.ww-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 35;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 16px;
+  color: var(--ww-ink);
+  pointer-events: none;
+}
+
+.ww-loading-text {
+  font-weight: 500;
+}
+
+.ww-loading .ww-cast-dot {
+  animation: ww-breathe 2.4s ease-in-out infinite;
+  animation-delay: calc(var(--ww-i, 0) * 200ms);
+}
+
+@keyframes ww-breathe {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+
+/* Story menu --------------------------------------------------------------------- */
+
+.ww-menu {
+  z-index: 30;
+  background: var(--ww-bg);
+}
+
+.ww-menu-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(100%, 64rem);
+  margin: 0 auto;
+}
+
+.ww-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ww-menu-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* Shown only when the 3D stage could not start on this device: calm, still, no icon. */
+.ww-menu-notice {
+  margin: 0;
+  padding: 12px 16px;
+  border: 1px solid var(--ww-line-strong);
+  border-radius: var(--ww-radius-small);
+  background: var(--ww-surface);
+  color: var(--ww-ink);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.ww-menu-heading {
+  margin-top: 8px;
+  font-size: 1.125rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.ww-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  gap: 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.ww-menu-cell {
+  display: flex;
+}
+
+.ww-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 96px;
+  padding: 14px 16px;
+  border: 2px solid var(--ww-line);
+  border-radius: var(--ww-radius);
+  background: var(--ww-surface);
+  color: var(--ww-ink);
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.ww-card:hover {
+  border-color: var(--ww-line-strong);
+}
+
+.high-contrast .ww-card-badge,
+.high-contrast .ww-cast-dot {
+  border: 2px solid #000000;
+}
+
+.ww-card-badge {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--ww-dot, #d5d9e2);
+  color: #2a2638;
+  font-size: 1.125rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.ww-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ww-card-title {
+  font-size: 1.0625rem;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.ww-card-host {
+  color: var(--ww-ink-soft);
+  font-size: 0.875rem;
+  line-height: 1.3;
+}
+
+/* Corner controls during play ---------------------------------------------------- */
+
+.ww-controls {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 20;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: calc(10px + var(--ww-safe-top)) calc(10px + var(--ww-safe-right)) 0 calc(10px + var(--ww-safe-left));
+  pointer-events: none;
+}
+
+.ww-controls-group {
+  display: flex;
+  gap: 8px;
+}
+
+/* The right-hand group wraps onto a second row only on the narrowest phones, never off screen. */
+.ww-controls-group-end {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.ww-controls button {
+  pointer-events: auto;
+}
+
+/*
+ * "Your child had a turn": while a turn waits it gets a still, solid outline (no
+ * fill and no animation, so it never competes with the glowing object the child
+ * is looking at); otherwise it is dashed and soft like any disabled control.
+ */
+.ww-controls [data-control="confirm"]:not(:disabled) {
+  border-color: var(--ww-selected-line);
+}
+
+/* Captions --------------------------------------------------------------------------- */
+
+.ww-captions {
+  position: absolute;
+  bottom: calc(16px + var(--ww-safe-bottom));
+  left: 50%;
+  z-index: 15;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  width: min(calc(100% - 32px - var(--ww-safe-left) - var(--ww-safe-right)), 40rem);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.ww-caption-line {
+  padding: 12px 18px;
+  border-radius: 16px;
+  background: var(--ww-caption-bg);
+  color: var(--ww-caption-ink);
+  font-size: 1.125rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.ww-caption-speaker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 8px;
+  font-weight: 500;
+}
+
+.ww-caption-speaker::before {
+  content: "";
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--ww-dot, transparent);
+}
+
+.ww-caption-notice,
+.ww-caption-tip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--ww-line);
+  border-radius: 12px;
+  background: var(--ww-surface);
+  color: var(--ww-ink);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.ww-caption-tip .ww-icon {
+  width: 20px;
+  height: 20px;
+}
+
+html.high-contrast .ww-caption-line {
+  border: 2px solid #ffffff;
+  font-size: 1.25rem;
+}
+
+/* Parent gate ------------------------------------------------------------------------ */
+
+.ww-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.ww-gate-text {
+  max-width: 26rem;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* One large button: the ring disc and its "Hold to open" label. */
+.ww-hold {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: var(--ww-radius);
+  background: transparent;
+  color: var(--ww-ink);
+  cursor: pointer;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.ww-hold-disc {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background: var(--ww-selected-bg);
+  color: var(--ww-selected-ink);
+}
+
+.ww-hold-disc .ww-icon {
+  width: 44px;
+  height: 44px;
+}
+
+.ww-hold-label {
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.ww-gate-note {
+  max-width: 24rem;
+}
+
+.ww-hold-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.ww-hold-track,
+.ww-hold-progress {
+  fill: none;
+  stroke-width: 6;
+}
+
+.ww-hold-track {
+  stroke: var(--ww-line);
+}
+
+/* r = 44, circumference about 276.5. */
+.ww-hold-progress {
+  stroke: var(--ww-primary);
+  stroke-dasharray: 276.5;
+  stroke-dashoffset: 276.5;
+  transition: stroke-dashoffset 150ms ease-out;
+}
+
+.ww-hold.is-holding .ww-hold-progress {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 2s linear;
+}
+
+.high-contrast .ww-hold-disc {
+  border: 3px solid #000000;
+  background: #ffffff;
+  color: #000000;
+}
+
+.high-contrast .ww-hold-track {
+  stroke: #c4c4c4;
+}
+
+.high-contrast .ww-hold-progress {
+  stroke: #000000;
+}
+
+/* Parent panel ----------------------------------------------------------------------- */
+
+.ww-parent {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 40rem);
+  height: min(100%, 56rem);
+  padding: 0;
+  overflow: hidden;
+}
+
+.ww-parent-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 12px 12px 20px;
+  border-bottom: 1px solid var(--ww-line);
+}
+
+.ww-parent-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 24px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 20px;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.ww-parent-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.ww-field-note {
+  margin: 0 0 8px;
+  color: var(--ww-ink-soft);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.ww-chip-grid + .ww-field-note,
+.ww-segmented-options + .ww-field-note {
+  margin: 8px 0 0;
+}
+
+.ww-wordlist-count {
+  font-variant-numeric: tabular-nums;
+}
+
+.ww-clear {
+  align-self: flex-start;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.ww-parent-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 38rem;
+  padding-top: 20px;
+  border-top: 1px solid var(--ww-line);
+}
+
+.ww-section-title {
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.ww-guide-list {
+  display: grid;
+  gap: 4px;
+  padding-left: 1.25rem;
+}
+
+.ww-links {
+  display: grid;
+  gap: 4px;
+  padding: 0;
+  list-style: none;
+}
+
+.ww-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--ww-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ww-parent-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--ww-line);
+  background: var(--ww-surface);
+}
+
+/* Offline card ------------------------------------------------------------------------- */
+
+/* Opaque: the scene is blanked behind the card. */
+.ww-offline-overlay {
+  z-index: 40;
+  background: var(--ww-bg);
+}
+
+.ww-offline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  width: min(100%, 32rem);
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: none;
+}
+
+.ww-offline-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.ww-offline-text {
+  max-width: 26rem;
+  font-size: 1.25rem;
+  line-height: 1.45;
+}
+
+/* The caregiver bridge under the activity: small grown-up text. On a short screen the card scrolls inside itself. */
+.ww-offline-note {
+  max-width: 26rem;
+  margin: 0;
+}
+
+.ww-offline {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.ww-offline-done {
+  min-height: 56px;
+  padding: 0 28px;
+  font-size: 1.125rem;
+}
+
+/* Small screens and short landscape screens ----------------------------------------------- */
+
+@media (max-width: 560px) {
+  .ww-parent-overlay {
+    padding: 0;
+  }
+
+  .ww-parent {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .ww-parent-header {
+    padding-top: calc(12px + var(--ww-safe-top));
+    padding-right: calc(12px + var(--ww-safe-right));
+    padding-left: calc(20px + var(--ww-safe-left));
+  }
+
+  .ww-parent-body {
+    padding-right: calc(20px + var(--ww-safe-right));
+    padding-left: calc(20px + var(--ww-safe-left));
+  }
+
+  .ww-parent-actions {
+    padding-bottom: calc(12px + var(--ww-safe-bottom));
+  }
+
+  .ww-parent-actions .ww-button {
+    flex: 1;
+  }
+
+  .ww-menu-title {
+    font-size: 1.3125rem;
+  }
+
+  .ww-card {
+    min-height: 84px;
+  }
+
+  .ww-card-badge {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+@media (max-width: 360px) {
+  .ww-pill-button {
+    padding: 0 12px 0 10px;
+  }
+
+  .ww-controls-group {
+    gap: 6px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .ww-start-inner {
+    gap: 12px;
+  }
+
+  .ww-start .ww-cast {
+    display: none;
+  }
+
+  .ww-start-title {
+    font-size: 2rem;
+  }
+
+  .ww-start-button {
+    min-height: 60px;
+    font-size: 1.25rem;
+  }
+
+  .ww-start-note {
+    padding: 12px 16px;
+  }
+
+  .ww-parent-overlay {
+    padding: 0;
+  }
+
+  .ww-parent {
+    width: min(100%, 48rem);
+    height: 100%;
+    border-radius: 0;
+  }
+
+  .ww-parent-header {
+    padding-top: calc(8px + var(--ww-safe-top));
+    padding-bottom: 8px;
+  }
+
+  .ww-parent-body {
+    padding-right: calc(20px + var(--ww-safe-right));
+    padding-left: calc(20px + var(--ww-safe-left));
+  }
+
+  .ww-parent-actions {
+    padding-bottom: calc(8px + var(--ww-safe-bottom));
+  }
+
+  .ww-captions {
+    bottom: calc(10px + var(--ww-safe-bottom));
+  }
+
+  .ww-caption-line {
+    padding: 8px 14px;
+    font-size: 1rem;
+  }
+
+  .ww-offline {
+    padding: 20px 24px;
+  }
+}
+
+/* Calm motion: OS preference or the parent setting (class on <html>). The gate
+   ring keeps its fill because it is the hold's progress feedback. */
+@media (prefers-reduced-motion: reduce) {
+  #ui *,
+  #ui *::before,
+  #ui *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+
+  #ui .ww-hold.is-holding .ww-hold-progress {
+    transition: stroke-dashoffset 2s linear !important;
+  }
+}
+
+.reduced-motion #ui *,
+.reduced-motion #ui *::before,
+.reduced-motion #ui *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+
+.reduced-motion #ui .ww-hold.is-holding .ww-hold-progress {
+  transition: stroke-dashoffset 2s linear !important;
+}
+
+/* Windows high contrast and other forced-colour modes. */
+@media (forced-colors: active) {
+  .ww-icon-button,
+  .ww-pill-button,
+  .ww-button,
+  .ww-start-button,
+  .ww-card,
+  .ww-segment-face,
+  .ww-chip-face,
+  .ww-switch-track,
+  .ww-caption-line {
+    border: 2px solid CanvasText;
+  }
+
+  .ww-choice-input:checked + .ww-segment-face,
+  .ww-choice-input:checked + .ww-chip-face {
+    outline: 3px solid Highlight;
+  }
+
+  .ww-choice-input:checked + .ww-switch-track::after {
+    background: Highlight;
+  }
+
+  .ww-hold-progress {
+    stroke: Highlight;
+  }
+}
