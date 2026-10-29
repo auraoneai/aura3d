@@ -71,7 +71,8 @@ async function boot(): Promise<void> {
     autoStart: false,
     resize: false,
     pixelRatio: 1,
-    renderer: { quality: "high" },
+    // Fixed tier on purpose: the parity harness must render the same on every runner. Object form, no RENDERER_QUALITY_STRING warning.
+    renderer: { quality: { tier: "high" } },
     qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }
   } as never);
   await app.ready();

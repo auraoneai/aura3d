@@ -341,6 +341,11 @@ describe("top-tennis-C8 / C11 / C18: lifecycle", () => {
     expect(renderer).toContain('renderer: { quality: { tier: "auto" } }');
     expect(renderer).not.toContain('quality: "high"');
   });
+  it("C11: the rig-parity harness keeps its fixed tier in the object form (same tier, no string-form warning)", () => {
+    const rigparity = readFileSync("examples/aura-slam/view/rigparity/main.ts", "utf8");
+    expect(rigparity).toContain('renderer: { quality: { tier: "high" } }');
+    expect(rigparity).not.toMatch(/quality:\s*"/);
+  });
   it("C18: dispose removes the pointerdown and visibility listeners, both subscriptions, and disposes the app", () => {
     const dispose = boot.slice(boot.indexOf("    dispose() {"));
     for (const needle of ['document.removeEventListener("pointerdown", initAudio)', 'document.removeEventListener("visibilitychange", onVisibility)', "unsubscribeControls()", "unsubscribeSwipe()"]) expect(dispose).toContain(needle);
