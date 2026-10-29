@@ -226,7 +226,7 @@
    "genre": "racing",
    "verification": "replay-verified",
    "evidenceFolder": "roadster-hours-port",
-   "text": "Coastal drive with 92 vehicles in one batched mesh; the recorded 48-second run replays exactly. Coastal look with sky, ocean and a lit road; vehicles and scenery are generated models and there are no shadows."
+   "text": "Coastal highway drive with jumps, traffic and relay gates. 33 to 35 vehicles per route, one batched mesh per vehicle model, with sun shadows; a recorded 6,124-step run replays to the original's final state."
   },
   {
    "appFolder": "showcase-where-the-wind-wanders-port",

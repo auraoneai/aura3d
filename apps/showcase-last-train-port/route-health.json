@@ -20,7 +20,7 @@
   "sourceExample": "examples/last-train-port/",
   "evidence": "Loop steps within 0.1% of the original, score 4,039 on every loop, 0% GPU memory drift across three loops.",
   "limits": [
-    "No garage wear, requests or Gold grade; procedural models; night is a sky blend plus surface tints.",
+    "No garage wear or requests; Gold is graded on comfort and catches only; night is a sky blend plus surface tints.",
     "Procedural art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
     "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
   ],

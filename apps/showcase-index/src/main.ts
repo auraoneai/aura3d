@@ -275,7 +275,7 @@ const apps = [
     primaryAssetStatus: "primitive-only",
     primitiveStatus: "primary-subject-proxy",
     claimStatus: "bounded",
-    notes: "Train-driving loop with day and night, passengers, fares and tips; loop length and score match a recorded loop and memory stays flat over three loops. No garage wear, requests or Gold grade; procedural models; night is a sky blend plus surface tints."
+    notes: "Train-driving loop with day and night, passengers, fares and tips; loop length and score match a recorded loop and memory stays flat over three loops. No garage wear or requests; Gold is graded on comfort and catches only; night is a sky blend plus surface tints."
   },
   {
     id: "showcase-roadster-hours-port",
@@ -286,7 +286,7 @@ const apps = [
     primaryAssetStatus: "primitive-only",
     primitiveStatus: "primary-subject-proxy",
     claimStatus: "bounded",
-    notes: "Coastal drive with 92 vehicles in one batched mesh; the recorded 48-second run replays exactly. Box vehicles, flat sky, no post-processing or audio."
+    notes: "Coastal highway drive with jumps, traffic and relay gates. 33 to 35 vehicles per route, one batched mesh per vehicle model, with sun shadows; a recorded 6,124-step run replays to the original's final state."
   },
   {
     id: "showcase-where-the-wind-wanders-port",

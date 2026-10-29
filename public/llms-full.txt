@@ -65,7 +65,7 @@ Typed lighting looks, licensed and hashed GLB assets, a game kit and deploy chec
 - [Ion Circuit — Anti-Gravity Time Trial](https://aura3d.auraone.ai/apps/ion-circuit/): Anti-gravity time trial with boost pads, pickups, barrels and heat management. Time Trial mode.
 - [Shadowstep Gauntlet — Lane-Running Combat](https://aura3d.auraone.ai/apps/shadowstep-gauntlet/): Lane-running combat with a dozen skinned clones, form changes and a full course finish.
 - [Lamplight Line — Night Tram Driving](https://aura3d.auraone.ai/apps/lamplight-line/): Tram-driving loop with day and night, passengers, fares and tips: balance the lean and keep every rider happy.
-- [Saltwind Highway — Coastal Highway Drive](https://aura3d.auraone.ai/apps/saltwind-highway/): Coastal drive among 92 vehicles in one batched mesh, with sky, ocean and a lit road.
+- [Saltwind Highway — Coastal Highway Drive](https://aura3d.auraone.ai/apps/saltwind-highway/): Coastal highway drive with jumps, traffic and relay gates: 33 to 35 vehicles per route in batched meshes, with sun shadows, sky and ocean.
 - [The Bellkeeper's Walk — Meadow Walk](https://aura3d.auraone.ai/apps/the-bellkeepers-walk/): Meadow walk: collect three letters and ring the bell, with a boat epilogue, a journal and audio.
 - [Duneglide — Silt-World Flight](https://aura3d.auraone.ai/apps/duneglide/): Free-ride flight over a silt world, through ring beacons; the first chapter has real colliders.
 - [Cumulus Dash — Cloud Obstacle Runner](https://aura3d.auraone.ai/apps/cumulus-dash/): Obstacle runner on a cloud: creatures, boulders, a duel and a finale, with audio.
