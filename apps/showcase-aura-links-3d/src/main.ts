@@ -849,7 +849,8 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   // --- Tee box + surround + markers ---
   const teeMat = material.pbr({ color: pal.teeBox, roughness: 0.82 });
   const teeEdgeMat = material.pbr({ color: shade(pal.teeBox, 0.72), roughness: 0.92 });
-  const markMat = material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.85 });
+  // red tee blocks: the glowing white 22 cm spheres read as a second, larger ball in the address frame
+  const markMat = material.emissive({ color: "#c8402f", emissive: "#c8402f", emissiveIntensity: 0.25 });
   nodes.push(
     primitives.box({ name: "tee-surround", size: [9.3, 0.07, 7.3], material: teeEdgeMat }).position(terrain.tee[0], terrain.tee[1] - 0.025, terrain.tee[2]),
     primitives.box({ name: "tee-box", size: [8.4, 0.12, 6.4], material: teeMat }).position(terrain.tee[0], terrain.tee[1] - 0.03, terrain.tee[2]),
@@ -1277,7 +1278,9 @@ function updateCamera(dt: number): void {
     const lookAhead = 34 * cam.zoom;
     const tx2 = bx + Math.sin(yaw) * lookAhead, tz2 = bz + Math.cos(yaw) * lookAhead;
     cam.eye = lerp3(cam.eye, [ex, t.height(ex, ez) + h, ez], 1 - Math.pow(0.002, dt));
-    cam.target = lerp3(cam.target, [tx2, t.height(tx2, tz2) + 0.9, tz2], 1 - Math.pow(0.002, dt));
+    // aimed below the fairway so the ball sits in the lower third with the golfer instead of on the bottom edge
+    // (it projected to y 710 of 720 at 1280x720 with a +0.9 m target, remote run g10f-links-figures-neonBay)
+    cam.target = lerp3(cam.target, [tx2, t.height(tx2, tz2) - 2.2, tz2], 1 - Math.pow(0.002, dt));
     cam.fov = lerp(cam.fov, (cam.zoom > 1.5 ? 46 : 42) + 16 * portrait, 0.08);
   }
   camApply();
@@ -1852,7 +1855,7 @@ function startHole(idx: number): void {
   const initTx = t.tee[0] + Math.sin(t.lineYaw) * 42;
   const initTz = t.tee[2] + Math.cos(t.lineYaw) * 42;
   cam.eye = [initEx, t.height(initEx, initEz) + 5.3, initEz];
-  cam.target = [initTx, t.height(initTx, initTz) + 0.6, initTz];
+  cam.target = [initTx, t.height(initTx, initTz) - 2.4, initTz];
   cam.fov = 40;
   if (framesRendered > 0 || idx > 0) {
     showMsg(`HOLE ${hole.number} — ${hole.name.toUpperCase()}`, `PAR ${hole.par} · ${hole.lengthM}M`, 2100);
