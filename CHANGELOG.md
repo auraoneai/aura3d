@@ -1,12 +1,14 @@
 # Changelog
 
-Version: 4.5.0
+Version: 4.6.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
-## Unreleased
+## 4.6.0 (2026-10-29)
 
-Fixes from the live-games and 4.5.0 audit (`docs/audits/live-games-4.5.0-audit-2026-10-29.md`), one branch per lane (`audit-fix/e1`..`e5`, `audit-fix/g01`..`g25`; lane reports in `docs/audits/lanes/`). This entry covers the engine lanes E1 to E5 and the game lanes that had committed when it was written (G01 to G09); the other game lanes add their lines when they merge. All browser measurements are software WebGL2 on the remote runner; no real-GPU run has been made.
+Fixes from the live-games and 4.5.0 audit (`docs/audits/live-games-4.5.0-audit-2026-10-29.md`), one branch per lane (`audit-fix/e1`..`e5`, `audit-fix/g01`..`g25`; lane reports in `docs/audits/lanes/`). This release carries the engine lanes E1 to E5 and 18 games: G01 to G09, G12 and G15 to G17. The other twelve games (Aura Links 3D, Bunker Zero, Glint Courier, Cross Hop, Gridlock Courier, Ion Circuit, Shadowstep Gauntlet, Lamplight Line, Saltwind Highway, The Bellkeeper's Walk, Duneglide, Cumulus Dash) get their fixes in 4.6.1; they run on the 4.6.0 engine meanwhile. All browser measurements are software WebGL2 on the remote runner; no real-GPU run has been made.
+
+Two visual changes, read them before upgrading: hemisphere lights now light scenes that also have an environment, applied as sky over ground per normal; and a scene that adds a look at runtime next to an authored ambient light no longer gets the look's fill on top.
 
 ### Engine and rendering
 
@@ -34,6 +36,10 @@ Fixes from the live-games and 4.5.0 audit (`docs/audits/live-games-4.5.0-audit-2
 - **Aura Hoops 3D (G07).** Touch controls that show and work on phones, 5v5 copy, one-shot input, shot meter, team kits and squad picker, a menu that pauses play, a fixed step, a results card, and a chase camera kept clear of poles and floodlights.
 - **Aura Diamond 3D (G08).** Real swing timing, game rules in a tested module, team kits, a fixed-step simulation, a lighter crowd athlete (3,809 triangles) and the bat re-attached after a park switch.
 - **Aura FC 3D (G09).** Touch Lab, shootouts, slide tackles, penalties, golden goal and CPU scoring fixed; goal and net size, phone stick and camera, pause and crowd audio; the referee walks its patrol.
+- **Slingshot Siege (G12).** Restart, pause, mute, range and level keys work again (input was updated twice per frame); mute is saved and drives the audio; the ammo dock counts shots used; pooled blocks reset their material and size on every level, and every piece of a level is drawn; result-card buttons work; parked pool nodes are hidden (395 draw calls on level 1 before); a per-route asset manifest replaces the shared catalog; Space no longer scrolls the page.
+- **Craterline GP (G15).** Lit again after the 4.5.0 environment loss (`environments.neutral` 0.9, calibrated against 4.3.7); touch steering and pointer controls; medals by finishing place; rival pace and catch-up rebalanced; saved progress.
+- **Chroma Roll (G16).** Lit again after the 4.5.0 environment loss (`environments.neutral` 0.8; model luma back to 94% to 100% of the pre-4.5.0 card); draw calls in play 160 to 22, programs 271 to 34, texture memory 110 MB to 34 MB with unchanged geometry; popups drain by id; the credit no longer covers the mute button.
+- **Serpentine Sky Run (G17).** Lit again after the 4.5.0 environment loss (`environments.neutral` 0.9; lit-surface luma 80.8 on 4.5.0 to 159.6, 4.3.7 was 158.2); one failed frame no longer ends the session (it takes 30 in a row or a lost context); the QA hook is `__AURA_SERPENTINE_SKY_RUN__`; `renderer: { quality: "auto" }` replaces the deprecated fields.
 
 ### Docs, site and tooling
 
@@ -47,7 +53,6 @@ Fixes from the live-games and 4.5.0 audit (`docs/audits/live-games-4.5.0-audit-2
 - **The browser test server serves what the deploy serves (tests).** `apps/*/public/aura-assets` resolves under `/aura-assets/`, and inside a bundled app entry `import.meta.url` is each module's own URL, so a port app that mounts its example (Shadowstep Gauntlet) finds the example's models. Captures of Iron Crown, Pip's Big Leap, Bunker Zero, Cross Hop and Shadowstep Gauntlet no longer need a `page.route` workaround.
 - **Remote runner (tools).** `tools/remote-acr/run.sh` always stages `apps/common` and `apps/showcase-port-shared`, keeps subfolders in `PUBLIC_ASSETS` (shared textures under `Textures/`), and refuses shell metacharacters in `SPECS`.
 - **"Built with Aura3D" credit stays off game controls (site).** The credit on the eleven renamed game pages picks a corner that overlaps no control, re-checks after the game mounts its controls and on resize, fades on the first key or pointer press, and carries `no-steer`. It sat over Chroma Roll's mute button and The Bellkeeper's Walk joystick. Pages pick it up on the next `node tools/showcase-port-pages/sync.mjs`.
-- **Comparison copy uses the 4.5.0 run (docs, site).** The README, the engine npm page, the homepage, the comparison page and `llms.txt` quote scene source size from `RESULTS-4.5.0.md` (PBR viewer 23 lines against 49, 1 import against 8; all five benchmark scenes 17% to 53% shorter, one author). The benchmark viewer is no longer described as "HDR lighting": its HDRI node does not load. `RESULTS.md` (4.1.2) is marked superseded, and `claims-and-boundaries.md` states that only scene source size may sit next to three.js while T1 fails.
 - **Index posters and card copy (site).** The posters of Aura Slam 3D, Apex Overdrive, Grid Dispatch, Pip's Big Leap and Aura Hoops 3D, and the homepage hero frame, are rebuilt from the retaken 4.5.0 card frames. Card copy: Aura Hoops 3D is 5v5, Grid Dispatch has AI rival cars (no other players), and Apex Overdrive drops its vehicle count.
 - **`showcaseStadiumSeats` bounds (assets).** The manifest listed the mesh-local box [43.8, 153.0, 29.0]; it now lists the scene-space box with the GLB's root matrix applied, [33.7, 45.8, 144.1].
 
