@@ -4,7 +4,7 @@ import { CREDIT_NOTE, CREDIT_STYLE } from "../../tools/showcase-port-pages/lib.m
 
 /**
  * "Built with Aura3D" credit over game controls (audit 2026-10-29: Chroma Roll C3 mute button, The Bellkeeper's Walk WW-2
- * joystick). Remote only (tools/remote-acr/run.sh). The app pages are owned by the game lanes, so the spec swaps the page's
+ * joystick, Duneglide C13 flight HUD). Remote only (tools/remote-acr/run.sh). The app pages are owned by the game lanes, so the spec swaps the page's
  * current credit for the canonical one from tools/showcase-port-pages/lib.mjs in the live DOM, then hit-tests the control:
  * BEFORE is the shipped credit, AFTER the canonical one. Output: CREDIT_META <json> lines.
  */
@@ -16,7 +16,8 @@ const CASES: readonly Case[] = [
   { name: "splat-rush-port-1440", url: "/apps/showcase-splat-rush-port/", control: "#btn-mute", viewport: { width: 1440, height: 900 }, touch: false },
   { name: "splat-rush-port-390", url: "/apps/showcase-splat-rush-port/", control: "#btn-mute", viewport: { width: 390, height: 844 }, touch: true },
   { name: "where-the-wind-wanders-port-390", url: "/apps/showcase-where-the-wind-wanders-port/", control: "#wwui-pad", viewport: { width: 390, height: 844 }, touch: true },
-  { name: "where-the-wind-wanders-port-1440", url: "/apps/showcase-where-the-wind-wanders-port/", control: "#wwui-pad", viewport: { width: 1440, height: 900 }, touch: false }
+  { name: "where-the-wind-wanders-port-1440", url: "/apps/showcase-where-the-wind-wanders-port/", control: "#wwui-pad", viewport: { width: 1440, height: 900 }, touch: false },
+  { name: "silt-and-signal-port-1280", url: "/apps/showcase-silt-and-signal-port/", control: "#flight", viewport: { width: 1280, height: 720 }, touch: false }
 ];
 
 /** Points on the control (centre and four corners inset 3 px) whose topmost element is inside the credit. */
