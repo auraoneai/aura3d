@@ -236,7 +236,7 @@ let builtFor: MazeId | "" = "";
 function paintMaze(m: ParsedMaze): void {
   const def = m.def;
   const P = def.palette;
-  const wallColor = P.wall;
+  const wallColor = boardLook(def).wall;
   const edgeColor = P.edge;
   for (let y = 0; y < m.height; y++) {
     for (let x = 0; x < m.width; x++) {
@@ -282,7 +282,7 @@ const PEDESTALS: readonly (readonly [number, number])[] = [
 /** Perimeter dressing per board theme — pedestals under spinning gems, plus pylon stubs. */
 function paintDressing(m: ParsedMaze): void {
   const P = m.def.palette;
-  const wallColor = P.wall;
+  const wallColor = boardLook(m.def).wall;
   const accentColor = P.accent;
   PEDESTALS.forEach(([px, pz]) => {
     inst("dress", px, 0.22, pz, 1.25, 0.44, 1.25, wallColor);
@@ -495,7 +495,7 @@ function applyBoardLook(id: MazeId): boolean {
   const nodes = app?.nodes;
   if (!nodes) return false;
   const look = boardLook(MAZES[id]);
-  if (look === appliedLook) return true; // board 1 on first boot: the authored materials already are this look
+  if (look.slab === appliedLook.slab && look.wallEmissive === appliedLook.wallEmissive) return true; // board 1 on first boot: the authored materials already are this look
   try {
     nodes.require("board").setMaterial(boardMaterial(look.slab, look.slabEmissive));
     nodes.require("pool-wall").setMaterial(wallMaterial(look.wallEmissive));

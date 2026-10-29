@@ -38,7 +38,8 @@ describe("camera fit (DD-3)", () => {
 
 describe("board palette (DD-E1)", () => {
   it("board 1 keeps the authored look", () => {
-    expect(boardLook(MAZES.classic)).toBe(REFERENCE_LOOK);
+    expect(boardLook(MAZES.classic)).toEqual({ ...REFERENCE_LOOK, wall: MAZES.classic.palette.wall });
+    expect(MAZES.classic.palette.wall).toBe(REFERENCE_LOOK.wall);
   });
 
   it("every other board gets its own slab and wall glow at board 1's brightness", () => {
@@ -48,6 +49,8 @@ describe("board palette (DD-E1)", () => {
       slabs.add(look.slab);
       expect(Math.abs(luma(look.slab) - luma(REFERENCE_LOOK.slab)), id).toBeLessThan(2);
       expect(Math.abs(luma(look.wallEmissive) - luma(REFERENCE_LOOK.wallEmissive)), id).toBeLessThan(2);
+      // walls stay lighter than the slab on every board, as on board 1 (dark walls on a lifted slab read as holes)
+      expect(luma(look.wall), id).toBeGreaterThan(luma(look.slab));
     }
     expect(slabs.size).toBe(MAZE_ORDER.length);
   });

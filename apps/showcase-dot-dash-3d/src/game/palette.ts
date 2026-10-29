@@ -43,6 +43,7 @@ export const REFERENCE_LOOK = {
   slab: "#24443a",
   slabEmissive: "#17342c",
   wallEmissive: "#3a2210",
+  wall: "#5c4630",
   background: "#0e1a17"
 } as const;
 
@@ -50,15 +51,18 @@ export interface BoardLook {
   readonly slab: string;
   readonly slabEmissive: string;
   readonly wallEmissive: string;
+  /** Wall and dressing instance colour. */
+  readonly wall: string;
   readonly background: string;
 }
 
 export function boardLook(def: MazeDef): BoardLook {
-  if (def.id === "classic") return REFERENCE_LOOK;
+  if (def.id === "classic") return { ...REFERENCE_LOOK, wall: def.palette.wall };
   return {
     slab: withLuma(def.palette.floor, luma(REFERENCE_LOOK.slab)),
     slabEmissive: withLuma(def.palette.floor, luma(REFERENCE_LOOK.slabEmissive)),
     wallEmissive: withLuma(def.palette.edge, luma(REFERENCE_LOOK.wallEmissive)),
+    wall: withLuma(def.palette.wall, luma(REFERENCE_LOOK.wall)),
     background: withLuma(def.background, luma(REFERENCE_LOOK.background))
   };
 }
