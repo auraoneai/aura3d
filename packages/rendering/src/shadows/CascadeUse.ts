@@ -9,14 +9,17 @@
  * `selectForwardShadowMap`), the same item centre (`renderItemWorldCenter`) and the same camera inputs the renderer hands the forward pass
  * (`resolvedCamera.viewMatrix`, `cameraPosition`). Every cascade no receiver picks is reported as unused. Because the decision is computed by the
  * forward path's own function and not by a parallel formula, a skipped cascade is one the forward path cannot select for these receivers.
+ * Instanced receivers (SI-1) select by instance coverage (`forwardCascadePosition`); every cascade holding any of their instances counts as used.
  */
 
-import { forwardCascadeSelectionDepth, renderItemWorldCenter } from "../forward/Lighting";
+import { forwardCascadeSelectionDepth, forwardInstanceCascadeCoverage, forwardInstancedCascadeReceiver, renderItemWorldCenter } from "../forward/Lighting";
 import type { RenderItem } from "../contracts/renderItem";
 
 export interface CascadeUseFit {
   readonly index: number;
   readonly splitFar: number;
+  /** The cascade's unbiased light view-projection (what the bridge hands the forward pass as `lightMatrix`); needed for instanced receivers. */
+  readonly drawViewProjection?: ArrayLike<number>;
 }
 
 /** The camera inputs `ForwardPass` receives as `cameraViewMatrix` / `cameraPosition`; they decide which depth the forward path measures. */
@@ -45,6 +48,17 @@ export function unusedCascadeIndices(
     let pick = fits.length - 1;
     for (let i = 0; i < fits.length; i += 1) if (depth <= fits[i]!.splitFar) { pick = i; break; }
     used.add(pick);
+    // SI-1: an instanced receiver picks the cascade holding most of its (camera-culled) instance centres. The culled set is only known
+    // inside the forward draw, so mark every cascade that holds any instance: the forward pick is always one of them or the centre pick.
+    if (forwardInstancedCascadeReceiver(item)) {
+      const coverage = forwardInstanceCascadeCoverage(item, fits.map((fit) => fit.drawViewProjection), false);
+      if (!coverage) {
+        if (fits.some((fit) => fit.drawViewProjection === undefined)) return undefined;
+        // Non-finite instance data: the forward pass falls back to the centre pick, already counted.
+      } else {
+        coverage.counts.forEach((count, i) => { if (count > 0) used.add(i); });
+      }
+    }
     if (used.size === fits.length) return undefined;
   }
   const unused = new Set<number>();

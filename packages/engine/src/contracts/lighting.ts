@@ -19,7 +19,8 @@ export interface AuraLightsApiAdditions {
 }
 export interface AuraLightingDiagnostics {
   readonly environment: { readonly source: string; readonly faceSize: number; readonly mipCount: number; readonly format: string; readonly shBound: boolean; readonly backgroundDrawn: boolean; readonly pmremGpuMs: number | null };
-  readonly shadows: readonly { readonly light: string; readonly filter: string; readonly casterVariants: readonly string[]; readonly sampled: boolean }[];
+  /** Sun row: `cascadeCount` fitted this frame and `skippedCascades` (indices allocated but not redrawn, PRD-2 WP-7). */
+  readonly shadows: readonly { readonly light: string; readonly filter: string; readonly casterVariants: readonly string[]; readonly sampled: boolean; readonly cascadeCount?: number; readonly skippedCascades?: readonly number[] }[];
   readonly droppedFeatures: readonly string[];
   readonly contactShadows: { readonly passExecuted: boolean };
   readonly programCompileCount: number;

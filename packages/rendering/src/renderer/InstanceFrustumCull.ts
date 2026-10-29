@@ -6,8 +6,10 @@
  * whose bounding sphere intersects the view frustum, in draw order, so the draw is pixel-identical and cheaper. It is conservative: the
  * sphere is inflated, and anything it cannot reason about (non-finite matrices, tiny draws) is left to the caller's normal path.
  *
- * The scan itself is allocation-free (module scratch for the keep list); only the compacted output arrays are allocated, and only when
- * something was culled.
+ * The scan and the output are allocation-free in steady state (SI-2): the keep list and the compacted transforms and colours live in
+ * module scratch buffers that grow on demand and are reused, so the result arrays are views that stay valid only until the next call.
+ * Every consumer in the forward draw copies them synchronously (InstanceBuffer.setMatrices, the uniform pack, createBuffer with data).
+ * Before this a 900-slot pool with most slots parked off-screen allocated about 72 KB of fresh arrays per frame.
  */
 
 /** Below this many instances the GPU handles the draw trivially and the scan would cost more than it saves. */
@@ -35,6 +37,12 @@ export interface InstanceFrustumCullResult {
 }
 
 let keepScratch = new Uint32Array(0);
+let transformScratch: Float32Array<ArrayBuffer> = new Float32Array(0);
+let colorScratch: Float32Array<ArrayBuffer> = new Float32Array(0);
+
+function grown(current: Float32Array<ArrayBuffer>, length: number): Float32Array<ArrayBuffer> {
+  return current.length >= length ? current : new Float32Array(Math.max(length, current.length * 2));
+}
 const planes = new Float64Array(24);
 
 function extractPlanes(vp: ArrayLike<number>): boolean {
@@ -67,7 +75,7 @@ function isIdentity(m: ArrayLike<number> | undefined): boolean {
 }
 
 /**
- * Returns the visible subset, or null when nothing was culled (or culling does not apply), in which case the caller keeps its originals.
+ * Returns the visible subset (views into reused scratch, valid until the next call), or null when nothing was culled (or culling does not apply), in which case the caller keeps its originals.
  * A result with `count === 0` means every instance is outside the frustum.
  */
 export function cullInstancesToFrustum(input: InstanceFrustumCullInput): InstanceFrustumCullResult | null {
@@ -125,9 +133,13 @@ export function cullInstancesToFrustum(input: InstanceFrustumCullInput): Instanc
     kept += 1;
   }
   if (kept === total) return null;
-  // Fresh arrays: the draw (and any deferred multi-draw bookkeeping) may hold them past this call.
-  const outTransforms = new Float32Array(kept * 16);
-  const outColors = colors !== undefined ? new Float32Array(kept * 4) : undefined;
+  transformScratch = grown(transformScratch, kept * 16);
+  const outTransforms = transformScratch.subarray(0, kept * 16);
+  let outColors: Float32Array<ArrayBuffer> | undefined;
+  if (colors !== undefined) {
+    colorScratch = grown(colorScratch, kept * 4);
+    outColors = colorScratch.subarray(0, kept * 4);
+  }
   for (let k = 0; k < kept; k += 1) {
     const i = keepScratch[k]!;
     outTransforms.set(transforms.subarray(i * 16, i * 16 + 16), k * 16);

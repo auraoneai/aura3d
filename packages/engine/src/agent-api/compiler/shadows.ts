@@ -3,6 +3,7 @@
 import { cachedSearchParams } from "../../contracts/urlCache.js";
 import type { AuraRendererRuntimeObservation, AuraSceneSnapshot, AuraVec3 } from "../nodes/types.js";
 import { resolveProductionRuntimeShadowTuning } from "../compiler/observations.js";
+import { liveInstanceCount } from "./primitives.js";
 import { groups } from "../nodes/groups.js";
 import { mediaMatches } from "../platform.js";
 import { resolveRendererSceneCategory } from "../rendererDiagnostics.js";
@@ -211,14 +212,17 @@ export function shadowQualityTapTierEnabled(): boolean {
   return readOptIn("__A3D_QUALITY_SHADOW_TAPS__", "qualitytaps");
 }
 
-/** Total instances across shadow-casting instanced primitive nodes (nodes parked at y <= -50 excluded, like the scene radius). */
+/**
+ * Live instances across shadow-casting instanced primitive nodes (nodes parked at y <= -50 excluded, like the scene radius).
+ * Pool slots parked at world y <= -50 or at scale 0 are not casters and do not count (SI-7, `liveInstanceCount`).
+ */
 export function shadowCastingInstanceCount(snapshot: AuraSceneSnapshot): number {
   let total = 0;
   for (const node of groups.flatten(snapshot.nodes)) {
     if (node.kind !== "primitive" || !node.castShadow || !Array.isArray(node.instances)) continue;
     const position: AuraVec3 = Array.isArray(node.position) ? node.position : [0, 0, 0];
     if (position[1] <= -50) continue;
-    total += node.instances.length;
+    total += liveInstanceCount(node);
   }
   return total;
 }
