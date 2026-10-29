@@ -4,14 +4,16 @@ import type { AthletePose, SceneRenderer } from "../contract/modules";
 import type { ActorState, BallState, MatchState } from "../contract/sim";
 import type { Vec3 } from "../contract/units";
 import { resolveBallHandles, updateBall, type BallHandles } from "./ball";
-import { CAMERA_EYE, CAMERA_FAR, CAMERA_FOV_DEG, CAMERA_NEAR, CAMERA_TARGET, projectWorldPoint } from "./camera";
+import { CAMERA_EYE, CAMERA_FAR, CAMERA_FOV_DEG, CAMERA_NEAR, CAMERA_TARGET, cameraFovForAspect, projectWorldPoint } from "./camera";
 import { COURT_X, COURT_Y, COURT_Z, HIDDEN_SCALE, SERVICE_Z, SINGLES_X, SPECTATOR_COUNT, clamp } from "./constants";
 import { QUALITY_REBUILD } from "./lighting";
 import { resolveAppearance } from "./appearance";
 import { createPoseRig } from "./poseRig";
 import type { AthleteRigPort } from "./rigPort";
-import { buildTennisScene } from "./scene";
-import { updateSpectators } from "./spectators";
+import { cachedMediaQuery } from "../ui/dom";
+import { createParticleUpdater } from "./particles";
+import { STATIC_RUNTIME_IDS, buildTennisScene } from "./scene";
+import { createSpectatorUpdater } from "./spectators";
 import { VENUE_PALETTES, isMoonVenue, venueKey } from "./venues";
 
 /** Serve cue the HUD publishes (the renderer only needs the fault flash). */
@@ -30,7 +32,12 @@ export interface SceneRendererOptions {
   wrapHandle?: (id: string, handle: AuraRuntimeNodeHandle) => AuraRuntimeNodeHandle;
   /** Page search string for the safety switches (defaults to `location.search`). */
   search?: string;
+  /** Reduced-motion probe for the hit shake (defaults to a cached `prefers-reduced-motion` media query). */
+  reducedMotion?: () => boolean;
 }
+
+/** Camera shake per unit of sim `screenShake` (the sim sets 0.15 on a serve fault and 0.07 on a player hit). */
+export const SHAKE_TRAUMA_PER_UNIT = 2.4;
 
 export interface SceneRendererHandle extends SceneRenderer {
   readonly app: AuraApp | null;
@@ -55,6 +62,15 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
   const h: Record<string, AuraRuntimeNodeHandle> = {};
   let grassStripes: AuraRuntimeNodeHandle[] = [];
   let spectators: AuraRuntimeNodeHandle | null = null;
+  let particles: AuraRuntimeNodeHandle | null = null;
+  const spectatorUpdater = createSpectatorUpdater();
+  const particleUpdater = createParticleUpdater();
+  const reducedMotionQuery = options.reducedMotion ? null : cachedMediaQuery("(prefers-reduced-motion: reduce)");
+  const reducedMotion = options.reducedMotion ?? (() => reducedMotionQuery!.matches());
+  let audienceVisible = true;
+  let cameraFov = CAMERA_FOV_DEG;
+  let lastShake = 0;
+  let particlesDrawn = 0;
 
   let viewportWidth = 1280;
   let viewportHeight = 800;
@@ -76,6 +92,24 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     h.singles!.setMaterial(material.pbr({ color: pal.court, roughness: 0.78 }));
     const isGrass = key === "grass";
     for (const stripe of grassStripes) stripe.setScale(isGrass ? [1, 1, 1] : HIDDEN_SCALE).setVisible(isGrass);
+    // C7: the rest of the venue palette, and no crowd or grandstand on the Moon.
+    h.backdrop?.setMaterial(material.pbr({ color: pal.background, roughness: 1, unlit: true }));
+    h.bleachers?.setMaterial(material.pbr({ color: pal.seat, roughness: 0.85 }));
+    h.sponsorTrim?.setMaterial(material.pbr({ color: pal.trim, roughness: 0.55 }));
+    audienceVisible = !isMoonVenue(key);
+    spectators?.setVisible(audienceVisible);
+    h.grandstand?.setVisible(audienceVisible);
+    h.bleachers?.setVisible(audienceVisible);
+  }
+
+  /** C2: aspect-aware FOV, pushed to the live camera whenever the canvas aspect changes. */
+  function applyCameraFov(): void {
+    const fov = cameraFovForAspect(viewportWidth / Math.max(1, viewportHeight));
+    if (Math.abs(fov - cameraFov) < 1e-6) return;
+    cameraFov = fov;
+    try {
+      app?.camera?.setPose({ position: [...CAMERA_EYE], target: [...CAMERA_TARGET], fov }, { cut: true });
+    } catch { /* camera controller is optional */ }
   }
 
   const self: SceneRendererHandle = {
@@ -90,7 +124,8 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       canvas = target;
       app = createAuraApp(target, {
         scene: buildTennisScene(rig),
-        renderer: { quality: "high" },
+        // C11: a governed tier ("auto") instead of the old string, which resolveMountQuality ignored; coarse-pointer devices get "medium".
+        renderer: { quality: { tier: "auto" } },
         qualityRebuild: QUALITY_REBUILD
       });
       await app.ready();
@@ -111,6 +146,13 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       h.faultRight = req("net-fault-right");
       grassStripes = Array.from({ length: 8 }, (_, i) => req(`grass-stripe-${i}`));
       spectators = req("spectators");
+      particles = req("hit-particles");
+      particles.setVisible(false);
+      h.backdrop = req("stadium-backdrop");
+      h.bleachers = req(STATIC_RUNTIME_IDS.bleachers);
+      h.sponsorTrim = req(STATIC_RUNTIME_IDS.sponsorTrim);
+      h.grandstand = req("stadium-grandstand-rear");
+      try { app.camera?.shake.configure({ maxOffset: 0.18, maxAngleDeg: 0.35, frequency: 18, decayPerSecond: 2.6 }); } catch { /* optional */ }
       net = installSafetyNet({
         safety: options.safety ?? true,
         canvas: target,
@@ -118,6 +160,8 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
         ...(options.search !== undefined ? { search: options.search } : {})
       });
       ready = true;
+      cameraFov = CAMERA_FOV_DEG;
+      applyCameraFov();
     },
 
     setVenue(venueId: string): void {
@@ -142,7 +186,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       const isPlayerServing = state.mode === "playing" && state.server === "player" && (state.phase === "serve" || state.phase === "serveToss");
       const serveAim = state.serveAttempt?.lockedAim || state.serveAttempt?.aim;
       if (isPlayerServing && serveAim) {
-        const boxSignX = s.serveSide === "deuce" ? -1 : 1;
+        const boxSignX = (s.serveCourt ?? s.serveSide) === "deuce" ? -1 : 1;
         h.serviceBox!.setPosition(boxSignX * SINGLES_X * 0.5, 0.011, -SERVICE_Z * 0.5).setScale([1, 1, 1]).setVisible(true);
         h.aimRing!.setPosition(serveAim.x * COURT_X, 0.022, serveAim.y * COURT_Z).setScale([1, 1, 1]).setVisible(true);
       } else {
@@ -178,7 +222,15 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
 
       const t = Number(state.time ?? 0);
       const cheering = (state.phase as string) === "pointOver" || state.mode === "gameover";
-      if (spectators) updateSpectators(spectators, t, cheering);
+      if (spectators && audienceVisible) spectatorUpdater.update(spectators, t, cheering);
+      if (particles) particlesDrawn = particleUpdater.update(particles, s.particles as never);
+
+      // C13: the sim's screen shake drives a small camera trauma, skipped under reduced motion.
+      const shake = Number(s.screenShake ?? 0);
+      if (shake > lastShake + 1e-4 && !reducedMotion()) {
+        try { app.camera?.shake.add(Math.min(1, shake * SHAKE_TRAUMA_PER_UNIT)); } catch { /* optional */ }
+      }
+      lastShake = shake;
 
       const pPose = options.pose.pose(state.player, state);
       const aiPose = options.pose.pose(state.ai, state);
@@ -190,7 +242,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     },
 
     project(world: Vec3): { x: number; y: number; visible: boolean } {
-      const p = projectWorldPoint(viewportWidth, viewportHeight, world[0] * COURT_X, Math.max(0.04, world[2] * COURT_Y), world[1] * COURT_Z);
+      const p = projectWorldPoint(viewportWidth, viewportHeight, world[0] * COURT_X, Math.max(0.04, world[2] * COURT_Y), world[1] * COURT_Z, cameraFov);
       return { x: p.x, y: p.y, visible: p.visible };
     },
 
@@ -198,12 +250,15 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       viewportWidth = Math.max(1, width);
       viewportHeight = Math.max(1, height);
       pixelRatio = ratio || 1;
+      if (ready) applyCameraFov();
     },
 
     dispose(): void {
       net?.dispose();
       net = null;
       ready = false;
+      reducedMotionQuery?.dispose();
+      try { app?.dispose(); } catch { /* already gone */ }
       app = null;
     },
 
@@ -213,10 +268,11 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
         engine: "@aura3d/engine",
         playerStyle: "3d",
         displayBall: [...lastBallWorld],
-        camera: { position: [...CAMERA_EYE], target: [...CAMERA_TARGET], fov: CAMERA_FOV_DEG, near: CAMERA_NEAR, far: CAMERA_FAR, aspect: viewportWidth / Math.max(1, viewportHeight) },
+        camera: { position: [...CAMERA_EYE], target: [...CAMERA_TARGET], fov: cameraFov, near: CAMERA_NEAR, far: CAMERA_FAR, aspect: viewportWidth / Math.max(1, viewportHeight) },
         viewport: { width: viewportWidth, height: viewportHeight, bottom: 0, pixelRatio },
-        audience: { visible: !isMoonVenue(currentVenueKey), count: SPECTATOR_COUNT },
-        environment: { venue: currentVenueKey || "hard" },
+        audience: { visible: spectators ? spectators.visible !== false : audienceVisible, count: SPECTATOR_COUNT },
+        environment: { venue: currentVenueKey || "hard", background: VENUE_PALETTES[currentVenueKey || "hard"]?.background ?? null },
+        particles: { drawn: particlesDrawn },
         umpire: { visible: true },
         netPostLights: { active: lastFaultActive },
         outfits: { player: currentVenueKey === "moon" ? "apollo" : "tennis", rival: currentVenueKey === "moon" ? "apollo" : "tennis" },

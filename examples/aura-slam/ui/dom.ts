@@ -27,3 +27,12 @@ export function setVisible(el: HTMLElement, show: boolean): void {
   el.hidden = !show;
   setInert(el, !show);
 }
+
+/** A `matchMedia` result cached with a `change` listener, so per-frame code never calls `matchMedia` (C12). */
+export function cachedMediaQuery(query: string): { matches(): boolean; dispose(): void } {
+  const list = typeof window !== "undefined" && typeof window.matchMedia === "function" ? window.matchMedia(query) : null;
+  let value = Boolean(list?.matches);
+  const onChange = (event: MediaQueryListEvent): void => { value = event.matches; };
+  list?.addEventListener?.("change", onChange);
+  return { matches: () => value, dispose: () => list?.removeEventListener?.("change", onChange) };
+}
