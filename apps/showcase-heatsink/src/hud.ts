@@ -255,7 +255,8 @@ export function createHud(doc: Document) {
       text(el.pos, String(race.position));
       text(el.posOf, `/${race.field}`);
       text(el.lap, String(race.mode === "elim" ? race.lapsDone + 1 : Math.min(TOTAL_LAPS, race.lapsDone + 1)));
-      text(el.time, formatRaceTime(race.phase === "countdown" ? 0 : race.time - race.lapStartTime));
+      // After the finish the lap clock would read 0:00.0; keep the last lap's time behind the results panel.
+      text(el.time, formatRaceTime(race.phase === "countdown" ? 0 : race.phase === "results" ? (race.lapTimes[race.lapTimes.length - 1] ?? 0) : race.time - race.lapStartTime));
       text(el.best, formatRaceTime(race.bestLap));
       text(el.td, String(race.takedowns));
       text(el.sector, extra.sector);
