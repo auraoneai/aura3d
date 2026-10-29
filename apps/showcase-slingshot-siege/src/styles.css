@@ -55,7 +55,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
 }
 .brand-lockup { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .engine-badge {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.16em;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.16em;
   color: #0e2238; background: linear-gradient(180deg, #ffd766, #ffbe2e);
   padding: 4px 8px; border-radius: 6px;
   border: 2px solid #0e2238; box-shadow: 0 2px 0 rgba(0,0,0,0.28);
@@ -78,7 +78,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
 }
 .mode-tab:hover { background: rgba(255,255,255,0.15); transform: translateY(-1px); }
 .mode-tab.is-active { color: #0e2238; background: linear-gradient(180deg, #ffd766, #ffbe2e); border-color: #0e2238; box-shadow: 0 2px 0 rgba(0,0,0,0.3); }
-.mode-tab .sub { display: block; font-size: 9.5px; font-weight: 400; opacity: 0.75; letter-spacing: 0.08em; }
+.mode-tab .sub { display: block; font-size: 11px; font-weight: 400; opacity: 0.75; letter-spacing: 0.08em; }
 
 .chapter-switcher { margin-left: auto; display: flex; gap: 5px; overflow-x: auto; max-width: 46vw; scrollbar-width: none; }
 .chapter-switcher::-webkit-scrollbar { display: none; }
@@ -90,7 +90,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
 }
 .chapter-chip:hover { background: rgba(255,255,255,0.14); }
 .chapter-chip.is-active { color: #0e2238; background: var(--chip-color, var(--ss-gold)); border-color: #0e2238; font-weight: 700; }
-.chapter-chip .stars { margin-left: 4px; font-size: 10px; letter-spacing: 0.05em; }
+.chapter-chip .stars { margin-left: 4px; font-size: 11px; letter-spacing: 0.05em; }
 
 /* ------------------------------------------------------------- viewport --- */
 .viewport { position: fixed; inset: 0; width: 100vw; height: 100vh; overflow: hidden; }
@@ -109,7 +109,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
   padding: 6px 14px 8px; color: var(--ss-cream);
   box-shadow: 0 3px 0 rgba(0,0,0,0.25);
 }
-.score-card .label { font-size: 9.5px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: #a8c6ea; }
+.score-card .label { font-size: 11px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: #a8c6ea; }
 .score-card .value { font-size: 22px; font-weight: 700; color: var(--ss-gold); line-height: 1; font-variant-numeric: tabular-nums; }
 .star-meter { display: flex; gap: 2px; font-size: 15px; line-height: 1; }
 .star-meter .star { color: rgba(255,255,255,0.28); text-shadow: 0 1px 0 rgba(0,0,0,0.4); transition: color 200ms ease, transform 200ms ease; }
@@ -119,7 +119,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
   background: var(--ss-panel); border: 2px solid #0e2238; border-radius: 12px;
   padding: 6px 14px; color: var(--ss-cream); box-shadow: 0 3px 0 rgba(0,0,0,0.25);
 }
-.level-tag .label { font-size: 9.5px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: #a8c6ea; }
+.level-tag .label { font-size: 11px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: #a8c6ea; }
 .level-tag .value { font-size: 13.5px; font-weight: 700; color: #fff; }
 
 .hud-right { margin-left: auto; display: flex; gap: 8px; }
@@ -146,8 +146,8 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
   transition: transform 160ms ease, opacity 160ms ease;
 }
 .ammo-slot .ammo-icon { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 17px; font-weight: 700; color: #0e2238; text-shadow: none; }
-.ammo-slot .ammo-key { position: absolute; top: -7px; right: -5px; font-size: 9px; font-weight: 700; background: #0e2238; color: var(--ss-cream); border-radius: 5px; padding: 1px 5px; }
-.ammo-slot .ammo-name { position: absolute; bottom: -16px; left: 50%; transform: translateX(-50%); font-size: 8.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.65); white-space: nowrap; }
+.ammo-slot .ammo-key { position: absolute; top: -7px; right: -5px; font-size: 11px; font-weight: 700; background: #0e2238; color: var(--ss-cream); border-radius: 5px; padding: 1px 5px; }
+.ammo-slot .ammo-name { position: absolute; bottom: -16px; left: 50%; transform: translateX(-50%); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.65); white-space: nowrap; }
 .ammo-slot.spent { opacity: 0.32; transform: scale(0.9); }
 .ammo-slot.loaded { outline: 3px solid var(--ss-gold); outline-offset: 1px; transform: translateY(-6px) scale(1.05); }
 .ammo-slot.infinite { outline: 3px dashed rgba(255,255,255,0.5); outline-offset: 1px; }
@@ -283,7 +283,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
 }
 .level-cell:hover { transform: translateY(-2px) scale(1.03); }
 .level-cell .num { font-size: 17px; font-weight: 700; color: var(--ss-ink); }
-.level-cell .cell-stars { font-size: 10px; letter-spacing: 0.04em; color: #b7c4d2; }
+.level-cell .cell-stars { font-size: 11px; letter-spacing: 0.04em; color: #b7c4d2; }
 .level-cell .cell-stars .lit { color: var(--ss-gold); }
 .level-cell.current { outline: 3px solid var(--ss-orange); outline-offset: 1px; }
 .level-cell.locked { cursor: not-allowed; opacity: 0.55; background: repeating-linear-gradient(45deg, #e8eef6, #e8eef6 6px, #dde5ee 6px, #dde5ee 12px); }
@@ -346,7 +346,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
 /* misc ------------------------------------------------------------------------------ */
 .is-hidden { display: none !important; }
 .kbd {
-  font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 5px;
+  font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 5px;
   background: #0e2238; color: var(--ss-cream); border: 1px solid rgba(255,255,255,0.25);
 }
 
@@ -356,7 +356,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
 }
 @media (max-width: 640px) {
   .mode-tab { padding: 5px 9px; font-size: 11px; }
-  .controls-hint { gap: 16px; font-size: 10.5px; flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; white-space: nowrap; scrollbar-width: none; padding: 4px 10px; }
+  .controls-hint { gap: 16px; font-size: 11px; flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; white-space: nowrap; scrollbar-width: none; padding: 4px 10px; }
   .controls-hint::-webkit-scrollbar { display: none; }
   .controls-hint > span { flex: 0 0 auto; }
   .score-card .value { font-size: 17px; }
@@ -407,7 +407,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
   background: var(--ss-panel); border: 2px solid #0e2238; border-radius: 12px;
   padding: 7px 14px 9px; color: var(--ss-cream); box-shadow: 0 3px 0 rgba(0,0,0,0.25);
 }
-.ss-score-label { font-size: 9px; font-weight: 500; letter-spacing: 0.18em; color: #a8c6ea; }
+.ss-score-label { font-size: 11px; font-weight: 500; letter-spacing: 0.18em; color: #a8c6ea; }
 .ss-score { font-size: 24px; font-weight: 700; color: var(--ss-gold); line-height: 1.05; font-variant-numeric: tabular-nums; }
 .ss-stars { display: flex; gap: 2px; font-size: 15px; }
 .ss-star { color: rgba(255,255,255,0.25); }
@@ -448,7 +448,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
 }
 .ss-ammo-chip span {
   position: absolute; bottom: -17px; left: 50%; transform: translateX(-50%);
-  font-size: 8.5px; font-weight: 700; letter-spacing: 0.1em; color: #fff;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #fff;
   text-shadow: 0 1px 2px rgba(0,0,0,0.7);
 }
 .ss-ammo-chip.spent { opacity: 0.3; transform: scale(0.88); }
@@ -467,7 +467,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
   animation: ss-ability-pulse 0.9s ease infinite;
 }
 @keyframes ss-ability-pulse { 50% { transform: translateY(-3px) scale(1.04); } }
-.ss-ability-key { font-size: 9px; font-weight: 700; letter-spacing: 0.2em; color: #a8c6ea; }
+.ss-ability-key { font-size: 11px; font-weight: 700; letter-spacing: 0.2em; color: #a8c6ea; }
 .ss-ability-name { font-size: 12.5px; font-weight: 700; color: var(--ammo-color, var(--ss-cream)); }
 
 .ss-utility { position: absolute; top: 112px; right: 14px; display: flex; flex-direction: column; gap: 8px; }
@@ -580,7 +580,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
 }
 .ss-level-tile b { font-size: 14px; width: 16px; color: var(--ss-ink); }
 .ss-level-tile span { flex: 1; font-weight: 500; color: #43596f; }
-.ss-level-tile i { font-style: normal; font-size: 10px; letter-spacing: 1px; }
+.ss-level-tile i { font-style: normal; font-size: 11px; letter-spacing: 1px; }
 .ss-level-tile i s { text-decoration: none; color: #c3cfdb; }
 .ss-level-tile i s.lit { color: var(--ss-gold); }
 .ss-level-tile.current { outline: 3px solid var(--ss-orange); outline-offset: 1px; }
@@ -620,4 +620,25 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
   .ss-brand-mark { display: none; }
   .ss-tabs { margin-left: 2px; gap: 4px; }
   .ss-topbar { gap: 8px; padding: 6px 10px; }
+}
+
+/* First-level coach card: sits above the ammo dock until the first launch. */
+.ss-coach {
+  position: absolute; left: 50%; bottom: 112px; transform: translateX(-50%);
+  max-width: min(420px, calc(100% - 32px)); padding: 10px 14px; border-radius: 12px;
+  background: rgba(14, 34, 56, 0.86); border: 2px solid rgba(255, 247, 232, 0.35);
+  color: var(--ss-cream); font-size: 13px; font-weight: 500; line-height: 1.4; text-align: center;
+  pointer-events: none;
+}
+.ss-coach b { font-weight: 700; color: var(--ss-gold); }
+.ss-coach span { display: block; margin-top: 4px; font-size: 11.5px; font-weight: 400; color: #cfe4ff; }
+
+/* Reduced motion: no pulsing, popping or sliding HUD. Popups and the banner still show
+   (their timers remove them), just without movement. */
+@media (prefers-reduced-motion: reduce) {
+  .ss-hud *, .ss-hud *::before, .ss-hud *::after { transition: none !important; }
+  .ss-ability.armed { animation: none; }
+  .ss-popup { animation: none; opacity: 1; }
+  .ss-banner.in { animation: none; opacity: 1; }
+  .ss-toast.in { transform: none; }
 }

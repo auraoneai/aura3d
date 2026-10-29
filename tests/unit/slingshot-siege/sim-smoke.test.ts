@@ -1,8 +1,8 @@
-// Headless regression: every level boots, fires, and settles through the real
-// Rapier-backed SiegeSim (no renderer). Run: npx vitest run tests/smoke.spec.ts
+// Headless regression (moved from apps/showcase-slingshot-siege/tests so the root unit gate runs it): every level boots, fires, and settles through the real
+// Rapier-backed SiegeSim (no renderer). Run: pnpm exec vitest run tests/unit/slingshot-siege
 import { describe, expect, it } from "vitest";
-import { SiegeSim } from "../src/game/sim";
-import { LEVELS } from "../src/game/levels";
+import { SiegeSim } from "../../../apps/showcase-slingshot-siege/src/game/sim";
+import { LEVELS } from "../../../apps/showcase-slingshot-siege/src/game/levels";
 
 function pump(sim: SiegeSim, frames: number): void {
   for (let i = 0; i < frames; i += 1) sim.update(1 / 60);
@@ -29,7 +29,7 @@ describe("slingshot-siege sim", () => {
     const ok = sim.launch("stone", ORIGIN, VELOCITY);
     expect(ok).toBe(true);
     pump(sim, 60 * 14);
-    const kinds = sim.events.map((e) => e.kind);
+    const kinds = sim.drainEvents().map((e) => e.kind);
     expect(sim.gullsAlive()).toBeLessThan(sim.gullList().length);
     expect(kinds).toContain("shot-settled");
   }, 30_000);

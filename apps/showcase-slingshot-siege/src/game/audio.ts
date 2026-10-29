@@ -1,11 +1,12 @@
 /**
  * Slingshot Siege audio — typed siege-catalog cues over `createGameAudio`
  * (@aura3d/engine). Every cue is a registered CC0 asset synthesized in-repo
- * for the siege family; playback only starts after a user gesture unlocks the
- * AudioContext.
+ * for the siege family; playback only starts after a user gesture (pointer or
+ * key) unlocks the AudioContext. The mute toggle silences the master bus and
+ * is remembered across visits.
  */
 import { createGameAudio, type GameAudio } from "@aura3d/engine";
-import { assets } from "../../../../src/aura-assets";
+import { assets } from "../aura-assets.route";
 
 export type SiegeCue =
   | "launch"
@@ -22,30 +23,21 @@ export type SiegeCue =
   | "ui-confirm"
   | "wind";
 
-type SiegeAssetKey =
-  | "gullSiegeDriveHitSfx"
-  | "gullSiegeWoodCrackSfx"
-  | "gullSiegeMetalClangSfx"
-  | "gullSiegeTargetDownSfx"
-  | "gullSiegeParChimeSfx"
-  | "gullSiegeBogeyStingSfx"
-  | "gullSiegeUiConfirmSfx"
-  | "gullSiegeAmbientWindSfx";
-
-const CUE_ASSETS: Record<SiegeCue, SiegeAssetKey> = {
-  launch: "gullSiegeDriveHitSfx",
-  "wood-crack": "gullSiegeWoodCrackSfx",
-  "stone-thud": "gullSiegeMetalClangSfx",
-  "glass-shatter": "gullSiegeTargetDownSfx",
-  "gull-squash": "gullSiegeTargetDownSfx",
-  "gull-scare": "gullSiegeBogeyStingSfx",
-  ability: "gullSiegeParChimeSfx",
-  "windmill-snap": "gullSiegeWoodCrackSfx",
-  "star-chime": "gullSiegeParChimeSfx",
-  "level-clear": "gullSiegeParChimeSfx",
-  "level-fail": "gullSiegeBogeyStingSfx",
-  "ui-confirm": "gullSiegeUiConfirmSfx",
-  wind: "gullSiegeAmbientWindSfx"
+/** Static `assets.<id>` references, so per-route typegen sees every sound this game ships. */
+const CUE_ASSETS: Record<SiegeCue, { readonly url: string; readonly hash: string }> = {
+  launch: assets.gullSiegeDriveHitSfx,
+  "wood-crack": assets.gullSiegeWoodCrackSfx,
+  "stone-thud": assets.gullSiegeMetalClangSfx,
+  "glass-shatter": assets.gullSiegeTargetDownSfx,
+  "gull-squash": assets.gullSiegeTargetDownSfx,
+  "gull-scare": assets.gullSiegeBogeyStingSfx,
+  ability: assets.gullSiegeParChimeSfx,
+  "windmill-snap": assets.gullSiegeWoodCrackSfx,
+  "star-chime": assets.gullSiegeParChimeSfx,
+  "level-clear": assets.gullSiegeParChimeSfx,
+  "level-fail": assets.gullSiegeBogeyStingSfx,
+  "ui-confirm": assets.gullSiegeUiConfirmSfx,
+  wind: assets.gullSiegeAmbientWindSfx
 };
 
 const CUE_BUS: Record<SiegeCue, "sfx" | "ui" | "ambience"> = {
@@ -64,14 +56,31 @@ const CUE_BUS: Record<SiegeCue, "sfx" | "ui" | "ambience"> = {
   wind: "ambience"
 };
 
-let cached: GameAudio<SiegeCue> | null = null;
+export const MUTE_STORE_KEY = "slingshot-siege-audio";
 
-export function siegeAudio(): { cue(name: SiegeCue): void; unlock(): Promise<void> } {
+export interface SiegeAudio {
+  cue(name: SiegeCue): void;
+  /** Unlock the context from a user gesture and start the wind ambience once. */
+  unlock(): Promise<void>;
+  setMuted(muted: boolean): void;
+  readonly muted: boolean;
+  /** Small evidence snapshot for capture tooling. */
+  state(): { readonly muted: boolean; readonly unlocked: boolean; readonly windStarted: boolean; readonly engineMuted: boolean | null; readonly sfxLevel: number | null };
+}
+
+export function readStoredMute(): boolean {
+  try { return localStorage.getItem(MUTE_STORE_KEY) === "muted"; } catch { return false; }
+}
+
+let cached: GameAudio<SiegeCue> | null = null;
+let api: SiegeAudio | null = null;
+
+export function siegeAudio(): SiegeAudio {
+  if (api) return api;
   if (!cached) {
     const cues = Object.fromEntries(
       (Object.keys(CUE_ASSETS) as SiegeCue[]).map((cue) => {
-        const key = CUE_ASSETS[cue];
-        const asset = assets[key];
+        const asset = CUE_ASSETS[cue];
         return [
           cue,
           {
@@ -95,8 +104,37 @@ export function siegeAudio(): { cue(name: SiegeCue): void; unlock(): Promise<voi
     });
   }
   const audio = cached;
-  return {
+  let muted = readStoredMute();
+  let unlocked = false;
+  let windStarted = false;
+  audio.setMuted(muted);
+  api = {
     cue(name) { void audio.cue(name).catch(() => undefined); },
-    async unlock() { await audio.unlock().catch(() => undefined); }
+    async unlock() {
+      if (unlocked) return;
+      unlocked = true;
+      await audio.unlock().catch(() => undefined);
+      if (!windStarted) {
+        windStarted = true;
+        void audio.cue("wind").catch(() => { windStarted = false; });
+      }
+    },
+    setMuted(next) {
+      muted = next;
+      audio.setMuted(next);
+      try { localStorage.setItem(MUTE_STORE_KEY, next ? "muted" : "on"); } catch { /* private mode */ }
+    },
+    get muted() { return muted; },
+    state() {
+      let engineMuted: boolean | null = null;
+      let sfxLevel: number | null = null;
+      try {
+        const ev = audio.evidence;
+        engineMuted = ev.muted;
+        sfxLevel = ev.busLevels.find((b) => b.id === "sfx")?.level ?? null;
+      } catch { /* evidence optional */ }
+      return { muted, unlocked, windStarted, engineMuted, sfxLevel };
+    }
   };
+  return api;
 }

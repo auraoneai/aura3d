@@ -28,6 +28,8 @@ export interface HudState {
   level: LevelSpec;
   score: number;
   ammo: readonly AmmoId[];
+  /** Shots already fired this level: chips [0, shotsUsed) are spent, chip `shotsUsed` is next. */
+  shotsUsed: number;
   ammoLeft: number;
   currentAmmo: AmmoId | null;
   abilityReady: boolean;
@@ -79,6 +81,10 @@ export class SiegeHud {
   private mode: ModeId = "siege";
   private state!: HudState;
   private destroyed = false;
+  private muteBtn!: HTMLButtonElement;
+  private coach!: HTMLElement;
+  /** Last written HUD fragments: `update()` touches the DOM only when one changes. */
+  private written = { score: "", rating: -1, levelTag: "", pips: "", dock: "", ability: "" };
 
   constructor(container: HTMLElement, actions: HudActions) {
     this.actions = actions;
@@ -100,7 +106,10 @@ export class SiegeHud {
       tabs.appendChild(btn);
     }
     const mute = el("button", "ss-topbar-btn", "🔊");
-    mute.addEventListener("click", () => { mute.textContent = this.actions.onMuteToggle() ? "🔇" : "🔊"; });
+    mute.title = "Mute sound";
+    mute.setAttribute("aria-label", "Mute sound");
+    mute.addEventListener("click", () => this.setMuted(this.actions.onMuteToggle()));
+    this.muteBtn = mute;
     topbar.append(brand, tabs, mute);
     this.root.appendChild(topbar);
 
@@ -145,7 +154,20 @@ export class SiegeHud {
 
     // ---------------- result card ---------------------------------------------
     this.resultCard = el("div", "ss-result ss-hidden");
+    // One delegated listener for the card's lifetime: clicks that miss a button do nothing,
+    // and a re-shown card never stacks a second handler.
+    this.resultCard.addEventListener("click", (ev) => {
+      const btn = (ev.target as HTMLElement | null)?.closest<HTMLElement>("[data-act]");
+      const act = btn?.dataset.act;
+      if (act === "next" || act === "retry" || act === "map") this.actions.onResult(act);
+    });
     this.root.appendChild(this.resultCard);
+
+    // ---------------- first-level coach -----------------------------------------
+    this.coach = el("div", "ss-coach ss-hidden");
+    this.coach.innerHTML = `<b>Drag the pouch back</b> and release to launch.
+      <span>Keys: W/S or ↑/↓ aim up and down, A/D or ←/→ set power, Space launches, Space again fires the ammo power.</span>`;
+    this.root.appendChild(this.coach);
 
     // ---------------- pause veil -----------------------------------------------
     this.pauseVeil = el("div", "ss-veil ss-hidden");
@@ -182,28 +204,65 @@ export class SiegeHud {
 
   update(state: HudState): void {
     this.state = state;
-    this.scoreEl.textContent = Math.round(state.score).toLocaleString();
+    const w = this.written;
+    const score = Math.round(state.score).toLocaleString();
+    if (score !== w.score) { w.score = score; this.scoreEl.textContent = score; }
     const rating = starRating(state.score, state.level.stars);
-    this.starEls.forEach((s, i) => s.classList.toggle("lit", i < rating));
-    this.levelTag.innerHTML = `<b>${CHAPTERS[state.level.chapter]!.name}</b> · ${state.level.slot + 1}. ${state.level.name}`;
-
-    this.gullPips.innerHTML = "";
-    for (let i = 0; i < state.gullsTotal; i += 1) {
-      this.gullPips.appendChild(el("span", `ss-gull-pip ${i < state.gullsLeft ? "alive" : "down"}`, i < state.gullsLeft ? "🐦" : "✕"));
+    if (rating !== w.rating) { w.rating = rating; this.starEls.forEach((s, i) => s.classList.toggle("lit", i < rating)); }
+    const levelTag = `${state.level.id}`;
+    if (levelTag !== w.levelTag) {
+      w.levelTag = levelTag;
+      this.levelTag.innerHTML = `<b>${CHAPTERS[state.level.chapter]!.name}</b> · ${state.level.slot + 1}. ${state.level.name}`;
     }
 
-    this.ammoDock.innerHTML = "";
-    state.ammo.forEach((ammo, i) => {
-      const chip = el("div", `ss-ammo-chip ${i < state.ammoLeft ? "ready" : "spent"} ${i === 0 && state.ammoLeft > 0 ? "current" : ""}`);
-      chip.style.setProperty("--ammo-color", AMMO[ammo].glow);
-      chip.innerHTML = `<i></i><span>${AMMO[ammo].short}</span>`;
-      chip.title = `${AMMO[ammo].name} — ${AMMO[ammo].abilityHint}`;
-      this.ammoDock.appendChild(chip);
-    });
-    const cur = state.currentAmmo ? AMMO[state.currentAmmo] : null;
-    this.abilityBtn.classList.toggle("armed", state.abilityReady);
-    this.abilityBtn.querySelector(".ss-ability-name")!.textContent = cur ? cur.abilityName : "";
-    this.abilityBtn.style.setProperty("--ammo-color", cur?.glow ?? "#888");
+    const pips = `${state.gullsLeft}/${state.gullsTotal}`;
+    if (pips !== w.pips) {
+      w.pips = pips;
+      this.gullPips.innerHTML = "";
+      for (let i = 0; i < state.gullsTotal; i += 1) {
+        const alive = i < state.gullsLeft;
+        const pip = el("span", `ss-gull-pip ${alive ? "alive" : "down"}`, alive ? "🐗" : "✕");
+        pip.title = alive ? "Raider still standing" : "Raider squashed";
+        this.gullPips.appendChild(pip);
+      }
+    }
+
+    const dock = `${state.level.id}:${state.ammo.join(",")}:${state.shotsUsed}`;
+    if (dock !== w.dock) {
+      w.dock = dock;
+      this.ammoDock.innerHTML = "";
+      state.ammo.forEach((ammo, i) => {
+        const spent = i < state.shotsUsed;
+        const current = i === state.shotsUsed;
+        const chip = el("div", `ss-ammo-chip ${spent ? "spent" : "ready"}${current ? " current" : ""}`);
+        chip.style.setProperty("--ammo-color", AMMO[ammo].glow);
+        chip.innerHTML = `<i></i><span>${AMMO[ammo].short}</span>`;
+        chip.title = `${AMMO[ammo].name} — ${AMMO[ammo].abilityHint}`;
+        this.ammoDock.appendChild(chip);
+      });
+    }
+    const ability = `${state.currentAmmo ?? ""}:${state.abilityReady}`;
+    if (ability !== w.ability) {
+      w.ability = ability;
+      const cur = state.currentAmmo ? AMMO[state.currentAmmo] : null;
+      this.abilityBtn.classList.toggle("armed", state.abilityReady);
+      this.abilityBtn.querySelector(".ss-ability-name")!.textContent = cur ? cur.abilityName : "";
+      this.abilityBtn.style.setProperty("--ammo-color", cur?.glow ?? "#888");
+    }
+    if (state.muted !== (this.muteBtn.dataset.muted === "1")) this.setMuted(state.muted);
+  }
+
+  setMuted(muted: boolean): void {
+    this.muteBtn.dataset.muted = muted ? "1" : "0";
+    this.muteBtn.textContent = muted ? "🔇" : "🔊";
+    const label = muted ? "Unmute sound" : "Mute sound";
+    this.muteBtn.title = label;
+    this.muteBtn.setAttribute("aria-label", label);
+  }
+
+  /** First-level onboarding card: shown until the first launch. */
+  setCoach(visible: boolean): void {
+    this.coach.classList.toggle("ss-hidden", !visible);
   }
 
   toast(text: string, cls = ""): void {
@@ -251,10 +310,6 @@ export class SiegeHud {
         <button class="ss-btn ${won && hasNext ? "" : "ss-btn-primary"}" data-act="retry">${won ? "Replay" : "Try Again"}</button>
         <button class="ss-btn" data-act="map">Siege Map</button>
       </div></div>`;
-    this.resultCard.addEventListener("click", (ev) => {
-      const act = (ev.target as HTMLElement).dataset?.act;
-      if (act === "next" || act === "retry" || act === "map") this.actions.onResult(act);
-    }, { once: true });
   }
 
   hideResult(): void {
@@ -338,9 +393,9 @@ export class SiegeHud {
     (this.rangeOverlay.querySelector(".ss-range-chip") as HTMLElement).classList.add("sel");
     for (const id of ["#ss-range-power", "#ss-range-angle"]) {
       const input = this.rangeOverlay.querySelector(id) as HTMLInputElement;
+      // Sliders only set the shot; the LAUNCH button fires it.
       input.addEventListener("input", () => {
         (this.rangeOverlay.querySelector(id === "#ss-range-power" ? "#ss-power-val" : "#ss-angle-val") as HTMLElement).textContent = input.value;
-        fire();
       });
     }
     this.rangeOverlay.querySelector("#ss-range-fire")!.addEventListener("click", fire);
