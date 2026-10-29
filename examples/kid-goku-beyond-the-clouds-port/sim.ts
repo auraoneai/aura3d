@@ -25,6 +25,8 @@ export interface Janken { step: string; t: number; creature?: unknown; kind?: st
 export interface SimState {
   chapter: number; s: number; lane: number; laneVelocity: number; speed: number; jump: number; jumpVelocity: number;
   time: number; score: number; orbs: number; combo: number; maxCombo: number; comboTimer: number; hearts: number;
+  /** Heart cap for meat and checkpoint refills; unset means the original's 3 (easy mode sets 4). */
+  maxHearts?: number;
   checkpoint: number; pole: Span | null; poleTimer: number; staffRecall: number; strikeTimer: number; invincible: number;
   finished: boolean; dead: boolean; hits: number; falls: number; polesUsed: number; encounters: number;
   checkpointIndex: number; trick: string; trickTimer: number; trickDuration: number; boostTimer: number;
@@ -392,13 +394,13 @@ export function step(state: SimState, input: StepInput, dtIn: number, ch: Chapte
   for (const m of ch.meat) {
     if (meatHit(state, m)) {
       state.eaten.add(m.s); state.meat++;
-      if (state.hearts < 3) { state.hearts++; award(state, 200); } else award(state, 800);
+      if (state.hearts < (state.maxHearts ?? 3)) { state.hearts++; award(state, 200); } else award(state, 800);
       ev.push("meat");
     }
   }
   for (let i = 0; i < ch.checkpoints.length; i++) {
     if (state.s >= (ch.checkpoints[i] as number) && i > state.checkpointIndex) {
-      state.checkpoint = ch.checkpoints[i] as number; state.checkpointIndex = i; state.hearts = Math.min(3, state.hearts + 1); ev.push("checkpoint");
+      state.checkpoint = ch.checkpoints[i] as number; state.checkpointIndex = i; state.hearts = Math.min(state.maxHearts ?? 3, state.hearts + 1); ev.push("checkpoint");
     }
   }
   if (state.s >= ch.length) {

@@ -15,7 +15,16 @@ import {
 import { GLIDER } from "./chapter";
 
 export type Phase = "menu" | "playing" | "paused" | "falling" | "finale" | "result";
-export interface RunResult { won: boolean; score: number; time: number; hits: number; falls: number; balls: number; orbs: number; meat: number; maxCombo: number; stars: readonly number[]; best: boolean }
+export interface RunResult {
+  won: boolean; score: number; time: number; hits: number; falls: number; balls: number; orbs: number; meat: number; maxCombo: number; stars: readonly number[];
+  best: boolean; /** Fastest finished run so far (seconds, 0 = none) and whether this run set it. */ bestTime: number; newBestTime: boolean;
+  /** Most sky pearls held at the end of any run, and whether this run set it. */ bestPearls: number; newBestPearls: boolean;
+  /** Where "run again" restarts: from the start after a win, from the last checkpoint after a loss. */ retryFrom: "start" | "checkpoint";
+}
+export type Difficulty = "normal" | "easy";
+/** Easy mode: 0.85x running speed and a fourth heart. Normal is the original's tuning. */
+export const DIFFICULTY: Readonly<Record<Difficulty, { speed: number; hearts: number }>> = { normal: { speed: 1, hearts: 3 }, easy: { speed: 0.85, hearts: 4 } };
+export interface Records { best: number; bestTime: number; bestPearls: number }
 export interface Toast { text: string; until: number }
 export interface Falling { t: number; y: number; v: number; s: number; lane: number; jump: number }
 export const FINALE_SECONDS = 9;
@@ -43,28 +52,46 @@ export class Game {
   readonly magnet = new Map<number, number>();
   danger = 0;
   chase = false;
+  /** Reduced motion (prefers-reduced-motion or the title toggle): presentation drops shake, softens flashes and skips the hit blink. */
+  reducedMotion = false;
   timeScale = 1;
   hold = 0;
   clock = 0;
   taught = new Set<string>();
   best = 0;
+  bestTime = 0;
+  bestPearls = 0;
+  /** Current difficulty; `chapter` is the base chapter with the difficulty's speed applied. */
+  difficulty: Difficulty = "normal";
+  chapter: Chapter;
   private clockToast = 0;
   private strikeHint = false;
   private gliderHint = false;
   readonly orbs: readonly Orb[];
 
-  constructor(readonly chapter: Chapter, start = 0, bestScore = 0) {
+  constructor(readonly base: Chapter, start = 0, records: number | Partial<Records> = 0, difficulty: Difficulty = "normal") {
+    this.difficulty = difficulty;
+    this.chapter = withDifficulty(base, difficulty);
     this.state = this.fresh(start);
     this.enc = this.attach();
-    this.orbs = worldLayout(chapter).orbs;
-    this.best = bestScore;
+    this.orbs = worldLayout(this.chapter).orbs;
+    const r = typeof records === "number" ? { best: records } : records;
+    this.best = r.best ?? 0; this.bestTime = r.bestTime ?? 0; this.bestPearls = r.bestPearls ?? 0;
     this.menu();
   }
 
   private fresh(start: number): SimState {
     const s = createState(0);
     s.s = start;
+    s.hearts = s.maxHearts = DIFFICULTY[this.difficulty].hearts;
     return s;
+  }
+  /** Switch difficulty (title screen only); the next run uses it. */
+  setDifficulty(d: Difficulty): void {
+    if (d === this.difficulty) return;
+    this.difficulty = d;
+    this.chapter = withDifficulty(this.base, d);
+    if (this.phase === "menu") this.menu();
   }
   private attach(): Encounters {
     const enc = new Encounters(this.chapter);
@@ -95,9 +122,10 @@ export class Game {
   }
   pause(): void { if (this.phase === "playing") this.phase = "paused"; }
   resume(): void { if (this.phase === "paused") this.phase = "playing"; }
-  /** After a game over: restart at the last checkpoint with the balls found so far. */
+  /** From the result card: after a win a fresh run from the start; after a game over the last checkpoint with the pearls found so far. */
   retry(): void {
     const s = this.state;
+    if (this.result?.won) { this.start(0); return; }
     this.start(s.checkpoint, s.balls);
   }
 
@@ -118,7 +146,14 @@ export class Game {
     if (won) s.score += 1000 + Math.max(0, 3 - s.hits) * 300 + s.balls.length * 500;
     const best = Math.round(s.score) > this.best;
     if (best) this.best = Math.round(s.score);
-    this.result = { won, score: Math.round(s.score), time: s.time, hits: s.hits, falls: s.falls, balls: s.balls.length, orbs: s.orbs, meat: s.meat, maxCombo: s.maxCombo, stars: [...s.balls], best };
+    const newBestTime = won && (this.bestTime <= 0 || s.time < this.bestTime);
+    if (newBestTime) this.bestTime = s.time;
+    const newBestPearls = s.balls.length > this.bestPearls;
+    if (newBestPearls) this.bestPearls = s.balls.length;
+    this.result = {
+      won, score: Math.round(s.score), time: s.time, hits: s.hits, falls: s.falls, balls: s.balls.length, orbs: s.orbs, meat: s.meat, maxCombo: s.maxCombo, stars: [...s.balls],
+      best, bestTime: this.bestTime, newBestTime, bestPearls: this.bestPearls, newBestPearls, retryFrom: won ? "start" : "checkpoint"
+    };
     this.phase = "result";
     this.prompt = null;
     return [won ? "finish" : "dead"];
@@ -182,7 +217,9 @@ export class Game {
         if (!this.gliderHint && s.glider.charge >= 1 && !s.glider.active && s.glider.call <= 0 && !this.prompt) { this.gliderHint = true; this.say("The sky cloud is ready: press Q!", 2600); }
       }
     }
-    s.score += s.speed * t * 0.6;
+    // A last heart lost to a rock or log (worldPass) or a sim hazard ends the run here; only encounters and falls checked before.
+    if (s.dead && this.phase === "playing") { out.push(...this.end(false)); return; }
+    if (!s.dead && !s.finished) s.score += s.speed * t * 0.6;
     this.teach();
   }
   private lastSlow = 0;
@@ -352,4 +389,10 @@ export class Game {
     s.speed *= Math.max(0, 1 - dt * 1.5);
     if (f.t >= FINALE_SECONDS) { this.finale = null; out.push(...this.end(true)); }
   }
+}
+
+/** The chapter with a difficulty's running speed applied (normal returns the chapter itself). */
+export function withDifficulty(ch: Chapter, d: Difficulty): Chapter {
+  const k = DIFFICULTY[d].speed;
+  return k === 1 ? ch : { ...ch, speed: ch.speed * k };
 }
