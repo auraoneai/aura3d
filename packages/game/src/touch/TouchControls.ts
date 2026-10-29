@@ -124,12 +124,13 @@ export function mountTouchControls(
     elementIdPrefix: `a3g-touch-${options.preset}`
   });
 
+  injectTouchBaseCss(doc);
   const host = doc.createElement("div");
   host.className = `a3g-touch a3g-touch-${options.preset} a3g-hidden`;
   deps.root.appendChild(host);
 
   const bound: string[] = [];
-  const sticks: { name: string; stick: VirtualTouchJoystick; rect: TouchLayoutRect }[] = [];
+  const sticks: { name: string; stick: VirtualTouchJoystick; rect: TouchLayoutRect; nub: HudElement }[] = [];
   const stickHeld = new Map<string, string>();
 
   const place = (name: string, rect: TouchLayoutRect, extra = ""): HudElement => {
@@ -150,6 +151,7 @@ export function mountTouchControls(
     if (!action) return; // unbound controls are not rendered
     const el = place(suffix, rect, "a3g-tc-btn");
     el.setAttribute("role", "button");
+    el.setAttribute("aria-label", action);
     let down = false;
     el.addEventListener("touchstart", () => {
       down = true;
@@ -174,19 +176,24 @@ export function mountTouchControls(
   }
 
   // Sticks: DOM zone + VirtualTouchJoystick writing directional actions.
-  const stickSpecs: { name: string; cfg?: { center: readonly [number, number]; radius: number; deadZone?: number; fixed?: boolean; returnToCenter?: boolean } }[] = [
-    { name: "stick", cfg: preset.leftStick },
-    { name: "rstick", cfg: preset.rightStick }
+  // Binding ids are `stick.*` / `rstick.*`; the layout names the rects
+  // `leftStick` / `rightStick`. A stick with no bound direction is not
+  // rendered, like an unbound button; a zero-radius stick (lane-swipe,
+  // flippers) has no rect and is skipped.
+  const stickSpecs: { name: "stick" | "rstick"; rectKey: "leftStick" | "rightStick"; cfg?: { center: readonly [number, number]; radius: number; deadZone?: number; fixed?: boolean; returnToCenter?: boolean } }[] = [
+    { name: "stick", rectKey: "leftStick", cfg: preset.leftStick },
+    { name: "rstick", rectKey: "rightStick", cfg: preset.rightStick }
   ];
-  for (const { name, cfg } of stickSpecs) {
-    const rect = preset.rects[name];
-    if (!cfg || !rect) continue;
+  for (const { name, rectKey, cfg } of stickSpecs) {
+    const rect = preset.rects[rectKey];
+    if (!cfg || !rect || cfg.radius <= 0) continue;
+    if (!STICK_DIRS.some(([dir]) => options.bindings[`${name}.${dir.split(".").pop()}`])) continue;
     const el = place(name, rect, "a3g-tc-stick");
     const nub = doc.createElement("div");
     nub.className = "a3g-tc-stick-nub";
     el.appendChild(nub);
-    const pxW = rect.w * viewport.width;
-    const pxH = rect.h * viewport.height;
+    const pxW = rect.w * scale * viewport.width;
+    const pxH = rect.h * scale * viewport.height;
     const joystick = new VirtualTouchJoystick({
       center: [pxW / 2, pxH / 2],
       radius: Math.min(pxW, pxH) / 2,
@@ -212,11 +219,11 @@ export function mountTouchControls(
     });
     el.addEventListener("touchend", () => joystick.touchEnd({ id: nextId, x: 0, y: 0 }));
     el.addEventListener("touchcancel", () => joystick.touchEnd({ id: nextId, x: 0, y: 0 }));
-    sticks.push({ name, stick: joystick, rect });
+    sticks.push({ name, stick: joystick, rect, nub });
     bound.push(name);
   }
 
-  const syncStick = (name: string, stick: VirtualTouchJoystick) => {
+  const syncStick = (name: string, stick: VirtualTouchJoystick, nub: HudElement) => {
     const [vx, vy] = stick.snapshot().value;
     for (const [dir, dx, dy] of STICK_DIRS) {
       const controlId = `${name}.${dir.split(".").pop()}`;
@@ -228,8 +235,8 @@ export function mountTouchControls(
       if (shouldHold && !wasHeld) { input.setAction(action, true); stickHeld.set(key, action); }
       else if (!shouldHold && wasHeld) { input.setAction(action, false); stickHeld.delete(key); }
     }
-    // Nub visual offset
-    void name;
+    // Nub follows the stick value (60% of its own size per unit deflection).
+    nub.style.transform = `translate(calc(-50% + ${(vx * 60).toFixed(1)}%), calc(-50% + ${(vy * 60).toFixed(1)}%))`;
   };
 
   let visible = false;
@@ -252,7 +259,7 @@ export function mountTouchControls(
     preset: options.preset,
     setVisible: applyVisibility,
     update() {
-      for (const s of sticks) syncStick(s.name, s.stick);
+      for (const s of sticks) syncStick(s.name, s.stick, s.nub);
     },
     dispose() {
       doc.body.removeEventListener("touchstart", onFirstTouch);
@@ -266,6 +273,37 @@ export function mountTouchControls(
       sticks: sticks.map((s) => s.name)
     })
   };
+}
+
+/**
+ * Default placement and look for the touch layer. The control rects are set
+ * as inline `left`/`top`/`width`/`height` percentages, which only take effect
+ * on positioned elements; before this sheet a route without its own
+ * `.a3g-tc` CSS got a column of static blocks. The rules use `:where()`
+ * (zero specificity), so any route stylesheet still wins.
+ */
+const TOUCH_BASE_CSS = [
+  ".a3g-touch.a3g-hidden { display: none; }",
+  ":where(.a3g-touch) { position: absolute; inset: 0; pointer-events: none; z-index: 45; }",
+  ":where(.a3g-tc) { position: absolute; box-sizing: border-box; pointer-events: auto; touch-action: none;",
+  "  user-select: none; -webkit-user-select: none; border-radius: 12px;",
+  "  background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.35); }",
+  ":where(.a3g-tc-stick) { border-radius: 50%; }",
+  ":where(.a3g-tc-stick-nub) { position: absolute; left: 50%; top: 50%; width: 40%; aspect-ratio: 1;",
+  "  transform: translate(-50%, -50%); border-radius: 50%; background: rgba(255,255,255,.3); pointer-events: none; }",
+  ":where(.a3g-tc-down) { background: rgba(255,255,255,.32); }"
+].join("\n");
+
+function injectTouchBaseCss(doc: HudDocument): void {
+  const realDoc = doc as unknown as {
+    head?: { querySelector?: (s: string) => unknown; appendChild?: (el: unknown) => void };
+  };
+  const head = realDoc.head;
+  if (!head || typeof head.appendChild !== "function" || head.querySelector?.("[data-a3g-touch-base]")) return;
+  const styleEl = doc.createElement("style");
+  styleEl.setAttribute("data-a3g-touch-base", "true");
+  styleEl.textContent = TOUCH_BASE_CSS;
+  head.appendChild(styleEl);
 }
 
 /** Elements flagged `data-a3g-keyhint` under the document. */
