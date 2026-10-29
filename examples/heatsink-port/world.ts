@@ -5,7 +5,7 @@
  * GLB/texture assets are re-created procedurally; see PORTING-NOTES.md.
  */
 import { createCameraShake } from "@aura3d/engine/game";
-import { camera, cameras, effects, geometry, lights, material, primitives, scene, type AuraApp } from "@aura3d/engine";
+import { camera, cameras, effects, environments, geometry, lights, material, primitives, scene, type AuraApp } from "@aura3d/engine";
 import { CFG } from "./config";
 import { buildArches, buildDividers, buildProps, buildRails, buildRoad, buildShards, buildShoulders, groundQuad, hexLinear, padQuad, veilQuad, type MeshData } from "./meshes";
 import { pointsSpec, roadSpec, skySpec, solidSpec, streakSpec, terrainSpec, veilSpec, type Rgb } from "./materials";
@@ -58,6 +58,8 @@ const BOLT_LENGTH = CFG.weapons.length;
 const BOLT_HALF_WIDTH = 0.22;
 /** chase-camera framing of the art pass (lower and closer than `CFG.camera`, matching the original's frames); the sim never reads it */
 const FRAMING = { dist: 7.6, height: 2.0 };
+/** Neutral-room IBL intensity for the lit models (LIGHT-01); see the environment node in `buildWorld`. */
+export const NEUTRAL_FILL = 1.0;
 
 export interface WorldRuntime {
   update(race: Race, hud: HudValues, dt: number, time: number, aspect: number): void;
@@ -99,6 +101,13 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high"): Worl
 
   /* the Meshy models are lit surfaces: a cool sky fill and a warm low key, the custom (unlit) road/sky/neon shaders ignore both */
   b.add(lights.hemisphere({ name: "sky-fill", skyColor: "#6fa8d8", groundColor: "#2a1a10", intensity: 1.1 }));
+  /*
+   * LIGHT-01: 4.5.0 gives a scene with authored lights and no environment no image-based light at all, so the lit Meshy
+   * models lost the neutral-room fill and reflections they had on 4.3.7. An explicit neutral room (background off, so
+   * the authored sky and the unlit shaders are untouched) brings it back; the intensity is calibrated against 4.3.7
+   * captures with the hemisphere contributing next to it (evidence/audit-fix/g19).
+   */
+  b.add(environments.neutral({ name: "model-fill", intensity: NEUTRAL_FILL }));
   b.add(lights.directional({ name: "key", position: [180, 260, -120], target: [0, 0, 0], intensity: 2.6, color: "#ffd9b0", shadow: (typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0" ? false : { cascades: 2, maxDistance: 160 } as never) }));
   for (const n of sceneryNodes(track)) b.add(n);
 

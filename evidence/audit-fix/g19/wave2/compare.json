@@ -1,0 +1,684 @@
+{
+  "rows": [
+    {
+      "key": "437:none@450",
+      "step": 450,
+      "wholeMean": 52.29,
+      "maskBlocks": 675,
+      "maskMean": 71.53,
+      "maskRef437": 71.53,
+      "maskDelta": 0,
+      "meanAbsDiffVs437": 0
+    },
+    {
+      "key": "base:none@450",
+      "step": 450,
+      "wholeMean": 51.26,
+      "maskBlocks": 675,
+      "maskMean": 22.5,
+      "maskRef437": 71.53,
+      "maskDelta": -49.03,
+      "meanAbsDiffVs437": 1.05
+    },
+    {
+      "key": "cal:0.6@450",
+      "step": 450,
+      "wholeMean": 52.01,
+      "maskBlocks": 675,
+      "maskMean": 55.04,
+      "maskRef437": 71.53,
+      "maskDelta": -16.49,
+      "meanAbsDiffVs437": 0.9
+    },
+    {
+      "key": "cal:0.8@450",
+      "step": 450,
+      "wholeMean": 52.09,
+      "maskBlocks": 675,
+      "maskMean": 65.12,
+      "maskRef437": 71.53,
+      "maskDelta": -6.41,
+      "meanAbsDiffVs437": 0.6
+    },
+    {
+      "key": "cal:1.0@450",
+      "step": 450,
+      "wholeMean": 52.38,
+      "maskBlocks": 675,
+      "maskMean": 72.58,
+      "maskRef437": 71.53,
+      "maskDelta": 1.05,
+      "meanAbsDiffVs437": 0.56
+    },
+    {
+      "key": "cal:1.2@450",
+      "step": 450,
+      "wholeMean": 52.34,
+      "maskBlocks": 675,
+      "maskMean": 76.4,
+      "maskRef437": 71.53,
+      "maskDelta": 4.87,
+      "meanAbsDiffVs437": 0.68
+    },
+    {
+      "key": "cal:off@450",
+      "step": 450,
+      "wholeMean": 51.3,
+      "maskBlocks": 675,
+      "maskMean": 22.63,
+      "maskRef437": 71.53,
+      "maskDelta": -48.9,
+      "meanAbsDiffVs437": 1.26
+    },
+    {
+      "key": "437:none@1200",
+      "step": 1200,
+      "wholeMean": 53.93,
+      "maskBlocks": 4579,
+      "maskMean": 80.39,
+      "maskRef437": 80.39,
+      "maskDelta": 0,
+      "meanAbsDiffVs437": 0
+    },
+    {
+      "key": "base:none@1200",
+      "step": 1200,
+      "wholeMean": 52.8,
+      "maskBlocks": 4579,
+      "maskMean": 72.85,
+      "maskRef437": 80.39,
+      "maskDelta": -7.53,
+      "meanAbsDiffVs437": 2.65
+    },
+    {
+      "key": "cal:0.6@1200",
+      "step": 1200,
+      "wholeMean": 53.59,
+      "maskBlocks": 4579,
+      "maskMean": 78.49,
+      "maskRef437": 80.39,
+      "maskDelta": -1.89,
+      "meanAbsDiffVs437": 1.68
+    },
+    {
+      "key": "cal:0.8@1200",
+      "step": 1200,
+      "wholeMean": 53.82,
+      "maskBlocks": 4579,
+      "maskMean": 79.86,
+      "maskRef437": 80.39,
+      "maskDelta": -0.53,
+      "meanAbsDiffVs437": 1.7
+    },
+    {
+      "key": "cal:1.0@1200",
+      "step": 1200,
+      "wholeMean": 53.99,
+      "maskBlocks": 4579,
+      "maskMean": 80.97,
+      "maskRef437": 80.39,
+      "maskDelta": 0.58,
+      "meanAbsDiffVs437": 1.38
+    },
+    {
+      "key": "cal:1.2@1200",
+      "step": 1200,
+      "wholeMean": 54.21,
+      "maskBlocks": 4579,
+      "maskMean": 82.16,
+      "maskRef437": 80.39,
+      "maskDelta": 1.77,
+      "meanAbsDiffVs437": 1.44
+    },
+    {
+      "key": "cal:off@1200",
+      "step": 1200,
+      "wholeMean": 52.8,
+      "maskBlocks": 4579,
+      "maskMean": 72.91,
+      "maskRef437": 80.39,
+      "maskDelta": -7.47,
+      "meanAbsDiffVs437": 2.21
+    },
+    {
+      "key": "437:none@2250",
+      "step": 2250,
+      "wholeMean": 52.34,
+      "maskBlocks": 3043,
+      "maskMean": 90.83,
+      "maskRef437": 90.83,
+      "maskDelta": 0,
+      "meanAbsDiffVs437": 0
+    },
+    {
+      "key": "base:none@2250",
+      "step": 2250,
+      "wholeMean": 51.37,
+      "maskBlocks": 3043,
+      "maskMean": 81,
+      "maskRef437": 90.83,
+      "maskDelta": -9.83,
+      "meanAbsDiffVs437": 1.74
+    },
+    {
+      "key": "cal:0.6@2250",
+      "step": 2250,
+      "wholeMean": 52.22,
+      "maskBlocks": 3043,
+      "maskMean": 89.45,
+      "maskRef437": 90.83,
+      "maskDelta": -1.38,
+      "meanAbsDiffVs437": 1.13
+    },
+    {
+      "key": "cal:0.8@2250",
+      "step": 2250,
+      "wholeMean": 52.19,
+      "maskBlocks": 3043,
+      "maskMean": 89.85,
+      "maskRef437": 90.83,
+      "maskDelta": -0.98,
+      "meanAbsDiffVs437": 1
+    },
+    {
+      "key": "cal:1.0@2250",
+      "step": 2250,
+      "wholeMean": 52.47,
+      "maskBlocks": 3043,
+      "maskMean": 92.09,
+      "maskRef437": 90.83,
+      "maskDelta": 1.26,
+      "meanAbsDiffVs437": 0.84
+    },
+    {
+      "key": "cal:1.2@2250",
+      "step": 2250,
+      "wholeMean": 52.67,
+      "maskBlocks": 3043,
+      "maskMean": 94.04,
+      "maskRef437": 90.83,
+      "maskDelta": 3.21,
+      "meanAbsDiffVs437": 0.99
+    },
+    {
+      "key": "cal:off@2250",
+      "step": 2250,
+      "wholeMean": 51.48,
+      "maskBlocks": 3043,
+      "maskMean": 82.2,
+      "maskRef437": 90.83,
+      "maskDelta": -8.63,
+      "meanAbsDiffVs437": 1.58
+    }
+  ],
+  "metas": {
+    "437": [
+      {
+        "arm": "none",
+        "step": 450,
+        "state": "race",
+        "simStep": 450,
+        "playerS": 309.3689199798255,
+        "ms": 157405,
+        "w": 960,
+        "h": 540,
+        "gw": 240,
+        "gh": 135,
+        "mean": 52.29,
+        "p5": 18,
+        "p50": 41,
+        "p95": 140,
+        "info": {
+          "renderPath": null,
+          "bloomFusion": null,
+          "drawCalls": 88,
+          "warnings": []
+        }
+      },
+      {
+        "arm": "none",
+        "step": 1200,
+        "state": "race",
+        "simStep": 1200,
+        "playerS": 1935.4716007371517,
+        "ms": 50782,
+        "w": 960,
+        "h": 540,
+        "gw": 240,
+        "gh": 135,
+        "mean": 53.93,
+        "p5": 19,
+        "p50": 42,
+        "p95": 119,
+        "info": {
+          "renderPath": null,
+          "bloomFusion": null,
+          "drawCalls": 51,
+          "warnings": []
+        }
+      },
+      {
+        "arm": "none",
+        "step": 2250,
+        "state": "race",
+        "simStep": 2250,
+        "playerS": 4246.353832847912,
+        "ms": 135626,
+        "w": 960,
+        "h": 540,
+        "gw": 240,
+        "gh": 135,
+        "mean": 52.34,
+        "p5": 18,
+        "p50": 42,
+        "p95": 135,
+        "info": {
+          "renderPath": null,
+          "bloomFusion": null,
+          "drawCalls": 46,
+          "warnings": []
+        }
+      }
+    ],
+    "base": [
+      {
+        "arm": "none",
+        "step": 450,
+        "state": "race",
+        "simStep": 450,
+        "playerS": 309.3689199798255,
+        "ms": 172179,
+        "w": 960,
+        "h": 540,
+        "gw": 240,
+        "gh": 135,
+        "mean": 51.26,
+        "p5": 17,
+        "p50": 40,
+        "p95": 139,
+        "info": {
+          "renderPath": "hdr-msaa",
+          "bloomFusion": "separable",
+          "drawCalls": 88,
+          "warnings": []
+        }
+      },
+      {
+        "arm": "none",
+        "step": 1200,
+        "state": "race",
+        "simStep": 1200,
+        "playerS": 1935.4716007371517,
+        "ms": 55604,
+        "w": 960,
+        "h": 540,
+        "gw": 240,
+        "gh": 135,
+        "mean": 52.8,
+        "p5": 18,
+        "p50": 41,
+        "p95": 118,
+        "info": {
+          "renderPath": "hdr-msaa",
+          "bloomFusion": "separable",
+          "drawCalls": 51,
+          "warnings": []
+        }
+      },
+      {
+        "arm": "none",
+        "step": 2250,
+        "state": "race",
+        "simStep": 2250,
+        "playerS": 4246.353832847912,
+        "ms": 153986,
+        "w": 960,
+        "h": 540,
+        "gw": 240,
+        "gh": 135,
+        "mean": 51.37,
+        "p5": 17,
+        "p50": 40,
+        "p95": 134,
+        "info": {
+          "renderPath": "hdr-msaa",
+          "bloomFusion": "separable",
+          "drawCalls": 46,
+          "warnings": []
+        }
+      }
+    ],
+    "cal": [
+      {
+        "arm": "off",
+        "step": 450,
+        "state": "race",
+        "simStep": 450,
+        "playerS": 309.3689199798255,
+        "ms": 152504,
+        "w": 960,
+        "h": 540,
+        "gw": 240,
+        "gh": 135,
+        "mean": 51.3,
+        "p5": 18,
+        "p50": 40,
+        "p95": 139,
+        "info": {
+          "renderPath": "hdr-msaa",
+          "bloomFusion": "separable",
+          "drawCalls": 88,
+          "warnings": []
+        }
+      },
+      {
+        "arm": "off",
+        "step": 1200,
+        "state": "race",
+        "simStep": 1200,
+        "playerS": 1935.4716007371517,
+        "ms": 48023,
+        "w": 960,
+        "h": 540,
+        "gw": 240,
+        "gh": 135,
+        "mean": 52.8,
+        "p5": 18,
+        "p50": 41,
+        "p95": 117,
+        "info": {
+          "renderPath": "hdr-msaa",
+          "bloomFusion": "separable",
+          "drawCalls": 51,
+          "warnings": []
+        }
+      },
+      {
+        "arm": "off",
+        "step": 2250,
+        "state": "race",
+        "simStep": 2250,
+        "playerS": 4246.353832847912,
+        "ms": 133630,
+        "w": 960,
+        "h": 540,
+        "gw": 240,
+        "gh": 135,
+        "mean": 51.48,
+        "p5": 17,
+        "p50": 40,
+        "p95": 135,
+        "info": {
+          "renderPath": "hdr-msaa",
+          "bloomFusion": "separable",
+          "drawCalls": 46,
+          "warnings": []
+        }
+      },
+      {
+        "arm": "0.6",
+        "step": 450,
+        "state": "race",
+        "simStep": 450,
+        "playerS": 309.3689199798255,
+        "ms": 152982,
+        "w": 960,
+        "h": 540,
+        "gw": 240,
+        "gh": 135,
+        "mean": 52.01,
+        "p5": 18,
+        "p50": 40,
+        "p95": 139,
+        "info": {
+          "renderPath": "hdr-msaa",
+          "bloomFusion": "separable",
+          "drawCalls": 88,
+          "warnings": []
+        }
+      },
+      {
+        "arm": "0.6",
+        "step": 1200,
+        "state": "race",
+        "simStep": 1200,
+        "playerS": 1935.4716007371517,
+        "ms": 48058,
+        "w": 960,
+        "h": 540,
+        "gw": 240,
+        "gh": 135,
+        "mean": 53.59,
+        "p5": 19,
+        "p50": 42,
+        "p95": 118,
+        "info": {
+          "renderPath": "hdr-msaa",
+          "bloomFusion": "separable",
+          "drawCalls": 51,
+          "warnings": []
+        }
+      },
+      {
+        "arm": "0.6",
+        "step": 2250,
+        "state": "race",
+        "simStep": 2250,
+        "playerS": 4246.353832847912,
+        "ms": 135064,
+        "w": 960,
+        "h": 540,
+        "gw": 240,
+        "gh": 135,
+        "mean": 52.22,
+        "p5": 17,
+        "p50": 41,
+        "p95": 135,
+        "info": {
+          "renderPath": "hdr-msaa",
+          "bloomFusion": "separable",
+          "drawCalls": 46,
+          "warnings": []
+        }
+      },
+      {
+        "arm": "0.8",
+        "step": 450,
+        "state": "race",
+        "simStep": 450,
+        "playerS": 309.3689199798255,
+        "ms": 152868,
+        "w": 960,
+        "h": 540,
+        "gw": 240,
+        "gh": 135,
+        "mean": 52.09,
+        "p5": 18,
+        "p50": 41,
+        "p95": 140,
+        "info": {
+          "renderPath": "hdr-msaa",
+          "bloomFusion": "separable",
+          "drawCalls": 88,
+          "warnings": []
+        }
+      },
+      {
+        "arm": "0.8",
+        "step": 1200,
+        "state": "race",
+        "simStep": 1200,
+        "playerS": 1935.4716007371517,
+        "ms": 46788,
+        "w": 960,
+        "h": 540,
+        "gw": 240,
+        "gh": 135,
+        "mean": 53.82,
+        "p5": 19,
+        "p50": 42,
+        "p95": 118,
+        "info": {
+          "renderPath": "hdr-msaa",
+          "bloomFusion": "separable",
+          "drawCalls": 51,
+          "warnings": []
+        }
+      },
+      {
+        "arm": "0.8",
+        "step": 2250,
+        "state": "race",
+        "simStep": 2250,
+        "playerS": 4246.353832847912,
+        "ms": 133750,
+        "w": 960,
+        "h": 540,
+        "gw": 240,
+        "gh": 135,
+        "mean": 52.19,
+        "p5": 17,
+        "p50": 41,
+        "p95": 135,
+        "info": {
+          "renderPath": "hdr-msaa",
+          "bloomFusion": "separable",
+          "drawCalls": 46,
+          "warnings": []
+        }
+      },
+      {
+        "arm": "1.0",
+        "step": 450,
+        "state": "race",
+        "simStep": 450,
+        "playerS": 309.3689199798255,
+        "ms": 150562,
+        "w": 960,
+        "h": 540,
+        "gw": 240,
+        "gh": 135,
+        "mean": 52.38,
+        "p5": 18,
+        "p50": 41,
+        "p95": 140,
+        "info": {
+          "renderPath": "hdr-msaa",
+          "bloomFusion": "separable",
+          "drawCalls": 88,
+          "warnings": []
+        }
+      },
+      {
+        "arm": "1.0",
+        "step": 1200,
+        "state": "race",
+        "simStep": 1200,
+        "playerS": 1935.4716007371517,
+        "ms": 48083,
+        "w": 960,
+        "h": 540,
+        "gw": 240,
+        "gh": 135,
+        "mean": 53.99,
+        "p5": 19,
+        "p50": 42,
+        "p95": 119,
+        "info": {
+          "renderPath": "hdr-msaa",
+          "bloomFusion": "separable",
+          "drawCalls": 51,
+          "warnings": []
+        }
+      },
+      {
+        "arm": "1.0",
+        "step": 2250,
+        "state": "race",
+        "simStep": 2250,
+        "playerS": 4246.353832847912,
+        "ms": 133467,
+        "w": 960,
+        "h": 540,
+        "gw": 240,
+        "gh": 135,
+        "mean": 52.47,
+        "p5": 18,
+        "p50": 42,
+        "p95": 135,
+        "info": {
+          "renderPath": "hdr-msaa",
+          "bloomFusion": "separable",
+          "drawCalls": 46,
+          "warnings": []
+        }
+      },
+      {
+        "arm": "1.2",
+        "step": 450,
+        "state": "race",
+        "simStep": 450,
+        "playerS": 309.3689199798255,
+        "ms": 152506,
+        "w": 960,
+        "h": 540,
+        "gw": 240,
+        "gh": 135,
+        "mean": 52.34,
+        "p5": 18,
+        "p50": 41,
+        "p95": 140,
+        "info": {
+          "renderPath": "hdr-msaa",
+          "bloomFusion": "separable",
+          "drawCalls": 88,
+          "warnings": []
+        }
+      },
+      {
+        "arm": "1.2",
+        "step": 1200,
+        "state": "race",
+        "simStep": 1200,
+        "playerS": 1935.4716007371517,
+        "ms": 48979,
+        "w": 960,
+        "h": 540,
+        "gw": 240,
+        "gh": 135,
+        "mean": 54.21,
+        "p5": 19,
+        "p50": 42,
+        "p95": 119,
+        "info": {
+          "renderPath": "hdr-msaa",
+          "bloomFusion": "separable",
+          "drawCalls": 51,
+          "warnings": []
+        }
+      },
+      {
+        "arm": "1.2",
+        "step": 2250,
+        "state": "race",
+        "simStep": 2250,
+        "playerS": 4246.353832847912,
+        "ms": 133475,
+        "w": 960,
+        "h": 540,
+        "gw": 240,
+        "gh": 135,
+        "mean": 52.67,
+        "p5": 18,
+        "p50": 42,
+        "p95": 135,
+        "info": {
+          "renderPath": "hdr-msaa",
+          "bloomFusion": "separable",
+          "drawCalls": 46,
+          "warnings": []
+        }
+      }
+    ]
+  }
+}
