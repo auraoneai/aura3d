@@ -286,6 +286,18 @@ const HALO_FADE_SEC = 0.6;
 /** A raised object that topples lands this many times its old height sideways, clear of the stack it fell from. */
 const TUMBLE_SPREAD = 1.25;
 const VEIL_COLOR = "#FBF6EC";
+/**
+ * Yaw (radians) that turns a model's front to +Z, the stage's forward (every stand-in recipe faces +Z). Meshy made
+ * the vehicles side-on with their front toward -X (GoGo's face is on its boiler end), so they get a quarter turn:
+ * `face viewer` then shows GoGo's face, and a drive leads with the front instead of sliding broadside. Every other
+ * model already faces +Z (Meshy's export convention).
+ */
+export const MODEL_FRONT_YAW: Readonly<Partial<Record<ModelKey, number>>> = {
+  gogo: Math.PI / 2,
+  gogoCarriage: Math.PI / 2,
+  car: Math.PI / 2
+};
+
 /** The character a mirror reflects (E01, "Mirror Momo"). */
 const REFLECTED_CHARACTER: CharacterId = "momo";
 /** The reflection's height over the glass radius: small enough to stay inside the frame while it moves. */
@@ -813,6 +825,7 @@ function buildStory(story: StorySpec, available: (key: ModelKey) => boolean, cam
     if (seed.modelKey && ref && available(seed.modelKey)) {
       const profile: CharacterProfile | null = seed.characterId ? CHARACTERS[seed.characterId] : null;
       const idleClip = profile && profile.rigged ? profile.idleClip() : null;
+      const frontYaw = MODEL_FRONT_YAW[seed.modelKey] ?? 0;
       let builderNode = model(ref, {
         name: seed.id,
         targetHeight: seed.heightM,
@@ -825,11 +838,11 @@ function buildStory(story: StorySpec, available: (key: ModelKey) => boolean, cam
           : {})
       })
         .position(base)
-        .rotate(0, 0, 0);
+        .rotate(0, frontYaw, 0);
       if (idleClip) builderNode = builderNode.animate({ clip: idleClip, loop: true });
       builder.add(builderNode.runtime({ id: seed.id, tags: [...tags, "model"], mutable: true }));
       clipInitial.set(seed.id, idleClip);
-      nodes.push(newNode(seed, base, "model", [{ id: seed.id, center: [0, 0, 0], rotation: [0, 0, 0], index: 0, tinted: true }]));
+      nodes.push(newNode(seed, base, "model", [{ id: seed.id, center: [0, 0, 0], rotation: [0, frontYaw, 0], index: 0, tinted: true }]));
     } else {
       const built = buildStandIn(seed.asset, {
         id: seed.id,
