@@ -146,7 +146,21 @@ const geo = (m: MeshData, _name: string) => {
   return geometry.define({ positions: a.positions, normals: a.normals, uvs: a.uvs, colors: a.colors, indices: a.indices });
 };
 
-export function buildLook(world: { blocks: readonly Block[]; buildings: readonly Building[]; traffic: readonly TrafficCar[]; pickups: readonly Pickup[] }, opts: { models: boolean; quality: "high" | "low"; ao: boolean; env: boolean; shadow: boolean; fog: boolean; post: boolean; aa?: boolean; sky: boolean; sun: number; roadCells?: number; start: { x: number; z: number } }): LookRig {
+/**
+ * Hemisphere "sky-fill" intensity. Up to 4.5.0 the engine dropped an authored hemisphere next to an environment node
+ * (LIGHT-05), so the shipped HDRI frame never had this fill; the 1.7 only lit the lights-only `env=0` path (heal rung
+ * `no-env`). With the hemisphere now adding to the HDRI, 1.7 lifts the steady-state frame by 10.7% (mean luma 108.2 to
+ * 119.8, lane E2). Next to the HDRI the fill is kept small so the shipped frame holds; the lights-only path keeps 1.7.
+ */
+export const SKY_FILL = { withEnv: 0.3, lightsOnly: 1.7 } as const;
+
+/** Sky-fill intensity for the light rig; `override` is the `skyfill=` diagnostics switch. */
+export function skyFillIntensity(env: boolean, override?: number): number {
+  if (override !== undefined && Number.isFinite(override) && override >= 0) return override;
+  return env ? SKY_FILL.withEnv : SKY_FILL.lightsOnly;
+}
+
+export function buildLook(world: { blocks: readonly Block[]; buildings: readonly Building[]; traffic: readonly TrafficCar[]; pickups: readonly Pickup[] }, opts: { models: boolean; quality: "high" | "low"; ao: boolean; env: boolean; shadow: boolean; fog: boolean; post: boolean; aa?: boolean; sky: boolean; sun: number; skyFill?: number; roadCells?: number; start: { x: number; z: number } }): LookRig {
   const high = opts.quality === "high";
   const tex = paintTextures(opts.quality);
   const city = buildCity(world.blocks, world.buildings);
@@ -174,7 +188,7 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
   // ---- light rig, atmosphere and post ----
   if (opts.env) b.add(environments.hdri({ name: "env-sky", texture: ASSETS.skyHdr, intensity: 1.0, background: false, color: "#ffc890" }));
   b.add(lights.directional({ name: "sun", position: [-88, 38, -50], target: [0, 0, 0], intensity: opts.sun, color: "#ffbf80", shadow: high && opts.shadow ? { cascades: 2, maxDistance: 150, blend: 0.12, mapSize: 2048 } : false }).runtime({ id: "sun" }));
-  b.add(lights.hemisphere({ name: "sky-fill", skyColor: "#ffe0b0", groundColor: "#c9a070", intensity: 1.7 }));
+  b.add(lights.hemisphere({ name: "sky-fill", skyColor: "#ffe0b0", groundColor: "#c9a070", intensity: skyFillIntensity(opts.env, opts.skyFill) }));
   if (opts.fog) b.add(effects.fog({ name: "haze", color: FOG.color, density: FOG.density }));
   if (high && opts.ao) b.add(effects.ambientOcclusion({ name: "ao" }));
   if (opts.post) {

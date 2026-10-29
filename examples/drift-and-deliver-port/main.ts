@@ -65,7 +65,9 @@ const config = {
   /** `roadcells=N` splits the road plane into N x N cells (default one per 60 m tile; diagnostics for the road-flip investigation) */
   roadCells: Number(params.get("roadcells")) ? Math.max(1, Math.min(64, Math.floor(Number(params.get("roadcells"))))) : undefined,
   exposure: Number(params.get("exposure") ?? "2.3") || 2.3,
-  sun: Number(params.get("sun") ?? "4.4") || 4.4
+  sun: Number(params.get("sun") ?? "4.4") || 4.4,
+  /** `skyfill=N` overrides the hemisphere fill intensity (diagnostics for the LIGHT-05 retune; default from `SKY_FILL`) */
+  skyFill: params.has("skyfill") ? Number(params.get("skyfill")) : undefined
 };
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
@@ -125,7 +127,7 @@ const shellGeometry = (m: LookRig["playerShell"]["paint"]) => {
 let look: LookRig;
 
 function buildScene() {
-  look = buildLook({ blocks, buildings, traffic, pickups }, { models: config.models, quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, roadCells: config.roadCells, start: { x: car.x, z: car.z } });
+  look = buildLook({ blocks, buildings, traffic, pickups }, { models: config.models, quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, skyFill: config.skyFill, roadCells: config.roadCells, start: { x: car.x, z: car.z } });
   const s = look.builder;
   if (config.models) {
     s.add(carModel("car-rig", "courier", true));
