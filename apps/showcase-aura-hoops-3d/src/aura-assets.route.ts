@@ -326,22 +326,22 @@ export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAu
     sizeBytes: 70604,
   },
   // Route-local (apps/showcase-aura-hoops-3d/public/aura-assets): region-split copies of hoopsAthlete{Big,Guard}Clean with
-  // one material per body region for team kits (tools/hoops-athlete-retexture/split-kit-materials.mjs). Same vertices.
+  // three materials (-body, -kit, -shorts) for team kits (tools/hoops-athlete-retexture/split-kit-materials.mjs). Same vertices.
   "hoopsAthleteBigKit": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/hoopsAthleteBigKit.02749aa6.glb",
-    hash: "sha256-02749aa676c1afb2cfa2be6b3ce9df03ddd50cf9da64255785a1a8c13ad553e2",
+    url: "/aura-assets/hoopsAthleteBigKit.cdf4afa6.glb",
+    hash: "sha256-cdf4afa686924ddd67c8661e0853f1f14aa84467eb281b551c345a2a173cbb2a",
     bounds: [0.878,1.903,0.429],
-    sizeBytes: 1321824,
+    sizeBytes: 1317940,
   },
   "hoopsAthleteGuardKit": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/hoopsAthleteGuardKit.b14c63b3.glb",
-    hash: "sha256-b14c63b303194341265141ac2a42c285212fd39286da96718b7a41284a0ce8de",
+    url: "/aura-assets/hoopsAthleteGuardKit.5c0f9a76.glb",
+    hash: "sha256-5c0f9a76aacc6dcb14c3fb3b8895cfcef3a0d16305f3567f8cc66805a98643ce",
     bounds: [0.905,1.903,0.404],
-    sizeBytes: 1596556,
+    sizeBytes: 1592664,
   },
   "showcaseStadiumSeats": {
     type: "model",

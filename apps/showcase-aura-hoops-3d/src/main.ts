@@ -426,17 +426,14 @@ interface TourState {
   opponents: number[]; // squad index per round played
 }
 
+/** Player Studio fit: the home crew's jersey (with socks) and shorts, the two regions the kit materials carry. */
 interface StudioFit {
   jersey: number;
-  kicks: number;
-  skin: number;
-  hair: number;
+  shorts: number;
 }
 const STUDIO = {
   jersey: ["#ff7a1a", "#39d7ff", "#e26bff", "#66e37f", "#f2f0e2", "#ff3b5c"],
-  kicks: ["#f2f0e2", "#22262e", "#ff7a1a", "#39d7ff", "#ffd257", "#e26bff"],
-  skin: ["#c68a5a", "#8a5f42", "#6b4630", "#e8b08a", "#4a3222", "#d99b6c"],
-  hair: ["#1a1410", "#3a2c20", "#5e503f", "#0d0d12", "#7a4a2a", "#c7c7cf"]
+  shorts: ["#1a1206", "#22262e", "#f2f0e2", "#06222b", "#3a2c20", "#2b0710"]
 };
 
 const initialParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
@@ -479,7 +476,7 @@ const game_ = {
   lab: { score: 0, streak: 0, best: 0, attempts: 0, style: 0 },
   cones: { active: false, order: [] as number[], next: 0, cleared: 0, streak: 0, score: 0, best: 0 } as ConesState,
   tour: { active: false, round: 0, eliminated: false, champion: false, opponents: [] as number[] } as TourState,
-  fit: { jersey: 0, kicks: 1, skin: 0, hair: 0 } as StudioFit,
+  fit: { jersey: 0, shorts: 0 } as StudioFit,
   /** Player Studio fit in force on the home squad (null until APPLY FIT). */
   appliedFit: null as StudioFit | null,
   /** game_.time when the ball went live (the check press must not also open the shot meter). */
@@ -650,41 +647,33 @@ function buildAthleteAccessories(id: string, team: TeamId, kit: Kit): any[] {
   ];
 }
 
-/** The kit one athlete wears: the squad kit (rules.teamKits), with the applied Player Studio fit on the home side. */
-function athleteLook(team: TeamId, index: number): { kit: Kit; kicks?: string; skin?: string; hair?: string } {
+/** The kit one side wears: the squad kit (rules.teamKits), with the applied Player Studio fit on the home side. */
+function teamKit(team: TeamId): Kit {
   const kits = teamKits(game_.homeSquad, game_.awaySquad);
-  if (team === "away") return { kit: kits.away };
+  if (team === "away") return kits.away;
   const fit = game_.appliedFit;
-  if (!fit) return { kit: kits.home };
+  if (!fit) return kits.home;
   const jersey = STUDIO.jersey[fit.jersey] ?? kits.home.jersey;
-  return {
-    kit: { jersey, shorts: kits.home.shorts, socks: jersey },
-    kicks: STUDIO.kicks[fit.kicks],
-    // skin and hair belong to your own player (p0), not the whole crew
-    ...(index === 0 ? { skin: STUDIO.skin[fit.skin], hair: STUDIO.hair[fit.hair] } : {})
-  };
+  return { jersey, shorts: STUDIO.shorts[fit.shorts] ?? kits.home.shorts, socks: jersey };
 }
 
-function athleteOverrides(look: ReturnType<typeof athleteLook>): any[] {
+function athleteOverrides(kit: Kit): any[] {
   const flat = (target: RegExp, color: string, roughness: number) => ({ target, color, colorMode: "replace", replaceTextures: true, roughness, metallic: 0 });
-  const out = [flat(/-kit$/, look.kit.jersey, 0.68), flat(/-shorts$/, look.kit.shorts, 0.72), flat(/-socks$/, look.kit.socks, 0.78)];
-  if (look.kicks) out.push(flat(/-kicks$/, look.kicks, 0.55));
-  if (look.skin) out.push(flat(/-skin$/, look.skin, 0.62));
-  if (look.hair) out.push(flat(/-hair$/, look.hair, 0.8));
-  return out;
+  // -kit carries jersey and socks (one colour), -shorts the shorts; -body (skin, hair, face, kicks) keeps its palette texture
+  return [flat(/-kit$/, kit.jersey, 0.68), flat(/-shorts$/, kit.shorts, 0.72)];
 }
 
 function buildAthlete(id: string, team: TeamId): any[] {
   // Region-split copies of the palette athletes (tools/hoops-athlete-retexture/split-kit-materials.mjs): one material per
   // body region, so the kit, shorts and socks take the team colours.
   const athleteAsset = /[124]$/.test(id) ? assets.hoopsAthleteBigKit : assets.hoopsAthleteGuardKit;
-  const look = athleteLook(team, Number(id.slice(1)));
+  const kit = teamKit(team);
   return [
-    model(athleteAsset, { name: id, targetHeight: 1.92, scaleMode: "fit", castShadow: true, receiveShadow: true, materialOverrides: athleteOverrides(look) } as any)
+    model(athleteAsset, { name: id, targetHeight: 1.92, scaleMode: "fit", castShadow: true, receiveShadow: true, materialOverrides: athleteOverrides(kit) } as any)
       .position(0, 0, 6)
       .animate({ clip: "Crouch_Idle_Loop", loop: true, speed: 1.0 })
       .runtime(game.runtimeNode(id)),
-    ...buildAthleteAccessories(id, team, look.kit)
+    ...buildAthleteAccessories(id, team, kit)
   ];
 }
 
@@ -3584,9 +3573,7 @@ function renderBracket(): void {
 function buildStudioPills(): void {
   const groups: { id: string; key: keyof StudioFit; colors: readonly string[] }[] = [
     { id: "studio-jersey", key: "jersey", colors: STUDIO.jersey },
-    { id: "studio-kicks", key: "kicks", colors: STUDIO.kicks },
-    { id: "studio-skin", key: "skin", colors: STUDIO.skin },
-    { id: "studio-hair", key: "hair", colors: STUDIO.hair }
+    { id: "studio-shorts", key: "shorts", colors: STUDIO.shorts }
   ];
   for (const g of groups) {
     const row = el<HTMLElement>(g.id);
@@ -3674,7 +3661,7 @@ function wireMenus(): void {
     enterLive();
   });
   el<HTMLElement>("studio-apply")?.addEventListener("click", () => {
-    // The fit goes onto the home squad's kit materials: jersey and kicks for the crew, skin and hair for your player.
+    // The fit goes onto the home crew's kit materials (jersey with socks, and shorts).
     game_.appliedFit = { ...game_.fit };
     rebuildScene();
     buildStudioPills();

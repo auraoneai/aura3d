@@ -1,11 +1,13 @@
 #!/usr/bin/env node
-// Splits a palette athlete (one primitive, one material, a NEAREST 80x3 palette strip) into one primitive per body region,
-// each with its own named material that still samples the same palette texture, so a route can retint the kit per team
-// with `materialOverrides: [{ target: /-kit$/, color, colorMode: "replace", replaceTextures: true }]`.
-// Regions come from the palette cell (10 px wide, 8 cells) each triangle samples: hair 0, skin 1/4/7, kit 2, shorts 3,
-// socks 5, kicks 6. Triangles that touch a face-detail texel (brows 1:1, eye whites 7:1, pupils 7:2) go to "-face", which
-// keeps the texture so a skin retint never blanks the face. Geometry, skin weights, skeleton and clips are copied
-// unchanged (vertices are only duplicated where two regions meet). Prints the position-accessor hash before and after.
+// Splits a palette athlete (one primitive, one material, a NEAREST 80x3 palette strip) into three primitives, each with its
+// own named material that still samples the same palette texture, so a route can retint the team kit with
+// `materialOverrides: [{ target: /-kit$/, color, colorMode: "replace", replaceTextures: true }]`:
+//   -kit     jersey + socks (cells 2 and 5)
+//   -shorts  shorts (cell 3)
+//   -body    everything else, textured as before: hair, skin, face detail, kicks
+// Every extra primitive draws in several passes (forward, depth, contact depth, shadow cascades), so the split is kept to
+// the regions a team kit needs. Geometry, skin weights, skeleton and clips are copied unchanged (vertices are only
+// duplicated where two regions meet). Prints the position-accessor hash before and after.
 // Usage: node tools/hoops-athlete-retexture/split-kit-materials.mjs <in.glb> <out-dir> <name>
 import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -16,9 +18,10 @@ const [, , inFile, outDir, name] = process.argv;
 if (!inFile || !outDir || !name) { console.error("usage: split-kit-materials.mjs <in.glb> <out-dir> <name>"); process.exit(2); }
 
 const W = 80, H = 3, CELL = 10;
-const GROUP_OF_CELL = ["hair", "skin", "kit", "shorts", "skin", "socks", "kicks", "skin"];
+const GROUP_OF_CELL = ["body", "body", "kit", "shorts", "body", "kit", "body", "body"];
+// a triangle touching a face-detail texel (brows 1:1, eye whites 7:1, pupils 7:2) stays in the textured body
 const FACE_TEXELS = new Set(["1:1", "7:1", "7:2"]);
-const ORDER = ["hair", "skin", "face", "kit", "shorts", "socks", "kicks"];
+const ORDER = ["body", "kit", "shorts"];
 
 const io = new NodeIO();
 const doc = await io.read(inFile);
@@ -54,7 +57,7 @@ for (let t = 0; t < triCount; t += 1) {
   const v = [idx.getScalar(3 * t), idx.getScalar(3 * t + 1), idx.getScalar(3 * t + 2)];
   const tx = v.map(texel);
   let group;
-  if (tx.some(([c, r]) => FACE_TEXELS.has(`${c}:${r}`))) group = "face";
+  if (tx.some(([c, r]) => FACE_TEXELS.has(`${c}:${r}`))) group = "body";
   else {
     const votes = new Map();
     for (const [c] of tx) votes.set(GROUP_OF_CELL[c], (votes.get(GROUP_OF_CELL[c]) ?? 0) + 1);

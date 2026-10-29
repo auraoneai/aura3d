@@ -9,18 +9,18 @@
   "machinePass": true,
   "renderer": {
     "path": "createAuraApp root safe API",
-    "mode": "production",
+    "mode": "auto",
     "nativeWebGPU": false,
     "productionRuntimeClaimed": true
   },
   "primaryAssets": [
     {
-      "typedRef": "assets.hoopsAthleteGuard",
+      "typedRef": "assets.hoopsAthleteGuardKit",
       "quality": "candidate",
       "role": "heroCast"
     },
     {
-      "typedRef": "assets.hoopsAthleteBig",
+      "typedRef": "assets.hoopsAthleteBigKit",
       "quality": "candidate",
       "role": "heroCast"
     },
