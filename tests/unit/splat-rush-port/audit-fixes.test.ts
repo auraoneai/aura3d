@@ -141,17 +141,17 @@ describe("C9/C10: batches upload only what changed", () => {
     b.flush(handle as never, false);
     expect(calls).toEqual([{ name: "position", offset: 0, length: 9 }]);
   });
-  it("slots stay with their object and are freed when it goes", () => {
+  it("slots stay with their object, and a full pool frees leavers before it takes newcomers", () => {
     const slots = new Slots<object>(2);
     const a = {}, b = {}, c = {};
     expect(slots.use(a)).toEqual({ slot: 0, fresh: true });
     expect(slots.use(b)).toEqual({ slot: 1, fresh: true });
     expect(slots.use(c).slot).toBe(-1);
     const gone: number[] = [];
-    slots.sweep((s) => gone.push(s));
+    slots.retain([a, b], (s) => gone.push(s));
     expect(gone).toEqual([]);
-    slots.use(b);
-    slots.sweep((s) => gone.push(s));
+    // next frame: a left and c arrived while the pool was full
+    slots.retain([b, c], (s) => gone.push(s));
     expect(gone).toEqual([0]);
     expect(slots.use(b)).toEqual({ slot: 1, fresh: false });
     expect(slots.use(c)).toEqual({ slot: 0, fresh: true });
@@ -262,6 +262,50 @@ describe("C9/C10: world runtime against a recording app", () => {
     expect(perFrame).toBeLessThan(0.15 * 33000);
     expect(rt.nodeCount).toBeLessThan(80);
     for (const id of BATCH_IDS) expect(uploads.has(id) || id === "gate-symbols", id).toBe(true);
+    if (!hadDocument) delete g.document;
+  });
+});
+
+describe("C9: batches after a multi-step jump (manual QA stepping renders once after hundreds of steps)", () => {
+  it("every live splatter, gate and segment is written, though the whole pool turned over", async () => {
+    const { buildWorld } = await import("../../../examples/splat-rush-port/world");
+    const g = globalThis as { document?: unknown };
+    const hadDocument = "document" in g;
+    if (!hadDocument) g.document = { createElement: () => ({ width: 0, height: 0, getContext: () => new Proxy({}, { get: () => () => undefined }) }) };
+    const sim = new SplatRushSim(20261023);
+    for (let i = 0; i < 30; i++) sim.advance(IDLE);
+    const world = buildWorld({ sim, aspect: 1.6 });
+    const buffers = new Map<string, Float32Array>();
+    const handle = (id: string) => {
+      const h: Record<string, unknown> = {};
+      const chain = () => h;
+      Object.assign(h, {
+        setPosition: chain, setRotation: chain, setScale: chain, setUniform: chain, setVisible: chain,
+        updateAttribute: (name: string, u: { array: Float32Array; offset: number }) => {
+          if (name !== "position") return;
+          let b = buffers.get(id);
+          if (!b) buffers.set(id, (b = new Float32Array(2_000_000)));
+          b.set(u.array, u.offset * 3);
+        }
+      });
+      return h;
+    };
+    const rt = world.bind({ nodes: { require: handle }, camera: { setPose: () => undefined } } as never);
+    sim.advance({ ...IDLE, start: true });
+    for (let i = 0; i < 45; i++) sim.advance(IDLE);
+    rt.update(sim, 1.6);
+    const pilot = new Autopilot({ maxDx: 14, mistakeRows: [], aimOffset: 0 });
+    for (let i = 0; i < 420; i++) { sim.advance(pilot.next(sim, i)); pilot.observe(sim); }
+    rt.update(sim, 1.6);
+    const instancesWritten = (id: string, vertsPer: number, max: number): number => {
+      const b = buffers.get(id)!;
+      let n = 0;
+      for (let i = 0; i < max; i++) if (b.subarray(i * vertsPer * 3, (i + 1) * vertsPer * 3).some((v) => v !== 0)) n++;
+      return n;
+    };
+    const splatVerts = buffers.get("splats")!.length > 0 ? (await import("../../../examples/splat-rush-port/world")).splatVertexCount : 0;
+    expect(sim.splatters.length).toBeGreaterThan(15);
+    expect(instancesWritten("splats", splatVerts, 20)).toBe(sim.splatters.length);
     if (!hadDocument) delete g.document;
   });
 });

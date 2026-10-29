@@ -255,17 +255,19 @@ export class Batch {
   }
 }
 
-/** Stable pool slots for objects that come and go (segments, gates, splatters): an object keeps its slot for its life. */
+/**
+ * Stable pool slots for objects that come and go (segments, gates, splatters): an object keeps its slot for its life.
+ * Each frame: `retain(live, gone)` first (frees the slots of objects that left, so a full pool can take the newcomers),
+ * then `use(item)` for each live object.
+ */
 export class Slots<T extends object> {
   private readonly slot = new Map<T, number>();
-  private readonly seen = new Set<T>();
   private readonly free: number[];
   constructor(readonly size: number) {
     this.free = Array.from({ length: size }, (_, i) => size - 1 - i);
   }
-  /** The object's slot and whether it was just assigned (`-1` when the pool is full). Marks it alive this frame. */
+  /** The object's slot and whether it was just assigned (`-1` when the pool is full). */
   use(item: T): { slot: number; fresh: boolean } {
-    this.seen.add(item);
     const known = this.slot.get(item);
     if (known !== undefined) return { slot: known, fresh: false };
     const next = this.free.pop();
@@ -273,15 +275,15 @@ export class Slots<T extends object> {
     this.slot.set(item, next);
     return { slot: next, fresh: true };
   }
-  /** Release every object not used since the last sweep; `gone` gets each freed slot. */
-  sweep(gone: (slot: number) => void): void {
+  /** Release every object not in `live`; `gone` gets each freed slot. */
+  retain(live: Iterable<T>, gone: (slot: number) => void): void {
+    const keep = new Set(live);
     for (const [item, s] of this.slot) {
-      if (this.seen.has(item)) continue;
+      if (keep.has(item)) continue;
       this.slot.delete(item);
       this.free.push(s);
       gone(s);
     }
-    this.seen.clear();
   }
 }
 
@@ -351,6 +353,8 @@ const CLOUDS = 56;
 const STREAKS = 50;
 /** Gate symbols float this high above the gate's base, over the bar (the bar top is at about 1.74). */
 export const GATE_SYMBOL_Y = 2.3;
+/** Vertices per splatter instance in the `splats` batch (tests). */
+export let splatVertexCount = 0;
 /** Ids of the merged batch nodes. */
 export const BATCH_IDS = ["deck", "rails", "dashes", "gates", "gate-symbols", "splats", "particles", "clouds", "streaks"] as const;
 
@@ -419,6 +423,7 @@ export function buildWorld(options: WorldOptions): World {
     transformMesh(cylinderMesh(0.15, 0.15, 0.05, 16), { tx: -1.2, ty: 0.02, tz: -1.5 })
   ]);
   const splats = new Batch(splatMesh, POOL.splatters, hexLinear(COLORS[0] as string));
+  splatVertexCount = splats.vertsPer;
   addBatch("splats", splats, toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
 
   /* particles (world space, rewritten while any is alive), clouds (drift frame), streaks (rewritten per frame), shield */
@@ -503,6 +508,8 @@ export function buildWorld(options: WorldOptions): World {
 
         /* road: segments, lane marks (every fourth segment), written once per segment in the scrolling frame */
         const scroll = simNow.scroll;
+        segSlots.retain(simNow.segments, (slot) => { deck.collapse(slot); rails.collapse(slot * 2); rails.collapse(slot * 2 + 1); });
+        dashSlots.retain(simNow.segments.filter((s) => s.index % 4 === 0), (slot) => dashes.collapse(slot));
         for (const s of simNow.segments) {
           const { slot, fresh } = segSlots.use(s);
           if (fresh) {
@@ -517,11 +524,10 @@ export function buildWorld(options: WorldOptions): World {
             if (d.fresh) dashes.place(d.slot, curve(-o.distance + s.z), 0.01, s.z - scroll, roadYaw(-o.distance + s.z), 1, 1, 1);
           }
         }
-        segSlots.sweep((slot) => { deck.collapse(slot); rails.collapse(slot * 2); rails.collapse(slot * 2 + 1); });
-        dashSlots.sweep((slot) => dashes.collapse(slot));
 
         /* gates and their symbols */
         const wantSymbols = view.symbols === true;
+        gateSlots.retain(simNow.gates, (slot) => { gates.collapse(slot); gateSymbols.collapse(slot); gateColor[slot] = -1; });
         for (const g of simNow.gates) {
           const { slot, fresh } = gateSlots.use(g);
           if (slot < 0) continue;
@@ -533,7 +539,6 @@ export function buildWorld(options: WorldOptions): World {
             gateSymbols.place(slot, x, GATE_SYMBOL_Y, r, 0, 1, 1, 1, symbolMeshes[SYMBOL_FOR_COLOR[g.colorIndex] ?? "circle"]);
           }
         }
-        gateSlots.sweep((slot) => { gates.collapse(slot); gateSymbols.collapse(slot); gateColor[slot] = -1; });
         symbolsOn = wantSymbols;
         node("gate-symbols").setVisible(wantSymbols);
         const showBallSymbol = wantSymbols && p.visible && !o.isRainbowActive && o.phase === "playing";
@@ -564,6 +569,7 @@ export function buildWorld(options: WorldOptions): World {
         updatePickups(node, simNow.powerups, elapsed, back);
 
         /* splatters: written when they appear and while they grow */
+        splatSlots.retain(simNow.splatters, (slot) => { splats.collapse(slot); splatScale[slot] = -1; });
         for (const sp of simNow.splatters) {
           const { slot } = splatSlots.use(sp);
           if (slot < 0) continue;
@@ -573,7 +579,6 @@ export function buildWorld(options: WorldOptions): World {
           }
           if (splatColor[slot] !== sp.colorIndex) { splats.setTone(slot, hexLinear(COLORS[sp.colorIndex] as string)); splatColor[slot] = sp.colorIndex; }
         }
-        splatSlots.sweep((slot) => { splats.collapse(slot); splatScale[slot] = -1; });
 
         /* particles */
         for (let i = 0; i < POOL.particles; i++) {
