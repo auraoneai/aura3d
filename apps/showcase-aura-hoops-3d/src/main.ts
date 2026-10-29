@@ -2969,6 +2969,26 @@ const cam = {
   punch: 0
 };
 
+/** Courtside poles per venue as [x, z, clearance radius] (floodlights, lamps, palms); see buildVenueDressing. */
+function cameraObstacles(v: VenueSpec): readonly (readonly [number, number, number])[] {
+  switch (v.id) {
+    case "rucker": return [[-11, -7, 2.4], [11, -7, 2.4], [-11, 13, 2.4], [11, 13, 2.4]];
+    case "manila": return [[-13, -4, 2.4], [13, -4, 2.4], [-13, 12, 2.4], [13, 12, 2.4]];
+    case "shanghai": return [[-9, -3.2, 1.8], [9, -3.2, 1.8], [-9, 11.5, 1.8], [9, 11.5, 1.8], [-12, 4, 1.8], [12, 4, 1.8]];
+    case "venice": return [[-12, -8, 2.2], [12.5, -10, 2.2], [-14, 12, 2.2], [14, 14, 2.2], [-9, 16, 2.2]];
+    default: return [];
+  }
+}
+function pushEyeClear(eye: Vec3): void {
+  for (const [ox, oz, r] of cameraObstacles(venue)) {
+    const dx = eye[0] - ox, dz = eye[2] - oz;
+    const d = Math.hypot(dx, dz);
+    if (d >= r) continue;
+    // step toward the court centre line, where there is never a pole
+    const ux = d > 1e-3 ? dx / d : -Math.sign(ox) || 1, uz = d > 1e-3 ? dz / d : 0;
+    eye[0] = ox + ux * r; eye[2] = oz + uz * r;
+  }
+}
 function updateCamera(dt: number): void {
   const holder = holderAthlete();
   cam.orbit += dt * 0.11;
@@ -3018,6 +3038,9 @@ function updateCamera(dt: number): void {
         };
     }
   }
+  // The low chase eye (handler + (5.6, 3.0, 4.2)) can land inside a courtside pole: a Rucker floodlight at (11, 13) filled
+  // the right third of the frame on a drive down the right side (remote run g07-after2). Push the eye out of every pole.
+  if (game_.phase !== "menu") pushEyeClear(want.eye);
   const k = 1 - Math.pow(0.02, dt);
   cam.eye = [lerp(cam.eye[0], want.eye[0], k), lerp(cam.eye[1], want.eye[1], k), lerp(cam.eye[2], want.eye[2], k)];
   cam.target = [lerp(cam.target[0], want.target[0], k), lerp(cam.target[1], want.target[1], k), lerp(cam.target[2], want.target[2], k)];
