@@ -159,6 +159,11 @@ function harness(story: StorySpec, options: HarnessOptions = {}): Harness {
   return self;
 }
 
+/** The key of a LineRef handed to the narration player ("" for anything else). */
+function lineKeyOf(value: unknown): string {
+  return typeof value === "object" && value !== null && "key" in value && typeof value.key === "string" ? value.key : "";
+}
+
 function storyOf(id: string): StorySpec {
   const story = findStory(id);
   if (!story) throw new Error(`missing story ${id}`);
@@ -423,6 +428,59 @@ describe("story runner", () => {
         for (let i = 0; i < 200; i += 1) h.runner.tick(STEP_MS);
         expect(h.calls.length, label).toBe(before);
       }
+    }
+  });
+
+  it("plays every story to its end in Play Together with a tap on the first active target at every wait (06:36, QA-E03)", () => {
+    expect(STORIES).toHaveLength(32);
+    for (const story of STORIES) {
+      const label = story.id;
+      const h = harness(story, { mode: "play-together" });
+      h.runner.start();
+      let used = 0;
+      let waits = 0;
+      let accepted = 0;
+      let wasWaiting = false;
+      const refused: string[] = [];
+      const untappable: string[] = [];
+      while (h.runner.finishReason() === null && used < RUN_TO_END_DEFAULT_MS) {
+        const snapshot = h.runner.snapshot();
+        const waiting = snapshot.phase === "waiting";
+        if (waiting && !wasWaiting) {
+          waits += 1;
+          const [target] = h.runner.activeTargets();
+          if (target === undefined) untappable.push(String(snapshot.beatId));
+          else if (h.runner.tap(target, snapshot.elapsedMs)) {
+            accepted += 1;
+            // The tap ends the wait at once: the targets clear and the beat answers (or the next beat starts).
+            expect(h.runner.activeTargets(), `${label} ${String(snapshot.beatId)}`).toEqual([]);
+            expect(h.runner.snapshot().phase, `${label} ${String(snapshot.beatId)}`).not.toBe("waiting");
+          } else refused.push(`${String(snapshot.beatId)}:${target}`);
+        }
+        wasWaiting = h.runner.snapshot().phase === "waiting";
+        h.runner.tick(STEP_MS);
+        used += STEP_MS;
+      }
+      expect(waits, `${label} offers at least one turn`).toBeGreaterThan(0);
+      expect(untappable, `${label}: every wait offers something to tap`).toEqual([]);
+      expect(refused, `${label}: every tap on an active target is taken`).toEqual([]);
+      expect(accepted, label).toBe(waits);
+      expect(h.runner.snapshot().taps, label).toBe(accepted);
+      expect(h.runner.finishReason(), label).toBe("complete");
+      expect(h.finished, label).toEqual(["complete"]);
+      expect(h.offline, label).toEqual([story.offlinePlayKey]);
+      expect(used, `${label} ends in a short session`).toBeLessThan(10 * 60 * 1000);
+      // A tap on every "more" plays every round, and every answered wait speaks its response: the lines are exactly the
+      // authored ones in order (an activity's round once per round).
+      const beats = story.kind === "episode" ? story.beats : [...story.intro, ...Array.from({ length: story.roundLimit }, () => story.round).flat(), ...story.outro];
+      const expected = beats.flatMap((beat) => [...beat.lines, ...(beatWaits(beat) ? (beat.response?.lines ?? []) : [])].map((line) => line.key));
+      const played = h.of("narration", "play").map((call) => lineKeyOf(call.args[0]));
+      expect(played, `${label}: every authored line in order`).toEqual(expected);
+      if (story.kind === "activity") expect(h.runner.snapshot().round, `${label}: a tap on every "more" plays all ${story.roundLimit} rounds`).toBe(story.roundLimit);
+      // Nothing plays after the end, however long it is left.
+      const before = h.calls.length;
+      for (let i = 0; i < 200; i += 1) h.runner.tick(STEP_MS);
+      expect(h.calls.length, label).toBe(before);
     }
   });
 
