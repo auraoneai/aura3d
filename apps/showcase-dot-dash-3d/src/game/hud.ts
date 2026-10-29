@@ -3,7 +3,7 @@
 // clear/gameover cards, and the in-run HUD.
 
 import { MAZE_ORDER, MAZES, FRUIT_LABEL } from "./mazes.js";
-import { GHOST_ORDER, GHOST_TINT, st, startRun, endToTitle } from "./sim.js";
+import { GHOST_ORDER, GHOST_TINT, st, startRun, skipClear } from "./sim.js";
 import { saveProfile } from "./save.js";
 import type { MazeId } from "./mazes.js";
 
@@ -15,6 +15,18 @@ const TRAIL_SWATCHES = ["#ffd23d", "#45e8ff", "#ff4d5e", "#7dff5e", "#ff9ed2", "
 
 let paused = false;
 export const isPaused = (): boolean => paused;
+
+/** Modes that end a run on a card: pause and Escape stay out of the way there. */
+const isEndMode = (): boolean => st.mode === "gameover" || st.mode === "win";
+/** Modes the board can be paused in. */
+const isPausable = (): boolean => st.mode !== "title" && !isEndMode();
+/** Board Map or Courier Studio is open on top of everything else. */
+const menuOpen = (): boolean => $("dd-circuit").hidden === false || $("dd-studio").hidden === false;
+
+/** First-run hint for touch and narrow screens, shown until the first input of the page. */
+let firstHintDone = false;
+const wantsFirstHint = (): boolean =>
+  (typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches) || window.innerWidth < 680;
 
 export function mountUI(): void {
   // ---- title buttons
@@ -53,10 +65,9 @@ export function mountUI(): void {
   $("dd-circuit-close").addEventListener("click", closeOverlays);
   $("dd-studio-close").addEventListener("click", closeOverlays);
 
-  // ---- clear card
+  // ---- clear card: Next Board skips the clear pause and keeps score and lives (same path as the timer)
   $("dd-next-maze").addEventListener("click", () => {
-    const next = MAZE_ORDER[MAZE_ORDER.indexOf(st.mazeId) + 1];
-    if (next) startRun(st.runKind === "quick" ? "quick" : "circuit", next);
+    skipClear();
     closeOverlays();
   });
   $("dd-clear-retry").addEventListener("click", () => { startRun(st.runKind, st.mazeId); closeOverlays(); });
@@ -66,6 +77,19 @@ export function mountUI(): void {
   $("dd-go-retry").addEventListener("click", () => { startRun(st.runKind, st.mazeId); closeOverlays(); });
   $("dd-go-circuit").addEventListener("click", () => { closeOverlays(); openCircuit(); });
 
+  // ---- win card
+  $("dd-win-replay").addEventListener("click", () => {
+    startRun(st.runKind, st.runKind === "quick" ? "classic" : st.mazeId);
+    closeOverlays();
+  });
+  $("dd-win-circuit").addEventListener("click", () => { closeOverlays(); openCircuit(); });
+
+  // ---- touch pause button
+  $("dd-btn-pause").addEventListener("click", () => {
+    if ($("dd-pause").hidden === false) setPaused(false);
+    else if (isPausable()) setPaused(true);
+  });
+
   document.addEventListener("keydown", onKey);
   syncTopBar();
   buildStudioSwatches();
@@ -74,17 +98,24 @@ export function mountUI(): void {
 function onKey(e: KeyboardEvent): void {
   if (e.key === "Escape") {
     if (st.mode === "title") { closeOverlays(); return; }
-    if ($("dd-circuit").hidden === false || $("dd-studio").hidden === false) { closeOverlays(); return; }
+    if (menuOpen()) { closeOverlays(); return; }
+    if (isEndMode()) return; // the game-over / win card has its own buttons
     setPaused(!paused);
     return;
   }
-  if ((e.key === "r" || e.key === "R") && st.mode !== "title") startRun(st.runKind, st.mazeId);
+  // one restart per press: key repeat from a held R used to restart the run every repeat
+  if ((e.key === "r" || e.key === "R") && !e.repeat && st.mode !== "title") { setPaused(false); startRun(st.runKind, st.mazeId); }
   if (e.key === "Enter" && st.mode === "title") startRun("quick", "classic");
 }
 
 export function setPaused(v: boolean): void {
-  paused = v && st.mode !== "title";
+  paused = v && isPausable();
   $("dd-pause").hidden = !paused;
+}
+
+/** Tab hidden or window blurred: pause a live board (never over a menu, title or end card). */
+export function autoPause(): void {
+  if (isPausable() && !menuOpen()) setPaused(true);
 }
 
 function openCircuit(): void {
@@ -118,6 +149,7 @@ function openStudio(): void {
 function closeOverlays(): void {
   $("dd-circuit").hidden = true;
   $("dd-studio").hidden = true;
+  syncEndCards();
   if (st.mode === "title") $("dd-title").hidden = false;
   setPaused(false);
 }
@@ -158,6 +190,18 @@ function syncTopBar(): void {
   }
 }
 
+/**
+ * The clear, game-over and win cards follow the mode: each is up exactly while its mode lasts, and steps aside while
+ * Board Map or Courier Studio is open. (The game-over card used to be shown and never hidden, so the next run played
+ * under it; the win mode had no card at all.)
+ */
+function syncEndCards(): void {
+  const menu = menuOpen();
+  $("dd-clear").hidden = st.mode !== "cleared" || menu;
+  $("dd-gameover").hidden = st.mode !== "gameover" || menu;
+  $("dd-win").hidden = st.mode !== "win" || menu;
+}
+
 let lastMode = "";
 export function tickUI(): void {
   // title overlay
@@ -165,9 +209,16 @@ export function tickUI(): void {
   if (st.mode !== lastMode) {
     lastMode = st.mode;
     syncTopBar();
-    if (st.mode === "cleared") showClearCard();
-    if (st.mode === "gameover") showGameoverCard();
+    if (st.mode === "cleared") fillClearCard();
+    if (st.mode === "gameover") fillGameoverCard();
+    if (st.mode === "win") fillWinCard();
+    if (!isPausable() && paused) setPaused(false);
   }
+  syncEndCards();
+  $("dd-btn-pause").hidden = !isPausable();
+  const hint = $("dd-first-hint");
+  if (st.hasMoved) firstHintDone = true;
+  hint.hidden = firstHintDone || st.autopilot || st.mode === "title" || !wantsFirstHint();
 
   const inRun = st.mode !== "title";
   $("dd-hud").style.opacity = inRun ? "1" : "0.25";
@@ -189,13 +240,14 @@ export function tickUI(): void {
   $("dd-hiscore").textContent = String(Math.max(st.profile.best, st.score)).padStart(6, "0");
   $("dd-lives").textContent = "●".repeat(Math.max(0, st.lives)) + "○".repeat(Math.max(0, 3 - st.lives));
   $("dd-dots").textContent = String(st.dotsLeft);
-  const fruitChip = $("dd-fruit");
-  fruitChip.textContent = st.fruitActive ? FRUIT_LABEL[st.maze.def.fruit] : FRUIT_LABEL[st.maze.def.fruit];
+  // cache chip: lit while the bonus gem is on the board, dimmed while it is not
+  $("dd-fruit").textContent = FRUIT_LABEL[st.maze.def.fruit];
+  $("dd-fruit-chip").classList.toggle("idle", !st.fruitActive);
 
-  // orb timer + dash
+  // orb timer + dash (the surge shortens on later boards, so divide by this surge's own length)
   const orbChip = $("dd-orb-chip");
   orbChip.hidden = st.fright <= 0;
-  if (st.fright > 0) ($("dd-orb-fill") as HTMLElement).style.width = `${Math.min(100, (st.fright / 6) * 100)}%`;
+  if (st.fright > 0) ($("dd-orb-fill") as HTMLElement).style.width = `${Math.min(100, (st.fright / Math.max(0.001, st.frightMax)) * 100)}%`;
   const dashFill = $("dd-dash-fill") as HTMLElement;
   const dashFrac = st.profile.dashEnabled ? Math.max(0, 1 - st.player.dashCd / 1.7) : 0;
   dashFill.style.width = `${dashFrac * 100}%`;
@@ -214,6 +266,11 @@ export function tickUI(): void {
     banner.classList.add("show");
     big.textContent = "LINK UP";
     small.textContent = st.maze.def.title;
+  } else if (st.mode === "play" && !st.hasMoved && !st.autopilot && !paused) {
+    // the board holds until the first direction (start and after every catch): say so on the board itself
+    banner.classList.add("show");
+    big.textContent = "READY";
+    small.textContent = "Press a direction to move";
   } else if (st.mode === "dying") {
     banner.classList.add("show");
     big.textContent = "INTERCEPTED";
@@ -233,24 +290,37 @@ export function tickUI(): void {
   });
 }
 
-function showClearCard(): void {
+function fillClearCard(): void {
   const next = MAZE_ORDER[MAZE_ORDER.indexOf(st.mazeId) + 1];
+  const chains = Boolean(next && st.runKind === "quick");
   $("dd-clear-title").textContent = `${st.maze.def.title.toUpperCase()} CLEARED`;
-  $("dd-clear-sub").textContent = next && st.runKind === "quick" ? `Next: ${MAZES[next].title}` : "The board is clear.";
+  $("dd-clear-sub").textContent = chains ? `Next: ${MAZES[next!].title}` : "The board is clear.";
+  const prevBest = st.profile.mazeBest[st.mazeId] ?? 0;
   $("dd-clear-stats").innerHTML =
     `<div class="dd-stat">SCORE <b>${st.score}</b></div>` +
     `<div class="dd-stat">LIVES LEFT <b>${st.lives}</b></div>` +
-    `<div class="dd-stat">BOARD BEST <b>${st.profile.mazeBest[st.mazeId] ?? st.score}</b></div>`;
-  ($("dd-next-maze") as HTMLButtonElement).hidden = !(next && st.runKind === "quick");
-  $("dd-clear").hidden = false;
-  setTimeout(() => { $("dd-clear").hidden = true; }, 2100);
+    `<div class="dd-stat">BOARD BEST <b>${Math.max(prevBest, st.score)}</b></div>`;
+  $("dd-clear-best").hidden = !st.newBoardBest;
+  ($("dd-next-maze") as HTMLButtonElement).hidden = !chains;
+  // a run that ends on this board goes on to the win card; Replay and Board Map live there
+  ($("dd-clear-retry") as HTMLButtonElement).hidden = !chains;
+  ($("dd-clear-circuit") as HTMLButtonElement).hidden = !chains;
 }
 
-function showGameoverCard(): void {
+function fillWinCard(): void {
+  const all = st.runKind === "quick";
+  $("dd-win-title").textContent = all ? "ALL SIX BOARDS CLEAR" : `${st.maze.def.title.toUpperCase()} COMPLETE`;
+  $("dd-win-sub").textContent = st.school ? "Lab session complete." : all ? "Every shard delivered. The machine is yours." : "Board delivered.";
+  $("dd-win-stats").innerHTML =
+    `<div class="dd-stat">FINAL SCORE <b>${st.score}</b></div>` +
+    `<div class="dd-stat">BEST <b>${Math.max(st.profile.best, st.score)}</b></div>` +
+    `<div class="dd-stat">BOARDS CLEARED <b>${st.boardsCleared}</b></div>`;
+}
+
+function fillGameoverCard(): void {
   $("dd-gameover-sub").textContent = st.school ? "Lab session over." : "The sentries cut your link.";
   $("dd-gameover-stats").innerHTML =
     `<div class="dd-stat">SCORE <b>${st.score}</b></div>` +
     `<div class="dd-stat">BEST <b>${st.profile.best}</b></div>` +
     `<div class="dd-stat">REACHED <b>${st.maze.def.title}</b></div>`;
-  $("dd-gameover").hidden = false;
 }

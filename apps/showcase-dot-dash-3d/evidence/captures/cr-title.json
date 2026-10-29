@@ -1,6 +1,0 @@
-Error: capture failed (exit 1): page.waitForTimeout: Target page, context or browser has been closed
-    at /opt/aura3d-captures/showcase-dot-dash-3d/capture.cjs:44:16
-
-    at runCapture (file:///opt/aura3d-captures/bin/capture-server.mjs:220:34)
-    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
-    at async Server.<anonymous> (file:///opt/aura3d-captures/bin/capture-server.mjs:250:22)

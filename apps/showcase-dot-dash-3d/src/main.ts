@@ -1,9 +1,9 @@
 /** Glint Courier — circuit-board chase (PRD: docs/prd/dot-dash-3d.md). */
-import { game } from "@aura3d/engine";
+import { game, installQaHooks } from "@aura3d/engine";
 import { createGame, sfxUrl } from "@aura3d/engine/game";
-import { buildScene, bindApp, syncVisuals, wx, wz } from "./game/world";
-import { st, frame, startRun, evidenceExtra, GHOST_LABEL } from "./game/sim";
-import { mountUI, tickUI, isPaused } from "./game/hud";
+import { buildScene, bindApp, syncVisuals, wx, wz, cameraPose, setMotionPrefs, tileToScreen } from "./game/world";
+import { st, frame, startRun, bootToTitle, evidenceExtra, GHOST_LABEL } from "./game/sim";
+import { mountUI, tickUI, isPaused, autoPause } from "./game/hud";
 import { FRUIT_LABEL, type MazeId } from "./game/mazes";
 import type { FruitKind } from "./game/grid";
 import "../../showcase-port-shared/quickbar.css";
@@ -131,7 +131,30 @@ document.addEventListener("keyup", onCaptureKeyUp, { capture: true });
 window.addEventListener("blur", () => {
   keysHeld.clear();
   keysPressed.clear();
+  autoPause();
 });
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") autoPause();
+});
+
+// Swipe on the board (touch): a flick of 24 px or more queues that direction like a key press (buffered turn).
+let swipeFrom: { x: number; y: number; id: number } | null = null;
+const SWIPE_CODES = { left: "ArrowLeft", right: "ArrowRight", up: "ArrowUp", down: "ArrowDown" } as const;
+const appEl = document.getElementById("app");
+appEl?.addEventListener("pointerdown", (e) => {
+  if (e.pointerType === "mouse") return;
+  swipeFrom = { x: e.clientX, y: e.clientY, id: e.pointerId };
+});
+appEl?.addEventListener("pointerup", (e) => {
+  const from = swipeFrom;
+  swipeFrom = null;
+  if (!from || from.id !== e.pointerId) return;
+  const dx = e.clientX - from.x, dy = e.clientY - from.y;
+  if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
+  const dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : (dy > 0 ? "down" : "up");
+  keysPressed.add(SWIPE_CODES[dir]);
+});
+appEl?.addEventListener("pointercancel", () => { swipeFrom = null; });
 
 const hasCode = (set: Set<string>, action: string): boolean => {
   const codes = ACTION_CODES[action];
@@ -161,6 +184,41 @@ const input = {
 const eventLog = game.eventLog({ label: "glint courier events", maxEvents: 40 });
 mountUI();
 
+// Reduced motion / reduced flash: the session settings, or the OS preference when the session has none.
+const motionQuery = typeof matchMedia === "function" ? matchMedia("(prefers-reduced-motion: reduce)") : null;
+const syncMotionPrefs = (): void => {
+  const session = g.session as unknown as { reducedMotion?: boolean; reducedFlash?: boolean } | undefined;
+  const osReduce = motionQuery?.matches === true;
+  setMotionPrefs({ reducedMotion: session?.reducedMotion === true || osReduce, reducedFlash: session?.reducedFlash === true || osReduce });
+};
+syncMotionPrefs();
+motionQuery?.addEventListener?.("change", syncMotionPrefs);
+try { (g.session as unknown as { on?(e: "settings", cb: () => void): void }).on?.("settings", syncMotionPrefs); } catch { /* optional */ }
+
+// Score pop-ups: "+200" floats up from the tile that scored (sentry disabled, cache gem).
+const popHost = document.getElementById("dd-popups");
+function popScore(x: number, y: number, points: number): void {
+  if (!popHost) return;
+  const at = tileToScreen(x, y);
+  if (!at) return;
+  const el = document.createElement("div");
+  el.className = "dd-pop";
+  el.textContent = `+${points}`;
+  el.style.left = `${at.x}px`;
+  el.style.top = `${at.y}px`;
+  popHost.appendChild(el);
+  setTimeout(() => el.remove(), 950);
+}
+
+// QA hooks (window.__AURA_DOT_DASH_3D__): state for specs and capture tools; `sim()` is the live simulation object.
+installQaHooks("dot-dash-3d", {
+  ready: () => appReady,
+  state: () => evidenceExtra(),
+  app: () => app,
+  begin: () => startRun("quick", "classic"),
+  extras: { sim: () => st, pose: () => cameraPose(), sync: () => syncVisuals(0) }
+});
+
 // ambient hum loop — start on first user gesture (audio unlock)
 let humStarted = false;
 const tryHum = (): void => {
@@ -176,6 +234,10 @@ if (AUTOSTART) {
   const maze = (params.get("maze") ?? "classic") as MazeId;
   startRun(mode === "school" ? "school" : mode === "circuit" ? "circuit" : "quick", maze);
   syncVisuals(0);
+  tickUI();
+} else {
+  // ?autostart=0 opens the title menu (the sim starts in "play" with an empty board otherwise)
+  bootToTitle();
   tickUI();
 }
 
@@ -201,6 +263,7 @@ function killTrail(): void {
 
 let frames = 0;
 let lastMode = st.mode;
+let humDucked = false;
 
 app.onFrame(({ dt }) => {
   if (!appReady) return;
@@ -232,6 +295,8 @@ app.onFrame(({ dt }) => {
       eventLog.push({ type: "death", label: `caught @${st.score}` });
     }
     if (ev.clear) { g.sound?.cue("clear"); g.juice?.fire("clear"); }
+    if (ev.extraLife) { g.sound?.cue("orb"); eventLog.push({ type: "extra-life", label: `extra life @${st.score}` }); }
+    for (const p of ev.points) popScore(p.x, p.y, p.points);
 
     // player trail — attach during play, drop on death/title
     if (st.mode === "play") ensureTrail();
@@ -241,6 +306,13 @@ app.onFrame(({ dt }) => {
     syncVisuals(d);
   }
   lastMode = st.mode;
+
+  // duck the looped hum while the board is paused
+  const pausedNow = isPaused();
+  if (pausedNow !== humDucked && humStarted) {
+    humDucked = pausedNow;
+    try { (g.sound as unknown as { setCueLevel?(c: string, l: { volume: number }, ms?: number): void } | undefined)?.setCueLevel?.("hum", { volume: pausedNow ? 0.2 : 1 }, 220); } catch { /* audio optional */ }
+  }
 
   tickUI();
 

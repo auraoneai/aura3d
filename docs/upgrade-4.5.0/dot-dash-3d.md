@@ -4,14 +4,14 @@
 
 ## What this game uses
 
-- Entry: `apps/showcase-dot-dash-3d/src/main.ts`. One `createGame(...)` call from `@aura3d/engine/game` (line 42). No direct `createAuraApp`. Options: `diagnostics`, `scene`, `input`, `hud`, `touch`, `sound`, `juice`, `qualityRebuild: { flags: ["game", "materials"] }`, `evidence`. No `quality`, `renderer`, `output` or `preserveDrawingBuffer` option. `app` is a module-local const (`main.ts:90`) and is not exposed on `window`.
+- Entry: `apps/showcase-dot-dash-3d/src/main.ts`. One `createGame(...)` call from `@aura3d/engine/game`. No direct `createAuraApp`. Options: `diagnostics`, `scene`, `input`, `hud`, `touch`, `sound`, `juice`, `qualityRebuild: { flags: ["game", "materials"] }`, `evidence`. No `quality`, `renderer`, `output` or `preserveDrawingBuffer` option. `app` is module-local; since the audit fixes the page installs `window.__AURA_DOT_DASH_3D__` (`installQaHooks`) with `diagnostics()`, `sim()` and `pose()`, and `window.__AURA3D_LIVE_APPS__` lists the app.
 - Scene: `src/game/world.ts` `buildScene()`.
   - Effects: `effects.bloom`, `effects.vignette`, `effects.fog` (lines 105-109).
   - Look: `looks.preset("neon-arcade", { fogDensityScale: 0, exposureEv: 0.05, background: "#0e1a17", accent: "#ffb23e" })` (line 110).
   - Lights: `lights.ambient` 0.92, `lights.hemisphere` 0.85, `lights.directional` 1.25 with `shadow: true` (lines 111-113). No authored `environments.*` node.
   - Materials: `material.pbr` (several with `opacity < 1`, lines 129, 167, 170) and `material.emissive` (lines 128, 179, 180).
   - Geometry: `primitives.box/sphere/cylinder` and 15 `instances.box/cylinder/sphere/polyhedron/torus/cone` pools (lines 142-156), 2 to 900 slots each (`CAP`, line 51). No models, animation, physics or interactions.
-- Per-frame instancing: `syncVisuals()` writes `Float32Array` matrices plus 3-float colours and calls `setInstanceTransforms(mat, n, col)` on every pool each frame (`world.ts:416-423`).
+- Per-frame instancing: `syncVisuals()` writes `Float32Array` matrices plus 3-float colours and calls `setInstanceTransforms(mat, n, col)`. Since the audit fixes (DD-E4) the wall, rail, dressing and glow pools are painted and submitted once per board; only the actor, shard and gem pools go up each frame.
 - Canvas access: none in game code. `src/main.ts:11-13` installs `installBlackFrameGuard` from `@aura3d/debug`, which samples the canvas.
 - Other: `?freeze=<ms>` pauses the app for headless capture (`main.ts:98-102`); `scripts/write-route-health.mjs`; shared CSS `apps/showcase-port-shared/quickbar.css`. Globals: `window.__AURA3D_DOT_DASH__` and `window.__gameEvidence`.
 - Package: `package.json` depends on `@aura3d/engine` as `workspace:*`; there is no version pin to bump.
@@ -41,14 +41,16 @@
 - **What happens now:** `quality` defaults to `"auto"`. The scene authors bloom, vignette, emissive materials and transparent materials, each of which is a direct-path blocker, so it keeps the HDR chain. Expect no change in pipeline.
 - **Evidence:** `src/game/world.ts:105-106, 128-130, 167, 170, 179-180`; `packages/engine/src/agent-api/app/renderPath.ts:103-143` (`renderPathBlockers`).
 - **What to do:** Nothing required. To pin the old pipeline byte-for-byte, add `quality: "production"` to the `createGame({...})` options in `main.ts` (the option is forwarded to the app options at `packages/game/src/createGame.ts:105-113`).
-- **How to check:** `app` is module-local in `main.ts`, so the console cannot see it. Temporarily add `(window as any).__app = app;` after `main.ts:90` (do not commit it), then in the console `__app.diagnostics().renderPath` should report `path: "hdr-msaa"` and `quality: "auto"`. If it reports `direct`, a blocker was removed.
+- **How to check:** in the console, `__AURA3D_LIVE_APPS__.all()[0].diagnostics().renderPath` (or `__AURA_DOT_DASH_3D__.diagnostics()`) should report `path: "hdr-msaa"` and `quality: "auto"`. If it reports `direct`, a blocker was removed.
 
 ### 3. Bloom fusion and shadow cascade skipping are automatic (changes 7 and 6)
 
 - **What happens now:** With `auto`, the bloom chain is fused (frames within 1/255 of the separable chain), and shadow cascades no receiver selects are skipped. Both are pixel-neutral by design.
 - **Evidence:** `src/game/world.ts:105`; `packages/engine/src/agent-api/app/renderPath.ts:24-43`; `packages/engine/src/agent-api/compiler/renderer.ts:123-126`.
+- **Measured (audit lane E1, RP-05):** on the same paused frame, `auto` against the production pass sequence differs by 2.18 and 2.16/255 mean RGB in two runs. Repeating the `auto` frame differs by 1.05 and 1.03/255, so about 1.1/255 of the difference is the fused bloom and cascade skip, and the rest is frame-to-frame motion. The maximum pixel difference (223) is the same in both comparisons, so the largest changes come from animated pixels, not from the bloom.
+- **Decision:** keep `quality: "auto"`. A 1.1/255 mean change cannot be seen on this dark board, and pinning `quality: "production"` would also turn off the cascade skip on a route that already presents only about 0.3 frames per second on the software-GL runner.
 - **What to do:** Nothing. Option `renderer: { bloomFusion: "fused-2d" }` exists only if you want the other mode.
-- **How to check:** With the temporary `__app` global, `__app.diagnostics().renderPath.bloomFusion` should be `"separable"`.
+- **How to check:** `__AURA3D_LIVE_APPS__.all()[0].diagnostics().renderPath.bloomFusion` should be `"separable"`.
 
 ### 4. Instanced pools: dense path and empty-pool skip (change 6)
 
@@ -59,7 +61,7 @@
   - Pool sizes (max 900) are below the 1024 shadow-proxy and dense-depth thresholds, so those features do not engage.
 - **Evidence:** `src/game/world.ts:416-423`; `packages/engine/src/agent-api/app/runtimeNodes.ts:450-478`; `packages/engine/src/agent-api/compiler/renderInput.ts:324-327`; `packages/engine/src/agent-api/nodes/game/instanceTransforms.ts` (`stubSetInstanceTransforms`, `rgbToLinearRgba`).
 - **What to do:** Nothing in game code. If a QA step fails on any diagnostics warning, filter `INSTANCES_EMPTY` for these pools.
-- **How to check:** `__app.diagnostics()` during play and during a death; confirm walls, rails, shards and sentries still render and colours match 4.3.7.
+- **How to check:** `__AURA3D_LIVE_APPS__.all()[0].diagnostics()` during play and during a death; confirm walls, rails, shards and sentries still render and colours match 4.3.7.
 
 ## Changes that do not affect this game
 
@@ -76,12 +78,14 @@
 
 ## Checklist
 
-- [ ] Capture the same frames (title, classic maze play, surge active) on 4.3.7 (`main`) and 4.5.0 with `?capture=1`, and compare brightness and colour (the direction of the change is not predicted).
-- [ ] If the board is darker or brighter than intended, adjust `lights.ambient`, `lights.directional` or the `exposureEv` override in `src/game/world.ts:110-113`. Do not count on `lights.hemisphere` for brightness.
-- [ ] Temporarily expose `app` on `window` (not committed) and confirm `diagnostics().renderPath` reports `path: "hdr-msaa"`, `quality: "auto"`, `bloomFusion: "separable"`.
-- [ ] Decide whether to pin `quality: "production"` in `src/main.ts` (optional; restores the old pipeline, but does not undo the look's new environment node).
-- [ ] Check `diagnostics()` for warnings: expect `INSTANCES_EMPTY` for empty pools, and no `OPTION_IGNORED`.
-- [ ] Play all six mazes: wall, rail, shard, sentry and gem pools draw correctly and per-instance colours are unchanged.
-- [ ] Confirm the black-frame guard does not reload the page (`window.__AURA3D_HEAL__.rung` stays 0).
-- [ ] Run `node tools/game-checks/run.mjs dot-dash-3d`.
-- [ ] Run `pnpm --filter @aura3d/showcase-dot-dash-3d typecheck` and `build`, then `npm run evidence:route-health` in the app folder (build/browser runs go through the remote runner, not local).
+Closed by audit lane G13 on the remote runner (software WebGL2, `tests/browser/audit-fix/dot-dash-3d.spec.ts`; numbers and frames in `evidence/dot-dash-3d/audit-fix/` and `docs/audits/lanes/g13.md`).
+
+- [x] Capture the same frames on 4.3.7 and 4.5.0 and compare brightness and colour: 25.0 on 4.3.7, 29.5 on 4.5.0 (above). After the per-normal hemisphere (lane E2) and the retune to 0.5, the old framing reads 29.50 (`g13w2-after`). The aspect-fit camera (DD-3) now shows the whole board and more of the dark deck at 16:9, so the same 75 s shot reads 25.49 (`g13w3-after3`); the board lighting itself is unchanged.
+- [x] Adjust the lights if the board reads wrong: `lights.hemisphere` 0.85 to 0.5 (`world.ts`, wave 2, LIGHT-03). Ambient, directional and `exposureEv` unchanged.
+- [x] `diagnostics().renderPath` reports `path: "hdr-msaa"`, `quality: "auto"`, `bloomFusion: "separable"` in every shot of `g13w3-before` and `g13w3-after3` (read through `window.__AURA3D_LIVE_APPS__`, no code change needed).
+- [x] Decide whether to pin `quality: "production"` in `src/main.ts`: not pinned (RP-05 measurement above).
+- [x] Check `diagnostics()` for warnings: no `INSTANCES_EMPTY` and no `OPTION_IGNORED` in `g13w3-after3`. Two info warnings remain: "Scene has no interactions" (expected, the camera is game-driven) and one "step() was called before the WebGL renderer finished mounting" at boot.
+- [x] Play all six mazes: `g13-boards` (Board Map, each board 40 s after the first move) shows walls, rails, shards, sentries and gems on all six, with live pool counts (walls 182 to 208, rails 334 to 368, shards 156 to 179, one instance per sentry pool).
+- [x] The black-frame guard does not reload the page: `__AURA3D_HEAL__.rung` is 0 in every after shot.
+- [x] `node tools/game-checks/run.mjs dot-dash-3d`: 0 errors, 0 warnings.
+- [x] `typecheck` (`tsc -p apps/showcase-dot-dash-3d/tsconfig.json --noEmit`: clean), `vite build` and `node scripts/write-route-health.mjs` (all six checks ok) ran inside the remote image (`g13-build` in `g13w3-after3`).

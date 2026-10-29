@@ -25,7 +25,7 @@
   <body>
     <div class="aura3d-top-bar" role="toolbar" aria-label="Glint Courier shell">
       <button type="button" id="dd-btn-play" class="active" title="Quick Play — Classic Grid, 3 lives">Quick Play</button>
-      <button type="button" id="dd-btn-school" title="Sentry Lab — slow-mo practice with live target-tile overlays">Sentry Lab</button>
+      <button type="button" id="dd-btn-school" title="Sentry Lab — practice at 0.6x speed, no catches, with live target-tile overlays">Sentry Lab</button>
       <button type="button" id="dd-btn-circuit" title="Board Map — board select and high scores">Board Map</button>
       <button type="button" id="dd-btn-studio" title="Courier Studio — core and trail colors">Courier Studio</button>
       <span class="aura-sep" aria-hidden="true"></span>
@@ -82,7 +82,10 @@
         </div>
         <div id="dd-banner" class="dd-banner"><div class="big" id="dd-banner-big"></div><div class="small" id="dd-banner-small"></div></div>
         <div id="dd-toast" class="dd-toast"></div>
+        <div id="dd-popups" class="dd-popups" aria-hidden="true"></div>
+        <div id="dd-first-hint" class="dd-first-hint" hidden>D-pad or swipe to move · collect every shard · avoid the sentries</div>
       </div>
+      <button type="button" id="dd-btn-pause" class="dd-btn-pause" aria-label="Pause" title="Pause">II</button>
 
       <!-- Title menu -->
       <div id="dd-title" class="dd-overlay">
@@ -141,6 +144,7 @@
           <h2 id="dd-clear-title">BOARD CLEARED</h2>
           <p class="dd-sub" id="dd-clear-sub">The board is clear.</p>
           <div class="dd-stats" id="dd-clear-stats"></div>
+          <p class="dd-new-best" id="dd-clear-best" hidden>NEW BOARD BEST</p>
           <div class="dd-btns">
             <button type="button" id="dd-next-maze">Next Board</button>
             <button type="button" id="dd-clear-retry">Replay</button>
@@ -158,6 +162,19 @@
           <div class="dd-btns">
             <button type="button" id="dd-go-retry">Retry Board</button>
             <button type="button" id="dd-go-circuit">Board Map</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Run complete overlay (Board Map / Sentry Lab board done, or all six Quick Play boards) -->
+      <div id="dd-win" class="dd-overlay" hidden>
+        <div class="dd-panel">
+          <h2 id="dd-win-title">RUN COMPLETE</h2>
+          <p class="dd-sub" id="dd-win-sub">Board delivered.</p>
+          <div class="dd-stats" id="dd-win-stats"></div>
+          <div class="dd-btns">
+            <button type="button" id="dd-win-replay">Replay</button>
+            <button type="button" id="dd-win-circuit">Board Map</button>
           </div>
         </div>
       </div>

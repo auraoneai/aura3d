@@ -49,8 +49,8 @@ export interface MazeDef {
     readonly dot: string;
     readonly accent: string;
   };
+  /** Clear colour behind the board (world.ts lifts it to board 1's brightness). One global haze covers every board. */
   readonly background: string;
-  readonly fog: { readonly color: string; readonly near: number; readonly far: number } | null;
   readonly fruit: FruitKind;
   /** Set dressing flavor for the perimeter. */
   readonly theme: "grid" | "spiral" | "towers" | "garden" | "foundry" | "reactor";
