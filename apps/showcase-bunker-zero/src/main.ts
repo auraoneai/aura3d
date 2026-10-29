@@ -1,9 +1,11 @@
 /**
  * Bunker Zero — six-floor retro corridor FPS on Aura3D.
  * Real extruded 3D corridors from ASCII grids (instanced boxes — NOT a raycaster),
- * pointer-lock FPS controller, 4 weapons, 3 enemy archetypes + Iron Warden boss,
- * push-wall secrets, key→elevator progression, Kill House skill mode,
- * deterministic ?demo=1 playback, JSON evidence on window.__gameEvidence.
+ * pointer-lock FPS controller with a twin-stick touch layer, 4 weapons with their own
+ * magazines, 3 enemy archetypes + the Iron Warden boss, push-wall secrets,
+ * key→elevator progression with the loadout carried floor to floor, Kill House
+ * skill mode, pause, minimap, results panel, deterministic ?demo=1 playback,
+ * JSON evidence on window.__gameEvidence.
  */
 import "../../showcase-port-shared/quickbar.css";
 import {
@@ -14,8 +16,14 @@ import { createGame, sfxUrl, type ForwardAxis } from "@aura3d/engine/game";
 import { assets } from "./aura-assets";
 import { CELL, WALL_H, SILO_H, FLOORS, KILL_HOUSE, type FloorDef } from "./maps";
 import {
-  createSim, cellCenter, WEAPONS, type Sim, type SimInput, type WeaponId
+  createSim, cellCenter, captureLoadout, defaultLoadout, drainEvents, ENEMIES, MAX_SUMMONS, WEAPONS,
+  type Enemy, type Loadout, type Sim, type SimInput, type WeaponId
 } from "./sim";
+import { autopilotInput, createAutopilot } from "./autopilot";
+import {
+  betterMedal, cosmeticRng, DEFAULT_BINDINGS, enemyNodeStem, floorOutcome, floorResult, hudKey, keyLabel, MEDAL_MARK,
+  outcomeView, parseBindings, REMAPPABLE, rebind, runTotals, type BindAction, type Bindings, type FloorOutcome, type FloorResult
+} from "./flow";
 import { VIEWMODEL_ASSET, VIEWMODEL_YAW_OFFSET, weaponHudLabel } from "./weapons-view";
 import { ENEMY_FORWARD, enemyFacingError, nextEnemyYaw } from "./enemy-facing";
 import { installBlackFrameGuard } from "@aura3d/debug";
@@ -38,6 +46,9 @@ const LOOK_ID = "night-city" as const;
 const EYE = 1.55;
 const FLOOR_SPAN = 300;
 const MAX_ROCKETS = 18;
+const ENEMY_TRACERS = 8;
+/** C24 A/B knob: `?bz-contact-shadows=0` drops effects.contactShadows. */
+const CONTACT_SHADOWS = bootParams.get("bz-contact-shadows") !== "0";
 const ALL_FLOORS: { def: FloorDef; slot: number }[] = [
   ...FLOORS.map((def, i) => ({ def, slot: i })),
   { def: KILL_HOUSE, slot: 6 }
@@ -65,6 +76,18 @@ const pickupGlow = (color: string, emissive: string, emissiveIntensity: number, 
 // ---------------------------------------------------------------------------
 // scene graph — everything exists from boot; runtime nodes move per frame
 function cellX(slot: number, cx: number) { return cellCenter(cx) + slot * FLOOR_SPAN; }
+/** Wall height of each floor slot (floor 6 is the tall silo): the door sink uses it (C15). */
+const SLOT_WALL_H = ALL_FLOORS.map(({ def }) => (def.id === 5 ? SILO_H : WALL_H));
+/** Every runtime node id built for each floor slot; startFloor hides all slots but the active one (C18). */
+const SLOT_IDS: string[][] = ALL_FLOORS.map(() => []);
+/** The static geometry ids of each slot (walls, floor, ceiling, trim, exits, columns): shown only on the active floor. */
+const SLOT_STATIC_IDS: string[][] = ALL_FLOORS.map(() => []);
+function slotNode(slot: number, id: string, tags: string[], isStatic = false) {
+  if (!SLOT_IDS[slot]!.includes(id)) SLOT_IDS[slot]!.push(id);
+  if (isStatic && !SLOT_STATIC_IDS[slot]!.includes(id)) SLOT_STATIC_IDS[slot]!.push(id);
+  return game.runtimeNode(id, { tags });
+}
+const staticNode = (slot: number, key: string) => slotNode(slot, `f${slot}-s-${key}`, ["floor-static"], true);
 
 function buildScene() {
   const b = scene().add(looks.preset(LOOK_ID, { fogDensityScale: 0.28, exposureEv: 0.42 }));
@@ -82,7 +105,7 @@ function buildScene() {
   for (const { def, slot } of ALL_FLOORS) {
     const rows = def.rows;
     const h = rows.length, w = rows[0].length;
-    const wallH = def.id === 5 ? SILO_H : WALL_H;
+    const wallH = SLOT_WALL_H[slot]!;
     const wallMat = material.pbr({ color: shade(def.palette.wall, 0.14), roughness: 0.68, metalness: 0.12 });
     const altMat = material.pbr({ color: shade(def.palette.wallAlt, 0.16), roughness: 0.62, metalness: 0.18 });
     const wallInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
@@ -131,19 +154,19 @@ function buildScene() {
     }
     nodes.push(
       // structural walls — one instanced draw call per material group
-      primitives.box({ name: `f${slot} walls`, material: wallMat, instances: wallInst, instanceColors: wallCol }),
-      primitives.box({ name: `f${slot} accent`, material: altMat, instances: altInst, instanceColors: altCol }),
+      primitives.box({ name: `f${slot} walls`, material: wallMat, instances: wallInst, instanceColors: wallCol }).runtime(staticNode(slot, "walls")),
+      primitives.box({ name: `f${slot} accent`, material: altMat, instances: altInst, instanceColors: altCol }).runtime(staticNode(slot, "accent")),
       // slab floor + sealed ceiling: the ceiling now meets the wall tops so the
       // corridors read as enclosed rooms instead of an open-topped flat plane.
-      primitives.box({ name: `f${slot} floor`, size: [w * CELL, 0.3, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, -0.15, h * CELL / 2], material: material.pbr({ color: shade(def.palette.floor, 0.1), roughness: 0.62, metalness: 0.12 }) }),
-      primitives.box({ name: `f${slot} ceil`, size: [w * CELL, 0.24, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, wallH + 0.14, h * CELL / 2], material: material.emissive({ color: shade(def.palette.ceil, 0.14), emissive: def.palette.accent, emissiveIntensity: 0.12, roughness: 0.9 }) }),
+      primitives.box({ name: `f${slot} floor`, size: [w * CELL, 0.3, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, -0.15, h * CELL / 2], material: material.pbr({ color: shade(def.palette.floor, 0.1), roughness: 0.62, metalness: 0.12 }) }).runtime(staticNode(slot, "floor")),
+      primitives.box({ name: `f${slot} ceil`, size: [w * CELL, 0.24, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, wallH + 0.14, h * CELL / 2], material: material.emissive({ color: shade(def.palette.ceil, 0.14), emissive: def.palette.accent, emissiveIntensity: 0.12, roughness: 0.9 }) }).runtime(staticNode(slot, "ceil")),
       primitives.box({
         name: `f${slot} wall-trim`,
         material: material.emissive({ color: def.palette.accent, emissive: def.palette.accent, emissiveIntensity: 1.25, roughness: 0.32, metalness: 0.35 }),
         instances: stripInst,
         castShadow: false,
         receiveShadow: false
-      })
+      }).runtime(staticNode(slot, "trim"))
     );
     if (ceilInst.length) {
       nodes.push(primitives.box({
@@ -152,7 +175,7 @@ function buildScene() {
         instances: ceilInst,
         castShadow: false,
         receiveShadow: false
-      }));
+      }).runtime(staticNode(slot, "work-lights")));
     }
     if (faltInst.length) {
       nodes.push(primitives.box({
@@ -160,7 +183,7 @@ function buildScene() {
         material: def.palette.floorEmissive
           ? material.emissive({ color: def.palette.floorAlt, emissive: def.palette.floorEmissive, emissiveIntensity: 1.6, roughness: 0.4 })
           : material.pbr({ color: def.palette.floorAlt, roughness: 0.75 })
-      }));
+      }).runtime(staticNode(slot, "floor-alt")));
     }
     // ---- per-cell runtime 3D Meshy entities & props -----------------------
     let dI = 0, pI = 0, eI = 0, kI = 0;
@@ -172,7 +195,7 @@ function buildScene() {
           nodes.push(
             model(assets.pulseNeonGateArchMeshy, { name: `f${slot} door ${dI}`, targetHeight: wallH * 0.96 })
               .position(wx, 0, wz)
-              .runtime(game.runtimeNode(`f${slot}-door-${x}-${z}`, { tags: ["door"] }))
+              .runtime(slotNode(slot, `f${slot}-door-${x}-${z}`, ["door"]))
           );
           dI++;
           break;
@@ -182,10 +205,10 @@ function buildScene() {
           nodes.push(
             model(assets.fpsSciFiCoverCrateMeshy, { name: `f${slot} push ${pI}`, targetHeight: wallH * 0.92 })
               .position(wx, 0, wz)
-              .runtime(game.runtimeNode(`f${slot}-pw-${x}-${z}`, { tags: ["pushwall"] })),
+              .runtime(slotNode(slot, `f${slot}-pw-${x}-${z}`, ["pushwall"])),
             model(assets.auroraPadBeacon, { name: `f${slot} crack ${pI}`, targetHeight: 0.85 })
               .position(wx + side[0] * CELL * 0.44, 0.2, wz + side[1] * CELL * 0.44)
-              .runtime(game.runtimeNode(`f${slot}-crack-${x}-${z}`, { tags: ["crack"] }))
+              .runtime(slotNode(slot, `f${slot}-crack-${x}-${z}`, ["crack"]))
           );
           pI++;
           break;
@@ -193,16 +216,16 @@ function buildScene() {
         case "E":
           nodes.push(
             model(assets.pulseNeonGateArchMeshy, { name: `f${slot} exit`, targetHeight: wallH * 0.98 })
-              .position(wx, 0, wz),
+              .position(wx, 0, wz).runtime(staticNode(slot, "exit")),
             model(assets.auroraPadBeacon, { name: `f${slot} exitpost`, targetHeight: 1.5 })
-              .position(wx, 0.05, wz)
+              .position(wx, 0.05, wz).runtime(staticNode(slot, "exitpost"))
           );
           break;
         case "K":
           nodes.push(
             model(assets.bunkerKeyMeshy, { name: `f${slot} key`, materialOverrides: pickupGlow("#fff0b8", "#ff9d2a", 0.45, { metallic: 0.7, roughness: 0.35 }) })
               .position(wx, 1.1, wz).scale(0.18)
-              .runtime(game.runtimeNode(`f${slot}-pk-${x}-${z}`, { tags: ["pickup", "key"] }))
+              .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "key"]))
           );
           break;
         case "t": case "T":
@@ -212,7 +235,7 @@ function buildScene() {
               materialOverrides: pickupGlow("#ffe9a0", "#ffd76a", ch === "T" ? 0.7 : 0.4, { metallic: 0.8, roughness: 0.3 })
             })
               .position(wx, 0.55, wz).scale(ch === "T" ? 0.38 : 0.28)
-              .runtime(game.runtimeNode(`f${slot}-pk-${x}-${z}`, { tags: ["pickup", "treasure"] }))
+              .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "treasure"]))
           );
           kI++;
           break;
@@ -220,55 +243,55 @@ function buildScene() {
           nodes.push(
             model(assets.fpsEnergyCorePickupMeshy, { name: `f${slot} medkit ${x}-${z}`, targetHeight: 0.82 })
               .position(wx, 0.45, wz)
-              .runtime(game.runtimeNode(`f${slot}-pk-${x}-${z}`, { tags: ["pickup", "health"] }))
+              .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "health"]))
           );
           break;
         case "a":
           nodes.push(
             model(assets.corridorFireAmmoCrateMeshy, { name: `f${slot} ammo`, materialOverrides: pickupGlow("#d8e6a8", "#5a6a2a", 0.18) })
               .position(wx, 0.0, wz).scale(0.42)
-              .runtime(game.runtimeNode(`f${slot}-pk-${x}-${z}`, { tags: ["pickup", "ammo"] }))
+              .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "ammo"]))
           );
           break;
         case "r":
           nodes.push(
             model(assets.bzArmorMeshy, { name: `f${slot} armor`, materialOverrides: pickupGlow("#b8dcf2", "#3a8aaa", 0.3) })
               .position(wx, 0.0, wz).scale(0.36)
-              .runtime(game.runtimeNode(`f${slot}-pk-${x}-${z}`, { tags: ["pickup", "armor"] }))
+              .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "armor"]))
           );
           break;
         case "w":
           nodes.push(
             model(assets.corridorPulseRifleMeshy, { name: `f${slot} mgpickup`, materialOverrides: pickupGlow("#e6f4f8", "#7dfcff", 0.25) })
               .position(wx, 0.55, wz).rotate(0, 0.7, 0).scale(0.48)
-              .runtime(game.runtimeNode(`f${slot}-pk-${x}-${z}`, { tags: ["pickup", "weapon"] }))
+              .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "weapon"]))
           );
           break;
         case "W":
           nodes.push(
             model(assets.mechWeaponB, { name: `f${slot} rocketpickup`, targetHeight: 0.55, materialOverrides: pickupGlow("#ffe2cc", "#ff8a3a", 0.3) })
               .position(wx, 0.55, wz).rotate(0, -0.7, 0)
-              .runtime(game.runtimeNode(`f${slot}-pk-${x}-${z}`, { tags: ["pickup", "weapon"] }))
+              .runtime(slotNode(slot, `f${slot}-pk-${x}-${z}`, ["pickup", "weapon"]))
           );
           break;
         case "b":
           nodes.push(
             model(assets.bzBarrelMeshy, { name: `f${slot} barrel ${x}-${z}`, materialOverrides: pickupGlow("#ffc4a8", "#c44a22", 0.14, { roughness: 0.55 }) })
               .position(wx, 0, wz).scale(0.88)
-              .runtime(game.runtimeNode(`f${slot}-prop-${x}-${z}`, { tags: ["prop", "barrel"] }))
+              .runtime(slotNode(slot, `f${slot}-prop-${x}-${z}`, ["prop", "barrel"]))
           );
           break;
         case "c":
           nodes.push(
             model(assets.bzCrateMeshy, { name: `f${slot} crate ${x}-${z}` })
               .position(wx, 0, wz).scale(0.72)
-              .runtime(game.runtimeNode(`f${slot}-prop-${x}-${z}`, { tags: ["prop", "crate"] }))
+              .runtime(slotNode(slot, `f${slot}-prop-${x}-${z}`, ["prop", "crate"]))
           );
           break;
         case "o":
           nodes.push(
             model(assets.blockfallReactorContainmentPylonMeshy, { name: `f${slot} column ${x}-${z}`, targetHeight: wallH })
-              .position(wx, 0, wz)
+              .position(wx, 0, wz).runtime(staticNode(slot, `col-${x}-${z}`))
           );
           break;
         case "g":
@@ -276,10 +299,10 @@ function buildScene() {
             model(assets.bzGuardMeshy, { name: `f${slot} guard ${eI}`, targetHeight: 1.9, materialOverrides: HOSTILE_OVERRIDES })
               .position(wx, 0, wz)
               .animate({ clip: "Walk_Loop", loop: true, speed: 1.05 })
-              .runtime(game.runtimeNode(`f${slot}-en-${x}-${z}`, { tags: ["enemy", "guard"] })),
+              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "guard"])),
             primitives.sphere({ name: `f${slot} guard eyes ${eI}`, material: material.emissive({ color: "#ffe09a", emissive: "#ff9a2a", emissiveIntensity: 2.6, roughness: 0.22 }), castShadow: false, receiveShadow: false })
               .position(wx, 1.66, wz).scale([0.16, 0.055, 0.16])
-              .runtime(game.runtimeNode(`f${slot}-eye-${x}-${z}`, { tags: ["enemy", "marker"] }))
+              .runtime(slotNode(slot, `f${slot}-eye-${x}-${z}`, ["enemy", "marker"]))
           );
           eI++;
           break;
@@ -290,10 +313,10 @@ function buildScene() {
             })
               .position(wx, 0, wz)
               .animate({ clip: "Walk_Loop", loop: true, speed: 1.35 })
-              .runtime(game.runtimeNode(`f${slot}-en-${x}-${z}`, { tags: ["enemy", "dog"] })),
+              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "dog"])),
             primitives.sphere({ name: `f${slot} hound eyes ${eI}`, material: material.emissive({ color: "#ffcf7a", emissive: "#ff8a2a", emissiveIntensity: 2.8, roughness: 0.22 }), castShadow: false, receiveShadow: false })
               .position(wx, 0.8, wz).scale([0.13, 0.045, 0.13])
-              .runtime(game.runtimeNode(`f${slot}-eye-${x}-${z}`, { tags: ["enemy", "marker"] }))
+              .runtime(slotNode(slot, `f${slot}-eye-${x}-${z}`, ["enemy", "marker"]))
           );
           eI++;
           break;
@@ -304,10 +327,10 @@ function buildScene() {
             })
               .position(wx, 0, wz)
               .animate({ clip: "Walk_Loop", loop: true, speed: 1.0 })
-              .runtime(game.runtimeNode(`f${slot}-en-${x}-${z}`, { tags: ["enemy", "gunner"] })),
+              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "gunner"])),
             primitives.sphere({ name: `f${slot} gunner eyes ${eI}`, material: material.emissive({ color: "#ffd36a", emissive: "#ff7a1a", emissiveIntensity: 2.6, roughness: 0.22 }), castShadow: false, receiveShadow: false })
               .position(wx, 1.76, wz).scale([0.17, 0.058, 0.17])
-              .runtime(game.runtimeNode(`f${slot}-eye-${x}-${z}`, { tags: ["enemy", "marker"] }))
+              .runtime(slotNode(slot, `f${slot}-eye-${x}-${z}`, ["enemy", "marker"]))
           );
           eI++;
           break;
@@ -318,13 +341,27 @@ function buildScene() {
             })
               .position(wx, 0, wz)
               .animate({ clip: "Idle_Loop", loop: true, speed: 0.95 })
-              .runtime(game.runtimeNode(`f${slot}-en-${x}-${z}`, { tags: ["enemy", "boss"] })),
+              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "boss"])),
             primitives.sphere({ name: `f${slot} boss eyes ${eI}`, material: material.emissive({ color: "#ffb648", emissive: "#ff5a1a", emissiveIntensity: 3.2, roughness: 0.22 }), castShadow: false, receiveShadow: false })
               .position(wx, 2.62, wz).scale([0.26, 0.075, 0.26])
-              .runtime(game.runtimeNode(`f${slot}-eye-${x}-${z}`, { tags: ["enemy", "marker"] }))
+              .runtime(slotNode(slot, `f${slot}-eye-${x}-${z}`, ["enemy", "marker"]))
           );
           eI++;
           break;
+      }
+    }
+    // C1: hidden guard nodes for the guards the Iron Warden summons (sim.MAX_SUMMONS), mapped by Enemy.summonSlot
+    if (rows.some((r) => r.includes("B"))) {
+      for (let i = 0; i < MAX_SUMMONS; i++) {
+        nodes.push(
+          model(assets.bzGuardMeshy, { name: `f${slot} summon ${i}`, targetHeight: 1.9, materialOverrides: HOSTILE_OVERRIDES })
+            .position(slot * FLOOR_SPAN, -50, 0)
+            .animate({ clip: "Run", loop: true, speed: 1.3 })
+            .runtime(slotNode(slot, `f${slot}-summon-${i}`, ["enemy", "guard", "summon"])),
+          primitives.sphere({ name: `f${slot} summon eyes ${i}`, material: material.emissive({ color: "#ffe09a", emissive: "#ff9a2a", emissiveIntensity: 2.6, roughness: 0.22 }), castShadow: false, receiveShadow: false })
+            .position(slot * FLOOR_SPAN, -50, 0).scale([0.16, 0.055, 0.16])
+            .runtime(slotNode(slot, `f${slot}-summon-eye-${i}`, ["enemy", "marker"]))
+        );
       }
     }
   }
@@ -350,8 +387,23 @@ function buildScene() {
     lights.point({ name: "muzzle light", color: "#ffb648", intensity: 0, distance: 6, decay: 2, position: [0, -50, 0] })
       .runtime(game.runtimeNode("muzzle-light", { tags: ["vfx"] })),
     lights.point({ name: "boom light", color: "#ff6a2a", intensity: 0, distance: 10, decay: 2, position: [0, -50, 0] })
-      .runtime(game.runtimeNode("boom-light", { tags: ["vfx"] }))
+      .runtime(game.runtimeNode("boom-light", { tags: ["vfx"] })),
+    // C27: the Iron Warden's vent glows while it is vulnerable
+    lights.point({ name: "warden vent light", color: "#ff5a1a", intensity: 7, distance: 9, decay: 1.6, position: [0, -50, 0] })
+      .runtime(game.runtimeNode("vent-light", { tags: ["vfx"] }))
   );
+  // C8: enemy gunshots get a muzzle flash and a tracer, misses included
+  for (let i = 0; i < ENEMY_TRACERS; i++)
+    nodes.push(
+      primitives.sphere({
+        name: `enemy tracer ${i}`, size: [1, 1, 1], position: [0, -50, 0], castShadow: false, receiveShadow: false,
+        material: material.emissive({ color: "#ffe2a8", emissive: "#ff8a2a", emissiveIntensity: 7.5, roughness: 0.2 })
+      }).runtime(game.runtimeNode(`etracer-${i}`, { tags: ["vfx"] })),
+      primitives.sphere({
+        name: `enemy flash ${i}`, size: [0.3, 0.3, 0.3], position: [0, -50, 0], castShadow: false, receiveShadow: false,
+        material: material.emissive({ color: "#ffd27a", emissive: "#ff9a2a", emissiveIntensity: 6, roughness: 0.3 })
+      }).runtime(game.runtimeNode(`eflash-${i}`, { tags: ["vfx"] }))
+    );
   for (let i = 0; i < 8; i++)
     nodes.push(
       model(assets.corridorMuzzleFlameBurstMeshy, { name: `spark ${i}`, material: material.emissive({ color: "#ffca7a", emissive: "#ff9a3a", emissiveIntensity: 6 }) })
@@ -377,9 +429,8 @@ function buildScene() {
       }).runtime(game.runtimeNode(`tracer-${i}`, { tags: ["vfx"] }))
     );
 
-  return b
-    .addMany(nodes)
-    .add(effects.contactShadows({ intensity: 0.55, length: 0.35 }))
+  const withNodes = b.addMany(nodes);
+  return (CONTACT_SHADOWS ? withNodes.add(effects.contactShadows({ intensity: 0.55, length: 0.35 })) : withNodes)
     .add(effects.fog({ color: "#1a2230", density: 0.0095 }))
     .add(effects.filmGrain({ intensity: 0.02 }))
     .add(effects.vignette({ intensity: 0.2 }))
@@ -426,6 +477,11 @@ const CUES = {
   door: { id: "door", asset: { url: sfxUrl("impact.metal.medium.00", "opus.webm") }, volume: 0.4, bus: "sfx" },
   alert: { id: "alert", asset: { url: sfxUrl("creature.grunt-light.00", "opus.webm") }, volume: 0.5, bus: "sfx" },
   boss: { id: "boss", asset: { url: sfxUrl("stinger.alarm.00", "opus.webm") }, volume: 0.7, bus: "sfx" },
+  // C9: the Warden's volley, vent and summon each get their own cue
+  launch: { id: "launch", asset: { url: sfxUrl("whoosh.swing-light.00", "opus.webm") }, volume: 0.75, bus: "sfx" },
+  vent: { id: "vent", asset: { url: sfxUrl("ui.unlock.00", "opus.webm") }, volume: 0.7, bus: "sfx" },
+  // C8: positional enemy gunfire
+  enemyShot: { id: "enemyShot", asset: { url: sfxUrl("explosion.laser.00", "opus.webm") }, volume: 0.42, bus: "sfx" },
   win: { id: "win", asset: { url: sfxUrl("stinger.win.00", "opus.webm") }, volume: 0.9, bus: "ui" },
   lose: { id: "lose", asset: { url: sfxUrl("stinger.lose.00", "opus.webm") }, volume: 0.8, bus: "ui" },
   switch: { id: "switch", asset: { url: sfxUrl("ui.click.00", "opus.webm") }, volume: 0.5, bus: "ui" },
@@ -434,37 +490,14 @@ const CUES = {
 type CueId = keyof typeof CUES;
 
 // ---------------------------------------------------------------------------
-const inputOptions = {
-  actions: {
-    forward: ["KeyW", "ArrowUp"],
-    back: ["KeyS", "ArrowDown"],
-    strafeLeft: ["KeyA"],
-    strafeRight: ["KeyD"],
-    turnLeft: ["ArrowLeft"],
-    turnRight: ["ArrowRight"],
-    fire: ["Space", "KeyF", "Enter"],
-    reload: ["KeyR"],
-    use: ["KeyE"],
-    weapon1: ["Digit1"], weapon2: ["Digit2"], weapon3: ["Digit3"], weapon4: ["Digit4"],
-    sprint: ["ShiftLeft", "ShiftRight"],
-    map: ["KeyM", "Tab"],
-    pause: ["Escape", "KeyP"]
-  },
-  axes: {
-    moveZ: { negative: "back", positive: "forward" },
-    moveX: { negative: "strafeLeft", positive: "strafeRight" },
-    turn: { negative: "turnLeft", positive: "turnRight" }
-  },
-  bufferMs: { fire: 120, use: 160, reload: 160 },
-  pointer: true
-} as const;
-
+// The game reads its own key table (flow.ts DEFAULT_BINDINGS, remappable in the Player Studio); the engine input only gets
+// the pointer.
 const mg = createGame({
   id: "showcase-bunker-zero",
   target: "#app",
   autoStart: true,
   scene: buildScene,
-  input: inputOptions,
+  input: { actions: { fire: [...DEFAULT_BINDINGS.fire] }, pointer: true },
   sound: { cues: { ...CUES } },
   juice: {
     fire: { shake: 0.06 },
@@ -478,24 +511,30 @@ const mg = createGame({
 });
 const app = mg.app;
 mg.start();
-const input = mg.input!;
 const feel = gameFeel.create({ app, time: app.time });
+const cue = (id: CueId) => { void mg.sound?.cue(id); };
 
 // ---------------------------------------------------------------------------
 // sim + node-handle caches
+type NodeHandle = ReturnType<typeof app.nodes.require>;
 let sim: Sim;
 let mode: "descent" | "killhouse" = "descent";
 let floorIdx = 0;
-let camoTint = "#ffb648";
 let dogtag = "RAZOR-6";
-const nodeCache = new Map<string, ReturnType<typeof app.nodes.require>>();
+const nodeCache = new Map<string, NodeHandle | null>();
 const enemyAnimCache = new Map<string, string>();
-function req(id: string) {
+/** Node by id, or null when the scene has no such node: per-frame code skips missing nodes instead of throwing (C1). */
+function opt(id: string): NodeHandle | null {
   let n = nodeCache.get(id);
-  if (!n) { n = app.nodes.require(id); nodeCache.set(id, n); }
+  if (n === undefined) { n = app.nodes.get(id) ?? null; if (n) nodeCache.set(id, n); }
   return n;
 }
-function setEnemyClip(id: string, node: ReturnType<typeof app.nodes.require>, clip: string, speed: number) {
+function req(id: string): NodeHandle {
+  const n = opt(id);
+  if (!n) throw new Error(`Bunker Zero: scene node "${id}" is missing`);
+  return n;
+}
+function setEnemyClip(id: string, node: NodeHandle, clip: string, speed: number) {
   const key = `${clip}:${speed.toFixed(2)}`;
   if (enemyAnimCache.get(id) === key) return;
   enemyAnimCache.set(id, key);
@@ -505,12 +544,16 @@ const vmNodes = { knife: req("vm-knife"), pistol: req("vm-pistol"), mg: req("vm-
 const muzzleFlash = req("muzzle-flash");
 const muzzleLight = req("muzzle-light");
 const boomLight = req("boom-light");
+const ventLight = req("vent-light");
 const playerLight = req("player-light");
 const playerAheadLight = req("player-ahead-light");
 const sparkNodes = Array.from({ length: 8 }, (_, i) => req(`spark-${i}`));
 const boomNodes = Array.from({ length: 6 }, (_, i) => req(`boom-${i}`));
 const rocketNodes = Array.from({ length: MAX_ROCKETS }, (_, i) => req(`rocket-${i}`));
 const tracerNodes = Array.from({ length: MAX_ROCKETS }, (_, i) => req(`tracer-${i}`));
+const enemyTracerNodes = Array.from({ length: ENEMY_TRACERS }, (_, i) => req(`etracer-${i}`));
+const enemyFlashNodes = Array.from({ length: ENEMY_TRACERS }, (_, i) => req(`eflash-${i}`));
+const fxRng = cosmeticRng(0xb2e0);
 
 const enemyYaw = new Map<string, number>();
 const forwardOverride: Partial<Record<string, ForwardAxis>> = {};
@@ -518,47 +561,73 @@ const enemyForward = (kind: keyof typeof ENEMY_FORWARD): ForwardAxis => forwardO
 let lastPoseTime = -1;
 let poseDt = 1 / 60;
 let qaFrozen = false;
-function startFloor(idx: number, m: "descent" | "killhouse") {
+const activeSlot = () => (sim.state.mode === "killhouse" ? 6 : floorIdx);
+const enemyIds = (slot: number, e: Enemy) => { const st = enemyNodeStem(e); return { body: `f${slot}-${st.body}`, eye: `f${slot}-${st.eye}` }; };
+
+// ---------------------------------------------------------------------------
+// run state: the loadout and score carry floor to floor in a descent run (C14); the results panel totals the run (C3)
+let runResults: FloorResult[] = [];
+let runStartFloor = 0;
+let entryLoadout: Loadout = defaultLoadout();
+let outcomeHandled = false;
+let campaignDone = false;
+/** The one pending transition (death retry, next floor, Kill House retry). startFloor clears it, so timers never stack (C16). */
+let pending: { kind: "next" | "retry" | "killhouse-retry" | "to-descent" | "results"; t: number; age: number } | null = null;
+let eventSeq = 0;
+let eventsDrained = 0;
+let frameErrors = 0;
+let lastFrameError = "";
+let pilot = createAutopilot();
+
+interface StartOptions { loadout?: Loadout; newRun?: boolean }
+function startFloor(idx: number, m: "descent" | "killhouse", opts: StartOptions = {}) {
   mode = m;
   enemyYaw.clear();
   lastPoseTime = -1;
   floorIdx = idx;
-  const def = m === "killhouse" ? KILL_HOUSE : FLOORS[idx];
-  sim = createSim(def, { ox: (m === "killhouse" ? 6 : idx) * FLOOR_SPAN, mode: m, seed: 1337 + idx * 97 + (m === "killhouse" ? 7 : 0) });
+  pending = null;
+  outcomeHandled = false;
+  campaignDone = false;
+  if (opts.newRun || m === "killhouse") { runResults = []; runStartFloor = idx; }
+  entryLoadout = opts.loadout ?? (opts.newRun || m === "killhouse" ? defaultLoadout() : entryLoadout);
+  const def = m === "killhouse" ? KILL_HOUSE : FLOORS[idx]!;
+  sim = createSim(def, { ox: (m === "killhouse" ? 6 : idx) * FLOOR_SPAN, mode: m, seed: 1337 + idx * 97 + (m === "killhouse" ? 7 : 0), loadout: entryLoadout });
+  pilot = createAutopilot();
+  eventSeq = 0;
   hideAllRuntime();
   bindFloor();
-  syncScenePose({ moveX: 0, moveZ: 0, turn: 0, pitchDelta: 0, fire: false, firePressed: false, reload: false, use: false });
+  syncScenePose(NO_INPUT);
+  setResultsVisible(false);
+  lastHud = "";
   renderHud();
-  publishEvidence();
-  lastEventIdx = 0;
-  banner(`FLOOR ${def.id + 1} — ${def.name.toUpperCase()}`, def.subtitle);
+  publishEvidence(true);
+  setModeButtons();
+  (document.activeElement as HTMLElement | null)?.blur?.();
   if (m === "killhouse") banner("KILL HOUSE", "clear the floor before the clock runs out");
+  else banner(`FLOOR ${def.id + 1} — ${def.name.toUpperCase()}`, def.subtitle);
 }
+/** C18: every floor slot but the active one is hidden, static geometry included. */
 function hideAllRuntime() {
-  for (const { slot } of ALL_FLOORS) {
-    const ids = nodeCache.keys();
-    for (const id of ids) if (id.startsWith(`f${slot}-`)) nodeCache.get(id)!.setVisible(false);
+  const slot = activeSlot();
+  for (let s = 0; s < ALL_FLOORS.length; s++) {
+    for (const id of SLOT_IDS[s]!) opt(id)?.setVisible(false);
+    if (s === slot) for (const id of SLOT_STATIC_IDS[s]!) opt(id)?.setVisible(true);
   }
   for (const v of Object.values(vmNodes)) v.setVisible(false);
   muzzleFlash.setVisible(false);
 }
 function bindFloor() {
-  // lazily grab handles for this floor's entities
-  const slot = sim.state.mode === "killhouse" ? 6 : floorIdx;
+  const slot = activeSlot();
   enemyAnimCache.clear();
   for (const e of sim.state.enemies) {
-    const id = `f${slot}-en-${e.sx}-${e.sz}`;
-    const node = req(id);
-    const initClip = e.kind === "boss" ? "Idle_Loop" : "Walk_Loop";
-    const initSpeed = e.kind === "dog" ? 1.35 : 1.05;
-    setEnemyClip(id, node, initClip, initSpeed);
+    const { body } = enemyIds(slot, e);
+    const node = opt(body);
+    if (!node) continue;
+    setEnemyClip(body, node, e.kind === "boss" ? "Idle_Loop" : "Walk_Loop", e.kind === "dog" ? 1.35 : 1.05);
   }
-  for (const pk of sim.state.pickups) req(`f${slot}-pk-${pk.cx}-${pk.cz}`);
-  for (const d of sim.state.doors) req(`f${slot}-door-${d.cx}-${d.cz}`);
-  for (const pw of sim.state.pushWalls) { req(`f${slot}-pw-${pw.cx}-${pw.cz}`); req(`f${slot}-crack-${pw.cx}-${pw.cz}`); }
-  for (const pr of sim.state.props) if (pr.kind !== "column") req(`f${slot}-prop-${pr.cx}-${pr.cz}`);
 }
 const cellOf = (v: number) => Math.floor(v / CELL);
+const NO_INPUT: SimInput = { moveX: 0, moveZ: 0, turn: 0, pitchDelta: 0, fire: false, firePressed: false, reload: false, use: false };
 
 // ---------------------------------------------------------------------------
 // HUD
@@ -566,18 +635,54 @@ const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as 
 const elHud = $<HTMLElement>("bz-hud"), elHp = $("bz-hp"), elArmor = $("bz-armor"), elAmmo = $("bz-ammo"),
   elWeapon = $("bz-weapon-name"), elScore = $("bz-score"), elKills = $("bz-kills"), elTime = $("bz-time"),
   elVign = $("bz-vignette"), elBanner = $("bz-banner"), elTag = $("bz-floor-tag"), elFeed = $("bz-feed"),
-  elCross = $("bz-crosshair"), elMenu = $("bz-menu");
+  elCross = $("bz-crosshair"), elMenu = $("bz-menu"), elPause = $("bz-pause"), elResults = $("bz-results"),
+  elIntro = $("bz-intro"), elMap = $<HTMLCanvasElement>("bz-map"), elVuln = $("bz-vulnerable"), elTouch = $("bz-touch");
 let bannerT = 0;
 function banner(big: string, small = "") {
-  elBanner.innerHTML = `${big}<small>${small}</small>`;
+  elBanner.textContent = big;
+  const sm = document.createElement("small");
+  sm.textContent = small;
+  elBanner.append(sm);
   elBanner.classList.add("show");
   bannerT = 3;
 }
-const FEED: string[] = [];
+const FEED: { text: string; warn: boolean }[] = [];
 function feed(s: string, warn = false) {
-  FEED.push(s);
+  FEED.push({ text: s, warn });
   if (FEED.length > 6) FEED.shift();
-  elFeed.innerHTML = FEED.map((f) => `<div class="bz-tick${warn ? " warn" : ""}">${f}</div>`).join("");
+  elFeed.replaceChildren(...FEED.map((f) => { const d = document.createElement("div"); d.className = `bz-tick${f.warn ? " warn" : ""}`; d.textContent = f.text; return d; }));
+}
+
+// ---------------------------------------------------------------------------
+// settings: key bindings, HUD scale, reduced motion (C10, C21)
+const store = {
+  get(k: string): string | null { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k: string, v: string) { try { localStorage.setItem(k, v); } catch { /* private mode */ } }
+};
+let bindings: Bindings = parseBindings(store.get("bz-bindings"));
+const reducedMotionQuery = typeof matchMedia === "function" ? matchMedia("(prefers-reduced-motion: reduce)") : null;
+let reducedMotionPref = store.get("bz-reduced-motion");
+const reducedMotion = () => (reducedMotionPref === null ? !!reducedMotionQuery?.matches : reducedMotionPref === "1");
+/** Shake and head bob scale: 15% under reduced motion. */
+const motionScale = () => (reducedMotion() ? 0.15 : 1);
+function applyHudScale(v: string) {
+  const scale = v === "l" ? 1.25 : v === "s" ? 0.85 : 1;
+  document.documentElement.style.setProperty("--bz-hud-scale", String(scale));
+  document.querySelectorAll<HTMLButtonElement>(".bz-hudscale").forEach((b) => b.classList.toggle("active", b.dataset.scale === v));
+}
+applyHudScale(store.get("bz-hud-scale") ?? "m");
+
+// ---------------------------------------------------------------------------
+// pause (C13): menu open, pointer lock lost, P or Esc, the intro card
+const pauseReason = { user: false, lock: false, menu: false, intro: false };
+const isPaused = () => pauseReason.user || pauseReason.lock || pauseReason.menu || pauseReason.intro;
+function refreshPause() {
+  elPause.hidden = !(pauseReason.user || pauseReason.lock) || pauseReason.menu || pauseReason.intro || campaignDone;
+}
+function setPaused(reason: keyof typeof pauseReason, on: boolean) { pauseReason[reason] = on; refreshPause(); }
+function resume() {
+  pauseReason.user = false; pauseReason.lock = false; refreshPause();
+  if (!DEMO && !touchMode) requestLock();
 }
 
 // ---------------------------------------------------------------------------
@@ -587,20 +692,31 @@ let pointerLocked = false;
 let pointerFireHeld = false;
 let pointerFirePressed = false;
 let pendingWheel = 0;
+let lockRequestedAt = -1;
+let lockUnavailable = false;
 const keysHeld = new Set<string>();
 const keysPressed = new Set<string>();
+let remapAction: BindAction | null = null;
+let yawDelta = 0, pitchDelta = 0;
 
+function requestLock() {
+  if (pointerLocked || lockUnavailable) return;
+  lockRequestedAt = performance.now();
+  try { const r = canvas.requestPointerLock() as unknown; if (r instanceof Promise) r.catch(() => { lockUnavailable = true; }); } catch { lockUnavailable = true; }
+}
 canvas.addEventListener("click", () => {
-  if (!DEMO) {
-    autoPilot = false;
-    if (!pointerLocked) {
-      try { canvas.requestPointerLock(); } catch { /* ignore */ }
-    }
-  }
+  if (!DEMO) { autoPilot = false; if (!touchMode) requestLock(); }
   void mg.sound?.unlock();
-  void mg.sound?.cue("ambience");
+  cue("ambience");
 });
-document.addEventListener("pointerlockchange", () => { pointerLocked = document.pointerLockElement === canvas; });
+document.addEventListener("pointerlockchange", () => {
+  const was = pointerLocked;
+  pointerLocked = document.pointerLockElement === canvas;
+  // losing the lock mid-play pauses the run; the Resume button takes it back
+  if (was && !pointerLocked && !DEMO && !campaignDone) setPaused("lock", true);
+  if (pointerLocked) setPaused("lock", false);
+});
+document.addEventListener("pointerlockerror", () => { lockUnavailable = true; });
 document.addEventListener("mousemove", (e) => {
   if (!pointerLocked || DEMO) return;
   autoPilot = false;
@@ -610,36 +726,54 @@ document.addEventListener("mousemove", (e) => {
 window.addEventListener("mousedown", (e) => {
   if (e.button !== 0) return;
   const target = e.target as HTMLElement | null;
-  if (target && (target.closest(".aura3d-top-bar") || target.closest("#bz-menu"))) return;
+  if (target && (target.closest(".aura3d-top-bar") || target.closest(".bz-overlay") || target.closest("#bz-menu") || target.closest("#bz-touch"))) return;
+  if (pending?.kind === "retry" && pending.age > 0.6) { runPending(); return; }
+  // C26: the click that acquires pointer lock does not also fire (unless the browser cannot lock at all)
+  if (!DEMO && !touchMode && !pointerLocked && !lockUnavailable) {
+    if (lockRequestedAt > 0 && performance.now() - lockRequestedAt > 1500) lockUnavailable = true;
+    else return;
+  }
   if (!DEMO) autoPilot = false;
   pointerFireHeld = true;
   pointerFirePressed = true;
 }, { capture: true });
-window.addEventListener("mouseup", (e) => {
-  if (e.button === 0) pointerFireHeld = false;
-}, { capture: true });
+window.addEventListener("mouseup", (e) => { if (e.button === 0) pointerFireHeld = false; }, { capture: true });
 document.addEventListener("wheel", (e) => {
+  if ((e.target as HTMLElement | null)?.closest?.(".bz-panel")) return;
   if (!DEMO) autoPilot = false;
   pendingWheel += Math.sign(e.deltaY);
 });
 
+const boundCodes = () => new Set(Object.values(bindings).flat());
+const actionHas = (a: BindAction, set: Set<string>) => bindings[a].some((c) => set.has(c));
 const onKeyDown = (e: KeyboardEvent) => {
-  if ((document.activeElement as HTMLElement | null)?.tagName === "INPUT") return;
-  if (e.code === "Escape" && pointerLocked) document.exitPointerLock();
-  if (/^(Key[WASDQERFJ]|Arrow(Up|Down|Left|Right)|Space|Enter|Digit[1234]|Shift(Left|Right))$/.test(e.code)) {
-    if (!DEMO) autoPilot = false;
-    if (!keysHeld.has(e.code)) keysPressed.add(e.code);
-    keysHeld.add(e.code);
-    if (e.code === "Space" || e.code.startsWith("Arrow")) e.preventDefault();
+  const typing = (document.activeElement as HTMLInputElement | null)?.tagName === "INPUT" && (document.activeElement as HTMLInputElement).type === "text";
+  if (remapAction) {
+    e.preventDefault(); e.stopPropagation();
+    if (e.code !== "Escape") { bindings = rebind(bindings, remapAction, e.code); store.set("bz-bindings", JSON.stringify(bindings)); }
+    remapAction = null; renderRemap();
+    return;
   }
+  if (typing || e.repeat && keysHeld.has(e.code)) { if (!typing && boundCodes().has(e.code) && e.code !== "Escape") e.preventDefault(); return; }
+  if (e.code === "Escape") {
+    if (elMenu.classList.contains("open")) { closeMenu(); return; }
+    if (!elIntro.hidden) { dismissIntro(); return; }
+    if (!pointerLocked && !campaignDone) { if (isPaused()) resume(); else setPaused("user", true); }
+    return; // with the pointer locked the browser releases it, and pointerlockchange pauses
+  }
+  if (pending?.kind === "retry" && pending.age > 0.6) { runPending(); return; }
+  if (elMenu.classList.contains("open") || !elIntro.hidden) return;
+  // C11: Enter, Tab, Space and arrows act in game only; they never re-click a focused button or move browser focus
+  if (boundCodes().has(e.code)) e.preventDefault();
+  if (bindings.pause.includes(e.code)) { if (isPaused()) resume(); else setPaused("user", true); return; }
+  if (bindings.map.includes(e.code)) { toggleMap(); return; }
+  if (!DEMO) autoPilot = false;
+  if (!keysHeld.has(e.code)) keysPressed.add(e.code);
+  keysHeld.add(e.code);
 };
-const onKeyUp = (e: KeyboardEvent) => {
-  keysHeld.delete(e.code);
-};
+const onKeyUp = (e: KeyboardEvent) => { keysHeld.delete(e.code); };
 window.addEventListener("keydown", onKeyDown, { capture: true });
-document.addEventListener("keydown", onKeyDown, { capture: true });
 window.addEventListener("keyup", onKeyUp, { capture: true });
-document.addEventListener("keyup", onKeyUp, { capture: true });
 window.addEventListener("blur", () => {
   keysHeld.clear();
   keysPressed.clear();
@@ -647,63 +781,95 @@ window.addEventListener("blur", () => {
   pointerFirePressed = false;
 });
 
-let yawDelta = 0, pitchDelta = 0;
+// ---------------------------------------------------------------------------
+// touch layer (C12): left stick moves, the right half looks, buttons of at least 56 px fire, use, reload, swap and pause
+let touchMode = false;
+const touch = { moveX: 0, moveZ: 0, fire: false, firePressed: false, use: false, reload: false, swap: 0 };
+function enableTouch() {
+  if (touchMode) return;
+  touchMode = true;
+  elTouch.hidden = false;
+  document.body.classList.add("bz-touch-mode");
+}
+if (typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches) enableTouch();
+window.addEventListener("touchstart", () => enableTouch(), { passive: true, capture: true });
+{
+  const stick = elTouch.querySelector<HTMLElement>('[data-control="move"]')!;
+  const knob = stick.querySelector<HTMLElement>(".bz-knob")!;
+  const look = elTouch.querySelector<HTMLElement>('[data-control="look"]')!;
+  let stickId = -1, cx = 0, cy = 0, lookId = -1, lx = 0, ly = 0;
+  stick.addEventListener("pointerdown", (e) => {
+    stickId = e.pointerId; stick.setPointerCapture(e.pointerId);
+    const r = stick.getBoundingClientRect(); cx = r.left + r.width / 2; cy = r.top + r.height / 2;
+    e.preventDefault();
+  });
+  stick.addEventListener("pointermove", (e) => {
+    if (e.pointerId !== stickId) return;
+    const r = stick.getBoundingClientRect().width / 2;
+    let dx = (e.clientX - cx) / r, dy = (e.clientY - cy) / r;
+    const m = Math.hypot(dx, dy); if (m > 1) { dx /= m; dy /= m; }
+    touch.moveX = Math.abs(dx) > 0.12 ? dx : 0; touch.moveZ = Math.abs(dy) > 0.12 ? -dy : 0;
+    knob.style.transform = `translate(${dx * 34}px, ${dy * 34}px)`;
+  });
+  const endStick = (e: PointerEvent) => { if (e.pointerId !== stickId) return; stickId = -1; touch.moveX = 0; touch.moveZ = 0; knob.style.transform = ""; };
+  stick.addEventListener("pointerup", endStick); stick.addEventListener("pointercancel", endStick);
+  look.addEventListener("pointerdown", (e) => { lookId = e.pointerId; look.setPointerCapture(e.pointerId); lx = e.clientX; ly = e.clientY; e.preventDefault(); });
+  look.addEventListener("pointermove", (e) => {
+    if (e.pointerId !== lookId) return;
+    yawDelta += (e.clientX - lx) * 0.006; pitchDelta -= (e.clientY - ly) * 0.004; lx = e.clientX; ly = e.clientY;
+    autoPilot = false;
+  });
+  const endLook = (e: PointerEvent) => { if (e.pointerId === lookId) lookId = -1; };
+  look.addEventListener("pointerup", endLook); look.addEventListener("pointercancel", endLook);
+  const button = (name: string, down: () => void, up?: () => void) => {
+    const el = elTouch.querySelector<HTMLElement>(`[data-control="${name}"]`)!;
+    el.addEventListener("pointerdown", (e) => { e.preventDefault(); el.setPointerCapture(e.pointerId); el.classList.add("on"); autoPilot = false; down(); void mg.sound?.unlock(); });
+    const release = () => { el.classList.remove("on"); up?.(); };
+    el.addEventListener("pointerup", release); el.addEventListener("pointercancel", release);
+  };
+  button("fire", () => { if (pending?.kind === "retry" && pending.age > 0.6) { runPending(); return; } touch.fire = true; touch.firePressed = true; }, () => { touch.fire = false; });
+  button("use", () => { touch.use = true; });
+  button("reload", () => { touch.reload = true; });
+  button("swap", () => { touch.swap += 1; });
+  button("pause", () => { if (isPaused()) resume(); else setPaused("user", true); });
+}
 
 // ---------------------------------------------------------------------------
-// demo / autopilot driver — active 60 FPS gameplay ONLY when ?autoplay=1 or ?demo=1
-let demoT = 0;
-function demoInput(dt: number): SimInput {
-  demoT += dt;
-  const p = sim.state.player;
-  const inp: SimInput = { moveX: 0, moveZ: 0, turn: 0, pitchDelta: 0, fire: false, firePressed: false, reload: false, use: false };
-  if (demoT < 0.15) return inp;
-  // Auto-open nearby doors or push-walls
-  const pcx = cellOf(p.x), pcz = cellOf(p.z);
-  for (const d of sim.state.doors) {
-    if (Math.abs(d.cx - pcx) + Math.abs(d.cz - pcz) <= 1 && d.open < 0.2) inp.use = true;
+// minimap (C11, C27): M or Tab toggles it; walls, doors, the key, the exit and the player
+let mapOpen = false;
+let mapDrawT = 0;
+function toggleMap(on = !mapOpen) { mapOpen = on; elMap.hidden = !on; if (on) drawMap(); }
+function drawMap() {
+  const s = sim.state, p = s.player;
+  const px = 9;
+  if (elMap.width !== s.w * px) { elMap.width = s.w * px; elMap.height = s.h * px; }
+  const ctx = elMap.getContext("2d");
+  if (!ctx) return;
+  ctx.fillStyle = "rgba(6,8,11,0.88)"; ctx.fillRect(0, 0, elMap.width, elMap.height);
+  for (let z = 0; z < s.h; z++) for (let x = 0; x < s.w; x++) {
+    const ch = s.grid[z * s.w + x]!;
+    const col = ch === "#" || ch === " " ? "#4b4f57" : ch === "%" ? "#6a5a40" : ch === "P" ? "#4b4f57" : ch === "D" ? "#ffb648" : ch === "E" ? "#58e08a" : ch === "o" || ch === "b" || ch === "c" ? "#2a2e35" : "#14181e";
+    ctx.fillStyle = col; ctx.fillRect(x * px, z * px, px - 1, px - 1);
   }
-  // aim at nearest visible enemy; otherwise follow waypoint (weapon → key → exit)
-  let target: [number, number] | null = null;
-  let best = 1e9;
-  for (const e of sim.state.enemies) {
-    if (e.state === "dead") continue;
-    const d = Math.hypot(e.x - p.x, e.z - p.z);
-    if (d < best && d < 24 && sim.hasLOS(p.x, p.z, e.x, e.z)) { best = d; target = [e.x, e.z]; }
-  }
-  if (!target) {
-    const mgPk = sim.state.pickups.find((k) => (k.kind === "mg" || k.kind === "armor") && !k.taken && Math.hypot(k.x - p.x, k.z - p.z) < 9);
-    const want = mgPk ?? (!p.key ? sim.state.pickups.find((k) => k.kind === "key" && !k.taken) : null);
-    target = want ? [want.x, want.z] : findCellCenter(sim, "E");
-  }
-  if (target) {
-    const ang = Math.atan2(target[0] - p.x, -(target[1] - p.z));
-    let d = ang - p.yaw;
-    while (d > Math.PI) d -= Math.PI * 2;
-    while (d < -Math.PI) d += Math.PI * 2;
-    inp.turn = Math.max(-3.0 * dt, Math.min(3.0 * dt, d));
-    const aligned = Math.abs(d) < 0.35;
-    inp.moveZ = best < 4.2 && aligned ? 0.2 : aligned || best < 10 ? 1 : 0.55;
-    inp.moveX = best < 12 ? Math.sin(demoT * 2.2) * 0.45 : 0;
-    if (best < 18 && aligned) { inp.fire = true; inp.firePressed = true; }
-    if (p.mag === 0 && p.reloading <= 0) inp.reload = true;
-  }
-  return inp;
-}
-function findCellCenter(s: Sim, ch: string): [number, number] | null {
-  for (let z = 0; z < s.state.h; z++) for (let x = 0; x < s.state.w; x++)
-    if (s.state.grid[z * s.state.w + x] === ch) return [cellCenter(x), cellCenter(z)];
-  return null;
+  for (const k of s.pickups) if (k.kind === "key" && !k.taken) { ctx.fillStyle = "#ffe066"; ctx.beginPath(); ctx.arc((k.cx + 0.5) * px, (k.cz + 0.5) * px, px * 0.38, 0, Math.PI * 2); ctx.fill(); }
+  const mx = (p.x / CELL) * px, mz = (p.z / CELL) * px;
+  ctx.save(); ctx.translate(mx, mz); ctx.rotate(p.yaw);
+  ctx.fillStyle = "#7dfcff"; ctx.beginPath(); ctx.moveTo(0, -px * 0.7); ctx.lineTo(px * 0.45, px * 0.45); ctx.lineTo(-px * 0.45, px * 0.45); ctx.closePath(); ctx.fill();
+  ctx.restore();
 }
 
+// ---------------------------------------------------------------------------
+// the camera, viewmodel, enemies and props follow the sim
 function syncScenePose(inp: SimInput) {
   const p = sim.state.player;
   poseDt = lastPoseTime < 0 ? 1 : Math.min(0.1, Math.max(0, sim.state.time - lastPoseTime));
   lastPoseTime = sim.state.time;
-  // ---- camera: eye pose + shake + tactical flashlight tracking
-  const shake = sim.state.shake + (p.hurtT > 0 ? 0.3 : 0);
+  const motion = motionScale();
+  // ---- camera: eye pose + shake + tactical flashlight tracking (C21: both scale down under reduced motion)
+  const shake = (sim.state.shake + (p.hurtT > 0 ? 0.3 : 0)) * motion;
   const shakeYaw = shake * Math.sin(sim.state.time * 91) * 0.012;
   const moveMag = Math.min(1, Math.abs(inp.moveZ) + Math.abs(inp.moveX));
-  const eyeY = EYE + Math.sin(sim.state.time * 8.4) * 0.024 * moveMag;
+  const eyeY = EYE + Math.sin(sim.state.time * 8.4) * 0.024 * moveMag * motion;
   const ox = sim.state.ox;
   const fx = Math.sin(p.yaw + shakeYaw), fz = -Math.cos(p.yaw + shakeYaw);
   app.camera?.setPose({
@@ -711,11 +877,12 @@ function syncScenePose(inp: SimInput) {
     target: [p.x + ox + fx, eyeY + Math.tan(p.pitch), p.z + fz],
     fov: 72
   });
+  try { mg.sound?.setListener?.({ position: [p.x + ox, EYE, p.z], forward: [fx, 0, fz], up: [0, 1, 0] }); } catch { /* audio not ready */ }
   playerLight.setPosition(p.x + ox, eyeY + 0.4, p.z);
   playerAheadLight.setPosition(p.x + ox + fx * 6.5, eyeY + 0.6, p.z + fz * 6.5);
 
   // ---- viewmodel (with crisp recoil kickback on fire)
-  const bob = Math.sin(sim.state.time * 9) * 0.018 * moveMag;
+  const bob = Math.sin(sim.state.time * 9) * 0.018 * moveMag * motion;
   const muzzleFrac = Math.min(1, (sim.state.muzzle ?? 0) / 0.06);
   const recoil = muzzleFrac * 0.12;
   const rx = Math.cos(p.yaw), rz = Math.sin(p.yaw);
@@ -735,11 +902,12 @@ function syncScenePose(inp: SimInput) {
     const mx = p.x + ox + fx * 0.95 + rx * 0.22, my = EYE - 0.22, mz = p.z + fz * 0.95 + rz * 0.22;
     muzzleFlash.setPosition(mx, my, mz);
     muzzleFlash.setRotation(0, -p.yaw + Math.PI / 2, sim.state.time * 25);
-    muzzleFlash.setScale(0.11 + sim.state.rng() * 0.05);
+    // C17: cosmetic jitter comes from its own RNG, never the sim's seeded stream
+    muzzleFlash.setScale(0.11 + fxRng() * 0.05);
     muzzleFlash.setVisible(true);
     muzzleLight.setPosition(mx, my, mz);
   } else if (sim.state.rockets.length > 0) {
-    const lead = sim.state.rockets[sim.state.rockets.length - 1];
+    const lead = sim.state.rockets[sim.state.rockets.length - 1]!;
     muzzleFlash.setVisible(false);
     muzzleFlash.setPosition(0, -50, 0);
     muzzleLight.setPosition(lead.x + ox, lead.y ?? 1.18, lead.z);
@@ -749,18 +917,20 @@ function syncScenePose(inp: SimInput) {
     muzzleLight.setPosition(0, -50, 0);
   }
 
-  // ---- enemies (skeletal animation + procedural stride cadence)
-  const slot = sim.state.mode === "killhouse" ? 6 : floorIdx;
+  // ---- enemies (skeletal animation + procedural stride cadence); nodes that do not exist are skipped (C1)
+  const slot = activeSlot();
+  let vulnerable: Enemy | null = null;
   for (const e of sim.state.enemies) {
-    const id = `f${slot}-en-${e.sx}-${e.sz}`;
-    const node = req(id);
-    const eye = req(`f${slot}-eye-${e.sx}-${e.sz}`);
+    const ids = enemyIds(slot, e);
+    const node = opt(ids.body);
+    const eye = opt(ids.eye);
+    if (!node) continue;
     if (e.state === "dead") {
-      eye.setVisible(false);
+      eye?.setVisible(false);
       if (e.deathT < 4) {
-        setEnemyClip(id, node, "Idle_Loop", 0.2);
+        setEnemyClip(ids.body, node, "Idle_Loop", 0.2);
         node.setPosition(e.x + ox, Math.max(-0.6, -e.deathT * 0.2), e.z);
-        node.setRotation(Math.min(Math.PI / 2, e.deathT * 4), enemyYaw.get(id) ?? nextEnemyYaw(0, e.kind, e.facing, 1, enemyForward(e.kind)), 0);
+        node.setRotation(Math.min(Math.PI / 2, e.deathT * 4), enemyYaw.get(ids.body) ?? nextEnemyYaw(0, e.kind, e.facing, 1, enemyForward(e.kind)), 0);
         node.setVisible(true);
       } else node.setVisible(false);
       continue;
@@ -787,37 +957,52 @@ function syncScenePose(inp: SimInput) {
       clip = "Contest";
       speed = 1.4;
     }
-    setEnemyClip(id, node, clip, speed);
+    setEnemyClip(ids.body, node, clip, speed);
     node.setPosition(e.x + ox, strideBob, e.z);
-    const yaw = nextEnemyYaw(enemyYaw.get(id) ?? nextEnemyYaw(0, e.kind, e.facing, 1, enemyForward(e.kind)), e.kind, e.facing, poseDt, enemyForward(e.kind));
-    enemyYaw.set(id, yaw);
+    const yaw = nextEnemyYaw(enemyYaw.get(ids.body) ?? nextEnemyYaw(0, e.kind, e.facing, 1, enemyForward(e.kind)), e.kind, e.facing, poseDt, enemyForward(e.kind));
+    enemyYaw.set(ids.body, yaw);
     node.setRotation(0, yaw, strideRoll);
     node.setVisible(true);
     const eyeY = e.kind === "dog" ? 0.8 : e.kind === "boss" ? 2.62 : e.kind === "gunner" ? 1.76 : 1.66;
-    eye.setPosition(e.x + ox, eyeY + strideBob, e.z);
-    eye.setVisible(true);
+    if (e.kind === "boss" && e.vulnerableT > 0) vulnerable = e;
+    if (eye) {
+      eye.setPosition(e.x + ox, eyeY + strideBob, e.z);
+      // C27: the Warden's eyes flare while its vent is open
+      if (e.kind === "boss") {
+        const flare = e.vulnerableT > 0 ? 2.1 + Math.sin(sim.state.time * 14) * 0.35 : 1;
+        eye.setScale([0.26 * flare, 0.075 * flare, 0.26 * flare]);
+      }
+      eye.setVisible(true);
+    }
   }
+  if (vulnerable) ventLight.setPosition(vulnerable.x + ox, 1.9, vulnerable.z);
+  else ventLight.setPosition(0, -50, 0);
+  elVuln.hidden = !vulnerable;
 
   // ---- pickups (bob + spin)
   for (const pk of sim.state.pickups) {
-    const node = req(`f${slot}-pk-${pk.cx}-${pk.cz}`);
+    const node = opt(`f${slot}-pk-${pk.cx}-${pk.cz}`);
+    if (!node) continue;
     if (pk.taken) { node.setVisible(false); continue; }
     node.setPosition(pk.x + ox, (pk.kind === "key" ? 1.1 : 0.55) + Math.sin(sim.state.time * 2.4 + pk.cx) * 0.1, pk.z);
     node.setRotation(0, sim.state.time * 1.6, 0);
     node.setVisible(true);
   }
 
-  // ---- doors
+  // ---- doors sink by this floor's wall height (C15: the floor-6 silo doors are 5.2 m tall)
+  const wallH = SLOT_WALL_H[slot]!;
   for (const d of sim.state.doors) {
-    const node = req(`f${slot}-door-${d.cx}-${d.cz}`);
-    node.setPosition(cellX(slot, d.cx), -d.open * WALL_H * 0.94, cellCenter(d.cz));
+    const node = opt(`f${slot}-door-${d.cx}-${d.cz}`);
+    if (!node) continue;
+    node.setPosition(cellX(slot, d.cx), -d.open * wallH * 0.97, cellCenter(d.cz));
     node.setVisible(true);
   }
 
   // ---- push-walls (block + crack cue slide together)
   for (const pw of sim.state.pushWalls) {
-    const node = req(`f${slot}-pw-${pw.cx}-${pw.cz}`);
-    const crack = req(`f${slot}-crack-${pw.cx}-${pw.cz}`);
+    const node = opt(`f${slot}-pw-${pw.cx}-${pw.cz}`);
+    const crack = opt(`f${slot}-crack-${pw.cx}-${pw.cz}`);
+    if (!node || !crack) continue;
     node.setVisible(true);
     if (pw.state === "closed") { crack.setVisible(true); continue; }
     const px = cellX(slot, pw.cx) + pw.dx * pw.progress * CELL;
@@ -830,209 +1015,245 @@ function syncScenePose(inp: SimInput) {
   // ---- props (barrels extinguish)
   for (const pr of sim.state.props) {
     if (pr.kind === "column") continue;
-    const node = req(`f${slot}-prop-${pr.cx}-${pr.cz}`);
-    node.setVisible(pr.alive);
+    opt(`f${slot}-prop-${pr.cx}-${pr.cz}`)?.setVisible(pr.alive);
   }
 
   // ---- 3D ammo projectiles (rockets + plasma/bullet bolts + glowing tracer cores)
   const rockets = sim.state.rockets;
   for (let i = 0; i < rocketNodes.length; i++) {
     if (i < rockets.length) {
-      const r = rockets[i];
+      const r = rockets[i]!;
       const ry = r.y ?? 1.18;
-      const vx = r.vx ?? r.dx * 18;
-      const vz = r.vz ?? r.dz * 18;
-      const projYaw = Math.atan2(vx, vz);
+      const projYaw = Math.atan2(r.vx, r.vz);
       const isRocket = r.kind === "rocket" || r.fromEnemy;
-      rocketNodes[i].setPosition(r.x + ox, ry, r.z);
-      rocketNodes[i].setRotation(0, projYaw, r.t * 16);
-      rocketNodes[i].setScale(isRocket ? 0.36 : 0.28);
-      rocketNodes[i].setVisible(true);
-      tracerNodes[i].setPosition(r.x + ox - r.dx * 0.16, ry, r.z - r.dz * 0.16);
-      tracerNodes[i].setRotation(0, projYaw, 0);
-      tracerNodes[i].setScale(isRocket ? [1.25, 1.25, 1.4] : [0.95, 0.95, 1.15]);
-      tracerNodes[i].setVisible(true);
+      rocketNodes[i]!.setPosition(r.x + ox, ry, r.z);
+      rocketNodes[i]!.setRotation(0, projYaw, r.t * 16);
+      rocketNodes[i]!.setScale(isRocket ? 0.36 : 0.28);
+      rocketNodes[i]!.setVisible(true);
+      tracerNodes[i]!.setPosition(r.x + ox - r.dx * 0.16, ry, r.z - r.dz * 0.16);
+      tracerNodes[i]!.setRotation(0, projYaw, 0);
+      tracerNodes[i]!.setScale(isRocket ? [1.25, 1.25, 1.4] : [0.95, 0.95, 1.15]);
+      tracerNodes[i]!.setVisible(true);
     } else {
-      rocketNodes[i].setVisible(false);
-      rocketNodes[i].setPosition(0, -50, 0);
-      tracerNodes[i].setVisible(false);
-      tracerNodes[i].setPosition(0, -50, 0);
+      rocketNodes[i]!.setVisible(false);
+      rocketNodes[i]!.setPosition(0, -50, 0);
+      tracerNodes[i]!.setVisible(false);
+      tracerNodes[i]!.setPosition(0, -50, 0);
+    }
+  }
+  // ---- enemy gunfire: muzzle flash at the shooter, a tracer to the player (or past them on a miss)
+  const eshots = sim.state.enemyShots;
+  for (let i = 0; i < ENEMY_TRACERS; i++) {
+    const s = eshots[i];
+    if (s && s.t < 0.12) {
+      const dx = s.x1 - s.x0, dz = s.z1 - s.z0, len = Math.hypot(dx, dz);
+      const k = Math.min(1, s.t / 0.12);
+      enemyTracerNodes[i]!.setPosition(s.x0 + dx * (0.5 + k * 0.2) + ox, s.y0 - 0.1 * k, s.z0 + dz * (0.5 + k * 0.2));
+      enemyTracerNodes[i]!.setRotation(0, Math.atan2(dx, dz), 0);
+      enemyTracerNodes[i]!.setScale([0.045, 0.045, Math.max(0.2, len * 0.6)]);
+      enemyTracerNodes[i]!.setVisible(true);
+      enemyFlashNodes[i]!.setPosition(s.x0 + ox, s.y0, s.z0);
+      enemyFlashNodes[i]!.setVisible(s.t < 0.07);
+    } else {
+      enemyTracerNodes[i]!.setVisible(false); enemyTracerNodes[i]!.setPosition(0, -50, 0);
+      enemyFlashNodes[i]!.setVisible(false); enemyFlashNodes[i]!.setPosition(0, -50, 0);
     }
   }
   const exps = sim.state.explosions;
   for (let i = 0; i < boomNodes.length; i++) {
-    if (i < exps.length && exps[i].t < 0.55) {
-      const e = exps[i];
-      boomNodes[i].setPosition(e.x + ox, 1.0, e.z);
-      boomNodes[i].setScale(0.5 + e.t * 6);
-      boomNodes[i].setVisible(true);
+    if (i < exps.length && exps[i]!.t < 0.55) {
+      const e = exps[i]!;
+      boomNodes[i]!.setPosition(e.x + ox, 1.0, e.z);
+      boomNodes[i]!.setScale(0.5 + e.t * 6);
+      boomNodes[i]!.setVisible(true);
       if (i === 0) boomLight.setPosition(e.x + ox, 1.4, e.z);
-    } else boomNodes[i].setVisible(false), boomNodes[i].setPosition(0, -50, 0);
+    } else { boomNodes[i]!.setVisible(false); boomNodes[i]!.setPosition(0, -50, 0); }
   }
   if (exps.every((e) => e.t > 0.55)) boomLight.setPosition(0, -50, 0);
   const shots = sim.state.shots;
   for (let i = 0; i < sparkNodes.length; i++) {
-    if (i < shots.length && shots[i].t < 0.25) {
-      sparkNodes[i].setPosition(shots[i].x + ox, 1.18, shots[i].z);
-      sparkNodes[i].setScale(Math.max(0.18, 0.55 - shots[i].t * 2));
-      sparkNodes[i].setVisible(true);
-    } else sparkNodes[i].setVisible(false), sparkNodes[i].setPosition(0, -50, 0);
+    if (i < shots.length && shots[i]!.t < 0.25) {
+      sparkNodes[i]!.setPosition(shots[i]!.x + ox, 1.18, shots[i]!.z);
+      sparkNodes[i]!.setScale(Math.max(0.18, 0.55 - shots[i]!.t * 2));
+      sparkNodes[i]!.setVisible(true);
+    } else { sparkNodes[i]!.setVisible(false); sparkNodes[i]!.setPosition(0, -50, 0); }
   }
 }
 
 // ---------------------------------------------------------------------------
 // per-frame: read input → tick sim → drive nodes/camera/HUD
-let lastEventIdx = 0;
 let simSteps = 0;
-app.onFrame(({ dt }) => {
-  if (!appReady || !sim) return;
-  const p = sim.state.player;
-
-  const forwardHeld = input.held("forward") || keysHeld.has("KeyW") || keysHeld.has("ArrowUp");
-  const backHeld = input.held("back") || keysHeld.has("KeyS") || keysHeld.has("ArrowDown");
-  const leftHeld = input.held("strafeLeft") || keysHeld.has("KeyA");
-  const rightHeld = input.held("strafeRight") || keysHeld.has("KeyD");
-  const turnLeftHeld = input.held("turnLeft") || keysHeld.has("ArrowLeft") || keysHeld.has("KeyQ");
-  const turnRightHeld = input.held("turnRight") || keysHeld.has("ArrowRight") || keysHeld.has("KeyE");
-  const fireHeld = input.held("fire") || keysHeld.has("Space") || keysHeld.has("Enter") || keysHeld.has("KeyJ") || keysHeld.has("KeyF") || pointerFireHeld;
-  const fireJustPressed = input.pressed("fire") || keysPressed.has("Space") || keysPressed.has("Enter") || keysPressed.has("KeyJ") || keysPressed.has("KeyF") || pointerFirePressed;
-  const reloadPressed = input.pressed("reload") || keysPressed.has("KeyR");
-  const usePressed = input.pressed("use") || keysPressed.has("KeyE") || keysPressed.has("KeyF");
+let demoAcc = 0;
+let lastWall = performance.now();
+let lastAutoInput: SimInput = NO_INPUT;
+function gatherInput(dt: number): SimInput {
+  const held = (a: BindAction) => actionHas(a, keysHeld);
+  const pressed = (a: BindAction) => actionHas(a, keysPressed);
+  const fireHeld = held("fire") || pointerFireHeld || touch.fire;
+  const fireJustPressed = pressed("fire") || pointerFirePressed || touch.firePressed;
+  const reloadPressed = pressed("reload") || touch.reload;
+  const usePressed = pressed("use") || touch.use;
   const wpnPick: WeaponId | undefined =
-    (input.pressed("weapon1") || keysPressed.has("Digit1")) ? "knife" :
-    (input.pressed("weapon2") || keysPressed.has("Digit2")) ? "pistol" :
-    (input.pressed("weapon3") || keysPressed.has("Digit3")) ? "mg" :
-    (input.pressed("weapon4") || keysPressed.has("Digit4")) ? "rocket" : undefined;
-
-  const moveZ = ((forwardHeld ? 1 : 0) - (backHeld ? 1 : 0)) || input.axis("moveZ");
-  const moveX = ((rightHeld ? 1 : 0) - (leftHeld ? 1 : 0)) || input.axis("moveX");
-  const turnDir = ((turnRightHeld ? 1 : 0) - (turnLeftHeld ? 1 : 0)) || input.axis("turn");
-
-  const userActive =
-    Math.abs(moveX) > 0.01 ||
-    Math.abs(moveZ) > 0.01 ||
-    Math.abs(turnDir) > 0.01 ||
-    fireHeld || fireJustPressed ||
-    reloadPressed || usePressed || wpnPick !== undefined;
-  if (userActive && !DEMO) {
-    autoPilot = false;
-  }
-
-  // ---- input → SimInput
-  const useAuto = DEMO || autoPilot;
-  const totalTurn = yawDelta + turnDir * 2.4 * dt;
-  const totalPitch = pitchDelta;
-  const inp: SimInput = useAuto
-    ? demoInput(dt)
+    pressed("weapon1") ? "knife" : pressed("weapon2") ? "pistol" : pressed("weapon3") ? "mg" : pressed("weapon4") ? "rocket" : undefined;
+  const moveZ = ((held("forward") ? 1 : 0) - (held("back") ? 1 : 0)) || touch.moveZ;
+  const moveX = ((held("strafeRight") ? 1 : 0) - (held("strafeLeft") ? 1 : 0)) || touch.moveX;
+  const turnDir = (held("turnRight") ? 1 : 0) - (held("turnLeft") ? 1 : 0);
+  const wheel = pendingWheel + touch.swap;
+  const userActive = Math.abs(moveX) > 0.01 || Math.abs(moveZ) > 0.01 || Math.abs(turnDir) > 0.01 || fireHeld || fireJustPressed || reloadPressed || usePressed || wpnPick !== undefined;
+  if (userActive && !DEMO) autoPilot = false;
+  const inp: SimInput = DEMO ? lastAutoInput : autoPilot
+    ? autopilotInput(pilot, sim, dt)
     : {
-        moveX,
-        moveZ,
-        turn: totalTurn,
-        pitchDelta: totalPitch,
-        fire: fireHeld,
-        firePressed: fireJustPressed,
-        reload: reloadPressed,
-        use: usePressed,
-        weapon: wpnPick,
-        weaponDelta: pendingWheel !== 0 ? Math.sign(pendingWheel) : 0
+        moveX, moveZ, turn: yawDelta + turnDir * 2.4 * dt, pitchDelta,
+        fire: fireHeld, firePressed: fireJustPressed, reload: reloadPressed, use: usePressed,
+        weapon: wpnPick, weaponDelta: wheel !== 0 ? Math.sign(wheel) : 0
       };
-  yawDelta = 0;
-  pitchDelta = 0;
-  pendingWheel = 0;
+  yawDelta = 0; pitchDelta = 0; pendingWheel = 0;
   keysPressed.clear();
   pointerFirePressed = false;
+  touch.firePressed = false; touch.use = false; touch.reload = false; touch.swap = 0;
+  return inp;
+}
 
-  // ---- tick (fixed 60Hz substeps for demo determinism)
-  if (qaFrozen) {
-    // QA hook froze the world for a still frame: no simulation
-  } else if (DEMO) {
+function stepSim(dt: number, inp: SimInput) {
+  if (DEMO) {
     demoAcc += dt;
-    while (demoAcc >= 1 / 60) { sim.tick(1 / 60, inp); demoAcc -= 1 / 60; simSteps++; }
-  } else {
-    const totalStepDt = Math.min(0.1, Math.max(1 / 240, dt));
-    let remaining = totalStepDt;
-    let firstSub = true;
-    while (remaining > 0) {
-      const st = Math.min(1 / 60, remaining);
-      const frac = st / totalStepDt;
-      const subInp: SimInput = useAuto ? inp : {
-        ...inp,
-        turn: inp.turn * frac,
-        pitchDelta: inp.pitchDelta * frac,
-        firePressed: firstSub ? inp.firePressed : false,
-        reload: firstSub ? inp.reload : false,
-        use: firstSub ? inp.use : false,
-        weapon: firstSub ? inp.weapon : undefined,
-        weaponDelta: firstSub ? inp.weaponDelta : 0
-      };
-      sim.tick(st, subInp);
-      remaining -= st;
-      firstSub = false;
-      simSteps++;
+    while (demoAcc >= 1 / 60) { lastAutoInput = autopilotInput(pilot, sim, 1 / 60); sim.tick(1 / 60, lastAutoInput); demoAcc -= 1 / 60; simSteps++; }
+    return;
+  }
+  const useAuto = autoPilot;
+  const totalStepDt = Math.min(0.1, Math.max(1 / 240, dt));
+  let remaining = totalStepDt;
+  let firstSub = true;
+  while (remaining > 1e-9) {
+    const st = Math.min(1 / 60, remaining);
+    const frac = st / totalStepDt;
+    const subInp: SimInput = useAuto ? (firstSub ? inp : autopilotInput(pilot, sim, st)) : {
+      ...inp,
+      turn: inp.turn * frac,
+      pitchDelta: inp.pitchDelta * frac,
+      firePressed: firstSub ? inp.firePressed : false,
+      reload: firstSub ? inp.reload : false,
+      use: firstSub ? inp.use : false,
+      weapon: firstSub ? inp.weapon : undefined,
+      weaponDelta: firstSub ? inp.weaponDelta : 0
+    };
+    sim.tick(st, subInp);
+    remaining -= st;
+    firstSub = false;
+    simSteps++;
+  }
+}
+
+/** C2: drain by sequence number, so audio and feedback keep working however many events a floor emits. */
+function drain() {
+  eventSeq = drainEvents(sim.state, eventSeq, (ev) => { eventsDrained++; handleEvent(ev); });
+}
+
+/** C3/C4/C16: one outcome per floor, read from the medal and the floor index, then one pending transition. */
+function checkOutcome() {
+  const p = sim.state.player;
+  if (sim.state.finished && !outcomeHandled) {
+    outcomeHandled = true;
+    const outcome: FloorOutcome = floorOutcome(sim, floorIdx);
+    const view = outcomeView(outcome, sim, fmtTime);
+    banner(view.title, view.subtitle);
+    cue(view.cue);
+    if (view.juice) mg.juice?.fire(view.juice);
+    if (outcome === "floor-cleared" || outcome === "campaign-complete") {
+      runResults.push(floorResult(sim, floorIdx));
+      recordMedal(floorIdx, sim.state.medal);
     }
+    pending = {
+      kind: outcome === "killhouse-timeup" ? "killhouse-retry" : outcome === "killhouse-clear" ? "to-descent" : outcome === "campaign-complete" ? "results" : "next",
+      t: outcome === "campaign-complete" ? 2.2 : 2.6, age: 0
+    };
+    return;
   }
-
-  // ---- drain events → audio + juice + feed
-  const evs = sim.state.events;
-  for (; lastEventIdx < evs.length; lastEventIdx++) handleEvent(evs[lastEventIdx]);
-  if (evs.length > 60) { sim.state.events.splice(0, evs.length - 40); lastEventIdx = Math.min(lastEventIdx, sim.state.events.length); }
-
-  syncScenePose(inp);
-
-  // ---- floor transitions
-  if (sim.state.finished && !transitionPending) {
-    transitionPending = true;
-    banner(mode === "killhouse" ? "KILL HOUSE CLEAR" : `${sim.state.floor.name.toUpperCase()} — CLEARED`,
-      `medal: ${sim.state.medal.toUpperCase()} · time ${fmtTime(sim.state.time)}`);
-    void mg.sound?.cue("win");
-    mg.juice?.fire("win");
-    setTimeout(() => {
-      transitionPending = false;
-      if (mode === "killhouse") startFloor(0, "descent");
-      else if (floorIdx < FLOORS.length - 1) startFloor(floorIdx + 1, "descent");
-      else banner("BUNKER ZERO COMPLETE", "the Iron Warden is down — the bunker is yours");
-    }, 2600);
-  }
-  if (!p.alive && !deathPending) {
-    deathPending = true;
-    void mg.sound?.cue("lose");
+  if (!p.alive && !sim.state.finished && !pending) {
+    cue("lose");
     banner("YOU DIED", "press any key to retry the floor");
-    setTimeout(() => { deathPending = false; startFloor(floorIdx, mode); }, 2200);
+    pending = { kind: "retry", t: 2.2, age: 0 };
   }
+}
+function tickPending(dt: number) {
+  if (!pending) return;
+  pending.age += dt;
+  pending.t -= dt;
+  if (pending.t <= 0) runPending();
+}
+function runPending() {
+  const job = pending;
+  pending = null;
+  if (!job) return;
+  switch (job.kind) {
+    case "retry": startFloor(floorIdx, mode, { loadout: entryLoadout }); break;
+    case "killhouse-retry": startFloor(0, "killhouse"); break;
+    case "to-descent": startFloor(0, "descent", { newRun: true }); break;
+    case "next": startFloor(floorIdx + 1, "descent", { loadout: captureLoadout(sim) }); break;
+    case "results": showResults(); break;
+  }
+}
 
+app.onFrame(({ dt }) => {
+  if (!appReady || !sim) return;
+  const now = performance.now();
+  const wallDt = Math.min(1, Math.max(0, (now - lastWall) / 1000));
+  lastWall = now;
+  const paused = isPaused();
+  const inp = paused ? (gatherInput(dt), NO_INPUT) : gatherInput(dt);
+  if (!qaFrozen && !paused && !campaignDone) stepSim(dt, inp);
+  drain();
+  try { syncScenePose(inp); } catch (e) { frameErrors++; lastFrameError = e instanceof Error ? e.message : String(e); }
+  if (!paused) { checkOutcome(); tickPending(wallDt); }
   renderHud();
   publishEvidence();
   feel.update(dt * 1000);
-  bannerT -= dt;
+  bannerT -= wallDt;
   if (bannerT <= 0) elBanner.classList.remove("show");
+  if (mapOpen) { mapDrawT -= wallDt; if (mapDrawT <= 0) { mapDrawT = 0.2; drawMap(); } }
 });
-let transitionPending = false, deathPending = false, demoAcc = 0;
 
 // ---------------------------------------------------------------------------
 function handleEvent(ev: string) {
-  const [type, a] = ev.split(":");
+  const [type, a, b] = ev.split(":");
   switch (type) {
-    case "fire": void mg.sound?.cue(a === "pistol" ? "pistol" : a === "mg" ? "mg" : a === "rocket" ? "rocket" : a === "dry" ? "dry" : "knife"); mg.juice?.fire("fire"); break;
-    case "hit": void mg.sound?.cue("hit"); elCross.classList.add("hit"); setTimeout(() => elCross.classList.remove("hit"), 90); break;
-    case "kill": void mg.sound?.cue("kill"); mg.juice?.fire("kill"); feed(`kill confirmed — ${a}`); break;
-    case "hurt": void mg.sound?.cue("hurt"); mg.juice?.fire("hurt"); break;
-    case "dog": void mg.sound?.cue("bite"); break;
-    case "step": void mg.sound?.cue("step"); break;
-    case "secret": void mg.sound?.cue("secret"); mg.juice?.fire("secret"); feed("push-wall revealed a secret"); break;
-    case "pickup": void mg.sound?.cue(a === "key" ? "key" : a === "mg" || a === "rocket" ? "weapon" : "pickup"); feed(a === "key" ? "brass key secured" : `${a} collected`); break;
-    case "door": void mg.sound?.cue("door"); break;
-    case "reload": void mg.sound?.cue("reload"); break;
-    case "weapon": void mg.sound?.cue("switch"); break;
-    case "rocket": void mg.sound?.cue("boom"); break;
-    case "barrel": void mg.sound?.cue("boom"); mg.juice?.fire("fire"); break;
-    case "boss": void mg.sound?.cue("boss"); feed("the Iron Warden moves", true); break;
-    case "alert": case "spot": void mg.sound?.cue("alert"); break;
-    case "floor": break; // handled in frame loop
-    case "player": break;
-    case "guard": case "gunner": break;
-    case "use": break;
-    case "pushwall": break;
+    case "fire": cue(a === "pistol" ? "pistol" : a === "mg" ? "mg" : a === "rocket" ? "rocket" : a === "dry" ? "dry" : "knife"); mg.juice?.fire("fire"); break;
+    case "hit": cue("hit"); elCross.classList.add("hit"); setTimeout(() => elCross.classList.remove("hit"), 90); break;
+    case "kill": cue("kill"); mg.juice?.fire("kill"); feed(`kill confirmed — ${a}`); break;
+    case "hurt": cue("hurt"); mg.juice?.fire("hurt"); break;
+    case "dog": cue("bite"); break;
+    case "step": cue("step"); break;
+    case "secret": cue("secret"); mg.juice?.fire("secret"); feed("push-wall revealed a secret"); break;
+    case "pickup": cue(a === "key" ? "key" : a === "mg" || a === "rocket" ? "weapon" : "pickup"); feed(a === "key" ? "brass key secured" : `${a} collected`); break;
+    case "door": cue("door"); break;
+    case "reload": cue("reload"); break;
+    case "weapon": cue("switch"); break;
+    case "rocket": cue("boom"); break;
+    case "barrel": cue("boom"); mg.juice?.fire("fire"); break;
+    // C9: each Warden event has its own cue and line
+    case "boss":
+      if (a === "rocket") positional("launch", bossPos());
+      else if (a === "vent") { cue("vent"); feed("the Warden vents — VULNERABLE", true); }
+      else if (a === "summon") { cue("boss"); feed("the Warden calls reinforcements", true); }
+      break;
+    case "alert": case "spot": cue("alert"); break;
+    // C8: enemy gunfire is heard where it comes from
+    case "guard": case "gunner": if (b === "hit" || b === "miss") positional("enemyShot", shooterPos(a as "guard" | "gunner")); break;
+    default: break;
   }
+}
+function positional(id: CueId, at: [number, number, number] | null) {
+  if (!at || !mg.sound?.playPositional) { cue(id); return; }
+  mg.sound.playPositional(id, { x: at[0], y: at[1], z: at[2] }).catch(() => { /* audio locked until the first click */ });
+}
+function bossPos(): [number, number, number] | null {
+  const e = sim.state.enemies.find((en) => en.kind === "boss");
+  return e ? [e.x + sim.state.ox, 2, e.z] : null;
+}
+function shooterPos(kind: "guard" | "gunner"): [number, number, number] | null {
+  const s = [...sim.state.enemyShots].reverse().find((sh) => sh.kind === kind);
+  return s ? [s.x0 + sim.state.ox, s.y0, s.z0] : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -1041,7 +1262,9 @@ function renderHud() {
   const p = sim.state.player;
   const wpn = WEAPONS[p.weapon];
   const ammoStr = wpn.ammo === "none" ? "—" : `${p.mag} / ${p.ammo[wpn.ammo as "bullets" | "rockets"]}`;
-  const hud = `${Math.ceil(p.hp)}|${Math.ceil(p.armor)}|${ammoStr}|${sim.state.score}|${sim.state.kills}|${sim.state.time}|${p.weapon}`;
+  const timeShown = mode === "killhouse" ? Math.max(0, sim.state.killhouseLeft) : sim.state.time;
+  // C25: keyed on whole seconds, so the DOM is written only when a shown value changes
+  const hud = hudKey(sim, p.reloading > 0, mode === "killhouse" ? Math.ceil(timeShown) : timeShown);
   if (hud !== lastHud) {
     lastHud = hud;
     elHp.textContent = String(Math.ceil(p.hp));
@@ -1051,13 +1274,21 @@ function renderHud() {
     elWeapon.textContent = weaponHudLabel(p.weapon);
     elScore.textContent = String(sim.state.score);
     elKills.textContent = `${sim.state.kills}/${sim.state.totalEnemies}`;
-    elTime.textContent = mode === "killhouse" ? fmtTime(Math.max(0, sim.state.killhouseLeft)) : fmtTime(sim.state.time);
-    elVign.style.opacity = String(Math.max(p.hurtT * 1.6, p.alive && p.hp <= 30 ? 0.4 : 0));
+    elTime.textContent = fmtTime(timeShown);
     elVign.classList.toggle("low", p.alive && p.hp <= 30);
-    elTag.innerHTML = mode === "killhouse"
-      ? `SKILL LAB — KILL HOUSE<small>${dogtag} · clear the floor</small>`
-      : `FLOOR ${floorIdx + 1} — ${sim.state.floor.name.toUpperCase()}<small>${p.key ? "key secured · " : ""}${sim.state.floor.subtitle} · ${dogtag}</small>`;
+    // C26: the dog tag is text, never markup
+    const small = document.createElement("small");
+    if (mode === "killhouse") {
+      elTag.textContent = "SKILL LAB — KILL HOUSE";
+      small.textContent = `${dogtag} · clear the floor`;
+    } else {
+      elTag.textContent = `FLOOR ${floorIdx + 1} — ${sim.state.floor.name.toUpperCase()}`;
+      small.textContent = `${p.key ? "key secured · " : ""}${sim.state.floor.subtitle} · ${dogtag}`;
+    }
+    elTag.append(small);
   }
+  const vign = String(Math.max(p.hurtT * 1.6, p.alive && p.hp <= 30 ? 0.4 : 0));
+  if (elVign.style.opacity !== vign) elVign.style.opacity = vign;
   if (sim.state.msg) feed2(sim.state.msg);
 }
 let lastFeedMsg = "";
@@ -1068,20 +1299,59 @@ function fmtTime(t: number) {
 }
 
 // ---------------------------------------------------------------------------
-// QA hook (deterministic stills and numbers): stage an enemy of a kind in front of the player and report which way it is drawn.
-function installFacingQa() {
+// results panel (C3, C27) and floor medals
+function loadJson<T>(k: string, fallback: T): T { try { const v = store.get(k); return v ? (JSON.parse(v) as T) : fallback; } catch { return fallback; } }
+let floorMedals = loadJson<Record<string, string>>("bz-medals", {});
+function recordMedal(idx: number, medal: string) {
+  floorMedals = { ...floorMedals, [idx]: betterMedal(floorMedals[idx], medal) };
+  store.set("bz-medals", JSON.stringify(floorMedals));
+  renderFloorCards();
+}
+function setResultsVisible(on: boolean) { elResults.hidden = !on; }
+function showResults() {
+  campaignDone = true;
+  refreshPause();
+  if (pointerLocked) document.exitPointerLock();
+  const totals = runTotals(runResults);
+  const fullRun = runStartFloor === 0 && runResults.length === FLOORS.length;
+  const best = loadJson<{ score: number; time: number } | null>("bz-best-run", null);
+  const isBest = fullRun && (!best || totals.score > best.score);
+  if (isBest) store.set("bz-best-run", JSON.stringify({ score: totals.score, time: totals.time }));
+  const rows = $("bz-results-rows");
+  rows.replaceChildren(...runResults.map((r) => {
+    const tr = document.createElement("tr");
+    for (const cell of [`F${r.floor} ${r.name}`, fmtTime(r.time), `${r.kills}/${r.totalEnemies}`, `${r.secrets}/${r.totalSecrets}`, r.medal.toUpperCase()]) {
+      const td = document.createElement("td"); td.textContent = cell; tr.append(td);
+    }
+    return tr;
+  }));
+  $("bz-results-total").textContent =
+    `SCORE ${totals.score} · TIME ${fmtTime(totals.time)} · KILLS ${totals.kills}/${totals.totalEnemies} · SECRETS ${totals.secrets}/${totals.totalSecrets} · ` +
+    `MEDALS ${totals.medals.gold} gold, ${totals.medals.silver} silver, ${totals.medals.bronze} bronze`;
+  const bestNow = isBest ? { score: totals.score, time: totals.time } : best;
+  $("bz-results-best").textContent = !fullRun
+    ? `run started on floor ${runStartFloor + 1}: start from floor 1 to set a best run`
+    : bestNow ? `${isBest ? "NEW BEST RUN" : "best run"}: ${bestNow.score} in ${fmtTime(bestNow.time)}` : "";
+  setResultsVisible(true);
+  publishEvidence(true);
+}
+
+// ---------------------------------------------------------------------------
+// QA hook (deterministic stills and numbers): stage an enemy of a kind in front of the player and report which way it is drawn;
+// drive the end states the remote captures check (boss summon, campaign results, Kill House time-out).
+function installQa() {
   const KIND_CHAR = { guard: "g", dog: "d", gunner: "G", boss: "B" } as const;
-  const noInput: SimInput = { moveX: 0, moveZ: 0, turn: 0, pitchDelta: 0, fire: false, firePressed: false, reload: false, use: false };
+  const noInput = NO_INPUT;
+  const tickN = (seconds: number) => { const n = Math.round(seconds * 60); for (let i = 0; i < n; i++) { sim.tick(1 / 60, autoPilot ? autopilotInput(pilot, sim, 1 / 60) : noInput); simSteps++; drain(); syncScenePose(noInput); checkOutcome(); tickPending(1 / 60); } };
   const rig = {
     stage(kind: keyof typeof KIND_CHAR, dist = 4.5, bearingDeg = 0) {
       const floor = FLOORS.findIndex((f, i) => createSim(f, { ox: 0, mode: "descent", seed: 1337 + i * 97 }).state.enemies.some((en) => en.kind === kind));
       if (floor < 0) return { ok: false, reason: "no floor has this enemy" };
-      startFloor(floor, "descent");
+      startFloor(floor, "descent", { newRun: true });
       qaFrozen = false;
       const e = sim.state.enemies.find((en) => en.kind === kind && en.state !== "dead");
       if (!e) return { ok: false, reason: "enemy missing" };
       const p = sim.state.player;
-      // keep every other enemy out of the shot, then pick the open spot around this enemy with a clear line and room for the player
       for (const o of sim.state.enemies) if (o !== e) { o.state = "dead"; o.deathT = 99; }
       const base = (bearingDeg * Math.PI) / 180;
       for (let k = 0; k < 16; k++) {
@@ -1110,27 +1380,21 @@ function installFacingQa() {
       const n = Math.max(1, Math.round(seconds * 60));
       for (let i = 0; i < n; i++) { lastPoseTime = sim.state.time - 1 / 60; syncScenePose(noInput); }
     },
-    /** Run the sim and the drawn-yaw smoothing for `seconds` of 60 Hz steps, then refreeze: used to measure convergence. */
-    advance(seconds: number) {
-      const n = Math.round(seconds * 60);
-      for (let i = 0; i < n; i++) { sim.tick(1 / 60, noInput); syncScenePose(noInput); }
-    },
-    /** Make the enemy look away, then call advance() to see it turn back. */
+    /** Run the sim, events, pose and transitions for `seconds` of 60 Hz steps, then refreeze. */
+    advance(seconds: number) { tickN(seconds); qaFrozen = true; return rig.snapshot(); },
     turnAway(kind: keyof typeof KIND_CHAR) {
       const e = sim.state.enemies.find((en) => en.kind === kind && en.state !== "dead");
       if (!e) return false;
-      const id = `f${sim.state.mode === "killhouse" ? 6 : floorIdx}-en-${e.sx}-${e.sz}`;
+      const id = enemyIds(activeSlot(), e).body;
       enemyYaw.set(id, (enemyYaw.get(id) ?? 0) + Math.PI);
       return true;
     },
-    /** Rotate the drawn model by `rad` about Y while frozen (a profile still: forward = camera right when the model's forward is +Z after +90 degrees). */
     rotateDrawn(kind: keyof typeof KIND_CHAR, rad: number) {
       const e = sim.state.enemies.find((en) => en.kind === kind && en.state !== "dead");
       if (!e) return false;
-      const id = `f${sim.state.mode === "killhouse" ? 6 : floorIdx}-en-${e.sx}-${e.sz}`;
+      const id = enemyIds(activeSlot(), e).body;
       enemyYaw.set(id, (enemyYaw.get(id) ?? 0) + rad);
-      const node = req(id);
-      node.setRotation(0, enemyYaw.get(id)!, 0);
+      opt(id)?.setRotation(0, enemyYaw.get(id)!, 0);
       return true;
     },
     setForward(kind: keyof typeof KIND_CHAR, axis: ForwardAxis | null) {
@@ -1139,27 +1403,80 @@ function installFacingQa() {
     },
     report() {
       const p = sim.state.player;
-      const slot = sim.state.mode === "killhouse" ? 6 : floorIdx;
+      const slot = activeSlot();
       return sim.state.enemies.filter((e) => e.state !== "dead").map((e) => {
-        const id = `f${slot}-en-${e.sx}-${e.sz}`;
-        const yaw = enemyYaw.get(id) ?? 0;
+        const yaw = enemyYaw.get(enemyIds(slot, e).body) ?? 0;
         const dx = p.x - e.x, dz = p.z - e.z;
-        // the error is always measured against the model's real forward axis (ENEMY_FORWARD), never the QA override
         return {
           kind: e.kind, state: e.state, forward: enemyForward(e.kind), trueForward: ENEMY_FORWARD[e.kind], simFacing: +e.facing.toFixed(4), drawnYaw: +yaw.toFixed(4),
           distance: +Math.hypot(dx, dz).toFixed(2), errorDeg: +((enemyFacingError(yaw, e.kind, dx, dz, ENEMY_FORWARD[e.kind]) * 180) / Math.PI).toFixed(2)
         };
       });
-    }
+    },
+    snapshot() {
+      const s = sim.state;
+      return {
+        mode, floor: floorIdx + 1, time: +s.time.toFixed(2), simSteps, paused: isPaused(), finished: s.finished, medal: s.medal,
+        hp: Math.ceil(s.player.hp), alive: s.player.alive, summons: s.summons.length, enemies: s.enemies.length,
+        summonNodesVisible: s.enemies.filter((e) => e.summonSlot !== undefined).map((e) => opt(enemyIds(activeSlot(), e).body)?.visible ?? null),
+        eventSeq: s.eventSeq, eventsDrained, frameErrors, lastFrameError, pending: pending?.kind ?? null, campaignDone,
+        results: !elResults.hidden, banner: elBanner.textContent
+      };
+    },
+    /** C1: start floor 6, bring the Warden under 66% so it summons, and keep the sim running. */
+    bossSummon() {
+      startFloor(5, "descent", { newRun: true });
+      const boss = sim.state.enemies.find((e) => e.kind === "boss")!;
+      const p = sim.state.player;
+      p.hp = 9999;
+      p.x = boss.x; p.z = boss.z + CELL * 2; p.yaw = 0;
+      boss.hp = ENEMIES.boss.hp * 0.6; boss.state = "attack"; boss.stateT = 0; boss.volleyLeft = 3;
+      for (let i = 0; i < 120 && sim.state.summons.length === 0; i++) { sim.tick(1 / 60, noInput); drain(); syncScenePose(noInput); }
+      return rig.snapshot();
+    },
+    /** C3: finish floor 6 (Warden down, key in hand, standing on the exit) and let the transition run. */
+    campaignComplete() {
+      startFloor(5, "descent", { newRun: true });
+      // a completed run: floors 1 to 5 as gold clears
+      runResults = FLOORS.slice(0, 5).map((f, i) => ({ floor: i + 1, name: f.name, time: f.par * 0.8, kills: 4, totalEnemies: 5, secrets: 1, totalSecrets: 2, medal: "gold", score: 1500 * (i + 1) }));
+      const p = sim.state.player;
+      for (const e of sim.state.enemies) { e.state = "dead"; e.deathT = 9; e.hp = 0; }
+      p.key = true; p.hp = 9999;
+      const exit = (() => { for (let z = 0; z < sim.state.h; z++) for (let x = 0; x < sim.state.w; x++) if (sim.state.grid[z * sim.state.w + x] === "E") return [x, z] as const; return null; })()!;
+      p.x = cellCenter(exit[0]); p.z = cellCenter(exit[1]);
+      qaFrozen = false;
+      tickN(3.2);
+      return rig.snapshot();
+    },
+    /** C4: start the Kill House and run the clock out. */
+    killhouseTimeout() {
+      startFloor(0, "killhouse");
+      sim.state.killhouseLeft = 0.05;
+      sim.state.player.hp = 9999;
+      tickN(0.2);
+      return rig.snapshot();
+    },
+    autopilot(on: boolean) { autoPilot = on; return on; },
+    dismissIntro() { dismissIntro(); return true; }
   };
   (window as unknown as { __AURA_BUNKER_ZERO_QA__?: typeof rig }).__AURA_BUNKER_ZERO_QA__ = rig;
 }
 
 // ---------------------------------------------------------------------------
-function publishEvidence() {
+// evidence at 4 Hz (C25), with draw calls per floor (C18)
+let lastEvidenceAt = -1;
+const drawCallsByFloor: Record<string, number> = {};
+function publishEvidence(force = false) {
+  const now = performance.now();
+  if (!force && lastEvidenceAt >= 0 && now - lastEvidenceAt < 250) return;
+  lastEvidenceAt = now;
   const p = sim.state.player;
+  let drawCalls: number | null = null;
+  try { drawCalls = (app.diagnostics?.() as { drawCalls?: number } | undefined)?.drawCalls ?? null; } catch { drawCalls = null; }
+  const floorKey = mode === "killhouse" ? "killhouse" : `f${floorIdx + 1}`;
+  if (drawCalls) drawCallsByFloor[floorKey] = drawCalls;
   const payload = {
-    status: "playing",
+    status: campaignDone ? "complete" : "playing",
     mode, floor: floorIdx + 1,
     floorName: sim.state.floor.name,
     playerPos: [+(p.x.toFixed(2)), +(p.z.toFixed(2))],
@@ -1168,13 +1485,18 @@ function publishEvidence() {
     player: {
       x: +(p.x.toFixed(2)), z: +(p.z.toFixed(2)), yaw: +p.yaw.toFixed(3),
       hp: Math.ceil(p.hp), armor: Math.ceil(p.armor), alive: p.alive,
-      weapon: p.weapon, mag: p.mag, ammo: p.ammo, key: p.key
+      weapon: p.weapon, mag: p.mag, mags: { ...p.mags, [p.weapon]: p.mag }, ammo: { ...p.ammo }, key: p.key
     },
     enemiesAlive: sim.state.enemies.filter((e) => e.state !== "dead").length,
     kills: sim.state.kills, score: sim.state.score,
     secrets: `${sim.state.secrets}/${sim.state.totalSecrets}`,
     time: +sim.state.time.toFixed(1),
     simSteps,
+    paused: isPaused(),
+    outcome: pending?.kind ?? (campaignDone ? "results" : null),
+    eventSeq: sim.state.eventSeq, eventsDrained, frameErrors,
+    drawCalls, drawCallsByFloor: { ...drawCallsByFloor },
+    run: { startFloor: runStartFloor + 1, floorsCleared: runResults.length },
     events: sim.state.events.slice(-12),
     look: { id: LOOK_ID, category: looks.describe(LOOK_ID).category }
   };
@@ -1182,10 +1504,7 @@ function publishEvidence() {
   const prevEv = (window.__AURA3D_GAME_EVIDENCE__ && typeof window.__AURA3D_GAME_EVIDENCE__ === "object")
     ? (window.__AURA3D_GAME_EVIDENCE__ as Record<string, unknown>)
     : {};
-  window.__AURA3D_GAME_EVIDENCE__ = {
-    ...prevEv,
-    ...payload
-  };
+  window.__AURA3D_GAME_EVIDENCE__ = { ...prevEv, ...payload };
 }
 
 // ---------------------------------------------------------------------------
@@ -1196,41 +1515,96 @@ function setModeButtons() {
   document.querySelectorAll<HTMLButtonElement>(".floor-btn").forEach((b, i) =>
     b.classList.toggle("active", mode === "descent" && i === floorIdx));
 }
-$("bz-btn-play").addEventListener("click", () => { startFloor(0, "descent"); setModeButtons(); });
-$("bz-btn-killhouse").addEventListener("click", () => { startFloor(0, "killhouse"); setModeButtons(); });
-$("bz-btn-menu").addEventListener("click", () => elMenu.classList.toggle("open"));
-$("bz-menu-close").addEventListener("click", () => elMenu.classList.remove("open"));
+function openMenu() { elMenu.classList.add("open"); setPaused("menu", true); if (pointerLocked) document.exitPointerLock(); renderRemap(); }
+function closeMenu() { elMenu.classList.remove("open"); setPaused("menu", false); }
+// C11: buttons give focus back to the game after a click, so Enter or Space never re-clicks them
+document.addEventListener("click", (e) => {
+  const b = (e.target as HTMLElement | null)?.closest?.("button");
+  if (b) setTimeout(() => b.blur(), 0);
+}, { capture: true });
+$("bz-btn-play").addEventListener("click", () => { closeMenu(); startFloor(0, "descent", { newRun: true }); });
+$("bz-btn-killhouse").addEventListener("click", () => { closeMenu(); startFloor(0, "killhouse"); });
+$("bz-btn-menu").addEventListener("click", () => (elMenu.classList.contains("open") ? closeMenu() : openMenu()));
+$("bz-menu-close").addEventListener("click", () => closeMenu());
+$("bz-resume").addEventListener("click", () => resume());
+$("bz-results-restart").addEventListener("click", () => startFloor(0, "descent", { newRun: true }));
+$("bz-results-menu").addEventListener("click", () => openMenu());
 document.querySelectorAll<HTMLButtonElement>(".floor-btn").forEach((b) =>
-  b.addEventListener("click", () => { startFloor(parseInt(b.dataset.auraFloor!, 10), "descent"); setModeButtons(); }));
-$("bz-dogtag").addEventListener("input", (e) => { dogtag = (e.target as HTMLInputElement).value.toUpperCase() || "RAZOR-6"; });
+  b.addEventListener("click", () => { closeMenu(); startFloor(parseInt(b.dataset.auraFloor!, 10), "descent", { newRun: true }); }));
+$<HTMLInputElement>("bz-dogtag").addEventListener("input", (e) => { dogtag = (e.target as HTMLInputElement).value.toUpperCase() || "RAZOR-6"; lastHud = ""; });
+// C22: the tint recolours the HUD accents (crosshair, frame, labels); the viewmodel keeps its textures
+function applyTint(tint: string) {
+  document.documentElement.style.setProperty("--bz-amber", tint);
+  document.querySelectorAll<HTMLButtonElement>(".bz-swatch").forEach((x) => x.classList.toggle("active", x.dataset.tint === tint));
+}
+applyTint(store.get("bz-tint") ?? "#ffb648");
 document.querySelectorAll<HTMLButtonElement>(".bz-swatch").forEach((b) =>
-  b.addEventListener("click", () => {
-    camoTint = b.dataset.tint!;
-    document.querySelectorAll(".bz-swatch").forEach((x) => x.classList.remove("active"));
-    b.classList.add("active");
+  b.addEventListener("click", () => { applyTint(b.dataset.tint!); store.set("bz-tint", b.dataset.tint!); }));
+document.querySelectorAll<HTMLButtonElement>(".bz-hudscale").forEach((b) =>
+  b.addEventListener("click", () => { applyHudScale(b.dataset.scale!); store.set("bz-hud-scale", b.dataset.scale!); }));
+{
+  const rm = $<HTMLInputElement>("bz-reduced-motion");
+  rm.checked = reducedMotion();
+  rm.addEventListener("change", () => { reducedMotionPref = rm.checked ? "1" : "0"; store.set("bz-reduced-motion", reducedMotionPref); });
+}
+const ACTION_LABEL: Partial<Record<BindAction, string>> = { forward: "FORWARD", back: "BACK", strafeLeft: "STRAFE LEFT", strafeRight: "STRAFE RIGHT", fire: "FIRE", use: "USE", reload: "RELOAD", map: "MAP" };
+function renderRemap() {
+  const host = $("bz-remap");
+  host.replaceChildren(...REMAPPABLE.map((a) => {
+    const row = document.createElement("div"); row.className = "bz-kv";
+    const name = document.createElement("span"); name.textContent = ACTION_LABEL[a] ?? a;
+    const btn = document.createElement("button"); btn.type = "button"; btn.className = "bz-key";
+    btn.textContent = remapAction === a ? "PRESS A KEY" : bindings[a].map(keyLabel).join(" / ");
+    btn.addEventListener("click", () => { remapAction = a; renderRemap(); });
+    row.append(name, btn);
+    return row;
   }));
+  updateHint();
+}
+$("bz-remap-reset").addEventListener("click", () => { bindings = parseBindings(null); store.set("bz-bindings", JSON.stringify(bindings)); renderRemap(); });
+function updateHint() {
+  const k = (a: BindAction) => keyLabel(bindings[a][0]);
+  $("bz-controls-hint").textContent = `${k("forward")}${k("strafeLeft")}${k("back")}${k("strafeRight")} MOVE · MOUSE AIM · CLICK/${k("fire")} FIRE · ${k("reload")} RELOAD · ${k("use")} USE · 1–4/WHEEL WEAPONS · ${k("map")} MAP · P PAUSE`;
+}
 
-// floor select cards
+// floor select cards (C22: the medal mark shows the best medal earned on each floor)
 const floorList = $("bz-floor-list");
-floorList.innerHTML = FLOORS.map((f, i) =>
-  `<button type="button" class="bz-floor-card" data-f="${i}"><span class="medal">◎</span><strong>F${i + 1} — ${f.name}</strong><small>par ${fmtTime(f.par)} · descent</small></button>`).join("");
-floorList.querySelectorAll(".bz-floor-card").forEach((b) =>
-  b.addEventListener("click", () => { startFloor(parseInt((b as HTMLElement).dataset.f!, 10), "descent"); elMenu.classList.remove("open"); setModeButtons(); }));
-$("bz-tour-stats").innerHTML = [
-  `<div class="bz-kv"><span>WEAPONS</span><span>knife · pistol · MG · rockets</span></div>`,
-  `<div class="bz-kv"><span>ENEMIES</span><span>guard · hound · gunner · IRON WARDEN</span></div>`,
-  `<div class="bz-kv"><span>SECRETS</span><span>2 push-walls per floor</span></div>`,
-  `<div class="bz-kv"><span>ENGINE</span><span>Aura3D · night-city look</span></div>`
-].join("");
+function renderFloorCards() {
+  floorList.replaceChildren(...FLOORS.map((f, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "bz-floor-card"; b.dataset.f = String(i);
+    const medal = floorMedals[i] ?? "none";
+    const mark = document.createElement("span"); mark.className = `medal medal-${medal}`; mark.textContent = MEDAL_MARK[medal] ?? "◎"; mark.title = medal === "none" ? "not cleared yet" : `best: ${medal}`;
+    const strong = document.createElement("strong"); strong.textContent = `F${i + 1} — ${f.name}`;
+    const small = document.createElement("small"); small.textContent = `par ${fmtTime(f.par)} · ${medal === "none" ? "descent" : `best ${medal}`}`;
+    b.append(mark, strong, small);
+    b.addEventListener("click", () => { closeMenu(); startFloor(i, "descent", { newRun: true }); });
+    return b;
+  }));
+}
+renderFloorCards();
+$("bz-tour-stats").replaceChildren(...[
+  ["WEAPONS", "knife · pistol · MG · rockets"],
+  ["ENEMIES", "guard · hound · gunner · IRON WARDEN"],
+  ["SECRETS", "push-walls on every floor"],
+  ["BEST RUN", (() => { const b = loadJson<{ score: number; time: number } | null>("bz-best-run", null); return b ? `${b.score} in ${fmtTime(b.time)}` : "not set"; })()],
+  ["ENGINE", "Aura3D · night-city look"]
+].map(([k, v]) => { const d = document.createElement("div"); d.className = "bz-kv"; const a = document.createElement("span"); a.textContent = k!; const c = document.createElement("span"); c.textContent = v!; d.append(a, c); return d; }));
+
+// onboarding card (C27): controls and the objective before floor 1, once per browser
+function dismissIntro() { elIntro.hidden = true; setPaused("intro", false); store.set("bz-intro-seen", "1"); }
+$("bz-intro-go").addEventListener("click", () => { dismissIntro(); if (!touchMode) requestLock(); void mg.sound?.unlock(); cue("ambience"); });
+if (!DEMO && !autoPilot && store.get("bz-intro-seen") !== "1") { elIntro.hidden = false; setPaused("intro", true); }
 
 // ---------------------------------------------------------------------------
-startFloor(0, "descent");
-setModeButtons();
+startFloor(0, "descent", { newRun: true });
+updateHint();
 elHud.classList.remove("hidden");
 void mg.ready().then(() => {
   appReady = true;
+  lastWall = performance.now();
   document.body.dataset.aura3dReady = "true";
-  installFacingQa();
+  installQa();
   window.__AURA3D_ROUTE_READY__ = { ready: true };
 }).catch((err: unknown) => {
   const el = document.getElementById("render-error") ?? document.createElement("div");

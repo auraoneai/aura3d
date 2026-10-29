@@ -70,14 +70,14 @@
       #bz-crosshair.hit::before, #bz-crosshair.hit::after { background: #ff6a4d; }
 
       #bz-status {
-        position: absolute; left: 50%; bottom: 44px; transform: translateX(-50%);
+        position: absolute; left: 50%; bottom: 44px; transform: translateX(-50%) scale(var(--bz-hud-scale, 1)); transform-origin: 50% 100%;
         display: flex; gap: 22px; align-items: flex-end;
         padding: 8px 18px; border-radius: 6px;
         background: linear-gradient(180deg, rgba(10,13,18,0.78), rgba(6,8,11,0.88));
         border: 1px solid rgba(255,182,72,0.25);
       }
       .bz-stat { text-align: center; min-width: 56px; }
-      .bz-stat .bz-label { display: block; font-size: 9px; letter-spacing: 0.16em; color: #8a94a2; text-transform: uppercase; }
+      .bz-stat .bz-label { display: block; font-size: 11px; letter-spacing: 0.16em; color: #8a94a2; text-transform: uppercase; }
       .bz-stat .bz-value { display: block; font-size: 22px; font-weight: 700; color: var(--bz-bone); line-height: 1.15; }
       .bz-stat .bz-value.low { color: var(--bz-blood); }
       .bz-stat .bz-value.amber { color: var(--bz-amber); }
@@ -111,7 +111,7 @@
       #bz-banner small { display: block; font-size: 12px; letter-spacing: 0.2em; color: var(--bz-amber); margin-top: 8px; }
 
       #bz-feed {
-        position: fixed; left: 16px; bottom: 48px; z-index: 32;
+        position: fixed; left: 16px; bottom: 112px; z-index: 32;
         display: flex; flex-direction: column; gap: 4px; pointer-events: none;
         font-family: "Monument Grotesk Mono", monospace; font-size: 10.5px;
       }
@@ -162,6 +162,46 @@
         border: 1px solid rgba(243,236,217,0.2); color: var(--bz-bone);
         border-radius: 8px; padding: 6px 14px; cursor: pointer; font-size: 12px;
       }
+      .bz-overlay { position: fixed; inset: 0; z-index: 72; display: flex; align-items: center; justify-content: center; background: rgba(4, 6, 9, 0.7); backdrop-filter: blur(6px); }
+      .bz-overlay[hidden] { display: none; }
+      .bz-btn { appearance: none; min-height: 44px; min-width: 120px; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-family: "DIN Pro", sans-serif; font-weight: 700; letter-spacing: 0.16em; font-size: 13px; color: #140d02; background: var(--bz-amber); border: 1px solid rgba(0,0,0,0.3); }
+      .bz-btn.ghost { color: var(--bz-bone); background: rgba(255,255,255,0.07); border-color: rgba(243,236,217,0.25); }
+      .bz-actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+      .bz-results-table { width: 100%; border-collapse: collapse; font-family: "Monument Grotesk Mono", monospace; font-size: 12px; color: #c8ccd4; }
+      .bz-results-table th, .bz-results-table td { text-align: left; padding: 5px 6px; border-bottom: 1px dashed rgba(255,255,255,0.08); }
+      .bz-results-table th { color: #8a94a2; font-weight: 400; letter-spacing: 0.1em; font-size: 11px; }
+      #bz-results-total { font-family: "Monument Grotesk Mono", monospace; font-size: 12px; color: var(--bz-amber); margin-top: 12px; line-height: 1.6; }
+      #bz-results-best { font-family: "Monument Grotesk Mono", monospace; font-size: 11px; color: #9aa4b0; margin-top: 4px; }
+      .bz-intro-keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-family: "Monument Grotesk Mono", monospace; font-size: 12px; color: #c8ccd4; margin-top: 10px; }
+      .bz-intro-keys b { color: var(--bz-amber); font-weight: 700; }
+      .bz-key { appearance: none; min-height: 32px; min-width: 96px; border-radius: 6px; cursor: pointer; background: rgba(255,255,255,0.06); border: 1px solid rgba(243,236,217,0.2); color: var(--bz-bone); font-family: "Monument Grotesk Mono", monospace; font-size: 11px; }
+      .bz-hudscale { appearance: none; min-width: 44px; min-height: 36px; border-radius: 6px; cursor: pointer; background: rgba(255,255,255,0.06); border: 1px solid rgba(243,236,217,0.2); color: var(--bz-bone); font-family: "Monument Grotesk Mono", monospace; font-size: 12px; }
+      .bz-hudscale.active { border-color: var(--bz-amber); color: var(--bz-amber); }
+      .bz-check { display: flex; align-items: center; gap: 8px; color: #b8bfca; font-size: 13px; }
+      .bz-floor-card .medal-gold { color: #ffd76a; } .bz-floor-card .medal-silver { color: #d6dde6; } .bz-floor-card .medal-bronze { color: #d58a4a; }
+      #bz-vulnerable {
+        position: fixed; left: 50%; top: calc(50% + 34px); transform: translateX(-50%); z-index: 31; pointer-events: none;
+        font-family: "DIN Pro", sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.32em; color: #ff8a4a;
+        text-shadow: 0 0 12px rgba(255,90,26,0.8), 0 1px 2px #000;
+      }
+      #bz-vulnerable[hidden] { display: none; }
+      #bz-map { position: fixed; right: 16px; top: calc(var(--a3d-bar-space, 52px) + 8px); z-index: 33; border: 1px solid rgba(255,182,72,0.35); border-radius: 6px; image-rendering: pixelated; width: 198px; height: 144px; pointer-events: none; }
+      #bz-map[hidden] { display: none; }
+      /* ---- touch layer (shown on coarse pointers or after the first touch) ---- */
+      #bz-touch { position: fixed; inset: 0; z-index: 34; pointer-events: none; touch-action: none; user-select: none; -webkit-user-select: none; }
+      #bz-touch[hidden] { display: none; }
+      #bz-touch [data-control] { pointer-events: auto; touch-action: none; }
+      #bz-touch [data-control="look"] { position: absolute; right: 0; top: 18%; width: 55%; bottom: 0; }
+      #bz-touch [data-control="move"] { position: absolute; left: max(16px, env(safe-area-inset-left)); bottom: max(150px, calc(env(safe-area-inset-bottom) + 150px)); width: 128px; height: 128px; border-radius: 50%; background: rgba(8,10,14,0.42); border: 1px solid rgba(243,236,217,0.28); }
+      #bz-touch .bz-knob { position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; background: rgba(255,182,72,0.55); pointer-events: none; }
+      #bz-touch .bz-tbtn { position: absolute; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(8,10,14,0.55); border: 1px solid rgba(243,236,217,0.3); color: var(--bz-bone); font-family: "Monument Grotesk Mono", monospace; font-size: 11px; letter-spacing: 0.08em; }
+      #bz-touch .bz-tbtn.on { background: rgba(255,182,72,0.5); color: #140d02; }
+      #bz-touch [data-control="fire"] { right: max(18px, env(safe-area-inset-right)); bottom: 168px; width: 84px; height: 84px; }
+      #bz-touch [data-control="use"] { right: 112px; bottom: 214px; }
+      #bz-touch [data-control="reload"] { right: 112px; bottom: 140px; }
+      #bz-touch [data-control="swap"] { right: 26px; bottom: 264px; }
+      #bz-touch [data-control="pause"] { right: max(14px, env(safe-area-inset-right)); top: calc(var(--a3d-bar-space, 52px) + 56px); width: 48px; height: 48px; }
+      body.bz-touch-mode .aura3d-controls-hint { display: none; }
       .bz-kv { display: flex; justify-content: space-between; font-family: "Monument Grotesk Mono", monospace; font-size: 11px; color: #9aa4b0; padding: 3px 0; border-bottom: 1px dashed rgba(255,255,255,0.07); }
 
       .render-error {
@@ -170,7 +210,17 @@
         background: #090b0f; color: var(--bz-bone); padding: 40px;
         font-size: 15px; line-height: 1.6;
       }
-      @media (max-width: 760px) { .aura3d-controls-hint { display: none; } #bz-status { gap: 12px; padding: 6px 10px; } .bz-stat .bz-value { font-size: 17px; } }
+      @media (max-width: 760px) {
+        .aura3d-controls-hint { display: none; }
+        #bz-status { gap: 10px; padding: 6px 10px; bottom: 16px; max-width: calc(100vw - 20px); box-sizing: border-box; }
+        .bz-stat { min-width: 44px; }
+        .bz-stat .bz-value { font-size: 16px; }
+        .bz-stat .bz-label { font-size: 10px; letter-spacing: 0.08em; }
+        /* the feed sits above the touch stick and the status bar, never over HEALTH/ARMOR/weapon */
+        #bz-feed { bottom: auto; top: calc(var(--a3d-bar-space, 52px) + 64px); left: 10px; max-width: 60vw; }
+        .bz-tick { white-space: normal; }
+        #bz-map { width: 154px; height: 112px; top: calc(var(--a3d-bar-space, 52px) + 110px); }
+      }
       @media (prefers-reduced-motion: reduce) { #bz-vignette.low { animation: none; } }
     </style>
   </head>
@@ -189,7 +239,7 @@
     </div>
 
     <div class="aura3d-controls-hint" id="bz-controls-hint">
-      WASD MOVE · MOUSE AIM · CLICK/SPACE FIRE · R RELOAD · E USE · 1–4/WHEEL WEAPONS · M MAP
+      WASD MOVE · MOUSE AIM · CLICK/SPACE FIRE · R RELOAD · E USE · 1–4/WHEEL WEAPONS · M MAP · P PAUSE
     </div>
 
     <main id="app" class="game-shell" aria-label="Bunker Zero game"></main>
@@ -209,6 +259,61 @@
     <div id="bz-vignette"></div>
     <div id="bz-banner"></div>
     <div id="bz-feed"></div>
+    <div id="bz-vulnerable" hidden>VULNERABLE</div>
+    <canvas id="bz-map" hidden aria-label="Floor map"></canvas>
+
+    <div id="bz-touch" hidden>
+      <div data-control="look" aria-hidden="true"></div>
+      <div data-control="move" aria-label="Move stick"><div class="bz-knob"></div></div>
+      <div class="bz-tbtn" data-control="fire" role="button" aria-label="Fire">FIRE</div>
+      <div class="bz-tbtn" data-control="use" role="button" aria-label="Use">USE</div>
+      <div class="bz-tbtn" data-control="reload" role="button" aria-label="Reload">RLD</div>
+      <div class="bz-tbtn" data-control="swap" role="button" aria-label="Next weapon">SWAP</div>
+      <div class="bz-tbtn" data-control="pause" role="button" aria-label="Pause">II</div>
+    </div>
+
+    <div id="bz-pause" class="bz-overlay" hidden role="dialog" aria-label="Paused">
+      <div class="bz-panel" style="width:min(380px,90vw);text-align:center">
+        <h2>Paused</h2>
+        <p>The bunker waits. P or Esc resumes; the Modes &amp; Tour menu also pauses the run.</p>
+        <div class="bz-actions" style="justify-content:center"><button type="button" class="bz-btn" id="bz-resume">RESUME</button></div>
+      </div>
+    </div>
+
+    <div id="bz-results" class="bz-overlay" hidden role="dialog" aria-label="Run results">
+      <div class="bz-panel">
+        <h2>Bunker Zero cleared</h2>
+        <p>The Iron Warden is down. Your descent, floor by floor:</p>
+        <table class="bz-results-table">
+          <thead><tr><th>FLOOR</th><th>TIME</th><th>KILLS</th><th>SECRETS</th><th>MEDAL</th></tr></thead>
+          <tbody id="bz-results-rows"></tbody>
+        </table>
+        <div id="bz-results-total"></div>
+        <div id="bz-results-best"></div>
+        <div class="bz-actions">
+          <button type="button" class="bz-btn" id="bz-results-restart">RESTART DESCENT</button>
+          <button type="button" class="bz-btn ghost" id="bz-results-menu">MENU</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="bz-intro" class="bz-overlay" hidden role="dialog" aria-label="How to play">
+      <div class="bz-panel" style="width:min(520px,92vw)">
+        <h2>Bunker Zero</h2>
+        <p>Six floors down. On each floor, find the brass key and ride the elevator. Your weapons, ammo, armor and score come with you. On the last floor the elevator stays locked until the Iron Warden falls: hit it hardest while its vent glows.</p>
+        <div class="bz-intro-keys">
+          <b>WASD</b><span>move (arrow keys turn)</span>
+          <b>MOUSE</b><span>aim · click to fire</span>
+          <b>E</b><span>open doors · push cracked walls</span>
+          <b>R</b><span>reload · every weapon has its own magazine</span>
+          <b>1–4</b><span>knife · pistol · machine gun · rockets</span>
+          <b>M</b><span>floor map</span>
+          <b>P / ESC</b><span>pause</span>
+          <b>TOUCH</b><span>left stick moves · drag right to look · FIRE, USE, RLD, SWAP buttons</span>
+        </div>
+        <div class="bz-actions"><button type="button" class="bz-btn" id="bz-intro-go">DEPLOY</button></div>
+      </div>
+    </div>
 
     <div id="bz-menu" role="dialog" aria-label="Bunker Zero modes and tour">
       <div class="bz-panel">
@@ -220,13 +325,23 @@
         <h3>Player Studio</h3>
         <p style="margin-bottom:8px">DOG TAG</p>
         <input type="text" id="bz-dogtag" maxlength="14" value="RAZOR-6" aria-label="Dog tag name" />
-        <p style="margin:12px 0 8px">CAMO TINT (viewmodel)</p>
+        <p style="margin:12px 0 8px">HUD TINT</p>
         <div class="bz-swatchrow" id="bz-camo-row">
           <button type="button" class="bz-swatch active" data-tint="#ffb648" style="background:#ffb648" aria-label="amber"></button>
           <button type="button" class="bz-swatch" data-tint="#7dfcff" style="background:#7dfcff" aria-label="cyan"></button>
           <button type="button" class="bz-swatch" data-tint="#9be84e" style="background:#9be84e" aria-label="olive"></button>
           <button type="button" class="bz-swatch" data-tint="#ff6a9e" style="background:#ff6a9e" aria-label="crimson"></button>
         </div>
+        <p style="margin:14px 0 8px">HUD SIZE</p>
+        <div class="bz-swatchrow">
+          <button type="button" class="bz-hudscale" data-scale="s">S</button>
+          <button type="button" class="bz-hudscale active" data-scale="m">M</button>
+          <button type="button" class="bz-hudscale" data-scale="l">L</button>
+        </div>
+        <p style="margin:14px 0 8px"><label class="bz-check"><input type="checkbox" id="bz-reduced-motion" /> Reduced camera motion (shake and head bob)</label></p>
+        <h3>Keys</h3>
+        <div id="bz-remap"></div>
+        <div class="bz-actions"><button type="button" class="bz-btn ghost" id="bz-remap-reset">RESET KEYS</button></div>
         <h3>Tour Record</h3>
         <div id="bz-tour-stats"></div>
       </div>
