@@ -479,8 +479,8 @@ installQaHooks("strange-orbit", {
     config: () => ({ ...config }),
     touch: () => ({ visible: touchUi.visible(), wanted: touchWanted, sample: touchInput.sample() }),
     muted: () => sound.isMuted(),
-    /** QA: screen position (0..1) of each rider with the last camera pose. */
-    riderScreen: () => Array.from({ length: 6 }, (_, i) => runtime?.projectRider(i, canvas.clientWidth / Math.max(1, canvas.clientHeight)) ?? null),
+    /** QA: screen position (0..1) of each rider (6 = trial ghost) with the last camera pose. */
+    riderScreen: () => Array.from({ length: 7 }, (_, i) => runtime?.projectRider(i, canvas.clientWidth / Math.max(1, canvas.clientHeight)) ?? null),
     status: runStatus,
     applyInput(input: Input | null) { heldInput = input; autopilotOn = false; },
     setScript(next: readonly InputSegment[]) { script = next; heldInput = null; autopilotOn = false; },

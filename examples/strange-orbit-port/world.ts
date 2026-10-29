@@ -177,7 +177,7 @@ export interface WorldRuntime {
   resetCamera(): void;
   /** A zero-G crash along `normal`: push the drawn rider out along it for `IMPACT_REBOUND.seconds`. */
   impact(normal: readonly [number, number, number]): void;
-  /** QA: where the rider at `index` would land on screen with the last camera pose (x, y in 0..1 from top left). */
+  /** QA: where the rider at `index` (6 = trial ghost) would land on screen with the last camera pose (x, y in 0..1 from top left). */
   projectRider(index: number, aspect: number): { x: number; y: number; depth: number } | null;
   readonly nodeCount: number;
 }
@@ -515,7 +515,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
   let lastSizeKey = "";
   const rebound = { t: 0, x: 0, y: 0, z: 0 };
   let lastCamera: { eye: Vec3; look: Vec3; up: Vec3; fov: number } | null = null;
-  const riderAt: Vec3[] = Array.from({ length: 6 }, () => new Vec3());
+  const riderAt: Vec3[] = Array.from({ length: 7 }, () => new Vec3()); // 0 player, 1..5 rivals, 6 ghost
 
   /** Group pose for a rider standing at (`s`, `lane`) on `route`. */
   const poseAt = (s: number, lane: number, route: Route, height: number, heading: number, lean: number): Pose => {
@@ -608,6 +608,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
         const up = new Vec3().crossVectors(side, pose.forward).normalize();
         const e = euler(multiplyMat3(basisMatrix(pose.forward, up, side), MESHY_ENABLED ? MODEL_YAW[input.vehicle] : IDENTITY));
         g.setPosition(pose.position.x, pose.position.y, pose.position.z);
+        riderAt[6]!.copy(pose.position).addScaledVector(up, 0.8 * scale);
         g.setRotation(e[0], e[1], e[2]);
         g.setScale(scale);
       }
@@ -786,11 +787,12 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
 
 /**
  * Menu camera for portrait screens, in the menu frame's axes (metres along the track, across it and up from it).
- * Calibrated on the remote 390x844 capture so the riders sit in the lower third under the menu panel.
+ * Chosen by projecting the rider positions for a 390x844 screen; the remote capture checks it (`riderScreen`).
  */
-export function menuPortraitCamera(aspect: number): { forward: number; side: number; height: number; lookForward: number; lookSide: number; lookHeight: number; fov: number } {
-  const narrow = Math.max(0, Math.min(1, (0.85 - aspect) / 0.4));
-  return { forward: 2.5, side: -11 - 3 * narrow, height: 3.4, lookForward: 8, lookSide: 2.2, lookHeight: 4.4 + 1.2 * narrow, fov: 56 };
+export function menuPortraitCamera(_aspect: number): { forward: number; side: number; height: number; lookForward: number; lookSide: number; lookHeight: number; fov: number } {
+  // Behind the grid, aimed 8 m above the track 14 m ahead: at 390x844 this projects the player to (0.50, 0.84) and the
+  // rivals to y 0.71 to 0.75 (fractions of the screen from the top left), below the menu panel.
+  return { forward: -12, side: 0, height: 3.4, lookForward: 14, lookSide: 0, lookHeight: 8, fov: 60 };
 }
 
 function loopFramePose(state: RaceState): Pose {
