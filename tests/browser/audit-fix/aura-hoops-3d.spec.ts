@@ -7,6 +7,8 @@ import { startExampleDevServer, type ExampleDevServer } from "../example-dev-ser
  *   GL_META <json>                         stats + evidence per shot
  *   GL_JPG  <target> <shot> <i>/<n> <b64>  JPEG, chunked (decode with evidence/aura-hoops-3d/audit-fix-2026-10-29/decode.mjs)
  * Runs on the base commit (BEFORE) and the lane branch (AFTER); features the base lacks are logged, not assumed.
+ * Tags for --grep (one ACR step is capped at 1 h, and the task shell treats "|" as a pipe): @screens, @play, @sweep,
+ * @percourt, @aopage.
  * Software GL presents about one frame every few seconds, so first frames are never judged: every number that matters is
  * taken after a settle of 25 s or more.
  */
@@ -133,18 +135,18 @@ async function screensSet(page: Page, vp: string, actions: number): Promise<void
   await grab(page, `screens-${vp}`, "04-mid", {}, { canvas: false, quality: 88 });
 }
 
-test("screens 1280x720", async ({ page }) => {
+test("@screens screens 1280x720", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
   await screensSet(page, "1280x720", 7);
 });
 
-test("screens 390x844", async ({ browser }) => {
+test("@screens screens 390x844", async ({ browser }) => {
   const ctx = await phoneContext(browser);
   const page = await ctx.newPage();
   try { await screensSet(page, "390x844", 3); } finally { await ctx.close(); }
 });
 
-test("screens card", async ({ browser }) => {
+test("@screens screens card", async ({ browser }) => {
   for (const scale of [1, 2]) {
     const ctx = await browser.newContext({ viewport: { width: 720, height: 450 }, deviceScaleFactor: scale });
     const page = await ctx.newPage();
@@ -158,7 +160,7 @@ test("screens card", async ({ browser }) => {
 
 /* ---------------- C1: touch play under coarse-pointer emulation ---------------- */
 
-test("phone touch", async ({ browser }) => {
+test("@play phone touch", async ({ browser }) => {
   const ctx = await phoneContext(browser);
   const page = await ctx.newPage();
   try {
@@ -200,7 +202,7 @@ test("phone touch", async ({ browser }) => {
 
 /* ---------------- C2 / C14: one Escape opens the menu, and the open menu pauses play ---------------- */
 
-test("escape menu pause", async ({ page }) => {
+test("@play escape menu pause", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
   const t0 = await open(page, "?court=rucker&autoplay=1", "escape");
   await waitUntil(page, t0, 30);
@@ -228,7 +230,7 @@ test("escape menu pause", async ({ page }) => {
 
 /* ---------------- C22 (4) / checklist: results card ---------------- */
 
-test("results card", async ({ page }) => {
+test("@play results card", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
   const t0 = await open(page, "?court=rucker&autoplay=1&diag=1&qaTarget=2&simsteps=6", "results");
   let reached = false;
@@ -249,7 +251,7 @@ test("results card", async ({ page }) => {
 
 const COURTS = ["rucker", "venice", "athens", "manila", "shanghai", "orbit"] as const;
 for (const court of COURTS) {
-  test(`courts ${court}`, async ({ page }) => {
+  test(`@percourt courts ${court}`, async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
     const t0 = await open(page, `?court=${court}`, `court-${court}`);
     for (const sec of [25, 60]) {
@@ -261,7 +263,7 @@ for (const court of COURTS) {
 
 for (const court of ["rucker", "shanghai"] as const) {
   for (const ao of ["0", "1"] as const) {
-    test(`ao ${court} ao=${ao}`, async ({ page }) => {
+    test(`@aopage ao ${court} ao=${ao}`, async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 720 });
       const t0 = await open(page, `?court=${court}&diag=1&qaAo=${ao}`, `ao-${court}-${ao}`);
       await waitUntil(page, t0, 60);
@@ -286,12 +288,12 @@ async function cycleCourts(page: Page, label: string, query: string, courts: rea
   }
 }
 
-test("courts all", async ({ page }) => {
+test("@sweep courts all", async ({ page }) => {
   await cycleCourts(page, "courts", "", COURTS);
 });
 
 for (const ao of ["0", "1"] as const) {
-  test(`ao cycle ao=${ao}`, async ({ page }) => {
+  test(`@sweep ao cycle ao=${ao}`, async ({ page }) => {
     await cycleCourts(page, `ao${ao}`, `&diag=1&qaAo=${ao}`, ["rucker", "shanghai", "orbit"]);
   });
 }
