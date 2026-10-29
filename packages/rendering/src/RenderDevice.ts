@@ -220,6 +220,11 @@ export interface RenderDeviceInfo {
 
 export interface RenderDeviceDiagnostics {
   readonly drawCalls: number;
+  /** Primitives submitted through `draw` and `multiDrawElementsInstanced` since the frame began: index (or vertex) count / 3 per triangle draw, times the instance count. */
+  readonly triangles?: number;
+  /** Same count for `lines` draws (count / 2) and `points` draws (count). */
+  readonly lines?: number;
+  readonly points?: number;
   readonly buffers: number;
   readonly shaders: number;
   /** C-28 (PR 0a): native program compiles this session. */

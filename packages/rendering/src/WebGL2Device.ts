@@ -522,6 +522,7 @@ export class WebGL2Device implements RenderDevice {
 
   beginFrame(width: number, height: number): void {
     this.host.lifecycle.beginFrame(width, height);
+    this.primitiveCounts = { triangles: 0, lines: 0, points: 0 };
   }
 
   clear(color: readonly [number, number, number, number]): void {
@@ -538,6 +539,18 @@ export class WebGL2Device implements RenderDevice {
 
   draw(command: DrawCommand): void {
     this.host.drawBinder.draw(command);
+    this.countPrimitives(command);
+  }
+
+  /** Per-frame primitive totals for `getDiagnostics()` (`info().render.triangles`); reset in `beginFrame` and `resetFrameCounters`. */
+  private primitiveCounts = { triangles: 0, lines: 0, points: 0 };
+
+  private countPrimitives(command: DrawCommand): void {
+    const elements = command.indexBuffer ? command.indexCount ?? 0 : command.vertexCount;
+    const instances = Math.max(1, command.instanceCount ?? 1);
+    if (command.topology === "lines") this.primitiveCounts.lines += Math.floor(elements / 2) * instances;
+    else if (command.topology === "points") this.primitiveCounts.points += elements * instances;
+    else this.primitiveCounts.triangles += Math.floor(elements / 3) * instances;
   }
 
   readPixels(x: number, y: number, width: number, height: number, attachment?: number): Uint8Array {
@@ -592,6 +605,7 @@ export class WebGL2Device implements RenderDevice {
 
   resetFrameCounters(): void {
     this.host.counters.drawCalls = 0;
+    this.primitiveCounts = { triangles: 0, lines: 0, points: 0 };
     this.host.counters.readbacks = 0;
   }
 
@@ -685,6 +699,7 @@ export class WebGL2Device implements RenderDevice {
 
   multiDrawElementsInstanced(draws: readonly unknown[]): void {
     this.host.drawBinder.multiDrawElementsInstanced(draws);
+    for (const command of draws as readonly DrawCommand[]) this.countPrimitives(command);
   }
 
   /**
@@ -1520,6 +1535,9 @@ export class WebGL2Device implements RenderDevice {
     const gpuTargetEntries = this.host.post.describeGpuTargetInventory(liveRenderTargets);
     return {
       drawCalls: this.host.counters.drawCalls,
+      triangles: this.primitiveCounts.triangles,
+      lines: this.primitiveCounts.lines,
+      points: this.primitiveCounts.points,
       buffers: liveBuffers,
       shaders: liveShaders,
       renderTargets: liveRenderTargets.length,
