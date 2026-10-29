@@ -27,6 +27,8 @@ const PAGE = "/examples/strange-orbit-port/index.html";
 interface Target { readonly name: string; readonly query: string }
 const TARGETS: readonly Target[] = [
   { name: "so-default", query: "" },
+  // RP-05 game side: the 4.3.7 production chain (bloom fusion off) against the default auto/separable chain
+  { name: "so-production", query: "?aura3d-render=production" },
   { name: "so-env-0", query: "?env=0" },
   { name: "so-env-0.5", query: "?env=0.5" },
   { name: "so-env-0.75", query: "?env=0.75" },
