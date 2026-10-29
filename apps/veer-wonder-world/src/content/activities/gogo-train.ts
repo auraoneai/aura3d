@@ -49,6 +49,8 @@ export const activity: ActivitySpec = {
         { do: "sfx", sound: "chugga" },
         { do: "enter", actor: "gogo", at: "center", from: "offLeft", style: "drive" },
         { do: "object", target: "gogo", action: "go" },
+        // GoGo drives in front first along the track, then turns its face to the child for its "Hi!" (07 B33).
+        { do: "face", actor: "gogo", toward: "viewer" },
         { do: "face", actor: "peeko", toward: "gogo" }
       ],
       // The narrator speaks while GoGo drives in from off-screen; GoGo's own

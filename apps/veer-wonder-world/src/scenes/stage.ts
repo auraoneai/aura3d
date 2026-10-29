@@ -1658,7 +1658,8 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
         n.base = run.to;
         n.move = null;
         director.setLocomotion(n.id, null);
-        if (n.traits.turns === "full" && n.role === "actor") n.faceYaw = n.heading;
+        // A vehicle (GoGo, its carriage, the car) stays facing the way it drove; a face action still turns it.
+        if (n.traits.turns === "full") n.faceYaw = n.heading;
         // Off stage this is unseen; on stage (an exit to "back") it is a soft shrink, never a blink.
         if (run.hideOnArrival) hide(n);
       }

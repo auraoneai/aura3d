@@ -64,6 +64,8 @@ export const episode: EpisodeSpec = {
         { do: "music", bed: "stationBed" },
         { do: "sfx", sound: "chugga" },
         { do: "enter", actor: "gogo", at: "center", from: "offLeft", style: "drive" },
+        // GoGo drives in front first along the track, then turns its face to the child to say hi (07 B33).
+        { do: "face", actor: "gogo", toward: "viewer" },
         { do: "enter", actor: "carriage", at: "left", from: "offLeft", style: "drive" },
         { do: "gesture", actor: "lulu", gesture: "wave" },
         { do: "gesture", actor: "peeko", gesture: "wave" }

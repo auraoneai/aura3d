@@ -8,7 +8,8 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { MODEL_KEYS, type ModelKey } from "../../../src/aura-assets.js";
 import { episode as E04 } from "../../../src/content/episodes/gogo-abc-train.js";
-import { MODEL_FRONT_YAW, buildStoryScene } from "../../../src/scenes/stage.js";
+import { MODEL_FRONT_YAW, buildStoryScene, createStage } from "../../../src/scenes/stage.js";
+import type { EpisodeSpec } from "../../../src/types.js";
 
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
@@ -64,6 +65,43 @@ describe("model orientation (07 B33)", () => {
       expect(Array.isArray(rotation), JSON.stringify(gogo).slice(0, 300)).toBe(true);
       const yaw = Array.isArray(rotation) ? Number(rotation[1]) : NaN;
       expect(yaw, withModels ? "the model is turned" : "the stand-in faces +Z already").toBeCloseTo(withModels ? Math.PI / 2 : 0, 6);
+    }
+  });
+
+  it("keeps a vehicle facing the way it drove, and a face action still turns it", async () => {
+    const probe: EpisodeSpec = {
+      ...E04,
+      id: "probe-vehicle-heading",
+      cast: [{ id: "gogo", at: "offRight" }],
+      props: [{ id: "car", asset: "car", at: "offRight", size: 0.6 }],
+      beats: []
+    };
+    const stage = await createStage({ target: null, reducedMotion: false, models: false, mountTimeoutMs: 50 });
+    const run = (seconds: number): void => {
+      for (let i = 0; i < Math.round(seconds * 20); i += 1) stage.update(0.05);
+    };
+    try {
+      await stage.load(probe);
+      const app = stage.game().app;
+      const car = app.nodes.get("car");
+      const gogo = app.nodes.get("gogo");
+      if (!car || !gogo) throw new Error("missing nodes");
+      // Both drive in from the right, heading toward -X, and keep that heading once parked.
+      stage.apply([
+        { do: "enter", actor: "car", at: "left", from: "offRight", style: "drive" },
+        { do: "enter", actor: "gogo", at: "right", from: "offRight", style: "drive" }
+      ]);
+      run(8);
+      expect(stage.snapshot().nodes.find((n) => n.id === "car")?.moving).toBe(false);
+      expect(car.rotation[1]).toBeCloseTo(-Math.PI / 2, 2);
+      expect(gogo.rotation[1]).toBeCloseTo(-Math.PI / 2, 2);
+      // Facing the viewer turns GoGo's front (+Z for the stand-in, the turned model) to the camera.
+      stage.apply([{ do: "face", actor: "gogo", toward: "viewer" }]);
+      run(3);
+      expect(gogo.rotation[1]).toBeCloseTo(0, 2);
+      expect(car.rotation[1]).toBeCloseTo(-Math.PI / 2, 2);
+    } finally {
+      stage.dispose();
     }
   });
 });
