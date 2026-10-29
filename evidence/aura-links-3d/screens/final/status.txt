@@ -1,25 +1,35 @@
-@@SHOTSA aura-links-3d 1280x720 title ready=true
-@@SHOTSA aura-links-3d 1280x720 play ready=true
-@@FINA links-state after-swing+0ms {"route":"showcase-aura-links-3d","engine":"@aura3d/engine","engineVersion":"4.0.2","ready":true,"framesRendered":69,"mode":"quick","phase":"flight","cameraMode":"flight","course":"stAuroras","hole":1,"par":4,"strokes":1,"putts":0,"lie":"tee","club":"driver","aimYaw":0.0407936828678654,"windSpeed":5.509567142699279,"windYaw":2.2810624838252145,"ballStatus":"fligh
-@@FINA links-state after-swing+3000ms {"route":"showcase-aura-links-3d","engine":"@aura3d/engine","engineVersion":"4.0.2","ready":true,"framesRendered":70,"mode":"quick","phase":"flight","cameraMode":"flight","course":"stAuroras","hole":1,"par":4,"strokes":1,"putts":0,"lie":"tee","club":"driver","aimYaw":0.0407936828678654,"windSpeed":5.509567142699279,"windYaw":2.2810624838252145,"ballStatus":"fl
-@@FINA links-state after-swing+8000ms {"route":"showcase-aura-links-3d","engine":"@aura3d/engine","engineVersion":"4.0.2","ready":true,"framesRendered":71,"mode":"quick","phase":"flight","cameraMode":"flight","course":"stAuroras","hole":1,"par":4,"strokes":1,"putts":0,"lie":"tee","club":"driver","aimYaw":0.0407936828678654,"windSpeed":5.509567142699279,"windYaw":2.2810624838252145,"ballStatus":"fl
-@@FINA links-hud-strokes 1
-@@SHOTSA aura-links-3d 1280x720 done captured=10 signatures=1 late=false results=false errors=0
-@@SHOTSA aura-links-3d 390x844 title ready=true
-@@SHOTSA aura-links-3d 390x844 play ready=true
-@@FINA links-state after-swing+0ms {"route":"showcase-aura-links-3d","engine":"@aura3d/engine","engineVersion":"4.0.2","ready":true,"framesRendered":68,"mode":"quick","phase":"flight","cameraMode":"flight","course":"stAuroras","hole":1,"par":4,"strokes":1,"putts":0,"lie":"tee","club":"driver","aimYaw":0.0407936828678654,"windSpeed":5.509567142699279,"windYaw":2.2810624838252145,"ballStatus":"fligh
-@@FINA links-state after-swing+3000ms {"route":"showcase-aura-links-3d","engine":"@aura3d/engine","engineVersion":"4.0.2","ready":true,"framesRendered":69,"mode":"quick","phase":"flight","cameraMode":"flight","course":"stAuroras","hole":1,"par":4,"strokes":1,"putts":0,"lie":"tee","club":"driver","aimYaw":0.0407936828678654,"windSpeed":5.509567142699279,"windYaw":2.2810624838252145,"ballStatus":"fl
-@@FINA links-state after-swing+8000ms {"route":"showcase-aura-links-3d","engine":"@aura3d/engine","engineVersion":"4.0.2","ready":true,"framesRendered":71,"mode":"quick","phase":"flight","cameraMode":"flight","course":"stAuroras","hole":1,"par":4,"strokes":1,"putts":0,"lie":"tee","club":"driver","aimYaw":0.0407936828678654,"windSpeed":5.509567142699279,"windYaw":2.2810624838252145,"ballStatus":"fl
-@@FINA links-hud-strokes 1
-@@SHOTSA aura-links-3d 390x844 done captured=10 signatures=1 late=false results=false errors=0
-@@SHOTSA aura-links-3d card 1x ok
-@@SHOTSA aura-links-3d card 2x ok
-@@SHOTSA aura-links-3d 390x844 title ready=true
-@@SHOTSA aura-links-3d 390x844 play ready=true
-@@FINA links-state after-swing+0ms {"route":"showcase-aura-links-3d","engine":"@aura3d/engine","engineVersion":"4.0.2","ready":true,"framesRendered":69,"mode":"quick","phase":"flight","cameraMode":"flight","course":"stAuroras","hole":1,"par":4,"strokes":1,"putts":0,"lie":"tee","club":"driver","aimYaw":0.0407936828678654,"windSpeed":5.509567142699279,"windYaw":2.2810624838252145,"ballStatus":"fligh
-@@FINA links-state after-swing+3000ms {"route":"showcase-aura-links-3d","engine":"@aura3d/engine","engineVersion":"4.0.2","ready":true,"framesRendered":70,"mode":"quick","phase":"flight","cameraMode":"flight","course":"stAuroras","hole":1,"par":4,"strokes":1,"putts":0,"lie":"tee","club":"driver","aimYaw":0.0407936828678654,"windSpeed":5.509567142699279,"windYaw":2.2810624838252145,"ballStatus":"fl
-@@FINA links-state after-swing+8000ms {"route":"showcase-aura-links-3d","engine":"@aura3d/engine","engineVersion":"4.0.2","ready":true,"framesRendered":72,"mode":"quick","phase":"flight","cameraMode":"flight","course":"stAuroras","hole":1,"par":4,"strokes":1,"putts":0,"lie":"tee","club":"driver","aimYaw":0.0407936828678654,"windSpeed":5.509567142699279,"windYaw":2.2810624838252145,"ballStatus":"fl
-@@FINA links-hud-strokes 1
-@@SHOTSA aura-links-3d 390x844 done captured=10 signatures=1 late=false results=false errors=0
-@@SHOTSA aura-links-3d card 1x ok
-@@SHOTSA aura-links-3d card 2x ok
+# remote capture log lines (2026-10-29, branch audit-fix/g10 f03ec0bd1)
+GL_STATE {"target":"links-shots-play-1280x720","probe":"figures-at-address","figures":{"ball":[0,2,0],"eye":[-2.917978533588253,4.1499991655812325,-5.285395113976291],"target":[1.386600566363492,-1.0359139150927859,33.97171387590555],"golfer-body":{"position":[0.5187517402220141,1.95,-0.04119019320945238],"visible":true},"caddy-body":{"position":[3.1871421775432704,1.95,2.0717443713269117],"visible":true},"golfer-bag":{"position":[3.7071173888507136,2.41,2.5509372131200454],"visible":true},"golfer-cart":{"position":[6.517022648386624,1.9467379424835725,2.736496994410153],"visible":true},"gallery-fan-0":null,"gallery-fan-1":null,"gallery-fan-2":null,"gallery-fan-3":null,"gallery-fan-4":null,"gallery-fan-5":null}}
+GL_STATE {"target":"links-shots-play-1280x720","probe":"screens","phase":"address","strokes":1,"hudStrokes":"1","lastShot":["Driver · 52% · PURE · STRAIGHT"]}
+GL_STATE {"target":"links-shots-play-390x844","probe":"figures-at-address","figures":{"ball":[0,2,0],"eye":[-0.37864391339961684,4.146262037482752,-7.290623417234536],"target":[1.386600564094922,-1.0359139114587101,33.97171382032559],"golfer-body":{"position":[0.5187517402220141,1.95,-0.04119019320945238],"visible":true},"caddy-body":{"position":[3.1871421775432704,1.95,2.0717443713269117],"visible":true},"golfer-bag":{"position":[3.7071173888507136,2.41,2.5509372131200454],"visible":true},"golfer-cart":{"position":[6.517022648386624,1.9467379424835725,2.736496994410153],"visible":true},"gallery-fan-0":null,"gallery-fan-1":null,"gallery-fan-2":null,"gallery-fan-3":null,"gallery-fan-4":null,"gallery-fan-5":null}}
+GL_STATE {"target":"links-shots-play-390x844","probe":"screens","phase":"address","strokes":1,"hudStrokes":"1","lastShot":["Driver · 52% · PURE · STRAIGHT"]}
+GL_STATE {"target":"links-play-holeout-phone","probe":"hole-out","start":{"hole":1,"strokes":0},"spentS":15,"phase":"address","hole":2,"card":{"toPar":-2,"totalStrokes":2},"strokesLog":["Driver · 97% · PURE · STRAIGHT","lie: green · 242m carry + 0m roll · 6m out","Putter · 49% · PURE · STRAIGHT","EAGLE on 1 (2 for par 4)"]}
+GL_STATE {"target":"links-play-holeout-phone","probe":"hole-2-address","spentS":6,"hole":2,"phase":"address","cameraMode":"aim"}
+GL_STATE {"target":"links-play-roundout-desktop","probe":"round-out","spentS":160,"phase":"roundover","hole":9,"card":{"toPar":-17,"totalStrokes":19},"finalCard":{"shown":true,"title":"ROUND COMPLETE","rows":["HOLE123456789TOT","PAR45434534436","YOU23222222219"],"foot":"ST. AURORAS LINKS · -17 · 19 STROKES · MENU FOR A NEW ROUND"}}
+GL_STATE {"target":"links-play-roundout-phone","probe":"round-out","spentS":160,"phase":"roundover","hole":9,"card":{"toPar":-17,"totalStrokes":19},"finalCard":{"shown":true,"title":"ROUND COMPLETE","rows":["HOLE123456789TOT","PAR45434534436","YOU23222222219"],"foot":"ST. AURORAS LINKS · -17 · 19 STROKES · MENU FOR A NEW ROUND"}}
+GL_META links-shots-card-1x card-1x 720x450 mean 135.12 phase address strokes 0 drawCalls 138
+GL_META links-shots-card-2x card-2x 1440x900 mean 134.65 phase address strokes 0 drawCalls 138
+GL_META links-shots-title-1280x720 01-title 1280x720 mean 32.57 phase menu strokes 0 drawCalls 122
+GL_META links-shots-title-390x844 01-title 390x844 mean 37.21 phase menu strokes 0 drawCalls 70
+GL_META links-shots-play-1280x720 02-early 1280x720 mean 122.18 phase address strokes 0 drawCalls 138
+GL_META links-shots-play-1280x720 03-action-01-address 1280x720 mean 122.2 phase address strokes 0 drawCalls 138
+GL_META links-shots-play-1280x720 03-action-02-power 1280x720 mean 119.93 phase swing strokes 0 drawCalls 167
+GL_META links-shots-play-1280x720 03-action-03-accuracy 1280x720 mean 120.47 phase swing strokes 0 drawCalls 167
+GL_META links-shots-play-1280x720 03-action-04-swing-0 1280x720 mean 120.59 phase swing strokes 1 drawCalls 167
+GL_META links-shots-play-1280x720 03-action-05-swing-1 1280x720 mean 120.99 phase flight strokes 1 drawCalls 183
+GL_META links-shots-play-1280x720 03-action-06-swing-2 1280x720 mean 98.56 phase flight strokes 1 drawCalls 99
+GL_META links-shots-play-1280x720 03-action-07-swing-3 1280x720 mean 97.74 phase flight strokes 1 drawCalls 105
+GL_META links-shots-play-1280x720 03-action-08-swing-4 1280x720 mean 96.24 phase flight strokes 1 drawCalls 101
+GL_META links-shots-play-1280x720 03-action-09-swing-5 1280x720 mean 101.77 phase flight strokes 1 drawCalls 101
+GL_META links-shots-play-1280x720 03-action-10-route-showcase-aura-links-3d-state-p 1280x720 mean 110.35 phase address strokes 1 drawCalls 203
+GL_META links-shots-play-390x844 02-early 390x844 mean 132.77 phase address strokes 0 drawCalls 103
+GL_META links-shots-play-390x844 03-action-01-address 390x844 mean 132.44 phase address strokes 0 drawCalls 103
+GL_META links-shots-play-390x844 03-action-02-power 390x844 mean 136.08 phase swing strokes 0 drawCalls 87
+GL_META links-shots-play-390x844 03-action-03-accuracy 390x844 mean 135.84 phase swing strokes 0 drawCalls 87
+GL_META links-shots-play-390x844 03-action-04-swing-0 390x844 mean 136.24 phase swing strokes 1 drawCalls 87
+GL_META links-shots-play-390x844 03-action-05-swing-1 390x844 mean 135.95 phase flight strokes 1 drawCalls 103
+GL_META links-shots-play-390x844 03-action-06-swing-2 390x844 mean 98.58 phase flight strokes 1 drawCalls 74
+GL_META links-shots-play-390x844 03-action-07-swing-3 390x844 mean 97.19 phase flight strokes 1 drawCalls 78
+GL_META links-shots-play-390x844 03-action-08-swing-4 390x844 mean 96.55 phase flight strokes 1 drawCalls 76
+GL_META links-shots-play-390x844 03-action-09-swing-5 390x844 mean 93.49 phase flight strokes 1 drawCalls 76
+GL_META links-shots-play-390x844 03-action-10-route-showcase-aura-links-3d-state-p 390x844 mean 118.65 phase address strokes 1 drawCalls 119
