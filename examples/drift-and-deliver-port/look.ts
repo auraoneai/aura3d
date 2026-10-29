@@ -8,13 +8,14 @@
  */
 import { camera, defineAuraAssets, effects, environments, geometry, instances, lights, material, primitives, scene, texture } from "@aura3d/engine";
 import { CAR_KINDS, buildCarShell, type CarKind, type CarShell } from "./vehicles";
-import { TRAFFIC_MODEL, carModel } from "./models";
+import { TRAFFIC_MODEL, carScale, trafficInstances } from "./models";
 import { planProps, propNodes, type PropPlan } from "./props";
 import { GROUND_HALF, WALLS, blockDecals, buildCity, buildFurniture, buildProps, facadeKey, farCity, roadPlane, type Furniture } from "./city";
 import { farCitySpec, skySpec } from "./sky";
 import { PALETTE_SLOTS, Palette, bakePaletteUVs, createMesh, quad, toArrays, type MeshData } from "./mesh";
 import { paintFacade, paintPalette, paintPark, paintPlaza, paintRoadTile, paintShopfront, paintSky, type FacadeKind } from "./textures";
 import type { Block, Building, Pickup, TrafficCar } from "./world";
+import type { Solid } from "./sim";
 
 type TextureHandle = ReturnType<typeof texture.canvas>;
 type Matrix = number[];
@@ -34,6 +35,30 @@ export function mat(x: number, y: number, z: number, yaw: number, pitch: number,
   const cp = Math.cos(pitch);
   const sp = Math.sin(pitch);
   return [cy * sx, 0, -sn * sx, 0, sn * sp * sy, cp * sy, cy * sp * sy, 0, sn * cp * sz, -sp * sz, cy * cp * sz, 0, x, y, z, 1];
+}
+
+/** `mat` written into `out` (no allocation; for per-frame instance updates). */
+export function matInto(out: Float32Array, x: number, y: number, z: number, yaw: number, pitch: number, sx: number, sy: number, sz: number): Float32Array {
+  const cy = Math.cos(yaw);
+  const sn = Math.sin(yaw);
+  const cp = Math.cos(pitch);
+  const sp = Math.sin(pitch);
+  out[0] = cy * sx; out[1] = 0; out[2] = -sn * sx; out[3] = 0;
+  out[4] = sn * sp * sy; out[5] = cp * sy; out[6] = cy * sp * sy; out[7] = 0;
+  out[8] = sn * cp * sz; out[9] = -sp * sz; out[10] = cy * cp * sz; out[11] = 0;
+  out[12] = x; out[13] = y; out[14] = z; out[15] = 1;
+  return out;
+}
+
+/** `coinMat` written into `out`. */
+export function coinMatInto(out: Float32Array, x: number, y: number, z: number, yaw: number, diameter: number, thickness: number): Float32Array {
+  const cy = Math.cos(yaw);
+  const sn = Math.sin(yaw);
+  out[0] = cy * diameter; out[1] = 0; out[2] = -sn * diameter; out[3] = 0;
+  out[4] = sn * thickness; out[5] = 0; out[6] = cy * thickness; out[7] = 0;
+  out[8] = 0; out[9] = -diameter; out[10] = 0; out[11] = 0;
+  out[12] = x; out[13] = y; out[14] = z; out[15] = 1;
+  return out;
 }
 
 /** A cylinder lying on its side with its axis along the car's x axis (a wheel), at `(x, y, z)`. */
@@ -121,11 +146,21 @@ export interface TrafficRig {
   detail: ReturnType<typeof instances.mesh>;
 }
 
+export interface TrafficGroup {
+  /** runtime id of the instanced model node */
+  id: string;
+  /** traffic indices drawn by this node, in instance order */
+  cars: number[];
+  scale: number;
+}
+
 export interface LookRig {
   builder: ReturnType<typeof scene>;
   traffic: TrafficRig[];
-  /** car indices drawn as generated models (`traffic-<i>` runtime nodes); empty when the instanced shells are used */
-  modelTraffic: number[];
+  /** traffic drawn as generated models, one instanced node per car kind; empty when the instanced shells are used */
+  modelTraffic: TrafficGroup[];
+  /** collision solids of the generated hydrants and bus shelters (empty with `models: false`) */
+  propSolids: readonly Solid[];
   coinMesh: ReturnType<typeof instances.mesh>;
   starMesh: ReturnType<typeof instances.mesh>;
   heartMesh: ReturnType<typeof instances.mesh>;
@@ -227,12 +262,15 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
   if (propPlan) for (const n of propNodes(propPlan)) b.add(n);
 
   // ---- traffic: paint + detail shells per kind, wheels and hubs ----
-  const modelTraffic: number[] = [];
+  const modelTraffic: TrafficGroup[] = [];
   if (opts.models) {
-    world.traffic.forEach((_, i) => {
-      b.add(carModel(`traffic-${i}`, TRAFFIC_MODEL[CAR_KINDS[i % CAR_KINDS.length] as CarKind], false));
-      modelTraffic.push(i);
-    });
+    for (const kind of CAR_KINDS) {
+      const cars = world.traffic.map((_, i) => i).filter((i) => CAR_KINDS[i % CAR_KINDS.length] === kind);
+      const key = TRAFFIC_MODEL[kind];
+      const id = `traffic-${kind}`;
+      b.add(trafficInstances(id, key, cars.map((i) => ({ position: [world.traffic[i]!.x, 0, world.traffic[i]!.z] as [number, number, number], rotation: [0, world.traffic[i]!.yaw, 0] as [number, number, number] }))));
+      modelTraffic.push({ id, cars, scale: carScale(key) });
+    }
   }
   const traffic: TrafficRig[] = (opts.models ? [] : CAR_KINDS).map((kind) => {
     const cars = world.traffic.map((_, i) => i).filter((i) => i % CAR_KINDS.length === CAR_KINDS.indexOf(kind));
@@ -257,6 +295,7 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
     builder: b,
     traffic,
     modelTraffic,
+    propSolids: propPlan?.solids ?? [],
     coinMesh,
     starMesh,
     heartMesh,

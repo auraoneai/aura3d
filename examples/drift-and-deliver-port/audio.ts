@@ -56,6 +56,13 @@ export const CUES = {
 
 export interface PortAudio {
   resume(): void;
+  /**
+   * Pause, blur or a hidden tab: ramp the engine, squeal and nitro beds to silence and suspend the context (rAF stops
+   * in a hidden tab, so the last ramp targets would otherwise hold). `resume()` brings it back.
+   */
+  suspend(): void;
+  /** Current gain targets of the continuous beds (tests and QA). */
+  beds(): { engine: number; squeal: number; rush: number } | null;
   update(car: AudioCar, throttle: boolean, dt: number): void;
   chime(kind: "coin" | "star" | "heart", combo: number): void;
   thud(): void;
@@ -74,9 +81,11 @@ function noiseBuffer(ctx: AudioContext, seconds: number): AudioBuffer {
   return buffer;
 }
 
-export function createAudio(): PortAudio {
-  const manager = new AudioContextManager();
+export function createAudio(options: { context?: AudioContext } = {}): PortAudio {
+  const manager = new AudioContextManager(options.context ? { context: options.context as never } : {});
   const bank = createCueBank({ cues: CUES, manager, masterGain: 0.8, sfxGain: 1, noiseSeed: 0x2f6e2b1, muteKey: false });
+  let suspended = false;
+  const targets = { engine: 0, squeal: 0, rush: 0 };
   let ctx: AudioContext | undefined;
   let master: GainNode | undefined;
   let muted = false;
@@ -89,7 +98,7 @@ export function createAudio(): PortAudio {
 
   const start = (): void => {
     if (ctx) return;
-    if (typeof AudioContext === "undefined") return;
+    if (!options.context && typeof AudioContext === "undefined") return;
     ctx = manager.context as unknown as AudioContext;
     master = ctx.createGain();
     master.gain.value = muted ? 0 : 0.8;
@@ -139,18 +148,37 @@ export function createAudio(): PortAudio {
       return muted;
     },
     resume() {
+      suspended = false;
       start();
       void bank.unlock();
       if (ctx && ctx.state === "suspended") void ctx.resume();
     },
+    suspend() {
+      suspended = true;
+      if (!ctx || !engineGainNode || !squeal || !rush) return;
+      for (const g of [engineGainNode, squeal, rush]) {
+        g.gain.cancelScheduledValues?.(ctx.currentTime);
+        g.gain.setTargetAtTime(0, ctx.currentTime, 0.03);
+      }
+      targets.engine = targets.squeal = targets.rush = 0;
+      const c = ctx;
+      // let the 30 ms ramp land before the clock stops
+      setTimeout(() => { if (suspended && c.state === "running") void c.suspend(); }, 150);
+    },
+    beds() {
+      return ctx ? { ...targets } : null;
+    },
     update(car, throttle, dt) {
-      if (!ctx || !engineA || !engineB || !engineGainNode || !squeal || !rush) return;
+      if (suspended || !ctx || !engineA || !engineB || !engineGainNode || !squeal || !rush) return;
       const f = engineFreq(car.speed, car.boosting);
       ramp(engineA.frequency, f, dt);
       ramp(engineB.frequency, f * 1.503, dt);
-      ramp(engineGainNode.gain, engineGain(car.speed, throttle), dt);
-      ramp(squeal.gain, squealGain(car.drifting, car.speed), dt);
-      ramp(rush.gain, rushGain(car.boosting, car.speed), dt);
+      targets.engine = engineGain(car.speed, throttle);
+      targets.squeal = squealGain(car.drifting, car.speed);
+      targets.rush = rushGain(car.boosting, car.speed);
+      ramp(engineGainNode.gain, targets.engine, dt);
+      ramp(squeal.gain, targets.squeal, dt);
+      ramp(rush.gain, targets.rush, dt);
     },
     chime(kind, combo) {
       bank.play(kind === "star" ? "chimeStar" : kind === "heart" ? "chimeHeart" : "chimeCoin", { level: combo });

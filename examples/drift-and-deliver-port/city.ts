@@ -11,6 +11,7 @@
 import { BAY_M, CELLS, FLOOR_M, SHOP_H, rng, type FacadeKind } from "./textures";
 import { blob, box, createMesh, hexRgb, mixRgb, orientedBox, prism, quad, scaleRgb, tri, triangleCount, type MeshData, type Rgb } from "./mesh";
 import { PITCH, STREET_LINES, noise, type Block, type Building, type District } from "./world";
+import type { Solid } from "./sim";
 
 /** One chunk: the whole city is ~126k triangles, so merging by material (about ten draws) beats per-chunk culling. */
 export const CHUNK_BLOCKS = 15;
@@ -432,6 +433,25 @@ export function buildFurniture(blocks: readonly Block[]): Furniture {
   return { pedestrians: buildPedestrians(), lamps, streetTrees, signals, parkTrees };
 }
 
+
+/** Collision half sizes (metres) of the street furniture: thin posts stop the car hard, trees and people give way a little. */
+export const FURNITURE_HALF = { lamp: 0.22, signal: 0.22, tree: 0.4, pedestrian: 0.3 } as const;
+
+/**
+ * Collision solids for the street furniture (checklist M6): lamps and signals are `post` solids (the sim stops the car
+ * at 0.42 of its speed into them), street and park trees and pedestrians are `prop` solids (a soft shove, 0.16).
+ * Pedestrians stand on the sidewalk 6.4 to 7.9 m from the centre line, outside both 4.2 m traffic lanes.
+ */
+export function furnitureSolids(f: Furniture): Solid[] {
+  const out: Solid[] = [];
+  const add = (x: number, z: number, h: number, kind: Solid["kind"]): void => { out.push({ x, z, hw: h, hd: h, kind }); };
+  for (const p of f.lamps) add(p.x, p.z, FURNITURE_HALF.lamp, "post");
+  for (const p of f.signals) add(p.x, p.z, FURNITURE_HALF.signal, "post");
+  for (const t of f.streetTrees) add(t.x, t.z, FURNITURE_HALF.tree, "prop");
+  for (const t of f.parkTrees) add(t.x, t.z, FURNITURE_HALF.tree, "prop");
+  for (const p of f.pedestrians) add(p.x, p.z, FURNITURE_HALF.pedestrian, "prop");
+  return out;
+}
 
 /* ------------------------------------------------------------------ merged static props */
 

@@ -27,14 +27,34 @@ export interface ChaseState {
   time: number;
 }
 
-const rig = cameras.chase({
-  offset: { back: 5.9, backPerSpeed: 0.048, backBoost: 1.2, up: 2.5, upPerSpeed: 0.013, minAboveGround: 1.9, lead: 5, leadPerSpeed: 0.3, lookUp: 1.25 },
-  lag: { heading: CONFIG.CAMERA_CHASE, headingMinFollow: 0.34, headingFullSpeed: 15, eye: 8, look: 10, fov: 4 },
+const OFFSET = { back: 5.9, backPerSpeed: 0.048, backBoost: 1.2, up: 2.5, upPerSpeed: 0.013, minAboveGround: 1.9, lead: 5, leadPerSpeed: 0.3, lookUp: 1.25 } as const;
+const LAG = { heading: CONFIG.CAMERA_CHASE, headingMinFollow: 0.34, headingFullSpeed: 15, eye: 8, look: 10, fov: 4 } as const;
+const SNAP = { back: 10.6, up: 4.3, lead: 5, lookUp: 1.25, fov: 56 } as const;
+const fullRig = cameras.chase({
+  offset: OFFSET,
+  lag: LAG,
   fovKick: { base: 56, perSpeed: 0.28, maxSpeedKick: 12, boost: 7 },
   shake: { perShake: 0.9, speedStart: 22, speedRange: 40, speedAmp: 0.075, boostAmp: 0.05, threshold: 2e-3, verticalScale: 0.7, verticalPhase: 1.3, mode: "accumulate" },
-  snapOffset: { back: 10.6, up: 4.3, lead: 5, lookUp: 1.25, fov: 56 }
+  snapOffset: SNAP
 });
-rig.snap({});
+/** `prefers-reduced-motion`: no shake at all and the speed/nitro field-of-view kick capped at 3 degrees. */
+export const REDUCED_FOV_KICK = 3;
+const calmRig = cameras.chase({
+  offset: OFFSET,
+  lag: LAG,
+  fovKick: { base: 56, perSpeed: 0.28, maxSpeedKick: REDUCED_FOV_KICK, boost: 0 },
+  shake: { perShake: 0, speedStart: 22, speedRange: 40, speedAmp: 0, boostAmp: 0, threshold: 2e-3, verticalScale: 0.7, verticalPhase: 1.3, mode: "accumulate" },
+  snapOffset: SNAP
+});
+fullRig.snap({});
+calmRig.snap({});
+let rig = fullRig;
+
+/** Switch to the calm rig (no shake, capped FOV kick) for players who ask the OS for reduced motion. */
+export function setReducedMotion(on: boolean): void {
+  rig = on ? calmRig : fullRig;
+}
+export const reducedMotion = (): boolean => rig === calmRig;
 
 const target = (c: ChaseInput, groundAt?: (x: number, z: number) => number) => ({
   position: [c.x, c.y, c.z] as const,
