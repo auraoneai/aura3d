@@ -13,9 +13,11 @@
     <link rel="stylesheet" href="/fonts/local.css" />
     <link rel="stylesheet" href="./src/ui/styles.css" />
     <script>
-      // Wonder World draws with WebGL 2 (iPadOS 15.4 or later, any current desktop browser). Without it the app
-      // cannot run, so the splash below shows a notice instead of waiting forever.
-      if (!("WebGL2RenderingContext" in window)) document.documentElement.classList.add("ww-unsupported");
+      // Wonder World draws with WebGL 2 and uses JavaScript that Safari has had since 15.4 (Array at, Object.hasOwn,
+      // structuredClone): iPadOS 15.4 or later, or any current desktop browser. Without them the app cannot run, so
+      // the splash below shows a notice instead of waiting forever.
+      if (!("WebGL2RenderingContext" in window && "at" in Array.prototype && "hasOwn" in Object && "structuredClone" in window))
+        document.documentElement.classList.add("ww-unsupported");
     </script>
   </head>
   <body>

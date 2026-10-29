@@ -500,8 +500,23 @@ describe("index.html", () => {
     expect(html).toMatch(/<script type="module" src="\.\/src\/main\.ts"><\/script>/);
   });
 
-  it("tells a browser without WebGL 2 that it is too old, instead of leaving the splash up", () => {
-    expect(html).toContain('if (!("WebGL2RenderingContext" in window)) document.documentElement.classList.add("ww-unsupported");');
+  it("tells a browser without WebGL 2 or Safari 15.4's JavaScript that it is too old, instead of leaving the splash up", () => {
+    const script = /<script>([\s\S]*?)<\/script>/.exec(html)?.[1] ?? "";
+    const flagsUnsupported = (win: object, arrayPrototype: object, object: object): boolean => {
+      const added: string[] = [];
+      const doc = { documentElement: { classList: { add: (name: string) => added.push(name) } } };
+      new Function("window", "document", "Array", "Object", script)(win, doc, { prototype: arrayPrototype }, object);
+      return added.includes("ww-unsupported");
+    };
+    const webgl2 = { WebGL2RenderingContext: class {} };
+    const clone = { structuredClone: (value: unknown) => value };
+    const at = { at: () => undefined };
+    const hasOwn = { hasOwn: () => true };
+    expect(flagsUnsupported({ ...webgl2, ...clone }, at, hasOwn)).toBe(false);
+    expect(flagsUnsupported(clone, at, hasOwn)).toBe(true); // iPadOS 14 and older: no WebGL 2
+    expect(flagsUnsupported({ ...webgl2, ...clone }, {}, hasOwn)).toBe(true); // iPadOS 15.0-15.3: no Array at
+    expect(flagsUnsupported({ ...webgl2, ...clone }, at, {})).toBe(true);
+    expect(flagsUnsupported(webgl2, at, hasOwn)).toBe(true);
     expect(html).toMatch(/<p class="ww-boot-unsupported">\s*This browser is too old for Wonder World\. On an iPad it needs iPadOS 15\.4 or later/);
     const css = readFileSync(join(uiDir, "styles.css"), "utf8");
     expect(css).toMatch(/\.ww-boot-unsupported \{\s*display: none;/);
