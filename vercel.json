@@ -170,6 +170,15 @@
   ],
   "headers": [
     {
+      "source": "/assets/((?!draco/).*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
       "source": "/apps/aura-clash-showcase/aura-assets/:path*",
       "headers": [
         {
