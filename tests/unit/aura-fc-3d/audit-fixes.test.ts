@@ -411,3 +411,18 @@ describe("FC-E1 fewer scene nodes", () => {
     console.log("FC_NODES", JSON.stringify({ munich: nodes.length }));
   });
 });
+
+describe("FC-16 football sounds", () => {
+  it("kick, pass, net and post cues use the route-local football SFX, not the basketball ones", async () => {
+    const { readFileSync, existsSync } = await import("node:fs");
+    const main = readFileSync("apps/showcase-aura-fc-3d/src/main.ts", "utf8");
+    for (const [cue, key] of [["kick", "fcKickSfx"], ["pass", "fcKickSfx"], ["net", "fcNetSfx"], ["post", "fcPostSfx"]] as const) {
+      expect(main).toMatch(new RegExp(`${cue}:\\s*\\{ id: "${cue}", asset: assets\\.${key}`));
+    }
+    expect(main).not.toMatch(/hoopsBoardThudSfx|hoopsSwishSfx|hoopsRimClankSfx/);
+    const manifest = readFileSync("apps/showcase-aura-fc-3d/src/aura-assets-v2.ts", "utf8");
+    for (const m of manifest.matchAll(/url: "\/aura-assets\/(fc(?:Kick|Net|Post)Sfx\.[0-9a-f]{8}\.wav)"/g)) {
+      expect(existsSync(`apps/showcase-aura-fc-3d/public/aura-assets/${m[1]}`)).toBe(true);
+    }
+  });
+});
