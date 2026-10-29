@@ -563,7 +563,7 @@ export function defineCharacterSheetSuite(options: { readonly title: string; rea
         await test.step(`${entry.character} in ${entry.code.toUpperCase()} ${entry.story}`, async () => {
           const mark = log.mark();
           const result = await characterSheet(page, log, entry, entry === first);
-          emitJson(`char-${entry.character}`, { context: { runId: context["runId"], engineVersion: context["engineVersion"], renderer: context["renderer"] }, ...result.record });
+          emitJson(`char-${entry.character}`, { context: { runId: context["runId"], commit: context["commit"], engineVersion: context["engineVersion"], renderer: context["renderer"] }, ...result.record });
           summary.push({
             character: entry.character,
             story: entry.story,
@@ -665,7 +665,7 @@ export function defineStillsSuite(options: { readonly title: string; readonly st
       for (const story of options.stories) {
         await test.step(`${story.code.toUpperCase()} ${story.title} (${story.id})`, async () => {
           const still = await storyStill(page, log, story, story === first);
-          emitJson(`still-${story.code}`, { context: { runId: context["runId"], engineVersion: context["engineVersion"], renderer: context["renderer"] }, ...still.record });
+          emitJson(`still-${story.code}`, { context: { runId: context["runId"], commit: context["commit"], engineVersion: context["engineVersion"], renderer: context["renderer"] }, ...still.record });
           summary.push({ code: story.code, id: story.id, moment: still.record["moment"] ?? null, problems: still.problems });
           expect.soft(still.problems, `${story.code.toUpperCase()} ${story.id}: the still is drawn from the admitted models with no error`).toEqual([]);
         });

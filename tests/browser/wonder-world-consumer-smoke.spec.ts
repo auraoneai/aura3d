@@ -27,7 +27,7 @@ import { existsSync, mkdtempSync, readdirSync, rmSync, statSync } from "node:fs"
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { expect, test } from "@playwright/test";
-import { emitJson, redact } from "./wonder-world-lib";
+import { emitJson, redact, runCommit } from "./wonder-world-lib";
 
 const CREATE = "create-aura3d@4.5.0";
 const CLI = "@aura3d/cli@4.5.0";
@@ -135,7 +135,7 @@ test("create-aura3d@4.5.0 mini-game: scaffold, install, build and check-deploy p
   const root = mkdtempSync(join(tmpdir(), "ww-consumer-"));
   const app = join(root, "smoke");
   const steps: StepResult[] = [];
-  const record: Record<string, unknown> = { create: CREATE, cli: CLI, node: process.version, template: "mini-game", steps };
+  const record: Record<string, unknown> = { runId: process.env["AURA3D_RUN_ID"] ?? null, commit: runCommit(), create: CREATE, cli: CLI, node: process.version, template: "mini-game", steps };
   const gate = ({ step }: { readonly step: StepResult }): void => {
     steps.push(step);
     expect(step.status, `${step.name} (${step.command}) exits 0:\n${step.tail}`).toBe(0);
