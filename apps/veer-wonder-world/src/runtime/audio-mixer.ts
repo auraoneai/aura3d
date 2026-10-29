@@ -74,6 +74,7 @@ import {
 } from "@aura3d/engine/audio";
 import type { GameAudioOptions } from "@aura3d/engine";
 import type { AUDIO_MANIFEST } from "../audio-manifest.js";
+import { SFX, SFX_MAX_GAIN } from "../content/sfx.js";
 import type { AudioClipRef, MusicBedId, SfxId, SfxVolume, SongId } from "../types.js";
 
 export type AudioManifest = typeof AUDIO_MANIFEST;
@@ -107,6 +108,13 @@ export const CLIP_LEVELS = {
   sfxMaxPeak: 0.5,
   musicMaxRms: 0.18
 } as const;
+
+/** An effect's gain from src/content/sfx.ts as a multiplier of its clip level (0-1; the loudest allowed gain is 1). */
+export function sfxGainScale(id: SfxId): number {
+  const gain = SFX[id]?.gain;
+  if (gain === undefined || !Number.isFinite(gain) || gain <= 0) return 1;
+  return Math.min(1, gain / SFX_MAX_GAIN);
+}
 
 /** The grown-up's sound-effect levels as multipliers of the SFX bus cap (never above it). */
 export const SFX_VOLUME_SCALE: Readonly<Record<SfxVolume, number>> = { off: 0, soft: 0.5, normal: 1 };
@@ -334,7 +342,7 @@ interface Track {
   readonly kind: BusId;
   readonly clip: AudioClip;
   readonly loop: boolean;
-  /** Clip gain from the level check. */
+  /** Clip gain from the level check (times the effect's own gain for SFX). */
   readonly level: number;
   state: "playing" | "held" | "done";
   source: AudioBufferSourceNode | null;
@@ -609,12 +617,12 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
 
   // ---- tracks ------------------------------------------------------------------
 
-  function newTrack(kind: BusId, clip: AudioClip, loop: boolean, onEnded: (() => void) | null): Track {
+  function newTrack(kind: BusId, clip: AudioClip, loop: boolean, onEnded: (() => void) | null, scale = 1): Track {
     return {
       kind,
       clip,
       loop,
-      level: levelFor(clip, kind),
+      level: levelFor(clip, kind) * scale,
       state: "held",
       source: null,
       gain: null,
@@ -832,9 +840,10 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
     for (const track of [...sfxTracks]) endTrack(track, SFX_FADE_S);
   }
 
-  function startSfx(clip: AudioClip): void {
+  function startSfx(clip: AudioClip, id: SfxId): void {
     if (sfxTracks.size >= AUDIO_LIMITS.sfxMaxVoices) return;
-    const track = newTrack("sfx", clip, false, null);
+    // Each effect's own gain (src/content/sfx.ts) relative to the loudest allowed one: never above the clip's cap.
+    const track = newTrack("sfx", clip, false, null, sfxGainScale(id));
     sfxTracks.add(track);
     if (!startSource(track, 0, 0)) forget(track);
   }
@@ -973,7 +982,7 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
       sfxLastAt.set(id, requestedAt);
       const cached = cachedClip(ref.url);
       if (cached) {
-        startSfx(cached);
+        startSfx(cached, id);
         return;
       }
       const token = sfxToken;
@@ -982,7 +991,7 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
         sfxLoading.delete(id);
         if (!clip || token !== sfxToken || !effectsLive()) return;
         if (activeClock() - requestedAt > AUDIO_LIMITS.sfxMaxLatencyS) return;
-        startSfx(clip);
+        startSfx(clip, id);
       });
     },
 

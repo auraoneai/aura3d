@@ -10,6 +10,8 @@ import {
   clipGain,
   createAudioMixer,
   measureClipLevels,
+  SFX_VOLUME_SCALE,
+  sfxGainScale,
   type AudioManifest,
   type AudioMixerOptions
 } from "../../../src/runtime/audio-mixer.js";
@@ -604,7 +606,9 @@ describe("audio mixer: levels", () => {
     const woofGain = clipGainOf(woof).gain.value;
     expect(woofGain).toBeLessThan(1);
     expect(woofAmplitude * woofGain).toBeLessThanOrEqual(CLIP_LEVELS.sfxMaxWindowRms + 1e-9);
-    expect(clipGainOf(pop).gain.value).toBe(1);
+    // A quiet effect is never boosted: only its own gain from src/content/sfx.ts (relative to the loudest allowed) applies.
+    expect(clipGainOf(pop).gain.value).toBeCloseTo(sfxGainScale("pop"), 9);
+    expect(sfxGainScale("pop")).toBeLessThanOrEqual(1);
     expect(busOf(woof).gain.value).toBe(AUDIO_LEVELS.sfx);
 
     // Loudest SFX moment after its bus vs the average level of a normalised voice line.
@@ -612,6 +616,24 @@ describe("audio mixer: levels", () => {
     const voiceLevels = measureClipLevels(tone(2, 0.125));
     const voiceAverage = voiceLevels.gatedRms * clipGain(voiceLevels, "voice") * AUDIO_LEVELS.voice;
     expect(loudestSfx).toBeLessThan(voiceAverage);
+  });
+
+  it("scales sound effects by the grown-up's level and plays none at off", async () => {
+    const { mixer, refs, playingWith, library } = setup();
+    await mixer.unlock();
+    mixer.setSfxVolume("soft");
+    mixer.playSfx("pop");
+    await flush();
+    const [pop] = playingWith(library.bufferOf(refs.pop));
+    if (!pop) throw new Error("sfx did not start");
+    expect(busOf(pop).gain.target).toBeCloseTo(AUDIO_LEVELS.sfx * SFX_VOLUME_SCALE.soft, 9);
+    expect(SFX_VOLUME_SCALE.normal).toBe(1);
+    mixer.setSfxVolume("off");
+    expect(busOf(pop).gain.target).toBe(0);
+    const before = playingWith(library.bufferOf(refs.woof)).length;
+    mixer.playSfx("woof");
+    await flush();
+    expect(playingWith(library.bufferOf(refs.woof)).length).toBe(before);
   });
 
   it("evens out voice lines within limits", async () => {
