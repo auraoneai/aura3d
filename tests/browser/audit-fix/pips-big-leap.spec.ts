@@ -349,14 +349,14 @@ test.describe("pips-big-leap audit fixes", () => {
     await context.close();
   });
 
-  test("grpC pbl-worlds 1280x720: every world at steady state with render-path and contact-shadow diagnostics (RH-04, LIGHT-06)", async ({ browser }) => {
+  const worldsTest = (worlds: readonly string[]) => async ({ browser }: { browser: import("@playwright/test").Browser }) => {
     const T = "w1280";
     const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
     const consoleLines: string[] = [];
     const page = await prepare(context, freshNet());
     page.on("console", (m) => { if (/prd02\.contactShadows|OPTION_IGNORED/.test(m.text())) consoleLines.push(m.text().slice(0, 200)); });
     await open(page);
-    for (const world of ["academy", "w1", "w2", "w3", "w4", "w5", "w6"]) {
+    for (const world of worlds) {
       if (world === "academy") {
         await click(page, "#aura-btn-academy");
       } else {
@@ -369,10 +369,14 @@ test.describe("pips-big-leap audit fixes", () => {
       await page.waitForTimeout(20_000);
       await shot(page, T, `${world}-35s`);
     }
-    log(`PBL_META ${JSON.stringify({ target: T, id: "console-flags", lines: consoleLines })}`);
+    log(`PBL_META ${JSON.stringify({ target: T, id: "console-flags", worlds, lines: consoleLines })}`);
     log(`PBL_DONE ${T}`);
     await context.close();
-  });
+  };
+  // Every world at steady state with render-path and contact-shadow diagnostics (RH-04, LIGHT-06), split in two so
+  // each half fits the per-test budget on software GL.
+  test("grpC pbl-worlds 1280x720: academy, w1-w4", worldsTest(["academy", "w1", "w2", "w3", "w4"]));
+  test("grpE pbl-worlds 1280x720: w5, w6", worldsTest(["w5", "w6"]));
 
   test("grpD pbl-ao 1280x720: AO on/off pairs with feet crops (LIGHT-06)", async ({ browser }) => {
     const T = "o1280";
