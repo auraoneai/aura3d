@@ -1,0 +1,37 @@
+# Upload list of the Wonder World preview deploy. tools/deploy-preview.sh copies this file to the root of a clean
+# checkout as .vercelignore, next to deploy/vercel.json as vercel.json. Everything is left out except what the
+# deploy host's install and build need (tools/deploy-build.sh):
+# - the workspace (root manifests, lockfile, patches, packages/*) for `pnpm install --frozen-lockfile`;
+# - the root Vite config and the two files it imports, since the app's Vite config extends it;
+# - the shared fonts and HDRIs the build copies into dist/;
+# - the app itself, without its tests and this folder.
+/*
+!/package.json
+!/pnpm-lock.yaml
+!/pnpm-workspace.yaml
+!/tsconfig*.json
+!/vite.config.ts
+!/vite.aliases.generated.ts
+!/vercel.json
+!/patches/
+!/packages/
+!/workers/
+!/tools/
+/tools/*
+!/tools/naming-taxonomy/
+!/tests/
+/tests/*
+!/tests/browser/
+/tests/browser/*
+!/tests/browser/installed-package-resolve.ts
+!/public/
+/public/*
+!/public/fonts/
+!/public/hdri/
+!/apps/
+/apps/*
+!/apps/veer-wonder-world/
+/apps/veer-wonder-world/tests/
+/apps/veer-wonder-world/deploy/
+node_modules/
+dist/
