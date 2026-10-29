@@ -106,7 +106,6 @@ export function athleteNodes(id: string): RigNode[] {
     model(bodyAsset, {
       name: `${id}-body`,
       targetHeight: isKeeper ? 2.32 : isPower ? 2.26 : 2.22,
-      animation: { clip: "Ready", loop: true, speed: 1 },
       materialOverrides: [
         { target: /-kit$/, color: kit.shirt, colorMode: "replace", replaceTextures: true, roughness: 0.62, metallic: 0.04 },
         { target: /-shorts$/, color: kit.shorts, colorMode: "replace", replaceTextures: true, roughness: 0.7, metallic: 0 },

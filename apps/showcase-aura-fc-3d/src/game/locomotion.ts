@@ -108,3 +108,28 @@ export function athleteAnimation(
   const metres = p.gait / GAIT_PER_METRE;
   return { anim: { clip: next, phase: wrap(metres / (STANCE_SPEED_MODEL[next]! * modelScale), d), duration: d, loop: true }, loco: next };
 }
+
+/* ---- Touchline referee ---- */
+
+/** Patrol half-length (m) and angular rate (rad/s): peak pace 10.5 * 0.22 = 2.31 m/s, about Walk_Loop at rate 1. */
+export const REFEREE_PATROL_HALF = 10.5;
+export const REFEREE_PATROL_RATE = 0.22;
+
+/**
+ * Referee patrol x, facing and Walk_Loop phase at app time `t`. x = A sin(w t); the clip phase advances with the
+ * distance walked (the total variation of x, closed form per quarter period), so the planted foot stays planted
+ * through the slow-down at each end instead of the clip playing at rate 1 while the body slides.
+ */
+export function refereePatrol(t: number, modelScale: number): { x: number; yaw: number; clip: "Walk_Loop"; phase: number; duration: number } {
+  const a = REFEREE_PATROL_HALF, u = REFEREE_PATROL_RATE * t;
+  const quarter = Math.floor(u / (Math.PI / 2));
+  const metres = a * (quarter + Math.abs(Math.sin(u) - Math.sin(quarter * Math.PI / 2)));
+  const d = CLIP_SECONDS.Walk_Loop!;
+  return {
+    x: a * Math.sin(u),
+    yaw: Math.cos(u) >= 0 ? Math.PI / 2 : -Math.PI / 2,
+    clip: "Walk_Loop",
+    phase: wrap(metres / (STANCE_SPEED_MODEL.Walk_Loop! * modelScale), d),
+    duration: d
+  };
+}

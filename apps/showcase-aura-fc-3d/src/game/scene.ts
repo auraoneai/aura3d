@@ -17,6 +17,10 @@ import {
   PEN_X, CIRCLE_R, BALL_R, BALL_VIS_R, CAGE_GOAL_GAP
 } from "./dims";
 import { athleteNodes } from "./rig";
+import { refereePatrol } from "./locomotion";
+
+/** Referee height (m); also the model scale for the foot-locked walk phase. */
+export const REFEREE_TARGET_HEIGHT = 1.84;
 
 export const LOOK_ID = "interior-industrial" as const;
 
@@ -360,8 +364,7 @@ function stadiumNodes(v: VenueSpec): any[] {
       .scale([1.3, 1, 1.1]),
     model(assets.fcSoccerStrikerMeshy, {
       name: "fc-referee",
-      targetHeight: 1.84,
-      animation: { clip: "Walk", loop: true, speed: 1.0 },
+      targetHeight: REFEREE_TARGET_HEIGHT,
       materialOverrides: [
         { target: /-kit$/, color: "#e6d02e", colorMode: "replace", replaceTextures: true, roughness: 0.65, metallic: 0 },
         { target: /-shorts$/, color: "#15171c", colorMode: "replace", replaceTextures: true, roughness: 0.7, metallic: 0 },
@@ -370,6 +373,8 @@ function stadiumNodes(v: VenueSpec): any[] {
       ]
     } as any)
       .position(0, 0, -(PITCH_HZ + 1.1))
+      // model() has no `animation` option; the walk is declared here and phase-locked to the patrol in tickWorld.
+      .animate({ clip: "Walk_Loop", loop: true })
       .runtime(gameRuntime("fc-referee")),
     // trophy cabinet by the tunnel (catalog dressing)
     // FC-19: fitted models sit base-at-origin, so the trophy stands on a 0.9 m plinth and the spare ball on the grass
@@ -555,9 +560,10 @@ export function applyVenue(h: WorldHandles, v: VenueSpec): void {
 export function tickWorld(h: WorldHandles, t: number, opts: { cheering: boolean; ripple: number; goalSide?: -1 | 0 | 1; accent?: string; hoarding?: string }): void {
   const cheer = opts.cheering;
   // Touchline referee patrols along the north touchline
-  const refX = Math.sin(t * 0.42) * 10.5;
-  const refDir = Math.cos(t * 0.42) >= 0 ? Math.PI / 2 : -Math.PI / 2;
-  h.referee?.setPosition(refX, 0, -(PITCH_HZ + 1.1)).setRotation(0, refDir, 0).setScale([1, 1, 1]);
+  // at walking pace, Walk_Loop phase driven by distance walked so the feet do not slide.
+  const ref = refereePatrol(t, REFEREE_TARGET_HEIGHT / assets.fcSoccerStrikerMeshy.bounds[1]);
+  h.referee?.setPosition(ref.x, 0, -(PITCH_HZ + 1.1)).setRotation(0, ref.yaw, 0).setScale([1, 1, 1]);
+  h.referee?.setAnimation?.({ clip: ref.clip, loop: true, duration: ref.duration, startTime: t - ref.phase, crossFade: false });
 
   h.wavers?.setInstances?.(waverTransforms(t, cheer));
   for (let i = 0; i < h.auroras.length; i++) {
