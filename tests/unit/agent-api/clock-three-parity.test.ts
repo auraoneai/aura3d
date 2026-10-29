@@ -44,3 +44,35 @@ describe("Clock three.js parity", () => {
     });
   });
 });
+
+describe("Clock.stop() three.js parity (anim-phys-05)", () => {
+  it("stop() keeps the time up to the stop, stays stopped, and loses nothing", () => {
+    withNow((set) => {
+      // three r185: start at 0, stop at 2.5 s, read at 5 s -> 2.5, running false, 2.5.
+      set(0);
+      const clock = new Clock();
+      clock.start();
+      set(2000);
+      expect(clock.getElapsedTime()).toBeCloseTo(2, 9);
+      set(2500);
+      clock.stop();
+      expect(clock.elapsedTime).toBeCloseTo(2.5, 9);
+      expect(clock.running).toBe(false);
+      expect(clock.autoStart).toBe(false);
+      set(5000);
+      expect(clock.getElapsedTime()).toBeCloseTo(2.5, 9);
+      expect(clock.getDelta()).toBe(0);
+      expect(clock.running).toBe(false);
+    });
+  });
+
+  it("a never-started autoStart clock still starts on its first read", () => {
+    withNow((set) => {
+      const clock = new Clock();
+      expect(clock.getDelta()).toBe(0);
+      expect(clock.running).toBe(true);
+      set(1250);
+      expect(clock.getDelta()).toBeCloseTo(0.25, 9);
+    });
+  });
+});

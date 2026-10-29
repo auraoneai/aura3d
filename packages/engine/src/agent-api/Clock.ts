@@ -3,7 +3,9 @@
  * time base. `getDelta()` returns seconds since the last `getDelta`/
  * `getElapsedTime` call (0 while stopped); `getElapsedTime()` returns total
  * seconds since `start()`. `autoStart` (default true) starts the clock on the
- * first read, matching three.js.
+ * first read, matching three.js. `stop()` folds the pending interval into
+ * `elapsedTime` and clears `autoStart`, as three does, so a stopped clock stays
+ * stopped and keeps its time (anim-phys-05).
  *
  * Backed by `createFrameLoop({ useRaf: false, fixedDt: 0 })`: the loop is a
  * pure accumulator here — `step(dt)` adds scaled real seconds to `time`, which
@@ -23,7 +25,8 @@ export interface AuraClockOptions {
 export class Clock {
   private readonly loop: FrameLoop;
   private readonly now: () => number;
-  private readonly autoStart: boolean;
+  /** three's `clock.autoStart`; `stop()` sets it to false. */
+  autoStart: boolean;
   private lastNow: number | undefined;
   private runningFlag = false;
   /** Loop time at the last start(); three resets elapsedTime to 0 on every start(). */
@@ -57,6 +60,9 @@ export class Clock {
   }
 
   stop(): void {
+    // three: `this.getElapsedTime(); this.running = false; this.autoStart = false;`
+    if (this.runningFlag) this.getDelta();
+    this.autoStart = false;
     this.runningFlag = false;
     this.loop.stop();
     this.lastNow = undefined;
@@ -65,10 +71,7 @@ export class Clock {
   /** Seconds since the previous `getDelta`/`getElapsedTime` (0 while stopped). */
   getDelta(): number {
     if (!this.runningFlag) {
-      if (this.autoStart && this.lastNow === undefined) {
-        this.start();
-        return 0;
-      }
+      if (this.autoStart) this.start();
       return 0;
     }
     const now = this.now();
