@@ -19,7 +19,6 @@ export const MAZES: Record<MazeId, MazeDef> = {
     look: "neon-arcade",
     palette: { wall: "#5c4630", edge: "#ffb23e", floor: "#24443a", dot: "#5ff3ff", accent: "#ffb23e" },
     background: "#0e1a17",
-    fog: null,
     fruit: "cherry",
     theme: "grid",
     rows: [
@@ -57,7 +56,6 @@ export const MAZES: Record<MazeId, MazeDef> = {
     look: "neon-arcade",
     palette: { wall: "#130b33", edge: "#9b5bff", floor: "#07050f", dot: "#ffc9e8", accent: "#c86bff" },
     background: "#07050f",
-    fog: { color: "#07050f", near: 18, far: 60 },
     fruit: "strawberry",
     theme: "spiral",
     rows: [
@@ -95,7 +93,6 @@ export const MAZES: Record<MazeId, MazeDef> = {
     look: "neon-arcade",
     palette: { wall: "#0a1626", edge: "#2bd9a9", floor: "#040a10", dot: "#d6f4ff", accent: "#39e6b0" },
     background: "#040a10",
-    fog: { color: "#040a10", near: 18, far: 60 },
     fruit: "orange",
     theme: "towers",
     rows: [
@@ -133,7 +130,6 @@ export const MAZES: Record<MazeId, MazeDef> = {
     look: "neon-arcade",
     palette: { wall: "#0b1f14", edge: "#4dff88", floor: "#050f08", dot: "#ffe9a3", accent: "#7dff5e" },
     background: "#050f08",
-    fog: { color: "#050f08", near: 18, far: 60 },
     fruit: "apple",
     theme: "garden",
     rows: [
@@ -171,7 +167,6 @@ export const MAZES: Record<MazeId, MazeDef> = {
     look: "neon-arcade",
     palette: { wall: "#1c1206", edge: "#ff9d2e", floor: "#0d0803", dot: "#ffd27a", accent: "#ff7a2e" },
     background: "#0d0803",
-    fog: { color: "#0d0803", near: 16, far: 55 },
     fruit: "melon",
     theme: "foundry",
     rows: [
@@ -209,7 +204,6 @@ export const MAZES: Record<MazeId, MazeDef> = {
     look: "neon-arcade",
     palette: { wall: "#14061c", edge: "#ff4dd8", floor: "#0a0310", dot: "#baf3ff", accent: "#ff4dd8" },
     background: "#0a0310",
-    fog: { color: "#0a0310", near: 16, far: 52 },
     fruit: "star",
     theme: "reactor",
     rows: [

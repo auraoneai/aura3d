@@ -21,7 +21,7 @@ export const TUNNEL_SPEED_RATIO = 0.55;   // ghosts slow on wrap-edge cells
 export const DASH_MULT = 1.9;
 export const DASH_TIME = 0.26;
 export const DASH_COOLDOWN = 1.7;
-export const READY_TIME = 0.25;
+export const READY_TIME = 1.5;           // board-intro banner (DD-6: 0.25 s was barely visible)
 export const DEATH_TIME = 1.6;
 export const CLEAR_TIME = 2.4;
 export const FRUIT_LIFE = 14.0;
@@ -30,6 +30,16 @@ export const EAT_RADIUS = 0.58;
 export const TOUCH_RADIUS = 0.56;
 export const FRIGHT_BASE = 6.0;
 export const WAVE_SCHEDULE = [6, 18, 6, 18, 5, 18, 5, Infinity]; // scatter/chase alternating
+/** Sentry Lab runs the whole board at this time scale (the "slow-mo practice" the menu promises). */
+export const SCHOOL_TIME_SCALE = 0.6;
+/** Corridor spawns keep at least this many path tiles between a sentry and the courier. */
+export const MIN_SPAWN_PATH = 10;
+/** Seconds between staggered sentry releases on board 1; shrinks by RELEASE_STEP_DECAY per board, floored at 0. */
+export const RELEASE_STEP = 1.6;
+export const RELEASE_STEP_DECAY = 0.32;
+/** One extra life when the score first reaches this. */
+export const EXTRA_LIFE_AT = 10000;
+export const MAX_LIVES = 5;
 const EYE_FX_EVERY = 0.09;
 
 export type GhostId = "blitz" | "sly" | "flick" | "dim";
@@ -114,6 +124,9 @@ export interface SimEvents {
   ready: boolean;
   eyesHome: { ghost: GhostId } | null;
   fruitSpawn: boolean;
+  /** Points scored this frame at a tile (score pop-ups). */
+  points: { x: number; y: number; points: number }[];
+  extraLife: boolean;
 }
 
 export interface Sim {
@@ -125,6 +138,17 @@ export interface Sim {
   score: number;
   lives: number;
   time: number;                // sim-time inside run (pauses in ready/dying)
+  /** Seconds of play since the courier first moved on this life; sentry releases count from here. */
+  runT: number;
+  /** Total simulated seconds since page load (evidence beacon: tells a slow sim from a stalled one). */
+  simTime: number;
+  /** Duration of the current surge, for the HUD bar. */
+  frightMax: number;
+  /** Boards cleared in this run (win card). */
+  boardsCleared: number;
+  /** The board just cleared beat its previous best (clear card flourish). */
+  newBoardBest: boolean;
+  extraLifeAwarded: boolean;
   dotsEaten: number;
   dotsLeft: number;
   dots: Uint8Array;            // per-cell: 1 = still present dot
@@ -163,6 +187,12 @@ export const st: Sim = {
   score: 0,
   lives: 3,
   time: 0,
+  runT: 0,
+  simTime: 0,
+  frightMax: FRIGHT_BASE,
+  boardsCleared: 0,
+  newBoardBest: false,
+  extraLifeAwarded: false,
   dotsEaten: 0,
   dotsLeft: 0,
   dots: new Uint8Array(19 * 21),
@@ -193,7 +223,7 @@ export const st: Sim = {
 };
 
 function freshEvents(): SimEvents {
-  return { dot: false, orb: false, ghostEat: null, fruit: null, death: false, dash: false, clear: false, ready: false, eyesHome: null, fruitSpawn: false };
+  return { dot: false, orb: false, ghostEat: null, fruit: null, death: false, dash: false, clear: false, ready: false, eyesHome: null, fruitSpawn: false, points: [], extraLife: false };
 }
 
 export function pushMsg(s: string): void {
@@ -213,6 +243,8 @@ export function startRun(kind: RunKind, mazeId: MazeId): void {
   if (kind !== "circuit" || st.mode === "title" || st.mode === "gameover" || st.mode === "win") {
     st.score = 0;
     st.lives = 3;
+    st.boardsCleared = 0;
+    st.extraLifeAwarded = false;
   }
   resetBoard();
   st.mode = "play";
@@ -243,14 +275,19 @@ function resetBoard(): void {
   resetActors();
 }
 
-function pickCorridorTile(m: ParsedMaze, prefX: number, prefY: number): Tile {
-  if (tileWalkable(m, { x: prefX, y: prefY }, false)) return { x: prefX, y: prefY };
+/**
+ * Nearest corridor tile to (prefX, prefY) that is at least MIN_SPAWN_PATH path tiles from the courier spawn
+ * (`fromSpawn` is a BFS from the spawn). The straight-line test this replaced let a sentry start 6 tiles away.
+ */
+export function pickCorridorTile(m: ParsedMaze, prefX: number, prefY: number, fromSpawn: Int32Array = bfsDistances(m, m.spawn, false)): Tile {
+  const far = (x: number, y: number): boolean => (fromSpawn[idx(m.width, x, y)] ?? -1) >= MIN_SPAWN_PATH;
+  if (tileWalkable(m, { x: prefX, y: prefY }, false) && far(prefX, prefY)) return { x: prefX, y: prefY };
   let best: Tile = m.aboveDoor;
   let bestDist = Infinity;
   for (let y = 1; y < m.height - 1; y++) {
     for (let x = 1; x < m.width - 1; x++) {
       if (!tileWalkable(m, { x, y }, false)) continue;
-      if (Math.hypot(x - m.spawn.x, y - m.spawn.y) < 4.5) continue;
+      if (!far(x, y)) continue;
       const d = Math.hypot(x - prefX, y - prefY);
       if (d < bestDist) {
         bestDist = d;
@@ -261,17 +298,27 @@ function pickCorridorTile(m: ParsedMaze, prefX: number, prefY: number): Tile {
   return best;
 }
 
+/** Seconds between staggered releases on the current board (0 from board 6: everyone starts at once). */
+export function releaseStep(level: number): number {
+  return Math.max(0, RELEASE_STEP - RELEASE_STEP_DECAY * (level - 1));
+}
+
 function resetActors(): void {
   const m = st.maze;
   st.hasMoved = false;
+  st.runT = 0;
+  const fromSpawn = bfsDistances(m, m.spawn, false);
   st.player = { px: m.spawn.x, py: m.spawn.y, dir: DIR_LEFT, want: DIR_LEFT, wantT: 0, dashT: 0, dashCd: 0, dashQueued: false };
-  // Spawn all 4 specters directly in active maze corridors so Quick Play immediately reads as a live 4-specter chase!
+  // All four sentries start in corridors (so the board reads as a live chase), but each at least MIN_SPAWN_PATH path
+  // tiles from the courier, and on early boards they start moving one after another (blitz first).
   const spawns: Record<GhostId, Tile> = {
     blitz: m.aboveDoor,
-    flick: pickCorridorTile(m, 4, 5),
-    dim: pickCorridorTile(m, 14, 5),
-    sly: pickCorridorTile(m, 13, 13)
+    flick: pickCorridorTile(m, 4, 5, fromSpawn),
+    dim: pickCorridorTile(m, 14, 5, fromSpawn),
+    sly: pickCorridorTile(m, 13, 13, fromSpawn)
   };
+  const step = releaseStep(st.level);
+  const releaseOrder: Record<GhostId, number> = { blitz: 0, flick: 1, dim: 2, sly: 3 };
   const dirs: Record<GhostId, Dir> = {
     blitz: DIR_LEFT,
     flick: DIR_RIGHT,
@@ -285,7 +332,7 @@ function resetActors(): void {
     dir: dirs[id],
     state: "active" as GhostState,
     target: { ...SCATTER[id] },
-    releaseAt: 0,
+    releaseAt: releaseOrder[id] * step,
     frightFlash: false,
     eyesFxT: 0,
     eaten: 0
@@ -636,7 +683,7 @@ function moveGhost(g: Ghost, dt: number): void {
   const m = st.maze;
   if (g.state === "house") {
     // bob inside the pen until release time
-    if (st.time >= g.releaseAt) g.state = "exiting";
+    if (st.runT >= g.releaseAt) g.state = "exiting";
     return;
   }
   if (g.state === "exiting") {
@@ -668,7 +715,7 @@ function moveGhost(g: Ghost, dt: number): void {
     if (d < speed * dt) {
       g.px = hx; g.py = hy;
       g.state = "house";
-      g.releaseAt = st.time + 1.2;
+      g.releaseAt = st.runT + 1.2;
       st.events.eyesHome = { ghost: g.id };
     } else {
       g.px += (dx / d) * speed * dt;
@@ -676,6 +723,8 @@ function moveGhost(g: Ghost, dt: number): void {
     }
     return;
   }
+  // staggered release: an active sentry holds its spawn tile until its release time (counted from the first move)
+  if (g.state === "active" && st.runT < g.releaseAt) return;
   // eyes or active → tile movement
   const speed = ghostSpeed(g, Math.round(normX(m, g.px)), Math.round(normY(m, g.py)));
   advance(m, g, speed * dt, g.state === "eyes", ghostDecide(g));
@@ -754,6 +803,8 @@ export function input(dt: number, ctl: { held(a: string): boolean; consume(a: st
 
 export function frame(dt: number, ctl: { held(a: string): boolean; consume(a: string): boolean; pressed(a: string): boolean }): void {
   st.events = freshEvents();
+  if (st.school) dt *= SCHOOL_TIME_SCALE;
+  if (st.mode !== "title") st.simTime += dt;
   if (st.msgT > 0) st.msgT -= dt;
 
   switch (st.mode) {
@@ -802,6 +853,7 @@ export function frame(dt: number, ctl: { held(a: string): boolean; consume(a: st
     eatThings();
     return;
   }
+  st.runT += dt;
   movePlayer(st.maze, dt);
   for (const g of st.ghosts) moveGhost(g, dt);
   eatThings();
@@ -818,8 +870,25 @@ export function frame(dt: number, ctl: { held(a: string): boolean; consume(a: st
     st.events.clear = true;
     const bonus = 100 * st.level;
     st.score += bonus;
+    st.newBoardBest = st.score > (st.profile.mazeBest[st.mazeId] ?? 0);
     pushMsg(`${st.maze.def.title} cleared! +${bonus}`);
   }
+  checkExtraLife();
+}
+
+function checkExtraLife(): void {
+  if (st.extraLifeAwarded || st.score < EXTRA_LIFE_AT) return;
+  st.extraLifeAwarded = true;
+  st.lives = Math.min(MAX_LIVES, st.lives + 1);
+  st.events.extraLife = true;
+  pushMsg(`EXTRA LIFE at ${EXTRA_LIFE_AT}!`);
+}
+
+/** Clear card "Next Board": skip the rest of the clear pause and advance like the timer would (keeps score and lives). */
+export function skipClear(): void {
+  if (st.mode !== "cleared") return;
+  st.clearT = 0;
+  advanceMaze();
 }
 
 function eatThings(): void {
@@ -841,6 +910,7 @@ function eatThings(): void {
       st.events.orb = true;
       const dur = Math.max(2.2, FRIGHT_BASE - (st.level - 1) * 0.45);
       st.fright = dur;
+      st.frightMax = dur;
       st.chain = 0;
       for (const g of st.ghosts) {
         if (g.state === "active") g.dir = reverseDir(g.dir); // classic reversal
@@ -855,6 +925,7 @@ function eatThings(): void {
       const pts = FRUIT_SCORE[kind];
       st.score += pts;
       st.events.fruit = { kind, points: pts };
+      st.events.points.push({ x: cx, y: cy, points: pts });
       pushMsg(`${FRUIT_LABEL[kind]} +${pts}`);
     }
   }
@@ -904,6 +975,7 @@ function checkCollisions(): void {
       g.eaten++;
       g.frightFlash = false;
       st.events.ghostEat = { ghost: g.id, points: pts };
+      st.events.points.push({ x: gx, y: gy, points: pts });
       pushMsg(`${GHOST_LABEL[g.id]} disabled +${pts}${st.chain > 1 ? ` x${st.chain}` : ""}`);
     } else if (!st.school) {
       loseLife();
@@ -935,6 +1007,7 @@ function gameOver(): void {
 function advanceMaze(): void {
   // record per-maze best + cleared
   const id = st.mazeId;
+  st.boardsCleared += 1;
   if (!st.profile.cleared.includes(id)) st.profile.cleared.push(id);
   if (st.score > (st.profile.mazeBest[id] ?? 0)) st.profile.mazeBest[id] = st.score;
   if (st.score > st.profile.best) st.profile.best = st.score;
@@ -976,6 +1049,8 @@ export function evidenceExtra(): Record<string, unknown> {
     dotsEaten: totalDots - st.dotsLeft,
     playerTile: [px, pz],
     fright: +st.fright.toFixed(2),
+    simTime: +st.simTime.toFixed(3),
+    boardsCleared: st.boardsCleared,
     wave: st.wave,
     wavePhase: st.wave % 2 === 0 ? "scatter" : "chase",
     chain: st.chain,

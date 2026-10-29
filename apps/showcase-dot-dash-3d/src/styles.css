@@ -312,3 +312,80 @@ html, body {
   .dd-school-legend { display: none; }
   .aura3d-controls-hint { display: none; }
 }
+
+/* ------------------------------------------------- audit fixes (lane G13) */
+
+/* Cache chip dims while no bonus gem is on the board. */
+#dd-fruit-chip.idle { opacity: 0.42; }
+
+/* Pause / menu button: the only way to pause on touch (Escape needs a keyboard). 44 px target. */
+.dd-btn-pause {
+  position: absolute;
+  top: calc(var(--a3d-bar-space) + 6px);
+  right: max(10px, env(safe-area-inset-right, 0px));
+  z-index: 15;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--dd-edge);
+  background: var(--dd-panel);
+  color: var(--dd-gold);
+  font: 800 15px/1 "Graphik Web", sans-serif;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+.dd-btn-pause[hidden] { display: none; }
+
+/* First-run hint for touch and narrow screens, until the first move. */
+.dd-first-hint {
+  position: absolute;
+  left: 50%;
+  bottom: calc(150px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  max-width: calc(100vw - 32px);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: var(--dd-ink);
+  background: var(--dd-panel);
+  border: 1px solid var(--dd-edge);
+  border-radius: 8px;
+  padding: 7px 12px;
+}
+.dd-first-hint[hidden] { display: none; }
+
+.dd-new-best {
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  color: var(--dd-gold);
+  text-shadow: 0 0 14px rgba(255, 178, 62, 0.6);
+}
+.dd-new-best[hidden] { display: none; }
+
+/* Score pop-ups float up from the tile that scored. */
+.dd-popups { position: absolute; inset: 0; overflow: hidden; }
+.dd-pop {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--dd-gold);
+  text-shadow: 0 0 10px rgba(255, 178, 62, 0.65), 0 1px 0 #000;
+  white-space: nowrap;
+  animation: dd-pop-rise 0.9s ease-out forwards;
+}
+@keyframes dd-pop-rise {
+  from { opacity: 1; margin-top: 0; }
+  to { opacity: 0; margin-top: -34px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dd-pop { animation: dd-pop-fade 0.9s linear forwards; }
+}
+@keyframes dd-pop-fade { from { opacity: 1; } to { opacity: 0; } }
+
+@media (max-width: 680px) {
+  .dd-tl { max-width: calc(100vw - 76px); }
+}

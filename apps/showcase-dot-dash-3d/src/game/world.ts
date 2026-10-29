@@ -12,6 +12,8 @@ import {
   GHOST_TINT, st, normPos, normGhostPos, type GhostId
 } from "./sim.js";
 import type { FruitKind } from "./grid.js";
+import { fitDistanceScale, projectNdc, scalePose, type CameraPose } from "./camera.js";
+import { boardLook, hexToRgb, pylonLayout, REFERENCE_LOOK, type BoardLook } from "./palette.js";
 
 export const TILE = 1;
 export const OX = -9, OZ = -10; // world offset of tile(0,0)
@@ -44,6 +46,35 @@ const TROPHY_COLORS = ["#ff3b5c", "#ffb23e", "#3dff9a", "#3de7ff", "#b78bff", "#
 
 let app: AuraApp | null = null;
 export function bindApp(a: AuraApp): void { app = a; }
+
+/** Reduced motion / reduced flash (session settings or the OS preference): steady death shrink, slow sentry pulse, no red fade. */
+let calmMotion = false;
+let calmFlash = false;
+export function setMotionPrefs(p: { reducedMotion: boolean; reducedFlash: boolean }): void {
+  calmMotion = p.reducedMotion;
+  calmFlash = p.reducedFlash || p.reducedMotion;
+}
+
+/** Last camera pose the game set and the aspect it was fitted for (QA hook + score pop-up projection). */
+let lastPose: CameraPose = { position: CAMERA_RIG.position, target: CAMERA_RIG.target, fov: CAMERA_RIG.fov };
+let fitAspect = 0;
+let fitK = 1;
+export function cameraPose(): CameraPose & { readonly aspect: number; readonly pullBack: number } {
+  return { ...lastPose, aspect: fitAspect, pullBack: fitK };
+}
+function viewAspect(): number {
+  const c = app?.canvas as HTMLCanvasElement | null | undefined;
+  if (c && c.clientWidth > 0 && c.clientHeight > 0) return c.clientWidth / c.clientHeight;
+  return typeof window !== "undefined" && window.innerHeight > 0 ? window.innerWidth / window.innerHeight : 16 / 9;
+}
+/** Screen position (CSS px inside the canvas) of a tile, or null when it is off-screen. */
+export function tileToScreen(tx: number, ty: number, y = 0.6): { x: number; y: number } | null {
+  const c = app?.canvas as HTMLCanvasElement | null | undefined;
+  const w = c?.clientWidth ?? window.innerWidth, h = c?.clientHeight ?? window.innerHeight;
+  const ndc = projectNdc(lastPose, w / Math.max(1, h), [wx(tx), y, wz(ty)]);
+  if (!ndc || Math.abs(ndc[0]) > 1 || Math.abs(ndc[1]) > 1) return null;
+  return { x: (ndc[0] * 0.5 + 0.5) * w, y: (0.5 - ndc[1] * 0.5) * h };
+}
 
 // ---------------------------------------------------------------------------
 // Static-ish instanced pools — rebuilt when the maze changes.
@@ -86,14 +117,21 @@ function inst(k: keyof typeof CAP, x: number, y: number, z: number, sx: number, 
   const p = POOL[k];
   if (p.n >= CAP[k]) return;
   writeMat(p.mat, p.n, x, y, z, sx, sy, sz, ry);
-  const v = parseInt(color.slice(1), 16);
-  p.col[p.n * 3] = ((v >> 16) & 255) / 255;
-  p.col[p.n * 3 + 1] = ((v >> 8) & 255) / 255;
-  p.col[p.n * 3 + 2] = (v & 255) / 255;
+  const rgb = hexToRgb(color); // cached per colour string
+  p.col[p.n * 3] = rgb[0];
+  p.col[p.n * 3 + 1] = rgb[1];
+  p.col[p.n * 3 + 2] = rgb[2];
   p.n++;
 }
 
+/** Pools that only change with the board: painted and submitted once per board, not every frame. */
+const STATIC_POOLS = ["wall", "rail", "dress", "glow"] as const satisfies readonly (keyof typeof CAP)[];
+const DYNAMIC_POOLS = (Object.keys(CAP) as (keyof typeof CAP)[]).filter((k) => !(STATIC_POOLS as readonly string[]).includes(k));
+
 const pad = (n: number) => Array.from({ length: n }, () => ({ position: [0, -999, 0] as [number, number, number], scale: [0.001, 0.001, 0.001] as [number, number, number] }));
+
+const wallMaterial = (emissive: string) => material.pbr({ color: "#ffffff", emissive, emissiveIntensity: 0.38, roughness: 0.42, metalness: 0.18 });
+const boardMaterial = (color: string, emissive: string) => material.pbr({ color, emissive, emissiveIntensity: 0.5, roughness: 0.42, metalness: 0.28 });
 
 // ---------------------------------------------------------------------------
 // Scene definition — one static graph; instanced pools get re-filled per frame.
@@ -118,7 +156,7 @@ export function buildScene(): unknown {
 
   // IMPORTANT: In Aura3D's instanced shader, v_instanceColor multiplies u_baseColor (color), NOT u_emissiveColor!
   // Never set emissive: "#ffffff" on instanced pools, or every instance emits pure white regardless of instance color.
-  const wallMat = material.pbr({ color: "#ffffff", emissive: "#3a2210", emissiveIntensity: 0.38, roughness: 0.42, metalness: 0.18 });
+  const wallMat = wallMaterial(REFERENCE_LOOK.wallEmissive);
   const railMat = material.pbr({ color: "#ffffff", emissive: "#ffb23e", emissiveIntensity: 0.48, roughness: 0.28, metalness: 0.1 });
   const dotMat = material.pbr({ color: "#ffffff", emissive: "#2fd6e6", emissiveIntensity: 0.55, roughness: 0.25, metalness: 0.25 });
   const orbMat = material.pbr({ color: "#ffffff", emissive: "#ffb23e", emissiveIntensity: 0.6, roughness: 0.2, metalness: 0.3 });
@@ -138,7 +176,7 @@ export function buildScene(): unknown {
   s.addMany([
     // ground slab — graphite circuit board with a low-gloss sheen so the key
     // light rakes across it instead of reading as flat navy.
-    primitives.box({ name: "board", size: [46.0, 0.32, 36.0], material: material.pbr({ color: "#24443a", emissive: "#17342c", emissiveIntensity: 0.5, roughness: 0.42, metalness: 0.28 }) })
+    primitives.box({ name: "board", size: [46.0, 0.32, 36.0], material: boardMaterial(REFERENCE_LOOK.slab, REFERENCE_LOOK.slabEmissive) })
       .position(0, -0.18, 0)
       .runtime(game.runtimeNode("board")),
     // instanced pools
@@ -233,33 +271,35 @@ function paintMaze(m: ParsedMaze): void {
   } catch { /* boot race */ }
 }
 
+const PEDESTALS: readonly (readonly [number, number])[] = [
+  [-10.8, 9.2], [10.8, 9.2],
+  [-10.8, 6.0], [10.8, 6.0],
+  [-10.8, 1.5], [10.8, 1.5],
+  [-10.8, -3.5], [10.8, -3.5],
+  [-10.8, -8.5], [10.8, -8.5]
+];
+
 /** Perimeter dressing per board theme — pedestals under spinning gems, plus pylon stubs. */
 function paintDressing(m: ParsedMaze): void {
   const P = m.def.palette;
   const wallColor = P.wall;
   const accentColor = P.accent;
-  const pedestals: readonly [number, number][] = [
-    [-10.8, 9.2], [10.8, 9.2],
-    [-10.8, 6.0], [10.8, 6.0],
-    [-10.8, 1.5], [10.8, 1.5],
-    [-10.8, -3.5], [10.8, -3.5],
-    [-10.8, -8.5], [10.8, -8.5]
-  ];
-  pedestals.forEach(([px, pz], i) => {
+  PEDESTALS.forEach(([px, pz]) => {
     inst("dress", px, 0.22, pz, 1.25, 0.44, 1.25, wallColor);
     inst("glow", px, 0.45, pz, 1.05, 0.06, 1.05, accentColor);
+  });
+  // pylon stubs: layout seeded from the board id, height and count from its theme
+  for (const py of pylonLayout(m.def.id, m.def.theme)) {
+    inst("dress", py.x, py.h * 0.5, py.z, py.w, py.h, py.w, wallColor);
+    if (py.cap) inst("glow", py.x, py.h + 0.06, py.z, py.w * 0.76, 0.1, py.w * 0.76, accentColor);
+  }
+}
+
+/** Spinning trophy gems on the pedestals (dynamic: they bob and turn). */
+function paintTrophies(): void {
+  PEDESTALS.forEach(([px, pz], i) => {
     inst("trophy", px, 1.05 + Math.sin(st.time * 2 + i) * 0.06, pz, 0.78, 0.78, 0.78, TROPHY_COLORS[i % TROPHY_COLORS.length]!, st.time * 1.1 + i);
   });
-  for (let c = 0; c < 18; c++) {
-    const r1 = Math.abs(Math.sin(c * 37.3 + m.width)) % 1;
-    const r2 = Math.abs(Math.sin(c * 91.7 + m.height)) % 1;
-    const side = c % 2 === 0 ? -1 : 1;
-    const edgeX = side * (12.6 + r1 * 3.5);
-    const edgeZ = -9.5 + r2 * 19;
-    const h = 0.65 + r1 * 1.9;
-    inst("dress", edgeX, h * 0.5, edgeZ, 0.55, h, 0.55, wallColor);
-    if (r2 < 0.65) inst("glow", edgeX, h + 0.06, edgeZ, 0.42, 0.1, 0.42, accentColor);
-  }
 }
 
 
@@ -271,11 +311,14 @@ export function syncVisuals(_dt: number): void {
   const nodes = app.nodes;
   const m = st.maze;
   if (builtFor !== m.def.id) {
-    builtFor = m.def.id as MazeId;
+    // board change: repaint the static pools and apply this board's palette (slab, wall glow, background)
+    for (const k of STATIC_POOLS) POOL[k].n = 0;
+    paintMaze(m);
+    paintDressing(m);
+    if (submit(STATIC_POOLS) && applyBoardLook(m.def.id as MazeId)) builtFor = m.def.id as MazeId;
   }
-  for (const k of Object.keys(CAP) as (keyof typeof CAP)[]) POOL[k].n = 0;
-  paintMaze(m);
-  paintDressing(m);
+  for (const k of DYNAMIC_POOLS) POOL[k].n = 0;
+  paintTrophies();
 
   // dots & power orbs
   const pulse = 0.5 + 0.5 * Math.sin(st.time * 6);
@@ -316,9 +359,9 @@ export function syncVisuals(_dt: number): void {
     const dead = st.mode === "dying";
     const byte = nodes.require("byte");
     byte.setPosition(wx(pp.x), 0.36 + (dead ? 0 : bob), wz(pp.y));
-    byte.setRotation(dead ? 0 : pitch, yawOf(st.player.dir) + Math.PI, dead ? Math.sin(st.time * 20) * 0.5 : 0);
+    byte.setRotation(dead ? 0 : pitch, yawOf(st.player.dir) + Math.PI, dead && !calmMotion ? Math.sin(st.time * 20) * 0.5 : 0);
     if (dead) {
-      byte.setScale(Math.max(0.05, (st.deathT / 1.6) * 0.76));
+      byte.setScale(Math.max(0.05, (st.deathT / 1.6) * 0.76)); // a steady shrink; the flicker below is skipped when calm
     } else if (st.player.dashT > 0) {
       const ds = 0.82 + Math.sin(st.time * 40) * 0.05;
       byte.setScale([ds * 1.06, ds * 0.94, ds * 1.06]);
@@ -327,7 +370,8 @@ export function syncVisuals(_dt: number): void {
     } else {
       byte.setScale(0.76);
     }
-    byte.setVisible(!dead || Math.sin(st.time * 24) > -0.2);
+    const flickerOn = !dead || calmMotion || calmFlash || Math.sin(st.time * 24) > -0.2;
+    byte.setVisible(flickerOn);
     // wrap echo copy
     const ex = echoOffset(m, pp.x, pp.y);
     const echo = nodes.require("byte-echo");
@@ -342,7 +386,7 @@ export function syncVisuals(_dt: number): void {
     {
       const hpos = [wx(pp.x), 0.4 + (dead ? 0 : bob), wz(pp.y)] as const;
       const shell = dead ? Math.max(0.05, (st.deathT / 1.6) * 0.62) : st.player.dashT > 0 ? 0.72 : 0.6;
-      if (!dead || Math.sin(st.time * 24) > -0.2) {
+      if (flickerOn) {
         inst("hero", hpos[0], hpos[1], hpos[2], shell, shell * 1.15, shell, st.profile.orbColor, st.time * (st.player.dashT > 0 ? 7 : 2.4));
         inst("halo", hpos[0], hpos[1], hpos[2], shell * 1.35, shell * 1.35, shell * 1.35, "#ffb23e", yawOf(st.player.dir) + st.time * 3.2);
         if (ex) {
@@ -357,11 +401,13 @@ export function syncVisuals(_dt: number): void {
       const gp = normGhostPos(g);
       const wob = Math.sin(st.time * 7 + g.px) * 0.04;
       const frightened = st.fright > 0 && g.state === "active";
-      const flash = frightened && st.fright < 1.8 && Math.sin(st.time * 18) > 0;
-      const col = frightened ? (flash ? OVERLOAD_FLASH : OVERLOAD_COLOR) : GHOST_TINT[g.id];
+      // surge ending: a white strobe, or a slow 1 Hz pulse between slate and white when motion/flash is reduced
+      const ending = frightened && st.fright < 1.8;
+      const flash = ending && !calmFlash && Math.sin(st.time * 18) > 0;
+      const col = !frightened ? GHOST_TINT[g.id] : flash ? OVERLOAD_FLASH : ending && calmFlash ? mixHex(OVERLOAD_COLOR, OVERLOAD_FLASH, 0.5 + 0.5 * Math.sin(st.time * Math.PI * 2)) : OVERLOAD_COLOR;
       const hidden = g.state === "eyes" || g.state === "entering";
       if (hidden) continue;
-      const k = frightened ? 0.82 + Math.sin(st.time * 14) * 0.05 : g.state === "house" ? 0.86 : 0.94;
+      const k = frightened ? 0.82 + (calmMotion ? 0 : Math.sin(st.time * 14) * 0.05) : g.state === "house" ? 0.86 : 0.94;
       const yaw = yawOf(g.dir);
       const place = (x: number, z: number): void => {
         const y = 0.42 + wob;
@@ -399,31 +445,71 @@ export function syncVisuals(_dt: number): void {
 
   // camera — slightly lower/wider than the old rig so the lit deck and neon
   // horizon fill the frame; the whole maze and every hazard stay in view.
+  // Aspect fit (DD-3): the rig pulls back along its own view direction until the whole board is in frame, so a
+  // portrait phone sees all 19 columns instead of the middle 9. Desktop stays within a few percent of the old rig.
+  const aspect = viewAspect();
+  if (Math.abs(aspect - fitAspect) > 1e-3) {
+    fitAspect = aspect;
+    fitK = fitDistanceScale({ position: CAMERA_RIG.position, target: CAMERA_RIG.target, fov: CAMERA_RIG.fov }, aspect);
+  }
+  const rig = scalePose({ position: CAMERA_RIG.position, target: CAMERA_RIG.target, fov: CAMERA_RIG.fov }, fitK);
   const pp2 = normPos(m);
   if (st.camera === "overhead") {
-    app.camera?.setPose({ position: CAMERA_RIG.position, target: CAMERA_RIG.target, fov: CAMERA_RIG.fov });
+    lastPose = rig;
   } else {
     const bx = wx(pp2.x) * CAMERA_RIG.followX, bz = wz(pp2.y) * CAMERA_RIG.followZ;
-    app.camera?.setPose({
-      position: [bx, CAMERA_RIG.position[1], CAMERA_RIG.position[2] + bz],
-      target: [bx * 0.75, 0, CAMERA_RIG.target[2] + bz * 0.65],
+    lastPose = {
+      position: [bx, rig.position[1], rig.position[2] + bz],
+      target: [bx * 0.75, 0, rig.target[2] + bz * 0.65],
       fov: CAMERA_RIG.fov
-    });
+    };
   }
+  app.camera?.setPose({ position: lastPose.position, target: lastPose.target, fov: lastPose.fov });
   app.output?.setOutputOverlay(
-    st.mode === "dying" ? { fade: [0.4, 0.02, 0.1, 0.45] }
+    st.mode === "dying" && !calmFlash ? { fade: [0.4, 0.02, 0.1, 0.45] }
     : st.fright > 0 && st.fright < 1.8 ? { vignette: [0.05, 0.05, 0.35, 0.5] }
     : {}
   );
 
-  // submit pools
-  for (const k of Object.keys(CAP) as (keyof typeof CAP)[]) {
+  // submit the dynamic pools (the static ones went up once, on the board change)
+  submit(DYNAMIC_POOLS);
+}
+
+/** Upload pools to their instanced nodes; false while the nodes are not mounted yet (boot race). */
+function submit(keys: readonly (keyof typeof CAP)[]): boolean {
+  const nodes = app?.nodes;
+  if (!nodes) return false;
+  let ok = true;
+  for (const k of keys) {
     const p = POOL[k];
     try {
       (nodes.require(`pool-${k}`) as unknown as { setInstanceTransforms(m: Float32Array, n: number, c?: Float32Array): void })
         .setInstanceTransforms(p.mat, p.n, p.col);
-    } catch { st.nodesOk = false; }
+    } catch { st.nodesOk = false; ok = false; }
   }
+  return ok;
+}
+
+/** Per-board palette: slab and wall glow keep board 1's brightness in each board's own hue; the clear colour follows. */
+function applyBoardLook(id: MazeId): boolean {
+  const nodes = app?.nodes;
+  if (!nodes) return false;
+  const look = boardLook(MAZES[id]);
+  if (look === appliedLook) return true; // board 1 on first boot: the authored materials already are this look
+  try {
+    nodes.require("board").setMaterial(boardMaterial(look.slab, look.slabEmissive));
+    nodes.require("pool-wall").setMaterial(wallMaterial(look.wallEmissive));
+  } catch { return false; }
+  try { (app as unknown as { setClearColor?(c: string): void }).setClearColor?.(look.background); } catch { /* optional */ }
+  appliedLook = look;
+  return true;
+}
+let appliedLook: BoardLook = REFERENCE_LOOK;
+
+function mixHex(a: string, b: string, t: number): string {
+  const ca = hexToRgb(a), cb = hexToRgb(b);
+  const h = (v: number) => Math.round(Math.min(1, Math.max(0, v)) * 255).toString(16).padStart(2, "0");
+  return `#${h(ca[0] + (cb[0] - ca[0]) * t)}${h(ca[1] + (cb[1] - ca[1]) * t)}${h(ca[2] + (cb[2] - ca[2]) * t)}`;
 }
 
 function yawOf(d: { x: number; z: number }): number {
