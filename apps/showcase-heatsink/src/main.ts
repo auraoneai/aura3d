@@ -99,6 +99,9 @@ async function boot(): Promise<void> {
   const pose2: TrackPose = { x: 0, y: 0, z: 0, heading: 0 };
   const screen: ScreenPoint = { x: 0, y: 0, depth: 0 };
   const rivalSlots = new Map<number, DroneId>();
+  const slotOut = new Map<DroneId, number>();
+  const rivalModelsFor = Object.fromEntries(DRONE_ORDER.map((d) => [d, DRONE_ORDER.filter((o) => o !== d)])) as unknown as Record<DroneId, readonly DroneId[]>;
+  const SIDES = [-1, 1] as const;
   let shownCircuit: CircuitId = selectedCircuit;
 
   // ------------------------------------------------------------------------------------------ input
@@ -258,7 +261,7 @@ async function boot(): Promise<void> {
     const dronePos: [number, number, number] = [pose.x, pose.y, pose.z];
 
     // Rivals: drawn set onto the six other drone models; a rival keeps its model while it stays drawn.
-    const slots = slotRivals(race.drawn, rivalSlots, DRONE_ORDER.filter((d) => d !== race.drone));
+    const slots = slotRivals(race.drawn, rivalSlots, rivalModelsFor[race.drone], slotOut);
     for (const id of DRONE_ORDER) {
       if (id === race.drone) continue;
       const h = droneHandles[id];
@@ -295,7 +298,7 @@ async function boot(): Promise<void> {
       const n = firstWall + i;
       const d = n * WALL_SPACING + WALL_SPACING / 2 - progress;
       const chev = (n & 1) === 0 ? writers.chevA : writers.chevB;
-      for (const side of [-1, 1]) {
+      for (const side of SIDES) {
         track.place(d, side * 11.3, 0.55, pose2); writers.walls.push(pose2.x, pose2.y, pose2.z, -pose2.heading, 1);
         track.place(d, side * 10.72, 0.72, pose2); chev.push(pose2.x, pose2.y, pose2.z, -pose2.heading, 1);
       }

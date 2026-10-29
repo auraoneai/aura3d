@@ -37,20 +37,20 @@ export class InstanceWriter {
 
 /**
  * Stable mapping of drawn rivals onto the six non-player drone models: a rival keeps its model while it stays drawn,
- * a newly drawn rival takes a free model. Returns droneId -> rival index.
+ * a newly drawn rival takes a free model. Writes droneId -> rival index into `out` (reused every frame).
  */
-export function slotRivals(drawn: readonly number[], bySlot: Map<number, DroneId>, models: readonly DroneId[]): Map<DroneId, number> {
-  for (const [rival, model] of [...bySlot]) if (!drawn.includes(rival) || !models.includes(model)) bySlot.delete(rival);
-  const used = new Set(bySlot.values());
+export function slotRivals(drawn: readonly number[], bySlot: Map<number, DroneId>, models: readonly DroneId[], out: Map<DroneId, number> = new Map()): Map<DroneId, number> {
+  bySlot.forEach((model, rival) => { if (!drawn.includes(rival) || !models.includes(model)) bySlot.delete(rival); });
+  out.clear();
+  bySlot.forEach((model, rival) => { out.set(model, rival); });
   for (const rival of drawn) {
     if (bySlot.has(rival)) continue;
-    const free = models.find((m) => !used.has(m));
+    let free: DroneId | undefined;
+    for (const m of models) if (!out.has(m)) { free = m; break; }
     if (!free) break;
     bySlot.set(rival, free);
-    used.add(free);
+    out.set(free, rival);
   }
-  const out = new Map<DroneId, number>();
-  for (const [rival, model] of bySlot) out.set(model, rival);
   return out;
 }
 
