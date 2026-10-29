@@ -4,10 +4,14 @@
  *   apps/veer-wonder-world/tools/remote-run.sh live                                  (est. 10 min)
  * WONDER_LIVE_URL overrides the address (default https://aura3d-wonder-world.vercel.app/).
  *
- * 1. A visitor's load in headless Chromium with software WebGL2: the start screen, a tap on Start, the story menu
- *    with its 32 cards and their portraits, then a tap on E17's card and the story on stage. No console error, page
- *    error or bad response, no failed request besides ones the page cancelled itself (net::ERR_ABORTED, recorded),
- *    every request on the preview's own origin, and nothing stored but the settings record.
+ * 1. A visitor's load in headless Chromium with software WebGL2:
+ *    - the start screen, once its fade-in has finished: the static splash is gone and the Start button's label reads
+ *      at 4.5:1 or better against the button (a reset once left these labels dark on purple);
+ *    - a tap on Start, then the story menu with its 32 cards and their portraits;
+ *    - a tap on E17's card, then the story on stage.
+ *    The visit must show no console error, page error or bad response, and no failed request besides ones the page
+ *    cancelled itself (net::ERR_ABORTED, recorded). Every request must stay on the preview's own origin, and the page
+ *    must store nothing but the settings record.
  * 2. The hosting rules on what the page fetched (plain requests, no browser): every response carries X-Robots-Tag
  *    noindex; the page revalidates (no-cache); hashed assets are immutable; models, sounds, fonts and the HDRIs have
  *    their content types; a missing file answers 404 rather than the page (no SPA fallback).
@@ -46,6 +50,39 @@ const CONTENT_TYPES: Readonly<Record<string, RegExp>> = {
   js: /^(?:text|application)\/javascript/,
   css: /^text\/css/
 };
+
+/** Waits until the start screen has finished its fade-in (computed opacity 1). */
+async function startScreenShown(page: Page): Promise<void> {
+  await page.waitForFunction(
+    () => {
+      const screen = document.querySelector('[data-ui="start"]');
+      return screen !== null && getComputedStyle(screen).opacity === "1";
+    },
+    undefined,
+    { timeout: UI_TIMEOUT_MS }
+  );
+}
+
+/** The computed text and background colours of the first element matching `selector`, and their WCAG contrast. */
+async function labelContrast(page: Page, selector: string): Promise<{ readonly color: string; readonly background: string; readonly ratio: number }> {
+  return page.evaluate((target) => {
+    const element = document.querySelector(target);
+    if (!element) throw new Error(`${target} is not on the page`);
+    const style = getComputedStyle(element);
+    const luminance = (css: string): number => {
+      const [r = 0, g = 0, b = 0] = (css.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
+      const channel = (value: number): number => {
+        const s = value / 255;
+        return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+      };
+      return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+    };
+    const text = luminance(style.color);
+    const background = luminance(style.backgroundColor);
+    const ratio = (Math.max(text, background) + 0.05) / (Math.min(text, background) + 0.05);
+    return { color: style.color, background: style.backgroundColor, ratio: Math.round(ratio * 100) / 100 };
+  }, selector);
+}
 
 async function menuCards(page: Page): Promise<{ readonly cards: number; readonly portraits: number; readonly loaded: number }> {
   return page.evaluate(async () => {
@@ -129,7 +166,13 @@ test.describe("Wonder World live preview", () => {
       await waitForHooks(page, log);
       const start = page.locator(SELECTORS.start);
       await start.waitFor({ state: "visible", timeout: UI_TIMEOUT_MS });
+      // The button is "visible" as soon as it is in the page; the screen is drawn once its fade-in has finished.
+      await startScreenShown(page);
+      await page.locator('[data-ui="boot"]').waitFor({ state: "detached", timeout: UI_TIMEOUT_MS });
+      const startLabel = await labelContrast(page, SELECTORS.start);
+      visit["startButton"] = startLabel;
       emitShot("live-start", await captureView(page), "jpg");
+      expect(startLabel.ratio, `Start label ${startLabel.color} on ${startLabel.background}`).toBeGreaterThanOrEqual(4.5);
 
       await start.click({ timeout: UI_TIMEOUT_MS });
       await page.locator(SELECTORS.menu).waitFor({ state: "visible", timeout: UI_TIMEOUT_MS });
