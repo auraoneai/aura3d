@@ -1622,7 +1622,10 @@ function onBallRest(pos: Vec3, zone: LieKind): void {
   }
   if (zone === "water" || zone === "oob") return; // handled by events
   if (pickUpIfOver()) return;
-  pushEvent("lie", `lie: ${zone} · ${state.terrain!.cupDistance(pos[0], pos[2]).toFixed(0)}m out`, "info");
+  // carry plus roll readout (audit C19)
+  const shot = Math.hypot(pos[0] - r.prevPos[0], pos[2] - r.prevPos[2]);
+  const air = Math.min(shot, state.ball?.carry ?? shot);
+  pushEvent("lie", `lie: ${zone} · ${air.toFixed(0)}m carry + ${(shot - air).toFixed(0)}m roll · ${state.terrain!.cupDistance(pos[0], pos[2]).toFixed(0)}m out`, "info");
   state.phase = "between";
   betweenUntil = performance.now() + 850;
 }
@@ -1724,14 +1727,17 @@ function scoreRangeShot(pos: Vec3): void {
     const dz = pos[2] - (t.tee[2] + d);
     best = Math.min(best, Math.hypot(dx, dz));
   }
-  const carry = Math.hypot(pos[0] - t.tee[0], pos[2] - t.tee[2]);
+  // carry is the air distance; total adds the roll to where the ball stopped (audit C17)
+  const total = Math.hypot(pos[0] - t.tee[0], pos[2] - t.tee[2]);
+  const carry = state.ball?.carry ?? total;
+  const dist = `${carry.toFixed(0)}m carry · ${total.toFixed(0)}m total`;
   if (best < 8) {
     l = { ...l, hits: l.hits + 1, streak: l.streak + 1, best: Math.max(l.best, l.streak + 1) };
-    pushEvent("lab", `on the ring — ${carry.toFixed(0)}m carry`, "success");
+    pushEvent("lab", `on the ring — ${dist}`, "success");
     void audio?.cue("parChime");
   } else {
     l = { ...l, streak: 0 };
-    pushEvent("lab", `${carry.toFixed(0)}m — off the rings by ${best.toFixed(0)}m`, "info");
+    pushEvent("lab", `${dist} — off the rings by ${best.toFixed(0)}m`, "info");
   }
   state.lab = l;
   updateModeChips();
@@ -1847,8 +1853,10 @@ function finishRound(): void {
     updateModeChips();
   } else if (state.mode === "skins") {
     const r = state.round!;
-    showMsg("SKINS MATCH OVER", `${r.skinsWon} skins won · ${toPar >= 0 ? "+" : ""}${toPar}`, 4000);
-    pushEvent("skins", `match over — ${r.skinsWon} skins`, "info");
+    // a pot still carried after hole 9 is shown, not silently dropped (audit C19)
+    const pot = r.skinsPot > 0 ? ` · ${r.skinsPot} carried, unclaimed` : "";
+    showMsg("SKINS MATCH OVER", `${r.skinsWon} of 9 skins won${pot} · ${toPar >= 0 ? "+" : ""}${toPar}`, 4000);
+    pushEvent("skins", `match over — ${r.skinsWon} skins won${pot}`, "info");
   } else {
     showMsg("ROUND COMPLETE", `${card.totalStrokes} strokes · ${toPar >= 0 ? "+" : ""}${toPar} vs par ${card.totalPar}`, 4200);
     pushEvent("round", `round complete: ${toPar >= 0 ? "+" : ""}${toPar}`, toPar <= 0 ? "success" : "info");
@@ -2010,8 +2018,7 @@ function frame(dt: number): void {
   if (!appReady) return;
   framesRendered += 1;
   simTime += dt;
-  if (framesRendered === 1) console.log("[links] first frame tick", dt);
-  publishEvidence();
+  if (framesRendered === 1) diagLog("[links] first frame tick", dt);
   const now = performance.now();
   const r = state.round;
   const t = state.terrain;
@@ -2278,15 +2285,24 @@ function openMenu(): void {
   if (state.phase !== "menu") menuReturn = { phase: state.phase, mode: state.mode };
   state.phase = "menu";
   state.mode = "menu";
-  $("menu-overlay")?.classList.add("open");
+  setMenuOverlay(true);
   setPrompt(null);
   $("swing-meter")?.classList.remove("show");
   for (const b of Array.from(document.querySelectorAll<HTMLButtonElement>("[data-mode-btn]"))) b.classList.remove("active");
   document.querySelector<HTMLButtonElement>('[data-mode-btn="menu"]')?.classList.add("active");
 }
 
+/** show or hide the menu overlay; a closed menu is inert and leaves the accessibility tree (audit P-1) */
+function setMenuOverlay(open: boolean): void {
+  const el = $("menu-overlay");
+  if (!el) return;
+  el.classList.toggle("open", open);
+  el.toggleAttribute("inert", !open);
+  el.setAttribute("aria-hidden", open ? "false" : "true");
+}
+
 function closeMenu(): void {
-  $("menu-overlay")?.classList.remove("open");
+  setMenuOverlay(false);
   $("studio-section")!.style.display = "none";
   $("tour-section")!.style.display = "none";
   // release focus from the clicked control — a focused button eats the next
@@ -2317,7 +2333,7 @@ function startModeFromMenu(mode: string): void {
     b.classList.toggle("active", b.dataset.modeBtn === (mode === "quick" ? "quick" : mode === "rangelab" ? "rangelab" : "menu"));
   }
   if (mode === "studio") {
-    $("menu-overlay")?.classList.add("open");
+    setMenuOverlay(true);
     $("studio-section")!.style.display = "";
     return;
   }
@@ -2341,6 +2357,8 @@ function renderBracket(): void {
   }).join("");
 }
 
+const SWATCH_GROUP_LABEL: Partial<Record<keyof GolferFit, string>> = { polo: "Polo", cap: "Cap", skin: "Skin tone", trail: "Ball trail" };
+
 function buildStudioSwatches(): void {
   const mk = (rowId: string, colors: string[], key: keyof GolferFit) => {
     const row = $(rowId);
@@ -2354,6 +2372,7 @@ function buildStudioSwatches(): void {
       b.style.width = "30px";
       b.style.height = "30px";
       b.title = c;
+      b.setAttribute("aria-label", `${SWATCH_GROUP_LABEL[key] ?? String(key)} colour ${c}`);
       b.addEventListener("click", () => {
         (state.fit as any)[key] = c;
         row.querySelectorAll(".swatch").forEach((x) => x.classList.remove("active"));
@@ -2488,7 +2507,7 @@ function setupFxAndTouch(): void {
 
   try {
     const keyFor = (b: string): string =>
-      ({ left: "KeyA", right: "KeyD", up: "KeyW", down: "KeyS", hit: "Space", light: "Space", jump: "Space", special: "KeyE", block: "KeyQ", heavy: "KeyM" } as Record<string, string>)[b] ?? b;
+      ({ left: "KeyA", right: "KeyD", up: "KeyW", down: "KeyS", hit: "Space", light: "Space", special: "KeyE", heavy: "KeyM", pin: "KeyP", fine: "ShiftLeft" } as Record<string, string>)[b] ?? b;
     const sink = {
       press: (b: string) => { lastManualInputAt = simTime; const c = keyFor(b); pressedKeys.add(c); justPressed.add(c); },
       release: (b: string) => pressedKeys.delete(keyFor(b)),
@@ -2496,7 +2515,8 @@ function setupFxAndTouch(): void {
     };
     touchControls = mountTouchControls(sink as any, {
       preset: "dpad-4btn",
-      bindings: { "stick.left": "left", "stick.right": "right", "stick.up": "up", "stick.down": "down", left: "left", right: "right", light: "hit", heavy: "special", special: "special", jump: "hit", block: "block" },
+      // touch: light = swing, heavy = mulligan, special = next club, jump = aim at the pin, hold block = fine aim (audit C14)
+      bindings: { "stick.left": "left", "stick.right": "right", "stick.up": "up", "stick.down": "down", left: "left", right: "right", light: "hit", heavy: "heavy", special: "special", jump: "pin", block: "fine" },
       haptics: { ms: 12 }
     } as any, {
       doc: document as any,
@@ -2511,6 +2531,28 @@ function setupFxAndTouch(): void {
 /* ------------------------------------------------------------------ *
  *  Evidence                                                           *
  * ------------------------------------------------------------------ */
+
+/** typed catalog keys the game shows in its evidence (hoisted: the evidence is built every 500 ms, not every frame, audit C13) */
+const CATALOG_ASSETS: readonly string[] = [
+  "linksGolferAthleteMeshy",
+  "linksGolfCartMeshy",
+  "linksPinFlagMeshy",
+  "siegeGolfBall",
+  "propPineTree",
+  "propRockA",
+  "propRockB",
+  "siegeWindmillTowerMeshy",
+  "siegeStoneBridgeMeshy",
+  "skylineCrystalShardMeshy",
+  "turboAlpineVenueBackdrop",
+  "neonStreetLampProp",
+  "showcaseModernBuildingOne",
+  "showcaseModernOfficeBuilding",
+  "showcaseVoxelBuilding",
+  "auroraHabitatDomeMeshy",
+  "lunarRoverMeshy",
+  "gravityOrbitalRelayMeshy"
+];
 
 function publishEvidence(): void {
   const r = state.round;
@@ -2576,26 +2618,7 @@ function publishEvidence(): void {
     eventLog: eventLog.snapshot(),
     touch: touchControls?.evidence?.() ?? null,
     audio: audio?.evidence ? { unlocked: audio.evidence.unlocked, cueCount: audio.evidence.cueCount, playedCueCount: audio.evidence.playedCueCount } : null,
-    catalogAssets: [
-      "linksGolferAthleteMeshy",
-      "linksGolfCartMeshy",
-      "linksPinFlagMeshy",
-      "siegeGolfBall",
-      "propPineTree",
-      "propRockA",
-      "propRockB",
-      "siegeWindmillTowerMeshy",
-      "siegeStoneBridgeMeshy",
-      "skylineCrystalShardMeshy",
-      "turboAlpineVenueBackdrop",
-      "neonStreetLampProp",
-      "showcaseModernBuildingOne",
-      "showcaseModernOfficeBuilding",
-      "showcaseVoxelBuilding",
-      "auroraHabitatDomeMeshy",
-      "lunarRoverMeshy",
-      "gravityOrbitalRelayMeshy"
-    ],
+    catalogAssets: CATALOG_ASSETS,
     deterministic: { terrain: "buildHoleTerrain", ball: "stepBall", seed: "lcg" }
   };
   publishBeacon(evidence);
@@ -2605,9 +2628,15 @@ function publishEvidence(): void {
  *  Boot                                                               *
  * ------------------------------------------------------------------ */
 
+/** boot, RAF and fetch tracing run only with ?diag=1 or ?qa=1 (audit C18) */
+const DIAG = bootUrlParams.get("diag") === "1" || bootUrlParams.get("qa") === "1";
+function diagLog(...args: unknown[]): void {
+  if (DIAG) console.log(...args);
+}
+
 function bootStage(name: string): void {
   (window as any).__BOOT_STAGE__ = name;
-  console.log("[links] boot:", name);
+  diagLog("[links] boot:", name);
 }
 
 function boot(): void {
@@ -2616,7 +2645,7 @@ function boot(): void {
   // Trace every fetch — the SPA fallback serves index.html for missing files,
   // which surfaces as opaque JSON parse errors inside the renderer mount.
   const origFetch = window.fetch.bind(window);
-  window.fetch = (async (input: any, init?: any) => {
+  if (DIAG) window.fetch = (async (input: any, init?: any) => {
     const url = typeof input === "string" ? input : String(input?.url ?? input);
     try {
       const res = await origFetch(input, init);
@@ -2677,10 +2706,12 @@ function boot(): void {
   }
   if (params.get("menu") !== "1") closeMenu();
 
-  console.log("[links] visibility:", document.visibilityState, "hidden:", document.hidden);
-  requestAnimationFrame(() => console.log("[links] raf tick — RAF is live"));
-  window.setTimeout(() => console.log("[links] raf after 2s:", (window as any).__rafFired ?? "none"), 2000);
-  requestAnimationFrame(() => { (window as any).__rafFired = true; });
+  if (DIAG) {
+    diagLog("[links] visibility:", document.visibilityState, "hidden:", document.hidden);
+    requestAnimationFrame(() => diagLog("[links] raf tick — RAF is live"));
+    window.setTimeout(() => diagLog("[links] raf after 2s:", (window as any).__rafFired ?? "none"), 2000);
+    requestAnimationFrame(() => { (window as any).__rafFired = true; });
+  }
   // Evidence pump: publishes state even when RAF is throttled (headless capture)
   window.setInterval(() => publishEvidence(), 500);
   (auraApp as any).onFrame(({ dt }: { dt: number }) => {
@@ -2694,7 +2725,7 @@ function boot(): void {
     bootStage("mounted");
     const rr = (window as any).__AURA3D_ROUTE_READY__;
     const diag = (auraApp as any).diagnostics?.() ?? rr?.diagnostics;
-    console.log("[links] route-state:", rr?.status ?? "?",
+    diagLog("[links] route-state:", rr?.status ?? "?",
       "backend:", (auraApp as any).backend ?? "?",
       "drawCalls:", diag?.drawCalls ?? "?",
       "errors:", JSON.stringify(diag?.errors ?? []),
@@ -2718,7 +2749,7 @@ function boot(): void {
       (auraApp as any).pause?.();
       for (let i = 0; i < n; i += 1) (auraApp as any).step?.(1 / 60);
       publishEvidence();
-      console.log(`[links] still: stepped ${n} frames, framesRendered=${framesRendered}`);
+      diagLog(`[links] still: stepped ${n} frames, framesRendered=${framesRendered}`);
     })();
   }
 }

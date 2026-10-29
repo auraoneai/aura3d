@@ -11,7 +11,7 @@
     "status": "unreviewed"
   },
   "routeGate": {
-    "claim": "Three-click arcade golf on a deterministic ball-flight sim (launch/spin/wind → terrain bounce/roll → cup) with 3D Meshy Golfer, Caddy, Golf Bag, Golf Cart, and Green-Side Grandstands. Six authored courses × 9 holes from Scottish dunes to a 1/6-gravity lunar mare: certified terrain sampler drives both physics and visuals. Immediate playable boot with smart autopilot, shot-shaping via accuracy/spin clicks, lie/wind penalties, stroke play with skins tiebreak, Range Lab + Putting Lab, 32-player Pro Circuit, Player Studio. Publishes window.__AURA3D_SHOWCASE_AURA_LINKS_3D__ and __AURA3D_GAME_EVIDENCE__."
+    "claim": "Three-click arcade golf on a deterministic ball-flight sim (launch/spin/wind → terrain bounce/roll → cup) with 3D Meshy Golfer, Caddy, Golf Bag, Golf Cart, and Green-Side Grandstands. Six authored courses × 9 holes from Scottish dunes to a 1/6-gravity lunar mare: certified terrain sampler drives both physics and visuals. Boots into Quick Play; the player's three presses set power, accuracy and spin (?autoplay=1 runs a demo autopilot that plans each shot with the same sim), lie/wind penalties, stroke play with skins tiebreak, Range Lab + Putting Lab, 32-player Pro Circuit, Player Studio. Publishes window.__AURA3D_SHOWCASE_AURA_LINKS_3D__ and __AURA3D_GAME_EVIDENCE__."
   },
   "machinePass": true,
   "renderer": {
@@ -35,11 +35,6 @@
       "typedRef": "assets.linksPinFlagMeshy",
       "quality": "production",
       "role": "holeMarker"
-    },
-    {
-      "typedRef": "assets.rooftopBallRackCartMeshy",
-      "quality": "production",
-      "role": "prop"
     },
     {
       "typedRef": "assets.siegeGolfBall",
