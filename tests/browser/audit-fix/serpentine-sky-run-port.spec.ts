@@ -30,7 +30,9 @@ const VARIANTS: readonly Variant[] = [
   { name: "v-env080", query: "&env=0.8" },
   { name: "v-env060", query: "&env=0.6" },
   { name: "v-env045", query: "&env=0.45" },
-  { name: "v-diag", query: "&diag=1" }
+  { name: "v-diag", query: "&diag=1" },
+  // RP-05: fused bloom (quality auto) against the production chain on the same build
+  { name: "v-prod", query: "&aura3d-render=production" }
 ];
 
 /** Crops as fractions of the frame: x0, y0, x1, y1. The runner sits on the centre line, feet near 79% of the height. */
