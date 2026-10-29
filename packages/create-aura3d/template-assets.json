@@ -1,0 +1,165 @@
+{
+  "schema": "create-aura3d/template-assets@1",
+  "templates": {
+    "animation-channel": [
+      {
+        "path": "public/aura-assets/luma.047f5e5f.glb",
+        "bytes": 463988,
+        "sha256": "047f5e5fb3bb6d378bd1df16ca6137f2a596c99b3a1b5690b4020c05aaf6f319"
+      },
+      {
+        "path": "public/aura-assets/miko.047f5e5f.glb",
+        "bytes": 463988,
+        "sha256": "047f5e5fb3bb6d378bd1df16ca6137f2a596c99b3a1b5690b4020c05aaf6f319"
+      }
+    ],
+    "animation-studio": [
+      {
+        "path": "public/aura-assets/cast-a.catalog.glb",
+        "bytes": 1997240,
+        "sha256": "fcdc2b7502031e556259dfe942fdfbd7abe41963433f2046ed2522d27bce9d65"
+      },
+      {
+        "path": "public/aura-assets/cast-b.catalog.glb",
+        "bytes": 1980724,
+        "sha256": "911c60a074f6d89d0eaeefc1f1eecf4188873880b62aa11b3d02ec2c18a4e036"
+      },
+      {
+        "path": "public/aura-assets/luma.catalog.glb",
+        "bytes": 2856452,
+        "sha256": "ef3892179fe70cf2062cdbafcce131d33968a7667e087d630b866a4fd022c74d"
+      },
+      {
+        "path": "public/aura-assets/luma2.catalog.glb",
+        "bytes": 1980724,
+        "sha256": "911c60a074f6d89d0eaeefc1f1eecf4188873880b62aa11b3d02ec2c18a4e036"
+      },
+      {
+        "path": "public/aura-assets/miko.catalog.glb",
+        "bytes": 1997240,
+        "sha256": "fcdc2b7502031e556259dfe942fdfbd7abe41963433f2046ed2522d27bce9d65"
+      },
+      {
+        "path": "public/aura-assets/mushroom.catalog.glb",
+        "bytes": 1648136,
+        "sha256": "5ac6aa7a4d230052fdc15cd316afe7251173e1cf57e16f44e0b28178776e5e8d"
+      },
+      {
+        "path": "public/aura-assets/rusty.catalog.glb",
+        "bytes": 681820,
+        "sha256": "1e14e6bb82a25c5fdf9e5845c9239bd6656ee8713da159d48971137aaead964b"
+      },
+      {
+        "path": "public/hifi-cast/BrainStem.glb",
+        "bytes": 3194848,
+        "sha256": "ddda3a53b5c9771f992463034a430340ba2bac571e5869c723f7cba4976e9174"
+      },
+      {
+        "path": "public/hifi-cast/CesiumMan.glb",
+        "bytes": 438044,
+        "sha256": "b7001eaeea8254bd44773bcd247e78696d94169388fbb2a1800fc69434e777d9"
+      },
+      {
+        "path": "public/hifi-cast/kaykit/Barbarian.glb",
+        "bytes": 3613268,
+        "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6"
+      },
+      {
+        "path": "public/hifi-cast/kaykit/Knight.glb",
+        "bytes": 3659532,
+        "sha256": "60428e3abc09ba83e595d256e3af8c5c976b46cdae599f0802fc82b4a3445168"
+      },
+      {
+        "path": "public/hifi-cast/kaykit/Mage.glb",
+        "bytes": 3589240,
+        "sha256": "cf898585da33fab50c724d31605fb931eb2912e6d2280092141e98ca81ad507d"
+      },
+      {
+        "path": "public/hifi-cast/kaykit/Rogue.glb",
+        "bytes": 3616284,
+        "sha256": "e825437cd4d2ee9c1960b517a74a69101e33eb409ae7fa8cedc7134a998fbb7d"
+      },
+      {
+        "path": "public/hifi-cast/kaykit/Rogue_Hooded.glb",
+        "bytes": 3597652,
+        "sha256": "93e6e25213009952276d9cf34f5d96a243767334c66f280db0433ddfabb91545"
+      },
+      {
+        "path": "public/hifi-cast/rpm/cesiumman.glb",
+        "bytes": 438044,
+        "sha256": "b7001eaeea8254bd44773bcd247e78696d94169388fbb2a1800fc69434e777d9"
+      }
+    ],
+    "architecture-interior": [
+      {
+        "path": "public/aura-assets/kenneyModularDungeonRoomSmall.a7e74a5f.glb",
+        "bytes": 412996,
+        "sha256": "a7e74a5f2c91ce0503190bcda140259545478d7c80f60243d2c13a897e01af20"
+      }
+    ],
+    "character-controller": [
+      {
+        "path": "public/aura-assets/auraclash-player-rig.glb",
+        "bytes": 7822664,
+        "sha256": "3318d671632878ed27b8af6de88c6e5ca647e0d4a04cf03780d555fa07cec087"
+      }
+    ],
+    "cinematic-scene": [
+      {
+        "path": "public/aura-assets/hero-fixture.glb",
+        "bytes": 3773916,
+        "sha256": "4028ccbce11eb924936dad9bfee2af2aecf4b72203feb8a6b9dfdc458093e656"
+      }
+    ],
+    "fighting-game": [
+      {
+        "path": "public/aura-assets/auraclash-player-rig.glb",
+        "bytes": 7822664,
+        "sha256": "3318d671632878ed27b8af6de88c6e5ca647e0d4a04cf03780d555fa07cec087"
+      },
+      {
+        "path": "public/aura-assets/auraclash-rival-rig.glb",
+        "bytes": 4732472,
+        "sha256": "c8d844dc4a70bc5d548c1bdd5c20c7a2f336529088fd350098431adf87cdf13b"
+      }
+    ],
+    "mini-game": [
+      {
+        "path": "public/aura-assets/kaykit-barbarian.glb",
+        "bytes": 3613268,
+        "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6"
+      }
+    ],
+    "postprocess-scene": [
+      {
+        "path": "public/aura-assets/showcaseLuma.ef389217.glb",
+        "bytes": 2856452,
+        "sha256": "ef3892179fe70cf2062cdbafcce131d33968a7667e087d630b866a4fd022c74d"
+      },
+      {
+        "path": "public/aura-assets/showcaseMiko.fcdc2b75.glb",
+        "bytes": 1997240,
+        "sha256": "fcdc2b7502031e556259dfe942fdfbd7abe41963433f2046ed2522d27bce9d65"
+      }
+    ],
+    "premium-product-viewer": [
+      {
+        "path": "public/aura-assets/khronosToyCar.01a60862.glb",
+        "bytes": 5422412,
+        "sha256": "01a60862de55cd4b9f3acfab0b0def86451800f9c42467fcd61052c16cb9838c"
+      }
+    ],
+    "racing-starter": [
+      {
+        "path": "public/aura-assets/showcaseCleanSportsCar.1c69283f.glb",
+        "bytes": 357064,
+        "sha256": "1c69283fa2b3fb96b3dc3418f2d0dede842e6984f1776a8ca00b099836fc9c14"
+      },
+      {
+        "path": "public/aura-assets/showcaseReadableKartCircuit.5cbb912e.glb",
+        "bytes": 1641744,
+        "sha256": "5cbb912e511e5e82363c347210096d59dd3007db12c363fd0c9f07919f5ebbd0"
+      }
+    ]
+  }
+}

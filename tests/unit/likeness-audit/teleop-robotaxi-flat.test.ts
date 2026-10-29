@@ -7,7 +7,7 @@ const root = resolve(__dirname, "../../..");
 const manifest = JSON.parse(readFileSync(join(root, "aura.assets.json"), "utf8")) as { assets: Array<{ name: string; source: string }> };
 
 describe("teleoperator robotaxi: flat region materials", () => {
-  for (const key of ["teleopWaymoHero", "teleopWaymoTraffic"]) {
+  for (const key of ["gridCruiser", "gridRivalCruiser"]) {
     it(`${key}: no baked atlas, no cover discs, flat materials only, inside the triangle budget`, async () => {
       const entry = manifest.assets.find((a) => a.name === key)!;
       const file = join(root, entry.source);

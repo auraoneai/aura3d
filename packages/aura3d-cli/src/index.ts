@@ -1145,6 +1145,7 @@ export function checkDeploy(options: CheckDeployOptions = {}): AssetValidationRe
       }
     }
   }
+  warnings.push(...deadAssetUrlWarnings(resolve(projectDir, distDir), distDir));
   const validation = validateAssets({
     projectDir,
     noPlaceholders: options.noPlaceholders,
@@ -3872,6 +3873,30 @@ function sameBytes(a: string, b: string): boolean {
   const as = statSync(a);
   const bs = statSync(b);
   return as.size === bs.size && readFileSync(a).equals(readFileSync(b));
+}
+
+/**
+ * Asset URLs written into the shipped JavaScript that have no file in the build output (audit RH-06: eight live games
+ * shipped a 2.6 MB catalogue chunk naming 522 assets the deploy does not carry). A warning, not a failure: a URL may be
+ * served from elsewhere on purpose. Fix by importing a per-route catalogue (`aura3d assets typegen --route`).
+ */
+export function deadAssetUrlWarnings(distRoot: string, distLabel = "dist"): string[] {
+  if (!existsSync(distRoot)) return [];
+  const dead = new Map<string, string>();
+  const pattern = /["'`](\/aura-assets\/[A-Za-z0-9_.@\/-]+\.(?:glb|gltf|ktx2|bin|wav|ogg|mp3|hdr|png|jpe?g|webp))["'`]/g;
+  for (const file of walkFilesUnder(distRoot)) {
+    if (!/\.m?js$/.test(file)) continue;
+    const text = readFileSync(file, "utf8");
+    for (const match of text.matchAll(pattern)) {
+      const url = match[1]!;
+      if (dead.has(url) || existsSync(join(distRoot, url.slice(1)))) continue;
+      dead.set(url, file.slice(distRoot.length + 1));
+    }
+  }
+  if (dead.size === 0) return [];
+  const chunks = [...new Set(dead.values())];
+  const examples = [...dead.keys()].slice(0, 3).join(", ");
+  return [`Deploy check: ${dead.size} asset URL(s) in the shipped JavaScript have no file in ${distLabel} (${chunks.slice(0, 3).join(", ")}${chunks.length > 3 ? ", ..." : ""}; e.g. ${examples}). The bundle carries a catalogue of assets it does not deploy: import a per-route catalogue (aura3d assets typegen --route) instead.`];
 }
 
 function* walkFilesUnder(dir: string): Generator<string> {

@@ -1,0 +1,60 @@
+[
+ {
+  "target": "ninja-runner-port--default",
+  "id": "settle-25s",
+  "slug": "ninja-runner-port",
+  "variant": "default",
+  "sinceReadyMs": 25006,
+  "mean": 121.15,
+  "p5": 52,
+  "p50": 124,
+  "p95": 173,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   109.3,
+   143.4,
+   115.3,
+   89.6,
+   158.5,
+   107,
+   113.3,
+   138.6,
+   115.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 93
+  }
+ },
+ {
+  "target": "ninja-runner-port--default",
+  "id": "settle-60s",
+  "slug": "ninja-runner-port",
+  "variant": "default",
+  "sinceReadyMs": 840424,
+  "mean": 121.26,
+  "p5": 52,
+  "p50": 124,
+  "p95": 173,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   109.3,
+   143.4,
+   115.3,
+   89.6,
+   158.4,
+   107,
+   113.3,
+   139.7,
+   115.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 93
+  }
+ }
+]

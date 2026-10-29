@@ -1,0 +1,3 @@
+GL_HTTP ninja-runner-port--default 404 /apps/showcase-ninja-runner-port/src/assets/meshy/hero.glb
+GL_CONSOLE ninja-runner-port--default Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_CONSOLE ninja-runner-port--default Error: glTF request failed with 404

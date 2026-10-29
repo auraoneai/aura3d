@@ -9,18 +9,18 @@ const require = createRequire(join(root, "package.json"));
 
 // asset key -> generated vehicle (see tools/teleoperator-vehicles/apply.mjs)
 const KEYS = [
-  "teleopWaymoHero",
-  "teleopWaymoTraffic",
-  "teleopCybercab",
-  "teleopCybertruck",
-  "teleopCorvette",
-  "teleopMissions",
-  "teleopSedan",
-  "teleopTaxi",
-  "teleopSuv",
-  "teleopVan",
-  "teleopPickup",
-  "teleopBus"
+  "gridCruiser",
+  "gridRivalCruiser",
+  "gridCoupe",
+  "gridTruck",
+  "gridGt",
+  "gridInterceptor",
+  "gridSedan",
+  "gridTaxi",
+  "gridHatch",
+  "gridVan",
+  "gridPickup",
+  "gridBoxTruck"
 ];
 
 const OLD_FILES = [

@@ -380,7 +380,7 @@ export function gitFiles(root) {
   gitCache.set(root, list);
   return list;
 }
-export function resetGitCache() { gitCache = new Map(); }
+export function resetGitCache() { gitCache = new Map(); releaseCache = new Map(); }
 
 function checkVercelignore({ root }) {
   const p = join(root, ".vercelignore");
@@ -498,6 +498,199 @@ function checkSkin({ root, inventory }) {
   return findings;
 }
 
+const CODE_KIND = /^[cm]?[jt]sx?$/;
+const firstLine = (files, re) => { for (const f of files) { const i = f.text.split("\n").findIndex((l) => re.test(l)); if (i >= 0) return { f, no: i + 1 }; } return null; };
+const okMarker = (f, no, tag) => new RegExp(`${tag}: ok`).test(f.raw.split("\n")[no - 1] ?? "");
+
+/** Body of the first `{ ... }` object literal that starts at or after `from` (brace matched on comment-free text). */
+function objectAt(text, from) {
+  const start = text.indexOf("{", from);
+  if (start < 0) return "";
+  let depth = 0;
+  for (let i = start; i < text.length; i++) {
+    if (text[i] === "{") depth++;
+    else if (text[i] === "}" && --depth === 0) return text.slice(start + 1, i);
+  }
+  return "";
+}
+const topLevelKeys = (body) => {
+  const keys = [];
+  let depth = 0;
+  for (const m of body.matchAll(/[{}\[\]]|(?:^|[,{\s])["']?([A-Za-z_$][\w$.-]*)["']?\s*:/g)) {
+    if (m[0] === "{" || m[0] === "[") depth++;
+    else if (m[0] === "}" || m[0] === "]") depth--;
+    else if (depth === 0 && m[1]) keys.push(m[1]);
+  }
+  return keys;
+};
+
+/**
+ * Touch input (audit 2026-10-29, cross-cutting): seven live games shipped keyboard-only and four shipped touch that could not
+ * work. Flags (1) gameplay read from the keyboard with no touch path: no touch preset or touch-controls API, no touchstart /
+ * touchmove / pointermove handler, no on-screen hold button (pointercancel handler), and no pointerdown handler that reads the pointer (a handler that only unlocks audio or
+ * starts the title does not count); (2) a `touch: { bindings }` value that names no declared input action or axis.
+ * Severity is warn until every live game passes; switch TOUCH_INPUT_SEVERITY to "error" then (lessons-learned.md).
+ * 2026-10-29, wave 2 of the audit fixes, with audit-fix/g01..g09 overlaid: still failing are bunker-zero, strange-orbit-port,
+ * drift-and-deliver-port, heatsink-port, last-train-port and roadster-hours-port (their lanes had not committed yet), so it stays warn.
+ * Escape hatch for a game that is desktop-only on purpose: `// touch-input: ok` on the keyboard listener line.
+ */
+export const TOUCH_INPUT_SEVERITY = "warn";
+function checkTouchInput({ game, src }) {
+  const out = [];
+  const code = src.files.filter((f) => CODE_KIND.test(f.kind));
+  const keyboard = firstLine(code, /addEventListener\(\s*["']key(?:down|up)["']|\bonkeydown\s*=|\bactions\s*:\s*\{|\.code\s*===\s*["'](?:Key|Arrow|Space)/);
+  if (!keyboard) return out;
+  const touchApi = /mountTouchControls|bindGameTouch\w*\(|createTouchLayoutPreset|createGameTouchControlLayout|VirtualTouch\w*|addEventListener\(\s*["'](?:touchstart|touchmove|pointermove)["']|["']pointercancel["']|\bon(?:touchstart|touchmove|pointermove)\s*=|\btouch\s*:\s*\{\s*preset\s*:/;
+  let touch = code.some((f) => touchApi.test(f.text));
+  if (!touch) {
+    for (const f of code) {
+      for (const m of f.text.matchAll(/addEventListener\(\s*["']pointerdown["']|\bonpointerdown\s*=/g)) {
+        const body = f.text.slice(m.index, m.index + 400);
+        if (/clientX|clientY|offsetX|pageX|pointerType|movementX|getBoundingClientRect/.test(body)) { touch = true; break; }
+      }
+      if (touch) break;
+    }
+  }
+  if (!touch && !okMarker(keyboard.f, keyboard.no, "touch-input")) {
+    out.push(finding("touch-input", TOUCH_INPUT_SEVERITY, game, keyboard.f.rel, keyboard.no, "gameplay input is keyboard-only: phones and tablets cannot play. Mount the engine touch preset (createGame `touch: { preset, bindings }` or mountTouchControls) or read pointer moves."));
+  }
+  for (const f of code) {
+    for (const m of f.text.matchAll(/\btouch\s*:\s*\{\s*preset\s*:/g)) {
+      const bindingsAt = f.text.indexOf("bindings", m.index);
+      if (bindingsAt < 0 || bindingsAt - m.index > 400) continue;
+      const bindings = objectAt(f.text, bindingsAt);
+      const declared = new Set();
+      let spread = false;
+      for (const a of f.text.matchAll(/\b(actions|axes)\s*:\s*\{/g)) {
+        const body = objectAt(f.text, a.index);
+        if (/\.\.\./.test(body)) spread = true;
+        for (const k of topLevelKeys(body)) declared.add(k);
+      }
+      if (declared.size === 0) continue;
+      for (const b of bindings.matchAll(/:\s*["']([\w.-]+)["']/g)) {
+        if (declared.has(b[1])) continue;
+        const no = f.text.slice(0, bindingsAt + bindings.indexOf(b[0])).split("\n").length + 1;
+        if (okMarker(f, no, "touch-input")) continue;
+        out.push(finding("touch-input", TOUCH_INPUT_SEVERITY, game, f.rel, no, `touch binding targets "${b[1]}", which is not a declared input action or axis${spread ? " in this file (a spread may supply it; check)" : ""}: the button does nothing`));
+      }
+    }
+  }
+  return dedupe(out);
+}
+
+/**
+ * Lighting rule that changed in 4.5.0 (audit LIGHT-01/11): lights with no environment or look get no image-based light (no
+ * implicit room since 4.5.0), so GLBs lose their reflections and fill. Add `environments.neutral({ intensity })` calibrated on
+ * a capture. Warn: it needs a steady-state capture, not a rule.
+ * Not checked, because the engine now handles them (lane E2): a hemisphere next to an environment contributes (LIGHT-05), a
+ * look added at runtime drops its fill next to an authored ambient (LIGHT-04), and contact shadows on a weak key raise the
+ * runtime warning CONTACT_SHADOWS_WEAK_KEY in app.diagnostics() (LIGHT-09).
+ * Escape hatch: `// lighting: ok` on the flagged line.
+ */
+function checkLighting({ game, src }) {
+  const out = [];
+  const code = src.files.filter((f) => CODE_KIND.test(f.kind));
+  const lights = firstLine(code, /\blights\.(?:ambient|hemisphere|directional|point|spot)\s*\(/);
+  if (!lights) return out;
+  const env = /\benvironments\.\w+\s*\(|\blooks\.preset\s*\(|\blook\s*:\s*["'`{]|\blook\s*:\s*[A-Z][A-Z0-9_]{2,}\b|\benvironment\s*:\s*["'`{]/;
+  const hasEnv = code.some((f) => env.test(f.text));
+  if (!hasEnv && !okMarker(lights.f, lights.no, "lighting")) {
+    out.push(finding("lighting", "warn", game, lights.f.rel, lights.no, "lights with no environment or look: since 4.5.0 such a scene gets no image-based light, so GLBs lose reflections and fill. Add environments.neutral({ intensity }) calibrated on a steady-state capture."));
+  }
+  return dedupe(out);
+}
+
+/**
+ * Root typed-asset catalogue (audit RH-06): `src/aura-assets.ts` lists every admitted asset in the repo (2.6 MB of JS live,
+ * 522 of its URLs not deployed). A game that imports it ships the whole catalogue. Generate the route's own catalogue
+ * (`aura3d assets typegen --route apps/<app>`, writes `src/aura-assets.route.ts`) and import that instead.
+ */
+function checkSharedCatalog({ game, src }) {
+  const out = [];
+  for (const f of src.files) {
+    if (!CODE_KIND.test(f.kind)) continue;
+    const lines = f.text.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      if (/from\s+["'](?:\.\.\/)+src\/aura-assets(?:\.ts)?["']|import\(\s*["'](?:\.\.\/)+src\/aura-assets(?:\.ts)?["']\s*\)/.test(lines[i]) && !okMarker(f, i + 1, "shared-catalog")) {
+        out.push(finding("shared-catalog", "warn", game, f.rel, i + 1, "imports the repository-wide asset catalogue (src/aura-assets.ts, 2.6 MB of JS): run `aura3d assets typegen --route apps/<app>` and import ./aura-assets.route"));
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Card frame older than the latest minor release (audit RH-05): every index poster is built from the inventory's card frame
+ * (tools/site/build-card-images.mjs), so a card committed before the last vX.Y.0 tag shows a render the engine no longer
+ * produces. Retake the final screens from the current build, then rebuild the posters.
+ */
+let releaseCache = new Map();
+function latestMinorRelease(root) {
+  if (releaseCache.has(root)) return releaseCache.get(root);
+  let out = null;
+  try {
+    const tag = execFileSync("git", ["describe", "--tags", "--abbrev=0", "--match", "v[0-9]*.[0-9]*.0"], { cwd: root, stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
+    const time = Number(execFileSync("git", ["log", "-1", "--format=%ct", tag], { cwd: root, stdio: ["ignore", "pipe", "ignore"] }).toString().trim());
+    if (tag && time) out = { tag, time };
+  } catch { /* no release tag */ }
+  releaseCache.set(root, out);
+  return out;
+}
+function checkScreensFresh({ game, root }) {
+  const release = latestMinorRelease(root);
+  const dir = game.screens?.dir;
+  const card = game.screens?.card;
+  if (!release || !dir || !card) return [];
+  const rel = `${dir}/${card}`;
+  let time = 0;
+  try { time = Number(execFileSync("git", ["log", "-1", "--format=%ct", "--", rel], { cwd: root, stdio: ["ignore", "pipe", "ignore"] }).toString().trim()); } catch { return []; }
+  if (!time || time >= release.time) return [];
+  const day = (t) => new Date(t * 1000).toISOString().slice(0, 10);
+  return [finding("screens-fresh", "warn", game, rel, 0, `card frame last committed ${day(time)}, before ${release.tag} (${day(release.time)}): the index poster shows an older render. Retake the final screens on the current build, then run node tools/site/build-card-images.mjs`)];
+}
+
+/**
+ * Third-party names in identifiers that ship (audit RH-07): the `likeness` check reads visible text only, so QA hook ids,
+ * log prefixes and storage keys such as `installQaHooks("kid-goku")` or `"saiyan-snake-way"` reached the live bundles.
+ * Flags a real brand, product or lore term (terms.json `brandTerms`; former game names stay with `names`) inside any string literal of shipped code (case-insensitive, `-`/`_`/space folded),
+ * import lines excluded. Escape hatch: `// brand-identifier: ok` on the line.
+ */
+function checkBrandIdentifiers({ game, src, terms }) {
+  const out = [];
+  const fold = (t) => t.toLowerCase().replace(/[\s_-]+/g, "");
+  const brand = terms.brandTerms.filter((t) => fold(t).length >= 4).map((t) => ({ t, f: fold(t) }));
+  for (const f of src.files) {
+    if (!CODE_KIND.test(f.kind)) continue;
+    const lines = f.text.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      if (isImportLine(lines[i]) || /\bimport\(/.test(lines[i]) || okMarker(f, i + 1, "brand-identifier")) continue;
+      for (const lit of literals(lines[i])) {
+        if (!idLike(lit)) continue; // prose is the likeness check's job
+        const folded = fold(lit);
+        const hit = brand.find((b) => folded.includes(b.f));
+        if (hit) { out.push(finding("brand-identifiers", "warn", game, f.rel, i + 1, `identifier "${lit}" contains the third-party name "${hit.t}" and ships in the bundle (QA hook, log prefix or key): rename it to the game's own name`)); break; }
+      }
+    }
+  }
+  return dedupe(out);
+}
+
+/**
+ * Open upgrade checks (audit RH-04): 4.5.0 shipped with every per-game guide in docs/upgrade-4.5.0/ still listing unchecked
+ * `- [ ]` captures. Warns with the count for the guide of the latest minor release tag. Close a box only with the capture
+ * or test that answers it.
+ */
+function checkUpgradeGuide({ game, root }) {
+  const release = latestMinorRelease(root);
+  if (!release) return [];
+  const version = release.tag.replace(/^v/, "");
+  const rel = `docs/upgrade-${version}/${game.slug}.md`;
+  const file = join(root, rel);
+  if (!existsSync(file)) return [];
+  const open = readFileSync(file, "utf8").split("\n").filter((l) => /^[ \t]*[-*] \[ \]/.test(l)).length;
+  return open ? [finding("upgrade-guide", "warn", game, rel, 0, `${open} unchecked item(s) in the ${version} upgrade guide: run the listed captures (tests/browser/game-luma-capture.spec.ts) and tick each box with its evidence`)] : [];
+}
+
 function dedupe(list) {
   const seen = new Set();
   return list.filter((f) => { const k = `${f.check}|${f.game}|${f.file}|${f.line}|${f.message}`; if (seen.has(k)) return false; seen.add(k); return true; });
@@ -518,7 +711,13 @@ export const GAME_CHECKS = {
   "runtime-masking": checkRuntimeMasking,
   "no-three": checkNoThree,
   fonts: checkFonts,
-  "screens-tracked": checkScreensTracked
+  "screens-tracked": checkScreensTracked,
+  "touch-input": checkTouchInput,
+  lighting: checkLighting,
+  "shared-catalog": checkSharedCatalog,
+  "screens-fresh": checkScreensFresh,
+  "brand-identifiers": checkBrandIdentifiers,
+  "upgrade-guide": checkUpgradeGuide
 };
 export const GLOBAL_CHECKS = { vercelignore: checkVercelignore, counts: checkCounts, "meshy-cap": checkMeshyCap, skin: checkSkin };
 

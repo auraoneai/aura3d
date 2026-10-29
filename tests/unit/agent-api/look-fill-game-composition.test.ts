@@ -4,7 +4,8 @@
 // The 4.5.0 first cut gave night-city / polar-night / neon-arcade the baked "night" probe and space / underwater the
 // "studio" probe. The first frame looked right because the analytic neutral floor is bound until the baked probe
 // lands; at steady state the night probe's diffuse irradiance (SH9 DC 0.11 to 0.16) is about 30x below the neutral
-// room's (3.76), and Aura Diamond 3D Skyline went from mean luma 68.7 to 5.9. This test measures the probe that is
+// room's (3.76), and Aura Diamond 3D Skyline went from mean luma 71.0 to 2.6 (tests/browser/game-luma-capture.spec.ts,
+// steady state; an earlier build read 68.7 to 5.9). This test measures the probe that is
 // finally bound, not the placeholder.
 
 import { readFileSync } from "node:fs";

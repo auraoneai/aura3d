@@ -93,6 +93,8 @@ Most templates include:
 - `src/aura-assets.ts` for generated typed asset references;
 - template-local test and project files you can keep editing.
 
+Large template models and sounds (files of 256 KB or more, listed with their sha256 in `template-assets.json`) are not in the npm package. The first scaffold of such a template downloads them from this version's tagged source on GitHub and writes each file only if its size and sha256 match; if a download fails, the command exits non-zero and says which files are missing, so run it again when online. Set `AURA3D_TEMPLATE_ASSET_BASE` to use a mirror of `packages/create-aura3d`.
+
 ## Best For
 
 - product viewers and configurators;
