@@ -1,0 +1,56 @@
+[
+ {
+  "event": "GL_CONSOLE e4-fc error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ },
+ {
+  "target": "e4-fc",
+  "id": "settle-3s",
+  "sinceReadyMs": 3005,
+  "mean": 113.45,
+  "p5": 44,
+  "p50": 109,
+  "p95": 228,
+  "darkFrac": 0,
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 389,
+   "optionIgnored": []
+  }
+ },
+ {
+  "target": "e4-fc",
+  "id": "settle-25s",
+  "sinceReadyMs": 255800,
+  "mean": 113.45,
+  "p5": 44,
+  "p50": 109,
+  "p95": 228,
+  "darkFrac": 0,
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 389,
+   "optionIgnored": []
+  }
+ },
+ {
+  "target": "e4-fc",
+  "id": "settle-60s",
+  "sinceReadyMs": 495566,
+  "mean": 113.45,
+  "p5": 44,
+  "p50": 109,
+  "p95": 228,
+  "darkFrac": 0,
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 389,
+   "optionIgnored": []
+  }
+ },
+ {
+  "event": "GL_DONE e4-fc"
+ }
+]
