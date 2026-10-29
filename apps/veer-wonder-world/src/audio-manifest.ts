@@ -837,6 +837,8 @@ export const AUDIO_MANIFEST: {
     "g12.your-turn.3": { url: new URL("./assets/audio/en/lines/g12.your-turn.3.mp3", import.meta.url).pathname, sha256: "f491cceede66041eecbcf9232924f7303e8cbe6a45cac76de9db3666bdd1ee97", durationMs: 2136 }
   },
   sfx: {
+    "arf": { url: new URL("./assets/audio/sfx/arf.mp3", import.meta.url).pathname, sha256: "b534a7fade957850553adecf2bf9c03d8dfdf8f4cf12c09e72e79fcb3ddcb336", durationMs: 480 },
+    "aroo": { url: new URL("./assets/audio/sfx/aroo.mp3", import.meta.url).pathname, sha256: "2d36ffaa6c4b0fb1bd19c9e9b235eb970c30e20b1720a66e89fdfa04d1039896", durationMs: 1000 },
     "baa": { url: new URL("./assets/audio/sfx/baa.mp3", import.meta.url).pathname, sha256: "fe1cb5abdf057ee90272c37858d8db5fa38509f7d19090c62c4e581e8c4612ac", durationMs: 1200 },
     "beep": { url: new URL("./assets/audio/sfx/beep.mp3", import.meta.url).pathname, sha256: "4acfbefee5e14afb9a4a11fa233382580622b59d5f2f62f017d9fe6c2fec3d7e", durationMs: 800 },
     "blow": { url: new URL("./assets/audio/sfx/blow.mp3", import.meta.url).pathname, sha256: "1f7774f92f995fbc7db451d5d3b88086e96d38f91fac929fa341aaaed3bc4eed", durationMs: 1000 },
@@ -850,9 +852,11 @@ export const AUDIO_MANIFEST: {
     "doorbell": { url: new URL("./assets/audio/sfx/doorbell.mp3", import.meta.url).pathname, sha256: "c5fe874160b1838ed632cef18de0cdd431868d06f5efaef913eb415835fbc3a4", durationMs: 1480 },
     "drum": { url: new URL("./assets/audio/sfx/drum.mp3", import.meta.url).pathname, sha256: "4ea7a999c52bcb53b20998e0fecd2d82d5ddb9e8c5979fc666f1e5f62c38a4f0", durationMs: 800 },
     "giggle": { url: new URL("./assets/audio/sfx/giggle.mp3", import.meta.url).pathname, sha256: "6081b38733ade0e81d8e2a013f8efe3957673dec5031ad8e74c3bafa92837011", durationMs: 1000 },
+    "huff": { url: new URL("./assets/audio/sfx/huff.mp3", import.meta.url).pathname, sha256: "9fb32424cd3991ffca8020882760066b67786f5e94b13d0977468da790262be4", durationMs: 480 },
     "moo": { url: new URL("./assets/audio/sfx/moo.mp3", import.meta.url).pathname, sha256: "4d2546f497dab1b85a713309bb39cc80abc246b34bf6152cacda5f80d9d11559", durationMs: 1480 },
     "munch": { url: new URL("./assets/audio/sfx/munch.mp3", import.meta.url).pathname, sha256: "8bf824934a5f22f86e9c19f2fe995f751a938a5549016ea2f247f556d33461ae", durationMs: 800 },
     "neigh": { url: new URL("./assets/audio/sfx/neigh.mp3", import.meta.url).pathname, sha256: "212bfa83b721dec6097651f87862ddc01fffdfcd7369e73c62b697cbc702e234", durationMs: 1480 },
+    "pant": { url: new URL("./assets/audio/sfx/pant.mp3", import.meta.url).pathname, sha256: "144e4439485e2640908a05104870649a2a6ca03e7fc5230f910882a5bdbcadc2", durationMs: 1480 },
     "pianoDown": { url: new URL("./assets/audio/sfx/pianoDown.mp3", import.meta.url).pathname, sha256: "823b04315912c576751ae5a67d92db4a42ba904f31ca77333af62dd805a75eef", durationMs: 1480 },
     "pianoUp": { url: new URL("./assets/audio/sfx/pianoUp.mp3", import.meta.url).pathname, sha256: "1e9c06539c6c333f63164f0b26409d560177e4f0509495cd34bbb4108bf4c004", durationMs: 1480 },
     "pop": { url: new URL("./assets/audio/sfx/pop.mp3", import.meta.url).pathname, sha256: "2a4c88f5deb63f6df052f0a0683f2849620f6f664cd4232c07378fdf6e3033c8", durationMs: 480 },
@@ -860,6 +864,7 @@ export const AUDIO_MANIFEST: {
     "rumble": { url: new URL("./assets/audio/sfx/rumble.mp3", import.meta.url).pathname, sha256: "736fc39aaaa9e57aee739cd02370fe2aa712ecdbc2778a6f17a163511b8c6fe8", durationMs: 1000 },
     "rustle": { url: new URL("./assets/audio/sfx/rustle.mp3", import.meta.url).pathname, sha256: "dc8d379f59c7e2e598d08adc643ecf4aeb49b6cc8a951949f1e2bbc51b78c905", durationMs: 1200 },
     "shaker": { url: new URL("./assets/audio/sfx/shaker.mp3", import.meta.url).pathname, sha256: "9bb20ecf6c030f435798b0c8cf532be3728cc6b814aa9d3374abf39be5a98f08", durationMs: 800 },
+    "sniffs": { url: new URL("./assets/audio/sfx/sniffs.mp3", import.meta.url).pathname, sha256: "8306e6e8bbe136be0f3691b9a100f5ef60b28e5c905ec67d7c584a2e9c73801a", durationMs: 1000 },
     "sparkle": { url: new URL("./assets/audio/sfx/sparkle.mp3", import.meta.url).pathname, sha256: "669acafb5cd49fe1bae2753a18c5553e47f33c5afe83d1a8866fa6ee8394aa0d", durationMs: 1200 },
     "splash": { url: new URL("./assets/audio/sfx/splash.mp3", import.meta.url).pathname, sha256: "b613f062ac4c3c50981426d5ecdb549d02ce48fb48faf7b59c2aea007fc52650", durationMs: 1000 },
     "squeak": { url: new URL("./assets/audio/sfx/squeak.mp3", import.meta.url).pathname, sha256: "9e79de20c029feb8497e969fa1ce0a355da006310765e8672a5f9594ea401bcb", durationMs: 480 },
@@ -870,7 +875,10 @@ export const AUDIO_MANIFEST: {
     "whistle": { url: new URL("./assets/audio/sfx/whistle.mp3", import.meta.url).pathname, sha256: "a04001fed72f7770f2ae20eacd4382d5eeb12ab132b231ce695005563626bc95", durationMs: 1000 },
     "whoosh": { url: new URL("./assets/audio/sfx/whoosh.mp3", import.meta.url).pathname, sha256: "a2cfeb7e4e9294728531b28e8e4ed24dfdf409eba273776da9a776b0fd9fc98b", durationMs: 800 },
     "woof": { url: new URL("./assets/audio/sfx/woof.mp3", import.meta.url).pathname, sha256: "ef9598d20a0d286f830722f54dbae8729a23d7d8bb745d763f1a4301c4bb7d8f", durationMs: 800 },
-    "yawn": { url: new URL("./assets/audio/sfx/yawn.mp3", import.meta.url).pathname, sha256: "14a714470f8d9bddc2da707c448d4aa41d6ed005ceedb76d62e2f2b041004503", durationMs: 1480 }
+    "woofDouble": { url: new URL("./assets/audio/sfx/woofDouble.mp3", import.meta.url).pathname, sha256: "b206e09cdeb61e4704138258cf20b2c10aee8bbfa5aacbc7808bf503c3270eff", durationMs: 1000 },
+    "woofSoft": { url: new URL("./assets/audio/sfx/woofSoft.mp3", import.meta.url).pathname, sha256: "bacae44cc08208658f601ec8f09e54a361d5912ec8a5a51b409e1f0ad1aa51ec", durationMs: 680 },
+    "yawn": { url: new URL("./assets/audio/sfx/yawn.mp3", import.meta.url).pathname, sha256: "14a714470f8d9bddc2da707c448d4aa41d6ed005ceedb76d62e2f2b041004503", durationMs: 1480 },
+    "yip": { url: new URL("./assets/audio/sfx/yip.mp3", import.meta.url).pathname, sha256: "657a06f61232fe0293414378a55f223ac0b634451d72e3b1d92a7f5e6c1eadde", durationMs: 480 }
   },
   songs: {
     "abc": { url: new URL("./assets/audio/songs/abc.mp3", import.meta.url).pathname, sha256: "be6f3135bc9c243087c72288cfd13e6b6f2ddb32a9c46943d8509e109432b144", durationMs: 17032 },

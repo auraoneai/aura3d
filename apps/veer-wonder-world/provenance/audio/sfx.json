@@ -338,5 +338,85 @@
   "prompt": "a soft, gentle rustle of leaves in a small bush, quiet and calm",
   "date": "2026-10-29",
   "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "yip": {
+  "file": "src/assets/audio/sfx/yip.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "one short, happy little puppy yip, cute and gentle, quiet, not shrill",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, short-clip mean-volume correction to -26 dB, 64k"
+ },
+ "arf": {
+  "file": "src/assets/audio/sfx/arf.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "one short, playful cartoon puppy arf, friendly and soft, low volume",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, short-clip mean-volume correction to -26 dB, 64k"
+ },
+ "woofSoft": {
+  "file": "src/assets/audio/sfx/woofSoft.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "one very soft, low, gentle cartoon puppy woof, warm and calm, quiet, no growl, no echo",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, short-clip mean-volume correction to -26 dB, 64k"
+ },
+ "woofDouble": {
+  "file": "src/assets/audio/sfx/woofDouble.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "two soft, happy cartoon puppy barks, woof woof, friendly and gentle, low volume, no growl, no echo",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, short-clip mean-volume correction to -26 dB, 64k"
+ },
+ "huff": {
+  "file": "src/assets/audio/sfx/huff.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "one soft, playful puppy huff through the nose, a gentle friendly snort, quiet",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, short-clip mean-volume correction to -26 dB, 64k"
+ },
+ "sniffs": {
+  "file": "src/assets/audio/sfx/sniffs.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a cute puppy sniffing softly three times, gentle and quiet",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, short-clip mean-volume correction to -26 dB, 64k"
+ },
+ "pant": {
+  "file": "src/assets/audio/sfx/pant.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a happy puppy panting softly for a moment, gentle and cute, quiet",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, short-clip mean-volume correction to -26 dB, 64k"
+ },
+ "aroo": {
+  "file": "src/assets/audio/sfx/aroo.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "one tiny, soft, happy cartoon puppy aroo, short and gentle, quiet, not a howl",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, short-clip mean-volume correction to -26 dB, 64k"
  }
 }
