@@ -61,6 +61,24 @@ export function bladeNodeId(mill: number, blade: number): string { return `v-mil
 export function millHubNodeId(mill: number): string { return `v-mill-${mill}-hub`; }
 export function millPoleNodeId(mill: number): string { return `v-mill-${mill}-pole`; }
 
+/**
+ * Every pooled node that starts parked at y -120. They must be hidden, not only
+ * parked: a visible parked GLB still costs its draw calls (and shadow draws)
+ * every frame, which is where most of the 394 draw calls on level 1 came from.
+ */
+export function pooledNodeIds(): string[] {
+  const ids: string[] = [];
+  for (let i = 0; i < POOL.blocks; i += 1) ids.push(blockNodeId(i));
+  for (let i = 0; i < POOL.crates; i += 1) ids.push(crateNodeId(i));
+  for (let i = 0; i < POOL.barrels; i += 1) ids.push(barrelNodeId(i));
+  for (let i = 0; i < POOL.planks; i += 1) ids.push(plankNodeId(i));
+  for (let i = 0; i < POOL.projectiles; i += 1) ids.push(projectileNodeId(i));
+  for (let i = 0; i < POOL.debris; i += 1) ids.push(debrisNodeId(i));
+  for (let i = 0; i < POOL.puffs; i += 1) ids.push(puffNodeId(i));
+  for (let i = 0; i < POOL.dots; i += 1) ids.push(dotNodeId(i));
+  return ids;
+}
+
 export const SLING_IDS = {
   catapult: "sling-catapult",
   forkL: "sling-fork-l",

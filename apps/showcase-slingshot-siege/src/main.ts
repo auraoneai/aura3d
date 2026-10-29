@@ -23,7 +23,7 @@ import { SiegeSim, type VisualUpdate } from "./game/sim";
 import {
   blockLook, blockNodeId, bladeNodeId, buildScene, debrisLook, debrisNodeId, dotNodeId,
   gullPartId, millHubNodeId, millPoleNodeId, crateNodeId, barrelNodeId, plankNodeId, projectileNodeId,
-  puffMaterial, puffNodeId, PROP_IDS, POOL, SLING_IDS
+  pooledNodeIds, puffMaterial, puffNodeId, PROP_IDS, POOL, SLING_IDS
 } from "./game/stage";
 import { sanitizeRenderParams } from "./game/urlGuard";
 import { installBlackFrameGuard } from "@aura3d/debug";
@@ -91,6 +91,7 @@ const IS_TOUCH = matchMedia("(pointer: coarse)").matches;
 // --------------------------------------------------------------- handles --
 
 const H = new Map<string, AuraRuntimeNodeHandle>();
+const POOLED_IDS = pooledNodeIds();
 const animCache = new Map<string, string>();
 function node(id: string): AuraRuntimeNodeHandle | undefined {
   if (!H.has(id)) {
@@ -181,10 +182,9 @@ const tweenList: { id: string; t: number; dur: number; base: readonly [number, n
 
 function assignPieceVisuals(): void {
   pieceVisuals.clear();
-  // Park pooled piece/projectile/debris nodes (never hide static stage/sling/prop nodes).
-  for (const [id, h] of H.entries()) {
-    if (id.startsWith("v-")) { h.setPosition(0, -120, 0); h.setVisible(false); }
-  }
+  // Park AND hide every pooled piece/projectile/debris/puff node, including ones never touched yet
+  // (never hide static stage/sling/prop nodes). Gull rigs and windmills are toggled below.
+  for (const id of POOLED_IDS) node(id)?.setPosition(0, -120, 0).setVisible(false);
   const pieces = sim.pieceList();
   pieceSlots = assignPoolSlots(pieces.map((p) => p.spec), POOL);
   pieces.forEach((p, i) => {
