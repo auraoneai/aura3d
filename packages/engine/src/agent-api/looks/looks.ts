@@ -298,7 +298,7 @@ function v0Children(preset: AuraLookPreset, overrides: AuraLookOverrides | undef
     );
   } else if (v0.fill !== undefined) {
     // No HDRI: a faint procedural fill, so the look is not lit by its key light alone.
-    const fill = v0.fill.preset === "night" ? environments.nightCinematic : environments.studio;
+    const fill = v0.fill.preset === "night" ? environments.nightCinematic : v0.fill.preset === "neutral" ? environments.neutral : environments.studio;
     children.push(fill({ name: `look fill ${v0.fill.preset}`, intensity: v0.fill.intensity }).toJSON());
   }
   children.push(

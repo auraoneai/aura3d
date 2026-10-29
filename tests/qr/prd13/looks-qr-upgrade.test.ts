@@ -48,7 +48,8 @@ describe("A3D_QR_LOOKS look expansion", () => {
         expect(child, id).toBeUndefined();
       } else {
         expect(child?.kind, id).toBe("environment");
-        expect(child?.environment, id).toBe("preset");
+        // The neutral room, not a baked night/studio probe: those are 0.03x to 0.8x of the room the looks were lit by on 4.3.7.
+        expect(child?.environment, id).toBe(fill.preset === "neutral" ? "neutral" : "preset");
         expect(child?.name, id).toBe(`look fill ${fill.preset}`);
         expect(child?.intensity, id).toBe(fill.intensity);
         expect(child?.texture, id).toBeUndefined();
