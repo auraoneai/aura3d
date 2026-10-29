@@ -1,6 +1,6 @@
 # Cumulus Dash: audit 2026-10-29 before/after evidence (lane g25)
 
-All frames are remote software WebGL2 (SwiftShader) on `tools/remote-acr/run.sh`, never a real GPU. Spec: `tests/browser/audit-fix/cloud-runner-port.spec.ts` (desktop 960x540, mobile 390x844 with `isMobile`/`hasTouch`). Each luma number is the second render at a `place(s)` point after a 30 s settle, never the first frame. `meta.log` in each folder is the raw `CR_META` / `AB_META` output.
+All frames are remote software WebGL2 (SwiftShader) on `tools/remote-acr/run.sh`, never a real GPU. Spec: `tests/browser/audit-fix/cloud-runner-port.spec.ts` (desktop 960x540, mobile 390x844 with `isMobile`/`hasTouch`). Each luma number is the second render at a `place(s)` point after a 30 s settle, never the first frame. `meta.txt` in each folder is the raw `CR_META` / `AB_META` output.
 
 | Folder | Run | Code |
 |---|---|---|
