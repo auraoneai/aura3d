@@ -1,0 +1,3 @@
+{"target": "ship", "id": "settle-0s", "mean": 190.54, "w": 1440, "h": 900, "state": {"frameCount": 466, "score": 1839.4457388888898, "distance": 141.15158333333346}, "info": {"app": true, "renderPath": "hdr-msaa", "drawCalls": 159, "environment": "null"}}
+{"target": "ship", "id": "settle-30s", "mean": 191.47, "w": 1440, "h": 900, "state": {"frameCount": 466, "score": 1839.4457388888898, "distance": 141.15158333333346}, "info": {"app": true, "renderPath": "hdr-msaa", "drawCalls": 159, "environment": "null"}}
+{"target": "ship", "id": "settle-60s", "mean": 191.47, "w": 1440, "h": 900, "state": {"frameCount": 466, "score": 1839.4457388888898, "distance": 141.15158333333346}, "info": {"app": true, "renderPath": "hdr-msaa", "drawCalls": 159, "environment": "null"}}
