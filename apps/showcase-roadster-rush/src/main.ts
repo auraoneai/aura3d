@@ -689,13 +689,6 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     const [gr, gg, gb] = hexToRgb(groundHex);
     outerGroundHandle.setUniform?.("groundColor", [gr / 255, gg / 255, gb / 255] as never);
     outerGroundHandle.setUniform?.("groundFogColor", [look.skyHorizon[0] * 0.8, look.skyHorizon[1] * 0.75, look.skyHorizon[2] * 0.8] as never);
-    // Scene light follows the time of day (audit RR-E5). Light intensities are fixed at mount (no runtime light setter), so
-    // the output exposure carries the change: 1 at sunset (unchanged frame), 0.8 at night. It multiplies the look's grade.
-    try {
-      auraApp.setOutput?.({ exposure: lerp(1, 0.8, look.nightAmount) });
-    } catch {
-      /* output surface not mounted */
-    }
   }
 
   function runSmartFreewayAutopilot(g: any): void {
