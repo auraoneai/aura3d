@@ -1,4 +1,6 @@
 import { test, type Page } from "@playwright/test";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { startExampleDevServer, type ExampleDevServer } from "../example-dev-server";
 
 /**
@@ -7,9 +9,12 @@ import { startExampleDevServer, type ExampleDevServer } from "../example-dev-ser
  * egress, so output goes to the log:
  *   E2_META <json>                         luma stats (whole frame and top/middle/bottom thirds) + engine diagnostics
  *   E2_JPG  <target> <shot> <i>/<n> <b64>  canvas-only JPEG, chunked
- * Targets carry a shard prefix (s1-..s8-, three per shard) so one image can run as parallel `--grep=sN-` shards inside the 3600 s task
+ * Targets carry a shard prefix (s1-..s7-, p1-..p4-, about three per shard) so one image can run as parallel `--grep=sN-` shards inside the 3600 s task
  * limit. The software-GL runner presents about one frame every 5 to 10 s and HDRI/baked probes land seconds after the
  * first frame: judge the last shot, never the first.
+ * Ports load their example page (the app wrapper imports the same `examples/<dir>/main.ts`, and the dev server's app
+ * bundle breaks the examples' `new URL("./assets/...", import.meta.url)` model paths). App-level `public/aura-assets`
+ * files the dev server does not resolve (Cross Hop's GLBs) are served from the app's public tree by a route fallback.
  */
 const SETTLE_SECONDS = (process.env.E2_SETTLE ?? "30,75").split(",").map(Number);
 const CHUNK = 16000;
@@ -25,28 +30,52 @@ const TARGETS: readonly Target[] = [
   { name: "s1-heatsink", url: "/apps/showcase-heatsink/", rows: "LIGHT-05" },
   { name: "s1-teleoperator", url: "/apps/showcase-teleoperator/", rows: "LIGHT-05" },
   { name: "s2-slingshot-siege", url: "/apps/showcase-slingshot-siege/", rows: "LIGHT-05" },
-  { name: "s2-cloud-runner-port", url: "/apps/showcase-cloud-runner-port/", rows: "LIGHT-05 SSAO" },
-  { name: "s2-drift-and-deliver-port", url: "/apps/showcase-drift-and-deliver-port/", rows: "LIGHT-05" },
-  { name: "s3-ninja-runner-port", url: "/apps/showcase-ninja-runner-port/", rows: "LIGHT-05" },
-  { name: "s3-silt-and-signal-port", url: "/apps/showcase-silt-and-signal-port/", rows: "LIGHT-05" },
+  { name: "p3-cloud-runner-port", url: "/examples/kid-goku-beyond-the-clouds-port/index.html", rows: "LIGHT-05 SSAO" },
+  { name: "p3-drift-and-deliver-port", url: "/examples/drift-and-deliver-port/index.html", rows: "LIGHT-05" },
+  { name: "p2-ninja-runner-port", url: "/examples/ninja-runner-port/index.html", rows: "LIGHT-05" },
+  { name: "p2-silt-and-signal-port", url: "/examples/silt-and-signal-port/index.html", rows: "LIGHT-05" },
   { name: "s3-links-stAuroras", url: "/apps/showcase-aura-links-3d/?course=stAuroras", rows: "LIGHT-05" },
   { name: "s4-links-cinderRim", url: "/apps/showcase-aura-links-3d/?course=cinderRim", rows: "LIGHT-05" },
   { name: "s4-links-neonBay", url: "/apps/showcase-aura-links-3d/?course=neonBay", rows: "LIGHT-08" },
   { name: "s4-links-mareCourse", url: "/apps/showcase-aura-links-3d/?course=mareCourse", rows: "LIGHT-08" },
   // LIGHT-08: lights-only scenes whose hemisphere was a flat mean.
-  { name: "s5-heatsink-port", url: "/apps/showcase-heatsink-port/", rows: "LIGHT-08" },
-  { name: "s5-splat-rush-port", url: "/apps/showcase-splat-rush-port/", rows: "LIGHT-08" },
-  { name: "s5-serpentine-sky-run-port", url: "/apps/showcase-serpentine-sky-run-port/", rows: "LIGHT-08" },
-  { name: "s6-strange-orbit-port", url: "/apps/showcase-strange-orbit-port/", rows: "LIGHT-08" },
+  { name: "p1-heatsink-port", url: "/examples/heatsink-port/index.html", rows: "LIGHT-08" },
+  { name: "p1-splat-rush-port", url: "/examples/splat-rush-port/index.html", rows: "LIGHT-08" },
+  { name: "p1-serpentine-sky-run-port", url: "/examples/saiyan-snake-way-port/index.html", rows: "LIGHT-08" },
+  { name: "p2-strange-orbit-port", url: "/examples/strange-orbit-port/index.html", rows: "LIGHT-08" },
   { name: "s6-top-tennis", url: "/apps/showcase-top-tennis/", rows: "LIGHT-08" },
   { name: "s6-bunker-zero", url: "/apps/showcase-bunker-zero/", rows: "LIGHT-08 SSAO" },
   { name: "s7-dot-dash-3d", url: "/apps/showcase-dot-dash-3d/", rows: "LIGHT-08 SSAO" },
   // LIGHT-04: a look swapped in at runtime next to an authored ambient.
-  { name: "s7-crosshop-theme3", url: "/apps/showcase-cross-hop/?theme=3", rows: "LIGHT-04" },
-  { name: "s7-crosshop-theme4", url: "/apps/showcase-cross-hop/?theme=4", rows: "LIGHT-04" },
+  { name: "p4-crosshop-theme3", url: "/apps/showcase-cross-hop/?theme=3", rows: "LIGHT-04" },
+  { name: "p4-crosshop-theme4", url: "/apps/showcase-cross-hop/?theme=4", rows: "LIGHT-04" },
   // SSAO normals input.
-  { name: "s8-last-train-port", url: "/apps/showcase-last-train-port/", rows: "SSAO" }
+  { name: "p3-last-train-port", url: "/examples/last-train-port/index.html", rows: "SSAO" }
 ];
+
+const REPO_ROOT = process.cwd();
+/** First existing `apps/<app>/public/<path>` for a root-relative asset path. */
+function appPublicFile(path: string): string | undefined {
+  const appsDir = join(REPO_ROOT, "apps");
+  if (!existsSync(appsDir)) return undefined;
+  for (const app of readdirSync(appsDir)) {
+    const file = join(appsDir, app, "public", path);
+    if (existsSync(file)) return file;
+  }
+  return undefined;
+}
+
+async function installAssetFallback(page: Page): Promise<void> {
+  await page.route(/\/(aura-assets|fonts)\//, async (route) => {
+    const response = await route.fetch();
+    if (response.status() !== 404) return route.fulfill({ response });
+    const path = new URL(route.request().url()).pathname.replace(/^\//, "");
+    const file = appPublicFile(path);
+    if (!file) return route.fulfill({ response });
+    const type = file.endsWith(".glb") ? "model/gltf-binary" : file.endsWith(".css") ? "text/css" : "application/octet-stream";
+    return route.fulfill({ status: 200, body: readFileSync(file), headers: { "content-type": type } });
+  });
+}
 
 async function lumaStats(page: Page, png: Buffer) {
   return page.evaluate(async (b64) => {
@@ -123,6 +152,7 @@ test.describe("e2 lighting capture", () => {
       page.on("console", (m) => { if (m.type() === "error" || m.type() === "warning") log(`E2_CONSOLE ${target.name} ${m.type()} ${m.text().slice(0, 240)}`); });
       page.on("response", (r) => { if (r.status() >= 400) log(`E2_HTTP ${target.name} ${r.status()} ${r.url().replace(server.origin, "").slice(0, 200)}`); });
       page.on("requestfailed", (r) => log(`E2_REQFAIL ${target.name} ${r.url().replace(server.origin, "").slice(0, 200)} ${r.failure()?.errorText ?? ""}`));
+      await installAssetFallback(page);
       await page.setViewportSize({ width: 1280, height: 720 });
       await page.goto(`${server.origin}${target.url}`, { waitUntil: "domcontentloaded" });
       try {
