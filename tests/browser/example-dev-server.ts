@@ -381,6 +381,9 @@ function resolveRequest(root: string, pathname: string): string | undefined {
     candidates.push(join(root, "packages", "create-aura3d", "templates", "product-viewer", "public", normalizedPath.replace(/^[/\\]?/, "")));
     candidates.push(join(root, "templates", "mini-game", "public", normalizedPath.replace(/^[/\\]?/, "")));
     candidates.push(join(root, "packages", "create-aura3d", "templates", "mini-game", "public", normalizedPath.replace(/^[/\\]?/, "")));
+    // Route-local typed assets (apps/<app>/public/aura-assets/, e.g. Iron Crown, Pip's Big Leap, Bunker Zero, Cross Hop):
+    // the deploy flattens every app's public tree onto the origin root, so the harness must serve them too.
+    for (const appPublic of appPublicDirs(root)) candidates.push(join(appPublic, normalizedPath.replace(/^[/\\]?/, "")));
   } else if (loadersBrowserMappedPath) {
     candidates.push(join(root, loadersBrowserMappedPath));
   } else if (legacyGameSliceTemplatePath) {
