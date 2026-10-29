@@ -60,7 +60,7 @@ The [showcase index](https://aura3d.auraone.ai/apps/showcase-index/) has 25 play
 
 three.js gives you a renderer. Aura3D is a complete TypeScript 3D engine and toolchain with its own renderer, so the parts three.js leaves to you come built in:
 
-- **A lit, shadowed, framed product in 10 lines.** The same scene in three.js is 38 lines before orbit controls ([tagline check](./evidence/vs-threejs/tagline-check/)). In our five-scene benchmark, a PBR viewer with HDR lighting, shadow, bloom and orbit controls is 24 lines instead of 49, with 1 import instead of 8 ([results](./evidence/vs-threejs/RESULTS.md)).
+- **A lit, shadowed, framed product in 10 lines.** The same scene in three.js is 38 lines before orbit controls ([tagline check](./evidence/vs-threejs/tagline-check/)). In our five-scene benchmark, a PBR viewer with a GLB, shadow, bloom and orbit controls is 23 lines instead of 49, with 1 import instead of 8; Aura3D is shorter in all five scenes (non-blank, non-comment lines of scene code, one author) ([results](./evidence/vs-threejs/RESULTS-4.5.0.md)).
 - **Assets you can trust.** Every model is typed, hashed and licensed; in production an unverified model doesn't draw.
 - **The game stack included.** HUD, touch controls, audio cues, a fixed-step loop, seeded replay, a safety net and smooth motion on 120 and 144 Hz displays.
 - **Built for AI coding agents.** `llms.txt`, 14 skills and compiled recipes ship with every new project.
