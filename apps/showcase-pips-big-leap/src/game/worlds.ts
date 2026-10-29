@@ -53,7 +53,7 @@ export const WORLDS: readonly WorldSpec[] = [
       { id: "thorns-a", x: -2.0, y: 0.85, z: -8.4, w: 1.4, d: 1.2, type: "thorns" },
       { id: "thorns-b", x: 0.6, y: 1.24, z: -21.4, w: 3.4, d: 1.6, type: "thorns", respawn: true }
     ],
-    springs: [{ id: "spring-academy", x: 0, y: 1.3, z: -44, power: 11.5 }],
+    springs: [{ id: "spring-academy", x: 0, y: 1.3, z: -44, power: 15.6 }],
     waters: [],
     seeds: [
       { id: "ac-seed-1", x: 1.2, y: 1.6, z: -9.8 },
@@ -133,7 +133,7 @@ export const WORLDS: readonly WorldSpec[] = [
       { id: "thorns-2", x: 0, y: 1.8, z: -25.9, w: 3.2, d: 1.6, type: "thorns" },
       { id: "bog", x: 0, y: 1.79, z: -33.8, w: 5.5, d: 2.2, type: "thorns", respawn: true }
     ],
-    springs: [{ id: "spring-w1", x: 0.5, y: 1.9, z: -47.5, power: 11.8 }],
+    springs: [{ id: "spring-w1", x: 0.5, y: 1.9, z: -47.5, power: 15.6 }],
     waters: [],
     seeds: [
       { id: "w1-seed-1", x: 0.6, y: 1.65, z: -9.6 },

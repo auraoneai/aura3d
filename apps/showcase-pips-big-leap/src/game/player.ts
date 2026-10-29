@@ -5,7 +5,9 @@
 // coyote time + jump buffer via `game.jumpAssist`, variable jump, double
 // jump, apex hang, dive, ground pound, cape glide, swim pockets, springs,
 // hazards with knockback + i-frames, and checkpoint respawn. Camera-relative
-// input: `camYaw` eases behind the hero so WASD always means screen-relative.
+// input: `camYaw` eases behind the hero only while Pip runs forward, so A/D
+// strafe along a steady camera axis (W/S still steer the follow camera), and
+// `input.orbit` turns the camera directly (mouse drag, Q/E, right stick).
 
 import type { BuiltWorld, WaterZone } from "./world.js";
 import type { MoveState, Vec3 } from "./types.js";
@@ -21,6 +23,8 @@ export interface PlayerInput {
   readonly jumpHeld: boolean;
   readonly divePressed: boolean;
   readonly poundPressed: boolean;
+  /** Camera orbit this step, in radians (positive turns the view right). */
+  readonly orbit?: number;
 }
 
 export interface PlayerEvent {
@@ -50,6 +54,13 @@ export interface PlayerState {
   checkpoint: Checkpoint;
   gliding: boolean;
 }
+
+/** Hurt lasts this long; afterwards Pip moves again (i-frames run longer). */
+export const HURT_SECONDS = 0.55;
+/** Pip follows a lift down while his feet stay within this distance of its top. */
+const GROUND_PROBE = 0.12;
+/** The follow camera chases Pip's heading only while forward input exceeds this. */
+const CAMERA_CHASE_MIN_FORWARD = 0.3;
 
 export interface Checkpoint {
   readonly id: string;
@@ -112,10 +123,14 @@ export function stepPlayer(
   const swimming = inWater(p, world.waters);
 
   // ------------------------------------------------------------- state gates
-  const busy = p.state === "hurt" || p.state === "dead" || p.state === "celebrate" || p.poundTimer > 0;
+  const pounding = p.poundTimer > 0;
   p.invuln = Math.max(0, p.invuln - dt);
   p.hurtTimer = Math.max(0, p.hurtTimer - dt);
   p.poundTimer = Math.max(0, p.poundTimer - dt);
+  // Knockback is over once the hurt timer runs out: hand control back
+  // (the i-frames keep running, so Pip is not hit again straight away).
+  if (p.state === "hurt" && p.hurtTimer <= 0) p.state = p.grounded ? "grounded" : "air";
+  const busy = p.state === "hurt" || p.state === "dead" || p.state === "celebrate" || pounding;
 
   // -------------------------------------------------------------- move input
   const fwd = { x: Math.sin(p.camYaw), z: Math.cos(p.camYaw) };
@@ -148,10 +163,16 @@ export function stepPlayer(
     while (dyaw < -Math.PI) dyaw += Math.PI * 2;
     p.yaw += dyaw * Math.min(1, 12 * dt);
   }
-  let cd = p.yaw - p.camYaw;
-  while (cd > Math.PI) cd -= Math.PI * 2;
-  while (cd < -Math.PI) cd += Math.PI * 2;
-  p.camYaw += cd * Math.min(1, 2.2 * dt);
+  // The camera trails Pip's heading only while he runs forward. Strafing and
+  // backing up leave it alone, so the strafe axis stays fixed and A/D move
+  // sideways instead of circling.
+  if (wantMove && input.moveZ > CAMERA_CHASE_MIN_FORWARD) {
+    let cd = p.yaw - p.camYaw;
+    while (cd > Math.PI) cd -= Math.PI * 2;
+    while (cd < -Math.PI) cd += Math.PI * 2;
+    p.camYaw += cd * Math.min(1, 2.2 * dt);
+  }
+  if (input.orbit) p.camYaw += input.orbit;
 
   // ---------------------------------------------------------------- swimming
   if (swimming && !p.swim && p.vy <= 0.5) {
@@ -234,6 +255,8 @@ export function stepPlayer(
 
   // ------------------------------------------------------------ integrate XZ
   const wasGrounded = p.grounded;
+  const prevGroundId = p.groundId;
+  const feetBefore = p.y;
   moveAxis(p, world, "x", p.vx * dt);
   moveAxis(p, world, "z", p.vz * dt);
 
@@ -251,9 +274,9 @@ export function stepPlayer(
       p.vy = 0;
       p.grounded = true;
       p.groundId = s.id;
-      // Carry by mover surface velocity.
+      // Carry by mover surface velocity, up and down alike.
       p.x += s.vx * dt; p.z += s.vz * dt;
-      if (s.vy > 0) p.y += s.vy * dt;
+      p.y += s.vy * dt;
     } else if (p.vy > 0 && box.y + box.hy < s.y - s.hy + Math.max(0.3, p.vy * dt + 0.12)) {
       // Bonk head.
       p.y = s.y - s.hy - HEIGHT - STEP_EPS;
@@ -264,6 +287,24 @@ export function stepPlayer(
       const pushZ = (box.z < s.z) ? box.z + box.hz - s.z + s.hz : -(s.z + s.hz - box.z + box.hz);
       if (Math.abs(pushX) < Math.abs(pushZ)) { p.x += pushX; box.x += pushX; if (p.state !== "dive") p.vx = 0; }
       else { p.z += pushZ; box.z += pushZ; if (p.state !== "dive") p.vz = 0; }
+    }
+  }
+
+  // Ground probe: a lift that dropped away faster than gravity pulls Pip down
+  // (a descending mover) keeps him standing on it instead of flickering
+  // airborne and firing "land" every few frames.
+  if (!p.grounded && wasGrounded && prevGroundId && p.vy <= 0 && p.state !== "hurt") {
+    const s = world.solids.find((solid) => solid.id === prevGroundId);
+    if (s && s.active) {
+      const top = s.y + s.hy;
+      const inside = Math.abs(p.x - s.x) < s.hx + HALF && Math.abs(p.z - s.z) < s.hz + HALF;
+      if (inside && top <= feetBefore + STEP_EPS && feetBefore - top <= GROUND_PROBE + Math.abs(s.vy) * dt) {
+        p.y = top + s.vy * dt;
+        p.vy = 0;
+        p.grounded = true;
+        p.groundId = s.id;
+        p.x += s.vx * dt; p.z += s.vz * dt;
+      }
     }
   }
 
@@ -301,7 +342,7 @@ export function stepPlayer(
     if (!overlaps(box, box.hx, box.hy * 0.9, box.hz, hz)) continue;
     if (p.invuln > 0 || p.state === "dead") continue;
     if (p.state === "pound" || p.state === "dive") continue; // attacks pass through
-    damage(p, hz.spec.respawn ? "respawn" : "hit", events, [hz.x, hz.y, hz.z]);
+    damage(p, hz.spec.respawn ? "respawn" : "hit", events, t.knockback, [hz.x, hz.y, hz.z]);
     break;
   }
 
@@ -314,14 +355,14 @@ export function stepPlayer(
         p.vy = t.jumpVelocity * 0.8;
         events.push({ kind: "boss-hit" });
       } else if (!stomp) {
-        damage(p, "hit", events, [opts.bossAt[0], opts.bossAt[1], opts.bossAt[2]], "boss-contact");
+        damage(p, "hit", events, t.knockback, [opts.bossAt[0], opts.bossAt[1], opts.bossAt[2]], "boss-contact");
       }
     }
   }
 
   // --------------------------------------------------------------- fell out
   if (p.y < world.spec.lowerBound && p.state !== "dead") {
-    damage(p, "respawn", events);
+    damage(p, "respawn", events, t.knockback);
   }
 
   // --------------------------------------------------------------- pickups
@@ -360,7 +401,14 @@ function near3(p: PlayerState, at: { readonly x: number; readonly y: number; rea
   return dx * dx + dy * dy + dz * dz < r * r;
 }
 
-function damage(p: PlayerState, mode: "hit" | "respawn", events: PlayerEvent[], source?: Vec3, kind?: PlayerEvent["kind"]): void {
+function damage(
+  p: PlayerState,
+  mode: "hit" | "respawn",
+  events: PlayerEvent[],
+  knockback: { readonly h: number; readonly v: number },
+  source?: Vec3,
+  kind?: PlayerEvent["kind"]
+): void {
   if (p.state === "dead") return;
   p.hearts -= 1;
   p.gliding = false;
@@ -380,16 +428,16 @@ function damage(p: PlayerState, mode: "hit" | "respawn", events: PlayerEvent[], 
     events.push({ kind: "respawn" });
     return;
   }
-  // Knockback away from the source.
+  // Knockback away from the source, scaled by this world's derived tuning.
   if (source) {
     const dx = p.x - source[0], dz = p.z - source[2];
     const n = Math.hypot(dx, dz) || 1;
-    p.vx = (dx / n) * 5.4;
-    p.vz = (dz / n) * 5.4;
+    p.vx = (dx / n) * knockback.h;
+    p.vz = (dz / n) * knockback.h;
   }
-  p.vy = 4.4;
+  p.vy = knockback.v;
   p.state = "hurt";
-  p.hurtTimer = 0.55;
+  p.hurtTimer = HURT_SECONDS;
   p.invuln = 1.4;
   p.grounded = false;
 }
