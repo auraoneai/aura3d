@@ -1,4 +1,4 @@
-// Peeko Peekaboo Barn (PRD 04 D12): a friendly red barn behind the play area,
+// Peeko Peekaboo Barn (PRD 04 D12): a friendly barn (the admitted model is green) behind the play area,
 // a low fence and hay bales. The big doors and hiding places a story opens are
 // story props (door, bush), so reveals stay gentle and predictable.
 

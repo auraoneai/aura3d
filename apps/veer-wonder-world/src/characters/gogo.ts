@@ -24,7 +24,8 @@ export const GOGO: CharacterDefinition = {
     nod: gestureMotion([proc("nod", 1.0, 0.08, 2)]),
     look: gestureMotion([proc("turn", 2.0, 0.3)]),
     bow: gestureMotion([proc("bow", 1.4, 0.12)]),
-    // A vehicle never hops or stretches (07 B20): surprised, it rocks back on its springs with a little puff.
+    // Surprised it never jumps or stretches (07 B20): it rocks back on its springs with a little puff. Its happy,
+    // cheer and hop gestures are small bounces on the springs.
     surprise: gestureMotion([proc("lean", 0.8, -0.05), proc("pulse", 0.8, 0.04)]),
     // Waiting: it settles on its springs and holds still, like a train at the platform.
     wait: gestureMotion([proc("duck", 1.0, 0.04)], { hold: true })

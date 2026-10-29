@@ -24,7 +24,7 @@ Output, in `apps/veer-wonder-world/dist/` (`vite.config.ts`):
 | --- | --- | --- |
 | `index.html` | The page (relative URLs, `base: "./"`) | fixed |
 | `assets/*.js`, `assets/*.css` | App and engine code, styles | content-hashed |
-| `assets/*.glb`, `assets/*.mp3` | The 53 admitted models and 882 audio files (module-relative URLs, never inlined) | content-hashed |
+| `assets/*.glb`, `assets/*.mp3` | The 54 admitted models and 907 audio files (module-relative URLs, never inlined) | content-hashed |
 | `fonts/local.css`, `fonts/graphik/*.woff2`, `fonts/tt-commons-mono/*.woff2` | Licensed fonts, copied from the repo `public/fonts/` | fixed |
 | `hdri/autumn_field_puresky_1k.hdr`, `hdri/studio_small_08_1k.hdr`, `hdri/ATTRIBUTION.md` | The look HDRIs (Poly Haven, CC0), copied from the repo `public/hdri/` | fixed |
 

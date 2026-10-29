@@ -10,7 +10,7 @@ Wonder World is a toddler co-play app built on Aura3D 4.5.0: short 3D cartoon st
 - Six worlds: Momo Meadow, Lulu Music Garden, Home Nook, GoGo Station, Peeko Peekaboo Barn, Lumi Learning Cloud.
 - 20 episodes (`src/content/episodes/`) and 12 activities (`src/content/activities/`), with their English text in `src/localization/en/`.
 - Two modes: **Watch and sing** (the story plays with no input) and **Play together** (the same story, with one or two big things to tap at each turn).
-- 53 admitted Meshy models (about 23 MB) and 882 ElevenLabs audio files (826 voice lines, 16 songs, 6 music beds, 34 sound effects; about 22 MB), each with a provenance record.
+- 54 admitted Meshy models (about 23 MB) and 907 ElevenLabs audio files (843 voice lines, 16 songs, 6 music beds, 42 sound effects; about 22 MB, all on the paid starter tier), each with a provenance record.
 
 ## Safety rules the code holds
 
@@ -119,13 +119,13 @@ Page switches:
 
 ## Assets and audio
 
-**Models.** Meshy text-to-3D through Kiro Prism, from the 59 prompts in `tools/wonder-assets.json`:
+**Models.** Meshy text-to-3D through Kiro Prism, from the 65 prompts in `tools/wonder-assets.json`:
 
 1. `node tools/meshy-pipeline.mjs` runs preview, refine and remesh, records every job in the Meshy ledger (`--game wonder-world`) and downloads each thumbnail into `artifacts/meshy/wonder-world/<key>/` (gitignored). It is resumable and waits on existing task ids instead of paying twice.
 2. Every thumbnail is reviewed by eye; the verdict (approve, reject, tint or procedural) goes into `tools/model-review.json`.
 3. `node tools/admit-models.mjs` optimizes, tints, inspects and copies each approved model to `src/assets/models/<key>.<sha8>.glb`, writes `provenance/models/<key>.json` and regenerates `src/aura-assets.ts` (`tools/gen-aura-assets.mjs`).
 
-No model is rigged: Meshy rigging is humanoid only, the Lulu rig failed `aura3d assets validate --skin`, and every character, animal and prop moves procedurally. Six keys (`ball`, `bush`, `hat`, `stompStone`, `cloud`, `balloon`) are drawn from scene geometry by design. Every model has a primitive stand-in of the right size and colour, so the app runs while a model is missing or with `?models=0`; a stand-in is never a release claim.
+No model is rigged: Meshy rigging is humanoid only, the Lulu rig failed `aura3d assets validate --skin`, and every character, animal and prop moves procedurally. Eleven keys (`ball`, `bush`, `stompStone`, `cloud`, `balloon`, `letterBLower`, `letterALower`, `toothbrush`, `sun`, `candleFlame`, `partyHat`) are drawn from scene geometry by design. Meshy made the vehicles (GoGo, its carriage, the car) side-on, so the stage turns those three models a quarter turn to face +Z like every stand-in (`MODEL_FRONT_YAW`, `07` B33). Every model has a primitive stand-in of the right size and colour, so the app runs while a model is missing or with `?models=0`; a stand-in is never a release claim.
 
 **Audio.** ElevenLabs through Kiro Prism (premade voices; the cast is in `07` section 3.1): `./node_modules/.bin/tsx tools/gen-audio.ts` writes `src/assets/audio/{en/lines,songs,music,sfx}/*.mp3` and `provenance/audio/*.json` (provider, voice, prompt, Prism key id and tier, date), then `node tools/gen-audio-manifest.mjs` regenerates `src/audio-manifest.ts` with each file's sha256 and ffprobe duration. Never print `PRISM_API_KEY`. Output from free-tier keys is prototype-only and must be re-rendered on a paid tier before any commercial release.
 
@@ -135,6 +135,6 @@ All media URLs are module-relative (`new URL("./assets/...", import.meta.url)`):
 
 - No physical-device runs yet (iPad and iPhone Safari, Android Chrome); every browser result so far is software WebGL2 on the remote runner. The label stays `prototype` until those runs pass (`07` section 4.3).
 - No public release: that needs the owner's decision, an external privacy and legal review, a trademark search, a check of the provider terms and a human SLP and caregiver review (`07` section 4.3).
-- Open model deviations: Momo has an open grin with two blunt teeth (brief: small closed smile), GoGo's face is not visible in its review thumbnail and the barn came out green (brief: red).
+- Open model deviations: GoGo's face is not visible in its review thumbnail (it shows in the app, `07` B33) and the barn came out green (brief: red). GoGo's wheels do not turn and the train has no doors (`07` B25).
 - English only: the Punjabi pack stays off until a native review. No family greeting packs are built.
 - The engine requests the look HDRIs at `/hdri/` and the font stylesheet names `/fonts/`, so a deployed `dist/` must be served at an origin root.
