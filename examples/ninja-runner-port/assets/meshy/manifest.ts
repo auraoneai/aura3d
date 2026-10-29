@@ -3,8 +3,8 @@ export type PropId = "boulder" | "bush" | "cliffA" | "cliffB" | "fenceRail" | "g
 export interface MeshyEntry { readonly sha256: string; readonly bytes: number; readonly size: readonly [number, number, number]; readonly min: readonly [number, number, number]; readonly triangles: number }
 export const MESHY_MANIFEST = {
   "boulder": {
-    "sha256": "6f2e8e90bf2e40f4c648a9a4834473afb7a7823bcb8e7a033786502e3380a13f",
-    "bytes": 801308,
+    "sha256": "87e9a38d2b9e5be6dde640058c4801f7924cbaf4166706f4183dc5de692d4e90",
+    "bytes": 455644,
     "size": [
       1.869,
       1.211,
@@ -18,8 +18,8 @@ export const MESHY_MANIFEST = {
     "triangles": 3646
   },
   "brute": {
-    "sha256": "34a3073ff3923804fa16e11489100c616e9836fb0c78e034b09d6587abf3c82c",
-    "bytes": 2907012,
+    "sha256": "6a1cc0fab7ce978f43b9271f79c269aca55ad019eac21b3668ee075c03b07d81",
+    "bytes": 2529108,
     "size": [
       1.468,
       2.4,
@@ -33,8 +33,8 @@ export const MESHY_MANIFEST = {
     "triangles": 15608
   },
   "bush": {
-    "sha256": "c3629cc47f1e9f93c9cb961e6cf9208e683fe978a36bdb88d2edd33b89cb93a1",
-    "bytes": 165572,
+    "sha256": "d4d37a174221548bcbd001f394b08f08e65b90d935dcff924aac3d1d1585e9b5",
+    "bytes": 125616,
     "size": [
       1.75,
       1.447,
@@ -48,8 +48,8 @@ export const MESHY_MANIFEST = {
     "triangles": 889
   },
   "cliffA": {
-    "sha256": "bd13c84002482bcf4d2b1da7f21fa1093a9c4a033dccf955e1a671be864e35b3",
-    "bytes": 927996,
+    "sha256": "f3d681b71ff2e552401dca95cf4dbe3b87b59a064b3188227b575ed56949e2c7",
+    "bytes": 572084,
     "size": [
       1.028,
       1.902,
@@ -63,8 +63,8 @@ export const MESHY_MANIFEST = {
     "triangles": 3581
   },
   "cliffB": {
-    "sha256": "edfce61ce033f67089253b214ac3fb0d09dc14729a0a368d57d125be6fc3c96e",
-    "bytes": 984724,
+    "sha256": "b759d85961565cad5d7f3f74e72cbf12fb7b90ed57f4bc6d7927b68ffd37940e",
+    "bytes": 605108,
     "size": [
       1.778,
       1.393,
@@ -78,8 +78,8 @@ export const MESHY_MANIFEST = {
     "triangles": 3276
   },
   "fenceRail": {
-    "sha256": "a8421a4d635e7ae5894bbe967b19ee05c5a25420ca7eb0bd5ca41f33b3bda433",
-    "bytes": 912904,
+    "sha256": "c2483cbc162f76531097ad2f52bb7a338e5577391fe76fb6b665e4bf3cec7377",
+    "bytes": 557080,
     "size": [
       1.903,
       0.656,
@@ -93,8 +93,8 @@ export const MESHY_MANIFEST = {
     "triangles": 2286
   },
   "gate": {
-    "sha256": "0f05b59e45b30e2edb0611bcf74c16245437acf1fcbbc529f3476e60f199dd21",
-    "bytes": 1049216,
+    "sha256": "39c541911d50802160d052041d7a35f17ce343135f96b1d987b2a16b52bfcb2d",
+    "bytes": 681608,
     "size": [
       1.899,
       1.839,
@@ -108,8 +108,8 @@ export const MESHY_MANIFEST = {
     "triangles": 3488
   },
   "hero": {
-    "sha256": "4a69ed5f3b7a5e5c93e85c12e8f97c0aeaf80f43e1d3e1fd35ba0afd21313607",
-    "bytes": 4107832,
+    "sha256": "d370e19b94afb13809921e770656f5d875149486db57bf90ed3cfd51dc69461f",
+    "bytes": 2668472,
     "size": [
       0.9,
       1.8,
@@ -123,8 +123,8 @@ export const MESHY_MANIFEST = {
     "triangles": 12393
   },
   "houseA": {
-    "sha256": "77bbf6142c0a91be6c173007d4f545c8b6b01575dbc7b0a6f61b114eb00b0d74",
-    "bytes": 988728,
+    "sha256": "2d169a991dc3f6842eae79de9ede957cf689998b1741298a8abb260a60437193",
+    "bytes": 662184,
     "size": [
       1.9,
       1.595,
@@ -138,8 +138,8 @@ export const MESHY_MANIFEST = {
     "triangles": 3764
   },
   "houseB": {
-    "sha256": "a18ebaf213ba3ebb02e1bc86baefe926557370a8ef096579db47ca96125aacd8",
-    "bytes": 1014072,
+    "sha256": "0d6da6235b8bc4e4813c7057dc7db49bcb581e0a7064e462cef7e3725b545625",
+    "bytes": 697536,
     "size": [
       0.909,
       1.904,
@@ -153,8 +153,8 @@ export const MESHY_MANIFEST = {
     "triangles": 3932
   },
   "houseC": {
-    "sha256": "4d4a59c4fe2f756ccfaea40b10daedb2bc749ecfc707ceadb2c6cebb4be3f60a",
-    "bytes": 1499840,
+    "sha256": "dc5fca2181c23129be23c874d56c82bee780d29ca7e51a24f0a4e6b2465b4174",
+    "bytes": 933792,
     "size": [
       1.883,
       1.898,
@@ -168,8 +168,8 @@ export const MESHY_MANIFEST = {
     "triangles": 4377
   },
   "houseD": {
-    "sha256": "0633d9c1a9f0fe19a2de21d5f6ac73f320e5294d26bd91b34c52a05a86506f1c",
-    "bytes": 1479524,
+    "sha256": "85b4153348530e81e1b1ed93cfa12e10cc9a71a700f1109febadfdf4d3645e04",
+    "bytes": 954488,
     "size": [
       1.147,
       1.903,
@@ -183,8 +183,8 @@ export const MESHY_MANIFEST = {
     "triangles": 4317
   },
   "lantern": {
-    "sha256": "870d7680ba54be095bded477c01bb9842a383045e46c7db695a3d7e4cc14357b",
-    "bytes": 766224,
+    "sha256": "4bb6f2a7d276d113762bb52a2354a0baf27e25e22232b7e5a2436ee8df9f6b18",
+    "bytes": 444528,
     "size": [
       0.72,
       1.902,
@@ -198,8 +198,8 @@ export const MESHY_MANIFEST = {
     "triangles": 1351
   },
   "marketStall": {
-    "sha256": "ffa86ec04b1633b5c139060a704df8cdd3e2971e662a2e6183d584fee7129654",
-    "bytes": 1485028,
+    "sha256": "2823f084d84011a47f5f0903ae8d443e723984a9bba1277ad2539bd10a512053",
+    "bytes": 949128,
     "size": [
       1.893,
       1.33,
@@ -213,8 +213,8 @@ export const MESHY_MANIFEST = {
     "triangles": 4035
   },
   "oak": {
-    "sha256": "90b77ccf7ec42276bcb5f3e3939583fb1bb1b121503d3b457855f15d33052211",
-    "bytes": 1001772,
+    "sha256": "78f7cdc7c6bb965a375779f213a4e3f10450ecef925b14cc2c13bd3c9ac4481d",
+    "bytes": 618876,
     "size": [
       1.201,
       1.85,
@@ -228,8 +228,8 @@ export const MESHY_MANIFEST = {
     "triangles": 1372
   },
   "pine": {
-    "sha256": "e3c60a80c35a52904b5e3e95a2dcc6c17111036c5d47bb1dd2c908a6be69c8c7",
-    "bytes": 1010932,
+    "sha256": "55359e1b7934514bcf64b89270ba941c973b867b114cd2bed94ff2a8e43a161b",
+    "bytes": 614284,
     "size": [
       1.001,
       1.858,
@@ -243,8 +243,8 @@ export const MESHY_MANIFEST = {
     "triangles": 1588
   },
   "ridge": {
-    "sha256": "c59a11f39159a131fe8a4d5cc36bfbcc5c0c1dc5cc7b0f7b0a64a226c0b86882",
-    "bytes": 1022128,
+    "sha256": "2c60443dcf8f57e8d36dc131f1cd7a166257632dcf8929b9d9a2352e8249d7d2",
+    "bytes": 633504,
     "size": [
       1.716,
       0.346,
@@ -258,8 +258,8 @@ export const MESHY_MANIFEST = {
     "triangles": 3492
   },
   "sage": {
-    "sha256": "7485c427d30bd5d7730f0224257ed117353afc88ffb33918bfbaa0525fc649aa",
-    "bytes": 2979180,
+    "sha256": "42f4ea01792a60851feac4716d779472aa017ea526de417cd662ab171fa5d947",
+    "bytes": 2191572,
     "size": [
       0.964,
       1.8,
@@ -273,8 +273,8 @@ export const MESHY_MANIFEST = {
     "triangles": 12352
   },
   "soldier": {
-    "sha256": "a2dbe578270720fda6071c067e71b3722c40865de8cd2bf120360aa0a1b75a4d",
-    "bytes": 2009424,
+    "sha256": "f5725d01d71b2002de6c363935541aa1153dd4b32a62e087ae3fed3e5120f184",
+    "bytes": 1637200,
     "size": [
       0.875,
       1.8,
@@ -288,8 +288,8 @@ export const MESHY_MANIFEST = {
     "triangles": 10390
   },
   "teahouse": {
-    "sha256": "432fb6e42147667ca262f693a18699202d9b4c57d8c35e8677d4bf44ed3d3f18",
-    "bytes": 1643652,
+    "sha256": "65c365dc57edc3ba936c9d7457a59555989232fccc4c7f399982f018c5681152",
+    "bytes": 1049996,
     "size": [
       1.889,
       1.638,
@@ -303,8 +303,8 @@ export const MESHY_MANIFEST = {
     "triangles": 4861
   },
   "tower": {
-    "sha256": "7b978347ecfa24289dee6b3f2c6b6bc48edaff0b6f95a66607890d95253caa2f",
-    "bytes": 954504,
+    "sha256": "876304bcb466bba46efba73ed6b4eb702f201a2477360c659631f7f82ca18cc2",
+    "bytes": 632328,
     "size": [
       1.568,
       1.902,
