@@ -114,7 +114,8 @@ describe("last-train-port audit fixes: simulation", () => {
       let n = 0;
       while (s.phase !== "ready") { step(s, DT, {}, data); if (++n > 20000) throw new Error("stuck"); }
       actionDepart(s);
-      while (s.phase !== "enroute") step(s, DT, {}, data);
+      const phase = (): string => s.phase;
+      while (phase() !== "enroute") step(s, DT, {}, data);
       while (s.speed < 7) step(s, DT, { accelerate: true }, data);
       const c0 = s.comfort;
       for (let i = 0; i < 30; i++) step(s, DT, { brake: true, brakeLevel: level }, data);
