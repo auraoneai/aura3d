@@ -3,7 +3,8 @@
 // Builds apps/veer-wonder-world with Vite (the app's vite.config.ts extends the root config), then runs
 // `aura3d check-deploy --dist dist --no-assets --browser --route /` from the app folder (static checks plus a headless
 // load that fails on HTTP errors, failed requests, uncaught errors and console errors). The app keeps its models and
-// audio as module-relative assets, not in a root aura.assets.json, hence --no-assets.
+// audio as module-relative assets, so its aura.assets.json lists no entries (the file must exist for check-deploy),
+// hence --no-assets.
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
