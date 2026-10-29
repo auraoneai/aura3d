@@ -1,23 +1,24 @@
 /**
- * Ninja Runner world on the public `@aura3d/engine` surface. The ground is lit PBR (one mesh per biome and surface),
- * the village, rooftops, crossing, forest and valley are instanced PBR scenery (`scenery.ts`), lit by the outdoor-day
- * look (HDRI, shadowed key light) plus a hemisphere fill, exponential fog, bloom, contact shadows and a vignette. The
- * sky, river, falls, spirit flames, Spiralorb orb, wind shuriken, auras and particles keep their ported `material.custom`
- * shaders. Every character comes from one `cloneSkinned` call: the hero, three shadow clones and eight enemies share one
- * rigged model (CC0, see assets/ATTRIBUTION.md) with independent skeletons and animation, differentiated by tint, scale
- * and attached weapons.
+ * Shadowstep Gauntlet world on the public `@aura3d/engine` surface. The ground is lit PBR (one mesh per biome and surface);
+ * the village, rooftops, crossing, forest and valley are instanced scenery: procedural PBR layers plus generated Meshy
+ * models (`scenery.ts`, `models.ts`). Lighting is an HDRI environment (`autumn_field_puresky_1k`, diffuse and specular),
+ * a sun with two shadow cascades (`?shadow=0` turns them off) and a cool rim light, with exponential fog, ambient
+ * occlusion (high quality only), bloom, a colour grade, a vignette and FXAA. The sky, river, falls, spirit flames, spiral
+ * orb, gale star, auras and particles keep their ported `material.custom` shaders. Characters come from four rigged GLBs
+ * (hero, soldier, brute, sage; one `cloneSkinned` call each): the hero, three shadow clones, six soldiers, two brutes and
+ * the sage stand-in have independent skeletons and animation, told apart by tint, scale and attached weapons.
  */
 import { attachRootRenderSource, camera, cameras, cloneSkinned, effects, environments, geometry, instances, lights, material, primitives, scene, texture, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
 import { groundFrame, laneOffset, smooth, COURSE_LENGTH } from "./course";
 import { auraSpec, ballSpec, fallsSpec, flameSpec, particleSpec, skySpec, solidSpec, sparksSpec, waterSpec } from "./materials";
 import { buildRouteGroups, buildSheet, buildTownFloor, buildWater } from "./meshes";
 import { hexLinear, type Rgb } from "./palette";
-import { LAYERS, buildScenery, type LayerSpec, type ModelSink, type ShapeId, type SurfaceKey } from "./scenery";
+import { LAYERS, buildScenery, cameraEye, type LayerSpec, type ModelSink, type ShapeId, type SurfaceKey } from "./scenery";
 import { unitBox, unitCone, unitCylinder, unitDisc, unitGable, unitHip, unitRock, unitSphere, type Shape } from "./shapes";
 import { normalFromHeight, paintBark, paintCobble, paintDirt, paintGrass, paintLeaf, paintPlanks, paintPlaster, paintTiles, type Raster } from "./textures";
 import type { CameraShake } from "@aura3d/engine/game";
 import { TIER_FEEDBACK, pieceScale, spawnPieces, stepPieces, type Piece } from "./impact";
-import { TUNING, isEnemy, seededRandom, type RamTier, type Entity, type EnemyKind, type SimEvent, type SimState } from "./sim";
+import { TUNING, crosshairTarget, isEnemy, seededRandom, type RamTier, type Entity, type EnemyKind, type SimEvent, type SimState } from "./sim";
 import { CHARACTER_URLS, PROP_ASSETS, SLOT_MODEL, type CharacterId } from "./models";
 
 /** The rig faces +Z; characters are turned so +Z points along the route (or back at the runner). */
@@ -36,6 +37,7 @@ const BARRIER_POOL = 8;
 const BEAM_POOL = 8;
 const PLANK_POOL = 32, STRAP_POOL = 12, BEAM_PIECE_POOL = 12;
 const SHURIKEN_POOL = 3;
+const THREAT_POOL = 1;
 const TOWN_FLOOR_Y = 3.2;
 
 /** Canonical clip names: every character GLB is merged with these names (see tools/crayon-capture/ninja-runner-meshy-merge.mjs). */
@@ -113,8 +115,17 @@ const layerMaterial = (l: LayerSpec) => {
 
 /** Column-major model matrix: uniform scale, yaw about +Y, translation. */
 export function modelMatrix(x: number, y: number, z: number, yaw: number, scale: number): number[] {
+  return modelMatrixInto(new Array<number>(16), x, y, z, yaw, scale);
+}
+
+/** `modelMatrix` written into `out` (no allocation; the actors reuse one matrix each per frame). */
+export function modelMatrixInto(out: number[], x: number, y: number, z: number, yaw: number, scale: number): number[] {
   const c = Math.cos(yaw) * scale, s = Math.sin(yaw) * scale;
-  return [c, 0, -s, 0, 0, scale, 0, 0, s, 0, c, 0, x, y, z, 1];
+  out[0] = c; out[1] = 0; out[2] = -s; out[3] = 0;
+  out[4] = 0; out[5] = scale; out[6] = 0; out[7] = 0;
+  out[8] = s; out[9] = 0; out[10] = c; out[11] = 0;
+  out[12] = x; out[13] = y; out[14] = z; out[15] = 1;
+  return out;
 }
 
 /** Flame sprite the original draws on a 128 x 128 canvas (`texture.canvas`, bound by R-26). */
@@ -166,7 +177,7 @@ export interface ActorAssets {
 }
 
 /** One `cloneSkinned` call per distinct character model: hero (+ shadow clones), foot soldiers, brutes and the sage. */
-export async function loadActors(canvas: HTMLCanvasElement): Promise<ActorAssets> {
+export async function loadActors(canvas: HTMLCanvasElement, onProgress?: (done: number, total: number, id: CharacterId) => void): Promise<ActorAssets> {
   const slotsOf = (id: CharacterId): number[] => SLOT_MODEL.flatMap((m, slot) => (m === id ? [slot] : []));
   const order: CharacterId[] = ["hero", "soldier", "brute", "sage"];
   const actors: TypedGLBActor[] = new Array(ACTOR_COUNT);
@@ -174,8 +185,10 @@ export async function loadActors(canvas: HTMLCanvasElement): Promise<ActorAssets
   for (const id of order) {
     const slots = slotsOf(id);
     const asset = { url: CHARACTER_URLS[id], type: "model" as const, format: "glb" };
+    onProgress?.(batches.length, order.length, id);
     const batch = await cloneSkinned(asset, slots.length, { width: canvas.width, height: canvas.height, idPrefix: `ninja-${id}` });
     batches.push(batch);
+    onProgress?.(batches.length, order.length, id);
     slots.forEach((slot, i) => { actors[slot] = batch.actors[i]!; });
   }
   const slotClips = actors.map((a) => a.evidence.clips);
@@ -207,6 +220,8 @@ export interface WorldOptions { readonly canvas: HTMLCanvasElement; readonly act
 export interface WorldRuntime {
   update(state: SimState, dt: number, time: number, events: readonly SimEvent[]): void;
   resetCamera(): void;
+  /** A new run starts: every spirit flame is back, debris and enemy slots clear. */
+  resetRun(): void;
   /** World translation of `joint` on every actor after posing each at a staggered clip phase (independence probe). */
   probeBones(joint?: string): { joint: string; translations: [number, number, number][]; distinct: number };
   readonly stats: () => { visibleActors: number; actors: number; pickups: number; particles: number; debris: number };
@@ -215,8 +230,6 @@ export interface WorldRuntime {
 
 /** The sun's cascaded shadow; `?shadow=0` restores the blob-only look. */
 const SUN_SHADOW = !(typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0");
-// The 4000 m sky dome needs the 4.3.0 shadow fit (it skips oversize shells); every other game keeps the 4.2.0 fit by default.
-if (SUN_SHADOW) (globalThis as { __A3D_SHADOW_FIT__?: string }).__A3D_SHADOW_FIT__ = "current";
 
 export interface World { readonly scene: Scene; bind(app: AuraApp): WorldRuntime }
 
@@ -227,9 +240,9 @@ export function buildWorld(options: WorldOptions): World {
     .background("#8fb7c9")
     .camera(camera.perspective({ position: [0, 6, 12], target: [0, 2, -20], fov: 57, near: 0.1, far: 3200 }))
     .add(environments.hdri({ name: "sky ibl", intensity: 0.7, background: false, texture: { type: "texture", format: "hdr", url: "/hdri/autumn_field_puresky_1k.hdr" } as never }))
-    // The sun casts cascaded shadows (`?shadow=0` turns them off); the 4000 m sky dome is skipped as an oversize caster and the actors keep blob shadows.
+    // The sun casts cascaded shadows (`?shadow=0` turns them off). The sky dome and the glow effects opt out of casting.
+    // No hemisphere light: next to an environment the engine drops it (release finding LIGHT-05), so the HDRI is the fill.
     .add(lights.directional({ name: "sun", position: [-40, 67, 56], target: [0, 0, 0], intensity: 2.8, color: "#ffe3b1", shadow: (SUN_SHADOW ? { cascades: 2, maxDistance: 90 } : false) as never }))
-    .add(lights.hemisphere({ name: "sky fill", skyColor: "#d3ebf3", groundColor: "#80715b", intensity: 0.5 }))
     .add(lights.directional({ name: "cool rim", position: [30, 20, -40], intensity: 0.4, color: "#bcd9ff" }))
     .add(effects.fog({ name: "haze", color: "#b5c8c4", density: 0.0028 }));
   if (high) builder.add(effects.ambientOcclusion({ name: "ao" }));
@@ -286,7 +299,8 @@ export function buildWorld(options: WorldOptions): World {
 
   const water = buildWater();
   builder.add(geometry.custom(geometry.dynamic({ positions: f32(water.positions), normals: f32(water.normals), uvs: f32(water.uvs), indices: Uint32Array.from(water.indices) }), { name: "river", material: material.custom(waterSpec()), position: [0, -2.5, 0] }).runtime({ id: "river" }));
-  builder.add(primitives.sphere({ name: "sky", size: 4000, material: material.custom(skySpec()) }).runtime({ id: "sky" }));
+  // The 4000 m dome neither casts nor receives: as a caster it would stretch every cascade over the whole sky.
+  builder.add(primitives.sphere({ name: "sky", size: 4000, material: material.custom(skySpec()), castShadow: false, receiveShadow: false }).runtime({ id: "sky" }));
   const endFrame = groundFrame(COURSE_LENGTH - 90, 0, 0);
   const sheet = buildSheet(56, 63);
   builder.add(geometry.custom(geometry.dynamic({ positions: f32(sheet.positions), normals: f32(sheet.normals), uvs: f32(sheet.uvs), indices: Uint32Array.from(sheet.indices) }), { name: "valley-falls", material: material.custom(fallsSpec()), position: [endFrame.x + 30, endFrame.y - 40, endFrame.z - 30] }).runtime({ id: "valley-falls" }));
@@ -312,26 +326,30 @@ export function buildWorld(options: WorldOptions): World {
     attributes: { aAlive: { itemSize: 1, data: f32(pickups.map(() => 1)) }, aDistance: { itemSize: 1, data: f32(pickups.map((p) => p.s)) } }
   }), { name: "spirit-flames", material: material.custom(flameSpec(flameMap)) }).runtime({ id: "spirit-flames" }));
 
-  builder.add(primitives.sphere({ name: "spiralorb", size: 0.21, material: material.custom(ballSpec()) }).runtime({ id: "spiralorb" }));
+  // The glow effects (orb, gale star, aura, caster orbs) are additive and transparent: they must not cast solid sun shadows.
+  builder.add(primitives.sphere({ name: "spiralorb", size: 0.21, material: material.custom(ballSpec()), castShadow: false, receiveShadow: false }).runtime({ id: "spiralorb" }));
   const sparkSeeds = Array.from({ length: 90 * 3 }, (_, i) => (((i + 1) * (i % 3 === 0 ? 0.618034 : i % 3 === 1 ? 0.754878 : 0.56984)) % 1));
   builder.add(geometry.custom(geometry.dynamic({
     positions: f32(new Array(90 * 3).fill(0)),
     topology: "points",
     attributes: { seed: { itemSize: 3, data: f32(sparkSeeds) } }
   }), { name: "spiralorb-sparks", material: material.custom(sparksSpec()) }).runtime({ id: "spiralorb-sparks" }));
-  for (let i = 0; i < SHURIKEN_POOL; i++) builder.add(primitives.sphere({ name: `shuriken-${i}`, size: 1, material: material.custom(ballSpec()) }).runtime({ id: `shuriken-${i}` }));
-  builder.add(primitives.sphere({ name: "aura", size: 1, material: material.custom(auraSpec()) }).runtime({ id: "aura" }));
+  for (let i = 0; i < SHURIKEN_POOL; i++) builder.add(primitives.sphere({ name: `shuriken-${i}`, size: 1, material: material.custom(ballSpec()), castShadow: false, receiveShadow: false }).runtime({ id: `shuriken-${i}` }));
+  builder.add(primitives.sphere({ name: "aura", size: 1, material: material.custom(auraSpec()), castShadow: false, receiveShadow: false }).runtime({ id: "aura" }));
 
   const steel = material.pbr({ color: "#cfd6dc", roughness: 0.28, metallic: 0.85 });
   const club = material.pbr({ color: "#5a4332", roughness: 0.8 });
   for (let i = 0; i < ENEMY_SLOTS.length; i++) {
     builder.add(primitives.box({ name: `blade-${i}`, size: [0.07, 0.05, 1], material: steel, castShadow: false }).runtime({ id: `blade-${i}` }));
     builder.add(primitives.box({ name: `club-${i}`, size: [0.26, 0.26, 1.1], material: club, castShadow: false }).runtime({ id: `club-${i}` }));
-    builder.add(primitives.sphere({ name: `orb-${i}`, size: 0.3, material: material.custom(ballSpec()) }).runtime({ id: `orb-${i}` }));
+    builder.add(primitives.sphere({ name: `orb-${i}`, size: 0.3, material: material.custom(ballSpec()), castShadow: false, receiveShadow: false }).runtime({ id: `orb-${i}` }));
   }
 
   const blobShadow = solidSpec([0.02, 0.025, 0.02], { alpha: 0.4 });
   const disc = defineShape(unitDisc(20));
+  // Threat marker: a red strip from the hero to the next rival charging down the hero's lane (`crosshairTarget`, E-01).
+  const threat = solidSpec([0.9, 0.12, 0.06], { glow: 0.9, glowColor: [1, 0.2, 0.1], alpha: 0.42 });
+  for (let i = 0; i < THREAT_POOL; i++) builder.add(geometry.custom(disc, { name: `threat-${i}`, material: material.custom(threat), castShadow: false, receiveShadow: false }).runtime({ id: `threat-${i}` }));
   for (let i = 0; i < ACTOR_COUNT; i++) builder.add(geometry.custom(disc, { name: `blob-${i}`, material: material.custom(blobShadow), castShadow: false, receiveShadow: false }).runtime({ id: `blob-${i}` }));
 
   builder.add(geometry.custom(geometry.dynamic({
@@ -378,7 +396,9 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
   const shake = options.shake;
   const POOL_CAP: Record<Piece["kind"], number> = { plank: PLANK_POOL, strap: STRAP_POOL, beam: BEAM_PIECE_POOL };
   const addPieces = (list: Piece[]): void => { pieces = pieces.concat(list); for (const k of ["plank", "strap", "beam"] as const) { let over = pieces.filter((q) => q.kind === k).length - POOL_CAP[k]; if (over > 0) pieces = pieces.filter((q) => (q.kind === k && over > 0 ? (over--, false) : true)); } };
-  const entityById = new Map(options.entities.map((e) => [e.id, e]));
+  /** Enemies in the render window this frame, by id, taken from the state passed to `update` (never the boot state). */
+  const inWindow = new Map<number, Entity>();
+  const windowList: Entity[] = [];
   const mm = actors.map(() => modelMatrix(0, -1000, 0, 0, 1));
   const graphs = actors.map((a) => a.pipeline.resources.scene);
   const boneCache = actors.map(() => new Map<string, SceneNodeLike | undefined>());
@@ -425,7 +445,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
     let t = anim.t;
     if (t === undefined) { loopClock[slot] = (loopClock[slot]! + dt * (anim.rate ?? 1)) % length; t = loopClock[slot]!; }
     actor.playClip(clip, Math.max(0, Math.min(length, t)) % (length + 1e-6));
-    mm[slot] = modelMatrix(f.x, f.y, f.z, Math.atan2(f.dx, f.dz) + MODEL_YAW_OFFSET + yawExtra, scale);
+    modelMatrixInto(mm[slot]!, f.x, f.y, f.z, Math.atan2(f.dx, f.dz) + MODEL_YAW_OFFSET + yawExtra, scale);
     (actor as TypedGLBActor & { __mm?: number[] }).__mm = mm[slot];
     const g = groundFrame(entity.s, entity.x, 0.1);
     const lift = Math.max(0, entity.y);
@@ -435,8 +455,18 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
     blob.setUniform?.("solidAlpha", (SUN_SHADOW ? 0.2 : 0.42) * (1 - Math.min(0.7, lift * 0.14)));
   };
 
+  const renderItems: ReturnType<TypedGLBActor["collectRenderItems"]>[number][] = [];
   const detach = attachRootRenderSource(options.canvas, {
-    source: { collectRenderItems: () => actors.flatMap((actor, i) => visible[i] ? actor.collectRenderItems({ modelMatrix: mm[i]! }).map((item) => ({ ...item, castShadow: SUN_SHADOW })) : []) }
+    source: {
+      collectRenderItems: () => {
+        renderItems.length = 0;
+        for (let i = 0; i < actors.length; i++) {
+          if (!visible[i]) continue;
+          for (const item of actors[i]!.collectRenderItems({ modelMatrix: mm[i]! })) renderItems.push(item.castShadow === SUN_SHADOW ? item : { ...item, castShadow: SUN_SHADOW });
+        }
+        return renderItems;
+      }
+    }
   });
 
   const aim = (id: string, from: Vec3, to: Vec3, length: number, grip = 0.12): void => {
@@ -521,26 +551,28 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       });
 
       /* enemies: stable slot per entity while in window */
-      const window: Entity[] = [];
+      windowList.length = 0;
+      inWindow.clear();
       for (const e of state.entities) {
         if (!isEnemy(e)) continue;
         const d = e.s - s;
         if (d > 72 || d < -6) continue;
         if (!e.alive && state.time - e.defeatedAt > 0.45) continue;
-        window.push(e);
+        windowList.push(e);
       }
-      window.sort((a, b) => a.s - b.s);
-      const wanted = new Set(window.slice(0, ENEMY_SLOTS.length).map((e) => e.id));
-      for (const [slot, id] of slotEntity) if (!wanted.has(id)) slotEntity.delete(slot);
+      windowList.sort((a, b) => a.s - b.s);
+      if (windowList.length > ENEMY_SLOTS.length) windowList.length = ENEMY_SLOTS.length;
+      for (const e of windowList) inWindow.set(e.id, e);
+      for (const [slot, id] of slotEntity) if (!inWindow.has(id)) slotEntity.delete(slot);
       const assigned = new Set(slotEntity.values());
-      for (const e of window.slice(0, ENEMY_SLOTS.length)) {
+      for (const e of windowList) {
         if (assigned.has(e.id)) continue;
         const free = (e.type === "heavy" ? BRUTE_SLOTS : SOLDIER_SLOTS).find((sl) => !slotEntity.has(sl));
         if (free !== undefined) { slotEntity.set(free, e.id); assigned.add(e.id); tints[free] = ""; }
       }
       ENEMY_SLOTS.forEach((slot, w) => {
         const id = slotEntity.get(slot);
-        const e = id === undefined ? undefined : entityById.get(id);
+        const e = id === undefined ? undefined : inWindow.get(id);
         if (!e) { visible[slot] = false; node(`blob-${slot}`).setVisible(false); hideWeapons(w); return; }
         const kind = e.type as EnemyKind;
         const dead = !e.alive;
@@ -571,6 +603,19 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
           }
         }
       });
+
+      /* threat marker: the hero's lane up to the next rival in it (the crosshair target), stronger as it closes in */
+      const target = state.phase === "running" ? crosshairTarget(state) : null;
+      const marker = node("threat-0");
+      marker.setVisible(!!target && target.s - s > 2);
+      if (target && target.s - s > 2) {
+        const along = (target.s - s) / 2;
+        const f = groundFrame(s + along, target.lane * laneOffset(target.s), 0.06);
+        marker.setPosition(f.x, f.y, f.z);
+        marker.setRotation(0, Math.atan2(f.dx, f.dz), 0);
+        marker.setScale([0.7, 1, along]);
+        marker.setUniform?.("solidAlpha", 0.16 + 0.3 * (1 - Math.min(1, (target.s - s) / 26)));
+      }
 
       /* barriers and beams */
       const barriers = state.entities.filter((e) => e.type === "barrier" && e.alive && e.s - s > -6 && e.s - s < 90);
@@ -693,7 +738,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
 
       /* chase camera: the original's offsets, eased with 1 - exp(-7 dt), with a short shake on damage */
       const widen = smooth(2220, 2410, s);
-      const eyeF = groundFrame(s - 6.4 - widen * 3.4, state.x * 0.45, 3.35 + widen * 0.95 + state.y * 0.22);
+      const eyeF = cameraEye(s, state.x, state.y);
       const lookF = groundFrame(s + 12 + widen * 6, state.x * 0.38, 1.6 + widen * 0.35 + state.y * 0.15);
       const jolt = shake.update(dt);
       const pose = chase.step({
@@ -705,6 +750,13 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       cameraController.setPose({ position: pose.eye, target: pose.look, fov: pose.fov }, { cut: false });
     },
     resetCamera() { chase.reset(); },
+    resetRun() {
+      aliveFlags.fill(1);
+      flamesDirty = true;
+      pieces = [];
+      slotEntity.clear();
+      for (const p of pool) p.life = 0;
+    },
     probeBones(joint) {
       const names = actors[0]!.animation.skeletonJointNames();
       const name = joint && names.includes(joint) ? joint : names.includes("LeftForeArm") ? "LeftForeArm" : names[0]!;

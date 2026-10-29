@@ -5,7 +5,7 @@
  * crossing, forest, valley) follows the course's biome table.
  */
 import { BIOME_TONES } from "./palette";
-import { COURSE_LENGTH, GAPS, biomeAt, gapAt, groundFrame, pathWidth } from "./course";
+import { COURSE_LENGTH, GAPS, biomeAt, gapAt, groundFrame, laneOffset, pathWidth, smooth } from "./course";
 import { surfaceY } from "./meshes";
 import { seededRandom } from "./sim";
 import { trs } from "./shapes";
@@ -59,6 +59,76 @@ const BLOSSOM = ["#f0a9bf", "#e895ae", "#f4c3d0"] as const;
 const STONE = ["#9a9484", "#8c8a7c", "#aaa893", "#7d9188"] as const;
 const WOOD = ["#8a6a45", "#7a5c3b", "#9a7a50"] as const;
 const CLOTH = ["#c0392b", "#d4a24c", "#3f7f9a", "#7a5c9a"] as const;
+
+/**
+ * The chase camera's eye for runner distance `s` and lateral position `x` (the original's offsets; `world.ts` uses the
+ * same function). `y` is the runner's height above the path (0 when grounded).
+ */
+export function cameraEye(s: number, x: number, y = 0): { x: number; y: number; z: number } {
+  const widen = smooth(2220, 2410, s);
+  const f = groundFrame(s - 6.4 - widen * 3.4, x * 0.45, 3.35 + widen * 0.95 + y * 0.22);
+  return { x: f.x, y: f.y, z: f.z };
+}
+
+/** Minimum horizontal gap kept between the camera path and every model's footprint (E-05: no prop sweeps past the lens). */
+export const CAMERA_CLEARANCE = 3;
+/** Props the camera is meant to pass through or that sit far off the path with very loose bounds. */
+const CLEARANCE_EXEMPT = new Set(["gate", "ridge"]);
+
+/** Camera eye samples every metre for the outer lanes and the centre lane, bucketed in a 10 m grid. */
+function cameraEyeGrid(): Map<string, { x: number; y: number; z: number }[]> {
+  const grid = new Map<string, { x: number; y: number; z: number }[]>();
+  for (let s = 0; s <= COURSE_LENGTH; s += 1) for (const lane of [-1, 0, 1]) {
+    const e = cameraEye(s, lane * laneOffset(s));
+    const key = `${Math.floor(e.x / 10)},${Math.floor(e.z / 10)}`;
+    let cell = grid.get(key);
+    if (!cell) grid.set(key, cell = []);
+    cell.push(e);
+  }
+  return grid;
+}
+
+/** Horizontal distance from the nearest camera eye (within the model's height band) to a model's footprint, and that eye. */
+export function cameraGap(p: ModelPlacement, size: readonly [number, number, number], grid = cameraEyeGrid()): { gap: number; eye: { x: number; z: number } | null } {
+  const hx = (size[0] * p.scale[0]) / 2, hz = (size[2] * p.scale[2]) / 2, h = size[1] * p.scale[1];
+  const c = Math.cos(p.yaw), sn = Math.sin(p.yaw);
+  const reach = Math.hypot(hx, hz) + CAMERA_CLEARANCE + 1;
+  let gap = Infinity, eye: { x: number; z: number } | null = null;
+  for (let gx = Math.floor((p.position[0] - reach) / 10); gx <= Math.floor((p.position[0] + reach) / 10); gx++) {
+    for (let gz = Math.floor((p.position[2] - reach) / 10); gz <= Math.floor((p.position[2] + reach) / 10); gz++) {
+      for (const e of grid.get(`${gx},${gz}`) ?? []) {
+        if (e.y < p.position[1] - 0.5 || e.y > p.position[1] + h + 0.5) continue;
+        const dx = e.x - p.position[0], dz = e.z - p.position[2];
+        const lx = dx * c - dz * sn, lz = dx * sn + dz * c;
+        const d = Math.hypot(Math.max(0, Math.abs(lx) - hx), Math.max(0, Math.abs(lz) - hz));
+        if (d < gap) { gap = d; eye = e; }
+      }
+    }
+  }
+  return { gap, eye };
+}
+
+/** Push every model placement that comes closer than `CAMERA_CLEARANCE` to the camera path straight away from it. */
+function clearCameraPath(models: ModelSink): void {
+  const grid = cameraEyeGrid();
+  for (const [id, list] of Object.entries(models)) {
+    if (CLEARANCE_EXEMPT.has(id)) continue;
+    const size = MESHY_MANIFEST[id]!.size;
+    for (let i = 0; i < list.length; i++) {
+      let p = list[i]!;
+      for (let pass = 0; pass < 10; pass++) {
+        const { gap, eye } = cameraGap(p, size, grid);
+        if (gap >= CAMERA_CLEARANCE || !eye) break;
+        let ux = p.position[0] - eye.x, uz = p.position[2] - eye.z;
+        const len = Math.hypot(ux, uz) || 1;
+        ux /= len; uz /= len;
+        const push = CAMERA_CLEARANCE - gap + 0.25;
+        p = { ...p, position: [p.position[0] + ux * push, p.position[1], p.position[2] + uz * push] };
+      }
+      list[i] = p;
+    }
+  }
+}
 
 export function buildScenery(models?: ModelSink): SceneryLayer[] {
   const layers = new Map<string, SceneryLayer>(LAYERS.map((l) => [l.id, { ...l, placements: [] }]));
@@ -429,5 +499,6 @@ export function buildScenery(models?: ModelSink): SceneryLayer[] {
     }
   }
 
+  if (models) clearCameraPath(models);
   return [...layers.values()].filter((l) => l.placements.length > 0);
 }

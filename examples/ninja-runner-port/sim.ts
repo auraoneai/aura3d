@@ -10,6 +10,8 @@ import { COURSE_LENGTH, GAPS, gapAhead, gapAt, laneOffset, nearGap } from "./cou
 
 export const SIM_STEP = 1 / 120;
 export const DEFAULT_SEED = 17;
+/** Today's course seed: the UTC date as YYYYMMDD, so every player gets the same course on a given day (`?daily=1`). */
+export const dailySeed = (date: Date = new Date()): number => date.getUTCFullYear() * 10000 + (date.getUTCMonth() + 1) * 100 + date.getUTCDate();
 
 export const TUNING = Object.freeze({
   length: COURSE_LENGTH, laneWidth: 2.35, baseSpeed: 18, maxSpeed: 25, gravity: 25, jumpVelocity: 10.4,
@@ -442,13 +444,16 @@ function updateTechnique(i: SimState, t: number): void {
   i.shurikens = i.shurikens.filter((n) => n.age < 2.2 && n.s - i.s < 110);
 }
 
+/** Countdown timers decremented every step (hoisted so the 1/120 s step allocates no array). */
+const TIMER_KEYS = ["attackCooldown", "dashCooldown", "slide", "invulnerable", "comboTimer", "cloneCooldown", "shurikenCooldown", "clones", "stumble"] as const;
+
 /** Advance the run by `dt` seconds (clamped to 0.05). Original `pf`. */
 export function stepSim(i: SimState, dtRaw: number): void {
   if (i.phase !== "running") return;
   const e = clamp(dtRaw, 0, 0.05);
   const prevS = i.s;
   i.time += e;
-  for (const key of ["attackCooldown", "dashCooldown", "slide", "invulnerable", "comboTimer", "cloneCooldown", "shurikenCooldown", "clones", "stumble"] as const) {
+  for (const key of TIMER_KEYS) {
     i[key] = Math.max(0, i[key] - e);
   }
   if (i.comboTimer === 0) i.combo = 0;
