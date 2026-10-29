@@ -1,5 +1,5 @@
 /**
- * Bunker Zero simulation — deterministic, renderer-free Wolf3D-style loop.
+ * Bunker Zero simulation — deterministic, renderer-free grid-shooter loop.
  * World coords: cell (cx,cz) centre = ((cx+0.5)*CELL + ox, (cz+0.5)*CELL).
  * Each floor renders at its own x-offset (ox = floorIndex * 300) so all six
  * maps coexist in one scene — the player teleports between floor origins.

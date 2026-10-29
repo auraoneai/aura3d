@@ -1,5 +1,5 @@
 /**
- * Bunker Zero floor maps — ASCII-grid authored Wolf3D-style mazes.
+ * Bunker Zero floor maps — ASCII-grid authored corridor mazes.
  *
  * Legend:
  *   #  wall            %  accent wall         .  floor            ,  floor variant (water/grate)

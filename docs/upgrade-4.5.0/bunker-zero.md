@@ -79,7 +79,7 @@ All findings come from reading the code in `/Users/gurbakshchahal/platforms/aura
 
 - [ ] Build and open the game on 4.5.0 (with `app` exposed temporarily if you want the diagnostics checks); confirm `app.diagnostics().renderPath` is `{ path: "hdr-msaa", quality: "auto" }` and `bloomFusion` is not `"off"`.
 - [ ] Capture the same frames on 4.3.7 (`main`) and 4.5.0 for floors 1 and 6 and the boss (`tools/remote-capture.sh showcase-bunker-zero <dist> <out> "/apps/showcase-bunker-zero/?demo=1&capture=1" 8000 4`), run on the remote runner, not locally.
-- [ ] If 4.5.0 is visibly brighter, retune `exposureEv` in the `looks.preset` call (`main.ts:70`), then `lights.ambient` intensity (`main.ts:72`), and re-capture. Do not spend time on `lights.hemisphere` intensity; it has no effect in this scene.
+- [ ] If 4.5.0 is visibly brighter, scale `lights.hemisphere` intensity first (item 1: it is the light that now adds to the ambient), then `lights.ambient`, and re-capture. Leave `exposureEv` alone; it also moves the emissive trim and work lights.
 - [ ] Check contact shadows at prop bases; adjust `effects.contactShadows` intensity if needed; confirm no `[prd02.contactShadows]` console warning.
 - [ ] Confirm `app.diagnostics()` has no `OPTION_IGNORED` entries.
 - [ ] Confirm no `SAFETY_COMPAT_MODE` message (black-frame guard) in the console during a demo run.
