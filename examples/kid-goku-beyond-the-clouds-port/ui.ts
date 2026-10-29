@@ -65,6 +65,7 @@ const CSS = `
 #cr-ui kbd{display:inline-block;min-width:22px;padding:2px 6px;margin-right:4px;text-align:center;font:500 11px "Graphik Web",ui-monospace,monospace;color:#2a1a08;background:#fff1cf;border-radius:5px;box-shadow:0 1px 0 rgba(0,0,0,.35)}
 #cr-ui .best{font-size:12px;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.6)}
 #cr-ui .credit{position:absolute;right:14px;bottom:10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.7);text-shadow:0 1px 4px rgba(0,0,0,.5)}
+#cr-ui:not(.coarse) .credit{top:12px;bottom:auto}
 #cr-ui .hud-top{position:absolute;left:14px;right:14px;top:12px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 #cr-ui .left{display:flex;gap:10px;align-items:flex-start}
 #cr-ui .pausebtn{width:44px;height:44px;padding:0;border-radius:12px;font-size:13px;letter-spacing:-2px;color:#3a2410;background:#fff4dc;box-shadow:0 3px 0 rgba(0,0,0,.3)}
