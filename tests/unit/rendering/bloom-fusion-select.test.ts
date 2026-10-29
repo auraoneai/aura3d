@@ -103,14 +103,17 @@ describe("AuraBloomFusion selection", () => {
     expect(Object.isFrozen(SEPARABLE_BLOOM_FUSION) && Object.isFrozen(FUSED_2D_BLOOM_FUSION)).toBe(true);
   });
 
-  it("the option and the URL override pick the mode; the URL wins; typos throw", () => {
+  it("the option and the URL override pick the mode; the URL wins; code typos throw, URL typos warn and fall back (RP-04)", () => {
     expect(parseBloomFusionOption(undefined, null)).toBe("separable");
     expect(parseBloomFusionOption({}, "")).toBe("separable");
     expect(parseBloomFusionOption({ bloomFusion: "fused-2d" }, null)).toBe("fused-2d");
     expect(parseBloomFusionOption({ bloomFusion: "fused-2d" }, "?aura3d-bloom-fusion=separable")).toBe("separable");
     expect(parseBloomFusionOption(undefined, "?x=1&aura3d-bloom-fusion=fused-2d")).toBe("fused-2d");
     expect(() => parseBloomFusionOption({ bloomFusion: "fused" as never }, null)).toThrow("QUALITY_OPTION_INVALID:renderer.bloomFusion=fused");
-    expect(() => parseBloomFusionOption(undefined, "?aura3d-bloom-fusion=2d")).toThrow("QUALITY_OPTION_INVALID:?aura3d-bloom-fusion=2d");
+    const warnings: string[] = [];
+    expect(parseBloomFusionOption({ bloomFusion: "fused-2d" }, "?aura3d-bloom-fusion=2d", { warnings, console: false })).toBe("fused-2d");
+    expect(warnings).toEqual(['QUALITY_URL_IGNORED: ?aura3d-bloom-fusion=2d (expected separable|fused-2d); using "fused-2d"']);
+    expect(() => parseBloomFusionOption(undefined, "?aura3d-bloom-fusion=2d", { strict: true })).toThrow("QUALITY_OPTION_INVALID:?aura3d-bloom-fusion=2d");
   });
 
   it("fusion is allowed only under quality auto and cinematic; production never fuses", () => {

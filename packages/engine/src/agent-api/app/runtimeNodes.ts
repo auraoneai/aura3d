@@ -18,6 +18,7 @@ import { asRuntimeCompiled } from "../../contracts/compiler.js";
 import { nodeHandleExtensionsAll } from "../../contracts/runtimeNodes.js";
 import type { AuraNodeKindMap } from "../../contracts/compiler.js";
 import { assertCustomUniformWrite, recordCustomUniformWrite } from "../compiler/customMaterial.js";
+import { isDirectRenderPath, nodeDirectPathBlockers } from "./renderPath.js";
 
 /**
  * C-37 (PRD 15 T3.12): how the registry mutates the live scene.
@@ -70,6 +71,25 @@ const removeRuntimeNodeById = (nodes: readonly AuraSceneNode[], runtimeId: strin
   return { nodes: next, removed };
 };
 
+/** Insert `node` as the last child of the group whose runtime id is `parentId`; top level when no such group exists. */
+const insertRuntimeNode = (nodes: readonly AuraSceneNode[], node: AuraSceneNode, parentId: string | undefined): AuraSceneNode[] => {
+  if (parentId !== undefined) {
+    let placed = false;
+    const visit = (list: readonly AuraSceneNode[]): AuraSceneNode[] => list.map((entry) => {
+      if (placed || entry.kind !== "group") return entry;
+      if (entry.runtime?.id === parentId) {
+        placed = true;
+        return { ...entry, children: [...entry.children, node] };
+      }
+      const children = visit(entry.children);
+      return placed ? { ...entry, children } : entry;
+    });
+    const next = visit(nodes);
+    if (placed) return next;
+  }
+  return [...nodes, node];
+};
+
 export function createAuraRuntimeNodeRegistry(snapshot: AuraSceneSnapshot, deps: AuraRuntimeNodeRegistryDeps = {}): MutableAuraRuntimeNodeRegistry {
   let handles = new Map<string, AuraRuntimeNodeHandle>();
   let registryVersion = 0;
@@ -81,6 +101,16 @@ export function createAuraRuntimeNodeRegistry(snapshot: AuraSceneSnapshot, deps:
   let setScene = deps.setScene;
   let diagnostic = deps.diagnostic;
   const compilerFlagOn = () => flags.on("A3D_QR_COMPILER");
+  /*
+   * RP-03: nodes added through the compiled subtree path live only in the compiled scene, not in the app snapshot. They are kept
+   * here so a remount (to take the HDR target, see `add`) carries them over instead of dropping them. Cleared on `reset`.
+   */
+  let compiledAdds: { readonly id: string; readonly node: AuraSceneNode; readonly parent?: string }[] = [];
+  const sceneWithCompiledAdds = (scene: AuraSceneSnapshot): AuraSceneSnapshot => {
+    let nodes: AuraSceneNode[] = [...scene.nodes];
+    for (const entry of compiledAdds) nodes = insertRuntimeNode(nodes, entry.node, entry.parent);
+    return { ...scene, nodes };
+  };
   // C-37 (PRD 15 T3.12 seam): flatten every registered NodeHandleExtension
   // whose flag is on and whose `appliesTo` covers the node kind onto the
   // handle (`handle.animation`, `handle.materials`, ...). Applied lazily on
@@ -135,14 +165,33 @@ export function createAuraRuntimeNodeRegistry(snapshot: AuraSceneSnapshot, deps:
         runtime?.id ? raw : { ...raw, runtime: { ...(runtime ?? {}), id } }
       ) as AuraSceneNode & { runtime: AuraRuntimeNodeSpec };
       registryVersion += 1;
+      /*
+       * RP-03: a direct-path app has no post chain and no HDR target, so an effect, a custom-shader or transparent material added
+       * now would be dropped or drawn wrong, silently. Remount with the node in the scene: the mount re-decides the path and takes
+       * the HDR target. Earlier compiled additions ride along.
+       */
+      const directBlockers = app?.canvas && isDirectRenderPath(app.canvas) ? nodeDirectPathBlockers([node]) : [];
+      const scene = getScene?.();
+      if (directBlockers.length > 0 && scene && setScene) {
+        const next = sceneWithCompiledAdds(scene);
+        compiledAdds = [];
+        setScene({ ...next, nodes: insertRuntimeNode(next.nodes, node, options.parent) });
+        // After setScene: the remount resets the app's warning list.
+        diagnostic?.(`DIRECT_PATH_REMOUNT: runtime node "${id}" needs the HDR target (${directBlockers.join("; ")}); the scene was remounted so it renders.`);
+        const remounted = handles.get(id);
+        if (remounted) return applyHandleExtensions(remounted);
+        const handle = applyHandleExtensions(createRuntimeNodeHandle(node as MutableAuraRuntimeSceneNode, node.runtime));
+        handles.set(id, handle);
+        return handle;
+      }
       if (compiled && compilerFlagOn()) {
         compiled.addSubtree(node, options.parent);
+        compiledAdds.push({ id, node, ...(options.parent === undefined ? {} : { parent: options.parent }) });
         const handle = applyHandleExtensions(createRuntimeNodeHandle(node as MutableAuraRuntimeSceneNode, node.runtime));
         handles.set(id, handle);
         return handle;
       }
       // Legacy seam (C-37 PR 0b-1): append to the snapshot and remount.
-      const scene = getScene?.();
       if (scene && setScene) {
         diagnostic?.(`RUNTIME_ADD_REMOUNT: runtime node "${id}" appended and remounted (enable A3D_QR_COMPILER for subtree compile)`);
         setScene({ ...scene, nodes: [...scene.nodes, node] });
@@ -165,6 +214,7 @@ export function createAuraRuntimeNodeRegistry(snapshot: AuraSceneSnapshot, deps:
       handles.delete(id);
       if (compiled && compilerFlagOn()) {
         compiled.removeSubtree(id);
+        compiledAdds = compiledAdds.filter((entry) => entry.id !== id);
         return true;
       }
       const scene = getScene?.();
@@ -188,7 +238,12 @@ export function createAuraRuntimeNodeRegistry(snapshot: AuraSceneSnapshot, deps:
     detachCompiled() {
       compiled = undefined;
     },
+    sceneWithRuntimeAdditions() {
+      const scene = getScene?.();
+      return scene ? sceneWithCompiledAdds(scene) : undefined;
+    },
     reset(nextSnapshot) {
+      compiledAdds = [];
       handles = collectRuntimeNodeHandles(nextSnapshot);
       registryVersion += 1;
     }
@@ -290,6 +345,8 @@ export interface MutableAuraRuntimeNodeRegistry extends AuraRuntimeNodeRegistry 
   attachCompiled(scene: CompiledScene): void;
   detachCompiled(scene: CompiledScene): void;
   reset(snapshot: AuraSceneSnapshot): void;
+  /** The live scene plus nodes added through the compiled subtree path (RP-03), for a remount that must keep them. */
+  sceneWithRuntimeAdditions(): AuraSceneSnapshot | undefined;
 }
 
 export function collectRuntimeNodeHandles(snapshot: AuraSceneSnapshot): Map<string, AuraRuntimeNodeHandle> {

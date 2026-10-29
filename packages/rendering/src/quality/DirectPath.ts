@@ -53,12 +53,53 @@ export function resolveRenderPath(input: RenderPathInput): RenderPathDecision {
     return { path: "hdr-msaa", quality, reason: `quality "${quality}" always uses the HDR multisampled target` };
   }
   if (quality === "safe-basic") {
-    return { path: "direct", quality, reason: 'quality "safe-basic" always uses the direct path' };
+    // RP-06: the direct path has no post chain, so whatever would have needed the HDR target is dropped; name it.
+    const dropped = input.blockers.length > 0 ? `; not rendered on this path: ${input.blockers.join("; ")}` : "";
+    return { path: "direct", quality, reason: `quality "safe-basic" always uses the direct path${dropped}` };
   }
   if (input.blockers.length > 0) {
     return { path: "hdr-msaa", quality, reason: `scene needs the HDR target: ${input.blockers.join("; ")}` };
   }
   return { path: "direct", quality, reason: "scene authors no post-processing, HDR output or transmission" };
+}
+
+/** The parts of a render item {@link directPathItemBlockers} reads (structural, so no GL types are needed). */
+export interface DirectPathItemLike {
+  readonly label?: string;
+  readonly material?: unknown;
+}
+
+type ParameterSource = { getParameter?(name: string): unknown; renderState?: { blend?: unknown } };
+
+function numericParameter(material: ParameterSource, name: string): number {
+  const value = material.getParameter?.(name);
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+/**
+ * RP-01: reasons a decoded scene needs the HDR target that the authored snapshot cannot show, read from the render items a GLB
+ * produced. Blending happens after the in-shader encode on the direct path (display space) but before it on the HDR path (linear),
+ * so a BLEND material renders differently (50% white over black: 113/255 direct against 197/255 HDR). Transmission needs the
+ * HDR scene-colour capture. The transmission test mirrors `itemReportsTransmissionLobe` (forward/Transmission.ts). Each reason
+ * appears once.
+ */
+export function directPathItemBlockers(items: readonly DirectPathItemLike[]): string[] {
+  const reasons = new Set<string>();
+  for (const item of items) {
+    const material = item.material as (ParameterSource & { baseMaterial?: ParameterSource }) | undefined;
+    if (!material) continue;
+    const base = material.baseMaterial ?? material;
+    if (base.renderState?.blend) {
+      reasons.add("decoded GLB has a transparent (BLEND) material");
+      continue;
+    }
+    if (numericParameter(base, "u_transmissionFactor") > 0.001
+      || numericParameter(base, "u_diffuseTransmissionFactor") > 0.001
+      || numericParameter(base, "u_volumeThicknessFactor") > 0.001) {
+      reasons.add("decoded GLB has a transmission material");
+    }
+  }
+  return [...reasons];
 }
 
 /** The renderer flags for the direct path: the OutputPass/HDR-target route pinned off. */

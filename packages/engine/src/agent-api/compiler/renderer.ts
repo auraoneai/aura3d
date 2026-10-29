@@ -2,7 +2,7 @@
 
 import type { AuraBackend, AuraCreateAppRendererOptions, AuraLightNode, AuraModelNode, AuraRendererDiagnosticReport, AuraRuntimeNodeRegistry, AuraSceneSnapshot, AuraVec3, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, WebGLSceneRenderer } from "../nodes/types.js";
 import { colorToAcesInputClearColor, colorToClearColor, colorToLinearRgb, colorToLinearRgba } from "../colorUtils.js";
-import { configureBloomFusionDevice, isDirectRenderPath, isFusedBloomPasses, type BloomFusionDevice } from "../app/renderPath.js";
+import { configureBloomFusionDevice, decodedModelDirectPathBlockers, isDirectRenderPath, isFusedBloomPasses, recordDecodedDirectPathBlockers, type BloomFusionDevice } from "../app/renderPath.js";
 import { createAssetProvenance, formatSkippedInlineModelWarning } from "../diagnostics.js";
 import { groups } from "../nodes/groups.js";
 import { primitive } from "../nodes/primitives.js";
@@ -263,6 +263,8 @@ export async function createProductionRuntimeSceneRenderer(
       // subtree-compile path (no remount) under A3D_QR_COMPILER.
       (runtimeNodes as { attachCompiled?: (scene: unknown) => void } | undefined)?.attachCompiled?.(compiledScene);
     }
+    // RP-01 (lane E1): the GLBs are decoded now; tell the frame loop about BLEND/transmission materials the direct path cannot draw.
+    if (isDirectRenderPath(canvas)) recordDecodedDirectPathBlockers(canvas, decodedModelDirectPathBlockers(actorEntries));
     const authoredLightNodes = flattened.filter((node): node is AuraLightNode => node.kind === "light");
     const authoredDirectLightNodes = authoredLightNodes.filter((node) => node.light !== "ambient");
     const authoredAmbientLightCount = authoredLightNodes.length - authoredDirectLightNodes.length;
@@ -510,14 +512,17 @@ export async function createProductionRuntimeSceneRenderer(
 
 /**
  * TIER: resolve the mount compile ctx quality surface from the caller's
- * renderer options. `rendererOptions.quality.tier` (C-27, prd11) wins;
- * absent or "auto" keeps the desktop default "high" — the same stub
- * resolution the lighting handlers apply to their own auto tier.
+ * renderer options. `renderer.quality` is a tier name or `{ tier }` (C-27,
+ * prd11; `parseQualityRendererOptions` accepts both); absent or "auto" keeps
+ * the desktop default "high", the same stub resolution the lighting handlers
+ * apply to their own auto tier. The string form used to be ignored here
+ * (top-tennis C11), so `renderer: { quality: "low" }` mounted at "high".
  */
 export function resolveMountQuality(
   rendererOptions?: AuraCreateAppRendererOptions
 ): MountSceneCompileContext["quality"] {
-  const governed = (rendererOptions?.quality as { tier?: unknown } | undefined)?.tier;
+  const option = rendererOptions?.quality as unknown;
+  const governed = typeof option === "string" ? option : (option as { tier?: unknown } | undefined)?.tier;
   const tier: AuraQualityTier =
     typeof governed === "string" && governed !== "auto" && governed in QUALITY_TIERS ? (governed as AuraQualityTier) : "high";
   return { ...resolveTierSettings(tier), tier };

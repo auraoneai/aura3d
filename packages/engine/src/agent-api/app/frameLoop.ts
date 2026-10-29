@@ -10,7 +10,7 @@ import { camera } from "../nodes/camera.js";
 import { collectAuraSceneEvidence } from "../sceneEvidence.js";
 import { collectLabelTelemetry, summarizeTextBuckets } from "../LabelTelemetry.js";
 import { createProductionSceneRenderer } from "./mountRenderer.js";
-import { applyRenderPathToCanvas, resolveAppRenderPath, wantsPreservedDrawingBuffer } from "./renderPath.js";
+import { applyRenderPathToCanvas, directPathVetoReasons, resolveAppRenderPath, takeDecodedDirectPathBlockers, wantsPreservedDrawingBuffer } from "./renderPath.js";
 import { appTierMaxPixelRatio, currentDevicePixelRatio, minimumBackingSize, resolveAppPixelRatio } from "./pixelRatio.js";
 import { resolveMountQuality } from "../compiler/renderer.js";
 import { devicePixelRatioSafe, markTiming, performanceNow } from "../platform.js";
@@ -82,10 +82,12 @@ export async function startProductionRender(
   );
   // beat-three.js L-P1: decided per mount (setScene re-mounts re-decide). `direct` pins the
   // HDR-target route off for this renderer only; the app's own flags are untouched.
-  const renderPath = resolveAppRenderPath(snapshot, options, qrFlags);
+  // RP-01/RP-03: reasons found after an earlier mount on this canvas (a custom post pass) keep it off the direct path.
+  let renderPath = resolveAppRenderPath(snapshot, options, qrFlags, { extraBlockers: directPathVetoReasons(canvas) });
   diagnosticsState.renderPath = renderPath.report;
+  pushWarnings(diagnosticsState, renderPath.warnings);
   applyRenderPathToCanvas(canvas, renderPath);
-  const renderer = await createProductionSceneRenderer(
+  const mountRenderer = () => createProductionSceneRenderer(
     canvas,
     snapshot,
     options.renderer,
@@ -94,6 +96,21 @@ export async function startProductionRender(
     { strict: options.strict, onDegradation: options.onDegradation },
     { preserveDrawingBuffer: wantsPreservedDrawingBuffer(options) }
   );
+  let renderer = await mountRenderer();
+  /*
+   * RP-01: the direct-path decision reads the authored snapshot, which cannot show a GLB's own BLEND or transmission materials.
+   * The mount records them once the GLBs are decoded; if there are any, mount again on the HDR target before the first frame,
+   * so the blended or refracted surfaces are composited in linear space as on the HDR path.
+   */
+  const decoded = renderPath.direct && !isCancelled() ? takeDecodedDirectPathBlockers(canvas) : [];
+  if (decoded.length > 0) {
+    renderer.dispose();
+    renderPath = resolveAppRenderPath(snapshot, options, qrFlags, { extraBlockers: [...directPathVetoReasons(canvas), ...decoded] });
+    diagnosticsState.renderPath = renderPath.report;
+    pushWarnings(diagnosticsState, [`DIRECT_PATH_REDECIDED: ${decoded.join("; ")}; mounted on the HDR target instead of the direct path.`]);
+    applyRenderPathToCanvas(canvas, renderPath);
+    renderer = await mountRenderer();
+  }
   if (isCancelled()) {
     renderer.dispose();
     return {
@@ -131,6 +148,8 @@ export async function startProductionRender(
   let disposed = false;
   let animationHandle = 0;
   let lastTime = 0;
+  // ENG-FPS: measured over the presented rAF frames of the last second, not a 60 placeholder.
+  const frameRate = createFrameRateMeter();
   let pendingFrames = 0;
   let frameTail: Promise<void> = Promise.resolve();
   const lazyFrameDiagnostics = bindLazyFrameDiagnostics(diagnosticsState, {
@@ -186,6 +205,7 @@ export async function startProductionRender(
     if (lastTime === 0) markTiming("a3d:mount:first-renderFrame");
     const delta = lastTime > 0 ? Math.max(1, time - lastTime) : 16.67;
     lastTime = time;
+    if (!explicit) frameRate.sample(time);
     if (!explicit && !isPaused()) beforeRender?.(delta / 1000, "raf");
     /*
      * A paused app must not keep advancing time-driven rendering.
@@ -216,7 +236,7 @@ export async function startProductionRender(
       rethrowShaderFailure(error);
     }
     diagnosticsState.backend = renderer.backend;
-    diagnosticsState.fps = diagnosticsState.fps || 60;
+    diagnosticsState.fps = frameRate.fps();
     diagnosticsState.drawCalls = drawCalls;
     // Same size as last frame: keep the existing tuple instead of allocating a new one every frame.
     const previousSize = diagnosticsState.renderSize;
@@ -268,6 +288,7 @@ export async function startProductionRender(
       if (automatic) {
         const delta = lastTime > 0 ? Math.max(1, time - lastTime) : 16.67;
         lastTime = time;
+        frameRate.sample(time);
         if (!isPaused()) beforeRender?.(delta / 1000, "raf");
       }
       // User frame callbacks can dispose the app. Do not submit a new frame after
@@ -386,6 +407,41 @@ export async function startProductionRender(
       resizeObserver?.disconnect();
       if (typeof window !== "undefined") window.removeEventListener("resize", resizeRenderer);
       resourceOwner.dispose();
+    }
+  };
+}
+
+function pushWarnings(state: MutableDiagnostics, warnings: readonly string[]): void {
+  for (const warning of warnings) if (!state.warnings.includes(warning)) state.warnings.push(warning);
+}
+
+export interface FrameRateMeter {
+  /** Record one presented frame at `time` (ms, the rAF timestamp). */
+  sample(time: number): void;
+  /** Frames per second over the window, to 0.1; 0 until two frames were sampled. */
+  fps(): number;
+}
+
+/**
+ * ENG-FPS: frame rate averaged over the frames of the last `windowMs` (default 1 s). `diagnostics().fps` used to be the constant
+ * 60 on the WebGL path (`fps || 60`) and `1000 / delta` of the single last frame on the canvas path, so it read 60 while a
+ * measured rAF loop ran at 0.4-0.85 fps. The window keeps the newest frame older than `windowMs` as well, so a loop slower than
+ * one frame per window still reports its real rate (two frames 2.5 s apart: 0.4).
+ */
+export function createFrameRateMeter(windowMs = 1000): FrameRateMeter {
+  const times: number[] = [];
+  return {
+    sample(time) {
+      if (!Number.isFinite(time)) return;
+      if (times.length > 0 && time <= times[times.length - 1]!) return;
+      times.push(time);
+      // Drop frames older than the window, keeping one before it so the span always covers at least one interval.
+      while (times.length > 2 && time - times[1]! >= windowMs) times.shift();
+    },
+    fps() {
+      if (times.length < 2) return 0;
+      const span = times[times.length - 1]! - times[0]!;
+      return span > 0 ? Math.round(((times.length - 1) * 1000 / span) * 10) / 10 : 0;
     }
   };
 }
