@@ -141,7 +141,8 @@ async function grab(page: Page, target: Target, id: string, extra: Record<string
 }
 
 test.describe("e2 lighting capture", () => {
-  test.setTimeout(900_000);
+  // Heavy scenes (Shadowstep Gauntlet) need more than 15 min at one frame every several seconds.
+  test.setTimeout(1_800_000);
   let server: ExampleDevServer;
   test.beforeAll(async () => { server = await startExampleDevServer(); });
   test.afterAll(async () => { await server.close(); });
