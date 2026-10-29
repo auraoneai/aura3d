@@ -194,8 +194,9 @@ describe("renderer postprocess plan diagnostics", () => {
       name: "ssao",
       requiresDepth: true,
       usesRendererOwnedDepth: true,
-      requiresNormals: true,
-      hasNormalsInput: true,
+      // SSAO reads depth only; an authored normals buffer is not an input it needs.
+      requiresNormals: false,
+      hasNormalsInput: false,
       submitted: true,
       pixelBacked: true,
       missingInputs: [],
@@ -470,7 +471,7 @@ describe("renderer postprocess plan diagnostics", () => {
     });
   });
 
-  it("requires depth plus normals for SSAO and SSR", () => {
+  it("requires depth for SSAO (depth-only kernel) and depth plus normals for SSR", () => {
     const plan = createRendererPostprocessPlanDiagnostics({
       toneMapping: false,
       ssao: { radius: 2, intensity: 0.7, bias: 0.01 },
@@ -483,22 +484,22 @@ describe("renderer postprocess plan diagnostics", () => {
       nativeLdrPostprocess: true
     });
 
-    expect(plan.missingInputs).toEqual(["ssao:normals", "ssr:normals"]);
+    expect(plan.missingInputs).toEqual(["ssr:normals"]);
     expect(plan.plannedVsActual).toMatchObject({
       requested: ["ssao", "ssr", "fxaa"],
-      submitted: ["fxaa"],
-      pixelBacked: ["fxaa"],
-      dropped: ["ssao", "ssr"]
+      submitted: ["ssao", "fxaa"],
+      pixelBacked: ["ssao", "fxaa"],
+      dropped: ["ssr"]
     });
     expect(plan.passes[0]).toMatchObject({
       name: "ssao",
       requiresDepth: true,
       usesRendererOwnedDepth: true,
-      requiresNormals: true,
+      requiresNormals: false,
       hasNormalsInput: false,
-      submitted: false,
-      pixelBacked: false,
-      missingInputs: ["ssao:normals"]
+      submitted: true,
+      pixelBacked: true,
+      missingInputs: []
     });
     expect(plan.passes[1]).toMatchObject({
       name: "ssr",
@@ -510,7 +511,7 @@ describe("renderer postprocess plan diagnostics", () => {
     });
   });
 
-  it("fails closed with named depth and normals inputs when SSAO has no depth source", () => {
+  it("fails closed with a named depth input when SSAO has no depth source", () => {
     const plan = createRendererPostprocessPlanDiagnostics({
       toneMapping: false,
       ssao: { radius: 2, intensity: 0.7, bias: 0.01 },
@@ -522,7 +523,8 @@ describe("renderer postprocess plan diagnostics", () => {
       nativeLdrPostprocess: true
     });
 
-    expect(plan.missingInputs).toEqual(["ssao:depth", "ssao:normals"]);
+    expect(plan.missingInputs).toEqual(["ssao:depth"]);
+    expect(plan.plannedVsActual.dropped).toEqual(["ssao"]);
   });
 
   it("requires history plus velocity for TAA", () => {

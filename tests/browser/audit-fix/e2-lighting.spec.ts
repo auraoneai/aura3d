@@ -91,7 +91,7 @@ async function engineInfo(page: Page) {
         app: true,
         renderPath: dg?.renderPath?.path ?? null,
         drawCalls: dg?.drawCalls ?? null,
-        post: post ? { requested: post.requestedPasses, submitted: post.submittedPasses, dropped: post.droppedPasses, missing: post.missingInputs } : null,
+        post: post ? { pipeline: post.pipeline, requested: post.requestedPasses, submitted: post.submittedPasses, dropped: post.droppedPasses, missing: post.missingInputs, stagesRan: post.stagesRan ?? null, skipped: (post.skipped ?? []).slice(0, 8) } : null,
         warnings
       };
     } catch (e) { return { app: true, diagErr: String(e) }; }
