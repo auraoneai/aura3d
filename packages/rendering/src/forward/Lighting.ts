@@ -47,6 +47,118 @@ export function forwardCascadeSelectionDepth(
       : fallbackNear;
 }
 
+/** The position in `cascades` the item's world-centre depth picks: the first whose far split is >= the depth, else the last. */
+export function forwardCenterCascadePosition(
+  cascades: readonly { readonly near: number; readonly far: number }[],
+  item: RenderItem,
+  cameraViewMatrix?: Float32Array | readonly number[],
+  cameraPosition?: readonly [number, number, number]
+): number {
+  const depth = forwardCascadeSelectionDepth(renderItemWorldCenter(item), cameraViewMatrix, cameraPosition, cascades[0]!.near);
+  for (let i = 0; i < cascades.length; i += 1) if (depth <= cascades[i]!.far) return i;
+  return cascades.length - 1;
+}
+
+/** Instanced items carry their world placement in `instanceTransforms`, so one centre does not describe where they are. */
+export function forwardInstancedCascadeReceiver(item: RenderItem): boolean {
+  const transforms = item.instanceTransforms;
+  return transforms !== undefined && transforms.length >= 16;
+}
+
+/**
+ * SI-1: per-cascade count of the item's instances whose world centre lies inside that cascade's light volume (the unbiased draw
+ * view-projection, clip space -1..1 on every axis). `lightMatrices[i]` undefined, or a non-finite instance, yields `undefined` (the caller
+ * then keeps the centre selection). When `stopAtFullCoverage` is set the scan returns as soon as a cascade covers every instance,
+ * leaving the later counts at 0: that cascade is the answer for the forward selection, and nothing later can beat it.
+ */
+export function forwardInstanceCascadeCoverage(
+  item: RenderItem,
+  lightMatrices: readonly (ArrayLike<number> | undefined)[],
+  stopAtFullCoverage: boolean
+): { readonly counts: readonly number[]; readonly total: number } | undefined {
+  const transforms = item.instanceTransforms;
+  if (!transforms || transforms.length < 16) return undefined;
+  if (lightMatrices.some((matrix) => !matrix || matrix.length < 16)) return undefined;
+  const total = Math.floor(transforms.length / 16);
+  const bounds = item.geometry.bounds;
+  const local = item.boundingBoxCenter ?? [
+    (bounds.min[0] + bounds.max[0]) / 2,
+    (bounds.min[1] + bounds.max[1]) / 2,
+    (bounds.min[2] + bounds.max[2]) / 2
+  ];
+  const lx = local[0]!, ly = local[1]!, lz = local[2]!;
+  const model = item.modelMatrix && item.modelMatrix.length >= 16 ? item.modelMatrix : undefined;
+  const counts = new Array<number>(lightMatrices.length).fill(0);
+  const centers = scratchCenters(total);
+  for (let i = 0; i < total; i += 1) {
+    const o = i * 16;
+    const t = transforms;
+    let x = t[o]! * lx + t[o + 4]! * ly + t[o + 8]! * lz + t[o + 12]!;
+    let y = t[o + 1]! * lx + t[o + 5]! * ly + t[o + 9]! * lz + t[o + 13]!;
+    let z = t[o + 2]! * lx + t[o + 6]! * ly + t[o + 10]! * lz + t[o + 14]!;
+    if (model) {
+      const px = x, py = y, pz = z;
+      x = model[0]! * px + model[4]! * py + model[8]! * pz + model[12]!;
+      y = model[1]! * px + model[5]! * py + model[9]! * pz + model[13]!;
+      z = model[2]! * px + model[6]! * py + model[10]! * pz + model[14]!;
+    }
+    if (!Number.isFinite(x + y + z)) return undefined;
+    centers[i * 3] = x; centers[i * 3 + 1] = y; centers[i * 3 + 2] = z;
+  }
+  for (let c = 0; c < lightMatrices.length; c += 1) {
+    const m = lightMatrices[c]!;
+    let covered = 0;
+    for (let i = 0; i < total; i += 1) {
+      const x = centers[i * 3]!, y = centers[i * 3 + 1]!, z = centers[i * 3 + 2]!;
+      const w = m[3]! * x + m[7]! * y + m[11]! * z + m[15]!;
+      if (!(w > 0)) continue;
+      const cx = m[0]! * x + m[4]! * y + m[8]! * z + m[12]!;
+      const cy = m[1]! * x + m[5]! * y + m[9]! * z + m[13]!;
+      const cz = m[2]! * x + m[6]! * y + m[10]! * z + m[14]!;
+      if (cx >= -w && cx <= w && cy >= -w && cy <= w && cz >= -w && cz <= w) covered += 1;
+    }
+    counts[c] = covered;
+    if (stopAtFullCoverage && covered === total) break;
+  }
+  return { counts, total };
+}
+
+let centerScratch = new Float64Array(0);
+function scratchCenters(instances: number): Float64Array {
+  if (centerScratch.length < instances * 3) centerScratch = new Float64Array(Math.max(instances * 3, centerScratch.length * 2));
+  return centerScratch;
+}
+
+/**
+ * The position in `cascades` an item samples. Non-instanced items keep the world-centre depth pick. Instanced items (SI-1) pick the
+ * cascade whose light volume holds the most of their instance centres, the nearer (sharper) cascade on a tie; when no cascade holds any
+ * instance, or a cascade has no light matrix, they fall back to the centre pick. Before this, a pool spread along the view axis (conifers at
+ * 20-277 m around a node at the origin) took cascade 0 from the node centre and every instance outside cascade 0 rendered unshadowed.
+ */
+export function forwardCascadePosition(
+  cascades: readonly ForwardShadowCascadeLike[],
+  item: RenderItem,
+  cameraViewMatrix?: Float32Array | readonly number[],
+  cameraPosition?: readonly [number, number, number]
+): number {
+  if (cascades.length > 1 && forwardInstancedCascadeReceiver(item)) {
+    const coverage = forwardInstanceCascadeCoverage(item, cascades.map((cascade) => cascade.shadowMap?.lightMatrix), true);
+    if (coverage) {
+      let best = -1;
+      let bestCount = 0;
+      coverage.counts.forEach((count, index) => { if (count > bestCount) { best = index; bestCount = count; } });
+      if (best >= 0) return best;
+    }
+  }
+  return forwardCenterCascadePosition(cascades, item, cameraViewMatrix, cameraPosition);
+}
+
+interface ForwardShadowCascadeLike {
+  readonly near: number;
+  readonly far: number;
+  readonly shadowMap?: { readonly lightMatrix?: ArrayLike<number> };
+}
+
 export function selectForwardShadowMap(
   shadowMap: ForwardShadowMapOptions | undefined,
   item: RenderItem,
@@ -55,9 +167,7 @@ export function selectForwardShadowMap(
 ): ForwardShadowMapOptions | undefined {
   const cascades = shadowMap?.cascades;
   if (!shadowMap || !cascades || cascades.length === 0) return shadowMap;
-  const depth = forwardCascadeSelectionDepth(renderItemWorldCenter(item), cameraViewMatrix, cameraPosition, cascades[0]!.near);
-  const selected = cascades.find((cascade) => depth <= cascade.far) ?? cascades[cascades.length - 1]!;
-  return selected.shadowMap;
+  return cascades[forwardCascadePosition(cascades, item, cameraViewMatrix, cameraPosition)]!.shadowMap;
 }
 
 export function applyForwardShadowMapUniforms(

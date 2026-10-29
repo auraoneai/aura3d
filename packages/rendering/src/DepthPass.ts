@@ -8,6 +8,7 @@ import { type RenderItem } from "./ForwardPass";
 import type { DepthVariantFeature, ShadowCasterVariantKey } from "./contracts/shadows";
 import { prd02DepthProgram, prd02DepthVariantDefines, PRD02_DEPTH_MAX_INSTANCES } from "./shadows/Prd02DepthShaderLibrary";
 import { identityMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
+import { InstanceBuffer } from "./resources/InstanceBuffer";
 
 export interface DepthPassOptions {
   readonly casters: readonly RenderItem[];
@@ -40,6 +41,47 @@ export class DepthMaterial extends Material {
 }
 
 const DEPTH_INSTANCE_ATTRIBUTE_NAMES = ["a_instanceMatrix0", "a_instanceMatrix1", "a_instanceMatrix2", "a_instanceMatrix3"] as const;
+
+/** Most dense casters kept resident per device; the least recently drawn one is disposed past this. */
+export const DEPTH_INSTANCE_BUFFER_CACHE_LIMIT = 64;
+
+/**
+ * SI-6: persistent per-caster instance buffers for dense (attribute-mode) depth draws, per device. The key is the caster's
+ * `instanceTransforms` array, which the renderer passes through from the node unchanged frame to frame. Every cascade draws the same
+ * casters, so after the first cascade of a frame `InstanceBuffer.setMatrices` finds identical contents and skips the upload, and the VAO
+ * keyed by the buffer id stays cached. Before this each dense caster created and disposed a vertex buffer and a VAO per cascade per frame.
+ * Map order is LRU order (a hit is re-inserted at the end).
+ */
+const depthInstanceBuffers = new WeakMap<RenderDevice, Map<object, { readonly buffer: InstanceBuffer; readonly capacity: number }>>();
+
+export function depthInstanceBufferFor(device: RenderDevice, key: object, matrices: Float32Array): InstanceBuffer {
+  let cache = depthInstanceBuffers.get(device);
+  if (!cache) {
+    cache = new Map();
+    depthInstanceBuffers.set(device, cache);
+  }
+  const count = Math.floor(matrices.length / 16);
+  let entry = cache.get(key);
+  if (entry) cache.delete(key);
+  if (!entry || entry.capacity < count || entry.buffer.bind().matrixBuffer.disposed) {
+    entry?.buffer.dispose();
+    const capacity = Math.max(16, 2 ** Math.ceil(Math.log2(Math.max(1, count))));
+    entry = { buffer: new InstanceBuffer(device, capacity), capacity };
+  }
+  cache.set(key, entry);
+  while (cache.size > DEPTH_INSTANCE_BUFFER_CACHE_LIMIT) {
+    const [oldestKey, oldest] = cache.entries().next().value as [object, { readonly buffer: InstanceBuffer }];
+    cache.delete(oldestKey);
+    oldest.buffer.dispose();
+  }
+  entry.buffer.setMatrices(matrices, count);
+  return entry.buffer;
+}
+
+/** Test and diagnostics hook: how many dense-caster instance buffers the device keeps resident. */
+export function depthInstanceBufferCount(device: RenderDevice): number {
+  return depthInstanceBuffers.get(device)?.size ?? 0;
+}
 
 export class DepthPass extends BaseRenderPass {
   /**
@@ -126,11 +168,9 @@ export class DepthPass extends BaseRenderPass {
     // instead of ceil(n / 64) draws per cascade (a forest of 2,000 trees was 32 draws in every cascade).
     const attributeMode = Boolean(variant.instanced && instanceTransforms && instanceTotal > PRD02_DEPTH_MAX_INSTANCES && variant.features["prd02.depthInstanceAttr"] !== undefined);
     const batchCount = variant.instanced && instanceTransforms && !attributeMode ? Math.ceil(instanceTotal / PRD02_DEPTH_MAX_INSTANCES) : 1;
-    let instanceBuffer: RenderBuffer | null = null;
     let instanceAttributes: readonly InstanceVertexAttribute[] | null = null;
     if (attributeMode && instanceTransforms) {
-      instanceBuffer = device.createBuffer("vertex", instanceTransforms.byteLength, instanceTransforms);
-      const buffer = instanceBuffer;
+      const buffer: RenderBuffer = depthInstanceBufferFor(device, caster.instanceTransforms as object, instanceTransforms).bind().matrixBuffer;
       instanceAttributes = DEPTH_INSTANCE_ATTRIBUTE_NAMES.map((shaderName, column) => ({ buffer, shaderName, components: 4 as const, offset: column * 16, stride: 64, divisor: 1 }));
     }
     for (let batch = 0; batch < batchCount; batch += 1) {
@@ -191,7 +231,6 @@ export class DepthPass extends BaseRenderPass {
       }
       device.draw(command);
     }
-    instanceBuffer?.dispose();
   }
 
   private getShader(device: RenderDevice): RenderShaderProgram {
