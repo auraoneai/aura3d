@@ -13,7 +13,7 @@ the QA `step(n)` hook (fixed 1/60 s steps); judge the later shots of each target
 | `before/venues` (Favela, Lagos, Uyuni) | base | `g09cap-before4-171735` |
 | `after/desktop` | `2cc85c5ae` | `g09cap-after1-171737` |
 | `after/phone` | `d6ae2caef` | `g09cap-after2-172256` |
-| `after/modes` | `0faa96cb1` | `g09cap-after3-172256` |
+| `after/modes` | `d6ae2caef` | `g09cap-after3-172256` |
 | `after/venues` (first venue looks, washed out) | `2cc85c5ae` | `g09cap-after4-171737` |
 | `after/venues-tuned` | `fa446fdf5` | `g09cap-after5-180321` |
 | `diag-4.5.0` (render path, bloom A/B, AO A/B, foot crops) | `6a0275a76` | `g09cap-diag-171922` |
