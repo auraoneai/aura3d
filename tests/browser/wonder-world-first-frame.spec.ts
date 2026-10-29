@@ -7,6 +7,11 @@
  * -> canvas-only screenshot (overlays hidden, black backdrop, so a blank or transparent canvas cannot pass) -> luma,
  * draw calls, live scene nodes, zero console errors. The view the grown-up sees is printed as WWSHOT
  * first-frame-<variant>; the record as WWJSON first-frame-<variant>.
+ *
+ * Models variant: software WebGL2 starves the page, so a large GLB can outlast the preload's 10 s wait. The app then
+ * draws that model's stand-in for this mount and keeps downloading it (src/runtime/asset-preloader.ts). When that
+ * happens the spec waits for the downloads to settle, starts the story again and checks that the second mount draws
+ * the models, which is the app's own path for a late model. The record keeps the first mount's state as `firstMount`.
  */
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
@@ -26,10 +31,12 @@ import {
   openWonderWorld,
   qaAdvance,
   qaDiagnostics,
+  qaStartStory,
   qaState,
   readBootError,
   runContext,
   saveReportFile,
+  waitFor,
   waitForStoryOnStage
 } from "./wonder-world-lib";
 
@@ -40,6 +47,8 @@ const MIN_NON_BLACK_RATIO = 0.5;
 /** A frame that drew only its clear colour is flat; cast, ball and ground give real contrast. */
 const MIN_LUMA_STD_DEV = 2;
 const MIN_COARSE_COLOURS = 12;
+/** Longer than the app's 120 s download cap, so every download has settled (or been capped) by then. */
+const DOWNLOADS_SETTLED_MS = 150_000;
 
 const VARIANTS = [
   { label: "models", models: true, title: "admitted GLB models" },
@@ -69,6 +78,22 @@ test.describe("Wonder World J08 first frame", () => {
       });
       await waitForStoryOnStage(page, log, E17.id);
 
+      const admitted = admittedModelKeys();
+      // Cast members whose GLB is admitted must draw as models (F0.4); a prop without a model (the ball) is a stand-in.
+      const expectModel: string[] = variant.models ? E17.cast.filter((id) => admitted?.has(id) === true) : [];
+      let firstMount: Record<string, unknown> | null = null;
+      const lateModels = (await liveNodes(page, expectModel)).nodes.filter((node) => !node.tags.includes("model")).map((node) => node.id);
+      if (lateModels.length > 0) {
+        const first = await qaDiagnostics(page);
+        firstMount = { standIns: lateModels, modelStatus: first?.modelStatus ?? null };
+        await waitFor(page, log, "model downloads settled", DOWNLOADS_SETTLED_MS, async () => {
+          const status = (await qaDiagnostics(page))?.modelStatus as Readonly<Record<string, number>> | undefined;
+          return status !== undefined && !((status.pending ?? 0) > 0);
+        });
+        await qaStartStory(page, E17.id, "play-together");
+        await waitForStoryOnStage(page, log, E17.id);
+      }
+
       const before = await qaState(page);
       expect(before.audio.unlocked, "autostart keeps audio locked until a grown-up taps").toBe(false);
       expect(before.stage.modelsEnabled, "state().stage.modelsEnabled follows ?models").toBe(variant.models);
@@ -89,9 +114,6 @@ test.describe("Wonder World J08 first frame", () => {
       const diagnostics = await qaDiagnostics(page);
       const drawCalls = diagnostics?.drawCalls ?? after.stage.drawCalls;
       const nodes = await liveNodes(page, [...E17.cast, ...E17.props]);
-      const admitted = admittedModelKeys();
-      // Cast members whose GLB is admitted must draw as models (F0.4); a prop without a model (the ball) is a stand-in.
-      const expectModel: string[] = variant.models ? E17.cast.filter((id) => admitted?.has(id) === true) : [];
       const bootError = await readBootError(page);
 
       emitJson(`first-frame-${variant.label}`, {
@@ -108,6 +130,7 @@ test.describe("Wonder World J08 first frame", () => {
         diagnostics,
         nodes,
         expectModel,
+        firstMount,
         consoleErrors: log.consoleErrors,
         pageErrors: log.pageErrors,
         badResponses: log.badResponses,

@@ -36,7 +36,7 @@ import { createGame, warmPrograms, type Prd09Game } from "@aura3d/engine/game";
 import { modelRef, type ModelKey } from "../aura-assets.js";
 import { CHARACTERS, type CharacterProfile } from "../characters/character-registry.js";
 import { createAnimationDirector, propAnimationProfile, type AnimationDirector } from "../runtime/animation-director.js";
-import { createAssetPreloader, storyModelKeys, type AssetPreloader, type ModelLoadStatus } from "../runtime/asset-preloader.js";
+import { createAssetPreloader, storyModelKeys, type AssetPreloader, type ModelSummaryStatus } from "../runtime/asset-preloader.js";
 import type {
   CameraPresetId,
   CharacterId,
@@ -131,7 +131,8 @@ export interface StageDiagnostics {
   /** Story nodes drawn from their GLB / as primitive stand-ins. */
   readonly modelNodes: number;
   readonly standInNodes: number;
-  readonly modelStatus: Readonly<Partial<Record<ModelLoadStatus, number>>>;
+  /** Model results by status; `pending` counts downloads still running (a stand-in is drawn until the next mount). */
+  readonly modelStatus: Readonly<Partial<Record<ModelSummaryStatus, number>>>;
   /** The last load's mount failed with models and was remounted with the failing (or all) models as stand-ins. */
   readonly recoveredFromMountFailure: boolean;
   readonly warmed: boolean;

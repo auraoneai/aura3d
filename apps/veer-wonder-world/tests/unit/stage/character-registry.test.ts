@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { MODEL_INFO, type ModelInfo, type ModelKey } from "../../../src/aura-assets.js";
 import {
   CHARACTERS,
@@ -355,6 +355,59 @@ describe("asset preloader", () => {
     expect((await first).status.get("teddy")).toBe("timeout");
     const second = await preloader.preload(["teddy"]);
     expect(second.status.get("teddy")).toBe("unverified");
+    expect(calls).toBe(2);
+  });
+
+  it("keeps downloading a model whose wait timed out and uses it from the next preload", async () => {
+    let calls = 0;
+    let arrive: (response: typeof okResponse) => void = () => undefined;
+    const timers: Array<{ fire: () => void; ms: number }> = [];
+    const fetch: FetchLike = () => {
+      calls += 1;
+      return new Promise((resolve) => { arrive = resolve; });
+    };
+    const preloader = createAssetPreloader({
+      fetch,
+      source,
+      digest: null,
+      enabled: true,
+      timeoutMs: 10_000,
+      maxMs: 120_000,
+      schedule: (fire, ms) => { timers.push({ fire, ms }); return () => undefined; }
+    });
+    const first = preloader.preload(["teddy"]);
+    // Only the preload's 10 s wait runs out; the 120 s download cap does not.
+    for (const timer of timers.filter((t) => t.ms === 10_000)) timer.fire();
+    const firstResult = await first;
+    expect(firstResult.status.get("teddy")).toBe("timeout");
+    expect(firstResult.available.has("teddy")).toBe(false);
+    expect(preloader.status("teddy")).toBe("pending");
+    expect(preloader.summary()).toEqual({ pending: 1 });
+    arrive(okResponse);
+    await vi.waitFor(() => expect(preloader.isAvailable("teddy")).toBe(true));
+    const second = await preloader.preload(["teddy"]);
+    expect(second.status.get("teddy")).toBe("unverified");
+    expect(second.available.has("teddy")).toBe(true);
+    expect(calls).toBe(1);
+    expect(preloader.summary()).toEqual({ unverified: 1 });
+  });
+
+  it("aborts a download at its cap and fetches it again on the next preload", async () => {
+    let calls = 0;
+    const signals: AbortSignal[] = [];
+    const timers: Array<{ fire: () => void; ms: number }> = [];
+    const fetch: FetchLike = (_url, init) => {
+      calls += 1;
+      if (init?.signal) signals.push(init.signal);
+      return calls === 1 ? new Promise(() => undefined) : Promise.resolve(okResponse);
+    };
+    const preloader = createAssetPreloader({ fetch, source, digest: null, enabled: true, schedule: (fire, ms) => { timers.push({ fire, ms }); return () => undefined; } });
+    const first = preloader.preload(["teddy"]);
+    timers.splice(0).forEach((timer) => timer.fire());
+    expect((await first).status.get("teddy")).toBe("timeout");
+    expect(signals[0]?.aborted).toBe(true);
+    expect(preloader.status("teddy")).toBe("timeout");
+    expect((await preloader.preload(["teddy"])).status.get("teddy")).toBe("unverified");
     expect(calls).toBe(2);
   });
 

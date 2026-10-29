@@ -9,6 +9,11 @@
 // stand-in instead, so a missing or slow model never deadlocks the story.
 // Fetched files also warm the browser cache for the engine's own load.
 //
+// The timeout bounds the wait, not the download: a model that is still
+// arriving when a preload stops waiting keeps downloading (up to `maxMs`) and
+// is used from the next mount on. Aborting it instead would mean that on a
+// slow connection the largest models (about 2 MB) never finish at all.
+//
 // prefetch() warms the next story in the background (current + next).
 
 import { MODEL_INFO, models, modelRef, type ModelKey } from "../aura-assets.js";
@@ -45,6 +50,9 @@ function isRetryable(status: ModelLoadStatus): boolean {
   return status === "timeout" || status === "error";
 }
 
+/** `summary()` keys: settled results plus downloads still running. */
+export type ModelSummaryStatus = ModelLoadStatus | "pending";
+
 export interface ModelSource {
   readonly url: string;
   readonly sha256?: string;
@@ -60,8 +68,10 @@ export type FetchLike = (url: string, init?: { readonly signal?: AbortSignal }) 
 
 export interface AssetPreloaderOptions {
   readonly fetch?: FetchLike;
-  /** Per-model timeout. Default 10000 ms. */
+  /** How long one preload waits for a model before it is drawn as a stand-in. Default 10000 ms. */
   readonly timeoutMs?: number;
+  /** Cap on one download; one still running then is aborted and retried by the next preload. Default 120000 ms. */
+  readonly maxMs?: number;
   /** SHA-256 hex of the bytes; null skips the check. Default: Web Crypto when available. */
   readonly digest?: ((bytes: ArrayBuffer) => Promise<string>) | null;
   /** Models switched on. Default `models.enabled` (false with `?models=0`). */
@@ -79,7 +89,10 @@ export interface PreloadResult {
 }
 
 export interface AssetPreloader {
-  /** Fetches (and checks) every key; resolves once each one is settled or timed out. Never rejects. */
+  /**
+   * Fetches (and checks) every key; resolves once each one is settled or its wait timed out
+   * ("timeout": drawn as a stand-in now, still downloading in the background). Never rejects.
+   */
   preload(keys: readonly ModelKey[]): Promise<PreloadResult>;
   /** Background preload (for the next story); errors are swallowed. */
   prefetch(keys: readonly ModelKey[]): void;
@@ -87,7 +100,7 @@ export interface AssetPreloader {
   isAvailable(key: ModelKey): boolean;
   /** Records that models broke a scene mount after preload; they are drawn as stand-ins for the rest of the session. */
   markFailed(keys: readonly ModelKey[]): void;
-  summary(): Readonly<Partial<Record<ModelLoadStatus, number>>>;
+  summary(): Readonly<Partial<Record<ModelSummaryStatus, number>>>;
   dispose(): void;
 }
 
@@ -123,6 +136,7 @@ function defaultSource(key: ModelKey): ModelSource | undefined {
 export function createAssetPreloader(options: AssetPreloaderOptions = {}): AssetPreloader {
   const fetchFn = options.fetch ?? defaultFetch();
   const timeoutMs = options.timeoutMs ?? 10_000;
+  const maxMs = Math.max(timeoutMs, options.maxMs ?? 120_000);
   const digest = options.digest === undefined ? defaultDigest() : options.digest;
   const enabled = options.enabled ?? models.enabled;
   const source = options.source ?? defaultSource;
@@ -134,6 +148,7 @@ export function createAssetPreloader(options: AssetPreloaderOptions = {}): Asset
   const inflight = new Map<ModelKey, Promise<ModelLoadStatus>>();
   let disposed = false;
 
+  /** One download (fetch, then hash check), aborted at `maxMs`. */
   async function load(key: ModelKey): Promise<ModelLoadStatus> {
     if (MODEL_INFO[key].procedural) return "procedural";
     if (!enabled) return "disabled";
@@ -141,14 +156,14 @@ export function createAssetPreloader(options: AssetPreloaderOptions = {}): Asset
     if (!src) return "not-admitted";
     if (!fetchFn) return "unverified";
     const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
-    let timedOut = false;
+    let capped = false;
     let cancel: () => void = () => undefined;
-    const timeout = new Promise<ModelLoadStatus>((resolve) => {
+    const cap = new Promise<ModelLoadStatus>((resolve) => {
       cancel = schedule(() => {
-        timedOut = true;
+        capped = true;
         controller?.abort();
         resolve("timeout");
-      }, timeoutMs);
+      }, maxMs);
     });
     const work = (async (): Promise<ModelLoadStatus> => {
       try {
@@ -159,14 +174,15 @@ export function createAssetPreloader(options: AssetPreloaderOptions = {}): Asset
         const actual = await digest(bytes);
         return normalizeHash(actual) === normalizeHash(src.sha256) ? "ready" : "hash-mismatch";
       } catch {
-        return timedOut ? "timeout" : "error";
+        return capped ? "timeout" : "error";
       }
     })();
-    const status = await Promise.race([work, timeout]);
+    const status = await Promise.race([work, cap]);
     cancel();
     return status;
   }
 
+  /** The key's download: settled, joined while running, or started (again, when the last result was retryable). */
   function start(key: ModelKey): Promise<ModelLoadStatus> {
     const known = settled.get(key);
     if (known !== undefined && !isRetryable(known)) return Promise.resolve(known);
@@ -181,10 +197,23 @@ export function createAssetPreloader(options: AssetPreloaderOptions = {}): Asset
     return promise;
   }
 
+  /** Waits up to `timeoutMs` for the key's download; "timeout" leaves the download running. */
+  function wait(key: ModelKey): Promise<ModelLoadStatus> {
+    const download = start(key);
+    if (!inflight.has(key)) return download;
+    return new Promise((resolve) => {
+      const cancel = schedule(() => resolve("timeout"), timeoutMs);
+      void download.then((status) => {
+        cancel();
+        resolve(status);
+      });
+    });
+  }
+
   return {
     async preload(keys) {
       const unique = [...new Set(keys)];
-      const results = await Promise.all(unique.map(async (key) => [key, await start(key)] as const));
+      const results = await Promise.all(unique.map(async (key) => [key, await wait(key)] as const));
       const status = new Map<ModelKey, ModelLoadStatus>(results);
       const available = new Set<ModelKey>();
       for (const [key, value] of results) if (isUsableStatus(value)) available.add(key);
@@ -204,8 +233,9 @@ export function createAssetPreloader(options: AssetPreloaderOptions = {}): Asset
       for (const key of keys) settled.set(key, "failed");
     },
     summary() {
-      const out: Partial<Record<ModelLoadStatus, number>> = {};
-      for (const value of settled.values()) out[value] = (out[value] ?? 0) + 1;
+      const out: Partial<Record<ModelSummaryStatus, number>> = {};
+      for (const [key, value] of settled) if (!inflight.has(key)) out[value] = (out[value] ?? 0) + 1;
+      if (inflight.size > 0) out.pending = inflight.size;
       return out;
     },
     dispose() {
