@@ -82,8 +82,8 @@ async function lumaStats(page: Page, png: Buffer) {
 
 /** Engine diagnostics the rows need: render path (quality, bloom fusion), draw calls, post warnings, OPTION_IGNORED, textures. */
 const diag = (page: Page) => silt<Record<string, unknown>>(page, `
-  const app = api.app ? api.app() : null;
-  const d = app && app.diagnostics ? app.diagnostics() : null;
+  // the hook's info() carries app.diagnostics() (the hook object has no app accessor)
+  const d = api.info ? api.info().diagnostics : null;
   if (!d) return { none: true };
   const rows = (d.renderer && d.renderer.runtime && d.renderer.runtime.texturedMaterials) || [];
   const tex = { total: rows.length, textured: rows.filter((r) => r.status === "textured").length, pending: rows.filter((r) => r.status === "pending").length };
@@ -111,7 +111,7 @@ async function settle(page: Page, name: string, budget = SETTLE_BUDGET_MS): Prom
   const t0 = Date.now();
   let last: unknown = null, prev = "", stable = 0;
   while (Date.now() - t0 < budget) {
-    last = await silt(page, `api.render(); const a = api.app(); const rows = (a && a.diagnostics().renderer?.runtime?.texturedMaterials) || []; return { total: rows.length, pending: rows.filter((r) => r.status === "pending").length };`).catch((e) => ({ error: String(e).slice(0, 120) }));
+    last = await silt(page, `api.render(); const d = api.info().diagnostics; const rows = (d && d.renderer && d.renderer.runtime && d.renderer.runtime.texturedMaterials) || []; return { total: rows.length, pending: rows.filter((r) => r.status === "pending").length };`).catch((e) => ({ error: String(e).slice(0, 120) }));
     const l = last as { total?: number; pending?: number };
     const key = `${l.total}/${l.pending}`;
     stable = key === prev ? stable + 1 : 0;
