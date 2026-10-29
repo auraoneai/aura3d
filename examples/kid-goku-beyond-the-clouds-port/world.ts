@@ -2,7 +2,7 @@
  * Rendering for the Cloud Runner port: a sunlit sandstone-and-forest ridge in the sky. Sky dome with lit cumulus and hazy
  * ridges, lofted ground (textured PBR track and grass, banded sandstone cliffs), merged foliage, mesas and cloud banks,
  * a rigged GLB runner with skeletal animation, the sky cloud, star orbs, creatures, boulders, warning decals, pooled
- * particles and post (bloom and grade on top of the outdoor-day look). Everything goes through the public `@aura3d/engine` surface; art is
+ * particles and post (bloom, grade and vignette on top of the outdoor-day look). Everything goes through the public `@aura3d/engine` surface; art is
  * original (procedural meshes, CC0 catalog model and textures).
  */
 import { camera, cameras, defineAuraAssets, effects, environments, geometry, instances, lights, looks, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
@@ -120,6 +120,9 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   b.add(effects.fog({ name: "haze", color: LOOK.fogHex, density: LOOK.fogDensity }));
   b.add(effects.bloom({ name: "bloom", intensity: 0.38, threshold: 0.88 }));
   b.add(effects.colorGrade({ name: "grade", exposure: 1.02, contrast: 1.07, saturation: 1.16 }));
+  // The vignette renders through the post-v2 bridge (postBridge.ts) even though the effects diagnostics list it with
+  // consumer "none". Removing it lifted mean luma from 131 to 199 with clipping (remote A/B run g25-abvig), so it stays.
+  b.add(effects.vignette({ name: "vignette", intensity: 0.2, smoothness: 0.7 }));
 
   let triangles = 0, chunks = 0, drawNodes = 0;
   const cullables: Cullable[] = [];
