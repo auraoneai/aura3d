@@ -201,6 +201,15 @@ test.describe("g20 ninja-runner-port", () => {
     });
   }
 
+  // Index card: the run state at the 1440x900 card viewport (screens/final/card@2x.jpg; card.jpg is its half-size copy).
+  test("g20-card", async ({ browser }) => {
+    const errors: string[] = [];
+    const page = await open(browser, server, "?manual=1", { width: 1440, height: 900 }, false, errors);
+    const err = await drive(page, `api.begin(); api.stepFrames(300);`, 4);
+    await grab(page, "card", "card@2x", { driveErr: err });
+    log(`GL_ERRORS card ${JSON.stringify(errors.slice(0, 8))}`);
+  });
+
   // Sunfire form with the orb out, sun shadow on and off (S-06), plus a phone frame of the running HUD (E-02, E-05, S-03).
   test("g20-sunfire", async ({ browser }) => {
     const errors: string[] = [];
