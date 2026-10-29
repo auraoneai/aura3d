@@ -96,6 +96,18 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high"): Worl
   let minY = Infinity, maxY = -Infinity;
   for (let i = 0; i < track.n; i++) { minY = Math.min(minY, track.py[i] as number); maxY = Math.max(maxY, track.py[i] as number); }
   const snowLine = (minY + maxY) / 2 + 45;
+  /*
+   * The bolt, streak, exhaust and contact-shadow strips are rebuilt every frame through `updateAttribute`, which does
+   * not refresh a node's bounds. Their initial positions are all zero, so without authored bounds they were culled
+   * against a point at the origin and drew nothing on most of the lap. Author the whole course as their bounds.
+   */
+  let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+  for (let i = 0; i < track.n; i++) {
+    minX = Math.min(minX, track.px[i] as number); maxX = Math.max(maxX, track.px[i] as number);
+    minZ = Math.min(minZ, track.pz[i] as number); maxZ = Math.max(maxZ, track.pz[i] as number);
+  }
+  const PAD = 300;
+  const courseBounds = { min: [minX - PAD, minY - PAD, minZ - PAD] as [number, number, number], max: [maxX + PAD, maxY + PAD, maxZ + PAD] as [number, number, number] };
   const b: Scene = scene()
     .background("#02040a")
     .camera(camera.perspective({ position: [0, 40, 0], target: [0, 0, 0], fov: CFG.camera.fovBase, near: 0.3, far: 4200 }));
@@ -178,11 +190,11 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high"): Worl
   {
     const uv: number[] = [], idx: number[] = [];
     for (let k = 0; k < BOLTS; k++) { uv.push(0, 0, 1, 0, 1, 1, 0, 1); idx.push(k * 4, k * 4 + 1, k * 4 + 2, k * 4, k * 4 + 2, k * 4 + 3); }
-    b.add(geometry.custom(geometry.dynamic({ positions: f32(new Array<number>(BOLTS * 12).fill(0)), uvs: f32(uv), indices: Uint32Array.from(idx) }), { name: "bolts", material: material.custom(streakSpec()) }).runtime({ id: "bolts" }));
+    b.add(geometry.custom(geometry.dynamic({ positions: f32(new Array<number>(BOLTS * 12).fill(0)), uvs: f32(uv), indices: Uint32Array.from(idx), bounds: courseBounds }), { name: "bolts", material: material.custom(streakSpec()) }).runtime({ id: "bolts" }));
   }
 
   /* the drone's contact shadow on the road (HP-08): a quad rebuilt under the drone every frame */
-  b.add(geometry.custom(geometry.dynamic({ positions: f32(new Array<number>(12).fill(0)), uvs: f32([0, 0, 1, 0, 1, 1, 0, 1]), indices: Uint32Array.from([0, 1, 2, 0, 2, 3]) }), { name: "drone-blob", material: material.custom(blobSpec()), castShadow: false }).runtime({ id: "drone-blob" }));
+  b.add(geometry.custom(geometry.dynamic({ positions: f32(new Array<number>(12).fill(0)), uvs: f32([0, 0, 1, 0, 1, 1, 0, 1]), indices: Uint32Array.from([0, 1, 2, 0, 2, 3]), bounds: courseBounds }), { name: "drone-blob", material: material.custom(blobSpec()), castShadow: false }).runtime({ id: "drone-blob" }));
 
   /* player drone */
   for (const part of DRONE_PARTS) {
@@ -201,7 +213,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high"): Worl
   {
     const uv: number[] = [], idx: number[] = [];
     for (let k = 0; k < STREAKS; k++) { uv.push(0, 0, 1, 0, 1, 1, 0, 1); idx.push(k * 4, k * 4 + 1, k * 4 + 2, k * 4, k * 4 + 2, k * 4 + 3); }
-    b.add(geometry.custom(geometry.dynamic({ positions: f32(new Array<number>(STREAKS * 12).fill(0)), uvs: f32(uv), indices: Uint32Array.from(idx) }), { name: "streaks", material: material.custom(streakSpec()) }).runtime({ id: "streaks" }));
+    b.add(geometry.custom(geometry.dynamic({ positions: f32(new Array<number>(STREAKS * 12).fill(0)), uvs: f32(uv), indices: Uint32Array.from(idx), bounds: courseBounds }), { name: "streaks", material: material.custom(streakSpec()) }).runtime({ id: "streaks" }));
   }
 
   /* exhaust / dust points */
@@ -209,6 +221,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high"): Worl
   b.add(geometry.custom(geometry.dynamic({
     positions: f32(new Array<number>(POINTS * 3).fill(0)),
     topology: "points",
+    bounds: courseBounds,
     attributes: {
       size: { itemSize: 1, data: f32(new Array<number>(POINTS).fill(0)) },
       tint: { itemSize: 3, data: f32(new Array<number>(POINTS * 3).fill(1)) },
