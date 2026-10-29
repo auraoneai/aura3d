@@ -23,7 +23,7 @@ type Win = Record<string, any>;
 
 async function frameStats(page: Page, png: Buffer, crop?: { x: number; y: number; w: number; h: number }) {
   return page.evaluate(async ([b64, c]) => {
-    const bmp = await createImageBitmap(await (await fetch(`data:image/png;base64,${b64}`)).blob());
+    const bmp = await createImageBitmap(await (await fetch(`data:image/jpeg;base64,${b64}`)).blob());
     const cv = document.createElement("canvas");
     cv.width = bmp.width; cv.height = bmp.height;
     const ctx = cv.getContext("2d")!;
@@ -111,10 +111,10 @@ async function shot(page: Page, target: string, id: string, opts: { canvasOnly?:
   const pr = await probe(page);
   const handle = opts.canvasOnly ? await page.addStyleTag({ content: CANVAS_ONLY }) : null;
   if (handle) await page.waitForTimeout(200);
-  const png = await page.screenshot({ type: "png" });
-  const jpg = await page.screenshot({ type: "jpeg", quality: opts.quality ?? 72 });
+  // One screenshot per shot (each costs a presented frame on software GL): stats are read from the JPEG itself.
+  const jpg = await page.screenshot({ type: "jpeg", quality: opts.quality ?? 82 });
   if (handle) await handle.evaluate((el) => el.remove());
-  const stats = await frameStats(page, png, opts.crop ? carCrop(pr.player as { p: number[] } | null, vp.width, vp.height) : undefined);
+  const stats = await frameStats(page, jpg, opts.crop ? carCrop(pr.player as { p: number[] } | null, vp.width, vp.height) : undefined);
   const yellowView = pr.yellowL?.p?.[0] ?? null;
   const geometry = pr.player ? { carViewX: +(pr.player as { p: number[] }).p[0]!.toFixed(3), yellowViewX: yellowView === null ? null : +Number(yellowView).toFixed(3), carScreenX: Math.round(project([(pr.player as { p: number[] }).p[0]!, 0, (pr.player as { p: number[] }).p[2]!], vp.width, vp.height).x) } : null;
   log(`GL_META ${JSON.stringify({ target, id, vp, canvasOnly: !!opts.canvasOnly, ...opts.extra, ...stats, geometry, probe: pr })}`);
@@ -200,8 +200,9 @@ test.describe("grid dispatch audit-fix capture", () => {
     // weather presets: lighting must follow the sky (C8)
     for (const tod of ["golden", "fog", "night", "noon"]) {
       if (!(await clickDock(page, `#teleopDock button[data-tod="${tod}"]`))) continue;
-      await page.waitForFunction(READY, undefined, { timeout: 600_000, polling: 500 });
-      await page.waitForTimeout(20000);
+      await page.waitForTimeout(1500);
+      await page.waitForFunction(() => !(window as unknown as Win).__AURA3D_SHOWCASE_TELEOPERATOR__?.evidence?.remounting, undefined, { timeout: 900_000, polling: 1000 });
+      await page.waitForTimeout(15000);
       await shot(page, T, `weather-${tod}`, { canvasOnly: true, crop: true, extra: { tod } });
     }
     // gameplay through the QA hooks (fixed build only)
@@ -254,6 +255,22 @@ test.describe("grid dispatch audit-fix capture", () => {
     await page.waitForTimeout(6000);
     await shot(page, T, "06-results");
     await ctx.close();
+    log(`GL_DONE ${T}`);
+  });
+
+  // RP-05 game side: the default (bloom fusion) frame against ?aura3d-render=production on the same frozen street.
+  test("bloom-ab", async ({ page }) => {
+    const T = "bloom";
+    const means: Record<string, unknown> = {};
+    for (const [label, query] of [["fused", ""], ["production", "?aura3d-render=production"]] as const) {
+      await boot(page, server, T, { width: 1280, height: 720 }, query);
+      const frozen = await qa(page, "freeze");
+      if (frozen === "__missing__") { log(`GL_NOTE ${T} no freeze hook (base build): skipped`); return; }
+      await page.waitForTimeout(30000);
+      await shot(page, T, `bloom-${label}`, { canvasOnly: true, quality: 92 });
+      means[label] = await page.evaluate(() => (window as unknown as Win).__AURA3D_SHOWCASE_TELEOPERATOR__?.app?.diagnostics()?.renderPath ?? null);
+    }
+    log(`GL_NOTE ${T} renderPaths ${JSON.stringify(means)}`);
     log(`GL_DONE ${T}`);
   });
 

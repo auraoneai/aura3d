@@ -514,6 +514,8 @@ async function bootGridDispatch(): Promise<void> {
   const rivalAccents = RIVALS.map((r) => r.accent);
   const carSizes = Object.fromEntries(PLAYABLE_IDS.map((id) => [id, fittedSize(PLAYABLE_FLEET[id].bounds, PLAYABLE_FLEET[id].maxDim)])) as Record<PlayableCarId, ReturnType<typeof fittedSize>>;
   let shakeNow = { x: 0, y: 0 };
+  /** QA review only: extra yaw on the player car and every road user so each side of a model can be framed. */
+  let qaYawAdd = 0;
 
   function beaconMaterials(mode: "pickup" | "dropoff"): void {
     if (mode === lastBeaconMode) return;
@@ -560,7 +562,7 @@ async function bootGridDispatch(): Promise<void> {
     const rz = (wz: number) => wz - pose.pz + camOff.z;
     const pos = (x: number, y: number, z: number): AuraTransformSpec => ({ position: [x, y, z] });
 
-    N.cars[S.car].setPosition(rx(pose.px), ry(0), CAR_DRAW_Z + camOff.z).setRotation(pose.pitch, pose.yaw, pose.roll);
+    N.cars[S.car].setPosition(rx(pose.px), ry(0), CAR_DRAW_Z + camOff.z).setRotation(pose.pitch, pose.yaw + qaYawAdd, pose.roll);
     // Road strips follow the same lateral shift as everything else, so the car stays in its lane (C2).
     for (const strip of N.strips) strip.h.setPosition(rx(strip.x), ry(strip.y), -160 + camOff.z);
 
@@ -636,7 +638,7 @@ async function bootGridDispatch(): Promise<void> {
     S.users.forEach((u, i) => {
       const vz = rz(pose.uz[i] ?? u.z);
       const visible = vz < 18 && vz > -220;
-      N.users[i]!.setPosition(rx(u.laneX), ry(0), vz).setRotation(0, u.direction === 1 ? 0 : Math.PI, 0).setScale(visible ? [1, 1, 1] : HIDDEN_SCALE).setVisible(visible);
+      N.users[i]!.setPosition(rx(u.laneX), ry(0), vz).setRotation(0, (u.direction === 1 ? 0 : Math.PI) + qaYawAdd, 0).setScale(visible ? [1, 1, 1] : HIDDEN_SCALE).setVisible(visible);
     });
 
     // Impact sparks
@@ -758,6 +760,7 @@ async function bootGridDispatch(): Promise<void> {
       vehicle: S.car,
       autopilotLevel: S.level,
       weatherPreset: weather,
+      remounting,
       cameraMode: camMode,
       rideState: S.ride.state,
       rideStyle: S.style,
@@ -842,6 +845,13 @@ async function bootGridDispatch(): Promise<void> {
       return { position: [SCENE_CAM_POS[0] + shakeNow.x * 0, SCENE_CAM_POS[1], SCENE_CAM_POS[2]], mode: camMode, car: S.car, offset: off, clearance: cameraClearance(size, off, viewX(S.player.x, S.player.x)) };
     },
     settle: () => warmPrograms(auraApp),
+    /** Deterministic still frame for A/B captures: a fresh shift, the sim stopped, the street placed once. */
+    freeze: () => {
+      retry();
+      loop.manual = true;
+      present(0);
+      return evidence();
+    },
     evidence
   };
   const qa = installQaHooks("grid-dispatch", {
@@ -876,6 +886,9 @@ async function bootGridDispatch(): Promise<void> {
       u.cruise = state.speed;
       u.direction = state.direction;
       return true;
+    },
+    qaSetYaw(yaw: number) {
+      qaYawAdd = yaw;
     },
     qaSetPlayer(state: { x?: number; speed?: number }) {
       if (state.x !== undefined) S.player.x = state.x;
