@@ -73,12 +73,14 @@
 
 ## Checklist
 
-- [ ] Run `pnpm --filter @aura3d/showcase-cross-hop typecheck`. The package has no `test` script, so run `tests/lanes.test.ts` with vitest from the app directory (it only covers lane and theme logic, not rendering). Builds and browser runs go through the remote runner, `tools/remote-acr/run.sh`, not local Playwright.
-- [ ] Run `node tools/game-checks/run.mjs cross-hop` and fix any error findings.
-- [ ] Load the game and check `__AURA3D_LIVE_APPS__.all()[0].diagnostics().renderPath`: expect `path: "hdr-msaa"`, `quality: "auto"`, `bloomFusion: "separable"`.
-- [ ] Check `__AURA3D_LIVE_APPS__.all()[0].lighting.diagnostics().contactShadows`: `passExecuted: true`, no `unavailable`, and no `[prd02.contactShadows]` console warning (on the Low tier `passExecuted: false` with no warning is expected).
-- [ ] Capture 4.3.7 reference screenshots of all six themes from main, then take `?capture=1` screenshots of the same themes (`?theme=0` to `?theme=5`) on 4.5.0 and compare. Retune `effects.contactShadows` `intensity`/`length` (core.ts:310) if the contact shadows read too dark; check the night themes separately.
-- [ ] Look specifically at `?theme=3` (night-city) and `?theme=4` (neon-arcade) for brightness changes from the look presets' new fill.
-- [ ] Confirm `app.diagnostics()` lists no `option-ignored` degradations.
-- [ ] Confirm the page does not reload into a `SAFETY_COMPAT_MODE` rung (black-frame guard) when loaded without `?capture=1`.
-- [ ] Optional: add `quality: "production"` to the `createGame` options in main.ts to pin the 4.3.7 render path and bloom passes. It will not restore the old contact-shadow look, so still compare screenshots.
+Closed by audit lane G14 on 2026-10-29 (branch `audit-fix/g14`; report `docs/audits/lanes/g14.md`). Remote runs are SwiftShader (software WebGL2) on the ACR runner, measured at steady state; they are not real-GPU evidence.
+
+- [x] Run `pnpm --filter @aura3d/showcase-cross-hop typecheck`: 0 errors. `tests/lanes.test.ts` (8 tests) and the new `tests/unit/cross-hop/run-logic.test.ts` (37 tests) pass.
+- [x] Run `node tools/game-checks/run.mjs cross-hop`: 0 errors, 0 warnings.
+- [x] Render path: every remote shot reports `renderPath.path: "hdr-msaa"`, and `bloomFusion: "separable"` under the default `auto` quality (runs g14after-a, g14after-themes).
+- [x] Contact shadows: no `[prd02.contactShadows]` warning and no other console error in any of the 11 remote runs. `lighting.diagnostics().contactShadows.passExecuted` was not read by the spec.
+- [ ] Capture 4.3.7 reference screenshots of all six themes. Not done: the lane compared the 4.5.0 base (`audit-fix/integration`) with the lane build for themes 0, 3 and 4 only. The contact-shadow strength was left at `intensity: 0.7, length: 0.3`: theme 0 frames show 0.5% to 1.3% of pixels at luma 8 or below, so the contact darkening does not crush the lanes.
+- [x] `?theme=3` (Emberline) and `?theme=4` (Neon District), 1280x720, mean luma at 75 s: base 4.5.0 67.4 and 70.7 (runs g14before-themes-r); lane build 67.9 and 70.9 (no lighting change, as expected). With the engine fixes from lanes E1 and E2 merged on top (run g14combo-themes2) they read 57.3 and 59.7: removing theme 0's stale outdoor-day HDRI and yielding the look fill to the ambient light darkens both night themes by about 15%. The frames stay readable (p5 14 and 22, 1.9% and 2.1% of pixels at luma 8 or below), so no per-theme retune was made.
+- [ ] Confirm `app.diagnostics()` lists no `option-ignored` degradations. Not read by the spec; the builder options are listed under "OPTION_IGNORED" above.
+- [x] No `SAFETY_COMPAT_MODE` reload: none of the remote runs (all loaded without `?capture=1`) logged the black-frame guard code.
+- [x] `quality: "production"`: not added. `?aura3d-render=production` on the same seed reads 101.26 mean luma at 90 s against 101.32 under `auto` (bloom fusion off versus separable, runs g14after-prod-r and g14after-a), so pinning the old path changes nothing visible here.
