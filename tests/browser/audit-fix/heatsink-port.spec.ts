@@ -22,9 +22,7 @@ const CHUNK = 16000;
 const LAB = "/examples/heatsink-port/";
 const log = (line: string): void => { process.stdout.write(`${line}\n`); };
 
-const SUITE = process.env.HP_SUITE ?? "calibration";
-
-(SUITE === "calibration" ? test.describe : test.describe.skip)("g19 heatsink-port environment calibration", () => {
+test.describe("g19 heatsink-port environment calibration", () => {
   test.setTimeout(3_000_000);
   let server: ExampleDevServer;
   test.beforeAll(async () => { server = await startExampleDevServer(); });
@@ -103,7 +101,7 @@ const SUITE = process.env.HP_SUITE ?? "calibration";
 });
 
 /*
- * Audit lane G19 fix checks (HP_SUITE=fixes). Each test logs HP_FIX <json> records (UI state read from the DOM and the
+ * Audit lane G19 fix checks (select with SPECS="tests/browser/audit-fix/heatsink-port.spec.ts --grep=fixes"). Each test logs HP_FIX <json> records (UI state read from the DOM and the
  * QA hooks) and HP_SHOT <name> <i>/<n> <b64> chunked page screenshots (DOM overlays included). Hooks that the base
  * build does not have are logged as "absent" instead of failing, so the same spec runs BEFORE (base) and AFTER (lane
  * branch). Measured at steady state: the replay frames at steps 1200 and 2250 are the ones to judge.
@@ -143,7 +141,7 @@ const ui = (page: import("@playwright/test").Page) => page.evaluate(() => {
   };
 });
 
-(SUITE === "fixes" ? test.describe : test.describe.skip)("g19 heatsink-port fixes", () => {
+test.describe("g19 heatsink-port fixes", () => {
   test.setTimeout(3_000_000);
   let server: ExampleDevServer;
   test.beforeAll(async () => { server = await startExampleDevServer(); });
