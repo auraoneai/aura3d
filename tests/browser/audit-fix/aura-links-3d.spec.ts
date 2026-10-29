@@ -175,11 +175,11 @@ const TARGETS: readonly Target[] = [
   ...COURSE_IDS.map((id) => ({ name: `links-desktop-${id}`, url: `${APP}?course=${id}`, viewport: DESKTOP, ...(id === "neonBay" || id === "mareCourse" ? { tag: "@w2" } : {}) })),
   { name: "links-phone-neonBay", url: `${APP}?course=neonBay`, viewport: PHONE, phone: true, tag: "@w2" },
   { name: "links-phone-mareCourse", url: `${APP}?course=mareCourse`, viewport: PHONE, phone: true },
-  { name: "links-play-holeout-desktop", url: `${APP}?course=stAuroras&autoplay=1&qa=1`, viewport: DESKTOP, run: holeOut },
+  { name: "links-play-holeout-desktop", url: `${APP}?course=stAuroras&autoplay=1&qa=1`, viewport: DESKTOP, run: holeOut, tag: "@play" },
   { name: "links-play-holeout-phone", url: `${APP}?course=stAuroras&autoplay=1&qa=1`, viewport: PHONE, phone: true, run: holeOut },
-  { name: "links-play-menu-midshot", url: `${APP}?course=stAuroras&autoplay=1&qa=1`, viewport: DESKTOP, run: menuMidShot },
-  { name: "links-play-reduced-motion", url: `${APP}?menu=1&reducedMotion=1&qa=1`, viewport: DESKTOP, run: reducedMotion },
-  { name: "links-pond-mapleHollow", url: `${APP}?course=mapleHollow&hole=7&qa=1`, viewport: DESKTOP, run: pondView }
+  { name: "links-play-menu-midshot", url: `${APP}?course=stAuroras&autoplay=1&qa=1`, viewport: DESKTOP, run: menuMidShot, tag: "@play" },
+  { name: "links-play-reduced-motion", url: `${APP}?menu=1&reducedMotion=1&qa=1`, viewport: DESKTOP, run: reducedMotion, tag: "@play" },
+  { name: "links-pond-mapleHollow", url: `${APP}?course=mapleHollow&hole=7&qa=1`, viewport: DESKTOP, run: pondView, tag: "@play" }
 ];
 
 async function openPage(browser: Browser, target: Target): Promise<Page> {
