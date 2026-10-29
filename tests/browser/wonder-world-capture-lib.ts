@@ -22,11 +22,10 @@
  *       front but for the face, so the side views carry the check) and the face actions add no stage warning;
  *   (b) pose sheet: the six 02 section 2 states as body poses, each captured mid-motion in normal motion: neutral
  *       (idle), delighted (happy), curious (look), surprised (surprise), waiting (wait), good-bye (wave);
- *   (c) talking pulse: four crops 100 ms apart with setTalking(id) on, the same four one idle period later with it
- *       off (the same idle phase, so only the pulse differs), and again one more period later: each talking crop
- *       differs visibly from its silent twin, and the silent crops repeat with the idle period (the pulse is gone).
- *       Comparing frames at the same idle phase keeps a large idle motion, such as Lumi's float, out of the check;
- *       frames inside one window are not compared, since a bob can cancel the float there;
+ *   (c) talking pulse, in reduced motion: there the idle loop (Lumi's float), breathing target rings and halos all
+ *       stand still and the pulse still runs (at half strength), so it is the only thing that can move the crop. Four
+ *       crops 100 ms apart with setTalking(id) on, then four with it off: the larger of two 200 ms pair deltas must be
+ *       visible while talking and much smaller while silent;
  *   (d) reduced motion: the same "happy" gesture sampled at the same offsets in normal and in reduced motion; the
  *       reduced delta is clearly smaller.
  * Records: WWJSON char-<id> per character and chars-<ids>-summary; WWSHOT char-<id>-phone, char-<id>-turn-<view>,
@@ -37,13 +36,6 @@
  * which story nodes drew as models) and stills-<range>-summary (with the request, console and storage evidence).
  */
 import { expect, test, type Page } from "@playwright/test";
-import type { CharacterDefinition } from "../../apps/veer-wonder-world/src/characters/character-registry";
-import { GOGO } from "../../apps/veer-wonder-world/src/characters/gogo";
-import { LULU } from "../../apps/veer-wonder-world/src/characters/lulu";
-import { LUMI } from "../../apps/veer-wonder-world/src/characters/lumi";
-import { MOMO } from "../../apps/veer-wonder-world/src/characters/momo";
-import { PEEKO } from "../../apps/veer-wonder-world/src/characters/peeko";
-import { SHERU } from "../../apps/veer-wonder-world/src/characters/sheru";
 import type { Gesture, StageAction } from "../../apps/veer-wonder-world/src/types";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 import {
@@ -133,9 +125,6 @@ async function loadStory(page: Page, log: PageLog, storyId: string, alreadyLoadi
 
 // ---------------------------------------------------------------- character sheets
 
-/** The character definitions (src/characters), for the idle period the talking check matches. */
-const DEFINITIONS: Readonly<Record<string, CharacterDefinition>> = { momo: MOMO, lulu: LULU, sheru: SHERU, gogo: GOGO, lumi: LUMI, peeko: PEEKO };
-
 /**
  * The turnaround views: the character faces the viewer, or the spot `toward` (offLeft, back, offRight). The stage's
  * `face` action turns toward the viewer or toward a node, so a hidden story node (the anchor) is first set down on
@@ -175,8 +164,6 @@ const PIN_MS = 100;
 const FRAME_MS = 100;
 const TURN_JOB_MS = PIN_MS + VIEWS.length * FRAME_MS;
 const POSES_JOB_MS = PIN_MS + POSES.reduce((sum, pose) => sum + pose.atMs, 0);
-/** The talking job's silent frames start one idle period after the talking ones (any 500 ms without idle motion). */
-const NO_IDLE_PERIOD_MS = 500;
 /** The reduced-motion job: "happy" sampled 300-600 ms after it starts, in normal and then in reduced motion. */
 const REDUCED_GESTURE: Gesture = "happy";
 const REDUCED_FIRST_FRAME_MS = 300;
@@ -190,11 +177,13 @@ const SILHOUETTE_MIN_SEPARATED_SHARE = 0.4;
 /** The view most unlike the front differs from it: one of these, over the crop. */
 const TURN_MIN_MEAN_ABS = 1;
 const TURN_MIN_CHANGED = 0.02;
-/** The talking pulse is visible: one of these, over the crop, for the larger talking-against-silent difference. */
+/** The talking pulse is visible: one of these, over the crop, for the larger 200 ms pair. */
 const TALK_MIN_MEAN_ABS = 0.5;
 const TALK_MIN_CHANGED = 0.005;
-/** The silent crops repeat with the idle period: their difference stays under this share of the talking one. */
+/** In reduced motion nothing but the pulse moves, so silent frames stay under this share of the talking delta. */
 const SILENT_MAX_SHARE = 0.5;
+/** Story time between clearing the talking flag and the first silent crop (the pulse stops at once). */
+const TALK_GAP_MS = 200;
 /** Reduced motion is clearly smaller: at most this share of the normal-motion delta. */
 const REDUCED_MAX_SHARE = 0.85;
 
@@ -202,17 +191,6 @@ interface PairDeltas {
   readonly pairs: readonly FrameDelta[];
   /** The pair with the larger mean |luma change| (a single pair can land where the motion turns round). */
   readonly best: FrameDelta;
-}
-
-/** Deltas of each frame against its twin (the same index in the other run). */
-function twinDeltas(frames: readonly DecodedImage[], twins: readonly DecodedImage[]): PairDeltas {
-  const pairs: FrameDelta[] = [];
-  frames.forEach((frame, index) => {
-    const twin = twins[index];
-    if (twin) pairs.push(frameDelta(frame, twin));
-  });
-  const best = pairs.reduce<FrameDelta>((top, pair) => (pair.meanAbsLumaDiff > top.meanAbsLumaDiff ? pair : top), { meanAbsLumaDiff: 0, meanLumaDelta: 0, changedRatio: 0 });
-  return { pairs, best };
 }
 
 /** Deltas of the frame pairs 200 ms apart among four frames 100 ms apart: (0, 2) and (1, 3). */
@@ -283,9 +261,9 @@ interface CharacterSheetResult {
   /** The turned view most unlike the front (largest mean |luma change|), with its name. */
   readonly turned: { readonly view: string; readonly delta: FrameDelta } | null;
   readonly poses: number;
-  /** Each talking crop against its silent twin one idle period later (only the pulse differs). */
+  /** Reduced motion, talking: 200 ms pair deltas of four crops 100 ms apart (only the pulse moves). */
   readonly talking: PairDeltas | null;
-  /** Each silent crop against the same crop one more idle period later (nothing should differ). */
+  /** Reduced motion, silent: the same, after the talking flag is cleared (nothing should move). */
   readonly silent: PairDeltas | null;
   readonly normal: PairDeltas | null;
   readonly reduced: PairDeltas | null;
@@ -444,40 +422,34 @@ async function characterSheet(page: Page, log: PageLog, entry: CharacterStory, a
       }
     }
 
-    // (c) Talking pulse: on, then off one idle period later (the same idle phase), then off one more period later.
-    const idleSec = DEFINITIONS[character]?.idleMotion?.durationSec ?? 0;
-    const periodMs = idleSec > 0 ? Math.round((idleSec * 1000) / 50) * 50 : NO_IDLE_PERIOD_MS;
-    const talkAt = await calmJump(context, PIN_MS + 4 * FRAME_MS + 2 * periodMs);
+    // (c) Talking pulse, in reduced motion (pinned with reduced motion kept on): talking, then silent.
+    const talkAt = await calmJump(context, PIN_MS + 8 * FRAME_MS + TALK_GAP_MS);
     if (talkAt === null) errors.push("talking: no calm window left in the story");
     else {
-      await pin(context, false);
+      await pin(context, true);
       const cropped = await sheetCrop(context);
       if (!cropped) errors.push("talking: the character has no nodeRect after the pin");
       else {
         const talkingFrames: DecodedImage[] = [];
         const silentFrames: DecodedImage[] = [];
-        const silentAgain: DecodedImage[] = [];
         await qaSetTalking(page, character);
         for (let index = 0; index < 4; index += 1) {
           await qaAdvance(page, FRAME_MS);
           talkingFrames.push((await cropShot(page, cropped.crop)).image);
         }
         await qaSetTalking(page, null);
-        // Each frame one idle period after its twin: the first waits out the period less the three frames since.
-        for (const frames of [silentFrames, silentAgain]) {
-          for (let index = 0; index < 4; index += 1) {
-            await qaAdvance(page, index === 0 ? periodMs - 3 * FRAME_MS : FRAME_MS);
-            frames.push((await cropShot(page, cropped.crop)).image);
-          }
+        for (let index = 0; index < 4; index += 1) {
+          await qaAdvance(page, index === 0 ? TALK_GAP_MS : FRAME_MS);
+          silentFrames.push((await cropShot(page, cropped.crop)).image);
         }
-        result.talking = twinDeltas(talkingFrames, silentFrames);
-        result.silent = twinDeltas(silentFrames, silentAgain);
+        result.talking = pairDeltas(talkingFrames);
+        result.silent = pairDeltas(silentFrames);
         record["talking"] = {
           storyMs: talkAt,
-          idlePeriodMs: periodMs,
+          reducedMotion: true,
           crop: cropped.crop,
-          talkingVsSilentTwin: result.talking,
-          silentVsSilentTwin: result.silent,
+          talking: result.talking,
+          silent: result.silent,
           silentShare: result.talking.best.meanAbsLumaDiff > 0 ? Math.round((result.silent.best.meanAbsLumaDiff / result.talking.best.meanAbsLumaDiff) * 1000) / 1000 : null
         };
       }
@@ -556,8 +528,8 @@ function expectCharacterSheet(entry: CharacterStory, result: CharacterSheetResul
   if (result.talking && result.silent) {
     const talk = result.talking.best;
     const silent = result.silent.best;
-    expect.soft(talk.meanAbsLumaDiff >= TALK_MIN_MEAN_ABS || talk.changedRatio >= TALK_MIN_CHANGED, `${who}: the talking pulse is visible against the same idle moment in silence (${JSON.stringify(talk)})`).toBe(true);
-    expect.soft(silent.meanAbsLumaDiff, `${who}: in silence the frames repeat with the idle period (silent ${JSON.stringify(silent)}, talking ${JSON.stringify(talk)})`).toBeLessThanOrEqual(talk.meanAbsLumaDiff * SILENT_MAX_SHARE);
+    expect.soft(talk.meanAbsLumaDiff >= TALK_MIN_MEAN_ABS || talk.changedRatio >= TALK_MIN_CHANGED, `${who}: the talking pulse is visible, at its reduced-motion half strength (${JSON.stringify(talk)})`).toBe(true);
+    expect.soft(silent.meanAbsLumaDiff, `${who}: silent frames move much less than talking ones (silent ${JSON.stringify(silent)}, talking ${JSON.stringify(talk)})`).toBeLessThanOrEqual(talk.meanAbsLumaDiff * SILENT_MAX_SHARE);
   }
   // (d) reduced motion.
   expect.soft(result.reduced, `${who}: the reduced-motion pass was measured`).not.toBeNull();
