@@ -180,6 +180,13 @@ Lanes own disjoint files. Merge order: WP-5, WP-1, WP-3, WP-4, WP-2, WP-6, WP-7,
   2. Run `node tools/bench-vs-threejs/gate.mjs --results <results.json> --static <static-metrics.json> --extra <extra.json>`.
   3. Copy: per PASS gate line only, update the audit, boundaries and positioning "Claims to unlock", then README and site with Aura3D-side facts and method. For each FAIL, record value and cause in `evidence/`. No "faster", "lighter" or "better than three.js" while T1 fails.
 
+- **WP-9 Games lane: the 25 live games against 4.5.0 (audit RH-03 to RH-06).** Added 2026-10-29 from `docs/audits/live-games-4.5.0-audit-2026-10-29.md`; executed by the audit-fix program (`docs/audits/execution-plan.md`, game lanes G01 to G25, with E5 owning the shared harness and copy). It does not change the gate; it keeps the games honest while WP-1 to WP-8 move the engine.
+  1. Steady-state luma, 4.3.7 against the current build, for every game and lighting variant: `tests/browser/game-luma-capture.spec.ts` (61 targets in `tests/browser/game-luma-targets.ts`, groups `@g1` to `@g7`), judged on the 25 s and 60 s shots. Record per-game ranges in the CHANGELOG instead of one "about 5%" figure (RH-03).
+  2. Close each `docs/upgrade-4.5.0/<slug>.md` checklist from those captures, or say per box why it stays open (RH-04).
+  3. Retake every game's final screens on the current build, then `node tools/site/build-card-images.mjs` for the index posters; `node tools/game-checks/run.mjs --all --only screens-fresh` must report no card older than the latest minor tag (RH-05).
+  4. Each of the eight games that imports `src/aura-assets.ts` switches to `aura3d assets typegen --route apps/<app>` and `./aura-assets.route`; `--only shared-catalog` must report none (RH-06).
+  5. Acceptance: every game has a 4.3.7 and a current steady-state row in its evidence folder; `node tools/game-checks/run.mjs --all` reports no `screens-fresh` or `shared-catalog` warning; WP-C1's `evidence/bundle/BASELINE.md` exists so the bundle work (companion Track C) starts from measured numbers.
+
 ### Owner steps (listed separately; an agent never starts these)
 
 - **OWNER-1 Real-GPU receipts (P7).** `REAL_GPU_HEADLESS=false tools/real-gpu/run.sh all` on the Mac, or a granted GPU quota; feeds the gate's real-GPU column. Until then every speed statement keeps the software-WebGL2 qualifier.

@@ -36,7 +36,8 @@ function walkSourceFiles(root: string): string[] {
       // Asset registration and evidence-generation scripts are pipeline
       // inputs. They may name raw upstream model URLs so the CLI can validate
       // and generate typed route assets; they are not shipped visual source.
-      if (current !== absoluteRoot && current.endsWith(`${join("", "scripts")}`)) return;
+      // App-local `tools/` (for example far-LOD baking) is the same kind of build-time input.
+      if (current !== absoluteRoot && (current.endsWith(`${join("", "scripts")}`) || current.endsWith(`${join("", "tools")}`))) return;
       // Candidate and art-review folders are also pipeline-only inputs. They
       // contain acquisition previews and rejected art options, never shipped
       // route source; scanning them as public examples turns an intentional
@@ -51,7 +52,8 @@ function walkSourceFiles(root: string): string[] {
       return;
     }
     if (!/\.[cm]?[jt]sx?$/.test(current)) return;
-    if (/[\\/]aura-assets\.ts$/.test(current)) return;
+    // Generated typed-asset catalogues, including per-app shards such as aura-assets.shared.ts.
+    if (/[\\/]aura-assets(?:\.[\w-]+)?\.ts$/.test(current)) return;
     files.push(relativePath);
   };
   visit(absoluteRoot);

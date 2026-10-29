@@ -63,3 +63,43 @@ export function viewOf(sim: SplatRushSim, shown: Shown): SplatRushSim {
 export function createSplatPresenter(getSim: () => Pick<SplatRushSim, "o" | "elapsed" | "player" | "camera">): FixedStepPresenter<Shown> {
   return createFixedStepPresenter<Shown>({ snapshot: () => shownOf(getSim()), blend: blendShown });
 }
+
+/**
+ * C8 reduced motion: the sim's chase camera without the shake. It follows the same target with the same 0.1-per-step
+ * lerp (sim.ts `frame`), so it matches the sim camera exactly whenever no shake is running, and the sim is never touched.
+ */
+export class SteadyCamera {
+  prev: Shown["camera"];
+  cur: Shown["camera"];
+  constructor(sim: Pick<SplatRushSim, "camera">) {
+    this.cur = { ...sim.camera };
+    this.prev = { ...sim.camera };
+  }
+  reset(sim: Pick<SplatRushSim, "camera">): void {
+    this.cur = { ...sim.camera };
+    this.prev = { ...sim.camera };
+  }
+  /** Call once after every sim step. */
+  step(sim: Pick<SplatRushSim, "o" | "player">): void {
+    const ge = sim.player, e = Math.max(0, sim.o.introT / 2), e2 = e * e;
+    const tx = 0.5 * ge.x, ty = ge.y + 5 + 9 * e2, tz = ge.z + 9 + 8 * e2;
+    this.prev = this.cur;
+    const c = this.cur;
+    this.cur = { x: c.x + 0.1 * (tx - c.x), y: c.y + 0.1 * (ty - c.y), z: c.z + 0.1 * (tz - c.z), lookX: ge.x, lookY: ge.y, lookZ: ge.z - 10 };
+  }
+  /** The camera between the last two steps (`t` = the loop's blend factor, 1 = latest step). */
+  at(t: number): Shown["camera"] {
+    const a = this.prev, b = this.cur;
+    return { x: mix(a.x, b.x, t), y: mix(a.y, b.y, t), z: mix(a.z, b.z, t), lookX: mix(a.lookX, b.lookX, t), lookY: mix(a.lookY, b.lookY, t), lookZ: mix(a.lookZ, b.lookZ, t) };
+  }
+}
+
+/**
+ * C2: the popups the HUD has not shown yet. The sim keeps only the last 64 popups and never clears the list, so a
+ * reader that counts by index stalls for good once the list is full; reading by `seq` keeps working across restarts.
+ */
+export function drainPopups<T extends { readonly seq: number }>(list: readonly T[], nextSeq: number): { fresh: T[]; nextSeq: number } {
+  const fresh: T[] = [];
+  for (const p of list) if (p.seq >= nextSeq) fresh.push(p);
+  return { fresh, nextSeq: fresh.length > 0 ? (fresh[fresh.length - 1] as T).seq + 1 : nextSeq };
+}

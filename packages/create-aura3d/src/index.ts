@@ -3,6 +3,7 @@ import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { writeAgentSkills } from "./agent-skills.js";
 import { copyTemplateHdris, TEMPLATE_HDRI_DIR, templateAuthorsLook } from "./template-hdri.js";
+import { fetchTemplateAssets, missingTemplateAssets, readTemplateAssetManifest, type FetchTemplateAssetsOptions, type FetchTemplateAssetsResult, type TemplateAssetEntry } from "./template-assets.js";
 
 export const CREATE_AURA3D_TEMPLATES = [
   "product-viewer",
@@ -82,6 +83,11 @@ export interface CreateA3DProjectResult {
   readonly template: CreateA3DTemplate;
   readonly files: readonly string[];
   readonly agentSkills?: import("./agent-skills.js").WriteAgentSkillsResult;
+  /**
+   * Large template binaries the npm package does not ship (template-assets.json) and that are not in the project yet.
+   * Empty in a source checkout. Pass the result to `fetchMissingTemplateAssets` (the CLI does) to download them.
+   */
+  readonly missingAssets: readonly TemplateAssetEntry[];
 }
 
 export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DProjectResult {
@@ -106,7 +112,7 @@ export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DPro
   const dependencies = { ...(packageJson.dependencies ?? {}) };
   const auraDependencies = Object.keys(dependencies).filter((name) => name.startsWith("@aura3d/"));
   if (auraDependencies.length === 0) {
-    dependencies["@aura3d/engine"] = options.packageVersion ?? "4.5.0";
+    dependencies["@aura3d/engine"] = options.packageVersion ?? "4.6.0";
   } else if (options.packageVersion) {
     for (const dependency of auraDependencies) dependencies[dependency] = options.packageVersion;
   }
@@ -122,8 +128,17 @@ export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DPro
     targetDir,
     template,
     files: listTemplateFiles(targetDir),
-    ...(agentSkills ? { agentSkills } : {})
+    ...(agentSkills ? { agentSkills } : {}),
+    missingAssets: missingTemplateAssets(readTemplateAssetManifest(rootDir), template, targetDir)
   };
+}
+
+/** Download the template binaries `createA3DProject` reported missing; each is verified against its size and sha256. */
+export async function fetchMissingTemplateAssets(
+  result: CreateA3DProjectResult,
+  options: { readonly version: string } & Pick<FetchTemplateAssetsOptions, "bases" | "fetch" | "log">
+): Promise<FetchTemplateAssetsResult> {
+  return fetchTemplateAssets({ projectDir: result.targetDir, template: result.template, entries: result.missingAssets, ...options });
 }
 
 export function writeCreateA3DReport(path: string, result: CreateA3DProjectResult): void {
@@ -181,6 +196,20 @@ export {
   type ShowcaseAssetPairCompositionReport,
   type ValidateShowcaseAssetPairCompositionFromDiskOptions
 } from "./showcase-spec-asset-pair-composition.js";
+
+export {
+  DEFAULT_TEMPLATE_ASSET_BASES,
+  TEMPLATE_ASSET_MANIFEST,
+  buildTemplateAssetManifest,
+  fetchTemplateAssets,
+  missingTemplateAssets,
+  readTemplateAssetManifest,
+  templateAssetBases,
+  type FetchTemplateAssetsOptions,
+  type FetchTemplateAssetsResult,
+  type TemplateAssetEntry,
+  type TemplateAssetManifest
+} from "./template-assets.js";
 
 export {
   AURA_AGENT_CLIENTS,

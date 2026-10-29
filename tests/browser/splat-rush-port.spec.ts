@@ -131,7 +131,7 @@ test.describe("splat-rush-port", () => {
     expect(health.routeHealth?.status).toBe("ready");
     expect(health.routeHealth?.parityIds).toContain("R-23");
     expect(health.diagnostics?.errors ?? []).toEqual([]);
-    expect(health.nodes).toBeGreaterThan(200);
+    expect(health.nodes, "merged batches (C9): about 60 runtime nodes, not one per entity").toBeGreaterThan(40);
     expect(errors.filter((e) => /parity-not-implemented|CUSTOM_TEXTURE_UNBOUND/.test(e)), "no unimplemented-surface errors").toEqual([]);
     expect(errors.filter((e) => !/favicon|net::ERR|Failed to load resource/.test(e)), "console errors").toEqual([]);
     writeFileSync(resolve(REPORT_ROOT, "stats.json"), JSON.stringify({ splash, run1, run2, health }, null, 2));

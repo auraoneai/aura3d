@@ -5,6 +5,7 @@ import type { AuraAssetDefinition, AuraAssetMap } from "@aura3d/engine";
 
 type AuraGeneratedRouteAssetDefinitions = {
   readonly "diamondAthlete": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
+  readonly "diamondCrowdAthlete": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
   readonly "diamondBall": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
   readonly "diamondBase": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
   readonly "diamondBat": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
@@ -51,10 +52,20 @@ export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAu
   "diamondAthlete": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/diamondAthleteClean.678bff87.glb",
-    hash: "sha256-678bff87d051a7ee77c5ca63d7ff830eff4cb026d3b15cf97a9cffa131b3a46e",
+    url: "/aura-assets/diamondAthleteClean.43c2d5ab.glb",
+    hash: "sha256-43c2d5aba16d1633934cc7dc49ac5df6d40aec2438207ab6a2e4a523d42c1ac3",
     bounds: [0.938, 1.903, 0.364],
-    sizeBytes: 1401680,
+    sizeBytes: 1371668,
+  },
+  // Route-local crowd variant of diamondAthlete (C12): same rig and texture, Ready + Idle_Loop only, mesh simplified
+  // 31,758 -> 3,809 triangles with meshoptimizer. Admission in aura.assets.json is handed off to lane E5.
+  "diamondCrowdAthlete": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/diamondCrowdAthlete.00a45874.glb",
+    hash: "sha256-00a45874d3593f126c8bb4eae959a5204407a473b719ae7db74f6cc0935a704f",
+    bounds: [0.938, 1.903, 0.364],
+    sizeBytes: 264964,
   },
   "diamondBall": {
     type: "model",

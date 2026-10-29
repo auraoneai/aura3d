@@ -1,6 +1,6 @@
 {
   "name": "create-aura3d",
-  "version": "4.5.0",
+  "version": "4.6.0",
   "type": "module",
   "bin": {
     "create-aura3d": "dist/cli.js"
@@ -44,7 +44,37 @@
     "!templates/**/*.png",
     "!templates/**/*.jpg",
     "!templates/**/*.jpeg",
-    "!templates/**/*.csv"
+    "!templates/**/*.csv",
+    "template-assets.json",
+    "!templates/**/__on-demand-assets__",
+    "!templates/animation-channel/public/aura-assets/luma.047f5e5f.glb",
+    "!templates/animation-channel/public/aura-assets/miko.047f5e5f.glb",
+    "!templates/animation-studio/public/aura-assets/cast-a.catalog.glb",
+    "!templates/animation-studio/public/aura-assets/cast-b.catalog.glb",
+    "!templates/animation-studio/public/aura-assets/luma.catalog.glb",
+    "!templates/animation-studio/public/aura-assets/luma2.catalog.glb",
+    "!templates/animation-studio/public/aura-assets/miko.catalog.glb",
+    "!templates/animation-studio/public/aura-assets/mushroom.catalog.glb",
+    "!templates/animation-studio/public/aura-assets/rusty.catalog.glb",
+    "!templates/animation-studio/public/hifi-cast/BrainStem.glb",
+    "!templates/animation-studio/public/hifi-cast/CesiumMan.glb",
+    "!templates/animation-studio/public/hifi-cast/kaykit/Barbarian.glb",
+    "!templates/animation-studio/public/hifi-cast/kaykit/Knight.glb",
+    "!templates/animation-studio/public/hifi-cast/kaykit/Mage.glb",
+    "!templates/animation-studio/public/hifi-cast/kaykit/Rogue.glb",
+    "!templates/animation-studio/public/hifi-cast/kaykit/Rogue_Hooded.glb",
+    "!templates/animation-studio/public/hifi-cast/rpm/cesiumman.glb",
+    "!templates/architecture-interior/public/aura-assets/kenneyModularDungeonRoomSmall.a7e74a5f.glb",
+    "!templates/character-controller/public/aura-assets/auraclash-player-rig.glb",
+    "!templates/cinematic-scene/public/aura-assets/hero-fixture.glb",
+    "!templates/fighting-game/public/aura-assets/auraclash-player-rig.glb",
+    "!templates/fighting-game/public/aura-assets/auraclash-rival-rig.glb",
+    "!templates/mini-game/public/aura-assets/kaykit-barbarian.glb",
+    "!templates/postprocess-scene/public/aura-assets/showcaseLuma.ef389217.glb",
+    "!templates/postprocess-scene/public/aura-assets/showcaseMiko.fcdc2b75.glb",
+    "!templates/premium-product-viewer/public/aura-assets/khronosToyCar.01a60862.glb",
+    "!templates/racing-starter/public/aura-assets/showcaseCleanSportsCar.1c69283f.glb",
+    "!templates/racing-starter/public/aura-assets/showcaseReadableKartCircuit.5cbb912e.glb"
   ],
   "publishConfig": {
     "access": "public"

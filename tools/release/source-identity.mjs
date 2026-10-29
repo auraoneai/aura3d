@@ -41,7 +41,7 @@ function sourceBytes(root, path) {
 }
 
 export function sourceIdentity(root) {
-  const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
+  const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }).trim();
   const paths = git('ls-files', '-z', '--cached', '--others', '--exclude-standard').split('\0').filter(isSourceInput);
   const hash = createHash('sha256');
   for (const path of [...new Set(paths)].sort()) hash.update(path).update('\0').update(sourceBytes(root, path)).update('\0');
@@ -50,7 +50,7 @@ export function sourceIdentity(root) {
 
 /** A Git tag can identify only committed source; dirty-source candidate receipts cannot authorize publication. */
 export function assertCommittedReleaseSource(root) {
-  const git=(...args)=>execFileSync('git',args,{cwd:root,encoding:'utf8'});
+  const git=(...args)=>execFileSync('git',args,{cwd:root,encoding:'utf8',maxBuffer:256*1024*1024});
   const paths=[...git('diff','--name-only','-z','HEAD').split('\0'),...git('ls-files','-z','--others','--exclude-standard').split('\0')];
   const relevant=paths.filter(isSourceInput);
   if(relevant.length)throw new Error(`Release tag cannot identify uncommitted source: ${[...new Set(relevant)].slice(0,20).join(', ')}`);

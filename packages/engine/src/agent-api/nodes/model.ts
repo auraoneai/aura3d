@@ -6,12 +6,55 @@ import { defineAuraAssets } from "./assets.js";
 import { material } from "./material.js";
 import { physics } from "./physics.js";
 import { lazyNamespace } from "../lazyNamespace.js";
+import { formatIgnoredOptions, unreadOptionKeys } from "./optionDiagnostics.js";
+
+/**
+ * Every top-level option `model()` reads, plus the transform extras it forwards to the node
+ * (the render path reads `renderOrder`, `frustumCulled`, `layers`, `userData`; the scene graph
+ * reads `rotationOrder`, `quaternion`). `lod` and `collider` are typed but not applied by
+ * `model()`: `false` (the default behaviour) is accepted, any other value is OPTION_IGNORED
+ * (anim-phys-06).
+ */
+export const MODEL_OPTION_KEYS: readonly string[] = [
+  "name", "position", "rotation", "scale", "lookAt", "rotationOrder", "quaternion",
+  "renderOrder", "frustumCulled", "layers", "userData",
+  "material", "castShadow", "receiveShadow", "visible", "role", "scaleMode",
+  "targetHeight", "targetMaxDimension", "targetLength", "physics", "hiddenNodeNames",
+  "materialOverrides", "variant", "wrinkle"
+];
+
+/** Typed model options that are honoured only when `false` (nothing to build). */
+const MODEL_FALSE_ONLY_KEYS: readonly string[] = ["lod", "collider"];
+
+/** Builder label and readable keys for the OPTION_IGNORED note; `instances.model` passes its own. */
+export interface ModelOptionGuard {
+  readonly builder: string;
+  readonly validKeys: readonly string[];
+}
+
+function modelIgnoredOptions(options: AuraModelOptions, guard: ModelOptionGuard): { readonly ignoredOptions?: readonly string[] } {
+  const record = options as Record<string, unknown>;
+  const unread = unreadOptionKeys(options, [...guard.validKeys, ...MODEL_FALSE_ONLY_KEYS]);
+  const falseOnly = MODEL_FALSE_ONLY_KEYS.filter((key) => !guard.validKeys.includes(key) && record[key] !== undefined && record[key] !== false);
+  const all = [...unread, ...falseOnly];
+  return all.length === 0 ? {} : { ignoredOptions: [formatIgnoredOptions(guard.builder, all, guard.validKeys)] };
+}
 
 
 export function model<TAsset extends AuraAssetRef<"model">>(
   asset: TAsset,
   options: AuraModelOptions = {}
 ): AuraNodeBuilder<AuraModelNode> {
+  return buildModel(asset, options, { builder: "model", validKeys: MODEL_OPTION_KEYS });
+}
+
+/** `model()` with the OPTION_IGNORED label and key list of the calling builder. */
+export function buildModel<TAsset extends AuraAssetRef<"model">>(
+  asset: TAsset,
+  options: AuraModelOptions,
+  guard: ModelOptionGuard
+): AuraNodeBuilder<AuraModelNode> {
+  const ignored = modelIgnoredOptions(options, guard);
   return new AuraNodeBuilder({
     kind: "model",
     asset,
@@ -20,6 +63,14 @@ export function model<TAsset extends AuraAssetRef<"model">>(
     rotation: options.rotation,
     scale: options.scale,
     lookAt: options.lookAt,
+    // Transform extras, as `primitive()` forwards them; spread only when set so node JSON is unchanged otherwise.
+    ...(options.rotationOrder !== undefined ? { rotationOrder: options.rotationOrder } : {}),
+    ...(options.quaternion !== undefined ? { quaternion: options.quaternion } : {}),
+    ...(options.renderOrder !== undefined ? { renderOrder: options.renderOrder } : {}),
+    ...(options.frustumCulled !== undefined ? { frustumCulled: options.frustumCulled } : {}),
+    ...(options.layers !== undefined ? { layers: options.layers } : {}),
+    ...(options.userData !== undefined ? { userData: options.userData } : {}),
+    ...ignored,
     material: options.material,
     castShadow: options.castShadow ?? true,
     receiveShadow: options.receiveShadow ?? true,

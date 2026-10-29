@@ -15,8 +15,8 @@ function pageStorage(): Storage | null {
 
 /** Boots the native game: M-RULES engine, M-INPUT mapper, M-AUDIO cues and the DOM shell around the supplied renderer. */
 export function startAuraSlam(options: StartAuraSlamOptions): Promise<AuraSlamHandle> {
-  const tennis = createTennisAudio();
-  const audio: AudioPort = { unlock: () => tennis.init(), setEnabled: (on) => tennis.setEnabled(on), handle: (event) => tennis.handleEvent(event) };
+  const tennis = createTennisAudio({ ambience: true });
+  const audio: AudioPort = { unlock: () => tennis.init(), setEnabled: (on) => tennis.setEnabled(on), handle: (event) => tennis.handleEvent(event), setVenue: (venue) => tennis.setVenue(venue) };
   return bootAuraSlam({
     ...options,
     createEngine: createMatchEngine as unknown as CreateSlamEngine,

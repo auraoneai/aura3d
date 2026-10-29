@@ -27,9 +27,20 @@
 
       .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; backdrop-filter: blur(8px); }
 
-      #speedfx, #fallfx { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.18s linear; }
+      #speedfx, #fallfx, #drowsefx { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.18s linear; }
       #speedfx { background: radial-gradient(ellipse at 50% 55%, transparent 52%, rgba(255, 214, 236, 0.5) 100%); }
       #fallfx { background: radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(60, 20, 90, 0.7) 100%); }
+      #drowsefx { background: radial-gradient(ellipse at 50% 50%, transparent 38%, rgba(26, 14, 48, 0.92) 100%); }
+      .bar-row .mlabel { grid-column: 1 / -1; font-size: 11px; line-height: 12px; color: var(--muted); letter-spacing: 0.08em; margin-bottom: -2px; }
+      #drowse-bar { background: linear-gradient(90deg, #9a8cff, #3a2a8a); }
+      #charges { grid-column: 1 / -1; font-size: 11px; line-height: 14px; color: var(--gold); letter-spacing: 0.06em; min-height: 14px; }
+      #progress .track { position: relative; }
+      #best-mark { position: absolute; top: -3px; width: 2px; height: 10px; margin-left: -1px; background: #ffffff; box-shadow: 0 0 4px rgba(255, 255, 255, 0.9); }
+      #gust { position: absolute; top: 34%; left: 50%; transform: translateX(-50%); font-size: 14px; line-height: 18px; font-weight: 600; letter-spacing: 0.1em; padding: 2px 12px; border-radius: 3px; background: rgba(22, 20, 56, 0.78); color: #bfeaff; }
+      #gap-warn { position: absolute; top: 40%; left: 50%; transform: translateX(-50%); font-size: 18px; line-height: 22px; font-weight: 600; letter-spacing: 0.12em; padding: 3px 14px; border-radius: 3px; background: rgba(232, 80, 58, 0.88); color: #fff; }
+      #prompt { position: absolute; left: 50%; bottom: 96px; transform: translateX(-50%); font-size: 14px; line-height: 18px; font-weight: 500; letter-spacing: 0.06em; padding: 4px 14px; border-radius: 4px; background: rgba(22, 20, 56, 0.82); color: var(--ink); white-space: nowrap; }
+      #prompt:empty { display: none; }
+      #mute-btn { position: absolute; left: 70px; bottom: 18px; height: 42px; padding: 0 14px; border-radius: 21px; background: rgba(34, 24, 70, 0.8); color: var(--ink); border: 1px solid var(--line); pointer-events: auto; font-size: 12px; letter-spacing: 0.06em; box-shadow: none; }
 
       #hud { position: fixed; inset: 0; pointer-events: none; }
       .card-hud { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; backdrop-filter: blur(8px); box-shadow: 0 6px 20px rgba(20, 8, 40, 0.35); }
@@ -42,7 +53,7 @@
       .meter > i { display: block; height: 100%; width: 0; }
       #ki-bar { background: linear-gradient(90deg, #3aa8e8, #bff0ff); }
       #strain-bar { background: linear-gradient(90deg, #ffb36e, #ff5a4a); }
-      #surge-chip { position: absolute; top: 96px; left: 18px; padding: 4px 10px; font-size: 12px; line-height: 16px; letter-spacing: 0.06em; transition: box-shadow 0.2s, border-color 0.2s; }
+      #surge-chip { position: absolute; top: 158px; left: 18px; padding: 4px 10px; font-size: 12px; line-height: 16px; letter-spacing: 0.06em; transition: box-shadow 0.2s, border-color 0.2s; }
       #surge-chip.hot { border-color: var(--gold); box-shadow: 0 0 18px rgba(255, 138, 92, 0.6); color: var(--gold); }
       #progress { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: min(420px, 38vw); display: grid; gap: 4px; }
       #progress .rowp { display: flex; justify-content: space-between; font-size: 12px; line-height: 14px; color: var(--muted); letter-spacing: 0.06em; text-shadow: 0 1px 6px rgba(42, 27, 69, 0.7); }
@@ -94,6 +105,7 @@
       #touch button.ghost:active { background: rgba(255, 255, 255, 0.28); }
       @media (pointer: coarse) { #touch { display: flex; } }
       @media (max-width: 640px) { #banner { font-size: 28px; } #progress { top: auto; bottom: calc(70px + env(safe-area-inset-bottom)); left: 18px; transform: none; width: calc(100vw - 36px); } #progress { padding: 6px 10px; border-radius: 8px; background: rgba(34, 24, 70, 0.62); } #progress .rowp { color: var(--ink); } #progress .rowp .num { white-space: nowrap; } #side { width: 120px; } #side .big { font-size: 26px; } #player { width: 200px; } }
+      @media (max-width: 640px) { #surge-chip { top: 156px; } #mute-btn { left: 66px; width: 42px; padding: 0; font-size: 0; } #mute-btn::before { content: "\266A"; font-size: 18px; } #mute-btn[aria-pressed="true"]::before { content: "\00D7"; } #prompt { bottom: 170px; white-space: normal; width: max-content; max-width: calc(100vw - 36px); text-align: center; } }
       .overlay:not(.hidden) ~ #touch { visibility: hidden; }
       .card { max-height: 92vh; overflow: auto; }
     </style>
@@ -102,6 +114,7 @@
     <canvas id="world"></canvas>
     <div id="speedfx"></div>
     <div id="fallfx"></div>
+    <div id="drowsefx"></div>
     <section id="loading"><div class="card"><h2>Serpentine Sky Run</h2><p id="loading-status" class="meta">Laying the road</p></div></section>
     <section id="title" class="overlay">
       <div class="card">
@@ -135,7 +148,10 @@
           <div class="stat"><div class="label">DISTANCE KM</div><div class="value num" id="r-km">0</div></div>
           <div class="stat"><div class="label">SCORE</div><div class="value num" id="r-score">0</div></div>
           <div class="stat"><div class="label">BEST</div><div class="value num" id="r-best">0</div></div>
+          <div class="stat"><div class="label">DAYS LEFT</div><div class="value num" id="r-days">0</div></div>
+          <div class="stat"><div class="label">DAYS BONUS</div><div class="value num" id="r-bonus">0</div></div>
         </div>
+        <p class="meta" id="r-bonus-note"></p>
         <div class="row"><button id="again" type="button">Run again</button><span class="meta">or press <kbd>R</kbd> / <kbd>Enter</kbd></span></div>
       </div>
     </section>
@@ -145,23 +161,29 @@
       <div id="player" class="card-hud">
         <div id="badge"></div>
         <div class="pname">RUNNER</div>
-        <div class="bar-row"><div class="meter"><i id="ki-bar"></i></div><div class="num" id="ki-num">35</div></div>
-        <div class="bar-row"><div class="meter"><i id="strain-bar"></i></div><div class="num" id="strain-num">0</div></div>
+        <div class="bar-row"><span class="mlabel" id="ki-label">SPARK</span><div class="meter" role="img" aria-labelledby="ki-label ki-num"><i id="ki-bar"></i></div><div class="num" id="ki-num">35</div></div>
+        <div class="bar-row"><span class="mlabel" id="strain-label">STRAIN</span><div class="meter" role="img" aria-labelledby="strain-label strain-num"><i id="strain-bar"></i></div><div class="num" id="strain-num">0</div></div>
+        <div class="bar-row hidden" id="drowse-row"><span class="mlabel" id="drowse-label">DROWSE</span><div class="meter" role="img" aria-labelledby="drowse-label"><i id="drowse-bar"></i></div><div></div></div>
+        <div id="charges" aria-live="polite"></div>
       </div>
       <div id="surge-chip" class="card-hud"><span class="label">SURGE</span> <span class="num" id="mult">×1</span></div>
       <div id="progress">
         <div class="rowp"><span>OUTBOUND — KM COVERED</span><span class="num" id="km">0</span></div>
-        <div class="track"><i id="km-fill"></i></div>
+        <div class="track"><i id="km-fill"></i><b id="best-mark" class="hidden" title="best distance"></b></div>
       </div>
       <div id="side">
-        <div class="card-hud"><span class="tag">DAYS LEFT</span><div><span class="big num" id="days">365</span><span class="unit">DAYS</span></div><span class="chip">RUN ACTIVE</span></div>
+        <div class="card-hud" id="days-card" role="status" aria-label="Days left: 365 days. Run active."><span class="tag" aria-hidden="true">DAYS LEFT</span><div aria-hidden="true"><span class="big num" id="days">365</span> <span class="unit">DAYS</span></div><span class="chip" aria-hidden="true">RUN ACTIVE</span></div>
         <div class="card-hud"><div class="label">RUN SCORE</div><div class="score num" id="score">0</div></div>
       </div>
       <div id="phase"></div>
       <div id="banner"></div>
       <div id="sub"></div>
       <div id="toast"></div>
+      <div id="gust" class="hidden"></div>
+      <div id="gap-warn" class="hidden">GAP AHEAD</div>
+      <div id="prompt"></div>
       <button id="pause-btn" type="button" aria-label="Pause"><i></i><i></i></button>
+      <button id="mute-btn" type="button" aria-label="Mute sound" aria-pressed="false">SOUND ON</button>
     </div>
     <script type="module" src="./main.ts"></script>
   </body>

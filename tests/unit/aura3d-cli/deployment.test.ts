@@ -3,9 +3,24 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
-import { addAsset, checkDeploy } from "../../../packages/aura3d-cli/src";
+import { addAsset, checkDeploy, deadAssetUrlWarnings } from "../../../packages/aura3d-cli/src";
 
 describe("@aura3d/cli deployment", () => {
+  test("warns when shipped JavaScript names asset URLs the build does not carry (audit RH-06)", () => {
+    const projectDir = createProject();
+    mkdirSync(join(projectDir, "dist", "assets"), { recursive: true });
+    mkdirSync(join(projectDir, "dist", "aura-assets"), { recursive: true });
+    writeFileSync(join(projectDir, "dist", "aura-assets", "ball.0123abcd.glb"), "glb");
+    writeFileSync(join(projectDir, "dist", "assets", "catalog-x.js"), 'const a={u:"/aura-assets/ball.0123abcd.glb"},b={u:"/aura-assets/gone.89abcdef.glb"},c=`/aura-assets/old.wav`;');
+    const warnings = deadAssetUrlWarnings(join(projectDir, "dist"));
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toMatch(/^Deploy check: 2 asset URL\(s\) in the shipped JavaScript have no file in dist \(assets\/catalog-x\.js; e\.g\. \/aura-assets\/gone\.89abcdef\.glb, \/aura-assets\/old\.wav\)/);
+    const result = checkDeploy({ projectDir, distDir: "dist" });
+    expect(result.warnings.some((w) => /2 asset URL\(s\)/.test(w))).toBe(true);
+    writeFileSync(join(projectDir, "dist", "assets", "catalog-x.js"), 'const a={u:"/aura-assets/ball.0123abcd.glb"};');
+    expect(deadAssetUrlWarnings(join(projectDir, "dist"))).toEqual([]);
+  });
+
   test("fails missing hashed assets before upload", () => {
     const projectDir = createProject();
     writeFileSync(join(projectDir, "assets", "robot.gltf"), JSON.stringify({ asset: { version: "2.0" } }));

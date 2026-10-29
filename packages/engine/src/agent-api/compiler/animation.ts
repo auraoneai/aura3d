@@ -6,7 +6,7 @@
 
 import type { AnimationPose } from "@aura3d/animation";
 import { createBoneMask } from "@aura3d/animation/lanes";
-import { toPoseBoneMaskSpec } from "../animationMask.js";
+import { boneMaskSkeletonFor, toPoseBoneMaskSpec } from "../animationMask.js";
 import type { PoseAction } from "@aura3d/animation/lanes";
 import type { AuraAnimationSpec, AuraModelNode, AuraRuntimeNodeRegistry, ProductionRuntimeActorEntry } from "../nodes/types.js";
 import type { AuraRuntimeNodeAnimationBindingMetadata } from "../RuntimeNodeHandle.js";
@@ -92,10 +92,11 @@ const resolveClipNameOptionsForSpec = (spec: AuraAnimationSpec): { readonly fall
     : clipNameResolveOptions();
 
 /** C-19 `animation.mask` → bind-order Float32Array over the runtime skeleton. */
-type AnimationRuntimeWithMask = { skeletonJointNames?: () => readonly string[] };
+type AnimationRuntimeWithMask = Parameters<typeof boneMaskSkeletonFor>[0];
 const animationMaskForRuntime = (runtime: AnimationRuntimeWithMask, spec: AuraAnimationSpec["mask"]): Float32Array | undefined => {
-  if (spec === undefined || typeof runtime.skeletonJointNames !== "function") return undefined;
-  return createBoneMask(toPoseBoneMaskSpec(spec), { jointNames: runtime.skeletonJointNames() });
+  if (spec === undefined) return undefined;
+  const skeleton = boneMaskSkeletonFor(runtime);
+  return skeleton === undefined ? undefined : createBoneMask(toPoseBoneMaskSpec(spec), skeleton);
 };
 
 const recordClipApplyFailure = (nodeId: string | undefined, message: string, cause?: unknown): void => {

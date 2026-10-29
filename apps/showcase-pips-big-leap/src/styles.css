@@ -295,12 +295,12 @@ html, body {
 
 .pbl-atlas-card:hover { background: rgba(255, 217, 94, 0.14); border-color: var(--pbl-edge); transform: translateY(-2px); }
 .pbl-atlas-card.done { border-color: rgba(95, 211, 138, 0.55); }
-.pbl-atlas-card .n { font: 500 20px/1 Graphik; color: var(--pbl-sun); }
-.pbl-atlas-card .t { font: 500 12px/1.2 Graphik; letter-spacing: 0; margin-top: 4px; }
-.pbl-atlas-card .s { font: 500 12px/1.4 Graphik; color: rgba(255, 246, 224, 0.65); margin-top: 4px; }
-.pbl-atlas-card .p { font: 500 12px/1 Graphik; color: #5fd38a; margin-top: 8px; letter-spacing: 0; }
-.pbl-atlas-card .sd { font: 500 12px/1 Graphik; color: #ffcf3d; margin-top: 4px; }
-.pbl-atlas-total { grid-column: 1 / -1; text-align: center; font: 500 12px/1 Graphik; letter-spacing: 0; color: var(--pbl-sun); padding-top: 4px; }
+.pbl-atlas-card .n { font: 500 20px/1 Graphik, sans-serif; color: var(--pbl-sun); }
+.pbl-atlas-card .t { font: 500 12px/1.2 Graphik, sans-serif; letter-spacing: 0; margin-top: 4px; }
+.pbl-atlas-card .s { font: 500 12px/1.4 Graphik, sans-serif; color: rgba(255, 246, 224, 0.65); margin-top: 4px; }
+.pbl-atlas-card .p { font: 500 12px/1 Graphik, sans-serif; color: #5fd38a; margin-top: 8px; letter-spacing: 0; }
+.pbl-atlas-card .sd { font: 500 12px/1 Graphik, sans-serif; color: #ffcf3d; margin-top: 4px; }
+.pbl-atlas-total { grid-column: 1 / -1; text-align: center; font: 500 12px/1 Graphik, sans-serif; letter-spacing: 0; color: var(--pbl-sun); padding-top: 4px; }
 
 /* --------------------------------------------------------------- studio */
 
@@ -310,7 +310,7 @@ html, body {
   text-align: left;
 }
 
-.pbl-studio-row .k { font: 500 12px/1 Graphik; letter-spacing: 0; color: rgba(255, 246, 224, 0.6); width: 44px; }
+.pbl-studio-row .k { font: 500 12px/1 Graphik, sans-serif; letter-spacing: 0; color: rgba(255, 246, 224, 0.6); width: 44px; }
 
 .pbl-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
 
@@ -325,6 +325,34 @@ html, body {
 .pbl-swatch:hover { transform: scale(1.1); }
 .pbl-swatch.active { border-color: var(--pbl-sun); box-shadow: 0 0 0 2px rgba(255, 217, 94, 0.4); }
 
+/* Pause button: the only pause control on touch screens (Esc / P on keyboards). */
+.pbl-pause-btn {
+  position: absolute;
+  top: calc(var(--a3d-bar-space) + 4px); right: 14px;
+  width: 44px; height: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
+  appearance: none;
+  pointer-events: auto;
+  border: 1px solid var(--pbl-edge);
+  border-radius: 12px;
+  background: var(--pbl-panel);
+  color: var(--pbl-sun);
+  font: 500 16px/1 Graphik, sans-serif;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.pbl-pause-btn:hover { background: rgba(255, 217, 94, 0.2); }
+
 @media (max-width: 720px) {
   .aura3d-controls-hint { display: none; }
+}
+
+/* Reduced motion: banners and toasts fade in place without sliding or scaling. */
+@media (prefers-reduced-motion: reduce) {
+  .pbl-banner, .pbl-banner.show { transform: translate(-50%, -50%); transition: opacity 0.2s; }
+  .pbl-toast, .pbl-toast.show { transform: translateX(-50%); transition: opacity 0.2s; }
+  .pbl-boss-fill { transition: none; }
+  .pbl-btns button, .pbl-atlas-card, .pbl-swatch { transition: none; }
+  .pbl-btns button:hover:not(:disabled), .pbl-atlas-card:hover, .pbl-swatch:hover { transform: none; }
 }

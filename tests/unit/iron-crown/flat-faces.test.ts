@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { NodeIO } from "@gltf-transform/core";
+import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
 
 const APP = path.resolve("apps/showcase-iron-crown");
 const manifest = JSON.parse(readFileSync(path.join(APP, "aura.assets.json"), "utf8"));
@@ -11,7 +12,7 @@ describe("iron crown fighters: flat stylised faces", () => {
   for (const id of ["ironcrownKenji", "ironcrownVolt", "ironcrownBoulder", "ironcrownSeraph", "ironcrownSovereign"]) {
     it(`${id}: head skin uses a small flat face texture and the head hair a flat colour`, async () => {
       const entry = entries.find((e) => e.id === id)!;
-      const doc = await new NodeIO().read(path.join(APP, entry.source));
+      const doc = await new NodeIO().registerExtensions(ALL_EXTENSIONS).read(path.join(APP, entry.source));
       const root = doc.getRoot();
       const mats = root.listMaterials().map((m) => m.getName());
       expect(mats).toContain("face");

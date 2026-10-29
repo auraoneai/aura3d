@@ -121,6 +121,10 @@ export interface Prd02ShadowDiagnostics {
     readonly filter: string;
     readonly casterVariants: readonly string[];
     readonly sampled: boolean;
+    /** Sun row only: cascades fitted this frame. */
+    readonly cascadeCount?: number;
+    /** Sun row only (SI-5): cascade indices allocated but not redrawn because no receiver can select them (PRD-2 WP-7). */
+    readonly skippedCascades?: readonly number[];
   }[];
   readonly droppedFeatures: readonly string[];
 }
@@ -184,7 +188,9 @@ class Prd02ShadowsRenderPass extends BaseRenderPass {
           light: "sun",
           filter: config.filter,
           casterVariants: diag.casterVariants,
-          sampled: rendered && diag.cascadeCount > 0
+          sampled: rendered && diag.cascadeCount > 0,
+          cascadeCount: diag.cascadeCount,
+          skippedCascades: [...diag.skippedCascades]
         },
         ...Array.from({ length: diag.localLights }, (_, i) => ({
           light: `local-${i}`,

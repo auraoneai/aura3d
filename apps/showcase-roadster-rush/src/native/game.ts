@@ -23,12 +23,12 @@ export type GameMode = "title" | "playing" | "crashed" | "gameover";
 
 export interface GameHud {
   popup?(text: string, points: number, style?: string): void;
-  update?(state: { score: number; distance: number; bolts: number; mult: number; comboT: number; air: number; airMax: number; powerups: Record<string, number> }): void;
+  update?(state: { score: number; distance: number; bolts: number; mult: number; comboT: number; air: number; airMax: number; powerups: Record<string, number>; speed?: number; nextMilestone?: number }): void;
   showRun?(): void;
   showTitle?(best: number): void;
   hideTitle?(): void;
   showPause?(visible: boolean): void;
-  showGameOver?(summary: { score: number; best: number; isBest: boolean; distance: number; bolts: number; bestCombo: number }): void;
+  showGameOver?(summary: { score: number; best: number; isBest: boolean; distance: number; bolts: number; bestCombo: number; assisted?: boolean }): void;
   hideGameOver?(): void;
   flashAir?(): void;
   clearPopups?(): void;
@@ -79,6 +79,8 @@ export class RoadsterGame {
   fixedSeed: number | null;
   startZ = 0;
   crashWhat: string | null = null;
+  /** True once a QA/demo scenario button or the autopilot touched this run; an assisted run never sets the saved best. */
+  assisted = false;
   readonly env: { difficulty: number; supportHeight(x: number, z: number, y: number): number };
 
   distance = 0;
@@ -211,6 +213,7 @@ export class RoadsterGame {
     this.paused = false;
     this.mode = "playing";
     this.crashWhat = null;
+    this.assisted = false;
     this.hud?.hideTitle?.();
     this.hud?.hideGameOver?.();
     this.hud?.showRun?.();
@@ -225,13 +228,21 @@ export class RoadsterGame {
     this.start();
   }
 
+  /** Mark the current run as assisted (scenario buttons, autopilot): it still scores, but cannot become the saved best. */
+  markAssisted(): void {
+    if (this.mode === "playing" || this.mode === "crashed") this.assisted = true;
+  }
+
   togglePause(force?: boolean): void {
     if (this.mode !== "playing" || this.activePreset) return;
     const next = force ?? !this.paused;
     if (next === this.paused) return;
     this.paused = next;
     this.hud?.showPause?.(next);
-    if (next) this.audio?.quiet?.();
+    if (next) {
+      this.audio?.quiet?.();
+      this.audio?.music?.(null);
+    } else this.audio?.music?.((this.player.rocketTimer || 0) > 0 ? "rocket" : "run");
     this.input?.reset?.();
   }
 
@@ -251,7 +262,7 @@ export class RoadsterGame {
     this.mode = "gameover";
     this.overT = 0;
     const score = Math.floor(this.score);
-    const isBest = score > this.best;
+    const isBest = !this.assisted && score > this.best;
     if (isBest) {
       this.best = score;
       try {
@@ -260,7 +271,7 @@ export class RoadsterGame {
         /* storage unavailable */
       }
     }
-    this.hud?.showGameOver?.({ score, best: this.best, isBest, distance: this.distance, bolts: this.bolts, bestCombo: this.bestCombo });
+    this.hud?.showGameOver?.({ score, best: this.best, isBest, distance: this.distance, bolts: this.bolts, bestCombo: this.bestCombo, assisted: this.assisted });
     this.audio?.music?.("title");
   }
 
@@ -561,7 +572,9 @@ export class RoadsterGame {
       comboT: this.chainTimer / CHAIN_SECONDS,
       air: override && this.activePreset ? override.air : p.air == null ? 100 : p.air,
       airMax: 100,
-      powerups: { rocket: p.rocketTimer || 0, shield: p.shieldTimer || 0, magnet: p.magnetTimer || 0, multiplier: p.multiplierTimer || 0 }
+      powerups: { rocket: p.rocketTimer || 0, shield: p.shieldTimer || 0, magnet: p.magnetTimer || 0, multiplier: p.multiplierTimer || 0 },
+      speed: p.speed || 0,
+      nextMilestone: this.nextMilestone
     });
   }
 
@@ -602,6 +615,7 @@ export class RoadsterGame {
       multiplier: this.mult,
       chain: this.chain,
       best: this.best,
+      assisted: this.assisted,
       difficulty: this.env.difficulty,
       seed: this.seed,
       player: {

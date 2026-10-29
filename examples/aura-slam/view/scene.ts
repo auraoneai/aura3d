@@ -7,6 +7,7 @@ import { postEffects, sceneLights } from "./lighting";
 import { createStaticBoxes } from "./statics";
 import type { Vec3 } from "../contract/units";
 import type { AthleteRigPort } from "./rigPort";
+import { buildParticleNodes } from "./particles";
 import { buildBleacherNodes, buildSpectatorNodes } from "./spectators";
 import { VENUE_PALETTES } from "./venues";
 
@@ -17,13 +18,19 @@ export const SCENE_NODE_IDS = [
   "umpire-head", "net-fault-left", "net-fault-right"
 ] as const;
 
+/** Static box groups that venues recolour at runtime (C7): seats from `seat`, sponsor-board trim from `trim`. */
+export const STATIC_RUNTIME_IDS = { bleachers: "stadium-bleachers", sponsorTrim: "stadium-sponsor-trim" } as const;
+export const GRANDSTAND_LENGTH = 24;
+export const FLOODLIGHT_MAST_H = 9;
+
 export function buildTennisScene(rig: AthleteRigPort): ReturnType<typeof scene> {
   const lineMat = material.pbr({ color: "#f5f4e6", roughness: 0.58 });
   const netPostMat = material.pbr({ color: "#1d322c", metalness: 0.42, roughness: 0.48 });
-  const netMeshMat = material.pbr({ color: "#182421", roughness: 0.88 });
+  // C9: the net mesh is see-through (blended, no depth write, no shadow) so it no longer reads as a black slab; the tape stays opaque.
+  const netMeshMat = material.pbr({ color: "#1c2a26", roughness: 0.88, opacity: 0.42, alphaMode: "blend", depthWrite: false, doubleSided: true });
   const netTapeMat = material.pbr({ color: "#faf8ee", roughness: 0.46 });
 
-  const s = scene().background("#0d2230").camera(cameraNode());
+  const s = scene().background(VENUE_PALETTES.hard.background).camera(cameraNode());
   for (const light of sceneLights()) s.add(light);
   for (const effect of postEffects()) s.add(effect);
 
@@ -149,7 +156,7 @@ export function buildTennisScene(rig: AthleteRigPort): ReturnType<typeof scene> 
     const segW = (t1 - t0) * netHalfSpan;
     const segX = tm * netHalfSpan;
     const topH = 0.914 + (1.07 - 0.914) * tm * tm;
-    statics.box("netMesh", netMeshMat, [segW + 0.01, topH - 0.05, 0.022], [segX, (topH - 0.05) * 0.5 + 0.02, 0]);
+    statics.box("netMesh", netMeshMat, [segW + 0.01, topH - 0.05, 0.022], [segX, (topH - 0.05) * 0.5 + 0.02, 0], false);
     statics.box("netTape", netTapeMat, [segW + 0.015, 0.062, 0.036], [segX, topH - 0.02, 0]);
   }
 
@@ -180,23 +187,31 @@ export function buildTennisScene(rig: AthleteRigPort): ReturnType<typeof scene> 
 
   // Sponsor A-frame boards ("FAMILYSHOOT") at z = -10.85, x = ±4.3 & side player benches
   const sponsorBoardMat = material.pbr({ color: "#1d3d33", roughness: 0.72 });
-  const sponsorTrimMat = material.pbr({ color: "#f3efdf", roughness: 0.55 });
+  const sponsorTrimMat = material.pbr({ color: VENUE_PALETTES.hard.trim, roughness: 0.55 });
   for (const bx of [-4.3, 4.3]) {
     statics.box("sponsorBoard", sponsorBoardMat, [3.2, 0.78, 0.34], [bx, 0.39, -10.85]);
     statics.box("sponsorTrim", sponsorTrimMat, [2.85, 0.18, 0.36], [bx, 0.42, -10.85]);
   }
   for (const bz of [-3.4, 3.4]) statics.box("wood", chairWood, [0.58, 0.46, 1.95], [-7.35, 0.23, bz]);
 
-  // Typed Aura3D Stadium Grandstands & Floodlights (from src/aura-assets.ts)
+  // Typed Aura3D stadium dressing (view/assets.ts). C10: the seats GLB is 33.7 x 45.8 x 144.1 m with its length along Z, so it is
+  // turned 90 degrees to run along the back of the court and fitted by length (24 m wide, about 7.6 m tall). The floodlight GLB
+  // is a 1.9 x 1.4 x 1.9 lamp head, so it sits on a 9 m mast instead of standing in for the whole tower.
+  const mastMat = material.pbr({ color: "#2b3a40", metalness: 0.55, roughness: 0.42 });
+  for (const side of [-1, 1]) {
+    s.add(primitives.cylinder({ name: `stadium-floodlight-mast-${side < 0 ? "left" : "right"}`, size: [0.28, FLOODLIGHT_MAST_H, 0.28], material: mastMat, castShadow: false })
+      .position(side * 12.5, FLOODLIGHT_MAST_H * 0.5, -13.2));
+  }
   s.addMany([
     model(assets.showcaseStadiumSeats, {
       name: "stadium-grandstand-rear",
       role: "setDressing",
       castShadow: false,
       scaleMode: "fit",
-      targetMaxDimension: 12.5
+      targetLength: GRANDSTAND_LENGTH
     })
-      .position(0, 0, -18.5)
+      .position(0, 0, -19.5)
+      .rotate(0, Math.PI * 0.5, 0)
       .runtime(game.runtimeNode("stadium-grandstand-rear", { tags: ["typed-supporting-asset"] })),
     model(assets.rooftopScoreboardRigMeshy, {
       name: "stadium-scoreboard-gantry",
@@ -210,21 +225,30 @@ export function buildTennisScene(rig: AthleteRigPort): ReturnType<typeof scene> 
       role: "setDressing",
       castShadow: false,
       scaleMode: "fit",
-      targetMaxDimension: 5.8
-    }).position(-12.5, 0, -13.2),
+      targetMaxDimension: 2.2
+    }).position(-12.5, FLOODLIGHT_MAST_H, -13.2),
     model(assets.rooftopFloodlightTowerMeshy, {
       name: "stadium-floodlight-right",
       role: "setDressing",
       castShadow: false,
       scaleMode: "fit",
-      targetMaxDimension: 5.8
-    }).position(12.5, 0, -13.2)
+      targetMaxDimension: 2.2
+    }).position(12.5, FLOODLIGHT_MAST_H, -13.2)
   ]);
 
+  // C7: an unlit backdrop wall at the far edge of the outer ground carries the venue `background` colour (the clear colour is fixed
+  // at compile time). It only shows on tall canvases, where the aspect-aware FOV sees past the ground.
+  s.add(
+    primitives
+      .box({ castShadow: false, name: "stadium-backdrop", size: [140, 60, 0.5], material: material.pbr({ color: VENUE_PALETTES.hard.background, roughness: 1, unlit: true }) })
+      .position(0, 10, -29.5)
+      .runtime(game.runtimeNode("stadium-backdrop"))
+  );
 
   s.addMany(buildBleacherNodes(statics));
-  s.addMany(statics.build());
+  s.addMany(statics.build("static", STATIC_RUNTIME_IDS));
   s.addMany(buildSpectatorNodes());
+  s.addMany(buildParticleNodes());
 
   // Service Box Highlight, Aim Ring, Toss Ring, Beginner Landing Ring
   s.addMany([

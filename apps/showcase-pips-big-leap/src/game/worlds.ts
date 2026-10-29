@@ -8,6 +8,9 @@
 
 import type { WorldSpec } from "./types";
 
+// Time-trial medals come from medals.ts (expert run + 20% = gold, 1.5x and 2x
+// gold for silver and bronze); tests/unit/pips-big-leap/medals.test.ts keeps
+// these literals equal to the derivation.
 const medals = (gold: number, silver: number, bronze: number) => ({ gold, silver, bronze }) as const;
 
 export const WORLDS: readonly WorldSpec[] = [
@@ -26,7 +29,7 @@ export const WORLDS: readonly WorldSpec[] = [
     lowerBound: -6,
     gateSeeds: 4,
     seedGoal: 6,
-    medals: medals(80, 120, 180),
+    medals: medals(19, 29, 38),
     moveSpeed: 5.2,
     ambientFx: "petals",
     unlockHint: "Jump Academy — clear the gauntlet to open the practice gate.",
@@ -53,7 +56,7 @@ export const WORLDS: readonly WorldSpec[] = [
       { id: "thorns-a", x: -2.0, y: 0.85, z: -8.4, w: 1.4, d: 1.2, type: "thorns" },
       { id: "thorns-b", x: 0.6, y: 1.24, z: -21.4, w: 3.4, d: 1.6, type: "thorns", respawn: true }
     ],
-    springs: [{ id: "spring-academy", x: 0, y: 1.3, z: -44, power: 11.5 }],
+    springs: [{ id: "spring-academy", x: 0, y: 1.3, z: -44, power: 15.6 }],
     waters: [],
     seeds: [
       { id: "ac-seed-1", x: 1.2, y: 1.6, z: -9.8 },
@@ -105,7 +108,7 @@ export const WORLDS: readonly WorldSpec[] = [
     lowerBound: -7,
     gateSeeds: 4,
     seedGoal: 6,
-    medals: medals(75, 115, 170),
+    medals: medals(21, 32, 42),
     moveSpeed: 5.3,
     ambientFx: "spores",
     platforms: [
@@ -133,7 +136,7 @@ export const WORLDS: readonly WorldSpec[] = [
       { id: "thorns-2", x: 0, y: 1.8, z: -25.9, w: 3.2, d: 1.6, type: "thorns" },
       { id: "bog", x: 0, y: 1.79, z: -33.8, w: 5.5, d: 2.2, type: "thorns", respawn: true }
     ],
-    springs: [{ id: "spring-w1", x: 0.5, y: 1.9, z: -47.5, power: 11.8 }],
+    springs: [{ id: "spring-w1", x: 0.5, y: 1.9, z: -47.5, power: 15.6 }],
     waters: [],
     seeds: [
       { id: "w1-seed-1", x: 0.6, y: 1.65, z: -9.6 },
@@ -199,7 +202,7 @@ export const WORLDS: readonly WorldSpec[] = [
     lowerBound: -5.5,
     gateSeeds: 4,
     seedGoal: 6,
-    medals: medals(85, 130, 190),
+    medals: medals(24, 36, 48),
     moveSpeed: 5.4,
     ambientFx: "dust",
     doubleJumpGrant: true,
@@ -287,7 +290,7 @@ export const WORLDS: readonly WorldSpec[] = [
     lowerBound: -8,
     gateSeeds: 4,
     seedGoal: 6,
-    medals: medals(95, 140, 200),
+    medals: medals(23, 35, 46),
     moveSpeed: 5.4,
     airControl: 0.8,
     ambientFx: "petals",
@@ -373,7 +376,7 @@ export const WORLDS: readonly WorldSpec[] = [
     lowerBound: -4.5,
     gateSeeds: 4,
     seedGoal: 6,
-    medals: medals(100, 150, 210),
+    medals: medals(23, 35, 46),
     moveSpeed: 5.4,
     ambientFx: "embers",
     swimPocket: true,
@@ -463,11 +466,11 @@ export const WORLDS: readonly WorldSpec[] = [
     lowerBound: -6,
     gateSeeds: 4,
     seedGoal: 6,
-    medals: medals(120, 175, 240),
+    medals: medals(40, 60, 80),
     moveSpeed: 5.5,
     ambientFx: "dust",
     boss: true,
-    unlockHint: "Brambleback stirs — stomp him when he tires to claim the crown seed.",
+    unlockHint: "Brambleback stirs — stomp him three times when he tires to unlatch the Sun-Gate.",
     platforms: [
       { id: "start", x: 0, y: 0.7, z: 0, w: 8.6, d: 8, kind: "marble" },
       { id: "stair-1", x: -0.8, y: 1.0, z: -6.4, w: 3, d: 2.6, kind: "marble" },
@@ -554,7 +557,7 @@ export const WORLDS: readonly WorldSpec[] = [
     lowerBound: -9,
     gateSeeds: 4,
     seedGoal: 6,
-    medals: medals(110, 165, 230),
+    medals: medals(26, 39, 52),
     gravityScale: 0.55,
     moveSpeed: 4.9,
     airControl: 0.78,

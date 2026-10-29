@@ -70,7 +70,11 @@ void main() {
   gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
 }`;
 
+/** Domain-warp strength of the track's paint marks (was 4.0, shared with the veins). */
+export const TRACK_MARK_WARP = 2.5;
+
 export const TRACK_FRAGMENT = /* glsl */ `
+#define TRACK_MARK_WARP ${TRACK_MARK_WARP.toFixed(1)}
 in vec3 vWorld;
 in vec3 vNormal;
 in vec2 vUv;
@@ -82,6 +86,9 @@ out vec4 outColor;
 ${NOISE}
 ${LIGHTING}
 float paintNoise(vec2 p) { return fbm(p + vec2(fbm(p * 0.35) * 4.0, 0.0)); }
+// The surface marks use a gentler domain warp than the veins (2.5 instead of 4.0): the stronger warp smeared each mark
+// into a long streak along one world axis (audit SO-E5).
+float markNoise(vec2 p) { return fbm(p + vec2(fbm(p * 0.35) * TRACK_MARK_WARP, 0.0)); }
 void main() {
   // Procedural stand-in for impasto.png: warm paint marks. World-space triplanar noise, so the marks keep the same size in
   // every direction (UV-mapped streaks stretched along the whole length of the track).
@@ -90,7 +97,7 @@ void main() {
   bw /= (bw.x + bw.y + bw.z + 1e-5);
   vec3 wq = vWorld * 0.42;
   vec2 q = wq.xz;
-  float streak = bw.x * paintNoise(wq.yz) + bw.y * paintNoise(wq.xz) + bw.z * paintNoise(wq.xy);
+  float streak = bw.x * markNoise(wq.yz) + bw.y * markNoise(wq.xz) + bw.z * markNoise(wq.xy);
   float grain = vnoise(wq.xz * 6.0 + vec2(wq.y * 3.1, 0.0));
   vec3 sampled = mix(vec3(0.50, 0.36, 0.30), vec3(0.93, 0.74, 0.58), streak) * (0.9 + 0.2 * grain);
   float lum = dot(sampled, vec3(0.2126, 0.7152, 0.0722));

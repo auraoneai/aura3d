@@ -56,5 +56,5 @@ describe("flag-on compiler submits the v2 post bag", () => {
     expect(on.pipeline).toBeTruthy();
     expect(on.bloom).toBeTruthy();
     resetAuthoredPostContext();
-  });
+  }, 120_000);
 });

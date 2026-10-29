@@ -34,9 +34,11 @@
 #                      (~1.4GB of showcase GLBs) and the environment-corpus /
 #                      asset-corpus / advanced-gallery fixture trees (~380MB); the
 #                      parity/port specs do not load them. Use full for specs that do.
-#   EXTRA_DIRS         space-separated repo-relative dirs to add to the context (e.g. apps/showcase-foo)
-#   PUBLIC_ASSETS      space-separated filenames under public/aura-assets to include
-#                      even in the slim profile
+#   EXTRA_DIRS         space-separated repo-relative dirs to add to the context (e.g. apps/showcase-foo).
+#                      apps/common and apps/showcase-port-shared are always staged (every showcase app imports them).
+#   PUBLIC_ASSETS      space-separated paths under public/aura-assets to include even in the slim
+#                      profile; subpaths keep their folders (Textures/x.png), and a directory is copied whole
+#   SPECS must not contain shell metacharacters (| ( ) ; & < > ` $): the ACR step runs it through /bin/sh.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -54,6 +56,12 @@ BUILD="${BUILD:-1}"
 KEEP_IMAGE="${KEEP_IMAGE:-1}"
 CONTEXT_PROFILE="${CONTEXT_PROFILE:-slim}"
 PUBLIC_ASSETS="${PUBLIC_ASSETS:-}"
+
+case "$SPECS" in
+  *[\|\(\)\;\&\<\>\`\$]*)
+    echo "SPECS contains a shell metacharacter (| ( ) ; & < > \` \$); the ACR step would run it through /bin/sh. Use a plain --grep tag such as @g3." >&2
+    exit 2 ;;
+esac
 
 IMAGE_TAG="${IMAGE_TAG:-run-${RUN_ID}}"
 OUT_DIR="tests/reports/remote-acr/${RUN_ID}"
@@ -102,7 +110,8 @@ if [ "$CONTEXT_PROFILE" = "full" ]; then
 else
   rsync -a --exclude 'aura-assets' public "$CTX/"
   mkdir -p "$CTX/public/aura-assets"
-  for asset in $PUBLIC_ASSETS; do rsync -a "public/aura-assets/$asset" "$CTX/public/aura-assets/"; done
+  # -R keeps subfolders (public/aura-assets/Textures/... stays under Textures/), so companion textures resolve.
+  for asset in $PUBLIC_ASSETS; do (cd public/aura-assets && rsync -aR "$asset" "$CTX/public/aura-assets/"); done
 fi
 rsync -a --exclude '*/node_modules' \
         --exclude 'create-aura3d/templates' \
@@ -126,6 +135,8 @@ rsync -a examples "$CTX/"
 mkdir -p "$CTX/apps"
 rsync -a src "$CTX/"
 rsync -aR assets/packs "$CTX/"
+# Shared by every showcase app (fonts.css, quickbar.css): without them HUD fonts 404 and the quick bar is unstyled.
+for shared in apps/common apps/showcase-port-shared; do [ -d "$shared" ] && rsync -aR --exclude node_modules --exclude dist "$shared" "$CTX/"; done
 for extra in ${EXTRA_DIRS:-}; do rsync -aR --exclude node_modules --exclude dist "$extra" "$CTX/"; done
 mkdir -p "$CTX/tools"
 # Whole tools/ tree (about 11 MB), matching the Dockerfile's `COPY tools/`: the visual specs import many tool modules.

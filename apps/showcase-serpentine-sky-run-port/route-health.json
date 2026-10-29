@@ -3,7 +3,7 @@
   "route": "/apps/showcase-serpentine-sky-run-port/",
   "classification": "prototype",
   "publicShowcase": true,
-  "generatedAt": "2026-10-23T08:56:30.375Z",
+  "generatedAt": "2026-10-29T12:00:00.000Z",
   "ok": true,
   "claimLabel": "Prototype",
   "claimStatus": "bounded",
@@ -21,8 +21,9 @@
   "sourceExample": "examples/saiyan-snake-way-port/",
   "evidence": "183 recorded snapshots match within 1e-6 over a 5,433-step run.",
   "limits": [
-    "Outbound run only (no menus, audio or later phases); primitive avatars and a gradient sky.",
-    "Procedural art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Outbound run only: the return leg, the phase after a fall and the later phases of the original are not ported.",
+    "Meshy-generated runner and props over custom toon-shaded road and sky; an independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Has a title with runner select, countdown, pause, results, best score and synthesised sound effects.",
     "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
   ],
   "checks": [

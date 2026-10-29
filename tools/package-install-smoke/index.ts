@@ -92,7 +92,11 @@ export function runPackageInstallSmoke(
       violations.push(`Tarball is missing: ${tarballPath}.`);
     }
 
-    const installCommand = ["npm", ...withNpmTransport(["install", "--ignore-scripts", "--no-audit", "--no-fund", tarballFullPath])] as const;
+    // The smoke exercises the physics scene kits (miniGolf, physicsPlayground), which need the optional Rapier peer;
+    // npm does not install optional peers, so install the declared version next to the tarball.
+    const rapierPeer = packageInfo.peerDependencies?.["@dimforge/rapier3d-compat"];
+    const peerSpecs = rapierPeer ? [`@dimforge/rapier3d-compat@${rapierPeer}`] : [];
+    const installCommand = ["npm", ...withNpmTransport(["install", "--ignore-scripts", "--no-audit", "--no-fund", tarballFullPath, ...peerSpecs])] as const;
 
     writeFileSync(join(tempProject, "package.json"), `${JSON.stringify({
       name: "a3d-external-install-smoke",
@@ -450,12 +454,13 @@ globalThis.__AURA3D_PACKAGE_VITE_SMOKE__ = {
 `;
 }
 
-function readPackageInfo(root: string): { readonly name: string | null; readonly version: string | null } {
+function readPackageInfo(root: string): { readonly name: string | null; readonly version: string | null; readonly peerDependencies?: Readonly<Record<string, string>> } {
   try {
     const parsed = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as Record<string, unknown>;
     return {
       name: typeof parsed.name === "string" ? parsed.name : null,
-      version: typeof parsed.version === "string" ? parsed.version : null
+      version: typeof parsed.version === "string" ? parsed.version : null,
+      peerDependencies: parsed.peerDependencies && typeof parsed.peerDependencies === "object" ? parsed.peerDependencies as Record<string, string> : undefined
     };
   } catch {
     return { name: null, version: null };

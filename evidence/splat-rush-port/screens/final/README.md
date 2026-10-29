@@ -1,9 +1,9 @@
-# Chroma Roll: final screenshots (after the UI and render fixes)
+# Chroma Roll: final screenshots (after the 4.5.0 audit fixes)
 
-- **Build:** head of `origin/game-rework` at `0d965903c` (fetched at the start of this capture; includes the group B UI fixes, the Gridlock first-frame fix and the athlete repaint). Capture code: `tests/browser/shotsb-lib.ts` and `tests/browser/shotsb-chroma.spec.ts` (unchanged from the earlier retake).
-- **Runner:** remote Azure ACR task `finb-chroma` (tools/remote-acr/run.sh), headless Chromium on SwiftShader: software WebGL2, not a GPU. Nothing here is real-GPU evidence; the owner should confirm the look on the Mac.
-- **Viewports:** 1280x720 and 390x844 (touch emulation, scale 1). Card images: `card.jpg` is 720x450 (downscaled from `card@2x.jpg`, 1440x900 captured at 1x device scale).
-- **Method:** states are driven through the game QA hooks (manual stepping) so frames are deterministic; the title frame is taken from the normal page. `capture-log.txt` has the per-frame state, the visible overlays and the console errors (empty for every pass).
+- **Build:** branch `audit-fix/g16` at `28697c8a5` (lane G16: environment for the Meshy GLBs, merged batches, toon shoulder, symbols and settings, pause). Retaken for RH-05 with the same file names and sizes as the 2026-10-25 set. Capture code: `tests/browser/audit-fix/splat-rush-port.spec.ts` (same QA-hook drives as `tests/browser/shotsb-chroma.spec.ts`); the `-settled` shot of each state (20 s after the drive) and the 60 s card shot are used.
+- **Runner:** remote Azure ACR task `g16w3-final3` (tools/remote-acr/run.sh), headless Chromium on SwiftShader: software WebGL2, not a GPU. Nothing here is real-GPU evidence.
+- **Viewports:** 1280x720 and 390x844 (touch emulation, scale 1). `card.jpg` is 720x450 (downscaled from `card@2x.jpg`, 1440x900 at 1x device scale).
+- **Method:** states are driven through the game QA hooks (manual stepping), so frames are deterministic. Per-shot luma, white share, draw calls and texture bytes: `evidence/audit-fix/g16/wave3/after/meta.jsonl`; before/after table: `evidence/audit-fix/g16/wave3/compare.txt`. No page or console errors were logged.
 
 ## Frames
 
@@ -24,15 +24,7 @@
 
 Reached: title, early (countdown/start), roll (autopilot, combo), mid-action, results ("SPLAT!" card, new best). Card: roll. Not reached: none.
 
-## Checked against the fixed list (frames opened and read: title 1280 and 390, roll 1280, early 390, mid-action 390, results 1280)
-
-- Old names or "port" text: none in the frames.
-- Black frames: none.
-- Brand marks or lettering: none seen.
-
 ## Problems still visible (severity)
 
-- **Low-medium:** on the 390 title screen the start card is wider than the viewport, so its border is clipped at both edges.
-- **Low:** on 390 the MILESTONE / OUCH / PERFECT popups stack tightly and nearly touch the combo counter.
-- **Low:** the results card sits on a flat red background with no 3D view behind it.
-- Fixed since the first retake: the title card reads "CHROMA ROLL" (no old name); no popup collides with the score or combo.
+- **Low:** the colour symbol over the ball overlaps the nearest gate bar for a few frames as the ball passes under it (symbols are off by default).
+- **Low:** the results card still uses one flat translucent colour wash; there is no animated 3D view behind it beyond the frozen frame.

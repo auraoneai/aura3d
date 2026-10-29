@@ -1,6 +1,6 @@
 # Why Aura3D over three.js
 
-Version: 4.5.0
+Version: 4.6.0
 
 Every claim on this page names its source, so a developer who checks it finds the same number. Per-capability status (shipped, partial, experimental) with code paths is in [`comparisons/aura3d-capability-audit.md`](comparisons/aura3d-capability-audit.md).
 

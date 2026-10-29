@@ -176,6 +176,7 @@ function deprecation(id: string, message: string, out: string[]): void {
 /** Test seam: forget which one-time deprecation warnings were already emitted. */
 export function resetRendererOptionDeprecationsForTests(): void {
   warnedDeprecations.clear();
+  warnedUrlValues.clear();
 }
 
 /**
@@ -189,7 +190,8 @@ export function resetRendererOptionDeprecationsForTests(): void {
 export function parseQualityRendererOptions(
   renderer: AuraCreateAppRendererOptions | undefined,
   search: string | null = typeof location !== "undefined" ? location.search : null,
-  root: { readonly performanceQuality?: unknown } = {}
+  root: { readonly performanceQuality?: unknown } = {},
+  urlPolicy?: Pick<UrlOptionPolicy, "strict">
 ): ParsedQualityRendererOptions {
   const warnings: string[] = [];
   const quality = renderer?.quality;
@@ -229,16 +231,22 @@ export function parseQualityRendererOptions(
     const params = new URLSearchParams(search);
     const urlTier = params.get("aura3d-quality");
     if (urlTier !== null) {
-      requested = parseTier(urlTier, "?aura3d-quality");
-      requestedSource = "url";
+      // RP-04: a URL typo warns and keeps the code option (strict apps still throw).
+      if (urlTier === "auto" || QUALITY_TIER_NAMES.includes(urlTier)) {
+        requested = urlTier as AuraQualityTierName | "auto";
+        requestedSource = "url";
+      } else {
+        ignoreInvalidUrlValue(`?aura3d-quality=${urlTier} (expected low|medium|high|ultra|auto); using "${requested}"`, { strict: urlPolicy?.strict, warnings, console: false });
+      }
     }
     const urlAdaptive = params.get("aura3d-adaptive");
     if (urlAdaptive !== null) {
-      if (urlAdaptive !== "0" && urlAdaptive !== "1") {
-        throw new Error(`QUALITY_OPTION_INVALID:?aura3d-adaptive=${urlAdaptive} (expected 0|1)`);
+      if (urlAdaptive === "0" || urlAdaptive === "1") {
+        adaptive = urlAdaptive === "1";
+        adaptiveSource = "url";
+      } else {
+        ignoreInvalidUrlValue(`?aura3d-adaptive=${urlAdaptive} (expected 0|1); using ${adaptive ? "1" : "0"}`, { strict: urlPolicy?.strict, warnings, console: false });
       }
-      adaptive = urlAdaptive === "1";
-      adaptiveSource = "url";
     }
   }
 
@@ -252,24 +260,70 @@ export function parseQualityRendererOptions(
   return { requested, requestedSource, overrides, adaptive, adaptiveSource, targetFrameRate, batching, warnings };
 }
 
+/** How URL-sourced debug switches behave on an invalid value (RP-04). */
+export interface UrlOptionPolicy {
+  /** Throw on an invalid URL value, like an invalid code option. Default false: warn and fall back. */
+  readonly strict?: boolean;
+  /** Receives one `QUALITY_URL_IGNORED:` message per ignored URL value. */
+  readonly warnings?: string[];
+  /** Also `console.warn` the message (once per message). Default true; false when the caller prints `warnings` itself. */
+  readonly console?: boolean;
+}
+
+const warnedUrlValues = new Set<string>();
+
+/**
+ * RP-04: a typo in a debug URL switch (`?aura3d-render=`, `?aura3d-bloom-fusion=`, `?aura3d-quality=`, `?aura3d-adaptive=`) used to
+ * throw inside the mount, so every game showed its "needs WebGL 2" error screen. URL values are a tester's switch, not code: warn
+ * once (console and `diagnostics().warnings`) and keep the code option or default. Strict apps keep the throw.
+ */
+export function ignoreInvalidUrlValue(message: string, policy: UrlOptionPolicy | undefined): void {
+  if (policy?.strict) throw new Error(`QUALITY_OPTION_INVALID:${message}`);
+  const warning = `QUALITY_URL_IGNORED: ${message}`;
+  policy?.warnings?.push(warning);
+  if (policy?.console !== false && !warnedUrlValues.has(warning)) {
+    warnedUrlValues.add(warning);
+    if (typeof console !== "undefined") console.warn(`[aura3d] ${warning}`);
+  }
+}
+
 /**
  * Bloom pass-fusion mode (PRD beat-threejs-2 contract 2.1): `renderer.bloomFusion` (`"separable"` default | `"fused-2d"`),
- * overridden by `?aura3d-bloom-fusion=`. Invalid values throw so a typo never silently runs the default. The mode only
- * takes effect under `quality: "auto"` / `"cinematic"`; `production` never fuses.
+ * overridden by `?aura3d-bloom-fusion=`. An invalid code option throws so a typo never silently runs the default; an invalid URL
+ * value warns and falls back to the code option (RP-04) unless `policy.strict`. The mode only takes effect under
+ * `quality: "auto"` / `"cinematic"`; `production` never fuses.
  */
 export function parseBloomFusionOption(
   renderer: Pick<AuraCreateAppRendererOptions, "bloomFusion"> | undefined,
-  search: string | null = typeof location !== "undefined" ? location.search : null
+  search: string | null = typeof location !== "undefined" ? location.search : null,
+  policy?: UrlOptionPolicy
 ): AuraBloomFusion {
-  let mode: unknown = renderer?.bloomFusion ?? DEFAULT_BLOOM_FUSION_MODE;
-  let where = "renderer.bloomFusion";
+  const mode: unknown = renderer?.bloomFusion ?? DEFAULT_BLOOM_FUSION_MODE;
+  if (!isBloomFusion(mode)) throw new Error(`QUALITY_OPTION_INVALID:renderer.bloomFusion=${String(mode)} (expected separable|fused-2d)`);
   if (search) {
     const fromUrl = new URLSearchParams(search).get("aura3d-bloom-fusion");
     if (fromUrl !== null) {
-      mode = fromUrl;
-      where = "?aura3d-bloom-fusion";
+      if (isBloomFusion(fromUrl)) return fromUrl;
+      ignoreInvalidUrlValue(`?aura3d-bloom-fusion=${fromUrl} (expected separable|fused-2d); using "${mode}"`, policy);
     }
   }
-  if (!isBloomFusion(mode)) throw new Error(`QUALITY_OPTION_INVALID:${where}=${String(mode)} (expected separable|fused-2d)`);
   return mode;
+}
+
+/**
+ * Top-tennis C11 (engine part): `renderer.quality` diagnostics, reported in `diagnostics().warnings` (not the console, since the
+ * string form is valid). A tier-name string is a fixed tier: every device, phones included, mounts at that tier, which a reader
+ * of `renderer: { quality: "high" }` easily takes for a no-op or for "best available". An unknown name used to mount at "high"
+ * with no message while the quality lane is off.
+ */
+export function rendererQualityWarnings(renderer: Pick<AuraCreateAppRendererOptions, "quality"> | undefined): string[] {
+  const quality = renderer?.quality as unknown;
+  if (quality === undefined || quality === "auto") return [];
+  const tier = typeof quality === "string" ? quality : quality !== null && typeof quality === "object" ? (quality as { tier?: unknown }).tier : quality;
+  if (tier === undefined || tier === "auto") return [];
+  if (typeof tier !== "string" || !QUALITY_TIER_NAMES.includes(tier)) {
+    return [`RENDERER_QUALITY_INVALID: renderer.quality${typeof quality === "object" ? ".tier" : ""}=${String(tier)} is not a tier (expected low|medium|high|ultra|auto); the mount uses "high".`];
+  }
+  if (typeof quality !== "string") return [];
+  return [`RENDERER_QUALITY_STRING: renderer.quality "${tier}" is a fixed tier, so every device, phones included, mounts at "${tier}" (pixel-ratio cap, shadow and post settings). Use "auto" or { tier: "auto" } to let the tier follow the device where the quality lane (A3D_QR_TIERS) is on.`];
 }

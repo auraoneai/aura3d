@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import { CREATE_AURA3D_TEMPLATES, createA3DProject, resolveTemplateAlias, templateAliasWarning, type AuraAgentTarget, type AuraSkillMode } from "./index.js";
+import { readFileSync } from "node:fs";
+import { CREATE_AURA3D_TEMPLATES, createA3DProject, fetchMissingTemplateAssets, resolveTemplateAlias, templateAliasWarning, type AuraAgentTarget, type AuraSkillMode } from "./index.js";
 import { compileShowcaseSpecFile } from "./showcase-spec-compiler.js";
 
 const args = process.argv.slice(2);
@@ -55,7 +56,24 @@ const result = createA3DProject({
   agent: agentOption as AuraAgentTarget | undefined,
   skills: skillsOption as AuraSkillMode
 });
-console.log(JSON.stringify(result, null, 2));
+// No top-level await (lessons-learned B8, pnpm verify:no-tla): the download runs in a promise chain.
+if (result.missingAssets.length > 0) {
+  // Large template binaries are not in the npm package; fetch them from this version's tagged source tree.
+  const version = (JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as { version: string }).version;
+  const mb = result.missingAssets.reduce((sum, entry) => sum + entry.bytes, 0) / 1048576;
+  console.error(`create-aura3d: downloading ${result.missingAssets.length} template asset(s), ${mb.toFixed(1)} MB, for ${template} ${version}`);
+  void fetchMissingTemplateAssets(result, { version, log: (line) => console.error(`  ${line}`) }).then((assets) => {
+    if (assets.failed.length > 0) {
+      console.error(`create-aura3d: ${assets.failed.length} template asset(s) could not be downloaded and verified:`);
+      for (const failure of assets.failed) console.error(`  ${failure.path}\n    ${failure.reasons.join("\n    ")}`);
+      console.error("Run the same command again when online, or set AURA3D_TEMPLATE_ASSET_BASE to a mirror of packages/create-aura3d.");
+      process.exitCode = 1;
+    }
+    console.log(JSON.stringify({ ...result, missingAssets: assets.failed.map((f) => f.path), fetchedAssets: assets.fetched.map((f) => f.path) }, null, 2));
+  });
+} else {
+  console.log(JSON.stringify(result, null, 2));
+}
 
 function readOption(name: string): string | undefined {
   const index = args.indexOf(name);

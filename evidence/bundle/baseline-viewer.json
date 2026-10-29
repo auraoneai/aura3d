@@ -1,0 +1,542 @@
+{
+  "name": "PBR viewer (tools/bench-vs-threejs/pbr-viewer/aura)",
+  "jsFiles": 42,
+  "totalRaw": 4147852,
+  "totalGzip": 1238237,
+  "packages": {
+    "@aura3d/engine": 3517208,
+    "(no sourcemap)": 599053,
+    "(unmapped)": 23952,
+    "ktx-parse": 4610,
+    "app": 2523
+  },
+  "areas": {
+    "@aura3d/engine > rendering": 823883,
+    "@aura3d/engine > engine/agent-api": 744223,
+    "(no sourcemap)": 599053,
+    "@aura3d/engine > assets": 320839,
+    "@aura3d/engine > rendering/environment": 164423,
+    "@aura3d/engine > rendering/webgl2": 159172,
+    "@aura3d/engine > rendering/post": 149830,
+    "@aura3d/engine > rendering/shaders": 147986,
+    "@aura3d/engine > animation": 130026,
+    "@aura3d/engine > engine/production-runtime": 81430,
+    "@aura3d/engine > rendering/vfx": 79350,
+    "@aura3d/engine > rendering/world": 73299,
+    "@aura3d/engine > rendering/renderer": 52215,
+    "@aura3d/engine > rendering/program": 51680,
+    "@aura3d/engine > rendering/atmosphere": 45563,
+    "@aura3d/engine > physics": 44841,
+    "@aura3d/engine > rendering/reference": 36077,
+    "@aura3d/engine > rendering/shadows": 35038,
+    "@aura3d/engine > rendering/geometry": 34641,
+    "@aura3d/engine > math": 30414,
+    "@aura3d/engine > rendering/forward": 29968,
+    "@aura3d/engine > audio": 24551,
+    "@aura3d/engine > engine/lanes": 24453,
+    "(unmapped)": 23952,
+    "@aura3d/engine > scene": 23463,
+    "@aura3d/engine > rendering/quality": 20557,
+    "@aura3d/engine > rendering/production-runtime": 18285,
+    "@aura3d/engine > rendering/contracts": 17016,
+    "@aura3d/engine > rendering/batching": 15656,
+    "@aura3d/engine > rendering/materials": 15630,
+    "@aura3d/engine > physics-rapier": 14789,
+    "@aura3d/engine > engine/contracts": 13221,
+    "@aura3d/engine > rendering/webgpu": 11809,
+    "@aura3d/engine > rendering/output": 11653,
+    "@aura3d/engine > rendering/probes": 11559,
+    "@aura3d/engine > rendering/compute": 11080,
+    "@aura3d/engine > rendering/resources": 9399,
+    "@aura3d/engine > rendering/passes": 9047,
+    "@aura3d/engine > input": 6895,
+    "@aura3d/engine > rendering/lanes": 6341,
+    "ktx-parse": 4610,
+    "@aura3d/engine > rendering/postprocess": 3993,
+    "@aura3d/engine > engine/material-physical": 2953,
+    "@aura3d/engine > rendering/performance": 2741,
+    "@aura3d/engine > rendering/textures": 2631,
+    "app": 2523,
+    "@aura3d/engine > rendering/animation": 2450,
+    "@aura3d/engine > engine/instances-model": 1973,
+    "@aura3d/engine > core": 165
+  },
+  "chunks": [
+    {
+      "file": "assets/index-DDjKhhSe.js",
+      "raw": 974403,
+      "gzip": 317629,
+      "byArea": {
+        "@aura3d/engine > engine/agent-api": 742493,
+        "@aura3d/engine > engine/production-runtime": 60410,
+        "@aura3d/engine > physics": 44841,
+        "@aura3d/engine > rendering/world": 30338,
+        "@aura3d/engine > audio": 24551,
+        "@aura3d/engine > engine/lanes": 24453,
+        "@aura3d/engine > physics-rapier": 14789,
+        "@aura3d/engine > engine/contracts": 12525,
+        "@aura3d/engine > input": 6895,
+        "(unmapped)": 4235,
+        "@aura3d/engine > engine/material-physical": 2953,
+        "app": 2395,
+        "@aura3d/engine > engine/instances-model": 1973,
+        "@aura3d/engine > math": 903,
+        "@aura3d/engine > rendering/contracts": 543
+      }
+    },
+    {
+      "file": "assets/DirectPath-DuMIRqYY.js",
+      "raw": 857631,
+      "gzip": 246766,
+      "byArea": {
+        "@aura3d/engine > rendering": 165953,
+        "@aura3d/engine > rendering/webgl2": 159172,
+        "@aura3d/engine > rendering/vfx": 79350,
+        "@aura3d/engine > rendering/atmosphere": 45563,
+        "@aura3d/engine > rendering/world": 42961,
+        "@aura3d/engine > rendering/program": 41710,
+        "@aura3d/engine > rendering/shaders": 41656,
+        "@aura3d/engine > rendering/renderer": 41211,
+        "@aura3d/engine > rendering/reference": 36077,
+        "@aura3d/engine > rendering/geometry": 34641,
+        "@aura3d/engine > rendering/shadows": 33872,
+        "@aura3d/engine > rendering/quality": 20557,
+        "@aura3d/engine > rendering/production-runtime": 18285,
+        "@aura3d/engine > rendering/batching": 15656,
+        "@aura3d/engine > rendering/environment": 12534,
+        "@aura3d/engine > rendering/post": 12302,
+        "@aura3d/engine > rendering/probes": 11559,
+        "@aura3d/engine > rendering/compute": 11080,
+        "@aura3d/engine > rendering/passes": 9047,
+        "@aura3d/engine > rendering/resources": 7560,
+        "@aura3d/engine > math": 6432,
+        "@aura3d/engine > rendering/lanes": 3967,
+        "(unmapped)": 2910,
+        "@aura3d/engine > rendering/postprocess": 1860,
+        "@aura3d/engine > rendering/contracts": 811,
+        "@aura3d/engine > rendering/performance": 697
+      }
+    },
+    {
+      "file": "aura-decoders/draco/draco_decoder.js",
+      "raw": 512465,
+      "gzip": 106846,
+      "byArea": {
+        "(no sourcemap)": 512465
+      }
+    },
+    {
+      "file": "assets/GLTFSharedTextureCache-B3_7ndl4.js",
+      "raw": 229874,
+      "gzip": 65647,
+      "byArea": {
+        "@aura3d/engine > assets": 205485,
+        "@aura3d/engine > animation": 18866,
+        "ktx-parse": 4610,
+        "(unmapped)": 901
+      }
+    },
+    {
+      "file": "assets/TexturedPBRMaterial-BX28NTvB.js",
+      "raw": 190526,
+      "gzip": 39968,
+      "byArea": {
+        "@aura3d/engine > rendering/shaders": 88925,
+        "@aura3d/engine > rendering": 88897,
+        "@aura3d/engine > rendering/materials": 5910,
+        "@aura3d/engine > rendering/forward": 3458,
+        "@aura3d/engine > rendering/textures": 2631,
+        "(unmapped)": 635,
+        "@aura3d/engine > rendering/lanes": 20
+      }
+    },
+    {
+      "file": "assets/ForwardPass-BmCG2hQj.js",
+      "raw": 184816,
+      "gzip": 55144,
+      "byArea": {
+        "@aura3d/engine > rendering": 104524,
+        "@aura3d/engine > rendering/forward": 26459,
+        "@aura3d/engine > rendering/shaders": 16960,
+        "@aura3d/engine > rendering/output": 11653,
+        "@aura3d/engine > rendering/renderer": 6342,
+        "@aura3d/engine > rendering/program": 5834,
+        "@aura3d/engine > rendering/contracts": 3925,
+        "@aura3d/engine > rendering/lanes": 2354,
+        "@aura3d/engine > rendering/performance": 2044,
+        "@aura3d/engine > rendering/resources": 1839,
+        "@aura3d/engine > rendering/shadows": 1166,
+        "@aura3d/engine > rendering/environment": 1003,
+        "(unmapped)": 677
+      }
+    },
+    {
+      "file": "assets/ShaderLibrary-C7IFAbVL.js",
+      "raw": 176282,
+      "gzip": 21404,
+      "byArea": {
+        "@aura3d/engine > rendering": 173348,
+        "@aura3d/engine > rendering/animation": 2450,
+        "(unmapped)": 473
+      }
+    },
+    {
+      "file": "assets/neutralEmbedded-B8SmvjFq.js",
+      "raw": 133223,
+      "gzip": 99514,
+      "byArea": {
+        "@aura3d/engine > rendering/environment": 133170,
+        "(unmapped)": 53
+      }
+    },
+    {
+      "file": "assets/WebGPUDevice-DQKHl2GQ.js",
+      "raw": 122301,
+      "gzip": 33048,
+      "byArea": {
+        "@aura3d/engine > rendering": 110019,
+        "@aura3d/engine > rendering/webgpu": 11809,
+        "(unmapped)": 467
+      }
+    },
+    {
+      "file": "assets/program-BDd3Pkzw.js",
+      "raw": 104472,
+      "gzip": 25991,
+      "byArea": {
+        "@aura3d/engine > rendering": 86342,
+        "@aura3d/engine > rendering/materials": 9720,
+        "@aura3d/engine > rendering/program": 4136,
+        "@aura3d/engine > rendering/contracts": 3592,
+        "@aura3d/engine > rendering/shaders": 445,
+        "(unmapped)": 179,
+        "@aura3d/engine > rendering/forward": 51
+      }
+    },
+    {
+      "file": "assets/browser-index-DQNSczom.js",
+      "raw": 87903,
+      "gzip": 22074,
+      "byArea": {
+        "@aura3d/engine > assets": 86378,
+        "(unmapped)": 1525
+      }
+    },
+    {
+      "file": "assets/v2Entry-ChePOerD.js",
+      "raw": 86422,
+      "gzip": 24531,
+      "byArea": {
+        "@aura3d/engine > rendering/post": 85687,
+        "(unmapped)": 676
+      }
+    },
+    {
+      "file": "assets/FrameGraph-B-LbNidb.js",
+      "raw": 76673,
+      "gzip": 21281,
+      "byArea": {
+        "@aura3d/engine > rendering": 25046,
+        "@aura3d/engine > scene": 23463,
+        "@aura3d/engine > math": 23079,
+        "@aura3d/engine > rendering/renderer": 4382,
+        "@aura3d/engine > rendering/contracts": 363,
+        "(unmapped)": 173,
+        "@aura3d/engine > core": 165
+      }
+    },
+    {
+      "file": "assets/RetargetWorker-DPIS4syV.js",
+      "raw": 63653,
+      "gzip": 22148,
+      "byArea": {
+        "@aura3d/engine > animation": 63601,
+        "(unmapped)": 52
+      }
+    },
+    {
+      "file": "aura-decoders/basis/basis_transcoder.js",
+      "raw": 57529,
+      "gzip": 15063,
+      "byArea": {
+        "(no sourcemap)": 57529
+      }
+    },
+    {
+      "file": "assets/index-Dz5-l0gl.js",
+      "raw": 49067,
+      "gzip": 17929,
+      "byArea": {
+        "@aura3d/engine > rendering": 42329,
+        "(unmapped)": 6738
+      }
+    },
+    {
+      "file": "assets/textures-Ir8HrSUe.js",
+      "raw": 44585,
+      "gzip": 33646,
+      "byArea": {
+        "@aura3d/engine > rendering/post": 44539,
+        "(unmapped)": 46
+      }
+    },
+    {
+      "file": "aura-decoders/meshopt/meshopt_decoder.mjs",
+      "raw": 29059,
+      "gzip": 7687,
+      "byArea": {
+        "(no sourcemap)": 29059
+      }
+    },
+    {
+      "file": "assets/TextureStreaming-Dgojh1CL.js",
+      "raw": 28599,
+      "gzip": 9849,
+      "byArea": {
+        "@aura3d/engine > assets": 28476,
+        "(unmapped)": 119
+      }
+    },
+    {
+      "file": "assets/retarget.worker-Dd-Qis9D.js",
+      "raw": 26134,
+      "gzip": 8911,
+      "byArea": {
+        "@aura3d/engine > animation": 26056,
+        "(unmapped)": 78
+      }
+    },
+    {
+      "file": "assets/TypedGLBActor-mo_xLtyN.js",
+      "raw": 22172,
+      "gzip": 7506,
+      "byArea": {
+        "@aura3d/engine > engine/production-runtime": 21020,
+        "@aura3d/engine > engine/contracts": 696,
+        "(unmapped)": 456
+      }
+    },
+    {
+      "file": "assets/index-DMnHfBBz.js",
+      "raw": 19834,
+      "gzip": 7747,
+      "byArea": {
+        "@aura3d/engine > animation": 19439,
+        "(unmapped)": 395
+      }
+    },
+    {
+      "file": "assets/Rgb9e5Cube-C8aNDpVr.js",
+      "raw": 12047,
+      "gzip": 4919,
+      "byArea": {
+        "@aura3d/engine > rendering/environment": 11866,
+        "(unmapped)": 181
+      }
+    },
+    {
+      "file": "assets/device-Dp_IN4Fv.js",
+      "raw": 11020,
+      "gzip": 3774,
+      "byArea": {
+        "@aura3d/engine > rendering/post": 7302,
+        "@aura3d/engine > rendering/postprocess": 2133,
+        "@aura3d/engine > rendering/contracts": 1497,
+        "(unmapped)": 83
+      }
+    },
+    {
+      "file": "assets/Texture-Cqa5BCQV.js",
+      "raw": 10573,
+      "gzip": 2812,
+      "byArea": {
+        "@aura3d/engine > rendering": 10528,
+        "(unmapped)": 45
+      }
+    },
+    {
+      "file": "assets/TemporalHistory-B7AShx5i.js",
+      "raw": 7079,
+      "gzip": 2521,
+      "byArea": {
+        "@aura3d/engine > rendering": 6643,
+        "(unmapped)": 436
+      }
+    },
+    {
+      "file": "assets/SphericalHarmonics-5GXTdsvR.js",
+      "raw": 5734,
+      "gzip": 2451,
+      "byArea": {
+        "@aura3d/engine > rendering/environment": 4990,
+        "@aura3d/engine > rendering/contracts": 649,
+        "(unmapped)": 95
+      }
+    },
+    {
+      "file": "assets/quality-CsKvJ4xe.js",
+      "raw": 4254,
+      "gzip": 1499,
+      "byArea": {
+        "@aura3d/engine > rendering/contracts": 4209,
+        "(unmapped)": 45
+      }
+    },
+    {
+      "file": "assets/MeshConsolidation-DeiOV2R5.js",
+      "raw": 3400,
+      "gzip": 1485,
+      "byArea": {
+        "@aura3d/engine > rendering": 3285,
+        "(unmapped)": 115
+      }
+    },
+    {
+      "file": "assets/ShaderFailures-CjhMCdXA.js",
+      "raw": 3068,
+      "gzip": 1504,
+      "byArea": {
+        "@aura3d/engine > rendering": 3016,
+        "(unmapped)": 52
+      }
+    },
+    {
+      "file": "assets/extension-scalar-atlas-Crl6JfR8.js",
+      "raw": 2919,
+      "gzip": 1290,
+      "byArea": {
+        "@aura3d/engine > rendering": 2817,
+        "(unmapped)": 102
+      }
+    },
+    {
+      "file": "assets/BoneMask-BzjxcBy7.js",
+      "raw": 2159,
+      "gzip": 923,
+      "byArea": {
+        "@aura3d/engine > animation": 2064,
+        "(unmapped)": 95
+      }
+    },
+    {
+      "file": "assets/PngTexturePixels-BbiT8MXa.js",
+      "raw": 1527,
+      "gzip": 859,
+      "byArea": {
+        "@aura3d/engine > engine/agent-api": 1473,
+        "(unmapped)": 54
+      }
+    },
+    {
+      "file": "assets/core-DMkF6785.js",
+      "raw": 1165,
+      "gzip": 615,
+      "byArea": {
+        "@aura3d/engine > rendering/contracts": 1123,
+        "(unmapped)": 42
+      }
+    },
+    {
+      "file": "assets/preload-helper-DQxEJtM2.js",
+      "raw": 1162,
+      "gzip": 693,
+      "byArea": {
+        "(unmapped)": 1162
+      }
+    },
+    {
+      "file": "assets/neutralEmbeddedLoader-BcCQptjh.js",
+      "raw": 1125,
+      "gzip": 673,
+      "byArea": {
+        "@aura3d/engine > rendering/environment": 860,
+        "(unmapped)": 265
+      }
+    },
+    {
+      "file": "assets/WebGPUSkinningLimits-D0XABiXy.js",
+      "raw": 1001,
+      "gzip": 436,
+      "byArea": {
+        "@aura3d/engine > rendering": 943,
+        "(unmapped)": 58
+      }
+    },
+    {
+      "file": "assets/postSkipped-BaCr6B2T.js",
+      "raw": 672,
+      "gzip": 425,
+      "byArea": {
+        "@aura3d/engine > rendering/contracts": 304,
+        "@aura3d/engine > rendering/renderer": 280,
+        "(unmapped)": 88
+      }
+    },
+    {
+      "file": "assets/decoderLoad-B_5pX0jV.js",
+      "raw": 549,
+      "gzip": 373,
+      "byArea": {
+        "@aura3d/engine > assets": 500,
+        "(unmapped)": 49
+      }
+    },
+    {
+      "file": "assets/AssetDecoders-DIvnPx5V.js",
+      "raw": 354,
+      "gzip": 270,
+      "byArea": {
+        "@aura3d/engine > engine/agent-api": 257,
+        "(unmapped)": 97
+      }
+    },
+    {
+      "file": "assets/TemporalMath-CVVOnycf.js",
+      "raw": 243,
+      "gzip": 213,
+      "byArea": {
+        "@aura3d/engine > rendering": 193,
+        "(unmapped)": 50
+      }
+    },
+    {
+      "file": "assets/engine_false-B0glq211.js",
+      "raw": 178,
+      "gzip": 173,
+      "byArea": {
+        "app": 128,
+        "(unmapped)": 50
+      }
+    }
+  ],
+  "otherFiles": [
+    {
+      "file": "aura-decoders/basis/basis_transcoder.wasm",
+      "raw": 527333
+    },
+    {
+      "file": "aura-decoders/draco/draco_decoder.wasm",
+      "raw": 192420
+    },
+    {
+      "file": "aura-decoders/meshopt/meshopt_decoder.cjs",
+      "raw": 29400
+    },
+    {
+      "file": "index.html",
+      "raw": 2222
+    },
+    {
+      "file": "aura-decoders/basis/README.md",
+      "raw": 1278
+    },
+    {
+      "file": "aura-decoders/draco/README.md",
+      "raw": 1128
+    },
+    {
+      "file": "aura-decoders/meshopt/README.md",
+      "raw": 1091
+    }
+  ]
+}

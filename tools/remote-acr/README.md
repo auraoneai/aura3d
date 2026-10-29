@@ -77,6 +77,23 @@ Output: `tests/reports/remote-acr/<RUN_ID>/` (gitignored) —
 `acr-build.log`, `acr-run.log` (full ACR step log incl. `--reporter` output),
 `summary.json`, `artifacts/<RUN_ID>/tests/reports/…` (spec PNGs etc.).
 
+## Capturing showcase games
+
+- **Shared app folders.** `run.sh` always stages `apps/common` (HUD fonts) and `apps/showcase-port-shared` (quick bar),
+  because every showcase app and port imports them. Add the game's own app folder with `EXTRA_DIRS=apps/showcase-<game>`.
+- **Model files.** The slim profile leaves `public/aura-assets` out. Name each file the game loads in `PUBLIC_ASSETS`.
+  Paths keep their folders (`PUBLIC_ASSETS="Textures/colormap.png"` lands in `public/aura-assets/Textures/`), and a
+  directory name copies the whole directory. Route-local files under `apps/<app>/public/aura-assets` come with the app
+  folder and are served under `/aura-assets/` by the dev server, as in the deploy.
+- **Ports.** A port app mounts its example (`import "../../../examples/<dir>/main"`), and the examples load models with
+  `new URL("./assets/...", import.meta.url)`. The dev server resolves `import.meta.url` per module inside the app bundle,
+  so `/apps/showcase-<port>/` works; `examples/` is always staged. Capturing `/examples/<dir>/index.html` also works.
+- **`SPECS` must be shell-safe.** The ACR step runs `SPECS` through `/bin/sh`, so `|`, `(`, `)`, `;`, `&`, `<`, `>`,
+  backquote and `$` would be executed (one run failed in 3 s on a `|`). `run.sh` now refuses them. Select tests with a
+  plain tag (`--grep=@g3`).
+- **Step limit.** One ACR step stops after 3600 s. On software GL a game presents one frame every several seconds, so
+  split long captures into groups selected by tag.
+
 ## WebGPU on this runner: use `@headed-xvfb`
 
 Headless Chromium on this runner (Playwright's headless shell, and new headless / `chrome-beta`

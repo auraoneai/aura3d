@@ -1,0 +1,4 @@
+{"target":"card","probe":"boot","readyMs":30794,"sharedCatalogRequests":[]}
+{"target":"pair-default","probe":"boot","readyMs":29705,"sharedCatalogRequests":[]}
+{"target":"pair-production-render","probe":"boot","readyMs":24224,"sharedCatalogRequests":[]}
+{"target":"pair-ao-off","probe":"boot","readyMs":19223,"sharedCatalogRequests":[]}

@@ -121,24 +121,6 @@ export const assets = defineAuraAssets({
     url: "/aura-assets/hoopsCheckSfx.405a831d.wav",
     hash: "sha256-405a831d3b901ca15f9a628f96e3136be8a2da626660da946ccf18fd2f610ba3"
   },
-  hoopsBoardThudSfx: {
-    type: "audio",
-    format: "wav",
-    url: "/aura-assets/hoopsBoardThudSfx.b2f87b29.wav",
-    hash: "sha256-b2f87b29f4b1f28e434ec5a5ef411a08595226c01ba37aa332f44dd548208eb3"
-  },
-  hoopsRimClankSfx: {
-    type: "audio",
-    format: "wav",
-    url: "/aura-assets/hoopsRimClankSfx.7909dddd.wav",
-    hash: "sha256-7909ddddb6a2df92d50ce8d2693d6543fe2b108fa146b83b4a8c3262cd9285cd"
-  },
-  hoopsSwishSfx: {
-    type: "audio",
-    format: "wav",
-    url: "/aura-assets/hoopsSwishSfx.fdab5827.wav",
-    hash: "sha256-fdab5827ad885ff1824877f81c5b968341ce228997248b0b168ee0bc3872046f"
-  },
   hoopsCrowdSfx: {
     type: "audio",
     format: "wav",
@@ -174,6 +156,43 @@ export const assets = defineAuraAssets({
     format: "wav",
     url: "/aura-assets/diamondConfirmSfx.70982d28.wav",
     hash: "sha256-70982d2827bd33a15e2ba174d40133aa21bea3b879bcf19e8da5714cb6693843"
+  },
+  bankShotFoulWhistleSfx: {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/bankShotFoulWhistleSfx.631d142b.wav",
+    hash: "sha256-631d142bd4c4fb0aca6377d96faaaba76c8299fe36a7445334a3db063cb1b869"
+  },
+  diamondCrowdSfx: {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondCrowdSfx.d68cf36a.wav",
+    hash: "sha256-d68cf36aa84536dd799c3558c9c7196029dde79866c92da2a60b8b6f96686e85"
+  },
+  diamondCrowdSwelSfx: {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondCrowdSwelSfx.6bb15fd5.wav",
+    hash: "sha256-6bb15fd56d8a2ebbd3cf495219366a09ccbdc0e41baedb355a99205d1bb4c4f1"
+  },
+  // FC-16: football SFX synthesised by tools/aura-fc/synth-sfx.mjs, served route-local from apps/showcase-aura-fc-3d/public/aura-assets
+  fcKickSfx: {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/fcKickSfx.cbf67a27.wav",
+    hash: "sha256-cbf67a27936d158f24e0ccf2d23582f1cbb4f893f74b388f25065ac1d9000826"
+  },
+  fcNetSfx: {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/fcNetSfx.e2258830.wav",
+    hash: "sha256-e22588307305a19c8688f11fb6fd6bb2627fe00d45c87dad98b5aee0a53b3eb5"
+  },
+  fcPostSfx: {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/fcPostSfx.8df2bd4f.wav",
+    hash: "sha256-8df2bd4fa24e75f571e698ce48e99dc49b339e81b0e1ff40e078ba800101a309"
   },
   diamondHomerBigSfx: {
     type: "audio",

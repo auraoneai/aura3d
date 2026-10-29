@@ -18,45 +18,45 @@
   },
   "primaryAssets": [
     {
-      "typedRef": "assets.teleopWaymoHero",
+      "typedRef": "assets.gridCruiser",
       "quality": "production",
       "role": "primaryVehicle"
     },
     {
-      "typedRef": "assets.teleopCybercab",
+      "typedRef": "assets.gridCoupe",
       "quality": "production",
       "role": "primaryVehicle"
     },
     {
-      "typedRef": "assets.teleopCybertruck",
+      "typedRef": "assets.gridTruck",
       "quality": "production",
       "role": "primaryVehicle"
     },
     {
-      "typedRef": "assets.teleopCorvette",
+      "typedRef": "assets.gridGt",
       "quality": "production",
       "role": "primaryVehicle"
     },
     {
-      "typedRef": "assets.teleopWaymoTraffic",
+      "typedRef": "assets.gridRivalCruiser",
       "quality": "production",
       "role": "primaryVehicle"
     },
     {
-      "typedRef": "assets.teleopCablecar",
+      "typedRef": "assets.gridCablecar",
       "quality": "production",
       "role": "primaryVehicle"
     },
     {
-      "typedRef": "assets.roadsterRushPlayerCar",
+      "typedRef": "assets.gridInterceptor",
       "quality": "production",
       "role": "primaryVehicle"
     },
     {
-      "typedRef": "assets.roadsterRushSedan",
+      "typedRef": "assets.gridSedan",
       "quality": "production",
       "role": "setDressing"
     }
   ],
-  "notes": "Full 3D San Francisco robotaxi dispatch showcase on Aura3D with an original fleet of generic, Meshy-generated vehicles (robotaxi, compact hatch, sports coupe, pickup, roadster, sedan, delivery van and box truck), five autonomy levels, 3D pickup and drop-off kerb beacons, floating multiplayer peer nameplates, an SVG speedometer dial and a vector minimap. No real vehicle brands or marks."
+  "notes": "Full 3D San Francisco robotaxi dispatch showcase on Aura3D with an original fleet of generic, Meshy-generated vehicles (robotaxi, compact hatch, sports coupe, pickup, roadster, sedan, delivery van and box truck), five autonomy levels, 3D pickup and drop-off kerb beacons, five AI rival cars with floating name tags, an SVG speedometer dial and a vector minimap. No real vehicle brands or marks."
 }

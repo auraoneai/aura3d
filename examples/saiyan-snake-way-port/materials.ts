@@ -60,6 +60,9 @@ export const roadSpec = (): CustomSpec => ({
     roadDark: { type: "color3", value: [...hexLinear(PALETTE.roadDark)] },
     jointColor: { type: "color3", value: [...hexLinear(PALETTE.joint)] },
     scaleColor: { type: "color3", value: [...hexLinear(PALETTE.scale)] },
+    /** Road distance `s` of the next missing plate and the 0..1 strength of its edge warning (hud.ts `gapAhead`). */
+    gapAt: { type: "f32", value: -1e6 },
+    gapWarn: { type: "f32", value: 0 },
   },
   side: "double"
 });

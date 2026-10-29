@@ -876,7 +876,7 @@
         opacity: 1;
       }
 
-      #drift {
+      #wrongWay {
         left: 50%;
         top: 26%;
         transform: translateX(-50%);
@@ -892,7 +892,7 @@
         transition: opacity 0.2s;
       }
 
-      #drift.on {
+      #wrongWay.on {
         opacity: 1;
       }
 
@@ -1153,7 +1153,7 @@
         font-size: 11px;
       }
 
-      #aids i {
+      #aids button {
         font-style: normal;
         padding: 3px 7px;
         border: 1px solid rgba(255, 255, 255, 0.24);
@@ -1164,42 +1164,42 @@
         transition: color 0.12s, background 0.12s, border-color 0.12s;
       }
 
-      #aids i.act {
+      #aids button.act {
         color: #06221f;
         background: var(--acc);
         border-color: var(--acc);
       }
 
-      #aids i.off {
+      #aids button.off {
         opacity: 0.4;
         text-decoration: line-through;
       }
 
-      #aids i.da {
+      #aids button.da {
         display: inline-flex;
         align-items: center;
         gap: 4px;
       }
 
-      #aids i.da svg {
+      #aids button.da svg {
         width: 13px;
         height: 9px;
       }
 
-      #aids i.da.drive {
+      #aids button.da.drive {
         color: #06221f;
         background: var(--acc);
         border-color: var(--acc);
         box-shadow: 0 0 10px 2px rgba(63, 214, 198, 0.45);
       }
 
-      #aids i.da.take {
+      #aids button.da.take {
         color: #241500;
         background: var(--acc2);
         border-color: var(--acc2);
       }
 
-      #aids i.da.boost {
+      #aids button.da.boost {
         color: #2a0600;
         background: #ff5a3c;
         border-color: #ff5a3c;
@@ -1264,7 +1264,8 @@
         #where .coords, #where #wX { display: none; }
         #topRightCluster { left: 8px; right: 8px; top: calc(62px + env(safe-area-inset-top, 0px)); flex-direction: row; align-items: center; justify-content: space-between; gap: 6px; }
         /* Fare card and active trip: a compact bottom sheet (about 18% of the height), tap the title to collapse it to one line. */
-        #taxiCard, #taxiTrip { left: 8px; right: 8px; width: auto; top: auto; bottom: calc(52px + env(safe-area-inset-bottom, 0px)); transform: translateY(8px); padding: 6px 10px; max-height: 18vh; overflow: hidden; }
+        /* Fare card and trip sit under the earnings row, clear of the dial and the touch pads (C15). */
+        #taxiCard, #taxiTrip { left: 8px; right: 8px; width: auto; top: calc(108px + env(safe-area-inset-top, 0px)); bottom: auto; transform: translateY(-6px); padding: 6px 10px; max-height: 20vh; overflow: hidden; }
         #taxiCard.on, #taxiTrip.on { transform: none; }
         #taxiCard.min, #taxiTrip.min { max-height: 34px; }
         .tx .tx-head { margin-bottom: 4px; }
@@ -1274,12 +1275,14 @@
         .tx .who small, .tx .leg small, .tx .dst small, .tx .row small, .tx .cf small { display: none; }
         .tx .who { gap: 8px; }
         .tx .leg, .tx .dst { padding: 2px 0; }
-        #taxiPen { top: calc(112px + env(safe-area-inset-top, 0px)); }
-        #taxiHint { top: calc(150px + env(safe-area-inset-top, 0px)); bottom: auto; left: 8px; right: 8px; max-width: none; text-align: center; }
+        #taxiPen { top: calc(108px + 20vh + 10px + env(safe-area-inset-top, 0px)); }
+        #taxiHint { top: calc(108px + 20vh + 64px + env(safe-area-inset-top, 0px)); bottom: auto; left: 8px; right: 8px; max-width: none; text-align: center; transform: none; }
         #taxiTotal { flex: 1 1 auto; min-width: 0; text-align: left; padding: 6px 10px; }
         #taxiTotal small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         #menu { flex: 0 0 auto; gap: 4px; }
-        #menu button { padding: 0 9px; white-space: nowrap; }
+        #menu button { padding: 0 9px; white-space: nowrap; min-height: 44px; }
+        #teleopDock button { height: 44px; }
+        #aids { display: none; }
         #mpCountLabel { display: none; }
         #mini { display: none; }
         #hud { right: 6px; bottom: 6px; transform: scale(0.7); transform-origin: bottom right; }
@@ -1290,6 +1293,58 @@
         #teleopDock .dock-row { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
         #teleopDock .dock-row > * { flex: 0 0 auto; }
         #teleopDock .dock-row::-webkit-scrollbar { display: none; }
+      }
+      /* Audit-fix additions: touch pads, rival chips, results, warnings, accessibility */
+      .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+      #unit { appearance: none; background: none; border: 0; padding: 2px 4px; display: block; margin-left: auto; margin-right: auto; }
+      #aids button { appearance: none; font: inherit; line-height: 1.2; }
+      .mpTag { appearance: none; font: inherit; }
+      .mpTag.chip { padding: 2px 8px; gap: 0; opacity: 0.85; }
+      .mpTag.chip small, .mpTag.chip i { display: none; }
+      .mpTag.chip b { font-size: 11px; }
+      .tx .style-toggle[disabled] { opacity: 0.7; cursor: default; }
+      .tx .who > div, .tx .leg > div, #taxiTrip .dst > div { min-width: 0; flex: 1 1 auto; }
+      #gmode { white-space: nowrap; font-size: 9px; letter-spacing: 0.02em; }
+      #taxiTrip .row b.late, .late { color: var(--bad); font-style: normal; }
+      #menu #muteBtn[aria-pressed="true"] { opacity: 0.7; }
+      #results { left: 50%; top: 50%; transform: translate(-50%, -46%) scale(0.97); width: min(360px, 90vw); background: rgba(8, 12, 18, 0.95); border: 1px solid var(--line-strong); border-radius: var(--r-md); padding: 16px 18px; box-shadow: var(--sh-2); pointer-events: none; z-index: 12; }
+      #results.on { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+      #results .tg { text-align: center; font-size: 13px; margin-bottom: 8px; }
+      #results .ln { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+      #results .tot { display: flex; justify-content: space-between; align-items: baseline; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.22); }
+      #results .tot b { font-family: var(--font-metric); font-size: 26px; color: #ffffff; }
+      #results .best { text-align: center; margin-top: 6px; color: var(--acc2); font-size: 12px; }
+      #results .resBtns { display: flex; justify-content: center; margin-top: 12px; }
+      #results .resBtns button { appearance: none; min-height: 44px; padding: 0 22px; border-radius: var(--r-pill); border: 1px solid var(--acc); background: var(--acc); color: #051816; font: 600 13px var(--font-ui); cursor: pointer; }
+      #wrongWay { background: rgba(255, 58, 58, 0.9); border-color: #ff5a4f; color: #ffffff; top: 38%; }
+      #skyChange { left: 50%; top: 46%; transform: translateX(-50%); padding: 8px 16px; border-radius: var(--r-pill); background: var(--glass-strong); border: 1px solid var(--line-strong); font: 500 13px var(--font-ui); opacity: 0; transition: opacity 0.2s; z-index: 11; }
+      #skyChange.on { opacity: 1; }
+      #mini { cursor: default; }
+      #touchPads { display: none; }
+      #touchPads.on { display: block; }
+      #touchPads .pad { position: fixed; z-index: 9; width: 72px; height: 72px; border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.35); background: rgba(8, 11, 16, 0.55); color: #ffffff; font: 600 14px var(--font-ui); letter-spacing: 0.04em; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); }
+      #touchPads .pad.down { background: rgba(63, 214, 198, 0.55); border-color: var(--acc); color: #051816; }
+      #touchPads .pad-left { left: calc(16px + env(safe-area-inset-left, 0px)); bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+      #touchPads .pad-right { left: calc(98px + env(safe-area-inset-left, 0px)); bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+      #touchPads .pad-brake { right: calc(252px + env(safe-area-inset-right, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+      #touchPads .pad-throttle { right: calc(252px + env(safe-area-inset-right, 0px)); bottom: calc(96px + env(safe-area-inset-bottom, 0px)); background: rgba(67, 209, 122, 0.35); }
+      body.touch #mini { display: none; }
+      @media (pointer: coarse) {
+        #teleopDock button, #menu button, #mpPanel button, .tx .style-toggle { min-height: 44px; }
+        #unit { min-width: 63px; min-height: 63px; }
+      }
+      @media (max-width: 760px) {
+        #touchPads .pad { width: 64px; height: 64px; }
+        #touchPads .pad-left { left: calc(8px + env(safe-area-inset-left, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+        #touchPads .pad-right { left: calc(80px + env(safe-area-inset-left, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+        #touchPads .pad-brake { right: calc(8px + env(safe-area-inset-right, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+        #touchPads .pad-throttle { right: calc(8px + env(safe-area-inset-right, 0px)); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+        body.touch #hud { right: 50%; bottom: 6px; transform: translateX(50%) scale(0.7); transform-origin: bottom center; }
+        body.touch #teleopDock { bottom: calc(86px + env(safe-area-inset-bottom, 0px)); }
+        body.touch #teleopDock[data-collapsed="false"] { bottom: calc(170px + env(safe-area-inset-bottom, 0px)); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { transition: none !important; animation: none !important; }
       }
       #boot.boot {
         position: fixed;
@@ -1313,112 +1368,119 @@
       }
     </style>
   </head>
-  <body class="teleop waymo play mpOn mpRoom">
+  <body class="play">
     <div id="boot" class="boot">
       <div style="font-size:18px;font-weight:700;color:#3fd6c6;">GRID DISPATCH · SAN FRANCISCO</div>
-      <div style="font-size:11px;opacity:0.78;">LOADING FLEET &amp; TELEOP CORRIDOR...</div>
+      <div style="font-size:11px;opacity:0.78;">LOADING THE FLEET AND THE AVENUE...</div>
     </div>
     <div id="view">
-      <canvas id="c" width="1280" height="800" aria-label="Grid Dispatch San Francisco 3D street view"></canvas>
+      <canvas id="c" width="1280" height="800" aria-label="Grid Dispatch: San Francisco street view from behind your car"></canvas>
     </div>
 
-    <!-- Top-Left District & Street Telemetry -->
+    <!-- Top-left district -->
     <div class="ov" id="where">
       <div class="hood-row">
         <div class="hood" id="wHood">Nob Hill</div>
         <span class="coords" id="wCoords">37.7919° N · 122.4102° W</span>
       </div>
       <div class="st" id="wSt">California Street</div>
-      <div class="x" id="wX">→ Grant Ave · Financial District</div>
+      <div class="x" id="wX">→ Mason St</div>
     </div>
 
-    <!-- Top-Center Apex Fare Card & Active Trip -->
-    <div class="tx on" id="taxiCard" aria-live="polite"></div>
-    <div class="tx" id="taxiTrip" aria-live="polite"></div>
+    <!-- Top-centre fare card and active trip (rebuilt only on state changes; announcements go to #rideStatus) -->
+    <div class="tx on" id="taxiCard"></div>
+    <div class="tx" id="taxiTrip"></div>
     <div class="tx on" id="taxiPen" aria-live="polite"></div>
-    <div class="tx" id="taxiHint">Stop at the glowing kerb beacon to board passenger</div>
-    <div class="tx" id="taxiSum" role="dialog" aria-label="Ride Summary"></div>
+    <div class="tx" id="taxiHint">Stop at the glowing kerb beacon to pick up the passenger</div>
+    <div class="tx" id="taxiSum" role="dialog" aria-label="Ride summary"></div>
+    <div id="rideStatus" class="sr-only" role="status" aria-live="polite"></div>
 
-    <!-- Top-Right Earnings & Multiplayer Room Controls -->
+    <!-- Shift results -->
+    <div class="tx" id="results" role="dialog" aria-modal="false" aria-labelledby="resultsTitle">
+      <div class="tg" id="resultsTitle">SHIFT COMPLETE</div>
+      <div data-body></div>
+      <div class="resBtns"><button type="button" data-retry>Retry shift (R)</button></div>
+    </div>
+
+    <!-- Top-right shift earnings, rivals, skip and sound -->
     <div id="topRightCluster">
       <div class="tx on" id="taxiTotal">
-        <b>$1,420</b>
-        <small>14 rides · ★ 4.96 · Teleop Room #SF-401</small>
+        <b>$0.00</b>
+        <small>Fare 0/5 · shift 07:00 · no rating yet</small>
       </div>
       <div id="menu">
-        <button id="mpChip" type="button" title="Drive together: Multiplayer room &amp; peer teleport">
+        <button id="mpChip" type="button" title="AI rivals on the avenue">
           <svg viewBox="0 0 24 16" aria-hidden="true">
             <circle cx="8" cy="5" r="3.2" fill="currentColor" />
             <path d="M1.5 15.5c.6-3.8 3.2-5.6 6.5-5.6s5.9 1.8 6.5 5.6z" fill="currentColor" />
             <circle cx="17" cy="5.6" r="2.6" fill="currentColor" opacity=".7" />
             <path d="M15.6 10.1c3.5-.6 6.3 1 6.9 5.4h-6.1c-.1-2.2-.4-3.9-.8-5.4z" fill="currentColor" opacity=".7" />
           </svg>
-          <span id="mpCountLabel">6 in Room #SF-401</span>
+          <span id="mpCountLabel">5 AI rivals</span>
         </button>
-        <button id="bNextFare" type="button" title="Dispatch next Apex passenger request (F)">Next Fare</button>
+        <button id="bNextFare" type="button" title="Skip this fare. It pays nothing (F)">Skip fare</button>
+        <button id="muteBtn" type="button" aria-pressed="false" title="Sound on or off (M)">Sound on</button>
       </div>
     </div>
 
-    <!-- Multiplayer Room Panel (#mpPanel) -->
-    <div class="ov" id="mpPanel" role="dialog" aria-label="Drive together">
+    <!-- AI rivals panel -->
+    <div class="ov" id="mpPanel" role="dialog" aria-label="AI rivals">
       <button class="mpX" id="mpCloseBtn" type="button" aria-label="Close">×</button>
-      <h2>Drive <em>together</em></h2>
-      <p class="mpRoomName" id="mpRoomTitle">San Francisco Teleop Room #SF-401 · Shared Traffic &amp; Weather</p>
-      <p class="mpStat" role="status" aria-live="polite">
-        <span id="mpStatusText">6 / 8 drivers connected · 18 ms SF-West</span>
-      </p>
+      <h2>AI <em>rivals</em></h2>
+      <p class="mpRoomName">Five computer-driven cars share the avenue with you. Pick one to drive beside it.</p>
+      <p class="mpStat" id="careerLine" role="status">0 rides · no rating yet · best shift 0</p>
       <ul class="mpList" id="mpPeerList"></ul>
       <label class="mpLink">
-        <input id="mpInviteInput" readonly aria-label="Invite link" value="https://aura3d.auraone.ai/apps/showcase-teleoperator/?room=SF-401" />
+        <input id="mpInviteInput" readonly aria-label="Game link" value="https://aura3d.auraone.ai/apps/showcase-teleoperator/" />
       </label>
       <div class="mpBtns">
-        <button type="button" id="mpCopyBtn">Copy invite link</button>
-        <button type="button" id="mpCyclePeerBtn">Teleport to next peer</button>
+        <button type="button" id="mpCopyBtn">Copy game link</button>
       </div>
     </div>
 
-    <!-- Floating 3D-to-2D Peer Nameplates (#mpTags) -->
+    <!-- Floating rival tags -->
     <div class="ov" id="mpTags"></div>
 
-    <!-- Center Brake & Drift Cues + Toast -->
-    <div class="ov" id="brakeCue" aria-live="polite">Brake</div>
-    <div class="ov" id="drift">Drift</div>
+    <!-- Centre cues and toast -->
+    <div class="ov" id="brakeCue">Brake assist</div>
+    <div class="ov" id="wrongWay" role="alert">Wrong way: move right of the yellow line</div>
+    <div class="ov" id="skyChange">Changing the sky…</div>
     <div id="toast" aria-live="polite"></div>
 
-    <!-- Bottom-Left Vector Minimap (#mini / #miniC) -->
-    <div class="ov" id="mini" title="San Francisco live vector radar (click to cycle peer focus)">
+    <!-- Bottom-left radar -->
+    <div class="ov" id="mini" aria-hidden="true">
       <canvas id="miniC" width="400" height="400"></canvas>
     </div>
 
-    <!-- Bottom-Left Interactive Fleet, Autopilot, Camera & Weather Switcher -->
-    <div id="teleopDock" data-collapsed="true" role="toolbar" aria-label="Grid Dispatch Fleet, Autopilot, Camera, and Weather Controls">
+    <!-- Bottom-left fleet, assist, camera and sky switcher -->
+    <div id="teleopDock" data-collapsed="true" role="toolbar" aria-label="Fleet, driver assist, camera and sky">
       <button type="button" id="dockToggle" aria-expanded="false" aria-controls="teleopDock" title="Fleet, camera and sky">Fleet · Cam · Sky</button>
       <div class="dock-row">
         <span class="dock-label">Fleet</span>
-        <button type="button" data-car="waymo" class="active">Apex Lidar Cruiser</button>
-        <button type="button" data-car="cybercab">Cyber Coupe</button>
-        <button type="button" data-car="cybertruck">Titan EV Truck</button>
-        <button type="button" data-car="corvette">Vortex GT</button>
-        <button type="button" data-car="roadster">Apex Interceptor</button>
+        <button type="button" data-car="cruiser" class="active" aria-pressed="true">Apex Lidar Cruiser</button>
+        <button type="button" data-car="coupe" aria-pressed="false">Cyber Coupe</button>
+        <button type="button" data-car="truck" aria-pressed="false">Titan EV Truck</button>
+        <button type="button" data-car="gt" aria-pressed="false">Vortex GT</button>
+        <button type="button" data-car="interceptor" aria-pressed="false">Apex Interceptor</button>
         <span class="dock-sep" aria-hidden="true"></span>
-        <button type="button" id="dockAutopilotBtn" title="Cycle Driver Assist (I key)">Manual Override</button>
+        <button type="button" id="dockAutopilotBtn" title="Cycle driver assist (I)">Manual</button>
       </div>
       <div class="dock-row">
         <span class="dock-label">Cam</span>
-        <button type="button" data-cam="0" class="active">Chase</button>
-        <button type="button" data-cam="1">Far Chase</button>
-        <button type="button" data-cam="2">Roof LiDAR Cam</button>
-        <button type="button" data-cam="3">Bumper</button>
+        <button type="button" data-cam="0" class="active" aria-pressed="true">Chase</button>
+        <button type="button" data-cam="1" aria-pressed="false">Far Chase</button>
+        <button type="button" data-cam="2" aria-pressed="false">Roof Cam</button>
+        <button type="button" data-cam="3" aria-pressed="false">Bumper</button>
         <span class="dock-sep" aria-hidden="true"></span>
-        <span class="dock-label">SF Sky</span>
-        <button type="button" data-tod="noon" class="active">Sunny Noon</button>
-        <button type="button" data-tod="golden">Golden Hour</button>
-        <button type="button" data-tod="fog">Karl the Fog</button>
-        <button type="button" data-tod="night">Night</button>
+        <span class="dock-label">Sky</span>
+        <button type="button" data-tod="noon" class="active" aria-pressed="true">Noon</button>
+        <button type="button" data-tod="golden" aria-pressed="false">Golden Hour</button>
+        <button type="button" data-tod="fog" aria-pressed="false">Fog</button>
+        <button type="button" data-tod="night" aria-pressed="false">Night</button>
       </div>
     </div>
 
-    <!-- Bottom-Right SVG Speedometer Dial (#hud / #dial) -->
+    <!-- Bottom-right speedometer -->
     <div class="ov" id="hud">
       <svg id="dial" viewBox="0 0 240 240" aria-hidden="true">
         <defs>
@@ -1441,23 +1503,20 @@
         <path id="nos" pathLength="100" />
       </svg>
       <div id="dialC">
-        <div id="spd">032</div>
-        <div id="unit" title="Click or press U to toggle MPH / KM/H">MPH</div>
+        <div id="spd">025</div>
+        <button type="button" id="unit" title="Switch MPH and KM/H (U)">MPH</button>
         <div id="gear">D</div>
       </div>
       <div id="aids">
-        <i id="aDA" class="da take" title="Driving level (I)">
+        <button type="button" id="aDA" class="da take" title="Driver assist (I)">
           <svg viewBox="0 0 20 14" aria-hidden="true">
             <path d="M3.5 5.2Q10-.6 16.5 5.2M6.3 7.3Q10 4.2 13.7 7.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
             <rect x="5" y="8.6" width="10" height="4.6" rx="2" fill="currentColor" />
           </svg>
           <b id="aDAl">MAN</b>
-        </i>
-        <i id="aABS" class="act" title="Toggle ABS">ABS</i>
-        <i id="aTCS" class="act" title="Toggle Traction Control">TCS</i>
-        <i id="aESP" class="act" title="Toggle Stability Control">ESP</i>
+        </button>
       </div>
-      <div id="gmode">MANUAL · PILOT OVERRIDE</div>
+      <div id="gmode">MANUAL · DUAL-MOTOR EV</div>
     </div>
 
     <script>

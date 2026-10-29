@@ -72,7 +72,7 @@ registerLookLintRule({
 
 // ---------- PRD-02 Phase 2 — C-09/C-36/C-38/C-31 registrations ----------
 
-import { registerPrd02EnvironmentSources, explicitEnvironmentResolution, prd02AmbientTerm } from "../agent-api/compiler/environment.js";
+import { registerPrd02EnvironmentSources, explicitEnvironmentResolution, prd02AmbientTerm, setRuntimeEnvironmentIntensity } from "../agent-api/compiler/environment.js";
 // Ordering guarantee: the registration flag lives in this leaf so the
 // self-registration below cannot touch uninitialised `let` state when a
 // cyclic import order runs this lane while compiler/environment.ts is
@@ -204,9 +204,10 @@ registerOptionCoverage([
 // ---------- C-38 app.lighting ----------
 
 /**
- * PRD-02 lighting runtime. Phase 2: observed bookkeeping (rotation /
- * intensity round-trip, model+flag in diagnostics); the real probe /
- * irradiance mutation paths land in Phase 3 (env) and Phase 5 (probes).
+ * PRD-02 lighting runtime. `setEnvironmentIntensity` scales the live
+ * environment term; rotation is still bookkeeping only (round-trip, model+flag
+ * in diagnostics); the probe / irradiance mutation paths land in Phase 3 (env)
+ * and Phase 5 (probes).
  */
 export class Prd02LightingRuntime {
   private rotation = 0;
@@ -219,7 +220,7 @@ export class Prd02LightingRuntime {
    * diagnostics sections report the app's flag state — not a second
    * ambient `?a3d-qr=` / env resolution.
    */
-  constructor(readonly flags?: QrFlags) {}
+  constructor(readonly flags?: QrFlags, private readonly scaleOwner?: object) {}
 
   /**
    * C-28 counters are consumed from the bound device, never counted here
@@ -230,7 +231,18 @@ export class Prd02LightingRuntime {
   updateProbe(name: string): Promise<void> { this.pendingProbes.add(name); return Promise.resolve(); }
   rebakeIrradiance(name?: string): Promise<void> { if (name) this.pendingProbes.add(name); return Promise.resolve(); }
   setEnvironmentRotation(radians: number): void { this.rotation = radians; }
-  setEnvironmentIntensity(value: number): void { this.intensity = value; }
+  /**
+   * Live scale on the environment term (image-based diffuse and specular), applied by the mounted scene's
+   * per-frame update. Lights, the ambient term and the background keep their authored values.
+   */
+  setEnvironmentIntensity(value: number): void {
+    if (this.scaleOwner) setRuntimeEnvironmentIntensity(this.scaleOwner, value);
+    else if (!Number.isFinite(value) || value < 0) throw new RangeError(`setEnvironmentIntensity expects a finite number >= 0, got ${String(value)}.`);
+    this.intensity = value;
+  }
+
+  /** The scale last set with `setEnvironmentIntensity` (1 until set). */
+  environmentIntensity(): number { return this.intensity; }
 
   /** §17 timing spans (item: C-31 `lighting` section). C-28 exposes only a
    *  capability flag today — no per-pass GPU timer API exists on
@@ -281,7 +293,8 @@ registerAppExtension({
   member: "lighting",
   owner: "prd02",
   flag: "A3D_QR_LIGHTING",
-  create: (_app, ctx) => new Prd02LightingRuntime(ctx.flags)
+  // The scale is keyed by `app.nodes`, the runtime registry the mounted scene's update receives.
+  create: (app, ctx) => new Prd02LightingRuntime(ctx.flags, (app as { readonly nodes?: object }).nodes)
 });
 
 // ---------- C-31 diagnostics sections ("lighting" / "shadows") ----------

@@ -1,8 +1,9 @@
 # Serpentine Sky Run on Aura3D: porting notes
 
 Aura3D port of the Crayon game "Serpentine Sky Run" (PRD Phase C / R-25 capture work), shown publicly as
-"Serpentine Sky Run". All on-screen wording goes through `text.ts`; the simulation keeps the original's identifiers and strings
-so its replay tests still compare against the recorded reference.
+"Serpentine Sky Run". The simulation uses this game's own names and strings (the borrowed lore was renamed at the source;
+`tests/unit/_support/legacy-names.ts` maps the captured reference's names in tests only), so the replay tests still compare
+against the recorded reference.
 Source: the captured game module in `tests/fixtures/crayon/saiyan-snake-way/` (see its
 `PROVENANCE.md`; untrusted data, read as text only, never executed). three r184 comes from the
 page's importmap, so the module is one 513,393-byte file of game code with minified names.
@@ -18,12 +19,17 @@ page's importmap, so the module is one 513,393-byte file of game code with minif
 | `assets/runner.glb`, `models.ts` | The rigged runner and the Meshy props (see the Meshy art pass section below and `assets/ATTRIBUTION.md`), driven through `cloneSkinned` / `TypedGLBActor`. |
 | `styles.ts` | Three runner looks for the select card (colours only; the run is identical). |
 | `sfx.ts` | Synthesised one-shot sound effects (Web Audio, no asset files, no continuous bed). |
-| `main.ts`, `index.html` | Boot, fixed-step loop, input (keyboard and touch), HUD, title with runner select, countdown, pause, results, best score, capture hooks (`window.__AURA_SERPENTINE_SKY_RUN__`). |
+| `main.ts`, `index.html` | Boot, fixed-step loop, HUD, title with runner select, countdown, pause, results, best score and distance, mute button, capture hooks (`window.__AURA_SERPENTINE_SKY_RUN__`, first error in `window.__AURA_SERPENTINE_SKY_RUN_ERROR__`). |
+| `input.ts` | Keyboard and touch to the sim's `RunInput`: taps, held keys, flight steering by a held touch, cleared on blur and hidden tab, dropped during the countdown. |
+| `hud.ts` | Presentation-only cues: drowse fade and meter, wind gust indicator, gap warning, days bonus, first-run prompts, the days status label. |
+| `renderGuard.ts` | Skips a frame that throws; ends the session only after 30 failures in a row or a lost WebGL context. |
 
 Run it: open `/examples/saiyan-snake-way-port/` on the example dev server. Query parameters:
-`autostart=1` (skip the title and countdown), `manual=1` (the sim only advances through `stepFrames` / `runSegments`).
+`autostart=1` (skip the title and countdown), `manual=1` (the sim only advances through `stepFrames` / `runSegments`),
+`shadow=0` (no sun shadow), `env=<n>` (neutral-environment intensity, calibration captures only).
 Keys: A/D or arrows lane, Space/W jump, S slide, Shift surge, E fly (WASD steers), P/Esc pause, M mute, R/Enter run again.
-Touch: swipe left/right for lanes, tap or swipe up to jump, swipe down to slide, buttons for surge, fly and slide.
+Touch: swipe left/right for lanes, tap or swipe up to jump, swipe down to slide, buttons for surge, fly and slide; while
+flying, hold the left or right half of the screen to steer and drag up or down to climb or dive.
 
 ## Simulation parity
 
@@ -71,20 +77,25 @@ Not ported (the original continues past these):
 
 | Area | Original | Port |
 | --- | --- | --- |
-| Assets | GLB avatars (hero, ogres, minions) animated with `SkeletonUtils` | The runner is a catalog CC0 humanoid (a different character, tinted per colourway; base-colour tint cannot turn its green outfit orange) with Sprint/Jump/Crouch/Idle/Hit clips and a body pitch for flight and fall; props are built from engine primitives (`ENTITY_PARTS` in `world.ts`) |
+| Assets | GLB avatars (hero, ogres, minions) animated with `SkeletonUtils` | The runner is a Meshy rigged humanoid (see the Meshy art pass) with Run_Loop, Idle_Loop, Jump_Loop, Slide_Loop, Flight_Loop, Dive_Loop and Hit_React clips and a body pitch for flight and fall; hazards, the feast, lanterns and islands are Meshy models; orbs, souls, power-ups, sparks, bursts and streaks are engine primitives (`ENTITY_PARTS` in `world.ts`) |
 | Sky and clouds | Violet gradient with white star points over a ray-marched golden cloud deck | The same idea in this port's own shader: gradient, ~2 px star points, and a 22-step front-to-back march through a lobed height field with a sun-shadow tap, fine grain and a lavender horizon haze. No sun disc, wisps or puffs (the original has none) |
 | Aura | Two `ShaderMaterial` shells | The same blade-tier fragment maths on two cylinders; uniform `time` is `auraTime` (a uniform named `time` lowers to the engine's reserved `u_time`); the shell now tilts with the body in flight |
 | Road | Toon-shaded scale texture | Ring ribbon with a plate/bevel pattern that fades with screen-space derivatives, faint pearl sheen and lavender feather streaks on the flanks; a missing plate leaves a hole one sample wider than the original's `gap` window |
-| Lighting | `MeshToonMaterial` + directional/hemisphere/point lights | Custom materials are unlit: the toon ramp, hemisphere tint, rim light and linear fog (430..1010 to the measured `#f2c6de`) are evaluated inline |
+| Lighting | `MeshToonMaterial` + directional/hemisphere/point lights | Custom materials are unlit: the toon ramp, hemisphere tint, rim light and linear fog (430..1010 to the measured `#f2c6de`) are evaluated inline. The PBR runner and Meshy props get the hemisphere, the sun and `environments.neutral` (added for 4.5.0, which no longer gives a lights-only scene an implicit environment) |
 | Post | Speed-line streak pass; the look spec records no composer | A faint bloom and FXAA from `effects.*`; world-fixed streak nodes only while surging or flying |
 | Camera | fov 62, pitch about -0.11 rad, close behind the runner | Same fov; chase offset 7 m back and 3.4 m up (was 10 / 4.2), look-ahead 12 m, so the runner fills about 40% of the frame height as in the reference |
-| HUD | Portrait card with segmented bars, km progress bar, days and score cards, pause button, stage title in a display face | Same layout with generic art (no portrait, no display face): segmented spark and strain bars, progress bar, days and score cards, pause button, stage banner |
+| HUD | Portrait card with segmented bars, km progress bar, days and score cards, pause button, stage title in a display face | Same layout with generic art (no portrait, no display face): labelled spark and strain bars, a drowse meter in the Drowse stage, Vital Seed and staff charges, progress bar with a best-distance marker, days and score cards, pause and mute buttons, stage banner, gust and gap warnings, first-run prompts. Days left pay a bonus when the runner reaches the tail |
 | Audio | Not recorded by the look spec | Synthesised one-shots only (pickup, jump, land, hit, surge, flight, fall, fanfare) |
 | Ink outlines, ground-contact shadow | Present | Contact shadow blob only; no outlines |
 
 ## Engine findings
 
-None blocking; no engine source was changed for this pass. Notes for authors of `material.custom` shaders:
+- The post chain throws `RenderDeviceError ... 0x502 [WEBGL_LDR_POSTPROCESS_FAILED]` when any GL error is pending, including one an
+  earlier pass left behind. In the 4.5.0 audit one such frame froze the game for the session in 3 of 4 `?manual=1` loads. The game now
+  skips the frame (`renderGuard.ts`); the pass that leaves the error pending is an engine issue (lane report `docs/audits/lanes/g17.md`).
+- `material.custom` programs read `modelMatrix`, so they cannot draw through `instances.*`; pooled props stay one node per slot.
+
+Notes for authors of `material.custom` shaders:
 
 - A uniform named `time` lowers to the reserved `u_time`; the engine rejects it at authoring time (the aura uses `auraTime`).
 - Custom vertex attributes passed to `geometry.dynamic({ attributes })` are declared in the vertex stage as `attribute <type> <name>;`
@@ -112,3 +123,11 @@ production bridge accepts.
 - Not used: `crystal.glb` (generated, 30 credits, not admitted).
 - Meshy facts worth knowing: `make` is 30 credits (20 preview + 10 refine); the rigged GLB is 21 MB raw (1024 px textures bring it to 4.6 MB with
   all clips); text-to-3D output comes back with 0.2-4 M vertices, so every static prop needs `optimize.mjs` (a second pass for the island).
+
+## Prop optimisation (2026-10-29, audit row C8)
+
+`aura3d assets optimize` (the CLI's `optimizeGlbFile`, role `prop`, `--max-verts 3000`, `--tex 512`) re-ran on six props; `models.ts`
+carries the new sha256 values. Triangles before and after: barrier 26,160 to 3,914; gate 25,330 to 4,430; lantern 16,260 to 4,450;
+ogre 26,244 to 3,666; cart 34,880 to 17,574 and feast 37,946 to 21,142 (the simplifier stops at their UV seams, so only their textures
+shrank much). Every texture went from 1024 to 512 px. Files: 9.2 MB to 3.6 MB. The island is unchanged (it can fill a quarter of the
+frame, and the simplifier removed only 10% of it). KTX2 is not used: the repo has no Basis encoder (`toktx`) installed.

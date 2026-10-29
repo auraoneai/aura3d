@@ -66,11 +66,13 @@
 
 ## Checklist
 
-- [ ] Add a temporary `console.log(app.diagnostics().renderPath)` after `main.ts:1005`; expect `path: "hdr-msaa"`, `quality: "auto"`, then remove it.
-- [ ] Open `?park=skyline&capture=1` and `?park=lunar&capture=1` in 4.3.7 and 4.5.0 and compare brightness and tint of the shadows and stands; only retune `exposureEv` at `main.ts:961` / `main.ts:965` if the 4.5.0 result is clearly off (do not lower it by default).
-- [ ] Open the other four parks (`sandlot`, `canyon`, `ivy`, `dome`) and confirm no darkening beyond contact-shadow definition.
-- [ ] Switch through all six parks with `setPark` and confirm no contact-shadow `console.warn` and no `option-ignored` entry in `app.diagnostics()`.
-- [ ] Review the contact-shadow look near the plate and bases in a day park (sandlot, ivy); lower `effects.contactShadows` `intensity` at `main.ts:979` if too heavy.
-- [ ] Run `node tools/game-checks/run.mjs aura-diamond-3d`.
-- [ ] Run the existing unit tests under `tests/unit/aura-diamond/` (`contact`, `batter-pose`, `batter-grip`, `drawn-grip`) on the remote runner (`tools/remote-acr/run.sh`), not locally.
-- [ ] Re-capture any stored baseline screenshots for Skyline and Lunar Park (`apps/showcase-aura-diamond-3d/route-health.json` records `mode: "production"` for the renderer; update that note only if you switch to `quality: "production"`).
+Closed on 2026-10-29 by lane G08 (`audit-fix/g08`). Captures ran remotely on software WebGL2 (SwiftShader) at steady state, 45 s after ready; numbers are in `evidence/aura-diamond-3d/audit-fix/{before,after}/meta.jsonl`. "Before" is 4.5.0 `audit-fix/integration` (`b2dba3713`), "after" is the lane branch. Line numbers in the sections above refer to the 4.5.0 release source; on the lane branch `createAuraApp` is at `main.ts:847`, the per-park `exposureEv` table at `main.ts:802-807` and `effects.contactShadows` at `main.ts:826`.
+
+- [x] Render path. No temporary `console.log` was needed: the remote spec reads `app.diagnostics().renderPath` through `__AURA3D_LIVE_APPS__`. Every park, before and after, reports `path: "hdr-msaa"`.
+- [x] Skyline and Lunar Park. The 4.3.7 to 4.5.0 numbers above (Skyline 71.0 to 74.5, Lunar 82.8 to 86.1) were not re-run here. This lane measured 4.5.0 before and after its fixes: Skyline mean luma 74.49 then 73.74, Lunar 86.07 then 84.15 (1280x720). Neither looks off in the frames, so `exposureEv` stays at 0.12 and 0.16.
+- [x] Other four parks, mean luma before then after: Sandlot 85.65 then 85.98, Canyon 110.19 then 109.52, Ivy 122.07 then 121.55, Dome 67.30 then 67.25. No darkening.
+- [x] All six parks switched with `setPark` (`dia-probe-parks`, runs `g08-w2-before-grp4` and `g08-w2-after-grp4`). No contact-shadow warning and no `option-ignored` or other degradation in any park. The only diagnostics warning is the generic "Scene has no interactions" hint, which does not apply to a game with its own input.
+- [x] Contact shadows near the plate in a day park. Ivy at 1280x720 with and without `effects.contactShadows` (`?qa-contact=0`): crop means at the batter's feet 155.28 and 155.38, at the catcher's feet 131.07 and 131.00. The mask changes these areas by under 0.1 of 255, so it is not too heavy and `intensity` stays 0.75. The weak effect is the engine behaviour tracked as LIGHT-09 (lane E2). Ambient occlusion does show: switching it off (`?qa-ao=0`) lifts the mound crop from 167.34 to 171.07 in Ivy and from 108.68 to 114.94 in Skyline.
+- [x] `node tools/game-checks/run.mjs aura-diamond-3d`: 0 errors, 0 warnings.
+- [x] Unit tests under `tests/unit/aura-diamond/` (now also `rules.test.ts` and `motion-gate.test.ts`) ran locally with vitest, which the lane rules allow for unit tests: 6 files, 58 tests passed.
+- [x] Baseline screenshots retaken: `evidence/aura-diamond-3d/screens/final/` (run `g08-w2-after-shotsa`, same file names and sizes). `route-health.json` still records `mode: "production"`; the game keeps `renderer: { quality: "high" }` and does not switch to `quality: "production"`.

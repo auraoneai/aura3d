@@ -12,6 +12,8 @@ export interface WebGL2VertexArrayCacheEntry {
   readonly key: string;
   readonly handle: WebGLVertexArrayObject;
   readonly boundLocations: ReadonlySet<number>;
+  /** Ids of the vertex, index and instance buffers this VAO references (the reverse of `bufferVaoIndex`, SI-6). */
+  readonly bufferIds?: readonly number[];
 }
 
 /** `uniform1f` on an int/uint/bool uniform raises INVALID_OPERATION, so integer-typed scalars (source `int` or GL enum strings) bind through `uniform1i`/`uniform1ui`. */
@@ -308,10 +310,13 @@ export class WebGL2DrawCallBinder {
     }
     this.disableUnboundVertexAttributes(boundLocations);
     this.applyDefaultAttributes(shader, boundLocations);
-    const entry: WebGL2VertexArrayCacheEntry = { key, handle, boundLocations };
-    this.vertexArrayCache.set(key, entry);
+    const bufferIds: number[] = [];
     for (const bufferId of [vertexBuffer.id, indexBuffer?.id, ...instanceBufferIds]) {
-      if (bufferId === undefined) continue;
+      if (bufferId !== undefined && !bufferIds.includes(bufferId)) bufferIds.push(bufferId);
+    }
+    const entry: WebGL2VertexArrayCacheEntry = { key, handle, boundLocations, bufferIds };
+    this.vertexArrayCache.set(key, entry);
+    for (const bufferId of bufferIds) {
       let keys = this.bufferVaoIndex.get(bufferId);
       if (!keys) {
         keys = new Set();
@@ -342,7 +347,18 @@ export class WebGL2DrawCallBinder {
       this.vertexArrayCache.delete(key);
       evicted += 1;
       if (entry.handle) this.host.gl.deleteVertexArray(entry.handle);
-      for (const set of this.bufferVaoIndex.values()) set.delete(key);
+      // SI-6: unlink the key from the index sets of the buffers this VAO actually references, not from every set in the map.
+      if (entry.bufferIds) {
+        for (const otherId of entry.bufferIds) {
+          if (otherId === bufferId) continue;
+          const set = this.bufferVaoIndex.get(otherId);
+          if (!set) continue;
+          set.delete(key);
+          if (set.size === 0) this.bufferVaoIndex.delete(otherId);
+        }
+      } else {
+        for (const set of this.bufferVaoIndex.values()) set.delete(key);
+      }
     }
     // The disposed buffer's own index entry goes too. Per-frame instance buffers (dense shadow casters create and dispose one per
     // node per cascade per frame) would otherwise leave one empty Set per frame in this map for the life of the page, and the scan

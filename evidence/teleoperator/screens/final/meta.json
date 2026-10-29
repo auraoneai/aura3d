@@ -1,70 +1,39 @@
 {
   "meta": {
     "teleoperator": {
-      "390": {
-        "notes": [
-          "ready 240s (never lit)",
-          "shot 01-title",
-          "shot 02-early",
-          "shot 03-action",
-          "shot 04-mid",
-          "modes:fare: dom-clicked #bNextFare",
-          "shot 05-modes",
-          "results: not reached"
-        ],
-        "errors": [],
-        "bad": [],
-        "navs": [
-          "/apps/showcase-teleoperator/"
-        ],
-        "beacon": {
-          "route": "showcase-teleoperator",
-          "state": "playing",
-          "rung": 0
-        },
-        "proxied": 0
-      },
+      "capturedAt": "2026-10-29",
+      "build": "audit-fix/g04 (Grid Dispatch audit fixes), Aura3D 4.5.0 engine",
+      "runner": "remote Azure ACR Task, headless Chromium, software WebGL2 (SwiftShader); not real-GPU evidence",
+      "spec": "tests/browser/audit-fix/teleoperator.spec.ts",
       "1280": {
+        "run": "g04c-desktop",
         "notes": [
-          "ready 254s (never lit)",
-          "shot 01-title",
-          "shot 02-early",
-          "shot 03-action",
-          "shot 04-mid",
-          "modes:fare: dom-clicked #bNextFare",
-          "shot 05-modes",
-          "results: not reached"
+          "ready lit (body data-aura3d-ready)",
+          "01-title first frame after ready",
+          "02-early after 60 s and 6 presented frames",
+          "03-action W and D held for 3 frames",
+          "04-mid after 45 s of manual driving through the QA simulate hook",
+          "05-modes AI rivals panel",
+          "06-results after an L5 shift through the QA check hook"
         ],
-        "errors": [],
-        "bad": [],
-        "navs": [
-          "/apps/showcase-teleoperator/"
+        "errors": []
+      },
+      "390": {
+        "run": "g04d-phone",
+        "notes": [
+          "touch pads visible (coarse pointer)",
+          "03-action after touch Throttle and Right",
+          "04-mid after 45 s of L5 driving",
+          "06-results after an L5 shift"
         ],
-        "beacon": {
-          "route": "showcase-teleoperator",
-          "state": "playing",
-          "rung": 0
-        },
-        "proxied": 0
+        "errors": []
       },
       "card": {
+        "run": "g04c-card",
         "notes": [
-          "ready 312s (never lit)",
-          "shot 04-mid"
-        ],
-        "errors": [],
-        "bad": [],
-        "navs": [
-          "/apps/showcase-teleoperator/"
-        ],
-        "beacon": {
-          "route": "showcase-teleoperator",
-          "state": "playing",
-          "rung": 0
-        },
-        "proxied": 0
+          "card-2x captured at 1440x900 after 50 s; card-1x downscaled to 720x450"
+        ]
       }
     }
-  },
-  "incomplete": []
+  }
 }

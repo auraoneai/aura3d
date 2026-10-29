@@ -251,6 +251,106 @@ describe("game-checks", () => {
     expect(run(missing, ["deployable-assets"]).length).toBe(1);
   });
 
+  it("touch-input: warns on keyboard-only gameplay, passes with a touch preset, pointer steering or hold buttons", () => {
+    const keysOnly = 'addEventListener("keydown", (e) => { if (e.code === "KeyA") left = true; });\naddEventListener("pointerdown", () => sound.unlock());\n';
+    const bad = run(fixture({ "apps/showcase-demo/src/main.ts": keysOnly }), ["touch-input"]);
+    expect(bad).toHaveLength(1);
+    expect(bad[0].severity).toBe("warn");
+    expect(bad[0].message).toMatch(/keyboard-only/);
+    const preset = 'createGame({ input: { actions: { left: ["KeyA"], jump: ["Space"] } }, touch: { preset: "dpad-2btn", bindings: { left: "left", jump: "jump" } } });\n';
+    expect(run(fixture({ "apps/showcase-demo/src/main.ts": preset }), ["touch-input"])).toEqual([]);
+    const steer = keysOnly + 'canvas.addEventListener("pointerdown", (e) => { steerX = e.clientX; });\n';
+    expect(run(fixture({ "apps/showcase-demo/src/main.ts": steer }), ["touch-input"])).toEqual([]);
+    const hold = keysOnly + 'for (const t of ["pointerup", "pointercancel"]) b.addEventListener(t, () => release());\n';
+    expect(run(fixture({ "apps/showcase-demo/src/main.ts": hold }), ["touch-input"])).toEqual([]);
+    const optOut = 'addEventListener("keydown", (e) => {}); // touch-input: ok\n';
+    expect(run(fixture({ "apps/showcase-demo/src/main.ts": optOut }), ["touch-input"])).toEqual([]);
+  });
+
+  it("touch-input: flags a touch binding that names no declared action (Iron Crown IC-01)", () => {
+    const src = 'createGame({\n  input: { actions: { moveLeft: ["KeyA"], light: ["KeyJ"] } },\n  touch: {\n    preset: "dpad-4btn",\n    bindings: {\n      left: "left",\n      light: "light"\n    }\n  }\n});\n';
+    const f = run(fixture({ "apps/showcase-demo/src/main.ts": src }), ["touch-input"]);
+    expect(f.map((x: { message: string }) => x.message)).toEqual([expect.stringContaining('touch binding targets "left"')]);
+    expect(f[0].line).toBe(6);
+    const fixed = src.replace('left: "left"', 'left: "moveLeft"');
+    expect(run(fixture({ "apps/showcase-demo/src/main.ts": fixed }), ["touch-input"])).toEqual([]);
+  });
+
+  it("lighting: warns on lights with no environment, passes once an environment or look is authored", () => {
+    const lightsOnly = "scene().add(lights.hemisphere({ intensity: 0.6 })).add(lights.directional({ intensity: 2 }));\n";
+    const f = run(fixture({ "apps/showcase-demo/src/world.ts": lightsOnly }), ["lighting"]);
+    expect(f).toHaveLength(1);
+    expect(f[0].message).toMatch(/no environment or look/);
+    const withEnv = "scene().add(environments.neutral({ intensity: 0.8 })).add(lights.directional({ intensity: 2 }));\n";
+    expect(run(fixture({ "apps/showcase-demo/src/world.ts": withEnv }), ["lighting"])).toEqual([]);
+    const noLights = "scene().add(primitives.box({}));\n";
+    expect(run(fixture({ "apps/showcase-demo/src/world.ts": noLights }), ["lighting"])).toEqual([]);
+  });
+
+  it("lighting: no longer warns on a hemisphere next to a look or a runtime look next to an ambient (fixed in the engine, E2)", () => {
+    const hemi = 'scene().add(looks.preset("outdoor-day")).add(lights.hemisphere({ intensity: 0.4 }));\n';
+    expect(run(fixture({ "apps/showcase-demo/src/world.ts": hemi }), ["lighting"])).toEqual([]);
+    const runtimeLook = [
+      "function buildLookGroup(id) {",
+      "  return looks.preset(id, {});",
+      "}",
+      "scene().add(buildLookGroup(\"outdoor-day\")).add(lights.ambient({ intensity: 0.42 }));",
+      "app.nodes.add(buildLookGroup(\"night-city\") as never);",
+      ""
+    ].join("\n");
+    expect(run(fixture({ "apps/showcase-demo/src/core.ts": runtimeLook }), ["lighting"])).toEqual([]);
+  });
+
+  it("shared-catalog: warns when a game imports the repository-wide asset catalogue (RH-06)", () => {
+    const bad = fixture({ "apps/showcase-demo/src/main.ts": 'import { assets } from "../../../src/aura-assets";\nmodel(assets.ball);\n' });
+    const f = run(bad, ["shared-catalog"]);
+    expect(f).toHaveLength(1);
+    expect(f[0]).toMatchObject({ severity: "warn", line: 1 });
+    const ok = fixture({ "apps/showcase-demo/src/main.ts": 'import { assets } from "./aura-assets.route";\nmodel(assets.ball);\n' });
+    expect(run(ok, ["shared-catalog"])).toEqual([]);
+  });
+
+  it("screens-fresh: warns when the card frame predates the latest minor release tag (RH-05)", () => {
+    const root = fixture({ "apps/showcase-demo/index.html": "<p>x</p>" }, { screens: true });
+    const git = (args: string[], date: string) =>
+      execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@t", ...args], { cwd: root, env: { ...process.env, GIT_AUTHOR_DATE: date, GIT_COMMITTER_DATE: date } });
+    git(["commit", "-q", "-m", "card"], "2026-10-01T00:00:00Z");
+    expect(run(root, ["screens-fresh"])).toEqual([]); // no release tag yet
+    writeFileSync(join(root, "README.md"), "x");
+    git(["add", "-A"], "2026-10-02T00:00:00Z");
+    git(["commit", "-q", "-m", "release"], "2026-10-02T00:00:00Z");
+    git(["tag", "v9.1.0"], "2026-10-02T00:00:00Z");
+    resetGitCache();
+    const stale = run(root, ["screens-fresh"]);
+    expect(stale).toHaveLength(1);
+    expect(stale[0].message).toMatch(/before v9\.1\.0/);
+    writeFileSync(join(root, "evidence/demo/screens/final/card.jpg"), "y");
+    git(["add", "-A"], "2026-10-03T00:00:00Z");
+    git(["commit", "-q", "-m", "retake"], "2026-10-03T00:00:00Z");
+    resetGitCache();
+    expect(run(root, ["screens-fresh"])).toEqual([]);
+  });
+
+  it("brand-identifiers: warns on a real brand term inside a shipped identifier (RH-07)", () => {
+    const bad = fixture({ "apps/showcase-demo/src/main.ts": 'installQaHooks("kid-goku", api);\nconsole.log("[saiyan_snake] boot");\n' });
+    const f = run(bad, ["brand-identifiers"]);
+    expect(f.map((x: { line: number }) => x.line)).toEqual([1]);
+    expect(f[0].message).toMatch(/"kid-goku".*"Goku"/);
+    const ok = fixture({ "apps/showcase-demo/src/main.ts": 'installQaHooks("cumulus-dash", api);\nimport x from "../../examples/kid-goku-port/main";\n' });
+    expect(run(ok, ["brand-identifiers"])).toEqual([]);
+  });
+
+  it("upgrade-guide: warns with the count of unchecked items in the latest minor's guide (RH-04)", () => {
+    const root = fixture({ "apps/showcase-demo/index.html": "<p>x</p>", "docs/upgrade-9.1.0/demo-port.md": "# x\n- [ ] capture A\n- [x] capture B\n  - [ ] nested C\n" });
+    execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "x"], { cwd: root });
+    execFileSync("git", ["tag", "v9.1.0"], { cwd: root });
+    resetGitCache();
+    const f = run(root, ["upgrade-guide"]);
+    expect(f.map((x: { message: string }) => x.message.split(" ")[0])).toEqual(["2"]);
+    writeFileSync(join(root, "docs/upgrade-9.1.0/demo-port.md"), "# x\n- [x] capture A\n");
+    expect(run(root, ["upgrade-guide"])).toEqual([]);
+  });
+
   it("rejects an unknown game slug", () => {
     const root = fixture({ "apps/showcase-demo/index.html": "<p>x</p>" });
     expect(() => runChecks({ root, slugs: ["nope"], global: false, env: {} })).toThrow(/unknown game/);

@@ -77,13 +77,27 @@
 
 ## Checklist
 
-- [ ] `pnpm` build for the app passes (`apps/showcase-pips-big-leap` runs `tsc --noEmit`; run it on the remote runner, not locally).
-- [ ] `node tools/game-checks/run.mjs pips-big-leap` has no new errors.
-- [ ] Capture each world (`academy`, `w1` to `w6`) with `?capture=1` and compare to the 4.3.7 baseline in `tools/quality-rebuild-capture/games.json` on the same device class; check shading under Pip, pickups and platform edges (change A) and overall brightness (change E).
-- [ ] w6 (Starfall Garden): confirm the neutral-room fill keeps the star and crystal mood (change B). Adjust only if it is visibly too bright.
-- [ ] `app.diagnostics().renderPath` reports `path: "hdr-msaa"` and `bloomFusion: "separable"` in every world (all seven, because of the look bloom).
-- [ ] `app.lighting.diagnostics().contactShadows` shows `passExecuted: true` with no `unavailable`, and the console shows no `[prd02.contactShadows]` warning.
-- [ ] No `OPTION_IGNORED` entries in `app.diagnostics()`.
-- [ ] `?diag=1` shows no draw-call or frame-time regression versus 4.3.7.
-- [ ] Update the stale "legacy-post safe" comment at `src/game/world.ts:316`.
-- [ ] Run the gameplay smoke probe (`tools/quality-rebuild-capture/gameplay-probe.json`) and confirm the black-frame guard does not trigger a heal reload (`window.__AURA3D_HEAL__.rung` stays 0).
+Measured 2026-10-29 on the remote runner (software WebGL2, 1280x720, `tests/browser/audit-fix/pips-big-leap.spec.ts`). Each world was opened from the game's own buttons and read 35 s later. Three builds: v4.3.7, the 4.5.0 base (`audit-fix/integration`, b2dba3713), and `audit-fix/g06` with the audit fixes. Evidence: `evidence/pips-big-leap/audit-2026-10-29/{v437,before,after}-{C,E}/` (frames plus `meta.jsonl`).
+
+- [x] App typecheck passes (`pnpm exec tsc -p apps/showcase-pips-big-leap/tsconfig.json --noEmit`: clean; a one-package `tsc --noEmit` is light enough to run locally).
+- [x] `node tools/game-checks/run.mjs pips-big-leap`: 0 errors, 0 warnings.
+- [x] Every world captured and compared with 4.3.7 on the same device class (change A and E). Mean canvas luma, an 80x44 crop at Pip's feet, and draw calls:
+
+  | World | 4.3.7 frame / feet / draws | 4.5.0 base | 4.5.0 + fixes | Frame change 4.3.7 to 4.5.0 |
+  |---|---|---|---|---|
+  | academy | 162.96 / 157.22 / 400 | 171.57 / 168.53 / 501 | 171.71 / 168.42 / 461 | +5.3% |
+  | w1 | 157.39 / 158.86 / 665 | 167.07 / 168.40 / 833 | 167.03 / 167.61 / 784 | +6.2% |
+  | w2 | 172.09 / 122.45 / 403 | 179.68 / 133.80 / 506 | 179.62 / 135.33 / 463 | +4.4% |
+  | w3 | 205.08 / 219.98 / 398 | 208.99 / 227.63 / 503 | 208.99 / 226.15 / 460 | +1.9% |
+  | w4 | 141.14 / 111.77 / 529 | 149.02 / 118.64 / 665 | 148.96 / 116.34 / 622 | +5.6% |
+  | w5 | 174.28 / 192.45 / 555 | 181.50 / 200.05 / 697 | 181.51 / 200.27 / 652 | +4.1% |
+  | w6 | 106.28 / 181.58 / 421 | 109.06 / 186.41 / 529 | 109.13 / 186.30 / 484 | +2.6% |
+
+  Every world is 2-6% brighter on 4.5.0, the feet crops move with the frame, and no frame has dark (luma <= 8) or clipped (>= 250) pixels above 0.3%. That matches change E (AO no longer darkens the whole frame on software GL) and shows no contact-shadow darkening. The fixes leave the look unchanged (frame means within 0.15 of the base); the lower draw counts come from spinning pickups no longer casting shadow-map shadows. With the look AO dropped (`?pbl-ao=0`, World 1, same frozen frame) the frame reads 169.68 against 166.93 with AO, and the feet crop 170.43 against 166.46, so real-depth AO now darkens contact areas by about 2%.
+- [x] w6 (Starfall Garden) keeps its night mood with the neutral fill: 106.28 on 4.3.7, 109.06 on 4.5.0 (change B). No adjustment made.
+- [x] `app.diagnostics().renderPath` reports `path: "hdr-msaa"`, `quality: "auto"` and `bloomFusion: "separable"` in all seven worlds. Fused bloom against `?aura3d-render=production` on the same frozen World 1 frame: 166.95 against 166.94 mean, 0.40/255 mean absolute difference.
+- [x] `app.lighting.diagnostics().contactShadows` reports `passExecuted: true` with no `unavailable` in all seven worlds, and the console shows no `[prd02.contactShadows]` line.
+- [x] No `OPTION_IGNORED` degradations in `app.diagnostics()` in any world (0 in every shot).
+- [x] Draw calls do not regress: 4.5.0 draws more than 4.3.7 (World 1 665 to 833, the extra AO and contact-shadow passes), and the audit fixes bring World 1 back to 784. Frame time is not measured: the software-GL runner presents one frame every few seconds, so a frame-time number from it means nothing.
+- [x] The stale "legacy-post safe" comment in `src/game/world.ts` now describes the 4.5.0 mask.
+- [x] Black-frame guard: `window.__AURA3D_HEAL__.rung` read 0 in every shot of every world, and the autoplay runs reached the World 1 results screen without a heal reload.

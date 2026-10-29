@@ -31,6 +31,7 @@ import type {
   CompilerImpl
 } from "../../contracts/compiler.js";
 import { groups } from "../nodes/groups.js";
+import { mountedRootOf } from "./mountedRoots.js";
 import { ignoredOptionMessages } from "../nodes/optionDiagnostics.js";
 import { isRenderableModelNode } from "./observations.js";
 import { createAssetProvenance } from "../diagnostics.js";
@@ -42,8 +43,8 @@ import type { CollectedLight, EnvironmentLightingOptions, ProductionRendererInpu
 import type { EnvironmentProbe } from "@aura3d/rendering/contracts";
 import { environmentProbeFactorySlot, isEnvironmentProbeFactoryPending } from "@aura3d/rendering/contracts";
 import { EnvironmentCache, defaultProbeLoader } from "../../../../rendering/src/environment/EnvironmentCache.js";
-import { bindPrd02EnvironmentProbe, prd02ProbeBindIntensities } from "./environment.js";
-import { resolveEnvironment } from "../../contracts/environment.js";
+import { bindPrd02EnvironmentProbe, prd02ProbeBindIntensities, runtimeEnvironmentIntensity, scaleEnvironmentLighting } from "./environment.js";
+import { resolveEnvironment, type AuraEnvironmentSourceResolution } from "../../contracts/environment.js";
 import { prd02LightingOn } from "./lights.js";
 import { colorToLinearRgb } from "../colorUtils.js";
 import { isKnownNodeKind, resolveNodeHandler } from "./handlers.js";
@@ -55,8 +56,11 @@ export { asRuntimeCompiled } from "../../contracts/compiler.js";
 /** Internal context fields the mount supplies beyond the frozen C-36 shape. */
 export interface MountSceneCompileContext extends SceneCompileContext {
   readonly canvas: HTMLCanvasElement;
-  /** Live accessor — the HDRI upgrade swaps the lighting object per frame. */
-  environmentLighting(): EnvironmentLightingOptions;
+  /**
+   * Live accessor — the HDRI upgrade swaps the lighting object per frame. LIGHT-07: the live snapshot (mount nodes
+   * plus runtime adds) lets the mount recompute the environment knob when its environment or light nodes change.
+   */
+  environmentLighting(liveSnapshot?: AuraSceneSnapshot): EnvironmentLightingOptions;
   readonly collectedLights: readonly CollectedLight[];
   readonly runtimeWarnings: Set<string>;
   /** The registry the mount was created with (t=0 source build only). */
@@ -88,6 +92,48 @@ class SourceContributions implements RenderSourceContributions {
   feature(f: AuraCompiledFeature): void {
     this.state.features.add(f);
   }
+}
+
+/** What one handled node's compile() put into the persistent contributions, so a subtree removal can take it back out. */
+interface NodeCompileRecord {
+  readonly items: RenderItem[];
+  readonly lights: CollectedLight[];
+  readonly overrides: Map<string, unknown>;
+}
+
+/** Writes through to `state` like `SourceContributions` and records what was written for `removeSubtree`. */
+class RecordingContributions extends SourceContributions {
+  readonly record: NodeCompileRecord = { items: [], lights: [], overrides: new Map() };
+  addItems(items: readonly unknown[]): void {
+    super.addItems(items);
+    this.record.items.push(...(items as readonly RenderItem[]));
+  }
+  addLights(lights: readonly unknown[]): void {
+    super.addLights(lights);
+    this.record.lights.push(...(lights as readonly CollectedLight[]));
+  }
+  set<K extends string>(field: K, value: unknown): void {
+    super.set(field, value);
+    this.record.overrides.set(field, value);
+  }
+}
+
+/**
+ * Flattens each top-level node on its own. The concatenation equals `groups.flatten(nodes)` (flatten walks the list in order
+ * with an identity parent transform), and each top-level runtime id keeps its own flattened descendants, so
+ * `app.nodes.remove(id)` on a mounted group or look can find them: groups themselves vanish in the flatten.
+ */
+function flattenPerRoot(nodes: readonly AuraSceneNode[]): { flat: AuraSceneNode[]; byRoot: Map<string, AuraSceneNode[]> } {
+  const flat: AuraSceneNode[] = [];
+  const byRoot = new Map<string, AuraSceneNode[]>();
+  for (const node of nodes) {
+    const part = groups.flatten([node]).slice();
+    flat.push(...part);
+    // A node the app already flattened out of a mounted group or look carries that root's id (see mountedRoots.ts).
+    const id = mountedRootOf(node) ?? ("runtime" in node ? node.runtime?.id : undefined);
+    if (id) byRoot.set(id, (byRoot.get(id) ?? []).concat(part));
+  }
+  return { flat, byRoot };
 }
 
 function mergeContributions(source: RenderSource, contributions: ContributionState): RenderSource {
@@ -125,8 +171,13 @@ export class CompiledSceneImpl implements CompiledScene {
   liveNodes: AuraSceneNode[];
   /** Raw (pre-flatten) nodes added via the C-37 subtree path, keyed by their root runtime id. */
   dynamicRoots = new Map<string, AuraSceneNode>();
-  /** Flattened nodes belonging to each dynamic root (for subtree dispose). */
+  /**
+   * Flattened nodes belonging to each runtime root (for subtree dispose): dynamic roots added through `addSubtree`, and the
+   * top-level mounted nodes that carry a runtime id (from `mountedFlat`).
+   */
   dynamicFlat = new Map<string, AuraSceneNode[]>();
+  /** What each handled node's compile() contributed to `persistentContributions` (taken back out by `removeSubtree`). */
+  compileRecords = new Map<AuraSceneNode, NodeCompileRecord>();
   /** RenderItem reuse cache for A3D_QR_COMPILER frames (T3.12): `${runtimeId}:${itemIndex}` → {version, item}. */
   itemCache = new Map<string, { version: number; item: RenderItem }>();
   /** Source contributions made by dynamically added subtree handlers. */
@@ -157,7 +208,8 @@ export class CompiledSceneImpl implements CompiledScene {
     handledNodes: { node: AuraSceneNode; handler: AnyNodeHandler }[],
     readonly mountCtx: MountSceneCompileContext,
     sceneNodes: readonly AuraSceneNode[],
-    flatNodes: AuraSceneNode[]
+    flatNodes: AuraSceneNode[],
+    mountedFlat?: ReadonlyMap<string, AuraSceneNode[]>
   ) {
     this.source = source;
     this.actors = actors;
@@ -166,6 +218,7 @@ export class CompiledSceneImpl implements CompiledScene {
     this.handledNodes = handledNodes;
     this.rawSceneNodes = sceneNodes;
     this.liveNodes = flatNodes;
+    if (mountedFlat) for (const [id, nodes] of mountedFlat) this.dynamicFlat.set(id, nodes.slice());
     bindRuntimeCompiled(this as unknown as import("../../contracts/compiler.js").CompiledScene, this as unknown as RuntimeCompiledSceneInternals);
   }
 
@@ -182,10 +235,12 @@ export class CompiledSceneImpl implements CompiledScene {
     const flatNodes = groups.flatten([effective]).slice();
     this.dynamicRoots.set(runtimeIdOf(node), node);
     this.dynamicFlat.set(runtimeIdOf(node), flatNodes);
+    // A node added under a live root goes with that root when the root is removed.
+    const parentFlat = parentId && parent ? this.dynamicFlat.get(parentId) : undefined;
+    if (parentFlat && parentId !== runtimeIdOf(node)) parentFlat.push(...flatNodes);
     this.liveNodes = this.liveNodes.concat(flatNodes);
 
     const contributions = this.persistentContributions;
-    const out = new SourceContributions(contributions);
     const ctx = this.mountCtx;
     const extraPrimitive = createProductionRuntimePrimitiveEntries(flatNodes, qrPrimitiveGeometryOptions(ctx.flags, ctx.quality, ctx));
     this.primitiveEntries.push(...extraPrimitive);
@@ -232,6 +287,8 @@ export class CompiledSceneImpl implements CompiledScene {
       // parityPending sentinel whose compile throws `parity-not-implemented`.
       if (handler && (handler.owner !== "prd15" || handler.flag !== undefined)) {
         this.handledNodes.push({ node: flatNode, handler });
+        const out = new RecordingContributions(contributions);
+        this.compileRecords.set(flatNode, out.record);
         void handler.compile(flatNode, ctx, out);
       }
     }
@@ -272,8 +329,37 @@ export class CompiledSceneImpl implements CompiledScene {
       handler.dispose?.(node);
       return false;
     });
+    this.dropCompileContributions(targets);
     this.itemCache.clear();
     return true;
+  }
+
+  /** Takes the removed nodes' compile-time items, lights and source overrides back out of the persistent contributions. */
+  private dropCompileContributions(targets: readonly AuraSceneNode[]): void {
+    const items = new Set<RenderItem>();
+    const lights = new Set<CollectedLight>();
+    const persistent = this.persistentContributions;
+    for (const node of targets) {
+      const record = this.compileRecords.get(node);
+      if (!record) continue;
+      this.compileRecords.delete(node);
+      for (const item of record.items) items.add(item);
+      for (const light of record.lights) lights.add(light);
+      // An override goes only while it still holds this node's value; a later node that set the same field keeps its value.
+      for (const [field, value] of record.overrides) {
+        if (persistent.overrides.get(field) === value) persistent.overrides.delete(field);
+      }
+    }
+    if (items.size > 0) {
+      const keep = persistent.items.filter((item) => !items.has(item));
+      persistent.items.length = 0;
+      persistent.items.push(...keep);
+    }
+    if (lights.size > 0) {
+      const keep = persistent.lights.filter((light) => !lights.has(light));
+      persistent.lights.length = 0;
+      persistent.lights.push(...keep);
+    }
   }
 
   dispose(): void {
@@ -321,7 +407,8 @@ const runtimeIdStillLive = (impl: CompiledSceneImpl, runtimeId: string): boolean
 async function compileSceneReal(snapshot: AuraSceneSnapshot, ctx: SceneCompileContext): Promise<CompiledScene> {
   const mount = ctx as MountSceneCompileContext;
   const canvas = mount.canvas;
-  const flattened = groups.flatten(snapshot.nodes);
+  const { flat: flattened, byRoot: mountedFlat } = flattenPerRoot(snapshot.nodes);
+  const compileRecords = new Map<AuraSceneNode, NodeCompileRecord>();
   const degradations: AuraDegradation[] = [];
   const recordDegrade = (d: Omit<AuraDegradation, "frame">): void => {
     const entry: AuraDegradation = { ...d, frame: 0 };
@@ -389,7 +476,9 @@ async function compileSceneReal(snapshot: AuraSceneSnapshot, ctx: SceneCompileCo
     // and its compile must run so flag-off fails closed (parity-not-implemented).
     if (handler && (handler.owner !== "prd15" || handler.flag !== undefined)) {
       handledNodes.push({ node, handler });
-      await handler.compile(node, ctx, new SourceContributions(contributions));
+      const out = new RecordingContributions(contributions);
+      compileRecords.set(node, out.record);
+      await handler.compile(node, ctx, out);
     }
   }
 
@@ -412,8 +501,10 @@ async function compileSceneReal(snapshot: AuraSceneSnapshot, ctx: SceneCompileCo
     handledNodes,
     mount,
     snapshot.nodes,
-    flattened.slice()
+    flattened.slice(),
+    mountedFlat
   );
+  for (const [node, record] of compileRecords) compiled.compileRecords.set(node, record);
   // C36-DROP: contributions made by handlers' compile() (addItems/addLights/
   // set — e.g. prd02 lights/environment/probe, prd10 world) were dropped before
   // the t=0 frame. They are persistent for the scene's life: merge them into
@@ -451,6 +542,10 @@ function updateCompiledSceneReal(
   }
 
   const liveSnapshot = impl.liveNodes === undefined ? snapshot : { ...snapshot, nodes: impl.liveNodes };
+  // app.lighting.setEnvironmentIntensity: a live scale on the environment term (legacy map path here, probe bind below).
+  const environmentScale = runtimeEnvironmentIntensity(runtime);
+  const knobLightingBase = ctx.environmentLighting(liveSnapshot);
+  const knobLightingScaled = scaleEnvironmentLighting(knobLightingBase, environmentScale);
   const input = createProductionRuntimeRendererInput(
     liveSnapshot,
     ctx.canvas,
@@ -459,7 +554,7 @@ function updateCompiledSceneReal(
     timeSeconds,
     runtime,
     ctx.runtimeWarnings,
-    ctx.environmentLighting(),
+    knobLightingScaled,
     ctx.collectedLights,
     // T4.1: the mounted ctx's C-36 degrade handler owns pose/foot/morph
     // failures on the flag-on path (strict throws; non-strict warns once).
@@ -520,6 +615,7 @@ function updateCompiledSceneReal(
           environmentProbeDiffuseIntensity?: number;
           environmentProbeSpecularIntensity?: number;
           environmentProbeAmbient?: { readonly color: readonly [number, number, number]; readonly intensity: number } | null;
+          environmentProbeHemisphere?: AuraEnvironmentSourceResolution["hemisphere"];
           environmentProbeBackground?: boolean;
         };
         // E3 stage-2b (step 3): capture the stage-2a knob object BEFORE it
@@ -527,7 +623,8 @@ function updateCompiledSceneReal(
         // is the single IBL intensity source the probe bind carries (see
         // prd02ProbeBindIntensities). This block already runs only under
         // prd02LightingOn, so COMPILER completes the conjunction.
-        const knobLighting = probed.environmentLighting;
+        // The knob is read unscaled; the runtime environment scale multiplies the bound intensities once, below.
+        const knobLighting = probed.environmentLighting === knobLightingScaled ? knobLightingBase : probed.environmentLighting;
         // Flag-on the C-09 probe owns environment lighting — the legacy studio
         // procedural object would early-return `collectEnvironmentLighting`.
         probed.environmentLighting = undefined;
@@ -537,11 +634,13 @@ function updateCompiledSceneReal(
         // paint a grey room over the authored `scene().background(colour)`.
         probed.environmentProbeBackground = resolution.background !== false && resolution.background.visible;
         const probeIntensities = prd02ProbeBindIntensities(knobLighting, resolution, ctx.flags.on("A3D_QR_COMPILER"));
-        probed.environmentProbeDiffuseIntensity = probeIntensities.diffuseIntensity;
-        probed.environmentProbeSpecularIntensity = probeIntensities.specularIntensity;
+        probed.environmentProbeDiffuseIntensity = probeIntensities.diffuseIntensity * environmentScale;
+        probed.environmentProbeSpecularIntensity = probeIntensities.specularIntensity * environmentScale;
         probed.environmentProbeAmbient = resolution.ambient
           ? { color: colorToLinearRgb(resolution.ambient.color), intensity: resolution.ambient.intensity }
           : null;
+        // LIGHT-05/08: authored hemisphere lights reach the PRD-02 IBL chunk as its directional sky/ground pair.
+        probed.environmentProbeHemisphere = resolution.hemisphere ?? null;
       }
     }
   }

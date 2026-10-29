@@ -23,12 +23,41 @@ vec3 srgbToLinear(vec3 c) {
   return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
 }`;
 
-export const toonFragment = (withMap: boolean): string => /* glsl */ `
+/** Same as TOON_VERTEX plus a per-vertex `tone` (linear RGB) for the merged batches (gates, splatters, particles, clouds). */
+export const TOON_TONE_VERTEX = /* glsl */ `
+in vec3 tone;
+out vec3 vNormal;
+out vec3 vWorld;
+out vec2 vUv;
+out vec3 vTone;
+void main() {
+  vUv = uv;
+  vTone = tone;
+  vWorld = (modelMatrix * vec4(position, 1.0)).xyz;
+  vNormal = normalize(normalMatrix * normal);
+  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
+}`;
+
+/**
+ * P-01: the toon terms add up to about 1.2 on up-facing surfaces, and with tone mapping off that clipped a fifth of the
+ * frame (the deck, clouds and gate tops) to pure white. Values up to SHOULDER pass unchanged; above it they roll off
+ * towards 1 so the brightest surfaces keep their speckles and edges.
+ */
+const SHOULDER = /* glsl */ `
+vec3 shoulder(vec3 c) {
+  const float k = 0.82;
+  vec3 over = max(c - k, vec3(0.0));
+  return min(c, vec3(k)) + (1.0 - k) * (1.0 - exp(-over / (1.0 - k)));
+}`;
+
+export const toonFragment = (withMap: boolean, withTone = false): string => /* glsl */ `
 in vec3 vNormal;
 in vec3 vWorld;
 in vec2 vUv;
+${withTone ? "in vec3 vTone;" : ""}
 out vec4 outColor;
 ${SRGB}
+${SHOULDER}
 float ramp(float d) {
   float c = d * 0.5 + 0.5;
   float fw = fwidth(c) * 0.5;
@@ -38,6 +67,7 @@ void main() {
   vec3 N = normalize(vNormal);
   if (dot(N, cameraPosition - vWorld) < 0.0) N = -N;
   vec3 base = baseColor;
+${withTone ? "base *= vTone;" : ""}
 ${withMap ? "base *= srgbToLinear(texture(map, vUv).rgb);" : ""}
   vec3 sky = vec3(1.0);
   vec3 ground = vec3(0.1845, 0.2462, 0.4020); // #7788aa
@@ -46,7 +76,7 @@ ${withMap ? "base *= srgbToLinear(texture(map, vUv).rgb);" : ""}
   vec3 L2 = normalize(vec3(-6.0, 8.0, -6.0));
   vec3 fill = vec3(0.3185, 0.4969, 1.0); // #99bbff
   vec3 lit = hemi + vec3(0.65) * ramp(dot(N, L1)) + fill * 0.25 * ramp(dot(N, L2));
-  outColor = vec4(base * lit + emissive, alpha);
+  outColor = vec4(shoulder(base * lit) + emissive, alpha);
 }`;
 
 /** The original's 2x512 vertical canvas gradient sky, evaluated analytically per view direction. */
@@ -81,6 +111,20 @@ void main() { gl_Position = modelViewProjectionMatrix * vec4(position, 1.0); }`;
 export const FLAT_FRAGMENT = /* glsl */ `
 out vec4 outColor;
 void main() { outColor = vec4(baseColor, alpha); }`;
+
+/** Flat colour times a per-vertex `tone`: the gate and ball colour symbols (white disc, dark mark) and the guide ring. */
+export const FLAT_TONE_VERTEX = /* glsl */ `
+in vec3 tone;
+out vec3 vTone;
+void main() {
+  vTone = tone;
+  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
+}`;
+
+export const FLAT_TONE_FRAGMENT = /* glsl */ `
+in vec3 vTone;
+out vec4 outColor;
+void main() { outColor = vec4(baseColor * vTone, alpha); }`;
 
 /** Round shadow with a crisp edge (the original's toon shadow), drawn over a unit quad's uv. */
 export const SHADOW_VERTEX = /* glsl */ `

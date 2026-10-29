@@ -10,7 +10,7 @@ import { STAGES, type StageId } from "./stages";
  */
 
 export type ModeId = "quick" | "lab" | "ladder" | "versus" | "studio";
-export type MenuId = "mode" | "versus" | "ladder" | "studio" | "pause" | "result" | null;
+export type MenuId = "mode" | "versus" | "ladder" | "studio" | "pause" | "result" | "controls" | null;
 
 export interface HudCallbacks {
   readonly onMode: (mode: ModeId) => void;
@@ -24,6 +24,9 @@ export interface HudCallbacks {
   readonly onPauseResume: () => void;
   readonly onPauseRematch: () => void;
   readonly onPauseQuit: () => void;
+  /** A setup sheet's Back button: close the sheet and resume the bout underneath. */
+  readonly onMenuBack: () => void;
+  readonly onPauseControls: () => void;
   readonly onLabStance: (stance: string) => void;
   readonly onLabReset: () => void;
   readonly onFrameData: (on: boolean) => void;
@@ -143,7 +146,8 @@ export function createHud(doc: Document, cb: HudCallbacks): Hud {
     ladder: el(doc, "menu-ladder"),
     studio: el(doc, "menu-studio"),
     pause: el(doc, "menu-pause"),
-    result: el(doc, "menu-result")
+    result: el(doc, "menu-result"),
+    controls: el(doc, "menu-controls")
   };
 
   /* -------- pick grids -------- */
@@ -273,7 +277,7 @@ export function createHud(doc: Document, cb: HudCallbacks): Hud {
   });
   doc.getElementById("ic-autopilot")?.addEventListener("click", () => cb.onAutopilotToggle());
   doc.querySelectorAll<HTMLButtonElement>("[data-menu-close]").forEach((btn) => {
-    btn.addEventListener("click", () => cb.onPauseQuit());
+    btn.addEventListener("click", () => cb.onMenuBack());
   });
   el<HTMLButtonElement>(doc, "versus-fight").addEventListener("click", () =>
     cb.onVersusFight({
@@ -295,6 +299,7 @@ export function createHud(doc: Document, cb: HudCallbacks): Hud {
   el<HTMLButtonElement>(doc, "pause-resume").addEventListener("click", cb.onPauseResume);
   el<HTMLButtonElement>(doc, "pause-rematch").addEventListener("click", cb.onPauseRematch);
   el<HTMLButtonElement>(doc, "pause-quit").addEventListener("click", cb.onPauseQuit);
+  el<HTMLButtonElement>(doc, "pause-controls").addEventListener("click", cb.onPauseControls);
   labReset.addEventListener("click", cb.onLabReset);
   frameDataBtn.addEventListener("click", () => {
     const next = frameDataBtn.getAttribute("aria-pressed") !== "true";

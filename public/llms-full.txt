@@ -8,12 +8,12 @@ Typed lighting looks, licensed and hashed GLB assets, a game kit and deploy chec
 
 - Product: AI-native TypeScript 3D SDK for browser 3D apps, interactive websites, and prompt-to-code scene kits
 - Website: https://aura3d.auraone.ai
-- Current release: Aura3D 4.5.0 (per the repo manifest — the same source the build's version guard uses)
+- Current release: Aura3D 4.6.0 (per the repo manifest — the same source the build's version guard uses)
 - Docs: https://aura3d.auraone.ai/docs/api.html
 - Showcase game: https://aura3d.auraone.ai/showcase/aura-clash/
 - Sitemap: https://aura3d.auraone.ai/sitemap.xml
 - Crawl policy: https://aura3d.auraone.ai/robots.txt (public content allow-all; build internals and source maps disallowed)
-- Last updated: 2026-10-28
+- Last updated: 2026-10-29
 
 ## Pages
 
@@ -31,7 +31,7 @@ Typed lighting looks, licensed and hashed GLB assets, a game kit and deploy chec
 - [Aura3D Guide for Claude-Assisted 3D Apps](https://aura3d.auraone.ai/docs/claude.html): Use Claude with Aura3D to generate TypeScript browser 3D scenes from scene kits, primitives, typed GLB/glTF assets, and Vite templates.
 - [Aura3D Guide for Cursor AI 3D Development](https://aura3d.auraone.ai/docs/cursor.html): Use Cursor with Aura3D projects to edit TypeScript browser 3D scenes, Vite templates, typed GLB/glTF assets, scene kits, and prompt-to-3D workflows.
 - [Aura3D Evidence and Release Gates](https://aura3d.auraone.ai/docs/evidence.html): How Aura3D binds public package, asset, browser, game, visual, and deployment claims to retained evidence.
-- [Aura3D Claims, Limits, and Release Scope](https://aura3d.auraone.ai/docs/claims.html): Current Aura3D 4.5.0 claim boundaries for the root API, game presentations, assets, rendering, WebGPU, and diagnostics.
+- [Aura3D Claims, Limits, and Release Scope](https://aura3d.auraone.ai/docs/claims.html): Current Aura3D 4.6.0 claim boundaries for the root API, game presentations, assets, rendering, WebGPU, and diagnostics.
 - [Why Aura3D over three.js: everything three.js leaves to you, built in](https://aura3d.auraone.ai/docs/aura3d-vs-threejs.html): Aura3D builds in what three.js leaves to you: studio lighting, typed and licensed assets, a game kit and deploy checks. A lit 3D product in 10 lines.
 - [Aura Clash: Aura3D Browser Fighting-Game Runtime Proof](https://aura3d.auraone.ai/docs/aura-clash-showcase.html): Aura Clash Arena is the Aura3D browser fighting-game development showcase: typed GLB runtime evidence, arena visuals, gameplay UI, accessibility controls, evidence routes, and release gates.
 
@@ -50,7 +50,7 @@ Typed lighting looks, licensed and hashed GLB assets, a game kit and deploy chec
 - [Grid Dispatch — San Francisco Robotaxi &amp;amp; Autonomous Fleet Showcase](https://aura3d.auraone.ai/apps/showcase-teleoperator/)
 - [IRON CROWN — 2.5D Arena Fighter · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-iron-crown/)
 - [PIP'S BIG LEAP — 3D Mascot Platformer · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-pips-big-leap/)
-- [Aura Hoops 3D — Streetball Worldwide · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-hoops-3d/): Aura Hoops 3D: NBA-Jam-pace 3v3 streetball on the Aura3D engine — check-ball, shot meter, Jam Meter dunk packages, six world courts, Dunk Lab, Handles Lab and a 32-team Street Tour.
+- [Aura Hoops 3D — Streetball Worldwide · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-hoops-3d/): Aura Hoops 3D: 5v5 streetball on the Aura3D engine — check ball, a timed shot meter, Jam Meter dunk packages, team kits, six world courts, Dunk Lab, Handles Lab and a 32-team Street Tour.
 - [Aura Diamond 3D — Baseball at Golden Hour · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-diamond-3d/): Aura Diamond 3D: broadcast-grade 3D baseball — real at-bats with PCI hitting, 4 pitch arsenals, 6 ballparks from Harbor Sandlot to Lunar Park, a 10-out Derby Lab, Bullpen Lab pitch-recognition drills, and a 32-team World Classic.
 - [Aura FC 3D — Street &amp; Stadium Football · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-fc-3d/): Aura FC 3D: five-a-side broadcast football on the Aura3D engine — six venues from a favela cage to a glacier dome, Shootout &amp; Touch Labs, a 32-team World Circuit, and a Player Studio.
 - [Aura Links 3D — Postcard Golf Worldwide · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-links-3d/): Aura Links 3D: three-click arcade golf on the Aura3D engine — six storybook courses from Scottish dunes to a lunar crater, Range &amp; Putting Labs, and a 32-player Pro Circuit.

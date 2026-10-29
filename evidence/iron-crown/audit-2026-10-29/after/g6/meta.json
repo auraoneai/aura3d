@@ -1,0 +1,423 @@
+{
+  "log": "g05-after-g6",
+  "shots": [
+    "ic-studio/swatch-default",
+    "ic-studio/swatch-crimson",
+    "ic-studio/swatch-gilded",
+    "ic-neo-no-contact/neo-40s",
+    "ic-neo-no-contact/neo-75s"
+  ],
+  "meta": [
+    {
+      "target": "ic-studio",
+      "id": "swatch-default",
+      "canvasOnly": true,
+      "method": "toDataURL",
+      "size": [
+        1280,
+        720
+      ],
+      "mean": 55.5,
+      "p5": 3,
+      "p50": 46,
+      "p95": 141,
+      "darkFrac": 0.1426,
+      "clipFrac": 0.0416,
+      "timing": {
+        "totalMs": 14793
+      },
+      "info": {
+        "renderPath": "hdr-msaa",
+        "bloomFusion": "separable",
+        "drawCalls": 190,
+        "optionIgnored": 0,
+        "contactShadows": {
+          "passExecuted": true,
+          "depthSource": "self"
+        }
+      },
+      "state": {
+        "frame": 32,
+        "mode": "quick",
+        "phase": "fight",
+        "stage": "crown-arena",
+        "p1": {
+          "x": -2.2,
+          "clip": "idle",
+          "health": 100,
+          "meter": 0,
+          "tint": "default"
+        },
+        "cpu": {
+          "x": 2.2,
+          "clip": "idle",
+          "health": 88
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "pips": {
+          "p1": 0,
+          "cpu": 0
+        },
+        "perf": {
+          "combatSnapshotsLastFrame": 4,
+          "replayLogLength": 0
+        },
+        "attackLayer": {
+          "p1": {
+            "mode": "off",
+            "active": null,
+            "timer": 0
+          },
+          "cpu": {
+            "mode": "off",
+            "active": null,
+            "timer": 0
+          }
+        }
+      }
+    },
+    {
+      "target": "ic-studio",
+      "id": "swatch-crimson",
+      "canvasOnly": true,
+      "method": "toDataURL",
+      "size": [
+        1280,
+        720
+      ],
+      "mean": 62.91,
+      "p5": 4,
+      "p50": 64,
+      "p95": 143,
+      "darkFrac": 0.2375,
+      "clipFrac": 0.015,
+      "timing": {
+        "totalMs": 530
+      },
+      "info": {
+        "renderPath": "hdr-msaa",
+        "bloomFusion": "separable",
+        "drawCalls": 188,
+        "optionIgnored": 0,
+        "contactShadows": {
+          "passExecuted": true,
+          "depthSource": "self"
+        }
+      },
+      "state": {
+        "frame": 129,
+        "mode": "quick",
+        "phase": "fight",
+        "stage": "crown-arena",
+        "p1": {
+          "x": -2.2,
+          "clip": "idle",
+          "health": 100,
+          "meter": 0,
+          "tint": "#ff8d80"
+        },
+        "cpu": {
+          "x": 2.2,
+          "clip": "idle",
+          "health": 88
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "pips": {
+          "p1": 0,
+          "cpu": 0
+        },
+        "perf": {
+          "combatSnapshotsLastFrame": 4,
+          "replayLogLength": 0
+        },
+        "attackLayer": {
+          "p1": {
+            "mode": "off",
+            "active": null,
+            "timer": 0
+          },
+          "cpu": {
+            "mode": "off",
+            "active": null,
+            "timer": 0
+          }
+        }
+      }
+    },
+    {
+      "target": "ic-studio",
+      "id": "swatch-gilded",
+      "canvasOnly": true,
+      "method": "toDataURL",
+      "size": [
+        1280,
+        720
+      ],
+      "mean": 63.87,
+      "p5": 4,
+      "p50": 64,
+      "p95": 145,
+      "darkFrac": 0.2352,
+      "clipFrac": 0.0154,
+      "timing": {
+        "totalMs": 2587
+      },
+      "info": {
+        "renderPath": "hdr-msaa",
+        "bloomFusion": "separable",
+        "drawCalls": 188,
+        "optionIgnored": 0,
+        "contactShadows": {
+          "passExecuted": true,
+          "depthSource": "self"
+        }
+      },
+      "state": {
+        "frame": 226,
+        "mode": "quick",
+        "phase": "fight",
+        "stage": "crown-arena",
+        "p1": {
+          "x": -2.2,
+          "clip": "idle",
+          "health": 100,
+          "meter": 0,
+          "tint": "#ffe9b0"
+        },
+        "cpu": {
+          "x": 2.2,
+          "clip": "idle",
+          "health": 88
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "pips": {
+          "p1": 0,
+          "cpu": 0
+        },
+        "perf": {
+          "combatSnapshotsLastFrame": 4,
+          "replayLogLength": 0
+        },
+        "attackLayer": {
+          "p1": {
+            "mode": "off",
+            "active": null,
+            "timer": 0
+          },
+          "cpu": {
+            "mode": "off",
+            "active": null,
+            "timer": 0
+          }
+        }
+      }
+    },
+    {
+      "target": "ic-neo-no-contact",
+      "id": "neo-40s",
+      "canvasOnly": true,
+      "method": "toDataURL",
+      "size": [
+        1280,
+        720
+      ],
+      "sinceReadyMs": 40004,
+      "mean": 31.51,
+      "p5": 0,
+      "p50": 26,
+      "p95": 94,
+      "darkFrac": 0.3182,
+      "clipFrac": 0.267,
+      "timing": {
+        "totalMs": 20076
+      },
+      "info": {
+        "renderPath": "hdr-msaa",
+        "bloomFusion": "separable",
+        "drawCalls": 1153,
+        "optionIgnored": 0,
+        "contactShadows": {
+          "passExecuted": false,
+          "depthSource": "none"
+        }
+      },
+      "state": {
+        "frame": 117,
+        "mode": "quick",
+        "phase": "fight",
+        "stage": "neo-tokyo-rooftop",
+        "p1": {
+          "x": -2.2,
+          "clip": "idle",
+          "health": 100,
+          "meter": 0,
+          "tint": "default"
+        },
+        "cpu": {
+          "x": 2.2,
+          "clip": "idle",
+          "health": 88
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "pips": {
+          "p1": 0,
+          "cpu": 0
+        },
+        "perf": {
+          "combatSnapshotsLastFrame": 4,
+          "replayLogLength": 0
+        },
+        "attackLayer": {
+          "p1": {
+            "mode": "off",
+            "active": null,
+            "timer": 0
+          },
+          "cpu": {
+            "mode": "off",
+            "active": null,
+            "timer": 0
+          }
+        }
+      }
+    },
+    {
+      "target": "ic-neo-no-contact",
+      "id": "neo-75s",
+      "canvasOnly": true,
+      "method": "toDataURL",
+      "size": [
+        1280,
+        720
+      ],
+      "sinceReadyMs": 75005,
+      "mean": 30.69,
+      "p5": 0,
+      "p50": 26,
+      "p95": 91,
+      "darkFrac": 0.3439,
+      "clipFrac": 0.2733,
+      "timing": {
+        "totalMs": 5726
+      },
+      "info": {
+        "renderPath": "hdr-msaa",
+        "bloomFusion": "separable",
+        "drawCalls": 1153,
+        "optionIgnored": 0,
+        "contactShadows": {
+          "passExecuted": false,
+          "depthSource": "none"
+        }
+      },
+      "state": {
+        "frame": 122,
+        "mode": "quick",
+        "phase": "fight",
+        "stage": "neo-tokyo-rooftop",
+        "p1": {
+          "x": -2.2,
+          "clip": "idle",
+          "health": 100,
+          "meter": 0,
+          "tint": "default"
+        },
+        "cpu": {
+          "x": 2.2,
+          "clip": "idle",
+          "health": 88
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "pips": {
+          "p1": 0,
+          "cpu": 0
+        },
+        "perf": {
+          "combatSnapshotsLastFrame": 4,
+          "replayLogLength": 0
+        },
+        "attackLayer": {
+          "p1": {
+            "mode": "off",
+            "active": null,
+            "timer": 0
+          },
+          "cpu": {
+            "mode": "off",
+            "active": null,
+            "timer": 0
+          }
+        }
+      }
+    }
+  ],
+  "probes": [
+    {
+      "target": "ic-studio",
+      "name": "swatch-default",
+      "region": {
+        "r": 98.3,
+        "g": 78.3,
+        "b": 65.8,
+        "lumaMean": 81.66,
+        "lumaStd": 43.56
+      }
+    },
+    {
+      "target": "ic-studio",
+      "name": "swatch-crimson",
+      "region": {
+        "r": 112.8,
+        "g": 93.7,
+        "b": 83.4,
+        "lumaMean": 97.05,
+        "lumaStd": 47.27
+      }
+    },
+    {
+      "target": "ic-studio",
+      "name": "swatch-gilded",
+      "region": {
+        "r": 113.4,
+        "g": 94.1,
+        "b": 83.5,
+        "lumaMean": 97.4,
+        "lumaStd": 47.29
+      }
+    }
+  ],
+  "other": [
+    "GL_READY ic-studio 42511ms",
+    "GL_READY ic-neo-no-contact 52484ms"
+  ]
+}

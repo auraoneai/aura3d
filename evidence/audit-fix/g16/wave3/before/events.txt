@@ -1,0 +1,8 @@
+GL_BOOT desk 33425ms
+GL_BOOT phone 20287ms
+GL_BOOT card 22915ms
+GL_HIT {"viewport":[1440,900],"btn-mute":{"rect":[16,840,44,44],"hits":{"centre":"btn-mute","tl":"btn-mute","tr":"btn-mute","bl":"A","br":"A"}},"btn-pause":"missing","credit":{"className":"aura-credit","link":[17,871,98,14]}}
+GL_HIT {"viewport":[1280,720],"btn-mute":{"rect":[16,660,44,44],"hits":{"centre":"btn-mute","tl":"btn-mute","tr":"btn-mute","bl":"A","br":"A"}},"btn-pause":"missing","credit":{"className":"aura-credit","link":[17,691,98,14]}}
+GL_HIT {"viewport":[390,844],"btn-mute":{"rect":[16,784,44,44],"hits":{"centre":"A","tl":"btn-mute","tr":"btn-mute","bl":"btn-mute","br":"btn-mute"}},"btn-pause":"missing","credit":{"className":"aura-credit","link":[17,798,98,14]}}
+GL_BOOT popups 20049ms
+GL_POPUPS base build has no restart hook

@@ -12,7 +12,7 @@ export interface PipSave {
   bestTimes: Record<string, number>;
   /** Player Studio colours. */
   studio: { cap: string; cape: string };
-  /** Once World 2 is entered the double-jump stays unlocked everywhere. */
+  /** Entering World 2 or any later world unlocks the double-jump for good. */
   doubleJump: boolean;
   /** Academy gauntlet finished at least once. */
   academyDone: boolean;
@@ -67,4 +67,45 @@ export function recordSeeds(save: PipSave, world: WorldId, seedIds: readonly str
 
 export function totalSeeds(save: PipSave): number {
   return Object.values(save.seeds).reduce((sum, ids) => sum + ids.length, 0);
+}
+
+/**
+ * The player's save plus an optional demo layer for the autopilot.
+ *
+ * While the demo is on, progress goes to an in-memory copy and nothing is
+ * written to storage; turning the demo off drops that copy, so the Atlas
+ * never shows seeds, clears, best times or unlocks the AI earned.
+ */
+export interface SaveStore {
+  /** The save the game reads right now (the demo copy while the demo runs). */
+  current(): PipSave;
+  /** Replace the current save; persisted only when the demo is off. */
+  commit(next: PipSave): PipSave;
+  setDemo(on: boolean): PipSave;
+  readonly demo: boolean;
+}
+
+export function createSaveStore(io: { load(): PipSave; persist(save: PipSave): void } = { load: loadSave, persist: persistSave }): SaveStore {
+  let real = io.load();
+  let demoSave: PipSave | null = null;
+  return {
+    current: () => demoSave ?? real,
+    commit(next) {
+      if (demoSave) {
+        demoSave = next;
+      } else {
+        real = next;
+        io.persist(next);
+      }
+      return next;
+    },
+    setDemo(on) {
+      if (on && !demoSave) demoSave = { ...real };
+      if (!on) demoSave = null;
+      return demoSave ?? real;
+    },
+    get demo() {
+      return demoSave !== null;
+    }
+  };
 }

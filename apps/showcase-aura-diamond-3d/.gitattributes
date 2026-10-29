@@ -1,0 +1,1 @@
+public/aura-assets/*.glb filter=lfs diff=lfs merge=lfs -text

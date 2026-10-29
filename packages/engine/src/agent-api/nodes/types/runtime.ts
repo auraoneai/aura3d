@@ -396,6 +396,11 @@ export interface AuraApp {
   diagnostics(): AuraDiagnostics;
   evidence(options?: GameRuntimeEvidenceOptions): ReturnType<typeof collectGameRuntimeEvidenceV105>;
   screenshot(): AuraScreenshot;
+  /**
+   * Like {@link screenshot}, but first waits for pending `stepAsync()` calls and any in-flight async frame, then re-renders the
+   * current state and reads the canvas in the same task. `screenshot()` cannot re-render while an async frame is in flight.
+   */
+  screenshotAsync?(): Promise<AuraScreenshot>;
   dispose(): void;
   // C-38 extension surface (PR 0a, all optional until providers register)
   readonly lighting?: import("../../../contracts/app").AuraAppExtensionMap["lighting"];

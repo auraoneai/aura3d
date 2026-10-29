@@ -66,7 +66,7 @@ const apps = [
     primaryAssetStatus: "release-validated-typed-primary-assets",
     primitiveStatus: "within-stated-role",
     claimStatus: "bounded",
-    notes: "High-speed sunset freeway & sky-lane combat racer featuring 11 typed vehicle GLBs, cold-gas thrusters, barrel rolls, carrier launch ramps, and sky-lane dogfights."
+    notes: "High-speed sunset freeway racer with sky-lane traffic, cold-gas thrusters, barrel rolls and carrier launch ramps."
   },
   {
     id: "showcase-heatsink",
@@ -88,7 +88,7 @@ const apps = [
     primaryAssetStatus: "release-validated-typed-primary-assets",
     primitiveStatus: "within-stated-role",
     claimStatus: "bounded",
-    notes: "San Francisco autonomous fleet & street teleoperation with Apex Lidar Cruiser, Cyber Coupe, Titan EV Truck, Vortex GT, L5 self-driving robotaxi fares, vector minimap, and multiplayer peer tags."
+    notes: "San Francisco robotaxi shifts: stop at kerb beacons to pick up and drop off five fares, five driver-assist levels, AI rival cars, signals and a scored results screen."
   },
   {
     id: "showcase-iron-crown",
@@ -121,7 +121,7 @@ const apps = [
     primaryAssetStatus: "typed-primary-assets",
     primitiveStatus: "within-stated-role",
     claimStatus: "bounded",
-    notes: "3v3 streetball — ankle-breaker jukes, alley-oops, and a press-hold-release shot meter across six courts from Rucker asphalt to the Orbit dome. Dunk Lab, Handles Lab, 8 squads, 32-team Street Tour."
+    notes: "5v5 streetball: check ball, a timed shot meter, contested dunks and team kits across six courts from Rucker asphalt to the Orbit dome. Dunk Lab, Handles Lab, a squad picker and a 32-team Street Tour."
   },
   {
     id: "showcase-aura-diamond-3d",

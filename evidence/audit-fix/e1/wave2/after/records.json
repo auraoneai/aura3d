@@ -1,0 +1,412 @@
+{
+ "fit": [
+  {
+   "game": "top-tennis",
+   "width": 390,
+   "height": 844,
+   "ready": true,
+   "first": {
+    "viewport": {
+     "width": 390,
+     "height": 844
+    },
+    "canvas": {
+     "top": 196,
+     "bottom": 732,
+     "left": 0,
+     "width": 390,
+     "height": 536
+    },
+    "parent": {
+     "top": 0,
+     "bottom": 844,
+     "left": 0,
+     "width": 390,
+     "height": 844
+    },
+    "backing": {
+     "width": 390,
+     "height": 536
+    },
+    "inline": {
+     "width": "390px",
+     "height": ""
+    },
+    "offscreenPx": 0,
+    "render": {
+     "calls": 101,
+     "triangles": 116070,
+     "points": 0,
+     "lines": 0,
+     "frame": 18
+    }
+   },
+   "later": {
+    "viewport": {
+     "width": 390,
+     "height": 844
+    },
+    "canvas": {
+     "top": 196,
+     "bottom": 732,
+     "left": 0,
+     "width": 390,
+     "height": 536
+    },
+    "parent": {
+     "top": 0,
+     "bottom": 844,
+     "left": 0,
+     "width": 390,
+     "height": 844
+    },
+    "backing": {
+     "width": 390,
+     "height": 536
+    },
+    "inline": {
+     "width": "390px",
+     "height": ""
+    },
+    "offscreenPx": 0,
+    "render": {
+     "calls": 101,
+     "triangles": 116070,
+     "points": 0,
+     "lines": 0,
+     "frame": 44
+    }
+   },
+   "luma": {
+    "w": 390,
+    "h": 844,
+    "mean": 52.31,
+    "darkFrac": 0.0411
+   }
+  },
+  {
+   "game": "top-tennis",
+   "width": 1280,
+   "height": 720,
+   "ready": true,
+   "first": {
+    "viewport": {
+     "width": 1280,
+     "height": 720
+    },
+    "canvas": {
+     "top": 0,
+     "bottom": 720,
+     "left": 0,
+     "width": 1280,
+     "height": 720
+    },
+    "parent": {
+     "top": 0,
+     "bottom": 720,
+     "left": 0,
+     "width": 1280,
+     "height": 720
+    },
+    "backing": {
+     "width": 1280,
+     "height": 720
+    },
+    "inline": {
+     "width": "1280px",
+     "height": "720px"
+    },
+    "offscreenPx": 0,
+    "render": {
+     "calls": 119,
+     "triangles": 143358,
+     "points": 0,
+     "lines": 0,
+     "frame": 7
+    }
+   },
+   "later": {
+    "viewport": {
+     "width": 1280,
+     "height": 720
+    },
+    "canvas": {
+     "top": 0,
+     "bottom": 720,
+     "left": 0,
+     "width": 1280,
+     "height": 720
+    },
+    "parent": {
+     "top": 0,
+     "bottom": 720,
+     "left": 0,
+     "width": 1280,
+     "height": 720
+    },
+    "backing": {
+     "width": 1280,
+     "height": 720
+    },
+    "inline": {
+     "width": "1280px",
+     "height": "720px"
+    },
+    "offscreenPx": 0,
+    "render": {
+     "calls": 119,
+     "triangles": 143358,
+     "points": 0,
+     "lines": 0,
+     "frame": 16
+    }
+   },
+   "luma": {
+    "w": 1280,
+    "h": 720,
+    "mean": 50.35,
+    "darkFrac": 0.0606
+   }
+  },
+  {
+   "game": "cross-hop",
+   "width": 390,
+   "height": 844,
+   "ready": true,
+   "first": {
+    "viewport": {
+     "width": 390,
+     "height": 844
+    },
+    "canvas": {
+     "top": 0,
+     "bottom": 844,
+     "left": 0,
+     "width": 390,
+     "height": 844
+    },
+    "parent": {
+     "top": 0,
+     "bottom": 844,
+     "left": 0,
+     "width": 390,
+     "height": 844
+    },
+    "backing": {
+     "width": 390,
+     "height": 844
+    },
+    "inline": {
+     "width": "390px",
+     "height": "844px"
+    },
+    "offscreenPx": 0,
+    "render": {
+     "calls": 141,
+     "triangles": 14784228,
+     "points": 0,
+     "lines": 0,
+     "frame": 5
+    }
+   },
+   "later": {
+    "viewport": {
+     "width": 390,
+     "height": 844
+    },
+    "canvas": {
+     "top": 0,
+     "bottom": 844,
+     "left": 0,
+     "width": 390,
+     "height": 844
+    },
+    "parent": {
+     "top": 0,
+     "bottom": 844,
+     "left": 0,
+     "width": 390,
+     "height": 844
+    },
+    "backing": {
+     "width": 390,
+     "height": 844
+    },
+    "inline": {
+     "width": "390px",
+     "height": "844px"
+    },
+    "offscreenPx": 0,
+    "render": {
+     "calls": 141,
+     "triangles": 14784228,
+     "points": 0,
+     "lines": 0,
+     "frame": 6
+    }
+   },
+   "luma": {
+    "w": 390,
+    "h": 844,
+    "mean": 127.77,
+    "darkFrac": 0.0009
+   }
+  },
+  {
+   "game": "pips-big-leap",
+   "width": 390,
+   "height": 844,
+   "ready": true,
+   "first": {
+    "viewport": {
+     "width": 390,
+     "height": 844
+    },
+    "canvas": {
+     "top": 0,
+     "bottom": 844,
+     "left": 0,
+     "width": 390,
+     "height": 844
+    },
+    "parent": {
+     "top": 0,
+     "bottom": 844,
+     "left": 0,
+     "width": 390,
+     "height": 844
+    },
+    "backing": {
+     "width": 390,
+     "height": 844
+    },
+    "inline": {
+     "width": "390px",
+     "height": "844px"
+    },
+    "offscreenPx": 0,
+    "render": {
+     "calls": 875,
+     "triangles": 3591154,
+     "points": 0,
+     "lines": 0,
+     "frame": 7
+    }
+   },
+   "later": {
+    "viewport": {
+     "width": 390,
+     "height": 844
+    },
+    "canvas": {
+     "top": 0,
+     "bottom": 844,
+     "left": 0,
+     "width": 390,
+     "height": 844
+    },
+    "parent": {
+     "top": 0,
+     "bottom": 844,
+     "left": 0,
+     "width": 390,
+     "height": 844
+    },
+    "backing": {
+     "width": 390,
+     "height": 844
+    },
+    "inline": {
+     "width": "390px",
+     "height": "844px"
+    },
+    "offscreenPx": 0,
+    "render": {
+     "calls": 875,
+     "triangles": 3591154,
+     "points": 0,
+     "lines": 0,
+     "frame": 8
+    }
+   },
+   "luma": {
+    "w": 390,
+    "h": 844,
+    "mean": 173.26,
+    "darkFrac": 0
+   }
+  }
+ ],
+ "hop": [
+  {
+   "theme0": {
+    "w": 1280,
+    "h": 720,
+    "mean": 109.94,
+    "darkFrac": 0.0023
+   },
+   "theme3-after-swap": {
+    "clicked": true,
+    "label": "EMBERLINE",
+    "luma": {
+     "w": 1280,
+     "h": 720,
+     "mean": 66.27,
+     "darkFrac": 0.0093
+    }
+   },
+   "theme4-after-swap": {
+    "clicked": true,
+    "label": "NEON DISTRICT",
+    "luma": {
+     "w": 1280,
+     "h": 720,
+     "mean": 67.52,
+     "darkFrac": 0.0106
+    }
+   },
+   "theme0-after-swap": {
+    "clicked": true,
+    "label": "MEADOW ROADS",
+    "luma": {
+     "w": 1280,
+     "h": 720,
+     "mean": 108.46,
+     "darkFrac": 0.0028
+    }
+   }
+  }
+ ],
+ "loss": [
+  {
+   "ready": true,
+   "lost": true,
+   "before": {
+    "luma": {
+     "w": 1280,
+     "h": 720,
+     "mean": 50.35,
+     "darkFrac": 0.0606
+    },
+    "errors": 0,
+    "navigations": 1
+   },
+   "during": {
+    "deviceLost": false,
+    "errors": []
+   },
+   "pageErrorsWhileLost": [],
+   "pageErrorsTotal": 0,
+   "after": {
+    "luma": {
+     "w": 1280,
+     "h": 720,
+     "mean": 50.35,
+     "darkFrac": 0.0606
+    },
+    "navigations": 2
+   }
+  }
+ ],
+ "errors": []
+}

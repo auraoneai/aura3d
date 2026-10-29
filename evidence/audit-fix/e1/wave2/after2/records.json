@@ -1,0 +1,74 @@
+{
+ "fit": [],
+ "hop": [],
+ "loss": [],
+ "loss2": [
+  {
+   "game": "top-tennis",
+   "ready": true,
+   "lost": true,
+   "before": {
+    "w": 1280,
+    "h": 720,
+    "mean": 50.35,
+    "darkFrac": 0.0606
+   },
+   "during": {
+    "drawCalls": null,
+    "warnings": [],
+    "errors": []
+   },
+   "errorsWhileLost": [],
+   "pageErrorsTotal": 0,
+   "afterState": {
+    "drawCalls": null,
+    "warnings": [],
+    "errors": []
+   },
+   "after": {
+    "w": 1280,
+    "h": 720,
+    "mean": 255,
+    "darkFrac": 0
+   },
+   "navigations": 2,
+   "blockedNavigations": 1
+  },
+  {
+   "game": "cross-hop",
+   "ready": true,
+   "lost": true,
+   "before": {
+    "w": 1280,
+    "h": 720,
+    "mean": 108.15,
+    "darkFrac": 0.0022
+   },
+   "during": {
+    "deviceLost": true,
+    "drawCalls": 0,
+    "warnings": [],
+    "errors": []
+   },
+   "errorsWhileLost": [],
+   "pageErrorsTotal": 0,
+   "afterState": {
+    "deviceLost": false,
+    "drawCalls": 158,
+    "warnings": [
+     "DEVICE_RESTORED_REMOUNT: the WebGL context was restored; the scene was mounted again so it renders."
+    ],
+    "errors": []
+   },
+   "after": {
+    "w": 1280,
+    "h": 720,
+    "mean": 108.22,
+    "darkFrac": 0.0015
+   },
+   "navigations": 1,
+   "blockedNavigations": 0
+  }
+ ],
+ "errors": []
+}

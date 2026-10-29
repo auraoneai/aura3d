@@ -7,7 +7,7 @@
  * unlock and the mute key come from the kit, tones are cue-bank cues, and recorded takes play through
  * `SampleSlices`.
  */
-import { createCueBank, createSampleSlices, type CueSpec, type SampleSlices, type SynthContext, type SynthCueBank } from "@aura3d/engine/audio";
+import { createCueBank, createSampleSlices, type CueLayer, type CueSpec, type SampleSlices, type SynthContext, type SynthCueBank } from "@aura3d/engine/audio";
 import type { ContactPresentation, SimEvent } from "../contract";
 
 const clamp = (value: number, min: number, max: number): number => Math.max(min, Math.min(max, value));
@@ -73,14 +73,66 @@ const TONE_ATTACK = 0.001;
 /** Generic tone cue: the sim sends `(freq, duration, type, volume, delay)`; the cue reads them from `params.data`. */
 type ToneArgs = readonly [freq: number, duration: number, type: OscillatorType, volume: number, delay: number];
 
-const cues: Record<"tone", CueSpec> = {
+type CueName = "tone" | "crowd" | "applause";
+
+/** Seconds one crowd-bed cue lasts; the bed is re-armed at every point so it never runs dry between rallies. */
+export const CROWD_BED_SECONDS = 14;
+
+/** Deterministic clap pattern for the applause cue: `count` short band-passed noise bursts over about 1.6 s. */
+export function applauseLayers(level: number): readonly CueLayer[] {
+  const count = Math.round(10 + 14 * clamp(level, 0, 1));
+  const layers: CueLayer[] = [{ kind: "noise", freq: 1500, q: 0.6, type: "bandpass", dur: 1.8, gain: 0.02 + 0.02 * level, attack: 0.08, loop: true }];
+  let seed = 977;
+  for (let i = 0; i < count; i++) {
+    seed = (Math.imul(seed, 1664525) + 1013904223) | 0;
+    const r = (seed >>> 0) / 4294967296;
+    layers.push({ kind: "noise", freq: 1800 + r * 1600, q: 1.4, type: "bandpass", dur: 0.035, gain: 0.05 + 0.03 * r, delay: (i / count) * 1.5 + r * 0.06 });
+  }
+  return layers;
+}
+
+const cues: Record<CueName, CueSpec> = {
   tone: {
     layers: (params) => {
       const [freq, duration, type, volume, delay] = params.data as ToneArgs;
       return [{ freq, type, dur: duration, gain: volume, delay, attack: TONE_ATTACK }];
     }
-  }
+  },
+  // C14: a low murmur under play (low-passed looping noise) and applause when a point ends.
+  crowd: { layers: [{ kind: "noise", freq: 520, q: 0.4, type: "lowpass", dur: CROWD_BED_SECONDS, gain: 0.016, attack: 1.2, loop: true }], maxConcurrent: 2 },
+  applause: { layers: (params) => applauseLayers(params.level), maxConcurrent: 2, cooldownMs: 600 }
 };
+
+/** Umpire call for a point or serve outcome (C14), or null when the umpire says nothing. */
+export function umpireCall(event: SimEvent): string | null {
+  if (event.type === "point") {
+    const call = String((event as { call?: unknown }).call ?? "");
+    if (call === "OUT") return "Out";
+    if (call === "NET") return "Net";
+    if (call === "DOUBLE FAULT") return "Double fault";
+    if (call === "ACE") return "Ace";
+    return null;
+  }
+  if (event.type === "serve" && (event as { stage?: unknown }).stage === "result") {
+    const result = String(((event as { attempt?: { result?: unknown } }).attempt?.result) ?? "");
+    if (result === "let") return "Let";
+    if (result === "fault") return "Fault";
+  }
+  return null;
+}
+
+/** Spoken calls go through the browser's speech synthesis when it exists; a test can inject its own speaker. */
+export type Speaker = (text: string) => void;
+const browserSpeaker: Speaker | null = typeof window !== "undefined" && "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined"
+  ? (text) => {
+      try {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.1; utterance.pitch = 0.9; utterance.volume = 0.7;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+      } catch { /* speech unavailable */ }
+    }
+  : null;
 
 export interface TennisAudioOptions {
   /** Uniform [0,1) draws for rate/gain jitter and take choice. Default `Math.random` (audio never feeds the simulation). */
@@ -94,6 +146,10 @@ export interface TennisAudioOptions {
    * toggles) and players can rebind actions, so enabling one is the shell's decision. */
   readonly muteKey?: string | false;
   readonly now?: () => number;
+  /** Crowd bed, applause and umpire calls (C14). Default false, so the ported surface keeps the original's sounds; the shell turns it on. */
+  readonly ambience?: boolean;
+  /** Umpire voice when `ambience` is on; defaults to the browser's speech synthesis (null disables calls). */
+  readonly speak?: Speaker | null;
 }
 
 export interface TennisAudio {
@@ -106,11 +162,15 @@ export interface TennisAudio {
   bounce(contact?: ContactLike): void;
   /** The two-note point jingle (`won` rising, otherwise falling), as game.js `playPointSound`. */
   pointSound(won: boolean): void;
-  /** Route a simulation event: `tone`, `hit`, `bounce`, `pointSound`. Other events are ignored. */
+  /** Route a simulation event: `tone`, `hit`, `bounce`, `pointSound`, `point` (applause, crowd, call), `serve` (let/fault call). */
   handleEvent(event: SimEvent): void;
+  /** Venue for the ambience: the Moon has no crowd. */
+  setVenue(venue: string): void;
+  /** Start the crowd bed (match start); a no-op while disabled or on the Moon. */
+  crowd(): void;
   /** Wire the kit's first-gesture unlock (and the mute key if enabled) onto a target; returns a remover. */
   install(target?: Parameters<SynthCueBank["install"]>[0], options?: Parameters<SynthCueBank["install"]>[1]): () => void;
-  readonly bank: SynthCueBank<"tone">;
+  readonly bank: SynthCueBank<CueName>;
   readonly slices: SampleSlices<ImpactKind>;
   dispose(): void;
 }
@@ -122,7 +182,7 @@ export function createTennisAudio(options: TennisAudioOptions = {}): TennisAudio
   const random = options.random ?? Math.random;
   const base = (name: string): string => new URL(`../assets/audio/${name}`, import.meta.url).href;
   const assets = options.assets ?? { hit: base("racket.wav"), bounce: base("bounce.wav") };
-  const bank = createCueBank<"tone">({
+  const bank = createCueBank<CueName>({
     cues,
     ...(options.context ? { context: options.context } : {}),
     masterGain: 0.9,
@@ -141,6 +201,11 @@ export function createTennisAudio(options: TennisAudioOptions = {}): TennisAudio
   // Fetch while the menu is open; creating/resuming the context stays inside a user gesture.
   void slices.preload();
   let enabled = true;
+  let venue = "hard";
+  const ambience = options.ambience === true;
+  const speak = !ambience ? null : options.speak === undefined ? browserSpeaker : options.speak;
+  const crowdOn = (): boolean => ambience && enabled && venue !== "moon";
+  const crowd = (): void => { if (crowdOn()) bank.play("crowd", {}); };
 
   const init = (): void => {
     if (!enabled) return;
@@ -148,7 +213,7 @@ export function createTennisAudio(options: TennisAudioOptions = {}): TennisAudio
     // The graph exists as soon as unlock() starts, so the fallback impacts are ready for the very first contact.
     const unlocking = bank.unlock();
     slices.buildFallbacks();
-    void unlocking.then((ok) => (ok ? slices.prepare() : undefined));
+    void unlocking.then((ok) => { if (ok) { crowd(); return slices.prepare(); } return undefined; });
   };
 
   const impact = (kind: ImpactKind, pitch: unknown, contact: ContactLike = {}): void => {
@@ -202,7 +267,20 @@ export function createTennisAudio(options: TennisAudioOptions = {}): TennisAudio
       } else if (event.type === "hit") impact("hit", event.args?.[0], event.contact);
       else if (event.type === "bounce") impact("bounce", 1, event.contact);
       else if (event.type === "pointSound") pointSound(event.won);
+      else if (event.type === "point") {
+        if (crowdOn()) {
+          bank.play("applause", { level: (event as { winner?: string }).winner === "player" ? 1 : 0.55 });
+          crowd();
+        }
+        const call = umpireCall(event);
+        if (call && enabled) speak?.(call);
+      } else if (event.type === "serve") {
+        const call = umpireCall(event);
+        if (call && enabled) speak?.(call);
+      }
     },
+    setVenue(next: string): void { venue = next || "hard"; },
+    crowd,
     install: (target, installOptions) => bank.install(target, installOptions),
     bank,
     slices,

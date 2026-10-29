@@ -172,6 +172,8 @@ export class SiegeSim {
   private retired = 0;
   /** Ambient time-scale (Moon Roost slow-mo chapter). */
   timeScaleAmbient = 1;
+  /** Last-gull slow-mo finish; off for reduced-motion players. */
+  slowmoEnabled = true;
   private slowmoScale = 1;
   private slowmoUntil = -1;
   /** Wall-clock age of the current shot (slow-mo must not stretch settle). */
@@ -642,7 +644,7 @@ export class SiegeSim {
     this.gullScore += 1000;
     this.spawnPuff(at, "poof", 1.7);
     this.push({ kind: "gull-squashed", gull: gull.index, at, points: 1000, lastGull: last });
-    if (last && !this.slowmoFired) {
+    if (last && !this.slowmoFired && this.slowmoEnabled) {
       this.slowmoFired = true;
       this.slowmoScale = 0.24;
       this.slowmoUntil = this.time + 0.55;

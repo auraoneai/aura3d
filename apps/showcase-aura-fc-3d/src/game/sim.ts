@@ -51,6 +51,15 @@ const KICK_PLANT_RATE = 34;       // 1/s: braking of the kicker during a swing
 const KICK_TURN_RATE = 30;        // 1/s: turn toward the kick direction during a swing
 const FOOT_AHEAD = 0.34;          // kicking-side foot, ahead of body centre (m)
 const FOOT_SIDE = 0.14;           // kicking-side foot, lateral offset to the right boot (m)
+/** CPU keeper penalty read: chance to pick the right side = base + (1 - power) * soft. Tuned so both sides convert about 70%. */
+const PEN_READ_BASE = 0.24;
+const PEN_READ_SOFT = 0.22;
+/** Open-play keeper gather radius (m) standing / extra while diving. */
+const OPEN_KEEPER_REACH = 0.6;
+const OPEN_DIVE_REACH = 0.45;
+const CPU_BACKPASS_PENALTY = 6;
+/** Seconds a keeper holds a gathered ball before he distributes it. */
+const KEEPER_HOLD = 0.6;
 const PASS_ARRIVE = 5.2;          // weighted ground pass: speed left when it reaches the receiver (m/s)
 const DRIVEN_ARRIVE = 7.0;
 
@@ -68,10 +77,40 @@ interface PendKick {
   minFootDist: number;            // closest foot↔ball approach before contact (evidence)
 }
 
-/** deterministic per-match RNG */
-function makeRng(seed: number) {
+/** deterministic per-match RNG (LCG). Every random draw in the sim and the AI goes through it. */
+export const SIM_SEED = 0xf0a7ba11;
+export function makeRng(seed: number) {
   let s = seed >>> 0;
   return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 0xffffffff; };
+}
+
+/**
+ * Launch angle (degrees) at which a ball struck at `speed` m/s crosses a line `dist` m away at height `h` m, ignoring
+ * drag (the 7 m penalty flight loses well under 0.1 m to it). Bisection on the rising branch of the arc, 0..40 degrees.
+ */
+export function penaltyLoftDeg(speed: number, dist: number, h: number): number {
+  const g = 9.81;
+  const yAt = (deg: number) => {
+    const a = (deg * Math.PI) / 180;
+    const c = Math.cos(a);
+    return BALL_R + dist * Math.tan(a) - (g * dist * dist) / (2 * speed * speed * c * c);
+  };
+  let lo = 0, hi = 40;
+  for (let i = 0; i < 40; i++) {
+    const mid = (lo + hi) / 2;
+    if (yAt(mid) < h) lo = mid; else hi = mid;
+  }
+  return (lo + hi) / 2;
+}
+
+/** Does a just-launched shot's drag-free path cross the goal line at `goalX` inside the frame? */
+export function shotOnTarget(b: { x: number; y: number; z: number; vx: number; vy: number; vz: number }, goalX: number): boolean {
+  if (Math.sign(b.vx) !== Math.sign(goalX) || Math.abs(b.vx) < 0.5) return false;
+  const t = (goalX - b.x) / b.vx;
+  if (t <= 0) return false;
+  const z = b.z + b.vz * t;
+  const y = b.y + b.vy * t - 4.905 * t * t;
+  return Math.abs(z) < GOAL_HALF_W && y < GOAL_H;   // a low strike that bounces in still counts
 }
 
 /* ------------------------------------------------------------------ */
@@ -82,6 +121,13 @@ export interface Sim {
   readonly chargeLevel: number;
   readonly autopilot: boolean;
   setAutopilot(on: boolean): void;
+  /** Assist: with no stick input the user's player chases a loose ball and dribbles at goal (off by default). */
+  readonly assist: boolean;
+  setAssist(on: boolean): void;
+  /** Seed of the current match RNG (published in the route evidence). */
+  readonly seed: number;
+  /** Celebration the user's scorers perform (Player Studio). */
+  setUserCelebration(kind: number): void;
   step(dt: number, input: UserInputFrame): SimEvent[];
   startMatch(cfg: MatchConfig): void;
   togglePause(): boolean;
@@ -95,11 +141,32 @@ interface PlayerInternal extends PlayerState {
   replanT: number;
   cmd: PlayerCommand;
   pendKick: PendKick | null;
+  /** This slide already won the ball once: one dispossession per slide. */
+  slideWon: boolean;
 }
+
+/** Difficulty used for the user's own CPU teammates, whatever the opponent's difficulty. */
+export const TEAMMATE_DIFFICULTY = 0.6;
+/**
+ * FC-12: difficulty an AI player plays at. The opponent plays at the match difficulty (no floor, so Quick Play and
+ * each group-stage match differ); the user's own CPU teammates play at TEAMMATE_DIFFICULTY whatever the opponent's.
+ */
+export function aiDifficulty(userTeam: TeamId | null, team: TeamId, matchDifficulty: number): number {
+  return userTeam !== null && team === userTeam ? TEAMMATE_DIFFICULTY : matchDifficulty;
+}
+
+/** Fixed sim step. main.ts runs an accumulator around it; the QA hooks step it directly. */
+export const SIM_DT = 1 / 60;
 
 export function createSim(): Sim {
   const events: SimEvent[] = [];
-  const rng = makeRng(0xf0a7ba11);
+  let seed = SIM_SEED;
+  let rng = makeRng(seed);
+  let matchIndex = 0;
+  let assist = false;
+  let userCelebration = 0;
+  let firstHalfKickoff: TeamId = 0;
+  let secondHalfKickoff: TeamId = 1;
   let cfg: MatchConfig = {
     mode: "quick", venue: "munich", homeClub: "aurora", awayClub: "iron",
     userTeam: 0, difficulty: 0.6, goldenGoal: true, shootoutOnTie: true
@@ -155,8 +222,8 @@ export function createSim(): Sim {
           kickT: 0, kickDur: 0.32, kickPower: 0, skillT: 0, skill: "none",
           celebrateT: 0, celebrateKind: 0, diveT: 0, diveDir: 0, diveVx: 0,
           stunT: 0, controlled: false, isKeeper: role === "GK", trapT: 0, holdT: 0,
-          gait: Math.random() * 6,
-          replanT: 0, cmd: { move: [0, 0], sprint: false }, pendKick: null
+          gait: rng() * 6,
+          replanT: 0, cmd: { move: [0, 0], sprint: false }, pendKick: null, slideWon: false
         });
       }
     }
@@ -311,6 +378,7 @@ export function createSim(): Sim {
     b.kickerId = p.id; b.lastToucherId = p.id; b.lastTouchTeam = p.team;
     b.intendedTargetId = pend.targetId;
     b.lastShot = pend.kind; b.shotPower = pend.kind === "shot" ? pend.power : 0;
+    if (pend.kind === "shot" && shotOnTarget(b, state.phase === "shootout" ? PITCH_HX : state.attackSign[p.team] * PITCH_HX)) state.shotsOn[p.team]++;
     // contact evidence: how far the boot was from the ball at the strike frame
     const f = footWorld(p);
     b.lastKickFootDist = dist2(b.x, b.z, f[0], f[1]);
@@ -347,11 +415,18 @@ export function createSim(): Sim {
       let open = Infinity;
       for (const o of state.players) if (o.team !== p.team) open = Math.min(open, dist2(m.x, m.z, o.x, o.z));
       const forward = (m.x - p.x) * state.attackSign[p.team];
-      const score = dot * 4 + open * 0.9 + forward * 0.12 - Math.abs(d - (driven ? 11 : 7)) * 0.25;
+      // a CPU back-pass to the keeper is the last resort (he holds it a second and boots it long; as an ordinary
+      // option half of all CPU passes recycled through him and matches stalled at 0-0)
+      const backPass = m.isKeeper && !p.controlled ? CPU_BACKPASS_PENALTY : 0;
+      const score = dot * 4 + open * 0.9 + forward * 0.12 - Math.abs(d - (driven ? 11 : 7)) * 0.25 - backPass;
       if (score > bestScore) { bestScore = score; best = m; }
     }
     if (!best) return null;
-    // lead the runner
+    return leadFor(p, best, driven);
+  }
+
+  /** Lead the runner: where the receiver will be when a pass from `p` arrives. */
+  function leadFor(p: PlayerInternal, best: PlayerInternal, driven: boolean): { p: PlayerInternal; lead: [number, number] } {
     const d = dist2(p.x, p.z, best.x, best.z);
     const t = d / (driven ? 19 : 10.5);
     const lead: [number, number] = [
@@ -369,7 +444,11 @@ export function createSim(): Sim {
     state.kickoffTeam = team === 0 ? 1 : 0;   // conceding team restarts
     state.phase = "goal"; state.phaseT = 0; state.goalFlashT = 2.8;
     const scorer = findPlayer(scorerId);
-    if (scorer) { scorer.celebrateT = 2.6; scorer.celebrateKind = (rng() * 4) | 0; }
+    if (scorer) {
+      scorer.celebrateT = 2.6;
+      // the user's scorers perform the Player Studio celebration; CPU scorers pick one
+      scorer.celebrateKind = state.userTeam !== null && scorer.team === state.userTeam ? userCelebration : (rng() * 4) | 0;
+    }
     for (const p of state.players) if (p.team === team && !p.isKeeper) p.celebrateT = Math.max(p.celebrateT, 1.6);
     const golden = state.half === 3;
     emit({ type: "goal", team, playerId: scorerId ?? undefined, label: golden ? `GOLDEN GOAL — ${team === 0 ? "home" : "away"} wins it` : `GOAL — ${team === 0 ? "home" : "away"}`, severity: "success", position: [state.ball.x, 1, state.ball.z] });
@@ -427,7 +506,7 @@ export function createSim(): Sim {
     state.shootout = {
       round: 1, takerTeam: 0, scores: [0, 0], taken: [0, 0],
       stage: "walkup", stageT: 0, aim: [0, 0.8], power: 0, resultText: "",
-      gkDive: 0, pendingMiss: false
+      gkDive: 0, pendingMiss: false, log: [[], []]
     };
     emit({ type: "shootout-start", label: "penalty shootout — five each", severity: "info" });
     setupPenalty();
@@ -534,14 +613,16 @@ export function createSim(): Sim {
       if (so.taken[tt] >= 5) return tt;
       return null;
     }
-    const rem0 = Math.max(0, 5 - so.taken[0]);
-    const rem1 = Math.max(0, 5 - so.taken[1]);
-    if (so.scores[0] > so.scores[1] + rem1) return 0;
-    if (so.scores[1] > so.scores[0] + rem0) return 1;
-    if (so.taken[0] >= 5 && so.taken[1] >= 5 && so.taken[0] === so.taken[1]) {
-      if (so.scores[0] !== so.scores[1]) return so.scores[0] > so.scores[1] ? 0 : 1;
+    // Regulation (five each): stop as soon as one side cannot be caught.
+    if (so.taken[0] < 5 || so.taken[1] < 5) {
+      const rem0 = Math.max(0, 5 - so.taken[0]);
+      const rem1 = Math.max(0, 5 - so.taken[1]);
+      if (so.scores[0] > so.scores[1] + rem1) return 0;
+      if (so.scores[1] > so.scores[0] + rem0) return 1;
       return null;
     }
+    // Sudden death: decide only after both sides have taken the same number of kicks.
+    if (so.taken[0] === so.taken[1] && so.scores[0] !== so.scores[1]) return so.scores[0] > so.scores[1] ? 0 : 1;
     return null;
   }
 
@@ -550,22 +631,28 @@ export function createSim(): Sim {
     const taker = findPlayer(state.ball.ownerId);
     if (!taker) return;
     // aim[0] = z placement in mouth, aim[1] = height
-    const target: [number, number] = [PITCH_HX - 0.05, aim[0]];
-    const dir = norm2(target[0] - state.ball.x, target[1] - state.ball.z);
-    // accuracy error shrinks with power but wild aims can miss the frame
-    const err = (1 - power) * 0.5 + (rng() - 0.5) * 0.22;
+    // accuracy error shrinks with power but wild aims can miss the frame; the error is applied to the strike itself
+    const err = (1 - power) * 0.5 * (rng() < 0.5 ? -1 : 1) + (rng() - 0.5) * 0.22;
     const zAtLine = aim[0] + err * 1.4;
-    const missesFrame = Math.abs(zAtLine) > GOAL_HALF_W - 0.1 || aim[1] > GOAL_H - 0.1;
+    const yAtLine = clamp(aim[1] + (rng() - 0.5) * (0.5 + (1 - power) * 0.6), 0.05, GOAL_H + 1.2);
+    const missesFrame = Math.abs(zAtLine) > GOAL_HALF_W - 0.1 || yAtLine > GOAL_H - 0.1;
+    const target: [number, number] = [PITCH_HX - 0.05, zAtLine];
+    const dir = norm2(target[0] - state.ball.x, target[1] - state.ball.z);
+    const kickPower = Math.max(0.5, power);
+    const dist = dist2(state.ball.x, state.ball.z, target[0], target[1]);
+    // loft from the target height: the launch angle whose drag-free arc crosses the line at yAtLine
+    const liftDeg = penaltyLoftDeg(15 + kickPower * 9, dist, yAtLine) - (5 + kickPower * 6);
     // the swing starts now; the strike lands when the boot reaches the ball
-    startKick(taker, dir, Math.max(0.5, power), { kind: "shot", aimLiftDeg: aim[1] * 3.5 });
+    startKick(taker, dir, kickPower, { kind: "shot", aimLiftDeg: liftDeg });
     so.stage = "kick"; so.stageT = 0;
     so.pendingMiss = missesFrame;
     // CPU keeper guesses a side — better placement into the corners is harder to read
     const defGk = (state.players as PlayerInternal[]).find((p) => p.isKeeper && p.team !== taker.team);
     if (defGk && defGk.team !== state.userTeam) {
-      const reads = rng() < 0.38 + (1 - power) * 0.3;
+      // the keeper reads a soft or central kick more often; a misread dives the wrong way (a placed corner beats him)
+      const reads = rng() < PEN_READ_BASE + (1 - power) * PEN_READ_SOFT;
       const correctSide = Math.abs(zAtLine) < 0.4 ? 0 : Math.sign(zAtLine);
-      defGk.diveDir = reads ? correctSide : (rng() < 0.5 ? -1 : 1);
+      defGk.diveDir = reads ? correctSide : correctSide === 0 ? (rng() < 0.5 ? -1 : 1) : -correctSide;
       so.gkDive = defGk.diveDir;
     } else {
       so.gkDive = 0;
@@ -575,6 +662,7 @@ export function createSim(): Sim {
 
   function resolvePenalty(outcome: "goal" | "save" | "miss") {
     const so = state.shootout!;
+    so.log[so.takerTeam].push(outcome === "goal" ? "in" : "out");
     if (outcome === "goal") {
       so.scores[so.takerTeam]++;
       so.resultText = "SCORED";
@@ -596,7 +684,10 @@ export function createSim(): Sim {
     if (v.walled) {
       const mx = PITCH_HX - BALL_R, mz = PITCH_HZ - BALL_R;
       let bounced = false;
-      if (Math.abs(b.x) > mx) { b.x = Math.sign(b.x) * mx; b.vx = -b.vx * 0.55; b.vz *= 0.85; bounced = true; }
+      // the end walls stop at the posts (scene.ts CAGE_GOAL_GAP): a ball inside the goal mouth is not bounced, so
+      // the goal test sees it cross the line (FC-10)
+      const inMouth = Math.abs(b.z) < GOAL_HALF_W - 0.06 && b.y < GOAL_H - 0.05;
+      if (Math.abs(b.x) > mx && !inMouth) { b.x = Math.sign(b.x) * mx; b.vx = -b.vx * 0.55; b.vz *= 0.85; bounced = true; }
       if (Math.abs(b.z) > mz) { b.z = Math.sign(b.z) * mz; b.vz = -b.vz * 0.55; b.vx *= 0.85; bounced = true; }
       if (bounced) {
         emit({ type: "wall", label: "off the boards", severity: "info", position: [b.x, b.y, b.z] });
@@ -640,6 +731,13 @@ export function createSim(): Sim {
     const spot = state.restartSpot!;
     const team = state.restartTeam!;
     const taker = nearestOf(team, spot[0], spot[1], false);
+    if (!taker) {
+      // nobody on that side to take it (never in a match): drop the ball on the spot and play on
+      const b = state.ball;
+      b.x = spot[0]; b.z = spot[1]; b.y = BALL_R; b.vx = 0; b.vy = 0; b.vz = 0; b.mode = "loose"; b.ownerId = null;
+      state.phase = "live"; state.phaseT = 0;
+      return;
+    }
     // walk the taker to the spot fast
     const to = norm2(spot[0] - taker.x, spot[1] - taker.z);
     const d = dist2(taker.x, taker.z, spot[0], spot[1]);
@@ -651,7 +749,7 @@ export function createSim(): Sim {
     if (state.restartT < 0.95) return;
 
     if (state.restartKind === "goalkick") {
-      const gk = (state.players as PlayerInternal[]).find((p) => p.team === team && p.isKeeper)!;
+      const gk = (state.players as PlayerInternal[]).find((p) => p.team === team && p.isKeeper) ?? taker;
       gk.x = spot[0]; gk.z = spot[1];
       giveBall(gk, false);
       gk.holdT = 0.001; // distribute quickly next frame
@@ -672,7 +770,8 @@ export function createSim(): Sim {
     }
   }
 
-  function nearestOf(team: TeamId, x: number, z: number, includeGk: boolean): PlayerInternal {
+  /** Nearest player of `team` to (x, z); undefined when the team has nobody on the pitch (Touch Lab fields one player). */
+  function nearestOf(team: TeamId, x: number, z: number, includeGk: boolean): PlayerInternal | undefined {
     let best: PlayerInternal | undefined;
     let bd = Infinity;
     for (const p of state.players as PlayerInternal[]) {
@@ -680,7 +779,17 @@ export function createSim(): Sim {
       const d = dist2(p.x, p.z, x, z);
       if (d < bd) { bd = d; best = p; }
     }
-    return best ?? (state.players as PlayerInternal[]).find((p) => p.team === team)!;
+    return best ?? (state.players as PlayerInternal[]).find((p) => p.team === team);
+  }
+
+  /** Touch Lab: the ball left the pitch or went in. No restart and no score: a fresh ball rolls in from the left. */
+  function labRefeed(reason: string) {
+    const b = state.ball;
+    b.x = -6; b.y = BALL_R; b.z = 0; b.vx = 4; b.vy = 0; b.vz = 0; b.spin = 0;
+    b.mode = "loose"; b.ownerId = null; b.kickerId = null; b.freeT = 0; b.rolling = false;
+    b.lastShot = "none"; b.intendedTargetId = null; b.trail.length = 0;
+    state.phase = "live"; state.phaseT = 0;
+    emit({ type: "out", label: `${reason} — fresh ball`, severity: "info", position: [b.x, b.y, b.z] });
   }
 
   /* --------------------------- ball flight ------------------------ */
@@ -727,16 +836,22 @@ export function createSim(): Sim {
     if (b.mode === "dead") return true;
 
     // loose / flight — integrate (drag, Magnus, bounce, roll: see ballPhysics.ts)
+    const px0 = b.x, pz0 = b.z, py0 = b.y;
     const impact = stepFreeBall(b, dt);
     if (impact > 0) emit({ type: "bounce", label: "bounce", severity: "info", position: [b.x, b.y, b.z], value: impact });
 
-    // goal posts / bar — clank detection near each goal line
+    // goal posts / bar — swept against the goal-line plane, so a fast strike cannot step past a post between two frames
     for (const gx of [-PITCH_HX, PITCH_HX]) {
-      if (Math.abs(b.x - gx) > 0.38) continue;
-      const post = Math.abs(Math.abs(b.z) - GOAL_HALF_W) < 0.16 && b.y < GOAL_H;
-      const bar = Math.abs(b.y - GOAL_H) < 0.18 && Math.abs(b.z) < GOAL_HALF_W + 0.1;
+      const crossed = (px0 - gx) * (b.x - gx) <= 0 && px0 !== b.x;
+      const near = Math.abs(b.x - gx) <= 0.38;
+      if (!crossed && !near) continue;
+      // where the ball was when it met the plane (or where it is now when it only skims it)
+      const t = crossed ? clamp((gx - px0) / (b.x - px0), 0, 1) : 1;
+      const cz = lerp(pz0, b.z, t), cy = lerp(py0, b.y, t);
+      const post = Math.abs(Math.abs(cz) - GOAL_HALF_W) < 0.16 && cy < GOAL_H;
+      const bar = Math.abs(cy - GOAL_H) < 0.18 && Math.abs(cz) < GOAL_HALF_W + 0.1;
       if (post && Math.sign(b.vx) === Math.sign(gx)) {
-        b.x = gx - Math.sign(b.vx) * 0.24; b.vx = -b.vx * 0.5; b.vz *= 0.6;
+        b.x = gx - Math.sign(b.vx) * 0.24; b.z = cz; b.y = Math.max(BALL_R, cy); b.vx = -b.vx * 0.5; b.vz *= 0.6;
         emit({ type: "post", label: "off the post", severity: "warn", position: [b.x, b.y, b.z] });
         continue;
       }
@@ -751,6 +866,7 @@ export function createSim(): Sim {
     if (Math.abs(b.x) > PITCH_HX + 0.1 && Math.abs(b.z) < GOAL_HALF_W - 0.06 && b.y < GOAL_H - 0.05) {
       const scoringTeam: TeamId = b.x > 0 ? 0 : 1; // goal at +X belongs to team 1
       if (state.phase === "shootout") { resolvePenalty("goal"); return true; }
+      if (state.mode === "touch") { labRefeed("in the net"); return true; }
       goal(scoringTeam, b.lastToucherId);
       return true;
     }
@@ -758,27 +874,37 @@ export function createSim(): Sim {
     // keeper catch / outfield trap
     for (const p of state.players as PlayerInternal[]) {
       if (p.id === b.kickerId && b.freeT < 0.4) continue;   // kicker can't instantly re-trap
-      const reach = p.isKeeper ? KEEPER_REACH + (p.diveT > 0 ? 0.5 : 0) : TRAP_R;
+      if (p.stunT > 0 || p.slideT > 0) continue;            // a beaten or sliding player cannot gather it
+      // open play: a keeper gathers what reaches his body or a full-stretch dive, so placed shots beat him (2-4 goals a
+      // CPU match); penalties keep the full reach (their conversion is tuned through the read chance instead)
+      const reach = p.isKeeper
+        ? (state.phase === "shootout" ? KEEPER_REACH + (p.diveT > 0 ? 0.5 : 0) : OPEN_KEEPER_REACH + (p.diveT > 0 ? OPEN_DIVE_REACH : 0))
+        : TRAP_R;
       const maxH = p.isKeeper ? 2.3 : TRAP_H;
       const d = dist2(p.x, p.z, b.x, b.z);
       if (d < reach && b.y < maxH) {
         if (p.isKeeper && (b.mode === "flight" || Math.hypot(b.vx, b.vz) > 3)) {
-          // keeper gathers — a save if it was a shot
-          if (b.lastShot === "shot") {
+          // keeper gathers — a save only for a shot still in flight towards his goal
+          const towardOwnGoal = Math.sign(b.vx) === -state.attackSign[p.team] || state.phase === "shootout";
+          if (b.lastShot === "shot" && b.mode === "flight" && towardOwnGoal) {
             state.saves[p.team]++;
             emit({ type: "save", team: p.team, playerId: p.id, label: "keeper save", severity: "success", position: [b.x, b.y, b.z] });
             if (state.phase === "shootout") { resolvePenalty("save"); return true; }
           }
-          b.ownerId = p.id; b.mode = "held"; b.lastTouchTeam = p.team; p.holdT = 1.0;
+          b.lastShot = "none";
+          b.ownerId = p.id; b.mode = "held"; b.lastTouchTeam = p.team; b.lastToucherId = p.id; p.holdT = KEEPER_HOLD;
           p.vx = 0; p.vz = 0;
           state.possessionTeam = p.team;
-          if (state.userTeam !== null && p.team === state.userTeam) setControlled(nearestOf(p.team, 0, 0, false).id);
+          if (state.userTeam !== null && p.team === state.userTeam) {
+            const mate = nearestOf(p.team, 0, 0, false);
+            if (mate) setControlled(mate.id);
+          }
           return true;
         }
-        if (b.mode === "flight" && b.lastShot === "shot" && p.team !== state.possessionTeam) {
+        if (b.mode === "flight" && b.lastShot === "shot" && p.team !== b.lastTouchTeam) {
           // outfield block: pops loose
           b.vx = -b.vx * 0.35; b.vz *= 0.5; b.vy = Math.abs(b.vy) * 0.4; b.mode = "loose";
-          b.lastTouchTeam = p.team;
+          b.lastTouchTeam = p.team; b.lastToucherId = p.id; b.lastShot = "none";
           return true;
         }
         // a bullet strike is not controllable at point-blank range: outfield
@@ -787,7 +913,7 @@ export function createSim(): Sim {
         if (bs > 11.5 && b.intendedTargetId !== p.id) continue;
         if (bs > 17 && b.intendedTargetId === p.id) continue;
         giveBall(p, true);
-        if (state.phase === "shootout") { /* taker regained a rebound — let play continue */ }
+        b.lastShot = "none";
         return true;
       }
     }
@@ -797,6 +923,7 @@ export function createSim(): Sim {
     // out of bounds
     if (Math.abs(b.x) > PITCH_HX + 0.2 || Math.abs(b.z) > PITCH_HZ + 0.2) {
       if (state.phase === "shootout") { resolvePenalty("miss"); return true; }
+      if (state.mode === "touch") { labRefeed("out of play"); return true; }
       outOfBounds();
     }
     return true;
@@ -848,14 +975,15 @@ export function createSim(): Sim {
       p.vx = p.slideDir[0] * SLIDE_SPEED * (p.slideT / SLIDE_TIME);
       p.vz = p.slideDir[1] * SLIDE_SPEED * (p.slideT / SLIDE_TIME);
       p.yaw = Math.atan2(p.slideDir[1], p.slideDir[0]);
-      // contact → win the ball
+      // contact → win the ball: once per slide, and never from a keeper holding it in his hands
       const b = state.ball;
       const o = owner();
-      if (o && o.team !== p.team && dist2(p.x, p.z, o.x, o.z) < 0.8) {
+      if (!p.slideWon && o && o.team !== p.team && b.mode !== "held" && dist2(p.x, p.z, o.x, o.z) < 0.8) {
+        p.slideWon = true;
         o.stunT = 0.55;
         b.ownerId = null; b.mode = "loose"; b.freeT = 0;
         b.vx = p.slideDir[0] * 4.4; b.vz = p.slideDir[1] * 4.4; b.y = BALL_R;
-        b.lastTouchTeam = p.team;
+        b.lastTouchTeam = p.team; b.lastToucherId = p.id; b.kickerId = p.id; b.lastShot = "none";
         emit({ type: "tackle", team: p.team, playerId: p.id, label: "slide tackle wins it", severity: "success", position: [b.x, b.y, b.z] });
       }
       return;
@@ -927,7 +1055,7 @@ export function createSim(): Sim {
       const tz = o ? o.z - p.z : state.ball.z - p.z;
       const d = len2(tx, tz);
       if (d < 3.4) {
-        p.slideDir = norm2(tx, tz); p.slideT = SLIDE_TIME; p.slideCooldown = 1.5;
+        p.slideDir = norm2(tx, tz); p.slideT = SLIDE_TIME; p.slideCooldown = 1.5; p.slideWon = false;
         emit({ type: "tackle", team: p.team, playerId: p.id, label: "slide tackle", severity: "info", position: [p.x, 0.2, p.z] });
       }
     }
@@ -938,7 +1066,9 @@ export function createSim(): Sim {
     if (mine && (b.mode === "dribble" || b.mode === "controlled") && !p.pendKick && (state.phase === "live" || state.phase === "extratime")) {
       if (c.pass) {
         const aim: [number, number] = ml > 0.25 ? dir : [Math.cos(p.yaw), Math.sin(p.yaw)];
-        const target = choosePassTarget(p, aim, c.pass === "driven");
+        // a CPU pass names its receiver (ai.ts bestPassLane, never the keeper); the user's pass is picked from the aim
+        const named = c.passTo ? (state.players as PlayerInternal[]).find((m) => m.id === c.passTo && m.team === p.team && m.id !== p.id) : undefined;
+        const target = named ? leadFor(p, named, c.pass === "driven") : choosePassTarget(p, aim, c.pass === "driven");
         if (target) {
           startKick(p, norm2(target.lead[0] - p.x, target.lead[1] - p.z), c.pass === "driven" ? 0.85 : 0.55, {
             kind: c.pass === "driven" ? "driven" : "pass", targetId: target.p.id,
@@ -959,7 +1089,6 @@ export function createSim(): Sim {
           aimLiftDeg: (c.shootAim?.lift ?? 0) * 4,
           spin: lat * -7.5  // release direction curls the flight
         });
-        state.shotsOn[p.team]++;
       }
     }
   }
@@ -994,7 +1123,7 @@ export function createSim(): Sim {
             state.phaseT = 0;
             if (!b.ownerId) {
               const fw = nearestOf(state.kickoffTeam, 0, 0, false);
-              giveBall(fw, false);
+              if (fw) giveBall(fw, false);
             }
           } else {
             // Wait in static formation until the user moves/passes/shoots or enables autopilot
@@ -1008,7 +1137,7 @@ export function createSim(): Sim {
           state.phaseT = 0;
           if (!b.ownerId) {
             const fw = nearestOf(state.kickoffTeam, 0, 0, false);
-            giveBall(fw, false);
+            if (fw) giveBall(fw, false);
           }
         } else {
           for (const p of state.players as PlayerInternal[]) {
@@ -1020,9 +1149,16 @@ export function createSim(): Sim {
       case "live":
         break;
       case "extratime":
-        // golden-goal banner, then a fresh kickoff
-        if (state.phaseT > 2.4) startKickoff(0);
-        break;
+        // golden-goal banner: play is held and the clock stays at 0, then a fresh kickoff by the side that did not
+        // kick off the second half
+        if (state.phaseT > 2.4) {
+          state.clock = 0;
+          startKickoff(secondHalfKickoff === 0 ? 1 : 0);
+          return events;
+        }
+        for (const p of state.players as PlayerInternal[]) applyCommand(p, { move: [0, 0], sprint: false }, dt);
+        publishPossession(dt);
+        return events;
       case "goal":
         if (state.phaseT > 3.0) endGoalPhase();
         break;
@@ -1030,7 +1166,8 @@ export function createSim(): Sim {
         if (state.phaseT > 2.6) {
           state.half = 2; state.clock = 0;
           state.attackSign = [-state.attackSign[0], -state.attackSign[1]];
-          startKickoff(state.kickoffTeam === 0 ? 1 : 0);
+          secondHalfKickoff = firstHalfKickoff === 0 ? 1 : 0;
+          startKickoff(secondHalfKickoff);
         }
         break;
       case "shootout":
@@ -1045,7 +1182,7 @@ export function createSim(): Sim {
                 // user keeper picks a side with W/S (screen up/down = world ∓Z)
                 const side = input.move[1] !== 0 ? Math.sign(input.move[1]) : 0;
                 cmd = { move: [0, 0], sprint: false, dive: side === 0 ? undefined : (side as -1 | 1) };
-              } else if (p.diveT <= 0 && so.gkDive !== 0) {
+              } else if (p.team !== so.takerTeam && p.diveT <= 0 && so.gkDive !== 0) {
                 cmd = { move: [0, 0], sprint: false, dive: (so.gkDive >= 0 ? 1 : -1) as -1 | 1 };
                 so.gkDive = 0;
               }
@@ -1094,7 +1231,7 @@ export function createSim(): Sim {
       if (state.userTeam !== null && !autopilot && p.id === state.controlledId) {
         cmd = userCommand(p, input);
       } else {
-        cmd = planCommand(state, p, dt, keeperRushHeld, Math.max(0.65, cfg.difficulty));
+        cmd = planCommand(state, p, dt, keeperRushHeld, aiDifficulty(state.userTeam, p.team, cfg.difficulty), rng);
       }
       (p as PlayerInternal).cmd = cmd;
       applyCommand(p, cmd, dt);
@@ -1148,27 +1285,28 @@ export function createSim(): Sim {
 
     // charge the shot while held — the swing only starts on release
     if (mine && input.shootHeld) {
-      charge = clamp(charge + dt0 / 0.55, 0.25, 1);
+      charge = clamp(charge + dt0 / 0.65, 0.25, 1);
       chargeHeld = true;
     }
 
     const hasDir = Math.hypot(input.move[0], input.move[1]) > 0.05;
-    let mv: [number, number];
+    let mv: [number, number] = [0, 0];
     if (hasDir) {
       mv = input.move;
-    } else if (mine) {
+    } else if (assist && mine) {
       mv = [state.attackSign[p.team], Math.sin(state.clock * 1.6) * 0.32];
-    } else {
+    } else if (assist && (b.mode === "loose" || b.mode === "flight")) {
       const dx = b.x - p.x, dz = b.z - p.z, d = Math.hypot(dx, dz) || 1;
       mv = [dx / d, dz / d];
     }
-    const cmd: PlayerCommand = { move: mv, sprint: true };
+    // Shift sprints (and drains stamina); without it the player runs
+    const cmd: PlayerCommand = { move: mv, sprint: input.sprint };
     if (mine) {
       if (input.passShort) cmd.pass = "short";
       else if (input.passDriven) cmd.pass = "driven";
       else if (input.skillStepover) cmd.skill = "stepover";
       else if (input.skillChop) cmd.skill = "chop";
-      if ((input.shootReleased && chargeHeld) || (input.shootHeld && charge >= 0.85)) {
+      if ((input.shootReleased && chargeHeld) || (input.shootHeld && charge >= 1)) {
         const lateral = clamp(input.move[1], -1, 1);
         const lift = clamp(-input.move[0], -1, 1);
         cmd.shoot = charge;
@@ -1191,6 +1329,10 @@ export function createSim(): Sim {
     get chargeLevel() { return chargeHeld ? charge : 0; },
     get autopilot() { return autopilot; },
     setAutopilot(on: boolean) { autopilot = on; },
+    get assist() { return assist; },
+    setAssist(on: boolean) { assist = on; },
+    get seed() { return seed; },
+    setUserCelebration(kind: number) { userCelebration = clamp(kind | 0, 0, 3); },
     step(dt: number, input: UserInputFrame): SimEvent[] {
       dt0 = dt;
       // player switching
@@ -1223,8 +1365,14 @@ export function createSim(): Sim {
       state.paused = false; state.kicks = 0; state.lastScorer = null;
       charge = 0; chargeHeld = false;
       labPens = false;
+      // reseed per match: a match replays from (seed, inputs); the seed is published in the evidence
+      seed = (c.seed ?? (SIM_SEED + matchIndex * 0x9e3779b1)) >>> 0;
+      matchIndex++;
+      rng = makeRng(seed);
       spawnTeams();
-      startKickoff(c.userTeam === null ? ((rng() < 0.5) ? 0 : 1) : c.userTeam);
+      firstHalfKickoff = c.userTeam === null ? ((rng() < 0.5) ? 0 : 1) : c.userTeam;
+      secondHalfKickoff = firstHalfKickoff === 0 ? 1 : 0;
+      startKickoff(firstHalfKickoff);
     },
     togglePause() {
       state.paused = !state.paused;

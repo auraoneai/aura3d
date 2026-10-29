@@ -5,7 +5,7 @@ import type { AuraApp, AuraAppTarget, AuraBackend, AuraCreateAppOptions, AuraFra
 import { declaresWebGLContent, productionRenderErrorMessage } from "../compiler/observations.js";
 import { createDiagnosticsOverlay, renderDiagnosticPreviewToCanvas, shouldRenderOverlay } from "../public/devtools.js";
 import { createInitialDiagnostics, snapshotDiagnostics, validateSceneAssets } from "../diagnostics.js";
-import { createRuntimeScenePhysics, eulerToQuat, physics, quatToEuler, resolveNodePhysicsShape } from "../nodes/physics.js";
+import { createRuntimeScenePhysics, nodeRotationQuaternion, physics, resolveNodePhysicsShape, writeNodeRotationFromBody } from "../nodes/physics.js";
 import { colorToLinearRgba } from "../colorUtils.js";
 import { scene } from "../nodes/scene.js";
 import { createComputeSurface } from "../nodes/compute.js";
@@ -19,7 +19,8 @@ import { appTierMaxPixelRatio, currentDevicePixelRatio, minimumBackingSize, reso
 import { resolveMountQuality } from "../compiler/renderer.js";
 import { AuraRuntimeError } from "./errors.js";
 import { AuraMigrationError } from "../compiler/errors.js";
-import { startProductionRender } from "./frameLoop.js";
+import { createFrameRateMeter, startProductionRender } from "./frameLoop.js";
+import { isDirectRenderPath, vetoDirectPath } from "./renderPath.js";
 import { registerAuraApp, unregisterAuraApp } from "./liveApps.js";
 import { markRouteError, markRouteReady } from "./routeState.js";
 import { AURA_APP_CANVAS, captureAuraScreenshot } from "./screenshot.js";
@@ -29,7 +30,7 @@ import { createGameInput } from "../GameRuntime.js";
 import { createPhysicsRuntime, type AuraPhysicsRuntime } from "../PhysicsRuntime.js";
 import { applyRootParticleQuality, hasRootRenderableContent, initializeRootPerformanceQuality, readRootDiagnosticSnapshot, setRootPerformanceQuality, supportsRootParticleQuality, validateRootPerformanceQuality } from "../RootRuntimeSupport.js";
 import { PhysicsWorld } from "@aura3d/physics/world";
-import { normalizeCreateAppRendererOptions } from "./rendererOptions.js";
+import { normalizeCreateAppRendererOptions, rendererQualityWarnings } from "./rendererOptions.js";
 import { qrFlagsWithAnimationMixer, resolveQrFlags } from "../../contracts/flags.js";
 import { setTypedGLBActorQrFlags } from "../../production-runtime/actor/extensions.js";
 import { setQrAnimationFlags } from "./actorAnimationHandle.js";
@@ -40,7 +41,8 @@ import { clearShaderFailures, setShaderFailureMode } from "@aura3d/rendering";
 import { createAuraRuntimeNodeRegistry } from "./runtimeNodes.js";
 import { setPrd01ModelMatrixCache } from "../compiler/renderInput.js";
 import { createModelMatrixCache } from "../sceneGraph.js";
-import { flattenAuraSceneSnapshot, modelMatrixFor } from "../compiler/sceneGraph.js";
+import { flattenAuraSceneNodes, modelMatrixFor } from "../compiler/sceneGraph.js";
+import { flattenTaggingMountedRoots } from "../compiler/mountedRoots.js";
 import { setPrd01ColorParsing } from "../compiler/color.js";
 import { collectGeneratedCodeWarnings } from "../looks/generatedCodeWarnings.js";
 import { material } from "../nodes/material.js";
@@ -73,7 +75,15 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   // payload.extra.mountTiming (see markTiming in ./platform).
   markTiming("a3d:mount:create-app-start");
   let snapshot = normalizeSceneSnapshot(options.scene);
-  let renderSnapshot = flattenSceneSnapshot(snapshot);
+  /*
+   * One top-level node at a time, so the compiled scene can find the children of a mounted group or look by the group's
+   * runtime id (`app.nodes.remove`). The concatenation is the same node list as flattening the whole list at once.
+   */
+  const flattenForRender = (scene: AuraSceneSnapshot, hierarchical: boolean): AuraSceneSnapshot => ({
+    ...scene,
+    nodes: flattenTaggingMountedRoots(scene.nodes, hierarchical ? (nodes) => flattenAuraSceneNodes(nodes, qrFlags) : (nodes) => flattenSceneSnapshot({ ...scene, nodes: [...nodes] }).nodes)
+  });
+  let renderSnapshot = flattenForRender(snapshot, false);
   const rendererSelection = normalizeCreateAppRendererOptions(options.renderer);
   // PR 0 seams (CONTRACTS.md §3.2): flag resolution, C-27 quality-tier resolve, C-38
   // app-extension mount and C-31 diagnostics sections are fixed call sites owned by PRD 15.
@@ -105,7 +115,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   // through compiler/sceneGraph.ts (rotationOrder, quaternion, group world
   // matrices) and the snapshot flattens hierarchically. Flag-off: unchanged.
   setPrd01ModelMatrixCache(qrFlags.on("A3D_QR_CORE") ? createModelMatrixCache(modelMatrixFor(qrFlags)) : null);
-  if (qrFlags.on("A3D_QR_CORE")) renderSnapshot = flattenAuraSceneSnapshot(snapshot, qrFlags);
+  if (qrFlags.on("A3D_QR_CORE")) renderSnapshot = flattenForRender(snapshot, true);
   // 01-S5 (C-06): colorUtils helpers delegate to parseAuraColor under the flag.
   setPrd01ColorParsing(qrFlags.on("A3D_QR_CORE") ? { strict: options.strict ?? qrFlags.on("A3D_QR_STRICT") } : null);
   // Custom-shader compile/link failures: a fresh app starts with a clean failure list; strict (or
@@ -205,6 +215,28 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
    */
   const deviceLostListeners = new Map<() => void, (() => void) | undefined>();
   const deviceRestoredListeners = new Map<() => void, (() => void) | undefined>();
+  /*
+   * top-tennis C8: a restored context comes back with every GL object of the lost one gone, including the post chain's programs
+   * and targets, so frames stay black until something mounts the renderer again. Apps that remount in their own
+   * `onDeviceRestored` handler (setScene) keep doing so; for every other app the engine remounts the current scene, with
+   * nodes added at runtime, once those handlers have run. Runtime node handles, physics and the clock are kept.
+   */
+  let restoreRemountUnsubscribe: (() => void) | undefined;
+  const attachRestoreRemount = (controller: WebGLRenderController): void => {
+    restoreRemountUnsubscribe?.();
+    const attachedRevision = mountRevision;
+    restoreRemountUnsubscribe = controller.onDeviceRestored?.(() => {
+      if (disposed || attachedRevision !== mountRevision || productionController !== controller) return;
+      try {
+        const current = runtimeNodes.sceneWithRuntimeAdditions() ?? snapshot;
+        renderSnapshot = flattenForRender(current, qrFlags.on("A3D_QR_CORE"));
+        mountCurrentScene();
+        diagnosticsState.warnings.push("DEVICE_RESTORED_REMOUNT: the WebGL context was restored; the scene was mounted again so it renders.");
+      } catch (error) {
+        diagnosticsState.errors.push(`DEVICE_RESTORE_REMOUNT_FAILED: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    });
+  };
   const attachDeviceListeners = (controller: WebGLRenderController): void => {
     for (const [listener, unsubscribe] of deviceLostListeners) {
       unsubscribe?.();
@@ -214,8 +246,12 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       unsubscribe?.();
       deviceRestoredListeners.set(listener, controller.onDeviceRestored?.(listener));
     }
+    // Last, so the app's own restored handlers (which may remount through setScene) run first.
+    attachRestoreRemount(controller);
   };
   let lastTime = 0;
+  // ENG-FPS: the canvas preview loop reports a 1 s windowed rate, not 1000 / (last delta).
+  let canvasFrameRate = createFrameRateMeter();
   let mountRevision = 0;
   let canvasRuntimePhysics: ReturnType<typeof createRuntimeScenePhysics> | undefined;
   const runtimeNodes = createAuraRuntimeNodeRegistry(renderSnapshot);
@@ -257,17 +293,17 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
    * Off by default: a route that already moves its own nodes (and steps physics only for events) must
    * not have them overwritten.
    */
-  const appPhysicsNodeBindings = new Map<number, string>();
+  const appPhysicsNodeBindings = new Map<number, { readonly runtimeId: string; readonly node: object }>();
   const syncBoundNodes = (): void => {
     const world = appPhysicsWorldInstance;
     if (world === undefined) return;
-    for (const [bodyId, runtimeId] of appPhysicsNodeBindings) {
+    for (const [bodyId, binding] of appPhysicsNodeBindings) {
       const body = world.getBody(bodyId);
-      const handle = runtimeNodes.get(runtimeId);
+      const handle = runtimeNodes.get(binding.runtimeId);
       if (body === undefined || handle === undefined || body.sleeping) continue;
-      const euler = quatToEuler(body.rotation);
       handle.setPosition(body.position[0], body.position[1], body.position[2]);
-      handle.setRotation(euler[0], euler[1], euler[2]);
+      // Same convention the node was seeded with (anim-phys-01): quaternion or `rotationOrder`.
+      writeNodeRotationFromBody(binding.node, body.rotation, (euler) => handle.setRotation(euler[0], euler[1], euler[2]));
     }
   };
   /** Lazy `app.physics`. Identity is stable: the same runtime is returned on every access. */
@@ -310,7 +346,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       const body = world.createRigidBody({
         type: spec.type ?? "dynamic",
         position: node.position ?? [0, 0, 0],
-        rotation: eulerToQuat(node.rotation ?? [0, 0, 0]),
+        rotation: nodeRotationQuaternion(node),
         ...(spec.mass === undefined ? {} : { mass: spec.mass }),
         ...(spec.friction === undefined ? {} : { friction: spec.friction }),
         ...(spec.restitution === undefined ? {} : { restitution: spec.restitution })
@@ -323,7 +359,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       if (node.name) appPhysicsNodeNames.set(body.id, node.name);
       const runtimeId = (node as { readonly runtime?: { readonly id?: string } }).runtime?.id;
       if (options.physics?.bindNodes === true && runtimeId !== undefined && (spec.type ?? "dynamic") === "dynamic") {
-        appPhysicsNodeBindings.set(body.id, runtimeId);
+        appPhysicsNodeBindings.set(body.id, { runtimeId, node });
       }
     }
   };
@@ -377,7 +413,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     diagnosticsState.assets = [];
     diagnosticsState.evidence = fresh.evidence;
     diagnosticsState.renderer = fresh.renderer;
-    diagnosticsState.warnings = [...fresh.warnings];
+    diagnosticsState.warnings = [...fresh.warnings, ...rendererQualityWarnings(options.renderer)];
     diagnosticsState.errors = [];
     validateSceneAssets(renderSnapshot, diagnosticsState.assets);
     diagnosticsState.warnings.push(
@@ -396,7 +432,8 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       canvasRuntimePhysics?.step(dt);
     }
     diagnosticsState.evidence = collectAuraSceneEvidence(renderSnapshot);
-    diagnosticsState.fps = Math.round(1000 / delta);
+    canvasFrameRate.sample(time);
+    diagnosticsState.fps = canvasFrameRate.fps();
     /*
      * WS-2.5 — the live loop must respect the same rule as `step()`.
      *
@@ -420,6 +457,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     productionController?.dispose();
     productionController = undefined;
     lastTime = 0;
+    canvasFrameRate = createFrameRateMeter();
     const shouldUseProductionRenderer = shouldUseProductionRendererForCurrentScene();
     /*
      * WS-2.5 — a scene with renderable content must never fall to the diagnostic 2D path.
@@ -650,7 +688,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     setScene(nextScene) {
       assertMutableFrame();
       snapshot = normalizeSceneSnapshot(nextScene);
-      renderSnapshot = flattenAuraSceneSnapshot(snapshot, qrFlags);
+      renderSnapshot = flattenForRender(snapshot, true);
       runtimeNodes.reset(renderSnapshot);
       // Drop bodies from the previous scene before registering the new ones, so swapping
       // scenes does not leave orphaned bodies colliding with the new level.
@@ -742,6 +780,8 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     },
     onDeviceRestored(listener) {
       deviceRestoredListeners.set(listener, productionController?.onDeviceRestored?.(listener));
+      // Keep the engine's restore remount after the app's handlers.
+      if (productionController) attachRestoreRemount(productionController);
       return () => {
         deviceRestoredListeners.get(listener)?.();
         deviceRestoredListeners.delete(listener);
@@ -883,6 +923,22 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
        */
       if (productionController && !disposed && !productionController.busy?.()) {
         productionController.render(runtimeTime * 1000);
+      } else if (productionController && !disposed) {
+        /*
+         * RP-08: an async frame is in flight, so a synchronous render would throw and the buffer may be cleared or half drawn.
+         * Say so instead of returning a possibly blank image silently; `screenshotAsync()` waits for the frame.
+         */
+        const warning = "SCREENSHOT_DURING_ASYNC_FRAME: app.screenshot() was called while an async frame was in flight, so it could not re-render and may return a cleared canvas. Use await app.screenshotAsync().";
+        if (!diagnosticsState.warnings.includes(warning)) diagnosticsState.warnings.push(warning);
+      }
+      return captureAuraScreenshot(canvas);
+    },
+    async screenshotAsync() {
+      // RP-08: wait for pending stepAsync() calls and the controller's in-flight frame, then re-render and read in one task.
+      await asyncSteps;
+      await productionController?.whenIdle?.();
+      if (productionController && !disposed && !productionController.busy?.()) {
+        productionController.render(runtimeTime * 1000);
       }
       return captureAuraScreenshot(canvas);
     },
@@ -898,6 +954,8 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       for (const unsubscribe of [...deviceLostListeners.values(), ...deviceRestoredListeners.values()]) unsubscribe?.();
       deviceLostListeners.clear();
       deviceRestoredListeners.clear();
+      restoreRemountUnsubscribe?.();
+      restoreRemountUnsubscribe = undefined;
       if (animationHandle && typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(animationHandle);
       for (const controller of ownedInputControllers) controller.dispose();
       ownedInputControllers.clear();
@@ -927,6 +985,29 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   // assigned by the extension loop; cutCamera binds the controller's C-14
   // reset so the camera extension's onCut hook invalidates temporal history.
   const postSurface = (app as { post?: { addPostPass?: (p: import("../../contracts/post.js").AuraCustomPostPass) => () => void; setQualityTier?: (t: AuraQualityTier | "auto") => void } }).post;
+  /*
+   * RP-03: a custom post pass needs the post chain, which the direct path does not have, and the path was chosen at mount
+   * (before any addPostPass call could run). On a direct-path canvas, keep the canvas off the direct path while the pass is
+   * registered and remount, carrying over nodes added at runtime, so the pass runs.
+   */
+  if (postSurface?.addPostPass && canvas) {
+    const addPostPass = postSurface.addPostPass.bind(postSurface);
+    postSurface.addPostPass = (pass) => {
+      const release = addPostPass(pass);
+      const releaseVeto = vetoDirectPath(canvas, `custom post pass "${pass.name}"`);
+      if (isDirectRenderPath(canvas) && !disposed) {
+        const remount = (): void => {
+          if (disposed) return;
+          app.setScene(runtimeNodes.sceneWithRuntimeAdditions() ?? snapshot);
+          // After setScene: the remount resets the warning list.
+          diagnosticsState.warnings.push(`DIRECT_PATH_REMOUNT: custom post pass "${pass.name}" needs the HDR target; the scene was remounted so it runs.`);
+        };
+        if (pendingAsyncSteps > 0 || productionController?.busy?.()) void asyncSteps.then(() => productionController?.whenIdle?.()).then(remount);
+        else remount();
+      }
+      return () => { releaseVeto(); release(); };
+    };
+  }
   (app as { addPostPass?: (p: import("../../contracts/post.js").AuraCustomPostPass) => () => void }).addPostPass =
     (p) => postSurface?.addPostPass?.(p) ?? (() => { /* stub */ });
   (app as { setQualityTier?: (t: AuraQualityTier | "auto") => void }).setQualityTier =

@@ -17,9 +17,9 @@
     "R-23"
   ],
   "sourceExample": "examples/strange-orbit-port/",
-  "evidence": "Original finish 283.683 s, 7 laps, 35 checkpoints reproduced exactly in Node and in the live page.",
+  "evidence": "Original finish 283.683 s, 7 laps, 35 checkpoints reproduced exactly in Node and in the live page with the original rivals (balance \"original\"); the shipped cup retunes the rivals per difficulty (audit 2026-10-29, SO-3).",
   "limits": [
-    "Simulation parity verified against the original's recorded seven-lap run; procedural art, no career, garage or audio.",
+    "Simulation parity verified against the original's recorded seven-lap run with the original rivals; no career or garage.",
     "Procedural art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
     "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
   ],

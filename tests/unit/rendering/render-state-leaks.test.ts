@@ -1373,3 +1373,50 @@ describe("WebGL2 viewport / scissor / external framebuffer (SC-01, XR)", () => {
     expect(toXr[0]!.viewport).toEqual([0, 0, 800, 600]);
   });
 });
+
+describe("E1 wave 2: device primitive counters", () => {
+  it("getDiagnostics() counts triangles, lines and points per frame (info().render.triangles was always 0)", () => {
+    const { canvas } = createFakeWebGL2Canvas();
+    const device = WebGL2Device.create({ canvas });
+    const geometry = Geometry.triangle();
+    const vertexBuffer = geometry.vertexBuffer.upload(device);
+    const indexBuffer = geometry.indexBuffer?.upload(device);
+    const shader = device.createShaderProgram({
+      label: "e1-triangle-count",
+      marker: "@aura3d-test:e1-triangle-count",
+      vertex: `
+        #version 300 es
+        // @aura3d-test:e1-triangle-count
+        in vec3 a_position;
+        void main() { gl_Position = vec4(a_position, 1.0); gl_PointSize = 1.0; }
+      `,
+      fragment: `
+        #version 300 es
+        // @aura3d-test:e1-triangle-count
+        precision mediump float;
+        out vec4 outColor;
+        void main() { outColor = vec4(1.0); }
+      `
+    });
+    const base = { vertexBuffer, vertexFormat: geometry.vertexBuffer.format, vertexCount: geometry.vertexBuffer.vertexCount, shader } as const;
+    const indexed = { ...base, indexBuffer, indexType: "uint16" as const, indexCount: 9 };
+    device.beginFrame(4, 4);
+    device.draw({ ...base, topology: "triangles", vertexCount: 3 });
+    device.draw({ ...indexed, topology: "triangles", instanceCount: 10 });
+    device.draw({ ...base, topology: "lines", vertexCount: 4 });
+    device.draw({ ...base, topology: "points", vertexCount: 3 });
+    device.multiDrawElementsInstanced([{ ...indexed, topology: "triangles", instanceCount: 4 }]);
+    device.endFrame();
+    expect(device.getDiagnostics().triangles).toBe(1 + 3 * 10 + 3 * 4);
+    expect(device.getDiagnostics().lines).toBe(2);
+    expect(device.getDiagnostics().points).toBe(3);
+
+    device.beginFrame(4, 4);
+    device.draw({ ...base, topology: "triangles", vertexCount: 3 });
+    device.endFrame();
+    expect(device.getDiagnostics().triangles).toBe(1);
+    expect(device.getDiagnostics().lines).toBe(0);
+    device.resetFrameCounters();
+    expect(device.getDiagnostics().triangles).toBe(0);
+  });
+});

@@ -90,13 +90,15 @@ export interface GameState {
 }
 
 export interface Segment { z: number; x: number; index: number }
-export interface Gate { z: number; x: number; laneX: number; colorIndex: number; passed: boolean }
+/** `row` groups the three gates spawned together (presentation and nearest-gate resolution only; not in the trace). */
+export interface Gate { z: number; x: number; laneX: number; colorIndex: number; passed: boolean; row: number }
 export interface Powerup { z: number; x: number; y: number; laneX: number; baseY: number; type: "rainbow" | "shield" | "x2" | "switch" }
 export interface Splatter { x: number; y: number; z: number; rotY: number; scale: number; targetScale: number; laneX: number; colorIndex: number }
 export interface Particle { visible: boolean; x: number; y: number; z: number; vx: number; vy: number; vz: number; life: number; max: number; s0: number; scale: number; color: string }
 export interface Cloud { x: number; y: number; z: number; s: number; r: number }
 export interface Streak { x: number; y: number; z: number; speed: number }
-export interface Popup { n: number; text: string; color: string; size: number; at: number }
+/** `seq` counts every popup ever created on this sim (monotonic, never reset, not in the trace); the HUD drains by it. */
+export interface Popup { n: number; seq: number; text: string; color: string; size: number; at: number }
 
 /** Values drawn for the two canvas textures, in draw order, so the renderer can paint identical canvases. */
 export interface TexturePaint {
@@ -138,6 +140,15 @@ export class SplatRushSim {
   /** private steering target `ye` and pointer drag state. */
   ye = 0;
   dragging = false;
+  /** Popups created so far (the `seq` of the next one). The list keeps the last 64; consumers read by `seq`, never by index. */
+  popupSeq = 0;
+  /** Gate rows spawned so far (the `row` id of the next row). */
+  private gateRows = 0;
+  /** Total cloud drift since construction: every cloud moves by the same amount per frame, so a cloud's z minus this is constant until it respawns. */
+  cloudDrift = 0;
+  /** Total road scroll since construction (the sum of every step's `move`): a road entity's z minus this is constant for
+   * its whole life, so the renderer can keep it in a scrolling frame and upload it once. Never reset, not in the trace. */
+  scroll = 0;
   /** virtual frame index n of the frame that ran last (0 = the module-eval frame). */
   n = 0;
   /** three.Clock emulation. */
@@ -195,7 +206,7 @@ export class SplatRushSim {
 
   private popup(text: string, color: string, size: number): void {
     const jitter = this.rng.next(); // popup x position: 0.42 + 0.16 * random
-    this.popups.push({ n: this.n, text, color, size, at: 0.42 + 0.16 * jitter });
+    this.popups.push({ n: this.n, seq: this.popupSeq++, text, color, size, at: 0.42 + 0.16 * jitter });
     if (this.popups.length > 64) this.popups.shift();
   }
 
@@ -238,6 +249,7 @@ export class SplatRushSim {
     const r = this.rng;
     const match = Math.floor(3 * r.next());
     const lanes = [-2.3, 0, 2.3];
+    const row = this.gateRows++;
     for (let a = 0; a < 3; a++) {
       if (this.gates.length >= POOL.gates) continue;
       let colorIndex = this.o.playerColorIndex;
@@ -245,7 +257,7 @@ export class SplatRushSim {
         do colorIndex = Math.floor(4 * r.next());
         while (colorIndex === this.o.playerColorIndex);
       }
-      this.gates.push({ z, x: 0, laneX: lanes[a] as number, colorIndex, passed: false });
+      this.gates.push({ z, x: 0, laneX: lanes[a] as number, colorIndex, passed: false, row });
     }
   }
 
@@ -292,6 +304,10 @@ export class SplatRushSim {
     o.trailTimer = 0; o.scoreX2Timer = 0; o.scoreX2Active = false; o.shieldActive = false; o.milestone = CONFIG.MILESTONE_SCORE; o.squashT = 0;
     o.ballScale = 1; o.playerColorIndex = 0; o.shakeTimer = 0; o.combo = 0; o.multiplier = 1; o._rainbowVisual = false;
     this.player.scale = 1;
+    // C4: a restart starts centred and not dragging (the original keeps the previous run's steering target; a run started
+    // from the splash already has both at their initial values, so replays of the reference are unchanged)
+    this.ye = 0;
+    this.dragging = false;
     this.segments = []; this.gates = []; this.splatters = []; this.powerups = [];
     o.segmentCounter = 0;
     o.lastSegmentZ = 20;
@@ -341,6 +357,7 @@ export class SplatRushSim {
         if (this.shieldPulse <= 0) { this.shieldPulse = 0.22; this.burst(ge.x, ge.y, ge.z, "#8fe3ff", 4, 1.2); }
       }
       const move = o.speed * dt;
+      this.scroll += move;
       o.lastSegmentZ += move;
       o.lastGateZ += move;
       for (let i = this.segments.length - 1; i >= 0; i--) {
@@ -355,9 +372,19 @@ export class SplatRushSim {
         g.x = g.laneX + curve(-o.distance + g.z);
         if (!g.passed && g.z > -0.5 && g.z < 1) {
           g.passed = true;
-          const off = Math.abs(o.laneOffset - g.laneX);
+          // C16: resolve a row once, against its nearest gate. The hit windows (|off| < 1.2, lanes 2.3 apart) overlap within
+          // 0.05 of a lane boundary, where the original applied both a match and an OUCH in one frame. Outside the overlap
+          // at most one gate is in reach, and it is the nearest, so the result and the random draws are unchanged.
+          let nearest = g;
+          for (const mate of this.gates) {
+            if (mate === g || mate.row !== g.row || mate.passed) continue;
+            mate.passed = true;
+            if (Math.abs(o.laneOffset - mate.laneX) < Math.abs(o.laneOffset - nearest.laneX)) nearest = mate;
+          }
+          const off = Math.abs(o.laneOffset - nearest.laneX);
+          const target = nearest;
           if (off < 1.2) {
-            if (o.isRainbowActive || g.colorIndex === o.playerColorIndex) {
+            if (o.isRainbowActive || target.colorIndex === o.playerColorIndex) {
               o.combo++;
               o.multiplier = Math.min(a.MAX_MULT, 1 + Math.floor(o.combo / a.COMBO_PER_MULT));
               const perfect = off < a.PERFECT_WINDOW;
@@ -367,7 +394,7 @@ export class SplatRushSim {
               o.ballScale = Math.min(1.6, o.ballScale * (perfect ? 1.15 * a.GROW_FACTOR : a.GROW_FACTOR));
               o.speed = Math.min(a.MAX_SPEED, o.speed + (perfect ? 0.45 : 0.3));
               o.squashT = 0.28;
-              const color = COLORS[g.colorIndex] ?? "#ffffff";
+              const color = COLORS[target.colorIndex] ?? "#ffffff";
               this.burst(ge.x, ge.y, ge.z, color, perfect ? 22 : 12, perfect ? 2.4 : 1.6);
               if (perfect) { o.squashT = 0.34; this.fovPunch(4); this.popup(`PERFECT! +${pts}`, "#b868e8", 1.9); }
               if (o.combo >= a.COMBO_PER_MULT && o.combo % a.COMBO_PER_MULT === 0) { this.popup(`COMBO x${o.multiplier}`, "#f9c647", 2.7); this.fovPunch(5); }
@@ -479,6 +506,7 @@ export class SplatRushSim {
       if (st.z > 20) { st.z = -60 - 40 * r.next(); st.x = 40 * (r.next() - 0.5); st.y = 0.5 + 15 * r.next(); }
     }
     const drift = (0.35 * d2 + 4) * dt;
+    this.cloudDrift += drift;
     for (let i = 0; i < 56; i++) {
       const c = this.clouds[i] as Cloud;
       c.z += drift;

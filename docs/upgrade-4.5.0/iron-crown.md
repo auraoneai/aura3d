@@ -2,7 +2,7 @@
 
 **Verdict:** Recommended changes. Nothing in the code fails to build or runs differently by contract, but the render now differs from 4.3.7 in three places (contact shadows, the Neo-Tokyo stage's lighting, fused bloom), so re-check the six stages by eye and re-baseline any pixel or luma comparisons.
 
-Scope: `apps/showcase-iron-crown/` on branch `beat3js2/integration`. `apps/showcase-iron-crown/package.json:3` already pins version `4.5.0`. The game imports only `../../showcase-port-shared/quickbar.css` from the shared port folder (`src/main.ts:1`), not `diag.ts`. It imports `../../../../src/aura-assets` for shared assets in `src/game/stages.ts:2`. Nothing from `apps/common` is imported.
+Scope: `apps/showcase-iron-crown/` on branch `beat3js2/integration`. `apps/showcase-iron-crown/package.json:3` already pins version `4.5.0`. The game imports only `../../showcase-port-shared/quickbar.css` from the shared port folder (`src/main.ts:1`), not `diag.ts`. Since 2026-10-29 the stage props come from the app's own 28-entry manifest `src/game/stage-assets.ts` instead of the shared `src/aura-assets` catalog. Nothing from `apps/common` is imported.
 
 ## What this game uses
 
@@ -107,12 +107,14 @@ Scope: `apps/showcase-iron-crown/` on branch `beat3js2/integration`. `apps/showc
 
 ## Checklist
 
-- [ ] Run `node tools/game-checks/run.mjs iron-crown` and confirm 0 errors (not run for this guide).
-- [ ] Run `pnpm --filter @aura3d/showcase-iron-crown typecheck` and `build` on the remote runner (`tools/remote-acr/run.sh`), not locally.
-- [ ] Log `app.diagnostics().renderPath` once; expect `hdr-msaa` and `bloomFusion: "separable"`.
-- [ ] Capture all six stages with `?capture=1` and compare against 4.3.7: Neo-Tokyo (lighting source, loaded first and reached by `setScene`), floor and feet (contact shadows), bloom halo on the light cones and crowd lights.
-- [ ] If Neo-Tokyo or the contact shadow is off, tune `lookOverrides.exposureEv` in `src/game/stages.ts` or the `effects.contactShadows` numbers at `src/main.ts:239`.
-- [ ] Confirm `app.diagnostics()` has no `OPTION_IGNORED` entry and `app.lighting.diagnostics().contactShadows` has no `unavailable`.
-- [ ] Update luma or pixel baselines that include `iron-crown` (`tests/browser/post-luma-games.json`, `tests/browser/exposure-scenes.json`).
-- [ ] In `tools/filmstrip/capture-films.mjs`, change the Iron Crown URL (line 111) to add `&capture=1` so the `toDataURL` fallback is not black; confirm `tools/quality-rebuild-capture/capture-games.mjs` frames are non-black (it uses `page.screenshot`).
-- [ ] Optional: add `quality: "production"` to the `createGame` options if you need the 4.3.7 render path and no bloom fusion while re-baselining. The contact-shadow and Neo-Tokyo changes remain either way.
+Closed on 2026-10-29 by audit lane G05 (`docs/audits/lanes/g05.md`). Captures ran on the remote runner (Azure ACR Tasks, headless Chromium, software WebGL2), spec `tests/browser/audit-fix/iron-crown.spec.ts`, frames and numbers in `evidence/iron-crown/audit-2026-10-29/`. These are 4.5.0 frames before and after the lane's game fixes; the 4.3.7 comparison for Neo-Tokyo is the earlier `evidence/games450/iron-crown-neo-tokyo.md` (31.4 on 4.3.7, 33.4 on 4.5.0).
+
+- [x] `node tools/game-checks/run.mjs iron-crown`: 0 errors, 0 warnings.
+- [x] Typecheck and build: `tsc -p apps/showcase-iron-crown/tsconfig.json --noEmit` passes; `vite build` of the app passes (main chunk 6.03 MB before the lane, 3.56 MB after, because the shared asset catalog is no longer bundled). The build was a single-app vite build, run locally; no browser ran locally.
+- [x] Render path logged on every shot (`GL_META info`): `hdr-msaa`, `bloomFusion: "separable"`, `optionIgnored: 0`.
+- [x] All six stages captured at steady state (1280x720, the later shots). Mean luma: Crown Arena 56.5, Neo-Tokyo 30.7 (75 s after the `setScene` swap), Lantern Dock 115.4, Colosseum 131.3, Airstrip 122.3, Monastery 129.9. Each matches the base build within 0.2 luma except the Crown Arena, where the new throne plinth is darker than the pale pedestal it replaced (57.3 to 56.5). Neo-Tokyo reached by `setScene` settles at 30.7 (p95 91); its first shot 10 s after the swap reads 25.5, so judge the later shot.
+- [x] Contact shadows: `passExecuted: true`, `depthSource: "self"`, no `unavailable`, on every stage. On Neo-Tokyo the mask changes the frame by 0.04 luma (30.73 with, 30.69 with `?iccontact=0`): the night key light it modulates is weak (LIGHT-09, engine lane E2).
+- [x] No retune needed: no stage moved more than 0.2 luma against the base, and the Neo-Tokyo figure is within the 4.3.7 range recorded above.
+- [x] Luma baselines: `tests/browser/post-luma-games.json` and `tests/browser/exposure-scenes.json` only list the route; they hold no numbers to update.
+- [ ] `tools/filmstrip/capture-films.mjs` line 111 `&capture=1`: handed off (shared tool, not owned by this lane); see the lane report.
+- [x] Optional `quality: "production"`: measured with `?aura3d-render=production` instead: Crown Arena 55.7 against 56.5 on the default path (bloom fusion `off` against `separable`, 1.4% darker). The default path stays.

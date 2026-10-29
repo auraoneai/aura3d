@@ -1,0 +1,4270 @@
+[
+ {
+  "run": "g04b-desktop",
+  "target": "desktop",
+  "id": "01-title",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": false,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 92.92,
+   "p5": 22,
+   "p50": 88,
+   "p95": 188,
+   "darkFrac": 0.0005,
+   "clipFrac": 0.002
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 0.952,
+   "yellowViewX": -0.18,
+   "carToLine": 1.132,
+   "carScreenX": 723
+  },
+  "clearance": null,
+  "cameraInsideCar": null,
+  "state": {
+   "framesRendered": 3,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 0,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     3.4,
+     0,
+     -0.77
+    ],
+    "speedMps": 11.28,
+    "speedMph": 25
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 612,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 695,
+     "y": 211,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 489,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 577,
+     "y": 279,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 431,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 401,
+     "y": 344,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "MANUAL \u00b7 PILOT OVERRIDE",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-desktop",
+  "target": "desktop",
+  "id": "chase-steady",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": true,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 106.31,
+   "p5": 42,
+   "p50": 98,
+   "p95": 194,
+   "darkFrac": 0,
+   "clipFrac": 0
+  },
+  "carCrop": {
+   "x": 643,
+   "y": 279,
+   "w": 233,
+   "h": 362,
+   "mean": 162.04,
+   "p5": 89,
+   "p50": 182,
+   "p95": 219,
+   "darkFrac": 0,
+   "clipFrac": 0.0003
+  },
+  "geometry": {
+   "carViewX": 0.952,
+   "yellowViewX": -0.18,
+   "carToLine": 1.132,
+   "carScreenX": 723
+  },
+  "clearance": null,
+  "cameraInsideCar": null,
+  "state": {
+   "framesRendered": 11,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 0,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     3.4,
+     0,
+     -4.99
+    ],
+    "speedMps": 10,
+    "speedMph": 22
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 610,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 699,
+     "y": 212,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 491,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 573,
+     "y": 279,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 432,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 402,
+     "y": 344,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "MANUAL \u00b7 PILOT OVERRIDE",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-desktop",
+  "target": "desktop",
+  "id": "02-early",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": false,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 85.32,
+   "p5": 19,
+   "p50": 69,
+   "p95": 187,
+   "darkFrac": 0.0011,
+   "clipFrac": 0.0022
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 0.952,
+   "yellowViewX": -0.18,
+   "carToLine": 1.132,
+   "carScreenX": 723
+  },
+  "clearance": null,
+  "cameraInsideCar": null,
+  "state": {
+   "framesRendered": 11,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 0,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     3.4,
+     0,
+     -4.99
+    ],
+    "speedMps": 10,
+    "speedMph": 22
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 610,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 699,
+     "y": 212,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 491,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 573,
+     "y": 279,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 432,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 402,
+     "y": 344,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "MANUAL \u00b7 PILOT OVERRIDE",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-desktop",
+  "target": "desktop",
+  "id": "03-action",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": false,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 84.59,
+   "p5": 19,
+   "p50": 68,
+   "p95": 187,
+   "darkFrac": 0.0013,
+   "clipFrac": 0.002
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 1.278,
+   "yellowViewX": -0.18,
+   "carToLine": 1.458,
+   "carScreenX": 751
+  },
+  "clearance": null,
+  "cameraInsideCar": null,
+  "state": {
+   "framesRendered": 16,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 0,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     4.57,
+     0,
+     -8.17
+    ],
+    "speedMps": 14.5,
+    "speedMph": 32
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 610,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 681,
+     "y": 212,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 477,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 561,
+     "y": 279,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 412,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 386,
+     "y": 344,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "MANUAL \u00b7 PILOT OVERRIDE",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-desktop",
+  "target": "desktop",
+  "id": "04-mid",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": false,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 83.09,
+   "p5": 18,
+   "p50": 66,
+   "p95": 187,
+   "darkFrac": 0.0014,
+   "clipFrac": 0.0019
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 1.429,
+   "yellowViewX": -0.18,
+   "carToLine": 1.609,
+   "carScreenX": 764
+  },
+  "clearance": null,
+  "cameraInsideCar": null,
+  "state": {
+   "framesRendered": 21,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 0,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     5.1,
+     0,
+     -11.67
+    ],
+    "speedMps": 13.7,
+    "speedMph": 31
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 609,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 673,
+     "y": 213,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 471,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 555,
+     "y": 279,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 404,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 378,
+     "y": 344,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "MANUAL \u00b7 PILOT OVERRIDE",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-desktop",
+  "target": "desktop",
+  "id": "mid-canvas",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": true,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 102.96,
+   "p5": 39,
+   "p50": 92,
+   "p95": 193,
+   "darkFrac": 0.0001,
+   "clipFrac": 0
+  },
+  "carCrop": {
+   "x": 676,
+   "y": 279,
+   "w": 260,
+   "h": 362,
+   "mean": 151.01,
+   "p5": 82,
+   "p50": 158,
+   "p95": 209,
+   "darkFrac": 0,
+   "clipFrac": 0
+  },
+  "geometry": {
+   "carViewX": 1.429,
+   "yellowViewX": -0.18,
+   "carToLine": 1.609,
+   "carScreenX": 764
+  },
+  "clearance": null,
+  "cameraInsideCar": null,
+  "state": {
+   "framesRendered": 21,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 0,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     5.1,
+     0,
+     -11.67
+    ],
+    "speedMps": 13.7,
+    "speedMph": 31
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 609,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 673,
+     "y": 213,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 471,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 555,
+     "y": 279,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 404,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 378,
+     "y": 344,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "MANUAL \u00b7 PILOT OVERRIDE",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-desktop",
+  "target": "desktop",
+  "id": "cam-car0-mode0",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": true,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 104.26,
+   "p5": 40,
+   "p50": 95,
+   "p95": 193,
+   "darkFrac": 0.0001,
+   "clipFrac": 0.0001
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 1.44,
+   "yellowViewX": -0.18,
+   "carToLine": 1.62,
+   "carScreenX": 765
+  },
+  "clearance": {
+   "dx": 0.525,
+   "dy": 0.5,
+   "dz": 5.35
+  },
+  "cameraInsideCar": false,
+  "state": {
+   "framesRendered": 24,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 0,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     5.14,
+     0,
+     -13.68
+    ],
+    "speedMps": 13.22,
+    "speedMph": 30
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 607,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 673,
+     "y": 213,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 470,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 554,
+     "y": 278,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 405,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 377,
+     "y": 344,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "AUTO \u00b7 APEX L5 AUTOPILOT",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-desktop",
+  "target": "desktop",
+  "id": "cam-car0-mode1",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": true,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 99.71,
+   "p5": 40,
+   "p50": 88,
+   "p95": 192,
+   "darkFrac": 0.0002,
+   "clipFrac": 0
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 1.442,
+   "yellowViewX": -0.18,
+   "carToLine": 1.622,
+   "carScreenX": 736
+  },
+  "clearance": {
+   "dx": 0.527,
+   "dy": 1.05,
+   "dz": 7.75
+  },
+  "cameraInsideCar": false,
+  "state": {
+   "framesRendered": 26,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 1,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     5.15,
+     0,
+     -14.98
+    ],
+    "speedMps": 12.9,
+    "speedMph": 29
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 610,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 666,
+     "y": 223,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 475,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 555,
+     "y": 288,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 421,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 389,
+     "y": 344,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "AUTO \u00b7 APEX L5 AUTOPILOT",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-desktop",
+  "target": "desktop",
+  "id": "cam-car0-mode2",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": true,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 107.26,
+   "p5": 44,
+   "p50": 102,
+   "p95": 190,
+   "darkFrac": 0.0001,
+   "clipFrac": 0.0001
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 1.443,
+   "yellowViewX": -0.18,
+   "carToLine": 1.623,
+   "carScreenX": -1327
+  },
+  "clearance": {
+   "dx": 0.528,
+   "dy": 0.25,
+   "dz": -0.85
+  },
+  "cameraInsideCar": false,
+  "state": {
+   "framesRendered": 28,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 2,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     5.15,
+     0,
+     -16.25
+    ],
+    "speedMps": 12.58,
+    "speedMph": 28
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 581,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 720,
+     "y": 218,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 442,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 552,
+     "y": 279,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 325,
+     "y": 166,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 312,
+     "y": 231,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "AUTO \u00b7 APEX L5 AUTOPILOT",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-desktop",
+  "target": "desktop",
+  "id": "cam-car0-mode3",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": true,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 109.46,
+   "p5": 42,
+   "p50": 104,
+   "p95": 188,
+   "darkFrac": 0.0001,
+   "clipFrac": 0
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 1.443,
+   "yellowViewX": -0.18,
+   "carToLine": 1.623,
+   "carScreenX": 58
+  },
+  "clearance": {
+   "dx": 0.528,
+   "dy": -0.8,
+   "dz": 0.35
+  },
+  "cameraInsideCar": false,
+  "state": {
+   "framesRendered": 30,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 3,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     5.16,
+     0,
+     -17.48
+    ],
+    "speedMps": 12.26,
+    "speedMph": 27
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 577,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 735,
+     "y": 214,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 435,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 551,
+     "y": 279,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 302,
+     "y": 112,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 294,
+     "y": 177,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "AUTO \u00b7 APEX L5 AUTOPILOT",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-desktop",
+  "target": "desktop",
+  "id": "cam-car1-mode2",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": true,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 92.15,
+   "p5": 40,
+   "p50": 73,
+   "p95": 184,
+   "darkFrac": 0.0001,
+   "clipFrac": 0
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 1.444,
+   "yellowViewX": -0.18,
+   "carToLine": 1.624,
+   "carScreenX": 1008
+  },
+  "clearance": {
+   "dx": 0.084,
+   "dy": -0.47,
+   "dz": 0.1
+  },
+  "cameraInsideCar": true,
+  "state": {
+   "framesRendered": 33,
+   "vehicle": "cybercab",
+   "autopilotLevel": "MAN",
+   "cameraMode": 2,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     5.16,
+     0,
+     -19.27
+    ],
+    "speedMps": 11.78,
+    "speedMph": 26
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 578,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 704,
+     "y": 214,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 451,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 552,
+     "y": 279,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 364,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 335,
+     "y": 344,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "AUTO \u00b7 NEURAL AUTOPILOT",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-desktop",
+  "target": "desktop",
+  "id": "cam-car1-mode3",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": true,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 94.48,
+   "p5": 40,
+   "p50": 78,
+   "p95": 186,
+   "darkFrac": 0.0009,
+   "clipFrac": 0
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 1.444,
+   "yellowViewX": -0.18,
+   "carToLine": 1.624,
+   "carScreenX": 2642
+  },
+  "clearance": {
+   "dx": 0.084,
+   "dy": -1.17,
+   "dz": -1.9
+  },
+  "cameraInsideCar": true,
+  "state": {
+   "framesRendered": 36,
+   "vehicle": "cybercab",
+   "autopilotLevel": "MAN",
+   "cameraMode": 3,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     5.16,
+     0,
+     -20.99
+    ],
+    "speedMps": 11.3,
+    "speedMph": 25
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 567,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 723,
+     "y": 214,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 441,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 552,
+     "y": 279,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 338,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 311,
+     "y": 158,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "AUTO \u00b7 NEURAL AUTOPILOT",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-desktop",
+  "target": "desktop",
+  "id": "cam-car2-mode2",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": true,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 92.22,
+   "p5": 23,
+   "p50": 79,
+   "p95": 185,
+   "darkFrac": 0.004,
+   "clipFrac": 0
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 1.444,
+   "yellowViewX": -0.18,
+   "carToLine": 1.624,
+   "carScreenX": 1008
+  },
+  "clearance": {
+   "dx": 0.309,
+   "dy": -0.17,
+   "dz": -0.675
+  },
+  "cameraInsideCar": false,
+  "state": {
+   "framesRendered": 38,
+   "vehicle": "cybertruck",
+   "autopilotLevel": "MAN",
+   "cameraMode": 2,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     5.16,
+     0,
+     -22.1
+    ],
+    "speedMps": 10.98,
+    "speedMph": 25
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 583,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 708,
+     "y": 214,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 449,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 552,
+     "y": 279,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 365,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 330,
+     "y": 214,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "AUTO \u00b7 TRI-MOTOR AWD",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-desktop",
+  "target": "desktop",
+  "id": "cam-car2-mode3",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": true,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 83.73,
+   "p5": 18,
+   "p50": 65,
+   "p95": 187,
+   "darkFrac": 0.0038,
+   "clipFrac": 0
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 1.444,
+   "yellowViewX": -0.18,
+   "carToLine": 1.624,
+   "carScreenX": 2642
+  },
+  "clearance": {
+   "dx": 0.309,
+   "dy": -0.87,
+   "dz": -2.675
+  },
+  "cameraInsideCar": false,
+  "state": {
+   "framesRendered": 41,
+   "vehicle": "cybertruck",
+   "autopilotLevel": "MAN",
+   "cameraMode": 3,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     5.16,
+     0,
+     -23.7
+    ],
+    "speedMps": 10.5,
+    "speedMph": 23
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 571,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 729,
+     "y": 214,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 438,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 552,
+     "y": 279,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 339,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 305,
+     "y": 158,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "AUTO \u00b7 TRI-MOTOR AWD",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-desktop",
+  "target": "desktop",
+  "id": "cam-car3-mode2",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": true,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 102.59,
+   "p5": 29,
+   "p50": 99,
+   "p95": 188,
+   "darkFrac": 0.0001,
+   "clipFrac": 0
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 1.444,
+   "yellowViewX": -0.18,
+   "carToLine": 1.624,
+   "carScreenX": 1008
+  },
+  "clearance": {
+   "dx": 0.314,
+   "dy": 0.66,
+   "dz": -0.23
+  },
+  "cameraInsideCar": false,
+  "state": {
+   "framesRendered": 43,
+   "vehicle": "corvette",
+   "autopilotLevel": "MAN",
+   "cameraMode": 2,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     5.16,
+     0,
+     -24.72
+    ],
+    "speedMps": 10.18,
+    "speedMph": 23
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 581,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 713,
+     "y": 214,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 446,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 552,
+     "y": 279,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 365,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 324,
+     "y": 176,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "8-DCT \u00b7 1,250 HP V8",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-desktop",
+  "target": "desktop",
+  "id": "cam-car3-mode3",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": true,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 110.86,
+   "p5": 40,
+   "p50": 112,
+   "p95": 190,
+   "darkFrac": 0.0012,
+   "clipFrac": 0
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 1.444,
+   "yellowViewX": -0.18,
+   "carToLine": 1.624,
+   "carScreenX": 2642
+  },
+  "clearance": {
+   "dx": 0.314,
+   "dy": -0.04,
+   "dz": -2.23
+  },
+  "cameraInsideCar": false,
+  "state": {
+   "framesRendered": 46,
+   "vehicle": "corvette",
+   "autopilotLevel": "MAN",
+   "cameraMode": 3,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     5.16,
+     0,
+     -26.2
+    ],
+    "speedMps": 9.7,
+    "speedMph": 22
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 567,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 736,
+     "y": 214,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 435,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 552,
+     "y": 279,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 339,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 297,
+     "y": 157,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "8-DCT \u00b7 1,250 HP V8",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-desktop",
+  "target": "desktop",
+  "id": "cam-car4-mode2",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": true,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 101.4,
+   "p5": 31,
+   "p50": 96,
+   "p95": 187,
+   "darkFrac": 0.005,
+   "clipFrac": 0
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 1.444,
+   "yellowViewX": -0.18,
+   "carToLine": 1.624,
+   "carScreenX": 1008
+  },
+  "clearance": {
+   "dx": 0.409,
+   "dy": 0.71,
+   "dz": -0.15
+  },
+  "cameraInsideCar": false,
+  "state": {
+   "framesRendered": 48,
+   "vehicle": "roadster",
+   "autopilotLevel": "MAN",
+   "cameraMode": 2,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     5.16,
+     0,
+     -27.16
+    ],
+    "speedMps": 9.5,
+    "speedMph": 21
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 569,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 719,
+     "y": 214,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 443,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 552,
+     "y": 279,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 365,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 317,
+     "y": 176,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "COLD-GAS THRUSTERS",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-desktop",
+  "target": "desktop",
+  "id": "cam-car4-mode3",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": true,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 104.47,
+   "p5": 38,
+   "p50": 101,
+   "p95": 188,
+   "darkFrac": 0.0001,
+   "clipFrac": 0
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 1.444,
+   "yellowViewX": -0.18,
+   "carToLine": 1.624,
+   "carScreenX": 2642
+  },
+  "clearance": {
+   "dx": 0.409,
+   "dy": 0.01,
+   "dz": -2.15
+  },
+  "cameraInsideCar": false,
+  "state": {
+   "framesRendered": 51,
+   "vehicle": "roadster",
+   "autopilotLevel": "MAN",
+   "cameraMode": 3,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     5.16,
+     0,
+     -28.58
+    ],
+    "speedMps": 9.5,
+    "speedMph": 21
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 570,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 743,
+     "y": 214,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 432,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 552,
+     "y": 279,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 338,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 288,
+     "y": 157,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "COLD-GAS THRUSTERS",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-desktop",
+  "target": "desktop",
+  "id": "05-modes",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": false,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 77.19,
+   "p5": 14,
+   "p50": 58,
+   "p95": 187,
+   "darkFrac": 0.0073,
+   "clipFrac": 0.0019
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 1.444,
+   "yellowViewX": -0.18,
+   "carToLine": 1.624,
+   "carScreenX": 766
+  },
+  "clearance": null,
+  "cameraInsideCar": null,
+  "state": {
+   "framesRendered": 53,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 0,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     5.16,
+     0,
+     -29.53
+    ],
+    "speedMps": 9.5,
+    "speedMph": 21
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 601,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 692,
+     "y": 217,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 459,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 554,
+     "y": 282,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 408,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 353,
+     "y": 344,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "AUTO \u00b7 APEX L5 AUTOPILOT",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-desktop",
+  "target": "desktop",
+  "id": "06-results",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": false,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 88.32,
+   "p5": 21,
+   "p50": 73,
+   "p95": 187,
+   "darkFrac": 0.0009,
+   "clipFrac": 0.0019
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 1.444,
+   "yellowViewX": -0.18,
+   "carToLine": 1.624,
+   "carScreenX": 766
+  },
+  "clearance": null,
+  "cameraInsideCar": null,
+  "state": {
+   "framesRendered": 57,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 0,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     5.16,
+     0,
+     -31.43
+    ],
+    "speedMps": 9.5,
+    "speedMph": 21
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 601,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 696,
+     "y": 217,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 457,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 554,
+     "y": 282,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 407,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 348,
+     "y": 344,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "AUTO \u00b7 APEX L5 AUTOPILOT",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-phone",
+  "target": "phone",
+  "id": "01-title",
+  "vp": {
+   "width": 390,
+   "height": 844
+  },
+  "canvasOnly": false,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "mean": 109.45,
+   "p5": 19,
+   "p50": 103,
+   "p95": 213,
+   "darkFrac": 0.0013,
+   "clipFrac": 0.0024
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 0.952,
+   "yellowViewX": -0.18,
+   "carToLine": 1.132,
+   "carScreenX": 292
+  },
+  "clearance": null,
+  "cameraInsideCar": null,
+  "state": {
+   "framesRendered": 3,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 0,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     3.4,
+     0,
+     -0.77
+    ],
+    "speedMps": 11.28,
+    "speedMph": 25
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 446,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 8,
+    "y": 667,
+    "w": 374,
+    "h": 125,
+    "shown": true
+   },
+   "trip": {
+    "x": 8,
+    "y": 786,
+    "w": 374,
+    "h": 14,
+    "shown": false
+   },
+   "hud": {
+    "x": 230,
+    "y": 684,
+    "w": 154,
+    "h": 154,
+    "shown": true
+   },
+   "dock": {
+    "x": 8,
+    "y": 800,
+    "w": 130,
+    "h": 36,
+    "shown": true
+   },
+   "total": {
+    "x": 8,
+    "y": 62,
+    "w": 374,
+    "h": 57,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 257,
+     "y": 258,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 30,
+     "y": 245,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 134,
+     "y": 323,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 6,
+     "y": 310,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 6,
+     "y": 375,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "MANUAL \u00b7 PILOT OVERRIDE",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-phone",
+  "target": "phone",
+  "id": "02-early",
+  "vp": {
+   "width": 390,
+   "height": 844
+  },
+  "canvasOnly": false,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "mean": 104.53,
+   "p5": 18,
+   "p50": 86,
+   "p95": 211,
+   "darkFrac": 0.0016,
+   "clipFrac": 0.0026
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 0.952,
+   "yellowViewX": -0.18,
+   "carToLine": 1.132,
+   "carScreenX": 292
+  },
+  "clearance": null,
+  "cameraInsideCar": null,
+  "state": {
+   "framesRendered": 12,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 0,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     3.4,
+     0,
+     -5.48
+    ],
+    "speedMps": 9.84,
+    "speedMph": 22
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 445,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 8,
+    "y": 667,
+    "w": 374,
+    "h": 125,
+    "shown": true
+   },
+   "trip": {
+    "x": 8,
+    "y": 786,
+    "w": 374,
+    "h": 14,
+    "shown": false
+   },
+   "hud": {
+    "x": 230,
+    "y": 684,
+    "w": 154,
+    "h": 154,
+    "shown": true
+   },
+   "dock": {
+    "x": 8,
+    "y": 800,
+    "w": 130,
+    "h": 36,
+    "shown": true
+   },
+   "total": {
+    "x": 8,
+    "y": 62,
+    "w": 374,
+    "h": 57,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 257,
+     "y": 259,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 31,
+     "y": 246,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 130,
+     "y": 324,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 6,
+     "y": 311,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 6,
+     "y": 376,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "MANUAL \u00b7 PILOT OVERRIDE",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-phone",
+  "target": "phone",
+  "id": "03-action",
+  "vp": {
+   "width": 390,
+   "height": 844
+  },
+  "canvasOnly": false,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "mean": 104.53,
+   "p5": 18,
+   "p50": 86,
+   "p95": 211,
+   "darkFrac": 0.0016,
+   "clipFrac": 0.0026
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 0.952,
+   "yellowViewX": -0.18,
+   "carToLine": 1.132,
+   "carScreenX": 292
+  },
+  "clearance": null,
+  "cameraInsideCar": null,
+  "state": {
+   "framesRendered": 12,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 0,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     3.4,
+     0,
+     -5.48
+    ],
+    "speedMps": 9.84,
+    "speedMph": 22
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 445,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 8,
+    "y": 667,
+    "w": 374,
+    "h": 125,
+    "shown": true
+   },
+   "trip": {
+    "x": 8,
+    "y": 786,
+    "w": 374,
+    "h": 14,
+    "shown": false
+   },
+   "hud": {
+    "x": 230,
+    "y": 684,
+    "w": 154,
+    "h": 154,
+    "shown": true
+   },
+   "dock": {
+    "x": 8,
+    "y": 800,
+    "w": 130,
+    "h": 36,
+    "shown": true
+   },
+   "total": {
+    "x": 8,
+    "y": 62,
+    "w": 374,
+    "h": 57,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 257,
+     "y": 259,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 31,
+     "y": 246,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 130,
+     "y": 324,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 6,
+     "y": 311,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 6,
+     "y": 376,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "MANUAL \u00b7 PILOT OVERRIDE",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-phone",
+  "target": "phone",
+  "id": "04-mid",
+  "vp": {
+   "width": 390,
+   "height": 844
+  },
+  "canvasOnly": false,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "mean": 104.41,
+   "p5": 18,
+   "p50": 86,
+   "p95": 211,
+   "darkFrac": 0.0016,
+   "clipFrac": 0.0024
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 0.952,
+   "yellowViewX": -0.18,
+   "carToLine": 1.132,
+   "carScreenX": 292
+  },
+  "clearance": null,
+  "cameraInsideCar": null,
+  "state": {
+   "framesRendered": 17,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 0,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     3.4,
+     0,
+     -7.87
+    ],
+    "speedMps": 9.5,
+    "speedMph": 21
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 445,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 8,
+    "y": 667,
+    "w": 374,
+    "h": 125,
+    "shown": true
+   },
+   "trip": {
+    "x": 8,
+    "y": 786,
+    "w": 374,
+    "h": 14,
+    "shown": false
+   },
+   "hud": {
+    "x": 230,
+    "y": 684,
+    "w": 154,
+    "h": 154,
+    "shown": true
+   },
+   "dock": {
+    "x": 8,
+    "y": 800,
+    "w": 130,
+    "h": 36,
+    "shown": true
+   },
+   "total": {
+    "x": 8,
+    "y": 62,
+    "w": 374,
+    "h": 57,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 257,
+     "y": 260,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 30,
+     "y": 246,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 128,
+     "y": 325,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 6,
+     "y": 311,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 6,
+     "y": 376,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "MANUAL \u00b7 PILOT OVERRIDE",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-phone",
+  "target": "phone",
+  "id": "05-modes",
+  "vp": {
+   "width": 390,
+   "height": 844
+  },
+  "canvasOnly": false,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "mean": 57.34,
+   "p5": 13,
+   "p50": 29,
+   "p95": 188,
+   "darkFrac": 0.0117,
+   "clipFrac": 0.0033
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 0.952,
+   "yellowViewX": -0.18,
+   "carToLine": 1.132,
+   "carScreenX": 292
+  },
+  "clearance": null,
+  "cameraInsideCar": null,
+  "state": {
+   "framesRendered": 19,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 0,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     3.4,
+     0,
+     -8.82
+    ],
+    "speedMps": 9.5,
+    "speedMph": 21
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 445,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 8,
+    "y": 667,
+    "w": 374,
+    "h": 125,
+    "shown": true
+   },
+   "trip": {
+    "x": 8,
+    "y": 786,
+    "w": 374,
+    "h": 14,
+    "shown": false
+   },
+   "hud": {
+    "x": 230,
+    "y": 684,
+    "w": 154,
+    "h": 154,
+    "shown": true
+   },
+   "dock": {
+    "x": 8,
+    "y": 800,
+    "w": 130,
+    "h": 36,
+    "shown": true
+   },
+   "total": {
+    "x": 8,
+    "y": 62,
+    "w": 374,
+    "h": 57,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 257,
+     "y": 260,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 30,
+     "y": 246,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 128,
+     "y": 325,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 6,
+     "y": 311,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 6,
+     "y": 376,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "MANUAL \u00b7 PILOT OVERRIDE",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-phone",
+  "target": "phone",
+  "id": "06-results",
+  "vp": {
+   "width": 390,
+   "height": 844
+  },
+  "canvasOnly": false,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "mean": 104.4,
+   "p5": 18,
+   "p50": 86,
+   "p95": 211,
+   "darkFrac": 0.0016,
+   "clipFrac": 0.0025
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 0.952,
+   "yellowViewX": -0.18,
+   "carToLine": 1.132,
+   "carScreenX": 292
+  },
+  "clearance": null,
+  "cameraInsideCar": null,
+  "state": {
+   "framesRendered": 22,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 0,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     3.4,
+     0,
+     -10.24
+    ],
+    "speedMps": 9.5,
+    "speedMph": 21
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 444,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 8,
+    "y": 667,
+    "w": 374,
+    "h": 125,
+    "shown": true
+   },
+   "trip": {
+    "x": 8,
+    "y": 786,
+    "w": 374,
+    "h": 14,
+    "shown": false
+   },
+   "hud": {
+    "x": 230,
+    "y": 684,
+    "w": 154,
+    "h": 154,
+    "shown": true
+   },
+   "dock": {
+    "x": 8,
+    "y": 800,
+    "w": 130,
+    "h": 36,
+    "shown": true
+   },
+   "total": {
+    "x": 8,
+    "y": 62,
+    "w": 374,
+    "h": 57,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 257,
+     "y": 261,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 29,
+     "y": 247,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 128,
+     "y": 326,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 6,
+     "y": 312,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 6,
+     "y": 377,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "MANUAL \u00b7 PILOT OVERRIDE",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-card",
+  "target": "card",
+  "id": "card-2x",
+  "vp": {
+   "width": 1440,
+   "height": 900
+  },
+  "canvasOnly": false,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "mean": 92.69,
+   "p5": 23,
+   "p50": 76,
+   "p95": 192,
+   "darkFrac": 0.0004,
+   "clipFrac": 0.0014
+  },
+  "carCrop": null,
+  "geometry": {
+   "carViewX": 0.952,
+   "yellowViewX": -0.18,
+   "carToLine": 1.132,
+   "carScreenX": 824
+  },
+  "clearance": null,
+  "cameraInsideCar": null,
+  "state": {
+   "framesRendered": 10,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 0,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     3.4,
+     0,
+     -4.49
+    ],
+    "speedMps": 10.16,
+    "speedMph": 23
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 610,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 524,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 524,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1204,
+    "y": 666,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 812,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1161,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 809,
+     "y": 280,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 550,
+     "y": 266,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 656,
+     "y": 331,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 474,
+     "y": 331,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 437,
+     "y": 396,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "MANUAL \u00b7 PILOT OVERRIDE",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-weather",
+  "target": "weather",
+  "id": "weather-noon0",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": true,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 106.77,
+   "p5": 43,
+   "p50": 98,
+   "p95": 194,
+   "darkFrac": 0,
+   "clipFrac": 0.0001
+  },
+  "carCrop": {
+   "x": 643,
+   "y": 279,
+   "w": 233,
+   "h": 362,
+   "mean": 162.14,
+   "p5": 90,
+   "p50": 182,
+   "p95": 219,
+   "darkFrac": 0,
+   "clipFrac": 0.0005
+  },
+  "geometry": {
+   "carViewX": 0.952,
+   "yellowViewX": -0.18,
+   "carToLine": 1.132,
+   "carScreenX": 723
+  },
+  "clearance": null,
+  "cameraInsideCar": null,
+  "state": {
+   "framesRendered": 9,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 0,
+   "weatherPreset": "noon",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     3.4,
+     0,
+     -3.98
+    ],
+    "speedMps": 10.32,
+    "speedMph": 23
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 611,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 698,
+     "y": 212,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 491,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 574,
+     "y": 279,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 432,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 402,
+     "y": 344,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "MANUAL \u00b7 PILOT OVERRIDE",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-weather",
+  "target": "weather",
+  "id": "weather-golden",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": true,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 103.91,
+   "p5": 41,
+   "p50": 94,
+   "p95": 192,
+   "darkFrac": 0.0001,
+   "clipFrac": 0
+  },
+  "carCrop": {
+   "x": 643,
+   "y": 279,
+   "w": 233,
+   "h": 362,
+   "mean": 161.48,
+   "p5": 89,
+   "p50": 182,
+   "p95": 219,
+   "darkFrac": 0,
+   "clipFrac": 0
+  },
+  "geometry": {
+   "carViewX": 0.952,
+   "yellowViewX": -0.18,
+   "carToLine": 1.132,
+   "carScreenX": 723
+  },
+  "clearance": null,
+  "cameraInsideCar": null,
+  "state": {
+   "framesRendered": 17,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 0,
+   "weatherPreset": "golden",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     3.4,
+     0,
+     -7.87
+    ],
+    "speedMps": 9.5,
+    "speedMph": 21
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 610,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 703,
+     "y": 213,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 490,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 572,
+     "y": 278,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 433,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 400,
+     "y": 344,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "MANUAL \u00b7 PILOT OVERRIDE",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-weather",
+  "target": "weather",
+  "id": "weather-fog",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": true,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 103.99,
+   "p5": 41,
+   "p50": 96,
+   "p95": 194,
+   "darkFrac": 0.0001,
+   "clipFrac": 0
+  },
+  "carCrop": {
+   "x": 643,
+   "y": 279,
+   "w": 233,
+   "h": 362,
+   "mean": 162.88,
+   "p5": 90,
+   "p50": 183,
+   "p95": 219,
+   "darkFrac": 0,
+   "clipFrac": 0.0004
+  },
+  "geometry": {
+   "carViewX": 0.952,
+   "yellowViewX": -0.18,
+   "carToLine": 1.132,
+   "carScreenX": 723
+  },
+  "clearance": null,
+  "cameraInsideCar": null,
+  "state": {
+   "framesRendered": 25,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 0,
+   "weatherPreset": "fog",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     3.4,
+     0,
+     -11.67
+    ],
+    "speedMps": 9.5,
+    "speedMph": 21
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 608,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 710,
+     "y": 214,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 488,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 571,
+     "y": 279,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 433,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 395,
+     "y": 344,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "MANUAL \u00b7 PILOT OVERRIDE",
+  "touchPads": 0
+ },
+ {
+  "run": "g04b-weather",
+  "target": "weather",
+  "id": "weather-night",
+  "vp": {
+   "width": 1280,
+   "height": 720
+  },
+  "canvasOnly": true,
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 720,
+   "mean": 100.44,
+   "p5": 41,
+   "p50": 90,
+   "p95": 192,
+   "darkFrac": 0,
+   "clipFrac": 0
+  },
+  "carCrop": {
+   "x": 643,
+   "y": 279,
+   "w": 233,
+   "h": 362,
+   "mean": 162.1,
+   "p5": 89,
+   "p50": 183,
+   "p95": 219,
+   "darkFrac": 0,
+   "clipFrac": 0.0001
+  },
+  "geometry": {
+   "carViewX": 0.952,
+   "yellowViewX": -0.18,
+   "carToLine": 1.132,
+   "carScreenX": 723
+  },
+  "clearance": null,
+  "cameraInsideCar": null,
+  "state": {
+   "framesRendered": 34,
+   "vehicle": "waymo",
+   "autopilotLevel": "MAN",
+   "cameraMode": 0,
+   "weatherPreset": "night",
+   "rideState": "offer",
+   "player": {
+    "position": [
+     3.4,
+     0,
+     -15.94
+    ],
+    "speedMps": 9.5,
+    "speedMph": 21
+   },
+   "completedRides": 14,
+   "totalEarningsUsd": 1420,
+   "shift": null,
+   "touchControls": null,
+   "muted": null
+  },
+  "diag": {
+   "drawCalls": 608,
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable"
+  },
+  "ui": {
+   "card": {
+    "x": 444,
+    "y": 14,
+    "w": 392,
+    "h": 191,
+    "shown": true
+   },
+   "trip": {
+    "x": 444,
+    "y": 6,
+    "w": 392,
+    "h": 24,
+    "shown": false
+   },
+   "hud": {
+    "x": 1044,
+    "y": 486,
+    "w": 220,
+    "h": 220,
+    "shown": true
+   },
+   "dock": {
+    "x": 16,
+    "y": 632,
+    "w": 799,
+    "h": 74,
+    "shown": true
+   },
+   "total": {
+    "x": 1001,
+    "y": 14,
+    "w": 263,
+    "h": 103,
+    "shown": true
+   },
+   "tags": [
+    {
+     "x": 718,
+     "y": 215,
+     "w": 127,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 485,
+     "y": 214,
+     "w": 129,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 571,
+     "y": 280,
+     "w": 150,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 433,
+     "y": 279,
+     "w": 113,
+     "h": 61,
+     "chip": false
+    },
+    {
+     "x": 388,
+     "y": 344,
+     "w": 114,
+     "h": 61,
+     "chip": false
+    }
+   ]
+  },
+  "gmode": "MANUAL \u00b7 PILOT OVERRIDE",
+  "touchPads": 0
+ }
+]

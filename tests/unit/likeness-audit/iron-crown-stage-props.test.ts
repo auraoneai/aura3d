@@ -41,7 +41,7 @@ describe("iron crown stage props carry no photographic portraits", () => {
   });
 
   it("no Iron Crown stage prop in the shared catalog is the old cabinet", () => {
-    const used = [...stages.matchAll(/rootAssets\.(\w+)/g)].map((m) => m[1]);
+    const used = [...stages.matchAll(/(?:rootAssets|stageAssets)\.(\w+)/g)].map((m) => m[1]);
     expect(used).not.toContain(OLD_KEY);
   });
 });

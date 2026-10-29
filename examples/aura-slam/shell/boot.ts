@@ -4,8 +4,10 @@ import { DIFFICULTY_LEVELS, FIXED_DT } from "../contract";
 import type { DeviceInputMapper } from "../input/mapper";
 import { createControlSettings, type ControlSettings } from "../ui/controlSettings";
 import type { ControlsPort } from "../ui/controls";
-import { byId, maybeById } from "../ui/dom";
-import { controlText } from "../ui/format";
+import { controlsHintText, SWING_ALIAS_KEYS, type SwingAliasKey } from "../ui/controlsHint";
+import { byId, cachedMediaQuery, maybeById } from "../ui/dom";
+import { createCoach } from "../ui/coach";
+import { controlText, movementLabel } from "../ui/format";
 import { createHud, type Hud } from "../ui/hud";
 import { createMenu, type Menu } from "../ui/menu";
 import { createPauseUi } from "../ui/pause";
@@ -29,6 +31,18 @@ export interface SlamRenderer extends Omit<SceneRenderer, "render"> {
   render(state: Readonly<HudState>, dt: number, feedback?: ServeFeedback | null): void;
   projectCourt?(x: number, y: number, z?: number): { x: number; y: number; visible: boolean };
   debug?(): unknown;
+}
+
+/** Saved sound toggle (C14). */
+export const SOUND_STORAGE_KEY = "aura-slam.sound.v1";
+/** Set once the first-visit coach card was shown (C17). */
+export const ONBOARDED_STORAGE_KEY = "aura-slam.onboarded.v1";
+
+function readStorage(key: string): string | null {
+  try { return window.localStorage.getItem(key); } catch { return null; }
+}
+function writeStorage(key: string, value: string): void {
+  try { window.localStorage.setItem(key, value); } catch { /* storage unavailable */ }
 }
 
 export interface AuraSlamDeps {
@@ -78,20 +92,29 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   /* ---- renderer ---- */
   try { await renderer.mount(canvas); }
   catch (error) { byId("render-error").hidden = false; console.error(error); throw error; }
-  canvas.addEventListener("webglcontextlost", () => { byId("render-error").hidden = false; });
 
   /* ---- engine and shared state ---- */
   let selectedShot: ShotPreset = "neutral";
-  let soundEnabled = document.documentElement.dataset.embed !== "true";
+  // C14: the sound toggle is saved; embeds start muted unless the player turned sound on there before.
+  const savedSound = readStorage(SOUND_STORAGE_KEY);
+  let soundEnabled = savedSound === "on" ? true : savedSound === "off" ? false : document.documentElement.dataset.embed !== "true";
   if (!soundEnabled) audio.setEnabled(false);
+  const keys: Record<string, boolean> = Object.create(null);
   const autopilot = createAdapterController({
     engine: () => engine, state: () => getState() as never,
-    autoplay: deps.autoplay ?? (params.get("autoplay") === "1" || params.get("demo") === "1")
+    autoplay: deps.autoplay ?? (params.get("autoplay") === "1" || params.get("demo") === "1"),
+    // C6: serve-setup movement follows the binding store, so rebinds apply (the shell's `keys` also honours blocked keys).
+    moveAxes: () => ({
+      mx: (controls.isDown("right", keys) ? 1 : 0) - (controls.isDown("left", keys) ? 1 : 0),
+      my: (controls.isDown("down", keys) ? 1 : 0) - (controls.isDown("up", keys) ? 1 : 0)
+    })
   });
+  // C12: media queries are evaluated once and kept current by `change` listeners, not per frame.
+  const coarseQuery = cachedMediaQuery("(pointer: coarse), (max-width: 760px)");
+  const anyCoarseQuery = cachedMediaQuery("(any-pointer: coarse)");
   // The menu and quick bar fire callbacks while they are being constructed; those wait until everything is wired.
   let booted = false;
 
-  const keys: Record<string, boolean> = Object.create(null);
   const physicalKeys = new Set<string>();
   const blockedKeys = new Set<string>();
 
@@ -110,7 +133,7 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   const modernServe = (): boolean => Boolean(engine.capabilities?.serveTargeting);
   const intentionalLobAllLevels = (): boolean => Boolean(engine.capabilities?.intentionalLobAllLevels);
   const strategic = (state: HudState = getState()): boolean => state.difficulty === "pro" || state.difficulty === "legend";
-  const mobileTouchAvailable = (): boolean => (navigator.maxTouchPoints || 0) > 0 || Boolean(window.matchMedia?.("(any-pointer: coarse)").matches);
+  const mobileTouchAvailable = (): boolean => (navigator.maxTouchPoints || 0) > 0 || anyCoarseQuery.matches();
   const swipeState = (): { effectiveStyle?: string; pendingStyle?: "classic" | "swipe" | null } & Record<string, unknown> =>
     (engine.getSwipeState?.() ?? {}) as { effectiveStyle?: string };
   const swipeActive = (): boolean => swipeEnabled && getState().mode === "playing" && swipeState().effectiveStyle === "swipe";
@@ -129,14 +152,15 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
     return playerFrame(deps.input, frameContext());
   }
   const hitKeyLabel = (): string => {
-    const coarse = document.documentElement.dataset.embed === "true" || Boolean(window.matchMedia?.("(pointer: coarse), (max-width: 760px)").matches);
+    const coarse = document.documentElement.dataset.embed === "true" || coarseQuery.matches();
     return pad.state.index !== null ? pad.state.hitLabel : coarse ? "HIT" : controls.labelFor("hit", "keyboard").toUpperCase();
   };
 
   /* ---- audio ---- */
   const initAudio = (): void => { if (soundEnabled) audio.unlock(); };
   function onSimEvent(event: SimEvent): void {
-    if (event.type === "tone" || event.type === "hit" || event.type === "bounce" || event.type === "pointSound") audio.handle(event);
+    if (event.type === "tone" || event.type === "hit" || event.type === "bounce" || event.type === "pointSound" || event.type === "point" || event.type === "serve") audio.handle(event);
+    if (event.type === "point") coach.pointPlayed();
     if (event.type === "selection" && (event as { side?: string }).side === "player") selectShotUI((event as unknown as { shot: ShotPreset }).shot);
     if (event.type === "complete") finishMatch();
   }
@@ -144,7 +168,9 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   /* ---- loop ---- */
   const presenter = createMatchPresenter(() => getState() as never);
   const loop = createMatchLoop({
-    step: (dt) => { update(dt); presenter.afterStep(); },
+    // C4: the adapter controller (serve-setup movement, the Auto player, the toss-apex assist) runs once per fixed 1/60 s step,
+    // not once per rendered frame, so it no longer speeds up on 120 Hz displays or on resize/settings re-renders.
+    step: (dt) => { update(dt); autopilot.step(getState() as never, dt); presenter.afterStep(); },
     render: (frameSeconds) => render(frameSeconds, !loop.manual && getState().mode === "playing" && !getState().paused),
     beforeFrame: () => { if (!loop.manual) pad.poll(); },
     isActive: () => true,
@@ -220,7 +246,11 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   const pause = createPauseUi({
     togglePause: () => togglePause(),
     returnToMenu: () => returnToMenu(),
-    toggleSound: () => { soundEnabled = !soundEnabled; audio.setEnabled(soundEnabled); if (soundEnabled) initAudio(); return soundEnabled; },
+    toggleSound: () => {
+      soundEnabled = !soundEnabled; audio.setEnabled(soundEnabled); if (soundEnabled) initAudio();
+      writeStorage(SOUND_STORAGE_KEY, soundEnabled ? "on" : "off");
+      return soundEnabled;
+    },
     toggleFullscreen: () => toggleFullscreen()
   });
   pause.setSound(soundEnabled);
@@ -230,7 +260,7 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
     settingsChanged: (settings) => {
       const s = getState() as { venue: string; difficulty: string };
       s.difficulty = settings.difficulty;
-      if (s.venue !== settings.venue) { s.venue = settings.venue; if (booted) renderer.setVenue(settings.venue); }
+      if (s.venue !== settings.venue) { s.venue = settings.venue; audio.setVenue?.(settings.venue); if (booted) renderer.setVenue(settings.venue); }
       if (!booted) return;
       quickBar.setVenue(settings.venue);
       render();
@@ -288,11 +318,21 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
 
   const quickBar = createQuickBar({
     autoplay: autopilot.enabled,
-    setAutoplay: (on) => { autopilot.enabled = on; },
+    setAutoplay: (on) => { autopilot.enabled = on; if (on) coach.dispose(); },
     quickMatch: () => menu.quickStart("single"),
     smashLab: () => menu.quickStart("practice"),
     openModes: () => menu.home(),
     selectVenue: (id) => menu.selectVenue(id)
+  });
+
+  const coach = createCoach({
+    host: shell,
+    hitKey: hitKeyLabel,
+    moveKeys: () => movementLabel(controls),
+    presetKeys: () => [controls.labelFor("short", "keyboard").toUpperCase(), controls.labelFor("deep", "keyboard").toUpperCase()],
+    touch: () => coarseQuery.matches() && (navigator.maxTouchPoints || 0) > 0,
+    allowed: () => document.documentElement.dataset.embed !== "true" && !autopilot.enabled && params.get("coach") !== "0",
+    storage: { get: () => readStorage(ONBOARDED_STORAGE_KEY), set: (value) => writeStorage(ONBOARDED_STORAGE_KEY, value) }
   });
 
   function syncSwipeBoundary(): void {
@@ -325,13 +365,12 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   /** `live` draws the ball and both athletes between the last two steps (smooth on 120 and 144 Hz displays); manual and QA frames draw the exact latest step. */
   function render(frameSeconds: number = FIXED_DT, live = false): void {
     const s = getState();
-    autopilot.step(s as never, FIXED_DT);
     const feedback = serveFeedback();
     renderer.render(live ? (viewOf(s as never, presenter.present(loop.loop, true)) as never) : s, frameSeconds, feedback);
     if (!canvas.dataset.ready) canvas.dataset.ready = "true";
     shell.dataset.mode = s.mode;
     hud.render(s);
-    const coarse = document.documentElement.dataset.embed === "true" || Boolean(window.matchMedia?.("(pointer: coarse), (max-width: 760px)").matches);
+    const coarse = document.documentElement.dataset.embed === "true" || coarseQuery.matches();
     const touchEnabled = touchPlayEnabled();
     touch.render({ phase: s.phase, server: s.server, touchEnabled, coarse });
     swipeOverlay?.render(touchEnabled);
@@ -351,6 +390,7 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
     const s = getState() as { paused: boolean; venue: string; player: { selectedShot?: ShotPreset } };
     s.paused = false;
     renderer.setVenue(s.venue);
+    audio.setVenue?.(s.venue);
     selectShotUI(s.player.selectedShot || "neutral");
     menu.started();
     const menuEl = byId("menu");
@@ -438,18 +478,63 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
       if (event.code === "Space" || (event.code === "KeyR" && s.mode === "gameover")) { event.preventDefault(); requestSwing(event); }
       return;
     }
-    // J short, K deep with power and L lob are handled by the adapter controller (shell/controller.ts), as on the live page.
+    // C6: J short, K deep with power and L lob are the live page's swing aliases. They now pass the same gates as the bound keys
+    // (overlay, swipe, pause, the lob difficulty gate) and only work while no action is bound to the key.
+    const alias = !action ? SWING_ALIAS_KEYS[event.code as SwingAliasKey] : undefined;
+    if (alias) {
+      if (!touchPlayEnabled() || swipeActive()) return;
+      event.preventDefault();
+      coach.swung();
+      if (alias === "lob") { requestLobSwing(event); return; }
+      selectShot(alias);
+      requestSwing(event, alias === "deep");
+      return;
+    }
     if (!touchPlayEnabled() || swipeActive() || !action) return;
     event.preventDefault();
     // Alternate keys are one logical button: release both before a second hit.
     if (actionWasDown) return;
-    if (action === "hit") requestSwing(event);
+    if (action === "hit") { coach.swung(); requestSwing(event); }
     if (action === "lob") requestLobSwing(event);
     if (action === "short") toggleShot("short");
     if (action === "deep") toggleShot("deep");
   }
 
   const uninstallController = autopilot.install();
+
+  /* ---- controls hint (C3): built from the live bindings, refreshed on every rebind ---- */
+  const hintEl = maybeById("aura-controls-hint");
+  const refreshHint = (): void => { if (hintEl) hintEl.textContent = controlsHintText(controls, { lobAllLevels: intentionalLobAllLevels() }); };
+  refreshHint();
+
+  /* ---- graphics reset (C8): the engine keeps the context (preventDefault) and rebuilds GPU objects on restore ---- */
+  const resetEl = maybeById("graphics-reset");
+  let contextLost = false;
+  let pausedForReset = false;
+  const onContextLost = (event: Event): void => {
+    event.preventDefault();
+    contextLost = true;
+    clearInputs();
+    const s = getState();
+    if (s.mode === "playing" && !s.paused) { togglePause(); pausedForReset = true; }
+    if (resetEl) { resetEl.textContent = "Graphics reset. Waiting for the graphics card…"; resetEl.hidden = false; }
+  };
+  const onContextRestored = (): void => {
+    contextLost = false;
+    if (resetEl) resetEl.textContent = "Graphics reset. Tap to resume.";
+    render();
+  };
+  const resumeAfterReset = (): void => {
+    if (contextLost || !resetEl || resetEl.hidden) return;
+    resetEl.hidden = true;
+    if (pausedForReset && getState().paused) togglePause();
+    pausedForReset = false;
+  };
+  canvas.addEventListener("webglcontextlost", onContextLost);
+  canvas.addEventListener("webglcontextrestored", onContextRestored);
+  resetEl?.addEventListener("click", resumeAfterReset);
+  canvas.addEventListener("pointerdown", resumeAfterReset);
+
   window.addEventListener("keydown", trackPhysicalKeyDown, true);
   window.addEventListener("keyup", trackPhysicalKeyUp, true);
   window.addEventListener("keydown", handleKeyDown, { passive: false });
@@ -463,12 +548,13 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   window.addEventListener("resize", onResize);
   window.addEventListener("blur", clearInputs);
   document.addEventListener("pointerdown", initAudio, { passive: true });
-  document.addEventListener("visibilitychange", () => {
+  const onVisibility = (): void => {
     if (document.hidden) clearInputs();
     if (document.hidden && getState().mode === "playing" && !getState().paused) togglePause();
-  });
-  controls.subscribe(() => { clearInputs(); controlSettings.refreshLabels(); render(); });
-  swipePort.subscribe(() => { clearInputs(); if (getState().mode === "playing" && mobileControls().available) engine.setControlStyle?.(swipePort.getPreference()); render(); });
+  };
+  document.addEventListener("visibilitychange", onVisibility);
+  const unsubscribeControls = controls.subscribe(() => { clearInputs(); controlSettings.refreshLabels(); refreshHint(); render(); });
+  const unsubscribeSwipe = swipePort.subscribe(() => { clearInputs(); if (getState().mode === "playing" && mobileControls().available) engine.setControlStyle?.(swipePort.getPreference()); render(); });
 
   /* ---- start state ---- */
   booted = true;
@@ -511,9 +597,12 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
 
   // Unless ?menu=1 or ?mode= is requested the live page starts on court so keys work immediately; the native page does the same.
   const requestedVenue = params.get("venue");
-  if (requestedVenue && themeFor(requestedVenue).id === requestedVenue) menu.selectVenue(requestedVenue);
-  if (params.get("menu") !== "1" && !params.get("mode")) { menu.quickStart("single"); quickBar.setActiveMode("play"); }
-  else if (params.get("mode") === "practice") { menu.quickStart("practice"); quickBar.setActiveMode("practice"); }
+  const venueOk = Boolean(requestedVenue && themeFor(requestedVenue).id === requestedVenue);
+  if (venueOk) menu.selectVenue(requestedVenue!);
+  // quickStart reads the per-mode remembered settings, so the requested venue is passed through (it was dropped before).
+  const startSettings = venueOk ? { venue: requestedVenue! } : {};
+  if (params.get("menu") !== "1" && !params.get("mode")) { menu.quickStart("single", startSettings); quickBar.setActiveMode("play"); coach.maybeShow(); }
+  else if (params.get("mode") === "practice") { menu.quickStart("practice", startSettings); quickBar.setActiveMode("practice"); }
   else quickBar.setActiveMode("menu");
 
   render();
@@ -532,6 +621,17 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
       window.removeEventListener("keyup", trackPhysicalKeyUp, true);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("blur", clearInputs);
+      document.removeEventListener("pointerdown", initAudio);
+      document.removeEventListener("visibilitychange", onVisibility);
+      canvas.removeEventListener("webglcontextlost", onContextLost);
+      canvas.removeEventListener("webglcontextrestored", onContextRestored);
+      canvas.removeEventListener("pointerdown", resumeAfterReset);
+      resetEl?.removeEventListener("click", resumeAfterReset);
+      unsubscribeControls();
+      unsubscribeSwipe();
+      coarseQuery.dispose();
+      anyCoarseQuery.dispose();
+      coach.dispose();
       qa.uninstall();
       renderer.dispose();
     }

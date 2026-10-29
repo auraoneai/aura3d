@@ -1,0 +1,21 @@
+{
+  "runId": "g04w2-e2probe-weather",
+  "finishedUtc": "2026-10-29T17:00:14.608Z",
+  "azure": {
+    "subscription": "9b7da706-63ce-4740-8c03-3b77cbe1b7d0",
+    "acr": "picassostagingacr",
+    "image": "aura3d-playwright:run-g04w2-e2probe-weather",
+    "loginServer": "picassostagingacr.azurecr.io"
+  },
+  "specs": [
+    "tests/browser/audit-fix/teleoperator.spec.ts",
+    "--grep=weather"
+  ],
+  "reporter": "line",
+  "acrRunExitCode": 0,
+  "playwrightExit": 0,
+  "logs": {
+    "build": "acr-build.log",
+    "run": "acr-run.log"
+  }
+}

@@ -31,7 +31,7 @@
         "set": "final",
         "dir": "evidence/aura-slam/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 12
+        "frameCount": 14
       }
     },
     {
@@ -82,7 +82,7 @@
         "set": "final",
         "dir": "evidence/teleoperator/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 12
+        "frameCount": 14
       }
     },
     {
@@ -116,7 +116,7 @@
         "set": "final",
         "dir": "evidence/pips-big-leap/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 12
+        "frameCount": 14
       }
     },
     {

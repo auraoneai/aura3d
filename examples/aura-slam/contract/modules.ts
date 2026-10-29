@@ -96,7 +96,7 @@ export interface SceneRenderer {
 }
 
 /* ---- M-AUDIO: cue bank on the synth kit and recorded impacts; consumes SimEvent only. ---- */
-export interface AudioPort { unlock(): void; setEnabled(on: boolean): void; handle(event: SimEvent): void }
+export interface AudioPort { unlock(): void; setEnabled(on: boolean): void; handle(event: SimEvent): void; setVenue?(venue: string): void }
 
 /* ---- M-HUD / M-MENU: DOM/game-kit UI driven purely by MatchState; no gameplay writes except through MatchEngine calls. ---- */
 export interface HudPort { update(state: Readonly<MatchState>): void; showResults(state: Readonly<MatchState>): void }

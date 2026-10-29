@@ -1,0 +1,3 @@
+{"target":"390","probe":"boot","readyMs":13390,"sharedCatalogRequests":[]}
+{"target":"390","probe":"touch","available":true,"held":{"steer":1,"pitch":0,"boost":false,"fire":true},"released":{"steer":0,"pitch":0,"boost":false,"fire":false}}
+{"target":"390","probe":"reduced-motion","matches":true,"state":true}

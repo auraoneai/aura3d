@@ -15,18 +15,18 @@ const [srcDir, ...flags] = process.argv.slice(2);
 const dry = flags.includes("--dry");
 
 const MODEL_FOR_KEY = {
-  teleopWaymoHero: "robotaxi",
-  teleopWaymoTraffic: "robotaxi",
-  teleopCybercab: "hatch",
-  teleopCybertruck: "pickup",
-  teleopCorvette: "coupe",
-  teleopMissions: "roadster",
-  teleopSedan: "sedan",
-  teleopTaxi: "sedan",
-  teleopSuv: "hatch",
-  teleopVan: "van",
-  teleopPickup: "pickup",
-  teleopBus: "boxtruck"
+  gridCruiser: "robotaxi",
+  gridRivalCruiser: "robotaxi",
+  gridCoupe: "hatch",
+  gridTruck: "pickup",
+  gridGt: "coupe",
+  gridInterceptor: "roadster",
+  gridSedan: "sedan",
+  gridTaxi: "sedan",
+  gridHatch: "hatch",
+  gridVan: "van",
+  gridPickup: "pickup",
+  gridBoxTruck: "boxtruck"
 };
 const FILE_STEM = {
   robotaxi: "teleopVehRobotaxi",

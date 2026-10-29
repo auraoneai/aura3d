@@ -37,8 +37,16 @@ describe("parseQualityRendererOptions", () => {
     expect(() => parseQualityRendererOptions({ adaptive: "yes" }, null)).toThrow(/renderer.adaptive/);
     expect(() => parseQualityRendererOptions({ targetFrameRate: 0 }, null)).toThrow(/targetFrameRate/);
     expect(() => parseQualityRendererOptions({ batching: "on" }, null)).toThrow(/batching/);
-    expect(() => parseQualityRendererOptions(undefined, "?aura3d-adaptive=off")).toThrow(/aura3d-adaptive/);
-    expect(() => parseQualityRendererOptions(undefined, "?aura3d-quality=max")).toThrow(/aura3d-quality/);
+  });
+
+  it("ignores invalid URL values with a warning, and throws on them in strict mode (audit RP-04)", () => {
+    const adaptive = parseQualityRendererOptions(undefined, "?aura3d-adaptive=off");
+    expect(adaptive.warnings.some((w) => /QUALITY_URL_IGNORED: \?aura3d-adaptive=off/.test(w))).toBe(true);
+    const quality = parseQualityRendererOptions({ quality: "low" }, "?aura3d-quality=max");
+    expect(quality.requested).toBe("low");
+    expect(quality.warnings.some((w) => /QUALITY_URL_IGNORED: \?aura3d-quality=max/.test(w))).toBe(true);
+    expect(() => parseQualityRendererOptions(undefined, "?aura3d-adaptive=off", {}, { strict: true })).toThrow(/aura3d-adaptive/);
+    expect(() => parseQualityRendererOptions(undefined, "?aura3d-quality=max", {}, { strict: true })).toThrow(/aura3d-quality/);
   });
 
   it("URL overrides win over options and are reported as source url", () => {

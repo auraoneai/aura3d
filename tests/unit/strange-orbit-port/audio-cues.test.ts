@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createCueBank } from "../../../packages/audio/src/synth";
-import { TONE_CUES, TONE_EVENTS } from "../../../examples/strange-orbit-port/audio";
+import { PORT_ONLY_CUES, TONE_CUES, TONE_EVENTS } from "../../../examples/strange-orbit-port/audio";
 import { createFakeContext } from "../audio-synth/mockContext";
 
 /** The port's original hand-written `tone` and the original `cue` cases now on the cue bank, verbatim. */
@@ -49,6 +49,7 @@ const calls = (list: Array<{ node: string; method: string; args: unknown[] }>, n
 
 describe("Strange Orbit tone-only cues on the synth cue kit (parameter-level equivalence; not listened to)", () => {
   for (const [name, cue] of Object.entries(TONE_EVENTS)) {
+    if (PORT_ONLY_CUES.includes(name)) continue;
     for (const mult of name === "dust" ? [1, 2, 5, 40] : [1]) {
       it(`${name}${name === "dust" ? ` (x${mult})` : ""} has the original oscillators, glides, envelopes and timing`, async () => {
         const ref = createFakeContext("running");
@@ -76,6 +77,11 @@ describe("Strange Orbit tone-only cues on the synth cue kit (parameter-level equ
       });
     }
   }
+
+  it("skate loop entry has its own cue, distinct from the checkpoint cue (SO-7)", () => {
+    expect(TONE_EVENTS.loop).toBe("loop");
+    expect(TONE_CUES.loop.layers).not.toEqual(TONE_CUES.gate.layers);
+  });
 
   it("keeps the noise-bearing cues out of the bank", () => {
     for (const name of ["land", "launch", "hit", "lost"]) expect(TONE_EVENTS[name]).toBeUndefined();

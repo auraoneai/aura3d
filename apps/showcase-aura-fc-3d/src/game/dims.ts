@@ -25,3 +25,5 @@ export const KICK_R = 0.92;        // foot contact radius
 export const SLIDE_TIME = 0.55;
 export const SLIDE_SPEED = 8.2;
 export const KEEPER_REACH = 1.15;
+/** Half-width of the gap left open in each Favela cage end wall for the goal mouth (m). */
+export const CAGE_GOAL_GAP = GOAL_HALF_W + 0.2;

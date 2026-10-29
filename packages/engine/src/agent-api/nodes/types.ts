@@ -790,6 +790,8 @@ export type AuraSceneNode =
 
 export interface AuraModelNode extends AuraTransformSpec {
   readonly kind: "model";
+  /** `OPTION_IGNORED` notes for options the builder does not read; the compiler reports each as an `option-ignored` degradation. */
+  readonly ignoredOptions?: readonly string[];
   readonly name?: string;
   readonly asset: AuraAssetRef<"model">;
   readonly material?: AuraMaterialSpec;

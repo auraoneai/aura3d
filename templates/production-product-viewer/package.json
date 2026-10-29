@@ -8,7 +8,7 @@
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
-    "@aura3d/engine": "4.5.0"
+    "@aura3d/engine": "4.6.0"
   },
   "devDependencies": {
     "typescript": "^5.9.3",

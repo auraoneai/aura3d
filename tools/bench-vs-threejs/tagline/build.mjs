@@ -10,7 +10,7 @@ import { brotliCompressSync, constants, gzipSync } from "node:zlib";
 
 const [tagline, benchRoot, work] = process.argv.slice(2);
 if (!tagline || !benchRoot || !work) throw new Error("usage: build.mjs <taglineDir> <benchRoot> <workDir>");
-const AURA = process.env.TAGLINE_AURA_VERSION ?? "4.3.5";
+const AURA = process.env.TAGLINE_AURA_VERSION ?? "4.5.0";
 const THREE = "0.185.1";
 const VITE = "7.3.2";
 const run = (cmd, args, cwd) => {

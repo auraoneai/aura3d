@@ -33,7 +33,7 @@ interface Step { state: { t: number; s: number; lane: number; speed: number; hea
 
 function replay(): { race: RaceState; steps: Step[]; ran: number } {
   const { setup } = reference;
-  const race = createRace({ rider: setup.rider, mode: setup.mode, difficulty: setup.difficulty, vehicle: setup.vehicle, courseId: setup.courseId, equipment: setup.equipment });
+  const race = createRace({ rider: setup.rider, mode: setup.mode, difficulty: setup.difficulty, vehicle: setup.vehicle, courseId: setup.courseId, equipment: setup.equipment, balance: "original" });
   startCountdown(race);
   const steps: Step[] = [];
   let ran = 0;
