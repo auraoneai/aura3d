@@ -495,12 +495,15 @@ function applyBoardLook(id: MazeId): boolean {
   const nodes = app?.nodes;
   if (!nodes) return false;
   const look = boardLook(MAZES[id]);
-  if (look.slab === appliedLook.slab && look.wallEmissive === appliedLook.wallEmissive) return true; // board 1 on first boot: the authored materials already are this look
+  // The aspect-fit camera sees past the 46 x 36 slab (a lot on portrait phones); clear to the board's background
+  // instead of black so the margin reads as the room around the board.
+  try { (app as unknown as { setClearColor?(c: string): void }).setClearColor?.(look.background); } catch { /* optional */ }
+  // board 1 on first boot: the authored materials already are this look
+  if (look.slab === appliedLook.slab && look.wallEmissive === appliedLook.wallEmissive) return true;
   try {
     nodes.require("board").setMaterial(boardMaterial(look.slab, look.slabEmissive));
     nodes.require("pool-wall").setMaterial(wallMaterial(look.wallEmissive));
   } catch { return false; }
-  try { (app as unknown as { setClearColor?(c: string): void }).setClearColor?.(look.background); } catch { /* optional */ }
   appliedLook = look;
   return true;
 }
