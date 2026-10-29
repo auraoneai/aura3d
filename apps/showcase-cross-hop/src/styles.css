@@ -29,13 +29,13 @@ html, body { margin: 0; padding: 0; height: 100%; background: #0b0e14; overflow:
   box-shadow: 0 8px 24px rgba(0,0,0,.28);
   backdrop-filter: blur(5px);
 }
-.ch-cap { font-size: 10px; font-weight: 800; letter-spacing: .22em; color: #a9bed8; }
+.ch-cap { font-size: 12px; font-weight: 800; letter-spacing: .22em; color: #a9bed8; }
 #ch-score { font-size: clamp(42px, 4vw, 60px); font-weight: 900; color: #fff; line-height: .95; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
 #ch-theme {
   justify-self: center;
   align-self: start;
   margin-top: 6px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: .16em;
   color: #7ce8c9;
@@ -61,8 +61,24 @@ html, body { margin: 0; padding: 0; height: 100%; background: #0b0e14; overflow:
 #ch-meta #ch-best { color: #cfe3ff; }
 
 #ch-msg { position: absolute; top: calc(var(--a3d-bar-space, 0px) + 112px); left: 0; right: 0; text-align: center; font-size: 18px; font-weight: 700; color: #ffd94a; text-shadow: 0 2px 8px #000; }
-#ch-ticker { position: absolute; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); left: 0; right: 0; text-align: center; font-size: 12px; color: #cfe3ff; opacity: .8; }
-#ch-help { position: absolute; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); right: calc(14px + env(safe-area-inset-right, 0px)); font-size: 11px; color: rgba(255,255,255,.45); }
+#ch-ticker { position: absolute; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); left: 0; right: 0; text-align: center; font-size: 13px; color: #cfe3ff; opacity: .85; text-shadow: 0 1px 4px #000; }
+#ch-help { position: absolute; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); right: calc(14px + env(safe-area-inset-right, 0px)); font-size: 14px; color: rgba(255,255,255,.8); text-shadow: 0 1px 4px #000; }
+
+#ch-intro {
+  position: absolute; left: 50%; bottom: calc(110px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+  width: min(460px, calc(100% - 32px)); display: flex; flex-direction: column; gap: 6px; padding: 14px 18px;
+  background: rgba(8, 12, 22, .82); border: 1px solid rgba(255, 255, 255, .18); border-radius: 12px;
+  color: #e8eeff; font-size: 14px; line-height: 1.35; text-align: center; pointer-events: none;
+}
+#ch-intro b { font-size: 17px; color: #ffd94a; }
+#ch-intro #ch-intro-keys { color: #9fe9d0; font-weight: 700; }
+#ch-pause-btn {
+  position: absolute; pointer-events: auto; top: calc(var(--a3d-bar-space, 0px) + 74px); right: calc(18px + env(safe-area-inset-right, 0px));
+  width: 44px; height: 44px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .2);
+  background: rgba(8, 12, 22, .62); color: #fff; font-size: 14px; font-weight: 900; letter-spacing: 2px; cursor: pointer;
+}
+#ch-newbest { margin: 0; color: #ffd94a !important; font-size: 20px !important; font-weight: 900; letter-spacing: 3px; }
+#ch-death-unlocks { margin: 0; color: #9fe9d0 !important; font-size: 15px !important; }
 
 .ch-panel {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
@@ -73,7 +89,7 @@ html, body { margin: 0; padding: 0; height: 100%; background: #0b0e14; overflow:
   text-shadow: 0 4px 0 #2a9d8f, 0 10px 30px rgba(0,0,0,.6); }
 .ch-panel h2 { margin: 0 0 8px; font-size: 28px; font-weight: 800; color: #fff; letter-spacing: 3px; }
 .ch-sub { color: #9db4d0; margin: 0 0 14px; font-size: 15px; }
-.ch-hint { color: #7d8ba0; font-size: 12px; margin-top: 18px; }
+.ch-hint { color: #a9b6c9; font-size: 13px; margin-top: 18px; }
 
 .ch-panel button {
   min-width: 240px; padding: 12px 22px; font-size: 15px; font-weight: 700; letter-spacing: 1.5px;
@@ -85,8 +101,8 @@ html, body { margin: 0; padding: 0; height: 100%; background: #0b0e14; overflow:
 .ch-back { min-width: 0 !important; align-self: flex-start; margin: 0 0 4px 24px; font-size: 12px !important; }
 
 .ch-card { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; }
-.ch-card i, .ch-crit i { font-style: normal; font-weight: 500; font-size: 11px; opacity: .7; }
-.ch-card em { font-style: normal; color: #2a9d8f; font-size: 10px; font-weight: 800; }
+.ch-card i, .ch-crit i { font-style: normal; font-weight: 500; font-size: 12px; opacity: .8; }
+.ch-card em { font-style: normal; color: #1f7a6f; font-size: 12px; font-weight: 800; }
 .ch-grid { display: grid; grid-template-columns: repeat(3, 200px); gap: 8px; }
 .ch-crit { min-width: 0 !important; display: flex; flex-direction: column; gap: 2px; text-align: left;
   background: linear-gradient(180deg, #2b3350, #1d2340) !important; color: #e8eeff !important;
@@ -102,15 +118,16 @@ html, body { margin: 0; padding: 0; height: 100%; background: #0b0e14; overflow:
   #ch-theme { grid-column: 1 / -1; grid-row: 2; justify-self: start; margin-top: 0; }
   #ch-score-wrap { min-width: 116px; padding: 6px 12px 9px; }
   #ch-score { font-size: 42px; }
-  .ch-pill { font-size: 11px; padding: 7px 10px; }
+  .ch-pill { font-size: 12px; padding: 7px 10px; }
   #ch-msg { top: calc(var(--a3d-bar-space, 0px) + 128px); font-size: 16px; }
+  #ch-pause-btn { top: calc(var(--a3d-bar-space, 0px) + 96px); right: calc(12px + env(safe-area-inset-right, 0px)); }
   #ch-help { display: none; }
 }
 
 @media (max-width: 520px) {
   #ch-top { left: calc(12px + env(safe-area-inset-left, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); }
   #ch-score { font-size: 36px; }
-  .ch-pill { font-size: 10px; padding: 6px 9px; }
+  .ch-pill { font-size: 12px; padding: 6px 9px; }
   .ch-panel h1 { font-size: 44px; letter-spacing: 3px; }
   .ch-panel button { min-width: 200px; }
 }
