@@ -56,6 +56,7 @@
       #abilities button { position: relative; overflow: hidden; min-width: 128px; text-align: left; display: grid; gap: 3px; }
       #abilities button small { font-size: 12px; color: var(--muted); }
       #abilities button.phone-only { display: none; }
+      #abilities .short { display: none; }
       #abilities button::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: calc(var(--cd, 0) * 100%); background: var(--cyan); }
       #abilities button.poor { opacity: 0.55; }
       #abilities button.live { border-color: var(--cyan); box-shadow: 0 0 12px rgba(131, 235, 255, 0.45); }
@@ -93,6 +94,8 @@
         #abilities button { min-width: 0; min-height: 44px; padding: 4px 4px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         #abilities button small { font-size: 12px; }
         #abilities button.phone-only { display: grid; }
+        #abilities .full { display: none; }
+        #abilities .short { display: inline; }
         #controls { top: auto; left: auto; right: max(8px, env(safe-area-inset-right)); bottom: calc(66px + env(safe-area-inset-bottom)); }
       }
     </style>
@@ -103,7 +106,7 @@
     <div id="stats" class="hidden glass"><div><span class="meta">DISTANCE</span><strong class="num"><span id="distance">0</span> m</strong></div><div><span class="meta">DEFEATED</span><strong class="num" id="kills">00</strong></div><div><span class="meta">SCORE</span><strong class="num" id="score">0</strong></div><div id="combo" class="num"></div></div>
     <div id="vitals" class="hidden glass"><span class="meta">SPIRIT</span><div class="bar"><i id="spirit-bar"></i></div><span class="num" id="spirit">300 / 300</span><div class="meta" style="margin-top:8px">HEALTH</div><div id="hearts">&#9829;&#9829;&#9829;&#9829;&#9829;</div><div class="meta" id="district">Lantern Village</div></div>
     <div id="forms" class="hidden glass"><button data-form="base" class="selected">Runner<small>Space cycles</small></button><button data-form="sage">Sunfire<small>from 600 m</small></button><button data-form="beast">Ember<small>from 1,620 m</small></button></div>
-    <div id="abilities" class="hidden glass"><button data-action="clones">Echo clones<small>1 &middot; 60</small></button><button data-action="spiralorb">Spiral orb<small>2 &middot; 14</small></button><button data-action="dash">Surge dash<small>Shift &middot; 38</small></button><button data-action="spiralstar">Gale star<small>3 &middot; 75</small></button><button data-action="cycleForm" class="phone-only" title="Cycle form (Space)"><span id="form-cycle">Runner</span><small>form</small></button></div>
+    <div id="abilities" class="hidden glass"><button data-action="clones"><span class="full">Echo clones</span><span class="short">Clones</span><small>1 &middot; 60</small></button><button data-action="spiralorb"><span class="full">Spiral orb</span><span class="short">Orb</span><small>2 &middot; 14</small></button><button data-action="dash"><span class="full">Surge dash</span><span class="short">Dash</span><small>Shift &middot; 38</small></button><button data-action="spiralstar"><span class="full">Gale star</span><span class="short">Gale</span><small>3 &middot; 75</small></button><button data-action="cycleForm" class="phone-only" title="Cycle form (Space)"><span id="form-cycle">Runner</span><small>form</small></button></div>
     <div id="announce"><strong id="announce-title"></strong><span class="meta" id="announce-small"></span></div>
     <div id="hurt"></div>
     <div id="district-banner"></div>

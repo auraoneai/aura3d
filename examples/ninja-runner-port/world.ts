@@ -627,7 +627,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       const near = s + 1.5, far = target ? target.s - 0.8 : 0;
       marker.setVisible(!!target && far - near > 1);
       if (target && far - near > 1) {
-        const f = groundFrame((near + far) / 2, target.lane * laneOffset(target.s), 0.05);
+        const f = groundFrame((near + far) / 2, target.lane * laneOffset(target.s), 0.12);
         marker.setPosition(f.x, f.y, f.z);
         marker.setRotation(0, Math.atan2(f.dx, f.dz), 0);
         marker.setScale([0.55, 1, far - near]);
