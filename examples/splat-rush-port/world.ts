@@ -145,14 +145,17 @@ export class Batch {
   readonly tones: Float32Array | null;
   readonly vertsPer: number;
   readonly mesh: MeshData;
-  private lo = Infinity;
-  private hi = -1;
-  private toneLo = Infinity;
-  private toneHi = -1;
+  /** Instances written since the last flush (positions/normals) and instances whose tone changed. */
+  private readonly dirty: Uint8Array;
+  private readonly toneDirty: Uint8Array;
+  private anyDirty = false;
+  private anyToneDirty = false;
   /** Vertex uploads issued by `flush` so far (for tests and the C10 budget). */
   uploadedVertices = 0;
   constructor(private readonly template: MeshData, readonly max: number, tone: Rgb | readonly number[] | null = null) {
     this.vertsPer = template.positions.length / 3;
+    this.dirty = new Uint8Array(max);
+    this.toneDirty = new Uint8Array(max);
     const merged = mergeMeshes(Array.from({ length: max }, () => template));
     this.mesh = merged;
     this.positions = new Float32Array(merged.positions.length);
@@ -172,8 +175,22 @@ export class Batch {
   }
 
   private mark(i: number): void {
-    if (i < this.lo) this.lo = i;
-    if (i > this.hi) this.hi = i;
+    this.dirty[i] = 1;
+    this.anyDirty = true;
+  }
+
+  /** Each run of consecutive flagged instances, as [first, count]; clears the flags. */
+  private static runs(flags: Uint8Array): [number, number][] {
+    const out: [number, number][] = [];
+    for (let i = 0; i < flags.length; i++) {
+      if (!flags[i]) continue;
+      let j = i;
+      while (j + 1 < flags.length && flags[j + 1]) j++;
+      out.push([i, j - i + 1]);
+      flags.fill(0, i, j + 1);
+      i = j;
+    }
+    return out;
   }
 
   /** Place instance `i` at (x, y, z) with yaw about Y and per-axis scale. */
@@ -206,8 +223,8 @@ export class Batch {
       const k = (i * this.vertsPer + v) * 3;
       this.tones[k] = rgb[0]; this.tones[k + 1] = rgb[1]; this.tones[k + 2] = rgb[2];
     }
-    if (i < this.toneLo) this.toneLo = i;
-    if (i > this.toneHi) this.toneHi = i;
+    this.toneDirty[i] = 1;
+    this.anyToneDirty = true;
   }
 
   geometry() {
@@ -217,19 +234,23 @@ export class Batch {
     });
   }
 
-  /** Upload the instances written since the last flush. `normals: false` for unlit batches. */
+  /** Upload each run of instances written since the last flush. `normals: false` for unlit batches. */
   flush(h: NodeHandle, normals = true): void {
     const span = this.vertsPer * 3;
-    if (this.hi >= 0) {
-      const from = this.lo * span, to = (this.hi + 1) * span, offset = this.lo * this.vertsPer;
-      h.updateAttribute?.("position", { array: this.positions.subarray(from, to), offset });
-      if (normals) h.updateAttribute?.("normal", { array: this.normals.subarray(from, to), offset });
-      this.uploadedVertices += (this.hi - this.lo + 1) * this.vertsPer;
-      this.lo = Infinity; this.hi = -1;
+    if (this.anyDirty) {
+      for (const [first, count] of Batch.runs(this.dirty)) {
+        const from = first * span, to = (first + count) * span, offset = first * this.vertsPer;
+        h.updateAttribute?.("position", { array: this.positions.subarray(from, to), offset });
+        if (normals) h.updateAttribute?.("normal", { array: this.normals.subarray(from, to), offset });
+        this.uploadedVertices += count * this.vertsPer;
+      }
+      this.anyDirty = false;
     }
-    if (this.tones && this.toneHi >= 0) {
-      h.updateAttribute?.("tone", { array: this.tones.subarray(this.toneLo * span, (this.toneHi + 1) * span), offset: this.toneLo * this.vertsPer });
-      this.toneLo = Infinity; this.toneHi = -1;
+    if (this.tones && this.anyToneDirty) {
+      for (const [first, count] of Batch.runs(this.toneDirty)) {
+        h.updateAttribute?.("tone", { array: this.tones.subarray(first * span, (first + count) * span), offset: first * this.vertsPer });
+      }
+      this.anyToneDirty = false;
     }
   }
 }

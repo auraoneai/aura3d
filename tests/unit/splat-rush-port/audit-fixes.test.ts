@@ -118,7 +118,7 @@ describe("C9/C10: road entities keep a constant offset from the scroll", () => {
 
 describe("C9/C10: batches upload only what changed", () => {
   const unit = { positions: [0, 0, 0, 1, 0, 0, 0, 1, 0], normals: [0, 0, 1, 0, 0, 1, 0, 0, 1], uvs: [0, 0, 1, 0, 0, 1], indices: [0, 1, 2] };
-  it("flush uploads the written range at its vertex offset, and nothing when idle", () => {
+  it("flush uploads each written run at its vertex offset, and nothing when idle", () => {
     const b = new Batch(unit, 10, [1, 1, 1]);
     const calls: { name: string; offset: number; length: number }[] = [];
     const handle = { updateAttribute: (name: string, u: { array: Float32Array; offset: number }) => { calls.push({ name, offset: u.offset, length: u.array.length }); } };
@@ -126,9 +126,12 @@ describe("C9/C10: batches upload only what changed", () => {
     b.place(5, 1, 2, 3, 0, 1, 1, 1);
     b.setTone(4, [0.5, 0.5, 0.5]);
     b.flush(handle as never);
+    // two separate runs (instances 3 and 5), not the span 3..5
     expect(calls).toEqual([
-      { name: "position", offset: 9, length: 27 },
-      { name: "normal", offset: 9, length: 27 },
+      { name: "position", offset: 9, length: 9 },
+      { name: "normal", offset: 9, length: 9 },
+      { name: "position", offset: 15, length: 9 },
+      { name: "normal", offset: 15, length: 9 },
       { name: "tone", offset: 12, length: 9 }
     ]);
     calls.length = 0;
@@ -221,5 +224,44 @@ describe("C7: colour symbols", () => {
     }
     const sig = SYMBOL_FOR_COLOR.map((k) => markOutline(k).map(([x, y]) => `${x.toFixed(3)},${y.toFixed(3)}`).join(" "));
     expect(new Set(sig).size).toBe(4);
+  });
+});
+
+describe("C9/C10: world runtime against a recording app", () => {
+  it("draws through about 60 nodes and uploads under 15% of the old per-frame road vertices", async () => {
+    const { buildWorld, BATCH_IDS } = await import("../../../examples/splat-rush-port/world");
+    // buildWorld paints two canvas textures; a 2D context that ignores every call is enough here
+    const g = globalThis as { document?: unknown };
+    const hadDocument = "document" in g;
+    if (!hadDocument) g.document = { createElement: () => ({ width: 0, height: 0, getContext: () => new Proxy({}, { get: () => () => undefined }) }) };
+    const sim = new SplatRushSim(20261023);
+    const world = buildWorld({ sim, aspect: 16 / 9 });
+    const uploads = new Map<string, number>();
+    const visible = new Map<string, boolean>();
+    const handle = (id: string) => {
+      const h: Record<string, unknown> = {};
+      const chain = () => h;
+      Object.assign(h, {
+        setPosition: chain, setRotation: chain, setScale: chain, setUniform: chain,
+        setVisible: (v: boolean) => { visible.set(id, v); return h; },
+        updateAttribute: (_name: string, u: { array: Float32Array }) => { uploads.set(id, (uploads.get(id) ?? 0) + u.array.length / 3); }
+      });
+      return h;
+    };
+    const app = { nodes: { require: handle }, camera: { setPose: () => undefined } };
+    const rt = world.bind(app as never);
+    sim.advance({ ...IDLE, start: true });
+    const pilot = new Autopilot();
+    for (let i = 0; i < 120; i++) { sim.advance(pilot.next(sim, i)); pilot.observe(sim); rt.update(sim, 16 / 9); }
+    const before = rt.uploadedVertices;
+    const frames = 300;
+    for (let i = 120; i < 120 + frames && sim.o.phase === "playing"; i++) { sim.advance(pilot.next(sim, i)); pilot.observe(sim); rt.update(sim, 16 / 9); }
+    const perFrame = (rt.uploadedVertices - before) / frames;
+    // the old path rewrote deck (220 x 24), rails (440 x 63) and dashes (60 x 24) every frame: 33,000 vertices. What is
+    // left is what really moves each frame: streaks (50 x 24), live particles and growing splatters (about 3,600 measured)
+    expect(perFrame).toBeLessThan(0.15 * 33000);
+    expect(rt.nodeCount).toBeLessThan(80);
+    for (const id of BATCH_IDS) expect(uploads.has(id) || id === "gate-symbols", id).toBe(true);
+    if (!hadDocument) delete g.document;
   });
 });
