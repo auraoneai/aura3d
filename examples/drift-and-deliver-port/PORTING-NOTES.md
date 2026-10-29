@@ -43,7 +43,8 @@ pathname URLs, which the production bridge requires) and `tests/unit/drift-and-d
 budget and the placement plan.
 
 - **Player**: a teal compact courier hatchback (37.5k triangles, one closed solid shell, regenerated 2026-10-25), the only car that casts shadows. **Traffic**: sedan, hatchback, taxi-style van and box truck
-  (6-9k triangles each; kinds cycle exactly as the old shells did: `i % 4`), 84 `model()` nodes moved each frame through runtime handles.
+  (6-9k triangles each; kinds cycle exactly as the old shells did: `i % 4`), drawn as one `instances.model` node per kind (4 nodes for
+  84 cars, was 84 `model()` nodes) and moved each frame with `setInstances`.
   The car GLBs are baked (vertex rotation + lift, `tools/crayon-capture/drift-and-deliver-bake-cars.mjs`) to face +z with the lowest point at
   y = 0, so a runtime `setPosition/setRotation` is all the sim state needs. Meshy bakes the wheels into the body, so wheels do not spin.
 - **Near-field props** (`props.ts`, instanced with `instances.model`, one draw per kind): lamps within 180 m of the start, signals 170 m,
@@ -52,14 +53,14 @@ budget and the placement plan.
   procedural props skip exactly the placements the models replace), which bounds the triangle count; the swap is not blended.
 - **Tree and palm** were remeshed by Meshy (3.5k and 3k target) because the leaf geometry cannot be simplified locally.
 - `?models=0` restores the code-built shells and props (diagnostics, and the fallback if the GLBs ever fail to load).
-- Not done: animated pedestrians (the rigged walker was generated and admitted as `assets/models/ped.glb`, 12.7k vertices, one 1.07 s
-  walk clip, but is not wired in: 276 static code-built pedestrians remain), per-instance paint variety on the traffic (the colour is
-  baked into each model's texture), spinning wheels.
+- Not done: animated pedestrians (276 static code-built pedestrians remain; the unused rigged walker GLB was deleted on 2026-10-29),
+  per-instance paint variety on the traffic (the colour is baked into each model's texture), spinning wheels.
 
 ## What is still not ported
 
 - The story, missions, police/wanted level and the BUSTED flow; getting in and out of cars on foot; the map overlay;
-  garage / results / level-select / intro screens.
+  garage / level-select / intro screens. The port has its own loop instead (`shift.ts`): a 3:00 courier shift with delivery jobs to a
+  drop-off beacon, drift-chain score, and a results screen with the best score kept in localStorage and a restart.
 - The original's ~11,000 GLB placements (517k triangles) and 456 animated pedestrians: the port has 1,688 dressed
   buildings (also the collision solids), ~270 static pedestrians and 84 traffic cars.
 - Shadows of traffic and pedestrians are cast, but vertex-level detail (window recesses, props on facades) is texture-only.
@@ -68,6 +69,9 @@ budget and the placement plan.
 ## Hooks
 
 `window.__AURA_DRIFT_AND_DELIVER__` (`state`, `stepFrames`, `applyInput`, `teleport`, `reset`, `headlights`, `pickups`,
-`counts`, `pixels`, `frame`, `routeHealth`) and the original's QA surface (`__sim`, `__tp`, `__game`, `__gameEntities`,
-`__dbg.nearSolids`, `__diag`) so the same capture runner that recorded the original drives the port. `?manual=1` makes
-the sim advance only through those hooks. `L` toggles the headlights.
+`counts`, `traffic`, `camera`, `audioBeds`, `restart`, `endShift`, `toDropoff`, `pixels`, `frame`, `routeHealth`) and the
+original's QA surface (`__sim`, `__tp`, `__game`, `__gameEntities`, `__dbg.nearSolids`, `__diag`) so the same capture runner that
+recorded the original drives the port. `__sim` and `__dbg.nearSolids` keep the original's building-only world, so the four recorded
+replay hashes are unchanged; normal play also collides with lamps and signals (`post`) and trees, pedestrians, hydrants and shelters
+(`prop`). `?manual=1` makes the sim advance only through those hooks; `?shift=N` shortens the shift for probes. `L` toggles the
+headlights.
