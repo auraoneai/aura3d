@@ -620,6 +620,28 @@ function errorMessage(error: unknown): string {
 }
 
 /** The parent's waiting time as a director override; the default keeps each beat's authored wait. */
+/** Frames to wait for before the stage boot starts, and the backstop for a hidden tab that draws none. */
+const FIRST_PAINT_FALLBACK_MS = 250;
+
+/**
+ * Resolves once the browser has drawn a frame (two animation frames), or after FIRST_PAINT_FALLBACK_MS when no
+ * frame comes (a hidden tab). The stage boot waits for it: the boot holds the main thread for a while (model
+ * decode, shader warm-up), and started at once it kept the start screen from being drawn, so the page stayed
+ * blank for seconds on a fast machine and for minutes on a software renderer.
+ */
+function afterFirstPaint(win: Window | null): Promise<void> {
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = (): void => {
+      if (done) return;
+      done = true;
+      resolve();
+    };
+    if (win && typeof win.requestAnimationFrame === "function") win.requestAnimationFrame(() => win.requestAnimationFrame(finish));
+    setTimeout(finish, FIRST_PAINT_FALLBACK_MS);
+  });
+}
+
 function waitOverride(waitMs: number): number | undefined {
   return waitMs === WAIT_MS_DEFAULT ? undefined : clampWaitMs(waitMs);
 }
@@ -1149,21 +1171,25 @@ export function createApp(options: WonderAppOptions): WonderApp {
     return "started";
   }
 
-  // ---- stage boot (createStage awaits the first mount and warmPrograms before showing a frame)
-  const stageReady: Promise<WonderStage> = createStage({
-    target: stageHost,
-    reducedMotion: reducedMotionNow(),
-    models: flags.models,
-    ...(flags.modelWaitMs !== null ? { modelTimeoutMs: flags.modelWaitMs } : {}),
-    ...(flags.audio ? { sound: mixer.gameSoundOptions() } : {}),
-    // A song line's cues are applied by the stage; their sounds are the mixer's (07 B20).
-    onSongCue: (cue) => {
-      if (disposed || !runningStory()) return;
-      for (const action of cue.actions) {
-        if (action.do === "sfx") mixer.playSfx(action.sound);
-        else if (action.do === "music") mixer.setBed(action.bed);
+  // ---- stage boot (createStage awaits the first mount and warmPrograms before showing a frame). It starts after
+  // the first screen has been drawn (afterFirstPaint), so the start screen shows while the stage boots.
+  const stageReady: Promise<WonderStage> = afterFirstPaint(doc.defaultView).then(() => {
+    if (disposed) throw new Error("app disposed before the stage boot started");
+    return createStage({
+      target: stageHost,
+      reducedMotion: reducedMotionNow(),
+      models: flags.models,
+      ...(flags.modelWaitMs !== null ? { modelTimeoutMs: flags.modelWaitMs } : {}),
+      ...(flags.audio ? { sound: mixer.gameSoundOptions() } : {}),
+      // A song line's cues are applied by the stage; their sounds are the mixer's (07 B20).
+      onSongCue: (cue) => {
+        if (disposed || !runningStory()) return;
+        for (const action of cue.actions) {
+          if (action.do === "sfx") mixer.playSfx(action.sound);
+          else if (action.do === "music") mixer.setBed(action.bed);
+        }
       }
-    }
+    });
   }).then((created) => {
     if (disposed) {
       created.dispose();
