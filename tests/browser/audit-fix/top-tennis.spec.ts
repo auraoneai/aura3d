@@ -129,7 +129,10 @@ async function grab(page: Page, target: string, id: string): Promise<Record<stri
       if (!a) continue;
       const feet = project(info.camera, info.rect, [a.x * COURT_X, 0.05, a.y * COURT_Z]);
       const head = project(info.camera, info.rect, [a.x * COURT_X, 1.75, a.y * COURT_Z]);
-      athletes[side] = { feet: [Math.round(feet.x), Math.round(feet.y)], head: [Math.round(head.x), Math.round(head.y)], inside: feet.inside && head.inside };
+      // On screen = inside the camera frustum AND inside the visible viewport (a canvas taller than the screen hides its bottom).
+      const vp = page.viewportSize() ?? { width: 1280, height: 720 };
+      const onScreen = (p: { x: number; y: number; inside: boolean }) => p.inside && p.x >= 0 && p.x <= vp.width && p.y >= 0 && p.y <= vp.height;
+      athletes[side] = { feet: [Math.round(feet.x), Math.round(feet.y)], head: [Math.round(head.x), Math.round(head.y)], inside: onScreen(feet) && onScreen(head) };
       points.push({ id: `${side}-torso`, x: (feet.x + head.x) / 2, y: (feet.y + head.y) / 2 });
     }
   }

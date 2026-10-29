@@ -71,6 +71,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
   let cameraFov = CAMERA_FOV_DEG;
   let lastShake = 0;
   let particlesDrawn = 0;
+  let resizeObserver: ResizeObserver | null = null;
 
   let viewportWidth = 1280;
   let viewportHeight = 800;
@@ -102,6 +103,19 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     h.bleachers?.setVisible(audienceVisible);
   }
 
+  /** Backing store = CSS box x device pixel ratio (capped at 2), never below the engine minimum. */
+  function syncBacking(): void {
+    if (!canvas) return;
+    const w = Number(canvas.clientWidth) || 0, h = Number(canvas.clientHeight) || 0;
+    if (w < 1 || h < 1) return;
+    const ratio = Math.min(2, (typeof window !== "undefined" ? window.devicePixelRatio : 1) || 1);
+    const bw = Math.max(320, Math.round(w * ratio)), bh = Math.max(220, Math.round(h * ratio));
+    if (canvas.width !== bw) canvas.width = bw;
+    if (canvas.height !== bh) canvas.height = bh;
+    viewportWidth = w; viewportHeight = h;
+    if (ready) applyCameraFov();
+  }
+
   /** C2: aspect-aware FOV, pushed to the live camera whenever the canvas aspect changes. */
   function applyCameraFov(): void {
     const fov = cameraFovForAspect(viewportWidth / Math.max(1, viewportHeight));
@@ -126,7 +140,11 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
         scene: buildTennisScene(rig),
         // C11: a governed tier ("auto") instead of the old string, which resolveMountQuality ignored; coarse-pointer devices get "medium".
         renderer: { quality: { tier: "auto" } },
-        qualityRebuild: QUALITY_REBUILD
+        qualityRebuild: QUALITY_REBUILD,
+        // C2: the page sizes the canvas (portrait phones put it between the score band and the control band). The engine's own
+        // resize fits the canvas to its parent, which ignored that layout: on a 390 x 844 phone the canvas stayed 844 px tall,
+        // pushed 196 px down, so its bottom (the near athlete) was below the screen. The renderer owns the backing size instead.
+        resize: false
       });
       await app.ready();
       const req = (id: string): AuraRuntimeNodeHandle => (options.wrapHandle ? options.wrapHandle(id, app!.nodes.require(id)) : app!.nodes.require(id));
@@ -160,6 +178,13 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
         ...(options.search !== undefined ? { search: options.search } : {})
       });
       ready = true;
+      // Hand layout back to the stylesheet (the mount froze the CSS size in px) and track the CSS box from now on.
+      if (target.style) { target.style.width = ""; target.style.height = ""; }
+      syncBacking();
+      if (typeof ResizeObserver !== "undefined") {
+        resizeObserver = new ResizeObserver(() => syncBacking());
+        resizeObserver.observe(target);
+      }
       cameraFov = CAMERA_FOV_DEG;
       applyCameraFov();
     },
@@ -250,6 +275,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       viewportWidth = Math.max(1, width);
       viewportHeight = Math.max(1, height);
       pixelRatio = ratio || 1;
+      syncBacking();
       if (ready) applyCameraFov();
     },
 
@@ -258,6 +284,8 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       net = null;
       ready = false;
       reducedMotionQuery?.dispose();
+      resizeObserver?.disconnect();
+      resizeObserver = null;
       try { app?.dispose(); } catch { /* already gone */ }
       app = null;
     },

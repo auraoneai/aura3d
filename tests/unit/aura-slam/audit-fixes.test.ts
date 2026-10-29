@@ -320,6 +320,11 @@ describe("top-tennis-C8 / C11 / C18: lifecycle", () => {
     expect(boot).not.toMatch(/webglcontextlost", \(\) => \{ byId\("render-error"\)/);
     for (const page of ["apps/showcase-top-tennis/index.html", "examples/aura-slam/index.html"]) expect(readFileSync(page, "utf8")).toContain('id="graphics-reset"');
   });
+  it("C2: the renderer owns the backing size (resize: false) and hands layout back to the stylesheet", () => {
+    expect(renderer).toContain("resize: false");
+    expect(renderer).toContain('target.style.width = ""; target.style.height = "";');
+    expect(renderer).toContain("new ResizeObserver(() => syncBacking())");
+  });
   it("C11: the renderer asks for a governed tier instead of the ignored string", () => {
     expect(renderer).toContain('renderer: { quality: { tier: "auto" } }');
     expect(renderer).not.toContain('quality: "high"');
