@@ -121,7 +121,7 @@ export const WEATHER: Readonly<Record<WeatherPreset, WeatherLook>> = {
     fill: { color: "#cbd5e1", intensity: 0.8, position: [6, 5, -18] }, bloom: 0.18, label: "Marine fog"
   },
   night: {
-    look: "night-city", fogDensityScale: 0.6, exposureEv: 0.5, sky: "#090d16", horizonEmissive: "#1e293b", horizonIntensity: 0.25, sunColor: "#cbd5e1", sunY: 64, ground: "#0b0f19", water: "#081c2e",
+    look: "night-city", fogDensityScale: 0.6, exposureEv: 0.5, sky: "#0d1424", horizonEmissive: "#2b4472", horizonIntensity: 0.45, sunColor: "#cbd5e1", sunY: 64, ground: "#0b0f19", water: "#081c2e",
     sun: { color: "#9db4e0", intensity: 0.7, position: [-30, 60, -40] }, hemisphere: { sky: "#3b5b8f", ground: "#1a2030", intensity: 0.6 },
     fill: { color: "#ffd9a0", intensity: 2.2, position: [0, 3.2, -9] }, bloom: 0.42, label: "Neon night"
   }

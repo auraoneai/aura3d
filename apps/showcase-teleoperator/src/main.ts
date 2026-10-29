@@ -632,7 +632,8 @@ async function bootGridDispatch(): Promise<void> {
     N.ribbons.setInstances(
       Array.from({ length: PATH_RIBBON_COUNT }, (_, i) => {
         const frac = (i + 1) / PATH_RIBBON_COUNT;
-        const segZ = pose.pz - 5.5 - i * 5.4;
+        // on-car cameras sit at the nose: start the ribbon ahead of it so the first slab does not fill the view
+        const segZ = pose.pz - 5.5 - i * 5.4 - (camMode >= 2 ? size.length / 2 + 6 : 0);
         const segX = lerp(pose.px, targetX, frac * 0.85);
         const nextX = lerp(pose.px, targetX, Math.min(1, (i + 2) / PATH_RIBBON_COUNT));
         const shimmer = motionOk() ? 0.82 + 0.24 * Math.sin(t * 7 - i * 0.7) : 1;
