@@ -13,8 +13,9 @@
  * `?models=0`, then UI steps)
  *
  * The page opens with `?autostart=1&manual=1&models=0` (the menu, no story, primitive stand-ins: the panel needs no
- * models). Records: WWJSON parent-panel (parent-panel-partial when a step fails); WWSHOT parent-panel (the open panel
- * after the changes: grown-up settings only, no child data).
+ * models). First the menu itself (PRD 04 E02): all 32 cards, each with its host's portrait loaded. Records: WWJSON
+ * parent-panel (parent-panel-partial when a step fails); WWSHOT story-menu (the menu with its portraits) and
+ * parent-panel (the open panel after the changes: grown-up settings only, no child data).
  */
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { SETTINGS_STORAGE_KEY } from "../../apps/veer-wonder-world/src/ui/settings-store";
@@ -112,6 +113,33 @@ async function checkedStates(panel: Locator, sfxPresent: boolean): Promise<Recor
   return out;
 }
 
+/** The menu cards and their host portraits once every portrait image has loaded or failed. */
+async function menuPortraits(page: Page): Promise<{ readonly cards: number; readonly portraits: number; readonly loaded: number; readonly failed: readonly string[]; readonly files: readonly string[] }> {
+  return page.evaluate(async () => {
+    const images = [...document.querySelectorAll<HTMLImageElement>(".ww-card img.ww-card-portrait")];
+    await Promise.all(
+      images.map(
+        (image) =>
+          new Promise<void>((resolve) => {
+            if (image.complete) resolve();
+            else {
+              image.addEventListener("load", () => resolve(), { once: true });
+              image.addEventListener("error", () => resolve(), { once: true });
+            }
+          })
+      )
+    );
+    const loaded = images.filter((image) => image.naturalWidth > 0);
+    return {
+      cards: document.querySelectorAll(".ww-card").length,
+      portraits: images.length,
+      loaded: loaded.length,
+      failed: images.filter((image) => image.naturalWidth === 0).map((image) => new URL(image.src).pathname.split("/").pop() ?? ""),
+      files: [...new Set(images.map((image) => new URL(image.src).pathname.split("/").pop() ?? ""))].sort()
+    };
+  });
+}
+
 async function highContrastClass(page: Page): Promise<boolean> {
   return page.evaluate(() => document.documentElement.classList.contains("high-contrast"));
 }
@@ -124,6 +152,14 @@ async function scenario(page: Page, log: PageLog, server: ExampleDevServer, step
   expect(boot.screen, "?autostart=1 without a story opens the menu").toBe("menu");
   expect(boot.settings.captions, "captions are on by default").toBe(true);
   expect(boot.settings.music, "music is on by default").toBe(true);
+
+  // 1b. The story menu (PRD 04 E02): every card shows its host's portrait, loaded from the app's own origin.
+  const menu = await menuPortraits(page);
+  steps["menu"] = menu;
+  emitShot("story-menu", await captureView(page), "jpg");
+  expect(menu.cards, "the menu lists the 20 episodes and 12 activities").toBe(32);
+  expect(menu.portraits, "every card shows its host's portrait").toBe(menu.cards);
+  expect(menu.loaded, `every portrait image loads (${JSON.stringify(menu.failed)})`).toBe(menu.portraits);
 
   // 2. The grown-up path: the menu's grown-up button, the hold, the panel; then every change.
   let panel = await openPanel(page, SELECTORS.menuParent);

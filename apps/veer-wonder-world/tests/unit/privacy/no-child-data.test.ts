@@ -158,6 +158,19 @@ describe("J07: no network calls or tracking", () => {
       expect(local, rel).toBe(urls);
       expect(code, rel).not.toMatch(/https?:\/\//);
     }
+    const portraits = SOURCES.find((source) => source.rel === "src/portrait-assets.ts")?.code ?? "";
+    const portraitUrls = (portraits.match(/new URL\(/g) ?? []).length;
+    expect(portraitUrls, "src/portrait-assets.ts").toBeGreaterThan(0);
+    expect((portraits.match(/new URL\("\.\/assets\/portraits\/[a-z]+\.webp", import\.meta\.url\)\.pathname/g) ?? []).length, "src/portrait-assets.ts").toBe(portraitUrls);
+    expect(portraits, "src/portrait-assets.ts").not.toMatch(/https?:\/\//);
+  });
+
+  it("resolves module-relative URLs only beside src/main.ts, where the dev server's one-module bundle resolves them too", () => {
+    // The repo dev server bundles the app into one module served at src/main.ts, so `new URL("./...",
+    // import.meta.url)` resolves from src/ wherever it is written; the Vite build resolves it from its own module. The
+    // two agree only for modules in src/ itself.
+    const files = [...new Set(codeHits(/new URL\(\s*["'`]\.{1,2}\//).map((hit) => hit.file))].sort();
+    expect(files).toEqual(["src/audio-manifest.ts", "src/aura-assets.ts", "src/portrait-assets.ts"]);
   });
 
   it("links out only to two parent reading pages, and loads nothing from another origin", () => {

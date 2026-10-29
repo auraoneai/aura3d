@@ -576,4 +576,59 @@ export const ENVIRONMENT_RIGHTS: readonly { readonly file: string; readonly sha2
   }
 ];
 
-export const PORTRAIT_RIGHTS: readonly { readonly id: string; readonly file: string; readonly sha256: string; readonly license: string; readonly source: string; readonly owner: string; readonly review: string }[] = [];
+export const PORTRAIT_RIGHTS: readonly { readonly id: string; readonly file: string; readonly sha256: string; readonly license: string; readonly source: string; readonly owner: string; readonly review: string }[] = [
+  {
+    "id": "momo",
+    "file": "src/assets/portraits/momo.webp",
+    "sha256": "ee427adc00473d4e9185849cf978dbc8bf0f22de0fe641cde7097f2769fcc9af",
+    "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
+    "source": "wonder-characters-20261029T163852Z capture char-momo-turn-front: the app stage rendering the admitted model (software WebGL2), cropped square and scaled to 256 px",
+    "owner": "AuraOne (project owner)",
+    "review": "approved by agent:claude-opus-5.5 on 2026-10-29"
+  },
+  {
+    "id": "lulu",
+    "file": "src/assets/portraits/lulu.webp",
+    "sha256": "8e504dc59ede9dc245ca09e8a357e94f35c39c22b872774fc4655f010c681f13",
+    "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
+    "source": "wonder-characters-20261029T163852Z capture char-lulu-turn-front: the app stage rendering the admitted model (software WebGL2), cropped square and scaled to 256 px",
+    "owner": "AuraOne (project owner)",
+    "review": "approved by agent:claude-opus-5.5 on 2026-10-29"
+  },
+  {
+    "id": "sheru",
+    "file": "src/assets/portraits/sheru.webp",
+    "sha256": "4356a4b7edf4486dddeccb5d42d1e00a9088370adeac1ae950e4cd84e9751612",
+    "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
+    "source": "wonder-characters-2-20261029T163852Z capture char-sheru-turn-front: the app stage rendering the admitted model (software WebGL2), cropped square and scaled to 256 px",
+    "owner": "AuraOne (project owner)",
+    "review": "approved by agent:claude-opus-5.5 on 2026-10-29"
+  },
+  {
+    "id": "gogo",
+    "file": "src/assets/portraits/gogo.webp",
+    "sha256": "6b0274a8f9f0596554cfe13836618a64008bbbca5a2d6a01a3dae02dd0eb972f",
+    "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
+    "source": "wonder-characters-2-20261029T163852Z capture char-gogo-turn-front: the app stage rendering the admitted model (software WebGL2), cropped square and scaled to 256 px",
+    "owner": "AuraOne (project owner)",
+    "review": "approved by agent:claude-opus-5.5 on 2026-10-29"
+  },
+  {
+    "id": "lumi",
+    "file": "src/assets/portraits/lumi.webp",
+    "sha256": "3b0b354ee67180eae92641b51de54fa66450132ff586b496ac926b196bcb89c9",
+    "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
+    "source": "wonder-characters-3-20261029T163852Z capture char-lumi-turn-front: the app stage rendering the admitted model (software WebGL2), cropped square and scaled to 256 px",
+    "owner": "AuraOne (project owner)",
+    "review": "approved by agent:claude-opus-5.5 on 2026-10-29"
+  },
+  {
+    "id": "peeko",
+    "file": "src/assets/portraits/peeko.webp",
+    "sha256": "6355440b92da33c16cc6c5987ef0eaa42846ace2fc61a4523e045438f416aded",
+    "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
+    "source": "wonder-characters-3-20261029T163852Z capture char-peeko-turn-front: the app stage rendering the admitted model (software WebGL2), cropped square and scaled to 256 px",
+    "owner": "AuraOne (project owner)",
+    "review": "approved by agent:claude-opus-5.5 on 2026-10-29"
+  }
+];
