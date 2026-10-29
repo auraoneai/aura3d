@@ -284,8 +284,11 @@ function startPlay(goal?: number): void {
 }
 
 /** `live` draws the tram between the last two steps (smooth on 120 and 144 Hz displays); everything else draws the exact latest step. */
+/** True from a render until the end of the current task: `pixels()` right after `frame()` (one evaluate) need not render again. */
+let freshFrame = false;
 function render(live = false): void {
   if (!app || !runtime) return;
+  if (!freshFrame) { freshFrame = true; queueMicrotask(() => { freshFrame = false; }); }
   runtime.update(live ? viewOf(sim, presenter.present(loop, true)) : sim, seconds, { orbit: titleMode, reducedMotion: reducedMotion() });
   app.step(0);
 }
@@ -404,7 +407,7 @@ function memory() {
  * after each present, so a read in a later task than the render saw black (D-07). Render in this task first, as `frame()` does.
  */
 function pixels(): { width: number; height: number; litFraction: number; mean: number } {
-  render();
+  if (!freshFrame) render();
   const probe = document.createElement("canvas");
   probe.width = 160; probe.height = 90;
   const ctx = probe.getContext("2d")!;

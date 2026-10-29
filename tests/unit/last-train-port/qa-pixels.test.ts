@@ -29,4 +29,9 @@ describe("last-train-port pixels() QA hook", () => {
     expect(renderAt, "pixels() renders first").toBeGreaterThanOrEqual(0);
     expect(renderAt).toBeLessThan(readAt);
   });
+
+  it("skips the render only when one already ran in this task (flag cleared by a microtask)", () => {
+    expect(body("pixels")).toMatch(/if \(!freshFrame\) render\(\);/);
+    expect(body("render")).toMatch(/freshFrame = true; queueMicrotask\(\(\) => \{ freshFrame = false; \}\)/);
+  });
 });
