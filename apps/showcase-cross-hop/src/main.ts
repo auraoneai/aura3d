@@ -1,8 +1,8 @@
 /** Cross Hop — endless lane-hopper showcase (PRD: docs/prd/cross-hop.md). */
-import { game } from "@aura3d/engine";
+import { game, createFixedStepLoop } from "@aura3d/engine";
 import { createGame, sfxUrl } from "@aura3d/engine/game";
-import { buildScene, probeScene, bindApp, frame, syncVisuals, st, startRun, evidenceExtra } from "./game/core";
-import { mountUI, tickUI } from "./game/ui";
+import { buildScene, probeScene, bindApp, step, syncVisuals, st, startRun, evidenceExtra, setPaused, setReducedMotion, SIM_STEP } from "./game/core";
+import { mountUI, tickUI, setUiSound } from "./game/ui";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
 import { installBlackFrameGuard } from "@aura3d/debug";
@@ -25,6 +25,32 @@ const inputOptions = {
 } as const;
 
 const PROBE = params.get("probe") ? parseInt(params.get("probe")!, 10) : 0;
+
+/** CH-15: honour `prefers-reduced-motion` (or `?reducedMotion=1`): no camera shake, FOV punch or screen flash. */
+const REDUCED_MOTION = params.get("reducedMotion") === "1" ||
+  (typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches);
+setReducedMotion(REDUCED_MOTION);
+
+type JuiceSpec = { hitStop?: number; shake?: number; punch?: unknown; flash?: unknown; rumble?: unknown };
+const JUICE: Record<string, JuiceSpec> = {
+  hop: { punch: { fovDeg: 1.4, ms: 130 } },
+  coin: { punch: { fovDeg: 1.6, ms: 160 }, flash: { color: "#ffd94a", peak: 0.12, ms: 160 }, rumble: { weak: 0.3, ms: 90 } },
+  splat: { hitStop: 0.07, shake: 0.5, flash: { color: "#ff4757", peak: 0.3, ms: 300 }, rumble: { strong: 0.8, ms: 320 } },
+  splash: { shake: 0.25, flash: { color: "#4a9fe8", peak: 0.28, ms: 340 }, rumble: { weak: 0.5, ms: 200 } },
+  burn: { shake: 0.3, flash: { color: "#ff6a1f", peak: 0.32, ms: 360 }, rumble: { strong: 0.7, ms: 280 } },
+  hawk: { shake: 0.4, punch: { fovDeg: 3.4, ms: 380 }, flash: { color: "#1a1a2e", peak: 0.3, ms: 320 }, rumble: { strong: 0.8, ms: 340 } },
+  rescue: { punch: { fovDeg: 2.6, ms: 320 }, flash: { color: "#ff9ed2", peak: 0.22, ms: 300 }, rumble: { strong: 0.6, ms: 300 } },
+  theme: { punch: { fovDeg: 2, ms: 280 }, flash: { color: "#ffffff", peak: 0.14, ms: 240 } }
+};
+/** Reduced motion keeps rumble and hit-stop and drops shake, FOV punch and flash. */
+function tameJuice(j: Record<string, JuiceSpec>): Record<string, JuiceSpec> {
+  const out: Record<string, JuiceSpec> = {};
+  for (const [k, v] of Object.entries(j)) {
+    const { shake: _s, punch: _p, flash: _f, ...rest } = v;
+    out[k] = rest;
+  }
+  return out;
+}
 
 const g = createGame({
   id: "cross-hop",
@@ -52,16 +78,7 @@ const g = createGame({
       ui: { id: "ui", asset: { url: sfxUrl("ui.click.00") }, volume: 0.5 }
     }
   },
-  juice: {
-    hop: { punch: { fovDeg: 1.4, ms: 130 } },
-    coin: { punch: { fovDeg: 1.6, ms: 160 }, flash: { color: "#ffd94a", peak: 0.12, ms: 160 }, rumble: { weak: 0.3, ms: 90 } },
-    splat: { hitStop: 0.07, shake: 0.5, flash: { color: "#ff4757", peak: 0.3, ms: 300 }, rumble: { strong: 0.8, ms: 320 } },
-    splash: { shake: 0.25, flash: { color: "#4a9fe8", peak: 0.28, ms: 340 }, rumble: { weak: 0.5, ms: 200 } },
-    burn: { shake: 0.3, flash: { color: "#ff6a1f", peak: 0.32, ms: 360 }, rumble: { strong: 0.7, ms: 280 } },
-    hawk: { shake: 0.4, punch: { fovDeg: 3.4, ms: 380 }, flash: { color: "#1a1a2e", peak: 0.3, ms: 320 }, rumble: { strong: 0.8, ms: 340 } },
-    rescue: { punch: { fovDeg: 2.6, ms: 320 }, flash: { color: "#ff9ed2", peak: 0.22, ms: 300 }, rumble: { strong: 0.6, ms: 300 } },
-    theme: { punch: { fovDeg: 2, ms: 280 }, flash: { color: "#ffffff", peak: 0.14, ms: 240 } }
-  },
+  juice: (REDUCED_MOTION ? tameJuice(JUICE) : JUICE) as never,
   qualityRebuild: { flags: ["game"] },
   evidence: {
     schema: 1,
@@ -77,12 +94,14 @@ g.start();
 
 const rawInput = g.input;
 const input = {
-  buffered: (d: string, _w: number) => (rawInput ? rawInput.buffered(d) : false)
+  buffered: (d: string, _w: number) => (rawInput ? rawInput.buffered(d) : false),
+  consume: (d: string) => (rawInput ? rawInput.consume(d) : false)
 };
 
 const eventLog = game.eventLog({ label: "cross hop events", maxEvents: 40 });
 
 mountUI(document.getElementById("hud") ?? document.body);
+setUiSound(() => g.sound?.cue("ui"));
 
 let appReady = false;
 
@@ -95,43 +114,66 @@ if (AUTOSTART) {
     params.get("seed") ? parseInt(params.get("seed")!, 10) : undefined,
     themeParam !== null ? parseInt(themeParam, 10) : undefined
   );
-  syncVisuals(0);
+  syncVisuals(1);
   tickUI();
 }
 
 void g.ready().then(() => {
   appReady = true;
-  syncVisuals(0);
+  syncVisuals(1);
   document.body.dataset.aura3dReady = "true";
 });
 
+// CH-E7: hold the run while the tab is hidden or the window loses focus.
+document.addEventListener("visibilitychange", () => { if (document.hidden) setPaused(true); });
+window.addEventListener("blur", () => setPaused(true));
+
 let frames = 0;
-let prevDead = false, prevHop = false, prevCoins = 0, prevTheme = 0;
+let prevDead = false, prevHop = false, prevCoins = 0, prevTheme = 0, prevRescues = 0, prevRailAlert = false;
 
-app.onFrame(({ dt }) => {
-  if (!appReady) return;
-  const d = Math.min(Math.max(dt, 1 / 240), 0.05);
-  frames++;
-
-  frame(d, input);
-  // fire juice/audio on state transitions
+function fireTransitions(): void {
   if (st.hop.active && !prevHop) { g.sound?.cue("hop"); g.juice.fire("hop"); }
   if (!st.hop.active && prevHop) g.sound?.cue("land");
   prevHop = st.hop.active;
-  if (st.coins !== prevCoins) { g.sound?.cue("coin"); g.juice.fire("coin"); prevCoins = st.coins; }
+  if (st.coins !== prevCoins) { if (st.coins > prevCoins) { g.sound?.cue("coin"); g.juice.fire("coin"); } prevCoins = st.coins; }
   if (st.themeIdx !== prevTheme) { g.sound?.cue("theme"); g.juice.fire("theme"); prevTheme = st.themeIdx; }
+  // CH-14: rescue pod pickup and the rail horn as a crossing ahead starts its warning.
+  if (st.rescues !== prevRescues) { g.sound?.cue("rescue"); g.juice.fire("rescue"); prevRescues = st.rescues; }
+  if (st.railAlert && !prevRailAlert) g.sound?.cue("horn");
+  prevRailAlert = st.railAlert;
   if (!prevDead && st.dead) {
     const cueMap = { squashed: "splat", flattened: "splat", drowned: "splash", burned: "burn", snatched: "hawk" } as const;
     const c = cueMap[st.dead.kind];
     g.sound?.cue(c);
-    g.juice.fire(st.dead.kind === "squashed" || st.dead.kind === "flattened" ? "splat" : st.dead.kind === "drowned" ? "splash" : st.dead.kind === "burned" ? "burn" : "hawk");
+    g.juice.fire(c);
     app.effects?.burst("debris", [st.playerCol, 0.6, -st.playerRow * 1.15], { count: 26, speed: 4, scale: 0.7 });
     eventLog.push({ type: "death", label: `${st.dead.label} @${st.score}` });
   }
   prevDead = !!st.dead;
+}
 
+// CH-E1: the run advances in fixed 60 Hz steps (collision is tested every step, whatever the display rate) and is
+// drawn between the last two steps (`loop.alpha`). The engine frame callback drives the loop clock.
+const loop = createFixedStepLoop({
+  stepSeconds: SIM_STEP,
+  step: (dt) => { step(dt, input); fireTransitions(); },
+  isActive: () => appReady && !st.paused,
+  schedule: () => 0,
+  cancel: () => undefined
+});
+
+let lastBeacon = -Infinity;
+app.onFrame(() => {
+  if (!appReady) return;
+  frames++;
+  loop.tick(performance.now());
+  syncVisuals(loop.alpha);
   tickUI();
 
+  // CH-E3: the evidence beacon is rebuilt at most every 250 ms instead of every frame.
+  const now = performance.now();
+  if (now - lastBeacon < 250) return;
+  lastBeacon = now;
   const extra = evidenceExtra();
   (window as unknown as Record<string, unknown>).__AURA3D_CROSS_HOP__ = {
     status: "live",
@@ -142,4 +184,3 @@ app.onFrame(({ dt }) => {
   };
   (window as unknown as Record<string, unknown>).__gameEvidence = (window as unknown as Record<string, unknown>).__AURA3D_CROSS_HOP__;
 });
-

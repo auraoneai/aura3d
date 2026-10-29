@@ -1,7 +1,7 @@
 /** Cross Hop — lane streamer + instanced visual pools + deterministic movers. */
 
 import {
-  COL_MAX, COL_MIN, COL_W, FIELD_HALF, LANE_D, STRIP_W, mulberry32, themeIndexForRow, THEMES
+  COL_MAX, COL_MIN, LANE_D, STRIP_W, mulberry32, themeIndexForRow, THEMES
 } from "./themes";
 import type { LaneType } from "./themes";
 
@@ -19,9 +19,6 @@ export interface Lane {
   readonly hasPod: boolean;
   readonly podCol: number;
 }
-
-const ROW_AHEAD = 26;
-const ROW_BEHIND = 8;
 
 export function laneZ(row: number): number { return -row * LANE_D; }
 
@@ -103,21 +100,42 @@ export function laneFor(row: number, seed: number, difficulty: number, forceThem
 
 
 
+/**
+ * Drawn length (metres, along X) of each model-backed mover. core.ts passes these as `targetMaxDimension`, and
+ * `moverHalf` derives its hit half-length from them, so the hitbox can never drift from the drawn model again (CH-5).
+ * A train is `TRAIN_CARS` cars of `TRAIN_CAR_LENGTH` coupled end to end.
+ */
+export const TRAIN_CARS = 3;
+export const TRAIN_CAR_LENGTH = 3.2;
+export const MOVER_LENGTH = {
+  car: 2.05, hatch: 1.95, suv: 2.15, taxi: 2.0, van: 2.15, pickup: 2.2, hover: 2.1,
+  truck: 2.75, tram: 3.1, train: TRAIN_CARS * TRAIN_CAR_LENGTH,
+  log: 3.8, pad: 0.92, stone: 1.05
+} as const;
+/** Slack added to half the drawn length in `moverHalf` (body overhang and wheel arches). */
+export const HIT_MARGIN = 0.05;
+
+/** Half the strip a looping mover wraps over: the strip plus the mover's own length, so it leaves the drawn strip
+ *  completely before it reappears on the other side (CH-12). */
+export function wrapSpan(lane: Lane): number {
+  return STRIP_W + 2 * moverHalf(lane) + 2;
+}
+
 /** Mover positions for a lane at time t — writes xs[] and returns count. */
 export function laneMovers(lane: Lane, t: number, xs: Float32Array): number {
-  if (lane.moverKind === "none" || lane.speed === 0) {
-    if (lane.type === "rail") {
-      // train: single sweep per cycle — active only during cross window
-      const cyc = railCycle(lane);
-      const u = ((t + lane.phase) % cyc.period + cyc.period) % cyc.period;
-      if (u > cyc.warn && u < cyc.warn + cyc.cross) {
-        xs[0] = lane.dir * (-FIELD_HALF - 12 + lane.speed * (u - cyc.warn));
-        return 1;
-      }
+  if (lane.moverKind === "train") {
+    // One train per rail cycle: a warning window, then a single sweep across the whole strip (CH-4). The train
+    // starts and ends beyond the strip so it never pops in or out on the visible ground.
+    const cyc = railCycle(lane);
+    const u = railPhase(lane, t);
+    if (u > cyc.warn && u < cyc.warn + cyc.cross) {
+      xs[0] = lane.dir * (-railRun(lane) / 2 + lane.speed * (u - cyc.warn));
+      return 1;
     }
     return 0;
   }
-  const span = FIELD_HALF * 2 + 8;
+  if (lane.moverKind === "none" || lane.speed === 0) return 0;
+  const span = wrapSpan(lane);
   const n = Math.min(xs.length, Math.max(1, Math.round(span / lane.spacing)));
   for (let i = 0; i < n; i++) {
     const raw = lane.phase + i * lane.spacing + lane.dir * lane.speed * t;
@@ -126,35 +144,58 @@ export function laneMovers(lane: Lane, t: number, xs: Float32Array): number {
   return n;
 }
 
+/** Distance a train's centre travels in one crossing: the strip plus the whole train on both ends. */
+function railRun(lane: Lane): number {
+  return STRIP_W + 2 * moverHalf(lane) + 4;
+}
+
+function railPhase(lane: Lane, t: number): number {
+  const cyc = railCycle(lane);
+  return ((t + lane.phase) % cyc.period + cyc.period) % cyc.period;
+}
+
 export function railCycle(lane: Lane): { period: number; warn: number; cross: number } {
-  const cross = (FIELD_HALF * 2 + 24) / Math.max(1, lane.speed);
+  const cross = railRun(lane) / Math.max(1, lane.speed);
   const warn = 1.35;
   const period = Math.max(4.6, warn + cross + 2.2 - Math.min(2, lane.speed * 0.02));
   return { period, warn, cross };
 }
 
-export function railWarning(lane: Lane, t: number): number {
+/** Seconds of tram travel the tram warning looks ahead (CH-4). */
+export const TRAM_WARN_SECONDS = 1.0;
+
+/**
+ * Crossing warning for a rail or tram lane at time t: 1 while lit, else 0.
+ * - Rail: lit for the `warn` window before the train and while it crosses, so every crossing follows a warning.
+ * - Tram: lit while a tram's nose will reach column x `px` within `TRAM_WARN_SECONDS`.
+ */
+export function railWarning(lane: Lane, t: number, px = 0): number {
   if (lane.type !== "rail" && lane.type !== "tram") return 0;
   if (lane.type === "tram") {
     const xs = railXs; const n = laneMovers(lane, t, xs);
-    for (let i = 0; i < n; i++) if (Math.abs(xs[i]) < FIELD_HALF + 4) return 0;
-    return 1; // no tram near — no flash
+    const half = moverHalf(lane) + 0.3;
+    for (let i = 0; i < n; i++) {
+      // Distance the tram's nose still has to travel to reach px: lit while that takes at most TRAM_WARN_SECONDS.
+      const nose = (px - xs[i]) * lane.dir - half;
+      if (nose >= 0 && nose < lane.speed * TRAM_WARN_SECONDS) return 1;
+    }
+    return 0;
   }
   const cyc = railCycle(lane);
-  const u = ((t + lane.phase) % cyc.period + cyc.period) % cyc.period;
-  return u < cyc.warn ? 1 : 0;
+  return railPhase(lane, t) < cyc.warn + cyc.cross ? 1 : 0;
 }
 
-const railXs = new Float32Array(4);
+const railXs = new Float32Array(24);
 
-/** Half-length of a mover for platform/collision tests. */
+/** Half-length of a mover for platform/collision tests: half the drawn length plus `HIT_MARGIN`. Cars use the
+ *  longest car model so every car pool is covered. */
 export function moverHalf(lane: Lane): number {
   switch (lane.moverKind) {
-    case "car": return 1.15;
-    case "truck": return 1.85;
-    case "tram": return 2.35;
-    case "train": return 5.6;
-    case "log": return 1.85;
+    case "car": return MOVER_LENGTH.pickup / 2 + HIT_MARGIN;
+    case "truck": return MOVER_LENGTH.truck / 2 + HIT_MARGIN;
+    case "tram": return MOVER_LENGTH.tram / 2 + HIT_MARGIN;
+    case "train": return MOVER_LENGTH.train / 2 + HIT_MARGIN;
+    case "log": return MOVER_LENGTH.log / 2 - 0.05;
     case "pad": return 0.52;
     case "stone": return 0.56;
     default: return 0;

@@ -8,15 +8,15 @@ import {
   COL_MAX, COL_MIN, COL_W, FIELD_HALF, LANE_D, STRIP_W, THEMES,
   themeIndexForRow, type LaneType
 } from "./themes";
-import { laneFor, laneZ, laneMovers, moverHalf, railCycle, railWarning, type Lane } from "./world";
+import { laneFor, laneZ, laneMovers, moverHalf, railWarning, MOVER_LENGTH, TRAIN_CARS, TRAIN_CAR_LENGTH, type Lane } from "./world";
 import { loadProfile, saveProfile, type Profile } from "./persistence";
 
 // ---------------- pool capacities ----------------
 const CAP = {
-  ground: 56, detail: 260, glow: 140,
+  ground: 56, detail: 260, glow: 140, glowS: 60,
   car: 22, hatch: 22, suv: 22, taxi: 22, van: 22, pickup: 22,
-  truck: 18, tram: 12, train: 6, hover: 26,
-  log: 48, pad: 48, stone: 48, coin: 26,
+  truck: 18, tram: 12, train: 6 * TRAIN_CARS, hover: 26,
+  log: 48, logEnd: 96, pad: 48, stone: 48, coin: 26,
   trunk: 200, canopy: 140, dressB: 150
 } as const;
 
@@ -95,6 +95,22 @@ export interface GameState {
   apTimer: number;
   dressKey: string;
   forceTheme: number | undefined;
+  /** The seed came from the caller (URL, World Tour, test) and restarts reuse it (CH-8). Quick Play rolls a new one. */
+  seedPinned: boolean;
+  /** This run's coins are already added to the profile (CH-1). */
+  banked: boolean;
+  /** Increments on every run start; keys the static instance pools (CH-E3). */
+  runId: number;
+  /** Simulation is held (tab hidden, window blurred, pause button) (CH-E7). */
+  paused: boolean;
+  /** Critters unlocked during this run, for the death card (CH-E7). */
+  runUnlocks: string[];
+  /** This run set a new profile best (CH-E7). */
+  newBest: boolean;
+  /** Rescue pods picked up this session; main.ts plays the rescue cue when it changes (CH-14). */
+  rescues: number;
+  /** A rail lane at or just ahead of the player is in its warning window (CH-14 horn). */
+  railAlert: boolean;
 }
 
 export const st: GameState = {
@@ -111,12 +127,22 @@ export const st: GameState = {
   themeIdx: 0, events: [],
   podTaken: new Set(), coinTaken: new Set(),
   autopilot: false, apTimer: 0, dressKey: "",
-  forceTheme: undefined
+  forceTheme: undefined,
+  seedPinned: false, banked: true, runId: 0, paused: false,
+  runUnlocks: [], newBest: false, rescues: 0, railAlert: false
 };
 
 const ROW_AHEAD = 26, ROW_BEHIND = 8;
 const HOP_DUR = 0.16;
-const HAWK_WARN = 3.0, HAWK_KILL = 5.2;
+const HAWK_KILL = 5.2;
+/** Row 0 is hawk-free only for this long after a run starts (CH-17). */
+export const ROW0_GRACE = 3.0;
+/** A dead critter ignores hop keys for this long, so a buffered key cannot skip the death card (CH-9). */
+export const RESTART_LOCKOUT = 0.6;
+/** A river or lava hop snaps sideways onto a platform only within this distance; further away it lands in the hazard (CH-11). */
+export const PLATFORM_SNAP = 0.9;
+/** Fixed simulation step (CH-E1). */
+export const SIM_STEP = 1 / 60;
 
 /**
  * Exact top-surface Y of a lane or its active platform in world units:
@@ -140,16 +166,25 @@ const CAM = {
   targetX: 0.36
 } as const;
 
-/** Coins sit inside a single lane tile instead of hovering at critter height. */
-const COIN_HEIGHT = 0.46;
-const COIN_LIFT = 0.26;
+/** One upright gold disc per coin, about half a column wide, so one drawn coin is one pickup (CH-13). */
+const COIN_DIAMETER = 0.5;
+const COIN_THICK = 0.08;
+const COIN_LIFT = 0.36;
+/** Top of the world floor plane that lies under and beyond the lane strips. */
+const FLOOR_Y = -0.16;
+/** Scenery and spectators stand beyond the drawn lane strips (|x| >= this), so nothing stands in a traffic lane (CH-12). */
+const SCENERY_X = STRIP_W / 2 + 0.5;
 
 function surfaceTopY(l: Lane): number {
-  if (l.type === "river") return l.moverKind === "log" ? 0.22 : 0.12;
+  if (l.type === "river") return l.moverKind === "log" ? 0.22 : PAD_TOP;
   if (l.type === "lava") return 0.16;
   if (l.type === "rail") return 0.13;
   return 0.12;
 }
+
+/** Lilypad top surface; the pad is drawn centred at PAD_TOP - PAD_H / 2 so the critter's feet touch it (CH-16). */
+export const PAD_TOP = 0.12;
+export const PAD_H = 0.08;
 
 function playerBaseY(l: Lane): number {
   return surfaceTopY(l) + CRITTER_FOOT_OFFSET;
@@ -168,12 +203,12 @@ for (const k of Object.keys(CAP) as (keyof typeof CAP)[]) {
   };
 }
 function P(k: keyof typeof CAP) { return POOL[k]; }
-function inst(k: keyof typeof CAP, x: number, y: number, z: number, sx: number, sy: number, sz: number, color: string, ry = 0): void {
+function inst(k: keyof typeof CAP, x: number, y: number, z: number, sx: number, sy: number, sz: number, color: string, ry = 0, rz = 0): void {
   const p = P(k);
   if (p.n >= CAP[k]) return;
   const s = p.specs[p.n];
   s.position[0] = x; s.position[1] = y; s.position[2] = z;
-  s.rotation[1] = ry;
+  s.rotation[1] = ry; s.rotation[2] = rz;
   s.scale[0] = sx; s.scale[1] = sy; s.scale[2] = sz;
   p.cols[p.n] = color;
   p.n++;
@@ -183,6 +218,19 @@ function difficulty(): number {
   return Math.min(1, st.playerRow / 220);
 }
 
+/**
+ * Mover settings for drill lanes. Each type carries its own spacing (CH-3): the base lane's spacing (4.2 to 8.2 m
+ * for roads, 6 for meadows) packed four to six trains onto one rail lane and made Train Dodges unwinnable.
+ */
+export const DRILL_LANE: Record<LaneType, Pick<Lane, "moverKind" | "speed" | "spacing">> = {
+  meadow: { moverKind: "none", speed: 0, spacing: 8 },
+  road: { moverKind: "car", speed: 3.4, spacing: 7 },
+  tram: { moverKind: "tram", speed: 3.6, spacing: 9.5 },
+  river: { moverKind: "log", speed: 1.8, spacing: 5.8 },
+  rail: { moverKind: "train", speed: 15, spacing: 60 },
+  lava: { moverKind: "stone", speed: 1.8, spacing: 3.4 }
+};
+
 /** Lane descriptor for row, honoring drill scripts. */
 export function lane(row: number): Lane {
   let l = st.lanes.get(row);
@@ -191,7 +239,14 @@ export function lane(row: number): Lane {
       const type = st.drill.script[Math.min(row, st.drill.script.length - 1)] ?? "meadow";
       l = laneFor(row, st.seed, difficulty());
       if (row > 1 && row < st.drill.script.length) {
-        l = { ...l, type, moverKind: type === "road" ? "car" : type === "tram" ? "tram" : type === "rail" ? "train" : type === "river" ? "log" : type === "lava" ? "stone" : "none", speed: type === "road" ? 3.4 : type === "rail" ? 15 : type === "river" ? 1.8 : type === "lava" ? 1.8 : type === "tram" ? 3.6 : 0, theme: 0 };
+        // Neighbouring platform lanes must drift against each other, or a log never lines up with the next lane
+        // (riders stay at the log centre): alternate direction and vary speed by row.
+        const drift = type === "river" || type === "lava";
+        const base = DRILL_LANE[type];
+        l = {
+          ...l, ...base, type, theme: 0,
+          ...(drift ? { dir: (row % 2 === 0 ? 1 : -1) as 1 | -1, speed: base.speed * (0.8 + (row % 3) * 0.2) } : {})
+        };
       } else {
         l = { ...l, type: "meadow", moverKind: "none", speed: 0, theme: 0 };
       }
@@ -204,22 +259,51 @@ export function lane(row: number): Lane {
 }
 
 export function startRun(kind: RunKind, drill: DrillDef | null, seed?: number, forceTheme?: number): void {
+  // A run that is replaced while still live (R, Quick Play, a World button) banks its coins first (CH-1).
+  bankRun();
   st.runKind = kind; st.drill = drill;
+  st.seedPinned = seed !== undefined;
   st.seed = seed ?? ((Math.random() * 0xffffffff) >>> 0);
   st.forceTheme = forceTheme;
-  st.time = 0; st.score = 0; st.row = 0;
+  st.time = 0; st.score = 0; st.coins = 0; st.row = 0;
   st.playerRow = 0; st.playerCol = 0;
-  st.hop.active = false; st.idle = 0; st.dead = null;
+  st.hop.active = false; st.hop.t = 0; st.hop.dir = "fwd"; st.idle = 0; st.dead = null; st.deadAt = 0;
   st.lanes.clear(); st.podTaken.clear(); st.coinTaken.clear();
   st.events.length = 0;
+  st.runUnlocks = []; st.newBest = false; st.banked = false; st.paused = false; st.railAlert = false;
+  st.runId++;
   st.critter = CRITTERS.find(c => c.id === st.profile.selected) ?? CRITTERS[0];
-  st.themeIdx = 0; st.dressKey = "";
-  if (forceTheme !== undefined) { st.themeIdx = forceTheme; swapLook(forceTheme); }
+  st.dressKey = "";
+  // The look on screen may belong to the theme the last run ended in (CH-6): put the starting theme's look back.
+  st.themeIdx = forceTheme ?? 0;
+  if (appliedLook !== st.themeIdx) swapLook(st.themeIdx);
   st.mode = "run";
   pushEvent(kind === "drill" ? `Drill: ${drill?.label}` : kind === "tour" ? "World Tour departure" : "Quick Play");
 }
 
-export function endToTitle(): void { st.mode = "title"; saveProfile(st.profile); }
+/** Restart the current run the way it was started: same kind, drill, World Tour theme and, when pinned, seed (CH-8). */
+export function restartRun(): void {
+  startRun(st.runKind, st.drill, st.seedPinned ? st.seed : undefined, st.forceTheme);
+}
+
+/** Add this run's coins to the profile exactly once (CH-1). */
+function bankRun(): void {
+  if (st.banked) return;
+  st.banked = true;
+  st.profile.coins += st.coins;
+  saveProfile(st.profile);
+}
+
+/** Coins to show in the HUD: the bank plus this run's coins while they are not banked yet. */
+export function displayCoins(): number {
+  return st.profile.coins + (st.banked ? 0 : st.coins);
+}
+
+export function endToTitle(): void { bankRun(); st.mode = "title"; st.paused = false; saveProfile(st.profile); }
+
+export function setPaused(paused: boolean): void {
+  st.paused = paused && st.mode === "run";
+}
 
 export function pushEvent(msg: string): void {
   st.events.push(msg);
@@ -232,10 +316,9 @@ function die(kind: Death["kind"], label: string): void {
   st.dead = { kind, label };
   st.deadAt = st.time;
   st.mode = "dead";
-  const total = st.profile.coins + st.coins;
-  st.profile.coins = total;
-  if (st.score > st.profile.best) st.profile.best = st.score;
-  saveProfile(st.profile);
+  // Drills are short scripted courses and do not count toward Best (CH-17); the Timing School panel says so.
+  if (st.runKind !== "drill" && st.score > st.profile.best) { st.profile.best = st.score; st.newBest = true; }
+  bankRun();
   pushEvent(`${label} — run over at ${st.score}`);
 }
 
@@ -366,21 +449,25 @@ export function buildScene(): unknown {
     instances.box({ name: "lane-ground", size: [1, 1, 1], material: groundMat, transforms: pad(CAP.ground), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-ground")),
     instances.box({ name: "lane-detail", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.detail), castShadow: false, receiveShadow: true }).runtime(game.runtimeNode("pool-detail")),
     instances.box({ name: "lane-glow", size: [1, 1, 1], material: glowMat, transforms: pad(CAP.glow), castShadow: false }).runtime(game.runtimeNode("pool-glow")),
+    instances.box({ name: "scenery-glow", size: [1, 1, 1], material: glowMat, transforms: pad(CAP.glowS), castShadow: false }).runtime(game.runtimeNode("pool-glowS")),
     // Full fleet of 3D Meshy traffic vehicles (length is along X in GLB local space)
-    instances.model(assets.trafficSedan, { name: "m-cars", transforms: pad(CAP.car), targetMaxDimension: 2.05, castShadow: true }).runtime(game.runtimeNode("pool-car")),
-    instances.model(assets.trafficHatch, { name: "m-hatch", transforms: pad(CAP.hatch), targetMaxDimension: 1.95, castShadow: true }).runtime(game.runtimeNode("pool-hatch")),
-    instances.model(assets.trafficSuv, { name: "m-suv", transforms: pad(CAP.suv), targetMaxDimension: 2.15, castShadow: true }).runtime(game.runtimeNode("pool-suv")),
-    instances.model(assets.trafficTaxi, { name: "m-taxi", transforms: pad(CAP.taxi), targetMaxDimension: 2.0, castShadow: true }).runtime(game.runtimeNode("pool-taxi")),
-    instances.model(assets.trafficVan, { name: "m-van", transforms: pad(CAP.van), targetMaxDimension: 2.15, castShadow: true }).runtime(game.runtimeNode("pool-van")),
-    instances.model(assets.trafficPickup, { name: "m-pickup", transforms: pad(CAP.pickup), targetMaxDimension: 2.2, castShadow: true }).runtime(game.runtimeNode("pool-pickup")),
-    instances.model(assets.trafficBoxtruck, { name: "m-trucks", transforms: pad(CAP.truck), targetMaxDimension: 2.75, castShadow: true }).runtime(game.runtimeNode("pool-truck")),
-    instances.model(assets.tramCar, { name: "m-trams", transforms: pad(CAP.tram), targetMaxDimension: 3.1, castShadow: true }).runtime(game.runtimeNode("pool-tram")),
-    instances.model(assets.trainCar, { name: "m-trains", transforms: pad(CAP.train), targetMaxDimension: 3.2, castShadow: true }).runtime(game.runtimeNode("pool-train")),
-    instances.model(assets.trafficSkyCar, { name: "m-hover", transforms: pad(CAP.hover), targetMaxDimension: 2.1, castShadow: true }).runtime(game.runtimeNode("pool-hover")),
-    instances.box({ name: "m-logs", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.88 }), transforms: pad(CAP.log), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-log")),
+    // Drawn lengths come from MOVER_LENGTH, the same table the hitboxes use (CH-5).
+    instances.model(assets.trafficSedan, { name: "m-cars", transforms: pad(CAP.car), targetMaxDimension: MOVER_LENGTH.car, castShadow: true }).runtime(game.runtimeNode("pool-car")),
+    instances.model(assets.trafficHatch, { name: "m-hatch", transforms: pad(CAP.hatch), targetMaxDimension: MOVER_LENGTH.hatch, castShadow: true }).runtime(game.runtimeNode("pool-hatch")),
+    instances.model(assets.trafficSuv, { name: "m-suv", transforms: pad(CAP.suv), targetMaxDimension: MOVER_LENGTH.suv, castShadow: true }).runtime(game.runtimeNode("pool-suv")),
+    instances.model(assets.trafficTaxi, { name: "m-taxi", transforms: pad(CAP.taxi), targetMaxDimension: MOVER_LENGTH.taxi, castShadow: true }).runtime(game.runtimeNode("pool-taxi")),
+    instances.model(assets.trafficVan, { name: "m-van", transforms: pad(CAP.van), targetMaxDimension: MOVER_LENGTH.van, castShadow: true }).runtime(game.runtimeNode("pool-van")),
+    instances.model(assets.trafficPickup, { name: "m-pickup", transforms: pad(CAP.pickup), targetMaxDimension: MOVER_LENGTH.pickup, castShadow: true }).runtime(game.runtimeNode("pool-pickup")),
+    instances.model(assets.trafficBoxtruck, { name: "m-trucks", transforms: pad(CAP.truck), targetMaxDimension: MOVER_LENGTH.truck, castShadow: true }).runtime(game.runtimeNode("pool-truck")),
+    instances.model(assets.tramCar, { name: "m-trams", transforms: pad(CAP.tram), targetMaxDimension: MOVER_LENGTH.tram, castShadow: true }).runtime(game.runtimeNode("pool-tram")),
+    instances.model(assets.trainCar, { name: "m-trains", transforms: pad(CAP.train), targetMaxDimension: TRAIN_CAR_LENGTH, castShadow: true }).runtime(game.runtimeNode("pool-train")),
+    instances.model(assets.trafficSkyCar, { name: "m-hover", transforms: pad(CAP.hover), targetMaxDimension: MOVER_LENGTH.hover, castShadow: true }).runtime(game.runtimeNode("pool-hover")),
+    // Round bark logs lying across the river, half sunk, with pale cut ends (CH-E4).
+    instances.cylinder({ name: "m-logs", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.92 }), transforms: pad(CAP.log), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-log")),
+    instances.cylinder({ name: "m-log-ends", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.8 }), transforms: pad(CAP.logEnd), castShadow: false, receiveShadow: true }).runtime(game.runtimeNode("pool-logEnd")),
     instances.cylinder({ name: "m-pads", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.8 }), transforms: pad(CAP.pad), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-pad")),
     instances.cylinder({ name: "m-stones", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.85 }), transforms: pad(CAP.stone), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-stone")),
-    instances.model(assets.coin, { name: "m-coins", transforms: pad(CAP.coin), targetHeight: COIN_HEIGHT }).runtime(game.runtimeNode("pool-coin")),
+    instances.cylinder({ name: "m-coins", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", metalness: 0.55, roughness: 0.3, emissive: "#ffb21f", emissiveIntensity: 0.32 }), transforms: pad(CAP.coin), castShadow: true }).runtime(game.runtimeNode("pool-coin")),
     instances.cylinder({ name: "d-trunks", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.trunk) }).runtime(game.runtimeNode("pool-trunk")),
     instances.sphere({ name: "d-canopy", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.canopy) }).runtime(game.runtimeNode("pool-canopy")),
     instances.box({ name: "d-b", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.dressB) }).runtime(game.runtimeNode("pool-dressb")),
@@ -397,7 +484,7 @@ export function buildScene(): unknown {
     // 3D Meshy spectator critters cheering along the outer meadow banks!
     ...SPECTATOR_CRITTERS.map((key, idx) =>
       model(assets[key], { name: `spectator-${idx}`, targetHeight: 0.92, castShadow: true, material: CRITTER_MAT })
-        .position((idx % 2 === 0 ? -1 : 1) * (13.8 + (idx % 3) * 1.1), 0.12, -idx * 2.2)
+        .position((idx % 2 === 0 ? -1 : 1) * (SCENERY_X + 0.6 + (idx % 3) * 1.1), FLOOR_Y, -idx * 2.2)
         .rotate(0, idx % 2 === 0 ? Math.PI * 0.45 : -Math.PI * 0.45, 0)
         .animate({ clip: "Idle", loop: true })
         .runtime(game.runtimeNode(`spectator-${idx}`))
@@ -411,34 +498,62 @@ let app: AuraApp | null = null;
 let nodeOk = true;
 export let nodeErr = "";
 let activePlayerClip = "Idle";
+/** Theme index of the look group currently mounted (CH-6). The mounted scene starts with theme 0. */
+let appliedLook = 0;
 
 export function bindApp(a: AuraApp): void { app = a; }
 
 const CAR_POOLS: readonly (keyof typeof CAP)[] = ["car", "hatch", "suv", "taxi", "van", "pickup"];
 const VEHICLE_POOL: Record<string, keyof typeof CAP> = { car: "car", truck: "truck", tram: "tram", train: "train", hover: "hover" };
 
-export function frame(dt: number, input: { buffered(d: string, w: number): boolean }): void {
+export interface GameInput { buffered(d: string, w: number): boolean; consume?(d: string): boolean }
+const DIRS = ["up", "down", "left", "right"] as const;
+
+function consumeAll(input: GameInput): void {
+  for (const d of DIRS) input.consume?.(d);
+}
+
+/** One fixed simulation step (CH-E1). Rendering is separate: `syncVisuals(alpha)`. */
+export function step(dt: number, input: GameInput): void {
+  if (st.paused) return;
   st.time += dt;
+  if (st.messageT > 0) st.messageT -= dt;
   if (st.mode === "run") {
     runFrame(dt, input);
+    st.railAlert = st.mode === "run" && railAlertNear();
   } else if (st.mode === "dead") {
-    const manualRestart =
-      input.buffered("up", 0.14) ||
-      input.buffered("down", 0.14) ||
-      input.buffered("left", 0.14) ||
-      input.buffered("right", 0.14);
+    if (st.time - st.deadAt < RESTART_LOCKOUT) {
+      // Keys pressed while the card appears are dropped, so they cannot skip it (CH-9).
+      consumeAll(input);
+      return;
+    }
+    const manualRestart = DIRS.some((d) => input.buffered(d, 0.14));
     if (manualRestart || (st.autopilot && st.time - st.deadAt > 1.4)) {
-      if (manualRestart) st.autopilot = false;
-      startRun(st.runKind, st.drill, undefined, st.forceTheme);
+      if (manualRestart) { st.autopilot = false; consumeAll(input); }
+      restartRun();
     }
   }
+}
+
+/** Compatibility wrapper for callers that drive one variable step and one draw. */
+export function frame(dt: number, input: GameInput): void {
+  step(dt, input);
   syncVisuals(dt);
 }
 
-function runFrame(dt: number, input: { buffered(d: string, w: number): boolean }): void {
+function railAlertNear(): boolean {
+  for (let r = st.playerRow; r <= st.playerRow + 2; r++) {
+    const l = lane(r);
+    if (l.type === "rail" && railWarning(l, st.time) > 0) return true;
+  }
+  return false;
+}
+
+function runFrame(dt: number, input: GameInput): void {
   let p = st.playerCol * COL_W;
   const l = lane(st.playerRow);
-  if (st.playerRow === 0 && !st.autopilot) {
+  // Row 0 is safe only while the player gets their bearings (CH-17); after that the hawk comes there too.
+  if (st.playerRow === 0 && !st.autopilot && st.time < ROW0_GRACE) {
     st.idle = 0;
   } else {
     st.idle += dt;
@@ -458,11 +573,14 @@ function runFrame(dt: number, input: { buffered(d: string, w: number): boolean }
   // hop trigger
   if (!st.hop.active) {
     let dir: string | null = null;
-    if (input.buffered("up", 0.14)) dir = "fwd";
-    else if (input.buffered("down", 0.14)) dir = "back";
-    else if (input.buffered("left", 0.14)) dir = "left";
-    else if (input.buffered("right", 0.14)) dir = "right";
-    if (dir) {
+    let action: (typeof DIRS)[number] | null = null;
+    if (input.buffered("up", 0.14)) { dir = "fwd"; action = "up"; }
+    else if (input.buffered("down", 0.14)) { dir = "back"; action = "down"; }
+    else if (input.buffered("left", 0.14)) { dir = "left"; action = "left"; }
+    else if (input.buffered("right", 0.14)) { dir = "right"; action = "right"; }
+    if (dir && action) {
+      // One press is one hop: consume it so the same press cannot also fire the next step.
+      input.consume?.(action);
       st.autopilot = false;
       tryHop(dir);
     } else if (st.autopilot) {
@@ -473,22 +591,21 @@ function runFrame(dt: number, input: { buffered(d: string, w: number): boolean }
     if (st.hop.t >= 1) landHop();
   }
 
-  // squash check on hazard lanes (while standing, not hopping)
+  // squash check on hazard lanes (while standing, not hopping); movers only hit inside the playfield
   if (!st.hop.active && !st.dead) {
     const laneType = l.type;
-    if (laneType === "road" || laneType === "tram") {
+    if (laneType === "road" || laneType === "tram" || laneType === "rail") {
       const n = laneMovers(l, st.time, XS);
       for (let i = 0; i < n; i++) {
-        if (Math.abs(XS[i] - p) < moverHalf(l) + 0.3) { die("squashed", "Squashed"); break; }
-      }
-    } else if (laneType === "rail") {
-      const n = laneMovers(l, st.time, XS);
-      for (let i = 0; i < n; i++) {
-        if (Math.abs(XS[i] - p) < moverHalf(l) + 0.3) { die("flattened", "Flattened by the train"); break; }
+        if (Math.abs(XS[i] - p) < moverHalf(l) + 0.3) {
+          if (laneType === "rail") die("flattened", "Flattened by the train");
+          else die("squashed", "Squashed");
+          break;
+        }
       }
     }
     // screen-edge drown
-    if (Math.abs(p) > FIELD_HALF) die("drowned", "Swept away");
+    if (!st.dead && Math.abs(p) > FIELD_HALF) die("drowned", "Swept away");
   }
 }
 
@@ -498,53 +615,33 @@ function tryHop(dir: string): void {
   else if (dir === "back") nr = Math.max(0, nr - 1);
   else if (dir === "left") nc = Math.max(COL_MIN, nc - 1);
   else if (dir === "right") nc = Math.min(COL_MAX, nc + 1);
-  let targetLane = lane(nr);
-  if (dir === "fwd" && targetLane.type === "rail") {
-    const nNow = laneMovers(targetLane, st.time + HOP_DUR, XS);
-    const nSoon = laneMovers(targetLane, st.time + HOP_DUR + 1.2, XS);
-    let railBusy = railWarning(targetLane, st.time) > 0;
-    for (let i = 0; i < nNow; i++) if (Math.abs(XS[i] - nc * COL_W) < moverHalf(targetLane) + 1.8) railBusy = true;
-    for (let i = 0; i < nSoon; i++) if (Math.abs(XS[i] - nc * COL_W) < moverHalf(targetLane) + 1.8) railBusy = true;
-    // Type-only compatibility with the legacy "grass" spelling; the lane
-    // vocabulary is "meadow" now, so this branch stays inert as before.
-    if (railBusy && (lane(nr + 1).type as string) === "grass") {
-      nr += 1;
-      targetLane = lane(nr);
-    }
-  }
+  const targetLane = lane(nr);
   if (targetLane.type === "river" || targetLane.type === "lava") {
+    // Snap onto a nearby platform only (CH-11); a hop into open water or lava lands there.
     const n = laneMovers(targetLane, st.time + HOP_DUR, XS);
-    if (n > 0) {
-      const targetX = nc * COL_W;
-      let hasMoverUnder = false;
-      let bestX = targetX;
-      let bestDist = Infinity;
-      for (let i = 0; i < n; i++) {
-        const d = Math.abs(XS[i] - targetX);
-        if (d < moverHalf(targetLane) - 0.08) {
-          hasMoverUnder = true;
-          break;
-        }
-        if (d < bestDist && Math.abs(XS[i]) <= FIELD_HALF - 0.5) {
-          bestDist = d;
-          bestX = XS[i];
-        }
-      }
-      if (!hasMoverUnder && bestDist < Infinity) {
-        nc = bestX / COL_W;
-      }
+    const targetX = nc * COL_W;
+    let hasMoverUnder = false;
+    let bestX = targetX;
+    let bestDist = Infinity;
+    for (let i = 0; i < n; i++) {
+      const d = Math.abs(XS[i] - targetX);
+      if (d < moverHalf(targetLane) - 0.08) { hasMoverUnder = true; break; }
+      if (d < bestDist && Math.abs(XS[i]) <= FIELD_HALF - 0.5) { bestDist = d; bestX = XS[i]; }
     }
+    if (!hasMoverUnder && bestDist <= PLATFORM_SNAP) nc = bestX / COL_W;
   }
   const fromY = playerBaseY(lane(st.playerRow));
   const toY = playerBaseY(targetLane);
   st.hop = { active: true, t: 0, fromX: st.playerCol * COL_W, fromY, fromZ: laneZ(st.playerRow), toX: nc * COL_W, toY, toZ: laneZ(nr), dir };
   st.playerRow = nr; st.playerCol = nc;
   st.idle = 0;
-  if (dir === "fwd") { st.score++; st.row = Math.max(st.row, nr); }
+  // Score counts new rows only, so hopping back and forth cannot farm points (CH-2).
+  if (dir === "fwd" && nr > st.row) { st.score++; st.row = nr; }
 }
 
 function landHop(): void {
   st.hop.active = false;
+  st.hop.t = 1;
   const l = lane(st.playerRow);
   const x = st.playerCol * COL_W;
   if (l.hasCoin && !st.coinTaken.has(l.row) && l.coinCol === Math.round(st.playerCol)) {
@@ -553,19 +650,20 @@ function landHop(): void {
     app?.effects?.burst("pickup", [x, 0.6, laneZ(st.playerRow)], { count: 14, speed: 2.2, scale: 0.5, color: COLORS.coin });
   }
   if (l.hasPod && !st.podTaken.has(l.row) && l.podCol === Math.round(st.playerCol)) {
-    st.podTaken.add(l.row); st.score += 50;
+    st.podTaken.add(l.row); st.score += 50; st.rescues++;
     const locked = CRITTERS.filter(c => !st.profile.unlocked.includes(c.id));
     if (locked.length) {
       const pick = locked[Math.floor(Math.random() * locked.length)];
       st.profile.unlocked.push(pick.id);
+      st.runUnlocks.push(pick.label);
       pushEvent(`+50 rescue pod — ${pick.label} unlocked!`);
     } else pushEvent("+50 rescue pod");
     app?.effects?.burst("aura-burst", [x, 0.8, laneZ(st.playerRow)], { count: 30, speed: 3, scale: 0.7, color: COLORS.pod });
   }
   if (l.type === "river" || l.type === "lava") {
     const on = platformUnder(l, x);
-    if (on < -1e8) die(l.type === "river" ? "drowned" : "burned", l.type === "river" ? "Drowned" : "Burned");
-    else st.playerCol = on / COL_W;
+    if (on < -1e8) { die(l.type === "river" ? "drowned" : "burned", l.type === "river" ? "Drowned" : "Burned"); return; }
+    st.playerCol = on / COL_W;
   }
   // drill completion
   if (st.runKind === "drill" && st.drill && st.playerRow >= st.drill.script.length) {
@@ -573,11 +671,12 @@ function landHop(): void {
       st.profile.drills.push(st.drill.id);
       st.coins += 25;
       pushEvent(`Drill cleared: ${st.drill.label} (+25)`);
-    }
+    } else pushEvent(`Drill cleared: ${st.drill.label}`);
     st.mode = "dead";
     st.dead = null; // reuse summary card
-    st.profile.coins += st.coins;
-    saveProfile(st.profile);
+    st.deadAt = st.time;
+    bankRun();
+    return;
   }
   // theme shift
   const ti = st.runKind === "drill" ? 0 : (st.forceTheme ?? themeIndexForRow(st.playerRow, st.seed));
@@ -594,50 +693,62 @@ function platformUnder(l: Lane, x: number): number {
   return -1e9;
 }
 
+/**
+ * Demo and QA autopilot. It checks a target cell over a short time window with the real hit sizes, so it only steps
+ * into a gap it can stand in, steps aside or back when the cell it stands on is about to be hit, and works back toward
+ * the centre while riding a platform.
+ */
 function autopilot(dt: number): void {
   st.apTimer += dt;
-  if (st.apTimer < 0.24) return;
+  if (st.apTimer < 0.12) return;
   st.apTimer = 0;
   const curCol = Math.round(st.playerCol);
   const ahead = lane(st.playerRow + 1);
   const curLane = lane(st.playerRow);
-  const safe = (l: Lane, col: number): boolean => {
-    if (col < COL_MIN + 1 || col > COL_MAX - 1) return false;
+  /** Will a mover hit column x of lane l at any time in [from, to] seconds from now? */
+  const hit = (l: Lane, px: number, from: number, to: number): boolean => {
+    for (let dtk = from; dtk <= to + 1e-6; dtk += 0.04) {
+      const n = laneMovers(l, st.time + dtk, XS);
+      for (let i = 0; i < n; i++) if (Math.abs(XS[i] - px) < moverHalf(l) + 0.55) return true;
+    }
+    return false;
+  };
+  const platformAt = (l: Lane, px: number, when: number): boolean => {
+    const n = laneMovers(l, st.time + when, XS);
+    for (let i = 0; i < n; i++) if (Math.abs(XS[i] - px) < moverHalf(l) - 0.12 && Math.abs(XS[i]) < FIELD_HALF - 1.5) return true;
+    return false;
+  };
+  const safe = (l: Lane, col: number, hold = 0.7): boolean => {
     const px = col * COL_W;
+    if (Math.abs(px) > FIELD_HALF - 1.5) return false;
     if (l.type === "road" || l.type === "tram" || l.type === "rail") {
-      if (l.type === "rail" && railWarning(l, st.time)) return false;
-      const clearance = moverHalf(l) + 1.65;
-      const n1 = laneMovers(l, st.time + HOP_DUR, XS);
-      for (let i = 0; i < n1; i++) if (Math.abs(XS[i] - px) < clearance) return false;
-      const n2 = laneMovers(l, st.time + HOP_DUR + 0.45, XS);
-      for (let i = 0; i < n2; i++) if (Math.abs(XS[i] - px) < clearance) return false;
-      return true;
+      if (l.type === "rail" && railWarning(l, st.time + HOP_DUR) > 0) return false;
+      if (l.type === "rail" && railWarning(l, st.time + HOP_DUR + hold) > 0) return false;
+      return !hit(l, px, 0, HOP_DUR + hold);
     }
-    if (l.type === "river" || l.type === "lava") {
-      const n = laneMovers(l, st.time + HOP_DUR, XS);
-      for (let i = 0; i < n; i++) if (Math.abs(XS[i] - px) < moverHalf(l) - 0.12) return true;
-      return false;
-    }
+    if (l.type === "river" || l.type === "lava") return platformAt(l, px, HOP_DUR);
     return true;
   };
-  if (safe(ahead, curCol)) {
-    tryHop("fwd");
-  } else if (curCol < 0 && safe(curLane, curCol + 1)) {
-    tryHop("right");
-  } else if (curCol >= 0 && safe(curLane, curCol - 1)) {
-    tryHop("left");
-  } else if (safe(curLane, curCol + 1)) {
-    tryHop("right");
-  } else if (safe(curLane, curCol - 1)) {
-    tryHop("left");
-  } else if (st.idle > 2.2 && st.playerRow > 0 && safe(lane(st.playerRow - 1), curCol)) {
-    tryHop("back");
+  const onPlatform = curLane.type === "river" || curLane.type === "lava";
+  const hereInDanger = (curLane.type === "road" || curLane.type === "tram" || curLane.type === "rail")
+    && hit(curLane, st.playerCol * COL_W, 0, 0.5);
+  if (safe(ahead, curCol)) { tryHop("fwd"); return; }
+  const inward = curCol < 0 ? 1 : -1;
+  if (onPlatform && Math.abs(curCol) >= 3 && safe(curLane, curCol + inward)) { tryHop(inward > 0 ? "right" : "left"); return; }
+  if (hereInDanger) {
+    if (safe(curLane, curCol + inward, 0.5)) { tryHop(inward > 0 ? "right" : "left"); return; }
+    if (safe(curLane, curCol - inward, 0.5)) { tryHop(inward > 0 ? "left" : "right"); return; }
+    if (st.playerRow > 0 && safe(lane(st.playerRow - 1), curCol, 0.5)) { tryHop("back"); return; }
+    return;
   }
+  // Waiting on solid, quiet ground: look for a column with a better chance of a gap ahead.
+  if (onPlatform || curLane.type !== "meadow") return;
+  if (curCol !== 0 && safe(ahead, curCol + inward) && safe(curLane, curCol + inward)) tryHop(inward > 0 ? "right" : "left");
+  else if (st.idle > 2.2 && safe(curLane, curCol + inward)) tryHop(inward > 0 ? "right" : "left");
+  else if (st.idle > 3.4 && safe(curLane, curCol - inward)) tryHop(inward > 0 ? "left" : "right");
 }
 
 // -------------------- visuals --------------------
-const LOOK_HOLD = new Set<number>();
-
 function swapLook(ti: number): void {
   if (!app) return;
   const th = THEMES[ti];
@@ -678,36 +789,81 @@ function swapLook(ti: number): void {
     n0.require("world-floor")?.setMaterial?.(material.pbr({ color: terrain, roughness: 0.96, metalness: 0 }));
     n0.require("sun")?.setVisible?.(th.dress === "trees" || th.dress === "reeds" || th.dress === "candy");
     try { (app as unknown as { lighting?: { setEnvironmentIntensity?(n:number):void } }).lighting?.setEnvironmentIntensity?.(0.58); } catch { /* no-op */ }
-    LOOK_HOLD.add(ti);
+    appliedLook = ti;
   } catch { /* look swap best-effort */ }
 }
 
 const TRUCK_TINTS = ["#d8e0ea", "#e2dad0", "#d4e0e6"] as const;
 
-export function syncVisuals(dt: number): void {
+/** Pools whose content depends only on the visible rows, their themes and the run: rebuilt when that key changes (CH-E3). */
+const STATIC_POOLS: readonly (keyof typeof CAP)[] = ["ground", "detail", "glowS", "trunk", "canopy", "dressB"];
+const DYNAMIC_POOLS = (Object.keys(CAP) as (keyof typeof CAP)[]).filter((k) => !STATIC_POOLS.includes(k));
+let staticKey = "";
+/** Pools submitted while empty and already hidden; they need no upload until they hold something again. */
+const emptySubmitted = new Set<keyof typeof CAP>();
+
+/** Reduced motion (CH-15): no hawk FOV widening. main.ts sets it from `prefers-reduced-motion`. */
+let reducedMotion = false;
+export function setReducedMotion(on: boolean): void { reducedMotion = on; }
+
+/**
+ * Simulation time drawn this frame: between the last two fixed steps, `alpha` of the way (CH-E1). Movers are pure
+ * functions of time, so drawing them at this time is exact interpolation.
+ */
+export function renderTime(alpha: number): number {
+  if (st.mode !== "run" || st.paused) return st.time;
+  return Math.max(0, st.time - (1 - Math.max(0, Math.min(1, alpha))) * SIM_STEP);
+}
+
+/** Player pose drawn this frame, interpolated the same way as the movers. */
+export function displayPose(alpha: number): { x: number; y: number; z: number; hopping: boolean } {
+  const tr = renderTime(alpha);
+  const lag = st.time - tr;
+  const pl = lane(st.playerRow);
+  if (st.hop.active) {
+    const t = Math.max(0, Math.min(1, st.hop.t - lag / HOP_DUR));
+    const x = st.hop.fromX + (st.hop.toX - st.hop.fromX) * t;
+    const z = st.hop.fromZ + (st.hop.toZ - st.hop.fromZ) * t;
+    const y = st.hop.fromY + (st.hop.toY - st.hop.fromY) * t + Math.sin(Math.PI * t) * 0.68;
+    return { x, y: Math.max(0.17, y), z, hopping: true };
+  }
+  let x = st.playerCol * COL_W;
+  // Riding a log or stone: the platform moves at a constant speed, so the drawn x trails the sim by `lag`.
+  if (!st.dead && (pl.type === "river" || pl.type === "lava")) x -= pl.dir * pl.speed * lag;
+  return { x, y: Math.max(0.17, playerBaseY(pl)), z: laneZ(st.playerRow), hopping: false };
+}
+
+export function syncVisuals(alpha = 1): void {
   if (!app) return;
   const nodes = app.nodes;
   if (!nodes) return;
-
-  for (const k of Object.keys(CAP) as (keyof typeof CAP)[]) P(k).n = 0;
+  const tr = renderTime(alpha);
 
   const lo = Math.max(0, st.playerRow - ROW_BEHIND), hi = st.playerRow + ROW_AHEAD;
-  for (let r = lo; r <= hi; r++) paintLane(lane(r), r);
-  paintDressing(lo, hi);
+  const key = `${st.runId}|${lo}|${hi}|${st.themeIdx}`;
+  const rebuildStatic = key !== staticKey;
+  for (const k of rebuildStatic ? (Object.keys(CAP) as (keyof typeof CAP)[]) : DYNAMIC_POOLS) P(k).n = 0;
+
+  const pose = displayPose(alpha);
+  for (let r = lo; r <= hi; r++) paintLane(lane(r), r, tr, rebuildStatic, pose.x);
+  if (rebuildStatic) paintDressing(lo, hi);
 
   // movers
   for (let r = lo; r <= hi; r++) {
     const l = lane(r);
     if (l.moverKind === "none") continue;
-    const n = laneMovers(l, st.time, XS);
+    const n = laneMovers(l, tr, XS);
     const z = laneZ(r);
     for (let i = 0; i < n; i++) {
       const x = XS[i];
       const ry = l.dir > 0 ? 0 : Math.PI;
-      // Logs: center y = 0.09, sy = 0.26 -> top surface at y = 0.22, sz = 0.74 fits inside LANE_D = 1.15
-      if (l.moverKind === "log") inst("log", x, 0.09, z, 3.8, 0.26, 0.74, "#8b5a2b", 0);
-      // Lilypads: center y = 0.04, sy = 0.08 -> top surface at y = 0.08, diameter = 0.92 fits inside LANE_D = 1.15
-      else if (l.moverKind === "pad") inst("pad", x, 0.04, z, 0.92, 0.08, 0.92, "#4f9e4f");
+      if (l.moverKind === "log") {
+        // Round log along X: radius 0.3, top at 0.22 like the old slab, so it rides half sunk in the water.
+        inst("log", x, 0.22 - 0.3, z, 0.6, MOVER_LENGTH.log, 0.6, "#7a4a24", 0, Math.PI / 2);
+        for (const e of [-1, 1]) inst("logEnd", x + e * (MOVER_LENGTH.log / 2 + 0.01), 0.22 - 0.3, z, 0.5, 0.03, 0.5, "#e2c08a", 0, Math.PI / 2);
+      }
+      // Lilypads: top surface at PAD_TOP, the critter's base height on pad lanes (CH-16).
+      else if (l.moverKind === "pad") inst("pad", x, PAD_TOP - PAD_H / 2, z, 0.92, PAD_H, 0.92, "#4f9e4f");
       // Lava stones: center y = 0.06, sy = 0.20 -> top surface at y = 0.16, sz = 0.88 fits inside LANE_D = 1.15
       else if (l.moverKind === "stone") inst("stone", x, 0.06, z, 1.05, 0.20, 0.88, "#565660");
       else {
@@ -717,68 +873,58 @@ export function syncVisuals(dt: number): void {
         const roadTopY = l.type === "rail" ? 0.13 : l.type === "tram" ? 0.128 : 0.12;
         const lift = kind === "hover" ? 0.32 : 0;
         const tint = pool === "truck" ? TRUCK_TINTS[(r + i) % TRUCK_TINTS.length]! : "#f4ead9";
-        inst(pool, x, roadTopY + lift, z, 1, 1, 1, tint, ry);
+        if (pool === "train") {
+          // One train is TRAIN_CARS coupled cars; the hitbox covers all of them (CH-5).
+          for (let c = 0; c < TRAIN_CARS; c++) {
+            const cx = x + (c - (TRAIN_CARS - 1) / 2) * TRAIN_CAR_LENGTH;
+            inst("train", cx, roadTopY, z, 1, 1, 1, tint, ry);
+          }
+        } else inst(pool, x, roadTopY + lift, z, 1, 1, 1, tint, ry);
       }
     }
   }
 
-  // coins + pod
+  // coins: one upright spinning disc per pickup (CH-13)
   for (let r = lo; r <= hi; r++) {
     const l = lane(r);
     if (l.hasCoin && !st.coinTaken.has(r)) {
       const coinBase = surfaceTopY(l) + COIN_LIFT;
-      inst("coin", l.coinCol * COL_W, coinBase + Math.sin(st.time * 3 + r) * 0.035, laneZ(r), 1, 1, 1, COLORS.coin, st.time * 1.6);
-    }
-  }
-
-  // platform carry visual sync before computing player world position
-  const pl = lane(st.playerRow);
-  if (!st.hop.active && !st.dead && (pl.type === "river" || pl.type === "lava")) {
-    const n = laneMovers(pl, st.time, XS);
-    const curX = st.playerCol * COL_W;
-    for (let i = 0; i < n; i++) {
-      if (Math.abs(XS[i] - curX) < moverHalf(pl) + 0.25) {
-        st.playerCol = XS[i] / COL_W;
-        break;
-      }
+      inst("coin", l.coinCol * COL_W, coinBase + Math.sin(tr * 3 + r) * 0.035, laneZ(r), COIN_DIAMETER, COIN_THICK, COIN_DIAMETER, COLORS.coin, tr * 1.6, Math.PI / 2);
     }
   }
 
   // player — grounded on the exact top surface of the current lane or platform
-  const px = st.hop.active ? st.hop.fromX + (st.hop.toX - st.hop.fromX) * st.hop.t : st.playerCol * COL_W;
-  const pz = st.hop.active ? st.hop.fromZ + (st.hop.toZ - st.hop.fromZ) * st.hop.t : laneZ(st.playerRow);
-  const baseY = st.hop.active ? st.hop.fromY + (st.hop.toY - st.hop.fromY) * st.hop.t : playerBaseY(pl);
-  const arc = st.hop.active ? Math.sin(Math.PI * Math.min(1, st.hop.t)) * 0.68 : 0;
-  const deathOffset = 0;
+  const px = pose.x, pz = pose.z;
   const squash = st.dead && (st.dead.kind === "squashed" || st.dead.kind === "flattened") ? 0.18 : 1;
   try {
     const h = nodes.require("player");
-    h.setPosition(px, Math.max(0.17, baseY + arc + deathOffset), pz);
-    if (st.hop.active) h.setScale(1.0 + Math.sin(Math.PI * st.hop.t) * 0.25);
+    h.setPosition(px, pose.y, pz);
+    if (pose.hopping) h.setScale(1.0 + Math.sin(Math.PI * Math.max(0, Math.min(1, st.hop.t))) * 0.25);
     else h.setScale(squash);
     if (st.hop.dir === "left") h.setRotation(0, -Math.PI / 2, 0);
     else if (st.hop.dir === "right") h.setRotation(0, Math.PI / 2, 0);
     else if (st.hop.dir === "back") h.setRotation(0, 0, 0);
     else h.setRotation(0, Math.PI, 0);
-    const targetClip = st.hop.active ? "Regular_Jump" : "Idle";
+    const targetClip = pose.hopping ? "Regular_Jump" : "Idle";
     if (targetClip !== activePlayerClip) {
       activePlayerClip = targetClip;
       h.setAnimation({ clip: targetClip, loop: true, speed: targetClip === "Regular_Jump" ? 2.2 : 1.0 });
     }
   } catch (e) { nodeOk = false; nodeErr = `player: ${String(e).slice(0, 120)}`; }
 
-  // animate 3D Meshy spectator critters cheering along the outer meadow banks beside the playfield
+  // Spectator critters cheer from the meadow banks beyond the lane strips (CH-12): meadow rows only, on the floor.
   const baseRow = Math.floor(st.playerRow / 12) * 12;
   for (let idx = 0; idx < SPECTATOR_CRITTERS.length; idx++) {
     const sp = nodes.get(`spectator-${idx}`);
     if (!sp) continue;
-    const specRow = baseRow + idx * 2;
+    let specRow = -1;
+    for (let r = baseRow + idx * 2; r < baseRow + idx * 2 + 4; r++) if (lane(r).type === "meadow") { specRow = r; break; }
+    if (specRow < 0) { sp.setVisible(false); continue; }
+    sp.setVisible(true);
     const side = idx % 2 === 0 ? -1 : 1;
-    const sx = side * (13.8 + (idx % 3) * 1.15);
-    const sz = laneZ(specRow);
-    const specTopY = surfaceTopY(lane(specRow));
-    const cheerBob = Math.abs(Math.sin(st.time * 5.2 + idx * 1.1)) * 0.22;
-    sp.setPosition(sx, specTopY + cheerBob, sz);
+    const sx = side * (SCENERY_X + 0.6 + (idx % 3) * 1.15);
+    const cheerBob = reducedMotion ? 0 : Math.abs(Math.sin(tr * 5.2 + idx * 1.1)) * 0.22;
+    sp.setPosition(sx, FLOOR_Y + cheerBob, laneZ(specRow));
     sp.setRotation(0, side < 0 ? Math.PI * 0.42 : -Math.PI * 0.42, 0);
   }
 
@@ -792,7 +938,7 @@ export function syncVisuals(dt: number): void {
     const sun = nodes.get("sun");
     if (sun) sun.setPosition(px * 0.3 - 17, 6.4, pz - 46);
     const floor = nodes.get("world-floor");
-    if (floor) floor.setPosition(px * 0.3, -0.16, pz - 20);
+    if (floor) floor.setPosition(px * 0.3, FLOOR_Y, pz - 20);
   } catch { /* no-op */ }
 
   // hawk
@@ -803,12 +949,13 @@ export function syncVisuals(dt: number): void {
       const hy = 9 - warn * 7.4;
       hk.setVisible(true);
       hk.setPosition(px, Math.max(1.1, hy), pz - 2.5 + warn * 1.5);
-      hk.setRotation(Math.PI * 0.2 * warn, 0, Math.sin(st.time * 7) * 0.12);
+      hk.setRotation(Math.PI * 0.2 * warn, 0, Math.sin(tr * 7) * 0.12);
     } else if (st.dead?.kind === "snatched") {
+      const since = st.time - st.deadAt;
       hk.setVisible(true);
-      hk.setPosition(px + Math.sin((st.time - st.deadAt) * 2) * 0.4, 1.2 + (st.time - st.deadAt) * 3.2, pz - 2 - (st.time - st.deadAt) * 4);
+      hk.setPosition(px + Math.sin(since * 2) * 0.4, 1.2 + since * 3.2, pz - 2 - since * 4);
       hk.setRotation(-0.3, 0, 0);
-      nodes.require("player").setPosition(px, 1.0 + (st.time - st.deadAt) * 3.2, pz - 2 - (st.time - st.deadAt) * 4);
+      nodes.require("player").setPosition(px, 1.0 + since * 3.2, pz - 2 - since * 4);
     } else hk.setVisible(false);
     // rescue pod marker
     const pod = nodes.require("pod");
@@ -817,7 +964,7 @@ export function syncVisuals(dt: number): void {
       const l = lane(r);
       if (l.hasPod && !st.podTaken.has(r)) {
         pod.setVisible(true); pod.setPosition(l.podCol * COL_W, surfaceTopY(l), laneZ(r));
-        pod.setRotation(0, st.time * 0.8, 0);
+        pod.setRotation(0, tr * 0.8, 0);
         podSet = true; break;
       }
     }
@@ -830,39 +977,43 @@ export function syncVisuals(dt: number): void {
   app.camera?.setPose({
     position: [px * CAM.followX, camY, camZ],
     target: [px * CAM.targetX, CAM.targetY, pz - CAM.ahead],
-    fov: CAM.fov + warn * 6
+    fov: CAM.fov + (reducedMotion ? 0 : warn * 6)
   });
   if (warn > 0.5) app.output?.setOutputOverlay({ vignette: [0.02, 0.02, 0.06, warn * 0.85] });
-  else app.output?.setOutputOverlay(st.mode === "dead" ? { fade: [0, 0, 0, 0.25] } : {});
+  else app.output?.setOutputOverlay(st.mode === "dead" || st.paused ? { fade: [0, 0, 0, 0.25] } : {});
 
-  // submit pools — hide stale slots beyond the live count, then push specs
-  for (const k of Object.keys(CAP) as (keyof typeof CAP)[]) {
+  // submit pools — hide stale slots beyond the live count, then push specs. Static pools only when their key changed;
+  // an empty pool whose slots are already hidden is skipped (CH-E3).
+  for (const k of rebuildStatic ? (Object.keys(CAP) as (keyof typeof CAP)[]) : DYNAMIC_POOLS) {
     const p = P(k);
+    if (p.n === 0 && p.dirty === 0 && emptySubmitted.has(k)) continue;
     for (let i = p.n; i < p.dirty; i++) {
       const s = p.specs[i];
       s.position[0] = HIDDEN.position[0]; s.position[1] = HIDDEN.position[1]; s.position[2] = HIDDEN.position[2];
-      s.rotation[1] = 0;
+      s.rotation[1] = 0; s.rotation[2] = 0;
       s.scale[0] = HIDDEN.scale[0]; s.scale[1] = HIDDEN.scale[1]; s.scale[2] = HIDDEN.scale[2];
     }
-    p.dirty = Math.max(p.dirty, p.n);
+    p.dirty = p.n;
     try {
       nodes.require(`pool-${k === "dressB" ? "dressb" : k}`)
         .setInstances(p.specs, p.cols);
+      if (p.n === 0) emptySubmitted.add(k); else emptySubmitted.delete(k);
     } catch (e) { nodeOk = false; nodeErr = `pool-${k}: ${String(e).slice(0, 120)}`; }
   }
+  if (rebuildStatic) staticKey = key;
 
-  if (st.messageT > 0) st.messageT -= dt;
 }
 
-function paintLane(l: Lane, r: number): void {
+function paintLane(l: Lane, r: number, tr: number, statics: boolean, playerX: number): void {
   const z = laneZ(r);
   const th = THEMES[l.theme];
   const pal = th.palette;
   switch (l.type) {
     case "meadow":
-      inst("ground", 0, 0, z, STRIP_W, 0.24, LANE_D, pal.meadow);
+      if (statics) inst("ground", 0, 0, z, STRIP_W, 0.24, LANE_D, pal.meadow);
       break;
     case "road": {
+      if (!statics) break;
       inst("ground", 0, 0, z, STRIP_W, 0.24, LANE_D, pal.road);
       // center dashes flush on road top (0.12)
       for (let x = -16; x < 17; x += 4) inst("detail", x, 0.121, z, 1.4, 0.008, 0.09, "#cfd6de");
@@ -871,13 +1022,17 @@ function paintLane(l: Lane, r: number): void {
       break;
     }
     case "tram": {
-      inst("ground", 0, 0, z, STRIP_W, 0.24, LANE_D, "#8b9099");
-      inst("detail", 0, 0.122, z - 0.32, STRIP_W, 0.016, 0.08, "#3a3d44");
-      inst("detail", 0, 0.122, z + 0.32, STRIP_W, 0.016, 0.08, "#3a3d44");
-      if (railWarning(l, st.time)) inst("glow", 0, 0.128, z, STRIP_W, 0.016, 0.5, "#f2c94c");
+      if (statics) {
+        inst("ground", 0, 0, z, STRIP_W, 0.24, LANE_D, "#8b9099");
+        inst("detail", 0, 0.122, z - 0.32, STRIP_W, 0.016, 0.08, "#3a3d44");
+        inst("detail", 0, 0.122, z + 0.32, STRIP_W, 0.016, 0.08, "#3a3d44");
+      }
+      // Lit when a tram will reach the player's column within a second (CH-4).
+      if (railWarning(l, tr, playerX)) inst("glow", 0, 0.128, z, STRIP_W, 0.016, 0.5, "#f2c94c");
       break;
     }
     case "river":
+      if (!statics) break;
       // Water top is at y = 0.00 (-0.08 + 0.16 / 2); bank trim only against non-river neighbors
       inst("ground", 0, -0.08, z, STRIP_W, 0.16, LANE_D, pal.water);
       if (lane(r + 1).type !== "river") {
@@ -888,20 +1043,39 @@ function paintLane(l: Lane, r: number): void {
       }
       break;
     case "rail": {
-      inst("ground", 0, -0.02, z, STRIP_W, 0.2, LANE_D, pal.railbed);
-      inst("detail", 0, 0.115, z - 0.3, STRIP_W, 0.03, 0.07, "#2c2c30");
-      inst("detail", 0, 0.115, z + 0.3, STRIP_W, 0.03, 0.07, "#2c2c30");
-      for (let x = -16; x < 17; x += 1.6) inst("detail", x, 0.09, z, 0.24, 0.03, 0.88, "#241f1a");
-      if (railWarning(l, st.time)) {
-        const blink = Math.sin(st.time * 16) > 0;
-        inst("glow", -8, 0.6, z - LANE_D * 0.42, 0.24, 0.24, 0.24, blink ? "#ff3355" : "#551122");
-        inst("glow", 8, 0.6, z + LANE_D * 0.42, 0.24, 0.24, 0.24, blink ? "#ff3355" : "#551122");
+      if (statics) {
+        inst("ground", 0, -0.02, z, STRIP_W, 0.2, LANE_D, pal.railbed);
+        inst("detail", 0, 0.115, z - 0.3, STRIP_W, 0.03, 0.07, "#2c2c30");
+        inst("detail", 0, 0.115, z + 0.3, STRIP_W, 0.03, 0.07, "#2c2c30");
+        for (let x = -16; x < 17; x += 1.6) inst("detail", x, 0.09, z, 0.24, 0.03, 0.88, "#241f1a");
+        // Crossing posts at both signals (CH-E5).
+        inst("trunk", -8, 0.4, z - LANE_D * 0.42, 0.1, 0.8, 0.1, "#3a3d44");
+        inst("trunk", 8, 0.4, z + LANE_D * 0.42, 0.1, 0.8, 0.1, "#3a3d44");
+      }
+      // Lights and lowered arms come before the train and stay while it crosses (CH-4, CH-E5).
+      const lit = railWarning(l, tr) > 0;
+      const blink = Math.sin(tr * 16) > 0;
+      for (const side of [-1, 1] as const) {
+        const sz = z + side * LANE_D * 0.42;
+        if (lit) {
+          inst("glow", side * 8, 0.86, sz, 0.24, 0.24, 0.24, blink ? "#ff3355" : "#551122");
+          // Arm lowered across the approach: red and white segments reaching toward the track centre.
+          for (let seg = 0; seg < 4; seg++) {
+            inst("glow", side * (8 - 0.3 - seg * 0.5), 0.62, sz, 0.48, 0.08, 0.08, seg % 2 === 0 ? "#ff3355" : "#f4f1ea");
+          }
+        } else {
+          inst("glow", side * 8, 0.86, sz, 0.24, 0.24, 0.24, "#3a1016");
+          // Arm raised: upright beside the post.
+          inst("glow", side * 8.12, 1.3, sz, 0.08, 0.9, 0.08, "#f4f1ea");
+        }
       }
       break;
     }
     case "lava":
-      inst("ground", 0, -0.08, z, STRIP_W, 0.16, LANE_D, pal.lava);
-      for (let x = -15; x < 16; x += 3.1) inst("detail", x, 0.01, z + (((r * 7 + x) % 3) - 1) * 0.3, 1.3, 0.06, 0.36, pal.crust);
+      if (statics) {
+        inst("ground", 0, -0.08, z, STRIP_W, 0.16, LANE_D, pal.lava);
+        for (let x = -15; x < 16; x += 3.1) inst("detail", x, 0.01, z + (((r * 7 + x) % 3) - 1) * 0.3, 1.3, 0.06, 0.36, pal.crust);
+      }
       inst("glow", 0, 0.01, z - LANE_D * 0.46, STRIP_W, 0.03, 0.08, "#ff6a2a");
       inst("glow", 0, 0.01, z + LANE_D * 0.46, STRIP_W, 0.03, 0.08, "#ff6a2a");
       break;
@@ -911,34 +1085,37 @@ function paintLane(l: Lane, r: number): void {
 function paintDressing(lo: number, hi: number): void {
   const th = THEMES[st.themeIdx];
   const pal = th.palette;
+  // Fence, tufts and signs stand just beyond the playfield, and only on meadow rows, so no prop sits in a traffic
+  // lane, river or lava strip (CH-12). Trees and buildings stand beyond the drawn strip on the world floor.
   const fenceX = FIELD_HALF + 2.1;
   const softTheme = th.dress === "trees" || th.dress === "reeds" || th.dress === "candy";
+  const b = FLOOR_Y;
   for (let r = lo; r <= hi; r++) {
     const z = laneZ(r);
+    const meadow = lane(r).type === "meadow";
     const rndA = Math.abs(Math.sin(r * 12.9898 + st.seed * 0.37)) % 1;
     const rndB = Math.abs(Math.sin(r * 78.233 + st.seed * 0.11)) % 1;
     const side = rndA < 0.5 ? -1 : 1;
-    // Scenery lives beyond the fence line so it never hides a car, train, or hazard.
-    const off = 15.9 + rndB * 3.2;
-    if (th.dress === "trees" || th.dress === "reeds" || th.dress === "candy") {
+    const off = SCENERY_X + 0.4 + rndB * 3.2;
+    if (softTheme) {
       if (rndA < 0.55) {
-        inst("trunk", side * off, 0.7, z, 0.22, 1.4, 0.22, pal.dressingB);
-        inst("canopy", side * off, 1.8, z, 1.1, 0.9, 1.1, pal.dressingA);
-        inst("trunk", -side * (off + 2.4), 0.7, z, 0.22, 1.4, 0.22, pal.dressingB);
-        inst("canopy", -side * (off + 2.4), 1.8, z, 1.1, 0.9, 1.1, pal.dressingA);
+        inst("trunk", side * off, b + 0.7, z, 0.22, 1.4, 0.22, pal.dressingB);
+        inst("canopy", side * off, b + 1.8, z, 1.1, 0.9, 1.1, pal.dressingA);
+        inst("trunk", -side * (off + 2.4), b + 0.7, z, 0.22, 1.4, 0.22, pal.dressingB);
+        inst("canopy", -side * (off + 2.4), b + 1.8, z, 1.1, 0.9, 1.1, pal.dressingA);
       }
     } else if (th.dress === "city" || th.dress === "neon") {
       const h = 2.2 + rndB * 3.4;
-      inst("dressB", side * (off + 2), h / 2, z, 1.8, h, 1.8, pal.dressingB);
-      if (th.dress === "neon" && rndB < 0.4) inst("glow", side * (off + 2) - 0.95, h / 2, z, 0.06, h * 0.5, 0.4, pal.accent);
-      inst("dressB", -side * (off + 4.5), (h * 0.7) / 2, z, 2.2, h * 0.7, 2.2, pal.dressingA);
+      inst("dressB", side * (off + 2), b + h / 2, z, 1.8, h, 1.8, pal.dressingB);
+      if (th.dress === "neon" && rndB < 0.4) inst("glowS", side * (off + 2) - 0.95, b + h / 2, z, 0.06, h * 0.5, 0.4, pal.accent);
+      inst("dressB", -side * (off + 4.5), b + (h * 0.7) / 2, z, 2.2, h * 0.7, 2.2, pal.dressingA);
     } else if (th.dress === "basalt") {
-      inst("dressB", side * off, 0.5 + rndB, z, 0.9, 1 + rndB * 2, 0.9, pal.dressingB);
-      if (rndA < 0.3) inst("glow", -side * (off + 1.5), 0.3, z, 0.3, 0.3, 0.3, "#ff5a1f");
+      inst("dressB", side * off, b + 0.5 + rndB, z, 0.9, 1 + rndB * 2, 0.9, pal.dressingB);
+      if (rndA < 0.3) inst("glowS", -side * (off + 1.5), b + 0.3, z, 0.3, 0.3, 0.3, "#ff5a1f");
     }
+    if (!meadow) continue;
 
-    // Low split-rail fence just outside the traffic envelope: frames the
-    // playfield in the foreground without crossing any lane.
+    // Low split-rail fence just outside the traffic envelope on meadow rows.
     if (r % 2 === 0) {
       for (const sdd of [-1, 1] as const) {
         inst("trunk", sdd * fenceX, 0.35, z, 0.12, 0.7, 0.12, pal.dressingB);
@@ -984,7 +1161,7 @@ export function evidenceExtra(): Record<string, unknown> {
   const lo = Math.max(0, st.playerRow - ROW_BEHIND), hi = st.playerRow + ROW_AHEAD;
   for (let r = lo; r <= hi; r++) movers += laneMovers(lane(r), st.time, XS);
   return {
-    state: { mode: st.mode, runKind: st.runKind, score: st.score, coins: st.coins, best: st.profile.best, row: st.playerRow, bestRow: st.row, critter: st.critter.id, theme: THEMES[st.themeIdx].label, dead: st.dead?.kind ?? null },
+    state: { mode: st.mode, paused: st.paused, runKind: st.runKind, score: st.score, coins: st.coins, bank: st.profile.coins, best: st.profile.best, row: st.playerRow, bestRow: st.row, critter: st.critter.id, theme: THEMES[st.themeIdx].label, lookTheme: THEMES[appliedLook].label, dead: st.dead?.kind ?? null, time: +st.time.toFixed(2) },
     movers,
     lanesBuffered: st.lanes.size,
     events: st.events.slice(-6),
