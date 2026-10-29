@@ -108,6 +108,8 @@ const css = `
 .fc-so .dot.cur { outline: 2px solid #7dfcff; }
 .fc-lab { position: absolute; top: calc(var(--a3d-bar-space, 44px) + 8px); right: 18px; background: rgba(7,16,22,.88);
   border: 1px solid rgba(125,252,255,.4); border-radius: 10px; padding: 10px 16px; text-align: right; }
+/* Shootout Lab shows both cards: the lab score card stacks under the ledger instead of covering it */
+.fc-so:not(.fc-hidden) ~ .fc-lab { top: calc(var(--a3d-bar-space, 44px) + 104px); }
 .fc-lab h4 { margin: 0 0 4px; font-size: 12px; letter-spacing: .18em; color: #7dfcff; text-transform: uppercase; }
 .fc-lab .big { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .fc-lab .sub { font-size: 12px; opacity: .7; letter-spacing: .1em; }

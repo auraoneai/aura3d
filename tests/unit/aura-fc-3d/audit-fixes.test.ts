@@ -449,3 +449,12 @@ describe("FC-21 day venues are not washed out", () => {
     }
   });
 });
+
+describe("HUD Shootout Lab cards", () => {
+  it("the lab card stacks under a visible shootout ledger (both sat at the same top-right spot)", async () => {
+    const { readFileSync } = await import("node:fs");
+    const src = readFileSync("apps/showcase-aura-fc-3d/src/game/hud.ts", "utf8");
+    expect(src).toMatch(/\.fc-so:not\(\.fc-hidden\) ~ \.fc-lab \{ top: calc\(var\(--a3d-bar-space, 44px\) \+ 104px\); \}/);
+    expect(src.indexOf('el("div", "fc-so fc-hidden", root)')).toBeLessThan(src.indexOf('el("div", "fc-lab fc-hidden", root)'));
+  });
+});
