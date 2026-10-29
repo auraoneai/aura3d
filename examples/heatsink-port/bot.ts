@@ -16,6 +16,8 @@ export interface BotOptions {
   lookAhead?: number;
   /** hold the trigger only when a target or barrel is within this distance ahead */
   fireRange?: number;
+  /** QA only: hold overdrive until the drone overheats, again and again, to reach the crash and DNF states */
+  wreck?: boolean;
 }
 
 const V = CFG.vehicle;
@@ -70,6 +72,7 @@ export function createBot(opts: BotOptions = {}): (race: Race) => Input {
     const steer = clamp(ff + (headWant - p.theta) * 3 + (headWant - p.phi) * 1.5, -1, 1);
     const throttle = p.v > cap + 2 ? 0 : cap / V.maxSpeed;
     const fire = aimD < fireRange && !p.gunLocked && p.gunHeat < 0.9;
+    if (opts.wreck) return { ...IDLE, throttle, steer, ramjet: true };
     return { ...IDLE, throttle, brake: p.v > cap + 8 ? 0.4 : 0, steer, fire };
   };
 }

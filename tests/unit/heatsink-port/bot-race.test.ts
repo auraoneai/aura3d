@@ -65,3 +65,11 @@ describe("GO banner (HP-01)", () => {
     expect(countText(race)).toBe("3");
   });
 });
+
+describe("wreck bot (QA DNF state)", () => {
+  it("reaches DNF after the crash budget", () => {
+    const r = runBotRace(new Race(), { wreck: true, maxSteps: 60 * 240 });
+    expect(r.state).toBe("dnf");
+    expect(r.resultsOpen).toBe(true);
+  }, 60_000);
+});

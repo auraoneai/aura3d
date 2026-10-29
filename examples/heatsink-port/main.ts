@@ -478,6 +478,8 @@ const hooks = installQaHooks("heatsink", {
     /** QA: force a runtime error through the same path a render exception takes */
     faultForTest(message = "test fault") { runtimeError(new Error(message)); },
     pause(on: boolean) { setPaused(on, "button"); return paused; },
+    /** the input the live loop would read this frame (keys, touch buttons, auto-throttle), without stepping */
+    input: () => sampleInput(FRAME),
     frames: () => frames,
     hud: () => lastHud ?? null,
     bot: (opts: BotOptions = {}) => { const r = runBotRace(new Race(track), opts); return { state: r.state, kills: r.ops.kills, medal: r.ops.medal, time: r.player.finishTime }; }
