@@ -1,4 +1,6 @@
 import { test, type Page } from "@playwright/test";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { startExampleDevServer, type ExampleDevServer } from "../example-dev-server";
 
 /**
@@ -8,7 +10,7 @@ import { startExampleDevServer, type ExampleDevServer } from "../example-dev-ser
  *   E1_BLOOM <json>                        RP-05: fused bloom (quality auto) against the production pass sequence, same frame
  *   E1_URL <json>                          RP-04: a page with typo'd ?aura3d-render= / ?aura3d-bloom-fusion= still mounts
  *   E1_JPG <game> <shot> <i>/<n> <b64>     canvas-only JPEG, chunked
- * Select a game group with `--grep=@g<n>` in SPECS. The software-GL runner presents about one frame every 5 to 10 s, so the first
+ * Select a game group with `--grep=@g<n>` in SPECS (four games per group; the URL-typo pair is the last group). The software-GL runner presents about one frame every 5 to 10 s, so the first
  * frame is never judged: the luma shot is taken after SETTLE_MS, and the bloom A/B runs on a paused app after that.
  *
  * RP-05 method: `quality: "auto"` and `quality: "production"` differ on the HDR route only in two device switches set at mount
@@ -35,14 +37,42 @@ const FOLDERS: ReadonlyArray<readonly [string, string]> = [
   ["roadster-hours-port", "showcase-roadster-hours-port"], ["where-the-wind-wanders-port", "showcase-where-the-wind-wanders-port"],
   ["silt-and-signal-port", "showcase-silt-and-signal-port"], ["cloud-runner-port", "showcase-cloud-runner-port"]
 ];
-const GAMES: readonly Game[] = FOLDERS.map(([slug, folder], index) => ({ slug, folder, group: Math.floor(index / 5) + 1 }));
-// Ports that wrap an example resolve their GLBs through import.meta.url, which the bundled app entry breaks; load the example page itself
-// (same table as fit-grounding-sweep.spec.ts).
+// Four games per group so one ACR run (1 h step limit) holds a group at software-GL speed.
+const GAMES: readonly Game[] = FOLDERS.map(([slug, folder], index) => ({ slug, folder, group: Math.floor(index / 4) + 1 }));
+const URL_GROUP = Math.ceil(FOLDERS.length / 4) + 1;
+// Ports that wrap an example resolve their GLBs through import.meta.url, which the dev server's bundled app entry breaks (measured:
+// 404 on /apps/showcase-*-port/src/assets/models/*.glb), so every port loads its example page, the same game code the app mounts.
 const EXAMPLE_PAGE: Record<string, string> = {
+  "showcase-strange-orbit-port": "/examples/strange-orbit-port/index.html",
+  "showcase-splat-rush-port": "/examples/splat-rush-port/index.html",
+  "showcase-serpentine-sky-run-port": "/examples/saiyan-snake-way-port/index.html",
+  "showcase-drift-and-deliver-port": "/examples/drift-and-deliver-port/index.html",
+  "showcase-heatsink-port": "/examples/heatsink-port/index.html",
   "showcase-ninja-runner-port": "/examples/ninja-runner-port/index.html",
   "showcase-last-train-port": "/examples/last-train-port/index.html",
+  "showcase-roadster-hours-port": "/examples/roadster-hours-port/index.html",
+  "showcase-where-the-wind-wanders-port": "/examples/where-the-wind-wanders-port/index.html",
+  "showcase-silt-and-signal-port": "/examples/silt-and-signal-port/index.html",
   "showcase-cloud-runner-port": "/examples/kid-goku-beyond-the-clouds-port/index.html"
 };
+
+/**
+ * Games that keep their GLBs in `apps/<folder>/public/aura-assets/` (Iron Crown, Pip's, Bunker Zero) get 404s from the example dev
+ * server, whose `/aura-assets/` branch reads only the repo-root public/ and the templates. Serve those files from the app's own
+ * public dir, which is what the deployed site does.
+ */
+async function serveAppPublicAssets(page: Page, folder: string): Promise<void> {
+  const dir = join(process.cwd(), "apps", folder, "public", "aura-assets");
+  if (!existsSync(dir)) return;
+  await page.route("**/aura-assets/**", async (route) => {
+    const name = decodeURIComponent(new URL(route.request().url()).pathname.replace(/^.*\/aura-assets\//, ""));
+    const file = join(dir, name);
+    if (!name.includes("..") && existsSync(file)) {
+      const type = file.endsWith(".glb") ? "model/gltf-binary" : file.endsWith(".svg") ? "image/svg+xml" : file.endsWith(".png") ? "image/png" : file.endsWith(".ogg") ? "audio/ogg" : "application/octet-stream";
+      await route.fulfill({ status: 200, body: readFileSync(file), headers: { "content-type": type } });
+    } else await route.continue();
+  });
+}
 const pageUrl = (folder: string): string => EXAMPLE_PAGE[folder] ?? `/apps/${folder}/index.html`;
 
 /** Canvas rectangle of the first live app (games can stack HUD canvases over it). */
@@ -196,6 +226,7 @@ test.describe("e1 render path", () => {
       page.on("pageerror", (e) => log(`E1_ERR ${game.slug} pageerror ${e.message.slice(0, 300)}`));
       page.on("console", (m) => { if (m.type() === "error") log(`E1_CONSOLE ${game.slug} ${m.text().slice(0, 200)}`); });
       await page.setViewportSize({ width: 1280, height: 720 });
+      await serveAppPublicAssets(page, game.folder);
       await page.goto(`${server.origin}${pageUrl(game.folder)}?capture=1`, { waitUntil: "domcontentloaded", timeout: 240_000 });
       const readyAt = Date.now();
       const ready = await page.waitForFunction(READY, undefined, { timeout: 420_000, polling: 500 }).then(() => true, () => false);
@@ -216,11 +247,12 @@ test.describe("e1 render path", () => {
 
   // RP-04: debug URL typos. Before the fix the mount threw QUALITY_OPTION_INVALID and the game showed its WebGL error screen.
   for (const [slug, folder] of [["dot-dash-3d", "showcase-dot-dash-3d"], ["heatsink-port", "showcase-heatsink-port"]] as const) {
-    test(`e1 url-typo ${slug} @g6`, async ({ page }) => {
+    test(`e1 url-typo ${slug} @g${URL_GROUP}`, async ({ page }) => {
       const errors: string[] = [];
       page.on("pageerror", (e) => errors.push(e.message.slice(0, 200)));
       page.on("console", (m) => { if (m.type() === "error" || m.type() === "warning") errors.push(`${m.type()}: ${m.text().slice(0, 200)}`); });
       await page.setViewportSize({ width: 1280, height: 720 });
+      await serveAppPublicAssets(page, folder);
       await page.goto(`${server.origin}${pageUrl(folder)}?capture=1&aura3d-render=prodution&aura3d-bloom-fusion=fused`, { waitUntil: "domcontentloaded", timeout: 240_000 });
       const mounted = await page.waitForFunction(READY, undefined, { timeout: 420_000, polling: 500 }).then(() => true, () => false);
       await page.waitForTimeout(10_000);
