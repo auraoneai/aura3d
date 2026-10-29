@@ -506,7 +506,9 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
       weight: options?.weight,
       blendMode: options?.blendMode,
       additive: additiveWanted,
-      mask
+      mask,
+      // A replaced clip on the same layer fades out while the new one fades in (anim-phys-03).
+      ...(options?.fadeIn !== undefined && options.fadeIn > 0 ? { fadeOutPrevious: options.fadeIn } : {})
     });
     if (options?.fadeIn !== undefined && options.fadeIn > 0) action.fadeIn(options.fadeIn);
     return this;
