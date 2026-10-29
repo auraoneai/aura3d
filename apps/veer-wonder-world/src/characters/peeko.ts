@@ -23,7 +23,9 @@ export const PEEKO: CharacterDefinition = {
     hide: gestureMotion([proc("duck", 0.9, 0.55)], { hold: true }),
     peek: gestureMotion([proc("hop", 1.0, 0.14), proc("peek", 1.0, 0.12)]),
     dance: gestureMotion([proc("hop", 2.2, 0.1, 4), proc("rock", 2.2, 0.12, 2)]),
-    talk: gestureMotion([proc("squash", 0.6, 0.06, 2)], { durationSec: 0.6 })
+    talk: gestureMotion([proc("squash", 0.6, 0.06, 2)], { durationSec: 0.6 }),
+    // Surprised (07 B20): a little stretch and hop with a flutter of the wings, never a jump at the viewer.
+    surprise: gestureMotion([proc("stretch", 0.8, 0.1), proc("hop", 0.8, 0.06), proc("flap", 0.8, 0.14, 2)])
   },
   idleMotion: gestureMotion([proc("pulse", 2.2, 0.015)]),
   talkStrength: 0.05,

@@ -11,18 +11,22 @@ import {
   clipCoverage,
   createCharacterProfile,
   isCharacterId,
+  isGesture,
   missingClipCandidates,
   permittedClips,
   profileForSpeaker
 } from "../../../src/characters/character-registry.js";
 import {
+  CALM_GESTURES,
   GESTURE_CLIP_SECONDS,
+  calmGesture,
   createAnimationDirector,
   planGesture,
   propAnimationProfile
 } from "../../../src/runtime/animation-director.js";
 import { createAssetPreloader, isUsableStatus, storyModelKeys, type FetchLike } from "../../../src/runtime/asset-preloader.js";
-import { isNeutral } from "../../../src/scenes/motion.js";
+import { isNeutral, sampleGestureMotion, type GestureMotionSpec, type PoseOffset } from "../../../src/scenes/motion.js";
+import type { CharacterId, Gesture } from "../../../src/types.js";
 import { strings as UI_STRINGS } from "../../../src/localization/en/ui.js";
 import type { EpisodeSpec } from "../../../src/types.js";
 
@@ -140,6 +144,129 @@ describe("character registry", () => {
         if (clip !== null) expect(MODEL_INFO[profile.modelKey].clips).toContain(clip);
       }
     }
+  });
+
+  it("recognises gesture ids (song motions are plain strings)", () => {
+    for (const gesture of GESTURES) expect(isGesture(gesture)).toBe(true);
+    expect(isGesture("jump")).toBe(false);
+    expect(isGesture("")).toBe(false);
+  });
+});
+
+describe("surprise and wait (07 B20)", () => {
+  const samples = (spec: GestureMotionSpec, steps = 60): PoseOffset[] =>
+    Array.from({ length: steps + 1 }, (_, i) => sampleGestureMotion(spec, (i / steps) * spec.durationSec, false));
+  const kinds = (id: CharacterId, gesture: Gesture): string[] => CHARACTERS[id].procedural(gesture).layers.map((layer) => layer.kind);
+  const highest = (id: CharacterId, gesture: Gesture): number => Math.max(...samples(CHARACTERS[id].procedural(gesture)).map((p) => p.dy));
+
+  it("every character has a calm surprise that ends where it began, and a wait that holds", () => {
+    for (const id of CHARACTER_IDS) {
+      const surprise = CHARACTERS[id].procedural("surprise");
+      const wait = CHARACTERS[id].procedural("wait");
+      expect(surprise.hold ?? false, `${id} surprise`).toBe(false);
+      expect(surprise.halo ?? false, `${id} surprise`).toBe(false);
+      expect(wait.hold, `${id} wait`).toBe(true);
+      // Attentive, not frozen: idle breathing goes on while it waits.
+      expect(wait.still ?? false, `${id} wait`).toBe(false);
+      for (const spec of [surprise, wait]) {
+        expect(spec.durationSec).toBeGreaterThanOrEqual(0.6);
+        expect(spec.durationSec).toBeLessThanOrEqual(1.2);
+        // Calm caps: never a startle (02 section 1).
+        for (const p of samples(spec)) {
+          for (const v of [p.dx, p.dy, p.dz]) expect(Math.abs(v), id).toBeLessThanOrEqual(0.1);
+          for (const v of [p.rx, p.ry, p.rz]) expect(Math.abs(v), id).toBeLessThanOrEqual(0.2);
+          for (const v of [p.sx, p.sy, p.sz]) {
+            expect(v, id).toBeGreaterThanOrEqual(0.85);
+            expect(v, id).toBeLessThanOrEqual(1.15);
+          }
+        }
+      }
+      expect(isNeutral(sampleGestureMotion(surprise, surprise.durationSec, false), 1e-6), `${id} surprise ends neutral`).toBe(true);
+      expect(isNeutral(sampleGestureMotion(wait, wait.durationSec + 5, false)), `${id} wait holds its pose`).toBe(false);
+    }
+    expect(GESTURE_CLIP_SECONDS.surprise).toBeGreaterThan(0);
+    expect(GESTURE_CLIP_SECONDS.wait).toBeGreaterThan(0);
+  });
+
+  it("fits each character: Lumi floats up, GoGo never hops or stretches, Sheru tilts and sits, Peeko flutters, Momo leans in", () => {
+    // Lumi floats: no hop off the ground, she rises.
+    expect(kinds("lumi", "surprise")).not.toContain("hop");
+    expect(highest("lumi", "surprise")).toBeGreaterThan(0.05);
+    // GoGo is a vehicle: no hop, stretch or squash in either.
+    for (const gesture of ["surprise", "wait"] as const) {
+      for (const kind of kinds("gogo", gesture)) expect(["hop", "stretch", "squash"], `gogo ${gesture}`).not.toContain(kind);
+    }
+    // Sheru is a dog: a puppy head tilt when surprised, and he waits sitting (lower, leaning back).
+    expect(kinds("sheru", "surprise")).toContain("tilt");
+    const sheruWaits = sampleGestureMotion(CHARACTERS.sheru.procedural("wait"), 5, false);
+    expect(sheruWaits.sy).toBeLessThan(1);
+    expect(sheruWaits.rx).toBeLessThan(0);
+    // Peeko flutters its wings.
+    expect(kinds("peeko", "surprise")).toContain("flap");
+    // Momo leans in toward the child with a curious tilt, and leans back a little when surprised.
+    const momoWaits = sampleGestureMotion(CHARACTERS.momo.procedural("wait"), 5, false);
+    expect(momoWaits.rx).toBeGreaterThan(0);
+    expect(Math.abs(momoWaits.rz)).toBeGreaterThan(0.03);
+    expect(Math.min(...samples(CHARACTERS.momo.procedural("surprise")).map((p) => p.rx))).toBeLessThan(0);
+    // The others keep the shared motion.
+    expect(CHARACTERS.lulu.procedural("surprise")).toBe(SHARED_GESTURES.surprise);
+    expect(CHARACTERS.lumi.procedural("wait")).toBe(SHARED_GESTURES.wait);
+  });
+
+  it("plays through the director: surprise returns to idle, wait holds until the next gesture", () => {
+    const director = createAnimationDirector();
+    director.register({ id: "sheru", profile: CHARACTERS.sheru, canPlayClips: false });
+    director.gesture("sheru", "surprise", false);
+    director.update(0.4);
+    expect(director.snapshot("sheru")?.gesture).toBe("surprise");
+    expect(Math.abs(director.pose("sheru").rz)).toBeGreaterThan(0.05);
+    director.update(1);
+    expect(director.snapshot("sheru")).toMatchObject({ gesture: null, holding: false });
+    director.gesture("sheru", "wait", false);
+    director.update(3);
+    expect(director.snapshot("sheru")).toMatchObject({ gesture: null, holding: true });
+    expect(director.pose("sheru").sy).toBeLessThan(0.95);
+    director.gesture("sheru", "wag", false);
+    expect(director.snapshot("sheru")?.holding).toBe(false);
+  });
+});
+
+describe("calm variants and reduced motion", () => {
+  it("song motions in reduced motion never hop or spin, for any character", () => {
+    for (const id of CHARACTER_IDS) {
+      for (const gesture of Object.keys(CALM_GESTURES)) {
+        if (!isGesture(gesture)) throw new Error(gesture);
+        const calm = calmGesture(gesture);
+        expect(calm).not.toBe(gesture);
+        for (const layer of CHARACTERS[id].procedural(calm).layers) expect(["hop", "spin"], `${id} ${gesture} -> ${calm}`).not.toContain(layer.kind);
+      }
+    }
+  });
+
+  it("drops a spin in reduced motion: Lumi never turns her back and never snaps round", () => {
+    const full = createAnimationDirector();
+    const reduced = createAnimationDirector({ reducedMotion: true });
+    for (const director of [full, reduced]) {
+      director.register({ id: "lumi", profile: CHARACTERS.lumi, canPlayClips: false });
+      director.gesture("lumi", "happy", false);
+    }
+    let fullest = 0;
+    let previous = 0;
+    for (let i = 0; i < 40; i += 1) {
+      full.update(0.05);
+      reduced.update(0.05);
+      fullest = Math.max(fullest, Math.abs(full.pose("lumi").ry));
+      const ry = reduced.pose("lumi").ry;
+      expect(Math.abs(ry)).toBeLessThan(1e-9);
+      expect(Math.abs(ry - previous)).toBeLessThan(0.2);
+      previous = ry;
+    }
+    // Full motion still spins the whole turn.
+    expect(fullest).toBeGreaterThan(Math.PI);
+    // The semantic action stays: she still floats in reduced motion.
+    reduced.gesture("lumi", "happy", false);
+    reduced.update(0.3);
+    expect(Math.abs(reduced.pose("lumi").dy)).toBeGreaterThan(0.005);
   });
 });
 

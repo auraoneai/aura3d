@@ -78,6 +78,11 @@ export const GESTURES: readonly Gesture[] = [
   "sit", "clap", "stomp", "freeze", "peek", "hide", "float", "glow", "blink", "bow", "surprise", "wait"
 ];
 
+/** True for a Gesture id (song motions are plain strings in src/content/songs.ts). */
+export function isGesture(value: string): value is Gesture {
+  return (GESTURES as readonly string[]).includes(value);
+}
+
 /**
  * Gentle default motion for every gesture (characters without an override, and props).
  * Calm toddler pacing: slow anticipation, small amplitudes, no snaps.
@@ -113,8 +118,10 @@ export const SHARED_GESTURES: Readonly<Record<Gesture, GestureMotionSpec>> = {
   glow: gestureMotion([proc("pulse", 2.0, 0.05)], { halo: true }),
   blink: gestureMotion([proc("squash", 0.3, 0.06)]),
   bow: gestureMotion([proc("bow", 1.4, 0.38)]),
-  // Surprised: a quick small stretch up and a little hop, then back (02 section 2 expression sheet).
-  surprise: gestureMotion([proc("stretch", 0.8, 0.12), proc("hop", 0.8, 0.06)]),
+  // Surprised: a quick small stretch up and a little hop, then back (02 section 2 expression sheet; never a
+  // startle: 02 section 1). Stretch and hop together stay under 15% taller. Characters that cannot hop or
+  // stretch like this override it (07 B20).
+  surprise: gestureMotion([proc("stretch", 0.8, 0.1), proc("hop", 0.8, 0.06)]),
   // Waiting: lean in a little toward the child and hold still, attentive (01 section 3.1: wait, do not ask again).
   wait: gestureMotion([proc("lean", 1.0, 0.1)], { hold: true })
 };

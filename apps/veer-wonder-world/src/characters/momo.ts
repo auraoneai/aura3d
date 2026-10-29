@@ -49,7 +49,11 @@ export const MOMO: CharacterDefinition = {
     happy: gestureMotion([proc("hop", 1.3, 0.18, 2)]),
     dance: gestureMotion([proc("rock", 2.4, 0.16, 3), proc("bob", 2.4, 0.06, 4)]),
     mirror: gestureMotion([proc("turn", 2.0, 0.3, 2), proc("squash", 2.0, 0.05, 2)]),
-    eat: gestureMotion([proc("chomp", 1.6, 0.12, 3)])
+    eat: gestureMotion([proc("chomp", 1.6, 0.12, 3)]),
+    // Surprised "Oh!": rises tall with a small lean back and a tiny hop, then settles (07 B20).
+    surprise: gestureMotion([proc("stretch", 0.9, 0.1), proc("lean", 0.9, -0.08), proc("hop", 0.9, 0.05)]),
+    // Waits for the child: leans in with a curious little tilt and holds it (D01: points and waits).
+    wait: gestureMotion([proc("lean", 1.0, 0.1), proc("tilt", 1.0, 0.07)], { hold: true })
   },
   idleMotion: gestureMotion([proc("pulse", 3.0, 0.012)]),
   talkStrength: 0.04,

@@ -24,7 +24,9 @@ export const LUMI: CharacterDefinition = {
     float: gestureMotion([proc("float", 3.0, 0.12)]),
     point: gestureMotion([proc("tilt", 1.4, 0.18)]),
     hop: gestureMotion([proc("hop", 0.8, 0.14)]),
-    look: gestureMotion([proc("turn", 2.0, 0.4)])
+    look: gestureMotion([proc("turn", 2.0, 0.4)]),
+    // Surprised (07 B20): she floats up a little and swells softly; a floater never hops off the ground.
+    surprise: gestureMotion([proc("bob", 0.8, 0.08), proc("pulse", 0.8, 0.05)])
   },
   idleMotion: gestureMotion([proc("float", 2.6, 0.07)]),
   talkStrength: 0.05,

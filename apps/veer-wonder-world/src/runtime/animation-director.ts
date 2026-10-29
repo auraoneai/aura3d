@@ -12,6 +12,11 @@
 // gesture clip > talk clip (while its line plays and nothing else is active)
 // > idle clip. Clips always play looped; the director switches them back when a
 // gesture's nominal time is over, so a short clip never freezes on its last frame.
+//
+// Reduced motion halves procedural gestures, leaves out spins and idle loops,
+// and keeps the talking pulse (at half strength). Song motions use the calm
+// variant of their gesture (`calmGesture`); beats bring their own
+// `reducedMotionStage`.
 
 import type { Gesture, MoveStyle } from "../types.js";
 import { SHARED_GESTURES } from "../characters/character-registry.js";
@@ -24,6 +29,7 @@ import {
   gestureMotion,
   phaseOf,
   proc,
+  reducedMotionSpec,
   sampleGestureMotion,
   talkPulse,
   type GestureMotionSpec,
@@ -79,6 +85,24 @@ export const GESTURE_CLIP_SECONDS: Readonly<Record<Gesture, number>> = {
   surprise: 0.8,
   wait: 1.0
 };
+
+/**
+ * The calm variant of a gesture, played instead of it by song motions in reduced motion (07 B20; PRD 02
+ * section 4 "Low-motion": no secondary bouncing, the semantic action stays). The bouncy gestures map to the
+ * calm ones the stories' own `reducedMotionStage` choose most (dance to sway, happy and hop to nod); a cheer
+ * becomes a soft clap. Every other gesture is calm already and plays as itself, so the variant of a variant
+ * is itself.
+ */
+export const CALM_GESTURES: Readonly<Partial<Record<Gesture, Gesture>>> = {
+  hop: "nod",
+  happy: "nod",
+  cheer: "clap",
+  dance: "sway"
+};
+
+export function calmGesture(gesture: Gesture): Gesture {
+  return CALM_GESTURES[gesture] ?? gesture;
+}
 
 export interface GesturePlan {
   readonly gesture: Gesture;
@@ -322,11 +346,11 @@ export function createAnimationDirector(options: { readonly reducedMotion?: bool
       if (run.gesture && run.plan) {
         still = run.plan.still;
         if (run.plan.motion) {
-          const g = sampleGestureMotion(run.plan.motion, run.elapsed, run.loop);
+          const g = sampleGestureMotion(reduced ? reducedMotionSpec(run.plan.motion) : run.plan.motion, run.elapsed, run.loop);
           layers.push(reduced ? dampPose(g, 0.5) : g);
         }
       } else if (run.holding) {
-        const g = sampleGestureMotion(run.holding, run.holding.durationSec, false);
+        const g = sampleGestureMotion(reduced ? reducedMotionSpec(run.holding) : run.holding, run.holding.durationSec, false);
         layers.push(reduced ? dampPose(g, 0.5) : g);
         still = run.holding.still === true;
       }

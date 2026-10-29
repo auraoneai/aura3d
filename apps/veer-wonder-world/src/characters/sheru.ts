@@ -26,7 +26,11 @@ export const SHERU: CharacterDefinition = {
     wave: gestureMotion([proc("wag", 1.4, 0.24, 3), proc("hop", 1.4, 0.06, 1)]),
     look: gestureMotion([proc("turn", 2.0, 0.5)]),
     dance: gestureMotion([proc("hop", 2.2, 0.1, 3), proc("wag", 2.2, 0.25, 5)]),
-    talk: gestureMotion([proc("squash", 0.6, 0.05, 2)], { durationSec: 0.6 })
+    talk: gestureMotion([proc("squash", 0.6, 0.05, 2)], { durationSec: 0.6 }),
+    // Surprised like a puppy (07 B20): ears-up stretch, a small hop and a head tilt, then back.
+    surprise: gestureMotion([proc("stretch", 0.8, 0.08), proc("hop", 0.8, 0.05), proc("tilt", 0.8, 0.12)]),
+    // Waits like a dog: settles into a small sit, looking up, and holds it.
+    wait: gestureMotion([proc("duck", 1.0, 0.1), proc("lean", 1.0, -0.08)], { hold: true })
   },
   idleMotion: gestureMotion([proc("pulse", 2.4, 0.014)]),
   talkStrength: 0.05,

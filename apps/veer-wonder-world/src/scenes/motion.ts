@@ -487,6 +487,18 @@ export function gestureFinished(spec: GestureMotionSpec, tSec: number): boolean 
   return tSec >= spec.durationSec;
 }
 
+/**
+ * Layers reduced motion leaves out. A spin is pure secondary motion, and damped to half it would end a gesture
+ * half-way round (facing away) and snap back when the gesture ends.
+ */
+export const REDUCED_MOTION_DROPPED: readonly ProceduralKind[] = ["spin"];
+
+/** The gesture as reduced motion plays it: the same timing, hold and halo, without the dropped layers. */
+export function reducedMotionSpec(spec: GestureMotionSpec): GestureMotionSpec {
+  if (!spec.layers.some((layer) => REDUCED_MOTION_DROPPED.includes(layer.kind))) return spec;
+  return { ...spec, layers: spec.layers.filter((layer) => !REDUCED_MOTION_DROPPED.includes(layer.kind)) };
+}
+
 // ---------------------------------------------------------------- tweens
 
 /** A scalar that eases toward a target over time. Deterministic: only `step(dt)` moves it. */
