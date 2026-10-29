@@ -926,11 +926,22 @@
   }
  },
  "where-the-wind-wanders MODEL_ASSETS": {
+  "bell": {
+   "type": "model",
+   "format": "glb",
+   "url": "<root>/examples/where-the-wind-wanders-port/assets/models/belltower-bell.glb",
+   "hash": "sha256-9cfea7c02304ebddc4a89cbc3f13d6e529f25690dc44a558f846cc3786089387",
+   "metadata": {
+    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
+   },
+   "kind": "aura-asset-ref",
+   "id": "bell"
+  },
   "belltower": {
    "type": "model",
    "format": "glb",
    "url": "<root>/examples/where-the-wind-wanders-port/assets/models/belltower.glb",
-   "hash": "sha256-8401165f31fe4302dc4b98875c2cffc6f814fd16c44a6e691c45e0e3af0cd0b7",
+   "hash": "sha256-71520d983e45551dbd61b55a38f128976c38621228734943a0dca26849e80c5f",
    "metadata": {
     "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
    },
@@ -941,7 +952,7 @@
    "type": "model",
    "format": "glb",
    "url": "<root>/examples/where-the-wind-wanders-port/assets/models/boat.glb",
-   "hash": "sha256-790c247bbe6ee02cb672594ae7f9ac556009e6eb0f5f3396d5076b08334b5b7a",
+   "hash": "sha256-967c9c64c9ef38bfaae193b1937418fdc80b8f9914916bb963eaf98e7211c335",
    "metadata": {
     "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
    },
@@ -952,7 +963,7 @@
    "type": "model",
    "format": "glb",
    "url": "<root>/examples/where-the-wind-wanders-port/assets/models/cottage.glb",
-   "hash": "sha256-730877a6342fb5aee973acf077239e226823ae26b854141edc3dfd5bbdad4d4d",
+   "hash": "sha256-9e07d9b0e155bf2dfb86428bb70da138fc0ea51c165fca0d3d276d174f946f2e",
    "metadata": {
     "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
    },
@@ -963,7 +974,7 @@
    "type": "model",
    "format": "glb",
    "url": "<root>/examples/where-the-wind-wanders-port/assets/models/hero.glb",
-   "hash": "sha256-ec555e8bd4f00c82f449597cb028d3f4032fa4f147df91f6a25466eab9b89681",
+   "hash": "sha256-c10cbf7d835d6b7f1c53f2ebb13fa65fb34ec6550ac74aa619012145c5a3a230",
    "metadata": {
     "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
    },
@@ -974,7 +985,7 @@
    "type": "model",
    "format": "glb",
    "url": "<root>/examples/where-the-wind-wanders-port/assets/models/letter.glb",
-   "hash": "sha256-e9dc7c0bdc943aced0f34eedcdc5577977831cda15ddb1ca93629fc9dc863e3e",
+   "hash": "sha256-dbd2c4e10ce2960f0621b9b8099ea80e80791df46a5626d47733829f9dc26087",
    "metadata": {
     "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
    },
@@ -985,7 +996,7 @@
    "type": "model",
    "format": "glb",
    "url": "<root>/examples/where-the-wind-wanders-port/assets/models/oak.glb",
-   "hash": "sha256-1ce33981a15eddddd9809809eb23a386f873e57e2e75ceeafe35de0e5ff2df29",
+   "hash": "sha256-5dfffb564f540fef386d5a5db032bbd9f041fb75f73491e3e7eab75381eaeb79",
    "metadata": {
     "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
    },
@@ -996,7 +1007,7 @@
    "type": "model",
    "format": "glb",
    "url": "<root>/examples/where-the-wind-wanders-port/assets/models/pine.glb",
-   "hash": "sha256-3bbed492f72cb8268aedf12a8849cbd2ba53616ded248d792aee22db3438ecd3",
+   "hash": "sha256-3364ba0eb714389e06dc4d119e58a9aa96512d16f3377ce71a34ef7c307c6c8d",
    "metadata": {
     "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
    },
@@ -1007,7 +1018,7 @@
    "type": "model",
    "format": "glb",
    "url": "<root>/examples/where-the-wind-wanders-port/assets/models/shrub.glb",
-   "hash": "sha256-0649b160ed12ddcde43294c1dd2e54bff3c78f97edd7f1697d24e5a91d98f1c4",
+   "hash": "sha256-3ab37835b509a15edd5b041807605aecb144ff02dced2b107e672730c37a0627",
    "metadata": {
     "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
    },
@@ -1018,7 +1029,7 @@
    "type": "model",
    "format": "glb",
    "url": "<root>/examples/where-the-wind-wanders-port/assets/models/stones.glb",
-   "hash": "sha256-82f54ab3ece98660680f6720bde7b00d185024d7391b29889685ef9c73149a39",
+   "hash": "sha256-1ac94b684dc3c4d0afa1a759448b73ddd62637eda8683c5a6d789f25752ee7cf",
    "metadata": {
     "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
    },
@@ -1029,7 +1040,7 @@
    "type": "model",
    "format": "glb",
    "url": "<root>/examples/where-the-wind-wanders-port/assets/models/wisp.glb",
-   "hash": "sha256-ab4e613e912577a049a12abd0bbcebc422c30341331e2188dc0b686e0c25ef4b",
+   "hash": "sha256-a7191fd8befb0d8927577b98ef47c23d3f186a760d03bd8a4ed02b7ede1260e7",
    "metadata": {
     "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time); original text prompt recorded in assets/ATTRIBUTION.md, 2026-10-23"
    },
