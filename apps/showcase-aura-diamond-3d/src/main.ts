@@ -3906,9 +3906,10 @@ function boot(): void {
     return {
       /**
        * Deliver one CPU pitch to the player with the sim stepped by hand, press swing when the timing error would be `offset`
-       * seconds (negative = early), or take the pitch when `offset` is null. Returns what the game decided.
+       * seconds (negative = early), or take the pitch when `offset` is null. With `aimAtBall` the contact point is put on
+       * the ball's crossing point first (what a player who reads the pitch does with the stick). Returns what the game decided.
        */
-      qaSwingAt: (offset: number | null) => {
+      qaSwingAt: (offset: number | null, aimAtBall = false) => {
         const wasManual = simLoop.manual;
         simLoop.manual = true;
         try {
@@ -3920,6 +3921,10 @@ function boot(): void {
           cpuChoosePitch();
           const p = G.pitch!;
           const cross = pitchPosAt(p, 1);
+          if (aimAtBall) {
+            const [zx, zy] = zoneCoords(cross);
+            G.pci = [clamp(zx, -1.3, 1.3), clamp(zy, -1.3, 1.3)];
+          }
           let pressed = offset === null;
           runUntil(() => {
             if (p.resolved || G.pitch !== p) return true;
@@ -3933,7 +3938,7 @@ function boot(): void {
             }
             return false;
           }, 4000);
-          return { offset, pitch: p.spec.name, inZone: inZone(cross), grade: G.lastGrade || null, timingErrMs: G.lastTimingErr === null ? null : Math.round(G.lastTimingErr * 1000), planned: G.batted?.plannedOutcome ?? null, before, after: { balls: G.balls, strikes: G.strikes, outs: G.outs }, phase: G.phase };
+          return { offset, aimAtBall, pitch: p.spec.name, inZone: inZone(cross), grade: G.lastGrade || null, timingErrMs: G.lastTimingErr === null ? null : Math.round(G.lastTimingErr * 1000), planned: G.batted?.plannedOutcome ?? null, before, after: { balls: G.balls, strikes: G.strikes, outs: G.outs }, phase: G.phase };
         } finally {
           simLoop.manual = wasManual;
         }

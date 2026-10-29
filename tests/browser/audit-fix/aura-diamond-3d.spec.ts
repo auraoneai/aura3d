@@ -193,6 +193,12 @@ test.describe("aura-diamond-3d audit-fix", () => {
       return [-0.25, -0.1, -0.03, 0, 0.03, 0.1, 0.25, null].map((off) => g.qaSwingAt(off));
     });
     log(`DIA_PROBE ${JSON.stringify({ probe: "qa-swing", grades })}`);
+    // C1: the same presses with the contact point on the ball. Timing alone decides the grade, so only near-zero offsets connect.
+    const aimed = await page.evaluate(() => {
+      const g = (globalThis as any).__AURA3D_GAME_DIAMOND__;
+      return [-0.25, -0.1, -0.03, 0, 0, 0.03, 0.1, 0.25].map((off) => g.qaSwingAt(off, true));
+    });
+    log(`DIA_PROBE ${JSON.stringify({ probe: "qa-swing-aimed", grades: aimed })}`);
     log(`DIA_PROBE ${JSON.stringify({ probe: "qa-kit", kit: await page.evaluate(() => (globalThis as any).__AURA3D_GAME_DIAMOND__.qaKit()) })}`);
     await grab(page, "dia-kit", "kit-closeup", true, { w: 1280, h: 720 });
     await page.evaluate(() => (globalThis as any).__AURA3D_GAME_DIAMOND__.qaFinish(true));
