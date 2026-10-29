@@ -212,6 +212,10 @@ describe("top-tennis-C6: J/K/L and serve movement go through the binding store",
 describe("top-tennis-C7 / C9 / C10 / C13: scene structure", () => {
   const snapshot = buildTennisScene(createPoseRig({ resolveAppearance }) as never).toJSON() as AuraSceneSnapshot;
   const byRuntime = (id: string) => snapshot.nodes.find((n) => (n as { runtime?: { id?: string } }).runtime?.id === id) as Record<string, unknown> | undefined;
+  it("C7: ?venue= reaches the quick-started match (quickStart reads per-mode settings, so the venue is passed through)", () => {
+    const boot = readFileSync("examples/aura-slam/shell/boot.ts", "utf8");
+    expect(boot).toContain('menu.quickStart("single", startSettings)');
+  });
   it("C7: backdrop, seats and sponsor trim are runtime nodes the venue can recolour", () => {
     for (const id of ["stadium-backdrop", STATIC_RUNTIME_IDS.bleachers, STATIC_RUNTIME_IDS.sponsorTrim, "stadium-grandstand-rear", "spectators"]) expect(byRuntime(id), id).toBeDefined();
   });

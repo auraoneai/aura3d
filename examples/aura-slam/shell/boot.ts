@@ -597,9 +597,12 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
 
   // Unless ?menu=1 or ?mode= is requested the live page starts on court so keys work immediately; the native page does the same.
   const requestedVenue = params.get("venue");
-  if (requestedVenue && themeFor(requestedVenue).id === requestedVenue) menu.selectVenue(requestedVenue);
-  if (params.get("menu") !== "1" && !params.get("mode")) { menu.quickStart("single"); quickBar.setActiveMode("play"); coach.maybeShow(); }
-  else if (params.get("mode") === "practice") { menu.quickStart("practice"); quickBar.setActiveMode("practice"); }
+  const venueOk = Boolean(requestedVenue && themeFor(requestedVenue).id === requestedVenue);
+  if (venueOk) menu.selectVenue(requestedVenue!);
+  // quickStart reads the per-mode remembered settings, so the requested venue is passed through (it was dropped before).
+  const startSettings = venueOk ? { venue: requestedVenue! } : {};
+  if (params.get("menu") !== "1" && !params.get("mode")) { menu.quickStart("single", startSettings); quickBar.setActiveMode("play"); coach.maybeShow(); }
+  else if (params.get("mode") === "practice") { menu.quickStart("practice", startSettings); quickBar.setActiveMode("practice"); }
   else quickBar.setActiveMode("menu");
 
   render();

@@ -278,6 +278,8 @@ test.describe("top-tennis audit-fix capture", () => {
   for (const venue of ["hard", "grass", "clay", "desert", "beach", "moon"]) {
     test(`tt-venue-${venue}`, async ({ page }) => {
       await open(page, `?venue=${venue}&autoplay=1&capture=1`, { width: 1280, height: 720 });
+      // Also switch through the quick bar, the live path a player uses (the base build ignored ?venue= on quick start).
+      await page.evaluate((v) => (document.querySelector(`[data-aura-venue="${v}"]`) as HTMLElement | null)?.click(), venue);
       for (const sec of [30, 60]) {
         await page.waitForTimeout(30_000);
         await grab(page, `venue-${venue}`, `settle-${sec}s`);
