@@ -351,7 +351,8 @@ export function signalSpeedCap(o: { readonly phase: 0 | 1 | 2; readonly distToLi
   if (o.phase === 0 || o.distToLine < 0 || o.distToLine > 60) return Infinity;
   const stopDist = (o.speed * o.speed) / (2 * 4);
   if (o.phase === 1 && stopDist > o.distToLine - 1.5) return Infinity;
-  return Math.max(0, (o.distToLine - 1.5) * 0.6);
+  // the speed from which the car still stops 1.5 m before the line at 4 m/s^2
+  return Math.sqrt(Math.max(0, 8 * (o.distToLine - 1.5)));
 }
 
 /** Left of the centre line the player is in the oncoming lanes. */
@@ -368,14 +369,23 @@ export interface LaneBody {
   length: number;
 }
 
+/** Index of the avenue lane nearest to `x`. */
+export const laneIndexOf = (x: number): number => {
+  let best = 0;
+  for (let i = 1; i < AVENUE_LANES_X.length; i++) if (Math.abs(AVENUE_LANES_X[i]! - x) < Math.abs(AVENUE_LANES_X[best]! - x)) best = i;
+  return best;
+};
+
 /**
  * Same-lane following for every road user that is not the player (traffic and AI rivals): a car never closes within
- * `gap` metres of the car ahead of it in its lane; it is held back and matches that car's speed.
+ * `gap` metres of the car ahead of it in its lane; it is held back and matches that car's speed. `player` is a leader the
+ * others brake for (they slow to its speed when they close in) but never move: hitting the player stays the contact
+ * system's job.
  */
-export function resolveLaneFollowing(cars: LaneBody[], gap = 2.5): void {
+export function resolveLaneFollowing(cars: LaneBody[], gap = 2.5, player?: LaneBody): void {
   const lanes = new Map<string, LaneBody[]>();
   for (const car of cars) {
-    const key = `${car.direction}:${Math.round(car.laneX)}`;
+    const key = `${car.direction}:${laneIndexOf(car.laneX)}`;
     let list = lanes.get(key);
     if (!list) lanes.set(key, (list = []));
     list.push(car);
@@ -392,6 +402,16 @@ export function resolveLaneFollowing(cars: LaneBody[], gap = 2.5): void {
       if (sep < min) {
         car.z = dir === 1 ? lead.z + min : lead.z - min;
         car.speed = Math.min(car.speed, lead.speed);
+      }
+    }
+    // a player between two lanes (changing lanes) blocks both of them
+    if (player && dir === player.direction && Math.abs(AVENUE_LANES_X[laneIndexOf(list[0]!.laneX)]! - player.laneX) < 2.4) {
+      for (const car of list) {
+        const sep = dir === 1 ? car.z - player.z : player.z - car.z;
+        const min = (player.length + car.length) / 2 + gap;
+        if (sep <= 0 || sep > min + 14) continue;
+        // ease down to the player's speed over the last 14 m, and never close faster than the player inside the gap
+        car.speed = Math.min(car.speed, sep < min ? player.speed * 0.9 : player.speed + (sep - min) * 0.6);
       }
     }
   }

@@ -148,6 +148,17 @@ describe("grid dispatch signals and assists (C19)", () => {
     expect(s.player.speed).toBeLessThan(10);
   });
 
+  it("L4 and L5 drive a whole shift with live traffic without a collision or a red light (C5, C19)", () => {
+    for (const level of ["L4", "L5"] as const) {
+      const sim = make(level);
+      for (let i = 0; i < 60 * (SHIFT_SECONDS + 5) && sim.state.phase === "driving"; i++) sim.step(DT, NO_INPUT);
+      expect(sim.state.phase, level).toBe("results");
+      expect(sim.state.shift.faresDone, level).toBe(5);
+      expect(sim.state.shift.collisions, level).toBe(0);
+      expect(sim.state.shift.redLights, level).toBe(0);
+    }
+  });
+
   it("road users never overlap in a lane (C5)", () => {
     const sim = make("L5");
     for (let t = 0; t < 90; t++) {

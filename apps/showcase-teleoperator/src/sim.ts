@@ -226,6 +226,7 @@ export function createSim(contacts: TrafficContacts, init: { car?: PlayableCarId
   contacts.setPlayerShape(playerShapeOf(state.car));
   let prevRel = state.users.map((u) => u.z - state.player.z);
   const lastHitAt = state.users.map(() => -10);
+  let committedLine: number | null = null;
 
   const penalise = (events: SimEvent[], title: string, comfortLoss: number, multiplierLoss: number, bountyLoss: number): void => {
     const r = state.ride;
@@ -319,7 +320,12 @@ export function createSim(contacts: TrafficContacts, init: { car?: PlayableCarId
       // ---- assist targets
       let targetLane = assist.steering === "route" ? 3.4 : p.holdLane;
       let targetSpeed = assist.cruiseMps;
-      if (assist.steering === "route" && r.state === "ride" && !towardKerb) targetLane = Math.sin(state.time * 0.35) > 0.35 ? 7.4 : 3.4;
+      if (assist.steering === "route" && r.state === "ride" && !towardKerb) {
+        const want = Math.sin(state.time * 0.35) > 0.35 ? 7.4 : 3.4;
+        const current = p.x > 5.4 ? 7.4 : 3.4;
+        const free = want === current || !state.users.some((u) => u.direction === 1 && Math.abs(u.laneX - want) < 2 && u.z - p.z < 9 && p.z - u.z < 12);
+        targetLane = free ? want : current;
+      }
       let leadGap = Infinity;
       let leadSpeed = Infinity;
       for (const u of state.users) {
@@ -332,10 +338,19 @@ export function createSim(contacts: TrafficContacts, init: { car?: PlayableCarId
       }
       if (assist.steering === "route" && leadGap < 22 && !towardKerb) {
         const blocked = state.users.find((u) => u.direction === 1 && p.z - u.z > 0 && p.z - u.z < 26 && Math.abs(u.laneX - p.x) < 2.1);
-        if (blocked) targetLane = blocked.laneX > 5 ? 3.4 : 7.4;
+        if (blocked) {
+          const other = blocked.laneX > 5 ? 3.4 : 7.4;
+          // change lanes only into a gap: nobody in the other lane within 12 m ahead or 9 m behind
+          const free = !state.users.some((u) => u.direction === 1 && Math.abs(u.laneX - other) < 2 && u.z - p.z < 9 && p.z - u.z < 12);
+          if (free) targetLane = other;
+          else targetLane = p.x > 5.4 ? 7.4 : 3.4;
+        }
       }
+      const laneFree = (x: number): boolean => !state.users.some((u) => u.direction === 1 && Math.abs(u.laneX - x) < 2 && u.z - p.z < 9 && p.z - u.z < 12);
+      if (r.state === "summary" && Math.abs(p.x - KERB_STOP_X) < 0.6 && !laneFree(targetLane)) targetLane = KERB_STOP_X;
       if (towardKerb) {
-        targetLane = KERB_STOP_X;
+        // pull in towards the kerb only through a gap in the right lane (the kerb stop sits in it)
+        if (Math.abs(p.x - KERB_STOP_X) < 1 || laneFree(7.4)) targetLane = KERB_STOP_X;
         if (dz < 24) targetSpeed = clamp(dz * 0.55, 2.2, 12.5);
       }
       if (atKerb) {
@@ -344,7 +359,11 @@ export function createSim(contacts: TrafficContacts, init: { car?: PlayableCarId
       }
       if (r.state === "summary") targetSpeed = Math.min(targetSpeed || 13.5, 13.5);
       const lineZ = nextStopLineZ(p.z);
-      const signalCap = signalSpeedCap({ phase: state.signal, distToLine: p.z - lineZ, speed: p.speed });
+      let signalCap = signalSpeedCap({ phase: state.signal, distToLine: p.z - lineZ, speed: p.speed });
+      // a car that decided to go on yellow keeps going through that line, even if it slows afterwards
+      if (state.signal === 1 && signalCap === Infinity && p.z - lineZ < 60) committedLine = lineZ;
+      if (committedLine === lineZ) signalCap = Infinity;
+      else if (state.signal === 0) committedLine = null;
       const followCap = leadGap < 26 ? Math.max(0, Math.min(leadSpeed, (leadGap - 3) * 0.8)) : Infinity;
 
       // ---- drive
@@ -391,6 +410,14 @@ export function createSim(contacts: TrafficContacts, init: { car?: PlayableCarId
         p.regen = diff < -0.6 ? clamp(-diff * 0.16, 0.25, 0.95) : 0.22;
         state.brakeCue = cap < targetSpeed - 1 && p.speed > 1;
       }
+      // Stopping for a light: brake with the deceleration that ends 1.5 m before the line (the proportional controller
+      // above lags, so on its own it would roll through the line).
+      if ((!playerDrives || assist.brakeAssist) && signalCap !== Infinity && p.speed > signalCap - 0.5) {
+        const room = Math.max(0.05, p.z - lineZ - 1.5);
+        const need = (p.speed * p.speed) / (2 * room) + 0.4;
+        p.speed = Math.max(0, p.speed - Math.min(16, need) * dt);
+        if (playerDrives) state.brakeCue = true;
+      }
       const prevZ = p.z;
       p.z -= p.speed * dt;
 
@@ -424,7 +451,7 @@ export function createSim(contacts: TrafficContacts, init: { car?: PlayableCarId
           if (u.z > p.z + 22) u.z = p.z - 210 - (u.slot % 3) * 18;
         }
       }
-      resolveLaneFollowing(state.users);
+      resolveLaneFollowing(state.users, 2.5, { laneX: p.x, z: p.z, speed: p.speed, direction: 1, length: contacts.playerShape.halfLength * 2 });
 
       // ---- contacts with the player
       const body: PlayerBody = { x: p.x, z: p.z, speed: p.speed, lateral: (p.x - xBefore) / Math.max(dt, 1e-4) };
