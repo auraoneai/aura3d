@@ -169,17 +169,22 @@ b {
   display: none !important;
 }
 
-#ui h1,
-#ui h2,
-#ui h3,
-#ui p,
-#ui ul,
-#ui fieldset {
+/*
+ * Element resets carry no specificity (`:where`), so every component rule below wins over them. Written as
+ * `#ui button`, the reset out-ranked every class: each purple button showed its parent's dark ink at about 2:1
+ * instead of its white label, and lost its own size and weight.
+ */
+:where(#ui) h1,
+:where(#ui) h2,
+:where(#ui) h3,
+:where(#ui) p,
+:where(#ui) ul,
+:where(#ui) fieldset {
   margin: 0;
 }
 
-#ui button,
-#ui input {
+:where(#ui) button,
+:where(#ui) input {
   font: inherit;
   color: inherit;
 }

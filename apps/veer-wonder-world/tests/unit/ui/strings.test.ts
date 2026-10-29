@@ -428,6 +428,52 @@ describe("styles.css", () => {
       expect(seconds, match[1]).toBeGreaterThanOrEqual(2);
     }
   });
+
+  it("keeps the element resets at zero specificity, so each control's own colour, size and weight win", () => {
+    // `#ui button { color: inherit }` once out-ranked every class: the purple buttons showed dark ink at about 2:1.
+    const rules = Array.from(css.matchAll(/([^{}]+)\{([^}]*)\}/g), (match) => ({ selector: (match[1] ?? "").trim(), body: match[2] ?? "" }));
+    const idScoped = rules.filter(
+      (rule) =>
+        rule.selector.split(",").some((part) => /(^|\s)#ui\s+(button|input|h[1-6]|p|ul|fieldset)\s*$/.test(part.trim())) &&
+        /(^|;)\s*(color|font|font-size|font-weight|margin)\s*:/.test(rule.body)
+    );
+    expect(idScoped.map((rule) => rule.selector)).toEqual([]);
+    expect(css).toMatch(/:where\(#ui\) button,\s*:where\(#ui\) input\s*\{\s*font: inherit;\s*color: inherit;/);
+  });
+
+  it("gives every filled control a readable label in both palettes (WCAG AA, at least 4.5:1)", () => {
+    const tokens = (block: string): Map<string, string> =>
+      new Map(Array.from(block.matchAll(/(--ww-[\w-]+):\s*(#[0-9a-fA-F]{6})\s*;/g), (match) => [match[1] ?? "", match[2] ?? ""]));
+    const luminance = (hex: string): number => {
+      const channel = (offset: number): number => {
+        const value = Number.parseInt(hex.slice(offset, offset + 2), 16) / 255;
+        return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+      };
+      return 0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5);
+    };
+    const contrast = (a: string, b: string): number => {
+      const [light, dark] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+      return ((light ?? 0) + 0.05) / ((dark ?? 0) + 0.05);
+    };
+    const base = tokens(/:root\s*\{([^}]*)\}/.exec(css)?.[1] ?? "");
+    const highContrast = new Map([...base, ...tokens(/\.high-contrast\s*\{([^}]*)\}/.exec(css)?.[1] ?? "")]);
+    const pairs = [
+      ["--ww-primary", "--ww-on-primary"],
+      ["--ww-primary-hover", "--ww-on-primary"],
+      ["--ww-selected-bg", "--ww-selected-ink"],
+      ["--ww-surface", "--ww-ink"],
+      ["--ww-surface", "--ww-ink-soft"]
+    ] as const;
+    for (const [palette, values] of [["default", base], ["high contrast", highContrast]] as const) {
+      for (const [background, text] of pairs) {
+        const bg = values.get(background);
+        const ink = values.get(text);
+        expect(bg, `${palette} ${background}`).toMatch(/^#/);
+        expect(ink, `${palette} ${text}`).toMatch(/^#/);
+        expect(contrast(bg ?? "", ink ?? ""), `${palette}: ${text} on ${background}`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
 });
 
 describe("index.html", () => {
