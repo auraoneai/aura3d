@@ -85,7 +85,7 @@
       body.touch #nitro { bottom: calc(240px + env(safe-area-inset-bottom, 0px)); }
       body.touch #speedbox { left: auto; right: 16px; bottom: calc(240px + env(safe-area-inset-bottom, 0px)); transform: none; text-align: right; }
       body.touch #job { top: 92px; }
-      body.touch #minimap { top: 96px; bottom: auto; right: 12px; width: 120px; height: 120px; }
+      body.touch #minimap { top: 120px; bottom: auto; right: 12px; width: 112px; height: 112px; }
       @media (max-width: 640px) {
         #score-box { top: 14px; right: 12px; }
         #score { font-size: 22px; }
@@ -97,7 +97,8 @@
         #clock { top: 62px; font-size: 22px; }
         #job { top: 92px; font-size: 13px; }
         body.touch #clock { top: 64px; }
-        body.touch #job { top: 94px; }
+        body.touch #job { top: 94px; left: 14px; transform: none; letter-spacing: 1px; }
+        body.touch #minimap { width: 96px; height: 96px; }
       }
     </style>
   </head>
