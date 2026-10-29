@@ -207,34 +207,46 @@ describe("RP-06: safe-basic names what it does not render", () => {
 });
 
 describe("ENG-FPS: windowed frame rate", () => {
-  it("averages the frames of the last second", () => {
+  // The meter counts one frame per task (a canvas presents once per task), so each sample here runs in its own microtask turn.
+  const frames = async (meter: ReturnType<typeof createFrameRateMeter>, times: readonly number[]) => {
+    for (const time of times) { meter.sample(time); await Promise.resolve(); }
+  };
+
+  it("averages the frames of the last second", async () => {
     const meter = createFrameRateMeter();
     expect(meter.fps()).toBe(0);
-    for (let i = 0; i <= 120; i++) meter.sample(i * (1000 / 60));
+    await frames(meter, Array.from({ length: 121 }, (_, i) => i * (1000 / 60)));
     expect(meter.fps()).toBeCloseTo(60, 0);
   });
 
-  it("reports a loop slower than one frame per second at its real rate, not 60", () => {
+  it("reports a loop slower than one frame per second at its real rate, not 60", async () => {
     const meter = createFrameRateMeter();
-    meter.sample(1000);
-    meter.sample(3500);
+    await frames(meter, [1000, 3500]);
     expect(meter.fps()).toBe(0.4);
-    meter.sample(4676);
+    await frames(meter, [4676]);
     expect(meter.fps()).toBe(0.9);
   });
 
-  it("smooths one long frame instead of reporting it alone", () => {
+  it("smooths one long frame instead of reporting it alone", async () => {
     const meter = createFrameRateMeter();
-    for (let i = 0; i < 30; i++) meter.sample(i * 33.3);
-    meter.sample(29 * 33.3 + 100);
+    await frames(meter, [...Array.from({ length: 30 }, (_, i) => i * 33.3), 29 * 33.3 + 100]);
     expect(meter.fps()).toBeGreaterThan(25);
     expect(meter.fps()).toBeLessThan(31);
   });
 
-  it("ignores repeated and non-finite timestamps", () => {
+  it("ignores repeated and non-finite timestamps", async () => {
     const meter = createFrameRateMeter();
-    meter.sample(0); meter.sample(0); meter.sample(Number.NaN); meter.sample(500);
+    await frames(meter, [0, 0, Number.NaN, 500]);
     expect(meter.fps()).toBe(2);
+  });
+
+  it("counts several renders in one task (a loop of app.step() calls) as one presented frame", async () => {
+    const meter = createFrameRateMeter();
+    meter.sample(0); meter.sample(10); meter.sample(20);
+    await Promise.resolve();
+    meter.sample(1000); meter.sample(1010);
+    await Promise.resolve();
+    expect(meter.fps()).toBe(1);
   });
 });
 

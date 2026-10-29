@@ -205,7 +205,9 @@ export async function startProductionRender(
     if (lastTime === 0) markTiming("a3d:mount:first-renderFrame");
     const delta = lastTime > 0 ? Math.max(1, time - lastTime) : 16.67;
     lastTime = time;
-    if (!explicit) frameRate.sample(time);
+    // Explicit renders (`app.step()` loops, which most games drive themselves) are sampled on the wall clock, since `time` is then
+    // simulated time; the meter counts one frame per task, so several steps inside one rAF callback count once.
+    frameRate.sample(explicit ? performanceNow() : time);
     if (!explicit && !isPaused()) beforeRender?.(delta / 1000, "raf");
     /*
      * A paused app must not keep advancing time-driven rendering.
@@ -288,7 +290,6 @@ export async function startProductionRender(
       if (automatic) {
         const delta = lastTime > 0 ? Math.max(1, time - lastTime) : 16.67;
         lastTime = time;
-        frameRate.sample(time);
         if (!isPaused()) beforeRender?.(delta / 1000, "raf");
       }
       // User frame callbacks can dispose the app. Do not submit a new frame after
@@ -423,17 +424,21 @@ export interface FrameRateMeter {
 }
 
 /**
- * ENG-FPS: frame rate averaged over the frames of the last `windowMs` (default 1 s). `diagnostics().fps` used to be the constant
+ * ENG-FPS: frame rate averaged over the presented frames of the last `windowMs` (default 1 s). `diagnostics().fps` used to be the constant
  * 60 on the WebGL path (`fps || 60`) and `1000 / delta` of the single last frame on the canvas path, so it read 60 while a
  * measured rAF loop ran at 0.4-0.85 fps. The window keeps the newest frame older than `windowMs` as well, so a loop slower than
  * one frame per window still reports its real rate (two frames 2.5 s apart: 0.4).
  */
 export function createFrameRateMeter(windowMs = 1000): FrameRateMeter {
   const times: number[] = [];
+  // A canvas is presented once per task, so renders issued in the same task (a loop of `app.step()` calls) are one frame.
+  let sampledThisTask = false;
   return {
     sample(time) {
-      if (!Number.isFinite(time)) return;
+      if (!Number.isFinite(time) || sampledThisTask) return;
       if (times.length > 0 && time <= times[times.length - 1]!) return;
+      sampledThisTask = true;
+      queueMicrotask(() => { sampledThisTask = false; });
       times.push(time);
       // Drop frames older than the window, keeping one before it so the span always covers at least one interval.
       while (times.length > 2 && time - times[1]! >= windowMs) times.shift();
