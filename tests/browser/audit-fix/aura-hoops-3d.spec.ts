@@ -270,3 +270,28 @@ for (const court of ["rucker", "shanghai"] as const) {
     });
   }
 }
+
+/* ---------------- One page, every court: load once, then switch courts with the top-bar buttons ----------------
+ * A full page load costs about 8 minutes of software GL, so the six-court and AO sweeps reuse one page. Each court is
+ * measured 60 s after its switch (the later shots), never right after the rebuild. */
+async function cycleCourts(page: Page, label: string, query: string, courts: readonly string[], settleSec = 60): Promise<void> {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  const t0 = await open(page, `?court=${courts[0]}${query}`, label);
+  for (let i = 0; i < courts.length; i++) {
+    const court = courts[i]!;
+    if (i > 0) await page.evaluate((c) => (document.querySelector(`[data-court="${c}"]`) as HTMLElement | null)?.click(), court);
+    const since = Date.now();
+    await page.waitForTimeout(settleSec * 1000);
+    await grab(page, `${label}-${court}`, `settle-${settleSec}s`, { sinceSwitchMs: Date.now() - since, sinceReadyMs: Date.now() - t0 }, { full: false, crop: { x0: 0.35, y0: 0.45, x1: 0.65, y1: 0.85 } });
+  }
+}
+
+test("courts all", async ({ page }) => {
+  await cycleCourts(page, "courts", "", COURTS);
+});
+
+for (const ao of ["0", "1"] as const) {
+  test(`ao cycle ao=${ao}`, async ({ page }) => {
+    await cycleCourts(page, `ao${ao}`, `&diag=1&qaAo=${ao}`, ["rucker", "shanghai", "orbit"]);
+  });
+}
