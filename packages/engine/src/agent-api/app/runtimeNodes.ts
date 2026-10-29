@@ -106,8 +106,11 @@ export function createAuraRuntimeNodeRegistry(snapshot: AuraSceneSnapshot, deps:
    * here so a remount (to take the HDR target, see `add`) carries them over instead of dropping them. Cleared on `reset`.
    */
   let compiledAdds: { readonly id: string; readonly node: AuraSceneNode; readonly parent?: string }[] = [];
+  /** Mounted (snapshot) node ids removed through the compiled subtree path; a remount must not bring them back. */
+  let compiledRemovals = new Set<string>();
   const sceneWithCompiledAdds = (scene: AuraSceneSnapshot): AuraSceneSnapshot => {
     let nodes: AuraSceneNode[] = [...scene.nodes];
+    for (const id of compiledRemovals) nodes = removeRuntimeNodeById(nodes, id).nodes;
     for (const entry of compiledAdds) nodes = insertRuntimeNode(nodes, entry.node, entry.parent);
     return { ...scene, nodes };
   };
@@ -175,6 +178,7 @@ export function createAuraRuntimeNodeRegistry(snapshot: AuraSceneSnapshot, deps:
       if (directBlockers.length > 0 && scene && setScene) {
         const next = sceneWithCompiledAdds(scene);
         compiledAdds = [];
+        compiledRemovals = new Set();
         setScene({ ...next, nodes: insertRuntimeNode(next.nodes, node, options.parent) });
         // After setScene: the remount resets the app's warning list.
         diagnostic?.(`DIRECT_PATH_REMOUNT: runtime node "${id}" needs the HDR target (${directBlockers.join("; ")}); the scene was remounted so it renders.`);
@@ -214,7 +218,9 @@ export function createAuraRuntimeNodeRegistry(snapshot: AuraSceneSnapshot, deps:
       handles.delete(id);
       if (compiled && compilerFlagOn()) {
         compiled.removeSubtree(id);
+        const wasAdded = compiledAdds.some((entry) => entry.id === id);
         compiledAdds = compiledAdds.filter((entry) => entry.id !== id);
+        if (!wasAdded) compiledRemovals.add(id);
         return true;
       }
       const scene = getScene?.();
@@ -244,6 +250,7 @@ export function createAuraRuntimeNodeRegistry(snapshot: AuraSceneSnapshot, deps:
     },
     reset(nextSnapshot) {
       compiledAdds = [];
+      compiledRemovals = new Set();
       handles = collectRuntimeNodeHandles(nextSnapshot);
       registryVersion += 1;
     }

@@ -90,6 +90,47 @@ class SourceContributions implements RenderSourceContributions {
   }
 }
 
+/** What one handled node's compile() put into the persistent contributions, so a subtree removal can take it back out. */
+interface NodeCompileRecord {
+  readonly items: RenderItem[];
+  readonly lights: CollectedLight[];
+  readonly overrides: Map<string, unknown>;
+}
+
+/** Writes through to `state` like `SourceContributions` and records what was written for `removeSubtree`. */
+class RecordingContributions extends SourceContributions {
+  readonly record: NodeCompileRecord = { items: [], lights: [], overrides: new Map() };
+  addItems(items: readonly unknown[]): void {
+    super.addItems(items);
+    this.record.items.push(...(items as readonly RenderItem[]));
+  }
+  addLights(lights: readonly unknown[]): void {
+    super.addLights(lights);
+    this.record.lights.push(...(lights as readonly CollectedLight[]));
+  }
+  set<K extends string>(field: K, value: unknown): void {
+    super.set(field, value);
+    this.record.overrides.set(field, value);
+  }
+}
+
+/**
+ * Flattens each top-level node on its own. The concatenation equals `groups.flatten(nodes)` (flatten walks the list in order
+ * with an identity parent transform), and each top-level runtime id keeps its own flattened descendants, so
+ * `app.nodes.remove(id)` on a mounted group or look can find them: groups themselves vanish in the flatten.
+ */
+function flattenPerRoot(nodes: readonly AuraSceneNode[]): { flat: AuraSceneNode[]; byRoot: Map<string, AuraSceneNode[]> } {
+  const flat: AuraSceneNode[] = [];
+  const byRoot = new Map<string, AuraSceneNode[]>();
+  for (const node of nodes) {
+    const part = groups.flatten([node]).slice();
+    flat.push(...part);
+    const id = "runtime" in node ? node.runtime?.id : undefined;
+    if (id) byRoot.set(id, (byRoot.get(id) ?? []).concat(part));
+  }
+  return { flat, byRoot };
+}
+
 function mergeContributions(source: RenderSource, contributions: ContributionState): RenderSource {
   if (!contributions.items.length && !contributions.lights.length && !contributions.overrides.size) {
     return source;
@@ -125,8 +166,13 @@ export class CompiledSceneImpl implements CompiledScene {
   liveNodes: AuraSceneNode[];
   /** Raw (pre-flatten) nodes added via the C-37 subtree path, keyed by their root runtime id. */
   dynamicRoots = new Map<string, AuraSceneNode>();
-  /** Flattened nodes belonging to each dynamic root (for subtree dispose). */
+  /**
+   * Flattened nodes belonging to each runtime root (for subtree dispose): dynamic roots added through `addSubtree`, and the
+   * top-level mounted nodes that carry a runtime id (from `mountedFlat`).
+   */
   dynamicFlat = new Map<string, AuraSceneNode[]>();
+  /** What each handled node's compile() contributed to `persistentContributions` (taken back out by `removeSubtree`). */
+  compileRecords = new Map<AuraSceneNode, NodeCompileRecord>();
   /** RenderItem reuse cache for A3D_QR_COMPILER frames (T3.12): `${runtimeId}:${itemIndex}` → {version, item}. */
   itemCache = new Map<string, { version: number; item: RenderItem }>();
   /** Source contributions made by dynamically added subtree handlers. */
@@ -157,7 +203,8 @@ export class CompiledSceneImpl implements CompiledScene {
     handledNodes: { node: AuraSceneNode; handler: AnyNodeHandler }[],
     readonly mountCtx: MountSceneCompileContext,
     sceneNodes: readonly AuraSceneNode[],
-    flatNodes: AuraSceneNode[]
+    flatNodes: AuraSceneNode[],
+    mountedFlat?: ReadonlyMap<string, AuraSceneNode[]>
   ) {
     this.source = source;
     this.actors = actors;
@@ -166,6 +213,7 @@ export class CompiledSceneImpl implements CompiledScene {
     this.handledNodes = handledNodes;
     this.rawSceneNodes = sceneNodes;
     this.liveNodes = flatNodes;
+    if (mountedFlat) for (const [id, nodes] of mountedFlat) this.dynamicFlat.set(id, nodes.slice());
     bindRuntimeCompiled(this as unknown as import("../../contracts/compiler.js").CompiledScene, this as unknown as RuntimeCompiledSceneInternals);
   }
 
@@ -182,10 +230,12 @@ export class CompiledSceneImpl implements CompiledScene {
     const flatNodes = groups.flatten([effective]).slice();
     this.dynamicRoots.set(runtimeIdOf(node), node);
     this.dynamicFlat.set(runtimeIdOf(node), flatNodes);
+    // A node added under a live root goes with that root when the root is removed.
+    const parentFlat = parentId && parent ? this.dynamicFlat.get(parentId) : undefined;
+    if (parentFlat && parentId !== runtimeIdOf(node)) parentFlat.push(...flatNodes);
     this.liveNodes = this.liveNodes.concat(flatNodes);
 
     const contributions = this.persistentContributions;
-    const out = new SourceContributions(contributions);
     const ctx = this.mountCtx;
     const extraPrimitive = createProductionRuntimePrimitiveEntries(flatNodes, qrPrimitiveGeometryOptions(ctx.flags, ctx.quality, ctx));
     this.primitiveEntries.push(...extraPrimitive);
@@ -232,6 +282,8 @@ export class CompiledSceneImpl implements CompiledScene {
       // parityPending sentinel whose compile throws `parity-not-implemented`.
       if (handler && (handler.owner !== "prd15" || handler.flag !== undefined)) {
         this.handledNodes.push({ node: flatNode, handler });
+        const out = new RecordingContributions(contributions);
+        this.compileRecords.set(flatNode, out.record);
         void handler.compile(flatNode, ctx, out);
       }
     }
@@ -272,8 +324,37 @@ export class CompiledSceneImpl implements CompiledScene {
       handler.dispose?.(node);
       return false;
     });
+    this.dropCompileContributions(targets);
     this.itemCache.clear();
     return true;
+  }
+
+  /** Takes the removed nodes' compile-time items, lights and source overrides back out of the persistent contributions. */
+  private dropCompileContributions(targets: readonly AuraSceneNode[]): void {
+    const items = new Set<RenderItem>();
+    const lights = new Set<CollectedLight>();
+    const persistent = this.persistentContributions;
+    for (const node of targets) {
+      const record = this.compileRecords.get(node);
+      if (!record) continue;
+      this.compileRecords.delete(node);
+      for (const item of record.items) items.add(item);
+      for (const light of record.lights) lights.add(light);
+      // An override goes only while it still holds this node's value; a later node that set the same field keeps its value.
+      for (const [field, value] of record.overrides) {
+        if (persistent.overrides.get(field) === value) persistent.overrides.delete(field);
+      }
+    }
+    if (items.size > 0) {
+      const keep = persistent.items.filter((item) => !items.has(item));
+      persistent.items.length = 0;
+      persistent.items.push(...keep);
+    }
+    if (lights.size > 0) {
+      const keep = persistent.lights.filter((light) => !lights.has(light));
+      persistent.lights.length = 0;
+      persistent.lights.push(...keep);
+    }
   }
 
   dispose(): void {
@@ -321,7 +402,8 @@ const runtimeIdStillLive = (impl: CompiledSceneImpl, runtimeId: string): boolean
 async function compileSceneReal(snapshot: AuraSceneSnapshot, ctx: SceneCompileContext): Promise<CompiledScene> {
   const mount = ctx as MountSceneCompileContext;
   const canvas = mount.canvas;
-  const flattened = groups.flatten(snapshot.nodes);
+  const { flat: flattened, byRoot: mountedFlat } = flattenPerRoot(snapshot.nodes);
+  const compileRecords = new Map<AuraSceneNode, NodeCompileRecord>();
   const degradations: AuraDegradation[] = [];
   const recordDegrade = (d: Omit<AuraDegradation, "frame">): void => {
     const entry: AuraDegradation = { ...d, frame: 0 };
@@ -389,7 +471,9 @@ async function compileSceneReal(snapshot: AuraSceneSnapshot, ctx: SceneCompileCo
     // and its compile must run so flag-off fails closed (parity-not-implemented).
     if (handler && (handler.owner !== "prd15" || handler.flag !== undefined)) {
       handledNodes.push({ node, handler });
-      await handler.compile(node, ctx, new SourceContributions(contributions));
+      const out = new RecordingContributions(contributions);
+      compileRecords.set(node, out.record);
+      await handler.compile(node, ctx, out);
     }
   }
 
@@ -412,8 +496,10 @@ async function compileSceneReal(snapshot: AuraSceneSnapshot, ctx: SceneCompileCo
     handledNodes,
     mount,
     snapshot.nodes,
-    flattened.slice()
+    flattened.slice(),
+    mountedFlat
   );
+  for (const [node, record] of compileRecords) compiled.compileRecords.set(node, record);
   // C36-DROP: contributions made by handlers' compile() (addItems/addLights/
   // set — e.g. prd02 lights/environment/probe, prd10 world) were dropped before
   // the t=0 frame. They are persistent for the scene's life: merge them into
