@@ -7,7 +7,7 @@ import { startExampleDevServer, type ExampleDevServer } from "../example-dev-ser
  * egress, so output goes to the log:
  *   E2_META <json>                         luma stats (whole frame and top/middle/bottom thirds) + engine diagnostics
  *   E2_JPG  <target> <shot> <i>/<n> <b64>  canvas-only JPEG, chunked
- * Targets carry a shard prefix (s1-..s4-) so one image can run as parallel `--grep=sN-` shards inside the 3600 s task
+ * Targets carry a shard prefix (s1-..s8-, three per shard) so one image can run as parallel `--grep=sN-` shards inside the 3600 s task
  * limit. The software-GL runner presents about one frame every 5 to 10 s and HDRI/baked probes land seconds after the
  * first frame: judge the last shot, never the first.
  */
@@ -24,28 +24,28 @@ const TARGETS: readonly Target[] = [
   { name: "s1-roadster-rush", url: "/apps/showcase-roadster-rush/", rows: "LIGHT-05" },
   { name: "s1-heatsink", url: "/apps/showcase-heatsink/", rows: "LIGHT-05" },
   { name: "s1-teleoperator", url: "/apps/showcase-teleoperator/", rows: "LIGHT-05" },
-  { name: "s1-slingshot-siege", url: "/apps/showcase-slingshot-siege/", rows: "LIGHT-05" },
-  { name: "s1-cloud-runner-port", url: "/apps/showcase-cloud-runner-port/", rows: "LIGHT-05 SSAO" },
-  { name: "s1-drift-and-deliver-port", url: "/apps/showcase-drift-and-deliver-port/", rows: "LIGHT-05" },
-  { name: "s2-ninja-runner-port", url: "/apps/showcase-ninja-runner-port/", rows: "LIGHT-05" },
-  { name: "s2-silt-and-signal-port", url: "/apps/showcase-silt-and-signal-port/", rows: "LIGHT-05" },
-  { name: "s2-links-stAuroras", url: "/apps/showcase-aura-links-3d/?course=stAuroras", rows: "LIGHT-05" },
-  { name: "s2-links-cinderRim", url: "/apps/showcase-aura-links-3d/?course=cinderRim", rows: "LIGHT-05" },
-  { name: "s2-links-neonBay", url: "/apps/showcase-aura-links-3d/?course=neonBay", rows: "LIGHT-08" },
-  { name: "s2-links-mareCourse", url: "/apps/showcase-aura-links-3d/?course=mareCourse", rows: "LIGHT-08" },
+  { name: "s2-slingshot-siege", url: "/apps/showcase-slingshot-siege/", rows: "LIGHT-05" },
+  { name: "s2-cloud-runner-port", url: "/apps/showcase-cloud-runner-port/", rows: "LIGHT-05 SSAO" },
+  { name: "s2-drift-and-deliver-port", url: "/apps/showcase-drift-and-deliver-port/", rows: "LIGHT-05" },
+  { name: "s3-ninja-runner-port", url: "/apps/showcase-ninja-runner-port/", rows: "LIGHT-05" },
+  { name: "s3-silt-and-signal-port", url: "/apps/showcase-silt-and-signal-port/", rows: "LIGHT-05" },
+  { name: "s3-links-stAuroras", url: "/apps/showcase-aura-links-3d/?course=stAuroras", rows: "LIGHT-05" },
+  { name: "s4-links-cinderRim", url: "/apps/showcase-aura-links-3d/?course=cinderRim", rows: "LIGHT-05" },
+  { name: "s4-links-neonBay", url: "/apps/showcase-aura-links-3d/?course=neonBay", rows: "LIGHT-08" },
+  { name: "s4-links-mareCourse", url: "/apps/showcase-aura-links-3d/?course=mareCourse", rows: "LIGHT-08" },
   // LIGHT-08: lights-only scenes whose hemisphere was a flat mean.
-  { name: "s3-heatsink-port", url: "/apps/showcase-heatsink-port/", rows: "LIGHT-08" },
-  { name: "s3-splat-rush-port", url: "/apps/showcase-splat-rush-port/", rows: "LIGHT-08" },
-  { name: "s3-serpentine-sky-run-port", url: "/apps/showcase-serpentine-sky-run-port/", rows: "LIGHT-08" },
-  { name: "s3-strange-orbit-port", url: "/apps/showcase-strange-orbit-port/", rows: "LIGHT-08" },
-  { name: "s3-top-tennis", url: "/apps/showcase-top-tennis/", rows: "LIGHT-08" },
-  { name: "s4-bunker-zero", url: "/apps/showcase-bunker-zero/", rows: "LIGHT-08 SSAO" },
-  { name: "s4-dot-dash-3d", url: "/apps/showcase-dot-dash-3d/", rows: "LIGHT-08 SSAO" },
+  { name: "s5-heatsink-port", url: "/apps/showcase-heatsink-port/", rows: "LIGHT-08" },
+  { name: "s5-splat-rush-port", url: "/apps/showcase-splat-rush-port/", rows: "LIGHT-08" },
+  { name: "s5-serpentine-sky-run-port", url: "/apps/showcase-serpentine-sky-run-port/", rows: "LIGHT-08" },
+  { name: "s6-strange-orbit-port", url: "/apps/showcase-strange-orbit-port/", rows: "LIGHT-08" },
+  { name: "s6-top-tennis", url: "/apps/showcase-top-tennis/", rows: "LIGHT-08" },
+  { name: "s6-bunker-zero", url: "/apps/showcase-bunker-zero/", rows: "LIGHT-08 SSAO" },
+  { name: "s7-dot-dash-3d", url: "/apps/showcase-dot-dash-3d/", rows: "LIGHT-08 SSAO" },
   // LIGHT-04: a look swapped in at runtime next to an authored ambient.
-  { name: "s4-crosshop-theme3", url: "/apps/showcase-cross-hop/?theme=3", rows: "LIGHT-04" },
-  { name: "s4-crosshop-theme4", url: "/apps/showcase-cross-hop/?theme=4", rows: "LIGHT-04" },
+  { name: "s7-crosshop-theme3", url: "/apps/showcase-cross-hop/?theme=3", rows: "LIGHT-04" },
+  { name: "s7-crosshop-theme4", url: "/apps/showcase-cross-hop/?theme=4", rows: "LIGHT-04" },
   // SSAO normals input.
-  { name: "s4-last-train-port", url: "/apps/showcase-last-train-port/", rows: "SSAO" }
+  { name: "s8-last-train-port", url: "/apps/showcase-last-train-port/", rows: "SSAO" }
 ];
 
 async function lumaStats(page: Page, png: Buffer) {
