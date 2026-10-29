@@ -26,6 +26,24 @@ describe("grid dispatch scene", () => {
       app.dispose?.();
     });
   }
+  it("no builder option is ignored (OPTION_IGNORED, upgrade guide check)", () => {
+    for (const weather of ["noon", "golden", "fog", "night"] as const) {
+      const app = createAuraApp(undefined, { scene: buildGridDispatchScene(weather), autoStart: false });
+      const notes: string[] = [];
+      let seen = 0;
+      const walk = (nodes: readonly unknown[]): void => {
+        for (const n of nodes as Array<{ ignoredOptions?: string[]; children?: unknown[] }>) {
+          seen++;
+          if (n.ignoredOptions) notes.push(...n.ignoredOptions);
+          if (n.children) walk(n.children);
+        }
+      };
+      walk((app.scene as unknown as { nodes: unknown[] }).nodes);
+      expect(seen).toBeGreaterThan(60);
+      expect(notes, weather).toEqual([]);
+      app.dispose?.();
+    }
+  });
   it("the hidden helper primitives are gone (C12)", () => {
     const app = createAuraApp(undefined, { scene: buildGridDispatchScene("noon"), autoStart: false });
     for (const id of ["player-lidar-dome", "player-tailbar", "player-contact-shadow", "peer-waymo-lidar-ring"]) expect(app.nodes.has(id)).toBe(false);
