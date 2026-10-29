@@ -61,6 +61,19 @@ export function planCommand(
 
   /* ------------------------------ keeper ------------------------------ */
   if (p.isKeeper) {
+    // ball at his feet (a slow ball or back-pass he trapped, not a catch): play it out at once. Without this the
+    // positioning branch below parked him on the line with the ball for the rest of the half (19 of 24 CPU matches
+    // stalled 15-80 s, tests/unit/aura-fc-3d/stall-probe.test.ts)
+    if (owner !== null && owner.id === p.id && (b.mode === "dribble" || b.mode === "controlled")) {
+      const mate = bestPassLane(state, p);
+      if (mate) {
+        const dx = mate.x - p.x, dz = mate.z - p.z;
+        const d = Math.hypot(dx, dz) || 1;
+        return { move: [dx / d, dz / d], sprint: false, pass: "driven" };
+      }
+      return { move: [s, 0], sprint: false, shoot: 0.7, shootAim: { lateral: 0, lift: 1 } };
+    }
+
     // user-initiated keeper rush (hold sprint off-ball): charge the ball
     if (keeperRushHeld && p.team === state.userTeam) {
       if (ballLive) {
