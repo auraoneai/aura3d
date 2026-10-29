@@ -11,6 +11,7 @@ All assets are CC0 and come from the Aura3D curated library (`aura.library.json`
 | models/board.glb | Kenney Skateboard (kenney.nl) | CC0 |
 | models/hero.glb | Aura3D animation-starter "Hero Character" (Kenney) | CC0-1.0 |
 | textures/{grass,ground,paving,rock,bricks}_*.jpg | ambientCG Grass005, Ground112, PavingStones151, Rock064, Bricks075A, 1K JPG Color/NormalGL/Roughness (ambientcg.com) | CC0 |
+| textures/plaster_*.jpg | ambientCG PaintedPlaster017, 1K JPG (library `acg-paintedplaster017`). Color is levelled to a mean of 243 with its variation scaled 4x (the source is a flat grey, mean 190, std 3, which would halve the wall tint); NormalGL and Roughness are resized to 512x256 | CC0 |
 
 The tree, rocks and hero GLBs were re-packed with `@gltf-transform/core` (`NodeIO` read, then write as GLB) so their palette textures are embedded; geometry, materials and the hero's 27 animation clips are unchanged. `models/Textures/` is gone for that reason.
 

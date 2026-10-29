@@ -3,7 +3,7 @@
   "route": "/apps/showcase-silt-and-signal-port/",
   "classification": "prototype",
   "publicShowcase": true,
-  "generatedAt": "2026-10-23T08:56:30.375Z",
+  "generatedAt": "2026-10-29T12:00:00.000Z",
   "ok": true,
   "claimLabel": "Prototype",
   "claimStatus": "bounded",
@@ -17,11 +17,12 @@
     "ST-01"
   ],
   "sourceExample": "examples/silt-and-signal-port/",
-  "evidence": "Three rides, two sessions each plus an in-page replay, 13 state columns per step, worst delta 0 in the browser.",
+  "evidence": "Three chapter-0 rides replay the original's recorded inputs step for step (worst delta 0); unit tests cover touch hold objectives, start=1 player mode, the chapter 1-6 floor and colliders and journey totals; remote software-GL captures in evidence/audit-fix/g24.",
   "limits": [
-    "Stand-in ground, canal, rings and rider; no chapters, colliders or voiced scenes.",
-    "Procedural art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
-    "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
+    "Seven chapters. Chapter 0 uses the original's measured floor and 1400 colliders; chapters 1-6 use this game's own terrain as the floor and colliders built from their scattered props, not the original's (never captured).",
+    "No voiced scenes, creatures, exploration or field notes; herd objectives are plain ring routes.",
+    "Procedural and CC0/Meshy art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Verified in remote software WebGL2 (SwiftShader) only, not on a hardware GPU or a real phone."
   ],
   "checks": [
     {

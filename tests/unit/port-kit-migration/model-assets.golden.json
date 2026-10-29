@@ -1403,6 +1403,39 @@
    "kind": "aura-asset-ref",
    "id": "pillar"
   },
+  "plasterColor": {
+   "type": "texture",
+   "format": "jpg",
+   "url": "<root>/examples/silt-and-signal-port/assets/textures/plaster_Color.jpg",
+   "hash": "sha256-be925668100ca02f524e2a21a3d3af3eb545e845a481490b5904318861d28eb9",
+   "metadata": {
+    "license": "CC0-1.0 (ambientCG)"
+   },
+   "kind": "aura-asset-ref",
+   "id": "plasterColor"
+  },
+  "plasterNormal": {
+   "type": "texture",
+   "format": "jpg",
+   "url": "<root>/examples/silt-and-signal-port/assets/textures/plaster_NormalGL.jpg",
+   "hash": "sha256-cbc39c32f995be2ca85093e3f0067202df7cfa0a91c1c5f64367e6a2b396bf1b",
+   "metadata": {
+    "license": "CC0-1.0 (ambientCG)"
+   },
+   "kind": "aura-asset-ref",
+   "id": "plasterNormal"
+  },
+  "plasterRough": {
+   "type": "texture",
+   "format": "jpg",
+   "url": "<root>/examples/silt-and-signal-port/assets/textures/plaster_Roughness.jpg",
+   "hash": "sha256-906fc577fe62ade67d8a8d83968543ed59926cf8e506979e10a49175f17303cb",
+   "metadata": {
+    "license": "CC0-1.0 (ambientCG)"
+   },
+   "kind": "aura-asset-ref",
+   "id": "plasterRough"
+  },
   "ringclean": {
    "type": "model",
    "format": "glb",

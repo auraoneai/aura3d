@@ -73,8 +73,8 @@ describe("collision resolution (original `uS`, `ss`, `Bx`)", () => {
     expect(Math.hypot(sim.state.x - house.x, sim.state.z - house.z)).toBeGreaterThan(house.r);
   });
 
-  it("keeps chapters without a measured world free of colliders", () => {
-    expect(createSim(1, 0).world.colliders).toBeUndefined();
+  it("chapter 0 keeps the 1400 measured colliders; chapters 1-6 collide with their scattered props (audit C6)", () => {
     expect(createSim(0, 0).world.colliders?.length).toBe(1400);
+    for (let c = 1; c <= 6; c++) expect(createSim(c, 0).world.colliders?.length ?? 0).toBeGreaterThan(600);
   });
 });

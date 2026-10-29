@@ -9,12 +9,14 @@
  * No rendering, no DOM, no randomness: `stepSim` is a fixed-timestep function of (state, input).
  *
  * Chapter 0 runs in the original's physical world (`world-ch0.ts`: terrain floor, platforms, ramps and the 1400 measured
- * colliders, resolved by `collide.ts`); other chapters take an injected `floor` (default: the 0.6 plain) and no colliders.
- * Not ported (documented in PORTING-NOTES.md): creature / exploration ticks, the chapter-1 spillway recovery, scenes and voice.
+ * colliders, resolved by `collide.ts`). Chapters 1-6 use the rendered terrain as the floor and a collider for every scattered
+ * prop (`terrainPhysics` in terrain.ts). Not ported (documented in PORTING-NOTES.md): creature / exploration ticks (so no
+ * field notes or the perks they unlock), the chapter-1 spillway recovery, scenes and voice.
  */
 import { CHAPTERS, type Objective, type Point } from "./chapters-data";
 import { sweep, type Collider } from "./collide";
 import { chapterWorld } from "./world-ch0";
+import { terrainPhysics } from "./terrain";
 
 export const STEP = 1 / 60;
 
@@ -46,7 +48,6 @@ export interface PlayState {
   line: number;
   elapsed: number;
   pendingChapter: number | null;
-  fieldNotes: string[];
 }
 
 /** The original's `rn` (flight state), from `Eo()`. */
@@ -70,7 +71,7 @@ export interface World {
   floor(x: number, z: number, y: number): number;
   /** hard ceiling (the original uses `r.ceiling || 205`) */
   ceiling: number;
-  /** round and box colliders the rider is pushed out of (chapter 0 only) */
+  /** round and box colliders the rider is pushed out of */
   colliders?: readonly Collider[];
   /** chapter length: z is clamped to [-length - 50, 150] */
   length: number;
@@ -94,7 +95,7 @@ export interface Sim {
   events: SimEvent[];
 }
 
-export type SimEvent = { type: "point" } | { type: "attach" } | { type: "complete"; objective: string };
+export type SimEvent = { type: "point" } | { type: "attach" } | { type: "complete"; objective: string } | { type: "impact"; speed: number };
 
 export const createFlight = (): FlightState => ({
   speed: 0,
@@ -143,8 +144,7 @@ export function createSim(chapter: number, objective: number, world?: Partial<Wo
     scene: null,
     line: 0,
     elapsed: 0,
-    pendingChapter: null,
-    fieldNotes: []
+    pendingChapter: null
   };
   const t = targetOf(state);
   state.x = start?.x ?? t.x;
@@ -154,16 +154,13 @@ export function createSim(chapter: number, objective: number, world?: Partial<Wo
   return {
     state,
     flight: createFlight(),
-    world: { floor: () => 0.6, ceiling: 205, length: ch.length, ...chapterWorld(chapter), ...world },
+    world: { floor: () => 0.6, ceiling: 205, length: ch.length, ...(chapter === 0 ? chapterWorld(0) : terrainPhysics(chapter)), ...world },
     time: start?.time ?? 0,
     ...(start?.clockMs !== undefined ? { clockMs: start.clockMs } : {}),
     steps: 0,
     events: []
   };
 }
-
-/** Field notes unlock the reserve (3) and wind (7) perks (original `wo`); a fresh journey has none. */
-const perks = (state: PlayState): { reserve: boolean; wind: boolean } => ({ reserve: state.fieldNotes.length >= 3, wind: state.fieldNotes.length >= 7 });
 
 /** The flight model: original `e0`. Returns true when a collision impact was registered. */
 export function flightStep(state: PlayState, flight: FlightState, input: Input, dtIn: number, world: World): boolean {
@@ -177,8 +174,6 @@ export function flightStep(state: PlayState, flight: FlightState, input: Input, 
   if (wantsBoost && !hasEnergy) flight.boostLocked = true;
   flight.boosting = wantsBoost && !flight.boostLocked && hasEnergy;
   flight.energy = clamp(flight.energy + n * (flight.boosting ? -0.14 : 0.09), 0, 1);
-  const p = perks(state);
-  if (p.reserve && !flight.boosting) flight.energy = clamp(flight.energy + n * 0.02, 0, 1);
   const top = flight.boosting ? 76 : 42;
   const target = input.brake ? 0 : s > 0 ? top * s : 13 * s;
   if (input.brake) flight.speed *= Math.exp(-n * 6);
@@ -187,16 +182,19 @@ export function flightStep(state: PlayState, flight: FlightState, input: Input, 
   const f = 0.65 / (1 + Math.abs(flight.speed) * 0.008);
   state.yaw -= flight.turn * f * n * (flight.speed < -0.5 ? -1 : 1);
   flight.bank += (-flight.turn * Math.min(0.68, 0.2 + Math.abs(flight.speed) * 0.014) - flight.bank) * (1 - Math.exp(-n * 5));
-  flight.vertical += (a * (p.wind ? 27 : 22) - flight.vertical) * (1 - Math.exp(-n * 3.4));
+  flight.vertical += (a * 22 - flight.vertical) * (1 - Math.exp(-n * 3.4));
   const previousX = state.x, previousZ = state.z;
   state.x -= Math.sin(state.yaw) * flight.speed * n;
   state.z -= Math.cos(state.yaw) * flight.speed * n;
-  state.y = clamp(state.y + flight.vertical * n, world.floor(state.x, state.z, state.y) + 2.4, world.ceiling || 205);
+  // the world-edge clamp comes before the floor test, so the floor is read where the rider ends up (the original clamps after)
   state.x = clamp(state.x, -640, 640);
   state.z = clamp(state.z, -world.length - 50, 150);
+  state.y = clamp(state.y + flight.vertical * n, world.floor(state.x, state.z, state.y) + 2.4, world.ceiling || 205);
   flight.collisionCooldown = Math.max(0, flight.collisionCooldown - n);
   let impact = false;
   if (world.colliders && sweep(state, { x: previousX, z: previousZ }, world.colliders, { radius: 1.85, halfHeight: 1, offsets: [-2.2, 0, 2.7, 5.4], yaw: state.yaw }) > 0) {
+    // a push can move the rider onto higher ground (a hillside in chapters 1-6): keep it above the floor there too
+    state.y = Math.max(state.y, world.floor(state.x, state.z, state.y) + 2.4);
     if (flight.collisionCooldown === 0 && Math.abs(flight.speed) > 4) {
       impact = true;
       flight.impacts++;
@@ -289,7 +287,8 @@ export function stepSim(sim: Sim, input: Input, dt: number = STEP): SimEvent[] {
   const o = objectiveOf(state);
   const tgt = targetOf(state);
   const lifting = o.kind === "lift" && Math.hypot(state.x - tgt.x, state.z - tgt.z) < o.radius && Math.abs(flight.speed) < 6 && input.lift > 0;
-  flightStep(state, flight, lifting ? { ...input, lift: 0 } : input, t, world);
+  const speedBefore = Math.abs(flight.speed);
+  if (flightStep(state, flight, lifting ? { ...input, lift: 0 } : input, t, world)) sim.events.push({ type: "impact", speed: speedBefore });
   if (lifting) flight.liftInput = 1;
   const ev = progressStep(state, flight, t, input, sim.time);
   if (ev) sim.events.push(ev);

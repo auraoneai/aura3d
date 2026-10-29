@@ -17,7 +17,7 @@
   - Scene `effects.fog`, `effects.bloom` and `effects.colorGrade` (`world.ts:186-188`).
 - Lighting (`world.ts:176-185`):
   - `environments.neutral({intensity: 0.95 | 0.4})`
-  - `lights.hemisphere` (intensity 1.45 day, 0.85 night)
+  - `lights.hemisphere` (intensity 1.05 day, 0.85 night; 1.45 until the audit lane G24 retune, see `docs/audits/lanes/g24.md`)
   - one `lights.directional` with `shadow:{mapSize:4096, cascades:3, maxDistance:360}`
 - Custom GLSL via `material.custom` for the sky and the canal water (`world.ts:190`, `218`; specs at `world.ts:44-88`). `ringSpec` (additive) is only listed in `allProgramSpecs` (`world.ts:94`) for the shader-compile unit test. The scene's rings are lit PBR models (`model(assets.ringclean)`).
 - Instancing, all built once from a `transforms` array and never updated afterwards (`world.ts:253-311`):
@@ -127,11 +127,13 @@ window.__AURA_SILT__.info().diagnostics.renderPath
 
 ## Checklist
 
-- [ ] Decide: accept `auto` (fused bloom, cascade skipping) or pin `quality: "production"` at `examples/silt-and-signal-port/main.ts:392`.
-- [ ] Run the game with `?start=1` and read `window.__AURA_SILT__.info().diagnostics.renderPath`. Expect `hdr-msaa`, `auto`, `separable`.
-- [ ] Optional visual A/B: compare `ch0-obj0-chase` and `ch2-obj0-night` against `?aura3d-render=production` to confirm bloom stays within 1/255. No lighting retune is expected.
-- [ ] Run `node tools/game-checks/run.mjs silt-and-signal-port` and confirm no new errors.
-- [ ] Run `tests/unit/silt-and-signal-port` (sim, terrain, shaders-compile, camera-clear) to confirm the sim is untouched.
-- [ ] Re-run `tests/browser/silt-and-signal-frames.spec.ts` on the remote runner (`tools/remote-acr/run.sh`) and refresh `evidence/neutral-embedded/frame-diff.json` if its silt entry moved.
-- [ ] Confirm `app.diagnostics()` has no `OPTION_IGNORED` degradations.
-- [ ] Optional: add `?capture=1` to any new tooling that reads the canvas after an await.
+Closed by audit lane G24 on 2026-10-29 (report: `docs/audits/lanes/g24.md`; numbers from the remote software-GL runs named there).
+
+- [x] Decide: accept `auto`. The A/B below shows no measurable difference, so the game keeps the cheaper fused bloom and cascade skipping. No `quality` option is added.
+- [x] Read `window.__AURA_SILT__.info().diagnostics.renderPath` on the live app page: `{ path: "hdr-msaa", quality: "auto", bloomFusion: "separable" }` (runs `g24before3-c`, `g24after2-b`, `g24after2-c`).
+- [x] Visual A/B against `?aura3d-render=production` on the chapter-0 key-boost frame (1280x720, steady state after texture settle): mean luma 112.85 on both arms, top/mid/bottom 131.34/114.38/92.84 (auto) and 131.34/114.39/92.84 (production), p5/p50/p95 identical (run `g24after2-c`; the base build `g24before3-c` gives 113.35 on both arms). Within 1/255 of each other. The `ch2-obj0-night` frame was not captured; chapter 2 uses the same render path and bloom settings.
+- [x] `node tools/game-checks/run.mjs silt-and-signal-port`: 0 errors, 0 warnings.
+- [x] `tests/unit/silt-and-signal-port`: 10 files, 98 tests pass. The three original parity rides still replay with worst delta below 1e-6 after the chapter 1-6 physics change.
+- [ ] `tests/browser/silt-and-signal-frames.spec.ts` was not re-run. The lane's own spec `tests/browser/audit-fix/silt-and-signal-port.spec.ts` recaptured the game's frames instead. `evidence/neutral-embedded/frame-diff.json` is not owned by this lane and was not refreshed.
+- [x] `app.diagnostics()` shows no `OPTION_IGNORED` degradations (degradations filtered for `OPTION_IGNORED|bloom|post-field` is empty on every shot). The only warning is the generic "Scene has no interactions" suggestion.
+- [x] `?capture=1`: not needed. The lane spec reads pixels with `page.screenshot`, never from the canvas after an await.

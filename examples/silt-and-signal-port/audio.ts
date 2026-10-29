@@ -1,8 +1,9 @@
 /**
  * Procedural audio for the port, generated with the Web Audio API (no sample files, nothing from the original):
  * a low drifting pad per chapter, rider hum and wind that follow speed and boost, and short chimes for rings,
- * objectives and the ending. Browsers need a user gesture before audio starts, so `resume()` is called from the
- * title screen's start button; QA and autopilot URLs never create a context.
+ * objectives, impacts and the ending. Browsers need a user gesture before audio starts, so `resume()` is called from the
+ * title screen's start button, the first key press, a canvas or touch-button press and the mute buttons; QA and autopilot URLs
+ * never create a context unless the tester presses something.
  */
 import { AudioContextManager } from "@aura3d/engine/audio";
 import type { Sim, SimEvent } from "./sim";
@@ -127,6 +128,7 @@ export function createSiltAudio(chapter: number): SiltAudio {
       if (kind === "point") { tone(659.25, 0, 0.5, 0.12); tone(987.77, 0.08, 0.6, 0.09); }
       else if (kind === "attach") { tone(392, 0, 0.35, 0.12, "triangle"); tone(523.25, 0.1, 0.45, 0.1, "triangle"); }
       else if (kind === "complete") { for (const [i, f] of [523.25, 659.25, 783.99, 1046.5].entries()) tone(f, i * 0.12, 0.9, 0.1); }
+      else if (kind === "impact") { tone(72, 0, 0.28, 0.22); tone(118, 0, 0.16, 0.12, "triangle"); }
       else tone(440, 0, 0.4, 0.06, "triangle");
     },
     setMuted(value) {

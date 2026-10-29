@@ -9,6 +9,8 @@
 import { CHAPTERS } from "./chapters-data";
 import { CHAPTER0_COLLIDERS, COLLIDER_FLAGS } from "./colliders-ch0";
 import { bridgeArch, canalCentre, ground0 } from "./world-ch0";
+import type { Collider } from "./collide";
+import type { World } from "./sim";
 
 export interface MeshData { positions: number[]; normals: number[]; uvs: number[]; indices: number[] }
 
@@ -337,4 +339,50 @@ export function createTerrain(chapter: number): Terrain {
   };
 
   return { chapter, length, water, heightAt, corridorDistance, terrainMesh, plazaMesh, roadMesh, bankMesh, waterMesh, deckMesh, props };
+}
+
+/*
+ * Model footprints used for the chapter 1-6 colliders, from the GLB bounds (gltf-transform getBounds) and the transforms in
+ * world.ts: house.glb is 1.64 x 0.88 x 0.97 (centred on its placement after the -0.064 z offset), lamp.glb stands 1.87 tall
+ * at `y + 0.95 * scale`, tree.glb is 0.93 wide and 1.68 tall (the collider is the trunk and the lower crown, not the full
+ * crown width), and the canyon-rock and polyhedron boulders reach about 0.45 x scale out and 0.5 x scale up.
+ */
+const HOUSE_HALF_X = 0.82, HOUSE_HALF_Z = 0.49, HOUSE_HEIGHT = 0.88;
+const TREE_COLLIDER_R = 0.22, TREE_HEIGHT = 1.684;
+const ROCK_COLLIDER_R = 0.45, ROCK_HEIGHT = 0.5;
+const LAMP_COLLIDER_R = 0.16, LAMP_HEIGHT = 1.87;
+
+/** Round and box colliders for the scattered props of chapters 1-6 (every solid thing the chapter renders). */
+export function scatterColliders(props: PropSet): Collider[] {
+  const out: Collider[] = [];
+  for (const h of props.houses) {
+    const quarter = Math.abs(Math.sin(h.yaw)) > 0.5;
+    const hx = (quarter ? HOUSE_HALF_Z : HOUSE_HALF_X) * h.scale, hz = (quarter ? HOUSE_HALF_X : HOUSE_HALF_Z) * h.scale;
+    out.push({ x: h.x, z: h.z, r: Math.max(hx, hz), bottom: h.y - 1, top: h.y + HOUSE_HEIGHT * h.scale, halfX: hx, halfZ: hz });
+  }
+  for (const t of props.trees) out.push({ x: t.x, z: t.z, r: TREE_COLLIDER_R * t.scale, bottom: t.y - 1, top: t.y + TREE_HEIGHT * t.scale });
+  for (const r of props.rocks) out.push({ x: r.x, z: r.z, r: ROCK_COLLIDER_R * r.scale, bottom: r.y - 1, top: r.y + ROCK_HEIGHT * r.scale });
+  for (const l of props.lamps) {
+    const s = Math.max(2.2, l.scale);
+    out.push({ x: l.x, z: l.z, r: LAMP_COLLIDER_R * s, bottom: l.y - 1, top: l.y + LAMP_HEIGHT * s });
+  }
+  for (const c of [...props.stone, ...props.brass]) out.push({ x: c.x, z: c.z, r: c.r, bottom: c.bottom, top: c.top });
+  return out;
+}
+
+const physicsCache = new Map<number, Partial<World>>();
+
+/**
+ * Floor and colliders for chapters 1-6: the rendered terrain height (never below the 0.6 road baseline) and a collider for
+ * every scattered prop, so the rider and the chase camera cannot pass through hills, houses, trees, rocks, lamps or piers.
+ * Chapter 0 keeps the original's measured world (`world-ch0.ts`).
+ */
+export function terrainPhysics(chapter: number): Partial<World> {
+  let cached = physicsCache.get(chapter);
+  if (!cached) {
+    const terrain = createTerrain(chapter);
+    cached = { floor: (x: number, z: number) => Math.max(0.6, terrain.heightAt(x, z)), colliders: scatterColliders(terrain.props()) };
+    physicsCache.set(chapter, cached);
+  }
+  return cached;
 }
