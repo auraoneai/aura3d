@@ -4,7 +4,8 @@
  * fallback) with its aura shell, ki sparks and speed streaks, pooled multi-part props for the road's entities, the
  * chase camera and the post stack. The simulation (`sim.ts`) never imports this file.
  */
-import { attachRootRenderSource, camera, cloneSkinned, effects, geometry, lights, material, model, primitives, scene, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
+import { attachRootRenderSource, camera, cloneSkinned, effects, environments, geometry, lights, material, model, primitives, scene, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
+import { gapAhead } from "./hud";
 import { HERO_PARTS, apply, mul, poseHero, rx, ry, rz, type HeroColor, type HeroPartSpec, type M3, type V3 as LV3 } from "./hero";
 import {
   PALETTE, auraSpec, blobSpec, flatSpec, glowSpec, hexLinear, roadSpec, skySpec, solidSpec, type CustomSpec, type Rgb
@@ -96,7 +97,7 @@ function frameBasis(frame: RoadFrame, yawOffset = 0): M3 {
 /** Local ZYX Euler (R = Rz·Ry·Rx) as a matrix. */
 const eulerMatrix = (e: LV3): M3 => mul(rz(e[2]), mul(ry(e[1]), rx(e[0])));
 
-/** Catalog humanoid (CC0, see assets/ATTRIBUTION.md): faces +Z, clips Sprint_Loop / Jump_Loop / Crouch_Idle_Loop / Idle_Loop / Hit_Chest. */
+/** Catalog humanoid (CC0, see assets/ATTRIBUTION.md): faces +Z; the clips this port plays are listed in `CLIP` (Run_Loop, Jump_Loop, Flight_Loop, Dive_Loop, Slide_Loop, Idle_Loop, Hit_React). */
 const RIG_URL = new URL("./assets/runner.glb", import.meta.url).href;
 const RIG_SCALE = 1.8;
 const CLIP = { run: "Run_Loop", air: "Jump_Loop", fly: "Flight_Loop", dive: "Dive_Loop", slide: "Slide_Loop", idle: "Idle_Loop", hit: "Hit_React" } as const;
@@ -120,7 +121,7 @@ export async function loadRunner(canvas: HTMLCanvasElement): Promise<RunnerActor
     for (const c of clips) { const info = infos.find((i) => i.name === c); durations[c] = info && info.duration > 0 ? info.duration : 1; }
     return { actor, clips, durations, dispose: () => batch.dispose() };
   } catch (error) {
-    console.warn("saiyan-snake-way-port: rigged runner unavailable, using the procedural figure", error);
+    console.warn("serpentine-sky-run: rigged runner unavailable, using the procedural figure", error);
     return null;
   }
 }
@@ -136,6 +137,10 @@ export interface WorldRuntime {
   update(state: RunState, dt: number, time: number, aspect: number, outro?: number, blend?: PresentSample): void;
   resetCamera(): void;
   setRunnerStyle(style: RunnerStyle): void;
+  /** Reduced motion (C9): no camera shake and no speed FOV widening. */
+  setReducedMotion(on: boolean): void;
+  /** `setVisible` calls the last `update` made (pooled slots only change when they change state). */
+  readonly visibilityWrites: number;
   readonly nodeCount: number;
   readonly entityNodes: number;
 }
@@ -143,6 +148,21 @@ export interface WorldRuntime {
 export interface World {
   readonly scene: Scene;
   bind(app: AuraApp): WorldRuntime;
+}
+
+/**
+ * Neutral-room IBL for the PBR runner and the Meshy props (LIGHT-01). Since 4.5.0 a lights-only scene gets no implicit
+ * environment, so without this node the runner and props lost the neutral-room probe they had on 4.3.7 (diffuse and
+ * specular 1). The custom road, sky and figure materials are unlit and ignore it. Calibrated with the hemisphere on
+ * (it contributes next to an environment, per normal, since lane E2's LIGHT-05/08) against v4.3.7 at the same game state:
+ * runner crop 193.3 on v4.3.7, 168.1 on 4.5.0 without an environment, 191.5 at 0.8 and 195.1 at 1.0 (remote runs
+ * g17v437a, g17before1, g17e2cal1; docs/audits/lanes/g17.md). `?env=<n>` overrides it for calibration captures only.
+ */
+export const ENV_INTENSITY = 0.9;
+export function environmentIntensity(search: string | undefined = typeof location !== "undefined" ? location.search : undefined): number {
+  const raw = search ? new URLSearchParams(search).get("env") : null;
+  const value = raw === null ? Number.NaN : Number(raw);
+  return Number.isFinite(value) && value >= 0 ? value : ENV_INTENSITY;
 }
 
 const STREAKS = 22;
@@ -156,6 +176,7 @@ export function buildWorld(options: WorldOptions = {}): World {
     .camera(camera.perspective({ position: [0, 6, 14], target: [0, 1, 0], fov: 62, near: 0.5, far: 6000 }))
     // the custom materials are unlit; these light the rigged runner (hemisphere colours are the look spec's)
     .add(lights.hemisphere({ name: "sky fill", skyColor: "#f6d0e6", groundColor: "#b98a2e", intensity: 1.1 }))
+    .add(environments.neutral({ intensity: environmentIntensity() }))
     .add(lights.directional({ name: "sun", position: [-40, 60, -70], target: [0, 0, 0], intensity: 2.2, color: "#fff0dc", shadow: (typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0" ? false : { cascades: 1, maxDistance: 80 } as never) }));
 
   /* road + sky */
@@ -257,7 +278,7 @@ export function buildWorld(options: WorldOptions = {}): World {
     scene: builder,
     bind(app: AuraApp): WorldRuntime {
       const cameraController = app.camera;
-      if (!cameraController) throw new Error("saiyan-snake-way-port: the app exposes no camera controller");
+      if (!cameraController) throw new Error("serpentine-sky-run: the app exposes no camera controller");
       const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
       const node = (id: string) => {
         let h = handles.get(id);
@@ -277,13 +298,30 @@ export function buildWorld(options: WorldOptions = {}): World {
       let prevS: number | null = null;
       let prevPulse = 0;
       let burstT = 1;
+      let reducedMotion = false;
+      /* C8: the visible state each pooled node was last given, so a frame only writes the slots that change */
+      const shown = new Map<string, boolean>();
+      let visibilityWrites = 0;
+      const show = (id: string, visible: boolean): ReturnType<typeof node> => {
+        const h = node(id);
+        if (shown.get(id) !== visible) { h.setVisible(visible); shown.set(id, visible); visibilityWrites++; }
+        return h;
+      };
+      /** Hides a pooled slot only when it was visible, without resolving its handle otherwise. */
+      const hide = (id: string): void => { if (shown.get(id) !== false) show(id, false); };
       const mod = (x: number, m: number): number => ((x % m) + m) % m;
 
       const update = (simState: RunState, dt: number, time: number, aspect: number, outro = 0, blend?: PresentSample): void => {
         const S = blend ? withSample(simState, blend) : simState;
+        visibilityWrites = 0;
         const frame = frameAt(samples, Math.min(S.s, ROAD_LENGTH));
         node("sky").setPosition(frame.p[0], frame.p[1], frame.p[2]);
         node("sky").setUniform?.("skyTime", time);
+
+        /* C12: warm road edges before the next missing plate */
+        const gap = gapAhead(S);
+        node("road").setUniform?.("gapAt", gap === null ? -1e6 : S.s + gap);
+        node("road").setUniform?.("gapWarn", gap === null ? 0 : 1);
 
         /* runner: articulated parts posed in the road frame; flight lifts the whole figure */
         let pose = onRoad(frame, S.laneX, S.y);
@@ -329,7 +367,7 @@ export function buildWorld(options: WorldOptions = {}): World {
         for (const [id, part] of Object.entries(parts)) {
           const p = toWorld(part.p);
           const e = matrixEuler(worldRot(part.m));
-          node(`r-${id}`).setPosition(p[0], p[1], p[2]).setRotation(e[0], e[1], e[2]).setVisible(!runner);
+          show(`r-${id}`, !runner).setPosition(p[0], p[1], p[2]).setRotation(e[0], e[1], e[2]);
         }
         if (runner) {
           /* rigged runner: pick a clip from the sim state, then orient the model on the road frame */
@@ -359,7 +397,8 @@ export function buildWorld(options: WorldOptions = {}): World {
         const growth = 1 + 0.14 * S.auraRung + (S.surge === "power" ? 0.2 : 0);
         for (const [id, scale, solidAmount] of [["aura-outer", growth, 0.5], ["aura-inner", growth * 0.92, 0.3]] as const) {
           const h = node(id);
-          h.setPosition(auraCentre[0], auraCentre[1], auraCentre[2]).setRotation(auraEuler[0], auraEuler[1], auraEuler[2]).setScale(scale).setVisible(surge > 4e-3);
+          show(id, surge > 4e-3);
+          h.setPosition(auraCentre[0], auraCentre[1], auraCentre[2]).setRotation(auraEuler[0], auraEuler[1], auraEuler[2]).setScale(scale);
           h.setUniform?.("auraTime", id === "aura-inner" ? 1.37 * time + 4 : time);
           h.setUniform?.("auraIntensity", surge * 0.7);
           h.setUniform?.("auraSolid", S.puff > 0 ? 0.24 : solidAmount);
@@ -369,16 +408,16 @@ export function buildWorld(options: WorldOptions = {}): World {
         const ground = onRoad(frame, S.laneX, 0.05);
         const be = matrixEuler(frameBasis(frame));
         const shadow = node("contact-shadow");
-        shadow.setPosition(ground[0], ground[1], ground[2]).setRotation(be[0], be[1], be[2]).setVisible(!flying && !leaping && S.grounded);
+        show("contact-shadow", !flying && !leaping && S.grounded);
+        shadow.setPosition(ground[0], ground[1], ground[2]).setRotation(be[0], be[1], be[2]);
         shadow.setUniform?.("blobAlpha", 0.5);
 
         /* ki sparks rising off the runner while the aura is up */
         for (let i = 0; i < SPARKS; i++) {
-          const h = node(`spark-${i}`);
-          if (surge < 0.12) { h.setVisible(false); continue; }
+          if (surge < 0.12) { hide(`spark-${i}`); continue; }
           const ph = mod(time * 0.9 + i / SPARKS, 1);
           const sp = toWorld([Math.sin(i * 7.13) * 0.95, 0.5 + ph * 3.4, 0.2 + ph * (1.4 + 0.04 * S.speed)]);
-          h.setPosition(sp[0], sp[1], sp[2]).setScale(Math.max(0.05, (1 - ph) * (0.5 + 0.5 * surge))).setVisible(true);
+          show(`spark-${i}`, true).setPosition(sp[0], sp[1], sp[2]).setScale(Math.max(0.05, (1 - ph) * (0.5 + 0.5 * surge)));
         }
 
         /* a ring of sparkles at each orb pickup */
@@ -386,45 +425,45 @@ export function buildWorld(options: WorldOptions = {}): World {
         prevPulse = S.kiPulse;
         burstT += dt;
         for (let i = 0; i < BURSTS; i++) {
-          const h = node(`burst-${i}`);
-          if (burstT >= 0.5) { h.setVisible(false); continue; }
+          if (burstT >= 0.5) { hide(`burst-${i}`); continue; }
+          const h = show(`burst-${i}`, true);
           const a = (i / BURSTS) * Math.PI * 2;
           const r = burstT * 7;
           const bp = toWorld([Math.cos(a) * r * 0.8, 2.3 + Math.sin(a) * r * 0.8, 0.4 + (i % 3) * 0.3]);
-          h.setPosition(bp[0], bp[1], bp[2]).setScale(Math.max(0.05, 1 - burstT / 0.5)).setVisible(true);
+          h.setPosition(bp[0], bp[1], bp[2]).setScale(Math.max(0.05, 1 - burstT / 0.5));
         }
 
         /* speed streaks fixed to the road so they sweep past the camera */
         const fast = surge > 0.3 || flying;
         for (let i = 0; i < STREAKS; i++) {
-          const h = node(`streak-${i}`);
-          if (!fast) { h.setVisible(false); continue; }
+          if (!fast) { hide(`streak-${i}`); continue; }
+          const h = show(`streak-${i}`, true);
           const rel = mod(i * 37.7 - S.s, 90) - 12;
           const sf = frameAt(samples, Math.min(Math.max(S.s + rel, -40), ROAD_LENGTH));
           const lateral = (i % 2 ? 1 : -1) * (4.5 + ((i * 5.3) % 9));
           const sp = onRoad(sf, lateral, 0.8 + ((i * 3.7) % 8) + (flying ? S.y * 0.3 : 0));
           const e = matrixEuler(frameBasis(sf));
-          h.setPosition(sp[0], sp[1], sp[2]).setRotation(e[0], e[1], e[2]).setScale([1, 1, Math.max(0.6, S.speed / 45)]).setVisible(true);
+          h.setPosition(sp[0], sp[1], sp[2]).setRotation(e[0], e[1], e[2]).setScale([1, 1, Math.max(0.6, S.speed / 45)]);
         }
 
         /* roadside lanterns (pairs along the verge) and floating islands drifting past on both sides */
         for (let i = 0; i < LANTERN_COUNT; i++) {
-          const h = node(`lantern-${i}`);
+          const h = show(`lantern-${i}`, true);
           const side = i % 2 ? 1 : -1;
           const rel = mod(Math.floor(i / 2) * 58 - S.s, (LANTERN_COUNT / 2) * 58) - 26;
           const lf = frameAt(samples, Math.min(Math.max(S.s + rel, -40), ROAD_LENGTH));
           const lp = onRoad(lf, side * 10.4, 0.4);
           const le = matrixEuler(frameBasis(lf, side > 0 ? -Math.PI / 2 : Math.PI / 2));
-          h.setPosition(lp[0], lp[1], lp[2]).setRotation(le[0], le[1], le[2]).setVisible(true);
+          h.setPosition(lp[0], lp[1], lp[2]).setRotation(le[0], le[1], le[2]);
         }
         for (let i = 0; i < ISLAND_COUNT; i++) {
-          const h = node(`island-${i}`);
+          const h = show(`island-${i}`, true);
           const side = i % 2 ? 1 : -1;
           const rel = mod(i * 140 - S.s, ISLAND_COUNT * 140) - 90;
           const sf = frameAt(samples, Math.min(Math.max(S.s + rel, -40), ROAD_LENGTH));
           const ip = onRoad(sf, side * (34 + ((i * 23) % 26)), 16 + ((i * 7) % 18) + Math.sin(time * 0.4 + i * 1.7) * 1.4);
           const ie = matrixEuler(frameBasis(sf, time * 0.05 + i));
-          h.setPosition(ip[0], ip[1], ip[2]).setRotation(ie[0], ie[1], ie[2]).setScale(1 + (i % 3) * 0.35).setVisible(true);
+          h.setPosition(ip[0], ip[1], ip[2]).setRotation(ie[0], ie[1], ie[2]).setScale(1 + (i % 3) * 0.35);
         }
 
         /* entities: assign the nearest alive ones to the pooled slots, hide the rest */
@@ -450,7 +489,7 @@ export function buildWorld(options: WorldOptions = {}): World {
           const tumble = ent.punt ? eulerMatrix([ent.punt.t * 9, ent.punt.t * 5, 0]) : null;
           const style = ent.type === "power" ? POWER_STYLE[ent.kind ?? "surge"] : undefined;
           parts3.forEach((part, j) => {
-            const handle = node(`ent-${ent.type}-${idx}-${j}`);
+            const handle = show(`ent-${ent.type}-${idx}-${j}`, true);
             let local: M3 = part.rot ? eulerMatrix(part.rot) : eulerMatrix([0, 0, 0]);
             if (part.spin) local = mul(ry(time * part.spin + ent.spin), local);
             let off: LV3 = part.at;
@@ -458,7 +497,7 @@ export function buildWorld(options: WorldOptions = {}): World {
             if (tumble) { m = mul(EB, mul(tumble, local)); off = apply(tumble, off); }
             const wo = apply(EB, off);
             const e = matrixEuler(m);
-            handle.setPosition(base[0] + wo[0], base[1] + wo[1], base[2] + wo[2]).setRotation(e[0], e[1], e[2]).setScale(pulse).setVisible(true);
+            handle.setPosition(base[0] + wo[0], base[1] + wo[1], base[2] + wo[2]).setRotation(e[0], e[1], e[2]).setScale(pulse);
             if (style && (part.mat === "power" || part.mat === "powerHalo")) {
               handle.setUniform?.("glowCore", [...style.core]);
               handle.setUniform?.("glowShell", [...style.shell]);
@@ -467,27 +506,29 @@ export function buildWorld(options: WorldOptions = {}): World {
         }
         for (const [type, count] of Object.entries(POOLS)) {
           const partCount = (ENTITY_PARTS[type] ?? []).length;
-          for (let i = used[type] ?? 0; i < count; i++) for (let j = 0; j < partCount; j++) node(`ent-${type}-${i}-${j}`).setVisible(false);
+          for (let i = used[type] ?? 0; i < count; i++) for (let j = 0; j < partCount; j++) hide(`ent-${type}-${i}-${j}`);
         }
 
         /* chase camera */
         rig = stepChaseRig(rig, frame.F, frame.U, dt);
         const back = flying ? 9.5 : 7 + Math.min(1.6, S.speed * 0.03);
         const rise = flying ? 4.4 : 3.4;
-        const shake = Math.min(1, Math.max(0, S.shake ?? 0)) * 0.25;
+        const shake = reducedMotion ? 0 : Math.min(1, Math.max(0, S.shake ?? 0)) * 0.25;
         const jx = shake * Math.sin(time * 61), jy = shake * Math.sin(time * 47 + 1.3);
         const lift = falling ? Math.min(tf, 2.2) * 2.2 : leaping ? Math.min(tf, 2) * 1.2 : 0;
         const eye: V3 = [pose[0] - rig.f[0] * back + rig.u[0] * (rise + lift) + frame.R[0] * jx, pose[1] - rig.f[1] * back + rig.u[1] * (rise + lift) + frame.R[1] * jx + jy, pose[2] - rig.f[2] * back + rig.u[2] * (rise + lift) + frame.R[2] * jx];
         const ahead = falling || leaping ? 3 : 12;
         const aim = falling ? -1.4 : 1.6;
         const look: V3 = [pose[0] + rig.f[0] * ahead + rig.u[0] * aim, pose[1] + rig.f[1] * ahead + rig.u[1] * aim, pose[2] + rig.f[2] * ahead + rig.u[2] * aim];
-        const fov = (aspect < 0.85 ? 74 : 62) + Math.min(10, Math.max(0, S.speed - 60) * 0.06);
+        const fov = (aspect < 0.85 ? 74 : 62) + (reducedMotion ? 0 : Math.min(10, Math.max(0, S.speed - 60) * 0.06));
         cameraController.setPose({ position: eye, target: look, up: rig.u, fov }, { cut: false });
       };
 
       return {
         update,
         resetCamera() { rig = null; prevS = null; },
+        setReducedMotion(on: boolean) { reducedMotion = on; },
+        get visibilityWrites() { return visibilityWrites; },
         setRunnerStyle(style: RunnerStyle) {
           const colorOf: Record<HeroColor, number> = { gi: style.gi, giDark: style.giDark, skin: style.skin, hair: style.hair, teal: style.belt, boot: style.boot, sash: style.sash };
           for (const part of HERO_PARTS as readonly HeroPartSpec[]) {

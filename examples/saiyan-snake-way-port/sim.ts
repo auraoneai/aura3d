@@ -505,7 +505,7 @@ function pickup(S: RunState, e: Entity): void {
       break;
     case "stamp":
       S.checkpointS = e.s;
-      toast(S, "WAYPOINT STAMP  —  checkpoint");
+      toast(S, "WAYPOINT STAMPED");
       break;
     case "weights":
       if (!S.weightsOff) {
@@ -1033,6 +1033,17 @@ export function snapshot(S: RunState, frame: number): Record<string, unknown> {
   }
   out.stage = S.stage ? S.stage.name : null;
   out.ents = S.ents.length;
+  return out;
+}
+
+/**
+ * The QA hook's state: `snapshot` without `lane`. The original never assigned `lane` (it stays 0 while `laneTarget`
+ * and `laneX` move), so the recorded reference keeps it for the field-for-field replay, but a live probe should read
+ * `laneTarget` (P-1).
+ */
+export function qaSnapshot(S: RunState, frame: number): Record<string, unknown> {
+  const out = snapshot(S, frame);
+  delete out.lane;
   return out;
 }
 

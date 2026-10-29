@@ -6,13 +6,13 @@ const LICENSE = "Meshy generated asset (AuraOne account plan terms at generation
 const glb = (file: string, sha256: string) => ({ url: new URL(`./assets/${file}`, import.meta.url).pathname, sha256 });
 
 export const MESHY = defineModelAssets({
-  gate: glb("gate.glb", "sha256-3fb6d7084b80b087037307a57740c9a217d9401c662c342f45206af7f647871f"),
-  barrier: glb("barrier.glb", "sha256-c1baefaebada21231cf073d8b8a530f75a7553b19c3dff8cfc1f38bc790e171b"),
-  ogre: glb("ogre.glb", "sha256-8dd09a9b08673e7848d67b052c8d3fb6172d10e2baff847a4a993da3f9bc1937"),
+  gate: glb("gate.glb", "sha256-f7f33f94d0ff7d3b2943d6571cea389d74952b60a4f9c6df651635626fec768a"),
+  barrier: glb("barrier.glb", "sha256-1abcb50e0356ee708a5db10e4b8dc64f876089ddc634dce8a8786e044273db40"),
+  ogre: glb("ogre.glb", "sha256-67e9ae1a89bdc48a0b6a28a535421071bca767930d317381c67cc2aaaf3ec519"),
   island: glb("island.glb", "sha256-605edc6b1c487fe3d8d9c649bd29e13dd6a57f394fdfc3ba4aacf386d79bd7bb"),
-  cart: glb("cart.glb", "sha256-e5a704485d2104bf228795a8767f213aa8f4411d734e52690028f49c9038f3a6"),
-  feast: glb("feast.glb", "sha256-993f6ebe301bd673989d07e1d1a1f0aada1b04e274169e24a6ac7a771f214620"),
-  lantern: glb("lantern.glb", "sha256-5711a1c30cbd9354c1b78121573d370b88a319b049eaf678155f67bce43f3637")
+  cart: glb("cart.glb", "sha256-b524d3694dfebc51538817c72e23d90c2b0d86800706ea0ef1e0d5bb1b2c3366"),
+  feast: glb("feast.glb", "sha256-ef57f499e2352bb73b9098a73190f88412b86aa54a1b9b711d7f69b2e856bac7"),
+  lantern: glb("lantern.glb", "sha256-e7455a1ef72d8e5fe0e9a460f8cd68e7ba6ef85292b823979a22d7df7d3f730b")
 }, { license: LICENSE, queryParam: null }).refs;
 
 export type MeshyKey = keyof typeof MESHY;
