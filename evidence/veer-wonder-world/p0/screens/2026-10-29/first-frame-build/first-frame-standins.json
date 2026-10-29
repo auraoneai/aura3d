@@ -1,0 +1,124 @@
+{
+  "label": "first-frame-standins",
+  "runId": "wonder-first-frame-build-20261029T174544Z",
+  "commit": {
+    "commit": "2ae4125d1d4323bca18ad330efdf9139e3befe3b",
+    "tree": "clean"
+  },
+  "engineVersion": "4.5.0",
+  "viewport": {
+    "width": 1024,
+    "height": 768
+  },
+  "renderer": {
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "vendor": "Google Inc. (Google)",
+    "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+  },
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "query": {
+    "autostart": 1,
+    "story": "sheru-big-adventure",
+    "manual": 1,
+    "mode": "play-together",
+    "models": 0
+  },
+  "advancedMs": 1500,
+  "director": {
+    "storyId": "sheru-big-adventure",
+    "phase": "speaking",
+    "mode": "play-together",
+    "beatIndex": 0,
+    "beatId": "greet",
+    "round": 0,
+    "lineIndex": 1,
+    "elapsedMs": 1500,
+    "waitedMs": 0,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "stage": {
+    "drawCalls": 122,
+    "nodes": 29,
+    "modelsEnabled": false
+  },
+  "audio": {
+    "unlocked": false,
+    "available": true
+  },
+  "luma": {
+    "meanLuma": 195.037,
+    "lumaStdDev": 33.369,
+    "nonBlackRatio": 1,
+    "coarseColours": 422
+  },
+  "viewLuma": {
+    "meanLuma": 194.748,
+    "lumaStdDev": 36.611,
+    "nonBlackRatio": 1,
+    "coarseColours": 460
+  },
+  "frame": {
+    "width": 1024,
+    "height": 768
+  },
+  "drawCalls": 122,
+  "diagnostics": {
+    "drawCalls": 122,
+    "nodes": 29,
+    "renderPath": "hdr-msaa",
+    "storyId": "sheru-big-adventure",
+    "world": "meadow",
+    "modelNodes": 0,
+    "standInNodes": 3,
+    "modelStatus": {
+      "disabled": 7,
+      "procedural": 3
+    },
+    "recoveredFromMountFailure": false,
+    "warmed": true,
+    "warnings": []
+  },
+  "nodes": {
+    "apps": 1,
+    "nodes": [
+      {
+        "id": "momo",
+        "exists": true,
+        "visible": true,
+        "tags": [
+          "actor",
+          "momo",
+          "stand-in"
+        ]
+      },
+      {
+        "id": "sheru",
+        "exists": true,
+        "visible": true,
+        "tags": [
+          "actor",
+          "sheru",
+          "stand-in"
+        ]
+      },
+      {
+        "id": "ball",
+        "exists": true,
+        "visible": true,
+        "tags": [
+          "prop",
+          "ball",
+          "stand-in"
+        ]
+      }
+    ]
+  },
+  "expectModel": [],
+  "firstMount": null,
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "appErrors": []
+}

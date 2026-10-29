@@ -1,0 +1,218 @@
+{
+  "code": "g02",
+  "id": "gogo-train",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 42026,
+  "runMs": 64112,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "gogo-train",
+    "director": {
+      "storyId": "gogo-train",
+      "phase": "speaking",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "arrive",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "g02.arrive.2",
+    "speaker": "narrator",
+    "spoken": [
+      "g02.arrive.2"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 58,
+      "nodes": 17,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 26,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 1750
+    },
+    "maxTargets": 2,
+    "targetIds": [
+      "peeko",
+      "teddy",
+      "gogo"
+    ],
+    "waitSamples": 8,
+    "maxRound": 1,
+    "beatIds": [
+      "arrive",
+      "platform",
+      "board",
+      "go",
+      "stop",
+      "more",
+      "thanks",
+      "bye"
+    ],
+    "phases": [
+      "speaking",
+      "holding",
+      "waiting",
+      "responding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 11,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "gogo-train",
+    "director": {
+      "storyId": "gogo-train",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 7,
+      "beatId": "bye",
+      "round": 1,
+      "lineIndex": 2,
+      "elapsedMs": 64239,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "g02.arrive.2",
+      "g02.arrive.1",
+      "g02.platform.1",
+      "g02.platform.2",
+      "g02.board.1",
+      "g02.board.2",
+      "g02.board.3",
+      "g02.go.1",
+      "g02.go.2",
+      "g02.go.3",
+      "g02.stop.1",
+      "g02.stop.2",
+      "g02.stop.3",
+      "g02.stop.4",
+      "g02.more.1",
+      "g02.more.2",
+      "g02.thanks.1",
+      "g02.thanks.2",
+      "g02.bye.1",
+      "g02.bye.2"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 56,
+      "nodes": 17,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "gogo-train",
+    "directorStoryId": "gogo-train",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "g02.arrive.2",
+    "g02.arrive.1",
+    "g02.platform.1",
+    "g02.platform.2",
+    "g02.board.1",
+    "g02.board.2",
+    "g02.board.3",
+    "g02.go.1",
+    "g02.go.2",
+    "g02.go.3",
+    "g02.stop.1",
+    "g02.stop.2",
+    "g02.stop.3",
+    "g02.stop.4",
+    "g02.more.1",
+    "g02.more.2",
+    "g02.thanks.1",
+    "g02.thanks.2",
+    "g02.bye.1",
+    "g02.bye.2"
+  ],
+  "spokenOrder": {
+    "spoken": 20,
+    "authored": 20,
+    "rounds": 1,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 15,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-activities-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

@@ -1,0 +1,413 @@
+{
+  "context": {
+    "runId": "wonder-characters-3-20261029T182623Z",
+    "commit": {
+      "commit": "498c32f63c44f90def67bc1c6a155c9263162e20",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0",
+    "renderer": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+    }
+  },
+  "character": "peeko",
+  "story": "peekaboo-animal-barn",
+  "code": "g04",
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "load": {
+    "loadMs": 34115,
+    "firstMount": null
+  },
+  "drawnAs": [
+    "actor",
+    "peeko",
+    "model"
+  ],
+  "phone": {
+    "viewport": {
+      "width": 320,
+      "height": 568
+    },
+    "storyMs": 5000,
+    "camera": {
+      "preset": "wide",
+      "since": 3500
+    },
+    "shownForShot": false,
+    "nodeRect": {
+      "id": "peeko",
+      "x": 32.2036784018805,
+      "y": 317.95421434108596,
+      "w": 63.49217312889348,
+      "h": 68.14221821607737
+    },
+    "canvas": {
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 568
+    },
+    "visibleHeight": 68,
+    "silhouette": {
+      "box": {
+        "x": 32,
+        "y": 318,
+        "width": 63,
+        "height": 68
+      },
+      "core": {
+        "r": 217.96,
+        "g": 194.635,
+        "b": 140.486,
+        "luma": 195.684,
+        "pixels": 1386
+      },
+      "ground": {
+        "r": 220.316,
+        "g": 224.381,
+        "b": 196.388,
+        "luma": 221.496,
+        "pixels": 13260
+      },
+      "lumaDiff": 25.812,
+      "colourDistance": 63.367,
+      "separatedShare": 0.577
+    },
+    "frame": {
+      "meanLuma": 194.033,
+      "lumaStdDev": 39.991,
+      "nonBlackRatio": 1,
+      "coarseColours": 273
+    }
+  },
+  "turnaround": {
+    "storyMs": 6200,
+    "reducedMotion": true,
+    "anchor": "door",
+    "nodeRect": {
+      "id": "peeko",
+      "x": 329.7160314936398,
+      "y": 314.0226744743324,
+      "w": 140.56793701272045,
+      "h": 164.0069794956429
+    },
+    "crop": {
+      "x": 287,
+      "y": 256,
+      "width": 226,
+      "height": 242
+    },
+    "views": [
+      {
+        "view": "front",
+        "toward": "viewer",
+        "frame": {
+          "meanLuma": 214.694,
+          "lumaStdDev": 21.75,
+          "nonBlackRatio": 1,
+          "coarseColours": 202
+        },
+        "vsFront": {
+          "meanAbsLumaDiff": 0,
+          "meanLumaDelta": 0,
+          "changedRatio": 0
+        }
+      },
+      {
+        "view": "left",
+        "toward": "offLeft",
+        "frame": {
+          "meanLuma": 214.9,
+          "lumaStdDev": 21.263,
+          "nonBlackRatio": 1,
+          "coarseColours": 180
+        },
+        "vsFront": {
+          "meanAbsLumaDiff": 2.792,
+          "meanLumaDelta": 0.206,
+          "changedRatio": 0.044
+        }
+      },
+      {
+        "view": "back",
+        "toward": "back",
+        "frame": {
+          "meanLuma": 214.701,
+          "lumaStdDev": 22.032,
+          "nonBlackRatio": 1,
+          "coarseColours": 184
+        },
+        "vsFront": {
+          "meanAbsLumaDiff": 2.293,
+          "meanLumaDelta": 0.008,
+          "changedRatio": 0.041
+        }
+      },
+      {
+        "view": "right",
+        "toward": "offRight",
+        "frame": {
+          "meanLuma": 214.588,
+          "lumaStdDev": 22.245,
+          "nonBlackRatio": 1,
+          "coarseColours": 165
+        },
+        "vsFront": {
+          "meanAbsLumaDiff": 3.601,
+          "meanLumaDelta": -0.106,
+          "changedRatio": 0.06
+        }
+      }
+    ],
+    "frontBack": {
+      "meanAbsLumaDiff": 2.293,
+      "meanLumaDelta": 0.008,
+      "changedRatio": 0.041
+    },
+    "mostUnlikeFront": {
+      "view": "right",
+      "delta": {
+        "meanAbsLumaDiff": 3.601,
+        "meanLumaDelta": -0.106,
+        "changedRatio": 0.06
+      }
+    },
+    "warningsAdded": []
+  },
+  "poses": {
+    "storyMs": 8700,
+    "nodeRect": {
+      "id": "peeko",
+      "x": 329.7160314936398,
+      "y": 314.0226744743324,
+      "w": 140.56793701272045,
+      "h": 164.0069794956429
+    },
+    "crop": {
+      "x": 287,
+      "y": 256,
+      "width": 226,
+      "height": 242
+    },
+    "states": [
+      {
+        "state": "neutral",
+        "gesture": "idle",
+        "atMs": 400,
+        "frame": {
+          "meanLuma": 214.456,
+          "lumaStdDev": 22.162,
+          "nonBlackRatio": 1,
+          "coarseColours": 201
+        },
+        "vsNeutral": null
+      },
+      {
+        "state": "delighted",
+        "gesture": "happy",
+        "atMs": 450,
+        "frame": {
+          "meanLuma": 213.353,
+          "lumaStdDev": 24.493,
+          "nonBlackRatio": 1,
+          "coarseColours": 206
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 8.815,
+          "meanLumaDelta": -1.103,
+          "changedRatio": 0.123
+        }
+      },
+      {
+        "state": "curious",
+        "gesture": "look",
+        "atMs": 800,
+        "frame": {
+          "meanLuma": 214.747,
+          "lumaStdDev": 21.712,
+          "nonBlackRatio": 1,
+          "coarseColours": 199
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 2.432,
+          "meanLumaDelta": 0.291,
+          "changedRatio": 0.04
+        }
+      },
+      {
+        "state": "surprised",
+        "gesture": "surprise",
+        "atMs": 350,
+        "frame": {
+          "meanLuma": 213.271,
+          "lumaStdDev": 24.531,
+          "nonBlackRatio": 1,
+          "coarseColours": 203
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 7.534,
+          "meanLumaDelta": -1.185,
+          "changedRatio": 0.112
+        }
+      },
+      {
+        "state": "waiting",
+        "gesture": "wait",
+        "atMs": 500,
+        "frame": {
+          "meanLuma": 214.37,
+          "lumaStdDev": 22.348,
+          "nonBlackRatio": 1,
+          "coarseColours": 200
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 2.502,
+          "meanLumaDelta": -0.086,
+          "changedRatio": 0.042
+        }
+      },
+      {
+        "state": "good-bye",
+        "gesture": "wave",
+        "atMs": 600,
+        "frame": {
+          "meanLuma": 212.691,
+          "lumaStdDev": 25.4,
+          "nonBlackRatio": 1,
+          "coarseColours": 202
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 6.856,
+          "meanLumaDelta": -1.766,
+          "changedRatio": 0.106
+        }
+      }
+    ]
+  },
+  "talking": {
+    "storyMs": 11900,
+    "reducedMotion": true,
+    "crop": {
+      "x": 287,
+      "y": 256,
+      "width": 226,
+      "height": 242
+    },
+    "talking": {
+      "pairs": [
+        {
+          "meanAbsLumaDiff": 1.766,
+          "meanLumaDelta": -0.097,
+          "changedRatio": 0.029
+        },
+        {
+          "meanAbsLumaDiff": 0.366,
+          "meanLumaDelta": -0.011,
+          "changedRatio": 0.004
+        }
+      ],
+      "best": {
+        "meanAbsLumaDiff": 1.766,
+        "meanLumaDelta": -0.097,
+        "changedRatio": 0.029
+      }
+    },
+    "silent": {
+      "pairs": [
+        {
+          "meanAbsLumaDiff": 0.022,
+          "meanLumaDelta": 0.006,
+          "changedRatio": 0
+        },
+        {
+          "meanAbsLumaDiff": 0.019,
+          "meanLumaDelta": 0.002,
+          "changedRatio": 0
+        }
+      ],
+      "best": {
+        "meanAbsLumaDiff": 0.022,
+        "meanLumaDelta": 0.006,
+        "changedRatio": 0
+      }
+    },
+    "silentShare": 0.012
+  },
+  "reducedMotion": {
+    "storyMs": 12900,
+    "gesture": "happy",
+    "crop": {
+      "x": 287,
+      "y": 256,
+      "width": 226,
+      "height": 242
+    },
+    "normalTravelPx": 31.8,
+    "reducedTravelPx": 16.3,
+    "normal": {
+      "pairs": [
+        {
+          "meanAbsLumaDiff": 6.216,
+          "meanLumaDelta": 0.329,
+          "changedRatio": 0.098
+        },
+        {
+          "meanAbsLumaDiff": 7.961,
+          "meanLumaDelta": -0.435,
+          "changedRatio": 0.118
+        }
+      ],
+      "best": {
+        "meanAbsLumaDiff": 7.961,
+        "meanLumaDelta": -0.435,
+        "changedRatio": 0.118
+      }
+    },
+    "reduced": {
+      "pairs": [
+        {
+          "meanAbsLumaDiff": 3.985,
+          "meanLumaDelta": 0.202,
+          "changedRatio": 0.066
+        },
+        {
+          "meanAbsLumaDiff": 5.784,
+          "meanLumaDelta": -0.138,
+          "changedRatio": 0.091
+        }
+      ],
+      "best": {
+        "meanAbsLumaDiff": 5.784,
+        "meanLumaDelta": -0.138,
+        "changedRatio": 0.091
+      }
+    },
+    "reducedShare": 0.727
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "director": {
+    "storyId": "peekaboo-animal-barn",
+    "phase": "waiting",
+    "mode": "watch-sing",
+    "beatIndex": 2,
+    "beatId": "cow",
+    "round": 1,
+    "lineIndex": 1,
+    "elapsedMs": 14200,
+    "waitedMs": 4862,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "errors": {
+    "steps": [],
+    "app": [],
+    "console": [],
+    "page": [],
+    "badResponses": []
+  }
+}

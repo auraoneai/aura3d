@@ -1,0 +1,324 @@
+{
+  "label": "stills-E17-G04",
+  "runId": "wonder-stills-3-20261029T172337Z",
+  "commit": {
+    "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+    "tree": "clean"
+  },
+  "engineVersion": "4.5.0",
+  "viewport": {
+    "width": 1024,
+    "height": 768
+  },
+  "renderer": {
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "vendor": "Google Inc. (Google)",
+    "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+  },
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "stories": [
+    {
+      "code": "e17",
+      "id": "sheru-big-adventure",
+      "moment": {
+        "beatId": "model",
+        "kind": "model",
+        "t": 29550,
+        "rule": "3 s after the beat starts",
+        "camera": {
+          "preset": "medium",
+          "since": 26550
+        }
+      },
+      "problems": []
+    },
+    {
+      "code": "e18",
+      "id": "whos-at-the-door",
+      "moment": {
+        "beatId": "open-lulu",
+        "kind": "model",
+        "t": 25700,
+        "rule": "3 s after the beat starts",
+        "camera": {
+          "preset": "wide",
+          "since": 0
+        }
+      },
+      "problems": []
+    },
+    {
+      "code": "e19",
+      "id": "momos-day",
+      "moment": {
+        "beatId": "wash-model",
+        "kind": "model",
+        "t": 23900,
+        "rule": "3 s after the beat starts",
+        "camera": {
+          "preset": "left",
+          "since": 20900
+        }
+      },
+      "problems": []
+    },
+    {
+      "code": "e20",
+      "id": "little-story-machine",
+      "moment": {
+        "beatId": "toy-teddy",
+        "kind": "model",
+        "t": 27300,
+        "rule": "3 s after the beat starts",
+        "camera": {
+          "preset": "medium",
+          "since": 17050
+        }
+      },
+      "problems": []
+    },
+    {
+      "code": "g01",
+      "id": "bubble-garden",
+      "moment": {
+        "beatId": "first-bubble",
+        "kind": "model",
+        "t": 7600,
+        "rule": "3 s after the beat starts",
+        "camera": {
+          "preset": "wide",
+          "since": 4600
+        }
+      },
+      "problems": []
+    },
+    {
+      "code": "g02",
+      "id": "gogo-train",
+      "moment": {
+        "beatId": "board",
+        "kind": "invite",
+        "t": 11250,
+        "rule": "600 ms into the beat's wait",
+        "camera": {
+          "preset": "wide",
+          "since": 8750
+        }
+      },
+      "problems": []
+    },
+    {
+      "code": "g03",
+      "id": "sheru-ball",
+      "moment": {
+        "beatId": "woof",
+        "kind": "model",
+        "t": 7400,
+        "rule": "3 s after the beat starts",
+        "camera": {
+          "preset": "wide",
+          "since": 4400
+        }
+      },
+      "problems": []
+    },
+    {
+      "code": "g04",
+      "id": "peekaboo-animal-barn",
+      "moment": {
+        "beatId": "cow",
+        "kind": "invite",
+        "t": 9950,
+        "rule": "600 ms into the beat's wait",
+        "camera": {
+          "preset": "wide",
+          "since": 7550
+        }
+      },
+      "problems": []
+    }
+  ],
+  "storage": {
+    "localKeys": [],
+    "settingsFields": null,
+    "sessionKeys": [],
+    "hasCookies": false,
+    "problems": []
+  },
+  "requests": {
+    "count": 138,
+    "byType": {
+      "document": 1,
+      "stylesheet": 2,
+      "script": 1,
+      "fetch": 132,
+      "font": 2
+    },
+    "foreign": [],
+    "all": [
+      "GET document /<app>/index.html?autostart=1&story=sheru-big-adventure&manual=1&mode=watch-sing&models=1&modelWaitMs=180000",
+      "GET stylesheet /fonts/local.css",
+      "GET stylesheet /<app>/src/ui/styles.css",
+      "GET script /<app>/src/main.ts",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+      "GET font /fonts/graphik/Graphik-Medium-Web.woff2",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /<app>/src/assets/models/momo.3b7a02aa.glb",
+      "GET fetch /<app>/src/assets/models/sheru.e0e039ec.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+      "GET fetch /<app>/src/assets/models/momo.3b7a02aa.glb",
+      "GET fetch /<app>/src/assets/models/sheru.e0e039ec.glb",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+      "GET fetch /<app>/src/assets/models/momo.3b7a02aa.glb",
+      "GET fetch /<app>/src/assets/models/sheru.e0e039ec.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET font /fonts/graphik/Graphik-Regular-Web.woff2",
+      "GET fetch /<app>/src/assets/models/peeko.016097bc.glb",
+      "GET fetch /<app>/src/assets/models/lulu.95ef56f6.glb",
+      "GET fetch /<app>/src/assets/models/door.780b4b6e.glb",
+      "GET fetch /hdri/studio_small_08_1k.hdr",
+      "GET fetch /<app>/src/assets/models/momo.3b7a02aa.glb",
+      "GET fetch /<app>/src/assets/models/peeko.016097bc.glb",
+      "GET fetch /<app>/src/assets/models/lulu.95ef56f6.glb",
+      "GET fetch /<app>/src/assets/models/sheru.e0e039ec.glb",
+      "GET fetch /<app>/src/assets/models/door.780b4b6e.glb",
+      "GET fetch /<app>/src/assets/models/momo.3b7a02aa.glb",
+      "GET fetch /<app>/src/assets/models/lulu.95ef56f6.glb",
+      "GET fetch /<app>/src/assets/models/peeko.016097bc.glb",
+      "GET fetch /<app>/src/assets/models/sheru.e0e039ec.glb",
+      "GET fetch /<app>/src/assets/models/door.780b4b6e.glb",
+      "GET fetch /hdri/studio_small_08_1k.hdr",
+      "GET fetch /<app>/src/assets/models/lumi.d65cb9e6.glb",
+      "GET fetch /<app>/src/assets/models/bed.f7f95330.glb",
+      "GET fetch /<app>/src/assets/models/sink.2e10ec2b.glb",
+      "GET fetch /<app>/src/assets/models/towel.73ce321a.glb",
+      "GET fetch /<app>/src/assets/models/plate.cbafe298.glb",
+      "GET fetch /<app>/src/assets/models/banana.576faff2.glb",
+      "GET fetch /hdri/studio_small_08_1k.hdr",
+      "GET fetch /<app>/src/assets/models/momo.3b7a02aa.glb",
+      "GET fetch /<app>/src/assets/models/lumi.d65cb9e6.glb",
+      "GET fetch /<app>/src/assets/models/bed.f7f95330.glb",
+      "GET fetch /<app>/src/assets/models/sink.2e10ec2b.glb",
+      "GET fetch /<app>/src/assets/models/towel.73ce321a.glb",
+      "GET fetch /<app>/src/assets/models/plate.cbafe298.glb",
+      "GET fetch /<app>/src/assets/models/banana.576faff2.glb",
+      "GET fetch /<app>/src/assets/models/momo.3b7a02aa.glb",
+      "GET fetch /<app>/src/assets/models/lumi.d65cb9e6.glb",
+      "GET fetch /<app>/src/assets/models/bed.f7f95330.glb",
+      "GET fetch /<app>/src/assets/models/sink.2e10ec2b.glb",
+      "GET fetch /<app>/src/assets/models/towel.73ce321a.glb",
+      "GET fetch /<app>/src/assets/models/plate.cbafe298.glb",
+      "GET fetch /<app>/src/assets/models/banana.576faff2.glb",
+      "GET fetch /hdri/studio_small_08_1k.hdr",
+      "GET fetch /<app>/src/assets/models/storyBox.3c134a7e.glb",
+      "GET fetch /<app>/src/assets/models/teddy.49af2add.glb",
+      "GET fetch /<app>/src/assets/models/car.ce6531fe.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /<app>/src/assets/models/momo.3b7a02aa.glb",
+      "GET fetch /<app>/src/assets/models/lumi.d65cb9e6.glb",
+      "GET fetch /<app>/src/assets/models/storyBox.3c134a7e.glb",
+      "GET fetch /<app>/src/assets/models/teddy.49af2add.glb",
+      "GET fetch /<app>/src/assets/models/car.ce6531fe.glb",
+      "GET fetch /<app>/src/assets/models/lumi.d65cb9e6.glb",
+      "GET fetch /<app>/src/assets/models/storyBox.3c134a7e.glb",
+      "GET fetch /<app>/src/assets/models/teddy.49af2add.glb",
+      "GET fetch /<app>/src/assets/models/car.ce6531fe.glb",
+      "GET fetch /<app>/src/assets/models/momo.3b7a02aa.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /<app>/src/assets/models/bubbleWand.1baf843e.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+      "GET fetch /<app>/src/assets/models/momo.3b7a02aa.glb",
+      "GET fetch /<app>/src/assets/models/bubbleWand.1baf843e.glb",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+      "GET fetch /<app>/src/assets/models/momo.3b7a02aa.glb",
+      "GET fetch /<app>/src/assets/models/bubbleWand.1baf843e.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /<app>/src/assets/models/gogo.a229380d.glb",
+      "GET fetch /<app>/src/assets/models/station.5442f8e0.glb",
+      "GET fetch /<app>/src/assets/models/tunnel.2ce4550c.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /<app>/src/assets/models/station.5442f8e0.glb",
+      "GET fetch /<app>/src/assets/models/tunnel.2ce4550c.glb",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/gogo.a229380d.glb",
+      "GET fetch /<app>/src/assets/models/peeko.016097bc.glb",
+      "GET fetch /<app>/src/assets/models/teddy.49af2add.glb",
+      "GET fetch /<app>/src/assets/models/station.5442f8e0.glb",
+      "GET fetch /<app>/src/assets/models/tunnel.2ce4550c.glb",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/gogo.a229380d.glb",
+      "GET fetch /<app>/src/assets/models/peeko.016097bc.glb",
+      "GET fetch /<app>/src/assets/models/teddy.49af2add.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+      "GET fetch /<app>/src/assets/models/momo.3b7a02aa.glb",
+      "GET fetch /<app>/src/assets/models/sheru.e0e039ec.glb",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+      "GET fetch /<app>/src/assets/models/sheru.e0e039ec.glb",
+      "GET fetch /<app>/src/assets/models/momo.3b7a02aa.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /<app>/src/assets/models/cow.133d9ae8.glb",
+      "GET fetch /<app>/src/assets/models/duck.3f6eb24c.glb",
+      "GET fetch /<app>/src/assets/models/horse.0767181a.glb",
+      "GET fetch /<app>/src/assets/models/barn.4e64b520.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /<app>/src/assets/models/barn.4e64b520.glb",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/peeko.016097bc.glb",
+      "GET fetch /<app>/src/assets/models/door.780b4b6e.glb",
+      "GET fetch /<app>/src/assets/models/cow.133d9ae8.glb",
+      "GET fetch /<app>/src/assets/models/duck.3f6eb24c.glb",
+      "GET fetch /<app>/src/assets/models/horse.0767181a.glb",
+      "GET fetch /<app>/src/assets/models/barn.4e64b520.glb",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/door.780b4b6e.glb",
+      "GET fetch /<app>/src/assets/models/cow.133d9ae8.glb",
+      "GET fetch /<app>/src/assets/models/peeko.016097bc.glb",
+      "GET fetch /<app>/src/assets/models/duck.3f6eb24c.glb",
+      "GET fetch /<app>/src/assets/models/horse.0767181a.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /<app>/src/assets/models/picnicBasket.355d9cf2.glb",
+      "GET fetch /<app>/src/assets/models/apple.4c797628.glb"
+    ],
+    "truncated": false
+  },
+  "consoleLogs": [
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x372400115400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ /<app>/index.html?autostart=1&story=sheru-big-adventure&manual=1&mode=watch-sing&models=1&modelWaitMs=180000:0",
+      "api": false
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x372400115400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ /<app>/index.html?autostart=1&story=sheru-big-adventure&manual=1&mode=watch-sing&models=1&modelWaitMs=180000:0",
+      "api": false
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x372400115400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ /<app>/index.html?autostart=1&story=sheru-big-adventure&manual=1&mode=watch-sing&models=1&modelWaitMs=180000:0",
+      "api": false
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x372400115400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat) @ /<app>/index.html?autostart=1&story=sheru-big-adventure&manual=1&mode=watch-sing&models=1&modelWaitMs=180000:0",
+      "api": false
+    }
+  ],
+  "appConsoleLogs": []
+}

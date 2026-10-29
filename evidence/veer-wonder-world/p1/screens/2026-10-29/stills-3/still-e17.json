@@ -1,0 +1,109 @@
+{
+  "context": {
+    "runId": "wonder-stills-3-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0",
+    "renderer": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+    }
+  },
+  "code": "e17",
+  "id": "sheru-big-adventure",
+  "title": "Sheru's Big Adventure",
+  "kind": "episode",
+  "viewport": {
+    "width": 1024,
+    "height": 768
+  },
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "load": {
+    "loadMs": 85640,
+    "firstMount": null
+  },
+  "moment": {
+    "beatId": "model",
+    "kind": "model",
+    "t": 29550,
+    "rule": "3 s after the beat starts",
+    "camera": {
+      "preset": "medium",
+      "since": 26550
+    }
+  },
+  "director": {
+    "storyId": "sheru-big-adventure",
+    "phase": "speaking",
+    "mode": "watch-sing",
+    "beatIndex": 2,
+    "beatId": "model",
+    "round": 0,
+    "lineIndex": 2,
+    "elapsedMs": 29550,
+    "waitedMs": 0,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "frame": {
+    "width": 1024,
+    "height": 768,
+    "luma": {
+      "meanLuma": 189.165,
+      "lumaStdDev": 40.171,
+      "nonBlackRatio": 1,
+      "coarseColours": 556
+    },
+    "colour": {
+      "meanSaturation": 0.242,
+      "colourfulness": 47.383,
+      "clippedRatio": 0,
+      "p5Luma": 121,
+      "p95Luma": 222
+    }
+  },
+  "nodes": [
+    {
+      "id": "momo",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "momo",
+        "model"
+      ]
+    },
+    {
+      "id": "sheru",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "sheru",
+        "model"
+      ]
+    }
+  ],
+  "stage": {
+    "drawCalls": 80,
+    "nodes": 17,
+    "world": "meadow",
+    "modelNodes": 2,
+    "standInNodes": 1,
+    "modelStatus": {
+      "procedural": 3,
+      "ready": 7
+    }
+  },
+  "stageWarnings": [],
+  "errors": {
+    "app": [],
+    "console": [],
+    "page": [],
+    "badResponses": []
+  },
+  "problems": []
+}

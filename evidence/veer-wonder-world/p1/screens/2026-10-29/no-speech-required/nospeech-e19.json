@@ -1,0 +1,243 @@
+{
+  "code": "e19",
+  "id": "momos-day",
+  "mode": "play-together",
+  "style": "single",
+  "loadMs": 28993,
+  "runMs": 8464,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "momos-day",
+    "director": {
+      "storyId": "momos-day",
+      "phase": "speaking",
+      "mode": "play-together",
+      "beatIndex": 0,
+      "beatId": "sunrise",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "e19.sunrise.1",
+    "speaker": "narrator",
+    "spoken": [
+      "e19.sunrise.1"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 68,
+      "nodes": 33,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "single",
+    "chunks": 1,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 129000
+    },
+    "maxTargets": 0,
+    "targetIds": [],
+    "waitSamples": 0,
+    "maxRound": 0,
+    "beatIds": [
+      "sunrise",
+      "outro"
+    ],
+    "phases": [
+      "speaking",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 1,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "momos-day",
+    "director": {
+      "storyId": "momos-day",
+      "phase": "finished",
+      "mode": "play-together",
+      "beatIndex": 15,
+      "beatId": "outro",
+      "round": 0,
+      "lineIndex": 3,
+      "elapsedMs": 128968,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "e19.sunrise.1",
+      "e19.greet.1",
+      "e19.hi.1",
+      "e19.hi.2",
+      "e19.hook.1",
+      "e19.hook.2",
+      "e19.hook.3",
+      "e19.wash-model.1",
+      "e19.wash-model.2",
+      "e19.wash-invite.1",
+      "e19.wash-invite.2",
+      "e19.wash-invite.3",
+      "e19.dry.1",
+      "e19.dry.2",
+      "e19.tummy.1",
+      "e19.tummy.2",
+      "e19.eat-model.1",
+      "e19.eat-model.2",
+      "e19.eat-invite.1",
+      "e19.eat-invite.2",
+      "e19.eat-invite.3",
+      "e19.toothbrush.1",
+      "e19.brush.1",
+      "e19.brush.2",
+      "e19.sleepy.1",
+      "e19.sleepy.2",
+      "e19.sleepy.3",
+      "e19.sleep-invite.1",
+      "e19.sleep-invite.2",
+      "e19.sleep-invite.3",
+      "e19.outro.1",
+      "e19.outro.2",
+      "e19.outro.3"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 59,
+      "nodes": 33,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "momos-day",
+    "directorStoryId": "momos-day",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": {
+    "installed": true,
+    "stubsLive": true,
+    "getUserMedia": 0,
+    "legacyGetUserMedia": 0,
+    "enumerateDevices": 0,
+    "speechRecognition": 0,
+    "speechRecognitionStart": 0,
+    "mediaRecorder": 0,
+    "mediaStreamSource": 0,
+    "micPermissionQuery": 0,
+    "calls": []
+  },
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "e19.sunrise.1",
+    "e19.greet.1",
+    "e19.hi.1",
+    "e19.hi.2",
+    "e19.hook.1",
+    "e19.hook.2",
+    "e19.hook.3",
+    "e19.wash-model.1",
+    "e19.wash-model.2",
+    "e19.wash-invite.1",
+    "e19.wash-invite.2",
+    "e19.wash-invite.3",
+    "e19.dry.1",
+    "e19.dry.2",
+    "e19.tummy.1",
+    "e19.tummy.2",
+    "e19.eat-model.1",
+    "e19.eat-model.2",
+    "e19.eat-invite.1",
+    "e19.eat-invite.2",
+    "e19.eat-invite.3",
+    "e19.toothbrush.1",
+    "e19.brush.1",
+    "e19.brush.2",
+    "e19.sleepy.1",
+    "e19.sleepy.2",
+    "e19.sleepy.3",
+    "e19.sleep-invite.1",
+    "e19.sleep-invite.2",
+    "e19.sleep-invite.3",
+    "e19.outro.1",
+    "e19.outro.2",
+    "e19.outro.3"
+  ],
+  "spokenOrder": {
+    "spoken": 33,
+    "authored": 33,
+    "rounds": 0,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 18,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-no-speech-required-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

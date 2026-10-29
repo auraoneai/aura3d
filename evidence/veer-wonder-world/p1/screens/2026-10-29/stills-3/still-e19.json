@@ -1,0 +1,159 @@
+{
+  "context": {
+    "runId": "wonder-stills-3-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0",
+    "renderer": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+    }
+  },
+  "code": "e19",
+  "id": "momos-day",
+  "title": "Momo's Day",
+  "kind": "episode",
+  "viewport": {
+    "width": 1024,
+    "height": 768
+  },
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "load": {
+    "loadMs": 86106,
+    "firstMount": null
+  },
+  "moment": {
+    "beatId": "wash-model",
+    "kind": "model",
+    "t": 23900,
+    "rule": "3 s after the beat starts",
+    "camera": {
+      "preset": "left",
+      "since": 20900
+    }
+  },
+  "director": {
+    "storyId": "momos-day",
+    "phase": "speaking",
+    "mode": "watch-sing",
+    "beatIndex": 4,
+    "beatId": "wash-model",
+    "round": 0,
+    "lineIndex": 1,
+    "elapsedMs": 23900,
+    "waitedMs": 0,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "frame": {
+    "width": 1024,
+    "height": 768,
+    "luma": {
+      "meanLuma": 188.353,
+      "lumaStdDev": 33.269,
+      "nonBlackRatio": 1,
+      "coarseColours": 409
+    },
+    "colour": {
+      "meanSaturation": 0.221,
+      "colourfulness": 48.858,
+      "clippedRatio": 0,
+      "p5Luma": 147,
+      "p95Luma": 226
+    }
+  },
+  "nodes": [
+    {
+      "id": "momo",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "momo",
+        "model"
+      ]
+    },
+    {
+      "id": "lumi",
+      "exists": true,
+      "visible": false,
+      "tags": [
+        "actor",
+        "lumi",
+        "model"
+      ]
+    },
+    {
+      "id": "bed",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "bed",
+        "model"
+      ]
+    },
+    {
+      "id": "sink",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "sink",
+        "model"
+      ]
+    },
+    {
+      "id": "towel",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "towel",
+        "model"
+      ]
+    },
+    {
+      "id": "plate",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "plate",
+        "model"
+      ]
+    },
+    {
+      "id": "banana",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "banana",
+        "model"
+      ]
+    }
+  ],
+  "stage": {
+    "drawCalls": 69,
+    "nodes": 33,
+    "world": "home-nook",
+    "modelNodes": 7,
+    "standInNodes": 2,
+    "modelStatus": {
+      "procedural": 5,
+      "ready": 16
+    }
+  },
+  "stageWarnings": [],
+  "errors": {
+    "app": [],
+    "console": [],
+    "page": [],
+    "badResponses": []
+  },
+  "problems": []
+}

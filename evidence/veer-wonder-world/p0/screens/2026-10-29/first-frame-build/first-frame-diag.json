@@ -1,0 +1,31 @@
+{
+  "label": "first-frame-diag",
+  "runId": "wonder-first-frame-build-20261029T174544Z",
+  "commit": {
+    "commit": "2ae4125d1d4323bca18ad330efdf9139e3befe3b",
+    "tree": "clean"
+  },
+  "engineVersion": "4.5.0",
+  "viewport": {
+    "width": 1024,
+    "height": 768
+  },
+  "renderer": {
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "vendor": "Google Inc. (Google)",
+    "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+  },
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "query": {
+    "autostart": 1,
+    "story": "sheru-big-adventure",
+    "manual": 1,
+    "mode": "play-together",
+    "models": 0,
+    "diag": 1
+  },
+  "panel": "Aura3D safety net (?diag=1)\ngpu: ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)\nmaxTex 8192 units 32 samples 4 fragUniforms 4096 varyings 31\ncolor_buffer_float:y texture_float_linear:y multi_draw:y disjoint_timer_query_webgl2:n navigator.gpu:y dpr 1\nengine: backend=webgl2 drawCalls=120 fps=60 warn:Scene has no interactions. Suggested fix: add interactions.orbit() for product/v\ncanvas: canvas 1024x768 (css 1024x768)\nsafety: rung 0 (full) off:[] quality:default tm:default heal:on\nno errors captured",
+  "consoleErrors": [],
+  "pageErrors": []
+}

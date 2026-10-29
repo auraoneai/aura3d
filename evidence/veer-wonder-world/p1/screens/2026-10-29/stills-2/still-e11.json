@@ -1,0 +1,109 @@
+{
+  "context": {
+    "runId": "wonder-stills-2-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0",
+    "renderer": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+    }
+  },
+  "code": "e11",
+  "id": "number-balloon-rescue",
+  "title": "Number Balloon Rescue",
+  "kind": "episode",
+  "viewport": {
+    "width": 1024,
+    "height": 768
+  },
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "load": {
+    "loadMs": 82246,
+    "firstMount": null
+  },
+  "moment": {
+    "beatId": "balloon-one",
+    "kind": "model",
+    "t": 8300,
+    "rule": "3 s after the beat starts",
+    "camera": {
+      "preset": "wide",
+      "since": 5300
+    }
+  },
+  "director": {
+    "storyId": "number-balloon-rescue",
+    "phase": "holding",
+    "mode": "watch-sing",
+    "beatIndex": 1,
+    "beatId": "balloon-one",
+    "round": 0,
+    "lineIndex": 1,
+    "elapsedMs": 8300,
+    "waitedMs": 0,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "frame": {
+    "width": 1024,
+    "height": 768,
+    "luma": {
+      "meanLuma": 191.339,
+      "lumaStdDev": 37.237,
+      "nonBlackRatio": 1,
+      "coarseColours": 467
+    },
+    "colour": {
+      "meanSaturation": 0.232,
+      "colourfulness": 44.883,
+      "clippedRatio": 0,
+      "p5Luma": 130,
+      "p95Luma": 221
+    }
+  },
+  "nodes": [
+    {
+      "id": "lulu",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "lulu",
+        "model"
+      ]
+    },
+    {
+      "id": "lumi",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "lumi",
+        "model"
+      ]
+    }
+  ],
+  "stage": {
+    "drawCalls": 82,
+    "nodes": 25,
+    "world": "meadow",
+    "modelNodes": 2,
+    "standInNodes": 3,
+    "modelStatus": {
+      "procedural": 5,
+      "ready": 23
+    }
+  },
+  "stageWarnings": [],
+  "errors": {
+    "app": [],
+    "console": [],
+    "page": [],
+    "badResponses": []
+  },
+  "problems": []
+}

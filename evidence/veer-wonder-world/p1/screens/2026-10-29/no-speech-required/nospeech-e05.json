@@ -1,0 +1,239 @@
+{
+  "code": "e05",
+  "id": "counting-cookies",
+  "mode": "play-together",
+  "style": "single",
+  "loadMs": 31588,
+  "runMs": 7614,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "counting-cookies",
+    "director": {
+      "storyId": "counting-cookies",
+      "phase": "speaking",
+      "mode": "play-together",
+      "beatIndex": 0,
+      "beatId": "greet",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "e05.greet.1",
+    "speaker": "momo",
+    "spoken": [
+      "e05.greet.1"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 37,
+      "nodes": 21,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "single",
+    "chunks": 1,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 136650
+    },
+    "maxTargets": 0,
+    "targetIds": [],
+    "waitSamples": 0,
+    "maxRound": 0,
+    "beatIds": [
+      "greet",
+      "outro"
+    ],
+    "phases": [
+      "speaking",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 1,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "counting-cookies",
+    "director": {
+      "storyId": "counting-cookies",
+      "phase": "finished",
+      "mode": "play-together",
+      "beatIndex": 13,
+      "beatId": "outro",
+      "round": 0,
+      "lineIndex": 3,
+      "elapsedMs": 136605,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "e05.greet.1",
+      "e05.greet.2",
+      "e05.hook.1",
+      "e05.hook.2",
+      "e05.hook.3",
+      "e05.plate.1",
+      "e05.plate.2",
+      "e05.lulu.1",
+      "e05.lulu.2",
+      "e05.count-one.1",
+      "e05.count-one.2",
+      "e05.count-two.1",
+      "e05.count-two.2",
+      "e05.turn.1",
+      "e05.turn.2",
+      "e05.turn.3",
+      "e05.count-three.1",
+      "e05.count-three.2",
+      "e05.eat.1",
+      "e05.eat.2",
+      "e05.eat.3",
+      "e05.share.1",
+      "e05.share.2",
+      "e05.lulu-eats.1",
+      "e05.lulu-eats.2",
+      "e05.for-you.1",
+      "e05.for-you.2",
+      "e05.for-you.3",
+      "e05.outro.1",
+      "e05.outro.2",
+      "e05.outro.3"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 46,
+      "nodes": 21,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "counting-cookies",
+    "directorStoryId": "counting-cookies",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": {
+    "installed": true,
+    "stubsLive": true,
+    "getUserMedia": 0,
+    "legacyGetUserMedia": 0,
+    "enumerateDevices": 0,
+    "speechRecognition": 0,
+    "speechRecognitionStart": 0,
+    "mediaRecorder": 0,
+    "mediaStreamSource": 0,
+    "micPermissionQuery": 0,
+    "calls": []
+  },
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "e05.greet.1",
+    "e05.greet.2",
+    "e05.hook.1",
+    "e05.hook.2",
+    "e05.hook.3",
+    "e05.plate.1",
+    "e05.plate.2",
+    "e05.lulu.1",
+    "e05.lulu.2",
+    "e05.count-one.1",
+    "e05.count-one.2",
+    "e05.count-two.1",
+    "e05.count-two.2",
+    "e05.turn.1",
+    "e05.turn.2",
+    "e05.turn.3",
+    "e05.count-three.1",
+    "e05.count-three.2",
+    "e05.eat.1",
+    "e05.eat.2",
+    "e05.eat.3",
+    "e05.share.1",
+    "e05.share.2",
+    "e05.lulu-eats.1",
+    "e05.lulu-eats.2",
+    "e05.for-you.1",
+    "e05.for-you.2",
+    "e05.for-you.3",
+    "e05.outro.1",
+    "e05.outro.2",
+    "e05.outro.3"
+  ],
+  "spokenOrder": {
+    "spoken": 31,
+    "authored": 31,
+    "rounds": 0,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 14,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-no-speech-required-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

@@ -1,0 +1,242 @@
+{
+  "code": "e20",
+  "id": "little-story-machine",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 40498,
+  "runMs": 114608,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "little-story-machine",
+    "director": {
+      "storyId": "little-story-machine",
+      "phase": "speaking",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "greet",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "e20.greet.1",
+    "speaker": "momo",
+    "spoken": [
+      "e20.greet.1"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 48,
+      "nodes": 20,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 50,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 1550
+    },
+    "maxTargets": 2,
+    "targetIds": [
+      "teddy",
+      "ball",
+      "car"
+    ],
+    "waitSamples": 4,
+    "maxRound": 0,
+    "beatIds": [
+      "greet",
+      "hook",
+      "open",
+      "toy-teddy",
+      "toy-ball",
+      "toy-car",
+      "pick-1",
+      "story-a",
+      "pick-2",
+      "story-b",
+      "song",
+      "outro"
+    ],
+    "phases": [
+      "speaking",
+      "holding",
+      "waiting",
+      "responding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 19,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "little-story-machine",
+    "director": {
+      "storyId": "little-story-machine",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 11,
+      "beatId": "outro",
+      "round": 0,
+      "lineIndex": 3,
+      "elapsedMs": 124001,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "e20.greet.1",
+      "e20.greet.2",
+      "e20.hook.1",
+      "e20.hook.2",
+      "e20.hook.3",
+      "e20.open.1",
+      "e20.open.2",
+      "e20.toy-teddy.1",
+      "e20.toy-teddy.2",
+      "e20.toy-ball.1",
+      "e20.toy-ball.2",
+      "e20.toy-car.1",
+      "e20.toy-car.2",
+      "e20.pick-1.1",
+      "e20.pick-1.2",
+      "e20.pick-1.3",
+      "e20.pick-1.4",
+      "e20.story-a.1",
+      "e20.story-a.2",
+      "e20.story-a.3",
+      "e20.pick-2.1",
+      "e20.pick-2.2",
+      "e20.pick-2.3",
+      "e20.pick-2.4",
+      "e20.story-b.1",
+      "e20.story-b.2",
+      "e20.story-b.3",
+      "e20.outro.1",
+      "e20.outro.2",
+      "e20.outro.3"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 66,
+      "nodes": 20,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "little-story-machine",
+    "directorStoryId": "little-story-machine",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "e20.greet.1",
+    "e20.greet.2",
+    "e20.hook.1",
+    "e20.hook.2",
+    "e20.hook.3",
+    "e20.open.1",
+    "e20.open.2",
+    "e20.toy-teddy.1",
+    "e20.toy-teddy.2",
+    "e20.toy-ball.1",
+    "e20.toy-ball.2",
+    "e20.toy-car.1",
+    "e20.toy-car.2",
+    "e20.pick-1.1",
+    "e20.pick-1.2",
+    "e20.pick-1.3",
+    "e20.pick-1.4",
+    "e20.story-a.1",
+    "e20.story-a.2",
+    "e20.story-a.3",
+    "e20.pick-2.1",
+    "e20.pick-2.2",
+    "e20.pick-2.3",
+    "e20.pick-2.4",
+    "e20.story-b.1",
+    "e20.story-b.2",
+    "e20.story-b.3",
+    "e20.outro.1",
+    "e20.outro.2",
+    "e20.outro.3"
+  ],
+  "spokenOrder": {
+    "spoken": 30,
+    "authored": 30,
+    "rounds": 0,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 13,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-episodes-2-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

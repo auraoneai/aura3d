@@ -1,0 +1,139 @@
+{
+  "context": {
+    "runId": "wonder-stills-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0",
+    "renderer": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+    }
+  },
+  "code": "e08",
+  "id": "wheres-sheru",
+  "title": "Where's Sheru?",
+  "kind": "episode",
+  "viewport": {
+    "width": 1024,
+    "height": 768
+  },
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "load": {
+    "loadMs": 73620,
+    "firstMount": null
+  },
+  "moment": {
+    "beatId": "box",
+    "kind": "model",
+    "t": 30850,
+    "rule": "3 s after the beat starts",
+    "camera": {
+      "preset": "wide",
+      "since": 27850
+    }
+  },
+  "director": {
+    "storyId": "wheres-sheru",
+    "phase": "speaking",
+    "mode": "watch-sing",
+    "beatIndex": 5,
+    "beatId": "box",
+    "round": 0,
+    "lineIndex": 1,
+    "elapsedMs": 30850,
+    "waitedMs": 0,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "frame": {
+    "width": 1024,
+    "height": 768,
+    "luma": {
+      "meanLuma": 186.025,
+      "lumaStdDev": 34.776,
+      "nonBlackRatio": 1,
+      "coarseColours": 447
+    },
+    "colour": {
+      "meanSaturation": 0.24,
+      "colourfulness": 47.516,
+      "clippedRatio": 0,
+      "p5Luma": 143,
+      "p95Luma": 225
+    }
+  },
+  "nodes": [
+    {
+      "id": "momo",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "momo",
+        "model"
+      ]
+    },
+    {
+      "id": "sheru",
+      "exists": true,
+      "visible": false,
+      "tags": [
+        "actor",
+        "sheru",
+        "model"
+      ]
+    },
+    {
+      "id": "table",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "table",
+        "model"
+      ]
+    },
+    {
+      "id": "bench",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "bench",
+        "model"
+      ]
+    },
+    {
+      "id": "box",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "toyBox",
+        "model"
+      ]
+    }
+  ],
+  "stage": {
+    "drawCalls": 46,
+    "nodes": 19,
+    "world": "home-nook",
+    "modelNodes": 5,
+    "standInNodes": 0,
+    "modelStatus": {
+      "procedural": 6,
+      "ready": 33
+    }
+  },
+  "stageWarnings": [],
+  "errors": {
+    "app": [],
+    "console": [],
+    "page": [],
+    "badResponses": []
+  },
+  "problems": []
+}

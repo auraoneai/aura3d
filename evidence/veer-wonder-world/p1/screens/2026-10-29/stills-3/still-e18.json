@@ -1,0 +1,139 @@
+{
+  "context": {
+    "runId": "wonder-stills-3-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0",
+    "renderer": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+    }
+  },
+  "code": "e18",
+  "id": "whos-at-the-door",
+  "title": "Who's at the Door?",
+  "kind": "episode",
+  "viewport": {
+    "width": 1024,
+    "height": 768
+  },
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "load": {
+    "loadMs": 86624,
+    "firstMount": null
+  },
+  "moment": {
+    "beatId": "open-lulu",
+    "kind": "model",
+    "t": 25700,
+    "rule": "3 s after the beat starts",
+    "camera": {
+      "preset": "wide",
+      "since": 0
+    }
+  },
+  "director": {
+    "storyId": "whos-at-the-door",
+    "phase": "speaking",
+    "mode": "watch-sing",
+    "beatIndex": 3,
+    "beatId": "open-lulu",
+    "round": 0,
+    "lineIndex": 2,
+    "elapsedMs": 25700,
+    "waitedMs": 0,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "frame": {
+    "width": 1024,
+    "height": 768,
+    "luma": {
+      "meanLuma": 187.793,
+      "lumaStdDev": 32.04,
+      "nonBlackRatio": 1,
+      "coarseColours": 391
+    },
+    "colour": {
+      "meanSaturation": 0.242,
+      "colourfulness": 47.647,
+      "clippedRatio": 0,
+      "p5Luma": 152,
+      "p95Luma": 225
+    }
+  },
+  "nodes": [
+    {
+      "id": "momo",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "momo",
+        "model"
+      ]
+    },
+    {
+      "id": "peeko",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "peeko",
+        "model"
+      ]
+    },
+    {
+      "id": "lulu",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "lulu",
+        "model"
+      ]
+    },
+    {
+      "id": "sheru",
+      "exists": true,
+      "visible": false,
+      "tags": [
+        "actor",
+        "sheru",
+        "model"
+      ]
+    },
+    {
+      "id": "door",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "door",
+        "model"
+      ]
+    }
+  ],
+  "stage": {
+    "drawCalls": 46,
+    "nodes": 19,
+    "world": "home-nook",
+    "modelNodes": 5,
+    "standInNodes": 0,
+    "modelStatus": {
+      "procedural": 5,
+      "ready": 13
+    }
+  },
+  "stageWarnings": [],
+  "errors": {
+    "app": [],
+    "console": [],
+    "page": [],
+    "badResponses": []
+  },
+  "problems": []
+}

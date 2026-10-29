@@ -1,0 +1,266 @@
+{
+  "code": "e12",
+  "id": "magic-shape-bakery",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 35126,
+  "runMs": 95624,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "magic-shape-bakery",
+    "director": {
+      "storyId": "magic-shape-bakery",
+      "phase": "speaking",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "greeting",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "e12.greeting.1",
+    "speaker": "momo",
+    "spoken": [
+      "e12.greeting.1"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 35,
+      "nodes": 25,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 53,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 650
+    },
+    "maxTargets": 2,
+    "targetIds": [
+      "pastry-circle",
+      "pastry-square",
+      "pastry-triangle"
+    ],
+    "waitSamples": 4,
+    "maxRound": 0,
+    "beatIds": [
+      "greeting",
+      "lumi-arrives",
+      "circle",
+      "bounce",
+      "circle-plate",
+      "square",
+      "square-block",
+      "turn-wobble",
+      "triangle",
+      "pointy",
+      "triangle-hat",
+      "turn-triangle",
+      "recap-circle",
+      "recap-square",
+      "recap-triangle",
+      "song",
+      "taste",
+      "outro"
+    ],
+    "phases": [
+      "speaking",
+      "holding",
+      "waiting",
+      "responding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 27,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "magic-shape-bakery",
+    "director": {
+      "storyId": "magic-shape-bakery",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 17,
+      "beatId": "outro",
+      "round": 0,
+      "lineIndex": 3,
+      "elapsedMs": 130625,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "e12.greeting.1",
+      "e12.greeting.2",
+      "e12.lumi-arrives.1",
+      "e12.lumi-arrives.2",
+      "e12.circle.1",
+      "e12.circle.2",
+      "e12.bounce.1",
+      "e12.bounce.2",
+      "e12.circle-plate.1",
+      "e12.circle-plate.2",
+      "e12.square.1",
+      "e12.square.2",
+      "e12.square.3",
+      "e12.square-block.1",
+      "e12.square-block.2",
+      "e12.turn-wobble.1",
+      "e12.turn-wobble.2",
+      "e12.turn-wobble.3",
+      "e12.turn-wobble.4",
+      "e12.triangle.1",
+      "e12.triangle.2",
+      "e12.triangle.3",
+      "e12.pointy.1",
+      "e12.pointy.2",
+      "e12.triangle-hat.1",
+      "e12.triangle-hat.2",
+      "e12.turn-triangle.1",
+      "e12.turn-triangle.2",
+      "e12.turn-triangle.3",
+      "e12.recap-circle.1",
+      "e12.recap-square.1",
+      "e12.recap-triangle.1",
+      "e12.recap-triangle.2",
+      "e12.taste.1",
+      "e12.taste.2",
+      "e12.taste.3",
+      "e12.outro.1",
+      "e12.outro.2",
+      "e12.outro.3"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 70,
+      "nodes": 25,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "magic-shape-bakery",
+    "directorStoryId": "magic-shape-bakery",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "e12.greeting.1",
+    "e12.greeting.2",
+    "e12.lumi-arrives.1",
+    "e12.lumi-arrives.2",
+    "e12.circle.1",
+    "e12.circle.2",
+    "e12.bounce.1",
+    "e12.bounce.2",
+    "e12.circle-plate.1",
+    "e12.circle-plate.2",
+    "e12.square.1",
+    "e12.square.2",
+    "e12.square.3",
+    "e12.square-block.1",
+    "e12.square-block.2",
+    "e12.turn-wobble.1",
+    "e12.turn-wobble.2",
+    "e12.turn-wobble.3",
+    "e12.turn-wobble.4",
+    "e12.triangle.1",
+    "e12.triangle.2",
+    "e12.triangle.3",
+    "e12.pointy.1",
+    "e12.pointy.2",
+    "e12.triangle-hat.1",
+    "e12.triangle-hat.2",
+    "e12.turn-triangle.1",
+    "e12.turn-triangle.2",
+    "e12.turn-triangle.3",
+    "e12.recap-circle.1",
+    "e12.recap-square.1",
+    "e12.recap-triangle.1",
+    "e12.recap-triangle.2",
+    "e12.taste.1",
+    "e12.taste.2",
+    "e12.taste.3",
+    "e12.outro.1",
+    "e12.outro.2",
+    "e12.outro.3"
+  ],
+  "spokenOrder": {
+    "spoken": 39,
+    "authored": 39,
+    "rounds": 0,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 21,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-episodes-2-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

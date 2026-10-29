@@ -1,0 +1,139 @@
+{
+  "context": {
+    "runId": "wonder-stills-3-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0",
+    "renderer": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+    }
+  },
+  "code": "e20",
+  "id": "little-story-machine",
+  "title": "The Little Story Machine",
+  "kind": "episode",
+  "viewport": {
+    "width": 1024,
+    "height": 768
+  },
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "load": {
+    "loadMs": 89040,
+    "firstMount": null
+  },
+  "moment": {
+    "beatId": "toy-teddy",
+    "kind": "model",
+    "t": 27300,
+    "rule": "3 s after the beat starts",
+    "camera": {
+      "preset": "medium",
+      "since": 17050
+    }
+  },
+  "director": {
+    "storyId": "little-story-machine",
+    "phase": "holding",
+    "mode": "watch-sing",
+    "beatIndex": 3,
+    "beatId": "toy-teddy",
+    "round": 0,
+    "lineIndex": 2,
+    "elapsedMs": 27300,
+    "waitedMs": 0,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "frame": {
+    "width": 1024,
+    "height": 768,
+    "luma": {
+      "meanLuma": 202.463,
+      "lumaStdDev": 28.023,
+      "nonBlackRatio": 1,
+      "coarseColours": 544
+    },
+    "colour": {
+      "meanSaturation": 0.12,
+      "colourfulness": 28.27,
+      "clippedRatio": 0,
+      "p5Luma": 133,
+      "p95Luma": 230
+    }
+  },
+  "nodes": [
+    {
+      "id": "momo",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "momo",
+        "model"
+      ]
+    },
+    {
+      "id": "lumi",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "lumi",
+        "model"
+      ]
+    },
+    {
+      "id": "box",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "storyBox",
+        "model"
+      ]
+    },
+    {
+      "id": "teddy",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "teddy",
+        "model"
+      ]
+    },
+    {
+      "id": "car",
+      "exists": true,
+      "visible": false,
+      "tags": [
+        "prop",
+        "car",
+        "model"
+      ]
+    }
+  ],
+  "stage": {
+    "drawCalls": 58,
+    "nodes": 20,
+    "world": "learning-cloud",
+    "modelNodes": 5,
+    "standInNodes": 1,
+    "modelStatus": {
+      "procedural": 5,
+      "ready": 17
+    }
+  },
+  "stageWarnings": [],
+  "errors": {
+    "app": [],
+    "console": [],
+    "page": [],
+    "badResponses": []
+  },
+  "problems": []
+}

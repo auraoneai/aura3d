@@ -1,0 +1,413 @@
+{
+  "context": {
+    "runId": "wonder-characters-3-20261029T182623Z",
+    "commit": {
+      "commit": "498c32f63c44f90def67bc1c6a155c9263162e20",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0",
+    "renderer": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+    }
+  },
+  "character": "lumi",
+  "story": "alphabet-zoo",
+  "code": "e03",
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "load": {
+    "loadMs": 28541,
+    "firstMount": null
+  },
+  "drawnAs": [
+    "actor",
+    "lumi",
+    "model"
+  ],
+  "phone": {
+    "viewport": {
+      "width": 320,
+      "height": 568
+    },
+    "storyMs": 4000,
+    "camera": {
+      "preset": "wide",
+      "since": 0
+    },
+    "shownForShot": false,
+    "nodeRect": {
+      "id": "lumi",
+      "x": 16.296112423845823,
+      "y": 154.42172151775242,
+      "w": 57.56481172053596,
+      "h": 53.19817043723447
+    },
+    "canvas": {
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 568
+    },
+    "visibleHeight": 53,
+    "silhouette": {
+      "box": {
+        "x": 16,
+        "y": 154,
+        "width": 58,
+        "height": 53
+      },
+      "core": {
+        "r": 212.988,
+        "g": 194.831,
+        "b": 154.746,
+        "luma": 195.797,
+        "pixels": 990
+      },
+      "ground": {
+        "r": 191.339,
+        "g": 186.051,
+        "b": 192.586,
+        "luma": 187.647,
+        "pixels": 7733
+      },
+      "lumaDiff": 8.15,
+      "colourDistance": 44.471,
+      "separatedShare": 0.759
+    },
+    "frame": {
+      "meanLuma": 203.489,
+      "lumaStdDev": 22.5,
+      "nonBlackRatio": 1,
+      "coarseColours": 319
+    }
+  },
+  "turnaround": {
+    "storyMs": 4000,
+    "reducedMotion": true,
+    "anchor": "peeko",
+    "nodeRect": {
+      "id": "lumi",
+      "x": 315.3948282707961,
+      "y": 295.1741300286741,
+      "w": 169.21034345840775,
+      "h": 171.84394391499842
+    },
+    "crop": {
+      "x": 264,
+      "y": 235,
+      "width": 272,
+      "height": 253
+    },
+    "views": [
+      {
+        "view": "front",
+        "toward": "viewer",
+        "frame": {
+          "meanLuma": 209.08,
+          "lumaStdDev": 15.909,
+          "nonBlackRatio": 1,
+          "coarseColours": 173
+        },
+        "vsFront": {
+          "meanAbsLumaDiff": 0,
+          "meanLumaDelta": 0,
+          "changedRatio": 0
+        }
+      },
+      {
+        "view": "left",
+        "toward": "offLeft",
+        "frame": {
+          "meanLuma": 208.521,
+          "lumaStdDev": 16.268,
+          "nonBlackRatio": 1,
+          "coarseColours": 148
+        },
+        "vsFront": {
+          "meanAbsLumaDiff": 4.69,
+          "meanLumaDelta": -0.559,
+          "changedRatio": 0.086
+        }
+      },
+      {
+        "view": "back",
+        "toward": "back",
+        "frame": {
+          "meanLuma": 209.155,
+          "lumaStdDev": 15.486,
+          "nonBlackRatio": 1,
+          "coarseColours": 148
+        },
+        "vsFront": {
+          "meanAbsLumaDiff": 2.104,
+          "meanLumaDelta": 0.075,
+          "changedRatio": 0.034
+        }
+      },
+      {
+        "view": "right",
+        "toward": "offRight",
+        "frame": {
+          "meanLuma": 208.698,
+          "lumaStdDev": 16.821,
+          "nonBlackRatio": 1,
+          "coarseColours": 144
+        },
+        "vsFront": {
+          "meanAbsLumaDiff": 4.491,
+          "meanLumaDelta": -0.383,
+          "changedRatio": 0.08
+        }
+      }
+    ],
+    "frontBack": {
+      "meanAbsLumaDiff": 2.104,
+      "meanLumaDelta": 0.075,
+      "changedRatio": 0.034
+    },
+    "mostUnlikeFront": {
+      "view": "left",
+      "delta": {
+        "meanAbsLumaDiff": 4.69,
+        "meanLumaDelta": -0.559,
+        "changedRatio": 0.086
+      }
+    },
+    "warningsAdded": []
+  },
+  "poses": {
+    "storyMs": 9700,
+    "nodeRect": {
+      "id": "lumi",
+      "x": 315.3948282707961,
+      "y": 295.1741300286741,
+      "w": 169.21034345840775,
+      "h": 171.84394391499842
+    },
+    "crop": {
+      "x": 264,
+      "y": 235,
+      "width": 272,
+      "height": 253
+    },
+    "states": [
+      {
+        "state": "neutral",
+        "gesture": "idle",
+        "atMs": 400,
+        "frame": {
+          "meanLuma": 208.891,
+          "lumaStdDev": 16.112,
+          "nonBlackRatio": 1,
+          "coarseColours": 173
+        },
+        "vsNeutral": null
+      },
+      {
+        "state": "delighted",
+        "gesture": "happy",
+        "atMs": 450,
+        "frame": {
+          "meanLuma": 209.865,
+          "lumaStdDev": 14.25,
+          "nonBlackRatio": 1,
+          "coarseColours": 144
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 5.413,
+          "meanLumaDelta": 0.974,
+          "changedRatio": 0.104
+        }
+      },
+      {
+        "state": "curious",
+        "gesture": "look",
+        "atMs": 800,
+        "frame": {
+          "meanLuma": 209.82,
+          "lumaStdDev": 14.167,
+          "nonBlackRatio": 1,
+          "coarseColours": 158
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 5.809,
+          "meanLumaDelta": 0.929,
+          "changedRatio": 0.111
+        }
+      },
+      {
+        "state": "surprised",
+        "gesture": "surprise",
+        "atMs": 350,
+        "frame": {
+          "meanLuma": 208.803,
+          "lumaStdDev": 16.836,
+          "nonBlackRatio": 1,
+          "coarseColours": 173
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 4.668,
+          "meanLumaDelta": -0.088,
+          "changedRatio": 0.081
+        }
+      },
+      {
+        "state": "waiting",
+        "gesture": "wait",
+        "atMs": 500,
+        "frame": {
+          "meanLuma": 208.802,
+          "lumaStdDev": 16.538,
+          "nonBlackRatio": 1,
+          "coarseColours": 169
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 5.681,
+          "meanLumaDelta": -0.089,
+          "changedRatio": 0.107
+        }
+      },
+      {
+        "state": "good-bye",
+        "gesture": "wave",
+        "atMs": 600,
+        "frame": {
+          "meanLuma": 208.871,
+          "lumaStdDev": 16.065,
+          "nonBlackRatio": 1,
+          "coarseColours": 165
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 4.859,
+          "meanLumaDelta": -0.02,
+          "changedRatio": 0.088
+        }
+      }
+    ]
+  },
+  "talking": {
+    "storyMs": 18100,
+    "reducedMotion": true,
+    "crop": {
+      "x": 264,
+      "y": 235,
+      "width": 272,
+      "height": 253
+    },
+    "talking": {
+      "pairs": [
+        {
+          "meanAbsLumaDiff": 1.648,
+          "meanLumaDelta": -0.019,
+          "changedRatio": 0.026
+        },
+        {
+          "meanAbsLumaDiff": 1.244,
+          "meanLumaDelta": -0.021,
+          "changedRatio": 0.018
+        }
+      ],
+      "best": {
+        "meanAbsLumaDiff": 1.648,
+        "meanLumaDelta": -0.019,
+        "changedRatio": 0.026
+      }
+    },
+    "silent": {
+      "pairs": [
+        {
+          "meanAbsLumaDiff": 0.031,
+          "meanLumaDelta": -0.002,
+          "changedRatio": 0
+        },
+        {
+          "meanAbsLumaDiff": 0.029,
+          "meanLumaDelta": 0.013,
+          "changedRatio": 0
+        }
+      ],
+      "best": {
+        "meanAbsLumaDiff": 0.031,
+        "meanLumaDelta": -0.002,
+        "changedRatio": 0
+      }
+    },
+    "silentShare": 0.019
+  },
+  "reducedMotion": {
+    "storyMs": 19100,
+    "gesture": "happy",
+    "crop": {
+      "x": 264,
+      "y": 235,
+      "width": 272,
+      "height": 253
+    },
+    "normalTravelPx": 3.5,
+    "reducedTravelPx": 1.1,
+    "normal": {
+      "pairs": [
+        {
+          "meanAbsLumaDiff": 4.001,
+          "meanLumaDelta": 0.009,
+          "changedRatio": 0.07
+        },
+        {
+          "meanAbsLumaDiff": 4.504,
+          "meanLumaDelta": -1.684,
+          "changedRatio": 0.075
+        }
+      ],
+      "best": {
+        "meanAbsLumaDiff": 4.504,
+        "meanLumaDelta": -1.684,
+        "changedRatio": 0.075
+      }
+    },
+    "reduced": {
+      "pairs": [
+        {
+          "meanAbsLumaDiff": 1.07,
+          "meanLumaDelta": -0.008,
+          "changedRatio": 0.015
+        },
+        {
+          "meanAbsLumaDiff": 1.074,
+          "meanLumaDelta": -0.007,
+          "changedRatio": 0.015
+        }
+      ],
+      "best": {
+        "meanAbsLumaDiff": 1.074,
+        "meanLumaDelta": -0.007,
+        "changedRatio": 0.015
+      }
+    },
+    "reducedShare": 0.238
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "director": {
+    "storyId": "alphabet-zoo",
+    "phase": "holding",
+    "mode": "watch-sing",
+    "beatIndex": 2,
+    "beatId": "gate",
+    "round": 0,
+    "lineIndex": 2,
+    "elapsedMs": 20400,
+    "waitedMs": 0,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "errors": {
+    "steps": [],
+    "app": [],
+    "console": [],
+    "page": [],
+    "badResponses": []
+  }
+}

@@ -1,0 +1,217 @@
+{
+  "code": "g07",
+  "id": "little-lift",
+  "mode": "play-together",
+  "style": "single",
+  "loadMs": 43061,
+  "runMs": 10998,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "little-lift",
+    "director": {
+      "storyId": "little-lift",
+      "phase": "speaking",
+      "mode": "play-together",
+      "beatIndex": 0,
+      "beatId": "hello",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "g07.hello.1",
+    "speaker": "peeko",
+    "spoken": [
+      "g07.hello.1"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 37,
+      "nodes": 17,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "single",
+    "chunks": 1,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 58450
+    },
+    "maxTargets": 0,
+    "targetIds": [],
+    "waitSamples": 0,
+    "maxRound": 1,
+    "beatIds": [
+      "hello",
+      "bye"
+    ],
+    "phases": [
+      "speaking",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 1,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "little-lift",
+    "director": {
+      "storyId": "little-lift",
+      "phase": "finished",
+      "mode": "play-together",
+      "beatIndex": 7,
+      "beatId": "bye",
+      "round": 1,
+      "lineIndex": 2,
+      "elapsedMs": 58437,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "g07.hello.1",
+      "g07.hello.2",
+      "g07.in.1",
+      "g07.in.2",
+      "g07.in.3",
+      "g07.in.4",
+      "g07.up.1",
+      "g07.up.2",
+      "g07.up.3",
+      "g07.top.1",
+      "g07.top.2",
+      "g07.down.1",
+      "g07.down.2",
+      "g07.down.3",
+      "g07.again.1",
+      "g07.again.2",
+      "g07.out.1",
+      "g07.out.2",
+      "g07.bye.1",
+      "g07.bye.2"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 43,
+      "nodes": 17,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "little-lift",
+    "directorStoryId": "little-lift",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": {
+    "installed": true,
+    "stubsLive": true,
+    "getUserMedia": 0,
+    "legacyGetUserMedia": 0,
+    "enumerateDevices": 0,
+    "speechRecognition": 0,
+    "speechRecognitionStart": 0,
+    "mediaRecorder": 0,
+    "mediaStreamSource": 0,
+    "micPermissionQuery": 0,
+    "calls": []
+  },
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "g07.hello.1",
+    "g07.hello.2",
+    "g07.in.1",
+    "g07.in.2",
+    "g07.in.3",
+    "g07.in.4",
+    "g07.up.1",
+    "g07.up.2",
+    "g07.up.3",
+    "g07.top.1",
+    "g07.top.2",
+    "g07.down.1",
+    "g07.down.2",
+    "g07.down.3",
+    "g07.again.1",
+    "g07.again.2",
+    "g07.out.1",
+    "g07.out.2",
+    "g07.bye.1",
+    "g07.bye.2"
+  ],
+  "spokenOrder": {
+    "spoken": 20,
+    "authored": 20,
+    "rounds": 1,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 13,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-no-speech-required-2-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

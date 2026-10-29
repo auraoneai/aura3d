@@ -1,0 +1,254 @@
+{
+  "code": "e06",
+  "id": "lulu-dino-dance",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 36185,
+  "runMs": 86844,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "lulu-dino-dance",
+    "director": {
+      "storyId": "lulu-dino-dance",
+      "phase": "holding",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "hello",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 62,
+      "nodes": 17,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 51,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 2200
+    },
+    "maxTargets": 1,
+    "targetIds": [
+      "drum"
+    ],
+    "waitSamples": 4,
+    "maxRound": 0,
+    "beatIds": [
+      "hello",
+      "greet",
+      "drum",
+      "steps",
+      "clap",
+      "stomp",
+      "go",
+      "stop",
+      "momo",
+      "ready-2",
+      "go-2",
+      "stop-2",
+      "invite-go",
+      "invite-stop",
+      "song-intro",
+      "song",
+      "rest",
+      "outro"
+    ],
+    "phases": [
+      "holding",
+      "speaking",
+      "waiting",
+      "responding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 22,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "lulu-dino-dance",
+    "director": {
+      "storyId": "lulu-dino-dance",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 19,
+      "beatId": "outro",
+      "round": 0,
+      "lineIndex": 3,
+      "elapsedMs": 127192,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "e06.greet.1",
+      "e06.greet.2",
+      "e06.drum.1",
+      "e06.drum.2",
+      "e06.steps.1",
+      "e06.steps.2",
+      "e06.clap.1",
+      "e06.clap.2",
+      "e06.stomp.1",
+      "e06.stomp.2",
+      "e06.ready.1",
+      "e06.go.1",
+      "e06.go.2",
+      "e06.stop.1",
+      "e06.stop.2",
+      "e06.momo.1",
+      "e06.momo.2",
+      "e06.ready-2.1",
+      "e06.ready-2.2",
+      "e06.go-2.1",
+      "e06.go-2.2",
+      "e06.stop-2.1",
+      "e06.stop-2.2",
+      "e06.invite-go.1",
+      "e06.invite-go.2",
+      "e06.invite-go.3",
+      "e06.invite-stop.1",
+      "e06.invite-stop.2",
+      "e06.invite-stop.3",
+      "e06.song-intro.1",
+      "e06.rest.1",
+      "e06.rest.2",
+      "e06.outro.1",
+      "e06.outro.2",
+      "e06.outro.3"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 64,
+      "nodes": 17,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "lulu-dino-dance",
+    "directorStoryId": "lulu-dino-dance",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "e06.greet.1",
+    "e06.greet.2",
+    "e06.drum.1",
+    "e06.drum.2",
+    "e06.steps.1",
+    "e06.steps.2",
+    "e06.clap.1",
+    "e06.clap.2",
+    "e06.stomp.1",
+    "e06.stomp.2",
+    "e06.ready.1",
+    "e06.go.1",
+    "e06.go.2",
+    "e06.stop.1",
+    "e06.stop.2",
+    "e06.momo.1",
+    "e06.momo.2",
+    "e06.ready-2.1",
+    "e06.ready-2.2",
+    "e06.go-2.1",
+    "e06.go-2.2",
+    "e06.stop-2.1",
+    "e06.stop-2.2",
+    "e06.invite-go.1",
+    "e06.invite-go.2",
+    "e06.invite-go.3",
+    "e06.invite-stop.1",
+    "e06.invite-stop.2",
+    "e06.invite-stop.3",
+    "e06.song-intro.1",
+    "e06.rest.1",
+    "e06.rest.2",
+    "e06.outro.1",
+    "e06.outro.2",
+    "e06.outro.3"
+  ],
+  "spokenOrder": {
+    "spoken": 35,
+    "authored": 35,
+    "rounds": 0,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 20,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-episodes-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

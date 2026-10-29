@@ -1,0 +1,217 @@
+{
+  "code": "g07",
+  "id": "little-lift",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 32779,
+  "runMs": 48117,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "little-lift",
+    "director": {
+      "storyId": "little-lift",
+      "phase": "speaking",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "hello",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "g07.hello.1",
+    "speaker": "peeko",
+    "spoken": [
+      "g07.hello.1"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 37,
+      "nodes": 17,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 24,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 950
+    },
+    "maxTargets": 2,
+    "targetIds": [
+      "teddy",
+      "lift"
+    ],
+    "waitSamples": 8,
+    "maxRound": 1,
+    "beatIds": [
+      "hello",
+      "in",
+      "up",
+      "top",
+      "down",
+      "again",
+      "out",
+      "bye"
+    ],
+    "phases": [
+      "speaking",
+      "holding",
+      "waiting",
+      "responding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 10,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "little-lift",
+    "director": {
+      "storyId": "little-lift",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 7,
+      "beatId": "bye",
+      "round": 1,
+      "lineIndex": 2,
+      "elapsedMs": 58437,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "g07.hello.1",
+      "g07.hello.2",
+      "g07.in.1",
+      "g07.in.2",
+      "g07.in.3",
+      "g07.in.4",
+      "g07.up.1",
+      "g07.up.2",
+      "g07.up.3",
+      "g07.top.1",
+      "g07.top.2",
+      "g07.down.1",
+      "g07.down.2",
+      "g07.down.3",
+      "g07.again.1",
+      "g07.again.2",
+      "g07.out.1",
+      "g07.out.2",
+      "g07.bye.1",
+      "g07.bye.2"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 43,
+      "nodes": 17,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "little-lift",
+    "directorStoryId": "little-lift",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "g07.hello.1",
+    "g07.hello.2",
+    "g07.in.1",
+    "g07.in.2",
+    "g07.in.3",
+    "g07.in.4",
+    "g07.up.1",
+    "g07.up.2",
+    "g07.up.3",
+    "g07.top.1",
+    "g07.top.2",
+    "g07.down.1",
+    "g07.down.2",
+    "g07.down.3",
+    "g07.again.1",
+    "g07.again.2",
+    "g07.out.1",
+    "g07.out.2",
+    "g07.bye.1",
+    "g07.bye.2"
+  ],
+  "spokenOrder": {
+    "spoken": 20,
+    "authored": 20,
+    "rounds": 1,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 10,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-activities-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

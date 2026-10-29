@@ -1,0 +1,239 @@
+{
+  "code": "e02",
+  "id": "peekaboo-palace",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 38005,
+  "runMs": 113191,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "peekaboo-palace",
+    "director": {
+      "storyId": "peekaboo-palace",
+      "phase": "speaking",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "greet",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "e02.greet.1",
+    "speaker": "momo",
+    "spoken": [
+      "e02.greet.1"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 62,
+      "nodes": 19,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 53,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 550
+    },
+    "maxTargets": 1,
+    "targetIds": [
+      "door-left",
+      "door-right"
+    ],
+    "waitSamples": 4,
+    "maxRound": 0,
+    "beatIds": [
+      "greet",
+      "hook",
+      "open-right",
+      "peeko-wave",
+      "peeko-hide",
+      "turn-left",
+      "duck",
+      "turn-right",
+      "song",
+      "hands",
+      "peek",
+      "outro"
+    ],
+    "phases": [
+      "speaking",
+      "holding",
+      "waiting",
+      "responding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 16,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "peekaboo-palace",
+    "director": {
+      "storyId": "peekaboo-palace",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 11,
+      "beatId": "outro",
+      "round": 0,
+      "lineIndex": 4,
+      "elapsedMs": 130547,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "e02.greet.1",
+      "e02.greet.2",
+      "e02.hook.1",
+      "e02.hook.2",
+      "e02.hook.3",
+      "e02.open-right.1",
+      "e02.open-right.2",
+      "e02.open-right.3",
+      "e02.peeko-wave.1",
+      "e02.peeko-wave.2",
+      "e02.peeko-hide.1",
+      "e02.peeko-hide.2",
+      "e02.turn-left.1",
+      "e02.turn-left.2",
+      "e02.turn-left.3",
+      "e02.turn-left.4",
+      "e02.duck.1",
+      "e02.duck.2",
+      "e02.turn-right.1",
+      "e02.turn-right.2",
+      "e02.turn-right.3",
+      "e02.turn-right.4",
+      "e02.hands.1",
+      "e02.peek.1",
+      "e02.peek.2",
+      "e02.outro.1",
+      "e02.outro.2",
+      "e02.outro.3",
+      "e02.outro.4"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 70,
+      "nodes": 19,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "peekaboo-palace",
+    "directorStoryId": "peekaboo-palace",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "e02.greet.1",
+    "e02.greet.2",
+    "e02.hook.1",
+    "e02.hook.2",
+    "e02.hook.3",
+    "e02.open-right.1",
+    "e02.open-right.2",
+    "e02.open-right.3",
+    "e02.peeko-wave.1",
+    "e02.peeko-wave.2",
+    "e02.peeko-hide.1",
+    "e02.peeko-hide.2",
+    "e02.turn-left.1",
+    "e02.turn-left.2",
+    "e02.turn-left.3",
+    "e02.turn-left.4",
+    "e02.duck.1",
+    "e02.duck.2",
+    "e02.turn-right.1",
+    "e02.turn-right.2",
+    "e02.turn-right.3",
+    "e02.turn-right.4",
+    "e02.hands.1",
+    "e02.peek.1",
+    "e02.peek.2",
+    "e02.outro.1",
+    "e02.outro.2",
+    "e02.outro.3",
+    "e02.outro.4"
+  ],
+  "spokenOrder": {
+    "spoken": 29,
+    "authored": 29,
+    "rounds": 0,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 17,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-episodes-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

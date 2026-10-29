@@ -1,0 +1,215 @@
+{
+  "code": "g08",
+  "id": "build-and-tumble",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 32782,
+  "runMs": 46729,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "build-and-tumble",
+    "director": {
+      "storyId": "build-and-tumble",
+      "phase": "speaking",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "hello",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "g08.hello.1",
+    "speaker": "lumi",
+    "spoken": [
+      "g08.hello.1"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 44,
+      "nodes": 18,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 23,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 1000
+    },
+    "maxTargets": 2,
+    "targetIds": [
+      "block-1",
+      "block-2",
+      "block-3"
+    ],
+    "waitSamples": 8,
+    "maxRound": 1,
+    "beatIds": [
+      "hello",
+      "one",
+      "two",
+      "three",
+      "again",
+      "real",
+      "bye"
+    ],
+    "phases": [
+      "speaking",
+      "waiting",
+      "responding",
+      "holding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 11,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "build-and-tumble",
+    "director": {
+      "storyId": "build-and-tumble",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 6,
+      "beatId": "bye",
+      "round": 1,
+      "lineIndex": 2,
+      "elapsedMs": 55984,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "g08.hello.1",
+      "g08.hello.2",
+      "g08.one.1",
+      "g08.one.2",
+      "g08.one.3",
+      "g08.one.4",
+      "g08.two.1",
+      "g08.two.2",
+      "g08.two.3",
+      "g08.two.4",
+      "g08.three.1",
+      "g08.three.2",
+      "g08.three.3",
+      "g08.three.4",
+      "g08.three.5",
+      "g08.again.1",
+      "g08.real.1",
+      "g08.bye.1",
+      "g08.bye.2"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 58,
+      "nodes": 18,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "build-and-tumble",
+    "directorStoryId": "build-and-tumble",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "g08.hello.1",
+    "g08.hello.2",
+    "g08.one.1",
+    "g08.one.2",
+    "g08.one.3",
+    "g08.one.4",
+    "g08.two.1",
+    "g08.two.2",
+    "g08.two.3",
+    "g08.two.4",
+    "g08.three.1",
+    "g08.three.2",
+    "g08.three.3",
+    "g08.three.4",
+    "g08.three.5",
+    "g08.again.1",
+    "g08.real.1",
+    "g08.bye.1",
+    "g08.bye.2"
+  ],
+  "spokenOrder": {
+    "spoken": 19,
+    "authored": 19,
+    "rounds": 1,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 8,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-activities-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

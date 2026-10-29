@@ -1,0 +1,179 @@
+{
+  "context": {
+    "runId": "wonder-stills-2-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0",
+    "renderer": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+    }
+  },
+  "code": "e09",
+  "id": "baby-animal-orchestra",
+  "title": "Baby Animal Orchestra",
+  "kind": "episode",
+  "viewport": {
+    "width": 1024,
+    "height": 768
+  },
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "load": {
+    "loadMs": 65569,
+    "firstMount": null
+  },
+  "moment": {
+    "beatId": "cow-says",
+    "kind": "model",
+    "t": 31000,
+    "rule": "3 s after the beat starts",
+    "camera": {
+      "preset": "wide",
+      "since": 28000
+    }
+  },
+  "director": {
+    "storyId": "baby-animal-orchestra",
+    "phase": "holding",
+    "mode": "watch-sing",
+    "beatIndex": 5,
+    "beatId": "cow-says",
+    "round": 0,
+    "lineIndex": 1,
+    "elapsedMs": 31000,
+    "waitedMs": 0,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "frame": {
+    "width": 1024,
+    "height": 768,
+    "luma": {
+      "meanLuma": 197.477,
+      "lumaStdDev": 34.106,
+      "nonBlackRatio": 1,
+      "coarseColours": 435
+    },
+    "colour": {
+      "meanSaturation": 0.154,
+      "colourfulness": 35.496,
+      "clippedRatio": 0,
+      "p5Luma": 138,
+      "p95Luma": 226
+    }
+  },
+  "nodes": [
+    {
+      "id": "lulu",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "lulu",
+        "model"
+      ]
+    },
+    {
+      "id": "peeko",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "peeko",
+        "model"
+      ]
+    },
+    {
+      "id": "sheru",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "sheru",
+        "model"
+      ]
+    },
+    {
+      "id": "cow",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "cow",
+        "model"
+      ]
+    },
+    {
+      "id": "sheep",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "sheep",
+        "model"
+      ]
+    },
+    {
+      "id": "duck",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "duck",
+        "model"
+      ]
+    },
+    {
+      "id": "cow-drum",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "drum",
+        "model"
+      ]
+    },
+    {
+      "id": "sheep-shaker",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "shaker",
+        "model"
+      ]
+    },
+    {
+      "id": "duck-piano",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "toyPiano",
+        "model"
+      ]
+    }
+  ],
+  "stage": {
+    "drawCalls": 72,
+    "nodes": 23,
+    "world": "music-garden",
+    "modelNodes": 9,
+    "standInNodes": 0,
+    "modelStatus": {
+      "procedural": 3,
+      "ready": 16
+    }
+  },
+  "stageWarnings": [],
+  "errors": {
+    "app": [],
+    "console": [],
+    "page": [],
+    "badResponses": []
+  },
+  "problems": []
+}

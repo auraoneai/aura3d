@@ -1,0 +1,219 @@
+{
+  "code": "g05",
+  "id": "teddy-snack-picnic",
+  "mode": "play-together",
+  "style": "single",
+  "loadMs": 36720,
+  "runMs": 9262,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "teddy-snack-picnic",
+    "director": {
+      "storyId": "teddy-snack-picnic",
+      "phase": "speaking",
+      "mode": "play-together",
+      "beatIndex": 0,
+      "beatId": "hello",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "g05.hello.1",
+    "speaker": "momo",
+    "spoken": [
+      "g05.hello.1"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 43,
+      "nodes": 20,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "single",
+    "chunks": 1,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 63950
+    },
+    "maxTargets": 0,
+    "targetIds": [],
+    "waitSamples": 0,
+    "maxRound": 1,
+    "beatIds": [
+      "hello",
+      "bye"
+    ],
+    "phases": [
+      "speaking",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 1,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "teddy-snack-picnic",
+    "director": {
+      "storyId": "teddy-snack-picnic",
+      "phase": "finished",
+      "mode": "play-together",
+      "beatIndex": 7,
+      "beatId": "bye",
+      "round": 1,
+      "lineIndex": 2,
+      "elapsedMs": 63929,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "g05.hello.1",
+      "g05.hello.2",
+      "g05.picnic.1",
+      "g05.picnic.2",
+      "g05.apple.1",
+      "g05.apple.2",
+      "g05.apple.3",
+      "g05.apple.4",
+      "g05.banana.1",
+      "g05.banana.2",
+      "g05.banana.3",
+      "g05.banana.4",
+      "g05.choose.1",
+      "g05.choose.2",
+      "g05.choose.3",
+      "g05.more.1",
+      "g05.full.1",
+      "g05.full.2",
+      "g05.full.3",
+      "g05.bye.1",
+      "g05.bye.2"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 52,
+      "nodes": 20,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "teddy-snack-picnic",
+    "directorStoryId": "teddy-snack-picnic",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": {
+    "installed": true,
+    "stubsLive": true,
+    "getUserMedia": 0,
+    "legacyGetUserMedia": 0,
+    "enumerateDevices": 0,
+    "speechRecognition": 0,
+    "speechRecognitionStart": 0,
+    "mediaRecorder": 0,
+    "mediaStreamSource": 0,
+    "micPermissionQuery": 0,
+    "calls": []
+  },
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "g05.hello.1",
+    "g05.hello.2",
+    "g05.picnic.1",
+    "g05.picnic.2",
+    "g05.apple.1",
+    "g05.apple.2",
+    "g05.apple.3",
+    "g05.apple.4",
+    "g05.banana.1",
+    "g05.banana.2",
+    "g05.banana.3",
+    "g05.banana.4",
+    "g05.choose.1",
+    "g05.choose.2",
+    "g05.choose.3",
+    "g05.more.1",
+    "g05.full.1",
+    "g05.full.2",
+    "g05.full.3",
+    "g05.bye.1",
+    "g05.bye.2"
+  ],
+  "spokenOrder": {
+    "spoken": 21,
+    "authored": 21,
+    "rounds": 1,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 18,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-no-speech-required-2-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

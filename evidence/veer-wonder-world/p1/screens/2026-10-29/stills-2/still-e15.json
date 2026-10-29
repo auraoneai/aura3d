@@ -1,0 +1,139 @@
+{
+  "context": {
+    "runId": "wonder-stills-2-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0",
+    "renderer": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+    }
+  },
+  "code": "e15",
+  "id": "momo-bubble-universe",
+  "title": "Momo's Bubble Universe",
+  "kind": "episode",
+  "viewport": {
+    "width": 1024,
+    "height": 768
+  },
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "load": {
+    "loadMs": 85934,
+    "firstMount": null
+  },
+  "moment": {
+    "beatId": "inside-1",
+    "kind": "model",
+    "t": 13500,
+    "rule": "3 s after the beat starts",
+    "camera": {
+      "preset": "wide",
+      "since": 10500
+    }
+  },
+  "director": {
+    "storyId": "momo-bubble-universe",
+    "phase": "speaking",
+    "mode": "watch-sing",
+    "beatIndex": 2,
+    "beatId": "inside-1",
+    "round": 0,
+    "lineIndex": 1,
+    "elapsedMs": 13500,
+    "waitedMs": 0,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "frame": {
+    "width": 1024,
+    "height": 768,
+    "luma": {
+      "meanLuma": 191.608,
+      "lumaStdDev": 37.342,
+      "nonBlackRatio": 1,
+      "coarseColours": 539
+    },
+    "colour": {
+      "meanSaturation": 0.226,
+      "colourfulness": 43.992,
+      "clippedRatio": 0,
+      "p5Luma": 131,
+      "p95Luma": 224
+    }
+  },
+  "nodes": [
+    {
+      "id": "momo",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "momo",
+        "model"
+      ]
+    },
+    {
+      "id": "wand",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "bubbleWand",
+        "model"
+      ]
+    },
+    {
+      "id": "duck",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "duck",
+        "model"
+      ]
+    },
+    {
+      "id": "bird",
+      "exists": true,
+      "visible": false,
+      "tags": [
+        "prop",
+        "bird",
+        "model"
+      ]
+    },
+    {
+      "id": "cow",
+      "exists": true,
+      "visible": false,
+      "tags": [
+        "prop",
+        "cow",
+        "model"
+      ]
+    }
+  ],
+  "stage": {
+    "drawCalls": 85,
+    "nodes": 25,
+    "world": "meadow",
+    "modelNodes": 5,
+    "standInNodes": 3,
+    "modelStatus": {
+      "procedural": 6,
+      "ready": 32
+    }
+  },
+  "stageWarnings": [],
+  "errors": {
+    "app": [],
+    "console": [],
+    "page": [],
+    "badResponses": []
+  },
+  "problems": []
+}
