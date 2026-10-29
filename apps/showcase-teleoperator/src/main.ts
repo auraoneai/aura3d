@@ -494,6 +494,8 @@ async function bootGridDispatch(): Promise<void> {
     step: () => {
       // While a sky change remounts the scene the world holds still, but frames keep presenting so warmPrograms sees the street.
       if (remounting) return;
+      // QA runs advance many steps between two presented frames: run the hit-stop clock per step so a contact cannot freeze them
+      if (qaInput) hitStop.update(STEP);
       const events = sim.step(STEP * hitStop.timeScale(), qaInput ?? currentInput());
       applyEvents(events);
       presenter.afterStep();
@@ -813,6 +815,7 @@ async function bootGridDispatch(): Promise<void> {
       setAutopilotLevel("MAN");
       S.player.x = KERB_STOP_X;
       S.player.z = S.ride.beaconZ + 1;
+      for (const u of S.users) if (Math.abs(u.z - S.player.z) < 30) u.z = S.player.z - 120 - u.slot * 9;
       S.player.speed = 0;
       const e = simulate(2.5, { brake: true });
       return { pass: e.rideState === "ride", rideState: e.rideState };

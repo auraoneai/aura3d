@@ -111,18 +111,18 @@ export const WEATHER: Readonly<Record<WeatherPreset, WeatherLook>> = {
     fill: { color: "#3fd6c6", intensity: 1.65, position: [6, 5, -18] }, bloom: 0.24, label: "Sunny noon"
   },
   golden: {
-    look: "golden-hour", fogDensityScale: 0.6, exposureEv: 0, sky: "#d97757", horizonEmissive: "#fb923c", horizonIntensity: 0.45, sunColor: "#f97316", sunY: 28, ground: "#271c24", water: "#1e3a5f",
+    look: "golden-hour", fogDensityScale: 0.3, exposureEv: 0, sky: "#d97757", horizonEmissive: "#fb923c", horizonIntensity: 0.45, sunColor: "#f97316", sunY: 28, ground: "#271c24", water: "#1e3a5f",
     sun: { color: "#ffb070", intensity: 1.7, position: [70, 20, -60] }, hemisphere: { sky: "#ffcf9a", ground: "#3b2a2a", intensity: 0.6 },
     fill: { color: "#ffb347", intensity: 1.2, position: [6, 5, -18] }, bloom: 0.3, label: "Golden hour"
   },
   fog: {
-    look: "overcast", fogDensityScale: 1.4, exposureEv: 0, sky: "#94a3b8", horizonEmissive: "#cbd5e1", horizonIntensity: 0.3, sunColor: "#e2e8f0", sunY: 46, ground: "#334155", water: "#3b5266",
+    look: "overcast", fogDensityScale: 0.9, exposureEv: 0, sky: "#94a3b8", horizonEmissive: "#cbd5e1", horizonIntensity: 0.3, sunColor: "#e2e8f0", sunY: 46, ground: "#334155", water: "#3b5266",
     sun: { color: "#e2e8f0", intensity: 0.9, position: [36, 62, -48] }, hemisphere: { sky: "#cbd5e1", ground: "#475569", intensity: 0.7 },
     fill: { color: "#cbd5e1", intensity: 0.8, position: [6, 5, -18] }, bloom: 0.18, label: "Marine fog"
   },
   night: {
-    look: "night-city", fogDensityScale: 1, exposureEv: 0, sky: "#090d16", horizonEmissive: "#1e293b", horizonIntensity: 0.25, sunColor: "#cbd5e1", sunY: 64, ground: "#0b0f19", water: "#081c2e",
-    sun: { color: "#7d9dd4", intensity: 0.35, position: [-30, 60, -40] }, hemisphere: { sky: "#1e3a5f", ground: "#0b0f19", intensity: 0.25 },
+    look: "night-city", fogDensityScale: 0.6, exposureEv: 0.5, sky: "#090d16", horizonEmissive: "#1e293b", horizonIntensity: 0.25, sunColor: "#cbd5e1", sunY: 64, ground: "#0b0f19", water: "#081c2e",
+    sun: { color: "#9db4e0", intensity: 0.7, position: [-30, 60, -40] }, hemisphere: { sky: "#3b5b8f", ground: "#1a2030", intensity: 0.6 },
     fill: { color: "#ffd9a0", intensity: 2.2, position: [0, 3.2, -9] }, bloom: 0.42, label: "Neon night"
   }
 };
