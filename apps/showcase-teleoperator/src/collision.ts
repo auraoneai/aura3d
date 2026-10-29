@@ -24,8 +24,9 @@ export interface TrafficHit {
 export const PLAYER_RADIUS = 0.95;
 export const PLAYER_HALF_LENGTH = 2.35;
 const BODY_Y = 0.8;
-const CULL_DZ = 12;
-const CULL_DX = 4.5;
+// Extra margins beyond the touching distance before a car's world is stepped at all.
+const CULL_DZ = 6;
+const CULL_DX = 2;
 
 // Footprints of the ten traffic vehicles in `trafficSpecs` order: [length, width] in metres.
 export const TRAFFIC_FOOTPRINTS: ReadonlyArray<readonly [number, number]> = [
@@ -43,36 +44,67 @@ export const TRAFFIC_FOOTPRINTS: ReadonlyArray<readonly [number, number]> = [
 
 const trafficVelocityZ = (car: TrafficBody): number => (car.direction === 1 ? -car.speed : car.speed);
 
+export interface PlayerShape {
+  /** Half width of the player car, metres. */
+  readonly radius: number;
+  /** Half length of the player car, metres. */
+  readonly halfLength: number;
+}
+
+export interface TrafficContactOptions {
+  /** [length, width] per slot in metres; defaults to TRAFFIC_FOOTPRINTS (repeated). */
+  readonly footprints?: ReadonlyArray<readonly [number, number]>;
+  readonly player?: PlayerShape;
+}
+
 /**
  * Player-versus-traffic contact. Each car gets its own impact world with the car's box at the origin, and the player
  * is stepped in that car's frame (position and velocity relative to the car), so a moving car behaves like a wall that
- * moves with it and each new contact raises exactly one impact event.
+ * moves with it and each new contact raises exactly one impact event. Footprints and the player's shape should come from
+ * the fitted model bounds (`fittedSize` in rules.ts), so the visible bodies and the colliders agree.
  */
-export function createTrafficContacts(slotCount: number, feedback?: ImpactFeedbackOptions) {
+export function createTrafficContacts(slotCount: number, feedback?: ImpactFeedbackOptions, options: TrafficContactOptions = {}) {
   const worlds: ImpactWorld[] = [];
-  for (let i = 0; i < slotCount; i++) {
-    const [length, width] = TRAFFIC_FOOTPRINTS[i % TRAFFIC_FOOTPRINTS.length]!;
-    worlds.push(
-      createImpactWorld({
-        colliders: [
-          {
-            kind: "box",
-            id: `traffic-${i}`,
-            tag: "traffic",
-            center: [0, BODY_Y, 0],
-            // Sphere radius stands in for the player's half width, so lengthen the box by the player's extra half length.
-            half: [width / 2, BODY_Y, length / 2 + (PLAYER_HALF_LENGTH - PLAYER_RADIUS)],
-            restitution: 0.15,
-            friction: 0.3
-          }
-        ],
-        eventMinSpeed: 0.8
-      })
-    );
-  }
+  let shape: PlayerShape = options.player ?? { radius: PLAYER_RADIUS, halfLength: PLAYER_HALF_LENGTH };
+  const footprintOf = (i: number): readonly [number, number] => {
+    const list = options.footprints ?? TRAFFIC_FOOTPRINTS;
+    return list[i % list.length]!;
+  };
+  const build = (): void => {
+    worlds.length = 0;
+    for (let i = 0; i < slotCount; i++) {
+      const [length, width] = footprintOf(i);
+      worlds.push(
+        createImpactWorld({
+          colliders: [
+            {
+              kind: "box",
+              id: `traffic-${i}`,
+              tag: "traffic",
+              center: [0, BODY_Y, 0],
+              // Sphere radius stands in for the player's half width, so lengthen the box by the player's extra half length.
+              half: [width / 2, BODY_Y, length / 2 + Math.max(0, shape.halfLength - shape.radius)],
+              restitution: 0.15,
+              friction: 0.3
+            }
+          ],
+          eventMinSpeed: 0.8
+        })
+      );
+    }
+  };
+  build();
   const handler = feedback ? createImpactFeedback(feedback) : undefined;
 
   return {
+    /** Switch the player's collision shape (a different car): rebuilds the per-car worlds. */
+    setPlayerShape(next: PlayerShape): void {
+      shape = next;
+      build();
+    },
+    get playerShape(): PlayerShape {
+      return shape;
+    },
     /**
      * `player` and `cars` are the state AFTER this frame's integration. The step rewinds one `dt`, then lets the impact
      * kit redo that motion with contact, so with no contact the result equals the input.
@@ -81,7 +113,8 @@ export function createTrafficContacts(slotCount: number, feedback?: ImpactFeedba
       const hits: TrafficHit[] = [];
       for (let i = 0; i < cars.length; i++) {
         const car = cars[i]!;
-        if (Math.abs(player.z - car.z) > CULL_DZ + player.speed * dt || Math.abs(player.x - car.laneX) > CULL_DX) {
+        const [len, wid] = footprintOf(i);
+        if (Math.abs(player.z - car.z) > len / 2 + shape.halfLength + CULL_DZ + player.speed * dt || Math.abs(player.x - car.laneX) > wid / 2 + shape.radius + CULL_DX) {
           worlds[i]!.reset();
           continue;
         }
@@ -93,7 +126,7 @@ export function createTrafficContacts(slotCount: number, feedback?: ImpactFeedba
             player.z + player.speed * dt - (car.z - carVz * dt)
           ] as [number, number, number],
           velocity: [player.lateral, 0, -player.speed - carVz] as [number, number, number],
-          radius: PLAYER_RADIUS
+          radius: shape.radius
         };
         for (const impact of worlds[i]!.step(body, dt)) {
           hits.push({ slot: i, impact });
