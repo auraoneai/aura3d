@@ -3,9 +3,60 @@
 // click is the genuine user gesture the app shell uses to unlock audio, so
 // onStart runs synchronously inside the click handler. The screen carries the
 // parent note and the mode choice; there is no autoplay and no timer.
+//
+// The welcome (07 O8): a decorative sky (sun glow, a rainbow in the six
+// character colours, slow clouds), the six characters' portraits in a row, and
+// "Welcome to" over "<name>'s Wonder World" (src/personal.ts; "Wonder World"
+// when no name is set). The decorations are hidden from screen readers. Motion
+// is slow and stops in reduced motion; high contrast drops the decorations.
 
+import { WELCOME_NAME } from "../personal.js";
 import type { PlayMode } from "../types.js";
-import { buildModeChoice, castDots, docOf, el, icon, inertOthers, uiText, uniqueId, type UiLocale } from "./accessibility.js";
+import {
+  CHARACTER_COLOURS,
+  CHARACTER_IDS,
+  buildModeChoice,
+  castDots,
+  docOf,
+  el,
+  fillTemplate,
+  icon,
+  inertOthers,
+  uiText,
+  uniqueId,
+  type UiLocale
+} from "./accessibility.js";
+import { PORTRAITS } from "./portraits.js";
+
+/** The welcome title's big line: "<name>'s Wonder World", or "Wonder World" when no name is set. */
+export function welcomeNameLine(locale: UiLocale, name: string | null = WELCOME_NAME): string {
+  return name ? fillTemplate(uiText(locale, "ui.start.welcomeNamed"), { name }) : uiText(locale, "ui.start.title");
+}
+
+/** The decorative sky behind the welcome: a sun glow, a rainbow arc and three slow clouds. */
+function welcomeSky(doc: Document): HTMLElement {
+  return el(doc, "div", { className: "ww-start-sky", attrs: { "aria-hidden": "true" } }, [
+    el(doc, "span", { className: "ww-start-sun" }),
+    el(doc, "span", { className: "ww-start-rainbow" }),
+    el(doc, "span", { className: "ww-start-cloud ww-start-cloud-1" }),
+    el(doc, "span", { className: "ww-start-cloud ww-start-cloud-2" }),
+    el(doc, "span", { className: "ww-start-cloud ww-start-cloud-3" })
+  ]);
+}
+
+/** The six characters' portraits in a row, each on a ring of its own colour; a dot where a portrait is missing. */
+function welcomeParade(doc: Document): HTMLElement {
+  const row = el(doc, "div", { className: "ww-start-parade", attrs: { "aria-hidden": "true" } });
+  CHARACTER_IDS.forEach((id, index) => {
+    const face = el(doc, "span", { className: "ww-start-face" });
+    face.style.setProperty("--ww-dot", CHARACTER_COLOURS[id]);
+    face.style.setProperty("--ww-i", String(index));
+    const url = PORTRAITS[id];
+    if (url) face.appendChild(el(doc, "img", { className: "ww-start-face-img", attrs: { src: url, alt: "", draggable: "false", decoding: "async" } }));
+    row.appendChild(face);
+  });
+  return row;
+}
 
 export interface StartScreenOptions {
   /** Pre-selected mode (usually the saved parent setting). Default "play-together". */
@@ -27,7 +78,10 @@ export function showStartScreen(
 
   const titleId = uniqueId("ww-start-title");
   const screen = el(doc, "section", { className: "ww-screen ww-start", attrs: { "aria-labelledby": titleId, "data-ui": "start" } });
-  const title = el(doc, "h1", { className: "ww-start-title", text: uiText(locale, "ui.start.title"), attrs: { id: titleId } });
+  const title = el(doc, "h1", { className: "ww-start-title", attrs: { id: titleId } }, [
+    el(doc, "span", { className: "ww-start-welcome", text: uiText(locale, "ui.start.welcome") }),
+    el(doc, "span", { className: "ww-start-name", text: welcomeNameLine(locale) })
+  ]);
   const modeChoice = buildModeChoice(doc, locale, mode, (next) => {
     mode = next;
   });
@@ -45,9 +99,10 @@ export function showStartScreen(
     el(doc, "p", { text: uiText(locale, "ui.note.start") }),
     el(doc, "p", { className: "ww-note-small", text: uiText(locale, "ui.note.privacy") })
   ]);
+  screen.appendChild(welcomeSky(doc));
   screen.appendChild(
     el(doc, "div", { className: "ww-start-inner" }, [
-      castDots(doc),
+      welcomeParade(doc),
       el(doc, "div", { className: "ww-start-head" }, [title, prototype]),
       modeChoice.element,
       el(doc, "div", { className: "ww-start-action" }, [start, hint]),

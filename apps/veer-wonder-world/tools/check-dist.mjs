@@ -3,7 +3,8 @@
 // host after the Vite build (tools/deploy-build.sh), so a build that fails it is never deployed:
 // - index.html exists and keeps its noindex meta tag (the app is an unlisted prototype);
 // - no source map is built;
-// - no served text file carries the child's name, bare or in the working folder form `<name>-wonder-world`;
+// - no served text file carries the child's name, bare or in the working folder form `<name>-wonder-world`, but for
+//   the owner's welcome (07 O8): one string literal of the name in the bundle, from src/personal.ts;
 // - no served text file carries the deploy host's own variables (VITE_VERCEL_*: the deployment's URLs and IDs),
 //   which Vite inlines when they reach the build (tools/deploy-build.sh keeps them out).
 // The name is not written here: it is the prefix of the app's working folder name, as in
@@ -45,11 +46,24 @@ const maps = files.filter((file) => file.endsWith(".map"));
 if (maps.length > 0) problems.push(`${maps.length} source map(s): ${maps.map((file) => relative(dist, file)).join(", ")}`);
 
 const textFiles = files.filter((file) => TEXT_FILE.test(file));
+// 07 O8: the owner's welcome. src/personal.ts puts the name into the bundle as one string literal ("<name>"), and
+// that single literal is allowed; any other hit, or a second literal, fails.
+let welcomeLiterals = 0;
 if (name) {
   const pattern = new RegExp(`(?<![a-z0-9])${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![a-z0-9])`, "gi");
+  const isLiteral = (text, hit) => {
+    const before = text[hit.index - 1];
+    return /["'`]/.test(before ?? "") && text[hit.index + hit[0].length] === before;
+  };
   for (const file of textFiles) {
     const text = readFileSync(file, "utf8");
-    const hits = [...text.matchAll(pattern)];
+    const hits = [...text.matchAll(pattern)].filter((hit) => {
+      if (welcomeLiterals === 0 && file.endsWith(".js") && isLiteral(text, hit)) {
+        welcomeLiterals += 1;
+        return false;
+      }
+      return true;
+    });
     if (hits.length === 0) continue;
     // Up to three hits with 40 characters either side, the name itself masked, so a hit can be traced safely.
     const contexts = hits
@@ -71,5 +85,5 @@ if (problems.length > 0) {
   process.exit(1);
 }
 console.log(
-  `check-dist: OK (${files.length} files, ${textFiles.length} text files scanned, 0 source maps, 0 name hits, 0 host variables, noindex kept)`
+  `check-dist: OK (${files.length} files, ${textFiles.length} text files scanned, 0 source maps, 0 name hits besides ${welcomeLiterals} welcome literal (07 O8), 0 host variables, noindex kept)`
 );

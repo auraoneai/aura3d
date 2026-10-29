@@ -27,6 +27,8 @@ export interface UiLocale {
  */
 export const UI_STRINGS = {
   "ui.start.title": "Wonder World",
+  "ui.start.welcome": "Welcome to",
+  "ui.start.welcomeNamed": "{name}’s Wonder World",
   "ui.start.tap": "Tap to start",
   "ui.mode.label": "How do you want to play?",
   "ui.mode.play": "Play together",
@@ -153,7 +155,8 @@ export const CHARACTER_COLOURS: Readonly<Record<CharacterId, string>> = {
 /** Neutral dot for speakers without a character colour (the baby robot). */
 export const NEUTRAL_COLOUR = "#d5d9e2";
 
-const CHARACTER_IDS: readonly CharacterId[] = ["momo", "lulu", "sheru", "gogo", "lumi", "peeko"];
+/** The six characters, in the order the UI shows them (the cast dots, the welcome parade). */
+export const CHARACTER_IDS: readonly CharacterId[] = ["momo", "lulu", "sheru", "gogo", "lumi", "peeko"];
 
 export function isCharacterId(value: string): value is CharacterId {
   return CHARACTER_IDS.some((id) => id === value);

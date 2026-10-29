@@ -13,6 +13,7 @@ import { CHARACTER_COLOURS, UI_STRINGS, fillTemplate, humanizeId, speakerName, s
 import { speakerColour } from "../../../src/ui/captions.js";
 import { menuSection, type MenuItem } from "../../../src/ui/episode-menu.js";
 import { GROWN_UP_LINKS, formatSeconds, waitChoicesMs } from "../../../src/ui/parent-panel.js";
+import { welcomeNameLine } from "../../../src/ui/start-screen.js";
 
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const uiDir = join(appRoot, "src/ui");
@@ -108,7 +109,9 @@ const PACK_UI_KEYS = [
   "ui.speaker.gogo",
   "ui.speaker.lumi",
   "ui.speaker.peeko",
-  "ui.speaker.robot"
+  "ui.speaker.robot",
+  "ui.start.welcome",
+  "ui.start.welcomeNamed"
 ] as const;
 
 /** Every `ui.*` key the UI uses. */
@@ -228,6 +231,13 @@ describe("English fallbacks", () => {
     for (const [key, text] of Object.entries(UI_STRINGS)) {
       for (const rule of FORBIDDEN_COPY) expect(text, `${key}: ${rule}`).not.toMatch(rule);
     }
+  });
+
+  it("greet by name only through src/personal.ts (07 O8): the string keeps a {name} placeholder", () => {
+    expect(UI_STRINGS["ui.start.welcome"]).toBe("Welcome to");
+    expect(UI_STRINGS["ui.start.welcomeNamed"]).toBe("{name}’s Wonder World");
+    expect(welcomeNameLine(englishOnly, "Sam")).toBe("Sam’s Wonder World");
+    expect(welcomeNameLine(englishOnly, null)).toBe("Wonder World");
   });
 
   it("carry the PRD notes: touch works without speaking, not therapy, settings stay on the device", () => {

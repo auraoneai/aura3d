@@ -11,6 +11,8 @@ export const lines: Record<string, string> = {};
 export const strings: Record<string, string> = {
   // Start screen.
   "ui.start.title": "Wonder World",
+  "ui.start.welcome": "Welcome to",
+  "ui.start.welcomeNamed": "{name}’s Wonder World",
   "ui.start.tap": "Tap to start",
   "ui.start.sound": "Sound starts after you tap.",
   "ui.prototype": "Prototype",

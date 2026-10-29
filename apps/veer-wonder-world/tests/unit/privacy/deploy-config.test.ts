@@ -207,6 +207,18 @@ describe("dist check (tools/check-dist.mjs)", () => {
     }
   });
 
+  it("allows the owner's welcome name once, as a string literal in the bundle (07 O8), and nothing more", () => {
+    const once = checkDist({ "index.html": PAGE, "assets/app.js": `const n=${JSON.stringify(childName)};` });
+    expect(once.out).toContain("besides 1 welcome literal");
+    expect(once.status).toBe(0);
+    const twice = checkDist({ "index.html": PAGE, "assets/app.js": `const n=${JSON.stringify(childName)},m='${childName}';` });
+    expect(twice.status).toBe(1);
+    const inText = checkDist({ "index.html": PAGE, "assets/app.js": `const t="Welcome, ${childName}!";` });
+    expect(inText.status).toBe(1);
+    const inPage = checkDist({ "index.html": PAGE.replace("<body>", `<body>"${childName}"`), "assets/app.js": "1" });
+    expect(inPage.status).toBe(1);
+  });
+
   it("fails a build that inlined the deploy host's variables", () => {
     const run = checkDist({ "index.html": PAGE, "assets/app.js": 'const env={MODE:"production",VITE_VERCEL_URL:"x"};' });
     expect(run.status).toBe(1);
