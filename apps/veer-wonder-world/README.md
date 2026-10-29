@@ -2,7 +2,7 @@
 
 Wonder World is a toddler co-play app built on Aura3D 4.5.0: short 3D cartoon stories and tap games that a grown-up plays alongside a young child. The folder keeps the working name `veer-wonder-world`; the public title is **Wonder World**, and no child's name appears in the app, its routes, its logs or its default lines.
 
-**Status: prototype.** It is play and language exposure, not therapy. It does not test, score, diagnose or teach a child to talk, and nothing here supports an efficacy claim. The route carries `noindex`, it is not in the public site build, catalog, showcase index or sitemap, and publishing it is a separate owner decision ([DEPLOYMENT.md](DEPLOYMENT.md)). The specification is [`docs/prds/veer-wonder-world/`](../../docs/prds/veer-wonder-world/README.md); decisions and results are recorded in [`07-autonomous-decisions-and-build-record.md`](../../docs/prds/veer-wonder-world/07-autonomous-decisions-and-build-record.md).
+**Status: prototype.** It is play and language exposure, not therapy. It does not test, score, diagnose or teach a child to talk, and nothing here supports an efficacy claim. It runs as an unlisted preview at https://aura3d-wonder-world.vercel.app (deployed at the owner's request on 2026-10-29). Every response carries `noindex`, it is not in the public site build, catalog, showcase index or sitemap, and publishing it is a separate owner decision ([DEPLOYMENT.md](DEPLOYMENT.md)). The specification is [`docs/prds/veer-wonder-world/`](../../docs/prds/veer-wonder-world/README.md); decisions and results are recorded in [`07-autonomous-decisions-and-build-record.md`](../../docs/prds/veer-wonder-world/07-autonomous-decisions-and-build-record.md).
 
 ## What is in it
 
@@ -87,6 +87,8 @@ apps/veer-wonder-world/tools/remote-run.sh look                    # look-dev fr
 ```
 
 Results land in `tests/reports/remote-acr/<RUN_ID>/`; copy what you keep into `evidence/veer-wonder-world/`. Software WebGL2 results are not real-GPU or device evidence.
+
+The unlisted preview deploys with `apps/veer-wonder-world/tools/deploy-preview.sh --prod`; the deploy host builds it (DEPLOYMENT.md section 3). Afterwards `apps/veer-wonder-world/tools/remote-run.sh live` opens the deployed address on the remote runner and checks its hosting rules. That spec file is outside the 20-run suite above.
 
 ## Running it
 
