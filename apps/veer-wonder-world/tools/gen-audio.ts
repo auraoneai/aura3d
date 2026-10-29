@@ -1,7 +1,7 @@
 // Generates every voice line, song, music bed and sound effect for Wonder World through Kiro Prism
 // (ElevenLabs text-to-speech, music and sound-generation). Resumable: existing files are kept.
 //
-//   ./node_modules/.bin/tsx tools/gen-audio.ts [--only lines|songs|beds|sfx] [--concurrency 4]
+//   ./node_modules/.bin/tsx tools/gen-audio.ts [--only lines|songs|beds|sfx] [--concurrency N]
 //
 // Output: src/assets/audio/en/lines/<key>.mp3, src/assets/audio/songs/<id>.mp3, src/assets/audio/music/<id>.mp3,
 // src/assets/audio/sfx/<id>.mp3 and provenance/audio/<kind>.json (provider, voice, Prism key id and tier, prompt, date).
@@ -21,7 +21,9 @@ const KEY = process.env.PRISM_API_KEY;
 if (!KEY) throw new Error("PRISM_API_KEY is not set");
 const args = process.argv.slice(2);
 const only = args.includes("--only") ? args[args.indexOf("--only") + 1] : null;
-const CONC = args.includes("--concurrency") ? Number(args[args.indexOf("--concurrency") + 1]) : 4;
+// The Prism pool sends each call to the key with the most characters left, and while the one paid key is busy the
+// rest spill onto free-tier keys, so voice lines run one at a time unless --concurrency says otherwise.
+const CONC = args.includes("--concurrency") ? Number(args[args.indexOf("--concurrency") + 1]) : !only || only === "lines" ? 1 : 4;
 const today = "2026-10-29";
 
 /** ElevenLabs premade voices (casting recorded in docs/prds/veer-wonder-world/07). */
@@ -163,13 +165,26 @@ for (const kind of Object.keys(kindDirs) as Job["kind"][]) {
 const todo = jobs.filter((j) => (!only || j.kind === only) && (!existsSync(j.file) || prov[j.kind][j.id]?.prompt !== j.prompt));
 console.log(`audio jobs: ${jobs.length} total, ${todo.length} to generate, ${pruned} stale files removed`);
 const tierOf = await tiers();
+if (todo.length > 0 && Object.keys(tierOf).length === 0) throw new Error("cannot read the voice key tiers (/admin/voice); nothing generated");
+/** ElevenLabs plans whose output may ship; anything else is regenerated. */
+const PAID_TIERS = new Set(["starter", "creator", "pro", "scale", "business"]);
+const MAX_TIER_ATTEMPTS = 4;
 let next = 0, done = 0;
 const failed: string[] = [];
 await Promise.all(Array.from({ length: CONC }, async () => {
   while (next < todo.length) {
     const job = todo[next++];
     try {
-      const p = await job.run();
+      let p = await job.run();
+      // Free-tier and unknown-tier output is prototype-only (07 C9): generate again until a paid key answers.
+      for (let attempt = 1; !PAID_TIERS.has(tierOf[p.prismKey] ?? "unknown"); attempt += 1) {
+        if (attempt >= MAX_TIER_ATTEMPTS) {
+          rmSync(job.file, { force: true });
+          throw new Error(`landed on a ${tierOf[p.prismKey] ?? "unknown"}-tier key ${attempt} times; rerun with --concurrency 1`);
+        }
+        console.log(`again ${job.kind}:${job.id}: key ${p.prismKey} is ${tierOf[p.prismKey] ?? "unknown"} tier`);
+        p = await job.run();
+      }
       prov[job.kind][job.id] = { ...p, tier: tierOf[p.prismKey] ?? "unknown", processing: p.processing ?? `ffmpeg loudnorm I=${LOUDNESS[job.kind].lufs} LUFS${SHORT_MEAN_DB[job.kind] !== undefined ? `, short-clip mean-volume correction to ${SHORT_MEAN_DB[job.kind]} dB` : ""}, ${LOUDNESS[job.kind].bitrate}` };
       done += 1;
       if (done % 20 === 0) { flush(); console.log(`${done}/${todo.length}`); }
