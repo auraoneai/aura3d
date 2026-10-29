@@ -154,10 +154,11 @@ export interface World {
  * Neutral-room IBL for the PBR runner and the Meshy props (LIGHT-01). Since 4.5.0 a lights-only scene gets no implicit
  * environment, so without this node the runner and props lost the neutral-room probe they had on 4.3.7 (diffuse and
  * specular 1). The custom road, sky and figure materials are unlit and ignore it. Calibrated with the hemisphere on
- * (it contributes next to an environment since LIGHT-05) against the v4.3.7 runner-region luma; see
- * docs/audits/lanes/g17.md. `?env=<n>` overrides it for calibration captures only.
+ * (it contributes next to an environment, per normal, since lane E2's LIGHT-05/08) against v4.3.7 at the same game state:
+ * runner crop 193.3 on v4.3.7, 168.1 on 4.5.0 without an environment, 191.5 at 0.8 and 195.1 at 1.0 (remote runs
+ * g17v437a, g17before1, g17e2cal1; docs/audits/lanes/g17.md). `?env=<n>` overrides it for calibration captures only.
  */
-export const ENV_INTENSITY = 1;
+export const ENV_INTENSITY = 0.9;
 export function environmentIntensity(search: string | undefined = typeof location !== "undefined" ? location.search : undefined): number {
   const raw = search ? new URLSearchParams(search).get("env") : null;
   const value = raw === null ? Number.NaN : Number(raw);
