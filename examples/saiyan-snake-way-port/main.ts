@@ -241,7 +241,8 @@ function updateHud(): void {
   const drowse = drowseCue(state);
   const gust = gustCue(state);
   const gap = started && counting <= 0 ? gapAhead(state) : null;
-  const prompt = started && counting <= 0 && !resultsShown ? onboardingPrompt(state, seenPrompts, gap, touchDevice) : null;
+  // manual stepping (captures, tests) never ages a prompt, so it shows none
+  const prompt = started && counting <= 0 && !resultsShown && !config.manual ? onboardingPrompt(state, seenPrompts, gap, touchDevice) : null;
   if (prompt && !activePrompt) { activePrompt = prompt.id; promptText = prompt.text; promptT = 2.4; }
   setText("toast", state.toastT > 0 ? state.toast : drowse.warn ? DROWSE_ALERT : "");
   ($("drowsefx") as HTMLElement).style.opacity = started ? String(drowse.fade) : "0";
