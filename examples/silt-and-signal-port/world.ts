@@ -128,8 +128,12 @@ const RIDER_HEIGHT = 2.1;
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
 const dynamicFrom = (m: MeshData | ColoredMesh) => geometry.dynamic({ positions: f32(m.positions), normals: f32(m.normals), uvs: f32(m.uvs), indices: Uint32Array.from(m.indices), ...("colors" in m ? { colors: f32(m.colors) } : {}) });
 
-/** Lighting rig per chapter, from the measured chapter-0 rig (warm key 2.2, sky/ground hemisphere 1.05, exp2 fog) and the palette. */
-function rigOf(chapter: number) {
+/**
+ * Lighting rig per chapter, from the measured chapter-0 rig (warm key 2.2, sky/ground hemisphere 1.05, exp2 fog) and the palette.
+ * The day hemisphere was 1.45 while the engine dropped hemisphere lights next to an environment node (LIGHT-05), so that
+ * number never reached a pixel. Since the hemisphere adds to `environments.neutral` it uses the original 1.05.
+ */
+export function rigOf(chapter: number) {
   const ch = CHAPTERS[chapter]!;
   const p = ch.palette;
   const night = chapter === 0 ? false : !!ch.night;
@@ -139,7 +143,7 @@ function rigOf(chapter: number) {
     sunIntensity: night ? 0.7 : 2.2,
     hemiSky: cssHex(night ? mixHex(p.sky!, 0x1a2a55, 0.5) : chapter === 0 ? 0x73b4c4 : p.sky!),
     hemiGround: cssHex(night ? 0x0b1220 : chapter === 0 ? 0x324a57 : mixHex(p.ground!, 0x1c2630, 0.6)),
-    hemiIntensity: night ? 0.85 : 1.45,
+    hemiIntensity: night ? 0.85 : 1.05,
     fog: chapter === 0 ? "#dcc5b1" : cssHex(p.fog!),
     fogDensity: night ? 0.0014 : 0.0009,
     background: chapter === 0 ? "#e3c5ab" : cssHex(p.fog!)
