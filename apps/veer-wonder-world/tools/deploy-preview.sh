@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Deploys Wonder World to its unlisted preview address (DEPLOYMENT.md section 3): the Vercel project
-# aura3d-wonder-world, whose production address is https://aura3d-wonder-world.vercel.app. Every response carries
-# X-Robots-Tag: noindex (deploy/vercel.json), and the address is linked from nowhere. The deploy host installs and
-# builds (tools/deploy-build.sh); nothing is built or opened in a browser on this machine. Usage, from anywhere in
-# the repo:
+# Deploys Wonder World to its unlisted preview (DEPLOYMENT.md section 3): the Vercel project aura3d-wonder-world,
+# served at its own production domain and at the owner's custom domain. Every response carries X-Robots-Tag: noindex
+# (deploy/vercel.json). This repository is public, so no address is written in it: a --prod deploy writes the
+# project address to apps/veer-wonder-world/.preview-url (gitignored), where the live check reads it. The deploy host
+# installs and builds (tools/deploy-build.sh); nothing is built or opened in a browser on this machine. Usage, from
+# anywhere in the repo:
 #   apps/veer-wonder-world/tools/deploy-preview.sh                 # a preview deployment of origin/main
 #   apps/veer-wonder-world/tools/deploy-preview.sh --prod          # production: moves the preview address to it
 #   apps/veer-wonder-world/tools/deploy-preview.sh --prod <ref>    # a given commit, branch or tag
@@ -43,3 +44,6 @@ cp "$DEPLOY_DIR/vercelignore" "$WORK/src/.vercelignore"
 
 echo "Deploying ${COMMIT} to ${PROJECT} (${TARGET[*]:-preview})"
 "$VERCEL" deploy "$WORK/src" --yes --scope "$TEAM" --project "$PROJECT" ${TARGET[@]+"${TARGET[@]}"} --meta "commit=${COMMIT}"
+if [ "${#TARGET[@]}" -gt 0 ]; then
+  echo "https://${PROJECT}.vercel.app/" > "$REPO_ROOT/apps/veer-wonder-world/.preview-url"
+fi

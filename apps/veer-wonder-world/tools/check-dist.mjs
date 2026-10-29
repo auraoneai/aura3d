@@ -19,7 +19,7 @@ import { fileURLToPath } from "node:url";
 const app = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = resolve(process.argv[2] ?? join(app, "dist"));
 const WORKING_SUFFIX = "-wonder-world";
-const TEXT_FILE = /\.(?:html|js|mjs|css|json|md|txt|svg)$/i;
+const TEXT_FILE = /\.(?:html|js|mjs|cjs|css|json|md|txt|svg)$/i;
 
 function filesUnder(dir) {
   const out = [];

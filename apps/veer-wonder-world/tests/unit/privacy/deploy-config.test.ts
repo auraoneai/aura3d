@@ -6,9 +6,10 @@
 //   index.html.
 // - The deploy host lints the content before the build and checks the built dist after it.
 // - The upload holds only the workspace, the shared fonts and HDRIs, and the app.
-// - The preview is named without the child's name.
+// - The preview is named without the child's name, and the public repository never writes its address.
 // - The site's own upload leaves the app out.
-// - check-dist fails a build with a source map, without noindex, or with the child's name in a text file.
+// - check-dist fails a build with a source map, without noindex, with deploy-host variables, or with the child's
+//   name in a text file beyond the owner's one welcome literal (07 O8).
 //
 // As in no-child-data.test.ts, the child's name is not written here: it is the prefix of the app's working folder
 // name (`<name>-wonder-world`).
@@ -144,14 +145,16 @@ describe("preview address (tools/deploy-preview.sh)", () => {
   const script = read("tools/deploy-preview.sh");
   const project = /^PROJECT="([^"]+)"$/m.exec(script)?.[1] ?? "";
 
-  it("names the project and its address without the child's name", () => {
+  it("names the project without the child's name, and writes no preview address into the public repository", () => {
     expect(childName).not.toBe("");
     expect(project).toBe("aura3d-wonder-world");
     expect(childNamePattern.test(project)).toBe(false);
-    expect(read("DEPLOYMENT.md")).toContain(`https://${project}.vercel.app`);
-    // The per-deployment hosts carry the team's slug; only the project address is ever written down.
-    const hosts = [...`${script}\n${read("DEPLOYMENT.md")}`.matchAll(/([a-z0-9-]+\.vercel\.app)/g)].map((match) => match[1]);
-    expect(new Set(hosts)).toEqual(new Set([`${project}.vercel.app`]));
+    // The repository is public; the addresses live in the Vercel project and the gitignored .preview-url (O6, O7).
+    const tracked = [read("DEPLOYMENT.md"), read("README.md"), script, readFileSync(join(repoRoot, "tests/browser/wonder-world-live.spec.ts"), "utf8")].join("\n");
+    expect(tracked.match(/\b[a-z0-9-]+\.vercel\.app\b/g) ?? []).toEqual([]);
+    expect(tracked.match(/\b[a-z0-9-]+\.auraone\.ai\b/g) ?? []).toEqual([]);
+    expect(read(".gitignore").split("\n")).toContain(".preview-url");
+    expect(script).toContain('> "$REPO_ROOT/apps/veer-wonder-world/.preview-url"');
   });
 
   it("names the Vercel team by ID and deploys only the commit's own deploy files", () => {

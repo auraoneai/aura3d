@@ -2,7 +2,8 @@
  * Wonder World live preview (apps/veer-wonder-world/DEPLOYMENT.md sections 3 and 4): the deployed address, not a
  * local build. Remote runner only, after a deploy (apps/veer-wonder-world/tools/deploy-preview.sh --prod):
  *   apps/veer-wonder-world/tools/remote-run.sh live                                  (est. 10 min)
- * WONDER_LIVE_URL overrides the address (default https://aura3d-wonder-world.vercel.app/).
+ * The address is WONDER_LIVE_URL, else the one apps/veer-wonder-world/tools/deploy-preview.sh --prod wrote to the app's
+ * gitignored .preview-url (the repository is public and never writes it down; DEPLOYMENT.md section 3).
  *
  * 1. A visitor's load in headless Chromium with software WebGL2:
  *    - the start screen, once its fade-in has finished: the static splash is gone and the Start button's label reads
@@ -18,8 +19,11 @@
  * Records: WWJSON live-visit (live-visit-partial when a step fails) and live-hosting; WWSHOT live-start, live-menu and
  * live-story.
  */
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 import {
+  APP_DIR,
   E17,
   SELECTORS,
   attachPageLog,
@@ -34,7 +38,16 @@ import {
   type PageLog
 } from "./wonder-world-lib";
 
-const LIVE_URL = new URL(process.env["WONDER_LIVE_URL"] ?? "https://aura3d-wonder-world.vercel.app/");
+/** The deployed address: WONDER_LIVE_URL, else the app's gitignored .preview-url that a --prod deploy writes. */
+function liveUrl(): URL {
+  const fromEnv = process.env["WONDER_LIVE_URL"];
+  if (fromEnv) return new URL(fromEnv);
+  const file = join(APP_DIR, ".preview-url");
+  if (!existsSync(file)) throw new Error(`no preview address: set WONDER_LIVE_URL, or deploy with deploy-preview.sh --prod (it writes ${file})`);
+  return new URL(readFileSync(file, "utf8").trim());
+}
+
+const LIVE_URL = liveUrl();
 const VIEWPORT = { width: 800, height: 600 } as const;
 // Software WebGL2 holds the main thread for long stretches during boot, so a UI step gets two minutes.
 const UI_TIMEOUT_MS = 120_000;

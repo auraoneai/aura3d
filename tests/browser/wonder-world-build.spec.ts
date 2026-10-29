@@ -23,7 +23,7 @@ import { emitJson, engineVersion, redact, runCommit } from "./wonder-world-lib";
 const repo = resolve(".");
 const app = join(repo, "apps", "veer-wonder-world");
 const WORKING_SUFFIX = "-wonder-world";
-const TEXT_FILE = /\.(?:html|js|mjs|css|json|md|txt|svg)$/i;
+const TEXT_FILE = /\.(?:html|js|mjs|cjs|css|json|md|txt|svg)$/i;
 
 function run(cmd: string, args: string[], cwd: string, timeout: number): { status: number | null; out: string } {
   const r = spawnSync(cmd, args, { cwd, encoding: "utf8", timeout, maxBuffer: 64 * 1024 * 1024, env: { ...process.env, CI: "1" } });
