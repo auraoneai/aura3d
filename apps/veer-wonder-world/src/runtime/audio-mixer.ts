@@ -112,9 +112,9 @@ export const CLIP_LEVELS = {
    * A song's gated RMS target. It is lower than the voice target because a 50 ms
    * RMS reads speech louder than a loudness meter does (its windows catch whole
    * syllables, and the pauses between them do not count), while a song's level
-   * is steady. Measured on the 16 sung tracks against 60 voice lines (EBU R128),
-   * 0.083 plays every song within 0.4 dB of the average voice line; 0.7 on the
-   * song bus with no song gain had left them 4 to 6 dB below it.
+   * is steady. From each file's EBU R128 loudness and these gains, 0.083 plays
+   * all 16 sung tracks within 0.4 dB of the average of 60 voice lines; 0.7 on
+   * the song bus with no song gain had left them 4 to 6 dB below it.
    */
   songTargetRms: 0.083,
   sfxMaxWindowRms: 0.1,

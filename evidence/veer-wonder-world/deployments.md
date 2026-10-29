@@ -11,7 +11,28 @@ The unlisted preview of `apps/<app>/DEPLOYMENT.md` §3 is the Vercel project `au
 
 ## Deployments (newest first)
 
-### `dpl_8XbRzzj7pe1L3pGhcQT5kdKG2xoY`: current
+### `dpl_Cj4Rj6Q4ph8Zy8TLBipdnq8G1C7Z`: current
+
+- **Commit:** `633f58a73`.
+- **Deployed:** 2026-10-29 21:58 UTC.
+- **Changes** (`07` B36-B39):
+  - Songs play as loud as the voice lines.
+  - The main cast's normal maps are stored as JPEG.
+  - The "too old" notice also covers iPadOS 15.0-15.3.
+  - The welcome's layout is reworked after a design review: two columns on short landscape screens, the rainbow sized by the window's height, a clean gradient, and clouds kept to the corners.
+- **Gates on the deploy host:** content lint OK. `check-dist` OK: 1002 files, 26 text files, 0 source maps, 1 welcome literal, 0 host variables, 0 class static blocks, noindex kept.
+- **Served files:**
+  - The main script has 0 class static blocks and the song level, and names the new model files only. The page has the browser check.
+  - Momo's GLB downloads as 939,394 bytes (brotli), down from 1,865,289.
+- **Live check:** run `wonder-live-20261029T215919Z` passed, at this commit with a clean tree:
+  - Start label `rgb(255, 255, 255)` on `rgb(91, 70, 163)`, 7.37:1.
+  - 32 cards, with 32 portraits loaded.
+  - E17 on stage and speaking, with the new Momo and Sheru models (and the next story's Peeko and Lulu prefetched).
+  - 0 console errors, 0 page errors, 0 bad responses and 0 failed requests.
+  - 49 requests, all same-origin. Nothing stored.
+  - Hosting rules: 0 problems.
+
+### `dpl_8XbRzzj7pe1L3pGhcQT5kdKG2xoY`: replaced
 
 - **Commit:** `deabb582a`.
 - **Deployed:** 2026-10-29 21:21 UTC.
