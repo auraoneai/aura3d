@@ -11,7 +11,7 @@ import { startExampleDevServer, type ExampleDevServer } from "../example-dev-ser
  * limit. The software-GL runner presents about one frame every 5 to 10 s and HDRI/baked probes land seconds after the
  * first frame: judge the last shot, never the first.
  */
-const SETTLE_SECONDS = [30, 75];
+const SETTLE_SECONDS = (process.env.E2_SETTLE ?? "30,75").split(",").map(Number);
 const CHUNK = 16000;
 const log = (line: string): void => { process.stdout.write(`${line}\n`); };
 const CANVAS_ONLY = "body *:not(canvas){visibility:hidden !important} canvas{visibility:visible !important} html,body{background:#000 !important}";
@@ -121,12 +121,21 @@ test.describe("e2 lighting capture", () => {
     test(`${target.name}`, async ({ page }) => {
       page.on("pageerror", (e) => log(`E2_ERR ${target.name} pageerror ${e.message.slice(0, 300)}`));
       page.on("console", (m) => { if (m.type() === "error" || m.type() === "warning") log(`E2_CONSOLE ${target.name} ${m.type()} ${m.text().slice(0, 240)}`); });
+      page.on("response", (r) => { if (r.status() >= 400) log(`E2_HTTP ${target.name} ${r.status()} ${r.url().replace(server.origin, "").slice(0, 200)}`); });
+      page.on("requestfailed", (r) => log(`E2_REQFAIL ${target.name} ${r.url().replace(server.origin, "").slice(0, 200)} ${r.failure()?.errorText ?? ""}`));
       await page.setViewportSize({ width: 1280, height: 720 });
       await page.goto(`${server.origin}${target.url}`, { waitUntil: "domcontentloaded" });
       try {
         await page.waitForFunction(READY, undefined, { timeout: 360_000, polling: 500 });
       } catch {
-        log(`E2_ERR ${target.name} not-ready`);
+        const state = await page.evaluate(() => ({
+          title: document.title,
+          ready: document.body?.dataset.aura3dReady ?? null,
+          apps: (globalThis as unknown as { __AURA3D_LIVE_APPS__?: { all(): unknown[] } }).__AURA3D_LIVE_APPS__?.all().length ?? null,
+          canvases: document.querySelectorAll("canvas").length,
+          text: (document.body?.innerText ?? "").replace(/\s+/g, " ").slice(0, 200)
+        })).catch((e) => ({ evalError: String(e) }));
+        log(`E2_ERR ${target.name} not-ready ${JSON.stringify(state)}`);
       }
       const loaded = Date.now();
       for (const sec of SETTLE_SECONDS) {
