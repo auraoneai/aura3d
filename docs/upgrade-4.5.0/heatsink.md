@@ -1,5 +1,11 @@
 # Thermal Drift (`heatsink`): upgrading to Aura3D 4.5.0
 
+> **Update 2026-10-29 (audit lane G03).** The game was rebuilt after this guide was written: `src/main.ts` is now a small
+> shell over `sim.ts`, `scene.ts`, `hud.ts` and friends, it uses `looks.preset("night-city")` instead of `outdoor-day`,
+> it has no authored hemisphere, bloom or colour grade, and it imports its own `src/aura-assets.ts`. The line numbers
+> below describe the game as it was on 4.5.0 (commit 31f8945ad). The checklist at the end records what was run, on the
+> remote runner with software WebGL2, and the results. See `docs/audits/lanes/g03.md`.
+
 **Verdict:** No change needed. The game already pins 4.5.0. It stays on the HDR render path because it authors bloom, vignette and colour grade, and because its look adds an HDRI environment and an ambient-occlusion effect. It has an environment node (from `looks.preset`), reads no canvas pixels, and passes only valid primitive options. Only a visual re-check is recommended.
 
 ## What this game uses

@@ -240,7 +240,13 @@ async function boot(): Promise<void> {
     handle.setRotation(pitch, -heading + yaw, roll);
   }
 
+  /** HUD timers (banners, messages, countdown digits) run on wall-clock time, so they clear on time even when the
+   *  page draws a frame every few seconds; the camera smoothing keeps the clamped frame time. */
+  let lastHudAt = performance.now();
   function draw(frameSeconds: number): void {
+    const now = performance.now();
+    const hudSeconds = Math.min(1, Math.max(0, (now - lastHudAt) / 1000));
+    lastHudAt = now;
     const circuit = CIRCUITS[race.circuit];
     if (shownCircuit !== race.circuit) {
       applyCircuitLook(lookHandles, circuit);
@@ -401,7 +407,7 @@ async function boot(): Promise<void> {
       autopilot: autopilotOn,
       reducedMotion: reduced,
       boosting: race.phase === "racing" && p.boosting
-    }, frameSeconds);
+    }, hudSeconds);
     audio.update({ racing: race.phase === "racing" && p.respawn <= 0, speedKmh: p.speedKmh, boosting: race.phase === "racing" && p.boosting });
     publish(false);
   }

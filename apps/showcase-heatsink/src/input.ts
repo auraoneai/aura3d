@@ -55,8 +55,8 @@ export function createInputs(cb: InputCallbacks): Inputs {
   let touchPitch = 0;
   let touchFire = false;
   let touchBoost = false;
-  const coarse = typeof window.matchMedia === "function" && (window.matchMedia("(pointer: coarse)").matches || window.matchMedia("(hover: none)").matches);
-  const touch = coarse || (typeof navigator !== "undefined" && (navigator.maxTouchPoints ?? 0) > 0 && !window.matchMedia?.("(pointer: fine)").matches);
+  // Same test as the CSS that shows the touch controls.
+  const touch = typeof window.matchMedia === "function" && window.matchMedia("(pointer: coarse)").matches;
   let gestured = false;
   const gesture = (): void => { if (!gestured) { gestured = true; cb.onGesture(); } };
 
