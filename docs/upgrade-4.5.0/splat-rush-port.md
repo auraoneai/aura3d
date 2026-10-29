@@ -1,5 +1,7 @@
 # Chroma Roll (`splat-rush-port`): upgrading to Aura3D 4.5.0
 
+**Status (2026-10-29):** done. The environment fix below is in `backdrop.ts`, and the checklist is closed.
+
 **Verdict:** Recommended changes. The game needs no code change to build or run on 4.5.0, but the seven Meshy GLB models (floating-island backdrop and power-up gems) are lit only by the scene's authored lights now. They are expected to render darker than on 4.3.7, so compare screenshots before release.
 
 ## What this game uses
@@ -59,9 +61,11 @@ builder.add(environments.studio());
 
 ## Checklist
 
-- [ ] Run `node tools/game-checks/run.mjs splat-rush-port` (a read-only run of it reported 0 errors, 0 warnings during the original review).
-- [ ] On the remote runner, run the unit tests in `tests/unit/splat-rush-port/` (including `shaders-compile.test.ts` and `reference-replay.test.ts`) and confirm they pass; the simulation is unchanged, so replay results should be identical.
-- [ ] Load `/apps/showcase-splat-rush-port/?diag=1` and confirm `__AURA_SPLAT_RUSH__.diagnostics().renderPath.path` is `"hdr-msaa"` and its `warnings`/`errors` are empty.
-- [ ] Capture `?capture=1&seed=20261023&manual=1&autostart=1` screenshots (splash, mid-run, game over, same `stepFrames` counts) on 4.3.7 and 4.5.0 and compare the backdrop islands, balloons and gems. Expect the models to be darker on 4.5.0.
-- [ ] If the models look different, add `builder.add(environments.studio())` in `world.ts` (preferred) or set `output.exposure` in `main.ts`, then re-capture and re-check that the toon surfaces are unchanged.
-- [ ] Update `apps/showcase-splat-rush-port/route-health.json` evidence text only if the screenshots or draw-call counts you cite change.
+Closed by lane G16 on 2026-10-29 (`docs/audits/lanes/g16.md`). Captures ran on the remote runner (`tools/remote-acr/run.sh`, SwiftShader software WebGL2), never local Playwright.
+
+- [x] Run `node tools/game-checks/run.mjs splat-rush-port`: 0 errors, 0 warnings.
+- [x] Run the unit tests in `tests/unit/splat-rush-port/`: 10 files, 75 tests pass, `reference-replay.test.ts` included (the simulation still matches the recorded reference on every field of every step). They run locally under vitest; no browser is needed.
+- [x] `renderPath.path` is `"hdr-msaa"` in every remote capture (`meta.jsonl` in `evidence/audit-fix/g16/wave3/`), and no page errors or console errors were logged.
+- [x] Captured title, early, roll, mid-action and results (same `stepFrames` drive as `screens/final`) on the pre-fix and fixed builds, 1280x720 and 390x844. The models were darker on 4.5.0: GLB-region luma at the roll state was 53.5% of the pre-4.5.0 card (lane G16 wave 2).
+- [x] Restored a fill with `environments.neutral({ intensity: 0.8 })` in `addBackdrop` (`examples/splat-rush-port/backdrop.ts`), calibrated against the card (94% on the base engine, 100.3% with the lighting lane's engine changes). The toon surfaces are unchanged by the environment; the later P-01 shoulder in the toon shader changes them on purpose (see the lane report).
+- [x] `apps/showcase-splat-rush-port/route-health.json` limits updated (audio and overlays are ported; the two parity notes C4 and C16).
