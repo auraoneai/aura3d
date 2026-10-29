@@ -235,7 +235,7 @@ test.describe("top-tennis audit-fix capture", () => {
     });
   }
 
-  test("tt-card", async ({ browser }) => {
+  test("tt-misc-card", async ({ browser }) => {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const page = await context.newPage();
     await open(page, "", { width: 1440, height: 900 });
@@ -249,18 +249,41 @@ test.describe("top-tennis audit-fix capture", () => {
     await context.close();
   });
 
-  for (const v of [{ name: "moon", query: "?venue=moon&autoplay=1" }, { name: "clay", query: "?venue=clay&autoplay=1" }, { name: "production", query: "?autoplay=1&aura3d-render=production" }, { name: "auto", query: "?autoplay=1" }]) {
+  // Steady-state luma: the Auto player on hard court (with ?diag=1 for the safety-net and render-path checks) and the production render path.
+  for (const v of [{ name: "auto", query: "?autoplay=1&diag=1" }, { name: "production", query: "?autoplay=1&aura3d-render=production" }]) {
     test(`tt-state-${v.name}`, async ({ page }) => {
       await open(page, v.query, { width: 1280, height: 720 });
       for (const sec of [10, 40, 70]) {
         await page.waitForTimeout(sec === 10 ? 10_000 : 30_000);
         await grab(page, `state-${v.name}`, `settle-${sec}s`);
       }
+      const extra = await page.evaluate(() => {
+        const w = window as unknown as Record<string, any>;
+        const app = w.__AURA3D_LIVE_APPS__?.all?.()[0];
+        let renderPath: unknown = null, ignored: unknown = null, safety: unknown = null;
+        try { renderPath = app?.diagnostics?.()?.renderPath ?? null; } catch (e) { renderPath = String(e); }
+        try { ignored = JSON.stringify(app?.diagnostics?.() ?? {}).match(/OPTION_IGNORED[^"]{0,160}/g) ?? []; } catch { ignored = null; }
+        try { const sf = w.__AURA_SAFETY__?.(); safety = sf ? { blackSamples: sf.observed?.blackSamples ?? null, stage: sf.stage ?? null, rung: sf.rung ?? null, escalated: sf.escalated ?? null } : null; } catch (e) { safety = String(e); }
+        return { renderPath, ignored, safety };
+      });
+      log(`GL_META ${JSON.stringify({ target: `state-${v.name}`, id: "diag", ...extra })}`);
       log(`GL_DONE state-${v.name}`);
     });
   }
 
-  test("tt-ctxloss", async ({ page }) => {
+  // All six venues with ?capture=1 (the upgrade-guide check), Auto player on, judged at the later shots.
+  for (const venue of ["hard", "grass", "clay", "desert", "beach", "moon"]) {
+    test(`tt-venue-${venue}`, async ({ page }) => {
+      await open(page, `?venue=${venue}&autoplay=1&capture=1`, { width: 1280, height: 720 });
+      for (const sec of [30, 60]) {
+        await page.waitForTimeout(30_000);
+        await grab(page, `venue-${venue}`, `settle-${sec}s`);
+      }
+      log(`GL_DONE venue-${venue}`);
+    });
+  }
+
+  test("tt-misc-ctxloss", async ({ page }) => {
     await open(page, "?autoplay=1", { width: 1280, height: 720 });
     await page.waitForTimeout(10_000);
     const lost = await page.evaluate(async () => {
