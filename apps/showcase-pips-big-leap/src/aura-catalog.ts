@@ -14,14 +14,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "pipsBrambleback": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/pipsBrambleback.eb18aa7f.glb",
-    hash: "sha256-eb18aa7ff3e4008e369201917c96d7395151d6ec031ac084f85a8416a56c716d",
+    url: "/aura-assets/pipsBrambleback.6aaa3db3.glb",
+    hash: "sha256-6aaa3db380dbc178045a7c39af698f997f0e87e588ece1e9e28836a47e9b87cb",
     bounds: [
       0.022,
       0.024,
       0.011
     ],
-    sizeBytes: 7415688,
+    sizeBytes: 2425048,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -363,7 +363,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/pipsBrambleback.eb18aa7f.glb",
+        "sourcePath": "public/aura-assets/pipsBrambleback.6aaa3db3.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -377,8 +377,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-10-17T09:36:30.616Z"
       },
-      "sourcePath": "public/aura-assets/pipsBrambleback.eb18aa7f.glb",
-      "outputPath": "public/aura-assets/pipsBrambleback.eb18aa7f.glb",
+      "sourcePath": "public/aura-assets/pipsBrambleback.6aaa3db3.glb",
+      "outputPath": "public/aura-assets/pipsBrambleback.6aaa3db3.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -465,14 +465,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "pipsCheckpointFlag": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/pipsCheckpointFlag.cc2162ee.glb",
-    hash: "sha256-cc2162ee9ecdc966202df492b9c35eaeb1d767e51fa5691cf40c8d9375d21a48",
+    url: "/aura-assets/pipsCheckpointFlag.9b30fdba.glb",
+    hash: "sha256-9b30fdbaf5a20aa2b0f3694a913b6b24c177a9e901fbbfdc1b74c7c4ebcee60c",
     bounds: [
       0.527,
       1.899,
       0.362
     ],
-    sizeBytes: 2029932,
+    sizeBytes: 286560,
     metadata: {
       "materials": [
         "material-0"
@@ -522,7 +522,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/pipsCheckpointFlag.cc2162ee.glb",
+        "sourcePath": "public/aura-assets/pipsCheckpointFlag.9b30fdba.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -536,8 +536,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-10-17T09:19:05.662Z"
       },
-      "sourcePath": "public/aura-assets/pipsCheckpointFlag.cc2162ee.glb",
-      "outputPath": "public/aura-assets/pipsCheckpointFlag.cc2162ee.glb",
+      "sourcePath": "public/aura-assets/pipsCheckpointFlag.9b30fdba.glb",
+      "outputPath": "public/aura-assets/pipsCheckpointFlag.9b30fdba.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -600,14 +600,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "pipsGoldenAcorn": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/pipsGoldenAcorn.16eae286.glb",
-    hash: "sha256-16eae286bf078f653c6704907e3aa6fb6c38c5de4c9a5294fbc24e2a8245b2e7",
+    url: "/aura-assets/pipsGoldenAcorn.a851976d.glb",
+    hash: "sha256-a851976d617249f305b0fb0f03deb223b62494f4d6159e80d9970e4956454f6b",
     bounds: [
-      1.005,
-      1.899,
-      1.005
+      1.001,
+      1.895,
+      1.002
     ],
-    sizeBytes: 2542684,
+    sizeBytes: 159468,
     metadata: {
       "materials": [
         "material-0"
@@ -657,7 +657,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/pipsGoldenAcorn.16eae286.glb",
+        "sourcePath": "public/aura-assets/pipsGoldenAcorn.a851976d.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -671,8 +671,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-10-17T09:18:56.803Z"
       },
-      "sourcePath": "public/aura-assets/pipsGoldenAcorn.16eae286.glb",
-      "outputPath": "public/aura-assets/pipsGoldenAcorn.16eae286.glb",
+      "sourcePath": "public/aura-assets/pipsGoldenAcorn.a851976d.glb",
+      "outputPath": "public/aura-assets/pipsGoldenAcorn.a851976d.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -735,14 +735,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "pipsPip": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/pipsPip.40f519aa.glb",
-    hash: "sha256-40f519aa21f0cd2d934081d5e49abeed258dc7be42d54be59f0ff4c8820dfdeb",
+    url: "/aura-assets/pipsPip.fcd4256f.glb",
+    hash: "sha256-fcd4256f0224f438f30bc72957bedca97de7b4728535118bb3b8b344b8860bfd",
     bounds: [
       0.007,
       0.009,
       0.005
     ],
-    sizeBytes: 5760500,
+    sizeBytes: 2078616,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -1123,7 +1123,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/pipsPip.40f519aa.glb",
+        "sourcePath": "public/aura-assets/pipsPip.fcd4256f.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -1137,8 +1137,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-10-17T09:36:01.143Z"
       },
-      "sourcePath": "public/aura-assets/pipsPip.40f519aa.glb",
-      "outputPath": "public/aura-assets/pipsPip.40f519aa.glb",
+      "sourcePath": "public/aura-assets/pipsPip.fcd4256f.glb",
+      "outputPath": "public/aura-assets/pipsPip.fcd4256f.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -1225,14 +1225,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "pipsSungate": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/pipsSungate.8b44ee22.glb",
-    hash: "sha256-8b44ee223ed35b811f61f87be60f96fa2454fdf2e30a68bc4bd96eaafefe279f",
+    url: "/aura-assets/pipsSungate.2ec2202c.glb",
+    hash: "sha256-2ec2202c361f5648851547f8c046531c6048424d00192416f791cb9a65fdf3d9",
     bounds: [
-      1.268,
-      1.897,
+      1.267,
+      1.898,
       0.409
     ],
-    sizeBytes: 6681444,
+    sizeBytes: 434388,
     metadata: {
       "materials": [
         "material-0"
@@ -1282,7 +1282,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/pipsSungate.8b44ee22.glb",
+        "sourcePath": "public/aura-assets/pipsSungate.2ec2202c.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -1296,8 +1296,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-10-17T09:20:21.088Z"
       },
-      "sourcePath": "public/aura-assets/pipsSungate.8b44ee22.glb",
-      "outputPath": "public/aura-assets/pipsSungate.8b44ee22.glb",
+      "sourcePath": "public/aura-assets/pipsSungate.2ec2202c.glb",
+      "outputPath": "public/aura-assets/pipsSungate.2ec2202c.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -1360,14 +1360,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "pipsSunseed": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/pipsSunseed.b9b50324.glb",
-    hash: "sha256-b9b503245011bf10eda48b31fbe865c6ae33bd5ac56c780474922352d8b859fa",
+    url: "/aura-assets/pipsSunseed.b52c5a99.glb",
+    hash: "sha256-b52c5a99b0c5596a0c35632a24274ca6f888b00d3269ed160b50824c42e8b20f",
     bounds: [
-      1.899,
-      0.907,
-      0.838
+      1.898,
+      0.904,
+      0.837
     ],
-    sizeBytes: 3712028,
+    sizeBytes: 159684,
     metadata: {
       "materials": [
         "material-0"
@@ -1417,7 +1417,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/pipsSunseed.b9b50324.glb",
+        "sourcePath": "public/aura-assets/pipsSunseed.b52c5a99.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -1431,8 +1431,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-10-17T09:17:35.188Z"
       },
-      "sourcePath": "public/aura-assets/pipsSunseed.b9b50324.glb",
-      "outputPath": "public/aura-assets/pipsSunseed.b9b50324.glb",
+      "sourcePath": "public/aura-assets/pipsSunseed.b52c5a99.glb",
+      "outputPath": "public/aura-assets/pipsSunseed.b52c5a99.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
