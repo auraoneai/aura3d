@@ -827,6 +827,15 @@
         .controls-strip { max-width: none; }
         .controls-strip > span { display: none; }
       }
+      /* Narrow desktop windows (the 720x450 index card): the gap between the item panel and the speedometer is too
+         small for the autopilot badge, so it sits above the item panel instead of over the speed readout. */
+      @media (max-width: 960px) {
+        .controls-strip { left: 22px; bottom: 142px; transform: none; }
+      }
+      /* Short windows: the drone card under the radar would run into the speedometer. */
+      @media (max-height: 520px) {
+        .hud-r6 .r6-top-right > :not(.radar-wrap) { display: none; }
+      }
 
       /* Countdown, start and results overlays */
       .countdown { position: fixed; left: 50%; top: 40%; transform: translate(-50%, -50%); z-index: 26; pointer-events: none;
