@@ -251,6 +251,69 @@ describe("game-checks", () => {
     expect(run(missing, ["deployable-assets"]).length).toBe(1);
   });
 
+  it("touch-input: warns on keyboard-only gameplay, passes with a touch preset, pointer steering or hold buttons", () => {
+    const keysOnly = 'addEventListener("keydown", (e) => { if (e.code === "KeyA") left = true; });\naddEventListener("pointerdown", () => sound.unlock());\n';
+    const bad = run(fixture({ "apps/showcase-demo/src/main.ts": keysOnly }), ["touch-input"]);
+    expect(bad).toHaveLength(1);
+    expect(bad[0].severity).toBe("warn");
+    expect(bad[0].message).toMatch(/keyboard-only/);
+    const preset = 'createGame({ input: { actions: { left: ["KeyA"], jump: ["Space"] } }, touch: { preset: "dpad-2btn", bindings: { left: "left", jump: "jump" } } });\n';
+    expect(run(fixture({ "apps/showcase-demo/src/main.ts": preset }), ["touch-input"])).toEqual([]);
+    const steer = keysOnly + 'canvas.addEventListener("pointerdown", (e) => { steerX = e.clientX; });\n';
+    expect(run(fixture({ "apps/showcase-demo/src/main.ts": steer }), ["touch-input"])).toEqual([]);
+    const hold = keysOnly + 'for (const t of ["pointerup", "pointercancel"]) b.addEventListener(t, () => release());\n';
+    expect(run(fixture({ "apps/showcase-demo/src/main.ts": hold }), ["touch-input"])).toEqual([]);
+    const optOut = 'addEventListener("keydown", (e) => {}); // touch-input: ok\n';
+    expect(run(fixture({ "apps/showcase-demo/src/main.ts": optOut }), ["touch-input"])).toEqual([]);
+  });
+
+  it("touch-input: flags a touch binding that names no declared action (Iron Crown IC-01)", () => {
+    const src = 'createGame({\n  input: { actions: { moveLeft: ["KeyA"], light: ["KeyJ"] } },\n  touch: {\n    preset: "dpad-4btn",\n    bindings: {\n      left: "left",\n      light: "light"\n    }\n  }\n});\n';
+    const f = run(fixture({ "apps/showcase-demo/src/main.ts": src }), ["touch-input"]);
+    expect(f.map((x: { message: string }) => x.message)).toEqual([expect.stringContaining('touch binding targets "left"')]);
+    expect(f[0].line).toBe(6);
+    const fixed = src.replace('left: "left"', 'left: "moveLeft"');
+    expect(run(fixture({ "apps/showcase-demo/src/main.ts": fixed }), ["touch-input"])).toEqual([]);
+  });
+
+  it("lighting: warns on lights with no environment, passes once an environment or look is authored", () => {
+    const lightsOnly = "scene().add(lights.hemisphere({ intensity: 0.6 })).add(lights.directional({ intensity: 2 }));\n";
+    const f = run(fixture({ "apps/showcase-demo/src/world.ts": lightsOnly }), ["lighting"]);
+    expect(f).toHaveLength(1);
+    expect(f[0].message).toMatch(/no environment or look/);
+    const withEnv = "scene().add(environments.neutral({ intensity: 0.8 })).add(lights.directional({ intensity: 2 }));\n";
+    expect(run(fixture({ "apps/showcase-demo/src/world.ts": withEnv }), ["lighting"])).toEqual([]);
+    const noLights = "scene().add(primitives.box({}));\n";
+    expect(run(fixture({ "apps/showcase-demo/src/world.ts": noLights }), ["lighting"])).toEqual([]);
+  });
+
+  it("lighting: warns on a hemisphere next to a look", () => {
+    const src = 'scene().add(looks.preset("outdoor-day")).add(lights.hemisphere({ intensity: 0.4 }));\n';
+    const f = run(fixture({ "apps/showcase-demo/src/world.ts": src }), ["lighting"]);
+    expect(f.map((x: { message: string }) => x.message)).toEqual([expect.stringMatching(/hemisphere light next to an environment or look/)]);
+    const ok = 'scene().add(looks.preset("outdoor-day")).add(lights.hemisphere({ intensity: 0.4 })); // lighting: ok\n';
+    expect(run(fixture({ "apps/showcase-demo/src/world.ts": ok }), ["lighting"])).toEqual([]);
+  });
+
+  it("lighting: warns on a look added at runtime through app.nodes next to an ambient (Cross Hop LIGHT-04)", () => {
+    const src = [
+      "function buildLookGroup(id) {",
+      "  return looks.preset(id, {});",
+      "}",
+      "scene().add(buildLookGroup(\"outdoor-day\")).add(lights.ambient({ intensity: 0.42 }));",
+      "function swapLook(id) {",
+      "  const n0 = app.nodes as unknown as { add(n: never): void };",
+      "  n0.add(buildLookGroup(id) as never);",
+      "}",
+      ""
+    ].join("\n");
+    const f = run(fixture({ "apps/showcase-demo/src/core.ts": src }), ["lighting"]);
+    expect(f).toHaveLength(1);
+    expect(f[0].line).toBe(7);
+    const noAmbient = src.replace("lights.ambient({ intensity: 0.42 })", "lights.directional({ intensity: 2 })");
+    expect(run(fixture({ "apps/showcase-demo/src/core.ts": noAmbient }), ["lighting"])).toEqual([]);
+  });
+
   it("rejects an unknown game slug", () => {
     const root = fixture({ "apps/showcase-demo/index.html": "<p>x</p>" });
     expect(() => runChecks({ root, slugs: ["nope"], global: false, env: {} })).toThrow(/unknown game/);

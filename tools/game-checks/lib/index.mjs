@@ -498,6 +498,128 @@ function checkSkin({ root, inventory }) {
   return findings;
 }
 
+const CODE_KIND = /^[cm]?[jt]sx?$/;
+const firstLine = (files, re) => { for (const f of files) { const i = f.text.split("\n").findIndex((l) => re.test(l)); if (i >= 0) return { f, no: i + 1 }; } return null; };
+const okMarker = (f, no, tag) => new RegExp(`${tag}: ok`).test(f.raw.split("\n")[no - 1] ?? "");
+
+/** Body of the first `{ ... }` object literal that starts at or after `from` (brace matched on comment-free text). */
+function objectAt(text, from) {
+  const start = text.indexOf("{", from);
+  if (start < 0) return "";
+  let depth = 0;
+  for (let i = start; i < text.length; i++) {
+    if (text[i] === "{") depth++;
+    else if (text[i] === "}" && --depth === 0) return text.slice(start + 1, i);
+  }
+  return "";
+}
+const topLevelKeys = (body) => {
+  const keys = [];
+  let depth = 0;
+  for (const m of body.matchAll(/[{}\[\]]|(?:^|[,{\s])["']?([A-Za-z_$][\w$.-]*)["']?\s*:/g)) {
+    if (m[0] === "{" || m[0] === "[") depth++;
+    else if (m[0] === "}" || m[0] === "]") depth--;
+    else if (depth === 0 && m[1]) keys.push(m[1]);
+  }
+  return keys;
+};
+
+/**
+ * Touch input (audit 2026-10-29, cross-cutting): seven live games shipped keyboard-only and four shipped touch that could not
+ * work. Flags (1) gameplay read from the keyboard with no touch path: no touch preset or touch-controls API, no touchstart /
+ * touchmove / pointermove handler, no on-screen hold button (pointercancel handler), and no pointerdown handler that reads the pointer (a handler that only unlocks audio or
+ * starts the title does not count); (2) a `touch: { bindings }` value that names no declared input action or axis.
+ * Severity is warn until every live game passes; switch TOUCH_INPUT_SEVERITY to "error" then (lessons-learned.md).
+ * Escape hatch for a game that is desktop-only on purpose: `// touch-input: ok` on the keyboard listener line.
+ */
+export const TOUCH_INPUT_SEVERITY = "warn";
+function checkTouchInput({ game, src }) {
+  const out = [];
+  const code = src.files.filter((f) => CODE_KIND.test(f.kind));
+  const keyboard = firstLine(code, /addEventListener\(\s*["']key(?:down|up)["']|\bonkeydown\s*=|\bactions\s*:\s*\{|\.code\s*===\s*["'](?:Key|Arrow|Space)/);
+  if (!keyboard) return out;
+  const touchApi = /mountTouchControls|bindGameTouch\w*\(|createTouchLayoutPreset|createGameTouchControlLayout|VirtualTouch\w*|addEventListener\(\s*["'](?:touchstart|touchmove|pointermove)["']|["']pointercancel["']|\bon(?:touchstart|touchmove|pointermove)\s*=|\btouch\s*:\s*\{\s*preset\s*:/;
+  let touch = code.some((f) => touchApi.test(f.text));
+  if (!touch) {
+    for (const f of code) {
+      for (const m of f.text.matchAll(/addEventListener\(\s*["']pointerdown["']|\bonpointerdown\s*=/g)) {
+        const body = f.text.slice(m.index, m.index + 400);
+        if (/clientX|clientY|offsetX|pageX|pointerType|movementX|getBoundingClientRect/.test(body)) { touch = true; break; }
+      }
+      if (touch) break;
+    }
+  }
+  if (!touch && !okMarker(keyboard.f, keyboard.no, "touch-input")) {
+    out.push(finding("touch-input", TOUCH_INPUT_SEVERITY, game, keyboard.f.rel, keyboard.no, "gameplay input is keyboard-only: phones and tablets cannot play. Mount the engine touch preset (createGame `touch: { preset, bindings }` or mountTouchControls) or read pointer moves."));
+  }
+  for (const f of code) {
+    for (const m of f.text.matchAll(/\btouch\s*:\s*\{\s*preset\s*:/g)) {
+      const bindingsAt = f.text.indexOf("bindings", m.index);
+      if (bindingsAt < 0 || bindingsAt - m.index > 400) continue;
+      const bindings = objectAt(f.text, bindingsAt);
+      const declared = new Set();
+      let spread = false;
+      for (const a of f.text.matchAll(/\b(actions|axes)\s*:\s*\{/g)) {
+        const body = objectAt(f.text, a.index);
+        if (/\.\.\./.test(body)) spread = true;
+        for (const k of topLevelKeys(body)) declared.add(k);
+      }
+      if (declared.size === 0) continue;
+      for (const b of bindings.matchAll(/:\s*["']([\w.-]+)["']/g)) {
+        if (declared.has(b[1])) continue;
+        const no = f.text.slice(0, bindingsAt + bindings.indexOf(b[0])).split("\n").length + 1;
+        if (okMarker(f, no, "touch-input")) continue;
+        out.push(finding("touch-input", TOUCH_INPUT_SEVERITY, game, f.rel, no, `touch binding targets "${b[1]}", which is not a declared input action or axis${spread ? " in this file (a spread may supply it; check)" : ""}: the button does nothing`));
+      }
+    }
+  }
+  return dedupe(out);
+}
+
+/**
+ * Lighting rules that changed in 4.5.0 (audit LIGHT-01/03/04/05/11). All warn: each needs a steady-state capture, not a rule.
+ *  - lights with no environment or look: the scene gets no image-based light (no implicit room since 4.5.0), so GLBs lose
+ *    their reflections and fill. Add `environments.neutral({ intensity })` calibrated on a capture.
+ *  - hemisphere next to an environment or look: with an environment node the hemisphere is dropped; with a no-HDRI look whose
+ *    fill yields to an authored ambient, it is added to the ambient term.
+ *  - a look added at runtime through app.nodes next to an authored ambient: the look's fill does not yield at runtime, so the
+ *    scene is lit twice after the swap.
+ * Escape hatch: `// lighting: ok` on the flagged line.
+ */
+function checkLighting({ game, src }) {
+  const out = [];
+  const code = src.files.filter((f) => CODE_KIND.test(f.kind));
+  const lights = firstLine(code, /\blights\.(?:ambient|hemisphere|directional|point|spot)\s*\(/);
+  if (!lights) return out;
+  const env = /\benvironments\.\w+\s*\(|\blooks\.preset\s*\(|\blook\s*:\s*["'`{]|\blook\s*:\s*[A-Z][A-Z0-9_]{2,}\b|\benvironment\s*:\s*["'`{]/;
+  const hasEnv = code.some((f) => env.test(f.text));
+  if (!hasEnv && !okMarker(lights.f, lights.no, "lighting")) {
+    out.push(finding("lighting", "warn", game, lights.f.rel, lights.no, "lights with no environment or look: since 4.5.0 such a scene gets no image-based light, so GLBs lose reflections and fill. Add environments.neutral({ intensity }) calibrated on a steady-state capture."));
+  }
+  const hemi = firstLine(code, /\blights\.hemisphere\s*\(/);
+  if (hemi && hasEnv && !okMarker(hemi.f, hemi.no, "lighting")) {
+    out.push(finding("lighting", "warn", game, hemi.f.rel, hemi.no, "hemisphere light next to an environment or look: an environment node drops it, and a no-HDRI look whose fill yields to an ambient adds it to the ambient term. Capture before and after tuning its intensity."));
+  }
+  const ambient = firstLine(code, /\blights\.ambient\s*\(/);
+  if (ambient) {
+    for (const f of code) {
+      const lookFns = [...f.text.matchAll(/function\s+([A-Za-z_$][\w$]*)\s*\([^)]*\)[^{]*\{/g)]
+        .filter((m) => /\blooks\.preset\s*\(/.test(objectAt(f.text, m.index)))
+        .map((m) => m[1]);
+      const receivers = ["app\\.nodes", "\\w+\\.nodes"];
+      for (const m of f.text.matchAll(/\b(?:const|let)\s+([A-Za-z_$][\w$]*)\s*=\s*\(?\s*(?:\w+\.)?nodes\b/g)) receivers.push(m[1]);
+      const arg = ["looks\\.preset", ...lookFns].join("|");
+      const re = new RegExp(`(?:${receivers.join("|")})\\.add\\w*\\(\\s*(?:${arg})\\s*\\(`);
+      const lines = f.text.split("\n");
+      const i = lines.findIndex((l) => re.test(l));
+      if (i >= 0 && !okMarker(f, i + 1, "lighting")) {
+        out.push(finding("lighting", "warn", game, f.rel, i + 1, "look added at runtime through app.nodes next to an authored lights.ambient: the look's fill does not yield to the ambient at runtime, so the scene is brighter after the swap than on first load. Capture both."));
+      }
+    }
+  }
+  return dedupe(out);
+}
+
 function dedupe(list) {
   const seen = new Set();
   return list.filter((f) => { const k = `${f.check}|${f.game}|${f.file}|${f.line}|${f.message}`; if (seen.has(k)) return false; seen.add(k); return true; });
@@ -518,7 +640,9 @@ export const GAME_CHECKS = {
   "runtime-masking": checkRuntimeMasking,
   "no-three": checkNoThree,
   fonts: checkFonts,
-  "screens-tracked": checkScreensTracked
+  "screens-tracked": checkScreensTracked,
+  "touch-input": checkTouchInput,
+  lighting: checkLighting
 };
 export const GLOBAL_CHECKS = { vercelignore: checkVercelignore, counts: checkCounts, "meshy-cap": checkMeshyCap, skin: checkSkin };
 
