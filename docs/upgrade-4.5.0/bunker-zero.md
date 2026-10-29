@@ -77,12 +77,14 @@ All findings come from reading the code in `/Users/gurbakshchahal/platforms/aura
 
 ## Checklist
 
-- [ ] Build and open the game on 4.5.0 (with `app` exposed temporarily if you want the diagnostics checks); confirm `app.diagnostics().renderPath` is `{ path: "hdr-msaa", quality: "auto" }` and `bloomFusion` is not `"off"`.
-- [ ] Capture the same frames on 4.3.7 (`main`) and 4.5.0 for floors 1 and 6 and the boss (`tools/remote-capture.sh showcase-bunker-zero <dist> <out> "/apps/showcase-bunker-zero/?demo=1&capture=1" 8000 4`), run on the remote runner, not locally.
-- [ ] If 4.5.0 is visibly brighter, scale `lights.hemisphere` intensity first (item 1: it is the light that now adds to the ambient), then `lights.ambient`, and re-capture. Leave `exposureEv` alone; it also moves the emissive trim and work lights.
-- [ ] Check contact shadows at prop bases; adjust `effects.contactShadows` intensity if needed; confirm no `[prd02.contactShadows]` console warning.
-- [ ] Confirm `app.diagnostics()` has no `OPTION_IGNORED` entries.
-- [ ] Confirm no `SAFETY_COMPAT_MODE` message (black-frame guard) in the console during a demo run.
-- [ ] Use `?capture=1` on any evidence run that reads the canvas after an `await`.
-- [ ] Run `node tools/game-checks/run.mjs showcase-bunker-zero` (the runner accepts a slug, app folder or title) and fix any error finding.
-- [ ] Re-run the enemy facing QA rig (`window.__AURA_BUNKER_ZERO_QA__`, assigned at `main.ts:1155`) to confirm the enemy facing evidence still holds after the lighting retune (lighting only; no logic changed).
+Closed 2026-10-29 by audit lane G11 (`audit-fix/g11`). Remote runs on `tools/remote-acr/run.sh`, software WebGL2, steady state (the later shots). Numbers and frames: `evidence/showcase-bunker-zero/audit-2026-10-29/` (`metrics.json`) and `docs/audits/lanes/g11.md`.
+
+- [x] Render path on 4.5.0: `diagnostics().renderPath` reports `hdr-msaa` with `bloomFusion: "separable"`; with `?aura3d-render=production` it reports `bloomFusion: "off"`. The two give the same floor-1 frame (mean luma 74.97 vs 75.01, run `g11-after-7`), so the fused bloom changes nothing visible here (RP-05).
+- [x] Same frames on 4.3.7 and 4.5.0, floors 1 and 6, 1280x720 (runs `g11-v437-2` on `v4.3.7`, `g11-before-2` on the 4.5.0 base). Floor 1: mean luma 66.53 on 4.3.7, 74.97 on 4.5.0 (+12.7%; wall band 54.6 to 64.1, pixels under 12 from 4.2% to 2.8%, none clipped). Floor 6 start: 23.93 to 25.93 (+8.4%). The boss is captured on the fixed build only (run `g11-final-states`), because the boss fight froze the base build (audit C1).
+- [x] Retune decision: no retune. The lift is the hemisphere now counting next to the ambient (item 1). It brightens a dark corridor game without clipping, and the audit judged the live 4.5.0 floor 1 fine. The real darkness problem was elsewhere: the walls on floors 2 to 6 and the Kill House drew near black on 4.3.7 and 4.5.0 alike, because the material and instance colours both carried the palette and the renderer multiplies them. That is fixed in the game (`flow.ts` `wallGain`). Floor 6 start now measures 42.0 with 12.5% of pixels under 12 (it was 53%). Engine lane E2 also turns the hemisphere into a sky/ground pair (measured -0.5% on floor 1), so any hemisphere retune should wait for that merge.
+- [x] Contact shadows: removed (audit C24). With and without `effects.contactShadows` floor 1 measures 74.98 and 74.99 mean luma, and the effect costs 52 draw calls (217 vs 165). No `[prd02.contactShadows]` warning appeared in any run.
+- [x] No `OPTION_IGNORED` in `diagnostics().warnings`. The two warnings present are "Scene has no interactions" and the first-frame "step() was called before the WebGL renderer finished mounting" (an engine item in the audit).
+- [x] No `SAFETY_COMPAT_MODE` message in any run's console.
+- [x] `?capture=1`: not needed by the lane's captures, which take browser screenshots (`page.screenshot`) and never read the canvas after an `await`.
+- [x] `node tools/game-checks/run.mjs bunker-zero`: 0 errors, 0 warnings.
+- [ ] Enemy facing QA rig (`window.__AURA_BUNKER_ZERO_QA__.stage/report`) not re-run remotely. Lighting does not change facing; `tests/unit/bunker-zero/enemy-facing.test.ts` passes and the rig's `report()` is unchanged.

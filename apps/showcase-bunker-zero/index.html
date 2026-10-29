@@ -215,7 +215,8 @@
         #bz-status { gap: 10px; padding: 6px 10px; bottom: 16px; max-width: calc(100vw - 20px); box-sizing: border-box; }
         .bz-stat { min-width: 44px; }
         .bz-stat .bz-value { font-size: 16px; }
-        .bz-stat .bz-label { font-size: 10px; letter-spacing: 0.08em; }
+        .bz-stat .bz-label { font-size: 10px; letter-spacing: 0.08em; white-space: nowrap; max-width: 72px; overflow: hidden; text-overflow: ellipsis; }
+        .bz-stat .bz-value { white-space: nowrap; }
         /* the feed sits above the touch stick and the status bar, never over HEALTH/ARMOR/weapon */
         #bz-feed { bottom: auto; top: calc(var(--a3d-bar-space, 52px) + 64px); left: 10px; max-width: 60vw; }
         .bz-tick { white-space: normal; }
