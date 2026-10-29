@@ -356,7 +356,7 @@ export function buildWorld(options: WorldOptions): World {
   const disc = defineShape(unitDisc(20));
   // Threat marker: a red strip from the hero to the next rival charging down the hero's lane (`crosshairTarget`, E-01).
   const threat = solidSpec([0.9, 0.12, 0.06], { glow: 0.9, glowColor: [1, 0.2, 0.1], alpha: 0.42 });
-  for (let i = 0; i < THREAT_POOL; i++) builder.add(geometry.custom(disc, { name: `threat-${i}`, material: material.custom(threat), castShadow: false, receiveShadow: false }).runtime({ id: `threat-${i}` }));
+  for (let i = 0; i < THREAT_POOL; i++) builder.add(primitives.box({ name: `threat-${i}`, size: [1, 0.02, 1], material: material.custom(threat), castShadow: false, receiveShadow: false }).runtime({ id: `threat-${i}` }));
   for (let i = 0; i < ACTOR_COUNT; i++) builder.add(geometry.custom(disc, { name: `blob-${i}`, material: material.custom(blobShadow), castShadow: false, receiveShadow: false }).runtime({ id: `blob-${i}` }));
 
   builder.add(geometry.custom(geometry.dynamic({
@@ -614,13 +614,14 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       /* threat marker: the hero's lane up to the next rival in it (the crosshair target), stronger as it closes in */
       const target = state.phase === "running" ? crosshairTarget(state) : null;
       const marker = node("threat-0");
-      marker.setVisible(!!target && target.s - s > 2);
-      if (target && target.s - s > 2) {
-        const along = (target.s - s) / 2;
-        const f = groundFrame(s + along, target.lane * laneOffset(target.s), 0.06);
+      // A flat strip on the lane from 1.5 m ahead of the hero to just short of the rival (never under the hero).
+      const near = s + 1.5, far = target ? target.s - 0.8 : 0;
+      marker.setVisible(!!target && far - near > 1);
+      if (target && far - near > 1) {
+        const f = groundFrame((near + far) / 2, target.lane * laneOffset(target.s), 0.05);
         marker.setPosition(f.x, f.y, f.z);
         marker.setRotation(0, Math.atan2(f.dx, f.dz), 0);
-        marker.setScale([0.7, 1, along]);
+        marker.setScale([0.55, 1, far - near]);
         marker.setUniform?.("solidAlpha", 0.16 + 0.3 * (1 - Math.min(1, (target.s - s) / 26)));
       }
 
