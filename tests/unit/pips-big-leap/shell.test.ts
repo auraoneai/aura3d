@@ -69,7 +69,7 @@ describe("pips-big-leap shell", () => {
   });
 
   it("C11: spinning pickups do not cast shadow-map shadows", () => {
-    const nodes = (buildWorld(worldSpec("w1")).scene.toJSON() as { nodes: { kind: string; name?: string; castShadow?: boolean }[] }).nodes;
+    const nodes = (buildWorld(worldSpec("w1")).scene.toJSON() as unknown as { nodes: { kind: string; name?: string; castShadow?: boolean }[] }).nodes;
     const pickups = nodes.filter((n) => /^(seed|acorn|heart):/.test(n.name ?? ""));
     expect(pickups.length).toBeGreaterThan(10);
     expect(pickups.every((n) => n.castShadow === false)).toBe(true);
