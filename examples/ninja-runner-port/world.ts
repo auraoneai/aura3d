@@ -363,10 +363,11 @@ export function buildWorld(options: WorldOptions): World {
 
   const blobShadow = solidSpec([0.02, 0.025, 0.02], { alpha: 0.4 });
   const disc = defineShape(unitDisc(20));
-  // Threat marker: a thin glowing red line from the hero to the next rival charging down the hero's lane (`crosshairTarget`, E-01).
+  // Threat marker: a glowing red disc under the next rival in the hero's lane (`crosshairTarget`, E-01). A strip between
+  // the two sat behind the hero's body from the chase camera (g20-dbg-threat2), so the marker sits under the rival.
   // Opaque, like the beams: the alpha-blended version never reached the frame on the remote captures (g20-dbg-threat).
   const threat = solidSpec([0.9, 0.12, 0.06], { glow: 0.9, glowColor: [1, 0.2, 0.1] });
-  for (let i = 0; i < THREAT_POOL; i++) builder.add(primitives.box({ name: `threat-${i}`, size: [1, 0.03, 1], material: material.custom(threat), castShadow: false, receiveShadow: false }).runtime({ id: `threat-${i}` }));
+  for (let i = 0; i < THREAT_POOL; i++) builder.add(geometry.custom(disc, { name: `threat-${i}`, material: material.custom(threat), castShadow: false, receiveShadow: false }).runtime({ id: `threat-${i}` }));
   for (let i = 0; i < ACTOR_COUNT; i++) builder.add(geometry.custom(disc, { name: `blob-${i}`, material: material.custom(blobShadow), castShadow: false, receiveShadow: false }).runtime({ id: `blob-${i}` }));
 
   builder.add(geometry.custom(geometry.dynamic({
@@ -622,19 +623,17 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
         }
       });
 
-      /* threat marker: the hero's lane up to the next rival in it (the crosshair target), stronger as it closes in */
+      /* threat marker: a disc under the next rival in the hero's lane (the crosshair target), brighter as it closes in */
       const target = state.phase === "running" ? crosshairTarget(state) : null;
       threatShown = null;
       const marker = node("threat-0");
-      // A flat strip on the lane from 1.5 m ahead of the hero to just short of the rival (never under the hero).
-      const near = s + 1.5, far = target ? target.s - 0.8 : 0;
-      marker.setVisible(!!target && far - near > 1);
-      if (target && far - near > 1) {
-        const f = groundFrame((near + far) / 2, target.lane * laneOffset(target.s), 0.05);
+      const show = !!target && target.s - s > 3;
+      marker.setVisible(show);
+      if (target && show) {
+        const f = groundFrame(target.s, target.lane * laneOffset(target.s), 0.06);
         marker.setPosition(f.x, f.y, f.z);
-        marker.setRotation(0, Math.atan2(f.dx, f.dz), 0);
-        marker.setScale([0.16, 1, far - near]);
-        threatShown = { target: target.id, from: +near.toFixed(2), to: +far.toFixed(2) };
+        marker.setScale([0.85, 1, 0.85]);
+        threatShown = { target: target.id, from: +s.toFixed(2), to: +target.s.toFixed(2) };
         marker.setUniform?.("glow", 0.5 + 1.2 * (1 - Math.min(1, (target.s - s) / 26)));
       }
 
