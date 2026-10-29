@@ -158,6 +158,39 @@ test.describe("audit g25 cloud-runner-port", () => {
     log("CR_DONE desktop");
   });
 
+  test("desktop 1280x720: steady-state luma, warnings, play still advances", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await boot(page, server.origin);
+    await page.evaluate(() => { const a = (window.__AURA_CUMULUS_DASH__ ?? window.__AURA_KID_GOKU__)!; a.place(60); a.settle(2); });
+    await page.waitForTimeout(30_000);
+    for (const s of [60, 520, 1420]) {
+      await page.evaluate((at) => { const a = (window.__AURA_CUMULUS_DASH__ ?? window.__AURA_KID_GOKU__)!; a.place(at); a.settle(3); }, s);
+      await measure(page);
+      const later = await measure(page);
+      log(`CR_META ${JSON.stringify({ shot: `hd-luma-${s}`, later })}`);
+      await jpg(page, `hd-luma-${s}`);
+    }
+    const warn = await page.evaluate(() => {
+      const a = (window.__AURA_CUMULUS_DASH__ ?? window.__AURA_KID_GOKU__)!;
+      const dg: any = a.diagnostics?.() ?? null;
+      const w = JSON.stringify(dg?.warnings ?? null).slice(0, 1500);
+      return { warnings: w, optionIgnored: /OPTION_IGNORED/.test(JSON.stringify(dg ?? {})), drawCalls: dg?.drawCalls ?? null, renderPath: dg?.renderPath ? { path: dg.renderPath.path, quality: dg.renderPath.quality, bloomFusion: dg.renderPath.bloomFusion } : null };
+    });
+    log(`CR_META ${JSON.stringify({ shot: "hd-diagnostics", ...warn })}`);
+    // Play from the start for 4 s of game time: distance and score must advance (the game still plays).
+    const run = await page.evaluate(() => {
+      const a = (window.__AURA_CUMULUS_DASH__ ?? window.__AURA_KID_GOKU__)!;
+      a.place(30);
+      const s0 = a.game().state.s;
+      a.play(240);
+      a.settle(2);
+      return { s0: Math.round(s0), s1: Math.round(a.game().state.s), phase: a.game().phase, score: Math.round(a.game().state.score) };
+    });
+    log(`CR_META ${JSON.stringify({ shot: "hd-play", ...run, stats: await measure(page) })}`);
+    await jpg(page, "hd-play-page", false);
+    log("CR_DONE hd");
+  });
+
   test("mobile portrait: ride-log framing, touch hints", async ({ browser }) => {
     const page = await mobilePage(browser, { isMobile: true, hasTouch: true });
     await boot(page, server.origin, `${LAB}&menu=0`);
