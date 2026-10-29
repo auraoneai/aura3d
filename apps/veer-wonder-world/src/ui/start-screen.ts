@@ -78,10 +78,13 @@ export function showStartScreen(
 
   const titleId = uniqueId("ww-start-title");
   const screen = el(doc, "section", { className: "ww-screen ww-start", attrs: { "aria-labelledby": titleId, "data-ui": "start" } });
+  const nameLine = el(doc, "span", { className: "ww-start-name", text: welcomeNameLine(locale) });
   const title = el(doc, "h1", { className: "ww-start-title", attrs: { id: titleId } }, [
     el(doc, "span", { className: "ww-start-welcome", text: uiText(locale, "ui.start.welcome") }),
-    el(doc, "span", { className: "ww-start-name", text: welcomeNameLine(locale) })
+    nameLine
   ]);
+  // A space between the two lines, so the heading's text reads "Welcome to <line>" (the flex layout ignores it).
+  title.insertBefore(doc.createTextNode(" "), nameLine);
   const modeChoice = buildModeChoice(doc, locale, mode, (next) => {
     mode = next;
   });
@@ -99,14 +102,13 @@ export function showStartScreen(
     el(doc, "p", { text: uiText(locale, "ui.note.start") }),
     el(doc, "p", { className: "ww-note-small", text: uiText(locale, "ui.note.privacy") })
   ]);
+  // Two groups: the welcome (portraits and title) and the controls. They stack, and stand side by side on short
+  // landscape screens (styles.css), so the start screen fits without scrolling there too.
   screen.appendChild(welcomeSky(doc));
   screen.appendChild(
     el(doc, "div", { className: "ww-start-inner" }, [
-      welcomeParade(doc),
-      el(doc, "div", { className: "ww-start-head" }, [title, prototype]),
-      modeChoice.element,
-      el(doc, "div", { className: "ww-start-action" }, [start, hint]),
-      note
+      el(doc, "div", { className: "ww-start-hero" }, [welcomeParade(doc), el(doc, "div", { className: "ww-start-head" }, [title, prototype])]),
+      el(doc, "div", { className: "ww-start-panel" }, [modeChoice.element, el(doc, "div", { className: "ww-start-action" }, [start, hint]), note])
     ])
   );
   root.appendChild(screen);

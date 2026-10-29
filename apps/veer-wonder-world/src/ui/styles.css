@@ -601,6 +601,13 @@ b {
   animation: none;
 }
 
+/* Once the first screen starts to fade in over it, the splash's dots and title fade out first, so the two layouts
+   never show through each other; its background, the same as the start screen's, stays until it is removed. */
+.ww-boot.ww-boot-leaving .ww-start-inner {
+  opacity: 0;
+  transition: opacity 160ms ease-out;
+}
+
 /* Shown only when the browser has no WebGL 2 (the check in index.html): the app cannot run there. */
 .ww-boot-unsupported {
   display: none;
@@ -620,9 +627,20 @@ b {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: clamp(16px, 3vh, 24px);
   width: min(100%, 36rem);
   text-align: center;
+}
+
+/* The welcome (portraits and title) and the controls; side by side on short landscape screens (end of this file). */
+.ww-start-hero,
+.ww-start-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(16px, 3vh, 24px);
+  width: 100%;
+  min-width: 0;
 }
 
 .ww-start-title {
@@ -640,11 +658,15 @@ b {
 /*
  * The welcome (07 O8): a sky behind the start screen (sun glow, a rainbow in the six character colours, three
  * slow clouds), the six characters' portraits, and "Welcome to" over the big "<name>'s Wonder World". Every
- * colour stop of the big line keeps at least 3:1 against the sky (large text). Entrances run once; the loops
- * are slow (clouds 48-60 s, faces 3.6 s), and reduced motion stops all of it (end of this file).
+ * colour stop of the big line keeps at least 3:1 against the sky (large text), and neighbouring stops are close
+ * in hue, so no blend between them turns grey. Entrances run once; the slow loops (faces 3.6 s, clouds 48-60 s)
+ * settle after a few rounds, so a tablet left on the welcome stops redrawing; reduced motion stops all of it (end
+ * of this file).
+ *
+ * The sky is fixed to the window, so it stays put if a small screen has to scroll the welcome.
  */
 .ww-start-sky {
-  position: absolute;
+  position: fixed;
   inset: 0;
   z-index: 0;
   overflow: hidden;
@@ -661,24 +683,30 @@ b {
   background: radial-gradient(circle, rgba(255, 236, 170, 0.95) 0%, rgba(255, 236, 170, 0.5) 36%, rgba(255, 236, 170, 0) 70%);
 }
 
+/*
+ * The rainbow is sized by the window's height, not its width, so its top stays at about half the height on any
+ * screen: below the title, behind the controls. Six bands, one per character colour, in rainbow order from the
+ * outside in. Short landscape screens use a smaller one (end of this file).
+ */
 .ww-start-rainbow {
   position: absolute;
   left: 50%;
-  bottom: -4vmin;
-  width: max(120vmin, 100%);
-  aspect-ratio: 2 / 1;
+  bottom: 0;
+  width: 100vh;
+  height: 50vh;
   transform: translateX(-50%);
   background: radial-gradient(
     circle at 50% 100%,
-    transparent 0 41%,
-    #cdbcf2 41% 46%,
-    #a9e5d1 46% 51%,
-    #f7dc82 51% 56%,
-    #f9cd92 56% 61%,
-    #f3aba4 61% 66%,
-    transparent 66%
+    transparent 0 40%,
+    #cdbcf2 40% 44.5%,
+    #a9e5d1 44.5% 49%,
+    #e8c9a2 49% 53.5%,
+    #f7dc82 53.5% 58%,
+    #f9cd92 58% 62.5%,
+    #f3aba4 62.5% 67%,
+    transparent 67%
   );
-  opacity: 0.5;
+  opacity: 0.7;
 }
 
 .ww-start-cloud {
@@ -691,8 +719,9 @@ b {
   animation-name: ww-drift;
   animation-duration: 48s;
   animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
+  animation-iteration-count: 2;
   animation-direction: alternate;
+  animation-fill-mode: both;
 }
 
 .ww-start-cloud::before,
@@ -717,14 +746,15 @@ b {
   height: 110%;
 }
 
+/* Clouds keep to the corners, clear of the portraits and the title: two along the top, one low on the left. */
 .ww-start-cloud-1 {
-  top: 12%;
-  left: 6%;
+  top: 4%;
+  left: 4%;
 }
 
 .ww-start-cloud-2 {
-  top: 24%;
-  right: 9%;
+  top: 4%;
+  right: 4%;
   width: 14vmin;
   height: 5vmin;
   animation-duration: 60s;
@@ -732,8 +762,8 @@ b {
 }
 
 .ww-start-cloud-3 {
-  top: 5%;
-  left: 44%;
+  top: 88%;
+  left: 5%;
   width: 11vmin;
   height: 4vmin;
   opacity: 0.8;
@@ -764,7 +794,7 @@ b {
   animation-duration: 600ms, 3.6s;
   animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1), ease-in-out;
   animation-delay: calc(var(--ww-i, 0) * 110ms), calc(700ms + var(--ww-i, 0) * 300ms);
-  animation-iteration-count: 1, infinite;
+  animation-iteration-count: 1, 4;
   animation-fill-mode: both, none;
 }
 
@@ -778,15 +808,18 @@ b {
   margin-bottom: 18px;
 }
 
+/* The portraits are full-body renders on their own backdrops: the image is drawn at 1.5 times the ring and centred
+   in it (a size, not a transform, so the round clip holds in every browser), so each ring holds the character. */
 .ww-start-face-img {
-  width: 100%;
-  height: 100%;
+  width: 150%;
+  max-width: none;
+  height: 150%;
   object-fit: cover;
 }
 
 .ww-start-welcome {
-  color: var(--ww-ink-soft);
-  font-size: clamp(1.125rem, 3.4vw, 1.5rem);
+  color: var(--ww-primary);
+  font-size: clamp(1.25rem, 3.4vw, 1.875rem);
   font-weight: 500;
   line-height: 1.3;
   letter-spacing: 0;
@@ -794,12 +827,12 @@ b {
 
 .ww-start-name {
   padding-bottom: 0.06em;
-  background: linear-gradient(100deg, #5b46a3 0%, #7c4dbf 25%, #1f8a73 52%, #c0562a 78%, #a86a00 100%);
+  background: linear-gradient(100deg, #5b46a3 0%, #8a3fb0 30%, #b8407a 62%, #c0562a 85%, #a86a00 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
-  font-size: clamp(2.75rem, 10vw, 5.25rem);
+  font-size: clamp(2.25rem, 10vw, 5.25rem);
   line-height: 1.02;
   text-wrap: balance;
   filter: drop-shadow(0 2px 0 rgba(255, 255, 255, 0.95)) drop-shadow(0 12px 24px rgba(91, 70, 163, 0.2));
@@ -880,6 +913,7 @@ b {
   padding: 2px 12px;
   border: 1px solid var(--ww-line-strong);
   border-radius: 999px;
+  background: var(--ww-surface);
   color: var(--ww-ink-soft);
   font-size: 0.8125rem;
   font-weight: 500;
@@ -897,6 +931,13 @@ b {
 
 .ww-start .ww-legend {
   justify-content: center;
+}
+
+/* Over the sky the chosen mode is filled in, so it cannot read as a gap in the row. */
+html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face {
+  border-color: var(--ww-primary);
+  background: var(--ww-primary);
+  color: var(--ww-on-primary);
 }
 
 .ww-start-button {
@@ -928,6 +969,12 @@ b {
   height: 30px;
 }
 
+/* The button takes focus when the screen opens; its ring stands clear of the pill, in the pill's own colour. */
+#ui .ww-start-button:focus-visible {
+  outline-color: var(--ww-primary);
+  outline-offset: 4px;
+}
+
 .ww-start-note {
   display: grid;
   gap: 8px;
@@ -939,6 +986,10 @@ b {
   font-size: 0.9375rem;
   line-height: 1.5;
   text-align: left;
+}
+
+.ww-start-note p {
+  text-wrap: pretty;
 }
 
 /* Loading ---------------------------------------------------------------------- */
@@ -1563,6 +1614,23 @@ html.high-contrast .ww-caption-line {
   }
 }
 
+/* Phones: one cloud, peeking in above the portraits, and a softer sun that leaves their rings their own colours. */
+@media (max-width: 560px) {
+  .ww-start-cloud-1 {
+    top: 1%;
+    left: -5%;
+  }
+
+  .ww-start-cloud-2,
+  .ww-start-cloud-3 {
+    display: none;
+  }
+
+  .ww-start-sun {
+    opacity: 0.6;
+  }
+}
+
 @media (max-width: 360px) {
   .ww-pill-button {
     padding: 0 12px 0 10px;
@@ -1581,24 +1649,79 @@ html.high-contrast .ww-caption-line {
     width: 40px;
     border-width: 3px;
   }
+
+  /* "Watch and sing" stays on one line in a 320 px phone's half-width segment. */
+  .ww-start .ww-segment-face {
+    padding-inline: 6px;
+  }
+
+  .ww-start-cloud-1 {
+    display: none;
+  }
+}
+
+/*
+ * Landscape screens up to 840 px tall (laptops, iPads held sideways, phones on their side): the welcome stands beside
+ * the controls, so the start screen fits without scrolling; in one column it is about 800 px tall. The big line
+ * scales with the narrower column, and the rainbow is smaller, so its top stays under the title.
+ */
+@media (orientation: landscape) and (max-height: 840px) and (min-width: 640px) {
+  .ww-start:not(.ww-boot) > .ww-start-inner {
+    flex-direction: row;
+    gap: clamp(24px, 5vw, 72px);
+    width: min(100%, 68rem);
+  }
+
+  .ww-start-hero {
+    flex: 1.2 1 0;
+  }
+
+  .ww-start-panel {
+    flex: 1 1 0;
+    max-width: 26rem;
+  }
+
+  .ww-start-name {
+    font-size: clamp(2.25rem, 6.4vw, 5.25rem);
+  }
+
+  .ww-start-rainbow {
+    width: 48vh;
+    height: 24vh;
+  }
 }
 
 @media (orientation: landscape) and (max-height: 560px) {
-  .ww-start-inner {
+  .ww-start-hero,
+  .ww-start-panel {
     gap: 12px;
   }
 
-  .ww-start .ww-cast,
-  .ww-start-parade {
-    display: none;
+  .ww-start-face {
+    width: 36px;
+    border-width: 3px;
+  }
+
+  .ww-start-face:nth-child(2),
+  .ww-start-face:nth-child(5) {
+    margin-bottom: 5px;
+  }
+
+  .ww-start-face:nth-child(3),
+  .ww-start-face:nth-child(4) {
+    margin-bottom: 9px;
   }
 
   .ww-start-title {
     font-size: 2rem;
   }
 
+  .ww-start-welcome {
+    font-size: 1.125rem;
+  }
+
   .ww-start-name {
-    font-size: clamp(2rem, 7vh, 2.75rem);
+    font-size: clamp(2rem, 10vh, 3rem);
   }
 
   .ww-start-button {
@@ -1608,6 +1731,7 @@ html.high-contrast .ww-caption-line {
 
   .ww-start-note {
     padding: 12px 16px;
+    font-size: 0.875rem;
   }
 
   .ww-parent-overlay {

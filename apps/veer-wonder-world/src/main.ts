@@ -69,6 +69,8 @@ function removeSplashUnderFirstScreen(uiRoot: HTMLElement): void {
     splash.remove();
     return;
   }
+  // The first screen is already fading in: the splash's own content fades out under it (styles.css).
+  splash.classList.add("ww-boot-leaving");
   let timer = 0;
   const remove = (): void => {
     window.clearTimeout(timer);
