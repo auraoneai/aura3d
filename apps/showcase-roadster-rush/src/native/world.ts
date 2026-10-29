@@ -10,9 +10,18 @@ export interface Gantry {
 const GANTRY_SPACING = 155;
 const RING_BEHIND = 70;
 const SIGN_SET_COUNT = 5;
-const NO_GANTRY_Z = 1e5;
+/** z of a gantry slot that holds no gantry this cycle (the renderer hides it). */
+export const NO_GANTRY_Z = 1e5;
 const CLEAR_ZONE = 15;
-const GANTRY_COUNT = Math.ceil(500 / GANTRY_SPACING) + 1;
+/** Number of gantry slots; every slot collides, so the renderer draws one gantry per slot. */
+export const GANTRY_COUNT = Math.ceil(500 / GANTRY_SPACING) + 1;
+/**
+ * Height band (m) in which a gantry crashes the car. The renderer builds the sign boards to fill exactly this band across the
+ * whole collidable width (|x| <= GANTRY_HALF_WIDTH), so what crashes the car is what is drawn.
+ */
+export const SIGN_BAND = { minY: 6.95, maxY: 11.1 } as const;
+/** Half width (m) of the collidable gantry span. */
+export const GANTRY_HALF_WIDTH = ROAD_HALF_WIDTH + 1.2;
 
 export interface WorldEvent {
   type: "crash" | "nearMiss";
@@ -80,8 +89,8 @@ export class FreewayWorld {
     const invulnerable = !!player.invulnerable;
     for (const gantry of this.gantries) {
       const gz = gantry.position.z;
-      if (gz > 1e4 || b.minZ > gz + 0.65 + sweep || b.maxZ < gz - 1.15 || Math.abs(pos.x) > ROAD_HALF_WIDTH + 1.2) continue;
-      if (b.maxY > 6.95 && b.minY < 11.1) {
+      if (gz > 1e4 || b.minZ > gz + 0.65 + sweep || b.maxZ < gz - 1.15 || Math.abs(pos.x) > GANTRY_HALF_WIDTH) continue;
+      if (b.maxY > SIGN_BAND.minY && b.minY < SIGN_BAND.maxY) {
         gantry.userData.nearMissed = true;
         if (!invulnerable && !gantry.userData.hit) {
           gantry.userData.hit = true;
@@ -89,7 +98,7 @@ export class FreewayWorld {
           out.push({ type: "crash", what: "sign", position: this.evPos });
           return out;
         }
-      } else if (!gantry.userData.nearMissed && ((b.maxY >= 5.5 && b.maxY <= 6.95) || (b.minY >= 11.1 && b.minY <= 12.5))) {
+      } else if (!gantry.userData.nearMissed && ((b.maxY >= 5.5 && b.maxY <= SIGN_BAND.minY) || (b.minY >= SIGN_BAND.maxY && b.minY <= 12.5))) {
         gantry.userData.nearMissed = true;
         this.evPos = { x: pos.x, y: pos.y + 0.6, z: gz };
         out.push({ type: "nearMiss", what: "sign", position: this.evPos });
