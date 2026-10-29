@@ -1,0 +1,82 @@
+build	run	target	shot	meanLuma	darkFrac	drawCalls	mode	audio	paused	best	sim ground/heavy/sky/bolts/powerups/gantries (120 m)	drawn (same)	assisted
+v437	dm	1280x720	title.a	75.91	0.03	897	playing	running	False	0	3/0/3/11/0/1	3/0/3/11/0/1	None
+v437	dm	1280x720	title.b	70.21	0.0279	887	playing	running	False	0	10/3/0/33/0/1	10/3/0/21/0/1	None
+v437	dm	1280x720	gameplay-early.a	76.98	0.0288	889	playing	running	False	0	5/1/0/8/0/1	5/1/0/8/0/1	None
+v437	dm	1280x720	gameplay-early.b	76.91	0.029	889	playing	running	False	0	5/1/0/8/0/1	5/1/0/8/0/1	None
+v437	dm	1280x720	key-ramp.a	82.19	0.0272	907	playing	running	False	0	9/5/0/21/0/1	9/5/0/8/0/1	None
+v437	dm	1280x720	key-ramp.b	82.16	0.0272	907	playing	running	False	0	9/5/0/21/0/1	9/5/0/8/0/1	None
+v437	dm	1280x720	mid-drive.a	72.49	0.031	875	playing	running	False	0	13/4/1/31/0/1	13/4/1/17/0/0	None
+v437	dm	1280x720	boot			887	playing	running	False	0	11/3/0/34/0/1	11/3/0/21/0/1	None
+v437	dm	1280x720	after-first-gesture			886	playing	running	False	0	11/3/0/35/0/1	11/3/0/21/0/1	None
+v437	dm	1280x720	hidden			866	playing	running	False	0	11/3/0/35/0/0	11/3/0/21/0/1	None
+v437	dm	1280x720	visible-again			867	playing	running	False	0	11/3/0/35/0/0	11/3/0/21/0/0	None
+before	dd	1280x720	dense-50s.b	75.36	0.0013	922	playing	running	False	0	31/13/6/38/1/1	14/3/5/19/1/0	None
+before	dd	1280x720	sky.b	45.86	0.3722	893	playing	running	False	0	30/14/8/38/0/1	10/1/4/11/0/0	None
+before	dd	1280x720	results-assisted.b	40.39	0.3888	876	gameover	running	False	11128	31/15/2/39/0/1	10/2/0/11/0/0	None
+before	dd	1280x720	dense-errors					errors=0					
+before	dm	1280x720	title.a	79.82	0.018	894	playing	running	False	0	3/0/3/9/0/1	4/1/3/9/0/1	None
+before	dm	1280x720	title.b	76.4	0.0156	879	playing	running	False	0	8/2/0/24/0/1	8/2/0/21/0/1	None
+before	dm	1280x720	gameplay-early.b	80.91	0.0176	889	playing	running	False	0	5/1/0/8/0/1	5/1/0/8/0/1	None
+before	dm	1280x720	key-ramp.b	86.51	0.0165	907	playing	running	False	0	9/5/0/21/0/1	9/5/0/8/0/1	None
+before	dm	1280x720	mid-drive.b	77.06	0.0154	875	playing	running	False	0	13/4/1/31/0/1	13/4/1/17/0/0	None
+before	dm	1280x720	results.b	77.19	0.0164	875	gameover	running	False	1460	13/4/1/30/0/1	13/4/1/16/0/0	None
+before	dm	1280x720	boot			879	playing	running	False	0	8/2/0/25/0/1	8/2/0/21/0/1	None
+before	dm	1280x720	after-first-gesture			884	playing	running	False	0	9/3/0/29/0/1	9/3/0/21/0/1	None
+before	dm	1280x720	hidden			885	playing	running	False	0	9/3/0/30/0/1	9/3/0/21/0/1	None
+before	dm	1280x720	visible-again			889	playing	running	False	0	9/3/0/31/0/1	9/3/0/21/0/1	None
+before	dm	1280x720	errors					errors=4					
+before	pd	390x844	dense-50s.b	101.44	0	655	playing	running	False	0	31/13/6/38/1/1	14/3/5/19/1/0	None
+before	pd	390x844	sky.b	96.54	0	601	playing	running	False	0	30/14/8/38/0/1	10/1/4/11/0/0	None
+before	pd	390x844	results-assisted.b	77.32	0.0063	563	gameover	running	False	11128	31/15/2/39/0/1	10/2/0/11/0/0	None
+before	pd	390x844	dense-errors					errors=0					
+before	pm	390x844	title.a	114.92	0	546	playing	running	False	0	4/1/3/10/0/1	4/1/3/10/0/1	None
+before	pm	390x844	title.b	107.76	0	631	playing	running	False	0	8/2/0/23/0/1	8/2/0/21/0/1	None
+before	pm	390x844	gameplay-early.b	115.23	0	649	playing	running	False	0	5/1/0/8/0/1	5/1/0/8/0/1	None
+before	pm	390x844	key-ramp.b	131.72	0	642	playing	running	False	0	9/5/0/21/0/1	9/5/0/8/0/1	None
+before	pm	390x844	results.b	117.18	0	638	gameover	running	False	41	9/5/0/21/0/1	9/5/0/8/0/1	None
+before	pm	390x844	boot			627	playing	running	False	0	8/2/0/24/0/1	8/2/0/21/0/1	None
+before	pm	390x844	after-first-gesture			621	playing	running	False	0	9/3/0/29/0/1	9/3/0/21/0/1	None
+before	pm	390x844	hidden			609	playing	running	False	0	9/3/0/30/0/1	9/3/0/21/0/1	None
+before	pm	390x844	visible-again			604	playing	running	False	0	9/3/0/31/0/1	9/3/0/21/0/1	None
+before	pm	390x844	errors					errors=4					
+before	x	bloom-auto	gameplay-early.b	80.89	0.0177	889	playing	running	False	0	5/1/0/8/0/1	5/1/0/8/0/1	None
+before	x	bloom-production	gameplay-early.b	80.88	0.0177	889	playing	running	False	0	5/1/0/8/0/1	5/1/0/8/0/1	None
+before	x	1440x900	card.2x.b	100.71	0.0133	909	playing	running	False	0	9/5/0/11/0/1	9/5/0/11/0/1	None
+before	y	tod-1280x720	sunset.b	83.51	0.0151	892	playing	running	False	0	5/1/0/9/0/1	5/1/0/9/0/1	None
+before	y	tod-1280x720	dusk.b	73.82	0.0156	892	playing	running	False	0	5/1/0/9/0/1	5/1/0/9/0/1	None
+before	y	tod-1280x720	night.b	60.3	0.0341	892	playing	running	False	0	5/1/0/9/0/1	5/1/0/9/0/1	None
+after	dd	1280x720	dense-50s.b	79.46	0.0001	175	playing	running	False	0	31/13/6/38/1/1	31/13/6/38/1/1	False
+after	dd	1280x720	sky.b	48.39	0.3567	173	playing	running	False	0	30/14/8/38/0/1	30/14/8/38/0/1	True
+after	dd	1280x720	results-assisted.b	44.84	0.3663	170	gameover	running	False	0	31/15/2/39/0/1	31/15/2/39/0/1	True
+after	dd	1280x720	dense-errors					errors=0					
+after	dm	1280x720	title.a	80.27	0.0095	114	title	running	False	0	0/0/0/0/0/0	0/0/0/0/0/0	False
+after	dm	1280x720	title.b	80.27	0.0095	114	title	running	False	0	0/0/0/0/0/0	0/0/0/0/0/0	False
+after	dm	1280x720	gameplay-early.b	77.58	0.0174	150	playing	running	False	0	5/1/0/8/0/1	5/1/0/8/0/1	False
+after	dm	1280x720	key-ramp.b	85.04	0.0161	159	playing	running	False	0	9/5/0/21/0/1	9/5/0/21/0/1	True
+after	dm	1280x720	mid-drive.b	76.87	0.0148	168	playing	running	False	0	13/4/1/31/0/1	13/4/1/31/0/1	True
+after	dm	1280x720	results.b	76.81	0.0162	173	gameover	running	False	0	13/4/1/30/0/1	13/4/1/30/0/1	True
+after	dm	1280x720	boot			114	title	running	False	0	0/0/0/0/0/0	0/0/0/0/0/0	False
+after	dm	1280x720	after-first-gesture			147	playing	running	False	0	5/1/0/8/0/0	5/1/0/8/0/0	False
+after	dm	1280x720	hidden			147	playing	suspended	True	0	5/1/0/8/0/0	5/1/0/8/0/0	False
+after	dm	1280x720	visible-again			147	playing	running	True	0	5/1/0/8/0/0	5/1/0/8/0/0	False
+after	dm	1280x720	errors					errors=4					
+after	pd	390x844	dense-50s.b	101.38	0	159	playing	running	False	0	31/13/6/38/1/1	31/13/6/38/1/1	False
+after	pd	390x844	sky.b	104.91	0	158	playing	running	False	0	30/14/8/38/0/1	30/14/8/38/0/1	True
+after	pd	390x844	results-assisted.b	91.25	0.0004	154	gameover	running	False	0	31/15/2/39/0/1	31/15/2/39/0/1	True
+after	pd	390x844	dense-errors					errors=0					
+after	pm	390x844	title.a	110.56	0	108	title	running	False	0	0/0/0/0/0/0	0/0/0/0/0/0	False
+after	pm	390x844	title.b	110.6	0	108	title	running	False	0	0/0/0/0/0/0	0/0/0/0/0/0	False
+after	pm	390x844	gameplay-early.b	115	0	139	playing	running	False	0	5/1/0/8/0/1	5/1/0/8/0/1	False
+after	pm	390x844	key-ramp.b	130.69	0	146	playing	running	False	0	9/5/0/21/0/1	9/5/0/21/0/1	True
+after	pm	390x844	results.b	118.64	0	146	gameover	running	False	0	9/5/0/21/0/1	9/5/0/21/0/1	True
+after	pm	390x844	boot			108	title	running	False	0	0/0/0/0/0/0	0/0/0/0/0/0	False
+after	pm	390x844	after-first-gesture			136	playing	running	False	0	5/1/0/8/0/0	5/1/0/8/0/0	False
+after	pm	390x844	hidden			136	playing	suspended	True	0	5/1/0/8/0/0	5/1/0/8/0/0	False
+after	pm	390x844	visible-again			136	playing	running	True	0	5/1/0/8/0/0	5/1/0/8/0/0	False
+after	pm	390x844	errors					errors=4					
+after	x	bloom-auto	gameplay-early.b	77.57	0.0177	150	playing	running	False	0	5/1/0/8/0/1	5/1/0/8/0/1	False
+after	x	bloom-production	gameplay-early.b	77.57	0.0177	150	playing	running	False	0	5/1/0/8/0/1	5/1/0/8/0/1	False
+after	x	1440x900	card.2x.b	98.55	0.0109	163	playing	running	False	0	9/5/0/11/0/1	9/5/0/11/0/1	True
+after	y	tod-1280x720	sunset.b	84.12	0.0148	150	playing	running	False	0	5/1/0/9/0/1	5/1/0/9/0/1	False
+after	y	tod-1280x720	dusk.b	74.6	0.0152	150	playing	running	False	0	5/1/0/9/0/1	5/1/0/9/0/1	False
+after	y	tod-1280x720	night.b	61.47	0.0255	150	playing	running	False	0	5/1/0/9/0/1	5/1/0/9/0/1	False
