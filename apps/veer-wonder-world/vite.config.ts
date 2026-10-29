@@ -7,7 +7,7 @@
 // - `base: "./"`: the built JS, CSS and asset URLs are relative.
 // - Output in dist/ (`vite build apps/veer-wonder-world` from the repo root, as
 //   tests/browser/wonder-world-build.spec.ts runs it, or `vite build` here).
-// - Module-relative assets: src/aura-assets.ts and src/audio-manifest.generated.ts
+// - Module-relative assets: src/aura-assets.ts and src/audio-manifest.ts
 //   name every GLB and MP3 as `new URL("./assets/...", import.meta.url).pathname`.
 //   Vite emits each one under dist/assets/ with a content hash. Inlining is off
 //   (`assetsInlineLimit: 0`): a short sound effect would otherwise become a

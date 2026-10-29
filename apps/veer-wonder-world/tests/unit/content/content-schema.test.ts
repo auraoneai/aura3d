@@ -24,7 +24,7 @@ import { WORDS, WORD_IDS, wordSpoken } from "../../../src/content/words.js";
 import { lettersNamedIn } from "../../../src/content/letters.js";
 import { EN_PARTS, en, mergeLocaleParts } from "../../../src/localization/en/index.js";
 import { PA_STATUS, pa } from "../../../src/localization/pa.js";
-import { AUDIO_MANIFEST } from "../../../src/audio-manifest.generated.js";
+import { AUDIO_MANIFEST } from "../../../src/audio-manifest.js";
 
 /**
  * The child's name, never written in source: it is the prefix of the app's

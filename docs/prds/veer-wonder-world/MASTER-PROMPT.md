@@ -246,7 +246,7 @@ Follow `parallelism.md`.
 | Models | Finish generation, review every thumbnail (`tools/model-review.json`), admit with `tools/admit-models.mjs` into `src/assets/models/` with sha256 and provenance, regenerate `src/aura-assets.ts`; D14-D16 |
 
 **Wave 2.** Start each unit as soon as its inputs exist:
-- **Audio media.** Needs the final line text. Covers voice lines, songs, music beds and sound effects in `public/audio/**`, with provenance, plus `src/content/audio-manifest.generated.ts`.
+- **Audio media.** Needs the final line text. Covers voice lines, songs, music beds and sound effects in `public/audio/**`, with provenance, plus `src/content/audio-manifest.ts`.
 - **App shell and QA.**
   - `src/main.ts`, `src/app.ts`, `src/qa/install-hooks.ts` and `vite.config.ts` (extend the root config the way `apps/showcase-pips-big-leap` does)
   - `README.md` and `DEPLOYMENT.md`

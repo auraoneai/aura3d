@@ -30,7 +30,7 @@ import {
   type StoryRunner,
   type StorySinks
 } from "../../../src/app.js";
-import { AUDIO_MANIFEST } from "../../../src/audio-manifest.generated.js";
+import { AUDIO_MANIFEST } from "../../../src/audio-manifest.js";
 import { ACTIVITIES, EPISODES, STORIES } from "../../../src/content/catalog.js";
 import { estimateLineMs } from "../../../src/content/schema.js";
 import { en } from "../../../src/localization/en/index.js";

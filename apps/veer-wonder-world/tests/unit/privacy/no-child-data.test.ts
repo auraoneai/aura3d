@@ -148,7 +148,7 @@ describe("J07: no network calls or tracking", () => {
   });
 
   it("names every model and sound by a module-relative, same-origin URL", () => {
-    for (const rel of ["src/aura-assets.ts", "src/audio-manifest.generated.ts"]) {
+    for (const rel of ["src/aura-assets.ts", "src/audio-manifest.ts"]) {
       const file = SOURCES.find((source) => source.rel === rel);
       expect(file, rel).toBeDefined();
       const code = file?.code ?? "";

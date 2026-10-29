@@ -253,7 +253,7 @@ const UI_PLACEHOLDERS: Readonly<Record<string, readonly string[]>> = {
 // ---------------------------------------------------------------------------
 // Durations.
 
-/** Recorded audio tables (the shape of AUDIO_MANIFEST in src/audio-manifest.generated.ts). */
+/** Recorded audio tables (the shape of AUDIO_MANIFEST in src/audio-manifest.ts). */
 export interface AudioTables {
   readonly lines: Readonly<Record<string, AudioClipRef>>;
   readonly sfx: Readonly<Partial<Record<SfxId, AudioClipRef>>>;

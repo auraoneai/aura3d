@@ -47,7 +47,7 @@ Conceptual runtime:
 - `src/scenes/meadow.ts`, `src/scenes/music-garden.ts`, `src/scenes/station.ts`, `src/scenes/peekaboo-barn.ts`, `src/scenes/learning-cloud.ts`, `src/scenes/home-nook.ts`
 - `src/characters/{momo,lulu,sheru,peeko,lumi,gogo}.ts`
 - `src/aura-assets.ts` **generated** by `tools/gen-aura-assets.mjs` from the admitted GLBs `src/assets/models/<key>.<sha8>.glb` and their provenance `provenance/models/<key>.json` (2026-10-29: replaces `public/aura-assets/**`; see section 5)
-- `src/audio-manifest.generated.ts` **generated** by `tools/gen-audio-manifest.mjs` from `src/assets/audio/{en/lines,songs,music,sfx}/*.mp3` and `provenance/audio/{lines,songs,beds,sfx}.json`
+- `src/audio-manifest.ts` **generated** by `tools/gen-audio-manifest.mjs` from `src/assets/audio/{en/lines,songs,music,sfx}/*.mp3` and `provenance/audio/{lines,songs,beds,sfx}.json`
 - `src/ui/child-controls.ts`, `src/ui/parent-panel.ts`, `src/ui/episode-menu.ts`, `src/ui/offline-card.ts`, `src/ui/styles.css`
 - `src/localization/en/**`: one `episodes/<slug>.ts` or `activities/<slug>.ts` per story exporting `lines` and `strings`, plus the UI and parent strings in `en/ui.ts`, aggregated by `en/index.ts`; `src/localization/pa.ts` stays present but disabled (additional locale pack is gated behind native review)
 - `src/qa/install-hooks.ts`, `tests/unit/**`, `tests/fixtures/**`; browser specs live at the repo root as `tests/browser/wonder-world-*.spec.ts`, where the root Playwright config and the remote runner find them

@@ -41,7 +41,7 @@ Wonder World is a toddler co-play app built on Aura3D 4.5.0: short 3D cartoon st
 | `src/characters/` | The six procedural character actors and their registry |
 | `src/ui/` | Start screen, menu, child controls, captions, parent gate and panel, offline card, settings store, styles |
 | `src/content/`, `src/localization/` | Story data, the content schema and validators, the word, letter, number, song, sound and music tables, the English pack |
-| `src/aura-assets.ts`, `src/audio-manifest.generated.ts` | Generated asset modules (never edited by hand) |
+| `src/aura-assets.ts`, `src/audio-manifest.ts` | Generated asset modules (never edited by hand) |
 
 **Time.** One story clock moves in fixed 50 ms steps (`createFixedStepLoop`), only while a story runs and nothing pauses it. Each step ticks the episode director, then the clock, which also drives the narration player's caption timing. The stage animates every frame on that clock as presented by `createFixedStepPresenter`, so motion is smooth at any refresh rate and never drifts from the story. No app code reads a wall clock or a random number.
 
@@ -117,7 +117,7 @@ Page switches:
 
 No model is rigged: Meshy rigging is humanoid only, the Lulu rig failed `aura3d assets validate --skin`, and every character, animal and prop moves procedurally. Six keys (`ball`, `bush`, `hat`, `stompStone`, `cloud`, `balloon`) are drawn from scene geometry by design. Every model has a primitive stand-in of the right size and colour, so the app runs while a model is missing or with `?models=0`; a stand-in is never a release claim.
 
-**Audio.** ElevenLabs through Kiro Prism (premade voices; the cast is in `07` section 3.1): `./node_modules/.bin/tsx tools/gen-audio.ts` writes `src/assets/audio/{en/lines,songs,music,sfx}/*.mp3` and `provenance/audio/*.json` (provider, voice, prompt, Prism key id and tier, date), then `node tools/gen-audio-manifest.mjs` regenerates `src/audio-manifest.generated.ts` with each file's sha256 and ffprobe duration. Never print `PRISM_API_KEY`. Output from free-tier keys is prototype-only and must be re-rendered on a paid tier before any commercial release.
+**Audio.** ElevenLabs through Kiro Prism (premade voices; the cast is in `07` section 3.1): `./node_modules/.bin/tsx tools/gen-audio.ts` writes `src/assets/audio/{en/lines,songs,music,sfx}/*.mp3` and `provenance/audio/*.json` (provider, voice, prompt, Prism key id and tier, date), then `node tools/gen-audio-manifest.mjs` regenerates `src/audio-manifest.ts` with each file's sha256 and ffprobe duration. Never print `PRISM_API_KEY`. Output from free-tier keys is prototype-only and must be re-rendered on a paid tier before any commercial release.
 
 All media URLs are module-relative (`new URL("./assets/...", import.meta.url)`): Vite fingerprints them, and the repo dev server resolves them without the root `public/` tree.
 

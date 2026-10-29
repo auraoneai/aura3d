@@ -89,7 +89,7 @@ Scope root: `apps/veer-wonder-world/` unless a row explicitly starts at repo roo
 | D12 | `src/scenes/peekaboo-barn.ts` | ART | [ ] P2 barn with two doors and gentle reveal |
 | D13 | `src/scenes/learning-cloud.ts` | ART | [ ] P2 letters/numbers with animated associated real objects |
 | D14 | `src/assets/rights-manifest.ts` | ART/PM | [ ] Build-readable license/owner/review records; no private PII in public files |
-| D15 | `src/assets/audio/{en/lines,songs,music,sfx}/*.mp3` (2026-10-29: replaces `public/audio/en/{dialogue,songs,sfx}/**`) | AUDIO | [ ] Approved compressed voiced lines/original songs/music beds/SFX from ElevenLabs through Kiro Prism (`tools/gen-audio.ts`), indexed by the generated `src/audio-manifest.generated.ts` (`tools/gen-audio-manifest.mjs`: module-relative URL, sha256, ffprobe duration); volume-normalized; no unconsented family recordings |
+| D15 | `src/assets/audio/{en/lines,songs,music,sfx}/*.mp3` (2026-10-29: replaces `public/audio/en/{dialogue,songs,sfx}/**`) | AUDIO | [ ] Approved compressed voiced lines/original songs/music beds/SFX from ElevenLabs through Kiro Prism (`tools/gen-audio.ts`), indexed by the generated `src/audio-manifest.ts` (`tools/gen-audio-manifest.mjs`: module-relative URL, sha256, ffprobe duration); volume-normalized; no unconsented family recordings |
 | D16 | `provenance/models/<key>.json` and `provenance/audio/{lines,songs,beds,sfx}.json` (2026-10-29: replaces `public/aura-assets/provenance/**`) | ART | [ ] Per-asset origin, SHA, optimization/admission evidence, generation rights (provider, voice, prompt, Prism key id and tier, date for audio) |
 
 ### Art / media acceptance

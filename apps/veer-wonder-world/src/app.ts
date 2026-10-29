@@ -45,7 +45,7 @@
 
 import { createFixedStepLoop, type AuraApp } from "@aura3d/engine";
 import { createFixedStepPresenter } from "@aura3d/engine/game";
-import { AUDIO_MANIFEST } from "./audio-manifest.generated.js";
+import { AUDIO_MANIFEST } from "./audio-manifest.js";
 import { LOCALE_PACKS, STORIES, storyByCode, storyById, storyCode } from "./content/catalog.js";
 import { estimateLineMs } from "./content/schema.js";
 import { createAudioMixer, type AudioMixer } from "./runtime/audio-mixer.js";

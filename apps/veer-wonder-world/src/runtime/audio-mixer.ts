@@ -73,7 +73,7 @@ import {
   type AudioFileManagerOptions
 } from "@aura3d/engine/audio";
 import type { GameAudioOptions } from "@aura3d/engine";
-import type { AUDIO_MANIFEST } from "../audio-manifest.generated.js";
+import type { AUDIO_MANIFEST } from "../audio-manifest.js";
 import type { AudioClipRef, MusicBedId, SfxId, SongId } from "../types.js";
 
 export type AudioManifest = typeof AUDIO_MANIFEST;

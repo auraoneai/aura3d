@@ -63,7 +63,7 @@ async function main(): Promise<number> {
   const { STORIES, storyCode } = catalogModule;
   const { en, EN_PARTS } = localeModule;
   const { validateCatalogDetailed, CHARACTER_IDS } = await import("../src/content/schema.js");
-  const { AUDIO_MANIFEST } = await import("../src/audio-manifest.generated.js");
+  const { AUDIO_MANIFEST } = await import("../src/audio-manifest.js");
 
   const recordedLines = Object.keys(AUDIO_MANIFEST.lines).length;
   // --allow-missing-audio is for runs while generation is still in progress; the release gate never passes it.

@@ -1,0 +1,342 @@
+{
+ "pop": {
+  "file": "src/assets/audio/sfx/pop.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a soft, gentle soap bubble pop, tiny and round, quiet and cute, a single pop",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k; short-clip gain correction to mean -26.4 dB (peak -15.1 dB) because loudnorm cannot measure clips under 3 s"
+ },
+ "woof": {
+  "file": "src/assets/audio/sfx/woof.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "one soft, friendly cartoon puppy bark, gentle and warm, a single short bark at low volume, no growl, no echo",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "bubbleBlow": {
+  "file": "src/assets/audio/sfx/bubbleBlow.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a soft, airy breath blowing soap bubbles through a wand, light and quiet",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "doorOpen": {
+  "file": "src/assets/audio/sfx/doorOpen.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a gentle wooden toy door opening smoothly with a soft click, quiet and friendly, no creak",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "doorbell": {
+  "file": "src/assets/audio/sfx/doorbell.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a soft, friendly two-note ding-dong doorbell chime, gentle and warm, low volume",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "moo": {
+  "file": "src/assets/audio/sfx/moo.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "one gentle, friendly cartoon cow moo, soft and calm, low volume, no echo",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "quack": {
+  "file": "src/assets/audio/sfx/quack.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "one soft, friendly cartoon duck quack, gentle and cute, low volume",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "baa": {
+  "file": "src/assets/audio/sfx/baa.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "one soft, friendly little lamb baa, gentle and calm, cartoon farm, low volume",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "neigh": {
+  "file": "src/assets/audio/sfx/neigh.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a short, gentle, friendly cartoon pony neigh, soft and calm, low volume, not loud",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "whistle": {
+  "file": "src/assets/audio/sfx/whistle.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a soft, mellow toy train whistle, short and gentle at low volume, not shrill",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "tweet": {
+  "file": "src/assets/audio/sfx/tweet.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "two soft, sweet little chick tweets, gentle and quiet",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "chugga": {
+  "file": "src/assets/audio/sfx/chugga.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a soft, slow toy train chugging, gentle chugga-chugga rhythm, quiet and smooth",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "drum": {
+  "file": "src/assets/audio/sfx/drum.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "one soft, warm tap on a small toy hand drum, a gentle single hit, no echo",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "shaker": {
+  "file": "src/assets/audio/sfx/shaker.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "one gentle shake of a small toy egg shaker, soft and short",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "pianoUp": {
+  "file": "src/assets/audio/sfx/pianoUp.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "three soft toy piano notes rising slowly, gentle and bright, quiet",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "pianoDown": {
+  "file": "src/assets/audio/sfx/pianoDown.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "three soft toy piano notes falling slowly, gentle and calm, quiet",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "squeak": {
+  "file": "src/assets/audio/sfx/squeak.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a soft, cute rubber toy squeak, a single gentle squeak, quiet",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "splash": {
+  "file": "src/assets/audio/sfx/splash.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a small, gentle water splash, like a soft sponge dipped in a bucket, playful and quiet",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "ding": {
+  "file": "src/assets/audio/sfx/ding.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a soft, warm single bell ding, gentle and clear, low volume",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "clack": {
+  "file": "src/assets/audio/sfx/clack.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "two soft wooden toy blocks gently clicking together, a single quiet clack",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "tumble": {
+  "file": "src/assets/audio/sfx/tumble.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "three soft wooden toy blocks gently tumbling onto a thick rug, quiet and playful, no crash",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "munch": {
+  "file": "src/assets/audio/sfx/munch.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a soft, cute cartoon nibble and munch, gentle and quiet",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "yawn": {
+  "file": "src/assets/audio/sfx/yawn.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a soft, gentle, sleepy cartoon creature yawn, calm and cute",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "giggle": {
+  "file": "src/assets/audio/sfx/giggle.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a soft, friendly cartoon creature giggle, warm and gentle, short",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "whoosh": {
+  "file": "src/assets/audio/sfx/whoosh.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a soft, slow, gentle air whoosh, light and smooth, quiet, no wind roar",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k; short-clip gain correction to mean -26.5 dB (peak -12.6 dB) because loudnorm cannot measure clips under 3 s"
+ },
+ "sparkle": {
+  "file": "src/assets/audio/sfx/sparkle.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a soft, gentle twinkle of a glockenspiel shimmer, light and quiet",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "stomp": {
+  "file": "src/assets/audio/sfx/stomp.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "one soft, padded cartoon footstep on grass, a gentle thump, quiet",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k; short-clip gain correction to mean -26.4 dB (peak -17.5 dB) because loudnorm cannot measure clips under 3 s"
+ },
+ "clap": {
+  "file": "src/assets/audio/sfx/clap.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "one soft, warm hand clap, gentle and close, no echo",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "boing": {
+  "file": "src/assets/audio/sfx/boing.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a soft, gentle cartoon boing of a small spring, playful and quiet",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "rumble": {
+  "file": "src/assets/audio/sfx/rumble.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a soft, funny little cartoon tummy rumble, a gentle gurgle, quiet",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "tada": {
+  "file": "src/assets/audio/sfx/tada.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a soft, gentle two-note celebration chime on a toy xylophone, warm and quiet, short",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "blow": {
+  "file": "src/assets/audio/sfx/blow.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a soft, gentle breath blowing out a pretend candle, a light whoo, quiet",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "beep": {
+  "file": "src/assets/audio/sfx/beep.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a soft, friendly little toy robot beep-boop, two gentle tones, quiet",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ },
+ "rustle": {
+  "file": "src/assets/audio/sfx/rustle.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "sound-generation",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "a soft, gentle rustle of leaves in a small bush, quiet and calm",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-24 LUFS, 64k"
+ }
+}
