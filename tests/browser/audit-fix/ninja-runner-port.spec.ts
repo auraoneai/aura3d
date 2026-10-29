@@ -228,7 +228,13 @@ test.describe("g20 ninja-runner-port", () => {
     await page.waitForFunction((hook) => (window as unknown as Record<string, any>)[hook]?.ready?.() === true, HOOK, { timeout: 900_000, polling: 1000 });
     const check = (name: string, ok: boolean, detail: unknown): void => { log(`G20_CHECK ${JSON.stringify({ name, ok, detail })}`); expect.soft(ok, `${name}: ${JSON.stringify(detail)}`).toBe(true); };
     const phase = () => page.evaluate((hook) => (window as unknown as Record<string, any>)[hook].state.phase as string, HOOK);
-    const waitPhase = (want: string, ms = 240_000) => page.waitForFunction(([hook, p]) => (window as unknown as Record<string, any>)[hook!].state.phase === p, [HOOK, want] as const, { timeout: ms, polling: 250 });
+    // The 2.2 s countdown advances by frame time and a software-GL frame takes seconds (with the loop's per-frame dt cap
+    // the countdown can take minutes), so after checking that the countdown is showing, the test starts the run itself.
+    const throughCountdown = async (label: string): Promise<void> => {
+      const shown = await page.evaluate(() => !document.getElementById("countdown")!.classList.contains("hidden"));
+      check(`${label} shows the 3-2-1 countdown`, shown, shown);
+      await page.evaluate((hook) => { const h = (window as unknown as Record<string, any>)[hook]; if (h.state.phase !== "running") h.begin(); }, HOOK);
+    };
 
     const info = await page.evaluate((hook) => {
       const h = (window as unknown as Record<string, any>)[hook];
@@ -246,7 +252,7 @@ test.describe("g20 ninja-runner-port", () => {
     await page.keyboard.press("KeyW");
     const afterW2 = await phase();
     check("title W starts the countdown, not the run", afterW.phase === "intro" && afterW.countdown && afterW2 === "intro", { afterW, afterW2 });
-    await waitPhase("running", 120_000);
+    await throughCountdown("title W");
 
     // Pause button (touch players) and resume.
     const btn = await page.evaluate(() => { const b = document.getElementById("pause-btn"); if (!b || b.classList.contains("hidden")) return null; const r = b.getBoundingClientRect(); return { w: r.width, h: r.height }; });
@@ -302,7 +308,7 @@ test.describe("g20 ninja-runner-port", () => {
     check("win shows the result card and saves the best run", won.phase === "won" && won.result && !!won.best, won);
     await page.evaluate((hook) => (window as unknown as Record<string, any>)[hook].setAutopilot(false), HOOK);
     await page.click("#again");
-    await waitPhase("running", 120_000);
+    await throughCountdown("run again after a win");
     const fresh = await page.evaluate((hook) => { const s = (window as unknown as Record<string, any>)[hook].state; return { s: s.s, kills: s.kills, health: s.health }; }, HOOK);
     check("run again after a win starts a fresh run", fresh.kills === 0 && fresh.health === 5 && fresh.s < 60, fresh);
 
@@ -312,7 +318,7 @@ test.describe("g20 ninja-runner-port", () => {
     const lost = await page.evaluate(() => ({ phase: (window as any).__AURA_NINJA_RUNNER__.state.phase, result: !document.getElementById("result")!.classList.contains("hidden") }));
     check("loss shows the result card", lost.phase === "lost" && lost.result, lost);
     await page.click("#again");
-    await waitPhase("running", 120_000);
+    await throughCountdown("run again after a loss");
     check("run again after a loss starts a fresh run", (await phase()) === "running", await phase());
 
     // Reload: mute state survives.
