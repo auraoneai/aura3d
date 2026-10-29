@@ -886,9 +886,12 @@ function syncScenePose(inp: SimInput) {
   const muzzleFrac = Math.min(1, (sim.state.muzzle ?? 0) / 0.06);
   const recoil = muzzleFrac * 0.12;
   const rx = Math.cos(p.yaw), rz = Math.sin(p.yaw);
-  const vmx = p.x + ox + fx * (0.62 - recoil) + rx * 0.26;
+  // portrait screens see a narrow horizontal slice: pull the weapon toward the centre so it stays in frame (C12)
+  const aspect = window.innerWidth / Math.max(1, window.innerHeight);
+  const side = 0.26 * Math.max(0.3, Math.min(1, aspect / 1.6));
+  const vmx = p.x + ox + fx * (0.62 - recoil) + rx * side;
   const vmy = EYE - 0.34 + bob - p.pitch * 0.12 + recoil * 0.38;
-  const vmz = p.z + fz * (0.62 - recoil) + rz * 0.26;
+  const vmz = p.z + fz * (0.62 - recoil) + rz * side;
   for (const [id, node] of Object.entries(vmNodes) as [WeaponId, typeof vmNodes.knife][]) {
     if (id === p.weapon && p.alive) {
       node.setPosition(vmx, vmy, vmz);
@@ -1283,7 +1286,7 @@ function renderHud() {
       small.textContent = `${dogtag} · clear the floor`;
     } else {
       elTag.textContent = `FLOOR ${floorIdx + 1} — ${sim.state.floor.name.toUpperCase()}`;
-      small.textContent = `${p.key ? "key secured · " : ""}${sim.state.floor.subtitle} · ${dogtag}`;
+      small.textContent = `${p.key ? "key secured · the elevator is armed" : sim.state.floor.subtitle} · ${dogtag}`;
     }
     elTag.append(small);
   }

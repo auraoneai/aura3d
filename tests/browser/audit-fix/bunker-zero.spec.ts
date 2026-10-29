@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { test, type Page } from "@playwright/test";
+import { test, type Browser, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "../example-dev-server";
 
 /**
@@ -117,6 +117,8 @@ async function open(page: Page, server: ExampleDevServer, name: string, url: str
   await page.waitForFunction(READY, undefined, { timeout: 420_000, polling: 500 });
   // the onboarding card (C27) pauses a first visit; close it so before and after builds both run the sim
   await page.evaluate(() => (globalThis as any).__AURA_BUNKER_ZERO_QA__?.dismissIntro?.());
+  // phones: a first touch shows the touch layer even where (pointer: coarse) does not match in the emulated context
+  if (viewport.width < 500) await page.evaluate(() => window.dispatchEvent(new Event("touchstart")));
   return Date.now();
 }
 
@@ -141,6 +143,12 @@ async function qa(page: Page, name: string, method: string, ...args: unknown[]):
   if (o.__error) { log(`GL_STATE ${JSON.stringify({ target: name, step: method, error: o.__error })}`); return undefined; }
   log(`GL_STATE ${JSON.stringify({ target: name, step: method, value: o.value })}`);
   return o.value;
+}
+
+/** Phone targets run in a touch context (coarse pointer), like a real phone: the touch layer shows at mount. */
+async function phonePage(browser: Browser): Promise<Page> {
+  const ctx = await browser.newContext({ viewport: PHONE, hasTouch: true, isMobile: true, deviceScaleFactor: 1 });
+  return ctx.newPage();
 }
 
 const click = (page: Page, selector: string) => page.evaluate((s) => (document.querySelector(s) as HTMLElement | null)?.click(), selector);
@@ -178,7 +186,8 @@ test.describe("bunker zero audit-fix", () => {
     log("GL_DONE desktop-f1-nocontact");
   });
 
-  test("bz-phone-f1 @phone", async ({ page }) => {
+  test("bz-phone-f1 @phone", async ({ browser }) => {
+    const page = await phonePage(browser);
     const loaded = await open(page, server, "phone-f1", APP, PHONE);
     await settle(page, "phone-f1", loaded, SETTLE.slice(1), true);
     log("GL_DONE phone-f1");
@@ -224,7 +233,8 @@ test.describe("bunker zero audit-fix", () => {
     log("GL_DONE states-desktop");
   });
 
-  test("bz-states-phone @phone", async ({ page }) => {
+  test("bz-states-phone @phone", async ({ browser }) => {
+    const page = await phonePage(browser);
     const name = "states-phone";
     const loaded = await open(page, server, name, APP, PHONE);
     await page.waitForTimeout(Math.max(0, 25_000 - (Date.now() - loaded)));
@@ -242,7 +252,8 @@ test.describe("bunker zero audit-fix", () => {
 
   // ---- RH-05: the inventory screens (same names and sizes as evidence/showcase-bunker-zero/screens/final) -----------
   for (const [vp, label] of [[DESKTOP, "1280"], [PHONE, "390"]] as const) {
-    test(`bz-screens-${label} @screens${label}`, async ({ page }) => {
+    test(`bz-screens-${label} @screens${label}`, async ({ browser, page: desktopPage }) => {
+      const page = label === "390" ? await phonePage(browser) : desktopPage;
       const name = `screens-${label}`;
       const loaded = await open(page, server, name, APP, vp);
       await page.waitForTimeout(Math.max(0, 20_000 - (Date.now() - loaded)));
