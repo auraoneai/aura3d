@@ -50,8 +50,10 @@ export interface StoryTimeline {
   at(t: number): TimelineStep | undefined;
   /** True when the director stays active and no stage action, line or song lands in (t, t + ms]. */
   calm(t: number, ms: number): boolean;
-  /** The earliest step time at or after `from` with `calm(t, ms)`, or null. */
-  findCalm(from: number, ms: number): number | null;
+  /** The earliest step time at or after `from` with `calm(t, ms)` (and `accept(t)`, when given), or null. */
+  findCalm(from: number, ms: number, accept?: (t: number) => boolean): number | null;
+  /** True when a "go" object action has `id` running (a train chugging along) at any time in [from, to]. */
+  running(id: string, from: number, to: number): boolean;
   /** The camera preset in force at `t` and the story time it was set. */
   cameraAt(t: number): { readonly preset: CameraPresetId; readonly since: number };
   /** First and last step time of the first visit to a beat, or null when the run never reaches it. */
@@ -109,6 +111,19 @@ export function storyTimeline(storyId: string): StoryTimeline {
   const cameras: { preset: CameraPresetId; since: number }[] = [];
   for (const step of steps) for (const action of step.stage) if (action.do === "camera") cameras.push({ preset: action.preset, since: step.t });
 
+  // Running spans per object: from a "go" object action to the next "stop" (or the end of the story).
+  const runningSpans = new Map<string, { start: number; end: number }[]>();
+  for (const step of steps) {
+    for (const action of step.stage) {
+      if (action.do !== "object" || (action.action !== "go" && action.action !== "stop")) continue;
+      const spans = runningSpans.get(action.target) ?? [];
+      const open = spans[spans.length - 1];
+      if (action.action === "go" && (!open || open.end < Infinity)) spans.push({ start: step.t, end: Infinity });
+      if (action.action === "stop" && open && open.end === Infinity) open.end = step.t;
+      runningSpans.set(action.target, spans);
+    }
+  }
+
   const indexOf = (t: number): number => Math.round(t / STEP_MS);
   const calm = (t: number, ms: number): boolean => {
     const from = indexOf(t);
@@ -126,9 +141,12 @@ export function storyTimeline(storyId: string): StoryTimeline {
     steps,
     at: (t) => steps[indexOf(t)],
     calm,
-    findCalm(from, ms) {
-      for (let t = Math.ceil(from / STEP_MS) * STEP_MS; t + ms <= endMs; t += STEP_MS) if (calm(t, ms)) return t;
+    findCalm(from, ms, accept) {
+      for (let t = Math.ceil(from / STEP_MS) * STEP_MS; t + ms <= endMs; t += STEP_MS) if (calm(t, ms) && (!accept || accept(t))) return t;
       return null;
+    },
+    running(id, from, to) {
+      return (runningSpans.get(id) ?? []).some((span) => span.start <= to && span.end >= from);
     },
     cameraAt(t) {
       let current: { preset: CameraPresetId; since: number } = { preset: "wide", since: 0 };

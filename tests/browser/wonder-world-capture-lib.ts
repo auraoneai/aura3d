@@ -27,7 +27,9 @@
  *       crops 100 ms apart with setTalking(id) on, then four with it off: the larger of two 200 ms pair deltas must be
  *       visible while talking and much smaller while silent;
  *   (d) reduced motion: the same "happy" gesture sampled at the same offsets in normal and in reduced motion; the
- *       reduced delta is clearly smaller.
+ *       character's nodeRect travels clearly less (every "happy" is a hop or a float). Crop deltas are recorded too,
+ *       but a mean luma change saturates for a large, detailed body such as GoGo's: a half-height hop changed it
+ *       almost as much as a full one.
  * Records: WWJSON char-<id> per character and chars-<ids>-summary; WWSHOT char-<id>-phone, char-<id>-turn-<view>,
  * char-<id>-pose-<state>.
  *
@@ -184,8 +186,10 @@ const TALK_MIN_CHANGED = 0.005;
 const SILENT_MAX_SHARE = 0.5;
 /** Story time between clearing the talking flag and the first silent crop (the pulse stops at once). */
 const TALK_GAP_MS = 200;
-/** Reduced motion is clearly smaller: at most this share of the normal-motion delta. */
-const REDUCED_MAX_SHARE = 0.85;
+/** Reduced motion is clearly smaller: its nodeRect travel is at most this share of normal motion's. */
+const REDUCED_MAX_SHARE = 0.75;
+/** Normal motion must move the nodeRect at least this much (px) for the travel to be compared. */
+const REDUCED_MIN_TRAVEL_PX = 2;
 
 interface PairDeltas {
   readonly pairs: readonly FrameDelta[];
@@ -237,10 +241,13 @@ async function sheetCrop(context: SheetContext): Promise<{ readonly rect: Wonder
   return crop ? { rect, crop } : null;
 }
 
-/** Jumps to the first calm window of `ms` from now; null (and a recorded reason) when the story has none left. */
+/**
+ * Jumps to the first calm window of `ms` from now in which the character is not running (GoGo chugs between a "go"
+ * and a "stop" in G02, which would move every frame of a job); null when the story has none left.
+ */
 async function calmJump(context: SheetContext, ms: number): Promise<number | null> {
   const now = (await qaState(context.page)).director?.elapsedMs ?? 0;
-  const at = context.timeline.findCalm(Math.ceil(now / 50) * 50, ms);
+  const at = context.timeline.findCalm(Math.ceil(now / 50) * 50, ms, (t) => !context.timeline.running(context.entry.character, t, t + ms));
   if (at === null) return null;
   await jumpTo(context.page, context.timeline, at);
   return at;
@@ -267,6 +274,9 @@ interface CharacterSheetResult {
   readonly silent: PairDeltas | null;
   readonly normal: PairDeltas | null;
   readonly reduced: PairDeltas | null;
+  /** How far the nodeRect moved across the four crops (spread of its top edge plus spread of its height, px). */
+  readonly normalTravel: number | null;
+  readonly reducedTravel: number | null;
   readonly sheetWarnings: readonly string[];
   readonly appErrors: readonly string[];
 }
@@ -291,6 +301,8 @@ async function characterSheet(page: Page, log: PageLog, entry: CharacterStory, a
     silent: null,
     normal: null,
     reduced: null,
+    normalTravel: null,
+    reducedTravel: null,
     sheetWarnings: [],
     appErrors: []
   };
@@ -463,23 +475,33 @@ async function characterSheet(page: Page, log: PageLog, entry: CharacterStory, a
       const cropped = await sheetCrop(context);
       if (!cropped) errors.push("reduced motion: the character has no nodeRect after the pin");
       else {
-        const sample = async (): Promise<DecodedImage[]> => {
+        const sample = async (): Promise<{ readonly frames: DecodedImage[]; readonly travel: number }> => {
           const frames: DecodedImage[] = [];
+          const rects: WonderNodeRect[] = [];
           await qaStageApply(page, [{ do: "gesture", actor: character, gesture: REDUCED_GESTURE }]);
           for (let index = 0; index < 4; index += 1) {
             await qaAdvance(page, index === 0 ? REDUCED_FIRST_FRAME_MS : FRAME_MS);
             frames.push((await cropShot(page, cropped.crop)).image);
+            const rect = (await qaNodeRects(page, [character])).find((candidate) => candidate.id === character);
+            if (rect) rects.push(rect);
           }
-          return frames;
+          const spread = (values: readonly number[]): number => (values.length > 0 ? Math.max(...values) - Math.min(...values) : 0);
+          return { frames, travel: Math.round((spread(rects.map((rect) => rect.y)) + spread(rects.map((rect) => rect.h))) * 10) / 10 };
         };
-        result.normal = pairDeltas(await sample());
+        const normal = await sample();
         await qaSetReducedMotion(page, true);
-        result.reduced = pairDeltas(await sample());
+        const reduced = await sample();
         await qaSetReducedMotion(page, false);
+        result.normal = pairDeltas(normal.frames);
+        result.reduced = pairDeltas(reduced.frames);
+        result.normalTravel = normal.travel;
+        result.reducedTravel = reduced.travel;
         record["reducedMotion"] = {
           storyMs: reducedAt,
           gesture: REDUCED_GESTURE,
           crop: cropped.crop,
+          normalTravelPx: normal.travel,
+          reducedTravelPx: reduced.travel,
           normal: result.normal,
           reduced: result.reduced,
           reducedShare: result.normal.best.meanAbsLumaDiff > 0 ? Math.round((result.reduced.best.meanAbsLumaDiff / result.normal.best.meanAbsLumaDiff) * 1000) / 1000 : null
@@ -533,8 +555,9 @@ function expectCharacterSheet(entry: CharacterStory, result: CharacterSheetResul
   }
   // (d) reduced motion.
   expect.soft(result.reduced, `${who}: the reduced-motion pass was measured`).not.toBeNull();
-  if (result.normal && result.reduced) {
-    expect.soft(result.reduced.best.meanAbsLumaDiff, `${who}: "${REDUCED_GESTURE}" moves clearly less with reduced motion (reduced ${JSON.stringify(result.reduced.best)}, normal ${JSON.stringify(result.normal.best)})`).toBeLessThanOrEqual(result.normal.best.meanAbsLumaDiff * REDUCED_MAX_SHARE);
+  if (result.normalTravel !== null && result.reducedTravel !== null) {
+    expect.soft(result.normalTravel, `${who}: "${REDUCED_GESTURE}" moves the character in normal motion`).toBeGreaterThanOrEqual(REDUCED_MIN_TRAVEL_PX);
+    expect.soft(result.reducedTravel, `${who}: "${REDUCED_GESTURE}" travels clearly less with reduced motion (reduced ${result.reducedTravel} px, normal ${result.normalTravel} px; crop deltas ${JSON.stringify(result.reduced?.best)} and ${JSON.stringify(result.normal?.best)})`).toBeLessThanOrEqual(result.normalTravel * REDUCED_MAX_SHARE);
   }
   expect.soft(result.sheetWarnings, `${who}: the sheet adds no stage warning`).toEqual([]);
   expect.soft(result.appErrors, `${who}: state().errors`).toEqual([]);
@@ -582,6 +605,7 @@ export function defineCharacterSheetSuite(options: { readonly title: string; rea
             silent: result.silent?.best ?? null,
             normal: result.normal?.best ?? null,
             reduced: result.reduced?.best ?? null,
+            travelPx: { normal: result.normalTravel, reduced: result.reducedTravel },
             stageWarnings: result.sheetWarnings.length
           });
           expectCharacterSheet(entry, result, log.since(mark));
