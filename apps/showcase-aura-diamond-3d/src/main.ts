@@ -1545,6 +1545,8 @@ function boot(): void {
 
   function openMenu(): void {
     el.menu?.classList.remove("hidden");
+    // Open at the top so the results card (shown first after a game) is in view.
+    if (el.menu) el.menu.scrollTop = 0;
     el.hud?.classList.remove("on");
     renderBracket();
   }

@@ -633,7 +633,9 @@
         inset: 0;
         z-index: 50;
         display: flex;
-        align-items: center;
+        /* flex-start plus margin:auto on .menu-inner: centred when it fits, scrollable from its top when it does not
+           (align-items:center pushed the results card above the scroll origin, out of reach). */
+        align-items: flex-start;
         justify-content: center;
         background: radial-gradient(120% 100% at 50% 10%, rgba(30, 26, 48, 0.72) 0%, rgba(10, 11, 22, 0.9) 60%, rgba(6, 7, 14, 0.96) 100%);
         backdrop-filter: blur(6px);
@@ -648,6 +650,7 @@
 
       .menu-inner {
         width: min(920px, calc(100vw - 36px));
+        margin: auto;
         padding: 34px 0 40px;
       }
 
