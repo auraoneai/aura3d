@@ -1,0 +1,69 @@
+{
+  "schema": "wonder-world.model-provenance/1",
+  "key": "pastrySquare",
+  "file": "src/assets/models/pastrySquare.cff9df45.glb",
+  "sha256": "cff9df45812423f8f0a7bc24974fa141637b8f29fe6cac219f6c1296036b18ca",
+  "sizeBytes": 205340,
+  "rigged": false,
+  "clips": [],
+  "heightM": 0.08,
+  "role": "prop",
+  "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
+  "source": {
+    "generator": "Meshy text-to-3d (preview, refine 2k, remesh) via Kiro Prism",
+    "prompt": "a flat golden pastry biscuit in a perfect square shape with rounded corners, preschool toy prop, soft rounded shapes, smooth matte clay-like material, bright clear saturated colors, simple chunky readable shapes, no face, no eyes, no text, no logos, no brand marks",
+    "taskIds": {
+      "preview": "01a18720-6a8a-711c-b673-527a525f42cd",
+      "refine": "01a18721-1bc1-723b-bf9b-4292e3d5c820"
+    },
+    "rights": null
+  },
+  "processing": {
+    "merge": null,
+    "optimize": {
+      "role": "prop",
+      "tex": 512,
+      "maxVerts": 1400,
+      "simplify": true,
+      "simplified": true,
+      "vertsBefore": 102232,
+      "vertsAfter": 4213,
+      "bytesIn": 9569128,
+      "bytesOut": 249468
+    },
+    "strippedNormalAndRoughnessMaps": true,
+    "tint": null,
+    "recolor": null,
+    "source": "refine model simplified locally (the remesh task could not run: its pinned Meshy key returned 402)",
+    "orientation": {
+      "forwardAxis": "+z",
+      "upAxis": "+y"
+    }
+  },
+  "inspection": {
+    "vertexCount": 4213,
+    "bounds": [
+      1.9,
+      1.89,
+      0.333
+    ],
+    "textures": [
+      "image-0"
+    ],
+    "animations": [],
+    "skeleton": {
+      "skinCount": 0,
+      "jointCount": 0
+    },
+    "warnings": []
+  },
+  "skin": null,
+  "review": {
+    "status": "approved",
+    "reviewer": "agent:claude-opus-5.5",
+    "date": "2026-10-29",
+    "notes": "Square cracker-style pastry; refine model simplified locally (remesh blocked).",
+    "source": "refine"
+  },
+  "admittedAt": "2026-10-29"
+}

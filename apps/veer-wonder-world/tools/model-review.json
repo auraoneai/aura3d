@@ -1,0 +1,383 @@
+{
+ "_about": "Visual review of each Meshy refine thumbnail (artifacts/meshy/wonder-world/<key>/thumb.png) against PRD 02 (friendly silhouette, readable at small size, no sharp teeth or fearful look, original design, no text/logos/brand or trade dress). Rejected versions are kept in artifacts/meshy/wonder-world/_rejected/. tint = glTF baseColorFactor applied at admission for generations that came out near-white.",
+ "lulu": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Rounded baby dinosaur, friendly face; body came out near-white, tinted mint per PRD 02 palette. Rig rejected after skin validation (see tools/wonder-assets.json rigNote); admitted as the static A-pose model with procedural motion.",
+  "tint": "#8fd9a8"
+ },
+ "sheru": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Floppy-eared puppy, gentle face; near-white, tinted warm cream.",
+  "tint": "#efcd9c"
+ },
+ "lumi": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Warm yellow puffy star with a friendly face; matches brief."
+ },
+ "teddy": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Brown teddy bear, friendly; matches brief."
+ },
+ "robot": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Small rounded toy robot, harmless; tinted light blue per brief.",
+  "tint": "#a9cdf2"
+ },
+ "cow": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Chunky toy cow with patches; friendly."
+ },
+ "sheep": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Woolly toy sheep; friendly."
+ },
+ "duck": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Toy duck, yellow-green; friendly."
+ },
+ "horse": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Toy pony with a soft mane; friendly."
+ },
+ "apple": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Apple shape correct; pale, tinted red.",
+  "tint": "#e8453c"
+ },
+ "banana": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Banana shape correct; tinted brighter yellow.",
+  "tint": "#f6d84a"
+ },
+ "car": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Rounded toy car with clear wheels; tinted blue per brief.",
+  "tint": "#5b9be6"
+ },
+ "gogoCarriage": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Toy carriage with round windows and wheels; tinted yellow per brief.",
+  "tint": "#f5c83a"
+ },
+ "bubbleWand": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Wand with a ring; tinted purple per brief.",
+  "tint": "#a46ad8"
+ },
+ "door": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Arched play door with a round knob; matches brief."
+ },
+ "flower": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Toy daisy on a green stem; friendly, no face."
+ },
+ "flowerBud": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Closed bud on a stem; matches brief."
+ },
+ "letterA": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Clear capital A; tinted red per brief.",
+  "tint": "#e8453c"
+ },
+ "letterB": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Clear capital B; tinted blue per brief.",
+  "tint": "#3f7fd9"
+ },
+ "lift": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Tall toy lift tower with a door; acceptable stylised lift."
+ },
+ "mirror": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Round toy mirror on a stand; plain surface."
+ },
+ "plate": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Shallow toy plate; tinted pale blue per brief.",
+  "tint": "#9cc8ef"
+ },
+ "shaker": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Toy maraca; matches brief."
+ },
+ "sponge": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Rounded sponge block; tinted yellow per brief.",
+  "tint": "#f7dc5a"
+ },
+ "towel": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Folded soft towel; matches brief."
+ },
+ "toyBlock": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Big rounded block, plain; stories tint per block."
+ },
+ "toyPiano": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Toy piano with big keys; tinted pink per brief.",
+  "tint": "#f4a6c4"
+ },
+ "barn": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Green toy barn with doors; colour differs from brief (red) but reads clearly as a barn."
+ },
+ "station": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Small toy station building on a base; matches brief."
+ },
+ "picnicBasket": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Woven basket with cloth; matches brief."
+ },
+ "momo": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "v2: fuzzy monster with big round eyes and a goofy open grin with two blunt buck teeth (not sharp); came out beige, recoloured to periwinkle purple with a hue shift so the eyes and teeth stay white. A v3 could not be generated: the API-usable Meshy keys hold 8-17 credits (26 pooled keys return HTTP 402). Recorded as a known deviation from the 'small closed smile' wording.",
+  "recolor": {
+   "hue": 218,
+   "saturation": 2.9,
+   "brightness": 0.9
+  }
+ },
+ "gogo": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "v3: bright red toy steam engine, no text (texture prompt fix). The face is not visible in the side thumbnail and cannot be regenerated without credits. Remesh blocked (pinned key 402), so the refine model is simplified locally.",
+  "source": "refine"
+ },
+ "peeko": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "v2: round baby chick, friendly; pale, tinted warmer yellow per brief.",
+  "tint": "#ffe066"
+ },
+ "ball": {
+  "status": "procedural",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "v1 had a face; v1b resembled a known capture-ball design (trade-dress risk); v2 came out lime with a valve. A plain red rubber ball is a perfect sphere: drawn procedurally (stand-in sphere, red) per PRD 02 section 6 (props can be simple scene geometry)."
+ },
+ "butterfly": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "v2: friendly flat-winged butterfly; grey wings, tinted pink per brief.",
+  "tint": "#f39ac0"
+ },
+ "drum": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "v2: upright toy drum with coloured rims; reads clearly as a drum."
+ },
+ "cookie": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "v1 geometry (flat round cookie) retextured through Meshy with an original style prompt (10 credits): pale dough with dark chocolate chips; light golden tint for a baked look. v2/v3 had come out green.",
+  "tint": "#f0c58a"
+ },
+ "cake": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "v2: round cake with frosting, sprinkles and exactly one candle (E16: cake, one, blow)."
+ },
+ "bird": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Cute round bird; came out cream with a blue belly, tinted light blue per brief.",
+  "tint": "#7fb2ea"
+ },
+ "tree": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "v2: fluffy green crown, brown trunk; matches brief."
+ },
+ "bed": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Small toy bed with pillow; matches brief."
+ },
+ "chair": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Chunky toy chair; matches brief."
+ },
+ "cushion": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Soft floor cushion; tinted purple per brief.",
+  "tint": "#b48ad8"
+ },
+ "house": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Small toy house with a round door and windows; matches brief."
+ },
+ "sink": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Toy sink with tap; matches brief."
+ },
+ "table": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Small round toy table; matches brief."
+ },
+ "toyBox": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Open toy box with a lid; refine model simplified locally (remesh blocked).",
+  "source": "refine"
+ },
+ "pastrySquare": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Square cracker-style pastry; refine model simplified locally (remesh blocked).",
+  "source": "refine"
+ },
+ "pastryCircle": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Round fluted pastry; matches brief."
+ },
+ "pastryTriangle": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Triangular layered pastry; thin but reads as a pastry."
+ },
+ "bench": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Chunky wooden toy bench; matches brief."
+ },
+ "colourMachine": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Rounded toy machine with buttons and a chute; matches brief."
+ },
+ "storyBox": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Open box with stars; matches brief."
+ },
+ "tunnel": {
+  "status": "approved",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Arched toy tunnel; matches brief."
+ },
+ "bush": {
+  "status": "procedural",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Generated as grey roses at 327 MB; a soft green bush is drawn procedurally (simple scene geometry, PRD 02 section 6)."
+ },
+ "cloud": {
+  "status": "procedural",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Not generated (Meshy API capacity exhausted); a puffy cloud is drawn procedurally."
+ },
+ "stompStone": {
+  "status": "procedural",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Not generated (capacity); a flat round stepping stone is drawn procedurally."
+ },
+ "balloon": {
+  "status": "procedural",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Not generated (capacity); a tinted sphere with a string is drawn procedurally."
+ },
+ "hat": {
+  "status": "procedural",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Not generated (capacity); a simple red sun hat is drawn procedurally."
+ }
+}

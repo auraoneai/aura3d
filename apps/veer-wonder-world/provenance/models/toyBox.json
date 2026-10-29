@@ -1,0 +1,69 @@
+{
+  "schema": "wonder-world.model-provenance/1",
+  "key": "toyBox",
+  "file": "src/assets/models/toyBox.5d99d2ce.glb",
+  "sha256": "5d99d2ce1a1a9f0f8077649a28a142d191445296208a7878cc328675cf9f1e90",
+  "sizeBytes": 264700,
+  "rigged": false,
+  "clips": [],
+  "heightM": 0.6,
+  "role": "prop",
+  "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
+  "source": {
+    "generator": "Meshy text-to-3d (preview, refine 2k, remesh) via Kiro Prism",
+    "prompt": "a toddler toy box with an open lid, pastel green with rounded corners, empty inside, preschool toy prop, soft rounded shapes, smooth matte clay-like material, bright clear saturated colors, simple chunky readable shapes, no face, no eyes, no text, no logos, no brand marks",
+    "taskIds": {
+      "preview": "01a1871f-bc37-71c9-af5a-de4e5174c96c",
+      "refine": "01a18720-b3b2-73f9-853c-59bc487b973a"
+    },
+    "rights": null
+  },
+  "processing": {
+    "merge": null,
+    "optimize": {
+      "role": "prop",
+      "tex": 512,
+      "maxVerts": 2100,
+      "simplify": true,
+      "simplified": true,
+      "vertsBefore": 102931,
+      "vertsAfter": 5146,
+      "bytesIn": 11494920,
+      "bytesOut": 323156
+    },
+    "strippedNormalAndRoughnessMaps": true,
+    "tint": null,
+    "recolor": null,
+    "source": "refine model simplified locally (the remesh task could not run: its pinned Meshy key returned 402)",
+    "orientation": {
+      "forwardAxis": "+z",
+      "upAxis": "+y"
+    }
+  },
+  "inspection": {
+    "vertexCount": 5146,
+    "bounds": [
+      1.903,
+      1.664,
+      1.233
+    ],
+    "textures": [
+      "image-0"
+    ],
+    "animations": [],
+    "skeleton": {
+      "skinCount": 0,
+      "jointCount": 0
+    },
+    "warnings": []
+  },
+  "skin": null,
+  "review": {
+    "status": "approved",
+    "reviewer": "agent:claude-opus-5.5",
+    "date": "2026-10-29",
+    "notes": "Open toy box with a lid; refine model simplified locally (remesh blocked).",
+    "source": "refine"
+  },
+  "admittedAt": "2026-10-29"
+}
