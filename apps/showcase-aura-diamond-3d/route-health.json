@@ -100,5 +100,52 @@
       "role": "landmark"
     }
   ],
-  "notes": "Pitcher, batter, 8 fielders, 3 baserunners, home-plate umpire, 1B/3B base coaches, and 18 front-row spectators use admitted Meshy 3D baseball athletes (diamondAthlete) with 3D bats (diamondBat), baseballs (diamondBall), and fielder mitts (diamondGlove) inside 3D ballpark grandstands (diamondStadium, showcaseStadiumSeats, diamondScoreboard, diamondFloodlight, diamondIvyWall)."
+  "notes": "Pitcher, batter, 8 fielders, 3 baserunners, home-plate umpire, 1B/3B base coaches, and 18 front-row spectators use admitted Meshy 3D baseball athletes (diamondAthlete) with 3D bats (diamondBat), baseballs (diamondBall), and fielder mitts (diamondGlove) inside 3D ballpark grandstands (diamondStadium, showcaseStadiumSeats, diamondScoreboard, diamondFloodlight, diamondIvyWall).",
+  "performance": {
+    "scope": "Engine draw calls from app.diagnostics().drawCalls at steady state (45 s after ready), remote headless Chromium on software WebGL2 (SwiftShader). Not a GPU frame-time or real-device claim.",
+    "source": "tests/browser/audit-fix/aura-diamond-3d.spec.ts, decoded in evidence/aura-diamond-3d/audit-fix/{before,after}/meta.jsonl",
+    "runs": {
+      "before": "g08-w2-before-grp1, g08-w2-before-grp2, g08-before-b2",
+      "after": "g08-w2-after-grp1 to g08-w2-after-grp3"
+    },
+    "drawCalls": {
+      "1280x720": {
+        "sandlot": 528,
+        "skyline": 370,
+        "canyon": 505,
+        "ivy": 394,
+        "dome": 337,
+        "lunar": 379
+      },
+      "390x844": {
+        "sandlot": 276,
+        "skyline": 177
+      }
+    },
+    "drawCallsBefore": {
+      "1280x720": {
+        "sandlot": 691,
+        "skyline": 627,
+        "canyon": 619,
+        "ivy": 654,
+        "dome": 628,
+        "lunar": 610
+      },
+      "390x844": {
+        "sandlot": 321,
+        "skyline": 295
+      }
+    },
+    "triangles": "Not reported by app.diagnostics() on this build. Per-asset counts from the GLB index buffers: on-field athlete diamondAthleteClean.43c2d5ab.glb 31,758 triangles (8 clips), crowd athlete diamondCrowdAthlete.00a45874.glb 3,809 (2 clips); the live ball is a 16x12 primitive sphere (about 330 triangles) instead of the 20,326-triangle diamondBall GLB.",
+    "jsHeapMB": {
+      "1280x720": {
+        "sandlot": 273,
+        "skyline": 215,
+        "canyon": 242,
+        "ivy": 257,
+        "dome": 242,
+        "lunar": 228
+      }
+    }
+  }
 }
