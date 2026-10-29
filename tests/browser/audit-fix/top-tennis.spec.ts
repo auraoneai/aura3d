@@ -64,7 +64,10 @@ async function probe(page: Page) {
     const r = canvas?.getBoundingClientRect();
     const hint = document.getElementById("aura-controls-hint")?.textContent?.replace(/\s+/g, " ").trim() ?? null;
     const err = document.getElementById("render-error");
+    let quality: unknown = null;
+    try { quality = app?.quality?.tier ?? null; } catch { quality = null; }
     return {
+      quality, coach: Boolean(document.getElementById("coach-card")),
       mode: s?.mode ?? null, phase: s?.phase ?? null, paused: s?.paused ?? null, venue: s?.venue ?? null, server: s?.server ?? null,
       score: s ? { pg: s.score.playerGames, ag: s.score.aiGames, pp: s.score.playerPoints, ap: s.score.aiPoints } : null,
       player: s ? { x: s.player.x, y: s.player.y } : null, ai: s ? { x: s.ai.x, y: s.ai.y } : null,
@@ -212,8 +215,9 @@ test.describe("top-tennis audit-fix capture", () => {
       await page.waitForTimeout(3_000);
       await shot(page, profile.name, "05-modes");
       await grab(page, `flow-${profile.name}`, "modes");
-      await click(page, "#aura-btn-auto");
       await click(page, "#aura-btn-play");
+      // The Auto player must be on for the QA drive (the quick-bar button toggles, so click it only when it is off).
+      await page.evaluate(() => { const b = document.getElementById("aura-btn-auto"); if (b && !b.classList.contains("active")) b.click(); });
       await page.waitForTimeout(2_000);
       const ended = await playToResults(page);
       log(`GL_META ${JSON.stringify({ target: `flow-${profile.name}`, id: "results-drive", ended })}`);
