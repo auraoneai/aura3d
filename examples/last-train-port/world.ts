@@ -71,15 +71,16 @@ const glow = (color: string, intensity = 1.2) => material.emissive({ color, emis
 const PAX_ASSET = { easy: MESHY_ASSETS.paxEasy, sightseer: MESHY_ASSETS.paxSightseer, rushed: MESHY_ASSETS.paxRushed, sleeper: MESHY_ASSETS.paxSleeper };
 const HOUSES = [MESHY_ASSETS.houseCream, MESHY_ASSETS.houseOchre, MESHY_ASSETS.houseBlue];
 const LICENSE_CATALOG = "Aura3D catalog (gullsiege Meshy set), licensed for use with the engine";
+/** The windmill and tower are the catalog GLBs with their 1024 px maps resized to 512 px (audit D-09: they are distant landmarks). */
 const ASSETS = defineAuraAssets({
   windmill: {
     type: "model", format: "glb", url: new URL("./assets/windmill.glb", import.meta.url).href,
-    sha256: "759e888f6b0efbeb31f7205cfb252c070662317a429bc011299c54c4142ad41f", sizeBytes: 1176176,
+    sha256: "612f5ff55b5c0d3544f3dfbf17f38b290ade0b58eb118f16b681d25572324fa7", sizeBytes: 866416,
     metadata: { license: LICENSE_CATALOG, provenance: { sourcePath: "public/aura-assets/gullsiegeWindmillMeshy.f4ebca18.glb" } }
   },
   tower: {
     type: "model", format: "glb", url: new URL("./assets/tower.glb", import.meta.url).href,
-    sha256: "c9af151e2d83350c4789bd5619202555c1dd2a13b896506a3b43d83b7128f8a6", sizeBytes: 1190360,
+    sha256: "f682cf1b45ee70e663eecd5cc84b58fbfa60f555e34450472ee91b5a57336006", sizeBytes: 803968,
     metadata: { license: LICENSE_CATALOG, provenance: { sourcePath: "public/aura-assets/gullsiegeWatchtowerMeshy.546ee761.glb" } }
   },
   skyHdr: { type: "texture", format: "hdr", url: new URL("./assets/sky.hdr", import.meta.url).href, metadata: { license: "CC0 1.0, Poly Haven kloppenheim_06_puresky (1k)" } }
