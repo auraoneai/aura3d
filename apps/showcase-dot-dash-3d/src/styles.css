@@ -119,6 +119,8 @@ html, body {
 .dd-lives { color: var(--dd-gold) !important; letter-spacing: 0.1em; font-size: clamp(17px, 1.4vw, 21px) !important; }
 
 .dd-orb-chip { border-color: var(--dd-cyan); }
+/* The surge chip shows only during a surge (`.dd-chip` sets display:flex, which beat the hidden attribute). */
+.dd-orb-chip[hidden] { display: none; }
 .dd-orb-track, .dd-dash-track {
   display: inline-block;
   width: clamp(70px, 6vw, 88px);
