@@ -75,7 +75,17 @@ async function beacon(page: Page): Promise<Record<string, unknown>> {
     const reg = (globalThis as unknown as { __AURA3D_LIVE_APPS__?: { all(): any[] } }).__AURA3D_LIVE_APPS__;
     const app = reg?.all()[0];
     let diag: Record<string, unknown> = {};
-    try { const dg = app?.diagnostics?.(); diag = { renderPath: dg?.renderPath?.path ?? null, drawCalls: dg?.drawCalls ?? null }; } catch (e) { diag = { diagErr: String(e) }; }
+    // First `textureBytes` anywhere in the diagnostics tree (materials diagnostics), for the restart-loop leak check.
+    const findKey = (o: unknown, key: string, depth = 0): unknown => {
+      if (!o || typeof o !== "object" || depth > 4) return undefined;
+      if (key in (o as Record<string, unknown>)) return (o as Record<string, unknown>)[key];
+      for (const v of Object.values(o as Record<string, unknown>)) { const f = findKey(v, key, depth + 1); if (f !== undefined) return f; }
+      return undefined;
+    };
+    try {
+      const dg = app?.diagnostics?.();
+      diag = { renderPath: dg?.renderPath?.path ?? null, bloomFusion: dg?.renderPath?.bloomFusion ?? null, drawCalls: dg?.drawCalls ?? null, textureBytes: findKey(dg, "textureBytes") ?? null };
+    } catch (e) { diag = { diagErr: String(e) }; }
     const active = document.activeElement;
     return {
       frame: b?.frame ?? null, state: b?.state ?? null, events: b?.events ?? null, look: b?.look ?? null,
@@ -157,6 +167,62 @@ test.describe("cross hop audit capture", () => {
       log(`CH_DONE ${name}`);
     });
   }
+
+  // RP-05 game side: the same theme 0 run with the 4.3.7 render path and bloom passes pinned.
+  test("sa-desk-production", async ({ page }) => {
+    const name = "sa-desk-production";
+    const loaded = await open(page, name, "?seed=7&autoplay=1&aura3d-render=production", 1280, 720);
+    for (const sec of [30, 90]) { await settle(page, loaded, sec); await grab(page, name, `settle-${sec}s`); }
+    log(`CH_DONE ${name}`);
+  });
+
+  // RH-05: retake the inventory's evidence screens (same names and sizes as evidence/cross-hop/screens/final).
+  for (const [vw, w, h] of [["1280", 1280, 720], ["390", 390, 844]] as const) {
+    const name = `sc-screens-${vw}`;
+    test(name, async ({ page }) => {
+      let loaded = await open(page, name, "?autostart=0", w, h);
+      await settle(page, loaded, 25);
+      await grab(page, name, `${vw}-01-title`, true);
+      await page.evaluate(() => (document.querySelector('#ch-menu button[data-m="quick"]') as HTMLElement | null)?.click());
+      await page.waitForTimeout(30_000);
+      await grab(page, name, `${vw}-02-early`, true);
+      for (let i = 0; i < 3; i++) { await page.keyboard.press("ArrowUp"); await page.waitForTimeout(8_000); }
+      await grab(page, name, `${vw}-03-action`, true);
+      await page.goto(`${serverOrigin}${APP}?seed=7&autoplay=1`, { waitUntil: "domcontentloaded" });
+      await page.waitForFunction(READY, undefined, { timeout: 420_000, polling: 500 });
+      loaded = Date.now();
+      await settle(page, loaded, 90);
+      await grab(page, name, `${vw}-04-mid`, true);
+      log(`CH_DONE ${name}`);
+    });
+  }
+  test("sc-screens-card", async ({ page }) => {
+    const name = "sc-screens-card";
+    const loaded = await open(page, name, "?seed=7&autoplay=1", 1440, 900);
+    await settle(page, loaded, 90);
+    await grab(page, name, "card-2x", true);
+    log(`CH_DONE ${name}`);
+  });
+
+  // Drill frame (Train Dodges through the Timing School menu) and the 20-restart texture-bytes loop.
+  test("sd-desk-drill-restarts", async ({ page }) => {
+    const name = "sd-desk-drill-restarts";
+    const loaded = await open(page, name, "?autostart=0", 1280, 720);
+    await settle(page, loaded, 10);
+    await page.evaluate(() => (document.querySelector('#ch-menu button[data-m="school"]') as HTMLElement | null)?.click());
+    await page.waitForTimeout(2000);
+    await page.evaluate(() => (document.querySelector('button[data-drill="train-dodges"]') as HTMLElement | null)?.click());
+    await page.waitForTimeout(40_000);
+    await grab(page, name, "drill-train-dodges-hud", true);
+    await state(page, name, "drill");
+    for (let i = 0; i < 20; i++) {
+      await page.keyboard.press("KeyR");
+      await page.waitForTimeout(6_000);
+      const b = await state(page, name, `restart-${i + 1}`);
+      if (i === 19) log(`CH_TEXBYTES ${JSON.stringify({ restarts: 20, textureBytes: b.textureBytes })}`);
+    }
+    log(`CH_DONE ${name}`);
+  });
 
   // CH-6 restart look, CH-7 Space re-clicking the focused button, death card, CH-9 restart lockout.
   test("sb-desk-flow", async ({ page }) => {
