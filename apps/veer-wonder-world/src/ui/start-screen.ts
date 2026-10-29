@@ -11,7 +11,7 @@
 // is slow and stops in reduced motion; high contrast drops the decorations.
 
 import { WELCOME_NAME } from "../personal.js";
-import type { PlayMode } from "../types.js";
+import type { CharacterId, PlayMode } from "../types.js";
 import {
   CHARACTER_COLOURS,
   CHARACTER_IDS,
@@ -33,6 +33,23 @@ export function welcomeNameLine(locale: UiLocale, name: string | null = WELCOME_
   return name ? fillTemplate(uiText(locale, "ui.start.welcomeNamed"), { name }) : uiText(locale, "ui.start.title");
 }
 
+/**
+ * The big line, with the product name held on one line: "<name>'s" over "Wonder World", never "<name>'s Wonder" over
+ * "World" (a balanced two-line break could pick either).
+ */
+function nameLineElement(doc: Document, locale: UiLocale): HTMLElement {
+  const line = welcomeNameLine(locale);
+  const product = uiText(locale, "ui.start.title");
+  const span = el(doc, "span", { className: "ww-start-name" });
+  const at = line.lastIndexOf(product);
+  if (at < 0) span.textContent = line;
+  else span.append(line.slice(0, at), el(doc, "span", { className: "ww-start-product", text: product }), line.slice(at + product.length));
+  return span;
+}
+
+/** How far below the middle of its picture a character sits: GoGo the train shows its face low in the frame. */
+const PORTRAIT_SHIFT: Partial<Record<CharacterId, string>> = { gogo: "13%" };
+
 /** The decorative sky behind the welcome: a sun glow, a rainbow arc and three slow clouds. */
 function welcomeSky(doc: Document): HTMLElement {
   return el(doc, "div", { className: "ww-start-sky", attrs: { "aria-hidden": "true" } }, [
@@ -51,6 +68,8 @@ function welcomeParade(doc: Document): HTMLElement {
     const face = el(doc, "span", { className: "ww-start-face" });
     face.style.setProperty("--ww-dot", CHARACTER_COLOURS[id]);
     face.style.setProperty("--ww-i", String(index));
+    const shift = PORTRAIT_SHIFT[id];
+    if (shift) face.style.setProperty("--ww-face-shift", shift);
     const url = PORTRAITS[id];
     if (url) face.appendChild(el(doc, "img", { className: "ww-start-face-img", attrs: { src: url, alt: "", draggable: "false", decoding: "async" } }));
     row.appendChild(face);
@@ -78,7 +97,7 @@ export function showStartScreen(
 
   const titleId = uniqueId("ww-start-title");
   const screen = el(doc, "section", { className: "ww-screen ww-start", attrs: { "aria-labelledby": titleId, "data-ui": "start" } });
-  const nameLine = el(doc, "span", { className: "ww-start-name", text: welcomeNameLine(locale) });
+  const nameLine = nameLineElement(doc, locale);
   const title = el(doc, "h1", { className: "ww-start-title", attrs: { id: titleId } }, [
     el(doc, "span", { className: "ww-start-welcome", text: uiText(locale, "ui.start.welcome") }),
     nameLine

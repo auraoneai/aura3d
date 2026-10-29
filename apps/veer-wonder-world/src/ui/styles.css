@@ -808,9 +808,17 @@ b {
   margin-bottom: 18px;
 }
 
-/* The portraits are full-body renders on their own backdrops: the image is drawn at 1.5 times the ring and centred
-   in it (a size, not a transform, so the round clip holds in every browser), so each ring holds the character. */
+/* The portraits are full-body renders on their own backdrops: the image is drawn at 1.5 times the ring, centred on
+   the character (a size and offsets, not a transform, so the round clip holds in every browser; --ww-face-shift
+   looks lower for a character drawn low in its picture), so each ring holds the character. */
+.ww-start-face {
+  position: relative;
+}
+
 .ww-start-face-img {
+  position: absolute;
+  top: calc(-25% - var(--ww-face-shift, 0%));
+  left: -25%;
   width: 150%;
   max-width: none;
   height: 150%;
@@ -823,6 +831,10 @@ b {
   font-weight: 500;
   line-height: 1.3;
   letter-spacing: 0;
+}
+
+.ww-start-product {
+  white-space: nowrap;
 }
 
 .ww-start-name {
