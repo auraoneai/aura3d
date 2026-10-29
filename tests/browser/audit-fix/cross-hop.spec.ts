@@ -163,7 +163,18 @@ test.describe("cross hop audit capture", () => {
     const name = `sa-desk-theme${theme}`;
     test(name, async ({ page }) => {
       const loaded = await open(page, name, `?seed=7&theme=${theme}`, 1280, 720);
-      for (const sec of [30, 75]) { await settle(page, loaded, sec); await grab(page, name, `settle-${sec}s`); }
+      // Keep the critter alive on row 0 (the hawk comes there after a 3 s grace since CH-17, and the death card fades
+      // the frame by 25%): step left and back to column 0 before each shot, so the camera pose matches a run that
+      // never moved.
+      for (const sec of [30, 75]) {
+        await settle(page, loaded, sec - 20);
+        await page.keyboard.press("ArrowLeft");
+        await until(page, (b) => b.state?.mode !== "run" || (b.state?.time ?? 0) > 0, 1000);
+        await page.waitForTimeout(8000);
+        await page.keyboard.press("ArrowRight");
+        await settle(page, loaded, sec);
+        await grab(page, name, `settle-${sec}s`);
+      }
       log(`CH_DONE ${name}`);
     });
   }
