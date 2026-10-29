@@ -123,17 +123,40 @@ app = createAuraApp(canvas, {
 - **Scene kit fixes and `provenance.builtIn` on the built-in humanoid GLB:** No scene kits. Characters are Meshy GLBs (`models.ts`), not the built-in humanoid.
 - **Package versions:** `apps/showcase-ninja-runner-port/package.json` is already `4.5.0`.
 
+## Measured on 4.5.0 (2026-10-29, lane G20)
+
+All numbers come from remote SwiftShader (software WebGL2) runs of `tests/browser/audit-fix/ninja-runner-port.spec.ts` on the example page, at a fixed sim state (`begin()` then `stepFrames(300)`, s = 45 m, 1280x720), with the game's frame loop stopped and the frame rendered through the QA hook. Mean is canvas-only luma (0-255). Frames and per-shot JSON are in `evidence/ninja-runner-port/audit-2026-10-29/`. Nothing here is real-GPU evidence.
+
+| Build and query | Mean | p5 / p95 | Draw calls |
+|---|---|---|---|
+| v4.3.7, default | 111.98 | 41 / 162 | 98 |
+| v4.3.7, `?aura3d-render=production` | 111.27 | 41 / 162 | 98 |
+| v4.3.7, `?quality=low` (no AO) | 118.71 | 52 / 170 | 98 |
+| 4.5.0 base (31f8945ad), default (`quality: auto`, `bloomFusion: separable`) | 118.22 | 52 / 169 | 98 |
+| 4.5.0 base, `?aura3d-render=production` (bloom fusion off) | 117.64 | 52 / 168 | 98 |
+| 4.5.0 base, `?quality=low` (no AO) | 119.61 | 54 / 171 | 98 |
+| 4.5.0 base, `?shadow=0` | 118.57 | 48 / 170 | 46 |
+| 4.5.0 base, `?shadowfit=legacy` (4.2.0 fit) | 112.62 | n/a | 132 |
+
+- 4.3.7 to 4.5.0: the frame is 6.2 levels brighter on average and the darkest 5% lifts from 41 to 52, with nothing clipped (p95 169). The cause is the ambient occlusion change (section 5), not the hemisphere: without AO (`?quality=low`) the two releases differ by only 0.9 levels (118.71 vs 119.61), while AO darkens the 4.3.7 frame by 6.7 levels and the 4.5.0 frame by 1.4. So the hemisphere change in section 3 is under one level here. The 4.5.0 frame reads slightly flatter, not wrong, so nothing is retuned.
+- Bloom fusion (RP-05): fused vs production differ by 0.58 levels on the base and 0.01 on the lane branch (118.07 vs 118.08), under the 2-level line. The game stays on `quality: auto`; pinning `quality: "production"` buys nothing measurable.
+- AO (LIGHT-06): AO on vs off (`?quality=low`) is 1.4 levels darker with AO on 4.5.0 and 6.7 levels on 4.3.7. `diagnostics().renderPath` lists no dropped passes.
+- Shadow fit: the 4.2.0 fit darkens the whole frame by about 6 levels with no visible shadow shapes, because every instanced scenery node spans the 2.6 km course and that fit widens each cascade to all casters. The game keeps its 4.3.0 fit opt-in (`world.ts`), and the sky dome now opts out of casting.
+- `?ibl=hdri` (new) loads the authored HDRI through a real asset ref: 111.5 mean on the branch, about the 4.3.7 level. The default stays on the neutral room.
+- The capture path (`app.capture` inside `api.frame()` and `pixels()`) works with `preserveDrawingBuffer` off: every run above read lit frames.
+
 ## Checklist
 
-- [x] `node tools/game-checks/run.mjs ninja-runner-port` reports 0 errors, 0 warnings on `beat3js2/integration` (run during this review). Re-run after any change you make.
-- [ ] Load the game on 4.5.0 and read `__AURA_NINJA_RUNNER__.diagnostics().renderPath`; expect `path: "hdr-msaa"`, `quality: "auto"`, `bloomFusion: "separable"`. Record the values.
-- [ ] Check `__AURA_NINJA_RUNNER__.diagnostics().degradations` for `option-ignored` entries; expect none. Check `.warnings` for "hdri environment has no texture asset ref"; if present, the HDRI is not loading (section 3).
-- [ ] Take the same frame on `main` (4.3.7) and 4.5.0 (`?autostart=1&autopilot=1`, then `stepFrames(...)` and `frame()`), and compare overall brightness and the shaded side of characters and ground, to judge the hemisphere "sky fill" / neutral-room change (section 3). Expect possible brightening, not only darkening.
-- [ ] If the look is off, tune the "sky fill" `intensity` (`world.ts:232`) or add a `lights.ambient`; re-capture. Do not rely on the `environments.hdri` `intensity` until the HDRI ref is fixed.
-- [ ] Decide whether to fix the `environments.hdri` texture ref (use `defineAuraAssets`) as a separate, deliberate look change.
-- [ ] Compare a default frame with a `?quality=low` frame to see the AO contribution on a device without float linear filtering (section 5).
-- [ ] Decide whether to add `quality: "production"` to `createAuraApp` (`main.ts:418`) to drop bloom fusion and cascade skipping, or accept `auto`. Frustum culling stays on either way.
-- [ ] Confirm `__AURA_NINJA_RUNNER__.pixels()` returns non-zero `litPixels`, so the `app.capture()` path still works with `preserveDrawingBuffer` off.
-- [ ] Run `tests/browser/ninja-runner-port.spec.ts` and `tests/browser/port-sun-shadows-ninja-runner.spec.ts` on the remote runner (`tools/remote-acr/run.sh`), not locally. The external capture tools were audited and need no change.
-- [ ] Re-run the unit tests in `tests/unit/ninja-runner-port/` on the remote runner (`scenery.test.ts` and `shaders-compile.test.ts` exercise the pieces this guide touches).
-- [ ] Update `route-health.json` (`generatedAt` is 2026-10-23) after the 4.5.0 run, if the route-health generator is part of your release flow.
+- [x] `node tools/game-checks/run.mjs ninja-runner-port` reports 0 errors, 0 warnings (re-run on `audit-fix/g20`).
+- [x] `diagnostics().renderPath` on 4.5.0: `path: "hdr-msaa"`, `bloomFusion: "separable"` (every G20 run).
+- [x] `diagnostics().warnings` holds only "Scene has no interactions"; the HDRI-ref warning does not reach `diagnostics().warnings`, but the code path in section 3 is confirmed by the `?ibl=hdri` frame differing from the default.
+- [x] Same frame on 4.3.7 and 4.5.0: 111.98 vs 118.22 mean (table above).
+- [x] Look judged at the lift (it comes from AO, not the "sky fill"): kept as is; the "sky fill" stays at 0.5.
+- [x] HDRI ref: `?ibl=hdri` added as a deliberate, opt-in look change; the default is unchanged.
+- [x] AO contribution: 1.4 levels on 4.5.0, 6.7 levels on 4.3.7 (default vs `?quality=low`).
+- [x] `quality: "production"` not added (fused vs production differ by 0.58 levels).
+- [x] `app.capture()` path works with `preserveDrawingBuffer` off.
+- [x] Browser checks ran remotely (`tools/remote-acr/run.sh`): `tests/browser/audit-fix/ninja-runner-port.spec.ts`, which replaces the older specs for these checks.
+- [x] Unit tests in `tests/unit/ninja-runner-port/` pass (115 tests, 12 files).
+- [x] `route-health.json` updated (route `/apps/shadowstep-gauntlet/`, current limits).
+- [ ] Real-GPU frame (`tools/real-gpu/run.sh`). This needs a Mac or GPU VM run by the owner; agents may not run local Chrome.

@@ -1,0 +1,2 @@
+GL_ERRORS g20-variants-shadow []
+  1 passed (22.9m)
