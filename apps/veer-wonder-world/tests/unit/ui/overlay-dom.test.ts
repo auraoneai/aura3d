@@ -11,6 +11,7 @@ import type { CharacterId, ParentSettings } from "../../../src/types.js";
 import { ENGLISH_ONLY, HIGH_CONTRAST_CLASS, UI_STRINGS, isCharacterId, type UiLocale } from "../../../src/ui/accessibility.js";
 import { mountCaptions } from "../../../src/ui/captions.js";
 import { showEpisodeMenu, type MenuItem, type PortraitMap } from "../../../src/ui/episode-menu.js";
+import { PARENT_GATE_HOLD_MS, requireParent } from "../../../src/ui/parent-gate.js";
 import { LOCALE_CHOICES, SFX_CHOICES, openParentPanel } from "../../../src/ui/parent-panel.js";
 import { PORTRAITS } from "../../../src/ui/portraits.js";
 import {
@@ -30,10 +31,17 @@ type Listener = (event: FakeEvent) => void;
 class FakeEvent {
   defaultPrevented = false;
   target: FakeElement | null = null;
-  readonly timeStamp = 0;
-  constructor(readonly type: string) {}
+  constructor(readonly type: string, readonly timeStamp = 0) {}
   preventDefault(): void {
     this.defaultPrevented = true;
+  }
+}
+
+/** A key press or release, stamped (ms) when the key moved, as a browser stamps it however late the page handles it. */
+class FakeKeyboardEvent extends FakeEvent {
+  readonly repeat = false;
+  constructor(type: "keydown" | "keyup", readonly key: string, timeStamp: number) {
+    super(type, timeStamp);
   }
 }
 
@@ -287,6 +295,12 @@ class FakeDocument extends FakeEventTarget {
   createElementNS(namespace: string, tag: string): FakeElement {
     return new FakeElement(this, tag, namespace);
   }
+  /** A text node: an element with only its own text, which no selector here matches. */
+  createTextNode(text: string): FakeElement {
+    const node = new FakeElement(this, "#text");
+    node.textContent = text;
+    return node;
+  }
 }
 
 /** A document whose window matches exactly the given media queries, with the `#ui` overlay root in its body. */
@@ -379,6 +393,32 @@ function openPanel(settings: ParentSettings = defaultSettings(), media: readonly
 function sfxInputs(root: FakeElement): FakeElement[] {
   return byAttr(root, "data-sfx-volume");
 }
+
+describe("parent gate (PRD 04 E04; 06 QA-A08)", () => {
+  const holdButton = (root: FakeElement): FakeElement => only(byAttr(root, "data-action", "hold"));
+
+  it("opens after a 2 s key hold measured by the key events' own times, even when the page never ran its timer", async () => {
+    const { root } = setup();
+    const answer = requireParent(asHtml(root), ENGLISH_ONLY);
+    const hold = holdButton(root);
+    hold.dispatchEvent(new FakeKeyboardEvent("keydown", "Enter", 1_000));
+    // A busy page handles the release straight after the press: no timer has had a turn in between.
+    hold.dispatchEvent(new FakeKeyboardEvent("keyup", "Enter", 1_000 + PARENT_GATE_HOLD_MS + 100));
+    await expect(answer).resolves.toBe(true);
+    expect(byAttr(root, "data-ui", "parent-gate")).toHaveLength(0);
+  });
+
+  it("resets on an early release and stays up until the grown-up holds again or backs out", async () => {
+    const { root } = setup();
+    const answer = requireParent(asHtml(root), ENGLISH_ONLY);
+    const hold = holdButton(root);
+    hold.dispatchEvent(new FakeKeyboardEvent("keydown", "Enter", 1_000));
+    hold.dispatchEvent(new FakeKeyboardEvent("keyup", "Enter", 1_000 + PARENT_GATE_HOLD_MS - 500));
+    expect(byAttr(root, "data-ui", "parent-gate")).toHaveLength(1);
+    tap(only(byAttr(root, "data-action", "cancel")));
+    await expect(answer).resolves.toBe(false);
+  });
+});
 
 describe("parent panel: sound-effect level (PRD 01 section 9; 07 B20)", () => {
   it("lists off, soft and normal, the levels the settings store keeps", () => {

@@ -55,6 +55,8 @@ export function requireParent(root: HTMLElement, locale: UiLocale, options: Pare
 
     let timer: ReturnType<typeof setTimeout> | null = null;
     let heldBy: HeldInput | null = null;
+    /** The press that started the current hold, as that input event's own timestamp. */
+    let heldSince = 0;
     /** True between a pointer press on the button and the click that follows it. */
     let pressed = false;
     let settled = false;
@@ -95,15 +97,30 @@ export function requireParent(root: HTMLElement, locale: UiLocale, options: Pare
       resolve(result);
     }
 
-    const startHold = (input: HeldInput): void => {
+    const startHold = (input: HeldInput, at: number): void => {
       if (settled || timer !== null) return;
       heldBy = input;
+      heldSince = at;
       hold.classList.add("is-holding");
       say("ui.gate.holding");
       timer = setTimeout(() => {
         timer = null;
         finish(true);
       }, PARENT_GATE_HOLD_MS);
+    };
+
+    /**
+     * Letting go. A busy page (a slow tablet, software WebGL) can handle the press late and the release straight after
+     * it, before the timer has had a turn, so the hold is judged by the two input events' own timestamps: held long
+     * enough opens the gate (the finger or key is already up, so nothing is left to swallow), shorter resets it.
+     */
+    const releaseHold = (at: number): void => {
+      if (timer !== null && at - heldSince >= PARENT_GATE_HOLD_MS) {
+        heldBy = null;
+        finish(true);
+        return;
+      }
+      stopHold(true);
     };
 
     hold.addEventListener("pointerdown", (event) => {
@@ -115,21 +132,21 @@ export function requireParent(root: HTMLElement, locale: UiLocale, options: Pare
         // Capture is a nicety; the hold still works without it.
       }
       pressed = true;
-      startHold({ kind: "pointer", pointerId: event.pointerId });
+      startHold({ kind: "pointer", pointerId: event.pointerId }, event.timeStamp);
     });
-    hold.addEventListener("pointerup", () => stopHold(true));
+    hold.addEventListener("pointerup", (event) => releaseHold(event.timeStamp));
     hold.addEventListener("pointercancel", () => stopHold(false));
     hold.addEventListener("lostpointercapture", () => stopHold(false));
     hold.addEventListener("contextmenu", (event) => event.preventDefault());
     hold.addEventListener("keydown", (event) => {
       if (event.key !== "Enter" && event.key !== " ") return;
       event.preventDefault();
-      if (!event.repeat) startHold({ kind: "key", key: event.key });
+      if (!event.repeat) startHold({ kind: "key", key: event.key }, event.timeStamp);
     });
     hold.addEventListener("keyup", (event) => {
       if (event.key !== "Enter" && event.key !== " ") return;
       event.preventDefault();
-      stopHold(true);
+      releaseHold(event.timeStamp);
     });
     hold.addEventListener("blur", () => stopHold(false));
     // An activation with no hold at all (for example from assistive
