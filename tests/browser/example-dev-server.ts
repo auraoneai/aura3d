@@ -1,6 +1,6 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { dirname, extname, join, normalize, relative, resolve } from "node:path";
+import { dirname, extname, join, normalize, relative, resolve, sep } from "node:path";
 import ts from "typescript";
 import * as esbuild from "esbuild";
 import { contextualPathForLegacyPath } from "../../tools/naming-taxonomy/contextualAliases";
@@ -138,6 +138,16 @@ for (const entry of installedAuraPackageAliases()) {
   packageEntryPoints.set(entry.find, `/${repositoryRelative}`);
 }
 
+/** The URL path the dev server serves `file` at (repo-relative, forward slashes). */
+export function moduleUrlPath(root: string, file: string): string {
+  return `/${relative(resolve(root), resolve(file)).replace(/\\/g, "/")}`;
+}
+
+/** Replaces `import.meta.url` with the module's own served URL, so bundled modules keep Vite's per-file resolution. */
+export function rewriteImportMetaUrl(source: string, urlPath: string): string {
+  return source.replace(/\bimport\.meta\.url\b/g, `new URL(${JSON.stringify(urlPath)}, self.location.href).href`);
+}
+
 export async function startExampleDevServer(root = process.cwd()): Promise<ExampleDevServer> {
   // Transforms are deterministic per (file, mtime); engine graphs pull ~1,300
   // modules through this handler and re-running ts.transpileModule plus the
@@ -200,6 +210,19 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
         loader: "js",
         contents: `(() => { const style = document.createElement("style"); style.setAttribute("data-aura3d-dev-css", ${JSON.stringify(relative(root, args.path))}); style.textContent = ${JSON.stringify(readFileSync(args.path, "utf8"))}; document.head.appendChild(style); })();`,
       }));
+      // A bundle gives every module the entry's import.meta.url, so an example mounted by an app
+      // (`new URL("./assets/meshy/x.glb", import.meta.url)` in examples/ninja-runner-port) resolved under
+      // /apps/<app>/src/ and 404ed. Vite resolves those URLs against the module's own file; do the same here.
+      build.onLoad({ filter: /\.(m?js|tsx?)$/ }, (args) => {
+        if (args.path.includes(`${sep}node_modules${sep}`)) return undefined;
+        const source = readFileSync(args.path, "utf8");
+        if (!source.includes("import.meta.url")) return undefined;
+        return {
+          contents: rewriteImportMetaUrl(source, moduleUrlPath(root, args.path)),
+          loader: args.path.endsWith(".tsx") ? "tsx" : args.path.endsWith(".ts") ? "ts" : "js",
+          resolveDir: dirname(args.path),
+        };
+      });
     },
   };
   const bundleForBrowser = async (file: string): Promise<string | undefined> => {
