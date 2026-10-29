@@ -85,17 +85,19 @@ test.describe("e4 touch sticks", () => {
     await page.waitForTimeout(WINDOW_MS);
     const idle1 = await controlled(page);
 
-    // Drag window: hold the stick 35 px right of where the finger lands (stick centre, or where it should be).
+    // Drag window: hold the stick 35 px LEFT of where the finger lands (stick centre, or where it should be). The idle
+    // drill drifts the player towards +x, so only a stick that works can give a negative dx.
     const cdp = await page.context().newCDPSession(page);
     const sx = dom.stick ? dom.stick.x + dom.stick.w / 2 : 0.145 * 390;
     const sy = dom.stick ? dom.stick.y + dom.stick.h / 2 : 0.855 * 844;
     const drag0 = await controlled(page);
     await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: sx, y: sy, id: 1 }] });
     await page.waitForTimeout(300);
-    await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: sx + 35, y: sy, id: 1 }] });
-    await page.waitForTimeout(WINDOW_MS / 2);
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: sx - 35, y: sy, id: 1 }] });
+    const track: { x: number | null; z: number | null; t: number }[] = [];
+    for (let i = 0; i < 6; i++) { await page.waitForTimeout(WINDOW_MS / 12); const c = await controlled(page); track.push({ x: c.x, z: c.z, t: c.t }); }
     const nub = await page.evaluate(() => document.querySelector<HTMLElement>('.a3g-touch [data-control="stick"] .a3g-tc-stick-nub')?.style.transform ?? null);
-    await shot(page, "dragging", { nub });
+    await shot(page, "dragging", { nub, track });
     await page.waitForTimeout(WINDOW_MS / 2);
     const drag1 = await controlled(page);
     await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
