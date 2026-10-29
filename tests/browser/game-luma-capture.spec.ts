@@ -13,10 +13,12 @@ import { GAME_LUMA_TARGETS } from "./game-luma-targets";
  * tests/browser/game-luma-targets.ts is the single target list; tests/unit/game-luma-targets.test.ts checks that every
  * live game in docs/workflows/game-inventory.json has at least one target.
  * The software-GL runner presents about one frame every 5 to 10 s, and a baked environment probe lands several seconds
- * after the first frame, so the FIRST shot is deliberately not trusted: judge the later ones.
+ * after the first frame, so the shots start at 25 s after ready (GL_SETTLE overrides; the 4.5.0 harness also took a 3 s shot,
+ * which read the analytic floor probe): judge the 25 s and 60 s shots. One screenshot per shot; on the runner a shot costs
+ * 50 to 110 s, so a target takes about 4 minutes.
  */
 
-const SETTLE_SECONDS = (process.env.GL_SETTLE ?? "3,25,60").split(",").map(Number);
+const SETTLE_SECONDS = (process.env.GL_SETTLE ?? "25,60").split(",").map(Number);
 const CHUNK = 16000;
 const log = (line: string): void => { process.stdout.write(`${line}\n`); };
 const CANVAS_ONLY = "body *:not(canvas){visibility:hidden !important} canvas{visibility:visible !important} html,body{background:#000 !important}";
@@ -47,10 +49,16 @@ async function lumaStats(page: Page, png: Buffer) {
       grid[gy * 3 + gx]! += y; gridN[gy * 3 + gx]!++;
     }
     const pct = (p: number) => { let acc = 0; for (let v = 0; v < 256; v++) { acc += hist[v]!; if (acc >= p * n) return v; } return 255; };
+    // The JPEG is encoded here from the same pixels: a second page.screenshot costs another presented frame, which is
+    // tens of seconds per shot on the software-GL runner.
+    const jpeg = c.toDataURL("image/jpeg", 0.7).slice("data:image/jpeg;base64,".length);
     return {
-      mean: +(sum / n).toFixed(2), p5: pct(0.05), p50: pct(0.5), p95: pct(0.95),
-      darkFrac: +(dark / n).toFixed(4), clipFrac: +(clip / n).toFixed(4),
-      grid: Array.from(grid, (v, k) => +(v / Math.max(1, gridN[k]!)).toFixed(1))
+      stats: {
+        mean: +(sum / n).toFixed(2), p5: pct(0.05), p50: pct(0.5), p95: pct(0.95),
+        darkFrac: +(dark / n).toFixed(4), clipFrac: +(clip / n).toFixed(4),
+        grid: Array.from(grid, (v, k) => +(v / Math.max(1, gridN[k]!)).toFixed(1))
+      },
+      jpeg
     };
   }, png.toString("base64"));
 }
@@ -68,11 +76,9 @@ async function grab(page: Page, target: string, id: string, extra: Record<string
   const handle = await page.addStyleTag({ content: CANVAS_ONLY });
   await page.waitForTimeout(250);
   const png = await page.screenshot({ type: "png" });
-  const jpg = await page.screenshot({ type: "jpeg", quality: 70 });
   await handle.evaluate((el) => el.remove());
-  const stats = await lumaStats(page, png);
+  const { stats, jpeg: b64 } = await lumaStats(page, png);
   log(`GL_META ${JSON.stringify({ target, id, ...extra, ...stats, info: await engineInfo(page) })}`);
-  const b64 = jpg.toString("base64");
   const n = Math.ceil(b64.length / CHUNK);
   for (let i = 0; i < n; i++) log(`GL_JPG ${target} ${id} ${i + 1}/${n} ${b64.slice(i * CHUNK, (i + 1) * CHUNK)}`);
 }

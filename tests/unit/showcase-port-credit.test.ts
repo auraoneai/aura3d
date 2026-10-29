@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-// @ts-expect-error plain ESM tool without types
 import { CREDIT_NOTE, CREDIT_STYLE, PORT_PAGES, appPagePath, composePortPage, pickCreditSpot } from "../../tools/showcase-port-pages/lib.mjs";
 
 type Spot = { left?: number; right?: number; top?: number; bottom?: number };

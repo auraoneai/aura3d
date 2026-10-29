@@ -1,6 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
-// @ts-expect-error plain ESM tool without types
 import { CREDIT_NOTE, CREDIT_STYLE } from "../../tools/showcase-port-pages/lib.mjs";
 
 /**
