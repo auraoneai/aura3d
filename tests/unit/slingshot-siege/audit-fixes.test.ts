@@ -119,3 +119,34 @@ describe("slingshot-siege URL guard (SS-E6)", () => {
     expect(invalidRenderParams("?aura3d-bloom-fusion=fused")).toEqual(["aura3d-bloom-fusion"]);
   });
 });
+
+describe("slingshot-siege stage build (RH-04 OPTION_IGNORED, LIGHT-06 switch, SS-E2)", async () => {
+  const { buildStage } = await import("../../../apps/showcase-slingshot-siege/src/game/stage");
+  const { CHAPTERS } = await import("../../../apps/showcase-slingshot-siege/src/game/levels");
+  type Node = { kind?: string; name?: string; effect?: string; ignoredOptions?: readonly string[]; children?: readonly Node[] };
+  const walk = (nodes: readonly unknown[]): Node[] => nodes.flatMap((n) => {
+    const node = (typeof (n as { toJSON?: unknown }).toJSON === "function" ? (n as { toJSON(): Node }).toJSON() : n) as Node;
+    return [node, ...walk(node.children ?? [])];
+  });
+
+  it("no node carries ignored options in any chapter", () => {
+    for (const chapter of CHAPTERS) {
+      const all = walk(buildStage(chapter, { reducedMotion: false }).nodes);
+      expect(all.flatMap((n) => n.ignoredOptions ?? [])).toEqual([]);
+    }
+  });
+
+  it("?ao=0 drops only the look AO node; reduced motion keeps FXAA and drops the vignette", () => {
+    const chapter = CHAPTERS[0]!;
+    const names = (opts: { reducedMotion: boolean; ambientOcclusion?: boolean }) => walk(buildStage(chapter, opts).nodes).map((n) => n.name ?? n.kind ?? "");
+    const on = names({ reducedMotion: false });
+    const off = names({ reducedMotion: false, ambientOcclusion: false });
+    expect(on).toContain("look ambient occlusion");
+    expect(off).not.toContain("look ambient occlusion");
+    expect(on.length - off.length).toBe(1);
+    const fx = (opts: { reducedMotion: boolean }) => JSON.stringify(walk(buildStage(chapter, opts).nodes).filter((n) => n.kind === "effect"));
+    expect(fx({ reducedMotion: true })).toContain("fxaa");
+    expect(fx({ reducedMotion: true })).not.toContain("vignette");
+    expect(fx({ reducedMotion: false })).toContain("vignette");
+  });
+});
