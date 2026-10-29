@@ -1,10 +1,12 @@
 # PRD 05 — Canonical 20 Episodes, 12 Interactive Games, Vocabulary and Scripts
-Status: **CANONICAL CONCEPT BACKLOG / PROPOSED, NOT PRODUCED** · Editorial owner: creative lead + pediatric SLP reviewer · Application files under `apps/veer-wonder-world/src/content/`
+Status: **CANONICAL CONCEPT BACKLOG; IN PRODUCTION (owner decision 2026-10-29: all 20 episodes and 12 activities are built in this run)** · Editorial owner: creative lead + pediatric SLP reviewer; for this build every SLP, educator, caregiver, creative or rights review named in this file is a recorded agent review (`07` section 2), which is not clinical review and relaxes no rule here · Application files under `apps/veer-wonder-world/src/content/` (story) and `apps/veer-wonder-world/src/localization/en/` (text)
 
 ## 0. Editorial source of truth and counting rule
 Exactly **20 original episode concepts** from the established Wonder World brainstorm; **12 separate interactive mini-games** from the first concept set. Some games and episodes share world, character and vocabulary but are not double-counted. One pilot “Momo's Ball Day” can be a **chapter inside episode #17, Sheru’s Big Adventure**, not a twenty-first required episode.
 
 Pilot P1 episodes: #1, #2, #5, #6, #9 and #17. Pilot P1 games: #G1, #G2 and #G3. The other 14 episodes and 9 activities belong to P2. “Magic Sound Garden” starts as touch-first and only gains sound detection after a separate P3 approval.
+
+**Owner decision 2026-10-29.** P2 is built in the same run as P1; the P1 set stays the golden slice that is verified first. Each story is `src/content/episodes/<slug>.ts` (`export const episode: EpisodeSpec`) or `src/content/activities/<slug>.ts` (`export const activity: ActivitySpec`) with its text in `src/localization/en/{episodes,activities}/<slug>.ts`; the story id is the slug. Line keys are `<code>.<beatId>.<n>` with `<code>` `e01`-`e20` or `g01`-`g12` (for example `e17.hook.1`), and each story has `<code>.title`, `<code>.offline`, `<code>.bridge` and `<code>.tip.<n>` strings. Every manifest carries `review: { language: "approved", rights: "approved", reviewer, date }` from the agent review in `07`.
 
 ## 1. Episode format contract
 Every episode is an independently enjoyable **watchable short**, generally target 2–4 minutes (a design hypothesis to test), with optional in-story touch moments in Play Together mode:
@@ -22,13 +24,13 @@ Every episode is an independently enjoyable **watchable short**, generally targe
 ### E01 — Momo's Magic Mouth (P1)
 **File:** `src/content/episodes/momo-magic-mouth.ts`. **Hero:** Momo. **Core:** “ah,” “oh,” “mmm”; optional “more”.
 - **Hook:** Momo sees his reflection in a toy mirror and makes a surprised “Oh!”
-- **Action:** Three silly mouth/expression changes paired with the sound *once per beat*, then gestures and a playful little tune; do not show articulatory anatomy as a clinical model.
+- **Action:** Three silly mouth/expression changes paired with the sound *once per beat*, then gestures and a playful little tune; do not show articulatory anatomy as a clinical model. In this build the models have no mouth or face animation (`02` section 2), so each “face” is a body pose, a squash/bob and the mirror reflection, never a lip-sync claim.
 - **Turn:** Momo pauses, looks toward child, and optionally reacts to a tap on the mirror or parent-confirmed sound/gesture.
 - **Caregiver:** Copy each other's expressions in a real mirror; name what each person does. **Safety:** never reward or score accurate mouth or speech production.
-- **Done:** Approved cue timing, visible talking face, short natural pause and silent-child route.
+- **Done:** Approved cue timing, visible talking face (the talking pulse in this build), short natural pause and silent-child route.
 
 ### E02 — The Peekaboo Palace (P1)
-**File:** `src/content/episodes/peekaboo-palace.ts`. **Hero:** Pip in P2, but **P1 alternative Momo host with non-rigged door/baby animal props** until Pip approved. **Core:** “open,” “hi,” “bye.”
+**File:** `src/content/episodes/peekaboo-palace.ts`. **Hero:** Peeko + Momo: **Momo hosts with non-rigged door/baby animal props**, and Peeko (renamed from Pip; built now, with procedural motion) peeks out of a door. **Core:** “open,” “hi,” “bye.”
 - **Hook:** A large colourful door wiggles and a tiny friend peeks out.
 - **Action:** Two or three doors open slowly; animal/object revealed; narrator names it; visitor waves.
 - **Turn:** Tap door OR allow parent to acknowledge child's point; if neither, door opens naturally.
@@ -36,12 +38,12 @@ Every episode is an independently enjoyable **watchable short**, generally targe
 - **Done:** At most two doors shown as current choices; closed door clearly labelled by action, not written text.
 
 ### E03 — The Alphabet Zoo (P2)
-**File:** `src/content/episodes/alphabet-zoo.ts`. **Hero:** Lumi + Pip. **Core:** “B,” “ball,” “bear” for pilot; other letters later.
+**File:** `src/content/episodes/alphabet-zoo.ts`. **Hero:** Lumi + Peeko. **Core:** “B,” “ball,” “bear” for pilot; other letters later.
 - **Hook:** Big friendly B opens a tiny zoo gate; a bear and a ball appear.
 - **Action:** Narrator distinguishes letter name “bee” and first sound /b/ in “ball”; each object performs a small visible action.
 - **Turn:** Tap either object to make it act; no forced letter choice.
 - **Caregiver:** Point to B on a page and find a ball; name rather than quiz.
-- **Done:** Phoneme/letter review by educator; no claim of independent alphabet learning.
+- **Done:** Phoneme/letter review by educator (this build: agent review, `07`); no claim of independent alphabet learning.
 
 ### E04 — GoGo's ABC Train (P2)
 **File:** `src/content/episodes/gogo-abc-train.ts`. **Hero:** GoGo. **Core:** “A,” “apple,” “go,” then future single-letter variants.
@@ -49,7 +51,7 @@ Every episode is an independently enjoyable **watchable short**, generally targe
 - **Action:** Apple rolls down a gentle chute; passengers cheer “Apple!” then the train goes.
 - **Turn:** Tap carriage/large go control, with narrator providing all word models either way.
 - **Caregiver:** Play with real toy train or picture of apple; **one featured letter per short episode**, not 26 rapidly.
-- **Done:** Train/letter asset rights and clip mapping signed off.
+- **Done:** Train/letter asset rights and motion mapping signed off (GoGo is procedural, so there are no clips to map; agent review, `07`).
 
 ### E05 — Momo's Counting Cookies (P1)
 **File:** `src/content/episodes/counting-cookies.ts`. **Hero:** Momo as cookie-loving, original friendly creature; **do not imitate copyrighted Cookie Monster**. **Core:** “one,” “two,” “three,” plus “cookie.”
@@ -124,7 +126,7 @@ Every episode is an independently enjoyable **watchable short**, generally targe
 - **Done:** Friendly humour, no disturbing disassembly effects.
 
 ### E14 — The Lost Teddy Adventure (P2)
-**File:** `src/content/episodes/lost-teddy-adventure.ts`. **Hero:** Momo + Pip. **Core:** “teddy,” “look,” “find.”
+**File:** `src/content/episodes/lost-teddy-adventure.ts`. **Hero:** Momo + Peeko. **Core:** “teddy,” “look,” “find.”
 - **Hook:** Teddy is absent from his chair.
 - **Action:** Look under a small table, behind a cushion and in a basket; happy reunion.
 - **Turn:** Tap a hiding spot, the narrator describes location even if Teddy is elsewhere.
@@ -157,8 +159,8 @@ Every episode is an independently enjoyable **watchable short**, generally targe
 - **Expansion after pilot:** Add bird/butterfly/puddle scenes to the **same episode**, not a separate required episode.
 
 ### E18 — Who's at the Door? (P2)
-**File:** `src/content/episodes/whos-at-the-door.ts`. **Hero:** Pip + Momo; optional local family greetings.
-- **Core:** “hi,” “bye,” “Mama/Papa” **only if family-approved and appropriate**.
+**File:** `src/content/episodes/whos-at-the-door.ts`. **Hero:** Peeko + Momo; optional local family greetings.
+- **Core:** “hi,” “bye,” “Mama/Papa” **only if family-approved and appropriate**. This build uses generic friends only: no family names or voices (`MASTER-PROMPT.md` section 6), and no family pack is built.
 - **Hook:** Soft doorbell rings; a familiar cartoon friend appears.
 - **Action:** Friend enters, waves, says hello, and leaves gently.
 - **Turn:** Tap the doorbell or wave with caregiver; no face/camera recognition.
@@ -190,7 +192,7 @@ Every episode is an independently enjoyable **watchable short**, generally targe
 - **Round**: 3 bubbles then “more” request; if no action, pause then gentle automatic closure.
 - **Real play**: Blow bubbles with caregiver / pretend-pop bubbles.
 
-### G02 — Go-Go Train (P1, original GoGo hero art can be P2; don't claim final until approved)
+### G02 — Go-Go Train (P1; GoGo's generated model is built now, with a primitive stand-in while it is missing; don't claim final until approved)
 `src/content/activities/gogo-train.ts`.
 - **Action**: Tap GO to start train, STOP to halt; choose one of two passengers.
 - **Words**: “go”, “stop”, “in”, “bye”; “ready...go!” pause.
@@ -242,7 +244,7 @@ Every episode is an independently enjoyable **watchable short**, generally targe
 ### G09 — Family Doorbells (P2)
 `src/content/activities/family-doorbells.ts`.
 - **Action**: Tap doorbell, show approved cartoon relative or default friendly character, wave.
-- **Words**: “hi”, “bye”, family names (only with consent), “door.”
+- **Words**: “hi”, “bye”, family names (only with consent), “door.” This build uses generic friends only: no family names or voices (`MASTER-PROMPT.md` section 6).
 - **Real play**: Wave to a family member or toy.
 - **Privacy**: Optional private local file pack, never committed/public.
 
@@ -268,7 +270,7 @@ Every episode is an independently enjoyable **watchable short**, generally targe
 - **Note**: No camera tracking, object recognition or automatic assertions about child behaviour.
 
 ## 4. Pilot scripts and cue outlines (production writing seeds)
-Full narration/localized audio is still to be produced and reviewed. These are authored **beat maps**; character lines illustrate desired level and must be approved.
+Full narration/localized audio is produced and reviewed per story file; the rows below are the seeds. These are authored **beat maps**; character lines illustrate desired level and must be approved. In this build the English lines are recorded with ElevenLabs premade voices through Kiro Prism (casting in `07` section 3.1) and approved by agent review (`07` section 2).
 
 | Pilot episode | Beat 1 hook | Beat 2 model/meaning | Beat 3 child turn | Beat 4 musical/visual payoff | Beat 5 finish |
 | --- | --- | --- | --- | --- | --- |

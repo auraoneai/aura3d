@@ -1,0 +1,299 @@
+# PRD 07 — Autonomous Decisions, Agent Review and Build Record
+Status: **LIVING RECORD for the 2026-10-29 build (prototype; not released)** · Owner: build agent (owner instruction 2026-10-29) · Links: [index](README.md), [execution prompt](MASTER-PROMPT.md), [product and safety](01-product-learning-and-safety.md), [content bible](02-character-and-content-bible.md), [architecture](03-aura3d-architecture-and-contracts.md), [backlog](04-implementation-backlog-by-filename.md), [episodes](05-episodes-games-and-curriculum.md), [QA](06-qa-release-and-execution.md)
+
+This file records four things:
+1. what the owner decided;
+2. what the build changed in `01`-`06` after checking them against Aura3D 4.5.0;
+3. which agent reviews replaced the human sign-offs the PRD names;
+4. what was built and verified, and what remains open.
+
+Every entry names its source, so the next reader can check it.
+
+**What agent review means here.** A software agent checked the work against the rules written in `01`-`06` and `MASTER-PROMPT.md`. That is not a clinical (SLP), legal, privacy-counsel, trademark or assistive-technology-user review. It relaxes no safety rule and supports no educational, therapeutic or "ready for children" claim.
+
+**How to read the evidence paths.** Paths are repo-relative at the branch commit. API facts were checked in two places:
+- the published 4.5.0 typings in `apps/veer-wonder-world/node_modules/@aura3d/*/dist` (a local, gitignored install used for the consumer typecheck);
+- the matching source under `packages/`, which this file cites so the path survives a fresh checkout.
+
+## 1. Decision log
+
+### 1.1 Owner decisions (2026-10-29)
+| # | Decision | Why | Source / where applied |
+| --- | --- | --- | --- |
+| O1 | Build everything now: 6 characters, 20 episodes, 12 activities, 6 worlds, all media, all tests and every doc update. P1 and P2 are in scope; P3 (microphone and voice input, `04` K01-K06) stays out of scope and off | Owner instruction | `MASTER-PROMPT.md` §0.1. Applied in README phases, `04` header and §L, `05` header and §0, `06` §2 and §9 |
+| O2 | No human sign-off. The SLP, caregiver, creative, rights and legal reviews are agent reviews recorded in section 2. Story manifests carry `review: { language: "approved", rights: "approved", reviewer, date }` | Owner instruction | `MASTER-PROMPT.md` §0.2; `apps/veer-wonder-world/src/types.ts:167`; section 2 below |
+| O3 | Every safety rule still applies in full. Agent review replaces only the sign-off step | Owner instruction | `MASTER-PROMPT.md` §0.3 and §6. This edit pass deleted no rule from `01`-`06`; where a rule names a human review needed before a public claim or launch, it stays open (section 4.3) |
+| O4 | Generation spend is authorised: Meshy (no cap; every job in the ledger) and the pooled ElevenLabs keys, both through Kiro Prism | Owner instruction; Meshy spend was already uncapped (owner decision 2026-10-25) | `MASTER-PROMPT.md` §0.4; `CHANGELOG.md` 4.3.0 entry "Meshy spend is uncapped"; `apps/veer-wonder-world/tools/meshy-pipeline.mjs` (`aura3d meshy ledger reserve/settle --game wonder-world`) |
+| O5 | No public release in this run. The route stays `prototype` with `noindex`, out of the site catalog, sitemap and showcase index. Publishing a children's app is a separate owner decision | Owner instruction | `MASTER-PROMPT.md` §0.5; README phases paragraph; B5 below; section 4.3 |
+
+### 1.2 Doc corrections (`MASTER-PROMPT.md` §3), each checked against 4.5.0
+| # | Correction | What was checked (evidence) | Applied in |
+| --- | --- | --- | --- |
+| C1 | Version: pin 4.5.0 (npm `latest`); the stock Vite build fix shipped in 4.1.3; `workspace:*` inside the monorepo | npm dist-tag `latest` is `4.5.0`, published 2026-10-29T02:29:29Z (`npm view @aura3d/engine time`); `CHANGELOG.md:7` `## 4.5.0 (2026-10-28)`; `CHANGELOG.md:240` (4.1.3: `"readFileSync" is not exported by "__vite-browser-external"` fixed); `apps/veer-wonder-world/package.json` (`workspace:*`); every `@aura3d/*` package in the published install reports 4.5.0 | README "What exists" and P0 list; `03` §1 and §10; `04` A01 and F0.2; `06` §4 version guard |
+| C2 | Build commands: `apps/*` is not a workspace member; `check-deploy` from `@aura3d/cli` 4.5.0, `--browser` on the remote runner only; `EXTRA_DIRS` staging; real-GPU scenario | `pnpm-workspace.yaml:1-3` lists only `packages/*` and `workers/*`. `aura3d check-deploy --dist dist --browser [--route /path ...]` is in the 4.5.0 CLI help (`packages/aura3d-cli/src/cli-help.ts:70`; published `@aura3d/cli` `dist/cli-help.js:67`; `docs/api/cli-asset-tools.md:95`). `--browser` loads the build in headless Playwright (`CHANGELOG.md:41`), so policy keeps it remote. `tools/remote-acr/run.sh:37,129` documents and copies `EXTRA_DIRS`. `tools/real-gpu/scenarios.json` entries are `{ path, settleMs, steps }`. `tools/real-gpu/README.md` says agents must not run it on the Mac | README "What exists"; `04` A01; `06` §4 steps 2, 7, 8 and 10 |
+| C3 | Rendering: no vignette; HDRI or `environments.*` in every world; `quality: "auto"` and `renderPath`; runtime particles off with mesh bubbles; `await warmPrograms(app)`; the file is `looks.ts` | `packages/rendering/src/webgl2/LegacyPost.ts:2974-2987`: `linearVignetteEnabled()` is opt-in and "the 4.2.0 display-space vignette in the LDR tail is the default again". `CHANGELOG.md:84` (4.3.2). `CHANGELOG.md:33`: authored lights only, with no implicit environment. `CHANGELOG.md:32`: ten presets bring an HDRI; five carry a neutral fill, dropped under `lights.ambient`. `CHANGELOG.md:11`: `quality: "auto"`. `packages/engine/src/agent-api/nodes/types.ts:2516`: `renderPath { path: "direct" \| "hdr-msaa", quality, reason }`. `packages/engine/src/contracts/effects.ts:22` and `CHANGELOG.md:59` (4.3.5): `app.effects.runtime`. `packages/game/src/index.ts:68`: `warmPrograms` | `02` §4; `04` A10 |
+| C4 | Audio: one shared `AudioContextManager`; `createGame` and `createCueBank` both receive it; narration is an app-owned player; `GameAudio` cues are not used for voice | `packages/audio/src/AudioContextManager.ts:28` is a plain class. `packages/game/src/createGame.ts:196` passes `browserContext: true` before spreading `options.sound`. `packages/engine/src/game/GameAudio.ts:269-272`: `browserContext` makes a new manager, and combining it with `createContext` throws. `packages/audio/src/synth/SynthCueBank.ts:7`: the default is a new manager. `packages/audio/src/game-sound/Voice.ts:152,157`: default gain jitter ±1.5 dB and pitch jitter ±0.6 semitone; `GameAudio` sets no override. `cue()` resolves once playback starts and reports no end | `03` §1 and §4; `04` B05 and B06 |
+| C5 | API table: session states, touch, `TypedGLBActor`, `AnimationController`, `@aura3d/debug`, QA kit | `packages/engine/src/contracts/game.ts:9`: `GameSessionState` matches `03` §3. `packages/engine/src/contracts/game.ts:18`: `TouchPreset` lists `twin-stick`, `dpad-2btn`, `dpad-4btn`, `steer-pedals`, `aim-drag`, `flight`, `lane-swipe` and `flippers`; none means "tap a big object". `packages/engine/src/public/index.ts:22`: `TypedGLBActor` is type-only. `packages/engine/src/public/index.ts:15,21`: `AnimationController`, `cloneSkinned`, `raycast`, `defineModelAssets` and `attachRootRenderSource` are root values (`docs/api/skinned-actors.md`). `packages/debug/src/index.ts:58,61`: `installBlackFrameGuard`, `installSafetyNet`. `packages/engine/src/public/index.ts:18`: `createFixedStepLoop`, `installQaHooks`, `readQaParams` and `createCountedRng` are root exports | `03` §1 and §6 |
+| C6 | Rigs and mouths: Meshy rigging is humanoid only. It was evaluated on Lulu and rejected, so every character, animal and prop moves procedurally. The models have no mouth morphs; talking is a squash/bob pulse, never lip sync | `apps/veer-wonder-world/tools/wonder-assets.json` has `rig: false` for all 59 keys. Its `rigNote` on `momo` and `lulu` records the rejection: `validate --skin` fails in every clip (895-1465 of 12,356 triangles past 1.6x, worst 8.5-11.2x), and after `tools/bake-armature-scale.mjs` and `repair-skin --refit-skeleton` 297 triangles still stretch, worst 142.9x. `provenance/models/lulu.json` keeps the rig task id and ten animation task ids, yet records `rigged: false`, `clips: []` and zero joints. `src/aura-assets.ts` `MODEL_INFO` has `rigged: false` and `clips: []` for every key; see also `tools/model-review.json` (`lulu`). The unused rig path stays in `tools/meshy-pipeline.mjs` (`RIG_ACTIONS` for `momo` and `lulu`) and `tools/admit-models.mjs` (`merge-clips`, `validate --skin`) | README product definition; `02` §1, §2, §4 and §6; `03` §1, §4, §5, §9 and §10; `04` B05, B07 and D01-D07; `06` §4 step 6 and QA-A05 |
+| C7 | Rename Pip to Peeko everywhere | `tools/site/games.catalog.json:65` and `docs/workflows/game-inventory.json:108`: "Pip's Big Leap" is a live game whose hero is Pip | README decision 1; `02` cast table, world map and allocation table; `03` §2; `04` D04 (`peeko.ts`); `05` E02, E03, E14 and E18 |
+| C8 | Scope and gates follow the owner decisions; no safety rule deleted | The owner decisions in 1.1 | README phases and P0 list; `06` §2 Status column (G8 = agent review, owner instruction); `04` §L; `05` §0; `06` §8 and §9 |
+| C9 | Media sources: Meshy text-to-3D and ElevenLabs, both through Kiro Prism; a rights record per file; free-tier output is prototype-only and is re-rendered on a paid tier before any commercial release | `apps/veer-wonder-world/tools/meshy-pipeline.mjs` (Prism Meshy base URLs). `apps/veer-wonder-world/tools/gen-audio.ts`: Prism ElevenLabs text-to-speech, music and sound-generation, with provenance fields `provider`, `endpoint`, `voice`, `prismKey`, `tier`, `prompt` and `date` | `02` §5 and §6; `04` A09, D15 and D16; README P0 list |
+| C10 | Required reading and helpers; the `episode-builder` template in F0.1 | The files exist: `docs/agents/new-game-checklist.md`, `docs/agents/lessons-learned.md`, `docs/api/auravoice-bridge.md`, `docs/agents/effects-and-scene-kits.md` and `tools/game-checks/run.mjs`. `packages/game/src/index.ts:68,78` exports `warmPrograms`, `createFixedStepPresenter` and `runMotionGate`. `packages/create-aura3d/templates/episode-builder/README.md` labels the template example/experimental | README engineering start prompt; `06` §4 step 1 and §11; `04` F0.1 |
+| C11 | The P3 voice doc becomes `08-optional-voice-validation.md` | `07` is this record | `04` K05; README index |
+| C12 | `docs/agents/troubleshooting.md` line 79: the 4.3.0 vignette fix is opt-in, and the default vignette still darkens | `LegacyPost.ts:2974-2987`; `CHANGELOG.md:84` | `docs/agents/troubleshooting.md:79` |
+
+### 1.3 Build decisions
+| # | Decision | Why | Source / evidence |
+| --- | --- | --- | --- |
+| B1 | Admitted models live in `apps/veer-wonder-world/src/assets/models/<key>.<sha8>.glb`, with provenance in `apps/veer-wonder-world/provenance/models/<key>.json`. URLs are module-relative (`new URL("./assets/models/...", import.meta.url).pathname`). This replaces the `public/aura-assets/**` paths in `04` A09 and D16; `MASTER-PROMPT.md` §4 and §5 already use `src/assets/models/` | It is the documented `defineModelAssets` pattern (`docs/api/model-loader.md:12`, `docs/agents/asset-workflow.md:164`). The repo dev server maps `/aura-assets/` only to the root `public/` tree and the template trees (`tests/browser/example-dev-server.ts:378-383`). The Vite build fingerprints module-relative assets. The remote runner copies the app folder through `EXTRA_DIRS`, while its default slim profile leaves out the root `public/aura-assets` (`tools/remote-acr/run.sh:33,129`) | `apps/veer-wonder-world/tools/gen-aura-assets.mjs`, `apps/veer-wonder-world/tools/admit-models.mjs` |
+| B2 | Audio lives in `apps/veer-wonder-world/src/assets/audio/{en/lines,songs,music,sfx}/*.mp3`, with provenance in `apps/veer-wonder-world/provenance/audio/{lines,songs,beds,sfx}.json`. The manifest is `src/audio-manifest.generated.ts`, not `src/content/...`. This replaces `04` D15 and the `public/audio/**` and `src/content/audio-manifest.generated.ts` paths in `MASTER-PROMPT.md` §5 wave 2 | Same reasons as B1 | `apps/veer-wonder-world/tools/gen-audio.ts` (header), `apps/veer-wonder-world/tools/gen-audio-manifest.mjs` |
+| B3 | Generated, never hand-edited: `src/aura-assets.ts` (from `tools/gen-aura-assets.mjs`; exports `MODEL_KEYS`, `ModelKey`, `models`, `MODEL_INFO`, `modelRef`) and `src/audio-manifest.generated.ts` (from `tools/gen-audio-manifest.mjs`; sha256 plus ffprobe duration). Generators: `tools/meshy-pipeline.mjs` (preview, refine, remesh, rig, animate; resumable), `tools/admit-models.mjs` (merge-clips, optimize, inspect, `validate --skin`, admit, provenance), `tools/gen-audio.ts` (ElevenLabs through Prism; resumable). The rig, animate and merge-clips steps are unused, because no model is rigged (C6). The 59-model list is `tools/wonder-assets.json`. All paths are app-relative | Reproducible media with checked hashes. Regenerating and running `git diff --exit-code` proves nobody hand-edited the generated files (`MASTER-PROMPT.md` §8) | The files above |
+| B4 | Voices are ElevenLabs premade voices through Kiro Prism (cast in section 3.1). Sheru barks only (SFX `woof`) | Original voices with no cloning and no family voice; consistent across 32 stories | `apps/veer-wonder-world/tools/gen-audio.ts` (`VOICES`) |
+| B5 | The app is not in the site build (`showcaseRoutes`, `marketing/scripts/build-showcase-routes.mjs:50`). It is also not in `tools/site/games.catalog.json`, `docs/workflows/game-inventory.json` (the source of the showcase index, `tools/site/gen-showcase-index.mjs:11-12`), the sitemap route manifest in `marketing/scripts/gen-seo.mjs` or `docs/workflows/game-names.md`. `apps/veer-wonder-world/index.html` carries `<meta name="robots" content="noindex">` | Owner decision O5 | On 2026-10-29 no site, catalog, inventory, sitemap or showcase file named the app. Outside `apps/veer-wonder-world/` and this folder, only the repo-root browser specs `tests/browser/wonder-world-*.spec.ts` named it. The `noindex` tag and the title "Wonder World (prototype)" were present in `index.html`; the parent re-checks both in section 4.1 |
+| B6 | Reviewer string in every manifest: `"agent:claude-opus-5.5 (owner instruction 2026-10-29, no human sign-off)"` | Extends the §0.2 form `"agent (owner instruction 2026-10-29)"` with the reviewing model and the no-sign-off note, so each manifest says who reviewed it | `apps/veer-wonder-world/src/content/episodes/*.ts` and `src/content/activities/*.ts` (`review`; all 32 manifests carry this string on 2026-10-29) |
+| B7 | Names: the public title is "Wonder World"; the chick id is `peeko` (`src/types.ts:9`). No child name appears in UI, routes, logs, default lines or evidence. The working name survives only in this PRD folder and the directory name | `MASTER-PROMPT.md` §6 privacy | README decision 2; `01` §8 |
+| B8 | Motion. This run's fixed decisions named Momo and Lulu as Meshy-rigged bipeds with merged clips, and required a procedural fallback for any clip missing at runtime. Momo's clips were to be `idle`, `walk`, `run`, `wave`, `talk`, `happyJump`, `cheer`, `sway`, `mirror`, `pickUp`, `lookAround`, `sleep`, `drink`, `wakeUp`, `jazzHands` and `shrug`; Lulu's `idle`, `walk`, `run`, `dance`, `hop`, `cheer`, `wave`, `talk`, `sway`, `jazzHands`, `happyJump` and `funnyDance`. The rig was rejected (C6), so both GLBs carry no clips and the fallback is the motion of the whole cast, as `MASTER-PROMPT.md` §2 and §3.6 state. The clip names stay as candidates in the character files. "Talking" is a squash/bob pulse and is never called lip sync | `MASTER-PROMPT.md` §2 and §3.6 and the admitted models override the earlier clip plan. Keeping the candidates means a later rig that passes `validate --skin` needs no code change. `walk` and `run` would come from Meshy's basic rig animations; the rest are the `RIG_ACTIONS` library ids | `apps/veer-wonder-world/src/characters/momo.ts` and `lulu.ts` (`clipCandidates`); `src/characters/character-registry.ts` (plays only clips that `MODEL_INFO` lists); `src/aura-assets.ts` (`MODEL_INFO`) |
+| B9 | Every model use has a primitive stand-in of the right size and colour. It is drawn when `modelRef(key)` is `undefined` (not admitted) or when `?models=0` is set. `bubble` is always procedural. After review, six more keys are drawn procedurally by design (`PROCEDURAL_MODELS`): `ball`, `bush`, `hat`, `stompStone`, `cloud` and `balloon`. The ball generations had a face, resembled a known capture-ball design or came out lime. The bush came out as a 327 MB grey rose. The other four were not generated because the Meshy keys ran out of credits | The app must always run while generation is incomplete; the stand-in is never a release claim. `02` §6 allows simple scene geometry for props that are not hero subjects | `apps/veer-wonder-world/src/aura-assets.ts` (`modelRef`, `MODEL_INFO.heightM`, `MODEL_INFO.procedural`, `PROCEDURAL_MODELS`); `tools/model-review.json` (status `procedural`); `src/types.ts:17-28`; `docs/api/model-loader.md:5` |
+| B10 | Story files and keys are listed in section 3.2. Story id = slug. Line keys are `<code>.<beatId>.<n>`, with `<code>` `e01`-`e20` or `g01`-`g12`. A beat's response lines continue its numbering: `e17.invite.2` ("Go!") is the E17 invite response. All 823 line keys of the 32 stories match the scheme (2.1). Strings are `<code>.title`, `<code>.offline`, `<code>.bridge` and `<code>.tip.<n>` | One key scheme lets the validator, the audio generator and captions resolve every line | `apps/veer-wonder-world/src/localization/en/episodes/sheru-big-adventure.ts`; `apps/veer-wonder-world/tools/gen-audio.ts` |
+| B11 | The turn wait defaults to 5000 ms (`BeatSpec.waitMs`). Parents can change it (`ParentSettings.waitMs`), and the wait always ends by itself | Inside the 4-6 s proposal of `01` §3.1 | `src/types.ts:118-122`, `src/types.ts:276` |
+| B12 | Browser specs J08-J13 sit at the repo root as `tests/browser/wonder-world-*.spec.ts` | The root `playwright.config.ts:21-22` matches `tests/browser/**/*.spec.ts`, and the remote runner takes `SPECS="tests/browser/wonder-world-*.spec.ts"` | `04` J08-J13 updated |
+| B13 | Game checks without registration. `tools/game-checks/run.mjs` resolves only `kind: "game"`, `status: "live"` entries of `docs/workflows/game-inventory.json` and throws `unknown game(s)` for anything else (`tools/game-checks/lib/index.mjs:529-537`). Registering would put the prototype into the site inventory (B5). Instead, `node apps/veer-wonder-world/tools/game-checks.mjs` runs every per-game check in `GAME_CHECKS` (`tools/game-checks/lib/index.mjs:506`). It feeds them the files from `gameSources` (`:40`) for an unlisted game record (`appFolder: "veer-wonder-world"`, status `prototype`) and exits 1 on any error finding. The repo-wide `GLOBAL_CHECKS` are not part of it. `apps/veer-wonder-world/tools/check-all.sh` runs it with the other local checks. If the parent registers the app instead, record why (§0.5) | Keeps the static checks without listing a children's prototype publicly | `apps/veer-wonder-world/tools/game-checks.mjs`; `tools/game-checks/lib/index.mjs` |
+| B14 | Two typechecks. `apps/veer-wonder-world/tsconfig.json` extends the root `tsconfig.base.json` (workspace sources, `MASTER-PROMPT.md` §8). `tsconfig.published.json` checks the same `src` and `tests/unit` against the published 4.5.0 packages (`typecheck:published` script) | The first proves the monorepo build; the second proves the app uses only published API | `apps/veer-wonder-world/package.json`, `apps/veer-wonder-world/tsconfig.published.json` |
+| B15 | Fonts: "Graphik Web" through `/fonts/local.css`, weights 400, 500 and 600 | Licensed font set only | `public/fonts/local.css:7` |
+| B16 | Locale: English only. `pa.ts` stays present but disabled until a native review | `03` §7; `04` C08 | — |
+| B17 | No family content. E18 and G09 use generic friends; no family names, voices or photos; no family pack is built | `MASTER-PROMPT.md` §6 | `05` E18 and G09; `04` I06; `02` §3 |
+| B18 | Raw Meshy output stays in the gitignored `artifacts/meshy/wonder-world/<key>/` (root `.gitignore:418`, `/artifacts/`). Each model's thumbnail is reviewed before admission (`tools/model-review.json`), and rejected versions are kept in `artifacts/meshy/wonder-world/_rejected/`. The `ball` prompt was sharpened ("no face") after the first result looked like a face. The later versions were rejected too, so the ball is drawn procedurally (B9) | `MASTER-PROMPT.md` §4 | `apps/veer-wonder-world/tools/wonder-assets.json` (`ball`); `tools/model-review.json` (`ball`); regeneration status in 4.1 |
+| B19 | Run `aura3d check-deploy` from `apps/veer-wonder-world` (it reads `aura.assets.json` and `--dist` relative to the working directory). The app has no `aura.assets.json`, so the static pass checks no model files; the remote build spec `tests/browser/wonder-world-build.spec.ts` passes `--no-assets` to make that explicit. The GLBs and audio are covered instead by two checks. The regenerate-and-diff check (B3) requires each model's sha256 to match its provenance record, and each audio file to have a provenance record and a sha256 matching the committed manifest. The `--browser` pass fails on any 4xx/5xx response or failed request | It records honestly what each check covers | `packages/aura3d-cli/src/index.ts:1097-1160` (`checkDeploy`); `packages/aura3d-cli/src/asset-manifest.ts:15-25` (no manifest means no assets) |
+
+## 2. Agent-review record (stands in for every human sign-off the PRD names)
+Reviewer: build agent (`agent:claude-opus-5.5`), owner instruction 2026-10-29. Each review has two parts:
+- **PRD level**, done by the docs unit on 2026-10-29: the rules and the frozen contract `apps/veer-wonder-world/src/types.ts`.
+- **Story level**: the 32 stories, reviewed by the parent at integration (section 4.2).
+
+The snapshot below was taken in the docs review pass on 2026-10-29. All 32 stories existed by then, but other units were still editing them, so the parent re-runs every scan on the final files.
+
+### 2.1 SLP and content
+- **Replaces.** `01` header (pediatric SLP); `01` §3.1 (pause timing "SLP review required"); `01` §11 (first box); `04` B03; `05` header and E03 "Done"; `06` G8, QA-E07, §8 (SLP review) and §10 (speech-language reviewer); README P0 (pediatric speech-language advisor).
+- **Learning loop.** The contract carries `01` §3.1:
+  - each beat speaks its `lines` while the named object is visible (`BeatSpec.words`);
+  - invites wait `waitMs` (default 5000);
+  - every wait ends by itself (`BeatInput`: "Silence never fails");
+  - `response` plays after the wait, whatever ended it.
+- **No scoring or forcing.** There is no correctness state and no speech or score event (`DirectorEvent`). Any tap target is a good answer, and `microphoneRequired: false` holds for every activity.
+- **Target words.** `targetWords` holds 1-3 core words; 4 are allowed for the counting and animal-sound clusters (`05` §6 exception).
+- **Letters.** `letterConcept` keeps `letterNameKey` and `phonemeCueKey` as separate keys, one letter per episode (E03 B, E04 A).
+- **Counting.** `numberConcept` is fixed to `countMin: 1`, `countMax: 3`, and `countedObjectIds` names one visible object per spoken number.
+- **Snapshot, 2026-10-29 review pass** (all 32 stories: 20 episodes and 12 activities; the English pack holds 823 lines and 268 strings):
+  - `rg -n -i '\bwrong\b|try again|say it|repeat after me|good job|well done|\bcorrect\b|incorrect|\bscore|streak|happy birthday|\bmama\b|\bpapa\b|\bveer\b' apps/veer-wonder-world/src/localization` finds 3 hits and none in a line. Two are source comments that forbid the phrase (`whos-at-the-door.ts:2`, `little-birthday-party.ts:2`); the third is the parent-facing note in `en/ui.ts` that the app does not "test, score or diagnose";
+  - no line contains a number word above "three";
+  - all 81 tap-target lists have at most two targets, and all 81 explicit `waitMs` values are 5000;
+  - all 823 line keys match `<code>.<beatId>.<n>`;
+  - three stories list four target words: E05 and E11 (counting) and E09 (animal sounds), within the `05` §6 exception.
+- **Letter lines in the drafts (E03, E04).** Name and sound are separate lines. E03 has "B. Bee." (`e03.letter.2`), then "B says b-b-ball." (`e03.ball-sound.1`). E04 has "A. Ay." (`e04.letter.2`), then "A says a-a-apple." (`e04.a-sound.1`). The sound is modelled as the stretched start of the word, with no added vowel; an earlier draft's "buh" spelling is gone. Listen to the recorded lines and keep each sound short. This is not a safety issue.
+- **Counted objects in the drafts.** Four stories carry `numberConcept`: E05 (cookies), E11 (balloons), E16 (decorations) and G08 (blocks), each with three `countedObjectIds`.
+- **Evidence.** `apps/veer-wonder-world/src/types.ts:95-129,151-168,212-235`; this section.
+- **Parent completes (4.2).** Run the content validator (J14) and the scan above on all 20 + 12 stories. Check that E05 counts one visible cookie per number, that E16's tune and lyrics are original, and that E03 and E04 keep letter name and sound in separate lines.
+- **Limits.** This is not clinical review. It supports no educational or therapeutic claim (`01` §7 keeps the human SLP rule for any future claim).
+
+### 2.2 Caregiver UX
+- **Replaces.** `01` header (caregivers); `06` G8 (caregivers approve story tone and attention demands); `06` §7 (caregiver UX review); `06` §8 (caregiver review item).
+- **Checked against `01` §6 at contract level:**
+  - start note and parent guidance (`caregiverPromptKey`, `<code>.tip.<n>`);
+  - pause and resume (`PAUSE`, `RESUME`);
+  - "All done" at any moment (`ALL_DONE`, finished reason `all-done`);
+  - finite end with an offline card (`offlinePlayKey`, effect `offline`) and no next-episode effect;
+  - caregiver bridge per story (`caregiverBridgeKey`, `<code>.bridge`);
+  - settings on the device only, with no identity field (`ParentSettings`).
+- **Draft check.** The E17 bridge and tips read as invitations, not tests ("A reach, a look or a sound is a fine answer.", `e17.bridge`).
+- **Evidence.** `src/types.ts:211-235,267-278`; `apps/veer-wonder-world/src/localization/en/episodes/sheru-big-adventure.ts`.
+- **Parent completes (4.2).** Confirm in the remote run that "All done" works from every beat, that settings clear, and that no screen auto-starts another story (J09, J11, J12).
+- **Limits.** No caregiver has used the app. The `06` §8 observation items need a real family, so they stay open (4.3).
+
+### 2.3 Rights and IP
+- **Replaces.** `02` §1 (rights clearance) and §2 (originality, licensing, naming/trademark review); `02` §8 (provenance); `03` §10 (rights review); `05` §6 (assets original or licensed); `06` G1 (ART/legal) and §10 (characters original, rights cleared); README P0 (rights strategy).
+- **Names.**
+  - "Momo", "Lulu", "Sheru", "Peeko" and "GoGo" appear nowhere in the repo outside this app and folder. That includes `docs/workflows/game-names.md`, `tools/site/games.catalog.json` and `docs/workflows/game-inventory.json`.
+  - "Lumi" appears only as a driver-name preset seen in a third-party web game (`docs/workflows/crayon-game-reverse-engineering.md:660`, `evidence/crayon-runtime/last-train-to-the-sea/session.json:27`), not as a character.
+  - Pip was renamed because of *Pip's Big Leap* (C7).
+- **Model prompts.** All 59 prompts in `tools/wonder-assets.json` were scanned. None names a brand, franchise or existing character. The only capitalised words are colour words ("BRIGHT PURPLE", "RED", "GREEN" and the like) and the letters "A" and "B" (the letter props and "A-pose"). The shared style strings forbid text, logos and brand marks.
+- **E05.** Momo is an original purple monster (`02` §2; `momo` prompt), not a cookie character.
+- **E16.** The `birthday` song has its own lyrics ("Little cake, little cake, a pretend light glows. ...", `src/content/songs.ts`) and a style prompt that asks for "an original birthday melody of its own". `tools/gen-audio.ts` puts "Original children's song" into every sung-song prompt. No line or lyric contains "Happy Birthday"; the only matches are comments that forbid it (2.1). The parent checks the final lyrics.
+- **Provenance.**
+  - Models carry the license string (the `license` option of `defineModelAssets` in `src/aura-assets.ts`), plus `provenance/models/<key>.json` per file (53 files on 2026-10-29).
+  - Audio carries provider, endpoint, voice, Prism key id, key tier, prompt and date per file (`provenance/audio/*.json`).
+  - Family media: none.
+- **Rule applied.** Output from free-tier keys is prototype-only and is re-rendered on a paid tier before any commercial release.
+- **Parent completes (4.1).** Record the audio files per `tier` value as Prism reports it, and the per-model provenance count. The songs, beds and SFX generated so far report `starter`. Classify each value as paid or free; free and unknown stay prototype-only.
+- **Limits.** This is not a trademark search or legal opinion, and the provider terms were not re-read in this run. A trademark search for "Wonder World" and the six names, plus a legal check of provider terms for public redistribution, belong to the publish decision (4.3).
+
+### 2.4 Privacy
+- **Replaces.** `01` header (privacy counsel); `06` G7 (static/privacy review); README P0 (approve the family privacy model, no-microphone v0, parent gate, local-only notes).
+- **Checked (draft snapshot 2026-10-29):**
+  - `rg -n -i 'getUserMedia|SpeechRecognition|webkitSpeech|mediaDevices' apps/veer-wonder-world/src` found 0 hits;
+  - `ParentSettings` has no name or identity field;
+  - no line, string, route or log text in `src` carries a child name. The child's name appears once in `src`, as an entry of the guard list `FAMILY_NAMES` in `src/content/schema.ts`, which rejects it in content. `src/content/catalog.ts` imports that module, so the list can reach the built bundle (finding below);
+  - the only external URLs in `src` are the SVG namespace and two parent-facing guidance links (AAP *Media and Young Minds*, ASHA) in `src/ui/parent-panel.ts`; there is no analytics or tracking SDK;
+  - P3 stays off (`04` B11 flag).
+- **Model approved.** No microphone, no account, settings on the device only and clearable, a parent gate as UX rather than security, no evidence containing a child's image or audio.
+- **Finding for the content-core unit.** `MASTER-PROMPT.md` §6 forbids a child name in source and builds. Keep the name out of shipped modules: either take it out of `FAMILY_NAMES`, or move the name check into `tools/validate-wonder-world-content.mjs` or a unit test that is never bundled. Then confirm the built bundle and source maps do not contain it.
+- **Parent completes (4.2).** The J07 result, a scan of the built bundle and source maps for the same terms, and the network/storage check of QA-P07 on the remote run.
+- **Limits.** This is not legal review. `01` §8 keeps legal review for children's privacy rules (for example COPPA) before any hosted public launch (4.3).
+
+### 2.5 Accessibility
+- **Replaces.** `06` G6 (device/manual accessibility checklist) and §7 (accessibility review); `01` §9 checklist sign-off.
+- **Checked at design level:**
+  - `reducedMotionStage` per beat;
+  - `ParentSettings` `reducedMotion`, `highContrast` and `captions`;
+  - at most two tap targets per beat (snapshot in 2.1). The content schema enforces it with `MAX_TAP_TARGETS = 2` in `src/content/schema.ts` (`MASTER-PROMPT.md` §6);
+  - no camera-shake action exists: stage `camera` only switches between the fixed presets `wide`, `medium`, `close`, `left`, `right` and `high`. The `shake` object action is the shaker toy, not the camera;
+  - Graphik Web at 400/500/600 (B15).
+- **Parent completes (4.2).** J10 and J13 results; parent controls reachable by keyboard and labelled for screen readers (`src/ui/accessibility.ts`); checks that `glow` never flashes.
+- **Limits.** No assistive-technology user tested the app, and touch and screen-reader checks on real devices stay open with the device runs (4.3).
+
+### 2.6 Creative
+- **Replaces.** `02` §1 (creative review); `02` §2 character approval deliverables; `02` §8 content approval; `06` §10 creative checklist; README P0 (creative director).
+- **Checked:**
+  - cast briefs and prompts give friendly, rounded silhouettes ("closed gentle smile, no teeth", no horns for Momo);
+  - visual direction follows the 4.5.0 rules of `02` §4 (no vignette, HDRI or `environments.*`, runtime particles off, `warmPrograms`);
+  - song patterns are original and finite ("Go / Stop with Lulu", "The Ball Rolls"; no automatic repeat).
+- **Model review.** `tools/model-review.json` (reviewer `agent:claude-opus-5.5`) has 59 entries: 53 approved and 6 procedural (B9). Two deviations are recorded there and stay open for a regeneration when credits allow:
+  - Momo v2 has an open grin with two blunt buck teeth instead of the prompt's "small closed smiling mouth with no teeth". The teeth are not sharp, so the `02` §1 rule holds; a v3 could not be generated because the Meshy keys ran out of credits.
+  - GoGo's face is not visible in the side thumbnail.
+- **Parent completes (4.1).** Check the review record against every admitted model (`tools/admit-models.mjs` reads it). Four-side renders stand in for the turnaround and expression sheets of `02` §2. Note which models were regenerated after review.
+- **Limits.** This is agent aesthetic judgement; no child or caregiver has seen the characters.
+
+## 3. Reference for this build
+
+### 3.1 Voice casting (ElevenLabs premade voices through Kiro Prism)
+Lines use `eleven_multilingual_v2` at `mp3_44100_64`; songs and beds use the music endpoint at `mp3_44100_128`; SFX use sound-generation at `mp3_44100_64` (`apps/veer-wonder-world/tools/gen-audio.ts`). Every file is then loudness-normalised with ffmpeg `loudnorm`, which covers "volume-normalized" in `04` D15: lines at -18 LUFS (mono, 64k), SFX at -24 (mono, 64k), songs at -20 and beds at -28 (stereo, 128k).
+
+| Role (`SpeakerId`) | Voice | Voice id | Speed | Stability | Style |
+| --- | --- | --- | --- | --- | --- |
+| Narrator (`narrator`) | Bella | `hpp4J3VqNfWAUOO0d1Us` | 0.88 | 0.6 | 0.15 |
+| Momo (`momo`) | Will | `bIHbv24MWmeRgasZH58o` | 0.9 | 0.5 | 0.3 |
+| Lulu (`lulu`) | Laura | `FGY2WhTYpPnrIDTdsKH5` | 0.9 | 0.45 | 0.35 |
+| Lumi (`lumi`) | Matilda | `XrExE9yKIg1WjnnlVkGX` | 0.88 | 0.6 | 0.2 |
+| Peeko (`peeko`) | Jessica | `cgSgspJ2msm6clMCkdW9` | 0.92 | 0.45 | 0.35 |
+| GoGo (`gogo`) | Liam | `TX3LPaxmHKxFdv7VOQHJ` | 0.9 | 0.5 | 0.3 |
+| Baby robot (`robot`, E13) | Callum | `N2lVS1w4EtoT3dr4eOWO` | 0.88 | 0.55 | 0.25 |
+| Sheru (`sheru`) | none: barks only (SFX `woof`) | — | — | — | — |
+
+### 3.2 Content model (frozen contract `apps/veer-wonder-world/src/types.ts`)
+- **Story files.** Each episode is `src/content/episodes/<slug>.ts` (`export const episode: EpisodeSpec`), and each activity is `src/content/activities/<slug>.ts` (`export const activity: ActivitySpec`).
+- **Text.** It lives in `src/localization/en/{episodes,activities}/<slug>.ts` (`export const lines`, `export const strings`). Keys follow B10.
+- **Media manifests.** `AUDIO_MANIFEST` has `{ lines, sfx, songs, beds }` tables of `AudioClipRef { url, sha256, durationMs }`. The contract has 16 song ids, 6 music beds and 34 SFX ids.
+
+How the `03` §3 illustrative interfaces map to the contract:
+
+| `03` §3 (illustrative) | Contract (`src/types.ts`) |
+| --- | --- |
+| `id`, `version`, `title` | `id` (slug), `version`, `titleKey` (`<code>.title`) |
+| `ageIntent`, `modeSupport` | Not per story: all content is early-toddler, and every story plays in both `PlayMode`s (`watch-sing`, `play-together`) given at `START` |
+| `worldId`, `castIds`, `assetIds` | `world`, `cast` (`CastMember` with spot and `hidden`), `props` (`PropPlacement` with `asset`, spot, `tint`, `size`) |
+| `targetWords`, `supportWords` | Same names (1-3 core words; up to 4 for counting and animal-sound clusters) |
+| `letterConcept` | Same shape |
+| `numberConcept { countMin, countMax, countedObjectId }` | `numberConcept { countMin: 1, countMax: 3, countedObjectIds }` (one visible object per spoken number) |
+| `beats`, `estimatedDurationSec`, `musicKey`, `offlinePlayKey` | `beats` (episodes) or `intro`, `round` × `roundLimit`, `outro` (activities); `estimatedDurationSec`; `music`; `offlinePlayKey` (`<code>.offline`) |
+| `rightsReview`, `languageReview` | One `review { language: "approved", rights: "approved", reviewer, date }` (B6) |
+| New in the contract | `kind`, `number`, `phase`, `host`, `caregiverBridgeKey` (`<code>.bridge`) |
+| `BeatSpec.kind` greeting/hook/demonstrate/invite/consequence/song/outro | `greeting`, `hook`, `model` (was demonstrate), `invite`, `event` (was consequence), `repeat`, `song`, `outro` |
+| `sceneStateId`, `cameraPreset`, `animationCueIds` | `stage: StageAction[]` (`enter`, `exit`, `move`, `gesture`, `face`, `show`, `hide`, `object`, `carry`, `sfx`, `song`, `music`, `camera`), `camera`, `reducedMotionStage` |
+| `narrationCueKey`, `captionKey` | `lines: LineRef[]` (`speaker`, `key`); the caption is the same locale text |
+| `wordMentions [{ wordId, actionObjectId }]` | `words [{ wordId, objectId }]` |
+| `durationMs`, `minHoldMs` | `holdMs` after the lines finish; line lengths come from `AUDIO_MANIFEST` (caption timing when audio is missing) |
+| `input` none/tap-choice/tap-object/parent-confirm | `input` `none`, `tap { targets }` or `more-or-done { targets }`; a parent confirm is the `PARENT_CONFIRM` event on any waiting beat |
+| `waitForChildMs`, `autoAdvanceMs`, `fallbackBeatId`, `nextBeatId` | `waitMs` (default 5000); beats run in order; `response { stage, lines, holdMs }` plays after the wait however it ended |
+| `duckMusicDuringSpeech` | No per-beat flag: the mixer ducks music under every line (`03` §4) |
+| `caregiverPromptKey` | Same name (`<code>.tip.<n>`) |
+| `ActivitySpec` `labelKey`, `mainObjectId`, `action`, `introCue`, `actionCue`, `turnCue`, `outroCue`, `touchTargets`, `options` | `titleKey`; the main object and action are stage `object` actions in `round`; the cues are the `intro`, `round` and `outro` beat lists; targets are per beat; `options { allowTap: true, dragAlternative: "tap", microphoneRequired: false }` |
+
+How the `03` §3 transitions map to `DirectorEvent`:
+- `NEXT_BEAT` becomes `LINE_DONE` (a line finished) and `TICK` (holds and timers).
+- `USER_TAP` becomes `TAP { target }`, and `PARENT_CONFIRM` keeps its name.
+- `TURN_TIMEOUT` is a `TICK` past `waitMs`, with no failure state.
+- `PAUSE` and `RESUME` keep their names; the director emits the `pauseMedia` and `resumeMedia` effects.
+- `SKIP` and `ALL_DONE` become `SKIP_BEAT` and `ALL_DONE`.
+- `AUDIO_UNAVAILABLE` keeps its name.
+- `CONTEXT_LOST` has no director event: the app pauses the director while the `createGame` session is `context-lost` (app wiring, `04` A06).
+- `START { mode }` and `DISPOSE` open and close a story.
+
+The `03` §3 states map to beat kinds. `intro` is `greeting`, `problem` is `hook`, `model` is `model`, `invited_turn` is `invite`, and `acknowledge` is the invite's `response`. `repeat_with_variation` is `repeat`, `celebration` is `event` or `song`, `outro` is `outro`, and `finished` is the `DirectorPhase` `finished`.
+
+### 3.3 Asset model (`apps/veer-wonder-world/tools/wonder-assets.json`, 59 models)
+| Role | Count | Keys |
+| --- | --- | --- |
+| character | 12 | `momo`, `lulu`, `sheru`, `lumi`, `peeko`, `teddy`, `robot`, `cow`, `sheep`, `duck`, `horse`, `bird` |
+| vehicle | 3 | `gogo`, `gogoCarriage`, `car` |
+| prop | 36 | `butterfly`, `ball`, `bubbleWand`, `cookie`, `plate`, `mirror`, `door`, `letterB`, `letterA`, `apple`, `banana`, `cake`, `drum`, `shaker`, `toyPiano`, `picnicBasket`, `sponge`, `towel`, `toyBlock`, `lift`, `flower`, `flowerBud`, `bed`, `sink`, `table`, `chair`, `cushion`, `toyBox`, `bench`, `colourMachine`, `storyBox`, `pastryCircle`, `pastrySquare`, `pastryTriangle`, `hat`, `balloon` |
+| background | 8 | `tree`, `bush`, `barn`, `station`, `tunnel`, `house`, `stompStone`, `cloud` |
+
+`MODEL_KEYS` has 59 entries: the 6 characters plus every `PropAssetId` except the procedural `bubble`. Default fitted heights are `MODEL_INFO[key].heightM`. No key is rigged (C6). Six keys are drawn procedurally by design (B9), and on 2026-10-29 the other 53 were admitted (`provenance/models/*.json`).
+
+## 4. Build record (the parent fills every `PARENT-FILL`)
+
+### 4.1 Build, models and audio
+| Item | Source or command | Result |
+| --- | --- | --- |
+| Branch and commits | `git log --oneline origin/main..HEAD` on `feat/wonder-world-foundation-20261029` (base `31f8945ad`) | PARENT-FILL: commit SHAs and PR link |
+| Engine version | `apps/veer-wonder-world/node_modules/@aura3d/engine/package.json`; workspace `packages/engine/package.json` | 4.5.0 (published install used for the fast typecheck) and 4.5.0 (workspace `packages/engine`) |
+| `noindex` and title | `apps/veer-wonder-world/index.html` | PARENT-FILL: `<meta name="robots" content="noindex">` present; title "Wonder World (prototype)" |
+| Models admitted | `MODEL_INFO` in `src/aura-assets.ts` (`admitted: true`) | 53 of 59 admitted. The other 6 (`ball`, `bush`, `hat`, `stompStone`, `cloud`, `balloon`) are `PROCEDURAL_MODELS`, drawn from multi-piece scene geometry by design (B9). No other key is missing. |
+| Rigged models | `MODEL_INFO[key].rigged` and `.clips` | None. Every `MODEL_INFO[key].rigged` is false and every `.clips` list is empty (C6). |
+| Skin check | `pnpm exec aura3d assets validate --skin <glb>` for each rigged model | None rigged. The Lulu rig was evaluated before being rejected: `validate --skin` failed in every clip (895-1,465 of 12,356 triangles past 1.6x, worst 8.5-11.2x, `SKIN_STRETCH`, `SKIN_FLAP`, `SKIN_BIND_MISMATCH`). After `tools/bake-armature-scale.mjs` (lossless: the pre-repair report is identical) and `repair-skin --refit-skeleton`, 297 triangles still stretch past 1.6x, worst 142.9x, and knees bend forward (`SKIN_JOINT_RANGE`). |
+| Model review and regenerations | `apps/veer-wonder-world/tools/model-review.json`; `artifacts/meshy/wonder-world/_review/` and `_rejected/` | 53 approved, 6 procedural. Rejected versions are kept in `_rejected/`: `momo-v1`, `gogo-v1`, `gogo-v2`, `peeko-v1`, `ball-v1`, `ball-v1b` (resembled a known capture-ball design), `butterfly-v1`, `drum-v1`, `cookie-v1` (geometry reused), `cookie-v2`, `cake-v1`, `bird-v1`, `tree-v1`. Root cause of the colour misses: the refine texture prompt carried only the generic style; fixed in `tools/meshy-pipeline.mjs`. Recovery without new spend once Meshy's API keys ran dry (26 of 30 return HTTP 402): Momo v2 recoloured purple by a hue shift that keeps the eyes and teeth white; GoGo v3, `toyBox` and `pastrySquare` simplified locally from their refine models; the cookie retextured from v1 (10 credits). Open deviations: Momo has an open grin with two blunt teeth (brief: small closed smile); GoGo's face is not visible in its review thumbnail; the barn is green (brief: red). |
+| Model bytes | `du -ch apps/veer-wonder-world/src/assets/models/*.glb` | 22.4 MB for 53 GLBs (1024 px textures and normal maps for the main cast; 512 px base colour only for the rest) |
+| Meshy credits | `aura3d meshy ledger status` / `list` (ledger `~/.aura3d/meshy-ledger.jsonl`, tag `wonder-world`) | About 2,447 credits by the ledger estimate for `wonder-world` (generation, regenerations, the rejected Lulu and Momo rig and clips, one retexture) |
+| Audio files | `AUDIO_MANIFEST` table sizes | Lines 826 of 826 line keys (Sheru's barks are SFX), songs 16 of 16, beds 6 of 6, SFX 34 of 34 (882 files) |
+| Audio tiers | `provenance/audio/*.json` field `tier` | All 882 files `starter` (paid ElevenLabs plan). 47 lines first landed on free-tier keys; they were deleted and regenerated until every file was `starter`. |
+| Audio bytes | `du -ch apps/veer-wonder-world/src/assets/audio` | 22 MB (voice mono 64 kbit/s, normalised to -18 LUFS with a mean-volume correction for clips under 3 s, measured -20.3 ± 1.3 dB; SFX about -26 dB mean; songs -20 LUFS; beds -28 LUFS) |
+| Generated files are reproducible | `node apps/veer-wonder-world/tools/gen-aura-assets.mjs && node apps/veer-wonder-world/tools/gen-audio-manifest.mjs && git diff --exit-code apps/veer-wonder-world/src` | PARENT-FILL: exit code |
+
+### 4.2 Tests, validation and remote runs
+| Item | Command | Result |
+| --- | --- | --- |
+| Typecheck (workspace) | `pnpm exec tsc -p apps/veer-wonder-world/tsconfig.json --noEmit` | PARENT-FILL: error count |
+| Typecheck (published 4.5.0) | `(cd apps/veer-wonder-world && ./node_modules/.bin/tsc -p tsconfig.published.json --noEmit)` | PARENT-FILL: error count |
+| Unit tests (J01-J07, content tests) | `(cd apps/veer-wonder-world && ../../node_modules/.bin/vitest run --config vitest.config.ts)` | PARENT-FILL: files, tests passed, failed |
+| Content validation (J14) | `node apps/veer-wonder-world/tools/validate-wonder-world-content.mjs` | PARENT-FILL: stories validated (of 20 + 12), lines, errors |
+| Story-level review scans (2.1, 2.4) | The `rg` commands in 2.1 and 2.4, re-run on the final tree and the built bundle | PARENT-FILL: hits in line, string or lyric text (expected 0; the source comments and the "does not test, score or diagnose" note of 2.1 also match the pattern) |
+| Game checks (B13) | `node apps/veer-wonder-world/tools/game-checks.mjs` | PARENT-FILL: errors, warnings |
+| Remote browser specs (J08-J13) | `EXTRA_DIRS="apps/veer-wonder-world" SPECS="tests/browser/wonder-world-*.spec.ts" tools/remote-acr/run.sh`, or `apps/veer-wonder-world/tools/remote-run.sh` | PARENT-FILL: RUN_ID(s), passed/failed, `tests/reports/remote-acr/<RUN_ID>/` |
+| Build and deploy check | `tests/browser/wonder-world-build.spec.ts` on the remote runner (`apps/veer-wonder-world/tools/remote-run.sh build`): Vite build, then `aura3d check-deploy --dist dist --no-assets --browser --route /` | PARENT-FILL: RUN_ID, result |
+| Renderer string | Remote run report | PARENT-FILL: renderer string. A software WebGL2 result is not real-GPU or device evidence |
+| Evidence folders | `evidence/veer-wonder-world/{p0,p1,p2}/` | PARENT-FILL: paths; confirm no child image or audio |
+| Temporary cloud resources | ACR image tags and anything else created | PARENT-FILL: created and deleted (`tools/remote-acr/run.sh` keeps the pushed tag by default, `KEEP_IMAGE=1`; `apps/veer-wonder-world/tools/remote-run.sh` sets `KEEP_IMAGE=0`) |
+| Task IDs done | `04` A, F0, B, C, D, E, F, G, H, I, J | PARENT-FILL: done list with evidence; anything not done with the reason and command output |
+
+### 4.3 Open acceptance items (an agent cannot do these)
+1. **Physical-device runs** (`06` G9, §5 and §8; `03` §10 "phone + tablet"; `04` art/media acceptance). Steps for the owner:
+   1. Build the app and serve the built `dist` at a private address the devices can reach. That can be the owner's machine on the local network, or a non-public preview the owner approves. Keep `noindex`, and do not list the URL anywhere.
+   2. On an iPad with Safari (portrait and landscape), an iPhone with Safari, an Android phone with Chrome and desktop Chrome:
+      - tap to start sound;
+      - play E17 and G03 in Play Together;
+      - play one episode in Watch & Sing with no input to the end;
+      - press "All done" in the middle of a beat;
+      - switch reduced motion, captions and music;
+      - send the tab to the background during a line and come back;
+      - turn the sound off (mute switch) and check the captions path;
+      - tap fast and repeatedly.
+   3. Record each device in `evidence/veer-wonder-world/p1/devices/<device>.md`: model, OS, browser version, the renderer string from `?diag=1`, smoothness, audio, touch and any console error. Use screen recordings without people in them, and no child image or audio.
+   4. For a desktop real-GPU capture, add a `wonder-world` entry to `tools/real-gpu/scenarios.json` (`path`, `settleMs`, `steps`). Then run `REAL_GPU_HEADLESS=false REAL_GPU_BASE=<private URL> tools/real-gpu/run.sh wonder-world` on the owner's Mac. Results land in `evidence/real-gpu/<date>/`.
+   5. Optional, with caregiver consent: the short co-play observation of `06` §8. Take notes only; record no audio or video by default.
+
+   Until these runs pass, the label stays `prototype` and the performance baselines of `06` §6 stay unset.
+2. **Public release decision** (`MASTER-PROMPT.md` §0.5). It is a separate owner decision. Before any public release:
+   - external privacy/legal review for children's privacy rules (`01` §8, `06` §10);
+   - a real trademark search for "Wonder World" and the six character names (`02` §1);
+   - a legal check of the Meshy and ElevenLabs terms for public redistribution;
+   - re-render every free-tier or unknown-tier audio file on a paid tier (C9);
+   - a human SLP and caregiver review before any educational wording (`01` §7, `06` §8);
+   - real-device evidence (item 1);
+   - no efficacy or therapy claim.
+
+   Only after the owner decides: remove `noindex` and add the app to:
+   - `docs/workflows/game-names.md`;
+   - `tools/site/games.catalog.json`, then run `node tools/site/gen-game-inventory.mjs`;
+   - `showcaseRoutes` in `marketing/scripts/build-showcase-routes.mjs`;
+   - the sitemap route manifest in `marketing/scripts/gen-seo.mjs`.
+
+   Then run `node marketing/scripts/check-site.mjs` and `aura3d check-deploy --release`.

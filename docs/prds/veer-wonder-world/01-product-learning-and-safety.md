@@ -1,5 +1,5 @@
 # PRD 01 — Product, Learning Design, Caregiver Role and Safety
-Status: **PROPOSED** · Product owner: PM · Review: pediatric SLP, caregivers, privacy counsel · Links: [index](README.md), [content](05-episodes-games-and-curriculum.md), [QA](06-qa-release-and-execution.md)
+Status: **IN BUILD (prototype; owner decision 2026-10-29)** · Product owner: PM · Review: pediatric SLP, caregivers, privacy counsel; for this build each review is a recorded agent review (owner instruction 2026-10-29, [`07`](07-autonomous-decisions-and-build-record.md) section 2), which is not clinical or legal review and relaxes no rule in this file · Links: [index](README.md), [content](05-episodes-games-and-curriculum.md), [QA](06-qa-release-and-execution.md)
 
 ## 1. Problem to solve
 A toddler still developing speech may engage deeply with animals, songs, bright toys and familiar stories. Yet passive watching, tapping random buttons or reciting ABCs do not establish that a child can communicate. Build a compact **co-play storytelling experience** that repeatedly pairs a small set of useful words with real meaning, creates optional turn-taking opportunities, introduces letters/numbers/objects playfully, and ends by reconnecting child and caregiver to real life.
@@ -30,7 +30,7 @@ A toddler still developing speech may engage deeply with animals, songs, bright 
 Each beat must have:
 - **Model**: narrator says a short natural phrase, e.g. “Ball! A ball.”
 - **Meaning**: ball is visibly present, bouncing or rolling as it is named.
-- **Turn**: character looks toward viewer with a calm pause (content-configurable default proposal 4–6 seconds; SLP review required).
+- **Turn**: character looks toward viewer with a calm pause (content-configurable default proposal 4–6 seconds; SLP review required; this build defaults to 5 s, `BeatSpec.waitMs` in `src/types.ts`, under agent review in `07`).
 - **Response**: touch, gesture interpreted by caregiver, sound or word is welcomed; game advances without any test of pronunciation.
 - **Expansion**: adult or narrator adds one step, e.g. “The ball rolls.”
 - **Generalization**: end-card invites real ball play or books with the same word.
@@ -91,13 +91,13 @@ Story purpose, not a random reward, should cause the animation. Humour is gentle
 - Parent control gates are ordinary product UX, **not security controls**; keep privacy/settings surfaces separate from the play canvas.
 - If caregiver speaks to or models for child, app doesn't attribute, label or grade that speech.
 - “All done” always works and has immediate effect; no unfinished streak penalties or forced completion.
-- Personalisation: choose approved local voice pack, subtitle display, intro name, short target-word list (suggested 3–5 words), calming mode and story order.
+- Personalisation: choose approved local voice pack, subtitle display, intro name, short target-word list (suggested 3–5 words), calming mode and story order. This build has no intro name and no family voice pack: `ParentSettings` (`src/types.ts`) holds mode, music, sound, captions, reduced motion, high contrast, locale, wait time and word list only.
 - Offline mode: at end, optionally blank the scene and present a simple suggestion + stop playback (“Find a ball and roll it back and forth”). No automatic next episode.
 
 ## 7. Health and safety boundary
 - This is entertainment and caregiver-supported language exposure, **not a speech therapy device**; no diagnosis, outcome guarantees, normative scores, developmental risk prediction, or AI “speech age.”
 - Do not require verbal output to unlock rewards; do not insist on imitation if child is uninterested or frustrated.
-- Have pilot word set, prompt timing, interactions and any multilingual materials reviewed by a pediatric SLP before making educational claims.
+- Have pilot word set, prompt timing, interactions and any multilingual materials reviewed by a pediatric SLP before making educational claims. This build makes no educational claim; its agent review (`07`) does not satisfy this rule for any future claim.
 - Provide caregiver with external guidance to consult pediatrician/SLP if concerned about development; consider professional hearing evaluation as appropriate; avoid automated triage.
 - Limit stimulation: no flashing, strobe, loud stingers, camera shake, startling close-ups, aggressive jump cuts, endless loops, surprise rewards or autoplay next. Music ducks under speech.
 - Design brief parent-led sessions; this is not a tool for maximizing daily viewing minutes. No badge/battlepass/points streaks.
@@ -107,7 +107,7 @@ Story purpose, not a random reward, should cause the animation. Humour is gentle
 | Item | P1 baseline | Future voice experiment |
 | --- | --- | --- |
 | Login/account | None required | Same |
-| Child name | Optional, local settings; never URL/log | Same |
+| Child name | Optional, local settings; never URL/log (this build stores none: no name field in `ParentSettings`) | Same |
 | Raw audio | No microphone, no stored audio | Parent opt-in; default ephemeral, delete immediately; no storage |
 | Recognition transcripts | None | Avoid collecting; if essential, explicit consent, deletion, DPIA, browser/provider documentation |
 | Per-child developmental score | Prohibited | Prohibited |
@@ -116,7 +116,7 @@ Story purpose, not a random reward, should cause the animation. Humour is gentle
 | Purchases/ads/sharing | None | None |
 | Storage | Parent settings on-device, clearable | Additional privacy review for any further storage |
 
-Do not upload private family greetings or child photos as public git/LFS assets. Original commercial voices/music require licenses, invoices and provenance; use generated/recorded assets only with rights cleared. Consent and deletion flows must be comprehensible to caregivers. Any hosted public product requires legal review for applicable children’s privacy regulation (e.g. COPPA) before launch.
+Do not upload private family greetings or child photos as public git/LFS assets. Original commercial voices/music require licenses, invoices and provenance; use generated/recorded assets only with rights cleared. Consent and deletion flows must be comprehensible to caregivers. Any hosted public product requires legal review for applicable children’s privacy regulation (e.g. COPPA) before launch. The 2026-10-29 build is not released publicly, and this review stays open as part of the separate owner publish decision (`07` section 4).
 
 ## 9. Accessibility and UX acceptance
 - [ ] All child-essential actions possible with one tap; drags have tap alternatives; no required fine motor timing.
@@ -139,7 +139,7 @@ Do not upload private family greetings or child photos as public git/LFS assets.
 Recommended discovery: short co-play sessions observed with caregiver assent; avoid recording child audio/video by default. Staff notes require consent and careful storage.
 
 ## 11. Product acceptance checklist
-- [ ] SLP/caregiver review signs off target words, pause timing, sample scripts, and no-therapy claims.
+- [ ] SLP/caregiver review signs off target words, pause timing, sample scripts, and no-therapy claims (this build: agent review recorded in `07` section 2, owner instruction 2026-10-29).
 - [ ] Every P1 episode includes 1–3 target words, clear actions, an invitation to respond and offline play cue.
 - [ ] Watch-only is a fully watchable animated story, independent of touch/microphone.
 - [ ] No screen can pressure child to speak or punish silence.
