@@ -204,18 +204,12 @@ describe("adapter controller (live page autoplay, serve-phase movement and toss 
     ap.step(toss, 1 / 60);
     expect(calls.filter((c) => c[0] === "swing")).toHaveLength(1);
   });
-  it("J, K and L select short, deep (with power) and lob and swing; text fields are ignored; nothing runs while paused", () => {
+  it("J, K and L are no longer handled here: the shell routes them through the binding gates (top-tennis-C6, audit-fixes.test.ts)", () => {
     const calls: unknown[][] = [];
-    const playing = { mode: "playing", paused: false, time: 4 } as never;
-    const ap = make(false, playing, calls);
+    const ap = make(false, { mode: "playing", paused: false, time: 4 } as never, calls);
     ap.keyDown({ code: "KeyJ" }); ap.keyDown({ code: "KeyK" }); ap.keyDown({ code: "KeyL" });
-    expect(calls).toEqual([["shot", "short", "player"], ["swing", "player", 4, false], ["shot", "deep", "player"], ["swing", "player", 4, true], ["shot", "lob", "player"], ["swing", "player", 4, false]]);
-    const before = calls.length;
-    ap.keyDown({ code: "KeyJ", target: { tagName: "INPUT" } });
-    expect(calls).toHaveLength(before);
-    const paused = make(false, { mode: "playing", paused: true, time: 1 }, calls);
-    paused.keyDown({ code: "KeyK" });
-    expect(calls).toHaveLength(before);
+    expect(calls).toEqual([]);
+    expect(ap.keysHeld.has("KeyK")).toBe(true);
   });
 });
 

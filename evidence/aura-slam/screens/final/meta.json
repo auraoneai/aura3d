@@ -1,70 +1,23 @@
 {
   "meta": {
     "top-tennis": {
-      "390": {
-        "notes": [
-          "ready 22s",
-          "shot 01-title",
-          "play: clicked #aura-btn-play",
-          "shot 02-early",
-          "shot 03-action",
-          "auto: clicked #aura-btn-auto",
-          "shot 04-mid",
-          "modes:menu: clicked #aura-btn-menu",
-          "shot 05-modes",
-          "results: not reached"
-        ],
-        "errors": [],
-        "bad": [],
-        "navs": [
-          "/apps/showcase-top-tennis/"
-        ],
-        "beacon": {
-          "rung": 0
-        },
-        "proxied": 3
+      "source": "tests/browser/audit-fix/top-tennis.spec.ts",
+      "runs": {
+        "1280": "g01-final2-131920",
+        "390": "g01-final2-131920-390",
+        "card": "g01-final2-131920-misc"
       },
-      "1280": {
-        "notes": [
-          "ready 39s",
-          "shot 01-title",
-          "play: dom-clicked #aura-btn-play",
-          "shot 02-early",
-          "shot 03-action",
-          "auto: dom-clicked #aura-btn-auto",
-          "shot 04-mid",
-          "modes:menu: dom-clicked #aura-btn-menu",
-          "shot 05-modes",
-          "results: not reached"
-        ],
-        "errors": [],
-        "bad": [],
-        "navs": [
-          "/apps/showcase-top-tennis/"
-        ],
-        "beacon": {
-          "rung": 0
-        },
-        "proxied": 3
-      },
-      "card": {
-        "notes": [
-          "ready 51s",
-          "play: dom-clicked #aura-btn-play",
-          "auto: dom-clicked #aura-btn-auto",
-          "shot 04-mid"
-        ],
-        "errors": [],
-        "bad": [],
-        "navs": [
-          "/apps/showcase-top-tennis/"
-        ],
-        "beacon": {
-          "rung": 0
-        },
-        "proxied": 3
-      }
+      "states": [
+        "01-title",
+        "02-early",
+        "03-action",
+        "04-mid",
+        "05-modes",
+        "06-results"
+      ],
+      "results": "reached (3-0, Auto player, QA-hook steps)",
+      "errors": "none from the game; dev-server 404s for unmapped optional package entry points",
+      "capturedAt": "2026-10-29"
     }
-  },
-  "incomplete": []
+  }
 }

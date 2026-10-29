@@ -1,4 +1,4 @@
-import { geometry, type AuraCustomGeometrySpec, type AuraMaterialSpec } from "@aura3d/engine";
+import { game, geometry, type AuraCustomGeometrySpec, type AuraMaterialSpec } from "@aura3d/engine";
 import type { Vec3 } from "../contract/units";
 import type { NodeInput } from "./rigPort";
 
@@ -60,13 +60,15 @@ export function createStaticBoxes() {
       for (const g of groups.values()) n += g.parts.length;
       return n;
     },
-    /** One node per material group; empty groups are skipped (never an empty draw). */
-    build(prefix = "static"): NodeInput[] {
+    /** One node per material group; empty groups are skipped (never an empty draw). Groups named in `runtimeIds` get a runtime handle (venue recolours). */
+    build(prefix = "static", runtimeIds: Readonly<Record<string, string>> = {}): NodeInput[] {
       const nodes: NodeInput[] = [];
       for (const [key, g] of groups) {
         const merged = mergeBoxes(g.parts);
         if (!merged) continue;
-        nodes.push(geometry.custom(merged, { name: `${prefix}-${key}`, material: g.material, castShadow: g.castShadow }) as unknown as NodeInput);
+        const node = geometry.custom(merged, { name: `${prefix}-${key}`, material: g.material, castShadow: g.castShadow });
+        const id = runtimeIds[key];
+        nodes.push((id ? node.runtime(game.runtimeNode(id)) : node) as unknown as NodeInput);
       }
       return nodes;
     }
