@@ -76,6 +76,8 @@ async function gameInfo(page: Page) {
         diag = { renderPath: dg.renderPath?.path ?? null };
         for (const [k, v] of Object.entries(dg)) if (typeof v === "number") diag[k] = v;
         if (dg.frame && typeof dg.frame === "object") for (const [k, v] of Object.entries(dg.frame)) if (typeof v === "number") diag[`frame.${k}`] = v;
+        diag.warnings = (dg.warnings ?? []).slice(0, 8).map((x: unknown) => String(x).slice(0, 120));
+        diag.degradations = (dg.degradations ?? []).map((x: any) => `${x.code ?? x.kind}:${x.nodeId ?? ""}`).slice(0, 12);
       }
     } catch (e) { diag = { err: String(e) }; }
     const state = ev ? { phase: ev.phase, mode: ev.mode, park: ev.park, count: ev.count, outs: ev.outs, inning: ev.inning, half: ev.half, score: ev.score, lastGrade: ev.lastGrade, over: ev.over, result: ev.result, frames: ev.framesRendered } : null;
@@ -135,6 +137,17 @@ test.describe("aura-diamond-3d audit-fix", () => {
       log(`DIA_DONE ${shot.name}`);
     });
   }
+
+  /** RH-04: switch through all six parks with setPark and log warnings / degradations after each rebuild. */
+  test("dia-probe-parks setb grp6", async ({ page }) => {
+    await open(page, server, "?park=sandlot", 1280, 720, "dia-probe-parks");
+    for (const p of ["skyline", "canyon", "ivy", "dome", "lunar", "sandlot"]) {
+      await page.evaluate((id) => (globalThis as any).__AURA3D_GAME_DIAMOND__.setPark(id), p);
+      await page.waitForTimeout(25_000);
+      log(`DIA_PROBE ${JSON.stringify({ probe: "park-switch", park: p, ...(await gameInfo(page)) })}`);
+    }
+    log(`DIA_DONE dia-probe-parks`);
+  });
 
   /** C1: what a real key press does. BEFORE: the first press queues an automatic PERFECT swing. AFTER: grades follow timing. */
   test("dia-probe-swing setb grp5", async ({ page }) => {
