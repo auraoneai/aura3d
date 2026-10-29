@@ -47,6 +47,8 @@ describe("game luma capture targets (audit LIGHT-02)", () => {
     expect(variants("pips-big-leap").sort()).toEqual(worlds.sort());
     const themes = [...src("apps/showcase-cross-hop/src/game/themes.ts").matchAll(/^ {4}id: "([^"]+)",/gm)].length;
     expect(variants("cross-hop").length).toBe(themes);
+    const skies = [...src("apps/showcase-teleoperator/index.html").matchAll(/data-tod="([^"]+)"/g)].map((m) => m[1]!);
+    expect(variants("teleoperator").sort()).toEqual([...new Set(skies)].sort());
   });
 });
 

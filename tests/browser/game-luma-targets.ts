@@ -46,12 +46,15 @@ export const LINKS_COURSES = ["stAuroras", "mapleHollow", "cinderRim", "cloudTer
 export const IRON_CROWN_STAGES = ["crown-arena", "neo-tokyo-rooftop", "bangkok-dock", "colosseum-ruins", "desert-airbase", "himalayan-monastery"] as const;
 export const PIPS_WORLDS = ["w1", "w2", "w3", "w4", "w5", "w6"] as const;
 export const CROSS_HOP_THEMES = [0, 1, 2, 3, 4, 5] as const;
+/** Grid Dispatch sky presets (`#teleopDock button[data-tod]`); noon is the boot state. */
+export const TELEOP_SKIES = ["noon", "golden", "fog", "night"] as const;
 
 const DRAFTS: readonly Draft[] = [
   t("top-tennis", "default", "/apps/showcase-top-tennis/"),
-  t("roadster-rush", "default", "/apps/showcase-roadster-rush/"),
+  // capture=1 starts the run at once (the page otherwise opens on a title card); seed=42 fixes the traffic.
+  t("roadster-rush", "default", "/apps/showcase-roadster-rush/?seed=42&capture=1"),
   t("heatsink", "default", "/apps/showcase-heatsink/"),
-  t("teleoperator", "default", "/apps/showcase-teleoperator/"),
+  ...each(TELEOP_SKIES, (k) => t("teleoperator", k, "/apps/showcase-teleoperator/", k === "noon" ? undefined : clickSelector(`#teleopDock button[data-tod="${k}"]`))),
   ...each(IRON_CROWN_STAGES, (s) => t("iron-crown", s, "/apps/showcase-iron-crown/", s === "crown-arena" ? undefined : clickSelector(`#ic-venues button[data-stage="${s}"]`))),
   t("pips-big-leap", "academy", "/apps/showcase-pips-big-leap/"),
   ...each(PIPS_WORLDS, (w) => t("pips-big-leap", w, "/apps/showcase-pips-big-leap/", pipsWorld(w))),
