@@ -54,6 +54,7 @@ import { createEpisodeDirector } from "./runtime/episode-director.js";
 import type { WonderFlags } from "./runtime/feature-flags.js";
 import { createLocale, type Locale } from "./runtime/locale.js";
 import { createNarrationPlayer, type NarrationPlayer } from "./runtime/narration-player.js";
+import { createPauseSet, type PauseReason } from "./runtime/pause-reasons.js";
 import { createSessionGate } from "./runtime/session-gate.js";
 import { bindCanvasTaps, createTouchRouter, type TouchRouter } from "./runtime/touch-router.js";
 import { createStage, type StageDiagnostics, type TargetRect, type WonderStage } from "./scenes/stage.js";
@@ -588,8 +589,6 @@ export interface WonderApp {
   dispose(): void;
 }
 
-type PauseReason = "user" | "hidden" | "parent" | "device";
-
 interface ActiveStory {
   readonly story: StorySpec;
   readonly runner: StoryRunner;
@@ -706,7 +705,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
   // ---- story state
   let pending: StorySpec | null = null;
   let storyToken = 0;
-  const pauseReasons = new Set<PauseReason>();
+  const pauseReasons = createPauseSet();
   /** The story whose offline card is showing, with its final director snapshot. */
   let ended: { readonly storyId: string; readonly snapshot: DirectorSnapshot; readonly spoken: readonly string[] } | null = null;
   let initialStory: StorySpec | null = null;
@@ -734,7 +733,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
   /** The running story, or null when there is none, it ended or something pauses it. */
   const runningStory = (): ActiveStory | null => {
     const current = active;
-    if (!current || pauseReasons.size > 0 || !current.runner.started() || current.runner.finishReason() !== null) return null;
+    if (!current || pauseReasons.paused() || !current.runner.started() || current.runner.finishReason() !== null) return null;
     return current;
   };
 
@@ -797,9 +796,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
 
   const addPause = (reason: PauseReason): void => {
     if (disposed || !storyExists()) return;
-    const wasPaused = pauseReasons.size > 0;
-    pauseReasons.add(reason);
-    if (!wasPaused) active?.runner.pause();
+    if (pauseReasons.add(reason)) active?.runner.pause();
     active?.controls.setPaused(true);
   };
 
@@ -808,17 +805,14 @@ export function createApp(options: WonderAppOptions): WonderApp {
       pauseReasons.clear();
       return;
     }
-    let changed = false;
-    for (const reason of reasons) if (pauseReasons.delete(reason)) changed = true;
-    if (!changed || pauseReasons.size > 0) return;
+    if (!pauseReasons.release(reasons)) return;
     active?.runner.resume();
     active?.controls.setPaused(false);
   };
 
   /** Back from a hidden tab or a lost GPU: stay paused until a grown-up taps Resume (never auto-resume speech). */
   const holdForGrownUp = (reason: "hidden" | "device"): void => {
-    if (!pauseReasons.delete(reason)) return;
-    pauseReasons.add("user");
+    if (!pauseReasons.holdForGrownUp(reason)) return;
     active?.controls.setPaused(true);
   };
 
@@ -1142,7 +1136,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     target.update(0);
     if (active?.runner === runner) {
       if (audioFailed) runner.audioUnavailable();
-      if (pauseReasons.size > 0) {
+      if (pauseReasons.paused()) {
         runner.pause();
         controls.setPaused(true);
       }
