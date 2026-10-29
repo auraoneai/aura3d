@@ -11,6 +11,7 @@ import { physics } from "./physics.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
 import { timeline } from "./timeline.js";
 import { resolveQrFlags } from "../../contracts/flags.js";
+import { dropShadowedLookFill } from "../looks/lookFill.js";
 import { AuraRuntimeError } from "../compiler/errors.js";
 
 const DEFAULT_SCENE_BACKGROUND: AuraColor = "#070b12";
@@ -153,7 +154,7 @@ export class AuraSceneBuilder {
       timeline: this.timelineSpec,
       physics: this.physicsController?.snapshot(),
       ...(this.overrideMaterialSpec ? { overrideMaterial: this.overrideMaterialSpec } : {}),
-      nodes: this.overrideMaterialSpec ? applyOverrideMaterial(this.nodes, this.overrideMaterialSpec) : [...this.nodes],
+      nodes: dropShadowedLookFill(this.overrideMaterialSpec ? applyOverrideMaterial(this.nodes, this.overrideMaterialSpec) : [...this.nodes]),
       diagnostics: {
         enabled: this.diagnosticsEnabled
       }

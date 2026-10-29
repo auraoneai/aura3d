@@ -13,7 +13,7 @@ import { describe, expect, it } from "vitest";
 import { resolveEnvironment, resolveQrFlags } from "@aura3d/engine/contracts";
 import "@aura3d/engine/lanes"; // registers the C-09 environment sources
 import type { AuraLightNode, AuraSceneSnapshot } from "@aura3d/engine";
-import { looks } from "../../../packages/engine/src/agent-api/index";
+import { lights, looks, scene } from "../../../packages/engine/src/agent-api/index";
 
 const NO_HDRI_LOOKS = ["night-city", "polar-night", "neon-arcade", "space", "underwater"] as const;
 // Game-style overrides (Aura Diamond 3D: looks.preset(park.look, { fogDensityScale: 0, exposureEv })).
@@ -54,4 +54,44 @@ describe("looks.preset fill inside a game-style scene", () => {
       expect(irradiance / neutralDc, `${id} must not overshoot the 4.3.7 neutral room`).toBeLessThan(1.15);
     });
   }
+});
+
+// Aura Glint Courier composes neon-arcade with lights.ambient 0.92 and lights.hemisphere 0.85. On 4.3.7 an authored ambient light
+// withheld the implicit fill (mean luma 25); stacking the neutral room on it measured 77. The look fill yields the same way.
+describe("looks.preset fill and an authored ambient light", () => {
+  const envNodes = (snapshot: AuraSceneSnapshot): unknown[] => {
+    const out: unknown[] = [];
+    const walk = (nodes: readonly unknown[]): void => {
+      for (const node of nodes as { kind?: string; children?: unknown[] }[]) {
+        if (node.kind === "environment") out.push(node);
+        if (Array.isArray(node.children)) walk(node.children);
+      }
+    };
+    walk(snapshot.nodes);
+    return out;
+  };
+  const build = (withAmbient: boolean) => {
+    const s = scene().add(looks.preset("neon-arcade", { fogDensityScale: 0, exposureEv: 0.05 }));
+    if (withAmbient) s.add(lights.ambient({ color: "#ffe9cc", intensity: 0.92 })).add(lights.hemisphere({ skyColor: "#ffe3b8", groundColor: "#2a3a32", intensity: 0.85 }));
+    return s.add(lights.directional({ position: [8, 22, 12], intensity: 1.25, shadow: true })).toJSON();
+  };
+
+  it("keeps the fill when the scene authors no ambient light", () => {
+    expect(envNodes(build(false))).toHaveLength(1);
+  });
+
+  it("drops the fill when the scene authors an ambient light, so the ambient stays the only fill", () => {
+    const snapshot = build(true);
+    expect(envNodes(snapshot)).toHaveLength(0);
+    expect(resolveEnvironment(snapshot, "high", FLAGS).kind).toBe("neutral-room");
+  });
+
+  it("never drops an environment the author added", () => {
+    const own = scene()
+      .add(looks.preset("neon-arcade"))
+      .add({ kind: "environment", environment: "neutral", intensity: 0.5, name: "own" } as never)
+      .add(lights.ambient({ intensity: 0.5 }))
+      .toJSON();
+    expect(envNodes(own).map((n) => (n as { name?: string }).name)).toContain("own");
+  });
 });
