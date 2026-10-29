@@ -31,7 +31,7 @@ const SHOTS: readonly Shot[] = [
   { name: "dia-shot-skyline-noao", query: "?park=skyline&qa-ao=0", w: 1280, h: 720 }
 ];
 
-/** Run groups (`--grep=grpN`) so each remote run stays inside the 3600 s ACR step limit. */
+/** Run groups (`--grep=grpN`) so each remote run stays inside the 3600 s ACR step limit. grp4 also runs the park-switch probe, grp5 the swing probe, grp6 the QA probe, grp7 the take probe. */
 const GROUPS: Record<string, string> = {
   "dia-shot-sandlot-desktop": "grp1", "dia-shot-skyline-desktop": "grp1", "dia-shot-canyon-desktop": "grp1",
   "dia-shot-ivy-desktop": "grp2", "dia-shot-dome-desktop": "grp2", "dia-shot-lunar-desktop": "grp2",
@@ -139,7 +139,7 @@ test.describe("aura-diamond-3d audit-fix", () => {
   }
 
   /** RH-04: switch through all six parks with setPark and log warnings / degradations after each rebuild. */
-  test("dia-probe-parks setb grp6", async ({ page }) => {
+  test("dia-probe-parks setb grp4", async ({ page }) => {
     await open(page, server, "?park=sandlot", 1280, 720, "dia-probe-parks");
     for (const p of ["skyline", "canyon", "ivy", "dome", "lunar", "sandlot"]) {
       await page.evaluate((id) => (globalThis as any).__AURA3D_GAME_DIAMOND__.setPark(id), p);
@@ -170,7 +170,7 @@ test.describe("aura-diamond-3d audit-fix", () => {
   });
 
   /** C1: a pitch with no input. AFTER: the pitch is delivered and called a strike or a ball. BEFORE: nothing is pitched. */
-  test("dia-probe-take setb grp5", async ({ page }) => {
+  test("dia-probe-take setb grp7", async ({ page }) => {
     await open(page, server, "?park=sandlot", 1280, 720, "dia-probe-take");
     const start = await evidence(page);
     const pitched = await waitPhase(page, ["pitch"], 600_000);
@@ -180,7 +180,7 @@ test.describe("aura-diamond-3d audit-fix", () => {
   });
 
   /** Deterministic sim probe through the QA step hook (AFTER only): early, on-time and late presses, plus the results screen. */
-  test("dia-probe-qa setb grp5", async ({ page }) => {
+  test("dia-probe-qa setb grp6", async ({ page }) => {
     await open(page, server, "?park=sandlot&qa=1", 1280, 720, "dia-probe-qa");
     const hasQa = await page.evaluate(() => typeof (globalThis as any).__AURA3D_GAME_DIAMOND__?.qaSwingAt === "function");
     if (!hasQa) {
