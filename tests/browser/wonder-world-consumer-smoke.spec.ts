@@ -10,7 +10,10 @@
  * the 4.5.0 mini-game scaffold fails on 404s for the template's own demo media (its game-sfx-core pack and audio-codec
  * probes under /packs/ and /probes/, and the external Textures/colormap.png one Kenney GLB names), which the scaffold
  * does not ship. That is an upstream template defect (07 B32), not the SDK: those failures are listed in the record
- * and any other failure still fails the test. `npm ls @aura3d/engine @aura3d/cli --json` is
+ * and any other failure still fails the test. The same pass reports the template's hero GLB request as aborted
+ * (net::ERR_ABORTED) on software WebGL2; a direct visit of the built site (a static server here, the test's own page)
+ * then tells a lost hero from a cancelled duplicate request: the abort counts as upstream only when that visit sees the
+ * hero GLB finish downloading and the template report the hero's animation clips. `npm ls @aura3d/engine @aura3d/cli --json` is
  * recorded, and the engine must resolve to 4.5.0; npm ls itself exits 1 here because the scaffold does not list the
  * CLI (consumers run it with npx), so its exit status is recorded, not gated. The browser pass loads the built site
  * from a static server in the scaffold's own Playwright Chromium (software WebGL2 on the runner) and fails on HTTP
@@ -19,15 +22,16 @@
  * Remote runner only (needs the npm registry): apps/veer-wonder-world/tools/remote-run.sh consumer-smoke
  * (estimated 8-12 min)
  *
- * Records: WWJSON consumer-smoke (the scaffold's file list, the dist summary, the npm ls versions and every step's
- * command, exit status, time and redacted output tail).
+ * Records: WWJSON consumer-smoke (the scaffold's file list, the dist summary, the npm ls versions, every step's
+ * command, exit status, time and redacted output tail, and the hero check), WWSHOT consumer-smoke-scaffold.
  */
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readdirSync, rmSync, statSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
+import { createServer } from "node:http";
 import { tmpdir } from "node:os";
-import { join, relative } from "node:path";
-import { expect, test } from "@playwright/test";
-import { emitJson, redact, runCommit } from "./wonder-world-lib";
+import { extname, join, normalize, relative } from "node:path";
+import { expect, test, type Page } from "@playwright/test";
+import { emitJson, emitShot, redact, runCommit } from "./wonder-world-lib";
 
 const CREATE = "create-aura3d@4.5.0";
 const CLI = "@aura3d/cli@4.5.0";
@@ -105,6 +109,73 @@ const UPSTREAM_TEMPLATE_404: readonly RegExp[] = [
   /^Route \S+ request failed with HTTP 404 \/aura-assets\/Textures\/colormap\.png\.?$/
 ];
 
+/** The template's hero model, and the --browser failure that reports its request aborted. */
+const HERO_PATH = "/aura-assets/kaykit-barbarian.glb";
+const HERO_ABORTED = /^Route \S+ request did not complete: \/aura-assets\/kaykit-barbarian\.glb \(net::ERR_ABORTED\)\.?$/;
+
+const CONTENT_TYPES: Readonly<Record<string, string>> = {
+  ".html": "text/html",
+  ".js": "text/javascript",
+  ".mjs": "text/javascript",
+  ".css": "text/css",
+  ".json": "application/json",
+  ".glb": "model/gltf-binary",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".webp": "image/webp",
+  ".svg": "image/svg+xml",
+  ".wasm": "application/wasm",
+  ".woff2": "font/woff2"
+};
+
+/** Serves `dir` on 127.0.0.1 at a free port (a 404 for anything that is not a file in it). */
+async function serveDir(dir: string): Promise<{ readonly origin: string; readonly close: () => Promise<void> }> {
+  const server = createServer((request, response) => {
+    const path = decodeURIComponent(new URL(request.url ?? "/", "http://localhost").pathname);
+    const file = join(dir, normalize(path === "/" ? "/index.html" : path));
+    if (!file.startsWith(dir) || !existsSync(file) || statSync(file).isDirectory()) {
+      response.writeHead(404).end();
+      return;
+    }
+    response.writeHead(200, { "content-type": CONTENT_TYPES[extname(file)] ?? "application/octet-stream" });
+    response.end(readFileSync(file));
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+  const port = typeof address === "object" && address !== null ? address.port : 0;
+  return { origin: `http://127.0.0.1:${port}`, close: () => new Promise<void>((resolve) => server.close(() => resolve())) };
+}
+
+/**
+ * Opens the built scaffold and waits for the template's ready mark: whether the hero GLB finished downloading, which
+ * of its requests failed, the clips the template reports for the hero, and a screenshot.
+ */
+async function heroCheck(page: Page, origin: string): Promise<{ readonly ready: boolean; readonly error: string | null; readonly finished: number; readonly failed: readonly string[]; readonly clips: readonly string[] }> {
+  let finished = 0;
+  const failed: string[] = [];
+  const isHero = (url: string): boolean => new URL(url).pathname === HERO_PATH;
+  page.on("requestfinished", (request) => {
+    if (isHero(request.url())) finished += 1;
+  });
+  page.on("requestfailed", (request) => {
+    if (isHero(request.url())) failed.push(request.failure()?.errorText ?? "failed");
+  });
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await page.goto(`${origin}/`, { waitUntil: "commit", timeout: 2 * MINUTE });
+  const ready = await page
+    .waitForFunction(() => document.body.dataset["aura3dReady"] === "true" || document.body.dataset["aura3dError"] !== undefined, undefined, { timeout: 8 * MINUTE, polling: 1_000 })
+    .then(() => true)
+    .catch(() => false);
+  const seen = await page.evaluate(() => {
+    const game: unknown = Reflect.get(window, "__AURA3D_MINI_GAME__");
+    const animation: unknown = typeof game === "object" && game !== null ? Reflect.get(game, "animation") : null;
+    const clips: unknown = typeof animation === "object" && animation !== null ? Reflect.get(animation, "clips") : null;
+    return { error: document.body.dataset["aura3dError"] ?? null, clips: Array.isArray(clips) ? clips.filter((clip): clip is string => typeof clip === "string") : [] };
+  });
+  emitShot("consumer-smoke-scaffold", await page.screenshot({ type: "jpeg", quality: 70 }), "jpg");
+  return { ready, error: seen.error, finished, failed, clips: seen.clips };
+}
+
 /** The JSON report check-deploy prints on stdout (the outermost object), or null when there is none. */
 function deployReport(stdout: string): { readonly ok: boolean; readonly failures: readonly string[] } | null {
   const start = stdout.indexOf("{");
@@ -130,7 +201,7 @@ function lsVersion(tree: unknown, name: string): string | null {
   return typeof entry.version === "string" ? entry.version : null;
 }
 
-test("create-aura3d@4.5.0 mini-game: scaffold, install, build and check-deploy pass (--browser: nothing beyond the template's known missing demo media)", async () => {
+test("create-aura3d@4.5.0 mini-game: scaffold, install, build and check-deploy pass (--browser: nothing beyond the template's known missing demo media)", async ({ page }) => {
   test.setTimeout(40 * MINUTE);
   const root = mkdtempSync(join(tmpdir(), "ww-consumer-"));
   const app = join(root, "smoke");
@@ -178,10 +249,24 @@ test("create-aura3d@4.5.0 mini-game: scaffold, install, build and check-deploy p
     const report = deployReport(browser.stdout);
     expect(report, `check-deploy --browser prints its JSON report:\n${browser.step.tail}`).not.toBeNull();
     const failures = report?.failures ?? [];
-    const upstream = failures.filter((failure) => UPSTREAM_TEMPLATE_404.some((pattern) => pattern.test(failure)));
+
+    // The hero check: is the aborted hero request a lost model or a cancelled duplicate?
+    const served = await serveDir(dist);
+    let hero: Awaited<ReturnType<typeof heroCheck>>;
+    try {
+      hero = await heroCheck(page, served.origin);
+    } finally {
+      await served.close();
+    }
+    const heroLoaded = hero.ready && hero.error === null && hero.finished > 0 && hero.clips.length > 0;
+    record["hero"] = { path: HERO_PATH, loaded: heroLoaded, ...hero, error: hero.error === null ? null : clean(hero.error, root) };
+    expect(hero.ready, "the built scaffold marks itself ready (data-aura3d-ready)").toBe(true);
+    expect(hero.error, "the built scaffold reports no boot error").toBeNull();
+
+    const upstream = failures.filter((failure) => UPSTREAM_TEMPLATE_404.some((pattern) => pattern.test(failure)) || (heroLoaded && HERO_ABORTED.test(failure)));
     const other = failures.filter((failure) => !upstream.includes(failure));
     record["browser"] = { status: browser.step.status, failures: failures.length, upstreamTemplate404: upstream.map((failure) => clean(failure, root)), other: other.map((failure) => clean(failure, root)) };
-    expect(other, "check-deploy --browser finds nothing beyond the template's known missing demo media (07 B32)").toEqual([]);
+    expect(other, "check-deploy --browser finds nothing beyond the template's known missing demo media and, with the hero shown to load, its aborted duplicate hero request (07 B32)").toEqual([]);
     expect(browser.step.status === 0 || upstream.length > 0, `check-deploy --browser exits 0 or fails only on the known template media:\n${browser.step.tail}`).toBe(true);
     record["passed"] = true;
   } finally {
