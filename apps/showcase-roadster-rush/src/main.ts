@@ -574,7 +574,8 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const builtScene = buildRoadsterRushScene();
   const auraApp = createAuraApp(canvas, {
     scene: builtScene,
-    renderer: { quality: "high" },
+    // "auto": the tier follows the device once the quality lane is on; with it off the mount resolves to "high", as before.
+    renderer: { quality: "auto" },
     qualityRebuild: { flags: ["game"] }
   });
 
