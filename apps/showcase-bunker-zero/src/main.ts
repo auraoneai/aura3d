@@ -47,8 +47,6 @@ const EYE = 1.55;
 const FLOOR_SPAN = 300;
 const MAX_ROCKETS = 18;
 const ENEMY_TRACERS = 8;
-/** C24 A/B knob: `?bz-contact-shadows=0` drops effects.contactShadows. */
-const CONTACT_SHADOWS = bootParams.get("bz-contact-shadows") !== "0";
 const ALL_FLOORS: { def: FloorDef; slot: number }[] = [
   ...FLOORS.map((def, i) => ({ def, slot: i })),
   { def: KILL_HOUSE, slot: 6 }
@@ -429,8 +427,9 @@ function buildScene() {
       }).runtime(game.runtimeNode(`tracer-${i}`, { tags: ["vfx"] }))
     );
 
-  const withNodes = b.addMany(nodes);
-  return (CONTACT_SHADOWS ? withNodes.add(effects.contactShadows({ intensity: 0.55, length: 0.35 })) : withNodes)
+  // C24: no effects.contactShadows. The only shadow-casting light is the look's key above the sealed ceilings, so the mask
+  // changed nothing on screen (remote A/B g11-after-7: mean luma 74.98 with it, 74.99 without) and cost 52 draw calls (217 vs 165).
+  return b.addMany(nodes)
     .add(effects.fog({ color: "#1a2230", density: 0.0095 }))
     .add(effects.filmGrain({ intensity: 0.02 }))
     .add(effects.vignette({ intensity: 0.2 }))
@@ -1445,6 +1444,10 @@ function installQa() {
       startFloor(5, "descent", { newRun: true });
       // a completed run: floors 1 to 5 as gold clears
       runResults = FLOORS.slice(0, 5).map((f, i) => ({ floor: i + 1, name: f.name, time: f.par * 0.8, kills: 4, totalEnemies: 5, secrets: 1, totalSecrets: 2, medal: "gold", score: 1500 * (i + 1) }));
+      runStartFloor = 0;
+      sim.state.score = 7500 + 4000;
+      sim.state.time = 312;
+      sim.state.kills = sim.state.totalEnemies; sim.state.secrets = 1;
       const p = sim.state.player;
       for (const e of sim.state.enemies) { e.state = "dead"; e.deathT = 9; e.hp = 0; }
       p.key = true; p.hp = 9999;

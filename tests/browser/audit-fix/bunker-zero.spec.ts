@@ -181,6 +181,7 @@ test.describe("bunker zero audit-fix", () => {
     log("GL_DONE desktop-f1-production");
   });
 
+  // C24 A/B: run on a build that still has the ?bz-contact-shadows=0 knob (commit 53f3efc96); the fix removed the effect
   test("bz-desktop-f1-nocontact @ab", async ({ page }) => {
     const loaded = await open(page, server, "desktop-f1-nocontact", `${APP}?bz-contact-shadows=0`, DESKTOP);
     await settle(page, "desktop-f1-nocontact", loaded, SETTLE);
