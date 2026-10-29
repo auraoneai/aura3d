@@ -332,14 +332,16 @@ function v0Children(preset: AuraLookPreset, overrides: AuraLookOverrides | undef
     );
   }
   if (v0.effects.includes("colorGrade")) {
-    children.push(
-      effects.colorGrade({
+    // `lookGrade` lets an authored grade next to the look take precedence field by field (lookGrade.ts).
+    children.push({
+      ...effects.colorGrade({
         name: "look color grade",
         contrast: v0.grade.contrast,
         saturation: v0.grade.saturation,
         exposure: Math.pow(2, overrides?.exposureEv ?? 0)
-      }).toJSON()
-    );
+      }).toJSON(),
+      lookGrade: true
+    } as AuraSceneNode);
   }
   if (v0.effects.includes("ambientOcclusion")) {
     children.push(effects.ambientOcclusion({ name: "look ambient occlusion" }).toJSON());

@@ -40,6 +40,7 @@ import type { AuraCustomPostPass, AuraPostPassOrder, AuraPostSurface } from "../
 import type { AuraOutputOptions } from "../contracts/output.js";
 import { AuraRuntimeError, groups, type AuraApp, type AuraCreateAppOptions, type AuraEffectNode, type AuraSceneNode, type AuraSceneSnapshot } from "./index.js";
 import { expandPostPreset, presetCapabilityDegraded } from "./postPresets.js";
+import { mergeLookColorGrade } from "./looks/lookGrade.js";
 
 /* ------------------------------------------------------------------------- */
 /* Submitted postprocess telemetry                                           */
@@ -748,7 +749,8 @@ export function createRootPostPipeline(
   // Authored `output` fields win over the preset's; an authored effect node
   // overrides the preset's same-effect node field by field. Presets naming
   // agx/neutral render aces while C-05's operator selection is a stub.
-  const authoredEffectNodes = nodes.filter((node): node is AuraEffectNode => node.kind === "effect");
+  // CR-4: a grade authored next to a look wins over the look's grade field by field (looks/lookGrade.ts).
+  const authoredEffectNodes = mergeLookColorGrade(nodes.filter((node): node is AuraEffectNode => node.kind === "effect"));
   const expansion = expandPostPreset(output, authoredEffectNodes);
   const effectiveOutput = expansion.output;
   const effectNodes = expansion.nodes;
