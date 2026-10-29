@@ -714,7 +714,7 @@ b {
   width: 18vmin;
   height: 6vmin;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
+  background: #ffffff;
   box-shadow: 0 6px 18px rgba(91, 70, 163, 0.08);
   animation-name: ww-drift;
   animation-duration: 48s;
@@ -762,13 +762,19 @@ b {
 }
 
 .ww-start-cloud-3 {
-  top: 88%;
+  bottom: 3%;
   left: 5%;
   width: 11vmin;
   height: 4vmin;
-  opacity: 0.8;
   animation-duration: 54s;
   animation-delay: -35s;
+}
+
+/* The top-left cloud's tall puff rises 0.7 of its height above its box: keep it inside the top edge. */
+@media (min-height: 600px) {
+  .ww-start-cloud-1 {
+    top: 6%;
+  }
 }
 
 /* Portraits in a gentle arc: the middle faces stand a little higher. */
@@ -945,6 +951,15 @@ b {
   justify-content: center;
 }
 
+/* Over the sky, the question and the hint under the button sit on a soft backing, so no rainbow band edge runs
+   through their text (one-column layouts put the bands behind the controls). */
+.ww-start .ww-legend-text,
+.ww-start-hint {
+  padding: 2px 12px;
+  border-radius: 999px;
+  background: rgba(255, 253, 249, 0.88);
+}
+
 /* Over the sky the chosen mode is filled in, so it cannot read as a gap in the row. */
 html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face {
   border-color: var(--ww-primary);
@@ -991,6 +1006,7 @@ html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face {
   display: grid;
   gap: 8px;
   width: 100%;
+  max-width: 26rem;
   padding: 16px 20px;
   border: 1px solid var(--ww-line);
   border-radius: var(--ww-radius);
@@ -1643,6 +1659,13 @@ html.high-contrast .ww-caption-line {
   }
 }
 
+/* Short phones: the welcome fills the height, so the portraits sit at the top edge where the cloud would be. */
+@media (max-width: 560px) and (max-height: 700px) {
+  .ww-start-cloud-1 {
+    display: none;
+  }
+}
+
 @media (max-width: 360px) {
   .ww-pill-button {
     padding: 0 12px 0 10px;
@@ -1697,6 +1720,11 @@ html.high-contrast .ww-caption-line {
     font-size: clamp(2.25rem, 6.4vw, 5.25rem);
   }
 
+  /* The portrait row stays inside its column: 65 px rings at 1024 px wide, full size from about 1190 px. */
+  .ww-start-face {
+    width: clamp(46px, 6.4vw, 76px);
+  }
+
   .ww-start-rainbow {
     width: 48vh;
     height: 24vh;
@@ -1709,8 +1737,9 @@ html.high-contrast .ww-caption-line {
     gap: 12px;
   }
 
+  /* The welcome's column has height to spare beside the controls: the portraits stay readable. */
   .ww-start-face {
-    width: 36px;
+    width: clamp(36px, 5.6vw, 52px);
     border-width: 3px;
   }
 
@@ -1744,6 +1773,16 @@ html.high-contrast .ww-caption-line {
   .ww-start-note {
     padding: 12px 16px;
     font-size: 0.875rem;
+  }
+
+  /* The controls reach the top and bottom edges here: the top-right cloud would rest on the question above them,
+     and a centred rainbow would sit behind the note card. The rainbow stands under the welcome's column instead. */
+  .ww-start-cloud-2 {
+    display: none;
+  }
+
+  .ww-start-rainbow {
+    left: 27%;
   }
 
   .ww-parent-overlay {

@@ -273,7 +273,8 @@ export function buildModeChoice(doc: Document, locale: UiLocale, selected: PlayM
   const name = uniqueId("ww-mode");
   const fieldset = el(doc, "fieldset", { className: "ww-field ww-segmented", attrs: { "data-setting": "mode" } });
   const options = el(doc, "div", { className: "ww-segmented-options" });
-  fieldset.append(el(doc, "legend", { className: "ww-legend", text: uiText(locale, "ui.mode.label") }), options);
+  // The label sits in its own span, so the start screen can give it a soft backing over the sky (styles.css).
+  fieldset.append(el(doc, "legend", { className: "ww-legend" }, [el(doc, "span", { className: "ww-legend-text", text: uiText(locale, "ui.mode.label") })]), options);
   const inputs = new Map<PlayMode, HTMLInputElement>();
   for (const choice of MODE_CHOICES) {
     const input = el(doc, "input", {
