@@ -2,6 +2,8 @@
 
 **Verdict:** No change needed. The game authors bloom, colour grade, vignette, FXAA, output options, an HDRI environment and custom shader materials, so it stays on the HDR render path. It has no canvas read-back after an await, and no builder call passes an unread option. The one visible difference is bloom pass fusion (frames within 1/255), which is automatic.
 
+**Changed since this guide was written (audit lane G18, 2026-10-29):** the app now mounts with `resize: true` and a `pixelRatio` capped at 1.5 (1 on `quality=low`), traffic is one `instances.model` node per car kind moved with `setInstances` (it was 84 `model()` nodes), and the lights-only path adds `environments.neutral`. Line numbers below refer to the file before those changes.
+
 ## What this game uses
 
 - Entry: `apps/showcase-drift-and-deliver-port/src/main.ts` imports `apps/showcase-port-shared/diag.ts` and then `examples/drift-and-deliver-port/main.ts`. The app mounts the example; it has no code of its own. Unless stated otherwise, `main.ts`, `look.ts`, `models.ts` and `props.ts` below mean files in `examples/drift-and-deliver-port/`.
@@ -71,11 +73,15 @@
 
 ## Checklist
 
-- [ ] Run `node tools/game-checks/run.mjs drift-and-deliver-port` and confirm no new errors.
-- [ ] Run `pnpm --filter @aura3d/showcase-drift-and-deliver-port typecheck` (script `typecheck` in `package.json`) on the remote runner.
-- [ ] Load the page with `?manual=1&autostart=1`, call `window.__AURA_DRIFT_AND_DELIVER__.extras.diag()` and confirm `renderPath.path === "hdr-msaa"`, `quality === "auto"`, `bloomFusion === "separable"`.
-- [ ] Confirm `app.diagnostics()` has no `option-ignored` degradations.
-- [ ] Capture one `?capture=1` frame after a teleport plus `extras.settle()` and compare against the 4.3.7 frame; expect differences within 1/255 from bloom fusion only.
-- [ ] Confirm the black-frame watch does not escalate (no reload, no `drift-heal-stage` change) over a 10 s drive.
-- [ ] Re-capture any saved `?env=0` baselines.
-- [ ] Optional: add `quality: "production"` at `main.ts:454` only if you need byte-identical bloom output.
+Closed by audit lane G18 on 2026-10-29. Every browser check ran on the remote runner (`tools/remote-acr/run.sh`, headless Chromium on SwiftShader software WebGL2, 1280x720 unless stated), measured at steady state (the 90 s shot, never the first frame). Not real-GPU evidence. Run ids and frames: `evidence/audit-fix/g18/wave3/` and `docs/audits/lanes/g18.md`.
+
+- [x] Run `node tools/game-checks/run.mjs drift-and-deliver-port` and confirm no new errors. Result: 0 errors, 0 warnings.
+- [x] Run the app typecheck. Ran locally as `tsc -p apps/showcase-drift-and-deliver-port/tsconfig.json --noEmit` (a typecheck needs no browser): 0 errors.
+- [x] Confirm `renderPath.path === "hdr-msaa"`, `quality === "auto"`, `bloomFusion === "separable"`. Result (run `g18w3-a-g18xp`, `extras.diag()` after a 240-step drive): `hdr-msaa`, `auto`, `separable`.
+- [x] Confirm `app.diagnostics()` has no `option-ignored` degradations. Result (run `g18w3-a-g18xs`): `degradations: []` on both the base and the fixed build.
+- [x] Compare a steady-state frame against 4.3.7. Result (runs `g18w3-v437b` and `g18w3-before2`, default URL, 90 s): mean luma 108.21 on 4.3.7 and 108.21 on 4.5.0, thirds 118.87/114.95/90.80 against 118.88/114.95/90.80, p5/p95 57/168 on both. The fixed build reads 108.29. The default frame did not move in 4.5.0.
+- [x] Confirm the black-frame watch does not escalate. Result: `drift-heal-stage` stayed absent (`heal: null`) after a 120 s splash and after the drive probes; 0% dark pixels in every default frame.
+- [x] Re-capture the `?env=0` baseline. Result: the heal ladder's `no-env` rung read 123.47 on 4.3.7 and 75.52 on 4.5.0 (39% darker, LIGHT-01: 4.5.0 dropped the implicit room probe). The game now authors `environments.neutral({ intensity: 1 })` on that rung only (`look.ts`, `LIGHTS_ONLY_NEUTRAL`), which reads 123.55 (run `g18w3-neutral`; `?neutral=0` reproduces 75.61, `?neutral=0.6` reads 106.35).
+- [x] Optional `quality: "production"`: not added. Byte-identical bloom output is not needed; see the `auto` against `?aura3d-render=production` A/B in `docs/audits/lanes/g18.md` (row C8/RP-05).
+
+Item 5 above said the hemisphere change does not apply to the default look. That was true on 4.5.0 (LIGHT-05: the hemisphere was dropped next to the HDRI). With lane E2's engine fix the hemisphere adds to the HDRI, so the game now authors 0.3 next to the HDRI and keeps 1.7 on the lights-only path (`SKY_FILL` in `look.ts`).
