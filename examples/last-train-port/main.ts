@@ -130,6 +130,8 @@ function runLeg(renderEvery = 0): LegSummary {
   const leg = sim.leg, f0 = sim.attempt.fares, t0 = sim.attempt.tips, l0 = sim.attempt.lost, c0 = sim.catches;
   if (sim.phase === "docked") actionDoors(sim);
   until("ready", c, renderEvery);
+  // The service can complete at this stop (its last boarding); then there is no leg to drive.
+  if (sim.attempt.status !== "active") return { leg, steps: c.steps, fares: sim.attempt.fares - f0, tips: sim.attempt.tips - t0, lost: sim.attempt.lost - l0, aboard: sim.passengers, catches: sim.catches - c0, arrivedAt: sim.leg };
   actionDepart(sim);
   until("enroute", c, renderEvery);
   let g = 0;
@@ -150,7 +152,7 @@ function runCircuit(renderEvery = 0): { steps: number; seconds: number; fares: n
   if (sim.attempt.status !== "active") actionNewService(sim);
   const f0 = sim.attempt.fares, t0 = sim.attempt.tips, s0 = sim.score;
   let steps = 0;
-  for (let k = 0; k < data.tables.towns.length; k++) steps += runLeg(renderEvery).steps;
+  for (let k = 0; k < data.tables.towns.length && sim.attempt.status === "active"; k++) steps += runLeg(renderEvery).steps;
   steps += finishStop(renderEvery).steps;
   return { steps, seconds: steps * DT, fares: sim.attempt.fares - f0, tips: sim.attempt.tips - t0, score: sim.score - s0, legs: data.tables.towns.length };
 }
