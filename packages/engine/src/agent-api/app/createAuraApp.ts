@@ -206,6 +206,28 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
    */
   const deviceLostListeners = new Map<() => void, (() => void) | undefined>();
   const deviceRestoredListeners = new Map<() => void, (() => void) | undefined>();
+  /*
+   * top-tennis C8: a restored context comes back with every GL object of the lost one gone, including the post chain's programs
+   * and targets, so frames stay black until something mounts the renderer again. Apps that remount in their own
+   * `onDeviceRestored` handler (setScene) keep doing so; for every other app the engine remounts the current scene, with
+   * nodes added at runtime, once those handlers have run. Runtime node handles, physics and the clock are kept.
+   */
+  let restoreRemountUnsubscribe: (() => void) | undefined;
+  const attachRestoreRemount = (controller: WebGLRenderController): void => {
+    restoreRemountUnsubscribe?.();
+    const attachedRevision = mountRevision;
+    restoreRemountUnsubscribe = controller.onDeviceRestored?.(() => {
+      if (disposed || attachedRevision !== mountRevision || productionController !== controller) return;
+      try {
+        const current = runtimeNodes.sceneWithRuntimeAdditions() ?? snapshot;
+        renderSnapshot = qrFlags.on("A3D_QR_CORE") ? flattenAuraSceneSnapshot(current, qrFlags) : flattenSceneSnapshot(current);
+        mountCurrentScene();
+        diagnosticsState.warnings.push("DEVICE_RESTORED_REMOUNT: the WebGL context was restored; the scene was mounted again so it renders.");
+      } catch (error) {
+        diagnosticsState.errors.push(`DEVICE_RESTORE_REMOUNT_FAILED: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    });
+  };
   const attachDeviceListeners = (controller: WebGLRenderController): void => {
     for (const [listener, unsubscribe] of deviceLostListeners) {
       unsubscribe?.();
@@ -215,6 +237,8 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       unsubscribe?.();
       deviceRestoredListeners.set(listener, controller.onDeviceRestored?.(listener));
     }
+    // Last, so the app's own restored handlers (which may remount through setScene) run first.
+    attachRestoreRemount(controller);
   };
   let lastTime = 0;
   // ENG-FPS: the canvas preview loop reports a 1 s windowed rate, not 1000 / (last delta).
@@ -747,6 +771,8 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     },
     onDeviceRestored(listener) {
       deviceRestoredListeners.set(listener, productionController?.onDeviceRestored?.(listener));
+      // Keep the engine's restore remount after the app's handlers.
+      if (productionController) attachRestoreRemount(productionController);
       return () => {
         deviceRestoredListeners.get(listener)?.();
         deviceRestoredListeners.delete(listener);
@@ -919,6 +945,8 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       for (const unsubscribe of [...deviceLostListeners.values(), ...deviceRestoredListeners.values()]) unsubscribe?.();
       deviceLostListeners.clear();
       deviceRestoredListeners.clear();
+      restoreRemountUnsubscribe?.();
+      restoreRemountUnsubscribe = undefined;
       if (animationHandle && typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(animationHandle);
       for (const controller of ownedInputControllers) controller.dispose();
       ownedInputControllers.clear();
