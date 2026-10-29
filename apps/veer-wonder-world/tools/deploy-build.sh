@@ -10,6 +10,12 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 APP_DIR="$REPO_ROOT/apps/veer-wonder-world"
 cd "$REPO_ROOT"
+# The deploy host passes its own variables to the build, among them VITE_VERCEL_* (the deployment's URLs and IDs).
+# The engine reads import.meta.env as one object (packages/game/src/index.ts), so Vite would inline every VITE_
+# variable into the public bundle. The app reads none, so none reach the build.
+for name in $(compgen -e); do
+  case "$name" in VITE_*) unset "$name" ;; esac
+done
 node "$APP_DIR/tools/validate-wonder-world-content.mjs"
 node_modules/.bin/vite build "$APP_DIR" --logLevel warn
 node "$APP_DIR/tools/check-dist.mjs"

@@ -3,7 +3,9 @@
 // host after the Vite build (tools/deploy-build.sh), so a build that fails it is never deployed:
 // - index.html exists and keeps its noindex meta tag (the app is an unlisted prototype);
 // - no source map is built;
-// - no served text file carries the child's name, bare or in the working folder form `<name>-wonder-world`.
+// - no served text file carries the child's name, bare or in the working folder form `<name>-wonder-world`;
+// - no served text file carries the deploy host's own variables (VITE_VERCEL_*: the deployment's URLs and IDs),
+//   which Vite inlines when they reach the build (tools/deploy-build.sh keeps them out).
 // The name is not written here: it is the prefix of the app's working folder name, as in
 // tests/browser/wonder-world-build.spec.ts, which runs the same scan on the remote runner.
 // Usage: node apps/veer-wonder-world/tools/check-dist.mjs [dist]   (default: the app's dist/)
@@ -57,8 +59,17 @@ if (name) {
   }
 }
 
+for (const file of textFiles) {
+  const hostVariables = [...new Set(readFileSync(file, "utf8").match(/\bVITE_VERCEL_[A-Z0-9_]+/g) ?? [])];
+  if (hostVariables.length > 0) {
+    problems.push(`deploy-host variables inlined in ${relative(dist, file)}: ${hostVariables.slice(0, 5).join(", ")}${hostVariables.length > 5 ? ", ..." : ""}`);
+  }
+}
+
 if (problems.length > 0) {
   console.error(`check-dist: ${problems.length} problem(s):\n- ${problems.join("\n- ")}`);
   process.exit(1);
 }
-console.log(`check-dist: OK (${files.length} files, ${textFiles.length} text files scanned, 0 source maps, 0 name hits, noindex kept)`);
+console.log(
+  `check-dist: OK (${files.length} files, ${textFiles.length} text files scanned, 0 source maps, 0 name hits, 0 host variables, noindex kept)`
+);

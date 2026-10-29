@@ -81,6 +81,14 @@ describe("preview deploy config (deploy/vercel.json)", () => {
     expect(order.every((index) => index >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
   });
+
+  it("keeps the deploy host's VITE_ variables out of the build, since the engine inlines import.meta.env whole", () => {
+    // The first deploy after the custom domain inlined VITE_VERCEL_PROJECT_PRODUCTION_URL, which carries the name.
+    const script = read("tools/deploy-build.sh");
+    const unset = script.indexOf('case "$name" in VITE_*) unset "$name" ;; esac');
+    expect(unset).toBeGreaterThan(-1);
+    expect(unset).toBeLessThan(script.indexOf("vite build"));
+  });
 });
 
 describe("preview upload (deploy/vercelignore)", () => {
@@ -197,6 +205,12 @@ describe("dist check (tools/check-dist.mjs)", () => {
       expect(run.out).toContain("the child's name appears 1 time(s) in assets/app.js");
       expect(childNamePattern.test(run.out)).toBe(false);
     }
+  });
+
+  it("fails a build that inlined the deploy host's variables", () => {
+    const run = checkDist({ "index.html": PAGE, "assets/app.js": 'const env={MODE:"production",VITE_VERCEL_URL:"x"};' });
+    expect(run.status).toBe(1);
+    expect(run.out).toContain("deploy-host variables inlined in assets/app.js: VITE_VERCEL_URL");
   });
 
   it("is the check the deploy build runs", () => {
