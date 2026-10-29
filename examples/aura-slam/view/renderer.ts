@@ -263,7 +263,8 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       rig.update(rigs.player, state.player as Readonly<ActorState>, pPose, { isPlayer: true, isMoon });
       rig.update(rigs.rival, state.ai as Readonly<ActorState>, aiPose, { isPlayer: false, isMoon });
 
-      net?.sample(frames);
+      // C8: a lost context presents black frames by definition; sampling them made the safety net reload the page mid-match.
+      if (!app.deviceLost?.()) net?.sample(frames);
     },
 
     project(world: Vec3): { x: number; y: number; visible: boolean } {

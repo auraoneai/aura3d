@@ -302,7 +302,8 @@ test.describe("top-tennis audit-fix capture", () => {
       await new Promise((r) => setTimeout(r, 3000));
       const s = w.__TOP_TENNIS_CONTROL__.getState();
       const err = document.getElementById("render-error")!;
-      const snapshot = { ext: true, paused: s.paused, simAdvancedWhileLost: +(s.time - t0).toFixed(3), errorHidden: err.hidden, errorText: err.textContent?.slice(0, 120) };
+      const reset = document.getElementById("graphics-reset");
+      const snapshot = { ext: true, paused: s.paused, simAdvancedWhileLost: +(s.time - t0).toFixed(3), errorHidden: err.hidden, errorText: err.textContent?.slice(0, 120), resetHidden: reset?.hidden ?? null, resetText: reset?.textContent ?? null, navigations: performance.getEntriesByType("navigation").length };
       ext.restoreContext();
       return snapshot;
     });
@@ -311,11 +312,14 @@ test.describe("top-tennis audit-fix capture", () => {
     const after = await page.evaluate(() => {
       const err = document.getElementById("render-error")!;
       const w = window as unknown as Record<string, any>;
-      return { errorHidden: err.hidden, errorText: err.textContent?.slice(0, 120), paused: w.__TOP_TENNIS_CONTROL__.getState().paused };
+      const reset = document.getElementById("graphics-reset");
+      return { errorHidden: err.hidden, errorText: err.textContent?.slice(0, 120), paused: w.__TOP_TENNIS_CONTROL__.getState().paused, resetHidden: reset?.hidden ?? null, resetText: reset?.textContent ?? null, sinceLoadMs: Math.round(performance.now()) };
     });
     log(`GL_META ${JSON.stringify({ target: "ctxloss", id: "restored", after })}`);
     await page.mouse.click(640, 360);
-    await page.waitForTimeout(20_000);
+    await page.waitForTimeout(3_000);
+    log(`GL_META ${JSON.stringify({ target: "ctxloss", id: "tapped", paused: await page.evaluate(() => (window as unknown as Record<string, any>).__TOP_TENNIS_CONTROL__.getState().paused), resetHidden: await page.evaluate(() => document.getElementById("graphics-reset")?.hidden ?? null) })}`);
+    await page.waitForTimeout(17_000);
     await grab(page, "ctxloss", "after-restore");
     log("GL_DONE ctxloss");
   });

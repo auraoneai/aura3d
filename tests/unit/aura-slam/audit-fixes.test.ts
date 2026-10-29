@@ -334,6 +334,9 @@ describe("top-tennis-C8 / C11 / C18: lifecycle", () => {
     expect(renderer).toContain('target.style.width = ""; target.style.height = "";');
     expect(renderer).toContain("new ResizeObserver(() => syncBacking())");
   });
+  it("C8: the safety net does not sample while the context is lost (it reloaded the page mid-match)", () => {
+    expect(renderer).toContain("if (!app.deviceLost?.()) net?.sample(frames);");
+  });
   it("C11: the renderer asks for a governed tier instead of the ignored string", () => {
     expect(renderer).toContain('renderer: { quality: { tier: "auto" } }');
     expect(renderer).not.toContain('quality: "high"');
