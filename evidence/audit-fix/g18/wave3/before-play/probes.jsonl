@@ -1,0 +1,15 @@
+{"target": "g18x-play-1280", "ready": true}
+{"target": "g18x-play-1280", "row": "drive", "s": {"speedKmh": 101, "z": -215.48492386053584, "diag": {"drawCalls": 126, "renderPath": "hdr-msaa", "bloomFusion": "separable", "quality": "auto"}}}
+{"target": "g18x-play-1280", "row": "L1", "s": {"legacyPhase": "playing", "phase": "playing", "legacyZ": -215.48492386053584, "z": -215.48492386053584, "legacySpeed": 28.038620611790325, "speed": 28.038620611790325}}
+{"target": "g18x-play-1280", "row": "C6", "s": {"hook": false}}
+{"target": "g18x-play-1280", "row": "drift", "s": {"drifting": 1, "drift": null}}
+{"target": "g18x-play-1280", "row": "C5", "s": {"blocks": 225, "buildings": 1688, "trees": 762, "traffic": 84, "pickups": 174, "solids": 1688}}
+{"target": "g18x-play-1280", "row": "C14-delivery", "s": {"hook": false}}
+{"target": "g18x-play-1280", "row": "C14-delivered", "s": {"hook": false}}
+{"target": "g18x-play-1280", "row": "C14-camera", "s": {"hook": false}}
+{"target": "g18x-play-1280", "row": "C3", "s": {"hook": false, "phases": ["splash", "playing", "paused"]}}
+{"target": "g18x-play-1280", "row": "C3-restart", "s": {"hook": false}}
+{"target": "g18x-play-1280", "row": "pause", "s": {"phase": "paused", "focused": ""}}
+{"target": "g18x-play-390", "ready": true}
+{"target": "g18x-play-390", "row": "C1-ui", "s": {"touchLayer": false, "visible": false, "bodyTouch": false, "gas": null, "brake": null, "drift": null, "nitro": null, "steer": null, "pause": null, "mute": null, "speed": [344, 779, 32, 51], "minimap": [286, 92, 92, 92], "credit": null, "hint": null}}
+{"target": "g18x-play-390", "row": "C1-drive", "s": {"hook": false}, "released": {"w": false, "a": false, "s": false, "d": false, "shift": false, "space": false}}

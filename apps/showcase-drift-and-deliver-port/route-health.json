@@ -3,7 +3,7 @@
   "route": "/apps/showcase-drift-and-deliver-port/",
   "classification": "prototype",
   "publicShowcase": true,
-  "generatedAt": "2026-10-23T08:56:30.375Z",
+  "generatedAt": "2026-10-29T12:00:00.000Z",
   "ok": true,
   "claimLabel": "Prototype",
   "claimStatus": "bounded",
@@ -18,11 +18,12 @@
     "R-23"
   ],
   "sourceExample": "examples/drift-and-deliver-port/",
-  "evidence": "Four scenario hashes reproduced exactly in a remote browser; counts match the original (225 blocks, 174 pickups, 84 cars).",
+  "evidence": "Four scenario hashes reproduced exactly in a remote browser; counts match the original (225 blocks, 174 pickups, 84 cars). Shift, delivery, results, touch, resize and audio-suspend probes: tests/browser/audit-fix/drift-and-deliver-port.spec.ts (remote software GL), unit tests in tests/unit/drift-and-deliver-port/.",
   "limits": [
-    "Headlight beam cone does not draw yet; collision response untested; no audio, story or shadows.",
-    "Procedural art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
-    "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
+    "Verified in remote software WebGL2 (SwiftShader) only, not on a hardware GPU; frame rate on real devices is unmeasured.",
+    "Touch controls checked with emulated touch at 390x844, not on a physical phone or tablet.",
+    "Procedural art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port. Pedestrians are static, the original's story, police and on-foot play are not ported.",
+    "Traffic follows, yields and keeps right by rule; it does not react to the player's car (the player is shoved on contact)."
   ],
   "checks": [
     {

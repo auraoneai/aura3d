@@ -13,28 +13,67 @@
       canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
       .hidden { display: none !important; }
       h1 { margin: 0; font-size: 24px; font-weight: 600; line-height: 1.15; }
-      .meta { font-size: 12px; color: var(--muted); }
+      .meta { font-size: 13px; color: var(--muted); }
       button { font: 500 13px/1 "Graphik Web", sans-serif; color: #261e1a; background: var(--warm); border: 0; border-radius: 6px; padding: 10px 16px; cursor: pointer; }
       button:disabled { opacity: 0.5; cursor: default; }
-      .overlay { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(38, 30, 26, 0.55); }
+      .overlay { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; background: rgba(38, 30, 26, 0.55); }
       .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; width: min(420px, 90vw); display: grid; gap: 10px; }
       #hud { position: fixed; inset: 0; pointer-events: none; }
       #nitro { position: absolute; bottom: 26px; left: 26px; width: 250px; }
-      #nitro .label { font-size: 11px; letter-spacing: 2.5px; opacity: 0.9; margin-bottom: 7px; }
+      #nitro .label { font-size: 13px; letter-spacing: 2.5px; opacity: 0.9; margin-bottom: 7px; }
       #nitro .track { height: 9px; border-radius: 6px; background: rgba(18, 18, 22, 0.55); overflow: hidden; }
       #nitro-fill { height: 100%; width: 100%; border-radius: 6px; }
       #speedbox { position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); text-align: center; }
       #speed { font-size: 44px; font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; }
       #score-box { position: absolute; top: 18px; right: 22px; text-align: right; }
       #score { font-size: 28px; font-weight: 500; font-variant-numeric: tabular-nums; }
-      #streak { transition: opacity 0.2s; color: var(--warm); letter-spacing: 2px; font-size: 12px; }
+      #streak, #drift { transition: opacity 0.2s; color: var(--warm); letter-spacing: 2px; font-size: 13px; }
+      #drift { color: #ffe08a; }
+      #clock { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); font-size: 26px; font-weight: 500; font-variant-numeric: tabular-nums; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45); }
+      #job { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); font-size: 14px; letter-spacing: 1.5px; color: #9cefff; font-variant-numeric: tabular-nums; white-space: pre; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55); }
+      #clock.low, #job.low { color: #ff8a6a; }
+      #popups { position: absolute; left: 50%; top: 56%; width: 0; height: 0; }
+      .popup { position: absolute; left: 0; top: 0; transform: translate(-50%, 0); white-space: pre; font-size: 18px; font-weight: 600; letter-spacing: 1px; color: #ffe08a; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6); animation: rise 1.05s ease-out forwards; }
+      .popup-job { color: #9cefff; font-size: 22px; }
+      .popup-miss { color: #ff8a6a; }
+      .popup-star { color: #fff4c2; }
+      .popup-heart { color: #ffb0c4; }
+      @keyframes rise { from { opacity: 1; transform: translate(-50%, 0); } to { opacity: 0; transform: translate(-50%, -70px); } }
+      @keyframes fade { from { opacity: 1; } to { opacity: 0; } }
+      body.reduced-motion .popup { animation-name: fade; }
+      @media (prefers-reduced-motion: reduce) { .popup { animation-name: fade; } }
       #minimap { position: absolute; bottom: 20px; right: 20px; width: 160px; height: 160px; }
       .title { background: linear-gradient(160deg, rgba(60, 40, 30, 0.86), rgba(30, 24, 22, 0.9)); width: min(520px, 92vw); padding: 22px 24px; gap: 14px; }
       .title h1 { font-size: 34px; letter-spacing: 0.01em; }
-      .title .tag { color: var(--warm); letter-spacing: 3px; font-size: 11px; }
+      .title .tag { color: var(--warm); letter-spacing: 3px; font-size: 13px; }
       .keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; align-items: center; }
-      kbd { display: inline-block; min-width: 26px; text-align: center; padding: 2px 7px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; background: rgba(255, 246, 230, 0.08); font: 500 12px/1.3 "Graphik Web", sans-serif; }
-      #mute { position: absolute; top: 18px; left: 22px; font-size: 11px; letter-spacing: 1.5px; color: var(--muted); }
+      kbd { display: inline-block; min-width: 26px; text-align: center; padding: 2px 7px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; background: rgba(255, 246, 230, 0.08); font: 500 13px/1.3 "Graphik Web", sans-serif; }
+      #mute { position: absolute; top: 18px; left: 22px; font-size: 13px; letter-spacing: 1.5px; color: var(--muted); }
+      .results dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 0; }
+      .results dt { color: var(--muted); }
+      .results dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+      .results #r-score { font-size: 22px; font-weight: 600; }
+      .touch-only { display: none; }
+      body.touch .touch-only { display: grid; }
+      body.touch .keys-only { display: none; }
+      #touch { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+      #touch[hidden] { display: none; }
+      .tbtn { position: absolute; pointer-events: auto; touch-action: none; user-select: none; -webkit-user-select: none; display: grid; place-items: center; border-radius: 50%; background: rgba(38, 30, 26, 0.55); border: 2px solid rgba(255, 246, 230, 0.35); color: var(--ink); font: 600 13px/1 "Graphik Web", sans-serif; letter-spacing: 1px; }
+      .tbtn.on { background: rgba(255, 154, 46, 0.7); color: #261e1a; }
+      #t-steer { left: 16px; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); width: 150px; height: 150px; }
+      #t-knob { width: 62px; height: 62px; border-radius: 50%; background: rgba(255, 246, 230, 0.35); pointer-events: none; }
+      #t-gas { right: 16px; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); width: 86px; height: 86px; }
+      #t-brake { right: 112px; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); width: 64px; height: 64px; }
+      #t-nitro { right: 27px; bottom: calc(164px + env(safe-area-inset-bottom, 0px)); width: 64px; height: 64px; }
+      #t-drift { right: 112px; bottom: calc(142px + env(safe-area-inset-bottom, 0px)); width: 64px; height: 64px; }
+      #t-pause, #t-mute { top: calc(10px + env(safe-area-inset-top, 0px)); height: 48px; border-radius: 10px; padding: 0 12px; }
+      #t-pause { left: 12px; width: 72px; }
+      #t-mute { left: 92px; width: 96px; }
+      body.touch #mute { display: none; }
+      body.touch #nitro { bottom: calc(240px + env(safe-area-inset-bottom, 0px)); }
+      body.touch #speedbox { left: auto; right: 16px; bottom: calc(240px + env(safe-area-inset-bottom, 0px)); transform: none; text-align: right; }
+      body.touch #job { top: 92px; }
+      body.touch #minimap { top: 120px; bottom: auto; right: 12px; width: 112px; height: 112px; }
       @media (max-width: 640px) {
         #score-box { top: 14px; right: 12px; }
         #score { font-size: 22px; }
@@ -43,6 +82,11 @@
         #speedbox { left: auto; right: 14px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); transform: none; text-align: right; }
         #speed { font-size: 34px; }
         #mute { top: 14px; left: 14px; }
+        #clock { top: 62px; font-size: 22px; }
+        #job { top: 92px; font-size: 13px; }
+        body.touch #clock { top: 64px; }
+        body.touch #job { top: 94px; left: 14px; transform: none; letter-spacing: 1px; }
+        body.touch #minimap { width: 96px; height: 96px; }
       }
     </style>
   </head>
@@ -51,29 +95,61 @@
     <div id="hud">
       <div id="nitro"><div class="label">NITRO</div><div class="track"><div id="nitro-fill"></div></div></div>
       <div id="speedbox"><div id="speed">0</div><div class="meta">KM/H</div></div>
-      <div id="score-box"><div id="score">0</div><div id="streak" style="opacity: 0">x0  STREAK</div><div class="meta" id="count">0 / 174</div></div>
+      <div id="score-box"><div id="score">0</div><div id="streak" style="opacity: 0">x0  STREAK</div><div id="drift" style="opacity: 0">DRIFT  0</div><div class="meta" id="count">0 / 174</div></div>
       <canvas id="minimap" width="240" height="240"></canvas>
       <div id="mute">Sound on (M)</div>
+      <div id="clock">3:00</div>
+      <div id="job"></div>
+      <div id="popups"></div>
+    </div>
+    <div id="touch" hidden>
+      <div id="t-steer" class="tbtn" aria-label="Steer: drag left or right" role="button"><div id="t-knob"></div></div>
+      <div id="t-gas" class="tbtn" aria-label="Accelerate" role="button">GAS</div>
+      <div id="t-brake" class="tbtn" aria-label="Brake and reverse" role="button">BRAKE</div>
+      <div id="t-drift" class="tbtn" aria-label="Drift" role="button">DRIFT</div>
+      <div id="t-nitro" class="tbtn" aria-label="Nitro" role="button">NITRO</div>
+      <div id="t-pause" class="tbtn" aria-label="Pause" role="button">PAUSE</div>
+      <div id="t-mute" class="tbtn" aria-label="Sound on or off" role="button">SOUND</div>
     </div>
     <div id="splash" class="overlay">
       <div class="panel title">
         <div class="tag">AN OPEN-CITY DRIVING GAME</div>
         <h1>Gridlock Courier</h1>
-        <div class="meta">A getaway city of 225 blocks, 84 cars on the road and 174 pickups to chase. Collect coins, stars and hearts; keep the streak alive; drift to charge, burn nitro to run.</div>
-        <div class="keys meta">
+        <div class="meta">A city of 225 blocks, 84 cars on the road and 174 pickups. You have a three-minute shift: drive each parcel to the glowing blue drop-off before its clock runs out, collect coins, stars and hearts to build a streak, and drift for bonus points.</div>
+        <div class="keys meta keys-only">
           <span><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></span><span>drive (arrow keys work too)</span>
           <span><kbd>Space</kbd></span><span>drift</span>
           <span><kbd>Shift</kbd></span><span>nitro</span>
           <span><kbd>L</kbd> <kbd>M</kbd> <kbd>P</kbd></span><span>headlights, sound, pause</span>
         </div>
+        <div class="keys meta touch-only">
+          <span>Left pad</span><span>drag left or right to steer</span>
+          <span>GAS, BRAKE</span><span>hold to drive and brake</span>
+          <span>DRIFT, NITRO</span><span>hold while turning; burn the tank</span>
+        </div>
+        <div class="meta hidden" id="env-status">The sky lighting is still loading. You can start now.</div>
         <button id="start" disabled>Start</button>
       </div>
     </div>
     <div id="pause" class="overlay hidden">
       <div class="panel">
         <h1>Paused</h1>
-        <div class="meta">The city waits. Press P or Esc to carry on.</div>
+        <div class="meta">The city waits. Press P or Esc, or tap Resume, to carry on.</div>
         <button id="resume">Resume</button>
+      </div>
+    </div>
+    <div id="results" class="overlay hidden">
+      <div class="panel results" role="dialog" aria-labelledby="r-title">
+        <h1 id="r-title">Shift over</h1>
+        <dl class="meta">
+          <dt>Score</dt><dd id="r-score">0</dd>
+          <dt>Best</dt><dd id="r-best">0</dd>
+          <dt>Deliveries</dt><dd id="r-deliveries">0</dd>
+          <dt>Pickups</dt><dd id="r-collected">0 / 174</dd>
+          <dt>Best streak</dt><dd id="r-streak">x0</dd>
+          <dt>Time</dt><dd id="r-time">0:00</dd>
+        </dl>
+        <button id="restart">Drive another shift (R)</button>
       </div>
     </div>
     <div id="loading" class="overlay"><div class="panel"><h1>Loading the city</h1><div class="meta" id="loading-status">Building blocks, buildings and traffic.</div></div></div>

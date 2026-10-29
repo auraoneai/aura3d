@@ -8,13 +8,14 @@
  */
 import { camera, defineAuraAssets, effects, environments, geometry, instances, lights, material, primitives, scene, texture } from "@aura3d/engine";
 import { CAR_KINDS, buildCarShell, type CarKind, type CarShell } from "./vehicles";
-import { TRAFFIC_MODEL, carModel } from "./models";
+import { TRAFFIC_MODEL, carScale, trafficInstances } from "./models";
 import { planProps, propNodes, type PropPlan } from "./props";
 import { GROUND_HALF, WALLS, blockDecals, buildCity, buildFurniture, buildProps, facadeKey, farCity, roadPlane, type Furniture } from "./city";
 import { farCitySpec, skySpec } from "./sky";
 import { PALETTE_SLOTS, Palette, bakePaletteUVs, createMesh, quad, toArrays, type MeshData } from "./mesh";
 import { paintFacade, paintPalette, paintPark, paintPlaza, paintRoadTile, paintShopfront, paintSky, type FacadeKind } from "./textures";
 import type { Block, Building, Pickup, TrafficCar } from "./world";
+import type { Solid } from "./sim";
 
 type TextureHandle = ReturnType<typeof texture.canvas>;
 type Matrix = number[];
@@ -34,6 +35,30 @@ export function mat(x: number, y: number, z: number, yaw: number, pitch: number,
   const cp = Math.cos(pitch);
   const sp = Math.sin(pitch);
   return [cy * sx, 0, -sn * sx, 0, sn * sp * sy, cp * sy, cy * sp * sy, 0, sn * cp * sz, -sp * sz, cy * cp * sz, 0, x, y, z, 1];
+}
+
+/** `mat` written into `out` (no allocation; for per-frame instance updates). */
+export function matInto(out: Float32Array, x: number, y: number, z: number, yaw: number, pitch: number, sx: number, sy: number, sz: number): Float32Array {
+  const cy = Math.cos(yaw);
+  const sn = Math.sin(yaw);
+  const cp = Math.cos(pitch);
+  const sp = Math.sin(pitch);
+  out[0] = cy * sx; out[1] = 0; out[2] = -sn * sx; out[3] = 0;
+  out[4] = sn * sp * sy; out[5] = cp * sy; out[6] = cy * sp * sy; out[7] = 0;
+  out[8] = sn * cp * sz; out[9] = -sp * sz; out[10] = cy * cp * sz; out[11] = 0;
+  out[12] = x; out[13] = y; out[14] = z; out[15] = 1;
+  return out;
+}
+
+/** `coinMat` written into `out`. */
+export function coinMatInto(out: Float32Array, x: number, y: number, z: number, yaw: number, diameter: number, thickness: number): Float32Array {
+  const cy = Math.cos(yaw);
+  const sn = Math.sin(yaw);
+  out[0] = cy * diameter; out[1] = 0; out[2] = -sn * diameter; out[3] = 0;
+  out[4] = sn * thickness; out[5] = 0; out[6] = cy * thickness; out[7] = 0;
+  out[8] = 0; out[9] = -diameter; out[10] = 0; out[11] = 0;
+  out[12] = x; out[13] = y; out[14] = z; out[15] = 1;
+  return out;
 }
 
 /** A cylinder lying on its side with its axis along the car's x axis (a wheel), at `(x, y, z)`. */
@@ -121,11 +146,21 @@ export interface TrafficRig {
   detail: ReturnType<typeof instances.mesh>;
 }
 
+export interface TrafficGroup {
+  /** runtime id of the instanced model node */
+  id: string;
+  /** traffic indices drawn by this node, in instance order */
+  cars: number[];
+  scale: number;
+}
+
 export interface LookRig {
   builder: ReturnType<typeof scene>;
   traffic: TrafficRig[];
-  /** car indices drawn as generated models (`traffic-<i>` runtime nodes); empty when the instanced shells are used */
-  modelTraffic: number[];
+  /** traffic drawn as generated models, one instanced node per car kind; empty when the instanced shells are used */
+  modelTraffic: TrafficGroup[];
+  /** collision solids of the generated hydrants and bus shelters (empty with `models: false`) */
+  propSolids: readonly Solid[];
   coinMesh: ReturnType<typeof instances.mesh>;
   starMesh: ReturnType<typeof instances.mesh>;
   heartMesh: ReturnType<typeof instances.mesh>;
@@ -146,7 +181,36 @@ const geo = (m: MeshData, _name: string) => {
   return geometry.define({ positions: a.positions, normals: a.normals, uvs: a.uvs, colors: a.colors, indices: a.indices });
 };
 
-export function buildLook(world: { blocks: readonly Block[]; buildings: readonly Building[]; traffic: readonly TrafficCar[]; pickups: readonly Pickup[] }, opts: { models: boolean; quality: "high" | "low"; ao: boolean; env: boolean; shadow: boolean; fog: boolean; post: boolean; aa?: boolean; sky: boolean; sun: number; roadCells?: number; start: { x: number; z: number } }): LookRig {
+/**
+ * Hemisphere "sky-fill" intensity. Up to 4.5.0 the engine dropped an authored hemisphere next to an environment node
+ * (LIGHT-05), so the shipped HDRI frame never had this fill; the 1.7 only lit the lights-only `env=0` path (heal rung
+ * `no-env`). With the hemisphere now adding to the HDRI, 1.7 lifts the steady-state frame by 10.7% (mean luma 108.2 to
+ * 119.8, lane E2). Next to the HDRI the fill is kept small so the shipped frame holds; the lights-only path keeps 1.7.
+ */
+export const SKY_FILL = { withEnv: 0.3, lightsOnly: 1.7 } as const;
+
+/** Sky-fill intensity for the light rig; `override` is the `skyfill=` diagnostics switch. */
+export function skyFillIntensity(env: boolean, override?: number): number {
+  if (override !== undefined && Number.isFinite(override) && override >= 0) return override;
+  return env ? SKY_FILL.withEnv : SKY_FILL.lightsOnly;
+}
+
+/**
+ * Neutral-room fill for the lights-only path (`env=0`, the heal ladder's `no-env` rung). Up to 4.3.7 the engine added
+ * this room probe implicitly to a scene without an environment node; 4.5.0 stopped (`implicitFill: false`, LIGHT-01), and
+ * the rung read 39% darker (mean luma 123.5 on 4.3.7, 75.5 on 4.5.0, remote software GL). Authoring it restores the 4.3.7
+ * frame. It is generated in code, so the rung still loads no HDRI.
+ */
+export const LIGHTS_ONLY_NEUTRAL = 1;
+
+/** Neutral fill intensity for the light rig; `override` is the `neutral=` diagnostics switch. 0 next to the HDRI. */
+export function neutralFillIntensity(env: boolean, override?: number): number {
+  if (env) return 0;
+  if (override !== undefined && Number.isFinite(override) && override >= 0) return override;
+  return LIGHTS_ONLY_NEUTRAL;
+}
+
+export function buildLook(world: { blocks: readonly Block[]; buildings: readonly Building[]; traffic: readonly TrafficCar[]; pickups: readonly Pickup[] }, opts: { models: boolean; quality: "high" | "low"; ao: boolean; env: boolean; shadow: boolean; fog: boolean; post: boolean; aa?: boolean; sky: boolean; sun: number; skyFill?: number; neutral?: number; roadCells?: number; start: { x: number; z: number } }): LookRig {
   const high = opts.quality === "high";
   const tex = paintTextures(opts.quality);
   const city = buildCity(world.blocks, world.buildings);
@@ -173,8 +237,10 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
 
   // ---- light rig, atmosphere and post ----
   if (opts.env) b.add(environments.hdri({ name: "env-sky", texture: ASSETS.skyHdr, intensity: 1.0, background: false, color: "#ffc890" }));
+  const neutral = neutralFillIntensity(opts.env, opts.neutral);
+  if (neutral > 0) b.add(environments.neutral({ name: "env-room", intensity: neutral }));
   b.add(lights.directional({ name: "sun", position: [-88, 38, -50], target: [0, 0, 0], intensity: opts.sun, color: "#ffbf80", shadow: high && opts.shadow ? { cascades: 2, maxDistance: 150, blend: 0.12, mapSize: 2048 } : false }).runtime({ id: "sun" }));
-  b.add(lights.hemisphere({ name: "sky-fill", skyColor: "#ffe0b0", groundColor: "#c9a070", intensity: 1.7 }));
+  b.add(lights.hemisphere({ name: "sky-fill", skyColor: "#ffe0b0", groundColor: "#c9a070", intensity: skyFillIntensity(opts.env, opts.skyFill) }));
   if (opts.fog) b.add(effects.fog({ name: "haze", color: FOG.color, density: FOG.density }));
   if (high && opts.ao) b.add(effects.ambientOcclusion({ name: "ao" }));
   if (opts.post) {
@@ -213,12 +279,15 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
   if (propPlan) for (const n of propNodes(propPlan)) b.add(n);
 
   // ---- traffic: paint + detail shells per kind, wheels and hubs ----
-  const modelTraffic: number[] = [];
+  const modelTraffic: TrafficGroup[] = [];
   if (opts.models) {
-    world.traffic.forEach((_, i) => {
-      b.add(carModel(`traffic-${i}`, TRAFFIC_MODEL[CAR_KINDS[i % CAR_KINDS.length] as CarKind], false));
-      modelTraffic.push(i);
-    });
+    for (const kind of CAR_KINDS) {
+      const cars = world.traffic.map((_, i) => i).filter((i) => CAR_KINDS[i % CAR_KINDS.length] === kind);
+      const key = TRAFFIC_MODEL[kind];
+      const id = `traffic-${kind}`;
+      b.add(trafficInstances(id, key, cars.map((i) => ({ position: [world.traffic[i]!.x, 0, world.traffic[i]!.z] as [number, number, number], rotation: [0, world.traffic[i]!.yaw, 0] as [number, number, number] }))));
+      modelTraffic.push({ id, cars, scale: carScale(key) });
+    }
   }
   const traffic: TrafficRig[] = (opts.models ? [] : CAR_KINDS).map((kind) => {
     const cars = world.traffic.map((_, i) => i).filter((i) => i % CAR_KINDS.length === CAR_KINDS.indexOf(kind));
@@ -243,6 +312,7 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
     builder: b,
     traffic,
     modelTraffic,
+    propSolids: propPlan?.solids ?? [],
     coinMesh,
     starMesh,
     heartMesh,

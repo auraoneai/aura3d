@@ -6,6 +6,7 @@
  */
 import { instances } from "@aura3d/engine";
 import type { PropSkip, Furniture } from "./city";
+import type { Solid } from "./sim";
 import { MODEL_ASSETS, propTransform, type PropKey } from "./models";
 import type { Block, Building } from "./world";
 
@@ -18,12 +19,15 @@ export interface PropPlan {
   readonly skip: PropSkip;
   readonly placements: ReadonlyMap<PropKey, readonly Transform[]>;
   readonly landmarks: { clock: { x: number; z: number }; lighthouse: { x: number; z: number }; tanks: number };
+  /** Collision solids for the hydrants (`prop`) and bus shelters (`prop`, long side along the kerb). */
+  readonly solids: readonly Solid[];
 }
 
 const within = (start: { x: number; z: number }, r: number) => (x: number, z: number): boolean => Math.hypot(x - start.x, z - start.z) < r;
 
 export function planProps(f: Furniture, blocks: readonly Block[], buildings: readonly Building[], start: { x: number; z: number }): PropPlan {
   const out = new Map<PropKey, Transform[]>();
+  const solids: Solid[] = [];
   const add = (key: PropKey, t: Transform): void => {
     const list = out.get(key) ?? [];
     list.push(t);
@@ -41,14 +45,24 @@ export function planProps(f: Furniture, blocks: readonly Block[], buildings: rea
     // a hydrant beside every sixth lamp, a bus shelter beside every eightieth
     const along: [number, number] = [Math.cos(p.yaw), -Math.sin(p.yaw)];
     const across: [number, number] = [Math.sin(p.yaw), Math.cos(p.yaw)];
-    if (i % 6 === 0 && nearHydrant(p.x, p.z)) add("hydrant", propTransform("hydrant", p.x + along[0] * 2.2 - across[0] * 0.5, p.z + along[1] * 2.2 - across[1] * 0.5, p.yaw, 0.8));
+    if (i % 6 === 0 && nearHydrant(p.x, p.z)) {
+      const hx = p.x + along[0] * 2.2 - across[0] * 0.5;
+      const hz = p.z + along[1] * 2.2 - across[1] * 0.5;
+      add("hydrant", propTransform("hydrant", hx, hz, p.yaw, 0.8));
+      solids.push({ x: hx, z: hz, hw: 0.25, hd: 0.25, kind: "prop" });
+    }
   });
   f.lamps.forEach((p, i) => {
     if (i % 80 !== 7) return;
     const along: [number, number] = [Math.cos(p.yaw), -Math.sin(p.yaw)];
     const across: [number, number] = [Math.sin(p.yaw), Math.cos(p.yaw)];
     // the shelter's long side runs along the kerb; its open side faces the street
-    add("shelter", propTransform("shelter", p.x + along[0] * 5 - across[0] * 0.6, p.z + along[1] * 5 - across[1] * 0.6, Math.atan2(along[0], along[1]) + Math.PI / 2, 4.2));
+    const sx = p.x + along[0] * 5 - across[0] * 0.6;
+    const sz = p.z + along[1] * 5 - across[1] * 0.6;
+    add("shelter", propTransform("shelter", sx, sz, Math.atan2(along[0], along[1]) + Math.PI / 2, 4.2));
+    // lamps stand on axis-aligned streets, so the shelter's long side (4.2 m) runs along x or z
+    const alongX = Math.abs(along[0]) > Math.abs(along[1]);
+    solids.push({ x: sx, z: sz, hw: alongX ? 2.1 : 0.7, hd: alongX ? 0.7 : 2.1, kind: "prop" });
   });
   f.signals.forEach((p) => {
     if (nearSignal(p.x, p.z)) add("signal", propTransform("signal", p.x, p.z, p.yaw, 4.2));
@@ -82,7 +96,8 @@ export function planProps(f: Furniture, blocks: readonly Block[], buildings: rea
   return {
     skip: { lamp: nearLamp, signal: nearSignal, tree: nearTree },
     placements: out,
-    landmarks: { clock: { x: plaza.x, z: plaza.z }, lighthouse, tanks }
+    landmarks: { clock: { x: plaza.x, z: plaza.z }, lighthouse, tanks },
+    solids
   };
 }
 

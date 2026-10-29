@@ -1,0 +1,4 @@
+{"target": "g18x-resize", "ready": true}
+{"target": "g18x-resize", "row": "C2", "before": {"css": [1280, 720], "backing": [1280, 720], "win": [1280, 720], "dpr": 1}, "after": {"css": [900, 600], "backing": [900, 600], "win": [900, 600], "dpr": 1}, "portrait": {"css": [390, 844], "backing": [390, 844], "win": [390, 844], "dpr": 1}}
+{"target": "g18x-audio", "start": true}
+{"target": "g18x-audio", "row": "C4", "playing": {"phase": "playing", "beds": {"engine": 0.0809998611309399, "squeal": 0, "rush": 0}}, "paused": {"phase": "paused", "beds": {"engine": 0, "squeal": 0, "rush": 0}}, "resumed": {"phase": "playing", "beds": {"engine": 0.052230070174503554, "squeal": 0, "rush": 0}}, "hidden": {"phase": "paused", "beds": {"engine": 0, "squeal": 0, "rush": 0}}}

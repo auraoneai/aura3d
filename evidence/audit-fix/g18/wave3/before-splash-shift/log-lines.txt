@@ -1,0 +1,4 @@
+G18_DONE g18x-splash-1280
+G18_DONE g18x-shift-end
+2 passed (14.8m)
+[task-run] PLAYWRIGHT_EXIT=0

@@ -1,0 +1,17 @@
+G18_DONE g18x-play-390
+1 failed
+1 passed (47.2m)
+[task-run] PLAYWRIGHT_EXIT=1
+- Following Playwright test failed.
+128 |       page.on("pageerror", (e) => log(`G18_ERR ${target.name} pageerror ${e.message.slice(0, 300)}`));
+129 |       page.on("console", (m) => { if (m.type() === "error" || m.type() === "warning") log(`G18_CONSOLE ${target.name} ${m.type()} ${m.text().slice(0, 240)}`); });
+131 |       page.on("requestfailed", (r) => log(`G18_REQFAIL ${target.name} ${r.url().replace(server.origin, "").slice(0, 200)} ${r.failure()?.errorText ?? ""}`));
+145 |         log(`G18_ERR ${target.name} not-ready ${JSON.stringify(state)}`);
+153 |       log(`G18_DONE ${target.name}`);
+177 |   page.on("pageerror", (e) => log(`G18_ERR ${target} pageerror ${e.message.slice(0, 300)}`));
+178 |   page.on("console", (m) => { if (m.type() === "error") log(`G18_CONSOLE ${target} ${m.type()} ${m.text().slice(0, 240)}`); });
+235 |     log(`G18_DONE ${target}`);
+2026/10/29 20:20:22 Container failed during run: playwright. No retries remaining.
+failed to run step ID: playwright: exit status 1
+Run ID: ch5cj failed after 48m3s. Error: failed during run, err: exit status 1
+ERROR: Run failed

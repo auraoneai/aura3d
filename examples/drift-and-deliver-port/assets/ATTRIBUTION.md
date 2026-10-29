@@ -26,6 +26,7 @@ Every model comes from an original text prompt written for this port (no image-t
 | clocktower | landmark | tall stone clock tower, pointed copper green roof, four lit clock faces | 01a169e5-0183 | 01a16a1d-6074 | 19.2k |
 | lighthouse | landmark | white and red striped harbour lighthouse on a rocky base | 01a169e6-3970 | 01a16a1f-1dbb | 20.0k |
 | watertank | rooftop prop | rooftop wooden water tank on a steel stilt frame, conical lid | 01a169e7-27e0 | 01a16a21-32ca | 5.8k |
-| ped (not wired) | rigged walker | friendly stylised city pedestrian, olive jacket, dark jeans, A-pose | 01a169f0-01b4 | 01a169f3-9999 then rig 01a169f4-ee92 | 8.3k |
+
+The rigged walker (`ped`, Meshy 01a169f0-01b4) was generated but never wired in; it was deleted on 2026-10-29 (audit row C14) together with its provenance files.
 
 Generated models total about 16 MB (over the 10 MB new-asset guideline; the port's assets total about 17 MB); the sky HDRI is 1.2 MB. Everything else the port draws is painted or modelled in code (`textures.ts`, `city.ts`, `vehicles.ts` for the `?models=0` fallback); nothing comes from the original game.

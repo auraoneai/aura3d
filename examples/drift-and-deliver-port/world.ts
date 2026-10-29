@@ -196,7 +196,12 @@ export interface TrafficCar {
   fixed: number;
   horiz: boolean;
   dir: 1 | -1;
+  /** Cruising speed, m/s (seeded, 7 to 13). */
   speed: number;
+  /** Speed this step, m/s: the cruise speed, or less behind a slower car or at a crossing (`stepTraffic`). */
+  v: number;
+  /** Why the car is held this step: behind a car (`follow`), no room past the box (`room`), crossing traffic (`yield`). */
+  wait: "follow" | "room" | "yield" | null;
   hw: number;
   hd: number;
   x: number;
@@ -213,7 +218,8 @@ export function buildTraffic(): TrafficCar[] {
     const line = STREET_LINES[Math.floor(noise(5.7 * n) * STREET_LINES.length)] as number;
     const wish = noise(7.1 * n) > 0.5 ? 1 : -1;
     const dir = (Math.abs(line) > 449 ? -Math.sign(line) : wish) as 1 | -1;
-    const fixed = line + 4.2 * dir;
+    // keep right: for travel along +x the driver's right is +z, for travel along +z it is -x (`trafficLaneOffset`)
+    const fixed = line + trafficLaneOffset(horiz, dir);
     const along = noise(11.3 * n) * EXTENT * 2 - 450;
     const speed = 7 + 6 * noise(13.7 * n);
     const car: TrafficCar = {
@@ -222,6 +228,8 @@ export function buildTraffic(): TrafficCar[] {
       horiz,
       dir,
       speed,
+      v: speed,
+      wait: null,
       hw: 1,
       hd: 2.2,
       x: 0,
@@ -245,17 +253,175 @@ function placeTraffic(car: TrafficCar): void {
   }
 }
 
-/** Advance traffic (`_a` loop): move along the street, wrap at the city edge. */
+/**
+ * Lane offset from the street centre line for a car moving `dir` along x (`horiz`) or along z. Traffic keeps right on
+ * both orientations: moving +x the driver's right is +z; moving +z it is -x.
+ */
+export function trafficLaneOffset(horiz: boolean, dir: 1 | -1): number {
+  return (horiz ? 4.2 : -4.2) * dir;
+}
+
+/** Centre-to-centre distance kept to the car ahead in the same lane, metres (car length is 4.4). */
+export const FOLLOW_GAP = 6;
+/** Half size of an intersection box, metres (the asphalt is 17 m wide). */
+const BOX_HALF = WORLD.streetHalf;
+/** How far before the box a car looks for crossing traffic, metres. */
+const YIELD_LOOK = 7;
+/** Extra seconds an east-west car leaves between itself and a north-south car that has the right of way. */
+const CROSS_MARGIN = 0.8;
+/** Tolerance for "stopped on the box edge", metres. */
+const EDGE_EPS = 1e-3;
+
+const laneSpan = (car: TrafficCar): { lo: number; hi: number } => ({ lo: -444, hi: car.horiz ? 444 : 434 });
+
+/** Distance from `car` forward to `ahead` along their shared lane, wrapping at the city edge. */
+function gapAhead(car: TrafficCar, ahead: TrafficCar): number {
+  const { lo, hi } = laneSpan(car);
+  const length = hi - lo;
+  const d = (ahead.along - car.along) * car.dir;
+  return ((d % length) + length) % length;
+}
+
+const laneCache = new WeakMap<readonly TrafficCar[], Map<string, TrafficCar[]>>();
+function lanesOf(cars: readonly TrafficCar[]): Map<string, TrafficCar[]> {
+  let lanes = laneCache.get(cars);
+  if (!lanes) {
+    lanes = new Map();
+    for (const car of cars) {
+      const key = `${car.horiz ? "h" : "v"}:${car.fixed}`;
+      const list = lanes.get(key) ?? [];
+      list.push(car);
+      lanes.set(key, list);
+    }
+    laneCache.set(cars, lanes);
+  }
+  return lanes;
+}
+
+/** Signed distance from the car's front bumper to the near edge of the next intersection box (negative once inside). */
+function toNextBox(car: TrafficCar): { line: number; distance: number } {
+  let best = { line: 0, distance: Number.POSITIVE_INFINITY };
+  for (const line of STREET_LINES) {
+    const rel = (line - car.along) * car.dir; // distance to the box centre ahead
+    if (rel < -BOX_HALF - car.hd) continue; // already through this one
+    const distance = rel - BOX_HALF - car.hd;
+    if (distance < best.distance) best = { line, distance };
+  }
+  return best;
+}
+
+/** True while some part of the car is inside the box centred on `line` along its street. */
+const insideBox = (car: TrafficCar, line: number): boolean => Math.abs(car.along - line) < BOX_HALF + car.hd - 1e-3;
+
+/**
+ * Advance traffic (`_a` loop): each car moves along its street at its cruise speed, wraps at the city edge, keeps
+ * `FOLLOW_GAP` metres behind the car ahead in its lane, and yields at a crossing. The rule is deterministic (fixed car
+ * order, no randomness): cars on north-south streets (`horiz` false) have the right of way and wait only for a car
+ * already in the box; cars on east-west streets also wait while a north-south car is about to enter.
+ */
 export function stepTraffic(cars: readonly TrafficCar[], dt: number): void {
-  for (const car of cars) {
-    car.along += car.dir * car.speed * dt;
-    const hi = car.horiz ? 444 : 434;
-    const lo = -444;
+  const lanes = lanesOf(cars);
+  const wanted = new Float64Array(cars.length);
+  cars.forEach((car, i) => {
+    let v = car.speed;
+    let wait: TrafficCar["wait"] = null;
+    // follow: never close the gap below FOLLOW_GAP
+    const lane = lanes.get(`${car.horiz ? "h" : "v"}:${car.fixed}`) ?? [];
+    let gap = Number.POSITIVE_INFINITY;
+    for (const other of lane) if (other !== car) gap = Math.min(gap, gapAhead(car, other));
+    if (gap < Number.POSITIVE_INFINITY && (gap - FOLLOW_GAP) / dt < v) {
+      v = Math.max(0, (gap - FOLLOW_GAP) / dt);
+      wait = "follow";
+    }
+    // yield at the next crossing
+    const box = toNextBox(car);
+    // a car stopped on the edge reads a distance of about -1e-14: it has not entered yet
+    if (box.distance >= -EDGE_EPS && box.distance < YIELD_LOOK + v * dt) {
+      const crossLine = car.fixed - trafficLaneOffset(car.horiz, car.dir);
+      // never enter a box without room to clear it (a car stopped inside would block the crossing street)
+      const room = gap >= box.distance + 2 * BOX_HALF + 2 * car.hd + FOLLOW_GAP;
+      let blocked = !room;
+      for (const other of cars) {
+        if (blocked) break;
+        if (other.horiz === car.horiz) continue;
+        const otherLine = other.fixed - trafficLaneOffset(other.horiz, other.dir);
+        if (Math.abs(otherLine - box.line) > 1e-6) continue; // not on the crossing street
+        if (insideBox(other, crossLine)) { blocked = true; break; }
+        if (car.horiz) {
+          // wait while a moving north-south car would reach the box before this car is through it (a stopped one waits
+          // for this car: it re-checks the box before it enters)
+          const ahead = toNextBox(other);
+          const through = (box.distance + 2 * BOX_HALF + 2 * car.hd) / Math.max(1, car.speed) + CROSS_MARGIN;
+          if (Math.abs(ahead.line - crossLine) < 1e-6 && ahead.distance >= -EDGE_EPS && other.v > 0.05 && ahead.distance / other.v < through) { blocked = true; break; }
+        }
+      }
+      if (blocked && Math.max(0, box.distance) / dt < v) {
+        v = Math.max(0, box.distance) / dt;
+        wait = room ? "yield" : "room";
+      }
+    }
+    wanted[i] = v;
+    car.wait = wait;
+  });
+  cars.forEach((car, i) => {
+    car.v = wanted[i]!;
+    const before = car.along;
+    car.along += car.dir * car.v * dt;
+    const { lo, hi } = laneSpan(car);
+    const wrapped = car.along > hi || car.along < lo;
     if (car.along > hi) car.along = lo;
     if (car.along < lo) car.along = hi;
     placeTraffic(car);
+    // re-entering at the far edge: wait at the edge while that spot is taken (the edge streets cross there)
+    if (wrapped && cars.some((other) => other !== car && footprintsOverlap(car, other))) {
+      car.along = before;
+      car.v = 0;
+      car.wait = "room";
+      placeTraffic(car);
+    }
     if (car.hit > 0) car.hit -= dt;
+  });
+}
+
+function footprintsOverlap(a: TrafficCar, b: TrafficCar): boolean {
+  const ax = a.horiz ? a.hd : a.hw;
+  const az = a.horiz ? a.hw : a.hd;
+  const bx = b.horiz ? b.hd : b.hw;
+  const bz = b.horiz ? b.hw : b.hd;
+  return Math.abs(a.x - b.x) < ax + bx && Math.abs(a.z - b.z) < az + bz;
+}
+
+/** Overlapping traffic pairs (box test on the cars' footprints), for tests and the QA surface. */
+export function trafficOverlaps(cars: readonly TrafficCar[]): number {
+  let n = 0;
+  for (let i = 0; i < cars.length; i++) for (let j = i + 1; j < cars.length; j++) if (footprintsOverlap(cars[i]!, cars[j]!)) n++;
+  return n;
+}
+
+/**
+ * Pushes pickups out of building footprints so none is drawn inside a wall: any pickup closer than `margin` metres to a
+ * solid's edge moves straight out along the shallower axis until it is `margin` metres clear.
+ */
+export function clearPickups(pickups: Pickup[], solids: readonly Solid[], margin = 1.5): number {
+  let moved = 0;
+  for (const p of pickups) {
+    for (let pass = 0; pass < 4; pass++) {
+      let hit = false;
+      for (const s of solids) {
+        const dx = p.x - s.x;
+        const dz = p.z - s.z;
+        const w = s.hw + margin;
+        const d = s.hd + margin;
+        if (Math.abs(dx) >= w || Math.abs(dz) >= d) continue;
+        if (w - Math.abs(dx) < d - Math.abs(dz)) p.x = s.x + (dx < 0 ? -w : w);
+        else p.z = s.z + (dz < 0 ? -d : d);
+        hit = true;
+      }
+      if (!hit) break;
+      if (pass === 0) moved++;
+    }
   }
+  return moved;
 }
 
 export interface PickupEvent {
@@ -317,8 +483,8 @@ export function trafficContact(
     const ox = w - Math.abs(dx);
     const oz = d - Math.abs(dz);
     const first = !(t.hit > 0);
-    const tvx = t.horiz ? t.dir * t.speed : 0;
-    const tvz = t.horiz ? 0 : t.dir * t.speed;
+    const tvx = t.horiz ? t.dir * t.v : 0;
+    const tvz = t.horiz ? 0 : t.dir * t.v;
     if (ox < oz) {
       const s = dx < 0 ? -1 : 1;
       car.x += s * ox * 0.6;

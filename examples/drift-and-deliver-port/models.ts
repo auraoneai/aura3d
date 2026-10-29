@@ -6,7 +6,7 @@
  * the ground by `propTransform`.
  * URLs are same-origin pathnames with a content hash: the production bridge refuses http(s) model URLs.
  */
-import { defineModelAssets, model } from "@aura3d/engine";
+import { defineModelAssets, instances, model } from "@aura3d/engine";
 import type { CarKind } from "./vehicles";
 
 const LICENSE = "Meshy generated asset (AuraOne account plan terms at generation time); original text prompt in assets/ATTRIBUTION.md; 2026-10-23";
@@ -43,6 +43,18 @@ export const TRAFFIC_MODEL: Record<CarKind, Exclude<CarKey, "courier">> = { seda
 /** A runtime-addressable car model: the app moves it with `nodes.require(id).setPosition/setRotation`. */
 export function carModel(id: string, key: CarKey, castShadow: boolean) {
   return model(MODEL_ASSETS[key], { name: id, scale: CAR_LENGTH[key] / GLB_LENGTH, castShadow, receiveShadow: false }).runtime({ id });
+}
+
+/** Uniform scale that brings a car GLB to its target length. */
+export const carScale = (key: CarKey): number => CAR_LENGTH[key] / GLB_LENGTH;
+
+/**
+ * Traffic of one car kind as ONE instanced model (one draw per kind instead of one node per car). The app moves the cars
+ * with `nodes.require(id).setInstances(transforms)` every frame; `start` holds the first transforms.
+ */
+export function trafficInstances(id: string, key: Exclude<CarKey, "courier">, start: readonly { position: [number, number, number]; rotation: [number, number, number] }[]) {
+  const scale = carScale(key);
+  return instances.model(MODEL_ASSETS[key], { name: id, transforms: start.map((t) => ({ position: t.position, rotation: t.rotation, scale })), castShadow: false, receiveShadow: false }).runtime({ id });
 }
 
 /** Distance from each prop GLB's origin down to its lowest point (GLB units, longest side 1.9). */

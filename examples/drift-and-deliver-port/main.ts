@@ -7,12 +7,22 @@
  * `__dbg.nearSolids`) so the same capture runner that recorded the original can drive this port.
  *
  * Query parameters (all optional): `manual=1` (the sim only advances through `__sim` /
- * `__AURA_DRIFT_AND_DELIVER__.stepFrames`; no overlay), `autostart=1`, `quality=high|low`.
+ * `__AURA_DRIFT_AND_DELIVER__.stepFrames`; no overlay), `autostart=1`, `quality=high|low`, `shift=N` (shift length in
+ * seconds, default 180), `props=0` (street furniture without colliders).
+ *
+ * Collision: buildings are `hard` solids; lamps and signals are `post` solids; trees, pedestrians, hydrants and shelters
+ * are `prop` solids. The original's QA surface (`__sim`, `__dbg.nearSolids`) keeps the building-only world the reference
+ * capture was recorded against, so the recorded replay hashes are unchanged.
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, geometry, installQaHooks, material, primitives, type AuraApp } from "@aura3d/engine";
-import { createRenderInterpolator, drawCanvasMinimap, summarizeTextureUpgrade, warmPrograms } from "@aura3d/engine/game";
-import { blendPresented, type Presented } from "./presentation";
-import { buildLook, coinMat, mat, type LookRig } from "./look";
+import { createCameraClearance, createRenderInterpolator, drawCanvasMinimap, summarizeTextureUpgrade, warmPrograms } from "@aura3d/engine/game";
+import { blendPresentedInto, createPresented, type Presented } from "./presentation";
+import { buildLook, coinMatInto, mat, matInto, type LookRig } from "./look";
+import { furnitureSolids } from "./city";
+import { createShift, formatClock, recordBest, stepShift, type ShiftEvent } from "./shift";
+import { mountTouchControls } from "./touch";
+import { drivingKey, keyAction } from "./input";
+import { setReducedMotion } from "./chase";
 import { createAudio } from "./audio";
 import { createBlackFrameWatch, healParams, healStage, type BlackFrameWatch } from "@aura3d/debug";
 import { carModel } from "./models";
@@ -27,6 +37,7 @@ import {
   buildPickups,
   buildTraffic,
   buildingSolids,
+  clearPickups,
   collectPickups,
   stepTraffic,
   tickCombo,
@@ -65,8 +76,17 @@ const config = {
   /** `roadcells=N` splits the road plane into N x N cells (default one per 60 m tile; diagnostics for the road-flip investigation) */
   roadCells: Number(params.get("roadcells")) ? Math.max(1, Math.min(64, Math.floor(Number(params.get("roadcells"))))) : undefined,
   exposure: Number(params.get("exposure") ?? "2.3") || 2.3,
-  sun: Number(params.get("sun") ?? "4.4") || 4.4
+  sun: Number(params.get("sun") ?? "4.4") || 4.4,
+  /** `skyfill=N` overrides the hemisphere fill intensity (diagnostics for the LIGHT-05 retune; default from `SKY_FILL`) */
+  skyFill: params.has("skyfill") ? Number(params.get("skyfill")) : undefined,
+  /** `neutral=N` overrides the neutral-room fill on the lights-only path (`env=0`; default `LIGHTS_ONLY_NEUTRAL`) */
+  neutral: params.has("neutral") ? Number(params.get("neutral")) : undefined,
+  /** `shift=N`: shift length in seconds (default 180; probes shorten it to reach the results screen) */
+  shiftSeconds: Math.max(5, Number(params.get("shift")) || 180),
+  /** `props=0` leaves the street furniture without colliders (diagnostics) */
+  props: params.get("props") !== "0"
 };
+const BEST_KEY = "gridlock-courier-best";
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
@@ -84,16 +104,21 @@ const blocks = buildBlocks();
 const buildings = buildBuildings(blocks);
 const solids: Solid[] = buildingSolids(buildings);
 const pickups = buildPickups();
+// two of the seeded stars and hearts land inside a wall: push every pickup 1.5 m clear of the buildings
+clearPickups(pickups, solids, 1.5);
 const traffic = buildTraffic();
+const trafficStart = traffic.map((t) => ({ ...t }));
 const car = createCar();
-const game = { phase: "splash" as "splash" | "playing" | "paused", score: 0, collected: 0 };
+type Phase = "splash" | "playing" | "paused" | "results";
+const game = { phase: "splash" as Phase, score: 0, collected: 0 };
+let shift = createShift(config.shiftSeconds);
 const audio = config.manual ? null : createAudio();
 const keys: Keys = { ...NO_KEYS };
 const camState: ChaseState = snapChase({ x: car.x, z: car.z, y: 0, heading: car.heading, speed: 0, boosting: false, shake: 0 });
 
 const cell = (v: number): number => Math.floor(v / 24);
-const grid = new Map<string, Solid[]>();
-for (const s of solids) {
+type Grid<T extends { x: number; z: number; hw: number; hd: number }> = Map<string, T[]>;
+function insert<T extends { x: number; z: number; hw: number; hd: number }>(grid: Grid<T>, s: T): void {
   for (let cx = cell(s.x - s.hw); cx <= cell(s.x + s.hw); cx++) {
     for (let cz = cell(s.z - s.hd); cz <= cell(s.z + s.hd); cz++) {
       const k = `${cx},${cz}`;
@@ -103,17 +128,42 @@ for (const s of solids) {
     }
   }
 }
-function nearSolids(x: number, z: number): Solid[] {
-  const out: Solid[] = [];
+function query<T extends { x: number; z: number; hw: number; hd: number }>(grid: Grid<T>, x: number, z: number): T[] {
+  const out: T[] = [];
+  const seen = new Set<T>();
   for (let dx = -1; dx <= 1; dx++) {
     for (let dz = -1; dz <= 1; dz++) {
-      for (const s of grid.get(`${cell(x) + dx},${cell(z) + dz}`) ?? []) if (!out.includes(s)) out.push(s);
+      for (const s of grid.get(`${cell(x) + dx},${cell(z) + dz}`) ?? []) if (!seen.has(s)) { seen.add(s); out.push(s); }
     }
   }
   return out;
 }
+/** Building-only grid: the original's world, used by its QA surface (`__sim`, `__dbg.nearSolids`). */
+const grid: Grid<Solid> = new Map();
+for (const s of solids) insert(grid, s);
+/** Gameplay grid: buildings plus the street furniture colliders (filled when the scene is built). */
+const playGrid: Grid<Solid> = new Map();
+for (const s of solids) insert(playGrid, s);
+let propSolidCount = 0;
+/** Buildings with heights, for the chase camera's clearance test. */
+const buildingGrid: Grid<(typeof buildings)[number]> = new Map();
+for (const b of buildings) insert(buildingGrid, b);
+function nearSolids(x: number, z: number): Solid[] {
+  return query(grid, x, z);
+}
 /** Collision candidates near the car: the original queries a spatial grid; the port passes the nearby subset. */
-const solidsNear = (): Solid[] => nearSolids(car.x, car.z);
+const solidsNear = (): Solid[] => query(playGrid, car.x, car.z);
+const buildingSolidsNear = (): Solid[] => nearSolids(car.x, car.z);
+/** True when a camera point is inside a building (with a 0.4 m skin) or under the street. */
+function cameraBlocked(x: number, y: number, z: number): boolean {
+  if (y < 0.3) return true;
+  for (const b of query(buildingGrid, x, z)) {
+    if (y < b.height + 0.3 && Math.abs(x - b.x) < b.hw + 0.4 && Math.abs(z - b.z) < b.hd + 0.4) return true;
+  }
+  return false;
+}
+const clearance = createCameraClearance();
+let shownEye: [number, number, number] = [0, 0, 0];
 
 /* ------------------------------------------------------------------ scene */
 
@@ -125,7 +175,7 @@ const shellGeometry = (m: LookRig["playerShell"]["paint"]) => {
 let look: LookRig;
 
 function buildScene() {
-  look = buildLook({ blocks, buildings, traffic, pickups }, { models: config.models, quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, roadCells: config.roadCells, start: { x: car.x, z: car.z } });
+  look = buildLook({ blocks, buildings, traffic, pickups }, { models: config.models, quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, skyFill: config.skyFill, neutral: config.neutral, roadCells: config.roadCells, start: { x: car.x, z: car.z } });
   const s = look.builder;
   if (config.models) {
     s.add(carModel("car-rig", "courier", true));
@@ -136,8 +186,17 @@ function buildScene() {
     s.add(primitives.box({ name: "car-light-r", size: [0.4, 0.14, 0.1], position: [0.6, 0.62, 2.1], material: material.emissive({ color: "#eaf1ff", emissive: "#dfe9ff", emissiveIntensity: 1.4 }) }).runtime({ id: "car-light-r" }));
   }
   s.add(geometry.custom(geometry.dynamic({ positions: beam.positions, normals: beam.normals, uvs: beam.uvs, indices: beam.indices }), { name: "car-beams", material: material.custom(beamSpec(headlightAmount)) }).runtime({ id: "car-beams" }));
+  // delivery drop-off: a glowing pad and a tall beacon you can see over the roofs (moved to each new job)
+  s.add(primitives.cylinder({ name: "dropoff-pad", size: [2 * DROP_PAD_RADIUS, 0.06, 2 * DROP_PAD_RADIUS], position: [car.x, -60, car.z], material: material.emissive({ color: "#5ce1ff", emissive: "#2fc9ff", emissiveIntensity: 1.4 }), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-pad" }));
+  s.add(primitives.cylinder({ name: "dropoff-beacon", size: [0.9, 70, 0.9], position: [car.x, -60, car.z], material: material.emissive({ color: "#9cefff", emissive: "#46d6ff", emissiveIntensity: 1.8 }), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-beacon" }));
+  if (config.props) {
+    const extra = [...furnitureSolids(look.furniture), ...look.propSolids];
+    for (const sol of extra) insert(playGrid, sol);
+    propSolidCount = extra.length;
+  }
   return s;
 }
+const DROP_PAD_RADIUS = 6;
 
 /* ------------------------------------------------------------------ frame */
 
@@ -153,6 +212,8 @@ let renderFailed = false;
 /** Headlight beam strength 0..1 (the original ties it to night; `L` toggles it here). */
 let beamsUncullable = false;
 let headlightAmount = Math.max(0, Math.min(1, Number(new URLSearchParams(location.search).get("beams") ?? 0) || 0));
+/** True once the full warm-up (environment HDRI and texture upgrades) has finished; `ready` only needs the programs. */
+let settled = false;
 const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
 const node = (id: string) => {
   let h = handles.get(id);
@@ -173,19 +234,43 @@ function simulateStep(input: Keys): void {
     if (struck) audio.thud();
     for (const e of picked) audio.chime(e.kind, ps.combo);
   }
+  for (const e of picked) popup(`+${e.score}${ps.combo > 1 ? `  x${ps.combo}` : ""}`, e.kind);
   game.collected = ps.collected;
   game.score = ps.score;
   car.combo = ps.combo;
   car.comboTimer = ps.comboTimer;
   car.boost = ps.boost;
+  if (game.phase === "playing") for (const e of stepShift(shift, STEP, car, { combo: car.combo, collected: game.collected, total: pickups.length })) onShiftEvent(e);
+  syncQa();
 }
 
-function presentedNow(): Presented {
-  const tr = new Float64Array(traffic.length * 3);
-  traffic.forEach((t, i) => { tr[3 * i] = t.x; tr[3 * i + 1] = t.z; tr[3 * i + 2] = t.yaw; });
-  return { car: { x: car.x, z: car.z, heading: car.heading, lean: car.lean, steer: car.steer, speed: car.speed }, traffic: tr };
+function onShiftEvent(e: ShiftEvent): void {
+  if (e.kind === "delivered") {
+    game.score += e.score;
+    popup(`DELIVERED  +${e.score}`, "job");
+    audio?.chime("star", 4);
+  } else if (e.kind === "missed") popup("JOB MISSED", "miss");
+  else if (e.kind === "drift") {
+    game.score += e.score;
+    popup(`DRIFT  +${e.score}`, "drift");
+  } else if (e.kind === "job") placeDropoff();
+  else if (e.kind === "over") endShift();
 }
-const presenter = createRenderInterpolator<Presented>(blendPresented);
+
+/** Presented states live in a ring of three preallocated buffers: the interpolator holds two, the third is written. */
+const presentedRing = [createPresented(traffic.length), createPresented(traffic.length), createPresented(traffic.length)];
+let presentedSlot = 0;
+function presentedNow(): Presented {
+  const out = presentedRing[presentedSlot]!;
+  presentedSlot = (presentedSlot + 1) % presentedRing.length;
+  const tr = out.traffic;
+  traffic.forEach((t, i) => { tr[3 * i] = t.x; tr[3 * i + 1] = t.z; tr[3 * i + 2] = t.yaw; });
+  const c = out.car;
+  c.x = car.x; c.z = car.z; c.heading = car.heading; c.lean = car.lean; c.steer = car.steer; c.speed = car.speed;
+  return out;
+}
+const blended = createPresented(traffic.length);
+const presenter = createRenderInterpolator<Presented>((a, b, t) => blendPresentedInto(blended, a, b, t));
 presenter.reset(presentedNow());
 
 function simulate(steps: number, input: Keys = keys): void {
@@ -226,18 +311,34 @@ function placeTraffic(shown: Float64Array): void {
       rig.detail.setMatrixAt(n, m);
     });
   }
-  for (const i of look.modelTraffic) {
-    const h = node(`traffic-${i}`);
-    h.setPosition(shown[3 * i]!, 0, shown[3 * i + 1]!);
-    h.setRotation(0, shown[3 * i + 2]!, 0);
+  for (const group of look.modelTraffic) {
+    let list = trafficTransforms.get(group.id);
+    if (!list) trafficTransforms.set(group.id, (list = group.cars.map(() => ({ position: [0, 0, 0] as [number, number, number], rotation: [0, 0, 0] as [number, number, number], scale: group.scale }))));
+    group.cars.forEach((i, n) => {
+      const t = list![n]!;
+      t.position[0] = shown[3 * i]!;
+      t.position[2] = shown[3 * i + 1]!;
+      t.rotation[1] = shown[3 * i + 2]!;
+    });
+    node(group.id).setInstances?.(list);
   }
 }
+const trafficTransforms = new Map<string, { position: [number, number, number]; rotation: [number, number, number]; scale: number }[]>();
 
 const HIDDEN = mat(0, -50, 0, 0, 0, 0, 0, 0);
+const scratch = new Float32Array(16);
 function placePickups(): void {
-  look.coins.forEach((p, i) => look.coinMesh.setMatrixAt(i, p.taken ? HIDDEN : coinMat(p.x, 1.15 + 0.18 * Math.sin(2.4 * renderTime + p.spin), p.z, p.spin + renderTime * 2.4, 0.95, 0.14)));
-  look.stars.forEach((p, i) => look.starMesh.setMatrixAt(i, p.taken ? HIDDEN : mat(p.x, 1.4 + 0.18 * Math.sin(2.4 * renderTime + p.spin), p.z, p.spin + renderTime * 2.4, 0, 1.3, 1.3, 1.3)));
-  look.hearts.forEach((p, i) => look.heartMesh.setMatrixAt(i, p.taken ? HIDDEN : mat(p.x, 1.3 + 0.18 * Math.sin(2.4 * renderTime + p.spin), p.z, p.spin + renderTime * 2.4, 0, 1.0, 1.0, 1.0)));
+  look.coins.forEach((p, i) => look.coinMesh.setMatrixAt(i, p.taken ? HIDDEN : coinMatInto(scratch, p.x, 1.15 + 0.18 * Math.sin(2.4 * renderTime + p.spin), p.z, p.spin + renderTime * 2.4, 0.95, 0.14)));
+  look.stars.forEach((p, i) => look.starMesh.setMatrixAt(i, p.taken ? HIDDEN : matInto(scratch, p.x, 1.4 + 0.18 * Math.sin(2.4 * renderTime + p.spin), p.z, p.spin + renderTime * 2.4, 0, 1.3, 1.3, 1.3)));
+  look.hearts.forEach((p, i) => look.heartMesh.setMatrixAt(i, p.taken ? HIDDEN : matInto(scratch, p.x, 1.3 + 0.18 * Math.sin(2.4 * renderTime + p.spin), p.z, p.spin + renderTime * 2.4, 0, 1.0, 1.0, 1.0)));
+}
+
+function placeDropoff(): void {
+  if (!app || !ready) return;
+  const job = shift.job;
+  const y = job ? 0.03 : -60;
+  node("dropoff-pad").setPosition(job?.x ?? 0, y, job?.z ?? 0);
+  node("dropoff-beacon").setPosition(job?.x ?? 0, job ? 35 : -60, job?.z ?? 0);
 }
 
 function placeNodes(dt: number, shown: Presented): void {
@@ -268,7 +369,10 @@ function placeNodes(dt: number, shown: Presented): void {
   placeTraffic(shown.traffic);
   placePickups();
   stepChase(camState, { x: view.x, z: view.z, y: 0, heading: view.heading, speed: view.speed, boosting: car.boosting, shake: car.shake }, dt);
-  app!.camera!.setPose({ position: [...camState.eye], target: [...camState.look], up: [0, 1, 0], fov: camState.fov }, { cut: false });
+  // never put the eye inside a building at a corner (lesson M9)
+  const eye = clearance.update(dt, { focus: [view.x, 1.4, view.z], eye: camState.eye, blocked: cameraBlocked });
+  shownEye = eye;
+  app!.camera!.setPose({ position: eye, target: [...camState.look], up: [0, 1, 0], fov: camState.fov }, { cut: false });
 }
 
 function render(dt: number, alpha = 1): void {
@@ -288,7 +392,26 @@ function render(dt: number, alpha = 1): void {
 
 /* ------------------------------------------------------------------ HUD */
 
-const hud = { nitro: $("nitro-fill"), speed: $("speed"), score: $("score"), streak: $("streak"), count: $("count"), map: $<HTMLCanvasElement>("minimap") };
+const hud = { nitro: $("nitro-fill"), speed: $("speed"), score: $("score"), streak: $("streak"), count: $("count"), map: $<HTMLCanvasElement>("minimap"), clock: $("clock"), job: $("job"), drift: $("drift"), popups: $("popups") };
+const reducedMotionQuery = typeof matchMedia === "function" ? matchMedia("(prefers-reduced-motion: reduce)") : null;
+const applyReducedMotion = (): void => {
+  const on = Boolean(reducedMotionQuery?.matches) || params.get("motion") === "reduced";
+  setReducedMotion(on);
+  document.body.classList.toggle("reduced-motion", on);
+};
+applyReducedMotion();
+reducedMotionQuery?.addEventListener?.("change", applyReducedMotion);
+
+/** Floating score text over the car ('+120  x4', 'DELIVERED  +540'); at most six at a time. */
+function popup(text: string, kind: string): void {
+  if (config.manual) return;
+  const el = document.createElement("div");
+  el.className = `popup popup-${kind}`;
+  el.textContent = text;
+  hud.popups.appendChild(el);
+  while (hud.popups.childElementCount > 6) hud.popups.firstElementChild?.remove();
+  setTimeout(() => el.remove(), 1100);
+}
 const MINIMAP_GRID: [number, number, number, number][] = [];
 for (let k = -8; k <= 7; k++) {
   const o = k * PITCH + 30;
@@ -302,32 +425,80 @@ function updateHud(): void {
   hud.streak.style.opacity = car.combo > 1 ? "1" : "0";
   hud.streak.textContent = `x${car.combo}  STREAK`;
   hud.count.textContent = `${game.collected} / ${pickups.length}`;
+  hud.clock.textContent = formatClock(shift.timeLeft);
+  hud.clock.classList.toggle("low", shift.timeLeft <= 20);
+  const job = shift.job;
+  if (job) {
+    const d = Math.hypot(job.x - car.x, job.z - car.z);
+    hud.job.textContent = `DELIVER  ${Math.round(d)} m  ${formatClock(job.timeLeft)}`;
+    hud.job.classList.toggle("low", job.timeLeft <= 10);
+  } else hud.job.textContent = "";
+  hud.drift.style.opacity = shift.drift > 0 ? "1" : "0";
+  hud.drift.textContent = `DRIFT  ${Math.round(shift.drift)}`;
   const ctx = hud.map.getContext("2d");
   if (!ctx) return;
-  const loose: [number, number][] = [];
-  for (const p of pickups) if (!p.taken) loose.push([p.x, p.z]);
+  minimapCoins.length = 0;
+  for (const p of pickups) if (!p.taken && p.kind === "coin") minimapCoins.push([p.x, p.z]);
   drawCanvasMinimap(ctx, {
     size: 240,
-    bounds: [-510, -510, 510, 510],
+    bounds: MINIMAP_BOUNDS,
     background: { fill: "rgba(38,30,26,.82)", radius: 18 },
     layers: [
       { kind: "lines", segments: MINIMAP_GRID, stroke: "rgba(255,226,175,.5)", width: 2.5 },
       { kind: "rect", rect: [-510, 506, 510, 510], fill: "rgba(70,160,205,.55)" },
-      { kind: "points", points: loose, fill: "#ffd15c", size: 2.8 }
+      { kind: "points", points: minimapCoins, fill: "#ffd15c", size: 2.8 }
     ],
     marker: { x: car.x, z: car.z, heading: car.heading, fill: "#ff9a2e" }
   });
+  // stars and hearts get their own shapes (a white diamond and a pink dot), the drop-off a cyan ring and an arrow
+  const mx = (x: number): number => ((x - MINIMAP_BOUNDS[0]) / (MINIMAP_BOUNDS[2] - MINIMAP_BOUNDS[0])) * 240;
+  const mz = (z: number): number => ((z - MINIMAP_BOUNDS[1]) / (MINIMAP_BOUNDS[3] - MINIMAP_BOUNDS[1])) * 240;
+  for (const p of pickups) {
+    if (p.taken || p.kind === "coin") continue;
+    const x = mx(p.x), y = mz(p.z);
+    ctx.beginPath();
+    if (p.kind === "star") {
+      ctx.fillStyle = "#fff4c2";
+      ctx.moveTo(x, y - 5); ctx.lineTo(x + 4, y); ctx.lineTo(x, y + 5); ctx.lineTo(x - 4, y); ctx.closePath();
+    } else {
+      ctx.fillStyle = "#ff7aa0";
+      ctx.arc(x, y, 3.6, 0, Math.PI * 2);
+    }
+    ctx.fill();
+  }
+  if (job) {
+    const jx = mx(job.x), jy = mz(job.z), cx = mx(car.x), cy = mz(car.z);
+    ctx.strokeStyle = "#5ce1ff";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(jx, jy, 7, 0, Math.PI * 2);
+    ctx.stroke();
+    const dx = jx - cx, dy = jy - cy, len = Math.hypot(dx, dy);
+    if (len > 22) {
+      const ux = dx / len, uy = dy / len;
+      const tipX = cx + ux * 20, tipY = cy + uy * 20;
+      ctx.fillStyle = "#5ce1ff";
+      ctx.beginPath();
+      ctx.moveTo(tipX, tipY);
+      ctx.lineTo(tipX - ux * 8 - uy * 5, tipY - uy * 8 + ux * 5);
+      ctx.lineTo(tipX - ux * 8 + uy * 5, tipY - uy * 8 - ux * 5);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
 }
+const MINIMAP_BOUNDS: [number, number, number, number] = [-510, -510, 510, 510];
+const minimapCoins: [number, number][] = [];
 
 /* ------------------------------------------------------------------ input */
 
-const KEYMAP: Record<string, keyof Keys> = { w: "w", arrowup: "w", a: "a", arrowleft: "a", s: "s", arrowdown: "s", d: "d", arrowright: "d", shift: "shift", " ": "space" };
 const onKey = (down: boolean) => (e: KeyboardEvent) => {
-  const name = (e.key || "").toLowerCase();
-  if (down && name === "l") headlightAmount = headlightAmount > 0 ? 0 : 1;
-  if (down && !e.repeat && (name === "p" || name === "escape")) togglePause();
-  if (down && !e.repeat && name === "m" && audio) $("mute").textContent = audio.setMuted(!audio.muted) ? "Sound off (M)" : "Sound on (M)";
-  const k = KEYMAP[(e.key || "").toLowerCase()];
+  const action = down ? keyAction(e) : undefined;
+  if (action === "headlights") headlightAmount = headlightAmount > 0 ? 0 : 1;
+  else if (action === "pause") togglePause();
+  else if (action === "mute") toggleMute();
+  else if (action === "restart" && game.phase === "results") restart();
+  const k = drivingKey(e);
   if (k) {
     keys[k] = down;
     e.preventDefault();
@@ -336,29 +507,105 @@ const onKey = (down: boolean) => (e: KeyboardEvent) => {
 addEventListener("keydown", onKey(true));
 addEventListener("keyup", onKey(false));
 
+function toggleMute(): void {
+  if (!audio) return;
+  const off = audio.setMuted(!audio.muted);
+  $("mute").textContent = off ? "Sound off (M)" : "Sound on (M)";
+  $("t-mute").textContent = off ? "SOUND OFF" : "SOUND";
+}
+
+const touch = mountTouchControls(document, keys, { pause: () => togglePause(), mute: toggleMute });
+
 function begin(): void {
+  if (game.phase !== "splash") return;
   game.phase = "playing";
   $("splash").classList.add("hidden");
   audio?.resume();
 }
 
+function silence(): void {
+  Object.assign(keys, NO_KEYS);
+  touch.release();
+  audio?.suspend();
+}
+
 function togglePause(): void {
   if (game.phase === "playing") {
     game.phase = "paused";
-    Object.assign(keys, NO_KEYS);
+    silence();
     $("pause").classList.remove("hidden");
+    $<HTMLButtonElement>("resume").focus();
   } else if (game.phase === "paused") {
     game.phase = "playing";
     $("pause").classList.add("hidden");
+    audio?.resume();
   }
+}
+
+/** The shift is over: freeze the sim, record the best score and show the results screen. */
+function endShift(): void {
+  if (game.phase === "results") return;
+  game.phase = "results";
+  silence();
+  const { best, isNew } = recordBest(safeStorage(), BEST_KEY, game.score);
+  $("r-title").textContent = shift.reason === "cleared" ? "City cleared" : "Shift over";
+  $("r-score").textContent = String(game.score);
+  $("r-best").textContent = isNew ? `${best} (new best)` : String(best);
+  $("r-deliveries").textContent = `${shift.deliveries} delivered, ${shift.missed} missed`;
+  $("r-collected").textContent = `${game.collected} / ${pickups.length}`;
+  $("r-streak").textContent = `x${shift.bestStreak}`;
+  $("r-time").textContent = formatClock(shift.elapsed);
+  $("results").classList.remove("hidden");
+  $<HTMLButtonElement>("restart").focus();
+  syncQa();
+}
+
+function safeStorage(): Storage | null {
+  try {
+    return typeof localStorage === "undefined" ? null : localStorage;
+  } catch {
+    return null;
+  }
+}
+
+/** A fresh shift: car, pickups, traffic, streak, presenter, camera and clock all back to the start. */
+function restart(): void {
+  Object.assign(car, createCar());
+  pickups.forEach((p) => (p.taken = false));
+  traffic.forEach((t, i) => Object.assign(t, trafficStart[i]!));
+  game.score = 0;
+  game.collected = 0;
+  shift = createShift(config.shiftSeconds);
+  Object.assign(keys, NO_KEYS);
+  Object.assign(camState, snapChase({ x: car.x, z: car.z, y: 0, heading: car.heading, speed: 0, boosting: false, shake: 0 }));
+  clearance.reset();
+  presenter.reset(presentedNow());
+  placeDropoff();
+  $("results").classList.add("hidden");
+  $("pause").classList.add("hidden");
+  game.phase = "playing";
+  audio?.resume();
+  syncQa();
+  updateHud();
 }
 
 /* ------------------------------------------------------------------ original QA surface + hooks */
 
 const qaState: Record<string, unknown> = { phase: "splash", boost: 1, drifting: false, boosting: false, speed: 0, heading: 0, shake: 0, score: 0, combo: 0, comboTimer: 0, collected: 0, total: pickups.length };
 const player = { position: { x: car.x, y: 0, z: car.z }, userData: { footprint: FOOTPRINT } };
+/** Runs every fixed step and on every QA read, so the legacy globals never report stale state. */
 function syncQa(): void {
-  Object.assign(qaState, { phase: game.phase, boost: car.boost, drifting: car.drifting, boosting: car.boosting, speed: car.speed, heading: car.heading, shake: car.shake, score: game.score, combo: car.combo, comboTimer: car.comboTimer, collected: game.collected });
+  qaState.phase = game.phase;
+  qaState.boost = car.boost;
+  qaState.drifting = car.drifting;
+  qaState.boosting = car.boosting;
+  qaState.speed = car.speed;
+  qaState.heading = car.heading;
+  qaState.shake = car.shake;
+  qaState.score = game.score;
+  qaState.combo = car.combo;
+  qaState.comboTimer = car.comboTimer;
+  qaState.collected = game.collected;
   player.position.x = car.x;
   player.position.z = car.z;
 }
@@ -379,7 +626,8 @@ qa.__sim = (steps: number, input: Partial<Keys> | undefined, dt?: number) => {
   const step = dt ?? STEP;
   const samples: { t: number; x: number; z: number }[] = [];
   for (let i = 0; i < steps; i++) {
-    stepCar(car, step, held, solidsNear(), FOOTPRINT);
+    // the original's replay world: buildings only (the reference capture has no furniture colliders)
+    stepCar(car, step, held, buildingSolidsNear(), FOOTPRINT);
     syncQa();
     if (i % 10 === 0) samples.push({ t: +(i * step).toFixed(2), x: +car.x.toFixed(2), z: +car.z.toFixed(2) });
   }
@@ -388,26 +636,29 @@ qa.__sim = (steps: number, input: Partial<Keys> | undefined, dt?: number) => {
 
 function status() {
   syncQa();
-  return { phase: game.phase, state: stateVector(car), score: game.score, collected: game.collected, total: pickups.length, combo: car.combo, boost: car.boost, speedKmh: kmh(), frames, ready, warm: warmResult };
+  return {
+    phase: game.phase, state: stateVector(car), score: game.score, collected: game.collected, total: pickups.length, combo: car.combo, boost: car.boost, speedKmh: kmh(), frames, ready, settled, warm: warmResult,
+    shift: { timeLeft: shift.timeLeft, elapsed: shift.elapsed, deliveries: shift.deliveries, missed: shift.missed, job: shift.job ? { ...shift.job } : null, drift: shift.drift, bestStreak: shift.bestStreak, over: shift.over, reason: shift.reason },
+    touch: touch.enabled,
+    bootTimings: { ...bootTimings }
+  };
 }
 
 const hooks = installQaHooks("drift-and-deliver", {
-  ready: () => ready,
+  // a capture waits for the full warm-up (HDRI and textures); a player may start as soon as the programs settle
+  ready: () => settled,
   state: status,
   app: () => app,
   begin,
   nodeCount: () => handles.size,
   routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SG-01", "SG-10", "SH-03", "ST-01", "R-23"] }) : null),
   reset() {
-    Object.assign(car, createCar());
-    pickups.forEach((p) => (p.taken = false));
-    game.score = 0;
-    game.collected = 0;
-    Object.assign(camState, snapChase({ x: car.x, z: car.z, y: 0, heading: car.heading, speed: 0, boosting: false, shake: 0 }));
-    syncQa();
+    restart();
+    if (config.manual) game.phase = "splash";
   },
   /** Run `n` fixed 1/60 s steps with the given keys (default: held keys), then render once. */
   stepFrames(n: number, input?: Partial<Keys>) {
+    if (game.phase === "results") return;
     game.phase = "playing";
     manualInput = input ? { ...NO_KEYS, ...input } : keys;
     loop.advance(n);
@@ -436,40 +687,90 @@ const hooks = installQaHooks("drift-and-deliver", {
       return headlightAmount;
     },
     pickups: () => pickups.map((p) => ({ kind: p.kind, x: p.x, z: p.z, taken: p.taken })),
-    counts: () => ({ blocks: blocks.length, buildings: buildings.length, trees: look?.stats.trees ?? 0, traffic: traffic.length, pickups: pickups.length, solids: solids.length })
+    counts: () => ({ blocks: blocks.length, buildings: buildings.length, trees: look?.stats.trees ?? 0, traffic: traffic.length, pickups: pickups.length, solids: solids.length, propSolids: propSolidCount }),
+    /** traffic pose and speed (for the follow and yield specs) */
+    traffic: () => traffic.map((t) => ({ x: t.x, z: t.z, horiz: t.horiz, dir: t.dir, v: t.v, wait: t.wait })),
+    /** the audio beds' gain targets (zero while paused or hidden) */
+    audioBeds: () => audio?.beds() ?? null,
+    /** restart the shift (the results screen's Restart button) */
+    restart() {
+      restart();
+      return status();
+    },
+    /** end the shift now (probes that need the results screen without driving three minutes) */
+    endShift() {
+      shift.timeLeft = 0;
+      shift.elapsed = shift.length;
+      shift.over = true;
+      shift.reason = "time";
+      endShift();
+      return status();
+    },
+    /** the chase eye the rig wanted and the eye shown after the building clearance, and whether each is inside a building */
+    camera: () => ({ wanted: [...camState.eye], shown: [...shownEye], wantedBlocked: cameraBlocked(...camState.eye), shownBlocked: cameraBlocked(...shownEye), factor: clearance.factor }),
+    /** move the car onto the current drop-off (delivery probes) */
+    toDropoff() {
+      if (!shift.job) return status();
+      (qa.__tp as (x: number, z: number, h?: number) => void)(shift.job.x, shift.job.z, car.heading);
+      return status();
+    }
   }
 });
 
 /* ------------------------------------------------------------------ boot */
 
-function sizeCanvas(): void {
-  const dpr = Math.min(devicePixelRatio || 1, config.quality === "low" ? 1 : 1.5);
-  canvas.width = Math.max(2, Math.round(canvas.clientWidth * dpr));
-  canvas.height = Math.max(2, Math.round(canvas.clientHeight * dpr));
-}
-
+/** Boot phase timings (ms since the module ran), for the L2 probe and the loading panel. */
+const bootT0 = performance.now();
+const bootTimings: Record<string, number> = {};
+const mark = (phase: string): void => { bootTimings[phase] = Math.round(performance.now() - bootT0); };
+let bootPhase = "Building blocks, buildings and traffic";
+const loadingStatus = document.getElementById("loading-status");
+const progressTimer = setInterval(() => {
+  if (renderFailed || !loadingStatus) return;
+  loadingStatus.textContent = `${bootPhase} (${Math.round((performance.now() - bootT0) / 1000)} s)`;
+}, 1000);
 
 async function boot(): Promise<void> {
-  sizeCanvas();
+  mark("module");
+  // the engine owns the canvas size: CSS and backing store follow window resizes and phone rotation (lesson R1)
   app = createAuraApp(canvas, {
     autoStart: false,
-    resize: false,
-    pixelRatio: 1,
+    resize: true,
+    pixelRatio: Math.min(devicePixelRatio || 1, config.quality === "low" ? 1 : 1.5),
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
     output: { toneMapping: config.tm as "neutral", exposure: config.exposure, dither: false },
     scene: buildScene()
   });
+  bootPhase = "Uploading the city to the GPU";
   await app.ready();
-  // a draw whose program is still compiling is skipped: settle the programs so the first frame is the whole city
-  if (config.warm) warmResult = await warmPrograms(app, { waitForEnvironment: config.warmEnv, environmentTimeoutMs: config.warmEnvMs, waitForTextures: config.warmTex, textureTimeoutMs: config.warmEnvMs });
+  mark("appReady");
+  bootPhase = "Compiling shaders";
+  // a draw whose program is still compiling is skipped: settle the programs so the first frame is the whole city.
+  // Start unlocks once the programs settle; the sky HDRI and texture upgrades keep streaming in behind the splash
+  // (on software GL the HDRI took over 45 s, and Start used to wait for it).
+  if (config.warm) warmResult = await warmPrograms(app, { waitForEnvironment: false, waitForTextures: false });
+  mark("programsSettled");
+  clearInterval(progressTimer);
   ready = true;
   blackWatch = createBlackFrameWatch(canvas, { enabled: config.heal, storageKey: HEAL_STORAGE_KEY, ...(config.healFrames ? { fastFrames: config.healFrames } : {}) });
   $("loading").classList.add("hidden");
-  $<HTMLButtonElement>("start").disabled = false;
+  const start = $<HTMLButtonElement>("start");
+  start.disabled = false;
+  start.focus();
   syncQa();
+  placeDropoff();
   render(0);
   updateHud();
   if (config.autostart) begin();
+  const envStatus = $("env-status");
+  if (config.warm && (config.warmEnv || config.warmTex)) {
+    envStatus.classList.remove("hidden");
+    const full = await warmPrograms(app, { waitForEnvironment: config.warmEnv, environmentTimeoutMs: config.warmEnvMs, waitForTextures: config.warmTex, textureTimeoutMs: config.warmEnvMs });
+    warmResult = { ...full, durationMs: (warmResult?.durationMs ?? 0) + full.durationMs };
+  }
+  envStatus.classList.add("hidden");
+  mark("fullySettled");
+  settled = true;
 }
 
 const loop = createFixedStepLoop({
@@ -506,8 +807,18 @@ function tick(now: number): void {
 
 $("start").addEventListener("click", begin);
 $("resume").addEventListener("click", togglePause);
-addEventListener("blur", () => { if (game.phase === "playing" && !config.manual) togglePause(); });
-addEventListener("resize", sizeCanvas);
+$("restart").addEventListener("click", restart);
+addEventListener("blur", () => {
+  if (config.manual) return;
+  if (game.phase === "playing") togglePause();
+  else audio?.suspend();
+});
+// a hidden tab stops rAF, so the last audio ramp targets would hold: pause and silence instead
+document.addEventListener("visibilitychange", () => {
+  if (config.manual || document.visibilityState !== "hidden") return;
+  if (game.phase === "playing") togglePause();
+  else audio?.suspend();
+});
 requestAnimationFrame(tick);
 
 function reportError(error: unknown): void {
@@ -516,6 +827,7 @@ function reportError(error: unknown): void {
   const details = (error as { details?: unknown })?.details;
   const message = `${base}${typeof code === "string" ? ` [${code}]` : ""}${details ? ` ${JSON.stringify(details).slice(0, 6000)}` : ""}`;
   hooks.reportError(message);
+  clearInterval(progressTimer);
   $("loading-status").textContent = `The city could not load: ${message.slice(0, 300)}`;
   $("loading").classList.remove("hidden");
   console.error(error);
