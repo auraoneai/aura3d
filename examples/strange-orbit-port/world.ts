@@ -174,7 +174,7 @@ export interface World {
 }
 
 /** Neutral-room environment intensity, calibrated on the remote runner against the 4.3.7 rider-region luma (docs/audits/lanes/g15.md). */
-export const ENVIRONMENT_INTENSITY = 1;
+export const ENVIRONMENT_INTENSITY = 0.9;
 
 function environmentIntensity(): number {
   const raw = typeof location !== "undefined" ? new URLSearchParams(location.search).get("env") : null;
