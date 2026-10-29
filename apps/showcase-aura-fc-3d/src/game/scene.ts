@@ -453,6 +453,18 @@ export function buildFcScene(venue: VenueId = "munich") {
     .camera(camera.perspective({ position: [0, 11.5, 23.5], target: [0, 0.9, -1], fov: 40 }));
 }
 
+/**
+ * QA A/B only (`?ao=0`, LIGHT-06 capture pair): the scene snapshot without the look's ambient-occlusion node, so a
+ * capture can measure what the 4.5.0 real-depth AO changes. Normal loads never call this.
+ */
+export function withoutLookAo(scene: { toJSON(): any }): any {
+  const snap = scene.toJSON();
+  const strip = (nodes: any[]): any[] => nodes
+    .filter((n) => n?.name !== "look ambient occlusion")
+    .map((n) => (Array.isArray(n?.children) ? { ...n, children: strip(n.children) } : n));
+  return { ...snap, nodes: strip(snap.nodes ?? []) };
+}
+
 export interface WorldHandles {
   ground: any; apron: any; pitch: any;
   stripes: any;

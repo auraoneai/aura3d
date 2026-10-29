@@ -21,7 +21,7 @@ import {
 import "../../showcase-port-shared/quickbar.css";
 import { assets } from "./aura-assets-v2";
 import { createSim, PITCH_HX, PITCH_HZ, PEN_X, BALL_R, BALL_VIS_R, SIM_DT } from "./game/sim";
-import { buildFcScene, resolveWorld, applyVenue, tickWorld, ATHLETE_IDS, VENUE_LOOKS } from "./game/scene";
+import { buildFcScene, resolveWorld, applyVenue, tickWorld, ATHLETE_IDS, VENUE_LOOKS, withoutLookAo } from "./game/scene";
 import { mountFcTouch } from "./game/touch";
 import { fitCameraToAspect } from "./game/camera";
 import { loadSave } from "./game/save";
@@ -78,11 +78,13 @@ function boot(): void {
     return loadSave().venue;
   })();
   let sceneVenue: VenueId = bootVenue;
+  const noAo = bootParams.get("ao") === "0";
+  const sceneFor = (venue: VenueId) => (noAo ? withoutLookAo(buildFcScene(venue)) : buildFcScene(venue));
 
   let app: ReturnType<typeof createAuraApp>;
   try {
     app = createAuraApp("#app", {
-      scene: buildFcScene(bootVenue),
+      scene: sceneFor(bootVenue),
       ...looks.appOptions(VENUE_LOOKS[bootVenue].look),
       qualityRebuild: { flags: ["game"] }
     } as any);
@@ -104,7 +106,7 @@ function boot(): void {
     if (venue === sceneVenue) return;
     sceneVenue = venue;
     try {
-      (app as any).setScene(buildFcScene(venue));
+      (app as any).setScene(sceneFor(venue));
       world = resolveWorld(app);
       for (const id of ATHLETE_IDS) rigs.set(id, resolveAthlete(app, id));
     } catch (e) {
