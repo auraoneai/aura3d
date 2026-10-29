@@ -31,6 +31,12 @@ export interface AiPlayer extends PlayerState {
   replanT: number;
 }
 
+/** CPU shooting range (m from goal centre) = base + difficulty * diff. */
+const SHOOT_RANGE_BASE = 20;
+const SHOOT_RANGE_DIFF = 8;
+/** Score handicap on a pass back to the keeper. */
+const BACKPASS_PENALTY = 6;
+
 const ZERO: PlayerCommand = { move: [0, 0], sprint: false };
 
 export function planCommand(
@@ -38,7 +44,8 @@ export function planCommand(
   p: AiPlayer,
   dt: number,
   keeperRushHeld: boolean,
-  difficulty: number
+  difficulty: number,
+  rand: () => number = Math.random
 ): PlayerCommand {
   const b = state.ball;
   const s = state.attackSign[p.team];
@@ -86,9 +93,13 @@ export function planCommand(
     // rush loose balls dropped in the box that nobody else reaches first
     if (ballLive && Math.abs(b.x - ownGoalX) < BOX_DEPTH && Math.abs(b.z) < BOX_HALF_W) {
       let iAmClosest = true;
+      // he comes only for a ball he can reach first: no team-mate well ahead of him, and no attacker either (rushing an
+      // attacker's first touch left the striker's runs into the box all claimed by the keeper)
+      const myD = dist(p.x, p.z, b.x, b.z);
       for (const q of state.players) {
-        if (q.team !== p.team || q.id === p.id || q.isKeeper) continue;
-        if (dist(q.x, q.z, b.x, b.z) < dist(p.x, p.z, b.x, b.z) - 1.2) { iAmClosest = false; break; }
+        if (q.id === p.id || q.isKeeper) continue;
+        const margin = q.team === p.team ? 1.2 : -0.6;
+        if (dist(q.x, q.z, b.x, b.z) < myD - margin) { iAmClosest = false; break; }
       }
       const deep = Math.abs(b.x - ownGoalX) < BOX_DEPTH * 0.7;
       if (iAmClosest && (deep || difficulty > 0.55)) {
@@ -117,7 +128,7 @@ export function planCommand(
 
   /* ------------------------------ attack ------------------------------ */
   if (weHaveBall) {
-    if (owner!.id === p.id) return attackOwner(state, p, dt, difficulty, goalX);
+    if (owner!.id === p.id) return attackOwner(state, p, dt, difficulty, goalX, rand);
 
     // off-ball: shift with the attack so teammates make forward/overlapping runs
     const prog = clamp((b.x * s + PITCH_HX) / (2 * PITCH_HX), 0, 1);   // 0 own end → 1 their end
@@ -178,7 +189,7 @@ export function planCommand(
       const ownerSpeed = Math.hypot(o.vx, o.vz);
       if (myD < 1.7 && ownerSpeed > 2.6 && p.slideCooldown <= 0 && p.stunT <= 0) {
         const chance = (0.55 + difficulty * 0.45) * dt * 6;
-        if (Math.random() < chance) cmd.slide = true;
+        if (rand() < chance) cmd.slide = true;
       }
       return cmd;
     }
@@ -253,7 +264,8 @@ function attackOwner(
   p: AiPlayer,
   dt: number,
   difficulty: number,
-  goalX: number
+  goalX: number,
+  rand: () => number
 ): PlayerCommand {
   const s = state.attackSign[p.team];
   const dGoal = dist(p.x, p.z, goalX, 0);
@@ -268,26 +280,26 @@ function attackOwner(
   }
 
   if (p.replanT <= 0) {
-    p.replanT = 0.14 + (1 - difficulty) * 0.24 + Math.random() * 0.08;
+    p.replanT = 0.14 + (1 - difficulty) * 0.24 + rand() * 0.08;
 
     // shoot? in range with a sight of goal
-    const shootRange = 9.5 + difficulty * 6.5;
+    const shootRange = SHOOT_RANGE_BASE + difficulty * SHOOT_RANGE_DIFF;
     if (dGoal < shootRange) {
       const keeper = state.players.find((q) => q.isKeeper && q.team !== p.team);
-      const side = keeper ? -Math.sign(keeper.z || (Math.random() - 0.5)) : (Math.random() < 0.5 ? -1 : 1);
+      const side = keeper ? -Math.sign(keeper.z || (rand() - 0.5)) : (rand() < 0.5 ? -1 : 1);
       const closeness = 1 - clamp(dGoal / shootRange, 0, 1);
       const want = 0.45 + closeness * 0.35;
-      if (Math.random() < 0.55 + difficulty * 0.4) {
+      if (rand() < 0.55 + difficulty * 0.4) {
         return {
           move: [Math.sign(goalX - p.x) || s, 0], sprint: false,
           shoot: want,
-          shootAim: { lateral: side * (0.45 + Math.random() * 0.5), lift: Math.random() * 0.5 }
+          shootAim: { lateral: side * (0.45 + rand() * 0.5), lift: rand() * 0.5 }
         };
       }
     }
 
     // pass? pressed or a teammate is clearly better placed
-    if (nd < 2.1 || (dGoal > 15 && Math.random() < 0.3)) {
+    if (nd < 2.1 || (dGoal > 15 && rand() < 0.3)) {
       const mate = bestPassLane(state, p);
       if (mate) {
         const dx = mate.x - p.x, dz = mate.z - p.z;
@@ -301,9 +313,9 @@ function attackOwner(
     }
 
     // skill move when a defender is square in front
-    if (nd < 1.5 && Math.random() < 0.12 + difficulty * 0.2) {
+    if (nd < 1.5 && rand() < 0.12 + difficulty * 0.2) {
       const side = Math.sign(p.z - nz) || 1;
-      return { move: [Math.sign(goalX - p.x) || s, side * 0.7], sprint: false, skill: Math.random() < 0.5 ? "chop" : "stepover" };
+      return { move: [Math.sign(goalX - p.x) || s, side * 0.7], sprint: false, skill: rand() < 0.5 ? "chop" : "stepover" };
     }
   }
 
@@ -330,7 +342,9 @@ function bestPassLane(state: MatchState, p: PlayerState): PlayerState | null {
       open = Math.min(open, dist(m.x, m.z, o.x, o.z));
     }
     const forward = (m.x - p.x) * s;
-    const score = open * 1.3 + forward * 0.5 - Math.abs(d - 8) * 0.18 + (m.role === "FW" ? 1.4 : 0);
+    // a back-pass to the keeper is the last resort: he holds it a second and boots it upfield, and when he was just
+    // another open lane half of all CPU passes recycled through him and matches stalled at 0-0
+    const score = open * 1.3 + forward * 0.5 - Math.abs(d - 8) * 0.18 + (m.role === "FW" ? 1.4 : 0) - (m.isKeeper ? BACKPASS_PENALTY : 0);
     if (score > bestScore) { bestScore = score; best = m; }
   }
   return best;

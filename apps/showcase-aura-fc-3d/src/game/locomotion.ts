@@ -24,6 +24,9 @@ export const DIVE_SECONDS = 0.72;
 
 const IDLE_DOWN = 0.25, IDLE_UP = 0.45, WALK_TO_RUN = 2.6, RUN_TO_WALK = 2.2, RUN_TO_SPRINT = 6.0, SPRINT_TO_RUN = 5.6;
 
+/** Player Studio celebration ids in `celebrateKind` order. */
+export const CELEBRATIONS = ["knee", "spin", "leap", "heart"] as const;
+
 export type LocoClip = "Ready" | "Walk_Loop" | "Run" | "Sprint_Loop";
 
 export interface AthleteAnimation {
@@ -60,7 +63,7 @@ const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
 /** Clip + phase for one athlete. `loco` carries the hysteresis state between frames. */
 export function athleteAnimation(
-  p: Pick<PlayerState, "speed" | "gait" | "kickT" | "kickDur" | "kickPower" | "slideT" | "diveT" | "celebrateT" | "isKeeper">,
+  p: Pick<PlayerState, "speed" | "gait" | "kickT" | "kickDur" | "kickPower" | "slideT" | "diveT" | "celebrateT" | "isKeeper"> & { readonly celebrateKind?: number },
   now: number,
   modelScale: number,
   loco: LocoClip,
@@ -75,8 +78,20 @@ export function athleteAnimation(
     return { anim: { clip: "Attack", phase: clamp01(1 - p.slideT / SLIDE_SECONDS) * d, duration: d, loop: false }, loco };
   }
   if (p.celebrateT > 0.2) {
+    // CELEBRATIONS order (Player Studio): 0 knee slide, 1 aircraft spin, 2 fist-leap, 3 hands heart
+    const kind = p.celebrateKind ?? 2;
+    if (kind === 0) {
+      // knee slide: the low lunge of the slide clip, held
+      const d = CLIP_SECONDS.Attack!;
+      return { anim: { clip: "Attack", phase: d * 0.72, duration: d, loop: false }, loco };
+    }
+    if (kind === 3) {
+      const d = CLIP_SECONDS.Ready!;
+      return { anim: { clip: "Ready", phase: wrap(now, d), duration: d, loop: true }, loco };
+    }
+    // spin (rig.ts turns the body) and leap both bounce on the jump loop
     const d = CLIP_SECONDS.Jump_Loop!;
-    return { anim: { clip: "Jump_Loop", phase: wrap(now * 1.35, d), duration: d, loop: true }, loco };
+    return { anim: { clip: "Jump_Loop", phase: wrap(now * (kind === 1 ? 1.0 : 1.35), d), duration: d, loop: true }, loco };
   }
   if (p.kickT > 0.02) {
     const clip = kickClipFor(p.kickPower);

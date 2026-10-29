@@ -163,7 +163,9 @@ export function applyAthleteKit(rig: AthleteRig, kit: AthleteKit): void {
 export function poseAthlete(rig: AthleteRig, p: PlayerState, t: number): void {
   // Model forward is +Z; sim yaw=0 is +X, yaw=PI/2 is +Z -> modelY = PI/2 - p.yaw
   const diving = p.diveT > 0 && p.isKeeper;
-  const modelY = Math.PI / 2 - p.yaw;
+  // aircraft-spin celebration turns the whole body (the clip is the jump loop)
+  const spin = p.celebrateT > 0.2 && p.celebrateKind === 1 ? t * 5.5 : 0;
+  const modelY = Math.PI / 2 - p.yaw + spin;
   const diveRoll = diving ? -p.diveDir * 0.95 : 0;
   rig.body
     ?.setPosition(p.x, diving ? 0.16 : 0, p.z)
