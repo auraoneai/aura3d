@@ -27,8 +27,10 @@ describe("ninja-runner-port audit fixes", () => {
     }
   });
 
-  it("S-07: the hemisphere light the engine drops next to an environment is gone", () => {
-    expect(src("world.ts")).not.toMatch(/lights\.hemisphere\(/);
+  it("S-07 (not a defect here): the hemisphere stays, because the HDRI node has no asset ref and the neutral room counts it", () => {
+    const world = src("world.ts");
+    expect(world).toMatch(/lights\.hemisphere\(\{ name: "sky fill"/);
+    expect(world).toMatch(/IBL_HDRI \? SKY\.autumn :/);
   });
 
   it("enemies render from the live state, not the boot state (stale entity map removed)", () => {

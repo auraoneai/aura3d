@@ -1,14 +1,15 @@
 /**
  * Shadowstep Gauntlet world on the public `@aura3d/engine` surface. The ground is lit PBR (one mesh per biome and surface);
  * the village, rooftops, crossing, forest and valley are instanced scenery: procedural PBR layers plus generated Meshy
- * models (`scenery.ts`, `models.ts`). Lighting is an HDRI environment (`autumn_field_puresky_1k`, diffuse and specular),
- * a sun with two shadow cascades (`?shadow=0` turns them off) and a cool rim light, with exponential fog, ambient
+ * models (`scenery.ts`, `models.ts`). Lighting is the engine's neutral-room environment (the authored HDRI node does not
+ * load, see `buildWorld`) with the hemisphere "sky fill" counted as ambient, a sun with two shadow cascades (`?shadow=0`
+ * turns them off) and a cool rim light, with exponential fog, ambient
  * occlusion (high quality only), bloom, a colour grade, a vignette and FXAA. The sky, river, falls, spirit flames, spiral
  * orb, gale star, auras and particles keep their ported `material.custom` shaders. Characters come from four rigged GLBs
  * (hero, soldier, brute, sage; one `cloneSkinned` call each): the hero, three shadow clones, six soldiers, two brutes and
  * the sage stand-in have independent skeletons and animation, told apart by tint, scale and attached weapons.
  */
-import { attachRootRenderSource, camera, cameras, cloneSkinned, effects, environments, geometry, instances, lights, material, primitives, scene, texture, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
+import { attachRootRenderSource, camera, cameras, cloneSkinned, defineAuraAssets, effects, environments, geometry, instances, lights, material, primitives, scene, texture, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
 import { groundFrame, laneOffset, smooth, COURSE_LENGTH } from "./course";
 import { auraSpec, ballSpec, fallsSpec, flameSpec, particleSpec, skySpec, solidSpec, sparksSpec, waterSpec } from "./materials";
 import { buildRouteGroups, buildSheet, buildTownFloor, buildWater } from "./meshes";
@@ -230,6 +231,9 @@ export interface WorldRuntime {
 
 /** The sun's cascaded shadow; `?shadow=0` restores the blob-only look. */
 const SUN_SHADOW = !(typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0");
+/** `?ibl=hdri`: light with the authored HDRI (a real asset ref) instead of the neutral room. */
+const IBL_HDRI = typeof location !== "undefined" && new URLSearchParams(location.search).get("ibl") === "hdri";
+const SKY = defineAuraAssets({ autumn: { type: "texture", format: "hdr", url: "/hdri/autumn_field_puresky_1k.hdr", metadata: { license: "CC0 1.0, Poly Haven autumn_field_puresky (1k)" } } });
 
 export interface World { readonly scene: Scene; bind(app: AuraApp): WorldRuntime }
 
@@ -239,10 +243,13 @@ export function buildWorld(options: WorldOptions): World {
   const builder: Scene = scene()
     .background("#8fb7c9")
     .camera(camera.perspective({ position: [0, 6, 12], target: [0, 2, -20], fov: 57, near: 0.1, far: 3200 }))
-    .add(environments.hdri({ name: "sky ibl", intensity: 0.7, background: false, texture: { type: "texture", format: "hdr", url: "/hdri/autumn_field_puresky_1k.hdr" } as never }))
+    // The "sky ibl" texture is a plain object, not an asset ref, so the engine never loads this HDRI: the explicit source
+    // returns nothing and the scene lights through the neutral room, which counts the hemisphere "sky fill" as ambient.
+    // `?ibl=hdri` loads the HDRI through a real asset ref instead (then the hemisphere is dropped, LIGHT-05).
+    .add(environments.hdri({ name: "sky ibl", intensity: 0.7, background: false, texture: (IBL_HDRI ? SKY.autumn : { type: "texture", format: "hdr", url: "/hdri/autumn_field_puresky_1k.hdr" }) as never }))
     // The sun casts cascaded shadows (`?shadow=0` turns them off). The sky dome and the glow effects opt out of casting.
-    // No hemisphere light: next to an environment the engine drops it (release finding LIGHT-05), so the HDRI is the fill.
     .add(lights.directional({ name: "sun", position: [-40, 67, 56], target: [0, 0, 0], intensity: 2.8, color: "#ffe3b1", shadow: (SUN_SHADOW ? { cascades: 2, maxDistance: 90 } : false) as never }))
+    .add(lights.hemisphere({ name: "sky fill", skyColor: "#d3ebf3", groundColor: "#80715b", intensity: 0.5 }))
     .add(lights.directional({ name: "cool rim", position: [30, 20, -40], intensity: 0.4, color: "#bcd9ff" }))
     .add(effects.fog({ name: "haze", color: "#b5c8c4", density: 0.0028 }));
   if (high) builder.add(effects.ambientOcclusion({ name: "ao" }));

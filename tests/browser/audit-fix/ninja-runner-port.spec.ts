@@ -73,6 +73,8 @@ async function engine(page: Page) {
       return {
         renderPath: dg?.renderPath?.path ?? null, bloomFusion: dg?.renderPath?.bloomFusion ?? null, droppedFeatures: dg?.renderPath?.droppedFeatures ?? dg?.droppedFeatures ?? null,
         drawCalls: dg?.drawCalls ?? null, shadows: dg?.shadows ? JSON.stringify(dg.shadows).slice(0, 400) : null,
+        warnings: Array.isArray(dg?.warnings) ? dg.warnings.map((w: unknown) => String(typeof w === "object" && w && "message" in w ? (w as { message: string }).message : w).slice(0, 160)).slice(0, 8) : null,
+        environment: dg?.environment ? JSON.stringify(dg.environment).slice(0, 300) : dg?.lighting ? JSON.stringify(dg.lighting).slice(0, 300) : null,
         phase: snap?.phase ?? null, distance: snap?.distance ?? null, form: snap?.form ?? null, kills: snap?.kills ?? null
       };
     } catch (e) { return { err: String(e).slice(0, 200) }; }
@@ -176,7 +178,8 @@ test.describe("g20 ninja-runner-port", () => {
   // `quality=low` drops only the AO effect at DPR 1), and the sun shadow with each cascade fit (S-01).
   for (const [name, variants] of [
     ["g20-variants-render", ["", "&aura3d-render=production", "&quality=low"]],
-    ["g20-variants-shadow", ["&shadow=0", "&shadowfit=legacy", "&shadowfit=current"]]
+    ["g20-variants-shadow", ["&shadow=0", "&shadowfit=legacy", "&shadowfit=current"]],
+    ["g20-variants-ibl", ["", "&ibl=hdri"]]
   ] as const) {
     test(name, async ({ browser }) => {
       const errors: string[] = [];
