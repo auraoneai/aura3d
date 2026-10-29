@@ -2,12 +2,16 @@
  * Wonder World J11 (PRD 04; PRD 06 QA-A01, QA-A03, QA-A08, QA-A09, QA-E10, gate G4; PRD 03 section 4): nothing is
  * audible before a grown-up's tap, the "Tap to start" gesture unlocks audio (or the app says audio is unavailable and
  * runs on captions), and every way of stopping play stops speech: the pause control, the QA pause hook, the page being
- * hidden (with no automatic resume when it is shown again) and "All done", which ends on the offline card. A rapid
- * double skip (the app's skipBeat() extra, the grown-up's manual next) moves the story on. Mute goes through the real
- * grown-up path (corner button, 2 s hold on the gate, the panel's Sound switch): play pauses while the panel is open,
- * the story carries on after it closes, and no recorded voice line starts while sound is off. Throughout, a real-time
- * monitor checks that `speaking` never names more than one line, and a Web Audio probe (installed before the app
- * loads; it changes no behaviour) checks that two recorded voice lines never sound at once.
+ * hidden (with no automatic resume when it is shown again) and "All done", which ends on the offline card. "Replay
+ * word" (gap 01:124), pressed once early in a line, starts that line again: its key shows up a second time in
+ * `state().spoken` and its recorded clip starts again. A rapid double skip (skipBeat(), the grown-up's manual next)
+ * moves the story on. Mute goes through the real grown-up path (corner button, 2 s hold on the gate, the panel's
+ * Sound switch): play pauses while the panel is open, the story carries on after it closes, and no recorded voice line
+ * starts while sound is off. Throughout, a real-time monitor checks that `speaking` never names more than one line,
+ * and a Web Audio probe (installed before the app loads; it changes no behaviour) checks that two recorded voice lines
+ * never sound at once; that check fails when no recorded line started at all. At the end (gap 06:65) every request
+ * must have stayed on the app's origin, the page must have logged nothing, and localStorage must hold only the
+ * parent-settings record with allow-listed fields (the mute step wrote it).
  * Remote runner only: apps/veer-wonder-world/tools/remote-run.sh audio-and-pausing
  *
  * This spec uses the real-time loop (no ?manual=1): ?story=sheru-big-adventure&mode=play-together, start screen first.
@@ -24,6 +28,7 @@ import {
   captureView,
   emitJson,
   emitShot,
+  expectPagePrivacy,
   gotoWonderWorld,
   maxVoiceOverlapSec,
   qaPause,
@@ -82,6 +87,49 @@ async function clockRuns(page: Page, log: PageLog, label: string): Promise<{ rea
   const from = (await qaState(page)).director?.elapsedMs ?? 0;
   const later = await waitForPhase(page, log, label, (state) => (state.director?.elapsedMs ?? 0) > from || state.screen === "offline", 30_000);
   return { from, to: later.director?.elapsedMs ?? from };
+}
+
+/** The first key at index `from` or later that was already spoken before it (a replayed line), or null. */
+function firstRepeat(spoken: readonly string[], from: number): { readonly key: string; readonly index: number } | null {
+  for (let index = Math.max(0, from); index < spoken.length; index += 1) {
+    const key = spoken[index];
+    if (key !== undefined && spoken.indexOf(key) < index) return { key, index };
+  }
+  return null;
+}
+
+/**
+ * "Replay word" (gap 01:124): pressed once, early in a line, the line starts again. The press waits for a new line to
+ * start, so the line on screen is still the one that replays; should the story move on before the press lands, the
+ * line playing then (or the last one, between lines) replays, which the repeat check accepts as well. With audio on,
+ * the replayed key's recorded clip must start again after the press.
+ */
+async function replayWord(page: Page, log: PageLog): Promise<Record<string, unknown>> {
+  const before = await qaState(page);
+  const fresh = await waitForPhase(
+    page,
+    log,
+    "a new line starts before Replay word is pressed",
+    (state) => (state.spoken.length > before.spoken.length && state.speaking !== null) || state.screen === "offline",
+    60_000
+  );
+  expect(fresh.screen, "the story is still playing when Replay word is pressed").toBe("story");
+  const from = fresh.spoken.length;
+  const voicesAtPress = (await readVoiceProbe(page)).voices.length;
+  await page.locator(SELECTORS.replay).click({ timeout: UI_TIMEOUT_MS });
+  const after = await waitForPhase(page, log, "Replay word starts a line again", (state) => firstRepeat(state.spoken, from) !== null || state.screen === "offline", 15_000);
+  const replayed = firstRepeat(after.spoken, from);
+  expect(replayed, `Replay word starts a spoken line again (lines started after the press: ${after.spoken.slice(from).join(", ")})`).not.toBeNull();
+  let clipRestarted: boolean | null = null;
+  if (replayed && after.audio.unlocked) {
+    const probe = await waitFor(page, log, `the clip of ${replayed.key} starts again`, 10_000, async () => {
+      const report = await readVoiceProbe(page);
+      return report.voices.slice(voicesAtPress).some((voice) => voice.key === replayed.key) ? report : null;
+    }).catch(() => null);
+    clipRestarted = probe !== null;
+    expect(clipRestarted, `the recorded clip of ${replayed.key} starts again after Replay word`).toBe(true);
+  }
+  return { lineAtPress: fresh.speaking, spokenAtPress: from, replayed, spokenAfter: after.spoken.slice(from), audioUnlocked: after.audio.unlocked, clipRestarted };
 }
 
 /**
@@ -177,6 +225,9 @@ async function scenario(page: Page, server: ExampleDevServer, log: PageLog, step
   steps["resumeControl"] = { director: resumed.director, running };
   expect(running.to, "resume: the story clock moves again").toBeGreaterThan(running.from);
 
+  // 4b. "Replay word", pressed once: the line starts again.
+  steps["replay"] = await replayWord(page, log);
+
   // 5. The page is hidden (tab switch): play pauses; shown again it stays paused until a grown-up resumes.
   await setPageHidden(page, true);
   const hidden = await waitForPhase(page, log, "hiding the page pauses the director", isPaused);
@@ -243,11 +294,14 @@ async function scenario(page: Page, server: ExampleDevServer, log: PageLog, step
   expect(monitor.malformed, "speaking never names two lines at once").toEqual([]);
   expect(spokenKeys.every((key) => key.startsWith(`${E17.code}.`)), `every spoken line belongs to E17 (${spokenKeys.join(", ")})`).toBe(true);
   expect(monitor.maxTargets, "never more than two tap targets").toBeLessThanOrEqual(2);
-  if (audio.audio.unlocked && voices.starts === 0) {
-    test.info().annotations.push({ type: "note", description: "Audio unlocked but the voice probe saw no recorded line start (clips missing, still loading, or fetched differently); overlap unmeasured." });
-  }
+  // An overlap of zero proves nothing when no recorded line ever started (clips missing, never decoded, or fetched in
+  // a way the probe cannot see), so a run with no voice start fails here.
+  expect(voices.starts, `recorded voice lines started (audio ${JSON.stringify(audio.audio)}; fetched ${voices.fetched}, decoded ${voices.decoded})`).toBeGreaterThan(0);
   expect(overlap.seconds, `two recorded voice lines overlapped (${overlap.pair.join(" + ")})`).toBeLessThanOrEqual(MAX_VOICE_OVERLAP_SEC);
   expect(voices.activeNow, "no voice line sounds after All done").toBe(0);
+
+  // 11. Network, storage and logs (gap 06:65): same-origin requests only, nothing logged, only the settings record.
+  steps["privacy"] = await expectPagePrivacy(page, log, "audio-and-pausing");
 
   expect(afterDone.micRequested, "no microphone").toBe(false);
   expect(afterDone.errors, "state().errors").toEqual([]);
@@ -269,7 +323,7 @@ test.describe("Wonder World J11 audio and pausing", () => {
   test("start gesture unlocks audio; pause, hide, skip and All done stop speech; one voice at a time", async ({ page }) => {
     await page.addInitScript(voiceProbeInitScript);
     await page.setViewportSize({ width: 1024, height: 768 });
-    const log = attachPageLog(page);
+    const log = attachPageLog(page, server.origin);
     const steps: Record<string, unknown> = {};
     let passed = false;
     try {

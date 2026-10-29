@@ -1,16 +1,20 @@
 /**
- * Wonder World J10 (PRD 04; PRD 06 QA-A07, QA-A08, QA-E05; PRD 03 section 6): in portrait and landscape tablet and a
- * portrait phone, the golden episode's tap waits accept a real tap on the ball and nothing else.
+ * Wonder World J10 (PRD 04; PRD 06 QA-A07, QA-A08, QA-E03, QA-E05; PRD 03 section 6): in portrait and landscape tablet
+ * and a portrait phone, the golden episode's tap waits accept a real tap on the ball and nothing else, and the
+ * grown-up's "Your child had a turn" control answers a wait the way a tap does.
  * Remote runner only: apps/veer-wonder-world/tools/remote-run.sh touch-and-layout
  *
  * Per viewport (a touch-capable context, ?autostart=1&story=sheru-big-adventure&manual=1&mode=play-together):
  * - outside a wait, tap("ball") is refused and a real tap does nothing;
  * - at the "invite" wait: targetRects() names the ball with a large hit area, the topmost element at its centre is the
  *   canvas, the grown-up corner controls are at least 44 x 44 CSS px, inside the viewport and cover under a quarter of
- *   the target, "All done" is visible, the page does not scroll, a stray tap far from the ball changes nothing, and a
- *   page.mouse click at the target centre makes the director leave the wait by tap (taps + 1, targets cleared);
- * - at the "repeat" wait the same checks, with page.touchscreen taps.
- * Records: WWJSON touch-<viewport>, WWSHOT touch-<viewport>-invite.
+ *   the target, "All done" and the enabled "had a turn" confirm are visible, the page does not scroll, a stray tap far
+ *   from the ball changes nothing, and a page.mouse click at the target centre makes the director leave the wait by
+ *   tap (taps + 1, targets cleared);
+ * - at the "repeat" wait the same layout checks, then page.touchscreen taps; except in tablet-landscape, where one
+ *   click on the grown-up confirm control ([data-control="confirm"], gap 06:36, QA-E03) ends the wait instead: the
+ *   beat's response plays, targets clear, the confirm turns disabled, and the tap count stays (a confirm is no tap).
+ * Records: WWJSON touch-<viewport>, touch-<viewport>-invite, touch-<viewport>-repeat; WWSHOT touch-<viewport>-invite.
  */
 import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
@@ -50,10 +54,11 @@ import {
   type WonderTargetRect
 } from "./wonder-world-lib";
 
+/** How each viewport answers the "repeat" wait: a touch tap on the ball, or the grown-up's confirm control. */
 const VIEWPORTS = [
-  { label: "tablet-portrait", width: 768, height: 1024 },
-  { label: "tablet-landscape", width: 1024, height: 768 },
-  { label: "phone-portrait", width: 390, height: 844 }
+  { label: "tablet-portrait", width: 768, height: 1024, repeatBy: "touch" },
+  { label: "tablet-landscape", width: 1024, height: 768, repeatBy: "confirm" },
+  { label: "phone-portrait", width: 390, height: 844, repeatBy: "touch" }
 ] as const;
 
 type Viewport = (typeof VIEWPORTS)[number];
@@ -214,6 +219,37 @@ async function tapTheBall(page: Page, log: PageLog, viewport: Viewport, layout: 
   return { input, beat: layout.beat, stray, strayIgnored, tap, before, after: after.director, targetsAfter: after.targets };
 }
 
+interface ConfirmResult {
+  readonly input: "confirm";
+  readonly beat: string;
+  readonly before: WonderQaState["director"];
+  readonly after: WonderQaState["director"];
+  readonly targetsAfter: readonly string[];
+}
+
+/**
+ * One click on the grown-up's "Your child had a turn" (gap 06:36, QA-E03; PRD 01 section 3.2): the wait ends as for a
+ * tap on the ball (the beat's response plays and the targets clear), but the director counts no tap, and the control
+ * turns disabled once nothing waits.
+ */
+async function confirmTheTurn(page: Page, log: PageLog, viewport: Viewport, layout: WaitLayout): Promise<ConfirmResult> {
+  const where = `${viewport.label} ${layout.beat} (grown-up confirm)`;
+  const before = layout.state.director;
+  if (!before) throw new Error(`${where}: no director`);
+  await page.locator(SELECTORS.confirm).click({ timeout: 30_000 });
+  const after = await waitFor(page, log, `${where}: the director leaves the wait by the grown-up's confirm`, 15_000, async () => {
+    const state = await qaState(page);
+    return state.director && state.director.phase !== "waiting" ? state : null;
+  });
+  expect(after.director?.beatId, `${where}: the same beat answers`).toBe(layout.beat);
+  expect(after.director?.phase, `${where}: the beat's response plays`).toBe("responding");
+  expect(after.director?.taps, `${where}: a grown-up confirm is not a counted tap`).toBe(before.taps);
+  expect(after.targets, `${where}: targets clear once the wait ends`).toEqual([]);
+  const confirmAfter = (await controlBoxes(page)).find((control) => control.control === "confirm");
+  expect(confirmAfter?.disabled, `${where}: the confirm control is disabled once the wait ends`).toBe(true);
+  return { input: "confirm", beat: layout.beat, before, after: after.director, targetsAfter: after.targets };
+}
+
 test.describe("Wonder World J10 touch and layout", () => {
   test.setTimeout(TEST_TIMEOUT_MS);
   let server: ExampleDevServer;
@@ -250,17 +286,17 @@ test.describe("Wonder World J10 touch and layout", () => {
         expectLayout(invite, viewport);
         const mouse = await tapTheBall(page, log, viewport, invite, "mouse");
 
-        // The repeat wait, by touch.
+        // The repeat wait, by touch (or by the grown-up's confirm control in tablet-landscape).
         await reachWait(page, E17.repeatBeat);
         const repeat = await layoutAtWait(page, E17.repeatBeat);
         emitJson(`touch-${viewport.label}-repeat`, layoutRecord(repeat));
         expectLayout(repeat, viewport);
-        const touch = await tapTheBall(page, log, viewport, repeat, "touch");
+        const second = viewport.repeatBy === "confirm" ? await confirmTheTurn(page, log, viewport, repeat) : await tapTheBall(page, log, viewport, repeat, "touch");
 
         const final = await qaState(page);
         emitJson(`touch-${viewport.label}`, {
           ...(await runContext(page, `touch-${viewport.label}`)),
-          taps: [mouse, touch],
+          taps: [mouse, second],
           consoleErrors: log.consoleErrors,
           pageErrors: log.pageErrors,
           appErrors: final.errors

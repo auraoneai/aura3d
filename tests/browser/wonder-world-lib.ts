@@ -3,17 +3,32 @@
  * docs/prds/veer-wonder-world/04-implementation-backlog-by-filename.md section J).
  *
  * REMOTE RUNNER ONLY. These specs start headless Chromium with software WebGL2 (SwiftShader); never run them on the Mac.
- * From the repo root (each line is one `tools/remote-acr/run.sh` run with EXTRA_DIRS="apps/veer-wonder-world"):
- *   apps/veer-wonder-world/tools/remote-run.sh first-frame touch-and-layout audio-and-pausing low-motion
- *   apps/veer-wonder-world/tools/remote-run.sh playback-episodes playback-activities
- *   apps/veer-wonder-world/tools/remote-run.sh no-speech-required
- * The ACR task step stops at 60 minutes, so the suites are split across runs instead of one SPECS glob.
+ * From the repo root (each line is one `tools/remote-acr/run.sh` run with EXTRA_DIRS="apps/veer-wonder-world"; the
+ * minutes come from the 2026-10-29 runs, "est." where no run has measured the file yet):
+ *   apps/veer-wonder-world/tools/remote-run.sh first-frame build                     (10 min)
+ *   apps/veer-wonder-world/tools/remote-run.sh touch-and-layout                      (26 min)
+ *   apps/veer-wonder-world/tools/remote-run.sh audio-and-pausing                     (est. 8 min)
+ *   apps/veer-wonder-world/tools/remote-run.sh low-motion                            (est. 40 min)
+ *   apps/veer-wonder-world/tools/remote-run.sh playback-episodes                     (E01-E10, est. 23 min)
+ *   apps/veer-wonder-world/tools/remote-run.sh playback-episodes-2                   (E11-E20, est. 22 min)
+ *   apps/veer-wonder-world/tools/remote-run.sh playback-activities                   (19 min)
+ *   apps/veer-wonder-world/tools/remote-run.sh no-speech-required                    (episodes, est. 22 min)
+ *   apps/veer-wonder-world/tools/remote-run.sh no-speech-required-2                  (activities, est. 12 min)
+ *   apps/veer-wonder-world/tools/remote-run.sh look                                  (26 min)
+ *   apps/veer-wonder-world/tools/remote-run.sh characters                            (momo, lulu, sheru, est. 25-30 min)
+ *   apps/veer-wonder-world/tools/remote-run.sh characters-2                          (gogo, lumi, peeko, est. 25-30 min)
+ *   apps/veer-wonder-world/tools/remote-run.sh stills / stills-2 / stills-3 / stills-4   (8 stories each, est. 20-30 min)
+ *   apps/veer-wonder-world/tools/remote-run.sh parent-panel consumer-smoke           (est. 20 min)
+ * The ACR task step stops at 60 minutes and one spec file runs inside one run, so no file may need more than about
+ * 35 minutes: the long suites are split across files (and runs) instead of one SPECS glob.
  *
  * How the specs reach the app: the repo dev server (./example-dev-server.ts) serves the app's index.html and bundles
  * its src/main.ts with esbuild; the app installs `installQaHooks("wonder-world", ...)` from @aura3d/engine, which the
  * published qa/hooks.d.ts names `window.__AURA_WONDER_WORLD__` (first boot error in `__AURA_WONDER_WORLD_ERROR__`).
- * The hook contract (ready, state, startStory, advance, runToEnd, tap, targetRects, pause, resume, allDone,
- * setReducedMotion, diagnostics, ...) is mirrored by `WonderHooks` below; the state shape by `WonderQaState`.
+ * The hook contract (ready, state, startStory, advance, runToEnd, tap, targetRects, pause, resume, allDone, skipBeat,
+ * setReducedMotion, diagnostics, and for the character sheets nodeRects, stageApply and setTalking) is mirrored by
+ * `WonderHooks` below; the state shape (with `spoken`, every line key started in the current story) by `WonderQaState`.
+ * The authored stories come from the app's own catalog (src/content/catalog.ts): the spoken-order check reads them.
  *
  * Evidence: ad-hoc `az acr run` cannot upload artifacts, so every spec prints what it keeps into the run log:
  *   WWSHOT <name> <index> <total> <base64 chunk> .   a screenshot, chunked (the trailing " ." keeps a JSON-escaped
@@ -22,17 +37,22 @@
  * `node apps/veer-wonder-world/tools/extract-remote-evidence.mjs <acr-run.log> <out-dir>` turns them back into files.
  * The same files are also written to tests/reports/wonder-world/ (gitignored) on the runner.
  *
- * Privacy (PRD 01, MASTER-PROMPT section 6): nothing here reads, records or prints child data. Every printed record
- * (console text included) is stripped of the dev-server origin and the app directory name.
+ * Privacy (PRD 01, MASTER-PROMPT section 6; PRD 06 gap 06:65): nothing here reads, records or prints child data. Every
+ * printed record (console text included) is stripped of the dev-server origin, the app directory name and the name it
+ * carries (see `redact`). `attachPageLog` records every request and every console message, so the story suites and
+ * audio-and-pausing can prove that every request stays on the app's own origin, that the page logs nothing and (with
+ * `readStorage`) that the device keeps only the parent-settings record.
  */
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { inflateSync } from "node:zlib";
 import { expect, test, type Page } from "@playwright/test";
-import type { DirectorSnapshot, PlayMode } from "../../apps/veer-wonder-world/src/types";
+import { storyById } from "../../apps/veer-wonder-world/src/content/catalog";
+import type { BeatSpec, DirectorSnapshot, PlayMode, StageAction, StorySpec } from "../../apps/veer-wonder-world/src/types";
+import { PARENT_SETTINGS_FIELDS, SETTINGS_STORAGE_KEY } from "../../apps/veer-wonder-world/src/ui/settings-store";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-export type { DirectorSnapshot, PlayMode };
+export type { DirectorSnapshot, PlayMode, StageAction };
 
 // ---------------------------------------------------------------- constants
 
@@ -77,13 +97,20 @@ export const SELECTORS = {
   allDone: '[data-ui="controls"] [data-control="all-done"]',
   /** The grown-up's "Your child had a turn" confirm: enabled only while a beat waits for a turn. */
   confirm: '[data-ui="controls"] [data-control="confirm"]',
+  /** "Replay word": restarts the line being spoken (or the last one); disabled until a line has started. */
+  replay: '[data-ui="controls"] [data-control="replay"]',
   /** The grown-up corner button: the press-and-hold gate (src/ui/parent-gate.ts), then the parent panel (parent-panel.ts). */
   parent: '[data-ui="controls"] [data-control="parent"]',
+  menu: '[data-ui="menu"]',
+  /** The same grown-up button on the story menu (src/ui/episode-menu.ts). */
+  menuParent: '[data-ui="menu"] [data-control="parent"]',
   gateHold: '[data-ui="parent-gate"] [data-action="hold"]',
   parentPanel: '[data-ui="parent-panel"]',
   /** The panel's Sound switch input (visually hidden; its label row is what a grown-up taps). */
   soundSwitch: 'input[data-setting="sound"]',
   panelClose: '[data-ui="parent-panel"] [data-action="close"]',
+  /** "Clear settings on this device": back to the defaults, stored record removed. */
+  panelClear: '[data-ui="parent-panel"] [data-action="clear"]',
   offline: '[data-ui="offline"]',
   captions: '[data-ui="captions"]',
   loading: '[data-ui="loading"]',
@@ -103,6 +130,10 @@ export interface WonderQaState {
   readonly director: DirectorSnapshot | null;
   readonly targets: readonly string[];
   readonly speaking: string | null;
+  /** Speaker of the line being spoken. */
+  readonly speaker: string | null;
+  /** Key of every line started in the current (or just ended) story, in order; a replayed line appears again. */
+  readonly spoken: readonly string[];
   readonly audio: { readonly unlocked: boolean; readonly available: boolean };
   readonly settings: { readonly mode: string; readonly reducedMotion: boolean; readonly captions: boolean; readonly music: boolean; readonly sound: boolean };
   readonly stage: { readonly drawCalls: number; readonly nodes: number; readonly modelsEnabled: boolean };
@@ -126,13 +157,19 @@ export interface WonderTargetRect {
   readonly h: number;
 }
 
+/** `nodeRects(ids)`: the drawn bounds of shown scene nodes, in viewport CSS px (same shape as a target rect). */
+export type WonderNodeRect = WonderTargetRect;
+
 export interface WonderDiagnostics {
   readonly drawCalls: number;
   readonly nodes: number;
   readonly renderPath?: string;
+  /** The stage's own warnings (src/scenes/stage.ts: unknown node ids, failed actions, warm-up trouble), capped at 40. */
+  readonly warnings?: readonly string[];
   readonly [extra: string]: unknown;
 }
 
+/** The Wonder World QA hooks (src/qa/install-hooks.ts `WonderQaExtras` plus the standard ones the specs use). */
 export interface WonderHooks {
   ready(): boolean;
   state(): WonderQaState;
@@ -146,16 +183,23 @@ export interface WonderHooks {
   pause(): unknown;
   resume(): unknown;
   allDone(): unknown;
+  /** The grown-up's manual next: ends the current beat. */
+  skipBeat(): unknown;
   setReducedMotion(on: boolean): unknown;
   targetRects(): readonly WonderTargetRect[];
+  /** Drawn bounds of the given scene nodes (shown ones only) in viewport CSS px: the character-sheet crops. */
+  nodeRects(ids: readonly string[]): readonly WonderNodeRect[];
+  /** Applies StageAction objects (src/types.ts) to the running story's stage at once; no story event, no time. */
+  stageApply(actions: readonly StageAction[]): unknown;
+  /** Starts (actor id) or stops (null) a talking pulse without a line. */
+  setTalking(actor: string | null): unknown;
   diagnostics(): WonderDiagnostics | null;
-  /** The grown-up's manual next (src/qa/install-hooks.ts extra; not part of the frozen QA contract). */
-  skipBeat?(): unknown;
 }
 
 export const REQUIRED_HOOKS: readonly (keyof WonderHooks)[] = [
   "ready", "state", "stepFrames", "reset", "startStory", "advance", "runToEnd", "tap", "parentConfirm",
-  "pause", "resume", "allDone", "setReducedMotion", "targetRects", "diagnostics"
+  "pause", "resume", "allDone", "skipBeat", "setReducedMotion", "targetRects", "nodeRects", "stageApply", "setTalking",
+  "diagnostics"
 ];
 
 type HookHost = Record<string, WonderHooks | undefined>;
@@ -227,6 +271,45 @@ export const E17 = {
   repeatBeat: "repeat"
 } as const;
 
+/** The six characters and the story whose cast each one is in (src/content), for the character sheets (PRD 02 section 2). */
+export const CHARACTER_STORIES = [
+  { character: "momo", code: "e01", story: "momo-magic-mouth" },
+  { character: "lulu", code: "e06", story: "lulu-dino-dance" },
+  { character: "sheru", code: "e17", story: "sheru-big-adventure" },
+  { character: "gogo", code: "g02", story: "gogo-train" },
+  { character: "lumi", code: "e03", story: "alphabet-zoo" },
+  { character: "peeko", code: "e02", story: "peekaboo-palace" }
+] as const;
+
+export type CharacterStory = (typeof CHARACTER_STORIES)[number];
+
+/** The authored story (src/content via the app's catalog), or a named error. */
+export function authoredStory(id: string): StorySpec {
+  const story = storyById(id);
+  if (!story) throw new Error(`story "${id}" is not in src/content/catalog.ts`);
+  return story;
+}
+
+/** The beats of one pass in play order: an episode's beats, an activity's intro, one round and outro. */
+export function passBeats(story: StorySpec): readonly { readonly section: "beats" | "intro" | "round" | "outro"; readonly beat: BeatSpec }[] {
+  if (story.kind === "episode") return story.beats.map((beat) => ({ section: "beats" as const, beat }));
+  return [
+    ...story.intro.map((beat) => ({ section: "intro" as const, beat })),
+    ...story.round.map((beat) => ({ section: "round" as const, beat })),
+    ...story.outro.map((beat) => ({ section: "outro" as const, beat }))
+  ];
+}
+
+/** True when the beat waits for a turn (so its response always plays: tap, grown-up confirm or timeout). */
+export function beatWaitsForTurn(beat: BeatSpec): boolean {
+  return beat.input !== undefined && beat.input.type !== "none";
+}
+
+/** The line keys a visit to `beat` speaks, in order: its lines, then (when it waits) its response lines. */
+export function beatLineKeys(beat: BeatSpec): string[] {
+  return [...beat.lines.map((line) => line.key), ...(beatWaitsForTurn(beat) ? (beat.response?.lines ?? []).map((line) => line.key) : [])];
+}
+
 /** Story slugs on disk (src/content/<kind>/<slug>.ts), to prove the canonical list above is the shipped one. */
 export function storySlugsOnDisk(kind: "episodes" | "activities"): string[] {
   return readdirSync(resolve(APP_DIR, "src", "content", kind))
@@ -276,9 +359,29 @@ export function sleep(ms: number): Promise<void> {
   return new Promise((done) => setTimeout(done, ms));
 }
 
-/** Strips the dev-server origin and the app directory name from text that may be printed. */
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** The app's working folder (`<name>-wonder-world`) and the name it carries; the name is never written in this file. */
+const APP_FOLDER = APP_DIR.slice(APP_DIR.lastIndexOf("/") + 1);
+const WORKING_SUFFIX = "-wonder-world";
+const FOLDER_NAME = APP_FOLDER.endsWith(WORKING_SUFFIX) ? APP_FOLDER.slice(0, -WORKING_SUFFIX.length) : "";
+const APP_FOLDER_PATTERN = new RegExp(`(?:apps/)?${escapeRegExp(APP_FOLDER)}`, "gi");
+const FOLDER_NAME_PATTERN = FOLDER_NAME ? new RegExp(`(?<![a-z0-9])${escapeRegExp(FOLDER_NAME)}(?![a-z0-9])`, "gi") : null;
+
+/**
+ * Strips what printed evidence must not carry (PRD 06 gap 03:177): the dev-server origin, the app directory
+ * (`/apps/<folder>/` becomes `/<app>/`, any other mention of the folder `<app>`) and the bare name the folder carries
+ * (`<name>`), wherever they appear: URLs, file paths, tool output.
+ */
 export function redact(text: string): string {
-  return text.replace(/https?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?/g, "").split(`/${APP_DIR}/`).join("/<app>/");
+  const out = text
+    .replace(/https?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?/g, "")
+    .split(`/${APP_DIR}/`)
+    .join("/<app>/")
+    .replace(APP_FOLDER_PATTERN, "<app>");
+  return FOLDER_NAME_PATTERN ? out.replace(FOLDER_NAME_PATTERN, "<name>") : out;
 }
 
 function short(value: unknown, max = 1_500): string {
@@ -351,13 +454,37 @@ export function emitShot(name: string, bytes: Buffer, extension: "jpg" | "png"):
   }
 }
 
-// ---------------------------------------------------------------- page log (console errors, page errors, failed loads)
+// ---------------------------------------------------------------- page log (requests, console, page errors, failed loads)
+
+/** One request the page made. */
+export interface RequestEntry {
+  readonly method: string;
+  /** Playwright's resource type: document, script, fetch, image, media, font, ... */
+  readonly type: string;
+  /** Redacted: the app origin and directory are stripped, a foreign URL stays whole. */
+  readonly url: string;
+  /** "same-origin" (the app's own origin), "local" (data: and blob: URLs) or the foreign origin itself. */
+  readonly origin: string;
+}
+
+/** One console message: a console.* call from page script (`api`), or an entry the browser logged itself. */
+export interface ConsoleEntry {
+  readonly type: string;
+  readonly text: string;
+  /**
+   * True for a console.* call from page script (the app or the engine it bundles): Playwright hands those over with
+   * their arguments. Entries Chromium logs on its own (failed loads, interventions, GPU driver notes) carry none.
+   */
+  readonly api: boolean;
+}
 
 export interface LogMark {
   readonly console: number;
   readonly page: number;
   readonly responses: number;
   readonly failed: number;
+  readonly requests: number;
+  readonly logs: number;
 }
 
 export interface LogSlice {
@@ -365,6 +492,8 @@ export interface LogSlice {
   readonly pageErrors: readonly string[];
   readonly badResponses: readonly string[];
   readonly failedRequests: readonly string[];
+  readonly requests: readonly RequestEntry[];
+  readonly consoleLogs: readonly ConsoleEntry[];
 }
 
 export interface PageLog extends LogSlice {
@@ -372,25 +501,63 @@ export interface PageLog extends LogSlice {
   readonly pageErrors: string[];
   readonly badResponses: string[];
   readonly failedRequests: string[];
+  readonly requests: RequestEntry[];
+  readonly consoleLogs: ConsoleEntry[];
   mark(): LogMark;
   since(mark: LogMark): LogSlice;
 }
 
-/** Attach before navigating. Console messages of type "error" and uncaught page errors are the "console errors". */
-export function attachPageLog(page: Page): PageLog {
+/** The start of every log (for `since`). */
+export const LOG_START: LogMark = { console: 0, page: 0, responses: 0, failed: 0, requests: 0, logs: 0 };
+
+/**
+ * Attach before navigating. Console messages of type "error" and uncaught page errors are the "console errors"; every
+ * request and every console message is recorded as well. `appOrigin` (the dev server's) is what "same-origin" means;
+ * without it the origin of the first main-frame document request is used.
+ */
+export function attachPageLog(page: Page, appOrigin?: string): PageLog {
   const consoleErrors: string[] = [];
   const pageErrors: string[] = [];
   const badResponses: string[] = [];
   const failedRequests: string[] = [];
+  const requests: RequestEntry[] = [];
+  const consoleLogs: ConsoleEntry[] = [];
+  let origin = appOrigin ?? null;
   page.on("console", (message) => {
-    if (message.type() !== "error") return;
     const location = message.location();
     const where = location.url ? ` @ ${location.url}:${location.lineNumber}` : "";
-    consoleErrors.push(redact(`${message.text()}${where}`).slice(0, 600));
+    const text = redact(`${message.text()}${where}`).slice(0, 600);
+    consoleLogs.push({ type: message.type(), text, api: message.args().length > 0 });
+    if (message.type() === "error") consoleErrors.push(text);
   });
   page.on("pageerror", (error) => {
     const stack = (error.stack ?? "").split("\n").slice(0, 6).join("\n");
     pageErrors.push(redact(`${error.message}\n${stack}`).slice(0, 1_500));
+  });
+  page.on("request", (request) => {
+    const raw = request.url();
+    let kind: string;
+    if (/^(?:data|blob):/i.test(raw)) {
+      kind = "local";
+    } else {
+      let requestOrigin = "(unparsable)";
+      try {
+        requestOrigin = new URL(raw).origin;
+      } catch {
+        // kept as "(unparsable)", which is not same-origin
+      }
+      if (origin === null && request.isNavigationRequest()) {
+        let mainFrame = false;
+        try {
+          mainFrame = request.frame() === page.mainFrame();
+        } catch {
+          // a service-worker request has no frame
+        }
+        if (mainFrame) origin = requestOrigin;
+      }
+      kind = requestOrigin === origin ? "same-origin" : requestOrigin;
+    }
+    requests.push({ method: request.method(), type: request.resourceType(), url: redact(raw).slice(0, 300), origin: kind });
   });
   page.on("response", (response) => {
     if (response.status() >= 400) badResponses.push(redact(`${response.status()} ${response.url()}`).slice(0, 300));
@@ -403,14 +570,114 @@ export function attachPageLog(page: Page): PageLog {
     pageErrors,
     badResponses,
     failedRequests,
-    mark: () => ({ console: consoleErrors.length, page: pageErrors.length, responses: badResponses.length, failed: failedRequests.length }),
+    requests,
+    consoleLogs,
+    mark: () => ({
+      console: consoleErrors.length,
+      page: pageErrors.length,
+      responses: badResponses.length,
+      failed: failedRequests.length,
+      requests: requests.length,
+      logs: consoleLogs.length
+    }),
     since: (mark) => ({
       consoleErrors: consoleErrors.slice(mark.console),
       pageErrors: pageErrors.slice(mark.page),
       badResponses: badResponses.slice(mark.responses),
-      failedRequests: failedRequests.slice(mark.failed)
+      failedRequests: failedRequests.slice(mark.failed),
+      requests: requests.slice(mark.requests),
+      consoleLogs: consoleLogs.slice(mark.logs)
     })
   };
+}
+
+/** Requests that left the app's own origin (data: and blob: URLs are local, not network). */
+export function foreignRequests(requests: readonly RequestEntry[]): RequestEntry[] {
+  return requests.filter((request) => request.origin !== "same-origin" && request.origin !== "local");
+}
+
+/** Console messages the page's own script wrote (console.* calls): the app must log nothing (PRD 06 gap 06:65). */
+export function appConsoleLogs(logs: readonly ConsoleEntry[]): ConsoleEntry[] {
+  return logs.filter((entry) => entry.api);
+}
+
+/** A compact, printable request record: the count, the count per resource type and every request in order. */
+export function requestRecord(requests: readonly RequestEntry[], cap = 1_500): Record<string, unknown> {
+  const byType: Record<string, number> = {};
+  for (const request of requests) byType[request.type] = (byType[request.type] ?? 0) + 1;
+  return {
+    count: requests.length,
+    byType,
+    foreign: foreignRequests(requests),
+    all: requests.slice(0, cap).map((request) => `${request.method} ${request.type} ${request.origin === "same-origin" ? "" : `[${request.origin}] `}${request.url}`),
+    truncated: requests.length > cap
+  };
+}
+
+// ---------------------------------------------------------------- device storage (PRD 01 section 8; PRD 06 gap 06:65)
+
+export interface StorageReport {
+  readonly localKeys: readonly string[];
+  /** Fields of the stored parent-settings record, or null when there is none. */
+  readonly settingsFields: readonly string[] | null;
+  /** The stored record, parsed (null when there is none or it is not JSON). */
+  readonly settings: Readonly<Record<string, unknown>> | null;
+  readonly settingsUnparsable: boolean;
+  readonly sessionKeys: readonly string[];
+  readonly hasCookies: boolean;
+}
+
+/** What the app left on the device: localStorage and sessionStorage keys, the settings record and whether cookies exist. */
+export async function readStorage(page: Page): Promise<StorageReport> {
+  const raw = await page.evaluate((key) => {
+    const keysOf = (store: Storage): string[] => {
+      const out: string[] = [];
+      for (let index = 0; index < store.length; index += 1) {
+        const name = store.key(index);
+        if (name !== null) out.push(name);
+      }
+      return out.sort();
+    };
+    return {
+      localKeys: keysOf(window.localStorage),
+      record: window.localStorage.getItem(key),
+      sessionKeys: keysOf(window.sessionStorage),
+      hasCookies: document.cookie.length > 0
+    };
+  }, SETTINGS_STORAGE_KEY);
+  let settings: Record<string, unknown> | null = null;
+  let settingsUnparsable = false;
+  if (raw.record !== null) {
+    try {
+      const parsed: unknown = JSON.parse(raw.record);
+      if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) settings = { ...parsed };
+      else settingsUnparsable = true;
+    } catch {
+      settingsUnparsable = true;
+    }
+  }
+  return {
+    localKeys: raw.localKeys,
+    settingsFields: settings ? Object.keys(settings).sort() : null,
+    settings,
+    settingsUnparsable,
+    sessionKeys: raw.sessionKeys,
+    hasCookies: raw.hasCookies
+  };
+}
+
+/**
+ * What breaks the storage rule: localStorage holds only `wonder-world.parent-settings.v1`, and that record holds only
+ * the allow-listed parent-settings fields (src/ui/settings-store.ts PARENT_SETTINGS_FIELDS). No other key, no other
+ * field, no record that is not a JSON object.
+ */
+export function storageProblems(report: StorageReport): string[] {
+  const problems: string[] = [];
+  for (const key of report.localKeys) if (key !== SETTINGS_STORAGE_KEY) problems.push(`unexpected localStorage key "${redact(key).slice(0, 80)}"`);
+  if (report.settingsUnparsable) problems.push(`${SETTINGS_STORAGE_KEY} is not a JSON object`);
+  const allowed = new Set<string>(PARENT_SETTINGS_FIELDS);
+  for (const field of report.settingsFields ?? []) if (!allowed.has(field)) problems.push(`field "${redact(field).slice(0, 80)}" is not an allow-listed parent setting`);
+  return problems;
 }
 
 // ---------------------------------------------------------------- QA hook calls
@@ -427,7 +694,8 @@ export function wonderPath(query: WonderQuery = {}): string {
   return search ? `${APP_ROUTE}?${search}` : APP_ROUTE;
 }
 
-async function callHook(page: Page, method: keyof WonderHooks, args: readonly (string | number | boolean)[] = []): Promise<unknown> {
+/** Calls one hook with plain-JSON arguments (strings, numbers, booleans, null, stage actions, id lists). */
+async function callHook(page: Page, method: keyof WonderHooks, args: readonly unknown[] = []): Promise<unknown> {
   return page.evaluate(({ name, method: hook, args: hookArgs }) => {
     const hooks = (window as unknown as Record<string, Record<string, unknown> | undefined>)[name];
     if (!hooks) throw new Error(`${name} is not installed`);
@@ -477,9 +745,24 @@ export async function qaSetReducedMotion(page: Page, on: boolean): Promise<void>
   await callHook(page, "setReducedMotion", [on]);
 }
 
-/** skipBeat(): the app's manual-next extra (fails with a named error when the app does not expose it). */
+/** skipBeat(): the grown-up's manual next (fails with a named error when the app does not expose it). */
 export async function qaSkipBeat(page: Page): Promise<void> {
   await callHook(page, "skipBeat");
+}
+
+/** nodeRects(ids): drawn bounds of the shown nodes among `ids`, in viewport CSS px (hidden or unknown ids are left out). */
+export async function qaNodeRects(page: Page, ids: readonly string[]): Promise<readonly WonderNodeRect[]> {
+  return (await callHook(page, "nodeRects", [[...ids]])) as readonly WonderNodeRect[];
+}
+
+/** stageApply(actions): stage actions applied at once to the running story (no story time passes; the next advance draws). */
+export async function qaStageApply(page: Page, actions: readonly StageAction[]): Promise<void> {
+  await callHook(page, "stageApply", [[...actions]]);
+}
+
+/** setTalking(actor): the talking pulse on one actor (or none) without a line. */
+export async function qaSetTalking(page: Page, actor: string | null): Promise<void> {
+  await callHook(page, "setTalking", [actor]);
 }
 
 /** `startStory(id, mode)` with an in-page deadline, so a load that never settles fails with a named error. */
@@ -906,6 +1189,150 @@ export async function captureCanvasJpeg(page: Page, quality = 82): Promise<Buffe
   }
 }
 
+/**
+ * An integer clip box around `rect` (viewport CSS px), grown by the given shares of its width and height on each side
+ * and clipped to `bounds` (the canvas box), or null when nothing of it is inside.
+ */
+export function cropAround(
+  rect: { readonly x: number; readonly y: number; readonly w: number; readonly h: number },
+  bounds: Box,
+  grow: { readonly side: number; readonly top: number; readonly bottom: number }
+): Box | null {
+  const left = Math.max(bounds.x, Math.floor(rect.x - rect.w * grow.side));
+  const top = Math.max(bounds.y, Math.floor(rect.y - rect.h * grow.top));
+  const right = Math.min(bounds.x + bounds.width, Math.ceil(rect.x + rect.w * (1 + grow.side)));
+  const bottom = Math.min(bounds.y + bounds.height, Math.ceil(rect.y + rect.h * (1 + grow.bottom)));
+  return right - left >= 2 && bottom - top >= 2 ? { x: left, y: top, width: right - left, height: bottom - top } : null;
+}
+
+/** A canvas-only PNG of one viewport region (overlays hidden, see setCaptureMode). */
+export async function captureRegionPng(page: Page, clip: Box): Promise<Buffer> {
+  await setCaptureMode(page, true);
+  try {
+    return await page.screenshot({ type: "png", clip: { x: clip.x, y: clip.y, width: clip.width, height: clip.height } });
+  } finally {
+    await setCaptureMode(page, false);
+  }
+}
+
+/**
+ * Re-encodes a PNG as JPEG inside the page (OffscreenCanvas), so the evidence JPEG is the very frame that was measured
+ * and no second screenshot (a second software-GL frame) is needed.
+ */
+export async function pngToJpeg(page: Page, png: Buffer, quality = 0.85): Promise<Buffer> {
+  const base64 = await page.evaluate(
+    async ({ data, q }) => {
+      const bytes = Uint8Array.from(atob(data), (char) => char.charCodeAt(0));
+      const bitmap = await createImageBitmap(new Blob([bytes], { type: "image/png" }));
+      const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+      const context = canvas.getContext("2d");
+      if (!context) throw new Error("no 2D context for the JPEG re-encode");
+      context.drawImage(bitmap, 0, 0);
+      bitmap.close();
+      const blob = await canvas.convertToBlob({ type: "image/jpeg", quality: q });
+      const out = new Uint8Array(await blob.arrayBuffer());
+      let binary = "";
+      for (let index = 0; index < out.length; index += 0x8000) binary += String.fromCharCode(...out.subarray(index, index + 0x8000));
+      return btoa(binary);
+    },
+    { data: png.toString("base64"), q: quality }
+  );
+  return Buffer.from(base64, "base64");
+}
+
+export interface RegionMean {
+  readonly r: number;
+  readonly g: number;
+  readonly b: number;
+  readonly luma: number;
+  readonly pixels: number;
+}
+
+function inBox(box: Box, x: number, y: number): boolean {
+  return x >= box.x && x < box.x + box.width && y >= box.y && y < box.y + box.height;
+}
+
+/** Mean colour and luma of the pixels of `image` inside `include` and outside `exclude` (boxes in image px). */
+export function regionMean(image: DecodedImage, include: Box, exclude: Box | null = null): RegionMean {
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  let pixels = 0;
+  const x0 = Math.max(0, Math.floor(include.x));
+  const y0 = Math.max(0, Math.floor(include.y));
+  const x1 = Math.min(image.width, Math.ceil(include.x + include.width));
+  const y1 = Math.min(image.height, Math.ceil(include.y + include.height));
+  for (let y = y0; y < y1; y += 1) {
+    for (let x = x0; x < x1; x += 1) {
+      if (exclude && inBox(exclude, x, y)) continue;
+      const at = (y * image.width + x) * 4;
+      r += image.rgba[at] ?? 0;
+      g += image.rgba[at + 1] ?? 0;
+      b += image.rgba[at + 2] ?? 0;
+      pixels += 1;
+    }
+  }
+  const n = Math.max(1, pixels);
+  const mr = r / n;
+  const mg = g / n;
+  const mb = b / n;
+  return { r: round3(mr), g: round3(mg), b: round3(mb), luma: round3(0.2126 * mr + 0.7152 * mg + 0.0722 * mb), pixels };
+}
+
+export interface SilhouetteReport {
+  /** The node's box in image px (clipped to the image). */
+  readonly box: Box;
+  /** The central part of the box (most of it is the character). */
+  readonly core: RegionMean;
+  /** A band around the box, outside it: the ground and backdrop the character stands against. */
+  readonly ground: RegionMean;
+  readonly lumaDiff: number;
+  /** Distance between the two mean colours in RGB (0-441). */
+  readonly colourDistance: number;
+  /** Share of core pixels whose colour is more than 48 (RGB distance) from the ground's mean colour. */
+  readonly separatedShare: number;
+}
+
+/**
+ * Silhouette contrast of a node's box in a frame: the box's central part against a band around the box. The core is
+ * the middle half of the width and the middle 60% of the height; the band reaches half the box height beyond it.
+ */
+export function silhouetteContrast(image: DecodedImage, box: Box): SilhouetteReport {
+  const clipped: Box = {
+    x: Math.max(0, box.x),
+    y: Math.max(0, box.y),
+    width: Math.max(0, Math.min(image.width, box.x + box.width) - Math.max(0, box.x)),
+    height: Math.max(0, Math.min(image.height, box.y + box.height) - Math.max(0, box.y))
+  };
+  const core: Box = { x: clipped.x + clipped.width * 0.25, y: clipped.y + clipped.height * 0.2, width: clipped.width * 0.5, height: clipped.height * 0.6 };
+  const reach = Math.max(8, clipped.height * 0.5);
+  const band: Box = { x: clipped.x - reach, y: clipped.y - reach, width: clipped.width + 2 * reach, height: clipped.height + 2 * reach };
+  const coreMean = regionMean(image, core);
+  const groundMean = regionMean(image, band, clipped);
+  let far = 0;
+  let total = 0;
+  const x0 = Math.max(0, Math.floor(core.x));
+  const y0 = Math.max(0, Math.floor(core.y));
+  const x1 = Math.min(image.width, Math.ceil(core.x + core.width));
+  const y1 = Math.min(image.height, Math.ceil(core.y + core.height));
+  for (let y = y0; y < y1; y += 1) {
+    for (let x = x0; x < x1; x += 1) {
+      const at = (y * image.width + x) * 4;
+      const distance = Math.hypot((image.rgba[at] ?? 0) - groundMean.r, (image.rgba[at + 1] ?? 0) - groundMean.g, (image.rgba[at + 2] ?? 0) - groundMean.b);
+      if (distance > 48) far += 1;
+      total += 1;
+    }
+  }
+  return {
+    box: clipped,
+    core: coreMean,
+    ground: groundMean,
+    lumaDiff: round3(Math.abs(coreMean.luma - groundMean.luma)),
+    colourDistance: round3(Math.hypot(coreMean.r - groundMean.r, coreMean.g - groundMean.g, coreMean.b - groundMean.b)),
+    separatedShare: round3(far / Math.max(1, total))
+  };
+}
+
 /** Longer than the app's 120 s download cap (src/runtime/asset-preloader.ts), so every model download has settled by then. */
 export const DOWNLOADS_SETTLED_MS = 150_000;
 
@@ -920,7 +1347,8 @@ export async function remountIfModelsLate(
   log: PageLog,
   storyId: string,
   mode: PlayMode,
-  ids: readonly string[]
+  ids: readonly string[],
+  loadTimeoutMs: number = STORY_LOAD_TIMEOUT_MS
 ): Promise<{ readonly standIns: readonly string[]; readonly modelStatus: unknown } | null> {
   const late = (await liveNodes(page, ids)).nodes.filter((node) => !node.tags.includes("model")).map((node) => node.id);
   if (late.length === 0) return null;
@@ -930,8 +1358,8 @@ export async function remountIfModelsLate(
     const status = (await qaDiagnostics(page))?.["modelStatus"] as Readonly<Record<string, number>> | undefined;
     return status !== undefined && !((status["pending"] ?? 0) > 0);
   });
-  await qaStartStory(page, storyId, mode);
-  await waitForStoryOnStage(page, log, storyId);
+  await qaStartStory(page, storyId, mode, loadTimeoutMs);
+  await waitForStoryOnStage(page, log, storyId, loadTimeoutMs);
   return firstMount;
 }
 
@@ -1526,6 +1954,87 @@ export async function stopSpeakingMonitor(page: Page): Promise<SpeakingMonitorRe
   });
 }
 
+// ---------------------------------------------------------------- the playback recorder (PRD 05 gap 05:320)
+
+/** How a story's spoken lines (`state().spoken`) compare with its authored beats (src/content via the catalog). */
+export interface SpokenOrderReport {
+  readonly spoken: number;
+  /** Lines one pass authors: every episode beat, or an activity's intro, one round and outro (responses included). */
+  readonly authored: number;
+  /** Activity rounds the spoken lines went through (0 for an episode). */
+  readonly rounds: number;
+  /** Keys this story does not author. */
+  readonly unknown: readonly string[];
+  /** "<key> after <key>": a line spoken before one that comes earlier in the authored order. */
+  readonly outOfOrder: readonly string[];
+  /** Keys spoken twice in a row outside a new activity round. */
+  readonly repeats: readonly string[];
+  /** "<beat id>[ round n]: <key>": a line of a visited beat that was not spoken in that visit. */
+  readonly missing: readonly string[];
+  /** Beat ids with lines that no spoken key reached (every beat is visited when a zero-input run completes). */
+  readonly unvisited: readonly string[];
+  /** Rounds beyond the activity's roundLimit. */
+  readonly extraRounds: number;
+}
+
+/**
+ * Checks the spoken keys against the authored order: each key comes later in the authored pass than the one before,
+ * except that an activity may start its round again (a new round repeats the round's lines, up to roundLimit); no
+ * line is spoken twice otherwise; and a visited beat speaks every one of its lines (its response lines too when it
+ * waits for a turn, as every wait ends with a response).
+ */
+export function checkSpokenOrder(storyId: string, spoken: readonly string[]): SpokenOrderReport {
+  const story = authoredStory(storyId);
+  const units = passBeats(story).map((entry) => ({ ...entry, keys: beatLineKeys(entry.beat) }));
+  const where = new Map<string, { readonly unit: number; readonly index: number }>();
+  let authored = 0;
+  units.forEach((unit, unitIndex) => {
+    for (const key of unit.keys) {
+      where.set(key, { unit: unitIndex, index: authored });
+      authored += 1;
+    }
+  });
+  const unknown: string[] = [];
+  const outOfOrder: string[] = [];
+  const repeats: string[] = [];
+  /** Keys spoken per visit: `<unit>@<round>` (round 0 outside activity rounds). */
+  const visits = new Map<string, Set<string>>();
+  let previous: { readonly key: string; readonly unit: number; readonly index: number } | null = null;
+  let round = 0;
+  for (const key of spoken) {
+    const at = where.get(key);
+    if (!at) {
+      if (!unknown.includes(key)) unknown.push(key);
+      continue;
+    }
+    const section = units[at.unit]?.section;
+    const previousSection = previous ? units[previous.unit]?.section : undefined;
+    if (section === "round" && previousSection !== "round") round += 1;
+    if (previous && at.index <= previous.index) {
+      if (section === "round" && previousSection === "round") round += 1;
+      else if (at.index === previous.index) repeats.push(key);
+      else outOfOrder.push(`${key} after ${previous.key}`);
+    }
+    const visit = `${at.unit}@${section === "round" ? round : 0}`;
+    const keys = visits.get(visit) ?? new Set<string>();
+    keys.add(key);
+    visits.set(visit, keys);
+    previous = { key, unit: at.unit, index: at.index };
+  }
+  const missing: string[] = [];
+  for (const [visit, keys] of visits) {
+    const [unitText = "", roundText = "0"] = visit.split("@");
+    const unit = units[Number(unitText)];
+    if (!unit) continue;
+    const label = unit.section === "round" ? `${unit.beat.id} round ${roundText}` : unit.beat.id;
+    for (const key of unit.keys) if (!keys.has(key)) missing.push(`${label}: ${key}`);
+  }
+  const visitedUnits = new Set([...visits.keys()].map((visit) => visit.split("@")[0]));
+  const unvisited = units.filter((unit, index) => unit.keys.length > 0 && !visitedUnits.has(String(index))).map((unit) => unit.beat.id);
+  const roundLimit = story.kind === "activity" ? story.roundLimit : 0;
+  return { spoken: spoken.length, authored, rounds: round, unknown, outOfOrder, repeats, missing, unvisited, extraRounds: Math.max(0, round - roundLimit) };
+}
+
 // ---------------------------------------------------------------- one zero-input story run
 
 export interface StoryClockRun {
@@ -1690,6 +2199,16 @@ export interface StoryRunRecord {
   readonly consoleErrors: readonly string[];
   readonly pageErrors: readonly string[];
   readonly badResponses: readonly string[];
+  /** `state().spoken` once the run is over: every line key the story started, in order. */
+  readonly spoken: readonly string[];
+  /** The spoken keys against the authored order (null when the story did not load). */
+  readonly spokenOrder: SpokenOrderReport | null;
+  /** Stage warnings (`diagnostics().warnings`) this story added, and how many the stage holds after it. */
+  readonly stageWarnings: { readonly added: readonly string[]; readonly total: number } | null;
+  /** Requests this story made (the shard summary lists every one) and those that left the app's origin. */
+  readonly requests: { readonly count: number; readonly foreign: readonly RequestEntry[] };
+  /** console.* calls the page's own script made during this story: the app logs nothing. */
+  readonly appConsoleLogs: readonly ConsoleEntry[];
 }
 
 /** The entries `after` added to an append-only (capped, oldest dropped first) list. */
@@ -1705,11 +2224,16 @@ export function addedEntries(before: readonly string[], after: readonly string[]
   return added;
 }
 
-/** startStory, then a zero-input run to the end, then the no-autoplay check; never throws for a story-level failure. */
+/**
+ * startStory, then a zero-input run to the end, then the no-autoplay check; never throws for a story-level failure.
+ * The record carries what the playback recorder needs: the spoken keys checked against the authored order, the stage
+ * warnings the story added, its requests and any console.* call the page made meanwhile.
+ */
 export async function runStory(page: Page, log: PageLog, story: StoryEntry, mode: PlayMode, style: "sampled" | "single", withMicProbe: boolean): Promise<StoryRunRecord> {
   const mark = log.mark();
   const message = (error: unknown): string => redact(error instanceof Error ? error.message : String(error)).slice(0, 1_000);
   const errorsBefore = (await qaState(page).catch(() => null))?.errors ?? [];
+  const warningsBefore = (await qaDiagnostics(page).catch(() => null))?.warnings ?? [];
   let loadError: string | null = null;
   let runError: string | null = null;
   let started: WonderQaState | null = null;
@@ -1740,7 +2264,18 @@ export async function runStory(page: Page, log: PageLog, story: StoryEntry, mode
   const runMs = Date.now() - runStart;
   const micAfter = withMicProbe ? await readMicProbe(page).catch(() => null) : null;
   const mic = micAfter ? micDelta(micAfter, micBefore) : null;
-  const errorsAfter = (await qaState(page).catch(() => null))?.errors ?? ended?.errors ?? [];
+  const final = await qaState(page).catch(() => null);
+  const errorsAfter = final?.errors ?? ended?.errors ?? [];
+  const spoken = final?.spoken ?? ended?.spoken ?? [];
+  let spokenOrder: SpokenOrderReport | null = null;
+  if (loadError === null) {
+    try {
+      spokenOrder = checkSpokenOrder(story.id, spoken);
+    } catch (error) {
+      runError = runError ?? message(error);
+    }
+  }
+  const warningsAfter = (await qaDiagnostics(page).catch(() => null))?.warnings ?? null;
   const slice = log.since(mark);
   return {
     code: story.code,
@@ -1760,7 +2295,12 @@ export async function runStory(page: Page, log: PageLog, story: StoryEntry, mode
     newAppErrors: addedEntries(errorsBefore, errorsAfter).map((entry) => redact(entry)),
     consoleErrors: slice.consoleErrors,
     pageErrors: slice.pageErrors,
-    badResponses: slice.badResponses
+    badResponses: slice.badResponses,
+    spoken,
+    spokenOrder,
+    stageWarnings: warningsAfter ? { added: addedEntries(warningsBefore, warningsAfter).map((entry) => redact(entry)), total: warningsAfter.length } : null,
+    requests: { count: slice.requests.length, foreign: foreignRequests(slice.requests) },
+    appConsoleLogs: appConsoleLogs(slice.consoleLogs)
   };
 }
 
@@ -1802,6 +2342,45 @@ export function expectStoryRecord(record: StoryRunRecord): void {
   if (record.mic) expect.soft(micCalls(record.mic), `${label}: microphone/speech calls (${record.mic.calls.join(", ")})`).toBe(0);
   expect.soft(record.consoleErrors, `${label}: console errors`).toEqual([]);
   expect.soft(record.pageErrors, `${label}: page errors`).toEqual([]);
+  // The playback recorder: state().spoken against the authored beats (PRD 05 gap 05:320).
+  const order = record.spokenOrder;
+  if (order) {
+    expect.soft(order.spoken, `${label}: lines were spoken`).toBeGreaterThan(0);
+    expect.soft(order.unknown, `${label}: every spoken line is authored for this story`).toEqual([]);
+    expect.soft(order.outOfOrder, `${label}: the spoken lines follow the authored order`).toEqual([]);
+    expect.soft(order.repeats, `${label}: no line is spoken twice (a new activity round aside)`).toEqual([]);
+    expect.soft(order.missing, `${label}: every line of each visited beat was spoken`).toEqual([]);
+    expect.soft(order.extraRounds, `${label}: no more rounds than the activity's roundLimit`).toBe(0);
+    if (record.run?.result?.reason === "complete") {
+      expect.soft(order.unvisited, `${label}: a completed zero-input run visits every beat`).toEqual([]);
+      if (record.code.startsWith("g")) expect.soft(order.rounds, `${label}: with zero input an activity plays one round`).toBe(1);
+    }
+  }
+  if (record.stageWarnings) expect.soft(record.stageWarnings.added, `${label}: the stage's diagnostics().warnings stays empty`).toEqual([]);
+  // Network and logs (PRD 06 gap 06:65).
+  expect.soft(record.requests.foreign, `${label}: every request stays on the app's own origin`).toEqual([]);
+  expect.soft(record.appConsoleLogs, `${label}: the app logs nothing to the console`).toEqual([]);
+}
+
+/**
+ * The device and network rules for a whole page (PRD 06 gap 06:65), as soft assertions: every request stayed on the
+ * app's origin, the page's script logged nothing, and localStorage holds only the parent-settings record with only
+ * allow-listed fields. Returns the evidence record.
+ */
+export async function expectPagePrivacy(page: Page, log: PageLog, label: string): Promise<Record<string, unknown>> {
+  const storage = await readStorage(page);
+  const problems = storageProblems(storage);
+  const foreign = foreignRequests(log.requests);
+  const logged = appConsoleLogs(log.consoleLogs);
+  expect.soft(foreign, `${label}: every request stays on the app's own origin`).toEqual([]);
+  expect.soft(logged, `${label}: the app logs nothing to the console`).toEqual([]);
+  expect.soft(problems, `${label}: localStorage holds only ${SETTINGS_STORAGE_KEY} with allow-listed fields (${JSON.stringify(storage.localKeys)})`).toEqual([]);
+  return {
+    storage: { localKeys: storage.localKeys, settingsFields: storage.settingsFields, sessionKeys: storage.sessionKeys, hasCookies: storage.hasCookies, problems },
+    requests: requestRecord(log.requests),
+    consoleLogs: log.consoleLogs.slice(0, 200),
+    appConsoleLogs: logged
+  };
 }
 
 // ---------------------------------------------------------------- the story suite (playback J09, no speech J12)
@@ -1821,7 +2400,9 @@ export interface StorySuiteOptions {
 /**
  * Defines one describe block: a dev server for the file and one test per shard of stories. Each shard boots the app
  * once (`?autostart=1&manual=1`: menu, no real-time loop, audio locked) and plays its stories in order through
- * startStory + runToEnd with zero input. Story failures are soft, so one shard reports every failing story.
+ * startStory + runToEnd with zero input. Story failures are soft, so one shard reports every failing story. Per
+ * story the playback recorder checks `state().spoken` against the authored order and the stage warnings; per shard
+ * the page must keep every request on its origin, log nothing and leave only the parent-settings record on the device.
  */
 export function defineStorySuite(options: StorySuiteOptions): void {
   test.describe(options.title, () => {
@@ -1839,12 +2420,22 @@ export function defineStorySuite(options: StorySuiteOptions): void {
       test(`${range}: ${options.mode} runs finish with zero input`, async ({ page }) => {
         if (options.micProbe) await page.addInitScript(micProbeInitScript);
         await page.setViewportSize(options.viewport);
-        const log = attachPageLog(page);
+        const log = attachPageLog(page, server.origin);
         await openWonderWorld(page, server, log, { autostart: 1, manual: 1 });
-        const boot = log.since({ console: 0, page: 0, responses: 0, failed: 0 });
+        const bootSlice = log.since(LOG_START);
         const bootState = await qaState(page);
+        const bootWarnings = (await qaDiagnostics(page))?.warnings ?? [];
+        const boot = {
+          consoleErrors: bootSlice.consoleErrors,
+          pageErrors: bootSlice.pageErrors,
+          badResponses: bootSlice.badResponses,
+          failedRequests: bootSlice.failedRequests,
+          requests: bootSlice.requests.length,
+          stageWarnings: bootWarnings.map((warning) => redact(warning))
+        };
         expect.soft(boot.consoleErrors, "boot: console errors").toEqual([]);
         expect.soft(boot.pageErrors, "boot: page errors").toEqual([]);
+        expect.soft(boot.stageWarnings, "boot: the stage's diagnostics().warnings is empty").toEqual([]);
         expect.soft(bootState.errors, "boot: state().errors").toEqual([]);
         expect.soft(bootState.screen, "boot: ?autostart=1 without a story opens the menu").toBe("menu");
         expect.soft(bootState.micRequested, "boot: micRequested").toBe(false);
@@ -1870,6 +2461,15 @@ export function defineStorySuite(options: StorySuiteOptions): void {
               maxTargets: record.run?.maxTargets ?? null,
               waits: record.run?.waitSamples ?? null,
               lines: record.run?.speakingKeys ?? null,
+              spoken: record.spoken.length,
+              authored: record.spokenOrder?.authored ?? null,
+              rounds: record.spokenOrder?.rounds ?? null,
+              orderProblems: record.spokenOrder
+                ? record.spokenOrder.unknown.length + record.spokenOrder.outOfOrder.length + record.spokenOrder.repeats.length + record.spokenOrder.missing.length
+                : null,
+              stageWarnings: record.stageWarnings?.added.length ?? null,
+              requests: record.requests.count,
+              foreignRequests: record.requests.foreign.length,
               errors: record.consoleErrors.length + record.pageErrors.length + record.newAppErrors.length,
               loadError: record.loadError,
               runError: record.runError
@@ -1878,7 +2478,9 @@ export function defineStorySuite(options: StorySuiteOptions): void {
           });
         }
         const mic = options.micProbe ? await readMicProbe(page) : null;
-        emitJson(`${options.reportPrefix}-${range.toLowerCase()}-summary`, { ...context, mode: options.mode, style: options.style, stories: summary, mic, boot });
+        const privacy = await expectPagePrivacy(page, log, range);
+        const stageWarnings = ((await qaDiagnostics(page))?.warnings ?? []).map((warning) => redact(warning));
+        emitJson(`${options.reportPrefix}-${range.toLowerCase()}-summary`, { ...context, mode: options.mode, style: options.style, stories: summary, mic, boot, stageWarnings, ...privacy });
         if (mic) {
           expect(micCalls(mic), `no microphone or speech-recognition call in ${range} (${mic.calls.join(", ")})`).toBe(0);
           expect((await qaState(page)).micRequested, "micRequested stays false").toBe(false);
