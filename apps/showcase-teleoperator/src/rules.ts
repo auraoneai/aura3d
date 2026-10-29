@@ -117,7 +117,9 @@ export function cameraClearance(size: FittedSize, off: CamOffset, carViewX = 0, 
  * across the screen by the rest. Every world-anchored node, road strips included, goes through this one function.
  */
 export const VIEW_FOLLOW = 0.72;
-export const viewX = (worldX: number, playerX: number, shakeX = 0): number => worldX - playerX * VIEW_FOLLOW + shakeX;
+export const viewX = (worldX: number, playerX: number, shakeX = 0, follow = VIEW_FOLLOW): number => worldX - playerX * follow + shakeX;
+/** Portrait screens see a narrow slice of the street, so the view follows the car fully there (the car stays centred). */
+export const viewFollowFor = (aspect: number): number => (aspect < 0.8 ? 1 : VIEW_FOLLOW);
 
 // ---------------------------------------------------------------- assist levels
 

@@ -29,6 +29,7 @@ import {
   nextAssist,
   saveCareer,
   viewX,
+  viewFollowFor,
   DRIVING_CODES,
   type AutopilotLevel,
   type CameraMode,
@@ -213,7 +214,8 @@ async function bootGridDispatch(): Promise<void> {
   const sim = createSim(contacts, { level: autoplay ? "L5" : "MAN", career: loadCareer(storage) });
   sim.onCareer = (c) => saveCareer(storage, c);
   const S = sim.state;
-  let camMode: CameraMode = 0;
+  // Portrait phones start in the far chase camera so the car does not fill the screen.
+  let camMode: CameraMode = window.innerWidth < window.innerHeight * 0.8 ? 1 : 0;
   let useMph = true;
   let ready = false;
   let remounting = false;
@@ -532,7 +534,7 @@ async function bootGridDispatch(): Promise<void> {
   /** Read phase of the nameplate layout: panel rectangles, refreshed with the 10 Hz HUD tick (no reads in the write loop). */
   function readAvoidRects(): void {
     avoidRects = [];
-    for (const id of ["taxiCard", "taxiTrip", "taxiPen", "topRightCluster", "where", "taxiSum"]) {
+    for (const id of ["taxiCard", "taxiTrip", "taxiPen", "taxiHint", "topRightCluster", "where", "taxiSum", "wrongWay"]) {
       const el = $(id);
       if (!el) continue;
       const cs = getComputedStyle(el);
@@ -557,7 +559,8 @@ async function bootGridDispatch(): Promise<void> {
     shakeNow = shake;
     const size = carSizes[S.car];
     const camOff = cameraOffsets(size)[camMode];
-    const rx = (wx: number) => viewX(wx, pose.px, shake.x);
+    const follow = viewFollowFor((window.innerWidth || 1280) / Math.max(1, window.innerHeight || 720));
+    const rx = (wx: number) => viewX(wx, pose.px, shake.x, follow);
     const ry = (wy: number) => wy + camOff.y + shake.y;
     const rz = (wz: number) => wz - pose.pz + camOff.z;
     const pos = (x: number, y: number, z: number): AuraTransformSpec => ({ position: [x, y, z] });
@@ -901,6 +904,10 @@ async function bootGridDispatch(): Promise<void> {
   // ---------------------------------------------------------------- start
   initSpeedometerDial(false);
   updateModeLabels();
+  document.querySelectorAll<HTMLButtonElement>("#teleopDock button[data-cam]").forEach((btn) => {
+    btn.classList.toggle("active", Number(btn.dataset.cam) === camMode);
+    btn.setAttribute("aria-pressed", Number(btn.dataset.cam) === camMode ? "true" : "false");
+  });
   hud.update(S, true, null);
   const careerEl = $("careerLine");
   if (careerEl) careerEl.textContent = hud.career(S.career);
