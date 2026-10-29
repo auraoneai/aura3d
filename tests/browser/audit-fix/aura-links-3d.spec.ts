@@ -219,6 +219,36 @@ const cardRun = async (page: Page, name: string): Promise<void> => {
   await grab(page, name, name.endsWith("2x") ? "card-2x" : "card-1x");
 };
 
+/** RH-04 checklist: renderPath, bloom fusion, OPTION_IGNORED and contact-shadow availability from app.diagnostics(). */
+const diagRun = async (page: Page, name: string): Promise<void> => {
+  await settleFrames(page, 30_000);
+  const d = await page.evaluate(() => {
+    const app = (globalThis as any).__AURA3D_LIVE_APPS__?.all?.()[0];
+    const dg = app?.diagnostics?.() ?? null;
+    const text = JSON.stringify(dg ?? {});
+    const hits = (re: RegExp) => [...new Set(text.match(re) ?? [])].slice(0, 12);
+    const find = (o: any, key: string, path = "", out: string[] = []): string[] => {
+      if (!o || typeof o !== "object" || out.length > 12) return out;
+      for (const [k, v] of Object.entries(o)) {
+        const p = path ? `${path}.${k}` : k;
+        if (k.toLowerCase().includes(key)) out.push(`${p}=${JSON.stringify(v)?.slice(0, 300)}`);
+        if (v && typeof v === "object") find(v, key, p, out);
+      }
+      return out;
+    };
+    return {
+      renderPath: dg?.renderPath ?? null,
+      drawCalls: dg?.drawCalls ?? null,
+      errors: (dg?.errors ?? []).length,
+      optionIgnored: hits(/OPTION_IGNORED[^"]{0,160}/g),
+      unavailable: hits(/"unavailable":[^,}]{0,120}/g),
+      contact: find(dg, "contact")
+    };
+  });
+  log(`GL_STATE ${JSON.stringify({ target: name, probe: "diagnostics", ...d })}`);
+  await grab(page, name, "diag-30s");
+};
+
 const COURSE_IDS = ["mapleHollow", "cinderRim", "cloudTerrace", "neonBay", "mareCourse"] as const;
 
 const TARGETS: readonly Target[] = [
@@ -239,6 +269,8 @@ const TARGETS: readonly Target[] = [
   { name: "links-shots-title-390x844", url: `${APP}?menu=1`, viewport: PHONE, phone: true, run: titleRun, tag: "@shots" },
   { name: "links-shots-play-390x844", url: `${APP}?course=stAuroras&qa=1`, viewport: PHONE, phone: true, run: screensRun, tag: "@shots" },
   { name: "links-shots-card-1x", url: `${APP}?course=stAuroras`, viewport: { width: 720, height: 450 }, run: cardRun, tag: "@shots" },
+  { name: "links-diag-stAuroras", url: `${APP}?course=stAuroras`, viewport: DESKTOP, run: diagRun, tag: "@diag" },
+  { name: "links-diag-neonBay", url: `${APP}?course=neonBay`, viewport: DESKTOP, run: diagRun, tag: "@diag" },
   { name: "links-shots-card-2x", url: `${APP}?course=stAuroras`, viewport: { width: 720, height: 450 }, scale: 2, run: cardRun, tag: "@shots" }
 ];
 
