@@ -279,3 +279,20 @@ void main() {
   float a = (1.0 - smoothstep(0.0, 1.0, length(c))) * vFade;
   outColor = vec4(vTint * a, a);
 }`;
+
+/** Soft contact shadow under the hovering drone (HP-08): a dark radial blob, alpha-blended onto the road. */
+export const BLOB_VERTEX = /* glsl */ `
+out vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
+}`;
+
+export const BLOB_FRAGMENT = /* glsl */ `
+in vec2 vUv;
+out vec4 outColor;
+void main() {
+  float r = length(vUv * 2.0 - 1.0);
+  float a = (1.0 - smoothstep(0.2, 1.0, r)) * blobAlpha;
+  outColor = vec4(0.0, 0.0, 0.0, a);
+}`;

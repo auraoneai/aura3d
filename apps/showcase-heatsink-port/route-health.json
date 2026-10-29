@@ -3,7 +3,7 @@
   "route": "/apps/showcase-heatsink-port/",
   "classification": "prototype",
   "publicShowcase": true,
-  "generatedAt": "2026-10-23T08:56:30.375Z",
+  "generatedAt": "2026-10-29T12:00:00.000Z",
   "ok": true,
   "claimLabel": "Prototype",
   "claimStatus": "bounded",
@@ -20,8 +20,9 @@
   "sourceExample": "examples/heatsink-port/",
   "evidence": "202 recorded snapshots replay within 1e-6; the blind A/B 'same game' exit is NOT met.",
   "limits": [
-    "Simulation port only: the art is visibly different from the original (a blind model judge told them apart 48 of 48 times); Time Trial only, no AI or audio.",
-    "Procedural art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Simulation port only: the art is visibly different from the original (a blind model judge told them apart 48 of 48 times); Time Trial only (no rival AI). Sound is synthesised in code: strike and race cues plus a speed-pitched engine; M or the menu button mutes.",
+    "Meshy-generated models and procedural track art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Keyboard on desktop (rebindable); on-screen touch controls with auto-throttle on coarse-pointer devices, which also default to the low quality tier and its lighter model set.",
     "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
   ],
   "checks": [
