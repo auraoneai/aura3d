@@ -80,13 +80,16 @@ The first version of this guide was written from the code alone. The measurement
 
 ## Checklist
 
-- [ ] Confirm `apps/showcase-heatsink-port/package.json` shows `4.5.0` (it does).
-- [ ] Run `node tools/game-checks/run.mjs heatsink-port` and fix any errors.
-- [ ] Run `pnpm -C apps/showcase-heatsink-port typecheck`.
-- [ ] Run the unit tests in `tests/unit/heatsink-port/`, especially `reference-replay.test.ts` and `strike.test.ts` (simulation only, so they should be unaffected).
-- [ ] Remote runner (`tools/remote-acr/run.sh`): load `/apps/showcase-heatsink-port/?autostart=1&capture=1` and `/examples/heatsink-port/?autostart=1&capture=1` on `main` (4.3.7) and on 4.5.0, and compare the lit models (drone, pickups, barrels, pylons, scenery) for darkening and lost reflections.
-- [ ] If they are too dark or flat, add `b.add(environments.studio({ name: "fill" }))` in `world.ts` (and `environments` to the import on line 8), tune its `intensity` if needed, and recapture. Do not use `output.exposure`.
-- [ ] In the browser, check `app.diagnostics().renderPath` is `{ path: "hdr-msaa", quality: "auto", bloomFusion: "separable" }` (with a `reason` listing the effect, custom-material and transparent-material blockers) and that `diagnostics()` has no `option-ignored` entries.
-- [ ] Run `replayTo(n, 30, true)` through `__AURA_HEATSINK__` and confirm the grabbed `shot.lit` is above 0.
-- [ ] If you need the 4.3.7 pipeline exactly, add `quality: "production"` at `main.ts:502` (and keep it separate from the game's `config.quality`).
-- [ ] Re-run `tests/browser/heatsink-port.spec.ts` and the `heatsink-port` and `examples-heatsink-port` entries of `tests/browser/exposure-scenes-*.spec.ts` on the remote runner.
+Closed by audit lane G19 (2026-10-29); runs are remote software WebGL2 (`tools/remote-acr/run.sh`), evidence in `evidence/audit-fix/g19/`.
+
+- [x] Confirm `apps/showcase-heatsink-port/package.json` shows `4.5.0` (it does).
+- [x] Run `node tools/game-checks/run.mjs heatsink-port` and fix any errors: 0 errors, 0 warnings.
+- [x] Run `pnpm -C apps/showcase-heatsink-port typecheck`: clean.
+- [x] Run the unit tests in `tests/unit/heatsink-port/`: 11 files pass, including `reference-replay.test.ts` (unchanged) and `strike.test.ts` (strike outcome re-pinned for the HP-02 and HP-11 game fixes, not for 4.5.0).
+- [x] Remote runner: 4.3.7 against 4.5.0 on the replayed frames (steps 450, 1200, 2250): lit models 71.5/80.4/90.8 luma on 4.3.7, 22.5/72.9/81.0 on 4.5.0 without an environment (runs `g19-w2-437`, `g19-w2-base`). The `/examples/` route was captured; the app route mounts the same module (`apps/showcase-heatsink-port/src/main.ts`).
+- [x] They were darker, so the game authors `environments.neutral({ name: "model-fill", intensity: 1 })` (`world.ts:128`; the neutral room is the 4.3.7 implicit fill, so it was used instead of the `environments.studio` suggested above): 72.6/81.0/92.1 luma (run `g19-w2-cal`). No `output.exposure` change.
+- [x] `app.diagnostics().renderPath.path` is `hdr-msaa` with `bloomFusion: "separable"` in every G19 run (wave 2 `HP_META` records).
+- [ ] `diagnostics()` has no `option-ignored` entries: not checked; the G19 specs log only render-path, draw-call and lighting/bloom warning fields.
+- [x] `replayTo(n, 30, true)` returns a shot with `lit` above 0: 0.99 to 1.0 at steps 1200 and 2250 on 4.5.0 (runs `g19-w3-base`, `g19-w3-after2`).
+- [x] The 4.3.7 pipeline is not needed: the fused-bloom difference is under the audit's 2/255 bar (section 3), so `quality: "production"` is not set.
+- [ ] Re-run `tests/browser/heatsink-port.spec.ts` and the exposure-scenes entries: `heatsink-strike.spec.ts` passes (run `g19-w3-regress`); `heatsink-port.spec.ts` times out at its 25-minute limit after the 1170-step frame on both the base and the lane branch (runs `g19-w3-base-phaseb2`, `g19-w3-regress`), a runner speed limit. The exposure-scenes sweep belongs to lane E5 (LIGHT-02 harness).
