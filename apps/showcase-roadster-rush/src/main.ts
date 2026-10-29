@@ -3,6 +3,7 @@ import {
   createAuraApp,
   effects,
   game,
+  instances,
   lights,
   looks,
   material,
@@ -10,23 +11,44 @@ import {
   primitives,
   scene,
   type AuraAssetRef,
-  type AuraRuntimeNodeHandle,
-  type AuraSceneNode
+  type AuraRuntimeNodeHandle
 } from "@aura3d/engine";
 import { createNativeRoadster, findDrawCalls } from "./native";
 import { POWERUP_SECONDS } from "./native/constants";
-import { assets } from "../../../src/aura-assets";
+import { GANTRY_COUNT } from "./native/world";
+import { gantryBoxes } from "./render/gantry";
+import { assets } from "./assets";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { SHIELD_SIZE, shieldSpec } from "./art/shield";
 import { groundSpec } from "./art/ground";
 import { meshyVehicles } from "./meshy-vehicles";
 import { SKY_DOME_SIZE, skyLook, skySpec } from "./art/sky";
-import { installGameBeacon } from "@aura3d/engine/game";
+import { createCameraShake, createHitStop, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
 import { createRoadsterPresenter, viewOf } from "./native/presentation";
+import { InstancePool, parked } from "./render/instancePool";
+import {
+  DRAW_WINDOW,
+  NEAR_CAPACITY,
+  POOL_CAPACITY,
+  POWERUP_KINDS,
+  VEHICLE_TYPES,
+  assignGroundSlots,
+  assignPickupSlots,
+  emptyGroundSlots,
+  emptyPickupSlots,
+  nearestAhead,
+  splitNearFar,
+  trafficYawOffset,
+  type PowerupKind,
+  type VehicleType
+} from "./render/pools";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
-const publishBeacon = (evidence: object): void => {
+let beaconFrames = 0;
+/** The beacon copies the evidence object; publish every 10th frame (and on demand) instead of every frame (audit RR-E1). */
+const publishBeacon = (evidence: object, force = false): void => {
   gameBeacon ??= installGameBeacon({ route: "showcase-roadster-rush", evidenceGlobals: ["__AURA3D_GAME_EVIDENCE__"] });
+  if (!force && beaconFrames++ % 10 !== 0) return;
   gameBeacon.publishEvidence(evidence);
 };
 
@@ -34,90 +56,62 @@ installBlackFrameGuard();
 
 type Vec3 = [number, number, number];
 
-type VehicleType =
-  | "sedan"
-  | "hatch"
-  | "suv"
-  | "taxi"
-  | "van"
-  | "pickup"
-  | "boxtruck"
-  | "bus"
-  | "carrier";
-
-type PickupKind = "bolt" | "air" | "magnet" | "rocket" | "shield" | "multiplier";
-
 const HIDDEN_SCALE: Vec3 = [0.0001, 0.0001, 0.0001];
-const HIDDEN_POS: Vec3 = [0, -80, 120];
+
+const urlParams = new URLSearchParams(window.location.search);
+/** Start the run at once only for demos and captures; everyone else gets the title card (audit RR-10). */
+const AUTOSTART = ["autoplay", "demo", "capture"].some((k) => urlParams.get(k) === "1");
+const REDUCED_MOTION = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /** Meshy model for a vehicle type when it is shipped and enabled (`?models=0` turns it off), else the original showcase asset. */
 const pickVehicleAsset = (key: string, fallback: AuraAssetRef<"model">): AuraAssetRef<"model"> =>
   meshyVehicles.enabled && key in meshyVehicles.refs ? ((meshyVehicles.refs as Record<string, AuraAssetRef<"model">>)[key] as AuraAssetRef<"model">) : fallback;
 
-const VEHICLE_POOL_SPEC: Record<
-  VehicleType,
-  {
-    count: number;
-    maxDim: number;
-    role: "primaryVehicle" | "setDressing";
-    asset: AuraAssetRef<"model">;
-  }
-> = {
-  sedan: { count: 4, maxDim: 4.64, role: "setDressing", asset: pickVehicleAsset("sedan", assets.roadsterRushSedan) },
-  hatch: { count: 3, maxDim: 4.04, role: "setDressing", asset: pickVehicleAsset("hatch", assets.roadsterRushHatch) },
-  suv: { count: 3, maxDim: 4.94, role: "setDressing", asset: pickVehicleAsset("suv", assets.roadsterRushSuv) },
-  taxi: { count: 2, maxDim: 4.74, role: "setDressing", asset: pickVehicleAsset("taxi", assets.roadsterRushTaxi) },
-  van: { count: 2, maxDim: 5.34, role: "setDressing", asset: pickVehicleAsset("van", assets.roadsterRushVan) },
-  pickup: { count: 2, maxDim: 5.58, role: "setDressing", asset: pickVehicleAsset("pickup", assets.roadsterRushPickup) },
-  boxtruck: { count: 2, maxDim: 8.14, role: "setDressing", asset: pickVehicleAsset("boxtruck", assets.roadsterRushBoxtruck) },
-  bus: { count: 1, maxDim: 12.22, role: "setDressing", asset: pickVehicleAsset("bus", assets.roadsterRushBus) },
-  carrier: { count: 2, maxDim: 16.12, role: "primaryVehicle", asset: pickVehicleAsset("carrier", assets.roadsterRushCarrier) }
+const VEHICLE_ASSET: Record<VehicleType, { maxDim: number; role: "primaryVehicle" | "setDressing"; asset: AuraAssetRef<"model"> }> = {
+  sedan: { maxDim: 4.64, role: "setDressing", asset: pickVehicleAsset("sedan", assets.roadsterRushSedan) },
+  hatch: { maxDim: 4.04, role: "setDressing", asset: pickVehicleAsset("hatch", assets.roadsterRushHatch) },
+  suv: { maxDim: 4.94, role: "setDressing", asset: pickVehicleAsset("suv", assets.roadsterRushSuv) },
+  taxi: { maxDim: 4.74, role: "setDressing", asset: pickVehicleAsset("taxi", assets.roadsterRushTaxi) },
+  van: { maxDim: 5.34, role: "setDressing", asset: pickVehicleAsset("van", assets.roadsterRushVan) },
+  pickup: { maxDim: 5.58, role: "setDressing", asset: pickVehicleAsset("pickup", assets.roadsterRushPickup) },
+  boxtruck: { maxDim: 8.14, role: "setDressing", asset: pickVehicleAsset("boxtruck", assets.roadsterRushBoxtruck) },
+  bus: { maxDim: 12.22, role: "setDressing", asset: pickVehicleAsset("bus", assets.roadsterRushBus) },
+  carrier: { maxDim: 16.12, role: "primaryVehicle", asset: pickVehicleAsset("carrier", assets.roadsterRushCarrier) }
 };
 
 /** Measured from the baked Meshy GLBs at fit size: visual width over sim width. Only the two wildly wide models need a lateral squash; the rest stay within 1.3x. */
 const MODEL_WIDTH_OVER_SPEC: Partial<Record<VehicleType, number>> = { boxtruck: 1.72, carrier: 3.0 };
 const MODEL_WIDTH_FIT = 1.25;
+const TRAFFIC_YAW = trafficYawOffset(meshyVehicles.enabled);
 
-const VEHICLE_TYPES: readonly VehicleType[] = [
-  "sedan",
-  "hatch",
-  "suv",
-  "taxi",
-  "van",
-  "pickup",
-  "boxtruck",
-  "bus",
-  "carrier"
-];
-
-const SKY_CAR_POOL_COUNT = 5;
-const BOLT_POOL_COUNT = 28;
-const POWERUP_POOL_COUNT = 8;
-const BRAKE_BAR_POOL_COUNT = 12;
-const BLINKER_POOL_COUNT = 6;
+const BRAKE_BAR_CAPACITY = 48;
+const BLINKER_CAPACITY = 24;
+/** Brake bars and blinkers are small; draw them for traffic up to this far ahead. */
+const LIGHT_DETAIL_AHEAD = 140;
 
 const LANE_DIVIDER_X: readonly number[] = [-5.4, -1.8, 1.8, 5.4];
-const DASH_COUNT_PER_DIVIDER = 14;
+/** 24 dashes per divider at 14 m cover the deck to 322 m ahead (was 14, ending 182 m ahead). */
+const DASH_COUNT_PER_DIVIDER = 24;
 const DASH_STRIDE_Z = 14;
 
-const GANTRY_POOL_COUNT = 2;
-const GANTRY_STRIDE_Z = 130;
-
-const PALM_POOL_COUNT = 0;
-const PALM_STRIDE_Z = 34;
-
-const POLE_POOL_COUNT = 8;
+/** Light poles: world-anchored rows every 34 m from one row behind the camera to about 320 m ahead, both sides. */
+const POLE_ROWS = 11;
 const POLE_STRIDE_Z = 34;
 
-const SKYLINE_POOL_COUNT = 2;
+/** Skyline: world-anchored rows every 140 m, one row behind the camera and four ahead, so a building only recycles after it has passed the camera (audit RR-8). */
+const SKYLINE_ROWS = 5;
 const SKYLINE_STRIDE_Z = 140;
 
-const POWERUP_COLORS: Record<Exclude<PickupKind, "bolt">, string> = {
-  air: "#2f7dff",
-  rocket: "#ff5030",
-  shield: "#29c6ff",
-  magnet: "#ff2a3c",
-  multiplier: "#8a4bff"
+/** Overhead gantry geometry, built from the collision band so what crashes the car is what is drawn (audit RR-6). */
+const GANTRY_BOXES = gantryBoxes();
+
+/** Power-ups: each kind has its own shape (audit RR-E3) and the colour its HUD timer bar uses. */
+const POWERUP_LOOK: Record<PowerupKind, { color: string; shape: "capsule" | "cone" | "sphere" | "torus" | "box"; size: Vec3 }> = {
+  air: { color: "#2f7dff", shape: "capsule", size: [0.62, 1.15, 0.62] },
+  rocket: { color: "#ff6a3d", shape: "cone", size: [0.8, 1.2, 0.8] },
+  shield: { color: "#5fe6ff", shape: "sphere", size: [1.0, 1.0, 1.0] },
+  magnet: { color: "#c06bff", shape: "torus", size: [1.0, 1.0, 0.34] },
+  multiplier: { color: "#ffd24d", shape: "box", size: [0.78, 0.78, 0.78] }
 };
 
 function clamp(v: number, min: number, max: number): number {
@@ -191,30 +185,13 @@ interface PlayerHandles {
   contactShadow: AuraRuntimeNodeHandle;
 }
 
-interface SkyCarSlot {
-  car: AuraRuntimeNodeHandle;
-  plume: AuraRuntimeNodeHandle;
-  halo: AuraRuntimeNodeHandle;
-}
-
-interface GantrySlot {
-  pillarL: AuraRuntimeNodeHandle;
-  pillarR: AuraRuntimeNodeHandle;
-  beam: AuraRuntimeNodeHandle;
-  boardL: AuraRuntimeNodeHandle;
-  boardR: AuraRuntimeNodeHandle;
-  trimL: AuraRuntimeNodeHandle;
-  trimR: AuraRuntimeNodeHandle;
-}
-
-interface LightPoleSlot {
-  pole: AuraRuntimeNodeHandle;
-  arm: AuraRuntimeNodeHandle;
-  lamp: AuraRuntimeNodeHandle;
-}
+/** Runtime node id of an instanced pool node. */
+const poolId = (name: string): string => `pool-${name}`;
 
 function buildRoadsterRushScene(): ReturnType<typeof scene> {
   const s = scene()
+    // One look: its HDRI, its shadowed key light, its AO, bloom and colour grade. The authored warm sun below adds colour
+    // without a second shadow map, and no second bloom or grade stacks on the look's (audit RR-11).
     .add(looks.preset("outdoor-day", { fogDensityScale: 0, exposureEv: 0.08 }))
     .background("#1b1026")
     .camera(
@@ -228,19 +205,11 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     )
     .add(lights.ambient({ color: "#ffd8c4", intensity: 0.5 }))
     .add(
-      lights.hemisphere({
-        skyColor: "#ff9e75",
-        groundColor: "#2a1b38",
-        intensity: 0.7
-      })
-    )
-    .add(
       lights.directional({
         color: "#ffb178",
         intensity: 1.9,
         position: [22, 38, -45],
-        target: [0, 0, -10],
-        shadow: { cascades: 2, maxDistance: 90, blend: 0.12 }
+        target: [0, 0, -10]
       })
     )
     .add(
@@ -251,9 +220,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         distance: 65
       })
     )
-    .add(effects.bloom({ intensity: 0.24, threshold: 0.9, radius: 0.52 }))
-    .add(effects.vignette({ intensity: 0.2, smoothness: 0.65 }))
-    .add(effects.colorGrade({ contrast: 1.07, saturation: 1.12 }));
+    .add(effects.vignette({ intensity: 0.2, smoothness: 0.65 }));
 
   // 1. Endless Scrolling 5-Lane Sunset Freeway Deck, Shoulders, Jersey Barriers & Neon Sound Walls
   s.addMany([
@@ -344,121 +311,36 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .runtime(game.runtimeNode("horizon-sky-wall"))
   ]);
 
-  // 2. Scrolling White Lane Dashes (4 dividers × 14 dashes)
-  const dashMat = material.emissive({ color: "#f8fafc", emissive: "#e2e8f0", emissiveIntensity: 0.45 });
-  for (let d = 0; d < LANE_DIVIDER_X.length; d++) {
-    const lx = LANE_DIVIDER_X[d]!;
-    for (let i = 0; i < DASH_COUNT_PER_DIVIDER; i++) {
-      const id = `lane-dash-${d}-${i}`;
-      s.add(
-        primitives
-          .box({
-            name: id,
-            size: [0.14, 0.02, 4.2],
-            material: dashMat, castShadow: false })
-          .position(lx, 0.015, -i * DASH_STRIDE_Z)
-          .runtime(game.runtimeNode(id))
-      );
-    }
-  }
+  // 2. Lane dashes, light poles, gantries and skyline: one instanced node each (audit RR-E1: these were 150+ separate nodes)
+  s.addMany([
+    instances
+      .box({ name: "lane-dashes", size: [0.14, 0.02, 4.2], material: material.emissive({ color: "#f8fafc", emissive: "#e2e8f0", emissiveIntensity: 0.45 }), castShadow: false, transforms: parked(LANE_DIVIDER_X.length * DASH_COUNT_PER_DIVIDER) })
+      .runtime(game.runtimeNode(poolId("dashes"))),
+    instances
+      .box({ name: "gantry-steel", size: [1, 1, 1], material: material.pbr({ color: "#64748b", metalness: 0.65, roughness: 0.38 }), transforms: parked(GANTRY_COUNT * 3) })
+      .runtime(game.runtimeNode(poolId("gantry-steel"))),
+    instances
+      .box({ name: "gantry-boards", size: [1, 1, 1], material: material.pbr({ color: "#0d5c3a", roughness: 0.52, metalness: 0.12 }), transforms: parked(GANTRY_COUNT * 2) })
+      .runtime(game.runtimeNode(poolId("gantry-boards"))),
+    instances
+      .box({ name: "gantry-trims", size: [1, 1, 1], material: material.emissive({ color: "#e2f1e8", emissive: "#a7f3d0", emissiveIntensity: 0.55 }), castShadow: false, transforms: parked(GANTRY_COUNT * 4) })
+      .runtime(game.runtimeNode(poolId("gantry-trims"))),
+    instances
+      .cylinder({ name: "light-poles", size: [0.18, 7.6, 0.18], material: material.pbr({ color: "#475569", metalness: 0.7, roughness: 0.35 }), transforms: parked(POLE_ROWS * 2) })
+      .runtime(game.runtimeNode(poolId("poles"))),
+    instances
+      .box({ name: "light-arms", size: [1.8, 0.12, 0.12], material: material.pbr({ color: "#475569", metalness: 0.7, roughness: 0.35 }), castShadow: false, transforms: parked(POLE_ROWS * 2) })
+      .runtime(game.runtimeNode(poolId("pole-arms"))),
+    instances
+      .sphere({ name: "light-lamps", size: [0.36, 0.18, 0.48], material: material.emissive({ color: "#ffd28a", emissive: "#ffae52", emissiveIntensity: 1.65 }), castShadow: false, transforms: parked(POLE_ROWS * 2) })
+      .runtime(game.runtimeNode(poolId("pole-lamps"))),
+    // The skyline model has 75 meshes; instancing draws all buildings in 75 calls, and it casts no shadow (it stands 42 m off the road).
+    instances
+      .model(assets.showcaseModernBuildingOne, { name: "freeway-skyline", role: "setDressing", scaleMode: "fit", targetMaxDimension: 38, castShadow: false, transforms: parked(SKYLINE_ROWS * 2) })
+      .runtime(game.runtimeNode(poolId("skyline")))
+  ]);
 
-  // 3. Overhead Highway Sign Gantries (gantries with steel trusses, crossbeam & emerald exit boards)
-  const steelMat = material.pbr({ color: "#64748b", metalness: 0.65, roughness: 0.38 });
-  const signBoardMat = material.pbr({ color: "#0d5c3a", roughness: 0.52, metalness: 0.12 });
-  const signTrimMat = material.emissive({ color: "#e2f1e8", emissive: "#a7f3d0", emissiveIntensity: 0.55 });
-  for (let i = 0; i < GANTRY_POOL_COUNT; i++) {
-    const gz = -(i + 1) * GANTRY_STRIDE_Z;
-    s.addMany([
-      primitives
-        .box({ name: `gantry-pillar-l-${i}`, size: [0.55, 9.6, 0.55], material: steelMat })
-        .position(-10.9, 4.8, gz)
-        .runtime(game.runtimeNode(`gantry-pillar-l-${i}`)),
-      primitives
-        .box({ name: `gantry-pillar-r-${i}`, size: [0.55, 9.6, 0.55], material: steelMat })
-        .position(10.9, 4.8, gz)
-        .runtime(game.runtimeNode(`gantry-pillar-r-${i}`)),
-      primitives
-        .box({ name: `gantry-beam-${i}`, size: [22.6, 0.52, 0.55], material: steelMat })
-        .position(0, 9.0, gz)
-        .runtime(game.runtimeNode(`gantry-beam-${i}`)),
-      primitives
-        .box({ name: `gantry-board-l-${i}`, size: [7.6, 2.3, 0.22], material: signBoardMat })
-        .position(-4.4, 8.85, gz + 0.22)
-        .runtime(game.runtimeNode(`gantry-board-l-${i}`)),
-      primitives
-        .box({ name: `gantry-board-r-${i}`, size: [6.8, 2.1, 0.22], material: signBoardMat })
-        .position(4.6, 8.85, gz + 0.22)
-        .runtime(game.runtimeNode(`gantry-board-r-${i}`)),
-      primitives
-        .box({ name: `gantry-trim-l-${i}`, size: [7.0, 0.22, 0.26], material: signTrimMat, castShadow: false })
-        .position(-4.4, 9.55, gz + 0.24)
-        .runtime(game.runtimeNode(`gantry-trim-l-${i}`)),
-      primitives
-        .box({ name: `gantry-trim-r-${i}`, size: [6.2, 0.22, 0.26], material: signTrimMat, castShadow: false })
-        .position(4.6, 9.45, gz + 0.24)
-        .runtime(game.runtimeNode(`gantry-trim-r-${i}`))
-    ]);
-  }
-
-  // 4. Roadside California Sunset Palm Silhouettes & Highway Light Poles
-  const palmTrunkMat = material.pbr({ color: "#3d2822", roughness: 0.88 });
-  for (let i = 0; i < PALM_POOL_COUNT; i++) {
-    const side = i % 2 === 0 ? -1 : 1;
-    const px = side * (15.5 + (i % 3) * 1.8);
-    const pz = -Math.floor(i / 2) * PALM_STRIDE_Z;
-    const id = `freeway-palm-${i}`;
-    s.add(
-      primitives
-        .cylinder({
-          name: id,
-          size: [0.34, 9.2, 0.34],
-          material: palmTrunkMat, castShadow: false })
-        .position(px, 4.5, pz)
-        .runtime(game.runtimeNode(id))
-    );
-  }
-
-  const poleMat = material.pbr({ color: "#475569", metalness: 0.7, roughness: 0.35 });
-  const lampMat = material.emissive({ color: "#ffd28a", emissive: "#ffae52", emissiveIntensity: 1.65 });
-  for (let i = 0; i < POLE_POOL_COUNT; i++) {
-    const side = i % 2 === 0 ? -1 : 1;
-    const px = side * 12.1;
-    const pz = -Math.floor(i / 2) * POLE_STRIDE_Z - 12;
-    s.addMany([
-      primitives
-        .cylinder({ name: `light-pole-${i}`, size: [0.18, 7.6, 0.18], material: poleMat })
-        .position(px, 3.8, pz)
-        .runtime(game.runtimeNode(`light-pole-${i}`)),
-      primitives
-        .box({ name: `light-arm-${i}`, size: [1.8, 0.12, 0.12], material: poleMat, castShadow: false })
-        .position(px - side * 0.8, 7.55, pz)
-        .runtime(game.runtimeNode(`light-arm-${i}`)),
-      primitives
-        .sphere({ name: `light-lamp-${i}`, size: [0.36, 0.18, 0.48], material: lampMat, castShadow: false })
-        .position(px - side * 1.55, 7.45, pz)
-        .runtime(game.runtimeNode(`light-lamp-${i}`))
-    ]);
-  }
-
-  // 5. Midground Architectural Skyline (4 instances of assets.showcaseModernBuildingOne)
-  for (let i = 0; i < SKYLINE_POOL_COUNT; i++) {
-    const side = i % 2 === 0 ? -1 : 1;
-    const sx = side * 42;
-    const sz = -60 - Math.floor(i / 2) * SKYLINE_STRIDE_Z;
-    const id = `freeway-skyline-${i}`;
-    s.add(
-      model(assets.showcaseModernBuildingOne, {
-        name: id,
-        role: "setDressing",
-        scaleMode: "fit",
-        targetMaxDimension: 38
-      })
-        .position(sx, -0.2, sz)
-        .runtime(game.runtimeNode(id))
-    );
-  }
-
-  // 6. Player Roadster Assembly (Primary Car + Lightbar + Headlights + Cold-Gas Plumes + Powerups + Shadow)
+  // 3. Player Roadster Assembly (Primary Car + Lightbar + Headlights + Cold-Gas Plumes + Powerups + Shadow)
   const rearPlumeMat = material.emissive({
     color: "#67f3ff",
     emissive: "#38bdf8",
@@ -595,149 +477,83 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     ]);
   }
 
-  // 7. Ground Traffic Pool (42 Pooled 3D Vehicles Across All 9 Admitted Types + Carrier Launch Ramps)
+  // 4. Ground traffic: per type, a shadow-casting pool for the first 90 m and a shadowless pool beyond, sized to the
+  //    simulation's measured peaks (audit RR-1); plus carrier ramps, brake bars and turn signals.
   for (const vType of VEHICLE_TYPES) {
-    const spec = VEHICLE_POOL_SPEC[vType];
-    for (let i = 0; i < spec.count; i++) {
-      const id = `traffic-${vType}-${i}`;
+    const spec = VEHICLE_ASSET[vType];
+    for (const part of ["near", "far"] as const) {
       s.add(
-        model(spec.asset, {
-          name: id,
-          role: spec.role,
-          scaleMode: "fit",
-          targetMaxDimension: spec.maxDim
-        })
-          .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
-          .scale(HIDDEN_SCALE)
-          .runtime(game.runtimeNode(id))
+        instances
+          .model(spec.asset, {
+            name: `traffic-${vType}-${part}`,
+            role: spec.role,
+            scaleMode: "fit",
+            targetMaxDimension: spec.maxDim,
+            castShadow: part === "near",
+            transforms: parked(part === "near" ? NEAR_CAPACITY[vType] : POOL_CAPACITY[vType])
+          })
+          .runtime(game.runtimeNode(poolId(`traffic-${vType}-${part}`)))
       );
-
-      if (vType === "carrier") {
-        const rampId = `carrier-ramp-${i}`;
-        s.add(
-          primitives
-            .box({
-              name: rampId,
-              size: [2.38, 0.18, 6.6],
-              material: material.emissive({
-                color: "#ffc928",
-                emissive: "#ff9e00",
-                emissiveIntensity: 0.68
-              }), castShadow: false })
-            .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
-            .scale(HIDDEN_SCALE)
-            .runtime(game.runtimeNode(rampId))
-        );
-      }
     }
   }
+  s.addMany([
+    instances
+      .box({ name: "carrier-ramps", size: [2.38, 0.18, 6.6], material: material.emissive({ color: "#ffc928", emissive: "#ff9e00", emissiveIntensity: 0.68 }), castShadow: false, transforms: parked(POOL_CAPACITY.carrier) })
+      .runtime(game.runtimeNode(poolId("carrier-ramps"))),
+    instances
+      .box({ name: "traffic-brake-lights", size: [1.58, 0.16, 0.09], material: material.emissive({ color: "#ff1e27", emissive: "#ff1e27", emissiveIntensity: 2.1 }), castShadow: false, transforms: parked(BRAKE_BAR_CAPACITY) })
+      .runtime(game.runtimeNode(poolId("brake-lights"))),
+    instances
+      .sphere({ name: "traffic-blinkers", size: [0.28, 0.2, 0.34], material: material.emissive({ color: "#ffaa1d", emissive: "#ff9900", emissiveIntensity: 2.2 }), castShadow: false, transforms: parked(BLINKER_CAPACITY) })
+      .runtime(game.runtimeNode(poolId("blinkers")))
+  ]);
 
-  // 16 Glowing Red Brake-Light Bars & 8 Blinking Amber Turn-Signal Indicators
-  const brakeBarMat = material.emissive({ color: "#ff1e27", emissive: "#ff1e27", emissiveIntensity: 2.1 });
-  for (let i = 0; i < BRAKE_BAR_POOL_COUNT; i++) {
-    const id = `traffic-brake-${i}`;
+  // 5. Sky-lane traffic: lethal, so every sky car in the window gets a slot (audit RR-1)
+  s.addMany([
+    instances
+      .model(assets.roadsterRushSkyCar, { name: "sky-cars", role: "primaryVehicle", scaleMode: "fit", targetMaxDimension: 4.3, transforms: parked(POOL_CAPACITY.skyCar) })
+      .runtime(game.runtimeNode(poolId("sky-cars"))),
+    instances
+      .cylinder({ name: "sky-plumes", size: [0.42, 1.65, 0.42], material: rearPlumeMat, castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
+      .runtime(game.runtimeNode(poolId("sky-plumes"))),
+    instances
+      .torus({ name: "sky-halos", size: [1.55, 1.55, 0.075], material: material.emissive({ color: "#ff2a3c", emissive: "#ff2a3c", emissiveIntensity: 1.65 }), castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
+      .runtime(game.runtimeNode(poolId("sky-halos")))
+  ]);
+
+  // 6. Pickups: every bolt in the window, nearest first (audit RR-4), and one shaped pool per power-up kind (audit RR-E3)
+  s.add(
+    instances
+      .torus({ name: "pickup-bolts", size: [0.48, 0.48, 0.14], material: material.emissive({ color: "#ffc61f", emissive: "#ffae00", emissiveIntensity: 1.45 }), castShadow: false, transforms: parked(POOL_CAPACITY.bolt) })
+      .runtime(game.runtimeNode(poolId("bolts")))
+  );
+  for (const kind of POWERUP_KINDS) {
+    const look = POWERUP_LOOK[kind];
     s.add(
-      primitives
-        .box({
-          name: id,
-          size: [1.58, 0.16, 0.09],
-          material: brakeBarMat, castShadow: false })
-        .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
-        .scale(HIDDEN_SCALE)
-        .runtime(game.runtimeNode(id))
-    );
-  }
-
-  const blinkerMat = material.emissive({ color: "#ffaa1d", emissive: "#ff9900", emissiveIntensity: 2.2 });
-  for (let i = 0; i < BLINKER_POOL_COUNT; i++) {
-    const id = `traffic-blinker-${i}`;
-    s.add(
-      primitives
-        .sphere({
-          name: id,
-          size: [0.28, 0.2, 0.34],
-          material: blinkerMat, castShadow: false })
-        .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
-        .scale(HIDDEN_SCALE)
-        .runtime(game.runtimeNode(id))
-    );
-  }
-
-  // 8. Sky-Lane Dogfight Pool (14 Pooled assets.roadsterRushSkyCar + Thruster Plume + Oncoming Halo)
-  const skyHaloMat = material.emissive({ color: "#ff2a3c", emissive: "#ff2a3c", emissiveIntensity: 1.65 });
-  for (let i = 0; i < SKY_CAR_POOL_COUNT; i++) {
-    const carId = `sky-car-${i}`;
-    const plumeId = `sky-plume-${i}`;
-    const haloId = `sky-halo-${i}`;
-    s.addMany([
-      model(assets.roadsterRushSkyCar, {
-        name: carId,
-        role: "primaryVehicle",
-        scaleMode: "fit",
-        targetMaxDimension: 4.3
-      })
-        .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
-        .scale(HIDDEN_SCALE)
-        .runtime(game.runtimeNode(carId)),
-      primitives
-        .cylinder({
-          name: plumeId,
-          size: [0.42, 1.65, 0.42],
-          material: rearPlumeMat, castShadow: false })
-        .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
-        .scale(HIDDEN_SCALE)
-        .runtime(game.runtimeNode(plumeId)),
-      primitives
-        .torus({
-          name: haloId,
-          size: [1.55, 1.55, 0.075],
-          material: skyHaloMat, castShadow: false })
-        .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
-        .scale(HIDDEN_SCALE)
-        .runtime(game.runtimeNode(haloId))
-    ]);
-  }
-
-  // 9. 3D Pickups Pool (42 Spinning Golden Bolts + 10 Glowing Powerup Orbs)
-  const boltMat = material.emissive({
-    color: "#ffc61f",
-    emissive: "#ffae00",
-    emissiveIntensity: 1.45
-  });
-  for (let i = 0; i < BOLT_POOL_COUNT; i++) {
-    const id = `pickup-bolt-${i}`;
-    s.add(
-      primitives
-        .torus({
-          name: id,
-          size: [0.48, 0.48, 0.14],
-          material: boltMat, castShadow: false })
-        .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
-        .scale(HIDDEN_SCALE)
-        .runtime(game.runtimeNode(id))
-    );
-  }
-
-  const powerupInitMat = material.emissive({
-    color: "#2f7dff",
-    emissive: "#2f7dff",
-    emissiveIntensity: 1.65
-  });
-  for (let i = 0; i < POWERUP_POOL_COUNT; i++) {
-    const id = `pickup-power-${i}`;
-    s.add(
-      primitives
-        .sphere({
-          name: id,
-          size: [0.95, 0.95, 0.95],
-          material: powerupInitMat, castShadow: false })
-        .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
-        .scale(HIDDEN_SCALE)
-        .runtime(game.runtimeNode(id))
+      instances[look.shape]({
+        name: `pickup-${kind}`,
+        size: look.size,
+        material: material.emissive({ color: look.color, emissive: look.color, emissiveIntensity: 1.75 }),
+        castShadow: false,
+        transforms: parked(POOL_CAPACITY.powerup[kind])
+      }).runtime(game.runtimeNode(poolId(`power-${kind}`)))
     );
   }
 
   return s;
+}
+
+function showBootError(error: unknown): void {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error("Apex Overdrive failed to start", error);
+  const boot = document.getElementById("boot");
+  if (!boot) return;
+  boot.classList.remove("done");
+  boot.classList.add("boot-failed");
+  boot.innerHTML = `<div class="boot-mark">Apex Overdrive</div><div class="boot-error" role="alert"><p>The game could not start.</p><p class="boot-error-detail"></p><button type="button" class="boot-retry">Reload</button></div>`;
+  const detail = boot.querySelector(".boot-error-detail");
+  if (detail) detail.textContent = message.slice(0, 240);
+  boot.querySelector(".boot-retry")?.addEventListener("click", () => window.location.reload());
 }
 
 async function bootRoadsterRushAura3D(): Promise<void> {
@@ -754,6 +570,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   });
 
   const req = (id: string) => auraApp.nodes.require(id);
+  const pool = (name: string, capacity: number) => new InstancePool(req(poolId(name)), capacity);
 
   // Resolve Player Handles
   const playerHandles: PlayerHandles = {
@@ -785,82 +602,39 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const neonTrimRightHandle = req("freeway-neon-trim-right");
   const horizonWallHandle = req("horizon-sky-wall");
 
-  const dashHandles: AuraRuntimeNodeHandle[][] = LANE_DIVIDER_X.map((_, d) =>
-    Array.from({ length: DASH_COUNT_PER_DIVIDER }, (__, i) => req(`lane-dash-${d}-${i}`))
-  );
+  const dashPool = pool("dashes", LANE_DIVIDER_X.length * DASH_COUNT_PER_DIVIDER);
+  const gantrySteel = pool("gantry-steel", GANTRY_COUNT * 3);
+  const gantryBoards = pool("gantry-boards", GANTRY_COUNT * 2);
+  const gantryTrims = pool("gantry-trims", GANTRY_COUNT * 4);
+  const polePool = pool("poles", POLE_ROWS * 2);
+  const armPool = pool("pole-arms", POLE_ROWS * 2);
+  const lampPool = pool("pole-lamps", POLE_ROWS * 2);
+  const skylinePool = pool("skyline", SKYLINE_ROWS * 2);
 
-  const gantrySlots: GantrySlot[] = Array.from({ length: GANTRY_POOL_COUNT }, (_, i) => ({
-    pillarL: req(`gantry-pillar-l-${i}`),
-    pillarR: req(`gantry-pillar-r-${i}`),
-    beam: req(`gantry-beam-${i}`),
-    boardL: req(`gantry-board-l-${i}`),
-    boardR: req(`gantry-board-r-${i}`),
-    trimL: req(`gantry-trim-l-${i}`),
-    trimR: req(`gantry-trim-r-${i}`)
-  }));
-
-  const palmHandles: AuraRuntimeNodeHandle[] = Array.from({ length: PALM_POOL_COUNT }, (_, i) =>
-    req(`freeway-palm-${i}`)
-  );
-
-  const poleSlots: LightPoleSlot[] = Array.from({ length: POLE_POOL_COUNT }, (_, i) => ({
-    pole: req(`light-pole-${i}`),
-    arm: req(`light-arm-${i}`),
-    lamp: req(`light-lamp-${i}`)
-  }));
-
-  const skylineHandles: AuraRuntimeNodeHandle[] = Array.from({ length: SKYLINE_POOL_COUNT }, (_, i) =>
-    req(`freeway-skyline-${i}`)
-  );
-
-  // Resolve Ground Traffic Pool Handles
-  const vehiclePools: Record<VehicleType, AuraRuntimeNodeHandle[]> = {
-    sedan: [],
-    hatch: [],
-    suv: [],
-    taxi: [],
-    van: [],
-    pickup: [],
-    boxtruck: [],
-    bus: [],
-    carrier: []
-  };
+  const trafficNear = {} as Record<VehicleType, InstancePool>;
+  const trafficFar = {} as Record<VehicleType, InstancePool>;
   for (const vType of VEHICLE_TYPES) {
-    const count = VEHICLE_POOL_SPEC[vType].count;
-    vehiclePools[vType] = Array.from({ length: count }, (_, i) => req(`traffic-${vType}-${i}`));
+    trafficNear[vType] = pool(`traffic-${vType}-near`, NEAR_CAPACITY[vType]);
+    trafficFar[vType] = pool(`traffic-${vType}-far`, POOL_CAPACITY[vType]);
   }
-  const carrierRampHandles: AuraRuntimeNodeHandle[] = Array.from(
-    { length: VEHICLE_POOL_SPEC.carrier.count },
-    (_, i) => req(`carrier-ramp-${i}`)
-  );
-  const brakeBarHandles: AuraRuntimeNodeHandle[] = Array.from(
-    { length: BRAKE_BAR_POOL_COUNT },
-    (_, i) => req(`traffic-brake-${i}`)
-  );
-  const blinkerHandles: AuraRuntimeNodeHandle[] = Array.from(
-    { length: BLINKER_POOL_COUNT },
-    (_, i) => req(`traffic-blinker-${i}`)
-  );
+  const rampPool = pool("carrier-ramps", POOL_CAPACITY.carrier);
+  const brakePool = pool("brake-lights", BRAKE_BAR_CAPACITY);
+  const blinkerPool = pool("blinkers", BLINKER_CAPACITY);
+  const skyCarPool = pool("sky-cars", POOL_CAPACITY.skyCar);
+  const skyPlumePool = pool("sky-plumes", POOL_CAPACITY.skyCar);
+  const skyHaloPool = pool("sky-halos", POOL_CAPACITY.skyCar);
+  const boltPool = pool("bolts", POOL_CAPACITY.bolt);
+  const powerPools = {} as Record<PowerupKind, InstancePool>;
+  for (const kind of POWERUP_KINDS) powerPools[kind] = pool(`power-${kind}`, POOL_CAPACITY.powerup[kind]);
 
-  // Resolve Sky-Lane Pool Handles
-  const skyCarSlots: SkyCarSlot[] = Array.from({ length: SKY_CAR_POOL_COUNT }, (_, i) => ({
-    car: req(`sky-car-${i}`),
-    plume: req(`sky-plume-${i}`),
-    halo: req(`sky-halo-${i}`)
-  }));
-
-  // Resolve Pickups Pool Handles
-  const boltHandles: AuraRuntimeNodeHandle[] = Array.from({ length: BOLT_POOL_COUNT }, (_, i) =>
-    req(`pickup-bolt-${i}`)
-  );
-  const powerupHandles: AuraRuntimeNodeHandle[] = Array.from(
-    { length: POWERUP_POOL_COUNT },
-    (_, i) => req(`pickup-power-${i}`)
-  );
-  const powerupKindCache: string[] = Array.from({ length: POWERUP_POOL_COUNT }, () => "air");
+  // Scratch lists reused every frame (audit RR-E1: no per-frame filter/sort arrays)
+  const groundSlots = emptyGroundSlots<any>();
+  const pickupSlots = emptyPickupSlots<any>();
+  const skySlots: any[] = [];
+  const nearScratch: any[] = [];
+  const farScratch: any[] = [];
 
   // State Tracking
-  const urlParams = new URLSearchParams(window.location.search);
   let autopilot = urlParams.get("autoplay") === "1" || urlParams.get("demo") === "1";
   let framesRendered = 0;
   let lastTodBucket = -1;
@@ -869,6 +643,16 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   let lastAutopilotTickMs = 0;
   let lastAutopilotStuntMs = 0;
   let gameOverSinceMs = 0;
+
+  // Camera feel (audit RR-E2): trauma shake from the player's shake pulses, a speed FOV kick, a lagging chase anchor and a
+  // short hit-stop on a crash. Reduced motion turns shake and FOV kick off.
+  const shake = createCameraShake({ maxOffset: 0.22, maxRoll: 0.02, decayPerSecond: 1.8 });
+  const hitStop = createHitStop();
+  let hitStopHeld = false;
+  let lastMode = "";
+  let chaseX = 0;
+  let lastFrameMs = 0;
+  let lastFovKick = -1;
 
   function updateAtmosphereForTod(todRaw: number): void {
     const tod = clamp(manualTodOverride ?? todRaw, 0, 1);
@@ -888,7 +672,6 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       ["nightAmount", look.nightAmount]
     ];
     for (const [name, value] of skyUniforms) horizonWallHandle.setUniform?.(name, value as never);
-    (auraApp.scene as any).background = rgbToHex(look.skyHorizon[0] * 80, look.skyHorizon[1] * 60, look.skyHorizon[2] * 90);
 
     let groundHex: string;
     if (tod <= 0.5) groundHex = lerpHexColor("#190f24", "#100d1e", tod * 2);
@@ -896,6 +679,12 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     const [gr, gg, gb] = hexToRgb(groundHex);
     outerGroundHandle.setUniform?.("groundColor", [gr / 255, gg / 255, gb / 255] as never);
     outerGroundHandle.setUniform?.("groundFogColor", [look.skyHorizon[0] * 0.8, look.skyHorizon[1] * 0.75, look.skyHorizon[2] * 0.8] as never);
+    // Scene lighting follows the time of day too (audit RR-E5): the sky light dims towards night; emissive neon is untouched.
+    try {
+      auraApp.lighting?.setEnvironmentIntensity(lerp(1, 0.42, look.nightAmount));
+    } catch {
+      /* lighting runtime not mounted */
+    }
   }
 
   function runSmartFreewayAutopilot(g: any): void {
@@ -915,6 +704,8 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     gameOverSinceMs = 0;
 
     if (g.mode !== "playing" || g.paused || g.activePreset) return;
+    // an autopiloted run is an assisted run: it cannot set the saved best (audit RR-7)
+    g.markAssisted?.();
     if (now - lastAutopilotTickMs < 95) return;
     lastAutopilotTickMs = now;
 
@@ -1057,22 +848,52 @@ async function bootRoadsterRushAura3D(): Promise<void> {
 
     runSmartFreewayAutopilot(real);
 
+    const nowMs = performance.now();
+    const realDt = lastFrameMs ? clamp((nowMs - lastFrameMs) / 1000, 0, 0.1) : 1 / 60;
+    lastFrameMs = nowMs;
+
     const p = g.player;
     const px = Number(p.position?.x ?? 0);
     const py = Number(p.position?.y ?? 0);
     const pz = Number(p.position?.z ?? 0);
     const simTime = Number(g.time ?? performance.now() * 0.001);
 
+    // Camera feel: consume the simulation's shake pulses (they are never read by the simulation itself)
+    const pulse = Number(real.player.shakePulse ?? 0);
+    if (pulse > 0) {
+      if (!REDUCED_MOTION) shake.add(pulse * 0.6);
+      real.player.shakePulse = 0;
+    }
+    const sh = shake.update(realDt);
+    if (real.mode === "crashed" && lastMode === "playing" && !real.manual) hitStop.trigger(110);
+    lastMode = real.mode;
+    hitStop.update(realDt);
+    if (hitStop.active !== hitStopHeld) {
+      hitStopHeld = hitStop.active;
+      real.simPaused = hitStopHeld;
+    }
+    const fovKick = REDUCED_MOTION ? 0 : Math.round(clamp(Number(p.speedLinesAmount ?? 0), 0, 1) * 7 * 10) / 10;
+    if (fovKick !== lastFovKick) {
+      lastFovKick = fovKick;
+      try {
+        auraApp.camera?.fovKick.set("speed", fovKick, 0.18);
+      } catch {
+        /* camera controller not mounted */
+      }
+    }
+
     // Camera-anchored relative transform: the @aura3d/engine camera sits at [0, 3.6, 6.2] looking at [0, 0.9, -6.0].
-    // By shifting world coordinates by (camAnchorX, camAnchorY, pz), the Player Roadster stays right at z=0 in front
-    // of the chase camera while the 5-lane freeway, traffic, sky-lane Roadsters, and bolts rush past at 60 FPS!
-    const camAnchorX = px * 0.65;
-    const camAnchorY = Math.max(0, py * 0.85);
+    // World coordinates are shifted by the chase anchor, so the player car stays in front of the camera while the freeway,
+    // traffic, sky cars and bolts move past. The anchor lags lane changes a little, rises with altitude and carries the shake.
+    const targetX = px * 0.65;
+    chaseX = real.manual ? targetX : chaseX + (targetX - chaseX) * (1 - Math.exp(-9 * realDt));
+    const camAnchorX = chaseX + sh.x;
+    const camAnchorY = Math.max(0, py * 0.85) + sh.y;
     const rx = (wx: number) => wx - camAnchorX;
     const ry = (wy: number) => wy - camAnchorY;
     const rz = (wz: number) => wz - pz;
 
-    // 1. Sync Endless Scrolling 5-Lane Freeway, Lane Dashes, Gantries, Palms, Poles & Skyline
+    // 1. Freeway deck, walls and trims
     const centerZ = -150;
     outerGroundHandle.setPosition(rx(0), ry(-0.22), centerZ);
     asphaltDeckHandle.setPosition(rx(0), ry(-0.06), centerZ);
@@ -1085,72 +906,67 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     neonTrimLeftHandle.setPosition(rx(-11.3), ry(2.42), centerZ);
     neonTrimRightHandle.setPosition(rx(11.3), ry(2.42), centerZ);
 
+    dashPool.begin();
     const dashBaseZ = Math.floor(pz / DASH_STRIDE_Z) * DASH_STRIDE_Z + DASH_STRIDE_Z;
     for (let d = 0; d < LANE_DIVIDER_X.length; d++) {
       const lx = rx(LANE_DIVIDER_X[d]!);
-      const col = dashHandles[d]!;
-      for (let i = 0; i < DASH_COUNT_PER_DIVIDER; i++) {
-        col[i]!.setPosition(lx, ry(0.015), rz(dashBaseZ - i * DASH_STRIDE_Z));
+      for (let i = 0; i < DASH_COUNT_PER_DIVIDER; i++) dashPool.add(lx, ry(0.015), rz(dashBaseZ - i * DASH_STRIDE_Z));
+    }
+    dashPool.commit();
+
+    // Overhead sign gantries: one per collidable world slot (audit RR-2); empty slots are not drawn
+    gantrySteel.begin();
+    gantryBoards.begin();
+    gantryTrims.begin();
+    const worldGantries: any[] = Array.isArray(g.world?.gantries) ? g.world.gantries : [];
+    for (let i = 0; i < worldGantries.length; i++) {
+      const wz = Number(worldGantries[i]?.position?.z ?? 1e5);
+      if (wz > 1e4) continue;
+      const gz = rz(wz);
+      if (gz < -560 || gz > 40) continue;
+      for (const box of GANTRY_BOXES) {
+        const target = box.part === "steel" ? gantrySteel : box.part === "board" ? gantryBoards : gantryTrims;
+        target.add(rx(box.center[0]), ry(box.center[1]), gz + box.center[2], 0, 0, 0, box.size[0], box.size[1], box.size[2]);
       }
     }
+    gantrySteel.commit();
+    gantryBoards.commit();
+    gantryTrims.commit();
 
-    // Overhead Highway Sign Gantries
-    const worldGantries = Array.isArray(g.world?.gantries)
-      ? g.world.gantries
-      : Array.isArray(g.world?.gantries?.items)
-        ? g.world.gantries.items
-        : null;
-    const gantryBaseZ = Math.floor(pz / GANTRY_STRIDE_Z) * GANTRY_STRIDE_Z;
-    for (let i = 0; i < GANTRY_POOL_COUNT; i++) {
-      const slot = gantrySlots[i]!;
-      const worldGz =
-        worldGantries && worldGantries[i]?.position?.z != null
-          ? Number(worldGantries[i].position.z)
-          : gantryBaseZ - i * GANTRY_STRIDE_Z;
-      const gz = rz(worldGz);
-      slot.pillarL.setPosition(rx(-10.9), ry(4.8), gz);
-      slot.pillarR.setPosition(rx(10.9), ry(4.8), gz);
-      slot.beam.setPosition(rx(0), ry(9.0), gz);
-      slot.boardL.setPosition(rx(-4.4), ry(8.85), gz + 0.22);
-      slot.boardR.setPosition(rx(4.6), ry(8.85), gz + 0.22);
-      slot.trimL.setPosition(rx(-4.4), ry(9.55), gz + 0.24);
-      slot.trimR.setPosition(rx(4.6), ry(9.45), gz + 0.24);
+    // Highway light poles, world-anchored rows
+    polePool.begin();
+    armPool.begin();
+    lampPool.begin();
+    const poleBaseZ = Math.floor(pz / POLE_STRIDE_Z) * POLE_STRIDE_Z + POLE_STRIDE_Z - 14;
+    for (let row = 0; row < POLE_ROWS; row++) {
+      const poleZ = rz(poleBaseZ - row * POLE_STRIDE_Z);
+      for (const side of [-1, 1] as const) {
+        const poleX = rx(side * 12.1);
+        polePool.add(poleX, ry(3.8), poleZ);
+        armPool.add(poleX - side * 0.8, ry(7.55), poleZ);
+        lampPool.add(poleX - side * 1.55, ry(7.45), poleZ);
+      }
     }
+    polePool.commit();
+    armPool.commit();
+    lampPool.commit();
 
-    // Roadside Palm Silhouettes & Highway Streetlight Poles
-    const palmBaseZ = Math.floor(pz / PALM_STRIDE_Z) * PALM_STRIDE_Z + PALM_STRIDE_Z;
-    for (let i = 0; i < PALM_POOL_COUNT; i++) {
-      const side = i % 2 === 0 ? -1 : 1;
-      const row = Math.floor(i / 2);
-      const treeX = rx(side * (15.5 + (row % 2) * 1.8));
-      const treeZ = rz(palmBaseZ - row * PALM_STRIDE_Z);
-      palmHandles[i]!.setPosition(treeX, ry(4.5), treeZ).setRotation(0, 0, side * 0.06);
-    }
-
-    for (let i = 0; i < POLE_POOL_COUNT; i++) {
-      const side = i % 2 === 0 ? -1 : 1;
-      const row = Math.floor(i / 2);
-      const poleX = rx(side * 12.1);
-      const poleZ = rz(palmBaseZ - row * POLE_STRIDE_Z - 14);
-      const slot = poleSlots[i]!;
-      slot.pole.setPosition(poleX, ry(3.8), poleZ);
-      slot.arm.setPosition(poleX - side * 0.8, ry(7.55), poleZ);
-      slot.lamp.setPosition(poleX - side * 1.55, ry(7.45), poleZ);
-    }
-
+    // Skyline, world-anchored rows from one behind the camera to four ahead (audit RR-8)
+    skylinePool.begin();
     const skylineBaseZ = Math.floor(pz / SKYLINE_STRIDE_Z) * SKYLINE_STRIDE_Z;
-    for (let i = 0; i < SKYLINE_POOL_COUNT; i++) {
-      const side = i % 2 === 0 ? -1 : 1;
-      const row = Math.floor(i / 2);
-      skylineHandles[i]!.setPosition(rx(side * 42), ry(-0.2), rz(skylineBaseZ - 65 - row * SKYLINE_STRIDE_Z));
+    for (let row = -1; row < SKYLINE_ROWS - 1; row++) {
+      const sz = rz(skylineBaseZ - 65 - row * SKYLINE_STRIDE_Z);
+      skylinePool.add(rx(-42), ry(-0.2), sz);
+      skylinePool.add(rx(42), ry(-0.2), sz);
     }
+    skylinePool.commit();
 
     updateAtmosphereForTod(Number(g.world?.timeOfDay ?? 0));
 
     // 3. Sync Player Roadster Assembly, Thruster Plumes, Active Powerups & Contact Shadow
     const pitch = Number(p.pivot?.rotation?.x ?? p._pitch ?? 0);
     const yaw = Number(p.mesh?.rotation?.y ?? p._yaw ?? 0);
-    const roll = Number(p.pivot?.rotation?.z ?? p._bank ?? 0);
+    const roll = Number(p.pivot?.rotation?.z ?? p._bank ?? 0) + sh.roll;
     const squash: Vec3 = [
       Number(p.squashGroup?.scale?.x ?? 1),
       Number(p.squashGroup?.scale?.y ?? 1),
@@ -1193,7 +1009,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       .setRotation(pitch, yaw, roll)
       .setVisible(true);
 
-    // Cold-Gas Thruster Plumes
+    // Cold-Gas Thruster Plumes (no 8.8 Hz flicker under reduced motion, audit RR-E4)
     const rearPlumeLevel = clamp(
       Math.max(
         Number(p._rearPlume ?? 0),
@@ -1204,7 +1020,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       0,
       1.45
     );
-    const flicker = 0.92 + Math.sin(simTime * 55) * 0.08;
+    const flicker = REDUCED_MOTION ? 1 : 0.92 + Math.sin(simTime * 55) * 0.08;
     if (rearPlumeLevel > 0.04) {
       const rpL = rotateLocalOffset(pRoot, pitch, yaw, roll, [-0.42, 0.46, 2.45 + rearPlumeLevel * 0.35]);
       const rpR = rotateLocalOffset(pRoot, pitch, yaw, roll, [0.42, 0.46, 2.45 + rearPlumeLevel * 0.35]);
@@ -1284,9 +1100,10 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     // Active Powerup Visuals on Player
     if ((p.shieldTimer ?? 0) > 0) {
       const shieldLeft = Number(p.shieldTimer ?? 0);
-      // Fades in over the first 0.25 s, flickers over the last 1.5 s so the player can read it running out.
+      // Fades in over the first 0.25 s, then blinks over the last 1.5 s so the player can read it running out
+      // (under reduced motion it dims steadily instead of blinking).
       const shieldFade = Math.min(1, (POWERUP_SECONDS.shield - shieldLeft) / 0.25 + 0.3);
-      const shieldBlink = shieldLeft < 1.5 ? 0.55 + 0.45 * Math.sin(simTime * 22) : 1;
+      const shieldBlink = shieldLeft < 1.5 ? (REDUCED_MOTION ? 0.4 + 0.4 * (shieldLeft / 1.5) : 0.55 + 0.45 * Math.sin(simTime * 22)) : 1;
       playerHandles.shieldSphere
         .setPosition(pRoot[0], pRoot[1] + 0.62, pRoot[2])
         .setRotation(pitch * 0.5, yaw, roll * 0.5)
@@ -1328,226 +1145,124 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       .setScale([shadowScale, 1, shadowScale])
       .setVisible(alt < 20);
 
-    // 4. Sync Ground Traffic Pool (Pooled 3D Vehicles + Carrier Golden Launch Ramps + Brake & Blinker Lights)
+    // 4. Ground traffic: every vehicle in the window, in its own type's pool (audit RR-1), facing its travel direction (RR-3)
     const rawVehicles: any[] = Array.isArray(g.traffic?.vehicles) ? g.traffic.vehicles : [];
-    const visibleVehicles = rawVehicles
-      .filter((v) => v && v.z <= pz + 28 && v.z >= pz - 235)
-      .sort((a, b) => Math.abs(pz - a.z) - Math.abs(pz - b.z));
-
-    const poolCursor: Record<VehicleType, number> = {
-      sedan: 0,
-      hatch: 0,
-      suv: 0,
-      taxi: 0,
-      van: 0,
-      pickup: 0,
-      boxtruck: 0,
-      bus: 0,
-      carrier: 0
-    };
-
-    let brakeUsed = 0;
-    let blinkerUsed = 0;
+    assignGroundSlots(rawVehicles, pz, groundSlots);
+    rampPool.begin();
+    brakePool.begin();
+    blinkerPool.begin();
     const blinkOn = (simTime * 2.8) % 1 < 0.55;
+    let groundDrawn = 0;
+    for (const vType of VEHICLE_TYPES) {
+      const near = trafficNear[vType];
+      const far = trafficFar[vType];
+      near.begin();
+      far.begin();
+      splitNearFar(groundSlots[vType], pz, NEAR_CAPACITY[vType], nearScratch, farScratch);
+      const widthScale = Math.min(1, MODEL_WIDTH_FIT / ((meshyVehicles.enabled ? MODEL_WIDTH_OVER_SPEC[vType] : undefined) ?? 1));
+      for (let part = 0; part < 2; part++) {
+        const list = part === 0 ? nearScratch : farScratch;
+        const target = part === 0 ? near : far;
+        for (let i = 0; i < list.length; i++) {
+          const v = list[i];
+          const vx = rx(Number(v.x ?? 0));
+          const vz = rz(Number(v.z ?? 0));
+          const vw = Number(v.w ?? 1.9);
+          const vh = Number(v.h ?? 1.5);
+          const vl = Number(v.l ?? 4.6);
+          const vyaw = Number(v.yaw ?? 0);
+          const vphase = Number(v.phase ?? 0);
+          const vspd = Number(v.spd ?? 14);
+          const isHeavy = vh > 2.5;
+          const damp = isHeavy ? 0.35 : 1;
 
-    for (let i = 0; i < visibleVehicles.length; i++) {
-      const v = visibleVehicles[i];
-      const requestedType = (VEHICLE_POOL_SPEC[v.type as VehicleType] ? v.type : "sedan") as VehicleType;
-      let chosenType: VehicleType | null = null;
-      if (poolCursor[requestedType] < vehiclePools[requestedType].length) {
-        chosenType = requestedType;
-      } else {
-        for (const fallback of ["sedan", "hatch", "suv", "taxi", "van", "pickup"] as const) {
-          if (poolCursor[fallback] < vehiclePools[fallback].length) {
-            chosenType = fallback;
-            break;
+          const hopY =
+            (v.honkT > 0 ? Math.sin(Math.PI * (1 - v.honkT / 0.4)) * 0.38 : 0) +
+            Math.sin(simTime * (6 + vspd * 0.35) + vphase) * 0.014 * damp;
+          const vroll = Math.sin(simTime * 2.3 + vphase * 1.7) * 0.01 * damp;
+          const laneBrake = Number(g.traffic?._laneBrake?.[v.flowLane ?? v.lane ?? 0] ?? 0);
+          const isBraking = Number(v.dv ?? 0) < -0.5 || laneBrake > 0.5;
+          const vpitch = isBraking ? -0.012 * damp : 0;
+
+          if (!target.add(vx, ry(Math.max(0, hopY)), vz, -vpitch, vyaw + TRAFFIC_YAW, -vroll, widthScale, 1, 1)) continue;
+          groundDrawn++;
+
+          // Sloped golden launch ramp at the carrier's rear (+z end; the front points along -z)
+          if (vType === "carrier") {
+            const rampH = Number(v.ramp?.height ?? v.roof ?? 3.0);
+            const rampLen = Number(v.ramp?.length ?? 6.0);
+            const rampPitch = Math.atan2(rampH, rampLen);
+            rampPool.add(vx, ry(hopY + rampH * 0.48), vz + vl * 0.5 - rampLen * 0.48, rampPitch, vyaw, vroll);
+          }
+          const ahead = pz - Number(v.z ?? 0);
+          if (ahead > LIGHT_DETAIL_AHEAD) continue;
+          // Brake light bars at the rear
+          if (isBraking) brakePool.add(vx, ry(hopY + (isHeavy ? 0.95 : 0.72)), vz + vl * 0.5 + 0.06, vpitch, vyaw, vroll, vw / 1.9, 1, 1);
+          // Blinking turn signal at the front corner on the side the vehicle is moving to
+          const changer = v.changer;
+          if (changer && (changer.state === 1 || changer.state === 2) && blinkOn) {
+            const dirSign = Number(changer.dir || 1);
+            blinkerPool.add(vx + dirSign * (vw * 0.5 + 0.08), ry(hopY + 0.68), vz - vl * 0.35, 0, vyaw, 0);
           }
         }
       }
-      if (!chosenType) continue;
-
-      const slotIdx = poolCursor[chosenType]++;
-      const handle = vehiclePools[chosenType][slotIdx]!;
-
-      const vx = rx(Number(v.x ?? 0));
-      const vz = rz(Number(v.z ?? 0));
-      const vw = Number(v.w ?? 1.9);
-      const vh = Number(v.h ?? 1.5);
-      const vl = Number(v.l ?? 4.6);
-      const vyaw = Number(v.yaw ?? 0);
-      const vphase = Number(v.phase ?? 0);
-      const vspd = Number(v.spd ?? 14);
-      const isHeavy = vh > 2.5;
-      const damp = isHeavy ? 0.35 : 1;
-
-      const hopY =
-        (v.honkT > 0 ? Math.sin(Math.PI * (1 - v.honkT / 0.4)) * 0.38 : 0) +
-        Math.sin(simTime * (6 + vspd * 0.35) + vphase) * 0.014 * damp;
-      const vroll = Math.sin(simTime * 2.3 + vphase * 1.7) * 0.01 * damp;
-      const laneBrake = Number(g.traffic?._laneBrake?.[v.flowLane ?? v.lane ?? 0] ?? 0);
-      const isBraking = Number(v.dv ?? 0) < -0.5 || laneBrake > 0.5;
-      const vpitch = isBraking ? -0.012 * damp : 0;
-
-      handle
-        .setPosition(vx, ry(Math.max(0, hopY)), vz)
-        .setRotation(-vpitch, vyaw + Math.PI, -vroll)
-        .setScale([Math.min(1, MODEL_WIDTH_FIT / ((meshyVehicles.enabled ? MODEL_WIDTH_OVER_SPEC[chosenType] : undefined) ?? 1)), 1, 1])
-        .setVisible(true);
-
-      // Sloped golden launch ramp on Carrier trucks
-      if (chosenType === "carrier") {
-        const rampHandle = carrierRampHandles[slotIdx];
-        const rampH = Number(v.ramp?.height ?? v.roof ?? 3.0);
-        const rampLen = Number(v.ramp?.length ?? 6.0);
-        const rampPitch = Math.atan2(rampH, rampLen);
-        rampHandle
-          ?.setPosition(vx, ry(hopY + rampH * 0.48), vz + vl * 0.5 - rampLen * 0.48)
-          .setRotation(rampPitch, vyaw, vroll)
-          .setScale([1, 1, 1])
-          .setVisible(true);
-      }
-
-      // Brake Light Bars
-      if (isBraking && brakeUsed < BRAKE_BAR_POOL_COUNT) {
-        brakeBarHandles[brakeUsed++]!
-          .setPosition(vx, ry(hopY + (isHeavy ? 0.95 : 0.72)), vz + vl * 0.5 + 0.06)
-          .setRotation(vpitch, vyaw, vroll)
-          .setScale([vw / 1.9, 1, 1])
-          .setVisible(true);
-      }
-
-      // Blinking Amber Turn-Signal Indicators
-      const changer = v.changer;
-      if (changer && (changer.state === 1 || changer.state === 2) && blinkOn && blinkerUsed < BLINKER_POOL_COUNT) {
-        const dirSign = Number(changer.dir || 1);
-        blinkerHandles[blinkerUsed++]!
-          .setPosition(vx + dirSign * (vw * 0.5 + 0.08), ry(hopY + 0.68), vz - vl * 0.35)
-          .setRotation(0, vyaw, 0)
-          .setScale([1, 1, 1])
-          .setVisible(true);
-      }
+      near.commit();
+      far.commit();
     }
+    rampPool.commit();
+    brakePool.commit();
+    blinkerPool.commit();
 
-    // Hide unused ground vehicle slots
-    for (const vType of VEHICLE_TYPES) {
-      const pool = vehiclePools[vType];
-      for (let i = poolCursor[vType]; i < pool.length; i++) {
-        pool[i]!.setPosition(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2]).setScale(HIDDEN_SCALE).setVisible(false);
-        if (vType === "carrier") {
-          carrierRampHandles[i]
-            ?.setPosition(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
-            .setScale(HIDDEN_SCALE)
-            .setVisible(false);
-        }
-      }
-    }
-    for (let i = brakeUsed; i < BRAKE_BAR_POOL_COUNT; i++) {
-      brakeBarHandles[i]!.setScale(HIDDEN_SCALE).setVisible(false);
-    }
-    for (let i = blinkerUsed; i < BLINKER_POOL_COUNT; i++) {
-      blinkerHandles[i]!.setScale(HIDDEN_SCALE).setVisible(false);
-    }
-
-    // 5. Sync Sky-Lane Dogfight Pool (Pooled assets.roadsterRushSkyCar Nodes)
+    // 5. Sky-lane cars, nearest ahead first; every one in the window gets a slot
     const rawSkyCars: any[] = Array.isArray(g.traffic?.skyCars) ? g.traffic.skyCars : [];
-    const visibleSkyCars = rawSkyCars
-      .filter((sc) => sc && sc.z <= pz + 28 && sc.z >= pz - 290)
-      .sort((a, b) => Math.abs(pz - a.z) - Math.abs(pz - b.z));
-
-    let skyUsed = 0;
-    for (let i = 0; i < visibleSkyCars.length && skyUsed < SKY_CAR_POOL_COUNT; i++) {
-      const sc = visibleSkyCars[i];
-      const slot = skyCarSlots[skyUsed++]!;
+    nearestAhead(rawSkyCars, pz, DRAW_WINDOW.skyCars, POOL_CAPACITY.skyCar, skySlots);
+    skyCarPool.begin();
+    skyPlumePool.begin();
+    skyHaloPool.begin();
+    for (let i = 0; i < skySlots.length; i++) {
+      const sc = skySlots[i];
       const sx = rx(Number(sc.x ?? 0));
       const sy = ry(Number(sc.y ?? 12));
       const sz = rz(Number(sc.z ?? 0));
       const srx = Number(sc.rx ?? 0);
       const srz = Number(sc.rz ?? 0);
       const oncoming = Number(sc.dir ?? 1) > 0;
-      const sry = oncoming ? 0 : Math.PI;
-
-      slot.car
-        .setPosition(sx, sy, sz)
-        .setRotation(srx, sry, srz)
-        .setScale([1, 1, 1])
-        .setVisible(true);
-
+      skyCarPool.add(sx, sy, sz, srx, oncoming ? 0 : Math.PI, srz);
       const tailZ = oncoming ? sz - 2.35 : sz + 2.35;
-      slot.plume
-        .setPosition(sx, sy + 0.45, tailZ)
-        .setRotation(oncoming ? -Math.PI * 0.5 : Math.PI * 0.5, 0, 0)
-        .setScale([0.9, 1.2 * flicker, 0.9])
-        .setVisible(true);
-
-      if (oncoming) {
-        slot.halo
-          .setPosition(sx, sy + 0.55, sz + 2.15)
-          .setRotation(0, 0, simTime * 4)
-          .setScale([1, 1, 1])
-          .setVisible(true);
-      } else {
-        slot.halo.setScale(HIDDEN_SCALE).setVisible(false);
-      }
+      skyPlumePool.add(sx, sy + 0.45, tailZ, oncoming ? -Math.PI * 0.5 : Math.PI * 0.5, 0, 0, 0.9, 1.2 * flicker, 0.9);
+      if (oncoming) skyHaloPool.add(sx, sy + 0.55, sz + 2.15, 0, 0, REDUCED_MOTION ? 0 : simTime * 4);
     }
+    skyCarPool.commit();
+    skyPlumePool.commit();
+    skyHaloPool.commit();
 
-    for (let i = skyUsed; i < SKY_CAR_POOL_COUNT; i++) {
-      const slot = skyCarSlots[i]!;
-      slot.car.setScale(HIDDEN_SCALE).setVisible(false);
-      slot.plume.setScale(HIDDEN_SCALE).setVisible(false);
-      slot.halo.setScale(HIDDEN_SCALE).setVisible(false);
-    }
-
-    // 6. Sync 3D Pickups Pool (42 Spinning Golden Bolts + 10 Glowing Powerup Orbs)
+    // 6. Bolts and power-ups, nearest ahead first (audit RR-4)
     const rawPickups: any[] = Array.isArray(g.traffic?.pickups) ? g.traffic.pickups : [];
-    let boltUsed = 0;
-    let powerUsed = 0;
-
-    for (let i = 0; i < rawPickups.length; i++) {
-      const pk = rawPickups[i];
-      if (!pk || pk.z > pz + 16 || pk.z < pz - 235) continue;
-      const kx = rx(Number(pk.x ?? 0));
-      const kz = rz(Number(pk.z ?? 0));
+    assignPickupSlots(rawPickups, pz, pickupSlots);
+    boltPool.begin();
+    for (let i = 0; i < pickupSlots.bolts.length; i++) {
+      const pk = pickupSlots.bolts[i];
       const phase = Number(pk.phase ?? 0);
       const bob = pk.magnet ? 0 : Math.sin(simTime * 2.8 + phase) * 0.15;
-      const ky = ry(Number(pk.y ?? 1) + bob);
-      const spin = simTime * 3.4 + phase;
-
-      if (pk.kind === "bolt") {
-        if (boltUsed >= BOLT_POOL_COUNT) continue;
-        const bh = boltHandles[boltUsed++]!;
-        const s = pk.magnet ? 0.82 : 1.0;
-        bh.setPosition(kx, ky, kz)
-          .setRotation(0, spin, Math.PI * 0.12)
-          .setScale([s, s, s])
-          .setVisible(true);
-      } else {
-        if (powerUsed >= POWERUP_POOL_COUNT) continue;
-        const idx = powerUsed++;
-        const ph = powerupHandles[idx]!;
-        const kind = (pk.kind as Exclude<PickupKind, "bolt">) || "air";
-        if (powerupKindCache[idx] !== kind) {
-          powerupKindCache[idx] = kind;
-          const col = POWERUP_COLORS[kind] || "#2f7dff";
-          ph.setMaterial(
-            material.emissive({
-              color: col,
-              emissive: col,
-              emissiveIntensity: 1.75
-            })
-          );
-        }
-        ph.setPosition(kx, ky, kz)
-          .setRotation(spin * 0.5, spin, 0)
-          .setScale([1, 1, 1])
-          .setVisible(true);
+      const s = pk.magnet ? 0.82 : 1.0;
+      boltPool.add(rx(Number(pk.x ?? 0)), ry(Number(pk.y ?? 1) + bob), rz(Number(pk.z ?? 0)), 0, simTime * 3.4 + phase, Math.PI * 0.12, s, s, s);
+    }
+    boltPool.commit();
+    let powerDrawn = 0;
+    for (const kind of POWERUP_KINDS) {
+      const target = powerPools[kind];
+      target.begin();
+      const list = pickupSlots.powerups[kind];
+      for (let i = 0; i < list.length; i++) {
+        const pk = list[i];
+        const phase = Number(pk.phase ?? 0);
+        const bob = pk.magnet ? 0 : Math.sin(simTime * 2.8 + phase) * 0.15;
+        const spin = simTime * 3.4 + phase;
+        // the multiplier cube tumbles; the other shapes spin upright
+        const tilt = kind === "multiplier" ? spin * 0.5 : 0;
+        if (target.add(rx(Number(pk.x ?? 0)), ry(Number(pk.y ?? 1) + bob), rz(Number(pk.z ?? 0)), tilt, spin, 0)) powerDrawn++;
       }
-    }
-
-    for (let i = boltUsed; i < BOLT_POOL_COUNT; i++) {
-      boltHandles[i]!.setScale(HIDDEN_SCALE).setVisible(false);
-    }
-    for (let i = powerUsed; i < POWERUP_POOL_COUNT; i++) {
-      powerupHandles[i]!.setScale(HIDDEN_SCALE).setVisible(false);
+      target.commit();
     }
 
     // 7. Publish Aura3D Runtime Evidence & Telemetry
@@ -1559,11 +1274,13 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       framesRendered,
       mode: g.mode,
       paused: Boolean(g.paused),
+      assisted: Boolean(real.assisted),
       score: Math.floor(Number(g.score ?? 0)),
       distance: Math.floor(Number(g.distance ?? 0)),
       bolts: Number(g.bolts ?? 0),
       multiplier: Number(g.mult ?? 1),
       timeOfDay: Number(manualTodOverride ?? g.world?.timeOfDay ?? 0),
+      trafficYawOffset: TRAFFIC_YAW,
       player: {
         position: [px, py, pz],
         lane: Number(p.lane ?? 2),
@@ -1574,11 +1291,12 @@ async function bootRoadsterRushAura3D(): Promise<void> {
         boosting: Boolean(p.boosting)
       },
       visiblePools: {
-        groundVehicles: visibleVehicles.length,
-        skyCars: skyUsed,
-        bolts: boltUsed,
-        powerups: powerUsed
-      }
+        groundVehicles: groundDrawn,
+        skyCars: skySlots.length,
+        bolts: pickupSlots.bolts.length,
+        powerups: powerDrawn
+      },
+      drawn: drawnWithin(120, pz, worldGantries)
     };
     publishBeacon(evidence);
     (window as any).__AURA3D_SHOWCASE_ROADSTER_RUSH__ = {
@@ -1586,6 +1304,33 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       evidence,
       triggerScenario
     };
+  }
+
+  /** Drawn entity counts within `ahead` metres in front of the player, for the capture probe (same shape on every build). */
+  function drawnWithin(ahead: number, pz: number, gantrySlots: readonly { position?: { z?: number } }[]): Record<string, number> {
+    const within = (list: readonly { z: number }[]): number => {
+      let n = 0;
+      for (const item of list) {
+        const d = pz - item.z;
+        if (d >= 0 && d <= ahead) n++;
+      }
+      return n;
+    };
+    let ground = 0;
+    let heavy = 0;
+    for (const t of VEHICLE_TYPES) {
+      const n = within(groundSlots[t]);
+      ground += n;
+      if (t === "boxtruck" || t === "bus" || t === "carrier") heavy += n;
+    }
+    let powerups = 0;
+    for (const k of POWERUP_KINDS) powerups += within(pickupSlots.powerups[k]);
+    let gantries = 0;
+    for (const slot of gantrySlots) {
+      const z = Number(slot?.position?.z ?? 1e5);
+      if (z < 1e4 && pz - z >= 0 && pz - z <= ahead) gantries++;
+    }
+    return { ground, heavy, sky: within(skySlots), bolts: within(pickupSlots.bolts), powerups, gantries };
   }
 
   function ensureLivePlaying(g: any): void {
@@ -1603,6 +1348,8 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     const g = (window as any).__GAME__?.game;
     if (!g) return;
     ensureLivePlaying(g);
+    // scenario buttons refill air, grant rockets or teleport: the run is assisted and cannot set the saved best (audit RR-7)
+    g.markAssisted?.();
     const p = g.player;
     if (!p) return;
 
@@ -1679,14 +1426,17 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     const btnRoll = document.getElementById("aura-btn-roll");
     const btnRocket = document.getElementById("aura-btn-rocket");
     const btnAuto = document.getElementById("aura-btn-auto") as HTMLButtonElement | null;
-    const modeBtns = [btnFreeway, btnSky, btnRamp, btnRoll, btnRocket];
+    const modeBtns = [btnFreeway, btnSky, btnRamp];
     const todBtns = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-aura-tod]"));
 
     if (btnAuto) {
       btnAuto.classList.toggle("active", autopilot);
+      btnAuto.setAttribute("aria-pressed", String(autopilot));
       btnAuto.addEventListener("click", () => {
         autopilot = !autopilot;
         btnAuto.classList.toggle("active", autopilot);
+        btnAuto.setAttribute("aria-pressed", String(autopilot));
+        if (autopilot) (window as any).__GAME__?.game?.markAssisted?.();
         btnAuto.blur();
       });
     }
@@ -1696,27 +1446,33 @@ async function bootRoadsterRushAura3D(): Promise<void> {
         b?.classList.toggle("active", b === target);
       }
     };
+    /** One-shot actions flash briefly and drop focus, so they never look held on (audit RR-14). */
+    const momentary = (btn: HTMLElement | null, run: () => void) => {
+      btn?.addEventListener("click", () => {
+        run();
+        btn.classList.add("active");
+        window.setTimeout(() => btn.classList.remove("active"), 260);
+        (btn as HTMLButtonElement).blur();
+      });
+    };
 
     btnFreeway?.addEventListener("click", () => {
       setActiveBtn(btnFreeway);
       triggerScenario("freeway");
+      btnFreeway.blur();
     });
     btnSky?.addEventListener("click", () => {
       setActiveBtn(btnSky);
       triggerScenario("sky");
+      btnSky.blur();
     });
     btnRamp?.addEventListener("click", () => {
       setActiveBtn(btnRamp);
       triggerScenario("ramp");
+      btnRamp.blur();
     });
-    btnRoll?.addEventListener("click", () => {
-      setActiveBtn(btnRoll);
-      triggerScenario("roll");
-    });
-    btnRocket?.addEventListener("click", () => {
-      setActiveBtn(btnRocket);
-      triggerScenario("rocket");
-    });
+    momentary(btnRoll, () => triggerScenario("roll"));
+    momentary(btnRocket, () => triggerScenario("rocket"));
 
     for (const btn of todBtns) {
       btn.addEventListener("click", () => {
@@ -1725,6 +1481,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
         manualTodOverride = Number.isFinite(todVal) ? todVal : 0;
         const g = (window as any).__GAME__?.game;
         g?.world?.setTimeOfDay?.(manualTodOverride);
+        btn.blur();
       });
     }
   }
@@ -1757,14 +1514,15 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     syncRoadsterWorld(nativeGame, live ? viewOf(nativeGame, presenter.present(nativeGame, true)) : nativeGame);
   });
 
-  // Ensure initial live playing state and first synchronous world sync
-  ensureLivePlaying(nativeGame);
+  // Demos and captures start the run at once; everyone else sees the title card (goal, controls, best) and starts it.
+  if (AUTOSTART) ensureLivePlaying(nativeGame);
   syncRoadsterWorld(nativeGame);
-  auraApp.step(1 / 60);
+  // Compile every program (and wait for the environment) before the boot veil lifts (checklist R2)
+  await warmPrograms(auraApp);
   document.getElementById("boot")?.classList.add("done");
   document.body.dataset.aura3dReady = "true";
   canvas.dataset.ready = "true";
   auraApp.resume();
 }
 
-void bootRoadsterRushAura3D();
+bootRoadsterRushAura3D().catch(showBootError);

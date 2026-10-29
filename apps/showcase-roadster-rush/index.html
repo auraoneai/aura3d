@@ -138,6 +138,15 @@
       @media (max-width: 760px) {
         .aura3d-controls-hint { display: none; }
       }
+      /* 44 px touch targets on touch screens (checklist U1); the HUD moves down to clear the taller bar. */
+      @media (pointer: coarse) {
+        .aura3d-top-bar button { height: 44px; padding: 0 14px; }
+        .rr-left, .rr-right { top: 72px !important; }
+      }
+      .boot-error { display: grid; gap: 8px; justify-items: center; max-width: 320px; text-align: center; font-size: 13px; color: #cdd8e4; }
+      .boot-error p { margin: 0; }
+      .boot-error-detail { color: #9fb4c8; font-size: 12px; word-break: break-word; }
+      .boot-retry { height: 44px; padding: 0 22px; border-radius: 999px; border: 0; background: #ff2a3a; color: #fff; font-size: 13px; cursor: pointer; }
     </style>
   </head>
   <body>
@@ -159,7 +168,7 @@
       STEER: A/D or ARROWS · HOP / FLY: SPACE or W (HOLD) · BARREL ROLL: Q / E · BOOST: SHIFT · DIVE: S · PAUSE: P
     </div>
     <canvas id="game" width="1280" height="800" aria-label="Apex Overdrive 3D freeway view"></canvas>
-    <div id="hud" aria-live="polite"></div>
+    <div id="hud"></div>
     <div id="boot" class="boot">
       <div class="boot-mark">Apex Overdrive</div>
       <div class="boot-meter">
