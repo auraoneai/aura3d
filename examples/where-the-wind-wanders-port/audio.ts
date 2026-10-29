@@ -16,8 +16,14 @@ export interface WindAudio {
   chime(index: number): void;
   bell(): void;
   setMuted(muted: boolean): void;
+  /** Pause ducks the master gain to silence and stops the birds; the loops keep their place. */
+  setPaused(paused: boolean): void;
+  /** A hidden tab suspends the audio context; showing it again resumes it (if a gesture already started sound). */
+  setHidden(hidden: boolean): void;
   readonly muted: boolean;
   readonly started: boolean;
+  /** For QA: the context state and the master gain target. */
+  readonly snapshot: { context: string; gain: number; paused: boolean; hidden: boolean };
 }
 
 const STORE = "aura3d-wind-port-muted";
@@ -32,6 +38,8 @@ export function createAudio(enabled: boolean): WindAudio {
   let noise: AudioBuffer | null = null;
   let birdTimer = 0;
   let muted = false;
+  let paused = false;
+  let hidden = false;
   try { muted = localStorage.getItem(STORE) === "1"; } catch { /* storage unavailable */ }
 
   const noiseBuffer = (c: AudioContext): AudioBuffer => {
@@ -94,25 +102,27 @@ export function createAudio(enabled: boolean): WindAudio {
 
   const scheduleBirds = (): void => {
     birdTimer = window.setTimeout(() => {
-      if (!muted) chirp();
+      if (!muted && !paused && !hidden) chirp();
       scheduleBirds();
     }, 2600 + Math.random() * 6200);
   };
 
+  const level = (): number => (muted || paused ? 0 : 0.8);
   const apply = (): void => {
-    if (master && ctx) master.gain.setTargetAtTime(muted ? 0 : 0.8, ctx.currentTime, 0.05);
+    if (master && ctx) master.gain.setTargetAtTime(level(), ctx.currentTime, 0.05);
   };
 
   return {
     get muted() { return muted; },
     get started() { return ctx !== null; },
+    get snapshot() { return { context: ctx?.state ?? "none", gain: level(), paused, hidden }; },
     resume() {
       if (!enabled) return;
-      if (ctx) { void ctx.resume(); return; }
+      if (ctx) { if (!hidden) void ctx.resume(); return; }
       if (typeof AudioContext === "undefined") return;
       ctx = manager.context as unknown as AudioContext;
       master = ctx.createGain();
-      master.gain.value = muted ? 0 : 0.8;
+      master.gain.value = level();
       const comp = ctx.createDynamicsCompressor();
       master.connect(comp).connect(ctx.destination);
       noise = noiseBuffer(ctx);
@@ -134,7 +144,7 @@ export function createAudio(enabled: boolean): WindAudio {
       swell.connect(swellGain).connect(sea.gain.gain);
       swell.start();
       scheduleBirds();
-      void ctx.resume();
+      if (!hidden) void ctx.resume();
     },
     update(pos, time) {
       if (!ctx || !windGain || !seaGain || !windFilter) return;
@@ -143,7 +153,7 @@ export function createAudio(enabled: boolean): WindAudio {
       seaGain.gain.setTargetAtTime(0.025 + 0.11 * shore, ctx.currentTime, 0.6);
     },
     footstep() {
-      if (!ctx || !master || muted || !noise) return;
+      if (!ctx || !master || muted || paused || !noise) return;
       const t = ctx.currentTime;
       const src = ctx.createBufferSource();
       src.buffer = noise;
@@ -187,6 +197,16 @@ export function createAudio(enabled: boolean): WindAudio {
         const t = ctx.currentTime + strike * 1.9;
         partials.forEach((r, i) => tone(base * r, t, 0.16 / (1 + i * 0.9), 3.6 / (1 + i * 0.35), "sine", (i % 2 ? 0.2 : -0.2)));
       }
+    },
+    setPaused(value) {
+      paused = value;
+      apply();
+    },
+    setHidden(value) {
+      hidden = value;
+      if (!ctx) return;
+      if (value) void ctx.suspend();
+      else void ctx.resume();
     },
     setMuted(value) {
       muted = value;

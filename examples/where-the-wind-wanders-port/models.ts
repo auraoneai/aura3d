@@ -10,12 +10,32 @@ import { MODEL_ASSETS, hasModel } from "./model-assets";
 import { CLIP_SECONDS, HERO_GAITS, STRIDE_SPEED, type Gait } from "./locomotion";
 import type { ModelPlacement, Scenery } from "./scenery";
 
-export interface ModelSet { letter: boolean; bell: boolean; cottage: boolean; trees: boolean; hero: boolean; wisp: boolean; boat: boolean; stones: boolean; shrubs: boolean }
+export interface ModelSet { letter: boolean; bell: boolean; bellModel?: boolean; cottage: boolean; trees: boolean; hero: boolean; wisp: boolean; boat: boolean; stones: boolean; shrubs: boolean }
+
+/**
+ * The bell is split out of belltower.glb (assets/models/belltower-bell.glb, see model-assets.ts) so it can swing. Both
+ * files share the Meshy file's units: the tower is placed with `targetHeight` (normalised: bottom-centre of its bounds at
+ * the node position), and the bell file is re-centred on its yoke, so the bell node goes where the yoke sits in the
+ * placed tower and a z rotation swings it from there.
+ */
+export const BELLTOWER_FILE_BOUNDS = { min: [-0.576689, -0.951994, -0.531289], max: [0.575231, 0.950971, 0.52925] } as const;
+export const BELL_PIVOT_IN_FILE = [0.002974, 0.621514, 0.190564] as const;
+export const BELLTOWER_HEIGHT = 4.6;
+export function bellModelPose(tower: { x: number; y: number; z: number; h?: number }): { position: [number, number, number]; scale: number } {
+  const b = BELLTOWER_FILE_BOUNDS;
+  const scale = (tower.h ?? BELLTOWER_HEIGHT) / (b.max[1] - b.min[1]);
+  const cx = (b.min[0] + b.max[0]) / 2, cz = (b.min[2] + b.max[2]) / 2;
+  return {
+    position: [tower.x + scale * (BELL_PIVOT_IN_FILE[0] - cx), tower.y + scale * (BELL_PIVOT_IN_FILE[1] - b.min[1]), tower.z + scale * (BELL_PIVOT_IN_FILE[2] - cz)],
+    scale
+  };
+}
 
 export function availableModels(): ModelSet {
   return {
     letter: hasModel("letter"),
     bell: hasModel("belltower"),
+    bellModel: hasModel("belltower") && hasModel("bell"),
     cottage: hasModel("cottage"),
     trees: hasModel("pine") && hasModel("oak"),
     hero: hasModel("hero"),
@@ -28,12 +48,21 @@ export function availableModels(): ModelSet {
 
 const xf = (p: ModelPlacement, scale: number, yawOffset = 0, lift = 0) => ({ position: [p.x, p.y + lift, p.z] as [number, number, number], rotation: [0, p.yaw + yawOffset, 0] as [number, number, number], scale: [scale, scale, scale] as [number, number, number] });
 
-/** Static dressing: cottages, trees, shrubs, stones. The animated pieces (hero, wisp, boat) are added by `addAnimatedModels`. */
+/**
+ * Static dressing: cottages, the bell frame (and its swinging bell), trees, shrubs, stones. The animated pieces (hero,
+ * wisp, boat) are added by `addAnimatedModels`. Nothing casts or receives engine shadows: the scene authors no lights
+ * (the painted shaders carry their own key light and the GLBs take the engine's implicit fill), so there is no shadow
+ * light, and the traveller's contact shadow is the scene's own blob.
+ */
 export function addStaticModels(builder: Scene, sc: Scenery, set: ModelSet): void {
   if (set.cottage) {
-    sc.placements.cottages.forEach((p, i) => builder.add(model(MODEL_ASSETS.cottage, { name: `cottage-${i}`, targetHeight: p.h ?? 8, position: [p.x, p.y, p.z], rotation: [0, p.yaw, 0], castShadow: true, receiveShadow: true, collider: false })));
+    sc.placements.cottages.forEach((p, i) => builder.add(model(MODEL_ASSETS.cottage, { name: `cottage-${i}`, targetHeight: p.h ?? 8, position: [p.x, p.y, p.z], rotation: [0, p.yaw, 0], castShadow: false, receiveShadow: false, collider: false })));
   }
-  if (set.bell) sc.placements.bell.forEach((p) => builder.add(model(MODEL_ASSETS.belltower, { name: "belltower", targetHeight: p.h ?? 4.6, position: [p.x, p.y, p.z], rotation: [0, 0, 0], castShadow: true, receiveShadow: true, collider: false })));
+  if (set.bell) sc.placements.bell.forEach((p) => builder.add(model(MODEL_ASSETS.belltower, { name: "belltower", targetHeight: p.h ?? BELLTOWER_HEIGHT, position: [p.x, p.y, p.z], rotation: [0, 0, 0], castShadow: false, receiveShadow: false, collider: false })));
+  if (set.bellModel) sc.placements.bell.slice(0, 1).forEach((p) => {
+    const pose = bellModelPose(p);
+    builder.add(model(MODEL_ASSETS.bell, { name: "belltower-bell", scaleMode: "world", scale: [pose.scale, pose.scale, pose.scale], position: pose.position, castShadow: false, receiveShadow: false, collider: false }).runtime({ id: "bell-model" }));
+  });
   if (set.trees) {
     if (sc.placements.pines.length > 0) builder.add(instances.model(MODEL_ASSETS.pine, { name: "pines", targetHeight: 6, transforms: sc.placements.pines.map((p) => xf(p, (p.h ?? 6) / 6)), castShadow: false, receiveShadow: false, collider: false }));
     if (sc.placements.oaks.length > 0) builder.add(instances.model(MODEL_ASSETS.oak, { name: "oaks", targetHeight: 6, transforms: sc.placements.oaks.map((p) => xf(p, (p.h ?? 6) / 6)), castShadow: false, receiveShadow: false, collider: false }));

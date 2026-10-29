@@ -12,3 +12,9 @@ export const HERO_GAITS: readonly LocomotionGait[] = [
   { name: "Walk", speed: STRIDE_SPEED.Walk, cycle: CLIP_SECONDS.Walk },
   { name: "Run", speed: STRIDE_SPEED.Run, cycle: CLIP_SECONDS.Run }
 ];
+
+/** Ground distance between two footfalls of the Walk clip (two contacts per cycle); the clip's rate follows ground speed, so this holds at any walking speed. */
+export const FOOTFALL_SPACING = (STRIDE_SPEED.Walk * CLIP_SECONDS.Walk) / 2;
+/** `sim.ts` adds distance / 2.2 to `stride`; this is the index of the footfall the traveller is on, so a footstep sound plays when it changes. */
+export const STRIDE_UNIT = 2.2;
+export const footstepCell = (stride: number): number => Math.floor((stride * STRIDE_UNIT) / FOOTFALL_SPACING);

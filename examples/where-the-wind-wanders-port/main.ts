@@ -4,14 +4,21 @@
  *
  * Query parameters: `manual=1` (the sim only advances through `__AURA_WIND__.stepFrames`; no title
  * card, no sound), `start=1` (skip the title card), `quality=low`. The hooks mirror the capture harness: `applyInput(keys, act)` then
- * `stepFrames(n)`, or `runScript(segments)` to replay a recorded key script.
+ * `stepFrames(n)`, or `runScript(segments)` to replay a recorded key script; `realtime(seconds)` advances the game clock
+ * (captions, the bell-to-epilogue wait, the voyage) without drawing a frame per tick.
+ *
+ * Two clocks: the sim runs on fixed steps; captions, the epilogue wait and the voyage run on the game clock, which only
+ * moves while the walk runs (not on the title card, not while paused, not in a hidden tab).
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
-import { CAMERA_FOLLOW, CAMERA_OFFSET, LETTERS, VIRTUAL_STEP_MS, createState, expandScript, stepFrame, type Action, type FrameInput, type ScriptSegment, type WindState } from "./sim";
+import { CAMERA_FOLLOW, CAMERA_OFFSET, LETTERS, VIRTUAL_STEP_MS, createState, expandScript, nearbyInteraction, stepFrame, type Action, type FrameInput, type ScriptSegment, type WindState } from "./sim";
+import { createCaptionQueue } from "./captions";
+import { footstepCell } from "./locomotion";
 import { createWindPresenter, viewOf } from "./presentation";
 import { buildWorld, type WorldRuntime } from "./world";
 import { createAudio } from "./audio";
 import { STORY, createUi } from "./ui";
+import { MODEL_ASSETS } from "./model-assets";
 
 const params = new URLSearchParams(location.search);
 const manual = params.get("manual") === "1";
@@ -43,6 +50,12 @@ let completeClock = 0;
 let epilogueClock: number | null = null;
 const audio = createAudio(!manual);
 const ui = createUi();
+const captions = createCaptionQueue({ show: (text) => ui.showCaption(text), hide: () => ui.showCaption(null) });
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+/** Seconds after the bell before the boat leaves; the epilogue lines' times on the game clock. */
+const EPILOGUE_DELAY = 9;
+const INTRO_CUES = [0, 5.6, 11.2];
+const EPILOGUE_CUES = [{ at: 0, seconds: 6 }, { at: 6.5, seconds: 6 }, { at: 13, seconds: 7 }];
 
 declare global {
   interface Window {
@@ -77,12 +90,12 @@ function handleMessage(m: string): void {
     const index = LETTERS.findIndex((l) => `letter:${l.id}` === m);
     if (index >= 0) {
       ui.addLetter(index);
-      ui.caption(STORY.letters[index]!.text, 11);
+      captions.say(STORY.letters[index]!.text, 11);
       audio.chime(index);
     }
-  } else if (m === "bell:locked") ui.caption(STORY.locked, 4);
+  } else if (m === "bell:locked") captions.say(STORY.locked, 4);
   else if (m === "bell:complete") {
-    ui.caption(STORY.complete, 9);
+    captions.say(STORY.complete, 9);
     audio.bell();
   }
 }
@@ -99,28 +112,78 @@ function beginWalk(): void {
   ui.hideTitle();
   audio.resume();
   ui.setSound(audio.muted, audio.started);
-  STORY.intro.forEach((line, i) => window.setTimeout(() => ui.caption(line, 5), i * 5600));
+  captions.play(STORY.intro.map((text, i) => ({ text, at: INTRO_CUES[i] ?? i * 5.6, seconds: 5 })));
 }
 
 function startEpilogue(): void {
   epilogueClock = 0;
   ui.showEpilogue(true);
-  ui.caption(STORY.epilogue[0], 6);
-  window.setTimeout(() => ui.caption(STORY.epilogue[1], 6), 6500);
-  window.setTimeout(() => ui.caption(STORY.epilogue[2], 7), 13000);
+  captions.play(STORY.epilogue.map((text, i) => ({ text, ...EPILOGUE_CUES[i]! })));
 }
 
+/** "Keep wandering the valley": fade, put the traveller and boat back at the jetty, carry on walking. */
 function leaveEpilogue(): void {
+  if (epilogueClock === null) return;
+  captions.clear();
   epilogueClock = null;
   completeClock = -1e9;
-  runtime?.setEpilogue(null);
   ui.showEpilogue(false);
+  ui.fade(() => { runtime?.setEpilogue(null); render(VIRTUAL_STEP_MS); });
+}
+
+/** Back to a fresh valley: no letters, the bell silent, the traveller at the start. */
+function resetWalk(): void {
+  state = createState(); presenter.reset(); renderTime = 0; epilogueClock = null; completeClock = 0; lastStrideCell = 0; lastHopPhase = "idle";
+  captions.clear(); held.clear(); touchKeys = ""; pendingAct = null;
+  ui.clearLetters(); ui.showEpilogue(false); runtime?.reset(); updateHud(); render(VIRTUAL_STEP_MS);
+}
+
+/** "Walk again": fade, start a new walk from the title card. */
+function walkAgain(): void {
+  captions.clear();
+  epilogueClock = null;
+  ui.showEpilogue(false);
+  ui.fade(() => {
+    resetWalk();
+    if (paused) { paused = false; ui.setPaused(false); audio.setPaused(false); }
+    started = false;
+    ui.showTitle();
+  });
+}
+
+function setPaused(value: boolean): void {
+  if (!started || ui.titleVisible) return;
+  paused = value;
+  ui.setPaused(paused);
+  audio.setPaused(paused);
+  held.clear();
+  touchKeys = "";
+}
+
+/** Game-clock work for `dt` seconds of walking: captions, the wait after the bell, the voyage. */
+function advanceGameClock(dt: number): void {
+  if (state.complete && epilogueClock === null) {
+    completeClock += dt;
+    if (completeClock > EPILOGUE_DELAY) startEpilogue();
+  }
+  if (epilogueClock !== null) {
+    epilogueClock += dt;
+    runtime?.setEpilogue(epilogueClock);
+  }
+  captions.tick(dt);
+}
+
+/** The reach prompt: what E (or Act) would do here. */
+function updatePrompt(): void {
+  if (!started || paused || epilogueClock !== null || ui.titleVisible) { ui.setPrompt(null); return; }
+  const near = nearbyInteraction(state.pos, state.found);
+  ui.setPrompt(near.letter >= 0 ? "letter" : near.bell && !state.complete ? (state.found.length === LETTERS.length ? "bell" : "bell-locked") : null);
 }
 
 function advance(frame: FrameInput, dtMs = VIRTUAL_STEP_MS, tickTime = true): void {
   stepFrame(state, frame, dtMs);
   if (tickTime) renderTime += dtMs / 1000;
-  const cell = Math.floor(state.stride * 2);
+  const cell = footstepCell(state.stride);
   if (state.moved && state.hop.phase === "idle" && cell !== lastStrideCell) audio.footstep();
   lastStrideCell = cell;
   if (state.hop.phase !== lastHopPhase) {
@@ -156,6 +219,8 @@ const loop = createFixedStepLoop({
 
 window.addEventListener("keydown", (e) => {
   audio.resume();
+  // arrows and Space walk and hop: they must not scroll a page that hosts the game
+  if (e.code in KEY_LETTER || e.code === "Space") e.preventDefault();
   if (e.repeat) return;
   if (e.code === "Enter") {
     if (ui.titleVisible) beginWalk();
@@ -164,8 +229,8 @@ window.addEventListener("keydown", (e) => {
   }
   if (e.code === "KeyM") { audio.setMuted(!audio.muted); ui.setSound(audio.muted, audio.started); return; }
   if (!started) return;
-  if (e.code === "KeyJ" || e.code === "Tab") { ui.toggleJournal(); e.preventDefault(); return; }
-  if (e.code === "Escape" || e.code === "KeyP") { paused = !paused; ui.setPaused(paused); held.clear(); return; }
+  if (e.code === "KeyJ") { ui.toggleJournal(); return; }
+  if (e.code === "Escape" || e.code === "KeyP") { setPaused(!paused); return; }
   if (paused || epilogueClock !== null) return;
   if (e.code in KEY_LETTER) held.add(e.code);
   if (e.code === "KeyE") pendingAct = "E";
@@ -176,6 +241,9 @@ window.addEventListener("blur", () => held.clear());
 window.addEventListener("pointerdown", () => audio.resume(), { once: true });
 ui.onBegin(beginWalk);
 ui.onContinue(leaveEpilogue);
+ui.onWalkAgain(walkAgain);
+ui.onPause(() => setPaused(!paused));
+document.addEventListener("visibilitychange", () => { audio.setHidden(document.hidden); held.clear(); });
 ui.onToggleSound(() => { audio.resume(); audio.setMuted(!audio.muted); ui.setSound(audio.muted, audio.started); });
 ui.onTouch((k) => { touchKeys = k; }, (a) => { if (started && !paused && epilogueClock === null) pendingAct = a; });
 if (started) { ui.hideTitle(); }
@@ -187,19 +255,14 @@ function tick(now: number): void {
   last = now;
   loop.tick(now);
   if (!ready || manual) return;
-  if (!started || paused) {
+  if (!started || paused || document.hidden) {
     renderTime += dtMs / 1000;
+    updatePrompt();
     render(VIRTUAL_STEP_MS);
     return;
   }
-  if (state.complete && epilogueClock === null) {
-    completeClock += dtMs / 1000;
-    if (completeClock > 9) startEpilogue();
-  }
-  if (epilogueClock !== null) {
-    epilogueClock += dtMs / 1000;
-    runtime?.setEpilogue(epilogueClock);
-  }
+  advanceGameClock(dtMs / 1000);
+  updatePrompt();
   renderTime += dtMs / 1000;
   audio.update(state.pos, renderTime);
   render(dtMs, true);
@@ -248,10 +311,17 @@ installQaHooks("wind", {
       render(VIRTUAL_STEP_MS);
       return { xs, zs, found: [...state.found], complete: state.complete };
     },
-    reset(): void {
-      state = createState(); presenter.reset(); renderTime = 0; epilogueClock = null; completeClock = 0; lastStrideCell = 0; lastHopPhase = "idle";
-      ui.clearLetters(); ui.showEpilogue(false); runtime?.reset(); updateHud(); render(VIRTUAL_STEP_MS);
+    reset(): void { resetWalk(); },
+    /** Advance the game clock by `seconds` in 0.1 s ticks (captions, the wait after the bell, the voyage), then draw once. */
+    realtime(seconds: number): void {
+      for (let t = 0; t < seconds - 1e-9; t += 0.1) { const dt = Math.min(0.1, seconds - t); advanceGameClock(dt); renderTime += dt; }
+      updatePrompt();
+      render(VIRTUAL_STEP_MS);
     },
+    get caption() { return captions.current; },
+    get bellAngle() { return runtime?.bellAngle ?? null; },
+    get audioState() { return audio.snapshot; },
+    get reducedMotion() { return reducedMotion.matches; },
     /** Capture hook: place the traveller somewhere and settle the follow camera on it (resets the run). */
     teleport(x: number, z: number): void {
       state = createState();
@@ -296,9 +366,37 @@ function reportError(error: unknown): void {
   console.error(error);
 }
 
+/** Load progress on the loading card: the models are the bulk of the first load, so count them as they arrive. */
+function watchModelLoads(): () => void {
+  const status = $("loading-status");
+  const urls = new Set(Object.values(MODEL_ASSETS).map((ref) => new URL((ref as unknown as { url: string }).url, location.href).pathname));
+  const done = new Map<string, number>();
+  const show = (): void => {
+    const mb = [...done.values()].reduce((a, b) => a + b, 0) / 1e6;
+    status.textContent = `Drawing the valley… ${done.size} of ${urls.size} models${mb > 0 ? ` (${mb.toFixed(1)} MB)` : ""}`;
+  };
+  const take = (entries: PerformanceEntryList): void => {
+    let changed = false;
+    for (const e of entries) {
+      const path = new URL(e.name, location.href).pathname;
+      if (!urls.has(path) || done.has(path)) continue;
+      const r = e as PerformanceResourceTiming;
+      done.set(path, r.encodedBodySize || r.transferSize || 0);
+      changed = true;
+    }
+    if (changed) show();
+  };
+  if (typeof PerformanceObserver === "undefined") return () => {};
+  const observer = new PerformanceObserver((list) => take(list.getEntries()));
+  try { observer.observe({ type: "resource", buffered: true }); } catch { return () => {}; }
+  show();
+  return () => observer.disconnect();
+}
+
 async function boot(): Promise<void> {
   sizeCanvas();
-  const world = buildWorld({ density: lowQuality ? 0.5 : 1 });
+  const stopWatching = watchModelLoads();
+  const world = buildWorld({ density: lowQuality ? 0.5 : 1, reducedMotion: () => reducedMotion.matches });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
@@ -309,6 +407,7 @@ async function boot(): Promise<void> {
   });
   await app.ready();
   runtime = world.bind(app);
+  stopWatching();
   ready = true;
   $("loading").classList.add("hidden");
   updateHud();

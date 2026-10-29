@@ -155,7 +155,20 @@ export interface WorldRuntime {
   readonly nodeCount: number;
   readonly foliageCards: number;
   readonly stats: { trees: number; propTriangles: number; foliageTriangles: number; terrainTriangles: number };
+  /** The bell's current swing angle (radians about z), for QA. */
+  readonly bellAngle: number;
 }
+
+/**
+ * The bell's swing about its yoke: a strong, decaying swing every 6 s once it has rung, a slow sway before. The model bell
+ * hangs in a narrow frame, so its swing is scaled down to stay inside the posts. `motion` scales everything (reduced motion).
+ */
+export function bellSwing(time: number, complete: boolean, amplitude = 1, motion = 1): number {
+  const a = complete ? 0.32 * Math.sin(time * 5.2) * Math.exp(-((time % 6) * 0.35)) + 0.06 * Math.sin(time * 2.1) : 0.025 * Math.sin(time * 1.3);
+  return a * amplitude * motion;
+}
+/** The model bell's frame is about 0.5 file units wide around a 0.35-wide bell: about a third of the procedural swing fits. */
+export const MODEL_BELL_AMPLITUDE = 0.32;
 
 export interface World {
   readonly scene: Scene;
@@ -167,8 +180,10 @@ const FACING_YAW: Record<string, number> = { front: 0, frontRight: Math.PI / 4, 
 
 const dynamic = (m: Mesh, withLimb = false) => geometry.dynamic(toGeometryInput(m, withLimb, !withLimb));
 
-export function buildWorld(options: { density?: number; models?: boolean } = {}): World {
+export function buildWorld(options: { density?: number; models?: boolean; reducedMotion?: () => boolean } = {}): World {
   const density = options.density ?? 1;
+  /** Reduced motion: smaller bell swing, slower grass and leaf sway, a gentler voyage camera. */
+  const motion = (): number => (options.reducedMotion?.() ? 0.3 : 1);
   const rand = lehmer(20261022);
   const none: ModelSet = { letter: false, bell: false, cottage: false, trees: false, hero: false, wisp: false, boat: false, stones: false, shrubs: false };
   const set: ModelSet = options.models === false ? none : availableModels();
@@ -396,12 +411,15 @@ export function buildWorld(options: { density?: number; models?: boolean } = {})
       let lastFound = -1;
       let yaw = 0, gait = 0, walkAmt = 0, lastX = START.x, lastZ = START.z, lastStep = -1, lastStepTime = -1;
       let epilogue: number | null = null;
+      let bellAngle = 0;
+      let swayTime = 0, lastTime = 0;
       const wisp = { x: START.x - 1.1, y: 2.4, z: START.z + 0.6 };
       const allUniformNodes = ["foliage", "sea", "sky", "props", "motes", "stream"];
       return {
         foliageCards: cardCount,
         stats: { trees: sc.treeCount, propTriangles, foliageTriangles: f.indices.length / 3, terrainTriangles: terrain.indices.length / 3 },
         get nodeCount() { return handles.size; },
+        get bellAngle() { return bellAngle; },
         setEpilogue(seconds) { epilogue = seconds; },
         snap(state) { heroAnim?.reset(state.pos.x, state.pos.z); look.x = state.pos.x + 2; look.y = terrainHeight(state.pos.x, state.pos.z) + 1.8; look.z = state.pos.z - 3.5; epilogue = null; },
         reset() {
@@ -451,7 +469,11 @@ export function buildWorld(options: { density?: number; models?: boolean } = {})
             tr.setUniform?.("squash", squash);
             tr.setUniform?.("windTime", time);
           }
-          for (const id of allUniformNodes) node(id).setUniform?.("windTime", time);
+          // wind sway runs on its own clock so reduced motion can slow it without touching the sim or the camera
+          swayTime += Math.max(0, Math.min(0.25, time - lastTime)) * motion();
+          if (time < lastTime) swayTime = time;
+          lastTime = time;
+          for (const id of allUniformNodes) node(id).setUniform?.("windTime", id === "foliage" || id === "props" ? swayTime : time);
           node("foliage").setUniform?.("playerPos", [x, y, z]);
           node("props").setUniform?.("playerPos", [x, y, z]);
           // the companion wisp drifts after the traveller
@@ -463,7 +485,13 @@ export function buildWorld(options: { density?: number; models?: boolean } = {})
           wg.setUniform?.("windTime", time);
           node("sails").setPosition(sc.windmillHub.x, sc.windmillHub.y, sc.windmillHub.z).setRotation(0, 0, time * 0.38);
           const complete = state.complete;
-          node("bell").setPosition(sc.bellHang.x, sc.bellHang.y, sc.bellHang.z).setRotation(0, 0, complete ? 0.32 * Math.sin(time * 5.2) * Math.exp(-((time % 6) * 0.35)) + 0.06 * Math.sin(time * 2.1) : 0.025 * Math.sin(time * 1.3));
+          if (set.bellModel) {
+            bellAngle = bellSwing(time, complete, MODEL_BELL_AMPLITUDE, motion());
+            node("bell-model").setRotation(0, 0, bellAngle);
+          } else {
+            bellAngle = bellSwing(time, complete, 1, motion());
+            node("bell").setPosition(sc.bellHang.x, sc.bellHang.y, sc.bellHang.z).setRotation(0, 0, bellAngle);
+          }
           node("bell-glow").setPosition(sc.bellHang.x, sc.bellHang.y - 0.55, sc.bellHang.z + 0.2);
           const bg = node("bell-glow");
           bg.setUniform?.("windTime", time);
@@ -505,7 +533,7 @@ export function buildWorld(options: { density?: number; models?: boolean } = {})
             look.x += (tx - look.x) * (1 - Math.exp(-1.5 * dt));
             look.y += (b.y + 2.2 - look.y) * (1 - Math.exp(-1.5 * dt));
             look.z += (tz - look.z) * (1 - Math.exp(-1.5 * dt));
-            const ep: [number, number, number] = [look.x - 9 + 4 * Math.sin(e * 0.05), look.y + 3.2, look.z + 14];
+            const ep: [number, number, number] = [look.x - 9 + 4 * motion() * Math.sin(e * 0.05), look.y + 3.2, look.z + 14];
             node("sky").setPosition(ep[0], ep[1], ep[2]);
             cam.setPose({ position: ep, target: [look.x, look.y, look.z], up: [0, 1, 0], fov: aspect < 1 ? 52 : 45 }, { cut: false });
             return;
