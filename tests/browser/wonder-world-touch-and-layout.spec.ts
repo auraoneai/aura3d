@@ -236,8 +236,9 @@ async function confirmTheTurn(page: Page, log: PageLog, viewport: Viewport, layo
   const where = `${viewport.label} ${layout.beat} (grown-up confirm)`;
   const before = layout.state.director;
   if (!before) throw new Error(`${where}: no director`);
-  await page.locator(SELECTORS.confirm).click({ timeout: 30_000 });
-  const after = await waitFor(page, log, `${where}: the director leaves the wait by the grown-up's confirm`, 15_000, async () => {
+  // Software WebGL2 holds the main thread for long stretches, and a click waits until the page can take it.
+  await page.locator(SELECTORS.confirm).click({ timeout: 120_000 });
+  const after = await waitFor(page, log, `${where}: the director leaves the wait by the grown-up's confirm`, 60_000, async () => {
     const state = await qaState(page);
     return state.director && state.director.phase !== "waiting" ? state : null;
   });

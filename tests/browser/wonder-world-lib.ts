@@ -70,8 +70,12 @@ export const SOFTWARE_GL_NOTE = "Remote runner, headless Chromium, software WebG
 export const READY_TIMEOUT_MS = 480_000;
 /** One `startStory` (world swap, model preload with stand-in fallback, warmPrograms). */
 export const STORY_LOAD_TIMEOUT_MS = 180_000;
-/** Per test; no test in these files is allowed longer (the repo's long software-GL specs use 900 s). */
-export const TEST_TIMEOUT_MS = 900_000;
+/**
+ * Per test; no test in these files is allowed longer. A shard of five stories needs about 15 minutes on software
+ * WebGL2 (about 45 s to load and 85-160 s to play each), so 900 s cut the fifth story off (run
+ * wonder-B-20261029T152530Z); 25 minutes leaves room and keeps each file well inside the 60-minute ACR step.
+ */
+export const TEST_TIMEOUT_MS = 1_500_000;
 /** Story-time bound for one zero-input run (the longest story runs about 6 minutes with zero input). */
 export const RUN_MAX_MS = 900_000;
 /** Story-time chunk between state samples. Every wait is at least 3000 ms (settings WAIT_MS_MIN), so each is sampled. */
