@@ -10,6 +10,7 @@ import {
   ghostDelta,
   RESPAWN_PENALTY,
   RESPAWN_SECONDS,
+  SEPARATION_X,
   STEP,
   stepRace,
   type Action,
@@ -281,5 +282,35 @@ describe("heatsink sim: determinism", () => {
     run(a, 60, auto);
     run(b, 60, auto);
     expect(JSON.stringify({ p: a.player, r: a.rivals, t: a.takedowns })).toBe(JSON.stringify({ p: b.player, r: b.rivals, t: b.takedowns }));
+  });
+});
+
+describe("heatsink sim: drones never sit inside one another", () => {
+  it("a rival level with the player moves out to the separation distance", () => {
+    const s = createRace({ circuit: "grand", mode: "race", drone: "orion", seed: 3 });
+    toRacing(s);
+    const r = s.rivals[0]!;
+    r.progress = s.player.progress + 1;
+    r.x = s.player.x + 0.3;
+    r.respawn = 0;
+    run(s, 0.6);
+    expect(Math.abs(r.x - s.player.x)).toBeGreaterThan(SEPARATION_X * 0.9);
+  });
+  it("over a full autopilot race, rivals level with the player keep their lateral room", () => {
+    let level = 0, inside = 0;
+    const t = createRace({ circuit: "grand", mode: "race", drone: "orion", seed: 7 });
+    for (let i = 0; i < 60 * 140 && t.phase !== "results"; i++) {
+      const a = autopilot(t);
+      stepRace(t, a.input, a.actions);
+      if (t.phase !== "racing" || t.player.respawn > 0) continue;
+      for (const r of t.rivals) {
+        if (r.respawn > 0 || Math.abs(r.progress - t.player.progress) >= 2) continue;
+        level++;
+        if (Math.abs(r.x - t.player.x) < 1.2) inside++;
+      }
+    }
+    expect(level).toBeGreaterThan(0);
+    // The player can still steer into a rival for a moment (a bump); it must not stay there.
+    expect(inside / level).toBeLessThan(0.05);
   });
 });

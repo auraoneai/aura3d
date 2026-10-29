@@ -781,6 +781,38 @@ function stepRivals(state: RaceState, dt: number): void {
     r.x = lerp(r.x, r.targetX, clamp(dt * 3.2, 0, 1));
     r.y = lerp(r.y, 1.45 + (r.index % 3) * 0.45 + Math.cos(state.time * 1.4 + r.phase) * 0.32, clamp(dt * 3.2, 0, 1));
   }
+  separateRivals(state, dt);
+}
+
+/** Lateral room a rival keeps from the player and from other rivals while they are side by side. */
+export const SEPARATION_X = 2.6;
+const SEPARATION_PROGRESS = 5;
+
+/**
+ * Rivals side by side with the player or with each other drift apart sideways, so drone models never sit inside one
+ * another on screen (they did on the base and in the first rebuild, card-2x frame of run g03w3-after2). The player is
+ * not moved: steering into a rival faster than it yields still gives a bump.
+ */
+function separateRivals(state: RaceState, dt: number): void {
+  const p = state.player;
+  const k = clamp(dt * 15, 0, 1);
+  const push = (r: RivalState, otherX: number, otherProgress: number): void => {
+    if (Math.abs(r.progress - otherProgress) >= SEPARATION_PROGRESS) return;
+    const dx = r.x - otherX;
+    const gap = SEPARATION_X - Math.abs(dx);
+    if (gap <= 0) return;
+    const side = dx !== 0 ? Math.sign(dx) : r.index % 2 === 0 ? 1 : -1;
+    r.x = clamp(r.x + side * gap * k, -WALL_LIMIT, WALL_LIMIT);
+  };
+  const rivals = state.rivals;
+  for (const r of rivals) {
+    if (r.eliminated || r.respawn > 0) continue;
+    if (p.respawn <= 0 && !p.eliminated) push(r, p.x, p.progress);
+    for (const o of rivals) {
+      if (o.index >= r.index || o.eliminated || o.respawn > 0) continue;
+      push(r, o.x, o.progress);
+    }
+  }
 }
 
 function bumpRivals(state: RaceState): void {
