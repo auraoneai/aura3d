@@ -74,12 +74,14 @@
 
 ## Checklist
 
-- [ ] `pnpm --filter @aura3d/showcase-aura-fc-3d typecheck` passes (remote runner for heavy builds, per repo rules).
-- [ ] `node tools/game-checks/run.mjs aura-fc-3d` has no new errors.
-- [ ] All of `tests/unit/aura-fc-3d/*` pass (athlete-rig, ball-physics, gait-limits, kick-clips, locomotion-sync, pass-flight, sim-kick, skin-repair).
-- [ ] Load the game and confirm `app.diagnostics().renderPath` is `path: "hdr-msaa"`, `quality: "auto"`, `bloomFusion: "separable"`.
-- [ ] Confirm `app.diagnostics()` lists no `OPTION_IGNORED` and no contact-shadow `unavailable` entry; no new `console.warn`.
-- [ ] Capture `?capture=1` frames (quick match, shootout lab, each venue) and compare with the 4.3.7 captures in `evidence/aura-fc-3d/`; look specifically at player and ball grounding (contact shadows and look AO) and bloom on the flood-light cones.
-- [ ] If the contact-shadow mask doubles with the blob shadows, lower `intensity` in `effects.contactShadows(...)` at `src/game/scene.ts:390` and re-capture. If grounding is still too dark, the look's ambient-occlusion node is the other source.
-- [ ] Confirm the black-frame guard stays on rung 0 (`window.__AURA3D_HEAL__.name`) on a normal load.
-- [ ] Optional A/B: load with `?aura3d-render=production` and diff against the default load to see exactly what the new path changed.
+Closed 2026-10-29 by lane G09 on branch `audit-fix/g09` (remote software WebGL2 runs, not real-GPU frames; numbers in `evidence/aura-fc-3d/audit-fix-2026-10-29/`).
+
+- [x] `pnpm --filter @aura3d/showcase-aura-fc-3d typecheck` passes (`tsc -p apps/showcase-aura-fc-3d/tsconfig.json`, 0 errors).
+- [x] `node tools/game-checks/run.mjs aura-fc-3d` has no new errors (0 errors, 0 warnings).
+- [x] All of `tests/unit/aura-fc-3d/*` pass (12 files, including the new audit-fixes, audit-probe, referee-walk and stall-probe tests).
+- [x] `app.diagnostics().renderPath` is `path: "hdr-msaa"`, `quality: "auto"`, `bloomFusion: "separable"` (run `g09cap-diag-171922`).
+- [x] `app.diagnostics()` lists no `OPTION_IGNORED` and no contact-shadow `unavailable` entry, and the console shows no contact-shadow warning. One 404 remains: it carries no URL in Playwright's response events, which matches the browser's favicon request.
+- [x] Steady-state captures of quick match (desktop and phone), Shootout Lab, Touch Lab, pause and the Favela, Lagos and Uyuni venues, before (base) and after (lane branch). The 2026-10-25 final screens (4.3.7-era build) were retaken from the 4.5.0 build. Desktop `03-action-06` mean luma went from 97.7 (2026-10-25) to the values in the lane report. Player and ball grounding: the blob shadows and the contact mask do not double into black patches (the foot-area crops read 86-89 luma with AO on and 89-90 with it off).
+- [x] Contact-shadow intensity kept at 0.85 (`src/game/scene.ts`): the foot crops above showed no doubling, so lowering it was not needed.
+- [x] The black-frame guard stays on rung 0 (`__AURA3D_HEAL__.name === "full"`) on a normal load.
+- [x] A/B with `?aura3d-render=production`: steady-state mean 101.78 on both the default and the production chain (difference 0.00), foot crops within 3.3 luma. AO A/B with the QA switch `?ao=0`: frame mean 102.56 without AO and 101.78 with it (-0.8%), foot crops 89.1-90.0 without and 86.3-87.1 with (about -3%).

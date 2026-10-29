@@ -1,19 +1,15 @@
-# Aura FC 3D: final screenshots (2026-10-25)
+# Aura FC 3D: final screenshots (retaken 2026-10-29 on 4.5.0)
 
-- **Build:** `origin/game-rework` head `8da9c05d3` (play-fix, sports UI fix and shared quick bar included). Hoops and Links 390x844 and card frames, and the Links cards, come from the same head plus commit `4d9546a03` (venue chip hidden on phones). Desktop frames of Hoops and Links predate that CSS change.
-- **Runner:** remote ACR task (`tools/remote-acr/run.sh`), headless Chromium on **software WebGL2 (SwiftShader), not real-GPU frames**. RUN_IDs `fina-*`. A frame costs about 3 s there, so game time runs slow and "late" states are far fewer than on a real GPU.
-- **Specs:** `tests/browser/shotsa-<slug>.spec.ts` (+ `finam-*.spec.ts` for the mobile and card re-captures); decoder `tools/shots/decode-frames.mjs`. `status.txt` holds the capture log lines.
+- **Build:** branch `audit-fix/g09` at `0faa96cb1` (4.5.0 engine plus the lane G09 audit fixes up to the possession-bar fix; the later day-venue and Shootout Lab HUD commits do not touch these Munich frames). Same file names and pixel sizes as the 2026-10-25 set, which came from `origin/game-rework` `8da9c05d3`.
+- **Runner:** remote ACR task (`tools/remote-acr/run.sh`), RUN_ID `g09cap-shots2-175139`, headless Chromium on **software WebGL2 (SwiftShader), not real-GPU frames**. A frame costs several seconds there, so game time runs slow.
+- **Spec:** `tests/browser/shotsa-aura-fc-3d.spec.ts`; decoder `tools/shots/decode-frames.mjs`. `status.txt` holds the capture log lines. The run captured one extra desktop action frame (`03-action-08`), which is not kept so the set keeps its names.
 - **Layout:** `1280x720/`, `390x844/`, `card/` (720x450 at 1x and 2x).
-- **Reviewed:** I opened the frames listed under "Seen"; the rest were not opened.
-- **Results screens were not reached in any game.**
 
 ## Seen
-- Tighter broadcast camera works: players are readable at 1280x720 and 390x844, the ball and the goal are in frame (`03-action-04`, `03-action-06`).
-- Team kits: red and white versus navy and white; referee in a yellow and black kit (small, top of frame); goalkeeper in yellow.
-- Shared quick bar one row; no old names; 0 console errors.
+- The goal net is drawn at the goal-frame size (7.6 x 2.85 x 2.6 m) instead of about 35 m wide (`1280x720/03-action-05`, `390x844/03-action-06`).
+- At 390x844 the portrait camera keeps the players in frame (`03-action-06` shows six players, the keeper and the goal); the 2026-10-25 `03-action-08` showed none.
+- The HUD kit chips match the worn kits (red home, white away). The possession bar sits under the scoreboard.
+- Phones get the venue dropdown in the quick bar instead of a scrolled row of venue buttons.
 
-## Problems still visible
-- **Medium:** a ragged white fringe at the hips of the red-team players and dark noise fragments on the navy shorts. This is the known "hip slab" mesh problem noted by the earlier FC lane; the repaint did not remove it.
-- **Medium:** no frame shows a clear kick (plant, swing, contact, follow-through). The demo capture shows running and ball control; the kick work is verified by unit test only.
-- **Low-medium:** players look crouched in the run animation at kickoff.
-- Half-time and results were not reached.
+## Not covered
+- Half-time and results were not reached in this capture (software GL pace).
