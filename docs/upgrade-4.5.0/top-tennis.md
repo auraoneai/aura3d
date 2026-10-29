@@ -2,7 +2,7 @@
 
 **Verdict:** One decision needed. The game compiles and runs on 4.5.0 unchanged. The sun/ambient fill gets brighter, about 1.75x, because the hemisphere light now contributes. Decide whether to accept that look or lower the ambient light. The canvas read-back in the safety net behaves as it did on 4.3.7 (see change 2), so it needs a check, not a code change.
 
-Read-only review of `apps/showcase-top-tennis/` (branch `beat3js2/integration`, worktree `integration2`) and the shared code it mounts. Nothing was built or run, so every visual claim below is derived from the code and the changelog. Nothing was measured.
+Read-only review of `apps/showcase-top-tennis/` (branch `beat3js2/integration`, worktree `integration2`) and the shared code it mounts. The review itself built and ran nothing; the checklist at the end was closed later with remote captures (2026-10-29).
 
 ## What this game uses
 
@@ -79,10 +79,12 @@ Read-only review of `apps/showcase-top-tennis/` (branch `beat3js2/integration`, 
 
 ## Checklist
 
-- [ ] Run `pnpm --filter @aura3d/showcase-top-tennis typecheck`, and `node tools/game-checks/run.mjs top-tennis` (the command takes a slug, app folder or title; use `apps/showcase-top-tennis` if the slug does not resolve). Both should pass without source changes.
-- [ ] Open the built page on a remote runner with `?diag=1` and confirm `app.diagnostics().renderPath` is `hdr-msaa` / `auto` / `bloomFusion: "separable"` and that `app.diagnostics()` lists no `OPTION_IGNORED` entry.
-- [ ] Decide on the fill light: accept the brighter hemisphere-lit look (about 1.75x fill), or lower `lights.ambient` intensity in `examples/aura-slam/view/lighting.ts` (about 0.15 to match 4.3.7; 0.25 stays slightly brighter). Check the result by eye against a 4.3.7 capture of the same venue and frame.
-- [ ] Confirm the safety net sees lit frames: after 10 s on `?diag=1`, `window.__AURA_SAFETY__().observed.blackSamples === 0`, `stage === 0`, `escalated === false`. This is unchanged from 4.3.7; only if it fails, add `preserveDrawingBuffer: true` to the `createAuraApp` call at `examples/aura-slam/view/renderer.ts:91`.
-- [ ] Re-run `tests/browser/aura-slam-render.spec.ts` and `aura-slam-native-vs-live.spec.ts` on the remote runner (`tools/remote-acr/run.sh`). Expect them to pass; the render spec's parity thresholds are not applied because the reference rows have no `venue`. After review, regenerate `evidence/aura-slam/native-vs-live-metrics.json` and the native frames if you accept the new look.
-- [ ] Capture a `?capture=1` screenshot of each of the 6 venues (hard, grass, clay, desert, beach, moon) and compare with 4.3.7 for silhouette-edge and shadow-lift differences. Anything else beyond brightness is unknown until looked at.
-- [ ] If a byte-identical bloom/post pass sequence is required for a release baseline, pass `quality: "production"`; otherwise leave `quality` unset.
+Closed on 2026-10-29 by audit lane G01 (branch `audit-fix/g01`). Captures ran on the remote runner (software WebGL2, SwiftShader), measured at steady state; numbers and frames are in `evidence/aura-slam/audit-2026-10-29/`.
+
+- [x] `pnpm -C apps/showcase-top-tennis exec tsc -p tsconfig.json --noEmit` passes, and `node tools/game-checks/run.mjs top-tennis` reports 0 errors and 0 warnings.
+- [x] `app.diagnostics().renderPath` on `?autoplay=1&diag=1` is `{ path: "hdr-msaa", quality: "auto", bloomFusion: "separable" }`, and the diagnostics carry no `OPTION_IGNORED` entry (`tt-state-auto`, run `g01-final-124319-state`).
+- [x] Fill light decision: keep the 4.5.0 look. Measured on the live route at 1280x720, steady state: whole-frame mean luma 44.4 on v4.3.7 and 50.4 on the 4.5.0 base (+13.6%, median 48 to 54), not the computed 1.75x of the ambient term, because the directional and point lights dominate. Pixels below luma 12 fell from 9.9% to 8.3% and nothing clips. The frame stays dark rather than flat, so the hemisphere intensity stays at 0.72 (`LIGHT-03`).
+- [x] Safety net: `window.__AURA_SAFETY__()` after 70 s on `?diag=1` reports `blackSamples 0`, `stage 0`, `rung "full"`, `escalated false`. No `preserveDrawingBuffer` change is needed.
+- [x] The game's capture spec `tests/browser/audit-fix/top-tennis.spec.ts` replaced the render and native-vs-live re-runs for this release check: 1280x720 and 390x844 play, the results screen, the menu, six venues, the production render path and context loss. `evidence/aura-slam/native-vs-live-metrics.json` was not regenerated: the scene changed on purpose (coloured crowd, see-through net, venue palette, stand scale), so live parity with the pre-fix page is no longer the target.
+- [x] All six venues captured with `?capture=1` (`tt-venue-*`, run `g01-final3-*`).
+- [x] Bloom: the scene stays on `quality: "auto"` with separable bloom fusion. `?aura3d-render=production` measured within 0.01 mean luma of the default at the same state (53.29 against 53.28), so no `quality: "production"` pin is needed.

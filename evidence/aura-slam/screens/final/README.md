@@ -1,48 +1,27 @@
-# Aura Slam: final screenshots after the UI and content fixes
+# Aura Slam: final screenshots (retaken 2026-10-29 after the audit fixes)
 
-Route: `apps/showcase-top-tennis`. Built from `origin/game-rework` at `0d965903c` (includes the shared quick bar, the content fixes and the new Teleoperator vehicles).
+Route: `apps/showcase-top-tennis`, branch `audit-fix/g01` (audit lane G01). Same file names and sizes as the earlier set, plus the results frame that set never reached.
 
-**Runner:** remote Azure ACR Task, headless Chromium, **software WebGL2 (SwiftShader)**. This is not real-GPU evidence: it shows layout and content, not GPU look or frame rate. Tool: `tests/browser/shotsd-top-tennis.spec.ts` with `tests/browser/shotsd-lib.ts`, decoded with `tools/shots/decode-shotsd.mjs`. Frames come from clicking the game's own buttons and holding keys, not from the QA hooks.
-
-Staging: the dist was built with `tools/shots/vite.shotsd.config.ts`; every asset the route references was copied from this repo into the dist (so new and changed files are the repository's, not production's). Files the repository does not carry (shared decoders, HDRI, previews) fall back to production.
+**Runner:** remote Azure ACR Task, headless Chromium, **software WebGL2 (SwiftShader)**. This is not real-GPU evidence: it shows layout and content, not GPU look or frame rate. Tool: `tests/browser/audit-fix/top-tennis.spec.ts` (`tt-flow-1280`, `tt-flow-390`, `tt-misc-card`), served by `tests/browser/example-dev-server.ts` from the repository (no production fallback). Runs `g01-final2-131920` (1280), `g01-final2-131920-390` and `g01-final2-131920-misc` (card). Frames come from the page's own buttons and held keys; the results frame comes from QA-hook steps (`stepFrames`) with the Auto player on.
 
 ## Frames
 
 | Viewport | State | Meaning | Status |
 |---|---|---|---|
-| 1280 | 01-title | first loaded frame | captured |
-| 1280 | 02-early | early gameplay | captured |
-| 1280 | 03-action | after key input | captured |
-| 1280 | 04-mid | mid-play (autoplay or driving) | captured |
-| 1280 | 05-modes | modes / menu panel | captured |
-| 1280 | 06-results | results | not reached |
-| 390 | 01-title | first loaded frame | captured |
-| 390 | 02-early | early gameplay | captured |
-| 390 | 03-action | after key input | captured |
-| 390 | 04-mid | mid-play (autoplay or driving) | captured |
-| 390 | 05-modes | modes / menu panel | captured |
-| 390 | 06-results | results | not reached |
+| 1280 | 01-title | first loaded frame (match already on court) | captured |
+| 1280 | 02-early | first serve, with the one-time HOW TO PLAY card | captured |
+| 1280 | 03-action | after D, Space, A | captured |
+| 1280 | 04-mid | Auto player rally | captured |
+| 1280 | 05-modes | modes panel (Quick Match and Smash Lab only) | captured |
+| 1280 | 06-results | results after a 3-0 Auto match | captured |
+| 390 | 01-title .. 06-results | same states on a 390 x 844 touch phone | captured |
 
-Card images: `card-2x.jpg` (1440x900, captured natively) and `card-1x.jpg` (720x450, downscaled from the 2x capture). Card aspect from `apps/showcase-index/index.html`.
-
-## Capture health
-
-- 1280: console errors 0, bad responses 0, ready 39s, proxied from production 3
-- 390: console errors 0, bad responses 0, ready 22s, proxied from production 3
-- card: console errors 0, bad responses 0, ready 51s, proxied from production 3
+Card images: `card-2x.jpg` (1440x900, captured natively) and `card-1x.jpg` (720x450, downscaled from the 2x capture).
 
 ## Checked in the frames
 
-- Shared quick bar is a single row at 1280 and 390 and overlaps neither the scoreboard nor the pause and sound buttons.
-- The 'NEW YORK / HARD COURT' caption is visible above the hint bar at 1280 (it was covered before).
-- The Modes menu is styled (spacing, 56 px heading, three cards; Tournament and Online show 'Coming soon').
-- No AURA3D ENGINE chip and no stale version text in the frames I read (1280 title, mid and modes, 390 mid).
-
-## Problems still visible (not fixed in this lane)
-
-- [medium] 390 portrait: the court is cropped to the near half and the ball is not visible in the mid frame; the camera uses the 15 degree FOV pinned by the G3 render gate, so this needs a camera decision, not a UI change.
-- [low] Results were not reached in 40 s of autoplay; the modes panel marks both Auto and Modes as active at the same time.
-
-## Review coverage
-
-Frames opened and checked by eye: 1280 title, mid and modes; 390 mid (4 of 11). The remaining frames were captured but not individually inspected; the problems above come from the frames listed here.
+- The 24 spectators show their six colours (spectator patch saturation 0.62 against 0.01 before).
+- The net is see-through; the white tape stays opaque.
+- The hint bar names the bound keys: SHORT Q, DEEP E, LOB R, POWER SHIFT.
+- 390 portrait: the whole court and both athletes are on screen (aspect-aware FOV 29.3 degrees and a canvas that stays between the score band and the controls).
+- The results screen is reached at both sizes.
