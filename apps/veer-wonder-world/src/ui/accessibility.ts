@@ -18,10 +18,10 @@ export interface UiLocale {
  * Every `ui.*` key the overlay uses, with its English fallback; a fallback
  * shows only when the locale pack lacks the key. The first block is the
  * shared UI key list; the second block holds further keys the English pack
- * defines (src/localization/en/ui.ts, required by src/content/schema.ts
- * REQUIRED_UI_KEYS, plus the caption speaker names) and that carry PRD
- * requirements: the gate is not a lock, sound starts after the tap, the
- * prototype label, and the word list tracks nothing.
+ * defines (src/localization/en/ui.ts; most are also in src/content/schema.ts
+ * REQUIRED_UI_KEYS) and that carry PRD requirements: the gate is not a lock,
+ * sound starts after the tap, the prototype label, the word list tracks
+ * nothing, the caption speaker names and the sound-effect level.
  * tests/unit/ui/strings.test.ts checks this table against the UI sources and
  * the pack. None of these strings asks a child to speak, and none names a child.
  */
@@ -43,7 +43,6 @@ export const UI_STRINGS = {
   "ui.parent.wait": "Waiting time for a turn",
   "ui.parent.words": "Words for today",
   "ui.parent.locale": "Language",
-  "ui.parent.localeUnavailable": "Punjabi is not available yet.",
   "ui.parent.exit": "Exit to menu",
   "ui.parent.close": "Close settings",
   "ui.parent.clear": "Clear settings on this device",
@@ -81,6 +80,11 @@ export const UI_STRINGS = {
   "ui.gate.note": "This step keeps settings out of the way during play. It is not a lock.",
   "ui.parent.back": "Back to the story",
   "ui.parent.display": "Sound and display",
+  "ui.parent.sfx": "Sound effects",
+  "ui.parent.sfxHelp": "Animal sounds, pops and bells. Voices and songs keep their level.",
+  "ui.parent.sfx.off": "Off",
+  "ui.parent.sfx.soft": "Soft",
+  "ui.parent.sfx.normal": "Normal",
   "ui.parent.waitHelp": "How long a character pauses for your child. The story always carries on by itself.",
   "ui.parent.wordsHelp": "Pick up to 5 words to use often while you play. This list stays on this device and does not track progress.",
   "ui.parent.wordsEmpty": "No words are available yet.",
@@ -522,9 +526,13 @@ export function prefersReducedMotion(win: MediaWindow | null | undefined): boole
   return mediaMatches(win, "(prefers-reduced-motion: reduce)");
 }
 
-/** The OS-level more-contrast or forced-colours preference. */
+/**
+ * The OS-level `(prefers-contrast: more)` preference; seeds the high-contrast
+ * default. Forced-colour modes need no seed: styles.css handles them with its
+ * `(forced-colors: active)` block.
+ */
 export function prefersMoreContrast(win: MediaWindow | null | undefined): boolean {
-  return mediaMatches(win, "(prefers-contrast: more)") || mediaMatches(win, "(forced-colors: active)");
+  return mediaMatches(win, "(prefers-contrast: more)");
 }
 
 /** Calls `onChange` when a media query flips. Returns a remover. */

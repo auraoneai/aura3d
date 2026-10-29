@@ -602,7 +602,8 @@ const MENU_ITEMS: readonly MenuItem[] = STORIES.map((story) => ({
   titleKey: story.titleKey,
   kind: story.kind,
   host: story.host,
-  number: story.number
+  number: story.number,
+  phase: story.phase
 }));
 
 /** A story by slug or by code (`e17`, `g03`). */

@@ -30,7 +30,11 @@ export const PARENT_SETTINGS_FIELDS: readonly (keyof ParentSettings)[] = [
   "wordList"
 ];
 
-/** Locales a parent can pick today. Punjabi is listed in the panel as not available until native review. */
+/**
+ * Locales a parent can pick today: English only. The Punjabi pack
+ * (src/localization/pa.ts) stays disabled, and the panel does not list it,
+ * until native review (07 B16; 06 QA-E11).
+ */
 export const AVAILABLE_LOCALES: readonly string[] = ["en"];
 
 export const WAIT_MS_MIN = 3000;
@@ -49,10 +53,15 @@ export const WORD_ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,31}$/;
 const MAX_STORED_LENGTH = 4096;
 
 const PLAY_MODES: readonly PlayMode[] = ["play-together", "watch-sing"];
-/** The sound-effect levels a grown-up can pick (01 section 9). */
+/** The sound-effect levels a grown-up can pick (01 section 9; 07 B20). */
 export const SFX_VOLUMES: readonly SfxVolume[] = ["off", "soft", "normal"];
 
-export function defaultSettings(prefersReducedMotion = false): ParentSettings {
+/**
+ * The defaults. The two flags are the device's `(prefers-reduced-motion:
+ * reduce)` and `(prefers-contrast: more)` preferences: they seed calm motion
+ * and high contrast, and a stored parent choice still wins (loadSettings).
+ */
+export function defaultSettings(prefersReducedMotion = false, prefersMoreContrast = false): ParentSettings {
   return {
     mode: "play-together",
     music: true,
@@ -60,7 +69,7 @@ export function defaultSettings(prefersReducedMotion = false): ParentSettings {
     sfxVolume: "normal",
     captions: true,
     reducedMotion: prefersReducedMotion,
-    highContrast: false,
+    highContrast: prefersMoreContrast,
     locale: "en",
     waitMs: WAIT_MS_DEFAULT,
     wordList: []
@@ -124,13 +133,14 @@ export function sanitizeSettings(raw: unknown, defaults: ParentSettings = defaul
 }
 
 /**
- * Reads settings from storage. `prefersReducedMotion` comes from the caller's
- * `(prefers-reduced-motion: reduce)` media query and only seeds the default:
- * a stored parent choice wins. Returns defaults when storage is null,
- * blocked, empty or corrupt.
+ * Reads settings from storage. `prefersReducedMotion` and `prefersMoreContrast`
+ * come from the caller's `(prefers-reduced-motion: reduce)` and
+ * `(prefers-contrast: more)` media queries and only seed the defaults: a
+ * stored parent choice wins. Returns defaults when storage is null, blocked,
+ * empty or corrupt.
  */
-export function loadSettings(storage: SettingsStorage | null, prefersReducedMotion = false): ParentSettings {
-  const defaults = defaultSettings(prefersReducedMotion);
+export function loadSettings(storage: SettingsStorage | null, prefersReducedMotion = false, prefersMoreContrast = false): ParentSettings {
+  const defaults = defaultSettings(prefersReducedMotion, prefersMoreContrast);
   if (!storage) return defaults;
   let text: string | null;
   try {
@@ -154,7 +164,7 @@ export function loadSettings(storage: SettingsStorage | null, prefersReducedMoti
  */
 export function saveSettings(storage: SettingsStorage | null, settings: ParentSettings): boolean {
   if (!storage) return false;
-  const clean = sanitizeSettings(settings, defaultSettings(settings.reducedMotion));
+  const clean = sanitizeSettings(settings, defaultSettings(settings.reducedMotion, settings.highContrast));
   const record: Record<string, unknown> = {};
   for (const field of PARENT_SETTINGS_FIELDS) record[field] = clean[field];
   try {

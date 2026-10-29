@@ -1,9 +1,11 @@
-// Story menu (PRD 04 E02, PRD 01 section 6, PRD 06 QA-P04). A finite grid in
-// canonical order: the 20 episodes, then the 12 activities, each listed once
-// with its number, host colour, title and host name. No recommendations, no
-// "up next", no streaks, no autoplay: nothing happens until the grown-up picks.
+// Story menu (PRD 04 E02, PRD 01 section 6, PRD 06 QA-P04). A finite grid:
+// the 20 episodes, then the 12 activities. Inside each section the P1 pilot
+// stories come first, then P2, each group in canonical order. Every story is
+// listed once with its canonical number, its host's portrait (or host colour),
+// title and host name. No recommendations, no "up next", no streaks, no
+// autoplay: nothing happens until the grown-up picks.
 
-import type { CharacterId } from "../types.js";
+import type { CharacterId, Phase } from "../types.js";
 import {
   CHARACTER_COLOURS,
   docOf,
@@ -19,6 +21,7 @@ import {
   type UiLocale,
   type UiStringKey
 } from "./accessibility.js";
+import { PORTRAITS } from "./portraits.js";
 
 export interface MenuItem {
   /** Story id (the content slug). */
@@ -31,7 +34,16 @@ export interface MenuItem {
   readonly host: CharacterId;
   /** Number in the canonical list: 1-20 for episodes, 1-12 for activities. */
   readonly number: number;
+  /**
+   * The story's build phase (`StorySpec.phase`). P1 pilot stories are listed
+   * first in their section (PRD 04 E02); an item without a phase is listed
+   * with P2.
+   */
+  readonly phase?: Phase;
 }
+
+/** Host portrait URLs by character (src/ui/portraits.ts). */
+export type PortraitMap = Readonly<Partial<Record<CharacterId, string>>>;
 
 export interface EpisodeMenuOptions {
   /** When given, a "Grown-ups" button in the header calls it (the app runs the parent gate). */
@@ -42,6 +54,8 @@ export interface EpisodeMenuOptions {
    * silently returning to the menu.
    */
   readonly stageUnavailable?: boolean;
+  /** Portraits for the cards; defaults to PORTRAITS. A host without one keeps the colour badge. */
+  readonly portraits?: PortraitMap;
 }
 
 const SECTIONS: readonly { readonly kind: MenuItem["kind"]; readonly key: UiStringKey }[] = [
@@ -49,18 +63,58 @@ const SECTIONS: readonly { readonly kind: MenuItem["kind"]; readonly key: UiStri
   { kind: "activity", key: "ui.menu.activities" }
 ];
 
-/** Items of one kind in canonical order (by number, then id), each id once. */
+/** Listing order of the phases: the P1 pilot first (PRD 04 E02). */
+const PHASE_ORDER: Readonly<Record<Phase, number>> = { P1: 0, P2: 1 };
+
+function phaseRank(item: MenuItem): number {
+  return PHASE_ORDER[item.phase ?? "P2"];
+}
+
+/**
+ * Items of one kind: P1 first, then P2 (PRD 04 E02), each group in canonical
+ * order (by number, then id), each id once.
+ */
 export function menuSection(items: readonly MenuItem[], kind: MenuItem["kind"]): MenuItem[] {
   const seen = new Set<string>();
   return items
     .filter((item) => item.kind === kind)
     .slice()
-    .sort((a, b) => a.number - b.number || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+    .sort((a, b) => phaseRank(a) - phaseRank(b) || a.number - b.number || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
     .filter((item) => {
       if (seen.has(item.id)) return false;
       seen.add(item.id);
       return true;
     });
+}
+
+/**
+ * The card's badge: the canonical number on the host colour, or the host's
+ * portrait with the number as a small tag. Decorative (aria-hidden): the card's
+ * name is its title and host name.
+ */
+function cardBadge(doc: Document, item: MenuItem, portrait: string | undefined): HTMLElement {
+  const number = String(item.number);
+  const badge = el(doc, "span", { className: "ww-card-badge", attrs: { "aria-hidden": "true" } });
+  if (portrait === undefined || portrait === "") {
+    badge.textContent = number;
+    return badge;
+  }
+  badge.classList.add("has-portrait");
+  const image = el(doc, "img", {
+    className: "ww-card-portrait",
+    attrs: { src: portrait, alt: "", decoding: "async", draggable: "false" }
+  });
+  // A picture that cannot load gives the plain number badge back.
+  image.addEventListener(
+    "error",
+    () => {
+      badge.classList.remove("has-portrait");
+      badge.textContent = number;
+    },
+    { once: true }
+  );
+  badge.append(image, el(doc, "span", { className: "ww-card-number", text: number }));
+  return badge;
 }
 
 /**
@@ -75,6 +129,7 @@ export function showEpisodeMenu(
   options: EpisodeMenuOptions = {}
 ): () => void {
   const doc = docOf(root);
+  const portraits = options.portraits ?? PORTRAITS;
   const titleId = uniqueId("ww-menu-title");
   const screen = el(doc, "section", { className: "ww-screen ww-menu", attrs: { "aria-labelledby": titleId, "data-ui": "menu" } });
   const inner = el(doc, "div", { className: "ww-menu-inner" });
@@ -107,7 +162,7 @@ export function showEpisodeMenu(
       });
       card.style.setProperty("--ww-dot", colour);
       card.append(
-        el(doc, "span", { className: "ww-card-badge", text: String(item.number), attrs: { "aria-hidden": "true" } }),
+        cardBadge(doc, item, portraits[item.host]),
         el(doc, "span", { className: "ww-card-text" }, [
           el(doc, "span", { className: "ww-card-title", text: storyText(locale, item.titleKey, humanizeId(item.id)) }),
           el(doc, "span", { className: "ww-card-host", text: speakerName(item.host, locale) })

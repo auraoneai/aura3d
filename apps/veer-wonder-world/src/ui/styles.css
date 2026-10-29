@@ -382,6 +382,11 @@ b {
   gap: 8px;
 }
 
+/* Three segments in one row (the sound-effect level: off, soft, normal). */
+.ww-segmented-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .ww-segment,
 .ww-chip {
   position: relative;
@@ -804,6 +809,37 @@ b {
   font-variant-numeric: tabular-nums;
 }
 
+/* A host portrait fills the badge circle; the canonical number stays as a small tag. */
+.ww-card-badge.has-portrait {
+  position: relative;
+}
+
+.ww-card-portrait {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  -webkit-user-drag: none;
+}
+
+.ww-card-number {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  display: grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid var(--ww-line-strong);
+  border-radius: 999px;
+  background: var(--ww-surface);
+  color: var(--ww-ink);
+  font-size: 0.8125rem;
+  line-height: 1;
+}
+
 .ww-card-text {
   display: flex;
   flex-direction: column;
@@ -1090,6 +1126,30 @@ html.high-contrast .ww-caption-line {
   font-variant-numeric: tabular-nums;
 }
 
+/* A setting with one possible value (a single language pack): a plain row, not a choice of one. */
+.ww-setting-static {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--ww-line);
+  border-bottom: 1px solid var(--ww-line);
+}
+
+.ww-setting-label {
+  color: var(--ww-ink);
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.ww-setting-value {
+  margin: 0;
+  color: var(--ww-ink-soft);
+  line-height: 1.35;
+}
+
 .ww-clear {
   align-self: flex-start;
   padding-left: 0;
@@ -1343,6 +1403,7 @@ html.high-contrast .ww-caption-line {
   .ww-button,
   .ww-start-button,
   .ww-card,
+  .ww-card-number,
   .ww-segment-face,
   .ww-chip-face,
   .ww-switch-track,

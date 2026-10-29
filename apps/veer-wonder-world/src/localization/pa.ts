@@ -3,9 +3,9 @@
 // A Punjabi pack must be written and voiced by native speakers and reviewed
 // before it is offered: no machine translation, no word-by-word copies of the
 // English lines, and a natural localized script and offline prompt for every
-// target concept. Until then this pack is empty and disabled. The catalog
-// (src/content/catalog.ts) never lists it, and the parent panel shows Punjabi
-// only as "not available yet".
+// target concept. Until then this pack stays present, empty and disabled
+// (07 B16): the catalog (src/content/catalog.ts) and the parent panel do not
+// list it (06 QA-E11).
 
 import type { LocalePack } from "../types.js";
 

@@ -4,11 +4,13 @@
 
 import { describe, expect, it } from "vitest";
 import type { ParentSettings } from "../../../src/types.js";
+import { prefersMoreContrast, prefersReducedMotion } from "../../../src/ui/accessibility.js";
 import { CORE_WORD_IDS, toggleWord, wordChoices, wordLabel } from "../../../src/ui/parent-wordlist.js";
 import {
   AVAILABLE_LOCALES,
   PARENT_SETTINGS_FIELDS,
   SETTINGS_STORAGE_KEY,
+  SFX_VOLUMES,
   WAIT_MS_DEFAULT,
   WAIT_MS_MAX,
   WAIT_MS_MIN,
@@ -93,6 +95,14 @@ describe("settings defaults", () => {
     expect(loadSettings(new MemoryStorage()).reducedMotion).toBe(false);
   });
 
+  it("seed high contrast from the more-contrast preference, and only high contrast", () => {
+    expect(defaultSettings(false, true)).toEqual({ ...defaultSettings(), highContrast: true });
+    expect(defaultSettings(true, true)).toEqual({ ...defaultSettings(), reducedMotion: true, highContrast: true });
+    expect(loadSettings(null, false, true).highContrast).toBe(true);
+    expect(loadSettings(new MemoryStorage(), false, true).highContrast).toBe(true);
+    expect(loadSettings(new MemoryStorage(), true).highContrast).toBe(false);
+  });
+
   it("are returned for null or empty storage", () => {
     expect(loadSettings(null)).toEqual(defaultSettings());
     expect(loadSettings(new MemoryStorage())).toEqual(defaultSettings());
@@ -112,6 +122,40 @@ describe("settings defaults", () => {
     const b = loadSettings(null);
     expect(a).not.toBe(b);
     expect(a.wordList).not.toBe(b.wordList);
+  });
+});
+
+describe("device preferences that seed the defaults", () => {
+  /** A window whose matchMedia matches exactly the given queries. */
+  function mediaWindow(matching: readonly string[]): Pick<Window, "matchMedia"> {
+    return { matchMedia: (query: string) => ({ matches: matching.includes(query), media: query }) as MediaQueryList };
+  }
+
+  it("read (prefers-contrast: more) and (prefers-reduced-motion: reduce) only", () => {
+    expect(prefersMoreContrast(mediaWindow(["(prefers-contrast: more)"]))).toBe(true);
+    expect(prefersMoreContrast(mediaWindow(["(prefers-contrast: less)", "(forced-colors: active)", "(prefers-reduced-motion: reduce)"]))).toBe(false);
+    expect(prefersReducedMotion(mediaWindow(["(prefers-reduced-motion: reduce)"]))).toBe(true);
+    expect(prefersReducedMotion(mediaWindow(["(prefers-contrast: more)"]))).toBe(false);
+  });
+
+  it("mean no preference without matchMedia or when it throws", () => {
+    const throwing: Pick<Window, "matchMedia"> = {
+      matchMedia(): MediaQueryList {
+        throw new Error("matchMedia is not supported");
+      }
+    };
+    for (const win of [null, undefined, throwing]) {
+      expect(prefersMoreContrast(win)).toBe(false);
+      expect(prefersReducedMotion(win)).toBe(false);
+    }
+  });
+
+  it("seed the boot settings the way src/main.ts reads them; a stored choice still wins", () => {
+    const win = mediaWindow(["(prefers-contrast: more)", "(prefers-reduced-motion: reduce)"]);
+    const storage = new MemoryStorage();
+    expect(loadSettings(storage, prefersReducedMotion(win), prefersMoreContrast(win))).toEqual(defaultSettings(true, true));
+    saveSettings(storage, { ...defaultSettings(), highContrast: false, reducedMotion: false });
+    expect(loadSettings(storage, prefersReducedMotion(win), prefersMoreContrast(win))).toEqual(defaultSettings());
   });
 });
 
@@ -139,6 +183,30 @@ describe("settings round trip", () => {
     const storage = new MemoryStorage();
     saveSettings(storage, { ...defaultSettings(), reducedMotion: false });
     expect(loadSettings(storage, true).reducedMotion).toBe(false);
+  });
+
+  it("keeps a stored contrast choice over the OS preference", () => {
+    const storage = new MemoryStorage();
+    saveSettings(storage, { ...defaultSettings(), highContrast: false });
+    expect(loadSettings(storage, false, true).highContrast).toBe(false);
+    saveSettings(storage, { ...defaultSettings(), highContrast: true });
+    expect(loadSettings(storage, false, false).highContrast).toBe(true);
+    // A record without the field (written before it existed) takes the seeded default.
+    storage.data.set(SETTINGS_STORAGE_KEY, JSON.stringify({ music: false }));
+    expect(loadSettings(storage, false, true)).toEqual({ ...defaultSettings(false, true), music: false });
+  });
+
+  it("keeps the sound-effect level, default normal, and drops unknown levels", () => {
+    expect(SFX_VOLUMES).toEqual(["off", "soft", "normal"]);
+    const storage = new MemoryStorage();
+    for (const level of SFX_VOLUMES) {
+      saveSettings(storage, { ...defaultSettings(), sfxVolume: level });
+      expect(loadSettings(storage).sfxVolume).toBe(level);
+    }
+    for (const bad of ["loud", "", 1, null, true]) {
+      storage.data.set(SETTINGS_STORAGE_KEY, JSON.stringify({ sfxVolume: bad }));
+      expect(loadSettings(storage).sfxVolume).toBe("normal");
+    }
   });
 
   it("writes only under the app's own storage key", () => {
@@ -175,6 +243,7 @@ describe("corrupt or blocked storage", () => {
       storage.data.set(SETTINGS_STORAGE_KEY, text);
       expect(loadSettings(storage)).toEqual(defaultSettings());
       expect(loadSettings(storage, true)).toEqual(defaultSettings(true));
+      expect(loadSettings(storage, true, true)).toEqual(defaultSettings(true, true));
     });
   }
 
@@ -219,6 +288,7 @@ describe("corrupt or blocked storage", () => {
   it("survives storage that throws on every call", () => {
     expect(loadSettings(blockedStorage)).toEqual(defaultSettings());
     expect(loadSettings(blockedStorage, true)).toEqual(defaultSettings(true));
+    expect(loadSettings(blockedStorage, false, true)).toEqual(defaultSettings(false, true));
     expect(saveSettings(blockedStorage, defaultSettings())).toBe(false);
     expect(clearSettings(blockedStorage)).toBe(false);
     expect(saveSettings(null, defaultSettings())).toBe(false);

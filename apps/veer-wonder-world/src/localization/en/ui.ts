@@ -65,6 +65,12 @@ export const strings: Record<string, string> = {
   "ui.parent.display": "Sound and display",
   "ui.parent.music": "Music",
   "ui.parent.sound": "Sound and voices",
+  // The grown-up's sound-effect level (PRD 01 section 9; 07 B20).
+  "ui.parent.sfx": "Sound effects",
+  "ui.parent.sfxHelp": "Animal sounds, pops and bells. Voices and songs keep their level.",
+  "ui.parent.sfx.off": "Off",
+  "ui.parent.sfx.soft": "Soft",
+  "ui.parent.sfx.normal": "Normal",
   "ui.parent.captions": "Captions",
   "ui.parent.reducedMotion": "Calm motion",
   "ui.parent.highContrast": "High contrast and larger text",
@@ -78,8 +84,6 @@ export const strings: Record<string, string> = {
   "ui.parent.locale": "Language",
   "ui.parent.language": "Language",
   "ui.parent.locale.en": "English",
-  "ui.parent.locale.pa": "ਪੰਜਾਬੀ Punjabi (not available yet)",
-  "ui.parent.localeUnavailable": "Punjabi is not available yet. It will be added only after review by native speakers.",
 
   // Guidance (PRD 01 section 6).
   "ui.guide.title": "Ways to play together",

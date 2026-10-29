@@ -8,6 +8,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { strings as enUiStrings } from "../../../src/localization/en/ui.js";
 import { UI_STRINGS, fillTemplate, humanizeId, speakerName, storyText, uiText, type UiLocale } from "../../../src/ui/accessibility.js";
 import { speakerColour } from "../../../src/ui/captions.js";
 import { menuSection, type MenuItem } from "../../../src/ui/episode-menu.js";
@@ -43,7 +44,6 @@ const SHARED_UI_KEYS = [
   "ui.parent.wait",
   "ui.parent.words",
   "ui.parent.locale",
-  "ui.parent.localeUnavailable",
   "ui.parent.exit",
   "ui.parent.close",
   "ui.parent.clear",
@@ -70,10 +70,11 @@ const SHARED_UI_KEYS = [
 ] as const;
 
 /**
- * Further keys the English pack defines (src/localization/en/ui.ts; all but
- * the speaker names are in src/content/schema.ts REQUIRED_UI_KEYS) that the UI
- * uses for PRD requirements: the gate is not a lock, sound starts after the
- * tap, the prototype label, the word list tracks nothing, headings and labels.
+ * Further keys the English pack defines (src/localization/en/ui.ts; most are
+ * also in src/content/schema.ts REQUIRED_UI_KEYS) that the UI uses for PRD
+ * requirements: the gate is not a lock, sound starts after the tap, the
+ * prototype label, the word list tracks nothing, the sound-effect level (PRD 01
+ * section 9; 07 B20), the caption speaker names, headings and labels.
  */
 const PACK_UI_KEYS = [
   "ui.start.sound",
@@ -88,6 +89,11 @@ const PACK_UI_KEYS = [
   "ui.gate.note",
   "ui.parent.back",
   "ui.parent.display",
+  "ui.parent.sfx",
+  "ui.parent.sfxHelp",
+  "ui.parent.sfx.off",
+  "ui.parent.sfx.soft",
+  "ui.parent.sfx.normal",
   "ui.parent.waitHelp",
   "ui.parent.wordsHelp",
   "ui.parent.wordsEmpty",
@@ -163,7 +169,17 @@ describe("ui string keys", () => {
   it("UI_STRINGS defines exactly the listed ui.* keys, the whole shared list included", () => {
     expect(Object.keys(UI_STRINGS).sort()).toEqual([...UI_KEYS].sort());
     expect(new Set(UI_KEYS).size).toBe(UI_KEYS.length);
-    expect(SHARED_UI_KEYS.length).toBe(41);
+    expect(SHARED_UI_KEYS.length).toBe(40);
+  });
+
+  it("keep no string for the unavailable Punjabi pack (07 B16; 06 QA-E11)", () => {
+    for (const key of ["ui.parent.localeUnavailable", "ui.parent.locale.pa"]) {
+      expect(Object.keys(UI_STRINGS), key).not.toContain(key);
+      expect(Object.keys(enUiStrings), key).not.toContain(key);
+    }
+    for (const [key, text] of [...Object.entries(UI_STRINGS), ...Object.entries(enUiStrings)]) {
+      expect(text, key).not.toMatch(/Punjabi|ਪੰਜਾਬੀ/);
+    }
   });
 
   it("the UI sources use no ui.* key outside the list", () => {
@@ -304,6 +320,31 @@ describe("string lookup", () => {
     ];
     expect(menuSection(items, "episode").map((item) => item.id)).toEqual(["e-one", "e-two"]);
     expect(menuSection(items, "activity").map((item) => item.id)).toEqual(["g-two"]);
+  });
+
+  it("lists the P1 pilot stories first, then P2, each group in canonical order (PRD 04 E02)", () => {
+    const items: MenuItem[] = [
+      { id: "e-three", code: "e03", titleKey: "e03.title", kind: "episode", host: "lumi", number: 3, phase: "P2" },
+      { id: "e-seventeen", code: "e17", titleKey: "e17.title", kind: "episode", host: "sheru", number: 17, phase: "P1" },
+      { id: "e-two", code: "e02", titleKey: "e02.title", kind: "episode", host: "peeko", number: 2, phase: "P1" },
+      { id: "e-four", code: "e04", titleKey: "e04.title", kind: "episode", host: "gogo", number: 4 },
+      { id: "e-one", code: "e01", titleKey: "e01.title", kind: "episode", host: "momo", number: 1, phase: "P1" },
+      { id: "g-four", code: "g04", titleKey: "g04.title", kind: "activity", host: "peeko", number: 4, phase: "P2" },
+      { id: "g-three", code: "g03", titleKey: "g03.title", kind: "activity", host: "sheru", number: 3, phase: "P1" }
+    ];
+    // A story without a phase is never promoted into the pilot group.
+    expect(menuSection(items, "episode").map((item) => item.number)).toEqual([1, 2, 17, 3, 4]);
+    expect(menuSection(items, "activity").map((item) => item.code)).toEqual(["g03", "g04"]);
+    // Without phases the order stays canonical.
+    const unphased: MenuItem[] = items.map((item) => ({
+      id: item.id,
+      code: item.code,
+      titleKey: item.titleKey,
+      kind: item.kind,
+      host: item.host,
+      number: item.number
+    }));
+    expect(menuSection(unphased, "episode").map((item) => item.number)).toEqual([1, 2, 3, 4, 17]);
   });
 });
 

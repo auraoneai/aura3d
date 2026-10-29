@@ -27,7 +27,7 @@ import { createApp, type WonderApp } from "./app.js";
 import { installWonderQaHooks } from "./qa/install-hooks.js";
 import { readFlags } from "./runtime/feature-flags.js";
 import type { PlayMode } from "./types.js";
-import { prefersReducedMotion } from "./ui/accessibility.js";
+import { prefersMoreContrast, prefersReducedMotion } from "./ui/accessibility.js";
 import { loadSettings, safeLocalStorage } from "./ui/settings-store.js";
 
 const QA_PARAMS = {
@@ -73,7 +73,7 @@ function boot(): void {
 
   // Settings live on this device only; `?mode=` applies to this page load and is saved only if the grown-up changes a setting.
   const storage = safeLocalStorage(window);
-  let settings = loadSettings(storage, prefersReducedMotion(window));
+  let settings = loadSettings(storage, prefersReducedMotion(window), prefersMoreContrast(window));
   const mode = playModeOf(params.mode);
   if (mode) settings = { ...settings, mode };
 

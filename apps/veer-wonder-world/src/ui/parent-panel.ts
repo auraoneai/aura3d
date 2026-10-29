@@ -3,20 +3,21 @@
 // privacy notes, kept apart from the play canvas behind the parent gate.
 //
 // Every change is reported at once through onChange; the app shell persists
-// it with saveSettings and applies it (mode, music, sound, captions, calm
-// motion, contrast, wait time, locale, word list). Display settings are also
-// mirrored onto <html> here so the panel itself reflects them immediately.
-// All controls are native, labelled form controls: Tab moves between them
-// (and wraps inside the panel), arrow keys move inside a radio group, Space
-// toggles a switch or a word, and Escape closes the panel.
+// it with saveSettings and applies it (mode, music, sound, sound-effect level,
+// captions, calm motion, contrast, wait time, locale, word list). Display
+// settings are also mirrored onto <html> here so the panel itself reflects
+// them immediately. All controls are native, labelled form controls: Tab
+// moves between them (and wraps inside the panel), arrow keys move inside a
+// radio group, Space toggles a switch or a word, and Escape closes the panel.
 
-import type { ParentSettings } from "../types.js";
+import type { ParentSettings, SfxVolume } from "../types.js";
 import {
   applyDisplaySettings,
   buildModeChoice,
   docOf,
   el,
   iconButton,
+  prefersMoreContrast,
   prefersReducedMotion,
   presentModal,
   uiText,
@@ -26,7 +27,6 @@ import {
 } from "./accessibility.js";
 import { mountWordList, wordChoices, type WordChoice } from "./parent-wordlist.js";
 import {
-  AVAILABLE_LOCALES,
   WAIT_MS_MAX,
   WAIT_MS_MIN,
   WAIT_MS_STEP,
@@ -46,10 +46,24 @@ export interface ParentPanelOptions {
   readonly storage?: SettingsStorage | null;
 }
 
-/** Languages listed in the panel, by their own names. Only AVAILABLE_LOCALES can be picked. */
-export const LOCALE_CHOICES: readonly { readonly code: string; readonly name: string }[] = [
-  { code: "en", name: "English" },
-  { code: "pa", name: "ਪੰਜਾਬੀ" }
+/**
+ * The enabled languages (AVAILABLE_LOCALES), by their own names; the panel
+ * names the current one. The Punjabi pack (src/localization/pa.ts) stays
+ * present but disabled and unlisted until native review (07 B16; 06 QA-E11).
+ * With one language the panel shows it as plain text: enabling a second pack
+ * also needs a language choice in the panel.
+ */
+export const LOCALE_CHOICES: readonly { readonly code: string; readonly name: string }[] = [{ code: "en", name: "English" }];
+
+/**
+ * The sound-effect levels (PRD 01 section 9; 07 B20), in the order the panel
+ * lists them: off, soft (half) or normal (the capped level). Voices and songs
+ * keep their level.
+ */
+export const SFX_CHOICES: readonly { readonly level: SfxVolume; readonly key: UiStringKey }[] = [
+  { level: "off", key: "ui.parent.sfx.off" },
+  { level: "soft", key: "ui.parent.sfx.soft" },
+  { level: "normal", key: "ui.parent.sfx.normal" }
 ];
 
 /**
@@ -172,6 +186,36 @@ export function openParentPanel(
     );
   }
 
+  // Sound effects: off, soft or normal (PRD 01 section 9: capped, with a grown-up adjustment).
+  // A native radio group, so a screen reader announces the legend, the note and the checked level.
+  const sfxName = uniqueId("ww-sfx");
+  const sfxHelpId = uniqueId("ww-sfx-help");
+  const sfxOptions = el(doc, "div", { className: "ww-segmented-options ww-segmented-three" });
+  const sfxField = el(
+    doc,
+    "fieldset",
+    { className: "ww-field ww-segmented", attrs: { "data-setting": "sfxVolume", "aria-describedby": sfxHelpId } },
+    [
+      el(doc, "legend", { className: "ww-legend", text: uiText(locale, "ui.parent.sfx") }),
+      el(doc, "p", { className: "ww-field-note", text: uiText(locale, "ui.parent.sfxHelp"), attrs: { id: sfxHelpId } }),
+      sfxOptions
+    ]
+  );
+  const sfxInputs = new Map<SfxVolume, HTMLInputElement>();
+  for (const choice of SFX_CHOICES) {
+    const input = el(doc, "input", {
+      className: "ww-choice-input",
+      attrs: { type: "radio", name: sfxName, value: choice.level, "data-sfx-volume": choice.level }
+    });
+    input.addEventListener("change", () => {
+      if (input.checked) emit({ ...current, sfxVolume: choice.level });
+    });
+    sfxInputs.set(choice.level, input);
+    sfxOptions.appendChild(
+      el(doc, "label", { className: "ww-segment" }, [input, el(doc, "span", { className: "ww-segment-face", text: uiText(locale, choice.key) })])
+    );
+  }
+
   // Wait time for a turn: 3-8 whole seconds. Silence always carries on.
   const waitName = uniqueId("ww-wait");
   const waitHelpId = uniqueId("ww-wait-help");
@@ -206,35 +250,14 @@ export function openParentPanel(
     );
   }
 
-  // Language: English now; Punjabi is listed but cannot be picked until native review.
-  const localeName = uniqueId("ww-locale");
-  const localeNoteId = uniqueId("ww-locale-note");
-  const localeOptions = el(doc, "div", { className: "ww-segmented-options" });
-  const localeField = el(doc, "fieldset", { className: "ww-field ww-segmented", attrs: { "data-setting": "locale" } }, [
-    el(doc, "legend", { className: "ww-legend", text: uiText(locale, "ui.parent.locale") }),
-    localeOptions,
-    el(doc, "p", { className: "ww-field-note", text: uiText(locale, "ui.parent.localeUnavailable"), attrs: { id: localeNoteId } })
+  // Language (07 B16; 06 QA-E11): only enabled packs are offered, and today
+  // that is English alone, so the panel states the language as plain text
+  // instead of a choice of one. A picker returns with a second approved pack.
+  const localeValue = el(doc, "dd", { className: "ww-setting-value" });
+  const localeField = el(doc, "dl", { className: "ww-setting-static", attrs: { "data-setting": "locale" } }, [
+    el(doc, "dt", { className: "ww-setting-label", text: uiText(locale, "ui.parent.locale") }),
+    localeValue
   ]);
-  const localeInputs = new Map<string, HTMLInputElement>();
-  for (const choice of LOCALE_CHOICES) {
-    const available = AVAILABLE_LOCALES.includes(choice.code);
-    const input = el(doc, "input", {
-      className: "ww-choice-input",
-      attrs: { type: "radio", name: localeName, value: choice.code, "data-locale": choice.code }
-    });
-    input.disabled = !available;
-    if (!available) input.setAttribute("aria-describedby", localeNoteId);
-    input.addEventListener("change", () => {
-      if (input.checked && AVAILABLE_LOCALES.includes(choice.code)) emit({ ...current, locale: choice.code });
-    });
-    localeInputs.set(choice.code, input);
-    localeOptions.appendChild(
-      el(doc, "label", { className: "ww-segment" }, [
-        input,
-        el(doc, "span", { className: "ww-segment-face" }, [el(doc, "span", { text: choice.name, attrs: { lang: choice.code } })])
-      ])
-    );
-  }
 
   // Word list.
   const wordsHost = el(doc, "div", { className: "ww-wordlist-host" });
@@ -251,12 +274,13 @@ export function openParentPanel(
     attrs: { type: "button", "data-action": "clear" }
   });
   clear.addEventListener("click", () => {
-    emit(defaultSettings(prefersReducedMotion(win)));
+    // The defaults are seeded from the device's calm-motion and contrast preferences, as at start.
+    emit(defaultSettings(prefersReducedMotion(win), prefersMoreContrast(win)));
     sync();
     clearSettings(options.storage === undefined ? safeLocalStorage(win) : options.storage);
   });
 
-  form.append(modeChoice.element, switchField, waitField, localeField, wordsHost, clear);
+  form.append(modeChoice.element, switchField, sfxField, waitField, localeField, wordsHost, clear);
 
   // Guidance and notes (PRD 01 sections 6, 7, 8 and 11).
   const guideTitleId = uniqueId("ww-guide-title");
@@ -306,9 +330,11 @@ export function openParentPanel(
   function sync(): void {
     modeChoice.set(current.mode);
     for (const [field, input] of switchInputs) input.checked = current[field];
+    for (const [level, input] of sfxInputs) input.checked = level === current.sfxVolume;
     const wait = clampWaitMs(current.waitMs);
     for (const [ms, input] of waitInputs) input.checked = ms === wait;
-    for (const [code, input] of localeInputs) input.checked = code === current.locale;
+    localeValue.textContent = LOCALE_CHOICES.find((choice) => choice.code === current.locale)?.name ?? current.locale;
+    localeValue.setAttribute("lang", current.locale);
     wordList.update(current.wordList);
   }
   sync();
