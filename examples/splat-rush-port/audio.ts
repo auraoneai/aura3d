@@ -26,10 +26,12 @@ export interface FrameState {
   rainbowTimer: number;
   scoreX2Timer: number;
   playerColorIndex: number;
+  /** Next milestone score: it rises by 750 each time one is reached (the sim adds 100 points then). */
+  milestone: number;
   perfect: boolean;
 }
 
-export type GameSound = "match" | "perfect" | "hit" | "block" | "pickup" | "switch" | "burst" | "gameover" | "start";
+export type GameSound = "match" | "perfect" | "hit" | "block" | "pickup" | "switch" | "burst" | "gameover" | "start" | "milestone";
 
 /** Derives sound events from consecutive simulation states (pure: unit tested). */
 export function diffSounds(prev: FrameState | null, next: FrameState): { sound: GameSound; level: number }[] {
@@ -39,6 +41,7 @@ export function diffSounds(prev: FrameState | null, next: FrameState): { sound: 
   if (next.phase === "bursting" && prev.phase !== "bursting") out.push({ sound: "burst", level: 0 });
   if (next.phase === "gameOver" && prev.phase !== "gameOver") out.push({ sound: "gameover", level: 0 });
   if (next.phase !== "playing" && next.phase !== "bursting") return out;
+  if (next.milestone > prev.milestone) out.push({ sound: "milestone", level: 0 });
   if (next.lives < prev.lives) out.push({ sound: "hit", level: 0 });
   else if (prev.shieldActive && !next.shieldActive) out.push({ sound: "block", level: 0 });
   else if (next.combo > prev.combo) out.push({ sound: next.perfect ? "perfect" : "match", level: next.combo });
@@ -101,6 +104,10 @@ const CUES: Record<GameSound, CueSpec> = {
     ],
     priority: 1
   },
+  /* the original's milestone arpeggio: four triangle notes 60 ms apart, each sliding up a fifth */
+  milestone: {
+    layers: [0, 4, 7, 12].map((semis, i) => ({ freq: note(semis), type: "triangle" as const, dur: 0.3, gain: 0.18, delay: 0.06 * i, slideTo: 1.5 * note(semis) }))
+  },
   start: {
     layers: [
       { freq: note(0), type: "triangle", dur: 0.12, gain: 0.14 },
@@ -144,6 +151,17 @@ export class SplatSound {
 
   play(sound: GameSound, level = 0): void {
     this.bank.play(sound, { level });
+  }
+
+  /** Pause or resume the whole audio graph (the tab is hidden or the game is paused). The music scheduler reads the
+   * context clock, which stands still while the context is suspended, so no notes pile up. */
+  async suspend(suspended: boolean): Promise<void> {
+    const ctx = this.bank.context as (SynthContext & { state?: string; suspend?: () => Promise<void>; resume?: () => Promise<void> }) | null;
+    if (!ctx) return;
+    try {
+      if (suspended && ctx.state === "running") await ctx.suspend?.();
+      else if (!suspended && ctx.state === "suspended") await ctx.resume?.();
+    } catch { /* the context is closed */ }
   }
 
   dispose(): void {
