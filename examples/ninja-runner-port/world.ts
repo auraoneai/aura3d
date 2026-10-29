@@ -363,9 +363,10 @@ export function buildWorld(options: WorldOptions): World {
 
   const blobShadow = solidSpec([0.02, 0.025, 0.02], { alpha: 0.4 });
   const disc = defineShape(unitDisc(20));
-  // Threat marker: a red strip from the hero to the next rival charging down the hero's lane (`crosshairTarget`, E-01).
-  const threat = solidSpec([0.9, 0.12, 0.06], { glow: 0.9, glowColor: [1, 0.2, 0.1], alpha: 0.42 });
-  for (let i = 0; i < THREAT_POOL; i++) builder.add(primitives.box({ name: `threat-${i}`, size: [1, 0.02, 1], material: material.custom(threat), castShadow: false, receiveShadow: false }).runtime({ id: `threat-${i}` }));
+  // Threat marker: a thin glowing red line from the hero to the next rival charging down the hero's lane (`crosshairTarget`, E-01).
+  // Opaque, like the beams: the alpha-blended version never reached the frame on the remote captures (g20-dbg-threat).
+  const threat = solidSpec([0.9, 0.12, 0.06], { glow: 0.9, glowColor: [1, 0.2, 0.1] });
+  for (let i = 0; i < THREAT_POOL; i++) builder.add(primitives.box({ name: `threat-${i}`, size: [1, 0.03, 1], material: material.custom(threat), castShadow: false, receiveShadow: false }).runtime({ id: `threat-${i}` }));
   for (let i = 0; i < ACTOR_COUNT; i++) builder.add(geometry.custom(disc, { name: `blob-${i}`, material: material.custom(blobShadow), castShadow: false, receiveShadow: false }).runtime({ id: `blob-${i}` }));
 
   builder.add(geometry.custom(geometry.dynamic({
@@ -629,12 +630,12 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       const near = s + 1.5, far = target ? target.s - 0.8 : 0;
       marker.setVisible(!!target && far - near > 1);
       if (target && far - near > 1) {
-        const f = groundFrame((near + far) / 2, target.lane * laneOffset(target.s), 0.12);
+        const f = groundFrame((near + far) / 2, target.lane * laneOffset(target.s), 0.05);
         marker.setPosition(f.x, f.y, f.z);
         marker.setRotation(0, Math.atan2(f.dx, f.dz), 0);
-        marker.setScale([0.55, 1, far - near]);
+        marker.setScale([0.16, 1, far - near]);
         threatShown = { target: target.id, from: +near.toFixed(2), to: +far.toFixed(2) };
-        marker.setUniform?.("solidAlpha", 0.16 + 0.3 * (1 - Math.min(1, (target.s - s) / 26)));
+        marker.setUniform?.("glow", 0.5 + 1.2 * (1 - Math.min(1, (target.s - s) / 26)));
       }
 
       /* barriers and beams */
