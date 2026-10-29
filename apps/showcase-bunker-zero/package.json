@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Bunker Zero prototype: a six-floor retro corridor FPS in the Wolfenstein mold — ASCII-grid maze geometry, push-wall secrets, three enemy archetypes plus the Iron Warden boss, and an arsenal that grows floor by floor.",
+  "description": "Bunker Zero prototype: a six-floor retro corridor FPS: ASCII-grid maze geometry, push-wall secrets, three enemy archetypes plus the Iron Warden boss, and an arsenal that grows floor by floor.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc -p tsconfig.json --noEmit",

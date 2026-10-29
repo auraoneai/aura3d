@@ -69,5 +69,19 @@
       }
     }
   },
-  "incomplete": []
+  "incomplete": [],
+  "retake": {
+    "2026-10-29": {
+      "lane": "g11",
+      "branch": "audit-fix/g11",
+      "runs": [
+        "g11-final2-1280",
+        "g11-final2-390"
+      ],
+      "spec": "tests/browser/audit-fix/bunker-zero.spec.ts",
+      "console_errors": 0,
+      "page_errors": 0,
+      "results": "reached (audit-2026-10-29/after-states/states-desktop__results.jpg)"
+    }
+  }
 }
