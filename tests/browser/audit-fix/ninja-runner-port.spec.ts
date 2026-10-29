@@ -16,7 +16,7 @@ import { startExampleDevServer, type ExampleDevServer } from "../example-dev-ser
 // cannot run under the example dev server: it bundles apps/*/src/main.ts, which moves `import.meta.url` and so the GLB URLs.
 const APP = "/examples/ninja-runner-port/index.html";
 const HOOK = "__AURA_NINJA_RUNNER__";
-const WARMUP_MS = 20_000;
+const WARMUP_MS = 15_000;
 const CHUNK = 16000;
 const log = (line: string): void => { process.stdout.write(`${line}\n`); };
 const CANVAS_ONLY = "body *:not(canvas){visibility:hidden !important} canvas{visibility:visible !important} html,body{background:#000 !important}";
@@ -132,6 +132,10 @@ async function open(browser: Browser, server: ExampleDevServer, query: string, v
   const bootError = await page.evaluate(() => (window as unknown as Record<string, unknown>).__AURA_NINJA_RUNNER_ERROR__ ?? null);
   expect(bootError, errors.slice(0, 4).join(" | ")).toBeNull();
   await page.waitForTimeout(WARMUP_MS);
+  // Captures draw only through the QA hooks: the game's own frame loop is stopped (each software-GL frame costs many
+  // seconds, and a running loop makes every screenshot wait for one). `drive` renders settle frames explicitly.
+  await page.evaluate(() => { (window as unknown as { requestAnimationFrame: (cb: FrameRequestCallback) => number }).requestAnimationFrame = () => 0; });
+  await page.evaluate((hook) => (window as unknown as Record<string, any>)[hook].settle(2, 1 / 60), HOOK);
   return page;
 }
 
@@ -140,7 +144,7 @@ async function drive(page: Page, script: string, settle = 4): Promise<string> {
   try {
     await page.evaluate(({ hook, script }) => new Function("api", script)((window as unknown as Record<string, unknown>)[hook]), { hook: HOOK, script });
   } catch (e) { err = String(e).slice(0, 240); }
-  await page.evaluate((k) => new Promise<void>((res) => { let i = 0; const f = () => (++i >= k ? res() : requestAnimationFrame(f)); requestAnimationFrame(f); }), settle);
+  await page.evaluate(([hook, k]) => (window as unknown as Record<string, any>)[hook as string].settle(k, 1 / 60), [HOOK, settle] as const);
   return err;
 }
 
