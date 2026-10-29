@@ -20,7 +20,6 @@ import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 import {
   E17,
-  TEST_TIMEOUT_MS,
   advanceUntil,
   attachPageLog,
   captureCanvas,
@@ -44,7 +43,10 @@ import {
   type PageLog
 } from "./wonder-world-lib";
 
-const VIEWPORT = { width: 800, height: 600 } as const;
+/** Small enough that the 60-frame runs fit the timeout on software WebGL2 (each frame is one render and one screenshot). */
+const VIEWPORT = { width: 640, height: 480 } as const;
+/** Boot, then 60 rendered and captured frames, then the walk to the invite wait: run wonder-F-20261029T135132Z showed 15 minutes is too short on software WebGL2. */
+const LOW_MOTION_TIMEOUT_MS = 35 * 60_000;
 /** Story time between flash-run frames, and how many frames (about the first 30 s: greet, hook, model). */
 const FLASH_STEP_MS = 500;
 const FLASH_FRAMES = 60;
@@ -135,7 +137,7 @@ function expectClean(log: PageLog): void {
 }
 
 test.describe("Wonder World J13 low motion", () => {
-  test.setTimeout(TEST_TIMEOUT_MS);
+  test.setTimeout(LOW_MOTION_TIMEOUT_MS);
   let server: ExampleDevServer;
   test.beforeAll(async () => {
     server = await startExampleDevServer();

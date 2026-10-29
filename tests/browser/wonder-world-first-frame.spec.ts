@@ -12,6 +12,9 @@
  * draws that model's stand-in for this mount and keeps downloading it (src/runtime/asset-preloader.ts). When that
  * happens the spec waits for the downloads to settle, starts the story again and checks that the second mount draws
  * the models, which is the app's own path for a late model. The record keeps the first mount's state as `firstMount`.
+ *
+ * A third test opens E17 with `?diag=1` and checks the diagnostics panel (renderer string, engine line, no captured
+ * error); its capture and panel text are printed as first-frame-diag.
  */
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
@@ -31,12 +34,12 @@ import {
   openWonderWorld,
   qaAdvance,
   qaDiagnostics,
-  qaStartStory,
   qaState,
   readBootError,
+  redact,
+  remountIfModelsLate,
   runContext,
   saveReportFile,
-  waitFor,
   waitForStoryOnStage
 } from "./wonder-world-lib";
 
@@ -47,8 +50,6 @@ const MIN_NON_BLACK_RATIO = 0.5;
 /** A frame that drew only its clear colour is flat; cast, ball and ground give real contrast. */
 const MIN_LUMA_STD_DEV = 2;
 const MIN_COARSE_COLOURS = 12;
-/** Longer than the app's 120 s download cap, so every download has settled (or been capped) by then. */
-const DOWNLOADS_SETTLED_MS = 150_000;
 
 const VARIANTS = [
   { label: "models", models: true, title: "admitted GLB models" },
@@ -81,18 +82,7 @@ test.describe("Wonder World J08 first frame", () => {
       const admitted = admittedModelKeys();
       // Cast members whose GLB is admitted must draw as models (F0.4); a prop without a model (the ball) is a stand-in.
       const expectModel: string[] = variant.models ? E17.cast.filter((id) => admitted?.has(id) === true) : [];
-      let firstMount: Record<string, unknown> | null = null;
-      const lateModels = (await liveNodes(page, expectModel)).nodes.filter((node) => !node.tags.includes("model")).map((node) => node.id);
-      if (lateModels.length > 0) {
-        const first = await qaDiagnostics(page);
-        firstMount = { standIns: lateModels, modelStatus: first?.modelStatus ?? null };
-        await waitFor(page, log, "model downloads settled", DOWNLOADS_SETTLED_MS, async () => {
-          const status = (await qaDiagnostics(page))?.modelStatus as Readonly<Record<string, number>> | undefined;
-          return status !== undefined && !((status.pending ?? 0) > 0);
-        });
-        await qaStartStory(page, E17.id, "play-together");
-        await waitForStoryOnStage(page, log, E17.id);
-      }
+      const firstMount = await remountIfModelsLate(page, log, E17.id, "play-together", expectModel);
 
       const before = await qaState(page);
       expect(before.audio.unlocked, "autostart keeps audio locked until a grown-up taps").toBe(false);
@@ -174,4 +164,31 @@ test.describe("Wonder World J08 first frame", () => {
       expect(log.consoleErrors, "console errors").toEqual([]);
     });
   }
+
+  // The panel a grown-up opens on a device to report a problem (src/main.ts: installSafetyNet, panel "query").
+  test("?diag=1 shows the diagnostics panel with the renderer string and no captured error", async ({ page }) => {
+    await page.setViewportSize(VIEWPORT);
+    const log = attachPageLog(page);
+    const query = { autostart: 1, story: E17.id, manual: 1, mode: "play-together", models: 0, diag: 1 } as const;
+    await openWonderWorld(page, server, log, query);
+    await waitForStoryOnStage(page, log, E17.id);
+    const panel = page.locator("[data-aura3d-safety-panel]");
+    await expect(panel, "the ?diag=1 panel is shown").toBeVisible();
+    const text = (await panel.textContent()) ?? "";
+    emitShot("first-frame-diag", await captureView(page), "jpg");
+    emitJson("first-frame-diag", {
+      ...(await runContext(page, "first-frame-diag")),
+      query,
+      panel: redact(text),
+      consoleErrors: log.consoleErrors,
+      pageErrors: log.pageErrors
+    });
+    expect(text, "the panel names the GPU renderer").toMatch(/gpu: \S/);
+    expect(text, "the panel shows the engine section").toMatch(/engine: \S/);
+    expect(text, "the panel captured no error").toContain("no errors captured");
+    expect(text).not.toMatch(/SHADER|PROGRAM LINK FAILED|WEBGL CONTEXT LOST|uncaught:|rejection:/);
+    expect(await readBootError(page), "__AURA_WONDER_WORLD_ERROR__").toBeNull();
+    expect(log.pageErrors, "page errors").toEqual([]);
+    expect(log.consoleErrors, "console errors").toEqual([]);
+  });
 });

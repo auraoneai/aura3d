@@ -890,6 +890,51 @@ export async function captureView(page: Page): Promise<Buffer> {
   return page.screenshot({ type: "jpeg", quality: 65 });
 }
 
+/** The canvas alone (overlays hidden), as a JPEG for the log: the look-dev frames. */
+export async function captureCanvasJpeg(page: Page, quality = 82): Promise<Buffer> {
+  const box = await canvasBox(page);
+  const viewport = page.viewportSize();
+  const x = Math.max(0, Math.floor(box.x));
+  const y = Math.max(0, Math.floor(box.y));
+  const width = Math.max(1, Math.floor(Math.min(box.width, (viewport?.width ?? box.width) - x)));
+  const height = Math.max(1, Math.floor(Math.min(box.height, (viewport?.height ?? box.height) - y)));
+  await setCaptureMode(page, true);
+  try {
+    return await page.screenshot({ type: "jpeg", quality, clip: { x, y, width, height } });
+  } finally {
+    await setCaptureMode(page, false);
+  }
+}
+
+/** Longer than the app's 120 s download cap (src/runtime/asset-preloader.ts), so every model download has settled by then. */
+export const DOWNLOADS_SETTLED_MS = 150_000;
+
+/**
+ * Makes sure the story's admitted models are drawn. Software WebGL2 starves the page, so a large GLB can outlast the
+ * preload's 10 s wait; the app then draws its stand-in for that mount and keeps downloading it. When any of `ids` is
+ * a stand-in, this waits for the downloads to settle and starts the story again (the app's own path for a late
+ * model). Returns what the first mount drew, or null when it already drew every model.
+ */
+export async function remountIfModelsLate(
+  page: Page,
+  log: PageLog,
+  storyId: string,
+  mode: PlayMode,
+  ids: readonly string[]
+): Promise<{ readonly standIns: readonly string[]; readonly modelStatus: unknown } | null> {
+  const late = (await liveNodes(page, ids)).nodes.filter((node) => !node.tags.includes("model")).map((node) => node.id);
+  if (late.length === 0) return null;
+  const first = await qaDiagnostics(page);
+  const firstMount = { standIns: late, modelStatus: first?.["modelStatus"] ?? null };
+  await waitFor(page, log, "model downloads settled", DOWNLOADS_SETTLED_MS, async () => {
+    const status = (await qaDiagnostics(page))?.["modelStatus"] as Readonly<Record<string, number>> | undefined;
+    return status !== undefined && !((status["pending"] ?? 0) > 0);
+  });
+  await qaStartStory(page, storyId, mode);
+  await waitForStoryOnStage(page, log, storyId);
+  return firstMount;
+}
+
 export interface DecodedImage {
   readonly width: number;
   readonly height: number;
@@ -1016,6 +1061,69 @@ export function lumaStats(image: DecodedImage): LumaStats {
     lumaStdDev: round3(Math.sqrt(Math.max(0, sumSquares / pixels - mean * mean))),
     nonBlackRatio: round3(lit / pixels),
     coarseColours: colours.size
+  };
+}
+
+export interface ColourStats {
+  /** Mean HSV saturation, 0..1. */
+  readonly meanSaturation: number;
+  /** Hasler-Suesstrunk colourfulness (about 15 is "slightly colourful", 33 "moderately", 45 "quite"). */
+  readonly colourfulness: number;
+  /** Share of pixels with luma >= 250 (clipped highlights). */
+  readonly clippedRatio: number;
+  /** 5th and 95th percentile luma: the frame's usable tonal range. */
+  readonly p5Luma: number;
+  readonly p95Luma: number;
+}
+
+/** Colour and tonal-range numbers for the look-dev loop: a washed-out frame has high luma, low saturation and a narrow range. */
+export function colourStats(image: DecodedImage): ColourStats {
+  const pixels = image.width * image.height;
+  if (pixels === 0) return { meanSaturation: 0, colourfulness: 0, clippedRatio: 0, p5Luma: 0, p95Luma: 0 };
+  let saturation = 0;
+  let clipped = 0;
+  let rgSum = 0;
+  let rgSquares = 0;
+  let ybSum = 0;
+  let ybSquares = 0;
+  const histogram = new Array<number>(256).fill(0);
+  for (let pixel = 0; pixel < pixels; pixel += 1) {
+    const at = pixel * 4;
+    const r = image.rgba[at] ?? 0;
+    const g = image.rgba[at + 1] ?? 0;
+    const b = image.rgba[at + 2] ?? 0;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    saturation += max === 0 ? 0 : (max - min) / max;
+    const luma = lumaAt(image.rgba, pixel);
+    if (luma >= 250) clipped += 1;
+    histogram[Math.min(255, Math.round(luma))] = (histogram[Math.min(255, Math.round(luma))] ?? 0) + 1;
+    const rg = r - g;
+    const yb = 0.5 * (r + g) - b;
+    rgSum += rg;
+    rgSquares += rg * rg;
+    ybSum += yb;
+    ybSquares += yb * yb;
+  }
+  const percentile = (share: number): number => {
+    const wanted = share * pixels;
+    let seen = 0;
+    for (let value = 0; value < 256; value += 1) {
+      seen += histogram[value] ?? 0;
+      if (seen >= wanted) return value;
+    }
+    return 255;
+  };
+  const rgMean = rgSum / pixels;
+  const ybMean = ybSum / pixels;
+  const rgStd = Math.sqrt(Math.max(0, rgSquares / pixels - rgMean * rgMean));
+  const ybStd = Math.sqrt(Math.max(0, ybSquares / pixels - ybMean * ybMean));
+  return {
+    meanSaturation: round3(saturation / pixels),
+    colourfulness: round3(Math.sqrt(rgStd * rgStd + ybStd * ybStd) + 0.3 * Math.sqrt(rgMean * rgMean + ybMean * ybMean)),
+    clippedRatio: round3(clipped / pixels),
+    p5Luma: percentile(0.05),
+    p95Luma: percentile(0.95)
   };
 }
 

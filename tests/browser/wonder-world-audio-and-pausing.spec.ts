@@ -145,9 +145,11 @@ async function scenario(page: Page, server: ExampleDevServer, log: PageLog, step
   expect(probeAtStart.installed, "the voice probe was installed before the app loaded").toBe(true);
   expect(probeAtStart.starts, "no voice line starts before the start tap").toBe(0);
 
-  // 2. The real gesture: audio unlocks, or the app reports it unavailable and runs on captions.
-  await start.click({ timeout: UI_TIMEOUT_MS });
+  // 2. The real gesture: audio unlocks, or the app reports it unavailable and runs on captions. The tap waits until the
+  // stage has booted: on software WebGL2 the boot (shader warm-up) holds the page's main thread for longer than the
+  // click timeout, so a click sent earlier cannot be delivered. A grown-up on a device taps whenever the button shows.
   await waitForReady(page, log);
+  await start.click({ timeout: UI_TIMEOUT_MS });
   await waitForStoryOnStage(page, log, E17.id);
   const audio = await waitForPhase(page, log, "audio unlocked or reported unavailable", (state) => state.audio.unlocked || !state.audio.available, 10_000);
   steps["audio"] = audio.audio;
