@@ -729,7 +729,12 @@
         z-index: 18;
         display: flex;
         align-items: center;
-        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+        row-gap: 2px;
+        column-gap: 10px;
+        /* Fits between the item panel and the speedometer at 1280 px (audit: the strip overlapped the speedometer). */
+        max-width: min(540px, calc(100vw - 700px));
         padding: 5px 12px;
         background: rgba(8, 9, 12, 0.68);
         border: 1px solid rgba(244, 242, 236, 0.13);
@@ -786,7 +791,7 @@
 
       /* Touch controls (phones and tablets): steer pad left, action cluster right, 44 px or larger targets. */
       .touch-controls { display: none; }
-      @media (pointer: coarse), (hover: none) {
+      @media (pointer: coarse) {
         .touch-controls { display: block; position: fixed; inset: auto 0 0 0; height: 0; z-index: 30; pointer-events: none; }
         .touch-pad, .touch-cluster, .touch-top { pointer-events: auto; touch-action: none; -webkit-user-select: none; user-select: none; }
         .touch-pad {
@@ -817,7 +822,8 @@
         .controls-strip { display: none; }
       }
 
-      @media (max-width: 960px) {
+      @media (max-width: 1240px) {
+        .controls-strip { max-width: none; }
         .controls-strip > span { display: none; }
       }
 
@@ -1012,12 +1018,12 @@
 
       <div class="controls-strip">
         <button type="button" class="autopilot-badge manual" id="h-autopilot" style="pointer-events:auto;cursor:pointer;" title="Toggle the AI demo pilot">PILOT CONTROL: MANUAL</button>
-        <span><b>WASD/ARROWS</b> FLY</span>
-        <span><b>SHIFT</b> AFTERBURNER</span>
-        <span><b>SPACE</b> CANNONS</span>
-        <span><b>F</b> MISSILE</span>
+        <span><b>WASD</b> FLY</span>
+        <span><b>SPACE</b> FIRE</span>
+        <span><b>SHIFT</b> BOOST</span>
         <span><b>R</b> ROLL</span>
-        <span><b>Q/C/E</b> SHOCK · MINE · ITEM</span>
+        <span><b>F</b> MISSILE</span>
+        <span><b>Q C E</b> SHOCK MINE ITEM</span>
         <span><b>N</b> RESTART</span>
         <span><b>M</b> MUTE</span>
       </div>

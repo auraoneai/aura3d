@@ -33,7 +33,8 @@ export const KMH_PER_MS = 9.2;
 export const ELIM_INTERVAL = 20;
 export const DRAWN_RIVALS = 6;
 /** Rivals are drawn from this far behind to this far ahead of the player. */
-export const DRAW_BEHIND = 25;
+/** Behind the player a rival is drawn only while it is still clear of the camera, 10 m back (it fills the lens otherwise). */
+export const DRAW_BEHIND = 4;
 export const DRAW_AHEAD = 220;
 export const GHOST_STEP = 10;
 export const LASER_BOLTS = 6;
@@ -836,14 +837,15 @@ function stepWeapons(state: RaceState, dt: number): void {
     }
     if (m.ttl <= 0 || m.progress - p.progress > 140) m.active = false;
   }
-  // Proximity mine: a drawn rival crossing it takes 45 damage and loses half its speed.
+  // Proximity mine: a rival crossing it takes 45 damage and loses half its speed. The mine is the one rear weapon: it
+  // lies behind the camera by design, so it checks every active rival rather than the drawn (in-front) set.
   const mine = state.mine;
   if (mine.active) {
     mine.ttl -= dt;
     if (mine.ttl <= 0 || p.progress - mine.progress > 400) mine.active = false;
     else {
-      for (const i of state.drawn) {
-        const r = state.rivals[i]!;
+      for (const r of state.rivals) {
+        if (r.eliminated || r.respawn > 0) continue;
         const prev = r.progress - (r.speedKmh / KMH_PER_MS) * dt;
         if (prev < mine.progress && r.progress >= mine.progress && Math.abs(r.x - mine.x) < 2.6) {
           mine.active = false;

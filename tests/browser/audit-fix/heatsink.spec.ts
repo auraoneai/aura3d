@@ -275,7 +275,7 @@ test.describe("heatsink audit-fix capture", () => {
     await ctx.close();
   });
 
-  test("@base phone", async ({ browser }) => {
+  test("@base @phone phone", async ({ browser }) => {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
     const page = await ctx.newPage();
     const target = "390";
@@ -330,7 +330,7 @@ test.describe("heatsink audit-fix capture", () => {
     await ctx.close();
   });
 
-  test("@base card", async ({ browser }) => {
+  test("@base @card card", async ({ browser }) => {
     const ctx = await browser.newContext({ viewport: { width: 720, height: 450 }, deviceScaleFactor: 2 });
     const page = await ctx.newPage();
     await open(page, "card", "?autoplay=1");
@@ -364,7 +364,7 @@ test.describe("heatsink audit-fix capture", () => {
   });
 
   /** Lane branch only: exposure calibration of the night look (`qaEv`), steady state at the same sim state. */
-  test("@calib @desk calib", async ({ browser }) => {
+  test("@calib calib", async ({ browser }) => {
     const evs = (process.env.HS_EVS ?? "0,0.4,0.8").split(",");
     for (const ev of evs) {
       const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 });
