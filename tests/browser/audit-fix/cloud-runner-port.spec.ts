@@ -191,6 +191,34 @@ test.describe("audit g25 cloud-runner-port", () => {
     log("CR_DONE hd");
   });
 
+  test("budget: draw calls, triangles and GPU memory along the track", async ({ page }) => {
+    await page.setViewportSize({ width: 960, height: 540 });
+    await boot(page, server.origin);
+    await page.evaluate(() => { const a = (window.__AURA_CUMULUS_DASH__ ?? window.__AURA_KID_GOKU__)!; a.place(60); a.settle(2); });
+    await page.waitForTimeout(20_000);
+    for (const s of POINTS) {
+      const row = await page.evaluate((at) => {
+        const a = (window.__AURA_CUMULUS_DASH__ ?? window.__AURA_KID_GOKU__)!;
+        a.place(at); a.settle(3);
+        const dg: any = a.diagnostics?.() ?? null;
+        // first match of each counter anywhere in the diagnostics tree
+        const want = ["drawCalls", "triangles", "textureBytes", "approximateGpuMemoryBytes", "renderTargets", "geometryBytes"];
+        const found: Record<string, unknown> = {};
+        const walk = (o: any, path: string, depth: number) => {
+          if (!o || typeof o !== "object" || depth > 5) return;
+          for (const [k, v] of Object.entries(o)) {
+            if (want.includes(k) && typeof v === "number" && !(k in found)) found[k] = { v, at: `${path}.${k}` };
+            else if (typeof v === "object") walk(v, `${path}.${k}`, depth + 1);
+          }
+        };
+        walk(dg, "dg", 0);
+        return { s: at, ...found, culled: a.view?.()?.culled ?? null };
+      }, s);
+      log(`CR_META ${JSON.stringify({ shot: `budget-${s}`, ...row })}`);
+    }
+    log("CR_DONE budget");
+  });
+
   test("mobile portrait: ride-log framing, touch hints", async ({ browser }) => {
     const page = await mobilePage(browser, { isMobile: true, hasTouch: true });
     await boot(page, server.origin, `${LAB}&menu=0`);
