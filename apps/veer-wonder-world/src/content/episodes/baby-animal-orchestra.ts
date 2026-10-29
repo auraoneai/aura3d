@@ -355,7 +355,9 @@ export const episode: EpisodeSpec = {
       kind: "event",
       camera: "wide",
       stage: [
-        { do: "enter", actor: "sheru", at: "farRight", from: "offRight", style: "walk" },
+        // Front and centre, between Peeko and the duck: farRight is off screen on portrait phones, and every
+        // other free spot puts him behind the sheep or Lulu.
+        { do: "enter", actor: "sheru", at: "front", from: "offRight", style: "walk" },
         { do: "gesture", actor: "sheru", gesture: "wag" },
         { do: "face", actor: "peeko", toward: "sheru" },
         { do: "face", actor: "lulu", toward: "sheru" }
