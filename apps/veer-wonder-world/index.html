@@ -12,6 +12,11 @@
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="/fonts/local.css" />
     <link rel="stylesheet" href="./src/ui/styles.css" />
+    <script>
+      // Wonder World draws with WebGL 2 (iPadOS 15.4 or later, any current desktop browser). Without it the app
+      // cannot run, so the splash below shows a notice instead of waiting forever.
+      if (!("WebGL2RenderingContext" in window)) document.documentElement.classList.add("ww-unsupported");
+    </script>
   </head>
   <body>
     <!--
@@ -41,6 +46,10 @@
               <span class="ww-cast-dot" style="--ww-dot: #f9cd92"></span>
             </div>
             <p class="ww-start-title">Wonder World</p>
+            <p class="ww-boot-unsupported">
+              This browser is too old for Wonder World. On an iPad it needs iPadOS 15.4 or later; on a computer, a
+              current Chrome, Edge, Firefox or Safari.
+            </p>
           </div>
         </div>
       </div>

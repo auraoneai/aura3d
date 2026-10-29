@@ -222,6 +222,12 @@ describe("dist check (tools/check-dist.mjs)", () => {
     expect(inPage.status).toBe(1);
   });
 
+  it("fails a build that still holds a class static block, which Safari before 16.4 cannot parse", () => {
+    const run = checkDist({ "index.html": PAGE, "assets/app.js": "class V{static{this.zero=new V}}" });
+    expect(run.status).toBe(1);
+    expect(run.out).toContain("1 class static block(s) in assets/app.js");
+  });
+
   it("fails a build that inlined the deploy host's variables", () => {
     const run = checkDist({ "index.html": PAGE, "assets/app.js": 'const env={MODE:"production",VITE_VERCEL_URL:"x"};' });
     expect(run.status).toBe(1);

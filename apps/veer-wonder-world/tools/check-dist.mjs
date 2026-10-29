@@ -7,6 +7,7 @@
 //   the owner's welcome (07 O8): one string literal of the name in the bundle, from src/personal.ts;
 // - no served text file carries the deploy host's own variables (VITE_VERCEL_*: the deployment's URLs and IDs),
 //   which Vite inlines when they reach the build (tools/deploy-build.sh keeps them out).
+// - no script holds a class static block, which Safari before 16.4 cannot parse (the build targets Safari 15);
 // The name is not written here: it is the prefix of the app's working folder name, as in
 // tests/browser/wonder-world-build.spec.ts, which runs the same scan on the remote runner.
 // Usage: node apps/veer-wonder-world/tools/check-dist.mjs [dist]   (default: the app's dist/)
@@ -73,6 +74,13 @@ if (name) {
   }
 }
 
+// The build targets Safari 15 (vite.config.ts), which cannot parse class static blocks: one left in a script stops the
+// whole app on iPadOS 15 and 16.0-16.3. Minified output writes them as "static{".
+for (const file of files.filter((path) => /\.(?:js|mjs)$/.test(path))) {
+  const blocks = (readFileSync(file, "utf8").match(/\bstatic\s*\{/g) ?? []).length;
+  if (blocks > 0) problems.push(`${blocks} class static block(s) in ${relative(dist, file)}: Safari before 16.4 cannot parse them`);
+}
+
 for (const file of textFiles) {
   const hostVariables = [...new Set(readFileSync(file, "utf8").match(/\bVITE_VERCEL_[A-Z0-9_]+/g) ?? [])];
   if (hostVariables.length > 0) {
@@ -85,5 +93,5 @@ if (problems.length > 0) {
   process.exit(1);
 }
 console.log(
-  `check-dist: OK (${files.length} files, ${textFiles.length} text files scanned, 0 source maps, 0 name hits besides ${welcomeLiterals} welcome literal (07 O8), 0 host variables, noindex kept)`
+  `check-dist: OK (${files.length} files, ${textFiles.length} text files scanned, 0 source maps, 0 name hits besides ${welcomeLiterals} welcome literal (07 O8), 0 host variables, 0 class static blocks, noindex kept)`
 );

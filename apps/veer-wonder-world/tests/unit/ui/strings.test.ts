@@ -500,6 +500,20 @@ describe("index.html", () => {
     expect(html).toMatch(/<script type="module" src="\.\/src\/main\.ts"><\/script>/);
   });
 
+  it("tells a browser without WebGL 2 that it is too old, instead of leaving the splash up", () => {
+    expect(html).toContain('if (!("WebGL2RenderingContext" in window)) document.documentElement.classList.add("ww-unsupported");');
+    expect(html).toMatch(/<p class="ww-boot-unsupported">\s*This browser is too old for Wonder World\. On an iPad it needs iPadOS 15\.4 or later/);
+    const css = readFileSync(join(uiDir, "styles.css"), "utf8");
+    expect(css).toMatch(/\.ww-boot-unsupported \{\s*display: none;/);
+    expect(css).toMatch(/\.ww-unsupported \.ww-boot-unsupported \{\s*display: block;/);
+  });
+
+  it("builds for Safari 15, so iPadOS 15 and 16.0-16.3 can parse the bundle (no class static blocks)", () => {
+    const config = readFileSync(join(appRoot, "vite.config.ts"), "utf8");
+    expect(config).toMatch(/target: \["safari15", "chrome100", "edge100", "firefox100"\]/);
+    expect(readFileSync(join(appRoot, "tools/check-dist.mjs"), "utf8")).toMatch(/class static block/);
+  });
+
   it("shows a static splash from the first paint: the start screen's dots and title, nothing to tap", () => {
     const splash = /<div class="ww-screen ww-start ww-boot"[^>]*>([\s\S]*?)<\/p>\s*<\/div>\s*<\/div>/.exec(html)?.[1] ?? "";
     expect(splash).not.toBe("");

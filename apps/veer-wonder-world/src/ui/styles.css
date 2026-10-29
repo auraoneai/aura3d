@@ -601,6 +601,19 @@ b {
   animation: none;
 }
 
+/* Shown only when the browser has no WebGL 2 (the check in index.html): the app cannot run there. */
+.ww-boot-unsupported {
+  display: none;
+  max-width: 28rem;
+  color: var(--ww-ink);
+  font-size: 1.125rem;
+  line-height: 1.45;
+}
+
+.ww-unsupported .ww-boot-unsupported {
+  display: block;
+}
+
 .ww-start-inner {
   position: relative;
   z-index: 1;
