@@ -263,9 +263,9 @@ renderer.<span class="f">setAnimationLoop</span>(() =&gt; renderer.<span class="
     </div>
 
     <div class="side-foot" data-reveal>
-      <p>Also in our benchmark: a PBR viewer with a GLB, shadow, bloom and orbit controls in 23 lines instead of 49, with 1 import instead of 8. In the Aura3D benchmark (five small scenes, one author, counted in non-blank, non-comment lines of scene code), all five need 17% to 53% less scene code.</p>
+      <p>Also in our benchmark: a PBR viewer with HDR lighting, shadow, bloom and orbit controls in 24 lines instead of 49, with 1 import instead of 8. In the Aura3D benchmark (five small scenes, one author, counted in lines of scene code), four of them need up to 51% less scene code.</p>
       <p>Measured on the published 4.5.0 package: a one-cube scene reaches its first frame in about 420 ms and draws in 1 call, and a PBR viewer scene with a shadow and bloom draws in 25. The five benchmark scenes log no console warnings or errors. Software WebGL2 on a remote runner, one run, not GPU numbers.</p>
-      <a class="text-link" href="https://github.com/auraoneai/aura3d/blob/main/evidence/vs-threejs/RESULTS-4.5.0.md" target="_blank" rel="noopener">See the benchmark</a>
+      <a class="text-link" href="https://github.com/auraoneai/aura3d/blob/main/evidence/vs-threejs/RESULTS.md" target="_blank" rel="noopener">See the benchmark</a>
     </div>
   </div>
 </section>

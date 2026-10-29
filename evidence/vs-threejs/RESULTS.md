@@ -1,7 +1,5 @@
 # Aura3D 4.1.2 vs three.js 0.185.1: measured results
 
-**Superseded.** This is the 4.1.2 run. The current numbers are in [`RESULTS-4.5.0.md`](RESULTS-4.5.0.md) (and [`RESULTS-4.3.7.md`](RESULTS-4.3.7.md) for history). Quote this file only for section 11, the author-assessed feature list, which was not repeated.
-
 Generated 2026-10-24T09:47:43.933Z from `results.json` (run groups on separate remote runners) and `static-metrics.json`. Method: `tools/bench-vs-threejs/README.md`.
 
 **Read this first.** All timings come from a CPU-only remote runner with **software WebGL2 (SwiftShader), not a GPU**. They compare CPU/driver cost under identical conditions; they are not GPU performance numbers and say nothing about an Apple M-series or desktop GPU. Rows are marked `tie` within 5%. Lower is better in every numeric row. Verdicts are per row and are not averaged into a score.

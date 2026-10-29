@@ -46,7 +46,7 @@
       <p class="compare-hero-lede">three.js gives you a renderer. Everything after that is your job: loaders, environment lighting, shadows, post-processing, controls, the game loop, the HUD, audio, asset handling, licensing and the deploy checks. Aura3D ships all of that as one engine and one toolchain, with its own renderer, a typed declarative scene and an asset pipeline that will not let an unverified model reach production. It is built from the start to be written by AI coding agents.</p>
       <div class="hero-cta"><a class="btn btn-primary" href="/docs/agent-quickstart.html">Start building</a><a class="btn btn-ghost" href="/apps/showcase-index/">Play the games</a></div>
       <div class="compare-facts">
-        <div><strong>23 vs 49</strong><span>scene lines for a PBR viewer with a GLB, shadow, bloom and orbit controls (Aura3D benchmark, five scenes)</span></div>
+        <div><strong>24 vs 49</strong><span>scene lines for a PBR viewer with HDR lighting, shadow, bloom and orbit controls (Aura3D benchmark, five scenes)</span></div>
         <div><strong>1 vs 8</strong><span>import modules for the same viewer</span></div>
         <div><strong>10 lines</strong><span>for a lit, framed, orbitable product. The matched three.js app is 38 lines before orbit controls.</span></div>
         <div><strong>{{GAME_COUNT}}</strong><span>playable games built on Aura3D</span></div>
@@ -148,15 +148,15 @@ createAuraApp(&quot;#app&quot;, {
         </div>
         <div class="compare-row">
           <div class="compare-metric"><span class="m">Scene code</span></div>
-          <div class="compare-value aura">Shorter in all 5 benchmark scenes, 17% to 53% fewer lines of scene code: viewer 23 vs 49, forest 48 vs 71, skinned character 44 vs 62, game loop 60 vs 82, water 71 vs 86. Five small scenes, one author, Aura3D 4.5.0.</div>
+          <div class="compare-value aura">Shorter in 4 of 5 benchmark scenes, 26% to 51% fewer lines of scene code: viewer 24 vs 49, forest 49 vs 71, skinned character 45 vs 62, game loop 61 vs 82. Five small scenes, one author.</div>
           <div class="compare-value base">The longer side of each of those pairs.</div>
-          <div class="compare-src"><code>RESULTS-4.5.0.md §1</code></div>
+          <div class="compare-src"><code>RESULTS.md §1</code></div>
         </div>
         <div class="compare-row">
           <div class="compare-metric"><span class="m">Imports and concepts</span></div>
           <div class="compare-value aura">1 import module, and fewer API symbols in every benchmark scene.</div>
           <div class="compare-value base">Up to 8 modules (core plus addons).</div>
-          <div class="compare-src"><code>RESULTS-4.5.0.md §3</code></div>
+          <div class="compare-src"><code>RESULTS.md §3</code></div>
         </div>
         <div class="compare-row">
           <div class="compare-metric"><span class="m">Bloom, shadows, custom post pass</span></div>
@@ -261,7 +261,7 @@ createAuraApp(&quot;#app&quot;, {
           <div class="compare-src"><code>docs/workflows/game-inventory.json</code>, <a href="/apps/showcase-index/">showcase</a></div>
         </div>
       </div>
-      <p class="compare-note">Comparison target: three.js 0.185.1. <code>RESULTS-4.5.0.md</code> is <a href="https://github.com/auraoneai/aura3d/blob/main/evidence/vs-threejs/RESULTS-4.5.0.md">evidence/vs-threejs/RESULTS-4.5.0.md</a>, the current run; <code>RESULTS.md §11</code> is the feature list of the <a href="https://github.com/auraoneai/aura3d/blob/main/evidence/vs-threejs/RESULTS.md">earlier, superseded run</a>, assessed from the scene sources. Benchmark rows are Aura3D benchmark, five scenes, and compare scene source only.</p>
+      <p class="compare-note">Comparison target: three.js 0.185.1. <code>RESULTS.md</code> is <a href="https://github.com/auraoneai/aura3d/blob/main/evidence/vs-threejs/RESULTS.md">evidence/vs-threejs/RESULTS.md</a>. Benchmark rows are Aura3D benchmark, five scenes.</p>
     </div>
   </section>
 

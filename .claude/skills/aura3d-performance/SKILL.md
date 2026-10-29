@@ -29,7 +29,7 @@ manual quality override invalidates every measurement that follows.
    subpaths (`@aura3d/engine/game`, `@aura3d/engine/devtools`). Size is a known
    weak spot: a one-cube app built from 4.1.2 measured 3,841 KB raw JS (1,089 KB
    gzip) over about 25 requests, against 496 KB / 125 KB for the equivalent
-   three.js app (`evidence/vs-threejs/RESULTS-4.5.0.md`, section 4), and
+   three.js app (`evidence/vs-threejs/RESULTS.md`, section 4), and
    `BUNDLE_SIZES.md` records the engine critical path failing its budget.
    Import only what the route uses and keep devtools and cinematic helpers out
    of the critical path.

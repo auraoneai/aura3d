@@ -14,7 +14,7 @@ Per-capability status (shipped, partial, experimental) with code paths: [`aura3d
 
 **Supporting line:** "Half the code of three.js for a lit 3D product viewer."
 
-The source is the five-scene benchmark: a GLB with a shadow, bloom and orbit controls takes 23 lines in Aura3D 4.5.0 and 49 in three.js, with 1 import against 8 (`evidence/vs-threejs/RESULTS-4.5.0.md` sections 1 and 3). Do not say "HDR lighting" for this scene: its HDRI node does not load (see P4 below). Small print on the page: "Aura3D benchmark, five scenes."
+The source is the five-scene benchmark: a GLB with HDR environment lighting, a shadow, bloom and orbit controls takes 24 lines in Aura3D and 49 in three.js, with 1 import against 8 (`evidence/vs-threejs/RESULTS.md` sections 1 and 3). Small print on the page: "Aura3D benchmark, five scenes."
 
 **The former hero**, "Ship a typed 3D scene in 18 lines of TypeScript", is retired: the 4.5.0 bench cube is 12 lines (gate line D1), and the 10-line hero below replaced it on the site.
 
@@ -25,8 +25,8 @@ The source is the five-scene benchmark: a GLB with a shadow, bloom and orbit con
 | What you need | With Aura3D | With three.js | Source |
 |---|---|---|---|
 | A good-looking scene on first run | `looks.preset(id)` supplies HDRI lighting, a shadow-casting key light, background, grade and post effects in one call. 15 genre looks | No environment, tone mapping or shadows by default. PBR metals render dark until you wire an environment | `packages/engine/src/agent-api/looks/lookPresets.ts`; `RESULTS.md` §11 |
-| Scene code | Shorter in all 5 benchmark scenes, 17% to 53% fewer lines of scene code (five small scenes, one author, Aura3D 4.5.0): viewer 23 vs 49, forest 48 vs 71, skinned character 44 vs 62, game loop 60 vs 82, water 71 vs 86 | Longer | `RESULTS-4.5.0.md` §1 |
-| Imports and concepts | 1 import module; fewer API symbols in every benchmark scene | Up to 8 modules (core plus addons) | `RESULTS-4.5.0.md` §3 |
+| Scene code | Shorter in 4 of 5 benchmark scenes, 26% to 51% fewer lines of scene code (five small scenes, one author): viewer 24 vs 49, forest 49 vs 71, skinned character 45 vs 62, game loop 61 vs 82 | Longer | `RESULTS.md` §1 |
+| Imports and concepts | 1 import module; fewer API symbols in every benchmark scene | Up to 8 modules (core plus addons) | `RESULTS.md` §3 |
 | Bloom, shadows, custom post pass | One call each: `effects.bloom()`, `shadow: true`, `effects.shaderPass()` | `EffectComposer` plus 3 or 4 addon passes; shadow flags on every mesh | `RESULTS.md` §11 |
 | 10,000 instances with per-instance colour | Declarative `instances.*({ transforms, colors })` | Hand-written `InstancedMesh` matrix code | `RESULTS.md` §11 |
 | Character animation | Switch clips by name with cross-fade (`handle.play("Run", { crossFade })`) and fit the character to a height with one `targetHeight` option | `AnimationMixer`, `clipAction`, manual fitting with `Box3` | `RESULTS.md` §11 |
@@ -63,8 +63,8 @@ Use these as written. The sourced numbers carry the small print shown.
 | # | Claim | Label | Small print | Source |
 |---|---|---|---|---|
 | 1 | "A lit 3D product in 10 lines of TypeScript." | safe | none | `tools/bench-vs-threejs/tagline/aura-variants/hero.ts`; `tagline-check/run2/` |
-| 2 | "Half the code of three.js for a 3D product viewer: 23 lines vs 49, one import vs eight." | needs-qualifier | "Aura3D benchmark, five scenes." | `RESULTS-4.5.0.md` §1, §3 |
-| 3 | "17% to 53% less scene code than three.js in all five benchmark scenes (five small scenes, one author, lines of scene code)." | needs-qualifier | The qualifier is part of the claim: "five small scenes, one author", "lines of scene code". | `RESULTS-4.5.0.md` §1 |
+| 2 | "Half the code of three.js for a lit 3D product viewer: 24 lines vs 49, one import vs eight." | needs-qualifier | "Aura3D benchmark, five scenes." | `RESULTS.md` §1, §3 |
+| 3 | "Up to 51% less scene code than three.js, in 4 of 5 benchmark scenes (five small scenes, one author, lines of scene code)." | needs-qualifier | The qualifier is part of the claim: "4 of 5 benchmark scenes", "five small scenes, one author", "lines of scene code". | `RESULTS.md` §1 |
 | 4 | "Every model typed, hashed and licensed. In production, unverified assets don't draw." | safe | none | `claims-and-boundaries.md` §6 |
 | 5 | "Find, license, optimize, type and check your 3D assets with one CLI." | safe | none | `cli-help.ts` |
 | 6 | "Game batteries included: HUD, touch, audio, fixed-step loop, seeded replay and a safety net, in one install." | safe | none | `root-exports.md`, `game-kit.md` |
