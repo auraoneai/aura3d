@@ -67,7 +67,9 @@ let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
 async function boot(): Promise<void> {
   const auraApp = createAuraApp("#app", {
     scene: buildThermalDriftScene({ circuit: CIRCUITS[selectedCircuit], ...(qaEv !== undefined ? { exposureEv: qaEv } : {}), ...(qaAoOff ? { ambientOcclusion: false } : {}) }),
-    renderer: { quality: "high" },
+    // "auto" mounts at the "high" tier today (the same as the old "high" string) and lets the tier follow the device once the
+    // quality-tier lane is on; a fixed "high" would keep phones on the desktop tier and logs RENDERER_QUALITY_STRING.
+    renderer: { quality: { tier: "auto" } },
     qualityRebuild: { flags: ["game"] },
     diagnostics: false
   });
