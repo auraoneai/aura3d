@@ -150,17 +150,20 @@ test.describe("g20 ninja-runner-port", () => {
   test.beforeAll(async () => { server = await startExampleDevServer(); });
   test.afterAll(async () => { await server.close(); });
 
-  test("g20-desktop states", async ({ browser }) => {
-    const errors: string[] = [];
-    const page = await open(browser, server, "?manual=1", { width: 1280, height: 720 }, false, errors);
-    await grab(page, "desktop", "title-1280");
-    for (const key of ["early", "run", "action", "gate-hit", "mid-action", "results"]) {
-      const st = STATES[key]!;
-      const err = await drive(page, st.drive, st.settle);
-      await grab(page, "desktop", `${st.name}-1280`, { driveErr: err });
-    }
-    log(`GL_ERRORS desktop ${JSON.stringify(errors.slice(0, 8))}`);
-  });
+  // Split in two so each fits the one-hour ACR step on software GL.
+  for (const [name, keys, title] of [["g20-desktop-a", ["early", "run", "action"], true], ["g20-desktop-b", ["gate-hit", "mid-action", "results"], false]] as const) {
+    test(`${name} states`, async ({ browser }) => {
+      const errors: string[] = [];
+      const page = await open(browser, server, "?manual=1", { width: 1280, height: 720 }, false, errors);
+      if (title) await grab(page, "desktop", "title-1280");
+      for (const key of keys) {
+        const st = STATES[key]!;
+        const err = await drive(page, st.drive, st.settle);
+        await grab(page, "desktop", `${st.name}-1280`, { driveErr: err });
+      }
+      log(`GL_ERRORS ${name} ${JSON.stringify(errors.slice(0, 8))}`);
+    });
+  }
 
   test("g20-phone states", async ({ browser }) => {
     const errors: string[] = [];
