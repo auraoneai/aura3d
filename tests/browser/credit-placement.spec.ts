@@ -71,7 +71,9 @@ test.describe("credit placement", () => {
         page.on("framenavigated", (f) => { if (f === page.mainFrame()) nav.push(f.url()); });
         await page.keyboard.press("ArrowUp");
         await page.waitForTimeout(600);
-        const hidden = await page.evaluate(() => { const el = document.querySelector(".aura-credit") as HTMLElement | null; return el ? getComputedStyle(el).visibility === "hidden" && el.classList.contains("is-hidden") : null; });
+        // The visibility flip is a CSS transition, which on the software-GL runner (one frame every several seconds) may not
+        // have advanced yet; the link stops taking pointer events at once, so read the class and the link instead.
+        const hidden = await page.evaluate(() => { const el = document.querySelector(".aura-credit") as HTMLElement | null; const a = el?.querySelector("a"); return el ? el.classList.contains("is-hidden") && (!a || getComputedStyle(a).pointerEvents === "none") : null; });
         const afterHide = await creditHits(page, c.control);
         log(`CREDIT_META ${JSON.stringify({ case: c.name, before, after, hiddenAfterKey: hidden, afterHide, navigations: nav })}`);
         expect(after.hits, "canonical credit must not cover the control").toBeLessThanOrEqual(0);

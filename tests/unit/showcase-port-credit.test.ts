@@ -25,7 +25,7 @@ describe("Built with Aura3D credit placement (audit cross-cutting, splat-rush C3
     expect(r.spot.top).toBe(8);
   });
 
-  it("takes the least-covered corner when every corner has a control", () => {
+  it("slides above a bottom bar when every corner has a control", () => {
     const view = { w: 800, h: 600 };
     const size = { w: 200, h: 30 };
     const obstacles = [
@@ -34,7 +34,24 @@ describe("Built with Aura3D credit placement (audit cross-cutting, splat-rush C3
       { x: 780, y: 0, w: 20, h: 20 } // small top-right button
     ];
     const r = pick(view, size, obstacles);
-    expect(r.spot).toEqual({ right: 8, top: 8 });
+    expect(r.overlap).toBe(0);
+    expect(r.spot).toEqual({ left: 8, bottom: 48 });
+  });
+
+  it("leaves Chroma Roll's mute button free at 390x844, where the credit spans the width (remote run e5w2-credit)", () => {
+    // Measured on the runner: mute [16,784,44,44], credit 382x41 at bottom-left covered it; a top HUD blocks both top corners.
+    const mute = { x: 16, y: 784, w: 44, h: 44 };
+    const topHud = { x: 0, y: 0, w: 390, h: 56 };
+    const r = pick({ w: 390, h: 844 }, { w: 382, h: 41 }, [mute, topHud]);
+    expect(r.overlap).toBe(0);
+    expect(r.spot).toEqual({ left: 8, bottom: 68 });
+  });
+
+  it("takes the least-covered corner when no slide clears every control", () => {
+    const view = { w: 300, h: 200 };
+    const size = { w: 280, h: 60 };
+    const obstacles = [{ x: 0, y: 0, w: 300, h: 70 }, { x: 0, y: 75, w: 300, h: 50 }, { x: 0, y: 130, w: 20, h: 20 }];
+    const r = pick(view, size, obstacles);
     expect(r.overlap).toBeGreaterThan(0);
   });
 

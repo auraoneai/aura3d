@@ -54,19 +54,43 @@ export function pickCreditSpot(view, size, obstacles, margin) {
     { left: m, top: m }
   ];
   var best = null;
-  for (var i = 0; i < spots.length; i++) {
-    var s = spots[i];
-    var x = s.left != null ? s.left : view.w - m - size.w;
-    var y = s.top != null ? s.top : view.h - m - size.h;
-    var overlap = 0;
+  function hits(x, y) {
+    var list = [];
     for (var j = 0; j < obstacles.length; j++) {
       var o = obstacles[j];
       var ox = Math.max(0, Math.min(x + size.w, o.x + o.w) - Math.max(x, o.x));
       var oy = Math.max(0, Math.min(y + size.h, o.y + o.h) - Math.max(y, o.y));
-      overlap += ox * oy;
+      if (ox * oy > 0) list.push({ o: o, area: ox * oy });
     }
+    return list;
+  }
+  function area(list) { var a = 0; for (var k = 0; k < list.length; k++) a += list[k].area; return a; }
+  for (var i = 0; i < spots.length; i++) {
+    var s = spots[i];
+    var x = s.left != null ? s.left : view.w - m - size.w;
+    var y = s.top != null ? s.top : view.h - m - size.h;
+    var overlap = area(hits(x, y));
     if (overlap === 0) return { spot: s, overlap: 0, index: i };
     if (!best || overlap < best.overlap) best = { spot: s, overlap: overlap, index: i };
+  }
+  // Every corner covers a control (a phone, where the credit spans the width): slide each corner's box along the edge's
+  // normal, bottom ones up past what they cover and top ones down, and take the first position that covers nothing.
+  for (var i2 = 0; i2 < spots.length; i2++) {
+    var s2 = spots[i2];
+    var x2 = s2.left != null ? s2.left : view.w - m - size.w;
+    var y2 = s2.top != null ? s2.top : view.h - m - size.h;
+    for (var step = 0; step < 8; step++) {
+      var list = hits(x2, y2);
+      if (list.length === 0) {
+        var shifted = s2.left != null ? { left: m } : { right: m };
+        if (s2.top != null) shifted.top = Math.round(y2); else shifted.bottom = Math.round(view.h - y2 - size.h);
+        return { spot: shifted, overlap: 0, index: i2 };
+      }
+      var edge = s2.top != null ? -Infinity : Infinity;
+      for (var k2 = 0; k2 < list.length; k2++) edge = s2.top != null ? Math.max(edge, list[k2].o.y + list[k2].o.h) : Math.min(edge, list[k2].o.y);
+      y2 = s2.top != null ? edge + m : edge - m - size.h;
+      if (y2 < m || y2 + size.h > view.h - m) break;
+    }
   }
   return best;
 }
