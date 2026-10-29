@@ -1,5 +1,5 @@
 /**
- * "Cloud Runner" (Aura3D port of "Cumulus Dash"): boot, fixed-step loop, keyboard / touch input, persistence
+ * Cumulus Dash: boot, fixed-step loop, keyboard / touch input, persistence
  * and capture hooks. The simulation is `sim.ts` (pure, replayed against the original's recorded run), the encounter layer is
  * `encounters.ts`, the phase machine is `game.ts`, `world.ts` renders it, `ui.ts` / `audio.ts` are the interface.
  *
@@ -7,8 +7,9 @@
  * even in manual mode), `autostart=1` (skip the title), `chapterStart=<s>` (start the run at distance s).
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, texture, type AuraApp } from "@aura3d/engine";
+import { warmPrograms } from "@aura3d/engine/game";
 import { CUMULUS_RIDGE } from "./chapter";
-import { Game } from "./game";
+import { Game, type Difficulty } from "./game";
 import { createGoPresenter, viewOf } from "./presentation";
 import { GameAudio } from "./audio";
 import { IDLE, SETTLE_FRAMES, createState, stepFrame, type StepInput } from "./sim";
@@ -24,12 +25,20 @@ const canvas = document.getElementById("world") as HTMLCanvasElement;
 const hudEl = document.getElementById("hud") as HTMLElement | null;
 if (hudEl) hudEl.style.display = "none";
 
-interface Saved { best: number; sound: boolean }
-function load(): Saved { try { const v = JSON.parse(localStorage.getItem(STORE_KEY) ?? "{}") as Partial<Saved>; return { best: Number(v.best) || 0, sound: v.sound !== false }; } catch { return { best: 0, sound: true }; } }
+/** `motion`: "reduced" or "full" once the player picks one on the title screen; until then the OS `prefers-reduced-motion` setting applies. */
+interface Saved { best: number; bestTime: number; bestPearls: number; sound: boolean; motion?: "reduced" | "full"; difficulty: Difficulty }
+function load(): Saved {
+  try {
+    const v = JSON.parse(localStorage.getItem(STORE_KEY) ?? "{}") as Partial<Saved>;
+    return { best: Number(v.best) || 0, bestTime: Number(v.bestTime) || 0, bestPearls: Number(v.bestPearls) || 0, sound: v.sound !== false, ...(v.motion === "reduced" || v.motion === "full" ? { motion: v.motion } : {}), difficulty: v.difficulty === "easy" ? "easy" : "normal" };
+  } catch { return { best: 0, bestTime: 0, bestPearls: 0, sound: true, difficulty: "normal" }; }
+}
 function save(): void { try { localStorage.setItem(STORE_KEY, JSON.stringify(saved)); } catch { /* storage unavailable */ } }
 const saved = load();
 
-const game = new Game(CH, 0, saved.best);
+const game = new Game(CH, 0, { best: saved.best, bestTime: saved.bestTime, bestPearls: saved.bestPearls }, saved.difficulty);
+const prefersReduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+game.reducedMotion = saved.motion ? saved.motion === "reduced" : prefersReduced;
 const presenter = createGoPresenter(() => game);
 let lastPhase = game.phase;
 const audio = new GameAudio();
@@ -44,8 +53,10 @@ const held = new Set<string>();
 let oneShot = { jump: false, pole: false, glider: false };
 let last = 0;
 let pending: string[] = [];
+let lastFootsteps = 0;
 
 function startRun(at = 0): void { audio.unlock(); audio.event("ui"); game.start(at); }
+function toggleSound(): boolean { audio.unlock(); saved.sound = !audio.enabled; audio.setEnabled(saved.sound); save(); ui?.sound(saved.sound); return saved.sound; }
 const startParam = Number(params.get("chapterStart"));
 function applyStartMode(): void {
   if (Number.isFinite(startParam) && startParam > 0) game.start(startParam);
@@ -64,13 +75,14 @@ addEventListener("keydown", (e) => {
   audio.unlock();
   held.add(e.code);
   if (e.repeat) return;
+  if (e.code === "KeyM") { toggleSound(); return; }
   const ph = game.phase;
   if (ph === "menu") { if (e.code === "Space" || e.code === "Enter") startRun(); return; }
   if (ph === "result") { if (e.code === "Enter" || e.code === "Space") { audio.event("ui"); game.retry(); } return; }
   if (e.code === "KeyP" || e.code === "Escape") { if (ph === "paused") game.resume(); else game.pause(); return; }
   if (ph === "paused") { if (e.code === "Enter" || e.code === "Space") game.resume(); return; }
-  if (e.code === "Space" || e.code === "ArrowUp") oneShot.jump = true;
-  if (e.code === "KeyE" || e.code === "KeyX") oneShot.pole = true;
+  if (e.code === "Space" || e.code === "ArrowUp" || e.code === "KeyW") oneShot.jump = true;
+  if (e.code === "KeyE" || e.code === "KeyX" || e.code === "KeyK") oneShot.pole = true;
   if (e.code === "KeyQ" || e.code === "ShiftLeft" || e.code === "ShiftRight") oneShot.glider = true;
 });
 addEventListener("keyup", (e) => held.delete(e.code));
@@ -104,7 +116,9 @@ function render(dt = STEP): void {
 
 function consume(events: readonly string[]): void {
   for (const e of events) audio.event(e, game.state.orbs);
-  if (game.result && game.best > saved.best) { saved.best = game.best; save(); }
+  if (game.result && (game.best > saved.best || game.bestTime !== saved.bestTime || game.bestPearls > saved.bestPearls)) {
+    saved.best = Math.max(saved.best, game.best); saved.bestTime = game.bestTime; saved.bestPearls = Math.max(saved.bestPearls, game.bestPearls); save();
+  }
 }
 
 const stepper = createFixedStepLoop({
@@ -128,13 +142,16 @@ function loop(now: number): void {
   stepper.tick(now);
   if (!manual && ready) {
     consume(pending);
+    const steps = runtime?.footsteps ?? 0;
+    for (let i = lastFootsteps; i < steps && i < lastFootsteps + 4; i++) audio.event("footstep");
+    lastFootsteps = steps;
     audio.update({ running: game.phase === "playing" || game.phase === "falling", speed: game.state.speed, s: game.state.s, grounded: game.state.jump < 0.1, playing: game.phase === "playing", menu: game.phase === "menu" });
   }
   render(manual ? STEP : dt);
 }
 
 interface Segment { readonly steps: number; readonly input: StepInput }
-const qa = installQaHooks("kid-goku", {
+const qa = installQaHooks("cumulus-dash", {
   ready: () => ready,
   state: snapshot,
   app: () => app,
@@ -233,6 +250,10 @@ const qa = installQaHooks("kid-goku", {
       return btoa(bin);
     },
     stats: () => runtime?.stats ?? null,
+    /** Camera eye, target and fov plus the hero, ride-log and hut positions this frame (framing checks project these). */
+    view: () => (runtime ? JSON.parse(JSON.stringify(runtime.view)) as typeof runtime.view : null),
+    /** The program warm-up result from boot (null until it ran). */
+    warm: () => warmResult,
     /** Leg gait this frame: clip, phase (cycles), cadence rate, stride gain, planted-foot speed and the share of ground speed still slid. */
     gait: () => (runtime ? { ...runtime.gait } : null),
     errors: () => errors.slice()
@@ -242,6 +263,8 @@ const CHAPTER_ZERO = (): number => (Number.isFinite(startParam) && startParam > 
 void createState;
 void qa;
 
+let warmResult: Awaited<ReturnType<typeof warmPrograms>> | null = null;
+
 async function boot(): Promise<void> {
   ui = new Ui(CH, {
     play: () => startRun(),
@@ -250,14 +273,16 @@ async function boot(): Promise<void> {
     pause: () => game.pause(),
     resume: () => game.resume(),
     restart: () => { game.start(0); },
-    toggleSound: () => { audio.unlock(); saved.sound = !audio.enabled; audio.setEnabled(saved.sound); save(); return saved.sound; },
+    toggleSound,
+    toggleMotion: () => { game.reducedMotion = !game.reducedMotion; saved.motion = game.reducedMotion ? "reduced" : "full"; save(); return game.reducedMotion; },
+    toggleDifficulty: () => { game.setDifficulty(game.difficulty === "easy" ? "normal" : "easy"); saved.difficulty = game.difficulty; save(); return game.difficulty; },
     touch: (key, down) => {
       audio.unlock();
       if (key === "left") { if (down) held.add("ArrowLeft"); else held.delete("ArrowLeft"); }
       else if (key === "right") { if (down) held.add("ArrowRight"); else held.delete("ArrowRight"); }
       else if (down) { if (game.phase === "paused") game.resume(); else if (key === "jump") oneShot.jump = true; else if (key === "pole") oneShot.pole = true; else oneShot.glider = true; }
     }
-  }, saved.sound, saved.best);
+  }, { soundOn: saved.sound, reducedMotion: game.reducedMotion, difficulty: game.difficulty, best: saved.best, bestTime: saved.bestTime, bestPearls: saved.bestPearls });
   const rockMap = await texture.load(new URL("./assets/textures/rock-color.jpg", import.meta.url).pathname, { colorSpace: "srgb" });
   rockMap.wrapS = "repeat"; rockMap.wrapT = "repeat";
   const grassMap = await texture.load(new URL("./assets/textures/grass-color.jpg", import.meta.url).pathname, { colorSpace: "srgb" });
@@ -273,6 +298,9 @@ async function boot(): Promise<void> {
   await app.ready();
   runtime = world.bind(app);
   applyStartMode();
+  // compile every program before the player can start, so the first seconds of play do not hitch (checklist R2)
+  render(STEP);
+  warmResult = await warmPrograms(app, { environmentTimeoutMs: 15_000, textureTimeoutMs: 15_000 });
   last = performance.now();
   stepper.tick(last);
   ready = true;
@@ -280,4 +308,9 @@ async function boot(): Promise<void> {
   ui.ready();
 }
 
-boot().catch((error) => { errors.push(String((error as Error)?.stack ?? error)); if (hudEl) { hudEl.style.display = ""; hudEl.textContent = `error: ${String(error)}`; } });
+boot().catch((error) => {
+  errors.push(String((error as Error)?.stack ?? error));
+  // the Ui's full-screen loader sits above #hud, so the error must replace the loader text or it stays hidden
+  if (ui) ui.fail(String((error as Error)?.message ?? error));
+  else if (hudEl) { hudEl.style.display = ""; hudEl.textContent = `error: ${String(error)}`; }
+});

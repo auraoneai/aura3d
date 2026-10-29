@@ -25,13 +25,29 @@ export function shownOf(game: Pick<Game, "state" | "falling">): Shown {
   };
 }
 
-/** The game the world runtime reads, with the presented pose in place of the latest step (the real game is untouched). */
+interface ViewCache { view: Game; state: Game["state"]; falling: NonNullable<Game["falling"]> }
+const views = new WeakMap<Game, ViewCache>();
+
+/**
+ * The game the world runtime reads, with the presented pose in place of the latest step (the real game is untouched).
+ * One view object per game is reused every frame: the state copy is refreshed in place instead of allocating a new spread.
+ * The view's `state` and `falling` are plain own properties; every other field reads through to the real game.
+ */
 export function viewOf(game: Game, shown: Shown): Game {
-  const props: PropertyDescriptorMap = {
-    state: { value: { ...game.state, s: shown.s, lane: shown.lane, laneVelocity: shown.laneVelocity, jump: shown.jump, speed: shown.speed } }
-  };
-  if (game.falling && shown.falling) props.falling = { value: { ...game.falling, ...shown.falling } };
-  return Object.create(game, props) as Game;
+  let c = views.get(game);
+  if (!c) {
+    const state = {} as Game["state"], falling = {} as NonNullable<Game["falling"]>;
+    const view = Object.create(game, { state: { value: state, writable: true }, falling: { value: null, writable: true } }) as Game;
+    c = { view, state, falling };
+    views.set(game, c);
+  }
+  // `game.state` is replaced on start/menu, so copy its current fields each frame (no allocation)
+  Object.assign(c.state, game.state);
+  c.state.s = shown.s; c.state.lane = shown.lane; c.state.laneVelocity = shown.laneVelocity; c.state.jump = shown.jump; c.state.speed = shown.speed;
+  const writable = c.view as { falling: Game["falling"] };
+  if (game.falling && shown.falling) { Object.assign(c.falling, game.falling, shown.falling); writable.falling = c.falling; }
+  else writable.falling = game.falling;
+  return c.view;
 }
 
 export function createGoPresenter(getGame: () => Pick<Game, "state" | "falling">): FixedStepPresenter<Shown> {
