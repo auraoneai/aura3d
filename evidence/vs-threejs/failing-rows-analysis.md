@@ -1,5 +1,7 @@
 # Failing-rows analysis: the 86 "three.js better" rows in the candidate run
 
+Update 2026-10-28: the published 4.5.0 run has 81 such rows. The same grouping at 4.5.0 (G1 42, G2 10, G3 17, G4 6, G5 6) and the cause of every failed gate target are in [`RESULTS-4.5.0.md`](RESULTS-4.5.0.md) section 0a. The text below describes the candidate run and is unchanged.
+
 Source: `evidence/vs-threejs/candidate/results.json` + `static-metrics.json`, scored with `tools/bench-vs-threejs/harness/tally.mjs` (`computeTally`, Aura3D arm `aura-auto`). Tally: three.js better 86, Aura3D better 23, tie 11, unmeasurable 5, 125 numeric rows. T1 target is three.js better <= 30, so 56 rows have to flip or tie.
 
 All speed figures are **software WebGL2 (SwiftShader), one run, workspace-source build**, not a GPU and not a published package. Grouping below is by inspection of the row values and the profiles already in `RESULTS-4.3.7.md`, `evidence/forest-10k/README.md` and `RESULTS-candidate.md`; no new measurement was taken for this file. "Artefact" means the figure is dominated by the measurement setup and cannot be judged until the setup changes; it does not mean the row is acceptable.

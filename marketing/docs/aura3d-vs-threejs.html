@@ -265,6 +265,22 @@ createAuraApp(&quot;#app&quot;, {
     </div>
   </section>
 
+  <section class="compare-section" id="measured-450">
+    <div class="wrap">
+      <div class="compare-section-head">
+        <h2>Measured on the published 4.5.0 package</h2>
+        <p>Facts about Aura3D alone, each from a benchmark target that passes. Software WebGL2 on a remote CPU runner, 640x360, one run. These are not GPU numbers.</p>
+      </div>
+      <div class="compare-feature-grid why-moat">
+        <article><h3>First frame</h3><p>A one-cube scene reaches its first frame in about 420 ms (median of 3 cold loads).</p></article>
+        <article><h3>Draw calls</h3><p>A one-cube scene draws in 1 call. A PBR viewer scene with a shadow and bloom draws in 25 (33 in the previous release).</p></article>
+        <article><h3>Clean console</h3><p>The five benchmark scenes log no console warnings or errors.</p></article>
+        <article><h3>Options that work</h3><p>Every option covered by the option-coverage test either takes effect or raises <code>OPTION_IGNORED</code>: 16 of 16 tests pass.</p></article>
+      </div>
+      <p class="compare-note">Targets that did not pass carry no claim; each is listed with its cause in <a href="https://github.com/auraoneai/aura3d/blob/main/evidence/vs-threejs/RESULTS-4.5.0.md">evidence/vs-threejs/RESULTS-4.5.0.md</a>.</p>
+    </div>
+  </section>
+
   <section class="compare-section compare-dark" id="moat">
     <div class="wrap">
       <div class="compare-section-head">

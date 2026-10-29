@@ -44,6 +44,34 @@ Against 4.3.7 (`RESULTS-4.3.7.md`, production profile): cube frame 42.9 to 5.3 m
 
 Against the earlier candidate run (`RESULTS-candidate.md`, workspace build taken before the 4.5.0 look-fill fixes): its P3 696 ms and P5 33 were source-build numbers; its PBR viewer `aura-auto` 632.9 ms is now 391.9 ms. Its tally was 86 / 23 / 11 / 5.
 
+### 0a. Failed and unmeasured targets: value and cause
+
+No public claim is made for any row below. The candidate-run grouping of the "three.js better" rows is in [`failing-rows-analysis.md`](failing-rows-analysis.md); the 4.5.0 counts per group are in the second table.
+
+| Target | Measured | Limit | Cause | Where the cause is recorded |
+| --- | --- | --- | --- | --- |
+| P1 cube frame | 5.3 ms | 5 ms | The direct path still costs 0.9 ms of CPU per frame; the rest is the harness `gl.finish` wait on a software rasteriser, which is fill-rate bound. three.js 4x MSAA is 1.5 ms. | `wp5-frame-submission.md`; `failing-rows-analysis.md` G3 |
+| P2 CPU in `frame()` | 0.9 ms | 0.5 ms | JavaScript plus GL command submission. In the interleaved profile of the cube (0.7 ms real), about 0.4 ms is JavaScript and about 0.3 ms is GL calls; the state cache and allocation fixes moved the median by 0.1 to 0.4 ms but did not reach 0.5. three.js is 0.1 ms. | `wp5-frame-submission.md` |
+| P5 requests, cube | 31 (30 JS files, 4,046 KB raw) | 8 | The published engine is emitted as 30 JS chunks that all load on first paint, whatever the scene uses. three.js is 1 file, 496 KB. Nothing in the 4.5.0 benchmark work touched bundle composition. | Companion `docs/prds/agent-first-authoring/PRD-agent-first-game-authoring.md`, Track C; `failing-rows-analysis.md` G1 |
+| P6 forest 10k | 197 s, 3.12x three.js 4x MSAA (4,421 vs 1,419 ms per frame) | <= 300 s and <= 3x | Fragment-bound shadow sampling and the camera pass on software GL. The candidate run measured 2.99x (212 s); with 12 frames and one cold load the two runs straddle the limit. Not fixed, at the threshold. | `evidence/forest-10k/README.md`; `failing-rows-analysis.md` G3 |
+| P7 real GPU | no data | <= three.js 4x MSAA on every scene | No real-GPU receipt exists. Owner step: `REAL_GPU_HEADLESS=false tools/real-gpu/run.sh all` on the Mac. | `evidence/real-gpu/README.md` |
+| C1 audit rows | 7 of 7 unresolved | 0 | The rows are partial or experimental by design: genre kits, root `createGame` (a headless stub), `physics.*` mesh and heightfield colliders, joints and vehicles, `tsl`/`compute`/WebGPU, `xr`. None changed in 4.5.0. | `docs/comparisons/aura3d-capability-audit.md` |
+| M1 codemod rows | 150 approximate / 47 none / 0 pending (48 exact) | <= 100 / <= 20 / 0 | Aura3D math classes are immutable values and three.js classes mutate in place, so most math rows stay `approximate`; most `none` rows are loader and exporter addons that Aura3D does not port. | `packages/aura3d-cli/src/migrate-three/mappings.ts`; `docs/prds/beat-threejs/PRD-beat-threejs-2-remaining-gaps.md` WP-2 |
+| T1 tally | 81 of 125 three.js better | <= 30 | 42 of the 81 are bundle size and requests (G1); the other 39 are frame time, CPU time, first frame and draw counts. Even if all 39 flipped, 42 would remain, so T1 needs the companion PRD's bundle work as well. | table below |
+
+**Bench-source defect that affects the PBR viewer rows.** `tools/bench-vs-threejs/pbr-viewer/aura/scene.ts` passes the HDRI as a bare `{ type, format, url }` object cast with `as never`. The engine reads only an asset reference, so the HDRI never loads and the neutral room lights the scene (`evidence/exposure-parity/README.md`, PRD-2 WP-6 attribution). The PBR viewer draw count (P4), frame time, luma and request rows are therefore measured on a scene that does not do what its source declares; the three.js arm loads its HDRI. The source is left as it was in this run so that 4.5.0 numbers stay comparable with earlier runs; the fix and a re-run are in `docs/prds/beat-threejs/PRD-beat-threejs-3-after-450.md` (WP-8).
+
+Where the 81 "three.js better" rows sit at 4.5.0 (`aura-auto`; `node tools/bench-vs-threejs/harness/tally.mjs` rows, grouped as in `failing-rows-analysis.md`):
+
+| Group | Sections | Rows at 4.5.0 | Rows in the candidate run | What remains |
+| --- | --- | --- | --- | --- |
+| G1 bundle and requests | 4a to 4d, 5a to 5c | 42 | 42 | Aura3D 4.0 MB raw JS across 30 files for every scene; three.js 0.5 to 0.65 MB in 1 file. Companion PRD. |
+| G2 first frame | 6, 7e | 10 | 10 | Cube 419 vs 93 ms, forest 9.4 s vs 1.4 s, skinned character 1.9 s vs 0.56 s, game loop 1.0 s vs 0.18 s, shader water 0.91 s vs 0.25 s. The PBR viewer is an Aura3D win (2.3 s vs 6.1 s). |
+| G3 frame time | 7a, 7b, 7d | 17 | 17 | Skinned character 3.7x and game loop 7.2x three.js 4x MSAA; forest 3.1x; PBR viewer 1.24x; cube 3.5x. Shader water is an Aura3D win against `three-msaa`. |
+| G4 CPU in `frame()` | 7c | 6 | 6 | 0.9 to 11.6 ms against 0.1 to 0.7 ms. |
+| G5 draws, triangles, programs | 8a, 8b, 8c | 6 | 11 | Forest 8 vs 7 draws, skinned character 6 vs 5, game loop 3,099 vs 1,050 triangles, programs 15 vs 14 (PBR viewer), 4 vs 3 (skinned), 4 vs 2 (game loop). |
+| **Total** | | **81** | **86** | |
+
 **Read this first.** All timings come from a CPU-only remote runner with **software WebGL2 (SwiftShader), not a GPU**. They compare CPU/driver cost under identical conditions; they are not GPU performance numbers and say nothing about an Apple M-series or desktop GPU. Rows are marked `tie` within 5%. Lower is better in every numeric row. Verdicts are per row and are not averaged into a score.
 
 Runner: ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver) (vendor Google Inc. (Google)), 2 logical CPUs reported by the browser. Libraries as installed in the container: @aura3d/engine 4.5.0, three 0.185.1, vite 7.3.2.

@@ -1,6 +1,6 @@
 # Why Aura3D over three.js
 
-Status: 2026-10-27, Aura3D 4.3.5 compared with three.js 0.185.1. For marketing, sales and the site. Every claim below is one we can back: each row names its source, so copy built from this page holds up when a developer checks it.
+Status: 2026-10-28, Aura3D 4.5.0 compared with three.js 0.185.1 (sections that cite 4.3.5 numbers keep their original figures). For marketing, sales and the site. Every claim below is one we can back: each row names its source, so copy built from this page holds up when a developer checks it.
 
 ## The pitch
 
@@ -8,7 +8,7 @@ three.js gives you a renderer. Everything after that is your job: loaders, envir
 
 Aura3D is a standalone engine. `@aura3d/engine` has no `three` dependency; it renders through its own `@aura3d/rendering` package.
 
-Per-capability status (shipped, partial, experimental) with code paths: [`aura3d-capability-audit.md`](aura3d-capability-audit.md). Codemod figures in this doc are counted from the `mapping:` fields in `packages/aura3d-cli/src/migrate-three/mappings.ts` (245 constructs: 21 exact, 174 approximate, 47 none, 3 pending).
+Per-capability status (shipped, partial, experimental) with code paths: [`aura3d-capability-audit.md`](aura3d-capability-audit.md). Codemod figures in this doc are counted from the `mapping:` fields in `packages/aura3d-cli/src/migrate-three/mappings.ts` (245 constructs: 48 exact, 150 approximate, 47 none, 0 pending).
 
 ## Headline
 
@@ -72,17 +72,54 @@ Use these as written. The sourced numbers carry the small print shown.
 | 8 | "Built for AI coding agents: llms.txt, 14 skills and recipes in every new project." | safe | none | `packages/aura3d-cli/skills/` |
 | 9 | "25 playable games built on Aura3D." | safe | none | `game-inventory.json` |
 | 10 | "Ship a typed 3D scene in 18 lines of TypeScript." (current hero) | safe | none | `tagline-check/` |
+| 11 | "A one-cube scene reaches its first frame in about 420 ms." | needs-qualifier | "Published 4.5.0 bundle, median of 3 cold loads, software WebGL2, one run." | `RESULTS-4.5.0.md` section 0, gate line P3 |
+| 12 | "A one-cube scene draws in 1 call; a PBR viewer scene with a shadow and bloom draws in 25." | needs-qualifier | "Software WebGL2, benchmark scenes, one run." | `RESULTS-4.5.0.md` section 0, gate line P4 |
+| 13 | "The five benchmark scenes log no console warnings or errors." | needs-qualifier | "Software WebGL2, one run." | gate line Q2 |
+| 14 | "Every option covered by the option-coverage test either takes effect or raises OPTION_IGNORED: 16 of 16 tests pass." | safe | none | gate line D3; `tests/unit/agent-api/option-coverage.test.ts` |
+| 15 | "A one-cube scene is 12 lines of scene code; the shader-water scene is 71." | needs-qualifier | "Hand-tuned single source per scene." | gate lines D1, D2 |
 
-Claims to keep off the site (they don't hold today): "check-deploy catches failed requests and console errors" (the command is static, `packages/aura3d-cli/src/index.ts:1097`), and any "faster" or "smaller than three.js" wording. Item 2 in "Claims to unlock next" turns the first one into a usable claim.
+Claims to keep off the site (they don't hold today): "check-deploy catches failed requests and console errors" for the plain command (it is static, `packages/aura3d-cli/src/index.ts:1097`; only `check-deploy --browser` does that, since 4.3.7), and any "faster", "lighter" or "smaller than three.js" wording (see "Not unlocked" below).
 
-## Claims to unlock next
+## Claims to unlock
 
-Each of these turns into a bigger headline once it is done.
+Source for everything in this section: the published 4.5.0 run, `evidence/vs-threejs/RESULTS-4.5.0.md` and `evidence/vs-threejs/4.5.0/gate.txt` (software WebGL2, Aura3D arm `aura-auto`, one run, one author). Gate result: 7 PASS, 7 FAIL, 1 NO-DATA, and the gate fails on T1 (81 rows where three.js is better; limit 30). While T1 fails, no surface says Aura3D is faster, lighter or better than three.js.
+
+### Unlocked by a PASS line in `gate.txt` (Aura3D-side facts, used on the README, the homepage and `docs/aura3d-vs-threejs.md`)
+
+| Target | Gate line | Claim as published | Small print |
+|---|---|---|---|
+| P3 | `PASS P3 measured 418.7 ms` | "A one-cube scene reaches its first frame in about 420 ms." | Published `@aura3d/engine@4.5.0` bundle, median of 3 cold loads, software WebGL2, one run. Say nothing about three.js (it is 93 ms in the same run). |
+| P4 | `PASS P4 measured 1 / 25` | "A one-cube scene draws in 1 call; a PBR viewer scene with a shadow and bloom draws in 25 (33 on 4.3.7)." | Steady frame, software WebGL2, benchmark scenes `baseline` and `pbr-viewer`. The Aura3D `pbr-viewer` source declares an HDRI node that does not load (it passes a bare texture object, so the neutral room lights the scene; `evidence/exposure-parity/README.md`), so the claim says nothing about HDR lighting. |
+| Q2 | `PASS Q2 measured 0 message(s)` | "The five benchmark scenes log no console warnings or errors." | Software WebGL2, one run. |
+| D3 | `PASS D3 measured 0` | "Every option covered by the option-coverage test either takes effect or raises `OPTION_IGNORED`: 16 of 16 tests pass." | `tests/unit/agent-api/option-coverage.test.ts`; a test result, not a proof about every option. |
+| D1, D2 | `PASS D1 12 / 208`, `PASS D2 71 / 1317` | "A one-cube scene is 12 lines of scene code (208 tokens); the shader-water scene is 71 lines (1,317 tokens)." | Hand-tuned single source per scene, not independent authors; tokens are `gpt-tokenizer` o200k_base, a proxy. |
+
+### Passed but not published
+
+- **Q1 exposure** (`PASS Q1`, skinned character luma 136.2 against 144.0, 5.4%). The only phrasing is relative to three.js, and it holds for one scene of four. On the other three scenes the gap is still large (cube 12.8 vs 2.9, PBR viewer 89.3 vs 55.0, forest 119.6 vs 148.2). The existing wording stays: "calibrated against a CPU reference of three.js physically-based lights".
+
+### Not unlocked (FAIL or NO-DATA), no claim
+
+| Target | Measured | Limit | Cause (details in `RESULTS-4.5.0.md` section 0a) |
+|---|---|---|---|
+| P1 | 5.3 ms | 5 ms | CPU in the direct path plus a fill-bound `gl.finish` wait |
+| P2 | 0.9 ms | 0.5 ms | JavaScript and GL submission per frame |
+| P5 | 31 requests | 8 | 30 JS chunks load on first paint (companion bundle PRD) |
+| P6 | 197 s, 3.12x | 300 s and 3x | at the threshold; the candidate run measured 2.99x |
+| P7 | no data | on every scene | owner-run real-GPU receipts |
+| C1 | 7 of 7 unresolved | 0 | partial or experimental by design |
+| M1 | 150 / 47 / 0 | 100 / 20 / 0 | immutable math classes; addon rows excluded |
+| T1 | 81 of 125 | 30 | 42 bundle and request rows, 39 frame, CPU, first-frame and draw rows |
+
+The wording "faster than three.js", "lighter than three.js", "smaller bundle" and "better performance" stays banned. The bundle, request and software-GL frame-time rows all favour three.js.
+
+### Still open
 
 1. **Done in 4.3.7: `check-deploy --browser`.** It loads each route in headless Chromium and fails on HTTP errors, failed requests, uncaught errors and console errors, so the homepage can say what it says (the plain `check-deploy` stays the static asset check).
-2. **"A whole game in a fraction of the code."** Compare one complete game (HUD, audio, touch, replay) line for line against three.js plus the usual libraries. This is where Aura3D's built-in kits should show the widest gap.
-3. **"AI agents ship a game faster on Aura3D."** Run the cold-start trial on a full-game task with 4.3.5. The game kits should matter most there.
-4. **Real-device showcase numbers.** Capture the 25 games on real GPUs (`REAL_GPU_HEADLESS=false tools/real-gpu/run.sh all`) for showcase performance and screenshots.
+2. **"A whole game in a fraction of the code."** Measured at 4.5.0, and it does not support that wording: the coin-dash game is 271 lines / 2,622 tokens on Aura3D against 373 / 3,529 on three.js, 27% fewer lines, with 32 of 32 behavioural checks passing and equal replay hashes (`RESULTS-4.5.0.md` section 11). The full game is not a gate target, so it carries no public claim. "27% fewer lines for one complete game" is the sourced figure if it is wanted later. The bundle for that game is 3,645,076 B raw against 516,898 B.
+3. **"AI agents ship a game faster on Aura3D."** Run the cold-start trial on a full-game task with 4.5.0. The game kits should matter most there.
+4. **Real-device showcase numbers.** Capture the 25 games on real GPUs (`REAL_GPU_HEADLESS=false tools/real-gpu/run.sh all`) for showcase performance and screenshots. This is also the input for P7.
+5. **Next work on the failing rows:** [`docs/prds/beat-threejs/PRD-beat-threejs-3-after-450.md`](../prds/beat-threejs/PRD-beat-threejs-3-after-450.md).
 
 ## Reproduce the new tagline numbers
 

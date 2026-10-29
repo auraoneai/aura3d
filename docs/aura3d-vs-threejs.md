@@ -70,6 +70,18 @@ What a team cannot rebuild by adding a library or two:
 3. **The whole game stack in one install.** Fixed-step loop, seeded replay, QA hooks, safety net, high-refresh interpolation, HUD, touch, audio and genre kits, proven across 25 shipped games.
 4. **Quality gates built into the product.** The public-example boundary test, route-health specs in all 20 templates, `assets validate --release` and `check-deploy`. Teams adopting Aura3D get the release process along with the code.
 
+## Measured on the published 4.5.0 package
+
+These are facts about Aura3D alone, each from a line that passes in `evidence/vs-threejs/4.5.0/gate.txt`:
+
+- A one-cube scene reaches its first frame in about 420 ms (median of 3 cold loads).
+- A one-cube scene draws in 1 call. A PBR viewer scene with a shadow and bloom draws in 25 (33 on 4.3.7).
+- The five benchmark scenes log no console warnings or errors.
+- Every option covered by `tests/unit/agent-api/option-coverage.test.ts` either takes effect or raises `OPTION_IGNORED`: 16 of 16 tests pass.
+- A one-cube scene is 12 lines of scene code and the shader-water scene is 71 (hand-tuned single sources, not independent authors).
+
+Method: published `@aura3d/engine@4.5.0` installed from the registry, stock `vite build`, 640x360, software WebGL2 on a remote CPU runner, one run. These are not GPU numbers. Targets that did not pass carry no claim and are listed with their causes in [`evidence/vs-threejs/RESULTS-4.5.0.md`](../evidence/vs-threejs/RESULTS-4.5.0.md).
+
 ## Migrating from three.js
 
 `aura3d migrate three` classifies 245 three.js constructs (48 exact, 150 approximate, 47 none, 0 pending, counted from `packages/aura3d-cli/src/migrate-three/mappings.ts`) and writes an annotated worklist for the port. The codemod is a helper for porting, not a compatibility layer: the port itself is a rewrite against `@aura3d/engine`. The verified mapping for the 40 most common APIs, the steps and a measured before and after are in [`migration/from-threejs.md`](migration/from-threejs.md).

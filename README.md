@@ -64,6 +64,7 @@ three.js gives you a renderer. Aura3D is a complete TypeScript 3D engine and too
 - **Assets you can trust.** Every model is typed, hashed and licensed; in production an unverified model doesn't draw.
 - **The game stack included.** HUD, touch controls, audio cues, a fixed-step loop, seeded replay, a safety net and smooth motion on 120 and 144 Hz displays.
 - **Built for AI coding agents.** `llms.txt`, 14 skills and compiled recipes ship with every new project.
+- **Measured on the published 4.5.0 package.** A one-cube scene reaches its first frame in about 420 ms and draws in 1 call; a PBR viewer scene with a shadow and bloom draws in 25. The five benchmark scenes log no console warnings or errors, and the 16 option-coverage tests pass, so an option either takes effect or raises `OPTION_IGNORED`. Software WebGL2 on a remote runner, one run, median of 3 cold loads for the first frame; not GPU numbers ([results](./evidence/vs-threejs/RESULTS-4.5.0.md)).
 
 Porting an existing three.js project: [`docs/migration/from-threejs.md`](./docs/migration/from-threejs.md).
 
