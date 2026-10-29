@@ -1,8 +1,7 @@
 /**
  * Bunker Zero simulation — deterministic, renderer-free grid-shooter loop.
  * World coords: cell (cx,cz) centre = ((cx+0.5)*CELL + ox, (cz+0.5)*CELL).
- * Each floor renders at its own x-offset (ox = floorIndex * 300) so all six
- * maps coexist in one scene — the player teleports between floor origins.
+ * `ox` is the floor's x-offset in the scene (main.ts places every floor at the origin and shows only the active one).
  */
 import { createCountedRng } from "@aura3d/engine";
 import { CELL, WALL_H, SILO_H, isBlocked, isSolid, parseFloor, type FloorDef } from "./maps";
@@ -140,7 +139,6 @@ const EYE = 1.55;
 const PLAYER_R = 0.34;
 const NOISE_RANGE = 12;
 
-export function floorOrigin(floorIndex: number) { return floorIndex * 300; }
 export const cellCenter = (c: number) => (c + 0.5) * CELL;
 
 /** What a descent run carries from one floor to the next (C14). HP resets to 100 at each elevator; everything else carries. */
