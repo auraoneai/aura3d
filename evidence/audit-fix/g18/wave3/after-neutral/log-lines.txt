@@ -1,0 +1,9 @@
+G18_CONSOLE g18-noenv warning [.WebGL-0x2ec021c6600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+G18_CONSOLE g18-noenv warning [.WebGL-0x2ec021c6600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+G18_CONSOLE g18-noenv warning [.WebGL-0x2ec021c6600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+G18_CONSOLE g18-noenv warning [.WebGL-0x2ec021c6600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+G18_DONE g18-noenv
+G18_DONE g18-nn060
+G18_DONE g18-nn000
+3 passed (45.1m)
+[task-run] PLAYWRIGHT_EXIT=0

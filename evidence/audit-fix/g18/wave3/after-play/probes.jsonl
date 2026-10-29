@@ -1,0 +1,15 @@
+{"target": "g18x-play-1280", "ready": true}
+{"target": "g18x-play-1280", "row": "drive", "s": {"speedKmh": 101, "z": -215.48492386053584, "diag": {"drawCalls": 83, "renderPath": "hdr-msaa", "bloomFusion": "separable", "quality": "auto"}}}
+{"target": "g18x-play-1280", "row": "L1", "s": {"legacyPhase": "playing", "phase": "playing", "legacyZ": -215.48492386053584, "z": -215.48492386053584, "legacySpeed": 28.038620611790325, "speed": 28.038620611790325}}
+{"target": "g18x-play-1280", "row": "C6", "s": {"samples": 20, "samplesWithOverlap": 0, "worstPairs": 0, "meanV": 10.138555416337427}}
+{"target": "g18x-play-1280", "row": "drift", "s": {"drifting": 1, "drift": 20.76386497693395}}
+{"target": "g18x-play-1280", "row": "C5", "s": {"blocks": 225, "buildings": 1688, "trees": 762, "traffic": 84, "pickups": 174, "solids": 1688, "propSolids": 4045}}
+{"target": "g18x-play-1280", "row": "C14-delivery", "s": {"job": {"n": 1, "x": -60, "z": -390, "timeLeft": 50}, "before": 0}}
+{"target": "g18x-play-1280", "row": "C14-delivered", "s": {"deliveries": 1, "scoreGain": 790, "nextJob": {"n": 2, "x": -90, "z": -240, "timeLeft": 49.983333333333334}}}
+{"target": "g18x-play-1280", "row": "C14-camera", "s": [{"wanted": [43.26791320809394, 2.6250702122010425, -120], "shown": [39.21675484994649, 1.8370693204988093, -120], "wantedBlocked": true, "shownBlocked": false, "factor": 0.35677083333333326}, {"wanted": [16.566827917166126, 2.6250702122010425, -120], "shown": [16.566827917166126, 2.6250702122010425, -120], "wantedBlocked": false, "shownBlocked": false, "factor": 1}, {"wanted": [44.42657222074717, 2.6250702122010425, -150], "shown": [44.42657222074717, 2.6250702122010425, -150], "wantedBlocked": false, "shownBlocked": false, "factor": 1}]}
+{"target": "g18x-play-1280", "row": "C3", "s": {"phase": "results", "visible": true, "title": "Shift over", "score": "0", "best": "0", "focused": "restart"}}
+{"target": "g18x-play-1280", "row": "C3-restart", "s": {"phase": "playing", "score": 0, "collected": 0, "timeLeft": 180, "hidden": true}}
+{"target": "g18x-play-1280", "row": "pause", "s": {"error": "Error: page.evaluate: Test timeout of 2400000ms exceeded."}}
+{"target": "g18x-play-390", "ready": true}
+{"target": "g18x-play-390", "row": "C1-ui", "s": {"touchLayer": true, "visible": true, "bodyTouch": true, "gas": [288, 694, 86, 86], "brake": [214, 716, 64, 64], "drift": [214, 638, 64, 64], "nitro": [299, 616, 64, 64], "steer": [16, 630, 150, 150], "pause": [12, 10, 72, 48], "mute": [92, 10, 96, 48], "speed": [340, 551, 34, 53], "minimap": [258, 96, 120, 120], "credit": null, "hint": "grid"}}
+{"target": "g18x-play-390", "row": "C1-drive", "s": {"speedKmh": 22, "headingChange": -1.845141180318013, "keys": {"w": true, "a": false, "s": false, "d": true, "shift": false, "space": false}}, "released": {"w": false, "a": false, "s": false, "d": false, "shift": false, "space": false}}

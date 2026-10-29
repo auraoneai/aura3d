@@ -1,0 +1,10 @@
+G18_DONE g18x-resize
+G18_DONE g18x-audio
+1 failed
+2 passed (56.7m)
+[task-run] PLAYWRIGHT_EXIT=1
+- Following Playwright test failed.
+2026/10/29 20:29:49 Container failed during run: playwright. No retries remaining.
+failed to run step ID: playwright: exit status 1
+Run ID: ch5ch failed after 57m30s. Error: failed during run, err: exit status 1
+ERROR: Run failed

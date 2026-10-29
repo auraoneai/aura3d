@@ -1,0 +1,4 @@
+{"target": "g18x-resize", "ready": true}
+{"target": "g18x-resize", "row": "C2", "before": {"css": [1280, 720], "backing": [1280, 720], "win": [1280, 720], "dpr": 1}, "after": {"css": [1280, 720], "backing": [1280, 720], "win": [900, 600], "dpr": 1}, "portrait": {"css": [1280, 720], "backing": [1280, 720], "win": [390, 844], "dpr": 1}}
+{"target": "g18x-audio", "start": true}
+{"target": "g18x-audio", "row": "C4", "playing": {"phase": "playing", "beds": "no-hook"}, "paused": {"phase": "paused", "beds": "no-hook"}, "resumed": {"phase": "playing", "beds": "no-hook"}, "hidden": {"phase": "playing", "beds": "no-hook"}}

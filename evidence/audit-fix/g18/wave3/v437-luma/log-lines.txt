@@ -1,0 +1,8 @@
+G18_CONSOLE g18-default warning [.WebGL-0x205401b29800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+G18_CONSOLE g18-default warning [.WebGL-0x205401b29800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+G18_CONSOLE g18-default warning [.WebGL-0x205401b29800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+G18_CONSOLE g18-default warning [.WebGL-0x205401b29800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+G18_DONE g18-default
+G18_DONE g18-noenv
+2 passed (26.8m)
+[task-run] PLAYWRIGHT_EXIT=0
