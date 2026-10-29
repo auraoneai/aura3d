@@ -9,7 +9,7 @@ import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { strings as enUiStrings } from "../../../src/localization/en/ui.js";
-import { UI_STRINGS, fillTemplate, humanizeId, speakerName, storyText, uiText, type UiLocale } from "../../../src/ui/accessibility.js";
+import { CHARACTER_COLOURS, UI_STRINGS, fillTemplate, humanizeId, speakerName, storyText, uiText, type UiLocale } from "../../../src/ui/accessibility.js";
 import { speakerColour } from "../../../src/ui/captions.js";
 import { menuSection, type MenuItem } from "../../../src/ui/episode-menu.js";
 import { GROWN_UP_LINKS, formatSeconds, waitChoicesMs } from "../../../src/ui/parent-panel.js";
@@ -486,8 +486,18 @@ describe("index.html", () => {
     expect(html).toMatch(/<title>Wonder World \(prototype\)<\/title>/);
     expect(html).toMatch(/href="\/fonts\/local\.css"/);
     expect(html).toMatch(/<div id="stage"><\/div>/);
-    expect(html).toMatch(/<div id="ui"><\/div>/);
+    expect(html).toMatch(/<div id="ui">\s*<div class="ww-screen ww-start ww-boot" data-ui="boot" aria-hidden="true">/);
     expect(html).toMatch(/<script type="module" src="\.\/src\/main\.ts"><\/script>/);
+  });
+
+  it("shows a static splash from the first paint: the start screen's dots and title, nothing to tap", () => {
+    const splash = /<div class="ww-screen ww-start ww-boot"[^>]*>([\s\S]*?)<\/p>\s*<\/div>\s*<\/div>/.exec(html)?.[1] ?? "";
+    expect(splash).not.toBe("");
+    expect(splash).not.toMatch(/<(button|a|input|select|textarea)\b/);
+    const dots = Array.from(splash.matchAll(/--ww-dot:\s*(#[0-9a-f]{6})/g), (match) => match[1]);
+    expect(dots).toEqual(["momo", "lulu", "sheru", "gogo", "lumi", "peeko"].map((id) => CHARACTER_COLOURS[id as keyof typeof CHARACTER_COLOURS]));
+    expect(splash).toContain(`<p class="ww-start-title">${enUiStrings["ui.start.title"]}`);
+    expect(readFileSync(join(appRoot, "src/main.ts"), "utf8")).toMatch(/removeSplashUnderFirstScreen\(uiRoot\)/);
   });
 
   it("has no SEO or social tags, no autoplay media, no third-party script and no child name", () => {

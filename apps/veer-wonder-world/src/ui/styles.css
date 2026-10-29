@@ -590,6 +590,17 @@ b {
   background: linear-gradient(180deg, var(--ww-sky) 0%, var(--ww-meadow) 100%);
 }
 
+/*
+ * The static splash in index.html: the start screen's background, dots and title, shown from the first paint
+ * while the bundle downloads. It never fades (a fade would hold it invisible while the main thread is busy),
+ * takes no taps, and sits under every screen; src/main.ts removes it once the first screen has faded in.
+ */
+.ww-start.ww-boot {
+  z-index: 0;
+  pointer-events: none;
+  animation: none;
+}
+
 .ww-start-inner {
   display: flex;
   flex-direction: column;

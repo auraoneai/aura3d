@@ -23,7 +23,27 @@
     -->
     <main class="ww-app">
       <div id="stage"></div>
-      <div id="ui"></div>
+      <div id="ui">
+        <!--
+          Static splash (data-ui="boot"): visible from the first paint while the
+          bundle downloads, so the page is never blank. src/main.ts removes it
+          once the first screen has faded in over it. The dots are the six
+          character colours of src/ui/accessibility.ts CHARACTER_COLOURS.
+        -->
+        <div class="ww-screen ww-start ww-boot" data-ui="boot" aria-hidden="true">
+          <div class="ww-start-inner">
+            <div class="ww-cast">
+              <span class="ww-cast-dot" style="--ww-dot: #cdbcf2"></span>
+              <span class="ww-cast-dot" style="--ww-dot: #a9e5d1"></span>
+              <span class="ww-cast-dot" style="--ww-dot: #e8c9a2"></span>
+              <span class="ww-cast-dot" style="--ww-dot: #f3aba4"></span>
+              <span class="ww-cast-dot" style="--ww-dot: #f7dc82"></span>
+              <span class="ww-cast-dot" style="--ww-dot: #f9cd92"></span>
+            </div>
+            <p class="ww-start-title">Wonder World</p>
+          </div>
+        </div>
+      </div>
     </main>
     <noscript><p class="ww-noscript">Wonder World needs JavaScript to run.</p></noscript>
     <script type="module" src="./src/main.ts"></script>
