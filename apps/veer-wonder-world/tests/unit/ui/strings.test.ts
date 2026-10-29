@@ -201,6 +201,14 @@ describe("ui string keys", () => {
     expect(UI_KEYS.filter((key) => !text.includes(`"${key}"`))).toEqual([]);
   });
 
+  it("keeps each English fallback word for word the same as the English pack", () => {
+    const differ = Object.entries(UI_STRINGS).filter(([key, text]) => {
+      const packed: unknown = Object.entries(enUiStrings).find(([packKey]) => packKey === key)?.[1];
+      return typeof packed === "string" && packed !== text;
+    });
+    expect(differ.map(([key]) => key)).toEqual([]);
+  });
+
   it("UI modules never call locale.str for a ui.* key directly (uiText always passes the fallback)", () => {
     expect(usageSources()).not.toMatch(/\.str\(\s*["'`]ui\./);
   });

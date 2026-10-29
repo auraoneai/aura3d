@@ -57,7 +57,7 @@ export const UI_STRINGS = {
   "ui.gate.cancel": "Not now",
   "ui.note.start": "Play alongside your child when you can. All activities work by touch; speaking isn't required.",
   "ui.note.safety":
-    "This is play and language exposure, not therapy. Wonder World does not test, score or diagnose. If you have questions about your child's speech, language or hearing, talk with your pediatrician or a speech-language pathologist.",
+    "This is play and language exposure, not therapy. Wonder World does not test, score or diagnose, and it makes no promise about speech. If you have questions about your child's speech, language or hearing, talk with your pediatrician or a speech-language pathologist.",
   "ui.note.privacy": "No account, no microphone, nothing leaves this device. No ads and no tracking. Settings stay here, and you can clear them at any time.",
   "ui.note.links": "Reading for grown-ups:",
   "ui.guide.1": "Label what your child notices.",
@@ -66,7 +66,7 @@ export const UI_STRINGS = {
   "ui.guide.4": "Try with a real toy.",
   "ui.captions.label": "Captions",
   "ui.loading": "Getting ready...",
-  "ui.audio.unavailable": "Sound is not available right now. The story carries on, and captions show the words.",
+  "ui.audio.unavailable": "Sound is not available right now. The story carries on with pictures, and captions show the words.",
 
   "ui.start.sound": "Sound starts after you tap.",
   "ui.prototype": "Prototype",
