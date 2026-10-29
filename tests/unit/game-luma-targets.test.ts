@@ -49,6 +49,11 @@ describe("game luma capture targets (audit LIGHT-02)", () => {
     expect(variants("cross-hop").length).toBe(themes);
     const skies = [...src("apps/showcase-teleoperator/index.html").matchAll(/data-tod="([^"]+)"/g)].map((m) => m[1]!);
     expect(variants("teleoperator").sort()).toEqual([...new Set(skies)].sort());
+    const levelsSrc = src("examples/roadster-hours-port/data.ts");
+    const levels = [...levelsSrc.slice(levelsSrc.indexOf("export const LEVELS")).matchAll(/\{ id: `([a-z]+)`, name:/g)].map((m) => m[1]!);
+    expect(levels.length).toBeGreaterThan(0);
+    expect(variants("roadster-hours-port")).toEqual(levels);
+    expect(GAME_LUMA_TARGETS.filter((t) => t.slug === "roadster-hours-port").map((t) => t.url)).toEqual(levels.map((_, i) => `/apps/showcase-roadster-hours-port/?level=${i}&autostart=1&autopilot=1`));
   });
 });
 
