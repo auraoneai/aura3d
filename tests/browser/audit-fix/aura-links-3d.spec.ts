@@ -26,6 +26,8 @@ interface Target {
   readonly url: string;
   readonly viewport: { width: number; height: number };
   readonly phone?: boolean;
+  /** device scale factor (card-2x) */
+  readonly scale?: number;
   /** grep tag, e.g. "@w2" (SPECS cannot carry a `|` regex, so batches select by tag) */
   readonly tag?: string;
   /** steady-state render captures (default) or a gameplay probe */
@@ -167,25 +169,83 @@ const pondView = async (page: Page, name: string): Promise<void> => {
   await grab(page, name, "pond-top-2", { probe: "pond", info });
 };
 
+/** C1/C19: autopilot plays all nine holes; the closing scorecard (hole-by-hole, totals) shows at round over. */
+const roundOut = async (page: Page, name: string): Promise<void> => {
+  if (!(await hasQa(page))) { log(`GL_SKIP ${name} no __AURA_LINKS_QA__ (pre-fix build)`); return; }
+  await settleFrames(page, 15_000);
+  const done = await advanceUntil(page, "e.phase === 'roundover'", 1500, 4);
+  const card = await page.evaluate(() => ({
+    shown: document.getElementById("final-card")?.classList.contains("show") ?? false,
+    title: document.getElementById("fc-title")?.textContent ?? null,
+    rows: [...document.querySelectorAll("#fc-table tr")].map((tr) => tr.textContent?.replace(/\s+/g, " ").trim()),
+    foot: document.getElementById("fc-foot")?.textContent ?? null
+  }));
+  log(`GL_STATE ${JSON.stringify({ target: name, probe: "round-out", spentS: done.spent, phase: done.ev.phase, hole: done.ev.hole, card: done.ev.card, finalCard: card })}`);
+  await settleFrames(page, 15_000);
+  await grab(page, name, "04-results", { probe: "round-out" }, true);
+};
+
+/**
+ * RH-05: retake of evidence/aura-links-3d/screens/final with the same file names and sizes. The player drives the
+ * three-press swing with Space; logic advances through the ?qa=1 hook so each shot shows the state it is named for.
+ */
+const screensRun = async (page: Page, name: string): Promise<void> => {
+  if (!(await hasQa(page))) { log(`GL_SKIP ${name} no __AURA_LINKS_QA__ (pre-fix build)`); return; }
+  const snap = async (id: string, ms = 12_000) => { await settleFrames(page, ms); await grab(page, name, id, {}, true); };
+  await qa(page, "advance", 0.5);
+  await snap("02-early", 20_000);
+  await advanceUntil(page, "e.phase === 'address'", 10, 0.25);
+  await qa(page, "advance", 0.5);
+  await snap("03-action-01-address");
+  await page.keyboard.press("Space");
+  await qa(page, "advance", 0.7);
+  await snap("03-action-02-power");
+  await page.keyboard.press("Space");
+  await qa(page, "advance", 0.45);
+  await snap("03-action-03-accuracy");
+  await page.keyboard.press("Space");
+  for (let i = 0; i < 6; i++) { await qa(page, "advance", i === 0 ? 0.15 : 0.4); await snap(`03-action-${String(4 + i).padStart(2, "0")}-swing-${i}`); }
+  await qa(page, "advance", 4);
+  await snap("03-action-10-route-showcase-aura-links-3d-state-p");
+  const ev = await qa<any>(page, "evidence");
+  log(`GL_STATE ${JSON.stringify({ target: name, probe: "screens", phase: ev.phase, strokes: ev.strokes, hudStrokes: await page.evaluate(() => document.getElementById("h-strokes")?.textContent ?? null), lastShot: ev.eventLog?.events?.filter((x: any) => x.type === "shot").map((x: any) => x.label) ?? null })}`);
+};
+const titleRun = async (page: Page, name: string): Promise<void> => {
+  await settleFrames(page, 25_000);
+  await grab(page, name, "01-title", {}, true);
+};
+const cardRun = async (page: Page, name: string): Promise<void> => {
+  await settleFrames(page, 30_000);
+  await grab(page, name, name.endsWith("2x") ? "card-2x" : "card-1x");
+};
+
 const COURSE_IDS = ["mapleHollow", "cinderRim", "cloudTerrace", "neonBay", "mareCourse"] as const;
 
 const TARGETS: readonly Target[] = [
   { name: "links-desktop-stAuroras", url: `${APP}?course=stAuroras`, viewport: DESKTOP, tag: "@w2" },
-  { name: "links-phone-stAuroras", url: `${APP}?course=stAuroras`, viewport: PHONE, phone: true },
-  ...COURSE_IDS.map((id) => ({ name: `links-desktop-${id}`, url: `${APP}?course=${id}`, viewport: DESKTOP, ...(id === "neonBay" || id === "mareCourse" ? { tag: "@w2" } : {}) })),
+  { name: "links-phone-stAuroras", url: `${APP}?course=stAuroras`, viewport: PHONE, phone: true, tag: "@w3" },
+  ...COURSE_IDS.map((id) => ({ name: `links-desktop-${id}`, url: `${APP}?course=${id}`, viewport: DESKTOP, tag: id === "neonBay" || id === "mareCourse" ? "@w2" : "@w3" })),
   { name: "links-phone-neonBay", url: `${APP}?course=neonBay`, viewport: PHONE, phone: true, tag: "@w2" },
-  { name: "links-phone-mareCourse", url: `${APP}?course=mareCourse`, viewport: PHONE, phone: true },
+  { name: "links-phone-mareCourse", url: `${APP}?course=mareCourse`, viewport: PHONE, phone: true, tag: "@w3" },
   { name: "links-play-holeout-desktop", url: `${APP}?course=stAuroras&autoplay=1&qa=1`, viewport: DESKTOP, run: holeOut, tag: "@play" },
-  { name: "links-play-holeout-phone", url: `${APP}?course=stAuroras&autoplay=1&qa=1`, viewport: PHONE, phone: true, run: holeOut },
+  { name: "links-play-holeout-phone", url: `${APP}?course=stAuroras&autoplay=1&qa=1`, viewport: PHONE, phone: true, run: holeOut, tag: "@round" },
   { name: "links-play-menu-midshot", url: `${APP}?course=stAuroras&autoplay=1&qa=1`, viewport: DESKTOP, run: menuMidShot, tag: "@play" },
   { name: "links-play-reduced-motion", url: `${APP}?menu=1&reducedMotion=1&qa=1`, viewport: DESKTOP, run: reducedMotion, tag: "@play" },
-  { name: "links-pond-mapleHollow", url: `${APP}?course=mapleHollow&hole=7&qa=1`, viewport: DESKTOP, run: pondView, tag: "@play" }
+  { name: "links-pond-mapleHollow", url: `${APP}?course=mapleHollow&hole=7&qa=1`, viewport: DESKTOP, run: pondView, tag: "@play" },
+  { name: "links-play-roundout-desktop", url: `${APP}?course=stAuroras&autoplay=1&qa=1`, viewport: DESKTOP, run: roundOut, tag: "@round" },
+  { name: "links-play-roundout-phone", url: `${APP}?course=stAuroras&autoplay=1&qa=1`, viewport: PHONE, phone: true, run: roundOut, tag: "@round" },
+  { name: "links-shots-title-1280x720", url: `${APP}?menu=1`, viewport: DESKTOP, run: titleRun, tag: "@shots" },
+  { name: "links-shots-play-1280x720", url: `${APP}?course=stAuroras&qa=1`, viewport: DESKTOP, run: screensRun, tag: "@shots" },
+  { name: "links-shots-title-390x844", url: `${APP}?menu=1`, viewport: PHONE, phone: true, run: titleRun, tag: "@shots" },
+  { name: "links-shots-play-390x844", url: `${APP}?course=stAuroras&qa=1`, viewport: PHONE, phone: true, run: screensRun, tag: "@shots" },
+  { name: "links-shots-card-1x", url: `${APP}?course=stAuroras`, viewport: { width: 720, height: 450 }, run: cardRun, tag: "@shots" },
+  { name: "links-shots-card-2x", url: `${APP}?course=stAuroras`, viewport: { width: 720, height: 450 }, scale: 2, run: cardRun, tag: "@shots" }
 ];
 
 async function openPage(browser: Browser, target: Target): Promise<Page> {
   const context = await browser.newContext({
     viewport: target.viewport,
-    deviceScaleFactor: 1,
+    deviceScaleFactor: target.scale ?? 1,
     ...(target.phone ? { hasTouch: true, isMobile: true } : {})
   });
   return context.newPage();

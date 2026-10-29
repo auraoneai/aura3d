@@ -25,6 +25,7 @@ import {
   effects,
   game,
   geometry,
+  installQaHooks,
   instances,
   lights,
   looks,
@@ -1789,6 +1790,7 @@ function startRound(): void {
 }
 
 function startHole(idx: number): void {
+  hideFinalCard();
   const hole = state.course.holes[idx]!;
   state.hole = hole;
   state.terrain = buildHoleTerrain(state.course, hole);
@@ -1846,6 +1848,28 @@ function advanceHole(): void {
   startHole(next);
 }
 
+/** closing scorecard (audit C19): hole-by-hole strokes against par, totals, and the skins result in Skins mode */
+function renderFinalCard(title: string, foot: string): void {
+  const card = state.card;
+  const box = $("final-card");
+  if (!card || !box) return;
+  const holes = card.holes;
+  const cells = (pick: (h: (typeof holes)[number]) => string, cls?: (h: (typeof holes)[number]) => string) =>
+    holes.map((h) => `<td${cls ? ` class="${cls(h)}"` : ""}>${pick(h)}</td>`).join("");
+  const tp = card.toPar === 0 ? "E" : card.toPar > 0 ? `+${card.toPar}` : `${card.toPar}`;
+  $("fc-title")!.textContent = title;
+  $("fc-table")!.innerHTML =
+    `<tr><th>HOLE</th>${holes.map((h) => `<th>${h.hole}</th>`).join("")}<th>TOT</th></tr>` +
+    `<tr><td>PAR</td>${cells((h) => String(h.par))}<td>${card.totalPar}</td></tr>` +
+    `<tr><td>YOU</td>${cells((h) => String(h.strokes), (h) => (h.strokes < h.par ? "under" : h.strokes > h.par ? "over" : ""))}<td>${card.totalStrokes}</td></tr>`;
+  $("fc-foot")!.textContent = `${state.course.name.toUpperCase()} · ${tp} · ${foot}`;
+  box.classList.add("show");
+}
+
+function hideFinalCard(): void {
+  $("final-card")?.classList.remove("show");
+}
+
 function finishRound(): void {
   state.phase = "roundover";
   const card = state.card!;
@@ -1867,14 +1891,16 @@ function finishRound(): void {
       state.tourHoleStart += 9;
     }
     updateModeChips();
-  } else if (state.mode === "skins") {
+    renderFinalCard(`PRO CIRCUIT · ${t.playerAlive ? (t.round === "champion" ? "CHAMPION" : t.round.toUpperCase()) : "CUT"}`, t.playerAlive && t.round !== "champion" ? "MENU — NEXT ROUND" : "MENU — NEW CIRCUIT");
     const r = state.round!;
     // a pot still carried after hole 9 is shown, not silently dropped (audit C19)
     const pot = r.skinsPot > 0 ? ` · ${r.skinsPot} carried, unclaimed` : "";
     showMsg("SKINS MATCH OVER", `${r.skinsWon} of 9 skins won${pot} · ${toPar >= 0 ? "+" : ""}${toPar}`, 4000);
+    renderFinalCard("SKINS MATCH OVER", `SKINS WON ${r.skinsWon} OF 9${r.skinsPot > 0 ? ` · ${r.skinsPot} UNCLAIMED` : ""}`);
     pushEvent("skins", `match over — ${r.skinsWon} skins won${pot}`, "info");
   } else {
     showMsg("ROUND COMPLETE", `${card.totalStrokes} strokes · ${toPar >= 0 ? "+" : ""}${toPar} vs par ${card.totalPar}`, 4200);
+    renderFinalCard("ROUND COMPLETE", `${card.totalStrokes} STROKES · MENU FOR A NEW ROUND`);
     pushEvent("round", `round complete: ${toPar >= 0 ? "+" : ""}${toPar}`, toPar <= 0 ? "success" : "info");
     if (toPar < 0) void audio?.cue("win");
   }
@@ -2298,6 +2324,7 @@ function applyMulligan(): void {
 let menuReturn: { phase: PlayPhase; mode: typeof state.mode } | null = null;
 
 function openMenu(): void {
+  hideFinalCard();
   if (state.phase !== "menu") menuReturn = { phase: state.phase, mode: state.mode };
   state.phase = "menu";
   state.mode = "menu";
@@ -2649,7 +2676,11 @@ function publishEvidence(): void {
  * with it) and the next presented frame shows the state the logic reached.
  */
 function installQaHook(): void {
-  (window as any).__AURA_LINKS_QA__ = {
+  installQaHooks("links-qa", {
+    ready: () => document.body.dataset.aura3dReady === "true",
+    state: () => { publishEvidence(); return lastEvidence; },
+    app: () => auraApp as any,
+    extras: {
     advance(seconds: number): Record<string, unknown> | null {
       const step = 1 / 30;
       for (let t = 0; t < seconds; t += step) {
@@ -2676,7 +2707,8 @@ function installQaHook(): void {
       qaPondView = { x: w.center[0], z: w.center[1], y: g.surfaceY, r: w.radius };
       return { center: w.center, hazardRadius: w.radius, drawnRadius: g.pondDiameter / 2, rimRadius: g.rimDiameter / 2, surfaceY: g.surfaceY };
     }
-  };
+    }
+  });
 }
 let qaPondView: { x: number; z: number; y: number; r: number } | null = null;
 

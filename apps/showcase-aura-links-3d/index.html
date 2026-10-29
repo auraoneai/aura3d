@@ -384,6 +384,57 @@
         margin-top: 3px;
       }
 
+      /* Closing scorecard (round over): hole-by-hole strokes against par, totals, skins */
+      .final-card {
+        position: absolute;
+        top: 44%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: none;
+        padding: 10px 12px 9px;
+        background: rgba(6, 11, 8, 0.86);
+        border: 1px solid var(--rule-strong);
+        backdrop-filter: blur(8px);
+        max-width: calc(100vw - 20px);
+      }
+      .final-card.show {
+        display: block;
+      }
+      .final-card .fc-title {
+        font-family: var(--font-display);
+        font-size: 13px;
+        letter-spacing: 0.2em;
+        color: var(--accent);
+        margin-bottom: 6px;
+      }
+      .final-card table {
+        border-collapse: collapse;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--ink);
+      }
+      .final-card th,
+      .final-card td {
+        padding: 2px 5px;
+        text-align: center;
+        border-left: 1px solid var(--rule);
+      }
+      .final-card th:first-child,
+      .final-card td:first-child {
+        border-left: none;
+        text-align: left;
+        color: var(--muted);
+        letter-spacing: 0.12em;
+      }
+      .final-card td.under { color: var(--ok); }
+      .final-card td.over { color: var(--danger); }
+      .final-card .fc-foot {
+        margin-top: 6px;
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        color: var(--muted);
+      }
+
       .action-prompt {
         position: absolute;
         bottom: 148px;
@@ -887,6 +938,11 @@
         <div class="center-msg" id="msg">
           <div class="big" id="msg-text">AURA LINKS 3D</div>
           <div class="small" id="msg-sub">SIX COURSES · ONE CARD UNDER PAR</div>
+        </div>
+        <div class="final-card" id="final-card" role="dialog" aria-label="Closing scorecard">
+          <div class="fc-title" id="fc-title">ROUND COMPLETE</div>
+          <table id="fc-table"></table>
+          <div class="fc-foot" id="fc-foot"></div>
         </div>
         <div class="banner" id="banner">BIRDIE</div>
         <div class="action-prompt" id="prompt">SPACE — START SWING</div>
