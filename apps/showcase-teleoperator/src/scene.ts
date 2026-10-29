@@ -127,6 +127,13 @@ export const WEATHER: Readonly<Record<WeatherPreset, WeatherLook>> = {
   }
 };
 
+/**
+ * Renderer options for the mount. The game is tuned and captured at the "high" tier on every device,
+ * so it asks for that tier explicitly in object form: same tier as the old `quality: "high"` string,
+ * without the engine's RENDERER_QUALITY_STRING diagnostic warning.
+ */
+export const GRID_DISPATCH_RENDERER = { quality: { tier: "high" } } as const;
+
 const placed = (items: ReadonlyArray<readonly [number, number, number]>): AuraTransformSpec[] => items.map(([x, y, z]) => ({ position: [x, y, z] }));
 
 export function buildGridDispatchScene(weather: WeatherPreset): ReturnType<typeof scene> {

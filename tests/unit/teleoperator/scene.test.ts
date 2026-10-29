@@ -57,3 +57,15 @@ describe("grid dispatch scene", () => {
     expect(new Set(sigs).size).toBe(4);
   });
 });
+
+describe("grid dispatch renderer options (wave 2, E1 handoff)", () => {
+  it("asks for the high tier in object form: same mount tier and parse as the old string, no string-tier warning", async () => {
+    const { GRID_DISPATCH_RENDERER } = await import("../../../apps/showcase-teleoperator/src/scene");
+    const { resolveMountQuality } = await import("../../../packages/engine/src/agent-api/compiler/renderer");
+    const { parseQualityRendererOptions } = await import("../../../packages/engine/src/agent-api/app/rendererOptions");
+    expect(typeof GRID_DISPATCH_RENDERER.quality).toBe("object");
+    expect(resolveMountQuality(GRID_DISPATCH_RENDERER as never)).toEqual(resolveMountQuality({ quality: { tier: "high" } } as never));
+    expect(resolveMountQuality(GRID_DISPATCH_RENDERER as never).tier).toBe("high");
+    expect(parseQualityRendererOptions(GRID_DISPATCH_RENDERER as never, null).requested).toBe(parseQualityRendererOptions({ quality: "high" } as never, null).requested);
+  });
+});
