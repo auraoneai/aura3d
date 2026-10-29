@@ -7,7 +7,8 @@
 // The name is not written here: it is the prefix of the app's working folder name, as in
 // tests/browser/wonder-world-build.spec.ts, which runs the same scan on the remote runner.
 // Usage: node apps/veer-wonder-world/tools/check-dist.mjs [dist]   (default: the app's dist/)
-// Prints file names and counts only, never the matched text; exits 1 on any problem.
+// Prints file names, counts and up to three short contexts per file with the name masked as <name>, never the
+// name itself; exits 1 on any problem.
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -45,8 +46,14 @@ const textFiles = files.filter((file) => TEXT_FILE.test(file));
 if (name) {
   const pattern = new RegExp(`(?<![a-z0-9])${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![a-z0-9])`, "gi");
   for (const file of textFiles) {
-    const count = (readFileSync(file, "utf8").match(pattern) ?? []).length;
-    if (count > 0) problems.push(`the child's name appears ${count} time(s) in ${relative(dist, file)}`);
+    const text = readFileSync(file, "utf8");
+    const hits = [...text.matchAll(pattern)];
+    if (hits.length === 0) continue;
+    // Up to three hits with 40 characters either side, the name itself masked, so a hit can be traced safely.
+    const contexts = hits
+      .slice(0, 3)
+      .map((hit) => text.slice(Math.max(0, hit.index - 40), hit.index + hit[0].length + 40).replace(pattern, "<name>").replace(/\s+/g, " "));
+    problems.push(`the child's name appears ${hits.length} time(s) in ${relative(dist, file)}: ${contexts.map((context) => `"${context}"`).join(", ")}`);
   }
 }
 
