@@ -31,6 +31,7 @@ import type {
   CompilerImpl
 } from "../../contracts/compiler.js";
 import { groups } from "../nodes/groups.js";
+import { mountedRootOf } from "./mountedRoots.js";
 import { ignoredOptionMessages } from "../nodes/optionDiagnostics.js";
 import { isRenderableModelNode } from "./observations.js";
 import { createAssetProvenance } from "../diagnostics.js";
@@ -125,7 +126,8 @@ function flattenPerRoot(nodes: readonly AuraSceneNode[]): { flat: AuraSceneNode[
   for (const node of nodes) {
     const part = groups.flatten([node]).slice();
     flat.push(...part);
-    const id = "runtime" in node ? node.runtime?.id : undefined;
+    // A node the app already flattened out of a mounted group or look carries that root's id (see mountedRoots.ts).
+    const id = mountedRootOf(node) ?? ("runtime" in node ? node.runtime?.id : undefined);
     if (id) byRoot.set(id, (byRoot.get(id) ?? []).concat(part));
   }
   return { flat, byRoot };

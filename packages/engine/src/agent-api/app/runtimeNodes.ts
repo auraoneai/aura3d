@@ -213,7 +213,15 @@ export function createAuraRuntimeNodeRegistry(snapshot: AuraSceneSnapshot, deps:
     },
     remove(idOrHandle) {
       const id = typeof idOrHandle === "string" ? idOrHandle : idOrHandle.id;
-      if (!handles.has(id)) return false;
+      if (!handles.has(id)) {
+        // A mounted group or look has no handle (the app flattens it away), but the compiled scene keeps its children by its id.
+        if (compiled && compilerFlagOn() && compiled.removeSubtree(id)) {
+          registryVersion += 1;
+          compiledRemovals.add(id);
+          return true;
+        }
+        return false;
+      }
       registryVersion += 1;
       handles.delete(id);
       if (compiled && compilerFlagOn()) {

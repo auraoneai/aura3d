@@ -41,7 +41,8 @@ import { clearShaderFailures, setShaderFailureMode } from "@aura3d/rendering";
 import { createAuraRuntimeNodeRegistry } from "./runtimeNodes.js";
 import { setPrd01ModelMatrixCache } from "../compiler/renderInput.js";
 import { createModelMatrixCache } from "../sceneGraph.js";
-import { flattenAuraSceneSnapshot, modelMatrixFor } from "../compiler/sceneGraph.js";
+import { flattenAuraSceneNodes, modelMatrixFor } from "../compiler/sceneGraph.js";
+import { flattenTaggingMountedRoots } from "../compiler/mountedRoots.js";
 import { setPrd01ColorParsing } from "../compiler/color.js";
 import { collectGeneratedCodeWarnings } from "../looks/generatedCodeWarnings.js";
 import { material } from "../nodes/material.js";
@@ -74,7 +75,15 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   // payload.extra.mountTiming (see markTiming in ./platform).
   markTiming("a3d:mount:create-app-start");
   let snapshot = normalizeSceneSnapshot(options.scene);
-  let renderSnapshot = flattenSceneSnapshot(snapshot);
+  /*
+   * One top-level node at a time, so the compiled scene can find the children of a mounted group or look by the group's
+   * runtime id (`app.nodes.remove`). The concatenation is the same node list as flattening the whole list at once.
+   */
+  const flattenForRender = (scene: AuraSceneSnapshot, hierarchical: boolean): AuraSceneSnapshot => ({
+    ...scene,
+    nodes: flattenTaggingMountedRoots(scene.nodes, hierarchical ? (nodes) => flattenAuraSceneNodes(nodes, qrFlags) : (nodes) => flattenSceneSnapshot({ ...scene, nodes: [...nodes] }).nodes)
+  });
+  let renderSnapshot = flattenForRender(snapshot, false);
   const rendererSelection = normalizeCreateAppRendererOptions(options.renderer);
   // PR 0 seams (CONTRACTS.md §3.2): flag resolution, C-27 quality-tier resolve, C-38
   // app-extension mount and C-31 diagnostics sections are fixed call sites owned by PRD 15.
@@ -106,7 +115,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   // through compiler/sceneGraph.ts (rotationOrder, quaternion, group world
   // matrices) and the snapshot flattens hierarchically. Flag-off: unchanged.
   setPrd01ModelMatrixCache(qrFlags.on("A3D_QR_CORE") ? createModelMatrixCache(modelMatrixFor(qrFlags)) : null);
-  if (qrFlags.on("A3D_QR_CORE")) renderSnapshot = flattenAuraSceneSnapshot(snapshot, qrFlags);
+  if (qrFlags.on("A3D_QR_CORE")) renderSnapshot = flattenForRender(snapshot, true);
   // 01-S5 (C-06): colorUtils helpers delegate to parseAuraColor under the flag.
   setPrd01ColorParsing(qrFlags.on("A3D_QR_CORE") ? { strict: options.strict ?? qrFlags.on("A3D_QR_STRICT") } : null);
   // Custom-shader compile/link failures: a fresh app starts with a clean failure list; strict (or
@@ -220,7 +229,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       if (disposed || attachedRevision !== mountRevision || productionController !== controller) return;
       try {
         const current = runtimeNodes.sceneWithRuntimeAdditions() ?? snapshot;
-        renderSnapshot = qrFlags.on("A3D_QR_CORE") ? flattenAuraSceneSnapshot(current, qrFlags) : flattenSceneSnapshot(current);
+        renderSnapshot = flattenForRender(current, qrFlags.on("A3D_QR_CORE"));
         mountCurrentScene();
         diagnosticsState.warnings.push("DEVICE_RESTORED_REMOUNT: the WebGL context was restored; the scene was mounted again so it renders.");
       } catch (error) {
@@ -679,7 +688,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     setScene(nextScene) {
       assertMutableFrame();
       snapshot = normalizeSceneSnapshot(nextScene);
-      renderSnapshot = flattenAuraSceneSnapshot(snapshot, qrFlags);
+      renderSnapshot = flattenForRender(snapshot, true);
       runtimeNodes.reset(renderSnapshot);
       // Drop bodies from the previous scene before registering the new ones, so swapping
       // scenes does not leave orphaned bodies colliding with the new level.
