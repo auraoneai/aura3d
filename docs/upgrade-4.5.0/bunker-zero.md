@@ -1,6 +1,6 @@
 # Bunker Zero (`bunker-zero`): upgrading to Aura3D 4.5.0
 
-**Verdict:** Recommended changes. No API in this game breaks, but the scene lighting resolves differently under 4.5.0. The `night-city` look now adds its own night environment fill, which the game did not have in 4.3.7, so the game will probably render brighter and needs a visual re-check and possibly a small lighting retune. The hemisphere light does not newly contribute in this game (see item 1).
+**Verdict:** Recommended changes. No API in this game breaks. The scene authors `lights.ambient` 0.9, so the `night-city` look's neutral-room fill is dropped and the scene stays lit by its authored lights alone, as in 4.3.7. The hemisphere light now contributes (see item 1), so the scene can read a little brighter; it needs a visual re-check and possibly a small lighting retune.
 
 All findings come from reading the code in `/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/integration2` (branch `beat3js2/integration`) against `main` (4.3.7). Nothing was built or run, so the size of the brightness change is **unknown** until a frame is captured. Instance counts below were computed by running the same loops as `main.ts` over `src/maps.ts`.
 
@@ -22,24 +22,17 @@ All findings come from reading the code in `/Users/gurbakshchahal/platforms/aura
 
 ## What changes for this game in 4.5.0
 
-### 1. Lighting resolves differently (change 3): likely brighter
+### 1. Lighting: the look fill yields to the authored ambient; hemisphere now contributes (change 3)
 - **What happens now.**
   - The environment is resolved by the C-09 source chain (`compiler/compileScene.ts` around lines 510-545; sources registered in `compiler/environment.ts`, `registerPrd02EnvironmentSources`). `A3D_QR_LIGHTING` and `A3D_QR_COMPILER` are both default-on (`packages/rendering/src/contracts/flags.state.ts`), so this is the active path.
-  - In 4.3.7 `night-city` had no fill (`lookPresets.ts` on `main`), so the scene had no `environments.*` node. `createProductionRuntimeEnvironment` took its authored-ambient branch, which zeroes the environment-map intensities, so the neutral-room probe added no IBL. Only the additive ambient term (`lights.ambient` 0.9) filled the scene. The hemisphere light was not part of it.
-  - In 4.5.0 `night-city` carries `fill: { preset: "night", intensity: 1.0 }` (`lookPresets.ts:164-170`), and `looks.ts:299-302` emits `environments.nightCinematic(...)` for it. The scene now has an explicit environment node, so the `prd02.explicit` source binds the night probe at intensity 1.0 (diffuse and specular IBL), in addition to the ambient 0.9.
-  - The hemisphere light does **not** newly contribute here. The explicit source builds its ambient with `prd02AmbientTerm(snapshot)` and no `includeHemisphere` (`environment.ts:541`). Only the neutral-room source (`environment.ts:558`) and the lights-only branch (`environment.ts:172-181`) sum the hemisphere, and both apply only to scenes with no `environments.*` node. `CHANGELOG.md:25` says scenes with an `environments.*` node are unchanged by the "lights only" rule. I found no code in `packages/` that reads the `prd02.hemisphere` output, so `lights.hemisphere` (`main.ts:73`) should stay without visible effect, as in 4.3.7.
-  - The "no implicit scene-category fill" change (change 3 headline) does not apply to this game, because the look supplies an environment node.
-  - Net effect: a night IBL fill that did not exist before, on top of ambient 0.9 and `exposureEv: 0.42` that were tuned against the 4.3.7 look. Expect lifted shadows, less contrast in the dark corridors and extra specular on metals. The amount is unknown.
-- **Evidence.** `apps/showcase-bunker-zero/src/main.ts:37`, `:70-75`; `packages/engine/src/agent-api/looks/lookPresets.ts:156-171`; `looks.ts:299-302`; `compiler/environment.ts:541` and `:558`; `compiler/compileScene.ts` (probe bind block); `packages/rendering/src/contracts/flags.state.ts`.
+  - In 4.3.7 `night-city` had no fill, so the scene had no `environments.*` node. `createProductionRuntimeEnvironment` took its authored-ambient branch, which zeroes the environment-map intensities, so the neutral-room probe added no IBL. Only the additive ambient term (`lights.ambient` 0.9) filled the scene. The hemisphere light was not part of it.
+  - In 4.5.0 `night-city` carries an `environments.neutral` fill (`lookPresets.ts` `fill`, `looks.ts` `v0Children`), marked `lookFill`. Because this scene authors a `lights.ambient`, `scene.toJSON()` drops the marked fill (`looks/lookFill.ts`), as the implicit fill was withheld on 4.3.7. The scene therefore has no `environments.*` node and takes the lights-only branch.
+  - The lights-only branch sums ambient and hemisphere (`explicitLightFillFree`), so `lights.hemisphere` (`main.ts:73`) now adds to the ambient 0.9. That is the one lighting difference from 4.3.7 here.
+  - Measured on a sibling game with the same composition (Aura Glint Courier: `neon-arcade` + ambient 0.92 + hemisphere 0.85 + one directional light): mean luma 25.0 on 4.3.7, 29.5 on 4.5.0 (remote software GL, steady state). Expect a lift of that size, not a doubling. Bunker Zero itself was not captured.
+- **Evidence.** `apps/showcase-bunker-zero/src/main.ts:37`, `:70-75`; `packages/engine/src/agent-api/looks/lookPresets.ts`; `looks/lookFill.ts`; `nodes/scene.ts` `toJSON`; `compiler/environment.ts` (`explicitLightFillFree`); `packages/rendering/src/contracts/flags.state.ts`.
 - **What to do.**
   1. Capture the same frames on 4.3.7 and 4.5.0 (floor 1 start, a corridor with a door, the silo on floor 6, the boss) and compare.
-  2. If 4.5.0 is too bright, retune with options that exist: lower `exposureEv` in the look overrides (accepted range -2..2, clamped at `looks.ts:161`) or lower the `intensity` of `lights.ambient` (`main.ts:72`). Changing `lights.hemisphere` intensity will not help in this scene. The look fill intensity itself cannot be overridden through `looks.preset` (the override keys are `sun`, `exposureEv`, `fogDensityScale`, `accent`, `background`).
-  ```ts
-  const b = scene().add(looks.preset(LOOK_ID, { fogDensityScale: 0.28, exposureEv: 0.2 })); // was 0.42; tune from captures
-  lights.ambient({ name: "bunker ambient", color: "#c2d6ee", intensity: 0.6 }) // was 0.9; tune from captures
-  ```
-  The values above are placeholders; pick them from the comparison, not from this note.
-- **How to check.** `?capture=1` screenshots before and after (see item 3), and `node tools/game-checks/run.mjs showcase-bunker-zero` (the repo's per-game checks; whether any of them measure brightness is unknown).
+  2. If 4.5.0 is too bright, retune with options that exist: lower `exposureEv` in the look overrides (accepted range -2..2, clamped at `looks.ts`) or lower the `intensity` of `lights.hemisphere` (`main.ts:73`) or `lights.ambient` (`main.ts:72`).
 
 ### 2. Render path stays on the HDR chain (change 1): informational, no code change
 - **What happens now.** Under `quality: "auto"` the direct path is used only when `renderPathBlockers` returns nothing. This scene returns blockers: `effect "bloom"`, `"vignette"`, `"filmGrain"`, `"contactShadows"` and the look's `colorGrade` / `ambientOcclusion` (every effect except `fog` blocks, `renderPath.ts`, `FORWARD_ONLY_EFFECTS` and `renderPathBlockers`). So the route takes `hdr-msaa`, as before. The output should be unchanged by this item (the "up to 48/255 on 0.1-0.3% of pixels" silhouette difference applies only to the direct path).

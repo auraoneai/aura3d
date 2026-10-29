@@ -1,6 +1,6 @@
 # Glint Courier (`dot-dash-3d`): upgrading to Aura3D 4.5.0
 
-**Verdict:** Recommended changes. The game compiles and runs unchanged on 4.5.0, but its lighting will probably look different, in a direction I could not determine from the code (the `neon-arcade` look now adds a night environment fill; the old ambient-only lighting path is replaced). Capture before and after and tune.
+**Verdict:** Recommended changes. The game compiles and runs unchanged on 4.5.0. Its lighting reads a little brighter (mean luma 25.0 on 4.3.7, 29.5 on 4.5.0 in a remote software-GL capture) because the hemisphere light now contributes. The `neon-arcade` look's fill is dropped here, since the scene authors `lights.ambient`. Capture before and after and tune if needed.
 
 ## What this game uses
 
@@ -21,12 +21,10 @@
 ### 1. Lighting: the `neon-arcade` look now brings an environment node (change 3)
 
 - **What happens now:**
-  - In 4.3.7 the game had no `environments.*` node. It was lit by the ambient light (0.92, no IBL) plus the directional lights (the "authored-ambient" branch in `compiler/environment.ts`, or the prd02 neutral-room source).
-  - In 4.5.0 the `neon-arcade` look has `fill: { preset: "night", intensity: 1.0 }`, so it expands to an `environments.nightCinematic` node (`lookPresets.ts:356-358`, `looks.ts:299-302`).
-  - That node now selects the authored-environment path (the 'evening' preset lighting) instead of the ambient-only path. On the legacy branch the ambient light is not added back on top; on the prd02 path the explicit source adds ambient but not hemisphere.
-  - The "darker without an environment" rule (`explicitLightFillFree`, `environment.ts:31-80`) does not apply here, because the look supplies the environment node.
-  - The "hemisphere now contributes" change is not established for this game. `includeHemisphere: true` is passed only by the prd02 neutral-room source (no environment node). With an explicit environment node, hemisphere is not added to the ambient term, and on the legacy path it is no longer a direct light (`renderer.ts:188`, `observations.ts:333`). Expect the hemisphere light to add nothing, or to contribute less than in 4.3.7.
-  - Direction and size of the change: unknown without a capture. It could be darker, brighter or a colour shift (bluer fill, loss of the warm ambient 0.92). I could not confirm whether the legacy path (`renderer.ts:152`) or the prd02 probe (`compileScene.ts:~478`) is what lights the forward pass.
+  - In 4.3.7 the game had no `environments.*` node. It was lit by the ambient light (0.92, no IBL) plus the directional light (the "authored-ambient" branch in `compiler/environment.ts`).
+  - In 4.5.0 the `neon-arcade` look carries an `environments.neutral` fill (`lookPresets.ts` `fill`, `looks.ts` `v0Children`). Because `world.ts:111` authors `lights.ambient`, `scene.toJSON()` drops that fill (`looks/lookFill.ts`), so the scene keeps the ambient-only path. Without that rule the neutral room stacked on the ambient and the capture read 77.
+  - The scene has no `environments.*` node, so the lights-only branch sums ambient and hemisphere (`explicitLightFillFree`, `environment.ts`): `lights.hemisphere` (`world.ts:112`) now adds to the ambient. That is the main difference from 4.3.7.
+  - Measured (remote software GL, 1280x720, steady state, `tests/browser/game-luma-capture.spec.ts`): 25.0 on 4.3.7, 29.5 on 4.5.0 (+18%); an earlier 4.5.0 build with the baked night probe as fill read 28.2.
 - **Evidence:** `src/game/world.ts:110-113`; `packages/engine/src/agent-api/looks/lookPresets.ts:356-358`; `packages/engine/src/agent-api/looks/looks.ts:299-302`; `packages/engine/src/agent-api/compiler/environment.ts` (authored-environment branch ~94-165; `prd02AmbientTerm` ~246-290; `prd02.explicit` and `prd02.neutral-room` sources ~534-560); `compiler/renderer.ts:152` and `:188`; `compiler/observations.ts:333`.
 - **What to do:** Capture the same frame on 4.3.7 and 4.5.0, then compare. If the board is too dark or the warm amber/cyan balance drifted, raise the intensities in `world.ts` or the `exposureEv` override on `looks.preset(...)` (line 110). If it is too bright, lower them. For example, to push warmth back after a darker result:
 
@@ -35,7 +33,7 @@
 .add(lights.directional({ position: [8, 22, 12], target: [0, 0, 0], color: "#fff2dc", intensity: 1.4, shadow: true }))
 ```
 
-  The numbers above are placeholders, not measured values. Do not rely on `lights.hemisphere` to brighten the board; with the look's environment node present it may contribute nothing.
+  The numbers above are placeholders, not measured values. `lights.hemisphere` now contributes on this scene, so lower it first if the board reads too bright.
 - **How to check:** Run `npm run dev` (port 5181) and open `/?capture=1&autostart=1` on both versions, or use the remote runner (`tools/remote-acr/run.sh`) for browser captures. Compare the title and `?maze=classic` play frames. Also run `node tools/game-checks/run.mjs dot-dash-3d`.
 
 ### 2. Render path stays HDR; confirm it (change 1)

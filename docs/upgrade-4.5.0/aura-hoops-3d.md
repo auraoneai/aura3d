@@ -1,6 +1,6 @@
 # Aura Hoops 3D (`aura-hoops-3d`): upgrading to Aura3D 4.5.0
 
-**Verdict:** Recommended changes. Nothing in the code has to change for the game to build and run on 4.5.0, but `effects.contactShadows` is now a real mask that darkens the floor, and the Shanghai and Orbit courts change their ambient fill. Both change how the game looks, so re-judge the six courts and refresh any stored screenshots.
+**Verdict:** Recommended changes. Nothing in the code has to change for the game to build and run on 4.5.0, but `effects.contactShadows` is now a real mask that darkens the floor, and the Shanghai and Orbit courts get their ambient fill from the look's explicit neutral-room fill. Both change how the game looks, so re-judge the six courts and refresh any stored screenshots.
 
 ## What this game uses
 
@@ -39,11 +39,11 @@
 - **How to check:** the mask is reported through the lighting extension; `app.lighting.diagnostics().contactShadows` returns `{ passExecuted, depthSource, unavailable? }` (`packages/engine/src/lanes/prd02.ts:272`). `unavailable` should be absent. If it is `no-drawn-program-samples-the-mask`, a `[prd02.contactShadows]` `console.warn` also appears once. Compare a `?capture=1` screenshot of each `?court=` value against 4.3.7 (see the checklist for how to produce both sets).
 - **Cost:** the extra depth pass runs every frame. Check frame time on a mid-range device on all six courts; do not assume which one is heaviest (Rucker has the densest crowd and four floodlights, Athens loads a GLB venue).
 
-### 2. Night City and Neon Arcade looks now carry a procedural fill (Shanghai, Orbit)
+### 2. Night City and Neon Arcade looks now carry an explicit neutral-room fill (Shanghai, Orbit)
 
-- **Now:** the `night-city` and `neon-arcade` presets gained `fill: { preset: "night", intensity: 1.0 }` (`lookPresets.ts:167` and `:358`). `looks.ts:299-303` adds `environments.nightCinematic` for them. In 4.3.7 these two courts relied on the scene category's implicit fill. 4.5.0 no longer adds that implicit fill when lights are authored and no environment node exists (`packages/engine/src/agent-api/compiler/environment.ts`, `implicitFill`, line 172).
+- **Now:** the `night-city` and `neon-arcade` presets gained `fill: { preset: "neutral", intensity: 0.85 }` (`lookPresets.ts`), which `looks.ts` `v0Children` emits as `environments.neutral`. In 4.3.7 these two courts were lit by the implicit neutral room probe (no environment node, no ambient light). 4.5.0 no longer adds that implicit fill when lights are authored and no environment node exists (`packages/engine/src/agent-api/compiler/environment.ts`, `implicitFill`), so the look supplies the same room explicitly.
 - **Applies because:** Shanghai uses `night-city` (`src/main.ts:242`) and Orbit uses `neon-arcade` (`:248`). Both presets have `hdri: null`. The other four courts use presets with an HDRI, so they still have an `environments.hdri` node and keep their ambient (`lookPresets.ts` golden-hour, outdoor-day, interior-warm).
-- **Net effect:** neither court should get the "scene goes dark" regression, because the look supplies its own environment node. The replacement fill is not guaranteed to match the old implicit fill brightness, so these two courts may be slightly brighter or darker. Unknown until compared.
+- **Net effect (measured):** remote software GL, 1280x720, steady state (`tests/browser/game-luma-capture.spec.ts`): Shanghai mean luma 53.5 on 4.3.7 and 55.6 on 4.5.0, Orbit 109.4 and 113.3. The HDRI court Rucker moves from 82.8 to about 88 in the same runs. An earlier 4.5.0 build that used the baked `night` probe as the fill read 5.7 (Shanghai) and 10.9 (Orbit); it was fixed before release.
 - **What to do:** compare Shanghai and Orbit against 4.3.7 captures. If either is off, adjust the look override rather than adding lights:
   ```ts
   looks.preset(v.look, { fogDensityScale: 0, exposureEv: 0.16 })   // tune exposureEv per venue if needed
@@ -78,7 +78,7 @@
 
 - Direct render path and canvas MSAA edge differences (1): effects, bloom and transparent materials keep the HDR chain on all six courts.
 - `preserveDrawingBuffer` default (2): no read-back in `src/` (see item 6 above for tooling only).
-- Implicit environment removal causing darker scenes (3): every look supplies an `environments.*` node. The hemisphere-light contribution fix does not apply because the game has no hemisphere light. The `polar-night`, `space` and `underwater` fills do not apply because the game does not use those looks.
+- Implicit environment removal causing darker scenes (3): every look supplies an `environments.*` node (an HDRI, or the neutral-room fill for Shanghai and Orbit). The hemisphere-light contribution fix does not apply because the game has no hemisphere light. The `polar-night`, `space` and `underwater` fills do not apply because the game does not use those looks.
 - `OPTION_IGNORED` and the `primitive()` forwarding fix (4): the game passes only `name`, `size` and `material` to `primitives.*`, and `name`, `transforms`, `material` to `instances.sphere`, all valid (`primitives.ts:58-64`; `instances.sphere` goes through the same primitive option check). No `interactions.*` calls.
 - `interactions.orbit` (5): not used. The Orbit court's camera is custom code (`src/main.ts:2681-2699`).
 - Instancing changes (6): the only instanced node is 140 starfield spheres. The shadow proxy needs at least 1024 shadow-casting instances, the cascade cap needs 8192, and `setInstanceTransforms` is not called.

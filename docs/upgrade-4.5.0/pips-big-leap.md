@@ -1,6 +1,6 @@
 # Pip's Big Leap (`pips-big-leap`): upgrading to Aura3D 4.5.0
 
-**Verdict:** Recommended changes. The game compiles and runs unchanged on 4.5.0. Three things can change how it looks, so every world needs one visual re-check against its baseline: `effects.contactShadows` is on in all seven worlds and is now a real screen-space shadow mask; every world's look also adds ambient occlusion, which is now correct on devices without float linear filtering; and `polar-night` (world w6) gains a procedural fill.
+**Verdict:** Recommended changes. The game compiles and runs unchanged on 4.5.0. Three things can change how it looks, so every world needs one visual re-check against its baseline: `effects.contactShadows` is on in all seven worlds and is now a real screen-space shadow mask; every world's look also adds ambient occlusion, which is now correct on devices without float linear filtering; and `polar-night` (world w6) gets an explicit neutral-room fill in place of the implicit one.
 
 ## What this game uses
 
@@ -28,11 +28,12 @@
   3. `app.lighting.diagnostics().contactShadows` (`app.lighting` is a typed optional member, lighting lane `A3D_QR_LIGHTING` is default-on; the same data is in `app.diagnostics().lighting`) should show `passExecuted: true` and no `unavailable` field. `unavailable` can be `no-shadow-casting-directional-light` or `no-drawn-program-samples-the-mask`; either one means the mask is doing nothing.
   4. Run `node tools/game-checks/run.mjs pips-big-leap`.
 
-### B. World w6 (`polar-night`) gets a procedural environment fill (change 3). Applies to w6 only.
+### B. World w6 (`polar-night`) gets an explicit neutral-room fill (change 3). Applies to w6 only.
 
-- **What happens now:** In 4.3.7, `polar-night` had no HDRI and no fill (main `lookPresets.ts:167-183`). 4.5.0 adds `fill: { preset: "night", intensity: 1.0 }` (`packages/engine/src/agent-api/looks/lookPresets.ts:185`) and `looks.ts:299-302` emits `environments.nightCinematic(...)` for it. Starfall Garden will be somewhat brighter and more evenly lit than the 4.3.7 baseline.
+- **What happens now:** In 4.3.7, `polar-night` had no HDRI and no environment node, so the implicit neutral room probe lit w6. 4.5.0 removes that implicit fill for scenes with authored lights, so the look adds `fill: { preset: "neutral", intensity: 0.85 }` (`packages/engine/src/agent-api/looks/lookPresets.ts`), emitted by `looks.ts` `v0Children` as `environments.neutral`.
+- **Measured:** remote software GL, 1280x720, steady state (`tests/browser/game-luma-capture.spec.ts`, world picked from the atlas): w6 Starfall Garden mean luma 108.1 on 4.3.7, 111.1 on 4.5.0. w1, an HDRI world, goes from 157.4 to 166.9 in the same runs. An earlier 4.5.0 build that used the baked `night` probe as the fill read 23.7 here; it was fixed before release.
 - **Evidence:** worlds.ts:549 `look: "polar-night"`, worlds.ts:550 `lookOverrides: { fogDensityScale: 0 }`. The override does not disable the fill.
-- **What to do:** Nothing is required. If w6 is now too bright for the intended moonlit mood, author your own environment or lower exposure, for example `output: { exposure: ... }` passed to `createGame` (it spreads unknown options into `createGameApp`, `packages/game/src/createGame.ts:106-115`). Confirm the exact `output` field names in `packages/engine/src/agent-api/nodes/types.ts` before use. Do this only after looking at the capture. Setting `output` is harmless for the render path here because the game is already on the HDR chain (see C).
+- **What to do:** Nothing is required. If w6 reads too bright for the moonlit mood, lower the look's `exposureEv` override in `worlds.ts` before adding any lighting.
 - **How to check:** `?capture=1` screenshot of w6 against the baseline.
 
 ### C. Render path (change 1): the game stays on the HDR chain. No rendering change, only new diagnostics.
@@ -79,7 +80,7 @@
 - [ ] `pnpm` build for the app passes (`apps/showcase-pips-big-leap` runs `tsc --noEmit`; run it on the remote runner, not locally).
 - [ ] `node tools/game-checks/run.mjs pips-big-leap` has no new errors.
 - [ ] Capture each world (`academy`, `w1` to `w6`) with `?capture=1` and compare to the 4.3.7 baseline in `tools/quality-rebuild-capture/games.json` on the same device class; check shading under Pip, pickups and platform edges (change A) and overall brightness (change E).
-- [ ] w6 (Starfall Garden): confirm the new night fill does not wash out the star and crystal mood (change B). Adjust only if it is visibly too bright.
+- [ ] w6 (Starfall Garden): confirm the neutral-room fill keeps the star and crystal mood (change B). Adjust only if it is visibly too bright.
 - [ ] `app.diagnostics().renderPath` reports `path: "hdr-msaa"` and `bloomFusion: "separable"` in every world (all seven, because of the look bloom).
 - [ ] `app.lighting.diagnostics().contactShadows` shows `passExecuted: true` with no `unavailable`, and the console shows no `[prd02.contactShadows]` warning.
 - [ ] No `OPTION_IGNORED` entries in `app.diagnostics()`.

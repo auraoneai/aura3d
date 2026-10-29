@@ -55,17 +55,19 @@ Their luma barely moves because these scenes are mostly background at this size;
 
 ### Look presets
 
-Ten of the fifteen `looks.preset(id)` expand with an HDRI environment and render identically (0.00 change). Five had `hdri: null` and relied on the implicit fill; rendered in one fixed scene (grey ground and three grey solids), mean luma before / after the calibration alone / after the retune:
+Ten of the fifteen `looks.preset(id)` expand with an HDRI environment. Five have `hdri: null` and relied on the implicit fill. Rendered in one fixed scene (grey ground and three grey solids), mean luma at **steady state** (the harness waits 15 s after the first presented frame; remote software GL, runs `l450-old-looks2`, `l450-pre-looks`, `l450-fin-looks`):
 
-| Look | before | calibration alone | retuned |
-| --- | --- | --- | --- |
-| night-city | 95.0 | 1.5 (black) | 95.3 (`fill: night 1.0`) |
-| polar-night | 109.6 | 4.4 (black) | 109.9 (`fill: night 1.0`) |
-| neon-arcade | 130.6 | 1.8 (black) | 130.9 (`fill: night 1.0`) |
-| space | 156.5 | 94.7 | 148.8 (`fill: studio 0.75`, -5%) |
-| underwater | 25.2 | 18.9 | 25.2 (`fill: studio 1.0`) |
+| Look | 4.3.7 | 4.5.0 first cut (night/studio probe fill), first frame / steady | 4.5.0 final (`environments.neutral` fill) | fill intensity |
+| --- | --- | --- | --- | --- |
+| night-city | 95.0 | 107.1 / 5.1 | 99.3 (+4.5%) | 0.85 |
+| polar-night | 109.6 | 121.5 / 11.4 | 113.6 (+3.6%) | 0.85 |
+| neon-arcade | 130.6 | 143.0 / 8.1 | 134.8 (+3.2%) | 0.85 |
+| space | 156.5 | 155.3 / 133.0 | 162.8 (+4.0%) | 1.0 |
+| underwater | 25.2 | 29.6 / 23.8 | 26.0 (+3.2%) | 0.65 |
 
-`AuraLookV0Expansion.fill` is new: `v0Children` emits `environments.nightCinematic` or `environments.studio` at that intensity when `hdri` is null. `tests/unit/rendering/look-presets-environment.test.ts` keeps every preset on an environment. No game art was touched and no visual-regression golden needed a refresh (every changed preset is within 5% of its old luma).
+The ten HDRI looks gain 2.9% to 6.7% from the other 4.5.0 changes (outdoor-day 198.6 to 206.3, golden-hour 172.6 to 184.2), so +3% to +4.5% is the same drift, not a fill excess. An earlier version of this table showed night-city 95.3, polar-night 109.9 and neon-arcade 130.9 for the first cut. Those were first-frame readings: the baked night probe (diffuse SH9 DC 0.11 to 0.16, against 3.76 for the neutral room) is fetched asynchronously, and until it lands the analytic neutral floor is bound. The first cut therefore measured the placeholder, and the games (steady state) went near black. The fill is now the neutral room those looks were lit by on 4.3.7. The fill-scale sweep that chose the intensities is `tests/browser/exposure-looks-fill-sweep.spec.ts`.
+
+`AuraLookV0Expansion.fill` is new: `v0Children` emits `environments.neutral` (or `nightCinematic` / `studio` for a custom preset) at that intensity when `hdri` is null, marked `lookFill`. A scene that also authors a `lights.ambient` drops the marked node in `scene.toJSON()`, as the implicit fill was withheld on 4.3.7 (Aura Glint Courier, ambient 0.92: 25.0 on 4.3.7, 77 with the fill stacked, 29.5 with the rule). `tests/unit/rendering/look-presets-environment.test.ts` keeps every preset on an environment, and `tests/unit/agent-api/look-fill-game-composition.test.ts` pins the bound probe's irradiance for a game-style composition. No game art was touched.
 
 ## Skinned character (Q1) and console (Q2)
 

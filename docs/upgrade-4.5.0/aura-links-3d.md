@@ -1,6 +1,6 @@
 # Aura Links 3D (`aura-links-3d`): upgrading to Aura3D 4.5.0
 
-**Verdict:** Recommended changes. Nothing in the source has to change to build or run on 4.5.0, but two courses (`night-city`, `space`) get a different environment fill, contact shadows now render as a real mask, and the render path, canvas read-back and shadow behaviour should be confirmed once on 4.5.0.
+**Verdict:** Recommended changes. Nothing in the source has to change to build or run on 4.5.0, but the hemisphere light now contributes on the `night-city` and `space` courses, contact shadows now render as a real mask, and the render path, canvas read-back and shadow behaviour should be confirmed once on 4.5.0.
 
 ## What this game uses
 
@@ -20,9 +20,9 @@
 
 ## What changes for this game in 4.5.0
 
-### 1. Night-city and space courses get an explicit environment fill (looks change)
+### 1. Night-city and space courses: the look fill yields to the game's ambient light (looks change)
 
-- **What happens now:** the `night-city` and `space` look presets have no HDRI (`hdri: null`). On 4.3.7 they emitted no environment node, so the scene-category fill applied. In 4.5.0 they emit one: `environments.nightCinematic` (intensity 1.0) for `night-city` and `environments.studio` (intensity 0.75) for `space`. Evidence: `looks.ts:299-302`, `lookPresets.ts:167` and `lookPresets.ts:271`. Courses 5 (`neonBay`, night-city) and 6 (`mareCourse`, space) therefore get a different amount of ambient/IBL light than on 4.3.7. The other four courses (`stAuroras`, `mapleHollow`, `cinderRim`, `cloudTerrace`, on the `outdoor-day`, `golden-hour` and `alpine-snow` looks) already had an HDRI environment and are not changed by this. The direction and size of the brightness shift is unknown without rendering it.
+- **What happens now:** the `night-city` and `space` look presets have no HDRI (`hdri: null`). On 4.3.7 they emitted no environment node; the game authors `lights.ambient`, so the authored-ambient branch applied and no IBL was added. In 4.5.0 the presets emit an `environments.neutral` fill (`lookPresets.ts` `fill`, `looks.ts` `v0Children`), marked `lookFill`. Because the game authors an ambient light, `scene.toJSON()` drops the fill (`looks/lookFill.ts`), so courses 5 (`neonBay`, night-city) and 6 (`mareCourse`, space) keep the ambient-only lighting. Hemisphere now contributes on the lights-only branch, so they can read slightly brighter. The other four courses (`stAuroras`, `mapleHollow`, `cinderRim`, `cloudTerrace`, on the `outdoor-day`, `golden-hour` and `alpine-snow` looks) already had an HDRI environment and are not changed by this. The brightness shift was not captured for this game; the sibling game Aura Glint Courier (same composition) moved from 25.0 to 29.5.
 - **What to do:** Capture before/after and compare. If a course reads too dark or too bright, tune the existing per-course override, which the game already uses (`exposureEv` at `courses.ts:749` for night-city and `courses.ts:890` for space; the default `exposureEv: -0.06` at `src/main.ts:956`). For example, in the `neonBay` course spec:
   ```ts
   lookOverrides: { fogDensityScale: 0, exposureEv: 0.1 },
