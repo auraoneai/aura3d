@@ -7,7 +7,7 @@
     "dev": "vite",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "typecheck:published": "tsc -p tsconfig.published.json --noEmit",
-    "build": "vite build",
+    "build": "node tools/validate-wonder-world-content.mjs && vite build",
     "test:unit": "vitest run --config vitest.config.ts",
     "test:browser": "echo 'Browser specs run on the remote runner, one run per line of the list in tests/browser/wonder-world-lib.ts (each under 60 min), e.g. apps/veer-wonder-world/tools/remote-run.sh first-frame build (from the repo root)'",
     "validate:content": "node tools/validate-wonder-world-content.mjs"

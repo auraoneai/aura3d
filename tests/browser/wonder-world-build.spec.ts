@@ -1,18 +1,23 @@
-// Wonder World production build + deploy gate (PRD 06 gates G0 and G10). Remote runner only:
+// Wonder World production build + deploy gate (PRD 06 gates G0 and G10; gaps 03:177 and Lint-4). Remote runner only:
 //   apps/veer-wonder-world/tools/remote-run.sh build
-// Builds apps/veer-wonder-world with Vite (the app's vite.config.ts extends the root config), then runs
-// `aura3d check-deploy --dist dist --no-assets --browser --route /` from the app folder (static checks plus a headless
-// load that fails on HTTP errors, failed requests, uncaught errors and console errors). The app keeps its models and
-// audio as module-relative assets, so its aura.assets.json lists no entries (the file must exist for check-deploy),
-// hence --no-assets.
-//
-// Before check-deploy it scans what would be served (07 section 2.4): no source maps, and no child name in any text
-// file. The name is not written here: it is the prefix of the app's working folder name (`<name>-wonder-world`), as in
-// apps/veer-wonder-world/tests/unit/privacy/no-child-data.test.ts, and both the bare name and the folder form count.
+// 1. The content lint (`node apps/veer-wonder-world/tools/validate-wonder-world-content.mjs`, PRD 04 J14) runs first
+//    and must pass: content the lint rejects is never built, as with the app's own `npm run build`.
+// 2. Vite builds apps/veer-wonder-world (the app's vite.config.ts extends the root config).
+// 3. Before check-deploy it scans what would be served (07 section 2.4): no source maps, and no child name in any text
+//    file. The name is not written here: it is the prefix of the app's working folder name (`<name>-wonder-world`), as
+//    in apps/veer-wonder-world/tests/unit/privacy/no-child-data.test.ts, and both the bare name and the folder form count.
+// 4. `aura3d check-deploy --dist dist --no-assets --browser --route /` from the app folder (static checks plus a
+//    headless load that fails on HTTP errors, failed requests, uncaught errors and console errors). The app keeps its
+//    models and audio as module-relative assets, so its aura.assets.json lists no entries (the file must exist for
+//    check-deploy), hence --no-assets.
+// Every printed line and record goes through `redact` (wonder-world-lib.ts): tool output names the app folder and the
+// runner's paths, and neither the folder nor the name it carries may reach the run log (gap 03:177). Records: WWJSON
+// build-content-lint, build-stats, build-privacy-scan, check-deploy.
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
+import { emitJson, redact } from "./wonder-world-lib";
 
 const repo = resolve(".");
 const app = join(repo, "apps", "veer-wonder-world");
@@ -21,7 +26,7 @@ const TEXT_FILE = /\.(?:html|js|mjs|css|json|md|txt|svg)$/i;
 
 function run(cmd: string, args: string[], cwd: string, timeout: number): { status: number | null; out: string } {
   const r = spawnSync(cmd, args, { cwd, encoding: "utf8", timeout, maxBuffer: 64 * 1024 * 1024, env: { ...process.env, CI: "1" } });
-  return { status: r.status, out: `${r.stdout ?? ""}\n${r.stderr ?? ""}` };
+  return { status: r.status, out: redact(`${r.stdout ?? ""}\n${r.stderr ?? ""}`) };
 }
 
 function dirStats(dir: string): { files: number; bytes: number; byExt: Record<string, number> } {
@@ -70,19 +75,24 @@ function childNameHits(dist: string): { textFiles: number; hits: Array<{ file: s
   return { textFiles: textFiles.length, hits };
 }
 
-test("wonder world builds with Vite and passes check-deploy --browser", async () => {
+test("wonder world passes its content lint, builds with Vite and passes check-deploy --browser", async () => {
   test.setTimeout(40 * 60_000);
+  const lint = run("node", [join(app, "tools", "validate-wonder-world-content.mjs")], repo, 5 * 60_000);
+  const lintTail = lint.out.split("\n").filter((line) => line.trim().length > 0).slice(-30).join("\n");
+  console.log(lintTail);
+  emitJson("build-content-lint", { status: lint.status, tail: lintTail.slice(-4000) });
+  expect(lint.status, `the content lint passes before anything is built:\n${lintTail}`).toBe(0);
+
   const build = run(join(repo, "node_modules", ".bin", "vite"), ["build", app], repo, 20 * 60_000);
   console.log(build.out.split("\n").filter((l) => /error|warn|built in|dist\//i.test(l)).slice(-40).join("\n"));
   expect(build.status, "vite build exit").toBe(0);
   const dist = join(app, "dist");
   expect(existsSync(join(dist, "index.html"))).toBe(true);
-  const stats = dirStats(dist);
-  console.log(`WWJSON build-stats ${JSON.stringify(stats)}`);
+  emitJson("build-stats", dirStats(dist));
 
   // The hit list names build files only (hashed asset names), never the matched text.
   const privacy = { sourceMaps: filesUnder(dist).filter((file) => file.endsWith(".map")).length, ...childNameHits(dist) };
-  console.log(`WWJSON build-privacy-scan ${JSON.stringify(privacy)}`);
+  emitJson("build-privacy-scan", privacy);
   expect(privacy.sourceMaps, "no source maps are served").toBe(0);
   expect(privacy.hits, "no child name in any served text file").toEqual([]);
 
@@ -93,6 +103,6 @@ test("wonder world builds with Vite and passes check-deploy --browser", async ()
   const check = run("npx", ["-y", "@aura3d/cli@4.5.0", "check-deploy", "--dist", "dist", "--no-assets", "--browser", "--route", "/", "--browser-timeout", "180000", "--browser-settle", "300000"], app, 20 * 60_000);
   const tail = check.out.split("\n").slice(-60).join("\n");
   console.log(tail);
-  console.log(`WWJSON check-deploy ${JSON.stringify({ status: check.status, tail: tail.slice(-4000) })}`);
+  emitJson("check-deploy", { status: check.status, tail: tail.slice(-4000) });
   expect(check.status, "check-deploy exit").toBe(0);
 });
