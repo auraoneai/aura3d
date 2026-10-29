@@ -218,6 +218,12 @@ void main() {
   vec3 col = toon(albedo, N);
   col += vec3(1.0, 0.82, 0.9) * pow(max(dot(N, SUN_DIR), 0.0), 3.0) * 0.07 * top;
 
+  // gap telegraph: the edges of the 30 m of road before the next missing plate glow warm while gapWarn is up
+  float ahead = gapAt - s;
+  float edge = smoothstep(2.6, 3.5, abs(vCross.x)) * top;
+  float warn = gapWarn * edge * step(0.0, ahead) * (1.0 - smoothstep(0.0, 30.0, ahead));
+  col = mix(col, vec3(1.0, 0.52, 0.32), clamp(warn, 0.0, 1.0) * 0.85);
+
   outColor = vec4(fogMix(col, dist), 1.0);
 }`;
 

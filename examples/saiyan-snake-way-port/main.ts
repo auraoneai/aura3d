@@ -1,36 +1,38 @@
 /**
  * Serpentine Sky Run on Aura3D: boot, fixed-step loop, input, HUD, menus and capture hooks.
- * The simulation lives in `sim.ts` (pure); `world.ts` renders it through the public engine surface and
- * `text.ts` maps the simulation's strings to this port's generic on-screen wording.
+ * The simulation lives in `sim.ts` (pure); `world.ts` renders it through the public engine surface, `input.ts` turns
+ * keyboard and touch into the sim's input, `hud.ts` holds the presentation-only HUD cues and `renderGuard.ts` decides
+ * when a failed frame ends the session.
  *
  * Query parameters (all optional): `autostart=1` (skip the title and countdown), `manual=1` (the sim
  * only advances through `__AURA_SERPENTINE_SKY_RUN__.stepFrames`), `autopilot=1` (replay `?script=` or nothing).
  * Keys: A/D or arrows change lane, Space/W jump, S/down slide, Shift toggles surge, E flies (hold
- * W/S/A/D to steer), P/Esc pauses, M mutes, R/Enter restarts from the results screen.
+ * W/S/A/D to steer), P/Esc pauses, M mutes, R/Enter restarts from the results screen. Touch: swipe for lanes, tap to
+ * jump, swipe down to slide; while flying, hold the left or right half to steer and drag up or down to climb or dive.
+ * `env=<n>` overrides the neutral-environment intensity (calibration captures only, see world.ts).
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { createRenderInterpolator } from "@aura3d/engine/game";
 import {
-  RUNGS, START_DAYS, STEP, ROAD_LENGTH, KM_TOTAL, createRun, expandScript, snapshot, stepRun, type InputSegment, type RunInput, type RunState
+  RUNGS, STEP, ROAD_LENGTH, KM_TOTAL, createRun, expandScript, qaSnapshot, stepRun, type InputSegment, type RunInput, type RunState
 } from "./sim";
+import { DROWSE_ALERT, daysStatusLabel, drowseCue, finalScore, gapAhead, gustCue, onboardingPrompt } from "./hud";
+import { createRunInput } from "./input";
+import { createRenderGuard } from "./renderGuard";
 import { blendSamples, sampleOf, type PresentSample } from "./presentation";
 import { createSfx } from "./sfx";
 import { RUNNER_STYLES, hexCss } from "./styles";
 import { buildWorld, loadRunner, type WorldRuntime } from "./world";
 
-declare global {
-  interface Window {
-    __AURA_SERPENTINE_SKY_RUN__?: unknown;
-    __AURA_SERPENTINE_SKY_RUN_ERROR__?: string;
-  }
-}
+/** QA hook name: `window.__AURA_SERPENTINE_SKY_RUN__` (and `__AURA_SERPENTINE_SKY_RUN_ERROR__` for the first error). */
+export const QA_HOOK_NAME = "serpentine-sky-run";
 
 const params = new URLSearchParams(location.search);
 const config = { autostart: params.get("autostart") === "1", manual: params.get("manual") === "1" };
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
-  if (!el) throw new Error(`saiyan-snake-way-port: #${id} is missing`);
+  if (!el) throw new Error(`serpentine-sky-run: #${id} is missing`);
   return el as T;
 };
 const canvas = $<HTMLCanvasElement>("world");
@@ -46,7 +48,7 @@ let renderTime = 0;
 const interpolator = createRenderInterpolator<PresentSample>(blendSamples);
 let last = 0;
 let steps = 0;
-let renderFailed = false;
+const guard = createRenderGuard();
 let outroT = 0;
 let counting = 0;
 let resultsShown = false;
@@ -55,6 +57,9 @@ let runnerIndex = 0;
 /* ------------------------------------------------------------------ best score */
 
 const BEST_KEY = "serpentine-sky-run.best";
+const BEST_S_KEY = "serpentine-sky-run.best-distance";
+const MUTE_KEY = "serpentine-sky-run.muted";
+const SEEN_KEY = "serpentine-sky-run.onboarding";
 function loadBest(): number {
   try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch { return 0; }
 }
@@ -62,6 +67,13 @@ function saveBest(value: number): void {
   try { localStorage.setItem(BEST_KEY, String(Math.round(value))); } catch { /* storage unavailable */ }
 }
 let best = loadBest();
+const loadNumber = (key: string): number => { try { return Number(localStorage.getItem(key)) || 0; } catch { return 0; } };
+const saveValue = (key: string, value: string): void => { try { localStorage.setItem(key, value); } catch { /* storage unavailable */ } };
+/** Furthest road distance `s` any run reached (the marker on the progress bar). */
+let bestS = loadNumber(BEST_S_KEY);
+const seenPrompts = new Set<string>((() => { try { return (localStorage.getItem(SEEN_KEY) ?? "").split(",").filter(Boolean); } catch { return []; } })());
+const touchDevice = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+const reducedMotion = typeof matchMedia === "function" ? matchMedia("(prefers-reduced-motion: reduce)") : null;
 
 /* ------------------------------------------------------------------ runner select */
 
@@ -106,49 +118,62 @@ function buildRunnerCards(): void {
 
 /* ------------------------------------------------------------------ input */
 
-const tapKeys = new Set<string>();
-const heldKeys = new Set<string>();
+const input = createRunInput({ flying: () => state.puff > 0, blocked: () => counting > 0 });
 const GAME_KEYS = new Set(["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space", "KeyA", "KeyD", "KeyW", "KeyS", "ShiftLeft", "ShiftRight", "KeyE", "KeyP", "Escape", "KeyM", "KeyR", "Enter"]);
 addEventListener("keydown", (e) => {
   if (!GAME_KEYS.has(e.code)) return;
   e.preventDefault();
   sfx.unlock();
-  if (e.code === "KeyM") { sfx.toggleMute(); return; }
+  if (e.code === "KeyM") { toggleMute(); return; }
   if (e.code === "Escape" || e.code === "KeyP") { if (started && !resultsShown && counting <= 0) paused = !paused; return; }
   if (!started && (e.code === "ArrowLeft" || e.code === "KeyA")) { selectRunner(runnerIndex - 1); return; }
   if (!started && (e.code === "ArrowRight" || e.code === "KeyD")) { selectRunner(runnerIndex + 1); return; }
   if (!started && (e.code === "Space" || e.code === "Enter")) { startRun(true); return; }
   if (resultsShown) { if (e.code === "KeyR" || e.code === "Enter" || e.code === "Space") startRun(true); return; }
-  if (!heldKeys.has(e.code)) tapKeys.add(e.code);
-  heldKeys.add(e.code);
+  // game keys pressed during the countdown are dropped, so they cannot fire on the first frame after GO (C10)
+  input.keyDown(e.code);
 });
-addEventListener("keyup", (e) => { heldKeys.delete(e.code); });
-document.addEventListener("visibilitychange", () => { if (document.hidden && started && !resultsShown && counting <= 0) paused = true; });
+addEventListener("keyup", (e) => { input.keyUp(e.code); });
+// a key released while the page had no focus never sends keyup: drop every held key on blur and when the tab hides (C10)
+addEventListener("blur", () => input.clear());
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) return;
+  input.clear();
+  if (started && !resultsShown && counting <= 0) paused = true;
+});
 
-/* touch: swipe left/right for lanes, up or tap to jump, down to slide; buttons for surge, flight and slide */
-let swipe: { x: number; y: number } | null = null;
+/* touch: swipe left/right for lanes, up or tap to jump, down to slide; while flying, a held touch steers (C6) */
 canvas.addEventListener("pointerdown", (e) => {
   sfx.unlock();
-  if (e.pointerType !== "mouse") swipe = { x: e.clientX, y: e.clientY };
+  if (e.pointerType === "mouse") return;
+  input.pointerDown(e.pointerId, e.clientX, e.clientY, canvas.clientWidth);
 });
+canvas.addEventListener("pointermove", (e) => { if (e.pointerType !== "mouse") input.pointerMove(e.pointerId, e.clientX, e.clientY, canvas.clientWidth); });
+canvas.addEventListener("pointercancel", (e) => input.pointerCancel(e.pointerId));
 canvas.addEventListener("pointerup", (e) => {
-  if (!swipe) return;
-  const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y;
-  swipe = null;
-  if (!started || counting > 0) return;
-  if (resultsShown) { startRun(true); return; }
-  if (Math.abs(dx) > 28 && Math.abs(dx) > Math.abs(dy)) tapKeys.add(dx < 0 ? "KeyA" : "KeyD");
-  else if (dy > 28) tapKeys.add("KeyS");
-  else tapKeys.add("Space");
+  if (e.pointerType === "mouse") return;
+  if (!started || counting > 0) { input.pointerCancel(e.pointerId); return; }
+  if (resultsShown) { input.pointerCancel(e.pointerId); startRun(true); return; }
+  input.pointerUp(e.pointerId, e.clientX, e.clientY);
 });
 for (const [id, key] of [["t-surge", "ShiftLeft"], ["t-fly", "KeyE"], ["t-slide", "KeyS"]] as const) {
-  $(id).addEventListener("pointerdown", (e) => { e.preventDefault(); sfx.unlock(); if (started && !resultsShown && counting <= 0) tapKeys.add(key); });
+  $(id).addEventListener("pointerdown", (e) => { e.preventDefault(); sfx.unlock(); if (started && !resultsShown && counting <= 0) input.tap(key); });
 }
 
 function takeInput(): RunInput {
-  const input: RunInput = { taps: [...tapKeys], held: [...heldKeys] };
-  tapKeys.clear();
-  return input;
+  return input.take();
+}
+
+/* ------------------------------------------------------------------ mute */
+
+let muted = false;
+function toggleMute(): void {
+  muted = sfx.toggleMute();
+  saveValue(MUTE_KEY, muted ? "1" : "0");
+  const btn = $("mute-btn");
+  btn.setAttribute("aria-pressed", String(muted));
+  btn.setAttribute("aria-label", muted ? "Unmute sound" : "Mute sound");
+  btn.textContent = muted ? "SOUND OFF" : "SOUND ON";
 }
 
 /* ------------------------------------------------------------------ HUD */
@@ -178,7 +203,9 @@ function phaseLabel(): string {
 
 function showResults(): void {
   resultsShown = true;
-  const score = state.score;
+  const final = finalScore(state);
+  const score = final.total;
+  if (state.s > bestS) { bestS = state.s; saveValue(BEST_S_KEY, String(Math.round(bestS))); }
   const isBest = score > best;
   if (isBest) { best = score; saveBest(best); }
   const reached = state.phase === "leap";
@@ -188,6 +215,9 @@ function showResults(): void {
     : (state.phase === "fall" ? state.fallWhy || "OFF THE ROAD" : state.ended || "TOO LATE") + (isBest ? "  ·  new best score" : ""));
   setText("r-km", fmt(distanceKm()));
   setText("r-score", fmt(score));
+  setText("r-days", fmt(final.daysLeft));
+  setText("r-bonus", final.daysBonus > 0 ? `+${fmt(final.daysBonus)}` : "0");
+  setText("r-bonus-note", reached ? `${fmt(final.daysLeft)} days left pay ${fmt(final.daysBonus)} points` : "Days left only pay out at the tail");
   setText("r-best", fmt(best));
   setText("best-title", fmt(best));
   if (reached) sfx.fanfare();
@@ -200,6 +230,7 @@ function updateHud(): void {
   setText("ki-num", String(Math.round(Math.max(0, Math.min(1, state.ki / state.kiMax)) * 100)));
   setText("strain-num", String(Math.round(state.strain * 100)));
   setText("days", fmt(state.days));
+  $("days-card").setAttribute("aria-label", daysStatusLabel(state.days, started && !resultsShown && state.phase === "run"));
   setText("score", fmt(state.score));
   setText("mult", `×${rung.mult}`);
   $("surge-chip").classList.toggle("hot", state.auraRung > 0);
@@ -207,7 +238,23 @@ function updateHud(): void {
   ($("strain-bar") as HTMLElement).style.width = `${Math.round(state.strain * 100)}%`;
   setText("banner", state.bannerT > 0 ? state.banner : "");
   setText("sub", state.bannerT > 0 ? state.bannerSub : "");
-  setText("toast", state.toastT > 0 ? state.toast : "");
+  const drowse = drowseCue(state);
+  const gust = gustCue(state);
+  const gap = started && counting <= 0 ? gapAhead(state) : null;
+  const prompt = started && counting <= 0 && !resultsShown ? onboardingPrompt(state, seenPrompts, gap, touchDevice) : null;
+  if (prompt && !activePrompt) { activePrompt = prompt.id; promptText = prompt.text; promptT = 2.4; }
+  setText("toast", state.toastT > 0 ? state.toast : drowse.warn ? DROWSE_ALERT : "");
+  ($("drowsefx") as HTMLElement).style.opacity = started ? String(drowse.fade) : "0";
+  ($("drowse-bar") as HTMLElement).style.width = `${Math.round(drowse.meter * 100)}%`;
+  setHidden("drowse-row", !(started && drowse.meter > 0));
+  setHidden("gust", !gust);
+  if (gust) setText("gust", gust.dir < 0 ? "\u2190 GUST" : "GUST \u2192");
+  setHidden("gap-warn", gap === null);
+  setText("prompt", activePrompt ? promptText : "");
+  setText("charges", `${state.vitalseed > 0 ? `VITAL SEED \u00d7${state.vitalseed}` : ""}${state.vitalseed > 0 && state.poleCharges > 0 ? " \u00b7 " : ""}${state.poleCharges > 0 ? `STAFF \u00d7${state.poleCharges}` : ""}`);
+  const bestMark = $("best-mark");
+  bestMark.style.left = `${Math.round(Math.max(0, Math.min(1, bestS / ROAD_LENGTH)) * 1000) / 10}%`;
+  bestMark.classList.toggle("hidden", bestS <= 0);
   setText("phase", phaseLabel());
   setHidden("title", started);
   setHidden("hud", !started || resultsShown);
@@ -215,7 +262,7 @@ function updateHud(): void {
   setHidden("results", !resultsShown);
   setHidden("count", counting <= 0);
   if (counting > 0) setText("count", counting > 2.6 ? "3" : counting > 1.6 ? "2" : counting > 0.6 ? "1" : "GO");
-  const fast = Math.max(0, Math.min(0.85, (state.speed - 44) / 70 + (state.auraRung > 0 ? 0.25 : 0)));
+  const fast = Math.max(0, Math.min(reducedMotion?.matches ? 0.25 : 0.85, (state.speed - 44) / 70 + (state.auraRung > 0 ? 0.25 : 0)));
   $("speedfx").style.opacity = started && state.phase === "run" ? String(fast.toFixed(2)) : "0";
   $("fallfx").style.opacity = state.phase === "fall" ? String(Math.min(1, outroT / 1.2).toFixed(2)) : "0";
 }
@@ -237,16 +284,33 @@ function cues(): void {
 
 /* ------------------------------------------------------------------ loop */
 
+let activePrompt: string | null = null;
+let promptT = 0;
+let promptText = "";
+
+/** Ages the onboarding prompt; a prompt counts as seen once it has shown for its full time. */
+function agePrompt(dt: number): void {
+  if (!activePrompt || promptT <= 0) return;
+  promptT -= dt;
+  if (promptT <= 0) {
+    seenPrompts.add(activePrompt);
+    saveValue(SEEN_KEY, [...seenPrompts].join(","));
+    activePrompt = null;
+  }
+}
+
 /** `blend` draws between the last two simulation steps (live play); captures and manual stepping draw the exact state. */
 function render(dt: number, blend = false): void {
-  if (!app || !runtime || renderFailed) return;
+  if (!app || !runtime || guard.failed) return;
   try {
     const alpha = blend ? Math.min(1, loop.accumulator / STEP) : 1;
     runtime.update(state, dt, renderTime + (alpha < 1 ? loop.accumulator : 0), canvas.clientWidth / Math.max(1, canvas.clientHeight), outroT, alpha < 1 ? interpolator.sample(alpha) : undefined);
     app.step(0);
+    guard.ok();
   } catch (error) {
-    renderFailed = true;
-    reportError(error);
+    // C1: one bad frame is skipped and logged; the session ends only after RENDER_FAIL_LIMIT failures in a row
+    if (guard.fail(error) === "fatal") reportError(error);
+    else if (guard.total === 1 || guard.consecutive === 1) console.warn("serpentine-sky-run: frame skipped after a render error", error);
   }
 }
 
@@ -283,6 +347,7 @@ function tick(now: number): void {
   if (started && !paused && counting <= 0 && state.phase !== "run" && !config.manual) outroT += dt;
   if (started && !resultsShown && state.phase !== "run" && outroT > (RESULT_DELAY[state.phase] ?? 1.5)) showResults();
   cues();
+  if (stepping()) agePrompt(dt);
   render(dt, stepping());
   updateHud();
 }
@@ -304,7 +369,7 @@ function begin(): void {
 /** UI start: a three-second countdown before the road moves. */
 function startRun(withCountdown: boolean): void {
   begin();
-  tapKeys.clear();
+  input.clear();
   if (withCountdown) counting = 3.6;
 }
 
@@ -313,7 +378,7 @@ function reportError(error: unknown): void {
   const code = (error as { code?: unknown })?.code;
   const details = (error as { details?: unknown })?.details;
   const message = `${base}${typeof code === "string" ? ` [${code}]` : ""}${details ? ` ${JSON.stringify(details).slice(0, 6000)}` : ""}`;
-  if (!window.__AURA_SERPENTINE_SKY_RUN_ERROR__) window.__AURA_SERPENTINE_SKY_RUN_ERROR__ = message;
+  qa.reportError(message);
   $("loading-status").textContent = `The road could not load: ${message.slice(0, 300)}`;
   $("loading").classList.remove("hidden");
   console.error(error);
@@ -321,21 +386,21 @@ function reportError(error: unknown): void {
 
 /* ------------------------------------------------------------------ capture hooks */
 
-installQaHooks("saiyan-snake-way", {
+const qa = installQaHooks(QA_HOOK_NAME, {
   ready: () => ready,
-  state: () => snapshot(state, steps),
+  state: () => qaSnapshot(state, steps),
   app: () => app,
   routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SH-02", "SG-05", "SG-06", "SG-07", "SC-01", "SR-02"] }) : null),
   nodeCount: () => runtime?.nodeCount ?? 0,
   extras: {
     get ready() { return ready; },
     raw: () => JSON.parse(JSON.stringify(state)) as RunState,
-    reset: () => { begin(); render(0); return snapshot(state, steps); },
+    reset: () => { begin(); render(0); return qaSnapshot(state, steps); },
     /** Steps the simulation `n` fixed steps with `input` (idle by default) and renders once. */
     stepFrames: (n: number, input: RunInput = {}) => {
       for (let i = 0; i < n && state.phase === "run" && !state.atEnd; i++) advance(input);
       render(0);
-      return snapshot(state, steps);
+      return qaSnapshot(state, steps);
     },
     /** Replays recorded run-length segments from a fresh run and returns the final snapshot and steps taken. */
     runSegments: (segments: readonly InputSegment[], maxSteps: number = Number.POSITIVE_INFINITY) => {
@@ -346,14 +411,19 @@ installQaHooks("saiyan-snake-way", {
         if (state.phase !== "run" || state.atEnd) break;
       }
       render(0);
-      return { steps, final: snapshot(state, steps) };
+      return { steps, final: qaSnapshot(state, steps) };
     },
-    start: () => { begin(); render(0); return snapshot(state, steps); },
+    start: () => { begin(); render(0); return qaSnapshot(state, steps); },
     /** Presentation-only: edits the live state (speed, aura, ...) so a capture can show a given look without a replay. */
-    setState: (patch: Partial<RunState>) => { Object.assign(state, patch); render(0); return snapshot(state, steps); },
+    setState: (patch: Partial<RunState>) => { Object.assign(state, patch); render(0); return qaSnapshot(state, steps); },
     /** Presentation-only: renders `seconds` of the post-run phase (fall / leap / over) after `setState` put the run there. */
-    outro: (seconds: number) => { outroT = seconds; render(0); return snapshot(state, steps); },
-    meta: () => ({ steps, renderTime, entityNodes: runtime?.entityNodes ?? 0, nodeCount: runtime?.nodeCount ?? 0 }),
+    outro: (seconds: number) => { outroT = seconds; render(0); return qaSnapshot(state, steps); },
+    meta: () => ({
+      steps, renderTime, entityNodes: runtime?.entityNodes ?? 0, nodeCount: runtime?.nodeCount ?? 0, visibilityWrites: runtime?.visibilityWrites ?? 0,
+      renderErrors: guard.total, renderFailed: guard.failed, lastRenderError: guard.lastError
+    }),
+    /** Test seam for the touch and keyboard input (C6, C10). */
+    input: () => ({ held: [...input.held], taps: [...input.taps] }),
     capture: async () => {
       if (!app?.capture) throw new Error("not ready");
       const blob = (await app.capture({ type: "png-blob" })) as Blob;
@@ -387,6 +457,8 @@ async function boot(): Promise<void> {
   });
   await app.ready();
   runtime = world.bind(app);
+  runtime.setReducedMotion(Boolean(reducedMotion?.matches));
+  reducedMotion?.addEventListener?.("change", (e) => runtime?.setReducedMotion(e.matches));
   selectRunner(runnerIndex, false);
   ready = true;
   $("loading").classList.add("hidden");
@@ -397,6 +469,9 @@ async function boot(): Promise<void> {
 }
 
 buildRunnerCards();
+canvas.addEventListener("webglcontextlost", () => { guard.contextLost(); reportError(new Error("WebGL context lost")); });
+$("mute-btn").addEventListener("click", () => { sfx.unlock(); toggleMute(); });
+if (loadNumber(MUTE_KEY) === 1) toggleMute();
 $("pause-btn").addEventListener("click", () => { if (started && !resultsShown && counting <= 0) paused = !paused; });
 $("start").addEventListener("click", () => { sfx.unlock(); startRun(true); });
 $("again").addEventListener("click", () => startRun(true));
@@ -404,5 +479,4 @@ $("resume").addEventListener("click", () => { paused = false; });
 $("restart").addEventListener("click", () => startRun(true));
 addEventListener("resize", sizeCanvas);
 requestAnimationFrame(tick);
-void START_DAYS;
 boot().catch(reportError);
