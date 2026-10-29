@@ -5,6 +5,8 @@
 # - the root Vite config and the two files it imports, since the app's Vite config extends it;
 # - the shared fonts and HDRIs the build copies into dist/;
 # - the app itself, without its tests and this folder.
+# The Vercel CLI tests each directory by its path without a trailing slash, so no rule here ends in "/": a rule
+# such as "!/packages/" would never match the directory and its files would stay out.
 /*
 !/package.json
 !/pnpm-lock.yaml
@@ -13,25 +15,25 @@
 !/vite.config.ts
 !/vite.aliases.generated.ts
 !/vercel.json
-!/patches/
-!/packages/
-!/workers/
-!/tools/
+!/patches
+!/packages
+!/workers
+!/tools
 /tools/*
-!/tools/naming-taxonomy/
-!/tests/
+!/tools/naming-taxonomy
+!/tests
 /tests/*
-!/tests/browser/
+!/tests/browser
 /tests/browser/*
 !/tests/browser/installed-package-resolve.ts
-!/public/
+!/public
 /public/*
-!/public/fonts/
-!/public/hdri/
-!/apps/
+!/public/fonts
+!/public/hdri
+!/apps
 /apps/*
-!/apps/veer-wonder-world/
-/apps/veer-wonder-world/tests/
-/apps/veer-wonder-world/deploy/
-node_modules/
-dist/
+!/apps/veer-wonder-world
+/apps/veer-wonder-world/tests
+/apps/veer-wonder-world/deploy
+/apps/veer-wonder-world/dist
+node_modules
