@@ -20,9 +20,10 @@ step "content validation (all 32 stories)" node tools/validate-wonder-world-cont
 # files are not yet committed (git diff ignores untracked files). A stale module is left regenerated, as with git diff.
 step "generated files are current" bash -c '
   tmp="$(mktemp -d)"; trap "rm -rf \"$tmp\"" EXIT
-  cp src/aura-assets.ts src/audio-manifest.ts "$tmp/" &&
-  node tools/gen-aura-assets.mjs >/dev/null && node tools/gen-audio-manifest.mjs >/dev/null &&
-  diff -u "$tmp/aura-assets.ts" src/aura-assets.ts && diff -u "$tmp/audio-manifest.ts" src/audio-manifest.ts'
+  cp src/aura-assets.ts src/audio-manifest.ts src/assets/rights-manifest.ts "$tmp/" &&
+  node tools/gen-aura-assets.mjs >/dev/null && node tools/gen-audio-manifest.mjs >/dev/null && node tools/gen-rights-manifest.mjs >/dev/null &&
+  diff -u "$tmp/aura-assets.ts" src/aura-assets.ts && diff -u "$tmp/audio-manifest.ts" src/audio-manifest.ts &&
+  diff -u "$tmp/rights-manifest.ts" src/assets/rights-manifest.ts'
 step "repo game checks" node tools/game-checks.mjs
 echo
 if [ "$fail" -eq 0 ]; then echo "ALL CHECKS PASSED"; else echo "SOME CHECKS FAILED"; fi
