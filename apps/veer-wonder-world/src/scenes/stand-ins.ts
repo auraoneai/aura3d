@@ -368,10 +368,10 @@ export const STAND_INS: Readonly<Record<StageAssetKey, StandInRecipe>> = {
   banana: r(piece("capsule", "#F7D64A", [0.32, 1, 0.32], [0, 0.5, 0], { rotation: [0, 0, 0.35] }), [
     piece("cylinder", "#7A5233", [0.08, 0.12, 0.08], [0.2, 0.98, 0], { rotation: [0, 0, 0.35] })
   ]),
+  // The candle reaches the top (rest height 1); its flame is the separate candleFlame prop (E16 blows it out).
   cake: r(piece("cylinder", "#F7A8C4", [1.3, 0.6, 1.3], [0, 0.3, 0]), [
     piece("cylinder", "#FFF1E0", [1.36, 0.12, 1.36], [0, 0.62, 0]),
-    piece("cylinder", "#7FB8E8", [0.08, 0.3, 0.08], [0, 0.83, 0]),
-    piece("sphere", "#FFC34D", [0.08, 0.13, 0.08], [0, 1.02, 0], { emissive: { color: "#FFB23A", intensity: 0.35 } })
+    piece("cylinder", "#7FB8E8", [0.08, 0.32, 0.08], [0, 0.84, 0])
   ]),
   drum: r(piece("cylinder", "#E4574B", [1.1, 1, 1.1], [0, 0.5, 0]), [
     piece("cylinder", "#FFF8EE", [1.06, 0.04, 1.06], [0, 1.0, 0]),
