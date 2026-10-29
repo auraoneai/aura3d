@@ -29,3 +29,6 @@ tests/reports/
 /.orchestrate/
 # evidence/ holds test and audit artifacts the site build never reads; keeps the deploy under the 15,000-file limit
 /evidence/
+# Wonder World is not part of the site and deploys on its own (apps/veer-wonder-world/DEPLOYMENT.md); its ~1,200
+# media and provenance files would also push this upload past the 15,000-file limit
+/apps/veer-wonder-world/
