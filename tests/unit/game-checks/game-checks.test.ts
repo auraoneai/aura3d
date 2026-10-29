@@ -353,6 +353,17 @@ describe("game-checks", () => {
     expect(run(ok, ["brand-identifiers"])).toEqual([]);
   });
 
+  it("upgrade-guide: warns with the count of unchecked items in the latest minor's guide (RH-04)", () => {
+    const root = fixture({ "apps/showcase-demo/index.html": "<p>x</p>", "docs/upgrade-9.1.0/demo-port.md": "# x\n- [ ] capture A\n- [x] capture B\n  - [ ] nested C\n" });
+    execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "x"], { cwd: root });
+    execFileSync("git", ["tag", "v9.1.0"], { cwd: root });
+    resetGitCache();
+    const f = run(root, ["upgrade-guide"]);
+    expect(f.map((x: { message: string }) => x.message.split(" ")[0])).toEqual(["2"]);
+    writeFileSync(join(root, "docs/upgrade-9.1.0/demo-port.md"), "# x\n- [x] capture A\n");
+    expect(run(root, ["upgrade-guide"])).toEqual([]);
+  });
+
   it("rejects an unknown game slug", () => {
     const root = fixture({ "apps/showcase-demo/index.html": "<p>x</p>" });
     expect(() => runChecks({ root, slugs: ["nope"], global: false, env: {} })).toThrow(/unknown game/);

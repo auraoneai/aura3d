@@ -695,6 +695,22 @@ function checkBrandIdentifiers({ game, src, terms }) {
   return dedupe(out);
 }
 
+/**
+ * Open upgrade checks (audit RH-04): 4.5.0 shipped with every per-game guide in docs/upgrade-4.5.0/ still listing unchecked
+ * `- [ ]` captures. Warns with the count for the guide of the latest minor release tag. Close a box only with the capture
+ * or test that answers it.
+ */
+function checkUpgradeGuide({ game, root }) {
+  const release = latestMinorRelease(root);
+  if (!release) return [];
+  const version = release.tag.replace(/^v/, "");
+  const rel = `docs/upgrade-${version}/${game.slug}.md`;
+  const file = join(root, rel);
+  if (!existsSync(file)) return [];
+  const open = readFileSync(file, "utf8").split("\n").filter((l) => /^[ \t]*[-*] \[ \]/.test(l)).length;
+  return open ? [finding("upgrade-guide", "warn", game, rel, 0, `${open} unchecked item(s) in the ${version} upgrade guide: run the listed captures (tests/browser/game-luma-capture.spec.ts) and tick each box with its evidence`)] : [];
+}
+
 function dedupe(list) {
   const seen = new Set();
   return list.filter((f) => { const k = `${f.check}|${f.game}|${f.file}|${f.line}|${f.message}`; if (seen.has(k)) return false; seen.add(k); return true; });
@@ -720,7 +736,8 @@ export const GAME_CHECKS = {
   lighting: checkLighting,
   "shared-catalog": checkSharedCatalog,
   "screens-fresh": checkScreensFresh,
-  "brand-identifiers": checkBrandIdentifiers
+  "brand-identifiers": checkBrandIdentifiers,
+  "upgrade-guide": checkUpgradeGuide
 };
 export const GLOBAL_CHECKS = { vercelignore: checkVercelignore, counts: checkCounts, "meshy-cap": checkMeshyCap, skin: checkSkin };
 
