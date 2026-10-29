@@ -97,8 +97,12 @@ async function probe(page: Page) {
     try {
       const d = hook.app.diagnostics();
       const lights = d?.lights ?? d?.lighting ?? null;
+      const warnings = JSON.stringify(d?.warnings ?? d?.runtimeWarnings ?? []);
       diag = {
-        renderPath: d?.renderPath?.path ?? d?.renderPath ?? null,
+        renderPath: d?.renderPath ? JSON.stringify(d.renderPath).slice(0, 600) : null,
+        optionIgnored: (warnings.match(/OPTION_IGNORED/g) ?? []).length,
+        warnings: warnings.slice(0, 600),
+        heal: JSON.stringify((window as unknown as Record<string, any>).__AURA3D_HEAL__ ?? null).slice(0, 200),
         drawCalls: d?.drawCalls ?? null,
         passes: d?.passes ?? d?.renderPasses ?? d?.post?.passes ?? null,
         lights: lights ? JSON.stringify(lights).slice(0, 1500) : null,
@@ -271,6 +275,21 @@ test.describe("audit-fix roadster-rush", () => {
       }
       await ctx.close();
     }
+  });
+
+  test("roadster-rush time of day", async ({ browser }) => {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+    const page = await ctx.newPage();
+    if (await boot(page, "?seed=42&capture=1")) {
+      await takeManual(page);
+      await run(page, 120);
+      for (const [name, tod] of [["sunset", "0"], ["dusk", "0.5"], ["night", "1"]] as const) {
+        await page.evaluate((t) => (document.querySelector(`[data-aura-tod="${t}"]`) as HTMLElement | null)?.click(), tod);
+        await run(page, 2);
+        await shootState(page, "tod-1280x720", name);
+      }
+    }
+    await ctx.close();
   });
 
   test("roadster-rush card", async ({ browser }) => {
