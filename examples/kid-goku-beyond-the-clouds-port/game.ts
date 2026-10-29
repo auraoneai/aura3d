@@ -54,6 +54,8 @@ export class Game {
   chase = false;
   /** Reduced motion (prefers-reduced-motion or the title toggle): presentation drops shake, softens flashes and skips the hit blink. */
   reducedMotion = false;
+  /** A pause asked for during a fall, applied when the fall ends (see `pause()`). */
+  pauseQueued = false;
   timeScale = 1;
   hold = 0;
   clock = 0;
@@ -105,7 +107,7 @@ export class Game {
     this.enc = this.attach();
     this.phase = "menu";
     this.falling = null; this.finale = null; this.result = null; this.prompt = null; this.magnet.clear();
-    this.timeScale = 1; this.hold = 0; this.impact = 0; this.flash = null;
+    this.timeScale = 1; this.hold = 0; this.impact = 0; this.flash = null; this.pauseQueued = false;
   }
 
   /** Begin a fresh run from `start`, or from a checkpoint keeping the collected balls. */
@@ -118,10 +120,18 @@ export class Game {
     this.enc.rewind(start);
     this.phase = "playing";
     this.falling = null; this.finale = null; this.result = null; this.prompt = null; this.hint = null; this.hintId = ""; this.taught.clear(); this.magnet.clear();
-    this.timeScale = 1; this.hold = 0; this.impact = 0; this.flash = null; this.strikeHint = false;
+    this.timeScale = 1; this.hold = 0; this.impact = 0; this.flash = null; this.strikeHint = false; this.pauseQueued = false;
   }
-  pause(): void { if (this.phase === "playing") this.phase = "paused"; }
-  resume(): void { if (this.phase === "paused") this.phase = "playing"; }
+  /**
+   * Pause the run. During a fall the pause is queued and lands when the run is back on the track (the fall camera and the
+   * respawn belong to the falling phase). The finale is a short cutscene that ends on the result card, which waits for input,
+   * so it is not paused.
+   */
+  pause(): void {
+    if (this.phase === "playing") this.phase = "paused";
+    else if (this.phase === "falling") this.pauseQueued = true;
+  }
+  resume(): void { this.pauseQueued = false; if (this.phase === "paused") this.phase = "playing"; }
   /** From the result card: after a win a fresh run from the start; after a game over the last checkpoint with the pearls found so far. */
   retry(): void {
     const s = this.state;
@@ -180,6 +190,8 @@ export class Game {
     else if (this.phase === "falling") this.fallingFrame(dt, input, out);
     else if (this.phase === "finale") this.finaleFrame(dt, out);
     else if (this.phase === "menu") this.state.time += dt;
+    // A pause asked for during a fall (window blur, hidden tab, P) lands as soon as the run is back on the track.
+    if (this.pauseQueued && this.phase !== "falling") { if (this.phase === "playing") this.phase = "paused"; this.pauseQueued = false; }
     return out;
   }
 

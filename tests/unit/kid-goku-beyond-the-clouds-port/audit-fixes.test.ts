@@ -210,3 +210,40 @@ describe("CR-E9: easy mode, checkpoint markers and records", () => {
     expect(m.vertexCount % markers).toBe(0);
   });
 });
+
+describe("Tests gap: pause asked for during a fall or the finale", () => {
+  it("a pause during a fall lands when the run is back on the track, and the run then stays still", () => {
+    const g = placed(120);
+    g.state.checkpoint = 0;
+    for (let i = 0; i < 400 && g.phase !== "falling"; i++) g.frame(DT, IDLE);
+    expect(g.phase).toBe("falling");
+    g.pause();
+    expect(g.phase).toBe("falling");
+    for (let i = 0; i < 400 && g.phase === "falling"; i++) g.frame(DT, IDLE);
+    expect(g.phase).toBe("paused");
+    const s = g.state.s;
+    frames(g, 60);
+    expect(g.state.s).toBe(s);
+    g.resume();
+    frames(g, 30);
+    expect(g.state.s).toBeGreaterThan(s);
+  });
+  it("a fresh run clears a queued pause", () => {
+    const g = placed(120);
+    for (let i = 0; i < 400 && g.phase !== "falling"; i++) g.frame(DT, IDLE);
+    g.pause();
+    g.start(0);
+    frames(g, 30);
+    expect(g.phase).toBe("playing");
+  });
+  it("the finale cutscene is not paused and still ends on the result card", () => {
+    const g = placed(1950);
+    for (let i = 0; i < 60 * 30 && g.phase !== "finale"; i++) g.frame(DT, IDLE);
+    expect(g.phase).toBe("finale");
+    g.pause();
+    expect(g.phase).toBe("finale");
+    runToResult(g);
+    expect(g.phase).toBe("result");
+    expect(g.result?.won).toBe(true);
+  });
+});
