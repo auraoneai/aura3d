@@ -13,7 +13,11 @@ mkdirSync(workArg, { recursive: true });
 const work = realpathSync(workArg);
 
 // Versions are pinned here and overridable for re-runs (the 4.1.2 results in RESULTS.md were taken with BENCH_AURA_VERSION=4.1.2).
-const AURA_VERSION = process.env.BENCH_AURA_VERSION ?? "4.3.7";
+// Marker file (harness/run-candidate.sh): { "candidate": true } builds the workspace sources; { "candidate": true, "published": "<version>" } measures the
+// two Aura3D arms (aura-auto, aura-production) against the registry install of that version. The runner does not forward env vars, so the version rides in the marker.
+const MARKER = existsSync(join(benchRoot, "candidate.json")) ? JSON.parse(readFileSync(join(benchRoot, "candidate.json"), "utf8")) : null;
+const PUBLISHED = typeof MARKER?.published === "string" ? MARKER.published : null;
+const AURA_VERSION = PUBLISHED ?? process.env.BENCH_AURA_VERSION ?? "4.3.7";
 const THREE_VERSION = process.env.BENCH_THREE_VERSION ?? "0.185.1";
 const VITE_VERSION = "7.3.2";
 const ALL_SCENES = ["baseline", "pbr-viewer", "forest", "skinned-character", "game-loop", "shader-water"];
@@ -21,9 +25,9 @@ const SCENES = sceneArg ? sceneArg.split(",") : ALL_SCENES;
 // Candidate mode (harness/run-candidate.sh writes tools/bench-vs-threejs/candidate.json): the Aura3D arms are built from the workspace
 // sources (shared/aura-vite-workspace.ts + the repo's generated alias table) instead of an npm install. `aura-auto` is the scene source as
 // written; `aura-production` is the same source with `quality: "production"` injected at build time.
-const CANDIDATE = existsSync(join(benchRoot, "candidate.json"));
+const CANDIDATE = MARKER !== null && PUBLISHED === null;
 const REPO_ROOT = join(benchRoot, "..", "..");
-const AURA_LIBS = CANDIDATE ? ["aura-auto", "aura-production"] : ["aura"];
+const AURA_LIBS = MARKER !== null ? ["aura-auto", "aura-production"] : ["aura"];
 const LIBS = libArg ? libArg.split(",") : ["three", ...AURA_LIBS];
 const isAuraLib = (lib) => lib === "aura" || lib.startsWith("aura-");
 const ASSETS = {
@@ -66,8 +70,8 @@ for (const scene of SCENES) {
   for (const lib of LIBS) {
     const dir = join(work, "apps", scene, lib);
     cpSync(join(benchRoot, scene, isAuraLib(lib) ? "aura" : lib), dir, { recursive: true });
-    if (CANDIDATE && isAuraLib(lib)) {
-      writeFileSync(join(dir, "vite.config.ts"), 'export { default } from "../../shared/aura-vite-workspace";\n');
+    if (CANDIDATE && isAuraLib(lib)) writeFileSync(join(dir, "vite.config.ts"), 'export { default } from "../../shared/aura-vite-workspace";\n');
+    if (MARKER !== null && isAuraLib(lib)) {
       if (lib === "aura-production") {
         const file = join(dir, "scene.ts");
         const source = readFileSync(file, "utf8");

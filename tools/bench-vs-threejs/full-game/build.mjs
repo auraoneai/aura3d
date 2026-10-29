@@ -10,7 +10,6 @@ import { brotliCompressSync, constants, gzipSync } from "node:zlib";
 
 const [root, work] = process.argv.slice(2);
 if (!root || !work) throw new Error("usage: build.mjs <fullGameRoot> <workDir>");
-const AURA = process.env.FULLGAME_AURA_VERSION ?? "4.3.7";
 const THREE = "0.185.1";
 const VITE = "7.3.2";
 const run = (cmd, args, cwd) => {
@@ -22,7 +21,11 @@ const sha256 = (file) => createHash("sha256").update(readFileSync(file)).digest(
 const benchRoot = dirname(root);
 // Candidate mode (harness/run-candidate.sh stages tools/bench-vs-threejs/candidate.json): the Aura3D app is built from the workspace sources
 // (shared/aura-vite-workspace.ts) instead of the published package, and is not type-checked (no published .d.ts to check against).
-const CANDIDATE = existsSync(join(benchRoot, "candidate.json"));
+// A marker with a "published" version (BENCH_AURA_VERSION on run-candidate.sh) keeps the registry install of that version instead.
+const MARKER = existsSync(join(benchRoot, "candidate.json")) ? JSON.parse(readFileSync(join(benchRoot, "candidate.json"), "utf8")) : null;
+const PUBLISHED = typeof MARKER?.published === "string" ? MARKER.published : null;
+const CANDIDATE = MARKER !== null && PUBLISHED === null;
+const AURA = PUBLISHED ?? process.env.FULLGAME_AURA_VERSION ?? "4.3.7";
 
 rmSync(work, { recursive: true, force: true });
 mkdirSync(work, { recursive: true });
