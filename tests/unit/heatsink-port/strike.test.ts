@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { CFG } from "../../../examples/heatsink-port/config";
-import { Operation, STRIKE, segmentSphere } from "../../../examples/heatsink-port/operation";
+import { Operation, STRIKE, segmentSphere, segmentVerticalCapsule } from "../../../examples/heatsink-port/operation";
 import { FRAME, Race } from "../../../examples/heatsink-port/race";
 import { Track } from "../../../examples/heatsink-port/track";
 import { IDLE, type Input } from "../../../examples/heatsink-port/vehicle";
@@ -11,6 +11,12 @@ const reference = JSON.parse(readFileSync("evidence/crayon-capture/heatsink-refe
 const SCRIPT = expandSegments(parseInputScript(reference.script.text));
 const SUB = 1 / 120;
 const FIRE: Input = { ...IDLE, fire: true };
+/*
+ * Pinned strike outcome of the reference movement with the gun held. Re-pinned for the audit fixes HP-02 (barrels hit
+ * as a capsule up to bolt height: 4 to 9 barrels shot) and HP-11 (distance-aware chain window: best chain 3 to 7).
+ * The previous pin was score 2950, barrels 4, hits 33, bestChain 3, hash e1d8bccd.
+ */
+const SCORE_PIN = 6350, BARRELS_PIN = 9, HITS_PIN = 38, CHAIN_PIN = 7, HASH_PIN = "914c9b7d";
 
 /** put the player `back` metres behind `target` on its lane, heading straight down the track, in the race state */
 function aim(race: Race, target: { s: number; x: number; world: { y: number } }, back = 30): void {
@@ -60,6 +66,15 @@ describe("segmentSphere", () => {
   });
 });
 
+describe("segmentVerticalCapsule", () => {
+  it("hits anywhere along the capsule height and misses above it or to the side", () => {
+    expect(segmentVerticalCapsule(0, 5.3, 0, 10, 5.3, 0, 5, 0, 6, 0, 1)).toBeCloseTo(0.5, 5);
+    expect(segmentVerticalCapsule(0, 0.5, 0, 10, 0.5, 0, 5, 0, 6, 0, 1)).toBeCloseTo(0.5, 5);
+    expect(segmentVerticalCapsule(0, 7.5, 0, 10, 7.5, 0, 5, 0, 6, 0, 1)).toBe(-1);
+    expect(segmentVerticalCapsule(0, 3, 0, 10, 3, 0, 5, 0, 6, 2, 1)).toBe(-1);
+  });
+});
+
 describe("the strike layer never changes the recorded movement", () => {
   it("replays the reference script identically with the gun held down", () => {
     const quiet = new Race();
@@ -94,7 +109,7 @@ describe("strike replay (reference movement, gun held down)", () => {
     expect(a.ops.hash()).toBe(b.ops.hash());
     expect(a.ops.score).toBe(b.ops.score);
     expect({ score: a.ops.score, kills: a.ops.kills, barrels: a.ops.barrelsShot, shots: a.ops.shots, hits: a.ops.hits, bestChain: a.ops.bestChain, hash: a.ops.hash() }).toEqual({
-      score: 2950, kills: 6, barrels: 4, shots: 872, hits: 33, bestChain: 3, hash: "e1d8bccd"
+      score: SCORE_PIN, kills: 6, barrels: BARRELS_PIN, shots: 872, hits: HITS_PIN, bestChain: CHAIN_PIN, hash: HASH_PIN
     });
   });
 
@@ -119,6 +134,7 @@ describe("combat rules", () => {
 
   it("takes twice the damage to down a heavy and pays more", () => {
     const race = new Race();
+    for (const b of race.barrels) b.alive = false;
     const t = race.ops.targets.find((x) => x.kind === "heavy")!;
     aim(race, t);
     shoot(race, 40);
@@ -141,7 +157,8 @@ describe("combat rules", () => {
     expect(race.ops.chain).toBe(2);
     expect(race.ops.multiplier).toBe(2);
     expect(race.ops.score).toBe(STRIKE.score.sentry + STRIKE.score.sentry * 2);
-    for (let i = 0; i < STRIKE.comboWindow * 120 + 5; i++) race.ops.advance(SUB, IDLE, race);
+    expect(race.ops.chainT).toBeGreaterThanOrEqual(STRIKE.comboWindow);
+    for (let i = 0; i < STRIKE.comboWindowMax * 120 + 5; i++) race.ops.advance(SUB, IDLE, race);
     expect(race.ops.chain).toBe(0);
     expect(race.ops.multiplier).toBe(1);
   });
@@ -169,6 +186,45 @@ describe("combat rules", () => {
     race.ops.advance(SUB, IDLE, race);
     expect(race.ops.score).toBe(STRIKE.score.cleanLap);
     expect(race.ops.targets.every((x) => x.alive)).toBe(true);
+  });
+
+  it("the chain window stretches to reach the next target at the current speed (HP-11)", () => {
+    const race = new Race();
+    for (const b of race.barrels) b.alive = false;
+    const sorted = race.ops.targets.slice().sort((a, b) => a.s - b.s);
+    const [a, b] = sorted as [typeof sorted[number], typeof sorted[number]];
+    aim(race, a);
+    race.player.v = CFG.vehicle.maxSpeed;
+    shoot(race, 240);
+    expect(a.alive).toBe(false);
+    const gap = b.s - race.player.s;
+    expect(gap).toBeGreaterThan(300);
+    const travel = gap / CFG.vehicle.maxSpeed;
+    expect(travel).toBeGreaterThan(STRIKE.comboWindow);
+    /* the window covers the trip to the next target at top speed, which the old fixed 3 s window did not */
+    expect(race.ops.chainWindow()).toBeGreaterThan(travel);
+    expect(race.ops.chainWindow()).toBeLessThanOrEqual(STRIKE.comboWindowMax);
+    expect(race.ops.chain).toBe(1);
+  });
+
+  it("a bolt fired from the real hover height hits a barrel on the drone's line (HP-02)", () => {
+    for (const index of [0, 3, 7]) {
+      const race = new Race();
+      const barrel = race.barrels[index]!;
+      for (const t of race.ops.targets) t.alive = false;
+      const p = race.player;
+      race.state = "race";
+      p.crashed = false;
+      p.theta = 0;
+      p.s = race.track.wrap(barrel.s - 40);
+      p.x = barrel.x;
+      const ground = race.track.frame(p.s).y + race.track.latY(p.s, p.x);
+      Object.assign(p.position, race.track.toWorld(p.s, p.x, ground + CFG.vehicle.hover));
+      p.gunCd = 0;
+      shoot(race, 30);
+      expect(barrel.alive, `barrel ${index}`).toBe(false);
+      expect(race.ops.barrelsShot).toBeGreaterThanOrEqual(1);
+    }
   });
 
   it("a shot barrel explodes, scores, and damages the targets around it", () => {
@@ -213,12 +269,14 @@ describe("combat rules", () => {
 });
 
 describe("medals", () => {
-  it("maps kills to the three thresholds", () => {
+  it("maps kills to the three thresholds, with gold also inside the gold time", () => {
     const ops = new Operation(new Track());
     expect(ops.medalFor(STRIKE.medals.bronze - 1)).toBe("none");
     expect(ops.medalFor(STRIKE.medals.bronze)).toBe("bronze");
     expect(ops.medalFor(STRIKE.medals.silver)).toBe("silver");
     expect(ops.medalFor(STRIKE.medals.gold)).toBe("gold");
+    expect(ops.medalFor(STRIKE.medals.gold, STRIKE.goldTime)).toBe("gold");
+    expect(ops.medalFor(STRIKE.perLap * CFG.track.laps, STRIKE.goldTime + 1)).toBe("silver");
     expect(STRIKE.medals.gold).toBeLessThanOrEqual(STRIKE.perLap * CFG.track.laps);
   });
 

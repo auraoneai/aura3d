@@ -41,7 +41,19 @@ export interface HudValues {
   gunLocked: boolean;
 }
 
-export const OBJECTIVE_TEXT = `Destroy sentry drones and shoot barrels for points. Chain kills to raise the multiplier. Finish ${CFG.track.laps} laps. Bronze ${STRIKE.medals.bronze}, silver ${STRIKE.medals.silver}, gold ${STRIKE.medals.gold} kills.`;
+/** "5:00" for the gold time limit */
+export const GOLD_TIME_TEXT = `${Math.floor(STRIKE.goldTime / 60)}:${String(STRIKE.goldTime % 60).padStart(2, "0")}`;
+export const MEDAL_TEXT = `Bronze ${STRIKE.medals.bronze} kills, silver ${STRIKE.medals.silver}, gold ${STRIKE.medals.gold} inside ${GOLD_TIME_TEXT}.`;
+export const OBJECTIVE_TEXT = `Destroy sentry drones and shoot barrels for points. Chain kills to raise the multiplier. Finish ${CFG.track.laps} laps. ${MEDAL_TEXT}`;
+
+/** seconds the GO banner stays up after the countdown ends */
+export const GO_SECONDS = 0.8;
+
+/** the countdown banner text: 3, 2, 1, then GO for GO_SECONDS of the race, then nothing (HP-01) */
+export function countText(race: Pick<Race, "state" | "countdown" | "goT">): string {
+  if (race.state === "countdown") return String(Math.max(1, Math.ceil(race.countdown - 0.2)));
+  return race.state === "race" && race.goT < GO_SECONDS ? "GO" : "";
+}
 
 function objectiveLine(race: Race): string {
   const o = race.ops;
@@ -56,8 +68,8 @@ function objectiveLine(race: Race): string {
   }
   const next = nearest < Infinity ? `NEXT TARGET ${Math.round(nearest)} m` : "NO TARGETS AHEAD";
   const medal = o.nextMedal();
-  const goal = medal ? `${medal.medal.toUpperCase()} AT ${medal.needed} KILLS` : "GOLD EARNED";
-  return `${next}   ·   ${goal}   ·   F or click to fire`;
+  const goal = medal ? `${medal.medal.toUpperCase()} AT ${medal.needed} KILLS${medal.medal === "gold" ? ` INSIDE ${GOLD_TIME_TEXT}` : ""}` : race.raceTime <= STRIKE.goldTime ? `GOLD PACE: FINISH INSIDE ${GOLD_TIME_TEXT}` : "SILVER SECURED";
+  return `${next}   ·   ${goal}`;
 }
 
 export class HudModel {

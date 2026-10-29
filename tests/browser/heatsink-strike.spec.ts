@@ -17,7 +17,8 @@ const REPORT_ROOT = resolve("tests/reports/heatsink-strike");
 const LAB = "/examples/heatsink-port/";
 const REFERENCE = "tests/browser/data/heatsink-reference-replay.json";
 const MOMENTS_COUNT = 7;
-const GOLDEN = { score: 2950, kills: 6, barrels: 4, shots: 872, hits: 33, bestChain: 3, hash: "e1d8bccd" };
+// re-pinned for the audit fixes HP-02 (barrels hit at bolt height) and HP-11 (distance-aware chain window); same pin as tests/unit/heatsink-port/strike.test.ts
+const GOLDEN = { score: 6350, kills: 6, barrels: 9, shots: 872, hits: 38, bestChain: 7, hash: "914c9b7d" };
 
 interface OpsState { score: number; kills: number; barrels: number; shots: number; hits: number; chain: number; bestChain: number; medal: string; targetsAlive: number; hash: string }
 interface Api {

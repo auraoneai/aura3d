@@ -17,3 +17,7 @@ All models are generated from original text prompts through the AuraOne Meshy ac
 Total about 11.4 MB. The refine texture prompts for drone, barrel, plant-cap and monolith steered the palette (copper/gunmetal/cyan, rust-orange, violet/teal, dark stone/orange runes).
 
 A first drone candidate (sleek wedge hover-craft, preview 01a169cc-5fec-76b4-bd5b-ba1aa13a204a, refine 01a169d0-cdd9-70fa-bc52-c5b46657abeb, 40 credits) was rejected: the design judge noted the original's vehicle is a quad-rotor drone, so it was regenerated; the raw file stays in the ignored `artifacts/meshy/` and is not shipped. The generated rotor blades are static.
+
+## Low-quality set (`models-lite/`, 2026-10-29)
+
+Derived from the files above by `provenance/make-lite.mjs` (glTF-Transform dedup, weld, meshopt simplify, 512 px JPEG maps): same prompts, same rights basis, same bounds (largest bounds change 0.0008 m on the drone). Drone 15,046 triangles (from 55,732), pickup-repair 20,380, plant-cap 14,476, plant-coral 18,750; the rest keep their triangles. 6.4 MB in total against 11 MB. Loaded only at `quality: "low"`.

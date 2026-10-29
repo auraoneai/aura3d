@@ -34,6 +34,8 @@ export class Race {
   state: RaceState = "countdown";
   countdown = COUNTDOWN_START;
   raceTime = 0;
+  /** wall-clock seconds (unscaled frames) since the state became "race"; drives the GO banner (HP-01) */
+  goT = 0;
   time = 0;
   lapIdx = 0;
   lapStart = 0;
@@ -64,6 +66,7 @@ export class Race {
     const grid = MAP.grid ?? { x: 7, row: 16 };
     this.player.reset(this.track.length - 25, -grid.x);
     this.raceTime = 0;
+    this.goT = 0;
     this.lapIdx = 0;
     this.lapStart = 0;
     this.bestLap = 0;
@@ -94,6 +97,7 @@ export class Race {
         const n = Math.ceil(s / SUBSTEP - 1e-6);
         for (let i = 0; i < n; i++) this.step(s / n, input);
       }
+      if (this.state === "race") this.goT += dt;
       if (this.state === "countdown") {
         this.countdown -= dt;
         if (this.countdown <= 0) {

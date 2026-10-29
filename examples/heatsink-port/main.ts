@@ -1,15 +1,18 @@
 /**
- * HEATSINK Time Trial on Aura3D: boot, fixed-step loop, input, DOM HUD and capture hooks.
- * The simulation lives in `race.ts` (pure); `world.ts` renders it through the public engine surface.
+ * HEATSINK Time Trial on Aura3D: boot, fixed-step loop, input (keyboard, rebindable; touch on coarse pointers), pause,
+ * DOM HUD and capture hooks. The simulation lives in `race.ts` (pure); `world.ts` renders it through the public engine
+ * surface.
  *
  * Query parameters (all optional): `autostart=1` (skip the menu), `manual=1` (the sim only advances through
- * `__AURA_HEATSINK__.stepFrames`), `quality=high|low`.
+ * `__AURA_HEATSINK__.stepFrames`), `quality=high|low` (default: low on coarse-pointer devices, else high), `touch=1`
+ * (show the touch controls on any device), `motion=reduced|full` (override the saved or system motion setting).
  */
-import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
+import { bindGameTouchControls, createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { expandSegments, parseInputScript } from "../../tools/crayon-capture/heatsink-lib";
 import { createHeatsinkAudio } from "./audio";
+import { runBotRace, createBot, type BotOptions } from "./bot";
 import { CFG } from "./config";
-import { HudModel, formatTime } from "./hud";
+import { HudModel, MEDAL_TEXT, countText, formatTime } from "./hud";
 import { STRIKE } from "./operation";
 import { FRAME, Race } from "./race";
 import { createHeatsinkPresenter, viewOf } from "./presentation";
@@ -18,7 +21,15 @@ import { IDLE, type Input } from "./vehicle";
 import { buildWorld, type WorldRuntime } from "./world";
 
 const params = new URLSearchParams(location.search);
-const config = { autostart: params.get("autostart") === "1", manual: params.get("manual") === "1", quality: (params.get("quality") === "low" ? "low" : "high") as "high" | "low" };
+const coarse = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+const qualityParam = params.get("quality");
+const config = {
+  autostart: params.get("autostart") === "1",
+  manual: params.get("manual") === "1",
+  /* HP-12: coarse-pointer devices (phones, tablets) get the low tier and its lighter model set unless the URL asks */
+  quality: (qualityParam === "low" || qualityParam === "high" ? qualityParam : coarse ? "low" : "high") as "high" | "low",
+  qualityReason: qualityParam === "low" || qualityParam === "high" ? "url" : coarse ? "coarse-pointer" : "default"
+};
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
@@ -26,6 +37,19 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   return el as T;
 };
 const canvas = $<HTMLCanvasElement>("world");
+
+/* every HUD node looked up once (HP-18) */
+const el = {
+  score: $("h-score"), mult: $("h-mult"), targets: $("h-targets"), objective: $("objective"), lap: $("h-lap"), time: $("h-time"),
+  best: $("h-best"), speed: $("h-speed"), hull: $("h-hull"), notice: $("notice"), count: $("count"),
+  abP: $("h-ab-p"), heatP: $("h-heat-p"), shieldP: $("h-shield-p"), gunP: $("h-gun-p"), heatLabel: $("h-heat-label"), gunLabel: $("h-gun-label"),
+  ab: $("h-ab"), heat: $("h-heat"), shield: $("h-shield"), gun: $("h-gun"), gunRow: $("h-gun-row"),
+  menu: $("menu"), results: $("results"), resultsTitle: $("results-title"), medalLine: $("medal-line"), resultsBody: $("results-body"), medalRules: $("medal-rules"),
+  pause: $("pause"), error: $("error"), errorText: $("error-text"), loading: $("loading"), loadingStatus: $("loading-status"),
+  touch: $("touch"), mute: $<HTMLButtonElement>("mute"), motion: $<HTMLButtonElement>("motion-toggle"), binds: $("binds"),
+  menuObjective: $("menu-objective"), menuControls: $("menu-controls")
+};
+const setText = (node: HTMLElement, text: string): void => { if (node.textContent !== text) node.textContent = text; };
 
 const audio = config.manual ? null : createHeatsinkAudio();
 const track = new Track();
@@ -36,41 +60,165 @@ let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
 let started = config.manual;
 let paused = false;
+let faulted = false;
 let heldInput: Input | null = null;
 let manualInput: Input | null = null;
 let renderTime = 0;
 let frames = 0;
 let lastHud: ReturnType<HudModel["update"]> | undefined;
 let lastCount = "";
+let lastThrottle = 0;
+
+/* ------------------------------------------------------------------ settings (HP-13) */
+
+const STORE = { binds: "ion-circuit:binds", motion: "ion-circuit:motion" };
+const store = {
+  get(key: string): string | null { try { return localStorage.getItem(key); } catch { return null; } },
+  set(key: string, value: string | null): void { try { if (value === null) localStorage.removeItem(key); else localStorage.setItem(key, value); } catch { /* private mode */ } }
+};
+
+type Action = "throttle" | "brake" | "left" | "right" | "afterburner" | "ramjet" | "drift" | "fire";
+const ACTIONS: readonly { id: Action; label: string }[] = [
+  { id: "throttle", label: "Throttle" }, { id: "brake", label: "Brake" }, { id: "left", label: "Steer left" }, { id: "right", label: "Steer right" },
+  { id: "afterburner", label: "Afterburner" }, { id: "ramjet", label: "Overdrive" }, { id: "drift", label: "Drift" }, { id: "fire", label: "Fire" }
+];
+const DEFAULT_BIND: Readonly<Record<Action, readonly string[]>> = { throttle: ["KeyW", "ArrowUp"], brake: ["KeyS", "ArrowDown"], left: ["KeyA", "ArrowLeft"], right: ["KeyD", "ArrowRight"], afterburner: ["ShiftLeft", "ShiftRight"], ramjet: ["Space"], drift: ["KeyE"], fire: ["KeyF", "KeyJ"] };
+/** keys that are never bindable: pause, start, mute */
+const RESERVED = new Set(["Escape", "Enter", "KeyM"]);
+
+function loadBinds(): Record<Action, string[]> {
+  const out = Object.fromEntries(ACTIONS.map((a) => [a.id, [...DEFAULT_BIND[a.id]]])) as Record<Action, string[]>;
+  try {
+    const saved = JSON.parse(store.get(STORE.binds) ?? "{}") as Partial<Record<Action, string>>;
+    for (const a of ACTIONS) { const code = saved[a.id]; if (typeof code === "string" && !RESERVED.has(code)) out[a.id] = [code]; }
+  } catch { /* corrupt entry: defaults */ }
+  return out;
+}
+let BIND = loadBinds();
+
+function rebind(action: Action, code: string): void {
+  if (RESERVED.has(code)) return;
+  for (const a of ACTIONS) BIND[a.id] = BIND[a.id].filter((c) => c !== code);
+  BIND[action] = [code];
+  const saved: Partial<Record<Action, string>> = {};
+  for (const a of ACTIONS) if (BIND[a.id].join() !== DEFAULT_BIND[a.id].join()) saved[a.id] = BIND[a.id][0] ?? "";
+  store.set(STORE.binds, Object.keys(saved).length ? JSON.stringify(saved) : null);
+  bindTouch();
+  renderBinds();
+}
+
+function resetBinds(): void {
+  store.set(STORE.binds, null);
+  BIND = loadBinds();
+  bindTouch();
+  renderBinds();
+}
+
+const keyName = (code: string): string => code.replace(/^Key/, "").replace(/^Digit/, "").replace(/^Arrow/, "").replace(/Left$|Right$/, (m) => (code.startsWith("Arrow") ? m : ""));
+
+let listening: Action | null = null;
+function renderBinds(): void {
+  el.binds.replaceChildren(...ACTIONS.map((a) => {
+    const row = document.createElement("div");
+    row.className = "bind";
+    const label = document.createElement("span");
+    label.textContent = a.label;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.action = a.id;
+    button.textContent = listening === a.id ? "Press a key" : BIND[a.id].map(keyName).join(" / ") || "unbound";
+    button.addEventListener("click", () => { listening = listening === a.id ? null : a.id; renderBinds(); });
+    row.append(label, button);
+    return row;
+  }));
+  setText(el.menuControls, `${ACTIONS.map((a) => `${BIND[a.id].map(keyName).join("/")} ${a.label.toLowerCase()}`).join(", ")}. Esc pause, M mute.${touchMode ? " On touch: the drone accelerates by itself; hold the arrows to steer." : ""}`);
+}
+
+const prefersReduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+const motionParam = params.get("motion");
+let reducedMotion = motionParam === "reduced" ? true : motionParam === "full" ? false : store.get(STORE.motion) === "reduced" ? true : store.get(STORE.motion) === "full" ? false : prefersReduced;
+function applyMotion(): void {
+  runtime?.setMotion({ reduced: reducedMotion });
+  setText(el.motion, reducedMotion ? "Reduced motion: on" : "Reduced motion: off");
+  el.motion.setAttribute("aria-pressed", String(reducedMotion));
+}
 
 /* ------------------------------------------------------------------ input */
 
-const BIND = { throttle: ["KeyW", "ArrowUp"], brake: ["KeyS", "ArrowDown"], left: ["KeyA", "ArrowLeft"], right: ["KeyD", "ArrowRight"], afterburner: ["ShiftLeft", "ShiftRight"], ramjet: ["Space"], drift: ["KeyE"], fire: ["KeyF", "KeyJ"] } as const;
 const down = new Set<string>();
 let steerSmooth = 0;
 let pointerFire = false;
-const held = (keys: readonly string[]): boolean => keys.some((k) => down.has(k));
+const held = (action: Action): boolean => BIND[action].some((k) => down.has(k));
+
+/* HP-03: touch mode turns on for coarse pointers, a touch, or ?touch=1; then the drone throttles by itself */
+let touchMode = coarse || params.get("touch") === "1";
+function setTouchMode(on: boolean): void {
+  if (touchMode === on && el.touch.classList.contains("hidden") !== on) return;
+  touchMode = on;
+  el.touch.classList.toggle("hidden", !on);
+  document.body.classList.toggle("touch", on);
+  renderBinds();
+}
 
 function sampleInput(dt: number): Input {
   if (heldInput) return heldInput;
-  const target = (held(BIND.right) ? 1 : 0) - (held(BIND.left) ? 1 : 0);
+  const target = (held("right") ? 1 : 0) - (held("left") ? 1 : 0);
   steerSmooth += (target - steerSmooth) * (1 - Math.exp(-dt * 12));
-  return { throttle: held(BIND.throttle) ? 1 : 0, brake: held(BIND.brake) ? 1 : 0, steer: steerSmooth, afterburner: held(BIND.afterburner), ramjet: held(BIND.ramjet), drift: held(BIND.drift), fire: held(BIND.fire) || pointerFire };
+  const brake = held("brake") ? 1 : 0;
+  const throttle = held("throttle") || (touchMode && !brake) ? 1 : 0;
+  lastThrottle = throttle;
+  return { throttle, brake, steer: steerSmooth, afterburner: held("afterburner"), ramjet: held("ramjet"), drift: held("drift"), fire: held("fire") || pointerFire };
 }
 
+const racing = (): boolean => started && !race.resultsOpen && (race.state === "countdown" || race.state === "race");
+
 addEventListener("keydown", (e) => {
-  if (Object.values(BIND).some((k) => (k as readonly string[]).includes(e.code))) e.preventDefault();
+  if (listening) {
+    e.preventDefault();
+    if (e.code !== "Escape") rebind(listening, e.code);
+    listening = null;
+    renderBinds();
+    return;
+  }
+  if (ACTIONS.some((a) => BIND[a.id].includes(e.code)) || e.code === "Space") e.preventDefault();
+  if (e.isTrusted && e.code !== "Escape") setTouchMode(touchMode && params.get("touch") === "1");
   if (e.repeat) return;
-  if (e.code === "Escape") { paused = !paused; return; }
-  if (e.code === "Enter" && !started) { begin(); return; }
+  if (e.code === "Escape") { if (started && !race.resultsOpen) setPaused(!paused, "key"); return; }
+  if (e.code === "Enter" && !started && ready) { begin(); return; }
   down.add(e.code);
 });
 addEventListener("keyup", (e) => down.delete(e.code));
-addEventListener("blur", () => { down.clear(); steerSmooth = 0; pointerFire = false; });
-canvas.addEventListener("pointerdown", () => { pointerFire = true; });
+const releaseAll = (): void => { down.clear(); steerSmooth = 0; pointerFire = false; };
+/* HP-07: losing focus or hiding the tab mid-race pauses it */
+addEventListener("blur", () => { releaseAll(); if (racing()) setPaused(true, "blur"); });
+document.addEventListener("visibilitychange", () => { if (document.hidden) { releaseAll(); if (racing()) setPaused(true, "hidden"); } });
+canvas.addEventListener("pointerdown", (e) => { if (e.pointerType === "touch") setTouchMode(true); else pointerFire = true; });
 addEventListener("pointerup", () => { pointerFire = false; });
+addEventListener("pointercancel", () => { pointerFire = false; });
+addEventListener("touchstart", () => setTouchMode(true), { passive: true });
+
+let touchBinding: { dispose(): void } | null = null;
+function bindTouch(): void {
+  touchBinding?.dispose();
+  const code = (a: Action): string => BIND[a][0] ?? DEFAULT_BIND[a][0]!;
+  touchBinding = bindGameTouchControls({
+    hold: [
+      { elementId: "t-left", code: code("left") }, { elementId: "t-right", code: code("right") }, { elementId: "t-brake", code: code("brake") },
+      { elementId: "t-fire", code: code("fire") }, { elementId: "t-boost", code: code("afterburner") }, { elementId: "t-drift", code: code("drift") },
+      { elementId: "t-over", code: code("ramjet") }
+    ]
+  });
+}
 
 /* ------------------------------------------------------------------ flow */
+
+function setPaused(on: boolean, reason: "key" | "button" | "blur" | "hidden" | "resume" = "key"): void {
+  paused = on && started && !race.resultsOpen;
+  el.pause.classList.toggle("hidden", !paused);
+  el.pause.dataset.reason = paused ? reason : "";
+  if (paused) releaseAll();
+  loop.resetAccumulator();
+}
 
 function begin(): void {
   race = new Race(track);
@@ -80,9 +228,18 @@ function begin(): void {
   audio?.reset();
   loop.resetAccumulator();
   started = true;
-  paused = false;
-  $("menu").classList.add("hidden");
-  $("results").classList.add("hidden");
+  if (faulted) {
+    /* a restart after a runtime error clears the error marks the panel set */
+    document.documentElement.removeAttribute("data-aura3d-error");
+    delete (window as unknown as Record<string, unknown>)[hooks.errorGlobalName];
+  }
+  faulted = false;
+  setPaused(false, "resume");
+  noticeT = 0;
+  eventsSeen = 0;
+  el.menu.classList.add("hidden");
+  el.results.classList.add("hidden");
+  el.error.classList.add("hidden");
 }
 
 function simulate(steps: number, input?: Input): void {
@@ -92,21 +249,50 @@ function simulate(steps: number, input?: Input): void {
   }
 }
 
-function updateHud(v: NonNullable<typeof lastHud>): void {
-  const set = (id: string, text: string): void => { const el = $(id); if (el.textContent !== text) el.textContent = text; };
-  set("h-score", v.score); set("h-mult", v.multiplier); set("h-targets", v.targets); set("objective", v.objective);
-  $("h-mult").classList.toggle("hot", v.chain >= 2);
-  set("h-pos", v.pos); set("h-posof", v.posOf); set("h-lap", v.lap); set("h-time", v.time); set("h-best", v.best); set("h-td", v.takedowns); set("h-speed", v.speed);
-  set("h-ab-p", v.pct.ab); set("h-heat-p", v.pct.heat); set("h-shield-p", v.pct.shield); set("h-gun-p", v.pct.gun); set("h-heat-label", v.heatLabel);
-  $("h-ab").style.width = v.width.ab; $("h-heat").style.width = v.width.heat; $("h-shield").style.width = v.width.shield; $("h-gun").style.width = v.width.gun;
-  const count = race.state === "countdown" ? String(Math.max(1, Math.ceil(race.countdown - 0.2))) : race.countdown > -0.8 && race.state === "race" ? "GO" : "";
-  if (count !== lastCount) { lastCount = count; const el = $("count"); el.textContent = count; el.classList.toggle("hidden", !count); }
-  if (race.resultsOpen) {
-    $("results").classList.remove("hidden");
+/* HP-06: crash reason and crashes left, written to #notice for 1.5 s */
+const NOTICE_SECONDS = 1.5;
+const CRASH_TEXT: Record<string, string> = { WALL: "Hit the wall", BARREL: "Barrel blast", OVERHEATED: "Overheated", PILLAR: "Hit a pillar", ROCK: "Hit a rock" };
+let noticeT = 0;
+let eventsSeen = 0;
+function updateNotice(dt: number): void {
+  if (eventsSeen > race.events.length) eventsSeen = 0;
+  for (; eventsSeen < race.events.length; eventsSeen++) {
+    const ev = race.events[eventsSeen]!;
+    if (ev.type === "crash") {
+      const left = CFG.vehicle.crashBudget - race.player.crashes;
+      const why = CRASH_TEXT[String(ev.detail)] ?? "Crashed";
+      setText(el.notice, left < 0 ? `${why}. Out of hull: DNF` : left === 0 ? `${why}. Last hull: the next crash ends the race` : `${why}. ${left} crash${left === 1 ? "" : "es"} left`);
+      el.notice.classList.add("warn");
+      noticeT = NOTICE_SECONDS;
+    }
+  }
+  if (noticeT > 0) { noticeT -= dt; if (noticeT <= 0) { setText(el.notice, ""); el.notice.classList.remove("warn"); } }
+}
+
+function updateHud(v: NonNullable<typeof lastHud>, dt: number): void {
+  setText(el.score, v.score); setText(el.mult, v.multiplier); setText(el.targets, v.targets); setText(el.objective, v.objective);
+  el.mult.classList.toggle("hot", v.chain >= 2);
+  setText(el.lap, v.lap); setText(el.time, v.time); setText(el.best, `best ${v.best}`); setText(el.speed, v.speed);
+  setText(el.hull, `${"■".repeat(v.hull)}${"□".repeat(Math.max(0, v.hullMax - v.hull))}`);
+  el.hull.setAttribute("aria-label", `hull ${v.hull} of ${v.hullMax}`);
+  el.hull.classList.toggle("warn", v.hull <= 1);
+  setText(el.abP, v.pct.ab); setText(el.heatP, v.pct.heat); setText(el.shieldP, v.pct.shield); setText(el.heatLabel, v.heatLabel);
+  setText(el.gunLabel, v.gunLocked ? "LOCKED" : "GUN"); setText(el.gunP, v.gunLocked ? "cool" : v.pct.gun);
+  el.gunRow.classList.toggle("locked", v.gunLocked);
+  el.ab.style.width = v.width.ab; el.heat.style.width = v.width.heat; el.shield.style.width = v.width.shield; el.gun.style.width = v.width.gun;
+  const count = countText(race);
+  if (count !== lastCount) { lastCount = count; el.count.textContent = count; el.count.classList.toggle("hidden", !count); }
+  updateNotice(dt);
+  if (race.resultsOpen && el.results.classList.contains("hidden")) {
+    el.results.classList.remove("hidden");
     const ops = race.ops;
-    $("results-title").textContent = race.state === "dnf" ? "DNF" : "Finished";
-    $("medal-line").textContent = race.state === "dnf" ? "No medal: finish the race to earn one" : ops.medal === "none" ? `No medal: ${ops.kills} of ${ops.totalTargets} kills (bronze needs ${STRIKE.medals.bronze})` : `${ops.medal.toUpperCase()} medal`;
-    $("results-body").textContent = `Score ${ops.score}   Kills ${ops.kills}/${ops.totalTargets}   Barrels ${ops.barrelsShot}   Best chain ${ops.bestChain}   Accuracy ${ops.shots ? Math.round((ops.hits / ops.shots) * 100) : 0}%   Time ${formatTime(race.player.finished ? race.player.finishTime : race.raceTime)}   Best lap ${race.bestLap ? formatTime(race.bestLap) : "--"}   Crashes ${race.player.crashes}`;
+    const time = race.player.finished ? race.player.finishTime : race.raceTime;
+    el.resultsTitle.textContent = race.state === "dnf" ? "DNF" : "Finished";
+    el.medalLine.textContent = race.state === "dnf"
+      ? "No medal: finish the race to earn one"
+      : ops.medal === "none" ? `No medal: ${ops.kills} of ${ops.totalTargets} kills (bronze needs ${STRIKE.medals.bronze})` : `${ops.medal.toUpperCase()} medal`;
+    el.resultsBody.textContent = `Score ${ops.score}   Kills ${ops.kills}/${ops.totalTargets}   Barrels ${ops.barrelsShot}   Best chain ${ops.bestChain}   Accuracy ${ops.shots ? Math.round((ops.hits / ops.shots) * 100) : 0}%   Time ${formatTime(time)}   Best lap ${race.bestLap ? formatTime(race.bestLap) : "--"}   Crashes ${race.player.crashes}`;
+    el.medalRules.textContent = MEDAL_TEXT;
   }
 }
 
@@ -114,8 +300,8 @@ function updateHud(v: NonNullable<typeof lastHud>): void {
 function render(dt: number, live = false): void {
   if (!app || !runtime) return;
   const v = lastHud ?? hudModel.current.update(0, race);
-  audio?.update(race);
-  updateHud(v);
+  updateHud(v, dt);
+  audio?.update(race, { count: lastCount, throttle: lastThrottle, active: started && !paused && !faulted });
   runtime.update(live ? viewOf(race, presenter.present(loop, true)) : race, v, dt, renderTime, canvas.clientWidth / Math.max(1, canvas.clientHeight));
   app.step(0);
   frames++;
@@ -126,20 +312,58 @@ const loop = createFixedStepLoop({
   maxFrameSeconds: 0.1,
   maxCatchUpSteps: 7,
   manual: config.manual,
-  isActive: () => ready && started && !paused,
+  isActive: () => ready && started && !paused && !faulted,
   step() {
     simulate(1, manualInput ?? undefined);
     presenter.afterStep();
   }
 });
 
+/* HP-12: a frame-time governor that lowers the pixel ratio when the device cannot keep up */
+const governor = { cap: config.quality === "low" ? 1 : 1.65, sum: 0, n: 0, drops: 0 };
+function govern(dt: number): void {
+  if (config.manual || paused || !started) return;
+  governor.sum += dt; governor.n++;
+  if (governor.sum < 3) return;
+  const mean = governor.sum / governor.n;
+  governor.sum = 0; governor.n = 0;
+  if (mean > 1 / 40 && governor.cap > 1) {
+    governor.cap = Math.max(1, +(governor.cap - 0.3).toFixed(2));
+    governor.drops++;
+    sizeCanvas();
+  }
+}
+
 let last = performance.now();
 function tick(now: number): void {
+  /* HP-05: the next frame is scheduled first, so one exception can never stop the loop */
+  requestAnimationFrame(tick);
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;
-  loop.tick(now);
-  if (ready && !config.manual) { renderTime += dt; render(dt, started && !paused && race.state === "race"); }
-  requestAnimationFrame(tick);
+  if (faulted) return;
+  try {
+    loop.tick(now);
+    if (ready && !config.manual) {
+      /* HP-07: a paused race is frozen: no sim time, no render time, no particle motion */
+      const frameDt = paused ? 0 : dt;
+      renderTime += frameDt;
+      render(frameDt, started && !paused && race.state === "race");
+      govern(dt);
+    }
+  } catch (error) {
+    runtimeError(error);
+  }
+}
+
+/** a runtime exception: stop stepping, show the error panel with a restart, and report it once (HP-05) */
+function runtimeError(error: unknown): void {
+  faulted = true;
+  const message = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+  hooks.reportError(error);
+  document.documentElement.setAttribute("data-aura3d-error", message.slice(0, 500));
+  setText(el.errorText, `The race stopped on an error: ${message.slice(0, 240)}`);
+  el.error.classList.remove("hidden");
+  console.error(error);
 }
 
 /* ------------------------------------------------------------------ hooks */
@@ -147,7 +371,8 @@ function tick(now: number): void {
 const state = () => {
   const p = race.player;
   return {
-    state: race.state, step: race.frames, raceTime: race.raceTime, countdown: race.countdown, lapIdx: race.lapIdx, bestLap: race.bestLap,
+    state: race.state, step: race.frames, raceTime: race.raceTime, countdown: race.countdown, goT: race.goT, lapIdx: race.lapIdx, bestLap: race.bestLap,
+    paused, faulted, touchMode, reducedMotion, quality: config.quality, qualityReason: config.qualityReason, pixelRatioCap: governor.cap,
     player: { s: p.s, x: p.x, dist: p.dist, v: p.v, ab: p.ab, heat: p.heat, shield: p.shield, gunHeat: p.gunHeat, theta: p.theta, phi: p.phi, yW: p.yW, vyW: p.vyW, steerVal: p.steerVal, burning: p.burning, invuln: p.invuln, burstT: p.burstT, landT: p.landT, crashT: p.crashT, crashes: p.crashes, crashed: p.crashed, finished: p.finished, takedowns: p.takedowns },
     events: race.events.length,
     ops: { score: race.ops.score, kills: race.ops.kills, barrels: race.ops.barrelsShot, shots: race.ops.shots, hits: race.ops.hits, chain: race.ops.chain, bestChain: race.ops.bestChain, medal: race.ops.medal, targetsAlive: race.ops.targets.filter((t) => t.alive).length, hash: race.ops.hash() }
@@ -168,6 +393,16 @@ function grabCanvas(): { w: number; h: number; lit: number; url: string } {
 
 let session: { inputs: Input[]; step: number } | null = null;
 
+function freshRace(): void {
+  race = new Race(track);
+  presenter.reset();
+  hudModel.current = new HudModel();
+  runtime?.resetCamera();
+  eventsSeen = 0;
+  noticeT = 0;
+  el.results.classList.add("hidden");
+}
+
 const hooks = installQaHooks("heatsink", {
   ready: () => ready,
   state,
@@ -176,20 +411,20 @@ const hooks = installQaHooks("heatsink", {
   reset() { begin(); },
   nodeCount: () => runtime?.nodeCount ?? 0,
   routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SG-03", "SG-05", "SH-02", "R-23", "R-24"] }) : null),
-  /** run `n` fixed 1/60 s steps (optionally with a fixed input), then render once */
+  /** run `n` fixed 1/60 s steps (optionally with a fixed input; missing fields are idle, HP-10), then render once */
   stepFrames(n: number, input?: Partial<Input>) {
-    manualInput = (input as Input | undefined) ?? heldInput ?? IDLE;
-    loop.advance(n);
-    manualInput = null;
+    manualInput = input ? { ...IDLE, ...input } : heldInput ?? IDLE;
+    try {
+      loop.advance(n);
+    } finally {
+      manualInput = null;
+    }
     renderTime += n * FRAME;
     render(FRAME);
   },
   /** replay a recorded run-length input script step-exactly on a fresh race and return the final state */
   replay(text: string) {
-    race = new Race(track);
-    presenter.reset();
-    hudModel.current = new HudModel();
-    runtime?.resetCamera();
+    freshRace();
     let n = 0;
     for (const input of expandSegments(parseInputScript(text))) { race.frame(FRAME, input); lastHud = hudModel.current.update(FRAME, race); n++; }
     renderTime = race.time;
@@ -200,10 +435,7 @@ const hooks = installQaHooks("heatsink", {
     applyInput(input: Input | null) { heldInput = input; },
     /** begin a stepwise replay of a recorded script on a fresh race (see `replayTo`) */
     replayStart(text: string) {
-      race = new Race(track);
-      presenter.reset();
-      hudModel.current = new HudModel();
-      runtime?.resetCamera();
+      freshRace();
       session = { inputs: expandSegments(parseInputScript(text)), step: 0 };
       renderTime = 0;
       return session.inputs.length;
@@ -227,8 +459,35 @@ const hooks = installQaHooks("heatsink", {
       }
       return { ...state(), shot };
     },
+    /**
+     * drive a fresh race with the lane-follow bot (`bot.ts`) for up to `maxSteps` steps or until the results open,
+     * rendering the last `lead` steps; `grab` reads the canvas back in the same task (QA captures of finished and DNF cards)
+     */
+    autopilot(opts: BotOptions & { maxSteps?: number; lead?: number; grab?: boolean; stopAt?: "results" | "never" } = {}) {
+      freshRace();
+      const bot = createBot(opts);
+      const max = opts.maxSteps ?? 60 * 900;
+      const lead = opts.lead ?? 30;
+      let shot: ReturnType<typeof grabCanvas> | null = null;
+      for (let i = 0; i < max; i++) {
+        race.frame(FRAME, bot(race));
+        lastHud = hudModel.current.update(FRAME, race);
+        if (race.resultsOpen && opts.stopAt !== "never") break;
+      }
+      /* the bot ran headless; replaying the drawing for the last `lead` steps is not possible, so settle the camera on the final step */
+      renderTime = race.time;
+      for (let k = 0; k < lead; k++) render(FRAME);
+      if (opts.grab) shot = grabCanvas();
+      return { ...state(), shot };
+    },
+    /** QA: force a runtime error through the same path a render exception takes */
+    faultForTest(message = "test fault") { runtimeError(new Error(message)); },
+    pause(on: boolean) { setPaused(on, "button"); return paused; },
+    /** the input the live loop would read this frame (keys, touch buttons, auto-throttle), without stepping */
+    input: () => sampleInput(FRAME),
     frames: () => frames,
-    hud: () => lastHud ?? null
+    hud: () => lastHud ?? null,
+    bot: (opts: BotOptions = {}) => { const r = runBotRace(new Race(track), opts); return { state: r.state, kills: r.ops.kills, medal: r.ops.medal, time: r.player.finishTime }; }
   }
 });
 
@@ -237,7 +496,7 @@ const hooks = installQaHooks("heatsink", {
 let ready = false;
 
 function sizeCanvas(): void {
-  const dpr = Math.min(devicePixelRatio || 1, config.quality === "low" ? 1 : 1.65);
+  const dpr = Math.min(devicePixelRatio || 1, governor.cap);
   canvas.width = Math.max(2, Math.round(canvas.clientWidth * dpr));
   canvas.height = Math.max(2, Math.round(canvas.clientHeight * dpr));
 }
@@ -255,18 +514,38 @@ async function boot(): Promise<void> {
   });
   await app.ready();
   runtime = world.bind(app);
+  applyMotion();
   ready = true;
-  $("loading").classList.add("hidden");
+  el.loading.classList.add("hidden");
   $<HTMLButtonElement>("start").disabled = false;
-  if (!config.autostart && !config.manual) $("menu").classList.remove("hidden");
+  if (!config.autostart && !config.manual && !started) el.menu.classList.remove("hidden");
   lastHud = hudModel.current.update(0, race);
   render(0);
   if (config.autostart) begin();
 }
 
+el.menuObjective.textContent = `Destroy sentry drones and shoot barrels for points, chain kills to raise the multiplier, and finish ${CFG.track.laps} laps for a medal. ${MEDAL_TEXT}`;
 $("start").addEventListener("click", begin);
 $("again").addEventListener("click", begin);
+$("resume").addEventListener("click", () => setPaused(false, "resume"));
+$("restart").addEventListener("click", begin);
+$("error-restart").addEventListener("click", begin);
+$("pause-button").addEventListener("click", () => { if (started && !race.resultsOpen) setPaused(!paused, "button"); });
+$("reset-keys").addEventListener("click", resetBinds);
+el.motion.addEventListener("click", () => { reducedMotion = !reducedMotion; store.set(STORE.motion, reducedMotion ? "reduced" : "full"); applyMotion(); });
+el.mute.addEventListener("click", () => {
+  if (!audio) return;
+  audio.setMuted(!audio.muted);
+  setText(el.mute, audio.muted ? "Sound off" : "Sound on");
+  el.mute.setAttribute("aria-pressed", String(audio.muted));
+});
+addEventListener("keydown", (e) => { if (e.code === "KeyM" && audio) queueMicrotask(() => { setText(el.mute, audio.muted ? "Sound off" : "Sound on"); el.mute.setAttribute("aria-pressed", String(audio.muted)); }); });
 addEventListener("resize", sizeCanvas);
+bindTouch();
+setTouchMode(touchMode);
+el.touch.classList.toggle("hidden", !touchMode);
+renderBinds();
+applyMotion();
 requestAnimationFrame(tick);
 
 function reportError(error: unknown): void {
@@ -275,10 +554,9 @@ function reportError(error: unknown): void {
   const details = (error as { details?: unknown })?.details;
   const message = `${base}${typeof code === "string" ? ` [${code}]` : ""}${details ? ` ${JSON.stringify(details).slice(0, 6000)}` : ""}`;
   hooks.reportError(message);
-  $("loading-status").textContent = `The track could not load: ${message.slice(0, 300)}`;
-  $("loading").classList.remove("hidden");
+  setText(el.loadingStatus, `The track could not load: ${message.slice(0, 300)}`);
+  el.loading.classList.remove("hidden");
   console.error(error);
 }
 
 boot().catch(reportError);
-void CFG;

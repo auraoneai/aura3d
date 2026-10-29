@@ -91,3 +91,19 @@ The ported Time Trial had no goal beyond the clock: the original's weapons, riva
 - **Medals**: only for a finished race: bronze 16, silver 30, gold 42 of 48 kills. Calibration: the reference movement with the trigger held and no aiming lands 6 kills in 1.55 laps (about 12 over three), so a medal needs real aiming.
 - **HUD and flow**: score, multiplier, targets block; objective line from the countdown, then the next target distance and the next medal; results show medal, score, kills, barrels, best chain and accuracy.
 - **Not verified**: the full game never completes automated checks on software GL, so the live feel of aiming, the camera shake and the audio were not judged by a person; see `evidence/heatsink-port/rework/README.md` for what was and was not run.
+
+## Audit fixes (2026-10-29, lane G19)
+
+These supersede the strike-layer numbers above where they differ. Rows refer to `docs/audits/sections/game-19-heatsink-port.md`.
+
+- **GO banner (HP-01)**: `Race.goT` counts wall-clock seconds in the race state; `hud.countText` shows GO for 0.8 s, then clears, so the objective line is visible for the rest of the race.
+- **Barrels (HP-02)**: a barrel is hit as a vertical capsule from the road to 6 m (`STRIKE.barrelHitTop`), so a bolt fired at the 5.3 m hover height connects. The old sphere at the barrel's centre sat about 4 m below every bolt.
+- **Chain (HP-11)**: after a kill the window is the travel time to the next live target or barrel at the current speed plus 1.5 s, between 3 and 9 s. Targets sit 350 to 460 m apart, which the fixed 3 s window never covered at speed.
+- **Medals (HP-14)**: bronze 16 and silver 30 kills; gold 36 kills inside 5:00. Lane-follow bot (`bot.ts`): 80 m/s finishes in 292 s with 42 kills (gold); 40 m/s gets 42 kills in 574 s (silver); 115 m/s finishes in 209 s with 32 kills (silver).
+- **Touch (HP-03)**: on coarse pointers (or `?touch=1`) the page shows steer, brake, fire, boost, drift and overdrive buttons bound through `bindGameTouchControls` (synthetic key events on the same key map), the drone throttles by itself, and pointercancel releases a held button.
+- **Pause and errors (HP-05, HP-07)**: Esc or the corner button opens a pause panel; blur and a hidden tab pause a race; a paused race freezes render time. `tick` schedules the next frame first and catches render errors into an error panel with a restart; a restart clears every dynamic buffer.
+- **HUD (HP-06, HP-15)**: HULL pips (3 crashes are survived; the 4th is a DNF) replace TAKEDOWNS, TIME carries the best lap, the kills block reads KILLS / RACE, the gun meter reads LOCKED while overheated, and a crash writes its reason and the crashes left for 1.5 s.
+- **Quality (HP-12)**: coarse-pointer devices default to the low tier, which loads `assets/models-lite/` (512 px maps, a quarter of the texture memory; drone 15k triangles instead of 55.7k; built by `assets/provenance/make-lite.mjs`). A frame-time governor lowers the pixel-ratio cap when frames average over 25 ms.
+- **Motion and keys (HP-13)**: `prefers-reduced-motion` (or the menu toggle, saved in localStorage) removes camera shake, caps the speed FOV kick at 6 degrees and halves the speed streaks. Every action can be rebound from the menu; Esc, Enter and M are reserved.
+- **Sound (HP-16)**: race cues (countdown, GO, checkpoint, lap, boost pad, pickup, crash, DNF) and a quiet engine voice (two detuned saws through a low-pass, 70 to 210 Hz with speed, silent when stopped or paused) next to the strike cues; a menu button mutes.
+- **Look (HP-08, HP-17, HP-19)**: a soft blob on the road under the drone, wider and fainter with height. Heavies have a cube core and a second ring; every damaged target shows a health ring. Bloom is intensity 0.6, threshold 1.0, no deprecated `radius`.

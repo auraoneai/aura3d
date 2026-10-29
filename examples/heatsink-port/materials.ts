@@ -4,7 +4,7 @@
  */
 import type { material } from "@aura3d/engine";
 import { VESPER } from "./map";
-import { POINTS_FRAGMENT, POINTS_VERTEX, ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX, STREAK_FRAGMENT, STREAK_VERTEX, TERRAIN_FRAGMENT, VEIL_FRAGMENT, VEIL_VERTEX } from "./shaders";
+import { BLOB_FRAGMENT, BLOB_VERTEX, POINTS_FRAGMENT, POINTS_VERTEX, ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX, STREAK_FRAGMENT, STREAK_VERTEX, TERRAIN_FRAGMENT, VEIL_FRAGMENT, VEIL_VERTEX } from "./shaders";
 
 export type CustomSpec = Parameters<typeof material.custom>[0];
 export type Rgb = readonly [number, number, number];
@@ -115,6 +115,16 @@ export const pointsSpec = (): CustomSpec => ({
   blending: "additive"
 });
 
+/** the drone's contact shadow: an alpha-blended dark blob drawn over the road (HP-08) */
+export const blobSpec = (): CustomSpec => ({
+  glsl: { vertex: BLOB_VERTEX, fragment: BLOB_FRAGMENT },
+  uniforms: { blobAlpha: { type: "f32", value: 0.5 } },
+  transparent: true,
+  depthWrite: false,
+  blending: "normal",
+  side: "double"
+});
+
 export const allProgramSpecs = (): readonly { readonly name: string; readonly spec: CustomSpec }[] => [
   { name: "road", spec: roadSpec() },
   { name: "solid", spec: solidSpec([0.5, 0.5, 0.5]) },
@@ -125,5 +135,6 @@ export const allProgramSpecs = (): readonly { readonly name: string; readonly sp
   { name: "sky", spec: skySpec() },
   { name: "terrain", spec: terrainSpec(80, [1, 1, 1]) },
   { name: "streak", spec: streakSpec() },
-  { name: "points", spec: pointsSpec() }
+  { name: "points", spec: pointsSpec() },
+  { name: "blob", spec: blobSpec() }
 ];
