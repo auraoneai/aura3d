@@ -1,0 +1,687 @@
+{
+  "log": "g05-before-g2",
+  "shots": [
+    "ic-phone/crown-3s",
+    "ic-phone/crown-30s",
+    "ic-phone/crown-60s",
+    "ic-phone/ui-60s",
+    "ic-phone/after-touch-walk",
+    "ic-phone/after-touch-buttons",
+    "ic-neo-tokyo/neo-10s",
+    "ic-neo-tokyo/neo-40s",
+    "ic-neo-tokyo/neo-75s"
+  ],
+  "meta": [
+    {
+      "target": "ic-phone",
+      "id": "crown-3s",
+      "canvasOnly": true,
+      "method": "toDataURL",
+      "size": [
+        390,
+        844
+      ],
+      "sinceReadyMs": 3002,
+      "mean": 76.02,
+      "p5": 10,
+      "p50": 77,
+      "p95": 184,
+      "darkFrac": 0.2199,
+      "clipFrac": 0.0154,
+      "timing": {
+        "totalMs": 1777
+      },
+      "info": {
+        "renderPath": "hdr-msaa",
+        "bloomFusion": "separable",
+        "drawCalls": 116,
+        "optionIgnored": 0,
+        "contactShadows": {
+          "passExecuted": true,
+          "depthSource": "self"
+        }
+      },
+      "state": {
+        "frame": 5,
+        "mode": "quick",
+        "phase": "fight",
+        "stage": "crown-arena",
+        "p1": {
+          "x": -2.2,
+          "clip": "idle",
+          "health": 100,
+          "meter": 0,
+          "tint": "default"
+        },
+        "cpu": {
+          "x": 2.2,
+          "clip": "idle",
+          "health": 88
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "pips": {
+          "p1": 0,
+          "cpu": 0
+        },
+        "perf": null,
+        "attackLayer": null
+      }
+    },
+    {
+      "target": "ic-phone",
+      "id": "crown-30s",
+      "canvasOnly": true,
+      "method": "toDataURL",
+      "size": [
+        390,
+        844
+      ],
+      "sinceReadyMs": 30004,
+      "mean": 61.83,
+      "p5": 3,
+      "p50": 52,
+      "p95": 175,
+      "darkFrac": 0.1137,
+      "clipFrac": 0.0431,
+      "timing": {
+        "totalMs": 3624
+      },
+      "info": {
+        "renderPath": "hdr-msaa",
+        "bloomFusion": "separable",
+        "drawCalls": 118,
+        "optionIgnored": 0,
+        "contactShadows": {
+          "passExecuted": true,
+          "depthSource": "self"
+        }
+      },
+      "state": {
+        "frame": 35,
+        "mode": "quick",
+        "phase": "fight",
+        "stage": "crown-arena",
+        "p1": {
+          "x": -2.2,
+          "clip": "idle",
+          "health": 100,
+          "meter": 0,
+          "tint": "default"
+        },
+        "cpu": {
+          "x": 2.2,
+          "clip": "idle",
+          "health": 88
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "pips": {
+          "p1": 0,
+          "cpu": 0
+        },
+        "perf": null,
+        "attackLayer": null
+      }
+    },
+    {
+      "target": "ic-phone",
+      "id": "crown-60s",
+      "canvasOnly": true,
+      "method": "toDataURL",
+      "size": [
+        390,
+        844
+      ],
+      "sinceReadyMs": 60004,
+      "mean": 61.82,
+      "p5": 3,
+      "p50": 52,
+      "p95": 175,
+      "darkFrac": 0.1138,
+      "clipFrac": 0.0431,
+      "timing": {
+        "totalMs": 1713
+      },
+      "info": {
+        "renderPath": "hdr-msaa",
+        "bloomFusion": "separable",
+        "drawCalls": 118,
+        "optionIgnored": 0,
+        "contactShadows": {
+          "passExecuted": true,
+          "depthSource": "self"
+        }
+      },
+      "state": {
+        "frame": 65,
+        "mode": "quick",
+        "phase": "fight",
+        "stage": "crown-arena",
+        "p1": {
+          "x": -2.2,
+          "clip": "idle",
+          "health": 100,
+          "meter": 0,
+          "tint": "default"
+        },
+        "cpu": {
+          "x": 2.2,
+          "clip": "idle",
+          "health": 88
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "pips": {
+          "p1": 0,
+          "cpu": 0
+        },
+        "perf": null,
+        "attackLayer": null
+      }
+    },
+    {
+      "target": "ic-phone",
+      "id": "ui-60s",
+      "canvasOnly": false,
+      "mean": 64.1,
+      "p5": 3,
+      "p50": 57,
+      "p95": 180,
+      "darkFrac": 0.131,
+      "clipFrac": 0.0434,
+      "timing": {
+        "styleMs": 0,
+        "shotMs": 27233,
+        "evalMs": 9199
+      },
+      "info": {
+        "app": true,
+        "renderPath": "hdr-msaa",
+        "bloomFusion": "separable",
+        "drawCalls": 117,
+        "optionIgnored": 0,
+        "contactShadows": {
+          "passExecuted": true,
+          "depthSource": "self"
+        }
+      },
+      "state": {
+        "frame": 105,
+        "mode": "quick",
+        "phase": "fight",
+        "stage": "crown-arena",
+        "p1": {
+          "x": -2.2,
+          "clip": "idle",
+          "health": 100,
+          "meter": 0
+        },
+        "cpu": {
+          "x": 2.2,
+          "clip": "idle",
+          "health": 88,
+          "meter": 0
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "pips": {
+          "p1": 0,
+          "cpu": 0
+        },
+        "round": 1,
+        "paused": false,
+        "result": null
+      }
+    },
+    {
+      "target": "ic-phone",
+      "id": "after-touch-walk",
+      "canvasOnly": true,
+      "method": "toDataURL",
+      "size": [
+        390,
+        844
+      ],
+      "mean": 61.82,
+      "p5": 3,
+      "p50": 52,
+      "p95": 175,
+      "darkFrac": 0.1137,
+      "clipFrac": 0.043,
+      "timing": {
+        "totalMs": 4588
+      },
+      "info": {
+        "renderPath": "hdr-msaa",
+        "bloomFusion": "separable",
+        "drawCalls": 118,
+        "optionIgnored": 0,
+        "contactShadows": {
+          "passExecuted": true,
+          "depthSource": "self"
+        }
+      },
+      "state": {
+        "frame": 160,
+        "mode": "quick",
+        "phase": "fight",
+        "stage": "crown-arena",
+        "p1": {
+          "x": -2.2,
+          "clip": "idle",
+          "health": 100,
+          "meter": 0,
+          "tint": "default"
+        },
+        "cpu": {
+          "x": 2.2,
+          "clip": "idle",
+          "health": 88
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "pips": {
+          "p1": 0,
+          "cpu": 0
+        },
+        "perf": null,
+        "attackLayer": null
+      }
+    },
+    {
+      "target": "ic-phone",
+      "id": "after-touch-buttons",
+      "canvasOnly": false,
+      "mean": 64.1,
+      "p5": 3,
+      "p50": 57,
+      "p95": 180,
+      "darkFrac": 0.131,
+      "clipFrac": 0.0436,
+      "timing": {
+        "styleMs": 0,
+        "shotMs": 27973,
+        "evalMs": 9257
+      },
+      "info": {
+        "app": true,
+        "renderPath": "hdr-msaa",
+        "bloomFusion": "separable",
+        "drawCalls": 118,
+        "optionIgnored": 0,
+        "contactShadows": {
+          "passExecuted": true,
+          "depthSource": "self"
+        }
+      },
+      "state": {
+        "frame": 210,
+        "mode": "quick",
+        "phase": "fight",
+        "stage": "crown-arena",
+        "p1": {
+          "x": -2.2,
+          "clip": "idle",
+          "health": 100,
+          "meter": 0
+        },
+        "cpu": {
+          "x": 2.2,
+          "clip": "idle",
+          "health": 88,
+          "meter": 0
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "pips": {
+          "p1": 0,
+          "cpu": 0
+        },
+        "round": 1,
+        "paused": false,
+        "result": null
+      }
+    },
+    {
+      "target": "ic-neo-tokyo",
+      "id": "neo-10s",
+      "canvasOnly": true,
+      "method": "toDataURL",
+      "size": [
+        1280,
+        720
+      ],
+      "sinceReadyMs": 10003,
+      "mean": 25.45,
+      "p5": 0,
+      "p50": 11,
+      "p95": 83,
+      "darkFrac": 0.5048,
+      "clipFrac": 0.4749,
+      "timing": {
+        "totalMs": 7549
+      },
+      "info": {
+        "renderPath": "hdr-msaa",
+        "bloomFusion": "separable",
+        "drawCalls": 1189,
+        "optionIgnored": 0,
+        "contactShadows": {
+          "passExecuted": true,
+          "depthSource": "self"
+        }
+      },
+      "state": {
+        "frame": 125,
+        "mode": "quick",
+        "phase": "fight",
+        "stage": "neo-tokyo-rooftop",
+        "p1": {
+          "x": -2.2,
+          "clip": "idle",
+          "health": 100,
+          "meter": 0,
+          "tint": "default"
+        },
+        "cpu": {
+          "x": 2.2,
+          "clip": "idle",
+          "health": 88
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "pips": {
+          "p1": 0,
+          "cpu": 0
+        },
+        "perf": null,
+        "attackLayer": null
+      }
+    },
+    {
+      "target": "ic-neo-tokyo",
+      "id": "neo-40s",
+      "canvasOnly": true,
+      "method": "toDataURL",
+      "size": [
+        1280,
+        720
+      ],
+      "sinceReadyMs": 40003,
+      "mean": 31.55,
+      "p5": 0,
+      "p50": 26,
+      "p95": 93,
+      "darkFrac": 0.3162,
+      "clipFrac": 0.2653,
+      "timing": {
+        "totalMs": 2738
+      },
+      "info": {
+        "renderPath": "hdr-msaa",
+        "bloomFusion": "separable",
+        "drawCalls": 1503,
+        "optionIgnored": 0,
+        "contactShadows": {
+          "passExecuted": true,
+          "depthSource": "self"
+        }
+      },
+      "state": {
+        "frame": 130,
+        "mode": "quick",
+        "phase": "fight",
+        "stage": "neo-tokyo-rooftop",
+        "p1": {
+          "x": -2.2,
+          "clip": "idle",
+          "health": 100,
+          "meter": 0,
+          "tint": "default"
+        },
+        "cpu": {
+          "x": 2.2,
+          "clip": "idle",
+          "health": 88
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "pips": {
+          "p1": 0,
+          "cpu": 0
+        },
+        "perf": null,
+        "attackLayer": null
+      }
+    },
+    {
+      "target": "ic-neo-tokyo",
+      "id": "neo-75s",
+      "canvasOnly": true,
+      "method": "toDataURL",
+      "size": [
+        1280,
+        720
+      ],
+      "sinceReadyMs": 75014,
+      "mean": 30.72,
+      "p5": 0,
+      "p50": 26,
+      "p95": 91,
+      "darkFrac": 0.3428,
+      "clipFrac": 0.2724,
+      "timing": {
+        "totalMs": 14119
+      },
+      "info": {
+        "renderPath": "hdr-msaa",
+        "bloomFusion": "separable",
+        "drawCalls": 1543,
+        "optionIgnored": 0,
+        "contactShadows": {
+          "passExecuted": true,
+          "depthSource": "self"
+        }
+      },
+      "state": {
+        "frame": 140,
+        "mode": "quick",
+        "phase": "fight",
+        "stage": "neo-tokyo-rooftop",
+        "p1": {
+          "x": -2.2,
+          "clip": "idle",
+          "health": 100,
+          "meter": 0,
+          "tint": "default"
+        },
+        "cpu": {
+          "x": 2.2,
+          "clip": "idle",
+          "health": 88
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "pips": {
+          "p1": 0,
+          "cpu": 0
+        },
+        "perf": null,
+        "attackLayer": null
+      }
+    }
+  ],
+  "probes": [
+    {
+      "target": "ic-phone",
+      "name": "touch-controls",
+      "controls": [
+        {
+          "control": "left",
+          "icTouch": null,
+          "visible": false
+        },
+        {
+          "control": "right",
+          "icTouch": null,
+          "visible": false
+        },
+        {
+          "control": "block",
+          "icTouch": null,
+          "visible": false
+        },
+        {
+          "control": "light",
+          "icTouch": null,
+          "visible": false
+        },
+        {
+          "control": "heavy",
+          "icTouch": null,
+          "visible": false
+        },
+        {
+          "control": "special",
+          "icTouch": null,
+          "visible": false
+        },
+        {
+          "control": "jump",
+          "icTouch": null,
+          "visible": false
+        }
+      ]
+    },
+    {
+      "target": "ic-phone",
+      "name": "touch-right",
+      "before": {
+        "frame": 115,
+        "mode": "quick",
+        "phase": "fight",
+        "stage": "crown-arena",
+        "p1": {
+          "x": -2.2,
+          "clip": "idle",
+          "health": 100,
+          "meter": 0
+        },
+        "cpu": {
+          "x": 2.2,
+          "clip": "idle",
+          "health": 88,
+          "meter": 0
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "pips": {
+          "p1": 0,
+          "cpu": 0
+        },
+        "round": 1,
+        "paused": false,
+        "result": null
+      },
+      "during": {
+        "frame": 150,
+        "mode": "quick",
+        "phase": "fight",
+        "stage": "crown-arena",
+        "p1": {
+          "x": -2.2,
+          "clip": "idle",
+          "health": 100,
+          "meter": 0
+        },
+        "cpu": {
+          "x": 2.2,
+          "clip": "idle",
+          "health": 88,
+          "meter": 0
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "pips": {
+          "p1": 0,
+          "cpu": 0
+        },
+        "round": 1,
+        "paused": false,
+        "result": null
+      },
+      "dx": 0
+    },
+    {
+      "target": "ic-phone",
+      "name": "touch-dash",
+      "button": "absent"
+    },
+    {
+      "target": "ic-phone",
+      "name": "touch-throw",
+      "button": "absent"
+    }
+  ],
+  "other": [
+    "GL_READY ic-phone 16835ms",
+    "GL_ERR ic-phone pageerror Cannot read properties of undefined (reading '0')",
+    "GL_READY ic-neo-tokyo 39877ms"
+  ]
+}

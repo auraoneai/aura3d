@@ -1,0 +1,311 @@
+{
+  "log": "g05-after-g3",
+  "shots": [
+    "ic-stages/bangkok-dock",
+    "ic-stages/colosseum-ruins",
+    "ic-stages/desert-airbase",
+    "ic-stages/himalayan-monastery"
+  ],
+  "meta": [
+    {
+      "target": "ic-stages",
+      "id": "bangkok-dock",
+      "canvasOnly": true,
+      "method": "toDataURL",
+      "size": [
+        1280,
+        720
+      ],
+      "mean": 115.35,
+      "p5": 61,
+      "p50": 111,
+      "p95": 180,
+      "darkFrac": 0,
+      "clipFrac": 0,
+      "timing": {
+        "totalMs": 14416
+      },
+      "info": {
+        "renderPath": "hdr-msaa",
+        "bloomFusion": "separable",
+        "drawCalls": 2810,
+        "optionIgnored": 0,
+        "contactShadows": {
+          "passExecuted": true,
+          "depthSource": "self"
+        }
+      },
+      "state": {
+        "frame": 108,
+        "mode": "quick",
+        "phase": "fight",
+        "stage": "bangkok-dock",
+        "p1": {
+          "x": -2.2,
+          "clip": "idle",
+          "health": 100,
+          "meter": 0,
+          "tint": "default"
+        },
+        "cpu": {
+          "x": 2.2,
+          "clip": "idle",
+          "health": 88
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "pips": {
+          "p1": 0,
+          "cpu": 0
+        },
+        "perf": {
+          "combatSnapshotsLastFrame": 4,
+          "replayLogLength": 0
+        },
+        "attackLayer": {
+          "p1": {
+            "mode": "off",
+            "active": null,
+            "timer": 0
+          },
+          "cpu": {
+            "mode": "off",
+            "active": null,
+            "timer": 0
+          }
+        }
+      }
+    },
+    {
+      "target": "ic-stages",
+      "id": "colosseum-ruins",
+      "canvasOnly": true,
+      "method": "toDataURL",
+      "size": [
+        1280,
+        720
+      ],
+      "mean": 131.28,
+      "p5": 83,
+      "p50": 128,
+      "p95": 184,
+      "darkFrac": 0,
+      "clipFrac": 0,
+      "timing": {
+        "totalMs": 13104
+      },
+      "info": {
+        "renderPath": "hdr-msaa",
+        "bloomFusion": "separable",
+        "drawCalls": 174,
+        "optionIgnored": 0,
+        "contactShadows": {
+          "passExecuted": true,
+          "depthSource": "self"
+        }
+      },
+      "state": {
+        "frame": 195,
+        "mode": "quick",
+        "phase": "fight",
+        "stage": "colosseum-ruins",
+        "p1": {
+          "x": -2.2,
+          "clip": "idle",
+          "health": 100,
+          "meter": 0,
+          "tint": "default"
+        },
+        "cpu": {
+          "x": 2.2,
+          "clip": "idle",
+          "health": 88
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "pips": {
+          "p1": 0,
+          "cpu": 0
+        },
+        "perf": {
+          "combatSnapshotsLastFrame": 4,
+          "replayLogLength": 0
+        },
+        "attackLayer": {
+          "p1": {
+            "mode": "off",
+            "active": null,
+            "timer": 0
+          },
+          "cpu": {
+            "mode": "off",
+            "active": null,
+            "timer": 0
+          }
+        }
+      }
+    },
+    {
+      "target": "ic-stages",
+      "id": "desert-airbase",
+      "canvasOnly": true,
+      "method": "toDataURL",
+      "size": [
+        1280,
+        720
+      ],
+      "mean": 122.28,
+      "p5": 72,
+      "p50": 123,
+      "p95": 180,
+      "darkFrac": 0,
+      "clipFrac": 0,
+      "timing": {
+        "totalMs": 5041
+      },
+      "info": {
+        "renderPath": "hdr-msaa",
+        "bloomFusion": "separable",
+        "drawCalls": 154,
+        "optionIgnored": 0,
+        "contactShadows": {
+          "passExecuted": true,
+          "depthSource": "self"
+        }
+      },
+      "state": {
+        "frame": 293,
+        "mode": "quick",
+        "phase": "fight",
+        "stage": "desert-airbase",
+        "p1": {
+          "x": -2.2,
+          "clip": "idle",
+          "health": 100,
+          "meter": 0,
+          "tint": "default"
+        },
+        "cpu": {
+          "x": 2.2,
+          "clip": "idle",
+          "health": 88
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "pips": {
+          "p1": 0,
+          "cpu": 0
+        },
+        "perf": {
+          "combatSnapshotsLastFrame": 4,
+          "replayLogLength": 0
+        },
+        "attackLayer": {
+          "p1": {
+            "mode": "off",
+            "active": null,
+            "timer": 0
+          },
+          "cpu": {
+            "mode": "off",
+            "active": null,
+            "timer": 0
+          }
+        }
+      }
+    },
+    {
+      "target": "ic-stages",
+      "id": "himalayan-monastery",
+      "canvasOnly": true,
+      "method": "toDataURL",
+      "size": [
+        1280,
+        720
+      ],
+      "mean": 129.94,
+      "p5": 85,
+      "p50": 131,
+      "p95": 176,
+      "darkFrac": 0,
+      "clipFrac": 0,
+      "timing": {
+        "totalMs": 10449
+      },
+      "info": {
+        "renderPath": "hdr-msaa",
+        "bloomFusion": "separable",
+        "drawCalls": 2984,
+        "optionIgnored": 0,
+        "contactShadows": {
+          "passExecuted": true,
+          "depthSource": "self"
+        }
+      },
+      "state": {
+        "frame": 425,
+        "mode": "quick",
+        "phase": "fight",
+        "stage": "himalayan-monastery",
+        "p1": {
+          "x": -2.2,
+          "clip": "idle",
+          "health": 100,
+          "meter": 0,
+          "tint": "default"
+        },
+        "cpu": {
+          "x": 2.2,
+          "clip": "idle",
+          "health": 88
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "pips": {
+          "p1": 0,
+          "cpu": 0
+        },
+        "perf": {
+          "combatSnapshotsLastFrame": 4,
+          "replayLogLength": 0
+        },
+        "attackLayer": {
+          "p1": {
+            "mode": "off",
+            "active": null,
+            "timer": 0
+          },
+          "cpu": {
+            "mode": "off",
+            "active": null,
+            "timer": 0
+          }
+        }
+      }
+    }
+  ],
+  "probes": [],
+  "other": [
+    "GL_READY ic-stages 31012ms"
+  ]
+}
