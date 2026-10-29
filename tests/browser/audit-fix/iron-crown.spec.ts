@@ -342,7 +342,7 @@ test.describe("iron crown audit fixes", () => {
 
   /** RH-05: the evidence screens, same names and sizes as evidence/iron-crown/screens/final (UI visible). */
   for (const vp of [{ name: "1280", phone: false }, { name: "390", phone: true }] as const) {
-    test(`ic-screens-${vp.name} ${vp.phone ? "@g5" : "@g4"}`, async ({ browser }) => {
+    test(`ic-screens-${vp.name} @g7`, async ({ browser }) => {
       const T = `ic-screens-${vp.name}`;
       const { context, page, loaded } = await open(browser, server, T, vp.phone, "?icdebug=1");
       await page.waitForTimeout(3000);

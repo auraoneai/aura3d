@@ -2026,6 +2026,8 @@ if (debugHooks) {
       combat.setActor(p1Won ? "rival" : "player", { health: 0 });
       snap();
       onKnockout(p1Won ? "p1" : "cpu");
+      // Skip the 1.7 s (sim time) K.O. beat: on software GL it is minutes of wall time.
+      state.koTimer = 1.7;
     }
   };
 }
