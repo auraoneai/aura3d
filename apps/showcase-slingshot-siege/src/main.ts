@@ -571,7 +571,8 @@ window.addEventListener("keydown", (ev) => {
   autoPlay = false;
   // A key press is a user gesture too: keyboard-only players get sound (and the wind loop).
   void audio.unlock();
-  if (ev.code === "Tab" || ev.code === "Space") ev.preventDefault();
+  // Space launches; keep it from scrolling the page. Tab is left alone so keyboard focus still moves.
+  if (ev.code === "Space" && !(ev.target instanceof HTMLButtonElement || ev.target instanceof HTMLInputElement)) ev.preventDefault();
   if (!heldKeys.has(ev.code)) justPressedKeys.add(ev.code);
   heldKeys.add(ev.code);
 });
