@@ -99,12 +99,12 @@
 
 ## Checklist
 
-- [ ] Decide whether to keep the new default (`quality: "auto"`, fused bloom) or pin `quality: "production"` in `createAuraApp` (`examples/last-train-port/main.ts:360`).
-- [ ] Add `renderPath` to the `diag()` hook (`main.ts:293`) and confirm `path: "hdr-msaa"`, `quality: "auto"`, `bloomFusion: "separable"` on both day and night scenes (night swaps the scene, so check after `setTimeOfDay("night")`; `?fx=nobloom` reports `"off"`).
+- [x] Decide whether to keep the new default (`quality: "auto"`, fused bloom) or pin `quality: "production"` in `createAuraApp` (`examples/last-train-port/main.ts:360`). Done: the game passes `quality: "auto"` explicitly and keeps fused bloom (audit fix D-13).
+- [x] Add `renderPath` to the `diag()` hook (`main.ts:293`) and confirm `path: "hdr-msaa"`, `quality: "auto"`, `bloomFusion: "separable"` on both day and night scenes (night swaps the scene, so check after `setTimeOfDay("night")`; `?fx=nobloom` reports `"off"`).
 - [x] Make `pixels()` (`main.ts:274`) call `render()` before `drawImage`, or pass `preserveDrawingBuffer: true`. Done: `pixels()` calls `render()` first (audit fix D-07; remote run g21w2-after-163943).
 - [ ] Run `tests/browser/last-train-port.spec.ts` (and `last-train-art`, `last-train-ui`, `last-train-play`) on the remote runner via `tools/remote-acr/run.sh`; confirm the `litFraction > 0.6` assertion still holds.
 - [ ] Capture day and night with `?capture=1` and compare with the 4.3.7 captures for bloom and AO differences.
 - [ ] Read `app.diagnostics()` after load (via the extended `diag()`) and confirm no `option-ignored` or new warnings.
-- [ ] Run `node tools/game-checks/run.mjs last-train-port`.
-- [ ] Optional: remove the deprecated `renderer.mode` and `renderer.fallback` options (and `renderer.qualityProfile` only after comparing captures, since it selects a pixel-ratio/draw-budget preset).
-- [ ] Optional: give `?fx=nohdri` an `environments.studio()` fallback if the switch is still used.
+- [x] Run `node tools/game-checks/run.mjs last-train-port`. 0 errors, 0 warnings (2026-10-29).
+- [x] Optional: remove the deprecated `renderer.mode` and `renderer.fallback` options (and `renderer.qualityProfile` only after comparing captures, since it selects a pixel-ratio/draw-budget preset). Done: all three removed; the pixel ratio is now set by the game (min(devicePixelRatio, 1.5), audit E-02).
+- [x] Optional: give `?fx=nohdri` an `environments.studio()` fallback if the switch is still used. Done with `environments.neutral({ intensity })` (the current builder; `studio` is a legacy alias).
