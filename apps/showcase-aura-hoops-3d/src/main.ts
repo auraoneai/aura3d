@@ -2972,12 +2972,29 @@ const cam = {
 /** Courtside poles per venue as [x, z, clearance radius] (floodlights, lamps, palms); see buildVenueDressing. */
 function cameraObstacles(v: VenueSpec): readonly (readonly [number, number, number])[] {
   switch (v.id) {
-    case "rucker": return [[-11, -7, 2.4], [11, -7, 2.4], [-11, 13, 2.4], [11, 13, 2.4]];
-    case "manila": return [[-13, -4, 2.4], [13, -4, 2.4], [-13, 12, 2.4], [13, 12, 2.4]];
+    // floodlights are fitted to 8.6-9.2 m tall, which makes the model about 3.2 m wide
+    case "rucker": return [[-11, -7, 2.2], [11, -7, 2.2], [-11, 13, 2.2], [11, 13, 2.2]];
+    case "manila": return [[-13, -4, 2.2], [13, -4, 2.2], [-13, 12, 2.2], [13, 12, 2.2]];
     case "shanghai": return [[-9, -3.2, 1.8], [9, -3.2, 1.8], [-9, 11.5, 1.8], [9, 11.5, 1.8], [-12, 4, 1.8], [12, 4, 1.8]];
     case "venice": return [[-12, -8, 2.2], [12.5, -10, 2.2], [-14, 12, 2.2], [14, 14, 2.2], [-9, 16, 2.2]];
     default: return [];
   }
+}
+/** Distance in the floor plane from (px, pz) to the segment a-b. */
+function segDist(ax: number, az: number, bx: number, bz: number, px: number, pz: number): number {
+  const dx = bx - ax, dz = bz - az;
+  const l2 = dx * dx + dz * dz || 1;
+  const t = clamp(((px - ax) * dx + (pz - az) * dz) / l2, 0, 1);
+  return Math.hypot(ax + dx * t - px, az + dz * t - pz);
+}
+const sightBlocked = (eye: Vec3, target: Vec3): boolean =>
+  cameraObstacles(venue).some(([ox, oz, r]) => segDist(eye[0], eye[2], target[0], target[2], ox, oz) < r);
+/** When a pole stands between the chase eye and the play, swing the eye to the other side of the handler, or else lift it over. */
+function clearSight(eye: Vec3, target: Vec3): void {
+  if (!sightBlocked(eye, target)) return;
+  const mirrored: Vec3 = [2 * target[0] - eye[0], eye[1], eye[2]];
+  if (!sightBlocked(mirrored, target)) { eye[0] = mirrored[0]; return; }
+  eye[1] = Math.max(eye[1], 9.5);
 }
 function pushEyeClear(eye: Vec3): void {
   for (const [ox, oz, r] of cameraObstacles(venue)) {
@@ -3038,9 +3055,10 @@ function updateCamera(dt: number): void {
         };
     }
   }
-  // The low chase eye (handler + (5.6, 3.0, 4.2)) can land inside a courtside pole: a Rucker floodlight at (11, 13) filled
-  // the right third of the frame on a drive down the right side (remote run g07-after2). Push the eye out of every pole.
-  if (game_.phase !== "menu") pushEyeClear(want.eye);
+  // The low chase eye (handler + (5.6, 3.0, 4.2)) can look straight through a courtside pole: the Rucker floodlight at
+  // (11, 13) filled the right third of the frame with the handler at (6.4, 11.5) (remote runs g07-after2, g07-final-screens).
+  // Swing the eye to the clear side, then push it out of any pole it still stands in.
+  if (game_.phase !== "menu") { clearSight(want.eye, want.target); pushEyeClear(want.eye); }
   const k = 1 - Math.pow(0.02, dt);
   cam.eye = [lerp(cam.eye[0], want.eye[0], k), lerp(cam.eye[1], want.eye[1], k), lerp(cam.eye[2], want.eye[2], k)];
   cam.target = [lerp(cam.target[0], want.target[0], k), lerp(cam.target[1], want.target[1], k), lerp(cam.target[2], want.target[2], k)];

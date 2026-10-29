@@ -232,9 +232,10 @@ test("@play escape menu pause", async ({ page }) => {
 
 test("@play results card", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
-  const t0 = await open(page, "?court=rucker&autoplay=1&diag=1&qaTarget=2&simsteps=6", "results");
+  // first basket wins (qaTarget=1); 30 extra fixed sim steps per rendered frame so software GL reaches it in minutes
+  const t0 = await open(page, "?court=rucker&autoplay=1&diag=1&qaTarget=1&simsteps=30", "results");
   let reached = false;
-  for (let i = 0; i < 90 && Date.now() - t0 < 480_000; i++) {
+  for (let i = 0; i < 200 && Date.now() - t0 < 1_200_000; i++) {
     const e = await evidence(page);
     if (e?.phase === "gameover") { reached = true; break; }
     await page.waitForTimeout(5_000);
