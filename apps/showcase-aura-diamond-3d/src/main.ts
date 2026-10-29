@@ -2984,13 +2984,18 @@ function boot(): void {
         );
       }
       for (const id of KIT_OWNERS) {
-        const owner = H[id]?.animation as AttachableActor | undefined;
-        if (!owner) continue;
-        if (H[`${id}-cap`] && owner.socket("Head").valid) {
-          batSocket.disposeKit.push(attachToBone(owner, { bone: "Head", target: `${id}-cap`, position: CAP_ATTACH_POS, rotation: [0, 0, 0], scale: 1 }).detach);
-        }
-        if (H[`${id}-belt`] && owner.socket("Hips").valid) {
-          batSocket.disposeKit.push(attachToBone(owner, { bone: "Hips", target: `${id}-belt`, position: BELT_ATTACH_POS, rotation: [0, 0, 0], scale: 1 }).detach);
+        // A kit that cannot attach must never take the bat socket down with it.
+        try {
+          const owner = H[id]?.animation as AttachableActor | undefined;
+          if (!owner) continue;
+          if (H[`${id}-cap`] && owner.socket("Head").valid) {
+            batSocket.disposeKit.push(attachToBone(owner, { bone: "Head", target: `${id}-cap`, position: CAP_ATTACH_POS, rotation: [0, 0, 0], scale: 1 }).detach);
+          }
+          if (H[`${id}-belt`] && owner.socket("Hips").valid) {
+            batSocket.disposeKit.push(attachToBone(owner, { bone: "Hips", target: `${id}-belt`, position: BELT_ATTACH_POS, rotation: [0, 0, 0], scale: 1 }).detach);
+          }
+        } catch (err) {
+          console.warn(`[aura-diamond] kit attach skipped for ${id}: ${String((err as Error)?.message ?? err).slice(0, 160)}`);
         }
       }
     } catch (err) {
@@ -3919,7 +3924,19 @@ function boot(): void {
       qaFinish: (playerWon: boolean) => {
         endGame(playerWon, `final after ${G.inning}`);
       },
-      qaStep: (n: number) => simLoop.advance(n)
+      qaStep: (n: number) => simLoop.advance(n),
+      /** Cap and belt heights above each athlete's ground point, and their horizontal offset (metres). */
+      qaKit: () =>
+        Object.fromEntries(
+          KIT_OWNERS.map((id) => {
+            const st = athleteState[id];
+            const cap = H[`${id}-cap`]?.position as Vec3 | undefined;
+            const belt = H[`${id}-belt`]?.position as Vec3 | undefined;
+            const rel = (v: Vec3 | undefined) => (v && st ? { up: Number((v[1] - st.pos[1]).toFixed(3)), off: Number(Math.hypot(v[0] - st.pos[0], v[2] - st.pos[2]).toFixed(3)) } : null);
+            return [id, { cap: rel(cap), belt: rel(belt), visible: kitVisible.get(id) ?? null }];
+          })
+        ),
+      qaLayout: () => ({ crowd0: crowdPlacements(park())[0], drawCalls: (app as any).diagnostics?.()?.drawCalls ?? null })
     };
   }
 

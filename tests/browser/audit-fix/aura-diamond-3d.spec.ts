@@ -171,6 +171,8 @@ test.describe("aura-diamond-3d audit-fix", () => {
       return [-0.25, -0.1, -0.03, 0, 0.03, 0.1, 0.25, null].map((off) => g.qaSwingAt(off));
     });
     log(`DIA_PROBE ${JSON.stringify({ probe: "qa-swing", grades })}`);
+    log(`DIA_PROBE ${JSON.stringify({ probe: "qa-kit", kit: await page.evaluate(() => (globalThis as any).__AURA3D_GAME_DIAMOND__.qaKit()) })}`);
+    await grab(page, "dia-kit", "kit-closeup", true, { w: 1280, h: 720 });
     await page.evaluate(() => (globalThis as any).__AURA3D_GAME_DIAMOND__.qaFinish(true));
     await page.waitForTimeout(20_000);
     await grab(page, "dia-results", "results-desktop", false, { w: 1280, h: 720 });
