@@ -16,3 +16,7 @@ Generated through Kiro Prism from original text prompts (never image-to-3D, no o
 | carrier | `carrier.glb` | `01a16b0f-e090-770b-b5e5-0235bbdfde25` | a flat-bed car carrier truck with an orange cab, dark grey flatbed and a loading ramp at the rear,  |
 
 Common style clause: `stylised game vehicle, clean readable silhouette, PBR materials, car facing forward, single object, no ground`.
+
+## Far level of detail (2026-10-29)
+
+`lod/<type>.far.glb` are derived from the nine traffic models above by `apps/showcase-roadster-rush/tools/make-far-lod.mjs`: meshoptimizer sloppy simplification to about 10% of the triangles (sedan 53,548 to 4,539; boxtruck 43,690 to 4,009) and textures downscaled to 256 px JPEG. Same rights basis as the source models; no new Meshy credits. The renderer draws traffic beyond 90 m with them.

@@ -21,7 +21,7 @@ import { assets } from "./assets";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { SHIELD_SIZE, shieldSpec } from "./art/shield";
 import { groundSpec } from "./art/ground";
-import { meshyVehicles } from "./meshy-vehicles";
+import { meshyFarVehicles, meshyVehicles } from "./meshy-vehicles";
 import { SKY_DOME_SIZE, skyLook, skySpec } from "./art/sky";
 import { createCameraShake, createHitStop, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
 import { createRoadsterPresenter, viewOf } from "./native/presentation";
@@ -66,6 +66,10 @@ const REDUCED_MOTION = typeof matchMedia === "function" && matchMedia("(prefers-
 /** Meshy model for a vehicle type when it is shipped and enabled (`?models=0` turns it off), else the original showcase asset. */
 const pickVehicleAsset = (key: string, fallback: AuraAssetRef<"model">): AuraAssetRef<"model"> =>
   meshyVehicles.enabled && key in meshyVehicles.refs ? ((meshyVehicles.refs as Record<string, AuraAssetRef<"model">>)[key] as AuraAssetRef<"model">) : fallback;
+
+/** Far-LOD Meshy model for a traffic type (drawn beyond 90 m); the `?models=0` fallbacks have no far LOD. */
+const pickFarVehicleAsset = (key: VehicleType, near: AuraAssetRef<"model">): AuraAssetRef<"model"> =>
+  meshyVehicles.enabled && key in meshyFarVehicles.refs ? ((meshyFarVehicles.refs as Record<string, AuraAssetRef<"model">>)[key] as AuraAssetRef<"model">) : near;
 
 const VEHICLE_ASSET: Record<VehicleType, { maxDim: number; role: "primaryVehicle" | "setDressing"; asset: AuraAssetRef<"model"> }> = {
   sedan: { maxDim: 4.64, role: "setDressing", asset: pickVehicleAsset("sedan", assets.roadsterRushSedan) },
@@ -477,14 +481,14 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     ]);
   }
 
-  // 4. Ground traffic: per type, a shadow-casting pool for the first 90 m and a shadowless pool beyond, sized to the
-  //    simulation's measured peaks (audit RR-1); plus carrier ramps, brake bars and turn signals.
+  // 4. Ground traffic: per type, a shadow-casting full-detail pool for the first 90 m and a shadowless far-LOD pool beyond,
+  //    sized to the simulation's measured peaks (audit RR-1); plus carrier ramps, brake bars and turn signals.
   for (const vType of VEHICLE_TYPES) {
     const spec = VEHICLE_ASSET[vType];
     for (const part of ["near", "far"] as const) {
       s.add(
         instances
-          .model(spec.asset, {
+          .model(part === "near" ? spec.asset : pickFarVehicleAsset(vType, spec.asset), {
             name: `traffic-${vType}-${part}`,
             role: spec.role,
             scaleMode: "fit",

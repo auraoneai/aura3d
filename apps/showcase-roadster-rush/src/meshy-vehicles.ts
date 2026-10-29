@@ -20,3 +20,22 @@ export const meshyVehicles = defineModelAssets(
   },
   { license: "Meshy generated asset (AuraOne account plan terms at generation time), own text prompts, 2026-10-23" }
 );
+
+/**
+ * Far level of detail of the traffic set (tools/make-far-lod.mjs: about a tenth of the triangles, 256 px textures). The
+ * renderer draws traffic beyond 90 m with these, so drawing every simulated vehicle does not multiply the triangle count.
+ */
+export const meshyFarVehicles = defineModelAssets(
+  {
+    sedan: { url: new URL("./assets/meshy/lod/sedan.far.glb", import.meta.url).pathname, sha256: "22e9e9e8dbe0332431d276ac91d1e8259a2089cc861c0e57a994e87ec3cbbfa9", sizeBytes: 126184 },
+    hatch: { url: new URL("./assets/meshy/lod/hatch.far.glb", import.meta.url).pathname, sha256: "6a88a45cd6a0719fb4919b04d11f4f0b0653bb510ab4436c497391c6d40c3ead", sizeBytes: 108460 },
+    suv: { url: new URL("./assets/meshy/lod/suv.far.glb", import.meta.url).pathname, sha256: "5ee64aec8fe165b1cce09ec7e160d393897183a10c832ad30369dd16540653aa", sizeBytes: 83548 },
+    taxi: { url: new URL("./assets/meshy/lod/taxi.far.glb", import.meta.url).pathname, sha256: "3aa3257c047f9fc0f79005b2168f51f2eb077128d8c335d2704031cadb4ca905", sizeBytes: 90492 },
+    van: { url: new URL("./assets/meshy/lod/van.far.glb", import.meta.url).pathname, sha256: "3c5adfc6e8e3346ec251846c2a076ab2dea1ae1175e1cd1cdcc2f31dce8053e2", sizeBytes: 107212 },
+    pickup: { url: new URL("./assets/meshy/lod/pickup.far.glb", import.meta.url).pathname, sha256: "3320f54780c7555e564b075f95d58a37212fce13b5fb20219f7976ebacd95a07", sizeBytes: 97888 },
+    boxtruck: { url: new URL("./assets/meshy/lod/boxtruck.far.glb", import.meta.url).pathname, sha256: "bc29654f2aa44539e50196288425f100967bf47a1a270f65873eca0a5ac3af38", sizeBytes: 132712 },
+    bus: { url: new URL("./assets/meshy/lod/bus.far.glb", import.meta.url).pathname, sha256: "e56652ce2d53150d9eef3b02c10cf8b40bb9a9c5049e6198a956d48c1d097860", sizeBytes: 114480 },
+    carrier: { url: new URL("./assets/meshy/lod/carrier.far.glb", import.meta.url).pathname, sha256: "31ce1ebec280dda8c32d8717586ce64b2c7f37ac13994504a3ed946b4f131cda", sizeBytes: 90108 }
+  },
+  { license: "Meshy generated asset (AuraOne account plan terms at generation time), own text prompts, 2026-10-23; simplified far LOD 2026-10-29" }
+);
