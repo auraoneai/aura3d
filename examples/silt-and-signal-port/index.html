@@ -7,13 +7,15 @@
     <link rel="stylesheet" href="/fonts/local.css" />
     <title>Duneglide</title>
     <style>
-      :root { color-scheme: dark; --ink: #f6f0e4; --muted: #c4bcab; --panel: rgba(22, 20, 24, 0.7); --line: rgba(246, 240, 228, 0.18); --warm: #f0b980; --jade: #8fd9c6; }
+      :root { color-scheme: dark; --ink: #f6f0e4; --muted: #c4bcab; --panel: rgba(22, 20, 24, 0.7); --line: rgba(246, 240, 228, 0.18); --warm: #f0b980; --jade: #8fd9c6; --alert: #ff8a6a; --credit-gap: 0px; --hud-meta: 12px; --hud-title: 16px; }
       * { box-sizing: border-box; }
       html, body { margin: 0; height: 100%; background: #14161c; color: var(--ink); font: 400 13px/1.45 "Graphik Web", sans-serif; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; }
       canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; touch-action: none; }
       .hidden { display: none !important; }
       .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; backdrop-filter: blur(6px); }
-      .meta { font-size: 12px; color: var(--muted); }
+      .meta { font-size: var(--hud-meta); color: var(--muted); }
+      body.text-large { --hud-meta: 15px; --hud-title: 20px; }
+      body.text-large .card p, body.text-large table.controls { font-size: 16px; }
       .num { font-variant-numeric: tabular-nums; }
       button { font: 500 13px/1 "Graphik Web", sans-serif; color: var(--ink); background: rgba(246, 240, 228, 0.08); border: 1px solid var(--line); border-radius: 6px; height: 32px; padding: 0 14px; cursor: pointer; }
       button:hover, button:focus-visible { background: rgba(240, 185, 128, 0.22); border-color: var(--warm); outline: none; }
@@ -22,12 +24,22 @@
       #hud { position: fixed; inset: 0; pointer-events: none; }
       #objective-card { position: absolute; top: 12px; left: 12px; max-width: 380px; }
       #chapter { font-size: 12px; color: var(--warm); letter-spacing: 0.04em; text-transform: uppercase; }
-      #objective { font-size: 16px; font-weight: 500; margin: 2px 0 4px; }
-      #flight { position: absolute; left: 12px; bottom: 12px; display: grid; gap: 4px; min-width: 200px; }
+      #objective { font-size: var(--hud-title); font-weight: 500; margin: 2px 0 4px; }
+      #hint { font-size: var(--hud-meta); color: var(--jade); margin-top: 2px; }
+      #hint.warn { color: var(--alert); }
+      #flight { position: absolute; left: 12px; bottom: calc(12px + var(--credit-gap)); display: grid; gap: 4px; min-width: 200px; }
       #flight .row { display: flex; justify-content: space-between; gap: 16px; }
       .meter { height: 6px; border-radius: 3px; background: rgba(246, 240, 228, 0.16); overflow: hidden; margin: 4px 0; }
       .meter > i { display: block; height: 100%; width: 100%; background: var(--jade); }
-      #keys { position: absolute; right: 12px; bottom: 12px; text-align: right; max-width: 420px; }
+      #keys { position: absolute; right: 12px; bottom: calc(12px + var(--credit-gap)); text-align: right; max-width: 420px; }
+      #touch { display: none; }
+      body.touch #keys { display: none; }
+      body.touch #touch { display: block; }
+      #touch button { position: absolute; pointer-events: auto; touch-action: none; border-radius: 50%; font-size: 13px; background: rgba(22, 20, 24, 0.62); border: 1px solid rgba(246, 240, 228, 0.35); }
+      #touch button.down { background: rgba(240, 185, 128, 0.42); border-color: var(--warm); }
+      #touch-hold { width: 76px; height: 76px; right: max(12px, env(safe-area-inset-right)); bottom: calc(max(12px, env(safe-area-inset-bottom)) + var(--credit-gap)); }
+      #touch-boost { width: 60px; height: 60px; right: calc(max(12px, env(safe-area-inset-right)) + 86px); bottom: calc(max(12px, env(safe-area-inset-bottom)) + var(--credit-gap) + 8px); }
+      #touch-pause { width: 48px; height: 48px; right: max(12px, env(safe-area-inset-right)); top: calc(max(12px, env(safe-area-inset-top)) + 104px); }
       #compass-wrap { position: absolute; top: 12px; right: 12px; width: 92px; height: 92px; background: rgba(8, 20, 28, 0.78); box-shadow: 0 0 0 3px #19e6ff, 0 0 18px 2px rgba(25, 230, 255, 0.55); display: grid; place-items: center; border-radius: 50%; }
       #compass { width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 44px solid #19e6ff; filter: drop-shadow(0 0 6px #19e6ff); transition: transform 60ms linear; }
       #toast { position: absolute; left: 50%; top: 18%; transform: translateX(-50%); font-size: 16px; font-weight: 500; opacity: 0; transition: opacity 240ms; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6); }
@@ -53,7 +65,10 @@
         #objective { font-size: 14px; }
         #compass-wrap { top: max(8px, env(safe-area-inset-top)); right: 8px; width: 72px; height: 72px; }
         #compass { border-left-width: 11px; border-right-width: 11px; border-bottom-width: 33px; }
-        #flight { left: 8px; bottom: max(8px, env(safe-area-inset-bottom)); min-width: 170px; }
+        #flight { left: 8px; bottom: calc(max(8px, env(safe-area-inset-bottom)) + var(--credit-gap)); min-width: 170px; }
+        #touch-hold { right: max(8px, env(safe-area-inset-right)); bottom: calc(max(8px, env(safe-area-inset-bottom)) + var(--credit-gap)); }
+        #touch-boost { right: calc(max(8px, env(safe-area-inset-right)) + 84px); bottom: calc(max(8px, env(safe-area-inset-bottom)) + var(--credit-gap) + 8px); }
+        #touch-pause { right: max(8px, env(safe-area-inset-right)); top: calc(max(8px, env(safe-area-inset-top)) + 80px); }
         #keys { display: none; }
         .card h1 { font-size: 24px; }
       }
@@ -69,6 +84,7 @@
         <div id="chapter"></div>
         <div id="objective"></div>
         <div class="meta"><span id="distance" class="num"></span> · <span id="steps" class="num"></span> <span id="hold" class="num"></span></div>
+        <div id="hint" class="hidden"></div>
       </div>
       <div id="compass-wrap" class="panel"><div id="compass"></div></div>
       <div id="flight" class="panel">
@@ -78,6 +94,11 @@
         <div class="row" style="justify-content:space-between"><span class="meta">Mode</span><span id="mode">Cruise</span></div>
       </div>
       <div id="keys" class="panel meta">W/S throttle · A/D steer · E/Q rise/fall · Shift boost · B brake · F interact · Esc pause · P autopilot · hold the mouse or touch to fly, drag to steer and climb</div>
+      <div id="touch" aria-label="Touch controls">
+        <button id="touch-pause" aria-label="Pause">Pause</button>
+        <button id="touch-boost" aria-label="Boost">Boost</button>
+        <button id="touch-hold" aria-label="Hold: interact and brake">Hold</button>
+      </div>
       <div id="toast"></div>
     </div>
 
@@ -86,7 +107,7 @@
         <div class="meta">A hover-board flight through seven valleys</div>
         <h1>Duneglide</h1>
         <p id="title-tagline" class="meta">Answer the lamp on the far road. Fly the rings, hold steady when asked, and see what is on the other side of the water.</p>
-        <div class="row"><button id="start-button" class="primary">Begin the journey</button><button id="mute-button">Sound: on</button></div>
+        <div class="row"><button id="start-button" class="primary">Begin the journey</button><button id="mute-button">Sound: on</button><button id="text-button">Text: normal</button></div>
         <div class="meta">Jump to a chapter</div>
         <div id="chapter-buttons" class="chapters"></div>
         <table class="controls">
@@ -97,6 +118,7 @@
           <tr><td>B</td><td>brake</td></tr>
           <tr><td>F (hold)</td><td>interact when a ring asks you to hold still</td></tr>
           <tr><td>Mouse or touch</td><td>hold to fly, drag sideways to steer, up or down to climb or dive, a second finger boosts</td></tr>
+          <tr><td>Touch buttons</td><td>Hold (brakes and interacts, for the rings that ask you to hold still), Boost, Pause</td></tr>
           <tr><td>Gamepad</td><td>left stick fly, right stick altitude, A or trigger boost, B brake, X interact, Start pause</td></tr>
         </table>
         <div class="meta">Terrain, models and textures are CC0 (Kenney, ambientCG, Aura3D starter); sound is synthesised live. Independent game; its art is original work.</div>
@@ -106,7 +128,7 @@
     <section id="pause-screen" class="screen hidden">
       <div class="card panel">
         <h2>Paused</h2>
-        <div class="row"><button id="resume-button" class="primary">Resume</button><button id="restart-button">Restart objective</button><button id="pause-mute">Sound: on</button><button id="title-button">Title screen</button></div>
+        <div class="row"><button id="resume-button" class="primary">Resume</button><button id="restart-button">Restart objective</button><button id="pause-mute">Sound: on</button><button id="pause-text">Text: normal</button><button id="title-button">Title screen</button></div>
       </div>
     </section>
 

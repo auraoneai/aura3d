@@ -41,6 +41,9 @@ const HASHES = {
   "textures/rock_Color.jpg": "sha256-09aab3df526e6801a788b9daee659ce081a582d88182b6e2ba17b3b6c1f8a6ad",
   "textures/rock_NormalGL.jpg": "sha256-2a5afdb4f4ea08aab0348d5e04b32e3a2ff92e450158344ea3bfa9a2140d6aa9",
   "textures/rock_Roughness.jpg": "sha256-75256cb9072dfdd046e12988e03c8d6a17af985b35e3b83e5082e4699ebde1a6",
+  "textures/plaster_Color.jpg": "sha256-be925668100ca02f524e2a21a3d3af3eb545e845a481490b5904318861d28eb9",
+  "textures/plaster_NormalGL.jpg": "sha256-cbc39c32f995be2ca85093e3f0067202df7cfa0a91c1c5f64367e6a2b396bf1b",
+  "textures/plaster_Roughness.jpg": "sha256-906fc577fe62ade67d8a8d83968543ed59926cf8e506979e10a49175f17303cb",
 } as const;
 
 /* Static literals: the bundler only rewrites `new URL("<literal>", import.meta.url)`; a computed path resolves against the chunk and 404s. */
@@ -78,6 +81,9 @@ const ASSET_URLS: Readonly<Record<string, string>> = {
   "textures/rock_Color.jpg": new URL("./assets/textures/rock_Color.jpg", import.meta.url).pathname,
   "textures/rock_NormalGL.jpg": new URL("./assets/textures/rock_NormalGL.jpg", import.meta.url).pathname,
   "textures/rock_Roughness.jpg": new URL("./assets/textures/rock_Roughness.jpg", import.meta.url).pathname,
+  "textures/plaster_Color.jpg": new URL("./assets/textures/plaster_Color.jpg", import.meta.url).pathname,
+  "textures/plaster_NormalGL.jpg": new URL("./assets/textures/plaster_NormalGL.jpg", import.meta.url).pathname,
+  "textures/plaster_Roughness.jpg": new URL("./assets/textures/plaster_Roughness.jpg", import.meta.url).pathname,
 };
 const url = (key: string): string => {
   const hit = ASSET_URLS[key];
@@ -152,5 +158,8 @@ export const assets = defineAuraAssets({
   rockRough: tex("rock", "Roughness"),
   bricksColor: tex("bricks", "Color"),
   bricksNormal: tex("bricks", "NormalGL"),
-  bricksRough: tex("bricks", "Roughness")
+  bricksRough: tex("bricks", "Roughness"),
+  plasterColor: tex("plaster", "Color"),
+  plasterNormal: tex("plaster", "NormalGL"),
+  plasterRough: tex("plaster", "Roughness")
 });

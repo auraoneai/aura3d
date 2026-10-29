@@ -13,7 +13,7 @@ import {
 import { assets } from "./assets";
 import { CHAPTERS } from "./chapters-data";
 import { chaseEyeBlocked, clearChaseEye, createChaseClearance, sceneryColumns, wantedChaseEye } from "./camera";
-import { objectiveOf, type Sim } from "./sim";
+import { gateOpen, objectiveOf, type Sim } from "./sim";
 import { RING_FRAGMENT, RING_VERTEX, SKY_FRAGMENT, SKY_VERTEX, WATER_FRAGMENT, WATER_VERTEX } from "./shaders";
 import { buildArchitecture, farDunes, terrainColors, type ColoredMesh } from "./architecture";
 import { createTerrain, usesOriginalTerrain, type Column, type MeshData, type Placement, type Terrain } from "./terrain";
@@ -36,8 +36,8 @@ export function skyColors(chapter: number): { top: Rgb; bottom: Rgb; night: numb
   const ch = CHAPTERS[chapter]!;
   // chapter 0 is a dusk plaza in the original's frames: measured sky colours (top, horizon) instead of the palette's day blues
   if (chapter === 0) return { top: hexLinear(0xa9b8c2), bottom: hexLinear(0xe8c9ae), night: 0 };
-  const top = chapter === 0 ? 7125983 : chapter === 6 ? 10205909 : chapter === 1 ? 9549517 : ch.palette.sky!;
-  const bottom = chapter === 0 ? 13494749 : chapter === 6 ? 15846320 : chapter === 1 ? 14792340 : ch.palette.fog!;
+  const top = chapter === 6 ? 10205909 : chapter === 1 ? 9549517 : ch.palette.sky!;
+  const bottom = chapter === 6 ? 15846320 : chapter === 1 ? 14792340 : ch.palette.fog!;
   return { top: hexLinear(top), bottom: hexLinear(bottom), night: ch.night ? 1 : 0 };
 }
 
@@ -105,18 +105,35 @@ export interface WorldRuntime {
   readonly cameraEye: () => { readonly eye: readonly [number, number, number]; readonly blocked: boolean } | null;
   /** play a one-shot rider clip (ring pickup, objective complete) and return to the cruise loop */
   celebrate(): void;
+  /** a short, capped camera shake for a collision (`strength` 0..1); a no-op with reduced motion */
+  shake(strength: number): void;
   readonly nodeCount: number;
   readonly riderAnimation: () => { bound: boolean; clip: string | null; error?: string };
+}
+
+export interface BindOptions {
+  readonly animate?: boolean;
+  readonly clearCamera?: boolean;
+  /** `prefers-reduced-motion`: no boost FOV kick, no thruster flicker, no impact shake */
+  readonly reducedMotion?: boolean;
 }
 
 export interface World {
   readonly scene: Scene;
   readonly stats: WorldStats;
   readonly terrain: Terrain;
-  bind(app: AuraApp, options?: { readonly animate?: boolean; readonly clearCamera?: boolean }): WorldRuntime;
+  bind(app: AuraApp, options?: BindOptions): WorldRuntime;
+}
+
+export interface BuildOptions {
+  /** Sun shadow map size. main.ts passes 2048 on coarse-pointer (phone and tablet) screens and 4096 elsewhere. */
+  readonly shadowMapSize?: 512 | 1024 | 2048 | 4096;
 }
 
 const FAR = [0, -400, 0] as const;
+/** Impact shake: at most 0.35 m of eye offset, fading out over 0.25 s. */
+const SHAKE_SECONDS = 0.25;
+const SHAKE_METRES = 0.35;
 /** QA only (`?nobeacon=1`): hides the active-ring beacon so a spec can difference two frames and measure its contrast. */
 const NO_BEACON = typeof location !== "undefined" && new URLSearchParams(location.search).has("nobeacon");
 /** hoverboard.glb is 1.9 m long (x axis) and 0.37 m thick, origin at its centre; the rider's feet stand on its deck top */
@@ -163,7 +180,12 @@ const columnTransforms = (list: readonly Column[]) =>
     scale: [c.r * 2, c.top - c.bottom, c.r * 2] as [number, number, number]
   }));
 
-export function buildWorld(chapter: number): World {
+/** Gate colours for timed objectives: the cyan beacon while the gate is open, this warm red one while it is shut. */
+export const GATE_SHUT = { rimColor: "#ff6a3d", haloColor: "#ffb08a", bodyColor: "#1a0603" } as const;
+/** Parked instances of the waiting-ring pool (one instanced node instead of eight model nodes). */
+const PARKED = { position: [...FAR] as [number, number, number], rotation: [0, 0, 0] as [number, number, number], scale: 0.001 };
+
+export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): World {
   const ch = CHAPTERS[chapter]!;
   const rig = rigOf(chapter);
   const terrain = createTerrain(chapter);
@@ -185,10 +207,11 @@ export function buildWorld(chapter: number): World {
       target: [0, 0, 0],
       intensity: rig.sunIntensity,
       color: rig.sun,
-      shadow: { mapSize: 4096, cascades: 3, maxDistance: 360, bias: -0.0004 }
+      shadow: { mapSize: buildOptions.shadowMapSize ?? 4096, cascades: 3, maxDistance: 360, bias: -0.0004 }
     }))
     .add(effects.fog({ density: rig.fogDensity, color: rig.fog }))
-    .add(effects.bloom({ intensity: rig.night ? 0.7 : 0.38, threshold: 0.82, radius: 0.5 }))
+    // threshold at HDR white (1.0) so only the emissive beacons, thrusters and lamps bloom; `radius` is a deprecated post field
+    .add(effects.bloom({ intensity: rig.night ? 0.7 : 0.38, threshold: 1 }))
     .add(effects.colorGrade({ contrast: 1.06, saturation: 1.08, exposure: rig.night ? 1.05 : 1 }));
 
   builder.add(primitives.sphere({ name: "sky", position: [0, 0, 0], size: 4200, material: material.custom(skySpec(chapter)) }).runtime({ id: "sky" }));
@@ -235,7 +258,8 @@ export function buildWorld(chapter: number): World {
     { name: "limestone", mesh: arch.stone, cast: true, spec: pbr({ color: white, texture: assets.bricksColor, normal: assets.bricksNormal, roughnessMap: assets.bricksRough, roughness: 1, normalScale: 0.8 }) },
     ...arch.plaster.map((mesh, i) => ({
       name: `plaster-${i}`, mesh, cast: true,
-      spec: pbr({ color: cssHex(((Math.round(Math.min(1, arch.plasterHues[i]![0] ** (1 / 2.2)) * 255) << 16) | (Math.round(Math.min(1, arch.plasterHues[i]![1] ** (1 / 2.2)) * 255) << 8) | Math.round(Math.min(1, arch.plasterHues[i]![2] ** (1 / 2.2)) * 255))), normal: assets.groundNormal, normalScale: 0.6, roughness: 0.9 })
+      // ambientCG PaintedPlaster017 (CC0) under the per-hue tint: trowel marks and worn paint instead of flat slabs
+      spec: pbr({ color: cssHex(((Math.round(Math.min(1, arch.plasterHues[i]![0] ** (1 / 2.2)) * 255) << 16) | (Math.round(Math.min(1, arch.plasterHues[i]![1] ** (1 / 2.2)) * 255) << 8) | Math.round(Math.min(1, arch.plasterHues[i]![2] ** (1 / 2.2)) * 255))), texture: assets.plasterColor, normal: assets.plasterNormal, roughnessMap: assets.plasterRough, normalScale: 0.8, roughness: 1 })
     })),
     { name: "roof-tiles", mesh: arch.roofs, cast: true, spec: pbr({ color: white, texture: assets.bricksColor, normal: assets.bricksNormal, roughnessMap: assets.bricksRough, roughness: 0.85 }) },
     { name: "window-dark", mesh: arch.dark, cast: false, spec: pbr({ color: "#1a1612", roughness: 0.6 }) }
@@ -287,7 +311,8 @@ export function buildWorld(chapter: number): World {
   if (props.lamps.length) {
     builder.add(instances.model(assets.lantern, {
       name: "lamps",
-      transforms: props.lamps.slice(0, 18).map((p) => {
+      // every lamp the sim collides with is drawn (one instanced node)
+      transforms: props.lamps.map((p) => {
         const s = Math.max(2.2, p.scale);
         return { position: [p.x, p.y + 0.95 * s, p.z] as [number, number, number], rotation: [0, p.yaw, 0] as [number, number, number], scale: s };
       }),
@@ -314,12 +339,16 @@ export function buildWorld(chapter: number): World {
     }));
   }
 
-  // Waiting rings are Meshy stone rings with ember runes (lit PBR, no blending); the active ring is the bright emissive beacon below.
-  for (let i = 0; i < MAX_RINGS; i++) {
-    builder.add(model(assets.ringclean, { name: `ring-${i}`, position: [...FAR], scale: 38, castShadow: false }).runtime({ id: `ring-${i}` }));
-  }
+  // Waiting rings are Meshy stone rings with ember runes (lit PBR, no blending), drawn as one instanced pool of MAX_RINGS; the
+  // active ring is the bright emissive beacon below.
+  builder.add(instances.model(assets.ringclean, { name: "rings", transforms: Array.from({ length: MAX_RINGS }, () => PARKED), castShadow: false }).runtime({ id: "rings" }));
   // Active-ring beacon: the library objective marker (dark-teal ring body, cyan rim, expanding halo, light column), sized to the 66 m rings.
   builder.addMany(prefabs.objectiveMarker({ id: "beacon", diameter: 66, hiddenPosition: [...FAR] }));
+  // The same marker in red, shown instead while a timed gate is shut.
+  builder.addMany(prefabs.objectiveMarker({ id: "gate", diameter: 66, hiddenPosition: [...FAR], ...GATE_SHUT }));
+  // The shell a tow objective drags behind the board (parked until the rider latches on).
+  builder.add(primitives.sphere({ name: "tow-shell", position: [...FAR], size: [3.2, 1.9, 3.2], castShadow: true, material: pbr({ color: "#e6d3ad", roughness: 0.55 }) }).runtime({ id: "tow-shell" }));
+  builder.add(primitives.sphere({ name: "tow-glow", position: [...FAR], size: [1.1, 0.5, 1.1], material: material.emissive({ color: "#ffd38a", emissiveIntensity: 2.2 }) }).runtime({ id: "tow-glow" }));
 
   for (const side of ["l", "r"]) {
     builder.add(primitives.sphere({ name: `thruster-${side}`, position: [0, 4, 0], size: [0.34, 1.1, 0.34], material: material.emissive({ color: "#38d6ff", emissiveIntensity: 3 }) }).runtime({ id: `thruster-${side}` }));
@@ -366,7 +395,7 @@ export function buildWorld(chapter: number): World {
     scene: builder,
     stats,
     terrain,
-    bind(app: AuraApp, options: { readonly animate?: boolean; readonly clearCamera?: boolean } = {}): WorldRuntime {
+    bind(app: AuraApp, options: BindOptions = {}): WorldRuntime {
       const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
       const node = (id: string) => {
         let h = handles.get(id);
@@ -398,8 +427,16 @@ export function buildWorld(chapter: number): World {
       const scenery = sceneryColumns(props);
       let lastEye: { eye: readonly [number, number, number]; blocked: boolean } | null = null;
       let lastPoint = -1, lastObjective = -1;
+      let ringsKey = "";
+      let shakeLeft = 0, shakeStrength = 0;
+      let towX: number = FAR[0], towY: number = FAR[1], towZ: number = FAR[2], towing = false;
       return {
         celebrate() { oneShot = 0.9; playClip("walk"); },
+        shake(strength) {
+          if (options.reducedMotion) return;
+          shakeStrength = Math.min(1, Math.max(shakeStrength * (shakeLeft > 0 ? 1 : 0), strength));
+          shakeLeft = SHAKE_SECONDS;
+        },
         update(sim, dt, time, aspect, cut = false) {
           const { state, flight } = sim;
           const fx = -Math.sin(state.yaw), fz = -Math.cos(state.yaw);
@@ -413,7 +450,7 @@ export function buildWorld(chapter: number): World {
           for (const [side, ox] of [["l", -0.62], ["r", 0.62]] as const) {
             const t = node(`thruster-${side}`);
             t.setPosition(state.x + ox * cy + 0.2 * sy, state.y - BOARD_DROP - 0.85, state.z - ox * sy + 0.2 * cy);
-            t.setScale([1, 0.8 + 0.25 * Math.sin(time * 24 + ox * 5) + Math.min(0.8, Math.abs(flight.speed) * 0.012), 1]);
+            t.setScale([1, 0.8 + (options.reducedMotion ? 0 : 0.25 * Math.sin(time * 24 + ox * 5)) + Math.min(0.8, Math.abs(flight.speed) * 0.012), 1]);
           }
           node("sky").setPosition(state.x, state.y, state.z);
           node("canal").setUniform?.("siltTime", time);
@@ -429,26 +466,55 @@ export function buildWorld(chapter: number): World {
 
           const o = objectiveOf(state);
           const active = o.points[state.point];
-          const poses = prefabs.objectiveMarkerPoses(!active || state.scene || state.completed || NO_BEACON ? null : [active.x, active.y, active.z], time, { diameter: 66, hiddenPosition: [...FAR] });
+          const target = !active || state.scene || state.completed || NO_BEACON ? null : [active.x, active.y, active.z] as [number, number, number];
+          // timed gates: the cyan beacon while open, the red one while shut
+          const shut = target !== null && o.kind === "timed" && !gateOpen(sim.time, o);
+          const open = prefabs.objectiveMarkerPoses(shut ? null : target, time, { diameter: 66, hiddenPosition: [...FAR] });
+          const closed = prefabs.objectiveMarkerPoses(shut ? target : null, time, { diameter: 66, hiddenPosition: [...FAR] });
           for (const part of ["ring", "rim", "halo", "beam"] as const) {
-            const h = node(`beacon-${part}`);
-            h.setPosition(...poses[part]!.position);
-            h.setScale([...poses[part]!.scale]);
+            for (const [id, poses] of [["beacon", open], ["gate", closed]] as const) {
+              const h = node(`${id}-${part}`);
+              h.setPosition(...poses[part]!.position);
+              h.setScale([...poses[part]!.scale]);
+            }
           }
-          for (let i = 0; i < MAX_RINGS; i++) {
-            const h = node(`ring-${i}`);
-            const p = o.points[i];
-            if (!p || state.scene || state.completed || i <= state.point) { h.setPosition(...FAR); continue; }
-            h.setPosition(p.x, p.y, p.z);
+          // waiting rings: rewrite the instanced pool only when the set of waiting rings changes
+          const waiting = state.scene || state.completed ? [] : o.points.slice(state.point + 1, MAX_RINGS);
+          const key = `${state.chapter}:${state.objective}:${state.point}:${waiting.length}`;
+          if (key !== ringsKey) {
+            ringsKey = key;
+            node("rings").setInstances(Array.from({ length: MAX_RINGS }, (_, i) => {
+              const p = waiting[i];
+              return p ? { position: [p.x, p.y, p.z] as [number, number, number], rotation: [0, 0, 0] as [number, number, number], scale: 38 } : PARKED;
+            }));
           }
+          // tow: the shell trails 9 m behind the board while towing
+          if (state.towing) {
+            const bx = state.x - fx * 9, bz = state.z - fz * 9, by = Math.max(state.y - 3.2, sim.world.floor(bx, bz, state.y) + 1);
+            if (!towing || cut) { towX = bx; towY = by; towZ = bz; }
+            const kt = 1 - Math.exp(-dt * 6);
+            towX += (bx - towX) * kt; towY += (by - towY) * kt; towZ += (bz - towZ) * kt;
+            node("tow-shell").setPosition(towX, towY, towZ);
+            node("tow-glow").setPosition(towX, towY + 0.95, towZ);
+          } else if (towing) {
+            node("tow-shell").setPosition(...FAR);
+            node("tow-glow").setPosition(...FAR);
+          }
+          towing = state.towing;
           const tx = state.x + fx * 14, ty = state.y + 1.2, tz = state.z + fz * 14;
           if (!init || cut) { lookX = tx; lookY = ty; lookZ = tz; init = true; clearance.reset(); }
           const k = 1 - Math.exp(-dt * 5);
           lookX += (tx - lookX) * k; lookY += (ty - lookY) * k; lookZ += (tz - lookZ) * k;
-          const kick = flight.boosting ? 6 : 0;
+          const kick = flight.boosting && !options.reducedMotion ? 6 : 0;
           const eye = options.clearCamera === false ? wantedChaseEye(sim) : clearChaseEye(sim, clearance, dt, scenery);
           lastEye = { eye, blocked: chaseEyeBlocked(sim.world, scenery)(eye[0], eye[1], eye[2]) };
-          cameraController.setPose({ position: eye, target: [lookX, lookY, lookZ], up: [0, 1, 0], fov: (aspect < 0.85 ? 78 : 62) + kick }, { cut });
+          let shown: [number, number, number] = [eye[0], eye[1], eye[2]];
+          if (shakeLeft > 0) {
+            shakeLeft = Math.max(0, shakeLeft - dt);
+            const a = SHAKE_METRES * shakeStrength * (shakeLeft / SHAKE_SECONDS);
+            shown = [eye[0] + a * Math.sin(time * 61), eye[1] + a * Math.sin(time * 47 + 1.3), eye[2] + a * Math.sin(time * 53 + 2.1)];
+          }
+          cameraController.setPose({ position: shown, target: [lookX, lookY, lookZ], up: [0, 1, 0], fov: (aspect < 0.85 ? 78 : 62) + kick }, { cut });
         },
         get nodeCount() { return handles.size; },
         cameraEye: () => lastEye,

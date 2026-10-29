@@ -43,12 +43,12 @@ export const OBJECTIVE_TITLES: Record<string, string> = {
   relay: "Hold still and send the beacon signal",
   worker: "Lift the trapped platform clear",
   tether: "Hover until the cable lets go",
-  "release-elder": "Lead the little ones beneath the giant",
+  "release-elder": "Fly the old path into the giant's shadow",
   "home-crossing": "Carry the living current home",
   "new-channel": "Return through the harbour channels",
   "village-sluice": "Hover at the sluice to bring the lights back",
   "last-bridge": "Lift the bridge so the road can open",
-  migration: "Fly alongside the herd past the gatehouse",
+  migration: "Fly the migration route past the gatehouse",
   ending: "Let the road belong to someone else"
 };
 

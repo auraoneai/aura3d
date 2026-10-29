@@ -31,7 +31,10 @@ bridges, and the 1400 measured colliders (round and box, `colliders-ch0.ts`), re
 and its impact rule (cooldown 0.7 s, speed x 0.82). `world-ch0.test.ts` checks the floor against the 14 floors the original
 reported at its objective points (to 9 decimals) and the collision maths; the three parity rides (0:1, 0:2, 0:3) still replay
 exactly with the world active. Chapter 6 shares the terrain function; chapters 1 to 5 have their own ground functions in the
-original that were not captured, so they keep the 0.6 plain and no colliders.
+original that were not captured. Since the 2026-10-29 audit (C3, C6) chapters 1 to 6 use this port's own physical world
+(`terrainPhysics` in `terrain.ts`): the floor is the rendered terrain (`max(0.6, heightAt)`), so the rider and the chase camera stay
+above the hills, and every scattered prop the chapter draws (houses, trees, rocks, lamps, piers) has a round or box collider sized
+from its model bounds. A push out of a collider re-applies the floor clamp, and the world-edge clamp now runs before the floor test.
 
 ## Art (this port's own, CC0 sources)
 
@@ -40,10 +43,13 @@ original that were not captured, so they keep the 0.6 plain and no colliders.
   Chapters 0 and 6 use the original's canal trench; chapters 1 to 5 use generated hills (`terrain.ts`) because their ground
   functions were not captured. Chapter 0 places every measured object: 51 houses, ~480 trees and shrubs, aqueduct piers, brass masts,
   lamps and the 783 box colliders as cliff terraces, aqueduct walls and building masses (instanced boxes: rock, brick, plaster).
+  All 55 chapter-0 lamps are drawn (the first 18 used to be, so 37 were solid but invisible). Plaster walls carry ambientCG
+  PaintedPlaster017 colour, normal and roughness maps under their per-wall tint.
 - **Rider**: the Aura3D animation-starter hero (rigged node animation, 27 clips) on a Kenney skateboard, driven by an
   `AnimationController` (idle, drive, interact-right while holding, emote-yes on ring or objective).
 - **Look**: output tone mapping `none` at exposure 0.65 (the original renders with no tone mapping; 0.65 brings this PBR rig's mean luma near the original's frames), and a cel pass (`effects.toon`: 5-step luma banding mixed 75% plus a Sobel outline) over the final image, `?toon=0` turns it off. This approximates the original's `MeshToonMaterial` 4-step look in screen space; materials stay PBR. Chapter 0's sky and fog use colours measured from the original's frames (dusk plaza), not the palette's day blues.
-- **Rings**: additive emissive torus with a pulsing rim; bloom gives the glow.
+- **Rings**: the active ring is the library objective marker (cyan; red while a timed gate is shut); waiting rings are one
+  instanced pool of Meshy stone rings. Bloom (threshold 1.0) gives the emissive parts their glow.
 - **Sky dome** is a faithful port of the original's shader; **canal water** is a flowing custom shader (fresnel, glint, foam).
 - Models and textures are CC0 (`assets/ATTRIBUTION.md`); nothing from the original's art, audio or text is reused. Chapter names,
   objective titles and scene captions are written for this port (`copy.ts`).
@@ -52,18 +58,27 @@ original that were not captured, so they keep the 0.6 plain and no colliders.
 
 ## Features
 
-Title screen with chapter select, pause (Esc / Start), scene cards between objectives, results screen, a compass to the next ring,
-toasts, mute; keyboard, mouse/touch (hold to fly, drag to steer and climb, second finger boosts) and gamepad (sticks, A / triggers,
-B, X, Start); procedural Web Audio (chapter pad, speed-reactive hum and wind, ring/objective chimes). QA and autopilot URLs
-(`objective`, `autopilot`, `manual`, `start`) skip every screen.
+Title screen with chapter select, pause (Esc / Start / the touch Pause button), scene cards between objectives, a results screen
+that sums the whole journey (time, lamps restored, chapters flown, impacts; per-chapter numbers ride in sessionStorage across the
+chapter reloads), a compass to the next ring, toasts, mute and text size (both kept in sessionStorage); keyboard, mouse/touch (hold
+to fly, drag to steer and climb, second finger boosts), on-screen touch buttons (Hold = interact + brake, Boost, Pause; shown on
+coarse pointers or after the first touch) and gamepad (sticks, A / triggers, B, X, Start); a hint line under the objective (which
+control to hold, timed-gate countdown, stealth and wake limits); impacts give a thud, a short capped camera shake and a toast; a tow
+objective drags a shell. `prefers-reduced-motion` turns off the boost FOV kick, the thruster flicker and the shake. Procedural Web
+Audio (chapter pad, speed-reactive hum and wind, ring/objective chimes) starts on the first key, pad button or press.
+QA URLs (`objective`, `autopilot`, `manual`) skip every screen and never pause; `start=1` alone skips the title and is player
+mode, which is how chapter changes reload. The loading screen stays up until the textured materials have swapped in (20 s cap).
+Coarse-pointer screens use a 2048 sun shadow map instead of 4096.
 
 ## Not ported (engine gaps and capture gaps are named, not hidden)
 
-- Colliders and ground for chapters 1 to 5 (and chapter 6's colliders): the reference world was recorded for chapter 0 only. The
-  recorded "limit ride" (chapter 1, objective 0: 13 impacts, minimum altitude 1.41) therefore cannot be replayed; it needs the chapter-1 world.
+- The original's own colliders and ground for chapters 1 to 5 (and chapter 6's colliders): the reference world was recorded for
+  chapter 0 only, so chapters 1 to 6 use this port's terrain and props instead. The recorded "limit ride" (chapter 1, objective 0:
+  13 impacts, minimum altitude 1.41) therefore cannot be replayed; it needs the original's chapter-1 world.
 - Tapered colliders (`profile` in the original's `hS`) and the original's creature colliders: not in the recorded data, so every collider is round or box.
 - Creature and exploration ticks (echoes, wind trials, herd), the chapter-1 spillway recovery (`E0`), voiced scene audio, save games,
-  and the arcade "Free ride & racing" mode.
+  and the arcade "Free ride & racing" mode. Without exploration there are no field notes, so the field-note perks (reserve energy,
+  stronger lift) and the results cell were removed; the two herd objectives are titled as the ring routes they are.
 - The original's look is per-material toon shading (`MeshToonMaterial`, 4-step gradient) with painted clouds, NPC sprites and a minimap; the port
   approximates the shading with a screen-space cel pass over PBR and has none of those three.
 - `time` (TSL) is not used; sky, water and rings are `material.custom` GLSL programs.
@@ -78,7 +93,7 @@ B, X, Start); procedural Web Audio (chapter pad, speed-reactive hum and wind, ri
 
 ## Hooks
 
-`window.__AURA_SILT__`: `ready`, `reset(chapter, objective)`, `stepFrames(n, input)`, `replay(segments)` (returns the same
+`window.__AURA_SILT__`: `ready`, `reset(chapter, objective, start?)`, `stepFrames(n, input?)` (no input: the live controls), `replay(segments)` (returns the same
 13-column trace rows as the reference), `applyInput(input)`, `setAutopilot(on)`, `state()`, `row()`, `render()`, `overview(on)`, `pose(p)`,
 `mode()`, `setMode(m)`, `info()`.
 Query: `?chapter=0..6&objective=N&autopilot=1&manual=1&start=1`.
@@ -98,7 +113,7 @@ Generated through Kiro Prism from original text prompts (no image-to-3D, no orig
 | watchtower.glb | two outposts on the road | ruined sandstone watchtower |
 | pillar.glb | six canyon pillars | wind-carved sandstone pillar |
 | canyonrocks.glb | the 48 largest boulders (the rest stay cheap instanced icosahedra) | eroded red-sandstone boulder cluster |
-| lantern.glb | first 18 street lamps | iron post with bronze lantern |
+| lantern.glb | every street lamp | iron post with bronze lantern |
 | banner.glb | eight route banners | tall pole, tattered teal and ochre banner |
 | stall.glb | two plaza market stalls | canvas-roofed stall with crates and jars |
 

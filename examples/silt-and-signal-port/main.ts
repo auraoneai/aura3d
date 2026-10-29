@@ -4,8 +4,9 @@
  *
  * Query parameters (all optional): `chapter=0..6`, `objective=N` (the QA jump: the rider starts 40 m
  * behind the objective's first point), `autopilot=1` (fly the reference controller), `manual=1` (the sim
- * only advances through `__AURA_SILT__.stepFrames` / `replay`), `start=1` (skip the title screen). Any of
- * `objective`, `autopilot`, `manual` or `start` goes straight into play with no screens.
+ * only advances through `__AURA_SILT__.stepFrames` / `replay`), `start=1` (skip the title screen). `objective`, `autopilot`
+ * and `manual` are QA modes: straight into play, no pause on Esc / blur / Start. `start=1` alone is player mode without
+ * the title (chapter changes and "Fly again" reload with it), so pause, audio and the results card all work.
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, effects, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { updateCompass } from "@aura3d/engine/game";
@@ -14,8 +15,10 @@ import { CHAPTERS } from "./chapters-data";
 import { autopilot } from "./autopilot";
 import { createSiltAudio, type SiltAudio } from "./audio";
 import { CHAPTER_COPY, ENDING_COPY, OBJECTIVE_TITLES, SCENE_COPY } from "./copy";
-import { IDLE, STEP, createSim, objectiveOf, stepSim, targetOf, type Input, type Sim, type SimEvent } from "./sim";
+import { STEP, createSim, objectiveOf, stepSim, targetOf, type Input, type Sim, type SimEvent } from "./sim";
 import { buildWorld, type World, type WorldRuntime } from "./world";
+import { mergeInput, objectiveHint, pageFlags, type Device } from "./controls";
+import { clearJourney, journeyTotals, ratingOf, readJourney, recordOf, writeChapter } from "./journey";
 
 const params = new URLSearchParams(location.search);
 const intParam = (key: string, fallback: number, lo: number, hi: number): number => {
@@ -37,10 +40,16 @@ const config = {
   exposure: Number.isFinite(Number(params.get("exposure"))) && params.has("exposure") ? Number(params.get("exposure")) : 0.65
 };
 config.objective = Math.min(config.objective, CHAPTERS[config.chapter]!.objectives.length - 1);
-const qa = params.has("objective") || params.has("autopilot") || params.has("manual") || params.get("start") === "1";
+const { qa, skipTitle } = pageFlags(params);
 
 type Mode = "title" | "play" | "paused" | "scene" | "done";
-let mode: Mode = qa ? "play" : "title";
+let mode: Mode = qa || skipTitle ? "play" : "title";
+
+const session: Storage | undefined = (() => { try { return window.sessionStorage; } catch { return undefined; } })();
+const MUTE_KEY = "duneglide.muted";
+const TEXT_KEY = "duneglide.text";
+const coarse = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+const reducedMotion = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
@@ -65,6 +74,9 @@ let toastTimer = 0;
 let heldInput: Input | null = null;
 const down = new Set<string>();
 const audio: SiltAudio = createSiltAudio(config.chapter);
+if (session?.getItem(MUTE_KEY) === "1") audio.setMuted(true);
+/** The last device the player used, for the control names in the hint line. */
+let device: Device = coarse ? "touch" : "keys";
 
 const chapterName = (index: number): string => CHAPTER_COPY[CHAPTERS[index]!.id]?.name ?? CHAPTERS[index]!.name;
 const objectiveTitle = (id: string, fallback: string): string => OBJECTIVE_TITLES[id] ?? fallback;
@@ -77,7 +89,7 @@ function setMode(next: Mode): void {
   mode = next;
   for (const id of Object.values(SCREENS)) $(id).classList.toggle("hidden", SCREENS[next as Exclude<Mode, "play">] !== id);
   $("hud").classList.toggle("hidden", next === "title");
-  if (next !== "play") { down.clear(); pointers.clear(); }
+  if (next !== "play") { down.clear(); pointers.clear(); touch.hold = false; touch.boost = false; }
   syncMuteLabels();
 }
 
@@ -85,6 +97,21 @@ function syncMuteLabels(): void {
   const label = `Sound: ${audio.muted ? "off" : "on"}`;
   $("mute-button").textContent = label;
   $("pause-mute").textContent = label;
+  const text = `Text: ${document.body.classList.contains("text-large") ? "large" : "normal"}`;
+  $("text-button").textContent = text;
+  $("pause-text").textContent = text;
+}
+
+function toggleMute(): void {
+  audio.setMuted(!audio.muted);
+  try { session?.setItem(MUTE_KEY, audio.muted ? "1" : "0"); } catch { /* blocked */ }
+  syncMuteLabels();
+}
+
+function toggleTextSize(): void {
+  const large = document.body.classList.toggle("text-large");
+  try { session?.setItem(TEXT_KEY, large ? "large" : "normal"); } catch { /* blocked */ }
+  syncMuteLabels();
 }
 
 function toast(text: string): void {
@@ -103,18 +130,18 @@ function openScene(): void {
   setMode("scene");
 }
 
+/** Results for the whole journey: every chapter flown since the title screen, summed from sessionStorage. */
 function openDone(): void {
   $("done-lines").innerHTML = ENDING_COPY.map((line) => `<p>${line}</p>`).join("");
-  const minutes = Math.floor(sim.state.elapsed / 60), seconds = Math.floor(sim.state.elapsed % 60);
-  const impacts = sim.flight.impacts;
-  const rating = impacts === 0 ? "Glass-smooth" : impacts <= 3 ? "Steady hand" : "Rough landings";
+  const totals = journeyTotals(readJourney(session), sim.state.chapter, recordOf(sim));
+  const minutes = Math.floor(totals.elapsed / 60), seconds = Math.floor(totals.elapsed % 60);
   const cell = (label: string, value: string | number, wide = false): string => `<div class="cell${wide ? " wide" : ""}"><span class="meta">${label}</span><b>${value}</b></div>`;
   $("done-stats").innerHTML = [
     cell("Time in flight", `${minutes}:${String(seconds).padStart(2, "0")}`),
-    cell("Lamps restored", sim.state.restored.length),
-    cell("Field notes", sim.state.fieldNotes.length),
-    cell("Impacts", impacts),
-    cell("Rating", rating, true)
+    cell("Lamps restored", totals.restored),
+    cell("Chapters flown", `${totals.chapters} of ${CHAPTERS.length}`),
+    cell("Impacts", totals.impacts),
+    cell("Rating", ratingOf(totals.impacts), true)
   ].join("");
   setMode("done");
 }
@@ -125,12 +152,18 @@ function goToChapter(chapter: number): void {
 
 function continueScene(): void {
   if (mode !== "scene") return;
-  if (sim.state.pendingChapter !== null) { goToChapter(sim.state.pendingChapter); return; }
+  if (sim.state.pendingChapter !== null) {
+    writeChapter(session, sim.state.chapter, recordOf(sim));
+    goToChapter(sim.state.pendingChapter);
+    return;
+  }
   sim.state.scene = null;
   setMode("play");
 }
 
+/** A journey starts on the title screen: totals from an earlier run are dropped. */
 function beginPlay(): void {
+  clearJourney(session);
   audio.resume();
   setMode("play");
 }
@@ -139,6 +172,9 @@ function beginPlay(): void {
 
 const KEYS = ["KeyW", "KeyS", "KeyA", "KeyD", "KeyE", "KeyQ", "KeyB", "ShiftLeft", "ShiftRight", "Space", "KeyF", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
 addEventListener("keydown", (e) => {
+  device = "keys";
+  // the first key press is a user gesture: start audio (chapter reloads land straight in play, with no Begin click)
+  if (mode !== "title" && !audio.running && !qa) audio.resume();
   if (mode === "title" && (e.code === "Enter" || e.code === "Space")) { e.preventDefault(); beginPlay(); return; }
   if (mode === "scene" && (e.code === "Enter" || e.code === "Space")) { e.preventDefault(); continueScene(); return; }
   if (e.code === "Escape" && !qa) { if (mode === "play") setMode("paused"); else if (mode === "paused") setMode("play"); return; }
@@ -146,17 +182,17 @@ addEventListener("keydown", (e) => {
   if (e.code === "KeyP") autopilotOn = !autopilotOn;
 });
 addEventListener("keyup", (e) => down.delete(e.code));
-addEventListener("blur", () => { down.clear(); pointers.clear(); if (mode === "play" && !qa) setMode("paused"); });
+addEventListener("blur", () => { down.clear(); pointers.clear(); touch.hold = false; touch.boost = false; if (mode === "play" && !qa) setMode("paused"); });
 
 const held = (...codes: string[]): boolean => codes.some((c) => down.has(c));
-const largest = (...values: number[]): number => values.reduce((a, b) => (Math.abs(b) > Math.abs(a) ? b : a), 0);
 
 interface Pointer { startX: number; startY: number; x: number; y: number }
 const pointers = new Map<number, Pointer>();
 canvas.addEventListener("pointerdown", (e) => {
+  if (e.pointerType === "touch") showTouch();
   if (mode !== "play") return;
   audio.resume();
-  canvas.setPointerCapture?.(e.pointerId);
+  try { canvas.setPointerCapture?.(e.pointerId); } catch { /* synthetic or already released pointer */ }
   pointers.set(e.pointerId, { startX: e.clientX, startY: e.clientY, x: e.clientX, y: e.clientY });
 });
 canvas.addEventListener("pointermove", (e) => {
@@ -177,7 +213,28 @@ function readPointer(): Partial<Input> {
   };
 }
 
+/* On-screen buttons for touch players (shown on coarse pointers or after the first touch): Hold sends interact and brake,
+ * Boost boosts, Pause pauses. They sit outside the canvas, so they never count as a steering finger. */
+const touch = { hold: false, boost: false };
+function showTouch(): void {
+  device = "touch";
+  document.body.classList.add("touch");
+}
+function bindHoldButton(id: string, key: "hold" | "boost"): void {
+  const el = $(id);
+  const set = (on: boolean) => (e: PointerEvent): void => {
+    e.preventDefault();
+    if (on) { showTouch(); audio.resume(); try { el.setPointerCapture?.(e.pointerId); } catch { /* synthetic pointer */ } }
+    touch[key] = on && mode === "play";
+    el.classList.toggle("down", touch[key]);
+  };
+  el.addEventListener("pointerdown", set(true));
+  for (const type of ["pointerup", "pointercancel", "lostpointercapture"] as const) el.addEventListener(type, set(false));
+  el.addEventListener("contextmenu", (e) => e.preventDefault());
+}
+
 let padStartHeld = false;
+let padAnyHeld = false;
 function readPad(): Partial<Input> {
   const pads = typeof navigator.getGamepads === "function" ? navigator.getGamepads() : [];
   const pad = Array.from(pads).find((p): p is Gamepad => !!p && p.connected);
@@ -186,6 +243,9 @@ function readPad(): Partial<Input> {
   const start = !!pad.buttons[9]?.pressed;
   if (start && !padStartHeld && !qa) setMode(mode === "play" ? "paused" : mode === "paused" ? "play" : mode);
   padStartHeld = start;
+  const any = pad.buttons.some((b) => b.pressed);
+  if (any && !padAnyHeld) { device = "pad"; if (!qa) audio.resume(); }
+  padAnyHeld = any;
   const rt = pad.buttons[7]?.value ?? 0;
   return {
     throttle: -dead(pad.axes[1]),
@@ -200,15 +260,19 @@ function readPad(): Partial<Input> {
 function sampleInput(): Input {
   if (heldInput) return heldInput;
   if (autopilotOn) return autopilot(sim);
-  const pad = readPad(), ptr = readPointer();
-  return {
-    throttle: Math.max(-1, Math.min(1, largest(held("KeyW", "ArrowUp") ? 1 : held("KeyS", "ArrowDown") ? -1 : 0, pad.throttle ?? 0, ptr.throttle ?? 0))),
-    steer: Math.max(-1, Math.min(1, largest(held("KeyD", "ArrowRight") ? 1 : held("KeyA", "ArrowLeft") ? -1 : 0, pad.steer ?? 0, ptr.steer ?? 0))),
-    lift: Math.max(-1, Math.min(1, largest(held("KeyE") ? 1 : held("KeyQ") ? -1 : 0, pad.lift ?? 0, ptr.lift ?? 0))),
-    brake: held("KeyB") || !!pad.brake,
-    boost: held("ShiftLeft", "ShiftRight", "Space") || !!pad.boost || !!ptr.boost,
-    interact: held("KeyF") || !!pad.interact
-  };
+  return mergeInput({
+    keys: {
+      throttle: held("KeyW", "ArrowUp") ? 1 : held("KeyS", "ArrowDown") ? -1 : 0,
+      steer: held("KeyD", "ArrowRight") ? 1 : held("KeyA", "ArrowLeft") ? -1 : 0,
+      lift: held("KeyE") ? 1 : held("KeyQ") ? -1 : 0,
+      brake: held("KeyB"),
+      boost: held("ShiftLeft", "ShiftRight", "Space"),
+      interact: held("KeyF")
+    },
+    pad: readPad(),
+    pointer: readPointer(),
+    touch
+  });
 }
 
 /* ------------------------------------------------------------------ loop */
@@ -236,7 +300,10 @@ function onEvents(events: readonly SimEvent[]): void {
   for (const ev of events) {
     audio.chime(ev.type);
     const o = objectiveOf(sim.state);
-    if (ev.type === "point") toast(`${sim.state.point} of ${o.points.length} rings`);
+    if (ev.type === "impact") {
+      runtime?.shake(Math.min(1, ev.speed / 40));
+      toast(`Impact: speed ${Math.round(ev.speed)} to ${Math.round(Math.abs(sim.flight.speed))}`);
+    } else if (ev.type === "point") toast(`${sim.state.point} of ${o.points.length} rings`);
     else if (ev.type === "attach") toast("Hooked on");
     else toast("Objective complete");
   }
@@ -256,7 +323,7 @@ const loop = createFixedStepLoop({
   render: (dt) => {
     renderTime += dt;
     if (mode === "play") {
-      if (!qa || params.get("start") === "1") {
+      if (!qa || skipTitle) {
         if (sim.state.completed) openDone();
         else if (sim.state.scene) openScene();
       }
@@ -285,6 +352,11 @@ function updateHud(): void {
   $<HTMLElement>("energy").style.width = `${(flight.energy * 100).toFixed(0)}%`;
   $("mode").textContent = flight.boostMode;
   $("hold").textContent = state.hold > 0 ? `holding ${state.hold.toFixed(1)} s` : "";
+  const hint = objectiveHint(sim, device);
+  const hintEl = $("hint");
+  hintEl.textContent = hint?.text ?? "";
+  hintEl.classList.toggle("warn", !!hint?.warn);
+  hintEl.classList.toggle("hidden", !hint);
   updateCompass($("compass"), state, t, state.yaw);
 }
 
@@ -297,7 +369,7 @@ const row = (): Row => {
   return [s.x, s.y, s.z, s.yaw, f.speed, f.turn, f.bank, f.vertical, f.energy, s.objective, s.point, s.hold, f.impacts];
 };
 
-function reset(chapter = config.chapter, objective = config.objective, start?: { clockMs?: number; time?: number }): void {
+function reset(chapter = config.chapter, objective = config.objective, start?: { x?: number; y?: number; z?: number; yaw?: number; clockMs?: number; time?: number }): void {
   const ch = Math.max(0, Math.min(6, Math.trunc(chapter)));
   sim = createSim(ch, Math.max(0, Math.min(CHAPTERS[ch]!.objectives.length - 1, Math.trunc(objective))), undefined, start);
   loop.resetAccumulator();
@@ -305,8 +377,12 @@ function reset(chapter = config.chapter, objective = config.objective, start?: {
   heldInput = null;
 }
 
-function stepFrames(n: number, input: Input = IDLE): void {
-  for (let i = 0; i < n; i++) stepSim(sim, input, STEP);
+/** QA stepping. With no input it samples the live controls (keys, pad, touch buttons or the autopilot) every step. */
+function stepFrames(n: number, input?: Input): void {
+  for (let i = 0; i < n; i++) {
+    const events = stepSim(sim, input ?? sampleInput(), STEP);
+    if (events.length) onEvents(events);
+  }
   presenter.reset();
   drawLatest = true;
   render(STEP);
@@ -364,7 +440,7 @@ function wireScreens(): void {
     const b = document.createElement("button");
     b.textContent = `${i + 1}. ${chapterName(i)}`;
     b.title = CHAPTER_COPY[CHAPTERS[i]!.id]?.tagline ?? "";
-    b.addEventListener("click", () => (i === config.chapter ? beginPlay() : goToChapter(i)));
+    b.addEventListener("click", () => { if (i === config.chapter) beginPlay(); else { clearJourney(session); goToChapter(i); } });
     names.appendChild(b);
   });
   $("title-tagline").textContent = CHAPTER_COPY[CHAPTERS[config.chapter]!.id]?.tagline ?? "";
@@ -373,10 +449,34 @@ function wireScreens(): void {
   $("restart-button").addEventListener("click", () => { reset(sim.state.chapter, sim.state.objective); setMode("play"); });
   $("title-button").addEventListener("click", () => { reset(config.chapter, 0); setMode("title"); });
   $("scene-next").addEventListener("click", continueScene);
-  $("again-button").addEventListener("click", () => goToChapter(0));
-  const toggleMute = (): void => { audio.setMuted(!audio.muted); syncMuteLabels(); };
+  $("again-button").addEventListener("click", () => { clearJourney(session); goToChapter(0); });
   $("mute-button").addEventListener("click", () => { audio.resume(); toggleMute(); });
-  $("pause-mute").addEventListener("click", toggleMute);
+  $("pause-mute").addEventListener("click", () => { audio.resume(); toggleMute(); });
+  $("text-button").addEventListener("click", toggleTextSize);
+  $("pause-text").addEventListener("click", toggleTextSize);
+  bindHoldButton("touch-hold", "hold");
+  bindHoldButton("touch-boost", "boost");
+  $("touch-pause").addEventListener("click", () => { if (mode === "play") setMode("paused"); else if (mode === "paused") setMode("play"); });
+  if (coarse) showTouch();
+  if (session?.getItem(TEXT_KEY) === "large") document.body.classList.add("text-large");
+}
+
+/**
+ * The loading screen stays up until the textured materials have swapped in (or LOADING_CAP_MS passes), so a slow device
+ * does not show the untextured first frames as the title. The loop already runs behind it.
+ */
+const LOADING_CAP_MS = 20_000;
+function hideLoadingWhenSettled(started: number): void {
+  const rows = (app?.diagnostics() as { renderer?: { runtime?: { texturedMaterials?: readonly { status: string }[] } } } | undefined)?.renderer?.runtime?.texturedMaterials ?? [];
+  const pending = rows.filter((r) => r.status === "pending").length;
+  const elapsed = performance.now() - started;
+  if ((rows.length > 0 && pending === 0) || elapsed > LOADING_CAP_MS) {
+    $("loading").classList.add("hidden");
+    (window as unknown as { __DUNEGLIDE_LOADED_MS__?: number }).__DUNEGLIDE_LOADED_MS__ = Math.round(elapsed);
+    return;
+  }
+  $("loading-status").textContent = `Painting the valley (${rows.length - pending} of ${rows.length} surfaces)`;
+  setTimeout(() => hideLoadingWhenSettled(started), 250);
 }
 
 async function boot(): Promise<void> {
@@ -388,7 +488,8 @@ async function boot(): Promise<void> {
   size();
   addEventListener("resize", size);
   wireScreens();
-  world = buildWorld(config.chapter);
+  // phones and tablets get a 2048 sun shadow map (a quarter of the 4096 texels; the heaviest pass on a phone GPU)
+  world = buildWorld(config.chapter, { shadowMapSize: coarse ? 2048 : 4096 });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
@@ -403,14 +504,16 @@ async function boot(): Promise<void> {
     app.post?.addPostPass?.(effects.toon({ name: "silt-cel", bands: 5, bandMix: 0.75, outline: 0.75, size: [canvas.width, canvas.height] }));
     addEventListener("resize", () => app?.post?.setPassUniform?.("silt-cel", "u_texel", texel()));
   }
-  runtime = world.bind(app, { animate: !config.norig, clearCamera: config.camClear });
+  runtime = world.bind(app, { animate: !config.norig, clearCamera: config.camClear, reducedMotion });
   ready = true;
-  $("loading").classList.add("hidden");
   setMode(mode);
   installHooks();
   render(0);
   updateHud();
   loop.start();
+  // QA pages keep the old behaviour (no wait); players get the settled frame first
+  if (qa) $("loading").classList.add("hidden");
+  else hideLoadingWhenSettled(performance.now());
 }
 
 boot().catch((error) => {
