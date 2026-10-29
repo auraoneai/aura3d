@@ -13,6 +13,9 @@ export interface GameLumaTarget {
   readonly slug: string;
   readonly variant: string;
   readonly url: string;
+  /** Run group `g1`..`gN` (9 targets each, in list order): select one with `--grep=@g3`. The ACR step runs SPECS through
+   *  /bin/sh and times out at 3600 s, so a grep must be shell-safe (no parentheses or pipes) and a group must fit the hour. */
+  readonly group: string;
   prepare?(page: Page): Promise<void>;
 }
 
@@ -28,10 +31,13 @@ const pipsWorld = (world: string) => async (page: Page): Promise<void> => {
   await clickSelector(`.pbl-atlas-card[data-world="${world}"]`)(page);
 };
 
-const t = (slug: string, variant: string, url: string, prepare?: (page: Page) => Promise<void>): GameLumaTarget =>
+type Draft = Omit<GameLumaTarget, "group">;
+const t = (slug: string, variant: string, url: string, prepare?: (page: Page) => Promise<void>): Draft =>
   ({ name: `${slug}--${variant}`, slug, variant, url, ...(prepare ? { prepare } : {}) });
 
-const each = <V extends string>(variants: readonly V[], make: (v: V) => GameLumaTarget): GameLumaTarget[] => variants.map(make);
+export const GROUP_SIZE = 9;
+
+const each = <V extends string>(variants: readonly V[], make: (v: V) => Draft): Draft[] => variants.map(make);
 
 export const DIAMOND_PARKS = ["sandlot", "skyline", "canyon", "ivy", "dome", "lunar"] as const;
 export const HOOPS_COURTS = ["rucker", "venice", "athens", "manila", "shanghai", "orbit"] as const;
@@ -41,7 +47,7 @@ export const IRON_CROWN_STAGES = ["crown-arena", "neo-tokyo-rooftop", "bangkok-d
 export const PIPS_WORLDS = ["w1", "w2", "w3", "w4", "w5", "w6"] as const;
 export const CROSS_HOP_THEMES = [0, 1, 2, 3, 4, 5] as const;
 
-export const GAME_LUMA_TARGETS: readonly GameLumaTarget[] = [
+const DRAFTS: readonly Draft[] = [
   t("top-tennis", "default", "/apps/showcase-top-tennis/"),
   t("roadster-rush", "default", "/apps/showcase-roadster-rush/"),
   t("heatsink", "default", "/apps/showcase-heatsink/"),
@@ -69,3 +75,5 @@ export const GAME_LUMA_TARGETS: readonly GameLumaTarget[] = [
   t("silt-and-signal-port", "default", "/apps/showcase-silt-and-signal-port/"),
   t("cloud-runner-port", "default", "/apps/showcase-cloud-runner-port/")
 ];
+
+export const GAME_LUMA_TARGETS: readonly GameLumaTarget[] = DRAFTS.map((d, i) => ({ ...d, group: `g${Math.floor(i / GROUP_SIZE) + 1}` }));

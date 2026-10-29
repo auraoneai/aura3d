@@ -8,7 +8,8 @@ import { GAME_LUMA_TARGETS } from "./game-luma-targets";
  * (tools/remote-acr/run.sh); the ACR run has no artifact egress, so output goes to the log:
  *   GL_META <json>                         luma stats, a 3x3 region grid and engine diagnostics per shot
  *   GL_JPG  <target> <shot> <i>/<n> <b64>  canvas-only JPEG, chunked
- * Target names are `<inventory slug>--<variant>`, so `--grep=(aura-diamond-3d|cross-hop)--` in SPECS selects whole games.
+ * Target names are `<inventory slug>--<variant> @g<N>`: select a run group with `--grep=@g3`, or one game with
+ * `--grep=aura-diamond-3d--` (the ACR step runs SPECS through /bin/sh, so no parentheses or pipes in a grep).
  * tests/browser/game-luma-targets.ts is the single target list; tests/unit/game-luma-targets.test.ts checks that every
  * live game in docs/workflows/game-inventory.json has at least one target.
  * The software-GL runner presents about one frame every 5 to 10 s, and a baked environment probe lands several seconds
@@ -83,7 +84,7 @@ test.describe("game luma capture", () => {
   test.afterAll(async () => { await server.close(); });
 
   for (const target of GAME_LUMA_TARGETS) {
-    test(`${target.name}`, async ({ page }) => {
+    test(`${target.name} @${target.group}`, async ({ page }) => {
       page.on("pageerror", (e) => log(`GL_ERR ${target.name} pageerror ${e.message.slice(0, 300)}`));
       page.on("console", (m) => { if (m.type() === "error") log(`GL_CONSOLE ${target.name} ${m.text().slice(0, 200)}`); });
       await page.setViewportSize({ width: 1280, height: 720 });

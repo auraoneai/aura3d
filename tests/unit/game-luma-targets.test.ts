@@ -49,3 +49,16 @@ describe("game luma capture targets (audit LIGHT-02)", () => {
     expect(variants("cross-hop").length).toBe(themes);
   });
 });
+
+describe("game luma capture run groups", () => {
+  it("splits targets into shell-safe groups of at most nine", async () => {
+    const { GROUP_SIZE } = await import("../browser/game-luma-targets");
+    const sizes = new Map<string, number>();
+    for (const t of GAME_LUMA_TARGETS) {
+      expect(t.group).toMatch(/^g\d+$/);
+      sizes.set(t.group, (sizes.get(t.group) ?? 0) + 1);
+    }
+    for (const n of sizes.values()) expect(n).toBeLessThanOrEqual(GROUP_SIZE);
+    for (const t of GAME_LUMA_TARGETS) expect(t.name).not.toMatch(/[()|&;<>$`'"\s]/);
+  });
+});
