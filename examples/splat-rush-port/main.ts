@@ -83,6 +83,8 @@ let paused = false;
 const steady = new SteadyCamera(sim);
 /** C18 results card: best combo and perfects of the current run. */
 const runStats = { maxCombo: 0, perfects: 0 };
+/** A run starts (splash to playing, a restart, or a QA reset): its stats start at zero. */
+const resetRunStats = (): void => { runStats.maxCombo = 0; runStats.perfects = 0; };
 
 /* ------------------------------------------------------------------ HUD */
 
@@ -125,14 +127,13 @@ function updateHud(): void {
     $("splash-screen").classList.toggle("hidden", o.phase !== "splash");
     $("gameover-screen").classList.toggle("hidden", o.phase !== "gameOver");
   }
-  if (o.phase === "playing" && o.combo > runStats.maxCombo) runStats.maxCombo = o.combo;
   let perfectNow = false;
   const drained = drainPopups(sim.popups, nextPopupSeq);
   nextPopupSeq = drained.nextSeq;
   if (config.manual && drained.fresh.length > 0) $("popups").replaceChildren();
   for (const p of drained.fresh) {
     popupsShown++;
-    if (p.text.startsWith("PERFECT")) { perfectNow = true; runStats.perfects++; }
+    if (p.text.startsWith("PERFECT")) perfectNow = true;
     const el = document.createElement("div");
     el.className = "popup-text";
     el.textContent = p.text;
@@ -190,7 +191,6 @@ function reactToFrame(perfect: boolean): void {
   fx.vignette(o.multiplier, o.isRainbowActive, own, performance.now() / 1000, reducedMotion);
   if (o.phase !== lastPhase) {
     if (o.phase === "splash" || o.phase === "playing") fx.clearReveal();
-    if (o.phase === "playing" && lastPhase !== "playing") { runStats.maxCombo = 0; runStats.perfects = 0; }
     if (o.phase === "gameOver") {
       /* C18: the card sits on a translucent wash of the ball's colour, so the road shows through */
       $("gameover-screen").style.background = translucent(own, 0.55);
@@ -230,7 +230,13 @@ function render(live = false): void {
 }
 
 function advance(input: Input): void {
+  const wasSplash = sim.o.phase === "splash";
+  const seqBefore = sim.popupSeq;
   sim.advance(input);
+  if (wasSplash && sim.o.phase === "playing") resetRunStats();
+  /* results-card stats, counted per step so manual multi-step QA drives count them too */
+  if (sim.o.combo > runStats.maxCombo) runStats.maxCombo = sim.o.combo;
+  if (sim.popupSeq !== seqBefore) for (const p of sim.popups) if (p.seq >= seqBefore && p.text.startsWith("PERFECT")) runStats.perfects++;
   steady.step(sim);
   pilot?.observe(sim);
   steps++;
@@ -392,6 +398,7 @@ paintSettings();
 
 function restart(): void {
   sim.begin();
+  resetRunStats();
   presenter.reset();
   steady.reset(sim);
   nextPopupSeq = sim.popupSeq;
@@ -470,6 +477,7 @@ const qa = installQaHooks("splat-rush", {
   },
   reset(seed = config.seed) {
     sim = new SplatRushSim(seed);
+    resetRunStats();
     presenter.reset();
     steady.reset(sim);
     steps = 0;
@@ -495,6 +503,7 @@ const qa = installQaHooks("splat-rush", {
     /** Frame capture: reset, warm up like the capture harness, and store a recorded input script to play step by step. */
     loadScript(text: string, warmup = config.warmup) {
       sim = new SplatRushSim(config.seed);
+      resetRunStats();
       presenter.reset();
       steady.reset(sim);
       steps = 0;
