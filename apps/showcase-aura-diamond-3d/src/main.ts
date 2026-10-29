@@ -1650,7 +1650,8 @@ function boot(): void {
       G.lastBatColor = "";
       G.lastFieldColor = "";
       applyUniforms();
-      // Scene rebuilds recreate the actors — re-socket the bat to the new rig.
+      // Scene rebuilds recreate the actors — re-socket the bat to the new rig (retried until the new rig has loaded).
+      batSocket.retries = 0;
       attachBatSocket();
       tick(`ballpark — ${PARKS[id].name.toLowerCase()}`, "info");
       showBanner(PARKS[id].name, 1.8);
@@ -2937,7 +2938,9 @@ function boot(): void {
     disposeCal: null as (() => void) | null,
     disposeMitt: null as (() => void) | null,
     disposeGloves: [] as Array<() => void>,
-    disposeKit: [] as Array<() => void>
+    disposeKit: [] as Array<() => void>,
+    retries: 0,
+    retryAtFrame: -1
   };
 
   function attachBatSocket(): void {
@@ -2960,6 +2963,14 @@ function boot(): void {
       const batter = H.batter?.animation as AttachableActor | undefined;
       const catcher = H["f-c"]?.animation as AttachableActor | undefined;
       if (!batter || !catcher) throw new Error("ATTACH_ACTOR_MISSING: the batter or catcher animation handle is not available");
+      // After app.setScene the new rigs load asynchronously: until the skeleton exists every socket reads invalid. Retry on
+      // later frames instead of failing for the rest of the session (a park switch used to leave the bat unplaced for good).
+      if (!batter.socket("RightForearm").valid && !batter.socket("LeftForearm").valid && !batter.socket("Hips").valid && batSocket.retries < 600) {
+        batSocket.stage = "idle";
+        batSocket.retries += 1;
+        batSocket.retryAtFrame = framesRendered + 10;
+        return;
+      }
       // This rig names its arm bones RightForearm / LeftForearm and has no hand bones: the solver poses both forearms and the bat follows the right palm.
       for (const bone of ["RightForearm", "LeftForearm"]) if (!batter.socket(bone).valid) throw new Error(`ATTACH_BONE_NOT_FOUND: the batter has no bone "${bone}"`);
       // Catcher's mitt rides the crouched catcher's left forearm (glove hand).
@@ -3275,6 +3286,12 @@ function boot(): void {
 
   function updateActors(dt: number, t: number): void {
     const pk = park();
+    if (batSocket.stage === "idle" && batSocket.retryAtFrame >= 0 && framesRendered >= batSocket.retryAtFrame) {
+      batSocket.retryAtFrame = -1;
+      bindHandles();
+      applyUniforms();
+      attachBatSocket();
+    }
     const playerBatting = battingIsPlayer();
 
     // Batter at the plate; completes the swing follow-through at home plate, then sprints down the 1B line
