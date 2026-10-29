@@ -45,9 +45,8 @@ let appReady = false;
 const LOOK_ID = "night-city" as const;
 const EYE = 1.55;
 /**
- * World x-offset between floor slots. All floors share the origin: only the active floor is visible (C18), and instanced boxes
- * drawn far from the origin came out unlit (floors 2-6 and the Kill House had pitch-black walls at x = 300..1800 on 4.3.7 and
- * 4.5.0, while non-instanced models and slabs there were lit), so nothing is placed far out any more.
+ * World x-offset between floor slots. All floors share the origin now that only the active floor is visible (C18). (The black
+ * walls on floors 2-6 first looked like a far-from-origin problem; the real cause was the palette applied twice, see wallGain.)
  */
 const FLOOR_SPAN = 0;
 const MAX_ROCKETS = 18;
