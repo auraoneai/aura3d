@@ -201,6 +201,19 @@ test.describe("g20 ninja-runner-port", () => {
     });
   }
 
+  // The action frame (jump plus orb at 52 m) with each shadow setting: the path under the gate is where the fits differ.
+  test("g20-action-shadow", async ({ browser }) => {
+    const errors: string[] = [];
+    const action = `${STATES.early!.drive} ${STATES.run!.drive} ${STATES.action!.drive}`;
+    for (const q of ["&shadow=0", "&shadowfit=legacy", "&shadowfit=current"]) {
+      const page = await open(browser, server, `?manual=1${q}`, { width: 1280, height: 720 }, false, errors);
+      const err = await drive(page, action, 3);
+      await grab(page, "action-shadow", `action${q.replace(/[&=]/g, "_")}`, { query: q, driveErr: err }, false);
+      await page.context().close();
+    }
+    log(`GL_ERRORS action-shadow ${JSON.stringify(errors.slice(0, 8))}`);
+  });
+
   // Index card: the run state at the 1440x900 card viewport (screens/final/card@2x.jpg; card.jpg is its half-size copy).
   test("g20-card", async ({ browser }) => {
     const errors: string[] = [];
