@@ -295,12 +295,12 @@ html, body {
 
 .pbl-atlas-card:hover { background: rgba(255, 217, 94, 0.14); border-color: var(--pbl-edge); transform: translateY(-2px); }
 .pbl-atlas-card.done { border-color: rgba(95, 211, 138, 0.55); }
-.pbl-atlas-card .n { font: 500 20px/1 Graphik; color: var(--pbl-sun); }
-.pbl-atlas-card .t { font: 500 12px/1.2 Graphik; letter-spacing: 0; margin-top: 4px; }
-.pbl-atlas-card .s { font: 500 12px/1.4 Graphik; color: rgba(255, 246, 224, 0.65); margin-top: 4px; }
-.pbl-atlas-card .p { font: 500 12px/1 Graphik; color: #5fd38a; margin-top: 8px; letter-spacing: 0; }
-.pbl-atlas-card .sd { font: 500 12px/1 Graphik; color: #ffcf3d; margin-top: 4px; }
-.pbl-atlas-total { grid-column: 1 / -1; text-align: center; font: 500 12px/1 Graphik; letter-spacing: 0; color: var(--pbl-sun); padding-top: 4px; }
+.pbl-atlas-card .n { font: 500 20px/1 Graphik, sans-serif; color: var(--pbl-sun); }
+.pbl-atlas-card .t { font: 500 12px/1.2 Graphik, sans-serif; letter-spacing: 0; margin-top: 4px; }
+.pbl-atlas-card .s { font: 500 12px/1.4 Graphik, sans-serif; color: rgba(255, 246, 224, 0.65); margin-top: 4px; }
+.pbl-atlas-card .p { font: 500 12px/1 Graphik, sans-serif; color: #5fd38a; margin-top: 8px; letter-spacing: 0; }
+.pbl-atlas-card .sd { font: 500 12px/1 Graphik, sans-serif; color: #ffcf3d; margin-top: 4px; }
+.pbl-atlas-total { grid-column: 1 / -1; text-align: center; font: 500 12px/1 Graphik, sans-serif; letter-spacing: 0; color: var(--pbl-sun); padding-top: 4px; }
 
 /* --------------------------------------------------------------- studio */
 
@@ -310,7 +310,7 @@ html, body {
   text-align: left;
 }
 
-.pbl-studio-row .k { font: 500 12px/1 Graphik; letter-spacing: 0; color: rgba(255, 246, 224, 0.6); width: 44px; }
+.pbl-studio-row .k { font: 500 12px/1 Graphik, sans-serif; letter-spacing: 0; color: rgba(255, 246, 224, 0.6); width: 44px; }
 
 .pbl-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
 
