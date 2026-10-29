@@ -3648,7 +3648,7 @@ function boot(): void {
       }
     }
     // C9: on-screen pitch buttons during pitch selection and Bullpen reads.
-    const padMode = playerPitchingTurn() && G.phase === "pitchSelect" ? "select" : G.mode === "bullpen" && (G.phase === "windup" || G.phase === "pitch") ? "bullpen" : "";
+    const padMode = playerPitchingTurn() && G.phase === "pitchSelect" ? "select" : G.mode === "bullpen" && G.phase === "pitch" && G.bullpen.guess === null ? "bullpen" : "";
     el.pitchPad?.classList.toggle("show", padMode !== "");
     if (padMode && el.pitchPad) {
       const rep = clubById(G.playerClub).rep;
@@ -4009,7 +4009,8 @@ function boot(): void {
     evidenceDue = qaMode || now - lastEvidenceAt >= 0.25;
     updateActors(dt, simTime);
     updateCamera(dt);
-    updateHud(dt);
+    // HUD timers run on wall-clock seconds (capped at 1 s for a stalled tab), not on the clamped sim frame.
+    updateHud(clamp(rawDt, 0, 1));
     touchControls?.update?.();
     justPressedKeys.clear();
     if (!evidenceDue) return;
