@@ -230,7 +230,7 @@ export function createUi(): WindUi {
     setPaused(paused) { pause.classList.toggle("hide", !paused); },
     showEpilogue(on) {
       epi.classList.toggle("hide", !on);
-      if (on) prompt.classList.add("hide");
+      if (on) { prompt.classList.add("hide"); journal.classList.add("hide"); }
       syncTouch();
       if (on) $("wwui-epi-text").textContent = STORY.epilogue.join(" ");
     },

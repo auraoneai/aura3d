@@ -169,6 +169,8 @@ export function bellSwing(time: number, complete: boolean, amplitude = 1, motion
 }
 /** The model bell's frame is about 0.5 file units wide around a 0.35-wide bell: about a third of the procedural swing fits. */
 export const MODEL_BELL_AMPLITUDE = 0.32;
+/** Epilogue camera height above its look target. */
+export const EPILOGUE_CAMERA_RISE = 6.4;
 
 export interface World {
   readonly scene: Scene;
@@ -533,7 +535,10 @@ export function buildWorld(options: { density?: number; models?: boolean; reduce
             look.x += (tx - look.x) * (1 - Math.exp(-1.5 * dt));
             look.y += (b.y + 2.2 - look.y) * (1 - Math.exp(-1.5 * dt));
             look.z += (tz - look.z) * (1 - Math.exp(-1.5 * dt));
-            const ep: [number, number, number] = [look.x - 9 + 4 * motion() * Math.sin(e * 0.05), look.y + 3.2, look.z + 14];
+            // 6.4 above the look target clears every tree top on the way from the bell to the jetty and out to sea (at 3.2 the
+            // camera passed through the oak at (22.8, -1.4) by the jetty); checked against the scenery placements in
+            // tests/unit/where-the-wind-wanders-port/footsteps-bell.test.ts
+            const ep: [number, number, number] = [look.x - 9 + 4 * motion() * Math.sin(e * 0.05), look.y + EPILOGUE_CAMERA_RISE, look.z + 14];
             node("sky").setPosition(ep[0], ep[1], ep[2]);
             cam.setPose({ position: ep, target: [look.x, look.y, look.z], up: [0, 1, 0], fov: aspect < 1 ? 52 : 45 }, { cut: false });
             return;

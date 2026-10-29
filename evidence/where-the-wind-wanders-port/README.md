@@ -13,4 +13,8 @@ Blind judge (`tools/crayon-capture/where-the-wind-wanders-judge.ts`, a MODEL jud
 So the look is much closer in colour and brightness, but a model still tells the two apart every time (flat low-poly
 trees and props, no painted texture detail, different traveller).
 
-Perf (software GL, not a GPU number): 23 draw calls, ~306k triangles, 18.8k foliage cards, 0 asset bytes. Replay worst delta 7.0e-10.
+Perf at the time of that run (procedural art only, before the Meshy models): 23 draw calls, ~306k triangles, 18.8k foliage cards, 0 asset bytes. Replay worst delta 7.0e-10.
+
+Current build (2026-10-29, audit lane G23, software GL, not a GPU number): 14 to 24 draw calls at 1280x720 depending on the view
+(17 at the start, measured from `diagnostics().drawCalls` in remote runs g23-before-10291933 and g23-after-10291946), and
+11 Meshy GLBs totalling 8,396,392 bytes (15,714,716 before the 2026-10-29 compression; see `audit-fix/README.md`).

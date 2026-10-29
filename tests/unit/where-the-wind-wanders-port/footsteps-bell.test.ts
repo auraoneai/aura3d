@@ -52,3 +52,29 @@ describe("the model bell swings from its yoke inside the placed tower (audit WW-
     expect(Math.abs(bellSwing(0.3, true, 1, 0.3))).toBeCloseTo(Math.abs(bellSwing(0.3, true, 1, 1)) * 0.3, 9);
   });
 });
+
+describe("the epilogue camera clears the trees (found while capturing the ending reached by play)", () => {
+  it("from the bell to the jetty and 40 s out to sea, no tree top is above the camera within its crown radius", async () => {
+    const { buildScenery } = await import("../../../examples/where-the-wind-wanders-port/scenery");
+    const { SEA_LEVEL } = await import("../../../examples/where-the-wind-wanders-port/terrain");
+    const { EPILOGUE_CAMERA_RISE } = await import("../../../examples/where-the-wind-wanders-port/world");
+    const sc = buildScenery(4242, { bell: true, cottage: true, trees: true, stones: true, shrubs: true });
+    const trees = [
+      ...sc.placements.oaks.map((p) => ({ x: p.x, z: p.z, top: p.y + (p.h ?? 6), r: 0.5 * (p.h ?? 6) })),
+      ...sc.placements.pines.map((p) => ({ x: p.x, z: p.z, top: p.y + (p.h ?? 6), r: 0.3 * (p.h ?? 6) }))
+    ];
+    const boat = (e: number) => {
+      const u = Math.min(1, Math.max(0, e - 4) / 80), ease = u * u * (3 - 2 * u);
+      return { x: sc.boatMoor.x + (-22 - sc.boatMoor.x) * ease + 6 * Math.sin(ease * Math.PI), y: SEA_LEVEL + 0.02, z: sc.boatMoor.z + (-108 - sc.boatMoor.z) * ease };
+    };
+    const look = { x: 48.6, y: 4, z: 0.8 };
+    let worst = Infinity;
+    for (let e = 0; e < 40; e += 0.05) {
+      const b = boat(e), k = Math.min(1, e / 6), a = 1 - Math.exp(-1.5 * 0.05);
+      look.x += (b.x - 4 * (1 - k) - look.x) * a; look.y += (b.y + 2.2 - look.y) * a; look.z += (b.z - 2 - look.z) * a;
+      const cam = { x: look.x - 9, y: look.y + EPILOGUE_CAMERA_RISE, z: look.z + 14 };
+      for (const t of trees) if (t.top >= cam.y - 0.3) worst = Math.min(worst, Math.hypot(t.x - cam.x, t.z - cam.z) - t.r);
+    }
+    expect(worst).toBeGreaterThan(2);
+  });
+});
