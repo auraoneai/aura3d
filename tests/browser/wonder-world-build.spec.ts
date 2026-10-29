@@ -12,12 +12,12 @@
 //    check-deploy), hence --no-assets.
 // Every printed line and record goes through `redact` (wonder-world-lib.ts): tool output names the app folder and the
 // runner's paths, and neither the folder nor the name it carries may reach the run log (gap 03:177). Records: WWJSON
-// build-content-lint, build-stats, build-privacy-scan, check-deploy.
+// build-context, build-content-lint, build-stats, build-privacy-scan, check-deploy.
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { emitJson, redact } from "./wonder-world-lib";
+import { emitJson, engineVersion, redact, runCommit } from "./wonder-world-lib";
 
 const repo = resolve(".");
 const app = join(repo, "apps", "veer-wonder-world");
@@ -77,6 +77,7 @@ function childNameHits(dist: string): { textFiles: number; hits: Array<{ file: s
 
 test("wonder world passes its content lint, builds with Vite and passes check-deploy --browser", async () => {
   test.setTimeout(40 * 60_000);
+  emitJson("build-context", { runId: process.env["AURA3D_RUN_ID"] ?? null, commit: runCommit(), engineVersion: engineVersion() });
   const lint = run("node", [join(app, "tools", "validate-wonder-world-content.mjs")], repo, 5 * 60_000);
   const lintTail = lint.out.split("\n").filter((line) => line.trim().length > 0).slice(-30).join("\n");
   console.log(lintTail);

@@ -332,6 +332,16 @@ export function admittedModelKeys(): ReadonlySet<string> | null {
   }
 }
 
+/** The commit a run tests and whether the tree was clean (apps/veer-wonder-world/.run-commit, from tools/remote-run.sh). */
+export function runCommit(): { readonly commit: string; readonly tree: string } | null {
+  try {
+    const [commit, tree] = readFileSync(resolve("apps", "veer-wonder-world", ".run-commit"), "utf8").trim().split("\n");
+    return commit ? { commit, tree: tree ?? "unknown" } : null;
+  } catch {
+    return null;
+  }
+}
+
 export function engineVersion(): string | null {
   try {
     const pkg = JSON.parse(readFileSync(resolve("packages", "engine", "package.json"), "utf8")) as { version?: unknown };
@@ -1083,6 +1093,7 @@ export async function runContext(page: Page, label: string): Promise<Record<stri
   return {
     label,
     runId: process.env["AURA3D_RUN_ID"] ?? null,
+    commit: runCommit(),
     engineVersion: engineVersion(),
     viewport: page.viewportSize(),
     renderer,
@@ -2449,7 +2460,7 @@ export function defineStorySuite(options: StorySuiteOptions): void {
         for (const story of shard) {
           await test.step(`${story.code.toUpperCase()} ${story.title} (${story.id})`, async () => {
             const record = await runStory(page, log, story, options.mode, options.style, options.micProbe);
-            emitJson(`${options.reportPrefix}-${story.code}`, { ...record, context: { runId: context["runId"], engineVersion: context["engineVersion"] } });
+            emitJson(`${options.reportPrefix}-${story.code}`, { ...record, context: { runId: context["runId"], commit: context["commit"], engineVersion: context["engineVersion"] } });
             summary.push({
               code: record.code,
               id: record.id,
