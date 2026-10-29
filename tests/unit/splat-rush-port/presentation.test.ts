@@ -4,7 +4,7 @@ import { flashFor, vignetteOpacity } from "../../../examples/splat-rush-port/fx"
 
 const base: FrameState = {
   phase: "playing", lives: 3, combo: 0, multiplier: 1, score: 0, shieldActive: false,
-  rainbowTimer: 0, scoreX2Timer: 0, playerColorIndex: 0, perfect: false
+  rainbowTimer: 0, scoreX2Timer: 0, playerColorIndex: 0, milestone: 750, perfect: false
 };
 const next = (patch: Partial<FrameState>): FrameState => ({ ...base, ...patch });
 const sounds = (prev: FrameState | null, n: FrameState): string[] => diffSounds(prev, n).map((e) => e.sound);
