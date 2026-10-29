@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { VENUES } from "../../../examples/aura-slam/contract/venues";
-import { CAMERA_EYE, CAMERA_FOV_DEG, CAMERA_TARGET, projectWorldPoint } from "../../../examples/aura-slam/view/camera";
+import { CAMERA_EYE, CAMERA_TARGET, cameraFovForAspect, projectWorldPoint } from "../../../examples/aura-slam/view/camera";
 import * as C from "../../../examples/aura-slam/view/constants";
 import { spectatorBounce, spectatorSeat } from "../../../examples/aura-slam/view/spectators";
 import { VENUE_PALETTES, isMoonVenue, venueKey } from "../../../examples/aura-slam/view/venues";
@@ -78,8 +78,9 @@ function referenceProject(w: number, h: number, p: readonly [number, number, num
   const y = cross(z, x);
   const d = sub([...p], CAMERA_EYE);
   const vx = dot(d, x), vy = dot(d, y), vz = dot(d, z);
-  const f = 1 / Math.tan((CAMERA_FOV_DEG * Math.PI) / 360);
   const aspect = Math.max(0.2, w / Math.max(1, h));
+  // C2: the court camera's vertical FOV is aspect-aware (15 degrees on desktop aspects, wider on portrait canvases).
+  const f = 1 / Math.tan((cameraFovForAspect(w / Math.max(1, h)) * Math.PI) / 360);
   const ndcX = (vx * f) / aspect / -vz;
   const ndcY = (vy * f) / -vz;
   return { x: (ndcX + 1) * 0.5 * w, y: (1 - ndcY) * 0.5 * h, visible: vz < -0.1 && Math.abs(ndcX) <= 1.05 && Math.abs(ndcY) <= 1.05 };
