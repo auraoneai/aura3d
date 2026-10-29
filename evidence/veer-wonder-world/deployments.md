@@ -11,7 +11,41 @@ The unlisted preview of `apps/<app>/DEPLOYMENT.md` §3 is the Vercel project `au
 
 ## Deployments (newest first)
 
-### `dpl_Cj4Rj6Q4ph8Zy8TLBipdnq8G1C7Z`: current
+### `dpl_2WbTkXTiPBrR6vS867ZnFXB3Xwzw`: current
+
+- **Commit:** `a71c82708`.
+- **Deployed:** 2026-10-29 22:45 UTC.
+- **Change:** the model preloader lets a slow download run for 15 minutes instead of 2 (`07` B21). Runs `wonder-exp-a/b/c-20261029T222803Z` showed what the 2-minute cap had done: on software WebGL2 it aborted a model the page had not read yet, which failed `check-deploy --browser`.
+- **Gates on the deploy host:** content lint OK. `check-dist` OK: 1002 files, 26 text files, 0 source maps, 1 welcome literal, 0 host variables, 0 class static blocks, noindex kept.
+- **Live check:** run `wonder-live-20261029T224622Z` passed, at this commit with a clean tree:
+  - Start label 7.37:1.
+  - 32 cards and 32 portraits.
+  - E17 on stage and speaking.
+  - 0 console errors, 0 page errors, 0 bad responses and 0 failed requests.
+  - 49 requests, all same-origin. Nothing stored.
+  - Hosting rules: 0 problems.
+
+### `dpl_H5yArKAQaUmqpxsx6XE6KoU8SUiq`: replaced
+
+- **Commit:** `216a19967`.
+- **Deployed:** 2026-10-29 22:36 UTC.
+- **Changes:** the follow-ups from a cloud-browser review of the welcome at 12 sizes:
+  - each portrait centred on its character, with GoGo's view moved down;
+  - "Wonder World" kept on one line;
+  - soft backings for the question and the hint;
+  - the note card no wider than the controls;
+  - opaque clouds kept clear of the edges, the portraits and the controls;
+  - larger portraits in phone landscape.
+- **Gates on the deploy host:** content lint OK, `check-dist` OK (as above).
+- **Live check:** run `wonder-live-20261029T223644Z` passed, at this commit with a clean tree:
+  - Start label 7.37:1.
+  - 32 cards and 32 portraits.
+  - E17 on stage and speaking.
+  - 0 console errors, 0 page errors, 0 bad responses and 0 failed requests.
+  - 49 requests, all same-origin. Nothing stored.
+  - Hosting rules: 0 problems.
+
+### `dpl_Cj4Rj6Q4ph8Zy8TLBipdnq8G1C7Z`: replaced
 
 - **Commit:** `633f58a73`.
 - **Deployed:** 2026-10-29 21:58 UTC.
