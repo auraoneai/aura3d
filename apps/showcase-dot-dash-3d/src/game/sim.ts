@@ -339,6 +339,16 @@ function resetActors(): void {
   }));
 }
 
+/** Boot into the title menu with board 1 laid out behind it (no run started, nothing counted). */
+export function bootToTitle(): void {
+  st.mazeId = "classic";
+  st.maze = parseMaze(mazeSpec("classic"));
+  st.level = 1;
+  resetBoard();
+  st.mode = "title";
+  st.school = false;
+}
+
 export function endToTitle(): void {
   st.mode = "title";
   st.school = false;

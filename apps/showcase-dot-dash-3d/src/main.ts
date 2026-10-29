@@ -2,7 +2,7 @@
 import { game, installQaHooks } from "@aura3d/engine";
 import { createGame, sfxUrl } from "@aura3d/engine/game";
 import { buildScene, bindApp, syncVisuals, wx, wz, cameraPose, setMotionPrefs, tileToScreen } from "./game/world";
-import { st, frame, startRun, evidenceExtra, GHOST_LABEL } from "./game/sim";
+import { st, frame, startRun, bootToTitle, evidenceExtra, GHOST_LABEL } from "./game/sim";
 import { mountUI, tickUI, isPaused, autoPause } from "./game/hud";
 import { FRUIT_LABEL, type MazeId } from "./game/mazes";
 import type { FruitKind } from "./game/grid";
@@ -234,6 +234,10 @@ if (AUTOSTART) {
   const maze = (params.get("maze") ?? "classic") as MazeId;
   startRun(mode === "school" ? "school" : mode === "circuit" ? "circuit" : "quick", maze);
   syncVisuals(0);
+  tickUI();
+} else {
+  // ?autostart=0 opens the title menu (the sim starts in "play" with an empty board otherwise)
+  bootToTitle();
   tickUI();
 }
 

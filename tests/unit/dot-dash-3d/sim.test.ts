@@ -230,6 +230,18 @@ describe("Sentry Lab (DD-12)", () => {
   });
 });
 
+describe("title boot", () => {
+  it("bootToTitle lays out board 1 behind the title without starting a run", async () => {
+    const { bootToTitle } = await import("../../../apps/showcase-dot-dash-3d/src/game/sim");
+    const played = st.profile.mazesPlayed;
+    bootToTitle();
+    expect(st.mode).toBe("title");
+    expect(st.dotsLeft).toBe(st.maze.dots.length);
+    expect(st.dotsLeft).toBeGreaterThan(0);
+    expect(st.profile.mazesPlayed).toBe(played);
+  });
+});
+
 describe("evidence beacon", () => {
   it("reports simulated seconds so tooling can tell a slow sim from a stalled one", async () => {
     const { evidenceExtra } = await import("../../../apps/showcase-dot-dash-3d/src/game/sim");
