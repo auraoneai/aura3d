@@ -145,7 +145,8 @@ test.describe("last-train-port (Phase D)", () => {
         expect(l.arrivedAt).toBe((k + 1) % 6);
       });
       expect(c.closing.status).toBe("complete");
-      expect(c.closing.grade).toBe("Silver");
+      // The original grades this run Silver (its Gold also needs requests, not ported); the port grades Gold on comfort >= 90% and no catches (audit D-06).
+      expect(c.closing.grade).toBe("Gold");
     });
 
     /* day / night: the night frame is darker than the day frame at the same station */
