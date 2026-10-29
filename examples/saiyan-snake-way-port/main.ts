@@ -452,7 +452,7 @@ async function boot(): Promise<void> {
     autoStart: false,
     resize: false,
     pixelRatio: 1,
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+    renderer: { quality: "auto" },
     output: { toneMapping: "none", dither: false },
     scene: world.scene
   });

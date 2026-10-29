@@ -25,6 +25,7 @@ interface Variant { readonly name: string; readonly query: string }
 /** `env=<n>` is the lane's calibration override of the neutral-environment intensity (world.ts); base and v4.3.7 ignore it. */
 const VARIANTS: readonly Variant[] = [
   { name: "v-default", query: "" },
+  { name: "v-phone", query: "" },
   { name: "v-env0", query: "&env=0" },
   { name: "v-env1", query: "&env=1" },
   { name: "v-env080", query: "&env=0.8" },
@@ -87,7 +88,7 @@ async function pageState(page: Page) {
     let diag = null;
     try {
       const dg = app && app.diagnostics ? app.diagnostics() : null;
-      diag = dg ? { renderPath: dg.renderPath ? dg.renderPath.path : null, drawCalls: dg.drawCalls ?? null, environment: dg.environment ? { preset: dg.environment.preset, intensity: dg.environment.intensity } : null, warnings: (dg.warnings || []).map(String).filter((w) => /environment|hemisphere|GL|error/i.test(w)).slice(0, 6) } : null;
+      diag = dg ? { renderPath: dg.renderPath ? dg.renderPath.path : null, drawCalls: dg.drawCalls ?? null, environment: dg.environment ? { preset: dg.environment.preset, intensity: dg.environment.intensity } : null, warnings: (dg.warnings || []).map(String).filter((w) => /environment|hemisphere|GL|error|deprecat/i.test(w)).slice(0, 6), degradations: (dg.degradations || []).map((d) => d.code + ":" + String(d.message || "").slice(0, 160)).slice(0, 12), quality: app.quality && app.quality.tier ? String(app.quality.tier) : null } : null;
     } catch (e) { diag = { err: String(e) }; }
     let state = null, meta = null;
     try { const s = h.state(); state = { s: s.s, phase: s.phase, laneTarget: s.laneTarget, hasLane: "lane" in s, frame: s.frame }; } catch (e) { state = { err: String(e) }; }
@@ -125,7 +126,7 @@ test.describe("g17 serpentine sky run capture", () => {
       page.on("pageerror", (e) => log(`SSR_ERR ${variant.name} pageerror ${e.message.slice(0, 300)}`));
       page.on("console", (m) => { if (m.type() === "error" || m.type() === "warning") log(`SSR_CONSOLE ${variant.name} ${m.type()} ${m.text().slice(0, 400)}`); });
       page.on("response", (r) => { if (r.status() >= 400) log(`SSR_HTTP ${variant.name} ${r.status()} ${r.url().replace(server.origin, "").slice(0, 200)}`); });
-      await page.setViewportSize({ width: 1280, height: 720 });
+      await page.setViewportSize(variant.name === "v-phone" ? { width: 390, height: 844 } : { width: 1280, height: 720 });
       await page.goto(`${server.origin}/examples/saiyan-snake-way-port/index.html?manual=1&autostart=1${variant.query}`, { waitUntil: "domcontentloaded" });
       try {
         await page.waitForFunction(`Boolean(${HOOK} && ${HOOK}.ready === true) || Boolean(${ERROR})`, undefined, { timeout: 600_000, polling: 1000 });
