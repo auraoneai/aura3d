@@ -3,7 +3,7 @@
   "version": "4.5.0",
   "private": true,
   "type": "module",
-  "description": "Aura3D 4.1.2 native reimplementation of a sky-lane freeway racer's mechanics (own fixed-step simulation, no third-party bundle) — cold-gas thruster flight, barrel rolls, carrier ramp launches, roof running, and sky-lane dogfights over a gridlocked sunset freeway.",
+  "description": "Apex Overdrive: a sky-lane freeway racer on Aura3D with its own fixed-step simulation. Cold-gas thruster flight, barrel rolls, carrier ramp launches, roof running and sky-lane traffic over a gridlocked sunset freeway.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc -p tsconfig.json --noEmit",

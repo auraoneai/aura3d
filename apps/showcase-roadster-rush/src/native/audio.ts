@@ -30,6 +30,7 @@ export class RoadsterAudio implements GameAudio {
   private musicTimer: ReturnType<typeof setInterval> | null = null;
   private musicStep = 0;
   private noiseBuffer: AudioBuffer | null = null;
+  private backgrounded = false;
 
   setMuted(muted: boolean): boolean {
     this.muted = muted;
@@ -41,10 +42,24 @@ export class RoadsterAudio implements GameAudio {
     return this.muted;
   }
 
+  /** Resume the context. Browsers allow this only inside a user gesture, so the page calls it from its input listeners. */
   unlock(): void {
     const ctx = this.ensure();
-    if (!ctx) return;
+    if (!ctx || this.backgrounded) return;
     void this.manager?.unlock().catch(() => undefined);
+  }
+
+  /** `running` once a gesture has unlocked sound; `locked` or `suspended` otherwise; `none` without Web Audio. */
+  get state(): string {
+    return this.manager?.state ?? "none";
+  }
+
+  /** Suspend the whole context while the tab is hidden (music, engine drone and effects stop); resume when it is shown. */
+  setBackgrounded(hidden: boolean): void {
+    this.backgrounded = hidden;
+    if (!this.manager) return;
+    if (hidden) void this.manager.suspend().catch(() => undefined);
+    else if (this.manager.state === "suspended") void this.manager.resume().catch(() => undefined);
   }
 
   sfx(name: string, options: { pitch?: number; volume?: number } = {}): void {

@@ -65,3 +65,32 @@
 .boot-line i { display: block; height: 100%; width: 100%; background: #5fe6ff; transform-origin: left; animation: boot-fill 1.4s ease-out forwards; }
 .boot-label { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: #9fb4c8; }
 @keyframes boot-fill { from { transform: scaleX(0.1); } to { transform: scaleX(1); } }
+
+/* Title card (audit RR-10): goal, controls for the current input, best score. */
+.rr-title-card { max-width: 420px; text-align: left; align-items: stretch; }
+.rr-title-card h2 { text-align: center; }
+.rr-title-card .rr-btn { align-self: center; }
+.rr-title-card small, .rr-title-card .title-best { text-align: center; }
+.rr-controls { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 13px; color: #cdd8e4; }
+.rr-controls b { color: #f4f6fb; font-weight: 500; }
+.rr-title { cursor: pointer; }
+/* Speed and next-kilometre bar (audit RR-E5). */
+.rr-speedo { display: grid; grid-template-columns: auto auto 1fr; align-items: baseline; gap: 4px 6px; margin-top: 8px; }
+.rr-speed { font-family: var(--font-display, "DIN Pro", sans-serif); font-size: 18px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.rr-mile-label { justify-self: end; }
+.rr-mile-track { grid-column: 1 / -1; height: 3px; border-radius: 2px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+.rr-mile-fill { height: 100%; background: #5fe6ff; transform-origin: left; transform: scaleX(0); }
+/* Screen-reader only live region for trick popups (audit RR-12). */
+.rr-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* Touch targets of at least 44 px on touch screens (audit RR-E4, checklist U1). */
+@media (pointer: coarse) {
+  .rr-icon-btn { width: 44px; height: 44px; font-size: 15px; }
+  .rr-btn { height: 44px; }
+}
+/* Reduced motion: no popup slide, no air flash (the page also stops plume flicker, shield blink and camera shake). */
+@media (prefers-reduced-motion: reduce) {
+  .rr-popup { animation: none; }
+  .rr-air.rr-flash { animation: none; }
+  .boot { transition: none; }
+  .boot-line i { animation: none; }
+}
