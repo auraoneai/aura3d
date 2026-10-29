@@ -105,7 +105,45 @@ async function nodeLuma(png: Buffer) {
   return { mean: +(sum / n).toFixed(2), p5: pct(0.05), p50: pct(0.5), p95: pct(0.95), darkFrac: +(dark / n).toFixed(4), clipFrac: +(clip / n).toFixed(4) };
 }
 
+/**
+ * Canvas frame in one page round trip: needs `capture=1` in the URL (preserveDrawingBuffer), which `open` adds. Every
+ * page.evaluate waits for a software-GL frame (about 20 s here), and a page screenshot about 100 s, so canvas-only shots
+ * use this; UI shots (evidence screens) still use page.screenshot.
+ */
+async function grabCanvas(page: Page, target: string, id: string, extra: Record<string, unknown> = {}): Promise<Buffer | null> {
+  const t0 = Date.now();
+  const got = await page.evaluate(() => {
+    const canvas = document.querySelector("canvas#game") as HTMLCanvasElement | null ?? document.querySelector("canvas");
+    const url = canvas?.toDataURL("image/png") ?? null;
+    const reg = (globalThis as any).__AURA3D_LIVE_APPS__;
+    const app = reg?.all()[0];
+    let info: unknown = null;
+    try {
+      const dg = app?.diagnostics?.();
+      info = { renderPath: dg?.renderPath?.path ?? null, bloomFusion: dg?.renderPath?.bloomFusion ?? null, drawCalls: dg?.drawCalls ?? null,
+        optionIgnored: (JSON.stringify(dg ?? {}).match(/OPTION_IGNORED/g) ?? []).length, contactShadows: app?.lighting?.diagnostics?.()?.contactShadows ?? null };
+    } catch (e) { info = String(e); }
+    const s = (window as any).__AURA3D_SHOWCASE_IRON_CROWN__;
+    const state = s ? { frame: s.frame, mode: s.mode, phase: s.phase, stage: s.stage?.id, p1: { x: s.fighters?.p1?.position?.[0], clip: s.fighters?.p1?.clip, health: s.fighters?.p1?.health, meter: s.fighters?.p1?.meter, tint: s.fighters?.p1?.tint },
+      cpu: { x: s.fighters?.cpu?.position?.[0], clip: s.fighters?.cpu?.clip, health: s.fighters?.cpu?.health }, stats: s.bout?.stats, pips: s.bout?.pips, perf: s.perf ?? null, attackLayer: s.attackLayer ?? null } : null;
+    return { url, info, state, size: canvas ? [canvas.width, canvas.height] : null };
+  });
+  if (!got.url) { log(`GL_ERR ${target} ${id} no canvas`); return null; }
+  const png = Buffer.from(got.url.split(",")[1]!, "base64");
+  const jpg: Buffer = await sharp(png).jpeg({ quality: 72 }).toBuffer();
+  const stats = await nodeLuma(png);
+  log(`GL_META ${JSON.stringify({ target, id, canvasOnly: true, method: "toDataURL", size: got.size, ...extra, ...stats, timing: { totalMs: Date.now() - t0 }, info: got.info, state: got.state })}`);
+  const b64 = jpg.toString("base64");
+  const n = Math.ceil(b64.length / CHUNK);
+  for (let i = 0; i < n; i++) log(`GL_JPG ${target} ${id} ${i + 1}/${n} ${b64.slice(i * CHUNK, (i + 1) * CHUNK)}`);
+  return png;
+}
+
 async function grab(page: Page, target: string, id: string, extra: Record<string, unknown> = {}, canvasOnly = true): Promise<Buffer> {
+  if (canvasOnly && page.url().includes("capture=1")) {
+    const png = await grabCanvas(page, target, id, extra);
+    if (png) return png;
+  }
   const t0 = Date.now();
   const handle = canvasOnly ? await page.addStyleTag({ content: CANVAS_ONLY }) : null;
   const t1 = Date.now();
@@ -154,7 +192,10 @@ async function open(browser: Browser, server: ExampleDevServer, target: string, 
   page.on("console", (m) => { if (m.type() === "error") log(`GL_CONSOLE ${target} ${m.text().slice(0, 240)}`); });
   page.on("requestfailed", (r) => log(`GL_REQFAIL ${target} ${r.url().slice(-120)}`));
   const t0 = Date.now();
-  await page.goto(`${server.origin}${ROUTE}${query}`, { waitUntil: "domcontentloaded" });
+  // capture=1 keeps the drawing buffer so canvas shots are one round trip (grabCanvas). ic-desktop keeps the page
+  // screenshot path, matching its first BEFORE run.
+  const q = target === "ic-desktop" ? query : `${query}${query ? "&" : "?"}capture=1`;
+  await page.goto(`${server.origin}${ROUTE}${q}`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(READY, undefined, { timeout: 600_000, polling: 500 });
   log(`GL_READY ${target} ${Date.now() - t0}ms`);
   return { context, page, loaded: Date.now() };
@@ -178,7 +219,7 @@ test.describe("iron crown audit fixes", () => {
   test.beforeAll(async () => { server = await startExampleDevServer(); });
   test.afterAll(async () => { await server.close(); });
 
-  test("ic-desktop", async ({ browser }) => {
+  test("ic-desktop @g1", async ({ browser }) => {
     const T = "ic-desktop";
     const { context, page, loaded } = await open(browser, server, T, false, "?icdebug=1");
     await settle(page, T, loaded, [3, 30, 60], "crown");
@@ -231,7 +272,7 @@ test.describe("iron crown audit fixes", () => {
     await context.close();
   });
 
-  test("ic-phone", async ({ browser }) => {
+  test("ic-phone @g2", async ({ browser }) => {
     const T = "ic-phone";
     const { context, page, loaded } = await open(browser, server, T, true);
     await settle(page, T, loaded, [3, 30, 60], "crown");
@@ -267,7 +308,7 @@ test.describe("iron crown audit fixes", () => {
     await context.close();
   });
 
-  test("ic-neo-tokyo", async ({ browser }) => {
+  test("ic-neo-tokyo @g2", async ({ browser }) => {
     const T = "ic-neo-tokyo";
     const { context, page } = await open(browser, server, T, false);
     await pickStage(page, "neo-tokyo-rooftop");
@@ -277,7 +318,7 @@ test.describe("iron crown audit fixes", () => {
     await context.close();
   });
 
-  test("ic-stages", async ({ browser }) => {
+  test("ic-stages @g3", async ({ browser }) => {
     const T = "ic-stages";
     const { context, page } = await open(browser, server, T, false);
     for (const stage of ["bangkok-dock", "colosseum-ruins", "desert-airbase", "himalayan-monastery"]) {
@@ -292,7 +333,7 @@ test.describe("iron crown audit fixes", () => {
 
   /** RH-05: the evidence screens, same names and sizes as evidence/iron-crown/screens/final (UI visible). */
   for (const vp of [{ name: "1280", phone: false }, { name: "390", phone: true }] as const) {
-    test(`ic-screens-${vp.name}`, async ({ browser }) => {
+    test(`ic-screens-${vp.name} ${vp.phone ? "@g5" : "@g4"}`, async ({ browser }) => {
       const T = `ic-screens-${vp.name}`;
       const { context, page, loaded } = await open(browser, server, T, vp.phone, "?icdebug=1");
       await page.waitForTimeout(3000);
@@ -331,7 +372,7 @@ test.describe("iron crown audit fixes", () => {
     });
   }
 
-  test("ic-card", async ({ browser }) => {
+  test("ic-card @g4", async ({ browser }) => {
     const T = "ic-card";
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
     await routeAppAssets(context);
@@ -345,7 +386,7 @@ test.describe("iron crown audit fixes", () => {
   });
 
   /** IC-09: one frame per Player Studio swatch; a multiply tint keeps the texture detail (luma spread) in the fighter region. */
-  test("ic-studio", async ({ browser }) => {
+  test("ic-studio @g6", async ({ browser }) => {
     const T = "ic-studio";
     const { context, page } = await open(browser, server, T, false);
     const P1_RECT = { x: 0.26, y: 0.3, w: 0.2, h: 0.62 };
@@ -362,7 +403,7 @@ test.describe("iron crown audit fixes", () => {
   });
 
   /** IC-15 (opt-in ?iclayer=1): the attack plays on the upper-body layer and the feet stay where the locomotion clip puts them. */
-  test("ic-layer", async ({ browser }) => {
+  test("ic-layer @g5", async ({ browser }) => {
     const T = "ic-layer";
     const { context, page } = await open(browser, server, T, false, "?iclayer=1");
     await page.waitForTimeout(20_000);
@@ -384,7 +425,7 @@ test.describe("iron crown audit fixes", () => {
   });
 
   /** Contact shadows on the night stage: Neo-Tokyo with and without the effect (compare with ic-neo-tokyo). */
-  test("ic-neo-no-contact", async ({ browser }) => {
+  test("ic-neo-no-contact @g6", async ({ browser }) => {
     const T = "ic-neo-no-contact";
     const { context, page } = await open(browser, server, T, false, "?iccontact=0");
     await pickStage(page, "neo-tokyo-rooftop");
@@ -394,14 +435,14 @@ test.describe("iron crown audit fixes", () => {
   });
 
   /** Fused bloom (default auto path) against ?aura3d-render=production on the Crown Arena (compare with ic-desktop crown-60s). */
-  test("ic-bloom-production", async ({ browser }) => {
+  test("ic-bloom-production @g4", async ({ browser }) => {
     const T = "ic-bloom-production";
     const { context, page, loaded } = await open(browser, server, T, false, "?aura3d-render=production");
     await settle(page, T, loaded, [30, 60], "crown");
     await context.close();
   });
   /** IC-07 (software GL only): runtime effects on with ?vfx=on&vfxdebug=1 during an autopilot bout; log live emitters and lingering-particle notes. */
-  test("ic-vfx", async ({ browser }) => {
+  test("ic-vfx @g5", async ({ browser }) => {
     const T = "ic-vfx";
     const { context, page } = await open(browser, server, T, false, "?vfx=on&vfxdebug=1&autoplay=1");
     for (let i = 0; i < 6; i++) {
