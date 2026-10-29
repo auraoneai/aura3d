@@ -530,6 +530,8 @@ const topLevelKeys = (body) => {
  * touchmove / pointermove handler, no on-screen hold button (pointercancel handler), and no pointerdown handler that reads the pointer (a handler that only unlocks audio or
  * starts the title does not count); (2) a `touch: { bindings }` value that names no declared input action or axis.
  * Severity is warn until every live game passes; switch TOUCH_INPUT_SEVERITY to "error" then (lessons-learned.md).
+ * 2026-10-29, wave 2 of the audit fixes, with audit-fix/g01..g09 overlaid: still failing are bunker-zero, strange-orbit-port,
+ * drift-and-deliver-port, heatsink-port, last-train-port and roadster-hours-port (their lanes had not committed yet), so it stays warn.
  * Escape hatch for a game that is desktop-only on purpose: `// touch-input: ok` on the keyboard listener line.
  */
 export const TOUCH_INPUT_SEVERITY = "warn";
