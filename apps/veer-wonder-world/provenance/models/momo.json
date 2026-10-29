@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "momo",
-  "file": "src/assets/models/momo.3b7a02aa.glb",
-  "sha256": "3b7a02aa5a5be628f2c939e9faf77ad9490c8db5b0ad7c12b7b43874b6599799",
-  "sizeBytes": 1937816,
+  "file": "src/assets/models/momo.9e38ee8e.glb",
+  "sha256": "9e38ee8e48b687843a6861e94b845f177b8f99f5ab717c770cdbf9ef27ead0a9",
+  "sizeBytes": 1011932,
   "rigged": false,
   "clips": [],
   "heightM": 0.9,
@@ -52,6 +52,25 @@
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "normalMapJpeg": {
+      "quality": 95,
+      "chromaSubsampling": "4:4:4",
+      "mozjpeg": true,
+      "encoder": "sharp",
+      "textures": [
+        {
+          "texture": "normal",
+          "pngBytes": 1238029,
+          "jpegBytes": 312152
+        }
+      ],
+      "geometrySha256": "c52fd021721233e25a27b97dcf36404e28baffd6b03569ceb363d10f3086e6eb",
+      "previous": {
+        "file": "src/assets/models/momo.3b7a02aa.glb",
+        "sha256": "3b7a02aa5a5be628f2c939e9faf77ad9490c8db5b0ad7c12b7b43874b6599799",
+        "sizeBytes": 1937816
+      }
     }
   },
   "inspection": {

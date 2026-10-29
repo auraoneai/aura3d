@@ -24,8 +24,8 @@ export interface AudioRightsGroup {
 export const MODEL_RIGHTS: readonly ModelRightsRecord[] = [
   {
     "key": "momo",
-    "file": "src/assets/models/momo.3b7a02aa.glb",
-    "sha256": "3b7a02aa5a5be628f2c939e9faf77ad9490c8db5b0ad7c12b7b43874b6599799",
+    "file": "src/assets/models/momo.9e38ee8e.glb",
+    "sha256": "9e38ee8e48b687843a6861e94b845f177b8f99f5ab717c770cdbf9ef27ead0a9",
     "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
     "generator": "Meshy text-to-3d (preview, refine 2k, remesh) via Kiro Prism",
     "owner": "AuraOne (project owner)",
@@ -33,8 +33,8 @@ export const MODEL_RIGHTS: readonly ModelRightsRecord[] = [
   },
   {
     "key": "lulu",
-    "file": "src/assets/models/lulu.95ef56f6.glb",
-    "sha256": "95ef56f602f6d888317469c253770962c81542d81cc936a73535b901830f78c0",
+    "file": "src/assets/models/lulu.5cfa945c.glb",
+    "sha256": "5cfa945cb96ce66de389d4cb8ccf84849d1ea672c75af6f0cab3ea7de5f00eab",
     "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
     "generator": "Meshy text-to-3d (preview, refine 2k, remesh) via Kiro Prism",
     "owner": "AuraOne (project owner)",
@@ -42,8 +42,8 @@ export const MODEL_RIGHTS: readonly ModelRightsRecord[] = [
   },
   {
     "key": "sheru",
-    "file": "src/assets/models/sheru.e0e039ec.glb",
-    "sha256": "e0e039ecf1bc16922040f3bb5a33cb638c410d172741d656541b00d3888bc13d",
+    "file": "src/assets/models/sheru.fc538703.glb",
+    "sha256": "fc538703b105461c645698e59df6e84846c5064b72881555053a3b53017db5b1",
     "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
     "generator": "Meshy text-to-3d (preview, refine 2k, remesh) via Kiro Prism",
     "owner": "AuraOne (project owner)",
@@ -69,8 +69,8 @@ export const MODEL_RIGHTS: readonly ModelRightsRecord[] = [
   },
   {
     "key": "lumi",
-    "file": "src/assets/models/lumi.d65cb9e6.glb",
-    "sha256": "d65cb9e69abf3776bf02761f3cb4cf23ba38ad0c2d87a0c430172a5a0b5212b9",
+    "file": "src/assets/models/lumi.1ba7cc4a.glb",
+    "sha256": "1ba7cc4a900c4fe5a66fdb09a8aa32b2fd774dd13b13dc24c99bd6440801f20c",
     "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
     "generator": "Meshy text-to-3d (preview, refine 2k, remesh) via Kiro Prism",
     "owner": "AuraOne (project owner)",
@@ -78,8 +78,8 @@ export const MODEL_RIGHTS: readonly ModelRightsRecord[] = [
   },
   {
     "key": "peeko",
-    "file": "src/assets/models/peeko.016097bc.glb",
-    "sha256": "016097bccbc0aad659ba0d62f6161204e49a46be7332ada7fb4d86a7505fffa9",
+    "file": "src/assets/models/peeko.febd9228.glb",
+    "sha256": "febd9228c5ee11fdeda4300d6ed12383e8180a92d5664c08191540bec71daa80",
     "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
     "generator": "Meshy text-to-3d (preview, refine 2k, remesh) via Kiro Prism",
     "owner": "AuraOne (project owner)",

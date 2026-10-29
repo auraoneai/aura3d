@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "sheru",
-  "file": "src/assets/models/sheru.e0e039ec.glb",
-  "sha256": "e0e039ecf1bc16922040f3bb5a33cb638c410d172741d656541b00d3888bc13d",
-  "sizeBytes": 2157616,
+  "file": "src/assets/models/sheru.fc538703.glb",
+  "sha256": "fc538703b105461c645698e59df6e84846c5064b72881555053a3b53017db5b1",
+  "sizeBytes": 1123060,
   "rigged": false,
   "clips": [],
   "heightM": 0.7,
@@ -50,6 +50,25 @@
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "normalMapJpeg": {
+      "quality": 95,
+      "chromaSubsampling": "4:4:4",
+      "mozjpeg": true,
+      "encoder": "sharp",
+      "textures": [
+        {
+          "texture": "normal",
+          "pngBytes": 1439083,
+          "jpegBytes": 404536
+        }
+      ],
+      "geometrySha256": "c60aa43f395cdaff9b241cd1d2fa35241ef3a0898625427898da85013b22b912",
+      "previous": {
+        "file": "src/assets/models/sheru.e0e039ec.glb",
+        "sha256": "e0e039ecf1bc16922040f3bb5a33cb638c410d172741d656541b00d3888bc13d",
+        "sizeBytes": 2157616
+      }
     }
   },
   "inspection": {

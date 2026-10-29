@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "peeko",
-  "file": "src/assets/models/peeko.016097bc.glb",
-  "sha256": "016097bccbc0aad659ba0d62f6161204e49a46be7332ada7fb4d86a7505fffa9",
-  "sizeBytes": 2426404,
+  "file": "src/assets/models/peeko.febd9228.glb",
+  "sha256": "febd9228c5ee11fdeda4300d6ed12383e8180a92d5664c08191540bec71daa80",
+  "sizeBytes": 1272148,
   "rigged": false,
   "clips": [],
   "heightM": 0.55,
@@ -50,6 +50,25 @@
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "normalMapJpeg": {
+      "quality": 95,
+      "chromaSubsampling": "4:4:4",
+      "mozjpeg": true,
+      "encoder": "sharp",
+      "textures": [
+        {
+          "texture": "normal",
+          "pngBytes": 1685383,
+          "jpegBytes": 531131
+        }
+      ],
+      "geometrySha256": "6f113db7f1f47a20cdcfafa3a4bc9eb9f92355532685699d618188536a468b26",
+      "previous": {
+        "file": "src/assets/models/peeko.016097bc.glb",
+        "sha256": "016097bccbc0aad659ba0d62f6161204e49a46be7332ada7fb4d86a7505fffa9",
+        "sizeBytes": 2426404
+      }
     }
   },
   "inspection": {
