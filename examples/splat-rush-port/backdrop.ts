@@ -3,7 +3,7 @@
  * road at the road's own scroll speed, following its curve. Placement is a pure function of the simulation's distance and
  * elapsed time, so it never touches the simulation or its random stream.
  */
-import { lights, model, scene, type AuraApp } from "@aura3d/engine";
+import { environments, lights, model, scene, type AuraApp } from "@aura3d/engine";
 import { MODELS } from "./models";
 import { curve } from "./sim";
 
@@ -44,9 +44,20 @@ export const PIECES: readonly Piece[] = (() => {
   });
 })();
 
+/**
+ * Neutral-room IBL for the Meshy GLBs (LIGHT-01). Since 4.5.0 a scene with only authored lights gets no implicit
+ * environment, so the islands, balloons and gems lost about half their luma (gem-double is mostly metal and needs the
+ * reflections). 0.8 is calibrated at the evidence "roll" state against `evidence/splat-rush-port/screens/final/card@2x.jpg`
+ * with the hemisphere contributing next to the environment and applied per normal (LIGHT-05/08): GLB-region luma
+ * 98.7% of the card at 0.75 and 107.1% at 1 (lane G16 report). The toon road, gates and ball use custom shaders and
+ * ignore it.
+ */
+export const BACKDROP_ENVIRONMENT_INTENSITY = 0.8;
+
 /** Scene nodes (models) plus the light rig the models need (the toon surfaces carry their own lighting). */
 export function addBackdrop(builder: Scene): void {
   builder
+    .add(environments.neutral({ name: "backdrop-environment", intensity: BACKDROP_ENVIRONMENT_INTENSITY }))
     .add(lights.hemisphere({ name: "backdrop-hemisphere", skyColor: "#ffffff", groundColor: "#7788aa", intensity: 1.15 }))
     .add(lights.directional({ name: "backdrop-key", position: [6, 12, 6], target: [0, 0, 0], intensity: 1.6, color: "#ffffff" }))
     .add(lights.directional({ name: "backdrop-fill", position: [-6, 8, -6], target: [0, 0, 0], intensity: 0.5, color: "#99bbff" }));
