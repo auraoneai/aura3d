@@ -4,7 +4,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { applyNeutralLabels } from "./lib.mjs";
+import { CREDIT_NOTE, CREDIT_STYLE, applyNeutralLabels } from "./lib.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const names = JSON.parse(readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), "names.json"), "utf8"));
@@ -20,8 +20,6 @@ const edit = (p, fn) => {
 const esc = (v) => v.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
 const re = (v) => v.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-const CREDIT_STYLE = '<style>.aura-credit{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none}.aura-credit a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-credit a:hover{text-decoration:underline}</style>';
-const CREDIT_NOTE = '<aside class="aura-credit" role="note"><a href="/apps/showcase-index/">Built with Aura3D</a> · independent game, not affiliated with any other game or studio.</aside>';
 
 // Reword card and notes text so it describes the game, not another game.
 export function neutralize(text) {
@@ -64,8 +62,8 @@ for (const g of names) {
     html = html.replace(/(<meta property="og:url" content=")[^"]*(")/, `$1${url}$2`);
     html = html.replace(/(<link rel="canonical" href=")[^"]*(")/, `$1${url}$2`);
     html = html.replace(/(<meta name="description" content=")[^"]*(")/, `$1${esc(g.pitch)}$2`);
-    html = html.replace(/<style>\.aura-(?:port-note|credit)[\s\S]*?<\/style>/, CREDIT_STYLE);
-    html = html.replace(/<aside class="aura-(?:port-note|credit)"[\s\S]*?<\/aside>/, CREDIT_NOTE);
+    html = html.replace(/<style>\.aura-(?:port-note|credit)[\s\S]*?<\/style>/, () => CREDIT_STYLE);
+    html = html.replace(/<aside class="aura-(?:port-note|credit)[^"]*"[\s\S]*?<\/aside>/, () => CREDIT_NOTE);
     return html;
   });
 
