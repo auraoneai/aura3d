@@ -1,4 +1,4 @@
-import type { BoneMaskSelector, BoneMaskSpec } from "@aura3d/animation/lanes";
+import type { BoneMaskSelector, BoneMaskSkeleton, BoneMaskSpec } from "@aura3d/animation/lanes";
 import type { AuraBoneMaskSpec } from "../contracts/animation.js";
 
 /**
@@ -9,14 +9,33 @@ import type { AuraBoneMaskSpec } from "../contracts/animation.js";
  *
  * - `include` entries are exact bone names (or pose selectors, passed through);
  * - `humanoid` adds the matching preset (`"arms"` is both arms);
- * - `exclude` names get weight 0 after the includes, so they win.
+ * - `exclude` names get weight 0 after the includes, so they win, and take their child bones with them;
+ *   with no `include`/`humanoid`, the mask starts from the full body (anim-phys-08).
  */
+/**
+ * The skeleton a mask is built over: bind-order joint names plus parent indices, so subtree
+ * selectors (`upper-body`, `exclude`) reach child bones. Without the mixer's skeleton the parents
+ * are unknown and every selector touches only the named joints (anim-phys-08).
+ */
+export function boneMaskSkeletonFor(runtime: {
+  readonly skeletonJointNames?: () => readonly string[];
+  readonly mixer?: () => { readonly skeleton?: BoneMaskSkeleton };
+}): BoneMaskSkeleton | undefined {
+  const skeleton = typeof runtime.mixer === "function" ? runtime.mixer().skeleton : undefined;
+  if (skeleton?.parentIndices !== undefined) return { jointNames: skeleton.jointNames, parentIndices: skeleton.parentIndices };
+  return typeof runtime.skeletonJointNames === "function" ? { jointNames: runtime.skeletonJointNames() } : undefined;
+}
+
 export function toPoseBoneMaskSpec(spec: AuraBoneMaskSpec | BoneMaskSpec): BoneMaskSpec {
   const source = spec as AuraBoneMaskSpec & Partial<BoneMaskSpec>;
   const include: BoneMaskSelector[] = [...((source.include ?? []) as readonly BoneMaskSelector[])];
   if (source.humanoid === "arms") include.push({ humanoid: "left-arm" }, { humanoid: "right-arm" });
   else if (source.humanoid !== undefined) include.push({ humanoid: source.humanoid });
   const weights: Record<string, number> = { ...(source.weights ?? {}) };
-  for (const bone of source.exclude ?? []) weights[bone] = 0;
-  return Object.keys(weights).length > 0 ? { include, weights } : { include };
+  const exclude: BoneMaskSelector[] = [...((source.exclude ?? []) as readonly BoneMaskSelector[])];
+  return {
+    include,
+    ...(Object.keys(weights).length > 0 ? { weights } : {}),
+    ...(exclude.length > 0 ? { exclude } : {})
+  };
 }
