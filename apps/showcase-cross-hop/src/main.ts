@@ -116,6 +116,10 @@ if (AUTOSTART) {
   );
   syncVisuals(1);
   tickUI();
+} else {
+  // `?autostart=0` opens on the title menu instead of a run that was never started.
+  st.mode = "title";
+  tickUI();
 }
 
 void g.ready().then(() => {
