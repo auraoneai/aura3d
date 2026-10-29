@@ -1,0 +1,102 @@
+[
+ {
+  "target": "ninja",
+  "id": "settle-5s",
+  "sinceReadyMs": 5004,
+  "mean": 121.16,
+  "p5": 52,
+  "p50": 124,
+  "p95": 173,
+  "darkFrac": 0,
+  "grid": [
+   104.95,
+   136.05,
+   132.7,
+   114.61,
+   87.56,
+   131.43,
+   143.36,
+   99.54,
+   93.52,
+   153.19,
+   156.26,
+   104.87,
+   107.45,
+   130.39,
+   135.26,
+   107.42
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 93,
+   "shadows": [
+    {
+     "light": "sun",
+     "filter": "pcf",
+     "casterVariants": [
+      "sk0|ah",
+      "sk0|ah|ds",
+      "sk0|i|b|ds|prd02.depthInstanceAttr=1,prd02.depthInstancing=1",
+      "sk0|i|b|ds|prd02.depthInstancing=1",
+      "sk0|i|b|prd02.depthInstancing=1",
+      "sk4|ds|prd02.depthSkinning=4"
+     ],
+     "sampled": true,
+     "cascadeCount": 2,
+     "skippedCascades": []
+    }
+   ]
+  }
+ },
+ {
+  "target": "ninja",
+  "id": "settle-30s",
+  "sinceReadyMs": 1118086,
+  "mean": 121.22,
+  "p5": 52,
+  "p50": 124,
+  "p95": 173,
+  "darkFrac": 0,
+  "grid": [
+   104.96,
+   136.04,
+   132.71,
+   114.61,
+   87.56,
+   131.44,
+   143.35,
+   99.54,
+   93.53,
+   153.47,
+   156.66,
+   104.87,
+   107.44,
+   130.7,
+   135.23,
+   107.41
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 93,
+   "shadows": [
+    {
+     "light": "sun",
+     "filter": "pcf",
+     "casterVariants": [
+      "sk0|ah",
+      "sk0|ah|ds",
+      "sk0|i|b|ds|prd02.depthInstanceAttr=1,prd02.depthInstancing=1",
+      "sk0|i|b|ds|prd02.depthInstancing=1",
+      "sk0|i|b|prd02.depthInstancing=1",
+      "sk4|ds|prd02.depthSkinning=4"
+     ],
+     "sampled": true,
+     "cascadeCount": 2,
+     "skippedCascades": []
+    }
+   ]
+  }
+ }
+]

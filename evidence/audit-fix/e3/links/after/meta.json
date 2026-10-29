@@ -1,0 +1,152 @@
+[
+ {
+  "target": "links-default",
+  "id": "settle-5s",
+  "sinceReadyMs": 5010,
+  "mean": 135.23,
+  "p5": 63,
+  "p50": 133,
+  "p95": 194,
+  "darkFrac": 0.0014,
+  "grid": [
+   158.5,
+   170.32,
+   156.51,
+   127.76,
+   130.23,
+   173.28,
+   181.05,
+   113.15,
+   113.14,
+   138.36,
+   116.41,
+   123.65,
+   103.2,
+   130.37,
+   125.49,
+   102.19
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 143,
+   "shadows": [
+    {
+     "light": "sun",
+     "filter": "pcf",
+     "casterVariants": [
+      "sk0",
+      "sk0|ah|ds",
+      "sk0|ds",
+      "sk0|i|b|ds|prd02.depthInstancing=1",
+      "sk0|i|b|prd02.depthInstancing=1",
+      "sk4|prd02.depthSkinning=4"
+     ],
+     "sampled": true,
+     "cascadeCount": 3,
+     "skippedCascades": []
+    }
+   ]
+  }
+ },
+ {
+  "target": "links-default",
+  "id": "settle-30s",
+  "sinceReadyMs": 376324,
+  "mean": 135.48,
+  "p5": 63,
+  "p50": 134,
+  "p95": 194,
+  "darkFrac": 0.0015,
+  "grid": [
+   158.52,
+   170.42,
+   155.52,
+   126.65,
+   129.05,
+   173.91,
+   181.43,
+   113.55,
+   110.41,
+   138.25,
+   116.21,
+   123.65,
+   106.26,
+   132.42,
+   128.77,
+   102.62
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 143,
+   "shadows": [
+    {
+     "light": "sun",
+     "filter": "pcf",
+     "casterVariants": [
+      "sk0",
+      "sk0|ah|ds",
+      "sk0|ds",
+      "sk0|i|b|ds|prd02.depthInstancing=1",
+      "sk0|i|b|prd02.depthInstancing=1",
+      "sk4|prd02.depthSkinning=4"
+     ],
+     "sampled": true,
+     "cascadeCount": 3,
+     "skippedCascades": []
+    }
+   ]
+  }
+ },
+ {
+  "target": "links-default",
+  "id": "settle-60s",
+  "sinceReadyMs": 640827,
+  "mean": 135.47,
+  "p5": 62,
+  "p50": 134,
+  "p95": 194,
+  "darkFrac": 0.0014,
+  "grid": [
+   158.52,
+   170.43,
+   155.49,
+   126.6,
+   128.99,
+   173.91,
+   181.41,
+   113.52,
+   110.32,
+   138.21,
+   116.21,
+   123.7,
+   106.3,
+   132.45,
+   128.8,
+   102.63
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 143,
+   "shadows": [
+    {
+     "light": "sun",
+     "filter": "pcf",
+     "casterVariants": [
+      "sk0",
+      "sk0|ah|ds",
+      "sk0|ds",
+      "sk0|i|b|ds|prd02.depthInstancing=1",
+      "sk0|i|b|prd02.depthInstancing=1",
+      "sk4|prd02.depthSkinning=4"
+     ],
+     "sampled": true,
+     "cascadeCount": 3,
+     "skippedCascades": []
+    }
+   ]
+  }
+ }
+]

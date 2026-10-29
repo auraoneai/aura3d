@@ -1,0 +1,137 @@
+[
+ {
+  "target": "crosshop",
+  "id": "settle-5s",
+  "sinceReadyMs": 5002,
+  "mean": 107.03,
+  "p5": 34,
+  "p50": 114,
+  "p95": 153,
+  "darkFrac": 0.0042,
+  "grid": [
+   118.43,
+   142.21,
+   140.73,
+   116.97,
+   88.92,
+   100.14,
+   120.67,
+   76.51,
+   90.55,
+   107.64,
+   115.37,
+   90.2,
+   91.82,
+   109.99,
+   110.65,
+   91.68
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 163,
+   "shadows": [
+    {
+     "light": "sun",
+     "filter": "pcf",
+     "casterVariants": [
+      "sk0|i|b|ds|prd02.depthInstancing=1",
+      "sk0|i|b|prd02.depthInstancing=1",
+      "sk4|ds|prd02.depthSkinning=4"
+     ],
+     "sampled": true
+    }
+   ]
+  }
+ },
+ {
+  "target": "crosshop",
+  "id": "settle-30s",
+  "sinceReadyMs": 524617,
+  "mean": 107.25,
+  "p5": 37,
+  "p50": 115,
+  "p95": 151,
+  "darkFrac": 0.0035,
+  "grid": [
+   118.37,
+   142.51,
+   140.98,
+   116.53,
+   89.63,
+   111.62,
+   104.39,
+   85.05,
+   90.08,
+   112.24,
+   116.65,
+   85.23,
+   91.82,
+   109.64,
+   109.6,
+   91.67
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 163,
+   "shadows": [
+    {
+     "light": "sun",
+     "filter": "pcf",
+     "casterVariants": [
+      "sk0|i|b|ds|prd02.depthInstancing=1",
+      "sk0|i|b|prd02.depthInstancing=1",
+      "sk4|ds|prd02.depthSkinning=4"
+     ],
+     "sampled": true
+    }
+   ]
+  }
+ },
+ {
+  "target": "crosshop",
+  "id": "settle-60s",
+  "sinceReadyMs": 1025847,
+  "mean": 106.8,
+  "p5": 34,
+  "p50": 115,
+  "p95": 152,
+  "darkFrac": 0.0044,
+  "grid": [
+   118.32,
+   142.59,
+   140.29,
+   116.56,
+   91.59,
+   96.84,
+   114.8,
+   80.38,
+   87.18,
+   115.48,
+   113.07,
+   88.35,
+   91.82,
+   109.77,
+   110.08,
+   91.68
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 163,
+   "shadows": [
+    {
+     "light": "sun",
+     "filter": "pcf",
+     "casterVariants": [
+      "sk0|i|b|ds|prd02.depthInstancing=1",
+      "sk0|i|b|prd02.depthInstancing=1",
+      "sk4|ds|prd02.depthSkinning=4"
+     ],
+     "sampled": true
+    }
+   ]
+  }
+ }
+]
