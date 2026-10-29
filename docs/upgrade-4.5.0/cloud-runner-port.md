@@ -1,6 +1,8 @@
 # Cumulus Dash (`cloud-runner-port`): upgrading to Aura3D 4.5.0
 
-**Verdict:** No change needed. The game keeps the HDR render chain (it authors bloom, colour grade, vignette, output options and custom shaders), reads pixels only through `app.capture()`, and passes only options that the builders read. One optional pin, a few visual spot-checks, and one pre-existing test-hook mismatch (not caused by 4.5.0) are listed below.
+**Verdict:** The game runs on 4.5.0 without code changes. It keeps the HDR render chain (it authors bloom, colour grade, vignette, output options and custom shaders), reads pixels only through `app.capture()`, and passes only options that the builders read. The "no change" claim for the `sky-fill` hemisphere light was wrong: 4.5.0 dropped it (see section 3). The 2026-10-29 audit fixes (lane g25, `docs/audits/lanes/g25.md`) changed the game and record the measured before and after numbers.
+
+**Update 2026-10-29 (audit lane g25):** the QA hook is now `installQaHooks("cumulus-dash", ...)`, which publishes `window.__AURA_CUMULUS_DASH__`. Where this guide says `__AURA_KID_GOKU__`, use `__AURA_CUMULUS_DASH__` on current builds. `bloom.radius` was removed and the look sun now points along the authored sun. The vignette stays: it renders through the post-v2 bridge although `diagnostics().effects` lists it with consumer `none`; removing it raised mean luma from 131 to 199 (remote A/B run `g25-abvig-*`).
 
 ## What this game uses
 
@@ -53,7 +55,9 @@ Nothing needs editing in the game. These are the behaviour changes that do reach
 - **What to do:** nothing.
 - **How to check:** `?diag=1` still works. `portDiagnostics` in `apps/showcase-port-shared/diag.ts` reads draw calls and backend from the QA hook. If you need `getError` every frame while debugging, `?diag=1` turns it on.
 
-### 3. Hemisphere light: expected no change, spot-check once
+### 3. Hemisphere light: dropped in 4.5.0 (the original "no change" below was wrong)
+
+**Correction (2026-10-29 audit, row CR-3):** in 4.3.7 the `sky-fill` hemisphere was turned into a direct spot proxy. In 4.5.0 it is dropped as a direct light, and the explicit-environment route does not add it to the ambient term, so it contributed nothing (live diagnostics: `lightsEvaluated 2`, `hemisphere:false`). Lane E2 fixes the engine path; with that fix the light contributes again, measured at +1.0% mean luma (110.66 to 111.72). The game keeps `sky-fill` at 0.7. The text below is the original analysis, kept for the record.
 - **What happens now:** 4.5.0 makes hemisphere lights contribute (mean of sky and ground) on the authored-lights-only path and the neutral-room path (`packages/engine/src/agent-api/compiler/environment.ts`: `explicitLightFillFree` at `:50`, the `implicitFill === false` branch at `:172`, and `prd02AmbientTerm(snapshot, { includeHemisphere: true })` at `:558`). This game has an authored environment node, because `looks.preset("outdoor-day")` emits `environments.hdri` (`packages/engine/src/agent-api/looks/lookPresets.ts:108-121`, `packages/engine/src/agent-api/looks/looks.ts:291-297`). So it takes the explicit-environment route. That route calls `prd02AmbientTerm(snapshot)` without hemisphere (`environment.ts:541`), and the older bridge branch (`if (authoredEnvironment)` at `environment.ts:95`) returns before the `implicitFill` code at `:172`. The `sky-fill` light at `world.ts:61` should therefore render as it did in 4.3.7.
 - **What to do:** nothing. If the ground or the hero looks brighter or bluer than in 4.3.7, change `intensity` on `sky-fill` (`world.ts:61`).
 - **How to check:** take one `?capture=1&autostart=1` frame via `__AURA_KID_GOKU__.capture()` on 4.3.7 and on 4.5.0 with `?aura3d-render=production`, at the same `place(s)`, and compare mean luma. I did not run the renderer, so the "no change" part is derived from the code, not measured.
@@ -77,11 +81,11 @@ Nothing needs editing in the game. These are the behaviour changes that do reach
 
 ## Checklist
 
-- [ ] Run `node tools/game-checks/run.mjs cloud-runner-port` and confirm 0 errors. I did not run it.
+- [x] Run `node tools/game-checks/run.mjs cloud-runner-port` and confirm 0 errors (0 errors, 0 warnings on 2026-10-29).
 - [ ] Load the game with `?autostart=1` and read `diagnostics().renderPath`. Expect `path: "hdr-msaa"`, `quality: "auto"` and `bloomFusion: "separable"`.
 - [ ] Confirm `diagnostics()` shows no `OPTION_IGNORED` or other new degradation entries.
 - [ ] On 4.5.0, compare one `capture()` frame at a `place(s)` position between `?aura3d-render=production` and the default. Expect differences of at most 1/255 on bloom edges.
 - [ ] Compare the same `place(s)` frame between 4.3.7 and 4.5.0 with `?aura3d-render=production`. Expect no change in overall brightness (this checks the hemisphere light and exposure assumptions).
-- [ ] Decide whether to pin `quality: "production"` in `main.ts:266`. Keep the default unless a visual diff appears.
-- [ ] Run the unit tests in `tests/unit/kid-goku-beyond-the-clouds-port/` (replay, gait, game, presentation, scenery, audio-cues, shader-compile, locomotion and sim). They do not touch the render path.
-- [ ] Fix the `__AURA_CUMULUS_DASH__` hook name in `kid-goku-beyond-the-clouds-port.spec.ts`, `kid-goku-art-frames.spec.ts` and `framecmp-kid.spec.ts` (read `__AURA_KID_GOKU__ ?? __AURA_CUMULUS_DASH__`), then run them on the remote runner (`tools/remote-acr/run.sh`). Check that the `page.screenshot` frames in `kid-goku-art-frames.spec.ts` are not blank.
+- [x] Decide whether to pin `quality: "production"`: not pinned. The default stays (decision recorded in `docs/audits/lanes/g25.md`).
+- [x] Run the unit tests in `tests/unit/kid-goku-beyond-the-clouds-port/` (106 passed on 2026-10-29) (replay, gait, game, presentation, scenery, audio-cues, shader-compile, locomotion and sim). They do not touch the render path.
+- [x] Hook-name mismatch: resolved the other way round. The game now publishes `__AURA_CUMULUS_DASH__` again (`installQaHooks("cumulus-dash", ...)`, audit row CR-8), which is the name those three specs already read. The specs that read both names keep working.
