@@ -271,7 +271,12 @@ function memory() {
   };
 }
 
+/**
+ * Lit fraction and mean of the canvas. The drawing buffer is kept only on `?capture=1` / `?qa=1`; elsewhere the browser clears it
+ * after each present, so a read in a later task than the render saw black (D-07). Render in this task first, as `frame()` does.
+ */
 function pixels(): { width: number; height: number; litFraction: number; mean: number } {
+  render();
   const probe = document.createElement("canvas");
   probe.width = 160; probe.height = 90;
   const ctx = probe.getContext("2d")!;
