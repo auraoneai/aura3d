@@ -7,7 +7,8 @@ import { AudioContextManager, createCueBank, type CueSpec, type ToneLayer } from
 
 export type Sfx =
   | "jump" | "land" | "slide" | "dash" | "orb" | "orbHit" | "gale" | "galeHit" | "clones" | "pickup" | "hurt" | "kill" | "heavyKill" | "crate" | "ramBump" | "ramCrash" | "crateSmash"
-  | "unlock" | "form" | "win" | "lose" | "warn" | "step" | "click";
+  | "unlock" | "form" | "win" | "lose" | "warn" | "step" | "click"
+  | "chargeScout" | "chargeSwordsman" | "chargeCaster" | "chargeHeavy";
 
 /** D minor pentatonic over three octaves, as MIDI notes. */
 const SCALE = [50, 53, 55, 57, 60, 62, 65, 67, 69, 72, 74, 77] as const;
@@ -57,10 +58,26 @@ export class GameAudio {
 
   get supported(): boolean { return typeof AudioContext !== "undefined"; }
   get active(): boolean { return this.ctx !== null; }
+  /** True while the context is suspended (hidden tab or paused run); false while it runs; null before the first gesture. */
+  get suspended(): boolean | null { return this.ctx ? this.ctx.state !== "running" : null; }
+  private held = false;
+
+  /** Hold the audio while the page is hidden or the run is paused: the wind bed and score stop until `release`. */
+  suspend(): void {
+    this.held = true;
+    void this.ctx?.suspend();
+  }
+
+  /** Resume after `suspend` (call from Resume or a user gesture). */
+  release(): void {
+    if (!this.held) return;
+    this.held = false;
+    void this.ctx?.resume();
+  }
 
   /** Create or resume the context; call from a user gesture. */
   unlock(): void {
-    if (!this.supported) return;
+    if (!this.supported || this.held) return;
     if (!this.ctx) this.build();
     void this.ctx?.resume();
   }
@@ -146,6 +163,11 @@ export class GameAudio {
       case "form": this.tone(200, 0.7, "sawtooth", 0.14, 800); this.tone(400, 0.7, "sine", 0.2, 1600); this.burst(0.6, 0.18, 500, 5000, 1); break;
       case "step": this.burst(0.05, 0.07, 500, 220, 0.8, "lowpass"); break;
       case "click": this.tone(520, 0.07, "triangle", 0.18); break;
+      /* enemy charges: a short tell per kind when a rival starts running at the hero, so a threat is heard before it lands */
+      case "chargeScout": this.tone(1240, 0.12, "triangle", 0.12, 1760); break;
+      case "chargeSwordsman": this.burst(0.22, 0.16, 2600, 5200, 2.4, "bandpass"); this.tone(700, 0.18, "sawtooth", 0.06, 1100); break;
+      case "chargeCaster": this.tone(330, 0.32, "sine", 0.14, 660); this.burst(0.3, 0.1, 800, 2400, 1.2); break;
+      case "chargeHeavy": this.tone(70, 0.4, "sine", 0.32, 48); this.burst(0.36, 0.18, 400, 120, 0.7, "lowpass"); break;
     }
   }
 

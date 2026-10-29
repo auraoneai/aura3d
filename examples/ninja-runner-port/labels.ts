@@ -1,5 +1,5 @@
 /** Player-facing copy. Original names are replaced with generic ones; the simulation's ids (`base`, `sage`, `beast`, `spiralorb`, ...) are unchanged. */
-import type { Form } from "./sim";
+import type { EnemyKind, Form } from "./sim";
 
 export const TITLE = "SHADOWSTEP GAUNTLET";
 
@@ -28,6 +28,22 @@ export function announcement(type: string, form?: string): Announcement | null {
     default: return null;
   }
 }
+
+/**
+ * How to beat each enemy, shown the first time one of its kind charges. Every rival in this course charges along its lane
+ * (`sim.ts` `approach`; the ranged-attack path is never reached because all hostiles approach), and the contact rule in
+ * `stepSim` lets the hero pass by changing lane, jumping high or sliding, or strike first with the orb or a surge dash.
+ * The guardian has two hit points: the first strike only knocks it back.
+ */
+export const ENEMY_HINT: Readonly<Record<EnemyKind, Announcement>> = {
+  scout: { title: "FOX SCOUT", small: "Change lane, jump or slide past it, or strike first with the spiral orb", seconds: 1.6 },
+  swordsman: { title: "HAWK SWORDSMAN", small: "Strike first with the spiral orb or a surge dash, or change lane", seconds: 1.6 },
+  caster: { title: "OWL CASTER", small: "Slide or jump past it, or strike first with the spiral orb", seconds: 1.6 },
+  heavy: { title: "BOAR GUARDIAN", small: "Takes two hits: strike twice, or change lane", seconds: 1.8 }
+};
+
+/** The objective line on the title card. */
+export const OBJECTIVE = "Reach the Valley Gate, 2,640 m.";
 
 export function resultCopy(won: boolean, falling: boolean): { label: string; title: string; copy: string } {
   if (won) return { label: "RUN COMPLETE", title: "The village is safe.", copy: "From the lantern gate to the valley falls." };

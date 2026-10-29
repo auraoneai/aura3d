@@ -5,26 +5,29 @@
  * Timing matches the original: real time feeds an accumulator and the sim advances in 1/120 s steps
  * (`pf(z, 1/120)`), with key presses applied between steps. Query parameters (all optional):
  * `autostart=1`, `autopilot=1` (the capture policy plays the run), `manual=1` (the sim only advances through
- * the hooks), `seed=N` (course seed, default 17), `quality=low`.
+ * the hooks), `seed=N` (course seed, default 17), `daily=1` (today's course: the seed is the UTC date as YYYYMMDD),
+ * `quality=low`.
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp, createFixedStepLoop, installQaHooks } from "@aura3d/engine";
 import { DEFAULT_POLICY, policyActions, type PolicyParams } from "./autopilot";
 import { courseDigest, decodeActionScript, replayScript, runIdle, runPolicy } from "./replay";
 import { GameAudio } from "./audio";
-import { announcement, districtLabel, resultCopy } from "./labels";
+import { ENEMY_HINT, FORM_SHORT, announcement, districtLabel, resultCopy } from "./labels";
 import { createCameraShake, createHitStop, createImpactFeedback } from "@aura3d/engine/game";
 import { TIER_FEEDBACK, type DebrisTier } from "./impact";
 import {
-  DEFAULT_SEED, SIM_STEP, TUNING, applyAction, createState, drainEvents, qaAutopilotActions, snapshot, startRun, stepSim,
-  type Action, type SimEvent, type SimState
+  DEFAULT_SEED, SIM_STEP, TUNING, dailySeed, applyAction, createState, drainEvents, qaAutopilotActions, snapshot, startRun, stepSim,
+  type Action, type EnemyKind, type Form, type SimEvent, type SimState
 } from "./sim";
 import { createNinjaPresenter, viewOf } from "./presentation";
 import { ACTOR_COUNT, buildWorld, loadActors, type ActorAssets, type WorldRuntime } from "./world";
 
 const params = new URLSearchParams(location.search);
 const num = (key: string, fallback: number): number => { const v = Number(params.get(key)); return params.has(key) && Number.isFinite(v) ? v : fallback; };
+const daily = params.get("daily") === "1";
 const config = {
-  seed: num("seed", DEFAULT_SEED) | 0,
+  seed: (daily ? dailySeed() : num("seed", DEFAULT_SEED)) | 0,
+  daily,
   autostart: params.get("autostart") === "1",
   autopilot: params.get("autopilot") === "1",
   manual: params.get("manual") === "1",
@@ -39,6 +42,19 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   return el as T;
 };
 const canvas = $<HTMLCanvasElement>("world");
+
+/* ------------------------------------------------------------------ preferences */
+
+const STORE = "shadowstep-gauntlet";
+const store = {
+  get(key: string): string | null { try { return localStorage.getItem(`${STORE}:${key}`); } catch { return null; } },
+  set(key: string, value: string): void { try { localStorage.setItem(`${STORE}:${key}`, value); } catch { /* private mode: not saved */ } }
+};
+const reducedMotion = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+document.documentElement.classList.toggle("reduced-motion", reducedMotion);
+interface Best { score: number; distance: number; combo: number; kills: number }
+const readBest = (): Best | null => { try { const v = JSON.parse(store.get(`best:${config.seed}`) ?? "null") as Best | null; return v && typeof v.score === "number" ? v : null; } catch { return null; } };
+const bestLine = (b: Best | null): string => (b ? `Best: ${b.score} points · ${b.distance} m · ${b.kills} defeated · ${b.combo}x combo` : "");
 
 /* ------------------------------------------------------------------ state */
 
@@ -57,8 +73,13 @@ let pendingEvents: SimEvent[] = [];
 let notice: { title: string; small: string; until: number } | null = null;
 let renderFailed = false;
 let countdown = 0;
+let recorded = false;
+let stepClock = 0, lastS = 0;
+const hinted = new Set<EnemyKind>();
+const charged = new Set<number>();
 const hitStop = createHitStop();
-const shake = createCameraShake({ maxOffset: 0.6 });
+/** Camera shake is off with prefers-reduced-motion. */
+const shake = createCameraShake({ maxOffset: reducedMotion ? 0 : 0.6 });
 const impactFeedback = Object.fromEntries((Object.keys(TIER_FEEDBACK) as DebrisTier[]).map((tier) => {
   const t = TIER_FEEDBACK[tier];
   return [tier, createImpactFeedback({ hitStop, shake, cue: (name) => audio.play(name as Parameters<GameAudio["play"]>[0]), cueName: t.cue, fullSpeed: t.fullSpeed, hitStopMs: t.hitStopMs })];
@@ -66,6 +87,7 @@ const impactFeedback = Object.fromEntries((Object.keys(TIER_FEEDBACK) as DebrisT
 const feel = (tier: DebrisTier, speed: number): void => { impactFeedback[tier].handle({ colliderId: "obstacle", tag: tier, point: [0, 0, 0], normal: [0, 0, -1], speed, impulse: speed }); };
 let shownDistrict = "";
 const audio = new GameAudio();
+audio.setMuted(store.get("muted") === "1");
 const maxCooldown: Record<string, number> = { dash: 1 };
 
 function say(title: string, small: string, seconds: number): void { notice = { title, small, until: renderTime + seconds }; }
@@ -74,6 +96,7 @@ const SFX_FOR_EVENT: Readonly<Record<string, Parameters<GameAudio["play"]>[0]>> 
   jump: "jump", land: "land", dash: "dash", spiralorb: "orb", spiralstar: "gale", clones: "clones", damage: "hurt", armorBreak: "crate",
   windImpact: "galeHit", cloneStrike: "orbHit", deflect: "orbHit", interrupt: "orbHit", unlock: "unlock", form: "form", won: "win", lost: "lose", dropWarning: "warn"
 };
+const CHARGE_SFX: Readonly<Record<EnemyKind, Parameters<GameAudio["play"]>[0]>> = { scout: "chargeScout", swordsman: "chargeSwordsman", caster: "chargeCaster", heavy: "chargeHeavy" };
 
 function handle(events: readonly SimEvent[]): void {
   for (const ev of events) {
@@ -89,15 +112,35 @@ function handle(events: readonly SimEvent[]): void {
   }
 }
 
+/** Red edge flash on damage; with reduced motion it is fainter and shorter (CSS `.reduced-motion #hurt`). */
 function flashHurt(): void {
   const el = document.getElementById("hurt");
   if (!el) return;
   el.classList.add("on");
-  window.setTimeout(() => el.classList.remove("on"), 90);
+  window.setTimeout(() => el.classList.remove("on"), reducedMotion ? 60 : 90);
 }
 
 function showHud(on: boolean): void {
-  for (const id of ["stats", "vitals", "forms", "abilities", "progress", "mute"]) $(id).classList.toggle("hidden", !on);
+  for (const id of ["stats", "vitals", "forms", "abilities", "progress", "controls"]) $(id).classList.toggle("hidden", !on);
+}
+
+function setMuted(on: boolean): void {
+  audio.setMuted(on);
+  store.set("muted", on ? "1" : "0");
+  $("mute").textContent = on ? "Sound off" : "Sound on";
+  $("mute").setAttribute("aria-pressed", String(on));
+}
+
+/** Save the run if it beats the stored best for this course seed. */
+function recordResult(): void {
+  if (recorded) return;
+  recorded = true;
+  const prev = readBest();
+  const run: Best = { score: z.score, distance: Math.floor(z.s), combo: z.bestCombo, kills: z.kills };
+  const better = !prev || run.score > prev.score;
+  if (better) store.set(`best:${config.seed}`, JSON.stringify(run));
+  $("result-best").textContent = better ? (prev ? `New best. ${bestLine(prev).replace("Best:", "Previous best:")}` : "First run on this course saved as your best.") : bestLine(prev);
+  $("best").textContent = bestLine(better ? run : prev);
 }
 
 function begin(): void {
@@ -107,8 +150,13 @@ function begin(): void {
   loop.resetAccumulator();
   simSteps = 0;
   countdown = 0;
+  recorded = false;
+  charged.clear();
+  stepClock = 0;
+  lastS = 0;
   pendingEvents = [];
   handle(drainEvents(z));
+  runtime?.resetRun();
   runtime?.resetCamera();
   shownDistrict = "";
   $("overlay").classList.add("hidden");
@@ -125,6 +173,7 @@ function startWithCountdown(): void {
   audio.play("click");
   z = createState(config.seed, { ram: config.ram });
   presenter.reset();
+  runtime?.resetRun();
   runtime?.resetCamera();
   $("overlay").classList.add("hidden");
   $("result").classList.add("hidden");
@@ -134,16 +183,22 @@ function startWithCountdown(): void {
   countdown = 2.2;
 }
 
+/** Pause or resume a running run. Pausing also holds the audio (wind bed and score); Resume releases it. */
 function setPaused(on: boolean): void {
   if (on && z.phase === "running") z.phase = "paused";
   else if (!on && z.phase === "paused") z.phase = "running";
   else return;
   $("pause").classList.toggle("hidden", !on);
+  if (on) audio.suspend();
+  else { audio.release(); loop.resetAccumulator(); }
 }
 
 function act(action: Action): boolean {
-  if (z.phase === "intro" && (action === "spiralorb" || action === "jump")) { begin(); return true; }
+  // On the title card, jump or orb starts the same 3-2-1 as Start; during the countdown every action is ignored.
+  if (countdown > 0) return false;
+  if (z.phase === "intro") { if (action === "spiralorb" || action === "jump") { startWithCountdown(); return true; } return false; }
   const ok = applyAction(z, action);
+  if (ok && action === "slide") audio.play("slide");
   handle(drainEvents(z));
   return ok;
 }
@@ -167,46 +222,71 @@ function abilityCooldown(action: string): number {
   return Math.max(0, Math.min(1, left / full));
 }
 
+/** HUD nodes looked up once; every write goes through `put`, which skips unchanged values (no per-frame layout churn). */
+const hud = {
+  distance: $("distance"), kills: $("kills"), score: $("score"), combo: $("combo"), spirit: $("spirit"), spiritBar: $("spirit-bar"),
+  hearts: $("hearts"), progressFill: $("progress-fill"), district: $("district"), banner: $("district-banner"),
+  announceTitle: $("announce-title"), announceSmall: $("announce-small"), result: $("result"), resultLabel: $("result-label"),
+  resultTitle: $("result-title"), resultCopy: $("result-copy"), resultStats: $("result-stats"), formCycle: document.getElementById("form-cycle"),
+  forms: Array.from(document.querySelectorAll<HTMLButtonElement>("#forms button")),
+  abilities: Array.from(document.querySelectorAll<HTMLButtonElement>("#abilities button[data-action]"))
+};
+const written = new Map<HTMLElement, Map<string, string>>();
+const put = (el: HTMLElement, key: string, value: string, write: () => void): void => {
+  let cache = written.get(el);
+  if (!cache) written.set(el, cache = new Map());
+  if (cache.get(key) === value) return;
+  cache.set(key, value);
+  write();
+};
+const text = (el: HTMLElement, value: string): void => put(el, "text", value, () => { el.textContent = value; });
+const width = (el: HTMLElement, pct: number): void => { const v = `${pct.toFixed(2)}%`; put(el, "width", v, () => { el.style.width = v; }); };
+const flag = (el: HTMLElement, cls: string, on: boolean): void => put(el, `class:${cls}`, on ? "1" : "0", () => { el.classList.toggle(cls, on); });
+
 function updateHud(): void {
-  $("distance").textContent = String(Math.floor(z.s));
-  $("kills").textContent = String(z.kills).padStart(2, "0");
-  $("score").textContent = String(z.score);
-  $("combo").textContent = z.combo > 1 ? `${z.combo}x combo` : "";
-  $("spirit").textContent = `${Math.round(z.spirit)} / ${TUNING.maxSpirit}`;
-  $("spirit-bar").style.width = `${(z.spirit / TUNING.maxSpirit) * 100}%`;
-  $("hearts").textContent = "♥".repeat(Math.max(0, z.health)) + "♡".repeat(Math.max(0, TUNING.health - z.health));
-  $("progress-fill").style.width = `${Math.min(100, (z.s / TUNING.length) * 100)}%`;
+  text(hud.distance, String(Math.floor(z.s)));
+  text(hud.kills, String(z.kills).padStart(2, "0"));
+  text(hud.score, String(z.score));
+  text(hud.combo, z.combo > 1 ? `${z.combo}x combo` : "");
+  text(hud.spirit, `${Math.round(z.spirit)} / ${TUNING.maxSpirit}`);
+  width(hud.spiritBar, (z.spirit / TUNING.maxSpirit) * 100);
+  text(hud.hearts, "♥".repeat(Math.max(0, z.health)) + "♡".repeat(Math.max(0, TUNING.health - z.health)));
+  width(hud.progressFill, Math.min(100, (z.s / TUNING.length) * 100));
   const district = districtLabel(z.s);
-  $("district").textContent = district;
+  text(hud.district, district);
   if (district !== shownDistrict && z.phase === "running") {
-    const banner = $("district-banner");
-    banner.textContent = district.toUpperCase();
-    banner.classList.add("show");
+    hud.banner.textContent = district.toUpperCase();
+    hud.banner.classList.add("show");
     shownDistrict = district;
-    window.setTimeout(() => banner.classList.remove("show"), 2200);
+    window.setTimeout(() => hud.banner.classList.remove("show"), reducedMotion ? 1200 : 2200);
   }
-  document.querySelectorAll<HTMLButtonElement>("#forms button").forEach((b) => {
+  for (const b of hud.forms) {
     const form = b.dataset.form as string;
-    b.classList.toggle("selected", z.form === form);
-    b.disabled = form !== "base" && z.s < (form === "sage" ? 600 : 1620);
-  });
-  document.querySelectorAll<HTMLButtonElement>("#abilities button").forEach((b) => {
-    const action = b.dataset.action as string;
-    b.style.setProperty("--cd", abilityCooldown(action).toFixed(3));
-    b.classList.toggle("poor", z.spirit < (ABILITY_COST[action] ?? 0));
-    b.classList.toggle("live", (action === "clones" && z.clones > 0) || (action === "spiralorb" && z.attack > 0) || (action === "dash" && z.dash > 0) || (action === "spiralstar" && z.shurikenCast > 0));
-  });
-  const live = notice && notice.until > renderTime ? notice : null;
-  $("announce-title").textContent = live?.title ?? "";
-  $("announce-small").textContent = live?.small ?? "";
-  if (z.phase === "won" || z.phase === "lost") {
-    $("result").classList.remove("hidden");
-    const copy = resultCopy(z.phase === "won", z.falling);
-    $("result-label").textContent = copy.label;
-    $("result-title").textContent = copy.title;
-    $("result-copy").textContent = copy.copy;
-    $("result-stats").textContent = `${Math.floor(z.s)} m · ${z.kills} defeated · best combo ${z.bestCombo}x · score ${z.score}`;
+    flag(b, "selected", z.form === form);
+    const locked = form !== "base" && z.s < (form === "sage" ? 600 : 1620);
+    put(b, "disabled", locked ? "1" : "0", () => { b.disabled = locked; });
   }
+  if (hud.formCycle) text(hud.formCycle, FORM_SHORT[z.form as Form] ?? "Runner");
+  for (const b of hud.abilities) {
+    const action = b.dataset.action as string;
+    if (action === "cycleForm") continue;
+    const cd = abilityCooldown(action).toFixed(2);
+    put(b, "cd", cd, () => { b.style.setProperty("--cd", cd); });
+    flag(b, "poor", z.spirit < (ABILITY_COST[action] ?? 0));
+    flag(b, "live", (action === "clones" && z.clones > 0) || (action === "spiralorb" && z.attack > 0) || (action === "dash" && z.dash > 0) || (action === "spiralstar" && z.shurikenCast > 0));
+  }
+  const live = notice && notice.until > renderTime ? notice : null;
+  text(hud.announceTitle, live?.title ?? "");
+  text(hud.announceSmall, live?.small ?? "");
+  if (z.phase === "won" || z.phase === "lost") {
+    flag(hud.result, "hidden", false);
+    const copy = resultCopy(z.phase === "won", z.falling);
+    text(hud.resultLabel, copy.label);
+    text(hud.resultTitle, copy.title);
+    text(hud.resultCopy, copy.copy);
+    text(hud.resultStats, `${Math.floor(z.s)} m · ${z.kills} defeated · best combo ${z.bestCombo}x · score ${z.score}`);
+    recordResult();
+  } else written.delete(hud.result);
 }
 
 /* ------------------------------------------------------------------ frame */
@@ -244,10 +324,60 @@ const loop = createFixedStepLoop({
       if (countdown <= 0) begin();
     }
     audio.update({ form: z.form, speed: z.speed, running: z.phase === "running" });
+    footsteps();
+    charges();
+    if (ready && z.phase === "intro" && countdown <= 0) watchFrameTime(dt);
     render(dt, !config.manual && z.phase === "running");
     updateHud();
   }
 });
+
+/**
+ * A rival starting its charge (`approachSpeed > 0` within 40 m): a short per-kind cue, and the first charge of each kind
+ * in this page session names it and says how to beat it.
+ */
+function charges(): void {
+  if (z.phase !== "running") return;
+  for (const e of z.entities) {
+    if (!e.alive || e.approachSpeed <= 0 || charged.has(e.id) || e.s - z.s > 40) continue;
+    charged.add(e.id);
+    const kind = e.type as EnemyKind;
+    const sfx = CHARGE_SFX[kind];
+    if (sfx) audio.play(sfx);
+    const hint = ENEMY_HINT[kind];
+    if (hint && !hinted.has(kind)) { hinted.add(kind); say(hint.title, hint.small, hint.seconds); }
+  }
+}
+
+/** Footsteps from the run cycle: one soft step every 2.2 m on the ground (none while sliding, in the air or falling). */
+function footsteps(): void {
+  const moved = z.s - lastS;
+  lastS = z.s;
+  if (z.phase !== "running" || moved <= 0 || moved > 5) return;
+  if (z.y > 0.06 || z.falling || z.slide > 0) { stepClock = 0; return; }
+  stepClock += moved;
+  if (stepClock >= 2.2) { stepClock -= 2.2; audio.play("step"); }
+}
+
+/**
+ * Slow-device offer: on the title card the scene redraws every frame, so its frame times show what a run would cost. When
+ * the median of 40 frames is over 100 ms (under 10 fps) at the default quality, the card offers the low-quality page
+ * (`?quality=low`: no ambient occlusion, DPR capped at 1). Nothing switches by itself; the choice stays with the player.
+ */
+const frameTimes: number[] = [];
+function watchFrameTime(dt: number): void {
+  if (config.quality === "low" || config.manual || frameTimes.length >= 40) return;
+  frameTimes.push(dt);
+  if (frameTimes.length < 40) return;
+  const median = [...frameTimes].sort((a, b) => a - b)[20]!;
+  if (median <= 0.1) return;
+  const next = new URLSearchParams(location.search);
+  next.set("quality", "low");
+  const link = document.getElementById("lowq") as HTMLAnchorElement | null;
+  if (!link) return;
+  link.href = `?${next.toString()}`;
+  link.classList.remove("hidden");
+}
 
 /* ------------------------------------------------------------------ input */
 
@@ -256,7 +386,7 @@ addEventListener("keydown", (e) => {
   if (!ready || e.repeat) return;
   audio.unlock();
   if (e.code === "Escape") { setPaused(z.phase === "running"); return; }
-  if (e.code === "KeyM") { audio.toggleMute(); $("mute").textContent = audio.muted ? "Sound off" : "Sound on"; return; }
+  if (e.code === "KeyM") { setMuted(!audio.muted); return; }
   if (e.code === "Enter" && (z.phase === "intro" || z.phase === "won" || z.phase === "lost")) { startWithCountdown(); return; }
   const a = KEYS[e.code];
   if (a) { e.preventDefault(); act(a); }
@@ -275,7 +405,19 @@ document.querySelectorAll<HTMLButtonElement>("[data-form]").forEach((b) => b.add
 $("start").addEventListener("click", startWithCountdown);
 $("again").addEventListener("click", startWithCountdown);
 $("resume").addEventListener("click", () => setPaused(false));
-$("mute").addEventListener("click", () => { audio.unlock(); audio.toggleMute(); $("mute").textContent = audio.muted ? "Sound off" : "Sound on"; });
+$("pause-btn").addEventListener("click", () => setPaused(true));
+$("mute").addEventListener("click", () => { audio.unlock(); setMuted(!audio.muted); });
+setMuted(audio.muted);
+// A hidden tab or a blurred window pauses a running run (it would otherwise resume at full speed with the wind still
+// playing). Audio is held while hidden; coming back keeps a paused run paused until Resume.
+// `manual=1` (QA stepping through the hooks) skips this: captures drive the sim themselves.
+document.addEventListener("visibilitychange", () => {
+  if (config.manual) return;
+  if (document.visibilityState === "hidden") { setPaused(true); audio.suspend(); }
+  else if (z.phase !== "paused") audio.release();
+});
+addEventListener("blur", () => { if (!config.manual) setPaused(true); });
+addEventListener("pagehide", () => { if (!config.manual) { setPaused(true); audio.suspend(); } });
 
 /* ------------------------------------------------------------------ capture hooks */
 
@@ -324,7 +466,10 @@ const api = {
   setAutopilot(on: boolean, next?: PolicyParams) { autopilotOn = on; if (next) policy = next; },
   /** Render `frames` real-time frames of `dt` seconds (animation clocks, particles) without advancing the sim; for captures. */
   settle(frames = 6, dt = 1 / 60) { for (let i = 0; i < frames; i++) { renderTime += dt; render(dt); } updateHud(); },
-  audio: () => ({ supported: audio.supported, active: audio.active, muted: audio.muted }),
+  audio: () => ({ supported: audio.supported, active: audio.active, muted: audio.muted, suspended: audio.suspended }),
+  reducedMotion: () => reducedMotion,
+  best: () => readBest(),
+  setPaused: (on: boolean) => setPaused(on),
   /** Replay a recorded action script (the capture's `script` string) into a fresh recorded run; no rendering per step. */
   replay: (text: string, maxSteps = 40000) => summary(replayScript(decodeActionScript(text), maxSteps)),
   runPolicy: (p: PolicyParams = DEFAULT_POLICY, maxSteps = 40000) => summary(runPolicy(p, maxSteps)),
@@ -413,7 +558,9 @@ function sizeCanvas(): void {
 
 async function boot(): Promise<void> {
   sizeCanvas();
-  actors = await loadActors(canvas);
+  const status = $("loading-status");
+  actors = await loadActors(canvas, (done, total) => { status.textContent = done < total ? `Loading the runners (${done + 1} of ${total})…` : "Building the village…"; });
+  status.textContent = "Building the village…";
   const world = buildWorld({ canvas, actors, entities: z.entities, quality: config.quality, shake });
   app = createAuraApp(canvas, {
     autoStart: false,
@@ -426,7 +573,7 @@ async function boot(): Promise<void> {
   await app.ready();
   runtime = world.bind(app);
   ready = true;
-  $("loading-status").textContent = "Ready.";
+  $("loading-status").textContent = config.daily ? `Ready. Daily course for ${config.seed}.` : "Ready.";
   $<HTMLButtonElement>("start").disabled = false;
   render(0);
   updateHud();
@@ -441,6 +588,17 @@ function reportError(error: unknown): void {
   qa.reportError(message);
   $("loading-status").textContent = `The village could not load: ${message.slice(0, 300)}`;
   console.error(error);
+}
+
+$("best").textContent = bestLine(readBest());
+{
+  const link = document.getElementById("daily") as HTMLAnchorElement | null;
+  if (link) {
+    const next = new URLSearchParams(location.search);
+    if (config.daily) { next.delete("daily"); link.textContent = "Back to the main course"; }
+    else { next.set("daily", "1"); next.delete("seed"); link.textContent = "Play today's course"; }
+    link.href = `?${next.toString()}`;
+  }
 }
 
 addEventListener("resize", sizeCanvas);
