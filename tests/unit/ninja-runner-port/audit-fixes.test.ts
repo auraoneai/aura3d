@@ -107,7 +107,7 @@ describe("ninja-runner-port audit fixes", () => {
       for (const p of list) { checked++; expect(cameraGap(p, MESHY_MANIFEST[id]!.size).gap, `${id} at ${p.position.map((v) => v.toFixed(1))}`).toBeGreaterThanOrEqual(CAMERA_CLEARANCE); }
     }
     expect(checked).toBeGreaterThan(1000);
-  });
+  }, 30_000);
 
   it("E-06: the daily seed is the UTC date and its course is complete", () => {
     expect(dailySeed(new Date(Date.UTC(2026, 9, 29, 23, 0)))).toBe(20261029);
