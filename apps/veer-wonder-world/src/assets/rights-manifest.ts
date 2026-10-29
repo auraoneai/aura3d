@@ -54,7 +54,7 @@ export const MODEL_RIGHTS: readonly ModelRightsRecord[] = [
     "file": "src/assets/models/gogo.a229380d.glb",
     "sha256": "a229380d1a9a9fede2a56ba3c4be44156b8e27cf37fcf5485d744cf8b0656cb8",
     "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
-    "generator": "Meshy text-to-3d (preview, refine 2k, remesh) via Kiro Prism",
+    "generator": "Meshy text-to-3d (preview, refine 2k) via Kiro Prism; simplified locally from the refine model (no remesh task ran)",
     "owner": "AuraOne (project owner)",
     "review": "approved by agent:claude-opus-5.5 on 2026-10-29"
   },
@@ -441,7 +441,7 @@ export const MODEL_RIGHTS: readonly ModelRightsRecord[] = [
     "file": "src/assets/models/toyBox.5d99d2ce.glb",
     "sha256": "5d99d2ce1a1a9f0f8077649a28a142d191445296208a7878cc328675cf9f1e90",
     "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
-    "generator": "Meshy text-to-3d (preview, refine 2k, remesh) via Kiro Prism",
+    "generator": "Meshy text-to-3d (preview, refine 2k) via Kiro Prism; simplified locally from the refine model (no remesh task ran)",
     "owner": "AuraOne (project owner)",
     "review": "approved by agent:claude-opus-5.5 on 2026-10-29"
   },
@@ -486,7 +486,7 @@ export const MODEL_RIGHTS: readonly ModelRightsRecord[] = [
     "file": "src/assets/models/pastrySquare.cff9df45.glb",
     "sha256": "cff9df45812423f8f0a7bc24974fa141637b8f29fe6cac219f6c1296036b18ca",
     "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
-    "generator": "Meshy text-to-3d (preview, refine 2k, remesh) via Kiro Prism",
+    "generator": "Meshy text-to-3d (preview, refine 2k) via Kiro Prism; simplified locally from the refine model (no remesh task ran)",
     "owner": "AuraOne (project owner)",
     "review": "approved by agent:claude-opus-5.5 on 2026-10-29"
   },
