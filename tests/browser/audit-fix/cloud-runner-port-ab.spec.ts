@@ -21,6 +21,7 @@ const VARIANTS: readonly Variant[] = [
   { name: "vignette", edits: [[/b\.add\(\s*effects\.colorGrade\(\s*\{\s*name:\s*"grade"/, 'b.add(effects.vignette({ name: "vignette", intensity: 0.2, smoothness: 0.7 })); b.add(effects.colorGrade({ name: "grade"']] },
   { name: "bloomradius", edits: [[/threshold:\s*0\.88\s*\}/, "threshold: 0.88, radius: 0.5 }"]] },
   { name: "nocull", edits: [[/c\.radius\s*>\s*c\.range/, "c.radius > 1e9"]] },
+  { name: "noflags", edits: [[/addMesh\(\s*buildCheckpointFlags\(ch\)/, "void (0"]] },
   { name: "nowarm", edits: [], main: [[/warmResult\s*=\s*await\s+warmPrograms\(/, "warmResult = null; void ("]] }
 ];
 
@@ -54,7 +55,7 @@ test.describe("audit g25 cloud-runner-port A/B", () => {
   test.afterAll(async () => { await server.close(); });
 
   VARIANTS.forEach((v, i) => {
-    test(`ab ${v.name} @ab${i < 3 ? "A" : "B"}`, async ({ page }) => {
+    test(`ab ${v.name} @ab${i < 3 ? "A" : "B"} @v-${v.name}`, async ({ page }) => {
       page.on("pageerror", (e) => log(`AB_ERR ${v.name} ${e.message.slice(0, 300)}`));
       const applied: boolean[] = [];
       const rewrite = (file: RegExp, edits: readonly [RegExp, string][]) => page.route(file, async (route) => {

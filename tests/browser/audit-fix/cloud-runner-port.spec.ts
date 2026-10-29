@@ -139,16 +139,21 @@ test.describe("audit g25 cloud-runner-port", () => {
     log(`CR_META ${JSON.stringify({ shot: "cr2-retry-after-win", won, retry, label })}`);
 
     // CR-5: finale framing and HUD
-    const fin = await page.evaluate(() => {
+    await page.evaluate(() => {
       const a = (window.__AURA_CUMULUS_DASH__ ?? window.__AURA_KID_GOKU__)!;
       a.place(1955);
       for (let i = 0; i < 30 && a.game().phase !== "finale"; i++) a.play(10);
       a.play(60 * 5);
       a.settle(3);
+    });
+    await page.waitForTimeout(1500); // the HUD fades out over 0.4 s of real time
+    const fin2 = await page.evaluate(() => {
+      const a = (window.__AURA_CUMULUS_DASH__ ?? window.__AURA_KID_GOKU__)!;
+      a.settle(1);
       const vis = (sel: string) => { const e = document.querySelector<HTMLElement>(sel); if (!e) return null; const cs = getComputedStyle(e); return cs.display !== "none" && cs.visibility !== "hidden" && Number(cs.opacity) > 0.05; };
       return { phase: a.game().phase, t: a.game().finale?.t ?? null, hudTop: vis("#cr-ui .hud-top"), gauge: vis("#cr-ui .gauge"), bars: vis("#cr-ui .bars.t.on"), view: a.view?.() ?? null };
     });
-    log(`CR_META ${JSON.stringify({ shot: "cr5-finale", ...fin, stats: await measure(page) })}`);
+    log(`CR_META ${JSON.stringify({ shot: "cr5-finale", ...fin2, stats: await measure(page) })}`);
     await jpg(page, "cr5-finale-page", false);
     log("CR_DONE desktop");
   });
