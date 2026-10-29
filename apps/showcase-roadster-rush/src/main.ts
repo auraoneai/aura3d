@@ -846,6 +846,32 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     }
   }
 
+  let lastPz = 0;
+  let lastGantries: readonly { position?: { z?: number } }[] = [];
+  const runtimeEvidence = {
+    route: "showcase-roadster-rush",
+    engine: "@aura3d/engine",
+    ready: true,
+    autopilot,
+    framesRendered: 0,
+    mode: "title" as string,
+    paused: false,
+    assisted: false,
+    score: 0,
+    distance: 0,
+    bolts: 0,
+    multiplier: 1,
+    timeOfDay: 0,
+    trafficYawOffset: TRAFFIC_YAW,
+    player: { position: [0, 0, 0] as Vec3, lane: 2, speed: 0, air: 100, grounded: true, rolling: false, boosting: false },
+    visiblePools: { groundVehicles: 0, skyCars: 0, bolts: 0, powerups: 0 },
+    /** What the renderer draws within 120 m ahead of the player (computed when read). */
+    get drawn(): Record<string, number> {
+      return drawnWithin(120, lastPz, lastGantries);
+    }
+  };
+  (window as any).__AURA3D_SHOWCASE_ROADSTER_RUSH__ = { app: auraApp, evidence: runtimeEvidence, triggerScenario };
+
   function syncRoadsterWorld(real: any, g: any = real): void {
     if (!real || !real.player) return;
     framesRendered += 1;
@@ -1271,45 +1297,34 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       target.commit();
     }
 
-    // 7. Publish Aura3D Runtime Evidence & Telemetry
-    const evidence = {
-      route: "showcase-roadster-rush",
-      engine: "@aura3d/engine",
-      ready: true,
-      autopilot,
-      framesRendered,
-      mode: g.mode,
-      paused: Boolean(g.paused),
-      assisted: Boolean(real.assisted),
-      score: Math.floor(Number(g.score ?? 0)),
-      distance: Math.floor(Number(g.distance ?? 0)),
-      bolts: Number(g.bolts ?? 0),
-      multiplier: Number(g.mult ?? 1),
-      timeOfDay: Number(manualTodOverride ?? g.world?.timeOfDay ?? 0),
-      trafficYawOffset: TRAFFIC_YAW,
-      player: {
-        position: [px, py, pz],
-        lane: Number(p.lane ?? 2),
-        speed: Number(p.speed ?? 0),
-        air: Number(p.air ?? 100),
-        grounded: Boolean(p.grounded),
-        rolling: Boolean(p.rolling),
-        boosting: Boolean(p.boosting)
-      },
-      visiblePools: {
-        groundVehicles: groundDrawn,
-        skyCars: skySlots.length,
-        bolts: pickupSlots.bolts.length,
-        powerups: powerDrawn
-      },
-      drawn: drawnWithin(120, pz, worldGantries)
-    };
-    publishBeacon(evidence);
-    (window as any).__AURA3D_SHOWCASE_ROADSTER_RUSH__ = {
-      app: auraApp,
-      evidence,
-      triggerScenario
-    };
+    // 7. Runtime evidence: one object updated in place every frame (legacy readers watch `__AURA3D_GAME_EVIDENCE__`,
+    //    which is this object), and the beacon snapshot rebuilt every 10th frame (audit RR-E1)
+    const ev = runtimeEvidence;
+    ev.autopilot = autopilot;
+    ev.framesRendered = framesRendered;
+    ev.mode = g.mode;
+    ev.paused = Boolean(g.paused);
+    ev.assisted = Boolean(real.assisted);
+    ev.score = Math.floor(Number(g.score ?? 0));
+    ev.distance = Math.floor(Number(g.distance ?? 0));
+    ev.bolts = Number(g.bolts ?? 0);
+    ev.multiplier = Number(g.mult ?? 1);
+    ev.timeOfDay = Number(manualTodOverride ?? g.world?.timeOfDay ?? 0);
+    const ep = ev.player;
+    ep.position[0] = px; ep.position[1] = py; ep.position[2] = pz;
+    ep.lane = Number(p.lane ?? 2);
+    ep.speed = Number(p.speed ?? 0);
+    ep.air = Number(p.air ?? 100);
+    ep.grounded = Boolean(p.grounded);
+    ep.rolling = Boolean(p.rolling);
+    ep.boosting = Boolean(p.boosting);
+    ev.visiblePools.groundVehicles = groundDrawn;
+    ev.visiblePools.skyCars = skySlots.length;
+    ev.visiblePools.bolts = pickupSlots.bolts.length;
+    ev.visiblePools.powerups = powerDrawn;
+    lastPz = pz;
+    lastGantries = worldGantries;
+    publishBeacon(ev);
   }
 
   /** Drawn entity counts within `ahead` metres in front of the player, for the capture probe (same shape on every build). */
