@@ -639,7 +639,8 @@ function status() {
   return {
     phase: game.phase, state: stateVector(car), score: game.score, collected: game.collected, total: pickups.length, combo: car.combo, boost: car.boost, speedKmh: kmh(), frames, ready, settled, warm: warmResult,
     shift: { timeLeft: shift.timeLeft, elapsed: shift.elapsed, deliveries: shift.deliveries, missed: shift.missed, job: shift.job ? { ...shift.job } : null, drift: shift.drift, bestStreak: shift.bestStreak, over: shift.over, reason: shift.reason },
-    touch: touch.enabled
+    touch: touch.enabled,
+    bootTimings: { ...bootTimings }
   };
 }
 
@@ -718,7 +719,19 @@ const hooks = installQaHooks("drift-and-deliver", {
 
 /* ------------------------------------------------------------------ boot */
 
+/** Boot phase timings (ms since the module ran), for the L2 probe and the loading panel. */
+const bootT0 = performance.now();
+const bootTimings: Record<string, number> = {};
+const mark = (phase: string): void => { bootTimings[phase] = Math.round(performance.now() - bootT0); };
+let bootPhase = "Building blocks, buildings and traffic";
+const loadingStatus = document.getElementById("loading-status");
+const progressTimer = setInterval(() => {
+  if (renderFailed || !loadingStatus) return;
+  loadingStatus.textContent = `${bootPhase} (${Math.round((performance.now() - bootT0) / 1000)} s)`;
+}, 1000);
+
 async function boot(): Promise<void> {
+  mark("module");
   // the engine owns the canvas size: CSS and backing store follow window resizes and phone rotation (lesson R1)
   app = createAuraApp(canvas, {
     autoStart: false,
@@ -728,11 +741,16 @@ async function boot(): Promise<void> {
     output: { toneMapping: config.tm as "neutral", exposure: config.exposure, dither: false },
     scene: buildScene()
   });
+  bootPhase = "Uploading the city to the GPU";
   await app.ready();
+  mark("appReady");
+  bootPhase = "Compiling shaders";
   // a draw whose program is still compiling is skipped: settle the programs so the first frame is the whole city.
   // Start unlocks once the programs settle; the sky HDRI and texture upgrades keep streaming in behind the splash
   // (on software GL the HDRI took over 45 s, and Start used to wait for it).
   if (config.warm) warmResult = await warmPrograms(app, { waitForEnvironment: false, waitForTextures: false });
+  mark("programsSettled");
+  clearInterval(progressTimer);
   ready = true;
   blackWatch = createBlackFrameWatch(canvas, { enabled: config.heal, storageKey: HEAL_STORAGE_KEY, ...(config.healFrames ? { fastFrames: config.healFrames } : {}) });
   $("loading").classList.add("hidden");
@@ -751,6 +769,7 @@ async function boot(): Promise<void> {
     warmResult = { ...full, durationMs: (warmResult?.durationMs ?? 0) + full.durationMs };
   }
   envStatus.classList.add("hidden");
+  mark("fullySettled");
   settled = true;
 }
 
@@ -808,6 +827,7 @@ function reportError(error: unknown): void {
   const details = (error as { details?: unknown })?.details;
   const message = `${base}${typeof code === "string" ? ` [${code}]` : ""}${details ? ` ${JSON.stringify(details).slice(0, 6000)}` : ""}`;
   hooks.reportError(message);
+  clearInterval(progressTimer);
   $("loading-status").textContent = `The city could not load: ${message.slice(0, 300)}`;
   $("loading").classList.remove("hidden");
   console.error(error);
