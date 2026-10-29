@@ -18,10 +18,10 @@
     "SG-05"
   ],
   "sourceExample": "examples/roadster-hours-port/",
-  "evidence": "6,124-step run replays with delta 2e-14; the batched mesh issues 3 multi-draw calls instead of 92 draws.",
+  "evidence": "6,124-step run replays with delta 2e-14 (tests/unit/roadster-hours-port/reference-replay.test.ts); 33 to 35 vehicles per route, drawn as one batched mesh per vehicle model.",
   "limits": [
-    "Box vehicles, flat sky, no post-processing or audio.",
-    "Procedural art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Vehicles, trees, rocks, houses and the lighthouse are generated models; the road, land, sea and sky are procedural; the sound is synthesised.",
+    "Independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
     "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
   ],
   "checks": [

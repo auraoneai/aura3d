@@ -14,7 +14,9 @@ import { LEVELS } from "./data";
 import { LOOKS, hexLinear, type Look } from "./look";
 import { beamSpec, plumeSpec, rampSpec, roadSpec, skySpec, solidSpec, terrainSpec, towerSpec, townSpec, waterSpec, type FogLook } from "./materials";
 import { hasMeshy, meshyGeometry, meshyMaterial, meshySize } from "./meshy";
-import type { Run } from "./sim";
+import type { Run, RunEvent as SimEvent } from "./sim";
+
+import { createCameraDirector } from "./camera";
 
 export { hexLinear };
 
@@ -397,8 +399,11 @@ function rigParts(piece: string, boxes: readonly LocalBox[], cargoColour: string
 interface VehicleDef { readonly piece: string; readonly variant: number; readonly car: CarKey | null; readonly meshy: string | null; readonly colour: string }
 
 export interface WorldRuntime {
-  update(run: Run, dt: number, time: number, aspect: number): void;
+  /** `events` are the sim events of every step since the last frame (camera shake, FOV kicks, cut on recover). */
+  update(run: Run, dt: number, time: number, aspect: number, events?: readonly SimEvent[]): void;
   reset(run: Run): void;
+  /** Reduced motion: no camera shake and no FOV kicks. */
+  setReducedMotion(on: boolean): void;
   batching(): Record<string, unknown> | null;
   /** Draw calls with every vehicle hidden vs shown: the delta is what the batched meshes cost. */
   probeBatchedDraws(): { hidden: number; visible: number; delta: number; instances: number; texturedInstances: number; batchedGeometries: number; geometries: number; features: readonly string[] };
@@ -421,9 +426,14 @@ export interface World {
   bind(app: AuraApp): WorldRuntime;
 }
 
-function matrixFor(psi: number, centre: Vec3, size: Vec3): Float32Array {
+/** Writes the instance matrix into `out` (one scratch buffer per world: `setMatrixAt` copies, so nothing is allocated per frame). */
+export function matrixFor(psi: number, centre: Vec3, size: Vec3, out: Float32Array = new Float32Array(16)): Float32Array {
   const c = Math.cos(psi), s = Math.sin(psi);
-  return Float32Array.from([c * size[0], 0, -s * size[0], 0, 0, size[1], 0, 0, s * size[2], 0, c * size[2], 0, centre[0], centre[1], centre[2], 1]);
+  out[0] = c * size[0]; out[1] = 0; out[2] = -s * size[0]; out[3] = 0;
+  out[4] = 0; out[5] = size[1]; out[6] = 0; out[7] = 0;
+  out[8] = s * size[2]; out[9] = 0; out[10] = c * size[2]; out[11] = 0;
+  out[12] = centre[0]; out[13] = centre[1]; out[14] = centre[2]; out[15] = 1;
+  return out;
 }
 
 export const fogFor = (look: Look): FogLook => ({ fogColor: look.horizon, fogNear: look.fogNear, fogFar: look.fogFar });
@@ -488,16 +498,22 @@ export function buildWorld(levelIndex: number): World {
     builder.add(geometry.custom(dyn(lamps.poles), { name: "lamp-poles", material: material.custom(solidSpec(look, [0.36, 0.38, 0.42], [0, 0, 0], 0, 0.5, 0.6)) }));
     builder.add(geometry.custom(dyn(lamps.heads), { name: "lamp-heads", material: material.custom(solidSpec(look, [1, 0.93, 0.8], [1, 0.9, 0.7], look.night ? 5 : 2.4, 0.3)) }));
   }
-  if (look.style === "coast") {
+  // Procedural town and lighthouse only where the generated models are missing (they sit at the same spots; audit C3).
+  const meshyTown = hasMeshy("villa") || hasMeshy("townhouse");
+  if (look.style === "coast" && !meshyTown) {
     const town = townBuildings(level, look, seed);
     if (town.indices.length) builder.add(geometry.custom(dyn(town), { name: "town", material: material.custom(townSpec(look)) }));
+  }
+  if (look.style === "coast") {
     const lightS = Math.min(level.length - 260, 2520);
     const base = roadPoint(level, lightS, look.seaSide * (level.width + 95), 0);
     const white = (): ReturnType<typeof material.custom> => material.custom(solidSpec(look, [0.82, 0.8, 0.76], [0, 0, 0], 0, 0.6));
     const red = (): ReturnType<typeof material.custom> => material.custom(solidSpec(look, [0.62, 0.08, 0.06], [0, 0, 0], 0, 0.55));
+    // The rock is the island under either lighthouse; the seven procedural tiers only stand in for a missing model.
     builder.add(primitives.sphere({ name: "lighthouse-rock", position: [base[0], 1, base[2]], size: [34, 18, 34], params: { widthSegments: 18, heightSegments: 10 }, material: material.custom(terrainSpec(look)) }));
+    const proceduralTower = !hasMeshy("lighthouse");
     const tier = (name: string, y: number, dia: number, h: number, mat: ReturnType<typeof material.custom>): void => {
-      builder.add(primitives.cylinder({ name: `lighthouse-${name}`, position: [base[0], y + h / 2, base[2]], size: [dia, h, dia], material: mat }));
+      if (proceduralTower) builder.add(primitives.cylinder({ name: `lighthouse-${name}`, position: [base[0], y + h / 2, base[2]], size: [dia, h, dia], material: mat }));
     };
     tier("base", 6, 10.5, 22, white());
     tier("band-a", 28, 9.2, 6, red());
@@ -518,7 +534,7 @@ export function buildWorld(levelIndex: number): World {
     ).runtime({ id: "car-body" }));
   }
 
-  /* ---- generated (Meshy) scenery: lighthouse, town houses, trees, boulders; each falls back to the procedural pieces above ---- */
+  /* ---- generated (Meshy) scenery: lighthouse, town houses, trees, boulders; the procedural lighthouse and town above are only built when these are missing ---- */
   let texturedScenery = 0;
   const scatter = (key: string, name: string, items: readonly { p: Vec3; yaw: number; size: Vec3 }[], options: { roughness?: number; metallic?: number; doubleSided?: boolean; specular?: number } = {}): void => {
     const data = meshyGeometry(key);
@@ -534,7 +550,7 @@ export function buildWorld(levelIndex: number): World {
     const towerH = 72;
     scatter("lighthouse", "lighthouse-model", [{ p: [lb[0], 6, lb[2]], yaw: 0, size: [towerH, towerH, towerH] }], { roughness: 0.6, metallic: 0.05 });
   }
-  if (look.style === "coast" && (hasMeshy("villa") || hasMeshy("townhouse"))) {
+  if (look.style === "coast" && meshyTown) {
     const lots = townLots(level, look, seed);
     const villas = lots.filter((l) => l.id % 2 === 0 || !hasMeshy("townhouse"));
     const towns = lots.filter((l) => !villas.includes(l));
@@ -679,12 +695,12 @@ export function buildWorld(levelIndex: number): World {
   geometryTotal++;
   builder.add(rigHeads);
 
-  interface Slot { readonly mesh: SlotMesh; readonly slot: number; readonly box: LocalBox }
+  interface Slot { readonly mesh: SlotMesh; readonly slot: number; readonly box: LocalBox; readonly size: Vec3 }
   const slotsFor = (def: VehicleDef): Slot[] => {
     const slots: Slot[] = [];
     if (def.meshy) {
       const handle = meshyBatches.get(def.meshy)!;
-      slots.push({ mesh: handle.mesh, slot: handle.mesh.addInstance(handle.geo), box: unionBox(pieceSpec(def.piece, def.variant)!.boxes) });
+      slots.push({ mesh: handle.mesh, slot: handle.mesh.addInstance(handle.geo), box: unionBox(pieceSpec(def.piece, def.variant)!.boxes), size: [0, 0, 0] });
     } else if (def.car) {
       const box = unionBox(pieceSpec(def.piece, def.variant)!.boxes);
       for (const g of CAR_GROUPS) {
@@ -693,17 +709,17 @@ export function buildWorld(levelIndex: number): World {
         if (!handle || geo === undefined) continue;
         const slot = handle.mesh.addInstance(geo);
         if (g === "paint") handle.mesh.setColorAt(slot, def.colour);
-        slots.push({ mesh: handle.mesh, slot, box });
+        slots.push({ mesh: handle.mesh, slot, box, size: [0, 0, 0] });
       }
     } else {
       const detail = rigDetail.get(def) ?? rigParts(def.piece, pieceSpec(def.piece, def.variant)!.boxes, def.colour, CAB_COLOURS[0]!);
       for (const part of detail.parts) {
         const slot = rigs.addInstance(rigGeo);
         rigs.setColorAt(slot, part.colour);
-        slots.push({ mesh: rigs, slot, box: part.box });
+        slots.push({ mesh: rigs, slot, box: part.box, size: [0, 0, 0] });
       }
-      for (const b of detail.tails) slots.push({ mesh: rigLights, slot: rigLights.addInstance(rigLightGeo), box: b });
-      for (const b of detail.heads) slots.push({ mesh: rigHeads, slot: rigHeads.addInstance(rigHeadGeo), box: b });
+      for (const b of detail.tails) slots.push({ mesh: rigLights, slot: rigLights.addInstance(rigLightGeo), box: b, size: [0, 0, 0] });
+      for (const b of detail.heads) slots.push({ mesh: rigHeads, slot: rigHeads.addInstance(rigHeadGeo), box: b, size: [0, 0, 0] });
     }
     return slots;
   };
@@ -762,7 +778,11 @@ export function buildWorld(levelIndex: number): World {
     texturedNodes: meshyBatches.size + (meshyPlayer ? 1 : 0) + texturedScenery,
     bind(app: AuraApp): WorldRuntime {
       const camCtl = app.camera;
-      const chase = cameras.chase();
+      // Framed mode: the director smooths the road-frame offsets and supplies shake and kicks; the rig only applies fov
+      // smoothing and the cut flag (audit C7).
+      const chase = cameras.chase({ lag: { fov: 4 } });
+      const director = createCameraDirector({ eyeRate: 9, lookRate: 12, fovRate: 4 });
+      const scratch = new Float32Array(16);
       if (!camCtl) throw new Error("roadster-hours-port: the app exposes no camera controller");
       const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
       const node = (id: string) => { let h = handles.get(id); if (!h) handles.set(id, h = app.nodes.require(id)); return h; };
@@ -785,7 +805,8 @@ export function buildWorld(levelIndex: number): World {
         const lon = (cx * sn - cz * c) / slope(s);
         const heading = roadProfile(level, s + lon).heading;
         const centre = roadPoint(level, s + lon, l + lat, cy);
-        slot.mesh.setMatrixAt(slot.slot, matrixFor(yaw - heading, centre, [b.max[0]! - b.min[0]!, b.max[1]! - b.min[1]!, b.max[2]! - b.min[2]!]));
+        slot.size[0] = b.max[0]! - b.min[0]!; slot.size[1] = b.max[1]! - b.min[1]!; slot.size[2] = b.max[2]! - b.min[2]!;
+        slot.mesh.setMatrixAt(slot.slot, matrixFor(yaw - heading, centre, slot.size, scratch));
       };
       const placeLineup = (): void => {
         layout.vehicles.forEach((v, vi) => { for (const slot of lineupSlots[vi]!) writeVehicle(slot, v.s, v.l, v.yaw); });
@@ -796,7 +817,8 @@ export function buildWorld(levelIndex: number): World {
       const offCentre = 0;
       return {
         vehicleInstances: allSlots.length,
-        reset: () => { placeLineup(); },
+        reset: () => { placeLineup(); director.cut(); chase.reset(); },
+        setReducedMotion: (on: boolean) => director.setReducedMotion(on),
         probeBatchedDraws() {
           const draws = (): number => { app.step(0); return app.diagnostics().drawCalls ?? 0; };
           for (const s of allSlots) s.mesh.setVisibleAt(s.slot, false);
@@ -807,7 +829,7 @@ export function buildWorld(levelIndex: number): World {
           return { hidden, visible, delta: visible - hidden, instances: allSlots.length, texturedInstances: allSlots.filter((s) => [...meshyBatches.values()].some((b) => b.mesh === s.mesh)).length, batchedGeometries: geometryTotal, geometries: geometryTotal, features: features.map(String) };
         },
         batching: () => ((app.diagnostics() as unknown as Record<string, unknown>)["renderer.batching"] as Record<string, unknown> | undefined) ?? null,
-        update(run: Run, dt: number, time: number, aspect: number): void {
+        update(run: Run, dt: number, time: number, aspect: number, events: readonly SimEvent[] = []): void {
           const prof = roadProfile(level, run.s);
           const psi = -(prof.heading + run.theta) + run.spin;
           const pitch = run.flip;
@@ -829,24 +851,27 @@ export function buildWorld(levelIndex: number): World {
           const wall = roadPoint(level, run.s, run.l + (run.l >= 0 ? 1.1 : -1.1), run.h + 0.35);
           const sparkAt = scraping && !burning ? wall : [rear[0], rear[1] + 0.2, rear[2]];
           sparks.setUniform?.("ptPos", sparkAt); sparks.setUniform?.("ptBack", trailDir); sparks.setUniform?.("ptSpeed", run.v); sparks.setUniform?.("ptAmount", sparkAmount);
-          level.cells.forEach((_c, i) => cells[i]!.setVisible(!run.cells.has(i)));
-          trafficSlots.forEach((slots, ci) => {
+          for (let i = 0; i < cells.length; i++) cells[i]!.setVisible(!run.cells.has(i));
+          for (let ci = 0; ci < trafficSlots.length; ci++) {
             const car = run.traffic[ci]!;
-            for (const slot of slots) writeVehicle(slot, car.s, car.l, 0);
-          });
+            for (const slot of trafficSlots[ci]!) writeVehicle(slot, car.s, car.l, 0);
+          }
           // headlight pool on the road follows the car
           roadNode.setUniform?.("carPos", [carP[0], carP[1], carP[2]]);
           roadNode.setUniform?.("carDir", [-Math.sin(psi), -Math.cos(psi)]);
-          // chase camera
+          // chase camera: the arc position follows exactly; lateral offset, height and fov are smoothed on the road frame
+          const cam = director.step(run, events, dt);
           const back = 8.5 + (run.v / 74) * 1.6;
           const eyeS = run.s - back;
-          const eyeL = run.l * 0.8 + offCentre;
-          const eye = roadPoint(level, eyeS, eyeL, run.h + 3.1 + (run.grounded ? 0 : Math.min(2.5, run.h * 0.05)));
-          const look2 = roadPoint(level, run.s + 12 + (run.v / 74) * 5, run.l * 0.9, run.h + 1.1);
+          const eye = roadPoint(level, eyeS, cam.eyeL + offCentre, cam.eyeH);
+          const look2 = roadPoint(level, run.s + 12 + (run.v / 74) * 5, cam.lookL, cam.lookH);
           void time;
-          const pose = chase.step({ wantEye: [eye[0], eye[1], eye[2]], wantLook: [look2[0], look2[1], look2[2]], fovTarget: (aspect < 1 ? 70 : 58) + (run.v / 74) * 8 }, dt);
+          // shake offset along the road's lateral axis at the eye (the same axis `roadPoint` uses) and world up
+          const dx = roadProfile(level, eyeS).dx, inv = 1 / Math.sqrt(1 + dx * dx);
+          const shake: [number, number, number] = [cam.shakeRight * inv, cam.shakeUp, cam.shakeRight * dx * inv];
+          const pose = chase.step({ wantEye: [eye[0], eye[1], eye[2]], wantLook: [look2[0], look2[1], look2[2]], fovTarget: (aspect < 1 ? 70 : 58) + cam.fovKick, cut: cam.cut, shakeOffset: shake }, dt);
           sky.setPosition(pose.eye[0], pose.eye[1], pose.eye[2]);
-          camCtl.setPose({ position: pose.eye, target: pose.look, up: [0, 1, 0], fov: pose.fov }, { cut: false });
+          camCtl.setPose({ position: pose.eye, target: pose.look, up: [0, 1, 0], fov: pose.fov }, { cut: pose.cut });
         }
       };
     }

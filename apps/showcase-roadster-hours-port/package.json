@@ -3,7 +3,7 @@
   "version": "4.5.0",
   "private": true,
   "type": "module",
-  "description": "Coastal drive among 92 vehicles in one batched mesh, with sky, ocean and a lit road.",
+  "description": "Coastal highway drive with jumps, traffic and relay gates: 33 to 35 vehicles per route in batched meshes, with sun shadows, sky and ocean.",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

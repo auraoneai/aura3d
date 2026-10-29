@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Coastal drive among 92 vehicles in one batched mesh, with sky, ocean and a lit road." />
+    <meta name="description" content="Coastal highway drive with jumps, traffic and relay gates: 33 to 35 vehicles per route in batched meshes, with sun shadows, sky and ocean." />
   <meta name="theme-color" content="#0b1020" />
   <meta property="og:title" content="Saltwind Highway — Coastal Highway Drive" />
   <meta property="og:type" content="website" />
@@ -57,23 +57,65 @@
     .route-name { font-size: 20px; font-weight: 500; line-height: 1.2; }
     .desc { color: var(--ink-2); max-width: 46ch; }
     .routes { display: flex; gap: 8px; flex-wrap: wrap; }
-    .routes a { height: 32px; padding: 0 12px; display: inline-flex; align-items: center; border-radius: 6px; border: 1px solid var(--line); background: var(--glass); color: var(--ink); text-decoration: none; font-weight: 500; backdrop-filter: blur(6px); }
+    .routes a { min-height: 44px; box-sizing: border-box; padding: 0 12px; display: inline-flex; align-items: center; border-radius: 6px; border: 1px solid var(--line); background: var(--glass); color: var(--ink); text-decoration: none; font-weight: 500; backdrop-filter: blur(6px); }
     .routes a[aria-current="true"] { background: rgba(255,179,71,.18); border-color: rgba(255,179,71,.6); }
     .keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--glass); backdrop-filter: blur(6px); }
     .keys dt { font-weight: 500; white-space: nowrap; }
     .keys dd { margin: 0; color: var(--ink-2); }
     .actions { display: flex; gap: 8px; align-items: center; }
-    button { font: inherit; font-weight: 500; height: 32px; padding: 0 16px; border-radius: 6px; border: 0; background: var(--red); color: #fff; cursor: pointer; }
+    button { font: inherit; font-weight: 500; min-height: 44px; padding: 0 16px; border-radius: 6px; border: 0; background: var(--red); color: #fff; cursor: pointer; }
     button.ghost { background: var(--glass); border: 1px solid var(--line); color: var(--ink); backdrop-filter: blur(6px); }
     button:disabled { opacity: .5; cursor: default; }
+    .best { font-size: 13px; color: var(--accent); min-height: 0; }
+    .remap-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .remap-row span { color: var(--ink-2); }
+    .remap-row button { min-width: 96px; }
+    #remap { display: grid; gap: 4px; max-height: min(60vh, 520px); overflow: auto; }
+    #coach { position: absolute; left: 0; right: 0; bottom: 92px; text-align: center; font-size: 15px; font-weight: 500; color: var(--ink); text-shadow: 0 2px 10px rgba(0,0,0,.7); }
+    .bar.window { box-shadow: 0 0 0 2px #46e08a; }
+    .bar.window i { background: #46e08a; animation: nitro-window .35s ease-in-out infinite alternate; }
+    @keyframes nitro-window { from { opacity: .55; } to { opacity: 1; } }
+    #nitro-label { color: var(--ink); font-weight: 500; }
+    .gauge:has(.bar.window) #nitro-label { color: #46e08a; }
+    #pause-button { position: absolute; right: 20px; top: 76px; pointer-events: auto; min-width: 44px; padding: 0 12px; }
+    #touch { display: none; }
+    body.touch #touch { display: block; }
+    body.touch #touch button { position: absolute; pointer-events: auto; min-height: 0; padding: 0; border-radius: 50%; font-size: 12px; background: rgba(10,14,24,.5); border: 1px solid rgba(255,255,255,.28); color: var(--ink); touch-action: none; user-select: none; -webkit-user-select: none; backdrop-filter: blur(4px); }
+    body.touch #touch .big { width: 76px; height: 76px; bottom: max(18px, env(safe-area-inset-bottom)); }
+    body.touch #touch .mid { width: 60px; height: 60px; }
+    body.touch #touch .small { width: 48px; height: 48px; }
+    #touch-left { left: max(14px, env(safe-area-inset-left)); }
+    #touch-right { left: calc(max(14px, env(safe-area-inset-left)) + 88px); }
+    #touch-roll-left { left: max(14px, env(safe-area-inset-left)); bottom: calc(max(18px, env(safe-area-inset-bottom)) + 92px); }
+    #touch-roll-right { left: calc(max(14px, env(safe-area-inset-left)) + 60px); bottom: calc(max(18px, env(safe-area-inset-bottom)) + 92px); }
+    #touch-recover { left: calc(max(14px, env(safe-area-inset-left)) + 120px); bottom: calc(max(18px, env(safe-area-inset-bottom)) + 92px); }
+    #touch-throttle { right: max(14px, env(safe-area-inset-right)); }
+    #touch-brake { right: calc(max(14px, env(safe-area-inset-right)) + 88px); bottom: max(18px, env(safe-area-inset-bottom)); }
+    #touch-thrust { right: max(14px, env(safe-area-inset-right)); bottom: calc(max(18px, env(safe-area-inset-bottom)) + 88px); }
+    #touch-nitro { right: calc(max(14px, env(safe-area-inset-right)) + 72px); bottom: calc(max(18px, env(safe-area-inset-bottom)) + 88px); }
+    body.touch #dash { bottom: auto; top: calc(max(12px, env(safe-area-inset-top)) + 70px); }
+    body.touch #coach { bottom: calc(max(18px, env(safe-area-inset-bottom)) + 156px); padding: 0 16px; font-size: 14px; }
+    body.touch #pause-button { top: calc(max(12px, env(safe-area-inset-top)) + 64px); right: 12px; }
+    body.touch #mute { top: calc(max(12px, env(safe-area-inset-top)) + 116px); bottom: auto; right: 12px; }
+    body.touch .enter-hint { display: none; }
+    body.reduced-motion .bar.window i { animation: none; }
+    @media (prefers-reduced-motion: reduce) { .bar.window i { animation: none; } }
     .credit { font-size: 12px; color: var(--ink-2); max-width: 52ch; }
-    #pause, #results { justify-content: center; background: rgba(5,7,12,.55); backdrop-filter: blur(3px); }
+    #pause, #results, #controls { justify-content: center; background: rgba(5,7,12,.55); backdrop-filter: blur(3px); }
     .modal { min-width: 300px; max-width: calc(100vw - 40px); padding: 20px 24px; display: grid; gap: 12px; border-radius: 10px; border: 1px solid var(--line); background: rgba(12,16,26,.9); }
     .modal h1 { margin: 0; font-size: 22px; font-weight: 600; line-height: 1.15; text-transform: capitalize; }
     .stats { display: grid; grid-template-columns: 1fr auto; gap: 4px 24px; }
     .stats dt { color: var(--ink-2); }
     .stats dd { margin: 0; font-weight: 500; text-align: right; }
     #mute { position: fixed; right: 16px; bottom: 16px; z-index: 5; }
+    @media (max-width: 560px) {
+      #hud .tl { left: 12px; top: max(12px, env(safe-area-inset-top)); }
+      #hud .tr { right: 12px; top: max(12px, env(safe-area-inset-top)); }
+      #dash { width: calc(100vw - 24px); grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 10px; bottom: max(14px, env(safe-area-inset-bottom)); }
+      #speed { font-size: 32px; }
+      #mute { right: 12px; bottom: auto; top: calc(max(12px, env(safe-area-inset-top)) + 116px); padding: 0 10px; }
+      #pause-button { right: 12px; top: calc(max(12px, env(safe-area-inset-top)) + 64px); }
+    }
     #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #0b0d12; text-align: center; }
     #loading b { font-weight: 500; font-size: 16px; }
   </style>
@@ -84,37 +126,53 @@
     <div class="tl"><div id="timer" class="num">0:00.00</div><div id="gate"></div><div id="act"></div></div>
     <div id="progress"><i id="progress-fill"></i></div>
     <div class="tr"><div id="score" class="num">0</div><div id="combo"></div></div>
-    <div id="toast"></div>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <div id="coach"></div>
     <div id="count"></div>
     <div id="dash">
-      <div class="gauge"><div class="row"><span>Thrust</span><span id="nitro-label"></span></div><div class="bar"><i id="thrust-fill"></i></div></div>
+      <div class="gauge"><div class="row"><span>Thrust</span><span id="nitro-label"></span></div><div class="bar" id="thrust-bar"><i id="thrust-fill"></i></div></div>
       <div id="speedo"><span id="speed" class="num">0</span><small>km/h</small></div>
       <div class="gauge"><div class="row"><span>Heat</span><span id="heat-label"></span></div><div class="bar"><i id="heat-fill"></i></div></div>
     </div>
     <span id="phase"></span>
+    <button id="pause-button" class="ghost hidden" type="button" aria-label="Pause">Pause</button>
+    <div id="touch" aria-label="Touch controls">
+      <button id="touch-left" class="big" type="button" aria-label="Steer left">Left</button>
+      <button id="touch-right" class="big" type="button" aria-label="Steer right">Right</button>
+      <button id="touch-roll-left" class="small" type="button" aria-label="Roll left">Roll L</button>
+      <button id="touch-roll-right" class="small" type="button" aria-label="Roll right">Roll R</button>
+      <button id="touch-recover" class="small" type="button" aria-label="Recover">Recover</button>
+      <button id="touch-brake" class="mid" type="button" aria-label="Brake">Brake</button>
+      <button id="touch-throttle" class="big" type="button" aria-label="Drive">Drive</button>
+      <button id="touch-thrust" class="mid" type="button" aria-label="Thrust">Thrust</button>
+      <button id="touch-nitro" class="mid" type="button" aria-label="Nitro">Nitro</button>
+    </div>
   </div>
   <div id="menu" class="panel">
     <div class="card">
       <h1 class="wordmark">Saltwind Highway</h1>
       <div><div class="route-name" id="level-name"></div><div class="meta" id="level-sub"></div></div>
       <div class="desc" id="level-desc"></div>
+      <div class="best" id="level-best"></div>
       <div class="routes" id="routes"></div>
-      <dl class="keys">
+      <dl class="keys" id="keys">
         <dt>W / S</dt><dd>Drive, brake (hold with A/D to drift)</dd>
         <dt>A / D</dt><dd>Steer, and spin in the air</dd>
         <dt>Space</dt><dd>Thrust</dd>
-        <dt>Shift</dt><dd>Nitro (tap on the green window)</dd>
+        <dt>Shift</dt><dd>Nitro (tap again when the bar turns green)</dd>
         <dt>Q / E</dt><dd>Roll in the air</dd>
         <dt>R, Esc, M</dt><dd>Recover, pause, mute</dd>
       </dl>
-      <div class="actions"><button id="start" disabled>Drive</button><span class="meta">or press Enter</span></div>
-      <div class="credit">An independent game built with Aura3D. The scenery is procedural; the cars are CC0 models (Quaternius, Kenney); the sound is synthesised.</div>
+      <div class="actions"><button id="start" disabled>Drive</button><span class="meta enter-hint">or press Enter</span></div>
+      <div class="actions"><button id="controls-open" class="ghost" type="button">Change keys</button><button id="motion" class="ghost" type="button" aria-pressed="false">Motion: full</button></div>
+      <div class="credit">An independent game built with Aura3D. The cars, trees, rocks, houses and lighthouse are generated models; the road, land, sea and sky are procedural; the sound is synthesised.</div>
     </div>
   </div>
   <div id="pause" class="panel hidden"><div class="modal"><h1>Paused</h1><div class="actions"><button id="resume">Resume</button><button id="restart" class="ghost">Restart route</button></div></div></div>
   <div id="results" class="panel hidden">
     <div class="modal">
       <h1 id="result-medal"></h1>
+      <div class="best" id="result-best"></div>
       <dl class="stats">
         <dt>Time</dt><dd id="result-time" class="num"></dd>
         <dt>Score</dt><dd id="result-score" class="num"></dd>
@@ -125,6 +183,7 @@
       <div class="actions"><button id="again">Run it again</button><button id="next" class="ghost hidden">Next route</button></div>
     </div>
   </div>
+  <div id="controls" class="panel hidden"><div class="modal"><h1>Keys</h1><div id="remap"></div><div class="actions"><button id="controls-close" type="button">Done</button><button id="controls-reset" class="ghost" type="button">Reset keys</button></div></div></div>
   <button id="mute" class="ghost hidden" aria-label="Toggle sound">Sound on</button>
   <div id="loading"><div><b>Saltwind Highway</b><br><span class="meta" id="loading-status">Preparing the road ahead</span></div></div>
   <script type="module" src="./src/main.ts"></script>

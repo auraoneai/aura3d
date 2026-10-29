@@ -2,8 +2,8 @@
  * Roadster Hours audio: a small synth on the shared `AudioContextManager` (the repo allows exactly one owner of an
  * AudioContext). Everything is generated here (no samples, no assets, no `Math.random`): a speed-driven engine voice
  * (detuned saws through a moving low-pass, never a pure sub-bass sine), wind noise, a quiet chord-pad and arpeggio, and
- * one short effect per game event. Events are derived from state changes the renderer observes (`diffRunEvents`), never
- * from the simulation.
+ * one short effect per game event. Cues come from the simulation's per-step events (`eventCues`, collected for every step
+ * between two rendered frames) plus a few state changes the renderer observes (`diffRunEvents`).
  */
 import { AudioContextManager, createCueBank, type CueSpec, type NoiseLayer, type ToneLayer } from "@aura3d/engine/audio";
 
@@ -22,26 +22,76 @@ export interface AudioFrame {
   combos: number;
   vehiclesCleared: number;
   throttle: boolean;
+  /** A relay was passed outside the gate (the sim raises a toast, no event). */
+  gateMiss?: boolean;
+  overheated?: boolean;
 }
 
-export type GameSound = "beep" | "go" | "gate" | "cell" | "crash" | "landing" | "nearmiss" | "combo" | "boost" | "finish" | "clear";
+export type GameSound =
+  | "beep" | "go" | "gate" | "cell" | "crash" | "landing" | "nearmiss" | "combo" | "boost" | "finish" | "clear"
+  | "landed" | "scrape" | "impact" | "overheat" | "trick" | "roll" | "hop" | "trailer" | "shortcut" | "nitro" | "perfect" | "shockwave" | "miss" | "flare";
 
-/** Derives sound events from consecutive frames (pure: unit tested). */
+/** One simulation event as `sim.ts` pushes it into `run.events` (only `type` and a few fields are read). */
+export interface SimEvent { readonly type: string; readonly [key: string]: unknown }
+
+/**
+ * Cues derived from consecutive rendered frames (pure: unit tested): only what the sim reports as state, not as an event —
+ * the countdown beeps, thrust start, a missed relay and overheating. Everything else comes from `eventCues`.
+ */
 export function diffRunEvents(prev: AudioFrame | null, next: AudioFrame): GameSound[] {
   const out: GameSound[] = [];
   if (!prev) return out;
   if (next.phase === "countdown" && Math.ceil(next.countdown) !== Math.ceil(prev.countdown) && prev.phase === "countdown") out.push("beep");
-  if (prev.phase === "countdown" && next.phase === "running") out.push("go");
-  if (next.phase === "complete" && prev.phase !== "complete") { out.push("finish"); return out; }
-  if (next.nextGate > prev.nextGate) out.push("gate");
-  if (next.cells > prev.cells) out.push("cell");
-  if (next.crashes > prev.crashes) out.push("crash");
-  if (next.cleanLandings > prev.cleanLandings) out.push("landing");
-  if (next.nearMisses > prev.nearMisses) out.push("nearmiss");
-  if (next.combos > prev.combos) out.push("combo");
-  if (next.vehiclesCleared > prev.vehiclesCleared) out.push("clear");
+  if (next.phase !== "running") return out;
   if (next.boosting && !prev.boosting) out.push("boost");
+  if (next.gateMiss && !prev.gateMiss) out.push("miss");
+  if (next.overheated && !prev.overheated) out.push("overheat");
   return out;
+}
+
+/**
+ * Cues for the simulation events of every step since the last rendered frame (pure: unit tested). Each sound plays at most
+ * once per frame, so an event the sim repeats on consecutive steps (a vent, a long scrape) does not stack.
+ */
+export function eventCues(events: readonly SimEvent[]): GameSound[] {
+  const out = new Set<GameSound>();
+  for (const e of events) {
+    switch (e.type) {
+      case "go": out.add("go"); break;
+      case "finish": out.add("finish"); break;
+      case "checkpoint": out.add("gate"); break;
+      case "cell": out.add("cell"); break;
+      case "recover": out.add("crash"); break;
+      case "land": out.add(e.clean ? "landing" : "landed"); break;
+      case "landingFlare": out.add("flare"); break;
+      case "closePass": out.add("nearmiss"); break;
+      case "combo": out.add("combo"); break;
+      case "lineup": out.add("clear"); break;
+      case "scrape": out.add("scrape"); break;
+      case "impact": out.add("impact"); break;
+      case "trick": out.add("trick"); break;
+      case "roll": out.add("roll"); break;
+      case "hop": out.add("hop"); break;
+      case "trailer": out.add("trailer"); break;
+      case "nitro": out.add(e.level === 3 ? "shockwave" : e.level === 2 ? "perfect" : "nitro"); break;
+      case "reward": if (e.label === "ROOFLINE CUT") out.add("shortcut"); break;
+      default: break;
+    }
+  }
+  // The finish fanfare replaces the route-complete reward chirps of the same step.
+  if (out.has("finish")) return ["finish"];
+  return [...out];
+}
+
+/**
+ * Music steps to schedule this tick. A hidden tab throttles timers to about 1 s, and steps whose time has already passed
+ * would all start at once (a note cluster), so late steps are skipped: scheduling restarts just ahead of `now`.
+ */
+export function musicSteps(nextAt: number, now: number, stepSeconds: number, lookahead = 0.25, restart = 0.05): { times: number[]; nextAt: number } {
+  let at = Math.max(nextAt, now + (nextAt < now ? restart : 0));
+  const times: number[] = [];
+  while (at < now + lookahead) { times.push(at); at += stepSeconds; }
+  return { times, nextAt: at };
 }
 
 const A2 = 110;
@@ -67,7 +117,22 @@ export const CUES = {
   combo: { layers: [tone(note(PENTA[5]!), "triangle", 0.16, 0.12), tone(note(PENTA[7]!), "triangle", 0.2, 0.12, 0.08)] },
   clear: { layers: [tone(note(PENTA[4]!), "sine", 0.12, 0.1, 0, note(PENTA[6]!))] },
   boost: { layers: [hit(0.6, 0.12, 400, 0.7, 3600), tone(220, "sawtooth", 0.5, 0.07, 0, 880)] },
-  finish: { layers: [0, 4, 7, 12].map((st, i) => tone(note(12 + st), "triangle", 0.5, 0.12, i * 0.12)) }
+  finish: { layers: [0, 4, 7, 12].map((st, i) => tone(note(12 + st), "triangle", 0.5, 0.12, i * 0.12)) },
+  /* added for the events the first cut left silent (audit C6) */
+  landed: { layers: [tone(80, "sine", 0.18, 0.16, 0, 38), hit(0.14, 0.07, 380, 0.8, 120)] },
+  scrape: { layers: [hit(0.28, 0.1, 2400, 2.2, 900), tone(330, "sawtooth", 0.18, 0.03, 0, 240)] },
+  impact: { layers: [tone(120, "square", 0.26, 0.12, 0, 60), hit(0.24, 0.16, 900, 0.7, 160)] },
+  overheat: { layers: [tone(520, "square", 0.12, 0.06), tone(390, "square", 0.16, 0.06, 0.14)] },
+  trick: { layers: [tone(note(PENTA[6]!), "triangle", 0.12, 0.09, 0, note(PENTA[8]!))] },
+  roll: { layers: [hit(0.24, 0.07, 800, 1.2, 2400), tone(note(PENTA[5]!), "sine", 0.14, 0.07, 0.04)] },
+  hop: { layers: [tone(note(PENTA[3]!), "triangle", 0.1, 0.1), tone(note(PENTA[7]!), "triangle", 0.14, 0.1, 0.06)] },
+  trailer: { layers: [tone(note(PENTA[2]!), "triangle", 0.12, 0.1), tone(note(PENTA[4]!), "triangle", 0.12, 0.1, 0.07), tone(note(PENTA[6]!), "triangle", 0.18, 0.1, 0.14)] },
+  shortcut: { layers: [tone(note(PENTA[4]!), "sine", 0.12, 0.1), tone(note(PENTA[8]!), "sine", 0.22, 0.1, 0.08)] },
+  nitro: { layers: [hit(0.4, 0.1, 600, 0.8, 2600)] },
+  perfect: { layers: [hit(0.4, 0.1, 600, 0.8, 2600), tone(note(12 + PENTA[5]!), "triangle", 0.2, 0.11, 0.03), tone(note(12 + PENTA[7]!), "triangle", 0.26, 0.11, 0.1)] },
+  shockwave: { layers: [tone(70, "sawtooth", 0.7, 0.16, 0, 30), hit(0.8, 0.16, 300, 0.6, 4200)] },
+  miss: { layers: [tone(330, "triangle", 0.18, 0.1), tone(247, "triangle", 0.3, 0.1, 0.16)] },
+  flare: { layers: [hit(0.3, 0.09, 260, 0.7, 1200)] }
 } satisfies Record<GameSound, CueSpec>;
 const NOISE_SEED = 0x1badf00d;
 
@@ -127,13 +192,25 @@ export class RoadsterSound {
     if (screen !== "play") this.setEngine(0, false);
   }
 
-  /** Once per rendered frame: derive events and drive the engine voice. */
-  update(frame: AudioFrame): void {
-    const events = diffRunEvents(this.prev, frame);
+  /** Once per rendered frame: state cues, the cues of every sim event since the last frame, and the engine voice. */
+  update(frame: AudioFrame, events: readonly SimEvent[] = []): GameSound[] {
+    const sounds = [...diffRunEvents(this.prev, frame), ...eventCues(events)];
     this.prev = frame;
-    for (const e of events) this.play(e);
+    for (const e of sounds) this.play(e);
     const active = frame.phase === "running";
     this.setEngine(active ? frame.speed : 0, active && frame.throttle, frame.boosting || frame.nitro > 0);
+    return sounds;
+  }
+
+  /**
+   * Suspends the context while the tab is hidden or the run is paused (no engine drone, no music catch-up), and resumes it
+   * when both clear. Resuming needs no gesture once the context has been unlocked.
+   */
+  setSuspended(suspended: boolean): void {
+    const ctx = this.ctx;
+    if (!ctx) return;
+    if (suspended && ctx.state === "running") void ctx.suspend().catch(() => undefined);
+    else if (!suspended && ctx.state === "suspended") void ctx.resume().catch(() => undefined);
   }
 
   reset(): void { this.prev = null; }
@@ -214,8 +291,10 @@ export class RoadsterSound {
     this.nextAt = ctx.currentTime + 0.1;
     this.setScreen("home");
     this.timer = setInterval(() => {
-      while (this.nextAt < ctx.currentTime + 0.25) {
-        const at = this.nextAt;
+      if (ctx.state !== "running") return;
+      const plan = musicSteps(this.nextAt, ctx.currentTime, eighth);
+      this.nextAt = plan.nextAt;
+      for (const at of plan.times) {
         const n = this.step;
         const bar = Math.floor(n / 8) % ROOTS.length;
         const beat = n % 8;
@@ -225,7 +304,6 @@ export class RoadsterSound {
           this.voice("sine", note(ROOTS[bar]! - 12), at + 4 * eighth, 3.6 * eighth, 0.07, 0.02);
         }
         this.voice("sine", note(ROOTS[bar]! + 12 + PENTA[ARP_STEPS[beat]! + 2]!), at, 1.2 * eighth, 0.034, 0.01);
-        this.nextAt += eighth;
         this.step++;
       }
     }, 40);

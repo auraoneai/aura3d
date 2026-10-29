@@ -37,13 +37,22 @@ export function blendShown(a: Shown, b: Shown, t: number): Shown {
   };
 }
 
-/** The run the world runtime reads, with the presented pose in place of the latest step (the real run is untouched). */
-export function viewOf(run: Run, shown: Shown): Run {
-  return {
-    ...run,
-    s: shown.s, l: shown.l, h: shown.h, v: shown.v, roll: shown.roll, spin: shown.spin, flip: shown.flip, theta: shown.theta,
-    traffic: run.traffic.map((c, i) => (shown.traffic[i] ? { ...c, s: shown.traffic[i]!.s, l: shown.traffic[i]!.l } : c))
-  };
+/**
+ * The run the world runtime reads, with the presented pose in place of the latest step (the real run is untouched). Pass
+ * the previous view as `out` to reuse it and its traffic objects (the game renders one view per frame; audit C14).
+ */
+export function viewOf(run: Run, shown: Shown, out?: Run): Run {
+  const previous = out?.traffic;
+  const view = Object.assign(out ?? ({} as Run), run);
+  view.s = shown.s; view.l = shown.l; view.h = shown.h; view.v = shown.v; view.roll = shown.roll; view.spin = shown.spin; view.flip = shown.flip; view.theta = shown.theta;
+  const traffic = previous && previous !== run.traffic && previous.length === run.traffic.length ? previous : run.traffic.map((c) => ({ ...c }));
+  for (let i = 0; i < run.traffic.length; i++) {
+    const t = Object.assign(traffic[i]!, run.traffic[i]!);
+    const p = shown.traffic[i];
+    if (p) { t.s = p.s; t.l = p.l; }
+  }
+  view.traffic = traffic;
+  return view;
 }
 
 export function createRoadsterPresenter(getRun: () => Run): FixedStepPresenter<Shown> {
