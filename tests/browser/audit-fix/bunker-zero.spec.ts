@@ -70,7 +70,9 @@ async function gameInfo(page: Page) {
       diag = {
         renderPath: dg?.renderPath?.path ?? null, bloomFusion: dg?.renderPath?.bloomFusion ?? null,
         drawCalls: dg?.drawCalls ?? null, triangles: dg?.triangles ?? null,
-        droppedPasses: dg?.renderPath?.droppedPasses ?? dg?.droppedPasses ?? null
+        droppedPasses: dg?.renderPath?.droppedPasses ?? dg?.droppedPasses ?? null,
+        warningCodes: [...new Set((dg?.warnings ?? []).map((w: any) => (typeof w === "string" ? w.split(":")[0] : w?.code ?? "?")))].slice(0, 12),
+        errors: (dg?.errors ?? []).length
       };
     } catch (e) { diag = { err: String(e) }; }
     const game = ev ? {
