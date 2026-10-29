@@ -494,9 +494,15 @@ export class Track {
     return t;
   }
 
-  toWorld(e: number, lateral: number, y: number): { x: number; y: number; z: number } {
-    const f = this.frame(e);
-    return { x: f.x + f.rx * lateral, y, z: f.z + f.rz * lateral };
+  private readonly worldFrame: Partial<Frame> = {};
+
+  /** world position of (s, lateral) at height `y`; pass `out` to reuse an object (per-frame callers, HP-18) */
+  toWorld(e: number, lateral: number, y: number, out: { x: number; y: number; z: number } = { x: 0, y: 0, z: 0 }): { x: number; y: number; z: number } {
+    const f = this.frame(e, this.worldFrame);
+    out.x = f.x + f.rx * lateral;
+    out.y = y;
+    out.z = f.z + f.rz * lateral;
+    return out;
   }
 
   curvAhead(e: number, t: number): number {

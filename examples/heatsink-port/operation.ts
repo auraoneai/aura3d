@@ -17,6 +17,12 @@ export const STRIKE = {
   hp: { sentry: 3, heavy: 6 },
   radius: { sentry: 2.6, heavy: 3.4 },
   barrelRadius: 1.8,
+  /**
+   * barrels are hit as a vertical capsule from the road up to this height (m), so a bolt fired at the drone's hover
+   * height (CFG.vehicle.hover, 5.3 m above the road) connects; a sphere at the barrel's centre sat ~4 m below every
+   * bolt (HP-02)
+   */
+  barrelHitTop: 6,
   /** extra reach added to every hit sphere (aim assist, the original's `weapons.assist` scaled for a single sphere) */
   assistSlack: 1.5,
   hoverHeight: 5,
@@ -26,11 +32,21 @@ export const STRIKE = {
   blastRadius: 14,
   blastDamage: 3,
   barrelRespawn: 25,
+  /** shortest chain window (s); the window stretches to reach the next target at the current speed (HP-11) */
   comboWindow: 3,
+  /** seconds of slack added to the travel time to the next target */
+  comboSlack: 1.5,
+  comboWindowMax: 9,
+  /** speed floor (m/s) used for the travel time, so a near-stop does not hold the chain open forever */
+  comboMinSpeed: 30,
   multiplierMax: 5,
   score: { sentry: 100, heavy: 250, barrel: 150, boostPad: 25, checkpoint: 100, pickup: 50, cleanLap: 500 },
-  /** kills needed (of `perLap` x laps) to finish with each medal; the race must be finished, not a DNF */
-  medals: { bronze: 16, silver: 30, gold: 42 }
+  /**
+   * kills needed (of `perLap` x laps) to finish with each medal; the race must be finished, not a DNF. Gold also needs
+   * the race finished within `goldTime` seconds, so it rewards fast and accurate driving rather than crawling (HP-14).
+   */
+  medals: { bronze: 16, silver: 30, gold: 36 },
+  goldTime: 300
 } as const;
 
 export type TargetKind = "sentry" | "heavy";
@@ -74,6 +90,20 @@ export function segmentSphere(ax: number, ay: number, az: number, bx: number, by
   return px * px + py * py + pz * pz <= r * r ? t : -1;
 }
 
+/**
+ * first hit parameter (0..1) of the segment a->b against a vertical capsule (axis from (cx, y0, cz) to (cx, y1, cz),
+ * radius r), or -1. The closest approach is taken in the ground plane, which is exact for the level bolts the gun fires.
+ */
+export function segmentVerticalCapsule(ax: number, ay: number, az: number, bx: number, by: number, bz: number, cx: number, y0: number, y1: number, cz: number, r: number): number {
+  const sx = bx - ax, sz = bz - az;
+  const len2 = sx * sx + sz * sz;
+  const t = len2 > 0 ? clamp(((cx - ax) * sx + (cz - az) * sz) / len2, 0, 1) : 0;
+  const px = ax + sx * t - cx, pz = az + sz * t - cz;
+  const y = ay + (by - ay) * t;
+  const dy = y < y0 ? y0 - y : y > y1 ? y - y1 : 0;
+  return px * px + pz * pz + dy * dy <= r * r ? t : -1;
+}
+
 export class Operation {
   readonly targets: StrikeTarget[] = [];
   readonly bolts: Bolt[] = [];
@@ -90,9 +120,11 @@ export class Operation {
   medal: Medal = "none";
   private seen = 0;
   private step = 0;
-  private player: { takedowns: number } | null = null;
+  private player: { takedowns: number; s: number; v: number } | null = null;
+  private race: Race | null = null;
   private nextBolt = 0;
   private readonly frameScratch: Partial<Frame> = {};
+  private readonly worldScratch = { x: 0, y: 0, z: 0 };
 
   constructor(private readonly track: Track) {
     const rng = seededRandom(STRIKE.seed);
@@ -137,9 +169,34 @@ export class Operation {
     this.nextBolt = 0;
   }
 
-  /** the medal a finished race earns for `kills`, and the next threshold still to reach (for the HUD) */
-  medalFor(kills: number): Medal {
-    return kills >= STRIKE.medals.gold ? "gold" : kills >= STRIKE.medals.silver ? "silver" : kills >= STRIKE.medals.bronze ? "bronze" : "none";
+  /** the medal a finished race earns for `kills` in `time` seconds (no time given: the kill thresholds alone) */
+  medalFor(kills: number, time = 0): Medal {
+    if (kills >= STRIKE.medals.gold && time <= STRIKE.goldTime) return "gold";
+    return kills >= STRIKE.medals.silver ? "silver" : kills >= STRIKE.medals.bronze ? "bronze" : "none";
+  }
+
+  /**
+   * seconds the chain stays open after a kill: the travel time to the next live target or barrel ahead at the current
+   * speed plus slack, never under `comboWindow` (targets sit 350 to 460 m apart, 3 s or more at top speed)
+   */
+  chainWindow(): number {
+    const race = this.race;
+    const p = this.player;
+    if (!race || !p) return STRIKE.comboWindow;
+    let gap = Infinity;
+    for (const t of this.targets) {
+      if (!t.alive) continue;
+      const d = -this.track.wrapDelta(p.s, t.s);
+      if (d > 1 && d < gap) gap = d;
+    }
+    for (const b of race.barrels) {
+      if (!b.alive) continue;
+      const d = -this.track.wrapDelta(p.s, b.s);
+      if (d > 1 && d < gap) gap = d;
+    }
+    if (!Number.isFinite(gap)) return STRIKE.comboWindow;
+    const travel = gap / Math.max(STRIKE.comboMinSpeed, p.v) + STRIKE.comboSlack;
+    return Math.min(STRIKE.comboWindowMax, Math.max(STRIKE.comboWindow, travel));
   }
 
   nextMedal(): { medal: Exclude<Medal, "none">; needed: number } | null {
@@ -155,6 +212,7 @@ export class Operation {
     this.step++;
     const p = race.player;
     this.player = p;
+    this.race = race;
     this.consumeRaceEvents(race);
     this.chainT -= e;
     if (this.chainT <= 0) this.chain = 0;
@@ -164,7 +222,7 @@ export class Operation {
     for (const b of this.bolts) if (b.alive) this.moveBolt(b, e, race);
 
     if (race.state === "finished" && this.medal === "none") {
-      this.medal = this.medalFor(this.kills);
+      this.medal = this.medalFor(this.kills, race.player.finishTime);
       this.events.push({ step: this.step, type: "medal", detail: this.medal });
     }
   }
@@ -223,8 +281,8 @@ export class Operation {
     for (let i = 0; i < race.barrels.length; i++) {
       const bar = race.barrels[i] as Race["barrels"][number];
       if (!bar.alive) continue;
-      const w = this.track.toWorld(bar.s, bar.x, bar.y + 1.1);
-      const k = segmentSphere(b.x, b.y, b.z, nx, ny, nz, w.x, w.y, w.z, STRIKE.barrelRadius + STRIKE.assistSlack);
+      const w = this.track.toWorld(bar.s, bar.x, bar.y, this.worldScratch);
+      const k = segmentVerticalCapsule(b.x, b.y, b.z, nx, ny, nz, w.x, bar.y, bar.y + STRIKE.barrelHitTop, w.z, STRIKE.barrelRadius + STRIKE.assistSlack);
       if (k >= 0 && k < bestT) { bestT = k; hitTarget = null; hitBarrel = i; }
     }
     if (hitTarget) {
@@ -255,8 +313,8 @@ export class Operation {
     this.kills++;
     if (this.player) this.player.takedowns++;
     this.chain++;
-    this.chainT = STRIKE.comboWindow;
     if (this.chain > this.bestChain) this.bestChain = this.chain;
+    this.chainT = this.chainWindow();
     this.score += STRIKE.score[t.kind] * this.multiplier;
     this.events.push({ step: this.step, type: "kill", detail: t.id, world: t.world });
     if (this.chain >= 2) this.events.push({ step: this.step, type: "chain", detail: this.multiplier });
@@ -268,8 +326,8 @@ export class Operation {
     bar.respawn = STRIKE.barrelRespawn;
     this.barrelsShot++;
     this.chain++;
-    this.chainT = STRIKE.comboWindow;
     if (this.chain > this.bestChain) this.bestChain = this.chain;
+    this.chainT = this.chainWindow();
     this.score += STRIKE.score.barrel * this.multiplier;
     const w = this.track.toWorld(bar.s, bar.x, bar.y + 1.1);
     this.events.push({ step: this.step, type: "barrel", detail: index, world: w });
