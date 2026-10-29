@@ -3,8 +3,9 @@
  * the original's measured route: ballast ribbon, instanced sleepers, rails, trestle pylons and masts), cloud-top
  * islands dressed with catalog houses, trees, rocks, a windmill and a watchtower, a station platform per town, an
  * open-sided tram with twelve seats and seated passengers, a sky dome and cloud sea (`material.custom`), and rain / snow /
- * mote points. The look is image-based lighting (CC0 sky HDRI), a cascaded-shadow sun, a cool moon fill, exp2 fog, AO,
- * bloom, colour grade and vignette; day/night re-aims the lights and moves the lighting runtime's environment intensity
+ * mote points. The look is image-based lighting (CC0 sky HDRI), a cascaded-shadow sun, a cool moon fill, exp2 fog,
+ * bloom, colour grade and vignette (AO is opt-in with `?fx=ao`: the engine drops the pass on this path for a missing
+ * normals input, audit D-08); day/night re-aims the lights and moves the lighting runtime's environment intensity
  * and the output exposure. Everything the original fetched remotely is re-created or replaced with licensed assets.
  */
 import { camera, cameras, defineAuraAssets, effects, environments, geometry, lights, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
@@ -94,8 +95,8 @@ export function weatherOf(data: SimData, sim: SimState): "clear" | "rain" | "sno
 /** `scene` is the day scene; `nightScene` has the same node ids with the moon, a dim environment, night fog and grading, and lit windows (the lighting nodes cannot be re-aimed at runtime, so night swaps scenes). */
 export interface World { readonly scene: Scene; readonly nightScene: Scene; bind(app: AuraApp, data: SimData, startNight?: boolean): WorldRuntime }
 export interface WorldRuntime {
-  /** `orbit` swings the camera slowly around the tram (title screen) instead of chasing it. */
-  update(sim: SimState, seconds: number, options?: { readonly orbit?: boolean }): void;
+  /** `orbit` swings the camera slowly around the tram (title screen) instead of chasing it; `reducedMotion` holds the title camera still and drops the dock sway. */
+  update(sim: SimState, seconds: number, options?: { readonly orbit?: boolean; readonly reducedMotion?: boolean }): void;
   readonly nodeCount: number;
   readonly camera: { eye: V3; target: V3 };
 }
@@ -162,7 +163,7 @@ function alongRoute(data: SimData, step: number, offset: number, lift: number): 
   return out;
 }
 
-/** Debug switches for look-dev captures: `?fx=noao,nofog,nobloom,nograde,novignette,nohdri,skyflat`. */
+/** Debug switches for look-dev captures: `?fx=ao,nofog,nobloom,nograde,novignette,nohdri,skyflat`. */
 const FX = new Set((typeof location !== "undefined" ? new URLSearchParams(location.search).get("fx") ?? "" : "").split(","));
 
 function buildScene(data: SimData, mode: "day" | "night", tex: TownTextures | null): Scene {
@@ -177,8 +178,10 @@ function buildScene(data: SimData, mode: "day" | "night", tex: TownTextures | nu
   if (night) b.add(lights.directional({ name: "moon", position: MOON_NIGHT, target: [0, 0, 0], intensity: 1.7, color: "#9db4ff", shadow: FX.has("noshadow") ? false : { cascades: 3, maxDistance: 190, blend: 0.12 } }));
   else b.add(lights.directional({ name: "sun", position: SUN_DAY, target: [0, 0, 0], intensity: 2.8, color: "#ffe8c0", shadow: FX.has("noshadow") ? false : { cascades: 3, maxDistance: 190, blend: 0.12 } }));
   if (!FX.has("nofog")) b.add(effects.fog({ name: "haze", color: night ? FOG_NIGHT : FOG_DAY, density: night ? 0.00018 : 0.00014 }));
-  if (!FX.has("noao")) b.add(effects.ambientOcclusion({ name: "ao" }));
-  if (!FX.has("nobloom")) b.add(effects.bloom({ name: "bloom", intensity: night ? 0.85 : 0.5, threshold: night ? 0.6 : 0.82, radius: 0.55 }));
+  // AO is off by default: on the hdr-msaa path the engine drops the ssao pass for a missing normals input (audit D-08,
+  // engine row owned by E2), so it cost a pass request and drew nothing. `?fx=ao` puts it back for when the engine runs it.
+  if (FX.has("ao")) b.add(effects.ambientOcclusion({ name: "ao" }));
+  if (!FX.has("nobloom")) b.add(effects.bloom({ name: "bloom", intensity: night ? 0.85 : 0.5, threshold: night ? 0.6 : 0.82 }));
   if (!FX.has("nograde")) b.add(effects.colorGrade({ name: "grade", contrast: night ? 1.1 : 1.08, saturation: night ? 0.95 : 1.12, ...(night ? { exposure: 0.95 } : {}) }));
   if (!FX.has("novignette")) b.add(effects.vignette({ name: "vignette", intensity: night ? 0.34 : 0.22, smoothness: 0.7 }));
 
@@ -464,6 +467,19 @@ export function buildWorld(data: SimData): World {
 
 type Handle = ReturnType<AuraApp["nodes"]["require"]>;
 
+/**
+ * Unit forward direction of the track at `distance` on `leg`. Docked (`distance < 1`) it is the platform heading from
+ * `sampleRoute(leg, 0..4)`, so the docked pose never depends on the last rendered frame (D-11: a results frame reached by
+ * fast-forwarding used a stale heading and showed the tram tilted into the canopy).
+ */
+export function dockForward(data: SimData, leg: number, distance: number): V3 {
+  const len = data.route.legs[leg]!.length;
+  const d0 = distance < 1 ? 0 : distance;
+  const a = sampleRoute(data.route, leg, d0), c = sampleRoute(data.route, leg, Math.min(d0 + 4, len));
+  const dx = c.x - a.x, dy = c.y - a.y, dz = c.z - a.z, l = Math.hypot(dx, dy, dz) || 1;
+  return [dx / l, dy / l, dz / l];
+}
+
 function bindRuntime(app: AuraApp, data: SimData, scenes: { readonly day: Scene; readonly night: Scene }, startNight: boolean): WorldRuntime {
   const maybeCamera = app.camera;
   if (!maybeCamera) throw new Error("last-train-port: the app exposes no camera controller");
@@ -485,9 +501,9 @@ function bindRuntime(app: AuraApp, data: SimData, scenes: { readonly day: Scene;
   let lastSeconds = 0;
   let dockBlend = -1;
   const rig = { eye: [0, 0, 0] as V3, target: [0, 0, 0] as V3 };
-  let smoothedForward: V3 = (() => { const a = sampleRoute(data.route, 0, 0), c = sampleRoute(data.route, 0, 4); const dx = c.x - a.x, dy = c.y - a.y, dz = c.z - a.z, l = Math.hypot(dx, dy, dz) || 1; return [dx / l, dy / l, dz / l] as V3; })();
+  let weatherWasOn = true;
 
-  function update(sim: SimState, seconds: number, options: { readonly orbit?: boolean } = {}): void {
+  function update(sim: SimState, seconds: number, options: { readonly orbit?: boolean; readonly reducedMotion?: boolean } = {}): void {
     const dt = Math.max(0, Math.min(0.1, seconds - lastSeconds));
     lastSeconds = seconds;
     /* day / night: the lighting rig differs per scene, so the app swaps scenes (node ids are identical); the sky and clouds blend smoothly */
@@ -501,11 +517,7 @@ function bindRuntime(app: AuraApp, data: SimData, scenes: { readonly day: Scene;
     if (Math.abs(nightLevel - night) < 0.01) nightLevel = night;
 
     const here = sampleRoute(data.route, sim.leg, sim.distance);
-    const ahead = sampleRoute(data.route, sim.leg, Math.min(sim.distance + 4, data.route.legs[sim.leg]!.length));
-    let f: V3 = [ahead.x - here.x, ahead.y - here.y, ahead.z - here.z];
-    const fl = Math.hypot(...f) || 1;
-    f = [f[0] / fl, f[1] / fl, f[2] / fl];
-    if (sim.distance < 1) f = smoothedForward; else smoothedForward = f;
+    const f = dockForward(data, sim.leg, sim.distance);
     const rot = tramRotation(f, -sim.roll);
     const euler = matrixToEulerZYX(rot);
     if (MESHY_ENABLED) {
@@ -553,19 +565,20 @@ function bindRuntime(app: AuraApp, data: SimData, scenes: { readonly day: Scene;
     clouds.setPosition(here.x, 0, here.z);
 
     /* chase camera, widening with speed */
-    const orbit = options.orbit ? seconds * 0.16 : 0;
+    const still = options.reducedMotion === true;
+    const orbit = options.orbit && !still ? seconds * 0.16 : 0;
     const dockTarget = sim.phase === "enroute" ? 0 : 1;
     dockBlend = dockBlend < 0 || dt === 0 ? dockTarget : dockBlend + (dockTarget - dockBlend) * Math.min(1, dt * 2.2);
     const kd = dockBlend * dockBlend * (3 - 2 * dockBlend);
     const sh = Math.hypot(f[0], f[2]) || 1, sd: V3 = [f[2] / sh, 0, -f[0] / sh];
     const chaseEye: V3 = [here.x - f[0] * 17, here.y + 6.2 - f[1] * 17, here.z - f[2] * 17];
     const chaseTarget: V3 = [here.x + f[0] * 12, here.y + 2.2 + f[1] * 12, here.z + f[2] * 12];
-    const sway = Math.sin(seconds * 0.45) * 0.5;
-    const dockEye: V3 = [here.x - sd[0] * (13 + sway) - f[0] * 8, here.y + 7.4 + Math.sin(seconds * 0.31) * 0.3, here.z - sd[2] * (13 + sway) - f[2] * 8];
+    const sway = still ? 0 : Math.sin(seconds * 0.45) * 0.5;
+    const dockEye: V3 = [here.x - sd[0] * (13 + sway) - f[0] * 8, here.y + 7.4 + (still ? 0 : Math.sin(seconds * 0.31) * 0.3), here.z - sd[2] * (13 + sway) - f[2] * 8];
     const dockAim: V3 = [here.x + f[0] * 4 + sd[0] * 3, here.y + 2.6, here.z + f[2] * 4 + sd[2] * 3];
     const mix3 = (a: V3, c: V3, t: number): V3 => [a[0] + (c[0] - a[0]) * t, a[1] + (c[1] - a[1]) * t, a[2] + (c[2] - a[2]) * t];
     const eye: V3 = options.orbit
-      ? [here.x + Math.sin(orbit + 0.6) * 22, here.y + 7.5 + Math.sin(seconds * 0.23) * 1.2, here.z + Math.cos(orbit + 0.6) * 22]
+      ? [here.x + Math.sin(orbit + 0.6) * 22, here.y + 7.5 + (still ? 0 : Math.sin(seconds * 0.23) * 1.2), here.z + Math.cos(orbit + 0.6) * 22]
       : mix3(chaseEye, dockEye, kd);
     const target: V3 = options.orbit ? [here.x, here.y + 2.6, here.z] : mix3(chaseTarget, dockAim, kd);
     rig.eye = eye; rig.target = target;
@@ -576,31 +589,37 @@ function bindRuntime(app: AuraApp, data: SimData, scenes: { readonly day: Scene;
     const weatherNow = weatherOf(data, sim);
     const raining = weatherNow === "rain", snowing = weatherNow === "snow";
     const amount = raining || snowing ? 1 : 0;
-    for (let i = 0; i < WEATHER_COUNT; i++) {
-      const [sx, sy, sz, ss] = seeds[i]!;
-      const y = ((sy * 60 - seconds * 4) % 60 + 60) % 60 - 20;
-      wpos[i * 3] = eye[0] + (sx - 0.5) * 80 + Math.sin(seconds * 0.8 + ss * 6) * 2;
-      wpos[i * 3 + 1] = eye[1] + y; wpos[i * 3 + 2] = eye[2] + (sz - 0.5) * 80;
-      wfade[i] = snowing ? 0.95 : 0; wsize[i] = 7 + ss * 5;
+    // In clear weather the rain and snow buffers are uploaded once with every fade at 0, then left alone (E-04).
+    const weatherOn = amount > 0;
+    const uploadWeather = weatherOn || weatherWasOn;
+    weatherWasOn = weatherOn;
+    if (uploadWeather) {
+      for (let i = 0; i < WEATHER_COUNT; i++) {
+        const [sx, sy, sz, ss] = seeds[i]!;
+        const y = ((sy * 60 - seconds * 4) % 60 + 60) % 60 - 20;
+        wpos[i * 3] = eye[0] + (sx - 0.5) * 80 + Math.sin(seconds * 0.8 + ss * 6) * 2;
+        wpos[i * 3 + 1] = eye[1] + y; wpos[i * 3 + 2] = eye[2] + (sz - 0.5) * 80;
+        wfade[i] = snowing ? 0.95 : 0; wsize[i] = 7 + ss * 5;
+      }
+      weather.updateAttribute?.("position", { array: wpos, offset: 0 });
+      weather.updateAttribute?.("fade", { array: wfade, offset: 0 });
+      weather.updateAttribute?.("size", { array: wsize, offset: 0 });
+      for (let i = 0; i < RAIN_COUNT; i++) {
+        const [sx, sy, sz, ss] = seeds[i % WEATHER_COUNT]!;
+        const x = eye[0] + (sx - 0.5) * 70 + (raining ? seconds * 1.5 : 0) % 1, z = eye[2] + (sz - 0.5) * 70;
+        const y = eye[1] + ((sy * 50 - seconds * 46) % 50 + 50) % 50 - 20, len = 1.4 + ss * 1.4;
+        const dx = eye[0] - x, dz = eye[2] - z, l = Math.hypot(dx, dz) || 1, rx = (-dz / l) * 0.04, rz = (dx / l) * 0.04;
+        const o = i * 12;
+        rpos[o] = x - rx; rpos[o + 1] = y; rpos[o + 2] = z - rz;
+        rpos[o + 3] = x + rx; rpos[o + 4] = y; rpos[o + 5] = z + rz;
+        rpos[o + 6] = x + rx; rpos[o + 7] = y + len; rpos[o + 8] = z + rz;
+        rpos[o + 9] = x - rx; rpos[o + 10] = y + len; rpos[o + 11] = z - rz;
+        const a = raining ? 0.5 : 0;
+        rfade[i * 4] = 0; rfade[i * 4 + 1] = 0; rfade[i * 4 + 2] = a; rfade[i * 4 + 3] = a;
+      }
+      rain.updateAttribute?.("position", { array: rpos, offset: 0 });
+      rain.updateAttribute?.("fade", { array: rfade, offset: 0 });
     }
-    weather.updateAttribute?.("position", { array: wpos, offset: 0 });
-    weather.updateAttribute?.("fade", { array: wfade, offset: 0 });
-    weather.updateAttribute?.("size", { array: wsize, offset: 0 });
-    for (let i = 0; i < RAIN_COUNT; i++) {
-      const [sx, sy, sz, ss] = seeds[i % WEATHER_COUNT]!;
-      const x = eye[0] + (sx - 0.5) * 70 + (raining ? seconds * 1.5 : 0) % 1, z = eye[2] + (sz - 0.5) * 70;
-      const y = eye[1] + ((sy * 50 - seconds * 46) % 50 + 50) % 50 - 20, len = 1.4 + ss * 1.4;
-      const dx = eye[0] - x, dz = eye[2] - z, l = Math.hypot(dx, dz) || 1, rx = (-dz / l) * 0.04, rz = (dx / l) * 0.04;
-      const o = i * 12;
-      rpos[o] = x - rx; rpos[o + 1] = y; rpos[o + 2] = z - rz;
-      rpos[o + 3] = x + rx; rpos[o + 4] = y; rpos[o + 5] = z + rz;
-      rpos[o + 6] = x + rx; rpos[o + 7] = y + len; rpos[o + 8] = z + rz;
-      rpos[o + 9] = x - rx; rpos[o + 10] = y + len; rpos[o + 11] = z - rz;
-      const a = raining ? 0.5 : 0;
-      rfade[i * 4] = 0; rfade[i * 4 + 1] = 0; rfade[i * 4 + 2] = a; rfade[i * 4 + 3] = a;
-    }
-    rain.updateAttribute?.("position", { array: rpos, offset: 0 });
-    rain.updateAttribute?.("fade", { array: rfade, offset: 0 });
     for (let i = 0; i < MOTE_COUNT; i++) {
       const [sx, sy, sz, ss] = moteSeeds[i]!;
       mpos[i * 3] = eye[0] + (sx - 0.5) * 70 + Math.sin(seconds * 0.4 + ss * 9) * 3;

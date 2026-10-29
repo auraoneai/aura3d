@@ -10,6 +10,11 @@
  *
  * Not ported (documented in PORTING-NOTES.md): orchard junction, driving gates / boost / bold bonuses, requests
  * and cargo, garage/upgrades/workshop, reaction messages, rear-car roll (the default garage has no rear car).
+ *
+ * Port-only rules (audit 2026-10-29, not in the original): Gold needs comfort >= 90% and no catches (the original also
+ * wanted three requests, which are not ported, so Gold was unreachable); a short service of `goal` legs; at 0 lanterns the
+ * service ends at the next station with the grade capped at Bronze; Enter after the results starts a free ride from where
+ * the tram stands; a forced new service abandons a running one; `brakeLevel` lets the player's brake ramp in.
  */
 
 export interface RouteLeg { length: number; spacing: number; count: number; position: number[]; physics: number[] }
@@ -39,6 +44,10 @@ export type Phase = "docked" | "opening" | "deploying" | "alighting" | "boarding
 
 export interface Attempt {
   id: number; status: "active" | "complete"; startStation: number; lastStation: number; legs: number[];
+  /** Legs to complete: the six-town circuit, or 2 for a short service. */
+  goal: number;
+  /** Why the service ended: the goal was reached, or the lanterns ran out. */
+  ended: "goal" | "lanterns" | null;
   fares: number; tips: number; bonuses: number; requests: number; lost: number; catches: number; lanterns: number; streak: number; wobble: number;
   distance: number; comfort: number; frontiers: Record<number, number>; grade: "Gold" | "Silver" | "Bronze" | null;
 }
@@ -57,7 +66,8 @@ export interface SimState {
   attempt: Attempt;
 }
 
-export interface StepInput { accelerate?: boolean; brake?: boolean; reverse?: boolean; left?: boolean; right?: boolean; cruisePace?: string | null }
+/** `brakeLevel` (0..1, default 1) scales the brake when `brake` is set; the replayed reference always brakes at 1. */
+export interface StepInput { accelerate?: boolean; brake?: boolean; brakeLevel?: number; reverse?: boolean; left?: boolean; right?: boolean; cruisePace?: string | null }
 
 export interface SimData { route: RouteData; tables: Tables }
 
@@ -69,8 +79,14 @@ export const MIN_TIP_SPEED = 2.5;
 
 const clamp = (x: number, a: number, b: number): number => Math.max(a, Math.min(b, x));
 
-export function newAttempt(id: number, station: number): Attempt {
-  return { id, status: "active", startStation: station, lastStation: station, legs: [], fares: 0, tips: 0, bonuses: 0, requests: 0, lost: 0, catches: 0, lanterns: 3, streak: 0, wobble: 0, distance: 0, comfort: 0, frontiers: {}, grade: null };
+/** Legs in a full circuit (six towns) and in a short service. */
+export const CIRCUIT_LEGS = 6;
+export const SHORT_LEGS = 2;
+/** Grade thresholds: Gold comfort >= 90 and 0 catches; Silver comfort >= 75 and at most 1 catch; otherwise Bronze. */
+export const GRADES = { gold: { comfort: 90, catches: 0 }, silver: { comfort: 75, catches: 1 } } as const;
+
+export function newAttempt(id: number, station: number, goal = CIRCUIT_LEGS): Attempt {
+  return { id, status: "active", startStation: station, lastStation: station, legs: [], goal, ended: null, fares: 0, tips: 0, bonuses: 0, requests: 0, lost: 0, catches: 0, lanterns: 3, streak: 0, wobble: 0, distance: 0, comfort: 0, frontiers: {}, grade: null };
 }
 
 export function createState(): SimState {
@@ -157,14 +173,40 @@ export function actionDepart(s: SimState): SimState {
 
 export function actionTimeOfDay(s: SimState, v: string): SimState { s.timeOfDay = v === "night" ? "night" : "day"; return s; }
 
-/** Start a fresh service: keeps score/wallet/time of day, resets the train to the first station with an empty manifest. */
-export function actionNewService(s: SimState): SimState {
-  if (s.attempt.status === "active") return s;
+/**
+ * Start a fresh service: keeps the session score/wallet/time of day, resets the train to the first station with an empty
+ * manifest. A running service is left alone unless `force` is set (the player confirmed abandoning it). `goal` picks a
+ * full circuit (6 legs) or a short service (2 legs).
+ */
+export function actionNewService(s: SimState, options: { force?: boolean; goal?: number } = {}): SimState {
+  if (s.attempt.status === "active" && !options.force) return s;
   const fresh = createState();
   fresh.score = s.score; fresh.wallet = s.wallet; fresh.timeOfDay = s.timeOfDay;
-  fresh.attempt = newAttempt(s.attempt.id + 1, 0);
+  fresh.attempt = newAttempt(s.attempt.id + 1, 0, options.goal ?? s.attempt.goal);
   Object.assign(s, fresh);
   return s;
+}
+
+/**
+ * "Keep riding" after the results: a new attempt that starts where the tram stands, with the riders aboard. The session
+ * score carries on; the new attempt is scored on its own and completes after another `goal` legs.
+ */
+export function actionKeepRiding(s: SimState): SimState {
+  if (s.attempt.status !== "complete") return s;
+  s.attempt = newAttempt(s.attempt.id + 1, s.leg, s.attempt.goal);
+  s.claims = [];
+  return s;
+}
+
+/** Score of one attempt on its own: fares, tips and line bonuses earned in this service (the results card and the best score). */
+export function attemptScore(a: Attempt): number { return a.fares + a.tips + a.bonuses; }
+
+/** Grade from an attempt's comfort and catches (`GRADES`); `capped` (out of lanterns) caps it at Bronze. */
+export function gradeOf(comfort: number, catches: number, capped = false): "Gold" | "Silver" | "Bronze" {
+  if (capped) return "Bronze";
+  if (comfort >= GRADES.gold.comfort && catches <= GRADES.gold.catches) return "Gold";
+  if (comfort >= GRADES.silver.comfort && catches <= GRADES.silver.catches) return "Silver";
+  return "Bronze";
 }
 
 function finishAlighting(s: SimState, data: SimData): void {
@@ -204,10 +246,13 @@ function finishBoarding(s: SimState, data: SimData): void {
   enter(s, "ready");
   const a = s.attempt;
   const n = data.tables.towns.length;
-  if (a.status === "active" && a.legs.length >= n && s.leg === a.startStation) {
+  const goalReached = a.goal >= n ? a.legs.length >= n && s.leg === a.startStation : a.legs.length >= a.goal;
+  const outOfLanterns = a.lanterns <= 0 && a.legs.length > 0;
+  if (a.status === "active" && (goalReached || outOfLanterns)) {
     const c = a.distance ? (a.comfort / a.distance) * 100 : 0;
     a.status = "complete";
-    a.grade = c >= 90 && a.catches === 0 && a.requests >= 3 ? "Gold" : c >= 75 && a.catches <= 1 ? "Silver" : "Bronze";
+    a.ended = goalReached ? "goal" : "lanterns";
+    a.grade = gradeOf(c, a.catches, !goalReached);
   }
 }
 
@@ -253,7 +298,8 @@ export function step(s: SimState, dtIn: number, input: StepInput, data: SimData)
   const g2 = -3.4 * here.grade;
   const v = T.garage;
 
-  if (brake) { s.speed = Math.sign(s.speed) * Math.max(0, Math.abs(s.speed) - 5 * v.brake * dt); }
+  const brakeLevel = clamp(input.brakeLevel ?? 1, 0, 1);
+  if (brake) { s.speed = Math.sign(s.speed) * Math.max(0, Math.abs(s.speed) - 5 * v.brake * brakeLevel * dt); }
   else if (reverse) { s.speed = Math.max(0, s.speed - 4.5 * v.brake * dt); }
   else if (accelerate) {
     const pace = input.cruisePace ? T.AM[input.cruisePace] : undefined;

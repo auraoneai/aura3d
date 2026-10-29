@@ -70,13 +70,14 @@ export class TrainSound {
   private nextChordAt = 0;
   private padVoices: OscillatorNode[] = [];
   muted = false;
+  private hidden = false;
 
   private rand(): number { this.lcg = (this.lcg * 1664525 + 1013904223) >>> 0; return this.lcg / 4294967296; }
 
   /** Call from a user gesture (first key or pointer). Safe to call repeatedly. */
   async unlock(): Promise<void> {
     try {
-      if (this.ctx) { if (this.ctx.state === "suspended") await this.ctx.resume(); return; }
+      if (this.ctx) { if (this.ctx.state === "suspended" && !this.hidden) await this.ctx.resume(); return; }
       const ctx = this.manager.context as unknown as AudioContext;
       this.ctx = ctx;
       if (ctx.state === "suspended") await ctx.resume();
@@ -124,6 +125,22 @@ export class TrainSound {
     src.connect(filter); filter.connect(gain); gain.connect(this.master!);
     src.start(0, this.rand() * 1.5);
     return gain;
+  }
+
+  /** Suspend the context while the tab is hidden (the loop gains only change on rendered frames, which stop there), resume when visible. */
+  async setHidden(hidden: boolean): Promise<void> {
+    this.hidden = hidden;
+    const ctx = this.ctx;
+    if (!ctx) return;
+    try {
+      if (hidden && ctx.state === "running") await ctx.suspend();
+      else if (!hidden && ctx.state === "suspended") await ctx.resume();
+    } catch { /* audio is optional */ }
+  }
+
+  /** QA: the context state, mute and hidden flags. */
+  status(): { context: string; muted: boolean; hidden: boolean } {
+    return { context: this.ctx?.state ?? "none", muted: this.muted, hidden: this.hidden };
   }
 
   setMuted(muted: boolean): void {

@@ -4,13 +4,16 @@
  *
  * Query parameters (all optional): `autopilot=1` (drive the tram with the capture's controller),
  * `night=1`, `manual=1` (the sim only advances through `__AURA_LAST_TRAIN__.stepFrames`; skips the title screen), `speed=N` (sim steps per frame),
- * `title=0` (skip the title screen).
+ * `title=0` (skip the title screen), `legs=2` (short service), `dpr=N` (pixel ratio override; default min(devicePixelRatio, 1.5)).
+ *
+ * Input: keyboard, or on touch screens the hold-button bar (`#touch`, shown on `(pointer: coarse)`), which feeds the same
+ * `keys` set through `press` / `release`.
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { controllerInput, type ControllerParams } from "./replay";
 import {
-  DT, actionDepart, actionDoors, actionNewService, actionTimeOfDay, createState, step, tipOf,
-  type SimData, type SimState, type StepInput
+  DT, GRADES, SHORT_LEGS, actionDepart, actionDoors, actionKeepRiding, actionNewService, actionTimeOfDay, attemptScore, createState, step, streakMultiplier, tipOf,
+  type SimData, type SimState, type StepInput, type Temperament
 } from "./sim";
 import { createTramPresenter, viewOf } from "./presentation";
 import { TrainSound, diffCues, type AudioState } from "./audio";
@@ -36,6 +39,7 @@ const canvas = $<HTMLCanvasElement>("world");
 let sim: SimState = createState();
 const presenter = createTramPresenter(() => sim);
 if (flag("night")) actionTimeOfDay(sim, "night");
+if (params.get("legs") === String(SHORT_LEGS)) actionNewService(sim, { force: true, goal: SHORT_LEGS });
 let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
 let ready = false;
@@ -48,8 +52,25 @@ let prevAudio: AudioState | null = null;
 let resultsShown = false;
 let toastUntil = 0;
 const BEST_KEY = "aura3d.lasttrain.best";
-const readBest = (): number => { try { return Number(localStorage.getItem(BEST_KEY) ?? 0) || 0; } catch { return 0; } };
-const writeBest = (score: number): void => { try { localStorage.setItem(BEST_KEY, String(score)); } catch { /* storage is optional */ } };
+const MUTE_KEY = "aura3d.lasttrain.muted";
+const HUD_KEY = "aura3d.lasttrain.hud";
+const readStore = (key: string): string | null => { try { return localStorage.getItem(key); } catch { return null; } };
+const writeStore = (key: string, value: string): void => { try { localStorage.setItem(key, value); } catch { /* storage is optional */ } };
+/** The best is the best single-service score (fares + tips + bonuses of one attempt), not the session total. */
+const readBest = (): number => Number(readStore(BEST_KEY) ?? 0) || 0;
+const writeBest = (score: number): void => writeStore(BEST_KEY, String(score));
+const media = (q: string): boolean => typeof matchMedia === "function" && matchMedia(q).matches;
+const reducedMotion = (): boolean => media("(prefers-reduced-motion: reduce)");
+/** The brake ramps to 70% (3.5 m/s^2) over 0.4 s, below the 3.8 m/s^2 harsh-braking limit, so Space slows the tram without the comfort penalty (D-10). */
+const BRAKE_MAX = 0.7, BRAKE_RAMP = 0.4;
+let brakeSteps = 0;
+/** Second press of R within this time abandons the running service. */
+let abandonUntil = 0;
+const TEMPERAMENT_LABEL: Record<Temperament, string> = { easy: "easy", sightseer: "sightseer", rushed: "rushed", sleeper: "sleeper" };
+const TEMPERAMENT_GLYPH: Record<Temperament, string> = { easy: "\u25cf", sightseer: "\u25b2", rushed: "\u25c6", sleeper: "\u25a0" };
+let ridersKey = "";
+if (readStore(MUTE_KEY) === "1") sound.setMuted(true);
+if (readStore(HUD_KEY) === "large") document.documentElement.classList.add("hud-large");
 
 const phaseMessage: Record<string, string> = {
   docked: "Press E to open the doors.", opening: "Doors opening", deploying: "Steps out", alighting: "Passengers getting off",
@@ -67,7 +88,9 @@ const phasePrompt: Record<string, [string, string]> = {
 
 function manualInput(): StepInput {
   const brake = keys.has("Space") || keys.has("KeyS") || keys.has("ArrowDown");
-  return { accelerate: !brake && (keys.has("KeyW") || keys.has("ArrowUp")), brake, left: keys.has("KeyA") || keys.has("ArrowLeft"), right: keys.has("KeyD") || keys.has("ArrowRight"), cruisePace: null };
+  brakeSteps = brake ? brakeSteps + 1 : 0;
+  const brakeLevel = BRAKE_MAX * Math.min(1, (brakeSteps * DT) / BRAKE_RAMP);
+  return { accelerate: !brake && (keys.has("KeyW") || keys.has("ArrowUp")), brake, brakeLevel, left: keys.has("KeyA") || keys.has("ArrowLeft"), right: keys.has("KeyD") || keys.has("ArrowRight"), cruisePace: null };
 }
 
 function autoDrive(): StepInput {
@@ -88,9 +111,14 @@ function advance(input: StepInput, counter: { steps: number }, renderEvery: numb
   counter.steps++;
   if (renderEvery && counter.steps % renderEvery === 0) { seconds += renderEvery * DT; render(); }
 }
+/** Waits for `phase`; a tram stopped mid-route is driven on to the next station first, so `runLeg` / `runCircuit` work from any state. */
 function until(phase: string, counter: { steps: number }, renderEvery: number): void {
   let g = 0;
-  while (sim.phase !== phase) { advance({}, counter, renderEvery); if (++g > 20000) throw new Error(`stuck waiting for ${phase} in ${sim.phase}`); }
+  while (sim.phase !== phase) {
+    advance(sim.phase === "enroute" ? controllerInput(sim, data, CONTROLLER) : {}, counter, renderEvery);
+    if (sim.phase === "docked" && phase !== "docked") actionDoors(sim);
+    if (++g > 200000) throw new Error(`stuck waiting for ${phase} in ${sim.phase}`);
+  }
 }
 
 /** Run one leg (doors, boarding, depart, drive, arrive) with the capture's controller; simulation only unless `renderEvery` > 0. */
@@ -137,18 +165,48 @@ function updateHud(): void {
   $("aboard").textContent = String(sim.passengers);
   $("fares").textContent = String(sim.attempt.fares);
   $("tips").textContent = String(sim.attempt.tips);
-  $("score").textContent = String(sim.score);
+  $("score").textContent = String(attemptScore(sim.attempt));
+  updateLean();
   const complete = sim.attempt.status === "complete" && sim.phase === "ready";
-  const prompt = complete ? ["Service complete", `Grade ${sim.attempt.grade ?? ""}. Press R for a new service`] as [string, string] : (phasePrompt[sim.phase] ?? [sim.phase, ""]);
+  const prompt = complete ? ["Service complete", `Grade ${sim.attempt.grade ?? ""}. R new service, Enter keep riding`] as [string, string] : (phasePrompt[sim.phase] ?? [sim.phase, ""]);
   const promptEl = $("prompt");
   const promptHtml = `${prompt[0]}<span class="meta">${prompt[1]}</span>`;
   if (promptEl.dataset.k !== promptHtml) { promptEl.dataset.k = promptHtml; promptEl.innerHTML = promptHtml; }
   promptEl.classList.toggle("hidden", titleMode);
   $("message").textContent = complete ? `Service complete (${sim.attempt.grade}). Press R for a new service.` : (phaseMessage[sim.phase] ?? sim.phase);
-  const riders = $("riders");
-  riders.classList.toggle("hidden", sim.trips.length === 0);
-  riders.innerHTML = sim.trips.map((t) => `<span class="meta"><i class="dot" style="background:${TEMPERAMENT_COLORS[t.temperament]}"></i>${t.name} → ${towns[t.destination]!.name} (${tipOf(t)})</span>`).join("");
+  updateRiders();
   updateResults();
+}
+
+/** Lean meter (E-01): the marker sits at the roll (full scale 0.49), coloured green / amber / red at 0.13 / 0.22 / 0.34; the bar under it fills over the 1.5 s critical window before a catch. */
+function updateLean(): void {
+  const r = Math.abs(sim.roll);
+  const band = r >= 0.34 ? "red" : r >= 0.22 ? "amber" : r >= 0.13 ? "warm" : "green";
+  const lean = $("lean");
+  if (lean.dataset.band !== band) lean.dataset.band = band;
+  $("lean-dot").style.left = `${50 + Math.max(-1, Math.min(1, sim.roll / 0.49)) * 50}%`;
+  $("lean-crit").style.width = `${Math.min(1, sim.criticalTime / 1.5) * 100}%`;
+  $("streak").textContent = streakMultiplier(sim).toFixed(2);
+  const lanterns = "\u25cf".repeat(sim.attempt.lanterns) + "\u25cb".repeat(Math.max(0, 3 - sim.attempt.lanterns));
+  const lt = $("lanterns");
+  if (lt.textContent !== lanterns) lt.textContent = lanterns;
+}
+
+/** Riders list (E-04/E-05/E-06): rebuilt only when it changes; temperament as a glyph and a word, not colour alone; 4 rows on narrow screens plus the next-stop count. */
+function updateRiders(): void {
+  const towns = data.tables.towns;
+  const riders = $("riders");
+  const narrow = media("(max-width: 560px)");
+  const nextStop = (sim.phase === "enroute" ? (sim.leg + 1) : sim.leg) % towns.length;
+  const alighting = sim.trips.filter((t) => t.destination === nextStop).length;
+  const key = `${narrow ? 1 : 0}|${nextStop}|${alighting}|${sim.trips.map((t) => `${t.id}:${tipOf(t)}`).join(",")}`;
+  if (key === ridersKey) return;
+  ridersKey = key;
+  riders.classList.toggle("hidden", sim.trips.length === 0);
+  const rows = sim.trips.map((t) => `<span class="meta rider"><i class="dot" style="color:${TEMPERAMENT_COLORS[t.temperament]}" aria-hidden="true">${TEMPERAMENT_GLYPH[t.temperament]}</i>${t.name} <em>${TEMPERAMENT_LABEL[t.temperament]}</em> → ${towns[t.destination]!.name} (${tipOf(t)})</span>`);
+  const limit = narrow ? 4 : rows.length;
+  const shown = rows.slice(0, limit).join("") + (rows.length > limit ? `<span class="meta">+${rows.length - limit} more</span>` : "");
+  riders.innerHTML = `<div class="meta next-stop">Next stop ${towns[nextStop]!.name}: ${alighting} alighting</div>${shown}`;
 }
 
 function toast(text: string, ms = 2600): void {
@@ -170,31 +228,55 @@ function updateAudio(dt: number): void {
   for (const cue of diffCues(prevAudio, state)) {
     sound.cue(cue);
     if (cue === "arrive") toast(`Arrived at ${data.tables.towns[sim.leg]!.name}`);
-    if (cue === "lost") toast("A rider left unhappy");
+    if (cue === "lost") toast(`Lurch! Tips lost: ${state.lost - (prevAudio?.lost ?? 0)}`);
   }
   prevAudio = state;
   sound.update(state, dt);
   if (toastUntil && performance.now() > toastUntil) { toastUntil = 0; $("toast").classList.add("off"); }
 }
 
+/** Results card (D-03/D-04/D-06): scores this service on its own; the session total is a separate row; the grade thresholds are shown. */
 function updateResults(): void {
   const complete = sim.attempt.status === "complete" && sim.phase === "ready";
   const box = $("results");
   if (complete && !resultsShown && !titleMode) {
     resultsShown = true;
-    $("res-grade").textContent = sim.attempt.grade ?? "Complete";
-    $("res-score").textContent = `Score ${sim.score}${sim.score > readBest() ? " · new best" : ""}`;
-    $("res-grid").innerHTML = [["Fares", sim.attempt.fares], ["Tips", sim.attempt.tips], ["Bonuses", sim.attempt.bonuses], ["Riders lost", sim.attempt.lost], ["Catches", sim.catches]]
+    const a = sim.attempt;
+    const score = attemptScore(a), best = readBest();
+    const comfort = a.distance ? (a.comfort / a.distance) * 100 : 0;
+    $("res-grade").textContent = a.grade ?? "Complete";
+    $("res-score").textContent = `Score ${score}${score > best ? " · new best" : best ? ` · best ${best}` : ""}`;
+    $("res-grid").innerHTML = [["Fares", a.fares], ["Tips", a.tips], ["Bonuses", a.bonuses], ["Tips lost", a.lost], ["Catches", a.catches], ["Comfort", `${Math.round(comfort)}%`], ["Session total", sim.score]]
       .map(([k, v]) => `<span>${k}</span><span class="num">${v}</span>`).join("");
-    if (sim.score > readBest()) writeBest(sim.score);
+    $("res-rule").textContent = `${a.ended === "lanterns" ? "Out of lanterns: the grade is capped at Bronze. " : ""}Gold: comfort ${GRADES.gold.comfort}%+ and no catches. Silver: ${GRADES.silver.comfort}%+ and at most ${GRADES.silver.catches} catch.`;
+    if (score > best) writeBest(score);
     box.classList.remove("hidden");
   }
   if (!complete && resultsShown) { resultsShown = false; box.classList.add("hidden"); }
 }
 
-function startPlay(): void {
+/** R: a new service. While one is running, the first press asks and a second press within 3 s abandons it (D-05). */
+function requestNewService(goal?: number): void {
+  if (sim.attempt.status === "active") {
+    if (performance.now() < abandonUntil) { abandonUntil = 0; actionNewService(sim, { force: true, ...(goal ? { goal } : {}) }); presenter.reset(); toast("New service from Mango Tide", 1800); }
+    else { abandonUntil = performance.now() + 3000; toast("Press R again to abandon this service", 3000); }
+    return;
+  }
+  actionNewService(sim, goal ? { goal } : {}); presenter.reset(); $("results").classList.add("hidden");
+}
+
+/** Enter on the results card: keep riding from this station with the riders aboard, scored as a new service (D-02). */
+function keepRiding(): void {
+  if (sim.attempt.status !== "complete") { $("results").classList.add("hidden"); return; }
+  actionKeepRiding(sim);
+  $("results").classList.add("hidden");
+  toast("Free ride: hold W to depart", 2600);
+}
+
+function startPlay(goal?: number): void {
   void sound.unlock();
   if (!titleMode) return;
+  if (goal) actionNewService(sim, { force: true, goal });
   titleMode = false;
   $("title").classList.add("hidden");
 }
@@ -202,7 +284,7 @@ function startPlay(): void {
 /** `live` draws the tram between the last two steps (smooth on 120 and 144 Hz displays); everything else draws the exact latest step. */
 function render(live = false): void {
   if (!app || !runtime) return;
-  runtime.update(live ? viewOf(sim, presenter.present(loop, true)) : sim, seconds, { orbit: titleMode });
+  runtime.update(live ? viewOf(sim, presenter.present(loop, true)) : sim, seconds, { orbit: titleMode, reducedMotion: reducedMotion() });
   app.step(0);
 }
 
@@ -225,28 +307,67 @@ const loop = createFixedStepLoop({
   }
 });
 
-$("start-btn").addEventListener("click", () => startPlay());
-addEventListener("pointerdown", () => { void sound.unlock(); if (titleMode) startPlay(); });
-addEventListener("keydown", (e) => {
-  if (titleMode) { if (e.code === "Enter" || e.code === "Space") startPlay(); return; }
+/** One press of a game key, from the keyboard or a touch button. */
+function press(code: string, repeat = false): void {
   void sound.unlock();
-  if (e.code === "Enter") $("results").classList.add("hidden");
-  if (e.code === "KeyM") { sound.setMuted(!sound.muted); toast(sound.muted ? "Sound off" : "Sound on", 1200); }
-  keys.add(e.code);
-  if (e.code === "KeyE" && sim.phase === "docked") actionDoors(sim);
-  if (!e.repeat && (e.code === "KeyW" || e.code === "ArrowUp") && sim.attempt.status === "active") {
-    if (sim.phase === "docked") { actionDoors(sim); toast("Doors opening. Riders board, then hold W to depart", 3200); }
-    else if (sim.phase !== "ready" && sim.phase !== "enroute") toast(`${phasePrompt[sim.phase]?.[0] ?? sim.phase}: wait for Ready, then hold W`, 2400);
+  if (code === "Enter") keepRiding();
+  if (code === "KeyM") { sound.setMuted(!sound.muted); writeStore(MUTE_KEY, sound.muted ? "1" : "0"); toast(sound.muted ? "Sound off" : "Sound on", 1200); }
+  if (code === "KeyU") { const large = document.documentElement.classList.toggle("hud-large"); writeStore(HUD_KEY, large ? "large" : "normal"); toast(large ? "Large HUD" : "Normal HUD", 1200); }
+  keys.add(code);
+  if (code === "KeyE" && sim.phase === "docked") actionDoors(sim);
+  if (!repeat && (code === "KeyW" || code === "ArrowUp") && sim.attempt.status === "active") {
+    if (sim.phase === "docked") { actionDoors(sim); toast("Doors opening. Riders board, then hold Go to depart", 3200); }
+    else if (sim.phase !== "ready" && sim.phase !== "enroute") toast(`${phasePrompt[sim.phase]?.[0] ?? sim.phase}: wait for Ready, then hold Go`, 2400);
   }
-  if (e.code === "KeyN") actionTimeOfDay(sim, sim.timeOfDay === "night" ? "day" : "night");
-  if (e.code === "KeyR") { actionNewService(sim); presenter.reset(); $("results").classList.add("hidden"); }
-  if (e.code === "KeyP") autopilot = !autopilot;
+  if (code === "KeyN") actionTimeOfDay(sim, sim.timeOfDay === "night" ? "day" : "night");
+  if (code === "KeyR" && !repeat) requestNewService();
+  if (code === "Digit2" && !repeat && sim.attempt.status === "complete") requestNewService(SHORT_LEGS);
+  if (code === "KeyP") autopilot = !autopilot;
+}
+function release(code: string): void { keys.delete(code); }
+
+$("start-btn").addEventListener("click", () => startPlay());
+document.getElementById("short-btn")?.addEventListener("click", () => startPlay(SHORT_LEGS));
+document.getElementById("res-new")?.addEventListener("click", () => requestNewService());
+document.getElementById("res-short")?.addEventListener("click", () => requestNewService(SHORT_LEGS));
+document.getElementById("res-keep")?.addEventListener("click", () => keepRiding());
+addEventListener("pointerdown", (e) => {
+  void sound.unlock();
+  if (titleMode && !(e.target instanceof Element && e.target.closest("button"))) startPlay();
 });
-addEventListener("keyup", (e) => keys.delete(e.code));
+addEventListener("keydown", (e) => {
+  if (titleMode) { if (e.code === "Enter" || e.code === "Space") startPlay(); else if (e.code === "Digit2") startPlay(SHORT_LEGS); return; }
+  press(e.code, e.repeat);
+});
+addEventListener("keyup", (e) => release(e.code));
 addEventListener("blur", () => keys.clear());
+/** The audio loops follow the rAF-driven `update`, which stops in a hidden tab: suspend the context there (D-12). */
+document.addEventListener("visibilitychange", () => { void sound.setHidden(document.visibilityState === "hidden"); });
+
+/** Touch hold-buttons (D-01): each feeds `press` / `release` like a key, held through pointer capture until up or cancel. */
+for (const btn of Array.from(document.querySelectorAll<HTMLButtonElement>("#touch [data-code]"))) {
+  const code = btn.dataset.code!;
+  let held = false;
+  const up = (): void => { if (!held) return; held = false; btn.classList.remove("on"); release(code); };
+  btn.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    try { btn.setPointerCapture(e.pointerId); } catch { /* synthetic pointers have no capture */ }
+    if (held) return;
+    held = true; btn.classList.add("on");
+    if (titleMode) startPlay();
+    press(code);
+  });
+  btn.addEventListener("pointerup", up);
+  btn.addEventListener("pointercancel", up);
+  btn.addEventListener("lostpointercapture", up);
+  btn.addEventListener("contextmenu", (e) => e.preventDefault());
+}
+
+/** Pixel ratio: min(devicePixelRatio, 1.5) so the 1-px rails stay sharp on 2x screens (E-02); `?dpr=` overrides. */
+const DPR = Math.max(0.5, Math.min(2, Number(params.get("dpr") ?? Math.min(typeof devicePixelRatio === "number" ? devicePixelRatio : 1, 1.5)) || 1));
 
 function sizeCanvas(): void {
-  const dpr = 1;
+  const dpr = DPR;
   canvas.width = Math.max(2, Math.round(canvas.clientWidth * dpr));
   canvas.height = Math.max(2, Math.round(canvas.clientHeight * dpr));
 }
@@ -258,14 +379,17 @@ function summary() {
   return {
     phase: sim.phase, leg: sim.leg, station: towns[sim.leg]!.name, distance: sim.distance, speed: sim.speed, roll: sim.roll,
     aboard: sim.passengers, fares: sim.attempt.fares, tips: sim.attempt.tips, bonuses: sim.attempt.bonuses, lost: sim.attempt.lost, score: sim.score,
+    serviceScore: attemptScore(sim.attempt), attemptId: sim.attempt.id, goal: sim.attempt.goal, ended: sim.attempt.ended, lanterns: sim.attempt.lanterns,
+    streak: sim.attempt.streak, criticalTime: sim.criticalTime, trim: sim.trim, keys: [...keys],
     circuits: sim.circuits, attempt: sim.attempt.status, grade: sim.attempt.grade, timeOfDay: sim.timeOfDay, played: sim.played, catches: sim.catches
   };
 }
 
 function memory() {
-  const info = app?.info as unknown as { approximateGpuMemoryBytes?: number; memory: { geometries: number; textures: number; renderTargets?: number }; render?: { calls?: number; triangles?: number } } | undefined;
+  const info = app?.info as unknown as { approximateGpuMemoryBytes?: number; bufferBytes?: number; textureBytes?: number; memory: { geometries: number; textures: number; renderTargets?: number; bufferBytes?: number; textureBytes?: number }; render?: { calls?: number; triangles?: number } } | undefined;
   return {
     approximateGpuMemoryBytes: info?.approximateGpuMemoryBytes ?? 0,
+    bufferBytes: info?.bufferBytes ?? info?.memory.bufferBytes ?? null, textureBytes: info?.textureBytes ?? info?.memory.textureBytes ?? null,
     textures: info?.memory.textures ?? 0, buffers: info?.memory.geometries ?? 0, renderTargets: info?.memory.renderTargets ?? 0,
     drawCalls: info?.render?.calls ?? app?.diagnostics().drawCalls ?? 0, nodes: runtime?.nodeCount ?? 0
   };
@@ -295,10 +419,11 @@ function assetStatus(): { total: number; loaded: number } {
   return { total: ids.length, loaded };
 }
 
-function diag(): { drawCalls: number; triangles: number; nodes: number; assets: { total: number; loaded: number }; errors: number } {
+function diag(): { drawCalls: number; triangles: number; nodes: number; assets: { total: number; loaded: number }; errors: number; renderPath: unknown; post: unknown; warnings: string[] } {
   const info = app?.info as unknown as { render?: { calls?: number; triangles?: number } } | undefined;
-  const errors = (app?.diagnostics() as unknown as { errors?: unknown[] } | undefined)?.errors?.length ?? 0;
-  return { drawCalls: info?.render?.calls ?? 0, triangles: info?.render?.triangles ?? 0, nodes: runtime?.nodeCount ?? 0, assets: assetStatus(), errors };
+  const d = app?.diagnostics() as unknown as { errors?: unknown[]; renderPath?: unknown; post?: unknown; warnings?: unknown[] } | undefined;
+  const warnings = (d?.warnings ?? []).map((w) => (typeof w === "string" ? w : String((w as { code?: unknown; message?: unknown }).code ?? (w as { message?: unknown }).message ?? JSON.stringify(w)))).slice(0, 40);
+  return { drawCalls: info?.render?.calls ?? 0, triangles: info?.render?.triangles ?? 0, nodes: runtime?.nodeCount ?? 0, assets: assetStatus(), errors: d?.errors?.length ?? 0, renderPath: d?.renderPath ?? null, post: d?.post ?? null, warnings };
 }
 
 const qa = installQaHooks("last-train", {
@@ -330,6 +455,10 @@ const qa = installQaHooks("last-train", {
   /** Switching swaps the whole lighting rig (a scene swap), so this renders once and waits for the renderer to settle. */
   setTimeOfDay: async (v: "day" | "night") => { actionTimeOfDay(sim, v); render(); await app?.ready(); render(); },
   newService: () => { actionNewService(sim); presenter.reset(); },
+  /** Plays a key press through the same path as the keyboard and the touch bar. */
+  press: (code: string) => press(code),
+  release: (code: string) => release(code),
+  audio: () => sound.status(),
   applyInput: (input: StepInput) => stepOnce(input),
   advance: (n: number, input?: StepInput) => { for (let i = 0; i < n; i++) stepOnce(input); return summary(); },
   stepFrames: (n: number, input?: StepInput) => { for (let i = 0; i < n; i++) stepOnce(input); render(); updateHud(); return summary(); },
@@ -363,8 +492,8 @@ async function boot(): Promise<void> {
   const world = buildWorld(data);
   mark("scene built");
   app = createAuraApp(canvas, {
-    autoStart: false, resize: false, pixelRatio: 1,
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+    autoStart: false, resize: false, pixelRatio: DPR,
+    quality: "auto",
     output: { toneMapping: (params.get("tm") as "aces" | "neutral" | "none" | "linear" | "agx" | null) ?? "none", exposure: Number(params.get("ev") ?? 1), dither: false },
     scene: sim.timeOfDay === "night" ? world.nightScene : world.scene
   });

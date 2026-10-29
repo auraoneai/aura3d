@@ -64,9 +64,14 @@ describe("port replay matches the original's economy and timing", () => {
     result.loopScores.forEach((score, i) => expect(Math.abs(score - ref.loops[i]!.score) / ref.loops[i]!.score).toBeLessThan(0.0015));
   });
 
-  it("completes each service with the original's grade and starts the next with the same score carried", () => {
+  it("completes each service and starts the next with the same score carried; Gold is reachable without requests (D-06)", () => {
     expect(result.final.attempt.status).toBe("complete");
-    expect(result.final.attempt.grade).toBe("Silver");
+    // The original graded this clean run Silver because Gold also needed three requests, which are not ported (audit D-06).
+    // The port grades Gold on comfort >= 90% with no catches, which this controller run meets.
+    const a = result.final.attempt;
+    expect(a.catches).toBe(0);
+    expect((a.comfort / a.distance) * 100).toBeGreaterThanOrEqual(90);
+    expect(a.grade).toBe("Gold");
     expect(result.final.circuits).toBe(1);
   });
 
