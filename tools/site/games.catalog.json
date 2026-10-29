@@ -46,7 +46,7 @@
    "genre": "racing",
    "verification": "playable",
    "evidenceFolder": "teleoperator",
-   "text": "San Francisco autonomous fleet &amp; street teleoperation — pilot an Apex Lidar Cruiser, Cyber Coupe, Titan EV Truck, or Vortex GT with L5 self-driving fares, vector minimap, and multiplayer peer tags."
+   "text": "San Francisco robotaxi shifts: stop at kerb beacons to pick up and drop off five fares, five driver-assist levels, AI rival cars, signals and a scored results screen."
   },
   {
    "appFolder": "showcase-iron-crown",
@@ -76,7 +76,7 @@
    "genre": "sports",
    "verification": "playable",
    "evidenceFolder": "aura-hoops-3d",
-   "text": "3v3 streetball — ankle-breaker jukes, alley-oops off the glass, and a press-hold-release shot meter across six courts from Rucker asphalt to the Orbit dome. Dunk Lab, Handles Lab, 8 squads, and a 32-team Street Tour."
+   "text": "5v5 streetball: check ball, a timed shot meter, contested dunks and team kits across six courts from Rucker asphalt to the Orbit dome. Dunk Lab, Handles Lab, a squad picker and a 32-team Street Tour."
   },
   {
    "appFolder": "showcase-aura-diamond-3d",
