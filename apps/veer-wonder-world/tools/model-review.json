@@ -379,5 +379,35 @@
   "reviewer": "agent:claude-opus-5.5",
   "date": "2026-10-29",
   "notes": "Not generated (capacity); a simple red sun hat is drawn procedurally."
+ },
+ "letterBLower": {
+  "status": "procedural",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Drawn procedurally by design: a lowercase b (stem and round bowl) in the uppercase B's blue, for the 05 section 1 upper and lower case rule (E03)."
+ },
+ "letterALower": {
+  "status": "procedural",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Drawn procedurally by design: a single-storey lowercase a (round bowl and stem) in the uppercase A's red, for the 05 section 1 upper and lower case rule (E04)."
+ },
+ "toothbrush": {
+  "status": "procedural",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Drawn procedurally by design: a mint toothbrush with white bristles for E19's brush routine."
+ },
+ "sun": {
+  "status": "procedural",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Drawn procedurally by design: a warm yellow sun with soft rays (no face, no flashing glow) for E19's morning hook."
+ },
+ "candleFlame": {
+  "status": "procedural",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Drawn procedurally by design: a small warm teardrop flame that sits on the cake's candle (the flame was cut from the cake model), so E16 can show the pretend candle lit and blown out. Its glow is steady and never flashes."
  }
 }

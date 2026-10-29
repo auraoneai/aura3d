@@ -75,7 +75,8 @@ Browser specs (J08-J13) and the production build with `aura3d check-deploy --bro
 ```bash
 apps/veer-wonder-world/tools/remote-run.sh                         # every tests/browser/wonder-world-*.spec.ts
 apps/veer-wonder-world/tools/remote-run.sh first-frame touch-and-layout
-apps/veer-wonder-world/tools/remote-run.sh build                   # Vite build + check-deploy --browser
+apps/veer-wonder-world/tools/remote-run.sh build                   # Vite build, served-bundle privacy scan, check-deploy --browser
+apps/veer-wonder-world/tools/remote-run.sh look                    # look-dev frames of the six worlds (src/scenes/LOOK-BRIEF.md)
 ```
 
 Results land in `tests/reports/remote-acr/<RUN_ID>/`; copy what you keep into `evidence/veer-wonder-world/`. Software WebGL2 results are not real-GPU or device evidence.
@@ -93,6 +94,7 @@ Page switches:
 | `?autostart=1` | No start screen; sound stays locked until the first real tap |
 | `?manual=1` | No live loop: only QA calls move story time (deterministic captures) |
 | `?models=0` | Primitive stand-ins instead of the admitted models |
+| `?modelWaitMs=N` | How long a story load waits for its models before drawing stand-ins (default 10 s, clamped to 1-300 s): for captures on slow software WebGL2 |
 | `?reducedMotion=1` | Calm motion for this page load |
 | `?audio=0` | No sound at all: captions and caption timing |
 | `?seed=N` | Recorded in the QA hooks (the content is deterministic) |

@@ -9,7 +9,8 @@
 //   traceRow(), frame(), pixels(), info(), routeHealth(), nodeCount(), plus
 //   startStory(id, mode), advance(ms), runToEnd(maxMs?), tap(id),
 //   parentConfirm(), pause(), resume(), allDone(), skipBeat(),
-//   setReducedMotion(on), targetRects(), diagnostics().
+//   setReducedMotion(on), targetRects(), diagnostics(), and for the character
+//   sheet captures nodeRects(ids), stageApply(actions), setTalking(actor).
 //
 // Time: every hook that moves time moves the story clock in fixed 50 ms steps
 // (`stepFrames(n)` is n steps); nothing reads a wall clock. With `?manual=1`
@@ -19,7 +20,7 @@
 import { installQaHooks, qaHookGlobalName, type InstalledQaHooks } from "@aura3d/engine";
 import { STEP_MS, type RunToEndResult, type WonderApp, type WonderDiagnostics, type WonderState } from "../app.js";
 import type { TargetRect } from "../scenes/stage.js";
-import type { PlayMode } from "../types.js";
+import type { PlayMode, StageAction } from "../types.js";
 
 /** The QA hook id; the global is `__AURA_WONDER_WORLD__`. */
 export const QA_HOOK_NAME = "wonder-world";
@@ -41,6 +42,9 @@ export type WonderQaApp = Pick<
   | "skipBeat"
   | "setReducedMotion"
   | "targetRects"
+  | "nodeRects"
+  | "stageApply"
+  | "setTalking"
   | "diagnostics"
   | "begin"
   | "reset"
@@ -66,6 +70,12 @@ export interface WonderQaExtras {
   setReducedMotion(on: boolean): void;
   /** Active tap targets in viewport CSS px, for real pointer taps. */
   targetRects(): TargetRect[];
+  /** Drawn bounds of the given scene nodes in viewport CSS px (character sheet crops). */
+  nodeRects(ids: readonly string[]): TargetRect[];
+  /** Applies stage actions to the running story at once (pose and turnaround sheets); no story event. */
+  stageApply(actions: readonly StageAction[]): void;
+  /** Starts (actor id) or stops (null) a talking pulse without a line. */
+  setTalking(actor: string | null): void;
   diagnostics(): WonderDiagnostics;
 }
 
@@ -255,6 +265,9 @@ export function installWonderQaHooks(app: WonderQaApp, options: WonderQaOptions 
     skipBeat: () => app.skipBeat(),
     setReducedMotion: (on) => app.setReducedMotion(on),
     targetRects: () => app.targetRects(),
+    nodeRects: (ids) => app.nodeRects(Array.isArray(ids) ? ids.filter((id): id is string => typeof id === "string") : []),
+    stageApply: (actions) => app.stageApply(Array.isArray(actions) ? actions : []),
+    setTalking: (actor) => app.setTalking(typeof actor === "string" ? actor : null),
     diagnostics: () => app.diagnostics()
   };
   return installQaHooks<WonderState, Record<string, never>, WonderQaExtras>(QA_HOOK_NAME, {

@@ -3,7 +3,7 @@
 import { defineModelAssets, type AuraAssetRef } from "@aura3d/engine";
 
 /** Every model key the app knows about, admitted or not. */
-export const MODEL_KEYS = ["momo","lulu","sheru","gogo","gogoCarriage","lumi","peeko","teddy","robot","cow","sheep","duck","horse","bird","butterfly","ball","bubbleWand","cookie","plate","mirror","door","letterB","letterA","apple","banana","cake","drum","shaker","toyPiano","picnicBasket","car","sponge","towel","toyBlock","lift","flower","flowerBud","tree","bush","barn","station","tunnel","house","bed","sink","table","chair","cushion","toyBox","bench","colourMachine","storyBox","pastryCircle","pastrySquare","pastryTriangle","hat","stompStone","cloud","balloon"] as const;
+export const MODEL_KEYS = ["momo","lulu","sheru","gogo","gogoCarriage","lumi","peeko","teddy","robot","cow","sheep","duck","horse","bird","butterfly","ball","bubbleWand","cookie","plate","mirror","door","letterB","letterA","apple","banana","cake","drum","shaker","toyPiano","picnicBasket","car","sponge","towel","toyBlock","lift","flower","flowerBud","tree","bush","barn","station","tunnel","house","bed","sink","table","chair","cushion","toyBox","bench","colourMachine","storyBox","pastryCircle","pastrySquare","pastryTriangle","hat","stompStone","cloud","balloon","letterBLower","letterALower","toothbrush","sun","candleFlame"] as const;
 export type ModelKey = (typeof MODEL_KEYS)[number];
 
 export const models = defineModelAssets(
@@ -135,10 +135,15 @@ export const MODEL_INFO: Readonly<Record<ModelKey, ModelInfo>> = {
   stompStone: { admitted: false, rigged: false, clips: [], heightM: 0.15, procedural: true },
   cloud: { admitted: false, rigged: false, clips: [], heightM: 1.2, procedural: true },
   balloon: { admitted: false, rigged: false, clips: [], heightM: 0.6, procedural: true },
+  letterBLower: { admitted: false, rigged: false, clips: [], heightM: 0.6, procedural: true },
+  letterALower: { admitted: false, rigged: false, clips: [], heightM: 0.5, procedural: true },
+  toothbrush: { admitted: false, rigged: false, clips: [], heightM: 0.4, procedural: true },
+  sun: { admitted: false, rigged: false, clips: [], heightM: 0.8, procedural: true },
+  candleFlame: { admitted: false, rigged: false, clips: [], heightM: 0.07, procedural: true },
 };
 
 /** Keys drawn procedurally by design (see tools/model-review.json). */
-export const PROCEDURAL_MODELS: readonly ModelKey[] = ["ball","bush","hat","stompStone","cloud","balloon"];
+export const PROCEDURAL_MODELS: readonly ModelKey[] = ["ball","bush","hat","stompStone","cloud","balloon","letterBLower","letterALower","toothbrush","sun","candleFlame"];
 
 /** The typed ref of an admitted model, or undefined when the file is not admitted (the scene draws a stand-in). */
 export function modelRef(key: ModelKey): AuraAssetRef<"model"> | undefined {

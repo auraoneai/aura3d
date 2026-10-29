@@ -14,7 +14,7 @@
 // panel (renderer string, draw calls, shader and context-loss errors).
 //
 // Page switches: `?story=<id>` `?mode=watch-sing|play-together` `?autostart=1`
-// `?manual=1` `?models=0` `?reducedMotion=1` `?audio=0` `?seed=N` `?diag=1`.
+// `?manual=1` `?models=0` `?modelWaitMs=N` `?reducedMotion=1` `?audio=0` `?seed=N` `?diag=1`.
 // None of them can turn on a microphone (src/runtime/feature-flags.ts).
 //
 // Nothing is logged to the console. A boot failure is recorded on

@@ -75,7 +75,7 @@ export interface CharacterProfile {
 export const GESTURES: readonly Gesture[] = [
   "idle", "wave", "talk", "point", "happy", "cheer", "dance", "hop", "nod", "look",
   "sleep", "eat", "wake", "sway", "mirror", "pickUp", "shrug", "wag", "sniff", "bark",
-  "sit", "clap", "stomp", "freeze", "peek", "hide", "float", "glow", "blink", "bow"
+  "sit", "clap", "stomp", "freeze", "peek", "hide", "float", "glow", "blink", "bow", "surprise", "wait"
 ];
 
 /**
@@ -112,7 +112,11 @@ export const SHARED_GESTURES: Readonly<Record<Gesture, GestureMotionSpec>> = {
   float: gestureMotion([proc("float", 2.6, 0.08)]),
   glow: gestureMotion([proc("pulse", 2.0, 0.05)], { halo: true }),
   blink: gestureMotion([proc("squash", 0.3, 0.06)]),
-  bow: gestureMotion([proc("bow", 1.4, 0.38)])
+  bow: gestureMotion([proc("bow", 1.4, 0.38)]),
+  // Surprised: a quick small stretch up and a little hop, then back (02 section 2 expression sheet).
+  surprise: gestureMotion([proc("stretch", 0.8, 0.12), proc("hop", 0.8, 0.06)]),
+  // Waiting: lean in a little toward the child and hold still, attentive (01 section 3.1: wait, do not ask again).
+  wait: gestureMotion([proc("lean", 1.0, 0.1)], { hold: true })
 };
 
 /** Gentle breathing for characters at rest. */

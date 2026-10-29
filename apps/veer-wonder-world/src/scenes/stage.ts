@@ -174,6 +174,8 @@ export interface WonderStage extends StageAdapter {
   diagnostics(): StageDiagnostics;
   /** CSS-px rectangles (relative to the canvas) of the active, visible touch targets: the generous hit areas. */
   targetRects(): TargetRect[];
+  /** Viewport CSS-px rectangles of the drawn bounds of the given nodes (shown ones only): QA region captures. */
+  nodeRects(ids: readonly string[]): TargetRect[];
   /** The mounted `createGame` handle. */
   game(): Prd09Game<string, string>;
   snapshot(): StageSnapshot;
@@ -1627,6 +1629,21 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       for (const n of pickableTargets()) {
         const rect = targetRectFor(candidateOf(n), pose, width, height);
         if (rect) out.push(rect);
+      }
+      return out;
+    },
+    nodeRects(ids) {
+      if (disposed || !mounted) return [];
+      const { width, height } = canvasCssSize();
+      if (width <= 0 || height <= 0) return [];
+      const pose = cameraPoseNow();
+      const out: TargetRect[] = [];
+      for (const id of ids) {
+        const n = nodes.get(id);
+        if (!n || !isShown(n)) continue;
+        const c = candidateOf(n);
+        const rect = boxToCssRect(standingBox(c.base, c.size), pose, width / height, width, height);
+        if (rect) out.push({ id, x: rect.x, y: rect.y, w: rect.w, h: rect.h });
       }
       return out;
     },

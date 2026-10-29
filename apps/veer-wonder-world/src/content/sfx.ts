@@ -2,7 +2,9 @@
 //
 // Every effect is soft, gentle, short and never startling: one sound at a
 // time, low volume, no echo, no harsh or sudden peaks. Sheru never speaks; his
-// friendly single bark is `woof`. `prompt` goes to the sound generator
+// reactions are a bark bank of nine friendly sounds (02 section 2: 8-15
+// non-speaking reactions): `woof` plus `woofSoft` ... `aroo`, none of them a
+// growl, whine or whimper. `prompt` goes to the sound generator
 // (ElevenLabs sound-generation through Kiro Prism, tools/gen-audio.ts);
 // `gain` (0-1) scales the effect on the SFX bus, which already sits below the
 // voice bus, so an effect never plays louder than speech.
@@ -49,7 +51,16 @@ export const SFX: Record<SfxId, SfxSpec> = {
   rumble: { prompt: "a soft, funny little cartoon tummy rumble, a gentle gurgle, quiet", durationSec: 1, gain: 0.35 },
   blow: { prompt: "a soft, gentle breath blowing out a pretend candle, a light whoo, quiet", durationSec: 1, gain: 0.4 },
   beep: { prompt: "a soft, friendly little toy robot beep-boop, two gentle tones, quiet", durationSec: 0.8, gain: 0.35 },
-  rustle: { prompt: "a soft, gentle rustle of leaves in a small bush, quiet and calm", durationSec: 1.2, gain: 0.3 }
+  rustle: { prompt: "a soft, gentle rustle of leaves in a small bush, quiet and calm", durationSec: 1.2, gain: 0.3 },
+  // Sheru's bark bank (with `woof`).
+  woofSoft: { prompt: "one very soft, low, gentle cartoon puppy woof, warm and calm, quiet, no growl, no echo", durationSec: 0.7, gain: 0.45 },
+  woofDouble: { prompt: "two soft, happy cartoon puppy barks, woof woof, friendly and gentle, low volume, no growl, no echo", durationSec: 1, gain: 0.45 },
+  yip: { prompt: "one short, happy little puppy yip, cute and gentle, quiet, not shrill", durationSec: 0.5, gain: 0.4 },
+  arf: { prompt: "one short, playful cartoon puppy arf, friendly and soft, low volume", durationSec: 0.5, gain: 0.45 },
+  pant: { prompt: "a happy puppy panting softly for a moment, gentle and cute, quiet", durationSec: 1.5, gain: 0.35 },
+  sniffs: { prompt: "a cute puppy sniffing softly three times, gentle and quiet", durationSec: 1, gain: 0.4 },
+  huff: { prompt: "one soft, playful puppy huff through the nose, a gentle friendly snort, quiet", durationSec: 0.5, gain: 0.4 },
+  aroo: { prompt: "one tiny, soft, happy cartoon puppy aroo, short and gentle, quiet, not a howl", durationSec: 1, gain: 0.35 }
 };
 
 /** Shortest and longest effect lengths (seconds) the generator is asked for. */

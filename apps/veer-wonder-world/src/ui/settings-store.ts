@@ -9,7 +9,7 @@
 // here leaves the device.
 
 import { isWordId } from "../content/words.js";
-import type { ParentSettings, PlayMode } from "../types.js";
+import type { ParentSettings, PlayMode, SfxVolume } from "../types.js";
 
 export type SettingsStorage = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
@@ -21,6 +21,7 @@ export const PARENT_SETTINGS_FIELDS: readonly (keyof ParentSettings)[] = [
   "mode",
   "music",
   "sound",
+  "sfxVolume",
   "captions",
   "reducedMotion",
   "highContrast",
@@ -48,12 +49,15 @@ export const WORD_ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,31}$/;
 const MAX_STORED_LENGTH = 4096;
 
 const PLAY_MODES: readonly PlayMode[] = ["play-together", "watch-sing"];
+/** The sound-effect levels a grown-up can pick (01 section 9). */
+export const SFX_VOLUMES: readonly SfxVolume[] = ["off", "soft", "normal"];
 
 export function defaultSettings(prefersReducedMotion = false): ParentSettings {
   return {
     mode: "play-together",
     music: true,
     sound: true,
+    sfxVolume: "normal",
     captions: true,
     reducedMotion: prefersReducedMotion,
     highContrast: false,
@@ -104,10 +108,12 @@ export function sanitizeSettings(raw: unknown, defaults: ParentSettings = defaul
   const modeValue = raw["mode"];
   const localeValue = raw["locale"];
   const waitValue = raw["waitMs"];
+  const sfxValue = raw["sfxVolume"];
   return {
     mode: PLAY_MODES.find((mode) => mode === modeValue) ?? defaults.mode,
     music: pickBoolean(raw, "music", defaults.music),
     sound: pickBoolean(raw, "sound", defaults.sound),
+    sfxVolume: SFX_VOLUMES.find((level) => level === sfxValue) ?? defaults.sfxVolume,
     captions: pickBoolean(raw, "captions", defaults.captions),
     reducedMotion: pickBoolean(raw, "reducedMotion", defaults.reducedMotion),
     highContrast: pickBoolean(raw, "highContrast", defaults.highContrast),

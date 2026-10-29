@@ -154,6 +154,15 @@ describe("feature flags", () => {
     expect(readFlags("?diag=1&reducedMotion=1")).toMatchObject({ diag: true, reducedMotion: true });
     expect(readFlags("?diag=0")).toMatchObject({ diag: false });
   });
+
+  it("reads ?modelWaitMs as a bounded preload wait, and nothing without it", () => {
+    expect(readFlags("").modelWaitMs).toBeNull();
+    expect(readFlags("?modelWaitMs=0").modelWaitMs).toBeNull();
+    expect(readFlags("?modelWaitMs=abc").modelWaitMs).toBeNull();
+    expect(readFlags("?modelWaitMs=180000").modelWaitMs).toBe(180_000);
+    expect(readFlags("?modelWaitMs=50").modelWaitMs).toBe(1_000);
+    expect(readFlags("?modelWaitMs=9999999").modelWaitMs).toBe(300_000);
+  });
 });
 
 describe("locale", () => {

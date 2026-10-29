@@ -71,7 +71,8 @@ export const PROP_ASSET_IDS = complete<PropAssetId>()([
   "cookie", "plate", "mirror", "door", "letterB", "letterA", "apple", "banana", "cake", "drum", "shaker", "toyPiano",
   "picnicBasket", "car", "sponge", "towel", "toyBlock", "lift", "flower", "flowerBud", "tree", "bush", "barn", "station",
   "tunnel", "house", "bed", "sink", "table", "chair", "cushion", "toyBox", "bench", "colourMachine", "storyBox",
-  "pastryCircle", "pastrySquare", "pastryTriangle", "hat", "stompStone", "cloud", "balloon"
+  "pastryCircle", "pastrySquare", "pastryTriangle", "hat", "stompStone", "cloud", "balloon", "letterBLower", "letterALower",
+  "toothbrush", "sun", "candleFlame"
 ]);
 export const SPOT_IDS = complete<SpotId>()([
   "center", "left", "right", "farLeft", "farRight", "front", "frontLeft", "frontRight", "back", "backLeft", "backRight",
@@ -80,7 +81,8 @@ export const SPOT_IDS = complete<SpotId>()([
 export const OFF_SPOTS: readonly SpotId[] = ["offLeft", "offRight", "offTop", "offBelow"];
 export const GESTURES = complete<Gesture>()([
   "idle", "wave", "talk", "point", "happy", "cheer", "dance", "hop", "nod", "look", "sleep", "eat", "wake", "sway", "mirror",
-  "pickUp", "shrug", "wag", "sniff", "bark", "sit", "clap", "stomp", "freeze", "peek", "hide", "float", "glow", "blink", "bow"
+  "pickUp", "shrug", "wag", "sniff", "bark", "sit", "clap", "stomp", "freeze", "peek", "hide", "float", "glow", "blink", "bow",
+  "surprise", "wait"
 ]);
 export const OBJECT_ACTIONS = complete<ObjectAction>()([
   "roll", "pop", "open", "close", "bounce", "wobble", "spin", "fall", "rise", "glow", "shrink", "grow", "bloom", "wash", "dry",

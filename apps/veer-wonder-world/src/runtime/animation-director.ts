@@ -75,7 +75,9 @@ export const GESTURE_CLIP_SECONDS: Readonly<Record<Gesture, number>> = {
   float: 2.6,
   glow: 2.0,
   blink: 0.4,
-  bow: 1.4
+  bow: 1.4,
+  surprise: 0.8,
+  wait: 1.0
 };
 
 export interface GesturePlan {

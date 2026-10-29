@@ -50,7 +50,7 @@ const blockedStorage: SettingsStorage = {
   }
 };
 
-const SETTINGS_FIELDS = ["captions", "highContrast", "locale", "mode", "music", "reducedMotion", "sound", "waitMs", "wordList"];
+const SETTINGS_FIELDS = ["captions", "highContrast", "locale", "mode", "music", "reducedMotion", "sfxVolume", "sound", "waitMs", "wordList"];
 
 /** Field names that would identify a child or family; none may ever be stored. */
 const IDENTITY_FIELDS = [
@@ -70,11 +70,12 @@ function storedRecord(storage: MemoryStorage): Record<string, unknown> {
 }
 
 describe("settings defaults", () => {
-  it("are play together, music, sound and captions on, 5 s wait, English, no words", () => {
+  it("are play together, music, sound and captions on, normal effects, 5 s wait, English, no words", () => {
     expect(defaultSettings()).toEqual({
       mode: "play-together",
       music: true,
       sound: true,
+      sfxVolume: "normal",
       captions: true,
       reducedMotion: false,
       highContrast: false,
@@ -121,6 +122,7 @@ describe("settings round trip", () => {
       mode: "watch-sing",
       music: false,
       sound: true,
+      sfxVolume: "soft",
       captions: false,
       reducedMotion: true,
       highContrast: true,

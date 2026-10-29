@@ -534,6 +534,56 @@
    "prompt": "a single round shiny toy balloon with a short curly string, bright red",
    "heightM": 0.6,
    "face": false
+  },
+  {
+   "key": "letterBLower",
+   "role": "prop",
+   "rig": false,
+   "poly": 2000,
+   "prompt": "a chunky rounded lowercase letter b toy, bright blue",
+   "heightM": 0.6,
+   "face": false,
+   "procedural": true
+  },
+  {
+   "key": "letterALower",
+   "role": "prop",
+   "rig": false,
+   "poly": 2000,
+   "prompt": "a chunky rounded lowercase letter a toy, bright red",
+   "heightM": 0.5,
+   "face": false,
+   "procedural": true
+  },
+  {
+   "key": "toothbrush",
+   "role": "prop",
+   "rig": false,
+   "poly": 2000,
+   "prompt": "a small toddler toothbrush with a mint green handle and white bristles",
+   "heightM": 0.4,
+   "face": false,
+   "procedural": true
+  },
+  {
+   "key": "sun",
+   "role": "prop",
+   "rig": false,
+   "poly": 2000,
+   "prompt": "a round warm yellow toy sun with short soft rays, no face",
+   "heightM": 0.8,
+   "face": false,
+   "procedural": true
+  },
+  {
+   "key": "candleFlame",
+   "role": "prop",
+   "rig": false,
+   "poly": 500,
+   "prompt": "a small soft warm candle flame",
+   "heightM": 0.07,
+   "face": false,
+   "procedural": true
   }
  ],
  "characterStyle": "cute preschool cartoon character, soft rounded shapes, smooth matte clay-like material, bright saturated colors, simple chunky readable shapes, big friendly eyes, closed gentle smile, no teeth, no text, no logos, no brand marks",

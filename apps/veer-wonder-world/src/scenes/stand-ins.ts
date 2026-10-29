@@ -128,6 +128,11 @@ export const ASSET_TRAITS: Readonly<Record<StageAssetKey, AssetTraits>> = {
   stompStone: trait(5, 5, "surface", { restAt: 1, tintMode: "replace" }),
   cloud: trait(1.6, 0.9, "plain", { floats: true, idle: "float", defaultStyle: "float" }),
   balloon: trait(0.8, 0.8, "plain", { floats: true, idle: "sway", tintMode: "replace", defaultStyle: "float" }),
+  letterBLower: trait(0.7, 0.25, "plain", { tintMode: "replace" }),
+  letterALower: trait(1.0, 0.25, "plain", { tintMode: "replace" }),
+  toothbrush: trait(0.5, 0.4, "plain"),
+  sun: trait(1.0, 0.35, "plain", { floats: true, defaultStyle: "float" }),
+  candleFlame: trait(0.55, 0.55, "plain"),
   bubble: trait(1, 1, "plain", { round: true, floats: true, idle: "float", defaultStyle: "float" })
 };
 
@@ -494,6 +499,35 @@ export const STAND_INS: Readonly<Record<StageAssetKey, StandInRecipe>> = {
   balloon: r(piece("sphere", "#E4574B", [0.75, 0.86, 0.75], [0, 0.58, 0], { roughness: 0.3 }), [
     piece("cylinder", "#F5F2EC", [0.015, 0.36, 0.015], [0, 0.18, 0]),
     piece("sphere", "#E4574B", [0.08, 0.08, 0.08], [0, 0.15, 0], { tinted: true })
+  ]),
+  // Lowercase letters (05 section 1: one clear uppercase and lowercase letter), in their capitals' colours.
+  // b: a full-height stem and a round bowl at the bottom right (chunky torus, outer radius 0.63 * size).
+  letterBLower: r(piece("box", "#3F7FD9", [0.22, 1, 0.24], [-0.2, 0.5, 0]), [
+    piece("torus", "#3F7FD9", [0.476, 0.476, 0.55], [0.05, 0.3, 0], { tube: 0.2, tinted: true })
+  ]),
+  // a: the single-storey form toddler books use, a round bowl with a stem on its right.
+  letterALower: r(piece("box", "#E4574B", [0.2, 0.9, 0.24], [0.29, 0.45, 0]), [
+    piece("torus", "#E4574B", [0.714, 0.714, 0.55], [-0.08, 0.45, 0], { tube: 0.2, tinted: true })
+  ]),
+  // A toddler toothbrush standing on its handle: mint handle, white bristles at the top.
+  toothbrush: r(piece("capsule", "#7ED6AE", [0.12, 0.86, 0.12], [0, 0.43, 0], { roughness: 0.45 }), [
+    piece("box", "#7ED6AE", [0.14, 0.16, 0.12], [0, 0.9, 0], { roughness: 0.45 }),
+    piece("box", "#FFFFFF", [0.1, 0.18, 0.2], [0, 0.9, 0.1], { roughness: 0.8 })
+  ]),
+  // The cake candle's flame: a warm teardrop with a brighter core. Its glow is steady and never flashes.
+  candleFlame: r(piece("sphere", "#FFB347", [0.55, 0.62, 0.55], [0, 0.3, 0], { roughness: 0.4, emissive: { color: "#FFB347", intensity: 0.45 } }), [
+    piece("cone", "#FFC864", [0.42, 0.62, 0.42], [0, 0.68, 0], { roughness: 0.4, emissive: { color: "#FFC864", intensity: 0.45 } }),
+    piece("sphere", "#FFF1C4", [0.26, 0.3, 0.26], [0, 0.3, 0.12], { roughness: 0.3, emissive: { color: "#FFF1C4", intensity: 0.5 } })
+  ]),
+  // A warm sun with eight soft rays (no face; the glow is steady and never flashes).
+  sun: r(piece("sphere", "#FFC94A", [0.62, 0.62, 0.4], [0, 0.5, 0], { roughness: 0.6, emissive: { color: "#FFD36B", intensity: 0.25 } }), [
+    ...[0, 1, 2, 3, 4, 5, 6, 7].map((k) => {
+      const a = (k * Math.PI) / 4;
+      return piece("cone", "#FFB938", [0.12, 0.16, 0.1], [Math.cos(a) * 0.44, 0.5 + Math.sin(a) * 0.44, 0], {
+        rotation: [0, 0, a - Math.PI / 2],
+        emissive: { color: "#FFD36B", intensity: 0.2 }
+      });
+    })
   ]),
   bubble: r(piece("sphere", "#DDF3FF", [1, 1, 1], [0, 0.5, 0], {
     roughness: 0.08,

@@ -36,14 +36,24 @@ export interface WonderFlags extends FeatureFlags {
   readonly audio: boolean;
   /** `?reducedMotion=1`: force reduced motion (QA captures); the parent setting still applies too. */
   readonly reducedMotion: boolean;
+  /**
+   * `?modelWaitMs=N`: how long a story load waits for its models before drawing stand-ins (default: the
+   * preloader's 10 s; clamped to 1-300 s). For captures on slow software WebGL2, where a model download can outlast
+   * the default wait; a device never needs it.
+   */
+  readonly modelWaitMs: number | null;
 }
 
 const PAGE_PARAMS = {
   models: { type: "string", default: "1" },
   diag: { type: "flag" },
   audio: { type: "string", default: "1" },
-  reducedMotion: { type: "flag" }
+  reducedMotion: { type: "flag" },
+  modelWaitMs: { type: "int", default: -1 }
 } as const;
+
+const MODEL_WAIT_MIN_MS = 1_000;
+const MODEL_WAIT_MAX_MS = 300_000;
 
 const OFF_VALUES: readonly string[] = ["0", "false", "off", "no"];
 
@@ -62,6 +72,7 @@ export function readFlags(search: string): WonderFlags {
     models: !switchedOff(page.models),
     diag: page.diag,
     audio: !switchedOff(page.audio),
-    reducedMotion: page.reducedMotion
+    reducedMotion: page.reducedMotion,
+    modelWaitMs: page.modelWaitMs > 0 ? Math.min(MODEL_WAIT_MAX_MS, Math.max(MODEL_WAIT_MIN_MS, page.modelWaitMs)) : null
   });
 }

@@ -74,7 +74,7 @@ import {
 } from "@aura3d/engine/audio";
 import type { GameAudioOptions } from "@aura3d/engine";
 import type { AUDIO_MANIFEST } from "../audio-manifest.js";
-import type { AudioClipRef, MusicBedId, SfxId, SongId } from "../types.js";
+import type { AudioClipRef, MusicBedId, SfxId, SfxVolume, SongId } from "../types.js";
 
 export type AudioManifest = typeof AUDIO_MANIFEST;
 
@@ -107,6 +107,9 @@ export const CLIP_LEVELS = {
   sfxMaxPeak: 0.5,
   musicMaxRms: 0.18
 } as const;
+
+/** The grown-up's sound-effect levels as multipliers of the SFX bus cap (never above it). */
+export const SFX_VOLUME_SCALE: Readonly<Record<SfxVolume, number>> = { off: 0, soft: 0.5, normal: 1 };
 
 export const AUDIO_LIMITS = {
   /** The same SFX id does not restart within this many seconds. */
@@ -226,6 +229,8 @@ export interface AudioMixer {
   duck(on: boolean): void;
   setMusicEnabled(enabled: boolean): void;
   setSoundEnabled(enabled: boolean): void;
+  /** The grown-up's sound-effect level: off, soft (half the capped level) or normal (the cap). Voices and songs keep theirs. */
+  setSfxVolume(level: SfxVolume): void;
   /** Freezes every voice, song and bed at its position and drops SFX. */
   pauseAll(): void;
   /** Continues everything pauseAll() froze. Best called from a user gesture. */
@@ -400,6 +405,7 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
 
   let musicEnabled = options.musicEnabled;
   let soundEnabled = options.soundEnabled;
+  let sfxScale = SFX_VOLUME_SCALE.normal;
   let disposed = false;
   let graph: Graph | null = null;
   let graphFailed = false;
@@ -518,7 +524,7 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
     return {
       voice: AUDIO_LEVELS.voice,
       song: ducked ? AUDIO_LEVELS.songUnderVoice : AUDIO_LEVELS.song,
-      sfx: AUDIO_LEVELS.sfx,
+      sfx: AUDIO_LEVELS.sfx * sfxScale,
       bed: songTrack ? AUDIO_LEVELS.bedUnderSong : ducked ? AUDIO_LEVELS.bedDucked : AUDIO_LEVELS.bed
     };
   }
@@ -957,7 +963,8 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
     },
 
     playSfx(id: SfxId): void {
-      if (!effectsLive()) return;
+      // Sound effects switched off by the grown-up are not even fetched.
+      if (!effectsLive() || sfxScale === 0) return;
       const ref = manifest.sfx[id];
       if (!ref || failedUrls.has(ref.url)) return;
       const requestedAt = activeClock();
@@ -1027,6 +1034,14 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
       musicEnabled = enabled;
       if (!enabled) stopSongInternal();
       syncBed();
+      applyLevels();
+    },
+
+    setSfxVolume(level: SfxVolume): void {
+      const scale = SFX_VOLUME_SCALE[level];
+      if (disposed || scale === undefined || scale === sfxScale) return;
+      sfxScale = scale;
+      if (scale === 0) stopAllSfx();
       applyLevels();
     },
 

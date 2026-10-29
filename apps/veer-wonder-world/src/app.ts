@@ -97,6 +97,9 @@ export const LINE_GRACE_MS = 1500;
 /** Taps on the same target closer than this are one tap (the touch router default). */
 export const TAP_DEBOUNCE_MS = 400;
 
+/** Most line keys one story's spoken log keeps (the longest story speaks under 80 lines; activities repeat rounds). */
+export const SPOKEN_LOG_MAX = 400;
+
 /**
  * The canvas binding's own repeat guard: none. The story runner's touch router
  * already debounces accepted taps (TAP_DEBOUNCE_MS), and a tap that ends a
@@ -368,6 +371,8 @@ export interface StoryRunner {
   activeTargets(): readonly string[];
   /** The line being spoken (or held), if any. */
   speakingLine(): LineRef | null;
+  /** Keys of the lines started in this story, in order (QA: the spoken-order check). */
+  spokenKeys(): readonly string[];
   snapshot(): DirectorSnapshot;
   started(): boolean;
   /** Why the story ended, or null while it runs. */
@@ -388,6 +393,7 @@ export function createStoryRunner(options: StoryRunnerOptions): StoryRunner {
   let disposed = false;
   let speaking: LineRef | null = null;
   let finished: FinishReason | null = null;
+  const spoken: string[] = [];
 
   const send = (event: DirectorEvent): DirectorEffect[] => {
     if (disposed) return [];
@@ -415,6 +421,7 @@ export function createStoryRunner(options: StoryRunnerOptions): StoryRunner {
     lineStarted(line) {
       if (disposed || finished !== null) return;
       speaking = line;
+      if (spoken.length < SPOKEN_LOG_MAX) spoken.push(line.key);
       sinks.captions.show(line.speaker, sinks.text.line(line.key));
       sinks.stage.setTalking(talkingActorFor(story, line.speaker));
     },
@@ -463,6 +470,7 @@ export function createStoryRunner(options: StoryRunnerOptions): StoryRunner {
     },
     activeTargets: () => router.active() ?? [],
     speakingLine: () => speaking,
+    spokenKeys: () => [...spoken],
     snapshot: () => director.snapshot(),
     started: () => begun,
     finishReason: () => finished,
@@ -513,6 +521,8 @@ export interface WonderState {
   readonly speaking: string | null;
   /** Speaker of that line. */
   readonly speaker: string | null;
+  /** Keys of every line started in the current (or last ended) story, in order. */
+  readonly spoken: readonly string[];
   readonly audio: { readonly unlocked: boolean; readonly available: boolean };
   readonly settings: {
     readonly mode: string;
@@ -560,6 +570,12 @@ export interface WonderApp {
   setReducedMotion(on: boolean): void;
   /** Active tap targets in viewport CSS px (for real pointer taps). */
   targetRects(): TargetRect[];
+  /** Drawn bounds of the given scene nodes in viewport CSS px (QA region captures). */
+  nodeRects(ids: readonly string[]): TargetRect[];
+  /** Applies stage actions to the running story's stage at once (QA pose and turnaround sheets); not a story event. */
+  stageApply(actions: readonly StageAction[]): void;
+  /** Starts or stops a character's talking pulse without a line (QA). */
+  setTalking(actor: string | null): void;
   diagnostics(): WonderDiagnostics;
   /** Leaves the start screen without unlocking audio (QA). */
   begin(): void;
@@ -637,6 +653,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
 
   // ---- audio: one mixer (the one AudioContext), one narration player on story time
   const mixer = createAudioMixer({ manifest: AUDIO_MANIFEST, musicEnabled: settings.music, soundEnabled: settings.sound });
+  mixer.setSfxVolume(settings.sfxVolume);
   /** True when sound cannot play at all this session (no Web Audio, `?audio=0`, or the start tap could not unlock it). */
   let audioFailed = !flags.audio || mixer.manager === null;
   const clock = createStoryClock();
@@ -691,7 +708,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
   let storyToken = 0;
   const pauseReasons = new Set<PauseReason>();
   /** The story whose offline card is showing, with its final director snapshot. */
-  let ended: { readonly storyId: string; readonly snapshot: DirectorSnapshot } | null = null;
+  let ended: { readonly storyId: string; readonly snapshot: DirectorSnapshot; readonly spoken: readonly string[] } | null = null;
   let initialStory: StorySpec | null = null;
   if (query.story !== undefined && query.story.length > 0) {
     const found = findStory(query.story);
@@ -856,6 +873,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     settings = { ...next, wordList: [...next.wordList] };
     saveSettings(storage, settings);
     if (previous.music !== settings.music) mixer.setMusicEnabled(settings.music);
+    if (previous.sfxVolume !== settings.sfxVolume) mixer.setSfxVolume(settings.sfxVolume);
     if (previous.sound !== settings.sound) {
       mixer.setSoundEnabled(settings.sound);
       narration.setMuted(!settings.sound);
@@ -946,10 +964,11 @@ export function createApp(options: WonderAppOptions): WonderApp {
   const showOffline = (story: StorySpec, key: string): void => {
     if (disposed) return;
     const snapshot = active?.story === story ? active.runner.snapshot() : null;
+    const spoken = active?.story === story ? active.runner.spokenKeys() : [];
     endStory();
     closeScreens();
     screen = "offline";
-    ended = snapshot ? { storyId: story.id, snapshot } : null;
+    ended = snapshot ? { storyId: story.id, snapshot, spoken } : null;
     removeOffline = showOfflineCard(
       uiRoot,
       locale,
@@ -1138,6 +1157,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
     target: stageHost,
     reducedMotion: reducedMotionNow(),
     models: flags.models,
+    ...(flags.modelWaitMs !== null ? { modelTimeoutMs: flags.modelWaitMs } : {}),
     ...(flags.audio ? { sound: mixer.gameSoundOptions() } : {})
   }).then((created) => {
     if (disposed) {
@@ -1217,6 +1237,7 @@ export function createApp(options: WonderAppOptions): WonderApp {
         targets: current ? [...current.runner.activeTargets()] : [],
         speaking: line?.key ?? null,
         speaker: line?.speaker ?? null,
+        spoken: current ? current.runner.spokenKeys() : (ended?.spoken ?? []),
         audio: { unlocked: mixer.isUnlocked(), available: !audioFailed },
         settings: {
           mode: settings.mode,
@@ -1279,6 +1300,23 @@ export function createApp(options: WonderAppOptions): WonderApp {
       const left = box ? box.left : 0;
       const top = box ? box.top : 0;
       return rects.map((rect) => ({ id: rect.id, x: rect.x + left, y: rect.y + top, w: rect.w, h: rect.h }));
+    },
+    nodeRects(ids) {
+      const target = stage;
+      if (!target) return [];
+      const canvas = target.game().app.canvas;
+      const box = canvas ? canvas.getBoundingClientRect() : null;
+      const left = box ? box.left : 0;
+      const top = box ? box.top : 0;
+      return target.nodeRects(ids).map((rect) => ({ id: rect.id, x: rect.x + left, y: rect.y + top, w: rect.w, h: rect.h }));
+    },
+    stageApply(actions) {
+      if (disposed || !active) return;
+      stage?.apply(actions);
+    },
+    setTalking(actor) {
+      if (disposed || !active) return;
+      stage?.setTalking(actor);
     },
     diagnostics: stageDiagnostics,
     begin() {

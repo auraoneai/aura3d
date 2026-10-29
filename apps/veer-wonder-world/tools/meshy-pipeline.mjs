@@ -167,7 +167,8 @@ if (args.includes("--thumbs")) {
   }
   process.exit(0);
 }
-const queue = spec.assets.filter((a) => !only || only.has(a.key));
+// `procedural: true` assets are drawn from scene geometry by design and are never generated.
+const queue = spec.assets.filter((a) => !a.procedural && (!only || only.has(a.key)));
 const failures = [];
 let next = 0;
 await Promise.all(Array.from({ length: CONC }, async (_, w) => {
