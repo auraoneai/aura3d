@@ -436,3 +436,16 @@ describe("HUD possession bar layout", () => {
     expect(bar).not.toMatch(/top:/);
   });
 });
+
+describe("FC-21 day venues are not washed out", () => {
+  it("Lagos and Uyuni run lighter fog, softer bloom and lower exposure than the night venues", () => {
+    for (const v of ["lagos", "uyuni"] as const) {
+      expect(VENUE_LOOKS[v].fog).toBeLessThan(VENUE_LOOKS.munich.fog);
+      expect(VENUE_LOOKS[v].bloom.intensity).toBeLessThan(VENUE_LOOKS.munich.bloom.intensity);
+      expect(VENUE_LOOKS[v].bloom.threshold).toBeGreaterThan(VENUE_LOOKS.munich.bloom.threshold);
+      expect(VENUE_LOOKS[v].exposureEv).toBeLessThan(0);
+      const bloom = flat(v).nodes.find((n) => n.type === "effect" && /bloom/.test(String(n.effect ?? n.kind ?? n.name ?? "")) && n.name !== "look bloom");
+      if (bloom) expect(JSON.stringify(bloom)).toContain(String(VENUE_LOOKS[v].bloom.threshold));
+    }
+  });
+});

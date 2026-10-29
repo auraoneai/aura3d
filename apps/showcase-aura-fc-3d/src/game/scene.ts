@@ -29,13 +29,15 @@ export const LOOK_ID = "interior-industrial" as const;
  * daytime salt flat get the matching outdoor looks, their own sky colour and a softer flood. The look is part of the
  * scene graph, so main.ts rebuilds the scene (app.setScene) when the venue changes between matches.
  */
-export const VENUE_LOOKS: Readonly<Record<VenueId, { readonly look: "interior-industrial" | "golden-hour" | "outdoor-day"; readonly background: string; readonly exposureEv: number; readonly flood: number }>> = {
-  favela: { look: "interior-industrial", background: "#140f0b", exposureEv: 0.08, flood: 2.3 },
-  munich: { look: "interior-industrial", background: "#0d1a24", exposureEv: 0.08, flood: 2.3 },
-  lagos: { look: "golden-hour", background: "#c98a5a", exposureEv: 0, flood: 0.9 },
-  kyoto: { look: "interior-industrial", background: "#0b0d1c", exposureEv: 0.08, flood: 2.3 },
-  uyuni: { look: "outdoor-day", background: "#9db8cf", exposureEv: -0.1, flood: 0.5 },
-  glacier: { look: "interior-industrial", background: "#08121c", exposureEv: 0.08, flood: 2.3 }
+// fog and bloom are per venue: on the bright sand (Lagos) and salt (Uyuni) pitches the night settings (fog 0.5,
+// bloom 0.22 over 0.82) washed the frame out (remote run g09cap-after4: Lagos p5 164, Uyuni p5 182, no darks at all)
+export const VENUE_LOOKS: Readonly<Record<VenueId, { readonly look: "interior-industrial" | "golden-hour" | "outdoor-day"; readonly background: string; readonly exposureEv: number; readonly flood: number; readonly fog: number; readonly bloom: { readonly intensity: number; readonly threshold: number } }>> = {
+  favela: { look: "interior-industrial", background: "#140f0b", exposureEv: 0.08, flood: 2.3, fog: 0.5, bloom: { intensity: 0.22, threshold: 0.82 } },
+  munich: { look: "interior-industrial", background: "#0d1a24", exposureEv: 0.08, flood: 2.3, fog: 0.5, bloom: { intensity: 0.22, threshold: 0.82 } },
+  lagos: { look: "golden-hour", background: "#c98a5a", exposureEv: -0.35, flood: 0.9, fog: 0.15, bloom: { intensity: 0.08, threshold: 0.96 } },
+  kyoto: { look: "interior-industrial", background: "#0b0d1c", exposureEv: 0.08, flood: 2.3, fog: 0.5, bloom: { intensity: 0.22, threshold: 0.82 } },
+  uyuni: { look: "outdoor-day", background: "#9db8cf", exposureEv: -0.5, flood: 0.5, fog: 0.15, bloom: { intensity: 0.06, threshold: 0.97 } },
+  glacier: { look: "interior-industrial", background: "#08121c", exposureEv: 0.08, flood: 2.3, fog: 0.5, bloom: { intensity: 0.22, threshold: 0.82 } }
 };
 const HIDDEN = 0.0001;
 
@@ -444,7 +446,7 @@ export function buildFcScene(venue: VenueId = "munich") {
   const s = scene()
     // The night looks open the roof onto a dark sky tone; Lagos gets a sunset sky and Uyuni daylight.
     .background(vl.background)
-    .add(looks.preset(vl.look, { fogDensityScale: 0.5, exposureEv: vl.exposureEv }))
+    .add(looks.preset(vl.look, { fogDensityScale: vl.fog, exposureEv: vl.exposureEv }))
     .addMany(pitchNodes(v))
     .addMany(goalNodes(-1))
     .addMany(goalNodes(1))
@@ -454,7 +456,7 @@ export function buildFcScene(venue: VenueId = "munich") {
   return s
     .add(effects.contactShadows({ intensity: 0.85, length: 0.32 }))
     .add(effects.motionBlur({ intensity: 0.1 }))
-    .add(effects.bloom({ intensity: 0.22, threshold: 0.82 }))
+    .add(effects.bloom({ intensity: vl.bloom.intensity, threshold: vl.bloom.threshold }))
     .camera(camera.perspective({ position: [0, 11.5, 23.5], target: [0, 0.9, -1], fov: 40 }));
 }
 
