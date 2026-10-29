@@ -73,7 +73,7 @@ describe("silt-and-signal-port terrain", () => {
   it("builds procedural architecture, terrain vertex colors, and far dunes with valid finite geometry", () => {
     const terrain = createTerrain(0);
     const props = terrain.props();
-    const arch = buildArchitecture(props.walls, props.houses);
+    const arch = buildArchitecture(props.walls);
     expect(arch.plaster.length).toBe(5);
     for (const [name, mesh] of [
       ["cliff", arch.cliff],
@@ -91,7 +91,7 @@ describe("silt-and-signal-port terrain", () => {
       expect(mesh.positions.every(Number.isFinite), name).toBe(true);
     }
     const baseTerrain = terrain.terrainMesh();
-    const colors = terrainColors(baseTerrain.positions, baseTerrain.normals, terrain.water.level);
+    const colors = terrainColors(baseTerrain.positions);
     expect(colors.length).toBe((baseTerrain.positions.length / 3) * 4);
     expect(colors.every((c) => Number.isFinite(c) && c > 0)).toBe(true);
 
