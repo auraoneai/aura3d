@@ -1,0 +1,234 @@
+[
+ {
+  "target": "teleoperator--noon",
+  "id": "settle-25s",
+  "slug": "teleoperator",
+  "variant": "noon",
+  "sinceReadyMs": 25014,
+  "mean": 106.26,
+  "p5": 43,
+  "p50": 97,
+  "p95": 194,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   138.2,
+   175.9,
+   90.5,
+   104,
+   140.2,
+   91.1,
+   47,
+   107,
+   62.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 608
+  }
+ },
+ {
+  "target": "teleoperator--noon",
+  "id": "settle-60s",
+  "slug": "teleoperator",
+  "variant": "noon",
+  "sinceReadyMs": 337890,
+  "mean": 106.95,
+  "p5": 42,
+  "p50": 99,
+  "p95": 194,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   129.4,
+   175.2,
+   88.6,
+   113.2,
+   140.9,
+   91.6,
+   47.7,
+   107.6,
+   68.3
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 604
+  }
+ },
+ {
+  "target": "teleoperator--golden",
+  "id": "settle-25s",
+  "slug": "teleoperator",
+  "variant": "golden",
+  "sinceReadyMs": 25004,
+  "mean": 104.98,
+  "p5": 43,
+  "p50": 96,
+  "p95": 192,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   137.8,
+   168.8,
+   89.6,
+   103.4,
+   138.6,
+   90.8,
+   46.8,
+   106.8,
+   62.1
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 608
+  }
+ },
+ {
+  "target": "teleoperator--golden",
+  "id": "settle-60s",
+  "slug": "teleoperator",
+  "variant": "golden",
+  "sinceReadyMs": 276354,
+  "mean": 104.74,
+  "p5": 42,
+  "p50": 97,
+  "p95": 192,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   130.7,
+   167.9,
+   85.6,
+   102.7,
+   141,
+   90.5,
+   47,
+   107.3,
+   69.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 608
+  }
+ },
+ {
+  "target": "teleoperator--fog",
+  "id": "settle-25s",
+  "slug": "teleoperator",
+  "variant": "fog",
+  "sinceReadyMs": 25001,
+  "mean": 105.99,
+  "p5": 43,
+  "p50": 98,
+  "p95": 193,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   138.5,
+   173.3,
+   91.8,
+   103.2,
+   139.2,
+   92,
+   46.7,
+   106.8,
+   62.1
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 609
+  }
+ },
+ {
+  "target": "teleoperator--fog",
+  "id": "settle-60s",
+  "slug": "teleoperator",
+  "variant": "fog",
+  "sinceReadyMs": 262309,
+  "mean": 105.47,
+  "p5": 42,
+  "p50": 98,
+  "p95": 194,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   131.6,
+   172.6,
+   85.3,
+   102.1,
+   142.4,
+   90.5,
+   47.2,
+   107.3,
+   70.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 608
+  }
+ },
+ {
+  "target": "teleoperator--night",
+  "id": "settle-25s",
+  "slug": "teleoperator",
+  "variant": "night",
+  "sinceReadyMs": 25005,
+  "mean": 100.15,
+  "p5": 43,
+  "p50": 87,
+  "p95": 192,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   137.2,
+   127.9,
+   89.4,
+   103,
+   137.5,
+   90.7,
+   46.8,
+   106.7,
+   62
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 608
+  }
+ },
+ {
+  "target": "teleoperator--night",
+  "id": "settle-60s",
+  "slug": "teleoperator",
+  "variant": "night",
+  "sinceReadyMs": 274491,
+  "mean": 99.65,
+  "p5": 42,
+  "p50": 89,
+  "p95": 192,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   130.6,
+   125.5,
+   84.2,
+   102.1,
+   139.8,
+   90.5,
+   47,
+   107.2,
+   69.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 607
+  }
+ }
+]
