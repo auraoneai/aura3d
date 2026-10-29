@@ -53,7 +53,7 @@
       .meter > i { display: block; height: 100%; width: 0; }
       #ki-bar { background: linear-gradient(90deg, #3aa8e8, #bff0ff); }
       #strain-bar { background: linear-gradient(90deg, #ffb36e, #ff5a4a); }
-      #surge-chip { position: absolute; top: 96px; left: 18px; padding: 4px 10px; font-size: 12px; line-height: 16px; letter-spacing: 0.06em; transition: box-shadow 0.2s, border-color 0.2s; }
+      #surge-chip { position: absolute; top: 158px; left: 18px; padding: 4px 10px; font-size: 12px; line-height: 16px; letter-spacing: 0.06em; transition: box-shadow 0.2s, border-color 0.2s; }
       #surge-chip.hot { border-color: var(--gold); box-shadow: 0 0 18px rgba(255, 138, 92, 0.6); color: var(--gold); }
       #progress { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: min(420px, 38vw); display: grid; gap: 4px; }
       #progress .rowp { display: flex; justify-content: space-between; font-size: 12px; line-height: 14px; color: var(--muted); letter-spacing: 0.06em; text-shadow: 0 1px 6px rgba(42, 27, 69, 0.7); }
@@ -105,6 +105,7 @@
       #touch button.ghost:active { background: rgba(255, 255, 255, 0.28); }
       @media (pointer: coarse) { #touch { display: flex; } }
       @media (max-width: 640px) { #banner { font-size: 28px; } #progress { top: auto; bottom: calc(70px + env(safe-area-inset-bottom)); left: 18px; transform: none; width: calc(100vw - 36px); } #progress { padding: 6px 10px; border-radius: 8px; background: rgba(34, 24, 70, 0.62); } #progress .rowp { color: var(--ink); } #progress .rowp .num { white-space: nowrap; } #side { width: 120px; } #side .big { font-size: 26px; } #player { width: 200px; } }
+      @media (max-width: 640px) { #surge-chip { top: 156px; } #mute-btn { left: auto; right: 18px; bottom: auto; top: 196px; height: 32px; } #prompt { bottom: 170px; white-space: normal; width: max-content; max-width: calc(100vw - 36px); text-align: center; } }
       .overlay:not(.hidden) ~ #touch { visibility: hidden; }
       .card { max-height: 92vh; overflow: auto; }
     </style>
