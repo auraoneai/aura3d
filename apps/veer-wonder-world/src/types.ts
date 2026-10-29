@@ -26,7 +26,7 @@ export type PropAssetId =
   | "tunnel" | "house" | "bed" | "sink" | "table" | "chair" | "cushion" | "toyBox" | "bench"
   | "colourMachine" | "storyBox" | "pastryCircle" | "pastrySquare" | "pastryTriangle" | "hat"
   | "stompStone" | "cloud" | "balloon"
-  // 2026-10-29 (07 C11): drawn from scene geometry like the other procedural props.
+  // 2026-10-29 (07 B20): drawn from scene geometry like the other procedural props.
   | "letterBLower" | "letterALower" | "toothbrush" | "sun" | "candleFlame";
 
 /**
@@ -43,7 +43,7 @@ export type Gesture =
   | "idle" | "wave" | "talk" | "point" | "happy" | "cheer" | "dance" | "hop" | "nod" | "look"
   | "sleep" | "eat" | "wake" | "sway" | "mirror" | "pickUp" | "shrug" | "wag" | "sniff" | "bark"
   | "sit" | "clap" | "stomp" | "freeze" | "peek" | "hide" | "float" | "glow" | "blink" | "bow"
-  // 2026-10-29 (07 C11): the "surprised" and "waiting" states of the 02 section 2 expression sheet.
+  // 2026-10-29 (07 B20): the "surprised" and "waiting" states of the 02 section 2 expression sheet.
   | "surprise" | "wait";
 
 /** Things that happen to objects. */
@@ -63,7 +63,7 @@ export type SfxId =
   | "tweet" | "whistle" | "chugga" | "drum" | "shaker" | "pianoUp" | "pianoDown" | "splash"
   | "squeak" | "ding" | "clack" | "tumble" | "munch" | "yawn" | "giggle" | "whoosh" | "sparkle"
   | "clap" | "stomp" | "boing" | "tada" | "rumble" | "blow" | "beep" | "rustle"
-  // 2026-10-29 (07 C11): Sheru's bark bank (02 section 2: 8-15 non-speaking reactions, with "woof").
+  // 2026-10-29 (07 B20): Sheru's bark bank (02 section 2: 8-15 non-speaking reactions, with "woof").
   | "woofSoft" | "woofDouble" | "yip" | "arf" | "pant" | "sniffs" | "huff" | "aroo";
 
 /** Song ids (see src/content/songs.ts). */
@@ -97,7 +97,7 @@ export type StageAction =
   /**
    * Starts a song. Each lyric line starts at `songCueTimesMs(song)[i]`; at that moment every performer plays the
    * line's motion (`SONGS[song].motions[i]`) and the line's `cues` are applied. Performers default to the cast
-   * characters on stage when the song starts; `[]` keeps the beat's own gestures (2026-10-29, 07 C11).
+   * characters on stage when the song starts; `[]` keeps the beat's own gestures (2026-10-29, 07 B20).
    */
   | { readonly do: "song"; readonly song: SongId; readonly performers?: readonly string[]; readonly cues?: readonly SongCue[] }
   | { readonly do: "music"; readonly bed: MusicBedId | null }
@@ -289,7 +289,7 @@ export interface ParentSettings {
   readonly mode: PlayMode;
   readonly music: boolean;
   readonly sound: boolean;
-  /** Sound effects only; voices and songs keep their level (2026-10-29, 07 C11). */
+  /** Sound effects only; voices and songs keep their level (2026-10-29, 07 B20). */
   readonly sfxVolume: SfxVolume;
   readonly captions: boolean;
   readonly reducedMotion: boolean;
