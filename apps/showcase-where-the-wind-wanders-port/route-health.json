@@ -3,7 +3,7 @@
   "route": "/apps/showcase-where-the-wind-wanders-port/",
   "classification": "prototype",
   "publicShowcase": true,
-  "generatedAt": "2026-10-23T08:56:30.375Z",
+  "generatedAt": "2026-10-29T00:00:00.000Z",
   "ok": true,
   "claimLabel": "Prototype",
   "claimStatus": "bounded",
@@ -21,8 +21,8 @@
   "sourceExample": "examples/where-the-wind-wanders-port/",
   "evidence": "Worst trajectory delta 7.0e-10 units over all 2,098 steps in Node and in the live page.",
   "limits": [
-    "Meadow only: no boat voyage, island, journal or audio; procedural art.",
-    "Procedural art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Meadow walk: three letters, the bell, a journal, synthesised audio, and a boat epilogue to Stillwater Isle that is a camera voyage only (the island is not walkable; boat, island and bench modes are not ported).",
+    "Art: 11 Meshy GLB models (8.4 MB after compression) over procedural terrain, foliage, sky and water; an independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
     "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
   ],
   "checks": [
