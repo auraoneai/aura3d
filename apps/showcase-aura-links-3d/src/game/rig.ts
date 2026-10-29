@@ -32,7 +32,7 @@
  */
 import { game, material, model, primitives } from "@aura3d/engine";
 import { gripQToEulerZYX } from "@aura3d/engine/game";
-import { assets } from "../../../../src/aura-assets";
+import { assets } from "../aura-assets";
 import type { GolferFit, Vec3 } from "./types";
 import {
   BALL_SHOT,
@@ -116,23 +116,22 @@ export function buildGolferNodes(fit: GolferFit): any[] {
       })
       .scale(HIDDEN)
       .runtime(rt("golfer-ring")),
-    // 3D Bespoke Meshy-6 Pro Golfer + Caddy + Bag + Golf Cart (minY = 0 grounded)
+    // 3D Bespoke Meshy-6 Pro Golfer + Caddy + Bag + Golf Cart (minY = 0 grounded).
+    // model() has no `animation` option (it was dropped silently); .animate() sets the clip.
     model(assets.linksGolferAthleteMeshy, {
       name: "golfer-body",
       targetHeight: 1.84,
       role: "primaryCharacter",
-      scaleMode: "fit",
-      animation: { clip: "Ready", loop: true, speed: 1 }
-    } as any)
+      scaleMode: "fit"
+    })
       .animate({ clip: "Ready", loop: true, speed: 1 })
       .runtime(rt("golfer-body")),
     model(assets.linksGolferAthleteMeshy, {
       name: "caddy-body",
       targetHeight: 1.8,
       role: "setDressing",
-      scaleMode: "fit",
-      animation: { clip: "Idle_Loop", loop: true, speed: 0.9 }
-    } as any)
+      scaleMode: "fit"
+    })
       .animate({ clip: "Idle_Loop", loop: true, speed: 0.9 })
       .runtime(rt("caddy-body")),
     primitives
