@@ -35,7 +35,8 @@ export const meshyFarVehicles = defineModelAssets(
     pickup: { url: new URL("./assets/meshy/lod/pickup.far.glb", import.meta.url).pathname, sha256: "3320f54780c7555e564b075f95d58a37212fce13b5fb20219f7976ebacd95a07", sizeBytes: 97888 },
     boxtruck: { url: new URL("./assets/meshy/lod/boxtruck.far.glb", import.meta.url).pathname, sha256: "bc29654f2aa44539e50196288425f100967bf47a1a270f65873eca0a5ac3af38", sizeBytes: 132712 },
     bus: { url: new URL("./assets/meshy/lod/bus.far.glb", import.meta.url).pathname, sha256: "e56652ce2d53150d9eef3b02c10cf8b40bb9a9c5049e6198a956d48c1d097860", sizeBytes: 114480 },
-    carrier: { url: new URL("./assets/meshy/lod/carrier.far.glb", import.meta.url).pathname, sha256: "31ce1ebec280dda8c32d8717586ce64b2c7f37ac13994504a3ed946b4f131cda", sizeBytes: 90108 }
+    carrier: { url: new URL("./assets/meshy/lod/carrier.far.glb", import.meta.url).pathname, sha256: "31ce1ebec280dda8c32d8717586ce64b2c7f37ac13994504a3ed946b4f131cda", sizeBytes: 90108 },
+    skycar: { url: new URL("./assets/meshy/lod/skycar.far.glb", import.meta.url).pathname, sha256: "8a951cbf9fc7baf5fa0b198799d2b4173f9c6dce5246fa650af2eecf32c8f78c", sizeBytes: 140000 }
   },
   { license: "Meshy generated asset (AuraOne account plan terms at generation time), own text prompts, 2026-10-23; simplified far LOD 2026-10-29" }
 );

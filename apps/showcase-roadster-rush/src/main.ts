@@ -29,6 +29,7 @@ import { InstancePool, parked } from "./render/instancePool";
 import {
   DRAW_WINDOW,
   NEAR_CAPACITY,
+  SHADOW_NEAR,
   POOL_CAPACITY,
   POWERUP_KINDS,
   VEHICLE_TYPES,
@@ -517,6 +518,10 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     instances
       .model(assets.roadsterRushSkyCar, { name: "sky-cars", role: "primaryVehicle", scaleMode: "fit", targetMaxDimension: 4.3, transforms: parked(POOL_CAPACITY.skyCar) })
       .runtime(game.runtimeNode(poolId("sky-cars"))),
+    // sky cars beyond 90 m: the far LOD, no shadow
+    instances
+      .model(meshyVehicles.enabled ? (meshyFarVehicles.refs as Record<string, AuraAssetRef<"model">>).skycar! : assets.roadsterRushSkyCar, { name: "sky-cars-far", role: "setDressing", scaleMode: "fit", targetMaxDimension: 4.3, castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
+      .runtime(game.runtimeNode(poolId("sky-cars-far"))),
     instances
       .cylinder({ name: "sky-plumes", size: [0.42, 1.65, 0.42], material: rearPlumeMat, castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
       .runtime(game.runtimeNode(poolId("sky-plumes"))),
@@ -625,6 +630,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const brakePool = pool("brake-lights", BRAKE_BAR_CAPACITY);
   const blinkerPool = pool("blinkers", BLINKER_CAPACITY);
   const skyCarPool = pool("sky-cars", POOL_CAPACITY.skyCar);
+  const skyCarFarPool = pool("sky-cars-far", POOL_CAPACITY.skyCar);
   const skyPlumePool = pool("sky-plumes", POOL_CAPACITY.skyCar);
   const skyHaloPool = pool("sky-halos", POOL_CAPACITY.skyCar);
   const boltPool = pool("bolts", POOL_CAPACITY.bolt);
@@ -1222,6 +1228,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     const rawSkyCars: any[] = Array.isArray(g.traffic?.skyCars) ? g.traffic.skyCars : [];
     nearestAhead(rawSkyCars, pz, DRAW_WINDOW.skyCars, POOL_CAPACITY.skyCar, skySlots);
     skyCarPool.begin();
+    skyCarFarPool.begin();
     skyPlumePool.begin();
     skyHaloPool.begin();
     for (let i = 0; i < skySlots.length; i++) {
@@ -1232,12 +1239,13 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       const srx = Number(sc.rx ?? 0);
       const srz = Number(sc.rz ?? 0);
       const oncoming = Number(sc.dir ?? 1) > 0;
-      skyCarPool.add(sx, sy, sz, srx, oncoming ? 0 : Math.PI, srz);
+      (pz - Number(sc.z ?? 0) <= SHADOW_NEAR ? skyCarPool : skyCarFarPool).add(sx, sy, sz, srx, oncoming ? 0 : Math.PI, srz);
       const tailZ = oncoming ? sz - 2.35 : sz + 2.35;
       skyPlumePool.add(sx, sy + 0.45, tailZ, oncoming ? -Math.PI * 0.5 : Math.PI * 0.5, 0, 0, 0.9, 1.2 * flicker, 0.9);
       if (oncoming) skyHaloPool.add(sx, sy + 0.55, sz + 2.15, 0, 0, REDUCED_MOTION ? 0 : simTime * 4);
     }
     skyCarPool.commit();
+    skyCarFarPool.commit();
     skyPlumePool.commit();
     skyHaloPool.commit();
 

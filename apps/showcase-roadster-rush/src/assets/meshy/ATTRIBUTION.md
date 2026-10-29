@@ -19,4 +19,4 @@ Common style clause: `stylised game vehicle, clean readable silhouette, PBR mate
 
 ## Far level of detail (2026-10-29)
 
-`lod/<type>.far.glb` are derived from the nine traffic models above by `apps/showcase-roadster-rush/tools/make-far-lod.mjs`: meshoptimizer sloppy simplification to about 10% of the triangles (sedan 53,548 to 4,539; boxtruck 43,690 to 4,009) and textures downscaled to 256 px JPEG. Same rights basis as the source models; no new Meshy credits. The renderer draws traffic beyond 90 m with them.
+`lod/<type>.far.glb` are derived from the nine traffic models above by `apps/showcase-roadster-rush/tools/make-far-lod.mjs`: meshoptimizer sloppy simplification to about 10% of the triangles (sedan 53,548 to 4,539; boxtruck 43,690 to 4,009) and textures downscaled to 256 px JPEG. `lod/skycar.far.glb` is made the same way from the sky-lane car `public/aura-assets/roadsterRushSkyCar.295dcba7.glb`, which only this game uses (58,378 to 5,549 triangles). Same rights basis as the source models; no new Meshy credits. The renderer draws traffic and sky cars beyond 90 m with them.

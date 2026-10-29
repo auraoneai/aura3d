@@ -15,11 +15,13 @@ await MeshoptSimplifier.ready;
 
 const dir = new URL("../src/assets/meshy/", import.meta.url).pathname;
 const types = ["sedan", "hatch", "suv", "taxi", "van", "pickup", "boxtruck", "bus", "carrier"];
+// the sky-lane car (public/aura-assets, used only by this game); its far LOD lives with the traffic LODs
+const SOURCES = { skycar: new URL("../../../public/aura-assets/roadsterRushSkyCar.295dcba7.glb", import.meta.url).pathname };
 mkdirSync(`${dir}lod`, { recursive: true });
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
 const tris = (doc) => doc.getRoot().listMeshes().flatMap((m) => m.listPrimitives()).reduce((n, p) => n + (p.getIndices()?.getCount() ?? p.getAttribute("POSITION").getCount()) / 3, 0);
-for (const t of types) {
-  const doc = await io.read(`${dir}${t}.glb`);
+for (const t of [...types, ...Object.keys(SOURCES)]) {
+  const doc = await io.read(SOURCES[t] ?? `${dir}${t}.glb`);
   const before = tris(doc);
   // Sloppy simplification ignores UV seams (the regular simplifier stops at about half the triangles on these scans); far
   // traffic is a few dozen pixels tall, so topology and seams do not show.
