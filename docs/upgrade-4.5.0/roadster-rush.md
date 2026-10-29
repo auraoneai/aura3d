@@ -73,14 +73,27 @@
 - **13 (getError sampling, per-frame allocation, unused warm programs):** a pure engine cost reduction. No action. `?diag=1` brings back per-frame `getError` if needed.
 - **14 (package pins):** already `4.5.0` (`package.json`).
 
+## Measured after the upgrade (2026-10-29)
+
+The sections above describe the 4.5.0 release source. The audit fixes since then (`docs/audits/lanes/g02.md`) moved the pooled traffic, pickups and roadside props to `instances.*`, removed the hemisphere light (it never contributed next to the look's HDRI) and the authored bloom and colour grade that stacked on the look's, so their line numbers no longer match.
+
+All numbers are from remote runs on software WebGL2 (SwiftShader in the ACR runner), not a GPU. Spec: `tests/browser/audit-fix/roadster-rush.spec.ts`; frames and numbers in `evidence/apex-overdrive/audit-2026-10-29/`.
+
+- **Render path:** `diagnostics().renderPath` reports `path: "hdr-msaa"`, `quality: "auto"`, `bloomFusion: "separable"`.
+- **Brightness, 4.3.7 against 4.5.0** (mean luma of the canvas, seed 42, 1280x720): gameplay-early 76.91 on 4.3.7 and 80.85 on 4.5.0; key-ramp 82.16 and 86.44. The 4.5.0 frame is about 5% brighter, not darker: the hemisphere was already dropped on 4.3.7 (audit LIGHT-05), and the authored colour grade stacked on the look's. With the audit fixes (one grade, one bloom) the same states measure 77.57 and 85.07.
+- **Fused bloom against the production chain:** gameplay-early at `?capture=1` measures 77.58 under `auto` and 77.58 with `&aura3d-render=production` (80.89 and 80.88 before the fixes). The difference is under 0.01 of 255.
+- **Time of day** (Sunset, Dusk, Night buttons): 84.14, 74.56 and 61.25 (4.5.0 base: 83.51, 73.82, 60.30).
+- **`OPTION_IGNORED`:** none. **Heal ladder:** `window.__AURA3D_HEAL__` stays at rung 0 (`full`).
+- **`route-health.json` `rendererMode`:** nothing compares it with `renderPath.quality` (`rg -n rendererMode tools/` finds only `tools/showcase-library/game-audit-matrix.mjs`, which reads `main.ts`, and `tools/agent-examples/index.ts`, which checks the starter examples).
+
 ## Checklist
 
-- [ ] Run `node tools/game-checks/run.mjs roadster-rush` and confirm 0 errors.
-- [ ] Load `/apps/showcase-roadster-rush/?seed=42` and check `__AURA3D_SHOWCASE_ROADSTER_RUSH__.app.diagnostics().renderPath` reports `hdr-msaa`, `auto`, `bloomFusion: "separable"`.
-- [ ] Check `app.diagnostics()` for `OPTION_IGNORED` entries (expected: none).
-- [ ] Take `?capture=1&seed=42` screenshots of each time-of-day preset (Sunset 0, Dusk 0.5, Night 1) on 4.3.7 and 4.5.0 and compare brightness and AO. Expect the 4.5.0 frames to be darker because the hemisphere light no longer contributes (item 2).
-- [ ] If darker, compensate with `lights.ambient` intensity/colour or the look's `exposureEv`, and re-compare. Do not rely on `quality: "production"` to restore the hemisphere.
-- [ ] Compare the default URL against `?aura3d-render=production`. Decide whether to accept the `auto` differences or set `quality: "production"` at `src/main.ts:750`.
-- [ ] If pinning `quality: "production"`, keep `route-health.json` `rendererMode` as `"production"`. If not pinning, run `rg -n rendererMode tools/` and confirm nothing compares that field with `renderPath.quality`.
-- [ ] Confirm `window.__AURA3D_HEAL__` shows no escalation after 30 seconds of play (black-frame guard with `preserveDrawingBuffer` off).
-- [ ] Optional cosmetic: update `package.json` `description` ("Aura3D 4.1.2") to 4.5.0.
+- [x] Run `node tools/game-checks/run.mjs roadster-rush` and confirm 0 errors. (0 errors, 0 warnings.)
+- [x] Load `/apps/showcase-roadster-rush/?seed=42` and check `__AURA3D_SHOWCASE_ROADSTER_RUSH__.app.diagnostics().renderPath` reports `hdr-msaa`, `auto`, `bloomFusion: "separable"`.
+- [x] Check `app.diagnostics()` for `OPTION_IGNORED` entries (expected: none). (None.)
+- [x] Take `?capture=1&seed=42` screenshots of each time-of-day preset (Sunset 0, Dusk 0.5, Night 1) on 4.3.7 and 4.5.0 and compare brightness and AO. (4.5.0 base against the fixed build above. The 4.3.7 run reached gameplay states only, at Sunset: 4.5.0 is about 5% brighter there.)
+- [x] If darker, compensate with `lights.ambient` intensity/colour or the look's `exposureEv`, and re-compare. Do not rely on `quality: "production"` to restore the hemisphere. (Not darker; no compensation. The hemisphere light was removed from the scene because it never contributed.)
+- [x] Compare the default URL against `?aura3d-render=production`. Decide whether to accept the `auto` differences or set `quality: "production"` at `src/main.ts:750`. (Under 0.01/255 apart; `auto` kept.)
+- [x] If pinning `quality: "production"`, keep `route-health.json` `rendererMode` as `"production"`. If not pinning, run `rg -n rendererMode tools/` and confirm nothing compares that field with `renderPath.quality`. (Not pinned; nothing compares it.)
+- [x] Confirm `window.__AURA3D_HEAL__` shows no escalation after 30 seconds of play (black-frame guard with `preserveDrawingBuffer` off). (Rung 0 through the dense 50 s state.)
+- [x] Optional cosmetic: update `package.json` `description` ("Aura3D 4.1.2") to 4.5.0. (The description no longer names a version.)
