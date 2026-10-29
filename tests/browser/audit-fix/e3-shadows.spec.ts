@@ -1,4 +1,6 @@
 import { test, type Page } from "@playwright/test";
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 import { startExampleDevServer, type ExampleDevServer } from "../example-dev-server";
 
 /**
@@ -15,11 +17,12 @@ const log = (line: string): void => { process.stdout.write(`${line}\n`); };
 const CANVAS_ONLY = "body *:not(canvas){visibility:hidden !important} canvas{visibility:visible !important} html,body{background:#000 !important}";
 const READY = "document.body.dataset.aura3dReady === 'true' || Boolean(window.__AURA3D_LIVE_APPS__ && window.__AURA3D_LIVE_APPS__.all().some((a) => (a.diagnostics?.().drawCalls ?? 0) > 0))";
 
-interface Target { readonly name: string; readonly url: string; }
+/** `publicDir`: the app keeps its own `public/aura-assets` (served at `/aura-assets/` by its Vite build, not by the shared dev server). */
+interface Target { readonly name: string; readonly url: string; readonly publicDir?: string; }
 
 const TARGETS: readonly Target[] = [
   { name: "links-default", url: "/apps/showcase-aura-links-3d/index.html" },
-  { name: "crosshop", url: "/apps/showcase-cross-hop/" },
+  { name: "crosshop", url: "/apps/showcase-cross-hop/", publicDir: "apps/showcase-cross-hop/public" },
   // Shadowstep Gauntlet opts into the 4.3.0 shadow fit (__A3D_SHADOW_FIT__ = "current"), where cascades hug the frustum slice: this is
   // where a centre-picked cascade leaves spread instanced scenery unshadowed.
   { name: "ninja", url: "/apps/showcase-ninja-runner-port/" }
@@ -90,6 +93,14 @@ test.describe("e3 shadows capture", () => {
     test(`${target.name}`, async ({ page }) => {
       page.on("pageerror", (e) => log(`E3_ERR ${target.name} pageerror ${e.message.slice(0, 300)}`));
       page.on("console", (m) => { if (m.type() === "error") log(`E3_CONSOLE ${target.name} ${m.text().slice(0, 200)}`); });
+      if (target.publicDir) {
+        const root = resolve(process.cwd(), target.publicDir);
+        await page.route("**/aura-assets/**", async (route) => {
+          const local = resolve(root, `.${new URL(route.request().url()).pathname}`);
+          if (local.startsWith(root) && existsSync(local)) await route.fulfill({ path: local });
+          else await route.fallback();
+        });
+      }
       await page.setViewportSize({ width: 1280, height: 720 });
       await page.goto(`${server.origin}${target.url}`, { waitUntil: "domcontentloaded" });
       await page.waitForFunction(READY, undefined, { timeout: 420_000, polling: 500 });
