@@ -152,6 +152,7 @@ test.describe("bunker zero audit-fix", () => {
   // ---- steady-state luma (LIGHT-03, RH-03, C24, RP-05) -----------------------------------------------------------
   test("bz-desktop-f1 @luma", async ({ page }) => {
     const loaded = await open(page, server, "desktop-f1", APP, DESKTOP);
+    await qa(page, "desktop-f1", "snapshot");
     await settle(page, "desktop-f1", loaded, SETTLE, true);
     log("GL_DONE desktop-f1");
   });

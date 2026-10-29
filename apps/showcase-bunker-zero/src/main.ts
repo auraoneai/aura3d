@@ -1420,7 +1420,10 @@ function installQa() {
         hp: Math.ceil(s.player.hp), alive: s.player.alive, summons: s.summons.length, enemies: s.enemies.length,
         summonNodesVisible: s.enemies.filter((e) => e.summonSlot !== undefined).map((e) => opt(enemyIds(activeSlot(), e).body)?.visible ?? null),
         eventSeq: s.eventSeq, eventsDrained, frameErrors, lastFrameError, pending: pending?.kind ?? null, campaignDone,
-        results: !elResults.hidden, banner: elBanner.textContent
+        results: !elResults.hidden, banner: elBanner.textContent,
+        // C18: runtime nodes left visible on floor slots other than the active one (0 when inactive floors are hidden)
+        offFloorVisible: app.nodes.all().filter((h) => h.visible !== false && /^f\d-/.test(h.id) && !h.id.startsWith(`f${activeSlot()}-`)).length,
+        onFloorStaticVisible: SLOT_STATIC_IDS[activeSlot()]!.filter((id) => opt(id)?.visible !== false).length
       };
     },
     /** C1: start floor 6, bring the Warden under 66% so it summons, and keep the sim running. */
@@ -1603,6 +1606,10 @@ elHud.classList.remove("hidden");
 void mg.ready().then(() => {
   appReady = true;
   lastWall = performance.now();
+  // C18: visibility set before the renderer mounted does not stick, so hide the inactive floors again once it is up
+  hideAllRuntime();
+  bindFloor();
+  syncScenePose(NO_INPUT);
   document.body.dataset.aura3dReady = "true";
   installQa();
   window.__AURA3D_ROUTE_READY__ = { ready: true };
