@@ -13,6 +13,9 @@
 // arriving when a preload stops waiting keeps downloading (up to `maxMs`) and
 // is used from the next mount on. Aborting it instead would mean that on a
 // slow connection the largest models (about 2 MB) never finish at all.
+// `dispose()` does abort every download still in flight (the stage is gone,
+// so nothing would use it): each fetch's signal fires, every waiting preload
+// resolves at once, and nothing is fetched or recorded afterwards.
 //
 // prefetch() warms the next story in the background (current + next).
 
@@ -101,6 +104,10 @@ export interface AssetPreloader {
   /** Records that models broke a scene mount after preload; they are drawn as stand-ins for the rest of the session. */
   markFailed(keys: readonly ModelKey[]): void;
   summary(): Readonly<Partial<Record<ModelSummaryStatus, number>>>;
+  /**
+   * Aborts every download still in flight and forgets every result. Waiting preloads resolve at once (the
+   * aborted keys as "error", never usable); later preloads and prefetches fetch nothing.
+   */
   dispose(): void;
 }
 
@@ -146,9 +153,11 @@ export function createAssetPreloader(options: AssetPreloaderOptions = {}): Asset
   });
   const settled = new Map<ModelKey, ModelLoadStatus>();
   const inflight = new Map<ModelKey, Promise<ModelLoadStatus>>();
+  /** Stops each download in flight (abort its fetch, settle its race at once); `dispose()` calls them all. */
+  const stoppers = new Set<() => void>();
   let disposed = false;
 
-  /** One download (fetch, then hash check), aborted at `maxMs`. */
+  /** One download (fetch, then hash check), aborted at `maxMs` or by `dispose()`. */
   async function load(key: ModelKey): Promise<ModelLoadStatus> {
     if (MODEL_INFO[key].procedural) return "procedural";
     if (!enabled) return "disabled";
@@ -158,13 +167,21 @@ export function createAssetPreloader(options: AssetPreloaderOptions = {}): Asset
     const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
     let capped = false;
     let cancel: () => void = () => undefined;
+    let settle: (status: ModelLoadStatus) => void = () => undefined;
     const cap = new Promise<ModelLoadStatus>((resolve) => {
+      settle = resolve;
       cancel = schedule(() => {
         capped = true;
         controller?.abort();
         resolve("timeout");
       }, maxMs);
     });
+    // Disposed: abort the fetch and settle now, also for a fetch that ignores its signal.
+    const stop = (): void => {
+      controller?.abort();
+      settle("error");
+    };
+    stoppers.add(stop);
     const work = (async (): Promise<ModelLoadStatus> => {
       try {
         const response = await fetchFn(src.url, controller ? { signal: controller.signal } : undefined);
@@ -177,13 +194,17 @@ export function createAssetPreloader(options: AssetPreloaderOptions = {}): Asset
         return capped ? "timeout" : "error";
       }
     })();
-    const status = await Promise.race([work, cap]);
-    cancel();
-    return status;
+    try {
+      return await Promise.race([work, cap]);
+    } finally {
+      cancel();
+      stoppers.delete(stop);
+    }
   }
 
   /** The key's download: settled, joined while running, or started (again, when the last result was retryable). */
   function start(key: ModelKey): Promise<ModelLoadStatus> {
+    if (disposed) return Promise.resolve("error");
     const known = settled.get(key);
     if (known !== undefined && !isRetryable(known)) return Promise.resolve(known);
     const running = inflight.get(key);
@@ -239,7 +260,10 @@ export function createAssetPreloader(options: AssetPreloaderOptions = {}): Asset
       return out;
     },
     dispose() {
+      if (disposed) return;
       disposed = true;
+      for (const stop of [...stoppers]) stop();
+      stoppers.clear();
       settled.clear();
       inflight.clear();
     }
