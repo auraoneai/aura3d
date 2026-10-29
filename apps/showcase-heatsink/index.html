@@ -804,7 +804,8 @@
         .touch-pad.held { border-color: var(--accent); }
         .touch-cluster {
           position: fixed; right: calc(12px + env(safe-area-inset-right)); bottom: calc(14px + env(safe-area-inset-bottom));
-          display: grid; grid-template-columns: 64px 64px; grid-template-rows: 52px 52px; gap: 8px;
+          display: grid; grid-template-columns: 58px 58px 58px; grid-template-rows: 52px 52px; gap: 8px;
+          /* Three columns keep FIRE (two rows), BOOST, ROLL and ITEM in two rows, below the AUTO and SOUND buttons. */
         }
         .touch-btn, .touch-small {
           font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; color: var(--ink);
