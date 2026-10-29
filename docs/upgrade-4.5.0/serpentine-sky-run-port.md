@@ -88,14 +88,35 @@ How to check: capture the same frames (runner on the road, lanterns, islands) wi
 - Scene kits and built-in humanoid provenance (change 12): no scene kits; the runner is the example's own `assets/runner.glb`.
 - Per-frame cost (change 13): applies automatically and needs no code change. `getError` is sampled unless frame/strict mode or `?diag=1` is on.
 
+## Measured (audit lane G17, 2026-10-29)
+
+Remote software WebGL2 (SwiftShader) on `tools/remote-acr/run.sh`, 1280x720, the example page with `?manual=1&autostart=1`
+after 360 idle steps (s = 108.8 m), the 50 s shot (spec `tests/browser/audit-fix/serpentine-sky-run-port.spec.ts`). "Lit
+surfaces" is the mean luma of the 30,567 pixels that change when the environment goes from 0 to 1, which are the runner and
+the Meshy props. Frames and `meta.jsonl` are in `evidence/audit-fix/g17/`.
+
+| Build | Whole frame | Top third | Runner crop | Lit surfaces |
+|---|---|---|---|---|
+| v4.3.7 (`g17v437a`) | 191.21 | 162.31 | 193.32 | 158.2 |
+| 4.5.0 base, no environment (`g17before1`) | 188.42 | 158.09 | 168.10 | 80.8 |
+| this lane + lane E2, `environments.neutral({ intensity: 0.9 })` (`g17after1`) | 191.27 | 162.44 | 193.37 | 159.6 |
+
+The lights-only change halved the luma of the lit surfaces (158.2 to 80.8), so the GLB models did darken. The game now authors
+`environments.neutral` at 0.9, calibrated next to the hemisphere light, which lane E2 made directional and additive. With
+the fused bloom of quality `auto` against `?aura3d-render=production` on the same build, the mean absolute difference is 0.30/255
+(the 99th percentile is 7/255, from JPEG noise and animated sparkles).
+
 ## Checklist
 
-- [ ] Replace `renderer: { mode, qualityProfile, fallback }` in `examples/saiyan-snake-way-port/main.ts:384` with an explicit `quality: "auto"` (or `quality: "production"` to keep the old render path; lighting still changes either way), keeping `pixelRatio: 1` and `output`.
-- [ ] Read `app.diagnostics().renderPath` and confirm `path: "hdr-msaa"` and `bloomFusion: "separable"` (`"off"` if pinned to production).
-- [ ] Capture `?capture=1` frames of the runner, lanterns and islands on `main` (4.3.7) and on `beat3js2/integration` (4.5.0) at the same game state and compare. If the GLB models are too dark, raise the light intensities, add `output.exposure`, or add `environments.studio()` (see section 2).
-- [ ] Compare the sun-shadow frames from `port-sun-shadows-serpentine-sky-run.spec.ts` on both versions.
-- [ ] Open `?diag=1`, let the game run a few seconds, and check the diag panel shows no black-frame report; if it does, add `preserveDrawingBuffer: true` for `?diag=1` only.
-- [ ] Check `app.diagnostics()` for any `option-ignored` entries.
-- [ ] Run `pnpm vitest run tests/unit/saiyan-snake-way-port` (not run here; read-only task).
-- [ ] Run the browser specs on the remote runner (`tools/remote-acr/run.sh`): `port-sun-shadows-serpentine-sky-run`, `saiyan-snake-way-port`, `saiyan-snake-way-art`, `live-ports-smoke`.
-- [ ] Run `node tools/game-checks/run.mjs serpentine-sky-run-port`.
+- [ ] Replace `renderer: { mode, qualityProfile, fallback }` with `quality: "auto"`. Not done: it changes no pixel (the profile's
+  pixel ratio is overridden by `pixelRatio: 1`), and `strict` is off, so the deprecated fields cause no error today.
+- [x] Read `app.diagnostics().renderPath`: `hdr-msaa` on every capture.
+- [x] Capture the runner, lanterns and islands on 4.3.7 and 4.5.0 at the same state and compare (table above). Fixed with
+  `environments.neutral({ intensity: 0.9 })`.
+- [ ] Compare the sun-shadow frames from `port-sun-shadows-serpentine-sky-run.spec.ts` on both versions. Not run: the luma
+  comparison above covers the lit surfaces, and the spec's hook name was only fixed in this lane.
+- [x] `?diag=1`: no black-frame report and no render error (variant `v-diag`, 0 render errors, same luma as the default).
+- [ ] Check `app.diagnostics()` for `option-ignored` entries. Not checked: the capture logs only warnings that match environment, hemisphere or GL errors.
+- [x] `pnpm vitest run tests/unit/saiyan-snake-way-port`: 96 tests pass.
+- [x] Browser runs on the remote runner: the lane capture spec and `shotsb-serpentine` (runs listed in `docs/audits/lanes/g17.md`).
+- [x] `node tools/game-checks/run.mjs serpentine-sky-run-port`: 0 errors, 0 warnings.

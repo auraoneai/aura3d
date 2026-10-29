@@ -1,41 +1,16 @@
-# Serpentine Sky Run: final screenshots (after the UI and render fixes)
+# Serpentine Sky Run: final screenshots (audit lane G17, 2026-10-29)
 
-- **Build:** head of `origin/game-rework` at `0d965903c` (fetched at the start of this capture; includes the group B UI fixes, the Gridlock first-frame fix and the athlete repaint). Capture code: `tests/browser/shotsb-lib.ts` and `tests/browser/shotsb-serp.spec.ts` (unchanged from the earlier retake).
-- **Runner:** remote Azure ACR task `finb-serp` (tools/remote-acr/run.sh), headless Chromium on SwiftShader: software WebGL2, not a GPU. Nothing here is real-GPU evidence; the owner should confirm the look on the Mac.
-- **Viewports:** 1280x720 and 390x844 (touch emulation, scale 1). Card images: `card.jpg` is 720x450 (downscaled from `card@2x.jpg`, 1440x900 captured at 1x device scale).
-- **Method:** states are driven through the game QA hooks (manual stepping) so frames are deterministic; the title frame is taken from the normal page. `capture-log.txt` has the per-frame state, the visible overlays and the console errors (empty for every pass).
+- **Build:** `audit-fix/g17` (head at capture: the phone mute icon commit) merged with `audit-fix/e2` bcb705198 (the directional, additive hemisphere), so these frames show the 4.5.0 engine with this lane's fixes, including `environments.neutral({ intensity: 0.9 })`. Capture code: `tests/browser/shotsb-lib.ts` and `tests/browser/shotsb-serpentine.spec.ts`.
+- **Runner:** remote Azure ACR task `g17shots3` (`tools/remote-acr/run.sh`), headless Chromium on SwiftShader. This is software WebGL2, not a GPU, so none of these frames is real-GPU evidence.
+- **Viewports:** 1280x720 and 390x844 (touch emulation, scale 1). The card images are `card@2x.jpg` (1440x900, captured at 1x device scale) and `card.jpg` (720x450, downscaled). The index posters `public/previews/showcase-index/serpentine-sky-run-port{,@2x}.webp` are made from the same frame.
+- **Method:** states are driven through `window.__AURA_SERPENTINE_SKY_RUN__` with manual stepping, so the frames are deterministic. The title frame comes from the normal page. `capture-log.txt` has the state of each frame, the visible overlays and the console errors, which are empty for every pass.
 
-## Frames
+## States
 
-- `card.jpg`
-- `card@2x.jpg`
-- `early-1280.jpg`
-- `early-390.jpg`
-- `jump-1280.jpg`
-- `jump-390.jpg`
-- `mid-action-1280.jpg`
-- `mid-action-390.jpg`
-- `results-1280.jpg`
-- `results-390.jpg`
-- `roll-1280.jpg`
-- `roll-390.jpg`
-- `title-1280.jpg`
-- `title-390.jpg`
+All five states were reached: title, early (the check-in banner), jump, roll, mid-action (the "THE LONG ROAD" banner, spark 87) and results. The card uses the mid-action state. The results frames show the real results card: the idle run falls at the first gap (s = 754.8), and `outro(3)` passes the fall's 2.6 s results delay. The card shows distance, score, best, days left, the days bonus and its note.
 
-## States reached and not reached
+## Checked
 
-Reached: title, early (check-in banner), jump, roll, mid-action. Card: jump. Not reached: results. The run ends in the fall phase, so the `results` frames (`results-1280`, `results-390`) show the run still in progress, not a results card.
-
-## Checked against the fixed list (frames opened and read: title 1280 and 390, early 1280 and 390, jump 390, mid-action 1280 and 390, results 390, jump card)
-
-- Old names or "port" text: none in the frames.
+- Old names: none in the frames.
 - Black frames: none.
-- Brand marks or lettering: none seen.
-
-## Problems still visible (severity)
-
-- **Medium:** in the jump frames (and the jump card, `card.jpg` / `card@2x.jpg`) the runner looks washed out and semi-transparent against the road. Pick another card state before wiring the index card.
-- **Medium (likeness review):** the Ember runner reads as an orange suit with dark wristbands and sash and a topknot; worth a review next to the likeness audit.
-- **Low:** the Slide and Fly touch buttons on 390 are almost invisible (very low contrast); only Surge is clearly a button.
-- **Low:** the `results` frames are not results (see above).
-- Fixed since the first retake: the title and tagline show no "port of a Crayon browser game" sentence; the HUD no longer overlaps; the distance bar sits at the bottom on phones.
+- HUD: the SPARK and STRAIN labels are visible, the surge chip sits below the player card, and the mute button is a text button on desktop and an icon beside pause on phones. On phones the touch buttons and the progress bar do not overlap.
