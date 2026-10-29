@@ -47,6 +47,8 @@
 
 - **What happens now:** With `auto`, the bloom chain is fused (frames within 1/255 of the separable chain), and shadow cascades no receiver selects are skipped. Both are pixel-neutral by design.
 - **Evidence:** `src/game/world.ts:105`; `packages/engine/src/agent-api/app/renderPath.ts:24-43`; `packages/engine/src/agent-api/compiler/renderer.ts:123-126`.
+- **Measured (audit lane E1, RP-05):** on the same paused frame, `auto` against the production pass sequence differs by 2.18 and 2.16/255 mean RGB in two runs. Repeating the `auto` frame differs by 1.05 and 1.03/255, so about 1.1/255 of the difference is the fused bloom and cascade skip, and the rest is frame-to-frame motion. The maximum pixel difference (223) is the same in both comparisons, so the largest changes come from animated pixels, not from the bloom.
+- **Decision:** keep `quality: "auto"`. A 1.1/255 mean change cannot be seen on this dark board, and pinning `quality: "production"` would also turn off the cascade skip on a route that already presents only about 0.3 frames per second on the software-GL runner.
 - **What to do:** Nothing. Option `renderer: { bloomFusion: "fused-2d" }` exists only if you want the other mode.
 - **How to check:** With the temporary `__app` global, `__app.diagnostics().renderPath.bloomFusion` should be `"separable"`.
 
@@ -79,7 +81,7 @@
 - [ ] Capture the same frames (title, classic maze play, surge active) on 4.3.7 (`main`) and 4.5.0 with `?capture=1`, and compare brightness and colour (the direction of the change is not predicted).
 - [ ] If the board is darker or brighter than intended, adjust `lights.ambient`, `lights.directional` or the `exposureEv` override in `src/game/world.ts:110-113`. Do not count on `lights.hemisphere` for brightness.
 - [ ] Temporarily expose `app` on `window` (not committed) and confirm `diagnostics().renderPath` reports `path: "hdr-msaa"`, `quality: "auto"`, `bloomFusion: "separable"`.
-- [ ] Decide whether to pin `quality: "production"` in `src/main.ts` (optional; restores the old pipeline, but does not undo the look's new environment node).
+- [x] Decide whether to pin `quality: "production"` in `src/main.ts`: not pinned (RP-05 measurement above).
 - [ ] Check `diagnostics()` for warnings: expect `INSTANCES_EMPTY` for empty pools, and no `OPTION_IGNORED`.
 - [ ] Play all six mazes: wall, rail, shard, sentry and gem pools draw correctly and per-instance colours are unchanged.
 - [ ] Confirm the black-frame guard does not reload the page (`window.__AURA3D_HEAL__.rung` stays 0).

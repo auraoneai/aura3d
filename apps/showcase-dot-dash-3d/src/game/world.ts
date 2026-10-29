@@ -109,7 +109,10 @@ export function buildScene(): unknown {
     .add(effects.fog({ color: "#0e1a17", density: 0.0035 }))
     .add(looks.preset("neon-arcade", { fogDensityScale: 0, exposureEv: 0.05, background: "#0e1a17", accent: "#ffb23e" }).runtime(game.runtimeNode("look")))
     .add(lights.ambient({ color: "#ffe9cc", intensity: 0.92 }))
-    .add(lights.hemisphere({ skyColor: "#ffe3b8", groundColor: "#2a3a32", intensity: 0.85 }))
+    // 0.5, not 0.85: since the engine applies the hemisphere per normal (sky on up-facing
+    // surfaces), 0.85 lifted the board from 29.5 to 31.5 mean luma. 0.5 holds the audited 4.5.0
+    // look (remote runs g13w2-before / g13w2-grid / g13w2-after, docs/audits/lanes/g13.md).
+    .add(lights.hemisphere({ skyColor: "#ffe3b8", groundColor: "#2a3a32", intensity: 0.5 }))
     .add(lights.directional({ position: [8, 22, 12], target: [0, 0, 0], color: "#fff2dc", intensity: 1.25, shadow: true }))
     .camera(camera.perspective({ position: CAMERA_RIG.position, target: CAMERA_RIG.target, fov: CAMERA_RIG.fov }));
 
