@@ -9,23 +9,27 @@
 import {
   createGameApp,
   material,
+  type AuraModelMaterialHandle,
+  type AuraModelMaterialOverride,
   type AuraRuntimeNodeHandle,
   type AuraSceneSnapshot
 } from "@aura3d/engine";
 import { AMMO, type AmmoId } from "./game/ammo";
 import { siegeAudio } from "./game/audio";
 import { SiegeHud, starRating, type ModeId } from "./game/hud";
+import { assignPoolSlots, fitHalfWidth, orbitAround, quatToEulerZYX, rotQ, type PoolSlot } from "./game/layout";
 import { CHAPTERS, isLevelUnlocked, levelById, LEVELS, type LevelSpec } from "./game/levels";
-import { MATERIALS } from "./game/materials";
 import { SiegeSim, type VisualUpdate } from "./game/sim";
 import {
-  blockMaterial, blockNodeId, bladeNodeId, buildScene, debrisMaterial, debrisNodeId, dotNodeId,
+  blockLook, blockNodeId, bladeNodeId, buildScene, debrisLook, debrisNodeId, dotNodeId,
   gullPartId, millHubNodeId, millPoleNodeId, crateNodeId, barrelNodeId, plankNodeId, projectileNodeId,
   puffMaterial, puffNodeId, PROP_IDS, POOL, SLING_IDS
 } from "./game/stage";
+import { sanitizeRenderParams } from "./game/urlGuard";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { installGameBeacon } from "@aura3d/engine/game";
 
+sanitizeRenderParams();
 installBlackFrameGuard();
 
 // ---------------------------------------------------------------- params --
@@ -37,6 +41,8 @@ let appReady = false;
 const SEED = (Number(params.get("seed")) || 0x51e9e) >>> 0;
 const START_LEVEL = Math.min(Math.max(0, Number(params.get("level")) || 0), LEVELS.length - 1);
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches || params.get("still") === "1";
+/** `?ao=0`: evidence switch for the AO-on/off capture pair (LIGHT-06). */
+const AO = params.get("ao") !== "0";
 
 // ---------------------------------------------------------- persistence --
 
@@ -74,7 +80,7 @@ const gameApp = createGameApp("#app", {
     touch: true
   },
   loop: { fixedDt: 1 / 60, maxSubSteps: 2 },
-  scene: buildScene(chapter, REDUCED)
+  scene: buildScene(chapter, { reducedMotion: REDUCED, ambientOcclusion: AO })
 });
 const app = gameApp.app;
 const input = gameApp.input;
@@ -105,50 +111,68 @@ function setPose(id: string, u: VisualUpdate, scale?: number | readonly [number,
   const h = node(id);
   if (!h) return;
   h.setPosition(u.position[0], u.position[1], u.position[2]);
-  const e = quatToEuler(u.rotation);
+  const e = quatToEulerZYX(u.rotation);
   h.setRotation(e[0], e[1], e[2]);
   if (scale !== undefined) h.setScale(scale as number | [number, number, number]);
   h.setVisible(u.visible);
 }
 
-/** quat [x,y,z,w] → ZYX-order Euler (the runtime handle's default order). */
-function quatToEuler(q: readonly [number, number, number, number]): [number, number, number] {
-  const [x, y, z, w] = q;
-  const sy = Math.max(-1, Math.min(1, 2 * (w * y - x * z)));
-  const ey = Math.asin(sy);
-  if (Math.abs(sy) > 0.9999) {
-    return [0, ey, Math.atan2(-(x * y - w * z), 1 - 2 * (y * y + z * z)) * -1];
+/**
+ * GLB looks for pooled model nodes go through the node's `materials` handle
+ * (C-15 overrides, re-applied from the authored snapshot, so they never
+ * accumulate). A model node's `setMaterial` only seeds the load-time look, so
+ * the old glass-only `setMaterial` never reset a pooled node. Each node
+ * remembers its look key; nodes whose GLB has not loaded yet are retried from
+ * the frame loop.
+ */
+const lookKeys = new Map<string, string>();
+const pendingLooks = new Map<string, readonly AuraModelMaterialOverride[]>();
+function modelMaterials(id: string): AuraModelMaterialHandle | undefined {
+  let h = app.nodes.get(id) as unknown as { materials?: AuraModelMaterialHandle } | undefined;
+  let m = h?.materials;
+  // The handle binds its actor when first read; a read before the GLB loaded keeps an empty
+  // handle, so drop it and let the registry rebuild it against the loaded actor.
+  if (h && m && m.inspectMaterials().length === 0) {
+    delete h.materials;
+    h = app.nodes.get(id) as unknown as { materials?: AuraModelMaterialHandle } | undefined;
+    m = h?.materials;
   }
-  const ex = Math.atan2(2 * (w * x + y * z), 1 - 2 * (x * x + y * y));
-  const ez = Math.atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z));
-  return [ex, ey, ez];
+  return m && m.inspectMaterials().length > 0 ? m : undefined;
 }
-
-function rotQ(q: readonly [number, number, number, number], v: readonly [number, number, number]): [number, number, number] {
-  const [qx, qy, qz, qw] = q;
-  const [vx, vy, vz] = v;
-  const tx = 2 * (qy * vz - qz * vy);
-  const ty = 2 * (qz * vx - qx * vz);
-  const tz = 2 * (qx * vy - qy * vx);
-  return [
-    vx + qw * tx + (qy * tz - qz * ty),
-    vy + qw * ty + (qz * tx - qx * tz),
-    vz + qw * tz + (qx * ty - qy * tx)
-  ];
+function applyLook(id: string, key: string, overrides: readonly AuraModelMaterialOverride[]): void {
+  if (lookKeys.get(id) === key && !pendingLooks.has(id)) return;
+  lookKeys.set(id, key);
+  const m = modelMaterials(id);
+  if (!m) { pendingLooks.set(id, overrides); return; }
+  pendingLooks.delete(id);
+  m.setMaterialOverrides(overrides);
+}
+function flushPendingLooks(): void {
+  for (const [id, overrides] of pendingLooks) {
+    const m = modelMaterials(id);
+    if (!m) continue;
+    pendingLooks.delete(id);
+    m.setMaterialOverrides(overrides);
+  }
 }
 
 // ------------------------------------------------------------------- sim --
 
 const sim = new SiegeSim({ level: levelById(START_LEVEL), seed: SEED });
+sim.slowmoEnabled = !REDUCED;
 let level = sim.level;
 let shotsUsed = 0;
 let levelScore = 0;
 let resultOpen = false;
 let mode: ModeId = "siege";
 let paused = false;
-let muted = false;
+let muted = audio.muted;
 let realLevelId = level.id;
 let settledSinceEmpty = 0;
+/** Seconds since the last gull fell with no shot in flight (late-topple win check). */
+let clearedSinceSettle = 0;
+/** Pool node per piece index, for the current level. */
+let pieceSlots: (PoolSlot | null)[] = [];
 
 type PieceVisual = { nodeId: string; scale: number | readonly [number, number, number]; pulse: number };
 const pieceVisuals = new Map<number, PieceVisual>();
@@ -161,38 +185,30 @@ function assignPieceVisuals(): void {
   for (const [id, h] of H.entries()) {
     if (id.startsWith("v-")) { h.setPosition(0, -120, 0); h.setVisible(false); }
   }
-  let crate = 0;
-  let barrel = 0;
-  let plank = 0;
-  sim.pieceList().forEach((p, i) => {
-    const want = p.spec.visual ?? "block";
-    if (want === "crate" && crate < POOL.crates) {
-      const id = crateNodeId(crate);
-      pieceVisuals.set(i, { nodeId: id, scale: 0.38, pulse: 0 });
-      node(id)?.setScale(0.38).setVisible(true);
-      crate += 1;
-    } else if (want === "barrel" && barrel < POOL.barrels) {
-      const id = barrelNodeId(barrel);
-      pieceVisuals.set(i, { nodeId: id, scale: 0.42, pulse: 0 });
-      node(id)?.setScale(0.42).setVisible(true);
-      barrel += 1;
-    } else if (want === "plank" && plank < POOL.planks) {
-      const id = plankNodeId(plank);
-      const scale: [number, number, number] = [Math.max(0.4, p.spec.hx * 1.1), Math.max(0.4, p.spec.hy * 2.4), Math.max(0.35, p.spec.hz * 0.9)];
-      pieceVisuals.set(i, { nodeId: id, scale, pulse: 0 });
-      node(id)?.setScale(scale).setVisible(true);
-      plank += 1;
-    } else {
-      const id = blockNodeId(i);
-      const scale: [number, number, number] = [Math.max(0.28, p.spec.hx * 1.15), Math.max(0.28, p.spec.hy * 1.45), Math.max(0.28, p.spec.hz * 1.25)];
-      pieceVisuals.set(i, { nodeId: id, scale, pulse: 0 });
-      const h = node(id);
-      if (p.spec.material === "glass" || p.spec.material === "ice") {
-        h?.setMaterial(blockMaterial(p.spec.material));
-      }
-      h?.setScale(scale);
-      h?.setVisible(true);
+  const pieces = sim.pieceList();
+  pieceSlots = assignPoolSlots(pieces.map((p) => p.spec), POOL);
+  pieces.forEach((p, i) => {
+    const slot = pieceSlots[i];
+    if (!slot) {
+      lastError = `pool overflow: level ${level.id} piece ${i} has no node`;
+      return;
     }
+    const visual = p.spec.visual ?? "block";
+    let id: string;
+    let scale: number | [number, number, number];
+    if (slot.kind === "crate") id = crateNodeId(slot.slot);
+    else if (slot.kind === "barrel") id = barrelNodeId(slot.slot);
+    else if (slot.kind === "plank") id = plankNodeId(slot.slot);
+    else id = blockNodeId(slot.slot);
+    if (visual === "crate") scale = 0.38;
+    else if (visual === "barrel") scale = 0.42;
+    else if (visual === "plank") scale = [Math.max(0.4, p.spec.hx * 1.1), Math.max(0.4, p.spec.hy * 2.4), Math.max(0.35, p.spec.hz * 0.9)];
+    else scale = [Math.max(0.28, p.spec.hx * 1.15), Math.max(0.28, p.spec.hy * 1.45), Math.max(0.28, p.spec.hz * 1.25)];
+    pieceVisuals.set(i, { nodeId: id, scale, pulse: 0 });
+    // Every assignment sets the look, so a pooled node never keeps the last level's material.
+    const mat = visual === "block" ? p.spec.material : "authored";
+    applyLook(id, `piece:${mat}`, visual === "block" ? blockLook(p.spec.material) : []);
+    node(id)?.setScale(scale).setVisible(true);
   });
   // gulls
   gullVisualCount = sim.gullList().length;
@@ -218,13 +234,16 @@ function assignPieceVisuals(): void {
 }
 
 function loadLevel(id: number, opts: { announce?: boolean } = {}): void {
-  level = levelById(id);
+  // The Trajectory Range sandbox (id 99) is not a campaign level: levelById would clamp it to level 30.
+  level = id === SANDBOX_LEVEL.id ? SANDBOX_LEVEL : levelById(id);
   sim.loadLevel(level);
   shotsUsed = 0;
   levelScore = 0;
   resultOpen = false;
   settledSinceEmpty = 0;
+  clearedSinceSettle = 0;
   assignPieceVisuals();
+  hud.setCoach(showCoach());
   hud.hideResult();
   hud.setPaused(false);
   paused = false;
@@ -244,8 +263,12 @@ function loadLevel(id: number, opts: { announce?: boolean } = {}): void {
 
 type CamState = "orbit" | "aim" | "follow" | "result";
 let camState: CamState = "aim";
-let camYaw = 1.42;
-let camPitch = 0.26;
+/** "Drag empty sky to orbit": yaw/pitch offsets around the current target, eased back to 0 after release. */
+let orbitYaw = 0;
+let orbitPitch = 0;
+const ORBIT_YAW_MAX = 0.75;
+const ORBIT_PITCH_MIN = -0.18;
+const ORBIT_PITCH_MAX = 0.45;
 let camPos: [number, number, number] = [-2.5, 4.0, 15.5];
 let camTgt: [number, number, number] = [-0.5, 1.5, 0];
 let trauma = 0;
@@ -277,6 +300,28 @@ function updateCamera(dt: number, elapsed: number): void {
     dp = [-2.5 + Math.sin(elapsed * 0.3) * 0.4, 4.0, 15.5];
     dtg = [-0.5, 1.5, 0];
   }
+
+  // Portrait phones: the fixed 55° vertical FOV leaves about 28° across, so fit the
+  // framing width instead (sling-to-fort while aiming, the fort on the result card).
+  // The aim frame fits sling (x -7.4) to fort (x 7.2) on every aspect, so the fort is not a speck on desktop.
+  const aspect = (stageEl.clientWidth || 1) / (stageEl.clientHeight || 1);
+  if (camState === "aim" || camState === "orbit") {
+    dtg = [-0.1, 1.6, 0];
+    dp = fitHalfWidth([dp[0] + 2.4, dp[1], dp[2]], dtg, 55, aspect, aspect < 1 ? 9.4 : 10.6, true);
+  } else if (aspect < 1) {
+    if (camState === "result") {
+      dp = fitHalfWidth(dp, dtg, 55, aspect, 3.6);
+    } else {
+      dp = fitHalfWidth(dp, dtg, 50, aspect, 4.6);
+    }
+  }
+  // Sky-drag orbit offsets (eased home once the drag ends).
+  if (aim.state !== "orbiting") {
+    const back = Math.exp(-dt * 1.6);
+    orbitYaw *= back;
+    orbitPitch *= back;
+  }
+  if (Math.abs(orbitYaw) > 1e-4 || Math.abs(orbitPitch) > 1e-4) dp = orbitAround(dp, dtg, orbitYaw, orbitPitch);
 
   const k = 1 - Math.exp(-dt * (camState === "follow" ? 7 : 3.2));
   camPos = [camPos[0] + (dp[0] - camPos[0]) * k, camPos[1] + (dp[1] - camPos[1]) * k, camPos[2] + (dp[2] - camPos[2]) * k];
@@ -420,12 +465,19 @@ function currentAmmo(): AmmoId | null {
   return level.ammo[shotsUsed] ?? null;
 }
 
+/** First-level onboarding: show the coach card until the player's first launch. */
+function showCoach(): boolean {
+  return mode === "siege" && level.id === 0 && shotsUsed === 0 && !DEMO && !autoPlay && Object.keys(saved.stars).length === 0;
+}
+
 function canAim(): boolean {
   return mode === "siege" && !paused && !resultOpen && !sim.isShotActive() && currentAmmo() !== null;
 }
 
-// world→screen: same view→projection the camera spec implies
-let vpMat = new Float32Array(16);
+// world→screen: same view→projection the camera spec implies (buffers reused every frame)
+const vpMat = new Float32Array(16);
+const vpView = new Float64Array(16);
+const vpProj = new Float64Array(16);
 function refreshVp(): void {
   const w = stageEl.clientWidth || 1;
   const h = stageEl.clientHeight || 1;
@@ -439,41 +491,36 @@ function refreshVp(): void {
   const fy = (tgt[1] ?? 0) - (eye[1] ?? 0);
   const fz = (tgt[2] ?? 0) - (eye[2] ?? 0);
   const fl = Math.hypot(fx, fy, fz) || 1;
-  const f = [fx / fl, fy / fl, fz / fl];
-  const up = [0, 1, 0];
-  const sx = f[1]! * up[2]! - f[2]! * up[1]!;
-  const sy2 = f[2]! * up[0]! - f[0]! * up[2]!;
-  const sz = f[0]! * up[1]! - f[1]! * up[0]!;
-  const sl = Math.hypot(sx, sy2, sz) || 1;
-  const s = [sx / sl, sy2 / sl, sz / sl];
-  const u = [s[1]! * f[2]! - s[2]! * f[1]!, s[2]! * f[0]! - s[0]! * f[2]!, s[0]! * f[1]! - s[1]! * f[0]!];
+  const f0 = fx / fl, f1 = fy / fl, f2 = fz / fl;
+  // s = f × up(0,1,0)
+  const sx = -f2;
+  const sz = f0;
+  const sl = Math.hypot(sx, sz) || 1;
+  const s0 = sx / sl, s1 = 0, s2 = sz / sl;
+  const f = [f0, f1, f2] as const;
+  const s = [s0, s1, s2] as const;
+  const u = [s1 * f2 - s2 * f1, s2 * f0 - s0 * f2, s0 * f1 - s1 * f0] as const;
   const ex = eye[0] ?? 0; const ey = eye[1] ?? 0; const ez = eye[2] ?? 0;
   // column-major view matrix
-  const view = [
-    s[0]!, u[0]!, -f[0]!, 0,
-    s[1]!, u[1]!, -f[1]!, 0,
-    s[2]!, u[2]!, -f[2]!, 0,
-    -(s[0]! * ex + s[1]! * ey + s[2]! * ez), -(u[0]! * ex + u[1]! * ey + u[2]! * ez), f[0]! * ex + f[1]! * ey + f[2]! * ez, 1
-  ];
+  const view = vpView;
+  view[0] = s[0]!; view[1] = u[0]!; view[2] = -f[0]!; view[3] = 0;
+  view[4] = s[1]!; view[5] = u[1]!; view[6] = -f[1]!; view[7] = 0;
+  view[8] = s[2]!; view[9] = u[2]!; view[10] = -f[2]!; view[11] = 0;
+  view[12] = -(s[0]! * ex + s[1]! * ey + s[2]! * ez); view[13] = -(u[0]! * ex + u[1]! * ey + u[2]! * ez); view[14] = f[0]! * ex + f[1]! * ey + f[2]! * ez; view[15] = 1;
   const t = 1 / Math.tan(fov / 2);
   const aspect = w / h;
   const nf = 1 / (0.1 - 400);
-  const proj = [
-    t / aspect, 0, 0, 0,
-    0, t, 0, 0,
-    0, 0, (400 + 0.1) * nf, -1,
-    0, 0, 2 * 400 * 0.1 * nf, 0
-  ];
+  const proj = vpProj;
+  proj.fill(0);
+  proj[0] = t / aspect; proj[5] = t; proj[10] = (400 + 0.1) * nf; proj[11] = -1; proj[14] = 2 * 400 * 0.1 * nf;
   // vp = proj * view (column-major)
-  const out = new Float32Array(16);
   for (let c = 0; c < 4; c += 1) {
     for (let r = 0; r < 4; r += 1) {
-      out[c * 4 + r] =
+      vpMat[c * 4 + r] =
         proj[r]! * view[c * 4]! + proj[4 + r]! * view[c * 4 + 1]! +
         proj[8 + r]! * view[c * 4 + 2]! + proj[12 + r]! * view[c * 4 + 3]!;
     }
   }
-  vpMat = out;
 }
 function projectWorld(p: readonly [number, number, number]): { x: number; y: number; behind: boolean } {
   const m = vpMat;
@@ -503,18 +550,28 @@ stageEl.addEventListener("pointerdown", (ev) => {
     if (dist < grabR || leftThird) {
       aim.state = "dragging";
       camState = "aim";
+      capturePointer(ev);
       ev.preventDefault();
       return;
     }
   }
   aim.state = "orbiting";
   aim.lastX = ev.clientX; aim.lastY = ev.clientY;
+  capturePointer(ev);
 });
+
+/** Keep pointermove/up on the stage while a drag leaves it (so a release outside still lands here). */
+function capturePointer(ev: PointerEvent): void {
+  try { stageEl.setPointerCapture(ev.pointerId); } catch { /* synthetic pointers have no capture */ }
+}
 
 const heldKeys = new Set<string>();
 const justPressedKeys = new Set<string>();
 window.addEventListener("keydown", (ev) => {
   autoPlay = false;
+  // A key press is a user gesture too: keyboard-only players get sound (and the wind loop).
+  void audio.unlock();
+  if (ev.code === "Tab" || ev.code === "Space") ev.preventDefault();
   if (!heldKeys.has(ev.code)) justPressedKeys.add(ev.code);
   heldKeys.add(ev.code);
 });
@@ -535,8 +592,8 @@ stageEl.addEventListener("pointermove", (ev) => {
     aim.pullX = px;
     aim.pullY = py;
   } else if (aim.state === "orbiting") {
-    camYaw -= (ev.clientX - aim.lastX) * 0.005;
-    camPitch = Math.min(0.9, Math.max(0.08, camPitch + (ev.clientY - aim.lastY) * 0.004));
+    orbitYaw = Math.min(ORBIT_YAW_MAX, Math.max(-ORBIT_YAW_MAX, orbitYaw - (ev.clientX - aim.lastX) * 0.005));
+    orbitPitch = Math.min(ORBIT_PITCH_MAX, Math.max(ORBIT_PITCH_MIN, orbitPitch + (ev.clientY - aim.lastY) * 0.004));
     aim.lastX = ev.clientX; aim.lastY = ev.clientY;
   }
 });
@@ -561,18 +618,34 @@ function endPointer(ev: PointerEvent): void {
   aim.state = "idle";
   if (quickTap && sim.isShotActive()) fireAbility();
 }
+/** The browser took the pointer (scroll, gesture, lost capture): drop the draw, never fire it. */
+function cancelPointer(ev: PointerEvent): void {
+  if (ev.pointerId !== aim.pointerId) return;
+  aim.pointerId = -1;
+  if (aim.state === "dragging") {
+    beginSnap();
+    aim.pullX = 0; aim.pullY = 0;
+  }
+  aim.state = "idle";
+}
 stageEl.addEventListener("pointerup", endPointer);
-stageEl.addEventListener("pointercancel", endPointer);
+stageEl.addEventListener("pointercancel", cancelPointer);
 
 function fireShot(): void {
   const ammo = currentAmmo();
-  if (!ammo) return;
+  if (!ammo || !canAim()) {
+    // paused, result card open or a shot still flying: release the draw without launching
+    beginSnap();
+    aim.pullX = 0; aim.pullY = 0;
+    return;
+  }
   const sol = aimSolution();
   const v: [number, number, number] = [sol.dir[0] * sol.speed, sol.dir[1] * sol.speed, 0];
   if (sol.speed > 0.5 && sim.launch(ammo, sol.pouch, v)) {
     shotsUsed += 1;
     camState = "follow";
     audio.cue("launch");
+    hud.setCoach(false);
   }
   // fired or refused — either way the draw releases and the bands snap home
   beginSnap();
@@ -588,11 +661,27 @@ function fireAbility(): void {
 function pulsePiece(index: number): void {
   const pv = pieceVisuals.get(index);
   if (!pv) return;
+  if (tweenList.some((tw) => tw.id === pv.nodeId)) return;
   const base: readonly [number, number, number] = typeof pv.scale === "number" ? [pv.scale, pv.scale, pv.scale] : pv.scale;
   tweenList.push({ id: pv.nodeId, t: 0, dur: 0.24, base, kind: "squash" });
 }
+/** A broken piece is already hidden, so the impact squash plays on the (up to two) nearest standing pieces. */
+function pulseNeighbours(at: readonly [number, number, number]): void {
+  const near: { i: number; d: number }[] = [];
+  sim.pieceList().forEach((p, i) => {
+    if (!p.alive) return;
+    const q = p.body.position;
+    const d = Math.hypot(q[0] - at[0], q[1] - at[1], q[2] - at[2]);
+    if (d < 1.6) near.push({ i, d });
+  });
+  near.sort((a, b) => a.d - b.d);
+  for (const n of near.slice(0, 2)) pulsePiece(n.i);
+}
+const hoppingGulls = new Set<string>();
 function hopGull(g: number): void {
   const id = gullPartId(g, "body");
+  if (hoppingGulls.has(id)) return;
+  hoppingGulls.add(id);
   setNodeAnim(id, "Contest", 1.35);
   tweenList.push({ id, t: 0, dur: 0.22, base: [0.54, 0.54, 0.54], kind: "hop" });
 }
@@ -615,6 +704,7 @@ function updateTweens(dt: number): void {
     }
     if (t >= 1) {
       if (h) h.setScale(tw.base as [number, number, number]);
+      if (tw.kind === "hop") hoppingGulls.delete(tw.id);
       tweenList.splice(i, 1);
     }
   }
@@ -632,7 +722,7 @@ function syncGull(g: number): void {
   // squashed gulls flatten in place — the body already retired to the graveyard
   const pos = rec.alive ? rec.body.position : rec.squashAt;
   const rot = rec.alive ? rec.body.rotation : ([0, 0, 0, 1] as const);
-  const e = quatToEuler(rot);
+  const e = quatToEulerZYX(rot);
   // squash tween: flatten into the ground over ~0.15s, hold 0.9s, then hide
   let sy = 1;
   let sxz = 1;
@@ -645,7 +735,9 @@ function syncGull(g: number): void {
   }
   const hidden = rec.squashAge > 1.05;
   const bodyId = gullPartId(g, "body");
-  setNodeAnim(bodyId, rec.alive ? "Idle_Loop" : "Contest", rec.alive ? 0.95 + (g % 3) * 0.08 : 1.4);
+  // While the scare hop plays, its tween owns the clip and the scale.
+  const hopping = rec.alive && hoppingGulls.has(bodyId);
+  if (!hopping) setNodeAnim(bodyId, rec.alive ? "Idle_Loop" : "Contest", rec.alive ? 0.95 + (g % 3) * 0.08 : 1.4);
   const idleBob = rec.alive ? Math.sin(elapsed * 2.8 + g * 1.3) * 0.035 : 0;
   const idleYaw = rec.alive ? Math.sin(elapsed * 1.9 + g * 0.9) * 0.08 : 0;
   for (const spec of GULL_PARTS) {
@@ -654,7 +746,7 @@ function syncGull(g: number): void {
     const off = rotQ(rot, spec.off);
     h.setPosition(pos[0] + off[0], pos[1] + off[1] - sink + idleBob, pos[2] + off[2]);
     h.setRotation(e[0], e[1] - Math.PI * 0.45 + idleYaw, e[2]);
-    h.setScale([spec.base[0] * sxz, spec.base[1] * sy, spec.base[2] * sxz]);
+    if (!hopping) h.setScale([spec.base[0] * sxz, spec.base[1] * sy, spec.base[2] * sxz]);
     h.setVisible(rec.alive ? true : !hidden);
   }
 }
@@ -664,7 +756,7 @@ function syncWindmill(m: number): void {
   if (!wm) return;
   const p = wm.rotor.position;
   const rot = wm.rotor.rotation;
-  const e = quatToEuler(rot);
+  const e = quatToEulerZYX(rot);
   node(millHubNodeId(m))?.setPosition(p[0], p[1], p[2]).setRotation(e[0], e[1], e[2]);
   for (let b = 0; b < POOL.windmillBlades; b += 1) {
     const angle = (b / POOL.windmillBlades) * Math.PI * 2;
@@ -741,12 +833,12 @@ function syncVisuals(): void {
       const pv = pieceVisuals.get(idx);
       if (pv) setPose(pv.nodeId, u);
     } else if (u.id.startsWith("projectile-")) {
-      const i = Number(u.id.slice(11));
-      if (i < POOL.projectiles) {
-        const pid = projectileNodeId(i);
-        setPose(pid, u, 0.48);
-        if (u.visible) setNodeAnim(pid, "Jump_Loop", 1.5);
-      }
+      // Projectile records are never reused, so slots wrap; the sim yields records oldest first,
+      // so a live newer shot always wins its slot over a dead older one.
+      const i = Number(u.id.slice(11)) % POOL.projectiles;
+      const pid = projectileNodeId(i);
+      setPose(pid, u, 0.48);
+      if (u.visible) setNodeAnim(pid, "Jump_Loop", 1.5);
     } else if (u.id.startsWith("debris-")) {
       const i = Number(u.id.slice(7));
       const d = sim.debrisList()[i];
@@ -754,6 +846,7 @@ function syncVisuals(): void {
         const h = node(debrisNodeId(i));
         if (h) {
           if (d.active) {
+            applyLook(debrisNodeId(i), `debris:${d.matId}`, debrisLook(d.matId));
             setPose(debrisNodeId(i), u, [d.sx * 2.2, d.sy * 2.2, d.sz * 2.2]);
           } else {
             h.setVisible(false);
@@ -783,17 +876,19 @@ function syncVisuals(): void {
 
 const hud = new SiegeHud(document.getElementById("hud") ?? stageEl, {
   onFireAbility: () => fireAbility(),
-  onReset: () => { audio.cue("ui-confirm"); loadLevel(realLevelId); },
+  onReset: () => resetLevel(),
   onPause: (p) => { paused = p; hud.setPaused(p); if (!p) hud.setMode(mode); },
   onLevelSelect: (id) => { realLevelId = id; mode = "siege"; hud.setMode(mode); loadLevel(id); },
   onModeChange: (m) => setMode(m),
   onResult: (next) => {
     if (next === "next") {
-      const nxt = Math.min(level.id + 1, LEVELS.length - 1);
+      // Same star gate the Siege Map enforces.
+      const nxt = level.id + 1;
+      if (nxt >= LEVELS.length || !isLevelUnlocked(nxt, saved.stars)) return;
       realLevelId = nxt;
       loadLevel(nxt);
     } else if (next === "retry") {
-      loadLevel(level.id);
+      resetLevel();
     } else {
       setMode("map");
     }
@@ -811,11 +906,17 @@ const hud = new SiegeHud(document.getElementById("hud") ?? stageEl, {
   onRangeShot: (ammo, powerPct, angleDeg) => {
     const power = (powerPct / 100) * 16.5;
     const rad = (angleDeg * Math.PI) / 180;
-    sim.launch(ammo, [-7.4, 1.8, 0], [Math.cos(rad) * power, Math.sin(rad) * power, 0]);
-    audio.cue("launch");
+    if (sim.launch(ammo, [-7.4, 1.8, 0], [Math.cos(rad) * power, Math.sin(rad) * power, 0])) audio.cue("launch");
   },
-  onMuteToggle: () => { muted = !muted; return muted; }
+  onMuteToggle: () => { muted = !muted; audio.setMuted(muted); return muted; }
 });
+hud.setMuted(muted);
+
+/** R, the reset button and the pause card's Restart: replay the level in play (the sandbox in range mode). */
+function resetLevel(): void {
+  audio.cue("ui-confirm");
+  loadLevel(mode === "range" ? SANDBOX_LEVEL.id : level.id);
+}
 
 // apply persisted studio colours
 {
@@ -859,7 +960,7 @@ function consumeEvents(): void {
     switch (ev.kind) {
       case "piece-broke": {
         levelScore += ev.points;
-        pulsePiece(ev.piece);
+        pulseNeighbours(ev.at);
         trauma = Math.min(1.4, trauma + 0.28);
         const sp = projectWorld(ev.at);
         hud.scorePopup(`+${ev.points}`, (sp.x / stageEl.clientWidth) * 100, (sp.y / stageEl.clientHeight) * 100);
@@ -922,6 +1023,8 @@ function onShotSettled(): void {
 
 function endLevel(won: boolean): void {
   if (resultOpen) return;
+  // Trajectory Range shots are free practice: no result card, no stars, no unlocks.
+  if (mode === "range") return;
   resultOpen = true;
   camState = "result";
   let bonus = 0;
@@ -940,7 +1043,7 @@ function endLevel(won: boolean): void {
   hud.showResult({
     won, stars, score: levelScore, bonus,
     levelName: `${CHAPTERS[level.chapter]!.name} · ${level.slot + 1}. ${level.name}`,
-    hasNext: won ? hasNext || level.id + 1 < LEVELS.length : true
+    hasNext
   });
   for (let i = 0; i < stars; i += 1) setTimeout(() => audio.cue("star-chime"), 350 + i * 320);
 }
@@ -1079,6 +1182,8 @@ function evidence(): Record<string, unknown> {
     savedStars: Object.values(saved.stars).reduce((a, b) => a + b, 0),
     resultOpen,
     paused,
+    audio: audio.state(),
+    pools: { blocks: POOL.blocks, crates: POOL.crates, planks: POOL.planks, unassigned: pieceSlots.filter((x) => x === null).length },
     error: lastError
   };
 }
@@ -1107,6 +1212,7 @@ function refreshHud(): void {
     level,
     score: levelScore,
     ammo: level.ammo,
+    shotsUsed,
     ammoLeft: Math.max(0, level.ammo.length - shotsUsed),
     currentAmmo: proj ? proj.ammo : currentAmmo(),
     abilityReady: sim.isShotActive() && !!proj && !proj.abilityUsed,
@@ -1132,6 +1238,7 @@ try {
   updateCamera(0, 0);
   refreshVp();
   hud.setMode(mode);
+  hud.setCoach(showCoach());
   hud.showBanner(`${CHAPTERS[level.chapter]!.name}`, `Level ${level.slot + 1} — ${level.name}`);
 } catch (err) {
   lastError = String(err);
@@ -1142,9 +1249,10 @@ gameApp.onFrame(({ dt }) => {
   frames += 1;
   elapsed += dt;
   try {
-    input?.update(dt);
-    if (input?.pressed("reset")) { audio.cue("ui-confirm"); loadLevel(level.id); }
-    if (input?.pressed("pause")) { paused = !paused; hud.setPaused(paused); }
+    // createGameApp already updated the owned input for this frame; a second update() here
+    // cleared the pressed edges before they were read, so R/P/M/Q never fired.
+    if (input?.pressed("reset")) resetLevel();
+    if (input?.pressed("pause")) { paused = !paused; hud.setPaused(paused); if (!paused) hud.setMode(mode); }
     if (input?.pressed("map")) setMode(mode === "map" ? "siege" : "map");
 
     // Keyboard aiming (WASD / Arrow keys) and launching (Space / Enter / KeyE / KeyF)
@@ -1200,7 +1308,16 @@ gameApp.onFrame(({ dt }) => {
       }
       // early-clear: last gull gone while a shot is flying → let the sim settle
       // via its own shot-settled path (slow-mo window) — no early end.
+      // Late topple: the last gull falls after the shot already settled, so no
+      // shot-settled event is coming. End the level after a short grace period.
+      if (!sim.isShotActive() && !resultOpen && mode === "siege" && sim.gullList().length > 0 && sim.gullsAlive() === 0) {
+        clearedSinceSettle += dt;
+        if (clearedSinceSettle > 1.2) endLevel(true);
+      } else {
+        clearedSinceSettle = 0;
+      }
     }
+    if (frames % 30 === 0 && pendingLooks.size > 0) flushPendingLooks();
     updateTweens(dt);
     syncVisuals();
     syncSling(dt);
@@ -1236,6 +1353,7 @@ gameApp.onFrame(({ dt }) => {
     const errs = (diag as { errors?: readonly { message?: string }[] } | undefined)?.errors ?? [];
     const fatal = errs.find((e) => (e.message ?? "").length > 0);
     if (fatal?.message) show(`Renderer mount reported: ${fatal.message}`);
+    flushPendingLooks();
     publishEvidence();
     refreshHud();
   }).catch(() => show("Renderer mount failed — WebGL2 is required."));
@@ -1255,9 +1373,23 @@ installGameBeacon({ route: "showcase-slingshot-siege" }).publishEvidence({
 });
 w.__SS_STATE__ = () => evidence();
 w.__SS_PUMP__ = (n = 60) => { for (let i = 0; i < n; i += 1) app.advance(1 / 60); return evidence(); };
-w.__SS_FIRE__ = (ammo: AmmoId = "stone") => {
-  sim.launch(ammo, [-7.4, 1.8, 0], [9.5, 7.5, 0]);
+w.__SS_FIRE__ = (ammo: AmmoId | undefined = currentAmmo() ?? undefined) => {
+  if (ammo) sim.launch(ammo, [-7.4, 1.8, 0], [9.5, 7.5, 0]);
   return evidence();
+};
+w.__SS_DEBUG__ = {
+  /** Resolved GLB material factors of the first `n` piece nodes (SS-4 / SS-16 evidence). */
+  blockLooks(n = 8) {
+    const out: { piece: number; node: string; material: string; look: string | undefined; baseColor: readonly number[] | null; pending: boolean }[] = [];
+    sim.pieceList().slice(0, n).forEach((p, i) => {
+      const id = pieceVisuals.get(i)?.nodeId;
+      if (!id) return;
+      const info = modelMaterials(id)?.inspectMaterials()[0];
+      out.push({ piece: i, node: id, material: p.spec.material, look: lookKeys.get(id), baseColor: info ? [...info.baseColorFactor].map((v) => Number(v.toFixed(3))) : null, pending: pendingLooks.has(id) });
+    });
+    return out;
+  },
+  project(p: [number, number, number]) { refreshVp(); return projectWorld(p); }
 };
 w.__SS_LEVEL__ = (id: number) => { realLevelId = Math.min(Math.max(0, id), LEVELS.length - 1); loadLevel(realLevelId); return evidence(); };
 

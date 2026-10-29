@@ -807,9 +807,14 @@ export const STAR_GATES: readonly number[] = LEVELS.map((_, i) => {
   return chapter * 8 + Math.max(0, slot - 1) * 2;
 });
 
+/** Campaign stars only: ids outside the campaign (the Trajectory Range sandbox is 99) never count toward unlocks. */
 export function totalStars(stars: Readonly<Record<number, number>>): number {
   let sum = 0;
-  for (const key of Object.keys(stars)) sum += stars[Number(key)] ?? 0;
+  for (const key of Object.keys(stars)) {
+    const id = Number(key);
+    if (!Number.isInteger(id) || id < 0 || id >= LEVELS.length) continue;
+    sum += stars[id] ?? 0;
+  }
   return sum;
 }
 

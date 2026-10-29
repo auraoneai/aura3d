@@ -18,17 +18,24 @@ import {
   scene,
   type AuraColor,
   type AuraMaterialSpec,
+  type AuraModelMaterialOverride,
   type AuraNodeBuilder,
   type AuraSceneNode
 } from "@aura3d/engine";
-import { assets } from "../../../../src/aura-assets";
+import { assets } from "../aura-assets.route";
 import { MATERIALS, type SiegeMaterialId } from "./materials";
 import type { ChapterDef } from "./levels";
 
 // ----------------------------------------------------------------- pools --
 
+/**
+ * Node pools. `blocks` (stone-bridge GLB) carries the stone, glass, ice and
+ * obsidian blocks; wood blocks draw from the crate and plank pools, so every
+ * level fits (Gull Keep, the largest, needs 80 stone-family block nodes;
+ * `tests/unit/slingshot-siege/pools.test.ts` asserts every level fits).
+ */
 export const POOL = {
-  blocks: 72,
+  blocks: 80,
   crates: 18,
   barrels: 12,
   planks: 24,
@@ -76,20 +83,27 @@ export const PROP_IDS = {
 
 // ------------------------------------------------------------- materials --
 
-export function blockMaterial(id: SiegeMaterialId): AuraMaterialSpec {
+/**
+ * GLB material overrides for a pooled piece node. Model nodes take their look
+ * through the actor's override list (applied on every level load, so a pooled
+ * node never keeps the previous level's material). Wood and stone keep the
+ * authored GLB textures; glass and ice get a flat pale tint with their
+ * opacity; obsidian a dark multiply.
+ */
+export function blockLook(id: SiegeMaterialId): readonly AuraModelMaterialOverride[] {
   const m = MATERIALS[id];
   if (id === "glass" || id === "ice") {
-    return material.pbr({ color: m.color, roughness: 0.16, metallic: 0.05, opacity: m.opacity ?? 0.85 });
+    return [{ color: m.color, colorMode: "replace", replaceTextures: true, roughness: 0.16, metallic: 0.05, opacity: m.opacity ?? 0.85 }];
   }
-  if (id === "obsidian") {
-    return material.pbr({ color: m.color, roughness: 0.35, metallic: 0.35 });
-  }
-  return material.pbr({ color: m.color, roughness: id === "wood" ? 0.58 : 0.46, metallic: 0.08 });
+  if (id === "obsidian") return [{ color: m.color, colorMode: "multiply", roughness: 0.35, metallic: 0.35 }];
+  if (id === "stone") return [{ color: "#d6dde6", colorMode: "multiply" }];
+  return [];
 }
 
-export function debrisMaterial(matId: string): AuraMaterialSpec {
+/** Debris chips take the colour of the material they broke off. */
+export function debrisLook(matId: string): readonly AuraModelMaterialOverride[] {
   const key = (matId in MATERIALS ? matId : "wood") as SiegeMaterialId;
-  return material.pbr({ color: MATERIALS[key].debrisColor, roughness: 0.55 });
+  return [{ color: MATERIALS[key].debrisColor, colorMode: "replace", replaceTextures: true, roughness: 0.6 }];
 }
 
 export function puffMaterial(kind: "dust" | "glass" | "fire" | "poof"): AuraMaterialSpec {
@@ -129,18 +143,31 @@ export interface StageNodes {
 
 type StageNode = AuraSceneNode | AuraNodeBuilder<AuraSceneNode>;
 
-export function buildStage(chapter: ChapterDef, reducedMotion: boolean): StageNodes {
+export interface StageOptions {
+  /** prefers-reduced-motion or `?still=1`: drops the vignette (FXAA stays on). */
+  readonly reducedMotion: boolean;
+  /** `?ao=0` evidence switch: removes the look's ambient-occlusion pass for an AO-on/off capture pair. */
+  readonly ambientOcclusion?: boolean;
+}
+
+export function buildStage(chapter: ChapterDef, options: StageOptions): StageNodes {
   const nodes: StageNode[] = [];
 
   // Chapter look preset — outdoor-day with zero fog and balanced studio exposure.
+  const look = looks.preset("outdoor-day", {
+    fogDensityScale: 0,
+    exposureEv: -0.08,
+    sun: chapter.look.sun,
+    ...(chapter.look.accent ? { accent: chapter.look.accent as AuraColor } : {}),
+    background: (chapter.look.background ?? "#2b6cb0") as AuraColor
+  });
+  if (options.ambientOcclusion === false) {
+    const group = look.toJSON() as AuraSceneNode & { readonly children?: readonly AuraSceneNode[] };
+    nodes.push({ ...group, children: (group.children ?? []).filter((c) => (c as { name?: string }).name !== "look ambient occlusion") } as AuraSceneNode);
+  } else {
+    nodes.push(look);
+  }
   nodes.push(
-    looks.preset("outdoor-day", {
-      fogDensityScale: 0,
-      exposureEv: -0.08,
-      sun: chapter.look.sun,
-      ...(chapter.look.accent ? { accent: chapter.look.accent as AuraColor } : {}),
-      background: (chapter.look.background ?? "#2b6cb0") as AuraColor
-    }),
     lights.ambient({ name: "siege-ambient", color: "#dce8f8", intensity: 0.2 }),
     lights.hemisphere({ name: "siege-hemi", skyColor: "#68a8e8", groundColor: "#3a5a34", intensity: 0.4, position: [0, 18, 0] }),
     lights.directional({ name: "siege-sun", color: "#ffe6bd", intensity: 0.85, position: [-10, 24, 16] }),
@@ -358,9 +385,9 @@ export function buildStage(chapter: ChapterDef, reducedMotion: boolean): StageNo
 
   // ------------------------------------------------------- piece pools ------
   // Every fortress piece is a real 3D Meshy GLB model (crates, barrels, planks, stone bridge blocks).
+  // Block pool = the stone-bridge GLB (stone, glass, ice, obsidian); wood blocks use the crate/plank pools below.
   for (let i = 0; i < POOL.blocks; i += 1) {
-    const asset = i % 3 === 0 ? assets.gullsiegeCrateMeshy : i % 3 === 1 ? assets.gullsiegePlanksMeshy : assets.gullsiegeBridgeMeshy;
-    nodes.push(model(asset, { name: blockNodeId(i), position: [0, -120, 0] })
+    nodes.push(model(assets.gullsiegeBridgeMeshy, { name: blockNodeId(i), position: [0, -120, 0] })
       .scale(0.45).runtime({ id: blockNodeId(i), tags: ["piece"] }));
   }
   for (let i = 0; i < POOL.crates; i += 1) {
@@ -482,12 +509,9 @@ export function buildStage(chapter: ChapterDef, reducedMotion: boolean): StageNo
   );
 
   // --------------------------------------------------------- lights + fx ----
-  if (!reducedMotion) {
-    nodes.push(
-      effects.vignette({ intensity: 0.18 }),
-      effects.antiAlias({ mode: "fxaa" })
-    );
-  }
+  // FXAA is an image-quality pass, not motion: it stays on for reduced-motion players. Only the vignette is dropped.
+  if (!options.reducedMotion) nodes.push(effects.vignette({ intensity: 0.18 }));
+  nodes.push(effects.antiAlias({ mode: "fxaa" }));
 
   // ---------------------------------------------------------- camera spec ---
   const cameraSpec = camera.perspective({
@@ -499,8 +523,8 @@ export function buildStage(chapter: ChapterDef, reducedMotion: boolean): StageNo
   return { nodes, cameraSpec };
 }
 
-export function buildScene(chapter: ChapterDef, reducedMotion: boolean): ReturnType<typeof scene> {
-  const { nodes, cameraSpec } = buildStage(chapter, reducedMotion);
+export function buildScene(chapter: ChapterDef, options: StageOptions): ReturnType<typeof scene> {
+  const { nodes, cameraSpec } = buildStage(chapter, options);
   let s = scene().background(chapter.look.background ?? "#2b6cb0", { toneMapped: false });
   for (const node of nodes) s = s.add(node);
   s = s.camera(cameraSpec);
