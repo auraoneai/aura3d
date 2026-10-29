@@ -103,6 +103,10 @@ The snapshot below was taken in the docs review pass on 2026-10-29. All 32 stori
   - all 823 line keys match `<code>.<beatId>.<n>`;
   - three stories list four target words: E05 and E11 (counting) and E09 (animal sounds), within the `05` §6 exception.
 - **Letter lines in the drafts (E03, E04).** Name and sound are separate lines. E03 has "B. Bee." (`e03.letter.2`), then "B says b-b-ball." (`e03.ball-sound.1`). E04 has "A. Ay." (`e04.letter.2`), then "A says a-a-apple." (`e04.a-sound.1`). The sound is modelled as the stretched start of the word, with no added vowel; an earlier draft's "buh" spelling is gone. Listen to the recorded lines and keep each sound short. This is not a safety issue.
+- **Pace of the recorded voice (`01` §9 "voice legible and slower than typical cartoons, in natural speech; no overlapping dialogue; intentional quiet spaces"), measured 2026-10-29 from the 843 clips in `AUDIO_MANIFEST` and the episode timing with recorded audio.**
+  - The voices speak at a natural rate: the median line of four or more words runs at about 152 words per minute, including the clip's own lead-in and tail (speed 0.88-0.92, section 3.1).
+  - The episodes are slow and quiet by design. A voice line plays during a median 39% of an episode's running time (at most 56%); the rest is action, music, song and pauses. Each line is followed by its hold, and only one voice line plays at a time (`narration-player.test.ts` "never lets two lines overlap"). That makes a median of 51 spoken words per minute of episode (range 43-77).
+  - A person still listens on the devices (4.3 item 1).
 - **Counted objects in the drafts.** Four stories carry `numberConcept`: E05 (cookies), E11 (balloons), E16 (decorations) and G08 (blocks), each with three `countedObjectIds`.
 - **Evidence.** `apps/veer-wonder-world/src/types.ts:95-129,151-168,212-235`; this section.
 - **Parent completes (4.2).** Run the content validator (J14) and the scan above on all 20 + 12 stories. Check that E05 counts one visible cookie per number, that E16's tune and lyrics are original, and that E03 and E04 keep letter name and sound in separate lines.
@@ -277,7 +281,7 @@ The `03` §3 states map to beat kinds. `intro` is `greeting`, `problem` is `hook
 | Temporary cloud resources | ACR image tags and anything else created | PARENT-FILL: created and deleted (`tools/remote-acr/run.sh` keeps the pushed tag by default, `KEEP_IMAGE=1`; `apps/veer-wonder-world/tools/remote-run.sh` sets `KEEP_IMAGE=0`) |
 | Task IDs done | `04` A, F0, B, C, D, E, F, G, H, I, J | PARENT-FILL: done list with evidence; anything not done with the reason and command output |
 
-### 4.3 Open acceptance items (an agent cannot do these)
+### 4.3 Open acceptance items (the two an agent cannot do, `MASTER-PROMPT.md` §9)
 1. **Physical-device runs** (`06` G9, §5 and §8; `03` §10 "phone + tablet"; `04` art/media acceptance). Steps for the owner:
    1. Build the app and serve the built `dist` at a private address the devices can reach. That can be the owner's machine on the local network, or a non-public preview the owner approves. Keep `noindex`, and do not list the URL anywhere.
    2. On an iPad with Safari (portrait and landscape), an iPhone with Safari, an Android phone with Chrome and desktop Chrome:
@@ -292,20 +296,20 @@ The `03` §3 states map to beat kinds. `intro` is `greeting`, `problem` is `hook
    3. Record each device in `evidence/veer-wonder-world/p1/devices/<device>.md`: model, OS, browser version, the renderer string from `?diag=1`, smoothness, audio, touch and any console error. Use screen recordings without people in them, and no child image or audio.
    4. For a desktop real-GPU capture, add a `wonder-world` entry to `tools/real-gpu/scenarios.json` (`path`, `settleMs`, `steps`). Then run `REAL_GPU_HEADLESS=false REAL_GPU_BASE=<private URL> tools/real-gpu/run.sh wonder-world` on the owner's Mac. Results land in `evidence/real-gpu/<date>/`.
    5. Optional, with caregiver consent: the short co-play observation of `06` §8. Take notes only; record no audio or video by default.
+   6. Listen while playing (an agent cannot judge recorded sound by ear):
+      - the letter clips `e03.letter.2`, `e03.ball-sound.1`, `e03.little-b.1`, `e03.little-b.2`, `e04.letter.2`, `e04.a-sound.1` and `e04.little-a.1` (`apps/veer-wonder-world/src/assets/audio/en/lines/`): each letter name is the name ("Bee", "Ay"), each sound is short with no added vowel, and the lowercase lines say the name (B30; `06` creative checklist);
+      - the pace of E01, E17 and G03. The measurement in section 2.1 ("Pace of the recorded voice") already shows slow, quiet episodes with natural-rate lines; if a line still sounds fast, lower `speed` in `tools/gen-audio.ts` and run it for lines only (843 lines, about 15,200 characters on the paid key).
 
    Until these runs pass, the label stays `prototype` and the performance baselines of `06` §6 stay unset.
-2. **Listening checks a person must do** (an agent cannot judge recorded sound by ear):
-   - **Letter clips** (`06` creative checklist, "letter names/sounds accurately distinguished"): play `e03.letter.2`, `e03.ball-sound.1`, `e03.little-b.1`, `e03.little-b.2`, `e04.letter.2`, `e04.a-sound.1` and `e04.little-a.1` from `apps/veer-wonder-world/src/assets/audio/en/lines/`. Check that each letter name is the name ("Bee", "Ay"), each sound is short with no added vowel, and the lowercase lines say the name (B30).
-   - **Speech rate** (`01` §9 "voice legible and slower than typical cartoons"). The recorded lines average about 135 words per minute (median about 152 for lines of four or more words), estimated from `AUDIO_MANIFEST` durations, and the voices are set to speed 0.88-0.92 (section 3.1). A measurement cannot settle "slower than typical cartoons". A caregiver listens to E01, E17 and G03; if they sound fast, lower `speed` in `tools/gen-audio.ts` and run it again (lines only: 843 lines, about 15,200 characters on the paid key).
-   - **Punjabi** (`04` C08, B16): `pa.ts` stays disabled until a native speaker reviews it; no Punjabi text or audio ships in this build.
-3. **Sheru's inspiration** (`02` §2: "family-dog-inspired"). Before any public release the owner confirms the family is happy for a character inspired by their dog to appear under the name Sheru. The build uses no photo, recording or likeness of a real dog.
-4. **Public release decision** (`MASTER-PROMPT.md` §0.5). It is a separate owner decision. Before any public release:
+2. **Public release decision** (`MASTER-PROMPT.md` §0.5). It is a separate owner decision. Before any public release:
    - external privacy/legal review for children's privacy rules (`01` §8, `06` §10);
    - a real trademark search for "Wonder World" and the six character names (`02` §1);
    - a legal check of the Meshy and ElevenLabs terms for public redistribution;
-   - re-render every free-tier or unknown-tier audio file on a paid tier (C9);
+   - re-render every free-tier or unknown-tier audio file on a paid tier (C9; none today, all 907 files are `starter`);
    - a human SLP and caregiver review before any educational wording (`01` §7, `06` §8);
    - real-device evidence (item 1);
+   - the family's OK for Sheru, the "family-dog-inspired" character (`02` §2), to appear under that name (the build uses no photo, recording or likeness of a real dog);
+   - if Punjabi is ever enabled, a native speaker's review of `pa.ts` first (`04` C08; it ships disabled, B16);
    - no efficacy or therapy claim.
 
    Only after the owner decides: remove `noindex` and add the app to:
