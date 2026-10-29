@@ -312,15 +312,16 @@ describe("FC-14 golden goal", () => {
     sim.startMatch({ ...CPU, goldenGoal: true, seed: seedOf(3) });
     const s = sim.state;
     s.half = 2; s.clock = 89.99; s.score = [1, 1]; s.phase = "live";
-    for (let i = 0; i < 5 && s.phase !== "extratime"; i++) sim.step(DT, IDLE);
+    const phase = (): string => s.phase;
+    for (let i = 0; i < 5 && phase() !== "extratime"; i++) sim.step(DT, IDLE);
     expect(s.phase).toBe("extratime");
     const pos = s.players.map((p) => [p.x, p.z]);
     for (let i = 0; i < 120; i++) sim.step(DT, IDLE);
     expect(s.clock).toBe(0);
     expect(s.score).toEqual([1, 1]);
     s.players.forEach((p, i) => expect(Math.hypot(p.x - pos[i]![0]!, p.z - pos[i]![1]!)).toBeLessThan(0.5));
-    for (let i = 0; i < 60 && s.phase === "extratime"; i++) sim.step(DT, IDLE);
-    expect(s.phase === "kickoff" || s.phase === "live").toBe(true);
+    for (let i = 0; i < 60 && phase() === "extratime"; i++) sim.step(DT, IDLE);
+    expect(phase() === "kickoff" || phase() === "live").toBe(true);
   });
 });
 

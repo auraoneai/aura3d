@@ -22,11 +22,12 @@ function cpuShootout(seed: number) {
   for (let i = 0; i < seed % 97; i++) sim.step(DT, IDLE);
   const s = sim.state;
   s.half = 2; s.clock = 89.99; s.phase = "live"; s.score = [0, 0];
+  const phase = (): string => s.phase;
   let guard = 0;
-  while (s.phase !== "shootout" && guard++ < 600) sim.step(DT, IDLE);
+  while (phase() !== "shootout" && guard++ < 600) sim.step(DT, IDLE);
   const kicks: { team: number; result: string }[] = [];
   guard = 0;
-  while (s.phase === "shootout" && guard++ < 60 * 200) {
+  while (phase() === "shootout" && guard++ < 60 * 200) {
     for (const e of sim.step(DT, IDLE)) {
       if (e.type === "pen-goal" || e.type === "pen-save" || e.type === "pen-miss") kicks.push({ team: e.team ?? -1, result: e.type });
     }
@@ -38,7 +39,7 @@ function cpuMatch(venue: MatchConfig["venue"], seconds: number, seed = 1) {
   const sim = createSim();
   sim.setAutopilot(true);
   sim.startMatch({ ...CPU, venue, shootoutOnTie: false, seed: (seed * 2654435761) >>> 0 } as MatchConfig);
-  const counts: Record<string, number> = {};
+  const counts: Record<string, number> = {} as Record<string, number>;
   let err: string | null = null;
   try {
     for (let i = 0; i < seconds * 60 && sim.state.phase !== "ended"; i++) {
@@ -68,7 +69,7 @@ describe("aura fc audit probe", () => {
   });
 
   it("cpu matches: goals, shots, saves and tackle wins", () => {
-    const rows = [];
+    const rows: ReturnType<typeof cpuMatch>[] = [];
     for (let i = 0; i < 24; i++) rows.push(cpuMatch("munich", 200, i + 1));
     const sum = (f: (r: (typeof rows)[number]) => number) => rows.reduce((a, r) => a + f(r), 0);
     console.log("SIM_PROBE matches", JSON.stringify({
@@ -85,7 +86,7 @@ describe("aura fc audit probe", () => {
   });
 
   it("favela: goals still count with the walls up", () => {
-    const rows = [];
+    const rows: ReturnType<typeof cpuMatch>[] = [];
     for (let i = 0; i < 6; i++) rows.push(cpuMatch("favela", 200, i + 101));
     console.log("SIM_PROBE favela", JSON.stringify({ matches: rows.length, goals: rows.reduce((a, r) => a + r.score[0] + r.score[1], 0), wallBounces: rows.reduce((a, r) => a + (r.counts["off the boards"] ?? 0), 0) }));
   });
