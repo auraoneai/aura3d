@@ -11,16 +11,18 @@
  * ARCHITECTURE
  *   Everything lives in this file: the state machine (menu → check-ball →
  *   live → score → game-over → rematch), a route-local ball sim (analytic
- *   launch solve + rim/backboard/floor contacts + swish detection), 3v3
+ *   launch solve + rim/backboard/floor contacts + swish detection), 5v5
  *   teammate/CPU AI, the shot meter + Jam Meter + dunk packages, Street Tour
- *   bracket, Player Studio fit colors, Handles Lab cone gates, Dunk Lab, a
+ *   bracket, team kits + Player Studio fit colors, Handles Lab cone gates, Dunk Lab, a
  *   camera director, DOM HUD wired to index.html ids every frame, rooftop-
  *   buckets SFX through createGameAudio, juice/FX layers, and a rich
- *   `__AURA3D_GAME_EVIDENCE__` channel.
+ *   `__AURA3D_GAME_EVIDENCE__` channel. Rules that need no scene (meter, dead
+ *   balls, take-back, kits, separation, render blend) live in rules.ts.
  */
 import {
   camera,
   createAuraApp,
+  createFixedStepLoop,
   createGameAudio,
   decals,
   effects,
@@ -53,6 +55,13 @@ import { createFrameErrorBoundary, installBlackFrameGuard } from "@aura3d/debug"
 import { pickLocomotion } from "./locomotionRates";
 import { advanceShotBall, aimError, createHoopWorld, crossedRimDownward, solveLaunch } from "./shotPhysics";
 import { BALL_R, DRIB_SHOULDER_FALLBACK, dribbleCycleY } from "./dribble";
+import { createOnePress } from "./input";
+import {
+  CHECK_SHOT_GUARD, CPU_DUNK_RATE, SIM_STEP, advanceMeter, blendPose, canBlockRelease, clearTarget, decayRimShake,
+  deadBallPossession, dunkRejectChance, isCleared, isDeadBall, makeCosmeticRng, matchDifficulty, meterQuality,
+  releaseRead, separate, squadAimSkill, squadSpeedScale, squadStealScale, teamKits, tourNeedsReset,
+  type Body, type Kit, type Pose
+} from "./rules";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
 const publishBeacon = (evidence: object): void => {
@@ -149,6 +158,8 @@ function makeRng(seed: number): () => number {
   };
 }
 const rng = makeRng(0xa3d5);
+/** Cosmetic jitter only (rim shake): never touches the gameplay stream above. */
+const fxRng = makeCosmeticRng(0x51de);
 
 /* ------------------------------------------------------------------ *
  *  Court geometry — half-court, rim at origin attacking +Z             *
@@ -181,7 +192,7 @@ const COURT_Z1 = 10.6;
 const PLAYER_SPEED = 4.6;
 const SPRINT_SPEED = 6.9;
 const DUNK_RANGE = 2.4;
-const GRAVITY = -10.4; // snappier NBA-Jam arc than textbook 9.81
+const GRAVITY = -10.4; // snappier arcade arc than textbook 9.81
 const HIDDEN = 0.0001;
 const CROWD_WAVERS = 0;
 const TRAIL_COUNT = 14;
@@ -361,7 +372,9 @@ interface AthleteState {
   screenT: number;
   cutT: number;
   aiT: number; // CPU decision timer
-  aiPlan: "idle" | "drive" | "stand" | "pullup" | "post" | "orbit";
+  aiPlan: "idle" | "drive" | "stand" | "pullup" | "post" | "orbit" | "clear";
+  /** Rolled once per CPU drive: go up for the dunk at the rim (true) or pull up (false). */
+  dunkIntent: boolean;
   tx: number; // AI target
   tz: number;
   clip: string;
@@ -391,6 +404,8 @@ interface Ball {
   shooter: number;
   blocked: boolean;
   looseT: number;
+  /** Team that touched the ball last (shot, pass, steal poke, block, dunk): a dead ball goes to the other team. */
+  lastTouch: TeamId;
 }
 
 interface ConesState {
@@ -443,6 +458,8 @@ const game_ = {
   phase: "menu" as Phase,
   venue: "rucker" as VenueId,
   diff: "pro" as DiffId,
+  /** The difficulty the player picked; Street Tour overrides `diff` per round and other modes restore this. */
+  userDiff: "pro" as DiffId,
   autopilot: initialParams.get("autoplay") === "1" || initialParams.get("demo") === "1",
   target: 11,
   scoreHome: 0,
@@ -459,6 +476,11 @@ const game_ = {
   cones: { active: false, order: [] as number[], next: 0, cleared: 0, streak: 0, score: 0, best: 0 } as ConesState,
   tour: { active: false, round: 0, eliminated: false, champion: false, opponents: [] as number[] } as TourState,
   fit: { jersey: 0, kicks: 1, skin: 0, hair: 0 } as StudioFit,
+  /** Player Studio fit in force on the home squad (null until APPLY FIT). */
+  appliedFit: null as StudioFit | null,
+  /** game_.time when the ball went live (the check press must not also open the shot meter). */
+  liveSince: -10,
+  stats: { home: { fga: 0, fgm: 0, dunks: 0, steals: 0, blocks: 0 }, away: { fga: 0, fgm: 0, dunks: 0, steals: 0, blocks: 0 } },
   pendingMode: "quick" as ModeId,
   time: 0,
   matchT: 0,
@@ -477,7 +499,7 @@ const ball: Ball = {
   state: "parked", x: 0, y: 1.0, z: 8.6, vx: 0, vy: 0, vz: 0,
   holder: -1, passTarget: -1, dribbleT: 0, flightT: 0,
   hitRim: false, hitBoard: false, scored: false, swishOnly: false,
-  shotValue: 1, shooter: -1, blocked: false, looseT: 0
+  shotValue: 1, shooter: -1, blocked: false, looseT: 0, lastTouch: "home"
 };
 let dribbleHand: { x: number; y: number; z: number; socket: boolean; forearmValid: boolean; socketApi: boolean; raw?: [number, number, number]; point?: [number, number, number] } | null = null;
 
@@ -526,23 +548,17 @@ function buildCourtSurfaces(v: VenueSpec): any[] {
     line("line-key-r", 0.1, 5.8, 2.45, 1.05),
     line("line-ft", 4.9, 0.1, 0, 3.95)
   );
-  // Free-throw circle + 2-point arc — painted dashes along the rings
+  // Free-throw circle + 2-point arc — painted dashes along the rings, one instanced draw for all 50 (they were 50 boxes)
+  const ticks: { position: Vec3; rotation: Vec3; scale: Vec3 }[] = [];
   for (let i = 0; i < 20; i++) {
     const a = (i / 20) * Math.PI * 2;
-    nodes.push(
-      primitives.box({ name: `ft-tick-${i}`, size: [0.09, 0.02, 0.55], material: lineMat })
-        .position(Math.cos(a) * 1.8, 0.012, 3.95 + Math.sin(a) * 1.8)
-        .rotate(0, -a, 0)
-    );
+    ticks.push({ position: [Math.cos(a) * 1.8, 0.012, 3.95 + Math.sin(a) * 1.8], rotation: [0, -a, 0], scale: [0.09, 0.02, 0.55] });
   }
   for (let i = 0; i < 30; i++) {
     const a = (i / 30) * Math.PI * 2;
-    nodes.push(
-      primitives.box({ name: `arc-tick-${i}`, size: [0.1, 0.02, 1.15], material: lineMat })
-        .position(Math.cos(a) * ARC_R, 0.014, Math.sin(a) * ARC_R)
-        .rotate(0, -a, 0)
-    );
+    ticks.push({ position: [Math.cos(a) * ARC_R, 0.014, Math.sin(a) * ARC_R], rotation: [0, -a, 0], scale: [0.1, 0.02, 1.15] });
   }
+  nodes.push((instances as any).box({ name: "court-ticks", transforms: ticks, material: lineMat, castShadow: false }));
   // Check hash mark
   nodes.push(line("check-hash", 0.6, 0.14, 0, CHECK_SPOT[2]));
   return nodes;
@@ -614,27 +630,57 @@ function buildBallNodes(): any[] {
 }
 
 /** Clean ground readability rings & shadow for one 3D Meshy athlete (no primitive body/shoe capsules). */
-function buildAthleteAccessories(id: string, team: TeamId): any[] {
-  // Muted team tints, not broadcast target markers: a thin painted ring with a
-  // whisper of emissive so it survives shade without reading as a reticle.
-  const ringColor = team === "home" ? "#8a3f16" : "#17465c";
-  const ringEmissive = team === "home" ? "#ff7a1a" : "#39d7ff";
+function buildAthleteAccessories(id: string, team: TeamId, kit: Kit): any[] {
+  // Team ring in the kit colour, with a shape cue that does not depend on colour: home stands on a round ring, away on a
+  // square one (a four-segment torus), so the sides read apart for colour-blind players too.
   return [
     primitives.cylinder({ name: `${id}-shadow`, size: [0.58, 0.008, 0.58], material: material.pbr({ color: "#000000", opacity: 0.24, roughness: 1 }) }).runtime(game.runtimeNode(`${id}-shadow`)),
-    primitives.torus({ name: `${id}-ring`, size: [0.82, 0.82, 0.34], material: material.emissive({ color: ringColor, emissive: ringEmissive, emissiveIntensity: 0.26, opacity: 0.42 }) }).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode(`${id}-ring`)),
+    primitives.torus({
+      name: `${id}-ring`,
+      size: team === "home" ? [0.82, 0.82, 0.34] : [0.86, 0.86, 0.34],
+      ...(team === "away" ? { params: { tubularSegments: 4 } } : {}),
+      material: material.emissive({ color: kit.jersey, emissive: kit.jersey, emissiveIntensity: 0.45, opacity: 0.72 })
+    }).rotate(Math.PI / 2, 0, team === "away" ? Math.PI / 4 : 0).runtime(game.runtimeNode(`${id}-ring`)),
     // Jam aura — hidden until the meter is full
     primitives.cylinder({ name: `${id}-aura`, size: [0.9, 1.9, 0.9], material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 0.9, opacity: 0.16 }) }).scale(HIDDEN).runtime(game.runtimeNode(`${id}-aura`))
   ];
 }
 
-function buildAthlete(id: string, _team: TeamId): any[] {
-  const athleteAsset = /[124]$/.test(id) ? assets.hoopsAthleteBig : assets.hoopsAthleteGuard;
+/** The kit one athlete wears: the squad kit (rules.teamKits), with the applied Player Studio fit on the home side. */
+function athleteLook(team: TeamId, index: number): { kit: Kit; kicks?: string; skin?: string; hair?: string } {
+  const kits = teamKits(game_.homeSquad, game_.awaySquad);
+  if (team === "away") return { kit: kits.away };
+  const fit = game_.appliedFit;
+  if (!fit) return { kit: kits.home };
+  const jersey = STUDIO.jersey[fit.jersey] ?? kits.home.jersey;
+  return {
+    kit: { jersey, shorts: kits.home.shorts, socks: jersey },
+    kicks: STUDIO.kicks[fit.kicks],
+    // skin and hair belong to your own player (p0), not the whole crew
+    ...(index === 0 ? { skin: STUDIO.skin[fit.skin], hair: STUDIO.hair[fit.hair] } : {})
+  };
+}
+
+function athleteOverrides(look: ReturnType<typeof athleteLook>): any[] {
+  const flat = (target: RegExp, color: string, roughness: number) => ({ target, color, colorMode: "replace", replaceTextures: true, roughness, metallic: 0 });
+  const out = [flat(/-kit$/, look.kit.jersey, 0.68), flat(/-shorts$/, look.kit.shorts, 0.72), flat(/-socks$/, look.kit.socks, 0.78)];
+  if (look.kicks) out.push(flat(/-kicks$/, look.kicks, 0.55));
+  if (look.skin) out.push(flat(/-skin$/, look.skin, 0.62));
+  if (look.hair) out.push(flat(/-hair$/, look.hair, 0.8));
+  return out;
+}
+
+function buildAthlete(id: string, team: TeamId): any[] {
+  // Region-split copies of the palette athletes (tools/hoops-athlete-retexture/split-kit-materials.mjs): one material per
+  // body region, so the kit, shorts and socks take the team colours.
+  const athleteAsset = /[124]$/.test(id) ? assets.hoopsAthleteBigKit : assets.hoopsAthleteGuardKit;
+  const look = athleteLook(team, Number(id.slice(1)));
   return [
-    model(athleteAsset, { name: id, targetHeight: 1.92, scaleMode: "fit", castShadow: true, receiveShadow: true })
+    model(athleteAsset, { name: id, targetHeight: 1.92, scaleMode: "fit", castShadow: true, receiveShadow: true, materialOverrides: athleteOverrides(look) } as any)
       .position(0, 0, 6)
       .animate({ clip: "Crouch_Idle_Loop", loop: true, speed: 1.0 })
       .runtime(game.runtimeNode(id)),
-    ...buildAthleteAccessories(id, _team)
+    ...buildAthleteAccessories(id, team, look.kit)
   ];
 }
 
@@ -1024,7 +1070,7 @@ function makeAthlete(nodeId: string, team: TeamId, index: number): AthleteState 
     hasBall: false, controlled: false, stumble: 0, jumpT: 0, blockArm: 0, pokeCd: 0,
     screenT: 0, cutT: 0, aiT: 0.4 + index * 0.45, aiPlan: "idle", tx: 0, tz: 6,
     clip: "", clipSince: -10, wpPauseT: 0, actionUntil: 0,
-    meterT: 0, shooting: false, dunkT: 0, dunkKind: ""
+    meterT: 0, shooting: false, dunkT: 0, dunkKind: "", dunkIntent: false
   };
 }
 
@@ -1041,10 +1087,20 @@ function resetAthletes(): void {
     makeAthlete("a3", "away", 3),
     makeAthlete("a4", "away", 4)
   ];
+  homeList = athletes.filter((a) => a.team === "home");
+  awayList = athletes.filter((a) => a.team === "away");
 }
 
-const homeTeam = () => athletes.filter((a) => a.team === "home");
-const awayTeam = () => athletes.filter((a) => a.team === "away");
+// Team lists are rebuilt only when the roster is (resetAthletes); callers must not reorder them (index order = spot order).
+let homeList: AthleteState[] = [];
+let awayList: AthleteState[] = [];
+const homeTeam = (): readonly AthleteState[] => homeList;
+const awayTeam = (): readonly AthleteState[] => awayList;
+const nearestOf = (list: readonly AthleteState[], x: number, z: number, skip?: AthleteState): AthleteState | undefined => {
+  let best: AthleteState | undefined; let bd = Infinity;
+  for (const m of list) { if (m === skip) continue; const d = dist2d(m.x, m.z, x, z); if (d < bd) { bd = d; best = m; } }
+  return best;
+};
 const holderAthlete = (): AthleteState | undefined => athletes.find((a) => a.hasBall);
 const idxOf = (a: AthleteState) => (a.team === "home" ? a.index : 5 + a.index);
 const nearestDefender = (a: AthleteState): AthleteState | undefined => {
@@ -1096,10 +1152,10 @@ const JUICE_EVENTS: Record<string, { fx?: { kind: any; count?: number; color?: s
   rim: { cue: "rimClank", shake: 0.12, rumble: { ms: 30, weak: 0.3 } },
   brick: { cue: "brickMiss", flash: { color: "#ff3b5c", peak: 0.08, ms: 110 } },
   buzzer: { cue: "buzzerFail", shake: 0.35, flash: { color: "#ff3b5c", peak: 0.2, ms: 240 } },
-  dunk: { fx: { kind: "ring", count: 26, color: "#ff7a1a", speed: 5.6 }, cue: "rimClank", hitStop: 0.09, shake: 0.5, punch: { fovDeg: 3.4, dolly: -0.5, ms: 300 }, flash: { color: "#ff7a1a", peak: 0.24, ms: 200 }, rumble: { ms: 70, strong: 0.7, weak: 0.9 } },
+  dunk: { fx: { kind: "ring", count: 26, color: "#ff7a1a", speed: 5.6 }, cue: "slam", hitStop: 0.09, shake: 0.5, punch: { fovDeg: 3.4, dolly: -0.5, ms: 300 }, flash: { color: "#ff7a1a", peak: 0.24, ms: 200 }, rumble: { ms: 70, strong: 0.7, weak: 0.9 } },
   jam: { fx: { kind: "aura", count: 30, color: "#ff7a1a", speed: 6.2 }, cue: "fireIgnite", hitStop: 0.11, shake: 0.6, punch: { fovDeg: 4.0, dolly: -0.6, ms: 380 }, flash: { color: "#ffd257", peak: 0.3, ms: 280 }, rumble: { ms: 90, strong: 0.85, weak: 1 } },
-  steal: { fx: { kind: "spark", count: 8, color: "#66e37f", speed: 3.0 }, cue: "heatAdvance", punch: { fovDeg: 1.2, ms: 140 } },
-  block: { fx: { kind: "spark", count: 14, color: "#39d7ff", speed: 4.4 }, cue: "boardThud", shake: 0.3, punch: { fovDeg: 2.0, ms: 200 } },
+  steal: { fx: { kind: "spark", count: 8, color: "#66e37f", speed: 3.0 }, cue: "steal", punch: { fovDeg: 1.2, ms: 140 } },
+  block: { fx: { kind: "spark", count: 14, color: "#39d7ff", speed: 4.4 }, cue: "block", shake: 0.3, punch: { fovDeg: 2.0, ms: 200 } },
   pass: { cue: "chargeTick", rumble: { ms: 18, weak: 0.2 } },
   juke: { fx: { kind: "streak", count: 12, color: "#e26bff", speed: 4.0 }, cue: "chargeTick", punch: { fovDeg: 1.4, ms: 160 } },
   check: { cue: "chargeTick" },
@@ -1164,7 +1220,10 @@ function setupSystems(): void {
       fanfare: { id: "fanfare", asset: assets.hoopsFanfareSfx as any, volume: 0.85 },
       winFanfare: { id: "winFanfare", asset: assets.hoopsFanfareSfx as any, volume: 0.95 },
       crowd: { id: "crowd", asset: assets.hoopsCrowdSfx as any, volume: 0.24, loop: true },
-      dribble: { id: "dribble", asset: assets.hoopsDribbleSfx as any, volume: 0.34 }
+      dribble: { id: "dribble", asset: assets.hoopsDribbleSfx as any, volume: 0.34 },
+      slam: { id: "slam", asset: assets.hoopsDunkSfx as any, volume: 0.9 },
+      steal: { id: "steal", asset: assets.hoopsStealSfx as any, volume: 0.7 },
+      block: { id: "block", asset: assets.hoopsBlockSfx as any, volume: 0.8 }
     },
     buses: [{ id: "sfx" } as any]
   } as any) as unknown as GameAudioLike;
@@ -1197,16 +1256,65 @@ function setupSystems(): void {
     };
     touchControls = mountTouchControls(sink as any, {
       preset: "dpad-4btn",
-      bindings: { "stick.left": "left", "stick.right": "right", "stick.up": "up", "stick.down": "down", left: "left", right: "right", light: "shoot", heavy: "cross", special: "pass", jump: "shoot", block: "hesi" },
+      // Buttons only: SHOOT / CROSS / PASS / SPRINT / HESI. Movement is the route's own stick below (the preset's
+      // left/right buttons would only strafe and sit under the stick, so they stay unbound and are not rendered).
+      bindings: { "stick.left": "left", "stick.right": "right", "stick.up": "up", "stick.down": "down", light: "shoot", heavy: "cross", special: "pass", jump: "sprint", block: "hesi" },
       haptics: { ms: 12 }
     } as any, {
       doc: document as any,
       root: (document.getElementById("touch") ?? stage) as any,
+      viewport: { width: window.innerWidth || 390, height: window.innerHeight || 844 },
       coarsePointer: () => window.matchMedia?.("(pointer: coarse)")?.matches ?? false
     } as any);
   } catch (e) {
     console.warn("[hoops] touch controls unavailable", e);
   }
+  mountMoveStick();
+}
+
+/**
+ * Route-local move stick for touch. The engine preset's stick zone does not mount today (its layout names the rect
+ * "leftStick" while the mounter looks up "stick"), so a phone could only strafe. When an engine stick is present this
+ * stands down so there is never a second one.
+ */
+let touchExtra: HTMLElement | null = null;
+function mountMoveStick(): void {
+  touchExtra = document.getElementById("touch-extra");
+  const zone = document.getElementById("touch-stick");
+  const nub = zone?.querySelector<HTMLElement>(".nub") ?? null;
+  if (!zone || !touchExtra) return;
+  if (document.querySelector('.a3g-touch [data-control="stick"]')) { zone.remove(); return; }
+  const held = new Map<string, boolean>();
+  const set = (action: string, on: boolean) => {
+    if ((held.get(action) ?? false) === on) return;
+    held.set(action, on);
+    inputCtl.setAction(action, on);
+  };
+  let pointer = -1;
+  const move = (cx: number, cy: number) => {
+    const r = zone.getBoundingClientRect();
+    const rad = r.width / 2;
+    let dx = (cx - (r.left + rad)) / rad, dy = (cy - (r.top + rad)) / rad;
+    const m = Math.hypot(dx, dy);
+    if (m > 1) { dx /= m; dy /= m; }
+    if (nub) nub.style.transform = `translate(${dx * rad * 0.6}px, ${dy * rad * 0.6}px)`;
+    set("left", dx < -0.35); set("right", dx > 0.35); set("up", dy < -0.35); set("down", dy > 0.35);
+  };
+  const end = () => {
+    pointer = -1;
+    if (nub) nub.style.transform = "";
+    for (const a of ["left", "right", "up", "down"]) set(a, false);
+  };
+  zone.addEventListener("pointerdown", (ev) => {
+    pointer = ev.pointerId;
+    try { zone.setPointerCapture(ev.pointerId); } catch { /* synthetic pointers */ }
+    move(ev.clientX, ev.clientY);
+    ev.preventDefault();
+  });
+  zone.addEventListener("pointermove", (ev) => { if (ev.pointerId === pointer) move(ev.clientX, ev.clientY); });
+  zone.addEventListener("pointerup", (ev) => { if (ev.pointerId === pointer) end(); });
+  zone.addEventListener("pointercancel", end);
+  zone.addEventListener("lostpointercapture", end);
 }
 
 /* ------------------------------------------------------------------ *
@@ -1293,8 +1401,8 @@ window.addEventListener("blur", () => keysHeld.clear());
 
 const held = (action: string, ...codes: string[]) =>
   inputCtl.held(action) || codes.some((c) => keysHeld.has(c));
-const pressed = (action: string, ...codes: string[]) =>
-  inputCtl.pressed(action) || inputCtl.buffered(action) || codes.some((c) => keysPressed.has(c));
+/** One fire per physical press (input.ts): never `buffered()`, which repeats for the whole 140 ms window. */
+const pressed = createOnePress(inputCtl, keysPressed, keysHeld);
 
 /* ------------------------------------------------------------------ *
  *  HUD helpers                                                        *
@@ -1315,7 +1423,84 @@ function showPrompt(text: string, dur = 0.2): void {
   if (promptEl) { promptEl.textContent = text; promptEl.classList.add("show"); }
   game_.promptT = Math.max(game_.promptT, dur);
 }
-function flashJam(alpha = 0.85): void { jamFlashT = alpha; }
+function flashJam(alpha = 0.85): void { if (!reducedFlash) jamFlashT = alpha; }
+
+/** The menu overlay is a modal: when closed it is inert and hidden from assistive tech, when open it pauses play. */
+function menuIsOpen(): boolean { return Boolean(menuOverlay?.classList.contains("open")); }
+function setMenuOpen(open: boolean, autoStart = true): void {
+  if (!menuOverlay) return;
+  menuOverlay.classList.toggle("open", open);
+  menuOverlay.toggleAttribute("inert", !open);
+  menuOverlay.setAttribute("aria-hidden", open ? "false" : "true");
+  if (open) (menuOverlay.querySelector("button") as HTMLButtonElement | null)?.focus({ preventScroll: true });
+  if (!open && autoStart && game_.phase === "menu") {
+    // closing the boot menu starts the mode it was showing instead of leaving a phase nothing advances
+    startMatch(game_.pendingMode === "studio" ? "quick" : game_.pendingMode);
+    enterLive();
+  }
+}
+
+/** Kits are baked into the scene graph: a new squad, opponent or applied fit rebuilds it (the match state survives, as for a court swap). */
+function rebuildScene(): void {
+  if (!auraApp) return;
+  try {
+    auraApp.setScene(buildScene(venue));
+    resolveHandles();
+  } catch (e) {
+    console.warn("[hoops] scene rebuild failed", e);
+  }
+}
+
+/** Crowd loop swells on a bucket, then settles back. */
+let crowdLevel = 1;
+function crowdSwell(): void {
+  crowdLevel = 2.2;
+  try { (audio as any)?.setCueLevel?.("crowd", { volume: crowdLevel }, 120); } catch { /* audio best-effort */ }
+}
+
+/** Athletes on the floor push apart to a shoulder width; a dunker in the air and lab-parked bodies keep their line. */
+const bodyScratch: (Body & { a: AthleteState })[] = [];
+function separateBodies(): void {
+  bodyScratch.length = 0;
+  for (const a of athletes) {
+    if (a.z < -40) continue; // parked off-court in the labs
+    bodyScratch.push({ x: a.x, z: a.z, pinned: a.dunkT > 0, a });
+  }
+  if (separate(bodyScratch) === 0) return;
+  for (const b of bodyScratch) { b.a.x = b.x; b.a.z = b.z; }
+}
+
+function rematch(): void {
+  promptEl?.classList.remove("show");
+  msgBox?.classList.remove("show");
+  startMatch(game_.mode);
+  enterLive();
+  renderBracket();
+}
+
+const resultsEl = el<HTMLElement>("results");
+/** Results card: the final, field-goal %, dunks, steals and blocks per side, the tour state, and Rematch / Menu buttons. */
+function showResults(won: boolean): void {
+  if (!resultsEl) return;
+  const pct = (s: { fga: number; fgm: number }) => (s.fga > 0 ? `${Math.round((100 * s.fgm) / s.fga)}%` : "—");
+  const h = game_.stats.home, a = game_.stats.away;
+  const tour = game_.mode === "tour"
+    ? (game_.tour.champion ? "STREET TOUR CHAMPION" : game_.tour.eliminated ? `ELIMINATED IN THE ${["ROUND OF 32", "ROUND OF 16", "QUARTERS", "SEMIS", "FINAL"][game_.tour.round] ?? "FINAL"}` : `NEXT: ${["ROUND OF 32", "ROUND OF 16", "QUARTERS", "SEMIS", "FINAL"][game_.tour.round] ?? "FINAL"}`)
+    : "";
+  const set = (id: string, text: string) => { const n = el<HTMLElement>(id); if (n) n.textContent = text; };
+  set("res-title", game_.celebration || (won ? "RUN WON" : "RUN LOST"));
+  set("res-score", `${game_.homeSquad.short} ${game_.scoreHome} — ${game_.scoreAway} ${game_.awaySquad.short}`);
+  set("res-home-name", game_.homeSquad.short);
+  set("res-away-name", game_.awaySquad.short);
+  set("res-fg-h", `${h.fgm}/${h.fga} · ${pct(h)}`); set("res-fg-a", `${a.fgm}/${a.fga} · ${pct(a)}`);
+  set("res-dunks-h", `${h.dunks}`); set("res-dunks-a", `${a.dunks}`);
+  set("res-steals-h", `${h.steals}`); set("res-steals-a", `${a.steals}`);
+  set("res-blocks-h", `${h.blocks}`); set("res-blocks-a", `${a.blocks}`);
+  set("res-tour", tour);
+  set("res-rematch", game_.mode === "tour" && !game_.tour.champion && !game_.tour.eliminated ? "NEXT ROUND" : "REMATCH");
+  resultsEl.hidden = false;
+}
+function hideResults(): void { if (resultsEl) resultsEl.hidden = true; }
 
 /* ------------------------------------------------------------------ *
  *  Possession / scoring                                               *
@@ -1361,6 +1546,8 @@ function enterCheck(team: TeamId): void {
   athletes.forEach((a) => { a.shooting = false; a.meterT = 0; a.actionUntil = 0; });
   ball.state = "parked";
   ball.scored = false; ball.hitRim = false; ball.hitBoard = false; ball.blocked = false;
+  ball.flightT = 0; ball.looseT = 0; ball.lastTouch = team;
+  trailHist.length = 0;
   const off = team === "home" ? homeTeam() : awayTeam();
   const def = team === "home" ? awayTeam() : homeTeam();
   off.forEach((a, i) => {
@@ -1394,8 +1581,12 @@ function enterCheck(team: TeamId): void {
 function enterLive(): void {
   if (game_.phase !== "check") return;
   game_.phase = "live";
+  game_.liveSince = game_.time;
   const h = holderAthlete();
   if (h) ball.state = "held";
+  // the ball is live: the check prompt goes away
+  promptEl?.classList.remove("show");
+  game_.promptT = 0;
   showBanner("LIVE");
   pushEvent("phase", "ball is live", "info");
 }
@@ -1451,7 +1642,8 @@ function endGame(winner: TeamId): void {
     juiceFire(won ? "win" : "buzzer", {});
   }
   renderBracket();
-  showMsg(game_.celebration, `${game_.homeSquad.short} ${game_.scoreHome} — ${game_.scoreAway} ${game_.awaySquad.short} · R TO REMATCH`, 30);
+  showMsg(game_.celebration, `${game_.homeSquad.short} ${game_.scoreHome} — ${game_.scoreAway} ${game_.awaySquad.short}`, 2.4);
+  showResults(won);
   pushEvent("game", `final ${game_.scoreHome}-${game_.scoreAway}`, won ? "success" : "warning");
 }
 
@@ -1465,16 +1657,25 @@ function startMatch(mode: ModeId): void {
   game_.servingTeam = "home";
   resetAthletes();
 
-  if (mode === "tour" && !game_.tour.active) {
+  hideResults();
+  game_.stats = { home: { fga: 0, fgm: 0, dunks: 0, steals: 0, blocks: 0 }, away: { fga: 0, fgm: 0, dunks: 0, steals: 0, blocks: 0 } };
+  // A finished tour (title or elimination) starts over from the round of 32, from the R key and the menu card alike.
+  if (mode === "tour" && tourNeedsReset(game_.tour)) {
     game_.tour = { active: true, round: 0, eliminated: false, champion: false, opponents: [] };
   }
-  if (mode === "tour" && game_.tour.active) {
-    const oppIdx = 1 + ((game_.tour.round * 3 + Math.floor(rng() * 5)) % (SQUADS.length - 1));
+  const prevAway = game_.awaySquad;
+  if (mode === "tour") {
+    // opponents come from the squads you are not playing as
+    const pool = SQUADS.filter((q) => q !== game_.homeSquad);
+    const oppIdx = SQUADS.indexOf(pool[(game_.tour.round * 3 + Math.floor(rng() * 5)) % pool.length]!);
     game_.awaySquad = SQUADS[oppIdx]!;
     game_.tour.opponents[game_.tour.round] = oppIdx;
-    const ladder: DiffId[] = ["playground", "pro", "pro", "legend", "legend"];
-    game_.diff = ladder[clamp(game_.tour.round, 0, 4)]!;
+  } else if (game_.awaySquad === game_.homeSquad) {
+    game_.awaySquad = SQUADS.find((q) => q !== game_.homeSquad)!;
   }
+  // Street Tour climbs its own ladder; every other mode plays at the difficulty you picked.
+  game_.diff = matchDifficulty(mode, game_.tour.round, game_.userDiff);
+  if (game_.awaySquad !== prevAway) rebuildScene();
 
   if (mode === "handleslab") {
     setupCones();
@@ -1542,7 +1743,7 @@ function closeMeter(): void {
   if (shotMeter) shotMeter.classList.remove("show");
 }
 
-function releaseShot(a: AthleteState, quality: number): void {
+function releaseShot(a: AthleteState, quality: number, meterT = game_.shotMeter.t): void {
   // quality ∈ [0,1] timing accuracy → aim error mapping
   a.yaw = angTo(a.x, a.z, RIM[0], RIM[2]);
   const from: Vec3 = [a.x, 2.0 + a.y, a.z];
@@ -1554,18 +1755,20 @@ function releaseShot(a: AthleteState, quality: number): void {
   const def = nearestDefender(a);
   const defD = def ? dist2d(a.x, a.z, def.x, def.z) : 99;
   const contest = defD < 1.6 ? -0.28 : defD < 2.6 ? -0.1 : 0;
-  const skill = a.controlled ? 0.06 : DIFFS[game_.diff].make;
+  const skill = a.team === "home" ? squadAimSkill(game_.homeSquad) : DIFFS[game_.diff].make + (squadAimSkill(game_.awaySquad) - 0.06);
   const err = aimError(quality, d, contest, skill, rng);
   const target: Vec3 = [RIM[0] + err.dx, RIM[1], RIM[2] + err.dz];
   shotStats.released += 1;
+  game_.stats[a.team].fga += 1;
 
   const v = solveLaunch(from, target, GRAVITY);
   Object.assign(ball, {
     state: "flight" as BallState, x: from[0], y: from[1], z: from[2],
     vx: v[0], vy: v[1], vz: v[2], holder: -1, flightT: 0,
     hitRim: false, hitBoard: false, scored: false,
-    swishOnly: perfect, shotValue: (isTwo ? 2 : 1) as 1 | 2, shooter: idxOf(a), blocked: false
+    swishOnly: perfect, shotValue: (isTwo ? 2 : 1) as 1 | 2, shooter: idxOf(a), blocked: false, looseT: 0, lastTouch: a.team
   });
+  trailHist.length = 0;
   a.hasBall = false;
   a.shooting = false;
   closeMeter();
@@ -1573,16 +1776,20 @@ function releaseShot(a: AthleteState, quality: number): void {
   a.actionUntil = game_.time + 0.42;
   game_.phase = "shot";
   juiceFire("release", { position: from });
-  pushEvent("shot", perfect ? "release — PERFECT" : inGreen ? "release — green" : `release — ${(quality * 100) | 0}%`, perfect || inGreen ? "success" : "info");
+  const read = releaseRead(meterT, quality, game_.shotMeter.perfect);
+  pushEvent("shot", perfect ? "release — PERFECT" : inGreen ? "release — green" : `release — ${read} ${(quality * 100) | 0}%`, perfect || inGreen ? "success" : "info");
+  if (a.team === "home" && !game_.autopilot) showBanner(read === "perfect" ? "PERFECT RELEASE" : read === "green" ? "GREEN" : read === "early" ? "EARLY" : "LATE", 0.9);
 
-  // Contest: a jumping defender within range may swat on release
-  if (def && def.jumpT > 0 && defD < 1.9 && !inGreen) {
+  // Contest: a jumping defender within range may swat any release short of perfect
+  if (def && def.jumpT > 0 && defD < 1.9 && canBlockRelease(quality)) {
     const blockP = (def.team === "away" ? 0.42 * DIFFS[game_.diff].contest : 0.5);
     if (rng() < blockP) {
       ball.vx = (ball.x - def.x) * 2.2 + (rng() - 0.5) * 3;
       ball.vy = 1.4;
       ball.vz = Math.abs(ball.vz) * 0.4 + 2.4;
       ball.blocked = true;
+      ball.lastTouch = def.team;
+      game_.stats[def.team].blocks += 1;
       juiceFire("block", { position: [ball.x, ball.y, ball.z] });
       pushEvent("block", "REJECTED", "warning");
       setClip(def, "Contest", 1.35);
@@ -1598,10 +1805,31 @@ const DUNK_PACKAGES = ["POWER JAM", "WINDMILL", "360", "LOB OOP"] as const;
 function startDunk(a: AthleteState, kind: string): void {
   const jammed = game_.jamFull && a.team === "home";
   const pkg = kind === "auto" ? (jammed ? DUNK_PACKAGES[1 + Math.floor(rng() * 2)] : "POWER JAM") : kind;
+  game_.stats[a.team].fga += 1;
+  // Contest at take-off: the nearest defender within 1.2 m may reject it (labs have no defenders on the floor).
+  const def = nearestDefender(a);
+  const defD = def ? defDist(a, def) : 99;
+  if (def && game_.mode !== "dunklab" && game_.mode !== "handleslab") {
+    const mine = a.team === "home" ? game_.homeSquad : game_.awaySquad;
+    const theirs = def.team === "home" ? game_.homeSquad : game_.awaySquad;
+    const p = dunkRejectChance({
+      defenderDistance: defD,
+      defenderAirborne: def.jumpT > 0,
+      defenderStumbling: def.stumble > 0,
+      dunk: mine.dunk + (jammed ? 2 : 0),
+      defense: theirs.defense,
+      contestScale: def.team === "away" ? DIFFS[game_.diff].contest : 1
+    });
+    if (p > 0 && rng() < p) {
+      rejectDunk(a, def);
+      return;
+    }
+  }
   a.dunkT = 0.0001;
   a.dunkKind = pkg;
   a.hasBall = false;
-  Object.assign(ball, { state: "dunk" as BallState, holder: idxOf(a), x: a.x, y: 1.4, z: a.z, vx: 0, vy: 0, vz: 0, shotValue: 1 as const, shooter: idxOf(a), scored: false });
+  Object.assign(ball, { state: "dunk" as BallState, holder: idxOf(a), x: a.x, y: 1.4, z: a.z, vx: 0, vy: 0, vz: 0, shotValue: 1 as const, shooter: idxOf(a), scored: false, flightT: 0, looseT: 0, lastTouch: a.team });
+  trailHist.length = 0;
   setClip(a, "Jump_Loop", 1.45);
   if (jammed) {
     game_.jam = 0;
@@ -1616,8 +1844,31 @@ function startDunk(a: AthleteState, kind: string): void {
   pushEvent("dunk", `${pkg.toLowerCase()} attempt`, "info");
 }
 
+/** A contested dunk swatted at take-off: the ball pops loose away from the rim and the rebound battle is on. */
+function rejectDunk(a: AthleteState, def: AthleteState): void {
+  a.hasBall = false;
+  a.jumpT = 0.0001; a.vy = 3.6;
+  setClip(a, "Jump_Loop", 1.45);
+  def.jumpT = Math.max(def.jumpT, 0.0001); def.vy = Math.max(def.vy, 5.4);
+  setClip(def, "Contest", 1.35);
+  const away = Math.atan2(a.x - RIM[0], a.z - RIM[2]);
+  Object.assign(ball, {
+    state: "loose" as BallState, holder: -1, x: a.x, y: 2.6, z: a.z,
+    vx: Math.sin(away) * 3.2 + (rng() - 0.5) * 1.6, vy: 2.2, vz: Math.cos(away) * 3.2,
+    scored: false, blocked: true, hitRim: false, hitBoard: false, flightT: 0, looseT: 0, lastTouch: def.team
+  });
+  trailHist.length = 0;
+  game_.phase = "live";
+  game_.stats[def.team].blocks += 1;
+  juiceFire("block", { position: [a.x, 2.6, a.z] });
+  showBanner("REJECTED", 1.1);
+  pushEvent("block", `REJECTED — ${def.team === "home" ? "your stop" : "cpu stop"}`, def.team === "home" ? "success" : "warning");
+}
+
 function finishDunk(a: AthleteState): void {
   const pts = 1;
+  game_.stats[a.team].fgm += 1;
+  game_.stats[a.team].dunks += 1;
   game_.jam = clamp(game_.jam + 0.22, 0, 1);
   juiceFire("dunk", { position: [RIM[0], RIM[1], RIM[2]] });
   netPulse = 1;
@@ -1703,6 +1954,8 @@ function stepBallSim(dt: number): void {
       else { cue("swish"); }
       const scorer = athletes[ball.shooter];
       if (scorer) {
+        game_.stats[scorer.team].fgm += 1;
+        crowdSwell();
         const label = swish ? (ball.shotValue === 2 ? "DEEP TWO · SWISH" : "SWISH") : ball.hitBoard ? "OFF THE GLASS" : "RIM ROLL";
         awardPoints(scorer.team, ball.shotValue, label);
       }
@@ -1731,9 +1984,11 @@ function stepBallSim(dt: number): void {
       }
     }
 
-    // Out of play → dead ball → check
-    if (ball.flightT > 4 || Math.abs(ball.x) > 24 || ball.z < -14 || ball.z > 24) {
-      enterCheck(game_.servingTeam === "home" ? "away" : "home");
+    // Out of play → dead ball → the team that did not touch it last checks it. A made basket is handled by the score
+    // phase (winner's ball), so its loose ball never counts as dead.
+    if (!ball.scored && (game_.phase === "live" || game_.phase === "shot") && isDeadBall(ball)) {
+      pushEvent("ball", "dead ball", "info");
+      enterCheck(deadBallPossession(ball.lastTouch));
     }
     return;
   }
@@ -1757,7 +2012,7 @@ function stepBallSim(dt: number): void {
       ball.state = "loose";
       ball.x = RIM[0]; ball.y = RIM[1] - 0.15; ball.z = RIM[2];
       ball.vx = 0; ball.vy = -3.2; ball.vz = 0.4;
-      ball.scored = true; ball.looseT = 0;
+      ball.scored = true; ball.looseT = 0; ball.flightT = 0;
       finishDunk(a);
     }
     return;
@@ -1918,7 +2173,7 @@ function stepTeammateAI(a: AthleteState, dt: number): void {
 function stepCpuOffense(a: AthleteState, dt: number): void {
   const diff = DIFFS[game_.diff];
   const squad = game_.awaySquad;
-  const speed = PLAYER_SPEED * 0.82 * diff.cpuSpeed * (0.85 + squad.speed * 0.03);
+  const speed = PLAYER_SPEED * 0.82 * diff.cpuSpeed * squadSpeedScale(squad);
   if (a.hasBall) {
     if (QA_STAND && !a.shooting) { a.vx = 0; a.vz = 0; return; } // measurement: an AI handler that stands and pounds the ball
     // CPU ball-handler: drive / pullup / pass
@@ -1928,14 +2183,27 @@ function stepCpuOffense(a: AthleteState, dt: number): void {
     if (a.shooting) {
       a.meterT += dt / 0.72;
       if (a.meterT >= (0.7 + (rng() - 0.5) * 0.06)) {
-        releaseShot(a, 0.64 + rng() * 0.32);
+        releaseShot(a, 0.64 + rng() * 0.32, a.meterT);
       }
       return;
     }
     a.aiT -= dt;
     if (a.dunkT > 0) return;
-    if (dRim < DUNK_RANGE && (a.aiPlan === "drive" || rng() < 0.008)) {
-      startDunk(a, "POWER JAM");
+    // Take-back: after a defensive board the CPU must dribble it out past the arc before it can shoot, pass or dunk.
+    if (game_.mustClear) {
+      a.aiPlan = "clear";
+      const [cx, cz] = clearTarget(a.x, a.z, RIM, ARC_R);
+      a.tx = cx; a.tz = cz;
+      aiMove(a, cx, cz, dt, speed);
+      return;
+    }
+    if (dRim < DUNK_RANGE && a.aiPlan === "drive") {
+      if (a.dunkIntent) { startDunk(a, "POWER JAM"); return; }
+      // pull up instead of a guaranteed slam
+      a.aiPlan = "pullup";
+      a.shooting = true;
+      a.meterT = 0;
+      setClip(a, "Load");
       return;
     }
     if (a.aiT <= 0 || dist2d(a.x, a.z, a.tx, a.tz) < 0.5) {
@@ -1956,6 +2224,7 @@ function stepCpuOffense(a: AthleteState, dt: number): void {
         return;
       }
       a.aiPlan = "drive";
+      a.dunkIntent = rng() < CPU_DUNK_RATE[game_.diff];
       a.tx = RIM[0] + (rng() - 0.5) * 2.8;
       a.tz = RIM[2] + 1.3 + rng() * 1.8;
     }
@@ -1977,9 +2246,9 @@ function stepCpuDefense(a: AthleteState, dt: number): void {
   const speed = PLAYER_SPEED * 0.82 * diff.cpuSpeed;
   const holder = holderAthlete();
   if (!holder || holder.team !== "home") return;
-  const foes = awayTeam().sort((m, n) => dist2d(m.x, m.z, holder.x, holder.z) - dist2d(n.x, n.z, holder.x, holder.z));
-  const onBall = foes[0] === a;
-  const help = foes[1] === a;
+  const [first, second] = defenderRanks(holder);
+  const onBall = first === a;
+  const help = second === a;
   if (onBall) {
     // Shadow the handler at arm's length between them and rim
     const gap = holder.shooting ? 0.8 : 1.15;
@@ -2032,8 +2301,19 @@ function stepCpuDefense(a: AthleteState, dt: number): void {
 
 const defDist = (a: AthleteState, b: AthleteState) => dist2d(a.x, a.z, b.x, b.z);
 
+/** The two CPU defenders closest to the home handler, computed once per frame (it used to sort per defender). */
+let rankFrame = -1;
+const ranks: [AthleteState | undefined, AthleteState | undefined] = [undefined, undefined];
+function defenderRanks(holder: AthleteState): readonly [AthleteState | undefined, AthleteState | undefined] {
+  if (rankFrame === framesRendered) return ranks;
+  rankFrame = framesRendered;
+  ranks[0] = nearestOf(awayTeam(), holder.x, holder.z);
+  ranks[1] = nearestOf(awayTeam(), holder.x, holder.z, ranks[0]);
+  return ranks;
+}
+
 function attemptSteal(def: AthleteState, holder: AthleteState): void {
-  const base = def.team === "away" ? 0.34 * DIFFS[game_.diff].contest : 0.42;
+  const base = (def.team === "away" ? 0.34 * DIFFS[game_.diff].contest : 0.42) * squadStealScale(def.team === "home" ? game_.homeSquad : game_.awaySquad);
   setClip(def, "Punch_Jab");
   def.actionUntil = game_.time + 0.42;
   if (rng() < base) {
@@ -2044,6 +2324,9 @@ function attemptSteal(def: AthleteState, holder: AthleteState): void {
     ball.vz = (rng() - 0.5) * 4 + (def.z - holder.z) * 1.4;
     ball.vy = 2.4;
     ball.x = holder.x; ball.y = 1.0; ball.z = holder.z;
+    ball.flightT = 0; ball.looseT = 0; ball.lastTouch = def.team; ball.scored = false; ball.blocked = false;
+    trailHist.length = 0;
+    game_.stats[def.team].steals += 1;
     game_.stealFlash = 0.4;
     juiceFire("steal", { position: [ball.x, 1.0, ball.z] });
     pushEvent("steal", def.team === "home" ? "POKE — BALL LOOSE" : "stripped — cpu steals it", def.team === "home" ? "success" : "warning");
@@ -2073,8 +2356,9 @@ function throwPass(a: AthleteState, recv: AthleteState): void {
   Object.assign(ball, {
     state: "pass" as BallState, x: from[0], y: from[1], z: from[2],
     vx: (to[0] - from[0]) / t, vy: (to[1] - from[1]) / t + 0.9, vz: (to[2] - from[2]) / t,
-    holder: -1, passTarget: idxOf(recv), flightT: 0
+    holder: -1, passTarget: idxOf(recv), flightT: 0, looseT: 0, lastTouch: a.team
   });
+  trailHist.length = 0;
   juiceFire("pass", {});
   pushEvent("pass", `dime → ${recv.nodeId.toUpperCase()}`, "info");
 }
@@ -2200,7 +2484,7 @@ function stepPlayerControl(dt: number): void {
   // Ankle-breaker / hesi timing taps (offense w/ ball)
   if (onOffense && me.dunkT <= 0) {
     if (pressed("cross", "KeyJ")) {
-      if (game_.jamFull && dist2d(me.x, me.z, RIM[0], RIM[2]) < DUNK_RANGE + 0.6) {
+      if (game_.jamFull && !game_.mustClear && dist2d(me.x, me.z, RIM[0], RIM[2]) < DUNK_RANGE + 0.6) {
         startDunk(me, "WINDMILL");
       } else {
         const def = nearestDefender(me);
@@ -2220,7 +2504,7 @@ function stepPlayerControl(dt: number): void {
       }
     }
     if (pressed("hesi", "KeyK")) {
-      if (game_.jamFull && dist2d(me.x, me.z, RIM[0], RIM[2]) < DUNK_RANGE + 0.6) {
+      if (game_.jamFull && !game_.mustClear && dist2d(me.x, me.z, RIM[0], RIM[2]) < DUNK_RANGE + 0.6) {
         startDunk(me, "360");
       } else {
         me.vx *= 0.12; me.vz *= 0.12;
@@ -2236,7 +2520,7 @@ function stepPlayerControl(dt: number): void {
       }
     }
     if (pressed("pass", "KeyE")) {
-      if (game_.jamFull && dist2d(me.x, me.z, RIM[0], RIM[2]) < DUNK_RANGE + 1.2) {
+      if (game_.jamFull && !game_.mustClear && dist2d(me.x, me.z, RIM[0], RIM[2]) < DUNK_RANGE + 1.2) {
         // Lob oop: find cutting teammate nearest rim
         const mate = homeTeam().filter((m) => m !== me).sort((x, y) => dist2d(x.x, x.z, RIM[0], RIM[2]) - dist2d(y.x, y.z, RIM[0], RIM[2]))[0];
         if (mate) {
@@ -2250,14 +2534,20 @@ function stepPlayerControl(dt: number): void {
         if (recv) { closeMeter(); me.shooting = false; throwPass(me, recv); }
       }
     }
-    // Shoot: press-hold-release meter OR rim-run dunk
-    if (pressed("shoot", "Space", "Enter")) {
+    // Shoot: press-hold-release meter OR rim-run dunk. Not on the check press itself (CHECK_SHOT_GUARD), and not
+    // before a defensive board has been taken back past the arc.
+    if (pressed("shoot", "Space", "Enter") && game_.time - game_.liveSince >= CHECK_SHOT_GUARD) {
       const dRim = dist2d(me.x, me.z, RIM[0], RIM[2]);
-      const driving = dRim < DUNK_RANGE && Math.hypot(me.vx, me.vz) > 1.4 && (me.vz < 0 || dRim < 1.4);
-      if (driving || (game_.jamFull && dRim < DUNK_RANGE)) {
-        startDunk(me, "auto");
-      } else if (!game_.shotMeter.active) {
-        openMeter(me);
+      if (game_.mustClear) {
+        showPrompt("TAKE IT BACK — PAST THE ARC FIRST", 0.9);
+        pushEvent("rules", "take it back before you score", "warning");
+      } else {
+        const driving = dRim < DUNK_RANGE && Math.hypot(me.vx, me.vz) > 1.4 && (me.vz < 0 || dRim < 1.4);
+        if (driving || (game_.jamFull && dRim < DUNK_RANGE)) {
+          startDunk(me, "auto");
+        } else if (!game_.shotMeter.active) {
+          openMeter(me);
+        }
       }
     }
   } else if (me.hasBall && inLab) {
@@ -2296,23 +2586,13 @@ function stepPlayerControl(dt: number): void {
     }
   }
 
-  // Meter release — supports both hold-and-release and quick tap of Space
+  // Meter release: the shot leaves at the needle's real position. An early tap is an early brick, holding to the end of
+  // the meter is a late brick (the needle stops at 1, it no longer wraps back into a free "tap" make).
   if (game_.shotMeter.active && me.shooting) {
     const shootHeld = held("shoot", "Space", "Enter");
-    if (!shootHeld && game_.shotMeter.frames > 1) {
-      if (game_.shotMeter.t < 0.48) {
-        // Quick tap: let the jumper rise to the release window then fire automatically
-        game_.shotMeter.tapRelease = true;
-      } else {
-        const t = game_.shotMeter.t;
-        const c = game_.shotMeter.perfect;
-        const hw = (game_.shotMeter.g1 - game_.shotMeter.g0) / 2;
-        const q = clamp(1 - Math.abs(t - c) / Math.max(hw * 2.2, 0.001), 0, 1);
-        releaseShot(me, q);
-      }
-    }
-    if (game_.shotMeter.tapRelease && game_.shotMeter.t >= game_.shotMeter.perfect - 0.02) {
-      releaseShot(me, game_.autopilot ? 0.58 + rng() * 0.4 : 0.94);
+    const sm = game_.shotMeter;
+    if ((!shootHeld && sm.frames > 1) || sm.t >= 1) {
+      releaseShot(me, meterQuality(sm.t, sm.g0, sm.g1, sm.perfect), sm.t);
     }
   }
 
@@ -2328,6 +2608,9 @@ function stepPlayerControl(dt: number): void {
 function grabLooseBall(a: AthleteState): void {
   ball.state = "held";
   ball.holder = idxOf(a);
+  ball.lastTouch = a.team;
+  ball.flightT = 0; ball.looseT = 0;
+  trailHist.length = 0;
   a.hasBall = true;
   ball.vx = 0; ball.vy = 0; ball.vz = 0;
   if (a.team === "home") {
@@ -2349,8 +2632,14 @@ function grabLooseBall(a: AthleteState): void {
       pushEvent("rebound", "cpu board — their rock", "warning");
     }
   }
-  a.aiPlan = "drive";
-  a.tx = a.x * 1.4; a.tz = 9.0; // clearance dribble target for CPU
+  if (game_.mustClear) {
+    a.aiPlan = "clear";
+    [a.tx, a.tz] = clearTarget(a.x, a.z, RIM, ARC_R);
+  } else {
+    a.aiPlan = "drive";
+    a.dunkIntent = rng() < CPU_DUNK_RATE[game_.diff];
+    a.tx = a.x * 1.4; a.tz = 9.0;
+  }
 }
 
 /* ------------------------------------------------------------------ *
@@ -2739,46 +3028,62 @@ function updateCamera(dt: number): void {
   try { (auraApp as any).camera?.setPose?.({ position: cam.eye, target: cam.target, fov: cam.fov }); } catch { /* camera ext optional */ }
 }
 
+/** DOM writes only when the value changes (the HUD used to rewrite every node every frame). */
+const domCache = new WeakMap<object, string>();
+function setText(node: Node | null | undefined, text: string): void {
+  if (!node || domCache.get(node) === text) return;
+  domCache.set(node, text);
+  node.textContent = text;
+}
+function setStyle(node: HTMLElement | null | undefined, prop: "width" | "left" | "display", value: string): void {
+  if (!node) return;
+  const key = `${prop}:${value}`;
+  const cacheKey = (node as any)[`__a3dStyle_${prop}`];
+  if (cacheKey === key) return;
+  (node as any)[`__a3dStyle_${prop}`] = key;
+  node.style[prop] = value;
+}
+
 function syncHud(): void {
-  if (hudHomeName) hudHomeName.textContent = game_.homeSquad.short;
-  if (hudAwayName) hudAwayName.textContent = game_.mode === "dunklab" || game_.mode === "handleslab" ? "LAB" : game_.awaySquad.short;
-  if (hudHomeScore) hudHomeScore.textContent = `${game_.scoreHome}`;
-  if (hudAwayScore) hudAwayScore.textContent = (game_.mode === "dunklab" || game_.mode === "handleslab") ? "—" : `${game_.scoreAway}`;
-  if (hudHomePoss) hudHomePoss.textContent = game_.possession === "home" ? "● BALL" : "";
-  if (hudAwayPoss) hudAwayPoss.textContent = game_.possession === "away" ? "● BALL" : "";
-  if (hudTarget) hudTarget.textContent = game_.mode === "dunklab" ? "FREE RUN" : game_.mode === "handleslab" ? "CONE DRILL" : `FIRST TO ${game_.target}`;
+  const lab = game_.mode === "dunklab" || game_.mode === "handleslab";
+  setText(hudHomeName, game_.homeSquad.short);
+  setText(hudAwayName, lab ? "LAB" : game_.awaySquad.short);
+  setText(hudHomeScore, `${game_.scoreHome}`);
+  setText(hudAwayScore, lab ? "—" : `${game_.scoreAway}`);
+  setText(hudHomePoss, game_.possession === "home" ? "● BALL" : "");
+  setText(hudAwayPoss, game_.possession === "away" ? "● BALL" : "");
+  setText(hudTarget, game_.mode === "dunklab" ? "FREE RUN" : game_.mode === "handleslab" ? "CONE DRILL" : `FIRST TO ${game_.target}`);
   if (hudClock) {
     const mm = Math.floor(game_.matchT / 60);
     const ss = Math.floor(game_.matchT % 60).toString().padStart(2, "0");
-    hudClock.textContent = game_.phase === "check" ? "CHECK" : game_.phase === "shot" ? "SHOT" : game_.phase === "score" ? "BUCKET" : game_.phase === "gameover" ? "FINAL" : game_.phase === "menu" ? "STREET" : `${mm}:${ss}`;
+    setText(hudClock, game_.phase === "check" ? "CHECK" : game_.phase === "shot" ? "SHOT" : game_.phase === "score" ? "BUCKET" : game_.phase === "gameover" ? "FINAL" : game_.phase === "menu" ? "STREET" : `${mm}:${ss}`);
   }
-  if (hudVenue) hudVenue.textContent = venue.label;
-  if (hudCourtChip?.firstChild) hudCourtChip.firstChild.textContent = `${venue.label}`;
-  if (hudLookChip) hudLookChip.textContent = venue.lookLabel;
-  if (jamFill) jamFill.style.width = `${Math.round(game_.jam * 100)}%`;
+  setText(hudVenue, venue.label);
+  setText(hudCourtChip?.firstChild, `${venue.label}`);
+  setText(hudLookChip, venue.lookLabel);
+  setStyle(jamFill, "width", `${Math.round(game_.jam * 100)}%`);
   const jamNowFull = game_.jam >= 1;
   if (jamNowFull !== game_.jamFull) {
     game_.jamFull = jamNowFull;
     jamWrap?.classList.toggle("full", jamNowFull);
     if (jamNowFull) { flashJam(); cue("fireIgnite"); showBanner("JAM METER FULL"); pushEvent("jam", "jam meter loaded — attack the rim", "success"); }
   }
-  if (hudTourChip) hudTourChip.style.display = game_.mode === "tour" ? "" : "none";
-  if (hudTourRound && game_.mode === "tour") {
-    hudTourRound.textContent = game_.tour.champion ? "CHAMPION" : game_.tour.eliminated ? "ELIMINATED" : `ROUND OF ${[32, 16, 8, 4, 2][game_.tour.round] ?? 2}`;
+  setStyle(hudTourChip, "display", game_.mode === "tour" ? "" : "none");
+  if (game_.mode === "tour") {
+    setText(hudTourRound, game_.tour.champion ? "CHAMPION" : game_.tour.eliminated ? "ELIMINATED" : `ROUND OF ${[32, 16, 8, 4, 2][game_.tour.round] ?? 2}`);
   }
-  const labActive = game_.mode === "dunklab" || game_.mode === "handleslab";
-  if (hudLabChip) hudLabChip.style.display = labActive ? "" : "none";
-  if (hudLabLine && labActive) {
-    hudLabLine.textContent = game_.mode === "dunklab"
+  setStyle(hudLabChip, "display", lab ? "" : "none");
+  if (lab) {
+    setText(hudLabLine, game_.mode === "dunklab"
       ? `SCORE ${game_.lab.score} · STREAK ${game_.lab.streak}`
-      : `CONES ${game_.cones.cleared} · STREAK ${game_.cones.streak} · STYLE ${game_.lab.style}`;
+      : `CONES ${game_.cones.cleared} · STREAK ${game_.cones.streak} · STYLE ${game_.lab.style}`);
   }
   // Shot meter
   const sm = game_.shotMeter;
-  if (smGreen) { smGreen.style.left = `${sm.g0 * 100}%`; smGreen.style.width = `${(sm.g1 - sm.g0) * 100}%`; }
-  if (smPerfect) { smPerfect.style.left = `${(sm.perfect - 0.012) * 100}%`; smPerfect.style.width = "2.4%"; }
-  if (smNeedle) smNeedle.style.left = `${clamp(sm.t, 0, 1) * 100}%`;
-  if (smLabel) smLabel.textContent = sm.active ? (sm.t < sm.g0 ? "CHARGING…" : sm.t <= sm.g1 ? "RELEASE NOW" : "LATE — STILL LIVE") : "RELEASE IN THE GREEN";
+  setStyle(smGreen, "left", `${sm.g0 * 100}%`); setStyle(smGreen, "width", `${(sm.g1 - sm.g0) * 100}%`);
+  setStyle(smPerfect, "left", `${(sm.perfect - 0.012) * 100}%`); setStyle(smPerfect, "width", "2.4%");
+  setStyle(smNeedle, "left", `${clamp(sm.t, 0, 1) * 100}%`);
+  setText(smLabel, sm.active ? (sm.t < sm.g0 ? "CHARGING…" : sm.t <= sm.g1 ? "RELEASE NOW" : "LATE") : "RELEASE IN THE GREEN");
 }
 
 /** Where a bone-relative point of an athlete really is in the world (sockets are in the model's native space, whose origin is 0.96 m above the grounded feet). */
@@ -2814,7 +3119,17 @@ function handProbe(): Record<string, unknown> | null {
   return out;
 }
 
-function publishEvidence(): void {
+/**
+ * The evidence snapshot allocates (event log copy, per-athlete records): publish it every 10th frame, or after 250 ms on a
+ * slow device, or when the phase changes, instead of on every frame.
+ */
+let lastPublishAt = -Infinity;
+let lastPublishedPhase = "";
+function publishEvidence(force = false): void {
+  const nowMs = performance.now();
+  if (!force && framesRendered % 10 !== 0 && nowMs - lastPublishAt < 250 && game_.phase === lastPublishedPhase) return;
+  lastPublishAt = nowMs;
+  lastPublishedPhase = game_.phase;
   const holder = holderAthlete();
   const evidence = {
     route: "showcase-aura-hoops-3d",
@@ -2858,6 +3173,12 @@ function publishEvidence(): void {
       hasBall: a.hasBall
     })),
     difficulty: game_.diff,
+    userDifficulty: game_.userDiff,
+    menuOpen: menuIsOpen(),
+    lastTouch: ball.lastTouch,
+    kits: teamKits(game_.homeSquad, game_.awaySquad),
+    appliedFit: game_.appliedFit,
+    stats: game_.stats,
     squads: { home: game_.homeSquad.id, away: game_.awaySquad.id },
     tour: { active: game_.tour.active, round: game_.tour.round, champion: game_.tour.champion, eliminated: game_.tour.eliminated },
     lab: { ...game_.lab, cones: game_.cones.cleared },
@@ -2867,7 +3188,7 @@ function publishEvidence(): void {
     touch: touchControls?.evidence?.() ?? null,
     deterministic: { rng: "lcg:0xa3d5", ballSim: "route-local analytic + contact model" },
     assets: [
-      "hoopsAthleteGuard", "hoopsAthleteBig", "hoopsHoopRig", "hoopsRim", "hoopsBackboard", "hoopsBall", "hoopsCourtShell", "showcaseStadiumSeats", "hoopsScoreboard", "hoopsFloodlight", "hoopsBallCart", "hoopsSkyline", "hoopsTower", "hoopsEarth", "hoopsOrbitArena", "hoopsCanopy", "hoopsLamp", "hoopsPalm", "hoopsTrophy"
+      "hoopsAthleteGuardKit", "hoopsAthleteBigKit", "hoopsHoopRig", "hoopsRim", "hoopsBackboard", "hoopsBall", "hoopsCourtShell", "showcaseStadiumSeats", "hoopsScoreboard", "hoopsFloodlight", "hoopsBallCart", "hoopsSkyline", "hoopsTower", "hoopsEarth", "hoopsOrbitArena", "hoopsCanopy", "hoopsLamp", "hoopsPalm", "hoopsTrophy"
     ]
   };
   publishBeacon(evidence);
@@ -2890,11 +3211,24 @@ function frame(dtRaw: number): void {
   if (game_.promptT > 0) { game_.promptT -= dt; if (game_.promptT <= 0) promptEl?.classList.remove("show"); }
   if (jamFlashT > 0) { jamFlashT = Math.max(0, jamFlashT - dt * 2.4); if (jamFlash) jamFlash.style.opacity = jamFlashT.toFixed(2); }
   if (netPulse > 0) netPulse -= dt * 3;
-  if (rimShake > 0) rimShake -= dt * 4;
+  rimShake = decayRimShake(rimShake, dt);
+  if (crowdLevel > 1) {
+    crowdLevel = Math.max(1, crowdLevel - dt * 0.6);
+    if (framesRendered % 12 === 0 || crowdLevel === 1) { try { (audio as any)?.setCueLevel?.("crowd", { volume: crowdLevel }, 200); } catch { /* best-effort */ } }
+  }
 
-  // Menu key
-  if (pressed("menu", "Escape")) {
-    menuOverlay?.classList.toggle("open");
+  // Menu key: exactly one toggle per press (input.ts)
+  pressed.beginFrame();
+  if (pressed("menu", "Escape")) setMenuOpen(!menuIsOpen());
+
+  // The open menu pauses play: no simulation and no gameplay input behind it.
+  if (menuIsOpen()) {
+    updateCamera(dt);
+    syncHud();
+    publishEvidence();
+    inputCtl.update(dt);
+    keysPressed.clear();
+    return;
   }
 
   const me = controlledAthlete();
@@ -2920,7 +3254,7 @@ function frame(dtRaw: number): void {
       } else if (game_.checkT > 0.9) {
         enterLive();
         const h = holderAthlete();
-        if (h) { h.aiPlan = "drive"; h.tx = RIM[0]; h.tz = 2.2; }
+        if (h) { h.aiPlan = "drive"; h.dunkIntent = rng() < CPU_DUNK_RATE[game_.diff]; h.tx = RIM[0]; h.tz = 2.2; }
       }
       break;
     }
@@ -2928,9 +3262,8 @@ function frame(dtRaw: number): void {
     case "shot": {
       // Meter charge
       if (game_.shotMeter.active && me?.shooting) {
-        game_.shotMeter.t += dt / 0.72;
+        game_.shotMeter.t = advanceMeter(game_.shotMeter.t, dt); // stops at 1: holding past the end is a late brick
         game_.shotMeter.frames += 1;
-        if (game_.shotMeter.t >= 1) { game_.shotMeter.t = 0; } // wraps — late release = brick territory
       }
       stepPlayerControl(dt);
       const playIsActive =
@@ -2966,7 +3299,7 @@ function frame(dtRaw: number): void {
           else if (a.team === "home" && !a.controlled) {
             // Home off-ball defenders shadow their 5v5 marks using discrete target updates
             const mark = awayTeam().find((m) => m.index === a.index)
-              ?? awayTeam().sort((m, n) => defDist(m, a) - defDist(n, a))[0];
+              ?? nearestOf(awayTeam(), a.x, a.z);
             if (mark) {
               const wantX = mark.x * 0.9;
               const wantZ = mark.z * 0.9 - 0.55;
@@ -3001,15 +3334,7 @@ function frame(dtRaw: number): void {
       break;
     }
     case "gameover": {
-      if (pressed("rematch", "KeyR")) {
-        promptEl?.classList.remove("show");
-        msgBox?.classList.remove("show");
-        if (game_.mode === "tour" && (game_.tour.champion || game_.tour.eliminated)) {
-          game_.tour = { active: true, round: 0, eliminated: false, champion: false, opponents: [] };
-        }
-        startMatch(game_.mode);
-        renderBracket();
-      }
+      if (pressed("rematch", "KeyR")) rematch();
       break;
     }
   }
@@ -3036,30 +3361,23 @@ function frame(dtRaw: number): void {
     game_.jamFull = true;
   }
 
+  // Bodies never overlap: one push-apart pass over the athletes on the floor (a dunker in the air holds its line).
+  separateBodies();
+
   // Ball + athletes
   stepBallSim(dt);
   for (const a of athletes) syncAthlete(a, dt);
   refreshHeldBall();
 
   // Ball visuals
-  if (ballNode) {
-    let rx = 0, ry = 0, rz = 0;
-    if (ball.state === "flight" || ball.state === "loose" || ball.state === "pass") {
-      rx = ball.flightT * 6; rz = ball.flightT * 4;
-    } else {
-      const h = holderAthlete();
-      rx = game_.time * 5.2; ry = h?.yaw ?? 0;
-    }
-    ballNode.setRotation(rx, ry, rz);
-    // The fitted ball model is grounded on its lowest point and rotates about that point: place the node so the ball CENTRE
-    // is at (ball.x, ball.y, ball.z) whatever the spin (centre = node + R * (0, radius, 0), R = Rz Ry Rx as the engine builds it).
-    const cxr = Math.cos(rx), sxr = Math.sin(rx), cyr = Math.cos(ry), syr = Math.sin(ry), czr = Math.cos(rz), szr = Math.sin(rz);
-    const ux = syr * sxr, uy = cxr, uz = cyr * sxr;
-    const off: Vec3 = [(czr * ux - szr * uy) * BALL_R, (szr * ux + czr * uy) * BALL_R, uz * BALL_R];
-    const cy = Math.max(BALL_R, ball.y);
-    ballNode.setPosition(ball.x - off[0], cy - off[1], ball.z - off[2]);
+  if (ball.state === "flight" || ball.state === "loose" || ball.state === "pass") {
+    ballSpin[0] = ball.flightT * 6; ballSpin[1] = 0; ballSpin[2] = ball.flightT * 4;
+  } else {
+    const h = holderAthlete();
+    ballSpin[0] = game_.time * 5.2; ballSpin[1] = h?.yaw ?? 0; ballSpin[2] = 0;
   }
-  ballShadow?.setPosition(ball.x, 0.014, ball.z).setScale([clamp(1.1 - ball.y * 0.12, 0.3, 1.05), 1, clamp(1.1 - ball.y * 0.12, 0.3, 1.05)]).setVisible(true);
+  placeBall(ball.x, ball.y, ball.z);
+  ballShadow?.setScale([clamp(1.1 - ball.y * 0.12, 0.3, 1.05), 1, clamp(1.1 - ball.y * 0.12, 0.3, 1.05)]).setVisible(true);
   for (let i = 0; i < TRAIL_COUNT; i++) {
     const h = trailNodes[i];
     const pt = trailHist[trailHist.length - 1 - i];
@@ -3074,7 +3392,7 @@ function frame(dtRaw: number): void {
   netBottom?.setScale([1 + Math.max(0, netPulse) * 0.8, 1 + Math.max(0, netPulse) * 0.8, 1]);
   netSkirt?.setScale([1 + netPulse * 0.3, 1 + netPulse * 0.55, 1 + netPulse * 0.3]);
   rimHalo?.setScale([1 + rimShake * 0.12, 1 + rimShake * 0.12, 1]);
-  rimNode?.setPosition(RIM[0] + (rng() - 0.5) * rimShake * 0.03, RIM[1] + rimShake * 0.02, RIM[2]);
+  rimNode?.setPosition(RIM[0] + (fxRng() - 0.5) * rimShake * 0.03, RIM[1] + rimShake * 0.02, RIM[2]);
   planetEarth?.setRotation(0, game_.time * 0.02, 0);
 
   // Cones
@@ -3091,11 +3409,92 @@ function frame(dtRaw: number): void {
 
   updateCamera(dt);
   touchControls?.update?.();
+  if (touchExtra) { const show = Boolean(touchControls?.visible); if (touchExtra.hidden === show) touchExtra.hidden = !show; }
   syncHud();
   publishEvidence();
   inputCtl.update(dt);
   keysPressed.clear();
 }
+
+/** Current ball spin (rx, ry, rz); the presenter reuses it when it draws the ball between steps. */
+const ballSpin: Vec3 = [0, 0, 0];
+/** Draw the ball with its CENTRE at (x, y, z). The fitted ball model is grounded on its lowest point and rotates about that
+ * point, so the node is offset by R * (0, radius, 0), R = Rz Ry Rx as the engine builds it. */
+function placeBall(x: number, y: number, z: number): void {
+  if (ballNode) {
+    const [rx, ry, rz] = ballSpin;
+    ballNode.setRotation(rx, ry, rz);
+    const cxr = Math.cos(rx), sxr = Math.sin(rx), cyr = Math.cos(ry), syr = Math.sin(ry), czr = Math.cos(rz), szr = Math.sin(rz);
+    const ux = syr * sxr, uy = cxr, uz = cyr * sxr;
+    const cy = Math.max(BALL_R, y);
+    ballNode.setPosition(x - (czr * ux - szr * uy) * BALL_R, cy - (szr * ux + czr * uy) * BALL_R, z - uz * BALL_R);
+  }
+  ballShadow?.setPosition(x, 0.014, z);
+}
+
+/* ------------------------------------------------------------------ *
+ *  Fixed-step presenter: the sim runs at SIM_STEP; every display frame  *
+ *  draws the athletes and the ball between the last two steps, so      *
+ *  120 and 144 Hz displays see motion on every frame.                  *
+ * ------------------------------------------------------------------ */
+interface Shown { prev: Pose; cur: Pose; has: boolean; out: Pose }
+const shownAthletes = new Map<string, Shown>();
+const shownBall: Shown = { prev: { x: 0, y: 0, z: 0, yaw: 0 }, cur: { x: 0, y: 0, z: 0, yaw: 0 }, has: false, out: { x: 0, y: 0, z: 0, yaw: 0 } };
+function pushShown(sh: Shown, x: number, y: number, z: number, yaw: number): void {
+  if (sh.has) Object.assign(sh.prev, sh.cur);
+  sh.cur.x = x; sh.cur.y = y; sh.cur.z = z; sh.cur.yaw = yaw;
+  if (!sh.has) { Object.assign(sh.prev, sh.cur); sh.has = true; }
+}
+function recordStep(): void {
+  for (const a of athletes) {
+    let sh = shownAthletes.get(a.nodeId);
+    if (!sh) { sh = { prev: { x: 0, y: 0, z: 0, yaw: 0 }, cur: { x: 0, y: 0, z: 0, yaw: 0 }, has: false, out: { x: 0, y: 0, z: 0, yaw: 0 } }; shownAthletes.set(a.nodeId, sh); }
+    pushShown(sh, a.x, a.y, a.z, a.yaw);
+  }
+  pushShown(shownBall, ball.x, ball.y, ball.z, 0);
+  pushShown(shownEye, cam.eye[0], cam.eye[1], cam.eye[2], cam.fov);
+  pushShown(shownTarget, cam.target[0], cam.target[1], cam.target[2], 0);
+}
+const shownEye: Shown = { prev: { x: 0, y: 0, z: 0, yaw: 0 }, cur: { x: 0, y: 0, z: 0, yaw: 0 }, has: false, out: { x: 0, y: 0, z: 0, yaw: 0 } };
+const shownTarget: Shown = { prev: { x: 0, y: 0, z: 0, yaw: 0 }, cur: { x: 0, y: 0, z: 0, yaw: 0 }, has: false, out: { x: 0, y: 0, z: 0, yaw: 0 } };
+const camLerp = (sh: Shown, alpha: number): Pose => {
+  const o = sh.out, a = Math.max(0, Math.min(1, alpha));
+  o.x = sh.prev.x + (sh.cur.x - sh.prev.x) * a; o.y = sh.prev.y + (sh.cur.y - sh.prev.y) * a; o.z = sh.prev.z + (sh.cur.z - sh.prev.z) * a;
+  o.yaw = sh.prev.yaw + (sh.cur.yaw - sh.prev.yaw) * a; // fov rides in yaw
+  return o;
+};
+function present(alpha: number): void {
+  if (alpha >= 0.999) return; // the last step is already drawn
+  athletes.forEach((a, i) => {
+    const sh = shownAthletes.get(a.nodeId);
+    const r = rigs[i];
+    if (!sh?.has || !r?.root) return;
+    const p = blendPose(sh.prev, sh.cur, alpha, sh.out);
+    r.root.setPosition(p.x, p.y, p.z).setRotation(0, p.yaw, 0);
+    r.shadow?.setPosition(p.x, 0.012, p.z);
+    r.ring?.setPosition(p.x, 0.018, p.z);
+    r.aura?.setPosition(p.x, p.y + 0.95, p.z); // fit-grounding: ok (a centre-based cylinder primitive)
+  });
+  if (shownBall.has) {
+    const b = blendPose(shownBall.prev, shownBall.cur, alpha, shownBall.out);
+    placeBall(b.x, b.y, b.z);
+  }
+  if (shownEye.has) {
+    // the camera eases toward its target every step; draw it between steps too, or the whole frame stalls at 120/144 Hz
+    const e = camLerp(shownEye, alpha), t = camLerp(shownTarget, alpha);
+    try { (auraApp as any).camera?.setPose?.({ position: [e.x, e.y, e.z], target: [t.x, t.y, t.z], fov: e.yaw }); } catch { /* camera ext optional */ }
+  }
+}
+const simLoop = createFixedStepLoop({
+  stepSeconds: SIM_STEP,
+  // the old variable step clamped a frame to 0.05 s; keep that ceiling (3 steps) so slow devices pace the same
+  maxCatchUpSteps: 3,
+  maxFrameSeconds: 0.05,
+  step: (seconds) => { frame(seconds); recordStep(); },
+  render: () => present(simLoop.alpha),
+  schedule: () => 0,
+  cancel: () => undefined
+});
 
 const frameBoundary = createFrameErrorBoundary({
   onFatal: () => { if (renderError) (renderError as HTMLElement).hidden = false; }
@@ -3114,8 +3513,13 @@ auraApp.onFrame(({ dt }) => {
       qaStepsLeft -= 1;
     }
     const extra = Math.max(0, Math.min(119, Number(initialParams.get("simsteps")) | 0));
-    for (let i = 0; i < extra; i += 1) frame(1 / 60);
-    frame(dt);
+    if (QA_STEP || extra > 0 || QA_DT > 0) {
+      // measurement paths (?diag=1 qaStep / qaDt, ?simsteps=N) keep their own stepping
+      for (let i = 0; i < extra; i += 1) frame(1 / 60);
+      frame(dt);
+      return;
+    }
+    simLoop.tick(performance.now());
   });
 });
 
@@ -3224,7 +3628,7 @@ function wireMenus(): void {
         tourSection?.style.setProperty("display", "");
         renderBracket();
       }
-      menuOverlay?.classList.remove("open");
+      setMenuOpen(false, false);
       startMatch(mode);
       enterLive();
     });
@@ -3233,7 +3637,8 @@ function wireMenus(): void {
     btn.addEventListener("click", () => {
       const d = btn.dataset.diff as DiffId;
       if (!DIFFS[d]) return;
-      game_.diff = d;
+      game_.userDiff = d;
+      if (game_.mode !== "tour") game_.diff = d;
       document.querySelectorAll<HTMLButtonElement>("[data-diff]").forEach((b) => b.classList.toggle("active", b === btn));
       pushEvent("difficulty", `difficulty: ${DIFFS[d].label.toLowerCase()}`, "info");
     });
@@ -3248,22 +3653,64 @@ function wireMenus(): void {
     btn.addEventListener("click", () => {
       const m = btn.dataset.modeBtn;
       document.querySelectorAll<HTMLButtonElement>("[data-mode-btn]").forEach((b) => b.classList.toggle("active", b === btn));
-      if (m === "menu") { menuOverlay?.classList.add("open"); return; }
-      if (m === "quick") { menuOverlay?.classList.remove("open"); startMatch("quick"); enterLive(); }
-      if (m === "dunklab") { menuOverlay?.classList.remove("open"); startMatch("dunklab"); }
+      if (m === "menu") { setMenuOpen(true); return; }
+      if (m === "quick") { setMenuOpen(false, false); startMatch("quick"); enterLive(); }
+      if (m === "dunklab") { setMenuOpen(false, false); startMatch("dunklab"); }
     });
   });
-  el<HTMLElement>("menu-close")?.addEventListener("click", () => menuOverlay?.classList.remove("open"));
+  el<HTMLElement>("menu-close")?.addEventListener("click", () => setMenuOpen(false));
   el<HTMLElement>("menu-run")?.addEventListener("click", () => {
-    menuOverlay?.classList.remove("open");
+    setMenuOpen(false, false);
     startMatch(game_.pendingMode === "studio" ? "quick" : game_.pendingMode);
     enterLive();
   });
   el<HTMLElement>("studio-apply")?.addEventListener("click", () => {
+    // The fit goes onto the home squad's kit materials: jersey and kicks for the crew, skin and hair for your player.
+    game_.appliedFit = { ...game_.fit };
+    rebuildScene();
     buildStudioPills();
     showBanner("FIT APPLIED TO YOUR SQUAD");
     pushEvent("studio", "fit applied", "success");
-    menuOverlay?.classList.remove("open");
+    setMenuOpen(false);
+  });
+  // Squad picker: your crew's colours and its shoot / speed / dunk / defense stats
+  const squadRow = el<HTMLElement>("squad-row");
+  const renderSquads = (): void => {
+    if (!squadRow) return;
+    squadRow.innerHTML = "";
+    for (const q of SQUADS) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "menu-pill squad-pill" + (q === game_.homeSquad ? " active" : "");
+      b.dataset.squad = q.id;
+      b.innerHTML = `<span class="sq-chip" style="background:${q.color}"></span>${q.name}<span class="sq-stats">SHT ${q.shoot} · SPD ${q.speed} · DNK ${q.dunk} · DEF ${q.defense}</span>`;
+      b.addEventListener("click", () => {
+        game_.homeSquad = q;
+        if (game_.awaySquad === q) game_.awaySquad = SQUADS.find((o) => o !== q)!;
+        rebuildScene();
+        renderSquads();
+        pushEvent("squad", `squad: ${q.name.toLowerCase()}`, "info");
+      });
+      squadRow.appendChild(b);
+    }
+  };
+  renderSquads();
+  // Mute toggle
+  const muteBtn = el<HTMLButtonElement>("tb-mute");
+  let muted = false;
+  muteBtn?.addEventListener("click", () => {
+    muted = !muted;
+    try { (audio as any)?.setMuted?.(muted); } catch { /* best-effort */ }
+    muteBtn.textContent = muted ? "SOUND: OFF" : "SOUND: ON";
+    muteBtn.setAttribute("aria-pressed", muted ? "true" : "false");
+  });
+  // Results card + touch buttons
+  el<HTMLElement>("res-rematch")?.addEventListener("click", () => rematch());
+  el<HTMLElement>("res-menu")?.addEventListener("click", () => { hideResults(); setMenuOpen(true); });
+  el<HTMLElement>("touch-menu")?.addEventListener("click", () => setMenuOpen(!menuIsOpen()));
+  // Pause when the tab or app goes to the background.
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && (game_.phase === "live" || game_.phase === "shot" || game_.phase === "check")) setMenuOpen(true);
   });
 }
 
@@ -3284,9 +3731,11 @@ const menuParam = params.get("menu") === "1" || modeParam === "studio";
 if (menuParam) {
   enterCheck("home");
   game_.phase = "menu";
-  menuOverlay?.classList.add("open");
+  if (modeParam && modeParam !== "studio") game_.pendingMode = modeParam;
+  if (modeParam === "studio") { studioSection?.style.setProperty("display", ""); buildStudioPills(); }
+  setMenuOpen(true);
 } else {
-  menuOverlay?.classList.remove("open");
+  setMenuOpen(false, false);
   startMatch(modeParam ?? "quick");
   if (QA_SERVE) enterCheck("away");
   enterLive();
@@ -3298,9 +3747,10 @@ void Promise.resolve((auraApp as any).ready?.()).then(() => {
   updateCamera(0.016);
   syncHud();
   appReady = true;
+  simLoop.resetAccumulator();
   document.body.dataset.aura3dReady = "true";
   document.querySelector("#app canvas")?.setAttribute("data-ready", "true");
-  publishEvidence();
+  publishEvidence(true);
   pushEvent("system", "aura hoops 3d online — six courts loaded", "success");
   console.info("[aura-hoops-3d] ready", { venue: venue.id, mode: game_.mode, phase: game_.phase });
 });

@@ -39,6 +39,8 @@ type AuraGeneratedRouteAssetDefinitions = {
   readonly "hoopsStealSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; readonly sizeBytes: number; };
   readonly "hoopsBlockSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; readonly sizeBytes: number; };
   readonly "hoopsCheckSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; readonly sizeBytes: number; };
+  readonly "hoopsAthleteBigKit": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
+  readonly "hoopsAthleteGuardKit": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
   readonly "showcaseStadiumSeats": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
 };
 
@@ -322,6 +324,24 @@ export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAu
     hash: "sha256-405a831d3b901ca15f9a628f96e3136be8a2da626660da946ccf18fd2f610ba3",
     bounds: [0,0,0],
     sizeBytes: 70604,
+  },
+  // Route-local (apps/showcase-aura-hoops-3d/public/aura-assets): region-split copies of hoopsAthlete{Big,Guard}Clean with
+  // one material per body region for team kits (tools/hoops-athlete-retexture/split-kit-materials.mjs). Same vertices.
+  "hoopsAthleteBigKit": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsAthleteBigKit.02749aa6.glb",
+    hash: "sha256-02749aa676c1afb2cfa2be6b3ce9df03ddd50cf9da64255785a1a8c13ad553e2",
+    bounds: [0.878,1.903,0.429],
+    sizeBytes: 1321824,
+  },
+  "hoopsAthleteGuardKit": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/hoopsAthleteGuardKit.b14c63b3.glb",
+    hash: "sha256-b14c63b303194341265141ac2a42c285212fd39286da96718b7a41284a0ce8de",
+    bounds: [0.905,1.903,0.404],
+    sizeBytes: 1596556,
   },
   "showcaseStadiumSeats": {
     type: "model",

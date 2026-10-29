@@ -15,7 +15,7 @@
     <meta name="twitter:image" content="https://aura3d.auraone.ai/store-assets/brand/social/twitter-1200x600.png" />
     <meta
       name="description"
-      content="Aura Hoops 3D: NBA-Jam-pace 3v3 streetball on the Aura3D engine — check-ball, shot meter, Jam Meter dunk packages, six world courts, Dunk Lab, Handles Lab and a 32-team Street Tour."
+      content="Aura Hoops 3D: 5v5 streetball on the Aura3D engine — check ball, a timed shot meter, Jam Meter dunk packages, team kits, six world courts, Dunk Lab, Handles Lab and a 32-team Street Tour."
     />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" href="/fonts/aura-fonts.css" />
@@ -116,7 +116,7 @@
 
       .aura3d-top-bar .bar-label {
         font-family: var(--font-mono);
-        font-size: 9px;
+        font-size: 11px;
         letter-spacing: 0.16em;
         color: var(--muted);
         text-transform: uppercase;
@@ -136,7 +136,7 @@
         border: 1px solid var(--rule);
         backdrop-filter: blur(10px);
         font-family: var(--font-mono);
-        font-size: 10px;
+        font-size: 11px;
         letter-spacing: 0.12em;
         color: var(--muted);
         white-space: nowrap;
@@ -194,7 +194,7 @@
       }
 
       .sb-team .sb-name {
-        font-size: 10px;
+        font-size: 11px;
         letter-spacing: 0.18em;
         color: var(--muted);
         text-transform: uppercase;
@@ -217,7 +217,7 @@
       }
 
       .sb-team .sb-poss {
-        font-size: 9px;
+        font-size: 11px;
         letter-spacing: 0.1em;
         color: var(--accent-2);
         height: 12px;
@@ -234,7 +234,7 @@
       }
 
       .sb-mid .sb-target {
-        font-size: 9px;
+        font-size: 11px;
         letter-spacing: 0.16em;
         color: var(--accent-2);
         text-transform: uppercase;
@@ -247,7 +247,7 @@
       }
 
       .sb-mid .sb-venue {
-        font-size: 8px;
+        font-size: 11px;
         letter-spacing: 0.14em;
         color: var(--muted);
         margin-top: 2px;
@@ -264,7 +264,7 @@
       }
 
       .jam-meter-wrap .k {
-        font-size: 10px;
+        font-size: 11px;
         letter-spacing: 0.18em;
         color: var(--muted);
       }
@@ -290,7 +290,7 @@
       }
 
       .jam-meter-wrap .ready {
-        font-size: 9px;
+        font-size: 11px;
         letter-spacing: 0.16em;
         color: var(--accent-2);
         display: none;
@@ -356,7 +356,7 @@
 
       .shot-meter .sm-label {
         text-align: center;
-        font-size: 9px;
+        font-size: 11px;
         letter-spacing: 0.2em;
         color: var(--muted);
         margin-top: 4px;
@@ -379,7 +379,7 @@
         border: 1px solid var(--rule);
         border-right: 2px solid var(--cyan);
         padding: 5px 10px;
-        font-size: 10px;
+        font-size: 11px;
         letter-spacing: 0.14em;
         color: var(--ink);
         text-transform: uppercase;
@@ -388,7 +388,7 @@
 
       .hud-chip .sub {
         display: block;
-        font-size: 8px;
+        font-size: 11px;
         color: var(--muted);
         letter-spacing: 0.12em;
         margin-top: 1px;
@@ -408,7 +408,7 @@
       }
 
       .hud-ticker .tick {
-        font-size: 10px;
+        font-size: 11px;
         letter-spacing: 0.18em;
         padding: 2px 12px;
         background: rgba(8, 9, 12, 0.78);
@@ -559,7 +559,7 @@
 
       .menu-head .menu-sub {
         font-family: var(--font-mono);
-        font-size: 10px;
+        font-size: 11px;
         letter-spacing: 0.2em;
         color: var(--muted);
         text-transform: uppercase;
@@ -611,7 +611,7 @@
 
       .menu-section .ms-label {
         font-family: var(--font-mono);
-        font-size: 9px;
+        font-size: 11px;
         letter-spacing: 0.22em;
         color: var(--muted);
         text-transform: uppercase;
@@ -708,7 +708,7 @@
       }
 
       .bracket-round .br-title {
-        font-size: 9px;
+        font-size: 11px;
         letter-spacing: 0.18em;
         color: var(--muted);
         text-transform: uppercase;
@@ -716,7 +716,7 @@
       }
 
       .bracket-cell {
-        font-size: 9px;
+        font-size: 11px;
         letter-spacing: 0.04em;
         padding: 3px 6px;
         border: 1px solid var(--rule);
@@ -758,8 +758,131 @@
       }
       #render-error[hidden] { display: none !important; }
 
-      .touch-controls {
-        display: none;
+      /* ---------- Touch controls (coarse pointers; revealed on the first touch too) ---------- */
+      .a3g-touch {
+        position: fixed;
+        inset: 0;
+        z-index: 30;
+        pointer-events: none;
+      }
+      .a3g-tc {
+        position: absolute;
+        pointer-events: auto;
+        touch-action: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 1px solid var(--rule-strong);
+        background: rgba(10, 11, 15, 0.62);
+        color: var(--ink);
+        font-family: var(--font-display);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      .a3g-tc.a3g-tc-down {
+        background: var(--accent);
+        color: #1a1206;
+      }
+      .a3g-tc[data-control="light"]::after { content: "SHOOT"; }
+      .a3g-tc[data-control="heavy"]::after { content: "CROSS"; }
+      .a3g-tc[data-control="special"]::after { content: "PASS"; }
+      .a3g-tc[data-control="jump"]::after { content: "SPRINT"; }
+      .a3g-tc[data-control="block"]::after { content: "HESI"; }
+      .touch-extra {
+        position: fixed;
+        inset: 0;
+        z-index: 31;
+        pointer-events: none;
+      }
+      .touch-extra[hidden] { display: none !important; }
+      .touch-stick {
+        position: absolute;
+        left: 4%;
+        bottom: calc(10% + env(safe-area-inset-bottom, 0px));
+        width: 128px;
+        height: 128px;
+        border-radius: 50%;
+        border: 1px solid var(--rule-strong);
+        background: rgba(10, 11, 15, 0.45);
+        pointer-events: auto;
+        touch-action: none;
+      }
+      .touch-stick .nub {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 52px;
+        height: 52px;
+        margin: -26px 0 0 -26px;
+        border-radius: 50%;
+        background: rgba(245, 239, 226, 0.28);
+        border: 1px solid var(--rule-strong);
+      }
+      .touch-btn {
+        position: absolute;
+        pointer-events: auto;
+        touch-action: manipulation;
+        appearance: none;
+        border: 1px solid var(--rule-strong);
+        background: rgba(10, 11, 15, 0.7);
+        color: var(--ink);
+        font-family: var(--font-display);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        padding: 8px 14px;
+        border-radius: 999px;
+      }
+      #touch-menu { right: 12px; top: calc(var(--a3d-bar-space, 56px) + 96px); }
+
+      /* ---------- Results card ---------- */
+      #results {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 35;
+        min-width: 300px;
+        max-width: calc(100vw - 24px);
+        padding: 18px 20px 16px;
+        border-radius: 14px;
+        background: rgba(10, 11, 15, 0.9);
+        border: 1px solid var(--rule-strong);
+        backdrop-filter: blur(10px);
+        font-family: var(--font-mono);
+        text-align: center;
+      }
+      #results[hidden] { display: none; }
+      #results h2 {
+        font-family: var(--font-display);
+        font-size: 26px;
+        letter-spacing: 0.08em;
+        color: var(--accent-2);
+      }
+      #results .res-score { font-size: 18px; margin: 4px 0 12px; color: var(--ink); }
+      #results table { width: 100%; border-collapse: collapse; font-size: 12px; }
+      #results th, #results td { padding: 4px 6px; border-top: 1px solid var(--rule); }
+      #results th { color: var(--muted); font-weight: 500; text-align: left; }
+      #results .res-tour { margin-top: 10px; font-size: 12px; color: var(--cyan); letter-spacing: 0.1em; }
+      #results .menu-actions { margin-top: 14px; justify-content: center; }
+      .squad-pill .sq-chip {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 6px;
+        vertical-align: -1px;
+      }
+      .squad-pill .sq-stats {
+        display: block;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        opacity: 0.75;
+        letter-spacing: 0.04em;
       }
 
       @media (max-width: 760px) {
@@ -779,7 +902,7 @@
           white-space: nowrap;
         }
         .center-msg .small {
-          font-size: 10px;
+          font-size: 11px;
           letter-spacing: 0.16em;
         }
         .hud-top-right {
@@ -806,6 +929,7 @@
         <button type="button" class="bar-mode" data-mode-btn="dunklab">DUNK LAB</button>
         <button type="button" class="bar-mode" id="tb-auto" title="Toggle CPU Autopilot">AUTO</button>
         <button type="button" class="bar-mode" data-mode-btn="menu">MODES &amp; TOUR</button>
+        <button type="button" class="bar-mode" id="tb-mute" aria-pressed="false" title="Mute or unmute the game sound">SOUND: ON</button>
         <div class="aura-sep"></div>
         <span class="bar-label">COURT</span>
         <button type="button" class="venue" data-court="rucker">RUCKER</button>
@@ -820,7 +944,7 @@
       <div id="hud">
         <div class="hud-top-left">
           <div class="hud-mode-tag" id="h-mode">QUICK PLAY</div>
-          <div class="scoreboard">
+          <div class="scoreboard" role="status" aria-live="polite" aria-label="Score">
             <div class="sb-team home">
               <span class="sb-name" id="h-home-name">HOME</span>
               <span class="sb-score" id="h-home-score">0</span>
@@ -870,7 +994,7 @@
       </div>
 
       <!-- Menu / Modes & Tour overlay -->
-      <div id="menu-overlay">
+      <div id="menu-overlay" role="dialog" aria-modal="true" aria-label="Modes and tour" inert aria-hidden="true">
         <div class="menu-panel">
           <div class="menu-head">
             <h1>AURA <em>HOOPS</em> 3D</h1>
@@ -924,6 +1048,11 @@
           </div>
 
           <div class="menu-section">
+            <div class="ms-label">YOUR SQUAD</div>
+            <div class="pill-row" id="squad-row"></div>
+          </div>
+
+          <div class="menu-section">
             <div class="ms-label">DIFFICULTY</div>
             <div class="pill-row" id="difficulty-row">
               <button type="button" class="menu-pill" data-diff="playground">PLAYGROUND</button>
@@ -955,7 +1084,31 @@
         MOVE: <b>WASD</b> · SPRINT: <b>SHIFT</b> · CROSS/HESI: <b>J/K</b> · PASS/OOP: <b>E</b> · SHOOT/BLOCK: <b>SPACE</b> · STEAL: <b>K</b>
       </div>
 
-      <div class="touch-controls" id="touch"></div>
+      <div class="touch-controls" id="touch">
+        <div class="touch-extra" id="touch-extra" hidden>
+          <div class="touch-stick" id="touch-stick" aria-label="Move"><div class="nub"></div></div>
+          <button type="button" class="touch-btn" id="touch-menu">MENU</button>
+        </div>
+      </div>
+
+      <section id="results" hidden aria-live="polite" aria-label="Final result">
+        <h2 id="res-title">RUN WON</h2>
+        <div class="res-score" id="res-score">HFY 11 — 7 SHN</div>
+        <table>
+          <thead><tr><th></th><th id="res-home-name">HOME</th><th id="res-away-name">AWAY</th></tr></thead>
+          <tbody>
+            <tr><th>FIELD GOALS</th><td id="res-fg-h">0/0</td><td id="res-fg-a">0/0</td></tr>
+            <tr><th>DUNKS</th><td id="res-dunks-h">0</td><td id="res-dunks-a">0</td></tr>
+            <tr><th>STEALS</th><td id="res-steals-h">0</td><td id="res-steals-a">0</td></tr>
+            <tr><th>BLOCKS</th><td id="res-blocks-h">0</td><td id="res-blocks-a">0</td></tr>
+          </tbody>
+        </table>
+        <div class="res-tour" id="res-tour"></div>
+        <div class="menu-actions">
+          <button type="button" class="menu-cta ghost" id="res-menu">MENU</button>
+          <button type="button" class="menu-cta" id="res-rematch">REMATCH</button>
+        </div>
+      </section>
 
       <div id="render-error" hidden>
         <div>
