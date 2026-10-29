@@ -181,4 +181,59 @@ test.describe("e1 wave 2", () => {
     log(`E1W2_LOSS ${JSON.stringify({ ready: true, lost, before, during, pageErrorsWhileLost: duringErrors.slice(0, 6), pageErrorsTotal: errors.length, after })}`);
     logJpg("top-tennis", "after-restore", await page.screenshot({ type: "jpeg", quality: 60 }));
   });
+
+  // C8 again with the page's reload safety net blocked (later main-frame navigations are aborted), so the frame after restore
+  // shows what the engine itself recovers. Cross Hop is the second game: it has no context-loss handler of its own.
+  for (const [slug, folder] of [["top-tennis", "showcase-top-tennis"], ["cross-hop", "showcase-cross-hop"]] as const) {
+    test(`e1w2 ${slug} context loss without reload @w2loss2`, async ({ page }) => {
+      const errors: string[] = [];
+      let navigations = 0;
+      let blocked = 0;
+      page.on("pageerror", (e) => errors.push(e.message.slice(0, 200)));
+      page.on("framenavigated", (f) => { if (f === page.mainFrame()) navigations++; });
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await serveAppPublicAssets(page, folder);
+      await page.goto(`${server.origin}/apps/${folder}/index.html?capture=1`, { waitUntil: "domcontentloaded", timeout: 240_000 });
+      await page.route("**/*", async (route) => {
+        if (route.request().isNavigationRequest() && route.request().frame() === page.mainFrame()) { blocked++; await route.abort(); }
+        else await route.fallback();
+      });
+      const ready = await page.waitForFunction(READY, undefined, { timeout: 420_000, polling: 500 }).then(() => true, () => false);
+      if (!ready) { log(`E1W2_LOSS2 ${JSON.stringify({ game: slug, ready: false })}`); return; }
+      await page.waitForTimeout(20_000);
+      const before = await viewportLuma(page);
+      const state = () => page.evaluate(() => {
+        const reg = (globalThis as unknown as { __AURA3D_LIVE_APPS__?: { all(): any[] } }).__AURA3D_LIVE_APPS__;
+        const app = reg?.all()[0];
+        let deviceLost: unknown = null;
+        try { deviceLost = app?.deviceLost?.(); } catch (e) { deviceLost = String(e); }
+        const dg = app?.diagnostics?.();
+        return {
+          deviceLost,
+          drawCalls: dg?.drawCalls ?? null,
+          warnings: (dg?.warnings ?? []).filter((w: string) => /DEVICE_RESTORE/.test(w)).slice(0, 3),
+          errors: (dg?.errors ?? []).slice(-3).map((e: string) => e.slice(0, 160))
+        };
+      });
+      const lost = await page.evaluate(() => {
+        const reg = (globalThis as unknown as { __AURA3D_LIVE_APPS__?: { all(): any[] } }).__AURA3D_LIVE_APPS__;
+        const canvas = reg?.all()[0]?.canvas as HTMLCanvasElement | undefined;
+        const ext = canvas?.getContext("webgl2")?.getExtension("WEBGL_lose_context");
+        (globalThis as unknown as { __E1W2_EXT__?: unknown }).__E1W2_EXT__ = ext;
+        ext?.loseContext();
+        return Boolean(ext);
+      });
+      await page.waitForTimeout(8_000);
+      const during = await state();
+      const errorsWhileLost = [...errors];
+      await page.evaluate(() => { (globalThis as unknown as { __E1W2_EXT__?: { restoreContext(): void } }).__E1W2_EXT__?.restoreContext(); });
+      // Some games pause on loss and resume on a tap; tap the canvas centre once after restore, as a player would.
+      await page.waitForTimeout(20_000);
+      await page.mouse.click(640, 360);
+      await page.waitForTimeout(60_000);
+      const after = await viewportLuma(page);
+      log(`E1W2_LOSS2 ${JSON.stringify({ game: slug, ready: true, lost, before, during, errorsWhileLost: errorsWhileLost.slice(0, 4), pageErrorsTotal: errors.length, afterState: await state(), after, navigations, blockedNavigations: blocked })}`);
+      logJpg(slug, "noreload-after-restore", await page.screenshot({ type: "jpeg", quality: 60 }));
+    });
+  }
 });
