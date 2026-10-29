@@ -3,7 +3,7 @@
   "route": "/apps/showcase-splat-rush-port/",
   "classification": "prototype",
   "publicShowcase": true,
-  "generatedAt": "2026-10-23T08:56:30.375Z",
+  "generatedAt": "2026-10-29T12:00:00.000Z",
   "ok": true,
   "claimLabel": "Prototype",
   "claimStatus": "bounded",
@@ -21,8 +21,9 @@
   "sourceExample": "examples/splat-rush-port/",
   "evidence": "28 state fields match at every step of a 1,500-step run, including the random-draw count.",
   "limits": [
-    "No audio; the original's DOM flash and vignette overlays and platform SDKs are not ported.",
-    "Procedural art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Synth audio and the DOM flash, vignette and burst reveal are ported; the original's platform SDKs are not.",
+    "Independent reconstruction of the mechanics with procedural toon art and Meshy-generated backdrop and pickup models; not a pixel-parity or 1:1 port.",
+    "Two presentation changes from the original: a restart re-centres steering (C4), and a gate row between two lanes resolves against the nearest gate only (C16). The recorded reference never reaches either case, so the replay still matches.",
     "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
   ],
   "checks": [
