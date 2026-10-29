@@ -16,9 +16,9 @@ Per-capability status (shipped, partial, experimental) with code paths: [`aura3d
 
 The source is the five-scene benchmark: a GLB with a shadow, bloom and orbit controls takes 23 lines in Aura3D 4.5.0 and 49 in three.js, with 1 import against 8 (`evidence/vs-threejs/RESULTS-4.5.0.md` sections 1 and 3). Do not say "HDR lighting" for this scene: its HDRI node does not load (see P4 below). Small print on the page: "Aura3D benchmark, five scenes."
 
-**The current hero**, "Ship a typed 3D scene in 18 lines of TypeScript", holds up: the 18-line scene builds on a stock `create-aura3d@4.3.5` project and renders (`evidence/vs-threejs/tagline-check/`). Its weakness is that the 18 lines draw a single cube, which undersells the product. The 10-line hero below replaces it.
+**The former hero**, "Ship a typed 3D scene in 18 lines of TypeScript", is retired: the 4.5.0 bench cube is 12 lines (gate line D1), and the 10-line hero below replaced it on the site.
 
-**Verified hero, ready now:** "A lit 3D product in 10 lines of TypeScript." Adding `camera.frameAsset` and `targetHeight` to the hello world gives a framed, shadowed, orbitable product in 10 lines on stock `create-aura3d@4.3.5` (`tools/bench-vs-threejs/tagline/aura-variants/hero.ts`, `evidence/vs-threejs/tagline-check/run2/`). The matched three.js app (HDRI environment, shadowed key light, tone mapping, model loading and framing, resize, render loop) is 38 lines before orbit controls, or 55 with the same post stack (`evidence/vs-threejs/tagline-check/README.md`). The site design update builds the homepage around this line: `docs/design/marketing-site-update.md`.
+**Verified hero, ready now:** "A lit 3D product in 10 lines of TypeScript." Adding `camera.frameAsset` and `targetHeight` to the hello world gives a framed, shadowed, orbitable product in 10 lines on stock `create-aura3d@4.3.5`, re-checked on `create-aura3d@4.5.0` (`evidence/vs-threejs/tagline-check/run-4.5.0/`) (`tools/bench-vs-threejs/tagline/aura-variants/hero.ts`, `evidence/vs-threejs/tagline-check/run2/`). The matched three.js app (HDRI environment, shadowed key light, tone mapping, model loading and framing, resize, render loop) is 38 lines before orbit controls, or 55 with the same post stack (`evidence/vs-threejs/tagline-check/README.md`). The site design update builds the homepage around this line: `docs/design/marketing-site-update.md`.
 
 ## Where Aura3D wins
 
@@ -71,7 +71,7 @@ Use these as written. The sourced numbers carry the small print shown.
 | 7 | "Smooth on 120 and 144 Hz displays, out of the box." | safe | none | `motion-presenter.md` |
 | 8 | "Built for AI coding agents: llms.txt, 14 skills and recipes in every new project." | safe | none | `packages/aura3d-cli/skills/` |
 | 9 | "25 playable games built on Aura3D." | safe | none | `game-inventory.json` |
-| 10 | "Ship a typed 3D scene in 18 lines of TypeScript." (current hero) | safe | none | `tagline-check/` |
+| 10 | "A one-cube scene in 12 lines of TypeScript." | safe | none | `tagline-check/run-4.5.0/`; gate line D1 |
 | 11 | "A one-cube scene reaches its first frame in about 420 ms." | needs-qualifier | "Published 4.5.0 bundle, median of 3 cold loads, software WebGL2, one run." | `RESULTS-4.5.0.md` section 0, gate line P3 |
 | 12 | "A one-cube scene draws in 1 call; a PBR viewer scene with a shadow and bloom draws in 25." | needs-qualifier | "Software WebGL2, benchmark scenes, one run." | `RESULTS-4.5.0.md` section 0, gate line P4 |
 | 13 | "The five benchmark scenes log no console warnings or errors." | needs-qualifier | "Software WebGL2, one run." | gate line Q2 |
