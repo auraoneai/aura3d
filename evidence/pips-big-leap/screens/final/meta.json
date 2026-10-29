@@ -1,78 +1,30 @@
 {
   "meta": {
     "pips-big-leap": {
-      "390": {
-        "notes": [
-          "ready 46s",
-          "shot 01-title",
-          "play: dom-clicked #aura-btn-play",
-          "shot 02-early",
-          "shot 03-action",
-          "ready 46s",
-          "play2: dom-clicked #aura-btn-play",
-          "shot 04-mid",
-          "modes:atlas: dom-clicked #aura-btn-atlas",
-          "shot 05-modes",
-          "results: not reached"
-        ],
-        "errors": [],
-        "bad": [],
-        "navs": [
-          "/apps/showcase-pips-big-leap/",
-          "/apps/showcase-pips-big-leap/?autoplay=1"
-        ],
-        "beacon": {
-          "route": "/apps/showcase-pips-big-leap/",
-          "state": "playing",
-          "rung": 0
-        },
-        "proxied": 20
-      },
-      "1280": {
-        "notes": [
-          "ready 5s",
-          "shot 01-title",
-          "play: clicked #aura-btn-play",
-          "shot 02-early",
-          "shot 03-action",
-          "ready 8s",
-          "play2: dom-clicked #aura-btn-play",
-          "shot 04-mid",
-          "modes:atlas: dom-clicked #aura-btn-atlas",
-          "shot 05-modes",
-          "results: not reached"
-        ],
-        "errors": [],
-        "bad": [],
-        "navs": [
-          "/apps/showcase-pips-big-leap/",
-          "/apps/showcase-pips-big-leap/?autoplay=1"
-        ],
-        "beacon": {
-          "route": "/apps/showcase-pips-big-leap/",
-          "state": "playing",
-          "rung": 0
-        },
-        "proxied": 20
-      },
-      "card": {
-        "notes": [
-          "ready 9s",
-          "play: dom-clicked #aura-btn-play",
-          "shot 04-mid"
-        ],
-        "errors": [],
-        "bad": [],
-        "navs": [
-          "/apps/showcase-pips-big-leap/"
-        ],
-        "beacon": {
-          "route": "/apps/showcase-pips-big-leap/",
-          "state": "playing",
-          "rung": 0
-        },
-        "proxied": 20
-      }
+      "source": "tests/browser/audit-fix/pips-big-leap.spec.ts",
+      "runs": [
+        "g06-after2-A-20261029T124048Z",
+        "g06-after2-B-20261029T124048Z"
+      ],
+      "commit": "ed0eea745",
+      "engine": "4.5.0",
+      "results": "reached (32.7 s sim) at 1280 and 390",
+      "frames": [
+        "1280-01-title.jpg",
+        "1280-02-early.jpg",
+        "1280-03-action.jpg",
+        "1280-04-mid.jpg",
+        "1280-05-modes.jpg",
+        "1280-06-results.jpg",
+        "390-01-title.jpg",
+        "390-02-early.jpg",
+        "390-03-action.jpg",
+        "390-04-mid.jpg",
+        "390-05-modes.jpg",
+        "390-06-results.jpg",
+        "card-1x.jpg",
+        "card-2x.jpg"
+      ]
     }
   },
   "incomplete": []

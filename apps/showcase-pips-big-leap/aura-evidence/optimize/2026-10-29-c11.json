@@ -1,0 +1,365 @@
+{
+  "schema": "pips-big-leap.optimize/1",
+  "row": "pips-big-leap-C11",
+  "tool": "aura3d assets optimize (packages/aura3d-cli/src/commands/assets/optimize.ts): dedup, weld, meshopt simplify, prune, textures to 1024 JPEG, reorder",
+  "settings": {
+    "pipsSunseed": "maxVerts 2000",
+    "pipsGoldenAcorn": "maxVerts 2000",
+    "pipsCheckpointFlag": "maxVerts 4000",
+    "pipsSungate": "maxVerts 6000",
+    "pipsPip": "no simplify (skinned)",
+    "pipsBrambleback": "no simplify (skinned)",
+    "tex": 1024
+  },
+  "note": "Four of the six shipped files no longer matched their manifest hash/size before this pass (an earlier edit replaced the bytes without re-admission); 'before' records both the manifest hash and the real file sha256.",
+  "assets": [
+    {
+      "id": "pipsBrambleback",
+      "before": {
+        "url": "/aura-assets/pipsBrambleback.eb18aa7f.glb",
+        "fileSha256": "eb18aa7ff3e4008e369201917c96d7395151d6ec031ac084f85a8416a56c716d",
+        "manifestHash": "sha256-eb18aa7ff3e4008e369201917c96d7395151d6ec031ac084f85a8416a56c716d",
+        "bytes": 7415688,
+        "verts": 33849,
+        "tris": 31364,
+        "min": [
+          -0.011,
+          0,
+          -0.006
+        ],
+        "max": [
+          0.011,
+          0.024,
+          0.006
+        ],
+        "tex": [
+          {
+            "mime": "image/png",
+            "size": [
+              2048,
+              2048
+            ],
+            "bytes": 5146902
+          }
+        ]
+      },
+      "after": {
+        "url": "/aura-assets/pipsBrambleback.6aaa3db3.glb",
+        "hash": "sha256-6aaa3db380dbc178045a7c39af698f997f0e87e588ece1e9e28836a47e9b87cb",
+        "bytes": 2425048,
+        "verts": 33551,
+        "tris": 31364,
+        "min": [
+          -0.011,
+          0,
+          -0.006
+        ],
+        "max": [
+          0.011,
+          0.024,
+          0.006
+        ],
+        "tex": [
+          {
+            "mime": "image/jpeg",
+            "size": [
+              1024,
+              1024
+            ],
+            "bytes": 163122
+          }
+        ]
+      }
+    },
+    {
+      "id": "pipsCheckpointFlag",
+      "before": {
+        "url": "/aura-assets/pipsCheckpointFlag.cc2162ee.glb",
+        "fileSha256": "093c1d96a8534a84b06c74b19d9eab64eaa418ad1bdee5855d4a2d372a462351",
+        "manifestHash": "sha256-cc2162ee9ecdc966202df492b9c35eaeb1d767e51fa5691cf40c8d9375d21a48",
+        "bytes": 432116,
+        "verts": 8738,
+        "tris": 12922,
+        "min": [
+          -0.271,
+          -0.951,
+          -0.183
+        ],
+        "max": [
+          0.256,
+          0.948,
+          0.179
+        ],
+        "tex": [
+          {
+            "mime": "image/jpeg",
+            "size": [
+              1024,
+              1024
+            ],
+            "bytes": 73607
+          }
+        ]
+      },
+      "after": {
+        "url": "/aura-assets/pipsCheckpointFlag.9b30fdba.glb",
+        "hash": "sha256-9b30fdbaf5a20aa2b0f3694a913b6b24c177a9e901fbbfdc1b74c7c4ebcee60c",
+        "bytes": 286560,
+        "verts": 5158,
+        "tris": 5914,
+        "min": [
+          -0.271,
+          -0.951,
+          -0.183
+        ],
+        "max": [
+          0.256,
+          0.948,
+          0.179
+        ],
+        "tex": [
+          {
+            "mime": "image/jpeg",
+            "size": [
+              1024,
+              1024
+            ],
+            "bytes": 84731
+          }
+        ]
+      }
+    },
+    {
+      "id": "pipsGoldenAcorn",
+      "before": {
+        "url": "/aura-assets/pipsGoldenAcorn.16eae286.glb",
+        "fileSha256": "63cfd2d58cbe32e355263a7f148ed2f1ca584618e1bfcbabe4d8551df00342e1",
+        "manifestHash": "sha256-16eae286bf078f653c6704907e3aa6fb6c38c5de4c9a5294fbc24e2a8245b2e7",
+        "bytes": 797420,
+        "verts": 18285,
+        "tris": 30216,
+        "min": [
+          -0.504,
+          -0.952,
+          -0.504
+        ],
+        "max": [
+          0.5,
+          0.947,
+          0.5
+        ],
+        "tex": [
+          {
+            "mime": "image/jpeg",
+            "size": [
+              1024,
+              1024
+            ],
+            "bytes": 29637
+          }
+        ]
+      },
+      "after": {
+        "url": "/aura-assets/pipsGoldenAcorn.a851976d.glb",
+        "hash": "sha256-a851976d617249f305b0fb0f03deb223b62494f4d6159e80d9970e4956454f6b",
+        "bytes": 159468,
+        "verts": 3226,
+        "tris": 3304,
+        "min": [
+          -0.503,
+          -0.949,
+          -0.504
+        ],
+        "max": [
+          0.498,
+          0.946,
+          0.498
+        ],
+        "tex": [
+          {
+            "mime": "image/jpeg",
+            "size": [
+              1024,
+              1024
+            ],
+            "bytes": 35128
+          }
+        ]
+      }
+    },
+    {
+      "id": "pipsPip",
+      "before": {
+        "url": "/aura-assets/pipsPip.40f519aa.glb",
+        "fileSha256": "40f519aa21f0cd2d934081d5e49abeed258dc7be42d54be59f0ff4c8820dfdeb",
+        "manifestHash": "sha256-40f519aa21f0cd2d934081d5e49abeed258dc7be42d54be59f0ff4c8820dfdeb",
+        "bytes": 5760500,
+        "verts": 24088,
+        "tris": 31291,
+        "min": [
+          -0.003,
+          0,
+          -0.002
+        ],
+        "max": [
+          0.003,
+          0.009,
+          0.002
+        ],
+        "tex": [
+          {
+            "mime": "image/png",
+            "size": [
+              2048,
+              2048
+            ],
+            "bytes": 3852776
+          }
+        ]
+      },
+      "after": {
+        "url": "/aura-assets/pipsPip.fcd4256f.glb",
+        "hash": "sha256-fcd4256f0224f438f30bc72957bedca97de7b4728535118bb3b8b344b8860bfd",
+        "bytes": 2078616,
+        "verts": 24030,
+        "tris": 31291,
+        "min": [
+          -0.003,
+          0,
+          -0.002
+        ],
+        "max": [
+          0.003,
+          0.009,
+          0.002
+        ],
+        "tex": [
+          {
+            "mime": "image/jpeg",
+            "size": [
+              1024,
+              1024
+            ],
+            "bytes": 155988
+          }
+        ]
+      }
+    },
+    {
+      "id": "pipsSungate",
+      "before": {
+        "url": "/aura-assets/pipsSungate.8b44ee22.glb",
+        "fileSha256": "31e5d6b608d61f5895a3c15e7cfcb44bfbda88d9db34a20199de2687866879fb",
+        "manifestHash": "sha256-8b44ee223ed35b811f61f87be60f96fa2454fdf2e30a68bc4bd96eaafefe279f",
+        "bytes": 832712,
+        "verts": 17444,
+        "tris": 24096,
+        "min": [
+          -0.636,
+          -0.952,
+          -0.207
+        ],
+        "max": [
+          0.632,
+          0.946,
+          0.202
+        ],
+        "tex": [
+          {
+            "mime": "image/jpeg",
+            "size": [
+              1024,
+              1024
+            ],
+            "bytes": 128562
+          }
+        ]
+      },
+      "after": {
+        "url": "/aura-assets/pipsSungate.2ec2202c.glb",
+        "hash": "sha256-2ec2202c361f5648851547f8c046531c6048424d00192416f791cb9a65fdf3d9",
+        "bytes": 434388,
+        "verts": 7325,
+        "tris": 8288,
+        "min": [
+          -0.635,
+          -0.952,
+          -0.207
+        ],
+        "max": [
+          0.632,
+          0.946,
+          0.202
+        ],
+        "tex": [
+          {
+            "mime": "image/jpeg",
+            "size": [
+              1024,
+              1024
+            ],
+            "bytes": 148972
+          }
+        ]
+      }
+    },
+    {
+      "id": "pipsSunseed",
+      "before": {
+        "url": "/aura-assets/pipsSunseed.b9b50324.glb",
+        "fileSha256": "93a26434034c9fc1168bdfb0f8167a3911cfb768b5384b7e3598db01ec81837a",
+        "manifestHash": "sha256-b9b503245011bf10eda48b31fbe865c6ae33bd5ac56c780474922352d8b859fa",
+        "bytes": 853204,
+        "verts": 19719,
+        "tris": 31056,
+        "min": [
+          -0.951,
+          -0.452,
+          -0.421
+        ],
+        "max": [
+          0.947,
+          0.454,
+          0.418
+        ],
+        "tex": [
+          {
+            "mime": "image/jpeg",
+            "size": [
+              1024,
+              1024
+            ],
+            "bytes": 34494
+          }
+        ]
+      },
+      "after": {
+        "url": "/aura-assets/pipsSunseed.b52c5a99.glb",
+        "hash": "sha256-b52c5a99b0c5596a0c35632a24274ca6f888b00d3269ed160b50824c42e8b20f",
+        "bytes": 159684,
+        "verts": 3105,
+        "tris": 3148,
+        "min": [
+          -0.951,
+          -0.45,
+          -0.42
+        ],
+        "max": [
+          0.947,
+          0.454,
+          0.417
+        ],
+        "tex": [
+          {
+            "mime": "image/jpeg",
+            "size": [
+              1024,
+              1024
+            ],
+            "bytes": 40147
+          }
+        ]
+      }
+    }
+  ]
+}

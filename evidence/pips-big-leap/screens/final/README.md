@@ -1,47 +1,35 @@
-# Pips Big Leap: final screenshots after the UI and content fixes
+# Pip's Big Leap: final screens (4.5.0 engine, audit fixes, 2026-10-29)
 
-Route: `apps/showcase-pips-big-leap`. Built from `origin/game-rework` at `0d965903c` (includes the shared quick bar, the content fixes and the new Teleoperator vehicles).
+Route: `apps/showcase-pips-big-leap`. Built from branch `audit-fix/g06` at ed0eea745 (all lane G06 fixes) on the 4.5.0 engine. Replaces the 2026-10-25 set (RH-05); same file names and pixel sizes, plus `1280-06-results.jpg` and `390-06-results.jpg`, which the old set never reached.
 
-**Runner:** remote Azure ACR Task, headless Chromium, **software WebGL2 (SwiftShader)**. This is not real-GPU evidence: it shows layout and content, not GPU look or frame rate. Tool: `tests/browser/shotsd-pips-big-leap.spec.ts` with `tests/browser/shotsd-lib.ts`, decoded with `tools/shots/decode-shotsd.mjs`. Frames come from clicking the game's own buttons and holding keys, not from the QA hooks.
+**Runner:** remote Azure ACR Task, headless Chromium, software WebGL2 (SwiftShader). This shows layout, content and look on software GL, not real-GPU look or frame rate. Tool: `tests/browser/audit-fix/pips-big-leap.spec.ts`, frames decoded from the run log with `evidence/pips-big-leap/audit-2026-10-29/decode.mjs`. Frames come from the game's own buttons, held keys, a touch tap on the pause button, and `?autoplay=1` for mid and results. The app's own GLBs are served from `apps/showcase-pips-big-leap/public/aura-assets` through `page.route` (the example dev server only serves the root `public/`). Shots are full page (HUD included) and taken after at least a 20 s settle.
 
-Staging: the dist was built with `tools/shots/vite.shotsd.config.ts`; every asset the route references was copied from this repo into the dist (so new and changed files are the repository's, not production's). Files the repository does not carry (shared decoders, HDRI, previews) fall back to production.
+`card-1x.jpg` (720x450) is a Lanczos downscale of `card-2x.jpg` (1440x900, captured natively).
 
-## Frames
-
-| Viewport | State | Meaning | Status |
-|---|---|---|---|
-| 1280 | 01-title | first loaded frame | captured |
-| 1280 | 02-early | early gameplay | captured |
-| 1280 | 03-action | after key input | captured |
-| 1280 | 04-mid | mid-play (autoplay or driving) | captured |
-| 1280 | 05-modes | modes / menu panel | captured |
-| 1280 | 06-results | results | not reached |
-| 390 | 01-title | first loaded frame | captured |
-| 390 | 02-early | early gameplay | captured |
-| 390 | 03-action | after key input | captured |
-| 390 | 04-mid | mid-play (autoplay or driving) | captured |
-| 390 | 05-modes | modes / menu panel | captured |
-| 390 | 06-results | results | not reached |
-
-Card images: `card-2x.jpg` (1440x900, captured natively) and `card-1x.jpg` (720x450, downscaled from the 2x capture). Card aspect from `apps/showcase-index/index.html`.
+| File | Run, target, shot | Canvas mean luma | Draw calls | World / mode | Sim seconds |
+|---|---|---|---|---|---|
+| 1280-01-title.jpg | g06-after2-A d1280 01-title | 165.11 | 782 | w1 quick | 0 |
+| 1280-02-early.jpg | g06-after2-A d1280 02-early | 165.27 | 782 | w1 quick | 0 |
+| 1280-03-action.jpg | g06-after2-A d1280 03-action | 156.32 | 784 | w1 quick | 0.22 |
+| 1280-04-mid.jpg | g06-after2-B a1280 04-mid | 155.89 | 433 | w1 quick | 0.57 |
+| 1280-05-modes.jpg | g06-after2-A d1280 05-modes | 167.77 | 782 | w1 quick | 3.92 |
+| 1280-06-results.jpg | g06-after2-B a1280 06-results | 172.45 | 25 | w1 quick | 32.7 |
+| 390-01-title.jpg | g06-after2-B p390 01-title | 167.21 | 684 | w1 quick | 0 |
+| 390-02-early.jpg | g06-after2-B p390 02-early | 167.22 | 684 | w1 quick | 0 |
+| 390-03-action.jpg | g06-after2-B p390 03-action | 170.08 | 304 | w1 quick | 0.45 |
+| 390-04-mid.jpg | g06-after2-B p390 04-mid | 168.37 | 218 | w1 quick | 1.38 |
+| 390-05-modes.jpg | g06-after2-B p390 05-modes | 157.32 | 298 | w1 quick | 5.92 |
+| 390-06-results.jpg | g06-after2-B p390 06-results | 161.58 | 27 | w1 quick | 32.7 |
+| card-2x.jpg | g06-after2-A c1440 card-2x | 163.42 | 782 | w1 quick | 0 |
 
 ## Capture health
 
-- 1280: console errors 0, bad responses 0, ready 5s, ready 8s, proxied from production 20
-- 390: console errors 0, bad responses 0, ready 46s, ready 46s, proxied from production 20
-- card: console errors 0, bad responses 0, ready 9s, proxied from production 20
+- Console errors: one 404, `/apps/common/src/fonts.css` (harness only: the remote build context did not include `apps/common`; the file exists in the repo and the production build bundles it, so Graphik falls back to sans-serif in these frames). No page errors.
+- Render path `hdr-msaa`, bloom fusion `separable`, contact shadows `passExecuted: true` in every shot that reports them.
+- Results reached by autoplay in 32.7 s of sim time at both 1280x720 and 390x844.
 
 ## Checked in the frames
 
-- Shared quick bar is a single row (scrolls sideways at 390) with a credit link at 1280; the HUD sits below it.
-- The Vale Atlas panel is readable and has no stale version text.
-
-## Problems still visible (not fixed in this lane)
-
-- [low] A second, blocky brown-haired human figure stands near the acorn hero in the early and mid frames; it reads as a Minecraft-style character. Check whether it is a rival or a placeholder.
-- [low] 390 portrait: the objective card sits tight under the HUD pills and the right edge of the stage is cropped.
-- [low] Results were not reached in 40 s of autoplay.
-
-## Review coverage
-
-Frames opened and checked by eye: 1280 mid and modes; 390 mid (3 of 11). The remaining frames were captured but not individually inspected; the problems above come from the frames listed here.
+- 390x844: the platforms ahead are in view (portrait FOV 67.9 deg, boom 5.6 m) and the 44 px pause button sits at top right.
+- The Studio cape shows on Pip's back while he runs; it no longer covers his face.
+- The sidekick runner is a blocky low-poly character from the shared catalog (`showcaseSidekickRunner`); it is intentional dressing, not a placeholder.

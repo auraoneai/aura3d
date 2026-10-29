@@ -67,7 +67,6 @@ export const nodeName = {
   gateRing: "sun-gate-ring",
   gateLock: "sun-gate-lock",
   hero: "pip",
-  heroCap: "pip:cap",
   heroCape: "pip:cape",
   boss: "brambleback",
   bossSpike: (i: number) => `bramble-spike:${i}`,
@@ -172,7 +171,7 @@ function decorNodes(d: DecorSpec): readonly SceneNodeArg[] {
       ];
     case "flower":
       return [
-        model(assets.sunseed, { name: `${d.id}:flower`, castShadow: true, targetHeight: 0.72 * s })
+        model(assets.sunseed, { name: `${d.id}:flower`, castShadow: false, targetHeight: 0.72 * s })
           .position(d.x, d.y, d.z)
           .rotate(0, yaw, 0)
       ];
@@ -297,23 +296,36 @@ function cameraObstacleFor(d: DecorSpec): CameraObstacle | null {
   }
 }
 
-export function buildWorld(spec: WorldSpec): BuiltWorld {
+export interface BuildWorldOptions {
+  /**
+   * QA only (`?pbl-ao=0`): drop the look's ambient-occlusion node so a capture
+   * can pair AO on and off at the same frame (LIGHT-06). Default true.
+   */
+  readonly ambientOcclusion?: boolean;
+}
+
+export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): BuiltWorld {
   const motion = deriveWorldMotion(spec);
   const skyColor = spec.background ?? "#1e4d78";
   const builder = scene().background(skyColor);
 
   // Look preset — fog itself is authored below so its color tracks the sky
   // exactly instead of the preset's generic haze tint.
-  builder.add(
-    looks.preset(spec.look as Parameters<typeof looks.preset>[0], {
-      fogDensityScale: 0,
-      background: skyColor
-    })
-  );
+  const look = looks.preset(spec.look as Parameters<typeof looks.preset>[0], {
+    fogDensityScale: 0,
+    background: skyColor
+  });
+  if (options.ambientOcclusion === false) {
+    const group = look.toJSON();
+    builder.add({ ...group, children: group.children.filter((child) => (child as { readonly name?: string }).name !== "look ambient occlusion") });
+  } else {
+    builder.add(look);
+  }
   // Light depth haze: dissolves the course edge into the sky and gives the
   // conifer line aerial perspective without graying the foreground.
   builder.add(effects.fog({ color: skyColor, density: 0.0075 }));
-  // Grounding for Pip, pickups, and the course props (legacy-post safe).
+  // Grounding for Pip, pickups, and the course props: since 4.5.0 a
+  // screen-space mask that darkens the shadow-casting look key light.
   builder.add(effects.contactShadows({ intensity: 0.75, length: 0.3 }));
   if (spec.ambientFx === "embers" || spec.ambientFx === "stars") {
     builder.add(effects.bloom({ intensity: 0.28 }));
@@ -401,10 +413,12 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
   });
 
   // Pickups — bespoke Meshy sun-seed / golden-acorn / energy-core models driven per frame.
+  // C11: small spinning pickups do not cast shadow-map shadows (each caster is
+  // a depth draw per cascade); the screen-space contact shadows still ground them.
   const spinNodes: string[] = [];
   for (const s of spec.seeds) {
     builder.add(
-      model(assets.sunseed, { name: nodeName.seed(s.id), castShadow: true, targetMaxDimension: 0.68, scaleMode: "fit" })
+      model(assets.sunseed, { name: nodeName.seed(s.id), castShadow: false, targetMaxDimension: 0.68, scaleMode: "fit" })
         .position(s.x, s.y - 0.1, s.z)
         .runtime(game.runtimeNode(nodeName.seed(s.id), { tags: ["pickup", "seed"] }))
     );
@@ -412,7 +426,7 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
   }
   for (const a of spec.acorns) {
     builder.add(
-      model(assets.goldenAcorn, { name: nodeName.acorn(a.id), castShadow: true, targetMaxDimension: 0.65, scaleMode: "fit" })
+      model(assets.goldenAcorn, { name: nodeName.acorn(a.id), castShadow: false, targetMaxDimension: 0.65, scaleMode: "fit" })
         .position(a.x, a.y - 0.2, a.z)
         .runtime(game.runtimeNode(nodeName.acorn(a.id), { tags: ["pickup", "acorn"] }))
     );
@@ -420,7 +434,7 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
   }
   for (const hpt of spec.hearts) {
     builder.add(
-      model(assets.props.energyCore, { name: nodeName.heart(hpt.id), castShadow: true, targetMaxDimension: 0.55, scaleMode: "fit" })
+      model(assets.props.energyCore, { name: nodeName.heart(hpt.id), castShadow: false, targetMaxDimension: 0.55, scaleMode: "fit" })
         .position(hpt.x, hpt.y - 0.18, hpt.z)
         .runtime(game.runtimeNode(nodeName.heart(hpt.id), { tags: ["pickup", "heart"] }))
     );
@@ -479,6 +493,9 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
     for (const node of decorNodes(d)) builder.add(node);
   }
   for (const n of spec.npcs) {
+    // C19: NPCs are camera obstacles too, so the boom shortens instead of
+    // letting a 1.35 m runner fill the foreground.
+    cameraObstacles.push({ x: n.x, z: n.z, baseY: n.y, radius: 0.45, height: 1.35 });
     const ref = n.who === "sidekick" ? assets.sidekick : assets.helper;
     const clip = n.clip ?? "idle";
     builder.add(
@@ -499,15 +516,11 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
       .animate({ clip: PIP_CLIPS.idle, loop: true })
       .runtime(game.runtimeNode(nodeName.hero, { tags: ["player"] }))
   );
-  // Studio accessories — compact 3D golden-acorn crest + glide cape badge so
-  // Pip's Meshy squirrel rig remains clearly visible while Player Studio tinting works.
+  // Player Studio cape: a thin panel on Pip's back (the Studio tints it). The
+  // old acorn-cap accessory is gone: Pip's GLB bakes one material, so there
+  // was no cap mesh to tint and the stand-in was always hidden.
   builder.add(
-    model(assets.goldenAcorn, { name: nodeName.heroCap, castShadow: false, visible: false, targetMaxDimension: 0.16, scaleMode: "fit" })
-      .position(spec.spawn[0], spec.spawn[1] + 1.15, spec.spawn[2])
-      .runtime(game.runtimeNode(nodeName.heroCap, { tags: ["player", "studio"] }))
-  );
-  builder.add(
-    primitives.box({ name: nodeName.heroCape, size: [0.22, 0.03, 0.24], position: [spec.spawn[0], spec.spawn[1] + 0.52, spec.spawn[2] + 0.16], material: material.pbr({ color: "#3f8cff", roughness: 0.6 }), castShadow: false })
+    primitives.box({ name: nodeName.heroCape, size: [0.3, 0.03, 0.32], position: [spec.spawn[0], spec.spawn[1] + 0.52, spec.spawn[2] + 0.16], material: material.pbr({ color: "#3f8cff", roughness: 0.6 }), castShadow: false })
       .runtime(game.runtimeNode(nodeName.heroCape, { tags: ["player", "studio"] }))
   );
 
