@@ -51,6 +51,14 @@ Wonder World is a toddler co-play app built on Aura3D 4.5.0: short 3D cartoon st
 
 ## Checks
 
+The local checks use the published 4.5.0 packages, not the workspace. Install them once from the repo root:
+
+```bash
+apps/veer-wonder-world/tools/install-published-deps.sh   # tools/published-deps.json -> artifacts/wonder-deps/, linked as node_modules
+```
+
+The app's own `package.json` uses `workspace:*`, which npm cannot install, so the set lives in `tools/published-deps.json`. The monorepo checks below (`pnpm exec tsc`, the root vitest) need only the root `pnpm install`.
+
 From the app folder, everything that runs locally (no browser, no monorepo-wide build):
 
 ```bash
