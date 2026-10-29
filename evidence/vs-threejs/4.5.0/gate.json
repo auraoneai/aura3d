@@ -1,0 +1,153 @@
+{
+  "targets": [
+    {
+      "id": "P1",
+      "title": "Steady-state frame, one cube",
+      "target": "<= 5 ms",
+      "status": "FAIL",
+      "measured": "5.3 ms",
+      "detail": "three.js 4x MSAA 1.5 ms",
+      "basis": "software WebGL2"
+    },
+    {
+      "id": "P2",
+      "title": "CPU inside frame(), one cube",
+      "target": "<= 0.5 ms",
+      "status": "FAIL",
+      "measured": "0.9 ms",
+      "detail": "three.js 0.1 ms",
+      "basis": "software WebGL2"
+    },
+    {
+      "id": "P3",
+      "title": "Time to first frame, one cube",
+      "target": "<= 500 ms",
+      "status": "PASS",
+      "measured": "418.7 ms",
+      "detail": "three.js 93.2 ms",
+      "basis": "software WebGL2"
+    },
+    {
+      "id": "P4",
+      "title": "Draw calls, one cube / PBR viewer",
+      "target": "1 / <= 25",
+      "status": "PASS",
+      "measured": "1 / 25",
+      "detail": "",
+      "basis": "software WebGL2"
+    },
+    {
+      "id": "P5",
+      "title": "Requests on first load, one cube",
+      "target": "<= 8",
+      "status": "FAIL",
+      "measured": "31",
+      "detail": "",
+      "basis": "software WebGL2"
+    },
+    {
+      "id": "P6",
+      "title": "Forest 10k completes on software GL",
+      "target": "<= 5 min and <= 3x three.js 4x MSAA",
+      "status": "FAIL",
+      "measured": "197 s, 3.12x",
+      "detail": "",
+      "basis": "software WebGL2"
+    },
+    {
+      "id": "P7",
+      "title": "Real GPU: steady-state frame, five scenes",
+      "target": "<= three.js 4x MSAA on every scene",
+      "status": "NO-DATA",
+      "measured": null,
+      "detail": "no real-GPU results; speed claims keep the software WebGL2 qualifier",
+      "basis": "real GPU"
+    },
+    {
+      "id": "Q1",
+      "title": "Exposure: skinned character mean luma",
+      "target": "within 10%",
+      "status": "PASS",
+      "measured": "three.js 144 vs Aura3D 136.2 (5.4%)",
+      "detail": "",
+      "basis": "software WebGL2"
+    },
+    {
+      "id": "Q2",
+      "title": "Console warnings on the five bench scenes",
+      "target": "0",
+      "status": "PASS",
+      "measured": "0 message(s), 0 kind(s)",
+      "detail": "",
+      "basis": "software WebGL2"
+    },
+    {
+      "id": "D1",
+      "title": "Source: hello cube lines / tokens",
+      "target": "<= 12 / <= 210",
+      "status": "PASS",
+      "measured": "12 / 208",
+      "detail": "",
+      "basis": "source"
+    },
+    {
+      "id": "D2",
+      "title": "Source: shader water lines / tokens",
+      "target": "<= 80 / <= 1,386",
+      "status": "PASS",
+      "measured": "71 / 1317",
+      "detail": "",
+      "basis": "source"
+    },
+    {
+      "id": "D3",
+      "title": "Silent no-ops in the documented API",
+      "target": "0",
+      "status": "PASS",
+      "measured": "0",
+      "detail": "pass --extra with silentNoOps from tests/unit/agent-api/option-coverage.test.ts",
+      "basis": "option-coverage test"
+    },
+    {
+      "id": "C1",
+      "title": "Partial and experimental audit rows",
+      "target": "0 unresolved",
+      "status": "FAIL",
+      "measured": "7 of 7 unresolved",
+      "detail": "Genre kits: `racketSports`, `arcadeKart`, `carSoccer`, fighting, platformer motion; Root `createGame`; `physics.*` root: mesh and heightfield colliders, joints, vehicles; `tsl` (62 names), `compute`, WebGPU backend; `xr`",
+      "basis": "docs"
+    },
+    {
+      "id": "M1",
+      "title": "Codemod rows approximate / none / pending",
+      "target": "<= 100 / <= 20 / 0",
+      "status": "FAIL",
+      "measured": "150 / 47 / 0",
+      "detail": "exact 48",
+      "basis": "source"
+    },
+    {
+      "id": "T1",
+      "title": "Benchmark tally: three.js better rows",
+      "target": "<= 30",
+      "status": "FAIL",
+      "measured": "81 of 125",
+      "detail": "Aura3D better 23, tie 16, unmeasurable 5",
+      "basis": "software WebGL2"
+    }
+  ],
+  "tally": {
+    "Aura3D better": 23,
+    "three.js better": 81,
+    "tie": 16,
+    "unmeasurable": 5
+  },
+  "totalRows": 125,
+  "basis": "software WebGL2",
+  "auraArm": "aura-auto",
+  "claims": [],
+  "failures": [
+    "T1"
+  ],
+  "exit": 1
+}

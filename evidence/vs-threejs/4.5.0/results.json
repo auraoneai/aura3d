@@ -1,0 +1,4691 @@
+{
+  "scenes": {
+    "baseline": {
+      "scene": "baseline",
+      "generatedUtc": "2026-10-29T02:46:50.123Z",
+      "frames": 60,
+      "coldLoads": 3,
+      "plan": {
+        "loads": 3,
+        "warmA": 19,
+        "gapB": 59,
+        "measure": 60
+      },
+      "env": {
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "vendor": "Google Inc. (Google)",
+        "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+        "hardwareConcurrency": 2
+      },
+      "cpuCount": 2,
+      "installed": {
+        "vite": "7.3.2",
+        "aura": "4.5.0",
+        "three": "0.185.1"
+      },
+      "correctness": {
+        "jsdFrame25": 0.9999999999999999,
+        "jsdFrame85": 1,
+        "meanLuma": {
+          "three": [
+            2.8768791440968555,
+            3.3493765399300712
+          ],
+          "aura": [
+            12.754807580686395,
+            13.103352654467372
+          ]
+        },
+        "meanLumaDeltaFrame25": 9.877928436589539,
+        "meanLumaDeltaFrame85": 9.7539761145373,
+        "std": {
+          "three": [
+            14.243139928472825,
+            15.3161597437035
+          ],
+          "aura": [
+            10.306527018599384,
+            11.09379865155983
+          ]
+        },
+        "meanAbsLumaDiffFrame25": 10.941219618055555,
+        "gainMatched": {
+          "gain": 0.22555253192945757,
+          "jsdFrame25": 0.03990022456363595,
+          "meanAbsLumaDiffFrame25": 4.264049479166666
+        }
+      },
+      "results": {
+        "three": {
+          "perFrame": {
+            "draws": 1,
+            "tris": 12,
+            "instances": 1,
+            "programs": 1,
+            "blits": 0,
+            "viewports": [],
+            "msaaTargets": []
+          },
+          "temporalDiffMeanLuma": 0.7718229166666667,
+          "cpuMs": {
+            "n": 60,
+            "mean": 0.11500000000135818,
+            "median": 0.09999999997671694,
+            "p95": 0.20000000001164153,
+            "min": 0,
+            "max": 0.7000000000116415
+          },
+          "totalMs": {
+            "n": 60,
+            "mean": 0.7399999999994179,
+            "median": 0.7000000000116415,
+            "p95": 1.3000000000465661,
+            "min": 0.5,
+            "max": 1.7000000000116415
+          },
+          "replay": null,
+          "state": null,
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 272
+            },
+            {
+              "path": "/assets/index-BSIOCvc-.js",
+              "status": 200,
+              "bytes": 507623
+            }
+          ],
+          "console": [
+            {
+              "type": "warning",
+              "text": "[.WebGL-0x368400129a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+            },
+            {
+              "type": "warning",
+              "text": "[.WebGL-0x368400129a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+            },
+            {
+              "type": "warning",
+              "text": "[.WebGL-0x368400129a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+            },
+            {
+              "type": "warning",
+              "text": "[.WebGL-0x368400129a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+            }
+          ],
+          "wallMs": 2970,
+          "ttffMs": {
+            "samples": [
+              141.29999999998836,
+              93.20000000001164,
+              89.30000000004657
+            ],
+            "median": 93.20000000001164
+          },
+          "build": {
+            "scene": "baseline",
+            "lib": "three",
+            "buildMs": 1691,
+            "bundle": {
+              "jsFiles": 1,
+              "raw": 507623,
+              "gzip": 127808,
+              "brotli": 105341,
+              "largestChunk": {
+                "path": "assets/index-BSIOCvc-.js",
+                "raw": 507623,
+                "gzip": 127808,
+                "brotli": 105341
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "index.html",
+                "size": 272
+              }
+            ],
+            "assetBytes": 0,
+            "outDir": "/tmp/bench/dist/baseline/three"
+          }
+        },
+        "aura-auto": {
+          "perFrame": {
+            "draws": 1,
+            "tris": 12,
+            "instances": 1,
+            "programs": 1,
+            "blits": 0,
+            "viewports": [
+              "640x360"
+            ],
+            "msaaTargets": []
+          },
+          "temporalDiffMeanLuma": 0.56390625,
+          "cpuMs": {
+            "n": 60,
+            "mean": 0.8800000000027164,
+            "median": 0.8999999999650754,
+            "p95": 1.1000000000349246,
+            "min": 0.6999999999534339,
+            "max": 2.400000000023283
+          },
+          "totalMs": {
+            "n": 60,
+            "mean": 5.356666666667055,
+            "median": 5.2999999999883585,
+            "p95": 6.099999999976717,
+            "min": 4.599999999976717,
+            "max": 6.900000000023283
+          },
+          "replay": null,
+          "state": null,
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 2245
+            },
+            {
+              "path": "/assets/core-BaYVi5dM.js",
+              "status": 200,
+              "bytes": 1123
+            },
+            {
+              "path": "/assets/quality-rplkEvUF.js",
+              "status": 200,
+              "bytes": 4209
+            },
+            {
+              "path": "/assets/Texture-B3K3JKvy.js",
+              "status": 200,
+              "bytes": 10528
+            },
+            {
+              "path": "/assets/SphericalHarmonics-C0VnUpIE.js",
+              "status": 200,
+              "bytes": 5678
+            },
+            {
+              "path": "/assets/WebGPUSkinningLimits-BWlgcUSU.js",
+              "status": 200,
+              "bytes": 943
+            },
+            {
+              "path": "/assets/ShaderFailures-CNnQzW3A.js",
+              "status": 200,
+              "bytes": 3016
+            },
+            {
+              "path": "/assets/program-D4fXTCpY.js",
+              "status": 200,
+              "bytes": 104427
+            },
+            {
+              "path": "/assets/FrameGraph-CrXAQkO_.js",
+              "status": 200,
+              "bytes": 76625
+            },
+            {
+              "path": "/assets/preload-helper-PPVm8Dsz.js",
+              "status": 200,
+              "bytes": 1232
+            },
+            {
+              "path": "/assets/Rgb9e5Cube-Df2uosiY.js",
+              "status": 200,
+              "bytes": 11999
+            },
+            {
+              "path": "/assets/postSkipped-CNV024FV.js",
+              "status": 200,
+              "bytes": 623
+            },
+            {
+              "path": "/assets/MeshConsolidation-D7mTL4E2.js",
+              "status": 200,
+              "bytes": 3345
+            },
+            {
+              "path": "/assets/device-CkV6VPzV.js",
+              "status": 200,
+              "bytes": 10976
+            },
+            {
+              "path": "/assets/ForwardPass-BAqW8Krf.js",
+              "status": 200,
+              "bytes": 184767
+            },
+            {
+              "path": "/assets/TemporalMath-Ikt_pM0o.js",
+              "status": 200,
+              "bytes": 193
+            },
+            {
+              "path": "/assets/RetargetWorker-DVa2B8kF.js",
+              "status": 200,
+              "bytes": 63626
+            },
+            {
+              "path": "/assets/ShaderLibrary-B4XT73rJ.js",
+              "status": 200,
+              "bytes": 176231
+            },
+            {
+              "path": "/assets/TexturedPBRMaterial-CFBGwayi.js",
+              "status": 200,
+              "bytes": 190469
+            },
+            {
+              "path": "/assets/decoderLoad-CuxniDwe.js",
+              "status": 200,
+              "bytes": 500
+            },
+            {
+              "path": "/assets/TextureStreaming-Cvt2rzNB.js",
+              "status": 200,
+              "bytes": 28545
+            },
+            {
+              "path": "/assets/index-BJU6dqkB.js",
+              "status": 200,
+              "bytes": 971537
+            },
+            {
+              "path": "/assets/TypedGLBActor-DxPbGlIR.js",
+              "status": 200,
+              "bytes": 22122
+            },
+            {
+              "path": "/assets/BoneMask-DanQ6u0d.js",
+              "status": 200,
+              "bytes": 2113
+            },
+            {
+              "path": "/assets/GLTFSharedTextureCache-Bmb_4cJT.js",
+              "status": 200,
+              "bytes": 229830
+            },
+            {
+              "path": "/assets/DirectPath-DEnBD5yw.js",
+              "status": 200,
+              "bytes": 857600
+            },
+            {
+              "path": "/assets/engine_false-jG2m2l4N.js",
+              "status": 200,
+              "bytes": 128
+            },
+            {
+              "path": "/assets/v2Entry-hVYqrXFk.js",
+              "status": 200,
+              "bytes": 86393
+            },
+            {
+              "path": "/assets/TemporalHistory-CgqIuuAk.js",
+              "status": 200,
+              "bytes": 7026
+            },
+            {
+              "path": "/assets/neutralEmbeddedLoader-Dvd4cMWH.js",
+              "status": 200,
+              "bytes": 1082
+            },
+            {
+              "path": "/assets/neutralEmbedded-CQj30fxp.js",
+              "status": 200,
+              "bytes": 133170
+            }
+          ],
+          "console": [],
+          "wallMs": 4659,
+          "ttffMs": {
+            "samples": [
+              519.5,
+              418.70000000001164,
+              415.69999999995343
+            ],
+            "median": 418.70000000001164
+          },
+          "build": {
+            "scene": "baseline",
+            "lib": "aura-auto",
+            "buildMs": 10295,
+            "bundle": {
+              "jsFiles": 42,
+              "raw": 4143282,
+              "gzip": 1239873,
+              "brotli": 1045475,
+              "largestChunk": {
+                "path": "assets/index-BJU6dqkB.js",
+                "raw": 971537,
+                "gzip": 317487,
+                "brotli": 258316
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "aura-decoders/basis/README.md",
+                "size": 1278
+              },
+              {
+                "path": "aura-decoders/basis/basis_transcoder.wasm",
+                "size": 527333
+              },
+              {
+                "path": "aura-decoders/draco/README.md",
+                "size": 1128
+              },
+              {
+                "path": "aura-decoders/draco/draco_decoder.wasm",
+                "size": 192420
+              },
+              {
+                "path": "aura-decoders/meshopt/README.md",
+                "size": 1091
+              },
+              {
+                "path": "aura-decoders/meshopt/meshopt_decoder.cjs",
+                "size": 29400
+              },
+              {
+                "path": "index.html",
+                "size": 2245
+              }
+            ],
+            "assetBytes": 0,
+            "outDir": "/tmp/bench/dist/baseline/aura-auto"
+          }
+        },
+        "aura-production": {
+          "perFrame": {
+            "draws": 2,
+            "tris": 13,
+            "instances": 2,
+            "programs": 2,
+            "blits": 1,
+            "viewports": [
+              "640x360"
+            ],
+            "msaaTargets": [
+              "4x 34842 640x360",
+              "4x 33190 640x360"
+            ]
+          },
+          "temporalDiffMeanLuma": 0.5651953125,
+          "cpuMs": {
+            "n": 60,
+            "mean": 2.7550000000046566,
+            "median": 2.599999999976717,
+            "p95": 3.7000000000116415,
+            "min": 2.2999999999883585,
+            "max": 9.5
+          },
+          "totalMs": {
+            "n": 60,
+            "mean": 43.65166666666628,
+            "median": 42.79999999998836,
+            "p95": 50.29999999998836,
+            "min": 41.399999999965075,
+            "max": 52.59999999997672
+          },
+          "replay": null,
+          "state": null,
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 2245
+            },
+            {
+              "path": "/assets/core-BaYVi5dM.js",
+              "status": 200,
+              "bytes": 1123
+            },
+            {
+              "path": "/assets/quality-rplkEvUF.js",
+              "status": 200,
+              "bytes": 4209
+            },
+            {
+              "path": "/assets/Texture-B3K3JKvy.js",
+              "status": 200,
+              "bytes": 10528
+            },
+            {
+              "path": "/assets/program-D4fXTCpY.js",
+              "status": 200,
+              "bytes": 104427
+            },
+            {
+              "path": "/assets/ShaderFailures-CNnQzW3A.js",
+              "status": 200,
+              "bytes": 3016
+            },
+            {
+              "path": "/assets/SphericalHarmonics-C0VnUpIE.js",
+              "status": 200,
+              "bytes": 5678
+            },
+            {
+              "path": "/assets/WebGPUSkinningLimits-BWlgcUSU.js",
+              "status": 200,
+              "bytes": 943
+            },
+            {
+              "path": "/assets/FrameGraph-CrXAQkO_.js",
+              "status": 200,
+              "bytes": 76625
+            },
+            {
+              "path": "/assets/preload-helper-PPVm8Dsz.js",
+              "status": 200,
+              "bytes": 1232
+            },
+            {
+              "path": "/assets/Rgb9e5Cube-Df2uosiY.js",
+              "status": 200,
+              "bytes": 11999
+            },
+            {
+              "path": "/assets/postSkipped-CNV024FV.js",
+              "status": 200,
+              "bytes": 623
+            },
+            {
+              "path": "/assets/device-CkV6VPzV.js",
+              "status": 200,
+              "bytes": 10976
+            },
+            {
+              "path": "/assets/ForwardPass-BAqW8Krf.js",
+              "status": 200,
+              "bytes": 184767
+            },
+            {
+              "path": "/assets/MeshConsolidation-D7mTL4E2.js",
+              "status": 200,
+              "bytes": 3345
+            },
+            {
+              "path": "/assets/ShaderLibrary-B4XT73rJ.js",
+              "status": 200,
+              "bytes": 176231
+            },
+            {
+              "path": "/assets/TemporalMath-Ikt_pM0o.js",
+              "status": 200,
+              "bytes": 193
+            },
+            {
+              "path": "/assets/TexturedPBRMaterial-CFBGwayi.js",
+              "status": 200,
+              "bytes": 190469
+            },
+            {
+              "path": "/assets/RetargetWorker-DVa2B8kF.js",
+              "status": 200,
+              "bytes": 63626
+            },
+            {
+              "path": "/assets/decoderLoad-CuxniDwe.js",
+              "status": 200,
+              "bytes": 500
+            },
+            {
+              "path": "/assets/index-Dd86L5Gi.js",
+              "status": 200,
+              "bytes": 971558
+            },
+            {
+              "path": "/assets/TypedGLBActor-DxPbGlIR.js",
+              "status": 200,
+              "bytes": 22122
+            },
+            {
+              "path": "/assets/TextureStreaming-Cvt2rzNB.js",
+              "status": 200,
+              "bytes": 28545
+            },
+            {
+              "path": "/assets/BoneMask-DanQ6u0d.js",
+              "status": 200,
+              "bytes": 2113
+            },
+            {
+              "path": "/assets/GLTFSharedTextureCache-Bmb_4cJT.js",
+              "status": 200,
+              "bytes": 229830
+            },
+            {
+              "path": "/assets/DirectPath-DEnBD5yw.js",
+              "status": 200,
+              "bytes": 857600
+            },
+            {
+              "path": "/assets/engine_false-jG2m2l4N.js",
+              "status": 200,
+              "bytes": 128
+            },
+            {
+              "path": "/assets/v2Entry-hVYqrXFk.js",
+              "status": 200,
+              "bytes": 86393
+            },
+            {
+              "path": "/assets/TemporalHistory-CgqIuuAk.js",
+              "status": 200,
+              "bytes": 7026
+            },
+            {
+              "path": "/assets/neutralEmbeddedLoader-Dvd4cMWH.js",
+              "status": 200,
+              "bytes": 1082
+            },
+            {
+              "path": "/assets/neutralEmbedded-CQj30fxp.js",
+              "status": 200,
+              "bytes": 133170
+            }
+          ],
+          "console": [],
+          "wallMs": 10781,
+          "ttffMs": {
+            "samples": [
+              528.0999999999767,
+              562.2999999999884,
+              573.9000000000233
+            ],
+            "median": 562.2999999999884
+          },
+          "build": {
+            "scene": "baseline",
+            "lib": "aura-production",
+            "buildMs": 10386,
+            "bundle": {
+              "jsFiles": 42,
+              "raw": 4143303,
+              "gzip": 1239881,
+              "brotli": 1045629,
+              "largestChunk": {
+                "path": "assets/index-Dd86L5Gi.js",
+                "raw": 971558,
+                "gzip": 317495,
+                "brotli": 258470
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "aura-decoders/basis/README.md",
+                "size": 1278
+              },
+              {
+                "path": "aura-decoders/basis/basis_transcoder.wasm",
+                "size": 527333
+              },
+              {
+                "path": "aura-decoders/draco/README.md",
+                "size": 1128
+              },
+              {
+                "path": "aura-decoders/draco/draco_decoder.wasm",
+                "size": 192420
+              },
+              {
+                "path": "aura-decoders/meshopt/README.md",
+                "size": 1091
+              },
+              {
+                "path": "aura-decoders/meshopt/meshopt_decoder.cjs",
+                "size": 29400
+              },
+              {
+                "path": "index.html",
+                "size": 2245
+              }
+            ],
+            "assetBytes": 0,
+            "outDir": "/tmp/bench/dist/baseline/aura-production"
+          }
+        },
+        "three-msaa": {
+          "perFrame": {
+            "draws": 1,
+            "tris": 12,
+            "instances": 1,
+            "programs": 1,
+            "blits": 0,
+            "viewports": [],
+            "msaaTargets": []
+          },
+          "temporalDiffMeanLuma": 0.7767144097222223,
+          "cpuMs": {
+            "n": 60,
+            "mean": 0.09166666666666666,
+            "median": 0.10000000000582077,
+            "p95": 0.20000000001164153,
+            "min": 0,
+            "max": 0.20000000001164153
+          },
+          "totalMs": {
+            "n": 60,
+            "mean": 1.5966666666674427,
+            "median": 1.5,
+            "p95": 3,
+            "min": 1.1999999999825377,
+            "max": 4.300000000017462
+          },
+          "replay": null,
+          "state": null,
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 277
+            },
+            {
+              "path": "/assets/index-BjEQ8srX.js",
+              "status": 200,
+              "bytes": 507641
+            }
+          ],
+          "console": [
+            {
+              "type": "warning",
+              "text": "[.WebGL-0x31d400105a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+            },
+            {
+              "type": "warning",
+              "text": "[.WebGL-0x31d400105a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+            },
+            {
+              "type": "warning",
+              "text": "[.WebGL-0x31d400105a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+            },
+            {
+              "type": "warning",
+              "text": "[.WebGL-0x31d400105a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+            }
+          ],
+          "wallMs": 2870,
+          "ttffMs": {
+            "samples": [
+              118.60000000000582,
+              99.89999999999418,
+              97.60000000000582
+            ],
+            "median": 99.89999999999418
+          },
+          "build": {
+            "scene": "baseline",
+            "lib": "three-msaa",
+            "buildMs": 1702,
+            "bundle": {
+              "jsFiles": 1,
+              "raw": 507641,
+              "gzip": 127820,
+              "brotli": 105359,
+              "largestChunk": {
+                "path": "assets/index-BjEQ8srX.js",
+                "raw": 507641,
+                "gzip": 127820,
+                "brotli": 105359
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "index.html",
+                "size": 277
+              }
+            ],
+            "assetBytes": 0,
+            "outDir": "/tmp/bench/dist/baseline/three-msaa"
+          }
+        }
+      }
+    },
+    "pbr-viewer": {
+      "scene": "pbr-viewer",
+      "generatedUtc": "2026-10-29T02:50:09.433Z",
+      "frames": 60,
+      "coldLoads": 3,
+      "plan": {
+        "loads": 3,
+        "warmA": 19,
+        "gapB": 59,
+        "measure": 60
+      },
+      "env": {
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "vendor": "Google Inc. (Google)",
+        "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+        "hardwareConcurrency": 2
+      },
+      "cpuCount": 2,
+      "installed": {
+        "vite": "7.3.2",
+        "aura": "4.5.0",
+        "three": "0.185.1"
+      },
+      "correctness": {
+        "jsdFrame25": 0.45778396529029247,
+        "jsdFrame85": 0.4480906023165625,
+        "meanLuma": {
+          "three": [
+            55.02814915435429,
+            55.02814915435429
+          ],
+          "aura": [
+            89.3464065547213,
+            91.14799371875053
+          ]
+        },
+        "meanLumaDeltaFrame25": 34.31825740036701,
+        "meanLumaDeltaFrame85": 36.11984456439624,
+        "std": {
+          "three": [
+            54.11863274743231,
+            54.11863274743231
+          ],
+          "aura": [
+            54.1730851276535,
+            54.49601525774498
+          ]
+        },
+        "meanAbsLumaDiffFrame25": 36.54217013888889,
+        "gainMatched": {
+          "gain": 0.615896612704302,
+          "jsdFrame25": 0.521957815446549,
+          "meanAbsLumaDiffFrame25": 19.938927951388887
+        }
+      },
+      "results": {
+        "three": {
+          "perFrame": {
+            "draws": 25,
+            "tris": 7264,
+            "instances": 25,
+            "programs": 14,
+            "blits": 0,
+            "viewports": [
+              "1024x1024",
+              "640x360",
+              "320x180",
+              "160x90",
+              "80x45",
+              "40x23",
+              "20x12"
+            ],
+            "msaaTargets": []
+          },
+          "temporalDiffMeanLuma": 0,
+          "cpuMs": {
+            "n": 60,
+            "mean": 0.6716666666713232,
+            "median": 0.7000000000116415,
+            "p95": 0.8999999999650754,
+            "min": 0.5,
+            "max": 0.9000000000232831
+          },
+          "totalMs": {
+            "n": 60,
+            "mean": 223.80500000000174,
+            "median": 222.70000000001164,
+            "p95": 235.70000000001164,
+            "min": 214.29999999998836,
+            "max": 239.90000000002328
+          },
+          "replay": null,
+          "state": null,
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 274
+            },
+            {
+              "path": "/assets/index-BCwuiK7L.js",
+              "status": 200,
+              "bytes": 655083
+            },
+            {
+              "path": "/env.hdr",
+              "status": 200,
+              "bytes": 1508872
+            },
+            {
+              "path": "/model.glb",
+              "status": 200,
+              "bytes": 369980
+            },
+            {
+              "path": "http://127.0.0.1:43385/dd8fc142-c1e0-4903-b2b8-efeea15c124c",
+              "status": 200,
+              "bytes": 218979
+            }
+          ],
+          "console": [
+            {
+              "type": "warning",
+              "text": "RGBELoader has been deprecated. Please use HDRLoader instead."
+            }
+          ],
+          "wallMs": 56354,
+          "ttffMs": {
+            "samples": [
+              5962.899999999965,
+              6456.599999999977,
+              6087.100000000035
+            ],
+            "median": 6087.100000000035
+          },
+          "build": {
+            "scene": "pbr-viewer",
+            "lib": "three",
+            "buildMs": 2068,
+            "bundle": {
+              "jsFiles": 1,
+              "raw": 655083,
+              "gzip": 166865,
+              "brotli": 136921,
+              "largestChunk": {
+                "path": "assets/index-BCwuiK7L.js",
+                "raw": 655083,
+                "gzip": 166865,
+                "brotli": 136921
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "env.hdr",
+                "size": 1508872
+              },
+              {
+                "path": "index.html",
+                "size": 274
+              },
+              {
+                "path": "model.glb",
+                "size": 369980
+              }
+            ],
+            "assetBytes": 1878852,
+            "outDir": "/tmp/bench/dist/pbr-viewer/three"
+          }
+        },
+        "aura-auto": {
+          "perFrame": {
+            "draws": 25,
+            "tris": 7266,
+            "instances": 27,
+            "programs": 15,
+            "blits": 1,
+            "viewports": [
+              "640x360",
+              "2048x2048",
+              "320x180",
+              "160x90",
+              "80x45",
+              "40x23",
+              "20x12"
+            ],
+            "msaaTargets": [
+              "4x 34842 640x360",
+              "4x 33190 640x360"
+            ]
+          },
+          "temporalDiffMeanLuma": 3.377421875,
+          "cpuMs": {
+            "n": 60,
+            "mean": 4.7816666666660845,
+            "median": 4.400000000023283,
+            "p95": 7.099999999976717,
+            "min": 3.7999999999883585,
+            "max": 13.099999999976717
+          },
+          "totalMs": {
+            "n": 60,
+            "mean": 392.8866666666669,
+            "median": 391.8999999999651,
+            "p95": 403.5999999999767,
+            "min": 384.30000000004657,
+            "max": 415.5
+          },
+          "replay": null,
+          "state": null,
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 2247
+            },
+            {
+              "path": "/assets/core-BaYVi5dM.js",
+              "status": 200,
+              "bytes": 1123
+            },
+            {
+              "path": "/assets/quality-rplkEvUF.js",
+              "status": 200,
+              "bytes": 4209
+            },
+            {
+              "path": "/assets/ShaderFailures-CNnQzW3A.js",
+              "status": 200,
+              "bytes": 3016
+            },
+            {
+              "path": "/assets/Texture-B3K3JKvy.js",
+              "status": 200,
+              "bytes": 10528
+            },
+            {
+              "path": "/assets/program-D4fXTCpY.js",
+              "status": 200,
+              "bytes": 104427
+            },
+            {
+              "path": "/assets/FrameGraph-CrXAQkO_.js",
+              "status": 200,
+              "bytes": 76625
+            },
+            {
+              "path": "/assets/WebGPUSkinningLimits-BWlgcUSU.js",
+              "status": 200,
+              "bytes": 943
+            },
+            {
+              "path": "/assets/SphericalHarmonics-C0VnUpIE.js",
+              "status": 200,
+              "bytes": 5678
+            },
+            {
+              "path": "/assets/preload-helper-PPVm8Dsz.js",
+              "status": 200,
+              "bytes": 1232
+            },
+            {
+              "path": "/assets/ForwardPass-BAqW8Krf.js",
+              "status": 200,
+              "bytes": 184767
+            },
+            {
+              "path": "/assets/postSkipped-CNV024FV.js",
+              "status": 200,
+              "bytes": 623
+            },
+            {
+              "path": "/assets/Rgb9e5Cube-Df2uosiY.js",
+              "status": 200,
+              "bytes": 11999
+            },
+            {
+              "path": "/assets/device-CkV6VPzV.js",
+              "status": 200,
+              "bytes": 10976
+            },
+            {
+              "path": "/assets/MeshConsolidation-D7mTL4E2.js",
+              "status": 200,
+              "bytes": 3345
+            },
+            {
+              "path": "/assets/TemporalMath-Ikt_pM0o.js",
+              "status": 200,
+              "bytes": 193
+            },
+            {
+              "path": "/assets/ShaderLibrary-B4XT73rJ.js",
+              "status": 200,
+              "bytes": 176231
+            },
+            {
+              "path": "/assets/TexturedPBRMaterial-CFBGwayi.js",
+              "status": 200,
+              "bytes": 190469
+            },
+            {
+              "path": "/assets/RetargetWorker-DVa2B8kF.js",
+              "status": 200,
+              "bytes": 63626
+            },
+            {
+              "path": "/assets/decoderLoad-CuxniDwe.js",
+              "status": 200,
+              "bytes": 500
+            },
+            {
+              "path": "/assets/TextureStreaming-Cvt2rzNB.js",
+              "status": 200,
+              "bytes": 28545
+            },
+            {
+              "path": "/assets/BoneMask-DanQ6u0d.js",
+              "status": 200,
+              "bytes": 2113
+            },
+            {
+              "path": "/assets/TypedGLBActor-DxPbGlIR.js",
+              "status": 200,
+              "bytes": 22122
+            },
+            {
+              "path": "/assets/GLTFSharedTextureCache-Bmb_4cJT.js",
+              "status": 200,
+              "bytes": 229830
+            },
+            {
+              "path": "/assets/DirectPath-DEnBD5yw.js",
+              "status": 200,
+              "bytes": 857600
+            },
+            {
+              "path": "/assets/index-NaaoNa_r.js",
+              "status": 200,
+              "bytes": 974401
+            },
+            {
+              "path": "/assets/engine_false-jG2m2l4N.js",
+              "status": 200,
+              "bytes": 128
+            },
+            {
+              "path": "/assets/v2Entry-hVYqrXFk.js",
+              "status": 200,
+              "bytes": 86393
+            },
+            {
+              "path": "/assets/TemporalHistory-CgqIuuAk.js",
+              "status": 200,
+              "bytes": 7026
+            },
+            {
+              "path": "/assets/AssetDecoders-q_VC-NqO.js",
+              "status": 200,
+              "bytes": 303
+            },
+            {
+              "path": "/model.glb",
+              "status": 200,
+              "bytes": 369980
+            },
+            {
+              "path": "/model.glb",
+              "status": 200,
+              "bytes": 369980
+            },
+            {
+              "path": "/assets/index-DpkUcx-8.js",
+              "status": 200,
+              "bytes": 19791
+            },
+            {
+              "path": "/assets/neutralEmbeddedLoader-Dvd4cMWH.js",
+              "status": 200,
+              "bytes": 1082
+            },
+            {
+              "path": "/assets/neutralEmbedded-CQj30fxp.js",
+              "status": 200,
+              "bytes": 133170
+            }
+          ],
+          "console": [],
+          "wallMs": 70265,
+          "ttffMs": {
+            "samples": [
+              2299.2000000000116,
+              2422,
+              2300.5999999999767
+            ],
+            "median": 2300.5999999999767
+          },
+          "build": {
+            "scene": "pbr-viewer",
+            "lib": "aura-auto",
+            "buildMs": 10176,
+            "bundle": {
+              "jsFiles": 42,
+              "raw": 4146146,
+              "gzip": 1241142,
+              "brotli": 1046378,
+              "largestChunk": {
+                "path": "assets/index-NaaoNa_r.js",
+                "raw": 974401,
+                "gzip": 318756,
+                "brotli": 259219
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "aura-decoders/basis/README.md",
+                "size": 1278
+              },
+              {
+                "path": "aura-decoders/basis/basis_transcoder.wasm",
+                "size": 527333
+              },
+              {
+                "path": "aura-decoders/draco/README.md",
+                "size": 1128
+              },
+              {
+                "path": "aura-decoders/draco/draco_decoder.wasm",
+                "size": 192420
+              },
+              {
+                "path": "aura-decoders/meshopt/README.md",
+                "size": 1091
+              },
+              {
+                "path": "aura-decoders/meshopt/meshopt_decoder.cjs",
+                "size": 29400
+              },
+              {
+                "path": "env.hdr",
+                "size": 1508872
+              },
+              {
+                "path": "index.html",
+                "size": 2247
+              },
+              {
+                "path": "model.glb",
+                "size": 369980
+              }
+            ],
+            "assetBytes": 1878852,
+            "outDir": "/tmp/bench/dist/pbr-viewer/aura-auto"
+          }
+        },
+        "aura-production": {
+          "perFrame": {
+            "draws": 33,
+            "tris": 7274,
+            "instances": 35,
+            "programs": 12,
+            "blits": 1,
+            "viewports": [
+              "640x360",
+              "2048x2048",
+              "320x180",
+              "160x90",
+              "80x45",
+              "40x23",
+              "20x12"
+            ],
+            "msaaTargets": [
+              "4x 34842 640x360",
+              "4x 33190 640x360"
+            ]
+          },
+          "temporalDiffMeanLuma": 3.3773741319444444,
+          "cpuMs": {
+            "n": 60,
+            "mean": 4.9966666666732635,
+            "median": 4.599999999976717,
+            "p95": 7.700000000069849,
+            "min": 4,
+            "max": 13
+          },
+          "totalMs": {
+            "n": 60,
+            "mean": 409.5583333333295,
+            "median": 401.5999999999767,
+            "p95": 447.5999999999767,
+            "min": 391.20000000001164,
+            "max": 537.9000000000233
+          },
+          "replay": null,
+          "state": null,
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 2247
+            },
+            {
+              "path": "/assets/core-BaYVi5dM.js",
+              "status": 200,
+              "bytes": 1123
+            },
+            {
+              "path": "/assets/quality-rplkEvUF.js",
+              "status": 200,
+              "bytes": 4209
+            },
+            {
+              "path": "/assets/Texture-B3K3JKvy.js",
+              "status": 200,
+              "bytes": 10528
+            },
+            {
+              "path": "/assets/ShaderFailures-CNnQzW3A.js",
+              "status": 200,
+              "bytes": 3016
+            },
+            {
+              "path": "/assets/program-D4fXTCpY.js",
+              "status": 200,
+              "bytes": 104427
+            },
+            {
+              "path": "/assets/SphericalHarmonics-C0VnUpIE.js",
+              "status": 200,
+              "bytes": 5678
+            },
+            {
+              "path": "/assets/FrameGraph-CrXAQkO_.js",
+              "status": 200,
+              "bytes": 76625
+            },
+            {
+              "path": "/assets/WebGPUSkinningLimits-BWlgcUSU.js",
+              "status": 200,
+              "bytes": 943
+            },
+            {
+              "path": "/assets/preload-helper-PPVm8Dsz.js",
+              "status": 200,
+              "bytes": 1232
+            },
+            {
+              "path": "/assets/Rgb9e5Cube-Df2uosiY.js",
+              "status": 200,
+              "bytes": 11999
+            },
+            {
+              "path": "/assets/postSkipped-CNV024FV.js",
+              "status": 200,
+              "bytes": 623
+            },
+            {
+              "path": "/assets/device-CkV6VPzV.js",
+              "status": 200,
+              "bytes": 10976
+            },
+            {
+              "path": "/assets/ForwardPass-BAqW8Krf.js",
+              "status": 200,
+              "bytes": 184767
+            },
+            {
+              "path": "/assets/MeshConsolidation-D7mTL4E2.js",
+              "status": 200,
+              "bytes": 3345
+            },
+            {
+              "path": "/assets/TemporalMath-Ikt_pM0o.js",
+              "status": 200,
+              "bytes": 193
+            },
+            {
+              "path": "/assets/TexturedPBRMaterial-CFBGwayi.js",
+              "status": 200,
+              "bytes": 190469
+            },
+            {
+              "path": "/assets/ShaderLibrary-B4XT73rJ.js",
+              "status": 200,
+              "bytes": 176231
+            },
+            {
+              "path": "/assets/RetargetWorker-DVa2B8kF.js",
+              "status": 200,
+              "bytes": 63626
+            },
+            {
+              "path": "/assets/decoderLoad-CuxniDwe.js",
+              "status": 200,
+              "bytes": 500
+            },
+            {
+              "path": "/assets/GLTFSharedTextureCache-Bmb_4cJT.js",
+              "status": 200,
+              "bytes": 229830
+            },
+            {
+              "path": "/assets/TextureStreaming-Cvt2rzNB.js",
+              "status": 200,
+              "bytes": 28545
+            },
+            {
+              "path": "/assets/DirectPath-DEnBD5yw.js",
+              "status": 200,
+              "bytes": 857600
+            },
+            {
+              "path": "/assets/BoneMask-DanQ6u0d.js",
+              "status": 200,
+              "bytes": 2113
+            },
+            {
+              "path": "/assets/index-RYmVIsOK.js",
+              "status": 200,
+              "bytes": 974422
+            },
+            {
+              "path": "/assets/TypedGLBActor-DxPbGlIR.js",
+              "status": 200,
+              "bytes": 22122
+            },
+            {
+              "path": "/assets/engine_false-jG2m2l4N.js",
+              "status": 200,
+              "bytes": 128
+            },
+            {
+              "path": "/assets/v2Entry-hVYqrXFk.js",
+              "status": 200,
+              "bytes": 86393
+            },
+            {
+              "path": "/assets/TemporalHistory-CgqIuuAk.js",
+              "status": 200,
+              "bytes": 7026
+            },
+            {
+              "path": "/assets/AssetDecoders-q_VC-NqO.js",
+              "status": 200,
+              "bytes": 303
+            },
+            {
+              "path": "/model.glb",
+              "status": 200,
+              "bytes": 369980
+            },
+            {
+              "path": "/model.glb",
+              "status": 200,
+              "bytes": 369980
+            },
+            {
+              "path": "/assets/index-DpkUcx-8.js",
+              "status": 200,
+              "bytes": 19791
+            },
+            {
+              "path": "/assets/neutralEmbeddedLoader-Dvd4cMWH.js",
+              "status": 200,
+              "bytes": 1082
+            },
+            {
+              "path": "/assets/neutralEmbedded-CQj30fxp.js",
+              "status": 200,
+              "bytes": 133170
+            }
+          ],
+          "console": [],
+          "wallMs": 72570,
+          "ttffMs": {
+            "samples": [
+              2293.5,
+              2712.79999999993,
+              2300.4000000000233
+            ],
+            "median": 2300.4000000000233
+          },
+          "build": {
+            "scene": "pbr-viewer",
+            "lib": "aura-production",
+            "buildMs": 9891,
+            "bundle": {
+              "jsFiles": 42,
+              "raw": 4146167,
+              "gzip": 1241151,
+              "brotli": 1046389,
+              "largestChunk": {
+                "path": "assets/index-RYmVIsOK.js",
+                "raw": 974422,
+                "gzip": 318765,
+                "brotli": 259230
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "aura-decoders/basis/README.md",
+                "size": 1278
+              },
+              {
+                "path": "aura-decoders/basis/basis_transcoder.wasm",
+                "size": 527333
+              },
+              {
+                "path": "aura-decoders/draco/README.md",
+                "size": 1128
+              },
+              {
+                "path": "aura-decoders/draco/draco_decoder.wasm",
+                "size": 192420
+              },
+              {
+                "path": "aura-decoders/meshopt/README.md",
+                "size": 1091
+              },
+              {
+                "path": "aura-decoders/meshopt/meshopt_decoder.cjs",
+                "size": 29400
+              },
+              {
+                "path": "env.hdr",
+                "size": 1508872
+              },
+              {
+                "path": "index.html",
+                "size": 2247
+              },
+              {
+                "path": "model.glb",
+                "size": 369980
+              }
+            ],
+            "assetBytes": 1878852,
+            "outDir": "/tmp/bench/dist/pbr-viewer/aura-production"
+          }
+        },
+        "three-msaa": {
+          "perFrame": {
+            "draws": 25,
+            "tris": 7264,
+            "instances": 25,
+            "programs": 14,
+            "blits": 2,
+            "viewports": [
+              "1024x1024",
+              "640x360",
+              "320x180",
+              "160x90",
+              "80x45",
+              "40x23",
+              "20x12"
+            ],
+            "msaaTargets": [
+              "4x 34842 640x360",
+              "4x 33190 640x360"
+            ]
+          },
+          "temporalDiffMeanLuma": 0,
+          "cpuMs": {
+            "n": 60,
+            "mean": 0.7033333333369228,
+            "median": 0.6999999999825377,
+            "p95": 1.3000000000174623,
+            "min": 0.5,
+            "max": 1.6999999999825377
+          },
+          "totalMs": {
+            "n": 60,
+            "mean": 329.31000000000057,
+            "median": 316.5,
+            "p95": 393.19999999998254,
+            "min": 305,
+            "max": 524.8000000000175
+          },
+          "replay": null,
+          "state": null,
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 279
+            },
+            {
+              "path": "/assets/index-PjtymCJv.js",
+              "status": 200,
+              "bytes": 655124
+            },
+            {
+              "path": "/env.hdr",
+              "status": 200,
+              "bytes": 1508872
+            },
+            {
+              "path": "/model.glb",
+              "status": 200,
+              "bytes": 369980
+            },
+            {
+              "path": "http://127.0.0.1:45767/43ee894a-fae4-4f07-bef4-3f3a81d95c7d",
+              "status": 200,
+              "bytes": 218979
+            }
+          ],
+          "console": [
+            {
+              "type": "warning",
+              "text": "RGBELoader has been deprecated. Please use HDRLoader instead."
+            }
+          ],
+          "wallMs": 71188,
+          "ttffMs": {
+            "samples": [
+              6094.5,
+              6328.599999999977,
+              6235.6999999999825
+            ],
+            "median": 6235.6999999999825
+          },
+          "build": {
+            "scene": "pbr-viewer",
+            "lib": "three-msaa",
+            "buildMs": 2037,
+            "bundle": {
+              "jsFiles": 1,
+              "raw": 655124,
+              "gzip": 166878,
+              "brotli": 136953,
+              "largestChunk": {
+                "path": "assets/index-PjtymCJv.js",
+                "raw": 655124,
+                "gzip": 166878,
+                "brotli": 136953
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "env.hdr",
+                "size": 1508872
+              },
+              {
+                "path": "index.html",
+                "size": 279
+              },
+              {
+                "path": "model.glb",
+                "size": 369980
+              }
+            ],
+            "assetBytes": 1878852,
+            "outDir": "/tmp/bench/dist/pbr-viewer/three-msaa"
+          }
+        }
+      }
+    },
+    "game-loop": {
+      "scene": "game-loop",
+      "generatedUtc": "2026-10-29T02:51:21.244Z",
+      "frames": 60,
+      "coldLoads": 3,
+      "plan": {
+        "loads": 3,
+        "warmA": 19,
+        "gapB": 59,
+        "measure": 60
+      },
+      "env": {
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "vendor": "Google Inc. (Google)",
+        "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+        "hardwareConcurrency": 2
+      },
+      "cpuCount": 2,
+      "installed": {
+        "vite": "7.3.2",
+        "aura": "4.5.0",
+        "three": "0.185.1"
+      },
+      "correctness": {
+        "jsdFrame25": 0.471533509792725,
+        "jsdFrame85": 0.4714406295305731,
+        "meanLuma": {
+          "three": [
+            59.56392213360826,
+            59.564114441767984
+          ],
+          "aura": [
+            54.42664266832537,
+            54.426514334992056
+          ]
+        },
+        "meanLumaDeltaFrame25": 5.137279465282887,
+        "meanLumaDeltaFrame85": 5.137600106775928,
+        "std": {
+          "three": [
+            30.230109401685404,
+            30.229434637646328
+          ],
+          "aura": [
+            25.10970187066623,
+            25.109563531069274
+          ]
+        },
+        "meanAbsLumaDiffFrame25": 5.229887152777778,
+        "gainMatched": {
+          "gain": 1.09438905678216,
+          "jsdFrame25": 0.6654382554047458,
+          "meanAbsLumaDiffFrame25": 3.182925347222222
+        }
+      },
+      "results": {
+        "three": {
+          "perFrame": {
+            "draws": 19,
+            "tris": 1050,
+            "instances": 19,
+            "programs": 2,
+            "blits": 0,
+            "viewports": [
+              "1024x1024",
+              "640x360"
+            ],
+            "msaaTargets": []
+          },
+          "temporalDiffMeanLuma": 0.005815972222222222,
+          "cpuMs": {
+            "n": 60,
+            "mean": 0.3983333333259604,
+            "median": 0.40000000002328306,
+            "p95": 0.5,
+            "min": 0.2999999999301508,
+            "max": 0.5999999999767169
+          },
+          "totalMs": {
+            "n": 60,
+            "mean": 20.454999999998837,
+            "median": 20.20000000006985,
+            "p95": 22.099999999976717,
+            "min": 19.699999999953434,
+            "max": 23.300000000046566
+          },
+          "replay": {
+            "first": "lost:60:1800:9b693d58",
+            "second": "lost:60:1800:9b693d58",
+            "short": "playing:30:600:321a662f"
+          },
+          "state": "playing:30:600:321a662f",
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 273
+            },
+            {
+              "path": "/assets/index-yy-ZCnMB.js",
+              "status": 200,
+              "bytes": 515280
+            }
+          ],
+          "console": [],
+          "wallMs": 6045,
+          "ttffMs": {
+            "samples": [
+              187.69999999995343,
+              181.30000000004657,
+              175.09999999997672
+            ],
+            "median": 181.30000000004657
+          },
+          "build": {
+            "scene": "game-loop",
+            "lib": "three",
+            "buildMs": 1802,
+            "bundle": {
+              "jsFiles": 1,
+              "raw": 515280,
+              "gzip": 130598,
+              "brotli": 107750,
+              "largestChunk": {
+                "path": "assets/index-yy-ZCnMB.js",
+                "raw": 515280,
+                "gzip": 130598,
+                "brotli": 107750
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "index.html",
+                "size": 273
+              }
+            ],
+            "assetBytes": 0,
+            "outDir": "/tmp/bench/dist/game-loop/three"
+          }
+        },
+        "aura-auto": {
+          "perFrame": {
+            "draws": 20,
+            "tris": 3099,
+            "instances": 20,
+            "programs": 4,
+            "blits": 1,
+            "viewports": [
+              "640x360",
+              "2048x2048"
+            ],
+            "msaaTargets": [
+              "4x 34842 640x360",
+              "4x 33190 640x360"
+            ]
+          },
+          "temporalDiffMeanLuma": 0.0013541666666666667,
+          "cpuMs": {
+            "n": 60,
+            "mean": 4.815000000006209,
+            "median": 4.599999999976717,
+            "p95": 6.800000000046566,
+            "min": 3.700000000069849,
+            "max": 7.099999999976717
+          },
+          "totalMs": {
+            "n": 60,
+            "mean": 163.0350000000035,
+            "median": 162.40000000002328,
+            "p95": 170.59999999997672,
+            "min": 156.5,
+            "max": 171.19999999995343
+          },
+          "replay": {
+            "first": "lost:60:1800:9b693d58",
+            "second": "lost:60:1800:9b693d58",
+            "short": "playing:30:600:321a662f"
+          },
+          "state": "playing:30:600:321a662f",
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 2246
+            },
+            {
+              "path": "/assets/core-BaYVi5dM.js",
+              "status": 200,
+              "bytes": 1123
+            },
+            {
+              "path": "/assets/quality-rplkEvUF.js",
+              "status": 200,
+              "bytes": 4209
+            },
+            {
+              "path": "/assets/Texture-B3K3JKvy.js",
+              "status": 200,
+              "bytes": 10528
+            },
+            {
+              "path": "/assets/program-D4fXTCpY.js",
+              "status": 200,
+              "bytes": 104427
+            },
+            {
+              "path": "/assets/FrameGraph-CrXAQkO_.js",
+              "status": 200,
+              "bytes": 76625
+            },
+            {
+              "path": "/assets/SphericalHarmonics-C0VnUpIE.js",
+              "status": 200,
+              "bytes": 5678
+            },
+            {
+              "path": "/assets/WebGPUSkinningLimits-BWlgcUSU.js",
+              "status": 200,
+              "bytes": 943
+            },
+            {
+              "path": "/assets/ShaderFailures-CNnQzW3A.js",
+              "status": 200,
+              "bytes": 3016
+            },
+            {
+              "path": "/assets/ForwardPass-BAqW8Krf.js",
+              "status": 200,
+              "bytes": 184767
+            },
+            {
+              "path": "/assets/preload-helper-PPVm8Dsz.js",
+              "status": 200,
+              "bytes": 1232
+            },
+            {
+              "path": "/assets/postSkipped-CNV024FV.js",
+              "status": 200,
+              "bytes": 623
+            },
+            {
+              "path": "/assets/Rgb9e5Cube-Df2uosiY.js",
+              "status": 200,
+              "bytes": 11999
+            },
+            {
+              "path": "/assets/device-CkV6VPzV.js",
+              "status": 200,
+              "bytes": 10976
+            },
+            {
+              "path": "/assets/MeshConsolidation-D7mTL4E2.js",
+              "status": 200,
+              "bytes": 3345
+            },
+            {
+              "path": "/assets/ShaderLibrary-B4XT73rJ.js",
+              "status": 200,
+              "bytes": 176231
+            },
+            {
+              "path": "/assets/TemporalMath-Ikt_pM0o.js",
+              "status": 200,
+              "bytes": 193
+            },
+            {
+              "path": "/assets/index-iBnL8-Fa.js",
+              "status": 200,
+              "bytes": 978060
+            },
+            {
+              "path": "/assets/TexturedPBRMaterial-CFBGwayi.js",
+              "status": 200,
+              "bytes": 190469
+            },
+            {
+              "path": "/assets/RetargetWorker-DVa2B8kF.js",
+              "status": 200,
+              "bytes": 63626
+            },
+            {
+              "path": "/assets/decoderLoad-CuxniDwe.js",
+              "status": 200,
+              "bytes": 500
+            },
+            {
+              "path": "/assets/TextureStreaming-Cvt2rzNB.js",
+              "status": 200,
+              "bytes": 28545
+            },
+            {
+              "path": "/assets/TypedGLBActor-DxPbGlIR.js",
+              "status": 200,
+              "bytes": 22122
+            },
+            {
+              "path": "/assets/BoneMask-DanQ6u0d.js",
+              "status": 200,
+              "bytes": 2113
+            },
+            {
+              "path": "/assets/DirectPath-DEnBD5yw.js",
+              "status": 200,
+              "bytes": 857600
+            },
+            {
+              "path": "/assets/GLTFSharedTextureCache-Bmb_4cJT.js",
+              "status": 200,
+              "bytes": 229830
+            },
+            {
+              "path": "/assets/engine_false-jG2m2l4N.js",
+              "status": 200,
+              "bytes": 128
+            },
+            {
+              "path": "/assets/v2Entry-hVYqrXFk.js",
+              "status": 200,
+              "bytes": 86393
+            },
+            {
+              "path": "/assets/TemporalHistory-CgqIuuAk.js",
+              "status": 200,
+              "bytes": 7026
+            },
+            {
+              "path": "/assets/neutralEmbeddedLoader-Dvd4cMWH.js",
+              "status": 200,
+              "bytes": 1082
+            },
+            {
+              "path": "/assets/neutralEmbedded-CQj30fxp.js",
+              "status": 200,
+              "bytes": 133170
+            }
+          ],
+          "console": [],
+          "wallMs": 31738,
+          "ttffMs": {
+            "samples": [
+              992.0999999999767,
+              997.6999999999534,
+              1028.2999999999302
+            ],
+            "median": 997.6999999999534
+          },
+          "build": {
+            "scene": "game-loop",
+            "lib": "aura-auto",
+            "buildMs": 10814,
+            "bundle": {
+              "jsFiles": 42,
+              "raw": 4149805,
+              "gzip": 1242759,
+              "brotli": 1047910,
+              "largestChunk": {
+                "path": "assets/index-iBnL8-Fa.js",
+                "raw": 978060,
+                "gzip": 320373,
+                "brotli": 260751
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "aura-decoders/basis/README.md",
+                "size": 1278
+              },
+              {
+                "path": "aura-decoders/basis/basis_transcoder.wasm",
+                "size": 527333
+              },
+              {
+                "path": "aura-decoders/draco/README.md",
+                "size": 1128
+              },
+              {
+                "path": "aura-decoders/draco/draco_decoder.wasm",
+                "size": 192420
+              },
+              {
+                "path": "aura-decoders/meshopt/README.md",
+                "size": 1091
+              },
+              {
+                "path": "aura-decoders/meshopt/meshopt_decoder.cjs",
+                "size": 29400
+              },
+              {
+                "path": "index.html",
+                "size": 2246
+              }
+            ],
+            "assetBytes": 0,
+            "outDir": "/tmp/bench/dist/game-loop/aura-auto"
+          }
+        },
+        "aura-production": {
+          "perFrame": {
+            "draws": 38,
+            "tris": 6195,
+            "instances": 38,
+            "programs": 4,
+            "blits": 1,
+            "viewports": [
+              "640x360",
+              "2048x2048"
+            ],
+            "msaaTargets": [
+              "4x 34842 640x360",
+              "4x 33190 640x360"
+            ]
+          },
+          "temporalDiffMeanLuma": 0.0013541666666666667,
+          "cpuMs": {
+            "n": 60,
+            "mean": 5.495000000003104,
+            "median": 4.700000000069849,
+            "p95": 7.900000000023283,
+            "min": 4,
+            "max": 32.5
+          },
+          "totalMs": {
+            "n": 60,
+            "mean": 174.0566666666651,
+            "median": 167.69999999995343,
+            "p95": 204.59999999997672,
+            "min": 160.80000000004657,
+            "max": 238.29999999993015
+          },
+          "replay": {
+            "first": "lost:60:1800:9b693d58",
+            "second": "lost:60:1800:9b693d58",
+            "short": "playing:30:600:321a662f"
+          },
+          "state": "playing:30:600:321a662f",
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 2246
+            },
+            {
+              "path": "/assets/core-BaYVi5dM.js",
+              "status": 200,
+              "bytes": 1123
+            },
+            {
+              "path": "/assets/quality-rplkEvUF.js",
+              "status": 200,
+              "bytes": 4209
+            },
+            {
+              "path": "/assets/Texture-B3K3JKvy.js",
+              "status": 200,
+              "bytes": 10528
+            },
+            {
+              "path": "/assets/ShaderFailures-CNnQzW3A.js",
+              "status": 200,
+              "bytes": 3016
+            },
+            {
+              "path": "/assets/WebGPUSkinningLimits-BWlgcUSU.js",
+              "status": 200,
+              "bytes": 943
+            },
+            {
+              "path": "/assets/program-D4fXTCpY.js",
+              "status": 200,
+              "bytes": 104427
+            },
+            {
+              "path": "/assets/FrameGraph-CrXAQkO_.js",
+              "status": 200,
+              "bytes": 76625
+            },
+            {
+              "path": "/assets/SphericalHarmonics-C0VnUpIE.js",
+              "status": 200,
+              "bytes": 5678
+            },
+            {
+              "path": "/assets/preload-helper-PPVm8Dsz.js",
+              "status": 200,
+              "bytes": 1232
+            },
+            {
+              "path": "/assets/postSkipped-CNV024FV.js",
+              "status": 200,
+              "bytes": 623
+            },
+            {
+              "path": "/assets/ForwardPass-BAqW8Krf.js",
+              "status": 200,
+              "bytes": 184767
+            },
+            {
+              "path": "/assets/Rgb9e5Cube-Df2uosiY.js",
+              "status": 200,
+              "bytes": 11999
+            },
+            {
+              "path": "/assets/MeshConsolidation-D7mTL4E2.js",
+              "status": 200,
+              "bytes": 3345
+            },
+            {
+              "path": "/assets/device-CkV6VPzV.js",
+              "status": 200,
+              "bytes": 10976
+            },
+            {
+              "path": "/assets/TemporalMath-Ikt_pM0o.js",
+              "status": 200,
+              "bytes": 193
+            },
+            {
+              "path": "/assets/ShaderLibrary-B4XT73rJ.js",
+              "status": 200,
+              "bytes": 176231
+            },
+            {
+              "path": "/assets/decoderLoad-CuxniDwe.js",
+              "status": 200,
+              "bytes": 500
+            },
+            {
+              "path": "/assets/RetargetWorker-DVa2B8kF.js",
+              "status": 200,
+              "bytes": 63626
+            },
+            {
+              "path": "/assets/TexturedPBRMaterial-CFBGwayi.js",
+              "status": 200,
+              "bytes": 190469
+            },
+            {
+              "path": "/assets/index-BJEOGjFS.js",
+              "status": 200,
+              "bytes": 978081
+            },
+            {
+              "path": "/assets/TextureStreaming-Cvt2rzNB.js",
+              "status": 200,
+              "bytes": 28545
+            },
+            {
+              "path": "/assets/BoneMask-DanQ6u0d.js",
+              "status": 200,
+              "bytes": 2113
+            },
+            {
+              "path": "/assets/TypedGLBActor-DxPbGlIR.js",
+              "status": 200,
+              "bytes": 22122
+            },
+            {
+              "path": "/assets/GLTFSharedTextureCache-Bmb_4cJT.js",
+              "status": 200,
+              "bytes": 229830
+            },
+            {
+              "path": "/assets/DirectPath-DEnBD5yw.js",
+              "status": 200,
+              "bytes": 857600
+            },
+            {
+              "path": "/assets/engine_false-jG2m2l4N.js",
+              "status": 200,
+              "bytes": 128
+            },
+            {
+              "path": "/assets/v2Entry-hVYqrXFk.js",
+              "status": 200,
+              "bytes": 86393
+            },
+            {
+              "path": "/assets/TemporalHistory-CgqIuuAk.js",
+              "status": 200,
+              "bytes": 7026
+            },
+            {
+              "path": "/assets/neutralEmbeddedLoader-Dvd4cMWH.js",
+              "status": 200,
+              "bytes": 1082
+            },
+            {
+              "path": "/assets/neutralEmbedded-CQj30fxp.js",
+              "status": 200,
+              "bytes": 133170
+            }
+          ],
+          "console": [],
+          "wallMs": 33963,
+          "ttffMs": {
+            "samples": [
+              1056.4000000000233,
+              1089.7999999999302,
+              1044.7999999999302
+            ],
+            "median": 1056.4000000000233
+          },
+          "build": {
+            "scene": "game-loop",
+            "lib": "aura-production",
+            "buildMs": 11104,
+            "bundle": {
+              "jsFiles": 42,
+              "raw": 4149826,
+              "gzip": 1242767,
+              "brotli": 1047834,
+              "largestChunk": {
+                "path": "assets/index-BJEOGjFS.js",
+                "raw": 978081,
+                "gzip": 320381,
+                "brotli": 260675
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "aura-decoders/basis/README.md",
+                "size": 1278
+              },
+              {
+                "path": "aura-decoders/basis/basis_transcoder.wasm",
+                "size": 527333
+              },
+              {
+                "path": "aura-decoders/draco/README.md",
+                "size": 1128
+              },
+              {
+                "path": "aura-decoders/draco/draco_decoder.wasm",
+                "size": 192420
+              },
+              {
+                "path": "aura-decoders/meshopt/README.md",
+                "size": 1091
+              },
+              {
+                "path": "aura-decoders/meshopt/meshopt_decoder.cjs",
+                "size": 29400
+              },
+              {
+                "path": "index.html",
+                "size": 2246
+              }
+            ],
+            "assetBytes": 0,
+            "outDir": "/tmp/bench/dist/game-loop/aura-production"
+          }
+        },
+        "three-msaa": {
+          "perFrame": {
+            "draws": 19,
+            "tris": 1050,
+            "instances": 19,
+            "programs": 2,
+            "blits": 0,
+            "viewports": [
+              "1024x1024",
+              "640x360"
+            ],
+            "msaaTargets": []
+          },
+          "temporalDiffMeanLuma": 0.006197916666666667,
+          "cpuMs": {
+            "n": 60,
+            "mean": 0.36000000000252236,
+            "median": 0.30000000004656613,
+            "p95": 0.5,
+            "min": 0.19999999995343387,
+            "max": 0.5999999999767169
+          },
+          "totalMs": {
+            "n": 60,
+            "mean": 22.903333333334498,
+            "median": 22.699999999953434,
+            "p95": 24.399999999965075,
+            "min": 21.900000000023283,
+            "max": 25.70000000001164
+          },
+          "replay": {
+            "first": "lost:60:1800:9b693d58",
+            "second": "lost:60:1800:9b693d58",
+            "short": "playing:30:600:321a662f"
+          },
+          "state": "playing:30:600:321a662f",
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 278
+            },
+            {
+              "path": "/assets/index-rOCxkpQv.js",
+              "status": 200,
+              "bytes": 515298
+            }
+          ],
+          "console": [],
+          "wallMs": 6587,
+          "ttffMs": {
+            "samples": [
+              191.90000000002328,
+              238.40000000002328,
+              189.09999999997672
+            ],
+            "median": 191.90000000002328
+          },
+          "build": {
+            "scene": "game-loop",
+            "lib": "three-msaa",
+            "buildMs": 2020,
+            "bundle": {
+              "jsFiles": 1,
+              "raw": 515298,
+              "gzip": 130610,
+              "brotli": 107868,
+              "largestChunk": {
+                "path": "assets/index-rOCxkpQv.js",
+                "raw": 515298,
+                "gzip": 130610,
+                "brotli": 107868
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "index.html",
+                "size": 278
+              }
+            ],
+            "assetBytes": 0,
+            "outDir": "/tmp/bench/dist/game-loop/three-msaa"
+          }
+        }
+      }
+    },
+    "forest": {
+      "scene": "forest",
+      "generatedUtc": "2026-10-29T02:52:54.196Z",
+      "frames": 12,
+      "coldLoads": 1,
+      "plan": {
+        "loads": 1,
+        "warmA": 4,
+        "gapB": 10,
+        "measure": 12
+      },
+      "env": {
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "vendor": "Google Inc. (Google)",
+        "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+        "hardwareConcurrency": 2
+      },
+      "cpuCount": 2,
+      "installed": {
+        "vite": "7.3.2",
+        "aura": "4.5.0",
+        "three": "0.185.1"
+      },
+      "correctness": {
+        "jsdFrame25": 0.5767845782910763,
+        "jsdFrame85": 0.5783607313997536,
+        "meanLuma": {
+          "three": [
+            148.16136677516172,
+            148.32754741839344
+          ],
+          "aura": [
+            119.57937389677905,
+            119.55836086378989
+          ]
+        },
+        "meanLumaDeltaFrame25": 28.581992878382678,
+        "meanLumaDeltaFrame85": 28.76918655460355,
+        "std": {
+          "three": [
+            37.81238727663296,
+            37.5982344028895
+          ],
+          "aura": [
+            57.93658645507634,
+            57.9648614341451
+          ]
+        },
+        "meanAbsLumaDiffFrame25": 35.32542534722222,
+        "gainMatched": {
+          "gain": 1.2390210949177127,
+          "jsdFrame25": 0.5333690670621347,
+          "meanAbsLumaDiffFrame25": 45.25268663194444
+        }
+      },
+      "results": {
+        "three": {
+          "perFrame": {
+            "draws": 7,
+            "tris": 1168002,
+            "instances": 36001,
+            "programs": 7,
+            "blits": 0,
+            "viewports": [
+              "2048x2048",
+              "640x360"
+            ],
+            "msaaTargets": []
+          },
+          "temporalDiffMeanLuma": 9.41713107638889,
+          "cpuMs": {
+            "n": 12,
+            "mean": 0.6500000000135818,
+            "median": 0.7000000000116415,
+            "p95": 0.8000000000465661,
+            "min": 0.5,
+            "max": 0.8000000000465661
+          },
+          "totalMs": {
+            "n": 12,
+            "mean": 1068.8333333333333,
+            "median": 1070.4000000000233,
+            "p95": 1110,
+            "min": 1028.5,
+            "max": 1110
+          },
+          "replay": null,
+          "state": null,
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 270
+            },
+            {
+              "path": "/assets/index-BueFm0_5.js",
+              "status": 200,
+              "bytes": 518270
+            }
+          ],
+          "console": [
+            {
+              "type": "warning",
+              "text": "[.WebGL-0x1e840012da00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+            },
+            {
+              "type": "warning",
+              "text": "[.WebGL-0x1e840012da00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+            },
+            {
+              "type": "warning",
+              "text": "[.WebGL-0x1e840012da00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+            },
+            {
+              "type": "warning",
+              "text": "[.WebGL-0x1e840012da00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+            }
+          ],
+          "wallMs": 51154,
+          "ttffMs": {
+            "samples": [
+              1444.899999999965
+            ],
+            "median": 1444.899999999965
+          },
+          "build": {
+            "scene": "forest",
+            "lib": "three",
+            "buildMs": 1706,
+            "bundle": {
+              "jsFiles": 1,
+              "raw": 518270,
+              "gzip": 130902,
+              "brotli": 107939,
+              "largestChunk": {
+                "path": "assets/index-BueFm0_5.js",
+                "raw": 518270,
+                "gzip": 130902,
+                "brotli": 107939
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "index.html",
+                "size": 270
+              }
+            ],
+            "assetBytes": 0,
+            "outDir": "/tmp/bench/dist/forest/three"
+          }
+        },
+        "aura-auto": {
+          "perFrame": {
+            "draws": 8,
+            "tris": 952659,
+            "instances": 25963,
+            "programs": 7,
+            "blits": 1,
+            "viewports": [
+              "640x360",
+              "2048x2048"
+            ],
+            "msaaTargets": [
+              "4x 34842 640x360",
+              "4x 33190 640x360"
+            ]
+          },
+          "temporalDiffMeanLuma": 2.830855034722222,
+          "cpuMs": {
+            "n": 12,
+            "mean": 11.883333333336244,
+            "median": 11.599999999976717,
+            "p95": 18.20000000006985,
+            "min": 10.29999999993015,
+            "max": 18.20000000006985
+          },
+          "totalMs": {
+            "n": 12,
+            "mean": 4439.375000000005,
+            "median": 4420.899999999907,
+            "p95": 4893,
+            "min": 4209.099999999977,
+            "max": 4893
+          },
+          "replay": null,
+          "state": null,
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 2243
+            },
+            {
+              "path": "/assets/core-BaYVi5dM.js",
+              "status": 200,
+              "bytes": 1123
+            },
+            {
+              "path": "/assets/quality-rplkEvUF.js",
+              "status": 200,
+              "bytes": 4209
+            },
+            {
+              "path": "/assets/Texture-B3K3JKvy.js",
+              "status": 200,
+              "bytes": 10528
+            },
+            {
+              "path": "/assets/ShaderFailures-CNnQzW3A.js",
+              "status": 200,
+              "bytes": 3016
+            },
+            {
+              "path": "/assets/program-D4fXTCpY.js",
+              "status": 200,
+              "bytes": 104427
+            },
+            {
+              "path": "/assets/FrameGraph-CrXAQkO_.js",
+              "status": 200,
+              "bytes": 76625
+            },
+            {
+              "path": "/assets/SphericalHarmonics-C0VnUpIE.js",
+              "status": 200,
+              "bytes": 5678
+            },
+            {
+              "path": "/assets/WebGPUSkinningLimits-BWlgcUSU.js",
+              "status": 200,
+              "bytes": 943
+            },
+            {
+              "path": "/assets/preload-helper-PPVm8Dsz.js",
+              "status": 200,
+              "bytes": 1232
+            },
+            {
+              "path": "/assets/Rgb9e5Cube-Df2uosiY.js",
+              "status": 200,
+              "bytes": 11999
+            },
+            {
+              "path": "/assets/postSkipped-CNV024FV.js",
+              "status": 200,
+              "bytes": 623
+            },
+            {
+              "path": "/assets/device-CkV6VPzV.js",
+              "status": 200,
+              "bytes": 10976
+            },
+            {
+              "path": "/assets/MeshConsolidation-D7mTL4E2.js",
+              "status": 200,
+              "bytes": 3345
+            },
+            {
+              "path": "/assets/ForwardPass-BAqW8Krf.js",
+              "status": 200,
+              "bytes": 184767
+            },
+            {
+              "path": "/assets/TemporalMath-Ikt_pM0o.js",
+              "status": 200,
+              "bytes": 193
+            },
+            {
+              "path": "/assets/ShaderLibrary-B4XT73rJ.js",
+              "status": 200,
+              "bytes": 176231
+            },
+            {
+              "path": "/assets/TexturedPBRMaterial-CFBGwayi.js",
+              "status": 200,
+              "bytes": 190469
+            },
+            {
+              "path": "/assets/index-DmxADxkk.js",
+              "status": 200,
+              "bytes": 973315
+            },
+            {
+              "path": "/assets/RetargetWorker-DVa2B8kF.js",
+              "status": 200,
+              "bytes": 63626
+            },
+            {
+              "path": "/assets/decoderLoad-CuxniDwe.js",
+              "status": 200,
+              "bytes": 500
+            },
+            {
+              "path": "/assets/GLTFSharedTextureCache-Bmb_4cJT.js",
+              "status": 200,
+              "bytes": 229830
+            },
+            {
+              "path": "/assets/TypedGLBActor-DxPbGlIR.js",
+              "status": 200,
+              "bytes": 22122
+            },
+            {
+              "path": "/assets/BoneMask-DanQ6u0d.js",
+              "status": 200,
+              "bytes": 2113
+            },
+            {
+              "path": "/assets/TextureStreaming-Cvt2rzNB.js",
+              "status": 200,
+              "bytes": 28545
+            },
+            {
+              "path": "/assets/DirectPath-DEnBD5yw.js",
+              "status": 200,
+              "bytes": 857600
+            },
+            {
+              "path": "/assets/engine_false-jG2m2l4N.js",
+              "status": 200,
+              "bytes": 128
+            },
+            {
+              "path": "/assets/v2Entry-hVYqrXFk.js",
+              "status": 200,
+              "bytes": 86393
+            },
+            {
+              "path": "/assets/TemporalHistory-CgqIuuAk.js",
+              "status": 200,
+              "bytes": 7026
+            },
+            {
+              "path": "/assets/neutralEmbeddedLoader-Dvd4cMWH.js",
+              "status": 200,
+              "bytes": 1082
+            },
+            {
+              "path": "/assets/neutralEmbedded-CQj30fxp.js",
+              "status": 200,
+              "bytes": 133170
+            }
+          ],
+          "console": [],
+          "wallMs": 197141,
+          "ttffMs": {
+            "samples": [
+              9372.299999999988
+            ],
+            "median": 9372.299999999988
+          },
+          "build": {
+            "scene": "forest",
+            "lib": "aura-auto",
+            "buildMs": 9386,
+            "bundle": {
+              "jsFiles": 42,
+              "raw": 4145060,
+              "gzip": 1240519,
+              "brotli": 1045912,
+              "largestChunk": {
+                "path": "assets/index-DmxADxkk.js",
+                "raw": 973315,
+                "gzip": 318133,
+                "brotli": 258753
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "aura-decoders/basis/README.md",
+                "size": 1278
+              },
+              {
+                "path": "aura-decoders/basis/basis_transcoder.wasm",
+                "size": 527333
+              },
+              {
+                "path": "aura-decoders/draco/README.md",
+                "size": 1128
+              },
+              {
+                "path": "aura-decoders/draco/draco_decoder.wasm",
+                "size": 192420
+              },
+              {
+                "path": "aura-decoders/meshopt/README.md",
+                "size": 1091
+              },
+              {
+                "path": "aura-decoders/meshopt/meshopt_decoder.cjs",
+                "size": 29400
+              },
+              {
+                "path": "index.html",
+                "size": 2243
+              }
+            ],
+            "assetBytes": 0,
+            "outDir": "/tmp/bench/dist/forest/aura-auto"
+          }
+        },
+        "aura-production": {
+          "perFrame": {
+            "draws": 11,
+            "tris": 1400659,
+            "instances": 43963,
+            "programs": 7,
+            "blits": 1,
+            "viewports": [
+              "640x360",
+              "2048x2048"
+            ],
+            "msaaTargets": [
+              "4x 34842 640x360",
+              "4x 33190 640x360"
+            ]
+          },
+          "temporalDiffMeanLuma": 2.830855034722222,
+          "cpuMs": {
+            "n": 12,
+            "mean": 12.033333333335273,
+            "median": 12,
+            "p95": 13.5,
+            "min": 11.5,
+            "max": 13.5
+          },
+          "totalMs": {
+            "n": 12,
+            "mean": 4747.266666666663,
+            "median": 4679.800000000047,
+            "p95": 5058.5,
+            "min": 4606.5,
+            "max": 5058.5
+          },
+          "replay": null,
+          "state": null,
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 2243
+            },
+            {
+              "path": "/assets/core-BaYVi5dM.js",
+              "status": 200,
+              "bytes": 1123
+            },
+            {
+              "path": "/assets/quality-rplkEvUF.js",
+              "status": 200,
+              "bytes": 4209
+            },
+            {
+              "path": "/assets/Texture-B3K3JKvy.js",
+              "status": 200,
+              "bytes": 10528
+            },
+            {
+              "path": "/assets/FrameGraph-CrXAQkO_.js",
+              "status": 200,
+              "bytes": 76625
+            },
+            {
+              "path": "/assets/program-D4fXTCpY.js",
+              "status": 200,
+              "bytes": 104427
+            },
+            {
+              "path": "/assets/ShaderFailures-CNnQzW3A.js",
+              "status": 200,
+              "bytes": 3016
+            },
+            {
+              "path": "/assets/WebGPUSkinningLimits-BWlgcUSU.js",
+              "status": 200,
+              "bytes": 943
+            },
+            {
+              "path": "/assets/preload-helper-PPVm8Dsz.js",
+              "status": 200,
+              "bytes": 1232
+            },
+            {
+              "path": "/assets/SphericalHarmonics-C0VnUpIE.js",
+              "status": 200,
+              "bytes": 5678
+            },
+            {
+              "path": "/assets/ForwardPass-BAqW8Krf.js",
+              "status": 200,
+              "bytes": 184767
+            },
+            {
+              "path": "/assets/postSkipped-CNV024FV.js",
+              "status": 200,
+              "bytes": 623
+            },
+            {
+              "path": "/assets/MeshConsolidation-D7mTL4E2.js",
+              "status": 200,
+              "bytes": 3345
+            },
+            {
+              "path": "/assets/Rgb9e5Cube-Df2uosiY.js",
+              "status": 200,
+              "bytes": 11999
+            },
+            {
+              "path": "/assets/device-CkV6VPzV.js",
+              "status": 200,
+              "bytes": 10976
+            },
+            {
+              "path": "/assets/index-DwKYK2pW.js",
+              "status": 200,
+              "bytes": 973336
+            },
+            {
+              "path": "/assets/TemporalMath-Ikt_pM0o.js",
+              "status": 200,
+              "bytes": 193
+            },
+            {
+              "path": "/assets/ShaderLibrary-B4XT73rJ.js",
+              "status": 200,
+              "bytes": 176231
+            },
+            {
+              "path": "/assets/TexturedPBRMaterial-CFBGwayi.js",
+              "status": 200,
+              "bytes": 190469
+            },
+            {
+              "path": "/assets/decoderLoad-CuxniDwe.js",
+              "status": 200,
+              "bytes": 500
+            },
+            {
+              "path": "/assets/RetargetWorker-DVa2B8kF.js",
+              "status": 200,
+              "bytes": 63626
+            },
+            {
+              "path": "/assets/TextureStreaming-Cvt2rzNB.js",
+              "status": 200,
+              "bytes": 28545
+            },
+            {
+              "path": "/assets/BoneMask-DanQ6u0d.js",
+              "status": 200,
+              "bytes": 2113
+            },
+            {
+              "path": "/assets/TypedGLBActor-DxPbGlIR.js",
+              "status": 200,
+              "bytes": 22122
+            },
+            {
+              "path": "/assets/GLTFSharedTextureCache-Bmb_4cJT.js",
+              "status": 200,
+              "bytes": 229830
+            },
+            {
+              "path": "/assets/DirectPath-DEnBD5yw.js",
+              "status": 200,
+              "bytes": 857600
+            },
+            {
+              "path": "/assets/engine_false-jG2m2l4N.js",
+              "status": 200,
+              "bytes": 128
+            },
+            {
+              "path": "/assets/v2Entry-hVYqrXFk.js",
+              "status": 200,
+              "bytes": 86393
+            },
+            {
+              "path": "/assets/TemporalHistory-CgqIuuAk.js",
+              "status": 200,
+              "bytes": 7026
+            },
+            {
+              "path": "/assets/neutralEmbeddedLoader-Dvd4cMWH.js",
+              "status": 200,
+              "bytes": 1082
+            },
+            {
+              "path": "/assets/neutralEmbedded-CQj30fxp.js",
+              "status": 200,
+              "bytes": 133170
+            }
+          ],
+          "console": [],
+          "wallMs": 210687,
+          "ttffMs": {
+            "samples": [
+              10015.899999999907
+            ],
+            "median": 10015.899999999907
+          },
+          "build": {
+            "scene": "forest",
+            "lib": "aura-production",
+            "buildMs": 9666,
+            "bundle": {
+              "jsFiles": 42,
+              "raw": 4145081,
+              "gzip": 1240527,
+              "brotli": 1046082,
+              "largestChunk": {
+                "path": "assets/index-DwKYK2pW.js",
+                "raw": 973336,
+                "gzip": 318141,
+                "brotli": 258923
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "aura-decoders/basis/README.md",
+                "size": 1278
+              },
+              {
+                "path": "aura-decoders/basis/basis_transcoder.wasm",
+                "size": 527333
+              },
+              {
+                "path": "aura-decoders/draco/README.md",
+                "size": 1128
+              },
+              {
+                "path": "aura-decoders/draco/draco_decoder.wasm",
+                "size": 192420
+              },
+              {
+                "path": "aura-decoders/meshopt/README.md",
+                "size": 1091
+              },
+              {
+                "path": "aura-decoders/meshopt/meshopt_decoder.cjs",
+                "size": 29400
+              },
+              {
+                "path": "index.html",
+                "size": 2243
+              }
+            ],
+            "assetBytes": 0,
+            "outDir": "/tmp/bench/dist/forest/aura-production"
+          }
+        },
+        "three-msaa": {
+          "perFrame": {
+            "draws": 7,
+            "tris": 1168002,
+            "instances": 36001,
+            "programs": 7,
+            "blits": 0,
+            "viewports": [
+              "2048x2048",
+              "640x360"
+            ],
+            "msaaTargets": []
+          },
+          "temporalDiffMeanLuma": 8.890425347222223,
+          "cpuMs": {
+            "n": 12,
+            "mean": 0.6333333333410943,
+            "median": 0.6000000000349246,
+            "p95": 0.9000000000232831,
+            "min": 0.5,
+            "max": 0.9000000000232831
+          },
+          "totalMs": {
+            "n": 12,
+            "mean": 1417.4333333333343,
+            "median": 1419.2000000000116,
+            "p95": 1475.5,
+            "min": 1377.9000000000233,
+            "max": 1475.5
+          },
+          "replay": null,
+          "state": null,
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 275
+            },
+            {
+              "path": "/assets/index-C8sIJo61.js",
+              "status": 200,
+              "bytes": 518288
+            }
+          ],
+          "console": [],
+          "wallMs": 65569,
+          "ttffMs": {
+            "samples": [
+              1783.9000000000233
+            ],
+            "median": 1783.9000000000233
+          },
+          "build": {
+            "scene": "forest",
+            "lib": "three-msaa",
+            "buildMs": 1681,
+            "bundle": {
+              "jsFiles": 1,
+              "raw": 518288,
+              "gzip": 130911,
+              "brotli": 108023,
+              "largestChunk": {
+                "path": "assets/index-C8sIJo61.js",
+                "raw": 518288,
+                "gzip": 130911,
+                "brotli": 108023
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "index.html",
+                "size": 275
+              }
+            ],
+            "assetBytes": 0,
+            "outDir": "/tmp/bench/dist/forest/three-msaa"
+          }
+        }
+      }
+    },
+    "skinned-character": {
+      "scene": "skinned-character",
+      "generatedUtc": "2026-10-29T02:49:03.953Z",
+      "frames": 60,
+      "coldLoads": 3,
+      "plan": {
+        "loads": 3,
+        "warmA": 19,
+        "gapB": 254,
+        "measure": 60
+      },
+      "env": {
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "vendor": "Google Inc. (Google)",
+        "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+        "hardwareConcurrency": 2
+      },
+      "cpuCount": 2,
+      "installed": {
+        "vite": "7.3.2",
+        "aura": "4.5.0",
+        "three": "0.185.1"
+      },
+      "correctness": {
+        "jsdFrame25": 0.9816711745993261,
+        "jsdFrame85": 0.9837188161414481,
+        "meanLuma": {
+          "three": [
+            143.95643352887492,
+            145.32715552372633
+          ],
+          "aura": [
+            136.2114443059119,
+            137.9864662737842
+          ]
+        },
+        "meanLumaDeltaFrame25": 7.744989222963028,
+        "meanLumaDeltaFrame85": 7.34068924994213,
+        "std": {
+          "three": [
+            22.23816432330775,
+            21.61016444181085
+          ],
+          "aura": [
+            28.73153374994669,
+            28.978535609008023
+          ]
+        },
+        "meanAbsLumaDiffFrame25": 10.695837673611111,
+        "gainMatched": {
+          "gain": 1.0568600477179353,
+          "jsdFrame25": 0.7097159952664662,
+          "meanAbsLumaDiffFrame25": 7.8770138888888885
+        }
+      },
+      "results": {
+        "three": {
+          "perFrame": {
+            "draws": 5,
+            "tris": 22754,
+            "instances": 5,
+            "programs": 3,
+            "blits": 0,
+            "viewports": [
+              "1024x1024",
+              "640x360"
+            ],
+            "msaaTargets": []
+          },
+          "temporalDiffMeanLuma": 2.5884331597222223,
+          "cpuMs": {
+            "n": 60,
+            "mean": 0.5166666666686069,
+            "median": 0.5,
+            "p95": 0.7000000000116415,
+            "min": 0.29999999998835847,
+            "max": 0.8000000000174623
+          },
+          "totalMs": {
+            "n": 60,
+            "mean": 52.648333333333234,
+            "median": 51.39999999999418,
+            "p95": 60.5,
+            "min": 48.80000000001746,
+            "max": 62.69999999998254
+          },
+          "replay": null,
+          "state": {
+            "running": true,
+            "angle": 1.52,
+            "clips": [
+              "Idle",
+              "Run",
+              "TPose",
+              "Walk"
+            ]
+          },
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 281
+            },
+            {
+              "path": "/assets/index-Co9yQfUu.js",
+              "status": 200,
+              "bytes": 623430
+            },
+            {
+              "path": "/model.glb",
+              "status": 200,
+              "bytes": 2160468
+            },
+            {
+              "path": "http://127.0.0.1:44687/f2debeaf-faf9-4ad4-976b-1829e15e8282",
+              "status": 200,
+              "bytes": 296774
+            },
+            {
+              "path": "http://127.0.0.1:44687/7ebcc2ad-de2a-406d-b25e-37ca7d09a5a6",
+              "status": 200,
+              "bytes": 365808
+            }
+          ],
+          "console": [
+            {
+              "type": "warning",
+              "text": "[.WebGL-0x86400105a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+            },
+            {
+              "type": "warning",
+              "text": "[.WebGL-0x86400105a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+            },
+            {
+              "type": "warning",
+              "text": "[.WebGL-0x86400105a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+            },
+            {
+              "type": "warning",
+              "text": "[.WebGL-0x86400105a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+            }
+          ],
+          "wallMs": 23205,
+          "ttffMs": {
+            "samples": [
+              600.5,
+              562.3999999999942,
+              553.3000000000175
+            ],
+            "median": 562.3999999999942
+          },
+          "build": {
+            "scene": "skinned-character",
+            "lib": "three",
+            "buildMs": 1956,
+            "bundle": {
+              "jsFiles": 1,
+              "raw": 623430,
+              "gzip": 159689,
+              "brotli": 131407,
+              "largestChunk": {
+                "path": "assets/index-Co9yQfUu.js",
+                "raw": 623430,
+                "gzip": 159689,
+                "brotli": 131407
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "index.html",
+                "size": 281
+              },
+              {
+                "path": "model.glb",
+                "size": 2160468
+              }
+            ],
+            "assetBytes": 2160468,
+            "outDir": "/tmp/bench/dist/skinned-character/three"
+          }
+        },
+        "aura-auto": {
+          "perFrame": {
+            "draws": 6,
+            "tris": 22755,
+            "instances": 6,
+            "programs": 4,
+            "blits": 1,
+            "viewports": [
+              "640x360",
+              "2048x2048"
+            ],
+            "msaaTargets": [
+              "4x 34842 640x360",
+              "4x 33190 640x360"
+            ]
+          },
+          "temporalDiffMeanLuma": 3.176371527777778,
+          "cpuMs": {
+            "n": 60,
+            "mean": 4.58833333333508,
+            "median": 4,
+            "p95": 7.900000000023283,
+            "min": 3.5,
+            "max": 25.400000000023283
+          },
+          "totalMs": {
+            "n": 60,
+            "mean": 263.49666666666747,
+            "median": 253.70000000001164,
+            "p95": 322,
+            "min": 244.10000000003492,
+            "max": 373.1000000000349
+          },
+          "replay": null,
+          "state": {
+            "running": true,
+            "angle": 1.52,
+            "clips": [
+              "Idle",
+              "Run",
+              "TPose",
+              "Walk"
+            ]
+          },
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 2254
+            },
+            {
+              "path": "/assets/core-BaYVi5dM.js",
+              "status": 200,
+              "bytes": 1123
+            },
+            {
+              "path": "/assets/quality-rplkEvUF.js",
+              "status": 200,
+              "bytes": 4209
+            },
+            {
+              "path": "/assets/Texture-B3K3JKvy.js",
+              "status": 200,
+              "bytes": 10528
+            },
+            {
+              "path": "/assets/ShaderFailures-CNnQzW3A.js",
+              "status": 200,
+              "bytes": 3016
+            },
+            {
+              "path": "/assets/program-D4fXTCpY.js",
+              "status": 200,
+              "bytes": 104427
+            },
+            {
+              "path": "/assets/SphericalHarmonics-C0VnUpIE.js",
+              "status": 200,
+              "bytes": 5678
+            },
+            {
+              "path": "/assets/FrameGraph-CrXAQkO_.js",
+              "status": 200,
+              "bytes": 76625
+            },
+            {
+              "path": "/assets/WebGPUSkinningLimits-BWlgcUSU.js",
+              "status": 200,
+              "bytes": 943
+            },
+            {
+              "path": "/assets/Rgb9e5Cube-Df2uosiY.js",
+              "status": 200,
+              "bytes": 11999
+            },
+            {
+              "path": "/assets/ForwardPass-BAqW8Krf.js",
+              "status": 200,
+              "bytes": 184767
+            },
+            {
+              "path": "/assets/preload-helper-PPVm8Dsz.js",
+              "status": 200,
+              "bytes": 1232
+            },
+            {
+              "path": "/assets/postSkipped-CNV024FV.js",
+              "status": 200,
+              "bytes": 623
+            },
+            {
+              "path": "/assets/MeshConsolidation-D7mTL4E2.js",
+              "status": 200,
+              "bytes": 3345
+            },
+            {
+              "path": "/assets/device-CkV6VPzV.js",
+              "status": 200,
+              "bytes": 10976
+            },
+            {
+              "path": "/assets/ShaderLibrary-B4XT73rJ.js",
+              "status": 200,
+              "bytes": 176231
+            },
+            {
+              "path": "/assets/TexturedPBRMaterial-CFBGwayi.js",
+              "status": 200,
+              "bytes": 190469
+            },
+            {
+              "path": "/assets/TemporalMath-Ikt_pM0o.js",
+              "status": 200,
+              "bytes": 193
+            },
+            {
+              "path": "/assets/decoderLoad-CuxniDwe.js",
+              "status": 200,
+              "bytes": 500
+            },
+            {
+              "path": "/assets/RetargetWorker-DVa2B8kF.js",
+              "status": 200,
+              "bytes": 63626
+            },
+            {
+              "path": "/assets/TextureStreaming-Cvt2rzNB.js",
+              "status": 200,
+              "bytes": 28545
+            },
+            {
+              "path": "/assets/TypedGLBActor-DxPbGlIR.js",
+              "status": 200,
+              "bytes": 22122
+            },
+            {
+              "path": "/assets/index-CQr6lvX4.js",
+              "status": 200,
+              "bytes": 974929
+            },
+            {
+              "path": "/assets/GLTFSharedTextureCache-Bmb_4cJT.js",
+              "status": 200,
+              "bytes": 229830
+            },
+            {
+              "path": "/assets/BoneMask-DanQ6u0d.js",
+              "status": 200,
+              "bytes": 2113
+            },
+            {
+              "path": "/assets/DirectPath-DEnBD5yw.js",
+              "status": 200,
+              "bytes": 857600
+            },
+            {
+              "path": "/assets/engine_false-jG2m2l4N.js",
+              "status": 200,
+              "bytes": 128
+            },
+            {
+              "path": "/assets/v2Entry-hVYqrXFk.js",
+              "status": 200,
+              "bytes": 86393
+            },
+            {
+              "path": "/assets/TemporalHistory-CgqIuuAk.js",
+              "status": 200,
+              "bytes": 7026
+            },
+            {
+              "path": "/assets/AssetDecoders-q_VC-NqO.js",
+              "status": 200,
+              "bytes": 303
+            },
+            {
+              "path": "/model.glb",
+              "status": 200,
+              "bytes": 2160468
+            },
+            {
+              "path": "/model.glb",
+              "status": 200,
+              "bytes": 2160468
+            },
+            {
+              "path": "/assets/index-DpkUcx-8.js",
+              "status": 200,
+              "bytes": 19791
+            },
+            {
+              "path": "/assets/index-CcZ366Kh.js",
+              "status": 200,
+              "bytes": 49024
+            },
+            {
+              "path": "/assets/neutralEmbeddedLoader-Dvd4cMWH.js",
+              "status": 200,
+              "bytes": 1082
+            },
+            {
+              "path": "/assets/neutralEmbedded-CQj30fxp.js",
+              "status": 200,
+              "bytes": 133170
+            }
+          ],
+          "console": [],
+          "wallMs": 102667,
+          "ttffMs": {
+            "samples": [
+              1899.2999999999884,
+              1748.2999999999884,
+              1902.5
+            ],
+            "median": 1899.2999999999884
+          },
+          "build": {
+            "scene": "skinned-character",
+            "lib": "aura-auto",
+            "buildMs": 9756,
+            "bundle": {
+              "jsFiles": 42,
+              "raw": 4146674,
+              "gzip": 1241433,
+              "brotli": 1046607,
+              "largestChunk": {
+                "path": "assets/index-CQr6lvX4.js",
+                "raw": 974929,
+                "gzip": 319047,
+                "brotli": 259448
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "aura-decoders/basis/README.md",
+                "size": 1278
+              },
+              {
+                "path": "aura-decoders/basis/basis_transcoder.wasm",
+                "size": 527333
+              },
+              {
+                "path": "aura-decoders/draco/README.md",
+                "size": 1128
+              },
+              {
+                "path": "aura-decoders/draco/draco_decoder.wasm",
+                "size": 192420
+              },
+              {
+                "path": "aura-decoders/meshopt/README.md",
+                "size": 1091
+              },
+              {
+                "path": "aura-decoders/meshopt/meshopt_decoder.cjs",
+                "size": 29400
+              },
+              {
+                "path": "index.html",
+                "size": 2254
+              },
+              {
+                "path": "model.glb",
+                "size": 2160468
+              }
+            ],
+            "assetBytes": 2160468,
+            "outDir": "/tmp/bench/dist/skinned-character/aura-auto"
+          }
+        },
+        "aura-production": {
+          "perFrame": {
+            "draws": 6,
+            "tris": 22755,
+            "instances": 6,
+            "programs": 4,
+            "blits": 1,
+            "viewports": [
+              "640x360",
+              "2048x2048"
+            ],
+            "msaaTargets": [
+              "4x 34842 640x360",
+              "4x 33190 640x360"
+            ]
+          },
+          "temporalDiffMeanLuma": 3.176371527777778,
+          "cpuMs": {
+            "n": 60,
+            "mean": 4.101666666668219,
+            "median": 3.900000000023283,
+            "p95": 5.2000000000116415,
+            "min": 3.599999999976717,
+            "max": 6.7000000000116415
+          },
+          "totalMs": {
+            "n": 60,
+            "mean": 250.40666666666803,
+            "median": 249.40000000002328,
+            "p95": 259.5999999999767,
+            "min": 243,
+            "max": 272.29999999998836
+          },
+          "replay": null,
+          "state": {
+            "running": true,
+            "angle": 1.52,
+            "clips": [
+              "Idle",
+              "Run",
+              "TPose",
+              "Walk"
+            ]
+          },
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 2254
+            },
+            {
+              "path": "/assets/core-BaYVi5dM.js",
+              "status": 200,
+              "bytes": 1123
+            },
+            {
+              "path": "/assets/quality-rplkEvUF.js",
+              "status": 200,
+              "bytes": 4209
+            },
+            {
+              "path": "/assets/Texture-B3K3JKvy.js",
+              "status": 200,
+              "bytes": 10528
+            },
+            {
+              "path": "/assets/ShaderFailures-CNnQzW3A.js",
+              "status": 200,
+              "bytes": 3016
+            },
+            {
+              "path": "/assets/SphericalHarmonics-C0VnUpIE.js",
+              "status": 200,
+              "bytes": 5678
+            },
+            {
+              "path": "/assets/program-D4fXTCpY.js",
+              "status": 200,
+              "bytes": 104427
+            },
+            {
+              "path": "/assets/FrameGraph-CrXAQkO_.js",
+              "status": 200,
+              "bytes": 76625
+            },
+            {
+              "path": "/assets/WebGPUSkinningLimits-BWlgcUSU.js",
+              "status": 200,
+              "bytes": 943
+            },
+            {
+              "path": "/assets/preload-helper-PPVm8Dsz.js",
+              "status": 200,
+              "bytes": 1232
+            },
+            {
+              "path": "/assets/postSkipped-CNV024FV.js",
+              "status": 200,
+              "bytes": 623
+            },
+            {
+              "path": "/assets/device-CkV6VPzV.js",
+              "status": 200,
+              "bytes": 10976
+            },
+            {
+              "path": "/assets/Rgb9e5Cube-Df2uosiY.js",
+              "status": 200,
+              "bytes": 11999
+            },
+            {
+              "path": "/assets/MeshConsolidation-D7mTL4E2.js",
+              "status": 200,
+              "bytes": 3345
+            },
+            {
+              "path": "/assets/TexturedPBRMaterial-CFBGwayi.js",
+              "status": 200,
+              "bytes": 190469
+            },
+            {
+              "path": "/assets/ShaderLibrary-B4XT73rJ.js",
+              "status": 200,
+              "bytes": 176231
+            },
+            {
+              "path": "/assets/ForwardPass-BAqW8Krf.js",
+              "status": 200,
+              "bytes": 184767
+            },
+            {
+              "path": "/assets/TemporalMath-Ikt_pM0o.js",
+              "status": 200,
+              "bytes": 193
+            },
+            {
+              "path": "/assets/RetargetWorker-DVa2B8kF.js",
+              "status": 200,
+              "bytes": 63626
+            },
+            {
+              "path": "/assets/decoderLoad-CuxniDwe.js",
+              "status": 200,
+              "bytes": 500
+            },
+            {
+              "path": "/assets/TextureStreaming-Cvt2rzNB.js",
+              "status": 200,
+              "bytes": 28545
+            },
+            {
+              "path": "/assets/index-DiuV5Wof.js",
+              "status": 200,
+              "bytes": 974950
+            },
+            {
+              "path": "/assets/GLTFSharedTextureCache-Bmb_4cJT.js",
+              "status": 200,
+              "bytes": 229830
+            },
+            {
+              "path": "/assets/TypedGLBActor-DxPbGlIR.js",
+              "status": 200,
+              "bytes": 22122
+            },
+            {
+              "path": "/assets/BoneMask-DanQ6u0d.js",
+              "status": 200,
+              "bytes": 2113
+            },
+            {
+              "path": "/assets/DirectPath-DEnBD5yw.js",
+              "status": 200,
+              "bytes": 857600
+            },
+            {
+              "path": "/assets/engine_false-jG2m2l4N.js",
+              "status": 200,
+              "bytes": 128
+            },
+            {
+              "path": "/assets/v2Entry-hVYqrXFk.js",
+              "status": 200,
+              "bytes": 86393
+            },
+            {
+              "path": "/assets/TemporalHistory-CgqIuuAk.js",
+              "status": 200,
+              "bytes": 7026
+            },
+            {
+              "path": "/assets/AssetDecoders-q_VC-NqO.js",
+              "status": 200,
+              "bytes": 303
+            },
+            {
+              "path": "/model.glb",
+              "status": 200,
+              "bytes": 2160468
+            },
+            {
+              "path": "/model.glb",
+              "status": 200,
+              "bytes": 2160468
+            },
+            {
+              "path": "/assets/index-DpkUcx-8.js",
+              "status": 200,
+              "bytes": 19791
+            },
+            {
+              "path": "/assets/index-CcZ366Kh.js",
+              "status": 200,
+              "bytes": 49024
+            },
+            {
+              "path": "/assets/neutralEmbeddedLoader-Dvd4cMWH.js",
+              "status": 200,
+              "bytes": 1082
+            },
+            {
+              "path": "/assets/neutralEmbedded-CQj30fxp.js",
+              "status": 200,
+              "bytes": 133170
+            }
+          ],
+          "console": [],
+          "wallMs": 99578,
+          "ttffMs": {
+            "samples": [
+              1779.399999999965,
+              1779,
+              1742.0999999999767
+            ],
+            "median": 1779
+          },
+          "build": {
+            "scene": "skinned-character",
+            "lib": "aura-production",
+            "buildMs": 10835,
+            "bundle": {
+              "jsFiles": 42,
+              "raw": 4146695,
+              "gzip": 1241441,
+              "brotli": 1046555,
+              "largestChunk": {
+                "path": "assets/index-DiuV5Wof.js",
+                "raw": 974950,
+                "gzip": 319055,
+                "brotli": 259396
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "aura-decoders/basis/README.md",
+                "size": 1278
+              },
+              {
+                "path": "aura-decoders/basis/basis_transcoder.wasm",
+                "size": 527333
+              },
+              {
+                "path": "aura-decoders/draco/README.md",
+                "size": 1128
+              },
+              {
+                "path": "aura-decoders/draco/draco_decoder.wasm",
+                "size": 192420
+              },
+              {
+                "path": "aura-decoders/meshopt/README.md",
+                "size": 1091
+              },
+              {
+                "path": "aura-decoders/meshopt/meshopt_decoder.cjs",
+                "size": 29400
+              },
+              {
+                "path": "index.html",
+                "size": 2254
+              },
+              {
+                "path": "model.glb",
+                "size": 2160468
+              }
+            ],
+            "assetBytes": 2160468,
+            "outDir": "/tmp/bench/dist/skinned-character/aura-production"
+          }
+        },
+        "three-msaa": {
+          "perFrame": {
+            "draws": 5,
+            "tris": 22754,
+            "instances": 5,
+            "programs": 3,
+            "blits": 0,
+            "viewports": [
+              "1024x1024",
+              "640x360"
+            ],
+            "msaaTargets": []
+          },
+          "temporalDiffMeanLuma": 2.554162326388889,
+          "cpuMs": {
+            "n": 60,
+            "mean": 0.5149999999984478,
+            "median": 0.5,
+            "p95": 0.7000000000116415,
+            "min": 0.3999999999650754,
+            "max": 0.7999999999883585
+          },
+          "totalMs": {
+            "n": 60,
+            "mean": 69.20666666666706,
+            "median": 67.89999999996508,
+            "p95": 76,
+            "min": 65.10000000003492,
+            "max": 97.90000000002328
+          },
+          "replay": null,
+          "state": {
+            "running": true,
+            "angle": 1.52,
+            "clips": [
+              "Idle",
+              "Run",
+              "TPose",
+              "Walk"
+            ]
+          },
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 286
+            },
+            {
+              "path": "/assets/index-TVAkzfOY.js",
+              "status": 200,
+              "bytes": 623448
+            },
+            {
+              "path": "/model.glb",
+              "status": 200,
+              "bytes": 2160468
+            },
+            {
+              "path": "http://127.0.0.1:35179/4414c5df-1f52-41ea-8920-791bfcf98653",
+              "status": 200,
+              "bytes": 296774
+            },
+            {
+              "path": "http://127.0.0.1:35179/79c24c62-5540-4536-b4f5-87d789c8a342",
+              "status": 200,
+              "bytes": 365808
+            }
+          ],
+          "console": [],
+          "wallMs": 29222,
+          "ttffMs": {
+            "samples": [
+              579.7999999999884,
+              570.2999999999884,
+              611.2999999999884
+            ],
+            "median": 579.7999999999884
+          },
+          "build": {
+            "scene": "skinned-character",
+            "lib": "three-msaa",
+            "buildMs": 2354,
+            "bundle": {
+              "jsFiles": 1,
+              "raw": 623448,
+              "gzip": 159703,
+              "brotli": 131329,
+              "largestChunk": {
+                "path": "assets/index-TVAkzfOY.js",
+                "raw": 623448,
+                "gzip": 159703,
+                "brotli": 131329
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "index.html",
+                "size": 286
+              },
+              {
+                "path": "model.glb",
+                "size": 2160468
+              }
+            ],
+            "assetBytes": 2160468,
+            "outDir": "/tmp/bench/dist/skinned-character/three-msaa"
+          }
+        }
+      }
+    },
+    "shader-water": {
+      "scene": "shader-water",
+      "generatedUtc": "2026-10-29T02:46:18.743Z",
+      "frames": 60,
+      "coldLoads": 3,
+      "plan": {
+        "loads": 3,
+        "warmA": 19,
+        "gapB": 59,
+        "measure": 60
+      },
+      "env": {
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "vendor": "Google Inc. (Google)",
+        "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+        "hardwareConcurrency": 2
+      },
+      "cpuCount": 2,
+      "installed": {
+        "vite": "7.3.2",
+        "aura": "4.5.0",
+        "three": "0.185.1"
+      },
+      "correctness": {
+        "jsdFrame25": 0.000028947777855286566,
+        "jsdFrame85": 0.000012542221193917718,
+        "meanLuma": {
+          "three": [
+            175.15956973165376,
+            174.80413194864397
+          ],
+          "aura": [
+            175.1723439530077,
+            174.8320883106224
+          ]
+        },
+        "meanLumaDeltaFrame25": 0.012774221353936355,
+        "meanLumaDeltaFrame85": 0.027956361978425548,
+        "std": {
+          "three": [
+            39.483253219050226,
+            38.944258323224744
+          ],
+          "aura": [
+            39.46695656705261,
+            38.93751271738958
+          ]
+        },
+        "meanAbsLumaDiffFrame25": 0.18225260416666667,
+        "gainMatched": {
+          "gain": 0.9999270762663462,
+          "jsdFrame25": 0.000028947777855286566,
+          "meanAbsLumaDiffFrame25": 0.18225260416666667
+        }
+      },
+      "results": {
+        "three": {
+          "perFrame": {
+            "draws": 4,
+            "tris": 19394,
+            "instances": 4,
+            "programs": 4,
+            "blits": 0,
+            "viewports": [],
+            "msaaTargets": []
+          },
+          "temporalDiffMeanLuma": 10.751176215277777,
+          "cpuMs": {
+            "n": 60,
+            "mean": 0.3249999999941792,
+            "median": 0.30000000004656613,
+            "p95": 0.5999999999767169,
+            "min": 0.19999999995343387,
+            "max": 0.6999999999534339
+          },
+          "totalMs": {
+            "n": 60,
+            "mean": 53.14666666666744,
+            "median": 52.60000000009313,
+            "p95": 60.59999999997672,
+            "min": 48.39999999990687,
+            "max": 63.39999999990687
+          },
+          "replay": null,
+          "state": null,
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 276
+            },
+            {
+              "path": "/assets/index-BcshGgbf.js",
+              "status": 200,
+              "bytes": 520379
+            }
+          ],
+          "console": [
+            {
+              "type": "warning",
+              "text": "[.WebGL-0x20400135a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+            },
+            {
+              "type": "warning",
+              "text": "[.WebGL-0x20400135a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+            },
+            {
+              "type": "warning",
+              "text": "[.WebGL-0x20400135a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+            },
+            {
+              "type": "warning",
+              "text": "[.WebGL-0x20400135a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+            }
+          ],
+          "wallMs": 11511,
+          "ttffMs": {
+            "samples": [
+              306.70000000006985,
+              249.69999999995343,
+              254.40000000002328
+            ],
+            "median": 254.40000000002328
+          },
+          "build": {
+            "scene": "shader-water",
+            "lib": "three",
+            "buildMs": 1765,
+            "bundle": {
+              "jsFiles": 1,
+              "raw": 520379,
+              "gzip": 131673,
+              "brotli": 108314,
+              "largestChunk": {
+                "path": "assets/index-BcshGgbf.js",
+                "raw": 520379,
+                "gzip": 131673,
+                "brotli": 108314
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "index.html",
+                "size": 276
+              }
+            ],
+            "assetBytes": 0,
+            "outDir": "/tmp/bench/dist/shader-water/three"
+          }
+        },
+        "aura-auto": {
+          "perFrame": {
+            "draws": 4,
+            "tris": 19458,
+            "instances": 4,
+            "programs": 4,
+            "blits": 1,
+            "viewports": [
+              "640x360"
+            ],
+            "msaaTargets": [
+              "4x 34842 640x360",
+              "4x 33190 640x360"
+            ]
+          },
+          "temporalDiffMeanLuma": 10.711219618055555,
+          "cpuMs": {
+            "n": 60,
+            "mean": 2.680000000002716,
+            "median": 2.400000000023283,
+            "p95": 4,
+            "min": 2.099999999976717,
+            "max": 7.099999999976717
+          },
+          "totalMs": {
+            "n": 60,
+            "mean": 107.61500000000233,
+            "median": 105.5,
+            "p95": 115.90000000002328,
+            "min": 101.79999999993015,
+            "max": 149.40000000002328
+          },
+          "replay": null,
+          "state": null,
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 2249
+            },
+            {
+              "path": "/assets/core-BaYVi5dM.js",
+              "status": 200,
+              "bytes": 1123
+            },
+            {
+              "path": "/assets/quality-rplkEvUF.js",
+              "status": 200,
+              "bytes": 4209
+            },
+            {
+              "path": "/assets/Texture-B3K3JKvy.js",
+              "status": 200,
+              "bytes": 10528
+            },
+            {
+              "path": "/assets/ShaderFailures-CNnQzW3A.js",
+              "status": 200,
+              "bytes": 3016
+            },
+            {
+              "path": "/assets/program-D4fXTCpY.js",
+              "status": 200,
+              "bytes": 104427
+            },
+            {
+              "path": "/assets/SphericalHarmonics-C0VnUpIE.js",
+              "status": 200,
+              "bytes": 5678
+            },
+            {
+              "path": "/assets/FrameGraph-CrXAQkO_.js",
+              "status": 200,
+              "bytes": 76625
+            },
+            {
+              "path": "/assets/WebGPUSkinningLimits-BWlgcUSU.js",
+              "status": 200,
+              "bytes": 943
+            },
+            {
+              "path": "/assets/preload-helper-PPVm8Dsz.js",
+              "status": 200,
+              "bytes": 1232
+            },
+            {
+              "path": "/assets/Rgb9e5Cube-Df2uosiY.js",
+              "status": 200,
+              "bytes": 11999
+            },
+            {
+              "path": "/assets/postSkipped-CNV024FV.js",
+              "status": 200,
+              "bytes": 623
+            },
+            {
+              "path": "/assets/ForwardPass-BAqW8Krf.js",
+              "status": 200,
+              "bytes": 184767
+            },
+            {
+              "path": "/assets/device-CkV6VPzV.js",
+              "status": 200,
+              "bytes": 10976
+            },
+            {
+              "path": "/assets/MeshConsolidation-D7mTL4E2.js",
+              "status": 200,
+              "bytes": 3345
+            },
+            {
+              "path": "/assets/TemporalMath-Ikt_pM0o.js",
+              "status": 200,
+              "bytes": 193
+            },
+            {
+              "path": "/assets/TexturedPBRMaterial-CFBGwayi.js",
+              "status": 200,
+              "bytes": 190469
+            },
+            {
+              "path": "/assets/RetargetWorker-DVa2B8kF.js",
+              "status": 200,
+              "bytes": 63626
+            },
+            {
+              "path": "/assets/ShaderLibrary-B4XT73rJ.js",
+              "status": 200,
+              "bytes": 176231
+            },
+            {
+              "path": "/assets/decoderLoad-CuxniDwe.js",
+              "status": 200,
+              "bytes": 500
+            },
+            {
+              "path": "/assets/GLTFSharedTextureCache-Bmb_4cJT.js",
+              "status": 200,
+              "bytes": 229830
+            },
+            {
+              "path": "/assets/TextureStreaming-Cvt2rzNB.js",
+              "status": 200,
+              "bytes": 28545
+            },
+            {
+              "path": "/assets/index-BK7fxVq_.js",
+              "status": 200,
+              "bytes": 974703
+            },
+            {
+              "path": "/assets/TypedGLBActor-DxPbGlIR.js",
+              "status": 200,
+              "bytes": 22122
+            },
+            {
+              "path": "/assets/BoneMask-DanQ6u0d.js",
+              "status": 200,
+              "bytes": 2113
+            },
+            {
+              "path": "/assets/DirectPath-DEnBD5yw.js",
+              "status": 200,
+              "bytes": 857600
+            },
+            {
+              "path": "/assets/engine_false-jG2m2l4N.js",
+              "status": 200,
+              "bytes": 128
+            },
+            {
+              "path": "/assets/v2Entry-hVYqrXFk.js",
+              "status": 200,
+              "bytes": 86393
+            },
+            {
+              "path": "/assets/TemporalHistory-CgqIuuAk.js",
+              "status": 200,
+              "bytes": 7026
+            },
+            {
+              "path": "/assets/neutralEmbeddedLoader-Dvd4cMWH.js",
+              "status": 200,
+              "bytes": 1082
+            },
+            {
+              "path": "/assets/neutralEmbedded-CQj30fxp.js",
+              "status": 200,
+              "bytes": 133170
+            }
+          ],
+          "console": [],
+          "wallMs": 22770,
+          "ttffMs": {
+            "samples": [
+              913,
+              843.7000000000698,
+              912
+            ],
+            "median": 912
+          },
+          "build": {
+            "scene": "shader-water",
+            "lib": "aura-auto",
+            "buildMs": 10434,
+            "bundle": {
+              "jsFiles": 42,
+              "raw": 4146448,
+              "gzip": 1241145,
+              "brotli": 1046468,
+              "largestChunk": {
+                "path": "assets/index-BK7fxVq_.js",
+                "raw": 974703,
+                "gzip": 318759,
+                "brotli": 259309
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "aura-decoders/basis/README.md",
+                "size": 1278
+              },
+              {
+                "path": "aura-decoders/basis/basis_transcoder.wasm",
+                "size": 527333
+              },
+              {
+                "path": "aura-decoders/draco/README.md",
+                "size": 1128
+              },
+              {
+                "path": "aura-decoders/draco/draco_decoder.wasm",
+                "size": 192420
+              },
+              {
+                "path": "aura-decoders/meshopt/README.md",
+                "size": 1091
+              },
+              {
+                "path": "aura-decoders/meshopt/meshopt_decoder.cjs",
+                "size": 29400
+              },
+              {
+                "path": "index.html",
+                "size": 2249
+              }
+            ],
+            "assetBytes": 0,
+            "outDir": "/tmp/bench/dist/shader-water/aura-auto"
+          }
+        },
+        "aura-production": {
+          "perFrame": {
+            "draws": 4,
+            "tris": 19458,
+            "instances": 4,
+            "programs": 4,
+            "blits": 1,
+            "viewports": [
+              "640x360"
+            ],
+            "msaaTargets": [
+              "4x 34842 640x360",
+              "4x 33190 640x360"
+            ]
+          },
+          "temporalDiffMeanLuma": 10.711219618055555,
+          "cpuMs": {
+            "n": 60,
+            "mean": 3.075,
+            "median": 2.599999999976717,
+            "p95": 5.400000000023283,
+            "min": 2.199999999953434,
+            "max": 9.70000000006985
+          },
+          "totalMs": {
+            "n": 60,
+            "mean": 127.51666666666473,
+            "median": 115.40000000002328,
+            "p95": 187.09999999997672,
+            "min": 101.5,
+            "max": 252.90000000002328
+          },
+          "replay": null,
+          "state": null,
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 2249
+            },
+            {
+              "path": "/assets/core-BaYVi5dM.js",
+              "status": 200,
+              "bytes": 1123
+            },
+            {
+              "path": "/assets/quality-rplkEvUF.js",
+              "status": 200,
+              "bytes": 4209
+            },
+            {
+              "path": "/assets/Texture-B3K3JKvy.js",
+              "status": 200,
+              "bytes": 10528
+            },
+            {
+              "path": "/assets/ShaderFailures-CNnQzW3A.js",
+              "status": 200,
+              "bytes": 3016
+            },
+            {
+              "path": "/assets/program-D4fXTCpY.js",
+              "status": 200,
+              "bytes": 104427
+            },
+            {
+              "path": "/assets/FrameGraph-CrXAQkO_.js",
+              "status": 200,
+              "bytes": 76625
+            },
+            {
+              "path": "/assets/SphericalHarmonics-C0VnUpIE.js",
+              "status": 200,
+              "bytes": 5678
+            },
+            {
+              "path": "/assets/WebGPUSkinningLimits-BWlgcUSU.js",
+              "status": 200,
+              "bytes": 943
+            },
+            {
+              "path": "/assets/preload-helper-PPVm8Dsz.js",
+              "status": 200,
+              "bytes": 1232
+            },
+            {
+              "path": "/assets/ForwardPass-BAqW8Krf.js",
+              "status": 200,
+              "bytes": 184767
+            },
+            {
+              "path": "/assets/Rgb9e5Cube-Df2uosiY.js",
+              "status": 200,
+              "bytes": 11999
+            },
+            {
+              "path": "/assets/postSkipped-CNV024FV.js",
+              "status": 200,
+              "bytes": 623
+            },
+            {
+              "path": "/assets/device-CkV6VPzV.js",
+              "status": 200,
+              "bytes": 10976
+            },
+            {
+              "path": "/assets/MeshConsolidation-D7mTL4E2.js",
+              "status": 200,
+              "bytes": 3345
+            },
+            {
+              "path": "/assets/TemporalMath-Ikt_pM0o.js",
+              "status": 200,
+              "bytes": 193
+            },
+            {
+              "path": "/assets/ShaderLibrary-B4XT73rJ.js",
+              "status": 200,
+              "bytes": 176231
+            },
+            {
+              "path": "/assets/TexturedPBRMaterial-CFBGwayi.js",
+              "status": 200,
+              "bytes": 190469
+            },
+            {
+              "path": "/assets/RetargetWorker-DVa2B8kF.js",
+              "status": 200,
+              "bytes": 63626
+            },
+            {
+              "path": "/assets/decoderLoad-CuxniDwe.js",
+              "status": 200,
+              "bytes": 500
+            },
+            {
+              "path": "/assets/TextureStreaming-Cvt2rzNB.js",
+              "status": 200,
+              "bytes": 28545
+            },
+            {
+              "path": "/assets/TypedGLBActor-DxPbGlIR.js",
+              "status": 200,
+              "bytes": 22122
+            },
+            {
+              "path": "/assets/index-DpTd45cs.js",
+              "status": 200,
+              "bytes": 974724
+            },
+            {
+              "path": "/assets/GLTFSharedTextureCache-Bmb_4cJT.js",
+              "status": 200,
+              "bytes": 229830
+            },
+            {
+              "path": "/assets/BoneMask-DanQ6u0d.js",
+              "status": 200,
+              "bytes": 2113
+            },
+            {
+              "path": "/assets/DirectPath-DEnBD5yw.js",
+              "status": 200,
+              "bytes": 857600
+            },
+            {
+              "path": "/assets/engine_false-jG2m2l4N.js",
+              "status": 200,
+              "bytes": 128
+            },
+            {
+              "path": "/assets/v2Entry-hVYqrXFk.js",
+              "status": 200,
+              "bytes": 86393
+            },
+            {
+              "path": "/assets/TemporalHistory-CgqIuuAk.js",
+              "status": 200,
+              "bytes": 7026
+            },
+            {
+              "path": "/assets/neutralEmbeddedLoader-Dvd4cMWH.js",
+              "status": 200,
+              "bytes": 1082
+            },
+            {
+              "path": "/assets/neutralEmbedded-CQj30fxp.js",
+              "status": 200,
+              "bytes": 133170
+            }
+          ],
+          "console": [],
+          "wallMs": 23157,
+          "ttffMs": {
+            "samples": [
+              846.5,
+              837,
+              850.9000000000233
+            ],
+            "median": 846.5
+          },
+          "build": {
+            "scene": "shader-water",
+            "lib": "aura-production",
+            "buildMs": 9981,
+            "bundle": {
+              "jsFiles": 42,
+              "raw": 4146469,
+              "gzip": 1241154,
+              "brotli": 1046446,
+              "largestChunk": {
+                "path": "assets/index-DpTd45cs.js",
+                "raw": 974724,
+                "gzip": 318768,
+                "brotli": 259287
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "aura-decoders/basis/README.md",
+                "size": 1278
+              },
+              {
+                "path": "aura-decoders/basis/basis_transcoder.wasm",
+                "size": 527333
+              },
+              {
+                "path": "aura-decoders/draco/README.md",
+                "size": 1128
+              },
+              {
+                "path": "aura-decoders/draco/draco_decoder.wasm",
+                "size": 192420
+              },
+              {
+                "path": "aura-decoders/meshopt/README.md",
+                "size": 1091
+              },
+              {
+                "path": "aura-decoders/meshopt/meshopt_decoder.cjs",
+                "size": 29400
+              },
+              {
+                "path": "index.html",
+                "size": 2249
+              }
+            ],
+            "assetBytes": 0,
+            "outDir": "/tmp/bench/dist/shader-water/aura-production"
+          }
+        },
+        "three-msaa": {
+          "perFrame": {
+            "draws": 4,
+            "tris": 19394,
+            "instances": 4,
+            "programs": 4,
+            "blits": 2,
+            "viewports": [],
+            "msaaTargets": [
+              "4x 34842 640x360",
+              "4x 33190 640x360"
+            ]
+          },
+          "temporalDiffMeanLuma": 10.71033420138889,
+          "cpuMs": {
+            "n": 60,
+            "mean": 0.30833333333624374,
+            "median": 0.29999999998835847,
+            "p95": 0.40000000002328306,
+            "min": 0.09999999997671694,
+            "max": 0.6000000000349246
+          },
+          "totalMs": {
+            "n": 60,
+            "mean": 130.50000000000097,
+            "median": 129.20000000001164,
+            "p95": 140.59999999997672,
+            "min": 125.39999999996508,
+            "max": 147.09999999997672
+          },
+          "replay": null,
+          "state": null,
+          "requests": [
+            {
+              "path": "/index.html",
+              "status": 200,
+              "bytes": 281
+            },
+            {
+              "path": "/assets/index-DD5UG6qV.js",
+              "status": 200,
+              "bytes": 520420
+            }
+          ],
+          "console": [],
+          "wallMs": 24375,
+          "ttffMs": {
+            "samples": [
+              447.9000000000233,
+              384,
+              374.70000000001164
+            ],
+            "median": 384
+          },
+          "build": {
+            "scene": "shader-water",
+            "lib": "three-msaa",
+            "buildMs": 1750,
+            "bundle": {
+              "jsFiles": 1,
+              "raw": 520420,
+              "gzip": 131693,
+              "brotli": 108277,
+              "largestChunk": {
+                "path": "assets/index-DD5UG6qV.js",
+                "raw": 520420,
+                "gzip": 131693,
+                "brotli": 108277
+              }
+            },
+            "nonJsFiles": [
+              {
+                "path": "index.html",
+                "size": 281
+              }
+            ],
+            "assetBytes": 0,
+            "outDir": "/tmp/bench/dist/shader-water/three-msaa"
+          }
+        }
+      }
+    }
+  },
+  "env": {
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "vendor": "Google Inc. (Google)",
+    "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+    "hardwareConcurrency": 2
+  },
+  "installed": {
+    "vite": "7.3.2",
+    "aura": "4.5.0",
+    "three": "0.185.1"
+  }
+}

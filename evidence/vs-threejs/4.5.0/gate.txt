@@ -1,0 +1,36 @@
+Benchmark gate (software WebGL2; Aura3D arm: aura-auto)
+
+FAIL    P1  Steady-state frame, one cube
+        measured 5.3 ms | target <= 5 ms | software WebGL2 | three.js 4x MSAA 1.5 ms
+FAIL    P2  CPU inside frame(), one cube
+        measured 0.9 ms | target <= 0.5 ms | software WebGL2 | three.js 0.1 ms
+PASS    P3  Time to first frame, one cube
+        measured 418.7 ms | target <= 500 ms | software WebGL2 | three.js 93.2 ms
+PASS    P4  Draw calls, one cube / PBR viewer
+        measured 1 / 25 | target 1 / <= 25 | software WebGL2
+FAIL    P5  Requests on first load, one cube
+        measured 31 | target <= 8 | software WebGL2
+FAIL    P6  Forest 10k completes on software GL
+        measured 197 s, 3.12x | target <= 5 min and <= 3x three.js 4x MSAA | software WebGL2
+NO-DATA P7  Real GPU: steady-state frame, five scenes
+        measured n/a | target <= three.js 4x MSAA on every scene | real GPU | no real-GPU results; speed claims keep the software WebGL2 qualifier
+PASS    Q1  Exposure: skinned character mean luma
+        measured three.js 144 vs Aura3D 136.2 (5.4%) | target within 10% | software WebGL2
+PASS    Q2  Console warnings on the five bench scenes
+        measured 0 message(s), 0 kind(s) | target 0 | software WebGL2
+PASS    D1  Source: hello cube lines / tokens
+        measured 12 / 208 | target <= 12 / <= 210 | source
+PASS    D2  Source: shader water lines / tokens
+        measured 71 / 1317 | target <= 80 / <= 1,386 | source
+PASS    D3  Silent no-ops in the documented API
+        measured 0 | target 0 | option-coverage test | pass --extra with silentNoOps from tests/unit/agent-api/option-coverage.test.ts
+FAIL    C1  Partial and experimental audit rows
+        measured 7 of 7 unresolved | target 0 unresolved | docs | Genre kits: `racketSports`, `arcadeKart`, `carSoccer`, fighting, platformer motion; Root `createGame`; `physics.*` root: mesh and heightfield colliders, joints, vehicles; `tsl` (62 names), `compute`, WebGPU backend; `xr`
+FAIL    M1  Codemod rows approximate / none / pending
+        measured 150 / 47 / 0 | target <= 100 / <= 20 / 0 | source | exact 48
+FAIL    T1  Benchmark tally: three.js better rows
+        measured 81 of 125 | target <= 30 | software WebGL2 | Aura3D better 23, tie 16, unmeasurable 5
+
+PASS 7  FAIL 7  NO-DATA 1
+
+GATE FAILED: T1

@@ -1,0 +1,962 @@
+{
+  "generatedUtc": "2026-10-29T02:45:05.096Z",
+  "build": {
+    "candidate": false,
+    "installed": {
+      "aura": "4.5.0",
+      "three": "0.185.1",
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "tokenizerInstalled": true,
+    "apps": {
+      "aura": {
+        "hasViteConfig": false,
+        "typecheckOk": true,
+        "typecheckOut": "",
+        "buildOk": true,
+        "buildMs": 16590,
+        "buildOut": "lved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\nnew URL(\"../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\u001b[33m[plugin vite:resolve] Module \"node:fs\" has been externalized for browser compatibility, imported by \"/tmp/fullgame/node_modules/@gltf-transform/core/dist/index.js\". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.\u001b[39m\n\u001b[33m[plugin vite:resolve] Module \"node:path\" has been externalized for browser compatibility, imported by \"/tmp/fullgame/node_modules/@gltf-transform/core/dist/index.js\". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.\u001b[39m\n\u001b[33m\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\u001b[39m\n",
+        "bundle": {
+          "jsFiles": 39,
+          "raw": 3645076,
+          "gzip": 1144923,
+          "brotli": 971977
+        },
+        "dist": "/tmp/fullgame/apps/full-game/aura/dist"
+      },
+      "three": {
+        "hasViteConfig": false,
+        "typecheckOk": true,
+        "typecheckOut": "",
+        "buildOk": true,
+        "buildMs": 2644,
+        "buildOut": "\n\u001b[33m\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\u001b[39m\n",
+        "bundle": {
+          "jsFiles": 1,
+          "raw": 516898,
+          "gzip": 131094,
+          "brotli": 108220
+        },
+        "dist": "/tmp/fullgame/apps/full-game/three/dist"
+      }
+    },
+    "coinSimSha256": {
+      "repo": "7921bc755f9226dc1ac92c274484ab1a54763bdc5906eab8bce13cb29a9a57bc",
+      "staged": "7921bc755f9226dc1ac92c274484ab1a54763bdc5906eab8bce13cb29a9a57bc"
+    },
+    "count": {
+      "tokenizer": "gpt-tokenizer o200k_base (OpenAI BPE; a proxy: Claude's tokenizer is not public)",
+      "rule": "non-blank, non-comment lines of src/*.ts and src/*.css (shared/coin-sim.ts, index.html, tsconfig.json not counted)",
+      "apps": {
+        "aura": {
+          "files": {
+            "audio.ts": {
+              "loc": 20,
+              "tokens": 248
+            },
+            "game.ts": {
+              "loc": 122,
+              "tokens": 1219
+            },
+            "main.ts": {
+              "loc": 5,
+              "tokens": 55
+            },
+            "scene.ts": {
+              "loc": 19,
+              "tokens": 352
+            },
+            "screens.ts": {
+              "loc": 31,
+              "tokens": 318
+            },
+            "style.css": {
+              "loc": 74,
+              "tokens": 430
+            }
+          },
+          "concerns": {
+            "scene": {
+              "loc": 22,
+              "tokens": 357
+            },
+            "loop": {
+              "loc": 35,
+              "tokens": 388
+            },
+            "input-touch": {
+              "loc": 47,
+              "tokens": 389
+            },
+            "hud-screens": {
+              "loc": 76,
+              "tokens": 606
+            },
+            "audio": {
+              "loc": 19,
+              "tokens": 229
+            },
+            "replay-qa": {
+              "loc": 31,
+              "tokens": 289
+            },
+            "resize-teardown": {
+              "loc": 27,
+              "tokens": 156
+            },
+            "glue": {
+              "loc": 14,
+              "tokens": 208
+            }
+          },
+          "total": {
+            "loc": 271,
+            "tokens": 2622
+          },
+          "index.html": 12,
+          "tsconfig.json": 14
+        },
+        "three": {
+          "files": {
+            "audio.ts": {
+              "loc": 42,
+              "tokens": 480
+            },
+            "game.ts": {
+              "loc": 133,
+              "tokens": 1240
+            },
+            "main.ts": {
+              "loc": 5,
+              "tokens": 50
+            },
+            "scene.ts": {
+              "loc": 60,
+              "tokens": 691
+            },
+            "style.css": {
+              "loc": 78,
+              "tokens": 455
+            },
+            "touch.ts": {
+              "loc": 28,
+              "tokens": 278
+            },
+            "ui.ts": {
+              "loc": 27,
+              "tokens": 335
+            }
+          },
+          "concerns": {
+            "scene": {
+              "loc": 33,
+              "tokens": 507
+            },
+            "loop": {
+              "loc": 49,
+              "tokens": 437
+            },
+            "input-touch": {
+              "loc": 74,
+              "tokens": 686
+            },
+            "hud-screens": {
+              "loc": 64,
+              "tokens": 524
+            },
+            "audio": {
+              "loc": 42,
+              "tokens": 480
+            },
+            "replay-qa": {
+              "loc": 43,
+              "tokens": 405
+            },
+            "resize-teardown": {
+              "loc": 51,
+              "tokens": 298
+            },
+            "glue": {
+              "loc": 17,
+              "tokens": 192
+            }
+          },
+          "total": {
+            "loc": 373,
+            "tokens": 3529
+          },
+          "index.html": 12,
+          "tsconfig.json": 14
+        }
+      }
+    }
+  },
+  "runs": {
+    "aura": {
+      "checks": {
+        "renders-nonblack-frame": {
+          "pass": true,
+          "detail": {
+            "canvas": {
+              "width": 800,
+              "height": 600,
+              "mean": 153.06,
+              "std": 58.21
+            },
+            "simFrameAfter2_5s": 198,
+            "glContexts": 3
+          }
+        },
+        "touch-buttons-present": {
+          "pass": true,
+          "detail": {
+            "rects": {
+              "left": {
+                "x": 24,
+                "y": 540,
+                "w": 102,
+                "h": 38,
+                "cx": 75,
+                "cy": 559
+              },
+              "right": {
+                "x": 136,
+                "y": 540,
+                "w": 102,
+                "h": 38,
+                "cx": 187,
+                "cy": 559
+              },
+              "up": {
+                "x": 676,
+                "y": 516,
+                "w": 102,
+                "h": 38,
+                "cx": 727,
+                "cy": 535
+              },
+              "down": {
+                "x": 560,
+                "y": 516,
+                "w": 102,
+                "h": 38,
+                "cx": 611,
+                "cy": 535
+              }
+            },
+            "display": "block"
+          }
+        },
+        "touch-moves-player-right": {
+          "pass": true,
+          "detail": {
+            "selector": ".a3g-touch [data-control=\"right\"]",
+            "rect": {
+              "x": 136,
+              "y": 540,
+              "w": 102,
+              "h": 38,
+              "cx": 187,
+              "cy": 559
+            },
+            "before": 0,
+            "after": 9,
+            "delta": 9
+          }
+        },
+        "touch-moves-player-down": {
+          "pass": true,
+          "detail": {
+            "selector": ".a3g-touch [data-control=\"attack\"]",
+            "rect": {
+              "x": 560,
+              "y": 516,
+              "w": 102,
+              "h": 38,
+              "cx": 611,
+              "cy": 535
+            },
+            "before": 0,
+            "after": 9,
+            "delta": 9
+          }
+        },
+        "touch-moves-player-left": {
+          "pass": true,
+          "detail": {
+            "selector": ".a3g-touch [data-control=\"left\"]",
+            "rect": {
+              "x": 24,
+              "y": 540,
+              "w": 102,
+              "h": 38,
+              "cx": 75,
+              "cy": 559
+            },
+            "before": 0,
+            "after": -9,
+            "delta": -9
+          }
+        },
+        "touch-moves-player-up": {
+          "pass": true,
+          "detail": {
+            "selector": ".a3g-touch [data-control=\"jump\"]",
+            "rect": {
+              "x": 676,
+              "y": 516,
+              "w": 102,
+              "h": 38,
+              "cx": 727,
+              "cy": 535
+            },
+            "before": 0,
+            "after": -9,
+            "delta": -9
+          }
+        },
+        "pause-key-stops-clock-and-resume-continues": {
+          "pass": true,
+          "detail": {
+            "pausedFrame": [
+              18,
+              18
+            ],
+            "timeLeft": [
+              29.7,
+              29.7
+            ],
+            "resumedFrame": 42
+          }
+        },
+        "pause-button-stops-clock-and-resume-continues": {
+          "pass": true,
+          "detail": {
+            "pausedFrame": [
+              66,
+              66
+            ],
+            "resumedFrame": 96,
+            "labelVisible": true
+          }
+        },
+        "results-screen-on-win": {
+          "pass": true,
+          "detail": {
+            "status": "won",
+            "score": 80,
+            "visible": true,
+            "text": "YOU WIN - score 80"
+          }
+        },
+        "results-screen-on-time-up": {
+          "pass": true,
+          "detail": {
+            "status": "lost",
+            "visible": true,
+            "text": "TIME UP - score 0"
+          }
+        },
+        "audio-unlock-and-three-cues": {
+          "pass": true,
+          "detail": {
+            "contextsBeforeGesture": [
+              "running"
+            ],
+            "contextsAfterGesture": [
+              "running"
+            ],
+            "pickupAndWinOscillators": [
+              "triangle",
+              "sine"
+            ],
+            "loseOscillators": [
+              "sawtooth"
+            ],
+            "oscillatorsDuringReplay": [],
+            "replayHash": "playing:30:600:321a662f"
+          }
+        },
+        "restart-key-resets": {
+          "pass": true,
+          "detail": {
+            "wonScore": 80,
+            "afterScore": 0,
+            "afterFrame": 24,
+            "resultsHidden": true
+          }
+        },
+        "restart-button-resets": {
+          "pass": true,
+          "detail": {
+            "overStatus": "lost",
+            "afterTimeLeft": 29.5,
+            "afterFrame": 30,
+            "afterRestartButtonFrame": 18
+          }
+        },
+        "seeded-replay-hash": {
+          "pass": true,
+          "detail": {
+            "a600": "playing:30:600:321a662f",
+            "b600": "playing:30:600:321a662f",
+            "a1800": "lost:60:1800:9b693d58",
+            "b1800": "lost:60:1800:9b693d58",
+            "stateKeys": [
+              "hash",
+              "status",
+              "score",
+              "frame",
+              "timeLeft",
+              "px",
+              "pz",
+              "paused",
+              "coins"
+            ],
+            "seed": 42,
+            "expected": {
+              "h600": "playing:30:600:321a662f",
+              "h1800": "lost:60:1800:9b693d58"
+            }
+          }
+        },
+        "resize-and-dpr": {
+          "pass": true,
+          "detail": {
+            "sizes": [
+              {
+                "viewport": [
+                  1000,
+                  500
+                ],
+                "canvas": {
+                  "cssW": 1000,
+                  "cssH": 500,
+                  "w": 1000,
+                  "h": 500,
+                  "ratio": 1,
+                  "dpr": 1,
+                  "canvases": 1
+                },
+                "mean": 44.45,
+                "fits": true
+              },
+              {
+                "viewport": [
+                  390,
+                  844
+                ],
+                "canvas": {
+                  "cssW": 390,
+                  "cssH": 844,
+                  "w": 390,
+                  "h": 844,
+                  "ratio": 1,
+                  "dpr": 1,
+                  "canvases": 1
+                },
+                "mean": 60.11,
+                "fits": true
+              },
+              {
+                "viewport": [
+                  800,
+                  600
+                ],
+                "canvas": {
+                  "cssW": 800,
+                  "cssH": 600,
+                  "w": 800,
+                  "h": 600,
+                  "ratio": 1,
+                  "dpr": 1,
+                  "canvases": 1
+                },
+                "mean": 52.91,
+                "fits": true
+              }
+            ],
+            "dpr2": {
+              "cssW": 640,
+              "w": 1280,
+              "ratio": 2,
+              "dpr": 2
+            }
+          }
+        },
+        "teardown-and-remount-without-leaks": {
+          "pass": true,
+          "detail": {
+            "initial": {
+              "listeners": 32,
+              "elements": 75,
+              "canvases": 1,
+              "glContexts": 3
+            },
+            "afterFirstRemount": {
+              "listeners": 32,
+              "elements": 75,
+              "canvases": 1,
+              "glContexts": 6
+            },
+            "afterFourRemounts": {
+              "listeners": 32,
+              "elements": 75,
+              "canvases": 1,
+              "glContexts": 15
+            },
+            "replayHashAfterRemount": "playing:30:600:321a662f",
+            "stillPlays": true
+          }
+        }
+      },
+      "info": {
+        "bootMs": 3364,
+        "listenersAtBoot": 32,
+        "firstSimStepMs": 10754,
+        "firstSimStepWaitMs": 6435,
+        "mousePressOnTouchButtonDeltaPx": 0,
+        "winPlan": {
+          "steps": 130,
+          "runs": 20,
+          "status": "won",
+          "score": 80
+        },
+        "cueEvidence": {
+          "win": [
+            "triangle",
+            "sine"
+          ],
+          "lose": [
+            "sawtooth"
+          ],
+          "replay": []
+        },
+        "resultsText": {
+          "win": "YOU WIN - score 80",
+          "lose": "TIME UP - score 0"
+        },
+        "replay": {
+          "a600": "playing:30:600:321a662f",
+          "b600": "playing:30:600:321a662f",
+          "a1800": "lost:60:1800:9b693d58",
+          "b1800": "lost:60:1800:9b693d58",
+          "stateKeys": [
+            "hash",
+            "status",
+            "score",
+            "frame",
+            "timeLeft",
+            "px",
+            "pz",
+            "paused",
+            "coins"
+          ],
+          "seed": 42,
+          "expected": {
+            "h600": "playing:30:600:321a662f",
+            "h1800": "lost:60:1800:9b693d58"
+          }
+        },
+        "dpr2": {
+          "cssW": 640,
+          "w": 1280,
+          "ratio": 2,
+          "dpr": 2
+        },
+        "wallMs": 348540
+      },
+      "console": [
+        "[warning] [.WebGL-0x39c400102400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+        "[warning] [.WebGL-0x39c400102400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+        "[warning] [.WebGL-0x39c400102400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+        "[warning] [.WebGL-0x39c400102400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+      ],
+      "consoleCount": 4,
+      "failedRequests": []
+    },
+    "three": {
+      "checks": {
+        "renders-nonblack-frame": {
+          "pass": true,
+          "detail": {
+            "canvas": {
+              "width": 800,
+              "height": 600,
+              "mean": 72.47,
+              "std": 35.34
+            },
+            "simFrameAfter2_5s": 284,
+            "glContexts": 1
+          }
+        },
+        "touch-buttons-present": {
+          "pass": true,
+          "detail": {
+            "rects": {
+              "left": {
+                "x": 16,
+                "y": 528,
+                "w": 56,
+                "h": 56,
+                "cx": 44,
+                "cy": 556
+              },
+              "right": {
+                "x": 140,
+                "y": 528,
+                "w": 56,
+                "h": 56,
+                "cx": 168,
+                "cy": 556
+              },
+              "up": {
+                "x": 78,
+                "y": 466,
+                "w": 56,
+                "h": 56,
+                "cx": 106,
+                "cy": 494
+              },
+              "down": {
+                "x": 78,
+                "y": 528,
+                "w": 56,
+                "h": 56,
+                "cx": 106,
+                "cy": 556
+              }
+            },
+            "display": "block"
+          }
+        },
+        "touch-moves-player-right": {
+          "pass": true,
+          "detail": {
+            "selector": ".dpad [data-dir=\"right\"]",
+            "rect": {
+              "x": 140,
+              "y": 528,
+              "w": 56,
+              "h": 56,
+              "cx": 168,
+              "cy": 556
+            },
+            "before": 0,
+            "after": 7.790862541310168,
+            "delta": 7.79
+          }
+        },
+        "touch-moves-player-down": {
+          "pass": true,
+          "detail": {
+            "selector": ".dpad [data-dir=\"down\"]",
+            "rect": {
+              "x": 78,
+              "y": 528,
+              "w": 56,
+              "h": 56,
+              "cx": 106,
+              "cy": 556
+            },
+            "before": 0,
+            "after": 6.729459927543417,
+            "delta": 6.73
+          }
+        },
+        "touch-moves-player-left": {
+          "pass": true,
+          "detail": {
+            "selector": ".dpad [data-dir=\"left\"]",
+            "rect": {
+              "x": 16,
+              "y": 528,
+              "w": 56,
+              "h": 56,
+              "cx": 44,
+              "cy": 556
+            },
+            "before": 0,
+            "after": -6.729459927543417,
+            "delta": -6.73
+          }
+        },
+        "touch-moves-player-up": {
+          "pass": true,
+          "detail": {
+            "selector": ".dpad [data-dir=\"up\"]",
+            "rect": {
+              "x": 78,
+              "y": 466,
+              "w": 56,
+              "h": 56,
+              "cx": 106,
+              "cy": 494
+            },
+            "before": 0,
+            "after": -7.790862541310168,
+            "delta": -7.79
+          }
+        },
+        "pause-key-stops-clock-and-resume-continues": {
+          "pass": true,
+          "detail": {
+            "pausedFrame": [
+              14,
+              14
+            ],
+            "timeLeft": [
+              29.766666666666666,
+              29.766666666666666
+            ],
+            "resumedFrame": 30
+          }
+        },
+        "pause-button-stops-clock-and-resume-continues": {
+          "pass": true,
+          "detail": {
+            "pausedFrame": [
+              50,
+              50
+            ],
+            "resumedFrame": 69,
+            "labelVisible": true
+          }
+        },
+        "results-screen-on-win": {
+          "pass": true,
+          "detail": {
+            "status": "won",
+            "score": 80,
+            "visible": true,
+            "text": "YOU WIN - score 80"
+          }
+        },
+        "results-screen-on-time-up": {
+          "pass": true,
+          "detail": {
+            "status": "lost",
+            "visible": true,
+            "text": "TIME UP - score 0"
+          }
+        },
+        "audio-unlock-and-three-cues": {
+          "pass": true,
+          "detail": {
+            "contextsBeforeGesture": [
+              "running"
+            ],
+            "contextsAfterGesture": [
+              "running"
+            ],
+            "pickupAndWinOscillators": [
+              "triangle",
+              "sine"
+            ],
+            "loseOscillators": [
+              "sawtooth"
+            ],
+            "oscillatorsDuringReplay": [],
+            "replayHash": "playing:30:600:321a662f"
+          }
+        },
+        "restart-key-resets": {
+          "pass": true,
+          "detail": {
+            "wonScore": 80,
+            "afterScore": 0,
+            "afterFrame": 22,
+            "resultsHidden": true
+          }
+        },
+        "restart-button-resets": {
+          "pass": true,
+          "detail": {
+            "overStatus": "lost",
+            "afterTimeLeft": 29.583333333333332,
+            "afterFrame": 25,
+            "afterRestartButtonFrame": 14
+          }
+        },
+        "seeded-replay-hash": {
+          "pass": true,
+          "detail": {
+            "a600": "playing:30:600:321a662f",
+            "b600": "playing:30:600:321a662f",
+            "a1800": "lost:60:1800:9b693d58",
+            "b1800": "lost:60:1800:9b693d58",
+            "stateKeys": [
+              "hash",
+              "status",
+              "score",
+              "frame",
+              "timeLeft",
+              "px",
+              "pz",
+              "paused",
+              "coins"
+            ],
+            "seed": 42,
+            "expected": {
+              "h600": "playing:30:600:321a662f",
+              "h1800": "lost:60:1800:9b693d58"
+            }
+          }
+        },
+        "resize-and-dpr": {
+          "pass": true,
+          "detail": {
+            "sizes": [
+              {
+                "viewport": [
+                  1000,
+                  500
+                ],
+                "canvas": {
+                  "cssW": 1000,
+                  "cssH": 500,
+                  "w": 1000,
+                  "h": 500,
+                  "ratio": 1,
+                  "dpr": 1,
+                  "canvases": 1
+                },
+                "mean": 22.68,
+                "fits": true
+              },
+              {
+                "viewport": [
+                  390,
+                  844
+                ],
+                "canvas": {
+                  "cssW": 390,
+                  "cssH": 844,
+                  "w": 390,
+                  "h": 844,
+                  "ratio": 1,
+                  "dpr": 1,
+                  "canvases": 1
+                },
+                "mean": 31.63,
+                "fits": true
+              },
+              {
+                "viewport": [
+                  800,
+                  600
+                ],
+                "canvas": {
+                  "cssW": 800,
+                  "cssH": 600,
+                  "w": 800,
+                  "h": 600,
+                  "ratio": 1,
+                  "dpr": 1,
+                  "canvases": 1
+                },
+                "mean": 27.06,
+                "fits": true
+              }
+            ],
+            "dpr2": {
+              "cssW": 640,
+              "w": 1280,
+              "ratio": 2,
+              "dpr": 2
+            }
+          }
+        },
+        "teardown-and-remount-without-leaks": {
+          "pass": true,
+          "detail": {
+            "initial": {
+              "listeners": 19,
+              "elements": 24,
+              "canvases": 1,
+              "glContexts": 1
+            },
+            "afterFirstRemount": {
+              "listeners": 19,
+              "elements": 24,
+              "canvases": 1,
+              "glContexts": 2
+            },
+            "afterFourRemounts": {
+              "listeners": 19,
+              "elements": 24,
+              "canvases": 1,
+              "glContexts": 5
+            },
+            "replayHashAfterRemount": "playing:30:600:321a662f",
+            "stillPlays": true
+          }
+        }
+      },
+      "info": {
+        "bootMs": 1399,
+        "listenersAtBoot": 19,
+        "firstSimStepMs": 1589,
+        "firstSimStepWaitMs": 126,
+        "mousePressOnTouchButtonDeltaPx": 9,
+        "winPlan": {
+          "steps": 130,
+          "runs": 20,
+          "status": "won",
+          "score": 80
+        },
+        "cueEvidence": {
+          "win": [
+            "triangle",
+            "sine"
+          ],
+          "lose": [
+            "sawtooth"
+          ],
+          "replay": []
+        },
+        "resultsText": {
+          "win": "YOU WIN - score 80",
+          "lose": "TIME UP - score 0"
+        },
+        "replay": {
+          "a600": "playing:30:600:321a662f",
+          "b600": "playing:30:600:321a662f",
+          "a1800": "lost:60:1800:9b693d58",
+          "b1800": "lost:60:1800:9b693d58",
+          "stateKeys": [
+            "hash",
+            "status",
+            "score",
+            "frame",
+            "timeLeft",
+            "px",
+            "pz",
+            "paused",
+            "coins"
+          ],
+          "seed": 42,
+          "expected": {
+            "h600": "playing:30:600:321a662f",
+            "h1800": "lost:60:1800:9b693d58"
+          }
+        },
+        "dpr2": {
+          "cssW": 640,
+          "w": 1280,
+          "ratio": 2,
+          "dpr": 2
+        },
+        "wallMs": 42421
+      },
+      "console": [],
+      "consoleCount": 0,
+      "failedRequests": []
+    }
+  },
+  "comparison": {
+    "sameReplayHash600": true,
+    "sameReplayHash1800": true
+  }
+}
