@@ -380,7 +380,7 @@ export function gitFiles(root) {
   gitCache.set(root, list);
   return list;
 }
-export function resetGitCache() { gitCache = new Map(); }
+export function resetGitCache() { gitCache = new Map(); releaseCache = new Map(); }
 
 function checkVercelignore({ root }) {
   const p = join(root, ".vercelignore");
@@ -639,6 +639,36 @@ function checkSharedCatalog({ game, src }) {
   return out;
 }
 
+/**
+ * Card frame older than the latest minor release (audit RH-05): every index poster is built from the inventory's card frame
+ * (tools/site/build-card-images.mjs), so a card committed before the last vX.Y.0 tag shows a render the engine no longer
+ * produces. Retake the final screens from the current build, then rebuild the posters.
+ */
+let releaseCache = new Map();
+function latestMinorRelease(root) {
+  if (releaseCache.has(root)) return releaseCache.get(root);
+  let out = null;
+  try {
+    const tag = execFileSync("git", ["describe", "--tags", "--abbrev=0", "--match", "v[0-9]*.[0-9]*.0"], { cwd: root, stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
+    const time = Number(execFileSync("git", ["log", "-1", "--format=%ct", tag], { cwd: root, stdio: ["ignore", "pipe", "ignore"] }).toString().trim());
+    if (tag && time) out = { tag, time };
+  } catch { /* no release tag */ }
+  releaseCache.set(root, out);
+  return out;
+}
+function checkScreensFresh({ game, root }) {
+  const release = latestMinorRelease(root);
+  const dir = game.screens?.dir;
+  const card = game.screens?.card;
+  if (!release || !dir || !card) return [];
+  const rel = `${dir}/${card}`;
+  let time = 0;
+  try { time = Number(execFileSync("git", ["log", "-1", "--format=%ct", "--", rel], { cwd: root, stdio: ["ignore", "pipe", "ignore"] }).toString().trim()); } catch { return []; }
+  if (!time || time >= release.time) return [];
+  const day = (t) => new Date(t * 1000).toISOString().slice(0, 10);
+  return [finding("screens-fresh", "warn", game, rel, 0, `card frame last committed ${day(time)}, before ${release.tag} (${day(release.time)}): the index poster shows an older render. Retake the final screens on the current build, then run node tools/site/build-card-images.mjs`)];
+}
+
 function dedupe(list) {
   const seen = new Set();
   return list.filter((f) => { const k = `${f.check}|${f.game}|${f.file}|${f.line}|${f.message}`; if (seen.has(k)) return false; seen.add(k); return true; });
@@ -662,7 +692,8 @@ export const GAME_CHECKS = {
   "screens-tracked": checkScreensTracked,
   "touch-input": checkTouchInput,
   lighting: checkLighting,
-  "shared-catalog": checkSharedCatalog
+  "shared-catalog": checkSharedCatalog,
+  "screens-fresh": checkScreensFresh
 };
 export const GLOBAL_CHECKS = { vercelignore: checkVercelignore, counts: checkCounts, "meshy-cap": checkMeshyCap, skin: checkSkin };
 

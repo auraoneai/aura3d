@@ -323,6 +323,27 @@ describe("game-checks", () => {
     expect(run(ok, ["shared-catalog"])).toEqual([]);
   });
 
+  it("screens-fresh: warns when the card frame predates the latest minor release tag (RH-05)", () => {
+    const root = fixture({ "apps/showcase-demo/index.html": "<p>x</p>" }, { screens: true });
+    const git = (args: string[], date: string) =>
+      execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@t", ...args], { cwd: root, env: { ...process.env, GIT_AUTHOR_DATE: date, GIT_COMMITTER_DATE: date } });
+    git(["commit", "-q", "-m", "card"], "2026-10-01T00:00:00Z");
+    expect(run(root, ["screens-fresh"])).toEqual([]); // no release tag yet
+    writeFileSync(join(root, "README.md"), "x");
+    git(["add", "-A"], "2026-10-02T00:00:00Z");
+    git(["commit", "-q", "-m", "release"], "2026-10-02T00:00:00Z");
+    git(["tag", "v9.1.0"], "2026-10-02T00:00:00Z");
+    resetGitCache();
+    const stale = run(root, ["screens-fresh"]);
+    expect(stale).toHaveLength(1);
+    expect(stale[0].message).toMatch(/before v9\.1\.0/);
+    writeFileSync(join(root, "evidence/demo/screens/final/card.jpg"), "y");
+    git(["add", "-A"], "2026-10-03T00:00:00Z");
+    git(["commit", "-q", "-m", "retake"], "2026-10-03T00:00:00Z");
+    resetGitCache();
+    expect(run(root, ["screens-fresh"])).toEqual([]);
+  });
+
   it("rejects an unknown game slug", () => {
     const root = fixture({ "apps/showcase-demo/index.html": "<p>x</p>" });
     expect(() => runChecks({ root, slugs: ["nope"], global: false, env: {} })).toThrow(/unknown game/);
