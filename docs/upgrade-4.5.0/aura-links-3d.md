@@ -81,6 +81,19 @@
 - **What to do:** If `route-health.json` budgets (`maxModelNodes: 48`, `minFps: 30`, `maxBootMs: 9000`, lines 54-56) are re-measured, re-measure on 4.5.0; the numbers in the file were generated 2026-10-17 against the old build.
 - **How to check:** Read `app.diagnostics()` at `ready` and compare `drawCalls` with 4.3.7.
 
+## Measured after the audit fixes (2026-10-29)
+
+Steady-state captures on the remote runner (software WebGL2, 1280x720 unless noted; mean luma of the canvas at about 75 s after ready). Base is `audit-fix/integration`, branch is `audit-fix/g10`. Frames and stats: `evidence/aura-links-3d/audit-fix/{before,after}/`.
+
+| Course | Base | Branch | Change |
+|---|---|---|---|
+| St Auroras | 135.47 | 135.46 | none |
+| Neon Bay | 2.26 (96.6% of pixels at 8 or below) | 27.59 (43.5%) | floodlight key added |
+| Neon Bay, 390x844 | 0.85 | 27.29 | floodlight key added |
+| Mare | 47.03 | 46.38 | -1.4% |
+
+Neon Bay was near black on 4.5.0 because the night-city look's only key is a 0.7 blue moon over dark-green turf. The game now adds a warm-white floodlight directional at 3.0 with no shadow (`src/game/lighting.ts`). These numbers come from one software renderer and do not describe a GPU.
+
 ## Changes that do not affect this game
 
 - **Direct render path as the final path:** Scene always carries effect nodes, an HDRI environment on three looks and opacity < 1 materials, so it stays on the HDR chain (section 2). No silhouette-edge difference from canvas MSAA.
