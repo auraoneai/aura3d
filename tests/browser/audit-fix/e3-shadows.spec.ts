@@ -18,14 +18,20 @@ const CANVAS_ONLY = "body *:not(canvas){visibility:hidden !important} canvas{vis
 const READY = "document.body.dataset.aura3dReady === 'true' || Boolean(window.__AURA3D_LIVE_APPS__ && window.__AURA3D_LIVE_APPS__.all().some((a) => (a.diagnostics?.().drawCalls ?? 0) > 0))";
 
 /** `publicDir`: the app keeps its own `public/aura-assets` (served at `/aura-assets/` by its Vite build, not by the shared dev server). */
-interface Target { readonly name: string; readonly url: string; readonly publicDir?: string; }
+interface Target {
+  readonly name: string;
+  readonly url: string;
+  readonly publicDir?: string;
+  /** URL path prefix served from a repo directory (the shared dev server resolves `new URL("./x", import.meta.url)` under the app). */
+  readonly mount?: { readonly prefix: string; readonly dir: string };
+}
 
 const TARGETS: readonly Target[] = [
   { name: "links-default", url: "/apps/showcase-aura-links-3d/index.html" },
   { name: "crosshop", url: "/apps/showcase-cross-hop/", publicDir: "apps/showcase-cross-hop/public" },
   // Shadowstep Gauntlet opts into the 4.3.0 shadow fit (__A3D_SHADOW_FIT__ = "current"), where cascades hug the frustum slice: this is
   // where a centre-picked cascade leaves spread instanced scenery unshadowed.
-  { name: "ninja", url: "/apps/showcase-ninja-runner-port/" }
+  { name: "ninja", url: "/apps/showcase-ninja-runner-port/", mount: { prefix: "/apps/showcase-ninja-runner-port/src/assets/", dir: "examples/ninja-runner-port/assets" } }
 ];
 
 async function lumaStats(page: Page, png: Buffer) {
@@ -92,11 +98,22 @@ test.describe("e3 shadows capture", () => {
   for (const target of TARGETS) {
     test(`${target.name}`, async ({ page }) => {
       page.on("pageerror", (e) => log(`E3_ERR ${target.name} pageerror ${e.message.slice(0, 300)}`));
+      page.on("response", (r) => { if (r.status() >= 400) log(`E3_HTTP ${target.name} ${r.status()} ${r.url().slice(0, 300)}`); });
       page.on("console", (m) => { if (m.type() === "error") log(`E3_CONSOLE ${target.name} ${m.text().slice(0, 200)}`); });
       if (target.publicDir) {
         const root = resolve(process.cwd(), target.publicDir);
         await page.route("**/aura-assets/**", async (route) => {
           const local = resolve(root, `.${new URL(route.request().url()).pathname}`);
+          if (local.startsWith(root) && existsSync(local)) await route.fulfill({ path: local });
+          else await route.fallback();
+        });
+      }
+      if (target.mount) {
+        const { prefix, dir } = target.mount;
+        const root = resolve(process.cwd(), dir);
+        await page.route(`**${prefix}**`, async (route) => {
+          const path = new URL(route.request().url()).pathname;
+          const local = resolve(root, `.${path.slice(prefix.length - 1)}`);
           if (local.startsWith(root) && existsSync(local)) await route.fulfill({ path: local });
           else await route.fallback();
         });
