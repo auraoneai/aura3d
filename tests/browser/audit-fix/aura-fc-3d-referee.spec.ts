@@ -26,7 +26,7 @@ async function freshFrames(page: Page, n: number) {
   await page.waitForFunction((s) => ((window as any).__AURA3D_GAME_EVIDENCE__?.framesRendered ?? 0) >= s, f0 + n, { timeout: 180_000, polling: 250 }).catch(() => undefined);
 }
 const setRefVisible = (page: Page, v: boolean) => page.evaluate(([h, vis]) => {
-  const app = (window as any)[h as string].app();
+  const app = (window as any).__AURA3D_LIVE_APPS__.all()[0];
   app.nodes.require("fc-referee").setVisible(vis);
   (window as any).__FC_REF_FORCE__ = vis;
 }, [HOOK, v] as const);
@@ -84,7 +84,7 @@ test("fc-referee-walk", async ({ page }) => {
     await setRefVisible(page, true);
     await freshFrames(page, 2);
     const anim = await page.evaluate((h) => {
-      const r = (window as any)[h].app().nodes.require("fc-referee");
+      const r = (window as any).__AURA3D_LIVE_APPS__.all()[0].nodes.require("fc-referee");
       const snap = r.snapshot?.();
       const cam = (window as any).__AURA3D_GAME_EVIDENCE__?.camera;
       const W = innerWidth, H = innerHeight;
