@@ -22,7 +22,7 @@ import {
 import { autopilotInput, createAutopilot } from "./autopilot";
 import {
   betterMedal, cosmeticRng, DEFAULT_BINDINGS, enemyNodeStem, floorOutcome, floorResult, hudKey, keyLabel, MEDAL_MARK,
-  outcomeView, parseBindings, REMAPPABLE, rebind, runTotals, type BindAction, type Bindings, type FloorOutcome, type FloorResult
+  outcomeView, parseBindings, REMAPPABLE, rebind, runTotals, scaleHex, wallGain, type BindAction, type Bindings, type FloorOutcome, type FloorResult
 } from "./flow";
 import { VIEWMODEL_ASSET, VIEWMODEL_YAW_OFFSET, weaponHudLabel } from "./weapons-view";
 import { ENEMY_FORWARD, enemyFacingError, nextEnemyYaw } from "./enemy-facing";
@@ -109,8 +109,12 @@ function buildScene() {
     const rows = def.rows;
     const h = rows.length, w = rows[0].length;
     const wallH = SLOT_WALL_H[slot]!;
-    const wallMat = material.pbr({ color: shade(def.palette.wall, 0.14), roughness: 0.68, metalness: 0.12 });
-    const altMat = material.pbr({ color: shade(def.palette.wallAlt, 0.16), roughness: 0.62, metalness: 0.18 });
+    // the renderer multiplies material and instance colours; wallGain undoes the palette being applied twice (floors 2-6 drew black)
+    const ref = FLOORS[0]!.palette;
+    const wallK = wallGain(shade(def.palette.wall, 0.14), shade(def.palette.wall, 0.12), shade(ref.wall, 0.14), shade(ref.wall, 0.12));
+    const altK = wallGain(shade(def.palette.wallAlt, 0.16), shade(def.palette.wallAlt, 0.14), shade(ref.wallAlt, 0.16), shade(ref.wallAlt, 0.14));
+    const wallMat = material.pbr({ color: scaleHex(shade(def.palette.wall, 0.14), wallK), roughness: 0.68, metalness: 0.12 });
+    const altMat = material.pbr({ color: scaleHex(shade(def.palette.wallAlt, 0.16), altK), roughness: 0.62, metalness: 0.18 });
     const wallInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const wallCol: string[] = [];
     const altInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
@@ -126,10 +130,10 @@ function buildScene() {
         if (ch === "P") continue; // push-walls are runtime nodes
         const j = (hash2(x, z) - 0.5) * 0.14;
         wallInst.push({ position: [wx, wallH / 2, wz], scale: [CELL, wallH, CELL] });
-        wallCol.push(shade(def.palette.wall, 0.12 + j));
+        wallCol.push(scaleHex(shade(def.palette.wall, 0.12 + j), wallK));
       } else if (ch === "%") {
         altInst.push({ position: [wx, wallH / 2, wz], scale: [CELL, wallH, CELL] });
-        altCol.push(shade(def.palette.wallAlt, 0.14 + (hash2(x, z) - 0.5) * 0.1));
+        altCol.push(scaleHex(shade(def.palette.wallAlt, 0.14 + (hash2(x, z) - 0.5) * 0.1), altK));
       } else if (ch === ",") {
         faltInst.push({ position: [wx, 0.04, wz], scale: [CELL, 0.08, CELL] });
       }

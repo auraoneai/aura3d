@@ -2,8 +2,9 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { FLOORS, KILL_HOUSE } from "../../../apps/showcase-bunker-zero/src/maps";
 import {
-  betterMedal, cloneBindings, cosmeticRng, DEFAULT_BINDINGS, keyLabel, parseBindings, rebind, runTotals, type BindAction
+  betterMedal, cloneBindings, scaleHex, wallAlbedo, wallGain, cosmeticRng, DEFAULT_BINDINGS, keyLabel, parseBindings, rebind, runTotals, type BindAction
 } from "../../../apps/showcase-bunker-zero/src/flow";
 import { VIEWMODEL_ASSET } from "../../../apps/showcase-bunker-zero/src/weapons-view";
 
@@ -114,5 +115,26 @@ describe("bunker zero flow and wiring", () => {
     const used = new Set([...MAIN.matchAll(/assets\.([A-Za-z0-9]+)/g)].map((m) => m[1]).concat(Object.values(VIEWMODEL_ASSET)));
     for (const id of used) expect(declared.has(id), id).toBe(true);
     execFileSync(process.execPath, [path.join(APP, "scripts/extract-assets.mjs"), "--check"], { encoding: "utf8" });
+  });
+
+  it("wall albedo: no floor's walls fall below 45% of floor 1's (floor 6 drew black at about 1/12)", () => {
+    const shade = (hex: string, amt: number) => {
+      const n = parseInt(hex.slice(1), 16);
+      const c = (v: number) => Math.max(0, Math.min(255, v + amt * 255));
+      return `#${((Math.round(c((n >> 16) & 255)) << 16) | (Math.round(c((n >> 8) & 255)) << 8) | Math.round(c(n & 255))).toString(16).padStart(6, "0")}`;
+    };
+    const ref = FLOORS[0]!.palette;
+    const albedo = (wall: string, k: number) => wallAlbedo(shade(wall, 0.14), k) * wallAlbedo(shade(wall, 0.12), k);
+    const refAlbedo = albedo(ref.wall, 1);
+    expect(wallGain(shade(ref.wall, 0.14), shade(ref.wall, 0.12), shade(ref.wall, 0.14), shade(ref.wall, 0.12))).toBe(1);
+    for (const def of [...FLOORS, KILL_HOUSE]) {
+      const k = wallGain(shade(def.palette.wall, 0.14), shade(def.palette.wall, 0.12), shade(ref.wall, 0.14), shade(ref.wall, 0.12));
+      const a = albedo(def.palette.wall, k);
+      expect(a / refAlbedo, def.name).toBeGreaterThan(0.43); // 45% before 8-bit rounding of the hex colours
+      expect(a / refAlbedo, def.name).toBeLessThanOrEqual(1.0001);
+      // unscaled, the dark palettes sit far below
+      if (def.id === 5) expect(albedo(def.palette.wall, 1) / refAlbedo).toBeLessThan(0.15);
+    }
+    expect(scaleHex("#808080", 1)).toBe("#808080");
   });
 });

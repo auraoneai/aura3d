@@ -122,3 +122,35 @@ export function cosmeticRng(seed = 0x9e3779b9): () => number {
   let s = seed >>> 0;
   return () => { s = (s + 0x6d2b79f5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
+
+// ---------------------------------------------------------------- wall albedo
+/**
+ * The renderer multiplies a primitive's material colour by its per-instance colour, and the walls set both from the same
+ * palette tint, so the wall albedo is the palette squared. Floor 1's light palette survives that; the darker palettes of
+ * floors 2-6 and the Kill House went to about 1/12 of floor 1's wall albedo and drew as black slabs. `wallGain` is the factor
+ * (applied to both colours, in linear light) that puts a floor's wall albedo at floor 1's value scaled by the ratio of the two
+ * palettes' luminance (at least WALL_ALBEDO_FLOOR): each floor keeps its own relative darkness once, not squared. Floor 1 gets 1.
+ */
+const srgbToLinear = (c: number) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+const linearToSrgb = (c: number) => (c <= 0.0031308 ? c * 12.92 : 1.055 * c ** (1 / 2.4) - 0.055);
+const hexLinear = (hex: string): [number, number, number] => {
+  const n = parseInt(hex.slice(1), 16);
+  return [srgbToLinear(((n >> 16) & 255) / 255), srgbToLinear(((n >> 8) & 255) / 255), srgbToLinear((n & 255) / 255)];
+};
+const lum = ([r, g, b]: readonly number[]) => 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+export const WALL_ALBEDO_FLOOR = 0.45;
+export function wallGain(material: string, instance: string, refMaterial: string, refInstance: string): number {
+  const m = hexLinear(material), i = hexLinear(instance), rm = hexLinear(refMaterial), ri = hexLinear(refInstance);
+  const product = lum([m[0] * i[0], m[1] * i[1], m[2] * i[2]]);
+  const refProduct = lum([rm[0] * ri[0], rm[1] * ri[1], rm[2] * ri[2]]);
+  // never below 45% of floor 1, so the darkest palette (the floor-6 silo) still reads as walls
+  const target = refProduct * Math.max(WALL_ALBEDO_FLOOR, lum(i) / Math.max(1e-6, lum(ri)));
+  return Math.max(1, Math.sqrt(target / Math.max(1e-6, product)));
+}
+/** Scale a hex colour by `gain` in linear light (clamped per channel). */
+export function scaleHex(hex: string, gain: number): string {
+  const to = (c: number) => Math.round(Math.max(0, Math.min(1, linearToSrgb(Math.min(1, c * gain)))) * 255);
+  const [r, g, b] = hexLinear(hex);
+  return `#${((to(r) << 16) | (to(g) << 8) | to(b)).toString(16).padStart(6, "0")}`;
+}
+export function wallAlbedo(color: string, gain: number): number { return lum(hexLinear(scaleHex(color, gain))); }
