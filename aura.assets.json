@@ -141759,8 +141759,8 @@
       ]
     },
     {
-      "id": "teleopBus",
-      "name": "teleopBus",
+      "id": "gridBoxTruck",
+      "name": "gridBoxTruck",
       "kind": "model",
       "format": "glb",
       "url": "/aura-assets/teleopVehBoxTruck.de4b81d4.glb",
@@ -141835,8 +141835,8 @@
       }
     },
     {
-      "id": "teleopCorvette",
-      "name": "teleopCorvette",
+      "id": "gridGt",
+      "name": "gridGt",
       "kind": "model",
       "format": "glb",
       "url": "/aura-assets/teleopVehCoupe.83b731ca.glb",
@@ -141874,8 +141874,8 @@
       }
     },
     {
-      "id": "teleopCybercab",
-      "name": "teleopCybercab",
+      "id": "gridCoupe",
+      "name": "gridCoupe",
       "kind": "model",
       "format": "glb",
       "url": "/aura-assets/teleopVehHatch.53933015.glb",
@@ -141913,8 +141913,8 @@
       }
     },
     {
-      "id": "teleopCybertruck",
-      "name": "teleopCybertruck",
+      "id": "gridTruck",
+      "name": "gridTruck",
       "kind": "model",
       "format": "glb",
       "url": "/aura-assets/teleopVehPickup.aaee30b6.glb",
@@ -141952,8 +141952,8 @@
       }
     },
     {
-      "id": "teleopMissions",
-      "name": "teleopMissions",
+      "id": "gridInterceptor",
+      "name": "gridInterceptor",
       "kind": "model",
       "format": "glb",
       "url": "/aura-assets/teleopVehRoadster.35a1e8b7.glb",
@@ -141991,8 +141991,8 @@
       }
     },
     {
-      "id": "teleopPickup",
-      "name": "teleopPickup",
+      "id": "gridPickup",
+      "name": "gridPickup",
       "kind": "model",
       "format": "glb",
       "url": "/aura-assets/teleopVehPickup.aaee30b6.glb",
@@ -142028,8 +142028,8 @@
       }
     },
     {
-      "id": "teleopSedan",
-      "name": "teleopSedan",
+      "id": "gridSedan",
+      "name": "gridSedan",
       "kind": "model",
       "format": "glb",
       "url": "/aura-assets/teleopVehSedan.431efea6.glb",
@@ -142065,8 +142065,8 @@
       }
     },
     {
-      "id": "teleopSuv",
-      "name": "teleopSuv",
+      "id": "gridHatch",
+      "name": "gridHatch",
       "kind": "model",
       "format": "glb",
       "url": "/aura-assets/teleopVehHatch.53933015.glb",
@@ -142102,8 +142102,8 @@
       }
     },
     {
-      "id": "teleopTaxi",
-      "name": "teleopTaxi",
+      "id": "gridTaxi",
+      "name": "gridTaxi",
       "kind": "model",
       "format": "glb",
       "url": "/aura-assets/teleopVehSedan.431efea6.glb",
@@ -142139,8 +142139,8 @@
       }
     },
     {
-      "id": "teleopVan",
-      "name": "teleopVan",
+      "id": "gridVan",
+      "name": "gridVan",
       "kind": "model",
       "format": "glb",
       "url": "/aura-assets/teleopVehVan.6e9c71d7.glb",
@@ -142176,8 +142176,8 @@
       }
     },
     {
-      "id": "teleopWaymoHero",
-      "name": "teleopWaymoHero",
+      "id": "gridCruiser",
+      "name": "gridCruiser",
       "kind": "model",
       "format": "glb",
       "url": "/aura-assets/teleopVehRobotaxi.f1726137.glb",
@@ -142215,8 +142215,8 @@
       }
     },
     {
-      "id": "teleopWaymoTraffic",
-      "name": "teleopWaymoTraffic",
+      "id": "gridRivalCruiser",
+      "name": "gridRivalCruiser",
       "kind": "model",
       "format": "glb",
       "url": "/aura-assets/teleopVehRobotaxi.f1726137.glb",

@@ -509,19 +509,19 @@ type AuraGeneratedAssetDefinitions = {
   readonly "skylineSentryTelegraphSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "skylineSummitThemeSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "skylineWinterParallaxBackdrop": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "teleopBus": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; };
+  readonly "gridBoxTruck": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; };
   readonly "teleopCablecar": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "teleopCorvette": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "teleopCybercab": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "teleopCybertruck": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "teleopMissions": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "teleopPickup": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; };
-  readonly "teleopSedan": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; };
-  readonly "teleopSuv": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; };
-  readonly "teleopTaxi": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; };
-  readonly "teleopVan": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; };
-  readonly "teleopWaymoHero": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "teleopWaymoTraffic": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "gridGt": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "gridCoupe": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "gridTruck": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "gridInterceptor": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "gridPickup": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; };
+  readonly "gridSedan": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; };
+  readonly "gridHatch": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; };
+  readonly "gridTaxi": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; };
+  readonly "gridVan": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; };
+  readonly "gridCruiser": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "gridRivalCruiser": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "turboAlpineVenueBackdrop": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "turboCheckpointChimeSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "turboCircuitEnvironmentV2": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -123200,7 +123200,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       }
     },
   },
-  "teleopBus": {
+  "gridBoxTruck": {
     type: "model",
     format: "glb",
     url: "/aura-assets/teleopVehBoxTruck.de4b81d4.glb",
@@ -123269,7 +123269,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "role": "unknown"
     },
   },
-  "teleopCorvette": {
+  "gridGt": {
     type: "model",
     format: "glb",
     url: "/aura-assets/teleopVehCoupe.83b731ca.glb",
@@ -123310,7 +123310,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "role": "unknown"
     },
   },
-  "teleopCybercab": {
+  "gridCoupe": {
     type: "model",
     format: "glb",
     url: "/aura-assets/teleopVehHatch.53933015.glb",
@@ -123351,7 +123351,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "role": "unknown"
     },
   },
-  "teleopCybertruck": {
+  "gridTruck": {
     type: "model",
     format: "glb",
     url: "/aura-assets/teleopVehPickup.aaee30b6.glb",
@@ -123392,7 +123392,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "role": "unknown"
     },
   },
-  "teleopMissions": {
+  "gridInterceptor": {
     type: "model",
     format: "glb",
     url: "/aura-assets/teleopVehRoadster.35a1e8b7.glb",
@@ -123433,7 +123433,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "role": "unknown"
     },
   },
-  "teleopPickup": {
+  "gridPickup": {
     type: "model",
     format: "glb",
     url: "/aura-assets/teleopVehPickup.aaee30b6.glb",
@@ -123461,7 +123461,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "role": "unknown"
     },
   },
-  "teleopSedan": {
+  "gridSedan": {
     type: "model",
     format: "glb",
     url: "/aura-assets/teleopVehSedan.431efea6.glb",
@@ -123489,7 +123489,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "role": "unknown"
     },
   },
-  "teleopSuv": {
+  "gridHatch": {
     type: "model",
     format: "glb",
     url: "/aura-assets/teleopVehHatch.53933015.glb",
@@ -123517,7 +123517,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "role": "unknown"
     },
   },
-  "teleopTaxi": {
+  "gridTaxi": {
     type: "model",
     format: "glb",
     url: "/aura-assets/teleopVehSedan.431efea6.glb",
@@ -123545,7 +123545,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "role": "unknown"
     },
   },
-  "teleopVan": {
+  "gridVan": {
     type: "model",
     format: "glb",
     url: "/aura-assets/teleopVehVan.6e9c71d7.glb",
@@ -123573,7 +123573,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "role": "unknown"
     },
   },
-  "teleopWaymoHero": {
+  "gridCruiser": {
     type: "model",
     format: "glb",
     url: "/aura-assets/teleopVehRobotaxi.f1726137.glb",
@@ -123614,7 +123614,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "role": "unknown"
     },
   },
-  "teleopWaymoTraffic": {
+  "gridRivalCruiser": {
     type: "model",
     format: "glb",
     url: "/aura-assets/teleopVehRobotaxi.f1726137.glb",
