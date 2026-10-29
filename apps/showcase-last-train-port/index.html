@@ -54,8 +54,11 @@
         #top .meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         #stats { top: calc(max(8px, env(safe-area-inset-top)) + 58px); left: 8px; right: 8px; text-align: left; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
         #stats .big { font-size: 20px; }
-        #prompt { top: calc(max(8px, env(safe-area-inset-top)) + 124px); }
-        #toast { top: calc(max(8px, env(safe-area-inset-top)) + 176px); }
+        #stats { flex-wrap: wrap; }
+        #stats .lean-row { flex-basis: 100%; justify-content: flex-start; }
+        #prompt { top: calc(max(8px, env(safe-area-inset-top)) + 146px); }
+        #toast { top: calc(max(8px, env(safe-area-inset-top)) + 198px); }
+        #results .grade { font-size: 52px; }
         #status { left: 8px; right: 8px; bottom: max(8px, env(safe-area-inset-bottom)); flex-direction: column; align-items: flex-start; gap: 4px; }
         #riders { bottom: 150px; left: 8px; max-width: calc(100vw - 16px); }
       }
@@ -77,8 +80,11 @@
       .touch button { min-width: 64px; min-height: 56px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: rgba(20, 24, 34, 0.78); color: var(--ink); font: 500 15px/1 "Graphik Web", sans-serif; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
       .touch button.on { background: rgba(242, 193, 78, 0.35); border-color: var(--warm); }
       .touch button.go { min-width: 84px; border-color: var(--jade); }
+      body.results-open #prompt, body.results-open #riders, body.results-open #status { display: none !important; }
+      body.results-open #results { background: rgba(14, 18, 32, 0.78); }
       @media (pointer: coarse) {
         .touch { display: flex; }
+        .kbd-hint { display: none; }
         #status .meta { display: none; }
         #status { bottom: calc(max(36px, calc(env(safe-area-inset-bottom) + 30px)) + 66px); }
         #riders { bottom: calc(max(36px, calc(env(safe-area-inset-bottom) + 30px)) + 118px); }
@@ -128,7 +134,7 @@
         <div class="grid" id="res-grid"></div>
         <div class="meta rule" id="res-rule"></div>
         <div class="row-btns"><button id="res-new" type="button">New service</button><button id="res-short" type="button">Short service</button><button id="res-keep" type="button">Keep riding</button></div>
-        <div class="meta">Press <kbd>R</kbd> for a new service, <kbd>2</kbd> for a short one &middot; <kbd>Enter</kbd> to keep riding from here</div>
+        <div class="meta kbd-hint">Press <kbd>R</kbd> for a new service, <kbd>2</kbd> for a short one &middot; <kbd>Enter</kbd> to keep riding from here</div>
       </div>
     </div>
     <div id="touch" class="touch" aria-label="Touch controls">

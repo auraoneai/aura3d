@@ -172,10 +172,10 @@ function updateHud(): void {
   const complete = sim.attempt.status === "complete" && sim.phase === "ready";
   const prompt = complete ? ["Service complete", `Grade ${sim.attempt.grade ?? ""}. R new service, Enter keep riding`] as [string, string] : (phasePrompt[sim.phase] ?? [sim.phase, ""]);
   const promptEl = $("prompt");
-  const promptHtml = `${prompt[0]}<span class="meta">${prompt[1]}</span>`;
+  const promptHtml = `${touchText(prompt[0])}<span class="meta">${touchText(prompt[1])}</span>`;
   if (promptEl.dataset.k !== promptHtml) { promptEl.dataset.k = promptHtml; promptEl.innerHTML = promptHtml; }
   promptEl.classList.toggle("hidden", titleMode);
-  $("message").textContent = complete ? `Service complete (${sim.attempt.grade}). Press R for a new service.` : (phaseMessage[sim.phase] ?? sim.phase);
+  $("message").textContent = touchText(complete ? `Service complete (${sim.attempt.grade}). Press R for a new service.` : (phaseMessage[sim.phase] ?? sim.phase));
   updateRiders();
   updateResults();
 }
@@ -211,9 +211,18 @@ function updateRiders(): void {
   riders.innerHTML = `<div class="meta next-stop">Next stop ${towns[nextStop]!.name}: ${alighting} alighting</div>${shown}`;
 }
 
+/** On touch screens the prompts name the on-screen buttons instead of keys. */
+const TOUCH_WORDS: [RegExp, string][] = [
+  [/Press E to open the doors/g, "Tap Go to open the doors"], [/Hold W to depart/g, "Hold Go to depart"], [/hold W/g, "hold Go"], [/Press W to depart/g, "Hold Go to depart"],
+  [/Space or S brakes, A \/ D balance the lean/g, "Brake slows, the Lean buttons balance"], [/A \/ D balance, W to speed up, Space to brake/g, "Lean buttons balance, Go speeds up, Brake slows"],
+  [/A \/ D to balance/g, "Lean buttons to balance"], [/Hold W once moving/g, "Hold Go once moving"],
+  [/R new service, Enter keep riding/g, "use the buttons below"], [/Press R for a new service\./g, ""]
+];
+const touchText = (text: string): string => (media("(pointer: coarse)") ? TOUCH_WORDS.reduce((t, [re, w]) => t.replace(re, w), text) : text);
+
 function toast(text: string, ms = 2600): void {
   const el = $("toast");
-  el.textContent = text;
+  el.textContent = touchText(text);
   el.classList.remove("off");
   toastUntil = performance.now() + ms;
 }
@@ -255,6 +264,7 @@ function updateResults(): void {
     box.classList.remove("hidden");
   }
   if (!complete && resultsShown) { resultsShown = false; box.classList.add("hidden"); }
+  document.body.classList.toggle("results-open", resultsShown && !box.classList.contains("hidden"));
 }
 
 /** R: a new service. While one is running, the first press asks and a second press within 3 s abandons it (D-05). */
