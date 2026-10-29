@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-// @ts-expect-error plain .mjs tool module without types
 import { appPagePath, composePortPage, examplePagePath, readFileText, readNeutralLabels } from "../../../tools/showcase-port-pages/lib.mjs";
 
 describe("the live wrapper page carries the example page's markup and CSS (audit WW-1)", () => {

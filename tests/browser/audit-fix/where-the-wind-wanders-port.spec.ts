@@ -23,6 +23,9 @@ import { startExampleDevServer, type ExampleDevServer } from "../example-dev-ser
 const CHUNK = 16000;
 const log = (line: string): void => { process.stdout.write(`${line}\n`); };
 const APP = "/apps/showcase-where-the-wind-wanders-port/";
+const ORIGIN = { value: "" };
+const ONLY = (process.env.WW_ONLY ?? "").split(",").filter(Boolean);
+const want = (name: string): boolean => ONLY.length === 0 || ONLY.includes(name);
 const LAB = "/examples/where-the-wind-wanders-port/";
 const REPLAY = JSON.parse(readFileSync(resolve("tests/browser/data/where-the-wind-wanders-reference-replay.json"), "utf8")) as { script: { keys: string; act: "E" | "Space" | null; steps: number }[] };
 
@@ -117,6 +120,19 @@ async function shot(page: Page, name: string, extra: Record<string, unknown> = {
   for (let i = 0; i < n; i++) log(`WW_JPG ${name} ${i + 1}/${n} ${b64.slice(i * CHUNK, (i + 1) * CHUNK)}`);
 }
 
+/**
+ * The dev server bundles apps/<app>/src/main.ts with esbuild, so `new URL("./assets/models/x.glb", import.meta.url)` in the
+ * mounted example resolves under apps/<app>/src/ (Vite emits those files in a real build). Serve them from the example.
+ */
+async function mapAppAssets(target: Page | BrowserContext, origin: string): Promise<void> {
+  await target.route(/\/apps\/showcase-where-the-wind-wanders-port\/src\/assets\//, async (route) => {
+    const url = new URL(route.request().url());
+    const file = url.pathname.replace("/apps/showcase-where-the-wind-wanders-port/src/assets/", "/examples/where-the-wind-wanders-port/assets/");
+    const response = await route.fetch({ url: `${origin}${file}` });
+    await route.fulfill({ response });
+  });
+}
+
 function watchPage(page: Page, tag: string): void {
   page.on("pageerror", (e) => log(`WW_ERR ${tag} pageerror ${e.message.slice(0, 300)}`));
   page.on("console", (m) => { if (m.type() === "error" || m.type() === "warning") log(`WW_CONSOLE ${tag} ${m.type()} ${m.text().slice(0, 240)}`); });
@@ -125,13 +141,19 @@ function watchPage(page: Page, tag: string): void {
 
 async function phoneContext(browserContext: BrowserContext): Promise<BrowserContext> {
   const browser = browserContext.browser()!;
-  return browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+  await mapAppAssets(ctx, ORIGIN.value);
+  return ctx;
 }
 
 test.describe("where-the-wind-wanders-port audit fix (G23)", () => {
   test.setTimeout(3_000_000);
   let server: ExampleDevServer;
-  test.beforeAll(async () => { server = await startExampleDevServer(); });
+  test.beforeAll(async () => { server = await startExampleDevServer(); ORIGIN.value = server.origin; });
+  test.beforeEach(async ({ context }, info) => {
+    test.skip(!want(info.title), `WW_ONLY=${ONLY.join(",")}`);
+    await mapAppAssets(context, server.origin);
+  });
   test.afterAll(async () => { await server.close(); });
 
   test("screens", async ({ page, context }) => {

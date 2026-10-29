@@ -314,7 +314,13 @@ installQaHooks("wind", {
     reset(): void { resetWalk(); },
     /** Advance the game clock by `seconds` in 0.1 s ticks (captions, the wait after the bell, the voyage), then draw once. */
     realtime(seconds: number): void {
-      for (let t = 0; t < seconds - 1e-9; t += 0.1) { const dt = Math.min(0.1, seconds - t); advanceGameClock(dt); renderTime += dt; }
+      const aspect = canvas.clientWidth / Math.max(1, canvas.clientHeight);
+      for (let t = 0; t < seconds - 1e-9; t += 0.1) {
+        const dt = Math.min(0.1, seconds - t);
+        advanceGameClock(dt); renderTime += dt;
+        // ease the cameras as the real-time loop would, without drawing
+        runtime?.update(state, dt, renderTime, aspect);
+      }
       updatePrompt();
       render(VIRTUAL_STEP_MS);
     },
