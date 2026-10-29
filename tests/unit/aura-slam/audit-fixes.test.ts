@@ -300,6 +300,11 @@ describe("top-tennis-C17: first-visit coach and hidden unfinished modes", () => 
     ]);
     expect(coachSteps("HIT", "", ["Q", "E"], true)[0]).toBe("YOUR SERVE · TAP HIT TO TOSS");
   });
+  it("the coach card closes when the Auto player is switched on, and sits clear of the near court", () => {
+    expect(readFileSync("examples/aura-slam/shell/boot.ts", "utf8")).toContain("setAutoplay: (on) => { autopilot.enabled = on; if (on) coach.dispose(); }");
+    const css = readFileSync("examples/aura-slam/ui/styles.css", "utf8");
+    expect(css).toMatch(/\.coach-card\{position:absolute;z-index:9;right:14px;top:250px/);
+  });
   it("both pages hide the tournament and online cards and say nothing is coming soon outside them", () => {
     for (const page of ["apps/showcase-top-tennis/index.html", "examples/aura-slam/index.html"]) {
       const html = readFileSync(page, "utf8");

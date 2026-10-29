@@ -318,7 +318,7 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
 
   const quickBar = createQuickBar({
     autoplay: autopilot.enabled,
-    setAutoplay: (on) => { autopilot.enabled = on; },
+    setAutoplay: (on) => { autopilot.enabled = on; if (on) coach.dispose(); },
     quickMatch: () => menu.quickStart("single"),
     smashLab: () => menu.quickStart("practice"),
     openModes: () => menu.home(),

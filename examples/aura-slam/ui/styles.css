@@ -732,7 +732,8 @@ body:has(.game-shell[data-mode=playing]) #feedback-widget-button{display:none!im
 .mode-choice[hidden]{display:none!important}
 .mode-picker:not(:has(> .mode-choice:not([hidden]) ~ .mode-choice:not([hidden]))){grid-template-columns:minmax(0,1fr)}
 #graphics-reset{cursor:pointer;text-align:center}
-.coach-card{position:absolute;z-index:9;left:50%;bottom:calc(var(--control-space,0px) + 64px);transform:translateX(-50%);width:min(440px,calc(100% - 28px));padding:14px 18px 12px;border:1px solid #e5f0e936;border-radius:5px;background:#0c252dea;color:#f4f2e9;font-size:11px;line-height:1.5;letter-spacing:.04em}
+.coach-card{position:absolute;z-index:9;right:14px;top:250px;width:min(300px,calc(100% - 28px));padding:12px 16px 10px;border:1px solid #e5f0e936;border-radius:5px;background:#0c252dea;color:#f4f2e9;font-size:11px;line-height:1.5;letter-spacing:.04em}
+@media(max-width:760px) and (orientation:portrait),(pointer:coarse) and (orientation:portrait){.coach-card{left:8px;right:8px;width:auto;top:calc(var(--score-space,120px) + 6px + env(safe-area-inset-top));font-size:10px;padding:9px 12px 8px}.coach-card ol{margin-bottom:6px}}
 .coach-card strong{display:block;margin-bottom:6px;color:#d8ff3e;font-size:10px;letter-spacing:.14em}
 .coach-card ol{margin:0 0 10px;padding-left:18px}
 .coach-card button{padding:6px 14px;border:1px solid #d8ff3e;border-radius:4px;background:transparent;color:#d8ff3e;font:inherit;font-weight:700;cursor:pointer}
