@@ -3,7 +3,7 @@
 None of these comes from the original game. Three kinds of file ship with this port:
 
 1. Licensed Aura3D catalog assets (windmill, watchtower) and a CC0 sky HDRI.
-2. Meshy-generated models (below): original text prompts only (never image-to-3D, never the original's names or art), generated through Kiro Prism on the AuraOne Meshy account on 2026-10-23, optimised with meshopt and 512 to 2048 px textures, admitted with `aura3d assets import-meshy` in an isolated project and validated (`failures: []`). Rights basis is the account's Meshy plan terms at generation time (`assets/provenance/*.rights.json`); not CC0, no exclusivity claimed. Prompts are summarised here; full task metadata is in `assets/provenance/*.meta.json`.
+2. Meshy-generated models (below): original text prompts only (never image-to-3D, never the original's names or art), generated through Kiro Prism on the AuraOne Meshy account on 2026-10-23, optimised with meshopt and 256 to 1024 px textures (the tram was cut from 2048 px and the passengers and townhouses decimated in the 2026-10-29 audit fix D-09), admitted with `aura3d assets import-meshy` in an isolated project and validated (`failures: []`). Rights basis is the account's Meshy plan terms at generation time (`assets/provenance/*.rights.json`); not CC0, no exclusivity claimed. Prompts are summarised here; full task metadata is in `assets/provenance/*.meta.json`.
 3. Everything else (islands, ground, track, bushes, stalls, folk, weather) is generated in code.
 
 | File | Source | License |

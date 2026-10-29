@@ -47,8 +47,51 @@
       #toast.off { opacity: 0; }
       #prompt { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 3; max-width: min(520px, calc(100vw - 560px)); min-width: 220px; text-align: center; padding: 8px 16px; border: 1px solid var(--warm); border-radius: 8px; background: var(--panel); font-size: 15px; font-weight: 500; pointer-events: none; }
       #prompt .meta { display: block; margin-top: 2px; }
-      @media (max-width: 900px) { #prompt { top: 76px; max-width: calc(100vw - 24px); } #toast { top: 128px; } }
+      @media (max-width: 900px) { #prompt { top: 104px; max-width: calc(100vw - 24px); } #toast { top: 156px; } }
       .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: baseline; }
+      @media (max-width: 560px) {
+        #top { top: max(8px, env(safe-area-inset-top)); left: 8px; right: 8px; min-width: 0; }
+        #top .meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #stats { top: calc(max(8px, env(safe-area-inset-top)) + 58px); left: 8px; right: 8px; text-align: left; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+        #stats .big { font-size: 20px; }
+        #stats { flex-wrap: wrap; }
+        #stats .lean-row { flex-basis: 100%; justify-content: flex-start; }
+        #prompt { top: calc(max(8px, env(safe-area-inset-top)) + 146px); }
+        #toast { top: calc(max(8px, env(safe-area-inset-top)) + 198px); }
+        #results .grade { font-size: 52px; }
+        #status { left: 8px; right: 8px; bottom: max(8px, env(safe-area-inset-bottom)); flex-direction: column; align-items: flex-start; gap: 4px; }
+        #riders { bottom: 150px; left: 8px; max-width: calc(100vw - 16px); }
+      }
+      .lean-row { display: flex; align-items: center; gap: 6px; justify-content: flex-end; margin-top: 3px; }
+      #lean { position: relative; display: inline-block; width: 120px; height: 10px; border-radius: 5px; background: linear-gradient(90deg, #e4572e 0 15%, #f2c14e 15% 27%, #9fd38a 27% 37%, #6bc5a0 37% 63%, #9fd38a 63% 73%, #f2c14e 73% 85%, #e4572e 85% 100%); opacity: 0.85; }
+      #lean-dot { position: absolute; top: -3px; width: 4px; height: 16px; margin-left: -2px; border-radius: 2px; background: var(--ink); box-shadow: 0 0 0 1px #0e1220; left: 50%; }
+      #lean-crit { position: absolute; left: 0; bottom: -5px; height: 3px; width: 0; background: #e4572e; border-radius: 2px; }
+      #lean[data-band="red"] { outline: 2px solid #e4572e; outline-offset: 1px; }
+      #riders .rider em { font-style: normal; opacity: 0.8; }
+      #riders .dot { width: auto; height: auto; border-radius: 0; font-style: normal; font-size: 11px; }
+      #riders .next-stop { color: var(--ink); margin-bottom: 2px; }
+      .row-btns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 4px 0 10px; }
+      .row-btns button, #title .start-alt { min-height: 44px; min-width: 44px; padding: 8px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); font: inherit; font-size: 14px; cursor: pointer; }
+      #title .start { min-height: 44px; }
+      #title .start-alt { margin: 0 0 18px 8px; }
+      #results .rule { max-width: 420px; margin: 0 auto 12px; }
+      .touch { display: none; position: fixed; left: 8px; right: 8px; bottom: max(36px, calc(env(safe-area-inset-bottom) + 30px)); z-index: 3; justify-content: space-between; gap: 8px; pointer-events: none; }
+      .touch .pair { display: flex; gap: 8px; pointer-events: auto; }
+      .touch button { min-width: 64px; min-height: 56px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: rgba(20, 24, 34, 0.78); color: var(--ink); font: 500 15px/1 "Graphik Web", sans-serif; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+      .touch button.on { background: rgba(242, 193, 78, 0.35); border-color: var(--warm); }
+      .touch button.go { min-width: 84px; border-color: var(--jade); }
+      body.results-open #prompt, body.results-open #riders, body.results-open #status { display: none !important; }
+      body.results-open #results { background: rgba(14, 18, 32, 0.78); }
+      @media (pointer: coarse) {
+        .touch { display: flex; }
+        .kbd-hint { display: none; }
+        #status .meta { display: none; }
+        #status { bottom: calc(max(36px, calc(env(safe-area-inset-bottom) + 30px)) + 66px); }
+        #riders { bottom: calc(max(36px, calc(env(safe-area-inset-bottom) + 30px)) + 118px); }
+      }
+      html.hud-large .panel, html.hud-large #prompt, html.hud-large #toast { font-size: 16px; }
+      html.hud-large .meta, html.hud-large kbd { font-size: 15px; }
+      html.hud-large #stats .big { font-size: 30px; }
     </style>
   </head>
   <body>
@@ -60,11 +103,12 @@
     <div id="stats" class="panel">
       <div class="big num"><span id="speed">0</span> <span class="meta">km/h</span></div>
       <div class="meta num">Aboard <span id="aboard">0</span> / 12 · Fares <span id="fares">0</span> · Tips <span id="tips">0</span> · Score <span id="score">0</span></div>
+      <div class="meta num lean-row"><span>Lean</span> <span id="lean" role="meter" aria-label="Lean" data-band="green"><i id="lean-dot"></i><b id="lean-crit"></b></span> <span>Streak &times;<span id="streak">1.00</span></span> <span>Lanterns <span id="lanterns" aria-label="Lanterns left">&#9679;&#9679;&#9679;</span></span></div>
     </div>
     <div id="riders" class="panel hidden"></div>
     <div id="status" class="panel">
       <div id="message">Press <kbd>E</kbd> to open the doors.</div>
-      <div class="meta"><kbd>W</kbd> go · <kbd>Space</kbd> brake · <kbd>A</kbd>/<kbd>D</kbd> balance · <kbd>E</kbd> doors · <kbd>N</kbd> day/night · <kbd>R</kbd> new service</div>
+      <div class="meta"><kbd>W</kbd> go · <kbd>Space</kbd> brake · <kbd>A</kbd>/<kbd>D</kbd> balance · <kbd>E</kbd> doors · <kbd>N</kbd> day/night · <kbd>R</kbd><kbd>R</kbd> abandon and restart · <kbd>U</kbd> HUD size</div>
     </div>
     <div id="prompt" role="status" aria-live="polite"></div>
     <div id="toast" class="off"></div>
@@ -72,11 +116,12 @@
       <div>
         <h2>Lamplight Line</h2>
         <div class="sub">Six cloud-top towns, one tram, twelve seats. Balance the lean, keep every rider happy, make the Lamplight Line.</div>
-        <button id="start-btn" class="start" type="button">Start &middot; press <kbd>Enter</kbd></button>
+        <button id="start-btn" class="start" type="button">Start &middot; press <kbd>Enter</kbd></button><button id="short-btn" class="start-alt" type="button">Short service, 2 stops &middot; <kbd>2</kbd></button>
         <div class="keys">
           <span><kbd>E</kbd> open the doors</span><span><kbd>W</kbd> / <kbd>&uarr;</kbd> accelerate</span>
           <span><kbd>Space</kbd> / <kbd>S</kbd> brake</span><span><kbd>A</kbd> <kbd>D</kbd> / <kbd>&larr;</kbd> <kbd>&rarr;</kbd> balance</span>
-          <span><kbd>N</kbd> day or night</span><span><kbd>P</kbd> autopilot &middot; <kbd>M</kbd> sound</span>
+          <span><kbd>N</kbd> day or night</span><span><kbd>P</kbd> autopilot &middot; <kbd>M</kbd> sound &middot; <kbd>U</kbd> HUD size</span>
+          <span>Touch: hold <b>Go</b>, <b>Brake</b>, <b>&#9664; Lean</b> / <b>Lean &#9654;</b></span><span>Three lanterns: lose them all and the service ends</span>
         </div>
         <div class="meta" id="best" style="margin-top:14px"></div>
       </div>
@@ -87,8 +132,14 @@
         <div class="grade" id="res-grade">Silver</div>
         <div class="sub" id="res-score">Score 0</div>
         <div class="grid" id="res-grid"></div>
-        <div class="meta">Press <kbd>R</kbd> for a new service &middot; <kbd>Enter</kbd> to keep riding</div>
+        <div class="meta rule" id="res-rule"></div>
+        <div class="row-btns"><button id="res-new" type="button">New service</button><button id="res-short" type="button">Short service</button><button id="res-keep" type="button">Keep riding</button></div>
+        <div class="meta kbd-hint">Press <kbd>R</kbd> for a new service, <kbd>2</kbd> for a short one &middot; <kbd>Enter</kbd> to keep riding from here</div>
       </div>
+    </div>
+    <div id="touch" class="touch" aria-label="Touch controls">
+      <div class="pair"><button type="button" data-code="KeyA" aria-label="Lean left">&#9664; Lean</button><button type="button" data-code="KeyD" aria-label="Lean right">Lean &#9654;</button></div>
+      <div class="pair"><button type="button" data-code="Space" aria-label="Brake">Brake</button><button type="button" class="go" data-code="KeyW" aria-label="Go: doors, depart and accelerate">Go</button></div>
     </div>
     <div id="loading"><div id="loading-status">Lighting the first view…</div></div>
     <script type="module" src="./src/main.ts"></script>

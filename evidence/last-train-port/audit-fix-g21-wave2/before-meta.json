@@ -1,0 +1,71 @@
+[
+  {
+    "target": "last-train",
+    "id": "settle-5s",
+    "sinceReadyMs": 5004,
+    "pixels": {
+      "width": 640,
+      "height": 360,
+      "litFraction": 0,
+      "mean": 0
+    },
+    "screenshot": {
+      "mean": 84.13,
+      "p5": 39,
+      "p50": 77,
+      "p95": 141,
+      "darkFrac": 0
+    },
+    "info": {
+      "app": true,
+      "renderPath": "hdr-msaa",
+      "drawCalls": 126
+    }
+  },
+  {
+    "target": "last-train",
+    "id": "settle-25s",
+    "sinceReadyMs": 292573,
+    "pixels": {
+      "width": 640,
+      "height": 360,
+      "litFraction": 0,
+      "mean": 0
+    },
+    "screenshot": {
+      "mean": 86.02,
+      "p5": 39,
+      "p50": 80,
+      "p95": 147,
+      "darkFrac": 0
+    },
+    "info": {
+      "app": true,
+      "renderPath": "hdr-msaa",
+      "drawCalls": 152
+    }
+  },
+  {
+    "target": "last-train",
+    "id": "settle-60s",
+    "sinceReadyMs": 563473,
+    "pixels": {
+      "width": 640,
+      "height": 360,
+      "litFraction": 0,
+      "mean": 0
+    },
+    "screenshot": {
+      "mean": 84.4,
+      "p5": 34,
+      "p50": 79,
+      "p95": 150,
+      "darkFrac": 0
+    },
+    "info": {
+      "app": true,
+      "renderPath": "hdr-msaa",
+      "drawCalls": 134
+    }
+  }
+]

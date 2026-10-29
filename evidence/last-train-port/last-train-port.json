@@ -1,28 +1,35 @@
 {
+  "recorded": "2026-10-29, branch audit-fix/g21 after audit fix D-09; the previous file (20 MB) predated the Meshy art pass",
   "gauges": [
     {
-      "approximateGpuMemoryBytes": 20274556,
-      "textures": 4,
-      "buffers": 51,
-      "renderTargets": 1,
-      "drawCalls": 53,
-      "nodes": 216
+      "approximateGpuMemoryBytes": 284631602,
+      "bufferBytes": null,
+      "textureBytes": null,
+      "textures": 59,
+      "buffers": 388,
+      "renderTargets": 6,
+      "drawCalls": 164,
+      "nodes": 54
     },
     {
-      "approximateGpuMemoryBytes": 20274556,
-      "textures": 4,
-      "buffers": 51,
-      "renderTargets": 1,
-      "drawCalls": 55,
-      "nodes": 216
+      "approximateGpuMemoryBytes": 271679522,
+      "bufferBytes": null,
+      "textureBytes": null,
+      "textures": 59,
+      "buffers": 292,
+      "renderTargets": 6,
+      "drawCalls": 154,
+      "nodes": 54
     },
     {
-      "approximateGpuMemoryBytes": 20274556,
-      "textures": 4,
-      "buffers": 51,
-      "renderTargets": 1,
-      "drawCalls": 53,
-      "nodes": 216
+      "approximateGpuMemoryBytes": 271679522,
+      "bufferBytes": null,
+      "textureBytes": null,
+      "textures": 59,
+      "buffers": 292,
+      "renderTargets": 6,
+      "drawCalls": 154,
+      "nodes": 54
     }
   ],
   "drift": [
@@ -33,9 +40,9 @@
       "renderTargets": 0
     },
     {
-      "approximateGpuMemoryBytes": 0,
+      "approximateGpuMemoryBytes": 0.0455047152494332,
       "textures": 0,
-      "buffers": 0,
+      "buffers": 0.24742268041237114,
       "renderTargets": 0
     },
     {
@@ -69,29 +76,29 @@
     "06-gardens": {
       "width": 800,
       "height": 450,
-      "litFraction": 1,
-      "mean": 215.26999999999958
+      "litFraction": 0.9990972222222222,
+      "mean": 83.46219907407327
     },
     "04-snow-observatory": {
       "width": 800,
       "height": 450,
-      "litFraction": 1,
-      "mean": 219.7024768518089
+      "litFraction": 0.9932638888888888,
+      "mean": 76.80523148148106
     },
     "05-rain-monsoon": {
       "width": 800,
       "height": 450,
-      "litFraction": 1,
-      "mean": 224.11159722225364
+      "litFraction": 0.9895833333333334,
+      "mean": 74.7223379629631
     },
     "07-night-gardens": {
       "width": 800,
       "height": 450,
-      "litFraction": 0.9997916666666666,
-      "mean": 95.09451388888915
+      "litFraction": 0.7383333333333333,
+      "mean": 37.75949074074062
     }
   },
-  "runId": "last-train-h-20261023T065059Z",
+  "runId": "g21w3-portspec-131252",
   "renderer": "SwiftShader WebGL2 (ACR task, playwright 1.59.1)",
   "reference": {
     "steps": [

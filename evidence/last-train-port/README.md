@@ -13,7 +13,9 @@ Remote run `last-train-h-20261023T065059Z` (Azure ACR Task, Playwright 1.59.1, S
 | textures / buffers / renderTargets | 4 / 51 / 1 | 4 / 51 / 1 | 4 / 51 / 1 |
 | Scene nodes | 216 | 216 | 216 |
 
-Memory drift against loop 1 is 0% on every gauge (limit 5%). The software renderer's draw-call count varies by 2 between loops and is not asserted.
+Memory drift against loop 1 is 0% on every gauge (limit 5%).
+
+**Re-recorded 2026-10-29** (remote run `g21w3-portspec-131252`, after the Meshy art pass and audit fix D-09; `last-train-port.json` now holds these numbers): `approximateGpuMemoryBytes` 284,631,602 / 271,679,522 / 271,679,522 over the three loops, 59 textures, 6 render targets, 154 to 164 draw calls, scores 4,039 on every loop. The table above is the procedural-art build of 2026-10-23. On the base commit the same scene measured 406,311,360 bytes, 64 textures and 11 render targets at the first station (run `g21w3-before-115656`). The software renderer's draw-call count varies by 2 between loops and is not asserted.
 Night frame mean brightness is 95 against 215 for the same station by day.
 
 ## Art pass (look and features)

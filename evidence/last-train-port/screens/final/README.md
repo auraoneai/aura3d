@@ -1,4 +1,8 @@
-# Lamplight Line: final screenshots (after the UI and render fixes)
+# Lamplight Line: final screenshots
+
+**Retaken 2026-10-29 (audit RH-05, lane g21)** from branch `audit-fix/g21` on the 4.5.0 engine, same file names and sizes, same capture (`tests/browser/finc-lib.ts`, `finc-games.ts` `TRAIN` / `TRAIN_CARD`, wrappers `tests/browser/audit-fix/last-train-port-screens-*.spec.ts`). Runs: `g21w3-scrdesktop-131235` (1280x720 frames), `g21w3-scrmobile-131238` (390x844 frames), `g21w3-scrcard-142538` (card). Software WebGL2 (SwiftShader), not a GPU. The HUD now has the lean meter, streak and lanterns; the results card shows the per-service score, Gold, the grade rule and buttons; in `results` the tram sits parallel to the platform (audit D-11). The 390x844 frames come from a viewport without touch, so the touch bar is not shown (it is in `evidence/last-train-port/audit-fix-g21-wave3/after-phone-*.jpg`).
+
+The original notes from 2026-10-24 follow.
 
 - **Build:** `origin/game-rework` at `0d965903c` (examples dev server, QA hooks). Capture: `tests/browser/finc-lib.ts` + `finc-games.ts` (`TRAIN`, `TRAIN_RESULTS`, `TRAIN_CARD`), decoder `tools/shots/decode-finc.mjs`; numbers in `metrics.jsonl`.
 - **Runner:** serverless ACR Chromium, **software WebGL2 (SwiftShader), not a GPU**. These frames are not real-GPU evidence.
