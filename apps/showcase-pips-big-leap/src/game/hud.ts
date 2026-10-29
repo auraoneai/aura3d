@@ -32,7 +32,7 @@ export interface Hud {
   showStudio(show: boolean): void;
   showComplete(show: boolean, title?: string, sub?: string, stats?: readonly string[], nextLabel?: string): void;
   renderAtlas(save: PipSave): void;
-  renderStudio(save: PipSave, onPick: (which: "cap" | "cape", color: string) => void): void;
+  renderStudio(save: PipSave, onPick: (which: "cape", color: string) => void): void;
   setVenue(id: WorldId): void;
   setTopMode(mode: ModeId): void;
 }
@@ -61,11 +61,13 @@ export function createHud(): Hud {
   const completeStats = $<HTMLDivElement>("pbl-complete-stats");
   const nextWorldBtn = $<HTMLButtonElement>("pbl-next-world");
   const atlasGrid = $<HTMLDivElement>("pbl-atlas-grid");
-  const capSwatches = $<HTMLDivElement>("pbl-cap-swatches");
   const capeSwatches = $<HTMLDivElement>("pbl-cape-swatches");
 
   let bannerTimer: ReturnType<typeof setTimeout> | null = null;
   let toastTimer: ReturnType<typeof setTimeout> | null = null;
+  // The timer is written every frame; only touch the DOM when its text changes.
+  let timerText = "";
+  let timerShown: boolean | null = null;
 
   const fmt = (s: number) => {
     const m = Math.floor(s / 60);
@@ -89,10 +91,18 @@ export function createHud(): Hud {
     setSeeds(got, total) { seedsEl.textContent = `${got}/${total}`; },
     setAcorns(n) { acornsEl.textContent = String(n); },
     setTimer(seconds, medals) {
-      timerChip.style.display = seconds === null ? "none" : "";
+      const show = seconds !== null;
+      if (show !== timerShown) {
+        timerChip.style.display = show ? "" : "none";
+        timerShown = show;
+      }
       if (seconds === null) return;
       const medal = medals ? (seconds <= medals.gold ? " 🥇" : seconds <= medals.silver ? " 🥈" : seconds <= medals.bronze ? " 🥉" : "") : "";
-      timerEl.textContent = fmt(seconds) + medal;
+      const text = fmt(seconds) + medal;
+      if (text !== timerText) {
+        timerEl.textContent = text;
+        timerText = text;
+      }
     },
     setObjective(text) { objectiveEl.textContent = text; },
     setBoss(hp, max, active) {
@@ -139,9 +149,8 @@ export function createHud(): Hud {
       }).join("") + `<div class="pbl-atlas-total">VALE TOTAL — ☀ ${total}/36 sun-seeds</div>`;
     },
     renderStudio(save, onPick) {
-      const CAPS = ["#c96a2b", "#a34a1f", "#d98a3c", "#7a3c2e", "#3f6d35", "#31557a", "#6a4a9c", "#c94a7a"];
       const CAPES = ["#3f8cff", "#ffd95e", "#ff6a8a", "#5fd38a", "#9a8ce0", "#ff9435", "#6fd8ff", "#f0e6d4"];
-      const make = (host: HTMLElement, which: "cap" | "cape", colors: readonly string[]) => {
+      const make = (host: HTMLElement, which: "cape", colors: readonly string[]) => {
         host.innerHTML = "";
         for (const c of colors) {
           const b = document.createElement("button");
@@ -153,7 +162,6 @@ export function createHud(): Hud {
           host.appendChild(b);
         }
       };
-      make(capSwatches, "cap", CAPS);
       make(capeSwatches, "cape", CAPES);
     },
     setVenue(id) {

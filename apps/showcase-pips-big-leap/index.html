@@ -25,7 +25,7 @@
       <button type="button" id="aura-btn-play" class="active" title="Drop into World 1 — Whispering Forest">Quick Play</button>
       <button type="button" id="aura-btn-academy" title="Jump Academy — skill gauntlet for every move">Jump Academy</button>
       <button type="button" id="aura-btn-atlas" title="Vale Atlas — world map with seed counts">Vale Atlas</button>
-      <button type="button" id="aura-btn-studio" title="Player Studio — cap &amp; cape colors">Player Studio</button>
+      <button type="button" id="aura-btn-studio" title="Player Studio — cape colour">Player Studio</button>
       <button type="button" id="aura-btn-trial" title="Time Trial — race the medal clocks">Time Trial</button>
       <span class="aura-sep" aria-hidden="true"></span>
       <button type="button" data-aura-venue="w1" class="venue active" title="World 1 — Whispering Forest">Forest</button>
@@ -40,7 +40,7 @@
     </div>
 
     <div class="aura3d-controls-hint" id="aura-controls-hint">
-      MOVE: WASD / ARROWS · JUMP: SPACE (HOLD = GLIDE) · DOUBLE-JUMP: W2+ · DIVE: SHIFT (AIR) · POUND: C / CTRL (AIR) · PAUSE: ESC · AUTO DEMO YIELDS ON INPUT
+      MOVE: WASD / ARROWS · JUMP: SPACE (HOLD = GLIDE) · DOUBLE-JUMP: W2+ · DIVE: SHIFT (AIR) · POUND: C / CTRL (AIR) · CAMERA: Q / E OR DRAG · PAUSE: ESC / P · AUTO DEMO YIELDS ON INPUT
     </div>
 
     <main class="game-shell" aria-label="Pip's Big Leap game">
@@ -50,7 +50,7 @@
       </div>
 
       <!-- In-game HUD -->
-      <div id="pbl-hud" class="pbl-hud" aria-live="polite">
+      <div id="pbl-hud" class="pbl-hud">
         <div class="pbl-tl">
           <div id="pbl-mode-tag" class="pbl-mode-tag">QUICK PLAY</div>
           <div class="pbl-row">
@@ -62,14 +62,15 @@
             <div class="pbl-chip"><span class="k">ACORNS</span><span class="v" id="pbl-acorns">0</span></div>
             <div class="pbl-chip" id="pbl-timer-chip"><span class="k">TIME</span><span class="v" id="pbl-timer">0:00.0</span></div>
           </div>
-          <div id="pbl-objective" class="pbl-objective">Gather sun-seeds and reach the Sun-Gate.</div>
+          <div id="pbl-objective" class="pbl-objective" aria-live="polite">Gather sun-seeds and reach the Sun-Gate.</div>
         </div>
         <div id="pbl-boss-wrap" class="pbl-boss-wrap" hidden>
           <div class="pbl-boss-name">BRAMBLEBACK</div>
           <div class="pbl-boss-bar"><div id="pbl-boss-fill" class="pbl-boss-fill"></div></div>
         </div>
         <div id="pbl-banner" class="pbl-banner"><div class="big" id="pbl-banner-big"></div><div class="small" id="pbl-banner-small"></div></div>
-        <div id="pbl-toast" class="pbl-toast"></div>
+        <div id="pbl-toast" class="pbl-toast" role="status" aria-live="polite"></div>
+        <button type="button" id="pbl-pause-btn" class="pbl-pause-btn" aria-label="Pause" title="Pause (Esc or P)">&#10074;&#10074;</button>
       </div>
 
       <!-- Pause menu -->
@@ -101,8 +102,7 @@
       <div id="pbl-studio" class="pbl-overlay" hidden>
         <div class="pbl-panel">
           <h2>PLAYER STUDIO</h2>
-          <p class="pbl-sub">Dress Pip's acorn cap and glide cape.</p>
-          <div class="pbl-studio-row"><span class="k">CAP</span><div id="pbl-cap-swatches" class="pbl-swatches"></div></div>
+          <p class="pbl-sub">Pick the colour of Pip's glide cape.</p>
           <div class="pbl-studio-row"><span class="k">CAPE</span><div id="pbl-cape-swatches" class="pbl-swatches"></div></div>
           <div class="pbl-btns"><button type="button" id="pbl-studio-close">Done</button></div>
         </div>

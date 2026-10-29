@@ -7,14 +7,14 @@
 // public platformer-geometry pipeline per world.
 
 import {
-  camera,
+  createFixedStepLoop,
   game,
   gameFeel,
   material,
   type AuraRuntimeNodeHandle,
   type AuraSceneSnapshot
 } from "@aura3d/engine";
-import { createGame, sfxUrl } from "@aura3d/engine/game";
+import { createFixedStepPresenter, createGame, createRecordBlend, sfxUrl } from "@aura3d/engine/game";
 import { createLocomotionKit } from "@aura3d/animation";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
@@ -24,7 +24,11 @@ import { createPlayer, stepPlayer, type PlayerState } from "./game/player.js";
 import { createBoss, damageBoss, stepBoss, type BossPhase, type BossState } from "./game/boss.js";
 import { certifyWorld, type WorldCertification } from "./game/certify.js";
 import { createHud } from "./game/hud.js";
-import { loadSave, persistSave, recordSeeds, totalSeeds, type PipSave } from "./game/save.js";
+import { createSaveStore, recordSeeds, totalSeeds, type PipSave } from "./game/save.js";
+import { gateState } from "./game/gate.js";
+import { framingFor } from "./game/framing.js";
+import { createInputLatch } from "./game/simInput.js";
+import { deriveWorldMotion } from "./game/motion.js";
 import { worldSpec } from "./game/worlds.js";
 import type { ModeId, WorldId } from "./game/types.js";
 import { installBlackFrameGuard } from "@aura3d/debug";
@@ -80,7 +84,9 @@ interface Run {
   save: PipSave;
 }
 
-let save = loadSave();
+// Real save, or an in-memory copy while the autopilot demo runs (C4).
+const saves = createSaveStore();
+let save = saves.current();
 let run: Run = makeRun(BOOT_WORLD, "quick");
 
 function makeRun(worldId: WorldId, mode: ModeId): Run {
@@ -133,7 +139,9 @@ const pipsGame = createGame({
       jump: ["Space"],
       dive: ["ShiftLeft", "ShiftRight"],
       pound: ["KeyC", "ControlLeft", "ControlRight"],
-      pause: ["Escape"]
+      pause: ["Escape", "KeyP"],
+      camLeft: ["KeyQ"],
+      camRight: ["KeyE"]
     },
     axes: {
       moveX: { negative: "left", positive: "right" },
@@ -150,7 +158,9 @@ const pipsGame = createGame({
       left: "left", right: "right", up: "up", down: "down",
       jump: "jump", dash: "dive", attack: "pound",
       "stick.up": "up", "stick.down": "down",
-      "stick.left": "left", "stick.right": "right"
+      "stick.left": "left", "stick.right": "right",
+      // Right stick orbits the follow camera.
+      "rstick.left": "camLeft", "rstick.right": "camRight"
     }
   },
   sound: {
@@ -166,7 +176,14 @@ const pipsGame = createGame({
       bounce: { id: "bounce", asset: { url: sfxUrl("sports.ball-bounce-hard.00") }, volume: 0.55 },
       bumper: { id: "bumper", asset: { url: sfxUrl("sports.bumper.00") }, volume: 0.6 },
       ui: { id: "ui", asset: { url: sfxUrl("ui.toggle.00") }, volume: 0.45 },
-      confirm: { id: "confirm", asset: { url: sfxUrl("ui.confirm.00") }, volume: 0.55 }
+      confirm: { id: "confirm", asset: { url: sfxUrl("ui.confirm.00") }, volume: 0.55 },
+      heart: { id: "heart", asset: { url: sfxUrl("pickup.extra-life.00") }, volume: 0.6 },
+      respawn: { id: "respawn", asset: { url: sfxUrl("pickup.power-down.00") }, volume: 0.5 },
+      // Per-world ambient beds (looped on the ambience bus; one plays at a time).
+      "amb-open": { id: "amb-open", asset: { url: sfxUrl("ambience.wind-open") }, volume: 0.22, loop: true, bus: "ambience" },
+      "amb-high": { id: "amb-high", asset: { url: sfxUrl("ambience.wind-high") }, volume: 0.2, loop: true, bus: "ambience" },
+      "amb-hum": { id: "amb-hum", asset: { url: sfxUrl("ambience.interior-hum") }, volume: 0.24, loop: true, bus: "ambience" },
+      "amb-space": { id: "amb-space", asset: { url: sfxUrl("ambience.space-hum") }, volume: 0.2, loop: true, bus: "ambience" }
     }
   },
   juice: {
@@ -205,12 +222,32 @@ const locomotion = createLocomotionKit({
 
 // ------------------------------------------------------------ node handles
 
+// Handles are cached per mounted scene (C21): about 40 lookups a frame used to
+// go through a try/catch `require`. The cache is dropped whenever a world
+// swap starts and again once the new scene has mounted.
+// The registry also bumps a version on every reset/remount (quality rebuilds
+// included); a changed version or registry object drops the cache.
+const nodeCache = new Map<string, AuraRuntimeNodeHandle | null>();
+let cacheRegistry: unknown = null;
+let cacheVersion: number | undefined;
 const node = (name: string): AuraRuntimeNodeHandle | null => {
-  try {
-    return app.nodes.require(name) as AuraRuntimeNodeHandle;
-  } catch {
-    return null;
+  const registry = app.nodes as unknown as { readonly version?: number };
+  if (registry !== cacheRegistry || registry.version !== cacheVersion) {
+    nodeCache.clear();
+    cacheRegistry = registry;
+    cacheVersion = registry.version;
   }
+  const cached = nodeCache.get(name);
+  if (cached !== undefined) return cached;
+  let handle: AuraRuntimeNodeHandle | null = null;
+  try {
+    handle = app.nodes.require(name) as AuraRuntimeNodeHandle;
+  } catch {
+    handle = null;
+  }
+  // Misses are cached too; a remount clears them.
+  nodeCache.set(name, handle);
+  return handle;
 };
 
 // ------------------------------------------------------------- world load
@@ -227,43 +264,68 @@ function loadWorld(id: WorldId, mode?: ModeId): void {
   // Mode survives only where it's meaningful: the gauntlet owns "academy",
   // trial follows the player across worlds, everything else is quick play.
   userEngaged = false;
+  const previousRun = run;
+  const previousWorld = mountedWorld;
   run = makeRun(id, mode ?? (id === "academy" ? "academy" : run.mode === "trial" ? "trial" : "quick"));
   resetCameraRig();
+  simLoop.resetAccumulator();
+  inputLatch.clear();
+  pipPresenter.reset();
   const { spec, built } = ensureWorld(id);
   if (mountedWorld !== id) {
     mountedWorld = id;
+    nodeCache.clear();
+    swapping = true;
     // Route swaps through game.setScene so the FX pool, look signature, and
     // first-presented beacon all re-arm per world.
-    void pipsGame.setScene(built.scene as unknown as AuraSceneSnapshot).catch(() => undefined);
+    const target = run;
+    pipsGame
+      .setScene(built.scene as unknown as AuraSceneSnapshot)
+      .then(() => {
+        nodeCache.clear();
+        swapping = false;
+        // The new scene's nodes exist only now: re-apply this run's state.
+        if (run === target) applyRunNodeState();
+      })
+      .catch((error: unknown) => {
+        // C10: the old world's visuals are still mounted, so put the old run
+        // (and its collision) back instead of simulating an invisible world.
+        console.error("[pips-big-leap] world swap failed", error);
+        nodeCache.clear();
+        swapping = false;
+        mountedWorld = previousWorld;
+        if (run === target) {
+          run = previousRun;
+          const prevSpec = ensureWorld(run.world).spec;
+          hud.setWorld(prevSpec.title);
+          hud.setVenue(run.world);
+          hud.setObjective(objectiveText());
+          startAmbience(run.world);
+        }
+        hud.toast(`Could not open ${spec.title}. Staying in ${ensureWorld(run.world).spec.title}.`, 4);
+      });
   } else {
     // Same world: undo the node mutations a run leaves behind — collected
     // pickups, unlocked gate, activated checkpoint flags — without remounting.
     for (const s of spec.seeds) node(nodeName.seed(s.id))?.setVisible(!run.seeds.has(s.id));
     for (const a of spec.acorns) node(nodeName.acorn(a.id))?.setVisible(true);
     for (const h of spec.hearts) node(nodeName.heart(h.id))?.setVisible(true);
-    node(nodeName.gateLock)?.setVisible(!run.gateUnlocked);
     for (const cp of spec.checkpoints) {
       (node(nodeName.checkpointFlag(cp.id)) as unknown as { setMaterial(m: unknown): void } | null)?.setMaterial(undefined);
     }
     for (let i = 0; i < 6; i += 1) node(nodeName.bossSpike(i))?.setVisible(false);
   }
-  applyStudioColors();
-  run.clipState = "";
-  driveAnimation(run.player, 0);
-
   // Persisted progress: collected seeds stay gone, and a world the player
   // already seeded open starts with the Sun-Gate unlatched (boss aside).
-  for (const sid of run.seeds) node(nodeName.seed(sid))?.setVisible(false);
-  if (run.seeds.size >= spec.gateSeeds) {
-    run.gateUnlocked = !(spec.boss && run.bossHp > 0);
-    if (run.gateUnlocked) node(nodeName.gateLock)?.setVisible(false);
-  }
+  run.gateUnlocked = gateState({ seeds: run.seeds.size, gateSeeds: spec.gateSeeds, boss: Boolean(spec.boss), bossHp: run.bossHp }).unlocked;
+  applyRunNodeState();
 
-  if (spec.doubleJumpGrant && !save.doubleJump) {
-    save = { ...save, doubleJump: true };
-    persistSave(save);
+  // C23: the double jump unlocks in World 2 and in every later world, so a
+  // player who opens World 3-6 from the bar or the Atlas has it too.
+  if ((spec.doubleJumpGrant || spec.order >= 2) && !save.doubleJump) {
+    save = saves.commit({ ...save, doubleJump: true });
     run.save = save;
-    hud.toast(spec.unlockHint ?? "Double-jump unlocked!", 4);
+    hud.toast(spec.doubleJumpGrant && spec.unlockHint ? spec.unlockHint : "Double-jump unlocked — press SPACE again in mid-air!", 4);
   } else if (spec.unlockHint && !save.completed[id]) {
     hud.toast(spec.unlockHint, 3.5);
   }
@@ -282,18 +344,52 @@ function loadWorld(id: WorldId, mode?: ModeId): void {
   hud.setTopMode(run.mode);
   hud.banner(spec.title.toUpperCase(), spec.subtitle, 2.8);
   void pipsGame.sound?.cue("level-start");
+  startAmbience(id);
+  publishEvidence();
+}
+
+/** Mirror the run's state onto the mounted scene nodes (pickups, gate lock, studio colours, hero pose). */
+function applyRunNodeState(): void {
+  const { spec } = ensureWorld(run.world);
+  for (const s of spec.seeds) node(nodeName.seed(s.id))?.setVisible(!run.seeds.has(s.id));
+  for (const a of spec.acorns) node(nodeName.acorn(a.id))?.setVisible(!run.acorns.has(a.id));
+  for (const h of spec.hearts) node(nodeName.heart(h.id))?.setVisible(!run.heartsGot.has(h.id));
+  node(nodeName.gateLock)?.setVisible(!run.gateUnlocked);
+  applyStudioColors();
+  run.clipState = "";
+  driveAnimation(run.player, 0);
+}
+
+const AMBIENCE_FOR: Record<WorldId, "amb-open" | "amb-high" | "amb-hum" | "amb-space"> = {
+  academy: "amb-open",
+  w1: "amb-open",
+  w2: "amb-open",
+  w3: "amb-high",
+  w4: "amb-hum",
+  w5: "amb-hum",
+  w6: "amb-space"
+};
+let ambience: (typeof AMBIENCE_FOR)[WorldId] | null = null;
+
+/** C24: one looped ambient bed per world; swaps when the world changes. */
+function startAmbience(id: WorldId): void {
+  const next = AMBIENCE_FOR[id];
+  if (ambience && ambience !== next) pipsGame.sound?.stopCue(ambience, 400);
+  ambience = next;
+  void pipsGame.sound?.cue(next);
 }
 
 function objectiveText(): string {
   const { spec } = ensureWorld(run.world);
   const need = spec.gateSeeds;
-  if (spec.boss && run.bossHp > 0 && run.seeds.size >= need) return `Sun-Gate wants ${need} seeds — but Brambleback guards it. Defeat him!`;
+  if (gateState({ seeds: run.seeds.size, gateSeeds: need, boss: Boolean(spec.boss), bossHp: run.bossHp }).bossBarring) return `Sun-Gate wants ${need} seeds — but Brambleback guards it. Defeat him!`;
   if (run.seeds.size < need) return `Gather sun-seeds for the Sun-Gate (${run.seeds.size}/${need} needed, ${spec.seedGoal} hidden).`;
   return "The Sun-Gate is open — leap through!";
 }
 
+// C7: Pip's GLB has one baked material, so there is no cap mesh to tint; the
+// Studio offers the cape only, and the cape now shows at rest too.
 function applyStudioColors(): void {
-  node(nodeName.heroCap)?.setMaterial(material.pbr({ color: save.studio.cap, roughness: 0.7 }));
   node(nodeName.heroCape)?.setMaterial(material.pbr({ color: save.studio.cape, roughness: 0.6 }));
 }
 
@@ -333,6 +429,7 @@ function handleEvent(e: import("./game/player.js").PlayerEvent): void {
       break;
     }
     case "respawn": {
+      cue("respawn");
       hud.setHearts(run.player.hearts);
       hud.toast("Back to the last checkpoint!", 1.6);
       break;
@@ -351,22 +448,20 @@ function handleEvent(e: import("./game/player.js").PlayerEvent): void {
       if (run.seeds.has(id)) return;
       run.seeds.add(id);
       node(nodeName.seed(id))?.setVisible(false);
-      save = recordSeeds(save, run.world, [id]);
-      persistSave(save);
+      save = saves.commit(recordSeeds(save, run.world, [id]));
       run.save = save;
       hud.setSeeds(run.seeds.size, spec.seedGoal);
       hud.setObjective(objectiveText());
       cue("power");
       juice("collect");
       hud.toast(`☀ Sun-seed ${run.seeds.size}/${spec.seedGoal}`, 1.4);
-      if (run.seeds.size >= spec.gateSeeds && !run.gateUnlocked) {
-        run.gateUnlocked = !(spec.boss && run.bossHp > 0);
-        node(nodeName.gateLock)?.setVisible(false);
-        if (spec.boss && run.bossHp > 0) {
-          hud.toast("The gate hums — but Brambleback bars the way!", 2.6);
-        } else {
-          hud.toast("The Sun-Gate is open!", 2.4);
-        }
+      if (!run.gateUnlocked) {
+        // C6: the lock icon goes only when the gate really opens.
+        const gate = gateState({ seeds: run.seeds.size, gateSeeds: spec.gateSeeds, boss: Boolean(spec.boss), bossHp: run.bossHp });
+        run.gateUnlocked = gate.unlocked;
+        node(nodeName.gateLock)?.setVisible(gate.lockVisible);
+        if (gate.unlocked) hud.toast("The Sun-Gate is open!", 2.4);
+        else if (gate.bossBarring) hud.toast("The gate hums — but Brambleback bars the way!", 2.6);
         hud.setObjective(objectiveText());
       }
       break;
@@ -384,13 +479,13 @@ function handleEvent(e: import("./game/player.js").PlayerEvent): void {
     case "heart": {
       const id = e.id ?? "";
       if (run.heartsGot.has(id)) return;
+      // C15: at full health the heart stays where it is for later.
+      if (run.player.hearts >= 3) return;
       run.heartsGot.add(id);
       node(nodeName.heart(id))?.setVisible(false);
-      if (run.player.hearts < 3) {
-        run.player.hearts += 1;
-        hud.setHearts(run.player.hearts);
-      }
-      cue("power");
+      run.player.hearts += 1;
+      hud.setHearts(run.player.hearts);
+      cue("heart");
       hud.toast("+1 heart", 1.2);
       break;
     }
@@ -407,9 +502,11 @@ function handleEvent(e: import("./game/player.js").PlayerEvent): void {
       juice("boss-hit");
       cue("thud");
       if (run.boss.hp <= 0) {
-        run.gateUnlocked = run.seeds.size >= spec.gateSeeds;
-        node(nodeName.gateLock)?.setVisible(false);
-        hud.banner("BRAMBLEBACK DOWN!", "The Sun-Gate is unlatched.", 3);
+        const gate = gateState({ seeds: run.seeds.size, gateSeeds: spec.gateSeeds, boss: true, bossHp: 0 });
+        run.gateUnlocked = gate.unlocked;
+        node(nodeName.gateLock)?.setVisible(gate.lockVisible);
+        const short = spec.gateSeeds - run.seeds.size;
+        hud.banner("BRAMBLEBACK DOWN!", gate.unlocked ? "The Sun-Gate is unlatched." : `Find ${short} more sun-seed${short === 1 ? "" : "s"} to open the Sun-Gate.`, 3);
         hud.setObjective(objectiveText());
         cue("win");
       } else {
@@ -439,21 +536,21 @@ function completeWorld(): void {
   cue("win");
   juice("gate");
   const completed = { ...save.completed, [run.world]: true as const };
-  save = { ...save, completed };
-  if (run.world === "academy" && !save.academyDone) {
-    save = { ...save, academyDone: true };
+  let next: PipSave = { ...save, completed };
+  if (run.world === "academy" && !next.academyDone) {
+    next = { ...next, academyDone: true };
   }
   let medal = "";
   if (run.mode === "trial") {
-    const best = save.bestTimes[run.world];
+    const best = next.bestTimes[run.world];
     if (best === undefined || run.levelTime < best) {
-      save = { ...save, bestTimes: { ...save.bestTimes, [run.world]: Math.round(run.levelTime * 10) / 10 } };
+      next = { ...next, bestTimes: { ...next.bestTimes, [run.world]: Math.round(run.levelTime * 10) / 10 } };
     }
     medal = run.levelTime <= spec.medals.gold ? " 🥇 GOLD" : run.levelTime <= spec.medals.silver ? " 🥈 SILVER" : run.levelTime <= spec.medals.bronze ? " 🥉 BRONZE" : "";
   }
-  persistSave(save);
+  save = saves.commit(next);
   run.save = save;
-  const next = nextWorldId(run.world);
+  const nextId = nextWorldId(run.world);
   hud.showComplete(
     true,
     run.world === "academy" ? "GAUNTLET CLEARED!" : "SUN-GATE OPENED!",
@@ -465,15 +562,15 @@ function completeWorld(): void {
       ...(run.mode === "trial" ? [`Best — ${save.bestTimes[run.world]?.toFixed(1) ?? "—"}s${medal}`] : []),
       ...(spec.boss ? [`Brambleback — ${3 - run.bossHp}/3 hits`] : [])
     ],
-    next ? `Next — ${worldSpec(next).title}` : "The Vale is saved!"
+    nextId ? `Next — ${worldSpec(nextId).title}` : "The Vale is saved!"
   );
   const nextBtn = document.getElementById("pbl-next-world") as HTMLButtonElement | null;
-  if (nextBtn) nextBtn.disabled = !next;
+  if (nextBtn) nextBtn.disabled = !nextId;
   hud.banner("SUN-GATE OPENED!", spec.title, 3);
   if (autopilot) {
     window.setTimeout(() => {
       if (autopilot && run.complete) {
-        loadWorld(next ?? "w1", run.mode);
+        loadWorld(nextId ?? "w1", run.mode);
       }
     }, 2400);
   }
@@ -500,6 +597,10 @@ function setAutopilot(next: boolean): void {
   if (autopilot) {
     userEngaged = true;
   }
+  // C4: the demo plays against an in-memory copy of the save; switching it
+  // off drops whatever the AI earned.
+  save = saves.setDemo(next);
+  run.save = save;
   const btn = document.getElementById("aura-btn-auto");
   if (btn) {
     btn.classList.toggle("active", autopilot);
@@ -755,12 +856,11 @@ function driveAnimation(p: PlayerState, dt: number): void {
     hero.setAnimation({ clip: spec.clip, loop: spec.loop ?? true, speed: spec.speed ?? 1 });
   }
 
-  // Studio accessories track the 1.25m hero; only show glide cape when gliding.
-  const cap = node(nodeName.heroCap);
+  // Studio cape tracks the 1.25 m hero: it hangs on his back at rest and
+  // spreads out while he glides.
   const cape = node(nodeName.heroCape);
   const fwdX = Math.sin(p.yaw), fwdZ = Math.cos(p.yaw);
-  cap?.setVisible(false);
-  cape?.setVisible(p.state === "glide");
+  cape?.setVisible(p.state !== "dead");
   const capeLift = p.state === "glide" ? 0.24 : 0;
   cape?.setPosition(p.x - fwdX * 0.22, p.y + 0.72 + capeLift, p.z - fwdZ * 0.22);
   cape?.setRotation(p.state === "glide" ? 1.1 : 0.35, p.yaw, 0);
@@ -771,9 +871,11 @@ function driveAnimation(p: PlayerState, dt: number): void {
   const camFwdX = Math.sin(p.camYaw);
   const camFwdZ = Math.cos(p.camYaw);
   const built = ensureWorld(run.world).built;
+  // C18: portrait screens get a wider vertical FOV and a longer boom.
+  const framing = framingFor(viewAspect());
   const camY = p.y + 2.25;
-  const desiredX = p.x - camFwdX * 4.5;
-  const desiredZ = p.z - camFwdZ * 4.5;
+  const desiredX = p.x - camFwdX * framing.boom;
+  const desiredZ = p.z - camFwdZ * framing.boom;
   const targetClearance = cameraClearance(p, built, desiredX, desiredZ, camY);
   if (!cameraRig.ready || dt <= 0) {
     cameraRig.clearance = targetClearance;
@@ -784,13 +886,20 @@ function driveAnimation(p: PlayerState, dt: number): void {
     const rate = targetClearance < cameraRig.clearance ? 24 : 5.5;
     cameraRig.clearance += (targetClearance - cameraRig.clearance) * (1 - Math.exp(-rate * dt));
   }
-  const boom = 4.5 * Math.max(CAM_MIN_CLEARANCE, cameraRig.clearance);
+  const boom = framing.boom * Math.max(CAM_MIN_CLEARANCE, cameraRig.clearance);
   app.camera?.setPose({
     position: [p.x - camFwdX * boom, camY, p.z - camFwdZ * boom],
     target: [p.x + camFwdX * 3.2, p.y + 0.55, p.z + camFwdZ * 3.2],
     up: [0, 1, 0],
-    fov: 52
+    fov: framing.fov
   });
+}
+
+function viewAspect(): number {
+  const host = document.getElementById("app");
+  const w = host?.clientWidth || window.innerWidth;
+  const h = host?.clientHeight || window.innerHeight;
+  return h > 0 ? w / h : 16 / 9;
 }
 
 // ----------------------------------------------------------------- overlay
@@ -800,6 +909,22 @@ const bind = (id: string, fn: () => void) => document.getElementById(id)?.addEve
 function setPaused(p: boolean): void {
   run.paused = p;
   hud.showPause(p);
+}
+
+const overlayIds = ["pbl-atlas", "pbl-studio", "pbl-pause"] as const;
+/** C9: any open menu overlay freezes the sim, not just the pause flag. */
+function overlayOpen(): boolean {
+  return overlayIds.some((id) => {
+    const el = document.getElementById(id);
+    return Boolean(el && !el.hidden);
+  });
+}
+
+/** Close Atlas/Studio; if they were opened from Pause, go back to the Pause menu. */
+function closeOverlay(which: "atlas" | "studio"): void {
+  if (which === "atlas") hud.showAtlas(false);
+  else hud.showStudio(false);
+  if (run.paused && !run.complete) hud.showPause(true);
 }
 
 function showAtlas(show: boolean): void {
@@ -819,8 +944,7 @@ function showAtlas(show: boolean): void {
 function showStudio(show: boolean): void {
   const render = (): void => {
     hud.renderStudio(run.save, (which, color) => {
-      save = { ...save, studio: { ...save.studio, [which]: color } };
-      persistSave(save);
+      save = saves.commit({ ...save, studio: { ...save.studio, [which]: color } });
       run.save = save;
       applyStudioColors();
       render();
@@ -857,10 +981,13 @@ function bindShell(): void {
   });
   bind("pbl-resume", () => setPaused(false));
   bind("pbl-restart", () => { setPaused(false); loadWorld(run.world); });
-  bind("pbl-pause-atlas", () => { setPaused(false); showAtlas(true); });
-  bind("pbl-pause-studio", () => { setPaused(false); showStudio(true); });
-  bind("pbl-atlas-close", () => hud.showAtlas(false));
-  bind("pbl-studio-close", () => hud.showStudio(false));
+  // Opening Atlas/Studio from Pause keeps the run paused behind them.
+  bind("pbl-pause-atlas", () => { hud.showPause(false); showAtlas(true); });
+  bind("pbl-pause-studio", () => { hud.showPause(false); showStudio(true); });
+  bind("pbl-atlas-close", () => closeOverlay("atlas"));
+  bind("pbl-studio-close", () => closeOverlay("studio"));
+  // C8: on-screen pause for touch (and mouse) players.
+  bind("pbl-pause-btn", () => { if (!run.complete && !overlayOpen()) setPaused(true); });
   bind("pbl-complete-retry", () => loadWorld(run.world));
   bind("pbl-complete-atlas", () => { hud.showComplete(false); showAtlas(true); });
   bind("pbl-next-world", () => {
@@ -884,30 +1011,101 @@ window.addEventListener("keydown", (event) => {
       setAutopilot(false);
     }
   }
-  if (event.code !== "Escape") return;
+  // First key press also starts the ambient bed (audio needs a gesture).
+  if (ambience) void pipsGame.sound?.cue(ambience);
+  if (event.code !== "Escape" && event.code !== "KeyP") return;
   const atlasEl = document.getElementById("pbl-atlas");
   const studioEl = document.getElementById("pbl-studio");
-  if (atlasEl && !atlasEl.hidden) { hud.showAtlas(false); return; }
-  if (studioEl && !studioEl.hidden) { hud.showStudio(false); return; }
+  if (atlasEl && !atlasEl.hidden) { closeOverlay("atlas"); return; }
+  if (studioEl && !studioEl.hidden) { closeOverlay("studio"); return; }
   if (run.complete) return;
   setPaused(!run.paused);
 });
 
-app.onFrame(({ dt }: { readonly dt: number }) => {
+// C2: drag with the mouse (or press Q/E, or use the right stick) to orbit the camera.
+const ORBIT_PER_PIXEL = 0.006;
+const ORBIT_KEY_RATE = 2.2; // rad/s
+let orbitPending = 0;
+let dragPointer: number | null = null;
+let dragLastX = 0;
+const appHost = document.getElementById("app");
+appHost?.addEventListener("pointerdown", (event) => {
+  if (ambience) void pipsGame.sound?.cue(ambience);
+  if (event.pointerType !== "mouse" || event.button !== 0) return;
+  dragPointer = event.pointerId;
+  dragLastX = event.clientX;
+});
+window.addEventListener("pointermove", (event) => {
+  if (event.pointerId !== dragPointer) return;
+  orbitPending += (event.clientX - dragLastX) * ORBIT_PER_PIXEL;
+  dragLastX = event.clientX;
+});
+const endDrag = (event: PointerEvent) => { if (event.pointerId === dragPointer) dragPointer = null; };
+window.addEventListener("pointerup", endDrag);
+window.addEventListener("pointercancel", endDrag);
+
+// C20: the sim runs on a fixed 60 Hz step (createFixedStepLoop) driven from
+// the engine frame, so a slow frame runs catch-up steps (up to 6, 0.1 s) and
+// a 144 Hz display does not speed Pip up. Edge inputs are latched per frame.
+const SIM_STEP_SECONDS = 1 / 60;
+const inputLatch = createInputLatch();
+let swapping = false;
+let frameInput = { moveX: 0, moveZ: 0, jumpHeld: false, orbitRate: 0 };
+
+// Pip's drawn pose blends the last two sim steps (loop.alpha), so a 60 Hz sim
+// still moves every frame on a 120/144 Hz display. Teleports (respawn) snap.
+interface PipPose { x: number; y: number; z: number; yaw: number; camYaw: number }
+const pipPresenter = createFixedStepPresenter<PipPose>({
+  snapshot: () => ({ x: run.player.x, y: run.player.y, z: run.player.z, yaw: run.player.yaw, camYaw: run.player.camYaw }),
+  blend: createRecordBlend<PipPose>({ angleKeys: ["yaw", "camYaw"], snapDistance: 2, position: (p) => [p.x, p.y, p.z] })
+});
+const drawnPlayer = { ...run.player } as PlayerState;
+
+const simLoop = createFixedStepLoop({
+  stepSeconds: SIM_STEP_SECONDS,
+  maxCatchUpSteps: 6,
+  maxFrameSeconds: 0.1,
+  isActive: () => appReady && !run.paused && !overlayOpen() && !swapping,
+  step: (seconds) => simStep(seconds),
+  render: (frameSeconds) => present(frameSeconds)
+});
+
+app.onFrame(() => {
   if (!appReady) {
     return;
   }
-  const seconds = Math.min(0.05, dt);
-  const { built, spec, cert } = ensureWorld(run.world);
-  if (run.paused) {
-    // Keep the evidence global honest while the sim is suspended.
-    const prior = window.__AURA3D_SHOWCASE_PIPS_BIG_LEAP__;
-    window.__AURA3D_SHOWCASE_PIPS_BIG_LEAP__ = { ...prior, status: "paused", paused: true };
-    return;
+  // Sample input once per display frame. createGame mounts touch but doesn't
+  // tick it per frame; `update` exists on the concrete mount but not the
+  // public TouchControls contract.
+  (pipsGame.touch as { update?: () => void } | null)?.update?.();
+  const moveX = input?.axis("moveX") ?? 0;
+  const moveZ = input?.axis("moveZ") ?? 0;
+  const jumpPressed = input?.pressed("jump") ?? false;
+  const jumpHeld = input?.held("jump") ?? false;
+  const divePressed = input?.pressed("dive") ?? false;
+  const poundPressed = input?.pressed("pound") ?? false;
+  const orbitRate = ((input?.held("camRight") ? 1 : 0) - (input?.held("camLeft") ? 1 : 0)) * ORBIT_KEY_RATE;
+  frameInput = { moveX, moveZ, jumpHeld, orbitRate };
+  inputLatch.latch({ jumpPressed, divePressed, poundPressed });
+  if (Math.abs(moveX) > 0.15 || Math.abs(moveZ) > 0.15 || jumpPressed || jumpHeld || divePressed || poundPressed || orbitRate !== 0) {
+    userEngaged = true;
+    if (autopilot) {
+      setAutopilot(false);
+    }
   }
+  const steps = simLoop.tick(performance.now());
+  if (steps === 0 && (run.paused || overlayOpen())) {
+    // Keep the evidence global honest while the sim is suspended.
+    inputLatch.clear();
+    publishEvidence();
+  }
+});
+
+function simStep(seconds: number): void {
+  const { built, spec } = ensureWorld(run.world);
   run.worldClock += seconds;
 
-  // Boss brain first — the player sim needs its pose this frame.
+  // Boss brain first — the player sim needs its pose this step.
   let bossAt: readonly [number, number, number] | undefined;
   let bossVulnerable = false;
   if (run.boss && !run.complete) {
@@ -956,40 +1154,21 @@ app.onFrame(({ dt }: { readonly dt: number }) => {
     }
   }
 
-  // Player sim — sync the virtual sticks into the shared input controller
-  // first. createGame mounts touch but doesn't tick it per frame; `update`
-  // exists on the concrete mount but not the public TouchControls contract.
-  (pipsGame.touch as { update?: () => void } | null)?.update?.();
-  const manualMoveX = input?.axis("moveX") ?? 0;
-  const manualMoveZ = input?.axis("moveZ") ?? 0;
-  const manualJumpPressed = input?.pressed("jump") ?? false;
-  const manualJumpHeld = input?.held("jump") ?? false;
-  const manualDivePressed = input?.pressed("dive") ?? false;
-  const manualPoundPressed = input?.pressed("pound") ?? false;
-  const hasManualInput =
-    Math.abs(manualMoveX) > 0.15 ||
-    Math.abs(manualMoveZ) > 0.15 ||
-    manualJumpPressed ||
-    manualJumpHeld ||
-    manualDivePressed ||
-    manualPoundPressed;
-  if (hasManualInput) {
-    userEngaged = true;
-    if (autopilot) {
-      setAutopilot(false);
-    }
-  }
+  const edges = inputLatch.consume();
+  const orbit = orbitPending + frameInput.orbitRate * seconds;
+  orbitPending = 0;
 
   if (autopilot || userEngaged) {
     const playerInput = autopilot
       ? computeAutopilotInput(built, spec, seconds, bossVulnerable, bossAt)
       : {
-          moveX: manualMoveX,
-          moveZ: manualMoveZ,
-          jumpPressed: manualJumpPressed,
-          jumpHeld: manualJumpHeld,
-          divePressed: manualDivePressed,
-          poundPressed: manualPoundPressed
+          moveX: frameInput.moveX,
+          moveZ: frameInput.moveZ,
+          jumpPressed: edges.jumpPressed,
+          jumpHeld: frameInput.jumpHeld,
+          divePressed: edges.divePressed,
+          poundPressed: edges.poundPressed,
+          orbit
         };
     const events = stepPlayer(run.player, built, playerInput, seconds, {
       doubleJump: save.doubleJump,
@@ -1022,20 +1201,22 @@ app.onFrame(({ dt }: { readonly dt: number }) => {
     }
     for (const e of events) handleEvent(e);
 
-    // Death → restart at spawn with full hearts.
+    // Death → back at the last checkpoint Pip touched, with full hearts (C16:
+    // the gold flags he passed stay true).
     if (run.player.state === "dead" && run.deadTimer > 0) {
       run.deadTimer -= seconds;
       if (run.deadTimer <= 0) {
-        const fresh = createPlayer(built);
-        run.player.x = fresh.x; run.player.y = fresh.y; run.player.z = fresh.z;
+        const cp = run.player.checkpoint;
+        run.player.x = cp.x; run.player.y = cp.y + 0.05; run.player.z = cp.z;
         run.player.vx = 0; run.player.vy = 0; run.player.vz = 0;
-        run.player.yaw = fresh.yaw; run.player.camYaw = fresh.camYaw;
+        run.player.yaw = cp.yaw; run.player.camYaw = cp.yaw;
         run.player.hearts = 3;
-        run.player.state = "grounded";
+        run.player.state = "air";
+        run.player.grounded = false;
         run.player.invuln = 1.6;
-        run.player.checkpoint = fresh.checkpoint;
         hud.setHearts(3);
-        hud.toast("Pip's back up!", 1.4);
+        cue("respawn");
+        hud.toast(cp.id === "spawn" ? "Pip's back up!" : "Pip's back up at the last checkpoint!", 1.6);
       }
     }
 
@@ -1043,30 +1224,49 @@ app.onFrame(({ dt }: { readonly dt: number }) => {
   } else {
     // Before first user input (when autopilot is OFF), keep Pip planted on the
     // starting platform in a clean Idle skeletal loop while pickups and moving
-    // platforms animate in place.
+    // platforms animate in place. Orbit still turns the camera.
     run.player.vx = 0;
     run.player.vy = 0;
     run.player.vz = 0;
     run.player.grounded = true;
     run.player.state = "grounded";
+    run.player.camYaw -= orbit;
   }
 
-  // Platform motion + pickup spin always animate in place.
-  tickPlatforms(built, run.worldClock, (name) => node(name));
-  for (const n of built.spinNodes) {
+  // Platform motion always animates in place (collision and visuals together).
+  tickPlatforms(built, run.worldClock, node);
+  pipPresenter.afterStep();
+}
+
+function present(frameSeconds: number): void {
+  const { spec } = ensureWorld(run.world);
+  for (const n of ensureWorld(run.world).built.spinNodes) {
     const h = node(n);
     if (h && h.visible !== false) h.setRotation(0, run.worldClock * 1.8, 0);
   }
-
-  driveAnimation(run.player, seconds);
-  feel.update(seconds * 1000);
+  Object.assign(drawnPlayer, run.player, pipPresenter.present(simLoop));
+  driveAnimation(drawnPlayer, frameSeconds);
+  feel.update(frameSeconds * 1000);
   hud.setTimer(run.levelTime, run.mode === "trial" ? spec.medals : undefined);
+  publishEvidence();
+}
 
-  // ------------------------------------------------------- evidence global
+// ------------------------------------------------------- evidence global
+
+const EVIDENCE_INTERVAL_MS = 250;
+let evidenceAt = -Infinity;
+
+/** C21: the evidence object is rebuilt at most 4 times a second, not every frame. */
+function publishEvidence(force = false): void {
+  const now = performance.now();
+  if (!force && now - evidenceAt < EVIDENCE_INTERVAL_MS) return;
+  evidenceAt = now;
+  const { spec, built, cert } = ensureWorld(run.world);
+  const suspended = run.paused || overlayOpen();
   const motion = built.motion;
   window.__AURA3D_SHOWCASE_PIPS_BIG_LEAP__ = {
-    status: "running",
-    paused: false,
+    status: suspended ? "paused" : "running",
+    paused: suspended,
     autopilot,
     appId: "showcase-pips-big-leap",
     route: "/apps/showcase-pips-big-leap/",
@@ -1086,7 +1286,9 @@ app.onFrame(({ dt }: { readonly dt: number }) => {
     levelTime: Number(run.levelTime.toFixed(2)),
     gate: { seedsNeeded: spec.gateSeeds, unlocked: run.gateUnlocked, complete: run.complete },
     boss: run.boss ? { active: run.bossActive, hp: run.bossHp, phase: run.boss.phase } : null,
-    camera: { rig: "shoulder:pip", presented: Boolean(app.camera?.presented()), camYaw: Number(run.player.camYaw.toFixed(3)) },
+    camera: { rig: "shoulder:pip", presented: Boolean(app.camera?.presented()), camYaw: Number(run.player.camYaw.toFixed(3)), ...framingFor(viewAspect()) },
+    sim: { stepSeconds: SIM_STEP_SECONDS, steps: simLoop.steps, worldClock: Number(run.worldClock.toFixed(3)) },
+    medals: spec.medals,
     motion: {
       gravity: Number(motion.tuning.gravity.toFixed(3)),
       jumpVelocity: Number(motion.tuning.jumpVelocity.toFixed(3)),
@@ -1094,6 +1296,8 @@ app.onFrame(({ dt }: { readonly dt: number }) => {
       coyoteMs: motion.tuning.coyoteMs,
       jumpBufferMs: motion.tuning.jumpBufferMs,
       reportOk: motion.report.passes,
+      failedChecks: motion.report.checks.filter((c) => !c.passes).map((c) => c.id),
+      springEdges: motion.springEdges,
       maxRise: motion.facts.maxRise,
       maxGap: motion.facts.maxGap,
       platformCount: motion.facts.platformCount
@@ -1114,11 +1318,19 @@ app.onFrame(({ dt }: { readonly dt: number }) => {
       kitSnapshot: cert.kitSnapshot ?? null,
       notes: cert.notes
     },
-    save: { worldsDone: Object.keys(save.completed).length, academyDone: save.academyDone, doubleJump: save.doubleJump, studio: save.studio },
+    save: { demo: saves.demo, worldsDone: Object.keys(save.completed).length, academyDone: save.academyDone, doubleJump: save.doubleJump, studio: save.studio },
     hero: { assetId: "pipsPip", hash: assets.pip.hash, clips: Object.values(PIP_CLIPS) },
     bossAsset: run.boss ? { assetId: "pipsBrambleback", hash: assets.boss.hash, clips: Object.values(BOSS_CLIPS) } : null
   };
-});
+}
+
+// P1: in dev, say which motion checks a world fails (none should).
+if (import.meta.env?.DEV) {
+  for (const id of ["academy", "w1", "w2", "w3", "w4", "w5", "w6"] as const) {
+    const report = deriveWorldMotion(worldSpec(id)).report;
+    if (!report.passes) console.warn(`[pips-big-leap] ${id} motion report fails`, report.checks.filter((c) => !c.passes));
+  }
+}
 
 // -------------------------------------------------------------------- wire
 
@@ -1134,9 +1346,10 @@ loadWorld(BOOT_WORLD, "quick");
 
 void app.ready().then(async () => {
   await pipsGame.ready();
-  run.clipState = "";
-  driveAnimation(run.player, 0);
+  nodeCache.clear();
+  applyRunNodeState();
   appReady = true;
+  publishEvidence(true);
   document.body.dataset.aura3dReady = "true";
   try {
     const freezeMs = Number(params.get("freeze"));

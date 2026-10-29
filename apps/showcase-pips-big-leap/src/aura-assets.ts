@@ -2,11 +2,12 @@
 //
 // Hero, boss, and the collectible/checkpoint/gate props are bespoke Meshy
 // generations imported into this app's own catalog (`aura.assets.json`,
-// generated key surface in `src/aura-catalog.ts`). The `backdrop` world kits
-// and the two NPC runners still come from the shared repo-level catalog —
-// they are environment dressing/cameo kits, not the replaced hero props.
+// generated key surface in `src/aura-catalog.ts`). The world props and the
+// two NPC runners come from the shared repo catalog, through the small
+// per-app copy in `src/aura-assets.shared.ts` (RH-06: importing the root
+// `src/aura-assets.ts` shipped the whole 2.6 MB shared catalog to this page).
 import { assets as catalog } from "./aura-catalog.js";
-import { assets as shared } from "../../../src/aura-assets";
+import { sharedAssets as shared } from "./aura-assets.shared.js";
 
 export const assets = {
   pip: catalog.pipsPip,
@@ -18,7 +19,7 @@ export const assets = {
   hawk: shared.heatsinkDroneNighthawk,
   sidekick: shared.showcaseSidekickRunner,
   helper: shared.helperChar,
-  robot: shared.showcaseRunnerRobot,
+  // Backdrop kits are not mounted; certify.ts reads their hash only.
   backdrop: {
     verdant: shared.showcaseKenneyVerdantPlatformerWorld,
     cartoon: shared.showcaseCartoonPlatformWorld,
@@ -28,34 +29,22 @@ export const assets = {
     basicpack: shared.showcasePlatformerBasicPack
   },
   props: {
-    pineTree: shared.propPineTree,
     conifer: shared.propConifer,
     boulder: shared.propBoulder,
-    rockA: shared.propRockA,
     rockB: shared.propRockB,
     windmill: shared.gullsiegeWindmillMeshy,
     watchtower: shared.gullsiegeWatchtowerMeshy,
-    gatehouse: shared.gullsiegeGatehouseMeshy,
-    bridge: shared.gullsiegeBridgeMeshy,
-    planks: shared.gullsiegePlanksMeshy,
     crate: shared.gullsiegeCrateMeshy,
     barrel: shared.gullsiegeBarrelMeshy,
     crystalShard: shared.skylineCrystalShardMeshy,
     energyCore: shared.fpsEnergyCorePickupMeshy,
-    treasure: shared.bunkerTreasureMeshy,
     brazier: shared.auraClashCornerBrazierPylonMeshy,
     streetLamp: shared.neonStreetLampProp,
     boostPad: shared.heatsinkBoostPad,
     arch: shared.heatsinkArch,
     pedestal: shared.galleryShiftPedestal,
     turbine: shared.reactorFusionTurbineMeshy,
-    pylon: shared.blockfallReactorContainmentPylonMeshy,
-    dragonStatue: shared.clashDragonStatueMeshy,
-    teaHouse: shared.showcaseTeaHouse,
-    hound: shared.bunkerHoundMeshy,
-    moth: shared.neonCrownMothElite,
-    frostDrone: shared.skylineFrostSentryDroneMeshy,
-    hawk: shared.heatsinkDroneNighthawk
+    pylon: shared.blockfallReactorContainmentPylonMeshy
   }
 } as const;
 

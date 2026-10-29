@@ -125,8 +125,12 @@ describe("pips-big-leap player: strafe (C2)", () => {
     const p = createPlayer(world);
     const step = stepper(world, p);
     const camYaw0 = p.camYaw;
+    const right0 = { x: -Math.cos(camYaw0), z: Math.sin(camYaw0) };
     step({ ...IDLE, orbit: 0.25 });
-    expect(p.camYaw - camYaw0).toBeCloseTo(0.25, 6);
+    expect(camYaw0 - p.camYaw).toBeCloseTo(0.25, 6);
+    // Turning right swings the forward axis toward the old right axis.
+    const fwd = { x: Math.sin(p.camYaw), z: Math.cos(p.camYaw) };
+    expect(fwd.x * right0.x + fwd.z * right0.z).toBeGreaterThan(0.2);
   });
 });
 

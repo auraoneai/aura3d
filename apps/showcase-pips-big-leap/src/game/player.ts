@@ -172,7 +172,8 @@ export function stepPlayer(
     while (cd < -Math.PI) cd += Math.PI * 2;
     p.camYaw += cd * Math.min(1, 2.2 * dt);
   }
-  if (input.orbit) p.camYaw += input.orbit;
+  // Positive orbit turns the view right (forward swings toward the right axis).
+  if (input.orbit) p.camYaw -= input.orbit;
 
   // ---------------------------------------------------------------- swimming
   if (swimming && !p.swim && p.vy <= 0.5) {
