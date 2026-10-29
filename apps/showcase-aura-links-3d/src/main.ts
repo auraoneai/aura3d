@@ -849,13 +849,13 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   // --- Tee box + surround + markers ---
   const teeMat = material.pbr({ color: pal.teeBox, roughness: 0.82 });
   const teeEdgeMat = material.pbr({ color: shade(pal.teeBox, 0.72), roughness: 0.92 });
-  // red tee blocks: the glowing white 22 cm spheres read as a second, larger ball in the address frame
+  // low red tee blocks: 22 cm spheres (white, then red) read as a second, larger ball in the address and card frames
   const markMat = material.emissive({ color: "#c8402f", emissive: "#c8402f", emissiveIntensity: 0.25 });
   nodes.push(
     primitives.box({ name: "tee-surround", size: [9.3, 0.07, 7.3], material: teeEdgeMat }).position(terrain.tee[0], terrain.tee[1] - 0.025, terrain.tee[2]),
     primitives.box({ name: "tee-box", size: [8.4, 0.12, 6.4], material: teeMat }).position(terrain.tee[0], terrain.tee[1] - 0.03, terrain.tee[2]),
-    primitives.sphere({ name: "tee-marker-l", size: [0.22, 0.22, 0.22], material: markMat }).position(terrain.tee[0] - 3.2, terrain.tee[1] + 0.11, terrain.tee[2]),
-    primitives.sphere({ name: "tee-marker-r", size: [0.22, 0.22, 0.22], material: markMat }).position(terrain.tee[0] + 3.2, terrain.tee[1] + 0.11, terrain.tee[2])
+    primitives.box({ name: "tee-marker-l", size: [0.3, 0.1, 0.12], material: markMat }).position(terrain.tee[0] - 3.2, terrain.tee[1] + 0.05, terrain.tee[2]),
+    primitives.box({ name: "tee-marker-r", size: [0.3, 0.1, 0.12], material: markMat }).position(terrain.tee[0] + 3.2, terrain.tee[1] + 0.05, terrain.tee[2])
   );
 
   // --- Bunkers (bright sand bowls + dark, crisp grass lip) ---
