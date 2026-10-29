@@ -395,7 +395,7 @@ function populatePhysicsWorldFromScene(controller: AuraPhysicsWorldController, n
     const body = controller.createBody({
       type: node.physics.type ?? "dynamic",
       position: node.position ?? [0, 0, 0],
-      rotation: eulerToQuat(node.rotation ?? [0, 0, 0]),
+      rotation: nodeRotationQuaternion(node),
       mass: node.physics.mass,
       friction: node.physics.friction,
       restitution: node.physics.restitution,
@@ -417,14 +417,16 @@ function scenePhysicsNodeAdapter(node: AuraModelNode | AuraPrimitiveNode): Scene
     getWorldPosition: () => node.position ?? [0, 0, 0],
     getWorldQuaternion: () => {
       const nodeWithPhysicsRotation = node as { physicsRotation?: readonly [number, number, number, number] };
-      return nodeWithPhysicsRotation.physicsRotation ?? eulerToQuat(node.rotation ?? [0, 0, 0]);
+      return nodeWithPhysicsRotation.physicsRotation ?? nodeRotationQuaternion(node);
     },
     setWorldPosition: (position) => {
       (node as { position?: AuraVec3 }).position = [position[0], position[1], position[2]];
     },
     setWorldQuaternion: (rotation) => {
       (node as { physicsRotation?: readonly [number, number, number, number] }).physicsRotation = [rotation[0], rotation[1], rotation[2], rotation[3]];
-      (node as { rotation?: AuraVec3 }).rotation = quatToEuler(rotation);
+      writeNodeRotationFromBody(node, rotation, (euler) => {
+        (node as { rotation?: AuraVec3 }).rotation = euler;
+      });
     }
   };
 }
@@ -454,7 +456,7 @@ export function createRuntimeScenePhysics(snapshot: AuraSceneSnapshot): AuraRunt
     const body = world.createRigidBody({
       type: spec.type ?? "dynamic",
       position: node.position ?? [0, 0, 0],
-      rotation: eulerToQuat(node.rotation ?? [0, 0, 0]),
+      rotation: nodeRotationQuaternion(node),
       mass: spec.mass,
       friction: spec.friction,
       restitution: spec.restitution,
@@ -511,6 +513,106 @@ export function createRuntimeScenePhysics(snapshot: AuraSceneSnapshot): AuraRunt
   };
 }
 
+type AuraPhysicsEulerOrder = "XYZ" | "YXZ" | "ZXY" | "ZYX" | "YZX" | "XZY";
+type AuraPhysicsQuat = readonly [number, number, number, number];
+
+/**
+ * Node rotation as the renderer composes it: `quaternion` wins, otherwise `rotation` in the
+ * node's `rotationOrder` (default "ZYX", `Rz·Ry·Rx`, see `sceneGraph.ts`). Physics bodies are
+ * seeded from this so a rotated body starts where the node is drawn (anim-phys-01).
+ */
+export function nodeRotationQuaternion(node: {
+  readonly rotation?: AuraVec3 | undefined;
+  readonly rotationOrder?: AuraPhysicsEulerOrder | undefined;
+  readonly quaternion?: AuraPhysicsQuat | undefined;
+}): AuraPhysicsQuat {
+  if (node.quaternion) return [node.quaternion[0], node.quaternion[1], node.quaternion[2], node.quaternion[3]];
+  return orderedEulerToQuat(node.rotation ?? [0, 0, 0], node.rotationOrder ?? "ZYX");
+}
+
+/** Sign of the second term of x, y, z, w per Euler order (three.js `setFromEuler`). */
+const EULER_QUAT_SIGNS: Readonly<Record<AuraPhysicsEulerOrder, readonly [number, number, number, number]>> = {
+  XYZ: [1, -1, 1, -1],
+  YXZ: [1, -1, -1, 1],
+  ZXY: [-1, 1, 1, -1],
+  ZYX: [-1, 1, -1, 1],
+  YZX: [1, 1, -1, -1],
+  XZY: [-1, -1, 1, 1]
+};
+
+/** Euler -> quaternion for any order, three.js `Quaternion.setFromEuler` semantics. */
+export function orderedEulerToQuat(euler: AuraVec3, order: AuraPhysicsEulerOrder): AuraPhysicsQuat {
+  const c1 = Math.cos(euler[0] / 2);
+  const c2 = Math.cos(euler[1] / 2);
+  const c3 = Math.cos(euler[2] / 2);
+  const s1 = Math.sin(euler[0] / 2);
+  const s2 = Math.sin(euler[1] / 2);
+  const s3 = Math.sin(euler[2] / 2);
+  const [sx, sy, sz, sw] = EULER_QUAT_SIGNS[order];
+  return [
+    s1 * c2 * c3 + sx * c1 * s2 * s3,
+    c1 * s2 * c3 + sy * s1 * c2 * s3,
+    c1 * c2 * s3 + sz * s1 * s2 * c3,
+    c1 * c2 * c3 + sw * s1 * s2 * s3
+  ];
+}
+
+/** Quaternion -> Euler in `order`, three.js `Euler.setFromRotationMatrix` semantics. */
+export function quatToOrderedEuler(rotation: AuraPhysicsQuat, order: AuraPhysicsEulerOrder): AuraVec3 {
+  const [x, y, z, w] = rotation;
+  const m11 = 1 - 2 * (y * y + z * z), m12 = 2 * (x * y - w * z), m13 = 2 * (x * z + w * y);
+  const m21 = 2 * (x * y + w * z), m22 = 1 - 2 * (x * x + z * z), m23 = 2 * (y * z - w * x);
+  const m31 = 2 * (x * z - w * y), m32 = 2 * (y * z + w * x), m33 = 1 - 2 * (x * x + y * y);
+  const clamp = (value: number) => Math.min(1, Math.max(-1, value));
+  const nearPole = (value: number) => Math.abs(value) >= 0.9999999;
+  switch (order) {
+    case "XYZ": {
+      const ey = Math.asin(clamp(m13));
+      return nearPole(m13) ? [Math.atan2(m32, m22), ey, 0] : [Math.atan2(-m23, m33), ey, Math.atan2(-m12, m11)];
+    }
+    case "YXZ": {
+      const ex = Math.asin(-clamp(m23));
+      return nearPole(m23) ? [ex, Math.atan2(-m31, m11), 0] : [ex, Math.atan2(m13, m33), Math.atan2(m21, m22)];
+    }
+    case "ZXY": {
+      const ex = Math.asin(clamp(m32));
+      return nearPole(m32) ? [ex, 0, Math.atan2(m21, m11)] : [ex, Math.atan2(-m31, m33), Math.atan2(-m12, m22)];
+    }
+    case "ZYX": {
+      const ey = Math.asin(-clamp(m31));
+      return nearPole(m31) ? [0, ey, Math.atan2(-m12, m22)] : [Math.atan2(m32, m33), ey, Math.atan2(m21, m11)];
+    }
+    case "YZX": {
+      const ez = Math.asin(clamp(m21));
+      return nearPole(m21) ? [0, Math.atan2(m13, m33), ez] : [Math.atan2(-m23, m22), Math.atan2(-m31, m11), ez];
+    }
+    case "XZY": {
+      const ez = Math.asin(-clamp(m12));
+      return nearPole(m12) ? [Math.atan2(-m23, m33), 0, ez] : [Math.atan2(m32, m22), Math.atan2(m13, m11), ez];
+    }
+  }
+}
+
+/**
+ * Write a body's world rotation back onto a scene node in the convention the renderer reads:
+ * a quaternion-authored node gets its quaternion, otherwise `rotation` in its `rotationOrder`.
+ */
+export function writeNodeRotationFromBody(
+  target: object,
+  rotation: AuraPhysicsQuat,
+  setRotation: (euler: AuraVec3) => void
+): void {
+  const node = target as { quaternion?: AuraPhysicsQuat | undefined; rotationOrder?: AuraPhysicsEulerOrder | undefined };
+  if (node.quaternion) {
+    node.quaternion = [rotation[0], rotation[1], rotation[2], rotation[3]];
+  }
+  setRotation(quatToOrderedEuler(rotation, node.rotationOrder ?? "ZYX"));
+}
+
+/**
+ * XYZ-order (`Rx·Ry·Rz`) Euler -> quaternion. Kept for existing callers; it is NOT the
+ * renderer's default order. Seed physics bodies from scene nodes with `nodeRotationQuaternion`.
+ */
 export function eulerToQuat(rotation: AuraVec3): readonly [number, number, number, number] {
   const [x, y, z] = rotation;
   const c1 = Math.cos(x / 2);

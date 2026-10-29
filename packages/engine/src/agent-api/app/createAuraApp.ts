@@ -5,7 +5,7 @@ import type { AuraApp, AuraAppTarget, AuraBackend, AuraCreateAppOptions, AuraFra
 import { declaresWebGLContent, productionRenderErrorMessage } from "../compiler/observations.js";
 import { createDiagnosticsOverlay, renderDiagnosticPreviewToCanvas, shouldRenderOverlay } from "../public/devtools.js";
 import { createInitialDiagnostics, snapshotDiagnostics, validateSceneAssets } from "../diagnostics.js";
-import { createRuntimeScenePhysics, eulerToQuat, physics, quatToEuler, resolveNodePhysicsShape } from "../nodes/physics.js";
+import { createRuntimeScenePhysics, nodeRotationQuaternion, physics, resolveNodePhysicsShape, writeNodeRotationFromBody } from "../nodes/physics.js";
 import { colorToLinearRgba } from "../colorUtils.js";
 import { scene } from "../nodes/scene.js";
 import { createComputeSurface } from "../nodes/compute.js";
@@ -257,17 +257,17 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
    * Off by default: a route that already moves its own nodes (and steps physics only for events) must
    * not have them overwritten.
    */
-  const appPhysicsNodeBindings = new Map<number, string>();
+  const appPhysicsNodeBindings = new Map<number, { readonly runtimeId: string; readonly node: object }>();
   const syncBoundNodes = (): void => {
     const world = appPhysicsWorldInstance;
     if (world === undefined) return;
-    for (const [bodyId, runtimeId] of appPhysicsNodeBindings) {
+    for (const [bodyId, binding] of appPhysicsNodeBindings) {
       const body = world.getBody(bodyId);
-      const handle = runtimeNodes.get(runtimeId);
+      const handle = runtimeNodes.get(binding.runtimeId);
       if (body === undefined || handle === undefined || body.sleeping) continue;
-      const euler = quatToEuler(body.rotation);
       handle.setPosition(body.position[0], body.position[1], body.position[2]);
-      handle.setRotation(euler[0], euler[1], euler[2]);
+      // Same convention the node was seeded with (anim-phys-01): quaternion or `rotationOrder`.
+      writeNodeRotationFromBody(binding.node, body.rotation, (euler) => handle.setRotation(euler[0], euler[1], euler[2]));
     }
   };
   /** Lazy `app.physics`. Identity is stable: the same runtime is returned on every access. */
@@ -310,7 +310,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       const body = world.createRigidBody({
         type: spec.type ?? "dynamic",
         position: node.position ?? [0, 0, 0],
-        rotation: eulerToQuat(node.rotation ?? [0, 0, 0]),
+        rotation: nodeRotationQuaternion(node),
         ...(spec.mass === undefined ? {} : { mass: spec.mass }),
         ...(spec.friction === undefined ? {} : { friction: spec.friction }),
         ...(spec.restitution === undefined ? {} : { restitution: spec.restitution })
@@ -323,7 +323,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       if (node.name) appPhysicsNodeNames.set(body.id, node.name);
       const runtimeId = (node as { readonly runtime?: { readonly id?: string } }).runtime?.id;
       if (options.physics?.bindNodes === true && runtimeId !== undefined && (spec.type ?? "dynamic") === "dynamic") {
-        appPhysicsNodeBindings.set(body.id, runtimeId);
+        appPhysicsNodeBindings.set(body.id, { runtimeId, node });
       }
     }
   };
