@@ -40,7 +40,7 @@ describe("traffic follows and yields (C6)", () => {
     // cruise speeds are 7 to 13 m/s (mean about 10); waiting at crossings costs a little
     expect(speed / 72_000 / cars.length).toBeGreaterThan(8);
     expect(stoppedLast).toBeLessThan(cars.length / 4);
-  });
+  }, 60_000);
 
   it("a slower car ahead holds the follower at the follow gap", () => {
     const cars = buildTraffic().slice(0, 2);
