@@ -12,9 +12,9 @@ const src = (path: string): string => readFileSync(new URL(`../../../examples/ni
 const page = readFileSync(new URL("../../../apps/showcase-ninja-runner-port/index.html", import.meta.url), "utf8");
 
 describe("ninja-runner-port audit fixes", () => {
-  it("S-01: no page-wide 4.3.0 shadow-fit opt-in, and the sky dome neither casts nor receives", () => {
+  it("S-01: the sky dome neither casts nor receives; the 4.3.0 fit stays on because the 4.2.0 fit spans the whole course", () => {
     const world = src("world.ts");
-    expect(world).not.toMatch(/__A3D_SHADOW_FIT__\s*=/);
+    expect(world).toMatch(/if \(SUN_SHADOW\) \(globalThis as \{ __A3D_SHADOW_FIT__\?: string \}\)\.__A3D_SHADOW_FIT__ = "current";/);
     expect(world).toMatch(/name: "sky", size: 4000, material: material\.custom\(skySpec\(\)\), castShadow: false, receiveShadow: false/);
   });
 

@@ -231,6 +231,15 @@ export interface WorldRuntime {
 
 /** The sun's cascaded shadow; `?shadow=0` restores the blob-only look. */
 const SUN_SHADOW = !(typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0");
+/**
+ * The 4.3.0 shadow fit (`__A3D_SHADOW_FIT__ = "current"`) stays on for this page. The default 4.2.0 fit widens every
+ * cascade to the bounds of every caster, and this course's instanced houses, trees and rocks each span the full 2.6 km
+ * route, so the 2048 texel maps cover kilometres: measured on remote SwiftShader (g20-after-vshadow, g20-after2-vrender)
+ * the 4.2.0 fit darkens the whole frame by about 5.5 luma (118.5 to 112.9 mean) with no visible shadow shapes, while the
+ * 4.3.0 fit matches the no-shadow frame within 0.4 and draws real shadows. The sky dome no longer casts either way.
+ * The 4.3.0 fit has no real-GPU frame for this game; `?shadowfit=legacy` restores the 4.2.0 fit for that check.
+ */
+if (SUN_SHADOW) (globalThis as { __A3D_SHADOW_FIT__?: string }).__A3D_SHADOW_FIT__ = "current";
 /** `?ibl=hdri`: light with the authored HDRI (a real asset ref) instead of the neutral room. */
 const IBL_HDRI = typeof location !== "undefined" && new URLSearchParams(location.search).get("ibl") === "hdri";
 const SKY = defineAuraAssets({ autumn: { type: "texture", format: "hdr", url: "/hdri/autumn_field_puresky_1k.hdr", metadata: { license: "CC0 1.0, Poly Haven autumn_field_puresky (1k)" } } });
