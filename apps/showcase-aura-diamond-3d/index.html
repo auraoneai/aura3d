@@ -108,7 +108,7 @@
         border: 1px solid var(--rule);
         color: #e8e2cf;
         font-family: var(--font-mono);
-        font-size: 11px;
+        font-size: 12px;
         letter-spacing: 0.03em;
         pointer-events: none;
         white-space: nowrap;
@@ -141,7 +141,7 @@
 
       .hud-mode-tag {
         align-self: flex-start;
-        font-size: 11px;
+        font-size: 12px;
         letter-spacing: 0.22em;
         padding: 3px 9px;
         background: rgba(255, 176, 58, 0.16);
@@ -171,7 +171,7 @@
 
       .hud-linescore th {
         color: var(--faint);
-        font-size: 10px;
+        font-size: 12px;
         letter-spacing: 0.08em;
       }
 
@@ -221,7 +221,7 @@
       }
 
       .hud-chip .k {
-        font-size: 9px;
+        font-size: 12px;
         letter-spacing: 0.16em;
         color: var(--muted);
         text-transform: uppercase;
@@ -374,7 +374,7 @@
       .hud-contact .grade.whiff { color: var(--danger); }
 
       .hud-contact .data {
-        font-size: 11px;
+        font-size: 12px;
         letter-spacing: 0.12em;
         color: var(--muted);
         background: rgba(10, 12, 24, 0.7);
@@ -497,7 +497,7 @@
         background: rgba(10, 12, 24, 0.72);
         border: 1px solid var(--rule);
         padding: 4px 12px;
-        font-size: 11px;
+        font-size: 12px;
         letter-spacing: 0.12em;
         color: var(--ink);
         text-transform: uppercase;
@@ -566,7 +566,7 @@
         top: 112px;
         left: 50%;
         transform: translateX(-50%);
-        font-size: 11px;
+        font-size: 12px;
         letter-spacing: 0.24em;
         padding: 4px 16px;
         background: rgba(10, 12, 24, 0.8);
@@ -723,7 +723,7 @@
       }
 
       .mode-card .mc-d {
-        font-size: 11px;
+        font-size: 12px;
         color: var(--muted);
         margin-top: 5px;
         line-height: 1.35;
@@ -735,7 +735,7 @@
 
       .menu-section > .k {
         font-family: var(--font-mono);
-        font-size: 10px;
+        font-size: 12px;
         letter-spacing: 0.22em;
         color: var(--muted);
         text-transform: uppercase;
@@ -754,7 +754,7 @@
         background: rgba(255, 255, 255, 0.06);
         color: var(--ink);
         font-family: var(--font-mono);
-        font-size: 11px;
+        font-size: 12px;
         padding: 6px 12px;
         border-radius: 8px;
         cursor: pointer;
@@ -864,7 +864,7 @@
 
       #bracket-panel .bp-game {
         font-family: var(--font-mono);
-        font-size: 10px;
+        font-size: 12px;
         color: var(--muted);
         padding: 3px 0;
         white-space: nowrap;
@@ -946,7 +946,7 @@
       .menu-footnote {
         margin-top: 18px;
         font-family: var(--font-mono);
-        font-size: 10px;
+        font-size: 12px;
         color: var(--faint);
         letter-spacing: 0.08em;
       }
@@ -994,7 +994,7 @@
           white-space: nowrap;
         }
         .hud-center-msg .small {
-          font-size: 10px;
+          font-size: 12px;
           letter-spacing: 0.14em;
         }
         .hud-top-left {
@@ -1002,6 +1002,21 @@
           transform-origin: top left;
         }
       }
+      /* Timing feedback after each swing (C22): early/late bar, -155..+155 ms. */
+      .hud-timing { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 12px; letter-spacing: 0.08em; }
+      .hud-timing .track { position: relative; width: 140px; height: 8px; background: rgba(245, 241, 228, 0.18); border-radius: 4px; }
+      .hud-timing .mid { position: absolute; left: 50%; top: -3px; width: 2px; height: 14px; background: rgba(245, 241, 228, 0.7); }
+      .hud-timing .needle { position: absolute; top: -4px; width: 4px; height: 16px; margin-left: -2px; background: #ffb03a; border-radius: 2px; }
+      /* On-screen pitch buttons (C9): pitch selection and Bullpen Lab on touch screens. */
+      .hud-pitch-pad { position: fixed; left: 50%; bottom: 112px; transform: translateX(-50%); display: none; gap: 8px; z-index: 31; pointer-events: auto; }
+      .hud-pitch-pad.show { display: flex; }
+      .hud-pitch-pad button { min-width: 52px; min-height: 44px; font: inherit; font-size: 14px; font-weight: 700; letter-spacing: 0.06em; color: #f5f1e4; background: rgba(13, 18, 28, 0.82); border: 1px solid rgba(245, 241, 228, 0.35); border-radius: 8px; }
+      .hud-pitch-pad button.active { border-color: #ffb03a; color: #ffb03a; }
+      .go-box { margin: 8px auto 0; border-collapse: collapse; font-size: 13px; }
+      .go-box th, .go-box td { padding: 2px 8px; text-align: center; }
+      .go-box td.tname { text-align: left; font-weight: 700; }
+      .go-bests { opacity: 0.8; font-size: 12px; }
+      .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
     </style>
   </head>
   <body>
@@ -1014,6 +1029,7 @@
       <button type="button" id="tb-derby" title="10-out home run derby">Derby Lab</button>
       <button type="button" id="tb-menu" title="Modes, World Classic &amp; Player Studio">Modes &amp; Tour</button>
       <button type="button" id="tb-auto" title="Toggle CPU Autopilot">Auto</button>
+      <button type="button" id="tb-mute" title="Mute or unmute game sound" aria-pressed="false">Sound: On</button>
       <span class="aura-sep"></span>
       <button type="button" class="venue" data-park="sandlot">Harbor</button>
       <button type="button" class="venue" data-park="skyline">Midtown</button>
@@ -1025,7 +1041,7 @@
     </nav>
 
     <div class="aura3d-controls-hint" id="controls-hint">
-      PCI: WASD · SWING: SPACE (HOLD=POWER) · PITCH: 1-4 + AIM + SPACE · PUSH/RETREAT: SPACE
+      PITCH NOW: SPACE · SWING: SPACE, TIMED TO THE BALL · PCI: WASD · PITCHING: 1-4 + AIM + SPACE · EXTRA BASE: SPACE
     </div>
 
     <!-- Broadcast HUD -->
@@ -1081,6 +1097,17 @@
       <div class="hud-contact" id="h-contact">
         <div class="grade" id="h-contact-grade">PERFECT</div>
         <div class="data" id="h-contact-data">102.4 MPH · 28° · 412 FT</div>
+        <div class="hud-timing" id="h-timing" aria-hidden="true">
+          <span class="lab">EARLY</span><span class="track"><i class="mid"></i><i class="needle" id="h-timing-needle"></i></span><span class="lab">LATE</span>
+        </div>
+        <div class="data" id="h-timing-ms"></div>
+      </div>
+
+      <div class="hud-pitch-pad" id="h-pitch-pad" role="group" aria-label="Pitch buttons">
+        <button type="button" data-pitch-idx="0">4FB</button>
+        <button type="button" data-pitch-idx="1">CB</button>
+        <button type="button" data-pitch-idx="2">SL</button>
+        <button type="button" data-pitch-idx="3">CH</button>
       </div>
 
       <div class="hud-catch-prompt" id="h-catch-prompt">◉ SPACE — CATCH</div>
@@ -1108,6 +1135,7 @@
     </div>
 
     <div id="event-ticker" role="log" aria-live="off" aria-label="Game event ticker"></div>
+    <div id="sr-result" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
     <!-- Menu / modes overlay -->
     <div id="menu" class="hidden">
@@ -1118,6 +1146,8 @@
         <div id="gameover-card">
           <div class="go-title" id="go-title">FINAL</div>
           <div class="go-line" id="go-line">—</div>
+          <table class="go-box" id="go-box" aria-label="Box score"></table>
+          <div class="go-line go-bests" id="go-bests"></div>
         </div>
 
         <div class="menu-grid">

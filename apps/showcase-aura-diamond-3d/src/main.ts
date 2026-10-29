@@ -9,19 +9,21 @@
  *   (polar-night, 1/6 gravity, 500-ft moonshots).
  *
  * ARCHITECTURE
- *   All game logic lives in this file: a deterministic baseball sim (pitch
+ *   The pure rules (pitch flight, swing timing, ball flight, count/outs/mercy/walk-off, the bracket and the set-dressing
+ *   layout) live in rules.ts with unit tests; this file runs them on a fixed 1/120 s step: a deterministic baseball sim (pitch
  *   movement curves → PCI×timing contact → launch/exit-velo ball flight →
  *   fence/field interaction), a full 3-inning game state machine with extras
  *   and a +10 mercy rule, Derby/Bullpen labs, a 32-team World Classic bracket
  *   and Player Studio cosmetics. The scene is rebuilt per ballpark through
  *   `app.setScene`; runtime node handles are re-bound after each rebuild.
- *   Athletes are typed catalog GLBs re-dressed with team-color cap/belt
- *   accents; bat/bases/mound/walls are authored field geometry (no catalog
- *   bat exists). The DOM HUD is wired every frame to the ids in index.html.
+ *   Athletes are typed catalog GLBs with team-colour caps and belts riding
+ *   their Head and Hips bones; bases, mound, walls and the ball are authored
+ *   field geometry. The DOM HUD is wired every frame to the ids in index.html.
  */
 import {
   camera,
   createAuraApp,
+  createFixedStepLoop,
   createGameAudio,
   effects,
   game,
@@ -36,6 +38,7 @@ import {
 import {
   createJuice,
   createOverlayDriver,
+  createFixedStepPresenter,
   createRumbleDriver,
   createTweenEngine,
   createFxParticlePass,
@@ -47,6 +50,58 @@ import {
 } from "@aura3d/engine/game";
 import { assets } from "./aura-assets.route";
 import { batContact, boundedBlend } from "./contact";
+import {
+  clamp,
+  lerp,
+  makeRng,
+  MOUND_Z,
+  MOUND_TOP,
+  RELEASE_PT,
+  ZONE_HW,
+  ZONE_CY,
+  ZONE_HH,
+  FOUL_DEG,
+  CONTACT_PLANE_T,
+  WINDUP_RELEASE_T,
+  PLAYER_SWING_PRE,
+  SIM_STEP,
+  PARKS,
+  PARK_ORDER,
+  PITCHES,
+  PITCH_KEYS,
+  WAVER_COUNT,
+  CLASSIC_ROUND_NAMES,
+  fenceRadius,
+  fencePoint,
+  pitchPosAt,
+  zoneCoords,
+  inZone,
+  timeToContactPlane,
+  swingTimingError,
+  gradeSwing,
+  stepFlight,
+  predictLanding,
+  halfEndDecision,
+  isWalkoff,
+  isMidInningMercy,
+  sacFlyScores,
+  createBracket,
+  advanceBracket,
+  shouldResumeClassic,
+  currentFixture,
+  crowdPlacements,
+  bleacherPlacements,
+  shellPlacements,
+  scoreboardPlacement,
+  propSpot,
+  HARBOR_WATER,
+  type Vec3,
+  type ParkId,
+  type ParkSpec,
+  type PitchId,
+  type PitchSpec,
+  type BracketState
+} from "./rules";
 import "../../showcase-port-shared/quickbar.css";
 import { installBlackFrameGuard } from "@aura3d/debug";
 
@@ -62,13 +117,10 @@ installBlackFrameGuard();
  *  Types + small math helpers                                         *
  * ================================================================== */
 
-type Vec3 = [number, number, number];
 type AnyHandle = any;
 
-type ParkId = "sandlot" | "skyline" | "canyon" | "ivy" | "dome" | "lunar";
 type ModeId = "quick" | "derby" | "bullpen" | "classic" | "studio";
 type DiffId = "rookie" | "pro" | "legend";
-type PitchId = "fourseam" | "curve" | "slider" | "changeup";
 type Phase =
   | "menu"
   | "between"
@@ -81,21 +133,10 @@ type Phase =
   | "gameover";
 type CamMode = "menuOrbit" | "batting" | "pitching" | "track" | "celebrate";
 
-const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
-const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
 const smoothstep = (t: number): number => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
 const mix3 = (a: Vec3, b: Vec3, t: number): Vec3 => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
 const mphToMs = (mph: number): number => mph * 0.44704;
 const mToFt = (m: number): number => m * 3.28084;
-
-/** Deterministic 32-bit LCG — same family as the other showcase routes. */
-function makeRng(seed: number): () => number {
-  let s = seed >>> 0;
-  return () => {
-    s = (s * 1664525 + 1013904223) >>> 0;
-    return s / 0xffffffff;
-  };
-}
 
 /** Signed jitter in [-1,1] from a uniform rng. */
 const jitter = (rng: () => number): number => rng() + rng() - 1;
@@ -104,12 +145,6 @@ const jitter = (rng: () => number): number => rng() + rng() - 1;
  *  Field geometry (metres, compact-but-proportional diamond)          *
  * ================================================================== */
 
-const MOUND_Z = -16.5;
-const MOUND_TOP = 0.28;
-const RELEASE_PT: Vec3 = [0.42, MOUND_TOP + 1.62, MOUND_Z + 0.6];
-const ZONE_HW = 0.56; // half-width of the effective strike zone (m)
-const ZONE_CY = 1.05; // zone centre height (m)
-const ZONE_HH = 0.55; // zone half-height (m)
 const BASE_PATH = 12.73; // home→1B legs at 45°, ~18 m paths
 const BASES: readonly Vec3[] = [
   [BASE_PATH, 0.09, -BASE_PATH], // 1B
@@ -117,9 +152,7 @@ const BASES: readonly Vec3[] = [
   [-BASE_PATH, 0.09, -BASE_PATH] // 3B
 ];
 const HOME_PLATE: Vec3 = [0, 0.05, 0.4];
-const FOUL_DEG = 45;
 const TRAIL_COUNT = 16;
-const WAVER_COUNT = 18;
 const HIDDEN_SCALE = 0.0001;
 
 import {
@@ -153,189 +186,9 @@ import {
   buildContactConfig
 } from "./batter-pose";
 
-/** Pitch progress when the ball reaches the bat's contact plane (z≈0.32). */
-const CONTACT_PLANE_T = 1 - 0.32 / Math.abs(RELEASE_PT[2]);
-/** Windup length before the pitch releases into flight. */
-const WINDUP_RELEASE_T = 0.52;
-
-/* ================================================================== *
- *  Ballparks                                                          *
- * ================================================================== */
-
-interface ParkSpec {
-  readonly id: ParkId;
-  readonly name: string;
-  readonly short: string;
-  readonly look: string;
-  readonly grass: string;
-  readonly grassAlt: string;
-  readonly dirt: string;
-  readonly wall: string;
-  readonly wallTop: string;
-  readonly wallH: number;
-  readonly fenceCorner: number; // metres down the lines
-  readonly fenceCenter: number; // metres to dead centre
-  readonly fenceSegments: number;
-  readonly gravity: number;
-  readonly flood: boolean;
-  readonly night: boolean;
-  readonly tag: string;
-}
-
-const PARKS: Record<ParkId, ParkSpec> = {
-  sandlot: {
-    id: "sandlot",
-    name: "HARBOR SANDLOT",
-    short: "Harbor",
-    look: "golden-hour",
-    grass: "#3e6b3a",
-    grassAlt: "#355f33",
-    dirt: "#a8593a",
-    wall: "#4a5158",
-    wallTop: "#2c3138",
-    wallH: 1.4,
-    fenceCorner: 76,
-    fenceCenter: 96,
-    fenceSegments: 15,
-    gravity: 9.81,
-    flood: false,
-    night: false,
-    tag: "Golden-hour pickup diamond by the water."
-  },
-  skyline: {
-    id: "skyline",
-    name: "MIDTOWN SKYLINE",
-    short: "Midtown",
-    look: "night-city",
-    grass: "#274b3a",
-    grassAlt: "#214234",
-    dirt: "#6b4a38",
-    wall: "#1a2130",
-    wallTop: "#35d6ff",
-    wallH: 1.2,
-    fenceCorner: 82,
-    fenceCenter: 102,
-    fenceSegments: 15,
-    gravity: 9.81,
-    flood: true,
-    night: true,
-    tag: "Rooftop park — office windows are live targets."
-  },
-  canyon: {
-    id: "canyon",
-    name: "CANYON RIM",
-    short: "Canyon",
-    look: "overcast",
-    grass: "#6b5a3a",
-    grassAlt: "#5f5033",
-    dirt: "#9c5c3d",
-    wall: "#7a4630",
-    wallTop: "#5d3524",
-    wallH: 2.0,
-    fenceCorner: 88,
-    fenceCenter: 118,
-    fenceSegments: 15,
-    gravity: 9.81,
-    flood: false,
-    night: false,
-    tag: "Deep alleys carved into red rock."
-  },
-  ivy: {
-    id: "ivy",
-    name: "IVY CLASSIC",
-    short: "Ivy",
-    look: "outdoor-day",
-    grass: "#2e6b3f",
-    grassAlt: "#285f37",
-    dirt: "#a8593a",
-    wall: "#6e3226",
-    wallTop: "#2e6b3f",
-    wallH: 3.1,
-    fenceCorner: 80,
-    fenceCenter: 100,
-    fenceSegments: 15,
-    gravity: 9.81,
-    flood: true,
-    night: false,
-    tag: "Brick walls, green vines, a century of ghosts."
-  },
-  dome: {
-    id: "dome",
-    name: "TYPHOON DOME",
-    short: "Dome",
-    look: "interior-industrial",
-    grass: "#2f6ea3",
-    grassAlt: "#2a6494",
-    dirt: "#4d5a68",
-    wall: "#233046",
-    wallTop: "#ffb03a",
-    wallH: 2.4,
-    fenceCorner: 78,
-    fenceCenter: 98,
-    fenceSegments: 15,
-    gravity: 9.81,
-    flood: true,
-    night: true,
-    tag: "Indoor thunder — no weather, no mercy."
-  },
-  lunar: {
-    id: "lunar",
-    name: "LUNAR PARK",
-    short: "Lunar",
-    look: "polar-night",
-    grass: "#4a4f63",
-    grassAlt: "#3f4457",
-    dirt: "#5d6378",
-    wall: "#8894a8",
-    wallTop: "#7dfcff",
-    wallH: 1.6,
-    fenceCorner: 110,
-    fenceCenter: 152,
-    fenceSegments: 15,
-    gravity: 1.63,
-    flood: true,
-    night: true,
-    tag: "One-sixth gravity. Every fly ball is a launch window."
-  }
-};
-
-const PARK_ORDER: readonly ParkId[] = ["sandlot", "skyline", "canyon", "ivy", "dome", "lunar"];
-
-/** Fence radius at foul-cone angle θ (deg, 0 = dead centre). */
-function fenceRadius(park: ParkSpec, thetaDeg: number): number {
-  const f = clamp(Math.abs(thetaDeg) / FOUL_DEG, 0, 1);
-  return lerp(park.fenceCenter, park.fenceCorner, Math.pow(f, 0.82));
-}
-
-/** Point on the fence arc; θ=0 is dead centre (-Z). */
-function fencePoint(park: ParkSpec, thetaDeg: number, y = 0): Vec3 {
-  const r = fenceRadius(park, thetaDeg);
-  const rad = (thetaDeg * Math.PI) / 180;
-  return [Math.sin(rad) * r, y, -Math.cos(rad) * r];
-}
-
 /* ================================================================== *
  *  Clubs + pitcher repertoires + pitch specs                          *
  * ================================================================== */
-
-interface PitchSpec {
-  readonly id: PitchId;
-  readonly name: string;
-  readonly short: string;
-  readonly mph: readonly [number, number];
-  readonly breakX: number; // metres of lateral break at the plate
-  readonly breakY: number; // vertical break (negative = drop)
-  readonly breakPow: number; // >1 = late break
-}
-
-const PITCHES: Record<PitchId, PitchSpec> = {
-  fourseam: { id: "fourseam", name: "4-SEAM", short: "4FB", mph: [91, 97], breakX: 0.06, breakY: -0.18, breakPow: 1.15 },
-  curve: { id: "curve", name: "CURVE", short: "CB", mph: [73, 80], breakX: -0.16, breakY: -0.92, breakPow: 2.4 },
-  slider: { id: "slider", name: "SLIDER", short: "SL", mph: [82, 88], breakX: 0.52, breakY: -0.4, breakPow: 2.1 },
-  changeup: { id: "changeup", name: "CHANGE", short: "CH", mph: [77, 83], breakX: -0.1, breakY: -0.52, breakPow: 1.7 }
-};
-
-const PITCH_KEYS: readonly PitchId[] = ["fourseam", "curve", "slider", "changeup"];
 
 interface ClubSpec {
   readonly id: string;
@@ -453,26 +306,6 @@ const WORLD_TEAMS: readonly ClassicTeam[] = [
   { name: "Reykjavík", abbr: "REY", rating: 0.48 }
 ];
 
-interface BracketGame {
-  a: number;
-  b: number;
-  scoreA: number;
-  scoreB: number;
-  winner: number;
-  me: boolean;
-  played: boolean;
-}
-
-interface BracketState {
-  player: number; // WORLD_TEAMS index of the player's squad (always 0 = Aura Select)
-  rounds: BracketGame[][];
-  round: number;
-  alive: boolean;
-  champion: number | null;
-}
-
-const CLASSIC_ROUND_NAMES = ["ROUND OF 32", "ROUND OF 16", "QUARTER-FINAL", "SEMI-FINAL", "FINAL"];
-
 /* ================================================================== *
  *  Pitch + contact sim types                                          *
  * ================================================================== */
@@ -490,6 +323,8 @@ interface LivePitch {
   releaseQ: number; // release-meter quality 0..1
   resolved: boolean;
   swung: boolean;
+  /** The CPU batter has made its one take-or-swing decision for this pitch. */
+  cpuDecided?: boolean;
 }
 
 interface BattedBall {
@@ -506,6 +341,10 @@ interface BattedBall {
   crossedFence: boolean;
   hrCrossed: boolean;
   wallHit: boolean;
+  /** The landing prediction's fence flags. The live flight starts with its own flags false and sets them as it reaches the wall. */
+  predicted: { crossedFence: boolean; hrCrossed: boolean; wallHit: boolean };
+  /** Outcome rolled at contact so a fielder can be sent to a catch in time (C8); null for fouls and assisted catches. */
+  plannedOutcome: string | null;
   outcome: string | null;
   dead: boolean;
   age: number;
@@ -591,7 +430,10 @@ function buildFieldNodes(park: ParkSpec): any[] {
   }
 
   // Outfield wall — segmented arc from foul pole to foul pole
+  // One instanced draw for the wall and one for its cap (C12); each segment is a unit-length box scaled to its chord.
   const segs = park.fenceSegments;
+  const wallT: { position: Vec3; rotation: Vec3; scale: Vec3 }[] = [];
+  const capT: { position: Vec3; rotation: Vec3; scale: Vec3 }[] = [];
   for (let i = 0; i < segs; i++) {
     const t0 = -FOUL_DEG + (2 * FOUL_DEG * i) / segs;
     const t1 = -FOUL_DEG + (2 * FOUL_DEG * (i + 1)) / segs;
@@ -601,11 +443,13 @@ function buildFieldNodes(park: ParkSpec): any[] {
     const pm = fencePoint(park, tm, 0);
     const segLen = Math.hypot(p1[0] - p0[0], p1[2] - p0[2]) + 0.35;
     const yaw = Math.atan2(p1[0] - p0[0], p1[2] - p0[2]);
-    nodes.push(
-      primitives.box({ name: `wall-${i}`, size: [segLen, park.wallH, 0.5], material: wallMat }).position(pm[0], park.wallH / 2, pm[2]).rotate(0, yaw + Math.PI / 2, 0),
-      primitives.box({ name: `wall-cap-${i}`, size: [segLen, 0.14, 0.56], material: wallTopMat }).position(pm[0], park.wallH + 0.07, pm[2]).rotate(0, yaw + Math.PI / 2, 0)
-    );
+    wallT.push({ position: [pm[0], park.wallH / 2, pm[2]], rotation: [0, yaw + Math.PI / 2, 0], scale: [segLen, 1, 1] });
+    capT.push({ position: [pm[0], park.wallH + 0.07, pm[2]], rotation: [0, yaw + Math.PI / 2, 0], scale: [segLen, 1, 1] });
   }
+  nodes.push(
+    instances.box({ name: "outfield-wall", size: [1, park.wallH, 0.5], material: wallMat, transforms: wallT }),
+    instances.box({ name: "outfield-wall-cap", size: [1, 0.14, 0.56], material: wallTopMat, transforms: capT })
+  );
 
   // On-deck rings + side dugouts. Keep the circles as painted chalk outlines
   // (a filled disc read as an oversized white target in the foreground) and
@@ -632,17 +476,13 @@ function buildStandsNodes(park: ParkSpec): any[] {
   const nodes: any[] = [];
   const rng = makeRng(0xbeef);
 
-  // Grandstand stadium shells framing the outer ballpark skyline
+  // Grandstand stadium shells framing the outer ballpark skyline, placed behind each park's own fence (rules.ts shellPlacements).
   nodes.push(
-    model(assets.diamondStadium, { name: "stadium-shell-l", targetMaxDimension: 28, role: "setDressing", scaleMode: "fit" })
-      .position(-62, 0, -102)
-      .rotate(0, Math.PI * 0.26, 0),
-    model(assets.diamondStadium, { name: "stadium-shell-c", targetMaxDimension: 30, role: "setDressing", scaleMode: "fit" })
-      .position(0, 0, -126)
-      .rotate(0, Math.PI, 0),
-    model(assets.diamondStadium, { name: "stadium-shell-r", targetMaxDimension: 28, role: "setDressing", scaleMode: "fit" })
-      .position(62, 0, -102)
-      .rotate(0, -Math.PI * 0.26, 0),
+    ...shellPlacements(park).map((sh) =>
+      model(assets.diamondStadium, { name: sh.name, targetMaxDimension: sh.name.endsWith("-c") ? 30 : 28, role: "setDressing", scaleMode: "fit" })
+        .position(sh.x, 0, sh.z)
+        .rotate(0, sh.yaw, 0)
+    ),
     // Hidden dugout seat asset reference so route asset validation sees showcaseStadiumSeats
     model(assets.showcaseStadiumSeats, {
       name: "dugout-seat-ref",
@@ -658,40 +498,27 @@ function buildStandsNodes(park: ParkSpec): any[] {
   // Grounded tiered stadium bleachers wrapping the outfield arc
   const deckMat = material.pbr({ color: "#1c2638", roughness: 0.78, metalness: 0.22 });
   const benchMat = material.pbr({ color: "#2d3e5a", roughness: 0.62, metalness: 0.28 });
-  for (let sec = 0; sec < 7; sec++) {
-    const theta = -38 + (76 * sec) / 6;
-    const rad = (theta * Math.PI) / 180;
-    const baseR = park.fenceCorner + 7.5 + (park.fenceCenter - park.fenceCorner) * Math.cos(rad) * 0.55;
-    for (let row = 0; row < 3; row++) {
-      const rr = baseR + row * 2.4;
-      const tierH = 1.1 + row * 0.95;
-      nodes.push(
-        primitives
-          .box({
-            name: `bleacher-riser-${sec}-${row}`,
-            size: [11.5, tierH, 2.2],
-            material: deckMat
-          })
-          .position(Math.sin(rad) * rr, tierH * 0.5, -Math.cos(rad) * rr)
-          .rotate(0, rad + Math.PI, 0),
-        primitives
-          .box({
-            name: `bleacher-bench-${sec}-${row}`,
-            size: [11.2, 0.22, 0.85],
-            material: benchMat
-          })
-          .position(Math.sin(rad) * (rr - 0.35), tierH + 0.11, -Math.cos(rad) * (rr - 0.35))
-          .rotate(0, rad + Math.PI, 0)
-      );
-    }
-  }
+  // Each section starts a fixed distance behind the fence at its own angle, so no row stands inside the wall (C3).
+  // Instanced risers and benches: two draws instead of 42 (C12).
+  const bleachers = bleacherPlacements(park);
+  nodes.push(
+    instances.box({
+      name: "bleacher-risers",
+      size: [11.5, 1, 2.2],
+      material: deckMat,
+      transforms: bleachers.map((b) => ({ position: [b.x, b.tierH * 0.5, b.z] as Vec3, rotation: [0, b.yaw, 0] as Vec3, scale: [1, b.tierH, 1] as Vec3 }))
+    }),
+    instances.box({
+      name: "bleacher-benches",
+      size: [11.2, 0.22, 0.85],
+      material: benchMat,
+      transforms: bleachers.map((b) => ({ position: b.bench, rotation: [0, b.yaw, 0] as Vec3 }))
+    })
+  );
 
   // Animated front-row wavers — real admitted 3D Meshy athletes grounded at y = 0
   void rng;
-  for (let i = 0; i < WAVER_COUNT; i++) {
-    const theta = -36 + (72 * i) / (WAVER_COUNT - 1);
-    const rad = (theta * Math.PI) / 180;
-    const rr = park.fenceCorner + 4.2;
+  for (const [i, c] of crowdPlacements(park).entries()) {
     nodes.push(
       model(assets.diamondAthlete, {
         name: `waver-${i}`,
@@ -699,18 +526,19 @@ function buildStandsNodes(park: ParkSpec): any[] {
         role: "setDressing",
         scaleMode: "fit"
       })
-        .position(Math.sin(rad) * rr, 0, -Math.cos(rad) * rr)
-        .rotate(0, rad + Math.PI, 0)
+        .position(c.x, 0, c.z)
+        .rotate(0, c.yaw, 0)
         .animate({ clip: "Idle_Loop", loop: true, speed: 1.1 })
         .runtime(game.runtimeNode(`waver-${i}`))
     );
   }
 
   // Scoreboard + floodlight towers
-  const sb = fencePoint(park, 0, 0);
+  // Behind the centre bleacher section, at the same rig-to-screen spacing the art was tuned with.
+  const sb = scoreboardPlacement(park);
   nodes.push(
-    model(assets.diamondScoreboard, { name: "scoreboard-rig", targetHeight: 11, role: "setDressing", scaleMode: "fit" }).position(sb[0] * 1.06, park.wallH + 0.2, sb[2] * 1.06 - 4).rotate(0, Math.PI, 0).runtime(game.runtimeNode("scoreboard-rig")),
-    primitives.box({ name: "scoreboard-screen", size: [10.5, 3.4, 0.4], material: material.emissive({ color: "#0d2436", emissive: "#1b4a66", emissiveIntensity: 0.9 }) }).position(sb[0] * 1.04, park.wallH + 7.4, sb[2] * 1.04 - 3.6).runtime(game.runtimeNode("scoreboard-screen"))
+    model(assets.diamondScoreboard, { name: "scoreboard-rig", targetHeight: 11, role: "setDressing", scaleMode: "fit" }).position(sb.rig[0], sb.rig[1], sb.rig[2]).rotate(0, Math.PI, 0).runtime(game.runtimeNode("scoreboard-rig")),
+    primitives.box({ name: "scoreboard-screen", size: [10.5, 3.4, 0.4], material: material.emissive({ color: "#0d2436", emissive: "#1b4a66", emissiveIntensity: 0.9 }) }).position(sb.screen[0], sb.screen[1], sb.screen[2]).runtime(game.runtimeNode("scoreboard-screen"))
   );
 
   if (park.flood) {
@@ -739,29 +567,27 @@ function buildParkExtras(park: ParkSpec): any[] {
   // silhouettes so the field stays the subject.
   const rockOverride = [{ color: "#745845", colorMode: "replace" as const, replaceTextures: true, roughness: 0.96, metallic: 0 }];
   const rockOverrideAlt = [{ color: "#82644e", colorMode: "replace" as const, replaceTextures: true, roughness: 0.94, metallic: 0 }];
+  // Outfield props come from rules.ts PROP_SPOTS, pushed behind each park's fence (C3).
+  const at = (name: string): [number, number] => propSpot(park, name);
   switch (park.id) {
     case "sandlot": {
+      const W = HARBOR_WATER;
       nodes.push(
-        model(assets.diamondHarborPier, { name: "harbor-pier", targetHeight: 8, role: "setDressing", scaleMode: "fit" }).position(60, -0.3, -118).rotate(0, 0.3, 0),
-        primitives.plane({ name: "harbor-water", size: [220, 60] as any, material: material.pbr({ color: "#2e5d7a", roughness: 0.35, metalness: 0.3 }) }).position(60, -0.4, -135),
-        model(assets.diamondTower, { name: "sandlot-windmill", targetHeight: 13, role: "setDressing", scaleMode: "fit" }).position(-42, 0, -72).rotate(0, 0.6, 0),
-        model(assets.diamondCanyonArch, { name: "sandlot-tower", targetHeight: 12, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverrideAlt }).position(48, 0, -58).rotate(0, -0.4, 0),
-        model(assets.diamondRock, { name: "pine-a", targetHeight: 7, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverride }).position(-34, 0, -82),
-        model(assets.diamondRock, { name: "pine-b", targetHeight: 6.5, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverrideAlt }).position(38, 0, -84).rotate(0, 1.2, 0),
-        model(assets.diamondFloodlight, { name: "sandlot-lamp", targetHeight: 5.4, role: "setDressing", scaleMode: "fit" }).position(-28, 0, -4)
+        model(assets.diamondHarborPier, { name: "harbor-pier", targetHeight: 8, role: "setDressing", scaleMode: "fit" }).position(at("harbor-pier")[0], -0.3, at("harbor-pier")[1]).rotate(0, 0.3, 0),
+        primitives.plane({ name: "harbor-water", size: [W.w, W.d] as any, material: material.pbr({ color: "#2e5d7a", roughness: 0.35, metalness: 0.3 }) }).position(W.x, W.y, W.z),
+        model(assets.diamondTower, { name: "sandlot-windmill", targetHeight: 13, role: "setDressing", scaleMode: "fit" }).position(at("sandlot-windmill")[0], 0, at("sandlot-windmill")[1]).rotate(0, 0.6, 0),
+        model(assets.diamondCanyonArch, { name: "sandlot-tower", targetHeight: 12, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverrideAlt }).position(at("sandlot-tower")[0], 0, at("sandlot-tower")[1]).rotate(0, -0.4, 0),
+        model(assets.diamondRock, { name: "pine-a", targetHeight: 7, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverride }).position(at("pine-a")[0], 0, at("pine-a")[1]),
+        model(assets.diamondRock, { name: "pine-b", targetHeight: 6.5, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverrideAlt }).position(at("pine-b")[0], 0, at("pine-b")[1]).rotate(0, 1.2, 0),
+        model(assets.diamondFloodlight, { name: "sandlot-lamp", targetHeight: 5.4, role: "setDressing", scaleMode: "fit" }).position(at("sandlot-lamp")[0], 0, at("sandlot-lamp")[1])
       );
       break;
     }
     case "skyline": {
-      const buildings: [any, number, number, number, number][] = [
-        [assets.diamondTower, -72, -95, 46, 0.5],
-        [assets.diamondTower, 74, -100, 52, -0.4],
-        [assets.diamondTower, -95, -40, 38, 0.9],
-        [assets.diamondTower, 95, -34, 30, -0.9],
-        [assets.diamondTower, 0, -150, 60, 0.1]
-      ];
-      buildings.forEach(([a, x, z, h, r], i) => {
-        nodes.push(model(a as any, { name: `skyline-bldg-${i}`, targetHeight: h, role: "setDressing", scaleMode: "fit" }).position(x, 0, z).rotate(0, r, 0));
+      const buildings: [number, number][] = [[46, 0.5], [52, -0.4], [38, 0.9], [30, -0.9], [60, 0.1]];
+      buildings.forEach(([h, r], i) => {
+        const [x, z] = at(`skyline-bldg-${i}`);
+        nodes.push(model(assets.diamondTower, { name: `skyline-bldg-${i}`, targetHeight: h, role: "setDressing", scaleMode: "fit" }).position(x, 0, z).rotate(0, r, 0));
       });
       for (let i = 0; i < 4; i++) {
         const theta = -24 + i * 16;
@@ -780,15 +606,10 @@ function buildParkExtras(park: ParkSpec): any[] {
       break;
     }
     case "canyon": {
-      const rocks: [any, number, number, number, number][] = [
-        [assets.diamondRock, -60, -96, 13, 0.3],
-        [assets.diamondRock, 56, -100, 15, -0.7],
-        [assets.diamondRock, -92, -58, 7.5, 1.1],
-        [assets.diamondRock, 94, -54, 6.5, -0.4],
-        [assets.diamondRock, 0, -142, 22, 0]
-      ];
-      rocks.forEach(([a, x, z, h, r], i) => {
-        nodes.push(model(a as any, {
+      const rocks: [number, number][] = [[13, 0.3], [15, -0.7], [7.5, 1.1], [6.5, -0.4], [22, 0]];
+      rocks.forEach(([h, r], i) => {
+        const [x, z] = at(`canyon-rock-${i}`);
+        nodes.push(model(assets.diamondRock, {
           name: `canyon-rock-${i}`, targetHeight: h, role: "setDressing", scaleMode: "fit",
           materialOverrides: i % 2 ? rockOverrideAlt : rockOverride
         }).position(x, 0, z).rotate(0, r, 0));
@@ -833,8 +654,8 @@ function buildParkExtras(park: ParkSpec): any[] {
       nodes.push(
         model(assets.diamondEarthRise, { name: "lunar-earth", targetHeight: 90, role: "primaryWorld", scaleMode: "fit" }).position(-30, 66, -260),
         model(assets.diamondLunarRover, { name: "lunar-rover", targetHeight: 2.6, role: "setDressing", scaleMode: "fit" }).position(-17, 0, 9).rotate(0, 0.8, 0),
-        ...Array.from({ length: 6 }, (_, i) => primitives.cylinder({ name: `regolith-${i}`, size: [4 + i, 0.5, 4 + i * 0.7], material: material.pbr({ color: "#5d6378", roughness: 1 }) }).position(-90 + i * 38, 0.1, -120 - (i % 2) * 30)),
-        model(assets.diamondMoonDome, { name: "lunar-comms", targetHeight: 15, role: "setDressing", scaleMode: "fit" }).position(60, 0, -70).rotate(0, -0.5, 0)
+        ...Array.from({ length: 6 }, (_, i) => primitives.cylinder({ name: `regolith-${i}`, size: [4 + i, 0.5, 4 + i * 0.7], material: material.pbr({ color: "#5d6378", roughness: 1 }) }).position(at(`regolith-${i}`)[0], 0.1, at(`regolith-${i}`)[1])),
+        model(assets.diamondMoonDome, { name: "lunar-comms", targetHeight: 15, role: "setDressing", scaleMode: "fit" }).position(at("lunar-comms")[0], 0, at("lunar-comms")[1]).rotate(0, -0.5, 0)
       );
       break;
     }
@@ -855,6 +676,11 @@ function buildAthleteNodes(id: string, asset: any, initialClip = "Ready"): any[]
 const FIELDER_IDS = ["f-c", "f-1b", "f-2b", "f-ss", "f-3b", "f-lf", "f-cf", "f-rf"] as const;
 /** Everyone who wears a glove except the catcher (his mitt has its own node and calibrated offsets). */
 const GLOVE_OWNERS = ["pitcher", "f-1b", "f-2b", "f-ss", "f-3b", "f-lf", "f-cf", "f-rf"] as const;
+/** Everyone in uniform who gets a team cap and belt. */
+const KIT_OWNERS = ["pitcher", ...FIELDER_IDS, "batter", "runner-0", "runner-1", "runner-2"] as const;
+/** Cap and belt offsets in bone space (Head and Hips bones point up the body in this rig). */
+const CAP_ATTACH_POS: Vec3 = [0, 0.135, 0.012];
+const BELT_ATTACH_POS: Vec3 = [0, 0.045, 0];
 const FIELDER_SPOTS: Record<string, Vec3> = {
   // The single catcher crouches behind the plate, offset to the camera-right
   // of the batter so it never crosses the batting-camera line.
@@ -906,6 +732,15 @@ function buildActorsNodes(): any[] {
     );
   }
 
+  // Team cap and belt per athlete (C5): primitives that ride the Head and Hips bones (attached in attachBatSocket) and take the
+  // team colour through setMaterial in applyUniforms. The athlete GLB has one mesh and one material, so a tint would recolour skin too.
+  for (const id of KIT_OWNERS) {
+    nodes.push(
+      primitives.sphere({ name: `${id}-cap`, size: [0.205, 0.11, 0.225], material: material.pbr({ color: "#f2eee3", roughness: 0.6 }) }).position(0, -80, 0).runtime(game.runtimeNode(`${id}-cap`)),
+      primitives.cylinder({ name: `${id}-belt`, size: [0.33, 0.05, 0.25], material: material.pbr({ color: "#f2eee3", roughness: 0.6 }) }).position(0, -80, 0).runtime(game.runtimeNode(`${id}-belt`))
+    );
+  }
+
   // Bat — socketed to the batter's right forearm (knob at the palm); authored
   // transform is only a sane first frame before the socket takes ownership.
   nodes.push(
@@ -922,9 +757,10 @@ function buildActorsNodes(): any[] {
       .runtime(game.runtimeNode("bat-cal"))
   );
 
-  // Ball — siegeGolfBall reads as a seamed baseball at 15 cm; shadow + trail
+  // Ball: a 16x12 sphere (about 360 triangles) instead of the 20,326-triangle GLB (C12); at 15 cm on the broadcast
+  // camera the seams of the GLB were never visible. The sphere is centred on its node (the GLB was grounded by fit).
   nodes.push(
-    model(assets.diamondBall, { name: "ball", targetHeight: 0.15, role: "setDressing", scaleMode: "fit" }).position(0, -60, 0).runtime(game.runtimeNode("ball")),
+    primitives.sphere({ name: "ball", size: [0.15, 0.15, 0.15], params: { widthSegments: 16, heightSegments: 12 }, material: material.pbr({ color: "#f4f1e8", roughness: 0.55 }) } as any).position(0, -60, 0).runtime(game.runtimeNode("ball")),
     primitives.cylinder({ name: "ball-shadow", size: [0.34, 0.006, 0.34], material: material.pbr({ color: "#000000", opacity: 0.28, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow")),
     effects.trail({ name: "ball-ribbon", target: "ball", color: "#f5f1e4", width: 0.1, maxPoints: 40, intensity: 0.85 } as any)
   );
@@ -953,6 +789,11 @@ function buildActorsNodes(): any[] {
   return nodes;
 }
 
+const QA_FLAGS = (() => {
+  const q = typeof window === "undefined" ? new URLSearchParams() : new URLSearchParams(window.location.search);
+  return { noAo: q.get("qa-ao") === "0", noContact: q.get("qa-contact") === "0" };
+})();
+
 function buildParkScene(park: ParkSpec): any {
   // fogDensityScale 0 removes the preset's volumetric fog: at stadium
   // distances even a heavily scaled density washed the stands out in white.
@@ -973,10 +814,16 @@ function buildParkScene(park: ParkSpec): any {
     dome: "#101216",
     lunar: "#04070d"
   };
-  return scene()
-    .add(looks.preset(park.look as any, lookOverrides[park.id] ?? { fogDensityScale: 0 }))
-    .background(backdrop[park.id])
-    .add(effects.contactShadows({ intensity: 0.75, length: 0.3 }))
+  // QA-only switches for the AO and contact-shadow on/off capture pairs (LIGHT-06, C17): `?qa-ao=0`, `?qa-contact=0`.
+  const look = looks.preset(park.look as any, lookOverrides[park.id] ?? { fogDensityScale: 0 });
+  let lookNode: any = look;
+  if (QA_FLAGS.noAo) {
+    const g = look.toJSON() as any;
+    lookNode = { ...g, children: (g.children ?? []).filter((c: any) => c.type !== "ambientOcclusion" && c.name !== "look ambient occlusion") };
+  }
+  const sc = scene().add(lookNode).background(backdrop[park.id]);
+  if (!QA_FLAGS.noContact) sc.add(effects.contactShadows({ intensity: 0.75, length: 0.3 }));
+  return sc
     .add(effects.vignette({ intensity: 0.16, smoothness: 0.7 }))
     .camera(camera.perspective({ fov: 42, near: 0.2, far: 700, position: [0, 26, 42], target: [0, 0, -14] }))
     .addMany(buildFieldNodes(park))
@@ -1064,7 +911,15 @@ function boot(): void {
     tbDerby: getEl("tb-derby"),
     tbAuto: getEl("tb-auto"),
     tbMenu: getEl("tb-menu"),
-    controlsHint: getEl("controls-hint")
+    controlsHint: getEl("controls-hint"),
+    timingNeedle: getEl("h-timing-needle"),
+    timingMs: getEl("h-timing-ms"),
+    timing: getEl("h-timing"),
+    pitchPad: getEl("h-pitch-pad"),
+    srResult: getEl("sr-result"),
+    goBox: getEl("go-box"),
+    goBests: getEl("go-bests"),
+    tbMute: getEl("tb-mute")
   };
   const countDots = {
     b: [0, 1, 2, 3].map((i) => getEl(`cd-b${i}`)),
@@ -1084,6 +939,7 @@ function boot(): void {
   };
 
   let H: Record<string, AnyHandle> = {};
+  const kitVisible = new Map<string, boolean>();
   const lastClipByActor = new Map<string, string>();
   const lastSpeedByActor = new Map<string, number>();
 
@@ -1108,6 +964,7 @@ function boot(): void {
   }
 
   function bindHandles(): void {
+    kitVisible.clear();
     lastClipByActor.clear();
     lastSpeedByActor.clear();
     const req = tryReq;
@@ -1132,6 +989,10 @@ function boot(): void {
     for (const id of FIELDER_IDS) H[id] = req(id);
     for (const id of GLOVE_OWNERS) H[`glove-${id}`] = tryReq(`glove-${id}`);
     for (let i = 0; i < 3; i++) H[`runner-${i}`] = req(`runner-${i}`);
+    for (const id of KIT_OWNERS) {
+      H[`${id}-cap`] = tryReq(`${id}-cap`);
+      H[`${id}-belt`] = tryReq(`${id}-belt`);
+    }
     H.wavers = Array.from({ length: WAVER_COUNT }, (_, i) => tryReq(`waver-${i}`));
     H.trail = Array.from({ length: TRAIL_COUNT }, (_, i) => tryReq(`ball-trail-${i}`));
     H.windows = Array.from({ length: 4 }, (_, i) => tryReq(`window-target-${i}`));
@@ -1150,7 +1011,6 @@ function boot(): void {
       pciR: ["KeyD", "ArrowRight"],
       pciU: ["KeyW", "ArrowUp"],
       pciD: ["KeyS", "ArrowDown"],
-      retreat: ["KeyX"],
       menu: ["Escape"]
     },
     bufferMs: { swing: 160 } as any
@@ -1165,6 +1025,15 @@ function boot(): void {
   });
   window.addEventListener("keyup", (e) => {
     heldKeys.delete(e.code);
+  });
+  // C10: a key released while the window was not focused never sends keyup; drop every held and fresh key on blur or hide.
+  const dropKeys = (): void => {
+    heldKeys.clear();
+    justPressedKeys.clear();
+  };
+  window.addEventListener("blur", dropKeys);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) dropKeys();
   });
 
   /* ---------- Audio ---------- */
@@ -1302,9 +1171,7 @@ function boot(): void {
     selPitch: PitchId;
     meterNeedle: number;
     meterDir: number;
-    chargeStart: number;
     charging: boolean;
-    manualSwingQueued: boolean;
     batterStepTimer: number;
     batterAimX: number;
     batterAimZ: number;
@@ -1337,6 +1204,12 @@ function boot(): void {
     result: string;
     lastBatColor: string;
     lastFieldColor: string;
+    /** Fielder holding a caught fly ball during the runners beat. */
+    caughtBy: string | null;
+    hits: { player: number; cpu: number };
+    longestFt: number;
+    /** WORLD_TEAMS index of the current World Classic opponent (HUD names, C20). */
+    classicOpp: number;
   }
 
   const G: GameState = {
@@ -1366,9 +1239,7 @@ function boot(): void {
     selPitch: "fourseam",
     meterNeedle: 0,
     meterDir: 1,
-    chargeStart: 0,
     charging: false,
-    manualSwingQueued: false,
     batterStepTimer: 0,
     batterAimX: 0,
     batterAimZ: 0,
@@ -1400,10 +1271,22 @@ function boot(): void {
     over: false,
     result: "",
     lastBatColor: "",
-    lastFieldColor: ""
+    lastFieldColor: "",
+    caughtBy: null,
+    hits: { player: 0, cpu: 0 },
+    longestFt: 0,
+    classicOpp: -1
   };
 
   const park = (): ParkSpec => PARKS[G.park];
+  /** Display abbreviation of a side: in the World Classic the national squads, otherwise the clubs (C20). */
+  function clubAbbr(side: "player" | "cpu"): string {
+    if (G.mode === "classic" && G.classic) {
+      if (side === "player") return WORLD_TEAMS[G.classic.player]?.abbr ?? "AUR";
+      if (G.classicOpp >= 0) return WORLD_TEAMS[G.classicOpp]?.abbr ?? clubById(G.cpuClub).abbr;
+    }
+    return clubById(side === "player" ? G.playerClub : G.cpuClub).abbr;
+  }
   const battingIsPlayer = (): boolean => G.half === "top";
   const battingClub = (): ClubSpec => (battingIsPlayer() ? clubById(G.playerClub) : clubById(G.cpuClub));
   const fieldingClub = (): ClubSpec => (battingIsPlayer() ? clubById(G.cpuClub) : clubById(G.playerClub));
@@ -1424,7 +1307,27 @@ function boot(): void {
     }
   }
 
+  /** Polite screen-reader announcement of at-bat results (C19); banners carry every at-bat result. */
+  function announce(text: string): void {
+    if (el.srResult) el.srResult.textContent = text;
+  }
+
+  /** Early/late bar and ms readout after a player's swing (C22). */
+  function showTiming(timingErr: number | null): void {
+    if (!el.timing) return;
+    if (timingErr === null) {
+      el.timing.style.display = "none";
+      if (el.timingMs) el.timingMs.textContent = "";
+      return;
+    }
+    el.timing.style.display = "";
+    const ms = Math.round(timingErr * 1000);
+    if (el.timingNeedle) el.timingNeedle.style.left = `${50 + clamp(timingErr / 0.155, -1, 1) * 50}%`;
+    if (el.timingMs) el.timingMs.textContent = Math.abs(ms) <= 15 ? `ON TIME (${ms >= 0 ? "+" : ""}${ms} MS)` : `${ms < 0 ? "EARLY" : "LATE"} ${Math.abs(ms)} MS`;
+  }
+
   function showBanner(text: string, dur = 1.8): void {
+    announce(text);
     if (el.banner) {
       el.banner.textContent = text;
       el.banner.classList.add("show");
@@ -1440,6 +1343,8 @@ function boot(): void {
   }
 
   let contactHideAt = 0;
+  let lastCross: [number, number] | null = null;
+  let lastCrossUntil = 0;
   let pitchChipHideAt = 0;
   let flairOnUntil = 0;
   let confettiUntil = 0;
@@ -1471,7 +1376,6 @@ function boot(): void {
     const cols = Math.max(3, G.inningsTotal, G.inning);
     const head = `<tr><th></th>${Array.from({ length: cols }, (_, i) => `<th>${i + 1}</th>`).join("")}<th>R</th></tr>`;
     const rowFor = (key: "player" | "cpu") => {
-      const c = key === "player" ? clubById(G.playerClub) : clubById(G.cpuClub);
       const batting = battingTeamKey() === key && !G.over ? " class=\"batting\"" : "";
       const cells = Array.from({ length: cols }, (_, i) => {
         const v = G.linescore[key][i];
@@ -1479,7 +1383,7 @@ function boot(): void {
         // scoreless inning is a stored 0 and still reads as 0.
         return `<td${i === G.inning - 1 && batting ? " class=\"cur\"" : ""}>${v ?? "–"}</td>`;
       }).join("");
-      return `<tr${batting}><td class="tname">${c.abbr}</td>${cells}<td class="runs">${G.score[key]}</td></tr>`;
+      return `<tr${batting}><td class="tname">${clubAbbr(key)}</td>${cells}<td class="runs">${G.score[key]}</td></tr>`;
     };
     const html = head + rowFor("player") + rowFor("cpu");
     if (html !== linescoreCache) {
@@ -1520,6 +1424,8 @@ function boot(): void {
     G.derby = { outs: 0, hrs: 0, longest: 0, totalFt: 0, done: false };
     G.bullpen = { round: 0, correct: 0, streak: 0, bestStreak: 0, guess: null, queue: [], done: false };
     G.studio.swings = 0;
+    G.hits = { player: 0, cpu: 0 };
+    G.longestFt = 0;
     G.over = false;
     G.result = "";
     resetField();
@@ -1534,97 +1440,15 @@ function boot(): void {
     }
   }
 
-  function startClassicBracket(): void {
-    const rng = makeRng(0xc1a551 + G.gameNo * 131);
-    const order = Array.from({ length: WORLD_TEAMS.length }, (_, i) => i).filter((i) => i !== 0);
-    for (let i = order.length - 1; i > 0; i--) {
-      const j = Math.floor(rng() * (i + 1));
-      [order[i], order[j]] = [order[j]!, order[i]!];
-    }
-    order.unshift(0); // player's squad "Aura Select" opens the bracket
-    const bracket: BracketState = { player: 0, rounds: [], round: 0, alive: true, champion: null };
-    bracket.rounds.push(
-      Array.from({ length: 16 }, (_, g) => ({
-        a: order[g * 2]!,
-        b: order[g * 2 + 1]!,
-        scoreA: -1,
-        scoreB: -1,
-        winner: -1,
-        me: order[g * 2] === 0 || order[g * 2 + 1] === 0,
-        played: false
-      }))
-    );
-    G.classic = bracket;
-  }
+  const WORLD_RATINGS = WORLD_TEAMS.map((t) => t.rating);
 
-  function simOtherClassicGames(): void {
-    const b = G.classic;
-    if (!b) return;
-    const round = b.rounds[b.round];
-    if (!round) return;
-    for (const gm of round) {
-      if (gm.me || gm.played) continue;
-      const ra = WORLD_TEAMS[gm.a]!.rating;
-      const rb = WORLD_TEAMS[gm.b]!.rating;
-      const aWins = G.rng() < ra / (ra + rb);
-      const hi = 2 + Math.floor(G.rng() * 4);
-      const lo = Math.floor(G.rng() * 2.4);
-      gm.scoreA = aWins ? hi : lo;
-      gm.scoreB = aWins ? lo : hi;
-      gm.winner = aWins ? gm.a : gm.b;
-      gm.played = true;
-    }
+  function startClassicBracket(): void {
+    G.classic = createBracket(WORLD_TEAMS.length, makeRng(0xc1a551 + G.gameNo * 131));
   }
 
   /** Resolve the player's classic game result + advance (or end) the bracket. */
   function advanceClassicRound(playerWon: boolean, playerScore: number, cpuScore: number): void {
-    const b = G.classic;
-    if (!b) return;
-    const round = b.rounds[b.round]!;
-    const meGame = round.find((g) => g.me);
-    if (meGame) {
-      if (meGame.a === b.player) {
-        meGame.scoreA = playerScore;
-        meGame.scoreB = cpuScore;
-      } else {
-        meGame.scoreA = cpuScore;
-        meGame.scoreB = playerScore;
-      }
-      meGame.winner = playerWon ? b.player : meGame.a === b.player ? meGame.b : meGame.a;
-      meGame.played = true;
-    }
-    simOtherClassicGames();
-    if (b.round >= 4) {
-      b.champion = playerWon ? b.player : (meGame?.winner ?? -1);
-      b.alive = playerWon;
-      return;
-    }
-    const winners = round.map((g) => g.winner);
-    const nextRound: BracketGame[] = [];
-    for (let i = 0; i < winners.length; i += 2) {
-      const a = winners[i]!;
-      const bb = winners[i + 1]!;
-      nextRound.push({ a, b: bb, scoreA: -1, scoreB: -1, winner: -1, me: a === b.player || bb === b.player, played: false });
-    }
-    b.rounds.push(nextRound);
-    b.round += 1;
-    b.alive = playerWon;
-    if (!playerWon) {
-      // sim the rest of the bracket for completeness
-      while (b.round <= 4) {
-        simOtherClassicGames();
-        const r2 = b.rounds[b.round]!;
-        const w2 = r2.map((g) => g.winner);
-        if (b.round === 4) {
-          b.champion = w2[0] ?? -1;
-          break;
-        }
-        const nr: BracketGame[] = [];
-        for (let i = 0; i < w2.length; i += 2) nr.push({ a: w2[i]!, b: w2[i + 1]!, scoreA: -1, scoreB: -1, winner: -1, me: false, played: false });
-        b.rounds.push(nr);
-        b.round += 1;
-      }
-    }
+    if (G.classic) advanceBracket(G.classic, playerWon, playerScore, cpuScore, WORLD_RATINGS, G.rng);
   }
 
   function renderBracket(): void {
@@ -1674,7 +1498,8 @@ function boot(): void {
   function startMode(mode: ModeId): void {
     // World Classic continuity: if a bracket is mid-run and the player is
     // still alive, the next game picks up the pending fixture.
-    const resumeClassic = mode === "classic" && G.classic !== null && G.classic.alive && G.classic.champion === null && G.result.startsWith("advanced");
+    // C2: an explicit flag set by advanceBracket when the player wins a round (the old check read the result text and never matched).
+    const resumeClassic = mode === "classic" && shouldResumeClassic(G.classic);
     G.mode = mode;
     G.pendingMode = mode;
     if (mode === "classic" && !resumeClassic) startClassicBracket();
@@ -1682,9 +1507,11 @@ function boot(): void {
     setModeTag();
     if (mode === "classic") {
       const b = G.classic;
-      const meGame = b?.rounds[b.round]?.find((g) => g.me && !g.played);
-      const oppIdx = meGame ? (meGame.a === b!.player ? meGame.b : meGame.a) : -1;
-      const opp = oppIdx >= 0 ? WORLD_TEAMS[oppIdx]! : WORLD_TEAMS[1]!;
+      const fixture = b ? currentFixture(b) : null;
+      const oppIdx = fixture ? fixture.opponent : 1;
+      const opp = WORLD_TEAMS[oppIdx]!;
+      G.classicOpp = oppIdx;
+      // The CPU still needs a club for its pitch repertoire and colours; the HUD names the national squad (clubAbbr).
       const others = CLUBS.filter((c) => c.id !== G.playerClub);
       G.cpuClub = others[Math.floor(G.rng() * others.length)]!.id;
       showMsg("WORLD CLASSIC", `${CLASSIC_ROUND_NAMES[b?.round ?? 0]} — AUR vs ${opp.abbr}`, 2.6);
@@ -1750,6 +1577,8 @@ function boot(): void {
         el.goLine.textContent = `${clubById(G.playerClub).name} ${G.score.player} — ${G.score.cpu} ${clubById(G.cpuClub).name} · ${reason}`;
       }
     }
+    renderBoxScore();
+    renderBests();
     el.goCard?.classList.add("show");
     renderBracket();
     openMenu();
@@ -1762,6 +1591,53 @@ function boot(): void {
       juiceFire("lose", {});
     }
     tick(reason, playerWon === true ? "success" : playerWon === false ? "warning" : "info");
+  }
+
+  /** Results card box score: runs per inning, R and H, and the longest drive (C22). */
+  function renderBoxScore(): void {
+    const box = el.goBox;
+    if (!box) return;
+    if (G.mode !== "quick" && G.mode !== "classic") {
+      box.innerHTML = "";
+      return;
+    }
+    const cols = Math.max(G.inningsTotal, G.inning);
+    const head = `<tr><th></th>${Array.from({ length: cols }, (_, i) => `<th>${i + 1}</th>`).join("")}<th>R</th><th>H</th></tr>`;
+    const row = (k: "player" | "cpu") => `<tr><td class="tname">${clubAbbr(k)}</td>${Array.from({ length: cols }, (_, i) => `<td>${G.linescore[k][i] ?? "–"}</td>`).join("")}<td>${G.score[k]}</td><td>${G.hits[k]}</td></tr>`;
+    box.innerHTML = `${head}${row("player")}${row("cpu")}<tr><td class="tname" colspan="${cols + 3}">LONGEST DRIVE ${G.longestFt > 0 ? `${G.longestFt} FT` : "—"}</td></tr>`;
+  }
+
+  /** Derby, Bullpen and World Classic bests kept in localStorage (C22). */
+  const BESTS_KEY = "aura-diamond-3d.bests";
+  function readBests(): { derbyHr: number; derbyLongest: number; bullpen: number; classicRound: number } {
+    try {
+      return { derbyHr: 0, derbyLongest: 0, bullpen: 0, classicRound: 0, ...JSON.parse(localStorage.getItem(BESTS_KEY) ?? "{}") };
+    } catch {
+      return { derbyHr: 0, derbyLongest: 0, bullpen: 0, classicRound: 0 };
+    }
+  }
+  function renderBests(): void {
+    const best = readBests();
+    if (G.mode === "derby") {
+      best.derbyHr = Math.max(best.derbyHr, G.derby.hrs);
+      best.derbyLongest = Math.max(best.derbyLongest, G.derby.longest);
+    } else if (G.mode === "bullpen") {
+      best.bullpen = Math.max(best.bullpen, G.bullpen.correct);
+    } else if (G.mode === "classic" && G.classic) {
+      const reached = G.classic.champion === G.classic.player ? CLASSIC_ROUND_NAMES.length : G.classic.round;
+      best.classicRound = Math.max(best.classicRound, reached);
+    }
+    try {
+      localStorage.setItem(BESTS_KEY, JSON.stringify(best));
+    } catch {
+      /* storage unavailable (private mode): bests are session-only */
+    }
+    if (!el.goBests) return;
+    el.goBests.textContent =
+      G.mode === "derby" ? `BEST: ${best.derbyHr} HR · LONGEST ${best.derbyLongest} FT`
+      : G.mode === "bullpen" ? `BEST: ${best.bullpen}/12 READS`
+      : G.mode === "classic" ? `BEST RUN: ${best.classicRound >= CLASSIC_ROUND_NAMES.length ? "CHAMPIONS" : CLASSIC_ROUND_NAMES[best.classicRound] ?? "ROUND OF 32"}`
+      : "";
   }
 
   /* ---------- Park switching ---------- */
@@ -1861,26 +1737,6 @@ function boot(): void {
     };
   }
 
-  function pitchPosAt(p: LivePitch, t: number): Vec3 {
-    const tt = clamp(t, 0, 1);
-    const s = Math.pow(tt, p.spec.breakPow);
-    const x = lerp(p.start[0], p.target[0], tt) + p.breakX * s;
-    const y = Math.max(0.05, lerp(p.start[1], p.target[1], tt) + p.breakY * s - 0.18 * tt * tt);
-    const z = lerp(p.start[2], 0, tt);
-    if (t <= 1) return [x, y, z];
-    const ex = t - 1;
-    return [x + p.breakX * ex * 2.4, Math.max(0.35, y - ex * 1.6), ex * 8.5];
-  }
-
-  function zoneCoords(p: Vec3): [number, number] {
-    return [p[0] / ZONE_HW, (p[1] - ZONE_CY) / ZONE_HH];
-  }
-
-  function inZone(p: Vec3): boolean {
-    const [zx, zy] = zoneCoords(p);
-    return Math.abs(zx) <= 1 && Math.abs(zy) <= 1;
-  }
-
   /* ---------- CPU pitch selection ---------- */
   function cpuChoosePitch(): void {
     const rep = fieldingClub().rep;
@@ -1934,11 +1790,13 @@ function boot(): void {
     const pciScale = isPlayer ? DIFFS[G.diff].pciScale : 1;
     const radius = (power > 0.5 ? 0.85 : 1.0) * pciScale;
     const dist = Math.hypot(pciX - bx, pciY - by);
-    const q = 1 - clamp(dist / (radius * 1.15), 0, 1);
-    const timingAbs = Math.abs(timingErr);
-    const whiffWindow = 0.155;
+    const graded = gradeSwing(timingErr, dist, radius);
+    const q = graded.q;
 
-    if (timingAbs > whiffWindow || dist > radius * 1.5) {
+    lastCross = [bx, by];
+    lastCrossUntil = performance.now() / 1000 + 1.6;
+    showTiming(isPlayer ? timingErr : null);
+    if (graded.grade === "WHIFF") {
       G.lastGrade = "WHIFF";
       G.lastTimingErr = timingErr;
       showContact("WHIFF", `${p.mph.toFixed(0)} MPH ${p.spec.name}`, 1.0);
@@ -1948,10 +1806,7 @@ function boot(): void {
       return;
     }
 
-    let grade = "GOOD";
-    if (q > 0.78 && timingAbs < 0.05) grade = "PERFECT";
-    else if (timingErr < -0.07 || (q < 0.4 && timingErr < 0)) grade = "EARLY";
-    else if (timingErr > 0.07 || (q < 0.4 && timingErr > 0)) grade = "LATE";
+    const grade: string = graded.grade;
     G.lastGrade = grade;
 
     const qualityBonus = grade === "PERFECT" ? 1 : grade === "GOOD" ? 0.78 : 0.55;
@@ -1996,7 +1851,6 @@ function boot(): void {
     ball.launchDeg = la;
     ball.sprayDeg = spray;
     ball.fromCpu = !isPlayer;
-    ball.maxY = contactPos[1];
     G.lastEV = evMph;
     G.lastLA = la;
     G.lastDistFt = Math.round(mToFt(ball.landDist));
@@ -2029,15 +1883,34 @@ function boot(): void {
     if (foul) {
       ball.outcome = "foul";
       ball.resolveAt = Math.min(ball.hangT, 1.4);
+    } else {
+      ball.plannedOutcome = rollOutcome(ball);
+      if (ball.plannedOutcome === "flyout") ball.catchFielder = nearestFielder(ball.landPos);
     }
     setPhase("batted");
     tick(`${isPlayer ? "you" : club.abbr} put it in play — ${evMph.toFixed(0)} mph`, "info");
   }
 
+  /** Index into FIELDER_IDS of the fielder (not the catcher) closest to a landing spot. */
+  function nearestFielder(at: Vec3): number {
+    let best = 6;
+    let bestD = Infinity;
+    FIELDER_IDS.forEach((id, i) => {
+      if (id === "f-c") return;
+      const sp = FIELDER_SPOTS[id]!;
+      const d = Math.hypot(sp[0] - at[0], sp[2] - at[2]);
+      if (d < bestD) {
+        bestD = d;
+        best = i;
+      }
+    });
+    return best;
+  }
+
   /** Catch-assist eligibility: CPU hit, fair, catchable hang time, in play. */
   function isPlayerHitBallEligible(ball: BattedBall): boolean {
     if (!ball.fromCpu) return false;
-    if (Math.abs(ball.landTheta) > FOUL_DEG || ball.hrCrossed || ball.wallHit) {
+    if (Math.abs(ball.landTheta) > FOUL_DEG || ball.predicted.hrCrossed || ball.predicted.wallHit) {
       ball.catchable = false;
       return true;
     }
@@ -2047,83 +1920,33 @@ function boot(): void {
     return true;
   }
 
-  /** Integrate a batted ball to its landing (also used for prediction). */
+  /**
+   * Predict a batted ball's landing with the fixed-step integrator, and return the live ball. The live flight starts with its
+   * fence flags false (C4): it replays the same 1/120 s steps in stepBatted and sets crossedFence / hrCrossed / wallHit itself
+   * when it reaches the wall, so a ball predicted to hit the wall bounces off it on screen instead of passing through.
+   */
   function simBattedLanding(pos0: Vec3, vel0: Vec3): BattedBall {
-    const g = park().gravity;
-    const k = park().id === "lunar" ? 0.0022 : 0.0042;
-    const pos: Vec3 = [...pos0];
-    const vel: Vec3 = [...vel0];
-    const dt = 1 / 120;
-    let t = 0;
-    let crossedFence = false;
-    let hrCrossed = false;
-    let wallHit = false;
-    let landPos: Vec3 = [...pos0];
-    let landTheta = 0;
-    let landDist = 0;
-    let maxY = pos0[1];
-    while (t < 14) {
-      const sp = Math.hypot(vel[0], vel[1], vel[2]);
-      vel[0] -= k * sp * vel[0] * dt;
-      vel[1] -= (g + k * sp * vel[1]) * dt;
-      vel[2] -= k * sp * vel[2] * dt;
-      pos[0] += vel[0] * dt;
-      pos[1] += vel[1] * dt;
-      pos[2] += vel[2] * dt;
-      t += dt;
-      if (pos[1] > maxY) maxY = pos[1];
-      const r = Math.hypot(pos[0], pos[2]);
-      const theta = (Math.atan2(pos[0], -pos[2]) * 180) / Math.PI;
-      const fenceR = Math.abs(theta) <= FOUL_DEG + 4 ? fenceRadius(park(), theta) : Infinity;
-      if (!crossedFence && r >= fenceR) {
-        crossedFence = true;
-        if (pos[1] > park().wallH && Math.abs(theta) <= FOUL_DEG) {
-          hrCrossed = true;
-        } else {
-          // In-park rebound off the wall — kick it back into play
-          wallHit = true;
-          const nx = pos[0] / r;
-          const nz = pos[2] / r;
-          const dot = vel[0] * nx + vel[2] * nz;
-          vel[0] = (vel[0] - 2 * dot * nx) * 0.42;
-          vel[2] = (vel[2] - 2 * dot * nz) * 0.42;
-          vel[1] *= 0.6;
-          pos[0] = nx * fenceR * 0.985;
-          pos[2] = nz * fenceR * 0.985;
-        }
-      }
-      // Behind-the-plate fouls die against the backstop
-      if (pos[2] > 5 && pos[1] < 3) {
-        landPos = [pos[0], Math.max(0.045, pos[1]), pos[2]];
-        landTheta = theta;
-        landDist = r;
-        break;
-      }
-      if (pos[1] <= 0.045) {
-        landPos = [pos[0], 0.045, pos[2]];
-        landTheta = theta;
-        landDist = r;
-        break;
-      }
-    }
+    const pr = predictLanding(pos0, vel0, park());
     return {
       pos: [...pos0],
       vel: [...vel0],
       evMph: 0,
       launchDeg: 0,
       sprayDeg: 0,
-      hangT: t,
-      landPos,
-      landDist,
-      landTheta,
-      maxY,
-      crossedFence,
-      hrCrossed,
-      wallHit,
+      hangT: pr.hangT,
+      landPos: pr.landPos,
+      landDist: pr.landDist,
+      landTheta: pr.landTheta,
+      maxY: pr.maxY,
+      crossedFence: false,
+      hrCrossed: false,
+      wallHit: false,
+      predicted: { crossedFence: pr.crossedFence, hrCrossed: pr.hrCrossed, wallHit: pr.wallHit },
+      plannedOutcome: null,
       outcome: null,
       dead: false,
       age: 0,
-      resolveAt: t,
+      resolveAt: pr.hangT,
       fromCpu: false,
       catchable: false,
       catchFielder: -1,
@@ -2132,33 +1955,23 @@ function boot(): void {
     };
   }
 
-  function classifyBatted(ball: BattedBall): void {
+  /** Roll the outcome from the landing prediction (called at contact, so a fielder can be sent to a catch in time). */
+  function rollOutcome(ball: BattedBall): string {
     const p = park();
     const theta = ball.landTheta;
-    if (ball.outcome) return;
-    if (Math.abs(theta) > FOUL_DEG) {
-      ball.outcome = "foul";
-      return;
-    }
-    if (ball.hrCrossed || (ball.landDist >= fenceRadius(p, theta) - 1 && ball.maxY > p.wallH && ball.hangT > 2.0)) {
-      ball.outcome = "homerun";
-      return;
-    }
-    if (ball.wallHit || ball.landDist >= fenceRadius(p, theta) - 3) {
-      ball.outcome = "double";
-      return;
-    }
-    if (ball.landDist < 26 || ball.launchDeg < 10) {
-      ball.outcome = G.rng() < 0.66 ? "groundout" : "single";
-      return;
-    }
+    if (Math.abs(theta) > FOUL_DEG) return "foul";
+    if (ball.predicted.hrCrossed || (ball.landDist >= fenceRadius(p, theta) - 1 && ball.maxY > p.wallH && ball.hangT > 2.0)) return "homerun";
+    if (ball.predicted.wallHit || ball.landDist >= fenceRadius(p, theta) - 3) return "double";
+    if (ball.landDist < 26 || ball.launchDeg < 10) return G.rng() < 0.66 ? "groundout" : "single";
     const pCatch = clamp(0.16 + (ball.hangT - 1.1) * 0.3 - Math.max(0, ball.evMph - 82) * 0.009, 0.04, 0.93);
     ball.catchProb = pCatch;
-    if (G.rng() < pCatch) {
-      ball.outcome = "flyout";
-      return;
-    }
-    ball.outcome = ball.landDist > 0.72 * fenceRadius(p, theta) ? (G.rng() < 0.14 ? "triple" : "double") : "single";
+    if (G.rng() < pCatch) return "flyout";
+    return ball.landDist > 0.72 * fenceRadius(p, theta) ? (G.rng() < 0.14 ? "triple" : "double") : "single";
+  }
+
+  function classifyBatted(ball: BattedBall): void {
+    if (ball.outcome) return;
+    ball.outcome = ball.plannedOutcome ?? rollOutcome(ball);
   }
 
   /* ---------- Count / outs / inning ---------- */
@@ -2225,6 +2038,7 @@ function boot(): void {
       showBanner("WALK", 1.4);
       applyRunnerPlan(planRunnerMoves("walk"));
       nextBatter("runners");
+      maybeWalkoff();
       return;
     }
     showBanner("BALL", 0.9);
@@ -2239,32 +2053,21 @@ function boot(): void {
   function endHalf(): void {
     const key = battingTeamKey();
     G.linescore[key][G.inning - 1] = G.linescore[key][G.inning - 1] ?? 0;
-    const diff = Math.abs(G.score.player - G.score.cpu);
-    const mercy = diff >= 10 && (G.inning >= 2 || G.half === "bottom");
-    const scheduled = G.inningsTotal;
-
-    if (G.half === "bottom") {
-      if (mercy) {
-        concludeMatch(G.score.player > G.score.cpu, `mercy rule — ${Math.max(G.score.player, G.score.cpu)}-${Math.min(G.score.player, G.score.cpu)} after ${G.inning}`);
-        return;
-      }
-      if (G.inning >= scheduled && G.score.player !== G.score.cpu) {
-        finishRegulation();
-        return;
-      }
+    // rules.ts halfEndDecision: the player is the visiting side (bats in the top), the CPU is home (C7).
+    const decision = halfEndDecision(G.half, G.inning, G.inningsTotal, scoreline());
+    if (decision === "mercy") {
+      concludeMatch(G.score.player > G.score.cpu, `mercy rule — ${Math.max(G.score.player, G.score.cpu)}-${Math.min(G.score.player, G.score.cpu)} after ${G.half === "top" ? "the top of " : ""}${G.inning}`);
+      return;
+    }
+    if (decision === "final") {
+      finishRegulation();
+      return;
+    }
+    if (decision === "next-inning") {
       // extras: keep playing until someone leads after a full inning
       G.inning += 1;
       G.half = "top";
     } else {
-      // Top ends → bottom begins. Walk-off skip: home already leads late.
-      if (G.inning >= scheduled && G.score.cpu > G.score.player) {
-        finishRegulation();
-        return;
-      }
-      if (mercy && G.inning >= 2) {
-        concludeMatch(G.score.player > G.score.cpu, `mercy rule — ${Math.max(G.score.player, G.score.cpu)}-${Math.min(G.score.player, G.score.cpu)}`);
-        return;
-      }
       G.half = "bottom";
     }
     G.outs = 0;
@@ -2272,8 +2075,30 @@ function boot(): void {
     G.runnerBase = [-1, -1, -1];
     resetCount();
     refreshUniformsByHalf();
-    showBanner(`${G.half === "top" ? "TOP" : "BOTTOM"} ${G.inning} — ${clubById(G.playerClub).abbr} ${G.score.player} · ${clubById(G.cpuClub).abbr} ${G.score.cpu}`, 2.0);
+    showBanner(`${G.half === "top" ? "TOP" : "BOTTOM"} ${G.inning} — ${clubAbbr("player")} ${G.score.player} · ${clubAbbr("cpu")} ${G.score.cpu}`, 2.0);
     setPhase("between");
+  }
+
+  const scoreline = () => ({ away: G.score.player, home: G.score.cpu });
+
+  /**
+   * After any run scores: a home lead in the bottom of the last (or an extra) inning ends the game as a walk-off, and a home lead
+   * of the mercy margin in a bottom half ends it at once (C7). Returns true when the game ended.
+   */
+  function maybeWalkoff(): boolean {
+    if (G.over || (G.mode !== "quick" && G.mode !== "classic")) return false;
+    const s = scoreline();
+    if (isWalkoff(G.half, G.inning, G.inningsTotal, s)) {
+      juiceFire("walkoff", {});
+      showBanner("WALK-OFF", 2.4);
+      concludeMatch(false, `walk-off — ${clubAbbr("cpu")} ${G.score.cpu}-${G.score.player} in the ${G.inning > G.inningsTotal ? "extra " : ""}${G.inning}`);
+      return true;
+    }
+    if (isMidInningMercy(G.half, s)) {
+      concludeMatch(false, `mercy rule — ${G.score.cpu}-${G.score.player} in the bottom of ${G.inning}`);
+      return true;
+    }
+    return false;
   }
 
   function finishRegulation(): void {
@@ -2310,6 +2135,13 @@ function boot(): void {
     G.linescore[key][G.inning - 1] = (G.linescore[key][G.inning - 1] ?? 0) + n;
   }
 
+  /** Where the batter-runner is now: he has been sprinting toward first during the flight (C8), so his run starts there. */
+  function batterRunnerFrom(): Vec3 {
+    const st = athleteState["batter"];
+    if (G.batterRunning && st) return [st.pos[0], HOME_PLATE[1], st.pos[2]];
+    return HOME_PLATE;
+  }
+
   /** Compute runner moves (batter → bases) for an outcome; returns anim list. */
   function planRunnerMoves(outcome: string): { node: number; from: Vec3; to: Vec3; t: number }[] {
     const b = G.bases;
@@ -2319,7 +2151,7 @@ function boot(): void {
     const slotFor = (baseIdx: number): number => G.runnerBase.indexOf(baseIdx);
     const pushMove = (fromIdx: number, toIdx: number) => {
       if (fromIdx >= 0 && prev[fromIdx]) moves.push({ node: slotFor(fromIdx), from: bw(fromIdx), to: toIdx === 3 ? HOME_PLATE : bw(toIdx), t: 0 });
-      else if (fromIdx === -1) moves.push({ node: -1, from: HOME_PLATE, to: toIdx === 3 ? HOME_PLATE : bw(toIdx), t: 0 });
+      else if (fromIdx === -1) moves.push({ node: -1, from: toIdx === 3 ? HOME_PLATE : batterRunnerFrom(), to: toIdx === 3 ? HOME_PLATE : bw(toIdx), t: 0 });
     };
 
     switch (outcome) {
@@ -2384,9 +2216,8 @@ function boot(): void {
         break;
       }
       case "flyout": {
-        // Tag-up sac fly: runner on 3rd scores on a deep fly
-        const deep = (G.batted?.landDist ?? 0) > 62;
-        if (b[2] && deep && G.outs < 3) {
+        // Tag-up sac fly: the runner on 3rd scores on a deep fly only when the catch is not the third out (C6).
+        if (sacFlyScores(b[2], G.batted?.landDist ?? 0, G.outs)) {
           addRun();
           b[2] = false;
           pushMove(2, 3);
@@ -2440,7 +2271,9 @@ function boot(): void {
           g.streak = 0;
         }
       }
-      showPitchChip(`IT WAS ${p.spec.name} · ${p.mph.toFixed(0)} MPH`, guess ? (correct ? "guess-correct" : "guess-wrong") : "", 1.8);
+      // C19: the result is in the text, not only in the chip colour.
+      showPitchChip(`IT WAS ${p.spec.name} · ${p.mph.toFixed(0)} MPH${guess ? (correct ? " — CORRECT" : " — MISS") : " — NO CALL"}`, guess ? (correct ? "guess-correct" : "guess-wrong") : "", 1.8);
+      announce(`It was ${p.spec.name}. ${guess ? (correct ? "Correct." : "Miss.") : "No call."}`);
       tick(correct ? `read: ${p.spec.name.toLowerCase()} — correct` : `it was ${p.spec.name.toLowerCase()}`, correct ? "success" : "warning");
       cue(correct ? "uiConfirm" : "foul");
       if (g.round >= 12) {
@@ -2452,6 +2285,8 @@ function boot(): void {
       setPhase("between");
       return;
     }
+    lastCross = zoneCoords(cross);
+    lastCrossUntil = performance.now() / 1000 + 1.6;
     if (inZone(cross)) {
       tick(`called strike — ${p.spec.name.toLowerCase()} ${p.mph.toFixed(0)}mph`, "warning");
       registerStrike();
@@ -2463,7 +2298,9 @@ function boot(): void {
 
   /* ---------- CPU batting ---------- */
   function cpuDecideSwing(p: LivePitch): void {
-    if (p.resolved || p.swung) return;
+    if (p.resolved || p.swung || p.cpuDecided) return;
+    // One decision per pitch: rolling every step made the CPU swing at nearly everything.
+    p.cpuDecided = true;
     const diff = DIFFS[G.diff];
     const cross = pitchPosAt(p, 1);
     const [zx, zy] = zoneCoords(cross);
@@ -2476,7 +2313,7 @@ function boot(): void {
       const sigma = diff.cpuContactSigma;
       const timingErr = jitter(G.rng) * sigma * (inZ ? 1 : 1.8);
       const pciOff = 0.45 * (1.15 - diff.cpuPower);
-      startBatterSwing({
+      const started = startBatterSwing({
         pitch: p,
         power: 0.25,
         isPlayer: false,
@@ -2486,6 +2323,7 @@ function boot(): void {
         durPre: clamp(remaining, 0.12, SWING_CONTACT_T * SWING_TOTAL),
         durPost: (1 - SWING_CONTACT_T) * SWING_TOTAL
       });
+      if (started) p.swung = true;
     }
   }
 
@@ -2497,7 +2335,7 @@ function boot(): void {
   function maybeStartAutoSwing(p: LivePitch, zx: number, zy: number, delay = 0): void {
     const timeToPlane = delay + (CONTACT_PLANE_T - p.t) * p.flightSec;
     if (timeToPlane > SWING_CONTACT_T * SWING_TOTAL + 1e-4) return; // too early — wait
-    startBatterSwing({
+    const started = startBatterSwing({
       pitch: p,
       power: 0.72,
       isPlayer: true,
@@ -2507,6 +2345,7 @@ function boot(): void {
       durPre: clamp(timeToPlane, 0.15, SWING_CONTACT_T * SWING_TOTAL),
       durPost: (1 - SWING_CONTACT_T) * SWING_TOTAL
     });
+    if (started) p.swung = true;
   }
 
   /* ---------- Outcome application ---------- */
@@ -2554,6 +2393,10 @@ function boot(): void {
     const landDist = ball.landDist;
     const landPos = ball.landPos;
     const crossed = ball.crossedFence;
+    if (o === "single" || o === "double" || o === "triple" || o === "homerun") {
+      G.hits[battingTeamKey()] += 1;
+      G.longestFt = Math.max(G.longestFt, distFt);
+    }
     switch (o) {
       case "homerun": {
         const runs = 1 + G.bases.filter(Boolean).length;
@@ -2622,21 +2465,46 @@ function boot(): void {
         break;
     }
     void landDist;
+    maybeWalkoff();
   }
 
   /* ---------- Phase machine ---------- */
   let appReady = false;
+  let evidenceDue = true;
   let framesRendered = 0;
   let simTime = 0;
   let lastManualInputAt = -10;
   const isAutopilotActive = (): boolean => G.autopilot;
 
-  const isSwingPressed = (): boolean =>
-    input.pressed("swing") ||
-    justPressedKeys.has("Space") ||
-    justPressedKeys.has("Enter") ||
-    justPressedKeys.has("KeyE") ||
-    justPressedKeys.has("KeyJ");
+  /*
+   * Presses are latched once per rendered frame and consumed by the first fixed sim step that runs (C14), so a frame that runs
+   * several 1/120 s steps cannot read one key press several times (for example confirm a pitch and release it in one frame).
+   */
+  const edges = { swing: false, digit: -1 };
+  let touchPitchPress = -1;
+  function captureEdges(): void {
+    // Latched until a sim step consumes them: a frame that runs no step (hit-stop) keeps the press for the next frame.
+    edges.swing ||=
+      input.pressed("swing") ||
+      justPressedKeys.has("Space") ||
+      justPressedKeys.has("Enter") ||
+      justPressedKeys.has("KeyE") ||
+      justPressedKeys.has("KeyJ");
+    const digit = input.pressed("pitch1") || justPressedKeys.has("Digit1") ? 0
+      : input.pressed("pitch2") || justPressedKeys.has("Digit2") ? 1
+      : input.pressed("pitch3") || justPressedKeys.has("Digit3") ? 2
+      : input.pressed("pitch4") || justPressedKeys.has("Digit4") ? 3
+      : -1;
+    if (digit >= 0) edges.digit = digit;
+    else if (touchPitchPress >= 0) edges.digit = touchPitchPress;
+    touchPitchPress = -1;
+  }
+  function consumeEdges(): void {
+    edges.swing = false;
+    edges.digit = -1;
+  }
+  const isSwingPressed = (): boolean => edges.swing;
+  const digitPressed = (): number => edges.digit;
 
   const getManualMoveAxis = (): [number, number] => {
     let ax = input.axis("pciMoveX", "pciL", "pciR");
@@ -2651,69 +2519,55 @@ function boot(): void {
   function setPhase(p: Phase): void {
     G.phase = p;
     G.phaseT = 0;
+    if (p !== "runners") G.caughtBy = null;
   }
 
+  /**
+   * The player's swing (C1). The bat reaches the contact plane PLAYER_SWING_PRE seconds after the press; the timing error is
+   * that arrival minus the ball's own arrival, measured at the moment of the press. The pitch is never moved, the break is
+   * never scaled, and the PCI is the player's own. Contact is resolved when the swing reaches the plane (updateActors).
+   */
   function triggerSwing(power = 0.84): void {
     lastManualInputAt = simTime;
-    G.charging = false;
-    G.manualSwingQueued = false;
     cue("swing");
     const p = G.pitch;
-    if (p && !p.swung && !p.resolved) {
-      // Fast-forward the approaching pitch into the strike zone so manual
-      // swing / movement makes solid fair contact, then let the swing
-      // animation meet the ball at the contact plane.
-      p.target[0] = clamp(p.target[0], -0.2, 0.2);
-      p.target[1] = clamp(p.target[1], ZONE_CY - 0.16, ZONE_CY + 0.16);
-      p.breakX *= 0.2;
-      p.breakY *= 0.2;
-      const cross = pitchPosAt(p, 1);
-      const [bx, by] = zoneCoords(cross);
-      G.pci = [bx, by];
-      const durPre = clamp((CONTACT_PLANE_T - p.t) * p.flightSec, 0.1, SWING_CONTACT_T * SWING_TOTAL);
-      p.t = Math.max(p.t, CONTACT_PLANE_T - (durPre / p.flightSec) * 1.0001);
-      startBatterSwing({ pitch: p, power, isPlayer: true, timingErr: 0, pciX: bx, pciY: by, durPre, durPost: (1 - SWING_CONTACT_T) * SWING_TOTAL });
-    } else {
+    if (p && !p.swung && !p.resolved && (G.phase === "windup" || G.phase === "pitch")) {
+      const toPlane = timeToContactPlane(G.phase, G.phaseT, p.t, p.flightSec);
+      const timingErr = swingTimingError(toPlane);
+      const started = startBatterSwing({ pitch: p, power, isPlayer: true, timingErr, pciX: G.pci[0], pciY: G.pci[1], durPre: PLAYER_SWING_PRE, durPost: (1 - SWING_CONTACT_T) * SWING_TOTAL });
+      if (started) p.swung = true;
+    } else if (!p) {
       // Practice swing between pitches.
       startBatterSwing({ power, isPlayer: true, durPre: 0.42, durPost: 0.45 });
     }
   }
+
+  /** Seconds of stance before the CPU pitcher delivers when the player does not ask for the pitch. */
+  const MANUAL_PITCH_WAIT = 2.0;
 
   function stepBetween(dt: number): void {
     G.phaseT += dt;
     const [ax, ay] = getManualMoveAxis();
     const moveActive = Math.abs(ax) > 0.01 || Math.abs(ay) > 0.01;
     const swingHit = isSwingPressed();
-    const digitHit =
-      input.pressed("pitch1") ||
-      input.pressed("pitch2") ||
-      input.pressed("pitch3") ||
-      input.pressed("pitch4") ||
-      justPressedKeys.has("Digit1") ||
-      justPressedKeys.has("Digit2") ||
-      justPressedKeys.has("Digit3") ||
-      justPressedKeys.has("Digit4");
-
-    if (moveActive) {
-      lastManualInputAt = simTime;
-      G.batterAimX = clamp(G.batterAimX + ax * dt * 1.35, -0.36, 0.36);
-      G.batterAimZ = clamp(G.batterAimZ - ay * dt * 1.15, -0.32, 0.32);
-      G.batterStepTimer = 0.34;
-    }
-    if (swingHit) {
-      lastManualInputAt = simTime;
-      triggerSwing(0.84);
-    }
+    const digitHit = digitPressed() >= 0;
 
     if (playerPitchingTurn()) {
-      const wait = 0.85;
-      if (!isAutopilotActive() && !moveActive && !swingHit && !digitHit && G.phaseT < wait) return;
+      // The player pitches: any input (or autopilot after a beat) opens pitch selection. Space never swings the CPU batter (C15).
       if (!isAutopilotActive() && !moveActive && !swingHit && !digitHit) return;
+      if (isAutopilotActive() && !moveActive && !swingHit && !digitHit && G.phaseT < 0.85) return;
       setPhase("pitchSelect");
       G.selPitch = clubById(G.playerClub).rep[0] ?? "fourseam";
       G.aim = [0, 0];
       showBanner("YOUR PITCH — 1-4 SELECT · WASD AIM · SPACE", 2.4);
       return;
+    }
+
+    if (moveActive && battingIsPlayer()) {
+      lastManualInputAt = simTime;
+      G.batterAimX = clamp(G.batterAimX + ax * dt * 1.35, -0.36, 0.36);
+      G.batterAimZ = clamp(G.batterAimZ - ay * dt * 1.15, -0.32, 0.32);
+      G.batterStepTimer = 0.34;
     }
 
     if (isAutopilotActive()) {
@@ -2724,44 +2578,24 @@ function boot(): void {
       return;
     }
 
-    // Manual play (autopilot OFF): immediately start pitch delivery on Space/Enter/KeyJ or WASD/Arrows
-    if (moveActive || swingHit || digitHit) {
-      cpuChoosePitch();
-      G.phaseT = 0.38;
-      G.manualSwingQueued = true;
-      if (swingHit) {
-        G.charging = true;
-        G.chargeStart = performance.now() / 1000;
-      }
-    }
+    // Manual play: Space asks for the pitch now (it does not swing); otherwise the pitcher delivers after a short stance.
+    // Movement and digit presses never start a pitch or queue a swing.
+    if (swingHit) lastManualInputAt = simTime;
+    if (swingHit || G.phaseT >= MANUAL_PITCH_WAIT) cpuChoosePitch();
   }
 
   function stepWindup(dt: number): void {
     G.phaseT += dt;
     const [ax, ay] = getManualMoveAxis();
     const moveActive = Math.abs(ax) > 0.01 || Math.abs(ay) > 0.01;
-    if (moveActive) {
+    if (moveActive && battingIsPlayer()) {
       lastManualInputAt = simTime;
       G.batterAimX = clamp(G.batterAimX + ax * dt * 1.35, -0.36, 0.36);
       G.batterAimZ = clamp(G.batterAimZ - ay * dt * 1.15, -0.32, 0.32);
       G.batterStepTimer = 0.32;
-      G.manualSwingQueued = true;
     }
-    if (battingIsPlayer() && G.mode !== "bullpen" && isSwingPressed()) {
-      lastManualInputAt = simTime;
-      G.manualSwingQueued = true;
-      G.charging = true;
-      G.chargeStart = performance.now() / 1000;
-      if (G.pitch && G.phaseT >= 0.22) {
-        setPhase("pitch");
-        cue("pitch");
-        juiceFire("pitch", {});
-        triggerSwing(0.86);
-        return;
-      }
-      // No live pitch yet — a practice swing through the zone.
-      triggerSwing(0.84);
-    }
+    // A press before release is a real (and very early) swing: it is graded like any other.
+    if (battingIsPlayer() && G.mode !== "bullpen" && isSwingPressed() && !isAutopilotActive()) triggerSwing(0.84);
     // Autopilot batting: fast flights need the load to start BEFORE release so
     // the swing's contact phase lands with the ball at the plate.
     if (isAutopilotActive() && battingIsPlayer() && G.mode !== "bullpen" && G.pitch && !swingDrive.active) {
@@ -2776,7 +2610,7 @@ function boot(): void {
         }
       }
     }
-    if (G.phaseT >= WINDUP_RELEASE_T && G.pitch) {
+    if (G.phaseT >= WINDUP_RELEASE_T && G.pitch && G.phase === "windup") {
       setPhase("pitch");
       cue("pitch");
       juiceFire("pitch", {});
@@ -2795,33 +2629,19 @@ function boot(): void {
       return;
     }
     p.t += dt / p.flightSec;
+    G.phaseT += dt;
     const [ax, ay] = getManualMoveAxis();
     const moveActive = Math.abs(ax) > 0.01 || Math.abs(ay) > 0.01;
-    if (moveActive) {
+    if (moveActive && battingIsPlayer()) {
       lastManualInputAt = simTime;
       G.batterAimX = clamp(G.batterAimX + ax * dt * 1.35, -0.36, 0.36);
       G.batterAimZ = clamp(G.batterAimZ - ay * dt * 1.15, -0.32, 0.32);
       G.batterStepTimer = 0.28;
-      G.manualSwingQueued = true;
     }
     if (battingIsPlayer() && G.mode !== "bullpen") {
-      const swingHit = isSwingPressed();
-      if (swingHit && !p.swung && !p.resolved) {
-        triggerSwing(0.86);
-        return;
-      }
-      if ((G.manualSwingQueued || G.charging) && p.t >= 0.28 && !p.swung && !p.resolved) {
-        triggerSwing(0.84);
-        return;
-      }
-      if (G.charging && input.released("swing") && p.t >= 0.25 && !p.swung && !p.resolved) {
-        const now = performance.now() / 1000;
-        const power = clamp((now - G.chargeStart) / 0.48, 0.55, 1);
-        triggerSwing(power);
-        return;
-      }
+      if (isSwingPressed() && !p.swung && !p.resolved && !isAutopilotActive()) triggerSwing(0.84);
       // Smart autopilot batting only when autopilot is explicitly enabled
-      if (!G.charging && isAutopilotActive() && !p.swung && !p.resolved) {
+      if (isAutopilotActive() && !p.swung && !p.resolved) {
         const cross = pitchPosAt(p, 1);
         const [zx, zy] = zoneCoords(cross);
         const trackRate = clamp(dt * 8.5, 0, 1);
@@ -2829,11 +2649,12 @@ function boot(): void {
         const shouldSwing = Math.abs(zx) <= 1.08 && Math.abs(zy) <= 1.08;
         if (shouldSwing && !swingDrive.active) maybeStartAutoSwing(p, zx, zy);
       }
-      if (p.t >= 1.0 && !p.resolved) resolvePitchAtPlate(p);
+      // A swung pitch is settled by the swing reaching the plane; only a take is called at the plate.
+      if (p.t >= 1.0 && !p.resolved && !p.swung) resolvePitchAtPlate(p);
     } else if (G.mode === "bullpen") {
       const g = G.bullpen;
       if (g.guess === null) {
-        const idx = input.pressed("pitch1") ? 0 : input.pressed("pitch2") ? 1 : input.pressed("pitch3") ? 2 : input.pressed("pitch4") ? 3 : -1;
+        const idx = digitPressed();
         if (idx >= 0) {
           lastManualInputAt = simTime;
           g.guess = PITCH_KEYS[idx]!;
@@ -2850,16 +2671,22 @@ function boot(): void {
       if (p.t >= 0.3 && !p.swung && !swingDrive.active) {
         cpuDecideSwing(p);
       }
-      if (p.t >= 1.0 && !p.resolved) resolvePitchAtPlate(p);
+      if (p.t >= 1.0 && !p.resolved && !p.swung) resolvePitchAtPlate(p);
     }
     // Resolved pitches ride through to the mitt, then the next beat starts.
     if (p.resolved && p.t > 1.22) {
       G.pitch = null;
       if (!G.over && G.phase === "pitch") setPhase("between");
-    } else if (!p.resolved && p.t > 1.3) {
-      p.resolved = true;
+    } else if (!p.resolved && p.t > 2.2) {
+      // Safety net: a swing that never reached the plane (it should not happen) is scored as a miss.
+      if (p.swung) {
+        p.resolved = true;
+        registerStrike();
+      } else {
+        resolvePitchAtPlate(p);
+      }
       G.pitch = null;
-      if (G.phase === "pitch") setPhase("between");
+      if (!G.over && G.phase === "pitch") setPhase("between");
     }
   }
 
@@ -2870,35 +2697,9 @@ function boot(): void {
       return;
     }
     ball.age += dt;
-    const g = park().gravity;
-    const k = park().id === "lunar" ? 0.0022 : 0.0042;
-    const sp = Math.hypot(ball.vel[0], ball.vel[1], ball.vel[2]);
-    ball.vel[0] -= k * sp * ball.vel[0] * dt;
-    ball.vel[1] -= (g + k * sp * ball.vel[1]) * dt;
-    ball.vel[2] -= k * sp * ball.vel[2] * dt;
-    ball.pos[0] += ball.vel[0] * dt;
-    ball.pos[1] += ball.vel[1] * dt;
-    ball.pos[2] += ball.vel[2] * dt;
+    // Same fixed step and the same wall rule as the landing prediction (rules.ts stepFlight), so the live ball follows it.
+    const { r, fenceR } = stepFlight(ball, park(), dt);
     if (ball.pos[1] > ball.maxY) ball.maxY = ball.pos[1];
-    const r = Math.hypot(ball.pos[0], ball.pos[2]);
-    const theta = (Math.atan2(ball.pos[0], -ball.pos[2]) * 180) / Math.PI;
-    const fenceR = Math.abs(theta) <= FOUL_DEG + 4 ? fenceRadius(park(), theta) : Infinity;
-    if (!ball.crossedFence && r >= fenceR) {
-      ball.crossedFence = true;
-      if (ball.pos[1] > park().wallH && Math.abs(theta) <= FOUL_DEG) {
-        ball.hrCrossed = true;
-      } else {
-        ball.wallHit = true;
-        const nx = ball.pos[0] / r;
-        const nz = ball.pos[2] / r;
-        const dot = ball.vel[0] * nx + ball.vel[2] * nz;
-        ball.vel[0] = (ball.vel[0] - 2 * dot * nx) * 0.42;
-        ball.vel[2] = (ball.vel[2] - 2 * dot * nz) * 0.42;
-        ball.vel[1] *= 0.6;
-        ball.pos[0] = nx * fenceR * 0.985;
-        ball.pos[2] = nz * fenceR * 0.985;
-      }
-    }
     // Skyline window target check
     if (park().id === "skyline" && ball.crossedFence && !ball.windowHit && !ball.dead) {
       for (let i = 0; i < 4; i++) {
@@ -2918,6 +2719,16 @@ function boot(): void {
       if (tLand < 0.85 && tLand > 0 && !G.catchPrompt) {
         G.catchPrompt = { fielder: FIELDER_IDS[ball.catchFielder] ?? "f-cf", pos: ball.landPos };
       }
+    }
+    // A planned fly-out is caught when the ball comes down to glove height; the fielder has run to the spot (C8).
+    if (ball.plannedOutcome === "flyout" && !ball.dead && !G.catchPrompt && ball.vel[1] < 0 && ball.pos[1] <= 1.7 && ball.age > 0.3) {
+      ball.outcome = "flyout";
+      ball.dead = true;
+      const catcherId = FIELDER_IDS[ball.catchFielder >= 0 ? ball.catchFielder : 6] ?? "f-cf";
+      cue("pop");
+      applyOutcome(ball);
+      G.caughtBy = catcherId;
+      return;
     }
     if (G.catchPrompt && (isSwingPressed() || (isAutopilotActive() && ball.resolveAt - ball.age < 0.35))) {
       if (isSwingPressed()) lastManualInputAt = simTime;
@@ -2967,6 +2778,7 @@ function boot(): void {
             G.bases[idx] = false;
             showBanner("EXTRA BASE — RUN SCORES", 1.7);
             tick("aggressive running — took home", "success");
+            maybeWalkoff();
           } else {
             G.runnerBase[slot] = toIdx;
             G.bases[idx] = false;
@@ -2997,7 +2809,7 @@ function boot(): void {
   function stepPitchSelect(dt: number): void {
     G.phaseT += dt;
     const rep = clubById(G.playerClub).rep;
-    const idx = input.pressed("pitch1") ? 0 : input.pressed("pitch2") ? 1 : input.pressed("pitch3") ? 2 : input.pressed("pitch4") ? 3 : -1;
+    const idx = digitPressed();
     if (idx >= 0) {
       lastManualInputAt = simTime;
       G.selPitch = rep[idx % rep.length] ?? "fourseam";
@@ -3084,12 +2896,20 @@ function boot(): void {
     if (!h) return;
     // `scaleMode: "fit"` grounds the model's lowest vertex on the node position, so the node sits at the ground (a +0.94 m "centred GLB" offset floated every athlete a metre up).
     h.setPosition(x, y, z).setRotation(0, yaw, 0).setVisible(true);
+    setKitVisible(id, true);
     setActorAnimation(id, h, clip, speed);
     athleteState[id] = { pos: [x, y, z], yaw };
   }
 
   function hideAthlete(id: string): void {
     H[id]?.setVisible(false);
+    setKitVisible(id, false);
+  }
+  function setKitVisible(id: string, on: boolean): void {
+    if (kitVisible.get(id) === on) return;
+    kitVisible.set(id, on);
+    H[`${id}-cap`]?.setVisible(on);
+    H[`${id}-belt`]?.setVisible(on);
   }
 
   /* ---------- Bat socket + swing driver ---------- */
@@ -3116,7 +2936,8 @@ function boot(): void {
     disposeBat: null as (() => void) | null,
     disposeCal: null as (() => void) | null,
     disposeMitt: null as (() => void) | null,
-    disposeGloves: [] as Array<() => void>
+    disposeGloves: [] as Array<() => void>,
+    disposeKit: [] as Array<() => void>
   };
 
   function attachBatSocket(): void {
@@ -3125,6 +2946,8 @@ function boot(): void {
     batSocket.disposeMitt?.();
     for (const dispose of batSocket.disposeGloves) dispose();
     batSocket.disposeGloves = [];
+    for (const dispose of batSocket.disposeKit) dispose();
+    batSocket.disposeKit = [];
     batSocket.disposeBat = null;
     batSocket.disposeCal = null;
     batSocket.disposeMitt = null;
@@ -3159,6 +2982,16 @@ function boot(): void {
             scale: 1
           }).detach
         );
+      }
+      for (const id of KIT_OWNERS) {
+        const owner = H[id]?.animation as AttachableActor | undefined;
+        if (!owner) continue;
+        if (H[`${id}-cap`] && owner.socket("Head").valid) {
+          batSocket.disposeKit.push(attachToBone(owner, { bone: "Head", target: `${id}-cap`, position: CAP_ATTACH_POS, rotation: [0, 0, 0], scale: 1 }).detach);
+        }
+        if (H[`${id}-belt`] && owner.socket("Hips").valid) {
+          batSocket.disposeKit.push(attachToBone(owner, { bone: "Hips", target: `${id}-belt`, position: BELT_ATTACH_POS, rotation: [0, 0, 0], scale: 1 }).detach);
+        }
       }
     } catch (err) {
       failBatSocket(String((err as Error)?.message ?? err));
@@ -3314,8 +3147,8 @@ function boot(): void {
   /** Nominal contact anchor for practice swings (zone-centre pitch crossing). */
   const nominalContactWorld = (): Vec3 => [0.18, ZONE_CY + 0.01, 0.32];
 
-  function startBatterSwing(opts: { pitch?: LivePitch | null; power?: number; isPlayer?: boolean; timingErr?: number; pciX?: number; pciY?: number; durPre?: number; durPost?: number }): void {
-    if (swingDrive.active && swingDrive.t < SWING_CONTACT_T + 0.2) return;
+  function startBatterSwing(opts: { pitch?: LivePitch | null; power?: number; isPlayer?: boolean; timingErr?: number; pciX?: number; pciY?: number; durPre?: number; durPost?: number }): boolean {
+    if (swingDrive.active && swingDrive.t < SWING_CONTACT_T + 0.2) return false;
     const pitch = opts.pitch ?? null;
     let ballWorld: Vec3 = nominalContactWorld();
     if (pitch) {
@@ -3344,6 +3177,7 @@ function boot(): void {
     swingDrive.prevTau = 0;
     swingDrive.prevTauL = 0;
     swingDrive.prevGamma = 0;
+    return true;
   }
 
   /**
@@ -3389,12 +3223,24 @@ function boot(): void {
     };
   }
 
-  function updateActors(dt: number, t: number): void {
-    const pk = park();
-    const playerBatting = battingIsPlayer();
+  /** Where the simulation puts the ball right now (before render interpolation). */
+  function simBallWorld(): Vec3 {
+    if (G.phase === "pitch" && G.pitch) return pitchPosAt(G.pitch, G.pitch.t);
+    if (G.phase === "windup" && G.pitch) return [RELEASE_PT[0], RELEASE_PT[1] - Math.sin(clamp(G.phaseT / 0.62, 0, 1) * Math.PI) * 0.3, RELEASE_PT[2]];
+    if ((G.phase === "batted" || G.phase === "runners") && G.batted) return [G.batted.pos[0], Math.max(0.075, G.batted.pos[1]), G.batted.pos[2]];
+    if (G.phase === "between" || G.phase === "pitchSelect" || G.phase === "pitchMeter") return [0.3, MOUND_TOP + 1.1, MOUND_Z + 0.4]; // in the pitcher's glove
+    return G.lastBallPos;
+  }
+  const presenter = createFixedStepPresenter<{ ball: Vec3 }>({
+    snapshot: () => ({ ball: simBallWorld() }),
+    // A jump of more than 4 m in one step is a new pitch or a reset: show it, do not smear across it.
+    blend: (a, b, t) => (Math.hypot(b.ball[0] - a.ball[0], b.ball[1] - a.ball[1], b.ball[2] - a.ball[2]) > 4 ? b : { ball: mix3(a.ball, b.ball, t) })
+  });
+
+  /** Sim-side timers and the swing clock: one fixed step (C14). Contact resolves exactly when the bat meets the plane. */
+  function stepSwingClock(dt: number): void {
     G.batterStepTimer = Math.max(0, G.batterStepTimer - dt);
     G.fielderThrowTimer = Math.max(0, G.fielderThrowTimer - dt);
-
     // Advance the swing timeline; resolve contact exactly when the bat meets the ball.
     if (swingDrive.active && swingDrive.hold !== null) {
       // QA hold (`holdSwingAt`): freeze the swing clock so a frame can be measured and captured at an exact t.
@@ -3406,7 +3252,7 @@ function boot(): void {
       if (prevT < SWING_CONTACT_T && swingDrive.t >= SWING_CONTACT_T && !swingDrive.resolved) {
         swingDrive.resolved = true;
         const p = swingDrive.pitch;
-        if (p && !p.swung && !p.resolved) {
+        if (p && !p.resolved && G.pitch === p) {
           resolveSwing(p, swingDrive.timingErr, swingDrive.pciX, swingDrive.pciY, swingDrive.power, swingDrive.isPlayer);
         }
       }
@@ -3419,6 +3265,12 @@ function boot(): void {
         }
       }
     }
+
+  }
+
+  function updateActors(dt: number, t: number): void {
+    const pk = park();
+    const playerBatting = battingIsPlayer();
 
     // Batter at the plate; completes the swing follow-through at home plate, then sprints down the 1B line
     const batterX = -0.82 + G.batterAimX;
@@ -3460,7 +3312,7 @@ function boot(): void {
     }
     batState.socketed = batSocket.stage === "attached";
     batState.swingT = swingDrive.active ? Number(swingDrive.t.toFixed(3)) : swingDrive.recover > 0 ? 1 : 0;
-    measureBatGrip();
+    if (evidenceDue) measureBatGrip();
     swingEvidence.phase = !swingDrive.active
       ? "stance"
       : swingDrive.t < 0.26
@@ -3511,7 +3363,7 @@ function boot(): void {
 
     // Fielders — only the active fielder chasing a live batted ball runs (Sprint_Loop); stationary fielders stay in Ready
     const b = G.batted;
-    let activeFielderId: string | null = b && !b.dead && b.catchable && b.catchFielder >= 0 ? FIELDER_IDS[b.catchFielder] ?? null : null;
+    let activeFielderId: string | null = b && !b.dead && (b.catchable || b.plannedOutcome === "flyout") && b.catchFielder >= 0 ? FIELDER_IDS[b.catchFielder] ?? null : null;
     if (!activeFielderId && G.phase === "batted" && b && !b.dead) {
       let bestDist = Infinity;
       for (const fid of FIELDER_IDS) {
@@ -3538,17 +3390,28 @@ function boot(): void {
       const shouldChase = G.phase === "batted" && b && !b.dead && id !== "f-c" && (id === activeFielderId || distToLanding < 22);
       if (shouldChase && b) {
         const isPrimary = id === activeFielderId;
-        const chaseScale = isPrimary ? 0.78 : 0.35;
+        // C8: the fielder who will make a catch reaches the landing spot a beat before the ball and reaches up for it.
+        const catching = isPrimary && b.plannedOutcome === "flyout";
+        const chaseScale = catching ? 1 : isPrimary ? 0.78 : 0.35;
         const rawProgress = b.age / Math.max(0.25, b.resolveAt);
-        const drift = clamp(rawProgress, 0, 1) * chaseScale;
+        const drift = clamp(catching ? rawProgress / 0.85 : rawProgress, 0, 1) * chaseScale;
         x = lerp(spot[0], b.landPos[0], drift);
         z = lerp(spot[2], b.landPos[2], drift);
-        const stillMoving = rawProgress < 0.98 && distToLanding > 1.2;
-        clip = stillMoving ? "Sprint_Loop" : "Ready";
+        const stillMoving = (catching ? drift < 0.999 : rawProgress < 0.98) && distToLanding > 1.2;
+        clip = stillMoving ? "Sprint_Loop" : catching ? "Contest" : "Ready";
         speed = stillMoving ? (isPrimary ? 1.45 : 1.28) : 1.0;
         if (distToLanding > 0.5) {
           yaw = Math.atan2(b.landPos[0] - spot[0], b.landPos[2] - spot[2]);
         }
+      } else if (G.caughtBy === id && G.phase === "runners") {
+        // Holding the catch where it was made.
+        const st = athleteState[id];
+        if (st) {
+          x = st.pos[0];
+          z = st.pos[2];
+          yaw = st.yaw;
+        }
+        clip = "Contest";
       } else if (G.fielderThrowTimer > 0 && G.activeThrowerId === id) {
         clip = "Release";
         speed = 1.35;
@@ -3576,31 +3439,27 @@ function boot(): void {
     });
 
     // Waver crowd — real 3D Meshy spectators standing calmly along the outfield wall grounded at y = 0
+    const crowd = crowdPlacements(pk);
     ((H.wavers as AnyHandle[]) ?? []).forEach((w, i) => {
       if (!w) return;
-      const rad = ((-36 + (72 * i) / (WAVER_COUNT - 1)) * Math.PI) / 180;
-      const rr = pk.fenceCorner + 4.2;
-      w.setPosition(Math.sin(rad) * rr, 0, -Math.cos(rad) * rr).setRotation(0, rad + Math.PI, 0);
+      const c = crowd[i];
+      if (c) w.setPosition(c.x, 0, c.z).setRotation(0, c.yaw, 0);
       setActorAnimation(`waver-${i}`, w, "Ready", 1.0);
     });
     void t;
 
-    // Ball + shadow + trail dots
-    let ballWorld: Vec3 = G.lastBallPos;
-    if (G.phase === "pitch" && G.pitch) {
-      ballWorld = pitchPosAt(G.pitch, G.pitch.t);
-    } else if (G.phase === "windup" && G.pitch) {
-      ballWorld = [RELEASE_PT[0], RELEASE_PT[1] - Math.sin(clamp(G.phaseT / 0.62, 0, 1) * Math.PI) * 0.3, RELEASE_PT[2]];
-    } else if ((G.phase === "batted" || G.phase === "runners") && G.batted) {
-      ballWorld = [G.batted.pos[0], Math.max(0.075, G.batted.pos[1]), G.batted.pos[2]];
-    } else if (G.phase === "between" || G.phase === "pitchSelect" || G.phase === "pitchMeter") {
-      ballWorld = [0.3, MOUND_TOP + 1.1, MOUND_Z + 0.4]; // in the pitcher's glove
+    // Ball + shadow + trail dots: drawn between the last two sim steps (fixed-step presenter, C14).
+    let ballWorld: Vec3 = presenter.present(simLoop, appReady && !simLoop.manual && !simPaused()).ball;
+    if (G.caughtBy && G.phase === "runners") {
+      const glove = H[`glove-${G.caughtBy}`]?.position as Vec3 | undefined;
+      if (glove) ballWorld = [glove[0], glove[1], glove[2]];
     }
     if (qaBall) ballWorld = qaBall;
     G.lastBallPos = ballWorld;
-    H.ball?.setPosition(ballWorld[0], ballWorld[1] > -30 ? ballWorld[1] - 0.075 : ballWorld[1], ballWorld[2]).setVisible(ballWorld[1] > -30);
+    H.ball?.setPosition(ballWorld[0], ballWorld[1], ballWorld[2]).setVisible(ballWorld[1] > -30);
     const shScale = clamp(1.15 - ballWorld[1] * 0.02, 0.4, 1.1);
-    H.ballShadow?.setPosition(ballWorld[0], 0.04, ballWorld[2]).setScale([shScale, 1, shScale]).setVisible(ballWorld[1] > -30 && ballWorld[1] < 60);
+    // C17: the key light already casts the ball's real shadow near the ground; the fake disc only marks a high fly ball's spot.
+    H.ballShadow?.setPosition(ballWorld[0], 0.04, ballWorld[2]).setScale([shScale, 1, shScale]).setVisible(ballWorld[1] > 3 && ballWorld[1] < 60);
 
     ((H.trail as AnyHandle[]) ?? []).forEach((th, i) => {
       if (!th) return;
@@ -3735,7 +3594,7 @@ function boot(): void {
     elRef.textContent = v;
   };
 
-  function updateHud(): void {
+  function updateHud(dt: number): void {
     const inGame = G.phase !== "menu" && !G.over;
     el.hud?.classList.toggle("on", inGame);
     renderLinescore();
@@ -3746,9 +3605,8 @@ function boot(): void {
     setText(el.inn, "inn", String(G.inning));
     setText(el.half, "half", G.half === "top" ? "▲" : "▼");
     baseDots.forEach((d, i) => d?.classList.toggle("on", G.bases[i] ?? false));
-    const bc = battingClub();
     const fc = fieldingClub();
-    setText(el.matchup, "matchup", `${bc.abbr} vs ${fc.abbr}`);
+    setText(el.matchup, "matchup", `${clubAbbr(battingTeamKey())} vs ${clubAbbr(battingIsPlayer() ? "cpu" : "player")}`);
     setText(el.pitcherRep, "prep", fc.rep.map((p) => PITCHES[p].short).join(" · "));
     if (el.pitchChip && performance.now() / 1000 > pitchChipHideAt) el.pitchChip.classList.remove("show");
     const showZone = (battingIsPlayer() && (G.phase === "pitch" || G.phase === "between" || G.phase === "windup") && G.mode !== "bullpen") || (playerPitchingTurn() && (G.phase === "pitchSelect" || G.phase === "pitchMeter"));
@@ -3774,9 +3632,29 @@ function boot(): void {
         el.pitchDot.style.left = dl;
         el.pitchDot.style.top = dt2;
         el.pitchDot.style.display = "";
+      } else if (el.pitchDot && lastCross && performance.now() / 1000 < lastCrossUntil) {
+        // C22: keep the crossing point on the zone for a moment after the pitch.
+        const [dl, dt2] = toPct(lastCross[0], lastCross[1]);
+        el.pitchDot.style.left = dl;
+        el.pitchDot.style.top = dt2;
+        el.pitchDot.style.display = "";
       } else if (el.pitchDot) {
         el.pitchDot.style.display = "none";
       }
+    }
+    // C9: on-screen pitch buttons during pitch selection and Bullpen reads.
+    const padMode = playerPitchingTurn() && G.phase === "pitchSelect" ? "select" : G.mode === "bullpen" && (G.phase === "windup" || G.phase === "pitch") ? "bullpen" : "";
+    el.pitchPad?.classList.toggle("show", padMode !== "");
+    if (padMode && el.pitchPad) {
+      const rep = clubById(G.playerClub).rep;
+      const labels = padMode === "select" ? [0, 1, 2, 3].map((i) => PITCHES[rep[i % rep.length]!].short) : PITCH_KEYS.map((k) => PITCHES[k].short);
+      const active = padMode === "select" ? G.selPitch : G.bullpen.guess;
+      el.pitchPad.querySelectorAll<HTMLButtonElement>("[data-pitch-idx]").forEach((b, i) => {
+        const label = labels[i] ?? "";
+        if (b.textContent !== label) b.textContent = label;
+        const id = padMode === "select" ? rep[i % rep.length] : PITCH_KEYS[i];
+        b.classList.toggle("active", id === active);
+      });
     }
     el.meter?.classList.toggle("show", G.phase === "pitchMeter");
     if (el.needle && G.phase === "pitchMeter") el.needle.style.left = `${G.meterNeedle * 100}%`;
@@ -3794,12 +3672,13 @@ function boot(): void {
       setText(el.bullpenStreak, "bpst", String(G.bullpen.streak));
       setText(el.bullpenRound, "bpr", String(Math.min(12, G.bullpen.round + 1)));
     }
+    // Banner timers count real seconds, not frames (C14).
     if (G.bannerT > 0) {
-      G.bannerT -= 1 / 60;
+      G.bannerT -= dt;
       if (G.bannerT <= 0) el.banner?.classList.remove("show");
     }
     if (G.msgT > 0) {
-      G.msgT -= 1 / 60;
+      G.msgT -= dt;
       if (G.msgT <= 0) el.msg?.classList.remove("show");
     }
   }
@@ -3904,6 +3783,41 @@ function boot(): void {
 
   el.tbQuick?.addEventListener("click", () => startMode("quick"));
   el.tbDerby?.addEventListener("click", () => startMode("derby"));
+  // C19: mute toggle, remembered across visits.
+  let muted = false;
+  try {
+    muted = localStorage.getItem("aura-diamond-3d.muted") === "1";
+  } catch {
+    /* storage unavailable */
+  }
+  const syncMute = (): void => {
+    try {
+      (audio as any).setMuted?.(muted);
+    } catch {
+      /* audio is best-effort */
+    }
+    if (el.tbMute) {
+      el.tbMute.textContent = muted ? "Sound: Off" : "Sound: On";
+      el.tbMute.setAttribute("aria-pressed", String(muted));
+    }
+  };
+  syncMute();
+  el.tbMute?.addEventListener("click", () => {
+    muted = !muted;
+    try {
+      localStorage.setItem("aura-diamond-3d.muted", muted ? "1" : "0");
+    } catch {
+      /* storage unavailable */
+    }
+    syncMute();
+  });
+  el.pitchPad?.querySelectorAll<HTMLButtonElement>("[data-pitch-idx]").forEach((b) => {
+    b.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      touchPitchPress = Number(b.dataset.pitchIdx);
+    });
+  });
+
   el.tbAuto?.addEventListener("click", () => {
     G.autopilot = !G.autopilot;
     syncAutoBtn();
@@ -3951,40 +3865,79 @@ function boot(): void {
     attachBatSocket();
     updateActors(0.016, simTime);
     updateCamera(0.016);
-    updateHud();
+    updateHud(0.016);
     appReady = true;
     document.body.dataset.aura3dReady = "true";
     document.querySelector("#app canvas")?.setAttribute("data-ready", "true");
   });
 
+  /* ---------- QA hooks (?qa=1 only) ---------- */
+  function qaHooks(): Record<string, unknown> {
+    const runUntil = (done: () => boolean, max = 6000): number => {
+      let n = 0;
+      while (!done() && n < max) {
+        simLoop.advance(1);
+        n++;
+      }
+      return n;
+    };
+    return {
+      /**
+       * Deliver one CPU pitch to the player with the sim stepped by hand, press swing when the timing error would be `offset`
+       * seconds (negative = early), or take the pitch when `offset` is null. Returns what the game decided.
+       */
+      qaSwingAt: (offset: number | null) => {
+        const wasManual = simLoop.manual;
+        simLoop.manual = true;
+        try {
+          runUntil(() => G.phase === "between" || G.over);
+          if (G.over || !battingIsPlayer()) return { error: "player not batting", phase: G.phase, half: G.half };
+          const before = { balls: G.balls, strikes: G.strikes, outs: G.outs };
+          G.lastGrade = "";
+          G.lastTimingErr = null;
+          cpuChoosePitch();
+          const p = G.pitch!;
+          const cross = pitchPosAt(p, 1);
+          let pressed = offset === null;
+          runUntil(() => {
+            if (p.resolved || G.pitch !== p) return true;
+            if (!pressed && (G.phase === "windup" || G.phase === "pitch")) {
+              // Press on the step where the bat would arrive `offset` seconds after the ball (one step = SIM_STEP).
+              const toPlane = timeToContactPlane(G.phase, G.phaseT + SIM_STEP, G.phase === "pitch" ? p.t + SIM_STEP / p.flightSec : p.t, p.flightSec);
+              if (swingTimingError(toPlane) >= (offset ?? 0) - SIM_STEP / 2) {
+                edges.swing = true;
+                pressed = true;
+              }
+            }
+            return false;
+          }, 4000);
+          return { offset, pitch: p.spec.name, inZone: inZone(cross), grade: G.lastGrade || null, timingErrMs: G.lastTimingErr === null ? null : Math.round(G.lastTimingErr * 1000), planned: G.batted?.plannedOutcome ?? null, before, after: { balls: G.balls, strikes: G.strikes, outs: G.outs }, phase: G.phase };
+        } finally {
+          simLoop.manual = wasManual;
+        }
+      },
+      qaFinish: (playerWon: boolean) => {
+        endGame(playerWon, `final after ${G.inning}`);
+      },
+      qaStep: (n: number) => simLoop.advance(n)
+    };
+  }
+
   /* ---------- Main loop ---------- */
-  app.onFrame(({ dt: rawDt }) => {
-    const dt = clamp(rawDt, 0.001, 0.05);
-    const now = performance.now() / 1000;
-    const sdt = hitStopUntil > now ? dt * 0.12 : dt;
-    framesRendered += 1;
-
-    if (!appReady) {
-      updateActors(0.016, simTime);
-      updateCamera(0.016);
-      updateHud();
-      return;
-    }
-
-    simTime += sdt;
-    input.update(sdt);
-
+  /** One fixed 1/120 s simulation step (C14): the phase machine, the PCI and the swing clock. */
+  function simStep(h: number): void {
+    simTime += h;
     if (G.phase !== "menu") {
       switch (G.phase) {
-        case "between": stepBetween(sdt); break;
-        case "windup": stepWindup(sdt); break;
-        case "pitch": stepPitch(sdt); break;
-        case "batted": stepBatted(sdt); break;
-        case "runners": stepRunners(sdt); break;
-        case "pitchSelect": stepPitchSelect(sdt); break;
-        case "pitchMeter": stepPitchMeter(sdt); break;
+        case "between": stepBetween(h); break;
+        case "windup": stepWindup(h); break;
+        case "pitch": stepPitch(h); break;
+        case "batted": stepBatted(h); break;
+        case "runners": stepRunners(h); break;
+        case "pitchSelect": stepPitchSelect(h); break;
+        case "pitchMeter": stepPitchMeter(h); break;
         case "gameover":
-          G.phaseT += sdt;
+          G.phaseT += h;
           if (isAutopilotActive() && G.phaseT > 4.2) {
             startMode(G.mode);
           }
@@ -3995,15 +3948,55 @@ function boot(): void {
       if (battingIsPlayer() && (G.phase === "between" || G.phase === "windup" || G.phase === "pitch")) {
         const [ax, ay] = getManualMoveAxis();
         if (Math.abs(ax) > 0.01 || Math.abs(ay) > 0.01) lastManualInputAt = simTime;
-        G.pci = [clamp(G.pci[0] + ax * sdt * 1.7, -1.3, 1.3), clamp(G.pci[1] + ay * sdt * 1.7, -1.3, 1.3)];
+        G.pci = [clamp(G.pci[0] + ax * h * 1.7, -1.3, 1.3), clamp(G.pci[1] + ay * h * 1.7, -1.3, 1.3)];
       }
     }
+    stepSwingClock(h);
+    consumeEdges();
+    presenter.afterStep();
+  }
 
-    updateActors(sdt, simTime);
-    updateCamera(sdt);
-    updateHud();
+  const simLoop = createFixedStepLoop({ step: (h) => simStep(h), stepSeconds: SIM_STEP, maxCatchUpSteps: 6, maxFrameSeconds: 0.05 });
+  /** Sim clock in ms: real frame time, slowed during hit-stop. */
+  let simClockMs = 0;
+
+  /** C10: the sim waits while the menu is open over a live game or the tab is hidden. */
+  const simPaused = (): boolean =>
+    (typeof document !== "undefined" && document.hidden) || (!(el.menu?.classList.contains("hidden") ?? true) && G.phase !== "gameover" && G.phase !== "menu");
+
+  const qaMode = params.get("qa") === "1";
+  let lastEvidenceAt = -Infinity;
+
+  app.onFrame(({ dt: rawDt }) => {
+    const dt = clamp(rawDt, 0.001, 0.05);
+    const now = performance.now() / 1000;
+    framesRendered += 1;
+
+    if (!appReady) {
+      updateActors(0.016, simTime);
+      updateCamera(0.016);
+      updateHud(0.016);
+      return;
+    }
+
+    input.update(dt);
+    captureEdges();
+    if (simPaused()) {
+      consumeEdges();
+    } else if (!simLoop.manual) {
+      simClockMs += dt * 1000 * (hitStopUntil > now ? 0.12 : 1);
+      simLoop.tick(simClockMs);
+    }
+
+    // Evidence (and the per-frame grip probe that feeds it) is built at 4 Hz, or every frame with ?qa=1 (C12).
+    evidenceDue = qaMode || now - lastEvidenceAt >= 0.25;
+    updateActors(dt, simTime);
+    updateCamera(dt);
+    updateHud(dt);
     touchControls?.update?.();
     justPressedKeys.clear();
+    if (!evidenceDue) return;
+    lastEvidenceAt = now;
 
     const p = G.pitch;
     const evidence = {
@@ -4095,6 +4088,9 @@ function boot(): void {
       touch: touchControls?.evidence?.() ?? null
     };
     publishBeacon(evidence);
+  });
+
+  {
     (window as any).__AURA3D_GAME_DIAMOND__ = {
       start: (m: ModeId) => startMode(m),
       setPark,
@@ -4131,15 +4127,11 @@ function boot(): void {
       setCamOverride: (o: { eye: Vec3; target: Vec3; fov: number } | null) => {
         qaCam = o;
       },
-      state: () => ({ mode: G.mode, phase: G.phase, park: G.park, inning: G.inning, half: G.half, score: { ...G.score }, outs: G.outs, bases: [...G.bases] })
+      state: () => ({ mode: G.mode, phase: G.phase, park: G.park, inning: G.inning, half: G.half, score: { ...G.score }, outs: G.outs, bases: [...G.bases] }),
+      ...(qaMode ? qaHooks() : {})
     };
-  });
-
-  const bootParams = new URLSearchParams(window.location.search);
-  const bootPark = bootParams.get("park") as ParkId | null;
-  if (bootPark && PARKS[bootPark]) setPark(bootPark);
-  const bootMode = bootParams.get("mode") as ModeId | null;
-  if (bootMode && bootMode !== "studio") startMode(bootMode);
+  }
+  // C18: the second boot block that started `?mode=` a second time (and ignored `?menu=1`) is gone; the URL is read once above.
 
   // Boot flourish
   setTimeout(() => {
