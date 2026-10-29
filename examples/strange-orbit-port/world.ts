@@ -5,7 +5,7 @@
  * points (`topology: "points"`), six riders and the chase camera. Visual assets
  * the original fetched as remote GLB/PNG files are re-created procedurally.
  */
-import { camera, defineAuraAssets, effects, geometry, lights, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
+import { camera, defineAuraAssets, effects, environments, geometry, lights, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
 import {
   COURSE_LENGTH,
   GATES,
@@ -173,6 +173,15 @@ export interface World {
   bind(app: AuraApp): WorldRuntime;
 }
 
+/** Neutral-room environment intensity, calibrated on the remote runner against the 4.3.7 rider-region luma (docs/audits/lanes/g15.md). */
+export const ENVIRONMENT_INTENSITY = 1;
+
+function environmentIntensity(): number {
+  const raw = typeof location !== "undefined" ? new URLSearchParams(location.search).get("env") : null;
+  const parsed = raw === null ? Number.NaN : Number(raw);
+  return Number.isFinite(parsed) && parsed >= 0 && parsed <= 4 ? parsed : ENVIRONMENT_INTENSITY;
+}
+
 export function buildWorld(options: WorldOptions): World {
   const { vehicle, rider } = options;
   const high = options.quality === "high";
@@ -188,6 +197,11 @@ export function buildWorld(options: WorldOptions): World {
       .add(lights.directional({ name: "key", position: [150, 280, -150], target: [0, 0, 0], intensity: 2.6, color: "#ffd09a", shadow: (typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0" ? false : { cascades: 2, maxDistance: 160 } as never) }))
       .add(lights.directional({ name: "fill", position: [-140, 80, 210], target: [0, 0, 0], intensity: 1.0, color: "#8195bc", shadow: false }));
   }
+  // Image-based fill for the lit GLBs (riders, pylons, boulders, props). Since 4.5.0 a lights-only scene gets no implicit
+  // environment, so without this the models lose their diffuse and specular fill (LIGHT-01). The hemisphere above keeps
+  // contributing next to it and is evaluated per normal (LIGHT-05/08), so the intensity is calibrated with it on.
+  // `?env=<n>` overrides the intensity for calibration captures; `?off=env` removes it.
+  if (!off.has("env")) builder.add(environments.neutral({ name: "fill-environment", intensity: environmentIntensity(), background: false }));
   if (!off.has("bloom")) builder.add(effects.bloom({ name: "bloom", intensity: 0.5, threshold: 0.78, radius: 0.55 }));
   if (!off.has("grade")) builder.add(effects.colorGrade({ name: "grade", contrast: 1.06, saturation: 1.14 }));
   if (!off.has("vignette")) builder.add(effects.vignette({ name: "vignette", intensity: 0.22, smoothness: 0.7 }));
