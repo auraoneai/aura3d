@@ -73,6 +73,17 @@
       }
       #render-error[hidden] { display: none; }
       @media (max-width: 760px) { .hint { display: none; } }
+      /* FC-E3: on phones the six venue buttons collapse into one Venue picker so every mode button fits the bar */
+      .venue-pick { display: none; }
+      .venue-pick .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .venue-pick select {
+        font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; color: var(--ink);
+        background: rgba(255, 255, 255, 0.07); border: 1px solid var(--rule); border-radius: 8px; padding: 6px 8px; min-height: 44px;
+      }
+      @media (max-width: 760px) {
+        .aura3d-top-bar button.venue { display: none; }
+        .venue-pick { display: inline-flex; align-items: center; }
+      }
     </style>
   </head>
   <body>
@@ -84,6 +95,12 @@
       <button data-fc-venue="kyoto" class="venue">KYOTO</button>
       <button data-fc-venue="uyuni" class="venue">UYUNI</button>
       <button data-fc-venue="glacier" class="venue">GLACIER</button>
+      <label class="venue-pick"><span class="sr">Venue</span>
+        <select id="fc-venue-select" aria-label="Venue">
+          <option value="favela">Favela</option><option value="munich" selected>Munich</option><option value="lagos">Lagos</option>
+          <option value="kyoto">Kyoto</option><option value="uyuni">Uyuni</option><option value="glacier">Glacier</option>
+        </select>
+      </label>
       <span class="aura-sep"></span>
       <button id="fc-btn-menu" title="Modes & tour hub">Modes & Tour</button>
       <button id="fc-btn-lab" title="Shootout lab">Skill Lab</button>

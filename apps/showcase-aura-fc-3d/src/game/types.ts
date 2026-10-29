@@ -111,6 +111,7 @@ export interface ShootoutState {
   resultText: string;
   gkDive: number;                 // keeper's committed dive side (-1/0/1)
   pendingMiss: boolean;           // flagged by firePenalty when the shot misses the frame
+  log: [("in" | "out")[], ("in" | "out")[]]; // per-team kick results in order (HUD ledger)
 }
 
 export interface MatchState {
@@ -151,6 +152,7 @@ export interface PlayerCommand {
   move: [number, number];         // desired world-space move dir (unit)
   sprint: boolean;
   pass?: "short" | "driven";
+  passTo?: string;                // CPU pass: the receiver it chose (the user's pass is picked from the aim)
   shoot?: number;                 // 0..1 power (released shot); undefined = no shot
   shootAim?: { lateral: number; lift: number }; // -1..1 mouth offset, 0..1 height
   skill?: "stepover" | "chop";
@@ -183,6 +185,7 @@ export interface MatchConfig {
   circuitTag?: string;            // e.g. "R16", "QF" — HUD ribbon label
   goldenGoal: boolean;            // tie → golden-goal extra time
   shootoutOnTie: boolean;         // …and penalties after that
+  seed?: number;                  // match RNG seed (default: SIM_SEED stepped per match)
 }
 
 /** Discrete sim events — ticker/juice/audio consume these. */
