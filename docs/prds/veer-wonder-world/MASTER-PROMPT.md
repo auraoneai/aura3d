@@ -356,7 +356,7 @@ pnpm exec tsc -p apps/veer-wonder-world/tsconfig.json --noEmit           # stric
 (cd apps/veer-wonder-world && ../../node_modules/.bin/vitest run --config vitest.config.ts)   # J01-J07 + content tests (reuse root vitest aliases so @aura3d/* resolves to packages/*/src)
 node apps/veer-wonder-world/tools/validate-wonder-world-content.mjs      # J14: every story, line, word, asset and rights reference
 node apps/veer-wonder-world/tools/gen-aura-assets.mjs && node apps/veer-wonder-world/tools/gen-audio-manifest.mjs && git diff --exit-code apps/veer-wonder-world/src
-node tools/game-checks/run.mjs veer-wonder-world
+node apps/veer-wonder-world/tools/game-checks.mjs                       # the tools/game-checks per-game checks; run.mjs takes only listed live games (07 B13)
 # remote only:
 EXTRA_DIRS="apps/veer-wonder-world" SPECS="tests/browser/wonder-world-*.spec.ts" tools/remote-acr/run.sh   # J08-J13
 # plus `aura3d check-deploy --dist <built dist> --browser --route /` on the remote runner
