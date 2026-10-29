@@ -59,13 +59,25 @@ completion and grade, new service, and the day/night toggle.
 | Alighting / boarding duration | Derived from walking paths to seats | Fitted to the reference: 7.65 s for one or two alighters, +1.2 s per extra; boarding 9.1 s for four (observed 8.6 to 9.4 s), 0.9 s less per missing boarder (extrapolated) |
 | Route | Quintic Bezier legs, curvature from tangents | The original's own route as 2 m samples, linearly interpolated |
 | Garage, upgrades, workshop, skins, wing boost, near-save and bold bonuses | Present | Not ported (default garage: motor, brake and sway 1.0, no rear car) |
-| Orchard junction, requests (steady / connection / cargo), reaction messages, sleeper jolt rule | Present | Not ported; Gold needs three requests, so the port awards at most Silver |
+| Orchard junction, requests (steady / connection / cargo), reaction messages, sleeper jolt rule | Present | Not ported. The original's Gold also needs three requests; the port grades Gold on comfort >= 90% and no catches instead (audit D-06), so a clean run the original grades Silver is Gold here |
 | Models and textures | Remote GLB models, sprite-sheet crowds, impasto textures | Art pass: terraced townhouses with painted plaster facades (shuttered windows, arched doors, lit windows at night), roof tiles, cobbled plaza, clock tower, stone arch, planters, stalls, townsfolk, trestle viaduct with pylons, sleepers and masts, an open-sided tram with benches and seated passengers (capsule bodies, sphere heads, coloured by temperament). Two catalog landmarks (windmill, watchtower). Not the original's art: no rigged or animated characters |
 | Shaders | Six `ShaderMaterial`s (live in the probe) | Three hand-ported: sky dome, cloud sea, weather points. The other three were not identified in the source and are not ported; lit surfaces use the engine's PBR material |
 | Weather and sky | Per-town sky palettes, rain at Monsoon Exchange, snow at Drowned Observatory | Same towns and palettes (smoothstep 0.22 to 0.82 of each leg); particles around the camera |
 | Day / night | A player toggle (`timeOfDay`) that changes lighting, not physics | Same: a toggle. The compiler ignores light-node visibility and `app.lighting.setEnvironmentIntensity` is a stored no-op, so the lighting rig cannot be re-aimed at runtime: the port builds two scenes with identical node ids (day: HDRI at 0.8, cascaded-shadow sun, haze; night: HDRI at 0.2, moon, dark fog, stronger bloom, lit windows and lamps) and swaps them with `app.setScene`. The sky and clouds blend through `nightMix` |
 | Title, results, arrival toasts, audio | Present | Ported (title with controls and best score kept in localStorage, results card with grade and tallies, synthesised audio; `M` mutes). Station camera while docked, chase camera while running |
-| Garage screen, level select, countdown, touch, Driver ID | Present | Not ported (the garage needs the wear and upgrade model the sim does not have) |
+| Garage screen, level select, countdown, Driver ID | Present | Not ported (the garage needs the wear and upgrade model the sim does not have) |
+| Touch | Present | Port's own hold-button bar (Go, Brake, Lean left, Lean right) on coarse pointers, plus results-card buttons |
+
+## Port-only rules (audit fixes, 2026-10-29)
+
+These are not in the original and are not part of the reference replay, which drives the sim the way the capture did.
+
+- Score: the results card and the saved best use the attempt's own fares + tips + bonuses. The session total (`sim.score`, carried across services as in the original) is a separate row.
+- Enter on the results card starts a new attempt from the current station with the riders aboard ("keep riding"). R during a service asks first; a second R within 3 s abandons it. `2` (or the button) starts a short service of 2 legs.
+- Three lanterns: a catch costs one. At 0 the service ends at the next station with the grade capped at Bronze.
+- The lost tally is tip points dropped on a catch, so it is labelled "Tips lost".
+- The player's brake ramps to 3.5 m/s^2 over 0.4 s (`StepInput.brakeLevel`), below the 3.8 m/s^2 harsh-braking limit. The replay brakes at full strength, as the original.
+- HUD: lean meter (green, amber and red at 0.13, 0.22 and 0.34 roll, with a bar for the 1.5 s critical window), streak multiplier, lanterns; riders show a glyph and a temperament word; `U` toggles a larger HUD; reduced motion stills the camera sway and the title orbit.
 
 ## Hooks (deterministic capture)
 
@@ -77,7 +89,7 @@ only through these hooks.
 ## Engine features exercised (route-health `parityIds`)
 
 `SH-02` (`material.custom` for sky, clouds, snow points, rain streaks), `SG-05` and `R-23` (`geometry.dynamic` ribbons, points with custom attributes,
-`updateAttribute` for weather), `SR-02`. The scene uses PBR materials with canvas textures, an HDRI environment, cascaded-shadow directional lights, fog, AO, bloom, colour grade and vignette (neutral tone mapping, exposure 1.5), instanced primitives, merged static meshes, two catalog models, and the node `runtime` handles to move the tram and passengers. Look-dev switches: `?fx=noao,nofog,nobloom,nograde,novignette,nohdri,skyflat`, `?tm=`, `?ev=`.
+`updateAttribute` for weather), `SR-02`. The scene uses PBR materials with canvas textures, an HDRI environment, cascaded-shadow directional lights, fog, AO, bloom, colour grade and vignette (neutral tone mapping, exposure 1.5), instanced primitives, merged static meshes, two catalog models, and the node `runtime` handles to move the tram and passengers. Look-dev switches: `?fx=ao,nofog,nobloom,nograde,novignette,nohdri,skyflat` (AO is opt-in since the 2026-10-29 audit: the engine drops the ssao pass on this path for a missing normals input), `?tm=`, `?ev=`.
 
 ## Measured on the remote runner
 
