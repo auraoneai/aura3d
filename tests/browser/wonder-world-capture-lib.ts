@@ -1,7 +1,8 @@
 /**
  * Wonder World capture suites (remote runner only), shared by the split spec files:
- *   wonder-world-characters.spec.ts, wonder-world-characters-2.spec.ts   character sheets (PRD 02 section 2 approval
- *                                                                          deliverables; gaps 02:28, 02:29, 02:31/02:128, 02:34)
+ *   wonder-world-characters.spec.ts ... wonder-world-characters-3.spec.ts   character sheets (PRD 02 section 2
+ *                                                                          approval deliverables; gaps 02:28, 02:29,
+ *                                                                          02:31/02:128, 02:34)
  *   wonder-world-stills.spec.ts ... wonder-world-stills-4.spec.ts       one still per story for the evidence README
  *
  * Both open the app with `?autostart=1&manual=1&models=1&modelWaitMs=180000` (each story load waits for its models
@@ -17,7 +18,8 @@
  *   a pin that hides the rest of the cast and the props, stands the character at center facing the viewer, clears its
  *   gesture and sets the close camera (reduced motion on for the pin, so camera and turn settle in one step):
  *   (a) turnaround: front, left (offLeft), back and right (offRight) views in reduced motion (no idle sway), one crop
- *       around its nodeRect each; the back view differs from the front and the face actions add no stage warning;
+ *       around its nodeRect each; the view most unlike the front differs from it clearly (Lumi's back matches its
+ *       front but for the face, so the side views carry the check) and the face actions add no stage warning;
  *   (b) pose sheet: the six 02 section 2 states as body poses, each captured mid-motion in normal motion: neutral
  *       (idle), delighted (happy), curious (look), surprised (surprise), waiting (wait), good-bye (wave);
  *   (c) talking pulse: crops 100 ms apart with setTalking(id) on, then off one idle period later (the same idle phase,
@@ -183,7 +185,7 @@ const PHONE_MIN_HEIGHT_PX = 48;
 const SILHOUETTE_MIN_LUMA_DIFF = 12;
 const SILHOUETTE_MIN_COLOUR_DISTANCE = 30;
 const SILHOUETTE_MIN_SEPARATED_SHARE = 0.4;
-/** The back view differs from the front: one of these, over the crop. */
+/** The view most unlike the front differs from it: one of these, over the crop. */
 const TURN_MIN_MEAN_ABS = 1;
 const TURN_MIN_CHANGED = 0.02;
 /** The talking pulse is visible: one of these, over the crop, for the larger 200 ms pair. */
@@ -265,6 +267,8 @@ interface CharacterSheetResult {
   readonly phone: { readonly height: number; readonly silhouette: SilhouetteReport } | null;
   readonly turnWarnings: readonly string[] | null;
   readonly frontBack: FrameDelta | null;
+  /** The turned view most unlike the front (largest mean |luma change|), with its name. */
+  readonly turned: { readonly view: string; readonly delta: FrameDelta } | null;
   readonly poses: number;
   readonly talking: PairDeltas | null;
   readonly silent: PairDeltas | null;
@@ -288,6 +292,7 @@ async function characterSheet(page: Page, log: PageLog, entry: CharacterStory, a
     phone: null,
     turnWarnings: null,
     frontBack: null,
+    turned: null,
     poses: 0,
     talking: null,
     silent: null,
@@ -321,7 +326,7 @@ async function characterSheet(page: Page, log: PageLog, entry: CharacterStory, a
     let rects = await qaNodeRects(page, [character]);
     let shownForShot = false;
     if (rects.length === 0) {
-      // The opening keeps it hidden (Peeko in E02): show it at its spot, at once.
+      // The opening keeps it hidden: show it at its spot, at once.
       shownForShot = true;
       await qaSetReducedMotion(page, true);
       await qaStageApply(page, [{ do: "show", actor: character }]);
@@ -380,6 +385,12 @@ async function characterSheet(page: Page, log: PageLog, entry: CharacterStory, a
         const front = views[0]?.image;
         const back = views.find((view) => view.view === "back")?.image;
         result.frontBack = front && back ? frameDelta(front, back) : null;
+        if (front) {
+          for (const view of views.slice(1)) {
+            const delta = frameDelta(front, view.image);
+            if (!result.turned || delta.meanAbsLumaDiff > result.turned.delta.meanAbsLumaDiff) result.turned = { view: view.view, delta };
+          }
+        }
         record["turnaround"] = {
           storyMs: turnAt,
           reducedMotion: true,
@@ -388,6 +399,7 @@ async function characterSheet(page: Page, log: PageLog, entry: CharacterStory, a
           crop: cropped.crop,
           views: views.map((view) => ({ view: view.view, toward: view.toward, frame: view.frame, vsFront: front ? frameDelta(front, view.image) : null })),
           frontBack: result.frontBack,
+          mostUnlikeFront: result.turned,
           warningsAdded: result.turnWarnings
         };
       }
@@ -513,9 +525,10 @@ function expectCharacterSheet(entry: CharacterStory, result: CharacterSheetResul
   // (a) turnaround.
   expect.soft(result.turnWarnings, `${who}: the turnaround's face actions add no stage warning`).toEqual([]);
   expect.soft(result.frontBack, `${who}: the turnaround has a front and a back view`).not.toBeNull();
-  if (result.frontBack) {
-    const turned = result.frontBack.meanAbsLumaDiff >= TURN_MIN_MEAN_ABS || result.frontBack.changedRatio >= TURN_MIN_CHANGED;
-    expect.soft(turned, `${who}: the back view differs from the front (${JSON.stringify(result.frontBack)})`).toBe(true);
+  if (result.turned) {
+    const { view, delta } = result.turned;
+    const turned = delta.meanAbsLumaDiff >= TURN_MIN_MEAN_ABS || delta.changedRatio >= TURN_MIN_CHANGED;
+    expect.soft(turned, `${who}: the turnaround turns (the ${view} view, the most unlike the front: ${JSON.stringify(delta)})`).toBe(true);
   }
   // (b) poses.
   expect.soft(result.poses, `${who}: all six poses captured`).toBe(POSES.length);
@@ -572,6 +585,7 @@ export function defineCharacterSheetSuite(options: { readonly title: string; rea
             phoneHeight: result.phone?.height ?? null,
             silhouette: result.phone ? { lumaDiff: result.phone.silhouette.lumaDiff, colourDistance: result.phone.silhouette.colourDistance, separatedShare: result.phone.silhouette.separatedShare } : null,
             frontBack: result.frontBack,
+            mostUnlikeFront: result.turned,
             poses: result.poses,
             talking: result.talking?.best ?? null,
             silent: result.silent?.best ?? null,

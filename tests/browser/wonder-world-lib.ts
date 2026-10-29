@@ -15,8 +15,9 @@
  *   apps/veer-wonder-world/tools/remote-run.sh no-speech-required                    (episodes, est. 22 min)
  *   apps/veer-wonder-world/tools/remote-run.sh no-speech-required-2                  (activities, est. 12 min)
  *   apps/veer-wonder-world/tools/remote-run.sh look                                  (26 min)
- *   apps/veer-wonder-world/tools/remote-run.sh characters                            (momo, lulu, sheru, est. 25-30 min)
- *   apps/veer-wonder-world/tools/remote-run.sh characters-2                          (gogo, lumi, peeko, est. 25-30 min)
+ *   apps/veer-wonder-world/tools/remote-run.sh characters                            (momo, lulu, est. 35 min)
+ *   apps/veer-wonder-world/tools/remote-run.sh characters-2                          (sheru, gogo, est. 35 min)
+ *   apps/veer-wonder-world/tools/remote-run.sh characters-3                          (lumi, peeko, est. 35 min)
  *   apps/veer-wonder-world/tools/remote-run.sh stills / stills-2 / stills-3 / stills-4   (8 stories each, est. 20-30 min)
  *   apps/veer-wonder-world/tools/remote-run.sh parent-panel consumer-smoke           (est. 20 min)
  * The ACR task step stops at 60 minutes and one spec file runs inside one run, so no file may need more than about
@@ -282,7 +283,9 @@ export const CHARACTER_STORIES = [
   { character: "sheru", code: "e17", story: "sheru-big-adventure" },
   { character: "gogo", code: "g02", story: "gogo-train" },
   { character: "lumi", code: "e03", story: "alphabet-zoo" },
-  { character: "peeko", code: "e02", story: "peekaboo-palace" }
+  // G04, not E02: E02 keeps Peeko hidden behind a door in every wide shot, and G04 is Peeko's own activity, with Peeko
+  // in front in its opening wide shot.
+  { character: "peeko", code: "g04", story: "peekaboo-animal-barn" }
 ] as const;
 
 export type CharacterStory = (typeof CHARACTER_STORIES)[number];
