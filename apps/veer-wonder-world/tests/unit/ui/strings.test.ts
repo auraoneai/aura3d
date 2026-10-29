@@ -5,7 +5,7 @@
 // the child-safety copy rules, and guards the stylesheet and index.html.
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { UI_STRINGS, fillTemplate, humanizeId, speakerName, storyText, uiText, type UiLocale } from "../../../src/ui/accessibility.js";
@@ -15,6 +15,14 @@ import { GROWN_UP_LINKS, formatSeconds, waitChoicesMs } from "../../../src/ui/pa
 
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const uiDir = join(appRoot, "src/ui");
+
+// The child's name is never written in this file: it is the prefix of the app's working folder name
+// (`<name>-wonder-world`), as in tests/unit/privacy/no-child-data.test.ts.
+const WORKING_SUFFIX = "-wonder-world";
+const appFolder = basename(appRoot);
+const CHILD_NAME = appFolder.endsWith(WORKING_SUFFIX) ? appFolder.slice(0, -WORKING_SUFFIX.length) : "";
+/** The bare name as a word (never matches when the folder name carries no name). */
+const CHILD_NAME_PATTERN = CHILD_NAME ? new RegExp(`\\b${CHILD_NAME.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i") : /(?!)/;
 
 /** The shared `ui.*` key list (content-core brief). */
 const SHARED_UI_KEYS = [
@@ -112,7 +120,7 @@ const FORBIDDEN_COPY: readonly RegExp[] = [
   /\bpoints?\b/i,
   /\bbuy\b/i,
   /\bshare\b/i,
-  /\bveer\b/i,
+  CHILD_NAME_PATTERN,
   /\bpip\b/i
 ];
 
@@ -391,6 +399,7 @@ describe("index.html", () => {
     expect(html).not.toMatch(/og:|twitter:|rel="canonical"/);
     expect(html).not.toMatch(/<audio|<video|autoplay/i);
     expect(html).not.toMatch(/<script[^>]+src="https?:/);
-    expect(html).not.toMatch(/\bveer\b/i);
+    expect(CHILD_NAME, "the working folder carries the guard name").not.toBe("");
+    expect(html).not.toMatch(CHILD_NAME_PATTERN);
   });
 });
