@@ -1027,6 +1027,17 @@ let readArrowHandles: any[] = [];
 let rangeRingHandles: any[] = [];
 const tryReq = (id: string) => { try { return (auraApp as any)?.nodes?.require(id); } catch { return null; } };
 
+/** true while frame() runs inside the engine's onFrame callback (scene swaps are deferred until it returns) */
+let inEngineFrame = false;
+let pendingHoleScene: unknown = null;
+function flushPendingHoleScene(): void {
+  const next = pendingHoleScene;
+  if (!next) return;
+  pendingHoleScene = null;
+  (auraApp as any)?.setScene(next);
+  resolveHoleHandles();
+}
+
 function resolveHoleHandles(): void {
   const req = (id: string) => (auraApp as any).nodes.require(id);
   golferRig = resolveGolferRig(auraApp);
@@ -1819,7 +1830,12 @@ function startHole(idx: number): void {
   const sig = `${state.course.id}|${hole.number}|${state.lab ? "lab" : "round"}`;
   if (sig !== mountedHoleSig) {
     mountedHoleSig = sig;
-    (auraApp as any)?.setScene(buildHoleScene(state.course, hole, t, state.lab));
+    const next = buildHoleScene(state.course, hole, t, state.lab);
+    // setScene disposes the mounted scene's GPU resources. Called from inside the engine's frame callback, the
+    // rest of that frame then draws disposed materials ("Material a3d-production-sdf-text-label is disposed"),
+    // so the swap waits until the frame has been submitted.
+    if (inEngineFrame) pendingHoleScene = next;
+    else (auraApp as any)?.setScene(next);
   }
   resolveHoleHandles();
   cam.t = 0;
@@ -1948,16 +1964,23 @@ function continueAfterRound(): void {
   else setMode(state.mode === "menu" ? "quick" : state.mode);
 }
 
-function selectCourse(id: CourseId, restart = true): void {
-  if (!COURSES[id]) return;
-  state.courseId = id;
-  state.course = COURSES[id]!;
+/** highlight the current course in the top bar and the menu (also on boot, so ?course= is reflected) */
+function syncCourseButtons(): void {
+  const id = state.courseId;
   for (const b of Array.from(document.querySelectorAll<HTMLButtonElement>("[data-course]"))) {
     b.classList.toggle("active", b.dataset.course === id);
+    b.setAttribute("aria-pressed", String(b.dataset.course === id));
   }
   for (const b of Array.from(document.querySelectorAll<HTMLButtonElement>("[data-course-menu]"))) {
     b.classList.toggle("active", b.dataset.courseMenu === id);
   }
+}
+
+function selectCourse(id: CourseId, restart = true): void {
+  if (!COURSES[id]) return;
+  state.courseId = id;
+  state.course = COURSES[id]!;
+  syncCourseButtons();
   if (restart) {
     startRound();
   }
@@ -2695,6 +2718,16 @@ function installQaHook(): void {
       publishEvidence();
       return lastEvidence;
     },
+    /** world positions of the people on the tee and by the green (framing checks) */
+    figures() {
+      const names = ["golfer-body", "caddy-body", "golfer-bag", "golfer-cart", ...Array.from({ length: 6 }, (_, i) => `gallery-fan-${i}`)];
+      const out: Record<string, unknown> = { ball: state.round?.ballPos ?? null, eye: cam.eye, target: cam.target };
+      for (const n of names) {
+        const h = tryReq(n);
+        out[n] = h ? { position: h.position ?? null, visible: h.visible ?? null } : null;
+      }
+      return out;
+    },
     /** park the camera above pond i of the current hole (C6 check); returns the hazard and drawn sizes */
     framePond(i: number) {
       const t = state.terrain!;
@@ -2777,6 +2810,7 @@ function boot(): void {
   buildStudioSwatches();
   bootStage("resolve-handles");
   resolveHoleHandles();
+  syncCourseButtons();
 
   pushEvent("system", "aura links 3d online", "success");
 
@@ -2805,7 +2839,13 @@ function boot(): void {
   window.setInterval(() => publishEvidence(), 500);
   (auraApp as any).onFrame(({ dt }: { dt: number }) => {
     if (!appReady) return;
-    frame(clamp(dt, 0.001, 0.05));
+    inEngineFrame = true;
+    try {
+      frame(clamp(dt, 0.001, 0.05));
+    } finally {
+      inEngineFrame = false;
+    }
+    if (pendingHoleScene) queueMicrotask(flushPendingHoleScene);
   });
   void (auraApp as any).ready?.()?.then(() => {
     appReady = true;

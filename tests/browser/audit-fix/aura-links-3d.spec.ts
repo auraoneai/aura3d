@@ -196,6 +196,7 @@ const screensRun = async (page: Page, name: string): Promise<void> => {
   await snap("02-early", 20_000);
   await advanceUntil(page, "e.phase === 'address'", 10, 0.25);
   await qa(page, "advance", 0.5);
+  log(`GL_STATE ${JSON.stringify({ target: name, probe: "figures-at-address", figures: await qa(page, "figures") })}`);
   await snap("03-action-01-address");
   await page.keyboard.press("Space");
   await qa(page, "advance", 0.7);
@@ -292,7 +293,7 @@ test.describe("aura links 3d audit-fix captures", () => {
   for (const target of TARGETS) {
     test(`${target.name}${target.tag ? ` ${target.tag}` : ""}`, async ({ browser }) => {
       const page = await openPage(browser, target);
-      page.on("pageerror", (e) => log(`GL_ERR ${target.name} pageerror ${e.message.slice(0, 300)}`));
+      page.on("pageerror", (e) => log(`GL_ERR ${target.name} pageerror ${e.message.slice(0, 300)} | ${(e.stack ?? "").replace(/\s+/g, " ").slice(0, 900)}`));
       page.on("console", (m) => { if (m.type() === "error" || m.type() === "warning") log(`GL_CONSOLE ${target.name} ${m.type()} ${m.text().slice(0, 240)}`); });
       page.on("requestfailed", (r) => log(`GL_REQFAIL ${target.name} ${r.url().slice(-120)}`));
       page.on("response", (r) => { if (r.status() >= 400) log(`GL_HTTP ${target.name} ${r.status()} ${r.url().slice(-120)}`); });
