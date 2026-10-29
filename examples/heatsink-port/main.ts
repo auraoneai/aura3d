@@ -228,6 +228,11 @@ function begin(): void {
   audio?.reset();
   loop.resetAccumulator();
   started = true;
+  if (faulted) {
+    /* a restart after a runtime error clears the error marks the panel set */
+    document.documentElement.removeAttribute("data-aura3d-error");
+    delete (window as unknown as Record<string, unknown>)[hooks.errorGlobalName];
+  }
   faulted = false;
   setPaused(false, "resume");
   noticeT = 0;
