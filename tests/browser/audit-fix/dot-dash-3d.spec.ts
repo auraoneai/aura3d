@@ -374,6 +374,38 @@ test.describe("g13 dot-dash-3d", () => {
     log("G13_DONE g13-dpr2");
   });
 
+  /** DD-E3: with prefers-reduced-motion the death keeps the courier visible (no 24 Hz flicker) and skips the red fade. */
+  for (const [name, reduce] of [["g13-calm-off", false], ["g13-calm-on", true]] as const) {
+    test(name, async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: reduce ? "reduce" : "no-preference" });
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await open(page, `${server.origin}${ROUTE}`);
+      const hooked = await waitUntil(page, `Boolean(${SIM})`, 120_000);
+      if (!hooked) { check(`${name} sim handle`, {}, false); return; }
+      await page.waitForTimeout(6_000);
+      // freeze the sim clock inside a death and step the visual phase by hand so the sample does not depend on frame rate
+      const samples = await page.evaluate((expr) => {
+        const s = (0, eval)(expr) as any;
+        const app = (globalThis as any).__AURA3D_LIVE_APPS__?.all()[0];
+        s.hasMoved = true; s.mode = "dying"; s.deathT = 1.2; s.lives = 2;
+        const out: boolean[] = [];
+        for (let i = 0; i < 48; i++) {
+          s.time = 10 + i * 0.011;
+          s.deathT = 1.2; // keep the dying state while sampling
+          const byte = app?.nodes?.get?.("byte");
+          (globalThis as any).__AURA_DOT_DASH_3D__?.sync?.();
+          out.push(byte ? byte.visible !== false : true);
+        }
+        return out;
+      }, SIM);
+      await page.waitForTimeout(4_000);
+      const visibleFrac = samples.filter(Boolean).length / samples.length;
+      await grab(page, name, "dying", { reducedMotion: reduce, visibleFrac });
+      check(`DD-E3 ${name} courier visibility while dying`, { reduce, visibleFrac, n: samples.length }, null);
+      log(`G13_DONE ${name}`);
+    });
+  }
+
   /** All six boards through Board Map: per-board palette (DD-E1) and the upgrade-guide "play all six mazes" check. */
   test("g13-boards", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });

@@ -216,7 +216,7 @@ installQaHooks("dot-dash-3d", {
   state: () => evidenceExtra(),
   app: () => app,
   begin: () => startRun("quick", "classic"),
-  extras: { sim: () => st, pose: () => cameraPose() }
+  extras: { sim: () => st, pose: () => cameraPose(), sync: () => syncVisuals(0) }
 });
 
 // ambient hum loop — start on first user gesture (audio unlock)
