@@ -1,31 +1,28 @@
-# Saltwind Highway: final screenshots (after the UI and render fixes)
+# Saltwind Highway: final screenshots (4.5.0 build, audit fix 2026-10-29)
 
-- **Build:** `origin/game-rework` at `0d965903c` (examples dev server, QA hooks). Capture: `tests/browser/finc-lib.ts` + `finc-games.ts` (`SALT`, `SALT_KEY`), decoder `tools/shots/decode-finc.mjs`; numbers in `metrics.jsonl`.
-- **Runner:** serverless ACR Chromium, **software WebGL2 (SwiftShader), not a GPU**. These frames are not real-GPU evidence.
-- **Method:** the route is the examples page, driven through `window.__AURA_ROADSTER_HOURS__`. Textures upgrade one material at a time after mount (tens of seconds each on SwiftShader), so every capture waited until `textures()` reported 0 pending (68 rows, 15 textured): 942 to 1646 s per page. The title frames were retaken after the same wait, because a first pass at the ready flag still showed white trees. Every frame was opened and looked at.
-- **Checks:** the title card reads "Saltwind Highway" with the "independent game built with Aura3D" line; no old name, "port" or lore term in any visible text; 0 console errors, 0 bad responses.
+- **Build:** `audit-fix/g22` (Aura3D 4.5.0 engine from the workspace, examples dev server, QA hooks). Capture: `tests/browser/audit-fix/roadster-hours-port.spec.ts` (`screens` and `card` tests), decoder `evidence/roadster-hours-port/audit-fix/decode.mjs`; numbers in `metrics.jsonl` (one JSON object per frame: sim state, draw calls, render path, canvas luma from the game's `stats()` read-back).
+- **Runner:** serverless ACR Chromium, **software WebGL2 (SwiftShader), not a GPU**. Runs `g22-after-screens3` and `g22-after-card`. These frames are not real-GPU evidence.
+- **Method:** `?manual=1&level=0`, so the sim only advances through `stepSteps` and every state is reproducible. Each page waited until `textures()` reported 0 pending (about 9.5 minutes on this runner) before the first frame. Phone frames come from the same page resized to 390x844 with the touch class the page sets on a coarse pointer. The card frame loads at 1440x900 from the start (resizing a page larger after load leaves the old backing size on screen; handed off to E1).
+- **Before/after:** the same states on the base build are in `evidence/roadster-hours-port/audit-fix/before-screens/`.
 
 ## States
 
 | File | State |
 |---|---|
-| `title.1280x720`, `title.390x844` | title card, textures settled (green trees, textured car) |
-| `gameplay-early.*` | run begins, countdown "3" |
-| `key-drive.*` | 330 autopilot steps: the countdown is over and the car has just launched (0:00.04, 2 km/h) |
-| `mid-drive.1280x720` | 1440 more steps: 199 km/h, Relay 2 / 5 "Break the horizon", 1,228 points |
-| `results.1280x720` | "Silver Medal" card (time 0:48.32, score 26,949, data cells 1 / 9, 0 crashes), reached by driving the route with the autopilot to the end |
-| `card.2x.1440x900`, `card.1x` | 720x450 card frame, 72 km/h, 1.29 s into the run; the 1x image is the 2x frame downscaled in the page |
+| `title.1280x720`, `title.390x844` | title card after the texture settle: route picker, key summary, "Change keys" and "Motion" switches, corrected credit line |
+| `gameplay-early.*` | run begins, countdown "3"; pause button in the HUD; touch buttons on the phone frame |
+| `key-drive.*` | 330 autopilot steps: launch moment (0:00.04, 2 km/h); coach line "W to accelerate · A / D to steer" (button names on the phone frame) |
+| `mid-drive.1280x720` | 330 + 1440 steps: 217 km/h, Relay 2 / 5 "Break the horizon", 1,503 points, "CLEAN LANDING"; third of three shots 20 s apart (draw calls 88; mean luma 86.9, 87.7, 85.6) |
+| `results.1280x720` | Silver Medal, 0:48.32, 26,949 points, 1 / 9 data cells, 0 crashes, "First finish on this route" |
+| `card.2x.1440x900`, `card.1x` | 1.29 s into the run at 71 km/h, 1440x900 viewport; the 1x image is the 2x frame downscaled to 720x450 |
 
-Mobile (390x844) has title, `gameplay-early` and `key-drive`.
+## Changes visible against the previous set (0d965903c)
 
-## Fixed since the first retake (confirmed in frames)
-
-- The white car and white trees are gone once textures have settled (teal car with a white stripe, green trees).
-- The mobile layout no longer overlaps: the title card, HUD and controls stack cleanly.
+- One lighthouse and one town: the procedural tiers and plaster town no longer render under the generated models (draw calls at the title 121 to 105).
+- HUD pause button and coach line; touch controls on the phone frames; credit line no longer says the cars are CC0 models.
 
 ## Problems still visible
 
-1. **Low-medium:** the white-car state returns whenever a frame is taken before the texture pass finishes (15 to 27 minutes on software GL); on a real GPU the window should be much shorter but was not measured.
-2. **Low (likeness review):** the car reads as a classic cobra-style roadster (teal with white stripes). It carries no brand marks, but the silhouette is a familiar real one.
-3. **Low:** `key-drive` shows the launch moment (2 km/h); `mid-drive` and the card show real motion.
-4. **Low:** a heavy white exhaust trail sits under the car in the card and `mid-drive`.
+1. **Low:** a heavy white exhaust trail sits behind the car at speed (`mid-drive`, card).
+2. **Low:** `key-drive` shows the launch moment (2 km/h), as before.
+3. **Low (likeness review):** the car still reads as a classic cobra-style roadster.

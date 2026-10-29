@@ -77,12 +77,14 @@
 
 ## Checklist
 
-- [ ] In `examples/roadster-hours-port/main.ts:337-343`, add an explicit `quality` (`"production"` for the old pipeline, or `"auto"` to accept 4.5.0 behaviour). Optionally drop `renderer.mode` and `renderer.fallback` (no effect); dropping `renderer.qualityProfile` changes the reported profile and draw budget (see 1), so compare diagnostics if you do.
-- [ ] After the change, read `__AURA_ROADSTER_HOURS__.diagnostics().renderPath` and confirm `path: "hdr-msaa"` and the expected `bloomFusion`.
-- [ ] Capture `?level=0`, `?level=1`, `?level=2` (2 = Halo Skyway) with `&capture=1&autostart=1` before (main) and after (4.5.0); compare, paying attention to the Halo Skyway bloom and the single shadow cascade near the car.
-- [ ] Confirm `__AURA_ROADSTER_HOURS__.diagnostics().warnings` contains no `OPTION_IGNORED` entry and `errors` is empty.
-- [ ] Confirm `await __AURA_ROADSTER_HOURS__.stats()` is not blank (`lumaStd` > 0, `colorBuckets` > 1) with and without `?capture=1`.
-- [ ] Re-baseline any `?env=0` capture and any stored absolute `drawCalls` number for this game.
-- [ ] Run `node tools/game-checks/run.mjs roadster-hours-port` (resolves this slug; 0 errors, 0 warnings on 4.5.0).
-- [ ] Run the specs `tests/browser/roadster-hours-port.spec.ts`, `roadster-hours-meshy.spec.ts`, `roadster-hours-art-l0.spec.ts`, `port-sun-shadows-roadster-hours.spec.ts` on the remote runner (`tools/remote-acr/run.sh`), not locally. Also check the other specs that load this game: `render-fix-regression.spec.ts:121`, the `exposure-scenes-*.spec.ts` entry for `roadster-hours-port` (`exposure-scenes.json:87`) and `fit-grounding-sweep.spec.ts:17`; any luma/exposure baselines there may move.
-- [ ] `pnpm --filter @aura3d/showcase-roadster-hours-port typecheck`.
+Closed by the 2026-10-29 audit fix (lane G22, `docs/audits/lanes/g22.md`). Captures ran on the remote runner (software WebGL2, SwiftShader, not a GPU); numbers and frames are in `evidence/roadster-hours-port/audit-fix/`.
+
+- [x] In `examples/roadster-hours-port/main.ts`, add an explicit `quality`. Done: `quality: "auto"` (the 4.5.0 behaviour), and the deprecated `renderer` block is gone. The game passes `pixelRatio: 1`, so the pixel ratio did not change; the frame draw count stayed at 112 (Sunbreak Coast) and 106 (Halo Skyway) with `?meshy=0`.
+- [x] Read `diagnostics().renderPath`: `{ path: "hdr-msaa", quality: "auto", bloomFusion: "separable" }` on the base and on the fix (runs `g22-before-render2`, `g22-after-render`); `?aura3d-render=production` reports `bloomFusion: "off"`.
+- [x] Capture the routes before and after, and compare the bloom. Same sim state (330 + 900 steps, `?manual=1&meshy=0`), two later shots per mode. Default against `?aura3d-render=production`: mean luma differs by -1.2 to +1.8 of 255 (Sunbreak Coast and Halo Skyway, both builds), while two shots of the same mode differ by 2.5 to 5.9 mean absolute luma from the animated sea, sky and particles. On this runner the fused bloom is not distinguishable from the old chain. Redline Canyon (`?level=1`) was captured after the fix only (in-place route change); it renders and plays.
+- [ ] Confirm `diagnostics().warnings` has no `OPTION_IGNORED` entry. Not confirmed: the capture's filter over `diagnostics().warnings` found nothing on either build, so the deprecation warnings named in the audit live elsewhere in the diagnostics. `diagnostics().errors` was empty on every capture.
+- [x] Confirm `stats()` is not blank: all 43 captures reported `lumaStd` 24 to 62 and 197 to 640 colour buckets (4-bit RGB) (without `?capture=1`; the runner page is not a capture page).
+- [x] Re-baseline `drawCalls`: 112 (Sunbreak Coast, procedural models), 106 (Halo Skyway), 150 (Redline Canyon after the in-place switch), 152 on a 390x844 touch page; with the generated models 121 on the base build at the title. `?env=0` was not re-captured (QA flag only).
+- [x] `node tools/game-checks/run.mjs roadster-hours-port`: 0 errors, 0 warnings.
+- [x] Remote specs: `tests/browser/audit-fix/roadster-hours-port.spec.ts` (new), `roadster-hours-port.spec.ts` and `port-sun-shadows-roadster-hours.spec.ts` (run `g22-after-regress`). Not rerun: `roadster-hours-meshy.spec.ts`, `roadster-hours-art-l0.spec.ts`, `render-fix-regression.spec.ts`, `exposure-scenes-*`, `fit-grounding-sweep.spec.ts`.
+- [x] `tsc -p apps/showcase-roadster-hours-port/tsconfig.json --noEmit`: clean.

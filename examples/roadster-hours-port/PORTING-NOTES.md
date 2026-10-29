@@ -22,7 +22,8 @@ per-step input hook, `window.skybreakDemo.input(state)`, which is what makes a d
 | 68 `BatchedMesh` + 121 `InstancedMesh` for traffic, lineups and scenery | seven `batched.mesh`es: baked CC0 cars (Quaternius sports car, car, taxi; Kenney race car; `tools/bake-cars.mjs`) in one mesh per material group (paint with per-instance colour, trim, glass, head, tail), box rigs detailed with windows, wheels and lamps; 451 instances | functional; scenery instancing is not ported |
 | 29 `ShaderMaterial`s | four `material.custom` programs | simplified look |
 | `roadster-rocket.glb`, `world-kit.glb`, HDR sky, post, audio, UI | engine bloom, colour grade, vignette, FXAA, IBL preset and fog; synthesised audio (`audio.ts`, engine, wind, music, event cues); title with route picker, HUD, pause and results (DIN Pro from the licensed font gallery); the Roadster is a baked graphite sports car | partial |
-| career UI, touch controls, shadows, slow motion, camera shake | not ported | gaps |
+| touch controls, camera shake and FOV kicks, coach line, best times | touch buttons (`input.ts`, synthetic `touch:<action>` key codes through `bindGameTouchControls`), event trauma and FOV kicks (`camera.ts`, off under reduced motion), the original's priority coach line (`hud.ts`), best times in `localStorage` | ported (2026-10-29 audit fix) |
+| career UI (upgrades, credits), slow motion | not ported | gaps |
 
 ## Determinism and the reference
 
@@ -46,7 +47,7 @@ No `@aura3d/rendering` internals, no `TODO(a3d-migrate)`.
 - `effects.particles` `attachTo` is typed but not implemented in the engine; the plumes are shader-driven point sprites instead.
 - The original replaces its built-in vehicle collision table with metadata from `world-kit.glb` at runtime; the port uses
   the built-in table (`ed`). The capture records the original's traffic dimensions and a test compares them.
-- Slow motion, camera shake, shadows and touch controls are not ported.
+- Slow motion and the career UI are not ported. Touch controls, camera shake and the coach line were added by the 2026-10-29 audit fix; sun shadows are on (one cascade).
 - Verification of rendering is on a software WebGL2 runner (SwiftShader), not a hardware GPU.
 
 ## Engine fixes found while verifying the batched path

@@ -1,0 +1,2 @@
+SUNSHADOW roadster-hours off {"luma":96.31,"drawCalls":71,"shadows":{"shadows":[],"droppedFeatures":[],"contactShadows":{"passExecuted":false,"depthSource":"none"}}}
+SUNSHADOW roadster-hours on {"luma":77.38,"drawCalls":121,"shadows":{"shadows":[{"light":"sun","filter":"pcf","casterVariants":["sk0","sk0|ah|ds","sk0|ds","sk0|i|b|prd02.depthInstancing=1","sk0|i|prd02.depthInstancing=1"],"sampled":true}],"droppedFeatures":[],"contactShadows":{"passExecuted":false,"depthSource":"none"}}}

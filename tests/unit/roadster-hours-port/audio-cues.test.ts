@@ -105,11 +105,16 @@ function oldPlay(ctx: any, sfx: any, noise: unknown, sound: GameSound): void {
   }
 }
 
+/** The port's first eleven sounds (compared against the hand-written originals above). */
+const ORIGINAL = ["beep", "boost", "cell", "clear", "combo", "crash", "finish", "gate", "go", "landing", "nearmiss"] as const;
+/** Cues added for events that were silent (no hand-written original to compare against). */
+const ADDED = ["landed", "scrape", "impact", "overheat", "trick", "roll", "hop", "trailer", "shortcut", "nitro", "perfect", "shockwave", "miss", "flare"] as const;
+
 const norm = (rows: unknown[][]) => rows.map((r) => r.map((v) => (typeof v === "number" ? Math.round(v * 1e9) / 1e9 : v)));
 const calls = (list: Array<{ node: string; method: string; args: unknown[] }>, node: string) => norm(list.filter((c) => c.node === node).map((c) => [c.method, ...c.args]));
 
 describe("Roadster Hours effects on the synth cue kit (parameter-level equivalence; not listened to)", () => {
-  for (const sound of Object.keys(CUES) as GameSound[]) {
+  for (const sound of ORIGINAL as readonly GameSound[]) {
     it(`${sound} has the original oscillators, noise filters, envelopes, timing and noise samples`, async () => {
       const ref = createFakeContext("running");
       ref.ctx.currentTime = 0.5;
@@ -154,7 +159,7 @@ describe("Roadster Hours effects on the synth cue kit (parameter-level equivalen
     });
   }
 
-  it("covers every game sound", () => {
-    expect(Object.keys(CUES).sort()).toEqual(["beep", "boost", "cell", "clear", "combo", "crash", "finish", "gate", "go", "landing", "nearmiss"]);
+  it("keeps every original sound and adds the event cues of audit C6", () => {
+    expect(Object.keys(CUES).sort()).toEqual([...ORIGINAL, ...ADDED].sort());
   });
 });

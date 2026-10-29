@@ -3,20 +3,22 @@
  * The simulation (`sim.ts`) is pure; `world.ts` renders it through the public engine surface.
  *
  * Query parameters (all optional): `level=0..2`, `autostart=1`, `autopilot=1`, `manual=1` (the sim only advances
- * through `__AURA_ROADSTER_HOURS__.stepSteps/replay`).
+ * through `__AURA_ROADSTER_HOURS__.stepSteps/replay`), `touch=1` (show the touch controls on any device).
  */
-import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp, createFixedStepLoop, installQaHooks } from "@aura3d/engine";
-import { summarizeTextureUpgrade } from "@aura3d/engine/game";
+import { bindGameTouchControls, createAuraApp, createAuraRouteHealthSnapshot, type AuraApp, createFixedStepLoop, installQaHooks } from "@aura3d/engine";
+import { summarizeTextureUpgrade, warmPrograms } from "@aura3d/engine/game";
 import { DEFAULT_PARAMS, autopilot } from "./autopilot";
-import { RoadsterSound } from "./audio";
+import { RoadsterSound, type AudioFrame, type GameSound } from "./audio";
 import { LEVELS } from "./data";
-import { SIM_STEP, createRun, defaultCareer, stepRun, type Career, type Run, type RunInput } from "./sim";
+import { ACTIONS, ACTION_LABELS, InputState, TOUCH_BUTTONS, keyLabel, loadBindings, promptText, rebind, runInput, saveBindings, touchCode, type Action } from "./input";
+import { bestLine, coachLine, createHudWriter, loadResults, nitroLabel, saveResults } from "./hud";
+import { SIM_STEP, createRun, defaultCareer, stepRun, type Career, type MedalResult, type Run, type RunEvent, type RunInput } from "./sim";
 import { createRoadsterPresenter, viewOf } from "./presentation";
 import { loadMeshy } from "./meshy";
-import { buildWorld, type WorldRuntime } from "./world";
+import { buildWorld, type World, type WorldRuntime } from "./world";
 
 const params = new URLSearchParams(location.search);
-const levelIndex = Math.max(0, Math.min(LEVELS.length - 1, Number(params.get("level") ?? 0) | 0));
+let levelIndex = Math.max(0, Math.min(LEVELS.length - 1, Number(params.get("level") ?? 0) | 0));
 const config = { autostart: params.get("autostart") === "1", autopilot: params.get("autopilot") === "1", manual: params.get("manual") === "1" };
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
@@ -25,6 +27,7 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   return el as T;
 };
 const canvas = $<HTMLCanvasElement>("world");
+const storage: Storage | null = (() => { try { return window.localStorage; } catch { return null; } })();
 
 /* Licensed UI face (DIN Pro Regular/Medium/Bold, from the paid font gallery), loaded without blocking boot. */
 const FONT_FILES: readonly (readonly [string, string])[] = [
@@ -37,14 +40,30 @@ for (const [weight, url] of FONT_FILES) {
   (document.fonts as unknown as { add(font: FontFace): void }).add(face);
   void face.load().catch(() => undefined);
 }
+
+/* Touch devices get on-screen controls; `?touch=1` forces them (QA). */
+const touch = params.get("touch") === "1" || (typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches);
+document.body.classList.toggle("touch", touch);
+/* Reduced motion: no camera shake, no FOV kicks, no pulsing HUD. Defaults to the OS setting; the menu switch is saved. */
+const MOTION_KEY = "saltwind-highway:reduced-motion";
+let reducedMotion = (() => {
+  const saved = storage?.getItem(MOTION_KEY);
+  if (saved === "1" || saved === "0") return saved === "1";
+  return typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+})();
+
 const sound = new RoadsterSound();
 let lastInput: RunInput | undefined;
 
 const career: Career = defaultCareer();
 career.unlocked = LEVELS.length - 1;
+career.results = loadResults(storage);
 let run: Run = createRun(levelIndex, career);
+/** Best result on this route before the current run (the results card compares against it). */
+let previousBest: MedalResult | undefined;
 const presenter = createRoadsterPresenter(() => run);
 let app: AuraApp | undefined;
+let world: World | undefined;
 let runtime: WorldRuntime | undefined;
 let ready = false;
 let screen: "home" | "play" | "results" = "home";
@@ -52,38 +71,58 @@ let paused = false;
 let autopilotOn = config.autopilot;
 let frames = 0;
 let simSteps = 0;
+/** Sim events of every step since the last rendered frame (audio cues and camera kicks read them once). */
+const pendingEvents: RunEvent[] = [];
+const MAX_PENDING_EVENTS = 512;
+/** Recently played cues, for the QA hook. */
+const cueLog: { frame: number; sounds: GameSound[] }[] = [];
 
 /* ------------------------------------------------------------------ input */
 
-const down = new Set<string>();
-const pressed = new Set<string>();
+const input = new InputState(loadBindings(storage));
+let remapping: Action | null = null;
+
 addEventListener("keydown", (e) => {
+  if (remapping) {
+    e.preventDefault();
+    if (e.code !== "Escape") {
+      input.bindings = rebind(input.bindings, remapping, e.code);
+      saveBindings(input.bindings, storage);
+    }
+    remapping = null;
+    renderControls();
+    return;
+  }
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
-  void sound.unlock();
+  if (!e.code.startsWith("touch:")) void sound.unlock();
   if (e.repeat) return;
-  if (e.code === "KeyM") { toggleMute(); return; }
-  if (e.code === "Escape" || e.code === "KeyP") { togglePause(); return; }
-  if (e.code === "Enter" && screen === "home") { begin(); return; }
-  if (e.code === "Enter" && screen === "results") { begin(); return; }
-  down.add(e.code);
-  pressed.add(e.code);
+  const action = input.actionOf(e.code);
+  if (action === "mute") { toggleMute(); return; }
+  if (action === "pause") { togglePause(); return; }
+  if (e.code === "Enter" && (screen === "home" || screen === "results") && $("controls").classList.contains("hidden")) { begin(); return; }
+  input.keydown(e.code);
 });
-addEventListener("keyup", (e) => down.delete(e.code));
-addEventListener("blur", () => down.clear());
+addEventListener("keyup", (e) => input.keyup(e.code));
+addEventListener("blur", () => { input.clear(); autoPause(); });
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) { input.clear(); autoPause(); }
+  syncAudioSuspend();
+});
 
-const held = (...codes: string[]): boolean => codes.some((c) => down.has(c) || pressed.has(c));
-const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
+/** A run in progress pauses itself when the window loses focus or the tab is hidden (never in QA manual mode). */
+function autoPause(): void {
+  if (config.manual || screen !== "play" || paused) return;
+  if (run.phase === "running" || run.phase === "countdown") togglePause();
+}
+function syncAudioSuspend(): void { sound.setSuspended(document.hidden || paused); }
 
-function keyboardInput(): RunInput {
-  const air = !run.grounded && run.phase === "running";
-  const right = held("KeyD", "ArrowRight"), left = held("KeyA", "ArrowLeft"), fwd = held("KeyW", "ArrowUp"), back = held("KeyS", "ArrowDown");
-  const steer = clamp(+right - +left, -1, 1);
-  const stopping = !air && back;
-  return {
-    throttle: !stopping && fwd && !air ? 1 : 0, brake: stopping ? (Math.abs(steer) > 0.3 && run.v > 18 ? 0.15 : 1) : 0, steer: air ? 0 : steer,
-    thrust: held("Space"), drift: stopping && Math.abs(steer) > 0.3 && run.v > 18, nitro: held("ShiftLeft", "ShiftRight"),
-    roll: clamp(+held("KeyE") - +held("KeyQ"), -1, 1), spin: air ? steer : 0, flip: air ? clamp(+fwd - +back, -1, 1) : 0, recover: held("KeyR")
-  };
+function bindTouch(): void {
+  bindGameTouchControls({
+    hold: TOUCH_BUTTONS.filter((b) => b.hold).map((b) => ({ elementId: b.id, code: touchCode(b.action) })),
+    pulse: TOUCH_BUTTONS.filter((b) => !b.hold).map((b) => ({ elementId: b.id, code: touchCode(b.action), holdMs: 60 }))
+  });
+  // The first touch is a user gesture: unlock audio from it (synthetic key events are not gestures).
+  document.addEventListener("pointerdown", () => { void sound.unlock(); }, { passive: true });
 }
 
 /* ------------------------------------------------------------------ flow */
@@ -91,20 +130,24 @@ function keyboardInput(): RunInput {
 function begin(): void {
   void sound.unlock();
   run = createRun(levelIndex, career);
+  previousBest = career.results[run.level.id] ? { ...career.results[run.level.id]! } : undefined;
   presenter.reset();
   runtime?.reset(run);
   sound.reset();
+  pendingEvents.length = 0;
   screen = "play";
   paused = false;
   loop.resetAccumulator();
   panels();
+  syncAudioSuspend();
 }
 
 function togglePause(): void {
   if (screen !== "play") return;
   if (run.phase === "paused") { run.phase = run.beforePause ?? "running"; paused = false; }
-  else if (run.phase === "running" || run.phase === "countdown") { run.beforePause = run.phase; run.phase = "paused"; paused = true; }
+  else if (run.phase === "running" || run.phase === "countdown") { run.beforePause = run.phase; run.phase = "paused"; paused = true; input.clear(); }
   panels();
+  syncAudioSuspend();
 }
 
 function toggleMute(): void {
@@ -112,22 +155,69 @@ function toggleMute(): void {
   $("mute").textContent = sound.muted ? "Sound off" : "Sound on";
 }
 
-function stepOnce(input: RunInput): void {
-  lastInput = input;
-  stepRun(run, input, SIM_STEP, career);
+function setReducedMotion(on: boolean): void {
+  reducedMotion = on;
+  try { storage?.setItem(MOTION_KEY, on ? "1" : "0"); } catch { /* ignore */ }
+  document.body.classList.toggle("reduced-motion", on);
+  runtime?.setReducedMotion(on);
+  $("motion").textContent = on ? "Motion: reduced" : "Motion: full";
+  $("motion").setAttribute("aria-pressed", String(on));
+}
+
+function stepOnce(stepInput: RunInput): void {
+  lastInput = stepInput;
+  stepRun(run, stepInput, SIM_STEP, career);
   simSteps++;
-  pressed.clear();
-  if (run.phase === "complete" && screen === "play") { screen = "results"; panels(); }
+  input.endStep();
+  if (run.events.length) {
+    pendingEvents.push(...run.events);
+    if (pendingEvents.length > MAX_PENDING_EVENTS) pendingEvents.splice(0, pendingEvents.length - MAX_PENDING_EVENTS);
+  }
+  if (run.phase === "complete" && screen === "play") {
+    saveResults(career, storage);
+    screen = "results";
+    panels();
+  }
+}
+
+/** Next route without a page reload: the models are already decoded, so only the scene is rebuilt. Falls back to a reload. */
+async function nextRoute(): Promise<void> {
+  const next = Math.min(LEVELS.length - 1, levelIndex + 1);
+  if (!app || next === levelIndex) return;
+  $("loading-status").textContent = "Loading the next route";
+  $("loading").classList.remove("hidden");
+  ready = false;
+  try {
+    levelIndex = next;
+    world = buildWorld(levelIndex);
+    app.setScene(world.scene);
+    runtime = world.bind(app);
+    runtime.setReducedMotion(reducedMotion);
+    hud.reset();
+    history.replaceState(null, "", `?${new URLSearchParams({ ...Object.fromEntries(params), level: String(levelIndex) }).toString()}`);
+    buildMenu();
+    await settle();
+    ready = true;
+    $("loading").classList.add("hidden");
+    begin();
+  } catch (error) {
+    console.warn("roadster-hours-port: in-place route change failed, reloading", error);
+    location.search = `?level=${levelIndex}&autostart=1`;
+  }
 }
 
 /* ------------------------------------------------------------------ HUD */
 
 const fmt = (t: number): string => `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, "0")}`;
+const hud = createHudWriter((id) => $(id));
+let nitroWindowShown = false;
 function buildMenu(): void {
   const level = LEVELS[levelIndex]!;
   $("level-name").textContent = level.name;
   $("level-sub").textContent = level.subtitle;
   $("level-desc").textContent = level.description;
+  const best = career.results[level.id];
+  $("level-best").textContent = best ? `Best ${fmt(best.time)} · ${best.medal} medal` : "";
   const routes = $("routes");
   routes.textContent = "";
   LEVELS.forEach((l, i) => {
@@ -138,10 +228,43 @@ function buildMenu(): void {
     routes.appendChild(a);
   });
   const progress = $("progress");
+  progress.querySelectorAll("b").forEach((b) => b.remove());
   for (const gate of level.gates) {
     const tick = document.createElement("b");
     tick.style.left = `${(gate.s / level.length) * 100}%`;
     progress.appendChild(tick);
+  }
+  renderControls();
+}
+/** The menu key summary and the remap panel, from the current bindings. */
+function renderControls(): void {
+  const b = input.bindings;
+  const k = (a: Action): string => keyLabel(b[a][0]!);
+  const rows: [string, string][] = touch
+    ? [["Drive / Brake", "Hold to drive, brake (with steer to drift)"], ["Left / Right", "Steer, and spin in the air"], ["Thrust", "Hold to fly"], ["Nitro", "Tap again when the bar turns green"], ["Roll", "Roll in the air"], ["Recover", "Back to the last relay"]]
+    : [[`${k("up")} / ${k("down")}`, `Drive, brake (hold with ${k("left")}/${k("right")} to drift)`], [`${k("left")} / ${k("right")}`, "Steer, and spin in the air"], [k("thrust"), "Thrust"], [k("nitro"), "Nitro (tap again when the bar turns green)"], [`${k("rollLeft")} / ${k("rollRight")}`, "Roll in the air"], [`${k("recover")}, ${k("pause")}, ${k("mute")}`, "Recover, pause, mute"]];
+  const keys = $("keys");
+  keys.textContent = "";
+  for (const [dt, dd] of rows) {
+    const t = document.createElement("dt"); t.textContent = dt;
+    const d = document.createElement("dd"); d.textContent = dd;
+    keys.append(t, d);
+  }
+  const list = $("remap");
+  list.textContent = "";
+  for (const a of ACTIONS) {
+    const row = document.createElement("div");
+    row.className = "remap-row";
+    const label = document.createElement("span");
+    label.textContent = ACTION_LABELS[a];
+    const button = document.createElement("button");
+    button.className = "ghost";
+    button.type = "button";
+    button.textContent = remapping === a ? "Press a key" : b[a].map(keyLabel).join(" / ");
+    button.setAttribute("aria-label", `Change the key for ${ACTION_LABELS[a]}`);
+    button.addEventListener("click", () => { remapping = a; renderControls(); });
+    row.append(label, button);
+    list.appendChild(row);
   }
 }
 function panels(): void {
@@ -150,6 +273,7 @@ function panels(): void {
   $("pause").classList.toggle("hidden", !(screen === "play" && paused));
   $("hud").classList.toggle("hidden", screen === "home");
   $("mute").classList.toggle("hidden", !ready);
+  $("pause-button").classList.toggle("hidden", !(screen === "play" && !paused));
   sound.setScreen(screen);
   if (screen === "results" && run.result) {
     const level = run.level;
@@ -159,24 +283,27 @@ function panels(): void {
     $("result-cells").textContent = `${run.result.cells} / ${level.cells.length}`;
     $("result-crashes").textContent = String(run.result.crashes);
     $("result-targets").textContent = `gold ${fmt(level.medal.gold)} · silver ${fmt(level.medal.silver)}`;
+    $("result-best").textContent = bestLine(run.result.time, previousBest);
     $("next").classList.toggle("hidden", levelIndex + 1 >= LEVELS.length);
   }
 }
 function updateHud(): void {
-  $("timer").textContent = fmt(run.time);
-  $("speed").textContent = String(Math.round(run.v * 3.6));
-  $("score").textContent = Math.round(run.score).toLocaleString();
-  $("gate").textContent = `Relay ${Math.min(run.nextGate + 1, run.level.gates.length)} / ${run.level.gates.length}`;
-  $("act").textContent = run.act;
-  $("combo").textContent = run.comboTime > 0 && run.combo > 1 ? `Combo x${run.combo.toFixed(1)}` : "";
-  $("toast").textContent = run.toastTime > 0 && run.toast ? run.toast : "";
-  $("count").textContent = run.phase === "countdown" ? String(Math.max(1, Math.ceil(run.countdown))) : "";
-  $("thrust-fill").style.width = `${(run.thrust / run.capacity) * 100}%`;
-  $("heat-fill").style.width = `${run.heat}%`;
-  $("nitro-label").textContent = run.nitro > 0 ? "Nitro" : "";
-  $("heat-label").textContent = run.overheated ? "Overheated" : "";
-  $("progress-fill").style.width = `${clamp((run.s / run.level.length) * 100, 0, 100)}%`;
-  $("phase").textContent = run.phase;
+  hud.text("timer", fmt(run.time));
+  hud.text("speed", String(Math.round(run.v * 3.6)));
+  hud.text("score", Math.round(run.score).toLocaleString());
+  hud.text("gate", `Relay ${Math.min(run.nextGate + 1, run.level.gates.length)} / ${run.level.gates.length}`);
+  hud.text("act", run.act);
+  hud.text("combo", run.comboTime > 0 && run.combo > 1 ? `Combo x${run.combo.toFixed(1)}` : "");
+  hud.text("toast", run.toastTime > 0 && run.toast ? promptText(run.toast, touch, input.bindings) : "");
+  hud.text("coach", coachLine(run, touch, input.bindings));
+  hud.text("count", run.phase === "countdown" ? String(Math.max(1, Math.ceil(run.countdown))) : "");
+  hud.style("thrust-fill", "width", `${((run.thrust / run.capacity) * 100).toFixed(1)}%`);
+  hud.style("heat-fill", "width", `${run.heat.toFixed(1)}%`);
+  hud.text("nitro-label", nitroLabel(run));
+  if (run.nitroWindow !== nitroWindowShown) { nitroWindowShown = run.nitroWindow; $("thrust-bar").classList.toggle("window", run.nitroWindow); }
+  hud.text("heat-label", run.overheated ? "Overheated" : "");
+  hud.style("progress-fill", "width", `${Math.min(100, Math.max(0, (run.s / run.level.length) * 100)).toFixed(2)}%`);
+  hud.text("phase", run.phase);
 }
 
 /* ------------------------------------------------------------------ frame loop */
@@ -189,25 +316,37 @@ const loop = createFixedStepLoop({
   isActive: () => ready,
   step: () => {
     if (config.manual || screen !== "play") return;
-    stepOnce(autopilotOn && run.phase === "running" ? autopilot(run, DEFAULT_PARAMS) : keyboardInput());
+    stepOnce(autopilotOn && run.phase === "running" ? autopilot(run, DEFAULT_PARAMS) : runInput(run, input));
     presenter.afterStep();
   },
   render: (dt) => render(dt, performance.now() / 1000, !config.manual && screen === "play" && run.phase === "running")
 });
 
+/** Two audio frames, swapped every frame (the sound keeps the previous one to diff against). */
+const blankFrame = (): AudioFrame => ({
+  phase: "", countdown: 0, speed: 0, grounded: true, boosting: false, nitro: 0, nextGate: 0, cells: 0, crashes: 0, cleanLandings: 0,
+  nearMisses: 0, combos: 0, vehiclesCleared: 0, throttle: false, gateMiss: false, overheated: false
+});
+const audioFrames = [blankFrame(), blankFrame()] as const;
+let view: Run | undefined;
+
 /** `live` draws the car and traffic between the last two steps (smooth on 144 Hz displays); everything else draws the exact latest step. */
 function render(dt: number, time: number, live = false): void {
   if (!ready || !app || !runtime) return;
-  runtime.update(live ? viewOf(run, presenter.present(loop, true)) : run, dt, time, canvas.clientWidth / Math.max(1, canvas.clientHeight));
+  const shown = live ? (view = viewOf(run, presenter.present(loop, true), view)) : run;
+  runtime.update(shown, dt, time, canvas.clientWidth / Math.max(1, canvas.clientHeight), pendingEvents);
   app.step(0);
   updateHud();
-  if (screen === "play") {
-    sound.update({
-      phase: run.phase, countdown: run.countdown, speed: run.v, grounded: run.grounded, boosting: run.boosting, nitro: run.nitro, nextGate: run.nextGate,
-      cells: run.cells.size, crashes: run.crashes, cleanLandings: run.cleanLandings, nearMisses: run.nearMisses, combos: run.combos,
-      vehiclesCleared: run.vehiclesCleared, throttle: (lastInput?.throttle ?? 0) > 0
-    });
+  // The step that completes the run switches to the results screen; its events (the finish fanfare) still play here.
+  if (screen === "play" || pendingEvents.length) {
+    const f = audioFrames[frames & 1];
+    f.phase = run.phase; f.countdown = run.countdown; f.speed = run.v; f.grounded = run.grounded; f.boosting = run.boosting; f.nitro = run.nitro;
+    f.nextGate = run.nextGate; f.cells = run.cells.size; f.crashes = run.crashes; f.cleanLandings = run.cleanLandings; f.nearMisses = run.nearMisses;
+    f.combos = run.combos; f.vehiclesCleared = run.vehiclesCleared; f.throttle = (lastInput?.throttle ?? 0) > 0; f.gateMiss = run.gateMiss; f.overheated = run.overheated;
+    const sounds = sound.update(f, pendingEvents);
+    if (sounds.length) { cueLog.push({ frame: frames, sounds }); if (cueLog.length > 64) cueLog.shift(); }
   }
+  pendingEvents.length = 0;
   frames++;
 }
 
@@ -298,8 +437,8 @@ const hooks = {
   state: () => run,
   begin,
   /** Advance the simulation by `n` fixed steps with an input (or the autopilot); no rendering. */
-  stepSteps(n: number, input?: RunInput): number {
-    for (let i = 0; i < n && run.phase !== "complete"; i++) stepOnce(input ?? (autopilotOn ? autopilot(run, DEFAULT_PARAMS) : keyboardInput()));
+  stepSteps(n: number, stepInput?: RunInput): number {
+    for (let i = 0; i < n && run.phase !== "complete"; i++) stepOnce(stepInput ?? (autopilotOn ? autopilot(run, DEFAULT_PARAMS) : runInput(run, input)));
     return simSteps;
   },
   /** Replay a recorded run-length script from the start of the route; resolves with the final snapshot. */
@@ -316,6 +455,11 @@ const hooks = {
   appInfo: () => app?.info ?? null,
   /** Texture upgrade status per node: textures upload one material at a time after mount, so an early frame shows white models until these read `textured`. */
   textures: () => summarizeTextureUpgrade(app?.diagnostics()),
+  /** Cues played on recent frames (QA: proves the finish fanfare and the event cues fire). */
+  cues: () => cueLog.map((c) => ({ ...c, sounds: [...c.sounds] })),
+  /** Switch to the next route in place (no reload). */
+  nextRoute,
+  setReducedMotion,
   routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SG-01", "SG-02", "SH-02", "SG-03", "SG-05"] }) : null)
 };
 declare global { interface Window { __AURA_ROADSTER_HOURS__?: typeof hooks; __AURA_ROADSTER_HOURS_ERROR__?: string; skybreak?: { snapshot: typeof snapshot } } }
@@ -329,28 +473,33 @@ window.skybreak = { snapshot };
 
 /* ------------------------------------------------------------------ boot */
 
+/**
+ * Programs and the generated-model textures settle before the first shown frame: `warmPrograms` precompiles, steps until the
+ * draw count is stable and waits for pending texture uploads, each wait bounded so a slow device shows the route within about
+ * 8 s (software GL can take minutes per texture; those frames then show the untextured fallback until the upload lands).
+ */
+async function settle(): Promise<void> {
+  if (!app) return;
+  if ((world?.texturedNodes ?? 0) > 0) $("loading-status").textContent = "Loading models";
+  await warmPrograms(app, { maxFrames: 12, waitForEnvironment: true, environmentTimeoutMs: 2000, waitForTextures: true, textureTimeoutMs: 6000 });
+}
+
 async function boot(): Promise<void> {
   sizeCanvas();
   if (new URLSearchParams(location.search).get("meshy") !== "0") await loadMeshy();
-  const world = buildWorld(levelIndex);
+  world = buildWorld(levelIndex);
   buildMenu();
   app = createAuraApp(canvas, {
     autoStart: false, resize: false, pixelRatio: 1,
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+    // 4.5.0 pipeline on purpose (bloom pass fusion); measured against `production` in evidence/roadster-hours-port/audit-fix.
+    quality: "auto",
     output: { toneMapping: "aces", dither: false },
     scene: world.scene
   });
   await app.ready();
   runtime = world.bind(app);
-  // The engine uploads generated-model textures one at a time after mount (its diagnostics expose no completion signal):
-  // keep the loading screen up for a short settle so the models do not flash untextured.
-  if (world.texturedNodes > 0) {
-    $("loading-status").textContent = "Loading models";
-    for (const started = performance.now(); performance.now() - started < 1500;) {
-      app.step(0);
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-  }
+  runtime.setReducedMotion(reducedMotion);
+  await settle();
   ready = true;
   $("loading").classList.add("hidden");
   $<HTMLButtonElement>("start").disabled = false;
@@ -362,10 +511,17 @@ async function boot(): Promise<void> {
 $("start").addEventListener("click", begin);
 for (const id of ["again", "restart"]) $(id).addEventListener("click", begin);
 $("resume").addEventListener("click", togglePause);
+$("pause-button").addEventListener("click", togglePause);
 $("mute").addEventListener("click", toggleMute);
-$("next").addEventListener("click", () => { location.search = `?level=${Math.min(LEVELS.length - 1, levelIndex + 1)}&autostart=1`; });
+$("motion").addEventListener("click", () => setReducedMotion(!reducedMotion));
+$("controls-open").addEventListener("click", () => { $("controls").classList.remove("hidden"); renderControls(); });
+$("controls-close").addEventListener("click", () => { remapping = null; $("controls").classList.add("hidden"); renderControls(); });
+$("controls-reset").addEventListener("click", () => { input.bindings = loadBindings(null); saveBindings(input.bindings, storage); remapping = null; renderControls(); });
+$("next").addEventListener("click", () => { void nextRoute(); });
 canvas.addEventListener("pointerdown", () => { void sound.unlock(); });
 addEventListener("resize", sizeCanvas);
+setReducedMotion(reducedMotion);
+if (touch) bindTouch();
 loop.start();
 
 boot().catch((error: unknown) => {
