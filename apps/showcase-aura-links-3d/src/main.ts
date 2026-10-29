@@ -106,6 +106,11 @@ import {
 import { installBlackFrameGuard } from "@aura3d/debug";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
+/** game-logic clock: wall time plus the simulated time a ?qa=1 advance() has stepped */
+let qaClockMs = 0;
+const nowMs = (): number => performance.now() + qaClockMs;
+let lastEvidence: Record<string, unknown> | null = null;
+
 const publishBeacon = (evidence: object): void => {
   gameBeacon ??= installGameBeacon({ route: "showcase-aura-links-3d", evidenceGlobals: ["__AURA3D_GAME_EVIDENCE__", "__AURA3D_SHOWCASE_AURA_LINKS_3D__"] });
   gameBeacon.publishEvidence(evidence);
@@ -780,14 +785,16 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
       scale: [1, 1, 1] as [number, number, number]
     };
   });
-  nodes.push(
-    instances.model(assets.linksGolferAthleteMeshy, {
-      name: "gallery-fans",
-      transforms: fanTransforms,
-      targetHeight: 1.8,
-      castShadow: true
-    })
-  );
+  // The athlete GLB is skinned, and instances.model falls back on skinned actors (audit C19), so each
+  // gallery fan is its own model node on a staggered idle loop.
+  fanTransforms.forEach((f, i) => {
+    nodes.push(
+      model(assets.linksGolferAthleteMeshy, { name: `gallery-fan-${i}`, targetHeight: 1.8, role: "setDressing", scaleMode: "fit" })
+        .position(f.position[0], f.position[1], f.position[2])
+        .rotate(0, f.rotation[1], 0)
+        .animate({ clip: "Idle_Loop", loop: true, speed: 0.8 + (i % 3) * 0.1 })
+    );
+  });
 
   return nodes;
 }
@@ -1046,7 +1053,7 @@ let touchControls: any = null;
 let a11ySettings: any = null;
 
 function pushEvent(type: string, label: string, severity: "info" | "success" | "warning" = "info", value?: number): void {
-  const rec = eventLog.push({ type, label, severity, value, time: performance.now() / 1000, frame: framesRendered });
+  const rec = eventLog.push({ type, label, severity, value, time: nowMs() / 1000, frame: framesRendered });
   const ticker = $("h-ticker");
   if (ticker) {
     const item = document.createElement("span");
@@ -1064,7 +1071,7 @@ function showBanner(text: string, ms = 1700): void {
   if (!b) return;
   b.textContent = text;
   b.classList.add("show");
-  bannerTimer = performance.now() + ms;
+  bannerTimer = nowMs() + ms;
 }
 
 let msgTimer = 0;
@@ -1075,7 +1082,7 @@ function showMsg(big: string, small = "", ms = 2200): void {
   if (bt) bt.textContent = big;
   if (st) st.textContent = small;
   m.classList.add("show");
-  msgTimer = performance.now() + ms;
+  msgTimer = nowMs() + ms;
 }
 
 function setPrompt(text: string | null): void {
@@ -1157,6 +1164,15 @@ function updateCamera(dt: number): void {
   const t = state.terrain;
   const r = state.round;
   cam.t += dt;
+  if (qaPondView) {
+    // ?qa=1 pond check: straight down over the hazard, the zone radius filling about 70% of the frame height
+    const p = qaPondView;
+    cam.eye = [p.x + 0.01, p.y + p.r * 3.4, p.z - 0.01];
+    cam.target = [p.x, p.y, p.z];
+    cam.fov = 40;
+    camApply();
+    return;
+  }
   if (!t || !r) {
     // menu orbit around the cup/tee midpoint (held still under reduced motion)
     if (!state.reducedMotion) cam.orbit += dt * 0.14;
@@ -1627,7 +1643,7 @@ function onBallRest(pos: Vec3, zone: LieKind): void {
   const air = Math.min(shot, state.ball?.carry ?? shot);
   pushEvent("lie", `lie: ${zone} · ${air.toFixed(0)}m carry + ${(shot - air).toFixed(0)}m roll · ${state.terrain!.cupDistance(pos[0], pos[2]).toFixed(0)}m out`, "info");
   state.phase = "between";
-  betweenUntil = performance.now() + 850;
+  betweenUntil = nowMs() + 850;
 }
 
 function onHoled(): void {
@@ -1657,7 +1673,7 @@ function onHoled(): void {
   showBanner(label.toUpperCase());
   if (state.mode === "skins") resolveSkin();
   state.phase = "card";
-  betweenUntil = performance.now() + 2400;
+  betweenUntil = nowMs() + 2400;
 }
 
 /**
@@ -1676,7 +1692,7 @@ function pickUpIfOver(): boolean {
   showBanner("PICKED UP");
   if (state.mode === "skins") resolveSkin();
   state.phase = "card";
-  betweenUntil = performance.now() + 2400;
+  betweenUntil = nowMs() + 2400;
   updateCardHud();
   return true;
 }
@@ -1690,13 +1706,13 @@ function applyPenaltyDrop(fromPos: Vec3): void {
   trailPts.length = 0;
   if (pickUpIfOver()) return;
   state.phase = "between";
-  betweenUntil = performance.now() + 1100;
+  betweenUntil = nowMs() + 1100;
   updateCardHud();
 }
 
 function reteeAfter(ms: number): void {
   state.phase = "between";
-  betweenUntil = performance.now() + ms;
+  betweenUntil = nowMs() + ms;
 }
 
 function nextPuttingSpot(): void {
@@ -1713,7 +1729,7 @@ function nextPuttingSpot(): void {
   state.ball = null;
   trailPts.length = 0;
   state.phase = "between";
-  betweenUntil = performance.now() + 700;
+  betweenUntil = nowMs() + 700;
 }
 
 function scoreRangeShot(pos: Vec3): void {
@@ -2019,7 +2035,7 @@ function frame(dt: number): void {
   framesRendered += 1;
   simTime += dt;
   if (framesRendered === 1) diagLog("[links] first frame tick", dt);
-  const now = performance.now();
+  const now = nowMs();
   const r = state.round;
   const t = state.terrain;
 
@@ -2323,7 +2339,7 @@ function resumeFromMenu(): void {
   updateModeChips();
   if (back.phase === "swing" || back.phase === "address") { beginAddress(); return; }
   state.phase = back.phase;
-  if (back.phase === "between") betweenUntil = performance.now() + 300;
+  if (back.phase === "between") betweenUntil = nowMs() + 300;
   if (back.phase === "roundover") setPrompt("MENU — NEW ROUND");
 }
 
@@ -2564,6 +2580,8 @@ function publishEvidence(): void {
     mode: state.mode,
     phase: state.phase,
     cameraMode: cam.mode,
+    cameraEye: [...cam.eye],
+    flagRotation,
     course: state.courseId,
     hole: state.hole.number,
     par: state.hole.par,
@@ -2621,8 +2639,46 @@ function publishEvidence(): void {
     catalogAssets: CATALOG_ASSETS,
     deterministic: { terrain: "buildHoleTerrain", ball: "stepBall", seed: "lcg" }
   };
+  lastEvidence = evidence;
   publishBeacon(evidence);
 }
+
+/**
+ * ?qa=1 hook for the remote gameplay probes (tests/browser/audit-fix/aura-links-3d.spec.ts). Software GL presents
+ * a frame every several seconds, so advance() steps the game's own frame() in simulated time (the logic clock moves
+ * with it) and the next presented frame shows the state the logic reached.
+ */
+function installQaHook(): void {
+  (window as any).__AURA_LINKS_QA__ = {
+    advance(seconds: number): Record<string, unknown> | null {
+      const step = 1 / 30;
+      for (let t = 0; t < seconds; t += step) {
+        qaClockMs += step * 1000;
+        frame(step);
+        justPressed.clear();
+      }
+      publishEvidence();
+      return lastEvidence;
+    },
+    evidence(): Record<string, unknown> | null {
+      publishEvidence();
+      return lastEvidence;
+    },
+    /** park the camera above pond i of the current hole (C6 check); returns the hazard and drawn sizes */
+    framePond(i: number) {
+      const t = state.terrain!;
+      const w = state.hole.layout.water[i];
+      if (!w) return null;
+      const g = pondGeometry(t, w);
+      state.phase = "menu";
+      $("menu-overlay")?.classList.remove("open");
+      cam.mode = "card";
+      qaPondView = { x: w.center[0], z: w.center[1], y: g.surfaceY, r: w.radius };
+      return { center: w.center, hazardRadius: w.radius, drawnRadius: g.pondDiameter / 2, rimRadius: g.rimDiameter / 2, surfaceY: g.surfaceY };
+    }
+  };
+}
+let qaPondView: { x: number; z: number; y: number; r: number } | null = null;
 
 /* ------------------------------------------------------------------ *
  *  Boot                                                               *
@@ -2705,6 +2761,7 @@ function boot(): void {
     if (Number.isFinite(holeParam) && holeParam >= 1 && holeParam <= 9) startHole(holeParam - 1);
   }
   if (params.get("menu") !== "1") closeMenu();
+  if (params.get("qa") === "1") installQaHook();
 
   if (DIAG) {
     diagLog("[links] visibility:", document.visibilityState, "hidden:", document.hidden);
