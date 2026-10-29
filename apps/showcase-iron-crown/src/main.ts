@@ -400,6 +400,9 @@ const app = fightingGame.app;
 fightingGame.start();
 const input = fightingGame.input as GameInputController;
 if (!input) throw new Error("Iron Crown: createGame failed to create runtime-owned input.");
+// createGame mounts the touch layer hidden until the first touch; on a coarse pointer (phones, tablets) show it at once
+// so players see the controls before they tap (audit IC-01).
+if (mediaMatches("(pointer: coarse)")) fightingGame.touch?.setVisible(true);
 
 // The live renderer canvas adopts id="game" (the static placeholder is removed).
 document.getElementById("game")?.remove();

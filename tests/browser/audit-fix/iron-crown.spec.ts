@@ -51,7 +51,16 @@ const FAKE_GAMEPAD = `(() => {
   const pad = () => ({ id: "audit-fake-pad", index: 0, connected: true, mapping: "standard", timestamp: performance.now(), axes: [0, 0, 0, 0],
     buttons: Array.from({ length: 17 }, (_, i) => ({ pressed: pressed.has(i), touched: pressed.has(i), value: pressed.has(i) ? 1 : 0 })) });
   Object.defineProperty(navigator, "getGamepads", { configurable: true, value: () => [pad(), null, null, null] });
+  // Synthetic touch with a touches list (the engine's touch listener reads touches[0]).
+  window.touchEv = (type) => {
+    const list = type === "touchend" ? [] : [{ identifier: 1, clientX: 10, clientY: 10, target: document.body }];
+    const ev = new Event(type, { bubbles: true, cancelable: true });
+    Object.defineProperty(ev, "touches", { value: list });
+    Object.defineProperty(ev, "changedTouches", { value: [{ identifier: 1, clientX: 10, clientY: 10, target: document.body }] });
+    return ev;
+  };
 })();`;
+declare function touchEv(type: "touchstart" | "touchend"): Event;
 
 async function engineInfo(page: Page) {
   return page.evaluate(() => {
@@ -285,10 +294,10 @@ test.describe("iron crown audit fixes", () => {
 
     // IC-01: hold the touch Right button. BEFORE: it drives the undeclared action "right" and P1 does not move. AFTER: walks.
     const b1 = await gameState(page);
-    await page.evaluate(() => document.querySelector("[data-control='right']")?.dispatchEvent(new Event("touchstart", { bubbles: true })));
+    await page.evaluate(() => document.querySelector("[data-control='right']")?.dispatchEvent(touchEv("touchstart")));
     await page.waitForTimeout(25_000);
     const m1 = await gameState(page);
-    await page.evaluate(() => document.querySelector("[data-control='right']")?.dispatchEvent(new Event("touchend", { bubbles: true })));
+    await page.evaluate(() => document.querySelector("[data-control='right']")?.dispatchEvent(touchEv("touchend")));
     probe(T, "touch-right", { before: b1, during: m1, dx: (m1?.p1.x ?? 0) - (b1?.p1.x ?? 0) });
     await grab(page, T, "after-touch-walk");
 
@@ -297,9 +306,9 @@ test.describe("iron crown audit fixes", () => {
       const exists = await page.evaluate((n) => Boolean(document.querySelector(`[data-ic-touch='${n}']`)), name);
       if (!exists) { probe(T, `touch-${name}`, { button: "absent" }); continue; }
       const before = await gameState(page);
-      await page.evaluate((n) => document.querySelector(`[data-ic-touch='${n}']`)?.dispatchEvent(new Event("touchstart", { bubbles: true })), name);
+      await page.evaluate((n) => document.querySelector(`[data-ic-touch='${n}']`)?.dispatchEvent(touchEv("touchstart")), name);
       await page.waitForTimeout(12_000);
-      await page.evaluate((n) => document.querySelector(`[data-ic-touch='${n}']`)?.dispatchEvent(new Event("touchend", { bubbles: true })), name);
+      await page.evaluate((n) => document.querySelector(`[data-ic-touch='${n}']`)?.dispatchEvent(touchEv("touchend")), name);
       await page.waitForTimeout(4000);
       const after = await gameState(page);
       probe(T, `touch-${name}`, { before, after, dx: (after?.p1.x ?? 0) - (before?.p1.x ?? 0) });
@@ -341,12 +350,12 @@ test.describe("iron crown audit fixes", () => {
       await page.waitForTimeout(Math.max(0, 40_000 - (Date.now() - loaded)));
       await grab(page, T, "02-early", {}, false);
       if (vp.phone) {
-        await page.evaluate(() => document.querySelector("[data-control='right']")?.dispatchEvent(new Event("touchstart", { bubbles: true })));
+        await page.evaluate(() => document.querySelector("[data-control='right']")?.dispatchEvent(touchEv("touchstart")));
         await page.waitForTimeout(12_000);
-        await page.evaluate(() => document.querySelector("[data-control='right']")?.dispatchEvent(new Event("touchend", { bubbles: true })));
-        await page.evaluate(() => document.querySelector("[data-control='light']")?.dispatchEvent(new Event("touchstart", { bubbles: true })));
+        await page.evaluate(() => document.querySelector("[data-control='right']")?.dispatchEvent(touchEv("touchend")));
+        await page.evaluate(() => document.querySelector("[data-control='light']")?.dispatchEvent(touchEv("touchstart")));
         await page.waitForTimeout(400);
-        await page.evaluate(() => document.querySelector("[data-control='light']")?.dispatchEvent(new Event("touchend", { bubbles: true })));
+        await page.evaluate(() => document.querySelector("[data-control='light']")?.dispatchEvent(touchEv("touchend")));
       } else {
         await page.keyboard.down("KeyD");
         await page.waitForTimeout(12_000);
