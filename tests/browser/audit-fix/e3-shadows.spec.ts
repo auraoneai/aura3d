@@ -19,7 +19,10 @@ interface Target { readonly name: string; readonly url: string; }
 
 const TARGETS: readonly Target[] = [
   { name: "links-default", url: "/apps/showcase-aura-links-3d/index.html" },
-  { name: "crosshop", url: "/apps/showcase-cross-hop/" }
+  { name: "crosshop", url: "/apps/showcase-cross-hop/" },
+  // Shadowstep Gauntlet opts into the 4.3.0 shadow fit (__A3D_SHADOW_FIT__ = "current"), where cascades hug the frustum slice: this is
+  // where a centre-picked cascade leaves spread instanced scenery unshadowed.
+  { name: "ninja", url: "/apps/showcase-ninja-runner-port/" }
 ];
 
 async function lumaStats(page: Page, png: Buffer) {
