@@ -1,6 +1,6 @@
 # Shadowstep Gauntlet: final screenshots (4.5.0, lane G20 retake, 2026-10-29)
 
-- **Build:** branch `audit-fix/g20` on Aura3D 4.5.0 (engine at origin/main 31f8945ad). Desktop and card frames from commit 85e1458f4; phone frames from a428ba490 (short ability labels on phones).
+- **Build:** branch `audit-fix/g20` on Aura3D 4.5.0 (engine at origin/main 31f8945ad). All frames from commit 6eccac79c.
 - **Runner:** remote Azure ACR task (`tools/remote-acr/run.sh`, spec `tests/browser/audit-fix/ninja-runner-port.spec.ts`), headless Chromium on SwiftShader: software WebGL2, not a GPU. Nothing here is real-GPU evidence; the owner should confirm the look on the Mac (`tools/real-gpu/run.sh`).
 - **Method:** the example page with `?manual=1`; states are driven through the QA hooks with the game's frame loop stopped, so every frame is a fixed sim state. Same file names and sizes as the 2026-10-25 set. Per-shot luma, draw calls and HUD rects: `../../audit-2026-10-29/after/`.
 - **Viewports:** 1280x720 for every state; 390x844 (touch emulation) for title, early and run; `card@2x.jpg` 1440x900 at the run state, `card.jpg` its 720x450 copy.

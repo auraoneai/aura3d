@@ -1,0 +1,3 @@
+{"name": "a finished run and a mute click are saved", "ok": true, "detail": {"muted": "1", "best": "{\"score\":39735,\"distance\":2640,\"combo\":66,\"kills\":102}"}}
+{"name": "mute and best score survive a reload", "ok": true, "detail": {"mute": "Sound off", "best": "Best: 39735 points \u00b7 2640 m \u00b7 102 defeated \u00b7 66x combo"}}
+{"name": "no page errors", "ok": true, "detail": []}

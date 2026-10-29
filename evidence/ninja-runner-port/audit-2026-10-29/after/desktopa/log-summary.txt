@@ -1,2 +1,2 @@
 GL_ERRORS g20-desktop-a []
-  1 passed (15.6m)
+  1 passed (14.0m)

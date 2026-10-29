@@ -7,7 +7,7 @@ States are driven through `window.__AURA_NINJA_RUNNER__` with `?manual=1` and th
 - `before/`: the unmodified base (`audit-fix/integration` b2dba3713 = origin/main 31f8945ad plus audit docs), in a temporary detached worktree.
 - `v4.3.7/`: the `v4.3.7` tag, render variants only.
 - `branch-intermediate/`: this branch with the shadow-fit opt-in removed (commits 2bf1ae759 to a986d1e4a). These runs are the measurement that put the opt-in back (85e1458f4).
-- `after/`: this branch after 85e1458f4 (final screens). `screens/final/` holds the same frames under the inventory's file names.
+- `after/`: this branch: screens at 6eccac79c or later (7891ab33c changes only a z-index); `vrender`, `vshadow`, `sunfire`, `vibl` at 85e1458f4; `behaviour/checks.jsonl` (g20-after3-beh, 18 checks pass before the 55 min test limit) and `prefs/checks.jsonl` (g20-final2-prefs, 3 checks pass).
 
 ## Run state (s = 45 m, 1280x720)
 
@@ -39,12 +39,12 @@ Reading: the 4.3.7 to 4.5.0 lift (+6.2) is the AO change (no-AO frames differ by
 |---|---|---|---|
 | title-1280 | 121.14 | 121.15 | |
 | early-1280 | 122.15 | 122.15 | |
-| run-1280 | 118.13 | 117.99 | |
+| run-1280 | 118.13 | 117.44 | the threat disc under the swordsman ahead (E-01) |
 | action-1280 | 121.60 | 121.56 | |
 | gate-hit-1280 | 110.70 | 114.22 | the near house that filled the right edge now keeps 3 m from the camera path |
 | mid-action-1280 | 110.46 | 110.74 | |
 | results-1280 | 120.08 | 120.08 | |
 | title-390 | 148.62 | 148.65 | |
 | early-390 | 148.44 | 148.47 | |
-| run-390 | 140.88 | 140.40 | phone HUD: two bottom rows (65 + 63 px) and a 26 px Sound button become one 54 px row with 44 px Pause and Sound |
+| run-390 | 140.88 | 140.32 | phone HUD: two bottom rows (65 + 63 px) and a 26 px Sound button become one 54 px row with 44 px Pause and Sound |
 | Sunfire, hero crop, shadow on minus off | -4.03 | -4.01 | S-06: the same; the darkening is the hero's own sun shadow, no aura shadow is visible on either |

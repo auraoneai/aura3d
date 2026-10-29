@@ -1,0 +1,18 @@
+{"name": "diagnostics renderPath", "ok": true, "detail": {"renderPath": "hdr-msaa", "droppedFeatures": null, "missingInputs": null, "droppedPasses": null, "reducedMotion": true}}
+{"name": "reduced motion honoured", "ok": true, "detail": {"renderPath": "hdr-msaa", "droppedFeatures": null, "missingInputs": null, "droppedPasses": null, "reducedMotion": true}}
+{"name": "intro card states the objective", "ok": true, "detail": "SHADOWSTEP GAUNTLETReach the Valley Gate, 2,640 m.Ready.Run the Village \u2192A / Dchange laneWjumpSslide1echo clones2spiral orb3gale starShiftsurge dashSpacecycle formEsc / Mpause / muteTouch: swipe to mo"}
+{"name": "title W starts the countdown, not the run", "ok": true, "detail": {"afterW": {"phase": "intro", "countdown": true}, "afterW2": "intro"}}
+{"name": "title W shows the 3-2-1 countdown", "ok": true, "detail": true}
+{"name": "pause button visible and at least 44 px", "ok": true, "detail": {"w": 63, "h": 44}}
+{"name": "pause button pauses the run", "ok": true, "detail": {"paused": "paused", "s0": 27.124437499999992, "s1": 27.124437499999992}}
+{"name": "resume continues the run", "ok": true, "detail": "running"}
+{"name": "hidden tab pauses the run and suspends audio", "ok": true, "detail": {"phase": "paused", "audio": {"supported": true, "active": true, "muted": false, "suspended": true}}}
+{"name": "returning to the tab keeps the run paused until Resume", "ok": true, "detail": "paused"}
+{"name": "window blur pauses the run", "ok": true, "detail": "paused"}
+{"name": "swipe right changes lane", "ok": true, "detail": {"lane0": 0, "lane1": 1}}
+{"name": "mute is saved", "ok": true, "detail": {"text": "Sound off", "stored": "1"}}
+{"name": "win shows the result card and saves the best run", "ok": true, "detail": {"phase": "won", "result": true, "text": "RUN COMPLETEThe village is safe.From the lantern gate to the valley falls.2640 m \u00b7 100 defeated \u00b7 best combo 73x \u00b7 score 39090First run on this course saved as your best.Run again", "best": "{\"score\":39090,\"distance\":2640,\"combo\":73,\"kills\":100}"}}
+{"name": "run again after a win shows the 3-2-1 countdown", "ok": true, "detail": true}
+{"name": "run again after a win starts a fresh run", "ok": true, "detail": {"s": 1.8005958333333334, "kills": 0, "health": 5}}
+{"name": "loss shows the result card", "ok": true, "detail": {"phase": "lost", "result": true}}
+{"name": "run again after a loss shows the 3-2-1 countdown", "ok": true, "detail": true}
