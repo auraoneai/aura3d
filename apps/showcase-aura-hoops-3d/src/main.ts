@@ -452,6 +452,10 @@ const QA_STEP = initialParams.get("diag") === "1" && initialParams.get("qaStep")
 let qaStepsLeft = 0;
 if (QA_STEP && typeof window !== "undefined") (window as unknown as { __qaStep: (n?: number) => void }).__qaStep = (n = 1) => { qaStepsLeft += n; };
 const QA_LEAD = initialParams.get("diag") === "1" ? Number(initialParams.get("qaLead")) || 1 : 1;
+/** ?diag=1&qaAo=0|1 builds the look from its flat nodes with the ambient-occlusion pass dropped (0) or kept (1), for AO on/off pairs (measurement only). */
+const QA_AO = initialParams.get("diag") === "1" ? initialParams.get("qaAo") : null;
+/** ?diag=1&qaTarget=N plays to N points so a run reaches the results card quickly (measurement only). */
+const QA_TARGET = initialParams.get("diag") === "1" ? Number(initialParams.get("qaTarget")) || 0 : 0;
 
 const game_ = {
   mode: "quick" as ModeId,
@@ -823,9 +827,14 @@ function buildCones(): any[] {
 }
 
 function buildScene(v: VenueSpec): any {
-  const s = scene()
-    .background(v.bg)
-    .add(looks.preset(v.look, { fogDensityScale: 0, exposureEv: 0.16 }))
+  const lookOverrides = { fogDensityScale: 0, exposureEv: 0.16 };
+  const s = scene().background(v.bg);
+  if (QA_AO === "0" || QA_AO === "1") {
+    s.addMany(looks.nodes(v.look, lookOverrides).filter((n) => QA_AO === "1" || (n.toJSON() as { name?: string }).name !== "look ambient occlusion"));
+  } else {
+    s.add(looks.preset(v.look, lookOverrides));
+  }
+  s
     .add(effects.contactShadows({ intensity: 0.7, length: 0.28 }))
     .add(effects.vignette({ intensity: 0.16, smoothness: 0.7 }))
     .camera(camera.perspective({ position: [0, 9.2, 17.4], target: [0, 1.4, 2.4], fov: 34, far: v.orbit ? 900 : 240 }))
@@ -1653,7 +1662,7 @@ function startMatch(mode: ModeId): void {
   game_.scoreAway = 0;
   game_.matchT = 0;
   game_.jam = mode === "dunklab" ? 1 : 0.35;
-  game_.target = mode === "blacktop" ? 21 : 11;
+  game_.target = QA_TARGET > 0 ? QA_TARGET : mode === "blacktop" ? 21 : 11;
   game_.servingTeam = "home";
   resetAthletes();
 
