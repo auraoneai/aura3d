@@ -82,10 +82,10 @@ Nothing needs editing in the game. These are the behaviour changes that do reach
 ## Checklist
 
 - [x] Run `node tools/game-checks/run.mjs cloud-runner-port` and confirm 0 errors (0 errors, 0 warnings on 2026-10-29).
-- [ ] Load the game with `?autostart=1` and read `diagnostics().renderPath`. Expect `path: "hdr-msaa"`, `quality: "auto"` and `bloomFusion: "separable"`.
-- [ ] Confirm `diagnostics()` shows no `OPTION_IGNORED` or other new degradation entries.
-- [ ] On 4.5.0, compare one `capture()` frame at a `place(s)` position between `?aura3d-render=production` and the default. Expect differences of at most 1/255 on bloom edges.
-- [ ] Compare the same `place(s)` frame between 4.3.7 and 4.5.0 with `?aura3d-render=production`. Expect no change in overall brightness (this checks the hemisphere light and exposure assumptions).
+- [x] Read `diagnostics().renderPath`: `path: "hdr-msaa"`, `quality: "auto"`, `bloomFusion: "separable"` on the base and on the lane branch (remote runs `g25-hd-before-194701`, `g25-hd-after-194659`, 1280x720).
+- [x] `diagnostics()` has no `OPTION_IGNORED` entry (same runs). The only warning is the generic "Scene has no interactions" hint, which does not apply to a chase-camera runner. `post.warnings` lost the two `bloom.radius` deprecations (row CR-11). The SSAO pass is still listed as dropped for `ssao:normals` on this branch; lane E2 owns that row.
+- [x] Fused bloom against the production pass sequence, measured by lane E1 (RP-05, `docs/audits/lanes/e1.md`): mean per-pixel difference 22.6 (max 168), against 32.9 (max 177) between two shots of the same mounted mode. The game animates between shots, so the 1/255 bound cannot be read from this game; the fused difference is below the repeat noise, and the render path is the same on both.
+- [x] 4.3.7 against 4.5.0 at steady state, measured by lane E5 (LIGHT-02 sweep, `docs/audits/lanes/e5.md`, 1280x720, 60 s after ready): mean luma 109.07 to 112.44 (+3.1%), 0% clipped, `hdr-msaa`. So 4.5.0 is slightly brighter, not unchanged. With lane E2's hemisphere fix the `sky-fill` light adds another +1.0%. The game does not retune for either.
 - [x] Decide whether to pin `quality: "production"`: not pinned. The default stays (decision recorded in `docs/audits/lanes/g25.md`).
-- [x] Run the unit tests in `tests/unit/kid-goku-beyond-the-clouds-port/` (106 passed on 2026-10-29) (replay, gait, game, presentation, scenery, audio-cues, shader-compile, locomotion and sim). They do not touch the render path.
+- [x] Run the unit tests in `tests/unit/kid-goku-beyond-the-clouds-port/` (109 passed on 2026-10-29) (replay, gait, game, presentation, scenery, audio-cues, shader-compile, locomotion and sim). They do not touch the render path.
 - [x] Hook-name mismatch: resolved the other way round. The game now publishes `__AURA_CUMULUS_DASH__` again (`installQaHooks("cumulus-dash", ...)`, audit row CR-8), which is the name those three specs already read. The specs that read both names keep working.

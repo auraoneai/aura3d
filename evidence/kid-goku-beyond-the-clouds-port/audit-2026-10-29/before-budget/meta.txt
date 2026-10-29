@@ -1,0 +1,7 @@
+CR_META {"hook":"__AURA_KID_GOKU__"}
+CR_META {"shot":"budget-60","s":60,"drawCalls":{"v":187,"at":"dg.drawCalls"},"textureBytes":{"v":172725760,"at":"dg.frameAllocations.device.textureBytes"},"culled":null}
+CR_META {"shot":"budget-520","s":520,"drawCalls":{"v":159,"at":"dg.drawCalls"},"textureBytes":{"v":176915968,"at":"dg.frameAllocations.device.textureBytes"},"culled":null}
+CR_META {"shot":"budget-1100","s":1100,"drawCalls":{"v":127,"at":"dg.drawCalls"},"textureBytes":{"v":189498880,"at":"dg.frameAllocations.device.textureBytes"},"culled":null}
+CR_META {"shot":"budget-1420","s":1420,"drawCalls":{"v":84,"at":"dg.drawCalls"},"textureBytes":{"v":189498880,"at":"dg.frameAllocations.device.textureBytes"},"culled":null}
+CR_META {"shot":"budget-1700","s":1700,"drawCalls":{"v":69,"at":"dg.drawCalls"},"textureBytes":{"v":189498880,"at":"dg.frameAllocations.device.textureBytes"},"culled":null}
+CR_DONE budget

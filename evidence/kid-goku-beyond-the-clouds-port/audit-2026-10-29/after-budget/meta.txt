@@ -1,0 +1,7 @@
+CR_META {"hook":"__AURA_CUMULUS_DASH__"}
+CR_META {"shot":"budget-60","s":60,"drawCalls":{"v":149,"at":"dg.drawCalls"},"textureBytes":{"v":176915968,"at":"dg.frameAllocations.device.textureBytes"},"culled":39}
+CR_META {"shot":"budget-520","s":520,"drawCalls":{"v":130,"at":"dg.drawCalls"},"textureBytes":{"v":176915968,"at":"dg.frameAllocations.device.textureBytes"},"culled":33}
+CR_META {"shot":"budget-1100","s":1100,"drawCalls":{"v":113,"at":"dg.drawCalls"},"textureBytes":{"v":189498880,"at":"dg.frameAllocations.device.textureBytes"},"culled":31}
+CR_META {"shot":"budget-1420","s":1420,"drawCalls":{"v":78,"at":"dg.drawCalls"},"textureBytes":{"v":189498880,"at":"dg.frameAllocations.device.textureBytes"},"culled":31}
+CR_META {"shot":"budget-1700","s":1700,"drawCalls":{"v":69,"at":"dg.drawCalls"},"textureBytes":{"v":189498880,"at":"dg.frameAllocations.device.textureBytes"},"culled":32}
+CR_DONE budget

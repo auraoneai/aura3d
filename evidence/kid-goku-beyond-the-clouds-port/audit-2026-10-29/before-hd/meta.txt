@@ -1,0 +1,7 @@
+CR_META {"hook":"__AURA_KID_GOKU__"}
+CR_META {"shot":"hd-luma-60","later":{"w":1280,"h":720,"mean":130.19,"p5":76,"p50":129,"p95":182,"sat":0.3,"corner":106.75,"centre":202.4,"darkFrac":0,"clipFrac":0}}
+CR_META {"shot":"hd-luma-520","later":{"w":1280,"h":720,"mean":129.25,"p5":53,"p50":130,"p95":200,"sat":0.3,"corner":97.33,"centre":203.41,"darkFrac":0,"clipFrac":0}}
+CR_META {"shot":"hd-luma-1420","later":{"w":1280,"h":720,"mean":125.96,"p5":61,"p50":127,"p95":179,"sat":0.26,"corner":103.51,"centre":180.83,"darkFrac":0,"clipFrac":0}}
+CR_META {"shot":"hd-diagnostics","warnings":"[\"Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.\"]","optionIgnored":false,"drawCalls":84,"renderPath":{"path":"hdr-msaa","quality":"auto","bloomFusion":"separable"}}
+CR_META {"shot":"hd-play","s0":30,"s1":89,"phase":"playing","score":361,"stats":{"w":1280,"h":720,"mean":128.9,"p5":73,"p50":127,"p95":183,"sat":0.32,"corner":101.16,"centre":202.04,"darkFrac":0,"clipFrac":0}}
+CR_DONE hd
