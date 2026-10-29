@@ -1,0 +1,111 @@
+/Users/gurbakshchahal/platforms/aura3d                                              1b89fe28b [main]
+/private/tmp/audit-450                                                              31f8945ad (detached HEAD)
+/private/tmp/base-e5                                                                b2dba3713 (detached HEAD)
+/private/tmp/before-e1                                                              b2dba3713 (detached HEAD)
+/private/tmp/before-e2                                                              b2dba3713 (detached HEAD)
+/private/tmp/before-e3                                                              b2dba3713 (detached HEAD)
+/private/tmp/before-e4                                                              b2dba3713 (detached HEAD)
+/private/tmp/before-e5-437                                                          62c56e207 (detached HEAD)
+/private/tmp/before-g01                                                             b2dba3713 (detached HEAD)
+/private/tmp/before-g02                                                             b2dba3713 (detached HEAD)
+/private/tmp/before-g03                                                             b2dba3713 (detached HEAD)
+/private/tmp/before-g04                                                             b2dba3713 (detached HEAD)
+/private/tmp/before-g05                                                             b2dba3713 (detached HEAD)
+/private/tmp/before-g06                                                             b2dba3713 (detached HEAD)
+/private/tmp/before-g07                                                             b2dba3713 (detached HEAD)
+/private/tmp/before-g08                                                             b2dba3713 (detached HEAD)
+/private/tmp/before-g09                                                             b2dba3713 (detached HEAD)
+/private/tmp/v437-g01                                                               62c56e207 (detached HEAD)
+/private/tmp/v437-g02                                                               62c56e207 (detached HEAD)
+/private/tmp/v437-g03                                                               62c56e207 (detached HEAD)
+/private/tmp/v437-g06                                                               62c56e207 (detached HEAD)
+/private/tmp/v437-g07                                                               62c56e207 (detached HEAD)
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/agent-a216dc3ee8ff42477    763f56e36 [beat3js/k1]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/agent-a30c33ad9ee9e9f42    e22c4cb7e [beat3js/p1]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/agent-a4fedc90422edb7da    c18c2dad2 [beat3js/p2]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/agent-a594fee68afdee594    64fa07726 [beat3js/s]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/agent-a5da43af7f8f55c9c    50938709e [beat3js/b]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/agent-a985343892763c790    3708b67ac [beat3js/nextprd]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/agent-aa143a6997d1b6c9f    e8fe25f0c [beat3js/d1]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/agent-aacb3f86d3e4fab35    b2c7a4ccf [beat3js/gates]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/agent-ab6266f0c499d327a    000a27a55 [beat3js/k2]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/agent-ab93168a45a6a2994    294fe16d5 [beat3js/vis]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/agent-abef2e7963674c6be    6637b9131 [beat3js/w0]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/agent-acec0b06063f8d7bf    e9f0f647b [worktree-agent-acec0b06063f8d7bf]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/agent-ade1adbfde0ebb345    2e9f9e545 [beat3js/k3]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/agent-ae2b7f3437001bf23    0e503ea1e [beat3js/bench2]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/agent-aec4db82774243d7b    357aa151c [beat3js/q]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-e1                   0c563444e [audit-fix/e1]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-e2                   e77f3f403 [audit-fix/e2]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-e3                   09dbcbeaf [audit-fix/e3]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-e4                   fd958bc56 [audit-fix/e4]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-e5                   264fffdbc [audit-fix/e5]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g01                  dc64a21bd [audit-fix/g01]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g02                  a5e48f571 [audit-fix/g02]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g03                  4c1461b72 [audit-fix/g03]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g04                  6502688e7 [audit-fix/g04]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g05                  8561efb27 [audit-fix/g05]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g06                  d1f38ec28 [audit-fix/g06]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g07                  681b77cba [audit-fix/g07]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g08                  b23c6a3ae [audit-fix/g08]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g09                  c2fe20792 [audit-fix/g09]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g10                  b2dba3713 [audit-fix/g10]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g11                  b2dba3713 [audit-fix/g11]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g12                  b2dba3713 [audit-fix/g12]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g13                  b2dba3713 [audit-fix/g13]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g14                  b2dba3713 [audit-fix/g14]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g15                  b2dba3713 [audit-fix/g15]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g16                  b2dba3713 [audit-fix/g16]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g17                  b2dba3713 [audit-fix/g17]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g18                  b2dba3713 [audit-fix/g18]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g19                  b2dba3713 [audit-fix/g19]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g20                  b2dba3713 [audit-fix/g20]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g21                  b2dba3713 [audit-fix/g21]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g22                  b2dba3713 [audit-fix/g22]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g23                  b2dba3713 [audit-fix/g23]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g24                  b2dba3713 [audit-fix/g24]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-g25                  b2dba3713 [audit-fix/g25]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/audit-integration          b2dba3713 [audit-fix/integration]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/g450-hoops-old             1b89fe28b (detached HEAD)
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/g450b1-new                 544b73bd4 (detached HEAD)
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/g450b1-old                 1b89fe28b (detached HEAD)
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/games450-capture-5-new     544b73bd4 [games450/capture-5]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/games450-new-1             544b73bd4 (detached HEAD)
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/ic-base-437                1b89fe28b (detached HEAD)
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/ic450-old                  1b89fe28b (detached HEAD)
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/integration                bf498418c [beat3js/integration]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/integration2               198e306cb [beat3js2/integration]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/pips-base-4.3.7            1b89fe28b (detached HEAD)
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/release450                 31f8945ad (detached HEAD)
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/upgrade-guides             367a33692 [docs/upgrade-450-games]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_1a6da830-f72-1          dfed7cc52 [beat3js2/wp8-first-frame]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_1a6da830-f72-2          c0f763dc8 [beat3js2/vis-fixes]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_3e9f7702-eac-1          1b89fe28b [worktree-wf_3e9f7702-eac-1]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_3e9f7702-eac-3          544b73bd4 [games450/capture-3]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_3e9f7702-eac-31         198e306cb [games450/fix-iron-crown]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_3e9f7702-eac-32         198e306cb [games450/fix-pips-big-leap]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_3e9f7702-eac-33         198e306cb [games450/fix-aura-hoops-3d]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_3e9f7702-eac-34         198e306cb [games450/fix-aura-diamond-3d]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_3e9f7702-eac-4          1b89fe28b [worktree-wf_3e9f7702-eac-4]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_3e9f7702-eac-4/.new450  544b73bd4 [games450/capture-4]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_3e9f7702-eac-5          1b89fe28b [worktree-wf_3e9f7702-eac-5]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_bf6f9bc4-a9a-1          774584268 [beat3js2/wp1-bloom-fusion]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_bf6f9bc4-a9a-10         aeb84fa16 [beat3js2/wp5-frame-submission-fixes]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_bf6f9bc4-a9a-12         851e1890d [beat3js2/wp7-skinned-gameloop-fixes]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_bf6f9bc4-a9a-2          428fa9f16 [beat3js2/wp5-frame-submission]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_bf6f9bc4-a9a-3          4c022d471 [beat3js2/wp7-skinned-gameloop]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_bf6f9bc4-a9a-4          7d297bd78 [beat3js2/wp9-draw-reduction]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_bf6f9bc4-a9a-6          10c51408b [beat3js2/wp9-draw-reduction-fixes]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_bf6f9bc4-a9a-8          33d4dc329 [beat3js2/wp1-bloom-fusion-fixes]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_e285f2f0-1e7-1          5314e5888 [beat3js2/wp2-math-three]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_e285f2f0-1e7-10         0cd216e22 [beat3js2/wp6-exposure-fixes]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_e285f2f0-1e7-12         26a67e44f [beat3js2/wp2-math-three-fixes]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_e285f2f0-1e7-2          eba4d1e3c [beat3js2/wp3-shadow-tiers]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_e285f2f0-1e7-3          097ca5ec1 [beat3js2/wp4-contact-shadows]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_e285f2f0-1e7-4          7af50fbaa [beat3js2/wp6-exposure]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_e285f2f0-1e7-6          100d98dbf [beat3js2/wp3-shadow-tiers-fixes]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_e285f2f0-1e7-8          f2577b209 [beat3js2/wp4-contact-shadows-fixes]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_f7167b37-d24-1          36d41eb65 [post450/bench]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_f7167b37-d24-2          3fac1b515 [post450/ironcrown]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wf_f7167b37-d24-3          31f8945ad [post450/copy]
+/Users/gurbakshchahal/platforms/aura3d/.claude/worktrees/wonder-world               31f8945ad [feat/wonder-world-foundation-20261029]
