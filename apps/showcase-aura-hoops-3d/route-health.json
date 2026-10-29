@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-10-17T09:56:00.000Z",
+  "generatedAt": "2026-10-29T16:00:00.000Z",
   "appId": "showcase-aura-hoops-3d",
   "route": "/apps/showcase-aura-hoops-3d/",
   "classification": "candidate",
@@ -9,18 +9,18 @@
   "machinePass": true,
   "renderer": {
     "path": "createAuraApp root safe API",
-    "mode": "production",
+    "mode": "auto",
     "nativeWebGPU": false,
     "productionRuntimeClaimed": true
   },
   "primaryAssets": [
     {
-      "typedRef": "assets.hoopsAthleteGuard",
+      "typedRef": "assets.hoopsAthleteGuardKit",
       "quality": "candidate",
       "role": "heroCast"
     },
     {
-      "typedRef": "assets.hoopsAthleteBig",
+      "typedRef": "assets.hoopsAthleteBigKit",
       "quality": "candidate",
       "role": "heroCast"
     },
@@ -174,5 +174,23 @@
       "quality": "candidate",
       "role": "audioCue"
     }
-  ]
+  ],
+  "measured": {
+    "source": "remote ACR, software WebGL2, 1280x720, tests/browser/audit-fix/aura-hoops-3d.spec.ts",
+    "run": "g07-final-sweep-135926 / g07-final2-screens-144440",
+    "drawCallsPerCourtAtCheck": {
+      "rucker": 344,
+      "venice": 347,
+      "athens": 328,
+      "manila": 280,
+      "shanghai": 341,
+      "orbit": 278
+    },
+    "drawCallsLivePlayRange": [
+      87,
+      397
+    ],
+    "renderPath": "hdr-msaa",
+    "triangles": "not reported by diagnostics() on this build"
+  }
 }

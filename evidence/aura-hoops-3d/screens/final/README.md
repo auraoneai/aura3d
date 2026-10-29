@@ -1,4 +1,17 @@
-# Aura Hoops 3D: final screenshots (2026-10-25)
+# Aura Hoops 3D: final screenshots
+
+## Retake 2026-10-29 (4.5.0 render, audit-fix lane G07)
+
+Every frame in `1280x720/`, `390x844/` and `card/` was replaced with the same file name and pixel size from remote run
+`g07-final2-screens-144440` (`audit-fix/g07` at 72f27e589, `tests/browser/audit-fix/aura-hoops-3d.spec.ts` `@screens`;
+software WebGL2, not real-GPU frames). Gameplay frames are taken 25 s after ready and then every 14 s, autopilot on.
+They show the 4.5.0 render (contact mask, real-depth AO), team kits (home orange, away light alternate with purple
+shorts, square away rings), the fixed check prompt, the phone touch controls and the clear-sight chase camera. Numbers
+per frame: `evidence/aura-hoops-3d/audit-fix-2026-10-29/after-screens/meta.jsonl`. The results screen is in
+`evidence/aura-hoops-3d/audit-fix-2026-10-29/after-results/`.
+
+## Earlier set (2026-10-25)
+
 
 - **Build:** `origin/game-rework` head `8da9c05d3` (play-fix, sports UI fix and shared quick bar included). Hoops and Links 390x844 and card frames, and the Links cards, come from the same head plus commit `4d9546a03` (venue chip hidden on phones). Desktop frames of Hoops and Links predate that CSS change.
 - **Runner:** remote ACR task (`tools/remote-acr/run.sh`), headless Chromium on **software WebGL2 (SwiftShader), not real-GPU frames**. RUN_IDs `fina-*`. A frame costs about 3 s there, so game time runs slow and "late" states are far fewer than on a real GPU.

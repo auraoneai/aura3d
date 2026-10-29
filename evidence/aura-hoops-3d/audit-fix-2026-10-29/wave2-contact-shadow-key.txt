@@ -1,0 +1,18 @@
+rucker [0,1.4,2.4] no warning share 98.4%
+rucker [0,1.6,2.5] no warning share 98.4%
+    directional:look key light:2.6:#ffb46b:shadow=true | spot:f-11-7:1.9:#ffd9b0:shadow=undefined | spot:f11-7:1.9:#ffd9b0:shadow=undefined | spot:f-1113:1.9:#ffd9b0:shadow=undefined | spot:f1113:1.9:#ffd9b0:shadow=undefined
+venice [0,1.4,2.4] no warning share 100.0%
+venice [0,1.6,2.5] no warning share 100.0%
+    directional:look key light:2.6:#ffb46b:shadow=true
+athens [0,1.4,2.4] no warning share 100.0%
+athens [0,1.6,2.5] no warning share 100.0%
+    directional:look key light:3:#fff2e0:shadow=true
+manila [0,1.4,2.4] no warning share 98.3%
+manila [0,1.6,2.5] no warning share 98.3%
+    directional:look key light:2:#ffe3c2:shadow=true | spot:f-13-4:2.2:#ffd9a8:shadow=undefined | spot:f13-4:2.2:#ffd9a8:shadow=undefined | spot:f-1312:2.2:#ffd9a8:shadow=undefined | spot:f1312:2.2:#ffd9a8:shadow=undefined
+shanghai [0,1.4,2.4] no warning share 93.2%
+shanghai [0,1.6,2.5] no warning share 93.1%
+    directional:look key light:0.7:#7d9dd4:shadow=true | point:a:1.6:#39d7ff:shadow=undefined | point:b:1.3:#e26bff:shadow=undefined
+orbit [0,1.4,2.4] no warning share 94.3%
+orbit [0,1.6,2.5] no warning share 94.1%
+    directional:look key light:0.7:#7d9dd4:shadow=true | point:o:2:#7dfcff:shadow=undefined
