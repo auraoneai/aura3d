@@ -287,7 +287,7 @@ const WORLD_TEAMS: readonly ClassicTeam[] = [
   { name: "San Juan", abbr: "SJU", rating: 0.73 },
   { name: "Caracas", abbr: "CAR", rating: 0.71 },
   { name: "Monterrey", abbr: "MTY", rating: 0.69 },
-  { name: "Tapei City", abbr: "TPE", rating: 0.67 },
+  { name: "Taipei City", abbr: "TPE", rating: 0.67 },
   { name: "Sydney", abbr: "SYD", rating: 0.62 },
   { name: "Amsterdam", abbr: "AMS", rating: 0.58 },
   { name: "Roma", abbr: "ROM", rating: 0.55 },
