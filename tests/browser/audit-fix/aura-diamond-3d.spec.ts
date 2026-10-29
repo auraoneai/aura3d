@@ -31,6 +31,15 @@ const SHOTS: readonly Shot[] = [
   { name: "dia-shot-skyline-noao", query: "?park=skyline&qa-ao=0", w: 1280, h: 720 }
 ];
 
+/** Run groups (`--grep=grpN`) so each remote run stays inside the 3600 s ACR step limit. */
+const GROUPS: Record<string, string> = {
+  "dia-shot-sandlot-desktop": "grp1", "dia-shot-skyline-desktop": "grp1", "dia-shot-canyon-desktop": "grp1",
+  "dia-shot-ivy-desktop": "grp2", "dia-shot-dome-desktop": "grp2", "dia-shot-lunar-desktop": "grp2",
+  "dia-shot-sandlot-phone": "grp3", "dia-shot-skyline-phone": "grp3", "dia-shot-ivy-noao": "grp3",
+  "dia-shot-ivy-nocontact": "grp4", "dia-shot-skyline-noao": "grp4"
+};
+const groupOf = (name: string): string => GROUPS[name] ?? "grp0";
+
 async function lumaStats(page: Page, png: Buffer) {
   return page.evaluate(async (b64) => {
     const blob = await (await fetch(`data:image/png;base64,${b64}`)).blob();
@@ -115,7 +124,7 @@ test.describe("aura-diamond-3d audit-fix", () => {
 
   for (const shot of SHOTS) {
     // Tag every non-desktop target "setb" so a run can select it with --grep=setb (az acr run cannot carry a "|" in SPECS).
-    test(shot.name.endsWith("-desktop") ? shot.name : `${shot.name} setb`, async ({ page }) => {
+    test(`${shot.name} ${groupOf(shot.name)}${shot.name.endsWith("-desktop") ? "" : " setb"}`, async ({ page }) => {
       await open(page, server, shot.query, shot.w, shot.h, shot.name);
       const loaded = Date.now();
       for (const sec of SETTLE_SECONDS) {
@@ -128,7 +137,7 @@ test.describe("aura-diamond-3d audit-fix", () => {
   }
 
   /** C1: what a real key press does. BEFORE: the first press queues an automatic PERFECT swing. AFTER: grades follow timing. */
-  test("dia-probe-swing setb", async ({ page }) => {
+  test("dia-probe-swing setb grp5", async ({ page }) => {
     await open(page, server, "?park=sandlot", 1280, 720, "dia-probe-swing");
     const results: unknown[] = [];
     for (let i = 0; i < 3; i++) {
@@ -148,7 +157,7 @@ test.describe("aura-diamond-3d audit-fix", () => {
   });
 
   /** C1: a pitch with no input. AFTER: the pitch is delivered and called a strike or a ball. BEFORE: nothing is pitched. */
-  test("dia-probe-take setb", async ({ page }) => {
+  test("dia-probe-take setb grp5", async ({ page }) => {
     await open(page, server, "?park=sandlot", 1280, 720, "dia-probe-take");
     const start = await evidence(page);
     const pitched = await waitPhase(page, ["pitch"], 600_000);
@@ -158,7 +167,7 @@ test.describe("aura-diamond-3d audit-fix", () => {
   });
 
   /** Deterministic sim probe through the QA step hook (AFTER only): early, on-time and late presses, plus the results screen. */
-  test("dia-probe-qa setb", async ({ page }) => {
+  test("dia-probe-qa setb grp5", async ({ page }) => {
     await open(page, server, "?park=sandlot&qa=1", 1280, 720, "dia-probe-qa");
     const hasQa = await page.evaluate(() => typeof (globalThis as any).__AURA3D_GAME_DIAMOND__?.qaSwingAt === "function");
     if (!hasQa) {
