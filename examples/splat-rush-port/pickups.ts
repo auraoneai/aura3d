@@ -51,6 +51,11 @@ export function addPickups(builder: Scene): void {
   }
 }
 
+/** Every pickup and halo node id (for program warm-up). */
+export function pickupNodeIds(): string[] {
+  return TYPES.flatMap((type) => Array.from({ length: PER_TYPE }, (_, k) => [pickupId(type, k), haloId(type, k)]).flat());
+}
+
 export function hidePickups(node: (id: string) => NodeHandle): void {
   for (const type of TYPES) {
     for (let k = 0; k < PER_TYPE; k++) {
@@ -60,14 +65,15 @@ export function hidePickups(node: (id: string) => NodeHandle): void {
   }
 }
 
-export function updatePickups(node: (id: string) => NodeHandle, powerups: readonly Powerup[], elapsed: number): void {
+/** `back` steps the pickups back with the interpolated road (see presentation.ts). */
+export function updatePickups(node: (id: string) => NodeHandle, powerups: readonly Powerup[], elapsed: number, back = 0): void {
   const used: Record<Powerup["type"], number> = { rainbow: 0, shield: 0, x2: 0, switch: 0 };
   for (const pu of powerups) {
     const k = used[pu.type]++;
     if (k >= PER_TYPE) continue;
     const wobble = 0.55 * Math.sin(elapsed * 2.1 + pu.laneX);
-    node(pickupId(pu.type, k)).setVisible(true).setPosition(pu.x, pu.y + 0.85, pu.z).setRotation(0, wobble, 0.06 * Math.sin(elapsed * 3.3 + pu.z));
-    node(haloId(pu.type, k)).setVisible(true).setPosition(pu.x, 0.06, pu.z).setScale(1.05 + 0.08 * Math.sin(elapsed * 4 + pu.z));
+    node(pickupId(pu.type, k)).setVisible(true).setPosition(pu.x, pu.y + 0.85, pu.z - back).setRotation(0, wobble, 0.06 * Math.sin(elapsed * 3.3 + pu.z));
+    node(haloId(pu.type, k)).setVisible(true).setPosition(pu.x, 0.06, pu.z - back).setScale(1.05 + 0.08 * Math.sin(elapsed * 4 + pu.z));
   }
   for (const type of TYPES) {
     for (let k = used[type]; k < PER_TYPE; k++) {
