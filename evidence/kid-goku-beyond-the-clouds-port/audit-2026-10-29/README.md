@@ -31,3 +31,27 @@ All frames are remote software WebGL2 (SwiftShader) on `tools/remote-acr/run.sh`
 | CR-6 portrait log | log band about y 490-665 of 844, rock-textured | log band about y 500-605 of 844, bark-coloured |
 | CR-9 touch hint | "← → OR A D TO STEER" | "TAP ◀ ▶ TO STEER" |
 | CR-11 post warnings | `post-field-deprecated:bloom.radius` twice | none |
+
+## 1280x720 steady state (`before-hd/`, `after-hd/`)
+
+Runs `g25-hd-before-194701` (base b2dba3713) and `g25-hd-after-194659` (lane). Second render at each point, after a 30 s settle.
+
+| place(s) | before | after |
+|---|---|---|
+| 60 | 130.19 | 130.68 |
+| 520 | 129.25 | 129.67 |
+| 1420 | 125.96 | 126.38 |
+
+Both: `hdr-msaa`, quality `auto`, bloom fusion `separable`, no `OPTION_IGNORED`, 0% black, 0% clipped. 240 frames of play from s=30 reached s=89 and score 361 on both builds (`hd-play-page.jpg`).
+
+## Draw-call and texture budget (`before-budget/`, `after-budget/`)
+
+Runs `g25-budget-before-195017` and `g25-budget-after-194950`, 960x540.
+
+| place(s) | draw calls before | after | chunks culled | textureBytes |
+|---|---|---|---|---|
+| 60 | 187 | 149 | 39 | 172.7 MB → 176.9 MB |
+| 520 | 159 | 130 | 33 | 176.9 MB |
+| 1100 | 127 | 113 | 31 | 189.5 MB |
+| 1420 | 84 | 78 | 31 | 189.5 MB |
+| 1700 | 69 | 69 | 32 | 189.5 MB |
