@@ -4,7 +4,7 @@
 
 ## What this game uses
 
-- Entry point: `apps/showcase-aura-hoops-3d/index.html` loads `src/main.ts` (3306 lines). Other files: `src/aura-assets.route.ts` (typed assets), `src/shotPhysics.ts`, `src/dribble.ts`, `src/hitStop.ts`, `src/locomotionRates.ts`. It imports `apps/showcase-port-shared/quickbar.css` only. There is no `apps/common` import.
+- Entry point: `apps/showcase-aura-hoops-3d/index.html` loads `src/main.ts` (3306 lines at 4.5.0; the audit-fix branch adds `src/rules.ts` and `src/input.ts` and removes the unused `src/hitStop.ts`). Other files: `src/aura-assets.route.ts` (typed assets), `src/shotPhysics.ts`, `src/dribble.ts`, `src/locomotionRates.ts`. It imports `apps/showcase-port-shared/quickbar.css` only. There is no `apps/common` import.
 - One `createAuraApp("#app", ...)` call at `src/main.ts:814-819`. Options: `scene`, `...looks.appOptions(venue.look)`, `qualityRebuild: { flags: ["game"] }`, `diagnostics: false`. There is no `quality`, `output`, `preserveDrawingBuffer` or `renderer.bloomFusion` option.
 - `looks.appOptions()` returns `renderer: { qualityProfile: "production" }` and a `pixelRatio` when the look expansion is v0 (`packages/engine/src/agent-api/looks/looks.ts:424-432`; it returns `{}` if the expansion resolves to `v1-contracts`, `looks.ts:425`). `qualityProfile` is the deprecated pixel-ratio preset, not a pipeline request (`packages/engine/src/agent-api/app/renderPath.ts:138`, `requestedQuality`, which reads only `?aura3d-render=` and `options.quality`). Quality is therefore `"auto"`. `apps/showcase-aura-hoops-3d/route-health.json` still says `renderer.mode: "production"`; that is descriptive text and does not set anything.
 - Six courts, each rebuilt through `auraApp.setScene(buildScene(venue))` (`src/main.ts:3133`). Look per court (`src/main.ts:218-250`): Rucker and Venice `golden-hour`, Athens `outdoor-day`, Manila `interior-warm`, Shanghai `night-city`, Orbit `neon-arcade`.
@@ -28,7 +28,8 @@
 - **Before (4.3.7):** `effects.contactShadows()` lowered to the SSAO pass, so it behaved like extra ambient occlusion on top of the look's own AO.
 - **Now:** it no longer lowers to the SSAO pass (`packages/engine/src/agent-api/compiler/postprocess.ts:70-71`). It marches a screen-space mask along the shadow-casting sun, and forward lighting samples it (`packages/rendering/src/passes/Prd02ContactShadowsContributor.ts:1-18`). It adds a half-resolution depth pass.
 - **Applies because:** `src/main.ts:783` calls `effects.contactShadows({ intensity: 0.7, length: 0.28 })`. Every look adds a shadow-casting directional light (`looks.ts:304-311`), which the mask needs. Floors and court lines are `primitives.*` with `receiveShadow` defaulting to true (`packages/engine/src/agent-api/nodes/primitives.ts:89`), so they sample it. Options `intensity` and `length` are valid (`packages/engine/src/agent-api/nodes/effects.lighting.ts:8-14`; defaults 1 and 0.25).
-- **Expect:** darker contact under the athletes, ball, hoop base and court lines. The mask only darkens the sun's light, so the spot floodlights (Manila, Rucker) and point fills (Shanghai, Orbit) are not affected by it. The game also draws its own blob shadows (`ball-shadow` `:604`, `${id}-shadow` `:623`), so the two can stack. I have not rendered it, so the size of the change is unknown.
+- **Expect:** darker contact under the athletes, ball, hoop base and court lines. The mask only darkens the sun's light, so the spot floodlights (Manila, Rucker) and point fills (Shanghai, Orbit) are not affected by it. The game also draws its own blob shadows (`ball-shadow` `:604`, `${id}-shadow` `:623`), so the two can stack.
+- **Measured (2026-10-29, lane G07):** see "Measured on the remote runner" below. `lighting.diagnostics().contactShadows` reads `{ passExecuted: true, depthSource: "self" }` on every 4.5.0 court (4.3.7 reported `depthSource: "scene"`), with no `unavailable` and no `[prd02.contactShadows]` warning in any run log.
 - **When it does not run:** at quality tier `low` (`Prd02ContactShadowsContributor.ts:99`), or when vetoed by `A3D_QR_LIGHTING_CONTACT=off` / `?a3dLighting=contact=off`.
 - **Materials that skip the mask:** the contributor's own warning (`Prd02ContactShadowsContributor.ts:230`) says textured-PBR materials with glTF extension textures (clearcoat, transmission and similar) do not sample the mask. Whether the athlete GLBs (`assets.hoopsAthleteGuard`, `assets.hoopsAthleteBig`) are in that group is unknown.
 - **What to do:** capture all six courts before and after. If the floor reads too dark, lower `intensity` and let the existing blobs carry the contact shadow:
@@ -87,15 +88,40 @@
 - Scene kit fixes, built-in humanoid provenance (12): no scene kits and no built-in humanoid.
 - Effects fix for depth of field, god rays, TAA, motion blur, auto exposure (9, other than AO): none of those effects are authored.
 
+## Measured on the remote runner (2026-10-29, lane G07)
+
+Remote ACR runner, headless Chromium on software WebGL2 (SwiftShader), 1280x720, `tests/browser/audit-fix/aura-hoops-3d.spec.ts` `@sweep courts all`: one page load, then each court is selected with its top-bar button and measured 60 s after the switch (the first frames are never used). Mean canvas luma, 0-255. Frames and per-shot JSON: `evidence/aura-hoops-3d/audit-fix-2026-10-29/` (`v4.3.7-courts/`, `before-base-4.5.0-courts/`, `after-courts/`).
+
+| Court (look) | 4.3.7 (run g07-v437b-134932) | 4.5.0 base (g07-before4-135927) | change | lane branch (g07-final-sweep-135926) | draw calls 4.3.7 / 4.5.0 / branch |
+|---|---|---|---|---|---|
+| Rucker (golden-hour) | 74.44 | 80.48 | +8.1% | 80.98 | 236 / 322 / 344 |
+| Venice (golden-hour) | 115.41 | 123.63 | +7.1% | 122.22 | 239 / 325 / 347 |
+| Athens (outdoor-day) | 105.82 | 111.82 | +5.7% | 110.22 | 222 / 306 / 328 |
+| Manila (interior-warm) | 89.26 | 94.30 | +5.6% | 93.13 | 225 / 278 / 280 |
+| Shanghai (night-city) | 53.49 | 55.63 | +4.0% | 54.29 | 231 / 319 / 341 |
+| Orbit (neon-arcade) | 109.46 | 113.27 | +3.5% | 113.26 | 219 / 276 / 278 |
+
+- Shanghai and Orbit reproduce the release numbers (53.5 to 55.6, 109.4 to 113.3). The four HDRI courts rise 5.6% to 8.1%, above the CHANGELOG's 5% target; the frames show a brighter floor and crowd, not clipping (clipped pixels 0% on every court). The release-level target is E2's (LIGHT-06); the game keeps `exposureEv: 0.16` because the 4.5.0 frames read correctly and the change comes from the engine's real-depth AO and fill, not from this game.
+- Draw calls rise 47 to 94 per court from 4.3.7 to 4.5.0 (the contact-shadow depth pass). The lane branch adds about 22 more: athletes now draw three region materials each for team kits (`hoopsAthlete{Big,Guard}Kit`), partly offset by drawing the 50 court tick marks as one instanced node.
+AO on/off pairs on the lane branch (`?diag=1&qaAo=1` keeps the look's AO pass, `qaAo=0` drops it; one page, 60 s after each switch; run g07-final2-ao-144830; crop = the centre 30% x 40% around the handler's feet and the ball):
+
+| Court | full frame AO off / on | feet-and-ball crop AO off / on |
+|---|---|---|
+| Rucker | 83.64 / 82.11 (-1.8%) | 78.38 / 76.80 (-2.0%) |
+| Shanghai | 56.30 / 54.30 (-3.6%) | 81.16 / 79.09 (-2.6%) |
+| Orbit | 116.54 / 113.26 (-2.8%) | 129.81 / 125.42 (-3.4%) |
+
+Real-depth AO darkens the contact area by 2-3.4% and never crushes it (crop p5 37-38 on Rucker with AO on and off).
+
 ## Checklist
 
-- [ ] Run `node tools/game-checks/run.mjs aura-hoops-3d` and confirm it still shows 0 errors and 0 warnings.
-- [ ] Produce paired captures on the remote runner (`tools/remote-acr/run.sh`; no local Playwright): serve the game from `/Users/gurbakshchahal/platforms/aura3d` (main, 4.3.7) and from the `beat3js2/integration` worktree, open each of `?court=rucker`, `venice`, `athens`, `manila`, `shanghai`, `orbit` with `?capture=1` at the same viewport, and compare. Look first at floor contact darkness, then Shanghai and Orbit brightness.
-- [ ] Decide on `effects.contactShadows` at `src/main.ts:783`: keep, lower `intensity` (for example 0.4), or remove it in favour of the blob shadows.
-- [ ] Read `app.lighting.diagnostics().contactShadows` and confirm `passExecuted: true` and no `unavailable`; confirm there is no `[prd02.contactShadows]` warning in the console.
-- [ ] Read `auraApp.diagnostics().renderPath` and confirm `path: "hdr-msaa"` on all six courts, including after a `setScene` switch.
-- [ ] If you need old-pipeline parity for a release comparison, add `quality: "production"` at `src/main.ts:814`, or test with `?aura3d-render=production`.
-- [ ] Measure frame time on all six courts without `?diag=1` (same device, same camera, several seconds of steady play), because the extra contact-shadow depth pass and the reduced per-frame overhead pull in opposite directions.
-- [ ] Re-run `tools/filmstrip/capture-films.mjs` with `?capture=1` if its CDP route fails and falls back to `toDataURL`.
-- [ ] Update `apps/showcase-aura-hoops-3d/route-health.json` only after a fresh visual pass; its `renderer.mode: "production"` text does not match the code's `auto` quality.
-- [ ] Do one software-GL run on the remote runner to confirm ambient occlusion on a device without float linear filtering looks acceptable.
+- [x] Run `node tools/game-checks/run.mjs aura-hoops-3d` and confirm it still shows 0 errors and 0 warnings. (0 errors, 0 warnings on the lane branch.)
+- [x] Produce paired captures on the remote runner and compare the six courts, floor contact first, then Shanghai and Orbit. (Table above; 4.3.7 from a `v4.3.7` worktree, 4.5.0 from `audit-fix/integration`.)
+- [x] Decide on `effects.contactShadows`: kept at `intensity: 0.7`. The mask runs on every court and the floor contact reads as contact, not a dark smear, in the steady-state frames; the blob shadows stay.
+- [x] Read `app.lighting.diagnostics().contactShadows`: `passExecuted: true`, `depthSource: "self"`, no `unavailable`, and no `[prd02.contactShadows]` warning in any run log.
+- [x] Read `auraApp.diagnostics().renderPath`: `hdr-msaa` on all six courts, including after each `setScene` court switch (every GL_META record of the sweep).
+- [x] Old-pipeline parity: not needed. `quality: "production"` was not added; the comparison above is 4.3.7 against 4.5.0 as shipped.
+- [ ] Measure frame time on all six courts without `?diag=1` on a real device. Not done: the remote runner is software GL at about one frame every few seconds, so its frame time says nothing about a device. Owner check on real GPU hardware.
+- [x] `tools/filmstrip/capture-films.mjs`: not used; the lane captures use Playwright `page.screenshot` (the CDP route), which does not need `?capture=1`.
+- [x] Update `apps/showcase-aura-hoops-3d/route-health.json` after a fresh visual pass: `renderer.mode` is now `auto` and the athlete refs name the kit models.
+- [x] Do one software-GL run to confirm ambient occlusion looks acceptable on a device without float linear filtering: the AO on/off pairs above ran on SwiftShader.
