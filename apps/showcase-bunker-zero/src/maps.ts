@@ -185,18 +185,18 @@ export const FLOORS: readonly FloorDef[] = [
     },
     rows: [
       "######################",
-      "#S....%.......%.....K#",
+      "#S.w..%.......%.....K#",
       "#..t...%.b.b..%..##..#",
       "#..g..D........D..#.*#",
       "#....P.%.c.c..%..#...#",
       "#.###....G....##.#...#",
       "#.#..D....##....#..g.#",
-      "#.#..#...#..#...#....#",
+      "#.#a.#...#..#...#....#",
       "#.#..P...#....#.##.###",
       "#.#..#T..#.B.#..#..T.#",
-      "#.#..#...#....#.##...#",
+      "#.#..#.a.#....#.##...#",
       "#.####...#.#..#..#.g.#",
-      "#..d..#..#.#..D..#...#",
+      "#W.d..#..#.#..D..#...#",
       "#.....#..#.#..#..#.r.#",
       "#..G....#..#..#..D..E#",
       "######################"
@@ -204,7 +204,7 @@ export const FLOORS: readonly FloorDef[] = [
   }
 ];
 
-/** Kill House Skill Lab: one arena, waves of enemies, 90-second clock. */
+/** Kill House Skill Lab: one arena, every enemy placed at the start, 90-second clock. */
 export const KILL_HOUSE: FloorDef = {
   id: 90,
   name: "Kill House",

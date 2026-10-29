@@ -53,7 +53,16 @@ export interface Enemy {
   deathT: number;
   // boss
   phase: number; volleyLeft: number; vulnerableT: number;
+  /** Set on guards the Iron Warden summons: index into the pre-built summon node pool (`summon-<i>`). */
+  summonSlot?: number;
 }
+
+/** Most guards the Iron Warden can summon on one floor (two phases of two). main.ts builds this many summon nodes. */
+export const MAX_SUMMONS = 4;
+/** Peak player damage from an enemy rocket's blast when it does not hit the player directly (falls off linearly to 0 at the splash radius). */
+export const ENEMY_ROCKET_SPLASH = 24;
+/** Visual-only record of an enemy hitscan shot: muzzle at (x0,z0), end of the tracer at (x1,z1). */
+export interface EnemyShot { x0: number; z0: number; y0: number; x1: number; z1: number; hit: boolean; kind: EnemyKind; t: number; }
 
 export interface Pickup {
   id: string; kind: "treasure" | "treasure-big" | "health" | "plate" | "ammo" | "armor" | "key" | "mg" | "rocket" | "kit" | "medal";
@@ -84,7 +93,8 @@ export interface PlayerState {
   hp: number; armor: number; alive: boolean;
   weapon: WeaponId; weapons: WeaponId[];
   ammo: { bullets: number; rockets: number };
-  mag: number; reloading: number;
+  /** Rounds in the current weapon's magazine. Every weapon keeps its own magazine in `mags`; `mag` mirrors `mags[weapon]`. */
+  mag: number; mags: Record<WeaponId, number>; reloading: number;
   key: boolean; hurtT: number; stepT: number; fireT: number; switchT: number;
 }
 
@@ -103,8 +113,11 @@ export interface Sim {
     time: number; score: number; kills: number; totalEnemies: number;
     secrets: number; totalSecrets: number; treasure: number;
     finished: boolean; medal: "gold" | "silver" | "bronze" | "none";
-    killhouseLeft: number; wave: number;
-    msg: string; msgT: number; events: string[];
+    killhouseLeft: number;
+    msg: string; msgT: number;
+    /** The last 40 events (oldest first). `eventSeq` counts every event ever emitted, so a consumer drains by sequence, not by index. */
+    events: string[]; eventSeq: number;
+    enemyShots: EnemyShot[];
     rng: () => number;
     shake: number;
     bossEnraging: boolean;
@@ -130,7 +143,33 @@ const NOISE_RANGE = 12;
 export function floorOrigin(floorIndex: number) { return floorIndex * 300; }
 export const cellCenter = (c: number) => (c + 0.5) * CELL;
 
-export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "killhouse"; seed: number }): Sim {
+/** What a descent run carries from one floor to the next (C14). HP resets to 100 at each elevator; everything else carries. */
+export interface Loadout {
+  armor: number; weapons: WeaponId[]; weapon: WeaponId;
+  ammo: { bullets: number; rockets: number };
+  mags: Record<WeaponId, number>; score: number;
+}
+export function defaultLoadout(): Loadout {
+  return { armor: 0, weapons: ["knife", "pistol"], weapon: "pistol", ammo: { bullets: 48, rockets: 0 }, mags: { knife: 0, pistol: WEAPONS.pistol.magSize, mg: 0, rocket: 0 }, score: 0 };
+}
+/** Snapshot of the player's loadout and score at the end of a floor. */
+export function captureLoadout(sim: Sim): Loadout {
+  const p = sim.state.player;
+  const mags = { ...p.mags, [p.weapon]: p.mag };
+  return { armor: p.armor, weapons: [...p.weapons], weapon: p.weapon, ammo: { ...p.ammo }, mags, score: sim.state.score };
+}
+
+/**
+ * Drain events in order by sequence number (C2). `lastSeq` is the sequence the consumer already handled; returns the new one.
+ * Works however many events the sim trimmed: events older than the 40-event window are skipped, never replayed.
+ */
+export function drainEvents(state: Pick<Sim["state"], "events" | "eventSeq">, lastSeq: number, handle: (ev: string) => void): number {
+  const firstSeq = state.eventSeq - state.events.length;
+  for (let seq = Math.max(lastSeq, firstSeq); seq < state.eventSeq; seq++) handle(state.events[seq - firstSeq]!);
+  return state.eventSeq;
+}
+
+export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "killhouse"; seed: number; loadout?: Loadout }): Sim {
   const { w, h, cells, at, spawns } = parseFloor(def);
   const grid = [...cells];
   const rng = mulberry32(opts.seed);
@@ -177,25 +216,26 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
   }
 
   const events: string[] = [];
-  const ev = (s: string) => { events.push(s); if (events.length > 40) events.shift(); };
+  const ev = (s: string) => { events.push(s); state.eventSeq++; if (events.length > 40) events.shift(); };
+  const lo = opts.loadout ?? defaultLoadout();
 
   const state: Sim["state"] = {
     floor: def, ox: opts.ox, mode: opts.mode,
     player: {
       x: cellCenter(start.cx), z: cellCenter(start.cz), yaw: startYaw, pitch: 0,
-      hp: 100, armor: 0, alive: true,
-      weapon: "pistol", weapons: ["knife", "pistol"],
-      ammo: { bullets: 48, rockets: 0 },
-      mag: WEAPONS.pistol.magSize, reloading: 0,
+      hp: 100, armor: lo.armor, alive: true,
+      weapon: lo.weapon, weapons: [...lo.weapons],
+      ammo: { ...lo.ammo },
+      mag: lo.mags[lo.weapon], mags: { ...lo.mags }, reloading: 0,
       key: false, hurtT: 0, stepT: 0, fireT: 0, switchT: 0
     },
     enemies, pickups, doors, pushWalls, rockets: [], props,
     grid, w, h,
-    time: 0, score: 0, kills: 0, totalEnemies: enemies.length,
+    time: 0, score: lo.score, kills: 0, totalEnemies: enemies.length,
     secrets: 0, totalSecrets: pushWalls.length, treasure: 0,
     finished: false, medal: "none",
-    killhouseLeft: opts.mode === "killhouse" ? def.par : 0, wave: 1,
-    msg: "", msgT: 0, events, rng, shake: 0,
+    killhouseLeft: opts.mode === "killhouse" ? def.par : 0,
+    msg: "", msgT: 0, events, eventSeq: 0, enemyShots: [], rng, shake: 0,
     bossEnraging: false, muzzle: 0, projectilesSpawned: 0, explosions: [], shots: [], summons: [], dtRemainder: 0
   };
 
@@ -216,13 +256,28 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
     return false;
   };
 
+  /**
+   * Sight and hitscan stop where projectiles stop (C7): walls, closed push-walls, doors under 45% open, columns, and
+   * standing barrels and crates.
+   */
+  const sightBlocked = (cx: number, cz: number) => {
+    if (cellSolid(cx, cz)) return true;
+    const ch = gridAt(cx, cz);
+    if (ch === "D") { const d = doors.find((dd) => dd.cx === cx && dd.cz === cz); return !!d && d.open < 0.45; }
+    if (ch === "o" || ch === "b" || ch === "c") { const pr = props.find((pp) => pp.cx === cx && pp.cz === cz); return !!pr && pr.alive; }
+    return false;
+  };
   function hasLOS(x0: number, z0: number, x1: number, z1: number): boolean {
     const dx = x1 - x0, dz = z1 - z0;
     const dist = Math.hypot(dx, dz);
     const steps = Math.max(1, Math.ceil(dist / (CELL * 0.33)));
+    const c0x = Math.floor(x0 / CELL), c0z = Math.floor(z0 / CELL), c1x = Math.floor(x1 / CELL), c1z = Math.floor(z1 / CELL);
     for (let i = 1; i < steps; i++) {
       const t = i / steps;
-      if (cellSolid(Math.floor((x0 + dx * t) / CELL), Math.floor((z0 + dz * t) / CELL))) return false;
+      const cx = Math.floor((x0 + dx * t) / CELL), cz = Math.floor((z0 + dz * t) / CELL);
+      // the cells the viewer and the target stand in never block (a player standing in an open doorway)
+      if ((cx === c0x && cz === c0z) || (cx === c1x && cz === c1z)) continue;
+      if (sightBlocked(cx, cz)) return false;
     }
     return true;
   }
@@ -370,7 +425,8 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
   }
 
   function dealDamage(toPlayer: boolean, amount: number, _srcX = 0, _srcZ = 0) {
-    if (!toPlayer || !p.alive) return;
+    // C16: once the floor is finished the player cannot be hurt during the cleared delay
+    if (!toPlayer || !p.alive || state.finished) return;
     const absorbed = Math.min(p.armor, amount * 0.6);
     p.armor -= absorbed;
     p.hp -= amount - absorbed;
@@ -454,7 +510,9 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
 
   function switchWeapon(id: WeaponId) {
     if (!p.weapons.includes(id) || p.weapon === id) return;
-    p.weapon = id; p.reloading = 0; p.switchT = 0.4;
+    // C5: every weapon keeps its own magazine
+    p.mags[p.weapon] = p.mag;
+    p.weapon = id; p.mag = p.mags[id]; p.reloading = 0; p.switchT = 0.4;
     emit(`weapon:${id}`);
   }
 
@@ -560,10 +618,20 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
           e.burstLeft--; e.stateT = 0;
           // hit chance falls with distance + player strafe
           const acc = Math.max(0.2, 0.75 - dist * 0.045);
-          if (rng() < acc && hasLOS(e.x, e.z, p.x, p.z)) {
+          const hit = rng() < acc && hasLOS(e.x, e.z, p.x, p.z);
+          if (hit) {
             dealDamage(true, cfg.hitDmg[0] + rng() * (cfg.hitDmg[1] - cfg.hitDmg[0]));
             emit(`${e.kind}:shot:hit`);
           } else emit(`${e.kind}:shot:miss`);
+          // C8: a visible tracer for every shot, misses included (a miss ends beside the player)
+          const n = Math.max(0.001, dist);
+          const side = hit ? 0 : (state.enemyShots.length % 2 ? 0.9 : -0.9);
+          const muzzleY = e.kind === "gunner" ? 1.35 : 1.3;
+          state.enemyShots.push({
+            x0: e.x + (dx / n) * 0.5, z0: e.z + (dz / n) * 0.5, y0: muzzleY,
+            x1: p.x + (-dz / n) * side, z1: p.z + (dx / n) * side, hit, kind: e.kind, t: 0
+          });
+          if (state.enemyShots.length > 8) state.enemyShots.shift();
         }
         if (e.burstLeft <= 0) { e.state = "chase"; e.attackCd = cfg.attackTime; e.stateT = 0; }
       }
@@ -587,9 +655,11 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
       for (let i = 0; i < 2; i++) {
         const gx = Math.floor(e.x / CELL) + (i === 0 ? 1 : -1);
         const gz = Math.floor(e.z / CELL);
-        if (!cellBlocked(gx, gz)) {
+        if (!cellBlocked(gx, gz) && state.summons.length < MAX_SUMMONS) {
           const g = mkEnemy("guard", gx, gz, cellCenter(gx), cellCenter(gz));
           g.state = "chase";
+          g.summonSlot = state.summons.length;
+          g.id = `summon-${g.summonSlot}`;
           enemies.push(g);
           state.totalEnemies++;
           state.summons.push(g.id);
@@ -627,7 +697,8 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
         const cx = Math.floor(nx / CELL), cz = Math.floor(nz / CELL);
         const doorInCell = doors.find((dd) => dd.cx === cx && dd.cz === cz);
         const hitDoor = doorInCell ? doorInCell.open < 0.45 : false;
-        const hitWall = cellSolid(cx, cz) || hitDoor;
+        const colInCell = gridAt(cx, cz) === "o" && props.some((pp) => pp.cx === cx && pp.cz === cz && pp.alive);
+        const hitWall = cellSolid(cx, cz) || hitDoor || colInCell;
 
         if (hitWall) {
           r.x = nx; r.z = nz;
@@ -675,8 +746,16 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
         r.t = -1;
         if (r.kind === "rocket" || r.fromEnemy) {
           state.explosions.push({ x: r.x, z: r.z, t: 0 });
-          splashDamage(r.x, r.z, r.splash || WEAPONS.rocket.splash, r.dmg || WEAPONS.rocket.dmg, !r.fromEnemy);
-          if (r.fromEnemy || hitPlayerTarget) dealDamage(true, 20 + rng() * 15);
+          const radius = r.splash || WEAPONS.rocket.splash;
+          splashDamage(r.x, r.z, radius, r.dmg || WEAPONS.rocket.dmg, !r.fromEnemy);
+          // C6: an enemy rocket deals its direct hit only when it hits the player; otherwise the blast falls off with distance
+          if (r.fromEnemy) {
+            if (hitPlayerTarget) dealDamage(true, 20 + rng() * 15);
+            else {
+              const d = Math.hypot(p.x - r.x, p.z - r.z);
+              if (d < radius && hasLOS(r.x, r.z, p.x, p.z)) dealDamage(true, ENEMY_ROCKET_SPLASH * (1 - d / radius));
+            }
+          }
           emit("rocket:boom");
         } else {
           state.shots.push({ x: r.x, z: r.z, t: 0 });
@@ -715,8 +794,8 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
         case "ammo": p.ammo.bullets = Math.min(200, p.ammo.bullets + 24); p.ammo.rockets = Math.min(10, p.ammo.rockets + 1); take("AMMO"); break;
         case "armor": p.armor = Math.min(100, p.armor + 50); take("ARMOR +50"); break;
         case "key": p.key = true; take("BRASS KEY — the elevator is armed"); break;
-        case "mg": if (!p.weapons.includes("mg")) { p.weapons.push("mg"); p.ammo.bullets = Math.min(200, p.ammo.bullets + 60); take("MACHINE GUN ACQUIRED"); switchWeapon("mg"); } else { p.ammo.bullets = Math.min(200, p.ammo.bullets + 30); take("MG AMMO"); } break;
-        case "rocket": if (!p.weapons.includes("rocket")) { p.weapons.push("rocket"); p.ammo.rockets = Math.min(10, p.ammo.rockets + 5); take("ROCKET LAUNCHER ACQUIRED"); } else { p.ammo.rockets = Math.min(10, p.ammo.rockets + 3); take("ROCKETS +3"); } break;
+        case "mg": if (!p.weapons.includes("mg")) { p.weapons.push("mg"); p.mags.mg = WEAPONS.mg.magSize; p.ammo.bullets = Math.min(200, p.ammo.bullets + 30); take("MACHINE GUN ACQUIRED"); switchWeapon("mg"); } else { p.ammo.bullets = Math.min(200, p.ammo.bullets + 30); take("MG AMMO"); } break;
+        case "rocket": if (!p.weapons.includes("rocket")) { p.weapons.push("rocket"); p.mags.rocket = WEAPONS.rocket.magSize; p.ammo.rockets = Math.min(10, p.ammo.rockets + 4); take("ROCKET LAUNCHER ACQUIRED"); } else { p.ammo.rockets = Math.min(10, p.ammo.rockets + 3); take("ROCKETS +3"); } break;
         case "kit": p.hp = 100; p.armor = Math.min(100, p.armor + 50); take("SURPLUS KIT"); break;
       }
     }
@@ -756,6 +835,8 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
     if (gridAt(pcx, pcz) === "E") {
       if (!p.key && state.mode === "descent") { say("LOCKED — FIND THE BRASS KEY", 1.6); return; }
       if (state.mode === "killhouse" && state.kills < state.totalEnemies) { say("CLEAR THE FLOOR FIRST", 1.6); return; }
+      // the last floor ends with the Iron Warden: its elevator stays locked while the boss stands
+      if (enemies.some((e) => e.kind === "boss" && e.state !== "dead")) { say("THE IRON WARDEN STILL STANDS", 1.6); return; }
       state.finished = true;
       const par = def.par;
       state.medal = state.time <= par ? "gold" : state.time <= par * 1.5 ? "silver" : "bronze";
@@ -820,12 +901,16 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
     }
 
     tickRockets(dt);
-    for (const e of enemies) tickEnemy(e, dt);
+    // C16: enemies stand down once the floor is finished (cleared delay, results)
+    if (!state.finished) for (const e of enemies) tickEnemy(e, dt);
+    else for (const e of enemies) if (e.state === "dead") e.deathT += dt;
     tickPickups();
     tickExit();
     tickKillhouse();
     for (const ex of state.explosions) ex.t += dt;
     for (const s of state.shots) s.t += dt;
+    for (const s of state.enemyShots) s.t += dt;
+    if (state.enemyShots.length && state.enemyShots[0]!.t > 0.3) state.enemyShots = state.enemyShots.filter((s) => s.t < 0.3);
     state.explosions = state.explosions.filter((ex) => ex.t < 0.65);
     state.shots = state.shots.filter((s) => s.t < 0.35);
   }
