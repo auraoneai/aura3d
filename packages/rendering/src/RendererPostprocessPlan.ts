@@ -351,8 +351,15 @@ function isDepthPostprocessPassName(name: RendererPostProcessPassName): boolean 
   return name === "volumetric-light" || name === "depth-of-field" || name === "contact-shadow" || name === "ssao" || name === "ssr";
 }
 
+/**
+ * Passes whose kernel reads a normals input. SSAO is not one: every SSAO the renderer executes reads depth only (the
+ * native fused kernel `executeNativeSsaoPass`, the CPU `ssaoPixels` reference, and on the A3D_QR_POST chain the S2
+ * GTAO stage, which reconstructs normals from depth). Listing it here reported `ssao:normals` missing and the pass
+ * dropped on every AO scene while the pass ran (live-games audit: bunker-zero, dot-dash-3d, last-train-port,
+ * cloud-runner-port).
+ */
 function isNormalsPostprocessPassName(name: RendererPostProcessPassName): boolean {
-  return name === "ssao" || name === "ssr";
+  return name === "ssr";
 }
 
 function isHistoryPostprocessPassName(name: RendererPostProcessPassName): boolean {

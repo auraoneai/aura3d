@@ -729,6 +729,8 @@ export function runV2HdrStages(
     const ao = pipeline.ao as GtaoOptions;
     const directions = ao.directions ?? 4;
     const steps = ao.steps ?? 4;
+    // Audit (ssao:normals): S2 is the SSAO the v2 chain executes; record it so diagnostics().post.stagesRan shows it.
+    recordPostStage(`S2:gtao-${directions}x${steps}`);
     const aoRaw = state.pool.acquire({ width: hw, height: hh, format: "rgba8", samples: 1, depth: false });
     const gtaoSrc = withDefines(GTAO_GLSL, { AURA_GTAO_DIRECTIONS: directions, AURA_GTAO_STEPS: steps });
     const gtaoProg = program(state, gl, `gtao-${directions}x${steps}`, gtaoSrc);
