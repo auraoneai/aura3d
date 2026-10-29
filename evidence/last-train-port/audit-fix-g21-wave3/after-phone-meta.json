@@ -1,0 +1,176 @@
+[
+ {
+  "target": "last-train",
+  "id": "phone-dock",
+  "kind": "page",
+  "stats": {
+   "mean": 79.46,
+   "p5": 31,
+   "p50": 69,
+   "p95": 163,
+   "darkFrac": 0.0002
+  },
+  "state": {
+   "phase": "docked",
+   "leg": 0,
+   "station": "Mango Tide",
+   "distance": 0,
+   "speed": 0,
+   "roll": 0,
+   "aboard": 0,
+   "fares": 0,
+   "tips": 0,
+   "bonuses": 0,
+   "lost": 0,
+   "score": 0,
+   "serviceScore": 0,
+   "attemptId": 1,
+   "goal": 6,
+   "ended": null,
+   "lanterns": 3,
+   "streak": 0,
+   "criticalTime": 0,
+   "trim": 0,
+   "keys": [],
+   "circuits": 0,
+   "attempt": "active",
+   "grade": null,
+   "timeOfDay": "day",
+   "played": 0,
+   "catches": 0
+  }
+ },
+ {
+  "target": "last-train",
+  "id": "phone-touch-buttons",
+  "buttons": [
+   {
+    "code": "KeyA",
+    "x": 47.5,
+    "y": 780,
+    "w": 79,
+    "h": 56,
+    "visible": true
+   },
+   {
+    "code": "KeyD",
+    "x": 134.5,
+    "y": 780,
+    "w": 79,
+    "h": 56,
+    "visible": true
+   },
+   {
+    "code": "Space",
+    "x": 256.5,
+    "y": 780,
+    "w": 67,
+    "h": 56,
+    "visible": true
+   },
+   {
+    "code": "KeyW",
+    "x": 340,
+    "y": 780,
+    "w": 84,
+    "h": 56,
+    "visible": true
+   }
+  ],
+  "coarse": true
+ },
+ {
+  "target": "last-train",
+  "id": "phone-enroute-touch",
+  "kind": "page",
+  "stats": {
+   "mean": 89.49,
+   "p5": 32,
+   "p50": 78,
+   "p95": 188,
+   "darkFrac": 0.0004
+  },
+  "state": {
+   "phase": "enroute",
+   "leg": 0,
+   "station": "Mango Tide",
+   "distance": 27.825931971466513,
+   "speed": 10.535873888864003,
+   "roll": 0.03224490277263059,
+   "aboard": 4,
+   "fares": 0,
+   "tips": 0,
+   "bonuses": 0,
+   "lost": 0,
+   "score": 0,
+   "serviceScore": 0,
+   "attemptId": 1,
+   "goal": 6,
+   "ended": null,
+   "lanterns": 3,
+   "streak": 26.71596347058148,
+   "criticalTime": 0,
+   "trim": 0,
+   "keys": [
+    "KeyW"
+   ],
+   "circuits": 0,
+   "attempt": "active",
+   "grade": null,
+   "timeOfDay": "day",
+   "played": 18.35000000000024,
+   "catches": 0
+  }
+ },
+ {
+  "target": "last-train",
+  "id": "phone-touch-play",
+  "opened": "opening",
+  "going": 10.535873888864003,
+  "trim": -0.9994469156298521,
+  "v0": 6.935873888864056,
+  "braked": 4.106707222197381,
+  "keys": []
+ },
+ {
+  "target": "last-train",
+  "id": "phone-results",
+  "kind": "page",
+  "stats": {
+   "mean": 34.6,
+   "p5": 20,
+   "p50": 29,
+   "p95": 52,
+   "darkFrac": 0.0012
+  },
+  "state": {
+   "phase": "ready",
+   "leg": 0,
+   "station": "Mango Tide",
+   "distance": 0,
+   "speed": 0,
+   "roll": 0,
+   "aboard": 10,
+   "fares": 1800,
+   "tips": 1790,
+   "bonuses": 300,
+   "lost": 6,
+   "score": 3890,
+   "serviceScore": 3890,
+   "attemptId": 1,
+   "goal": 6,
+   "ended": "goal",
+   "lanterns": 2,
+   "streak": 200,
+   "criticalTime": 0,
+   "trim": -1.4627256952818521e-67,
+   "keys": [],
+   "circuits": 1,
+   "attempt": "complete",
+   "grade": "Silver",
+   "timeOfDay": "day",
+   "played": 720.8666666663397,
+   "catches": 1
+  }
+ }
+]

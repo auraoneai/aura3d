@@ -1,0 +1,909 @@
+[
+ {
+  "target": "last-train",
+  "id": "settle-5s",
+  "sinceReadyMs": 5004,
+  "pixels": {
+   "width": 640,
+   "height": 360,
+   "litFraction": 1,
+   "mean": 107.9873842592591
+  },
+  "screenshot": {
+   "mean": 84.54,
+   "p5": 40,
+   "p50": 78,
+   "p95": 142,
+   "darkFrac": 0
+  },
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 161
+  }
+ },
+ {
+  "target": "last-train",
+  "id": "settle-25s",
+  "sinceReadyMs": 202638,
+  "pixels": {
+   "width": 640,
+   "height": 360,
+   "litFraction": 0.9953472222222223,
+   "mean": 84.95476851851734
+  },
+  "screenshot": {
+   "mean": 86.47,
+   "p5": 40,
+   "p50": 81,
+   "p95": 146,
+   "darkFrac": 0
+  },
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 152
+  }
+ },
+ {
+  "target": "last-train",
+  "id": "settle-60s",
+  "sinceReadyMs": 410180,
+  "pixels": {
+   "width": 640,
+   "height": 360,
+   "litFraction": 0.9794444444444445,
+   "mean": 84.28094907407389
+  },
+  "screenshot": {
+   "mean": 84.97,
+   "p5": 34,
+   "p50": 80,
+   "p95": 152,
+   "darkFrac": 0
+  },
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 134
+  }
+ },
+ {
+  "target": "last-train",
+  "id": "info-dock-day",
+  "info": {
+   "app": true,
+   "renderPath": {
+    "path": "hdr-msaa",
+    "quality": "auto",
+    "reason": "scene needs the HDR target: output options (tone mapping, exposure, dithering) are authored; hdri environment; effect \"bloom\"; effect \"color-grade\"; effect \"vignette\"; custom material",
+    "bloomFusion": "separable"
+   },
+   "post": {
+    "pipeline": "v2",
+    "present": true,
+    "requestedPasses": [
+     "bloom",
+     "color-grade"
+    ],
+    "submittedPasses": [
+     "bloom",
+     "color-grade"
+    ],
+    "pixelBackedPasses": [
+     "bloom",
+     "color-grade"
+    ],
+    "droppedPasses": [],
+    "missingInputs": [],
+    "executionMode": "renderer-owned-fused-ldr-native",
+    "readbackPasses": [],
+    "fusedLdr": true,
+    "targetFormat": "rgba8",
+    "temporalRequested": false,
+    "velocityCoverage": {
+     "items": 0,
+     "withVelocity": 0,
+     "moving": 0,
+     "movingWithHistory": 0
+    },
+    "antiAlias": {
+     "mode": "msaa",
+     "sampleCount": 4,
+     "tier": "high"
+    },
+    "skipped": [],
+    "stagesRan": [
+     "enter:taa=false:mb=false:temporal=false"
+    ],
+    "customPasses": [
+     {
+      "id": "prd10.underwaterDistortion",
+      "status": "v2"
+     },
+     {
+      "id": "prd03.screenFeel",
+      "status": "v2"
+     }
+    ],
+    "warnings": [
+     "BLOOM_THRESHOLD_BELOW_HDR_WHITE:bloom.threshold"
+    ],
+    "source": "agent-api/postBridge.ts + RendererPostprocessPlanDiagnostics"
+   },
+   "warnings": [
+    "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes."
+   ],
+   "drawCalls": 154,
+   "approximateGpuMemoryBytes": 277541436,
+   "memory": {
+    "geometries": 358,
+    "textures": 59,
+    "renderTargets": 6,
+    "programs": 20
+   },
+   "renderSize": [
+    1280,
+    720
+   ]
+  },
+  "diag": {
+   "drawCalls": 154,
+   "triangles": 0,
+   "nodes": 54,
+   "assets": {
+    "total": 105,
+    "loaded": 105
+   },
+   "errors": 0,
+   "renderPath": {
+    "path": "hdr-msaa",
+    "quality": "auto",
+    "reason": "scene needs the HDR target: output options (tone mapping, exposure, dithering) are authored; hdri environment; effect \"bloom\"; effect \"color-grade\"; effect \"vignette\"; custom material",
+    "bloomFusion": "separable"
+   },
+   "post": {
+    "pipeline": "v2",
+    "present": true,
+    "requestedPasses": [
+     "bloom",
+     "color-grade"
+    ],
+    "submittedPasses": [
+     "bloom",
+     "color-grade"
+    ],
+    "pixelBackedPasses": [
+     "bloom",
+     "color-grade"
+    ],
+    "droppedPasses": [],
+    "missingInputs": [],
+    "executionMode": "renderer-owned-fused-ldr-native",
+    "readbackPasses": [],
+    "fusedLdr": true,
+    "targetFormat": "rgba8",
+    "temporalRequested": false,
+    "velocityCoverage": {
+     "items": 0,
+     "withVelocity": 0,
+     "moving": 0,
+     "movingWithHistory": 0
+    },
+    "antiAlias": {
+     "mode": "msaa",
+     "sampleCount": 4,
+     "tier": "high"
+    },
+    "skipped": [],
+    "stagesRan": [
+     "enter:taa=false:mb=false:temporal=false"
+    ],
+    "customPasses": [
+     {
+      "id": "prd10.underwaterDistortion",
+      "status": "v2"
+     },
+     {
+      "id": "prd03.screenFeel",
+      "status": "v2"
+     }
+    ],
+    "warnings": [
+     "BLOOM_THRESHOLD_BELOW_HDR_WHITE:bloom.threshold"
+    ],
+    "source": "agent-api/postBridge.ts + RendererPostprocessPlanDiagnostics"
+   },
+   "warnings": [
+    "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes."
+   ]
+  },
+  "memory": {
+   "approximateGpuMemoryBytes": 277541436,
+   "bufferBytes": null,
+   "textureBytes": null,
+   "textures": 59,
+   "buffers": 358,
+   "renderTargets": 6,
+   "drawCalls": 154,
+   "nodes": 54
+  }
+ },
+ {
+  "target": "last-train",
+  "id": "dock-day",
+  "kind": "canvas",
+  "stats": {
+   "mean": 79.3,
+   "p5": 34,
+   "p50": 73,
+   "p95": 144,
+   "darkFrac": 0.0001
+  },
+  "state": {
+   "phase": "docked",
+   "leg": 0,
+   "station": "Mango Tide",
+   "distance": 0,
+   "speed": 0,
+   "roll": 0,
+   "aboard": 0,
+   "fares": 0,
+   "tips": 0,
+   "bonuses": 0,
+   "lost": 0,
+   "score": 0,
+   "serviceScore": 0,
+   "attemptId": 1,
+   "goal": 6,
+   "ended": null,
+   "lanterns": 3,
+   "streak": 0,
+   "criticalTime": 0,
+   "trim": 0,
+   "keys": [],
+   "circuits": 0,
+   "attempt": "active",
+   "grade": null,
+   "timeOfDay": "day",
+   "played": 0,
+   "catches": 0
+  },
+  "memory": {
+   "approximateGpuMemoryBytes": 277541436,
+   "bufferBytes": null,
+   "textureBytes": null,
+   "textures": 59,
+   "buffers": 358,
+   "renderTargets": 6,
+   "drawCalls": 154,
+   "nodes": 54
+  }
+ },
+ {
+  "target": "last-train",
+  "id": "mid-leg-day",
+  "kind": "canvas",
+  "stats": {
+   "mean": 126.1,
+   "p5": 61,
+   "p50": 126,
+   "p95": 187,
+   "darkFrac": 0
+  },
+  "state": {
+   "phase": "enroute",
+   "leg": 0,
+   "station": "Mango Tide",
+   "distance": 84.2114890020473,
+   "speed": 7.877602551617871,
+   "roll": -0.009442930230196465,
+   "aboard": 4,
+   "fares": 0,
+   "tips": 0,
+   "bonuses": 0,
+   "lost": 0,
+   "score": 0,
+   "serviceScore": 0,
+   "attemptId": 1,
+   "goal": 6,
+   "ended": null,
+   "lanterns": 3,
+   "streak": 82.55062932989071,
+   "criticalTime": 0,
+   "trim": -1.30762447957954e-23,
+   "keys": [],
+   "circuits": 0,
+   "attempt": "active",
+   "grade": null,
+   "timeOfDay": "day",
+   "played": 26.349999999999785,
+   "catches": 0
+  },
+  "memory": {
+   "approximateGpuMemoryBytes": 277541436,
+   "bufferBytes": null,
+   "textureBytes": null,
+   "textures": 59,
+   "buffers": 358,
+   "renderTargets": 6,
+   "drawCalls": 104,
+   "nodes": 54
+  }
+ },
+ {
+  "target": "last-train",
+  "id": "mid-leg-day-hud",
+  "kind": "page",
+  "stats": {
+   "mean": 117.65,
+   "p5": 43,
+   "p50": 123,
+   "p95": 189,
+   "darkFrac": 0
+  },
+  "state": {
+   "phase": "enroute",
+   "leg": 0,
+   "station": "Mango Tide",
+   "distance": 84.2114890020473,
+   "speed": 7.877602551617871,
+   "roll": -0.009442930230196465,
+   "aboard": 4,
+   "fares": 0,
+   "tips": 0,
+   "bonuses": 0,
+   "lost": 0,
+   "score": 0,
+   "serviceScore": 0,
+   "attemptId": 1,
+   "goal": 6,
+   "ended": null,
+   "lanterns": 3,
+   "streak": 82.55062932989071,
+   "criticalTime": 0,
+   "trim": -1.30762447957954e-23,
+   "keys": [],
+   "circuits": 0,
+   "attempt": "active",
+   "grade": null,
+   "timeOfDay": "day",
+   "played": 26.349999999999785,
+   "catches": 0
+  }
+ },
+ {
+  "target": "last-train",
+  "id": "d05-r-mid-service",
+  "beforeR": {
+   "phase": "enroute",
+   "leg": 0,
+   "station": "Mango Tide",
+   "distance": 84.2114890020473,
+   "speed": 7.877602551617871,
+   "roll": -0.009442930230196465,
+   "aboard": 4,
+   "fares": 0,
+   "tips": 0,
+   "bonuses": 0,
+   "lost": 0,
+   "score": 0,
+   "serviceScore": 0,
+   "attemptId": 1,
+   "goal": 6,
+   "ended": null,
+   "lanterns": 3,
+   "streak": 82.55062932989071,
+   "criticalTime": 0,
+   "trim": -1.30762447957954e-23,
+   "keys": [],
+   "circuits": 0,
+   "attempt": "active",
+   "grade": null,
+   "timeOfDay": "day",
+   "played": 26.349999999999785,
+   "catches": 0
+  },
+  "afterR": {
+   "phase": "docked",
+   "leg": 0,
+   "station": "Mango Tide",
+   "distance": 0,
+   "speed": 0,
+   "roll": 0,
+   "aboard": 0,
+   "fares": 0,
+   "tips": 0,
+   "bonuses": 0,
+   "lost": 0,
+   "score": 0,
+   "serviceScore": 0,
+   "attemptId": 2,
+   "goal": 6,
+   "ended": null,
+   "lanterns": 3,
+   "streak": 0,
+   "criticalTime": 0,
+   "trim": 0,
+   "keys": [],
+   "circuits": 0,
+   "attempt": "active",
+   "grade": null,
+   "timeOfDay": "day",
+   "played": 0,
+   "catches": 0
+  },
+  "toast": "Arrived at Mango Tide"
+ },
+ {
+  "target": "last-train",
+  "id": "results-1",
+  "s1": {
+   "phase": "ready",
+   "leg": 0,
+   "station": "Mango Tide",
+   "distance": 0,
+   "speed": 0,
+   "roll": 0,
+   "aboard": 10,
+   "fares": 1800,
+   "tips": 1939,
+   "bonuses": 300,
+   "lost": 0,
+   "score": 4039,
+   "serviceScore": 4039,
+   "attemptId": 2,
+   "goal": 6,
+   "ended": "goal",
+   "lanterns": 3,
+   "streak": 200,
+   "criticalTime": 0,
+   "trim": -1.7165524789498195e-116,
+   "keys": [],
+   "circuits": 1,
+   "attempt": "complete",
+   "grade": "Gold",
+   "timeOfDay": "day",
+   "played": 750.0166666663132,
+   "catches": 0
+  },
+  "card1": {
+   "grade": "Gold",
+   "score": "Score 4039 · new best",
+   "grid": "Fares1800Tips1939Bonuses300Tips lost0Catches0Comfort97%Session total4039",
+   "rule": "Gold: comfort 90%+ and no catches. Silver: 75%+ and at most 1 catch.",
+   "hint": "Press R for a new service, 2 for a short one · Enter to keep riding from here"
+  }
+ },
+ {
+  "target": "last-train",
+  "id": "results-1-hud",
+  "kind": "page",
+  "stats": {
+   "mean": 50.09,
+   "p5": 22,
+   "p50": 42,
+   "p95": 103,
+   "darkFrac": 0.0006
+  },
+  "state": {
+   "phase": "ready",
+   "leg": 0,
+   "station": "Mango Tide",
+   "distance": 0,
+   "speed": 0,
+   "roll": 0,
+   "aboard": 10,
+   "fares": 1800,
+   "tips": 1939,
+   "bonuses": 300,
+   "lost": 0,
+   "score": 4039,
+   "serviceScore": 4039,
+   "attemptId": 2,
+   "goal": 6,
+   "ended": "goal",
+   "lanterns": 3,
+   "streak": 200,
+   "criticalTime": 0,
+   "trim": -1.7165524789498195e-116,
+   "keys": [],
+   "circuits": 1,
+   "attempt": "complete",
+   "grade": "Gold",
+   "timeOfDay": "day",
+   "played": 750.0166666663132,
+   "catches": 0
+  }
+ },
+ {
+  "target": "last-train",
+  "id": "d02-keep-riding",
+  "ride": {
+   "phase": "enroute",
+   "leg": 0,
+   "station": "Mango Tide",
+   "distance": 57.56403400606955,
+   "speed": 12.1030361451389,
+   "roll": 0.06793051979501415,
+   "aboard": 10,
+   "fares": 0,
+   "tips": 0,
+   "bonuses": 0,
+   "lost": 0,
+   "score": 4039,
+   "serviceScore": 0,
+   "attemptId": 3,
+   "goal": 6,
+   "ended": null,
+   "lanterns": 3,
+   "streak": 56.2822583462972,
+   "criticalTime": 0,
+   "trim": -2.093472804699909e-167,
+   "keys": [
+    "KeyW"
+   ],
+   "circuits": 1,
+   "attempt": "active",
+   "grade": null,
+   "timeOfDay": "day",
+   "played": 760.0333333329708,
+   "catches": 0
+  }
+ },
+ {
+  "target": "last-train",
+  "id": "results-2",
+  "s2": {
+   "phase": "ready",
+   "leg": 0,
+   "station": "Mango Tide",
+   "distance": 0,
+   "speed": 0,
+   "roll": 0,
+   "aboard": 10,
+   "fares": 1800,
+   "tips": 1939,
+   "bonuses": 300,
+   "lost": 0,
+   "score": 8078,
+   "serviceScore": 4039,
+   "attemptId": 4,
+   "goal": 6,
+   "ended": "goal",
+   "lanterns": 3,
+   "streak": 200,
+   "criticalTime": 0,
+   "trim": -1.7165524789498195e-116,
+   "keys": [],
+   "circuits": 1,
+   "attempt": "complete",
+   "grade": "Gold",
+   "timeOfDay": "day",
+   "played": 750.0166666663132,
+   "catches": 0
+  },
+  "card2": {
+   "grade": "Gold",
+   "score": "Score 4039 · best 4039",
+   "grid": "Fares1800Tips1939Bonuses300Tips lost0Catches0Comfort97%Session total8078"
+  }
+ },
+ {
+  "target": "last-train",
+  "id": "info-night",
+  "info": {
+   "app": true,
+   "renderPath": {
+    "path": "hdr-msaa",
+    "quality": "auto",
+    "reason": "scene needs the HDR target: output options (tone mapping, exposure, dithering) are authored; hdri environment; effect \"bloom\"; effect \"color-grade\"; effect \"vignette\"; custom material",
+    "bloomFusion": "separable"
+   },
+   "post": {
+    "pipeline": "v2",
+    "present": true,
+    "requestedPasses": [
+     "bloom",
+     "color-grade"
+    ],
+    "submittedPasses": [
+     "bloom",
+     "color-grade"
+    ],
+    "pixelBackedPasses": [
+     "bloom",
+     "color-grade"
+    ],
+    "droppedPasses": [],
+    "missingInputs": [],
+    "executionMode": "renderer-owned-fused-ldr-native",
+    "readbackPasses": [],
+    "fusedLdr": true,
+    "targetFormat": "rgba8",
+    "temporalRequested": false,
+    "velocityCoverage": {
+     "items": 0,
+     "withVelocity": 0,
+     "moving": 0,
+     "movingWithHistory": 0
+    },
+    "antiAlias": {
+     "mode": "msaa",
+     "sampleCount": 4,
+     "tier": "high"
+    },
+    "skipped": [],
+    "stagesRan": [
+     "enter:taa=false:mb=false:temporal=false"
+    ],
+    "customPasses": [
+     {
+      "id": "prd10.underwaterDistortion",
+      "status": "v2"
+     },
+     {
+      "id": "prd03.screenFeel",
+      "status": "v2"
+     }
+    ],
+    "warnings": [
+     "bloom-noise-risk threshold=0.6 intensity=0.85 radius=3",
+     "BLOOM_THRESHOLD_BELOW_HDR_WHITE:bloom.threshold"
+    ],
+    "source": "agent-api/postBridge.ts + RendererPostprocessPlanDiagnostics"
+   },
+   "warnings": [
+    "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes.",
+    "Aura3D step() was called before the WebGL renderer finished mounting, so this frame rendered nothing. The production renderer mounts asynchronously. Suggested fix: await one animation frame — `await new Promise(requestAnimationFrame)` — or await `app.ready()` before stepping, then call step() as normal."
+   ],
+   "drawCalls": 164,
+   "approximateGpuMemoryBytes": 234146238,
+   "memory": {
+    "geometries": 234,
+    "textures": 58,
+    "renderTargets": 6,
+    "programs": 17
+   },
+   "renderSize": [
+    1280,
+    720
+   ]
+  },
+  "memory": {
+   "approximateGpuMemoryBytes": 234146238,
+   "bufferBytes": null,
+   "textureBytes": null,
+   "textures": 58,
+   "buffers": 234,
+   "renderTargets": 6,
+   "drawCalls": 164,
+   "nodes": 54
+  }
+ },
+ {
+  "target": "last-train",
+  "id": "night",
+  "kind": "canvas",
+  "stats": {
+   "mean": 41.96,
+   "p5": 9,
+   "p50": 35,
+   "p95": 96,
+   "darkFrac": 0.0453
+  },
+  "state": {
+   "phase": "ready",
+   "leg": 0,
+   "station": "Mango Tide",
+   "distance": 0,
+   "speed": 0,
+   "roll": 0,
+   "aboard": 10,
+   "fares": 0,
+   "tips": 0,
+   "bonuses": 0,
+   "lost": 0,
+   "score": 8078,
+   "serviceScore": 0,
+   "attemptId": 5,
+   "goal": 6,
+   "ended": null,
+   "lanterns": 3,
+   "streak": 0,
+   "criticalTime": 0,
+   "trim": -1.7165524789498195e-116,
+   "keys": [],
+   "circuits": 1,
+   "attempt": "active",
+   "grade": null,
+   "timeOfDay": "night",
+   "played": 750.0166666663132,
+   "catches": 0
+  },
+  "memory": {
+   "approximateGpuMemoryBytes": 238336446,
+   "bufferBytes": null,
+   "textureBytes": null,
+   "textures": 59,
+   "buffers": 234,
+   "renderTargets": 6,
+   "drawCalls": 164,
+   "nodes": 54
+  }
+ },
+ {
+  "target": "last-train",
+  "id": "phone-dock",
+  "kind": "page",
+  "stats": {
+   "mean": 78.1,
+   "p5": 30,
+   "p50": 67,
+   "p95": 163,
+   "darkFrac": 0.0003
+  },
+  "state": {
+   "phase": "docked",
+   "leg": 0,
+   "station": "Mango Tide",
+   "distance": 0,
+   "speed": 0,
+   "roll": 0,
+   "aboard": 0,
+   "fares": 0,
+   "tips": 0,
+   "bonuses": 0,
+   "lost": 0,
+   "score": 0,
+   "serviceScore": 0,
+   "attemptId": 1,
+   "goal": 6,
+   "ended": null,
+   "lanterns": 3,
+   "streak": 0,
+   "criticalTime": 0,
+   "trim": 0,
+   "keys": [],
+   "circuits": 0,
+   "attempt": "active",
+   "grade": null,
+   "timeOfDay": "day",
+   "played": 0,
+   "catches": 0
+  }
+ },
+ {
+  "target": "last-train",
+  "id": "phone-touch-buttons",
+  "buttons": [
+   {
+    "code": "KeyA",
+    "x": 47.5,
+    "y": 780,
+    "w": 79,
+    "h": 56,
+    "visible": true
+   },
+   {
+    "code": "KeyD",
+    "x": 134.5,
+    "y": 780,
+    "w": 79,
+    "h": 56,
+    "visible": true
+   },
+   {
+    "code": "Space",
+    "x": 256.5,
+    "y": 780,
+    "w": 67,
+    "h": 56,
+    "visible": true
+   },
+   {
+    "code": "KeyW",
+    "x": 340,
+    "y": 780,
+    "w": 84,
+    "h": 56,
+    "visible": true
+   }
+  ],
+  "coarse": true
+ },
+ {
+  "target": "last-train",
+  "id": "phone-enroute-touch",
+  "kind": "page",
+  "stats": {
+   "mean": 87.21,
+   "p5": 31,
+   "p50": 76,
+   "p95": 188,
+   "darkFrac": 0.0004
+  },
+  "state": {
+   "phase": "enroute",
+   "leg": 0,
+   "station": "Mango Tide",
+   "distance": 27.825931971466513,
+   "speed": 10.535873888864003,
+   "roll": 0.03224490277263059,
+   "aboard": 4,
+   "fares": 0,
+   "tips": 0,
+   "bonuses": 0,
+   "lost": 0,
+   "score": 0,
+   "serviceScore": 0,
+   "attemptId": 1,
+   "goal": 6,
+   "ended": null,
+   "lanterns": 3,
+   "streak": 26.71596347058148,
+   "criticalTime": 0,
+   "trim": 0,
+   "keys": [
+    "KeyW"
+   ],
+   "circuits": 0,
+   "attempt": "active",
+   "grade": null,
+   "timeOfDay": "day",
+   "played": 18.35000000000024,
+   "catches": 0
+  }
+ },
+ {
+  "target": "last-train",
+  "id": "phone-touch-play",
+  "opened": "opening",
+  "going": 10.535873888864003,
+  "trim": -0.9994469156298521,
+  "v0": 6.935873888864056,
+  "braked": 4.106707222197381,
+  "keys": []
+ },
+ {
+  "target": "last-train",
+  "id": "phone-results",
+  "kind": "page",
+  "stats": {
+   "mean": 51.03,
+   "p5": 22,
+   "p50": 37,
+   "p95": 120,
+   "darkFrac": 0.0017
+  },
+  "state": {
+   "phase": "ready",
+   "leg": 0,
+   "station": "Mango Tide",
+   "distance": 0,
+   "speed": 0,
+   "roll": 0,
+   "aboard": 10,
+   "fares": 1800,
+   "tips": 1790,
+   "bonuses": 300,
+   "lost": 6,
+   "score": 3890,
+   "serviceScore": 3890,
+   "attemptId": 1,
+   "goal": 6,
+   "ended": "goal",
+   "lanterns": 2,
+   "streak": 200,
+   "criticalTime": 0,
+   "trim": -1.4627256952818521e-67,
+   "keys": [],
+   "circuits": 1,
+   "attempt": "complete",
+   "grade": "Silver",
+   "timeOfDay": "day",
+   "played": 720.8666666663397,
+   "catches": 1
+  }
+ }
+]
