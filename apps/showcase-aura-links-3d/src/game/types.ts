@@ -226,6 +226,7 @@ export type BallEvent =
   | { readonly kind: "rollout"; readonly pos: Vec3; readonly zone: LieKind }
   | { readonly kind: "rest"; readonly pos: Vec3; readonly zone: LieKind }
   | { readonly kind: "holed"; readonly pos: Vec3 }
+  | { readonly kind: "lip"; readonly pos: Vec3 }
   | { readonly kind: "water"; readonly pos: Vec3 }
   | { readonly kind: "oob"; readonly pos: Vec3 }
   | { readonly kind: "tree"; readonly pos: Vec3 };
