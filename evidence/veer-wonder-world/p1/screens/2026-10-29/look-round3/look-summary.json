@@ -1,0 +1,262 @@
+{
+  "worlds": [
+    {
+      "world": "meadow",
+      "frames": {
+        "desktop": {
+          "viewport": {
+            "width": 1024,
+            "height": 768
+          },
+          "luma": {
+            "meanLuma": 190.987,
+            "lumaStdDev": 37.338,
+            "nonBlackRatio": 1,
+            "coarseColours": 644
+          },
+          "colour": {
+            "meanSaturation": 0.233,
+            "colourfulness": 45.385,
+            "clippedRatio": 0,
+            "p5Luma": 130,
+            "p95Luma": 221
+          }
+        },
+        "phone": {
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "luma": {
+            "meanLuma": 189.437,
+            "lumaStdDev": 38.946,
+            "nonBlackRatio": 1,
+            "coarseColours": 403
+          },
+          "colour": {
+            "meanSaturation": 0.245,
+            "colourfulness": 48.818,
+            "clippedRatio": 0,
+            "p5Luma": 112,
+            "p95Luma": 222
+          }
+        }
+      }
+    },
+    {
+      "world": "music-garden",
+      "frames": {
+        "desktop": {
+          "viewport": {
+            "width": 1024,
+            "height": 768
+          },
+          "luma": {
+            "meanLuma": 197.116,
+            "lumaStdDev": 34.569,
+            "nonBlackRatio": 1,
+            "coarseColours": 443
+          },
+          "colour": {
+            "meanSaturation": 0.157,
+            "colourfulness": 37.101,
+            "clippedRatio": 0,
+            "p5Luma": 137,
+            "p95Luma": 226
+          }
+        },
+        "phone": {
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "luma": {
+            "meanLuma": 191.194,
+            "lumaStdDev": 41.215,
+            "nonBlackRatio": 1,
+            "coarseColours": 360
+          },
+          "colour": {
+            "meanSaturation": 0.189,
+            "colourfulness": 42.313,
+            "clippedRatio": 0,
+            "p5Luma": 112,
+            "p95Luma": 227
+          }
+        }
+      }
+    },
+    {
+      "world": "peekaboo-barn",
+      "frames": {
+        "desktop": {
+          "viewport": {
+            "width": 1024,
+            "height": 768
+          },
+          "luma": {
+            "meanLuma": 196.004,
+            "lumaStdDev": 36.114,
+            "nonBlackRatio": 1,
+            "coarseColours": 570
+          },
+          "colour": {
+            "meanSaturation": 0.186,
+            "colourfulness": 40.821,
+            "clippedRatio": 0,
+            "p5Luma": 134,
+            "p95Luma": 226
+          }
+        },
+        "phone": {
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "luma": {
+            "meanLuma": 192.233,
+            "lumaStdDev": 40.19,
+            "nonBlackRatio": 1,
+            "coarseColours": 368
+          },
+          "colour": {
+            "meanSaturation": 0.21,
+            "colourfulness": 45.537,
+            "clippedRatio": 0,
+            "p5Luma": 112,
+            "p95Luma": 227
+          }
+        }
+      }
+    },
+    {
+      "world": "station",
+      "frames": {
+        "desktop": {
+          "viewport": {
+            "width": 1024,
+            "height": 768
+          },
+          "luma": {
+            "meanLuma": 196.603,
+            "lumaStdDev": 34.403,
+            "nonBlackRatio": 1,
+            "coarseColours": 549
+          },
+          "colour": {
+            "meanSaturation": 0.176,
+            "colourfulness": 44.499,
+            "clippedRatio": 0,
+            "p5Luma": 136,
+            "p95Luma": 226
+          }
+        },
+        "phone": {
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "luma": {
+            "meanLuma": 189.155,
+            "lumaStdDev": 41.862,
+            "nonBlackRatio": 1,
+            "coarseColours": 420
+          },
+          "colour": {
+            "meanSaturation": 0.212,
+            "colourfulness": 50.305,
+            "clippedRatio": 0,
+            "p5Luma": 111,
+            "p95Luma": 226
+          }
+        }
+      }
+    },
+    {
+      "world": "learning-cloud",
+      "frames": {
+        "desktop": {
+          "viewport": {
+            "width": 1024,
+            "height": 768
+          },
+          "luma": {
+            "meanLuma": 203.664,
+            "lumaStdDev": 25.152,
+            "nonBlackRatio": 1,
+            "coarseColours": 365
+          },
+          "colour": {
+            "meanSaturation": 0.112,
+            "colourfulness": 24.449,
+            "clippedRatio": 0,
+            "p5Luma": 148,
+            "p95Luma": 229
+          }
+        },
+        "phone": {
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "luma": {
+            "meanLuma": 202.458,
+            "lumaStdDev": 24.443,
+            "nonBlackRatio": 1,
+            "coarseColours": 322
+          },
+          "colour": {
+            "meanSaturation": 0.118,
+            "colourfulness": 25.63,
+            "clippedRatio": 0,
+            "p5Luma": 144,
+            "p95Luma": 220
+          }
+        }
+      }
+    },
+    {
+      "world": "home-nook",
+      "frames": {
+        "desktop": {
+          "viewport": {
+            "width": 1024,
+            "height": 768
+          },
+          "luma": {
+            "meanLuma": 189.121,
+            "lumaStdDev": 32.081,
+            "nonBlackRatio": 1,
+            "coarseColours": 395
+          },
+          "colour": {
+            "meanSaturation": 0.237,
+            "colourfulness": 48.305,
+            "clippedRatio": 0,
+            "p5Luma": 152,
+            "p95Luma": 225
+          }
+        },
+        "phone": {
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "luma": {
+            "meanLuma": 189.32,
+            "lumaStdDev": 32.06,
+            "nonBlackRatio": 1,
+            "coarseColours": 269
+          },
+          "colour": {
+            "meanSaturation": 0.238,
+            "colourfulness": 48.078,
+            "clippedRatio": 0,
+            "p5Luma": 153,
+            "p95Luma": 222
+          }
+        }
+      }
+    }
+  ]
+}

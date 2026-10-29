@@ -1,0 +1,73 @@
+{
+  "label": "look-station",
+  "runId": "wonder-look1-20261029T143734Z",
+  "engineVersion": "4.5.0",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "renderer": {
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "vendor": "Google Inc. (Google)",
+    "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+  },
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "world": "station",
+  "story": "gogo-train",
+  "openingMs": 4000,
+  "firstMount": null,
+  "director": {
+    "storyId": "gogo-train",
+    "phase": "holding",
+    "mode": "watch-sing",
+    "beatIndex": 0,
+    "beatId": "arrive",
+    "round": 0,
+    "lineIndex": 2,
+    "elapsedMs": 4100,
+    "waitedMs": 0,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "frames": {
+    "desktop": {
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "luma": {
+        "meanLuma": 195.231,
+        "lumaStdDev": 35.97,
+        "nonBlackRatio": 1,
+        "coarseColours": 542
+      },
+      "colour": {
+        "meanSaturation": 0.18,
+        "colourfulness": 43.437,
+        "clippedRatio": 0,
+        "p5Luma": 131,
+        "p95Luma": 226
+      }
+    },
+    "phone": {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "luma": {
+        "meanLuma": 190.005,
+        "lumaStdDev": 41.124,
+        "nonBlackRatio": 1,
+        "coarseColours": 400
+      },
+      "colour": {
+        "meanSaturation": 0.206,
+        "colourfulness": 46.856,
+        "clippedRatio": 0,
+        "p5Luma": 111,
+        "p95Luma": 226
+      }
+    }
+  }
+}

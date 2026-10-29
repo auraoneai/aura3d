@@ -1,0 +1,114 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "look-home-nook-desktop.jpg",
+      "sha256": "cc17dc7f119746f2875baf0c63ea188f2a0185e42b05b9637660e85d4db53817"
+    },
+    {
+      "path": "look-home-nook-phone.jpg",
+      "sha256": "7fdae690e706325e8fe41b726f0bada508e94a97c4f0c13379a07db166a9f3e1"
+    },
+    {
+      "path": "look-learning-cloud-desktop.jpg",
+      "sha256": "bd30c0d377a7aa559771d5c0111524d87a68fd68a5f1feb54ba3df82ea207cab"
+    },
+    {
+      "path": "look-learning-cloud-phone.jpg",
+      "sha256": "493d6626b2c3b507a5029f038e1374ed162aebd5553a28811d31177f3a94ce2e"
+    },
+    {
+      "path": "look-meadow-desktop.jpg",
+      "sha256": "9028bde92e682d4b3ec99af7b0700ba230f7b566ec535553e3811bed6bf489b6"
+    },
+    {
+      "path": "look-meadow-phone.jpg",
+      "sha256": "92795dc488d9af6de8d76e03f199d3f9d35706c61d81d306fc7c91da7d594f12"
+    },
+    {
+      "path": "look-music-garden-desktop.jpg",
+      "sha256": "2fedce22fe2108b85fdaa450ed0cb4d50b471e4688e79fb3426c4fd638349027"
+    },
+    {
+      "path": "look-music-garden-phone.jpg",
+      "sha256": "eb52c4aeb7efa98cf77afc19e7db5354985e55b02c16a2aea36494d2a28367a8"
+    },
+    {
+      "path": "look-peekaboo-barn-desktop.jpg",
+      "sha256": "cbfa312e84b7fb1d927a34d984b9f5bb7aa1e09b6d780ea5d3916be6449248b1"
+    },
+    {
+      "path": "look-peekaboo-barn-phone.jpg",
+      "sha256": "17a04459f070e1e5ec1f8a95468b75b2a20d67712fc9bf70462b2ff16df7515c"
+    },
+    {
+      "path": "look-station-desktop.jpg",
+      "sha256": "0ce167b9bfe41c514e1aada4170460a43221b49f8bcf83284f2b61494144f78a"
+    },
+    {
+      "path": "look-station-phone.jpg",
+      "sha256": "b61d4056f0e49fa787b085c1c43037f83c931037e95dc52b7496f2e02244845f"
+    }
+  ],
+  "references": [
+    "webgl_shaders_sky",
+    "webgl_animation_skinning_morph"
+  ],
+  "scores": {
+    "lighting": 5,
+    "shadows": 5.5,
+    "ibl_reflections": 6,
+    "environment_world": 6.5,
+    "atmospheric_effects": 6,
+    "material_quality": 5.5,
+    "modeling_assets": 7,
+    "composition": 5.5,
+    "camera": 6.5,
+    "postprocessing": 5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Every world is overexposed: mean luma 225-241 of 255 and p5 above 170, so the pastel ground and sky wash to near white."
+    },
+    {
+      "category": "shadows",
+      "seen": "Contact shadows under Momo and Sheru are faint grey smudges against the washed-out ground."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Matte clay materials show little image-based response; acceptable for the style but flat."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The learning cloud is a white field with white cloud banks: almost no figure-ground separation (colourfulness 5-6)."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "The thinned look fog adds a uniform pale haze over the whole meadow."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The red ball reads salmon and the green bushes read mint: saturation is lost to exposure (mean saturation 0.02-0.13)."
+    },
+    {
+      "category": "composition",
+      "seen": "Characters stand small in the middle third with the lower third empty ground."
+    },
+    {
+      "category": "camera",
+      "seen": "The wide child camera holds the whole stage but sits far back for a toddler's eye."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "The preset grade lifts the already bright frame further; highlights clip toward white."
+    }
+  ],
+  "nextChange": {
+    "category": "lighting",
+    "change": "Bring exposure about one stop under the presets for the pastel worlds",
+    "api": "looks.preset(id, { exposureEv })"
+  },
+  "judge": "self"
+}

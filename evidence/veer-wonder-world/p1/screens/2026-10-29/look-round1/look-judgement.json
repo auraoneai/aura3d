@@ -1,0 +1,102 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 2,
+  "shots": [
+    {
+      "path": "look-home-nook-desktop.jpg",
+      "sha256": "e0e426e3a4a8752f365c8cd0ef0b148a667409f772812a3891cd8704ea2f6980"
+    },
+    {
+      "path": "look-home-nook-phone.jpg",
+      "sha256": "89f8cb83c208971521bfd4d93dc18b6016393974bc2b59c68b2e27fa26ed1cec"
+    },
+    {
+      "path": "look-learning-cloud-desktop.jpg",
+      "sha256": "8508faff23732a78f2ed6da4d604427a190694a339db63a19e02ca0cd4395480"
+    },
+    {
+      "path": "look-learning-cloud-phone.jpg",
+      "sha256": "ed74eac94dcfbf78db2a104366f43024cd43ae6d844a6029a60a431b90551755"
+    },
+    {
+      "path": "look-meadow-desktop.jpg",
+      "sha256": "473d042acba86ba2d2f46cfe6774ffa9c97c0d36c7831d0d93c947e864ef2bb2"
+    },
+    {
+      "path": "look-meadow-phone.jpg",
+      "sha256": "c01116d79e88a5bc9aea496ba7fac568a1206bca82c5aab100e368ac29074bb4"
+    },
+    {
+      "path": "look-music-garden-desktop.jpg",
+      "sha256": "64e25de43e29707004d04feafe9b32d26c1ea73aa9b09dfed468b4fb30572b62"
+    },
+    {
+      "path": "look-music-garden-phone.jpg",
+      "sha256": "bfa4f65344913f1eac9499dfc1240906f9d3793be806f53f361687b9597aabc7"
+    },
+    {
+      "path": "look-peekaboo-barn-desktop.jpg",
+      "sha256": "91b3b803c05c9b6a5570d1f7d733c9a670c19a545d242dedf3e3bc7076f49433"
+    },
+    {
+      "path": "look-peekaboo-barn-phone.jpg",
+      "sha256": "f64154ec7c0a808888738a2c4477e26c6037510af665fb56d41aa5de4ccb03b8"
+    },
+    {
+      "path": "look-station-desktop.jpg",
+      "sha256": "31dda7e7a9e9d60b1c30c1d6b2338155c0be2772dd87616eea8bfb859b3b606a"
+    },
+    {
+      "path": "look-station-phone.jpg",
+      "sha256": "652f8ea48d25da618e8012aea7509eff02dd6802d9424d5d016e77bac70f86da"
+    }
+  ],
+  "references": [
+    "webgl_shaders_sky",
+    "webgl_animation_skinning_morph"
+  ],
+  "scores": {
+    "lighting": 7,
+    "shadows": 6,
+    "ibl_reflections": 6,
+    "environment_world": 6.5,
+    "atmospheric_effects": 6.5,
+    "material_quality": 7,
+    "modeling_assets": 7,
+    "composition": 5.5,
+    "camera": 6.5,
+    "postprocessing": 7
+  },
+  "observations": [
+    {
+      "category": "shadows",
+      "seen": "Contact shadows read under the characters now, still soft; fine for a calm look."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Matte materials by design; specular response stays low."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The meadow, garden, barn and station read well (colourfulness 37-49); the learning cloud is still a pale white field (colourfulness 11)."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Haze is gentler at the lower exposure; depth reads through the hills."
+    },
+    {
+      "category": "composition",
+      "seen": "Characters are about a sixth of the frame height; on phones the lower 40% is empty ground."
+    },
+    {
+      "category": "camera",
+      "seen": "The wide framing is far for the opening beats; the medium framing is better but still loose."
+    }
+  ],
+  "nextChange": {
+    "category": "composition",
+    "change": "Tighten the wide and medium framings so the cast fills more of the frame, and give the learning cloud a coloured floor",
+    "api": "camera.perspective fov + target (CAMERA_PRESETS)"
+  },
+  "judge": "self"
+}
