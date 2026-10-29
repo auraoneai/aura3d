@@ -1,0 +1,48 @@
+DIA_CONSOLE dia-shot-sandlot-phone error Failed to load resource: the server responded with a status of 404 (Not Found)
+DIA_CONSOLE dia-shot-sandlot-phone warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-sandlot-phone warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-sandlot-phone warning [.WebGL-0x1ce400122400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-shot-sandlot-phone warning ANIMATION_SOCKET_UNKNOWN_BONE: node "batter" has no bone "RightHand".
+DIA_CONSOLE dia-shot-sandlot-phone warning ANIMATION_SOCKET_UNKNOWN_BONE: node "batter" has no bone "LeftHand".
+DIA_CONSOLE dia-shot-sandlot-phone warning [.WebGL-0x1ce400122400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-shot-sandlot-phone warning [.WebGL-0x1ce400122400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-shot-sandlot-phone warning [.WebGL-0x1ce400122400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+DIA_CONSOLE dia-shot-skyline-phone error Failed to load resource: the server responded with a status of 404 (Not Found)
+DIA_CONSOLE dia-shot-skyline-phone error [aura-diamond] bat socket failed: ATTACH_BONE_NOT_FOUND: the batter has no bone "RightForearm"
+DIA_CONSOLE dia-shot-skyline-phone warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-skyline-phone warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-skyline-phone error [aura-diamond] bat socket failed: ATTACH_BONE_NOT_FOUND: the batter has no bone "RightForearm"
+DIA_CONSOLE dia-shot-ivy-noao error Failed to load resource: the server responded with a status of 404 (Not Found)
+DIA_CONSOLE dia-shot-ivy-noao error [aura-diamond] bat socket failed: ATTACH_BONE_NOT_FOUND: the batter has no bone "RightForearm"
+DIA_CONSOLE dia-shot-ivy-noao warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-ivy-noao warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-ivy-noao error [aura-diamond] bat socket failed: ATTACH_BONE_NOT_FOUND: the batter has no bone "RightForearm"
+DIA_CONSOLE dia-shot-ivy-nocontact error Failed to load resource: the server responded with a status of 404 (Not Found)
+DIA_CONSOLE dia-shot-ivy-nocontact error [aura-diamond] bat socket failed: ATTACH_BONE_NOT_FOUND: the batter has no bone "RightForearm"
+DIA_CONSOLE dia-shot-ivy-nocontact warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-ivy-nocontact warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-ivy-nocontact warning [.WebGL-0x147c00132400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-shot-ivy-nocontact error [aura-diamond] bat socket failed: ATTACH_BONE_NOT_FOUND: the batter has no bone "RightForearm"
+DIA_CONSOLE dia-shot-ivy-nocontact warning [.WebGL-0x147c00132400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-shot-ivy-nocontact warning [.WebGL-0x147c00132400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-shot-ivy-nocontact warning [.WebGL-0x147c00132400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+DIA_CONSOLE dia-shot-skyline-noao error Failed to load resource: the server responded with a status of 404 (Not Found)
+DIA_CONSOLE dia-shot-skyline-noao error [aura-diamond] bat socket failed: ATTACH_BONE_NOT_FOUND: the batter has no bone "RightForearm"
+DIA_CONSOLE dia-shot-skyline-noao warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-skyline-noao warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-skyline-noao error [aura-diamond] bat socket failed: ATTACH_BONE_NOT_FOUND: the batter has no bone "RightForearm"
+DIA_CONSOLE dia-probe-parks error Failed to load resource: the server responded with a status of 404 (Not Found)
+DIA_CONSOLE dia-probe-parks warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-probe-parks warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-probe-parks warning [.WebGL-0x353c0012e400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-probe-parks warning ANIMATION_SOCKET_UNKNOWN_BONE: node "batter" has no bone "RightHand".
+DIA_CONSOLE dia-probe-parks warning ANIMATION_SOCKET_UNKNOWN_BONE: node "batter" has no bone "LeftHand".
+DIA_CONSOLE dia-probe-parks warning [.WebGL-0x353c0012e400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-probe-parks error [aura-diamond] bat socket failed: ATTACH_BONE_NOT_FOUND: the batter has no bone "RightForearm"
+DIA_CONSOLE dia-probe-parks warning [.WebGL-0x353c0012e400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-probe-parks warning [.WebGL-0x353c0012e400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+DIA_CONSOLE dia-probe-parks error [aura-diamond] bat socket failed: ATTACH_BONE_NOT_FOUND: the batter has no bone "RightForearm"
+DIA_CONSOLE dia-probe-parks error [aura-diamond] bat socket failed: ATTACH_BONE_NOT_FOUND: the batter has no bone "RightForearm"
+DIA_CONSOLE dia-probe-parks error [aura-diamond] bat socket failed: ATTACH_BONE_NOT_FOUND: the batter has no bone "RightForearm"
+DIA_CONSOLE dia-probe-parks error [aura-diamond] bat socket failed: ATTACH_BONE_NOT_FOUND: the batter has no bone "RightForearm"
+DIA_CONSOLE dia-probe-parks error [aura-diamond] bat socket failed: ATTACH_BONE_NOT_FOUND: the batter has no bone "RightForearm"
