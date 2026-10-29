@@ -1,18 +1,16 @@
-# Aura Diamond 3D: final screenshots (2026-10-25)
+# Aura Diamond 3D: final screenshots (retaken 2026-10-29 on 4.5.0)
 
-- **Build:** `origin/game-rework` head `8da9c05d3` (play-fix, sports UI fix and shared quick bar included). Hoops and Links 390x844 and card frames, and the Links cards, come from the same head plus commit `4d9546a03` (venue chip hidden on phones). Desktop frames of Hoops and Links predate that CSS change.
-- **Runner:** remote ACR task (`tools/remote-acr/run.sh`), headless Chromium on **software WebGL2 (SwiftShader), not real-GPU frames**. RUN_IDs `fina-*`. A frame costs about 3 s there, so game time runs slow and "late" states are far fewer than on a real GPU.
-- **Specs:** `tests/browser/shotsa-<slug>.spec.ts` (+ `finam-*.spec.ts` for the mobile and card re-captures); decoder `tools/shots/decode-frames.mjs`. `status.txt` holds the capture log lines.
+- **Build:** branch `audit-fix/g08` at `454f97c46` (the lane's audit fixes on top of `audit-fix/integration`, engine 4.5.0 from the workspace). Same file names and sizes as the 2026-10-25 set (RH-05).
+- **Runner:** remote ACR task (`tools/remote-acr/run.sh`), RUN_ID `g08-w2-after-shotsa`. Headless Chromium on **software WebGL2 (SwiftShader), not real-GPU frames**. A frame costs several seconds there, so game time runs slow.
+- **Spec:** `tests/browser/shotsa-aura-diamond-3d.spec.ts` (title, `?mode=quick`, three practice swings at 250/450/700 ms, cards). Decoder `tools/shots/decode-frames.mjs`. `status.txt` holds the capture log lines: 10 frames per viewport, 0 console errors, both cards captured.
 - **Layout:** `1280x720/`, `390x844/`, `card/` (720x450 at 1x and 2x).
-- **Reviewed:** I opened the frames listed under "Seen"; the rest were not opened.
-- **Results screens were not reached in any game.**
 
 ## Seen
-- Batter holds the bat upright at the shoulder in stance (`03-action-01-stance.jpg`), hand at the grip; fielders wear gloves; athletes are clean flat-colour models.
-- Swing sequence (`03-action-02..10`): the bat leaves the shoulder and sweeps out to the side. In the 700 ms frames the bat sits beside the head and I cannot confirm the grip from the frame (the batter is small; software GL runs several sim steps per frame). The earlier lane measured 9 to 15 cm during fast swings.
-- Strike zone is a thin outline, not a slab. Shared quick bar one row; no old names; 0 console errors.
 
-## Problems still visible
-- **Low-medium:** bat-to-hand attachment during the swing is not provable from these frames.
-- **Low:** the "PLAY BALL" overlay stays up for the whole capture (game time is slow on software GL).
-- **Low:** the batter is small at the default camera, so hands and bat read poorly on phones.
+- `1280x720/03-action-04-swing-0-700.jpg`: Harbor Sandlot, both teams with navy caps and green belts on the athletes (C5), the controls hint reads "SWING: SPACE, TIMED TO THE BALL" (C11), the 12 px HUD text (C19), the crowd and bleachers behind the fence (C3).
+- `390x844/03-action-01-stance.jpg`: phone layout, batter in stance with the bat at the shoulder, linescore and count panels readable.
+
+## Not in this set
+
+- This spec does not play to a results screen. Results screens at 1280x720 and 390x844 come from the gameplay QA probe (`evidence/aura-diamond-3d/audit-fix/after/dia-results/`, run `g08-w2-after-grp6`).
+- Per-park steady-state frames for all six parks are in `evidence/aura-diamond-3d/audit-fix/{before,after}/`.

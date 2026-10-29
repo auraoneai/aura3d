@@ -1,0 +1,89 @@
+DIA_CONSOLE dia-shot-sandlot-desktop error Failed to load resource: the server responded with a status of 404 (Not Found)
+DIA_CONSOLE dia-shot-sandlot-desktop warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-sandlot-desktop warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-sandlot-desktop warning [.WebGL-0x152400116400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-shot-sandlot-desktop warning ANIMATION_SOCKET_UNKNOWN_BONE: node "batter" has no bone "RightHand".
+DIA_CONSOLE dia-shot-sandlot-desktop warning ANIMATION_SOCKET_UNKNOWN_BONE: node "batter" has no bone "LeftHand".
+DIA_CONSOLE dia-shot-sandlot-desktop warning [.WebGL-0x152400116400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-shot-sandlot-desktop warning [.WebGL-0x152400116400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-shot-sandlot-desktop warning [.WebGL-0x152400116400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+DIA_CONSOLE dia-shot-skyline-desktop error Failed to load resource: the server responded with a status of 404 (Not Found)
+DIA_CONSOLE dia-shot-skyline-desktop warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-skyline-desktop warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-canyon-desktop error Failed to load resource: the server responded with a status of 404 (Not Found)
+DIA_CONSOLE dia-shot-canyon-desktop warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-canyon-desktop warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-canyon-desktop warning ANIMATION_SOCKET_UNKNOWN_BONE: node "batter" has no bone "RightHand".
+DIA_CONSOLE dia-shot-canyon-desktop warning ANIMATION_SOCKET_UNKNOWN_BONE: node "batter" has no bone "LeftHand".
+DIA_CONSOLE dia-shot-ivy-desktop error Failed to load resource: the server responded with a status of 404 (Not Found)
+DIA_CONSOLE dia-shot-ivy-desktop warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-ivy-desktop warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-ivy-desktop warning [.WebGL-0x399400116400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-shot-ivy-desktop warning [.WebGL-0x399400116400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-shot-ivy-desktop warning [.WebGL-0x399400116400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-shot-ivy-desktop warning [.WebGL-0x399400116400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+DIA_CONSOLE dia-shot-dome-desktop error Failed to load resource: the server responded with a status of 404 (Not Found)
+DIA_CONSOLE dia-shot-dome-desktop warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-dome-desktop warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-lunar-desktop error Failed to load resource: the server responded with a status of 404 (Not Found)
+DIA_CONSOLE dia-shot-lunar-desktop warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-lunar-desktop warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-sandlot-phone error Failed to load resource: the server responded with a status of 404 (Not Found)
+DIA_CONSOLE dia-shot-sandlot-phone warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-sandlot-phone warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-sandlot-phone warning [.WebGL-0xc2400102400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-shot-sandlot-phone warning ANIMATION_SOCKET_UNKNOWN_BONE: node "batter" has no bone "RightHand".
+DIA_CONSOLE dia-shot-sandlot-phone warning ANIMATION_SOCKET_UNKNOWN_BONE: node "batter" has no bone "LeftHand".
+DIA_CONSOLE dia-shot-sandlot-phone warning [.WebGL-0xc2400102400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-shot-sandlot-phone warning [.WebGL-0xc2400102400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-shot-sandlot-phone warning [.WebGL-0xc2400102400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+DIA_CONSOLE dia-shot-skyline-phone error Failed to load resource: the server responded with a status of 404 (Not Found)
+DIA_CONSOLE dia-shot-skyline-phone warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-skyline-phone warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-ivy-noao error Failed to load resource: the server responded with a status of 404 (Not Found)
+DIA_CONSOLE dia-shot-ivy-noao warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-ivy-noao warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-ivy-nocontact error Failed to load resource: the server responded with a status of 404 (Not Found)
+DIA_CONSOLE dia-shot-ivy-nocontact warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-ivy-nocontact warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-ivy-nocontact warning [.WebGL-0x176c00112400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-shot-ivy-nocontact warning ANIMATION_SOCKET_UNKNOWN_BONE: node "batter" has no bone "RightHand".
+DIA_CONSOLE dia-shot-ivy-nocontact warning ANIMATION_SOCKET_UNKNOWN_BONE: node "batter" has no bone "LeftHand".
+DIA_CONSOLE dia-shot-ivy-nocontact warning [.WebGL-0x176c00112400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-shot-ivy-nocontact warning [.WebGL-0x176c00112400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-shot-ivy-nocontact warning [.WebGL-0x176c00112400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+DIA_CONSOLE dia-shot-skyline-noao error Failed to load resource: the server responded with a status of 404 (Not Found)
+DIA_CONSOLE dia-shot-skyline-noao warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-shot-skyline-noao warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-probe-parks error Failed to load resource: the server responded with a status of 404 (Not Found)
+DIA_CONSOLE dia-probe-parks warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-probe-parks warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-probe-parks warning ANIMATION_SOCKET_UNKNOWN_BONE: node "batter" has no bone "RightHand".
+DIA_CONSOLE dia-probe-parks warning ANIMATION_SOCKET_UNKNOWN_BONE: node "batter" has no bone "LeftHand".
+DIA_CONSOLE dia-probe-swing error Failed to load resource: the server responded with a status of 404 (Not Found)
+DIA_CONSOLE dia-probe-swing warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-probe-swing warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-probe-swing warning [.WebGL-0xb0c00146400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-probe-swing warning ANIMATION_SOCKET_UNKNOWN_BONE: node "batter" has no bone "RightHand".
+DIA_CONSOLE dia-probe-swing warning ANIMATION_SOCKET_UNKNOWN_BONE: node "batter" has no bone "LeftHand".
+DIA_CONSOLE dia-probe-swing warning [.WebGL-0xb0c00146400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-probe-swing warning [.WebGL-0xb0c00146400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-probe-swing warning [.WebGL-0xb0c00146400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+DIA_CONSOLE dia-probe-take error Failed to load resource: the server responded with a status of 404 (Not Found)
+DIA_CONSOLE dia-probe-take warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-probe-take warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-probe-take warning [.WebGL-0x181400102400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-probe-take warning ANIMATION_SOCKET_UNKNOWN_BONE: node "batter" has no bone "RightHand".
+DIA_CONSOLE dia-probe-take warning ANIMATION_SOCKET_UNKNOWN_BONE: node "batter" has no bone "LeftHand".
+DIA_CONSOLE dia-probe-take warning [.WebGL-0x181400102400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-probe-take warning [.WebGL-0x181400102400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-probe-take warning [.WebGL-0x181400102400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+DIA_CONSOLE dia-probe-qa error Failed to load resource: the server responded with a status of 404 (Not Found)
+DIA_CONSOLE dia-probe-qa warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-probe-qa warning The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+DIA_CONSOLE dia-probe-qa warning [.WebGL-0x14b400122400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-probe-qa warning ANIMATION_SOCKET_UNKNOWN_BONE: node "batter" has no bone "RightHand".
+DIA_CONSOLE dia-probe-qa warning ANIMATION_SOCKET_UNKNOWN_BONE: node "batter" has no bone "LeftHand".
+DIA_CONSOLE dia-probe-qa warning [.WebGL-0x14b400122400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-probe-qa warning [.WebGL-0x14b400122400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+DIA_CONSOLE dia-probe-qa warning [.WebGL-0x14b400122400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
