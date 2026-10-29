@@ -108,15 +108,20 @@ the fused bloom of quality `auto` against `?aura3d-render=production` on the sam
 
 ## Checklist
 
-- [ ] Replace `renderer: { mode, qualityProfile, fallback }` with `quality: "auto"`. Not done: it changes no pixel (the profile's
-  pixel ratio is overridden by `pixelRatio: 1`), and `strict` is off, so the deprecated fields cause no error today.
+- [x] Replace `renderer: { mode, qualityProfile, fallback }` with `quality: "auto"` (`renderer: { quality: "auto" }` in `main.ts`).
+  No pixel change: the 50 s in-run frame reads 191.26 mean luma (runner crop 193.35) against 191.27 (193.37) before the switch
+  (`g17after3` vs `g17after1`); the resolved tier is `high` and the deprecation warning is gone. The look lint now skips its production-only rules;
+  the one that applied, `look/low-dpr`, would flag `pixelRatio: 1`, which is expected here because `sizeCanvas` in `main.ts` sizes the canvas from the device pixel ratio itself (capped at 1.5).
 - [x] Read `app.diagnostics().renderPath`: `hdr-msaa` on every capture.
 - [x] Capture the runner, lanterns and islands on 4.3.7 and 4.5.0 at the same state and compare (table above). Fixed with
   `environments.neutral({ intensity: 0.9 })`.
-- [ ] Compare the sun-shadow frames from `port-sun-shadows-serpentine-sky-run.spec.ts` on both versions. Not run: the luma
-  comparison above covers the lit surfaces, and the spec's hook name was only fixed in this lane.
+- [x] Compare the sun-shadow frames from `port-sun-shadows-serpentine-sky-run.spec.ts` on both versions (640x360, 90 steps).
+  The sun shadow is sampled (`pcf`, 113 draw calls with it, 56 without) on all three builds and the frame stays lit:
+  v4.3.7 193.12 off / 193.12 on (`g17v437shadow`), 4.5.0 base 190.00 / 189.99 (`g17before3`), this lane 193.18 / 193.17
+  (`g17after3`). Pixels darker by more than 8 with the shadow on: 29, 466 and 632 of 230,400.
 - [x] `?diag=1`: no black-frame report and no render error (variant `v-diag`, 0 render errors, same luma as the default).
-- [ ] Check `app.diagnostics()` for `option-ignored` entries. Not checked: the capture logs only warnings that match environment, hemisphere or GL errors.
+- [x] Check `app.diagnostics()` for `option-ignored` entries: `degradations` is empty and no engine warning is logged on the
+  base or the lane (`g17before3`, `g17after3`).
 - [x] `pnpm vitest run tests/unit/saiyan-snake-way-port`: 96 tests pass.
 - [x] Browser runs on the remote runner: the lane capture spec and `shotsb-serpentine` (runs listed in `docs/audits/lanes/g17.md`).
 - [x] `node tools/game-checks/run.mjs serpentine-sky-run-port`: 0 errors, 0 warnings.
