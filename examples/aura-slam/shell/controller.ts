@@ -3,9 +3,10 @@ import { clamp } from "../ui/format";
 /**
  * The live page's adapter-side player controller, ported verbatim from `stepTopTennisPlayerControl` and
  * `installManualAndAutoplayControls` in tests/fixtures/aura-slam-original/adapter/main.ts. It is not part of the simulation: the live
- * page runs it once per `render()` (after `update()`), with a constant `dt` of 1/60, and it mutates the engine state
- * directly. Baseline replays (evidence/aura-slam/reference.json) include its effects, so the native shell calls it from
- * `render()` exactly once per presented frame and keeps the same arithmetic, clamps and ordering.
+ * page ran it once per `render()` with a constant `dt` of 1/60, which tied serve-setup movement and the Auto player to the
+ * display refresh rate (2x speed at 120 Hz). The native shell runs it once per fixed 1/60 s simulation step instead, right
+ * after `engine.step` (C4), which is also how the baseline replay (tests/unit/aura-slam/replay-lib.ts) drives it.
+ * Serve-setup movement reads the bound movement keys (C6) and keeps the server behind its own baseline half (C5).
  */
 export interface ControllerEngine {
   requestSwing?(side: "player" | "ai", time: number, forcePower?: boolean): unknown;
@@ -18,7 +19,7 @@ interface BallLike {
   targetX?: number; targetY?: number;
 }
 export interface ControllerState {
-  mode: string; paused: boolean; phase: string; server: string; time: number;
+  mode: string; paused: boolean; phase: string; server: string; time: number; serveCourt?: string;
   player?: ActorLike; ball?: BallLike;
   serveAttempt?: { swingAt?: number | null } | null;
 }
@@ -27,7 +28,7 @@ export interface AdapterController {
   /** The "Auto" demo player (`?autoplay=1`, `?demo=1` or the Auto toggle). */
   enabled: boolean;
   readonly keysHeld: ReadonlySet<string>;
-  /** One controller step; the live page calls it from `render()` with `dt = 1/60`. */
+  /** One controller step; the shell calls it once per fixed 1/60 s sim step. */
   step(state: ControllerState | null | undefined, dt?: number): void;
   keyDown(event: { code: string; target?: unknown }): void;
   keyUp(event: { code: string }): void;
@@ -41,7 +42,37 @@ const isTextField = (target: unknown): boolean => {
   return typeof tag === "string" && ["INPUT", "SELECT", "TEXTAREA"].includes(tag);
 };
 
-export function createAdapterController(options: { engine: () => ControllerEngine | null | undefined; state: () => ControllerState | null | undefined; autoplay?: boolean }): AdapterController {
+/** Default serve-setup axes: the default arrows/WASD bindings over the held-key set (the replay harness uses these). */
+export function defaultMoveAxes(held: ReadonlySet<string>): { mx: number; my: number } {
+  return {
+    mx: (held.has("KeyD") || held.has("ArrowRight") ? 1 : 0) - (held.has("KeyA") || held.has("ArrowLeft") ? 1 : 0),
+    my: (held.has("KeyS") || held.has("ArrowDown") ? 1 : 0) - (held.has("KeyW") || held.has("ArrowUp") ? 1 : 0)
+  };
+}
+
+/** Lateral room either side of the centre mark the server may use (court units; the doubles sideline is at 1.08). */
+export const SERVE_X_LIMIT = 0.95;
+/** The server stays on or behind the baseline (y = 1) and at most 0.12 behind it, as in the live clamp. */
+export const SERVE_Y_MIN = 1.0;
+export const SERVE_Y_MAX = 1.12;
+
+/**
+ * Legal serve-setup position (C5): behind the baseline and on the half of the centre mark that matches `serveCourt`. The near
+ * player serves from the deuce court at x > 0 and from the ad court at x < 0 (sim/serve.ts `positionPlayersForServe`).
+ */
+export function clampServePosition(x: number, y: number, serveCourt: string | undefined): { x: number; y: number } {
+  const lo = serveCourt === "deuce" ? 0.02 : -SERVE_X_LIMIT;
+  const hi = serveCourt === "ad" ? -0.02 : SERVE_X_LIMIT;
+  return { x: clamp(x, lo, hi), y: clamp(y, SERVE_Y_MIN, SERVE_Y_MAX) };
+}
+
+export function createAdapterController(options: {
+  engine: () => ControllerEngine | null | undefined;
+  state: () => ControllerState | null | undefined;
+  autoplay?: boolean;
+  /** Serve-setup movement axes; the shell passes the binding store's `isDown` so rebinds apply. Defaults to arrows/WASD. */
+  moveAxes?: (held: ReadonlySet<string>) => { mx: number; my: number };
+}): AdapterController {
   const held = new Set<string>();
   let autoServeTimer = 0;
 
@@ -52,8 +83,7 @@ export function createAdapterController(options: { engine: () => ControllerEngin
     const b = state.ball;
     if (!p || !b) return;
 
-    const mx = (held.has("KeyD") || held.has("ArrowRight") ? 1 : 0) - (held.has("KeyA") || held.has("ArrowLeft") ? 1 : 0);
-    const my = (held.has("KeyS") || held.has("ArrowDown") ? 1 : 0) - (held.has("KeyW") || held.has("ArrowUp") ? 1 : 0);
+    const { mx, my } = (options.moveAxes ?? defaultMoveAxes)(held);
 
     if (!controller.enabled) {
       // Immediate baseline movement and leg stride during serve setup as well as rally.
@@ -61,8 +91,9 @@ export function createAdapterController(options: { engine: () => ControllerEngin
         const len = Math.hypot(mx, my) || 1;
         p.vx = (mx / len) * 1.35;
         p.vy = (my / len) * 1.05;
-        p.x = clamp((p.x ?? 0) + p.vx * dt, -0.95, 0.95);
-        p.y = clamp((p.y ?? 1.035) + p.vy * dt, 0.72, 1.12);
+        const pos = clampServePosition((p.x ?? 0) + p.vx * dt, (p.y ?? 1.035) + p.vy * dt, state.serveCourt);
+        p.x = pos.x;
+        p.y = pos.y;
         p.moveBlend = Math.min(1, (p.moveBlend ?? 0) + dt * 9.5);
         p.stride = ((p.stride ?? 0) + dt * 11.5) % (Math.PI * 2);
         if (state.phase === "serve") {
@@ -122,15 +153,7 @@ export function createAdapterController(options: { engine: () => ControllerEngin
   function keyDown(event: { code: string; target?: unknown }): void {
     if (isTextField(event.target)) return;
     held.add(event.code);
-    if (event.code === "KeyJ" || event.code === "KeyK" || event.code === "KeyL") {
-      const eng = options.engine();
-      const st = options.state();
-      if (eng && st && st.mode === "playing" && !st.paused) {
-        const shot = event.code === "KeyJ" ? "short" : event.code === "KeyL" ? "lob" : "deep";
-        eng.selectShot?.(shot, "player");
-        eng.requestSwing?.("player", st.time, event.code === "KeyK");
-      }
-    }
+    // J/K/L swings moved to the shell's keydown handler (C6), which applies rebinding, the lob gate and the overlay checks.
   }
   const keyUp = (event: { code: string }): void => { held.delete(event.code); };
 
