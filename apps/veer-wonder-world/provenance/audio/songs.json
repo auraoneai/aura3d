@@ -1,0 +1,162 @@
+{
+ "hello": {
+  "file": "src/assets/audio/songs/hello.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "gentle preschool greeting song, soft ukulele and warm xylophone, 92 bpm, warm female vocal, slow and clear, cheerful and calm, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Hello, hello, / hi, hi, hi! / Wave hello, friend!",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "ballRolls": {
+  "file": "src/assets/audio/songs/ballRolls.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "gentle preschool song with a rolling feel, soft ukulele and warm marimba, 60 bpm, warm female vocal, slow and clear, a short rest after each phrase, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Ball, ball, rolling ball / Here it comes, and there it goes / Stop, ball, stop / Let's roll it once more!",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "faceSong": {
+  "file": "src/assets/audio/songs/faceSong.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "silly gentle preschool song, soft ukulele, kazoo-like woodwind and light xylophone, 88 bpm, warm male vocal, slow and clear, playful and calm, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Ah, ah, a big wide ah! / Oh, oh, a round little oh! / Mmm, mmm, lips go mmm! / Silly faces, you and me, / silly faces, look and see, / ah, oh, mmm!",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "goStop": {
+  "file": "src/assets/audio/songs/goStop.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "playful preschool movement song, soft hand drum and bright marimba, 60 bpm, warm female vocal, slow and clear, three gentle claps, then a quiet pause on stop, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Clap, clap, clap with me. / One, two, three! / Go, go, go! / Now ... stop!",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "animalBand": {
+  "file": "src/assets/audio/songs/animalBand.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "gentle preschool farm band song, soft acoustic guitar, small hand drum and toy piano, 90 bpm, warm female vocal, slow and clear, one animal sound at a time, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Moo, moo, says the cow. / Baa, baa, says the sheep. / Quack, quack, says the duck. / Woof, woof, says the dog. / Boom, boom, goes the drum. / Our little band is done!",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "peekaboo": {
+  "file": "src/assets/audio/songs/peekaboo.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "soft playful preschool song, gentle pizzicato strings and glockenspiel, 88 bpm, warm female vocal, slow and clear, a soft hush before each peekaboo, never startling, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Who's behind the door? / Peek, peek, peek. / Open, open, open... / Peekaboo! Hi, hi! / Hide again, hide again, / bye-bye, peekaboo!",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "bubbleSong": {
+  "file": "src/assets/audio/songs/bubbleSong.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "dreamy gentle preschool song, soft celesta and light ukulele, 88 bpm, warm female vocal, slow and clear, airy and calm, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Bubble, bubble, floating by, / round and shiny, way up high. / Pop, pop, pop! / Where did it go? / More bubbles, please? / More, more, here they go!",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "countToThree": {
+  "file": "src/assets/audio/songs/countToThree.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "calm preschool counting song, soft marimba and warm ukulele, 88 bpm, warm female vocal, slow and clear, a small pause after each number, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: One, one, here is one. / Two, two, now there are two. / Three, three, look, there are three. / One, two, three! / We counted, you and me, / one, two, three.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "birthday": {
+  "file": "src/assets/audio/songs/birthday.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "warm gentle preschool party song, soft ukulele and music box, 84 bpm, warm female vocal, slow and clear, cosy and celebratory, an original birthday melody of its own. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Little cake, little cake, / a pretend light glows. / Take a breath and gently blow, / whoo, whoo, out it goes! / Clap for the party, / a birthday hooray!",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "colours": {
+  "file": "src/assets/audio/songs/colours.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "bright gentle preschool song, soft xylophone and warm acoustic guitar, 88 bpm, warm female vocal, slow and clear, calm and cheerful, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Red, red, a red ball, / rolling, rolling, red. / Blue, blue, a blue ball, / rolling, rolling, blue. / Red and blue, / a ball for you!",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "shapes": {
+  "file": "src/assets/audio/songs/shapes.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "cosy gentle preschool bakery song, soft piano and light marimba, 84 bpm, warm female vocal, slow and clear, calm and friendly, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Circle, circle, round like a plate. / Square, square, like a block. / Triangle, triangle, like a hat. / Circle, square, triangle, / out of the oven, / mmm, shapes!",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "trainSong": {
+  "file": "src/assets/audio/songs/trainSong.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "gentle preschool train song, soft brushed snare, warm upright bass and toy xylophone, 88 bpm, warm male vocal, slow and clear, calm chugging rhythm, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Choo-choo, here comes GoGo, / chugga, chugga, slow. / Ready, steady... go! / Chugga, chugga, round we go, / and now the train goes... stop! / Bye-bye, train!",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "routine": {
+  "file": "src/assets/audio/songs/routine.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "gentle preschool daily-routine song, soft acoustic guitar and glockenspiel, 84 bpm, warm female vocal, slow and clear, calm and cosy, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Wake up, wake up, the sun is up. / Wash, wash, wash our hands. / Eat, eat, a yummy breakfast. / Brush, brush, brush our teeth. / The moon is up, it's time for bed. / Sleep, sleep, sleepy head.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "abc": {
+  "file": "src/assets/audio/songs/abc.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "gentle preschool letter song, soft ukulele and celesta, 84 bpm, warm female vocal, slow and clear, an original melody (not an alphabet tune). Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: Here is B, big B, / B for ball, B for bear. / Bounce, bounce, the ball goes up, / hug, hug, the big brown bear. / Ball and bear, / B is here!",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "lullaby": {
+  "file": "src/assets/audio/songs/lullaby.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "very soft preschool lullaby, gentle music box and felt piano, 66 bpm, warm hushed female vocal, slow and clear, quiet and soothing, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: The moon is up, the stars are too, / a sleepy yawn for me and you. / Teddy's tucked in, warm in bed, / rest your sleepy little head. / Night-night, night-night, / sleep tight.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ },
+ "allDone": {
+  "file": "src/assets/audio/songs/allDone.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "soft preschool goodbye song, gentle acoustic guitar and music box, 84 bpm, warm female vocal, slow and clear, calm and settling, original melody. Original children's song. Sing these exact lyrics slowly and clearly, one phrase at a time: All done, all done, / time to wave bye-bye, / bye-bye for now.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-20 LUFS, 128k"
+ }
+}

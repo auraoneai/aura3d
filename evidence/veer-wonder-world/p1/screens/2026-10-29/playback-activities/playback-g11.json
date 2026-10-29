@@ -1,0 +1,208 @@
+{
+  "code": "g11",
+  "id": "magic-sound-garden",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 42732,
+  "runMs": 53302,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "magic-sound-garden",
+    "director": {
+      "storyId": "magic-sound-garden",
+      "phase": "speaking",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "hello",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "g11.hello.1",
+    "speaker": "momo",
+    "spoken": [
+      "g11.hello.1"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 76,
+      "nodes": 19,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 20,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 2050
+    },
+    "maxTargets": 2,
+    "targetIds": [
+      "bud-1",
+      "bud-2",
+      "flower-1",
+      "flower-2"
+    ],
+    "waitSamples": 6,
+    "maxRound": 1,
+    "beatIds": [
+      "hello",
+      "garden",
+      "hello-one",
+      "open-one",
+      "hello-two",
+      "open-two",
+      "hands",
+      "all-done"
+    ],
+    "phases": [
+      "speaking",
+      "waiting",
+      "holding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 11,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "magic-sound-garden",
+    "director": {
+      "storyId": "magic-sound-garden",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 7,
+      "beatId": "all-done",
+      "round": 1,
+      "lineIndex": 3,
+      "elapsedMs": 49542,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "g11.hello.1",
+      "g11.hello.2",
+      "g11.garden.1",
+      "g11.garden.2",
+      "g11.hello-one.1",
+      "g11.open-one.1",
+      "g11.open-one.2",
+      "g11.hello-two.1",
+      "g11.open-two.1",
+      "g11.open-two.2",
+      "g11.open-two.3",
+      "g11.hands.1",
+      "g11.all-done.1",
+      "g11.all-done.2",
+      "g11.all-done.3"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 80,
+      "nodes": 19,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "magic-sound-garden",
+    "directorStoryId": "magic-sound-garden",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "g11.hello.1",
+    "g11.hello.2",
+    "g11.garden.1",
+    "g11.garden.2",
+    "g11.hello-one.1",
+    "g11.open-one.1",
+    "g11.open-one.2",
+    "g11.hello-two.1",
+    "g11.open-two.1",
+    "g11.open-two.2",
+    "g11.open-two.3",
+    "g11.hands.1",
+    "g11.all-done.1",
+    "g11.all-done.2",
+    "g11.all-done.3"
+  ],
+  "spokenOrder": {
+    "spoken": 15,
+    "authored": 15,
+    "rounds": 1,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 13,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-activities-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

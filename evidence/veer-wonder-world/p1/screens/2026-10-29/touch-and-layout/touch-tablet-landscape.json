@@ -1,0 +1,96 @@
+{
+  "label": "touch-tablet-landscape",
+  "runId": "wonder-touch-and-layout-20261029T172337Z",
+  "commit": {
+    "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+    "tree": "clean"
+  },
+  "engineVersion": "4.5.0",
+  "viewport": {
+    "width": 1024,
+    "height": 768
+  },
+  "renderer": {
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "vendor": "Google Inc. (Google)",
+    "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+  },
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "taps": [
+    {
+      "input": "mouse",
+      "beat": "invite",
+      "stray": {
+        "x": 123,
+        "y": 476
+      },
+      "strayIgnored": true,
+      "tap": {
+        "x": 775.696504137269,
+        "y": 495.2430757776804
+      },
+      "before": {
+        "storyId": "sheru-big-adventure",
+        "phase": "waiting",
+        "mode": "play-together",
+        "beatIndex": 3,
+        "beatId": "invite",
+        "round": 0,
+        "lineIndex": 1,
+        "elapsedMs": 46000,
+        "waitedMs": 947,
+        "taps": 0,
+        "finishedReason": null
+      },
+      "after": {
+        "storyId": "sheru-big-adventure",
+        "phase": "responding",
+        "mode": "play-together",
+        "beatIndex": 3,
+        "beatId": "invite",
+        "round": 0,
+        "lineIndex": 0,
+        "elapsedMs": 46000,
+        "waitedMs": 947,
+        "taps": 1,
+        "finishedReason": null
+      },
+      "targetsAfter": []
+    },
+    {
+      "input": "confirm",
+      "beat": "repeat",
+      "before": {
+        "storyId": "sheru-big-adventure",
+        "phase": "waiting",
+        "mode": "play-together",
+        "beatIndex": 5,
+        "beatId": "repeat",
+        "round": 0,
+        "lineIndex": 3,
+        "elapsedMs": 76000,
+        "waitedMs": 715,
+        "taps": 1,
+        "finishedReason": null
+      },
+      "after": {
+        "storyId": "sheru-big-adventure",
+        "phase": "responding",
+        "mode": "play-together",
+        "beatIndex": 5,
+        "beatId": "repeat",
+        "round": 0,
+        "lineIndex": 0,
+        "elapsedMs": 76000,
+        "waitedMs": 715,
+        "taps": 1,
+        "finishedReason": null
+      },
+      "targetsAfter": []
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "appErrors": []
+}

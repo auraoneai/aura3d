@@ -1,0 +1,240 @@
+{
+  "code": "e16",
+  "id": "little-birthday-party",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 44551,
+  "runMs": 109663,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "little-birthday-party",
+    "director": {
+      "storyId": "little-birthday-party",
+      "phase": "speaking",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "greet",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "e16.greet.1",
+    "speaker": "lulu",
+    "spoken": [
+      "e16.greet.1"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 68,
+      "nodes": 30,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 50,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 2050
+    },
+    "maxTargets": 1,
+    "targetIds": [
+      "balloon3",
+      "cake"
+    ],
+    "waitSamples": 4,
+    "maxRound": 0,
+    "beatIds": [
+      "greet",
+      "hook",
+      "teddy",
+      "count-one",
+      "count-two",
+      "count-three",
+      "candle",
+      "song",
+      "blow-model",
+      "relight",
+      "blow-invite",
+      "eat",
+      "outro"
+    ],
+    "phases": [
+      "speaking",
+      "holding",
+      "waiting",
+      "responding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 17,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "little-birthday-party",
+    "director": {
+      "storyId": "little-birthday-party",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 12,
+      "beatId": "outro",
+      "round": 0,
+      "lineIndex": 3,
+      "elapsedMs": 124504,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "e16.greet.1",
+      "e16.greet.2",
+      "e16.hook.1",
+      "e16.hook.2",
+      "e16.teddy.1",
+      "e16.teddy.2",
+      "e16.teddy.3",
+      "e16.count-one.1",
+      "e16.count-one.2",
+      "e16.count-two.1",
+      "e16.count-two.2",
+      "e16.count-three.1",
+      "e16.count-three.2",
+      "e16.count-three.3",
+      "e16.count-three.4",
+      "e16.candle.1",
+      "e16.candle.2",
+      "e16.blow-model.1",
+      "e16.blow-model.2",
+      "e16.relight.1",
+      "e16.relight.2",
+      "e16.blow-invite.1",
+      "e16.blow-invite.2",
+      "e16.blow-invite.3",
+      "e16.eat.1",
+      "e16.eat.2",
+      "e16.outro.1",
+      "e16.outro.2",
+      "e16.outro.3"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 92,
+      "nodes": 30,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "little-birthday-party",
+    "directorStoryId": "little-birthday-party",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "e16.greet.1",
+    "e16.greet.2",
+    "e16.hook.1",
+    "e16.hook.2",
+    "e16.teddy.1",
+    "e16.teddy.2",
+    "e16.teddy.3",
+    "e16.count-one.1",
+    "e16.count-one.2",
+    "e16.count-two.1",
+    "e16.count-two.2",
+    "e16.count-three.1",
+    "e16.count-three.2",
+    "e16.count-three.3",
+    "e16.count-three.4",
+    "e16.candle.1",
+    "e16.candle.2",
+    "e16.blow-model.1",
+    "e16.blow-model.2",
+    "e16.relight.1",
+    "e16.relight.2",
+    "e16.blow-invite.1",
+    "e16.blow-invite.2",
+    "e16.blow-invite.3",
+    "e16.eat.1",
+    "e16.eat.2",
+    "e16.outro.1",
+    "e16.outro.2",
+    "e16.outro.3"
+  ],
+  "spokenOrder": {
+    "spoken": 29,
+    "authored": 29,
+    "rounds": 0,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 22,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-episodes-2-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

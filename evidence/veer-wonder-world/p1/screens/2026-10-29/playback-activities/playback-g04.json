@@ -1,0 +1,218 @@
+{
+  "code": "g04",
+  "id": "peekaboo-animal-barn",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 43868,
+  "runMs": 64386,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "peekaboo-animal-barn",
+    "director": {
+      "storyId": "peekaboo-animal-barn",
+      "phase": "speaking",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "hello",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "g04.hello.1",
+    "speaker": "peeko",
+    "spoken": [
+      "g04.hello.1"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 62,
+      "nodes": 19,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 26,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 2100
+    },
+    "maxTargets": 1,
+    "targetIds": [
+      "door"
+    ],
+    "waitSamples": 8,
+    "maxRound": 1,
+    "beatIds": [
+      "hello",
+      "door",
+      "cow",
+      "duck",
+      "horse",
+      "more",
+      "goodbye",
+      "bye"
+    ],
+    "phases": [
+      "speaking",
+      "holding",
+      "waiting",
+      "responding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 11,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "peekaboo-animal-barn",
+    "director": {
+      "storyId": "peekaboo-animal-barn",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 7,
+      "beatId": "bye",
+      "round": 1,
+      "lineIndex": 2,
+      "elapsedMs": 64578,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "g04.hello.1",
+      "g04.hello.2",
+      "g04.door.1",
+      "g04.door.2",
+      "g04.cow.1",
+      "g04.cow.2",
+      "g04.duck.1",
+      "g04.duck.2",
+      "g04.duck.3",
+      "g04.duck.4",
+      "g04.horse.1",
+      "g04.horse.2",
+      "g04.horse.3",
+      "g04.horse.4",
+      "g04.more.1",
+      "g04.more.2",
+      "g04.more.3",
+      "g04.goodbye.1",
+      "g04.goodbye.2",
+      "g04.bye.1",
+      "g04.bye.2"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 70,
+      "nodes": 19,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "peekaboo-animal-barn",
+    "directorStoryId": "peekaboo-animal-barn",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "g04.hello.1",
+    "g04.hello.2",
+    "g04.door.1",
+    "g04.door.2",
+    "g04.cow.1",
+    "g04.cow.2",
+    "g04.duck.1",
+    "g04.duck.2",
+    "g04.duck.3",
+    "g04.duck.4",
+    "g04.horse.1",
+    "g04.horse.2",
+    "g04.horse.3",
+    "g04.horse.4",
+    "g04.more.1",
+    "g04.more.2",
+    "g04.more.3",
+    "g04.goodbye.1",
+    "g04.goodbye.2",
+    "g04.bye.1",
+    "g04.bye.2"
+  ],
+  "spokenOrder": {
+    "spoken": 21,
+    "authored": 21,
+    "rounds": 1,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 20,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-activities-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

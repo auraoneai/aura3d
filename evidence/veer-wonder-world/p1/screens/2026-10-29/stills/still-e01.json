@@ -1,0 +1,119 @@
+{
+  "context": {
+    "runId": "wonder-stills-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0",
+    "renderer": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+    }
+  },
+  "code": "e01",
+  "id": "momo-magic-mouth",
+  "title": "Momo's Magic Mouth",
+  "kind": "episode",
+  "viewport": {
+    "width": 1024,
+    "height": 768
+  },
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "load": {
+    "loadMs": 52556,
+    "firstMount": null
+  },
+  "moment": {
+    "beatId": "hello-mirror",
+    "kind": "model",
+    "t": 18650,
+    "rule": "3 s after the beat starts",
+    "camera": {
+      "preset": "medium",
+      "since": 15650
+    }
+  },
+  "director": {
+    "storyId": "momo-magic-mouth",
+    "phase": "speaking",
+    "mode": "watch-sing",
+    "beatIndex": 3,
+    "beatId": "hello-mirror",
+    "round": 0,
+    "lineIndex": 1,
+    "elapsedMs": 18650,
+    "waitedMs": 0,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "frame": {
+    "width": 1024,
+    "height": 768,
+    "luma": {
+      "meanLuma": 188.398,
+      "lumaStdDev": 33.724,
+      "nonBlackRatio": 1,
+      "coarseColours": 326
+    },
+    "colour": {
+      "meanSaturation": 0.23,
+      "colourfulness": 47.177,
+      "clippedRatio": 0,
+      "p5Luma": 151,
+      "p95Luma": 226
+    }
+  },
+  "nodes": [
+    {
+      "id": "momo",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "momo",
+        "model"
+      ]
+    },
+    {
+      "id": "mirror",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "mirror",
+        "model"
+      ]
+    },
+    {
+      "id": "cushion",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "cushion",
+        "model"
+      ]
+    }
+  ],
+  "stage": {
+    "drawCalls": 42,
+    "nodes": 18,
+    "world": "home-nook",
+    "modelNodes": 3,
+    "standInNodes": 0,
+    "modelStatus": {
+      "procedural": 2,
+      "ready": 9
+    }
+  },
+  "stageWarnings": [],
+  "errors": {
+    "app": [],
+    "console": [],
+    "page": [],
+    "badResponses": []
+  },
+  "problems": []
+}

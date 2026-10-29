@@ -1,0 +1,20 @@
+{
+  "schema": "wonder-world.environment-provenance/1",
+  "note": "The engine's look presets fetch their HDRI from /hdri/<name>.hdr at the origin root. vite.config.ts serves the repo's shared public/hdri/ files in dev and preview and copies these two (with public/hdri/ATTRIBUTION.md) into dist/hdri/ at build time (plugin wonder-world-copy-shared-public-files; a missing file fails the build). The app keeps no copy of its own.",
+  "files": {
+    "autumn_field_puresky_1k.hdr": {
+      "sha256": "e60470d3a0f219585df1d74c393b472361c5400a7ff8d071ebe6eca29b7fe2b0",
+      "sizeBytes": 1092974,
+      "source": "https://polyhaven.com/a/autumn_field_puresky",
+      "license": "CC0-1.0 (Poly Haven)",
+      "repoPath": "public/hdri/autumn_field_puresky_1k.hdr"
+    },
+    "studio_small_08_1k.hdr": {
+      "sha256": "f6a989f89432eb4eee3191364a9c1ceed195c4ec3544173a3c04fd96cb91d0ba",
+      "sizeBytes": 1508872,
+      "source": "https://polyhaven.com/a/studio_small_08",
+      "license": "CC0-1.0 (Poly Haven)",
+      "repoPath": "public/hdri/studio_small_08_1k.hdr"
+    }
+  }
+}

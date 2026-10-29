@@ -1,0 +1,258 @@
+{
+  "code": "e15",
+  "id": "momo-bubble-universe",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 46899,
+  "runMs": 126775,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "momo-bubble-universe",
+    "director": {
+      "storyId": "momo-bubble-universe",
+      "phase": "speaking",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "greeting",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "e15.greeting.1",
+    "speaker": "momo",
+    "spoken": [
+      "e15.greeting.1"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 68,
+      "nodes": 25,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 50,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 900
+    },
+    "maxTargets": 2,
+    "targetIds": [
+      "wand",
+      "momo",
+      "bubble-2",
+      "bubble-3"
+    ],
+    "waitSamples": 6,
+    "maxRound": 0,
+    "beatIds": [
+      "greeting",
+      "blow-1",
+      "inside-1",
+      "pop-1",
+      "duck",
+      "duck-walk",
+      "more-1",
+      "pop-2",
+      "bird",
+      "more-2",
+      "blow-3",
+      "song",
+      "pop-3",
+      "cow",
+      "all-popped",
+      "pretend-pop",
+      "outro"
+    ],
+    "phases": [
+      "speaking",
+      "holding",
+      "waiting",
+      "responding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 24,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "momo-bubble-universe",
+    "director": {
+      "storyId": "momo-bubble-universe",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 16,
+      "beatId": "outro",
+      "round": 0,
+      "lineIndex": 3,
+      "elapsedMs": 123362,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "e15.greeting.1",
+      "e15.greeting.2",
+      "e15.blow-1.1",
+      "e15.blow-1.2",
+      "e15.inside-1.1",
+      "e15.inside-1.2",
+      "e15.inside-1.3",
+      "e15.pop-1.1",
+      "e15.pop-1.2",
+      "e15.duck.1",
+      "e15.duck.2",
+      "e15.duck-walk.1",
+      "e15.duck-walk.2",
+      "e15.more-1.1",
+      "e15.more-1.2",
+      "e15.pop-2.1",
+      "e15.pop-2.2",
+      "e15.pop-2.3",
+      "e15.bird.1",
+      "e15.bird.2",
+      "e15.more-2.1",
+      "e15.more-2.2",
+      "e15.blow-3.1",
+      "e15.pop-3.1",
+      "e15.pop-3.2",
+      "e15.pop-3.3",
+      "e15.cow.1",
+      "e15.cow.2",
+      "e15.cow.3",
+      "e15.all-popped.1",
+      "e15.pretend-pop.1",
+      "e15.pretend-pop.2",
+      "e15.outro.1",
+      "e15.outro.2",
+      "e15.outro.3"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 88,
+      "nodes": 25,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "momo-bubble-universe",
+    "directorStoryId": "momo-bubble-universe",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "e15.greeting.1",
+    "e15.greeting.2",
+    "e15.blow-1.1",
+    "e15.blow-1.2",
+    "e15.inside-1.1",
+    "e15.inside-1.2",
+    "e15.inside-1.3",
+    "e15.pop-1.1",
+    "e15.pop-1.2",
+    "e15.duck.1",
+    "e15.duck.2",
+    "e15.duck-walk.1",
+    "e15.duck-walk.2",
+    "e15.more-1.1",
+    "e15.more-1.2",
+    "e15.pop-2.1",
+    "e15.pop-2.2",
+    "e15.pop-2.3",
+    "e15.bird.1",
+    "e15.bird.2",
+    "e15.more-2.1",
+    "e15.more-2.2",
+    "e15.blow-3.1",
+    "e15.pop-3.1",
+    "e15.pop-3.2",
+    "e15.pop-3.3",
+    "e15.cow.1",
+    "e15.cow.2",
+    "e15.cow.3",
+    "e15.all-popped.1",
+    "e15.pretend-pop.1",
+    "e15.pretend-pop.2",
+    "e15.outro.1",
+    "e15.outro.2",
+    "e15.outro.3"
+  ],
+  "spokenOrder": {
+    "spoken": 35,
+    "authored": 35,
+    "rounds": 0,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 18,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-episodes-2-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

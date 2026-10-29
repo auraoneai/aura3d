@@ -1,0 +1,206 @@
+{
+  "code": "g03",
+  "id": "sheru-ball",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 41618,
+  "runMs": 49709,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "sheru-ball",
+    "director": {
+      "storyId": "sheru-ball",
+      "phase": "speaking",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "hello",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "g03.hello.1",
+    "speaker": "momo",
+    "spoken": [
+      "g03.hello.1"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 80,
+      "nodes": 17,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 18,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 2400
+    },
+    "maxTargets": 1,
+    "targetIds": [
+      "ball"
+    ],
+    "waitSamples": 4,
+    "maxRound": 1,
+    "beatIds": [
+      "hello",
+      "woof",
+      "roll",
+      "fetch",
+      "back",
+      "more",
+      "thanks",
+      "bye"
+    ],
+    "phases": [
+      "speaking",
+      "holding",
+      "waiting",
+      "responding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 10,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "sheru-ball",
+    "director": {
+      "storyId": "sheru-ball",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 7,
+      "beatId": "bye",
+      "round": 1,
+      "lineIndex": 2,
+      "elapsedMs": 44866,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "g03.hello.1",
+      "g03.hello.2",
+      "g03.woof.1",
+      "g03.woof.2",
+      "g03.roll.1",
+      "g03.roll.2",
+      "g03.roll.3",
+      "g03.fetch.1",
+      "g03.back.1",
+      "g03.back.2",
+      "g03.more.1",
+      "g03.thanks.1",
+      "g03.thanks.2",
+      "g03.bye.1",
+      "g03.bye.2"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 80,
+      "nodes": 17,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "sheru-ball",
+    "directorStoryId": "sheru-ball",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "g03.hello.1",
+    "g03.hello.2",
+    "g03.woof.1",
+    "g03.woof.2",
+    "g03.roll.1",
+    "g03.roll.2",
+    "g03.roll.3",
+    "g03.fetch.1",
+    "g03.back.1",
+    "g03.back.2",
+    "g03.more.1",
+    "g03.thanks.1",
+    "g03.thanks.2",
+    "g03.bye.1",
+    "g03.bye.2"
+  ],
+  "spokenOrder": {
+    "spoken": 15,
+    "authored": 15,
+    "rounds": 1,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 15,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-activities-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

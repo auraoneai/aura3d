@@ -1,0 +1,4 @@
+{
+  "status": 0,
+  "tail": "{\n  \"ok\": true,\n  \"manifestPath\": \"/repo/<app>/aura.assets.json\",\n  \"manifest\": {\n    \"schema\": \"aura3d.assets/1.0\",\n    \"assetBasePath\": \"/aura-assets/\",\n    \"outputDir\": \"public/aura-assets\",\n    \"typegen\": \"src/aura-assets.ts\",\n    \"assets\": []\n  },\n  \"failures\": [],\n  \"warnings\": [],\n  \"messages\": [\n    \"Deploy check passed. Browser pass: 1 route(s) loaded with no HTTP errors, failed requests or console errors.\"\n  ]\n}\n\n"
+}

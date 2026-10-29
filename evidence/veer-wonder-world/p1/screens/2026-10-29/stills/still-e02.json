@@ -1,0 +1,139 @@
+{
+  "context": {
+    "runId": "wonder-stills-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0",
+    "renderer": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+    }
+  },
+  "code": "e02",
+  "id": "peekaboo-palace",
+  "title": "The Peekaboo Palace",
+  "kind": "episode",
+  "viewport": {
+    "width": 1024,
+    "height": 768
+  },
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "load": {
+    "loadMs": 77700,
+    "firstMount": null
+  },
+  "moment": {
+    "beatId": "open-right",
+    "kind": "model",
+    "t": 19600,
+    "rule": "3 s after the beat starts",
+    "camera": {
+      "preset": "right",
+      "since": 16600
+    }
+  },
+  "director": {
+    "storyId": "peekaboo-palace",
+    "phase": "speaking",
+    "mode": "watch-sing",
+    "beatIndex": 2,
+    "beatId": "open-right",
+    "round": 0,
+    "lineIndex": 1,
+    "elapsedMs": 19600,
+    "waitedMs": 0,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "frame": {
+    "width": 1024,
+    "height": 768,
+    "luma": {
+      "meanLuma": 197.326,
+      "lumaStdDev": 37.232,
+      "nonBlackRatio": 1,
+      "coarseColours": 524
+    },
+    "colour": {
+      "meanSaturation": 0.19,
+      "colourfulness": 40.529,
+      "clippedRatio": 0,
+      "p5Luma": 127,
+      "p95Luma": 228
+    }
+  },
+  "nodes": [
+    {
+      "id": "momo",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "momo",
+        "model"
+      ]
+    },
+    {
+      "id": "peeko",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "peeko",
+        "model"
+      ]
+    },
+    {
+      "id": "door-left",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "door",
+        "model"
+      ]
+    },
+    {
+      "id": "door-right",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "door",
+        "model"
+      ]
+    },
+    {
+      "id": "duck",
+      "exists": true,
+      "visible": false,
+      "tags": [
+        "prop",
+        "duck",
+        "model"
+      ]
+    }
+  ],
+  "stage": {
+    "drawCalls": 54,
+    "nodes": 19,
+    "world": "peekaboo-barn",
+    "modelNodes": 5,
+    "standInNodes": 0,
+    "modelStatus": {
+      "procedural": 4,
+      "ready": 12
+    }
+  },
+  "stageWarnings": [],
+  "errors": {
+    "app": [],
+    "console": [],
+    "page": [],
+    "badResponses": []
+  },
+  "problems": []
+}

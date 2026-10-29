@@ -1,0 +1,139 @@
+{
+  "context": {
+    "runId": "wonder-stills-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0",
+    "renderer": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+    }
+  },
+  "code": "e03",
+  "id": "alphabet-zoo",
+  "title": "The Alphabet Zoo",
+  "kind": "episode",
+  "viewport": {
+    "width": 1024,
+    "height": 768
+  },
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "load": {
+    "loadMs": 77448,
+    "firstMount": null
+  },
+  "moment": {
+    "beatId": "letter",
+    "kind": "model",
+    "t": 25150,
+    "rule": "3 s after the beat starts",
+    "camera": {
+      "preset": "medium",
+      "since": 22150
+    }
+  },
+  "director": {
+    "storyId": "alphabet-zoo",
+    "phase": "speaking",
+    "mode": "watch-sing",
+    "beatIndex": 3,
+    "beatId": "letter",
+    "round": 0,
+    "lineIndex": 2,
+    "elapsedMs": 25150,
+    "waitedMs": 0,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "frame": {
+    "width": 1024,
+    "height": 768,
+    "luma": {
+      "meanLuma": 202.691,
+      "lumaStdDev": 28.573,
+      "nonBlackRatio": 1,
+      "coarseColours": 475
+    },
+    "colour": {
+      "meanSaturation": 0.122,
+      "colourfulness": 27.945,
+      "clippedRatio": 0,
+      "p5Luma": 126,
+      "p95Luma": 230
+    }
+  },
+  "nodes": [
+    {
+      "id": "lumi",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "lumi",
+        "model"
+      ]
+    },
+    {
+      "id": "peeko",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "peeko",
+        "model"
+      ]
+    },
+    {
+      "id": "letter-b",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "letterB",
+        "model"
+      ]
+    },
+    {
+      "id": "gate",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "door",
+        "model"
+      ]
+    },
+    {
+      "id": "bear",
+      "exists": true,
+      "visible": false,
+      "tags": [
+        "prop",
+        "teddy",
+        "model"
+      ]
+    }
+  ],
+  "stage": {
+    "drawCalls": 58,
+    "nodes": 22,
+    "world": "learning-cloud",
+    "modelNodes": 5,
+    "standInNodes": 2,
+    "modelStatus": {
+      "procedural": 5,
+      "ready": 19
+    }
+  },
+  "stageWarnings": [],
+  "errors": {
+    "app": [],
+    "console": [],
+    "page": [],
+    "badResponses": []
+  },
+  "problems": []
+}

@@ -1,0 +1,139 @@
+{
+  "beat": "invite",
+  "canvas": {
+    "x": 0,
+    "y": 0,
+    "width": 1024,
+    "height": 768
+  },
+  "rects": [
+    {
+      "id": "ball",
+      "x": 700.1032387388766,
+      "y": 424.46539809379044,
+      "w": 151.18653079678484,
+      "h": 141.55535536777995
+    }
+  ],
+  "target": {
+    "x": 700.1032387388766,
+    "y": 424.46539809379044,
+    "width": 151.18653079678484,
+    "height": 141.55535536777995
+  },
+  "tap": {
+    "x": 775.696504137269,
+    "y": 495.2430757776804
+  },
+  "topAtTap": {
+    "isCanvas": true,
+    "tag": "canvas",
+    "id": "",
+    "className": "",
+    "data": "data-aura3d-canvas=true"
+  },
+  "controls": [
+    {
+      "control": "all-done",
+      "x": 10,
+      "y": 10,
+      "width": 128,
+      "height": 48,
+      "visible": true,
+      "disabled": false
+    },
+    {
+      "control": "confirm",
+      "x": 798,
+      "y": 10,
+      "width": 48,
+      "height": 48,
+      "visible": true,
+      "disabled": false
+    },
+    {
+      "control": "pause",
+      "x": 854,
+      "y": 10,
+      "width": 48,
+      "height": 48,
+      "visible": true,
+      "disabled": false
+    },
+    {
+      "control": "replay",
+      "x": 910,
+      "y": 10,
+      "width": 48,
+      "height": 48,
+      "visible": true,
+      "disabled": false
+    },
+    {
+      "control": "parent",
+      "x": 966,
+      "y": 10,
+      "width": 48,
+      "height": 48,
+      "visible": true,
+      "disabled": false
+    }
+  ],
+  "controlCover": [
+    {
+      "control": "all-done",
+      "fraction": 0
+    },
+    {
+      "control": "confirm",
+      "fraction": 0
+    },
+    {
+      "control": "pause",
+      "fraction": 0
+    },
+    {
+      "control": "replay",
+      "fraction": 0
+    },
+    {
+      "control": "parent",
+      "fraction": 0
+    }
+  ],
+  "captions": {
+    "x": 192,
+    "y": 714,
+    "width": 640,
+    "height": 38
+  },
+  "captionCoversTap": false,
+  "scrollOverflow": {
+    "x": 0,
+    "y": 0
+  },
+  "director": {
+    "storyId": "sheru-big-adventure",
+    "phase": "waiting",
+    "mode": "play-together",
+    "beatIndex": 3,
+    "beatId": "invite",
+    "round": 0,
+    "lineIndex": 1,
+    "elapsedMs": 46000,
+    "waitedMs": 947,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "targets": [
+    "ball"
+  ],
+  "speaking": null,
+  "settings": {
+    "mode": "play-together",
+    "reducedMotion": false,
+    "captions": true,
+    "music": true,
+    "sound": true
+  }
+}

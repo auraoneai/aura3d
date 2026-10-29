@@ -1,0 +1,7 @@
+{
+  "schema": "aura3d.assets/1.0",
+  "assetBasePath": "/aura-assets/",
+  "outputDir": "public/aura-assets",
+  "typegen": "src/aura-assets.ts",
+  "assets": []
+}

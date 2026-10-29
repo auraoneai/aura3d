@@ -1,0 +1,159 @@
+{
+  "context": {
+    "runId": "wonder-stills-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0",
+    "renderer": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+    }
+  },
+  "code": "e04",
+  "id": "gogo-abc-train",
+  "title": "GoGo's ABC Train",
+  "kind": "episode",
+  "viewport": {
+    "width": 1024,
+    "height": 768
+  },
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "load": {
+    "loadMs": 87354,
+    "firstMount": null
+  },
+  "moment": {
+    "beatId": "letter",
+    "kind": "model",
+    "t": 17700,
+    "rule": "3 s after the beat starts",
+    "camera": {
+      "preset": "medium",
+      "since": 14700
+    }
+  },
+  "director": {
+    "storyId": "gogo-abc-train",
+    "phase": "speaking",
+    "mode": "watch-sing",
+    "beatIndex": 2,
+    "beatId": "letter",
+    "round": 0,
+    "lineIndex": 2,
+    "elapsedMs": 17700,
+    "waitedMs": 0,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "frame": {
+    "width": 1024,
+    "height": 768,
+    "luma": {
+      "meanLuma": 185.877,
+      "lumaStdDev": 44.057,
+      "nonBlackRatio": 1,
+      "coarseColours": 777
+    },
+    "colour": {
+      "meanSaturation": 0.218,
+      "colourfulness": 54.936,
+      "clippedRatio": 0,
+      "p5Luma": 96,
+      "p95Luma": 226
+    }
+  },
+  "nodes": [
+    {
+      "id": "gogo",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "gogo",
+        "model"
+      ]
+    },
+    {
+      "id": "lulu",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "lulu",
+        "model"
+      ]
+    },
+    {
+      "id": "peeko",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "peeko",
+        "model"
+      ]
+    },
+    {
+      "id": "carriage",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "gogoCarriage",
+        "model"
+      ]
+    },
+    {
+      "id": "letter-a",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "letterA",
+        "model"
+      ]
+    },
+    {
+      "id": "apple",
+      "exists": true,
+      "visible": false,
+      "tags": [
+        "prop",
+        "apple",
+        "model"
+      ]
+    },
+    {
+      "id": "tunnel",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "tunnel",
+        "model"
+      ]
+    }
+  ],
+  "stage": {
+    "drawCalls": 74,
+    "nodes": 23,
+    "world": "station",
+    "modelNodes": 7,
+    "standInNodes": 1,
+    "modelStatus": {
+      "procedural": 5,
+      "ready": 22
+    }
+  },
+  "stageWarnings": [],
+  "errors": {
+    "app": [],
+    "console": [],
+    "page": [],
+    "badResponses": []
+  },
+  "problems": []
+}

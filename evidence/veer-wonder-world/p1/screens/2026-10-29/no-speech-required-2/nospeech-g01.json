@@ -1,0 +1,207 @@
+{
+  "code": "g01",
+  "id": "bubble-garden",
+  "mode": "play-together",
+  "style": "single",
+  "loadMs": 51680,
+  "runMs": 17129,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "bubble-garden",
+    "director": {
+      "storyId": "bubble-garden",
+      "phase": "speaking",
+      "mode": "play-together",
+      "beatIndex": 0,
+      "beatId": "hello",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "g01.hello.1",
+    "speaker": "momo",
+    "spoken": [
+      "g01.hello.1"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 84,
+      "nodes": 24,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "single",
+    "chunks": 1,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 50000
+    },
+    "maxTargets": 0,
+    "targetIds": [],
+    "waitSamples": 0,
+    "maxRound": 1,
+    "beatIds": [
+      "hello",
+      "bye"
+    ],
+    "phases": [
+      "speaking",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 1,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "bubble-garden",
+    "director": {
+      "storyId": "bubble-garden",
+      "phase": "finished",
+      "mode": "play-together",
+      "beatIndex": 6,
+      "beatId": "bye",
+      "round": 1,
+      "lineIndex": 2,
+      "elapsedMs": 49962,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "g01.hello.1",
+      "g01.hello.2",
+      "g01.first-bubble.1",
+      "g01.first-bubble.2",
+      "g01.blow.1",
+      "g01.blow.2",
+      "g01.blow.3",
+      "g01.pop.1",
+      "g01.pop.2",
+      "g01.pop.3",
+      "g01.more.1",
+      "g01.last-pop.1",
+      "g01.last-pop.2",
+      "g01.bye.1",
+      "g01.bye.2"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 84,
+      "nodes": 24,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "bubble-garden",
+    "directorStoryId": "bubble-garden",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": {
+    "installed": true,
+    "stubsLive": true,
+    "getUserMedia": 0,
+    "legacyGetUserMedia": 0,
+    "enumerateDevices": 0,
+    "speechRecognition": 0,
+    "speechRecognitionStart": 0,
+    "mediaRecorder": 0,
+    "mediaStreamSource": 0,
+    "micPermissionQuery": 0,
+    "calls": []
+  },
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "g01.hello.1",
+    "g01.hello.2",
+    "g01.first-bubble.1",
+    "g01.first-bubble.2",
+    "g01.blow.1",
+    "g01.blow.2",
+    "g01.blow.3",
+    "g01.pop.1",
+    "g01.pop.2",
+    "g01.pop.3",
+    "g01.more.1",
+    "g01.last-pop.1",
+    "g01.last-pop.2",
+    "g01.bye.1",
+    "g01.bye.2"
+  ],
+  "spokenOrder": {
+    "spoken": 15,
+    "authored": 15,
+    "rounds": 1,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 17,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-no-speech-required-2-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

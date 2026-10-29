@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#f4efe6" />
+    <meta name="format-detection" content="telephone=no" />
+    <title>Wonder World (prototype)</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/fonts/local.css" />
+    <link rel="stylesheet" href="./src/ui/styles.css" />
+  </head>
+  <body>
+    <!--
+      Wonder World prototype (PRD 04 A04). Nothing plays until a grown-up taps
+      "Tap to start" (a genuine user gesture unlocks audio); there is no
+      autoplay, no microphone and no third-party script. #stage hosts the
+      Aura3D canvas; #ui is the overlay root for the start screen, menu,
+      corner controls, captions, parent gate, parent panel and end card.
+    -->
+    <main class="ww-app">
+      <div id="stage"></div>
+      <div id="ui"></div>
+    </main>
+    <noscript><p class="ww-noscript">Wonder World needs JavaScript to run.</p></noscript>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

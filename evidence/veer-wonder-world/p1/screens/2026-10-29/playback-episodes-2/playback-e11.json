@@ -1,0 +1,257 @@
+{
+  "code": "e11",
+  "id": "number-balloon-rescue",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 49745,
+  "runMs": 130493,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "number-balloon-rescue",
+    "director": {
+      "storyId": "number-balloon-rescue",
+      "phase": "speaking",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "greeting",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "e11.greeting.1",
+    "speaker": "lulu",
+    "spoken": [
+      "e11.greeting.1"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 70,
+      "nodes": 25,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 50,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 1100
+    },
+    "maxTargets": 1,
+    "targetIds": [
+      "balloon-2",
+      "balloon-3"
+    ],
+    "waitSamples": 4,
+    "maxRound": 0,
+    "beatIds": [
+      "greeting",
+      "balloon-one",
+      "balloon-two",
+      "balloon-three",
+      "breeze",
+      "float-away",
+      "hop",
+      "call-lumi",
+      "count-one",
+      "turn-two",
+      "count-two",
+      "turn-three",
+      "count-three",
+      "all-down",
+      "song",
+      "up-again",
+      "down-again",
+      "outro"
+    ],
+    "phases": [
+      "speaking",
+      "holding",
+      "waiting",
+      "responding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 21,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "number-balloon-rescue",
+    "director": {
+      "storyId": "number-balloon-rescue",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 17,
+      "beatId": "outro",
+      "round": 0,
+      "lineIndex": 3,
+      "elapsedMs": 123552,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "e11.greeting.1",
+      "e11.greeting.2",
+      "e11.balloon-one.1",
+      "e11.balloon-two.1",
+      "e11.balloon-three.1",
+      "e11.breeze.1",
+      "e11.breeze.2",
+      "e11.breeze.3",
+      "e11.float-away.1",
+      "e11.float-away.2",
+      "e11.hop.1",
+      "e11.hop.2",
+      "e11.call-lumi.1",
+      "e11.call-lumi.2",
+      "e11.count-one.1",
+      "e11.count-one.2",
+      "e11.count-one.3",
+      "e11.turn-two.1",
+      "e11.turn-two.2",
+      "e11.turn-two.3",
+      "e11.count-two.1",
+      "e11.turn-three.1",
+      "e11.turn-three.2",
+      "e11.turn-three.3",
+      "e11.count-three.1",
+      "e11.all-down.1",
+      "e11.all-down.2",
+      "e11.all-down.3",
+      "e11.all-down.4",
+      "e11.up-again.1",
+      "e11.down-again.1",
+      "e11.down-again.2",
+      "e11.outro.1",
+      "e11.outro.2",
+      "e11.outro.3"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 100,
+      "nodes": 25,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "number-balloon-rescue",
+    "directorStoryId": "number-balloon-rescue",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "e11.greeting.1",
+    "e11.greeting.2",
+    "e11.balloon-one.1",
+    "e11.balloon-two.1",
+    "e11.balloon-three.1",
+    "e11.breeze.1",
+    "e11.breeze.2",
+    "e11.breeze.3",
+    "e11.float-away.1",
+    "e11.float-away.2",
+    "e11.hop.1",
+    "e11.hop.2",
+    "e11.call-lumi.1",
+    "e11.call-lumi.2",
+    "e11.count-one.1",
+    "e11.count-one.2",
+    "e11.count-one.3",
+    "e11.turn-two.1",
+    "e11.turn-two.2",
+    "e11.turn-two.3",
+    "e11.count-two.1",
+    "e11.turn-three.1",
+    "e11.turn-three.2",
+    "e11.turn-three.3",
+    "e11.count-three.1",
+    "e11.all-down.1",
+    "e11.all-down.2",
+    "e11.all-down.3",
+    "e11.all-down.4",
+    "e11.up-again.1",
+    "e11.down-again.1",
+    "e11.down-again.2",
+    "e11.outro.1",
+    "e11.outro.2",
+    "e11.outro.3"
+  ],
+  "spokenOrder": {
+    "spoken": 35,
+    "authored": 35,
+    "rounds": 0,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 19,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-episodes-2-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

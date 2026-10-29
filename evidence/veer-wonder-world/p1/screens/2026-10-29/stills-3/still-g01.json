@@ -1,0 +1,129 @@
+{
+  "context": {
+    "runId": "wonder-stills-3-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0",
+    "renderer": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+    }
+  },
+  "code": "g01",
+  "id": "bubble-garden",
+  "title": "Bubble Garden",
+  "kind": "activity",
+  "viewport": {
+    "width": 1024,
+    "height": 768
+  },
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "load": {
+    "loadMs": 107825,
+    "firstMount": null
+  },
+  "moment": {
+    "beatId": "first-bubble",
+    "kind": "model",
+    "t": 7600,
+    "rule": "3 s after the beat starts",
+    "camera": {
+      "preset": "wide",
+      "since": 4600
+    }
+  },
+  "director": {
+    "storyId": "bubble-garden",
+    "phase": "speaking",
+    "mode": "watch-sing",
+    "beatIndex": 1,
+    "beatId": "first-bubble",
+    "round": 0,
+    "lineIndex": 1,
+    "elapsedMs": 7600,
+    "waitedMs": 0,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "frame": {
+    "width": 1024,
+    "height": 768,
+    "luma": {
+      "meanLuma": 191.499,
+      "lumaStdDev": 37.256,
+      "nonBlackRatio": 1,
+      "coarseColours": 529
+    },
+    "colour": {
+      "meanSaturation": 0.229,
+      "colourfulness": 44.246,
+      "clippedRatio": 0,
+      "p5Luma": 130,
+      "p95Luma": 221
+    }
+  },
+  "nodes": [
+    {
+      "id": "momo",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "momo",
+        "model"
+      ]
+    },
+    {
+      "id": "wand",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "bubbleWand",
+        "model"
+      ]
+    },
+    {
+      "id": "flowerLeft",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "flower",
+        "model"
+      ]
+    },
+    {
+      "id": "flowerRight",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "flower",
+        "model"
+      ]
+    }
+  ],
+  "stage": {
+    "drawCalls": 89,
+    "nodes": 24,
+    "world": "meadow",
+    "modelNodes": 4,
+    "standInNodes": 3,
+    "modelStatus": {
+      "procedural": 5,
+      "ready": 20
+    }
+  },
+  "stageWarnings": [],
+  "errors": {
+    "app": [],
+    "console": [],
+    "page": [],
+    "badResponses": []
+  },
+  "problems": []
+}

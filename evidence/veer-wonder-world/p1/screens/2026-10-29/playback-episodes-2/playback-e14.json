@@ -1,0 +1,257 @@
+{
+  "code": "e14",
+  "id": "lost-teddy-adventure",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 36528,
+  "runMs": 94971,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "lost-teddy-adventure",
+    "director": {
+      "storyId": "lost-teddy-adventure",
+      "phase": "speaking",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "greeting",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "e14.greeting.1",
+    "speaker": "momo",
+    "spoken": [
+      "e14.greeting.1"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 46,
+      "nodes": 21,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 50,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 450
+    },
+    "maxTargets": 1,
+    "targetIds": [
+      "table",
+      "cushion",
+      "basket"
+    ],
+    "waitSamples": 6,
+    "maxRound": 0,
+    "beatIds": [
+      "greeting",
+      "meet-teddy",
+      "cover-eyes",
+      "teddy-hides",
+      "empty-chair",
+      "under-table",
+      "peeko-back",
+      "behind-cushion",
+      "giggle-hint",
+      "in-basket",
+      "found",
+      "hug",
+      "song",
+      "back-home",
+      "outro"
+    ],
+    "phases": [
+      "speaking",
+      "holding",
+      "waiting",
+      "responding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 25,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "lost-teddy-adventure",
+    "director": {
+      "storyId": "lost-teddy-adventure",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 14,
+      "beatId": "outro",
+      "round": 0,
+      "lineIndex": 3,
+      "elapsedMs": 122911,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "e14.greeting.1",
+      "e14.greeting.2",
+      "e14.meet-teddy.1",
+      "e14.meet-teddy.2",
+      "e14.cover-eyes.1",
+      "e14.cover-eyes.2",
+      "e14.teddy-hides.1",
+      "e14.teddy-hides.2",
+      "e14.empty-chair.1",
+      "e14.empty-chair.2",
+      "e14.empty-chair.3",
+      "e14.under-table.1",
+      "e14.under-table.2",
+      "e14.under-table.3",
+      "e14.under-table.4",
+      "e14.peeko-back.1",
+      "e14.peeko-back.2",
+      "e14.behind-cushion.1",
+      "e14.behind-cushion.2",
+      "e14.behind-cushion.3",
+      "e14.giggle-hint.1",
+      "e14.giggle-hint.2",
+      "e14.giggle-hint.3",
+      "e14.in-basket.1",
+      "e14.in-basket.2",
+      "e14.found.1",
+      "e14.found.2",
+      "e14.found.3",
+      "e14.hug.1",
+      "e14.hug.2",
+      "e14.hug.3",
+      "e14.back-home.1",
+      "e14.back-home.2",
+      "e14.outro.1",
+      "e14.outro.2",
+      "e14.outro.3"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 55,
+      "nodes": 21,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "lost-teddy-adventure",
+    "directorStoryId": "lost-teddy-adventure",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "e14.greeting.1",
+    "e14.greeting.2",
+    "e14.meet-teddy.1",
+    "e14.meet-teddy.2",
+    "e14.cover-eyes.1",
+    "e14.cover-eyes.2",
+    "e14.teddy-hides.1",
+    "e14.teddy-hides.2",
+    "e14.empty-chair.1",
+    "e14.empty-chair.2",
+    "e14.empty-chair.3",
+    "e14.under-table.1",
+    "e14.under-table.2",
+    "e14.under-table.3",
+    "e14.under-table.4",
+    "e14.peeko-back.1",
+    "e14.peeko-back.2",
+    "e14.behind-cushion.1",
+    "e14.behind-cushion.2",
+    "e14.behind-cushion.3",
+    "e14.giggle-hint.1",
+    "e14.giggle-hint.2",
+    "e14.giggle-hint.3",
+    "e14.in-basket.1",
+    "e14.in-basket.2",
+    "e14.found.1",
+    "e14.found.2",
+    "e14.found.3",
+    "e14.hug.1",
+    "e14.hug.2",
+    "e14.hug.3",
+    "e14.back-home.1",
+    "e14.back-home.2",
+    "e14.outro.1",
+    "e14.outro.2",
+    "e14.outro.3"
+  ],
+  "spokenOrder": {
+    "spoken": 36,
+    "authored": 36,
+    "rounds": 0,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 20,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-episodes-2-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

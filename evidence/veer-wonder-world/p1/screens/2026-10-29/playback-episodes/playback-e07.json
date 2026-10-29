@@ -1,0 +1,243 @@
+{
+  "code": "e07",
+  "id": "magic-colour-machine",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 37037,
+  "runMs": 98923,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "magic-colour-machine",
+    "director": {
+      "storyId": "magic-colour-machine",
+      "phase": "holding",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "hello",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 48,
+      "nodes": 19,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 50,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 1400
+    },
+    "maxTargets": 2,
+    "targetIds": [
+      "machine",
+      "red-ball",
+      "blue-ball"
+    ],
+    "waitSamples": 4,
+    "maxRound": 0,
+    "beatIds": [
+      "hello",
+      "greet",
+      "found",
+      "ball-rolls",
+      "ball-in",
+      "whirr",
+      "red",
+      "lumi-ball",
+      "lumi-ball-in",
+      "invite-machine",
+      "blue",
+      "both",
+      "invite-choose",
+      "play-red",
+      "play-blue",
+      "song",
+      "outro"
+    ],
+    "phases": [
+      "holding",
+      "speaking",
+      "waiting",
+      "responding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 18,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "magic-colour-machine",
+    "director": {
+      "storyId": "magic-colour-machine",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 16,
+      "beatId": "outro",
+      "round": 0,
+      "lineIndex": 3,
+      "elapsedMs": 123853,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "e07.greet.1",
+      "e07.greet.2",
+      "e07.found.1",
+      "e07.found.2",
+      "e07.ball-rolls.1",
+      "e07.ball-rolls.2",
+      "e07.ball-in.1",
+      "e07.whirr.1",
+      "e07.whirr.2",
+      "e07.red.1",
+      "e07.red.2",
+      "e07.red.3",
+      "e07.lumi-ball.1",
+      "e07.lumi-ball-in.1",
+      "e07.lumi-ball-in.2",
+      "e07.invite-machine.1",
+      "e07.invite-machine.2",
+      "e07.blue.1",
+      "e07.blue.2",
+      "e07.blue.3",
+      "e07.both.1",
+      "e07.both.2",
+      "e07.invite-choose.1",
+      "e07.invite-choose.2",
+      "e07.play-red.1",
+      "e07.play-blue.1",
+      "e07.outro.1",
+      "e07.outro.2",
+      "e07.outro.3"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 62,
+      "nodes": 19,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "magic-colour-machine",
+    "directorStoryId": "magic-colour-machine",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "e07.greet.1",
+    "e07.greet.2",
+    "e07.found.1",
+    "e07.found.2",
+    "e07.ball-rolls.1",
+    "e07.ball-rolls.2",
+    "e07.ball-in.1",
+    "e07.whirr.1",
+    "e07.whirr.2",
+    "e07.red.1",
+    "e07.red.2",
+    "e07.red.3",
+    "e07.lumi-ball.1",
+    "e07.lumi-ball-in.1",
+    "e07.lumi-ball-in.2",
+    "e07.invite-machine.1",
+    "e07.invite-machine.2",
+    "e07.blue.1",
+    "e07.blue.2",
+    "e07.blue.3",
+    "e07.both.1",
+    "e07.both.2",
+    "e07.invite-choose.1",
+    "e07.invite-choose.2",
+    "e07.play-red.1",
+    "e07.play-blue.1",
+    "e07.outro.1",
+    "e07.outro.2",
+    "e07.outro.3"
+  ],
+  "spokenOrder": {
+    "spoken": 29,
+    "authored": 29,
+    "rounds": 0,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 12,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-episodes-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

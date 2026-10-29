@@ -1,0 +1,533 @@
+{
+  "runId": "wonder-consumer-smoke-20261029T172337Z",
+  "commit": {
+    "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+    "tree": "clean"
+  },
+  "create": "create-aura3d@4.5.0",
+  "cli": "@aura3d/cli@4.5.0",
+  "node": "v24.14.1",
+  "template": "mini-game",
+  "steps": [
+    {
+      "name": "create",
+      "command": "npx -y create-aura3d@4.5.0 smoke --template mini-game --no-agent",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "seconds": 3.1,
+      "tail": "{\n  \"targetDir\": \"<tmp>/smoke\",\n  \"template\": \"mini-game\",\n  \"files\": [\n    \".claude/CLAUDE.md\",\n    \".github/workflows/aura3d-lookdev.yml\",\n    \"AGENTS.md\",\n    \"README.md\",\n    \"aura.assets.json\",\n    \"index.html\",\n    \"package.json\",\n    \"playwright.config.ts\",\n    \"public/aura-assets/kaykit-barbarian.glb\",\n    \"public/aura-assets/kenneyPlatformerKitKey.2e930961.glb\",\n    \"public/aura-assets/kenneyPlatformerKitStar.a102a1b9.glb\",\n    \"public/aura-assets/quaternius-crate.glb\",\n    \"public/aura-assets/quaternius-cube-crate.glb\",\n    \"public/hdri/ATTRIBUTION.md\",\n    \"public/hdri/autumn_field_puresky_1k.hdr\",\n    \"public/hdri/kloppenheim_06_puresky_1k.hdr\",\n    \"public/hdri/night-2k.hdr\",\n    \"public/hdri/studio_small_08_1k.hdr\",\n    \"src/aura-assets.ts\",\n    \"src/main.ts\",\n    \"tests/certified-rig.spec.ts\",\n    \"tests/look-floor.ts\",\n    \"tests/playable.spec.ts\",\n    \"tests/route-health.spec.ts\",\n    \"tests/screenshot.spec.ts\",\n    \"tsconfig.json\",\n    \"vite.config.ts\"\n  ]\n}"
+    },
+    {
+      "name": "install",
+      "command": "npm install --no-audit --no-fund",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "seconds": 18.7,
+      "tail": "added 57 packages in 19s"
+    },
+    {
+      "name": "npm ls",
+      "command": "npm ls @aura3d/engine @aura3d/cli --json",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "seconds": 0.3,
+      "tail": "{\n  \"version\": \"1.0.0\",\n  \"name\": \"aura3d-mini-game\",\n  \"dependencies\": {\n    \"@aura3d/engine\": {\n      \"version\": \"4.5.0\",\n      \"resolved\": \"https://registry.npmjs.org/@aura3d/engine/-/engine-4.5.0.tgz\",\n      \"overridden\": false\n    }\n  }\n}"
+    },
+    {
+      "name": "build",
+      "command": "npm run build",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "seconds": 13.8,
+      "tail": "dist/assets/core-BaYVi5dM.js                        1.12 kB │ gzip:   0.58 kB\ndist/assets/PngTexturePixels-BlaJE2h0.js            1.47 kB │ gzip:   0.83 kB\ndist/assets/BoneMask-OpXCW8uk.js                    2.11 kB │ gzip:   0.88 kB\ndist/assets/extension-scalar-atlas-By_z1wSa.js      2.86 kB │ gzip:   1.27 kB\ndist/assets/ShaderFailures-CNnQzW3A.js              3.02 kB │ gzip:   1.47 kB\ndist/assets/MeshConsolidation-D7mTL4E2.js           3.35 kB │ gzip:   1.45 kB\ndist/assets/quality-rplkEvUF.js                     4.21 kB │ gzip:   1.47 kB\ndist/assets/SphericalHarmonics-C0VnUpIE.js          5.68 kB │ gzip:   2.41 kB\ndist/assets/TemporalHistory-CgqIuuAk.js             7.03 kB │ gzip:   2.50 kB\ndist/assets/Texture-B3K3JKvy.js                    10.53 kB │ gzip:   2.78 kB\ndist/assets/device-CkV6VPzV.js                     10.98 kB │ gzip:   3.75 kB\ndist/assets/Rgb9e5Cube-Df2uosiY.js                 12.00 kB │ gzip:   4.93 kB\ndist/assets/index-D0Oi5Md4.js                      19.79 kB │ gzip:   7.82 kB\ndist/assets/TypedGLBActor-BNmg-MAa.js              22.12 kB │ gzip:   7.48 kB\ndist/assets/TextureStreaming-DGNj_4yC.js           28.55 kB │ gzip:   9.88 kB\ndist/assets/textures-Dx0JBOrN.js                   44.54 kB │ gzip:  33.42 kB\ndist/assets/index-BnHWhXhM.js                      49.02 kB │ gzip:  18.19 kB\ndist/assets/RetargetWorker-OHPYmxNj.js             63.60 kB │ gzip:  22.34 kB\ndist/assets/FrameGraph-CrXAQkO_.js                 76.63 kB │ gzip:  21.39 kB\ndist/assets/v2Entry-CW_MLdcV.js                    86.38 kB │ gzip:  24.73 kB\ndist/assets/browser-index-D4-wdw1t.js              87.85 kB │ gzip:  22.22 kB\ndist/assets/program-D4fXTCpY.js                   104.43 kB │ gzip:  26.06 kB\ndist/assets/WebGPUDevice-D1yFWhyA.js              122.25 kB │ gzip:  33.30 kB\ndist/assets/neutralEmbedded-CQj30fxp.js           133.17 kB │ gzip:  98.80 kB\ndist/assets/ShaderLibrary-B4XT73rJ.js             176.23 kB │ gzip:  21.52 kB\ndist/assets/ForwardPass-BAqW8Krf.js               184.77 kB │ gzip:  55.52 kB\ndist/assets/TexturedPBRMaterial-CFBGwayi.js       190.47 kB │ gzip:  40.26 kB\ndist/assets/GLTFSharedTextureCache-CcIvOO0f.js    229.81 kB │ gzip:  65.92 kB\ndist/assets/DirectPath-FHRWenZq.js                857.58 kB │ gzip: 248.54 kB\ndist/assets/index-Bv0C0Qkg.js                   1,226.64 kB │ gzip: 403.23 kB\n✓ built in 10.45s\nnew URL(\"./assets/humanoid-fixture.glb\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\nnew URL(\"../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n[plugin vite:resolve] Module \"node:fs\" has been externalized for browser compatibility, imported by \"<tmp>/smoke/node_modules/@gltf-transform/core/dist/index.js\". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.\n[plugin vite:resolve] Module \"node:path\" has been externalized for browser compatibility, imported by \"<tmp>/smoke/node_modules/@gltf-transform/core/dist/index.js\". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit."
+    },
+    {
+      "name": "check-deploy",
+      "command": "npx -y @aura3d/cli@4.5.0 check-deploy --dist dist",
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "seconds": 3.5,
+      "tail": "          2.021,\n          2.021\n        ]\n      },\n      {\n        \"id\": \"kenneyPlatformerKitKey\",\n        \"type\": \"model\",\n        \"format\": \"glb\",\n        \"source\": \"public/aura-assets/kenneyPlatformerKitKey.2e930961.glb\",\n        \"outputPath\": \"public/aura-assets/kenneyPlatformerKitKey.2e930961.glb\",\n        \"url\": \"/aura-assets/kenneyPlatformerKitKey.2e930961.glb\",\n        \"hash\": \"sha256-2e9309616c56536495d96fee85e75def26b63354139d19533773f23900984986\",\n        \"sizeBytes\": 13240,\n        \"bounds\": [\n          0.382,\n          0.218,\n          0.068\n        ],\n        \"materials\": [\n          \"colormap\"\n        ],\n        \"animations\": [],\n        \"textures\": [],\n        \"thumbnailUrl\": \"\"\n      }\n    ]\n  },\n  \"failures\": [],\n  \"warnings\": [\n    \"kaykitBarbarian: URL is not fingerprinted: /aura-assets/kaykit-barbarian.glb\",\n    \"quaterniusCrate: URL is not fingerprinted: /aura-assets/quaternius-crate.glb\",\n    \"quaterniusCubeCrate: URL is not fingerprinted: /aura-assets/quaternius-cube-crate.glb\",\n    \"kaykitBarbarian: manifest is missing the scene hierarchy inspection that the asset file provides.\",\n    \"quaterniusCrate: manifest is missing the scene hierarchy inspection that the asset file provides.\",\n    \"quaterniusCubeCrate: manifest is missing the scene hierarchy inspection that the asset file provides.\"\n  ],\n  \"messages\": [\n    \"Deploy check passed.\"\n  ]\n}"
+    },
+    {
+      "name": "check-deploy --browser",
+      "command": "npx -y @aura3d/cli@4.5.0 check-deploy --dist dist --browser --route / --browser-timeout 180000 --browser-settle 300000",
+      "status": 1,
+      "signal": null,
+      "error": null,
+      "seconds": 340.9,
+      "tail": "    \"Route / request failed with HTTP 404 /packs/game-sfx-core/pickup.coin.00.m4a.\",\n    \"Route / request failed with HTTP 404 /packs/game-sfx-core/stinger.checkpoint.00.m4a.\",\n    \"Route / request failed with HTTP 404 /packs/game-sfx-core/stinger.win.00.m4a.\",\n    \"Route / request failed with HTTP 404 /packs/game-sfx-core/impact.rubber-ball.heavy.00.m4a.\",\n    \"Route / request failed with HTTP 404 /packs/game-sfx-core/impact.rubber-ball.light.00.m4a.\",\n    \"Route / request failed with HTTP 404 /packs/game-sfx-core/ui.toggle.00.m4a.\",\n    \"Route / request failed with HTTP 404 /aura-assets/Textures/colormap.png.\",\n    \"Route / request failed with HTTP 404 /aura-assets/Textures/colormap.png.\",\n    \"Route / request did not complete: /aura-assets/kaykit-barbarian.glb (net::ERR_ABORTED).\",\n    \"Route / request did not complete: /aura-assets/kaykit-barbarian.glb (net::ERR_ABORTED).\"\n  ],\n  \"warnings\": [\n    \"kaykitBarbarian: URL is not fingerprinted: /aura-assets/kaykit-barbarian.glb\",\n    \"quaterniusCrate: URL is not fingerprinted: /aura-assets/quaternius-crate.glb\",\n    \"quaterniusCubeCrate: URL is not fingerprinted: /aura-assets/quaternius-cube-crate.glb\",\n    \"kaykitBarbarian: manifest is missing the scene hierarchy inspection that the asset file provides.\",\n    \"quaterniusCrate: manifest is missing the scene hierarchy inspection that the asset file provides.\",\n    \"quaterniusCubeCrate: manifest is missing the scene hierarchy inspection that the asset file provides.\",\n    \"Route / logged a console warning: The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio\",\n    \"Route / logged a console warning: glTF texture \\\"colormap\\\" (Textures/colormap.png) could not be loaded; falling back to baseColorFactor. Reason: glTF image request failed with 404\",\n    \"Route / logged a console warning: glTF texture \\\"colormap\\\" (Textures/colormap.png) could not be loaded; falling back to baseColorFactor. Reason: glTF image request failed with 404\",\n    \"Route / logged a console warning: glTF texture \\\"colormap\\\" (Textures/colormap.png) could not be loaded; falling back to baseColorFactor. Reason: glTF image request failed with 404\",\n    \"Route / logged a console warning: glTF texture \\\"colormap\\\" (Textures/colormap.png) could not be loaded; falling back to baseColorFactor. Reason: glTF image request failed with 404\",\n    \"Route / logged a console warning: glTF texture \\\"colormap\\\" (Textures/colormap.png) could not be loaded; falling back to baseColorFactor. Reason: glTF image request failed with 404\"\n  ],\n  \"messages\": [\n    \"Route / request failed with HTTP 404 /probes/probe-20ms.opus.webm.\",\n    \"Route / request failed with HTTP 404 /probes/probe-20ms.m4a.\",\n    \"Route / request failed with HTTP 404 /packs/game-sfx-core/pickup.coin.00.m4a.\",\n    \"Route / request failed with HTTP 404 /packs/game-sfx-core/stinger.checkpoint.00.m4a.\",\n    \"Route / request failed with HTTP 404 /packs/game-sfx-core/stinger.win.00.m4a.\",\n    \"Route / request failed with HTTP 404 /packs/game-sfx-core/impact.rubber-ball.heavy.00.m4a.\",\n    \"Route / request failed with HTTP 404 /packs/game-sfx-core/impact.rubber-ball.light.00.m4a.\",\n    \"Route / request failed with HTTP 404 /packs/game-sfx-core/ui.toggle.00.m4a.\",\n    \"Route / request failed with HTTP 404 /aura-assets/Textures/colormap.png.\",\n    \"Route / request failed with HTTP 404 /aura-assets/Textures/colormap.png.\",\n    \"Route / request did not complete: /aura-assets/kaykit-barbarian.glb (net::ERR_ABORTED).\",\n    \"Route / request did not complete: /aura-assets/kaykit-barbarian.glb (net::ERR_ABORTED).\"\n  ]\n}"
+    }
+  ],
+  "scaffold": [
+    {
+      "path": ".claude/CLAUDE.md",
+      "bytes": 213
+    },
+    {
+      "path": ".github/workflows/aura3d-lookdev.yml",
+      "bytes": 1919
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes": 213
+    },
+    {
+      "path": "aura.assets.json",
+      "bytes": 5615
+    },
+    {
+      "path": "index.html",
+      "bytes": 397
+    },
+    {
+      "path": "package.json",
+      "bytes": 922
+    },
+    {
+      "path": "playwright.config.ts",
+      "bytes": 348
+    },
+    {
+      "path": "public/aura-assets/kaykit-barbarian.glb",
+      "bytes": 3613268
+    },
+    {
+      "path": "public/aura-assets/kenneyPlatformerKitKey.2e930961.glb",
+      "bytes": 13240
+    },
+    {
+      "path": "public/aura-assets/kenneyPlatformerKitStar.a102a1b9.glb",
+      "bytes": 6268
+    },
+    {
+      "path": "public/aura-assets/quaternius-crate.glb",
+      "bytes": 35812
+    },
+    {
+      "path": "public/aura-assets/quaternius-cube-crate.glb",
+      "bytes": 12960
+    },
+    {
+      "path": "public/hdri/ATTRIBUTION.md",
+      "bytes": 1186
+    },
+    {
+      "path": "public/hdri/autumn_field_puresky_1k.hdr",
+      "bytes": 1092974
+    },
+    {
+      "path": "public/hdri/kloppenheim_06_puresky_1k.hdr",
+      "bytes": 1173154
+    },
+    {
+      "path": "public/hdri/night-2k.hdr",
+      "bytes": 5461210
+    },
+    {
+      "path": "public/hdri/studio_small_08_1k.hdr",
+      "bytes": 1508872
+    },
+    {
+      "path": "README.md",
+      "bytes": 1209
+    },
+    {
+      "path": "src/aura-assets.ts",
+      "bytes": 4425
+    },
+    {
+      "path": "src/main.ts",
+      "bytes": 15085
+    },
+    {
+      "path": "tests/certified-rig.spec.ts",
+      "bytes": 2011
+    },
+    {
+      "path": "tests/look-floor.ts",
+      "bytes": 15352
+    },
+    {
+      "path": "tests/playable.spec.ts",
+      "bytes": 5011
+    },
+    {
+      "path": "tests/route-health.spec.ts",
+      "bytes": 950
+    },
+    {
+      "path": "tests/screenshot.spec.ts",
+      "bytes": 3993
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 386
+    },
+    {
+      "path": "vite.config.ts",
+      "bytes": 377
+    }
+  ],
+  "npmLs": {
+    "status": 0,
+    "versions": {
+      "@aura3d/engine": "4.5.0",
+      "@aura3d/cli": null
+    },
+    "note": "npm ls exits 1 when a named package is not in the tree; the scaffold runs the CLI through npx."
+  },
+  "dist": {
+    "files": 59,
+    "bytes": 18072183,
+    "list": [
+      {
+        "path": "assets/AssetDecoders-q_VC-NqO.js",
+        "bytes": 303
+      },
+      {
+        "path": "assets/BoneMask-OpXCW8uk.js",
+        "bytes": 2113
+      },
+      {
+        "path": "assets/browser-index-D4-wdw1t.js",
+        "bytes": 87852
+      },
+      {
+        "path": "assets/core-BaYVi5dM.js",
+        "bytes": 1123
+      },
+      {
+        "path": "assets/decoderLoad-CuxniDwe.js",
+        "bytes": 500
+      },
+      {
+        "path": "assets/device-CkV6VPzV.js",
+        "bytes": 10976
+      },
+      {
+        "path": "assets/DirectPath-FHRWenZq.js",
+        "bytes": 857583
+      },
+      {
+        "path": "assets/engine_false-jG2m2l4N.js",
+        "bytes": 128
+      },
+      {
+        "path": "assets/extension-scalar-atlas-By_z1wSa.js",
+        "bytes": 2859
+      },
+      {
+        "path": "assets/ForwardPass-BAqW8Krf.js",
+        "bytes": 184767
+      },
+      {
+        "path": "assets/FrameGraph-CrXAQkO_.js",
+        "bytes": 76625
+      },
+      {
+        "path": "assets/GLTFSharedTextureCache-CcIvOO0f.js",
+        "bytes": 229814
+      },
+      {
+        "path": "assets/index-BnHWhXhM.js",
+        "bytes": 49024
+      },
+      {
+        "path": "assets/index-Bv0C0Qkg.js",
+        "bytes": 1226638
+      },
+      {
+        "path": "assets/index-D0Oi5Md4.js",
+        "bytes": 19791
+      },
+      {
+        "path": "assets/MeshConsolidation-D7mTL4E2.js",
+        "bytes": 3345
+      },
+      {
+        "path": "assets/neutralEmbedded-CQj30fxp.js",
+        "bytes": 133170
+      },
+      {
+        "path": "assets/neutralEmbeddedLoader-BdzUDr26.js",
+        "bytes": 1066
+      },
+      {
+        "path": "assets/PngTexturePixels-BlaJE2h0.js",
+        "bytes": 1473
+      },
+      {
+        "path": "assets/postSkipped-CNV024FV.js",
+        "bytes": 623
+      },
+      {
+        "path": "assets/preload-helper-BXl3LOEh.js",
+        "bytes": 1110
+      },
+      {
+        "path": "assets/program-D4fXTCpY.js",
+        "bytes": 104427
+      },
+      {
+        "path": "assets/quality-rplkEvUF.js",
+        "bytes": 4209
+      },
+      {
+        "path": "assets/retarget.worker-MbaBPo-u.js",
+        "bytes": 26081
+      },
+      {
+        "path": "assets/RetargetWorker-OHPYmxNj.js",
+        "bytes": 63601
+      },
+      {
+        "path": "assets/Rgb9e5Cube-Df2uosiY.js",
+        "bytes": 11999
+      },
+      {
+        "path": "assets/ShaderFailures-CNnQzW3A.js",
+        "bytes": 3016
+      },
+      {
+        "path": "assets/ShaderLibrary-B4XT73rJ.js",
+        "bytes": 176231
+      },
+      {
+        "path": "assets/SphericalHarmonics-C0VnUpIE.js",
+        "bytes": 5678
+      },
+      {
+        "path": "assets/TemporalHistory-CgqIuuAk.js",
+        "bytes": 7026
+      },
+      {
+        "path": "assets/TemporalMath-Ikt_pM0o.js",
+        "bytes": 193
+      },
+      {
+        "path": "assets/Texture-B3K3JKvy.js",
+        "bytes": 10528
+      },
+      {
+        "path": "assets/TexturedPBRMaterial-CFBGwayi.js",
+        "bytes": 190469
+      },
+      {
+        "path": "assets/textures-Dx0JBOrN.js",
+        "bytes": 44539
+      },
+      {
+        "path": "assets/TextureStreaming-DGNj_4yC.js",
+        "bytes": 28545
+      },
+      {
+        "path": "assets/TypedGLBActor-BNmg-MAa.js",
+        "bytes": 22121
+      },
+      {
+        "path": "assets/v2Entry-CW_MLdcV.js",
+        "bytes": 86377
+      },
+      {
+        "path": "assets/WebGPUDevice-D1yFWhyA.js",
+        "bytes": 122251
+      },
+      {
+        "path": "assets/WebGPUSkinningLimits-BWlgcUSU.js",
+        "bytes": 943
+      },
+      {
+        "path": "aura-assets/kaykit-barbarian.glb",
+        "bytes": 3613268
+      },
+      {
+        "path": "aura-assets/kenneyPlatformerKitKey.2e930961.glb",
+        "bytes": 13240
+      },
+      {
+        "path": "aura-assets/kenneyPlatformerKitStar.a102a1b9.glb",
+        "bytes": 6268
+      },
+      {
+        "path": "aura-assets/quaternius-crate.glb",
+        "bytes": 35812
+      },
+      {
+        "path": "aura-assets/quaternius-cube-crate.glb",
+        "bytes": 12960
+      },
+      {
+        "path": "aura-decoders/basis/basis_transcoder.js",
+        "bytes": 57529
+      },
+      {
+        "path": "aura-decoders/basis/basis_transcoder.wasm",
+        "bytes": 527333
+      },
+      {
+        "path": "aura-decoders/basis/README.md",
+        "bytes": 1278
+      },
+      {
+        "path": "aura-decoders/draco/draco_decoder.js",
+        "bytes": 512465
+      },
+      {
+        "path": "aura-decoders/draco/draco_decoder.wasm",
+        "bytes": 192420
+      },
+      {
+        "path": "aura-decoders/draco/README.md",
+        "bytes": 1128
+      },
+      {
+        "path": "aura-decoders/meshopt/meshopt_decoder.cjs",
+        "bytes": 29400
+      },
+      {
+        "path": "aura-decoders/meshopt/meshopt_decoder.mjs",
+        "bytes": 29059
+      },
+      {
+        "path": "aura-decoders/meshopt/README.md",
+        "bytes": 1091
+      },
+      {
+        "path": "hdri/ATTRIBUTION.md",
+        "bytes": 1186
+      },
+      {
+        "path": "hdri/autumn_field_puresky_1k.hdr",
+        "bytes": 1092974
+      },
+      {
+        "path": "hdri/kloppenheim_06_puresky_1k.hdr",
+        "bytes": 1173154
+      },
+      {
+        "path": "hdri/night-2k.hdr",
+        "bytes": 5461210
+      },
+      {
+        "path": "hdri/studio_small_08_1k.hdr",
+        "bytes": 1508872
+      },
+      {
+        "path": "index.html",
+        "bytes": 2419
+      }
+    ]
+  },
+  "hero": {
+    "path": "/aura-assets/kaykit-barbarian.glb",
+    "loaded": true,
+    "ready": true,
+    "error": null,
+    "finished": 2,
+    "failed": [],
+    "clips": [
+      "1H_Melee_Attack_Chop",
+      "1H_Melee_Attack_Slice_Diagonal",
+      "1H_Melee_Attack_Slice_Horizontal",
+      "1H_Melee_Attack_Stab",
+      "1H_Ranged_Aiming",
+      "1H_Ranged_Reload",
+      "1H_Ranged_Shoot",
+      "1H_Ranged_Shooting",
+      "2H_Melee_Attack_Chop",
+      "2H_Melee_Attack_Slice",
+      "2H_Melee_Attack_Spin",
+      "2H_Melee_Attack_Spinning",
+      "2H_Melee_Attack_Stab",
+      "2H_Melee_Idle",
+      "2H_Ranged_Aiming",
+      "2H_Ranged_Reload",
+      "2H_Ranged_Shoot",
+      "2H_Ranged_Shooting",
+      "Block",
+      "Block_Attack",
+      "Block_Hit",
+      "Blocking",
+      "Cheer",
+      "Death_A",
+      "Death_A_Pose",
+      "Death_B",
+      "Death_B_Pose",
+      "Dodge_Backward",
+      "Dodge_Forward",
+      "Dodge_Left",
+      "Dodge_Right",
+      "Dualwield_Melee_Attack_Chop",
+      "Dualwield_Melee_Attack_Slice",
+      "Dualwield_Melee_Attack_Stab",
+      "Hit_A",
+      "Hit_B",
+      "Idle",
+      "Interact",
+      "Jump_Full_Long",
+      "Jump_Full_Short",
+      "Jump_Idle",
+      "Jump_Land",
+      "Jump_Start",
+      "Lie_Down",
+      "Lie_Idle",
+      "Lie_Pose",
+      "Lie_StandUp",
+      "PickUp",
+      "Running_A",
+      "Running_B",
+      "Running_Strafe_Left",
+      "Running_Strafe_Right",
+      "Sit_Chair_Down",
+      "Sit_Chair_Idle",
+      "Sit_Chair_Pose",
+      "Sit_Chair_StandUp",
+      "Sit_Floor_Down",
+      "Sit_Floor_Idle",
+      "Sit_Floor_Pose",
+      "Sit_Floor_StandUp",
+      "Spellcast_Long",
+      "Spellcast_Raise",
+      "Spellcast_Shoot",
+      "Spellcasting",
+      "T-Pose",
+      "Throw",
+      "Unarmed_Idle",
+      "Unarmed_Melee_Attack_Kick",
+      "Unarmed_Melee_Attack_Punch_A",
+      "Unarmed_Melee_Attack_Punch_B",
+      "Unarmed_Pose",
+      "Use_Item",
+      "Walking_A",
+      "Walking_B",
+      "Walking_Backwards",
+      "Walking_C"
+    ]
+  },
+  "browser": {
+    "status": 1,
+    "failures": 12,
+    "upstreamTemplate404": [
+      "Route / request failed with HTTP 404 /probes/probe-20ms.opus.webm.",
+      "Route / request failed with HTTP 404 /probes/probe-20ms.m4a.",
+      "Route / request failed with HTTP 404 /packs/game-sfx-core/pickup.coin.00.m4a.",
+      "Route / request failed with HTTP 404 /packs/game-sfx-core/stinger.checkpoint.00.m4a.",
+      "Route / request failed with HTTP 404 /packs/game-sfx-core/stinger.win.00.m4a.",
+      "Route / request failed with HTTP 404 /packs/game-sfx-core/impact.rubber-ball.heavy.00.m4a.",
+      "Route / request failed with HTTP 404 /packs/game-sfx-core/impact.rubber-ball.light.00.m4a.",
+      "Route / request failed with HTTP 404 /packs/game-sfx-core/ui.toggle.00.m4a.",
+      "Route / request failed with HTTP 404 /aura-assets/Textures/colormap.png.",
+      "Route / request failed with HTTP 404 /aura-assets/Textures/colormap.png.",
+      "Route / request did not complete: /aura-assets/kaykit-barbarian.glb (net::ERR_ABORTED).",
+      "Route / request did not complete: /aura-assets/kaykit-barbarian.glb (net::ERR_ABORTED)."
+    ],
+    "other": []
+  },
+  "passed": true
+}
