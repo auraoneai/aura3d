@@ -116,7 +116,9 @@ test("wonder world passes its content lint, builds with Vite and passes check-de
   // 4 s settle (a model request of the idle scene, ERR_ABORTED), and run wonder-first-frame-build-20261029T172337Z once
   // with a 5-minute one. On this runner's software WebGL2 the boot (GLB decode and shader warm-up) holds the page's
   // main thread for minutes, which also stalls the idle scene's model downloads, so the page stays open for 10 minutes
-  // after the network first goes idle.
+  // after the network first goes idle. With the welcome animating over that boot, the app's own model preloader once
+  // aborted a stalled download at its 2-minute cap (ERR_ABORTED again); runs wonder-exp-{a,b,c}-20261029T222803Z traced
+  // it there (a longer cap, or no animation, passed), and the preloader now caps a download at 15 minutes.
   const check = run("npx", ["-y", "@aura3d/cli@4.5.0", "check-deploy", "--dist", "dist", "--no-assets", "--browser", "--route", "/", "--browser-timeout", "180000", "--browser-settle", "600000"], app, 25 * 60_000);
   const tail = check.out.split("\n").slice(-60).join("\n");
   console.log(tail);
