@@ -571,9 +571,8 @@ async function boot(): Promise<void> {
     autoStart: false,
     resize: false,
     pixelRatio: 1,
-    // `qualityProfile: "production"` still selects the production profile (texture budget, production code
-    // warnings); the deprecated `fallback` key had no effect and is gone (SO-E4).
-    renderer: { mode: "production", qualityProfile: "production" },
+    // No `renderer` keys (SO-E4): since 4.5.0 they do not pick the pipeline, `mode`/`fallback` are deprecated and
+    // `qualityProfile` warns. Quality stays `auto` (the pipeline the lighting was calibrated on); `pixelRatio: 1` is explicit.
     output: { toneMapping: "aces", dither: false },
     scene: world.scene
   });
