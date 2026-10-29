@@ -191,6 +191,18 @@ export interface EnvironmentLightingOptions {
    * conjunction; absent/null everywhere else, where no code reads it.
    */
   readonly environmentProbe?: EnvironmentProbe | null;
+  /**
+   * LIGHT-05/08: authored hemisphere lights as a directional sky/ground pair (linear rgb, premultiplied by
+   * intensity; `direction` is the light's unit up). `color`/`intensity` already include the pair's flat mean
+   * (mean(sky, ground), its horizontal-normal value) so every program that reads only the ambient scalar keeps the
+   * hemisphere; the PRD-02 IBL pack (`applyPrd02EnvironmentUniforms`) takes that mean back out of the ambient and
+   * binds the pair to `u_hemiSky`/`u_hemiGround`/`u_hemiDirection`, which the chunk evaluates per normal.
+   */
+  readonly hemisphere?: {
+    readonly sky: readonly [number, number, number];
+    readonly ground: readonly [number, number, number];
+    readonly direction: readonly [number, number, number];
+  } | null;
 }
 
 export interface ProceduralEnvironmentMapLightingOptions {
@@ -1702,7 +1714,7 @@ export function applyPrd02EnvironmentUniforms(
   }
   const packed = packA3DEnvironmentUniforms({
     probe,
-    ...(env ? { ambient: { color: env.color, intensity: env.intensity } } : {}),
+    ...(env ? prd02AmbientAndHemisphere(env) : {}),
     // EnvironmentLightingOptions rotation is in turns (indirect_default);
     // the PRD-02 chunk's u_envRotation is radians.
     rotation: (env?.environmentMapRotation ?? 0) * Math.PI * 2,
@@ -1719,6 +1731,29 @@ export function applyPrd02EnvironmentUniforms(
     sampler: dfgLutBinding().sampler,
     expectedColorSpace: "linear"
   }));
+}
+
+/**
+ * LIGHT-05/08: splits the pass ambient (which carries the hemisphere's flat mean for the programs that read only
+ * the ambient scalar) back into the constant ambient and the directional hemisphere pair for the PRD-02 chunk.
+ * With no hemisphere the ambient is passed through unchanged (byte-identical packet).
+ */
+export function prd02AmbientAndHemisphere(env: EnvironmentLightingOptions): {
+  readonly ambient: { readonly color: readonly [number, number, number]; readonly intensity: number };
+  readonly hemisphere?: { readonly sky: readonly [number, number, number]; readonly ground: readonly [number, number, number]; readonly intensity: number; readonly direction: readonly [number, number, number] };
+} {
+  const hemi = env.hemisphere;
+  if (!hemi) return { ambient: { color: env.color, intensity: env.intensity } };
+  const rest: [number, number, number] = [0, 0, 0];
+  for (let i = 0; i < 3; i += 1) {
+    const value = env.color[i]! * env.intensity - (hemi.sky[i]! + hemi.ground[i]!) / 2;
+    // Float residue of the add-then-subtract round trip is clamped; a real ambient is never negative.
+    rest[i] = value > 1e-7 ? value : 0;
+  }
+  return {
+    ambient: { color: rest, intensity: 1 },
+    hemisphere: { sky: hemi.sky, ground: hemi.ground, intensity: 1, direction: hemi.direction }
+  };
 }
 
 function applyProceduralEnvironmentMapUniforms(

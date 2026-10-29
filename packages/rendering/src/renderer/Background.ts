@@ -38,7 +38,37 @@ type RenderSourceWithProbe = RenderSource & {
   readonly environmentProbeSpecularIntensity?: number;
   /** Additive constant ambient (linear rgb, authored `lights.ambient` sum) layered on the probe's IBL. */
   readonly environmentProbeAmbient?: { readonly color: readonly [number, number, number]; readonly intensity: number } | null;
+  /** LIGHT-05/08: authored hemisphere lights as a directional sky/ground pair (linear, premultiplied), additive. */
+  readonly environmentProbeHemisphere?: EnvironmentLightingOptions["hemisphere"];
 };
+
+type HemispherePair = NonNullable<EnvironmentLightingOptions["hemisphere"]>;
+
+function sameHemisphere(a: HemispherePair | null, b: HemispherePair | null): boolean {
+  if (a === null || b === null) return a === b;
+  for (let i = 0; i < 3; i += 1) {
+    if (a.sky[i] !== b.sky[i] || a.ground[i] !== b.ground[i] || a.direction[i] !== b.direction[i]) return false;
+  }
+  return true;
+}
+
+/**
+ * The ambient scalar every program reads, with the hemisphere's flat mean folded in (programs without the PRD-02
+ * chunk keep the hemisphere at its horizontal-normal value; the chunk's pack takes the mean back out).
+ */
+function ambientWithHemisphereMean(
+  ambient: { readonly color: readonly [number, number, number]; readonly intensity: number } | null,
+  hemisphere: HemispherePair | null
+): { readonly color: readonly [number, number, number]; readonly intensity: number } | null {
+  if (!hemisphere) return ambient;
+  const total: [number, number, number] = [0, 0, 0];
+  for (let i = 0; i < 3; i += 1) {
+    total[i] = (ambient ? ambient.color[i]! * ambient.intensity : 0) + (hemisphere.sky[i]! + hemisphere.ground[i]!) / 2;
+  }
+  const peak = Math.max(total[0], total[1], total[2]);
+  if (!(peak > 0)) return ambient;
+  return { color: [total[0] / peak, total[1] / peak, total[2] / peak], intensity: peak };
+}
 
 export function collectEnvironmentBackground(source: RenderSource | Iterable<RenderItem> | Scene): EnvironmentBackgroundOptions | undefined {
   if (source instanceof Scene || isIterable(source) || source.environmentBackground === false) return undefined;
@@ -175,6 +205,7 @@ const prd02LightingMemo = new WeakMap<EnvironmentProbe, {
   readonly specular: number;
   readonly ambient: readonly [number, number, number, number] | null;
   readonly withProbe: boolean;
+  readonly hemisphere: HemispherePair | null;
   readonly result: EnvironmentLightingOptions;
 }>();
 
@@ -189,13 +220,15 @@ export function resolvePrd02EnvironmentLighting(source: RenderSource): Environme
   const meta = source as RenderSourceWithProbe;
   const diffuse = meta.environmentProbeDiffuseIntensity ?? 1;
   const specular = meta.environmentProbeSpecularIntensity ?? 1;
-  const ambient = meta.environmentProbeAmbient ?? null;
+  const hemisphere = meta.environmentProbeHemisphere ?? null;
+  const ambient = ambientWithHemisphereMean(meta.environmentProbeAmbient ?? null, hemisphere);
   const withProbe = rendererQrFlags().on("A3D_QR_COMPILER") && rendererQrFlags().on("A3D_QR_LIGHTING");
   const memo = prd02LightingMemo.get(probe);
   if (memo
     && memo.diffuse === diffuse
     && memo.specular === specular
     && memo.withProbe === withProbe
+    && sameHemisphere(memo.hemisphere, hemisphere)
     && (memo.ambient === null
       ? ambient === null
       : ambient !== null
@@ -229,12 +262,14 @@ export function resolvePrd02EnvironmentLighting(source: RenderSource): Environme
     // LIGHTING-only lighting object stays byte-identical.
     ...(withProbe
       ? { environmentProbe: probe }
-      : {})
+      : {}),
+    ...(hemisphere ? { hemisphere: { sky: [...hemisphere.sky], ground: [...hemisphere.ground], direction: [...hemisphere.direction] } as HemispherePair } : {})
   };
   prd02LightingMemo.set(probe, {
     diffuse,
     specular,
     withProbe,
+    hemisphere: hemisphere ? { sky: [...hemisphere.sky], ground: [...hemisphere.ground], direction: [...hemisphere.direction] } as HemispherePair : null,
     ambient: ambient ? [ambient.color[0], ambient.color[1], ambient.color[2], ambient.intensity] : null,
     result
   });

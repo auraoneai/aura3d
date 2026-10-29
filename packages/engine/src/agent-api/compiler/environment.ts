@@ -12,6 +12,7 @@ import { registerEnvironmentSource, type AuraEnvironmentSourceResolution } from 
 import { colorToLinearRgb } from "../colorUtils.js";
 import { nonNegativeFinite } from "../compiler/observations.js";
 import { groups } from "../nodes/groups.js";
+import { dropShadowedLookFill } from "../looks/lookFill.js";
 import { resolveRendererSceneCategory } from "../rendererDiagnostics.js";
 import { createExternalParityEnvironmentLighting, linearToSrgbChannel, type EnvironmentLightingOptions } from "@aura3d/rendering";
 
@@ -90,7 +91,7 @@ export function createProductionRuntimeEnvironment(
   readonly hdriReflectionUrl?: string;
   readonly hdriRotation?: number;
 } {
-  const nodes = groups.flatten(snapshot.nodes);
+  const nodes = groups.flatten(lightingNodes(snapshot));
   const authoredEnvironment = nodes.find((node): node is AuraEnvironmentNode => node.kind === "environment");
   if (authoredEnvironment) {
     const presetByEnvironment: Record<string, Parameters<typeof createExternalParityEnvironmentLighting>[0]> = {
@@ -240,6 +241,26 @@ export function createProductionRuntimeEnvironment(
   };
 }
 
+/**
+ * LIGHT-07: fingerprint of everything `createProductionRuntimeEnvironment` reads (environment and light nodes after
+ * the look-fill yield). The renderer computes the environment knob once at mount; when nodes added or removed at
+ * runtime change this key, the knob is recomputed from the live node set, so an environment added to a lights-only
+ * scene gets its authored intensity instead of the lights-only 0/0.
+ */
+export function environmentKnobKey(snapshot: AuraSceneSnapshot): string {
+  const parts: string[] = [];
+  for (const node of groups.flatten(lightingNodes(snapshot))) {
+    if (node.kind === "environment") {
+      const env = node as AuraEnvironmentNode & { diffuseIntensity?: number; specularIntensity?: number; preset?: string };
+      const texture = typeof env.texture === "object" && env.texture !== null ? (env.texture as { url?: string }).url ?? "ref" : String(env.texture ?? "");
+      parts.push(`e:${env.environment}:${env.intensity}:${env.diffuseIntensity ?? ""}:${env.specularIntensity ?? ""}:${env.preset ?? ""}:${env.color ?? ""}:${texture}`);
+    } else if (node.kind === "light") {
+      parts.push(`l:${node.light}:${node.intensity ?? ""}:${node.color ?? ""}:${(node as { groundColor?: AuraColor }).groundColor ?? ""}`);
+    }
+  }
+  return parts.join("|");
+}
+
 // ---------- PRD-02 Phase 2 — C-09 environment sources (flag path) ----------
 
 /** Additive ambient term: ambient lights never replace IBL under the flag
@@ -250,13 +271,17 @@ export function prd02AmbientTerm(
   snapshot: AuraSceneSnapshot,
   options?: { readonly includeHemisphere?: boolean }
 ): { readonly color: AuraColor; readonly intensity: number } | null {
-  const nodes = groups.flatten(snapshot.nodes);
+  const nodes = groups.flatten(lightingNodes(snapshot));
+  return ambientTermOf(nodes, options?.includeHemisphere === true ? hemisphereLights(nodes) : []);
+}
+
+function ambientTermOf(
+  nodes: ReturnType<typeof groups.flatten>,
+  hemispheres: readonly AuraLightNode[]
+): { readonly color: AuraColor; readonly intensity: number } | null {
   const ambientLights = nodes.filter(
     (node): node is AuraLightNode => node.kind === "light" && node.light === "ambient" && (node.intensity ?? 0) > 0
   );
-  const hemispheres = options?.includeHemisphere === true
-    ? nodes.filter((node): node is AuraLightNode => node.kind === "light" && node.light === "hemisphere" && (node.intensity ?? 1) > 0)
-    : [];
   if (ambientLights.length === 0 && hemispheres.length === 0) return null;
   const hex = (v: number) => Math.round(linearToSrgbChannel(v) * 255).toString(16).padStart(2, "0");
   if (hemispheres.length === 0) {
@@ -268,7 +293,7 @@ export function prd02AmbientTerm(
     }, [0, 0, 0]);
     return { color: `#${hex(color[0])}${hex(color[1])}${hex(color[2])}`, intensity };
   }
-  // A hemisphere light is uniform irradiance here: the mean of its sky and ground colours (three's value on a
+  // A folded hemisphere light is uniform irradiance here: the mean of its sky and ground colours (three's value on a
   // horizontal normal). Summed with the ambient lights in linear light; the magnitude rides in the intensity.
   const total: [number, number, number] = [0, 0, 0];
   for (const light of ambientLights) {
@@ -276,12 +301,98 @@ export function prd02AmbientTerm(
     for (let i = 0; i < 3; i += 1) total[i]! += linear[i]! * (light.intensity ?? 0);
   }
   for (const light of hemispheres) {
-    const sky = colorToLinearRgb(light.color ?? "#bcd7ff");
-    const ground = colorToLinearRgb((light as { groundColor?: AuraColor }).groundColor ?? "#352f28");
+    const { sky, ground } = hemisphereColours(light);
     for (let i = 0; i < 3; i += 1) total[i]! += ((sky[i]! + ground[i]!) / 2) * (light.intensity ?? 1);
   }
   const peak = Math.max(...total, 1e-9);
   return { color: `#${hex(total[0] / peak)}${hex(total[1] / peak)}${hex(total[2] / peak)}`, intensity: peak };
+}
+
+/**
+ * LIGHT-05 / LIGHT-08: authored hemisphere lights as a directional sky/ground pair (three.js r185 `HemisphereLight`:
+ * irradiance mix(ground, sky, dot(n, up) * 0.5 + 0.5) * intensity, up = normalize(position)). The PRD-02 IBL chunk
+ * already evaluates `u_hemiSky`/`u_hemiGround`/`u_hemiDirection` per normal; this term feeds them. Linear light,
+ * premultiplied by intensity. Hemispheres that share the strongest one's direction are summed into the pair; any
+ * other hemisphere (a second, differently aimed one) cannot share the single uniform set, so it stays in the flat
+ * ambient term as its sky/ground mean (its horizontal-normal value), which is the pre-fix behaviour.
+ */
+export interface Prd02HemisphereTerm {
+  readonly sky: readonly [number, number, number];
+  readonly ground: readonly [number, number, number];
+  readonly direction: readonly [number, number, number];
+}
+
+function hemisphereLights(nodes: readonly ReturnType<typeof groups.flatten>[number][]): AuraLightNode[] {
+  return nodes.filter((node): node is AuraLightNode => node.kind === "light" && node.light === "hemisphere" && (node.intensity ?? 1) > 0);
+}
+
+function hemisphereDirection(light: AuraLightNode): [number, number, number] {
+  const p = light.position ?? [0, 1, 0];
+  const len = Math.hypot(p[0], p[1], p[2]);
+  return len > 1e-9 ? [p[0] / len, p[1] / len, p[2] / len] : [0, 1, 0];
+}
+
+function hemisphereColours(light: AuraLightNode): { readonly sky: readonly [number, number, number]; readonly ground: readonly [number, number, number] } {
+  return {
+    sky: colorToLinearRgb(light.color ?? "#bcd7ff"),
+    ground: colorToLinearRgb((light as { groundColor?: AuraColor }).groundColor ?? "#352f28")
+  };
+}
+
+/** Splits the hemisphere lights into the directional pair (dominant direction) and the ones folded into ambient. */
+function splitHemispheres(nodes: ReturnType<typeof groups.flatten>): { readonly term: Prd02HemisphereTerm | null; readonly folded: readonly AuraLightNode[] } {
+  const lights = hemisphereLights(nodes);
+  if (lights.length === 0) return { term: null, folded: [] };
+  const strength = (light: AuraLightNode): number => {
+    const { sky, ground } = hemisphereColours(light);
+    return (light.intensity ?? 1) * (sky[0] + sky[1] + sky[2] + ground[0] + ground[1] + ground[2]);
+  };
+  const dominant = lights.reduce((best, light) => (strength(light) > strength(best) ? light : best));
+  const direction = hemisphereDirection(dominant);
+  const sky: [number, number, number] = [0, 0, 0];
+  const ground: [number, number, number] = [0, 0, 0];
+  const folded: AuraLightNode[] = [];
+  for (const light of lights) {
+    const d = hemisphereDirection(light);
+    if (d[0] * direction[0] + d[1] * direction[1] + d[2] * direction[2] < 0.9999) {
+      folded.push(light);
+      continue;
+    }
+    const colours = hemisphereColours(light);
+    const intensity = light.intensity ?? 1;
+    for (let i = 0; i < 3; i += 1) {
+      sky[i]! += colours.sky[i]! * intensity;
+      ground[i]! += colours.ground[i]! * intensity;
+    }
+  }
+  return { term: { sky, ground, direction }, folded };
+}
+
+/** The directional hemisphere pair the PRD-02 sources bind (null when the scene authors no hemisphere light). */
+export function prd02HemisphereTerm(snapshot: AuraSceneSnapshot): Prd02HemisphereTerm | null {
+  return splitHemispheres(groups.flatten(lightingNodes(snapshot))).term;
+}
+
+/**
+ * LIGHT-04: the yield rule of `scene().toJSON()` (a no-HDRI look fill steps aside for an authored ambient light,
+ * lookFill.ts) applied at resolution time too, so a look added at runtime (`app.nodes.add`) next to an authored
+ * ambient resolves the same way as one authored before mount.
+ */
+function lightingNodes(snapshot: AuraSceneSnapshot): AuraSceneSnapshot["nodes"] {
+  return dropShadowedLookFill(snapshot.nodes);
+}
+
+/**
+ * PRD-02 additive light terms: the ambient term (ambient lights, plus any hemisphere that cannot use the directional
+ * pair) and the directional hemisphere pair.
+ */
+export function prd02LightTerms(snapshot: AuraSceneSnapshot): {
+  readonly ambient: { readonly color: AuraColor; readonly intensity: number } | null;
+  readonly hemisphere: Prd02HemisphereTerm | null;
+} {
+  const nodes = groups.flatten(lightingNodes(snapshot));
+  const split = splitHemispheres(nodes);
+  return { ambient: ambientTermOf(nodes, split.folded), hemisphere: split.term };
 }
 
 /** §11 alias → preset name: every legacy environment kind except
@@ -537,11 +648,14 @@ export function registerPrd02EnvironmentSources(): void {
     flag: "A3D_QR_LIGHTING",
     priority: 400,
     resolve(snapshot) {
-      const node = groups.flatten(snapshot.nodes).find(
+      const node = groups.flatten(lightingNodes(snapshot)).find(
         (n): n is AuraEnvironmentNode => n.kind === "environment"
       ) as AuraEnvironmentNodeV2 | undefined;
       if (!node) return undefined;
-      return explicitEnvironmentResolution(node, prd02AmbientTerm(snapshot));
+      // LIGHT-05: authored hemisphere lights contribute next to an environment too (they were dropped here before).
+      const terms = prd02LightTerms(snapshot);
+      const resolution = explicitEnvironmentResolution(node, terms.ambient);
+      return resolution ? { ...resolution, hemisphere: terms.hemisphere } : undefined;
     }
   });
   registerEnvironmentSource({
@@ -550,6 +664,8 @@ export function registerPrd02EnvironmentSources(): void {
     flag: "A3D_QR_LIGHTING",
     priority: 0,
     resolve(snapshot) {
+      // LIGHT-08: the hemisphere is the directional sky/ground pair, no longer a flat mean inside the ambient term.
+      const terms = prd02LightTerms(snapshot);
       return {
         kind: "neutral-room",
         probe: "neutral",
@@ -558,7 +674,8 @@ export function registerPrd02EnvironmentSources(): void {
         specularIntensity: 1,
         rotation: 0,
         background: false,
-        ambient: prd02AmbientTerm(snapshot, { includeHemisphere: true })
+        ambient: terms.ambient,
+        hemisphere: terms.hemisphere
       };
     }
   });

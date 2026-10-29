@@ -43,7 +43,7 @@ import type { EnvironmentProbe } from "@aura3d/rendering/contracts";
 import { environmentProbeFactorySlot, isEnvironmentProbeFactoryPending } from "@aura3d/rendering/contracts";
 import { EnvironmentCache, defaultProbeLoader } from "../../../../rendering/src/environment/EnvironmentCache.js";
 import { bindPrd02EnvironmentProbe, prd02ProbeBindIntensities } from "./environment.js";
-import { resolveEnvironment } from "../../contracts/environment.js";
+import { resolveEnvironment, type AuraEnvironmentSourceResolution } from "../../contracts/environment.js";
 import { prd02LightingOn } from "./lights.js";
 import { colorToLinearRgb } from "../colorUtils.js";
 import { isKnownNodeKind, resolveNodeHandler } from "./handlers.js";
@@ -55,8 +55,11 @@ export { asRuntimeCompiled } from "../../contracts/compiler.js";
 /** Internal context fields the mount supplies beyond the frozen C-36 shape. */
 export interface MountSceneCompileContext extends SceneCompileContext {
   readonly canvas: HTMLCanvasElement;
-  /** Live accessor — the HDRI upgrade swaps the lighting object per frame. */
-  environmentLighting(): EnvironmentLightingOptions;
+  /**
+   * Live accessor — the HDRI upgrade swaps the lighting object per frame. LIGHT-07: the live snapshot (mount nodes
+   * plus runtime adds) lets the mount recompute the environment knob when its environment or light nodes change.
+   */
+  environmentLighting(liveSnapshot?: AuraSceneSnapshot): EnvironmentLightingOptions;
   readonly collectedLights: readonly CollectedLight[];
   readonly runtimeWarnings: Set<string>;
   /** The registry the mount was created with (t=0 source build only). */
@@ -459,7 +462,7 @@ function updateCompiledSceneReal(
     timeSeconds,
     runtime,
     ctx.runtimeWarnings,
-    ctx.environmentLighting(),
+    ctx.environmentLighting(liveSnapshot),
     ctx.collectedLights,
     // T4.1: the mounted ctx's C-36 degrade handler owns pose/foot/morph
     // failures on the flag-on path (strict throws; non-strict warns once).
@@ -520,6 +523,7 @@ function updateCompiledSceneReal(
           environmentProbeDiffuseIntensity?: number;
           environmentProbeSpecularIntensity?: number;
           environmentProbeAmbient?: { readonly color: readonly [number, number, number]; readonly intensity: number } | null;
+          environmentProbeHemisphere?: AuraEnvironmentSourceResolution["hemisphere"];
           environmentProbeBackground?: boolean;
         };
         // E3 stage-2b (step 3): capture the stage-2a knob object BEFORE it
@@ -542,6 +546,8 @@ function updateCompiledSceneReal(
         probed.environmentProbeAmbient = resolution.ambient
           ? { color: colorToLinearRgb(resolution.ambient.color), intensity: resolution.ambient.intensity }
           : null;
+        // LIGHT-05/08: authored hemisphere lights reach the PRD-02 IBL chunk as its directional sky/ground pair.
+        probed.environmentProbeHemisphere = resolution.hemisphere ?? null;
       }
     }
   }

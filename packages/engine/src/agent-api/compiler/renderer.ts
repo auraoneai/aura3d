@@ -16,7 +16,7 @@ import { getRootPerformanceQuality, getRootRenderSource } from "../RootRuntimeSu
 import { Renderer, webGL2MaxTextureSize, type RenderBackendKind, type ProductionRendererFeature, type ProductionRendererInput, type RenderDeviceDiagnostics } from "@aura3d/rendering";
 import { rendererFeatureReport, rendererInteractiveFeatureReport, validateProductionRendererInput } from "../rendererReports.js";
 import { normalizeTextureBudgetBytes } from "../app/rendererOptions.js";
-import { createProductionRuntimeEnvironment } from "./environment.js";
+import { createProductionRuntimeEnvironment, environmentKnobKey } from "./environment.js";
 import { applyModelTintBridge } from "./modelMaterials.js";
 import { createProductionRuntimePrimitiveEntries, upgradeProductionEnvironmentHdri } from "./primitives.js";
 import { qrPrimitiveGeometryOptions } from "./geometry.js";
@@ -155,6 +155,8 @@ export async function createProductionRuntimeSceneRenderer(
     // render closure reads every frame. Outcomes land in hdriWarnings, which
     // render() never clears (per-frame runtimeWarnings are rebuilt every frame).
     let currentEnvironmentLighting = productionEnvironment.lighting;
+    const mountKnobKey = environmentKnobKey(snapshot);
+    let liveKnob: { nodes: unknown; lighting: typeof currentEnvironmentLighting | null } = { nodes: null, lighting: null };
     const hdriWarnings = new Set<string>();
     const hdriState: {
       status: "none" | "pending" | "ready" | "fallback";
@@ -232,7 +234,19 @@ export async function createProductionRuntimeSceneRenderer(
         warn: (message) => { runtimeWarnings.add(message); }
       }),
       canvas,
-      environmentLighting: () => currentEnvironmentLighting,
+      environmentLighting: (liveSnapshot) => {
+        // LIGHT-07: the knob was computed from the mount snapshot. When runtime adds or removes change the
+        // environment or light nodes (liveNodes is replaced on every add/remove), recompute it from the live set.
+        if (!liveSnapshot) return currentEnvironmentLighting;
+        if (liveKnob.nodes !== liveSnapshot.nodes) {
+          const key = environmentKnobKey(liveSnapshot);
+          liveKnob = {
+            nodes: liveSnapshot.nodes,
+            lighting: key === mountKnobKey ? null : createProductionRuntimeEnvironment(liveSnapshot, flags, { implicitFill: false }).lighting
+          };
+        }
+        return liveKnob.lighting ?? currentEnvironmentLighting;
+      },
       collectedLights: productionRuntimeLights,
       runtimeWarnings,
       ...(runtimeNodes ? { runtimeNodes } : {})

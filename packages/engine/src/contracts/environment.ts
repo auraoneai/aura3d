@@ -14,6 +14,15 @@ export interface AuraEnvironmentSourceResolution {
   readonly intensity: number; readonly diffuseIntensity: number; readonly specularIntensity: number; readonly rotation: number;
   readonly background: false | { readonly visible: boolean; readonly blurriness: number; readonly intensity: number; readonly rotation: number };
   readonly ambient: { readonly color: AuraColor; readonly intensity: number } | null;   // ADDITIVE to IBL (never replaces it)
+  /**
+   * Authored hemisphere lights as a directional sky/ground pair (linear rgb, premultiplied by intensity; `direction` is
+   * the unit "up" of the light). ADDITIVE to IBL and ambient. Absent or null: no hemisphere contribution.
+   */
+  readonly hemisphere?: {
+    readonly sky: readonly [number, number, number];
+    readonly ground: readonly [number, number, number];
+    readonly direction: readonly [number, number, number];
+  } | null;
 }
 export interface AuraEnvironmentSource extends RegistryEntry {
   readonly id: string;               // "prd02.explicit", "prd10.biome", "prd13.look", "prd07.sky"

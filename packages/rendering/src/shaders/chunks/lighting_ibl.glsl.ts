@@ -112,11 +112,17 @@ vec3 a3d_iblDiffuseFresnel(vec3 f0, float roughness, float ndv) {
  * (which divide by pi) and applied once as exit radiance. `a3dEnvIrradiance`
  * keeps the name/scale the C-03 lobe IBL calls read from the default body
  * (true irradiance, cf. `PI * a3dSampleEnvironment(N, 8.0)` there).
+ *
+ * LIGHT-05/08: the hemisphere pair (true irradiance, no 1/pi) is split out the
+ * same way and applied as a plain Lambert term, as three.js r185 does for
+ * `HemisphereLight` (it joins `irradiance`, never `iblIrradiance`), so it
+ * does not feed the multiscatter energy terms of the probe.
  */
 export const LIGHTING_IBL_CALL_GLSL = /* glsl */ `
 vec3 a3dPrd02Irradiance = a3dIndirectDiffuseIrradiance(N);
-vec3 a3dEnvIrradiance = max(a3dPrd02Irradiance - u_ambientIrradiance, vec3(0.0));
+vec3 a3dHemiIrradiance = mix(u_hemiGround, u_hemiSky, dot(N, u_hemiDirection) * 0.5 + 0.5);
+vec3 a3dEnvIrradiance = max(a3dPrd02Irradiance - u_ambientIrradiance - a3dHemiIrradiance, vec3(0.0));
 indirectDiffuse += a3dIndirectDiffuse(a3dEnvIrradiance, V, N, material);
-indirectDiffuse += u_ambientIrradiance * material.diffuseContribution;
+indirectDiffuse += (u_ambientIrradiance + a3dHemiIrradiance * 0.31830989) * material.diffuseContribution;
 indirectSpecular += a3dIndirectSpecular(a3dEnvSpecularRadiance(N, V, material.roughness), a3dEnvIrradiance, V, N, material);
 `;
