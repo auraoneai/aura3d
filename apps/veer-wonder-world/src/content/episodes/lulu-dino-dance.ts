@@ -48,9 +48,12 @@ export const episode: EpisodeSpec = {
       id: "hello",
       kind: "greeting",
       camera: "wide",
+      // Lulu walks in during the hello song and performs it (wave, hop on
+      // "hi, hi, hi!", wave): she is named as the performer because she is
+      // still off stage when the song starts.
       stage: [
         { do: "music", bed: "gardenBed" },
-        { do: "song", song: "hello" },
+        { do: "song", song: "hello", performers: ["lulu"] },
         { do: "enter", actor: "lulu", at: "center", from: "offRight", style: "walk" },
         { do: "face", actor: "lulu", toward: "viewer" },
         { do: "gesture", actor: "lulu", gesture: "wave" }
@@ -373,15 +376,47 @@ export const episode: EpisodeSpec = {
       id: "song",
       kind: "song",
       camera: "wide",
+      // "Go / Stop with Lulu" (02 section 5), one action per lyric line for
+      // Lulu and Momo together: three claps on "Clap, clap, clap with me.",
+      // stomps on "One, two, three!", dancing (swaying in reduced motion) on
+      // "Go, go, go!", then a clear freeze on "Now ... stop!" that holds,
+      // still, until the next beat. The lines' cues set every gesture
+      // (performers: none), so nothing keeps dancing through the stop.
       stage: [
-        { do: "song", song: "goStop" },
-        { do: "gesture", actor: "lulu", gesture: "dance", loop: true },
-        { do: "gesture", actor: "momo", gesture: "clap", loop: true }
+        {
+          do: "song",
+          song: "goStop",
+          performers: [],
+          cues: [
+            { line: 0, stage: [{ do: "gesture", actor: "lulu", gesture: "clap" }, { do: "gesture", actor: "momo", gesture: "clap" }] },
+            { line: 1, stage: [{ do: "gesture", actor: "lulu", gesture: "stomp" }, { do: "gesture", actor: "momo", gesture: "stomp" }] },
+            {
+              line: 2,
+              stage: [{ do: "gesture", actor: "lulu", gesture: "dance", loop: true }, { do: "gesture", actor: "momo", gesture: "dance", loop: true }]
+            },
+            { line: 3, stage: [{ do: "gesture", actor: "lulu", gesture: "freeze" }, { do: "gesture", actor: "momo", gesture: "freeze" }] }
+          ]
+        },
+        { do: "face", actor: "lulu", toward: "viewer" },
+        { do: "face", actor: "momo", toward: "viewer" }
       ],
       reducedMotionStage: [
-        { do: "song", song: "goStop" },
-        { do: "gesture", actor: "lulu", gesture: "sway", loop: true },
-        { do: "gesture", actor: "momo", gesture: "sway", loop: true }
+        {
+          do: "song",
+          song: "goStop",
+          performers: [],
+          cues: [
+            { line: 0, stage: [{ do: "gesture", actor: "lulu", gesture: "clap" }, { do: "gesture", actor: "momo", gesture: "clap" }] },
+            { line: 1, stage: [{ do: "gesture", actor: "lulu", gesture: "stomp" }, { do: "gesture", actor: "momo", gesture: "stomp" }] },
+            {
+              line: 2,
+              stage: [{ do: "gesture", actor: "lulu", gesture: "sway", loop: true }, { do: "gesture", actor: "momo", gesture: "sway", loop: true }]
+            },
+            { line: 3, stage: [{ do: "gesture", actor: "lulu", gesture: "freeze" }, { do: "gesture", actor: "momo", gesture: "freeze" }] }
+          ]
+        },
+        { do: "face", actor: "lulu", toward: "viewer" },
+        { do: "face", actor: "momo", toward: "viewer" }
       ],
       lines: [],
       holdMs: 17000,

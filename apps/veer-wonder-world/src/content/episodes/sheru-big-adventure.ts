@@ -9,18 +9,28 @@
 // motion of one actor lives in its own step: Sheru walks up to the ball to
 // nose it (model), the ball rolls away, back to where it came from, in the
 // invite response, Sheru runs to it in the event beat, carries it back at the
-// start of the repeat beat, nudges it to Momo in the repeat response, watches
-// the song roll along the front, and trots over to it in the outro.
+// start of the repeat beat, nudges it to Momo in the repeat response, and
+// trots over to it in the outro.
 //
-// Ball motion is always a `move` with the roll style (it rolls as it travels).
-// It is never paired with an `object ... roll` in the same step: the stage
-// treats that as a second, 1 m roll that replaces the move's destination.
+// The "Ball Rolls" song (05 section 4 step 7) has two distinct rolls, started
+// by the song's lyric-line cues (07 B20): on "Here it comes, and there it
+// goes" the ball rolls along the front from Momo's side to the right, and on
+// "Let's roll it once more!" it rolls back to Momo. Momo and Sheru are the
+// song's default performers: they sway, point, freeze on "Stop, ball, stop"
+// and cheer, one motion per lyric line, so the beat sets no looping gesture
+// of its own that would fight them.
+//
+// Ball motion is always a `move` with the roll style (it rolls as it travels);
+// no `object ... roll` is used, since the stage ignores one while a move runs.
 // Every spot the ball uses stays inside the framings on portrait phones, and
-// no roll crosses where a character stands.
+// no roll crosses where a character stands: the song's rolls run along the
+// front row, in front of Sheru at the center and Momo at the left.
 //
-// Sheru never speaks (his speaker voice does not exist; barks are the "woof"
-// sound effect). Every wait ends by itself and nothing listens to or scores
-// speech. The ball is the only tap target.
+// Sheru never speaks (his speaker voice does not exist); his reactions are the
+// bark bank's sound effects, one at a time: a soft woof when the ball rolls
+// in, a happy yip as he runs after it, and a pant when he brings it back.
+// Every wait ends by itself and nothing listens to or scores speech. The ball
+// is the only tap target.
 import type { EpisodeSpec } from "../../types.js";
 
 export const episode: EpisodeSpec = {
@@ -75,10 +85,12 @@ export const episode: EpisodeSpec = {
       holdMs: 5000
     },
     {
-      // 2. The ball rolls slowly into view; Sheru follows it with his eyes.
+      // 2. The ball rolls slowly into view; Sheru follows it with his eyes and
+      // gives a soft, curious woof.
       id: "hook",
       kind: "hook",
       stage: [
+        { do: "sfx", sound: "woofSoft" },
         { do: "move", actor: "ball", to: "right", style: "roll" },
         { do: "face", actor: "sheru", toward: "ball" },
         { do: "gesture", actor: "sheru", gesture: "look" },
@@ -149,19 +161,19 @@ export const episode: EpisodeSpec = {
       words: [{ wordId: "go", objectId: "ball" }]
     },
     {
-      // 5. Sheru goes after the ball and finds it: he runs to the ball's spot and
-      // the stage stops him right beside it.
+      // 5. Sheru goes after the ball with a happy yip and finds it: he runs to
+      // the ball's spot and the stage stops him right beside it.
       id: "event",
       kind: "event",
       camera: "wide",
       stage: [
-        { do: "sfx", sound: "woof" },
+        { do: "sfx", sound: "yip" },
         { do: "move", actor: "sheru", to: "backRight", style: "run" },
         { do: "face", actor: "sheru", toward: "ball" },
         { do: "gesture", actor: "momo", gesture: "cheer" }
       ],
       reducedMotionStage: [
-        { do: "sfx", sound: "woof" },
+        { do: "sfx", sound: "yip" },
         { do: "move", actor: "sheru", to: "backRight", style: "walk" },
         { do: "face", actor: "sheru", toward: "ball" },
         { do: "gesture", actor: "momo", gesture: "happy" }
@@ -179,13 +191,14 @@ export const episode: EpisodeSpec = {
       holdMs: 6500
     },
     {
-      // 6. Sheru brings the ball back; "More ball?" and another calm pause.
-      // Silence moves on just the same: Sheru nudges the ball to Momo. He faces
-      // the viewer once he is back (not the spot the ball was picked up from),
-      // so the ball he puts down lands in front of him.
+      // 6. Sheru brings the ball back, panting happily; "More ball?" and another
+      // calm pause. Silence moves on just the same: Sheru nudges the ball to
+      // Momo. He faces the viewer once he is back (not the spot the ball was
+      // picked up from), so the ball he puts down lands in front of him.
       id: "repeat",
       kind: "repeat",
       stage: [
+        { do: "sfx", sound: "pant" },
         { do: "carry", actor: "sheru", item: "ball" },
         { do: "move", actor: "sheru", to: "center", style: "walk" },
         { do: "face", actor: "sheru", toward: "viewer" },
@@ -221,36 +234,40 @@ export const episode: EpisodeSpec = {
       ]
     },
     {
-      // 7. The original "Ball Rolls" song: Momo rolls the ball along the front of
-      // the meadow while Sheru, wagging, follows it with his eyes (the roll
-      // passes in front of him, never through him).
+      // 7. The original "Ball Rolls" song with two distinct rolls, each on its
+      // lyric line: the ball waits in front of Momo through "Ball, ball, rolling
+      // ball", rolls along the front to the right on "Here it comes, and there
+      // it goes", rests through "Stop, ball, stop" while everyone freezes, and
+      // rolls back to Momo on "Let's roll it once more!". Momo and Sheru watch
+      // it (they turn to follow it) and play the song's motion for each line.
+      // Both rolls pass in front of Sheru, never through him. Reduced motion
+      // keeps the same rolls; the stage gives the performers calm motions.
       id: "song",
       kind: "song",
       camera: "wide",
       stage: [
-        { do: "song", song: "ballRolls" },
-        { do: "move", actor: "ball", to: "frontRight", style: "roll" },
+        {
+          do: "song",
+          song: "ballRolls",
+          cues: [
+            { line: 1, stage: [{ do: "move", actor: "ball", to: "frontRight", style: "roll" }] },
+            { line: 3, stage: [{ do: "move", actor: "ball", to: "frontLeft", style: "roll" }] }
+          ]
+        },
         { do: "face", actor: "sheru", toward: "ball" },
-        { do: "gesture", actor: "sheru", gesture: "wag", loop: true },
-        { do: "gesture", actor: "momo", gesture: "sway", loop: true }
-      ],
-      reducedMotionStage: [
-        { do: "song", song: "ballRolls" },
-        { do: "move", actor: "ball", to: "frontRight", style: "roll" },
-        { do: "face", actor: "sheru", toward: "ball" },
-        { do: "gesture", actor: "momo", gesture: "sway" }
+        { do: "face", actor: "momo", toward: "ball" }
       ],
       lines: [],
       holdMs: 18000
     },
     {
-      // 8. Calm goodbye: Sheru trots over to his ball and turns to wave with his
-      // tail, Momo waves. No next episode.
+      // 8. Calm goodbye: Sheru trots over to his ball, back at Momo's side, and
+      // turns to wave with his tail; Momo waves. No next episode.
       id: "outro",
       kind: "outro",
       stage: [
         { do: "music", bed: null },
-        { do: "move", actor: "sheru", to: "frontRight", style: "walk" },
+        { do: "move", actor: "sheru", to: "frontLeft", style: "walk" },
         { do: "face", actor: "sheru", toward: "viewer" },
         { do: "gesture", actor: "sheru", gesture: "wag" },
         { do: "face", actor: "momo", toward: "viewer" },

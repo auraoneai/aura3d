@@ -8,6 +8,8 @@
 // Safety: the bell is soft and gets its own beat with no lines, so the ring is
 // heard on its own; doors open slowly, and every visitor is a familiar friend.
 // Visitors wait hidden in the doorway (same spot as the door) until it opens.
+// Sheru never speaks: he comes in with a woof, sniffs Peeko (a soft sniffing
+// sound) and leaves with a tiny happy "aroo", one bark-bank sound at a time.
 import type { EpisodeSpec } from "../../types.js";
 
 export const episode: EpisodeSpec = {
@@ -227,10 +229,11 @@ export const episode: EpisodeSpec = {
       holdMs: 2500
     },
     {
-      // Gentle humour: Sheru sniffs Peeko, who giggles.
+      // Gentle humour: Sheru sniffs Peeko (a soft sniffing sound), who giggles.
       id: "sniff",
       kind: "event",
       stage: [
+        { do: "sfx", sound: "sniffs" },
         { do: "object", target: "door", action: "close" },
         { do: "face", actor: "sheru", toward: "peeko" },
         { do: "gesture", actor: "sheru", gesture: "sniff" },
@@ -245,22 +248,19 @@ export const episode: EpisodeSpec = {
       holdMs: 2000
     },
     {
+      // All four friends are on stage, so all four are the song's default
+      // performers: they wave on "Hello, hello," hop on "hi, hi, hi!" (a nod
+      // in reduced motion) and wave on "Wave hello, friend!" (Sheru waves
+      // with his tail). No looping gesture of the beat's own fights them.
       id: "song",
       kind: "song",
       camera: "wide",
       stage: [
         { do: "song", song: "hello" },
-        { do: "gesture", actor: "lulu", gesture: "dance", loop: true },
-        { do: "gesture", actor: "momo", gesture: "sway", loop: true },
-        { do: "gesture", actor: "peeko", gesture: "sway", loop: true },
-        { do: "gesture", actor: "sheru", gesture: "wag", loop: true }
-      ],
-      reducedMotionStage: [
-        { do: "song", song: "hello" },
-        { do: "gesture", actor: "lulu", gesture: "sway" },
-        { do: "gesture", actor: "momo", gesture: "sway" },
-        { do: "gesture", actor: "peeko", gesture: "sway" },
-        { do: "gesture", actor: "sheru", gesture: "wag" }
+        { do: "face", actor: "lulu", toward: "viewer" },
+        { do: "face", actor: "momo", toward: "viewer" },
+        { do: "face", actor: "peeko", toward: "viewer" },
+        { do: "face", actor: "sheru", toward: "viewer" }
       ],
       lines: [],
       holdMs: 12000
@@ -303,12 +303,14 @@ export const episode: EpisodeSpec = {
       ]
     },
     {
-      // The visitors walk slowly back out through the open door. Sheru goes first
-      // into the doorway and Lulu stops beside him on the right, away from the
-      // door's hinge side, so nobody walks into the open door.
+      // The visitors walk slowly back out through the open door, Sheru with a
+      // tiny happy "aroo" goodbye. Sheru goes first into the doorway and Lulu
+      // stops beside him on the right, away from the door's hinge side, so
+      // nobody walks into the open door.
       id: "leave",
       kind: "event",
       stage: [
+        { do: "sfx", sound: "aroo" },
         { do: "object", target: "door", action: "open" },
         { do: "move", actor: "sheru", to: "back", style: "walk" },
         { do: "move", actor: "lulu", to: "back", style: "walk" },

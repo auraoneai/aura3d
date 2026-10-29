@@ -1,13 +1,17 @@
 // G05 — Teddy's Snack Picnic (P2 activity, PRD 05 section 3, task I02). Momo
-// hosts a pretend picnic in the Home Nook for Teddy, a toy bear prop. Each
-// round: Momo points to the apple on the plate ("An apple! For Teddy?"); a tap
-// on the apple or on Teddy (or the wait running out) slides it over to Teddy,
-// who pretends to eat ("Teddy eats the apple." "Mmm!"); then the same with a
-// banana; then "More for Teddy?". Pretend eating only: the food goes back to
-// its place, nobody has to eat anything, and Teddy ends by being "all done"
-// (no feeding pressure, no body talk). Tapping the food and tapping Teddy lead
-// to the same offer, so either target is always the right answer. At most
-// three rounds.
+// hosts a pretend picnic in the Home Nook for Teddy, a toy bear prop. First
+// each food is offered once: Momo points to the apple on the plate ("An
+// apple! For Teddy?"); a tap on the apple or on Teddy (or the wait running
+// out) slides it over to Teddy, who pretends to eat ("Teddy eats the apple."
+// "Mmm!"); then the same with a banana. Each round is then the child's choice
+// (05 G05, "Choose from apple/banana"): both foods glow at once and Momo asks
+// "Apple or banana?". A tap on either food (or a grown-up's confirm, or the
+// wait running out) plays the same answer, which fits either pick: Teddy
+// takes a pretend bite ("Mmm! Teddy likes it!"), and the caregiver tip asks
+// the grown-up to name the food the child chose. Then "More for Teddy?".
+// Pretend eating only: the food goes back to its place, nobody has to eat
+// anything, and Teddy ends by being "all done" (no feeding pressure, no body
+// talk). Every target is always a good answer. At most three rounds.
 // Words: apple, banana, eat (core) with more, all done, teddy, hi, uh-oh,
 // picnic, mmm, thank you, bye.
 import type { ActivitySpec } from "../../types.js";
@@ -96,9 +100,7 @@ export const activity: ActivitySpec = {
         { wordId: "picnic", objectId: "basket" }
       ],
       holdMs: 1500
-    }
-  ],
-  round: [
+    },
     {
       id: "apple",
       kind: "invite",
@@ -174,18 +176,56 @@ export const activity: ActivitySpec = {
         ],
         holdMs: 1200
       }
+    }
+  ],
+  round: [
+    {
+      // The choice: both foods back in their places, both glowing, offered at
+      // once. One answer for either pick: Teddy takes a pretend bite where he
+      // sits (no food moves, so nothing contradicts the child's pick), and
+      // the grown-up names the chosen food (tip 3).
+      id: "choose",
+      kind: "invite",
+      camera: "wide",
+      stage: [
+        { do: "move", actor: "banana", to: "frontRight", style: "slide" },
+        { do: "face", actor: "momo", toward: "viewer" },
+        { do: "gesture", actor: "momo", gesture: "point" },
+        { do: "object", target: "apple", action: "glow" },
+        { do: "object", target: "banana", action: "glow" }
+      ],
+      lines: [{ speaker: "momo", key: "g05.choose.1" }],
+      words: [
+        { wordId: "apple", objectId: "apple" },
+        { wordId: "banana", objectId: "banana" },
+        { wordId: "eat", objectId: "teddy" }
+      ],
+      holdMs: 800,
+      input: { type: "tap", targets: ["apple", "banana"] },
+      waitMs: 5000,
+      caregiverPromptKey: "g05.tip.3",
+      response: {
+        stage: [
+          { do: "face", actor: "momo", toward: "teddy" },
+          { do: "gesture", actor: "teddy", gesture: "eat" },
+          { do: "sfx", sound: "munch" }
+        ],
+        lines: [
+          { speaker: "narrator", key: "g05.choose.2" },
+          { speaker: "momo", key: "g05.choose.3" }
+        ],
+        holdMs: 1200
+      }
     },
     {
       id: "more",
       kind: "repeat",
       camera: "wide",
       stage: [
-        { do: "move", actor: "banana", to: "frontRight", style: "slide" },
         { do: "object", target: "teddy", action: "bounce" },
         { do: "face", actor: "momo", toward: "viewer" }
       ],
       reducedMotionStage: [
-        { do: "move", actor: "banana", to: "frontRight", style: "slide" },
         { do: "object", target: "teddy", action: "glow" },
         { do: "face", actor: "momo", toward: "viewer" }
       ],

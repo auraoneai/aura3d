@@ -13,6 +13,9 @@ export const lines: Record<string, string> = {
   "g05.banana.2": "For Teddy too?",
   "g05.banana.3": "Teddy eats the banana.",
   "g05.banana.4": "Yum!",
+  "g05.choose.1": "Apple or banana?",
+  "g05.choose.2": "Teddy eats a little pretend bite.",
+  "g05.choose.3": "Mmm! Teddy likes it!",
   "g05.more.1": "More for Teddy?",
   "g05.full.1": "Teddy is all done.",
   "g05.full.2": "Teddy says thank you!",
@@ -28,5 +31,6 @@ export const strings: Record<string, string> = {
   "g05.bridge":
     "Have a pretend picnic with a soft toy and real or toy food. Hold up two foods and name each one. Let your child feed the toy, then say \"Eat... mmm!\" When the toy is full, say \"All done.\" Keep it playful: nobody has to eat anything.",
   "g05.tip.1": "Point to the food with Momo and wait. Your child can tap the food, tap Teddy, point or just watch. Teddy eats either way.",
-  "g05.tip.2": "If your child reaches for Teddy, say \"More!\" for them. \"All done\" is a fine answer too."
+  "g05.tip.2": "If your child reaches for Teddy, say \"More!\" for them. \"All done\" is a fine answer too.",
+  "g05.tip.3": "Let your child tap or point to a food, then name it together: \"Apple!\" or \"Banana!\" Either one is a fine pick, and so is just watching."
 };

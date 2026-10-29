@@ -7,8 +7,11 @@
 //
 // No camera, no object recognition and no claims about what the child did:
 // nothing says "you found it". Lines only describe Sheru and the toys on
-// screen, or invite. Sheru never speaks; his barks are sound effects and the
-// narrator tells the story.
+// screen, or invite. Sheru never speaks; the narrator tells the story, and his
+// reactions are bark-bank sounds, one at a time: a playful arf hello, a soft
+// sniffing as he finds the ball ("Sniff, sniff... a ball!"), a woof with
+// "Woof! Toys are fun to find.", a little huff as the toys go back in the
+// box, and a soft woof goodbye.
 import type { ActivitySpec } from "../../types.js";
 
 export const activity: ActivitySpec = {
@@ -49,7 +52,7 @@ export const activity: ActivitySpec = {
         { do: "enter", actor: "sheru", at: "center", from: "offRight", style: "walk" },
         { do: "face", actor: "sheru", toward: "viewer" },
         { do: "gesture", actor: "sheru", gesture: "wag" },
-        { do: "sfx", sound: "woof" }
+        { do: "sfx", sound: "arf" }
       ],
       lines: [
         { speaker: "narrator", key: "g12.hello.1" },
@@ -92,7 +95,7 @@ export const activity: ActivitySpec = {
         { do: "gesture", actor: "sheru", gesture: "sniff" },
         { do: "show", actor: "ball" },
         { do: "object", target: "ball", action: "bounce" },
-        { do: "sfx", sound: "woof" }
+        { do: "sfx", sound: "sniffs" }
       ],
       reducedMotionStage: [
         { do: "hide", actor: "teddy" },
@@ -100,7 +103,7 @@ export const activity: ActivitySpec = {
         { do: "gesture", actor: "sheru", gesture: "sniff" },
         { do: "show", actor: "ball" },
         { do: "object", target: "ball", action: "wobble" },
-        { do: "sfx", sound: "woof" }
+        { do: "sfx", sound: "sniffs" }
       ],
       lines: [
         { speaker: "narrator", key: "g12.ball.1" },
@@ -184,6 +187,7 @@ export const activity: ActivitySpec = {
       caregiverPromptKey: "g12.tip.2",
       response: {
         stage: [
+          { do: "sfx", sound: "huff" },
           { do: "hide", actor: "ball" },
           { do: "hide", actor: "teddy" },
           { do: "object", target: "toy-box", action: "wobble" },
@@ -214,7 +218,7 @@ export const activity: ActivitySpec = {
         { do: "music", bed: null },
         { do: "face", actor: "sheru", toward: "viewer" },
         { do: "gesture", actor: "sheru", gesture: "wave" },
-        { do: "sfx", sound: "woof" }
+        { do: "sfx", sound: "woofSoft" }
       ],
       lines: [
         { speaker: "narrator", key: "g12.all-done.1" },

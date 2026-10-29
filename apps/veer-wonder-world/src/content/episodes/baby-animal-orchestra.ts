@@ -55,9 +55,11 @@ export const episode: EpisodeSpec = {
       id: "hello",
       kind: "greeting",
       camera: "wide",
+      // Lulu walks in during the hello song and performs it (named, since she
+      // is still off stage when it starts).
       stage: [
         { do: "music", bed: "gardenBed" },
-        { do: "song", song: "hello" },
+        { do: "song", song: "hello", performers: ["lulu"] },
         { do: "enter", actor: "lulu", at: "center", from: "offRight", style: "walk" },
         { do: "face", actor: "lulu", toward: "viewer" },
         { do: "gesture", actor: "lulu", gesture: "wave" }
@@ -418,16 +420,41 @@ export const episode: EpisodeSpec = {
       id: "song",
       kind: "song",
       camera: "wide",
+      // The band song, one animal per lyric line (07 B20): each animal moves
+      // on its own line (the cow on "Moo", the sheep on "Baa", the duck on
+      // "Quack", Sheru barks on "Woof"), the cow's drum bounces on "Boom,
+      // boom", and Sheru jumps for joy at the end. Lulu and Peeko keep the
+      // beat as the song's performers (a nod per animal, a stomp for the
+      // drum, a cheer at the end). Reduced motion wobbles instead of bouncing.
       stage: [
-        { do: "song", song: "animalBand" },
-        { do: "gesture", actor: "lulu", gesture: "dance", loop: true },
-        { do: "gesture", actor: "peeko", gesture: "dance", loop: true },
-        { do: "gesture", actor: "sheru", gesture: "wag", loop: true }
+        {
+          do: "song",
+          song: "animalBand",
+          performers: ["lulu", "peeko"],
+          cues: [
+            { line: 0, stage: [{ do: "object", target: "cow", action: "bounce" }] },
+            { line: 1, stage: [{ do: "object", target: "sheep", action: "bounce" }] },
+            { line: 2, stage: [{ do: "object", target: "duck", action: "bounce" }] },
+            { line: 3, stage: [{ do: "gesture", actor: "sheru", gesture: "bark" }] },
+            { line: 4, stage: [{ do: "object", target: "cow-drum", action: "bounce" }] },
+            { line: 5, stage: [{ do: "gesture", actor: "sheru", gesture: "happy" }] }
+          ]
+        }
       ],
       reducedMotionStage: [
-        { do: "song", song: "animalBand" },
-        { do: "gesture", actor: "lulu", gesture: "sway", loop: true },
-        { do: "gesture", actor: "peeko", gesture: "sway", loop: true }
+        {
+          do: "song",
+          song: "animalBand",
+          performers: ["lulu", "peeko"],
+          cues: [
+            { line: 0, stage: [{ do: "object", target: "cow", action: "wobble" }] },
+            { line: 1, stage: [{ do: "object", target: "sheep", action: "wobble" }] },
+            { line: 2, stage: [{ do: "object", target: "duck", action: "wobble" }] },
+            { line: 3, stage: [{ do: "gesture", actor: "sheru", gesture: "bark" }] },
+            { line: 4, stage: [{ do: "object", target: "cow-drum", action: "wobble" }] },
+            { line: 5, stage: [{ do: "gesture", actor: "sheru", gesture: "wag" }] }
+          ]
+        }
       ],
       lines: [],
       holdMs: 17000,

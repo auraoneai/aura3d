@@ -1,10 +1,23 @@
-// E01 — Momo's Magic Mouth (P1). Momo finds a toy mirror, says "Oh!" to his
-// reflection, then makes three silly faces, one sound per beat: "ah", "oh",
-// "mmm". The models have no mouth morphs, so each face is carried by a body
-// gesture plus the talking pulse; nothing claims lip sync or shows mouth
-// anatomy. Faces and sounds are play only: nothing listens, scores or rewards
-// accuracy, and every turn continues by itself. Song beats carry no lines so
-// speech never overlaps the song.
+// E01 — Momo's Magic Mouth (P1). Momo finds a toy mirror and sees himself in
+// it: the stage draws Mirror Momo in the glass, a small mirror image that
+// plays every gesture Momo plays. He says a surprised "Oh!", then makes three
+// silly faces at the mirror, one per beat, each paired with its sound once:
+// a big "Ah!", a surprised "Oh!" and a happy humming "Mmm.", while Mirror Momo
+// does the same.
+//
+// The models have no mouth or face animation (02 section 2), so each "face"
+// is a body pose (a big bouncy cheer, the quick `surprise` stretch, a calm
+// sway) plus the talking pulse and the reflection; no line names a mouth
+// shape, nothing claims lip sync, and no mouth anatomy is shown. Faces and
+// sounds are play only: nothing listens, scores or rewards accuracy, and every
+// turn continues by itself.
+//
+// Staging: the mirror stands front right, facing us, so its glass and Mirror
+// Momo stay in view on portrait phones; Momo stands at the center and turns
+// three-quarter toward it for the faces. The face beats use the medium
+// framing (the close one cuts the mirror off on most screens). The face song
+// pairs its sung sounds with the same poses through its lyric-line cues
+// (07 B20). Song beats carry no lines, so speech never overlaps the song.
 import type { EpisodeSpec } from "../../types.js";
 
 export const episode: EpisodeSpec = {
@@ -18,7 +31,7 @@ export const episode: EpisodeSpec = {
   host: "momo",
   cast: [{ id: "momo", at: "offLeft" }],
   props: [
-    { id: "mirror", asset: "mirror", at: "right", hidden: true, size: 1 },
+    { id: "mirror", asset: "mirror", at: "frontRight", hidden: true, size: 1 },
     { id: "cushion", asset: "cushion", at: "backLeft", size: 0.3 }
   ],
   targetWords: ["ah", "oh", "mmm"],
@@ -52,7 +65,8 @@ export const episode: EpisodeSpec = {
       holdMs: 3900
     },
     {
-      id: "hook",
+      // The mirror appears with a soft glow and Momo walks over to it.
+      id: "find",
       kind: "hook",
       camera: "medium",
       stage: [
@@ -62,16 +76,30 @@ export const episode: EpisodeSpec = {
         { do: "face", actor: "momo", toward: "mirror" },
         { do: "gesture", actor: "momo", gesture: "look" }
       ],
+      lines: [{ speaker: "narrator", key: "e01.find.1" }],
+      words: [{ wordId: "mirror", objectId: "mirror" }],
+      holdMs: 1500
+    },
+    {
+      // The hook (05 E01): in front of the mirror, Momo sees himself and makes a
+      // surprised "Oh!" (the `surprise` pose; Mirror Momo is surprised too).
+      // Its lines are e01.hook.2 and e01.hook.3: e01.hook.1 moved to "find".
+      id: "hook",
+      kind: "hook",
+      camera: "medium",
+      stage: [
+        { do: "face", actor: "momo", toward: "mirror" },
+        { do: "gesture", actor: "momo", gesture: "surprise" }
+      ],
       lines: [
-        { speaker: "narrator", key: "e01.hook.1" },
         { speaker: "momo", key: "e01.hook.2" },
         { speaker: "narrator", key: "e01.hook.3" }
       ],
       words: [
-        { wordId: "mirror", objectId: "mirror" },
-        { wordId: "oh", objectId: "momo" }
+        { wordId: "oh", objectId: "momo" },
+        { wordId: "mirror", objectId: "mirror" }
       ],
-      holdMs: 4400
+      holdMs: 2900
     },
     {
       id: "hello-mirror",
@@ -79,8 +107,7 @@ export const episode: EpisodeSpec = {
       camera: "medium",
       stage: [
         { do: "face", actor: "momo", toward: "mirror" },
-        { do: "gesture", actor: "momo", gesture: "wave" },
-        { do: "object", target: "mirror", action: "wobble" }
+        { do: "gesture", actor: "momo", gesture: "wave" }
       ],
       lines: [
         { speaker: "momo", key: "e01.hello-mirror.1" },
@@ -90,16 +117,18 @@ export const episode: EpisodeSpec = {
       holdMs: 4400
     },
     {
+      // Face 1, "Ah!": a big, bouncy, open pose (a slow big stretch in reduced
+      // motion). The sound is said once, as the pose starts.
       id: "face-ah",
       kind: "model",
-      camera: "close",
+      camera: "medium",
       stage: [
         { do: "face", actor: "momo", toward: "mirror" },
         { do: "gesture", actor: "momo", gesture: "cheer" }
       ],
       reducedMotionStage: [
         { do: "face", actor: "momo", toward: "mirror" },
-        { do: "gesture", actor: "momo", gesture: "happy" }
+        { do: "gesture", actor: "momo", gesture: "wake" }
       ],
       lines: [
         { speaker: "momo", key: "e01.face-ah.1" },
@@ -110,16 +139,13 @@ export const episode: EpisodeSpec = {
       holdMs: 4400
     },
     {
+      // Face 2, "Oh!": the quick surprised stretch and little hop.
       id: "face-oh",
       kind: "model",
-      camera: "close",
+      camera: "medium",
       stage: [
-        { do: "gesture", actor: "momo", gesture: "hop" },
-        { do: "object", target: "mirror", action: "wobble" }
-      ],
-      reducedMotionStage: [
-        { do: "gesture", actor: "momo", gesture: "look" },
-        { do: "object", target: "mirror", action: "wobble" }
+        { do: "face", actor: "momo", toward: "mirror" },
+        { do: "gesture", actor: "momo", gesture: "surprise" }
       ],
       lines: [
         { speaker: "momo", key: "e01.face-oh.1" },
@@ -130,9 +156,10 @@ export const episode: EpisodeSpec = {
       holdMs: 4400
     },
     {
+      // Face 3, "Mmm.": a calm, happy, humming sway.
       id: "face-mmm",
       kind: "model",
-      camera: "close",
+      camera: "medium",
       stage: [
         { do: "face", actor: "momo", toward: "mirror" },
         { do: "gesture", actor: "momo", gesture: "sway" }
@@ -146,12 +173,13 @@ export const episode: EpisodeSpec = {
       holdMs: 4400
     },
     {
+      // Momo turns to the child, leans in a little and waits (the `wait` pose).
       id: "turn",
       kind: "invite",
       camera: "medium",
       stage: [
         { do: "face", actor: "momo", toward: "viewer" },
-        { do: "gesture", actor: "momo", gesture: "point" },
+        { do: "gesture", actor: "momo", gesture: "wait" },
         { do: "object", target: "mirror", action: "glow" }
       ],
       lines: [
@@ -204,18 +232,43 @@ export const episode: EpisodeSpec = {
       }
     },
     {
+      // The face song: each sung sound gets its face's pose, at the mirror, so
+      // Mirror Momo sings along ("Ah" the big cheer, "Oh" the surprise, "Mmm"
+      // the sway); "you and me" turns to the child, "look and see" back to
+      // the mirror, and the last "ah, oh, mmm!" is a wiggly silly-faces dance.
+      // The cues set every gesture (performers: none).
       id: "song",
       kind: "song",
       camera: "wide",
       stage: [
-        { do: "face", actor: "momo", toward: "viewer" },
-        { do: "song", song: "faceSong" },
-        { do: "gesture", actor: "momo", gesture: "dance", loop: true }
+        {
+          do: "song",
+          song: "faceSong",
+          performers: [],
+          cues: [
+            { line: 0, stage: [{ do: "face", actor: "momo", toward: "mirror" }, { do: "gesture", actor: "momo", gesture: "cheer" }] },
+            { line: 1, stage: [{ do: "gesture", actor: "momo", gesture: "surprise" }] },
+            { line: 2, stage: [{ do: "gesture", actor: "momo", gesture: "sway" }] },
+            { line: 3, stage: [{ do: "face", actor: "momo", toward: "viewer" }, { do: "gesture", actor: "momo", gesture: "point" }] },
+            { line: 4, stage: [{ do: "face", actor: "momo", toward: "mirror" }, { do: "gesture", actor: "momo", gesture: "look" }] },
+            { line: 5, stage: [{ do: "gesture", actor: "momo", gesture: "mirror" }] }
+          ]
+        }
       ],
       reducedMotionStage: [
-        { do: "face", actor: "momo", toward: "viewer" },
-        { do: "song", song: "faceSong" },
-        { do: "gesture", actor: "momo", gesture: "sway", loop: true }
+        {
+          do: "song",
+          song: "faceSong",
+          performers: [],
+          cues: [
+            { line: 0, stage: [{ do: "face", actor: "momo", toward: "mirror" }, { do: "gesture", actor: "momo", gesture: "wake" }] },
+            { line: 1, stage: [{ do: "gesture", actor: "momo", gesture: "surprise" }] },
+            { line: 2, stage: [{ do: "gesture", actor: "momo", gesture: "sway" }] },
+            { line: 3, stage: [{ do: "face", actor: "momo", toward: "viewer" }, { do: "gesture", actor: "momo", gesture: "point" }] },
+            { line: 4, stage: [{ do: "face", actor: "momo", toward: "mirror" }, { do: "gesture", actor: "momo", gesture: "look" }] },
+            { line: 5, stage: [{ do: "gesture", actor: "momo", gesture: "mirror" }] }
+          ]
+        }
       ],
       lines: [],
       holdMs: 18000

@@ -21,17 +21,6 @@
   "date": "2026-10-29",
   "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
  },
- "e01.hook.1": {
-  "file": "src/assets/audio/en/lines/e01.hook.1.mp3",
-  "provider": "elevenlabs",
-  "endpoint": "text-to-speech/eleven_multilingual_v2",
-  "voice": "Bella (hpp4J3VqNfWAUOO0d1Us)",
-  "prismKey": "elevenlabs-11-216835",
-  "tier": "starter",
-  "prompt": "Momo finds a little mirror.",
-  "date": "2026-10-29",
-  "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
- },
  "e01.face-ah.3": {
   "file": "src/assets/audio/en/lines/e01.face-ah.3.mp3",
   "provider": "elevenlabs",
@@ -48,9 +37,9 @@
   "provider": "elevenlabs",
   "endpoint": "text-to-speech/eleven_multilingual_v2",
   "voice": "Will (bIHbv24MWmeRgasZH58o)",
-  "prismKey": "elevenlabs-03-0781b4",
+  "prismKey": "elevenlabs-11-216835",
   "tier": "starter",
-  "prompt": "Oh, look at me!",
+  "prompt": "Mirror Momo is surprised too!",
   "date": "2026-10-29",
   "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
  },
@@ -59,9 +48,9 @@
   "provider": "elevenlabs",
   "endpoint": "text-to-speech/eleven_multilingual_v2",
   "voice": "Bella (hpp4J3VqNfWAUOO0d1Us)",
-  "prismKey": "elevenlabs-03-0781b4",
+  "prismKey": "elevenlabs-11-216835",
   "tier": "starter",
-  "prompt": "A round, surprised face. Oh.",
+  "prompt": "A round, surprised face.",
   "date": "2026-10-29",
   "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
  },
@@ -81,9 +70,9 @@
   "provider": "elevenlabs",
   "endpoint": "text-to-speech/eleven_multilingual_v2",
   "voice": "Will (bIHbv24MWmeRgasZH58o)",
-  "prismKey": "elevenlabs-03-0781b4",
+  "prismKey": "elevenlabs-11-216835",
   "tier": "starter",
-  "prompt": "Mmm. I like this face.",
+  "prompt": "I like this face!",
   "date": "2026-10-29",
   "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
  },
@@ -103,9 +92,9 @@
   "provider": "elevenlabs",
   "endpoint": "text-to-speech/eleven_multilingual_v2",
   "voice": "Bella (hpp4J3VqNfWAUOO0d1Us)",
-  "prismKey": "elevenlabs-03-0781b4",
+  "prismKey": "elevenlabs-11-216835",
   "tier": "starter",
-  "prompt": "A happy, humming face. Mmm.",
+  "prompt": "A happy, humming face.",
   "date": "2026-10-29",
   "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
  },
@@ -8619,7 +8608,7 @@
   "voice": "Bella (hpp4J3VqNfWAUOO0d1Us)",
   "prismKey": "elevenlabs-11-216835",
   "tier": "starter",
-  "prompt": "A big, wide face. Ah.",
+  "prompt": "A big, wide face.",
   "date": "2026-10-29",
   "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
  },
@@ -9085,6 +9074,17 @@
   "date": "2026-10-29",
   "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
  },
+ "e01.find.1": {
+  "file": "src/assets/audio/en/lines/e01.find.1.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "text-to-speech/eleven_multilingual_v2",
+  "voice": "Bella (hpp4J3VqNfWAUOO0d1Us)",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "Momo finds a little mirror.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
+ },
  "e03.little-b.1": {
   "file": "src/assets/audio/en/lines/e03.little-b.1.mp3",
   "provider": "elevenlabs",
@@ -9129,6 +9129,28 @@
   "date": "2026-10-29",
   "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
  },
+ "e08.in-box.1": {
+  "file": "src/assets/audio/en/lines/e08.in-box.1.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "text-to-speech/eleven_multilingual_v2",
+  "voice": "Bella (hpp4J3VqNfWAUOO0d1Us)",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "Hop! Sheru jumps in the box.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
+ },
+ "e08.in-box.2": {
+  "file": "src/assets/audio/en/lines/e08.in-box.2.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "text-to-speech/eleven_multilingual_v2",
+  "voice": "Will (bIHbv24MWmeRgasZH58o)",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "Sheru is in the box!",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
+ },
  "e12.triangle-hat.1": {
   "file": "src/assets/audio/en/lines/e12.triangle-hat.1.mp3",
   "provider": "elevenlabs",
@@ -9137,6 +9159,28 @@
   "prismKey": "elevenlabs-11-216835",
   "tier": "starter",
   "prompt": "Look, my party hat!",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
+ },
+ "e08.behind-box.2": {
+  "file": "src/assets/audio/en/lines/e08.behind-box.2.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "text-to-speech/eleven_multilingual_v2",
+  "voice": "Will (bIHbv24MWmeRgasZH58o)",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "Behind the box! I see you, Sheru!",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
+ },
+ "e08.behind-box.1": {
+  "file": "src/assets/audio/en/lines/e08.behind-box.1.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "text-to-speech/eleven_multilingual_v2",
+  "voice": "Bella (hpp4J3VqNfWAUOO0d1Us)",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "Now Sheru hides behind the box.",
   "date": "2026-10-29",
   "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
  },
@@ -9192,6 +9236,39 @@
   "prismKey": "elevenlabs-11-216835",
   "tier": "starter",
   "prompt": "Clean teeth!",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
+ },
+ "g05.choose.1": {
+  "file": "src/assets/audio/en/lines/g05.choose.1.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "text-to-speech/eleven_multilingual_v2",
+  "voice": "Will (bIHbv24MWmeRgasZH58o)",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "Apple or banana?",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
+ },
+ "g05.choose.2": {
+  "file": "src/assets/audio/en/lines/g05.choose.2.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "text-to-speech/eleven_multilingual_v2",
+  "voice": "Bella (hpp4J3VqNfWAUOO0d1Us)",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "Teddy eats a little pretend bite.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
+ },
+ "g05.choose.3": {
+  "file": "src/assets/audio/en/lines/g05.choose.3.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "text-to-speech/eleven_multilingual_v2",
+  "voice": "Will (bIHbv24MWmeRgasZH58o)",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "Mmm! Teddy likes it!",
   "date": "2026-10-29",
   "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
  }

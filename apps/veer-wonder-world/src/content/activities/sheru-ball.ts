@@ -3,8 +3,11 @@
 // "Ready..." and waits; a tap on the ball (or the wait running out) rolls it
 // ("Go, ball!"); Sheru runs after it ("Go, Sheru, go!"), carries it back
 // ("Sheru has the ball!") and drops it; Momo asks "More ball?". Three fetches
-// at most (roundLimit 3); "All done" ends the game at any moment. Sheru only
-// barks; nothing listens to or scores speech.
+// at most (roundLimit 3); "All done" ends the game at any moment. Sheru never
+// speaks: his reactions are bark-bank sounds, one at a time (woof, a playful
+// arf as he runs, a pant when he is back, a happy double woof for "thank
+// you"). Nothing listens to or scores speech. The ball and Sheru stay in view
+// on portrait phones: the ball rolls to the back right, not off to farRight.
 // Words: ball, go, more (core) with hi, look, woof, roll, thank you, bye, all done.
 import type { ActivitySpec } from "../../types.js";
 
@@ -109,10 +112,13 @@ export const activity: ActivitySpec = {
       input: { type: "tap", targets: ["ball"] },
       waitMs: 5000,
       caregiverPromptKey: "g03.tip.1",
+      // The ball rolls to the back right, in view on portrait phones too
+      // (farRight is not); its path passes in front of and beside Sheru, never
+      // through him. One `move` with the roll style: no `object ... roll`,
+      // which the stage ignores while a move runs.
       response: {
         stage: [
-          { do: "move", actor: "ball", to: "farRight", style: "roll" },
-          { do: "object", target: "ball", action: "roll" },
+          { do: "move", actor: "ball", to: "backRight", style: "roll" },
           { do: "face", actor: "momo", toward: "ball" }
         ],
         lines: [
@@ -126,16 +132,18 @@ export const activity: ActivitySpec = {
       id: "fetch",
       kind: "event",
       camera: "wide",
+      // Sheru dashes after the ball with a playful arf; the stage stops him
+      // right beside it.
       stage: [
-        { do: "move", actor: "sheru", to: "farRight", style: "run" },
+        { do: "move", actor: "sheru", to: "backRight", style: "run" },
         { do: "face", actor: "sheru", toward: "ball" },
-        { do: "sfx", sound: "woof" },
+        { do: "sfx", sound: "arf" },
         { do: "gesture", actor: "momo", gesture: "cheer" }
       ],
       reducedMotionStage: [
-        { do: "move", actor: "sheru", to: "farRight", style: "walk" },
+        { do: "move", actor: "sheru", to: "backRight", style: "walk" },
         { do: "face", actor: "sheru", toward: "ball" },
-        { do: "sfx", sound: "woof" },
+        { do: "sfx", sound: "arf" },
         { do: "gesture", actor: "momo", gesture: "happy" }
       ],
       lines: [{ speaker: "momo", key: "g03.fetch.1" }],
@@ -147,10 +155,12 @@ export const activity: ActivitySpec = {
       kind: "event",
       camera: "wide",
       stage: [
+        // Back from the run, a happy pant.
+        { do: "sfx", sound: "pant" },
         { do: "carry", actor: "sheru", item: "ball" },
         { do: "move", actor: "sheru", to: "center", style: "walk" },
         // Without this Sheru keeps facing the ball he now carries, whose resting
-        // spot is still farRight, so he would turn away for "Hi, Sheru!"; facing
+        // spot is still backRight, so he would turn away for "Hi, Sheru!"; facing
         // the viewer also sets the ball down in front of him in the next beat.
         { do: "face", actor: "sheru", toward: "viewer" },
         { do: "gesture", actor: "sheru", gesture: "wag" },
@@ -173,7 +183,7 @@ export const activity: ActivitySpec = {
       stage: [
         // Sheru sets the ball down and it rolls to the front spot, where every
         // round starts: clear of Sheru as a tap target, and the next roll to
-        // farRight does not pass through him.
+        // backRight does not pass through him.
         { do: "carry", actor: "sheru", item: null },
         { do: "move", actor: "ball", to: "front", style: "roll" },
         { do: "gesture", actor: "sheru", gesture: "sit" },
@@ -202,7 +212,7 @@ export const activity: ActivitySpec = {
       kind: "outro",
       camera: "wide",
       stage: [
-        { do: "sfx", sound: "woof" },
+        { do: "sfx", sound: "woofDouble" },
         { do: "gesture", actor: "sheru", gesture: "wag" },
         { do: "face", actor: "momo", toward: "sheru" },
         { do: "gesture", actor: "momo", gesture: "happy" }

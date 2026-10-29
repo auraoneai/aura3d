@@ -24,6 +24,10 @@ export const lines: Record<string, string> = {
   "e08.invite-2.2": "There! Under the table!",
   "e08.come.1": "Out comes Sheru!",
   "e08.come.2": "There you are!",
+  "e08.in-box.1": "Hop! Sheru jumps in the box.",
+  "e08.in-box.2": "Sheru is in the box!",
+  "e08.behind-box.1": "Now Sheru hides behind the box.",
+  "e08.behind-box.2": "Behind the box! I see you, Sheru!",
   "e08.peekaboo.1": "Peekaboo, Sheru!",
   "e08.outro.1": "All done!",
   "e08.outro.2": "Bye-bye, Sheru.",
@@ -35,7 +39,7 @@ export const strings: Record<string, string> = {
   "e08.offline":
     "Hide a soft toy dog under a blanket with its tail peeking out. Ask \"Where is the dog?\", wait, then lift the blanket together: \"There! Under the blanket!\"",
   "e08.bridge":
-    "Momo looks under the box, the bench and the table to find Sheru. At home, hide a toy and look for it together, saying \"where\", \"under\" and \"there\" as you search. Let your child find it first.",
+    "Momo looks under the box, the bench and the table to find Sheru, and Sheru hops in the box and hides behind it. At home, hide a toy and look for it together, saying \"where\", \"under\", \"in\", \"behind\" and \"there\" as you search. Let your child find it first.",
   "e08.tip.1": "Wait a moment. If your child points or looks at the table, follow their point: \"Under the table?\"",
   "e08.tip.2": "Your child can see Sheru. Let them show Momo with a point, a tap or a sound, and say \"There!\" for them.",
   "e08.tip.3": "Cover your face with your hands, then peek out and smile: \"There you are!\""
