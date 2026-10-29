@@ -7,8 +7,8 @@ import { startExampleDevServer, type ExampleDevServer } from "../example-dev-ser
  *   GL_META <json>                         luma stats (canvas only), probe numbers and engine diagnostics per shot
  *   GL_JPG  <target> <shot> <i>/<n> <b64>  full-page JPEG (HUD included), chunked
  *   GL_PROBE <json>                        state probes (audio, pause, pools) that need no frame
- * Every state is shot twice; the frame loop presents about one frame every few seconds and the baked environment lands
- * after the first frames, so judge the second shot (`.b`).
+ * Each state is presented and drawn a few more frames before its `.b` shot; the title is also shot early (`.a`), because the
+ * baked environment lands after the first frames. Judge the `.b` shots.
  */
 const CHUNK = 16000;
 const log = (line: string): void => { process.stdout.write(`${line}\n`); };
@@ -31,7 +31,7 @@ async function settle(page: Page, extraFrames = 3): Promise<void> {
 
 async function lumaStats(page: Page, png: Buffer) {
   return page.evaluate(async (b64) => {
-    const blob = await (await fetch(`data:image/png;base64,${b64}`)).blob();
+    const blob = await (await fetch(`data:image/jpeg;base64,${b64}`)).blob();
     const bmp = await createImageBitmap(blob);
     const c = document.createElement("canvas");
     c.width = bmp.width; c.height = bmp.height;
@@ -133,22 +133,26 @@ async function probe(page: Page) {
 async function shoot(page: Page, target: string, id: string, extra: Record<string, unknown> = {}): Promise<void> {
   const handle = await page.addStyleTag({ content: CANVAS_ONLY });
   await page.waitForTimeout(200);
-  const png = await page.screenshot({ type: "png" });
+  const canvasOnly = await page.screenshot({ type: "jpeg", quality: 92 });
   await handle.evaluate((el) => el.remove());
-  await page.waitForTimeout(200);
   const jpg = await page.screenshot({ type: "jpeg", quality: 84 });
-  const stats = await lumaStats(page, png);
+  const stats = await lumaStats(page, canvasOnly);
   log(`GL_META ${JSON.stringify({ target, id, frames: await frames(page), ...extra, ...stats, probe: await probe(page) })}`);
   const b64 = jpg.toString("base64");
   const n = Math.ceil(b64.length / CHUNK);
   for (let i = 0; i < n; i++) log(`GL_JPG ${target} ${id} ${i + 1}/${n} ${b64.slice(i * CHUNK, (i + 1) * CHUNK)}`);
 }
 
-/** Shoot a state twice: `.a` right after it is presented, `.b` a few frames later (the one to judge). */
-async function shootState(page: Page, target: string, id: string): Promise<void> {
+/**
+ * Present a state, let the loop draw it a few more frames, then shoot it as `<id>.b` (the frame to judge). With `twice`, an
+ * earlier `.a` shot is taken first as well (used for the title, where the environment probe lands after the first frames).
+ */
+async function shootState(page: Page, target: string, id: string, twice = false): Promise<void> {
   await settle(page);
-  await shoot(page, target, `${id}.a`);
-  await settle(page, 3);
+  if (twice) {
+    await shoot(page, target, `${id}.a`);
+    await settle(page, 3);
+  }
   await shoot(page, target, `${id}.b`);
 }
 
@@ -196,8 +200,41 @@ test.describe("audit-fix roadster-rush", () => {
   test.beforeAll(async () => { server = await startExampleDevServer(); });
   test.afterAll(async () => { await server.close(); });
 
+  // One ACR step is capped at 60 min and software GL presents a frame every several seconds, so each viewport is split into
+  // two tests that separate remote runs select with --grep: `rr-<mode>-main` (title, input, early, key-ramp, mid) and
+  // `rr-<mode>-dense` (50 s of dense traffic, sky lane, results).
   for (const [mode, w, h] of [["desktop", 1280, 720], ["phone", 390, 844]] as const) {
-    test(`roadster-rush ${mode}`, async ({ browser }) => {
+    test(`rr-${mode}-dense`, async ({ browser }) => {
+      const target = `${w}x${h}`;
+      const ctx = await browser.newContext({ viewport: { width: w, height: h }, ...(mode === "phone" ? { hasTouch: true, isMobile: true } : {}) });
+      const page = await ctx.newPage();
+      const errors: string[] = [];
+      page.on("pageerror", (e) => errors.push(`pageerror ${e.message.slice(0, 300)}`));
+      page.on("console", (m) => { if (m.type() === "error") errors.push(`${m.type()} ${m.text().slice(0, 240)}`); });
+      page.on("response", (r) => { if (r.status() >= 400) errors.push(`HTTP ${r.status()} ${r.url().slice(0, 160)}`); });
+      if (!(await boot(page, "?seed=42&capture=1"))) return;
+      await takeManual(page);
+      await run(page, 60);
+      // dense traffic: 50 s more of play, kept alive with a shield (RR-1, RR-4, RR-E1)
+      await run(page, 3000, { shieldEvery: 120, weave: true });
+      await shootState(page, target, "dense-50s");
+      await scenario(page, "sky");
+      await run(page, 45);
+      await shootState(page, target, "sky");
+      await page.evaluate(() => {
+        const g = (window as unknown as Record<string, any>).__GAME__.game;
+        g.player.shieldTimer = 0; g.player.rocketTimer = 0; g.player.graceTimer = 0;
+        g.triggerAction("crash");
+        g.manual = true;
+        for (let i = 0; i < 240 && g.mode !== "gameover"; i++) g.simStep(1 / 60);
+        g.manual = true;
+      });
+      await shootState(page, target, "results-assisted");
+      log(`GL_PROBE ${JSON.stringify({ target, step: "dense-errors", errors: errors.slice(0, 30), errorCount: errors.length })}`);
+      await ctx.close();
+    });
+
+    test(`rr-${mode}-main`, async ({ browser }) => {
       const target = `${w}x${h}`;
       const ctx = await browser.newContext({ viewport: { width: w, height: h }, ...(mode === "phone" ? { hasTouch: true, isMobile: true } : {}) });
       const page = await ctx.newPage();
@@ -208,7 +245,7 @@ test.describe("audit-fix roadster-rush", () => {
       if (!(await boot(page, "?seed=42"))) return;
       // title: whatever the page shows before any input
       await page.waitForTimeout(2000);
-      await shootState(page, target, "title");
+      await shootState(page, target, "title", true);
       log(`GL_PROBE ${JSON.stringify({ target, step: "boot", ...(await probe(page)) })}`);
       // first gesture: does the first input start sound (RR-5)?
       if (mode === "phone") await page.touchscreen.tap(Math.round(w / 2), Math.round(h / 2));
@@ -243,13 +280,7 @@ test.describe("audit-fix roadster-rush", () => {
         await run(page, 480);
         await shootState(page, target, "mid-drive");
       }
-      // dense traffic: 50 s more of play, kept alive with a shield (RR-1, RR-4, RR-E1)
-      await run(page, 3000, { shieldEvery: 120, weave: true });
-      await shootState(page, target, "dense-50s");
-      await scenario(page, "sky");
-      await run(page, 45);
-      await shootState(page, target, "sky");
-      // a real crash and the results card (assisted runs do not set the best score after the fix)
+      // the results card: crash the run (as finc-apex.spec.ts did for the final screens)
       await page.evaluate(() => {
         const g = (window as unknown as Record<string, any>).__GAME__.game;
         g.player.shieldTimer = 0; g.player.rocketTimer = 0; g.player.graceTimer = 0;
@@ -264,7 +295,7 @@ test.describe("audit-fix roadster-rush", () => {
     });
   }
 
-  test("roadster-rush bloom: auto against production chain (RP-05, game side)", async ({ browser }) => {
+  test("rr-x-bloom auto against production chain (RP-05, game side)", async ({ browser }) => {
     for (const [tag, query] of [["auto", "?seed=42&capture=1"], ["production", "?seed=42&capture=1&aura3d-render=production"]] as const) {
       const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
       const page = await ctx.newPage();
@@ -277,7 +308,7 @@ test.describe("audit-fix roadster-rush", () => {
     }
   });
 
-  test("roadster-rush time of day", async ({ browser }) => {
+  test("rr-y-tod time of day", async ({ browser }) => {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
     const page = await ctx.newPage();
     if (await boot(page, "?seed=42&capture=1")) {
@@ -292,7 +323,7 @@ test.describe("audit-fix roadster-rush", () => {
     await ctx.close();
   });
 
-  test("roadster-rush card", async ({ browser }) => {
+  test("rr-x-card", async ({ browser }) => {
     const ctx = await browser.newContext({ viewport: { width: 720, height: 450 }, deviceScaleFactor: 2 });
     const page = await ctx.newPage();
     if (await boot(page, "?seed=42&capture=1")) {
