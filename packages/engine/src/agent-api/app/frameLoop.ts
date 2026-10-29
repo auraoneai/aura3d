@@ -27,7 +27,7 @@ import { text3D } from "../nodes/text3d.js";
 import { timeline } from "../nodes/timeline.js";
 import { worldLabelsFromSnapshot, createSceneLabelLayer, createSceneLabelOcclusionTest } from "../compiler/labels.js";
 import { round } from "../GameRuntime.js";
-import { authoredBackingResize } from "./canvas.js";
+import { authoredBackingResize, canvasContentBox, noteEngineCanvasSize, ownSizedCanvasAxes, refreshOwnSizedAxes } from "./canvas.js";
 
 export async function startProductionRender(
   canvas: HTMLCanvasElement,
@@ -168,12 +168,18 @@ export async function startProductionRender(
     labelLayer?.dispose();
     renderer.dispose();
   };
-  const parentFit = createParentFit(canvas);
+  const ownAxes = ownSizedCanvasAxes(canvas);
+  const parentFit = createParentFit(canvas, {
+    get width() { return ownAxes.width; },
+    get height() { return ownAxes.height; },
+    box: () => canvasContentBox(canvas)
+  });
   const resizeRenderer = (): void => {
     if (disposed) return;
     if (pendingFrames > 0) { resourceOwner.requestResize(); return; }
     if (options.resize === false) return;
-    const { cssWidth, cssHeight } = parentFit.measure(
+    refreshOwnSizedAxes(canvas);
+    const { cssWidth, cssHeight, ownWidth, ownHeight } = parentFit.measure(
       (typeof window !== "undefined" ? window.innerWidth : 960) || 960,
       (typeof window !== "undefined" ? window.innerHeight : 540) || 540
     );
@@ -181,8 +187,10 @@ export async function startProductionRender(
     const width = Math.max(1, Math.round(Math.max(backingMinimum.width, cssWidth * pixelRatio) * (getRootPerformanceQuality(canvas)?.resolutionScale ?? 1)));
     const height = Math.max(1, Math.round(Math.max(backingMinimum.height, cssHeight * pixelRatio) * (getRootPerformanceQuality(canvas)?.resolutionScale ?? 1)));
     if (canvas.width === width && canvas.height === height) return;
-    canvas.style.width = `${cssWidth}px`;
-    canvas.style.height = `${cssHeight}px`;
+    // top-tennis C2: an axis the page's CSS sizes (smaller than the parent) keeps that CSS; only the backing store follows it.
+    if (!ownWidth) canvas.style.width = `${cssWidth}px`;
+    if (!ownHeight) canvas.style.height = `${cssHeight}px`;
+    noteEngineCanvasSize(canvas);
     canvas.width = width;
     canvas.height = height;
     renderer.resize?.(width, height);
@@ -195,6 +203,8 @@ export async function startProductionRender(
     ? new ResizeObserver(resizeRenderer)
     : undefined;
   resizeObserver?.observe(canvas.parentElement!);
+  // A CSS-sized canvas can change size without its parent moving (a media query changes the reserved bands).
+  resizeObserver?.observe(canvas as unknown as Element);
   if (options.resize !== false && typeof window !== "undefined") window.addEventListener("resize", resizeRenderer);
 
   let firstFrameEndMarked = false;
