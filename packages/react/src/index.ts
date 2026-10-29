@@ -6,6 +6,7 @@ import {
   isValidElement,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type CSSProperties,
@@ -256,6 +257,75 @@ export function sceneMountKey(builder: AuraSceneBuilder): string {
   }
 }
 
+/** Props that never reach the scene: React-only (Suspense boundary, children) or the positional asset. */
+const NON_SCENE_PROPS: ReadonlySet<string> = new Set(["children", "fallback", "loader", "suspendOnLoad"]);
+
+const DECLARATIVE_TYPES = new Map<unknown, string>();
+
+function declarativeTypeName(type: unknown): string | undefined {
+  if (DECLARATIVE_TYPES.size === 0) {
+    DECLARATIVE_TYPES.set(Scene, "Scene").set(Model, "Model").set(Camera, "Camera").set(Lights, "Lights").set(Effect, "Effect");
+  }
+  return DECLARATIVE_TYPES.get(type);
+}
+
+/**
+ * Identity of the scene the declarative children describe, without building or serializing the
+ * scene (anim-phys-10). It reads only the `Scene`/`Model`/`Camera`/`Lights`/`Effect` elements and
+ * their scene-relevant props, so it costs a few small `JSON.stringify` calls instead of
+ * `JSON.stringify(scene.toJSON())` on every render. Functions key by name; nested React elements
+ * key as placeholders. An unserializable prop gets a fresh key (a scene update, never a stale scene).
+ */
+export function sceneChildrenKey(children: ReactNode): string {
+  const parts: string[] = [];
+  const visit = (nodes: ReactNode): void => {
+    Children.forEach(nodes, (child) => {
+      if (!isValidElement(child)) return;
+      const name = declarativeTypeName(child.type);
+      if (name === undefined) return;
+      const props = child.props as Record<string, unknown>;
+      const sceneProps: Record<string, unknown> = {};
+      for (const key of Object.keys(props).sort()) if (!NON_SCENE_PROPS.has(key)) sceneProps[key] = props[key];
+      parts.push(`${name}:${propsKey(sceneProps)}`);
+      if (name === "Scene") {
+        parts.push("[");
+        visit(props.children as ReactNode);
+        parts.push("]");
+      }
+    });
+  };
+  visit(children);
+  return parts.join("|");
+}
+
+function propsKey(value: unknown): string {
+  try {
+    return JSON.stringify(value, (_key, entry: unknown) => {
+      if (typeof entry === "function") return `fn:${(entry as { name?: string }).name ?? ""}`;
+      if (isValidElement(entry)) return "[element]";
+      if (entry instanceof RegExp) return `re:${entry.source}/${entry.flags}`;
+      return entry;
+    }) ?? "undefined";
+  } catch {
+    return `unserializable:${unstableMountKeys++}`;
+  }
+}
+
+/**
+ * Apply a scene change to a mounted app in place (anim-phys-10): `setScene` when the children key
+ * moved, nothing otherwise. Returns the key now mounted. The app, its canvas and WebGL context stay.
+ */
+export function applySceneChange(
+  app: Pick<AuraApp, "setScene">,
+  mountedKey: string,
+  nextKey: string,
+  nextScene: AuraSceneBuilder
+): string {
+  if (mountedKey === nextKey) return mountedKey;
+  app.setScene(nextScene);
+  return nextKey;
+}
+
 function optionMountKey(value: unknown): string {
   try {
     return JSON.stringify(value) ?? "undefined";
@@ -267,16 +337,20 @@ function optionMountKey(value: unknown): string {
 export function AuraCanvas(props: AuraCanvasProps): ReactElement {
   const ref = useRef<HTMLCanvasElement | null>(null);
   const [app, setApp] = useState<AuraApp | undefined>(undefined);
-  const builtScene = buildSceneFromChildren(props.children);
-  const sceneKey = sceneMountKey(builtScene);
+  // The scene is rebuilt only when the declarative children change, keyed without serializing it.
+  const sceneKey = sceneChildrenKey(props.children);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the children's scene identity, not their object identity.
+  const builtScene = useMemo(() => buildSceneFromChildren(props.children), [sceneKey]);
   const diagnosticsKey = optionMountKey(props.diagnostics);
   // Callbacks and options are read through a ref so inline arrow functions and object literals do not remount the app.
-  const latest = useRef({ props, builtScene });
-  latest.current = { props, builtScene };
+  const latest = useRef({ props, builtScene, sceneKey });
+  latest.current = { props, builtScene, sceneKey };
+  const mountedSceneKey = useRef(sceneKey);
   useEffect(() => {
     if (!ref.current) return undefined;
     const canvas = ref.current;
     const { props: mountProps, builtScene: mountScene } = latest.current;
+    mountedSceneKey.current = latest.current.sceneKey;
     const created = createAuraApp(canvas, {
       scene: mountScene,
       diagnostics: mountProps.diagnostics,
@@ -302,7 +376,12 @@ export function AuraCanvas(props: AuraCanvasProps): ReactElement {
       created.dispose();
       setApp(undefined);
     };
-  }, [sceneKey, diagnosticsKey, props.autoStart, props.pixelRatio, props.resize]);
+  }, [diagnosticsKey, props.autoStart, props.pixelRatio, props.resize]);
+  // A changed scene goes to the live app through setScene; it no longer disposes and recreates the app.
+  useEffect(() => {
+    if (!app) return;
+    mountedSceneKey.current = applySceneChange(app, mountedSceneKey.current, sceneKey, builtScene);
+  }, [app, sceneKey, builtScene]);
   // Children render inside the provider: the declarative nodes (`Scene`, `Camera`, `Lights`, `Effect`) return null,
   // `<Model suspendOnLoad>` suspends, and any other child (a component calling `useAuraFrame`/`useAuraApp`, a DOM
   // overlay) now sees the mounted app. Before this, children were only read for the scene and never rendered.
@@ -546,8 +625,11 @@ export function buildSceneFromChildren(children: ReactNode): AuraSceneBuilder {
   Children.forEach(content, (child) => {
     if (!isValidElement(child)) return;
     if (child.type === Model) {
-      const props = child.props as ModelProps;
-      builder.add(model(props.asset, props));
+      // Only model options reach model(): the asset is positional and the Suspense props are React-only,
+      // so they must not show up as OPTION_IGNORED notes.
+      const { asset, suspendOnLoad: _suspendOnLoad, fallback: _fallback, loader: _loader, ...options } = child.props as ModelProps & { readonly children?: ReactNode };
+      delete (options as { children?: ReactNode }).children;
+      builder.add(model(asset, options));
     }
     if (child.type === Camera) {
       const props = child.props as CameraProps;
