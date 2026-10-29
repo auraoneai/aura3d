@@ -93,6 +93,7 @@ test.describe("game luma capture", () => {
     test(`${target.name} @${target.group}`, async ({ page }) => {
       page.on("pageerror", (e) => log(`GL_ERR ${target.name} pageerror ${e.message.slice(0, 300)}`));
       page.on("console", (m) => { if (m.type() === "error") log(`GL_CONSOLE ${target.name} ${m.text().slice(0, 200)}`); });
+      page.on("response", (r) => { if (r.status() >= 400) log(`GL_HTTP ${target.name} ${r.status()} ${new URL(r.url()).pathname}`); });
       await page.setViewportSize({ width: 1280, height: 720 });
       const started = Date.now();
       await page.goto(`${server.origin}${target.url}`, { waitUntil: "domcontentloaded" });
