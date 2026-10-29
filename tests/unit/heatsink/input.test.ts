@@ -14,8 +14,8 @@ function key(type: "keydown" | "keyup", init: KeyInit): Event {
   return ev;
 }
 
-function callbacks(): InputCallbacks & Record<string, ReturnType<typeof vi.fn>> {
-  return {
+function callbacks() {
+  const cb = {
     stage: null,
     touchRoot: null,
     onAction: vi.fn(),
@@ -26,7 +26,8 @@ function callbacks(): InputCallbacks & Record<string, ReturnType<typeof vi.fn>> 
     onToggleMute: vi.fn(),
     onDrone: vi.fn(),
     onGesture: vi.fn()
-  } as InputCallbacks & Record<string, ReturnType<typeof vi.fn>>;
+  };
+  return cb satisfies InputCallbacks;
 }
 
 describe("heatsink input (C5, C14)", () => {
