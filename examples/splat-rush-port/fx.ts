@@ -19,8 +19,17 @@ export function flashFor(event: FxEvent, playerColorIndex: number): { color: str
     case "pickup": return { color: own, strength: 0.38 };
     case "switch": return { color: own, strength: 0.32 };
     case "burst": return { color: own, strength: 0.7 };
+    case "milestone": return { color: "#f9c647", strength: 0.5 };
     default: return null;
   }
+}
+
+/** Peak flash opacity when the player asked for reduced motion (C8). */
+export const REDUCED_FLASH_CAP = 0.1;
+
+/** Flash strength after the reduced-motion cap. */
+export function flashStrength(strength: number, reducedMotion: boolean): number {
+  return reducedMotion ? Math.min(REDUCED_FLASH_CAP, strength) : strength;
 }
 
 /** Vignette opacity for a combo multiplier (0 below x2, then a gentle pulse that grows up to a cap). */
@@ -58,7 +67,15 @@ export class ScreenFx {
   }
 
   /** A colour disc that grows from the ball's screen position over the whole frame (the burst). */
-  reveal(color: string): void {
+  /** `instant` (reduced motion) fills the frame with a short fade instead of the growing disc. */
+  reveal(color: string, instant = false): void {
+    if (instant) {
+      this.revealEl.style.transition = "opacity 0.3s ease";
+      this.revealEl.style.background = color;
+      this.revealEl.style.clipPath = "none";
+      this.revealEl.style.opacity = "1";
+      return;
+    }
     this.revealEl.style.transition = "none";
     this.revealEl.style.background = color;
     this.revealEl.style.opacity = "1";
@@ -74,8 +91,9 @@ export class ScreenFx {
     this.revealEl.style.opacity = "0";
   }
 
-  vignette(multiplier: number, rainbow: boolean, color: string, seconds: number): void {
-    const o = vignetteOpacity(multiplier, rainbow, seconds);
+  /** `steady` (reduced motion) drops the pulse and the vignette altogether. */
+  vignette(multiplier: number, rainbow: boolean, color: string, seconds: number, steady = false): void {
+    const o = steady ? 0 : vignetteOpacity(multiplier, rainbow, seconds);
     this.vignetteEl.style.background = `radial-gradient(ellipse at center, transparent 52%, ${color} 135%)`;
     this.vignetteEl.style.opacity = String(o);
   }

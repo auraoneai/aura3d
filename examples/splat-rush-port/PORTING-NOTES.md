@@ -92,3 +92,33 @@ vertices and 1024 px textures, admitted with `assets import-meshy` and wired thr
   colour-swap token), pooled 4 per type; the sim still owns type, lane and height. Gates, ball, splatters, road, rails and sky stay
   procedural (the original's gates are colour-coded gameplay objects tinted by uniform).
 - Cost: +~6 MB assets (7 GLBs), draw calls 105-201 at 640x360 (was 85-178).
+
+## Audit fixes (2026-10-29, lane G16)
+
+Rows from `docs/audits/sections/game-16-splat-rush-port.md`. Parity notes first: these two change behaviour the original
+has, in cases the recorded reference never reaches (`reference-replay.test.ts` still matches every field of every step).
+
+- **C16 gate rows resolve once.** Lanes are 2.3 apart and a gate reaches 1.2, so within 0.05 of a lane boundary the
+  original applied a match and an OUCH in the same frame. The port now resolves a row against its nearest gate only.
+  Outside the overlap at most one gate is in reach and it is the nearest, so scores and random draws are unchanged.
+- **C4 restart re-centres.** `begin()` resets the steering target `ye` and the drag flag. The original kept them, so the
+  ball drifted towards the last run's lane after PLAY AGAIN. Runs started from the splash already had both at 0.
+
+Presentation only (the sim and its trace are unchanged):
+
+- **C2** popups carry a monotonic `seq`; the HUD drains by `seq`, so popups (and the PERFECT cue and flash) no longer stop
+  once the 64-entry list is full.
+- **C6** the milestone plays the original's four-note arpeggio and a gold 0.5 flash.
+- **C7** optional colour symbols (C key or the splash toggle): red circle, yellow triangle, blue square, purple cross, on
+  each gate and over the ball.
+- **C8** reduced motion (follows `prefers-reduced-motion` until changed): flashes capped at 0.1, no vignette, no FOV
+  punch, and a chase camera without the shake.
+- **C9, C10** gates, splatters, particles, clouds and streaks draw as one batch each. Road entities live in a scrolling
+  frame (`sim.scroll`), so their vertices are written once; the HUD touches the DOM only when a value changes.
+- **C11** model maps re-encoded at 512 px (backdrop) and 256 px (pickups); geometry is byte-identical.
+- **C14** `warmPrograms` runs before the first frame with the pooled pickups and overlays parked in view.
+- **C15** the engine sizes the canvas at `min(devicePixelRatio, 2)`; a slow first 90 frames of play drops it to 1.
+- **C17** P or Esc pauses; a hidden tab pauses the run and suspends the audio context.
+- **C18** a ring marks the matching gate during the first run; the results card adds best combo, perfects and distance
+  on a translucent wash; the HUD respects safe-area insets.
+- **P-01** the toon shader rolls off above 0.82, so up-facing surfaces keep detail instead of clipping to white.

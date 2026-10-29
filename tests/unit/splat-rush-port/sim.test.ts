@@ -96,7 +96,7 @@ describe("splat-rush-port: starting a run", () => {
 
 describe("splat-rush-port: gate rules (original `Ye`/`$e`/frame collision branch)", () => {
   const lone = (sim: SplatRushSim, gate: { laneX: number; colorIndex: number }) => {
-    sim.gates = [{ z: -0.6, x: 0, laneX: gate.laneX, colorIndex: gate.colorIndex, passed: false }];
+    sim.gates = [{ z: -0.6, x: 0, laneX: gate.laneX, colorIndex: gate.colorIndex, passed: false, row: -1 }];
     sim.powerups = [];
   };
 

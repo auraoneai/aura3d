@@ -2,7 +2,9 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { PIECES, updateBackdrop } from "../../../examples/splat-rush-port/backdrop";
+import { scene } from "@aura3d/engine";
+import { createProductionRuntimeEnvironment } from "../../../packages/engine/src/agent-api/compiler/environment";
+import { BACKDROP_ENVIRONMENT_INTENSITY, PIECES, addBackdrop, updateBackdrop } from "../../../examples/splat-rush-port/backdrop";
 import { haloId, pickupId, updatePickups } from "../../../examples/splat-rush-port/pickups";
 import { MODELS } from "../../../examples/splat-rush-port/models";
 import type { Powerup } from "../../../examples/splat-rush-port/sim";
@@ -45,6 +47,23 @@ describe("Meshy presentation layer (backdrop + pickups)", () => {
         expect(c.scale).toBeLessThanOrEqual(1);
       }
     }
+  });
+
+  it("backdrop authors a neutral-room environment so the GLBs keep their IBL under authored-lights (LIGHT-01)", () => {
+    const builder = scene();
+    addBackdrop(builder);
+    const snapshot = builder.toJSON();
+    const envs = snapshot.nodes.filter((n) => n.kind === "environment") as unknown as { environment: string; intensity: number; background?: unknown }[];
+    expect(envs).toHaveLength(1);
+    expect(envs[0]).toMatchObject({ environment: "neutral", intensity: BACKDROP_ENVIRONMENT_INTENSITY, background: false });
+    expect(BACKDROP_ENVIRONMENT_INTENSITY).toBeGreaterThan(0.7);
+    expect(BACKDROP_ENVIRONMENT_INTENSITY).toBeLessThan(0.95);
+    // The hemisphere and both directionals stay authored next to it.
+    expect(snapshot.nodes.filter((n) => n.kind === "light").map((n) => (n as { light: string }).light).sort()).toEqual(["directional", "directional", "hemisphere"]);
+    // The renderer's lights-only path (implicitFill false) no longer applies: the scene resolves to an environment preset.
+    const resolved = createProductionRuntimeEnvironment(snapshot, undefined, { implicitFill: false });
+    expect(resolved.preset).not.toBe("authored-lights");
+    expect(resolved.lighting.environmentMapIntensity ?? 0).toBeGreaterThan(0);
   });
 
   it("pickups map each type to its own pool, hide the rest and cap at four per type", () => {

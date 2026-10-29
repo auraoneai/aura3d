@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" href="data:," />
     <title>Chroma Roll</title>
     <style>
@@ -23,8 +23,14 @@
       .overlay-card { background: #fdf0e0; border: 6px solid #333; border-radius: 30px; padding: clamp(14px, 4.5vh, 50px) 40px; max-height: 92vh; box-sizing: border-box; box-shadow: 12px 12px 0 rgba(0,0,0,0.2); display: flex; flex-direction: column; align-items: center; max-width: 500px; }
       .overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 10; text-align: center; }
       .hidden { display: none !important; }
-      .icon-btn { position: fixed; left: 16px; bottom: 16px; z-index: 12; width: 44px; height: 44px; border-radius: 50%; border: 3px solid #333; background: #fdf0e0; box-shadow: 0 4px 0 #333; font-size: 20px; line-height: 1; cursor: pointer; padding: 0; }
+      /* C3: the controls sit above the "Built with Aura3D" credit (left 8, bottom 8, up to two lines on a phone) */
+      .icon-btn { position: fixed; left: calc(16px + env(safe-area-inset-left)); bottom: calc(56px + env(safe-area-inset-bottom)); z-index: 12; width: 44px; height: 44px; border-radius: 50%; border: 3px solid #333; background: #fdf0e0; box-shadow: 0 4px 0 #333; font-size: 20px; line-height: 1; cursor: pointer; padding: 0; }
       .icon-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #333; }
+      #btn-pause { left: calc(70px + env(safe-area-inset-left)); }
+      .settings { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: clamp(6px, 1.6vh, 12px) 0 0; }
+      .toggle { font-weight: 800; font-size: 13px; line-height: 1; font-family: inherit; color: #333; background: #fff; border: 2px solid #333; border-radius: 100px; padding: 7px 12px; cursor: pointer; box-shadow: 0 2px 0 #333; }
+      .toggle[aria-pressed="true"] { background: #f9c647; }
+      #final-stats { font-size: clamp(14px, 2.6vh, 18px); font-weight: 800; color: #555; margin: 0 0 clamp(8px, 2vh, 16px); }
       .go-best { display: inline-block; margin-top: 8px; font-size: 24px; color: #b868e8; -webkit-text-stroke: 0; }
       @media (max-height: 420px) { .hint { display: none; } }
       .hint { font-size: 14px; font-weight: 800; color: #555; margin: 14px 0 0; }
@@ -34,19 +40,22 @@
         .overlay-card h1 { font-size: min(13vw, 64px) !important; }
         #hud-lives { flex: none; white-space: nowrap; }
         #hud-score { white-space: nowrap; font-size: clamp(18px, 5.2vw, 26px); }
-        #hud-combo { top: 72px !important; }
+        #hud-combo { top: calc(72px + env(safe-area-inset-top)) !important; }
+        .icon-btn { bottom: calc(64px + env(safe-area-inset-bottom)); }
+        #hud-powerups { bottom: calc(118px + env(safe-area-inset-bottom)) !important; }
       }
     </style>
   </head>
   <body class="game-ui">
     <canvas id="world" tabindex="0"></canvas>
     <button id="btn-mute" class="icon-btn no-steer" type="button" aria-label="Toggle sound (M)" aria-pressed="false">&#x1F50A;</button>
-    <div id="hud" style="position:fixed;top:0;left:0;right:0;padding:20px;display:flex;justify-content:space-between;pointer-events:none;z-index:5">
+    <button id="btn-pause" class="icon-btn no-steer" type="button" aria-label="Pause (P or Esc)">&#x23F8;&#xFE0E;</button>
+    <div id="hud" style="position:fixed;top:0;left:0;right:0;padding:max(20px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) 20px max(20px,env(safe-area-inset-left));display:flex;justify-content:space-between;pointer-events:none;z-index:5">
       <div id="hud-lives"></div>
       <div id="hud-score" class="hud-text">SCORE: 0</div>
       <div id="hud-combo" class="hud-text" style="position:absolute;top:clamp(44px,9.5vh,70px);right:20px;color:#f9c647;font-size:clamp(20px,4.6vh,30px);display:none"></div>
     </div>
-    <div id="hud-powerups" style="position:fixed;bottom:40px;left:50%;transform:translateX(-50%);display:none;z-index:6;pointer-events:none"></div>
+    <div id="hud-powerups" style="position:fixed;bottom:calc(40px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:none;z-index:6;pointer-events:none"></div>
     <div id="popups" style="position:fixed;inset:0;pointer-events:none;z-index:15;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;padding-top:clamp(120px,16vh,200px);box-sizing:border-box"></div>
     <div id="splash-screen" class="overlay" style="background:rgba(94,202,240,0.8)">
       <div class="overlay-card">
@@ -54,15 +63,25 @@
         <p style="font-size:clamp(14px,2.8vh,20px);margin:0 0 clamp(8px,2.5vh,20px);color:#333;font-weight:800">Drag left/right to steer.<br />Match colors for combos &amp; big scores.<br />Grab 🌈 Rainbow · 🛡 Shield · ✦ 2x · 🎨 Switch!</p>
         <div id="splash-best"></div>
         <button id="btn-start" class="btn">PLAY NOW</button>
-        <p class="hint">Mouse or touch: drag &middot; Keyboard: Space to start, &larr; &rarr; or A / D to steer, M to mute</p>
+        <div class="settings no-steer"><button class="toggle" type="button" data-setting="symbols" aria-pressed="false">Colour symbols: off</button><button class="toggle" type="button" data-setting="motion" aria-pressed="false">Reduced motion: off</button></div>
+        <p class="hint">Mouse or touch: drag &middot; Keyboard: Space to start, &larr; &rarr; or A / D to steer, C symbols, P pause, M mute</p>
       </div>
     </div>
     <div id="gameover-screen" class="overlay hidden" style="background:#f0433a">
       <div class="overlay-card">
         <h1 style="paint-order:stroke fill;font-size:clamp(34px,10vh,64px);margin:0 0 clamp(6px,2vh,10px);color:#f0433a;-webkit-text-stroke:clamp(2px,0.6vh,4px) #333;text-shadow:clamp(3px,0.8vh,5px) clamp(3px,0.8vh,5px) 0 #333">SPLAT!</h1>
-        <p id="final-score" style="font-size:clamp(22px,5vh,32px);font-weight:900;margin:0 0 clamp(8px,2.5vh,20px);color:#333"></p>
+        <p id="final-score" style="font-size:clamp(22px,5vh,32px);font-weight:900;margin:0 0 clamp(6px,1.5vh,10px);color:#333"></p>
+        <p id="final-stats"></p>
         <button id="btn-restart" class="btn btn-gold">PLAY AGAIN</button>
         <p class="hint">Space or Enter to play again</p>
+      </div>
+    </div>
+    <div id="pause-screen" class="overlay hidden no-steer" style="background:rgba(11,16,32,0.45)">
+      <div class="overlay-card">
+        <h1 style="paint-order:stroke fill;font-size:clamp(30px,8vh,56px);margin:0 0 clamp(6px,2vh,14px);color:#5ecaf0;-webkit-text-stroke:clamp(2px,0.5vh,3px) #333;text-shadow:4px 4px 0 #333">PAUSED</h1>
+        <button id="btn-resume" class="btn">RESUME</button>
+        <div class="settings"><button class="toggle" type="button" data-setting="symbols" aria-pressed="false">Colour symbols: off</button><button class="toggle" type="button" data-setting="motion" aria-pressed="false">Reduced motion: off</button></div>
+        <p class="hint">P or Esc to resume</p>
       </div>
     </div>
     <script type="module" src="./main.ts"></script>
