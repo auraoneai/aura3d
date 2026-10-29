@@ -287,31 +287,18 @@ describe("game-checks", () => {
     expect(run(fixture({ "apps/showcase-demo/src/world.ts": noLights }), ["lighting"])).toEqual([]);
   });
 
-  it("lighting: warns on a hemisphere next to a look", () => {
-    const src = 'scene().add(looks.preset("outdoor-day")).add(lights.hemisphere({ intensity: 0.4 }));\n';
-    const f = run(fixture({ "apps/showcase-demo/src/world.ts": src }), ["lighting"]);
-    expect(f.map((x: { message: string }) => x.message)).toEqual([expect.stringMatching(/hemisphere light next to an environment or look/)]);
-    const ok = 'scene().add(looks.preset("outdoor-day")).add(lights.hemisphere({ intensity: 0.4 })); // lighting: ok\n';
-    expect(run(fixture({ "apps/showcase-demo/src/world.ts": ok }), ["lighting"])).toEqual([]);
-  });
-
-  it("lighting: warns on a look added at runtime through app.nodes next to an ambient (Cross Hop LIGHT-04)", () => {
-    const src = [
+  it("lighting: no longer warns on a hemisphere next to a look or a runtime look next to an ambient (fixed in the engine, E2)", () => {
+    const hemi = 'scene().add(looks.preset("outdoor-day")).add(lights.hemisphere({ intensity: 0.4 }));\n';
+    expect(run(fixture({ "apps/showcase-demo/src/world.ts": hemi }), ["lighting"])).toEqual([]);
+    const runtimeLook = [
       "function buildLookGroup(id) {",
       "  return looks.preset(id, {});",
       "}",
       "scene().add(buildLookGroup(\"outdoor-day\")).add(lights.ambient({ intensity: 0.42 }));",
-      "function swapLook(id) {",
-      "  const n0 = app.nodes as unknown as { add(n: never): void };",
-      "  n0.add(buildLookGroup(id) as never);",
-      "}",
+      "app.nodes.add(buildLookGroup(\"night-city\") as never);",
       ""
     ].join("\n");
-    const f = run(fixture({ "apps/showcase-demo/src/core.ts": src }), ["lighting"]);
-    expect(f).toHaveLength(1);
-    expect(f[0].line).toBe(7);
-    const noAmbient = src.replace("lights.ambient({ intensity: 0.42 })", "lights.directional({ intensity: 2 })");
-    expect(run(fixture({ "apps/showcase-demo/src/core.ts": noAmbient }), ["lighting"])).toEqual([]);
+    expect(run(fixture({ "apps/showcase-demo/src/core.ts": runtimeLook }), ["lighting"])).toEqual([]);
   });
 
   it("shared-catalog: warns when a game imports the repository-wide asset catalogue (RH-06)", () => {

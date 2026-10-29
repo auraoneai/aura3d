@@ -577,13 +577,12 @@ function checkTouchInput({ game, src }) {
 }
 
 /**
- * Lighting rules that changed in 4.5.0 (audit LIGHT-01/03/04/05/11). All warn: each needs a steady-state capture, not a rule.
- *  - lights with no environment or look: the scene gets no image-based light (no implicit room since 4.5.0), so GLBs lose
- *    their reflections and fill. Add `environments.neutral({ intensity })` calibrated on a capture.
- *  - hemisphere next to an environment or look: with an environment node the hemisphere is dropped; with a no-HDRI look whose
- *    fill yields to an authored ambient, it is added to the ambient term.
- *  - a look added at runtime through app.nodes next to an authored ambient: the look's fill does not yield at runtime, so the
- *    scene is lit twice after the swap.
+ * Lighting rule that changed in 4.5.0 (audit LIGHT-01/11): lights with no environment or look get no image-based light (no
+ * implicit room since 4.5.0), so GLBs lose their reflections and fill. Add `environments.neutral({ intensity })` calibrated on
+ * a capture. Warn: it needs a steady-state capture, not a rule.
+ * Not checked, because the engine now handles them (lane E2): a hemisphere next to an environment contributes (LIGHT-05), a
+ * look added at runtime drops its fill next to an authored ambient (LIGHT-04), and contact shadows on a weak key raise the
+ * runtime warning CONTACT_SHADOWS_WEAK_KEY in app.diagnostics() (LIGHT-09).
  * Escape hatch: `// lighting: ok` on the flagged line.
  */
 function checkLighting({ game, src }) {
@@ -595,27 +594,6 @@ function checkLighting({ game, src }) {
   const hasEnv = code.some((f) => env.test(f.text));
   if (!hasEnv && !okMarker(lights.f, lights.no, "lighting")) {
     out.push(finding("lighting", "warn", game, lights.f.rel, lights.no, "lights with no environment or look: since 4.5.0 such a scene gets no image-based light, so GLBs lose reflections and fill. Add environments.neutral({ intensity }) calibrated on a steady-state capture."));
-  }
-  const hemi = firstLine(code, /\blights\.hemisphere\s*\(/);
-  if (hemi && hasEnv && !okMarker(hemi.f, hemi.no, "lighting")) {
-    out.push(finding("lighting", "warn", game, hemi.f.rel, hemi.no, "hemisphere light next to an environment or look: an environment node drops it, and a no-HDRI look whose fill yields to an ambient adds it to the ambient term. Capture before and after tuning its intensity."));
-  }
-  const ambient = firstLine(code, /\blights\.ambient\s*\(/);
-  if (ambient) {
-    for (const f of code) {
-      const lookFns = [...f.text.matchAll(/function\s+([A-Za-z_$][\w$]*)\s*\([^)]*\)[^{]*\{/g)]
-        .filter((m) => /\blooks\.preset\s*\(/.test(objectAt(f.text, m.index)))
-        .map((m) => m[1]);
-      const receivers = ["app\\.nodes", "\\w+\\.nodes"];
-      for (const m of f.text.matchAll(/\b(?:const|let)\s+([A-Za-z_$][\w$]*)\s*=\s*\(?\s*(?:\w+\.)?nodes\b/g)) receivers.push(m[1]);
-      const arg = ["looks\\.preset", ...lookFns].join("|");
-      const re = new RegExp(`(?:${receivers.join("|")})\\.add\\w*\\(\\s*(?:${arg})\\s*\\(`);
-      const lines = f.text.split("\n");
-      const i = lines.findIndex((l) => re.test(l));
-      if (i >= 0 && !okMarker(f, i + 1, "lighting")) {
-        out.push(finding("lighting", "warn", game, f.rel, i + 1, "look added at runtime through app.nodes next to an authored lights.ambient: the look's fill does not yield to the ambient at runtime, so the scene is brighter after the swap than on first load. Capture both."));
-      }
-    }
   }
   return dedupe(out);
 }

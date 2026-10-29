@@ -19,11 +19,12 @@ One page. Entry ids (R1, M2, ...) point into [`lessons-learned.md`](lessons-lear
 - [ ] Walkers use `createLocomotion`; keep `createFootSlideMeter` under the threshold (M5). No double skeletons: `checkDoubleFrame` clean (M7).
 - [ ] Every solid obstacle has a collider and a consequence (impact kit: stop or bounce, hit-stop, shake, sound, penalty) (M6).
 - [ ] Counters count transitions, not states (M8). Camera never inside scenery (`createCameraClearance`) (M9).
+- [ ] Renderer node pools are sized from the simulation's measured peak by a seeded replay test, and fill nearest-ahead first (G8).
 - [ ] Never assign canvas size after `app.ready()` (R1). `await warmPrograms(app)` before showing the game (R2). Give the canvas a fixed-size container (R3).
 - [ ] After every generated or downloaded model: render four sides, look for emblems, lettering, faces, atlas shards, stretched scale, noisy normals (A1 to A3, R6 to R8).
 - [ ] Phone layout at 390x844: one-row quick bar, HUD below it, collapsible panels, 44 px touch targets, safe-area insets (U1, U2).
 - [ ] Every gameplay action works by touch: engine touch preset bound to declared action names, shown on `(pointer: coarse)`; no fixed overlay over a control (U4, U5; check `touch-input`).
-- [ ] Lighting: authored lights come with an environment or a look; a hemisphere next to an environment, or a look added at runtime next to an ambient, is captured before and after (R17 to R19; check `lighting`). Compare steady-state luma against the previous release with `tests/browser/game-luma-capture.spec.ts` (R20).
+- [ ] Lighting: authored lights come with an environment or a look (R17; check `lighting`); a hemisphere, a runtime look swap and contact shadows are captured at steady state before and after tuning (R18 to R20), and `app.diagnostics().warnings` has no `CONTACT_SHADOWS_WEAK_KEY`. Compare steady-state luma against the previous release with `tests/browser/game-luma-capture.spec.ts` (R20).
 - [ ] No old names, "port" wording, version text or engine chip in visible text (N1, N2). One neutral "Built with Aura3D" link.
 
 ## 3. Before shipping (commands)
