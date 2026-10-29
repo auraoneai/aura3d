@@ -1032,6 +1032,8 @@ const tryReq = (id: string) => { try { return (auraApp as any)?.nodes?.require(i
 
 /** true while frame() runs inside the engine's onFrame callback (scene swaps are deferred until it returns) */
 let inEngineFrame = false;
+/** ?qa=1 hold: game logic advances only through the QA hook */
+let qaHold = false;
 let pendingHoleScene: unknown = null;
 function flushPendingHoleScene(): void {
   const next = pendingHoleScene;
@@ -2724,6 +2726,11 @@ function installQaHook(): void {
       publishEvidence();
       return lastEvidence;
     },
+    /** while held, only advance() moves game logic; the engine keeps presenting frames (deterministic screenshots) */
+    hold(on: boolean) {
+      qaHold = on;
+      return qaHold;
+    },
     /** world positions of the people on the tee and by the green (framing checks) */
     figures() {
       const names = ["golfer-body", "caddy-body", "golfer-bag", "golfer-cart", ...Array.from({ length: 6 }, (_, i) => `gallery-fan-${i}`)];
@@ -2844,7 +2851,7 @@ function boot(): void {
   // Evidence pump: publishes state even when RAF is throttled (headless capture)
   window.setInterval(() => publishEvidence(), 500);
   (auraApp as any).onFrame(({ dt }: { dt: number }) => {
-    if (!appReady) return;
+    if (!appReady || qaHold) return;
     inEngineFrame = true;
     try {
       frame(clamp(dt, 0.001, 0.05));

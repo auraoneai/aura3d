@@ -198,11 +198,13 @@ const screensRun = async (page: Page, name: string): Promise<void> => {
   await qa(page, "advance", 0.5);
   log(`GL_STATE ${JSON.stringify({ target: name, probe: "figures-at-address", figures: await qa(page, "figures") })}`);
   await snap("03-action-01-address");
+  // hold real-time logic so the meter does not drift while software GL presents the shot
+  await qa(page, "hold", true);
   await page.keyboard.press("Space");
-  await qa(page, "advance", 0.7);
+  await qa(page, "advance", 0.6);
   await snap("03-action-02-power");
   await page.keyboard.press("Space");
-  await qa(page, "advance", 0.45);
+  await qa(page, "advance", 0.42);
   await snap("03-action-03-accuracy");
   await page.keyboard.press("Space");
   for (let i = 0; i < 6; i++) { await qa(page, "advance", i === 0 ? 0.15 : 0.4); await snap(`03-action-${String(4 + i).padStart(2, "0")}-swing-${i}`); }
