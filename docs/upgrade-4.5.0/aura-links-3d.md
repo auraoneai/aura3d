@@ -22,7 +22,7 @@
 
 ### 1. Night-city and space courses: the look fill yields to the game's ambient light (looks change)
 
-- **What happens now:** the `night-city` and `space` look presets have no HDRI (`hdri: null`). On 4.3.7 they emitted no environment node; the game authors `lights.ambient`, so the authored-ambient branch applied and no IBL was added. In 4.5.0 the presets emit an `environments.neutral` fill (`lookPresets.ts` `fill`, `looks.ts` `v0Children`), marked `lookFill`. Because the game authors an ambient light, `scene.toJSON()` drops the fill (`looks/lookFill.ts`), so courses 5 (`neonBay`, night-city) and 6 (`mareCourse`, space) keep the ambient-only lighting. Hemisphere now contributes on the lights-only branch, so they can read slightly brighter. The other four courses (`stAuroras`, `mapleHollow`, `cinderRim`, `cloudTerrace`, on the `outdoor-day`, `golden-hour` and `alpine-snow` looks) already had an HDRI environment and are not changed by this. The brightness shift was not captured for this game; the sibling game Aura Glint Courier (same composition) moved from 25.0 to 29.5.
+- **What happens now:** the `night-city` and `space` look presets have no HDRI (`hdri: null`). On 4.3.7 they emitted no environment node; the game authors `lights.ambient`, so the authored-ambient branch applied and no IBL was added. In 4.5.0 the presets emit an `environments.neutral` fill (`lookPresets.ts` `fill`, `looks.ts` `v0Children`), marked `lookFill`. Because the game authors an ambient light, `scene.toJSON()` drops the fill (`looks/lookFill.ts`), so courses 5 (`neonBay`, night-city) and 6 (`mareCourse`, space) keep the ambient-only lighting. Hemisphere now contributes on the lights-only branch, so they can read slightly brighter. The other four courses (`stAuroras`, `mapleHollow`, `cinderRim`, `cloudTerrace`, on the `outdoor-day`, `golden-hour` and `alpine-snow` looks) already had an HDRI environment and are not changed by this. Measured on 2026-10-29 (remote software GL, 1280x720, mean luma at steady state): Neon Bay 2.03 on 4.3.7 and 2.26 on 4.5.0, Mare 48.27 and 47.03. The checklist below has every course.
 - **What to do:** Capture before/after and compare. If a course reads too dark or too bright, tune the existing per-course override, which the game already uses (`exposureEv` at `courses.ts:749` for night-city and `courses.ts:890` for space; the default `exposureEv: -0.06` at `src/main.ts:956`). For example, in the `neonBay` course spec:
   ```ts
   lookOverrides: { fogDensityScale: 0, exposureEv: 0.1 },
@@ -50,7 +50,7 @@
 
 ### 3. Bloom fusion is on for this game under `auto`
 
-- **What happens now:** Every look adds a `bloom` effect (`lookPresets.ts:60`, `looks.ts:346-350`), and the path is `hdr-msaa`, so under `quality: "auto"` the bloom chain is fused with mode `"separable"` (default). Evidence: `renderPath.ts:33-37` (`reportedBloomFusion`). The task notes frames within 1/255 of the old chain; this game was not measured.
+- **What happens now:** Every look adds a `bloom` effect (`lookPresets.ts:60`, `looks.ts:346-350`), and the path is `hdr-msaa`, so under `quality: "auto"` the bloom chain is fused with mode `"separable"` (default). Evidence: `renderPath.ts:33-37` (`reportedBloomFusion`). The task notes frames within 1/255 of the old chain. For this game only the whole-frame change from 4.3.7 to 4.5.0 was measured (+2.3% to +3.7% on the HDRI courses, checklist below); bloom fusion was not isolated from the other 4.5.0 changes.
 - **What to do:** Nothing. The opt-in 2-D variant is `renderer: { ...looks.appOptions(...).renderer, bloomFusion: "fused-2d" }` (`AuraBloomFusion`, `nodes/types.ts:1183`). Do not enable it without a visual check.
 - **How to check:** `app.diagnostics().renderPath.bloomFusion` should be `"separable"`. With `quality: "production"` it reports `"off"`.
 
@@ -112,12 +112,14 @@ Neon Bay was near black on 4.5.0 because the night-city look's only key is a 0.7
 
 ## Checklist
 
-- [ ] Run `node tools/game-checks/run.mjs aura-links-3d` on `beat3js2/integration` (verified to resolve this game: 0 errors, 0 warnings).
-- [ ] Log `app.diagnostics().renderPath` at `ready` (`src/main.ts:2561`) and confirm `path: "hdr-msaa"`, `quality: "auto"`, `bloomFusion: "separable"`.
-- [ ] Confirm `app.diagnostics()` has no `OPTION_IGNORED` entries and no `contactShadows.unavailable` field; check the console for `[prd02.contactShadows]` warnings.
-- [ ] Compare the `neonBay` (night-city) and `mareCourse` (space) courses before and after (`?course=<id>&still=60&capture=1`); adjust `lookOverrides.exposureEv` in `src/game/courses.ts:749` / `:890` if the new fill changes the look.
-- [ ] Compare one frame per remaining course (`stAuroras`/`mapleHollow` outdoor-day, `cinderRim` golden-hour, `cloudTerrace` alpine-snow) for the contact-shadow change; lower the `intensity` at `src/main.ts:950` if needed.
-- [ ] Check distant tree/backdrop shadows on `mapleHollow`, `stAuroras` and `cloudTerrace`; if they differ and matter, set `quality: "production"` in the `createAuraApp` call at `src/main.ts:2510`.
-- [ ] Add `?capture=1` to every screenshot or evidence URL used for this game (capture scripts, `tools/quality-rebuild-capture`, filmstrip fallback).
-- [ ] Re-measure `route-health.json` budgets (`minFps`, `maxBootMs`) on 4.5.0 if the file is regenerated.
-- [ ] Confirm the build still passes: `tsc -p apps/showcase-aura-links-3d/tsconfig.json --noEmit` (the package's `build` script; run on the remote runner per repo policy).
+Closed on 2026-10-29 by audit lane G10 (branch `audit-fix/g10`). All frames come from the remote runner (`tools/remote-acr/run.sh`, headless Chromium on SwiftShader software WebGL2, not a real GPU) with `tests/browser/audit-fix/aura-links-3d.spec.ts`. Luma is the mean of the canvas-only frame at steady state (75 s after ready). Numbers and frames are in `evidence/aura-links-3d/audit-fix/` (`before/`, `after/`, `v4.3.7/`; file names start with the run id).
+
+- [x] `node tools/game-checks/run.mjs aura-links-3d`: 0 errors, 0 warnings on `audit-fix/g10`.
+- [x] `app.diagnostics().renderPath` at ready (run `g10w3-diag`, St Auroras and Neon Bay): `path: "hdr-msaa"`, `quality: "auto"`, `bloomFusion: "separable"`, 0 errors. Same on the 4.5.0 base (run `g10w3-diagbefore`).
+- [x] No `OPTION_IGNORED` entries and no `unavailable` field in `app.diagnostics()` (same runs); no `[prd02.contactShadows]` console warning in any G10 run.
+- [x] Neon Bay and Mare compared on 4.3.7, the 4.5.0 base and the fixed build (1280x720). Neon Bay: 2.03 (4.3.7), 2.26 (4.5.0), 27.59 (fixed). The course was already almost black on 4.3.7 (97% of pixels at luma 8 or below), so this was not a 4.5.0 regression; the fix is a warm floodlight key (`src/game/lighting.ts`). Mare: 48.27, 47.03, 46.38; the hemisphere lift is not visible in the frame, and the fill is scaled back to the 4.3.7 ambient term. `exposureEv` is unchanged.
+- [x] One frame per remaining course (1280x720, 4.3.7 → 4.5.0 base → fixed): St Auroras 130.68 → 135.47 → 135.46, Maple Hollow 135.62 → 140.08 → 141.42, Cinder Rim 124.05 → 128.08 → 128.05, Cloud Terrace 148.18 → 151.56 → 151.53. The 4.5.0 change is +2.3% to +3.7% on these courses; contact-shadow `intensity` stays 0.62 on day courses and is 1 on Neon Bay (LIGHT-09).
+- [x] Distant tree shadows: the far tree belts get no sun shadow on 4.3.7 or 4.5.0. The cause is the instanced-cascade selection (audit SI-1, engine lane E3), not cascade skipping, so `quality: "production"` is not pinned.
+- [x] Screenshot URLs: the capture spec reads frames with CDP `page.screenshot`, not canvas read-back, and gameplay probes add `?qa=1`, which keeps the drawing buffer.
+- [x] `route-health.json` budgets: the file was edited (claim and asset list), not regenerated, and software GL cannot measure `minFps`, so the budgets were left as they are. Re-measure on a real GPU when the file is regenerated.
+- [x] `tsc -p apps/showcase-aura-links-3d/tsconfig.json --noEmit` passes (run locally; the repo-wide `tsconfig.check.json` count is unchanged at 58).
