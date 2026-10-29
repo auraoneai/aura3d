@@ -14,7 +14,7 @@ import { startExampleDevServer, type ExampleDevServer } from "../example-dev-ser
  * hook method is missing (the pre-fix build) the target logs GL_SKIP and still captures what it can.
  * Select batches with `--grep=@tag` in SPECS (a `|` regex cannot ride in SPECS).
  */
-const SETTLE = (process.env.GL_SETTLE ?? "25,60,90").split(",").map(Number);
+const SETTLE = (process.env.GL_SETTLE ?? "25,60").split(",").map(Number);
 const CHUNK = 16000;
 const log = (line: string): void => { process.stdout.write(`${line}\n`); };
 const CANVAS_ONLY = "body *:not(canvas){visibility:hidden !important} canvas{visibility:visible !important} html,body{background:#000 !important}";
@@ -24,8 +24,9 @@ const DESKTOP = { width: 1280, height: 720 };
 const PHONE = { width: 390, height: 844 };
 const CARD = { width: 1440, height: 900 };
 
-async function lumaStats(page: Page, png: Buffer) {
-  return page.evaluate(async (b64) => {
+/** Luma stats of a PNG plus a JPEG re-encode made in the page, so each shot costs one screenshot (software GL makes each one slow). */
+async function lumaStats(page: Page, png: Buffer, jpegQuality: number) {
+  return page.evaluate(async ([b64, q]) => {
     const blob = await (await fetch(`data:image/png;base64,${b64}`)).blob();
     const bmp = await createImageBitmap(blob);
     const c = document.createElement("canvas");
@@ -48,12 +49,14 @@ async function lumaStats(page: Page, png: Buffer) {
       band[b]! += y; bandN[b]!++;
     }
     const pct = (p: number) => { let acc = 0; for (let v = 0; v < 256; v++) { acc += hist[v]!; if (acc >= p * n) return v; } return 255; };
+    const jpg = c.toDataURL("image/jpeg", q as number).split(",")[1] ?? "";
     return {
+      jpg,
       w: c.width, h: c.height, mean: +(sum / n).toFixed(2), p5: pct(0.05), p50: pct(0.5), p95: pct(0.95),
       darkFrac: +(dark / n).toFixed(4), clipFrac: +(clip / n).toFixed(4),
       bands: band.map((s, k) => +(s / Math.max(1, bandN[k]!)).toFixed(2))
     };
-  }, png.toString("base64"));
+  }, [png.toString("base64"), jpegQuality] as const);
 }
 
 async function gameInfo(page: Page) {
@@ -83,11 +86,10 @@ async function grab(page: Page, target: string, id: string, extra: Record<string
   const handle = withHud ? null : await page.addStyleTag({ content: CANVAS_ONLY });
   await page.waitForTimeout(250);
   const png = await page.screenshot({ type: "png" });
-  const jpg = await page.screenshot({ type: "jpeg", quality: withHud ? 82 : 70 });
   await handle?.evaluate((el) => el.remove());
-  const stats = await lumaStats(page, png);
+  const { jpg, ...stats } = await lumaStats(page, png, withHud ? 0.84 : 0.72);
   log(`GL_META ${JSON.stringify({ target, id, hud: withHud, ...extra, ...stats, ...(await gameInfo(page)) })}`);
-  const b64 = jpg.toString("base64");
+  const b64 = jpg;
   const n = Math.ceil(b64.length / CHUNK);
   for (let i = 0; i < n; i++) log(`GL_JPG ${target} ${id} ${i + 1}/${n} ${b64.slice(i * CHUNK, (i + 1) * CHUNK)}`);
 }
@@ -164,19 +166,19 @@ test.describe("bunker zero audit-fix", () => {
     log("GL_DONE desktop-f6");
   });
 
-  test("bz-desktop-f1-production @luma", async ({ page }) => {
+  test("bz-desktop-f1-production @ab", async ({ page }) => {
     const loaded = await open(page, server, "desktop-f1-production", `${APP}?aura3d-render=production`, DESKTOP);
     await settle(page, "desktop-f1-production", loaded, SETTLE);
     log("GL_DONE desktop-f1-production");
   });
 
-  test("bz-desktop-f1-nocontact @luma", async ({ page }) => {
+  test("bz-desktop-f1-nocontact @ab", async ({ page }) => {
     const loaded = await open(page, server, "desktop-f1-nocontact", `${APP}?bz-contact-shadows=0`, DESKTOP);
     await settle(page, "desktop-f1-nocontact", loaded, SETTLE);
     log("GL_DONE desktop-f1-nocontact");
   });
 
-  test("bz-phone-f1 @luma", async ({ page }) => {
+  test("bz-phone-f1 @phone", async ({ page }) => {
     const loaded = await open(page, server, "phone-f1", APP, PHONE);
     await settle(page, "phone-f1", loaded, SETTLE.slice(1), true);
     log("GL_DONE phone-f1");
@@ -222,7 +224,7 @@ test.describe("bunker zero audit-fix", () => {
     log("GL_DONE states-desktop");
   });
 
-  test("bz-states-phone @states", async ({ page }) => {
+  test("bz-states-phone @phone", async ({ page }) => {
     const name = "states-phone";
     const loaded = await open(page, server, name, APP, PHONE);
     await page.waitForTimeout(Math.max(0, 25_000 - (Date.now() - loaded)));
@@ -240,10 +242,12 @@ test.describe("bunker zero audit-fix", () => {
 
   // ---- RH-05: the inventory screens (same names and sizes as evidence/showcase-bunker-zero/screens/final) -----------
   for (const [vp, label] of [[DESKTOP, "1280"], [PHONE, "390"]] as const) {
-    test(`bz-screens-${label} @screens`, async ({ page }) => {
+    test(`bz-screens-${label} @screens${label}`, async ({ page }) => {
       const name = `screens-${label}`;
       const loaded = await open(page, server, name, APP, vp);
       await page.waitForTimeout(Math.max(0, 20_000 - (Date.now() - loaded)));
+      // the title shot shows the onboarding card a first visit gets (open() closed it so the scene could settle)
+      await page.evaluate(() => { const el = document.getElementById("bz-intro"); if (el) el.hidden = false; });
       await grab(page, name, `${label}-01-title`, {}, true);
       await qa(page, name, "dismissIntro");
       await click(page, "#bz-btn-play");
@@ -267,7 +271,7 @@ test.describe("bunker zero audit-fix", () => {
     });
   }
 
-  test("bz-screens-card @screens", async ({ page }) => {
+  test("bz-screens-card @screens390", async ({ page }) => {
     const name = "screens-card";
     const loaded = await open(page, server, name, APP, CARD);
     await page.waitForTimeout(Math.max(0, 20_000 - (Date.now() - loaded)));
