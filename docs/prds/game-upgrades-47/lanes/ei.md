@@ -2,6 +2,21 @@
 
 Branch `gu47/ei`, base `f797808be` (gu47/integration), wave 1 (phase 1, code). Status: in progress; this report is updated after every row group.
 
+## Rows
+
+| ID | Pri | Status | Commit | Notes / evidence |
+|---|---|---|---|---|
+| EI-1 GL_META v2, crops, GL_PAIR_MS | M | done (pixels: phase 2) | 6219836d6 | v1 fields and order kept (decode-luma/compare-luma unit-tested); page stats in `tests/browser/game-luma-stats.ts`; `tests/unit/gu47/ei/game-luma-stats.test.ts` |
+| EI-2 region-luma, silhouette-iou | M | done | 6219836d6 | `tools/look-metrics/{region-luma,silhouette-iou}.mjs`; `tests/unit/gu47/ei/{region-luma,silhouette-iou}.test.ts` |
+| EI-3 variant params and targets | M | done | adb089d3b | 59 GU47 rows appended in `@g9`..`@g15`; the 68 existing targets keep names, URLs and `@g1`..`@g8`; `VARIANT_PARAMS` per game; `tests/unit/game-luma-targets.test.ts` (8 tests). NEW params are implemented by the game lanes (table below) |
+| EI-4 `look judge --judge prism` | M | done (live call: phase 2) | 3f6dc4679 | imports `judgeWithPrism` from `tools/quality-gate/src/judge-prism.ts`; `tests/unit/gu47/ei/look-judge-prism.test.ts` (provider stubbed) |
+| EI-5 `evidence judge --mode sibling` | M | done (live call: phase 2) | a51f2386d | `same_game` / `same_game_confidence`, `--trials 48`, `--seed 20261023`; `tests/unit/gu47/ei/evidence-judge-sibling.test.ts` (fetch mocked) |
+| EI-6 art-direction, look-identity, borrowed-asset / prop-exclusivity, luma-band | M | done (warn) | 76688ef8f, a461fae7d, 3ebcc15ab | `GU47_CHECK_SEVERITY = "warn"`; `tests/unit/game-checks/gu47-checks.test.ts` (10 tests); `run.mjs --all`: 0 errors (base 0), 181 warnings (base 20) |
+| EI-7 certify categories | M | done | fb52f05ff | `--category sports|fighting|arena|puzzle`; rules in `packages/aura3d-cli/src/commands/assets/certifyCategories.ts`; `tests/unit/gu47/ei/certify-categories.test.ts`; `tests/unit/aura3d-cli/assets.test.ts` unchanged and green |
+| EI-8 real-GPU scenarios | M | done (runs: owner, phase 2) | afa026d35 | 18 new + 3 VFX debug (E-F); `tests/unit/gu47/ei/real-gpu-scenarios.test.ts` |
+| EI-9 KTX2 encoder in the runner image | S | in progress | | |
+| EI-10 lessons + materials-environments skill | S | in progress | | |
+
 ## Art-direction check: compliance recipe (game lanes, read this first)
 
 The `art-direction` check (warn until WP-38) never evaluates TypeScript. It reads a JSON audit record that the game's own art-direction unit test writes beside `art/direction.ts`. To comply:
