@@ -25,7 +25,7 @@ Statuses mirror `docs/prds/game-upgrades-47/lanes/g07.md`.
 | H47-V1 | 5 kinds registered, each juice event maps to one; caps with reducedFlash; draws -12 | done in code (unit test); draws phase 2 |
 | H47-V2 | flood cones, god rays | not done |
 | H47-V3 | spray-tag decal; audit passes; <= 8 live tags | audit passes; decal not done (tag textures WP-36) |
-| H47-AN1 | net spring, head look-at | not done |
+| H47-AN1 | net tip >= 0.12 m in 200 ms; head yaw error <= 25 deg on 80% of frames | head look-at and backboard shake done (evidence `headLook.within25 / frames`, phase 2); net spring and clips WP-36 |
 | H47-C1 | broadcast camera language | not done |
 | H47-H1 | no system fonts, licensed face | not done |
 | H47-W1 | >= 12 prop keys per court | blocked (WP-36 props) |
