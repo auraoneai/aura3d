@@ -63,6 +63,7 @@ import { DOF_COMPOSITE_GLSL, DOF_GATHER_GLSL, DOF_NEAR_TILE_GLSL, DOF_PREFILTER_
 import { MB_NEIGHBOR_GLSL, MB_RECONSTRUCT_GLSL, MB_TILE_MAX_GLSL } from "./shaders/motionBlur.glsl.js";
 import { EXPOSURE_ADAPT_GLSL, EXPOSURE_LUMA_LOG_GLSL, EXPOSURE_MUL_GLSL, EXPOSURE_REDUCE_GLSL } from "./shaders/exposure.glsl.js";
 import { HDR_GRADE_GLSL, resolveHdrGradeUniforms, type HdrGradeInput, type HdrGradeUniforms } from "./shaders/hdrGrade.glsl.js";
+import { SSR_COMPOSITE_GLSL, SSR_DEFAULT_STEPS, SSR_DEFAULT_THICKNESS, SSR_TRACE_GLSL } from "./shaders/ssr.glsl.js";
 import { SMAA_BLEND_GLSL, SMAA_EDGES_GLSL, SMAA_WEIGHTS_GLSL } from "./shaders/smaa.glsl.js";
 import { FXAA_185_FRAGMENT_GLSL } from "./shaders/fxaa.glsl.js";
 import { POST_INSERT_ANCHORS, type AutoExposureOptionsV2, type DofOptions, type GtaoOptions, type GodRayOptions, type LutTexture3D, type MotionBlurOptions, type TaaOptions } from "./PostGraph";
@@ -291,6 +292,28 @@ export function godRayColor(color: unknown): [number, number, number] {
   }
   if (!rgb) return fallback;
   return [0, 1, 2].map((i) => (typeof rgb![i] === "number" && Number.isFinite(rgb![i]) ? (rgb![i] as number) : fallback[i]!)) as [number, number, number];
+}
+
+/**
+ * GU47 E-C (EC-6): S3 options from `pipeline.ssr`: `intensity` (default
+ * 0.9, [0, 2]), `maxDistance` metres (18, [0.5, 200]), `roughness` hint
+ * (0; the trace fades out between 0.35 and the 0.5 cutoff), `thickness`
+ * metres (0.25) and march `steps` snapped to 16 | 24 | 32 (24).
+ */
+export function resolveSsrOptions(ssr: unknown): { readonly intensity: number; readonly maxDistance: number; readonly roughness: number; readonly thickness: number; readonly steps: 16 | 24 | 32 } {
+  const bag = (ssr && typeof ssr === "object" ? ssr : {}) as Record<string, unknown>;
+  const num = (key: string, fallback: number, min: number, max: number): number => {
+    const value = bag[key];
+    return typeof value === "number" && Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : fallback;
+  };
+  const steps = num("steps", SSR_DEFAULT_STEPS, 1, 64);
+  return {
+    intensity: num("intensity", 0.9, 0, 2),
+    maxDistance: num("maxDistance", 18, 0.5, 200),
+    roughness: num("roughness", 0, 0, 1),
+    thickness: num("thickness", SSR_DEFAULT_THICKNESS, 0.01, 10),
+    steps: steps <= 16 ? 16 : steps <= 24 ? 24 : 32
+  };
 }
 
 /** GU47 E-C (EC-8): S4 `u_density` — the authored god-ray density clamped to [0.05, 1]; omitted or invalid = 1 (full march). */
@@ -767,6 +790,8 @@ export function runV2HdrStages(
   const wantsTaa = pipeline.antiAliasing === "taa" || Boolean(pipeline.taa);
   const wantsDof = Boolean(pipeline.dof);
   const wantsMb = Boolean(pipeline.motionBlur);
+  // GU47 E-C (EC-6): S3 SSR runs only for an authored screenSpaceReflections node.
+  const wantsSsr = Boolean(pipeline.ssr);
   // Phase 6: S8 auto-exposure + C-13 HDR-domain custom passes at their §6.1
   // insertion anchors (`after-tonemap` runs in the LDR tail instead).
   const autoExposure = pipeline.autoExposure as AutoExposureOptionsV2 | false | undefined;
@@ -794,11 +819,11 @@ export function runV2HdrStages(
   if (options?.deferBeforeTonemap) recordPostStage(`S9:bloom${bloomMipsTag(pipeline.bloom)}`);
   if (wantsTaa && !temporalOk) { skipped.push("TAA_VELOCITY_COVERAGE"); recordPostSkipped("TAA_VELOCITY_COVERAGE:v2-hdr-stages"); }
   if (wantsMb && !temporalOk) { skipped.push("S7_VELOCITY_UNAVAILABLE"); recordPostSkipped("S7_VELOCITY_UNAVAILABLE:v2-hdr-stages"); }
-  const needsLinZ = wantsAo || wantsGodRays || wantsDof || taaActive || mbActive
+  const needsLinZ = wantsAo || wantsGodRays || wantsDof || taaActive || mbActive || wantsSsr
     || hdrCustoms.some((pass) => pass.inputs.includes("depth"));
   const needsVelocity = ((taaActive || mbActive) && temporalOk)
     || (hdrCustoms.some((pass) => pass.inputs.includes("velocity")) && temporalOk);
-  if (!wantsAo && !wantsGodRays && !wantsCa && !taaActive && !wantsDof && !mbActive && !wantsAutoExposure && !wantsGrade && hdrCustoms.length === 0) return { target: source, aoPending: false, skipped };
+  if (!wantsAo && !wantsGodRays && !wantsCa && !taaActive && !wantsDof && !mbActive && !wantsSsr && !wantsAutoExposure && !wantsGrade && hdrCustoms.length === 0) return { target: source, aoPending: false, skipped };
 
   // T0-15: the forward HDR target is multisampled by default (`sampleCount` 4
   // in `Renderer`), so its `colorHandle`/`depthTextureHandle` only contain
@@ -815,7 +840,7 @@ export function runV2HdrStages(
     recordPostSkipped("WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED:v2-hdr-stages");
     return { target: source, aoPending: false, skipped: [...skipped, "V2_DEPTH_UNAVAILABLE"] };
   }
-  if ((wantsAo || wantsGodRays || needsVelocity) && !camera) {
+  if ((wantsAo || wantsGodRays || wantsSsr || needsVelocity) && !camera) {
     recordPostSkipped("POST_GRAPH_V2_CAMERA_REQUIRED:v2-hdr-stages");
     return { target: source, aoPending: false, skipped: [...skipped, "V2_CAMERA_UNAVAILABLE"] };
   }
@@ -964,6 +989,43 @@ export function runV2HdrStages(
     state.pool.release(aoRaw);
     state.pool.release(aoHalf);
     void AO_RHO;
+  }
+
+  // ── S3: GU47 E-C screen-space reflections (half-res trace + composite) ───
+  if (wantsSsr && camera && linZFull) {
+    const ssr = resolveSsrOptions(pipeline.ssr);
+    // Reprojected previous colour: the TAA history (last frame's resolved
+    // HDR) through prevViewProj · inv(view); without TAA history the trace
+    // samples this frame's HDR at the hit.
+    const history = taaActive && temporal?.historyValid && temporal.v2 ? temporal : undefined;
+    const viewToPrevClip = history
+      ? Float32Array.from(multiplyMat4(Array.from(history.v2!.previous) as unknown as Mat4, invertMat4(Array.from(camera.viewMatrix) as unknown as Mat4)))
+      : IDENTITY_MAT4_F32;
+    const trace = state.pool.acquire({ width: hw, height: hh, format: "rgba16f", samples: 1, depth: false });
+    const traceProg = program(state, gl, `ssr-trace-${ssr.steps}`, withDefines(SSR_TRACE_GLSL, { AURA_SSR_STEPS: ssr.steps }));
+    recordPostStage(`S3:ssr-${ssr.steps}${history ? ":history" : ""}`);
+    draw(host, state, traceProg, asGlTarget(trace), [asGlTarget(history ? history.history : hdr).colorHandle, asGlTarget(linZFull).colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(traceProg, "u_color"), 0);
+      g.uniform1i(g.getUniformLocation(traceProg, "u_linearDepth"), 1);
+      g.uniformMatrix4fv(g.getUniformLocation(traceProg, "u_projection"), false, camera.projectionMatrix);
+      g.uniformMatrix4fv(g.getUniformLocation(traceProg, "u_viewToPrevClip"), false, viewToPrevClip);
+      g.uniform1i(g.getUniformLocation(traceProg, "u_reproject"), history ? 1 : 0);
+      g.uniform1i(g.getUniformLocation(traceProg, "u_ortho"), ortho ? 1 : 0);
+      g.uniform1f(g.getUniformLocation(traceProg, "u_far"), far);
+      g.uniform1f(g.getUniformLocation(traceProg, "u_maxDistance"), ssr.maxDistance);
+      g.uniform1f(g.getUniformLocation(traceProg, "u_thickness"), ssr.thickness);
+      g.uniform1f(g.getUniformLocation(traceProg, "u_roughness"), ssr.roughness);
+    });
+    const composited = state.pool.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
+    const ssrCompProg = program(state, gl, "ssr-composite", SSR_COMPOSITE_GLSL);
+    draw(host, state, ssrCompProg, asGlTarget(composited), [asGlTarget(hdr).colorHandle, asGlTarget(trace).colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(ssrCompProg, "u_color"), 0);
+      g.uniform1i(g.getUniformLocation(ssrCompProg, "u_reflection"), 1);
+      g.uniform1f(g.getUniformLocation(ssrCompProg, "u_intensity"), ssr.intensity);
+    });
+    state.pool.release(trace);
+    if (hdr !== source) state.pool.release(hdr);
+    hdr = composited;
   }
 
   // ── S4: god rays, half-res radial march → additive onto HDR ─────────────

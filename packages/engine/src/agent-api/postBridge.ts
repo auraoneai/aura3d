@@ -779,7 +779,8 @@ export const POST_EFFECT_FIELDS: Readonly<Record<string, readonly string[]>> = {
   "volumetric-fog": ["density", "color", "volumetricQuality", "lightPosition", "heightFalloff", "heightReference", "godRayDensity"],
   "depth-of-field": ["focusDistance", "fStop", "focalLength", "maxBlur", "tiltShift"],
   "motion-blur": ["shutter", "maxBlur", "samples", "tileSize", "timeScale"],
-  "screen-space-reflections": ["maxDistance", "intensity"],
+  // GU47 E-C (EC-6): S3 roughness hint (cutoff 0.5) and hit thickness.
+  "screen-space-reflections": ["maxDistance", "intensity", "roughness", "thickness"],
   outline: ["color", "width", "threshold"]
 };
 
@@ -1293,7 +1294,16 @@ export function createRootPostPipeline(
         tileSize: numberField(mbNode, "tileSize", 16) <= 16 ? 16 : 20
       }
     } : {}),
-    ...(ssrNode && ssrEnabled ? { ssr: { intensity: numberField(ssrNode, "intensity", 0.9), maxDistance: numberField(ssrNode, "maxDistance", 18) } } : {}),
+    // GU47 E-C (EC-6): an authored screenSpaceReflections node runs the S3
+    // trace (v2Stages); roughness/thickness ride along only when authored.
+    ...(ssrNode && ssrEnabled ? {
+      ssr: {
+        intensity: numberField(ssrNode, "intensity", 0.9),
+        maxDistance: numberField(ssrNode, "maxDistance", 18),
+        ...(Number.isFinite(numberField(ssrNode, "roughness", NaN)) ? { roughness: numberField(ssrNode, "roughness", 0) } : {}),
+        ...(Number.isFinite(numberField(ssrNode, "thickness", NaN)) ? { thickness: numberField(ssrNode, "thickness", 0.25) } : {})
+      }
+    } : {}),
     ...(gradeNode ? {
       grade: {
         // GU47 E-C: these reach pixels in the S10 linear grade (v2Stages
