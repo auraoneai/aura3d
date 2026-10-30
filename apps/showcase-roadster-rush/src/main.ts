@@ -11,6 +11,7 @@ import {
   model,
   primitives,
   scene,
+  text3D,
   type AuraAssetRef,
   type AuraRuntimeNodeHandle,
   type AuraSceneNode
@@ -43,6 +44,21 @@ import { HAZE_FLOOR_Y, groundSpec } from "./art/ground";
 import { asphaltMaterial, concreteMaterial } from "./art/surfaces";
 import { apexHeroPaint, apexRivalPaint } from "./art/paint";
 import { PYLON_KIT, PYLON_ROWS, pylonLayout } from "./render/pylons";
+import {
+  BILLBOARD_FACE_SIZE,
+  BILLBOARD_FRAME_SIZE,
+  BILLBOARD_SLOTS,
+  GANTRY_LABELS,
+  GANTRY_LABEL_OFFSET,
+  RING_ROWS,
+  RING_SIZE,
+  SPAN_DECK_SIZE,
+  SPAN_PIER_SIZE,
+  SPAN_SLOTS,
+  billboardLayout,
+  ringLayout,
+  spanLayout
+} from "./render/dressing";
 import { TOWER_CAPACITY_PER_VARIANT, TOWER_VARIANTS, towerGlassSpec, towerLayout, type TowerVariant } from "./render/towers";
 import { meshyFarVehicles, meshyVehicles } from "./meshy-vehicles";
 import { SKY_DOME_SIZE, skyLook, skySpec } from "./art/sky";
@@ -480,6 +496,23 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     instances
       .box({ name: "deck-pylon-caps", size: [...PYLON_KIT.cap.size], material: material.pbr({ color: "#2c2e36", roughness: 0.8, metalness: 0.05 }), castShadow: false, receiveShadow: false, transforms: parked(PYLON_ROWS) })
       .runtime(game.runtimeNode(poolId("pylon-caps"))),
+    // AO-W1: cyan beacon rings over the piers (sky-lane edges), interchange spans every 600 m above the flight ceiling and
+    // shadowless billboard frames beside the deck (render/dressing.ts); 5 instanced nodes
+    instances
+      .torus({ name: "beacon-rings", size: [...RING_SIZE], material: material.emissive({ color: APEX_PALETTE.cyan, emissive: APEX_PALETTE.cyan, emissiveIntensity: 1.4 }), castShadow: false, receiveShadow: false, transforms: parked(RING_ROWS * 2) })
+      .runtime(game.runtimeNode(poolId("beacon-rings"))),
+    instances
+      .box({ name: "interchange-span-decks", size: [...SPAN_DECK_SIZE], material: material.pbr({ color: "#2c2e36", roughness: 0.78, metalness: 0.1 }), castShadow: false, receiveShadow: false, transforms: parked(SPAN_SLOTS) })
+      .runtime(game.runtimeNode(poolId("span-decks"))),
+    instances
+      .box({ name: "interchange-span-piers", size: [...SPAN_PIER_SIZE], material: material.pbr({ color: APEX_PALETTE.charcoal, roughness: 0.82 }), castShadow: false, receiveShadow: false, transforms: parked(SPAN_SLOTS * 2) })
+      .runtime(game.runtimeNode(poolId("span-piers"))),
+    instances
+      .box({ name: "billboard-frames", size: [...BILLBOARD_FRAME_SIZE], material: material.pbr({ color: "#3a3d46", roughness: 0.5, metalness: 0.6 }), castShadow: false, receiveShadow: false, transforms: parked(BILLBOARD_SLOTS) })
+      .runtime(game.runtimeNode(poolId("billboard-frames"))),
+    instances
+      .box({ name: "billboard-faces", size: [...BILLBOARD_FACE_SIZE], material: material.emissive({ color: "#ffb066", emissive: APEX_PALETTE.tangerine, emissiveIntensity: 0.9 }), castShadow: false, receiveShadow: false, transforms: parked(BILLBOARD_SLOTS) })
+      .runtime(game.runtimeNode(poolId("billboard-faces"))),
     // AO-A1: glass tower skyline rising from the haze, one instanced curtain-wall node per variant (3 draws; it replaces the
     // borrowed 75-mesh townhouse model). No shadows: the nearest tower stands 40 m off the road.
     ...TOWER_VARIANTS.map((variant) =>
@@ -488,6 +521,15 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         .runtime(game.runtimeNode(poolId(`tower-${variant}`)))
     )
   ]);
+
+  // AO-W1: SDF gantry labels, one per gantry slot (positioned by the frame loop)
+  GANTRY_LABELS.slice(0, GANTRY_COUNT).forEach((label, i) => {
+    s.add(
+      text3D(label, { backend: "sdf", size: 0.85, name: `gantry-label-${i}`, material: material.emissive({ color: "#f4f6fb", emissive: "#e8eef8", emissiveIntensity: 0.6 }), castShadow: false })
+        .position(GANTRY_LABEL_OFFSET[0], GANTRY_LABEL_OFFSET[1], -200 - i * 155)
+        .runtime(game.runtimeNode(`gantry-label-${i}`))
+    );
+  });
 
   // 3. Player Roadster Assembly (Primary Car + Lightbar + Headlights + Cold-Gas Plumes + Powerups + Shadow)
   const rearPlumeMat = material.emissive({
@@ -855,6 +897,12 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const lampPool = pool("pole-lamps", POLE_ROWS * 2);
   const towerPools = {} as Record<TowerVariant, InstancePool>;
   for (const variant of TOWER_VARIANTS) towerPools[variant] = pool(`tower-${variant}`, TOWER_CAPACITY_PER_VARIANT);
+  const ringPool = pool("beacon-rings", RING_ROWS * 2);
+  const spanDecks = pool("span-decks", SPAN_SLOTS);
+  const spanPiers = pool("span-piers", SPAN_SLOTS * 2);
+  const billboardFrames = pool("billboard-frames", BILLBOARD_SLOTS);
+  const billboardFaces = pool("billboard-faces", BILLBOARD_SLOTS);
+  const gantryLabels = GANTRY_LABELS.slice(0, GANTRY_COUNT).map((_, i) => auraApp.nodes.get(`gantry-label-${i}`));
   const towerHandles = {} as Record<TowerVariant, AuraRuntimeNodeHandle>;
   for (const variant of TOWER_VARIANTS) towerHandles[variant] = req(poolId(`tower-${variant}`));
   const pylonColumns = pool("pylon-columns", PYLON_ROWS * 2);
@@ -1339,6 +1387,36 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     gantrySteel.commit();
     gantryBoards.commit();
     gantryTrims.commit();
+    // AO-W1: one SDF label per gantry slot on the left board's face; empty slots hide theirs
+    for (let i = 0; i < gantryLabels.length; i++) {
+      const label = gantryLabels[i];
+      if (!label) continue;
+      const wz = Number(worldGantries[i]?.position?.z ?? 1e5);
+      const gz = rz(wz);
+      const shown = wz < 1e4 && gz > -560 && gz < 40;
+      if (shown) label.setPosition(rx(GANTRY_LABEL_OFFSET[0]), ry(GANTRY_LABEL_OFFSET[1]), gz + GANTRY_LABEL_OFFSET[2]);
+      label.setVisible(shown);
+    }
+
+    // AO-W1: beacon rings, interchange spans and billboards (world-anchored rows)
+    ringPool.begin();
+    for (const r of ringLayout(pz)) ringPool.add(rx(r.x), ry(r.y), rz(r.z));
+    ringPool.commit();
+    spanDecks.begin();
+    spanPiers.begin();
+    const spans = spanLayout(pz);
+    for (const d of spans.decks) spanDecks.add(rx(d.x), ry(d.y), rz(d.z));
+    for (const d of spans.piers) spanPiers.add(rx(d.x), ry(d.y), rz(d.z));
+    spanDecks.commit();
+    spanPiers.commit();
+    billboardFrames.begin();
+    billboardFaces.begin();
+    for (const b of billboardLayout(pz)) {
+      billboardFrames.add(rx(b.x), ry(b.y), rz(b.z));
+      billboardFaces.add(rx(b.x), ry(b.y), rz(b.z) + 0.3);
+    }
+    billboardFrames.commit();
+    billboardFaces.commit();
 
     // Highway light poles, world-anchored rows
     polePool.begin();

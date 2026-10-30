@@ -70,3 +70,29 @@ describe("Apex Overdrive skyway dressing (GU47 AO-E2)", () => {
     expect(Math.min(...a.caps.map((c) => c.z))).toBeLessThan(-1005 - 350);
   });
 });
+
+describe("Apex Overdrive skyway dressing (GU47 AO-W1)", () => {
+  it("rings every 30 m ahead, spans above the flight ceiling, billboards clear of the deck; <= 12 draws", async () => {
+    const d = await import("../../../apps/showcase-roadster-rush/src/render/dressing");
+    const { CEILING } = await import("../../../apps/showcase-roadster-rush/src/native/constants");
+    const { GANTRY_COUNT } = await import("../../../apps/showcase-roadster-rush/src/native/world");
+    const rings = d.ringLayout(-1234);
+    expect(rings).toHaveLength(d.RING_ROWS * 2);
+    const zs = [...new Set(rings.map((r) => r.z))].sort((a, b) => b - a);
+    for (let i = 1; i < zs.length; i++) expect(zs[i - 1]! - zs[i]!).toBe(d.RING_STRIDE_Z);
+    expect(zs.filter((z) => z < -1234 && z > -1234 - 150).length).toBeGreaterThanOrEqual(4); // in view ahead
+    const spans = d.spanLayout(-5000);
+    for (const deck of spans.decks) expect(deck.y - d.SPAN_DECK_SIZE[1] / 2).toBeGreaterThan(CEILING + 2);
+    for (const b of d.billboardLayout(-777)) expect(Math.abs(b.x) - d.BILLBOARD_FRAME_SIZE[0] / 2).toBeGreaterThan(12);
+    const draws = 5 + Math.min(GANTRY_COUNT, d.GANTRY_LABELS.length);
+    expect(draws).toBeLessThanOrEqual(12);
+  });
+
+  it("labels say nothing about engines or lineage (visible strings)", async () => {
+    const d = await import("../../../apps/showcase-roadster-rush/src/render/dressing");
+    for (const label of d.GANTRY_LABELS) {
+      expect(label).toMatch(/^[A-Z0-9 ]+$/);
+      expect(label.toLowerCase()).not.toMatch(/three|aura3d|webgl/);
+    }
+  });
+});
