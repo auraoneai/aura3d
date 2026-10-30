@@ -11,8 +11,17 @@ import {
   primitives,
   scene,
   type AuraAssetRef,
-  type AuraRuntimeNodeHandle
+  type AuraRuntimeNodeHandle,
+  type AuraSceneNode
 } from "@aura3d/engine";
+import {
+  APEX_FOG_DENSITY_SCALE,
+  APEX_IBL_HDRI,
+  APEX_IBL_ROTATION_DEG,
+  APEX_LOOK,
+  APEX_PALETTE,
+  APEX_SUN
+} from "./art/look";
 import { createNativeRoadster, findDrawCalls } from "./native";
 import { POWERUP_SECONDS } from "./native/constants";
 import { GANTRY_COUNT } from "./native/world";
@@ -193,12 +202,40 @@ interface PlayerHandles {
 /** Runtime node id of an instanced pool node. */
 const poolId = (name: string): string => `pool-${name}`;
 
+/** Runtime ids of the look's key light and the camera-side fill (AO-L2 retunes both per time of day with setLight). */
+const KEY_LIGHT_ID = "apex-sun-key";
+const FILL_LIGHT_ID = "apex-camera-fill";
+
+/**
+ * GU47 AO-L1: one golden-hour look whose sun sits where the dome draws the disc (7 deg, azimuth 175: dead ahead), so key,
+ * disc and shadows agree; its HDRI lights the scene without being drawn (the dome is the sky). The key light gets a runtime
+ * id so the time of day can retune it (AO-L2); no ambient light, no cyan point (look-lint ambient-flattens).
+ */
+function apexLookNode(): AuraSceneNode {
+  const sunset = APEX_LOOK[0];
+  const look = looks
+    .preset("golden-hour", {
+      sun: APEX_SUN,
+      fogDensityScale: APEX_FOG_DENSITY_SCALE,
+      hdri: APEX_IBL_HDRI,
+      environmentIntensity: sunset.environmentIntensity,
+      environmentRotationDeg: APEX_IBL_ROTATION_DEG,
+      background: APEX_PALETTE.charcoal,
+      key: { color: sunset.sun.color, intensity: sunset.sun.intensity }
+    })
+    .toJSON();
+  const children = (look.children ?? []).map((child) =>
+    child.kind === "light" && child.name === "look key light" ? ({ ...child, runtime: { id: KEY_LIGHT_ID } } as AuraSceneNode) : child
+  );
+  return { ...look, children } as AuraSceneNode;
+}
+
 function buildRoadsterRushScene(): ReturnType<typeof scene> {
   const s = scene()
-    // One look: its HDRI, its shadowed key light, its AO, bloom and colour grade. The authored warm sun below adds colour
-    // without a second shadow map, and no second bloom or grade stacks on the look's (audit RR-11).
-    .add(looks.preset("outdoor-day", { fogDensityScale: 0, exposureEv: 0.08 }))
-    .background("#1b1026")
+    // One look: its IBL, its one shadowed key light, its AO, bloom and colour grade; nothing authored stacks a second bloom,
+    // grade or shadowed light on it (audit RR-11, GU47 AO-L1).
+    .add(apexLookNode())
+    .background(APEX_PALETTE.charcoal)
     .camera(
       camera.perspective({
         fov: 58,
@@ -208,22 +245,19 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         target: [0, 0.9, -6.0]
       })
     )
-    .add(lights.ambient({ color: "#ffd8c4", intensity: 0.5 }))
+    // Camera-side fill: the sun is dead ahead, so the faces the chase camera sees are lit by this unshadowed 0.6 fill from
+    // behind the camera (cobalt skylight colour), not by an ambient term.
     .add(
-      lights.directional({
-        color: "#ffb178",
-        intensity: 1.9,
-        position: [22, 38, -45],
-        target: [0, 0, -10]
-      })
-    )
-    .add(
-      lights.point({
-        color: "#4df0ff",
-        intensity: 1.5,
-        position: [0, 8, -12],
-        distance: 65
-      })
+      lights
+        .directional({
+          name: FILL_LIGHT_ID,
+          color: APEX_LOOK[0].fill.color,
+          intensity: APEX_LOOK[0].fill.intensity,
+          position: [0, 9, 40],
+          target: [0, 0, -12],
+          shadow: false
+        })
+        .runtime({ id: FILL_LIGHT_ID })
     )
     .add(effects.vignette({ intensity: 0.2, smoothness: 0.65 }));
 
