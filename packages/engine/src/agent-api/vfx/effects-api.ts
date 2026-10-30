@@ -3,7 +3,7 @@
 // the A3D_QR_VFX flag is off so flag-off behaviour is byte-identical.
 
 import type { AuraApp, AuraVec3, AuraColor, AuraCreateAppOptions } from "../index";
-import type { AuraVfxKind, AuraVfxEffectSpec, AuraEffectInstanceHandle, AuraBurstOptions, AuraDecalOptions } from "../../contracts/effects";
+import type { AuraVfxKind, AuraVfxEffectSpec, AuraEffectInstanceHandle, AuraBurstOptions, AuraDecalOptions, AuraTrailHandle } from "../../contracts/effects";
 import type { QrFlags, AuraQualityTier } from "@aura3d/rendering/contracts";
 import { StubAppEffects } from "../../contracts/effects";
 import { ProductionEffectSystem, type AppLike } from "../../production-runtime/effects/ProductionEffectSystem";
@@ -492,16 +492,35 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
       // particles. Only an authored AuraVfxEffectSpec object is a looping effect that the caller stops.
       return typeof effect === "string" ? spawnEmitter(effect, position, spawnOptions) : spawnSpec(effect, position, spawnOptions);
     },
-    trail(_target, options) {
-      void options;
-      system.diagnostics.note("VFX_TRAIL_PENDING", "", "effects.trail lands with P2-T5 ribbons");
+    trail(target, options): AuraTrailHandle {
+      // GU47 E-F: a real ribbon on the RibbonBatch that follows `target` (node id, handle or { node, socket }).
+      // Runtime effects "off" drops trails like every other runtime-spawned effect.
+      const id = `fx-${nextInstanceId++}`;
+      const live = system.runtimeEffects !== "off";
+      if (live) {
+        system.addTrail(id, target, {
+          width: options.width,
+          life: options.life,
+          color: options.color ?? "#ffffff",
+          ...(options.widthOverSpeed !== undefined ? { widthOverSpeed: options.widthOverSpeed } : {})
+        });
+      }
       return {
-        id: `fx-${nextInstanceId++}`,
+        id,
         get alive() {
-          return false;
+          return live && system.trailInfo(id) !== null;
         },
-        stop: () => {},
-        setPosition: () => {}
+        get length() {
+          return system.trailInfo(id)?.length ?? 0;
+        },
+        get pointCount() {
+          return system.trailInfo(id)?.pointCount ?? 0;
+        },
+        stop: (o?: { immediate?: boolean }) => system.stopTrail(id, o?.immediate === true),
+        setPosition: (p: AuraVec3) => {
+          system.trailPush(id, [p[0] ?? 0, p[1] ?? 0, p[2] ?? 0]);
+        },
+        clear: () => system.clearTrail(id)
       };
     },
     decal(at, options) {

@@ -19,6 +19,26 @@ export interface AuraVfxEffectSpec {
 }
 export interface AuraEffectInstanceHandle { readonly id: string; readonly alive: boolean; stop(o?: { immediate?: boolean }): void; setPosition(p: AuraVec3): void; setDirection?(n: AuraVec3): void; }
 export interface AuraDecalOptions { readonly kind?: string; readonly size?: number; readonly lifetime?: number; readonly color?: AuraColor; readonly opacity?: number; }
+/** GU47 E-F `effects.trail` options. */
+export interface AuraTrailOptions {
+  /** Ribbon width in metres at full speed. */
+  readonly width: number;
+  /** Seconds each ribbon point lives. */
+  readonly life: number;
+  /** Ribbon colour (hex is sRGB; default white). */
+  readonly color?: AuraColor;
+  /** Width ramp by the target's speed in m/s: zero width at or below `[0]`, full `width` at or above `[1]`. */
+  readonly widthOverSpeed?: readonly [number, number];
+}
+/** GU47 E-F handle of a running trail. */
+export interface AuraTrailHandle extends AuraEffectInstanceHandle {
+  /** Ribbon length in metres along its live points. */
+  readonly length: number;
+  /** Live ribbon points. */
+  readonly pointCount: number;
+  /** Drop every point; the ribbon restarts from the target's next position. */
+  clear(): void;
+}
 /** `burst` options (GU47 E-F names the bag; `sprite` is new). */
 export interface AuraBurstOptions {
   readonly count?: number;
@@ -41,7 +61,12 @@ export interface AuraAppEffects {
   burst(kind: AuraVfxKind | (string & {}), position: AuraVec3, options?: AuraBurstOptions): AuraEffectInstanceHandle;
   /** A named preset (registered first) is one-shot; an authored spec object loops until its handle stops. */
   spawn(effect: AuraVfxEffectSpec | AuraVfxKind | (string & {}), at: AuraVec3 | { node: string; socket?: string }, options?: { seed?: number; scale?: number; color?: AuraColor; sprite?: AuraVfxSpriteSource }): AuraEffectInstanceHandle;
-  trail(target: string | { node: string; socket?: string }, options: { width: number; life: number; color?: AuraColor }): AuraEffectInstanceHandle;
+  /**
+   * GU47 E-F: a camera-facing ribbon that follows `target` (runtime node id, node handle, or `{ node, socket }`).
+   * Points live `life` seconds, so the ribbon is as long as the distance the target covered in that time;
+   * the head is opaque and the tail fades. Under `runtime: "off"` it returns an inert handle.
+   */
+  trail(target: string | AuraRuntimeNodeHandle | { node: string; socket?: string }, options: AuraTrailOptions): AuraTrailHandle;
   decal(at: { position: AuraVec3; normal: AuraVec3; target?: string }, options: AuraDecalOptions): AuraEffectInstanceHandle;
   readonly presets: Readonly<Record<AuraVfxKind, AuraVfxEffectSpec>>;
   registerPreset(kind: string, spec: AuraVfxEffectSpec): void;
@@ -91,12 +116,13 @@ export class StubAppEffects implements AuraAppEffects {
     return this.makeHandle(id);
   }
 
-  trail(target: string | { node: string; socket?: string }, options: { width: number; life: number; color?: AuraColor }): AuraEffectInstanceHandle {
+  trail(target: string | AuraRuntimeNodeHandle | { node: string; socket?: string }, options: AuraTrailOptions): AuraTrailHandle {
     const id = `fx-${this.nextId++}`;
     this.addNode("line", [0, 0, 0], { color: options.color, scale: options.width });
     this.live.set(id, { handle: null, effect: "trail", count: 1 });
     void target; void options.life;
-    return this.makeHandle(id);
+    const handle = this.makeHandle(id);
+    return { id, get alive() { return handle.alive; }, stop: handle.stop, setPosition: handle.setPosition, length: 0, pointCount: 0, clear: () => undefined };
   }
 
   decal(at: { position: AuraVec3; normal: AuraVec3; target?: string }, options: AuraDecalOptions): AuraEffectInstanceHandle {

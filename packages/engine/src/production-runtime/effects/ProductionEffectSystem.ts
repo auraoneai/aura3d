@@ -67,6 +67,34 @@ interface VolumeBinding {
 interface TrailBinding {
   readonly trail: RibbonTrail;
   readonly node: EffectNodeLike;
+  /** GU47 E-F: live-follow state (runtime `effects.trail` and scene trails with a `target`). */
+  follow?: TrailFollow;
+}
+
+/** GU47 E-F: a ribbon that samples its target every frame and drops points older than `life`. */
+interface TrailFollow {
+  readonly target: unknown;
+  /** Seconds a point lives (Infinity: ring only, no fade). */
+  readonly life: number;
+  readonly width: number;
+  readonly color: readonly [number, number, number, number];
+  /** Width ramp by target speed (m/s): zero at or below [0], full width at or above [1]. */
+  readonly widthOverSpeed?: readonly [number, number];
+  readonly maxPoints: number;
+  readonly minVertexDistance: number;
+  readonly points: { readonly position: readonly [number, number, number]; readonly time: number; readonly speed: number }[];
+  /** False after a non-immediate stop: points expire, then the trail is removed. */
+  following: boolean;
+  last: { readonly position: readonly [number, number, number]; readonly time: number } | null;
+  missingNoted: boolean;
+}
+
+/** Width multiplier for a point sampled at `speed` m/s under `widthOverSpeed` [min, max]. */
+export function trailWidthScale(speed: number, ramp: readonly [number, number] | undefined): number {
+  if (!ramp) return 1;
+  const [lo, hi] = ramp;
+  if (!(hi > lo)) return speed >= lo ? 1 : 0;
+  return Math.min(1, Math.max(0, (speed - lo) / (hi - lo)));
 }
 
 /** GU47 E-F: what an attach target resolves through (runtime node handle, or a bone socket on its actor). */
@@ -683,7 +711,137 @@ export class ProductionEffectSystem {
   trailPush(nodeId: string, position: readonly [number, number, number], width?: number, color?: readonly [number, number, number, number]): boolean {
     const binding = this.trails.get(nodeId);
     if (!binding) return false;
+    if (binding.follow) {
+      this.sampleTrail(binding.follow, position);
+      return true;
+    }
     return binding.trail.push(position, this.time, width, color);
+  }
+
+  /**
+   * GU47 E-F `app.effects.trail`: a camera-facing ribbon on the RibbonBatch that follows `target` (runtime node
+   * id, `{ node, socket }` or a node handle; undefined: points come from `trailPush`). Points older than `life`
+   * seconds drop off, so the ribbon is as long as the distance the target covered in `life`. The head is
+   * opaque and the tail fades; `widthOverSpeed` ramps the width by the target's speed.
+   */
+  addTrail(
+    id: string,
+    target: unknown,
+    options: { readonly width: number; readonly life: number; readonly color?: unknown; readonly widthOverSpeed?: readonly [number, number]; readonly minVertexDistance?: number }
+  ): string {
+    const life = Number.isFinite(options.life) && options.life > 0 ? options.life : 0.5;
+    const width = Number.isFinite(options.width) && options.width > 0 ? options.width : 0.3;
+    // One point per frame at up to 120 Hz over the life, capped per tier.
+    const cap = this.tier === "low" ? 120 : 360;
+    const maxPoints = Math.max(8, Math.min(cap, Math.ceil(life * 120) + 2));
+    const minVertexDistance = options.minVertexDistance !== undefined && options.minVertexDistance >= 0 ? options.minVertexDistance : 0.05;
+    const color = effectColor4({ kind: "effect", color: options.color as EffectNodeLike["color"] });
+    const trail = this.ribbons.upsertTrail({ id, maxPoints, minVertexDistance, width, color, orientation: "camera" });
+    const ramp = options.widthOverSpeed;
+    const follow: TrailFollow = {
+      target,
+      life,
+      width,
+      color,
+      ...(ramp && ramp.length >= 2 && Number.isFinite(ramp[0]) && Number.isFinite(ramp[1]) ? { widthOverSpeed: [ramp[0], ramp[1]] as const } : {}),
+      maxPoints,
+      minVertexDistance,
+      points: [],
+      following: true,
+      last: null,
+      missingNoted: false
+    };
+    this.trails.set(id, { trail, node: { kind: "effect", effect: "trail", id }, follow });
+    if (target !== undefined) {
+      const at = this.resolveTarget(target);
+      if (at) this.sampleTrail(follow, at);
+    }
+    return id;
+  }
+
+  /** GU47 E-F: live length (metres along the points) and point count of a trail, or null once it is gone. */
+  trailInfo(id: string): { readonly length: number; readonly pointCount: number } | null {
+    const binding = this.trails.get(id);
+    if (!binding) return null;
+    const points = binding.follow ? binding.follow.points.map((p) => p.position) : binding.trail.getPoints().map((p) => p.position);
+    let length = 0;
+    for (let i = 1; i < points.length; i++) {
+      length += Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1], points[i][2] - points[i - 1][2]);
+    }
+    return { length, pointCount: points.length };
+  }
+
+  /** GU47 E-F: drop every point of a trail (it restarts from the target's next position). */
+  clearTrail(id: string): void {
+    const binding = this.trails.get(id);
+    if (!binding) return;
+    if (binding.follow) {
+      binding.follow.points.length = 0;
+      binding.follow.last = null;
+    }
+    binding.trail.clear();
+  }
+
+  /** GU47 E-F: stop following; `immediate` removes the ribbon now, otherwise it fades out over `life`. */
+  stopTrail(id: string, immediate = false): void {
+    const binding = this.trails.get(id);
+    if (!binding) return;
+    if (immediate || !binding.follow || !Number.isFinite(binding.follow.life)) {
+      binding.trail.clear();
+      this.ribbons.removeTrail(id);
+      this.trails.delete(id);
+      return;
+    }
+    binding.follow.following = false;
+  }
+
+  /** Append the target's position when it moved at least `minVertexDistance` since the last point. */
+  private sampleTrail(follow: TrailFollow, position: readonly [number, number, number]): void {
+    const p: readonly [number, number, number] = [position[0], position[1], position[2]];
+    const last = follow.last;
+    const elapsed = last ? this.time - last.time : 0;
+    const speed = last && elapsed > 1e-6 ? Math.hypot(p[0] - last.position[0], p[1] - last.position[1], p[2] - last.position[2]) / elapsed : 0;
+    if (!last || elapsed > 1e-6 || follow.points.length === 0) follow.last = { position: p, time: this.time };
+    const head = follow.points[follow.points.length - 1];
+    if (!head || Math.hypot(p[0] - head.position[0], p[1] - head.position[1], p[2] - head.position[2]) >= follow.minVertexDistance) {
+      follow.points.push({ position: p, time: this.time, speed });
+      while (follow.points.length > follow.maxPoints) follow.points.shift();
+    }
+  }
+
+  /** GU47 E-F: sample every following trail, expire old points and rebuild the ribbon rings (head first). */
+  private stepTrails(): void {
+    for (const [id, binding] of this.trails) {
+      const follow = binding.follow;
+      if (!follow) continue;
+      if (follow.following && follow.target !== undefined) {
+        const at = this.resolveTarget(follow.target);
+        if (at) this.sampleTrail(follow, at);
+        else if (!follow.missingNoted) {
+          follow.missingNoted = true;
+          this.diagnostics.note("VFX_ATTACH_TARGET_MISSING", id, "trail target does not resolve to a runtime node; the ribbon stops growing");
+        }
+      }
+      if (Number.isFinite(follow.life)) {
+        const cutoff = this.time - follow.life;
+        let drop = 0;
+        while (drop < follow.points.length && follow.points[drop].time < cutoff) drop++;
+        if (drop > 0) follow.points.splice(0, drop);
+      }
+      if (!follow.following && follow.points.length === 0) {
+        binding.trail.clear();
+        this.ribbons.removeTrail(id);
+        this.trails.delete(id);
+        continue;
+      }
+      binding.trail.clear();
+      // Newest first: the batch alpha curve 0.45·(1 − i/maxPoints) then peaks at the target and fades to the tail.
+      for (let i = follow.points.length - 1; i >= 0; i--) {
+        const point = follow.points[i];
+        const fade = Number.isFinite(follow.life) ? Math.max(0, 1 - (this.time - point.time) / follow.life) : 1;
+        binding.trail.push(point.position, point.time, follow.width * trailWidthScale(point.speed, follow.widthOverSpeed), [follow.color[0], follow.color[1], follow.color[2], follow.color[3] * fade]);
+      }
+    }
   }
 
   private attachEmitter(lowered: Extract<LoweredEffect, { type: "emitter" }>): EmitterBinding {
@@ -877,6 +1035,7 @@ export class ProductionEffectSystem {
     const substeps = dt > 0 ? Math.min(Math.ceil(dt * 60 - 1e-6), 1800) : 0;
     const h = substeps > 0 ? dt / substeps : 0;
     if (this.attachments.size > 0) this.updateAttachments();
+    if (this.trails.size > 0) this.stepTrails();
     for (const binding of this.emitters.values()) {
       for (let s = 0; s < substeps; s++) stepEmitter(binding.state, h);
       this.diagnostics.track({

@@ -67,6 +67,10 @@ export interface EffectNodeLike {
   readonly surfaceNormal?: AuraVec3;
   readonly path?: readonly (readonly number[])[];
   readonly target?: string;
+  /** GU47 E-F trail: seconds a ribbon point lives (absent on scene trails: ring of `maxPoints`, no fade). */
+  readonly life?: number;
+  /** GU47 E-F trail: width ramp by target speed in m/s, zero at or below [0], full `width` at or above [1]. */
+  readonly widthOverSpeed?: readonly [number, number];
   // §6.2.10 beam-family fields (light-beam / lightCone / auroraRibbon).
   readonly from?: AuraVec3;
   readonly to?: AuraVec3;
