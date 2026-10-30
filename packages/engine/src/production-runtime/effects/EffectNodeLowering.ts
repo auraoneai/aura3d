@@ -9,6 +9,8 @@
 import type { EmitterDescriptor } from "./CpuEmitter";
 import type { AuraVec3 } from "./CpuEmitter";
 import { VOLUME_PRESETS, VOLUME_SPRITE_LIMITS, type VolumeEmitterSpec } from "@aura3d/rendering";
+import { VFX_SPRITE_LAYOUT, isVfxBuiltinSprite } from "./FlipbookAtlas";
+import type { AuraVfxBuiltinSequence } from "../../agent-api/vfx/atlas";
 
 export interface EffectNodeLike {
   readonly kind: string;
@@ -65,6 +67,10 @@ export interface EffectNodeLike {
   readonly surfaceNormal?: AuraVec3;
   readonly path?: readonly (readonly number[])[];
   readonly target?: string;
+  /** GU47 E-F trail: seconds a ribbon point lives (absent on scene trails: ring of `maxPoints`, no fade). */
+  readonly life?: number;
+  /** GU47 E-F trail: width ramp by target speed in m/s, zero at or below [0], full `width` at or above [1]. */
+  readonly widthOverSpeed?: readonly [number, number];
   // §6.2.10 beam-family fields (light-beam / lightCone / auroraRibbon).
   readonly from?: AuraVec3;
   readonly to?: AuraVec3;
@@ -100,7 +106,27 @@ export interface EffectNodeLike {
   readonly visible?: boolean;
   /** §8.3 sim backend: "gpu" forces ParticleGpuSim, "auto" picks by count. */
   readonly simulation?: "auto" | "cpu" | "gpu";
+  /**
+   * GU47 E-F emitter sprite: a built-in sequence of the baked VFX atlas ("smoke-a", "dust-mote", ...) or a
+   * texture sheet `{ atlas: assets.sheet | url, frame? }` (grid from `spriteColumns` × `spriteRows`).
+   */
+  readonly sprite?: string | { readonly atlas?: unknown; readonly frame?: number };
+  /** GU47 E-F `effects.flipbook({ texture })`: sprite-sheet texture asset ref or URL. */
+  readonly texture?: unknown;
+  /**
+   * GU47 E-F: follow a runtime node (id, `{ node, socket }` or a node handle); `position` becomes the offset
+   * from the target's world position. Resolved per frame by `ProductionEffectSystem`, never by lowering.
+   */
+  readonly attachTo?: unknown;
 }
+
+/**
+ * GU47 E-F: the sprite a particle batch samples. `builtin` is a sequence of the baked VFX page (premultiplied
+ * sRGB); `texture` is a whole texture asset (straight-alpha sRGB sheet) holding one fixed `frame` of its grid.
+ */
+export type LoweredSprite =
+  | { readonly kind: "builtin"; readonly name: AuraVfxBuiltinSequence; readonly columns: number; readonly rows: number; readonly frames: number; readonly fps?: number; readonly loop?: boolean }
+  | { readonly kind: "texture"; readonly url: string; readonly columns: number; readonly rows: number; readonly frames: number; readonly frame: number };
 
 export interface LoweredParticleEffect {
   readonly type: "emitter";
@@ -110,6 +136,8 @@ export interface LoweredParticleEffect {
   readonly emitter: EmitterDescriptor;
   readonly consumer: "particle-pass";
   readonly sim: "cpu" | "gpu";
+  /** GU47 E-F: atlas sprite the batch samples (absent: the analytic soft-dot). */
+  readonly sprite?: LoweredSprite;
 }
 
 export interface LoweredBeamEffect {
@@ -248,6 +276,56 @@ function simFor(node: EffectNodeLike, count: number): "cpu" | "gpu" {
   return count > GPU_AUTO_THRESHOLD ? "gpu" : "cpu";
 }
 
+/**
+ * URL of a texture asset value: an `assets.x` ref (`{ kind: "aura-asset-ref", type: "texture", url }`), a
+ * texture-like object with a `url`, or a plain URL string. Null when the value carries no URL.
+ */
+export function textureAssetUrl(value: unknown): string | null {
+  if (typeof value === "string") return value.length > 0 ? value : null;
+  if (typeof value === "object" && value !== null) {
+    const url = (value as { url?: unknown }).url;
+    if (typeof url === "string" && url.length > 0) return url;
+  }
+  return null;
+}
+
+/**
+ * GU47 E-F: resolve an emitter `sprite`. Built-in names other than "soft-dot" sample their atlas sequence;
+ * "soft-dot", an absent sprite, an unknown name or an atlas without a URL keep the analytic soft-dot, so
+ * scenes that do not opt in lower byte-identically.
+ */
+export function lowerSprite(node: Pick<EffectNodeLike, "sprite" | "spriteColumns" | "spriteRows">): LoweredSprite | undefined {
+  const sprite = node.sprite;
+  if (typeof sprite === "string") {
+    if (sprite === "soft-dot" || !isVfxBuiltinSprite(sprite)) return undefined;
+    const layout = VFX_SPRITE_LAYOUT[sprite];
+    return {
+      kind: "builtin",
+      name: sprite,
+      columns: layout.columns,
+      rows: layout.rows,
+      frames: layout.frames,
+      ...(layout.fps !== undefined ? { fps: layout.fps } : {}),
+      ...(layout.loop ? { loop: true } : {})
+    };
+  }
+  if (typeof sprite === "object" && sprite !== null) {
+    const url = textureAssetUrl(sprite.atlas);
+    if (!url) return undefined;
+    const columns = Math.max(1, Math.round(node.spriteColumns ?? 1));
+    const rows = Math.max(1, Math.round(node.spriteRows ?? 1));
+    const frames = columns * rows;
+    const frame = Math.min(frames - 1, Math.max(0, Math.floor(sprite.frame ?? 0)));
+    return { kind: "texture", url, columns, rows, frames, frame };
+  }
+  return undefined;
+}
+
+/** Batch atlas key of a sprite: batches merge only when they sample the same texture. */
+export function spriteAtlasKey(sprite: LoweredSprite): string {
+  return sprite.kind === "builtin" ? `vfx:${sprite.name}` : `tex:${sprite.url}:${sprite.columns}x${sprite.rows}`;
+}
+
 /** Lower one scene node; `seed` overrides hashing (benchmark scenes pin it). */
 export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): LoweredEffect {
   const nodeId = node.id ?? node.name ?? `effect-${node.effect ?? "none"}`;
@@ -270,6 +348,9 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
       const speedRange: readonly [number, number] = plume && plumeSpeed > 0
         ? [plumeSpeed * 0.85, plumeSpeed]
         : asRange(node.speed) ?? [speedScalar * 0.7, speedScalar];
+      // GU47 E-F: an atlas sprite replaces the analytic soft-dot (own batch key, frame blend on multi-frame sequences).
+      const sprite = lowerSprite(node);
+      const atlasKey = sprite ? spriteAtlasKey(sprite) : "soft-dot";
       return {
         type: "emitter",
         nodeId,
@@ -284,15 +365,16 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
           ...(node.nearFade !== undefined ? { nearFade: node.nearFade } : {}),
           ...(node.maxScreen !== undefined && node.maxScreen > 0 ? { maxScreen: node.maxScreen } : {}),
           stretch: materialMode === "spark",
-          frameBlend: false,
-          atlasKey: "soft-dot",
+          frameBlend: sprite?.kind === "builtin" && sprite.frames > 1,
+          atlasKey,
           ...(node.lowRes === true ? { lowRes: true } : {})
         },
+        ...(sprite ? { sprite } : {}),
         emitter: {
           // §6.2.2 material key — identical blend/atlas/flags merge into one
           // instanced draw in ProductionEffectSystem.feed.
           // Trailing bit: lowRes batches never merge with full-res ones.
-          key: `eff.${blend}.soft-dot.${materialMode !== "spark"}.${materialMode === "spark"}.${node.lowRes === true ? 1 : 0}${node.maxScreen !== undefined && node.maxScreen > 0 ? `.m${node.maxScreen}` : ""}`, 
+          key: `eff.${blend}.${atlasKey}.${materialMode !== "spark"}.${materialMode === "spark"}.${node.lowRes === true ? 1 : 0}${node.maxScreen !== undefined && node.maxScreen > 0 ? `.m${node.maxScreen}` : ""}`, 
           nodeId,
           origin: position,
           capacity: count,
@@ -380,14 +462,21 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
       // re-emitted 2 sprites/s at random rotation with frame 0 pinned and
       // sampled the soft-dot fallback, so both flipbooks drew as plain discs.
       const count = Math.max(1, Math.min(64, Math.round(node.particleCount ?? 1)));
-      const columns = Math.max(1, Math.round(node.spriteColumns ?? 8));
-      const rows = Math.max(1, Math.round(node.spriteRows ?? 8));
-      const frames = columns * rows;
+      // GU47 E-F sheet source: `texture` asset (grid from spriteColumns × spriteRows), else a built-in
+      // atlas `sprite` (its own grid), else the procedural fireball sheet (unchanged default).
+      const textureUrl = textureAssetUrl(node.texture);
+      const builtin = !textureUrl ? lowerSprite({ sprite: typeof node.sprite === "string" ? node.sprite : undefined }) : undefined;
+      const columns = builtin ? builtin.columns : Math.max(1, Math.round(node.spriteColumns ?? 8));
+      const rows = builtin ? builtin.rows : Math.max(1, Math.round(node.spriteRows ?? 8));
+      const frames = builtin ? builtin.frames : columns * rows;
       const frameRate = node.frameRate ?? 24;
       const loop = node.loop !== false;
       const blend: Blend = node.blend && VALID_BLENDS.has(node.blend) ? (node.blend as Blend) : "alpha";
       const sheetSeed = (node.seed ?? hashSeed(nodeId)) >>> 0;
-      const atlasKey = `flipbook.${columns}x${rows}.${sheetSeed}`;
+      const sprite: LoweredSprite | undefined = textureUrl
+        ? { kind: "texture", url: textureUrl, columns, rows, frames, frame: 0 }
+        : builtin;
+      const atlasKey = sprite ? spriteAtlasKey(sprite) : `flipbook.${columns}x${rows}.${sheetSeed}`;
       return {
         type: "emitter",
         nodeId,
@@ -403,6 +492,7 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
           atlasKey,
           ...(node.lowRes === true ? { lowRes: true } : {})
         },
+        ...(sprite ? { sprite } : {}),
         emitter: {
           key: `eff.${blend}.${atlasKey}.0.0.${node.lowRes === true ? 1 : 0}`,
           nodeId,

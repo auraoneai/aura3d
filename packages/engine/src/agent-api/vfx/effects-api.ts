@@ -3,10 +3,11 @@
 // the A3D_QR_VFX flag is off so flag-off behaviour is byte-identical.
 
 import type { AuraApp, AuraVec3, AuraColor, AuraCreateAppOptions } from "../index";
-import type { AuraVfxKind, AuraVfxEffectSpec, AuraEffectInstanceHandle } from "../../contracts/effects";
+import type { AuraVfxKind, AuraVfxEffectSpec, AuraEffectInstanceHandle, AuraBurstOptions, AuraDecalOptions, AuraTrailHandle, AuraVfxGenreVariant } from "../../contracts/effects";
 import type { QrFlags, AuraQualityTier } from "@aura3d/rendering/contracts";
 import { StubAppEffects } from "../../contracts/effects";
 import { ProductionEffectSystem, type AppLike } from "../../production-runtime/effects/ProductionEffectSystem";
+import type { EffectNodeLike } from "../../production-runtime/effects/EffectNodeLowering";
 import { attachVfxBridge } from "./bridge";
 
 interface EffectEntry {
@@ -30,6 +31,8 @@ interface BurstPreset {
   readonly additive: boolean;
   /** P2-T7 §6.2.12 light layer — flashes a transient pool light on spawn. */
   readonly light?: { readonly intensity: number; readonly range: number; readonly duration: number };
+  /** GU47 E-F: atlas sprite the preset's particles sample (absent: the soft-dot). */
+  readonly sprite?: string;
 }
 
 /** Largest on-screen diameter (fraction of the viewport height) per preset; flashes and explosions may be bigger. */
@@ -52,6 +55,36 @@ const BURST_PRESETS: Record<string, BurstPreset> = {
   "aura-burst": { speed: [2, 4], life: [0.5, 1.1], gravity: 0, color: [1.5, 2.5, 6], size: [0.08, 0.2], spread: 1, additive: true, light: { intensity: 10, range: 8, duration: 0.6 } }
 };
 
+/**
+ * GU47 E-F genre-coloured variants of `spark`, `dust` and `pickup`: the base row's motion, life and size with
+ * a genre palette, so two games firing "the same" hit or pickup stop looking identical. Additive rows keep an
+ * HDR colour of the base's energy; dust rows stay LDR.
+ */
+const GENRE_VARIANT_COLORS: Readonly<Record<AuraVfxGenreVariant, readonly [base: "spark" | "dust" | "pickup", color: [number, number, number]]>> = {
+  "spark-fire": ["spark", [4.5, 1.4, 0.35]],
+  "spark-electric": ["spark", [1.2, 2.8, 4.6]],
+  "spark-gold": ["spark", [4.2, 3, 0.9]],
+  "spark-magic": ["spark", [3.4, 1, 4.2]],
+  "spark-ice": ["spark", [2.2, 3.4, 4.4]],
+  "dust-sand": ["dust", [0.76, 0.62, 0.42]],
+  "dust-turf": ["dust", [0.36, 0.42, 0.24]],
+  "dust-snow": ["dust", [0.9, 0.93, 0.98]],
+  "dust-ash": ["dust", [0.28, 0.27, 0.27]],
+  "dust-clay": ["dust", [0.66, 0.38, 0.26]],
+  "pickup-gold": ["pickup", [4.4, 3.2, 0.8]],
+  "pickup-gem": ["pickup", [0.9, 2.8, 4.6]],
+  "pickup-power": ["pickup", [3.8, 1, 4]],
+  "pickup-star": ["pickup", [4.4, 4, 2.8]],
+  "pickup-heart": ["pickup", [4.4, 1, 1.6]]
+};
+
+/** GU47 E-F: the genre variant names, in table order. */
+export const AURA_VFX_GENRE_VARIANTS = Object.keys(GENRE_VARIANT_COLORS) as readonly AuraVfxGenreVariant[];
+
+for (const [name, [base, color]] of Object.entries(GENRE_VARIANT_COLORS)) {
+  BURST_PRESETS[name] = { ...BURST_PRESETS[base], color };
+}
+
 /** super-flash C-05 overlay flash: LDR warm white, 0.3 peak, 180 ms decay. */
 const SUPER_FLASH = { color: [1, 0.9, 0.72] as const, peak: 0.3, ms: 180 };
 
@@ -59,6 +92,81 @@ const SUPER_FLASH = { color: [1, 0.9, 0.72] as const, peak: 0.3, ms: 180 };
 function lightChromaticity(c: readonly number[]): [number, number, number] {
   const m = Math.max(1, c[0] ?? 0, c[1] ?? 0, c[2] ?? 0);
   return [(c[0] ?? 0) / m, (c[1] ?? 0) / m, (c[2] ?? 0) / m];
+}
+
+/** Options every spawn path takes: the public burst options plus the internal continuous/attach switches. */
+type SpawnOptions = AuraBurstOptions & { readonly continuous?: boolean; readonly attachTo?: unknown };
+
+/** One pooled emitter's parameters: a built-in preset row, or a registered preset's emitter layer over its base. */
+interface EmitterRecipe {
+  readonly speed: readonly [number, number];
+  readonly life: readonly [number, number];
+  readonly gravity: number;
+  readonly color: readonly [number, number, number];
+  readonly size: readonly [number, number];
+  readonly spread: number;
+  readonly additive: boolean;
+  readonly blend?: "alpha" | "premultiplied" | "additive" | "multiply";
+  readonly count?: number;
+  readonly sprite?: unknown;
+  readonly maxScreen?: number;
+  readonly drag?: number;
+  readonly direction?: readonly [number, number, number];
+}
+
+function builtinRecipe(kind: string): EmitterRecipe {
+  const preset = BURST_PRESETS[kind] ?? BURST_PRESETS.spark;
+  return { speed: preset.speed, life: preset.life, gravity: preset.gravity, color: preset.color, size: preset.size, spread: preset.spread, additive: preset.additive, ...(preset.sprite !== undefined ? { sprite: preset.sprite } : {}) };
+}
+
+function numberOr(value: unknown, fallback: number): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function rangeOr(value: unknown, fallback: readonly [number, number]): readonly [number, number] {
+  if (typeof value === "number" && Number.isFinite(value)) return [value, value];
+  if (Array.isArray(value) && typeof value[0] === "number") return [value[0], typeof value[1] === "number" ? value[1] : value[0]];
+  return fallback;
+}
+
+const LAYER_BLENDS = new Set(["alpha", "premultiplied", "additive", "multiply"]);
+
+/**
+ * GU47 E-F: a registered preset's emitter layer over its base row. The base is the built-in (or genre
+ * variant) named by `layer.preset`, else the built-in of the preset's own name, else `spark`. Recognised layer
+ * fields: count, speed, life | lifetime, gravity (number or vec3: y is used), color (hex or linear rgb),
+ * intensity (multiplies color), size, spread, additive | blend | materialMode, sprite, maxScreen, drag, direction.
+ */
+function recipeFromLayer(kind: string, layer: Readonly<Record<string, unknown>>): EmitterRecipe {
+  const baseKind = typeof layer.preset === "string" && BURST_PRESETS[layer.preset] ? layer.preset : kind;
+  const base = builtinRecipe(baseKind);
+  const gravity = Array.isArray(layer.gravity) ? numberOr(layer.gravity[1], base.gravity) : numberOr(layer.gravity, base.gravity);
+  const rawColor = typeof layer.color === "string" || Array.isArray(layer.color) ? toVec3(layer.color as AuraColor, base.color) : base.color;
+  const intensity = numberOr(layer.intensity, 1);
+  const blend = typeof layer.blend === "string" && LAYER_BLENDS.has(layer.blend) ? (layer.blend as EmitterRecipe["blend"]) : undefined;
+  const additive = typeof layer.additive === "boolean"
+    ? layer.additive
+    : blend !== undefined
+      ? blend === "additive"
+      : typeof layer.materialMode === "string"
+        ? ["additive-glow", "spark", "star"].includes(layer.materialMode)
+        : base.additive;
+  const direction = Array.isArray(layer.direction) && layer.direction.length >= 3 ? [Number(layer.direction[0]), Number(layer.direction[1]), Number(layer.direction[2])] as const : undefined;
+  return {
+    speed: rangeOr(layer.speed, base.speed),
+    life: rangeOr(layer.life ?? layer.lifetime, base.life),
+    gravity,
+    color: [rawColor[0] * intensity, rawColor[1] * intensity, rawColor[2] * intensity],
+    size: rangeOr(layer.size, base.size),
+    spread: numberOr(layer.spread, base.spread),
+    additive,
+    ...(blend !== undefined ? { blend } : {}),
+    ...(typeof layer.count === "number" && layer.count > 0 ? { count: Math.round(layer.count) } : {}),
+    ...(layer.sprite !== undefined ? { sprite: layer.sprite } : base.sprite !== undefined ? { sprite: base.sprite } : {}),
+    ...(typeof layer.maxScreen === "number" && layer.maxScreen > 0 ? { maxScreen: layer.maxScreen } : {}),
+    ...(typeof layer.drag === "number" ? { drag: layer.drag } : {}),
+    ...(direction ? { direction } : {})
+  };
 }
 
 let nextInstanceId = 0;
@@ -157,16 +265,97 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
     }
   };
 
-  const spawnEmitter = (
-    kind: string,
-    position: AuraVec3,
-    options: { count?: number; speed?: number; scale?: number; color?: AuraColor; seed?: number; intensity?: number; continuous?: boolean; camera?: boolean }
-  ): AuraEffectInstanceHandle => {
+  /** GU47 E-F: presets registered by the app; `burst`/`spawn` resolve these before the built-in table. */
+  const registered = new Map<string, AuraVfxEffectSpec>();
+  let unsupportedLayerNoted = false;
+
+  // GU47 E-F: delayed preset layers (`layer.at` seconds), fired from the app frame loop.
+  interface PendingLayer { readonly due: number; readonly fire: () => void; cancelled: boolean; done: boolean }
+  const pendingLayers: PendingLayer[] = [];
+  let layerClock = 0;
+  let offLayerFrame: (() => void) | null = null;
+  const scheduleLayer = (delay: number, fire: () => void): PendingLayer => {
+    const entry: PendingLayer = { due: layerClock + delay, fire, cancelled: false, done: false };
+    pendingLayers.push(entry);
+    if (!offLayerFrame && typeof app.onFrame === "function") {
+      offLayerFrame = app.onFrame((frame: { dt: number }) => {
+        layerClock += Math.max(0, frame.dt);
+        for (let i = 0; i < pendingLayers.length; ) {
+          const pending = pendingLayers[i];
+          if (pending.cancelled || pending.due <= layerClock) {
+            pendingLayers.splice(i, 1);
+            pending.done = true;
+            if (!pending.cancelled) pending.fire();
+          } else i += 1;
+        }
+      });
+    }
+    return entry;
+  };
+
+  /** Create one pooled emitter instance; returns its id (also the system emitter id). */
+  const spawnInstance = (recipe: EmitterRecipe, kind: string, position: AuraVec3, options: SpawnOptions): string => {
     const id = `fx-${nextInstanceId++}`;
+    const color = toVec3(options.color, recipe.color);
+    const sizeScale = options.scale !== undefined && Number.isFinite(options.scale) && options.scale > 0 ? options.scale : 1;
+    // GU47 E-F: spent one-shots (retired by the system) leave the pool before the cap check.
+    for (const [instanceId, entry] of instances) {
+      if (entry.alive && entry.emitterId && !system.instanceAlive(entry.emitterId)) instances.delete(instanceId);
+    }
+    // Pool cap: recycle the oldest live instance when the pool is full.
+    if (instances.size >= EFFECT_INSTANCE_CAP) {
+      const oldest = instances.keys().next().value!;
+      const entry = instances.get(oldest)!;
+      entry.alive = false;
+      if (entry.emitterId) system.removeInstance(entry.emitterId);
+      instances.delete(oldest);
+    }
+    const count = options.count ?? recipe.count;
+    const sprite = (options.sprite ?? recipe.sprite) as EffectNodeLike["sprite"];
+    const emitterId = system.addInstance(id, {
+      kind: "effect",
+      effect: "particles",
+      id,
+      position,
+      particleCount: options.continuous ? Math.max(64, count ?? 64) : Math.max(1, count ?? 24),
+      ...(options.continuous ? {} : { burst: Math.max(1, count ?? 24) }),
+      materialMode: recipe.additive ? "additive-glow" : "soft-alpha",
+      ...(recipe.blend !== undefined ? { blend: recipe.blend } : {}),
+      speed: options.speed ?? recipe.speed,
+      gravity: recipe.gravity,
+      // The preset's own life, size and spread: without them every kind inherited the
+      // emitter defaults (1.2 to 2.4 s lifetime, 5 to 14 cm glow discs) and read as lingering bubbles.
+      lifetime: recipe.life,
+      size: [recipe.size[0] * sizeScale, recipe.size[1] * sizeScale],
+      spread: recipe.spread,
+      // a preset's soft discs never grow past this share of the screen height: sparks and dust stay specks, not bubbles
+      maxScreen: recipe.maxScreen ?? PRESET_MAX_SCREEN[kind] ?? 0.05,
+      emissionRate: options.continuous ? (count ?? 24) * 2 : 0,
+      color,
+      seed: options.seed,
+      ...(recipe.drag !== undefined ? { drag: recipe.drag } : {}),
+      ...(recipe.direction !== undefined ? { direction: recipe.direction } : {}),
+      // GU47 E-F: atlas sprite (call site, else preset) and node following.
+      ...(sprite !== undefined ? { sprite } : {}),
+      ...(options.attachTo !== undefined ? { attachTo: options.attachTo } : {})
+    });
+    instances.set(id, { id, emitterId, alive: true });
+    return id;
+  };
+
+  const stopInstance = (id: string, immediate: boolean | undefined): void => {
+    const entry = instances.get(id);
+    if (!entry) return;
+    entry.alive = false;
+    if (entry.emitterId) system.removeInstance(entry.emitterId);
+    if (!immediate) instances.delete(id);
+  };
+
+  /** Built-in preset path (unchanged behaviour): camera layer, light layer, one pooled emitter. */
+  const spawnBuiltin = (kind: string, position: AuraVec3, options: SpawnOptions): AuraEffectInstanceHandle => {
     const preset = BURST_PRESETS[kind] ?? BURST_PRESETS.spark;
     if (options.camera !== false) applyPresetLayers(kind);
     const color = toVec3(options.color, preset.color);
-    const sizeScale = options.scale !== undefined && Number.isFinite(options.scale) && options.scale > 0 ? options.scale : 1;
     // P2-T7 §6.2.12 light layer — tier-capped transient pool flash.
     if (preset.light) {
       system.flashLight({
@@ -180,48 +369,139 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
         duration: preset.light.duration
       });
     }
-    // Pool cap: recycle the oldest live instance when the pool is full.
-    if (instances.size >= EFFECT_INSTANCE_CAP) {
-      const oldest = instances.keys().next().value!;
-      const entry = instances.get(oldest)!;
-      entry.alive = false;
-      if (entry.emitterId) system.removeInstance(entry.emitterId);
-      instances.delete(oldest);
-    }
-    const emitterId = system.addInstance(id, {
-      kind: "effect",
-      effect: "particles",
-      id,
-      position,
-      particleCount: options.continuous ? Math.max(64, options.count ?? 64) : Math.max(1, options.count ?? 24),
-      ...(options.continuous ? {} : { burst: Math.max(1, options.count ?? 24) }),
-      materialMode: preset.additive ? "additive-glow" : "soft-alpha",
-      speed: options.speed ?? preset.speed,
-      gravity: preset.gravity,
-      // The preset's own life, size and spread: without them every kind inherited the
-      // emitter defaults (1.2 to 2.4 s lifetime, 5 to 14 cm glow discs) and read as lingering bubbles.
-      lifetime: preset.life,
-      size: [preset.size[0] * sizeScale, preset.size[1] * sizeScale],
-      spread: preset.spread,
-      // a preset's soft discs never grow past this share of the screen height: sparks and dust stay specks, not bubbles
-      maxScreen: PRESET_MAX_SCREEN[kind] ?? 0.05,
-      emissionRate: options.continuous ? (options.count ?? 24) * 2 : 0,
-      color,
-      seed: options.seed
-    });
-    instances.set(id, { id, emitterId, alive: true });
+    const id = spawnInstance(builtinRecipe(kind), kind, position, options);
     return {
       id,
       get alive() {
-        return instances.get(id)?.alive ?? false;
+        // GU47 E-F: a one-shot is alive until its particles are gone (the system retires spent emitters).
+        return (instances.get(id)?.alive ?? false) && system.instanceAlive(id);
+      },
+      stop: (o?: { immediate?: boolean }) => stopInstance(id, o?.immediate),
+      setPosition: (p: AuraVec3) => system.setInstanceOrigin(id, p as readonly number[])
+    };
+  };
+
+  /**
+   * GU47 E-F registered preset path: every layer of the spec fires at `position` (after `layer.at` seconds):
+   * emitter layers spawn pooled emitters (one-shot bursts for named presets, continuous for authored spec
+   * objects), light layers flash the transient pool, camera layers shake/punch, decal layers place a decal.
+   */
+  const spawnSpec = (spec: AuraVfxEffectSpec, position: AuraVec3, options: SpawnOptions): AuraEffectInstanceHandle => {
+    const groupId = `fx-${nextInstanceId++}`;
+    const members: string[] = [];
+    const timers: PendingLayer[] = [];
+    let stopped = false;
+    let firstColor: readonly number[] | undefined;
+    const fireLayer = (layer: Readonly<Record<string, unknown>> & { readonly type: string }): void => {
+      if (stopped) return;
+      switch (layer.type) {
+        case "emitter": {
+          const recipe = recipeFromLayer(spec.name, layer);
+          firstColor ??= toVec3(options.color, recipe.color);
+          members.push(spawnInstance(recipe, spec.name, position, options));
+          break;
+        }
+        case "light": {
+          const color = typeof layer.color === "string" || Array.isArray(layer.color) ? toVec3(layer.color as AuraColor, [1, 1, 1]) : firstColor ?? [1, 1, 1];
+          system.flashLight({
+            position: [position[0] ?? 0, position[1] ?? 0, position[2] ?? 0],
+            color: lightChromaticity(color),
+            intensity: numberOr(layer.intensity, 8) * (options.intensity ?? 1),
+            range: numberOr(layer.range, 6),
+            duration: numberOr(layer.duration, 0.25)
+          });
+          break;
+        }
+        case "camera": {
+          if (options.camera === false) break;
+          const cam = app.camera;
+          if (!cam?.shake) {
+            if (!cameraWarned) {
+              cameraWarned = true;
+              system.diagnostics.note("VFX_LAYER_UNAVAILABLE", spec.name, "camera layers skipped — no C-22 camera extension");
+            }
+            break;
+          }
+          const configure = layer.configure as Parameters<NonNullable<typeof cam.shake>["configure"]>[0] | undefined;
+          if (configure) cam.shake.configure(configure);
+          if (typeof layer.shake === "number") cam.shake.add(layer.shake);
+          if (layer.punch && typeof layer.punch === "object") cam.punch?.trigger(layer.punch as Parameters<NonNullable<typeof cam.punch>["trigger"]>[0]);
+          break;
+        }
+        case "decal": {
+          const handle = spawnDecal(
+            { position, normal: options.normal ?? [0, 1, 0] },
+            {
+              ...(typeof layer.size === "number" ? { size: layer.size } : {}),
+              ...(typeof layer.lifetime === "number" ? { lifetime: layer.lifetime } : {}),
+              ...(typeof layer.opacity === "number" ? { opacity: layer.opacity } : {}),
+              ...(layer.color !== undefined ? { color: layer.color as AuraColor } : {})
+            }
+          );
+          members.push(handle.id);
+          break;
+        }
+        default:
+          if (!unsupportedLayerNoted) {
+            unsupportedLayerNoted = true;
+            system.diagnostics.note("VFX_PRESET_LAYER_UNSUPPORTED", spec.name, `preset layer type "${layer.type}" is not spawned by burst/spawn (emitter, light, camera and decal are)`);
+          }
+      }
+    };
+    // A spec without layers is its named built-in (or spark) as one emitter, as before GU47.
+    const layers: AuraVfxEffectSpec["layers"] = spec.layers.length > 0 ? spec.layers : [{ type: "emitter" }];
+    for (const layer of layers) {
+      const delay = typeof layer.at === "number" && layer.at > 0 ? layer.at : 0;
+      if (delay > 0) timers.push(scheduleLayer(delay, () => fireLayer(layer)));
+      else fireLayer(layer);
+    }
+    return {
+      id: groupId,
+      get alive() {
+        return !stopped && (members.some((member) => system.instanceAlive(member) && (instances.get(member)?.alive ?? true)) || timers.some((timer) => !timer.cancelled && !timer.done));
       },
       stop: (o?: { immediate?: boolean }) => {
-        const entry = instances.get(id);
-        if (!entry) return;
-        entry.alive = false;
-        if (entry.emitterId) system.removeInstance(entry.emitterId);
-        if (!o?.immediate) instances.delete(id);
+        stopped = true;
+        for (const timer of timers) timer.cancelled = true;
+        for (const member of members) {
+          if (instances.has(member)) stopInstance(member, o?.immediate);
+          else system.removeInstance(member);
+        }
       },
+      setPosition: (p: AuraVec3) => {
+        for (const member of members) system.setInstanceOrigin(member, p as readonly number[]);
+      }
+    };
+  };
+
+  const spawnEmitter = (kind: string, position: AuraVec3, options: SpawnOptions): AuraEffectInstanceHandle => {
+    const spec = registered.get(kind);
+    return spec ? spawnSpec(spec, position, options) : spawnBuiltin(kind, position, options);
+  };
+
+  // P6-T1 — runtime decal routed through the merged DecalBatch (§6.9) under A3D_QR_VFX_DECALS.
+  const spawnDecal = (at: { position: AuraVec3; normal: AuraVec3; target?: string }, options: AuraDecalOptions | undefined): AuraEffectInstanceHandle => {
+    const id = `fx-${nextInstanceId++}`;
+    const size = Math.max(0.01, options?.size ?? 0.5);
+    system.addInstance(id, {
+      kind: "effect",
+      effect: "decal",
+      id,
+      position: at.position,
+      decal: {
+        size: [size, size],
+        normal: at.normal,
+        baseOpacity: options?.opacity ?? 0.85,
+        ...(options?.color !== undefined ? { color: options.color } : {}),
+        ...(options?.lifetime !== undefined ? { lifetime: options.lifetime } : {})
+      }
+    });
+    return {
+      id,
+      get alive() {
+        return true;
+      },
+      stop: () => system.removeInstance(id),
       setPosition: (p: AuraVec3) => system.setInstanceOrigin(id, p as readonly number[])
     };
   };
@@ -233,54 +513,53 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
     set runtime(mode: "on" | "off") {
       system.setRuntimeEffects(mode);
     },
-    burst(kind: AuraVfxKind, position: AuraVec3, options) {
+    burst(kind: AuraVfxKind | AuraVfxGenreVariant | (string & {}), position: AuraVec3, options?: AuraBurstOptions) {
       return spawnEmitter(kind, position, options ?? {});
     },
-    spawn(effect: AuraVfxEffectSpec | AuraVfxKind, at: AuraVec3 | { node: string }, options) {
-      const kind = typeof effect === "string" ? effect : effect.name;
+    spawn(effect: AuraVfxEffectSpec | AuraVfxKind | AuraVfxGenreVariant | (string & {}), at: AuraVec3 | { node: string; socket?: string }, options) {
+      // GU47 E-F: `{ node, socket }` (or the spec's own attachTo) makes the effect follow that node; the old
+      // code spawned it at the world origin.
+      const onNode = !Array.isArray(at) && typeof (at as { node?: unknown }).node === "string";
       const position: AuraVec3 = Array.isArray(at) ? (at as unknown as AuraVec3) : [0, 0, 0];
-      // A named preset is a one-shot impact: it bursts and dies with its particles. Only an authored
-      // AuraVfxEffectSpec object is a looping effect that the caller stops.
-      return spawnEmitter(kind, position, { ...(options ?? {}), continuous: typeof effect !== "string" });
+      const attachTo = onNode ? at : typeof effect === "string" ? undefined : effect.attachTo;
+      const spawnOptions: SpawnOptions = { ...(options ?? {}), continuous: typeof effect !== "string", ...(attachTo !== undefined ? { attachTo } : {}) };
+      // A named preset (registered first, then built-in) is a one-shot impact: it bursts and dies with its
+      // particles. Only an authored AuraVfxEffectSpec object is a looping effect that the caller stops.
+      return typeof effect === "string" ? spawnEmitter(effect, position, spawnOptions) : spawnSpec(effect, position, spawnOptions);
     },
-    trail(_target, options) {
-      void options;
-      system.diagnostics.note("VFX_TRAIL_PENDING", "", "effects.trail lands with P2-T5 ribbons");
+    trail(target, options): AuraTrailHandle {
+      // GU47 E-F: a real ribbon on the RibbonBatch that follows `target` (node id, handle or { node, socket }).
+      // Runtime effects "off" drops trails like every other runtime-spawned effect.
+      const id = `fx-${nextInstanceId++}`;
+      const live = system.runtimeEffects !== "off";
+      if (live) {
+        system.addTrail(id, target, {
+          width: options.width,
+          life: options.life,
+          color: options.color ?? "#ffffff",
+          ...(options.widthOverSpeed !== undefined ? { widthOverSpeed: options.widthOverSpeed } : {})
+        });
+      }
       return {
-        id: `fx-${nextInstanceId++}`,
+        id,
         get alive() {
-          return false;
+          return live && system.trailInfo(id) !== null;
         },
-        stop: () => {},
-        setPosition: () => {}
+        get length() {
+          return system.trailInfo(id)?.length ?? 0;
+        },
+        get pointCount() {
+          return system.trailInfo(id)?.pointCount ?? 0;
+        },
+        stop: (o?: { immediate?: boolean }) => system.stopTrail(id, o?.immediate === true),
+        setPosition: (p: AuraVec3) => {
+          system.trailPush(id, [p[0] ?? 0, p[1] ?? 0, p[2] ?? 0]);
+        },
+        clear: () => system.clearTrail(id)
       };
     },
     decal(at, options) {
-      // P6-T1 — runtime decal routed through the merged DecalBatch (§6.9)
-      // under A3D_QR_VFX_DECALS.
-      const id = `fx-${nextInstanceId++}`;
-      const size = Math.max(0.01, options?.size ?? 0.5);
-      system.addInstance(id, {
-        kind: "effect",
-        effect: "decal",
-        id,
-        position: at.position,
-        decal: {
-          size: [size, size],
-          normal: at.normal,
-          baseOpacity: options?.opacity ?? 0.85,
-          ...(options?.color !== undefined ? { color: options.color } : {}),
-          ...(options?.lifetime !== undefined ? { lifetime: options.lifetime } : {})
-        }
-      });
-      return {
-        id,
-        get alive() {
-          return true;
-        },
-        stop: () => system.removeInstance(id),
-        setPosition: (p: AuraVec3) => system.setInstanceOrigin(id, p as readonly number[])
-      };
+      return spawnDecal(at, options);
     },
     get presets() {
       const out = {} as Record<string, AuraVfxEffectSpec>;
@@ -288,6 +567,8 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
       return out as unknown as Readonly<Record<AuraVfxKind, AuraVfxEffectSpec>>;
     },
     registerPreset(kind: string, spec: AuraVfxEffectSpec) {
+      // GU47 E-F: registered names (new or overriding a built-in) resolve in burst/spawn before BURST_PRESETS.
+      registered.set(kind, spec);
       presets.set(kind, spec);
     },
     get liveCount() {
@@ -298,6 +579,8 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
         if (entry.emitterId) system.removeInstance(entry.emitterId);
       }
       instances.clear();
+      // GU47 E-F: runtime trails and any other runtime emitter go too.
+      system.clearRuntimeParticles();
     }
   };
 }
@@ -409,10 +692,10 @@ export function prd07SystemFor(app: AuraApp): ProductionEffectSystem | null {
   return systems.get(app) ?? null;
 }
 
-function toVec3(c: AuraColor | undefined, fallback: [number, number, number]): [number, number, number] {
+function toVec3(c: AuraColor | undefined, fallback: readonly [number, number, number]): [number, number, number] {
   if (typeof c === "string" && c.startsWith("#") && c.length === 7) {
     return [parseInt(c.slice(1, 3), 16) / 255, parseInt(c.slice(3, 5), 16) / 255, parseInt(c.slice(5, 7), 16) / 255];
   }
   if (Array.isArray(c) && c.length >= 3) return [Number(c[0]), Number(c[1]), Number(c[2])];
-  return fallback;
+  return [fallback[0], fallback[1], fallback[2]];
 }
