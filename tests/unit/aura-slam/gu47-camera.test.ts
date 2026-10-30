@@ -4,6 +4,7 @@
  */
 import { describe, expect, it } from "vitest";
 import {
+  ACE_PUNCH_DEG, ACE_PUNCH_SECONDS, acePunchOffset, nextPunchT,
   CAMERA_CLASSIC, CAMERA_PAN_LIMIT, CAMERA_V2, cameraFovForAspect, cameraRigFor, dampPan, panGoal, panLimitFor, panPose, projectWorldPoint, type CameraPose
 } from "../../../examples/aura-slam/view/camera";
 import { COURT_X, COURT_Z } from "../../../examples/aura-slam/view/constants";
@@ -134,5 +135,36 @@ describe("GU47 TT-C1: broadcast camera v2", () => {
   it("reduced motion: no pan (the camera holds the v2 pose)", () => {
     expect(dampPan(0.4, 0.6, 1 / 60, true)).toBe(0);
     expect(dampPan(0, 0.6, 1, true)).toBe(0);
+  });
+
+  it("TT-V2 ace punch: zooms in by ACE_PUNCH_DEG and returns exactly to the rig FOV within a second", () => {
+    expect(ACE_PUNCH_SECONDS).toBeLessThanOrEqual(1);
+    expect(acePunchOffset(Number.POSITIVE_INFINITY)).toBe(0);
+    expect(acePunchOffset(-0.1)).toBe(0);
+    expect(acePunchOffset(0)).toBe(0);
+    let peak = 0, prev = 0, rising = true;
+    for (let t = 0; t <= ACE_PUNCH_SECONDS + 0.05; t += 1 / 120) {
+      const o = acePunchOffset(t);
+      expect(o).toBeGreaterThanOrEqual(0);
+      expect(o).toBeLessThanOrEqual(ACE_PUNCH_DEG + 1e-12);
+      if (o < prev - 1e-12) rising = false;
+      if (!rising) expect(o).toBeLessThanOrEqual(prev + 1e-12); // one rise, one fall: no wobble
+      peak = Math.max(peak, o);
+      prev = o;
+    }
+    expect(peak).toBeCloseTo(ACE_PUNCH_DEG, 9);
+    expect(acePunchOffset(ACE_PUNCH_SECONDS)).toBe(0);
+  });
+
+  it("TT-V2 ace punch clock: a new ace starts it in the World Tour look; reduced motion and ?look=original never punch", () => {
+    const INF = Number.POSITIVE_INFINITY;
+    expect(nextPunchT(INF, 1, 0, 1 / 60, true, false)).toBe(0);
+    expect(nextPunchT(0, 1, 1, 1 / 60, true, false)).toBeCloseTo(1 / 60, 12);
+    expect(nextPunchT(INF, 1, 1, 1 / 60, true, false)).toBe(INF);
+    // Reduced motion: the ace pose is the rig pose (offset 0) on every frame.
+    let t = INF;
+    for (let i = 0; i < 120; i++) { t = nextPunchT(t, i < 5 ? 0 : 1, i < 6 ? 0 : 1, 1 / 60, true, true); expect(acePunchOffset(t)).toBe(0); }
+    // Original look: never starts.
+    expect(nextPunchT(INF, 1, 0, 1 / 60, false, false)).toBe(INF);
   });
 });

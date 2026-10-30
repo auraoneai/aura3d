@@ -4,7 +4,7 @@ import type { AthletePose, SceneRenderer } from "../contract/modules";
 import type { ActorState, BallState, MatchState } from "../contract/sim";
 import type { Vec3 } from "../contract/units";
 import { resolveBallHandles, updateBall, type BallHandles } from "./ball";
-import { CAMERA_FAR, CAMERA_NEAR, cameraFovForAspect, cameraRigFor, dampPan, panGoal, panLimitFor, panPose, projectWorldPoint, type CameraPose } from "./camera";
+import { CAMERA_FAR, CAMERA_NEAR, acePunchOffset, nextPunchT, cameraFovForAspect, cameraRigFor, dampPan, panGoal, panLimitFor, panPose, projectWorldPoint, type CameraPose } from "./camera";
 import { COURT_X, COURT_Y, COURT_Z, HIDDEN_SCALE, SERVICE_Z, SINGLES_X, SPECTATOR_COUNT, clamp } from "./constants";
 import { QUALITY_REBUILD } from "./lighting";
 import { resolveAppearance } from "./appearance";
@@ -128,6 +128,10 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
   let pan = 0;
   let posedPan = 0;
   let cameraPose: CameraPose = panPose(cameraRig, 0);
+  // TT-V2: seconds since the last ace's lens punch (Infinity = none running); the drawn FOV is cameraFov minus the punch.
+  let punchT = Number.POSITIVE_INFINITY;
+  let punchSent = 0;
+  let acesPunched = 0;
   let lastShake = 0;
   let particlesDrawn = 0;
   let resizeObserver: ResizeObserver | null = null;
@@ -210,12 +214,25 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     if (ready) applyCameraFov();
   }
 
+  /** The FOV the frame uses: the aspect-aware rig FOV, narrowed while an ace punch runs. */
+  function drawnFov(): number {
+    return cameraFov - acePunchOffset(punchT);
+  }
+
+  /** TT-V2: starts a punch on a new ace (World Tour only, never under reduced motion) and advances a running one. */
+  function stepAcePunch(aces: number, dt: number | undefined): void {
+    punchT = nextPunchT(punchT, aces, acesPunched, dt, worldTour, reducedMotion());
+    acesPunched = aces;
+    const offset = acePunchOffset(punchT);
+    if (Math.abs(offset - punchSent) > 1e-4) { punchSent = offset; pushCameraPose(); }
+  }
+
   /** Pushes the live pose (rig + pan) and FOV to the camera controller. */
   function pushCameraPose(): void {
     cameraPose = panPose(cameraRig, pan);
     posedPan = pan;
     try {
-      app?.camera?.setPose({ position: [...cameraPose.eye], target: [...cameraPose.target], fov: cameraFov }, { cut: true });
+      app?.camera?.setPose({ position: [...cameraPose.eye], target: [...cameraPose.target], fov: drawnFov() }, { cut: true });
     } catch { /* camera controller is optional */ }
   }
 
@@ -393,6 +410,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       } else if (spectators && audienceVisible) spectatorUpdater.update(spectators, t, cheering);
       if (particles) particlesDrawn = particleUpdater.update(particles, s.particles as never);
       vfx?.update(s as never, venueLook(currentVenueKey));
+      stepAcePunch(vfx?.events.aces ?? 0, dt);
       if (boards) {
         boards.setStandText(standLineText(venueLook(currentVenueKey).city, state.score));
         const aces = vfx?.events.aces ?? 0;
@@ -419,7 +437,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     },
 
     project(world: Vec3): { x: number; y: number; visible: boolean } {
-      const p = projectWorldPoint(viewportWidth, viewportHeight, world[0] * COURT_X, Math.max(0.04, world[2] * COURT_Y), world[1] * COURT_Z, cameraFov, cameraPose);
+      const p = projectWorldPoint(viewportWidth, viewportHeight, world[0] * COURT_X, Math.max(0.04, world[2] * COURT_Y), world[1] * COURT_Z, drawnFov(), cameraPose);
       return { x: p.x, y: p.y, visible: p.visible };
     },
 
@@ -450,7 +468,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
         engine: "@aura3d/engine",
         playerStyle: "3d",
         displayBall: [...lastBallWorld],
-        camera: { rig: cameraRig.id, position: [...cameraPose.eye], target: [...cameraPose.target], pan, fov: cameraFov, near: CAMERA_NEAR, far: CAMERA_FAR, aspect: viewportWidth / Math.max(1, viewportHeight) },
+        camera: { rig: cameraRig.id, position: [...cameraPose.eye], target: [...cameraPose.target], pan, fov: drawnFov(), baseFov: cameraFov, acePunch: acePunchOffset(punchT), near: CAMERA_NEAR, far: CAMERA_FAR, aspect: viewportWidth / Math.max(1, viewportHeight) },
         viewport: { width: viewportWidth, height: viewportHeight, bottom: 0, pixelRatio },
         audience: {
           visible: spectators ? spectators.visible !== false : audienceVisible,

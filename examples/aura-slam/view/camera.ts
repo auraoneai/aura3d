@@ -96,6 +96,36 @@ export function dampPan(current: number, goal: number, dt: number, reducedMotion
   return current + (goal - current) * k;
 }
 
+/**
+ * TT-V2 ace punch: on an ace the broadcast lens zooms in by ACE_PUNCH_DEG (fast attack, short hold, eased release) and
+ * returns to the exact rig FOV after ACE_PUNCH_SECONDS. Presentation only; never under reduced motion (the caller skips it).
+ */
+export const ACE_PUNCH_DEG = 2.4;
+const ACE_PUNCH_ATTACK = 0.12;
+const ACE_PUNCH_HOLD = 0.22;
+const ACE_PUNCH_RELEASE = 0.6;
+export const ACE_PUNCH_SECONDS = ACE_PUNCH_ATTACK + ACE_PUNCH_HOLD + ACE_PUNCH_RELEASE;
+
+/** Degrees to subtract from the FOV `t` seconds after the ace (0 before, after, or for a non-finite t). */
+export function acePunchOffset(t: number): number {
+  if (!Number.isFinite(t) || t < 0 || t >= ACE_PUNCH_SECONDS) return 0;
+  if (t < ACE_PUNCH_ATTACK) { const k = t / ACE_PUNCH_ATTACK; return ACE_PUNCH_DEG * (1 - (1 - k) * (1 - k)); }
+  if (t < ACE_PUNCH_ATTACK + ACE_PUNCH_HOLD) return ACE_PUNCH_DEG;
+  const k = (t - ACE_PUNCH_ATTACK - ACE_PUNCH_HOLD) / ACE_PUNCH_RELEASE;
+  return ACE_PUNCH_DEG * (1 - k * k * (3 - 2 * k));
+}
+
+/**
+ * TT-V2: the punch clock after this frame. A new ace (`aces` above `acesSeen`) restarts it when `enabled` (World Tour);
+ * a running punch advances by dt; reduced motion stops it (Infinity = no punch, so the FOV is exactly the rig's).
+ */
+export function nextPunchT(punchT: number, aces: number, acesSeen: number, dt: number | undefined, enabled: boolean, reducedMotion: boolean): number {
+  if (reducedMotion) return Number.POSITIVE_INFINITY;
+  if (aces > acesSeen && enabled) return 0;
+  if (punchT < ACE_PUNCH_SECONDS) return punchT + (Number.isFinite(dt) && dt! > 0 ? Math.min(dt!, 0.25) : 1 / 60);
+  return punchT;
+}
+
 /** A live camera pose (the rig moved by the pan). */
 export interface CameraPose { readonly eye: Vec3; readonly target: Vec3 }
 
