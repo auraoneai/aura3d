@@ -1,4 +1,5 @@
 import { type CollectedLight } from "./LightCollector";
+import { packedLocalShadowSlot } from "./LightUniforms";
 import { Sampler } from "./Sampler";
 import { Texture } from "./Texture";
 import { TextureBinding } from "./TextureBinding";
@@ -89,7 +90,8 @@ export function createClusteredForwardLighting(
       light.castsShadow && light.kind !== "rect-area" ? 1 : 0,
       light.layerMask
     ], offset + 12);
-    lightPixels.set([...(light.right ?? [1, 0, 0]), 0], offset + 16);
+    // GU47 eint (EB-3): right.w carries the light's first PRD-02 local shadow tile + 1 (0 = none), as in LightUniforms.pack.
+    lightPixels.set([...(light.right ?? [1, 0, 0]), packedLocalShadowSlot(light)], offset + 16);
     lightPixels.set([...(light.up ?? [0, 1, 0]), 0], offset + 20);
   }
   const indexPixels = new Float32Array(MAX_LIGHTS_PER_CLUSTER * clusterCount * 4);
