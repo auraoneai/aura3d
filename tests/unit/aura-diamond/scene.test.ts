@@ -129,6 +129,17 @@ describe("aura-diamond GU47 scene (DIA-L1, E1, E2, E3, P1)", () => {
     }
   });
 
+  it("drizzles over Midtown only (DIA-E4), lighter on Low and under reduced motion", () => {
+    const rain = (park: ParkId, ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEXT) => flat(park, ctx).nodes.filter((n) => n.effect === "rain");
+    for (const park of PARK_ORDER) expect(rain(park)).toHaveLength(park === "skyline" ? 1 : 0);
+    const high = rain("skyline")[0]!;
+    expect(high.color).toBe(PARK_LOOKS.skyline.weather?.color);
+    const calm = rain("skyline", { ...DEFAULT_SCENE_CONTEXT, reducedMotion: true })[0]!;
+    expect(Number(calm.particleCount)).toBe(Number(high.particleCount) / 2);
+    expect(Number(rain("skyline", { ...DEFAULT_SCENE_CONTEXT, tier: "low" })[0]!.particleCount)).toBeLessThan(Number(high.particleCount));
+    expect(rain("skyline", ORIGINAL)).toHaveLength(0);
+  });
+
   it("drops the 16-sphere fake tracer and the scene ribbon in GU47 (main.ts runs one runtime trail); the original keeps both", () => {
     const tracer = (ctx: DiamondSceneContext) => flat("sandlot", ctx).nodes.filter((n) => /^ball-trail-\d+$/.test(String(n.name)) || n.name === "ball-ribbon").length;
     expect(tracer(DEFAULT_SCENE_CONTEXT)).toBe(0);

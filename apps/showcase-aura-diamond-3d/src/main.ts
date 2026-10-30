@@ -371,7 +371,8 @@ function boot(): void {
   const sceneCtx: DiamondSceneContext = {
     variant: resolveLookVariant(bootSearch),
     tier: resolveDiamondTier(bootSearch, window.matchMedia?.("(pointer: coarse)")?.matches ?? false, window.innerWidth),
-    skyMode: resolveSkyMode(bootSearch)
+    skyMode: resolveSkyMode(bootSearch),
+    reducedMotion: new URLSearchParams(bootSearch).has("reducedMotion") || (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false)
   };
   // Boot straight into the `?park=` park so a park link fetches only its own HDRI (DIA-E1), not Harbor's first.
   const bootParkParam = new URLSearchParams(bootSearch).get("park") as ParkId | null;

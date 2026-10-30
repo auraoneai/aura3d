@@ -49,7 +49,12 @@ export interface DiamondSceneContext {
   readonly variant: DiamondLookVariant;
   readonly tier: DiamondTier;
   readonly skyMode: DiamondSkyMode;
+  /** PRD 6.3: ambient particles (the Midtown drizzle) halve. */
+  readonly reducedMotion?: boolean;
 }
+
+/** DIA-E4 drizzle particles per tier (the look row sets intensity, density and colour). */
+const DRIZZLE_PARTICLES: Readonly<Record<DiamondTier, number>> = { low: 500, medium: 900, high: 1400 };
 
 export const DEFAULT_SCENE_CONTEXT: DiamondSceneContext = { variant: "gu47", tier: "high", skyMode: "analytic" };
 
@@ -681,6 +686,11 @@ export function buildParkScene(park: ParkSpec, ctx: DiamondSceneContext = DEFAUL
   if (!QA_FLAGS.noContact) sc.add(effects.contactShadows({ intensity: 0.75, length: 0.3 }));
   sc.add(effects.vignette({ intensity: plan.vignette, smoothness: 0.7 }));
   if (plan.grain !== null) sc.add(effects.filmGrain({ intensity: plan.grain }));
+  // DIA-E4: the rain-wet blue hour over Midtown (the wet warning track is its glossy track roughness, DIA-M1).
+  if (plan.weather?.kind === "drizzle") {
+    const particles = Math.round(DRIZZLE_PARTICLES[ctx.tier] * (ctx.reducedMotion ? 0.5 : 1));
+    sc.add(effects.rain({ intensity: plan.weather.intensity, density: plan.weather.density, color: plan.weather.color, speed: 0.8, particleCount: particles, splashes: true, mist: false }));
+  }
   return sc
     .camera(camera.perspective({ fov: 42, near: 0.2, far: 700, position: [0, 26, 42], target: [0, 0, -14] }))
     .addMany(buildFieldNodes(park, ctx))
