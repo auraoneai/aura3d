@@ -64,6 +64,11 @@ export interface FcVenueLook {
   readonly cones: number;
   /** Turf roughness (FC47-M1: 0.35 wet on Munich and Kyoto). */
   readonly turfRoughness: number;
+  /**
+   * Pitch surface (FC47-M1): "grass" = the acg-grass005 set tiled 24x16 with normal and roughness maps under 30% mow
+   * stripes; "ice" = clearcoat ice (Glacier); "plain" = today's flat colour (Favela dirt, Lagos sand, Uyuni salt).
+   */
+  readonly surface: "grass" | "ice" | "plain";
 }
 
 /**
@@ -83,7 +88,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, FcVenueLook>> = {
     fog: 1.3, fogColor: "#16243a",
     post: "arena-fight", grade: { contrast: 1.12, saturation: 0.92, temperature: -0.18, tint: 0 },
     bloom: { intensity: 0.24, threshold: 0.8 }, vignette: 0.25, grain: 0, chromaticAberration: 0,
-    weather: "rain", shafts: 0.35, cones: 0.5, turfRoughness: 0.35
+    weather: "rain", shafts: 0.35, cones: 0.5, turfRoughness: 0.35, surface: "grass"
   },
   // Kyoto: lantern red and magenta in drizzle.
   kyoto: {
@@ -95,7 +100,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, FcVenueLook>> = {
     fog: 1.0, fogColor: "#2a1020",
     post: "neon-night", grade: { contrast: 1.08, saturation: 1.12, temperature: 0.05, tint: 0.18 },
     bloom: { intensity: 0.3, threshold: 0.75 }, vignette: 0.25, grain: 0, chromaticAberration: 0.0015,
-    weather: "drizzle", shafts: 0, cones: 0.5, turfRoughness: 0.35
+    weather: "drizzle", shafts: 0, cones: 0.5, turfRoughness: 0.35, surface: "grass"
   },
   // Favela: sodium floods and dust in a walled cage.
   favela: {
@@ -107,7 +112,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, FcVenueLook>> = {
     fog: 0.8, fogColor: "#3a2814",
     post: "arena-fight", grade: { contrast: 1.1, saturation: 1.05, temperature: 0.32, tint: -0.05 },
     bloom: { intensity: 0.22, threshold: 0.82 }, vignette: 0.25, grain: 0.05, chromaticAberration: 0,
-    weather: "dust", shafts: 0, cones: 0.5, turfRoughness: 0.9
+    weather: "dust", shafts: 0, cones: 0.5, turfRoughness: 0.9, surface: "plain"
   },
   // Lagos: low copper sun over the sea (golden-hour look, its own sky), cascaded sun shadow, soft floods.
   lagos: {
@@ -119,7 +124,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, FcVenueLook>> = {
     fog: 0.15, fogColor: "#c98a5a",
     post: "cinematic-film", grade: { contrast: 1.08, saturation: 1.08, temperature: 0.3, tint: 0 },
     bloom: { intensity: 0.08, threshold: 0.96 }, vignette: 0.25, grain: 0, chromaticAberration: 0,
-    weather: "none", shafts: 0, cones: 0, turfRoughness: 0.95
+    weather: "none", shafts: 0, cones: 0, turfRoughness: 0.95, surface: "plain"
   },
   // Uyuni: pale dawn on a mirror flat (spruit_sunrise drawn as the sky, low warm cascaded key, exposure -0.9).
   uyuni: {
@@ -131,7 +136,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, FcVenueLook>> = {
     fog: 0.15, fogColor: "#d6dde6",
     post: "daylight-outdoor", grade: { contrast: 1.0, saturation: 0.92, temperature: 0.12, tint: 0 },
     bloom: { intensity: 0.06, threshold: 0.97 }, vignette: 0.25, grain: 0, chromaticAberration: 0,
-    weather: "none", shafts: 0, cones: 0, turfRoughness: 0.2
+    weather: "none", shafts: 0, cones: 0, turfRoughness: 0.2, surface: "plain"
   },
   // Glacier: polar night under a live aurora, with snow; real star sky.
   glacier: {
@@ -144,7 +149,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, FcVenueLook>> = {
     fog: 1.2, fogColor: "#0b1a26",
     post: "cinematic-film", grade: { contrast: 1.06, saturation: 0.95, temperature: -0.22, tint: -0.04 },
     bloom: { intensity: 0.26, threshold: 0.78 }, vignette: 0.25, grain: 0, chromaticAberration: 0,
-    weather: "snow", shafts: 0.3, cones: 0.5, turfRoughness: 0.3
+    weather: "snow", shafts: 0.3, cones: 0.5, turfRoughness: 0.3, surface: "ice"
   }
 };
 

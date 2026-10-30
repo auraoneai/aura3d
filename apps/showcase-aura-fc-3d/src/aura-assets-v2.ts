@@ -15,6 +15,56 @@ export const assets = defineAuraAssets({
     format: "hdr",
     url: "/hdri/night-2k.hdr"
   },
+  // GU47 FC47-M1: CC0 ambientCG tiling sets from the repo library (assets/library/textures/tiling/acg-grass005.zip,
+  // acg-concrete034.zip, the 1K-JPG maps), downsized to 512 px at JPEG q70 with sips. Served from public/aura-assets/.
+  fcTurfColor: {
+    type: "texture",
+    format: "jpg",
+    url: "/aura-assets/fcTurfColor.ac4777b3.jpg",
+    hash: "sha256-ac4777b3ac0cd9d661c3e392b198ee4057c11cd28df799f903e48a78099f6083",
+    sizeBytes: 108220,
+    metadata: { license: "CC0-1.0 (ambientCG)", author: "ambientCG", provenance: { sourceUrl: "https://ambientcg.com/view?id=Grass005" }, sourcePath: "assets/library/textures/tiling/acg-grass005.zip:Grass005_1K-JPG_Color.jpg" }
+  },
+  fcTurfNormal: {
+    type: "texture",
+    format: "jpg",
+    url: "/aura-assets/fcTurfNormal.c71ac38a.jpg",
+    hash: "sha256-c71ac38a9253bc3f2b340d6a1147048bfbf6092e906c1051ad253cfc163c1852",
+    sizeBytes: 91998,
+    metadata: { license: "CC0-1.0 (ambientCG)", author: "ambientCG", provenance: { sourceUrl: "https://ambientcg.com/view?id=Grass005" }, sourcePath: "assets/library/textures/tiling/acg-grass005.zip:Grass005_1K-JPG_NormalGL.jpg" }
+  },
+  fcTurfRough: {
+    type: "texture",
+    format: "jpg",
+    url: "/aura-assets/fcTurfRough.00436060.jpg",
+    hash: "sha256-00436060234c2f86ce5f199dea833c5b67799d171ef4c26a24704ade8176a1ee",
+    sizeBytes: 121011,
+    metadata: { license: "CC0-1.0 (ambientCG)", author: "ambientCG", provenance: { sourceUrl: "https://ambientcg.com/view?id=Grass005" }, sourcePath: "assets/library/textures/tiling/acg-grass005.zip:Grass005_1K-JPG_Roughness.jpg" }
+  },
+  fcConcreteColor: {
+    type: "texture",
+    format: "jpg",
+    url: "/aura-assets/fcConcreteColor.827f6a5b.jpg",
+    hash: "sha256-827f6a5bf627bccdbb5448a0adcd565210088e9dc2b099679a9afe2d02508391",
+    sizeBytes: 20654,
+    metadata: { license: "CC0-1.0 (ambientCG)", author: "ambientCG", provenance: { sourceUrl: "https://ambientcg.com/view?id=Concrete034" }, sourcePath: "assets/library/textures/tiling/acg-concrete034.zip:Concrete034_1K-JPG_Color.jpg" }
+  },
+  fcConcreteNormal: {
+    type: "texture",
+    format: "jpg",
+    url: "/aura-assets/fcConcreteNormal.e832ab39.jpg",
+    hash: "sha256-e832ab39766f053ae5952af061fb224e32b537a3f1f46ef61c245c5b7d0e89cd",
+    sizeBytes: 30123,
+    metadata: { license: "CC0-1.0 (ambientCG)", author: "ambientCG", provenance: { sourceUrl: "https://ambientcg.com/view?id=Concrete034" }, sourcePath: "assets/library/textures/tiling/acg-concrete034.zip:Concrete034_1K-JPG_NormalGL.jpg" }
+  },
+  fcConcreteRough: {
+    type: "texture",
+    format: "jpg",
+    url: "/aura-assets/fcConcreteRough.be4d8a8d.jpg",
+    hash: "sha256-be4d8a8d422d883167f37dadd807a385b8390301107041f5676f557bc8d961e7",
+    sizeBytes: 26542,
+    metadata: { license: "CC0-1.0 (ambientCG)", author: "ambientCG", provenance: { sourceUrl: "https://ambientcg.com/view?id=Concrete034" }, sourcePath: "assets/library/textures/tiling/acg-concrete034.zip:Concrete034_1K-JPG_Roughness.jpg" }
+  },
   fcFloodlightPylonMeshy: {
     type: "model",
     format: "glb",

@@ -288,8 +288,56 @@ export function surfaceMaterials(v: VenueSpec) {
   return {
     ground: material.pbr({ color: v.ground, roughness: 0.96 }),
     apron: material.pbr({ color: v.apron, roughness: Math.min(0.9, vl.turfRoughness + 0.1) }),
-    pitch: material.pbr({ color: v.pitch, roughness: vl.turfRoughness })
+    pitch: pitchMaterial(v)
   };
+}
+
+/** Turf tiling over the pitch plane (FC47-M1: 24 x 16 tiles, about 2.5 x 2.25 m each). */
+export const TURF_TILES: readonly [number, number] = [24, 16];
+
+/** Mix a hex colour toward white (0 = unchanged, 1 = white): the texture already carries the grass colour. */
+export function lightenHex(hex: string, t: number): string {
+  const n = parseInt(hex.replace("#", ""), 16);
+  const ch = (shift: number) => Math.round(((n >> shift) & 255) + (255 - ((n >> shift) & 255)) * t);
+  return `#${[16, 8, 0].map((sh) => ch(sh).toString(16).padStart(2, "0")).join("")}`;
+}
+
+/**
+ * FC47-M1 pitch surface per venue: real turf (acg-grass005 colour, normal and roughness, tiled 24x16; the venue colour
+ * is a light tint over the texture) on the grass venues with the wet roughness of the look row; clearcoat ice on
+ * Glacier; flat colour on the dirt, sand and salt venues (Uyuni's mirror is FC47-M3).
+ */
+export function pitchMaterial(v: VenueSpec) {
+  const vl = VENUE_LOOKS[v.id];
+  if (vl.surface === "grass") {
+    const tile = { scale: TURF_TILES };
+    return material.pbr({
+      color: lightenHex(v.pitch, 0.5), roughness: vl.turfRoughness,
+      texture: assets.fcTurfColor, normal: assets.fcTurfNormal, roughnessMap: assets.fcTurfRough, normalScale: 0.8,
+      texTransforms: { baseColor: tile, normal: tile, metallicRoughness: tile }
+    });
+  }
+  if (vl.surface === "ice") {
+    return material.pbr({ color: v.pitch, roughness: vl.turfRoughness, clearcoat: 1, clearcoatRoughness: 0.08 });
+  }
+  return material.pbr({ color: v.pitch, roughness: vl.turfRoughness });
+}
+
+/** Mow stripes over textured turf: a 30% tint so the grass texture reads underneath (FC47-M1). */
+export const STRIPE_OPACITY = 0.3;
+export function stripeMaterial(v: VenueSpec) {
+  const vl = VENUE_LOOKS[v.id];
+  return vl.surface === "grass"
+    ? material.pbr({ color: "#ffffff", roughness: vl.turfRoughness, opacity: STRIPE_OPACITY, depthWrite: false })
+    : material.pbr({ color: "#ffffff", roughness: 0.85 });
+}
+
+/** Favela cage walls: the acg-concrete034 set (FC47-M1), tinted with the venue wall colour. */
+export function cageWallMaterial(v: VenueSpec) {
+  return material.pbr({
+    color: lightenHex(v.wallColor, 0.35), roughness: 0.9,
+    texture: assets.fcConcreteColor, normal: assets.fcConcreteNormal, roughnessMap: assets.fcConcreteRough, normalScale: 0.7
+  });
 }
 
 /** Pitch-line paint: lit by the floods, a faint self-glow only (<= 0.1, the art-direction emissive-fill limit). */
@@ -314,7 +362,7 @@ function pitchNodes(v: VenueSpec): any[] {
   // 10 mow stripes across the length of the pitch (one instanced batch; hidden on venues without stripes)
   if (v.stripes) {
     const st = stripeInstances(v);
-    nodes.push((instances as any).plane({ name: "fc-stripes", size: [1, 1, 1], transforms: st.transforms, colors: st.colors, material: material.pbr({ color: "#ffffff", roughness: 0.85 }) })
+    nodes.push((instances as any).plane({ name: "fc-stripes", size: [1, 1, 1], transforms: st.transforms, colors: st.colors, material: stripeMaterial(v) })
       .runtime(gameRuntime("fc-stripes")));
   }
 
@@ -407,7 +455,7 @@ function stadiumNodes(v: VenueSpec): any[] {
   const nodes: any[] = [];
 
   /* ---- Favela cage walls (ball bounces off these) ---- */
-  const wallMat = material.pbr({ color: v.wallColor, roughness: 0.85 });
+  const wallMat = cageWallMaterial(v);
   const railMat = material.emissive({ color: v.accent, emissive: v.accent, emissiveIntensity: 0.5 });
   // End walls stop at the posts (FC-10): each goal line has two wall pieces, from the corner to GOAL_HALF_W + 0.2,
   // so the goal mouth stays open; sim.ts exempts the same gap from the cage bounce.
@@ -753,7 +801,7 @@ export function applyVenue(h: WorldHandles, v: VenueSpec): void {
     h.stripes.setInstances?.(st.transforms, st.colors);
     h.stripes.setVisible(v.stripes);
   }
-  for (const c of h.cages) c?.setMaterial(material.pbr({ color: v.wallColor, roughness: 0.85 })).setScale(v.walled ? [1, 1, 1] : [HIDDEN, HIDDEN, HIDDEN]).setVisible(v.walled);
+  for (const c of h.cages) c?.setMaterial(cageWallMaterial(v)).setScale(v.walled ? [1, 1, 1] : [HIDDEN, HIDDEN, HIDDEN]).setVisible(v.walled);
   for (const c of h.cageRails) c?.setMaterial(material.emissive({ color: v.accent, emissive: v.accent, emissiveIntensity: 0.5 })).setScale(v.walled ? [1, 1, 1] : [HIDDEN, HIDDEN, HIDDEN]).setVisible(v.walled);
   h.stands.forEach((s, i) => {
     const isNear = i >= 12;

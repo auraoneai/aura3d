@@ -128,3 +128,29 @@ describe("aura-fc-3d GU47 VFX pack (FC47-V1)", () => {
     expect(() => fireFcVfx(undefined, "tackle", [0, 0, 0], "uyuni")).not.toThrow();
   });
 });
+
+describe("aura-fc-3d GU47 materials (FC47-M1)", () => {
+  type Mat = { texture?: { url?: string }; normal?: { url?: string }; roughnessMap?: unknown; roughness?: number; clearcoat?: number; opacity?: number; texTransforms?: { baseColor?: { scale?: readonly number[] } } };
+  const byName = (venue: VenueId, name: string) => sceneNodes(venue).find((n) => n.name === name) as (Node & { material?: Mat }) | undefined;
+
+  it("grass venues get the tiled acg-grass005 set with the wet roughness; stripes become a 30% tint", () => {
+    for (const v of ["munich", "kyoto"] as const) {
+      const m = byName(v, "fc-pitch")!.material!;
+      expect(m.texture?.url).toMatch(/fcTurfColor\.[0-9a-f]{8}\.jpg$/);
+      expect(m.normal?.url).toMatch(/fcTurfNormal/);
+      expect(m.roughnessMap).toBeTruthy();
+      expect(m.roughness).toBe(0.35);
+      expect(m.texTransforms?.baseColor?.scale).toEqual([24, 16]);
+    }
+    expect(byName("munich", "fc-stripes")!.material!.opacity).toBe(0.3);
+  });
+
+  it("Glacier ice is clearcoat; dirt, sand and salt stay untextured", () => {
+    expect(byName("glacier", "fc-pitch")!.material!.clearcoat).toBe(1);
+    for (const v of ["favela", "lagos", "uyuni"] as const) expect(byName(v, "fc-pitch")!.material!.texture).toBeUndefined();
+  });
+
+  it("Favela cage walls use the acg-concrete034 set", () => {
+    expect((byName("favela", "cage-n")!.material!.texture?.url ?? "")).toMatch(/fcConcreteColor/);
+  });
+});
