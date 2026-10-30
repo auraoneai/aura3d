@@ -1,0 +1,15 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "top-tennis",
+  "note": "GU47 WP-11 acceptance bands that a single GL_META row can check (TT-P1, TT-E3). Cross-row and cross-cell rules (six means span >= 30, hard grid[4]/mean(grid[6],grid[8]) <= 1.25, desert top/bottom within 25, clay long-shadow probe) are evaluated in the phase-2 report.",
+  "default": { "darkFrac": [null, 0.6], "clipFrac": [null, 0.02] },
+  "variants": {
+    "default": { "mean": [38, 60], "cells": { "4": { "mean": [70, null] } } },
+    "grass": { "p95": [160, null], "spread": [120, null] },
+    "clay": { "p95": [160, null], "spread": [120, null] },
+    "desert": { "p95": [160, null], "spread": [120, null] },
+    "beach": { "p95": [160, null], "spread": [120, null] },
+    "moon": { "p95": [160, null], "spread": [120, null], "darkFrac": [0.15, 0.5], "clipFrac": [null, 0.02], "cells": { "4": { "mean": [90, null] } } }
+  },
+  "exceptions": { "moon": "declared exception (TT-E3): darkFrac 0.15-0.5 on the lunar venue (black sky); clipFrac stays <= 0.02" }
+}
