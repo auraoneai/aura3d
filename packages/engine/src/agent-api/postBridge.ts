@@ -41,6 +41,7 @@ import type { AuraOutputOptions } from "../contracts/output.js";
 import { AuraRuntimeError, groups, type AuraApp, type AuraCreateAppOptions, type AuraEffectNode, type AuraSceneNode, type AuraSceneSnapshot } from "./index.js";
 import { expandPostPreset } from "./postPresets.js";
 import { mergeLookColorGrade } from "./looks/lookGrade.js";
+import { lookOutputPreset } from "./looks/looks.js";
 import { colorToRgba } from "./colorUtils.js";
 
 /* ------------------------------------------------------------------------- */
@@ -1124,7 +1125,12 @@ export function createRootPostPipeline(
   // agx/neutral render that operator (GU47 E-C, EC-3).
   // CR-4: a grade authored next to a look wins over the look's grade field by field (looks/lookGrade.ts).
   const authoredEffectNodes = mergeLookColorGrade(nodes.filter((node): node is AuraEffectNode => node.kind === "effect"));
-  const expansion = expandPostPreset(output, authoredEffectNodes);
+  // GU47 E-A handoff: a look's declared post preset (the `output.preset` child
+  // `looks.preset` emits, or a v1 look node's preset) applies when the app
+  // authors no `output.preset`. Authored `output` fields still win over the
+  // preset's, and the look's own grade/bloom nodes win field by field.
+  const lookPreset = output?.preset === undefined ? lookOutputPreset(snapshot.nodes) : undefined;
+  const expansion = expandPostPreset(lookPreset === undefined ? output : { ...output, preset: lookPreset }, authoredEffectNodes);
   const effectiveOutput = expansion.output;
   const effectNodes = applyRuntimePostOverrides(expansion.nodes, canvas);
 
