@@ -1,0 +1,606 @@
+{
+  "schema": "aura3d.art-direction-audit/1",
+  "source": "apps/showcase-bunker-zero/src/art/direction.ts",
+  "sourceSha256": "9e4e346ab233a6343c2523efe89dbc479bcfdcfe1d23a3fbe54b03fb6cafb958",
+  "id": "showcase-bunker-zero",
+  "genre": "arena-shooter",
+  "signatureEffect": "Gunfire lights the room: every shot, ricochet and blast throws a warm transient light across board-formed concrete between the pools of the floor's own lamps.",
+  "palette": {
+    "primary": [
+      "#77756e",
+      "#4f5531",
+      "#7a3f22"
+    ],
+    "accent": "#e8b400",
+    "reservedObjective": "#ffb648"
+  },
+  "environment": {
+    "hdri": "hangar_interior",
+    "background": "enclosed"
+  },
+  "violations": [],
+  "snapshot": {
+    "lights": [
+      {
+        "type": "spot",
+        "shadow": true,
+        "intensity": 70
+      },
+      {
+        "type": "spot",
+        "shadow": false,
+        "intensity": 34
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 1.2
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 9
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 9
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 9
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 9
+      }
+    ],
+    "hasAmbient": false,
+    "environment": {
+      "kind": "hdri",
+      "background": true
+    },
+    "models": [
+      {
+        "assetKey": "auroraPadBeacon",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "blockfallReactorContainmentPylonMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "bunkerKeyMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "bunkerTreasureMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "bzArmorMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "bzBarrelMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "bzCrateMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "bzGuardMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "bzGunnerMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "bzHoundMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "bzPistol",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "bzWardenMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "corridorFireAmmoBoltMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "corridorFireAmmoCrateMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "corridorMuzzleFlameBurstMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "corridorPulseRifleMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fpsEnergyCorePickupMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fpsSciFiCoverCrateMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "mechWeaponA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "mechWeaponB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pulseNeonGateArchMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
+    "materials": [],
+    "drawCalls": 0
+  },
+  "direction": {
+    "id": "showcase-bunker-zero",
+    "genre": "arena-shooter",
+    "fantasy": "Fight floor by floor down a buried Cold-War bunker lit only by its own fixtures, where every shot lights the room.",
+    "rebuildTier": "S-world",
+    "wave": 4,
+    "references": [
+      {
+        "file": "references/civil-defence-bunker.json",
+        "source": "generic reference: Cold-War civil-defence and government bunker interiors (board-formed concrete, blast doors, olive-painted plant)",
+        "licence": "reference-only",
+        "why": "Board-formed concrete, olive steel doors and rusted plant read as a 1960s shelter dug into rock, never as sci-fi kit"
+      },
+      {
+        "file": "references/practical-lighting.json",
+        "source": "generic reference: practically lit film interiors (caged tungsten work lights, sodium and mercury-vapour lamps, flickering tubes)",
+        "licence": "reference-only",
+        "why": "Deep shadow between pools of light from fixtures the viewer can see, one lamp colour per space, haze catching the cones"
+      },
+      {
+        "file": "references/gunfire-lighting.json",
+        "source": "generic reference: first-person shooters whose muzzle flashes light the surrounding room for a frame",
+        "licence": "reference-only",
+        "why": "Gunfire as a light source: every shot throws a warm flash across concrete, so a fire-fight lights the corridor around it"
+      }
+    ],
+    "palette": {
+      "primary": [
+        "#77756e",
+        "#4f5531",
+        "#7a3f22"
+      ],
+      "accent": "#e8b400",
+      "reservedObjective": "#ffb648"
+    },
+    "lighting": {
+      "key": {
+        "type": "spot",
+        "colorTemperatureK": 2700,
+        "shadow": true
+      },
+      "fill": "ibl",
+      "practicals": 6,
+      "environment": {
+        "hdri": "hangar_interior",
+        "background": "enclosed"
+      },
+      "exposureEV": 0
+    },
+    "framing": {
+      "rig": "static",
+      "subjectHeightFraction": [
+        0.18,
+        0.62
+      ],
+      "fovDeg": [
+        72,
+        76
+      ],
+      "mobile": "both"
+    },
+    "assets": [
+      {
+        "role": "enemy",
+        "assetKey": "bzGuardMeshy",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "Walk_Loop",
+            "Run",
+            "Shoot",
+            "Contest",
+            "Idle_Loop"
+          ]
+        }
+      },
+      {
+        "role": "enemy",
+        "assetKey": "bzHoundMeshy",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "Walk_Loop",
+            "Run",
+            "Shoot",
+            "Contest",
+            "Idle_Loop"
+          ]
+        }
+      },
+      {
+        "role": "enemy",
+        "assetKey": "bzGunnerMeshy",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "Walk_Loop",
+            "Run",
+            "Shoot",
+            "Contest",
+            "Idle_Loop"
+          ]
+        }
+      },
+      {
+        "role": "enemy",
+        "assetKey": "bzWardenMeshy",
+        "maxTriangles": 90000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "Walk_Loop",
+            "Run",
+            "Shoot",
+            "Contest",
+            "Idle_Loop"
+          ]
+        }
+      },
+      {
+        "role": "prop",
+        "assetKey": "bzPistol",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "prop",
+        "assetKey": "mechWeaponA",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "mechWeaponB",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "corridorPulseRifleMeshy",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "bunkerKeyMeshy",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "bunkerTreasureMeshy",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "fpsEnergyCorePickupMeshy",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "corridorFireAmmoCrateMeshy",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "bzArmorMeshy",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "bzBarrelMeshy",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "bzCrateMeshy",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "auroraPadBeacon",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "corridorFireAmmoBoltMeshy",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "corridorMuzzleFlameBurstMeshy",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "pulseNeonGateArchMeshy",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "fpsSciFiCoverCrateMeshy",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "blockfallReactorContainmentPylonMeshy",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      }
+    ],
+    "vfx": [
+      {
+        "event": "player-fire",
+        "kind": "bz-muzzle",
+        "flipbook": "muzzle"
+      },
+      {
+        "event": "enemy-fire",
+        "kind": "bz-enemy-muzzle",
+        "flipbook": "muzzle"
+      },
+      {
+        "event": "bullet-impact",
+        "kind": "bz-impact",
+        "flipbook": "spark-streak"
+      },
+      {
+        "event": "wall-chip",
+        "kind": "concrete-chip",
+        "flipbook": "debris-chips"
+      },
+      {
+        "event": "rocket-or-barrel-blast",
+        "kind": "bz-blast",
+        "flipbook": "fireball"
+      },
+      {
+        "event": "door-slide",
+        "kind": "bz-door-dust",
+        "flipbook": "dust-mote"
+      },
+      {
+        "event": "push-wall",
+        "kind": "bz-pushwall-debris",
+        "flipbook": "smoke-a"
+      },
+      {
+        "event": "pickup",
+        "kind": "bz-pickup",
+        "flipbook": "glow"
+      }
+    ],
+    "audio": [
+      {
+        "event": "pistol-fire",
+        "cue": "pistol",
+        "variants": 1
+      },
+      {
+        "event": "mg-fire",
+        "cue": "mg",
+        "variants": 1
+      },
+      {
+        "event": "rocket-fire",
+        "cue": "rocket",
+        "variants": 1
+      },
+      {
+        "event": "knife-swing",
+        "cue": "knife",
+        "variants": 1
+      },
+      {
+        "event": "hit",
+        "cue": "hit",
+        "variants": 1
+      },
+      {
+        "event": "kill",
+        "cue": "kill",
+        "variants": 1
+      },
+      {
+        "event": "blast",
+        "cue": "boom",
+        "variants": 1
+      },
+      {
+        "event": "door",
+        "cue": "door",
+        "variants": 1
+      },
+      {
+        "event": "secret",
+        "cue": "secret",
+        "variants": 1
+      },
+      {
+        "event": "enemy-fire",
+        "cue": "enemyShot",
+        "variants": 1
+      },
+      {
+        "event": "warden-alarm",
+        "cue": "boss",
+        "variants": 1
+      },
+      {
+        "event": "bunker-hum",
+        "cue": "ambience",
+        "variants": 1
+      }
+    ],
+    "signatureEffect": "Gunfire lights the room: every shot, ricochet and blast throws a warm transient light across board-formed concrete between the pools of the floor's own lamps.",
+    "criticalCategories": [
+      "lighting",
+      "shadows",
+      "atmospheric_effects",
+      "vfx",
+      "gameplay_readability"
+    ],
+    "tiers": {
+      "low": {
+        "particles": 150,
+        "shadowMap": 1024,
+        "cascades": 1,
+        "textureMax": 1024
+      },
+      "medium": {
+        "particles": 300,
+        "shadowMap": 1024,
+        "cascades": 1,
+        "textureMax": 1024
+      },
+      "high": {
+        "particles": 600,
+        "shadowMap": 1024,
+        "cascades": 1,
+        "textureMax": 1024
+      },
+      "ultra": {
+        "particles": 600,
+        "shadowMap": 2048,
+        "cascades": 1,
+        "textureMax": 2048
+      }
+    }
+  }
+}
