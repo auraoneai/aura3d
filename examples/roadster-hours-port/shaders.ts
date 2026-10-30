@@ -406,8 +406,18 @@ void main() {
   vec3 N = normalize(vNormal);
   if (dot(N, V) < 0.0) N = -N;
   float flicker = glowAmount * (0.85 + 0.15 * sin(u_time * 4.0 + vWorld.z * 0.05));
+  // GU47 RH47-10: galvanised spangle (crystal patches a few cm across) on the guardrails, faded by the pixel footprint.
+  vec3 base = baseColor;
+  float rough = surfaceRough;
+  if (spangle > 0.0) {
+    vec2 q = vec2(vWorld.x + vWorld.z, vWorld.y) * 28.0;
+    float sfade = (1.0 - smoothstep(0.4, 1.5, length(fwidth(q)))) * spangle;
+    float cell = rhHash(q) - 0.5, grain = rhNoise(q * 3.1) - 0.5;
+    base *= 1.0 + (cell * 0.22 + grain * 0.08) * sfade;
+    rough = clamp(rough + cell * 0.2 * sfade, 0.05, 1.0);
+  }
   gSunShadow = a3dSunShadowAuto(vWorld, N);
-  vec3 lit = lightSurface(baseColor, N, V, surfaceRough, surfaceMetal, glowColor * flicker);
+  vec3 lit = lightSurface(base, N, V, rough, surfaceMetal, glowColor * flicker);
   outColor = vec4(finish(fogIt(lit, vWorld)), 1.0);
 }`;
 

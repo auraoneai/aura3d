@@ -45,3 +45,19 @@ describe("Saltwind Highway CC0 surface detail (RH47-10)", () => {
     }
   });
 });
+
+describe("Saltwind Highway galvanised guardrails (RH47-10)", () => {
+  it("the guardrails carry the spangle on the GU47 look only", async () => {
+    const { buildWorld } = await import("../../../examples/roadster-hours-port/world");
+    const find = (node: unknown): unknown => {
+      if (!node || typeof node !== "object") return undefined;
+      const n = node as { name?: string; material?: { custom?: { uniforms?: { spangle?: { value: number } } } } };
+      if (n.name === "guardrails") return n.material?.custom?.uniforms?.spangle?.value;
+      for (const child of Object.values(node)) { const hit = find(child); if (hit !== undefined) return hit; }
+      return undefined;
+    };
+    const rails = (mode: "gu47" | "original") => find(buildWorld(0, mode).scene.toJSON());
+    expect(rails("gu47")).toBe(1);
+    expect(rails("original")).toBe(0);
+  });
+});

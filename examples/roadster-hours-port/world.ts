@@ -581,7 +581,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
   builder.add(geometry.custom(dyn(flank(level, look, look.seaSide, seaKind, seed)), { name: "flank-sea", material: material.custom(terrainSpec(look)) }));
   if (look.style !== "skyway") builder.add(geometry.custom(dyn(flank(level, look, (look.seaSide * -1) as -1 | 1, look.style === "coast" ? "hills" : "cliff", seed + 101)), { name: "flank-cliff", material: material.custom(terrainSpec(look)) }));
   else builder.add(geometry.custom(dyn(flank(level, look, (look.seaSide * -1) as -1 | 1, "sea", seed + 101)), { name: "flank-far", material: material.custom(terrainSpec(look)) }));
-  builder.add(geometry.custom(dyn(guardrails(level)), { name: "guardrails", material: material.custom(solidSpec(look, [0.72, 0.74, 0.77], [0, 0, 0], 0, 0.32, 0.9)) }));
+  builder.add(geometry.custom(dyn(guardrails(level)), { name: "guardrails", material: material.custom(solidSpec(look, [0.72, 0.74, 0.77], [0, 0, 0], 0, 0.32, 0.9, look.row ? 1 : 0)) }));
   if (look.style === "skyway") builder.add(geometry.custom(dyn(towers(level, seed)), { name: "towers", material: material.custom(towerSpec(look)) }));
   if (look.style !== "canyon") {
     const lamps = streetLamps(level);

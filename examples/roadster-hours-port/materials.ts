@@ -137,11 +137,12 @@ export const plumeSpec = (style: PlumeStyle): CustomSpec => ({
   ...(style.additive ? { blending: "additive" as const } : {})
 });
 
-export const solidSpec = (look: Look, base: Rgb, glow: Rgb, glowAmount: number, rough = 0.55, metal = 0): CustomSpec => ({
+/** `spangle` (0..1, GU47 RH47-10) adds the galvanised crystal pattern; the guardrails use it on the GU47 look. */
+export const solidSpec = (look: Look, base: Rgb, glow: Rgb, glowAmount: number, rough = 0.55, metal = 0, spangle = 0): CustomSpec => ({
   receiveShadow: true,
   glsl: { vertex: SOLID_VERTEX, fragment: SOLID_FRAGMENT },
   uniforms: {
-    baseColor: c3(base), glowColor: c3(glow), glowAmount: f32(glowAmount), surfaceRough: f32(rough), surfaceMetal: f32(metal),
+    baseColor: c3(base), glowColor: c3(glow), glowAmount: f32(glowAmount), surfaceRough: f32(rough), surfaceMetal: f32(metal), spangle: f32(spangle),
     ...atmosphereUniforms(look)
   },
   side: "double"
@@ -185,5 +186,5 @@ export const allProgramSpecs = (look: Look): readonly { readonly name: string; r
   { name: "beam", spec: beamSpec(look.beam * 0.2) },
   { name: "blob", spec: blobSpec() },
   ...(look.row ? [{ name: "spray", spec: spraySpec(look, 11)! }] : []),
-  { name: "rail-metal", spec: solidSpec(look, [0.7, 0.72, 0.75], [0, 0, 0], 0, 0.35, 0.9) }
+  { name: "rail-metal", spec: solidSpec(look, [0.7, 0.72, 0.75], [0, 0, 0], 0, 0.35, 0.9, look.row ? 1 : 0) }
 ];
