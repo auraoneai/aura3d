@@ -151,7 +151,10 @@ export function registerPrd10WindFeatures(): () => void {
   const feature: ShaderFeature = {
     id: "prd10.wind",
     owner: "prd10",
-    flag: "A3D_QR_WORLD",
+    // GU47 E-G (WP-7): the world sub-flag (implied by `world`), so instanced
+    // wind (`instances.*({ wind })`) can bend without the whole WORLD lane.
+    // Selection is still label-driven: unlabelled draws never get the define.
+    flag: "A3D_QR_WORLD_WIND",
     // Path G contract: the lane labels wind-enabled draws "prd10.wind:<id>"
     // (RenderItem has no feature map today; the label prefix is the signal).
     select: (input) => (input.item.label?.startsWith("prd10.wind:") ? 1 : undefined),

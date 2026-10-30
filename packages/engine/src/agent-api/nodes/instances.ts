@@ -17,6 +17,11 @@ import { material } from "./material.js";
 import { lights } from "./lights.js";
 import { instancedMeshFactory } from "./batchedState.js";
 import { lazyNamespace } from "../lazyNamespace.js";
+import { normalizeWind, type AuraWindOptions } from "../world/wind.js";
+import type { AuraWindSpec } from "../../contracts/world.js";
+import { registerFrameContributor, type FrameContributor } from "@aura3d/rendering/contracts";
+import { setPrd10WindState } from "@aura3d/rendering/world";
+import type { RenderItem } from "@aura3d/rendering";
 
 /**
  * GU47 E-G (WP-7): what an instance colour multiplies — `"base"` (base
@@ -29,13 +34,107 @@ import { lazyNamespace } from "../lazyNamespace.js";
  */
 type InstanceColorTarget = "base" | "emissive" | "both";
 
+/**
+ * GU47 E-G (WP-7): instance wind without the WORLD lane. `true` sways with
+ * the default wind (or the scene's `world.wind` node when WORLD is on); an
+ * object tunes it with the `world.wind` options plus `assetHeight`, the
+ * mesh-local height that bends fully (default 1, in the mesh's own units).
+ * Every wind instance in a frame shares one wind field (the first wind node).
+ */
+export type AuraInstanceWindOption = boolean | (AuraWindOptions & { readonly assetHeight?: number });
+
 /** The options every `instances.<primitive>` builder takes. */
 export type AuraInstancedPrimitiveOptions = AuraPrimitiveOptions & {
   readonly transforms: readonly AuraTransformSpec[];
   readonly colors?: readonly AuraColor[];
   /** GU47 E-G: what the instance `colors` tint (default `"base"`). */
   readonly instanceColorTarget?: InstanceColorTarget;
+  /** GU47 E-G: bend the instances in the wind (Path G `prd10.wind` deform, no WORLD lane needed). */
+  readonly wind?: AuraInstanceWindOption;
 };
+
+/* ------------------------------------------------------------------------- */
+/* GU47 E-G (WP-7): instance wind without the WORLD lane                      */
+/* ------------------------------------------------------------------------- */
+
+/** The resolved wind a wind-opted node carries (`node.instanceWind`). */
+export interface AuraInstanceWind {
+  readonly wind: Required<AuraWindSpec>;
+  readonly assetHeight: number;
+}
+
+/**
+ * Wind-opted nodes by their `userData` object: the compiler forwards a
+ * node's `userData` reference onto every render item it emits, so the
+ * contributor below can find the items of wind nodes without a label or
+ * compiler change. The builder gives each wind node its own copy.
+ */
+const instanceWindByUserData = new WeakMap<object, AuraInstanceWind>();
+let instanceWindNodeCount = 0;
+
+/** Resolve a `wind` option (`false`/absent → null). */
+export function resolveInstanceWind(option: AuraInstanceWindOption | undefined): AuraInstanceWind | null {
+  if (option === undefined || option === false) return null;
+  const opts = option === true ? undefined : option;
+  const height = opts?.assetHeight;
+  return { wind: normalizeWind(opts), assetHeight: typeof height === "number" && Number.isFinite(height) && height > 0 ? height : 1 };
+}
+
+/** The Path G opt-in label prefix of the `prd10.wind` feature. */
+const WIND_LABEL_PREFIX = "prd10.wind:";
+
+/**
+ * Collect contributor (flag `A3D_QR_WORLD_WIND`): labels the render items of
+ * wind-opted instance nodes with the `prd10.wind:` prefix (the feature's
+ * selection contract) and, unless the WORLD lane publishes its own wind,
+ * publishes this frame's wind for the deform. Registered on the first
+ * wind-opted build, so apps without instance wind never run it.
+ */
+export const INSTANCE_WIND_CONTRIBUTOR: FrameContributor = {
+  id: "prd10.instanceWind",
+  owner: "prd10",
+  flag: "A3D_QR_WORLD_WIND",
+  phases: ["collect"],
+  order: 10,
+  collect(items, ctx) {
+    if (instanceWindNodeCount === 0) return items;
+    const out = labelInstanceWindItems(items);
+    if (out.wind && !ctx.flags.on("A3D_QR_WORLD")) setPrd10WindState(out.wind.wind, ctx.timeSeconds, out.wind.assetHeight);
+    return out.items;
+  }
+};
+
+/** Prefix the items of wind nodes; returns the first wind found (the frame's wind field). */
+export function labelInstanceWindItems(items: RenderItem[]): { readonly items: RenderItem[]; readonly wind: AuraInstanceWind | null } {
+  let wind: AuraInstanceWind | null = null;
+  let out: RenderItem[] | null = null;
+  for (let i = 0; i < items.length; i += 1) {
+    const item = items[i]!;
+    const data = (item as { readonly userData?: unknown }).userData;
+    const spec = typeof data === "object" && data !== null ? instanceWindByUserData.get(data) : undefined;
+    if (!spec) continue;
+    wind ??= spec;
+    const label = item.label ?? "";
+    if (label.startsWith(WIND_LABEL_PREFIX)) continue;
+    out ??= items.slice();
+    out[i] = { ...item, label: `${WIND_LABEL_PREFIX}${label}` };
+  }
+  return { items: out ?? items, wind };
+}
+
+let releaseInstanceWindContributor: (() => void) | null = null;
+
+/**
+ * Give a wind-opted node its own `userData` (a copy of the authored one),
+ * register it and make sure the contributor is installed.
+ */
+function adoptInstanceWind(userData: unknown, wind: AuraInstanceWind): Record<string, unknown> {
+  const own: Record<string, unknown> = typeof userData === "object" && userData !== null ? { ...(userData as Record<string, unknown>) } : {};
+  instanceWindByUserData.set(own, wind);
+  instanceWindNodeCount += 1;
+  releaseInstanceWindContributor ??= registerFrameContributor(INSTANCE_WIND_CONTRIBUTOR);
+  return own;
+}
 
 /**
  * GU47 E-G (WP-7): one clustered point light per instance of
@@ -61,7 +160,8 @@ export type AuraInstancedModelOptions = AuraModelOptions & {
   readonly static?: boolean;
   readonly chunkSize?: number;
   readonly shadowLod?: "none" | "lod1" | "impostor";
-  readonly wind?: boolean;
+  /** Wind sway; GU47 E-G: works without the WORLD lane (see `AuraInstanceWindOption`). */
+  readonly wind?: AuraInstanceWindOption;
   readonly impostor?: AuraAssetRef<"texture"> | "none";
   /** GU47 E-G: what the instance `colors` tint (default `"base"`). */
   readonly instanceColorTarget?: InstanceColorTarget;
@@ -186,11 +286,16 @@ function instancedModelNode<TAsset extends AuraAssetRef<"model">>(asset: TAsset,
     // (structural extension of the model node; promoted to `kind:"scatter"` by
     // the C-36 world handler under A3D_QR_WORLD — see compiler/world.ts).
     const worldOpted = options.static !== undefined || options.chunkSize !== undefined || options.shadowLod !== undefined || options.wind !== undefined || options.impostor !== undefined;
-    const placements = worldOpted ? packScatterPlacements(asset, options.transforms, options.colors, options) : undefined;
-    const node: AuraModelNode & { readonly placements?: AuraScatterPlacement; readonly instanceColorTarget?: InstanceColorTarget } = {
+    const instanceWind = resolveInstanceWind(options.wind);
+    const placements = worldOpted
+      ? packScatterPlacements(asset, options.transforms, options.colors, { ...options, wind: options.wind === undefined ? undefined : instanceWind !== null })
+      : undefined;
+    const node: AuraModelNode & { readonly placements?: AuraScatterPlacement; readonly instanceColorTarget?: InstanceColorTarget; readonly instanceWind?: AuraInstanceWind } = {
       ...base,
       ...(placements ? { placements } : {}),
       ...(options.instanceColorTarget !== undefined ? { instanceColorTarget: options.instanceColorTarget } : {}),
+      // GU47 E-G (WP-7): wind without the WORLD lane (see INSTANCE_WIND_CONTRIBUTOR).
+      ...(instanceWind ? { instanceWind, userData: adoptInstanceWind(base.userData, instanceWind) } : {}),
       instances: built.node.instances.map((transform) => ({
         ...(transform.position ? { position: [...transform.position] as AuraVec3 } : {}),
         ...(transform.rotation ? { rotation: [...transform.rotation] as AuraVec3 } : {}),
@@ -220,7 +325,7 @@ const INSTANCED_MODEL_OPTION_KEYS: readonly string[] = [
 ];
 
 /** `instances.<primitive>` / `instances.custom` read the primitive options plus these. */
-const INSTANCED_PRIMITIVE_BUILDER_KEYS: readonly string[] = [...INSTANCED_PRIMITIVE_OPTION_KEYS, "instanceColorTarget"];
+const INSTANCED_PRIMITIVE_BUILDER_KEYS: readonly string[] = [...INSTANCED_PRIMITIVE_OPTION_KEYS, "instanceColorTarget", "wind"];
 
 /** §7.1.5 scatter placements block carried on a model node pending promotion. */
 export interface AuraScatterPlacement {
@@ -279,15 +384,22 @@ function packScatterPlacements(
 export function instancedPrimitive(primitiveName: AuraPrimitiveNode["primitive"], options: AuraInstancedPrimitiveOptions): AuraNodeBuilder<AuraPrimitiveNode> {
   // Zero transforms is valid (a pool that is empty this frame): the compiler skips the node with INSTANCES_EMPTY.
   if (options.colors && options.colors.length !== options.transforms.length) throw new Error("Aura3D instance color count must match transform count.");
-  const { transforms, colors, instanceColorTarget, ...primitiveOptions } = options;
+  const { transforms, colors, instanceColorTarget, wind, ...primitiveOptions } = options;
   // The OPTION_IGNORED note names `instances.<kind>` and accepts `transforms` / `colors` (anim-phys-07).
   const built = primitive(primitiveName, { ...primitiveOptions, instances: transforms, instanceColors: colors }, {
     builder: `instances.${primitiveName}`,
     validKeys: INSTANCED_PRIMITIVE_BUILDER_KEYS,
     options
   });
-  if (instanceColorTarget === undefined) return built;
-  // GU47 E-G (WP-7): stamp the colour target for the renderer (GU47(E-D) node field).
-  const node: AuraPrimitiveNode & { readonly instanceColorTarget: InstanceColorTarget } = { ...built.toJSON(), instanceColorTarget };
+  const instanceWind = resolveInstanceWind(wind);
+  if (instanceColorTarget === undefined && !instanceWind) return built;
+  // GU47 E-G (WP-7): stamp the colour target for the renderer (GU47(E-D) node
+  // field) and opt the node into wind without the WORLD lane.
+  const base = built.toJSON();
+  const node: AuraPrimitiveNode & { readonly instanceColorTarget?: InstanceColorTarget; readonly instanceWind?: AuraInstanceWind } = {
+    ...base,
+    ...(instanceColorTarget !== undefined ? { instanceColorTarget } : {}),
+    ...(instanceWind ? { instanceWind, userData: adoptInstanceWind(base.userData, instanceWind) } : {})
+  };
   return new AuraNodeBuilder<AuraPrimitiveNode>(node);
 }

@@ -56,7 +56,7 @@ export function worldBuilderFlagOn(name: QrFlagName): boolean {
   return worldBuilderFlags().on(name);
 }
 
-export type AuraWorldSubFlag = "A3D_QR_WORLD_TERRAIN" | "A3D_QR_WORLD_WATER" | "A3D_QR_WORLD_BIOME";
+export type AuraWorldSubFlag = "A3D_QR_WORLD_TERRAIN" | "A3D_QR_WORLD_WATER" | "A3D_QR_WORLD_BIOME" | "A3D_QR_WORLD_WIND";
 
 /**
  * §13 — sub-flags are ON BY DEFAULT when `A3D_QR_WORLD` is on; they exist as
