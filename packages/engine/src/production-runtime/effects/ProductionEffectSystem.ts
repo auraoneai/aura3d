@@ -417,6 +417,9 @@ export class ProductionEffectSystem {
           return { id, age: Number((this.time - record.born).toFixed(2)), live: binding?.state.live ?? 0, emissionRate: binding?.state.desc.emissionRate ?? 0 };
         }),
         scene: [...this.emitters.keys()].filter((id) => !this.transients.has(id)),
+        // GU47 E-F: sprite texture load state and live trails (receipts vfx-atlas-sprites, vfx-trail).
+        sprites: this.spriteStatus(),
+        trails: [...this.trails.keys()].map((id) => ({ id, ...(this.trailInfo(id) ?? { length: 0, pointCount: 0 }) })),
         notes: this.diagnostics.report().errors
       });
     }
