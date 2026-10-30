@@ -198,7 +198,8 @@ function clampLookPost(post: LookPostOverride): LookPostOverride {
     if (!Object.prototype.hasOwnProperty.call(LOOK_POST_PRESET_IDS, post)) throw new Error(`LOOK_POST_UNKNOWN:${post}`);
     return post;
   }
-  return definedFields({ bloom: post.bloom === false ? false : post.bloom ? clampLookBloom(post.bloom) : undefined });
+  const bloom: false | LookBloomOptions | undefined = post.bloom === false ? false : post.bloom ? clampLookBloom(post.bloom) : undefined;
+  return bloom === undefined ? {} : { bloom };
 }
 
 export function clampLookOverrides(overrides: AuraLookOverrides | undefined): AuraLookOverrides | undefined {
@@ -562,7 +563,7 @@ function applyOverrides(preset: AuraLookPreset, overrides: AuraLookOverrides | u
 }
 
 /** Append authored keys a builder does not copy (the v2 bridge reads only `postAuthored` fields). */
-function withAuthoredFields(node: AuraSceneNode, fields: Readonly<Record<string, unknown>>): AuraSceneNode {
+function withAuthoredFields<T extends AuraSceneNode>(node: T, fields: Readonly<Record<string, unknown>>): T {
   const defined = Object.entries(fields).filter(([, value]) => value !== undefined);
   if (defined.length === 0) return node;
   const authored = (node as { postAuthored?: readonly string[] }).postAuthored ?? [];
@@ -570,7 +571,7 @@ function withAuthoredFields(node: AuraSceneNode, fields: Readonly<Record<string,
     ...node,
     ...Object.fromEntries(defined),
     postAuthored: [...authored, ...defined.map(([field]) => field).filter((field) => !authored.includes(field))]
-  } as AuraSceneNode;
+  } as T;
 }
 
 /**
@@ -623,17 +624,17 @@ function v0Children(preset: AuraLookPreset, overrides: AuraLookOverrides | undef
   }
   if (rig.fog && (overrides?.fogDensityScale ?? 1) > 0) {
     const height = rig.fog.height;
-    children.push(
-      effects.fog({
-        name: "look fog",
-        // C-21 height-fog fields ride on the node (compiler/fog.ts resolves them under A3D_QR_VFX_FOG).
-        ...(height !== undefined ? { ...height, mode: height.mode ?? "height" } : {}),
-        color: rig.fog.color,
-        // Base density derived from the preset range; fogDensityScale applies on top.
-        density: height?.density ?? 24 / Math.max(rig.fog.far, 1),
-        ...(rig.fog.range ? { near: rig.fog.near, far: rig.fog.far } : {})
-      }).toJSON()
-    );
+    const fog: Record<string, unknown> = {
+      name: "look fog",
+      // C-21 height-fog fields ride on the node (compiler/fog.ts resolves them under A3D_QR_VFX_FOG).
+      ...(height !== undefined ? { ...height, mode: height.mode ?? "height" } : {}),
+      color: rig.fog.color,
+      // Base density derived from the preset range; fogDensityScale applies on top.
+      density: height?.density ?? 24 / Math.max(rig.fog.far, 1),
+      ...(rig.fog.range ? { near: rig.fog.near, far: rig.fog.far } : {})
+    };
+    // The C-21 `mode` names differ from AuraEffectNode's anti-alias `mode`; effects.fog copies every field as data.
+    children.push(effects.fog(fog as Parameters<typeof effects.fog>[0]).toJSON());
   }
   if (rig.effects.includes("colorGrade")) {
     // `lookGrade` lets an authored grade next to the look take precedence field by field (lookGrade.ts).
