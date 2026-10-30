@@ -20,6 +20,8 @@ import type { BuiltWorld } from "./world.js";
 /** The node handle slice the presentation drives. */
 export interface PresentationNode {
   setScale(scale: number | readonly [number, number, number]): unknown;
+  setRotation?(x: number, y: number, z: number): unknown;
+  setPosition?(x: number, y: number, z: number): unknown;
   setLight?(patch: { readonly intensity?: number }, opts?: { readonly transitionSeconds?: number }): void;
 }
 
@@ -91,6 +93,24 @@ export function squashScaleY(amp: number, t: number): number {
 /** Volume-preserving x/z scale for a y scale. */
 export function squashScaleXZ(scaleY: number): number {
   return 1 / Math.sqrt(Math.max(0.05, scaleY));
+}
+
+/**
+ * PBL-AN1 prop motion (visual only): banners sway up to 0.06 rad about their foot, updraft
+ * fans spin at 1.4 rad/s, leaf pads bob 2 cm. Reduced motion scales all three to 30%.
+ */
+export const PROP_MOTION = { bannerSway: 0.06, bannerHz: 0.35, fanSpin: 1.4, bobMetres: 0.02, bobHz: 0.22 } as const;
+
+export function bannerTilt(time: number, phase: number, motion: number): number {
+  return PROP_MOTION.bannerSway * motion * Math.sin(time * Math.PI * 2 * PROP_MOTION.bannerHz + phase);
+}
+
+export function fanYaw(yaw: number, time: number, motion: number): number {
+  return yaw + PROP_MOTION.fanSpin * motion * time;
+}
+
+export function padBob(time: number, motion: number): number {
+  return PROP_MOTION.bobMetres * motion * Math.sin(time * Math.PI * 2 * PROP_MOTION.bobHz);
 }
 
 /** Smooth flicker in [0, 1]: two incommensurate sines, phase-shifted per light. */
@@ -340,6 +360,14 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
       heroScaleY = squashScaleY(squashAmp, squashT);
       const xz = squashScaleXZ(heroScaleY);
       node(options.heroNode)?.setScale([xz, heroScaleY, xz]);
+      // PBL-AN1: banners sway, updraft fans spin, leaf pads bob (visual only, PRD D8).
+      for (const d of built.presentation.animatedDecor) {
+        const h = node(d.name);
+        if (d.kind === "banner") h?.setRotation?.(0, d.yaw, bannerTilt(f.time, d.phase, scale.motion));
+        else h?.setRotation?.(0, fanYaw(d.yaw, f.time, scale.motion), 0);
+      }
+      const bob = padBob(f.time, scale.motion);
+      for (const name of built.presentation.bobNodes) node(name)?.setPosition?.(0, bob, 0);
       // PBL-V2: the unlocked Sun-Gate ring breathes.
       const ring = f.gateUnlocked ? 1 + 0.06 * Math.sin(f.time * 4) * scale.motion : 1;
       node(options.gateRingNode)?.setScale([ring, ring, ring]);

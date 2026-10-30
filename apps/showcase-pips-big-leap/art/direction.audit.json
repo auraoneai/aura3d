@@ -179,6 +179,13 @@
             "overridesTextures": false
           },
           {
+            "assetKey": "pipsCheckpointFlag",
+            "triangles": 0,
+            "textures": 1,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
             "assetKey": "skylineCrystalShardMeshy",
             "triangles": 0,
             "textures": 3,
@@ -217,13 +224,6 @@
             "assetKey": "heatsinkDroneNighthawk",
             "triangles": 0,
             "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
@@ -542,6 +542,20 @@
             "overridesTextures": false
           },
           {
+            "assetKey": "pipsCheckpointFlag",
+            "triangles": 0,
+            "textures": 1,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
+            "assetKey": "pipsCheckpointFlag",
+            "triangles": 0,
+            "textures": 1,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
             "assetKey": "skylineCrystalShardMeshy",
             "triangles": 0,
             "textures": 3,
@@ -557,13 +571,6 @@
           },
           {
             "assetKey": "propConifer",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
             "triangles": 0,
             "textures": 1,
             "unlit": false,
@@ -907,6 +914,13 @@
             "overridesTextures": false
           },
           {
+            "assetKey": "pipsCheckpointFlag",
+            "triangles": 0,
+            "textures": 1,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
             "assetKey": "skylineCrystalShardMeshy",
             "triangles": 0,
             "textures": 3,
@@ -952,13 +966,6 @@
             "assetKey": "neonStreetLampProp",
             "triangles": 0,
             "textures": 9,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
@@ -1270,6 +1277,27 @@
             "overridesTextures": false
           },
           {
+            "assetKey": "reactorFusionTurbineMeshy",
+            "triangles": 0,
+            "textures": 3,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
+            "assetKey": "reactorFusionTurbineMeshy",
+            "triangles": 0,
+            "textures": 3,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
+            "assetKey": "pipsCheckpointFlag",
+            "triangles": 0,
+            "textures": 1,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
             "assetKey": "skylineCrystalShardMeshy",
             "triangles": 0,
             "textures": 3,
@@ -1291,13 +1319,6 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "reactorFusionTurbineMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "gullsiegeWatchtowerMeshy",
             "triangles": 0,
             "textures": 3,
@@ -1308,13 +1329,6 @@
             "assetKey": "neonStreetLampProp",
             "triangles": 0,
             "textures": 9,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
@@ -1641,6 +1655,13 @@
             "overridesTextures": false
           },
           {
+            "assetKey": "pipsCheckpointFlag",
+            "triangles": 0,
+            "textures": 1,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
             "assetKey": "auraClashCornerBrazierPylonMeshy",
             "triangles": 0,
             "textures": 3,
@@ -1679,13 +1700,6 @@
             "assetKey": "neonStreetLampProp",
             "triangles": 0,
             "textures": 9,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
@@ -2023,6 +2037,20 @@
             "overridesTextures": false
           },
           {
+            "assetKey": "pipsCheckpointFlag",
+            "triangles": 0,
+            "textures": 1,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
+            "assetKey": "pipsCheckpointFlag",
+            "triangles": 0,
+            "textures": 1,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
             "assetKey": "skylineCrystalShardMeshy",
             "triangles": 0,
             "textures": 3,
@@ -2047,13 +2075,6 @@
             "assetKey": "heatsinkArch",
             "triangles": 0,
             "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },
@@ -2422,6 +2443,13 @@
             "overridesTextures": false
           },
           {
+            "assetKey": "pipsCheckpointFlag",
+            "triangles": 0,
+            "textures": 1,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
             "assetKey": "skylineCrystalShardMeshy",
             "triangles": 0,
             "textures": 3,
@@ -2453,13 +2481,6 @@
             "assetKey": "neonStreetLampProp",
             "triangles": 0,
             "textures": 9,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
             "unlit": false,
             "overridesTextures": false
           },

@@ -1,7 +1,7 @@
 // GU47 WP-16 (G06) PBL-PF1: the diorama draws decor, hazard dressing and pedestals as instanced models, one draw
 // class per asset / fit / shadow flags, and every instance stands where today's model node stood at today's size.
 import { describe, expect, it } from "vitest";
-import { buildWorld, decorInstance, hazardInstance, propGroupKey } from "../../../apps/showcase-pips-big-leap/src/game/world";
+import { ANIMATED_DECOR_KINDS, buildWorld, decorInstance, hazardInstance, propGroupKey } from "../../../apps/showcase-pips-big-leap/src/game/world";
 import { WORLD_IDS } from "../../../apps/showcase-pips-big-leap/src/game/looks";
 import { worldSpec } from "../../../apps/showcase-pips-big-leap/src/game/worlds";
 
@@ -56,7 +56,8 @@ describe("pips-big-leap instanced props (PBL-PF1)", () => {
       const spec = worldSpec(id);
       const nodes = sceneOf(id);
       const props = propNodes(nodes);
-      const expected = spec.decor.length + spec.hazards.length + spec.springs.length + spec.checkpoints.length;
+      const staticDecor = spec.decor.filter((d) => !ANIMATED_DECOR_KINDS.has(d.kind));
+      const expected = staticDecor.length + spec.hazards.length + spec.springs.length + spec.checkpoints.length;
       const instanced = props.reduce((sum, n) => sum + (n.instances?.length ?? 0), 0);
       expect(instanced, id).toBe(expected);
       expect(props.length, id).toBeLessThan(expected);
@@ -66,7 +67,7 @@ describe("pips-big-leap instanced props (PBL-PF1)", () => {
         expect(n.targetHeight === 1 || n.targetMaxDimension === 1, n.name).toBe(true);
       }
       // No per-prop model node is left in the diorama look.
-      expect(nodes.filter((n) => /:(mesh|base|pad)$/.test(n.name ?? "") || spec.decor.some((d) => n.name === `${d.id}:${d.kind}`)).map((n) => n.name), id).toEqual([]);
+      expect(nodes.filter((n) => /:(mesh|base|pad)$/.test(n.name ?? "") || staticDecor.some((d) => n.name === `${d.id}:${d.kind}`)).map((n) => n.name), id).toEqual([]);
     }
   });
 

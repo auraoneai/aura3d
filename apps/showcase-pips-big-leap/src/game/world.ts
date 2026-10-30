@@ -459,6 +459,46 @@ export interface WorldPresentation {
   readonly floraCount: number;
   /** Static platforms drawn through instanced slabs (PBL-PF1). */
   readonly instancedPlatforms: number;
+  /** PBL-AN1: decor the presentation sways (banners) or spins (updraft fans), one runtime node each. */
+  readonly animatedDecor: readonly AnimatedDecor[];
+  /** PBL-AN1: instanced leaf-pad draws that bob a few centimetres (visual only; colliders stay). */
+  readonly bobNodes: readonly string[];
+}
+
+/** PBL-AN1: one decor prop the presentation moves (visual only). */
+export interface AnimatedDecor {
+  readonly name: string;
+  readonly kind: "banner" | "fan";
+  readonly yaw: number;
+  /** Seeded from the decor id so neighbours do not move in lockstep. */
+  readonly phase: number;
+}
+
+/** Decor kinds the diorama animates instead of instancing (PBL-AN1). */
+export const ANIMATED_DECOR_KINDS: ReadonlySet<DecorSpec["kind"]> = new Set(["banner", "fan"]);
+
+/** Platform kinds whose static instanced draws bob (PBL-AN1 "bobbing leaf pads"). */
+export const BOBBING_PLATFORM_KINDS: ReadonlySet<PlatformKind> = new Set(["leaf"]);
+
+function phaseOf(id: string): number {
+  let h = 0;
+  for (let i = 0; i < id.length; i += 1) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return (h % 6283) / 1000;
+}
+
+/**
+ * PBL-AN1: a banner or updraft fan as its own runtime model node, at today's asset, place,
+ * yaw and fitted size, so the presentation can sway or spin it. Banners stay out of the
+ * shadow map like the other tiny props.
+ */
+function animatedDecorNode(d: DecorSpec): SceneNodeArg {
+  const s = d.s ?? 1;
+  const name = `${d.id}:${d.kind}`;
+  const asset = d.kind === "banner" ? assets.checkpointFlag : assets.props.turbine;
+  return model(asset, { name, castShadow: d.kind !== "banner", receiveShadow: true, targetHeight: 2.2 * s })
+    .position(d.x, d.y, d.z)
+    .rotate(0, d.yaw ?? 0, 0)
+    .runtime(game.runtimeNode(name, { tags: ["decor"] }));
 }
 
 /** Today's atmosphere (`?look=original`), unchanged. */
@@ -527,7 +567,7 @@ function addDioramaAtmosphere(builder: SceneBuilder, spec: WorldSpec, look: Worl
  * (clay body, felt top); movers and timed platforms keep their own runtime nodes so
  * `tickPlatforms` can move and hide them exactly as before.
  */
-function addDioramaPlatforms(builder: SceneBuilder, spec: WorldSpec): number {
+function addDioramaPlatforms(builder: SceneBuilder, spec: WorldSpec, bobNodes: string[]): number {
   const groups = new Map<PlatformKind, { body: ReturnType<typeof slabTransforms>["body"][]; top: ReturnType<typeof slabTransforms>["top"][] }>();
   let instanced = 0;
   for (const p of spec.platforms) {
@@ -554,8 +594,18 @@ function addDioramaPlatforms(builder: SceneBuilder, spec: WorldSpec): number {
   }
   for (const [kind, group] of groups) {
     const surface = SURFACES[kind];
-    builder.add(instances.roundedBox({ name: `plats:${kind}`, transforms: group.body, params: { radius: SLAB_RADIUS }, material: surface.body, castShadow: true, receiveShadow: true }));
-    builder.add(instances.roundedBox({ name: `plat-tops:${kind}`, transforms: group.top, params: { radius: 0.3 }, material: surface.top, castShadow: false, receiveShadow: true }));
+    const body = instances.roundedBox({ name: `plats:${kind}`, transforms: group.body, params: { radius: SLAB_RADIUS }, material: surface.body, castShadow: true, receiveShadow: true });
+    const top = instances.roundedBox({ name: `plat-tops:${kind}`, transforms: group.top, params: { radius: 0.3 }, material: surface.top, castShadow: false, receiveShadow: true });
+    if (BOBBING_PLATFORM_KINDS.has(kind)) {
+      // PBL-AN1: the leaf pads bob as one draw each; the instance transforms are world
+      // space, so the node's own position is the bob offset.
+      builder.add(body.runtime(game.runtimeNode(`plats:${kind}`, { tags: ["decor"] })));
+      builder.add(top.runtime(game.runtimeNode(`plat-tops:${kind}`, { tags: ["decor"] })));
+      bobNodes.push(`plats:${kind}`, `plat-tops:${kind}`);
+    } else {
+      builder.add(body);
+      builder.add(top);
+    }
   }
   return instanced;
 }
@@ -579,7 +629,9 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   const solids: SolidBox[] = [];
   const moving: SolidBox[] = [];
   const timed: SolidBox[] = [];
-  const instancedPlatforms = diorama ? addDioramaPlatforms(builder, spec) : 0;
+  const bobNodes: string[] = [];
+  const animatedDecor: AnimatedDecor[] = [];
+  const instancedPlatforms = diorama ? addDioramaPlatforms(builder, spec, bobNodes) : 0;
   for (const p of spec.platforms) {
     if (!diorama) {
       const style = KIND_STYLE[p.kind ?? "grass"];
@@ -752,7 +804,10 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   for (const d of spec.decor) {
     const obstacle = cameraObstacleFor(d);
     if (obstacle) cameraObstacles.push(obstacle);
-    if (diorama) {
+    if (diorama && ANIMATED_DECOR_KINDS.has(d.kind)) {
+      builder.add(animatedDecorNode(d));
+      animatedDecor.push({ name: `${d.id}:${d.kind}`, kind: d.kind as AnimatedDecor["kind"], yaw: d.yaw ?? 0, phase: phaseOf(d.id) });
+    } else if (diorama) {
       const prop = decorInstance(d);
       if (prop) props.push(prop);
     } else {
@@ -851,7 +906,9 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
       baseTop,
       practicals: diorama ? look.practicals.map((p) => ({ name: p.name, intensity: p.intensity, flicker: p.flicker })) : [],
       floraCount,
-      instancedPlatforms
+      instancedPlatforms,
+      animatedDecor,
+      bobNodes
     }
   };
 }
