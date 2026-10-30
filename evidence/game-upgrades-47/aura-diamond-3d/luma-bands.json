@@ -1,0 +1,14 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "aura-diamond-3d",
+  "note": "WP-18 acceptance bands (PRD DIA-L1, L2, E2, E3, P1); variants are the ?park= targets in tests/browser/game-luma-targets.ts",
+  "default": { "darkFrac": [null, 0.6], "clipFrac": [null, 0.05] },
+  "variants": {
+    "sandlot": { "p95": [200, null], "clipFrac": [null, 0.02], "rb": [1.15, null], "cells": { "middle": { "mean": [40, 170] } } },
+    "skyline": { "darkFrac": [null, 0.03], "p95": [190, null], "clipFrac": [null, 0.02], "rb": [null, 0.9], "cells": { "middle": { "mean": [40, 170] } } },
+    "canyon": { "p95": [200, null], "p5": [null, 25], "clipFrac": [null, 0.02], "cells": { "top": { "mean": [140, null] }, "middle": { "mean": [40, 170] } } },
+    "ivy": { "p95": [200, null], "clipFrac": [null, 0.02], "cells": { "middle": { "mean": [40, 170] } } },
+    "dome": { "p50": [85, null], "rb": [0.95, 1.05], "clipFrac": [null, 0.02], "cells": { "middle": { "mean": [40, 170] } } },
+    "lunar": { "darkFrac": [0.2, 0.4], "p95": [200, null], "rb": [null, 0.9], "clipFrac": [null, 0.02], "cells": { "top": { "mean": [null, 12] }, "middle": { "mean": [40, 170] } } }
+  }
+}
