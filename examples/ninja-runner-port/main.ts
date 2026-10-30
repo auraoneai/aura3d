@@ -6,7 +6,9 @@
  * (`pf(z, 1/120)`), with key presses applied between steps. Query parameters (all optional):
  * `autostart=1`, `autopilot=1` (the capture policy plays the run), `manual=1` (the sim only advances through
  * the hooks), `seed=N` (course seed, default 17), `daily=1` (today's course: the seed is the UTC date as YYYYMMDD),
- * `quality=low`.
+ * `quality=low`. GU47 (WP-30): `look=original` (the pre-GU47 midday look; the default is the evening that moves with
+ * distance), `at=<metres>` (boots straight into a run held at that distance through the capture policy; the sim then
+ * holds still like `manual=1`, for the district luma targets), `lanterns=0` (no pooled lantern lights), `scarf=0` (no scarf ribbon), `godrays=0`.
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp, createFixedStepLoop, installQaHooks } from "@aura3d/engine";
 import { DEFAULT_POLICY, policyActions, type PolicyParams } from "./autopilot";
@@ -20,6 +22,8 @@ import {
   type Action, type EnemyKind, type Form, type SimEvent, type SimState
 } from "./sim";
 import { createNinjaPresenter, viewOf } from "./presentation";
+import { lookMode } from "./districtLook";
+import { atDistance, qaCrops } from "./qa";
 import { ACTOR_COUNT, buildWorld, loadActors, type ActorAssets, type WorldRuntime } from "./world";
 
 const params = new URLSearchParams(location.search);
@@ -33,8 +37,17 @@ const config = {
   manual: params.get("manual") === "1",
   /** `rules=original` reproduces the original game's obstacle contact (crates vanish, no knock-back); the default is the reworked contact rules. */
   ram: params.get("rules") !== "original",
-  quality: (params.get("quality") === "low" ? "low" : "high") as "low" | "high"
+  quality: (params.get("quality") === "low" ? "low" : "high") as "low" | "high",
+  /** GU47: evening (default) or the pre-GU47 look (`?look=original`). */
+  look: lookMode(params),
+  /** GU47 NR-22: `?at=<metres>` district target, or null. */
+  at: atDistance(params),
+  lanterns: params.get("lanterns") !== "0",
+  scarf: params.get("scarf") !== "0",
+  godRays: params.get("godrays") !== "0"
 };
+// A district target holds the run where it lands (captures drive nothing), so it behaves like `manual=1`.
+if (config.at !== null) config.manual = true;
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
@@ -476,6 +489,10 @@ const api = {
   runIdle: (maxSteps = 40000) => summary(runIdle(maxSteps)),
   courseDigest: () => courseDigest(createState(config.seed)),
   probeBones: () => runtime?.probeBones(),
+  /** GU47: active look, district, scarf ribbon and lantern pool. */
+  look: () => runtime?.look() ?? null,
+  /** GU47 E-I crop contract: named normalised rects read at every capture shot. */
+  crops: () => qaCrops(z.s),
   stats: () => ({ ...(runtime?.stats() ?? { visibleActors: 0, actors: ACTOR_COUNT, pickups: 0, particles: 0, debris: 0, threat: null }), shared: actors ? { textureEntries: actors.sharedTextureEntries, refs: actors.sharedTextureRefs, clips: actors.clips, clip: actors.clip } : null }),
   diagnostics: () => app?.diagnostics() ?? null,
   appInfo: () => app?.info ?? null,
@@ -561,13 +578,14 @@ async function boot(): Promise<void> {
   const status = $("loading-status");
   actors = await loadActors(canvas, (done, total) => { status.textContent = done < total ? `Loading the runners (${done + 1} of ${total})…` : "Building the village…"; });
   status.textContent = "Building the village…";
-  const world = buildWorld({ canvas, actors, entities: z.entities, quality: config.quality, shake });
+  const world = buildWorld({ canvas, actors, entities: z.entities, quality: config.quality, shake, mode: config.look, reducedMotion, lanterns: config.lanterns, scarf: config.scarf, godRays: config.godRays });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
     pixelRatio: 1,
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
-    output: { toneMapping: "aces", dither: false },
+    // GU47 NR-08: the woodblock grade tone-maps with agx; `?look=original` keeps aces.
+    output: { toneMapping: config.look === "evening" ? "agx" : "aces", dither: false },
     scene: world.scene
   });
   await app.ready();
@@ -578,6 +596,26 @@ async function boot(): Promise<void> {
   render(0);
   updateHud();
   if (config.autostart) begin();
+  if (config.at !== null) jumpTo(config.at);
+}
+
+/**
+ * GU47 NR-22: start a run and step it (capture policy, no rendering) until `metres`, then hold it there. The sim is
+ * untouched: the same `step` the hooks use, with the reference policy playing (`?autopilot=1`).
+ */
+function jumpTo(metres: number): void {
+  begin();
+  const was = autopilotOn;
+  autopilotOn = true;
+  let n = 0;
+  while (z.phase === "running" && z.s < metres && n < 120 * 400) { step(1); n++; }
+  autopilotOn = was;
+  pendingEvents = [];
+  presenter.reset();
+  updateHud();
+  runtime?.resetCamera();
+  // A few real-time frames so the look, the lantern pool and the scarf settle before the first shot.
+  for (let i = 0; i < 30; i++) { renderTime += 1 / 60; render(1 / 60); }
 }
 
 function reportError(error: unknown): void {

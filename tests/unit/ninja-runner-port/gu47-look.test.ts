@@ -152,3 +152,37 @@ describe("ninja-runner-port VFX pack (NR-14, NR-15, reduced motion)", () => {
     expect(AMBIENT_BY_DISTRICT.gate).toBe("falls-spray");
   });
 });
+
+describe("ninja-runner-port ?at= district targets and QA crops (NR-22)", () => {
+  it("parses and clamps ?at=", async () => {
+    const { atDistance, qaCrops } = await import("../../../examples/ninja-runner-port/qa");
+    expect(atDistance(new URLSearchParams("at=700"))).toBe(700);
+    expect(atDistance(new URLSearchParams("at=99999"))).toBe(2600);
+    expect(atDistance(new URLSearchParams("at=x"))).toBeNull();
+    expect(atDistance(new URLSearchParams(""))).toBeNull();
+    for (const [, m] of NINJA_DISTRICTS) {
+      const crops = qaCrops(m);
+      expect(crops.length).toBeLessThanOrEqual(16);
+      for (const c of crops) {
+        expect(c.name).toMatch(/^[a-z0-9][a-z0-9_-]{0,31}$/);
+        expect(c.x + c.w).toBeLessThanOrEqual(1);
+        expect(c.y + c.h).toBeLessThanOrEqual(1);
+      }
+    }
+    expect(qaCrops(1300).map((c) => c.name)).toContain("river");
+    expect(qaCrops(700).map((c) => c.name)).toContain("roof");
+  });
+
+  it("the capture policy reaches every district stop without the run ending (sim untouched)", async () => {
+    const { createState, startRun, stepSim, applyAction, SIM_STEP } = await import("../../../examples/ninja-runner-port/sim");
+    const { DEFAULT_POLICY, policyActions } = await import("../../../examples/ninja-runner-port/autopilot");
+    const z = createState(17);
+    startRun(z);
+    for (const [, m] of NINJA_DISTRICTS) {
+      let n = 0;
+      while (z.phase === "running" && z.s < m && n < 120 * 400) { for (const a of policyActions(z, DEFAULT_POLICY)) applyAction(z, a); stepSim(z, SIM_STEP); n++; }
+      expect(z.s).toBeGreaterThanOrEqual(m);
+      expect(z.phase).toBe("running");
+    }
+  });
+});

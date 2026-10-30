@@ -27,10 +27,10 @@ describe("ninja-runner-port audit fixes", () => {
     }
   });
 
-  it("S-07 (not a defect here): the hemisphere stays, because the HDRI node has no asset ref and the neutral room counts it", () => {
-    const world = src("world.ts");
-    expect(world).toMatch(/lights\.hemisphere\(\{ name: "sky fill"/);
-    expect(world).toMatch(/IBL_HDRI \? SKY\.autumn :/);
+  it("S-07 (not a defect here): the original look keeps its hemisphere; GU47 moved that rig to lighting.ts (?look=original)", () => {
+    const rig = src("lighting.ts");
+    expect(rig).toMatch(/lights\.hemisphere\(\{ name: "sky fill"/);
+    expect(rig).toMatch(/o\.originalHdri \? SKY_ASSETS\.autumn :/);
   });
 
   it("enemies render from the live state, not the boot state (stale entity map removed)", () => {

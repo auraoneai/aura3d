@@ -9,6 +9,7 @@ import {
   PARTICLE_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX, SPARKS_FRAGMENT, SPARKS_VERTEX, WATER_FRAGMENT, WATER_VERTEX
 } from "./shaders";
 import type { Rgb } from "./palette";
+import { ORIGINAL_SKY } from "./districtLook";
 
 export type CustomSpec = Parameters<typeof material.custom>[0];
 export type TextureHandle = ReturnType<typeof texture.canvas>;
@@ -32,16 +33,33 @@ export const solidSpec = (base: Rgb, options: SolidOptions = {}): CustomSpec => 
   ...(options.alpha !== undefined && options.alpha < 1 ? { transparent: true, depthWrite: false } : {})
 });
 
+/** Sky dome; every default is the original shader constant (`ORIGINAL_SKY`), the evening look drives them per frame. */
 export const skySpec = (): CustomSpec => ({
   glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT },
-  uniforms: { sunDirection: { type: "vec3", value: [-0.45, 0.68, -0.4] } },
+  uniforms: {
+    sunDirection: { type: "vec3", value: [...ORIGINAL_SKY.sunDirection] },
+    skyZenith: { type: "color3", value: [...ORIGINAL_SKY.skyZenith] },
+    skyHorizon: { type: "color3", value: [...ORIGINAL_SKY.skyHorizon] },
+    skyGlow: { type: "color3", value: [...ORIGINAL_SKY.skyGlow] },
+    skyCloud: { type: "color3", value: [...ORIGINAL_SKY.skyCloud] },
+    skyGlowWide: { type: "f32", value: 0 },
+    skyStars: { type: "f32", value: ORIGINAL_SKY.stars },
+    skyMoon: { type: "f32", value: ORIGINAL_SKY.moon },
+    moonDirection: { type: "vec3", value: [0, 1, 0] }
+  },
   side: "back",
   depthWrite: false
 });
 
 export const waterSpec = (): CustomSpec => ({
   glsl: { vertex: WATER_VERTEX, fragment: WATER_FRAGMENT },
-  uniforms: { waterTime: { type: "f32", value: 0 } },
+  uniforms: {
+    waterTime: { type: "f32", value: 0 },
+    waterSky: { type: "f32", value: 0 },
+    waterZenith: { type: "color3", value: [...ORIGINAL_SKY.skyZenith] },
+    waterHorizon: { type: "color3", value: [...ORIGINAL_SKY.skyHorizon] },
+    waterKey: { type: "vec3", value: [-0.5, 0.8, 0.3] }
+  },
   transparent: true,
   depthWrite: false,
   side: "double"
