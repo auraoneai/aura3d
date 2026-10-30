@@ -141,7 +141,7 @@ function recipeFromLayer(kind: string, layer: Readonly<Record<string, unknown>>)
   const baseKind = typeof layer.preset === "string" && BURST_PRESETS[layer.preset] ? layer.preset : kind;
   const base = builtinRecipe(baseKind);
   const gravity = Array.isArray(layer.gravity) ? numberOr(layer.gravity[1], base.gravity) : numberOr(layer.gravity, base.gravity);
-  const rawColor = typeof layer.color === "string" || Array.isArray(layer.color) ? toVec3(layer.color as AuraColor, [...base.color] as [number, number, number]) : base.color;
+  const rawColor = typeof layer.color === "string" || Array.isArray(layer.color) ? toVec3(layer.color as AuraColor, base.color) : base.color;
   const intensity = numberOr(layer.intensity, 1);
   const blend = typeof layer.blend === "string" && LAYER_BLENDS.has(layer.blend) ? (layer.blend as EmitterRecipe["blend"]) : undefined;
   const additive = typeof layer.additive === "boolean"
@@ -685,10 +685,10 @@ export function prd07SystemFor(app: AuraApp): ProductionEffectSystem | null {
   return systems.get(app) ?? null;
 }
 
-function toVec3(c: AuraColor | undefined, fallback: [number, number, number]): [number, number, number] {
+function toVec3(c: AuraColor | undefined, fallback: readonly [number, number, number]): [number, number, number] {
   if (typeof c === "string" && c.startsWith("#") && c.length === 7) {
     return [parseInt(c.slice(1, 3), 16) / 255, parseInt(c.slice(3, 5), 16) / 255, parseInt(c.slice(5, 7), 16) / 255];
   }
   if (Array.isArray(c) && c.length >= 3) return [Number(c[0]), Number(c[1]), Number(c[2])];
-  return fallback;
+  return [fallback[0], fallback[1], fallback[2]];
 }

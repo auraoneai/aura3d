@@ -61,7 +61,7 @@ function dataLoader(calls: { url: string; rect: Rect | null }[], fail = false): 
 }
 
 const smokeNode = (sprite: unknown, extra: Record<string, unknown> = {}): EffectNodeLike =>
-  ({ ...(effects.particles({ name: "smoke", particleCount: 32, emissionRate: 40, sprite: sprite as never }).toJSON() as object), ...extra }) as EffectNodeLike;
+  ({ ...(effects.particles({ name: "smoke", particleCount: 32, emissionRate: 40, sprite: sprite as never }).toJSON() as object), ...extra }) as unknown as EffectNodeLike;
 
 describe("GU47 E-F item 1: atlas sprite lowering", () => {
   it("a built-in sprite gets its own batch key, its frame grid and frame blend; the default stays byte-identical", () => {

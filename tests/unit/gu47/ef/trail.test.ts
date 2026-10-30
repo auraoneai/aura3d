@@ -48,7 +48,7 @@ describe("GU47 E-F item 5: real trail", () => {
 
   it("the head (at the node) is opaque and the tail fades", () => {
     const h = harness();
-    h.fx.trail("car", { width: 0.4, life: 1, color: [1, 1, 1] });
+    h.fx.trail("car", { width: 0.4, life: 1, color: "#ffffff" });
     drive(h, 10, 1.2);
     const [geometry] = h.system.ribbonFeed().buildAll([0, 6, 20]);
     const alphaAt = (pointIndex: number) => geometry.vertices[pointIndex * 2 * RIBBON_VERTEX_FLOATS + 11];

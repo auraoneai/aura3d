@@ -45,7 +45,7 @@ const near = (p: readonly number[], q: readonly number[], r: number): boolean =>
 describe("GU47 E-F item 3: attachTo", () => {
   it("a scene emitter follows its node; `position` is the offset from it", () => {
     const hero = node([2, 0, 0]);
-    const emitter = effects.particles({ name: "exhaust", attachTo: "hero", position: [0, 1, 0], particleCount: 200, emissionRate: 600, speed: [0, 0], lifetime: [5, 5], gravity: 0, emitter: "ambient", radius: 0.01 }).toJSON() as EffectNodeLike;
+    const emitter = effects.particles({ name: "exhaust", attachTo: "hero", position: [0, 1, 0], particleCount: 200, emissionRate: 600, speed: 0, lifetime: [5, 5], gravity: 0, emitter: "ambient", radius: 0.01 }).toJSON() as EffectNodeLike;
     const { app, step } = fakeApp([emitter], new Map([["hero", hero]]));
     const system = new ProductionEffectSystem(app, { tier: "high" });
     step(1 / 60);
@@ -64,7 +64,7 @@ describe("GU47 E-F item 3: attachTo", () => {
     const matrix = new Float32Array(16);
     matrix[12] = -3; matrix[13] = 1.5; matrix[14] = 7;
     const actor = node([0, 0, 0], { animation: { socket: (bone: string) => ({ valid: bone === "hand_r", worldMatrix: (out?: Float32Array) => { (out ?? new Float32Array(16)).set(matrix); return out ?? matrix; } }) } });
-    const emitter = effects.particles({ name: "spark", attachTo: { node: "fighter", socket: "hand_r" }, particleCount: 50, emissionRate: 300, speed: [0, 0], lifetime: [3, 3], gravity: 0, emitter: "ambient", radius: 0.01 }).toJSON() as EffectNodeLike;
+    const emitter = effects.particles({ name: "spark", attachTo: { node: "fighter", socket: "hand_r" }, particleCount: 50, emissionRate: 300, speed: 0, lifetime: [3, 3], gravity: 0, emitter: "ambient", radius: 0.01 }).toJSON() as EffectNodeLike;
     const { app, step } = fakeApp([emitter], new Map([["fighter", actor]]));
     const system = new ProductionEffectSystem(app, { tier: "high" });
     step(1 / 30);
@@ -77,7 +77,7 @@ describe("GU47 E-F item 3: attachTo", () => {
 
   it("a missing target is reported once and the emitter keeps its last position", () => {
     const registry = new Map<string, FakeNode>([["drone", node([5, 5, 5])]]);
-    const emitter = effects.particles({ name: "smoke", attachTo: "drone", particleCount: 100, emissionRate: 300, speed: [0, 0], lifetime: [4, 4], gravity: 0, emitter: "ambient", radius: 0.01 }).toJSON() as EffectNodeLike;
+    const emitter = effects.particles({ name: "smoke", attachTo: "drone", particleCount: 100, emissionRate: 300, speed: 0, lifetime: [4, 4], gravity: 0, emitter: "ambient", radius: 0.01 }).toJSON() as EffectNodeLike;
     const { app, step } = fakeApp([emitter], registry);
     const system = new ProductionEffectSystem(app, { tier: "high" });
     step(1 / 60);

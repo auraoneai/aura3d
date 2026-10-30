@@ -44,14 +44,14 @@ describe("GU47 E-F item 6: genre-coloured variants", () => {
     const { fx } = harness();
     for (const variant of EXPECTED) expect(fx.presets).toHaveProperty(variant);
     for (const family of ["spark", "dust", "pickup"]) {
-      const colors = EXPECTED.filter((name) => name.startsWith(`${family}-`)).map((name) => JSON.stringify((fx.presets as Record<string, { layers: { color?: unknown }[] }>)[name].layers[0].color));
+      const colors = EXPECTED.filter((name) => name.startsWith(`${family}-`)).map((name) => JSON.stringify((fx.presets as unknown as Record<string, { layers: { color?: unknown }[] }>)[name].layers[0].color));
       expect(new Set(colors).size).toBe(5);
     }
   });
 
   it("dust variants stay LDR, spark and pickup variants keep HDR energy near their base", () => {
     const { fx } = harness();
-    const colorOf = (name: string) => (fx.presets as Record<string, { layers: { color: number[] }[] }>)[name].layers[0].color;
+    const colorOf = (name: string) => (fx.presets as unknown as Record<string, { layers: { color: number[] }[] }>)[name].layers[0].color;
     const energy = (c: number[]) => c[0] + c[1] + c[2];
     for (const variant of EXPECTED) {
       const c = colorOf(variant);
