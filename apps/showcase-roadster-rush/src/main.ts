@@ -15,7 +15,9 @@ import {
   type AuraSceneNode
 } from "@aura3d/engine";
 import {
+  APEX_BLOOM,
   APEX_FOG_DENSITY_SCALE,
+  APEX_GRADE,
   APEX_IBL_HDRI,
   APEX_IBL_ROTATION_DEG,
   APEX_LOOK,
@@ -140,6 +142,10 @@ function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
 }
 
+function round3(v: number): number {
+  return Math.round(v * 1000) / 1000;
+}
+
 function hexToRgb(hex: string): [number, number, number] {
   const clean = hex.replace("#", "");
   const n = parseInt(clean, 16);
@@ -227,7 +233,11 @@ function apexLookNode(): AuraSceneNode {
       background: APEX_PALETTE.charcoal,
       key: { color: sunset.sun.color, intensity: sunset.sun.intensity },
       // AO-E3: the preset's 30/180 range under the 0.7 density scale = near 43 / far 257; colour follows the time of day
-      fog: { color: sunset.fog.color, near: 30, far: 180 }
+      fog: { color: sunset.fog.color, near: 30, far: 180 },
+      // AO-P1: the game's own grade replaces the look's (one grade stage); the white balance follows the time of day
+      grade: { contrast: APEX_GRADE.contrast, saturation: APEX_GRADE.saturation, temperature: sunset.grade.temperature, tint: sunset.grade.tint },
+      // AO-P2: racer bloom for the corona, brake bars, plumes and lamps (the look's one bloom node, retuned)
+      post: { bloom: { intensity: APEX_BLOOM.intensity, threshold: APEX_BLOOM.threshold, scatter: APEX_BLOOM.scatter } }
     })
     .toJSON();
   const children = (look.children ?? []).map((child) =>
@@ -738,6 +748,12 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     fillLight?.setLight?.({ color: frame.fill.color, intensity: frame.fill.intensity }, blend);
     auraApp.lighting?.setEnvironmentIntensity?.(frame.environmentIntensity);
     auraApp.atmosphere?.setFog?.({ color: frame.fog.color, near: frame.fog.near, far: frame.fog.far }, blend);
+    // AO-P1: time-of-day white balance through E-C's grade writer, patched onto the one look grade node
+    try {
+      auraApp.post?.setEffect?.("colorGrade", { temperature: round3(frame.grade.temperature), tint: round3(frame.grade.tint) });
+    } catch {
+      /* post surface without runtime overrides */
+    }
     lookFrame = frame;
 
     let groundHex: string;
