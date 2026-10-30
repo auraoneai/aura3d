@@ -18,7 +18,7 @@ Counts are per table row: 562 rows, 52 in the release tables and 510 in the game
 | withdrawn | 0 | 0 | 1 | 0 | 1 | 2 |
 | total | 8 | 99 | 236 | 218 | 1 | 562 |
 
-RH-01 is listed with no severity because the owner withdrew it. Of the 555 done rows, 327 shipped in 4.6.0, 226 in 4.6.1 and 1 (IC-12) in 4.6.2; RH-13 was done by the owner's own agent. SO-6 and WW-16 were closed in wave 3 after the first count (a51efc5ea; fae2d5510 and 1452dcdc7). IC-12 was closed after that, once Meshy access through Kiro Prism was available (296d7b781). Every remaining "not done" row needs the owner: real-GPU hardware or deleting other people's branches.
+RH-01 is listed with no severity because the owner withdrew it. Of the 555 done rows, 327 shipped in 4.6.0, 226 in 4.6.1 and 1 (IC-12) in 4.6.2; RH-13 was done by the owner's own agent. SO-6 and WW-16 were closed in wave 3 after the first count (a51efc5ea; fae2d5510 and 1452dcdc7). IC-12 was closed after that, once Meshy access through Kiro Prism was available (296d7b781). The three remaining "not done" rows each need a real-GPU run (`tools/real-gpu/run.sh`), which the owner does.
 
 ### Not done
 
