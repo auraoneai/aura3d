@@ -9,13 +9,13 @@
 | ID | Pri | Status | Commit | Notes / evidence |
 |---|---|---|---|---|
 | EF-0 option fields | M | done | 16ef3e77c | `depthOfField({ tiltShift })`, `volumetricFog({ godRayDensity })`, `outline({ targets })` typed and recorded only when authored (behaviour: E-C, E-E). `tests/unit/gu47/ef/effect-option-fields.test.ts` |
-| EF-1 atlas sprites | M | done | (this commit) | `sprite: "<name>"` lowers to a `vfx:<name>` batch (own key, frame grid, frame blend on multi-frame sequences); `ProductionEffectSystem` crops the sequence from `aura-vfx-2k.png` (1k twin on low/medium) on first use and samples it; soft-dot until loaded or after a failed load (`VFX_SPRITE_UNAVAILABLE`). Per-particle frames written into the instance frame slot. Found and worked around a bake defect (see Decisions). `tests/unit/gu47/ef/vfx-atlas-sprites.test.ts` (14 tests incl. decoded-PNG check) |
-| EF-2 flipbook texture | M | pending | | |
-| EF-3 attachTo | M | pending | | |
-| EF-4 registered presets | M | pending | | |
-| EF-5 real trail | M | pending | | |
-| EF-6 genre variants | M | pending | | |
-| EF-7 stale warning, lightCone | M | pending | | |
+| EF-1 atlas sprites | M | done | c3752e262 | `sprite: "<name>"` lowers to a `vfx:<name>` batch (own key, frame grid, frame blend on multi-frame sequences); `ProductionEffectSystem` crops the sequence from `aura-vfx-2k.png` (1k twin on low/medium) on first use and samples it; soft-dot until loaded or after a failed load (`VFX_SPRITE_UNAVAILABLE`). Per-particle frames written into the instance frame slot. Found and worked around a bake defect (see Decisions). `tests/unit/gu47/ef/vfx-atlas-sprites.test.ts` (14 tests incl. decoded-PNG check) |
+| EF-2 flipbook texture | M | done | fe096ec34 | `effects.flipbook({ texture })` samples the asset sheet (grid `spriteColumns × spriteRows`, straight alpha); `sprite: "<name>"` uses that built-in sequence; default procedural fireball unchanged. `tests/unit/gu47/ef/flipbook-texture.test.ts` |
+| EF-3 attachTo | M | done | 98da1defa | Emitter `attachTo` (particles option, `AuraVfxEffectSpec.attachTo`, `spawn(effect, { node, socket })`) follows the node's world position or the actor's bone socket each frame; `position` is the offset; `VFX_ATTACH_TARGET_MISSING` once. `tests/unit/gu47/ef/attach-to.test.ts` |
+| EF-4 registered presets | M | done | 9f32f0451 | `burst`/`spawn(name)` resolve `registerPreset` entries before `BURST_PRESETS`; all layers fire (emitter, light, camera, decal; `at` delays); one handle. `tests/unit/gu47/ef/registered-presets.test.ts` |
+| EF-5 real trail | M | done | 20710d9ed, 99900dc51 (default change) | `app.effects.trail(target, { width, life, color, widthOverSpeed })` → `AuraTrailHandle` on the RibbonBatch; `VFX_TRAIL_PENDING` gone. Separate commit: scene `effects.trail({ target })` nodes follow their node (Diamond, FC and Links ball trails drew nothing before). `tests/unit/gu47/ef/trail.test.ts` (30 m ribbon at 25 m/s, life 1.5 s) |
+| EF-6 genre variants | M | done | a327619e5 | 15 kinds: `spark-{fire,electric,gold,magic,ice}`, `dust-{sand,turf,snow,ash,clay}`, `pickup-{gold,gem,power,star,heart}`. `tests/unit/gu47/ef/genre-variants.test.ts` |
+| EF-7 stale warning, lightCone | M | done | 77d792c2f | Both stale warnings (flipbook-sprite and light-beam) removed: under default-on A3D_QR_VFX they draw. lightCone/beam/flipbook draws proven on a mock device. Updated `tests/unit/engine/phase2-root-bridge.test.ts` (2 assertions flipped). `tests/unit/gu47/ef/light-cone-draws.test.ts` |
 | EF-8 floating-dot root cause | M | pending | | |
 | EF-9 liveCount soak | M | pending | | |
 | EF-10 game-art skill | M | pending | | |
