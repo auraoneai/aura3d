@@ -18,7 +18,7 @@
 // paid work; tasks already submitted are still polled, downloaded and settled.
 import { spawn } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -54,6 +54,8 @@ const plan = JSON.parse(readFileSync(PLAN, "utf8"));
 const rows = plan.rows;
 const byKey = new Map(rows.map((r) => [r.key, r]));
 const tagOf = (row) => `gu47-${row.slug}`;
+// plan sources are repo-relative, or absolute (read-only files in the main checkout's artifacts)
+const sourcePath = (p) => (isAbsolute(p) ? p : join(ROOT, p));
 const rowDir = (row) => join(BASE, row.slug, row.key);
 
 // ---------- small utils ----------
@@ -520,7 +522,7 @@ async function opTextTo3d(st, row) {
 }
 
 async function opRetexture(st, row) {
-  const source = join(ROOT, row.source);
+  const source = sourcePath(row.source);
   if (!existsSync(source)) throw new StepError("usage", `source GLB missing: ${row.source}`);
   const args = ["--model-url", source, "--text-style-prompt", row.prompt, "--enable-original-uv", String(row.sourceInfo?.uv !== false), "--enable-pbr", "true", "--texture-resolution", row.textureRes ?? "2k"];
   await paidTask(st, row, "retexture", { resource: "retexture", op: "retexture", args, pinned: false });
@@ -549,7 +551,7 @@ async function opRig(st, row) {
     args = ["--input-task-id", refineId];
     pinned = true;
   } else {
-    const source = join(ROOT, row.source ?? "");
+    const source = sourcePath(row.source ?? "");
     if (!row.source || !existsSync(source)) throw new StepError("usage", `rig source missing: ${row.source}`);
     args = ["--model-url", source];
   }
@@ -823,10 +825,15 @@ async function runPipeline() {
         // opt-in: everything left is blocked by the pool, so sleep and resume when a key can pay again (monthly resets)
         const blocked = queue.filter((r) => !["done", "blocked", "failed"].includes(loadState(r.key)?.status) && (needsNewUnpinned(r, loadState(r.key)) || loadState(r.key)?.status === "deferred"));
         if (blocked.length > 0) {
-          log("==", `${blocked.length} rows wait for credits; next pool check in 30 min`);
-          await sleep(30 * 60e3);
+          // Keys that answer 402 while reporting a balance flip back to "ok" between refreshes, so the pool is only
+          // re-tried after the next key reset Prism reports (then every 30 min), not on every flip.
+          const before = await poolSnapshot("wait for credits");
+          const reset = Date.parse(before?.totals?.next_reset_at ?? "");
+          const until = Number.isFinite(reset) && reset > Date.now() ? reset + 5 * 60e3 : Date.now() + 30 * 60e3;
+          log("==", `${blocked.length} rows wait for credits until ${new Date(until).toISOString()} (next key reset)`);
+          while (Date.now() < until && !STOP_ALL) await sleep(Math.min(30 * 60e3, until - Date.now()));
           const p = await poolSnapshot("wait for credits");
-          if (p && maxUsable(p) >= 30) {
+          if (p && maxUsable(p) >= 30 && (p.totals?.remaining_credits ?? 0) >= 30) {
             poolMax = maxUsable(p);
             STOP_NEW = false;
             refusalStreak = 0;
