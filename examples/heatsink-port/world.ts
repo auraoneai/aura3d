@@ -16,6 +16,7 @@ import { Operation, STRIKE } from "./operation";
 import { seededRandom } from "./rng";
 import { Track, type Frame } from "./track";
 import type { HudValues } from "./hud";
+import { lookFromSearch, lowTier, type HeatsinkLookRow } from "./art/look";
 
 type Scene = ReturnType<typeof scene>;
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
@@ -68,6 +69,8 @@ const FRAMING = { dist: 7.6, height: 2.0 };
 export const BLOOM = { intensity: 0.6, threshold: 1.0 } as const;
 /** Neutral-room IBL intensity for the lit models (LIGHT-01); see the environment node in `buildWorld`. */
 export const NEUTRAL_FILL = 1.0;
+/** IC-04: the twilight IBL (E-A catalogue, served at /hdri/sunset-dramatic_1k.hdr); IBL only, never the background */
+export const TWILIGHT_HDRI = { type: "texture", format: "hdr", url: "/hdri/sunset-dramatic_1k.hdr" } as const;
 
 /** HP-13: motion the player can turn down (and `prefers-reduced-motion` turns down by default) */
 export interface MotionSettings {
@@ -90,8 +93,15 @@ export interface World {
   bind(app: AuraApp): WorldRuntime;
 }
 
-export function buildWorld(track: Track, quality: "high" | "low" = "high"): World {
+/** the look row for a URL search string (`?look=original` is today's look) or an explicit row; Low gets `lowTier` */
+export function resolveLook(look: HeatsinkLookRow | string | undefined, quality: "high" | "low"): HeatsinkLookRow {
+  const row = typeof look === "object" ? look : lookFromSearch(look ?? (typeof location !== "undefined" ? location.search : ""));
+  return quality === "low" ? lowTier(row) : row;
+}
+
+export function buildWorld(track: Track, quality: "high" | "low" = "high", lookInput?: HeatsinkLookRow | string): World {
   const high = quality === "high";
+  const look = resolveLook(lookInput, quality);
   const models = modelSet(quality);
   let minY = Infinity, maxY = -Infinity;
   for (let i = 0; i < track.n; i++) { minY = Math.min(minY, track.py[i] as number); maxY = Math.max(maxY, track.py[i] as number); }
@@ -129,20 +139,27 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high"): Worl
   /* the earlier black sky was the draw-skip on unused declared uniforms (fixed in 4.0.7); the dome is back-culled again */
   b.add(primitives.sphere({ name: "sky", size: 3000, material: material.custom(skySpec()) }).runtime({ id: "sky" }));
 
-  /* the Meshy models are lit surfaces: a cool sky fill and a warm low key, the custom (unlit) road/sky/neon shaders ignore both */
-  b.add(lights.hemisphere({ name: "sky-fill", skyColor: "#6fa8d8", groundColor: "#2a1a10", intensity: 1.1 }));
+  /* the Meshy models are lit surfaces: a sky fill and the key; the custom (unlit) road/sky/neon shaders evaluate their own `lit()` */
+  b.add(lights.hemisphere({ name: "sky-fill", skyColor: look.hemisphere.sky, groundColor: look.hemisphere.ground, intensity: look.hemisphere.intensity }));
   /*
-   * LIGHT-01: 4.5.0 gives a scene with authored lights and no environment no image-based light at all, so the lit Meshy
-   * models lost the neutral-room fill and reflections they had on 4.3.7. An explicit neutral room (background off, so
-   * the authored sky and the unlit shaders are untouched) brings it back; the intensity is calibrated against 4.3.7
-   * captures with the hemisphere contributing next to it (evidence/audit-fix/g19).
+   * LIGHT-01 / IC-04: the lit models need an image-based light (4.5.0 gives none to a scene with authored lights and no
+   * environment). `?look=original` keeps the calibrated neutral room (evidence/audit-fix/g19). The twilight look uses a
+   * dusk HDRI from the E-A catalogue, IBL only (background off: the authored dome stays the visible sky), rotated to the
+   * shader sun's azimuth so the warm side of the reflections faces the sunset band. environments.capture of the custom
+   * dome is unverified on custom-material domes (E-G, phase 2), so the HDRI is the PRD's fallback; `?env=capture` tries it.
    */
-  b.add(environments.neutral({ name: "model-fill", intensity: NEUTRAL_FILL }));
+  const envParam = typeof location !== "undefined" ? new URLSearchParams(location.search).get("env") : null;
+  if (look.environment.kind === "neutral") b.add(environments.neutral({ name: "model-fill", intensity: look.environment.intensity }));
+  else if (envParam === "capture") b.add(environments.capture({ name: "model-fill", intensity: look.environment.intensity, background: false, include: "all", resolution: 128, update: "once" }));
+  else b.add(environments.hdri({ name: "model-fill", texture: TWILIGHT_HDRI as never, intensity: look.environment.intensity, rotation: (look.environment.rotationDeg * Math.PI) / 180, background: false }));
   /*
-   * The Meshy models do not cast (models.ts, castShadow false), so this cascade shadow never darkens under the drone;
-   * the drone's contact cue is the blob quad below (HP-08). `?shadow=0` turns the cascades off.
+   * IC-03: the twilight key sits along the shader sun ([0.55, 0.23, -0.62], ~15 degrees up) with the map's sun colour
+   * and intensity, so engine shadows fall the way the custom shaders shade; 3 cascades over 220 m and the drone casts.
+   * `?look=original` keeps the 52-degree key, 2 cascades over 160 m and no model casters (blob only). `?shadow=0` turns the
+   * cascades off. Low tier: 1 cascade.
    */
-  b.add(lights.directional({ name: "key", position: [180, 260, -120], target: [0, 0, 0], intensity: 2.6, color: "#ffd9b0", shadow: (typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0" ? false : { cascades: 2, maxDistance: 160 } as never) }));
+  const shadowOff = typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0";
+  b.add(lights.directional({ name: "key", position: [...look.key.position], target: [0, 0, 0], intensity: look.key.intensity, color: look.key.color, shadow: (shadowOff ? false : { cascades: look.key.cascades, maxDistance: look.key.maxDistance }) as never }));
   for (const n of sceneryNodes(track, undefined, models)) b.add(n);
 
   /* checkpoint gates: veil across the road + two pylons */
@@ -198,7 +215,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high"): Worl
 
   /* player drone */
   for (const part of DRONE_PARTS) {
-    if (part.model) { b.add(droneHull(models).runtime({ id: fogTracked(part.id, part.id) })); continue; }
+    if (part.model) { b.add(droneHull(models, look.key.droneCasts).runtime({ id: fogTracked(part.id, part.id) })); continue; }
     const extra = part.additive ? { transparent: true, blending: "additive" as const, depthWrite: false } : {};
     const mat = material.custom(solidSpec(hexLinear(part.base), hexLinear(part.glow), part.glowAmt, extra));
     const handle = part.prim === "box"
