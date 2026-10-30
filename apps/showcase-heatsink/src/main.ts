@@ -34,12 +34,14 @@ import {
   LAVA_POOL_SCALE,
   localLightSpecs,
   MODEL_NODE_COUNT,
+  RIG_IDS,
   ROAD_TILE_COUNT,
   ROAD_TILE_SPACING,
   WALL_SEGMENT_COUNT,
   WALL_SPACING
 } from "./scene";
 import { CHEVRON_HEAT_UNIFORM, quantisedHeat } from "./shaders";
+import { SECTOR_CROSSFADE_SECONDS, sectorTargets } from "./sectors";
 import {
   autopilot,
   collectedPass,
@@ -143,6 +145,9 @@ async function boot(): Promise<void> {
     return { head, anchored };
   };
   let localLights = bindLocalLights(selectedCircuit);
+  // HS-16: the sector the fog and key last cross-faded to ("" = the mounted circuit values, no fade on mount).
+  let keyHandle = req(RIG_IDS.key);
+  let shownSector = "";
   const anchorDistance: Record<string, number> = {};
   function bindHandles(circuit: CircuitId): void {
     droneHandles = makeDrones();
@@ -155,6 +160,8 @@ async function boot(): Promise<void> {
     chevronHandles = [req(IDS.chevA), req(IDS.chevB)];
     chevronHeat = -1;
     localLights = bindLocalLights(circuit);
+    keyHandle = req(RIG_IDS.key);
+    shownSector = "";
   }
 
   const track = new TrackView();
@@ -401,6 +408,16 @@ async function boot(): Promise<void> {
     const shown = presenter.present(loop, !qaManual && race.phase === "racing");
     const p = race.player;
     track.update(circuit, shown.player[0]!);
+
+    // HS-16: cross-fade fog and key to the player's sector over 1.5 s (first frame after a mount: no fade).
+    const sectorName = sectorNameAt(circuit, Math.max(0, p.progress));
+    if (sectorName !== shownSector) {
+      const target = sectorTargets(CIRCUIT_LOOKS[race.circuit], sectorName);
+      const transitionSeconds = shownSector === "" ? 0 : SECTOR_CROSSFADE_SECONDS;
+      auraApp.atmosphere?.setFog({ color: target.fog.color, density: target.fog.density }, { transitionSeconds });
+      keyHandle.setLight?.({ intensity: target.keyIntensity }, { transitionSeconds });
+      shownSector = sectorName;
+    }
 
     // Player
     const playerHandle = droneHandles[race.drone];
