@@ -15,7 +15,8 @@ import type {
   AuraCliLookDevRecord,
 } from "./contracts/assetManifest.js";
 
-export type AuraCliAssetType = "model" | "texture" | "environment" | "audio" | "navigation";
+/** GU47 E-C: `lut` is a display-domain `.cube` colour LUT (`effects.colorGrade({ lut: assets.<id> })`). */
+export type AuraCliAssetType = "model" | "texture" | "environment" | "audio" | "navigation" | "lut";
 export type AuraAssetQuality = "ungraded" | "blocked" | "prototype" | "candidate" | "release";
 // PRD-05 §7.2 — the C-17 union plus the legacy 1.0 roles. Roles outside the
 // C-17 set ("product", "weapon", "track", "environment", "unknown",

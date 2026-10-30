@@ -11,6 +11,7 @@ import { measureLoudness } from "@aura3d/audio";
 import { admitAssetForRole } from "./asset-role-admission.js";
 import { hasStylizedFlatApproval } from "./admission/artDirection.js";
 import { AUDIO_SYNTH_RELEASE_ALLOWLIST, isSynthesizedAudioProvenance } from "./admission/audio.js";
+import { validateCubeLut } from "./admission/cubeLut.js";
 import { profileForRole, requiresPbrTextures } from "./admission/profiles.js";
 import {
   DEFAULT_AURA_ASSET_MANIFEST,
@@ -386,6 +387,7 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
   const hash = hashFile(sourcePath);
   const format = extname(sourcePath).slice(1).toLowerCase();
   const type = options.type ?? inferAssetType(format);
+  if (type === "lut") admitCubeLut(sourcePath, format);
   const inspection = inspectAssetFile(sourcePath, format);
   const outputFileName = `${options.name}.${hash.slice(0, 8)}.${format}`;
   const outputPath = join(outputDir, outputFileName);
@@ -3839,13 +3841,26 @@ function writeThumbnail(projectDir: string, outputDir: string, publicPath: strin
   return `${publicPath}${fileName}`;
 }
 
+/** GU47 E-C: `--type lut` admits only a valid 3-D `.cube` (the S10b display-grade LUT). */
+function admitCubeLut(sourcePath: string, format: string): void {
+  if (format !== "cube") {
+    throw new Error(`Aura3D assets add failed: --type lut expects a .cube file, got ".${format || "unknown"}". Suggested fix: export a 3-D .cube LUT (LUT_3D_SIZE 17, 33 or 65) from your grading tool.`);
+  }
+  try {
+    validateCubeLut(readFileSync(sourcePath, "utf8"));
+  } catch (error) {
+    throw new Error(`Aura3D assets add failed: ${error instanceof Error ? error.message : String(error)} Suggested fix: export a 3-D .cube LUT with LUT_3D_SIZE in [2, 65].`);
+  }
+}
+
 function inferAssetType(format: string): AuraCliAssetType {
   if (["glb", "gltf"].includes(format)) return "model";
   if (["png", "jpg", "jpeg", "webp", "ktx2"].includes(format)) return "texture";
   if (["hdr", "exr"].includes(format)) return "environment";
   if (["mp3", "wav", "ogg"].includes(format)) return "audio";
   if (format === "navmesh") return "navigation";
-  throw new Error(`Unsupported Aura3D asset format: ${format || "unknown"}. Suggested fix: use glb, gltf, png, jpg, webp, ktx2, hdr, exr, mp3, wav, ogg, or navmesh.`);
+  if (format === "cube") return "lut";
+  throw new Error(`Unsupported Aura3D asset format: ${format || "unknown"}. Suggested fix: use glb, gltf, png, jpg, webp, ktx2, hdr, exr, mp3, wav, ogg, navmesh, or cube.`);
 }
 
 function hashFile(path: string): string {

@@ -84,6 +84,12 @@ export interface BloomOptionsV2 {
   readonly clampLuminance: number;
   /** Mip count, C-27 `bloomMipLevels`: 3 | 5 | 6. */
   readonly mips: 3 | 5 | 6;
+  /**
+   * GU47 E-C: selective bloom — a scene material declares a `bloom` weight
+   * other than 1, so the prefilter reads the per-material weight from HDR
+   * alpha (`NativeBloomPyramid.auraBloomWeight`). Omitted = today's bloom.
+   */
+  readonly selective?: boolean;
 }
 
 export interface TaaOptions {
@@ -101,6 +107,12 @@ export interface DofOptions {
   readonly sensorHeightMm: number;
   readonly maxBlurPx: number;
   readonly halfRes: boolean;
+  /**
+   * GU47 E-C: screen-space tilt-shift band (miniature look) instead of the
+   * thin-lens CoC. `bandCenter` 0 = top edge .. 1 = bottom edge, `bandWidth`
+   * the sharp fraction of the frame height, `angleDeg` rotates the band.
+   */
+  readonly tiltShift?: { readonly bandCenter: number; readonly bandWidth: number; readonly angleDeg?: number };
 }
 
 export interface MotionBlurOptions {
@@ -119,6 +131,8 @@ export interface GodRayOptions {
   readonly lightWorld?: readonly [number, number, number];
   /** World-space direction TOWARD the strongest directional light (bridge). */
   readonly lightDirection?: readonly [number, number, number];
+  /** GU47 E-C: shaft density, the march fraction toward the light in (0, 1] (volumetricFog `godRayDensity`); omitted = 1. */
+  readonly density?: number;
 }
 
 /** §6.7 composite (linear) grade options. */
