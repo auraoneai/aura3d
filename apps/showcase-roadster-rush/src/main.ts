@@ -34,6 +34,7 @@ import {
 } from "./art/look";
 import { apexFlash, apexFlashAlpha, apexPostPlan, applyApexPostPlan, type ApexFlashKind } from "./art/post";
 import { APEX_LUT_INTENSITY, apexGradePatch } from "./art/lut";
+import { APEX_PLUMES, plumeSpec } from "./art/plume";
 import { createNativeRoadster, findDrawCalls } from "./native";
 import { FIXED_DT, POWERUP_SECONDS } from "./native/constants";
 import { GANTRY_COUNT } from "./native/world";
@@ -553,21 +554,10 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
   });
 
   // 3. Player Roadster Assembly (Primary Car + Lightbar + Headlights + Cold-Gas Plumes + Powerups + Shadow)
-  const rearPlumeMat = material.emissive({
-    color: "#67f3ff",
-    emissive: "#38bdf8",
-    emissiveIntensity: 1.9
-  });
-  const downPlumeMat = material.emissive({
-    color: "#38bdf8",
-    emissive: "#0ea5e9",
-    emissiveIntensity: 1.75
-  });
-  const sidePlumeMat = material.emissive({
-    color: "#7dd3fc",
-    emissive: "#38bdf8",
-    emissiveIntensity: 1.7
-  });
+  // AO-M4: additive fresnel energy cones with scrolling noise and a hot core (src/art/plume.ts); same nodes, same draws
+  const rearPlumeMat = material.custom(plumeSpec(APEX_PLUMES.rear, REDUCED_MOTION));
+  const downPlumeMat = material.custom(plumeSpec(APEX_PLUMES.down, REDUCED_MOTION));
+  const sidePlumeMat = material.custom(plumeSpec(APEX_PLUMES.side, REDUCED_MOTION));
 
   s.addMany([
     model(pickVehicleAsset("hero", assets.roadsterRushPlayerCar), {
@@ -636,7 +626,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .cylinder({
         name: "player-power-rocket",
         size: [0.68, 2.6, 0.68],
-        material: material.emissive({ color: "#ff6b1a", emissive: "#ff3b00", emissiveIntensity: 2.3 }), castShadow: false })
+        material: material.custom(plumeSpec(APEX_PLUMES.rocket, REDUCED_MOTION)), castShadow: false })
       .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("player-power-rocket")),
     primitives
@@ -724,7 +714,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .model(meshyVehicles.enabled ? (meshyFarVehicles.refs as Record<string, AuraAssetRef<"model">>).skycar! : assets.roadsterRushSkyCar, { name: "sky-cars-far", role: "setDressing", scaleMode: "fit", targetMaxDimension: 4.3, castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
       .runtime(game.runtimeNode(poolId("sky-cars-far"))),
     instances
-      .cylinder({ name: "sky-plumes", size: [0.42, 1.65, 0.42], material: rearPlumeMat, castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
+      .cylinder({ name: "sky-plumes", size: [0.42, 1.65, 0.42], material: material.custom(plumeSpec(APEX_PLUMES.sky, REDUCED_MOTION)), castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
       .runtime(game.runtimeNode(poolId("sky-plumes"))),
     instances
       .torus({ name: "sky-halos", size: [1.55, 1.55, 0.075], material: material.emissive({ color: "#ff2a3c", emissive: "#ff2a3c", emissiveIntensity: 1.65 }), castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
