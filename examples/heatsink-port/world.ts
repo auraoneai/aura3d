@@ -11,7 +11,7 @@ import { buildArches, buildDividers, buildProps, buildRails, buildRoad, buildSha
 import { blobSpec, pointsSpec, roadSpec, setShading, skySpec, solidSpec, streakSpec, terrainSpec, veilSpec, wakeSpec, type Rgb } from "./materials";
 import { bankRoll, createIonWake, createSporeField, sporeField } from "./art/wake";
 import { districtFog, fogApproach } from "./art/look";
-import { afterburnerKick, directCamera, VIGNETTE_PULSE, vignettePulse } from "./art/director";
+import { afterburnerKick, directCamera, HEAT_STEPS, heatStep, VIGNETTE_PULSE, vignettePulse } from "./art/director";
 import { createPoolUniforms, glowEmitters, nearestPools } from "./art/pools";
 import { HEATSINK_VFX, registerHeatsinkVfx, vfxScale } from "./art/vfx";
 import { axisRotation, droneEuler, matrixToEulerZYX, multiplyMat3 } from "./orient";
@@ -374,6 +374,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
   let rollNow = 0;
   let finishedFor = 0;
   let vigEnv = 0;
+  let heatShown = 0;
   let vigShown = -1;
 
   function burst(x: number, y: number, z: number, count: number, r: number, g: number, bl: number, speed: number): void {
@@ -412,7 +413,12 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       const local = yawNow || part.rollZ ? multiplyMat3(axisRotation("y", yawNow), axisRotation("z", part.rollZ ?? 0)) : null;
       const e = local ? matrixToEulerZYX(multiplyMat3(R, local)) : euler;
       h.setRotation(e[0], e[1], e[2]);
-      if (part.model) continue;
+      if (part.model) {
+        /* IC-12: heat glows on the hull in 8 steps (one setEmissive per step change, so no per-frame material churn) */
+        const step = heatStep(row, heatGlow);
+        if (step !== heatShown) { heatShown = step; const [hex, k] = HEAT_STEPS[step]!; try { (h as { materials?: { setEmissive(t: string, c: string, i: number): void } }).materials?.setEmissive("*", hex, k); } catch { /* materials runtime off */ } }
+        continue;
+      }
       h.setUniform?.("heat", heatGlow);
       h.setUniform?.("flash", p.invuln > 0 ? 0.5 + 0.5 * Math.sin(time * 30) : 0);
     }
@@ -709,6 +715,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     finishedFor = 0;
     vigEnv = 0;
     vigShown = -1;
+    heatShown = -1;
     fogReady = false;
     poolSlot0 = -2;
     droneGlowHot = -1;

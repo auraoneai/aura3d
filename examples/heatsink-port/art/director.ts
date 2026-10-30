@@ -82,3 +82,15 @@ export function vignettePulse(row: HeatsinkLookRow, reduced: boolean, afterburne
   const rate = target > envelope ? VIGNETTE_PULSE.attack : VIGNETTE_PULSE.release;
   return envelope + (target - envelope) * (1 - Math.exp(-rate * Math.max(0, dt)));
 }
+
+/** IC-12: drone heat as 8 quantised emissive steps, copper to white-hot (sRGB hex, intensity); step 0 = no glow */
+export const HEAT_STEPS: readonly (readonly [string, number])[] = [
+  ["#000000", 0], ["#5a1e08", 0.25], ["#8a2e0a", 0.45], ["#c8441a", 0.7], ["#e8641e", 0.95], ["#ff8a2e", 1.2], ["#ffc070", 1.5], ["#fff0d8", 1.9]
+];
+
+/** heat 0..1 to a step index; the original look never glows (step 0) */
+export function heatStep(row: HeatsinkLookRow, heat: number): number {
+  if (!row.wake.enabled) return 0;
+  const h = Math.max(0, Math.min(1, heat));
+  return Math.min(HEAT_STEPS.length - 1, Math.floor(h * HEAT_STEPS.length));
+}

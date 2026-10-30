@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { afterburnerKick, AFTERBURNER_KICK, directCamera, SWEEP, vignettePulse } from "../../../examples/heatsink-port/art/director";
+import { afterburnerKick, AFTERBURNER_KICK, directCamera, SWEEP, vignettePulse, HEAT_STEPS, heatStep } from "../../../examples/heatsink-port/art/director";
 import { LOOKS } from "../../../examples/heatsink-port/art/look";
 
 const base = { target: [0, 1, 0] as const, eye: [-7.6, 3, 0] as const, look: [20, 1.8, 0] as const, finishedFor: 0 };
@@ -55,5 +55,14 @@ describe("heatsink-port IC-22 camera direction", () => {
     expect(after).toBeLessThan(e);
     expect(vignettePulse(LOOKS.twilight, true, true, e, 1 / 60)).toBe(0);
     expect(vignettePulse(LOOKS.original, false, true, 0, 1)).toBe(0);
+  });
+
+  it("IC-12 heat maps to 8 steps, copper to white-hot, never on the original look", () => {
+    expect(HEAT_STEPS).toHaveLength(8);
+    expect(heatStep(LOOKS.twilight, 0)).toBe(0);
+    expect(heatStep(LOOKS.twilight, 0.5)).toBe(4);
+    expect(heatStep(LOOKS.twilight, 1)).toBe(7);
+    expect(heatStep(LOOKS.original, 1)).toBe(0);
+    for (let i = 1; i < HEAT_STEPS.length; i++) expect(HEAT_STEPS[i]![1]).toBeGreaterThan(HEAT_STEPS[i - 1]![1]);
   });
 });
