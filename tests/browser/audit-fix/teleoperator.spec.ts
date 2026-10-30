@@ -220,8 +220,9 @@ test.describe("grid dispatch audit-fix capture", () => {
     const T = "weather";
     await boot(page, server, T, { width: 1280, height: 720 });
     await runFrames(page, 4, 45_000);
-    await shot(page, T, "weather-noon0", { canvasOnly: true, crop: true });
-    for (const tod of ["golden", "fog", "night"]) {
+    // GU47 GD-21: Marine dusk (`golden`) is the boot sky.
+    await shot(page, T, "weather-golden0", { canvasOnly: true, crop: true });
+    for (const tod of ["noon", "fog", "night"]) {
       await resume(page);
       await click(page, `#teleopDock button[data-tod="${tod}"]`);
       await page.waitForTimeout(2000);

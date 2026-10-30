@@ -98,9 +98,9 @@ interface WeatherLook {
  */
 export const WEATHER: Readonly<Record<WeatherPreset, WeatherLook>> = {
   noon: { sky: "#69abe0", label: "Sunny noon" },
-  golden: { sky: "#c98a5a", label: "Golden hour" },
+  golden: { sky: "#c98a5a", label: "Marine dusk" },
   fog: { sky: "#94a3b8", label: "Marine fog" },
-  night: { sky: "#0d1424", label: "Neon night" }
+  night: { sky: "#0d1424", label: "Sodium night" }
 };
 
 /** Image-based fill per sky (E-A catalogue HDRIs, `/hdri/<id>_1k.hdr`); never the visible background (GD-01). */

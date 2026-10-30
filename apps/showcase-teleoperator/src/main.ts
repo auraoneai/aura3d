@@ -61,7 +61,7 @@ import {
   skyOutput
 } from "./scene";
 import { NO_INPUT, RIVALS, ROAD_USER_COUNT, TRAFFIC_COUNT, createSim, fareOf, roadUserFootprints, type DriveInput, type SimEvent } from "./sim";
-import { SKY_LOOKS } from "./look";
+import { BOOT_SKY, SKY_LOOKS, nextSky, skyFromParam } from "./look";
 import { installSensorPass, scanPulseAt } from "./scanPulse";
 import { mountTouchPads } from "./touch";
 
@@ -178,7 +178,8 @@ async function bootGridDispatch(): Promise<void> {
   const params = new URLSearchParams(window.location.search);
   const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)");
   const motionOk = (): boolean => !(reducedMotion?.matches ?? false);
-  let weather: WeatherPreset = "noon";
+  // GD-21: Marine dusk is the boot sky; `?sky=noon|dusk|golden|fog|night` boots another row (captures, deep links).
+  let weather: WeatherPreset = skyFromParam(params.get("sky"));
 
   await probeBuildingModels();
   // GU47(E-D): `qualityRebuild.flags` is typed `readonly string[]` but createAuraApp hands it to resolveQrFlags, which
@@ -267,7 +268,7 @@ async function bootGridDispatch(): Promise<void> {
     const carKeys: Record<string, PlayableCarId> = { Digit1: "cruiser", Digit2: "coupe", Digit3: "truck", Digit4: "gt", Digit5: "interceptor" };
     if (ev.code === "KeyI") setAutopilotLevel(nextAssist(S.level));
     else if (ev.code === "KeyC") setCameraMode(((camMode + 1) % 4) as CameraMode);
-    else if (ev.code === "KeyT") void setWeather((["noon", "golden", "fog", "night"] as const)[(["noon", "golden", "fog", "night"].indexOf(weather) + 1) % 4]!);
+    else if (ev.code === "KeyT") void setWeather(nextSky(weather));
     else if (ev.code === "KeyU") toggleUnits();
     else if (ev.code === "KeyF") applyEvents(sim.skipFare());
     else if (ev.code === "KeyR" && S.phase === "results") retry();
@@ -395,15 +396,19 @@ async function bootGridDispatch(): Promise<void> {
     hud.toast(["Chase camera", "Far chase camera", "Roof sensor camera", "Front bumper camera"][mode]!, "Press C to cycle cameras");
   }
 
+  function syncSkyDock(active: WeatherPreset): void {
+    document.querySelectorAll<HTMLButtonElement>("#teleopDock button[data-tod]").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.tod === active);
+      btn.setAttribute("aria-pressed", btn.dataset.tod === active ? "true" : "false");
+    });
+  }
+
   /** A sky preset brings its own look, lights and fog, so changing it remounts the scene (C8). */
   async function setWeather(next: WeatherPreset): Promise<void> {
     if (next === weather || remounting) return;
     weather = next;
     remounting = true;
-    document.querySelectorAll<HTMLButtonElement>("#teleopDock button[data-tod]").forEach((btn) => {
-      btn.classList.toggle("active", btn.dataset.tod === next);
-      btn.setAttribute("aria-pressed", btn.dataset.tod === next ? "true" : "false");
-    });
+    syncSkyDock(next);
     $("skyChange")?.classList.add("on");
     auraApp.setScene(buildGridDispatchScene(next));
     applySkyOutput();
@@ -450,7 +455,7 @@ async function bootGridDispatch(): Promise<void> {
     btn.addEventListener("click", () => setCameraMode(clamp(Number(btn.dataset.cam ?? 0), 0, 3) as CameraMode))
   );
   document.querySelectorAll<HTMLButtonElement>("#teleopDock button[data-tod]").forEach((btn) =>
-    btn.addEventListener("click", () => void setWeather((btn.dataset.tod as WeatherPreset) || "noon"))
+    btn.addEventListener("click", () => void setWeather((btn.dataset.tod as WeatherPreset) || BOOT_SKY))
   );
   $("dockAutopilotBtn")?.addEventListener("click", () => setAutopilotLevel(nextAssist(S.level)));
   $("aDA")?.addEventListener("click", () => setAutopilotLevel(nextAssist(S.level)));
@@ -944,6 +949,7 @@ async function bootGridDispatch(): Promise<void> {
   // ---------------------------------------------------------------- start
   initSpeedometerDial(false);
   updateModeLabels();
+  syncSkyDock(weather);
   document.querySelectorAll<HTMLButtonElement>("#teleopDock button[data-cam]").forEach((btn) => {
     btn.classList.toggle("active", Number(btn.dataset.cam) === camMode);
     btn.setAttribute("aria-pressed", Number(btn.dataset.cam) === camMode ? "true" : "false");

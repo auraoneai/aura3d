@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { resolveQrFlags } from "@aura3d/engine";
-import { BOOT_SKY, KEY_SHADOW, SKY_LOOKS, SKY_ORDER, hazeAt, hdriUrl, keyLightPosition, sunDirection } from "../../../apps/showcase-teleoperator/src/look";
-import { GRID_DISPATCH_FLAGS, buildGridDispatchScene, skyOutput } from "../../../apps/showcase-teleoperator/src/scene";
+import { BOOT_SKY, KEY_SHADOW, SKY_LOOKS, SKY_ORDER, hazeAt, hdriUrl, keyLightPosition, nextSky, skyFromParam, sunDirection } from "../../../apps/showcase-teleoperator/src/look";
+import { GRID_DISPATCH_FLAGS, WEATHER, buildGridDispatchScene, skyOutput } from "../../../apps/showcase-teleoperator/src/scene";
 
 type Node = { kind?: string; light?: string; name?: string; environment?: string; texture?: { url?: string }; shadow?: unknown; position?: number[]; color?: string; intensity?: number; children?: Node[] };
 const flatNodes = (sky: (typeof SKY_ORDER)[number]): Node[] => {
@@ -170,5 +170,25 @@ describe("grid dispatch GD-08 tone mapping and post per sky", () => {
     for (const [i, sky] of SKY_ORDER.entries()) expect(grades[i]).toMatchObject({ contrast: SKY_LOOKS[sky].grade.contrast, saturation: SKY_LOOKS[sky].grade.saturation, temperature: SKY_LOOKS[sky].grade.temperature });
     expect(new Set(grades.map((g) => JSON.stringify([g.contrast, g.saturation, g.temperature]))).size).toBe(4);
     for (const sky of SKY_ORDER) expect(post(sky, "vignette")).toBeDefined();
+  });
+});
+
+describe("grid dispatch GD-21 Marine dusk boot sky", () => {
+  it("boots Marine dusk, `?sky=` picks a row, T cycles every sky once", () => {
+    expect(skyFromParam(null)).toBe("golden");
+    expect(skyFromParam("dusk")).toBe("golden");
+    expect(skyFromParam("NIGHT")).toBe("night");
+    expect(skyFromParam("bogus")).toBe(BOOT_SKY);
+    const seen = new Set<string>();
+    let sky = BOOT_SKY;
+    for (let i = 0; i < SKY_ORDER.length; i++) { seen.add(sky); sky = nextSky(sky); }
+    expect(sky).toBe(BOOT_SKY);
+    expect(seen.size).toBe(4);
+  });
+
+  it("labels: Marine dusk and Sodium night (scene toast labels match the look table)", () => {
+    expect(SKY_LOOKS.golden.label).toBe("Marine dusk");
+    expect(SKY_LOOKS.night.label).toBe("Sodium night");
+    for (const sky of SKY_ORDER) expect(WEATHER[sky].label).toBe(SKY_LOOKS[sky].label);
   });
 });
