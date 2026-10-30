@@ -18,6 +18,7 @@ import {
   sky,
   type AuraCustomPostPass,
   type AuraMaterialSpec,
+  type AuraModelMaterialOverride,
   type AuraTransformSpec,
   type AuraVfxBuiltinSequence,
   type scene
@@ -129,18 +130,92 @@ export const SURFACES: Readonly<Record<PlatformKind, SurfacePair>> = {
 export const SLAB_RADIUS = 0.08;
 
 /**
- * PBL-M2 interim hazards: a matte plum bramble mat (hue about 271, outside 290-330; no
- * emissive fill), glowing lava and embers as practical light sources, pale clearcoat frost.
- * The bramble model (WP-36) and the crusted scrolling lava shader replace these later.
+ * PBL-M2 crusted lava (w4): dark basalt crust plates drifting over glowing HDR cracks,
+ * world-space so neighbouring pools line up. The crack glow peaks at `glowIntensity`
+ * (linear, above 1 so the look's bloom catches it); `flowSpeed` carries reduced motion.
  */
-export function hazardMaterial(type: HazardSpec["type"]): AuraMaterialSpec {
+export const LAVA_FRAGMENT_GLSL = /* glsl */ `
+#include <a3d_math>
+#include <colorspace_decode>
+in vec3 vW;
+out vec4 outColor;
+float pblHash(vec2 p) {
+  p = fract(p * vec2(123.34, 456.21));
+  p += dot(p, p + 45.32);
+  return fract(p.x * p.y);
+}
+float pblNoise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(mix(pblHash(i), pblHash(i + vec2(1.0, 0.0)), u.x), mix(pblHash(i + vec2(0.0, 1.0)), pblHash(i + vec2(1.0, 1.0)), u.x), u.y);
+}
+void main() {
+  vec2 p = vW.xz * crustScale + vec2(0.0, uTime * flowSpeed);
+  float n = pblNoise(p) * 0.65 + pblNoise(p * 2.3 + vec2(7.1, 3.7)) * 0.35;
+  float crack = 1.0 - smoothstep(0.05, 0.16, abs(n - 0.5));
+  float pulse = 0.85 + 0.15 * sin(uTime * flowSpeed * 3.0 + n * 6.2832);
+  vec3 crust = a3dSrgbToLinear(crustColor) * (0.75 + 0.5 * pblNoise(p * 5.0));
+  vec3 glow = a3dSrgbToLinear(glowColor) * glowIntensity * pulse;
+  outColor = vec4(a3dFinite(mix(crust, glow, crack)), 1.0);
+}`;
+
+export const LAVA_VERTEX_GLSL = /* glsl */ `
+out vec3 vW;
+void main() {
+  vec4 w = modelMatrix * vec4(position, 1.0);
+  vW = w.xyz;
+  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
+}`;
+
+/** Lava look constants (PBL-M2): crust basalt, crack orange, HDR crack peak. */
+export const LAVA_LOOK = { crust: [0.16, 0.08, 0.06], glow: [1, 0.42, 0.12], glowIntensity: 3.2, crustScale: 0.9, flowSpeed: 0.12 } as const;
+
+export function lavaMaterial(motion = 1): AuraMaterialSpec {
+  return {
+    ...material.custom({
+      glsl: { vertex: LAVA_VERTEX_GLSL, fragment: LAVA_FRAGMENT_GLSL },
+      uniforms: {
+        crustColor: { type: "vec3", value: [...LAVA_LOOK.crust] },
+        glowColor: { type: "vec3", value: [...LAVA_LOOK.glow] },
+        glowIntensity: { type: "f32", value: LAVA_LOOK.glowIntensity },
+        crustScale: { type: "f32", value: LAVA_LOOK.crustScale },
+        flowSpeed: { type: "f32", value: LAVA_LOOK.flowSpeed * motion }
+      },
+      fog: true
+    }),
+    // A light source, not fill: the art-direction audit and the no-emissive-fill test read this.
+    practical: true
+  };
+}
+
+/**
+ * PBL-M2 hazards: a matte plum bramble mat (hue about 271, outside 290-330; no emissive
+ * fill), crusted scrolling lava (custom shader), embers as practical light sources, pale
+ * clearcoat frost. The bramble model is WP-36.
+ */
+export function hazardMaterial(type: HazardSpec["type"], motion = 1): AuraMaterialSpec {
   switch (type) {
     case "thorns": return material.felt({ color: "#5b3a7a", sheenColor: "#7a5a9a" });
-    case "lava": return material.emissive({ color: "#ff5a26", emissive: "#ff5a26", emissiveIntensity: 1.4, roughness: 0.5, practical: true });
+    case "lava": return lavaMaterial(motion);
     case "ember": return material.emissive({ color: "#ff9435", emissive: "#ff8a2a", emissiveIntensity: 1.1, roughness: 0.5, practical: true });
     case "frost": return material.clearcoat({ color: "#8fd0e8", roughness: 0.2 });
   }
 }
+
+/**
+ * PBL-M2 iridescent crystals: a cool cyan-to-violet fresnel rim over the crystal shards
+ * (rim reaches every generated-program PBR material) plus KHR iridescence, which the
+ * engine applies only to materials that already carry the parameter.
+ */
+export const CRYSTAL_OVERRIDES: readonly AuraModelMaterialOverride[] = [
+  { rim: { color: "#9fe8ff", power: 2.4, intensity: 0.9 }, iridescence: 1, roughness: 0.18 }
+];
+
+/** PBL-M2 gold seeds: sun-seed gold emissive lift and a warm rim on the pickup GLB (textures kept). */
+export const SEED_OVERRIDES: readonly AuraModelMaterialOverride[] = [
+  { emissive: PIP_PALETTE.sunSeed, emissiveIntensity: 0.45, metallic: 0.7, roughness: 0.3, rim: { color: "#ffe39a", power: 3, intensity: 0.7 } }
+];
 
 /** Sun-Gate ring: sun-seed gold, a practical (the portal is a light source, not fill). */
 export const GATE_RING_MATERIAL: AuraMaterialSpec = material.emissive({ color: PIP_PALETTE.sunSeed, emissive: PIP_PALETTE.sunSeed, emissiveIntensity: 0.9, practical: true });

@@ -1791,12 +1791,10 @@
           },
           {
             "node": "hazard:lava-1",
-            "emissiveIntensity": 1.4,
             "practical": true
           },
           {
             "node": "hazard:lava-2",
-            "emissiveIntensity": 1.4,
             "practical": true
           },
           {

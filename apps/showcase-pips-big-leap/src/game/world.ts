@@ -24,6 +24,8 @@ import { deriveWorldMotion, type WorldMotion } from "./motion.js";
 import {
   GATE_RING_MATERIAL,
   SLAB_RADIUS,
+  CRYSTAL_OVERRIDES,
+  SEED_OVERRIDES,
   SURFACES,
   ambientEmitterNode,
   auroraNode,
@@ -400,6 +402,8 @@ export function propInstanceNodes(props: readonly PropInstance[]): readonly Scen
       ...(first.measure === "height" ? { targetHeight: 1 } : { targetMaxDimension: 1 }),
       castShadow: first.castShadow,
       receiveShadow: first.receiveShadow,
+      // PBL-M2: the crystal shards (crystals, shard mushrooms, hazard dressing) shimmer.
+      ...(first.asset.id === assets.props.crystalShard.id ? { materialOverrides: CRYSTAL_OVERRIDES } : {}),
       transforms: list.map((p) => ({ position: [p.position[0], p.position[1], p.position[2]] as const, rotation: [0, p.yaw, 0] as const, scale: p.size }))
     });
   });
@@ -680,7 +684,7 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
         size: [hz.w, Math.min(h, 0.24), hz.d],
         position: [hz.x, hz.y - Math.min(h, 0.24) / 2, hz.z],
         material: diorama
-          ? hazardMaterial(hz.type)
+          ? hazardMaterial(hz.type, scale.motion)
           : material.emissive({ color: HAZARD_STYLE[hz.type], emissive: HAZARD_STYLE[hz.type], emissiveIntensity: 0.85, roughness: 0.5 })
       })
     );
@@ -722,7 +726,7 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   const spinNodes: string[] = [];
   for (const s of spec.seeds) {
     builder.add(
-      model(assets.sunseed, { name: nodeName.seed(s.id), castShadow: false, targetMaxDimension: 0.68, scaleMode: "fit" })
+      model(assets.sunseed, { name: nodeName.seed(s.id), castShadow: false, targetMaxDimension: 0.68, scaleMode: "fit", ...(diorama ? { materialOverrides: SEED_OVERRIDES } : {}) })
         .position(s.x, s.y - 0.1, s.z)
         .runtime(game.runtimeNode(nodeName.seed(s.id), { tags: ["pickup", "seed"] }))
     );
