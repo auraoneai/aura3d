@@ -17,15 +17,18 @@ import {
 import {
   APEX_BLOOM,
   APEX_FOG_DENSITY_SCALE,
+  APEX_GOD_RAY_DENSITY,
   APEX_GRADE,
   APEX_IBL_HDRI,
   APEX_IBL_ROTATION_DEG,
   APEX_LOOK,
+  APEX_MOTION_BLUR,
   APEX_PALETTE,
   APEX_SUN,
   apexLookAt,
   parseTodParam
 } from "./art/look";
+import { apexFlash, apexFlashAlpha, apexPostPlan, applyApexPostPlan, type ApexFlashKind } from "./art/post";
 import { createNativeRoadster, findDrawCalls } from "./native";
 import { POWERUP_SECONDS } from "./native/constants";
 import { GANTRY_COUNT } from "./native/world";
@@ -39,6 +42,7 @@ import { SKY_DOME_SIZE, skyLook, skySpec } from "./art/sky";
 import { createCameraShake, createHitStop, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
 import { createRoadsterPresenter, viewOf } from "./native/presentation";
 import { InstancePool, parked } from "./render/instancePool";
+import { apexQaCrops, type QaCrop } from "./render/qa";
 import {
   DRAW_WINDOW,
   NEAR_CAPACITY,
@@ -78,6 +82,9 @@ const AUTOSTART = ["autoplay", "demo", "capture"].some((k) => urlParams.get(k) =
 const REDUCED_MOTION = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 /** `?tod=sunset|dusk|night|0..1` pins the presented time of day (capture variants); presentation only, like the quick bar. */
 const TOD_PARAM = parseTodParam(urlParams.get("tod"));
+/** Reduced flash (PRD §6.3): reduced motion or `?flash=0` skips the output-overlay flashes. */
+const REDUCED_FLASH = REDUCED_MOTION || urlParams.get("flash") === "0";
+const COARSE_POINTER = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
 
 /** Meshy model for a vehicle type when it is shipped and enabled (`?models=0` turns it off), else the original showcase asset. */
 const pickVehicleAsset = (key: string, fallback: AuraAssetRef<"model">): AuraAssetRef<"model"> =>
@@ -215,6 +222,13 @@ const poolId = (name: string): string => `pool-${name}`;
 /** Runtime ids of the look's key light and the camera-side fill (AO-L2 retunes both per time of day with setLight). */
 const KEY_LIGHT_ID = "apex-sun-key";
 const FILL_LIGHT_ID = "apex-camera-fill";
+const SUN_FLARE_ID = "apex-sun-flare";
+
+/** Where the dome draws the sun (inside the 760 m dome; the camera stays at the origin and the world moves past it). */
+function sunWorldPosition(tod: number): Vec3 {
+  const d = apexLookAt(tod).sunDir;
+  return [d[0] * 340, d[1] * 340, d[2] * 340];
+}
 
 /**
  * GU47 AO-L1: one golden-hour look whose sun sits where the dome draws the disc (7 deg, azimuth 175: dead ahead), so key,
@@ -275,7 +289,30 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         })
         .runtime({ id: FILL_LIGHT_ID })
     )
-    .add(effects.vignette({ intensity: 0.2, smoothness: 0.65 }));
+    .add(effects.vignette({ intensity: 0.2, smoothness: 0.65 }))
+    // AO-P3 / AO-P4: motion blur (S7) and god rays through the haze (S4). art/post.ts switches both per tier: High and Ultra
+    // only, never on a phone, and motion blur never under reduced motion. The inscatter density stays tiny: the look fog owns
+    // the haze, this node only feeds the shafts (godRayDensity is decoupled from fog density, E-C EC-8).
+    .add(effects.motionBlur({ shutter: APEX_MOTION_BLUR, maxBlur: 24 }))
+    .add(effects.volumetricFog({ density: 0.004, color: APEX_LOOK[0].dome.sun, intensity: 0.45, godRayDensity: APEX_GOD_RAY_DENSITY }));
+  // AO-P3: the low sun's lens flare in the identity palette; skipped under reduced motion, hidden at night.
+  if (!REDUCED_MOTION) {
+    s.add(
+      lights.lensFlare({
+        name: SUN_FLARE_ID,
+        position: sunWorldPosition(0),
+        intensity: 0.32,
+        edgeFade: 0.2,
+        elements: [
+          { size: 210, distance: 0, color: APEX_PALETTE.tangerine },
+          { size: 42, distance: 0.42, color: "#ffb066" },
+          { size: 76, distance: 0.72, color: "#6a4fa8" },
+          { size: 30, distance: 1, color: APEX_PALETTE.tangerine }
+        ],
+        runtime: { id: SUN_FLARE_ID }
+      })
+    );
+  }
 
   // 1. Endless Scrolling 5-Lane Sunset Freeway Deck, Shoulders, Jersey Barriers & Neon Sound Walls
   s.addMany([
@@ -666,6 +703,33 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const fillLight = auraApp.nodes.get(FILL_LIGHT_ID);
   /** The look row the last time-of-day bucket resolved (practicals, emissive gains and the QA hook read it). */
   let lookFrame = apexLookAt(0);
+  const sunFlare = auraApp.nodes.get(SUN_FLARE_ID);
+
+  // AO-P3 / AO-P4 / AO-PF1: High-only motion blur and god rays, no DOF; re-applied when the quality tier changes.
+  let postStates: Readonly<Record<string, boolean>> = {};
+  const applyPost = (): void => {
+    postStates = applyApexPostPlan(auraApp.post, apexPostPlan({ tier: auraApp.quality?.tier, reducedMotion: REDUCED_MOTION, coarsePointer: COARSE_POINTER }));
+  };
+  applyPost();
+  auraApp.quality?.onChange?.(() => applyPost());
+
+  // AO-P4: warm crash / cyan rocket output-overlay flash, peak <= 0.3 for <= 180 ms; skipped under reduced flash.
+  let flash: { kind: ApexFlashKind; startMs: number } | null = null;
+  const startFlash = (kind: ApexFlashKind): void => {
+    if (!REDUCED_FLASH) flash = { kind, startMs: performance.now() };
+  };
+  const updateFlash = (nowMs: number): void => {
+    if (!flash) return;
+    const alpha = apexFlashAlpha(flash.kind, nowMs - flash.startMs, REDUCED_FLASH);
+    if (alpha <= 0) {
+      flash = null;
+      auraApp.setOutputOverlay?.({});
+      return;
+    }
+    const f = apexFlash(flash.kind);
+    auraApp.setOutputOverlay?.({ flash: [f.rgb[0], f.rgb[1], f.rgb[2], alpha] });
+  };
+  let lastRocketActive = false;
 
   const dashPool = pool("dashes", LANE_DIVIDER_X.length * DASH_COUNT_PER_DIVIDER);
   const gantrySteel = pool("gantry-steel", GANTRY_COUNT * 3);
@@ -747,7 +811,12 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     keyLight?.setLight?.({ color: frame.sun.color, intensity: frame.sun.intensity, direction: [-toward[0], -toward[1], -toward[2]] }, blend);
     fillLight?.setLight?.({ color: frame.fill.color, intensity: frame.fill.intensity }, blend);
     auraApp.lighting?.setEnvironmentIntensity?.(frame.environmentIntensity);
-    auraApp.atmosphere?.setFog?.({ color: frame.fog.color, near: frame.fog.near, far: frame.fog.far }, blend);
+    // overrideSceneFog: the volumetric god-ray node would otherwise make setFog skip the look's fog node (E-B default)
+    auraApp.atmosphere?.setFog?.({ color: frame.fog.color, near: frame.fog.near, far: frame.fog.far }, { ...blend, overrideSceneFog: true });
+    if (sunFlare) {
+      const at = sunWorldPosition(tod);
+      sunFlare.setPosition(at[0], at[1], at[2]).setVisible(look.nightAmount < 0.5);
+    }
     // AO-P1: time-of-day white balance through E-C's grade writer, patched onto the one look grade node
     try {
       auraApp.post?.setEffect?.("colorGrade", { temperature: round3(frame.grade.temperature), tint: round3(frame.grade.tint) });
@@ -945,6 +1014,20 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   };
   (window as any).__AURA3D_SHOWCASE_ROADSTER_RUSH__ = { app: auraApp, evidence: runtimeEvidence, triggerScenario };
 
+  // GU47 QA hook (E-I capture): named crops the WP-12 acceptance reads, plus the look state a judged shot needs.
+  const qaGlobal = window as unknown as { __AURA_QA__?: Record<string, unknown> };
+  const qa = (qaGlobal.__AURA_QA__ ??= {}) as { crops?: QaCrop[]; apex?: Record<string, unknown> };
+  qa.crops = [];
+  const qaApex: Record<string, unknown> = { variant: "sunset", tod: 0, post: postStates, reducedMotion: REDUCED_MOTION, reducedFlash: REDUCED_FLASH };
+  qa.apex = qaApex;
+  const publishQa = (heroRoot: Vec3): void => {
+    const aspect = canvas.clientWidth > 0 && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : 16 / 9;
+    qa.crops = apexQaCrops(sunWorldPosition(lookFrame.tod), [heroRoot[0], heroRoot[1] + 0.66, heroRoot[2]], aspect);
+    qaApex.variant = lookFrame.variant;
+    qaApex.tod = lookFrame.tod;
+    qaApex.post = postStates;
+  };
+
   function syncRoadsterWorld(real: any, g: any = real): void {
     if (!real || !real.player) return;
     framesRendered += 1;
@@ -968,8 +1051,15 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       real.player.shakePulse = 0;
     }
     const sh = shake.update(realDt);
-    if (real.mode === "crashed" && lastMode === "playing" && !real.manual) hitStop.trigger(110);
+    if (real.mode === "crashed" && lastMode === "playing" && !real.manual) {
+      hitStop.trigger(110);
+      startFlash("crash");
+    }
     lastMode = real.mode;
+    const rocketActive = Number(real.player.rocketTimer ?? 0) > 0;
+    if (rocketActive && !lastRocketActive && real.mode === "playing") startFlash("rocket");
+    lastRocketActive = rocketActive;
+    updateFlash(nowMs);
     hitStop.update(realDt);
     if (hitStop.active !== hitStopHeld) {
       hitStopHeld = hitStop.active;
@@ -1397,6 +1487,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     ev.visiblePools.powerups = powerDrawn;
     lastPz = pz;
     lastGantries = worldGantries;
+    if (framesRendered % 10 === 1) publishQa(pRoot);
     publishBeacon(ev);
   }
 
