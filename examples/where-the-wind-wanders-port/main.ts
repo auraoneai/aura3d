@@ -20,6 +20,7 @@ import { createAudio } from "./audio";
 import { STORY, createUi } from "./ui";
 import { MODEL_ASSETS } from "./model-assets";
 import { parseFoundParam } from "./daylight";
+import { paperPass } from "./paper-pass";
 
 const params = new URLSearchParams(location.search);
 const manual = params.get("manual") === "1";
@@ -411,12 +412,15 @@ async function boot(): Promise<void> {
     autoStart: false,
     resize: false,
     pixelRatio: 1,
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
-    output: { toneMapping: "aces", exposure: 1.25, dither: false },
+    // WW47-P1: renderer.quality replaces the deprecated qualityProfile (?look=original keeps the 4.6 options)
+    renderer: originalLook ? { mode: "production", qualityProfile: "production", fallback: "safe-basic" } : { mode: "production", quality: lowQuality ? "low" : "high", fallback: "safe-basic" },
+    output: { toneMapping: "aces", exposure: originalLook ? 1.25 : 1.18, dither: false },
     scene: world.scene
   });
   await app.ready();
   runtime = world.bind(app);
+  // WW47-P3: the gouache paper pass (High only, not on the original look)
+  if (!originalLook && !lowQuality) app.post?.addPostPass?.(paperPass(canvas.width, canvas.height));
   stopWatching();
   ready = true;
   $("loading").classList.add("hidden");

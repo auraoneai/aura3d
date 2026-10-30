@@ -479,11 +479,28 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
     builder.add(geometry.custom(geometry.dynamic({ positions: f32(pos), normals: f32(pos.map(() => 0)), uvs: f32(uv), indices: new Uint32Array(idx), attributes: { tint: { itemSize: 3, data: f32(tint) } } }), { name: "pollen", material: material.custom(moteSpec()) }).runtime({ id: lit("motes") }));
   }
 
-  /* ---- post: a gentle bloom for the glow, grade and vignette ---- */
-  builder
-    .add(effects.bloom({ name: "bloom", intensity: 0.32, threshold: 1.05, scatter: 0.55 }))
-    .add(effects.colorGrade({ name: "grade", contrast: 1.12, saturation: 1.28 }))
-    .add(effects.vignette({ name: "vignette", intensity: 0.1, smoothness: 0.8 }));
+  /* ---- post ---- */
+  if (original) {
+    // the 4.6 post: a gentle bloom for the glow, a saturated grade and a light vignette
+    builder
+      .add(effects.bloom({ name: "bloom", intensity: 0.32, threshold: 1.05, scatter: 0.55 }))
+      .add(effects.colorGrade({ name: "grade", contrast: 1.12, saturation: 1.28 }))
+      .add(effects.vignette({ name: "vignette", intensity: 0.1, smoothness: 0.8 }));
+  } else {
+    // WW47-P1: a softer gouache palette, a warm bloom on the glows and the sun, an umber vignette
+    builder
+      .add(effects.bloom({ name: "bloom", intensity: 0.42, threshold: 0.92, scatter: 0.55, color: "#ffe2b8" }))
+      .add(effects.colorGrade({ name: "grade", contrast: 1.06, saturation: 1.05, exposure: 1.05 }))
+      .add(effects.vignette({ name: "vignette", intensity: 0.22, smoothness: 0.75, color: "#3a2a1c" }));
+    if (options.quality !== "low") {
+      // WW47-P2: golden-hour shafts at a low fixed strength from the found-0 sun; P3: grain 0.02 under the paper pass
+      // no lightPosition: the stage takes the shadowed key; the WSW sun sits behind the follow camera, so the shafts read
+      // mostly in the dusk finale and the voyage, where the camera turns toward the valley (lanes/g23.md)
+      builder
+        .add(effects.volumetricFog({ name: "golden shafts", density: 0.05, intensity: 0.22, color: "#ffd9a8", godRayDensity: 0.2 }))
+        .add(effects.filmGrain({ name: "paper grain", intensity: 0.02 }));
+    }
+  }
 
   const propTriangles = sc.props.indices.length / 3;
   return {
