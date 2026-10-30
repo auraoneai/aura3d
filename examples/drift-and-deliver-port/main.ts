@@ -28,6 +28,7 @@ import { SkidMarks, COURIER_TEAL } from "./fx";
 import { beaconMaterial, createShiftRuntime, padMaterial, shiftSceneNodes, type ShiftRuntime } from "./shiftRuntime";
 import { shiftCrops } from "./qa";
 import { createAudio } from "./audio";
+import { districtLayers, drawDial, slamStamp, ticketText } from "./hud";
 import { BOARD, boardPose, textOrigin, textWidth } from "./board";
 import { INTRO, introPose, introWanted, orbitPose } from "./cinema";
 import { courierBraking, createPitch, placeHalos, stepPitch } from "./brakes";
@@ -282,7 +283,8 @@ function onShiftEvent(e: ShiftEvent): void {
   if (e.kind === "delivered") {
     if (!config.manual) shiftRuntime?.delivered(e.job.x, e.job.z);
     game.score += e.score;
-    popup(`DELIVERED  +${e.score}`, "job");
+    if (shiftLook && !config.manual) slamStamp(hud.stamp, `DELIVERED  +${e.score}`);
+    else popup(`DELIVERED  +${e.score}`, "job");
     audio?.chime("star", 4);
   } else if (e.kind === "missed") popup("JOB MISSED", "miss");
   else if (e.kind === "drift") {
@@ -476,7 +478,7 @@ function render(dt: number, alpha = 1): void {
 
 /* ------------------------------------------------------------------ HUD */
 
-const hud = { nitro: $("nitro-fill"), speed: $("speed"), score: $("score"), streak: $("streak"), count: $("count"), map: $<HTMLCanvasElement>("minimap"), clock: $("clock"), job: $("job"), drift: $("drift"), popups: $("popups") };
+const hud = { dial: $<HTMLCanvasElement>("dial"), stamp: $("stamp"), nitro: $("nitro-fill"), speed: $("speed"), score: $("score"), streak: $("streak"), count: $("count"), map: $<HTMLCanvasElement>("minimap"), clock: $("clock"), job: $("job"), drift: $("drift"), popups: $("popups") };
 const reducedMotionQuery = typeof matchMedia === "function" ? matchMedia("(prefers-reduced-motion: reduce)") : null;
 const applyReducedMotion = (): void => {
   const on = Boolean(reducedMotionQuery?.matches) || params.get("motion") === "reduced";
@@ -514,11 +516,15 @@ function updateHud(): void {
   const job = shift.job;
   if (job) {
     const d = Math.hypot(job.x - car.x, job.z - car.z);
-    hud.job.textContent = `DELIVER  ${Math.round(d)} m  ${formatClock(job.timeLeft)}`;
+    hud.job.textContent = shiftLook ? ticketText(shift.deliveries + shift.missed + 1, d, formatClock(job.timeLeft)) : `DELIVER  ${Math.round(d)} m  ${formatClock(job.timeLeft)}`;
     hud.job.classList.toggle("low", job.timeLeft <= 10);
   } else hud.job.textContent = "";
   hud.drift.style.opacity = shift.drift > 0 ? "1" : "0";
   hud.drift.textContent = `DRIFT  ${Math.round(shift.drift)}`;
+  if (shiftLook) {
+    const dial = hud.dial.getContext("2d");
+    if (dial) drawDial(dial, hud.dial.width, kmh(), car.boost);
+  }
   const ctx = hud.map.getContext("2d");
   if (!ctx) return;
   minimapCoins.length = 0;
@@ -528,6 +534,7 @@ function updateHud(): void {
     bounds: MINIMAP_BOUNDS,
     background: { fill: "rgba(38,30,26,.82)", radius: 18 },
     layers: [
+      ...(shiftLook ? DISTRICT_LAYERS : []),
       { kind: "lines", segments: MINIMAP_GRID, stroke: "rgba(255,226,175,.5)", width: 2.5 },
       { kind: "rect", rect: [-510, 506, 510, 510], fill: "rgba(70,160,205,.55)" },
       { kind: "points", points: minimapCoins, fill: "#ffd15c", size: 2.8 }
@@ -572,6 +579,9 @@ function updateHud(): void {
   }
 }
 const MINIMAP_BOUNDS: [number, number, number, number] = [-510, -510, 510, 510];
+/** GC-H1: district paper tints under the street grid (shift look only, built once). */
+const DISTRICT_LAYERS = shiftLook ? districtLayers(blocks) : [];
+if (shiftLook) document.body.classList.add("dispatch");
 const minimapCoins: [number, number][] = [];
 
 /* ------------------------------------------------------------------ input */
