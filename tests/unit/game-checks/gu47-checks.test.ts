@@ -2,7 +2,6 @@ import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-// @ts-expect-error plain ESM tool without types
 import { GAME_CHECKS, GU47_CHECK_SEVERITY, resetGitCache, runChecks } from "../../../tools/game-checks/lib/index.mjs";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 
@@ -47,7 +46,7 @@ const direction = (over: Record<string, unknown> = {}) => ({
   ...over
 });
 
-function withDirection(root: string, appFolder: string, dir: Record<string, unknown>, violations: unknown[] = []) {
+function withDirection(root: string, appFolder: string, dir: Record<string, unknown>, violations: object[] = []) {
   const rel = `apps/${appFolder}/art/direction.ts`;
   mkdirSync(dirname(join(root, rel)), { recursive: true });
   writeFileSync(join(root, rel), `export default ${JSON.stringify(dir)};\n`);

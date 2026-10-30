@@ -13,7 +13,6 @@ import {
   maskFromImage,
   normalizeMask,
   pairwiseIou
-  // @ts-expect-error plain ESM tool without types
 } from "../../../../tools/look-metrics/silhouette-iou.mjs";
 
 const SCRIPT = join(process.cwd(), "tools/look-metrics/silhouette-iou.mjs");

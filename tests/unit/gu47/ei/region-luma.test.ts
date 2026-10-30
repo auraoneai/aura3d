@@ -24,7 +24,6 @@ import {
   parseCaptureLog,
   regionStats,
   steadyRows
-  // @ts-expect-error plain ESM tool without types
 } from "../../../../tools/look-metrics/region-luma.mjs";
 import { glMetaInPage, glPairInPage, type DecodedFrame } from "../../../browser/game-luma-stats";
 
