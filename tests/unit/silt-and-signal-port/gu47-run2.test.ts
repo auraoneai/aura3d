@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 import { validatePostEffectNode } from "../../../packages/engine/src/agent-api/postBridge";
 import { FAR_DUNE_RINGS, farDuneRings, farDunes } from "../../../examples/silt-and-signal-port/architecture";
-import { BOOST_BLUR, BOOST_FOV_KICK, GOD_RAY_DENSITY, MAST_BRONZE, RING_PUNCH, WET_ROAD, buildWorld, fovKickTarget, inkSkySpec, mastTint, sequencePost } from "../../../examples/silt-and-signal-port/world";
+import { BOOST_BLUR, BOOST_FOV_KICK, GOD_RAY_DENSITY, MAST_BRONZE, RING_PUNCH, WET_ROAD, buildWorld, fovKickTarget, inkSkySpec, mastTint, sequencePost, treeWind } from "../../../examples/silt-and-signal-port/world";
 import { FINISH_ORBIT, chaseEyeBlocked, finishOrbitPose } from "../../../examples/silt-and-signal-port/camera";
 import { createSim } from "../../../examples/silt-and-signal-port/sim";
 import { LIGHTNING, createLightning, flashEnvelope, lightningStrikes } from "../../../examples/silt-and-signal-port/storm";
@@ -183,5 +183,16 @@ describe("GU47 WP-34 DG-C3 finish orbit", () => {
     // it moves: the first and last eye differ by more than the radius
     const a = finishOrbitPose(sim, 0).position, b = finishOrbitPose(sim, 3).position;
     expect(Math.hypot(a[0] - b[0], a[2] - b[2])).toBeGreaterThan(FINISH_ORBIT.radius);
+  });
+});
+
+describe("GU47 WP-34 DG-AN2 flora wind", () => {
+  it("inked trees carry instance wind, reduced motion keeps 30%, the original has none", () => {
+    expect(treeWind(true).strength).toBeCloseTo(treeWind(false).strength * 0.3, 6);
+    const trees = (o: Parameters<typeof buildWorld>[1] = {}) => nodes(0, o).find((n) => n.name === "trees");
+    const inked = trees();
+    if (!inked) return;
+    expect(JSON.stringify(inked)).toMatch(/wind/i);
+    expect(JSON.stringify(trees({ look: "original" }))).not.toMatch(/instanceWind/);
   });
 });

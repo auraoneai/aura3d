@@ -214,6 +214,12 @@ export interface BuildOptions {
   readonly reducedMotion?: boolean;
 }
 
+/** DG-AN2: instance wind for the flora (desert breeze from the west; reduced motion keeps 30%, PRD §6.3). */
+export function treeWind(reducedMotion: boolean) {
+  const k = reducedMotion ? 0.3 : 1;
+  return { directionDeg: 270, strength: 0.6 * k, gustStrength: 0.4 * k, gustScale: 50, turbulence: 0.25 * k, assetHeight: 1.684 };
+}
+
 /** DG-L6: the flare source sits this far out along the key vector from the rider. */
 export const FLARE_DISTANCE = 1800;
 /** DG-L6: a warm poster flare in the key's colour (no jade: the signal accent stays the rings', board's and HUD's). */
@@ -512,7 +518,9 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
     if (drums.length) builder.add(instances.model(assets.pillar, { name: "dressing-drums", castShadow: true, receiveShadow: true, transforms: drums.map((d) => ({ position: [d.x, d.y + 0.35 * d.scale, d.z] as [number, number, number], rotation: [0, d.yaw, 0] as [number, number, number], scale: [d.scale, d.scale * 0.45, d.scale] as [number, number, number] })) }));
     if (ruins.length) builder.add(instances.model(assets.canyonrocks, { name: "dressing-ruins", castShadow: false, receiveShadow: true, transforms: ruins.map((d) => ({ position: [d.x, d.y + 0.3 * d.scale, d.z] as [number, number, number], rotation: [0, d.yaw, 0] as [number, number, number], scale: [d.scale, d.scale * 0.7, d.scale] as [number, number, number] })) }));
   }
-  if (props.trees.length) builder.add(instances.model(assets.tree, { name: "trees", transforms: placements(props.trees), castShadow: true, receiveShadow: true }));
+  // GU47 DG-AN2 (part): E-G instance wind on today's trees in the inked look (reduced motion keeps 30% sway); the WP-36
+  // palms and tamarisk take the same option when admitted. Same draw, wind variant of its program.
+  if (props.trees.length) builder.add(instances.model(assets.tree, { name: "trees", transforms: placements(props.trees), castShadow: true, receiveShadow: true, ...(inked ? { wind: treeWind(!!buildOptions.reducedMotion) } : {}) }));
   // boulders: Meshy canyon-rock cluster (1.9 m wide, origin at its centre), sunk slightly so it sits on the ground
   if (props.rocks.length) {
     builder.add(instances.model(assets.canyonrocks, {
