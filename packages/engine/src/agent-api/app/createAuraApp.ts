@@ -428,7 +428,10 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     lastTime = time;
     const dt = delta / 1000;
     if (!runtimePaused) {
+      const revision = mountRevision;
       runRuntimeFrame(dt, "raf");
+      // A callback that called `setScene()` (or `dispose()`) already mounted the next scene and started its loop.
+      if (disposed || revision !== mountRevision) return;
       canvasRuntimePhysics?.step(dt);
     }
     diagnosticsState.evidence = collectAuraSceneEvidence(renderSnapshot);

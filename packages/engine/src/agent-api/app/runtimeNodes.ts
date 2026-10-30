@@ -668,6 +668,10 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
       bumpVersion();
       return this;
     },
+    // Bounds: `updateAttribute("position", ...)` writes vertices only. The culling bounds stay the ones from the last
+    // `setGeometry` / mount (authored `bounds`, else computed from the positions then), so a strip authored at all-zero
+    // positions and filled per frame is culled until it passes `geometry.dynamic({ bounds })` or calls `setGeometry` (g19
+    // handoff; the bounds refresh belongs in `compiler/primitives.ts` `syncRuntimePrimitiveGeometry`).
     updateAttribute(name: string, update: import("../nodes/types.js").AuraAttributeUpdate): AuraRuntimeNodeHandle {
       if (typeof name !== "string" || name.trim().length === 0) {
         throw new AuraRuntimeError("missing-asset", "Aura3D updateAttribute requires an attribute name.");

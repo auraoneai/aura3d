@@ -1,0 +1,118 @@
+[
+  {
+    "name": "start-1280x720",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "css": [
+      1280,
+      720
+    ],
+    "inline": [
+      "1280px",
+      "720px"
+    ],
+    "backing": [
+      1280,
+      720
+    ],
+    "renderSize": [
+      1280,
+      720
+    ],
+    "errors": 0,
+    "luma": {
+      "inner": 88.79,
+      "rightBand": -1,
+      "bottomBand": -1
+    }
+  },
+  {
+    "name": "grown-1440x900-0",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "css": [
+      1280,
+      720
+    ],
+    "inline": [
+      "1280px",
+      "720px"
+    ],
+    "backing": [
+      1280,
+      720
+    ],
+    "renderSize": [
+      1280,
+      720
+    ],
+    "errors": 0,
+    "luma": {
+      "inner": 88.22,
+      "rightBand": 14.09,
+      "bottomBand": 15.1
+    }
+  },
+  {
+    "name": "grown-1440x900-1",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "css": [
+      1280,
+      720
+    ],
+    "inline": [
+      "1280px",
+      "720px"
+    ],
+    "backing": [
+      1280,
+      720
+    ],
+    "renderSize": [
+      1280,
+      720
+    ],
+    "errors": 0,
+    "luma": {
+      "inner": 87.6,
+      "rightBand": 14.09,
+      "bottomBand": 15.1
+    }
+  },
+  {
+    "name": "shrunk-1280x720",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "css": [
+      1280,
+      720
+    ],
+    "inline": [
+      "1280px",
+      "720px"
+    ],
+    "backing": [
+      1280,
+      720
+    ],
+    "renderSize": [
+      1280,
+      720
+    ],
+    "errors": 0,
+    "luma": {
+      "inner": 86.93,
+      "rightBand": -1,
+      "bottomBand": -1
+    }
+  }
+]
