@@ -10,6 +10,18 @@ import { createHud } from "./hud";
 import { circuitFromParam } from "./look";
 import { applyCircuitLook, InstanceWriter, slotRivals } from "./view";
 import {
+  anchorPosition,
+  burstOptions,
+  EXHAUST_PLUME,
+  INCOMING_TRAIL,
+  MISSILE_TRAIL,
+  registerThermalDriftVfx,
+  VfxLedger,
+  vfxForEvent,
+  type TdVfxKind,
+  type VfxAnchor
+} from "./vfx";
+import {
   buildThermalDriftScene,
   IDS,
   INSTANCE_COUNTS,
@@ -108,6 +120,36 @@ async function boot(): Promise<void> {
   const SIDES = [-1, 1] as const;
   let shownCircuit: CircuitId = selectedCircuit;
 
+  // ------------------------------------------------------------------------------------------ VFX (HS-13)
+  // Sim events queue bursts during the fixed step; the draw fires them at the presented poses (presentation only).
+  const vfxLedger = new VfxLedger();
+  const pendingVfx: { kind: TdVfxKind; anchor: VfxAnchor }[] = [];
+  const vfxAt: [number, number, number] = [0, 0, 0];
+  let vfxSeed = 1;
+  registerThermalDriftVfx(auraApp.effects);
+  const missileTrail = auraApp.effects?.trail(IDS.missile, MISSILE_TRAIL);
+  const incomingTrail = auraApp.effects?.trail(IDS.incoming, INCOMING_TRAIL);
+  let missileWasActive = false;
+  let incomingWasActive = false;
+  let plume: { drone: DroneId; reduced: boolean; handle: { stop(o?: { immediate?: boolean }): void } | undefined } | null = null;
+  /** The exhaust plume follows the player's drone node; respawned when the drone or the motion preference changes. */
+  function syncPlume(drone: DroneId, reduced: boolean): void {
+    if (plume && plume.drone === drone && plume.reduced === reduced) return;
+    plume?.handle?.stop({ immediate: true });
+    const spec = reduced ? { ...EXHAUST_PLUME, layers: EXHAUST_PLUME.layers.map((l) => ({ ...l, count: 6 })) } : EXHAUST_PLUME;
+    plume = { drone, reduced, handle: auraApp.effects?.spawn(spec, { node: DRONE_SPECS[drone].nodeId }, { seed: 7 }) };
+  }
+  function fireVfx(target: readonly [number, number, number] | null, drone: readonly [number, number, number], reduced: boolean): void {
+    const effects = auraApp.effects;
+    for (let i = 0; i < pendingVfx.length && i < 8; i += 1) {
+      const { kind, anchor } = pendingVfx[i]!;
+      anchorPosition(anchor, drone, target, vfxAt);
+      effects?.burst(kind, [vfxAt[0], vfxAt[1], vfxAt[2]], burstOptions(kind, reduced, vfxSeed++));
+      vfxLedger.note(kind);
+    }
+    pendingVfx.length = 0;
+  }
+
   // ------------------------------------------------------------------------------------------ input
   const pendingActions: Action[] = [];
   const inputs = createInputs({
@@ -143,6 +185,8 @@ async function boot(): Promise<void> {
     race = newRace();
     hud.hideResults();
     resetView();
+    pendingVfx.length = 0;
+    vfxLedger.reset();
     publish(true);
   }
 
@@ -189,6 +233,8 @@ async function boot(): Promise<void> {
   function handleEvents(events: readonly SimEvent[]): void {
     audio.events(events);
     for (const e of events) {
+      const fx = vfxForEvent(e);
+      if (fx && pendingVfx.length < 16) pendingVfx.push({ kind: fx.kind, anchor: fx.anchor });
       switch (e.type) {
         case "countdown": hud.countdown(String(e.value)); break;
         case "go": hud.countdown("GO"); break;
@@ -367,6 +413,22 @@ async function boot(): Promise<void> {
       ringHandle.setPosition(dronePos[0], dronePos[1], dronePos[2]).setScale([s, s, 1]).setVisible(true);
     } else ringHandle.setVisible(false);
 
+    // VFX (HS-13): missile trails restart on launch, the exhaust plume follows the player, queued bursts fire here.
+    if (m.active && !missileWasActive) missileTrail?.clear();
+    missileWasActive = m.active;
+    if (inc.active && !incomingWasActive) incomingTrail?.clear();
+    incomingWasActive = inc.active;
+    syncPlume(race.drone, reduced);
+    if (pendingVfx.length > 0) {
+      let target: [number, number, number] | null = null;
+      if (race.locked >= 0) {
+        const base = race.locked * 3;
+        track.place(shown.rivals[base]! - progress + 0.4, shown.rivals[base + 1]!, shown.rivals[base + 2]!, pose2);
+        target = [pose2.x, pose2.y, pose2.z];
+      }
+      fireVfx(target, dronePos, reduced);
+    }
+
     // Rain (off with reduced motion)
     writers.rain.begin();
     for (let i = 0; i < RAIN_STREAK_COUNT; i += 1) {
@@ -438,7 +500,9 @@ async function boot(): Promise<void> {
     takedowns: race.takedowns,
     result: race.result,
     modelNodeCount: MODEL_NODE_COUNT,
-    admittedAssetKeyCount: 26
+    admittedAssetKeyCount: 26,
+    // HS-13: bursts fired this race, per preset (phase 2 matches them to the beacon events of an autopilot lap).
+    vfx: { fired: vfxLedger.total, byKind: { ...vfxLedger.fired }, live: auraApp.effects?.liveCount ?? 0 }
   });
   function publish(force: boolean): void {
     const now = performance.now();
