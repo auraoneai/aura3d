@@ -147,7 +147,7 @@ function applyPost(): void {
   }
 }
 function applyMotion(): void {
-  runtime?.setMotion({ reduced: reducedMotion });
+  runtime?.setMotion({ reduced: reducedMotion, cinematic: !config.manual });
   applyPost();
   setText(el.motion, reducedMotion ? "Reduced motion: on" : "Reduced motion: off");
   el.motion.setAttribute("aria-pressed", String(reducedMotion));

@@ -11,6 +11,7 @@ import { buildArches, buildDividers, buildProps, buildRails, buildRoad, buildSha
 import { blobSpec, pointsSpec, roadSpec, setShading, skySpec, solidSpec, streakSpec, terrainSpec, veilSpec, wakeSpec, type Rgb } from "./materials";
 import { bankRoll, createIonWake, createSporeField, sporeField } from "./art/wake";
 import { districtFog, fogApproach } from "./art/look";
+import { afterburnerKick, directCamera, VIGNETTE_PULSE, vignettePulse } from "./art/director";
 import { createPoolUniforms, glowEmitters, nearestPools } from "./art/pools";
 import { HEATSINK_VFX, registerHeatsinkVfx, vfxScale } from "./art/vfx";
 import { axisRotation, droneEuler, matrixToEulerZYX, multiplyMat3 } from "./orient";
@@ -79,6 +80,8 @@ export const TWILIGHT_HDRI = { type: "texture", format: "hdr", url: "/hdri/sunse
 /** HP-13: motion the player can turn down (and `prefers-reduced-motion` turns down by default) */
 export interface MotionSettings {
   readonly reduced: boolean;
+  /** IC-22 countdown sweep and finish orbit; false under `manual=1` (deterministic capture driving). Default true */
+  readonly cinematic?: boolean;
 }
 /** with reduced motion: no camera shake, the speed FOV kick capped at this many degrees, speed streaks at half alpha */
 export const REDUCED_FOV_KICK = 6;
@@ -369,6 +372,9 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
   const blobGeo = new Float32Array(12);
   let motion: MotionSettings = { reduced: false };
   let rollNow = 0;
+  let finishedFor = 0;
+  let vigEnv = 0;
+  let vigShown = -1;
 
   function burst(x: number, y: number, z: number, count: number, r: number, g: number, bl: number, speed: number): void {
     for (let i = 0; i < count; i++) {
@@ -426,7 +432,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     eye[0] = p.position.x - fx * FRAMING.dist; eye[1] = p.position.y + FRAMING.height; eye[2] = p.position.z - fz * FRAMING.dist;
     look[0] = p.position.x + fx * c.lookAhead; look[1] = p.position.y + 0.8; look[2] = p.position.z + fz * c.lookAhead;
     const speed01 = Math.min(1, p.v / CFG.vehicle.maxSpeed);
-    const kick = (c.fovMax - c.fovBase) * speed01 * speed01 + (p.rjActive ? c.fovRamjet * 0.35 : 0);
+    const kick = (c.fovMax - c.fovBase) * speed01 * speed01 + (p.rjActive ? c.fovRamjet * 0.35 : 0) + afterburnerKick(row, p.abActive);
     const fovBase = c.fovBase + (motion.reduced ? Math.min(REDUCED_FOV_KICK, kick) : kick);
     chaseIn.fovTarget = Math.min(c.fovMax, aspect < 0.85 ? fovBase + 8 : fovBase);
     const pose = chase.step(chaseIn, dt);
@@ -436,9 +442,13 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     const roll = motion.reduced ? 0 : bankRoll(row, p.steerVal, speed01);
     rollNow += (roll - rollNow) * (1 - Math.exp(-dt * 5));
     const up: [number, number, number] = [-fz * Math.sin(rollNow), Math.cos(rollNow), fx * Math.sin(rollNow)];
+    /* IC-22 countdown sweep into the chase pose and the finish orbit (twilight, full motion, not manual) */
+    finishedFor = race.state === "finished" ? finishedFor + dt : 0;
+    const dEye: [number, number, number] = [0, 0, 0], dLook: [number, number, number] = [0, 0, 0];
+    directCamera(row, !motion.reduced && motion.cinematic !== false, { state: race.state, countdown: race.countdown, finishedFor, target: [p.position.x, p.position.y, p.position.z], eye: pose.eye, look: pose.look }, dEye, dLook);
     /* fresh arrays here on purpose: the controller keeps the override object by reference */
-    cameraController.setPose({ position: [pose.eye[0] + fz * shx, pose.eye[1] + shy, pose.eye[2] - fx * shx], target: pose.look, up, fov: pose.fov }, { cut: false });
-    node("sky").setPosition(pose.eye[0], pose.eye[1], pose.eye[2]);
+    cameraController.setPose({ position: [dEye[0] + fz * shx, dEye[1] + shy, dEye[2] - fx * shx], target: dLook, up, fov: pose.fov }, { cut: false });
+    node("sky").setPosition(dEye[0], dEye[1], dEye[2]);
 
     /* speed streaks radiate from the vanishing point: world-fixed lines along the heading, respawned ahead once passed */
     {
@@ -573,7 +583,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
         const bolt = ops.bolts[k]!;
         const o = k * 12;
         if (!bolt.alive) { boltGeo.fill(0, o, o + 12); continue; }
-        const vx = bolt.x - pose.eye[0], vy = bolt.y - pose.eye[1], vz = bolt.z - pose.eye[2];
+        const vx = bolt.x - dEye[0], vy = bolt.y - dEye[1], vz = bolt.z - dEye[2];
         let wx = bolt.dy * vz - bolt.dz * vy, wy = bolt.dz * vx - bolt.dx * vz, wz = bolt.dx * vy - bolt.dy * vx;
         const wl = Math.hypot(wx, wy, wz) || 1;
         wx = (wx / wl) * BOLT_HALF_WIDTH; wy = (wy / wl) * BOLT_HALF_WIDTH; wz = (wz / wl) * BOLT_HALF_WIDTH;
@@ -601,6 +611,13 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       node("rail-posts").setUniform?.("glowColor", glowNow);
       /* IC-10: the causeway's ion pulse runs at the drone's speed */
       node("road").setUniform?.("ionSpeed", motion.reduced ? 0 : p.v);
+    }
+
+    /* IC-08 afterburner vignette pulse (none on reduced motion or ?look=original); written only when it changes */
+    if (row.post.vignette !== null) {
+      vigEnv = vignettePulse(row, motion.reduced, p.abActive && !p.crashed, vigEnv, dt);
+      const v = Math.round((row.post.vignette + VIGNETTE_PULSE.gain * vigEnv) * 200) / 200;
+      if (v !== vigShown) { vigShown = v; try { app.post?.setEffect("vignette", { intensity: v }); } catch { /* post runtime unavailable */ } }
     }
 
     /* IC-02 glow pools (+0 draws) and the two moving points */
@@ -631,7 +648,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     if (wake) {
       if (!p.crashed) wake.push({ t: time, x: p.position.x - fx * 2.2, y: p.position.y + 0.15, z: p.position.z - fz * 2.2 });
       else wake.clear();
-      wake.build(time, pose.eye, p.v, p.abActive || p.burstT > 0 ? 1 : 0, p.crashed ? 0 : 1);
+      wake.build(time, dEye, p.v, p.abActive || p.burstT > 0 ? 1 : 0, p.crashed ? 0 : 1);
       const wn = node("ion-wake");
       wn.updateAttribute?.("position", { array: wake.positions, offset: 0 });
       wn.updateAttribute?.("wakeColor", { array: wake.colors, offset: 0 });
@@ -641,7 +658,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     /* IC-20 spores: positions are a pure function of the seed, time and eye (wrapped into the box); reduced motion shows half */
     if (spores) {
       const live = motion.reduced ? Math.floor(spores.n / 2) : spores.n;
-      sporeField(spores, time, pose.eye, live);
+      sporeField(spores, time, dEye, live);
       const sn = node("spores");
       sn.updateAttribute?.("position", { array: spores.pos, offset: 0 });
       sn.updateAttribute?.("fade", { array: spores.fade, offset: 0 });
@@ -689,6 +706,9 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
   function resetCamera(): void {
     rigReady = false;
     rollNow = 0;
+    finishedFor = 0;
+    vigEnv = 0;
+    vigShown = -1;
     fogReady = false;
     poolSlot0 = -2;
     droneGlowHot = -1;
