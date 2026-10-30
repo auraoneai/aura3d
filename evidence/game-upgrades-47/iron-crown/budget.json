@@ -1,0 +1,21 @@
+{
+  "schema": "aura3d.gu47-budget/1",
+  "slug": "iron-crown",
+  "budget": { "drawCallsDesktop": 300, "drawCallsPhone": 220, "triangles": 1500000, "textureBytes": 100663296, "particles": 2000, "routeJsGzipDeltaPct": 5 },
+  "source": "evidence/iron-crown/audit-2026-10-29/after (a: crown desktop 1280x720; g2: phone 390x844 and Neo-Tokyo; g3: Dock, Colosseum, Airstrip, Monastery). Triangles, texture bytes, page MB, route JS and fps were not recorded in that capture.",
+  "variants": {
+    "crown-arena": { "before": { "drawCalls": 194, "drawCallsPhone": 125, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": 0, "fps": null, "meanLuma": 56.5 }, "after": null },
+    "neo-tokyo-rooftop": { "before": { "drawCalls": 1543, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": 0, "fps": null, "meanLuma": 30.7 }, "after": null },
+    "bangkok-dock": { "before": { "drawCalls": 2810, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": 0, "fps": null, "meanLuma": 115.4 }, "after": null },
+    "colosseum-ruins": { "before": { "drawCalls": 174, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": 0, "fps": null, "meanLuma": 131.3 }, "after": null },
+    "desert-airbase": { "before": { "drawCalls": 154, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": 0, "fps": null, "meanLuma": 122.3 }, "after": null },
+    "himalayan-monastery": { "before": { "drawCalls": 2984, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": 0, "fps": null, "meanLuma": 129.9 }, "after": null }
+  },
+  "expectedDrawDelta": {
+    "floorDeck": "-24 per venue (38 -> 14, IC47-PF1)",
+    "staticPropConsolidation": "tea house (Dock, Monastery) and office tower (Neo-Tokyo) collapse to one draw per material at load (IC47-PF1 interim); expected Dock and Monastery well under 300, measured in phase 2",
+    "backdrop": "+3 Neo-Tokyo, +4 Dock, +2 Colosseum, +3 Airstrip, +2 Monastery, 0 Crown (IC47-W1)",
+    "lights": "Crown follow-spot (1 PCSS shadow pass) + 2 unshadowed back rims per venue; Neo-Tokyo 2 rect panels (IC47-L1, IC47-L2)",
+    "weather": "rain 900 / snow 600 particles in one volume each (halved on reduced motion and ?tier=low)"
+  }
+}
