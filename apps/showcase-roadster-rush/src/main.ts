@@ -1015,8 +1015,12 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     keyLight?.setLight?.({ color: frame.sun.color, intensity: frame.sun.intensity, direction: [-toward[0], -toward[1], -toward[2]] }, blend);
     fillLight?.setLight?.({ color: frame.fill.color, intensity: frame.fill.intensity }, blend);
     auraApp.lighting?.setEnvironmentIntensity?.(frame.environmentIntensity);
-    // overrideSceneFog: the volumetric god-ray node would otherwise make setFog skip the look's fog node (E-B default)
-    auraApp.atmosphere?.setFog?.({ color: frame.fog.color, near: frame.fog.near, far: frame.fog.far }, { ...blend, overrideSceneFog: true });
+    // overrideSceneFog: the volumetric god-ray node would otherwise make setFog skip the look's fog node (E-B default).
+    // No transitionSeconds: the 4.7 LiveAtmosphere fog blend writes explicit `undefined` for the height fields neither
+    // spec authors, so packLegacy's density turns NaN mid-blend and ForwardPass throws "fog density must be finite"
+    // (GU47 phase 2, after-capture). The colour steps per 1/60 tod bucket, so an instant write does not pop.
+    // GU47(E-B): restore `{ ...blend, overrideSceneFog: true }` once interpolateFogSpec keeps the resolve-time defaults.
+    auraApp.atmosphere?.setFog?.({ color: frame.fog.color, near: frame.fog.near, far: frame.fog.far }, { overrideSceneFog: true });
     if (sunFlare) {
       const at = sunWorldPosition(tod);
       sunFlare.setPosition(at[0], at[1], at[2]).setVisible(look.nightAmount < 0.5);
