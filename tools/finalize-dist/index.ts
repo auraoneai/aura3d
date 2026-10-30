@@ -88,9 +88,30 @@ for (const file of [join(rootDist, "physics-rapier", "index.js"), join(packageRo
 writeFileSync(join(rootDist, "index.js"), `${rootIndexLines.join("\n")}\n`);
 writeFileSync(join(rootDist, "index.d.ts"), `${rootTypeLines.join("\n")}\n`);
 
+copyEngineVfxPages();
 assertWorkerUrlsEmitted();
 
 console.log(`Finalized dist exports for ${packageNames.length} packages.`);
+
+// GU47 E-F (eint EF-1): the built-in VFX sprite pages resolve as
+// `new URL("../../../assets/vfx/aura-vfx-<n>k.png", import.meta.url)` from
+// `engine/production-runtime/effects/FlipbookAtlas.js`: `dist/assets/vfx/` in the
+// root tarball (`dist/assets` is in package.json#files; copied after the package
+// loop, which recreates `dist/assets` for @aura3d/assets). The workspace package
+// dist already resolves to `packages/engine/assets/vfx/`.
+function copyEngineVfxPages(): void {
+  const sourceDir = join(packageRoot, "engine", "assets", "vfx");
+  const targetDir = join(rootDist, "assets", "vfx");
+  mkdirSync(targetDir, { recursive: true });
+  // Declared in the function: it runs from the top-level flow above this point.
+  for (const name of ["aura-vfx-1k.png", "aura-vfx-2k.png"]) {
+    const source = join(sourceDir, name);
+    if (!existsSync(source)) throw new Error(`finalize-dist: missing engine VFX page ${relative(root, source)}`);
+    cpSync(source, join(targetDir, name));
+  }
+  // The pages' licence note travels with them when present.
+  if (existsSync(join(sourceDir, "LICENSE.md"))) cpSync(join(sourceDir, "LICENSE.md"), join(targetDir, "LICENSE.md"));
+}
 
 // T0-20: `new Worker(new URL("./x.worker.js", import.meta.url))` only works in
 // a consumer if the emitted `.js` sits beside the caller. Every

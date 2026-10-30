@@ -44,6 +44,9 @@ const targets: readonly PackageTarget[] = [
 ];
 
 const disallowedPathPatterns = [/^archive\//, /V[234]PRD\.md$/, /TestV4PlanPRD\.md$/, /\.(png|jpe?g|csv)$/i];
+// GU47 E-F (eint EF-1): the engine's built-in VFX sprite pages are runtime assets, not screenshots or evidence:
+// the emitted FlipbookAtlas.js resolves them from dist/assets/vfx/ (tools/finalize-dist copies exactly these two).
+const allowedPathPatterns = [/^dist\/assets\/vfx\/aura-vfx-(1k|2k)\.png$/];
 const disallowedTextPatterns = [/AuraSceneIR/, /MockProvider/, /prompt-to-scene/, /@aura3d\/ai-scene/, /\bV[234]\b/, /Path A/, /Path B/];
 const exactPlan = loadValidatedReleasePlan();
 const extracted = new Map<string,string>();
@@ -64,7 +67,7 @@ for (const target of targets) {
   };
   const paths = pack.files.map((file) => file.path);
   const missing = target.requiredFiles.filter((file) => !paths.includes(file));
-  const disallowedPaths = paths.filter((path) => disallowedPathPatterns.some((pattern) => pattern.test(path)));
+  const disallowedPaths = paths.filter((path) => disallowedPathPatterns.some((pattern) => pattern.test(path)) && !allowedPathPatterns.some((pattern) => pattern.test(path)));
   const textHits = findTextHits(inspectedDir, pack.files);
   const rootNoThreeHits = target.id === "engine-root" ? findRootNoThreeHits(inspectedDir, pack.files) : [];
   const missingBins = (target.requiredBins ?? []).filter((bin) => !packageJson.bin?.[bin]);
