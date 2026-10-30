@@ -1706,6 +1706,26 @@
         "practical": false
       },
       {
+        "node": "dressing-sea-grass",
+        "practical": false
+      },
+      {
+        "node": "dressing-shells",
+        "practical": false
+      },
+      {
+        "node": "dressing-driftwood",
+        "practical": false
+      },
+      {
+        "node": "dressing-rope-posts",
+        "practical": false
+      },
+      {
+        "node": "dressing-lobster-pots",
+        "practical": false
+      },
+      {
         "node": "sling-fork-l",
         "practical": false
       },
