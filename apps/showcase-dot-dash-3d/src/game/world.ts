@@ -16,7 +16,7 @@ import { fitDistanceScale, projectNdc, scalePose, type CameraPose } from "./came
 import { hexToRgb, pylonLayout } from "./palette.js";
 import {
   BASE_FOCUS_DISTANCE, BENCH, BOARD_LOOKS, BOARD_PARTS, BOARD_PROBE, BOUNCE, LAMP, LENS, LOOK_HDRI, MACRO_DOF,
-  PRACTICALS, focusDistance, type BoardLookRow
+  LUT_INTENSITY, PRACTICALS, focusDistance, type BoardLookRow
 } from "./look.js";
 import { TraceField } from "./traces.js";
 import { dustMotesOptions } from "./vfx.js";
@@ -334,7 +334,7 @@ export function buildScene(): unknown {
 
 /** Per-board grade over the lens stack (DD47-P3); the LUT joins once the six .cube files are admitted. */
 function gradeOf(look: BoardLookRow) {
-  return { name: "board grade", contrast: look.grade.contrast, saturation: look.grade.saturation, temperature: look.grade.temperature, tint: look.grade.tint };
+  return { name: "board grade", contrast: look.grade.contrast, saturation: look.grade.saturation, temperature: look.grade.temperature, tint: look.grade.tint, lut: look.grade.lut, lutIntensity: LUT_INTENSITY };
 }
 
 // ---------------------------------------------------------------------------
@@ -808,7 +808,7 @@ function applyBoardLook(id: MazeId): boolean {
     nodes.require("board").setMaterial(boardMaterial(look));
     nodes.get("lamp")?.setLight?.({ color: look.lamp.color, intensity: look.lamp.intensity }, { transitionSeconds: 0.4 });
   } catch { return false; }
-  try { app?.post?.setEffect("colorGrade", { contrast: look.grade.contrast, saturation: look.grade.saturation, temperature: look.grade.temperature, tint: look.grade.tint }); } catch { /* post optional */ }
+  try { app?.post?.setEffect("colorGrade", { contrast: look.grade.contrast, saturation: look.grade.saturation, temperature: look.grade.temperature, tint: look.grade.tint, lut: look.grade.lut, lutIntensity: LUT_INTENSITY }); } catch { /* post optional */ }
   builtLook = id;
   return true;
 }

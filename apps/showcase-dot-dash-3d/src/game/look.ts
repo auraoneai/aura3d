@@ -62,6 +62,13 @@ export const MACRO_DOF = { fStop: 2, focalLength: 85, maxBlur: 6 } as const;
 /** Camera-to-board-centre distance of the base rig ([0, 17.2, 13.8] -> origin), before the aspect pull-back. */
 export const BASE_FOCUS_DISTANCE = Math.hypot(17.2, 13.8);
 
+/**
+ * Per-board display LUT strength (DD47-P3). The six `.cube` files are procedural split tones written by
+ * `scripts/write-board-luts.mjs` into `public/luts/dot-dash-3d/`; the S10b grade binds the identity LUT until a file
+ * loads, so the first frames read as the plain grade.
+ */
+export const LUT_INTENSITY = 0.8;
+
 /** Lens stack (DD47-P2), shared by every board; per-board grade terms live in the rows. */
 export const LENS = {
   bloom: { intensity: 0.55, threshold: 0.92, radius: 0.42 },
