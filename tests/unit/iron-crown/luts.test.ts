@@ -76,7 +76,7 @@ describe("IRON CROWN LUTs (IC47-P2)", () => {
     const withLut = STAGE_ORDER.filter((id) => STAGE_LOOKS[id].grade.lut !== undefined);
     expect(withLut.sort()).toEqual(["bangkok-dock", "colosseum-ruins", "desert-airbase", "himalayan-monastery"]);
     for (const id of withLut) {
-      const grade = (stageLookNode(STAGE_LOOKS[id]).children ?? []).find(
+      const grade = (((stageLookNode(STAGE_LOOKS[id]) as { children?: AuraSceneNode[] }).children) ?? []).find(
         (child: AuraSceneNode) => child.kind === "effect" && (child as { effect?: string }).effect === "color-grade"
       ) as { lut?: { url?: string } } | undefined;
       expect(grade?.lut?.url).toBe(STAGE_LOOKS[id].grade.lut!.url);

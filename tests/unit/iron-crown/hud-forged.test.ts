@@ -15,7 +15,8 @@ describe("iron-crown forged HUD (GU47 IC47-H1)", () => {
   });
 
   it("reserves the objective gold for the meter and the pips", () => {
-    const reserved = direction.palette.reservedObjective.toLowerCase();
+    const reserved = (direction.palette.reservedObjective ?? "").toLowerCase();
+    expect(reserved).not.toBe("");
     const rules = forged.split("}").filter((rule) => rule.toLowerCase().includes(reserved));
     expect(rules.length).toBeGreaterThan(0);
     for (const rule of rules) expect(rule, rule).toMatch(/fh-meter|fh-pips|fh-plate \{/);

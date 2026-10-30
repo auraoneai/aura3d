@@ -31,7 +31,7 @@ describe("IRON CROWN floor detail maps (IC47-M1)", () => {
     expect(Object.keys(FLOOR_DETAIL).sort()).toEqual(["colosseum-ruins", "crown-arena", "himalayan-monastery", "neo-tokyo-rooftop"]);
     expect(STAGE_MAP.size).toBe(6);
     for (const [id, stage] of STAGE_MAP) {
-      const planks = (stage.dressing as (AuraSceneNode & { material?: { normal?: unknown; roughnessMap?: unknown } })[]).filter((n) =>
+      const planks = (stage.dressing as (AuraSceneNode & { name?: string; material?: { normal?: unknown; roughnessMap?: unknown } })[]).filter((n) =>
         /floor-planks-[ab]$/.test(n.name ?? "")
       );
       expect(planks, id).toHaveLength(2);
