@@ -88,12 +88,13 @@ describe("look judge command", () => {
     expect(text).toContain("api:");
   });
 
-  it("exits 2 with judge-unavailable when --judge prism has no C-32 export", async () => {
+  // GU47 WP-9: the C-32 export exists now; --judge prism needs frames (full coverage in tests/unit/gu47/ei/look-judge-prism.test.ts).
+  it("exits 2 when --judge prism has no --shots", async () => {
     const cwd = mkdtempSync(join(tmpdir(), "look-judge-"));
     const err: string[] = [];
     const code = await runLookJudge(["--judge", "prism"], { cwd, stdout: () => {}, stderr: (s) => err.push(s) });
     expect(code).toBe(2);
-    expect(err.join("\n")).toContain("judge-unavailable");
+    expect(err.join("\n")).toContain("--shots");
   });
 
   it("exits 2 without --validate", async () => {
