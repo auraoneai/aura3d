@@ -131,7 +131,11 @@ export interface StageLookRow {
   readonly vignette: number;
   /** Film grain intensity, 0 = none (grain is the Crown's alone). */
   readonly grain: number;
-  readonly weather?: { readonly type: "rain" | "snow"; readonly streakLimit: number };
+  /**
+   * Precipitation (IC47-E2). `particles` is the weather volume's live count (A3D_QR_VFX, default on; inside the
+   * 2,000-particle budget); `streakLimit` caps the flag-off primitive streaks `weather.precipitation` also emits.
+   */
+  readonly weather?: { readonly type: "rain" | "snow"; readonly streakLimit: number; readonly particles: number; readonly color: AuraColor };
   readonly shafts: readonly LightShaft[];
   readonly floor: FloorFinish;
 }
@@ -200,7 +204,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     bloom: { intensity: 0.55, threshold: 0.95, knee: 0.55, scatter: 0.72 },
     vignette: 0.22,
     grain: 0,
-    weather: { type: "rain", streakLimit: 90 },
+    weather: { type: "rain", streakLimit: 90, particles: 900, color: "#b8c8ff" },
     shafts: [
       { name: "neo-tokyo sodium flood shaft", position: [-5.2, 6.4, -3.4], direction: [0.55, -0.7, 0.45], color: "#ffad5c", intensity: 0.14, length: 9, coneAngle: 0.26 }
     ],
@@ -296,7 +300,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     bloom: { intensity: 0.26, threshold: 1.3, knee: 0.45, scatter: 0.62 },
     vignette: 0.18,
     grain: 0,
-    weather: { type: "snow", streakLimit: 70 },
+    weather: { type: "snow", streakLimit: 70, particles: 600, color: "#eef4ff" },
     shafts: [],
     floor: { name: "frosted slate", base: "#5d6873", plank: "#6c7884", roughness: 0.62, metallic: 0.04, clearcoat: 0.25, inlay: "#8fe3ff", inlayGlow: 0.16, mirror: false }
   }
@@ -440,4 +444,10 @@ export function stageLightNodes(
 export function streakLimitFor(row: StageLookRow, reducedMotion: boolean): number {
   const limit = row.weather?.streakLimit ?? 0;
   return reducedMotion ? Math.floor(limit / 2) : limit;
+}
+
+/** Weather volume particles: halved on reduced motion (PRD §6.3) and again on Low (PRD §6.4). */
+export function weatherParticlesFor(row: StageLookRow, reducedMotion: boolean, lowTier = false): number {
+  const count = row.weather?.particles ?? 0;
+  return Math.round(count * (reducedMotion ? 0.5 : 1) * (lowTier ? 0.5 : 1));
 }

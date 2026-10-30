@@ -138,6 +138,8 @@ const STAGE_AMBIENCE: Record<StageId, "amb-city-night" | "amb-city-day" | "amb-c
 const debugHooks = params.get("icdebug") === "1";
 /** `?iccontact=0` drops the contact-shadow effect, to measure what the 4.5.0 mask adds on a stage. */
 const contactShadowsOn = params.get("iccontact") !== "0";
+/** PRD §6.4: `?tier=low` halves weather and VFX particles (the engine tier drops local shadows, AO, DOF and grain). */
+const lowTier = params.get("tier") === "low";
 /**
  * `?iclayer=1` plays attacks on the declared upper-body layer over the locomotion clip (audit IC-15). It is opt-in until
  * the node `playLayer` forwards a playback speed: the attack clips run 1.0 to 4.3 s at 1x, while the moves' hit frames
@@ -245,7 +247,8 @@ function buildArena(cfg: BoutConfig) {
     playerStart: PLAYER_START,
     rivalStart: RIVAL_START,
     contactShadows: contactShadowsOn,
-    reducedMotion
+    reducedMotion,
+    lowTier
   });
 }
 
@@ -322,7 +325,7 @@ const fightingGame = createGame({
 const app = fightingGame.app;
 // IC47-V1: runtime VFX back on with the Iron Crown preset pack (the floating-dot cause is fixed in the engine, E-F);
 // `?vfx=off` turns them off. Reduced motion halves the counts, reduced flash drops the flash lights (game/vfx.ts).
-const vfxComfort = { reducedMotion, reducedFlash, lowTier: params.get("tier") === "low" };
+const vfxComfort = { reducedMotion, reducedFlash, lowTier };
 const vfxLive = installIronCrownVfx(app.effects, vfxComfort, params.get("vfx"));
 fightingGame.start();
 const input = fightingGame.input as GameInputController;

@@ -18,7 +18,7 @@ import {
   type AuraSceneNode
 } from "@aura3d/engine";
 import { createFighterNode, type FighterDef, type FighterPalette, type TypedFighterAssets } from "./fighters";
-import { stageLightNodes, stageLook, stageLookNode, streakLimitFor, type StageLookRow } from "./look";
+import { stageLightNodes, stageLook, stageLookNode, streakLimitFor, weatherParticlesFor, type StageLookRow } from "./look";
 import type { IronStage } from "./stages";
 
 export type Vec3 = readonly [number, number, number];
@@ -36,6 +36,8 @@ export interface ArenaOptions {
   readonly contactShadows: boolean;
   /** PRD §6.3: precipitation streaks halve. */
   readonly reducedMotion: boolean;
+  /** PRD §6.4 (`?tier=low`): weather particles halve again. */
+  readonly lowTier?: boolean;
 }
 
 /** The fighting kit's debug-style markers (camera safe-zone posts, centre aura beam): dropped from a finished arena. */
@@ -119,10 +121,16 @@ export function arenaShaftNodes(row: StageLookRow): AuraSceneNode[] {
   );
 }
 
-/** Rain on Neo-Tokyo, snow on the Monastery (IC47-E2); streaks halve on reduced motion. */
-export function arenaWeatherNodes(row: StageLookRow, reducedMotion: boolean): AuraSceneNode[] {
+/**
+ * Rain on Neo-Tokyo, snow on the Monastery (IC47-E2). `weather.precipitation` emits the weather volume (first node) plus
+ * flag-off primitive streaks that A3D_QR_VFX (default on) hides; the volume gets the row's explicit particle count and
+ * colour, and both halve on reduced motion (the volume halves again on Low).
+ */
+export function arenaWeatherNodes(row: StageLookRow, reducedMotion: boolean, lowTier = false): AuraSceneNode[] {
   if (!row.weather) return [];
-  return [...weather.precipitation({ type: row.weather.type, seed: 0x1c47, streakLimit: streakLimitFor(row, reducedMotion) }).nodes];
+  const [volume, ...streaks] = weather.precipitation({ type: row.weather.type, seed: 0x1c47, streakLimit: streakLimitFor(row, reducedMotion) }).nodes;
+  if (!volume) return [...streaks];
+  return [{ ...volume, name: `${row.stage} ${row.weather.type}`, particleCount: weatherParticlesFor(row, reducedMotion, lowTier), color: row.weather.color } as AuraSceneNode, ...streaks];
 }
 
 export function buildArenaScene(o: ArenaOptions) {
@@ -138,7 +146,7 @@ export function buildArenaScene(o: ArenaOptions) {
     .addMany([
       ...stageLightNodes(row, rims, { p1: o.playerStart[0], p2: o.rivalStart[0] }),
       ...arenaShaftNodes(row),
-      ...arenaWeatherNodes(row, o.reducedMotion),
+      ...arenaWeatherNodes(row, o.reducedMotion, o.lowTier === true),
       ...arenaPostNodes(row, o.contactShadows)
     ])
     .camera(camera.perspective({ position: [0, 1.6, 5.6], target: [0, 0.82, 0], fov: 40 }));
