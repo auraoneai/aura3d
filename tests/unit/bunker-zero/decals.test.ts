@@ -67,3 +67,18 @@ describe("Bunker Zero wear decals (BZ-10)", () => {
     for (const kind of ["scorch", "crack", "bullet"] as const) expect(decalPixel(kind, 0.01, 0.01)[3], kind).toBe(0);
   });
 });
+
+describe("Bunker Zero floor stencils (BZ-10)", () => {
+  it("paints each floor's name flat on an open cell ahead of the spawn, in supported glyphs only", async () => {
+    const { floorStencil } = await import("../../../apps/showcase-bunker-zero/src/art/decals");
+    for (const def of [...FLOORS, KILL_HOUSE]) {
+      const st = floorStencil(def, def.id === 90 ? "KILL HOUSE" : `B-${def.id + 1} ${def.name}`);
+      expect(st, def.name).not.toBeNull();
+      expect(st!.text).toMatch(/^[A-Z0-9 -]+$/);
+      expect(st!.rotation[0]).toBeCloseTo(-Math.PI / 2);
+      const ch = def.rows[Math.floor(st!.position[2] / CELL)]![Math.floor(st!.position[0] / CELL)]!;
+      expect(isSolid(ch), def.name).toBe(false);
+    }
+    expect(MAIN).toContain('backend: "sdf"');
+  });
+});

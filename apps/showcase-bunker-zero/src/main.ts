@@ -10,7 +10,7 @@
 import "../../showcase-port-shared/quickbar.css";
 import {
   camera, decals, effects, environments, game, gameFeel, lights, material, model,
-  primitives, scene, type AuraNodeBuilder, type AuraSceneNode
+  primitives, scene, text3D, type AuraNodeBuilder, type AuraSceneNode
 } from "@aura3d/engine";
 import { createGame, sfxUrl, type ForwardAxis } from "@aura3d/engine/game";
 import { assets } from "./aura-assets";
@@ -36,7 +36,7 @@ import { damageArcDeg, deathFade, deathRoll, descentSeconds, doorOffset, reloadD
 import { BZ_VFX_EVENTS, atmosphereEmitters, registerBunkerVfx, type BunkerVfxKind } from "./art/vfx";
 import {
   BZ_BULLET_HOLES, BZ_FLOOR_DECAL_COUNT, bulletHoleId, bulletHolePose, decalUrl, decalsForTier, floorDecalId, floorDecalKind,
-  floorDecals, holeExpired, nextHoleSlot, type DecalKind
+  floorDecals, floorStencil, holeExpired, nextHoleSlot, type DecalKind
 } from "./art/decals";
 import { BLUEPRINT, blueprintEdges, type Segment } from "./art/minimap";
 import { BZ_CA_PULSE, caPulseLevel, lutOfSlot, lutUrlOfSlot } from "./art/lut";
@@ -213,6 +213,16 @@ function buildScene() {
         receiveShadow: false
       }).runtime(staticNode(slot, "trim"))
     );
+    // BZ-10: the floor's stencilled name on the floor ahead of the spawn (SDF text, +1 draw on its floor)
+    const stencil = floorStencil(def, def.id === 90 ? "KILL HOUSE" : `B-${def.id + 1} ${def.name}`);
+    if (stencil) {
+      nodes.push(text3D(stencil.text, {
+        name: `f${slot} floor stencil`, size: 0.42, depth: 0.01, letterSpacing: 0.06, backend: "sdf", castShadow: false,
+        material: material.pbr({ color: BZ_PALETTE.hazard, roughness: 0.82, metalness: 0 })
+      }).position(stencil.position[0], stencil.position[1], stencil.position[2])
+        .rotate(stencil.rotation[0], stencil.rotation[1], stencil.rotation[2])
+        .runtime(staticNode(slot, "stencil")) as unknown as AuraNodeBuilder<AuraSceneNode>);
+    }
     if (def.id === 5) {
       // BZ-07: the olive steel collar lining the shaft and the night backdrop closing it (+2 draws on F6 only)
       nodes.push(

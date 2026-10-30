@@ -137,3 +137,23 @@ export function decalPixel(kind: DecalKind, u: number, v: number): [number, numb
   const soot = Math.max(0, 1 - (r - 0.3) / 0.6) * (0.4 + n * 0.5);
   return [24, 22, 20, Math.round(255 * Math.min(1, soot))];
 }
+
+/**
+ * BZ-10: the floor's stencilled name, painted flat on the floor two cells ahead of the spawn in the first open direction
+ * (an SDF `text3D`, one per floor slot, shown with the floor's static geometry). Rotation is Euler XYZ: lay the text
+ * flat (x -90 deg), then turn it in its own plane (z) so it reads away from the spawn.
+ */
+export interface StencilPose { readonly text: string; readonly position: [number, number, number]; readonly rotation: [number, number, number] }
+export function floorStencil(def: FloorDef, label: string): StencilPose | null {
+  let sx = -1, sz = -1;
+  def.rows.forEach((r, z) => { const x = r.indexOf("S"); if (x >= 0) { sx = x; sz = z; } });
+  if (sx < 0) return null;
+  const open = (x: number, z: number) => !isSolid(def.rows[z]?.[x] ?? "#");
+  // reading direction -> in-plane z rotation (text reads along +x at 0)
+  const dirs: [number, number, number][] = [[1, 0, 0], [0, 1, -Math.PI / 2], [-1, 0, Math.PI], [0, -1, Math.PI / 2]];
+  const dir = dirs.find(([dx, dz]) => open(sx + dx, sz + dz) && open(sx + 2 * dx, sz + 2 * dz));
+  if (!dir) return null;
+  const [dx, dz, rz] = dir;
+  const text = label.toUpperCase().replace(/[^A-Z0-9 -]/g, "").replace(/\s+/g, " ").trim();
+  return { text, position: [(sx + 0.5 + dx * 1.6) * CELL, 0.02, (sz + 0.5 + dz * 1.6) * CELL], rotation: [-Math.PI / 2, 0, rz] };
+}
