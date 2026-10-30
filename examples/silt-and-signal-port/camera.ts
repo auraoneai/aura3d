@@ -59,3 +59,55 @@ export function clearChaseEye(sim: Pick<Sim, "state" | "flight" | "world">, clea
     blocked: chaseEyeBlocked(sim.world, scenery)
   });
 }
+
+/** GU47 DG-C1: length of the per-chapter establishing rail (seconds) and of its blend into the chase pose. */
+export const RAIL_SECONDS = 4;
+export const RAIL_BLEND_SECONDS = 1;
+/** Minimum clearance of a rail point above the ground under it (metres). */
+export const RAIL_CLEARANCE = 12;
+
+export interface RailPose { readonly position: Eye; readonly target: Eye }
+
+/**
+ * DG-C1: the establishing rail at `t` seconds (0..RAIL_SECONDS) for a rider at the chapter start: it starts high and
+ * ahead of the rider looking back down the route, sweeps around and settles behind the board, then blends into `chase`
+ * over the last second. Every point is lifted to RAIL_CLEARANCE above the ground and out of colliders, so no rail
+ * point is inside scenery. Reads the sim only.
+ */
+export function railPose(sim: Pick<Sim, "state" | "world">, t: number, chase: RailPose, scenery: readonly Column[] = []): RailPose {
+  const { state, world } = sim;
+  const u = Math.max(0, Math.min(1, t / RAIL_SECONDS));
+  const fx = -Math.sin(state.yaw), fz = -Math.cos(state.yaw);
+  const rx = -fz, rz = fx;
+  const ease = u * u * (3 - 2 * u);
+  const ahead = 70 * (1 - ease) - 18 * ease;
+  const side = 42 * Math.sin(Math.PI * ease);
+  const height = 34 * (1 - ease) + 8 * ease;
+  let x = state.x + fx * ahead + rx * side, z = state.z + fz * ahead + rz * side;
+  let y = Math.max(state.y + height, world.floor(x, z, state.y) + RAIL_CLEARANCE);
+  const blocked = chaseEyeBlocked(world, scenery);
+  for (let i = 0; i < 8 && blocked(x, y, z); i++) y += 6;
+  if (blocked(x, y, z)) { x = chase.position[0]; y = chase.position[1]; z = chase.position[2]; }
+  const target: Eye = [state.x + fx * 10, state.y + 1.5, state.z + fz * 10];
+  const b = Math.max(0, Math.min(1, (t - (RAIL_SECONDS - RAIL_BLEND_SECONDS)) / RAIL_BLEND_SECONDS));
+  const mix = (a: Eye, c: Eye): Eye => [a[0] + (c[0] - a[0]) * b, a[1] + (c[1] - a[1]) * b, a[2] + (c[2] - a[2]) * b];
+  return { position: mix([x, y, z], chase.position), target: mix(target, chase.target) };
+}
+
+/** GU47 DG-C3: the finish orbit's length (seconds), radius, lift (metres) and field of view (deg). */
+export const FINISH_ORBIT = { seconds: 3, radius: 21, lift: 4, fov: 30, sweepRad: Math.PI * 0.6 } as const;
+
+/**
+ * DG-C3: the finish orbit at `t` seconds: a slow 108 deg sweep around the rider at 21 m with a 30 deg lens (the rider is
+ * about 20% of the frame height), lifted out of colliders like the rail. Reads the sim only.
+ */
+export function finishOrbitPose(sim: Pick<Sim, "state" | "world">, t: number, scenery: readonly Column[] = []): RailPose & { readonly fov: number } {
+  const { state, world } = sim;
+  const u = Math.max(0, Math.min(1, t / FINISH_ORBIT.seconds));
+  const a = state.yaw + Math.PI * 0.75 + FINISH_ORBIT.sweepRad * u * u * (3 - 2 * u);
+  const x = state.x + Math.sin(a) * FINISH_ORBIT.radius, z = state.z + Math.cos(a) * FINISH_ORBIT.radius;
+  let y = Math.max(state.y + FINISH_ORBIT.lift, world.floor(x, z, state.y) + 3);
+  const blocked = chaseEyeBlocked(world, scenery);
+  for (let i = 0; i < 8 && blocked(x, y, z); i++) y += 4;
+  return { position: [x, y, z], target: [state.x, state.y - 0.6, state.z], fov: FINISH_ORBIT.fov };
+}

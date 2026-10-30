@@ -12,6 +12,8 @@ export interface SiltAudio {
   resume(): void;
   update(sim: Sim, dt: number): void;
   chime(kind: SimEvent["type"] | "scene"): void;
+  /** GU47 DG-S5: a thunder roll `delaySeconds` after a lightning flash, `strength` 0..1 */
+  thunder(delaySeconds: number, strength: number): void;
   setMuted(muted: boolean): void;
   readonly muted: boolean;
   readonly running: boolean;
@@ -130,6 +132,29 @@ export function createSiltAudio(chapter: number): SiltAudio {
       else if (kind === "complete") { for (const [i, f] of [523.25, 659.25, 783.99, 1046.5].entries()) tone(f, i * 0.12, 0.9, 0.1); }
       else if (kind === "impact") { tone(72, 0, 0.28, 0.22); tone(118, 0, 0.16, 0.12, "triangle"); }
       else tone(440, 0, 0.4, 0.06, "triangle");
+    },
+    thunder(delaySeconds, strength) {
+      if (!ctx || !master) return;
+      // low-passed noise: a sharp crack that rolls off over about 2.5 s
+      const at = ctx.currentTime + Math.max(0, delaySeconds);
+      const length = 2.6;
+      const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * length), ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      let last = 0;
+      for (let i = 0; i < data.length; i++) { last = last * 0.96 + (Math.random() * 2 - 1) * 0.04; data[i] = last * 6; }
+      const src = ctx.createBufferSource();
+      src.buffer = buffer;
+      const filter = ctx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(900, at);
+      filter.frequency.exponentialRampToValueAtTime(120, at + length);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, at);
+      g.gain.linearRampToValueAtTime(0.32 * Math.max(0, Math.min(1, strength)), at + 0.04);
+      g.gain.exponentialRampToValueAtTime(0.0001, at + length);
+      src.connect(filter).connect(g).connect(master);
+      src.start(at);
+      src.stop(at + length + 0.05);
     },
     setMuted(value) {
       muted = value;

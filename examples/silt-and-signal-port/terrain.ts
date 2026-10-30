@@ -86,9 +86,11 @@ export interface Terrain {
 
 type Seg = readonly [number, number, number, number];
 
+/** The paved plaza of the original-terrain chapters (0 and 6). Exported read-only for the DG-W2 decals. */
+export const PLAZA = { x0: -70, x1: 225, z0: -365, z1: 115 } as const;
+
 export function createTerrain(chapter: number): Terrain {
   const original = usesOriginalTerrain(chapter);
-  const PLAZA = { x0: -70, x1: 225, z0: -365, z1: 115 };
   const inPlaza = (x: number, z: number): boolean => x > PLAZA.x0 && x < PLAZA.x1 && z > PLAZA.z0 && z < PLAZA.z1;
   const CELL = original ? 8 : 10;
   const centreOf = original ? canalCentre : canalX;
