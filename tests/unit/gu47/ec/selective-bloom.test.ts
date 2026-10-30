@@ -54,7 +54,8 @@ describe("bloom weight math", () => {
 });
 
 describe("bridge: pipeline.bloom.selective", () => {
-  const derive = (...nodes: unknown[]) =>
+  // The v2 bag types its stage options as `unknown`; the tests read them loosely.
+  const derive = (...nodes: unknown[]): Record<string, any> =>
     createRootPostPipeline({ nodes } as never, undefined, undefined, QUALITY_TIERS.high).options;
   const bloomNode = () => effects.bloom({ intensity: 0.5 }).toJSON();
   const box = (material: Record<string, unknown>) => ({ kind: "primitive", primitive: "box", material });

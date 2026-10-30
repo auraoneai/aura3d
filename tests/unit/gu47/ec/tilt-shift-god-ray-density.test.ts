@@ -29,7 +29,8 @@ const BASE: PostPipelineOptions = {
   dither: true
 };
 
-const derive = (...nodes: unknown[]) =>
+/** The v2 bag types its stage options as `unknown`; the tests read them loosely. */
+const derive = (...nodes: unknown[]): Record<string, any> =>
   createRootPostPipeline({ nodes } as never, { near: 0.1, far: 100 }, undefined, QUALITY_TIERS.high).options;
 
 const dofNode = (extra: Record<string, unknown>) => ({ ...effects.depthOfField({ focusDistance: 4 }).toJSON(), ...extra, postAuthored: ["focusDistance", ...Object.keys(extra)] });

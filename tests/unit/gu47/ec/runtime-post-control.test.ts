@@ -20,7 +20,10 @@ function scene(...nodes: { toJSON(): unknown }[]) {
   return { nodes: nodes.map((node) => node.toJSON()) } as never;
 }
 
-const derive = (snapshot: never, target?: HTMLCanvasElement) =>
+/** The v2 bag types its stage options as `unknown`; the tests read them loosely. */
+type LooseBag = Record<string, any>;
+
+const derive = (snapshot: never, target?: HTMLCanvasElement): LooseBag =>
   createRootPostPipeline(snapshot, { near: 0.1, far: 100 }, undefined, QUALITY_TIERS.high, [], undefined, target).options;
 
 afterEach(() => resetRuntimePostOverrides());
