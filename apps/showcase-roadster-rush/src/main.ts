@@ -33,6 +33,7 @@ import {
   parseTodParam
 } from "./art/look";
 import { apexFlash, apexFlashAlpha, apexPostPlan, applyApexPostPlan, type ApexFlashKind } from "./art/post";
+import { APEX_LUT_INTENSITY, apexGradePatch } from "./art/lut";
 import { createNativeRoadster, findDrawCalls } from "./native";
 import { POWERUP_SECONDS } from "./native/constants";
 import { GANTRY_COUNT } from "./native/world";
@@ -113,6 +114,11 @@ const REDUCED_FLASH = REDUCED_MOTION || urlParams.get("flash") === "0";
 const COARSE_POINTER = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
 /** AO-H1: the Showcase chip (scenario and time-of-day buttons) exists only for developers and captures. */
 const SHOWCASE_CHIP = ["dev", "capture"].some((k) => urlParams.get(k) === "1");
+/**
+ * AO-P1: the game's own display LUT (src/art/lut.ts, written by tools/make-apex-lut.ts), served beside the app like the CC0
+ * deck textures; E-C fetches it once and binds it in the S10b display grade (identity until it arrives).
+ */
+const APEX_LUT_URL = new URL("./assets/luts/apex-bluehour.cube", import.meta.url).pathname;
 
 /** Meshy model for a vehicle type when it is shipped and enabled (`?models=0` turns it off), else the original showcase asset. */
 const pickVehicleAsset = (key: string, fallback: AuraAssetRef<"model">): AuraAssetRef<"model"> =>
@@ -987,9 +993,10 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       const at = sunWorldPosition(tod);
       sunFlare.setPosition(at[0], at[1], at[2]).setVisible(look.nightAmount < 0.5);
     }
-    // AO-P1: time-of-day white balance through E-C's grade writer, patched onto the one look grade node
+    // AO-P1: time-of-day white balance through E-C's grade writer plus the apex-bluehour display LUT (S10b), both patched
+    // onto the one look grade node (still a single color-grade stage)
     try {
-      auraApp.post?.setEffect?.("colorGrade", { temperature: round3(frame.grade.temperature), tint: round3(frame.grade.tint) });
+      auraApp.post?.setEffect?.("colorGrade", apexGradePatch(frame, APEX_LUT_URL));
     } catch {
       /* post surface without runtime overrides */
     }
@@ -1212,7 +1219,14 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const qaGlobal = window as unknown as { __AURA_QA__?: Record<string, unknown> };
   const qa = (qaGlobal.__AURA_QA__ ??= {}) as { crops?: QaCrop[]; apex?: Record<string, unknown> };
   qa.crops = [];
-  const qaApex: Record<string, unknown> = { variant: "sunset", tod: 0, post: postStates, reducedMotion: REDUCED_MOTION, reducedFlash: REDUCED_FLASH };
+  const qaApex: Record<string, unknown> = {
+    variant: "sunset",
+    tod: 0,
+    post: postStates,
+    grade: { lut: APEX_LUT_URL, lutIntensity: APEX_LUT_INTENSITY },
+    reducedMotion: REDUCED_MOTION,
+    reducedFlash: REDUCED_FLASH
+  };
   qa.apex = qaApex;
   const publishQa = (heroRoot: Vec3): void => {
     const aspect = canvas.clientWidth > 0 && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : 16 / 9;
