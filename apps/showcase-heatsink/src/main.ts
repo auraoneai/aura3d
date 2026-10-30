@@ -7,6 +7,7 @@ import { ChaseCamera, projectToScreen, type ScreenPoint } from "./camera";
 import { CIRCUITS, DRONE_ORDER, DRONE_SPECS, SCENERY_ANCHORS, TOTAL_LAPS, type CircuitId, type DroneId, type ModeId } from "./data";
 import { createInputs } from "./input";
 import { createHud } from "./hud";
+import { circuitFromParam } from "./look";
 import { applyCircuitLook, InstanceWriter, slotRivals } from "./view";
 import {
   buildThermalDriftScene,
@@ -50,7 +51,8 @@ const hud = createHud(document);
 const audio = createThermalDriftAudio((muted) => hud.setMuted(muted));
 
 let selectedDrone: DroneId = "orion";
-let selectedCircuit: CircuitId = "grand";
+// GU47 HS-21 / E-I variant param: `?circuit=grand|dustfall|vesper` boots that circuit (default MEGACITY).
+let selectedCircuit: CircuitId = circuitFromParam(params.get("circuit")) ?? "grand";
 let selectedMode: ModeId = "race";
 let autopilotOn = params.get("autoplay") === "1" || params.get("demo") === "1";
 let started = autopilotOn;
@@ -488,6 +490,7 @@ async function boot(): Promise<void> {
 
   await auraApp.ready();
   ready = true;
+  hud.selectCircuit(selectedCircuit);
   hud.resetRace(race);
   hud.setAutopilot(autopilotOn);
   if (!started) hud.showStart(inputs.touch);
