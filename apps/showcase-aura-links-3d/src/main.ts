@@ -95,6 +95,9 @@ import { buildCourseRig } from "./game/lookRig";
 import { landingVfxFor, registerLinksVfx, type LinksVfxId } from "./game/vfx";
 import { IMPACT_FOV_KICK_DEG, cupCamPose, flyoverAllowed, flyoverShots, tracerCamPose, wantsCupCam, wantsTracerCam } from "./game/broadcast";
 import { linksQaCrops } from "./game/qaCrops";
+import { discOnTerrain, ribbonAlongPath, terrainToMeshSpec, type SurfaceUvMode } from "./game/terrainMesh";
+import { MASK_COLOR_LIFT, TURF_SURFACES, type LinksSurfaceSlot } from "./game/turf";
+import { turfTexture } from "./game/turfTextures";
 import { holeCardTransition, holeCardVisible, holeMap, holeMapSvg, holeSubtitle, holeTitle, shotStatsLabel } from "./game/holeCard";
 import { clubForShot, planShot, puttRange, type ShotPlan } from "./game/autopilot";
 import {
@@ -218,116 +221,29 @@ const DIFF_AI_SKILL: Record<DifficultyId, number> = { amateur: 0.55, pro: 0.72, 
  *  Terrain → mesh builders                                            *
  * ------------------------------------------------------------------ */
 
-function terrainToMeshSpec(terrain: HoleTerrain, cols: number, rows: number, lift: number) {
-  const { minX, maxX, minZ, maxZ } = terrain.bounds;
-  const positions: [number, number, number][] = [];
-  const normals: [number, number, number][] = [];
-  const uvs: [number, number][] = [];
-  const indices: number[] = [];
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const x = minX + (maxX - minX) * (c / (cols - 1));
-      const z = minZ + (maxZ - minZ) * (r / (rows - 1));
-      const y = terrain.height(x, z) + lift;
-      positions.push([x, y, z]);
-      const [sx, sz] = terrain.slope(x, z);
-      const inv = 1 / Math.hypot(sx, 1, sz);
-      normals.push([-sx * inv, 1 * inv, -sz * inv]);
-      uvs.push([x / 18, z / 18]);
-    }
-  }
-  for (let r = 0; r < rows - 1; r++) {
-    for (let c = 0; c < cols - 1; c++) {
-      const i = r * cols + c;
-      // CCW winding when viewed from +Y so gl_FrontFacing is true and sun lighting hits the top surface
-      indices.push(i, i + cols, i + 1, i + 1, i + cols, i + cols + 1);
-    }
-  }
-  return { kind: "aura-custom-geometry" as const, positions, normals, uvs, indices };
-}
+// terrainToMeshSpec, ribbonAlongPath and discOnTerrain live in game/terrainMesh.ts (pure; LINKS-05 world-metre uv0)
 
-/** Multi-column ribbon strip conformed to terrain along the hole's intended line. */
-function ribbonAlongPath(terrain: HoleTerrain, path: readonly Vec2[], halfWidth: number, lift: number, step = 2.5, cols = 9) {
-  // Resample the polyline at fixed spacing with lateral offsets
-  const pts: { x: number; z: number; dx: number; dz: number }[] = [];
-  for (let i = 0; i < path.length - 1; i++) {
-    const [ax, az] = path[i]!;
-    const [bx, bz] = path[i + 1]!;
-    const segLen = Math.hypot(bx - ax, bz - az);
-    const n = Math.max(1, Math.round(segLen / step));
-    for (let s = 0; s < n; s++) {
-      const t = s / n;
-      pts.push({ x: lerp(ax, bx, t), z: lerp(az, bz, t), dx: (bx - ax) / segLen, dz: (bz - az) / segLen });
-    }
-  }
-  const last = path[path.length - 1]!;
-  const prev = path[path.length - 2]!;
-  const lastLen = Math.hypot(last[0] - prev[0], last[1] - prev[1]) || 1;
-  pts.push({ x: last[0], z: last[1], dx: (last[0] - prev[0]) / lastLen, dz: (last[1] - prev[1]) / lastLen });
+/** LINKS-05: the GU47 look tiles turf, sand, basalt and regolith in world metres; `?look=original` keeps 4.6.2 flat colour. */
+const turfOn = lookMode !== "original";
+const surfaceUv: SurfaceUvMode = turfOn ? "metres" : "legacy";
 
-  const positions: [number, number, number][] = [];
-  const normals: [number, number, number][] = [];
-  const uvs: [number, number][] = [];
-  const indices: number[] = [];
-  // Subdivide laterally across [-1, 1] so the ribbon follows the +0.15m fairway crown and tee pad without rough poke-through
-  pts.forEach((p, i) => {
-    const endDist = pts.length - 1 - i;
-    const taper = endDist < 4 ? clamp(endDist / 4, 0.78, 1) : 1;
-    const hw = halfWidth * taper;
-    const px = -p.dz, pz = p.dx; // lateral normal
-    for (let c = 0; c < cols; c++) {
-      const side = (c / (cols - 1)) * 2 - 1;
-      const x = p.x + px * hw * side;
-      const z = p.z + pz * hw * side;
-      positions.push([x, terrain.height(x, z) + lift, z]);
-      const [sx, sz] = terrain.slope(x, z);
-      const inv = 1 / Math.hypot(sx, 1, sz);
-      normals.push([-sx * inv, inv, -sz * inv]);
-      uvs.push([i * step / 10, side * 0.5 + 0.5]);
-    }
-    if (i > 0) {
-      const row0 = (i - 1) * cols;
-      const row1 = i * cols;
-      for (let c = 0; c < cols - 1; c++) {
-        const a = row0 + c;
-        // CCW winding when viewed from +Y
-        indices.push(a, row1 + c, a + 1, a + 1, row1 + c, row1 + c + 1);
-      }
-    }
+/**
+ * A course surface's material: on the GU47 look the theme's mask (mow stripes or rough mottling, colour lifted to keep
+ * the mean), its normal tile (High tier only; Low keeps the masks) and the cut-grass sheen; otherwise the 4.6.2 colour
+ * and roughness. Without canvases (no DOM) the textures drop out and the colour stays.
+ */
+function surfaceMaterial(course: CourseSpec, slot: LinksSurfaceSlot, color: string, legacyRoughness: number) {
+  if (!turfOn) return material.pbr({ color, roughness: legacyRoughness });
+  const s = TURF_SURFACES[course.dressing.theme][slot];
+  const mask = s.mask ? turfTexture(s.mask) : null;
+  const normal = s.normal && presentationTier === "high" ? turfTexture(s.normal) : null;
+  return material.pbr({
+    color: mask && s.mask ? shade(color, MASK_COLOR_LIFT[s.mask.kind]) : color,
+    roughness: s.roughness,
+    ...(mask ? { texture: mask as any } : {}),
+    ...(normal && s.normal ? { normal: normal as any, normalScale: s.normal.scale } : {}),
+    ...(s.sheen > 0 ? { sheen: s.sheen, sheenRoughness: 0.6, sheenColor: shade(color, 1.35) } : {})
   });
-  return { kind: "aura-custom-geometry" as const, positions, normals, uvs, indices };
-}
-
-/** Multi-ring disc conformed to terrain (green, fringe ring, and sand bunkers). */
-function discOnTerrain(terrain: HoleTerrain, cx: number, cz: number, radius: number, lift: number, segs = 32, innerRadius = 0) {
-  const positions: [number, number, number][] = [];
-  const normals: [number, number, number][] = [];
-  const uvs: [number, number][] = [];
-  const indices: number[] = [];
-  const rings = innerRadius > 0 ? [innerRadius, radius] : [0, radius * 0.35, radius * 0.7, radius];
-  for (const r of rings) {
-    for (let s = 0; s <= segs; s++) {
-      const a = (s / segs) * Math.PI * 2;
-      const x = cx + Math.cos(a) * r;
-      const z = cz + Math.sin(a) * r;
-      positions.push([x, terrain.height(x, z) + lift, z]);
-      const [sx, sz] = terrain.slope(x, z);
-      const inv = 1 / Math.hypot(sx, 1, sz);
-      normals.push([-sx * inv, inv, -sz * inv]);
-      uvs.push([0.5 + Math.cos(a) * r / (radius * 2), 0.5 + Math.sin(a) * r / (radius * 2)]);
-    }
-  }
-  const stride = segs + 1;
-  for (let ri = 0; ri < rings.length - 1; ri++) {
-    const baseA = ri * stride;
-    const baseB = (ri + 1) * stride;
-    for (let s = 0; s < segs; s++) {
-      const a0 = baseA + s, a1 = baseA + s + 1, b0 = baseB + s, b1 = baseB + s + 1;
-      // CCW winding when viewed from +Y
-      indices.push(a0, a1, b0, a1, b1, b0);
-    }
-  }
-  return { kind: "aura-custom-geometry" as const, positions, normals, uvs, indices };
 }
 
 /* ------------------------------------------------------------------ *
@@ -841,9 +757,9 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   const nodes: any[] = [];
 
   // --- Base heightfield (rough) + outer ground shell ---
-  const base = terrainToMeshSpec(terrain, 112, 96, -0.04);
+  const base = terrainToMeshSpec(terrain, 112, 96, -0.04, surfaceUv);
   nodes.push(
-    geometry.custom(base, { name: "terrain-rough", material: material.pbr({ color: pal.rough, roughness: 0.92 }) })
+    geometry.custom(base, { name: "terrain-rough", material: surfaceMaterial(course, "rough", pal.rough, 0.92) })
   );
   const outerY = Math.min(terrain.tee[1], terrain.cup[1]) - 6;
   nodes.push(
@@ -851,24 +767,28 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   );
 
   // --- Fairway ribbon (first-cut collar + two mow stripes) ---
-  const fairEdge = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2 + 1.7, 0.022);
-  const fairA = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2, 0.035);
-  const fairB = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2 - 3.2, 0.05);
+  // (LINKS-05: on the GU47 look the mow stripes are the fairway's mask, banded across the line of play, so the
+  // longitudinal stripe ribbon `fairway-b` is gone: one draw fewer)
+  const fairEdge = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2 + 1.7, 0.022, undefined, undefined, surfaceUv);
+  const fairA = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2, 0.035, undefined, undefined, surfaceUv);
   nodes.push(
-    geometry.custom(fairEdge, { name: "fairway-first-cut", material: material.pbr({ color: shade(pal.fairway, 0.8), roughness: 0.9 }) }),
-    geometry.custom(fairA, { name: "fairway-a", material: material.pbr({ color: pal.fairway, roughness: 0.84 }) }),
-    geometry.custom(fairB, { name: "fairway-b", material: material.pbr({ color: shade(pal.fairway, 1.22), roughness: 0.82 }) })
+    geometry.custom(fairEdge, { name: "fairway-first-cut", material: surfaceMaterial(course, "firstCut", shade(pal.fairway, 0.8), 0.9) }),
+    geometry.custom(fairA, { name: "fairway-a", material: surfaceMaterial(course, "fairway", pal.fairway, 0.84) })
   );
+  if (!turfOn) {
+    const fairB = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2 - 3.2, 0.05);
+    nodes.push(geometry.custom(fairB, { name: "fairway-b", material: material.pbr({ color: shade(pal.fairway, 1.22), roughness: 0.82 }) }));
+  }
 
   // --- Green + collar + fringe ---
   const [gx, gz] = [terrain.cup[0], terrain.cup[2]];
-  const collar = discOnTerrain(terrain, gx, gz, lay.greenRadius + 4.4, 0.045, 36, lay.greenRadius + 2.3);
-  const green = discOnTerrain(terrain, gx, gz, lay.greenRadius, 0.065, 36);
-  const fringe = discOnTerrain(terrain, gx, gz, lay.greenRadius + 2.5, 0.055, 36, lay.greenRadius * 0.96);
+  const collar = discOnTerrain(terrain, gx, gz, lay.greenRadius + 4.4, 0.045, 36, lay.greenRadius + 2.3, surfaceUv);
+  const green = discOnTerrain(terrain, gx, gz, lay.greenRadius, 0.065, 36, 0, surfaceUv);
+  const fringe = discOnTerrain(terrain, gx, gz, lay.greenRadius + 2.5, 0.055, 36, lay.greenRadius * 0.96, surfaceUv);
   nodes.push(
-    geometry.custom(collar, { name: "green-collar", material: material.pbr({ color: shade(pal.fringe, 0.82), roughness: 0.88 }) }),
-    geometry.custom(fringe, { name: "fringe", material: material.pbr({ color: pal.fringe, roughness: 0.85 }) }),
-    geometry.custom(green, { name: "green", material: material.pbr({ color: pal.green, roughness: 0.74 }) })
+    geometry.custom(collar, { name: "green-collar", material: surfaceMaterial(course, "firstCut", shade(pal.fringe, 0.82), 0.88) }),
+    geometry.custom(fringe, { name: "fringe", material: surfaceMaterial(course, "fringe", pal.fringe, 0.85) }),
+    geometry.custom(green, { name: "green", material: surfaceMaterial(course, "green", pal.green, 0.74) })
   );
 
   // --- Tee box + surround + markers ---
@@ -885,11 +805,11 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
 
   // --- Bunkers (bright sand bowls + dark, crisp grass lip) ---
   lay.bunkers.forEach((b, i) => {
-    const disc = discOnTerrain(terrain, b.center[0], b.center[1], b.radius, 0.09, 28);
+    const disc = discOnTerrain(terrain, b.center[0], b.center[1], b.radius, 0.09, 28, 0, surfaceUv);
     const lip = discOnTerrain(terrain, b.center[0], b.center[1], b.radius + 0.72, 0.075, 28, b.radius * 0.92);
     nodes.push(
       geometry.custom(lip, { name: `bunker-lip-${i}`, material: material.pbr({ color: shade(pal.sand, 0.64), roughness: 0.96 }) }),
-      geometry.custom(disc, { name: `bunker-${i}`, material: material.pbr({ color: shade(pal.sand, 1.08), roughness: 0.84 }) })
+      geometry.custom(disc, { name: `bunker-${i}`, material: surfaceMaterial(course, "bunker", shade(pal.sand, 1.08), 0.84) })
     );
   });
 
