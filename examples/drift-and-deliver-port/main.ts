@@ -446,6 +446,7 @@ function render(dt: number, alpha = 1): void {
     if (shiftRuntime) {
       // GU47 WP-28: time of day, sodium pool, headlight spot, beacon, VFX (presentation reads only)
       const lampsOn = shiftRuntime.row().lamps;
+      shiftRuntime.menu(game.phase === "splash" || game.phase === "results");
       shiftRuntime.frame(dt, shift, { x: shown.car.x, z: shown.car.z, heading: shown.car.heading, speed: shown.car.speed, drifting: car.drifting && live, boosting: car.boosting && live, braking: keys.s }, beamAmount(lampsOn));
     }
     app.step(0);

@@ -287,6 +287,9 @@ export function shiftShadow(quality: "high" | "low") {
     : { cascades: 1 as const, maxDistance: 110, mapSize: 1024 as const, filter: "pcf" as const };
 }
 
+/** GC-P3: the title/results tilt-shift band (normalised screen height; the courier sits just under the middle). */
+export const TILT = { bandCenter: 0.56, bandWidth: 0.2, maxBlur: 6 } as const;
+
 /** GC-S5: the sunset shafts (thin warm inscatter, scaled by `godRayStrength`). */
 export const GOD_RAYS = { density: 0.06, color: "#ffb070", intensity: 0.6, godRayDensity: 0.35, distance: 1500 } as const;
 
@@ -360,6 +363,8 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
         b.add(effects.screenSpaceReflections({ name: "wet-ssr", maxDistance: 60, roughness: 0.35, thickness: 0.5 }));
         b.add(effects.filmGrain({ name: "grain", intensity: row.grain }));
         b.add(effects.motionBlur({ name: "motion-blur", intensity: 0.3 }));
+        // GC-P3 tilt-shift toy-city band on the title and results screens only (shiftRuntime.menu toggles it)
+        b.add(effects.depthOfField({ name: "title-tilt", enabled: true, maxBlur: TILT.maxBlur, tiltShift: { bandCenter: TILT.bandCenter, bandWidth: TILT.bandWidth } }));
         // GC-S5 sunset god rays down the canyons (High only; intensity 0 away from sunset, driven by shiftRuntime)
         b.add(effects.volumetricFog({ name: "god-rays", enabled: godRayStrength(row.sun.elevationDeg) > 0, density: GOD_RAYS.density, color: GOD_RAYS.color, intensity: GOD_RAYS.intensity * godRayStrength(row.sun.elevationDeg), godRayDensity: GOD_RAYS.godRayDensity, lightPosition: godRayLightPosition(row.sun, opts.start) }));
       }

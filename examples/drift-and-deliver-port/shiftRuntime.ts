@@ -52,6 +52,8 @@ export interface ShiftRuntime {
   /** One render frame. `dt` in seconds (0 on manual frames). */
   frame(dt: number, shift: { elapsed: number; length: number }, car: ShiftCarView, beams: number): void;
   delivered(x: number, z: number): void;
+  /** GC-P3: tilt-shift on while a menu (title or results) is up; off in play. Writes only on a change. */
+  menu(on: boolean): void;
   pickup(kind: "coin" | "star" | "heart", x: number, z: number): void;
   bump(x: number, z: number): void;
   reset(): void;
@@ -90,6 +92,7 @@ export function createShiftRuntime(app: AuraApp, look: LookRig, lamps: readonly 
   let beaconShown = -1;
   let festoonShown = -1;
   let raysShown = -1;
+  let menuShown: boolean | null = null;
   let writes = 0;
   let wasDrifting = false;
   const burst = (kind: string, p: [number, number, number], count?: number) => {
@@ -185,6 +188,11 @@ export function createShiftRuntime(app: AuraApp, look: LookRig, lamps: readonly 
           app.effects?.burst(FX_KINDS.speedLines, spawn.at, { normal: spawn.normal, camera: false });
         }
       }
+    },
+    menu(on) {
+      if (on === menuShown) return;
+      menuShown = on;
+      app.post?.setEffect("depthOfField", { enabled: on });
     },
     delivered(x, z) {
       burst(deliveryKind(opts.reducedMotion(), opts.reducedFlash()), [x, 0.4, z]);
