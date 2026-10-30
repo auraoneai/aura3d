@@ -343,6 +343,10 @@
       {
         "node": "cr-cabinet-banner",
         "practical": false
+      },
+      {
+        "node": "ko scorch",
+        "practical": false
       }
     ],
     "drawCalls": 0
