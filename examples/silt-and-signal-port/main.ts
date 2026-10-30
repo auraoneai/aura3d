@@ -17,6 +17,7 @@ import { createSiltAudio, type SiltAudio } from "./audio";
 import { CHAPTER_COPY, ENDING_COPY, OBJECTIVE_TITLES, SCENE_COPY } from "./copy";
 import { STEP, createSim, objectiveOf, stepSim, targetOf, type Input, type Sim, type SimEvent } from "./sim";
 import { buildWorld, type World, type WorldRuntime } from "./world";
+import { chapterLook, inkPassOptions, siltLookMode } from "./art/look";
 import { mergeInput, objectiveHint, pageFlags, type Device } from "./controls";
 import { clearJourney, journeyTotals, ratingOf, readJourney, recordOf, writeChapter } from "./journey";
 
@@ -32,12 +33,14 @@ const config = {
   manual: params.get("manual") === "1",
   /** `norig=1` skips the animation controller (rider stays in the model's rest pose): an A/B for animation problems */
   norig: params.get("norig") === "1",
+  /** GU47: `look=original` keeps today's look (no tone mapping, 0.65 exposure, hand rig); the default is the inked poster look */
+  look: siltLookMode(params),
   /** `toon=0` turns the cel pass off (A/B against the plain PBR frame) */
   toon: params.get("toon") !== "0",
   /** `camclear=0` turns the chase-camera clearance off (A/B for the camera-inside-scenery check) */
   camClear: params.get("camclear") !== "0",
   /** linear output exposure; the original renders with no tone mapping at exposure 1; 0.65 here brings this PBR rig's mean luma near the original's frames (measured, see evidence README) */
-  exposure: Number.isFinite(Number(params.get("exposure"))) && params.has("exposure") ? Number(params.get("exposure")) : 0.65
+  exposure: Number.isFinite(Number(params.get("exposure"))) && params.has("exposure") ? Number(params.get("exposure")) : undefined as number | undefined
 };
 config.objective = Math.min(config.objective, CHAPTERS[config.chapter]!.objectives.length - 1);
 const { qa, skipTitle } = pageFlags(params);
@@ -490,19 +493,26 @@ async function boot(): Promise<void> {
   addEventListener("resize", size);
   wireScreens();
   // phones and tablets get a 2048 sun shadow map (a quarter of the 4096 texels; the heaviest pass on a phone GPU)
-  world = buildWorld(config.chapter, { shadowMapSize: coarse ? 2048 : 4096 });
+  world = buildWorld(config.chapter, { shadowMapSize: coarse ? 2048 : 4096, look: config.look, low: coarse });
+  const look = chapterLook(config.chapter);
+  const inked = config.look === "inked";
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
     pixelRatio: 1,
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
-    output: { toneMapping: "none", exposure: config.exposure, dither: false },
+    // DG-P2: ACES with the chapter's exposure in the inked look; the original renders with no tone mapping at 0.65
+    output: inked ? { toneMapping: "aces", exposure: config.exposure ?? look.grade.exposure, dither: true } : { toneMapping: "none", exposure: config.exposure ?? 0.65, dither: false },
     scene: world.scene
   });
   await app.ready();
   if (config.toon) {
     const texel = (): number[] => [1 / Math.max(1, canvas.width), 1 / Math.max(1, canvas.height)];
-    app.post?.addPostPass?.(effects.toon({ name: "silt-cel", bands: 5, bandMix: 0.75, outline: 0.75, size: [canvas.width, canvas.height] }));
+    // DG-P1: the inked look draws depth plus colour edges in umber by day and indigo at night, fading to 0 by 600 m
+    // (so the sky is never inked); 4 luma bands by day, 6 at night. The original keeps its 5-band colour-edge pass.
+    app.post?.addPostPass?.(inked
+      ? effects.toon(inkPassOptions(config.chapter, [canvas.width, canvas.height]))
+      : effects.toon({ name: "silt-cel", bands: 5, bandMix: 0.75, outline: 0.75, size: [canvas.width, canvas.height] }));
     addEventListener("resize", () => app?.post?.setPassUniform?.("silt-cel", "u_texel", texel()));
   }
   runtime = world.bind(app, { animate: !config.norig, clearCamera: config.camClear, reducedMotion });

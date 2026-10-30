@@ -1,0 +1,662 @@
+{
+  "schema": "aura3d.art-direction-audit/1",
+  "source": "examples/silt-and-signal-port/art/direction.ts",
+  "sourceSha256": "04d03d2d1caf51d1632348bd9e143dc815ee4dc687a9932877e9e31cbddd232d",
+  "id": "showcase-silt-and-signal-port",
+  "genre": "flight",
+  "signatureEffect": "Sand wake thrown up under the hoverboard at speed and low altitude, inside a hand-inked frame whose umber ink fades to nothing by 600 m.",
+  "palette": {
+    "primary": [
+      "#d6a467",
+      "#b4532f",
+      "#efe4cf",
+      "#2a2e5c"
+    ],
+    "accent": "#2fae86",
+    "reservedObjective": "#2fae86"
+  },
+  "environment": {
+    "hdri": "belfast_sunset_puresky",
+    "background": "sky"
+  },
+  "violations": [],
+  "snapshot": {
+    "lights": [
+      {
+        "type": "directional",
+        "shadow": true,
+        "intensity": 2.6
+      },
+      {
+        "type": "directional",
+        "shadow": false,
+        "intensity": 0.55
+      }
+    ],
+    "hasAmbient": false,
+    "environment": {
+      "kind": "hdri",
+      "background": true
+    },
+    "models": [
+      {
+        "assetKey": "tree",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "canyonrocks",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "house",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "lantern",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ringclean",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hoverboard",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "courier",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gatehouse",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "aqueduct",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "aqueduct",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ringgate",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "stall",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "stall",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "watchtower",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "watchtower",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "banner",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "banner",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "banner",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "banner",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "banner",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "banner",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "banner",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "banner",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pillar",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pillar",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pillar",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pillar",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pillar",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pillar",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
+    "materials": [
+      {
+        "node": "sky",
+        "practical": false
+      },
+      {
+        "node": "terrain",
+        "practical": false
+      },
+      {
+        "node": "plaza",
+        "practical": false
+      },
+      {
+        "node": "road",
+        "practical": false
+      },
+      {
+        "node": "canal",
+        "practical": false
+      },
+      {
+        "node": "cistern-deck",
+        "practical": false
+      },
+      {
+        "node": "cliffs",
+        "practical": false
+      },
+      {
+        "node": "limestone",
+        "practical": false
+      },
+      {
+        "node": "plaster-0",
+        "practical": false
+      },
+      {
+        "node": "plaster-1",
+        "practical": false
+      },
+      {
+        "node": "plaster-2",
+        "practical": false
+      },
+      {
+        "node": "plaster-3",
+        "practical": false
+      },
+      {
+        "node": "plaster-4",
+        "practical": false
+      },
+      {
+        "node": "roof-tiles",
+        "practical": false
+      },
+      {
+        "node": "window-dark",
+        "practical": false
+      },
+      {
+        "node": "far-dunes",
+        "practical": false
+      },
+      {
+        "node": "rocks-small",
+        "practical": false
+      },
+      {
+        "node": "piers",
+        "practical": false
+      },
+      {
+        "node": "masts",
+        "practical": false
+      },
+      {
+        "node": "beacon-ring",
+        "emissiveIntensity": 0.1,
+        "practical": true
+      },
+      {
+        "node": "beacon-rim",
+        "emissiveIntensity": 3.4,
+        "practical": true
+      },
+      {
+        "node": "beacon-halo",
+        "emissiveIntensity": 2.6,
+        "practical": true
+      },
+      {
+        "node": "beacon-beam",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "gate-ring",
+        "emissiveIntensity": 0.1,
+        "practical": true
+      },
+      {
+        "node": "gate-rim",
+        "emissiveIntensity": 3.4,
+        "practical": true
+      },
+      {
+        "node": "gate-halo",
+        "emissiveIntensity": 2.6,
+        "practical": true
+      },
+      {
+        "node": "gate-beam",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "tow-shell",
+        "practical": false
+      },
+      {
+        "node": "tow-glow",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "thruster-l",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "thruster-r",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      }
+    ],
+    "drawCalls": 0
+  },
+  "direction": {
+    "id": "showcase-silt-and-signal-port",
+    "genre": "flight",
+    "fantasy": "Courier on a hoverboard crossing a hand-inked desert canal at seven hours of one long day, sand always moving.",
+    "rebuildTier": "S-presentation",
+    "wave": 4,
+    "references": [
+      {
+        "file": "references/gouache-travel-poster.md",
+        "source": "genre comparable: mid-century gouache railway and travel posters (flat sunlit planes, indigo shadow shapes)",
+        "licence": "reference-only",
+        "why": "Sun-bleached sandstone and terracotta planes over indigo shadows with one saturated accent: the chapter palette and grade targets"
+      },
+      {
+        "file": "references/inked-desert-journey.md",
+        "source": "shipped comparable: inked desert-journey games (Sable's line-art dunes, Journey's moving sand and low sun)",
+        "licence": "reference-only",
+        "why": "Umber ink lines that thin out with distance, a sand wake behind the rider and a low sun with long shadows across dunes"
+      },
+      {
+        "file": "references/day-cycle-colour-script.md",
+        "source": "film comparable: one-day colour scripts (animated feature colour keys from dusk through night to dawn)",
+        "licence": "reference-only",
+        "why": "Seven chapters as seven hours: the key direction and colour change every chapter while the palette and ink stay one family"
+      }
+    ],
+    "palette": {
+      "primary": [
+        "#d6a467",
+        "#b4532f",
+        "#efe4cf",
+        "#2a2e5c"
+      ],
+      "accent": "#2fae86",
+      "reservedObjective": "#2fae86"
+    },
+    "lighting": {
+      "key": {
+        "type": "directional",
+        "colorTemperatureK": 3200,
+        "shadow": true
+      },
+      "fill": "ibl",
+      "practicals": 6,
+      "environment": {
+        "hdri": "belfast_sunset_puresky",
+        "background": "sky"
+      },
+      "exposureEV": 0
+    },
+    "framing": {
+      "rig": "chase",
+      "subjectHeightFraction": [
+        0.07,
+        0.2
+      ],
+      "fovDeg": [
+        62,
+        86
+      ],
+      "mobile": "both"
+    },
+    "assets": [
+      {
+        "role": "character",
+        "assetKey": "courier",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 2048,
+        "animated": {
+          "clips": [
+            "idle",
+            "walk",
+            "run"
+          ]
+        }
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "hoverboard",
+        "maxTriangles": 30000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "canyonrocks",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "aqueduct",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "gatehouse",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "ringgate",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "watchtower",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "prop",
+        "assetKey": "ringclean",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "prop",
+        "assetKey": "lantern",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "stall",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "banner",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "pillar",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "tree",
+        "maxTriangles": 5000,
+        "textureSet": "BC",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "house",
+        "maxTriangles": 5000,
+        "textureSet": "BC",
+        "maxTextureSize": 512
+      }
+    ],
+    "vfx": [
+      {
+        "event": "board-low-fast",
+        "kind": "silt-sand-wake"
+      },
+      {
+        "event": "board-over-canal",
+        "kind": "silt-canal-spray"
+      },
+      {
+        "event": "ring-pass",
+        "kind": "silt-signal"
+      },
+      {
+        "event": "impact",
+        "kind": "silt-impact"
+      },
+      {
+        "event": "boost",
+        "kind": "trail"
+      },
+      {
+        "event": "ambient-sand",
+        "kind": "silt-motes-sand"
+      },
+      {
+        "event": "ambient-fireflies",
+        "kind": "silt-motes-fireflies"
+      },
+      {
+        "event": "ambient-lantern-motes",
+        "kind": "silt-motes-lantern-motes"
+      },
+      {
+        "event": "ambient-pollen",
+        "kind": "silt-motes-pollen"
+      },
+      {
+        "event": "ambient-embers",
+        "kind": "silt-motes-embers"
+      }
+    ],
+    "audio": [
+      {
+        "event": "ring-pass",
+        "cue": "signal-chime",
+        "variants": 1
+      },
+      {
+        "event": "impact",
+        "cue": "board-thud",
+        "variants": 1
+      },
+      {
+        "event": "objective",
+        "cue": "objective-bell",
+        "variants": 1
+      },
+      {
+        "event": "chapter",
+        "cue": "chapter-theme",
+        "variants": 7
+      }
+    ],
+    "signatureEffect": "Sand wake thrown up under the hoverboard at speed and low altitude, inside a hand-inked frame whose umber ink fades to nothing by 600 m.",
+    "standIns": [
+      {
+        "feature": "Kenney tree and house in the dressing",
+        "file": "examples/silt-and-signal-port/world.ts",
+        "request": "R-14-07",
+        "removeWhen": "WP-36 palms, tamarisk and adobe dwellings admitted"
+      }
+    ],
+    "criticalCategories": [
+      "lighting",
+      "postprocessing",
+      "vfx",
+      "atmospheric_effects"
+    ],
+    "tiers": {
+      "low": {
+        "particles": 300,
+        "shadowMap": 2048,
+        "cascades": 1,
+        "textureMax": 1024
+      },
+      "medium": {
+        "particles": 450,
+        "shadowMap": 2048,
+        "cascades": 3,
+        "textureMax": 2048
+      },
+      "high": {
+        "particles": 600,
+        "shadowMap": 4096,
+        "cascades": 3,
+        "textureMax": 2048
+      },
+      "ultra": {
+        "particles": 600,
+        "shadowMap": 4096,
+        "cascades": 3,
+        "textureMax": 2048
+      }
+    }
+  }
+}

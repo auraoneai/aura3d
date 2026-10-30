@@ -1,0 +1,233 @@
+/**
+ * GU47 WP-34 (G24) look table: seven chapters are seven hours of one long day, a hand-inked gouache travel poster.
+ *
+ * One row per chapter (the variants `?chapter=0..6&start=1`). Every visual knob the inked look changes lives here:
+ * the key light (elevation, azimuth, colour, intensity; DG-L1), the IBL source (DG-L2), the rim (DG-L3), night
+ * practicals (DG-L4), the sky dome (DG-S1), height fog (DG-S3), the ink pass (DG-P1), the grade (DG-P2), bloom (DG-P3)
+ * and the signature sand wake (DG-V1). `?look=original` keeps today's look (world.ts `rigOf`, no tone mapping).
+ *
+ * Azimuth is degrees clockwise from north (-Z) toward east (+X); elevation is degrees above the horizon. The sky's
+ * sun disc, the water glint and the shadowed key all read the same vector (`keyDirection`).
+ */
+import type { AuraHdriId } from "@aura3d/engine";
+
+export type SiltLookMode = "inked" | "original";
+
+/** `?look=original` is today's look (PRD §6.1 ports keep it); anything else is the inked poster look. */
+export function siltLookMode(search: string | URLSearchParams | undefined): SiltLookMode {
+  const params = typeof search === "string" ? new URLSearchParams(search) : search;
+  return params?.get("look") === "original" ? "original" : "inked";
+}
+
+export type AmbientMotes = "sand" | "fireflies" | "lantern-motes" | "pollen" | "embers";
+
+export interface ChapterLook {
+  readonly chapter: number;
+  /** Hour of the one long day this chapter shows. */
+  readonly hour: string;
+  readonly night: boolean;
+  /** DG-L1: the one shadowed key (sun by day, moon by night). */
+  readonly key: { readonly elevationDeg: number; readonly azimuthDeg: number; readonly color: string; readonly intensity: number };
+  /** DG-L3: unshadowed jade-white rim opposite the key, always below it. */
+  readonly rim: { readonly color: string; readonly intensity: number };
+  /** DG-L2: IBL only (the custom dome stays the visible sky). Night chapters keep the neutral probe at 0.35. */
+  readonly hdri: AuraHdriId | null;
+  readonly environmentIntensity: number;
+  readonly environmentRotationDeg: number;
+  /** DG-L4: amber point lights along the ring route (night chapters only; the art direction caps practicals at 6). */
+  readonly practicals: number;
+  /** DG-L5: PCSS long shadows (low-sun chapters). */
+  readonly pcss: boolean;
+  /** DG-S1: dome colours (sRGB hex), sun or moon disc, inked cirrus bands, horizon dust band, storm cover. */
+  readonly sky: { readonly top: string; readonly horizon: string; readonly discSize: number; readonly glow: number; readonly cirrus: number; readonly dust: number; readonly storm: number; readonly stars: number };
+  /** DG-S3: height-fog ground haze (A3D_QR_VFX_FOG, default-on). */
+  readonly fog: { readonly color: string; readonly density: number; readonly heightFalloff: number; readonly heightReference: number; readonly maxOpacity: number };
+  /** DG-P2: ACES output exposure plus the grade. */
+  readonly grade: { readonly exposure: number; readonly contrast: number; readonly saturation: number; readonly temperature: number };
+  /** DG-P3: bloom only on HDR emissives (threshold 1.0). */
+  readonly bloom: { readonly intensity: number; readonly threshold: 1 };
+  /** DG-P1: ink colour (umber by day, indigo at night) and luma bands (4 by day, 6 at night). */
+  readonly ink: { readonly color: string; readonly bands: number };
+  /** DG-V1 signature: sand wake colour and per-second emission at full speed. */
+  readonly wake: { readonly color: string; readonly rate: number };
+  /** DG-V4: the chapter's ambient emitter. */
+  readonly motes: { readonly kind: AmbientMotes; readonly color: string };
+  /** DG-S5: rain in the storm chapter only. */
+  readonly rain: boolean;
+  /** DG-S4: god rays from the low sun (ch0) or moon shafts (ch2). */
+  readonly godRays: boolean;
+  /** DG-L6: low-sun lens flare (ch0, ch6). */
+  readonly lensFlare: boolean;
+}
+
+/** The poster palette (sRGB). Jade is reserved for rings, the board strips and the HUD. */
+export const SILT_PALETTE = {
+  sandstone: "#d6a467",
+  terracotta: "#b4532f",
+  bone: "#efe4cf",
+  indigo: "#2a2e5c",
+  jade: "#2fae86",
+  jadeWhite: "#c9f2e1",
+  umber: "#5a3a22",
+  inkIndigo: "#1f2550"
+} as const;
+
+const DAY_INK = { color: SILT_PALETTE.umber, bands: 4 } as const;
+const NIGHT_INK = { color: SILT_PALETTE.inkIndigo, bands: 6 } as const;
+
+export const CHAPTER_LOOKS: readonly ChapterLook[] = [
+  {
+    chapter: 0, hour: "amber dusk (19:10)", night: false,
+    key: { elevationDeg: 9, azimuthDeg: 250, color: "#ffb26a", intensity: 2.6 },
+    rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.55 },
+    hdri: "belfast_sunset_puresky", environmentIntensity: 0.9, environmentRotationDeg: 250, practicals: 0, pcss: true,
+    sky: { top: "#6d7ca6", horizon: "#f2a35c", discSize: 0.035, glow: 0.9, cirrus: 0.75, dust: 0.7, storm: 0, stars: 0 },
+    fog: { color: "#e6b07c", density: 0.0011, heightFalloff: 0.045, heightReference: 0, maxOpacity: 0.85 },
+    grade: { exposure: 1.0, contrast: 1.08, saturation: 1.14, temperature: 0.12 },
+    bloom: { intensity: 0.38, threshold: 1 }, ink: DAY_INK,
+    wake: { color: "#e8b678", rate: 140 }, motes: { kind: "sand", color: "#f0c58a" },
+    rain: false, godRays: true, lensFlare: true
+  },
+  {
+    chapter: 1, hour: "white-hot noon (12:40)", night: false,
+    key: { elevationDeg: 64, azimuthDeg: 160, color: "#fff3df", intensity: 3.4 },
+    rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.45 },
+    hdri: "outdoor-midday", environmentIntensity: 1.0, environmentRotationDeg: 160, practicals: 0, pcss: false,
+    sky: { top: "#78acd6", horizon: "#f4ead8", discSize: 0.028, glow: 0.6, cirrus: 0.45, dust: 0.85, storm: 0, stars: 0 },
+    fog: { color: "#efe2c8", density: 0.0008, heightFalloff: 0.035, heightReference: 0, maxOpacity: 0.8 },
+    grade: { exposure: 0.92, contrast: 1.0, saturation: 0.84, temperature: 0.04 },
+    bloom: { intensity: 0.3, threshold: 1 }, ink: DAY_INK,
+    wake: { color: "#f1d6a8", rate: 160 }, motes: { kind: "sand", color: "#f4e2c0" },
+    rain: false, godRays: false, lensFlare: false
+  },
+  {
+    chapter: 2, hour: "indigo moonlight under the roots (23:30)", night: true,
+    key: { elevationDeg: 28, azimuthDeg: 40, color: "#9fb4ff", intensity: 0.75 },
+    rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.35 },
+    hdri: null, environmentIntensity: 0.35, environmentRotationDeg: 0, practicals: 5, pcss: false,
+    sky: { top: "#0b1131", horizon: "#2a3470", discSize: 0.02, glow: 0.5, cirrus: 0.3, dust: 0.15, storm: 0, stars: 1 },
+    fog: { color: "#26305e", density: 0.0016, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.85 },
+    grade: { exposure: 1.3, contrast: 1.06, saturation: 1.0, temperature: -0.18 },
+    bloom: { intensity: 0.6, threshold: 1 }, ink: NIGHT_INK,
+    wake: { color: "#8ea6d8", rate: 110 }, motes: { kind: "fireflies", color: "#d9f06a" },
+    rain: false, godRays: true, lensFlare: false
+  },
+  {
+    chapter: 3, hour: "teal lantern-dusk over the reef (18:20)", night: false,
+    key: { elevationDeg: 14, azimuthDeg: 290, color: "#ff9a5e", intensity: 1.8 },
+    rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.5 },
+    hdri: "industrial_sunset_puresky", environmentIntensity: 0.8, environmentRotationDeg: 290, practicals: 0, pcss: true,
+    sky: { top: "#1f4f62", horizon: "#e48c5c", discSize: 0.032, glow: 0.8, cirrus: 0.6, dust: 0.4, storm: 0, stars: 0.2 },
+    fog: { color: "#3f7d82", density: 0.0012, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.85 },
+    grade: { exposure: 1.05, contrast: 1.06, saturation: 1.1, temperature: -0.04 },
+    bloom: { intensity: 0.45, threshold: 1 }, ink: DAY_INK,
+    wake: { color: "#cfa57a", rate: 130 }, motes: { kind: "lantern-motes", color: "#ffbf6a" },
+    rain: false, godRays: false, lensFlare: false
+  },
+  {
+    chapter: 4, hour: "slate storm in the orchard (15:00)", night: false,
+    key: { elevationDeg: 40, azimuthDeg: 200, color: "#dfe3ea", intensity: 1.3 },
+    rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.4 },
+    hdri: "kloppenheim_02", environmentIntensity: 0.85, environmentRotationDeg: 200, practicals: 0, pcss: false,
+    sky: { top: "#3b4455", horizon: "#8c9198", discSize: 0.022, glow: 0.2, cirrus: 0.2, dust: 0.3, storm: 1, stars: 0 },
+    fog: { color: "#7b838e", density: 0.0015, heightFalloff: 0.04, heightReference: 0, maxOpacity: 0.9 },
+    grade: { exposure: 1.1, contrast: 1.1, saturation: 0.9, temperature: -0.08 },
+    bloom: { intensity: 0.35, threshold: 1 }, ink: DAY_INK,
+    wake: { color: "#a39c90", rate: 120 }, motes: { kind: "pollen", color: "#f2e08a" },
+    rain: true, godRays: false, lensFlare: false
+  },
+  {
+    chapter: 5, hour: "violet night at the crown (02:10)", night: true,
+    key: { elevationDeg: 22, azimuthDeg: 330, color: "#c6b5ff", intensity: 0.65 },
+    rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.3 },
+    hdri: null, environmentIntensity: 0.35, environmentRotationDeg: 0, practicals: 5, pcss: false,
+    sky: { top: "#191233", horizon: "#4c3b70", discSize: 0.024, glow: 0.55, cirrus: 0.35, dust: 0.1, storm: 0, stars: 1 },
+    fog: { color: "#3e3360", density: 0.0015, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.85 },
+    grade: { exposure: 1.3, contrast: 1.05, saturation: 1.05, temperature: -0.1 },
+    bloom: { intensity: 0.6, threshold: 1 }, ink: NIGHT_INK,
+    wake: { color: "#a79ad0", rate: 110 }, motes: { kind: "embers", color: "#ff9c5a" },
+    rain: false, godRays: false, lensFlare: false
+  },
+  {
+    chapter: 6, hour: "rose dawn on the long return (06:05)", night: false,
+    key: { elevationDeg: 6, azimuthDeg: 80, color: "#ffad9a", intensity: 2.3 },
+    rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.5 },
+    hdri: "spruit_sunrise", environmentIntensity: 0.85, environmentRotationDeg: 80, practicals: 0, pcss: true,
+    sky: { top: "#8b98c4", horizon: "#f3a8a0", discSize: 0.034, glow: 0.85, cirrus: 0.7, dust: 0.55, storm: 0, stars: 0 },
+    fog: { color: "#e9b3a6", density: 0.0011, heightFalloff: 0.045, heightReference: 0, maxOpacity: 0.85 },
+    grade: { exposure: 1.0, contrast: 1.06, saturation: 1.12, temperature: 0.08 },
+    bloom: { intensity: 0.38, threshold: 1 }, ink: DAY_INK,
+    wake: { color: "#eab69a", rate: 140 }, motes: { kind: "sand", color: "#f3c7b4" },
+    rain: false, godRays: false, lensFlare: true
+  }
+];
+
+export function chapterLook(chapter: number): ChapterLook {
+  return CHAPTER_LOOKS[Math.max(0, Math.min(CHAPTER_LOOKS.length - 1, Math.trunc(chapter)))]!;
+}
+
+/** Unit vector toward the key (sun or moon), from the table's elevation and azimuth. */
+export function keyDirection(look: ChapterLook): [number, number, number] {
+  const el = (look.key.elevationDeg * Math.PI) / 180;
+  const az = (look.key.azimuthDeg * Math.PI) / 180;
+  return [Math.sin(az) * Math.cos(el), Math.sin(el), -Math.cos(az) * Math.cos(el)];
+}
+
+/** Angle in degrees between two chapters' key directions (DG-L1 acceptance: >= 15). */
+export function keyAngleDeg(a: ChapterLook, b: ChapterLook): number {
+  const u = keyDirection(a), v = keyDirection(b);
+  const dot = Math.max(-1, Math.min(1, u[0] * v[0] + u[1] * v[1] + u[2] * v[2]));
+  return (Math.acos(dot) * 180) / Math.PI;
+}
+
+/**
+ * The served catalogue file for a chapter's IBL HDRI (lane E-A ships `/hdri/<id>_1k.hdr`), with the file's sha256 so the
+ * production bridge treats it as a manifest asset. Night chapters return null (neutral probe).
+ */
+export const HDRI_HASHES: Readonly<Partial<Record<AuraHdriId, string>>> = {
+  belfast_sunset_puresky: "sha256-f5c14eb2ca1e2e7e281e39d3bf1a2898f43cc2b2db3232ab40c0c147e7d1c7a3",
+  "outdoor-midday": "sha256-206c67e3a1b992282821cf06662bdd69bbb4915c1c4444a66338a40d6a7d4e34",
+  industrial_sunset_puresky: "sha256-988320101df317784b2a869b40b0e23519726bf8827def4ed8eef806df2601cd",
+  kloppenheim_02: "sha256-c122eb29c259d8c2ef0093c20130faa67ea216f5a1407c409ee4fc97cd5ba002",
+  spruit_sunrise: "sha256-3ac30651cde16d2a80521273ec917ba3feca172ea4b842335431201879f39593"
+};
+
+export function chapterHdri(look: ChapterLook): { readonly kind: "aura-asset-ref"; readonly id: string; readonly type: "texture"; readonly format: "hdr"; readonly url: string; readonly hash?: string } | null {
+  if (!look.hdri) return null;
+  const hash = HDRI_HASHES[look.hdri];
+  return { kind: "aura-asset-ref", id: `siltHdri-${look.hdri}`, type: "texture", format: "hdr", url: `/hdri/${look.hdri}_1k.hdr`, ...(hash ? { hash } : {}) };
+}
+
+/** PRD §6.3: reduced motion halves particle emission and zeroes camera roll, FOV kicks and sway. */
+export function motionScale(reducedMotion: boolean): { readonly emission: number; readonly roll: number; readonly fovKick: number; readonly sway: number; readonly rail: boolean } {
+  return reducedMotion ? { emission: 0.5, roll: 0, fovKick: 0, sway: 0.3, rail: false } : { emission: 1, roll: 1, fovKick: 1, sway: 1, rail: true };
+}
+
+/** sRGB "#rrggbb" to a linear RGB triple (custom shader uniforms are linear). */
+export function linearOf(hex: string): [number, number, number] {
+  const n = Number.parseInt(hex.slice(1), 16);
+  const c = (v: number): number => { const s = v / 255; return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; };
+  return [c((n >> 16) & 255), c((n >> 8) & 255), c(n & 255)];
+}
+
+/** DG-P1 ink fade: the ink reaches zero at this view distance (metres), full strength up to half of it. */
+export const INK_FADE_METRES = 600;
+
+/**
+ * DG-P1: the silt-ink pass options for `effects.toon` (lane E-E depth-aware ink): depth plus colour edges in the
+ * chapter's ink colour, fading to 0 by 600 m, 4 bands by day and 6 at night. Same pass name as the original cel pass,
+ * so `setPassUniform("silt-cel", "u_texel", ...)` on resize keeps working. `?toon=0` turns it off.
+ */
+export function inkPassOptions(chapter: number, size: readonly [number, number]) {
+  const look = chapterLook(chapter);
+  return {
+    name: "silt-cel",
+    bands: look.ink.bands,
+    bandMix: look.night ? 0.55 : 0.7,
+    outline: 0.85,
+    inkSource: "both" as const,
+    fadeDistance: INK_FADE_METRES,
+    inkColor: look.ink.color,
+    size
+  };
+}

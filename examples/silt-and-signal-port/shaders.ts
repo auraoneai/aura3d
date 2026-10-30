@@ -43,6 +43,52 @@ void main() {
   outColor = vec4(mix(day, dark, skyNight), 1.0);
 }`;
 
+/**
+ * GU47 DG-S1: the inked poster sky (default look; `?look=original` keeps SKY_FRAGMENT). A gradient from `skyBottom` to
+ * `skyTop`, a sun or moon disc with a soft glow on `sunDir` (the same vector as the shadowed key and the water glint),
+ * two thin inked cirrus bands, a warm horizon dust band, storm cover (`skyStorm`) and stars at night (`skyStars`).
+ * One program for all seven chapters; only uniforms change.
+ */
+export const SKY_INK_FRAGMENT = /* glsl */ `
+in vec3 skyDirection;
+out vec4 outColor;
+float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float noise(vec2 p) {
+  vec2 i = floor(p), f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0)), f.x), f.y);
+}
+void main() {
+  vec3 dir = normalize(skyDirection);
+  vec3 sd = normalize(sunDir);
+  float h = smoothstep(-0.08, 0.7, dir.y);
+  vec3 c = mix(skyBottom, skyTop, h);
+  float cosA = dot(dir, sd);
+  // horizon glow toward the key, then the disc with a hard inked edge
+  float glow = pow(max(0.0, cosA), 24.0) * skyGlow + pow(max(0.0, cosA), 4.0) * skyGlow * 0.18 * (1.0 - h);
+  c += sunColor * glow * (1.0 - skyStorm * 0.85);
+  float disc = smoothstep(cos(sunSize * 1.08), cos(sunSize), cosA);
+  c = mix(c, sunColor * 2.4, disc * (1.0 - skyStorm));
+  // two thin cirrus bands, broken by noise (the poster's brush strokes)
+  vec2 p = vec2(atan(dir.x, dir.z), dir.y);
+  float n = noise(vec2(p.x * 9.0, p.y * 3.0) + 3.1);
+  float band1 = exp(-pow((p.y - 0.24 - sin(p.x * 1.5) * 0.04) * 38.0, 2.0));
+  float band2 = exp(-pow((p.y - 0.38 - sin(p.x * 2.3 + 1.7) * 0.05) * 52.0, 2.0));
+  float cirrus = (band1 + band2 * 0.7) * smoothstep(0.35, 0.7, n) * skyCirrus;
+  c = mix(c, mix(skyBottom, sunColor, 0.45) * 1.08, clamp(cirrus, 0.0, 1.0) * 0.75);
+  // horizon dust band: warm, low, always a little moving with the sand
+  float dust = exp(-pow(dir.y * 11.0, 2.0)) * (0.75 + 0.25 * noise(vec2(p.x * 14.0, 0.0))) * skyDust;
+  c = mix(c, skyBottom * vec3(1.06, 0.98, 0.88), clamp(dust, 0.0, 1.0) * 0.6);
+  // storm cover: a low slate deck over the whole dome
+  float deck = noise(dir.xz / max(0.15, dir.y + 0.3) * 2.2) * 0.6 + noise(dir.xz / max(0.15, dir.y + 0.3) * 5.1) * 0.4;
+  c = mix(c, mix(skyTop, skyBottom, 0.35) * (0.7 + 0.3 * deck), skyStorm * smoothstep(-0.05, 0.25, dir.y) * 0.85);
+  // stars at night
+  vec2 starP = vec2(atan(dir.x, dir.z), asin(dir.y)) * 800.0;
+  float sparkle = pow(max(0.0, 1.0 - length(fract(starP) - 0.5) * 2.0), 12.0) * step(0.996, hash(floor(starP)));
+  c += vec3(0.5, 0.56, 0.7) * sparkle * smoothstep(0.04, 0.3, dir.y) * skyStars;
+  outColor = vec4(c, 1.0);
+}`;
+
 const NOISE = /* glsl */ `
 float hash21(vec2 p) {
   p = fract(p * vec2(123.34, 456.21));
@@ -92,6 +138,17 @@ void main() {
   c += vec3(1.0, 0.92, 0.78) * glint * 0.5;
   float foam = smoothstep(canalHalf - 4.5, canalHalf - 1.2, d) * (0.45 + 0.55 * vnoise(flow * 15.0));
   c = mix(c, vec3(0.93, 0.95, 0.9), foam * 0.7);
+  // GU47 DG-M3 (inked look only; inkLook = 0 is today's water): fresnel toward the chapter sky, a sun glint on the
+  // key vector the sky disc uses, silt foam and flow streaks along the canal
+  if (inkLook > 0.5) {
+    vec3 n = normalize(vec3((ripple - 0.5) * 0.35, 1.0, (fbm(flow * 5.0 + 1.3) - 0.5) * 0.35));
+    vec3 r = reflect(-view, n);
+    float spec = pow(max(0.0, dot(r, normalize(sunDir))), 180.0);
+    c = mix(c, inkSky, fres * 0.55);
+    c += sunColor * spec * 3.0;
+    float streak = smoothstep(0.62, 0.9, vnoise(vec2(vWorld.x * 0.6, vWorld.z * 0.02 + siltTime * 0.9)));
+    c = mix(c, vec3(0.86, 0.78, 0.62), streak * 0.18 + foam * 0.12);
+  }
   float fogT = clamp(length(vWorld - cameraPosition) / fogFar, 0.0, 1.0);
   float alpha = 0.92 * (1.0 - smoothstep(canalHalf - 1.2, canalHalf, d));
   outColor = vec4(mix(c, fogColor, fogT * fogT), alpha);
