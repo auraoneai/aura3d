@@ -82,7 +82,7 @@ describe("clampLookOverrides: every GU47 E-A key and clamp", () => {
   });
 
   it("grade: contrast/saturation [0, 3], temperature/tint [-1, 1], lut passes through", () => {
-    const lut = defineAuraAssets({ warm: { type: "texture", format: "png", url: "/luts/warm.png" } }).warm;
+    const lut = defineAuraAssets({ warm: { type: "lut", format: "cube", url: "/luts/warm.cube" } }).warm;
     expect(clampLookOverrides({ grade: { contrast: 4, saturation: -1, temperature: 2, tint: -2, lut } })?.grade).toEqual({
       contrast: 3,
       saturation: 0,
@@ -179,7 +179,7 @@ describe("v0 emission of the GU47 E-A keys", () => {
   });
 
   it("grade: contrast/saturation/temperature/tint/lut on the look grade node, all authored and v2-valid", () => {
-    const lut = defineAuraAssets({ teal: { type: "texture", format: "png", url: "/luts/teal.png" } }).teal;
+    const lut = defineAuraAssets({ teal: { type: "lut", format: "cube", url: "/luts/teal.cube" } }).teal;
     const grade = effect(children("golden-hour", { grade: { contrast: 1.3, saturation: 0.8, temperature: -0.4, tint: 0.2, lut } }), "color-grade")!;
     expect(grade).toMatchObject({ contrast: 1.3, saturation: 0.8, temperature: -0.4, tint: 0.2, lut, lookGrade: true });
     expect(grade.postAuthored).toEqual(expect.arrayContaining(["contrast", "saturation", "temperature", "tint", "lut"]));
