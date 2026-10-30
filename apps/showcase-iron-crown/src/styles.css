@@ -518,3 +518,10 @@
 }
 .ic-controls-row button[aria-pressed="true"] { border-color: #ffd76a; color: #ffd76a; background: rgba(255, 215, 106, 0.12); }
 .ic-controls-row small { color: #9aa3bd; font-size: 11px; text-align: right; }
+
+/* GU47 IC47-C1: letterbox bars for the intro, K.O. and win shots (signature). */
+.ic-letterbox { position: fixed; left: 0; right: 0; height: var(--ic-bar, 11vh); background: #000; pointer-events: none; z-index: 5; transition: transform 0.28s ease-out; }
+.ic-letterbox-top { top: 0; transform: translateY(-100%); }
+.ic-letterbox-bottom { bottom: 0; transform: translateY(100%); }
+.ic-letterbox.on { transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) { .ic-letterbox { transition: none; } }

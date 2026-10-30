@@ -65,7 +65,8 @@ import { mountControlsSheet } from "./game/controlsSheet";
 import { mountExtraTouchButtons } from "./game/touchExtras";
 import { DEFAULT_STAGE, stageById, type IronStage, type StageId } from "./game/stages";
 import { buildArenaScene } from "./game/arena";
-import { backRimPose, FOLLOW_SPOT_ID, followSpotPose, poseDirection, RIM_IDS, stageLook, type SpotPose } from "./game/look";
+import { cinematicShot, createCinematicClock, letterboxWanted } from "./game/cinematics";
+import { backRimPose, FOLLOW_SPOT_ID, followSpotPose, LETTERBOX_BAR, poseDirection, RIM_IDS, stageLook, type SpotPose } from "./game/look";
 import { installIronCrownVfx, type IronCrownVfxKind } from "./game/vfx";
 import { advanceLadder, createLadder, currentRung, type LadderState } from "./game/ladder";
 import { createHud, type MenuId, type ModeId } from "./game/hud";
@@ -357,10 +358,42 @@ const baseFightingRig = camera.rigs.fighting({
   maxDistance: 7.0,
   fov: 40
 });
+// IC47-C1: letterboxed intro, K.O. and win shots (camera only; the phase windows are unchanged). The bars are two DOM
+// strips over the canvas, LETTERBOX_BAR of the viewport each.
+const cineClock = createCinematicClock();
+const letterbox = (["top", "bottom"] as const).map((edge) => {
+  const bar = document.createElement("div");
+  bar.className = `ic-letterbox ic-letterbox-${edge}`;
+  bar.setAttribute("aria-hidden", "true");
+  bar.style.setProperty("--ic-bar", `${LETTERBOX_BAR * 100}vh`);
+  document.body.appendChild(bar);
+  return bar;
+});
+let letterboxOn = false;
+function setLetterbox(on: boolean): void {
+  if (on === letterboxOn) return;
+  letterboxOn = on;
+  for (const bar of letterbox) bar.classList.toggle("on", on);
+}
+
 app.camera?.use({
   ...baseFightingRig,
   update(ctx) {
     const pose = baseFightingRig.update(ctx);
+    if (state && P1 && CPU) {
+      const phase = state.phase;
+      const winnerSide = phase === "boutEnd" ? (state.pipsP1 >= ROUNDS_TO_WIN ? P1 : state.pipsCpu >= ROUNDS_TO_WIN ? CPU : null) : null;
+      const shot = cinematicShot({
+        phase,
+        t: cineClock.tick(phase, ctx.dt),
+        p1: P1.body.position,
+        p2: CPU.body.position,
+        winner: winnerSide ? winnerSide.body.position : null,
+        reducedMotion
+      });
+      setLetterbox(letterboxWanted(phase, winnerSide !== null));
+      if (shot) return { ...pose, position: shot.position, target: shot.target, fov: shot.fov };
+    }
     const position: [number, number, number] = [pose.position[0], pose.position[1] + 0.82, pose.position[2] - 0.15];
     const target: [number, number, number] = [pose.target[0], pose.target[1] + 0.72, pose.target[2]];
     // Portrait phones: the rig frames by vertical FOV, so at 390x844 the fighters' start marks (x ±2.2) sat outside the
