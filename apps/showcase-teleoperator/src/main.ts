@@ -63,6 +63,7 @@ import {
   PLAYER_ASSET,
   carMaterialOverrides,
   probeBuildingModels,
+  roadTileLayout,
   sodiumPointIds,
   tailLampMaterial,
   windowGlowOverride,
@@ -153,6 +154,8 @@ function bindNodes(app: ReturnType<typeof createAuraApp>, sky: WeatherPreset) {
     cars: Object.fromEntries(PLAYABLE_IDS.map((id) => [id, req(`player-car-${id}`)])) as Record<PlayableCarId, AuraRuntimeNodeHandle>,
     strips: ROAD_STRIPS.map((strip) => ({ ...strip, h: req(strip.id) })),
     dashes: req("sf-dashes"),
+    roadPatches: req("sf-road-patches"),
+    roadJoints: req("sf-road-joints"),
     crossRoads: req("sf-cross-roads"),
     crosswalks: req("sf-crosswalks"),
     signalPoles: req("sf-signal-poles"),
@@ -653,6 +656,10 @@ async function bootGridDispatch(): Promise<void> {
 
     const dashBaseZ = Math.floor(pose.pz / DASH_STRIDE_Z) * DASH_STRIDE_Z + DASH_STRIDE_Z;
     N.dashes.setInstances(DASH_LINES_X.flatMap((lx) => Array.from({ length: DASH_ROWS }, (_, i) => pos(rx(lx), ry(0.018), rz(dashBaseZ - i * DASH_STRIDE_Z)))));
+    // GD-13: road bays recycle on the same stride (patches on alternating bays, a sealed joint at each bay).
+    const tiles = roadTileLayout(dashBaseZ);
+    N.roadPatches.setInstances(tiles.patches.map(([x, z]) => pos(rx(x), ry(0.004), rz(z))));
+    N.roadJoints.setInstances(tiles.joints.map((z) => pos(rx(0), ry(0.005), rz(z))));
 
     if (S.signal !== lastSignalPhase) {
       lastSignalPhase = S.signal;

@@ -293,6 +293,35 @@ export function carMaterialOverrides(asset: GridAssetKey, role: "player" | "riva
 }
 
 /**
+ * GD-13 road tiles (interim, no textures): the avenue reads as 14 m concrete-and-asphalt bays recycled on the dash stride,
+ * so the street visibly moves under the car. Two instanced nodes (+2 draws): repair patches in a second asphalt tone on
+ * alternating bays and lanes, and tar-sealed expansion joints across the full width at every bay. The CC0 asphalt, paver
+ * and granite texture sets are an asset need (ambientcg Road/Asphalt/PavingStones at 1k) for the admission pass.
+ */
+export const ROAD_TILE = { strideZ: DASH_STRIDE_Z, rows: DASH_ROWS, patch: [4.6, 0.006, 6.2] as [number, number, number], joint: [21.4, 0.006, 0.14] as [number, number, number] } as const;
+/** Lane centres (x) that carry patches, in an order that never repeats on two neighbouring bays. */
+export const PATCH_LANES = [-7.6, 3.2, -2.9, 7.8] as const;
+/** Patch and joint transforms (sim world space: x, z) for the bays starting at `baseZ`. Deterministic in the bay index. */
+export function roadTileLayout(baseZ: number): { patches: [number, number][]; joints: number[] } {
+  const patches: [number, number][] = [];
+  const joints: number[] = [];
+  for (let i = 0; i < ROAD_TILE.rows; i++) {
+    const z = baseZ - i * ROAD_TILE.strideZ;
+    joints.push(z);
+    const bay = Math.round(z / ROAD_TILE.strideZ);
+    if (bay % 2 === 0) patches.push([PATCH_LANES[((bay / 2) % PATCH_LANES.length + PATCH_LANES.length) % PATCH_LANES.length]!, z - ROAD_TILE.strideZ / 2]);
+  }
+  return { patches, joints };
+}
+export function roadTileMaterials(look: SkyLook) {
+  const wet = look.street.asphalt.roughness < 0.4;
+  return {
+    patch: material.pbr({ color: "#2b3038", roughness: wet ? 0.3 : 0.9, metalness: 0.04 }),
+    joint: material.pbr({ color: "#0e1014", roughness: wet ? 0.2 : 0.6, metalness: 0.02 })
+  };
+}
+
+/**
  * Renderer options for the mount. The game is tuned and captured at the "high" tier on every device,
  * so it asks for that tier explicitly in object form: same tier as the old `quality: "high"` string,
  * without the engine's RENDERER_QUALITY_STRING diagnostic warning.
@@ -335,7 +364,7 @@ export function buildGridDispatchScene(weather: WeatherPreset): ReturnType<typeo
     "sf-sidewalk-right": [8.5, 0.18, 420]
   };
   const stripMat = (id: string) =>
-    id === "sf-avenue-asphalt" ? material.pbr({ color: "#1e232d", roughness: 0.82, metalness: 0.08 })
+    id === "sf-avenue-asphalt" ? material.pbr({ color: look.street.asphalt.color, roughness: look.street.asphalt.roughness, metalness: 0.08 })
       : id.startsWith("sf-center-yellow") ? yellowMat
         : id.startsWith("sf-cable-rail") ? brassRailMat
           : id.startsWith("sf-curb") ? graniteCurbMat
@@ -383,6 +412,8 @@ export function buildGridDispatchScene(weather: WeatherPreset): ReturnType<typeo
   const lampMat = material.emissive({ color: "#fef3c7", emissive: SODIUM, emissiveIntensity: look.street.lampEmissive });
   const pool = (n: number): AuraTransformSpec[] => Array.from({ length: n }, (_, i) => ({ position: [0, -50, 200 + i] }));
   s.addMany([
+    instances.box({ name: "sf-road-patches", size: ROAD_TILE.patch, material: roadTileMaterials(look).patch, transforms: pool(ROAD_TILE.rows) }).runtime(game.runtimeNode("sf-road-patches")),
+    instances.box({ name: "sf-road-joints", size: ROAD_TILE.joint, material: roadTileMaterials(look).joint, transforms: pool(ROAD_TILE.rows) }).runtime(game.runtimeNode("sf-road-joints")),
     instances.box({ name: "sf-dashes", size: [0.14, 0.02, 4.2], material: dashMat, transforms: pool(DASH_ROWS * DASH_LINES_X.length) }).runtime(game.runtimeNode("sf-dashes")),
     instances.box({ name: "sf-cross-roads", size: [140, 0.03, 14], material: material.pbr({ color: "#222834", roughness: 0.84 }), transforms: pool(INTERSECTION_COUNT) }).runtime(game.runtimeNode("sf-cross-roads")),
     instances.box({ name: "sf-crosswalks", size: [19.6, 0.035, 2.2], material: zebraMat, transforms: pool(INTERSECTION_COUNT * 2) }).runtime(game.runtimeNode("sf-crosswalks")),

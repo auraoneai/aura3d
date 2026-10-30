@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { resolveQrFlags } from "@aura3d/engine";
 import { BOOT_SKY, KEY_SHADOW, SKY_LOOKS, SODIUM, SKY_ORDER, hazeAt, hdriUrl, keyLightPosition, nextSky, skyFromParam, sunDirection } from "../../../apps/showcase-teleoperator/src/look";
-import { GRID_DISPATCH_FLAGS, SODIUM_POINT_MAX, WEATHER, buildGridDispatchScene, nearestLamps, skyOutput, tailLampMaterial, windowGlowOverride } from "../../../apps/showcase-teleoperator/src/scene";
+import { GRID_DISPATCH_FLAGS, SODIUM_POINT_MAX, WEATHER, buildGridDispatchScene, nearestLamps, roadTileLayout, skyOutput, tailLampMaterial, windowGlowOverride } from "../../../apps/showcase-teleoperator/src/scene";
 
 type Node = { kind?: string; light?: string; name?: string; environment?: string; texture?: { url?: string }; shadow?: unknown; position?: number[]; color?: string; intensity?: number; children?: Node[] };
 const flatNodes = (sky: (typeof SKY_ORDER)[number]): Node[] => {
@@ -229,5 +229,21 @@ describe("grid dispatch GD-02 sodium night street", () => {
   it("window glow is off at noon and strongest at night", () => {
     expect(windowGlowOverride(SKY_LOOKS.noon).emissiveIntensity).toBe(0);
     expect(windowGlowOverride(SKY_LOOKS.night).emissiveIntensity).toBeGreaterThan(windowGlowOverride(SKY_LOOKS.golden).emissiveIntensity);
+  });
+});
+
+describe("grid dispatch GD-13 road bays", () => {
+  it("a joint per 14 m bay, patches on alternating bays, never the same lane on two patched bays in a row", () => {
+    const { patches, joints } = roadTileLayout(140);
+    expect(joints).toHaveLength(14);
+    expect(joints[0]! - joints[1]!).toBe(14);
+    expect(patches).toHaveLength(7);
+    for (let i = 1; i < patches.length; i++) expect(patches[i]![0]).not.toBe(patches[i - 1]![0]);
+  });
+  it("the layout is a pure function of the bay (recycling shows the same street again)", () => {
+    expect(roadTileLayout(-280)).toEqual(roadTileLayout(-280));
+    const a = roadTileLayout(140).patches.find(([, z]) => z === 7)!;
+    const b = roadTileLayout(154).patches.find(([, z]) => z === 7)!;
+    expect(a).toEqual(b);
   });
 });
