@@ -144,6 +144,37 @@ void main() {
   outColor = vec4(col, 1.0);
 }`;
 
+/** GU47 WP-35 CD-12: rain puddle on the track: mirrors the washed sky (fresnel), a sun glint and slow ripples; soft rim. */
+export const PUDDLE_VERTEX = /* glsl */ `
+out vec3 vW;
+out vec2 vUv;
+void main() {
+  vUv = uv;
+  vW = (modelMatrix * vec4(position, 1.0)).xyz;
+  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
+}`;
+
+export const PUDDLE_FRAGMENT = /* glsl */ `
+in vec3 vW;
+in vec2 vUv;
+out vec4 outColor;
+${NOISE}
+void main() {
+  vec2 c = vUv * 2.0 - 1.0;
+  float r = length(c);
+  float edge = smoothstep(1.0, 0.72, r + (vn(vUv * 9.0) - 0.5) * 0.18);
+  vec3 v = normalize(cameraPosition - vW);
+  vec2 rip = vec2(vn(vW.xz * 3.1 + tClock * 0.6), vn(vW.zx * 2.7 - tClock * 0.5)) - 0.5;
+  vec3 n = normalize(vec3(rip.x * 0.08, 1.0, rip.y * 0.08));
+  vec3 rf = reflect(-v, n);
+  float fres = 0.25 + 0.75 * pow(1.0 - clamp(dot(n, v), 0.0, 1.0), 4.0);
+  vec3 sky = mix(skyHorizon, skyTop, smoothstep(0.0, 0.6, rf.y));
+  vec3 col = sky * 0.9 + vec3(1.0, 0.92, 0.78) * pow(max(dot(rf, sunDir), 0.0), 220.0) * 3.0;
+  float dist = length(vW - cameraPosition);
+  col = mix(col, hazeColor, clamp(1.0 - exp(-pow(dist * fogDensity, 2.0)), 0.0, 1.0));
+  outColor = vec4(col, edge * mix(0.45, 0.92, fres));
+}`;
+
 export const VALLEY_VERTEX = /* glsl */ `
 out vec3 vW;
 void main() {

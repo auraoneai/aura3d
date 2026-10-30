@@ -12,7 +12,7 @@ import { meatChunk } from "./creatures";
 import { createCameraClearance, createLocomotion } from "@aura3d/engine/game";
 import { Fx } from "./fx";
 import type { Game } from "./game";
-import { ACTIVE, ballSpec, glowSpec, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, warnSpec } from "./materials";
+import { ACTIVE, ballSpec, puddleSpec, glowSpec, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, warnSpec } from "./materials";
 import { ACTIVE_LOOK, sunPosition, type CumulusLookRow } from "./art/look";
 import { launchFovKick, titleFlyover, traumaFor } from "./art/camera";
 import { CUMULUS_FLARE_ELEMENTS, CUMULUS_GOD_RAY_DENSITY, applyCumulusPostPlan, cumulusPostPlan } from "./art/post";
@@ -24,6 +24,7 @@ import { CLIP_TOUCHDOWN_LEFT, advanceGaitPhase, gaitParams, gaitTouchdowns, gait
 import { MESHY } from "./models";
 import { buildBridges, buildClouds, buildGorgePosts, buildHut, buildMesas, buildObstacles, yawOf } from "./props";
 import { smooth } from "./sim";
+import { buildPuddles } from "./puddles";
 import { ROAD_HALF, buildGround, buildScatter, buildValleyForest, groundHeight } from "./terrain";
 
 const LICENSE_ACG = "CC0 1.0, ambientCG";
@@ -195,7 +196,7 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   /* ground: textured PBR track and grass, banded sandstone and foliage-covered banks */
   const ground = buildGround(ch);
   const sampling = { wrap: "repeat" as const, anisotropy: 8 };
-  ground.road.forEach((m, i) => { b.add(geometry.custom(plainGeometry(m), { name: `road-${i}`, castShadow: false, material: material.pbr({ color: "#ffffff", roughness: 1, metallic: 0, specularIntensity: 0.12, texture: ASSETS.pathColor, normal: ASSETS.pathNormal, normalScale: 0.9, sampling }), side: "double" } as never)); triangles += m.indices.length / 3; chunks++; });
+  ground.road.forEach((m, i) => { b.add(geometry.custom(plainGeometry(m), { name: `road-${i}`, castShadow: false, material: material.pbr({ color: ACTIVE_LOOK.road.color, roughness: ACTIVE_LOOK.road.roughness, metallic: 0, specularIntensity: 0.12, texture: ASSETS.pathColor, normal: ASSETS.pathNormal, normalScale: 0.9, sampling }), side: "double" } as never)); triangles += m.indices.length / 3; chunks++; });
   ground.grass.forEach((m, i) => addMesh(m, `grass-${i}`, scenerySpec({ map: grassMap, mapMix: 0.7, mapScale: 0.9, rim: 0.12, sun: 1.2 })));
   ground.slope.forEach((m, i) => addMesh(m, `slope-${i}`, scenerySpec({ map: rockMap, mapMix: 0.55, mapScale: 0.5, rim: 0.22 }), undefined, true));
   const scatter = buildScatter(ch);
@@ -220,6 +221,13 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   const hut = buildHut(ch);
   if (hut) addMesh(hut, "home", scenerySpec({ rim: 0.2 }));
   addMesh(buildCheckpointFlags(ch), "checkpoint-flags", scenerySpec({ rim: 0.3, sun: 1.3 }));
+
+  /* CD-12: rain puddles on the wet track, one merged mesh (storm-washed row) */
+  if (ACTIVE_LOOK.road.puddles) {
+    const puddles = buildPuddles(ch);
+    b.add(geometry.custom(plainGeometry(puddles), { name: "puddles", castShadow: false, material: material.custom(puddleSpec()) }).runtime({ id: "puddles" }));
+    triangles += puddles.indices.length / 3; chunks++; drawNodes++;
+  }
 
   /* water: a shallow stream across the track */
   ch.waters.forEach((w, i) => {
@@ -652,6 +660,7 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
 
       /* ---- water, sky and valley follow (footstep dust is emitted on foot touchdowns in play()) ---- */
       for (const id of riverIds) node(id).setUniform?.("tClock", clock);
+      if (ACTIVE_LOOK.road.puddles) node("puddles").setUniform?.("tClock", g.reducedMotion ? 0 : clock);
 
       /* ---- camera ---- */
       let wantEye: V3, wantLook: V3, fov = aspect < 1 ? 62 : 55 + s.speed * 0.2;
