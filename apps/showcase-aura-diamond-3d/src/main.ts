@@ -120,7 +120,8 @@ type Phase =
   | "pitchSelect"
   | "pitchMeter"
   | "gameover";
-type CamMode = "menuOrbit" | "batting" | "pitching" | "track" | "celebrate";
+/** `sequence`: a GU47 broadcast shot between plays (art/cameraDirector.ts). */
+type CamMode = "menuOrbit" | "batting" | "pitching" | "track" | "celebrate" | "sequence";
 
 const smoothstep = (t: number): number => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
 const mix3 = (a: Vec3, b: Vec3, t: number): Vec3 => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
@@ -150,6 +151,7 @@ import {
 } from "./scene";
 import { lookPlan, resolveDiamondTier, resolveLookVariant, resolveSkyMode } from "../art/look";
 import { isDiamondVfxKind, juiceFxKind, landingFxKind, registerDiamondVfx, type DiamondVfxKind } from "../art/vfx";
+import { CameraDirector, halfInningShot, homeRunShot, introShot, walkupShot, type Shot } from "../art/cameraDirector";
 
 const HOME_PLATE: Vec3 = [0, 0.05, 0.4];
 
@@ -748,6 +750,59 @@ function boot(): void {
       /* juice best-effort */
     }
   };
+
+  /**
+   * GU47 DIA-C1 / DIA-P2: broadcast sequences between plays (art/cameraDirector.ts) with letterbox bars for the home run
+   * and depth of field in the walk-up and home-run shots (High tier). Any key or tap skips a shot; the game reads the same
+   * input as before. Never on `?look=original`.
+   */
+  const director = new CameraDirector(reducedMotion);
+  const playShot = (shot: Shot): void => {
+    if (sceneCtx.variant === "gu47") director.play(shot, performance.now() / 1000);
+  };
+  const cineBars = document.createElement("div");
+  cineBars.id = "diamond-cine-bars";
+  cineBars.setAttribute("aria-hidden", "true");
+  cineBars.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:25;";
+  const barTop = document.createElement("div");
+  const barBottom = document.createElement("div");
+  for (const [bar, edge] of [[barTop, "top"], [barBottom, "bottom"]] as const) {
+    bar.style.cssText = `position:absolute;left:0;right:0;${edge}:0;height:0;background:#000;`;
+    cineBars.appendChild(bar);
+  }
+  document.body.appendChild(cineBars);
+  let barsShown = -1;
+  function applyCineBars(amount: number): void {
+    const v = Math.round(amount * 100) / 100;
+    if (v === barsShown) return;
+    barsShown = v;
+    const h = `${(v * 11).toFixed(2)}vh`;
+    barTop.style.height = h;
+    barBottom.style.height = h;
+  }
+  let shotDofOn = false;
+  let shotDofFocus = 0;
+  function applyShotDof(on: boolean, focus: number): void {
+    const want = on && sceneCtx.tier === "high" && sceneCtx.variant === "gu47";
+    try {
+      if (want && (!shotDofOn || Math.abs(focus - shotDofFocus) > 0.25)) {
+        (app as any).post?.setEffect?.("depth-of-field", { focusDistance: focus });
+        shotDofFocus = focus;
+      }
+      if (want !== shotDofOn) (app as any).post?.setEffectEnabled?.("depth-of-field", want);
+    } catch {
+      /* post is presentation only */
+    }
+    shotDofOn = want;
+  }
+  const skipShot = (): void => {
+    if (director.active) director.skip();
+  };
+  window.addEventListener("keydown", (e) => {
+    if (e.code === "Space" || e.code === "Enter" || e.code === "Escape") skipShot();
+  });
+  window.addEventListener("pointerdown", skipShot);
+
   let touchControls: any = null;
   try {
     touchControls = mountTouchControls(
@@ -1153,6 +1208,8 @@ function boot(): void {
     el.hud?.classList.add("on");
     el.goCard?.classList.remove("show");
     setPhase("between");
+    // GU47 DIA-C1: the park intro rail opens every match (it ends when the first pitch is under way).
+    playShot(introShot(park()));
     cue("uiConfirm");
     cue("crowd");
     if (mode === "studio") fireFlair();
@@ -1276,6 +1333,7 @@ function boot(): void {
       attachBatSocket();
       tick(`ballpark — ${PARKS[id].name.toLowerCase()}`, "info");
       showBanner(PARKS[id].name, 1.8);
+      if (G.phase !== "menu") playShot(introShot(PARKS[id]));
     } catch (err) {
       console.warn("[diamond] park rebuild failed", err);
     }
@@ -2002,6 +2060,7 @@ function boot(): void {
         cue(distFt > 420 ? "homerBig" : "homer");
         juiceFire("homer", { position: ball.landPos });
         fireHrBurst(ball.landPos);
+        playShot(homeRunShot(park(), ball.landPos));
         tick(`derby HR #${G.derby.hrs} — ${distFt} ft`, "success", distFt);
       } else {
         G.derby.outs += 1;
@@ -2023,6 +2082,7 @@ function boot(): void {
         showBanner(`${distFt} FT MOONSHOT`, 2.0);
         cue("homer");
         fireHrBurst(ball.landPos);
+        playShot(homeRunShot(park(), ball.landPos));
       }
       nextBatter();
       return;
@@ -2042,6 +2102,7 @@ function boot(): void {
         cue(distFt > 420 || park().id === "lunar" ? "homerBig" : "homer");
         juiceFire("homer", { position: landPos });
         fireHrBurst(landPos);
+        playShot(homeRunShot(park(), landPos));
         applyRunnerPlan(planRunnerMoves("homerun"));
         tick(`${isPlayerHit ? "you" : clubById(G.cpuClub).abbr} go deep — ${distFt} ft (${runs} RBI)`, "success", distFt);
         if (park().id === "skyline" && ball.landTheta > -30 && ball.landTheta < 30 && crossed) {
@@ -3191,6 +3252,9 @@ function boot(): void {
   let qaBall: Vec3 | null = null;
   let qaRunT: number | null = null;
   let qaCam: { eye: Vec3; target: Vec3; fov: number } | null = null;
+  let lastCamPhase: Phase = G.phase;
+  let lastCamHalf: "top" | "bottom" = G.half;
+  let lastSeqActive = false;
   function updateCamera(dt: number): void {
     const c = G.cam;
     const pk = park();
@@ -3232,12 +3296,34 @@ function boot(): void {
       target = [-0.5 + drift * 0.4, 1.28 + (G.pitch?.t ?? 0) * 0.1, -7.2];
       fov = 40;
     }
+    // GU47 DIA-C1: broadcast sequences between plays. A new half-inning opens with the wide, a new at-bat (0-0 count) with
+    // the walk-up; the home run and the park intro are started where they happen. Menus, the final whistle and every
+    // interactive phase keep the game's own camera.
+    if (G.phase !== "menu" && !G.over) {
+      if (G.half !== lastCamHalf) playShot(halfInningShot());
+      else if (G.phase === "between" && lastCamPhase !== "between" && G.balls === 0 && G.strikes === 0) playShot(walkupShot());
+    }
+    lastCamHalf = G.half;
+    lastCamPhase = G.phase;
+    const gameCam = G.phase === "menu" || G.over || G.phase === "windup" || G.phase === "pitch" || G.phase === "batted" || G.phase === "pitchSelect" || G.phase === "pitchMeter";
+    const seq = director.update(performance.now() / 1000, gameCam);
+    if (seq) {
+      c.mode = "sequence";
+      eye = seq.pose.eye;
+      target = seq.pose.target;
+      fov = seq.pose.fov;
+    }
+    applyCineBars(seq?.bars ?? 0);
+    applyShotDof(seq?.dof ?? false, seq ? Math.hypot(eye[0] - target[0], eye[1] - target[1], eye[2] - target[2]) : 0);
+    // Reduced motion (PRD 6.3): entering or leaving a sequence is a cut, not an eased move.
+    const cut = reducedMotion && (seq !== null) !== lastSeqActive;
+    lastSeqActive = seq !== null;
     if (qaCam) {
       eye = qaCam.eye;
       target = qaCam.target;
       fov = qaCam.fov;
     }
-    const k = qaCam ? 1 : 1 - Math.pow(0.001, dt);
+    const k = qaCam || cut ? 1 : 1 - Math.pow(0.001, dt);
     c.eye = mix3(c.eye, eye, k);
     c.target = mix3(c.target, target, k);
     c.fov = lerp(c.fov, fov, k);
@@ -3691,6 +3777,8 @@ function boot(): void {
       lookVariant: sceneCtx.variant,
       lookTier: sceneCtx.tier,
       lookSky: sceneCtx.skyMode,
+      // DIA-C1 QA: the running broadcast sequence and how many of each played (>= 4 per QA match).
+      sequence: { active: director.active, played: { ...director.played } },
       mode: G.mode,
       phase: G.phase,
       cameraMode: G.cam.mode,
