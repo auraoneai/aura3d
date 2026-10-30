@@ -4,7 +4,7 @@ import type { AuraApp } from "@aura3d/engine";
 import direction from "../../../examples/strange-orbit-port/art/direction";
 import { LOOKS, SECTORS, lookFromSearch, sectorAt } from "../../../examples/strange-orbit-port/art/look";
 import { ORBIT_VFX_PRESETS, orbitVfxFor, registerOrbitVfx } from "../../../examples/strange-orbit-port/art/vfx";
-import { buildWorld } from "../../../examples/strange-orbit-port/world";
+import { GOUACHE_LIVERIES, buildWorld } from "../../../examples/strange-orbit-port/world";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 
 /** GU47 WP-25 (lane g15): the art direction audits clean against the authored gouache scene (E-I compliance recipe). */
@@ -45,5 +45,21 @@ describe("strange-orbit-port art direction", () => {
       expect(reduced.count).toBeLessThanOrEqual(Math.ceil(full.count / 2));
     }
     expect(orbitVfxFor("tick")).toBeNull();
+  });
+
+  it("gives the five rivals pairwise-distinct liveries away from the objective colours (SO47-M2)", () => {
+    const rgb = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+    const dist = (a: string, b: string) => Math.hypot(...rgb(a).map((v, i) => v - rgb(b)[i]!));
+    expect(GOUACHE_LIVERIES).toHaveLength(5);
+    for (let i = 0; i < 5; i++) {
+      for (let j = i + 1; j < 5; j++) expect(dist(GOUACHE_LIVERIES[i]!, GOUACHE_LIVERIES[j]!)).toBeGreaterThanOrEqual(35);
+      expect(dist(GOUACHE_LIVERIES[i]!, direction.palette.accent)).toBeGreaterThanOrEqual(35);
+      expect(dist(GOUACHE_LIVERIES[i]!, direction.palette.reservedObjective!)).toBeGreaterThanOrEqual(35);
+    }
+    const nodes = buildWorld({ vehicle: "bike", rider: 0, quality: "high" }).scene.toJSON().nodes as readonly { name?: string; materialOverrides?: readonly { rim?: unknown; clearcoat?: number }[] }[];
+    const riders = nodes.filter((n) => /^rider-\d-model$/.test(n.name ?? ""));
+    expect(riders).toHaveLength(6);
+    for (const r of riders) expect(r.materialOverrides?.[0]?.rim).toBeDefined();
+    expect(riders.find((r) => r.name === "rider-0-model")!.materialOverrides![0]!.clearcoat).toBe(0.6);
   });
 });

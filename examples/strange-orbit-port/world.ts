@@ -126,6 +126,9 @@ export const RIVAL_COLORS: readonly (readonly [string, string])[] = [
   ["#6aa8c9", "#efd7a0"], ["#d6a24b", "#4e697b"], ["#8d7bc4", "#f0dcb4"], ["#6fbf8e", "#d86a43"], ["#c96a6a", "#ead8a0"]
 ];
 
+/** GU47 SO47-M2: gouache rival liveries (cobalt, vermilion, violet, chalk, deep teal); none uses the amber/jade objective colours. */
+export const GOUACHE_LIVERIES: readonly string[] = ["#3f78c0", "#c4503c", "#8a62cc", "#e2d6bb", "#2f7464"];
+
 const IDENTITY: Mat3 = [1, 0, 0, 0, 1, 0, 0, 0, 1];
 
 interface Riderrig {
@@ -505,11 +508,19 @@ export function buildWorld(options: WorldOptions): World {
       const part = rig.parts[0]!;
       const size = vehicle === "skate" ? MESHY_SIZE.skate.target : MESHY_SIZE.bike.target;
       const wedge = vehicle === "bike" && i % 2 === 1; // rivals 1, 3, 5 ride the second Meshy bike design
-      const tint = i === 0 || wedge ? undefined : [{ color: mixHex(RIVAL_COLORS[i - 1]![0], "#ffffff", 0.55), colorMode: "multiply" as const }];
+      // GU47 SO47-M2 (gouache): five distinct rival liveries on both bike designs, a clearcoat hero, and the E-D rim
+      // term on every rider. `?look=original` keeps the 4.6.1 tints (3 tinted rivals, the wedge bikes untinted).
+      const tint = look === "gouache"
+        ? [{
+          ...(i === 0 ? { clearcoat: 0.6, clearcoatRoughness: 0.25 } : { color: mixHex(GOUACHE_LIVERIES[i - 1]!, "#ffffff", 0.3), colorMode: "multiply" as const }),
+          rim: { color: i === 0 ? "#ffe2c4" : "#c8d0ef", power: 3, intensity: i === 0 ? 0.5 : 0.35 }
+        }]
+        : i === 0 || wedge ? undefined : [{ color: mixHex(RIVAL_COLORS[i - 1]![0], "#ffffff", 0.55), colorMode: "multiply" as const }];
       builder.add(model(vehicle === "skate" ? MESHY.skateRider : wedge ? MESHY.rivalBike : MESHY.bikeRider, {
         name: part.id,
         targetMaxDimension: size,
-        castShadow: false,
+        // SO47-L1: the player casts into the raking key so its long shadow reads on the road (+1 draw per cascade).
+        castShadow: look === "gouache" && i === 0,
         receiveShadow: false,
         ...(tint ? { materialOverrides: tint } : {})
       }).runtime({ id: part.id }));
