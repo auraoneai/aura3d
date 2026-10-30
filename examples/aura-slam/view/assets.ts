@@ -24,3 +24,27 @@ export const stadiumAssets: AuraAssetMap<typeof definitions> = defineAuraAssets(
 
 /** Files a remote run must ship (`PUBLIC_ASSETS`). */
 export const STADIUM_PUBLIC_FILES = Object.values(definitions).map((a) => a.url.replace("/aura-assets/", ""));
+
+type HdriAsset = AuraAssetDefinition & { readonly type: "texture"; readonly format: "hdr"; readonly url: string };
+
+const hdri = (id: string, sizeBytes: number, sha256: string, source: string): HdriAsset =>
+  ({
+    type: "texture", format: "hdr", url: `/hdri/${id}_1k.hdr`, sizeBytes,
+    metadata: { license: "CC0-1.0", provenance: { sourcePath: `public/hdri/${id}_1k.hdr`, origin: source, sha256 } }
+  }) as unknown as HdriAsset;
+
+/**
+ * GU47 TT-E1: the six venue HDRIs from the E-A catalogue (`public/hdri/ATTRIBUTION.md`, all CC0-1.0). Only the active
+ * venue's file is fetched: the boot venue's at mount, the next one on a venue change (`app.lighting.setEnvironment`).
+ */
+const hdriDefinitions = {
+  rooftop_night: hdri("rooftop_night", 1629654, "4c8820e1517cc5fea7acaaa9b7ac1c043a4584f8b6042b6d6c72f8764abb255e", "Poly Haven rooftop_night"),
+  kloppenheim_02: hdri("kloppenheim_02", 1744238, "c122eb29c259d8c2ef0093c20130faa67ea216f5a1407c409ee4fc97cd5ba002", "Poly Haven kloppenheim_02"),
+  venice_sunset: hdri("venice_sunset", 1437625, "ada97320249204fe041054c281ead9425e54302ac1538466a71cc9c1f381c725", "Poly Haven venice_sunset"),
+  "outdoor-midday": hdri("outdoor-midday", 1173154, "206c67e3a1b992282821cf06662bdd69bbb4915c1c4444a66338a40d6a7d4e34", "Poly Haven kloppenheim_06_puresky (library outdoor-midday)"),
+  "sunset-dramatic": hdri("sunset-dramatic", 1541600, "169745b6baf57aefe59c71b2f0019857cbbc5ab9c87f70d7d5c87eaa7bc83929", "Poly Haven the_sky_is_on_fire (library sunset-dramatic)"),
+  deep_space_starfield: hdri("deep_space_starfield", 1831733, "1239cd4504c18d1b7e60921531c572430bf3493e3070caf57ae5e64062118526", "Aura3D procedural starfield (tools/asset-optimize/gen-starfield.py)")
+} as const;
+
+export type VenueHdriKey = keyof typeof hdriDefinitions;
+export const venueHdriAssets: AuraAssetMap<typeof hdriDefinitions> = defineAuraAssets(hdriDefinitions as never) as AuraAssetMap<typeof hdriDefinitions>;

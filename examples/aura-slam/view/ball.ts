@@ -62,13 +62,22 @@ export function ballWorld(ball: { x?: number; y?: number; z?: number } | undefin
   return [(b.x ?? 0) * COURT_X, Math.max(0.072, (b.z ?? 0.3) * COURT_Y), (b.y ?? 0) * COURT_Z];
 }
 
+export interface UpdateBallOptions {
+  /** Draw the cylinder ground-shadow disc (`?look=original`). GU47 TT-L2: the World Tour look grounds the ball with the key's shadow and contact shadows instead. */
+  readonly shadowDisc?: boolean;
+}
+
 /** Ball, ground shadow, retiring ball, flight trail and bounce marks; returns the ball's scene position. */
-export function updateBall(h: BallHandles, state: Readonly<MatchState>): Vec3 {
+export function updateBall(h: BallHandles, state: Readonly<MatchState>, options: UpdateBallOptions = {}): Vec3 {
   const ball = state.ball;
   const [bx, by, bz] = ballWorld(ball);
   h.ball.setPosition(bx, by, bz).setScale([1, 1, 1]).setVisible(true);
-  const shadowScale = clamp(1 - by * 0.16, 0.35, 1.05);
-  h.shadow.setPosition(bx, 0.014, bz).setScale([shadowScale, 1, shadowScale]).setVisible(true);
+  if (options.shadowDisc !== false) {
+    const shadowScale = clamp(1 - by * 0.16, 0.35, 1.05);
+    h.shadow.setPosition(bx, 0.014, bz).setScale([shadowScale, 1, shadowScale]).setVisible(true);
+  } else if (h.shadow.visible !== false) {
+    h.shadow.setScale(HIDDEN_SCALE).setVisible(false);
+  }
 
   if (state.retiringBall) {
     const rx = state.retiringBall.x * COURT_X;

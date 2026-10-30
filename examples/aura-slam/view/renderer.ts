@@ -15,6 +15,35 @@ import { createParticleUpdater } from "./particles";
 import { STATIC_RUNTIME_IDS, buildTennisScene } from "./scene";
 import { createSpectatorUpdater } from "./spectators";
 import { VENUE_PALETTES, isMoonVenue, venueKey } from "./venues";
+import { lookMode, venueLook } from "./look";
+import { applyVenueRuntime, venueRuntimePlan, type VenueRuntimeApp, type VenueRuntimePlan } from "./venueRuntime";
+
+/** Rig parts the World Tour look removes from the frame (TT-L2: contact shadows and the key's shadow replace the discs). */
+export const SHADOW_DISC_IDS = ["player-shadow", "rival-shadow"] as const;
+
+/** A handle that ignores every write: the rig keeps driving its disc, which stays hidden (rig code and parity unchanged). */
+function inertHandle(real: AuraRuntimeNodeHandle): AuraRuntimeNodeHandle {
+  const inert: Record<string, unknown> = {};
+  const self = new Proxy(inert, {
+    get(_target, prop) {
+      if (prop === "visible") return false;
+      if (prop === "id") return real.id;
+      const value = (real as unknown as Record<string | symbol, unknown>)[prop];
+      return typeof value === "function" ? () => self : value;
+    }
+  });
+  return self as unknown as AuraRuntimeNodeHandle;
+}
+
+/** Active post tier for the venue plan (volumetric fog at High+ only); "high" when the build reports none. */
+function activeTier(app: AuraApp): string {
+  try {
+    const tier = (app.diagnostics() as { post?: { tier?: string } }).post?.tier;
+    return typeof tier === "string" ? tier : "high";
+  } catch {
+    return "high";
+  }
+}
 
 /** Serve cue the HUD publishes (the renderer only needs the fault flash). */
 export interface ServeCue { visible?: boolean; kind?: string }
@@ -81,11 +110,24 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
   let lastBallWorld: Vec3 = [0, 0.8, 6.4];
   let lastPlayerPose: ReturnType<AthletePose["pose"]> | null = null;
   let frames = 0;
+  // GU47 WP-11: the World Tour look (default) or today's look (`?look=original`). The boot venue comes from `?venue=` so the
+  // authored scene already carries its HDRI, fog, key and grade (only the active HDRI is fetched).
+  const pageSearch = options.search ?? (typeof location !== "undefined" ? location.search : "");
+  const look = lookMode(pageSearch);
+  const worldTour = look === "world-tour";
+  const bootVenue = venueKey(new URLSearchParams(pageSearch).get("venue"));
+  let venuePlan: VenueRuntimePlan | null = null;
+  let venueChanges = 0;
 
   function applyVenue(venue: string): void {
     const key = venueKey(venue);
     if (currentVenueKey === key) return;
+    const first = currentVenueKey === "";
     currentVenueKey = key;
+    if (worldTour && app) {
+      venuePlan = applyVenueRuntime(app as unknown as VenueRuntimeApp, venueRuntimePlan(venueLook(key), activeTier(app)), { initial: first && key === bootVenue });
+      if (!first) venueChanges += 1;
+    }
     const pal = VENUE_PALETTES[key]!;
     h.ground!.setMaterial(material.pbr({ color: pal.ground, roughness: 0.94 }));
     h.apron!.setMaterial(material.pbr({ color: pal.apron, roughness: 0.88 }));
@@ -137,7 +179,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     async mount(target: HTMLCanvasElement): Promise<void> {
       canvas = target;
       app = createAuraApp(target, {
-        scene: buildTennisScene(rig),
+        scene: buildTennisScene(rig, { venue: bootVenue, look }),
         // C11: a governed tier ("auto") instead of the old string, which resolveMountQuality ignored; coarse-pointer devices get "medium".
         renderer: { quality: { tier: "auto" } },
         qualityRebuild: QUALITY_REBUILD,
@@ -148,7 +190,17 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       });
       await app.ready();
       const req = (id: string): AuraRuntimeNodeHandle => (options.wrapHandle ? options.wrapHandle(id, app!.nodes.require(id)) : app!.nodes.require(id));
-      const resolver = options.wrapHandle ? ({ nodes: { require: req } } as unknown as AuraApp) : app;
+      // TT-L2: in the World Tour look the athletes' cylinder shadow discs leave the frame (hidden once; the rig writes to an inert
+      // handle), so the PCSS key shadow and the contact-shadow pass ground the athletes instead.
+      const rigReq = worldTour
+        ? (id: string): AuraRuntimeNodeHandle => {
+            const handle = req(id);
+            if (!(SHADOW_DISC_IDS as readonly string[]).includes(id)) return handle;
+            handle.setScale(HIDDEN_SCALE).setVisible(false);
+            return inertHandle(handle);
+          }
+        : req;
+      const resolver = options.wrapHandle || worldTour ? ({ nodes: { require: rigReq } } as unknown as AuraApp) : app;
       rigs = { player: rig.resolve(resolver, "player"), rival: rig.resolve(resolver, "rival") };
       ball = resolveBallHandles(req);
       h.ground = req("stadium-outer-ground");
@@ -166,7 +218,9 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       spectators = req("spectators");
       particles = req("hit-particles");
       particles.setVisible(false);
-      h.backdrop = req("stadium-backdrop");
+      // TT-E1: the backdrop wall exists in `?look=original` only (the venue HDRI shows there in the World Tour look).
+      const backdrop = worldTour ? undefined : req("stadium-backdrop");
+      if (backdrop) h.backdrop = backdrop;
       h.bleachers = req(STATIC_RUNTIME_IDS.bleachers);
       h.sponsorTrim = req(STATIC_RUNTIME_IDS.sponsorTrim);
       h.grandstand = req("stadium-grandstand-rear");
@@ -178,6 +232,8 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
         ...(options.search !== undefined ? { search: options.search } : {})
       });
       ready = true;
+      // GU47: the boot venue's light visibility, grade and output apply before the first presented frame.
+      if (worldTour) applyVenue(bootVenue);
       // Hand layout back to the stylesheet (the mount froze the CSS size in px) and track the CSS box from now on.
       if (target.style) { target.style.width = ""; target.style.height = ""; }
       syncBacking();
@@ -204,7 +260,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       const isMoon = isMoonVenue(venue);
       applyVenue(venue);
 
-      lastBallWorld = updateBall(ball, state);
+      lastBallWorld = updateBall(ball, state, { shadowDisc: !worldTour });
       const [bx, by, bz] = lastBallWorld;
       const b = state.ball;
 
@@ -301,6 +357,18 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
         viewport: { width: viewportWidth, height: viewportHeight, bottom: 0, pixelRatio },
         audience: { visible: spectators ? spectators.visible !== false : audienceVisible, count: SPECTATOR_COUNT },
         environment: { venue: currentVenueKey || "hard", background: VENUE_PALETTES[currentVenueKey || "hard"]?.background ?? null },
+        look: {
+          mode: look,
+          bootVenue,
+          venueChanges,
+          hdri: venuePlan?.environment.hdri ?? null,
+          preset: venuePlan?.output.preset ?? null,
+          toneMapping: venuePlan?.output.toneMapping ?? null,
+          exposure: venuePlan?.output.exposure ?? null,
+          fog: venuePlan?.fog ?? null,
+          volumetricFog: venuePlan?.volumetricFog ?? false,
+          floodlights: venuePlan ? venuePlan.floods.filter((f) => f.visible).length : 0
+        },
         particles: { drawn: particlesDrawn },
         umpire: { visible: true },
         netPostLights: { active: lastFaultActive },

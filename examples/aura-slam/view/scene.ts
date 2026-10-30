@@ -1,15 +1,26 @@
-import { game, material, model, primitives, scene, type AuraApp, type AuraRuntimeNodeHandle } from "@aura3d/engine";
-import { stadiumAssets as assets } from "./assets";
+import { effects, environments, game, material, model, primitives, scene, type AuraApp, type AuraRuntimeNodeHandle } from "@aura3d/engine";
+import { stadiumAssets as assets, venueHdriAssets } from "./assets";
 import { buildBallNodes } from "./ball";
 import { BASELINE_Z, DOUBLES_X, HIDDEN_SCALE, NET_POST_H, NET_POST_X, SERVICE_Z, SINGLES_X } from "./constants";
 import { cameraNode } from "./camera";
-import { postEffects, sceneLights } from "./lighting";
+import { originalPostEffects, originalSceneLights, postEffects, sceneLights } from "./lighting";
+import { venueLook } from "./look";
 import { createStaticBoxes } from "./statics";
 import type { Vec3 } from "../contract/units";
 import type { AthleteRigPort } from "./rigPort";
 import { buildParticleNodes } from "./particles";
 import { buildBleacherNodes, buildSpectatorNodes } from "./spectators";
-import { VENUE_PALETTES } from "./venues";
+import { VENUE_PALETTES, venueKey } from "./venues";
+
+export interface TennisSceneOptions {
+  /** Boot venue: the authored environment, fog, key and grade are this venue's, so the first frame needs no swap. */
+  readonly venue?: string | null;
+  /** `"original"` (`?look=original`) keeps the 4.6.1 four-light rig, flat backdrop and post stack. */
+  readonly look?: "world-tour" | "original";
+}
+
+/** GU47 TT-E1: the venue environment node (its HDRI is swapped at runtime with `app.lighting.setEnvironment`). */
+export const VENUE_ENVIRONMENT_NAME = "venue-hdri";
 
 /** Every node name the renderer resolves at runtime; kept in one place so the scene and the renderer cannot drift. */
 export const SCENE_NODE_IDS = [
@@ -23,16 +34,35 @@ export const STATIC_RUNTIME_IDS = { bleachers: "stadium-bleachers", sponsorTrim:
 export const GRANDSTAND_LENGTH = 24;
 export const FLOODLIGHT_MAST_H = 9;
 
-export function buildTennisScene(rig: AthleteRigPort): ReturnType<typeof scene> {
+export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOptions = {}): ReturnType<typeof scene> {
+  const original = options.look === "original";
+  const boot = venueKey(options.venue);
+  const look = venueLook(boot);
   const lineMat = material.pbr({ color: "#f5f4e6", roughness: 0.58 });
   const netPostMat = material.pbr({ color: "#1d322c", metalness: 0.42, roughness: 0.48 });
   // C9: the net mesh is see-through (blended, no depth write, no shadow) so it no longer reads as a black slab; the tape stays opaque.
   const netMeshMat = material.pbr({ color: "#1c2a26", roughness: 0.88, opacity: 0.42, alphaMode: "blend", depthWrite: false, doubleSided: true });
   const netTapeMat = material.pbr({ color: "#faf8ee", roughness: 0.46 });
 
-  const s = scene().background(VENUE_PALETTES.hard.background).camera(cameraNode());
-  for (const light of sceneLights()) s.add(light);
-  for (const effect of postEffects()) s.add(effect);
+  const s = scene().background(VENUE_PALETTES[original ? "hard" : boot]!.background).camera(cameraNode());
+  if (original) {
+    for (const light of originalSceneLights()) s.add(light);
+    for (const effect of originalPostEffects()) s.add(effect);
+  } else {
+    // TT-L1 / TT-L2 / TT-P1: one shadowed key + four floodlights (night court), the venue's grade, SMAA and contact shadows.
+    for (const light of sceneLights(boot)) s.add(light);
+    for (const effect of postEffects(boot)) s.add(effect);
+    // TT-E1: the venue HDRI lights the court (fill) and shows where the sky does; it replaces the flat backdrop wall.
+    s.add(environments.hdri({
+      name: VENUE_ENVIRONMENT_NAME,
+      texture: venueHdriAssets[look.hdri],
+      intensity: look.environmentIntensity,
+      rotation: (look.environmentRotationDeg * Math.PI) / 180,
+      background: look.background === "hdri"
+    }));
+    // TT-E2: the venue's air (none on the Moon); changed at runtime with app.atmosphere.setFog.
+    if (look.fog) s.add(effects.fog({ color: look.fog.color, density: look.fog.density }));
+  }
 
   // Outer stadium ground, apron, doubles court, and singles inner court
   s
@@ -237,13 +267,16 @@ export function buildTennisScene(rig: AthleteRigPort): ReturnType<typeof scene> 
   ]);
 
   // C7: an unlit backdrop wall at the far edge of the outer ground carries the venue `background` colour (the clear colour is fixed
-  // at compile time). It only shows on tall canvases, where the aspect-aware FOV sees past the ground.
-  s.add(
-    primitives
-      .box({ castShadow: false, name: "stadium-backdrop", size: [140, 60, 0.5], material: material.pbr({ color: VENUE_PALETTES.hard.background, roughness: 1, unlit: true }) })
-      .position(0, 10, -29.5)
-      .runtime(game.runtimeNode("stadium-backdrop"))
-  );
+  // at compile time). It only shows on tall canvases, where the aspect-aware FOV sees past the ground. GU47 TT-E1: the World
+  // Tour look shows the venue HDRI there instead, so the wall is kept for `?look=original` only.
+  if (original) {
+    s.add(
+      primitives
+        .box({ castShadow: false, name: "stadium-backdrop", size: [140, 60, 0.5], material: material.pbr({ color: VENUE_PALETTES.hard.background, roughness: 1, unlit: true }) })
+        .position(0, 10, -29.5)
+        .runtime(game.runtimeNode("stadium-backdrop"))
+    );
+  }
 
   s.addMany(buildBleacherNodes(statics));
   s.addMany(statics.build("static", STATIC_RUNTIME_IDS));

@@ -9,6 +9,11 @@
  */
 import type { AuraColor, AuraHdriId, AuraPostPresetId, AuraVec3 } from "@aura3d/engine";
 import { VENUES, type VenueId } from "../contract/venues";
+import type { VenueHdriKey } from "./assets";
+
+/** The six venue HDRIs are E-A catalogue ids (compile-time check). */
+type CatalogueHdri<K extends AuraHdriId> = K;
+export type VenueHdri = CatalogueHdri<VenueHdriKey>;
 
 export interface VenueSun {
   readonly elevationDeg: number;
@@ -35,7 +40,7 @@ export interface VenueFloodlight {
 
 export interface VenueFog {
   readonly color: AuraColor;
-  /** Exponential density (per metre). The broadcast camera sits about 45 m from the court centre. */
+  /** exp2 density (per metre; a bare density fog compiles to exp2). The broadcast camera sits about 45 m from the court centre. */
   readonly density: number;
   /** Volumetric fog stage at High and above only (TT-E2: desert). */
   readonly volumetricAtHigh: boolean;
@@ -54,6 +59,7 @@ export interface VenueGrade {
   /** -1 (green) .. 1 (magenta). */
   readonly tint: number;
   readonly bloom: { readonly intensity: number; readonly threshold: number };
+  readonly vignette: number;
   /** TT-P3: an authored .cube per venue (`null` until the LUT asset exists; contrast/saturation carry the grade until then). */
   readonly lut: string | null;
 }
@@ -76,14 +82,22 @@ export interface VenueLook {
   readonly id: VenueId;
   readonly city: string;
   readonly timeOfDay: string;
-  readonly hdri: AuraHdriId;
+  readonly hdri: VenueHdri;
   /** The size the row asks for; 2k copies are an E-A handoff (only 1k ships today, `public/hdri/<id>_1k.hdr`). */
   readonly hdriSize: "1k" | "2k";
   readonly environmentIntensity: number;
   readonly environmentRotationDeg: number;
   /** Background where the sky shows: the HDRI itself, or a solid colour. */
   readonly background: "hdri" | AuraColor;
+  /** The sun; `null` on the night court. */
   readonly sun: VenueSun | null;
+  /**
+   * Night court only: the shadowed directional key standing in for the floodlight bank. The engine selects shadowed spots
+   * (E-B multi-caster), but the default forward path renders sun cascades only (`Prd02ShadowBridge` `localLights: []`), so
+   * hiding the directional at night would leave the athletes without a cast shadow. Swap point (one line each): set
+   * `shadow: true` on the two far FLOODLIGHTS rows and `nightKey: null` once local tiles render (E-B handoff).
+   */
+  readonly nightKey?: VenueSun | null;
   readonly floodlights: readonly VenueFloodlight[];
   readonly fog: VenueFog | null;
   readonly grade: VenueGrade;
@@ -96,23 +110,30 @@ export interface VenueLook {
 
 const particle = (id: VenueId): AuraColor => VENUES.find((v) => v.id === id)?.particleColor ?? "#ffffff";
 
-/** Hard court: four corner masts, the two far ones shadowed so the athletes' shadows fall toward the broadcast camera. */
+/**
+ * Hard court: four corner masts aimed at the court quadrants so the court lights evenly (TT-L1: no centre hotspot). TT-L1
+ * asks for the two far ones shadowed; until the forward path renders local shadow tiles they stay unshadowed and the night
+ * key below casts (see `VenueLook.nightKey`).
+ */
 const FLOOD_COLOR = "#e6eeff";
-const FLOODLIGHTS: readonly VenueFloodlight[] = [
-  { name: "flood-far-left", position: [-12.5, 15, -14.5], target: [-3.2, 0, -4.5], color: FLOOD_COLOR, intensity: 260, angle: 0.62, penumbra: 0.55, distance: 52, shadow: true },
-  { name: "flood-far-right", position: [12.5, 15, -14.5], target: [3.2, 0, -4.5], color: FLOOD_COLOR, intensity: 260, angle: 0.62, penumbra: 0.55, distance: 52, shadow: true },
+export const FLOODLIGHTS: readonly VenueFloodlight[] = [
+  { name: "flood-far-left", position: [-12.5, 15, -14.5], target: [-3.2, 0, -4.5], color: FLOOD_COLOR, intensity: 260, angle: 0.62, penumbra: 0.55, distance: 52, shadow: false },
+  { name: "flood-far-right", position: [12.5, 15, -14.5], target: [3.2, 0, -4.5], color: FLOOD_COLOR, intensity: 260, angle: 0.62, penumbra: 0.55, distance: 52, shadow: false },
   { name: "flood-near-left", position: [-12.5, 15, 14.5], target: [-3.2, 0, 4.5], color: FLOOD_COLOR, intensity: 230, angle: 0.62, penumbra: 0.55, distance: 52, shadow: false },
   { name: "flood-near-right", position: [12.5, 15, 14.5], target: [3.2, 0, 4.5], color: FLOOD_COLOR, intensity: 230, angle: 0.62, penumbra: 0.55, distance: 52, shadow: false }
 ];
+
+/** The night court's shadowed key: the far floodlight bank, high and cold, casting short shadows toward the camera. */
+const NIGHT_KEY: VenueSun = { elevationDeg: 58, azimuthDeg: 180, color: FLOOD_COLOR, intensity: 1.2, lightSize: 1.4, colorTemperatureK: 6500 };
 
 export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
   hard: {
     id: "hard", city: "New York", timeOfDay: "floodlit night (21:30), cold-white floods on navy acrylic",
     hdri: "rooftop_night", hdriSize: "1k", environmentIntensity: 0.35, environmentRotationDeg: 0, background: "hdri",
-    sun: null,
+    sun: null, nightKey: NIGHT_KEY,
     floodlights: FLOODLIGHTS,
-    fog: { color: "#0b1426", density: 0.006, volumetricAtHigh: false, lightCones: 4 },
-    grade: { preset: "arena-fight", exposure: 1, contrast: 1.12, saturation: 1.04, temperature: -0.18, tint: 0, bloom: { intensity: 0.22, threshold: 0.92 }, lut: null },
+    fog: { color: "#0b1426", density: 0.008, volumetricAtHigh: false, lightCones: 4 },
+    grade: { preset: "arena-fight", exposure: 1, contrast: 1.12, saturation: 1.04, temperature: -0.18, tint: 0, bloom: { intensity: 0.22, threshold: 0.92 }, vignette: 0.24, lut: null },
     signature: { burst: "hard-skid", burstColor: particle("hard"), markColor: "#c9d6e3", markOpacity: 0.42, markLifetime: 9 },
     crowd: true, wind: 0
   },
@@ -121,8 +142,8 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
     hdri: "kloppenheim_02", hdriSize: "1k", environmentIntensity: 0.9, environmentRotationDeg: 0, background: "hdri",
     sun: { elevationDeg: 40, azimuthDeg: 120, color: "#fff1dc", intensity: 2.6, lightSize: 0.9, colorTemperatureK: 5600 },
     floodlights: [],
-    fog: { color: "#cfdbe6", density: 0.0035, volumetricAtHigh: false, lightCones: 0 },
-    grade: { preset: "daylight-outdoor", exposure: 1, contrast: 1.06, saturation: 1.06, temperature: 0.04, tint: -0.02, bloom: { intensity: 0.12, threshold: 0.95 }, lut: null },
+    fog: { color: "#cfdbe6", density: 0.005, volumetricAtHigh: false, lightCones: 0 },
+    grade: { preset: "daylight-outdoor", exposure: 1, contrast: 1.06, saturation: 1.06, temperature: 0.04, tint: -0.02, bloom: { intensity: 0.12, threshold: 0.95 }, vignette: 0.14, lut: null },
     signature: { burst: "grass-flick", burstColor: particle("grass"), markColor: "#cfe0b4", markOpacity: 0.32, markLifetime: 12 },
     crowd: true, wind: 0.35
   },
@@ -131,8 +152,8 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
     hdri: "venice_sunset", hdriSize: "1k", environmentIntensity: 0.8, environmentRotationDeg: 0, background: "hdri",
     sun: { elevationDeg: 18, azimuthDeg: 250, color: "#ffc27a", intensity: 3.1, lightSize: 0.6, colorTemperatureK: 3400 },
     floodlights: [],
-    fog: { color: "#e3a46a", density: 0.006, volumetricAtHigh: false, lightCones: 0 },
-    grade: { preset: "cinematic-film", exposure: 1, contrast: 1.1, saturation: 1.12, temperature: 0.16, tint: 0.02, bloom: { intensity: 0.16, threshold: 0.9 }, lut: null },
+    fog: { color: "#e3a46a", density: 0.008, volumetricAtHigh: false, lightCones: 0 },
+    grade: { preset: "cinematic-film", exposure: 1, contrast: 1.1, saturation: 1.12, temperature: 0.16, tint: 0.02, bloom: { intensity: 0.16, threshold: 0.9 }, vignette: 0.26, lut: null },
     signature: { burst: "clay-puff", burstColor: particle("clay"), markColor: "#8e3e1f", markOpacity: 0.55, markLifetime: 900 },
     crowd: true, wind: 0.2
   },
@@ -142,7 +163,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
     sun: { elevationDeg: 72, azimuthDeg: 10, color: "#fffaf0", intensity: 4, lightSize: 0.4, colorTemperatureK: 6200 },
     floodlights: [],
     fog: { color: "#e8d2b0", density: 0.016, volumetricAtHigh: true, lightCones: 0 },
-    grade: { preset: "daylight-outdoor", exposure: 1.3, contrast: 1.04, saturation: 0.94, temperature: 0.08, tint: 0, bloom: { intensity: 0.18, threshold: 0.88 }, lut: null },
+    grade: { preset: "daylight-outdoor", exposure: 1.3, contrast: 1.04, saturation: 0.94, temperature: 0.08, tint: 0, bloom: { intensity: 0.18, threshold: 0.88 }, vignette: 0.12, lut: null },
     signature: { burst: "hard-skid", burstColor: particle("desert"), markColor: "#d7c19c", markOpacity: 0.4, markLifetime: 9 },
     crowd: true, wind: 0.5
   },
@@ -151,8 +172,8 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
     hdri: "sunset-dramatic", hdriSize: "2k", environmentIntensity: 0.85, environmentRotationDeg: 0, background: "hdri",
     sun: { elevationDeg: 8, azimuthDeg: 290, color: "#ff8f72", intensity: 2.4, lightSize: 0.8, colorTemperatureK: 2600 },
     floodlights: [],
-    fog: { color: "#e09a86", density: 0.008, volumetricAtHigh: false, lightCones: 0 },
-    grade: { preset: "cinematic-film", exposure: 1, contrast: 1.08, saturation: 1.16, temperature: 0.1, tint: 0.12, bloom: { intensity: 0.2, threshold: 0.86 }, lut: null },
+    fog: { color: "#e09a86", density: 0.01, volumetricAtHigh: false, lightCones: 0 },
+    grade: { preset: "cinematic-film", exposure: 1, contrast: 1.08, saturation: 1.16, temperature: 0.1, tint: 0.12, bloom: { intensity: 0.2, threshold: 0.86 }, vignette: 0.28, lut: null },
     signature: { burst: "hard-skid", burstColor: particle("beach"), markColor: "#b9e3df", markOpacity: 0.38, markLifetime: 9 },
     crowd: true, wind: 0.6
   },
@@ -162,7 +183,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
     sun: { elevationDeg: 25, azimuthDeg: 60, color: "#ffffff", intensity: 4.4, lightSize: 0.05, colorTemperatureK: 5800 },
     floodlights: [],
     fog: null,
-    grade: { preset: "space", exposure: 1, contrast: 1.16, saturation: 0.86, temperature: -0.04, tint: 0, bloom: { intensity: 0.1, threshold: 0.95 }, lut: null },
+    grade: { preset: "space", exposure: 1, contrast: 1.16, saturation: 0.86, temperature: -0.04, tint: 0, bloom: { intensity: 0.1, threshold: 0.95 }, vignette: 0.2, lut: null },
     signature: { burst: "regolith-drift", burstColor: particle("moon"), markColor: "#6f747a", markOpacity: 0.5, markLifetime: 30 },
     crowd: false, wind: 0
   }

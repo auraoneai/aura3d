@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { stadiumAssets } from "../../../examples/aura-slam/view/assets";
 import { buildTennisScene, SCENE_NODE_IDS } from "../../../examples/aura-slam/view/scene";
 import { createPoseRig } from "../../../examples/aura-slam/view/poseRig";
-import { QUALITY_REBUILD, postEffects, sceneLights } from "../../../examples/aura-slam/view/lighting";
+import { QUALITY_REBUILD, originalPostEffects, originalSceneLights, postEffects, sceneLights } from "../../../examples/aura-slam/view/lighting";
 import { MARK_COUNT, TRAIL_COUNT } from "../../../examples/aura-slam/view/constants";
 
 type Doc = { nodes?: Array<{ name?: string; id?: string; kind?: string; children?: unknown[] }>; camera?: { fov?: number; position?: number[]; target?: number[] }; background?: unknown };
@@ -50,10 +50,16 @@ describe("aura-slam view: scene composition", () => {
     expect(new Set(all).size).toBe(all.length);
   });
 
-  it("keeps the four-light rig, three post effects and the live quality flags", () => {
-    expect(sceneLights()).toHaveLength(4);
-    expect(postEffects()).toHaveLength(3);
+  it("?look=original keeps the four-light rig and three post effects; the live quality flags are unchanged", () => {
+    expect(originalSceneLights()).toHaveLength(4);
+    expect(originalPostEffects()).toHaveLength(3);
     expect(QUALITY_REBUILD.flags).toEqual(["game"]);
+  });
+
+  it("GU47 TT-L1: the World Tour rig has no ambient, hemisphere or point light (one key + four floodlights)", () => {
+    const kinds = sceneLights().map((l) => (l.toJSON() as { light?: string }).light);
+    expect(kinds).toEqual(["directional", "spot", "spot", "spot", "spot"]);
+    expect(postEffects().length).toBeGreaterThanOrEqual(3);
   });
 });
 
