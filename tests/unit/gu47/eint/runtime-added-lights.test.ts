@@ -41,7 +41,7 @@ describe("GU47 eint EB-4: runtime-added light nodes", () => {
 
   it("a point light added at runtime joins the frame's light list, bound to its node, and leaves with its subtree", () => {
     const { compiled, ctx } = compiledWith(PHYSICAL, [mountLight]);
-    compiled.addSubtree(node(lights.point({ name: "torch", position: [1, 2, 3], intensity: 4, castShadow: true }).runtime({ id: "torch" })));
+    compiled.addSubtree(node(lights.point({ name: "torch", position: [1, 2, 3], intensity: 4, shadow: true }).runtime({ id: "torch" })));
     expect(ctx.collectedLights).toHaveLength(2);
     expect(ctx.collectedLights[0]).toBe(mountLight);
     const torch = ctx.collectedLights[1]!;
