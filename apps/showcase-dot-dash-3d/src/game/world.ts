@@ -4,7 +4,7 @@
 
 import {
   game, lights, effects, scene, camera, instances, environments, defineAuraAssets,
-  primitives, material, type AuraApp
+  primitives, material, text3D, type AuraApp
 } from "@aura3d/engine";
 import { idx, type ParsedMaze } from "./grid.js";
 import type { MazeId } from "./mazes.js";
@@ -309,6 +309,25 @@ export function buildScene(): unknown {
     primitives.cylinder({ name: "school-beam", size: [0.35, 3.2, 0.35], material: material.pbr({ color: "#ffb23e", emissive: "#ffb23e", emissiveIntensity: 0.65, roughness: 0.4, opacity: 0.45, practical: true }) })
       .position(0, -999, 0)
       .runtime(game.runtimeNode("school-beam"))
+  ]);
+
+  // DD47-W1 silkscreen and mounting holes (+3 draws): two SDF labels laid flat on the mask in the board's silk ink and
+  // four gold plated mounting rings in one instanced draw, inside the board margin clear of the maze and the kit.
+  const silk = material.pbr({ color: look.silk, roughness: 0.7, metalness: 0 });
+  const holes = BENCH.board.size[0] / 2 - 1, holesZ = BENCH.board.size[2] / 2 - 1;
+  s.addMany([
+    text3D("GLINT COURIER  REV 4.7", { name: "silk title", size: 0.42, depth: 0.004, letterSpacing: 0.08, backend: "sdf", material: silk })
+      .position(-4.6, 0.004, 11.7).rotate(-Math.PI / 2, 0, 0),
+    text3D("U1  J2  C14  R7", { name: "silk refs", size: 0.3, depth: 0.004, letterSpacing: 0.1, backend: "sdf", material: silk })
+      .position(-15.4, 0.004, -11.6).rotate(-Math.PI / 2, 0, 0),
+    instances.torus({
+      name: "mounting holes", size: [1, 1, 1],
+      material: material.pbr({ color: "#d9b25a", roughness: 0.28, metalness: 1 }),
+      transforms: [[-holes, -holesZ], [holes, -holesZ], [-holes, holesZ], [holes, holesZ]].map(([x, z]) => ({
+        position: [x!, 0.01, z!] as [number, number, number], rotation: [Math.PI / 2, 0, 0] as [number, number, number], scale: [0.5, 0.5, 0.5] as [number, number, number]
+      })),
+      castShadow: false
+    })
   ]);
   return s.toJSON();
 }
