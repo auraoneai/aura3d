@@ -41,14 +41,14 @@ Status: `done`, `partial`, `declined (reason)`, `already applied (lane, commit)`
 | EF-3 | E-F -> E-I | `tools/real-gpu/scenarios.json` | already applied (E-I, afa026d35) | | |
 | EF-6 | E-F -> unowned | `tools/vfx-atlas-bake/bake.mjs` re-bake | pending | | |
 | EF-7 | E-F -> unowned | `rendering/src/vfx/VfxAtlas.ts:sequence` twin rects | pending | | |
-| EG-1 | E-G -> integration | `createAuraApp.ts` `setWorldBuilderFlags` | pending | | |
+| EG-1 | E-G -> integration | `createAuraApp.ts` `setWorldBuilderFlags` | done | d93c2fc61 | installed next to `setQrAnimationFlags(qrFlags)`; builders after the app see its flags; apps without declared flags resolve the same defaults. `tests/unit/gu47/eint/world-builder-flags-app.test.ts` |
 | EH-1 | E-H -> E-G | `public/index.ts` crowd kit, GLB cache, animation types | done | 166d4ee7a | |
 | EH-2 | E-H -> integration | `publishedUnion.ts:9` `AuraPlayLayerOptions`, `AuraActorPoseApi` | done | 166d4ee7a | |
-| EH-3 | E-H -> E-G | `nodes/instances.ts:59-62` doc note (skinned crowds) | pending | | |
-| EH-4 | E-H -> integration | `compiler/renderInput.ts` skinned-fallback warning text | pending | | |
-| EH-5 | E-H -> integration | `actor/ModelTextureShare.ts:modelTextureShareKey` by value | pending | | |
-| EH-6 | E-H -> integration | `ProductionGLTFRenderPipeline.ts` / `GLTFAssetParseCache.ts` decoder reuse | pending | | |
-| EH-7 | E-H -> integration | `createAuraApp.ts` clear the GLB cache on dispose | pending | | |
+| EH-3 | E-H -> E-G | `nodes/instances.ts:59-62` doc note (skinned crowds) | done | e299307af | on the `instances.model` doc comment (now ~line 213) |
+| EH-4 | E-H -> integration | `compiler/renderInput.ts` skinned-fallback warning text | done | b2e39396c | `SKINNED_CROWD_HINT` appended in the engine's `onWarning` (rendering's `warnOnInstancingFallback` untouched); `instances-model-mount-p2.test.ts` asserts it |
+| EH-5 | E-H -> integration | `actor/ModelTextureShare.ts:modelTextureShareKey` by value | done | 0eb9c84c3 | `decoders` / `compressedTextureCapabilities` via `GlbResourceCache.valueToken` (now exported); the old identity assertion in `model-texture-share.test.ts` flipped on purpose |
+| EH-6 | E-H -> integration | `ProductionGLTFRenderPipeline.ts` / `GLTFAssetParseCache.ts` decoder reuse | done | b8141fe49 | `sharedGLTFDecoderRegistry` per (basePath, workerCount, maxTextureSize, capabilities); failed `require()` drops it (retry semantics kept). `GLTFAssetParseCache.ts` unchanged (its identity key now matches); optional `acquireParsedGLTFAsset` export not added. `tests/unit/gu47/eint/gltf-decoder-registry-reuse.test.ts` |
+| EH-7 | E-H -> integration | `createAuraApp.ts` clear the GLB cache on dispose | declined (optional; would defeat the cache) | | The cache is process-wide: games that dispose and recreate the app (restart / level change) and pages with two apps would lose it; `clearGlbResourceCache()` is exported from the root for an SPA leaving the game route. |
 | EI-1 | E-I -> E-C/integration | `cli-help.ts:60-61` certify categories | done | 3cf747a0b | both `certify-game-geometry` lines list `racing\|platformer\|sports\|fighting\|arena\|puzzle` (= `CERTIFY_CATEGORIES`) |
 | EI-2 | E-I -> integration | `tools/real-gpu/capture.mjs` `evaluate` step | done | 15ebf8bab | step `{ evaluate }` runs after the step's shot; `report.json` games gain `evaluations: [{ expression, shot?, value \| error }]`; logic in `tools/real-gpu/evaluate-step.mjs` (unit-testable without the browser launch); README notes the key. Owner-run tool, not executed. `tests/unit/gu47/eint/real-gpu-evaluate-step.test.ts` |
 | EE-H0 | E-E -> E-C (blocking G16/G20/G24) | `agent-api/postBridge.ts:POST_EFFECT_FIELDS.outline` | done | c7d8b7a2b | admits `"targets"`; a scene authoring `outline({ targets })` no longer throws `POST_FIELD_UNSUPPORTED` on the strict v2 chain |
