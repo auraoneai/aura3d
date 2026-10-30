@@ -19,6 +19,7 @@ import {
   PRACTICALS, focusDistance, type BoardLookRow
 } from "./look.js";
 import { TraceField } from "./traces.js";
+import { dustMotesOptions } from "./vfx.js";
 import {
   CLEAR_LAMP_DIM, cinematicsAllowed, clearOrbitShot, introShots, stepCourierPose, waveLevel, WAVE_SECONDS,
   type CourierPose, type ShotPlan
@@ -228,6 +229,11 @@ export function buildScene(): unknown {
     // DD47-L2 moving practicals: the courier's cyan point and four pooled event points (parked dark until used).
     .add(lights.point({ name: "courier light", position: [wx(st.maze.spawn.x), PRACTICALS.courier.height, wz(st.maze.spawn.y)], color: PRACTICALS.courier.color, intensity: PRACTICALS.courier.intensity, distance: PRACTICALS.courier.distance, decay: PRACTICALS.courier.decay, shadow: false }).runtime(game.runtimeNode("courier-light")))
     .camera(camera.perspective({ position: CAMERA_RIG.position, target: CAMERA_RIG.target, fov: CAMERA_RIG.fov }));
+  // DD47-V2: dust motes drifting in the lamp cone (60, 30 on reduced motion; additive dust-mote sprite)
+  // GU47(E-F): effects.particles intersects AuraEffectNode (speed: number), which rejects the emitter's range fields;
+  // the cast passes the documented AuraParticleEmitterOptions through unchanged.
+  type ParticleOptions = Parameters<typeof effects.particles>[0];
+  s.add(effects.particles(dustMotesOptions({ reducedMotion: calmMotion }) as unknown as ParticleOptions).runtime(game.runtimeNode("lamp-motes")));
   for (let i = 0; i < PRACTICALS.pooled; i++) {
     s.add(lights.point({ name: `event light ${i}`, position: [0, -40, 0], color: PRACTICALS.surge.color, intensity: 0, distance: PRACTICALS.surge.distance, decay: PRACTICALS.surge.decay, shadow: false }).runtime(game.runtimeNode(`event-light-${i}`)));
   }
