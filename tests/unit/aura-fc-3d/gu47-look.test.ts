@@ -204,3 +204,17 @@ describe("aura-fc-3d GU47 aurora ribbons (FC47-V2)", () => {
     expect(rm.shimmer).toBeCloseTo(full.shimmer * 0.3, 6);
   });
 });
+
+describe("aura-fc-3d GU47 rim (FC47-L3)", () => {
+  it("night venues carry a cool unshadowed look rim opposite the camera", () => {
+    for (const v of ["munich", "kyoto", "favela", "glacier"] as const) {
+      const rim = VENUE_LOOKS[v].rim!;
+      expect(rim.intensity).toBeGreaterThan(0);
+      expect(rim.azimuthDeg).toBeGreaterThanOrEqual(150);
+      expect(rim.azimuthDeg).toBeLessThanOrEqual(210);
+    }
+    const rimNode = sceneNodes("munich").find((n) => n.name === "look rim light") as (Node & { shadow?: unknown }) | undefined;
+    expect(rimNode).toBeDefined();
+    expect(rimNode!.shadow ?? false).toBeFalsy();
+  });
+});
