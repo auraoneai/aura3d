@@ -221,13 +221,23 @@ export function parseFloorParam(search: string | URLSearchParams): { readonly sl
   return slot === 6 ? { slot, mode: "killhouse", floorIdx: 0 } : { slot, mode: "descent", floorIdx: slot };
 }
 
-/** Grid cells that carry a ceiling fixture (the work-light rule the scene has always used: every ninth open cell). */
+/** BZ-07: the F6 ceiling hatch over the Warden arena, inclusive grid cells (3x3 cells, 9 m square). */
+export const BZ_HATCH_CELLS = { min: [10, 8] as const, max: [12, 10] as const } as const;
+/** FloorDef id of the floor with the hatch (floor 6, the silo). */
+export const BZ_HATCH_FLOOR_ID = 5;
+/** True when grid cell (x, z) of `def` lies under the open hatch (no ceiling, so no ceiling fixture). */
+export function underHatch(def: FloorDef, x: number, z: number): boolean {
+  const { min, max } = BZ_HATCH_CELLS;
+  return def.id === BZ_HATCH_FLOOR_ID && x >= min[0] && x <= max[0] && z >= min[1] && z <= max[1];
+}
+
+/** Grid cells that carry a ceiling fixture (the work-light rule the scene has always used: every ninth open cell; none under the F6 hatch). */
 export function fixtureCells(def: FloorDef): readonly (readonly [number, number])[] {
   const out: (readonly [number, number])[] = [];
   def.rows.forEach((r, z) => {
     for (let x = 0; x < r.length; x++) {
       const ch = r[x]!;
-      if (ch !== "#" && ch !== "%" && ch !== " " && ch !== "P" && (x * 7 + z * 13) % 9 === 0) out.push([x, z] as const);
+      if (ch !== "#" && ch !== "%" && ch !== " " && ch !== "P" && (x * 7 + z * 13) % 9 === 0 && !underHatch(def, x, z)) out.push([x, z] as const);
     }
   });
   return out;

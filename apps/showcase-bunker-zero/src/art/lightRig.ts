@@ -16,7 +16,7 @@
 import type { AuraNodeBuilder, AuraSceneNode, lights as LightBuilders } from "@aura3d/engine";
 import { CELL } from "../maps";
 import {
-  BZ_FIXTURE_LIGHTS, BZ_PLAYER_LIGHT, cellWorld, fixtureCells, floorDefOfSlot, lookOfSlot, wallHeightOfSlot,
+  BZ_FIXTURE_LIGHTS, BZ_HATCH_CELLS, BZ_PLAYER_LIGHT, cellWorld, fixtureCells, floorDefOfSlot, lookOfSlot, wallHeightOfSlot,
   type BunkerLookRow, type BunkerSpotRow
 } from "./look";
 
@@ -31,7 +31,7 @@ export const FIXTURE_POOL_SIZE = Math.max(...Object.values(BZ_FIXTURE_LIGHTS));
 export const fixtureLightId = (i: number): string => `bz-fixture-light-${i}`;
 
 /** F6 set piece (BZ-07): the hatch over the Warden arena and the moon key through it (the strongest directional). */
-export const BZ_HATCH = { cells: { min: [10, 8] as const, max: [12, 10] as const } } as const;
+export const BZ_HATCH = { cells: BZ_HATCH_CELLS } as const;
 export const BZ_MOON = { color: "#9fb4ff", intensity: 2.6, elevationDeg: 74, azimuthDeg: 200 } as const;
 
 export type QualityTierName = keyof typeof BZ_FIXTURE_LIGHTS;

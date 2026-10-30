@@ -28,12 +28,13 @@ import { VIEWMODEL_ASSET, VIEWMODEL_YAW_OFFSET, weaponHudLabel } from "./weapons
 import { ENEMY_FORWARD, enemyFacingError, nextEnemyYaw } from "./enemy-facing";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import {
-  BZ_ENV_INTENSITY, BZ_HDRI, BZ_HDRI_URL, BZ_PALETTE, BZ_POST, BZ_VARIANTS, lookOfSlot, parseFloorParam
+  BZ_ENV_INTENSITY, BZ_HDRI, BZ_HDRI_URL, BZ_PALETTE, BZ_POST, BZ_VARIANTS, lookOfSlot, parseFloorParam, underHatch
 } from "./art/look";
 import { buildLightRig, createLightRigDriver, type QualityTierName, type RigLightHandle } from "./art/lightRig";
 import { BZ_FLOOR_TEXTURES, bunkerTexture } from "./art/textures";
 import { damageArcDeg, deathFade, deathRoll, descentSeconds, doorOffset, reloadDip, viewmodelSway } from "./art/motion";
 import { BZ_VFX_EVENTS, atmosphereEmitters, registerBunkerVfx, type BunkerVfxKind } from "./art/vfx";
+import { HATCH_BACKDROP, HATCH_COLLAR, hatchBackdrop, hatchCeiling, hatchCollar, hatchShaftSpec, shaftOnSlot } from "./art/hatch";
 
 installBlackFrameGuard();
 
@@ -158,7 +159,7 @@ function buildScene() {
         faltInst.push({ position: [wx, 0.04, wz], scale: [CELL, 0.08, CELL] });
       }
       // Ceiling work lights over open corridor cells.
-      if (ch !== "#" && ch !== "%" && ch !== " " && ch !== "P" && (x * 7 + z * 13) % 9 === 0) {
+      if (ch !== "#" && ch !== "%" && ch !== " " && ch !== "P" && (x * 7 + z * 13) % 9 === 0 && !underHatch(def, x, z)) {
         ceilInst.push({ position: [wx, wallH - 0.06, wz], scale: [1.55, 0.035, 0.2] });
       }
     }
@@ -189,7 +190,10 @@ function buildScene() {
         color: BZ_SURFACE_WHITE, texture: floorTex.color, normal: floorTex.normal, normalScale: 0.8, roughness: 0.82, metalness: tex.floor.startsWith("metal") ? 0.4 : 0,
         texTransforms: { baseColor: { scale: [w, h] }, normal: { scale: [w, h] } }
       }) }).runtime(staticNode(slot, "floor")),
-      primitives.box({ name: `f${slot} ceil`, size: [w * CELL, 0.24, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, wallH + 0.14, h * CELL / 2], material: material.pbr({ color: shade(def.palette.ceil, 0.1), roughness: 0.92, metalness: 0 }) }).runtime(staticNode(slot, "ceil")),
+      // BZ-07: F6's ceiling is four slabs around the 3x3 hatch (one instanced draw); every other floor stays sealed.
+      def.id === 5
+        ? primitives.box({ name: `f${slot} ceil`, instances: hatchCeiling(w, h, wallH), material: material.pbr({ color: shade(def.palette.ceil, 0.1), roughness: 0.92, metalness: 0 }) }).runtime(staticNode(slot, "ceil"))
+        : primitives.box({ name: `f${slot} ceil`, size: [w * CELL, 0.24, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, wallH + 0.14, h * CELL / 2], material: material.pbr({ color: shade(def.palette.ceil, 0.1), roughness: 0.92, metalness: 0 }) }).runtime(staticNode(slot, "ceil")),
       primitives.box({
         name: `f${slot} wall-trim`,
         // BZ-01: the glowing baseboard is gone; a painted hazard-yellow kick strip only reads where a lamp reaches it
@@ -199,6 +203,16 @@ function buildScene() {
         receiveShadow: false
       }).runtime(staticNode(slot, "trim"))
     );
+    if (def.id === 5) {
+      // BZ-07: the olive steel collar lining the shaft and the night backdrop closing it (+2 draws on F6 only)
+      nodes.push(
+        primitives.box({ name: `f${slot} hatch collar`, instances: hatchCollar(wallH), material: material.pbr({ color: HATCH_COLLAR.color, roughness: 0.6, metalness: 0.5 }) }).runtime(staticNode(slot, "hatch-collar")),
+        primitives.box({
+          name: `f${slot} hatch night backdrop`, instances: [hatchBackdrop(wallH)], castShadow: false, receiveShadow: false,
+          material: material.emissive({ color: HATCH_BACKDROP.color, emissive: HATCH_BACKDROP.emissive, emissiveIntensity: HATCH_BACKDROP.emissiveIntensity, roughness: 1 })
+        }).runtime(staticNode(slot, "hatch-backdrop"))
+      );
+    }
     if (ceilInst.length) {
       nodes.push(primitives.box({
         name: `f${slot} work-lights`,
@@ -443,6 +457,8 @@ function buildScene() {
       contrast: BZ_POST.grade.contrast, saturation: BZ_POST.grade.saturation,
       temperature: boot.grade.temperature, tint: boot.grade.tint
     }))
+    // BZ-07: the moon shaft through the F6 hatch (S4 god rays, Medium tier and up); disabled off F6 by applyFloorLook.
+    .add(effects.volumetricFog(hatchShaftSpec(lookOfSlot(5).fog.density)))
     .add(effects.vignette({ intensity: BZ_POST.vignette }))
     .add(effects.filmGrain({ intensity: BZ_POST.grain }))
     .camera(camera.perspective({ position: [4.5, EYE, 4.5], target: [12.5, EYE, 4.5], fov: 72 }));
@@ -583,6 +599,7 @@ function applyFloorLook(slot: number, transitionSeconds = 0) {
   try { app.lighting?.setEnvironmentIntensity(look.environmentIntensity / BZ_ENV_INTENSITY); } catch { /* lighting runtime not mounted */ }
   try { app.atmosphere?.setWetness(BZ_WETNESS[slot] ?? 0, { transitionSeconds }); } catch { /* wetness not mounted */ }
   try { app.post?.setEffect("colorGrade", { temperature: look.grade.temperature, tint: look.grade.tint }); } catch { /* post runtime not mounted */ }
+  try { app.post?.setEffectEnabled("volumetricFog", shaftOnSlot(slot)); } catch { /* post runtime not mounted */ }
   document.documentElement.style.setProperty("--bz-lamp", look.lamp.color);
   startAtmosphere(slot);
 }
