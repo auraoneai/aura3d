@@ -69,6 +69,24 @@ export function petalStreamSpec(motion: number): EffectSpec {
   };
 }
 
+/**
+ * WW47-V4 downwind chimney smoke: a thin looping plume on the E-F `smoke-a` sprite sequence, leaning along the wind and
+ * rising slowly. 24 live on High (+1 draw), 12 under reduced motion, none on Low (emissionScale 0).
+ */
+export const SMOKE_DIR: Vec3 = (() => {
+  const v: Vec3 = [WIND_DIR[0] * 0.8, 0.6, WIND_DIR[1] * 0.8];
+  const l = Math.hypot(v[0], v[1], v[2]);
+  return [v[0] / l, v[1] / l, v[2] / l];
+})();
+export function chimneySmokeSpec(motion: number): EffectSpec {
+  return {
+    name: "wind-chimney-smoke",
+    layers: [
+      { type: "emitter", preset: "dust", count: Math.max(1, Math.round(24 * motion)), speed: [0.5 * motion, 0.9 * motion], life: [3.5, 5], gravity: -0.05, color: "#d8d2c6", size: [0.35, 0.8], spread: 0.15, direction: SMOKE_DIR, drag: 0.1, additive: false, sprite: "smoke-a", maxScreen: 0.08 }
+    ]
+  };
+}
+
 /** The bell's warm flash (WW47-V2): peak 0.12 for 0.2 s, well under the 0.3 reduced-flash cap, skipped under reduced flash. */
 export const BELL_FLASH = { color: [1, 0.86, 0.62] as const, peak: 0.12, seconds: 0.2 };
 
@@ -88,7 +106,7 @@ export interface WindVfx {
   stop(): void;
 }
 
-export function createWindVfx(app: AuraApp, options: { readonly low: boolean; readonly reducedMotion: () => boolean; readonly reducedFlash: () => boolean }): WindVfx {
+export function createWindVfx(app: AuraApp, options: { readonly low: boolean; readonly reducedMotion: () => boolean; readonly reducedFlash: () => boolean; readonly chimney?: Vec3 | null }): WindVfx {
   const effects = app.effects;
   if (!effects) return { letterFound() {}, bellRing() {}, lanternFlare() {}, hopLanding() {}, update() {}, stop() {} };
   // the floating-dot cause is fixed in the engine (E-F): runtime effects stay on
@@ -96,6 +114,7 @@ export function createWindVfx(app: AuraApp, options: { readonly low: boolean; re
   for (const [kind, spec] of Object.entries(WIND_VFX_PRESETS)) effects.registerPreset(kind, spec);
   const scale = (): number => emissionScale({ low: options.low, reducedMotion: options.reducedMotion() });
   let petals: ReturnType<AppEffects["spawn"]> | null = null;
+  let smoke: ReturnType<AppEffects["spawn"]> | null = null;
   let petalMotion = -1;
   let lastGust = 0;
   let flashLeft = 0;
@@ -120,9 +139,11 @@ export function createWindVfx(app: AuraApp, options: { readonly low: boolean; re
       if (s > 0 && s !== petalMotion) {
         petals?.stop({ immediate: true });
         petals = effects.spawn(petalStreamSpec(s), upwind(traveller), { seed: 20261030 });
+        smoke?.stop({ immediate: true });
+        smoke = options.chimney ? effects.spawn(chimneySmokeSpec(s), options.chimney, { seed: 20261031 }) : null;
         petalMotion = s;
       }
-      if (s <= 0 && petals) { petals.stop({ immediate: true }); petals = null; petalMotion = -1; }
+      if (s <= 0 && petals) { petals.stop({ immediate: true }); petals = null; smoke?.stop({ immediate: true }); smoke = null; petalMotion = -1; }
       petals?.setPosition(upwind(traveller));
       const g = gustAt(traveller[0], traveller[2], time);
       // a gust band crossing the traveller (strength rising through 2.0) throws a few streaks downwind
@@ -134,7 +155,7 @@ export function createWindVfx(app: AuraApp, options: { readonly low: boolean; re
         if (flashLeft === 0) app.setOutputOverlay?.({});
       }
     },
-    stop() { petals?.stop({ immediate: true }); petals = null; petalMotion = -1; }
+    stop() { petals?.stop({ immediate: true }); petals = null; smoke?.stop({ immediate: true }); smoke = null; petalMotion = -1; }
   };
 }
 

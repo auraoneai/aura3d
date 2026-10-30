@@ -577,7 +577,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         for (const id of daylightIds) node(id).setUniform?.("paintAmt", 1);
       }
       // WW47-V1..V3: the wind's particles and the event bursts (none on Low or under ?look=original)
-      const vfx = original ? null : createWindVfx(app, { low: options.quality === "low", reducedMotion: () => motion() < 1, reducedFlash: () => motion() < 1 });
+      const vfx = original ? null : createWindVfx(app, { low: options.quality === "low", reducedMotion: () => motion() < 1, reducedFlash: () => motion() < 1, chimney: sc.chimney ? [sc.chimney.x, sc.chimney.y, sc.chimney.z] : null });
       const sequencer = createCameraSequencer({ reducedMotion: () => original || options.sequences !== true || motion() < 1 });
       let seqComplete = false;
       let vfxFound = 0, vfxComplete = false, vfxHop = "idle", vfxTime = -1, vfxLantern = 1, sailAngle = 0;
