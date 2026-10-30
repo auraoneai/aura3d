@@ -448,6 +448,11 @@ const boxMesh = (w: number, h: number, d: number): MeshData => {
 export const BUNTING_COLORS = ["#f3bac8", "#a0eeb3", "#ebc2c2", "#baf3c8"] as const;
 const BUNTING_POLE = "#6a3a6c";
 const BUNTING_MAX = 18;
+/** CR-W1 deck edge in bunting-pole space (pole 4.75 out, deck half-width 4: the runs sit 0.04 outside the side face, under the rail) and the drips hanging from it. */
+export const DECK_EDGE_X = 0.71;
+export const DECK_DRIPS: readonly { readonly z: number; readonly length: number }[] = [
+  { z: 0.6, length: 0.55 }, { z: -1.5, length: 0.8 }, { z: -3.4, length: 0.62 }
+];
 
 /**
  * One pole with a string of four pennants running back along the road (local -z), all in one mesh with a per-vertex
@@ -468,6 +473,18 @@ export function buntingMesh(): { mesh: MeshData; tones: number[] } {
     mesh.indices.push(base, base + 1, base + 2);
     const c = hexLinear(BUNTING_COLORS[k] as string);
     for (let i = 0; i < 3; i++) tones.push(...c);
+  }
+  /* CR-W1 deck-edge drips: three pennant-coloured runs down the deck's side face (local +x faces the road; the deck edge
+   * is 0.75 in from the pole, its top at y 0 and its bottom at -0.3), with a bead under the slab */
+  for (const [k, d] of DECK_DRIPS.entries()) {
+    const run = transformMesh(cylinderMesh(0.09, 0.06, d.length, 8), { tx: DECK_EDGE_X, ty: -d.length / 2 + 0.02, tz: d.z });
+    const bead = sphereMesh(0.085, 8, 6, DECK_EDGE_X, -d.length + 0.02, d.z);
+    const drip = mergeMeshes([run, bead]);
+    const base = mesh.positions.length / 3;
+    mesh.positions.push(...drip.positions); mesh.normals.push(...drip.normals); mesh.uvs.push(...drip.uvs);
+    for (const i of drip.indices) mesh.indices.push(base + i);
+    const c = hexLinear(BUNTING_COLORS[k % BUNTING_COLORS.length] as string);
+    for (let v = 0; v < drip.positions.length / 3; v++) tones.push(...c);
   }
   return { mesh, tones };
 }

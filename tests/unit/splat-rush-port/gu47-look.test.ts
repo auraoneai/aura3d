@@ -5,7 +5,7 @@ import { PIECES, addBackdrop, backdropSway } from "../../../examples/splat-rush-
 import { GATE_COLORS, LOOKS, QA_CROPS, parseLook, sunDirection, timeOfDay, type SplatLook } from "../../../examples/splat-rush-port/look";
 import { IDLE, SplatRushSim } from "../../../examples/splat-rush-port/sim";
 import { PAINT_SPLASH, PAINT_SPLASH_RING, SPLASH_COUNT, fireSplashes, splashesFor } from "../../../examples/splat-rush-port/vfx3d";
-import { BUNTING_COLORS, TITLE_RAIL_SECONDS, buildWorld, presentationPose, buntingMesh, cameraLayers, carnivalToonSpec, rolledUp } from "../../../examples/splat-rush-port/world";
+import { BUNTING_COLORS, DECK_DRIPS, DECK_EDGE_X, TITLE_RAIL_SECONDS, buildWorld, presentationPose, buntingMesh, cameraLayers, carnivalToonSpec, rolledUp } from "../../../examples/splat-rush-port/world";
 import { deltaE2000 } from "../../../tools/look-metrics/region-luma.mjs";
 
 const g = globalThis as { document?: unknown };
@@ -184,6 +184,18 @@ describe("GU47 CR-W1: festival bunting", () => {
     for (const gate of GATE_COLORS) for (const pennant of BUNTING_COLORS) expect((deltaE2000 as (a: number[], b: number[]) => number)(rgb(gate), rgb(pennant))).toBeGreaterThanOrEqual(25);
     const { mesh, tones } = buntingMesh();
     expect(tones.length).toBe(mesh.positions.length);
+  });
+
+  it("CR-W1 deck-edge drips hang at the deck edge, below the deck top, in pennant colours (same batch, +0 draws)", () => {
+    const { mesh } = buntingMesh();
+    const hanging: number[] = [];
+    for (let v = 0; v < mesh.positions.length / 3; v++) if (mesh.positions[v * 3 + 1]! < -0.05) hanging.push(v);
+    expect(DECK_DRIPS.length).toBeGreaterThanOrEqual(3);
+    expect(hanging.length).toBeGreaterThan(0);
+    for (const v of hanging) expect(Math.abs(mesh.positions[v * 3]! - DECK_EDGE_X)).toBeLessThan(0.1);
+    const lowest = Math.min(...hanging.map((v) => mesh.positions[v * 3 + 1]!));
+    expect(lowest).toBeLessThan(-0.3);
+    expect(lowest).toBeGreaterThan(-1);
   });
 
   it("bunting poles appear on both sides during a run", () => {
