@@ -1,6 +1,6 @@
 // Wonder World looks (PRD 04 A10, PRD 02 section 4).
 //
-// One calm, low-stimulus look per world, built on the real Aura3D 4.5.0 look
+// One calm, low-stimulus look per world, built on the real Aura3D 4.6.2 look
 // presets (`looks.preset`), each of which brings an HDRI environment, a soft
 // shadow-casting key light, a colour grade, ambient occlusion and bloom as one
 // unit. Facts from 4.5.0 that shape this file:
@@ -26,7 +26,7 @@ import type { WorldId } from "../types.js";
 
 export interface WorldLook {
   readonly world: WorldId;
-  /** A real 4.5.0 look preset id. */
+  /** A real 4.6.2 look preset id. */
   readonly look: AuraLookId;
   readonly overrides: AuraLookOverrides;
   /** Scene clear colour, matched to the horizon. */

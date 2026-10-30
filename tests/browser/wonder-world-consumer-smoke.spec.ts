@@ -1,20 +1,20 @@
 /**
  * The published consumer path, from nothing (PRD 03 gap 03:174; PRD 06 F0.1/F0.2): in a temporary folder outside the
- * repo, the way a new consumer starts, with the pinned 4.5.0 packages from the npm registry:
- *   npx -y create-aura3d@4.5.0 smoke --template mini-game --no-agent
+ * repo, the way a new consumer starts, with the pinned 4.6.2 packages from the npm registry:
+ *   npx -y create-aura3d@4.6.2 smoke --template mini-game --no-agent
  *   npm install
  *   npm run build                                   (the template's typecheck, then vite build)
- *   npx -y @aura3d/cli@4.5.0 check-deploy --dist dist
- *   npx -y @aura3d/cli@4.5.0 check-deploy --dist dist --browser --route / --browser-timeout 180000 --browser-settle 300000
+ *   npx -y @aura3d/cli@4.6.2 check-deploy --dist dist
+ *   npx -y @aura3d/cli@4.6.2 check-deploy --dist dist --browser --route / --browser-timeout 180000 --browser-settle 300000
  * Every step must exit 0 (the run stops at the first that does not), with one recorded exception: the --browser pass of
- * the 4.5.0 mini-game scaffold fails on 404s for the template's own demo media (its game-sfx-core pack and audio-codec
- * probes under /packs/ and /probes/, and the external Textures/colormap.png one Kenney GLB names), which the scaffold
- * does not ship. That is an upstream template defect (07 B32), not the SDK: those failures are listed in the record
+ * the mini-game scaffold may fail on 404s for the template's own demo media (seen on 4.5.0: its game-sfx-core pack and
+ * audio-codec probes under /packs/ and /probes/, and the external Textures/colormap.png one Kenney GLB names), which the
+ * scaffold does not ship. That is an upstream template defect (07 B32), not the SDK: those failures are listed in the record
  * and any other failure still fails the test. The same pass reports the template's hero GLB request as aborted
  * (net::ERR_ABORTED) on software WebGL2; a direct visit of the built site (a static server here, the test's own page)
  * then tells a lost hero from a cancelled duplicate request: the abort counts as upstream only when that visit sees the
  * hero GLB finish downloading and the template report the hero's animation clips. `npm ls @aura3d/engine @aura3d/cli --json` is
- * recorded, and the engine must resolve to 4.5.0; npm ls itself exits 1 here because the scaffold does not list the
+ * recorded, and the engine must resolve to 4.6.2; npm ls itself exits 1 here because the scaffold does not list the
  * CLI (consumers run it with npx), so its exit status is recorded, not gated. The browser pass loads the built site
  * from a static server in the scaffold's own Playwright Chromium (software WebGL2 on the runner) and fails on HTTP
  * errors, failed requests, uncaught errors and console errors. npm runs with the runner's pnpm and Playwright
@@ -33,9 +33,9 @@ import { extname, join, normalize, relative } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { emitJson, emitShot, redact, runCommit } from "./wonder-world-lib";
 
-const CREATE = "create-aura3d@4.5.0";
-const CLI = "@aura3d/cli@4.5.0";
-const ENGINE_VERSION = "4.5.0";
+const CREATE = "create-aura3d@4.6.2";
+const CLI = "@aura3d/cli@4.6.2";
+const ENGINE_VERSION = "4.6.2";
 const MINUTE = 60_000;
 
 interface StepResult {
@@ -99,7 +99,7 @@ function fileList(dir: string): { readonly path: string; readonly bytes: number 
 }
 
 /**
- * --browser failures that come from the 4.5.0 mini-game template's own demo media, not from the SDK (07 B32): the
+ * --browser failures that come from the mini-game template's own demo media (seen on 4.5.0), not from the SDK (07 B32): the
  * template plays its game-sfx-core pack and the audio-codec probes from /packs/ and /probes/, and one Kenney GLB names
  * an external Textures/colormap.png; the scaffold ships none of them.
  */
@@ -201,7 +201,7 @@ function lsVersion(tree: unknown, name: string): string | null {
   return typeof entry.version === "string" ? entry.version : null;
 }
 
-test("create-aura3d@4.5.0 mini-game: scaffold, install, build and check-deploy pass (--browser: nothing beyond the template's known missing demo media)", async ({ page }) => {
+test("create-aura3d@4.6.2 mini-game: scaffold, install, build and check-deploy pass (--browser: nothing beyond the template's known missing demo media)", async ({ page }) => {
   test.setTimeout(40 * MINUTE);
   const root = mkdtempSync(join(tmpdir(), "ww-consumer-"));
   const app = join(root, "smoke");
@@ -227,7 +227,7 @@ test("create-aura3d@4.5.0 mini-game: scaffold, install, build and check-deploy p
     }
     const versions = { "@aura3d/engine": lsVersion(tree, "@aura3d/engine"), "@aura3d/cli": lsVersion(tree, "@aura3d/cli") };
     record["npmLs"] = { status: ls.step.status, versions, note: "npm ls exits 1 when a named package is not in the tree; the scaffold runs the CLI through npx." };
-    expect(versions["@aura3d/engine"], "the scaffold installs @aura3d/engine 4.5.0").toBe(ENGINE_VERSION);
+    expect(versions["@aura3d/engine"], `the scaffold installs @aura3d/engine ${ENGINE_VERSION}`).toBe(ENGINE_VERSION);
 
     gate(runStep("build", "npm", ["run", "build"], app, 15 * MINUTE, root));
     const dist = join(app, "dist");

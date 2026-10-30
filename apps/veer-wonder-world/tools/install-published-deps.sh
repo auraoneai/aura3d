@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One-time setup for the app's local checks (README "Checks"): installs the published @aura3d 4.5.0 packages and the
+# One-time setup for the app's local checks (README "Checks"): installs the published @aura3d 4.6.2 packages and the
 # tools they need (tsc, vitest, tsx, vite) into the gitignored artifacts/wonder-deps/, then links
 # apps/veer-wonder-world/node_modules to it. The app's own package.json uses `workspace:*`, which npm cannot install,
 # and apps/* is not a pnpm workspace member (07 C2), so the published set lives in tools/published-deps.json instead.

@@ -1,5 +1,5 @@
 # Veer's Wonder World — Aura3D Product & Engineering PRD
-Status: **IN BUILD (prototype) on Aura3D 4.5.0; owner decision 2026-10-29: full catalog, agent review in place of human sign-off** · Created: 2026-10-24 · Updated: 2026-10-29 · Owner: Aura3D product + game engineering · Target: standalone browser app within the Aura3D monorepo.
+Status: **IN BUILD (prototype) on Aura3D 4.6.2; owner decision 2026-10-29: full catalog, agent review in place of human sign-off** · Created: 2026-10-24 · Updated: 2026-10-29 · Owner: Aura3D product + game engineering · Target: standalone browser app within the Aura3D monorepo.
 
 > **Mission.** Build an original, beautiful, parent-mediated 3D preschool cartoon-and-play universe for a roughly two-year-old child who is learning to communicate. A small recurring cast draws interest; brief meaningful language models, songs, stories, choices, and pauses invite the child to communicate through gaze/gesture, touch, sounds, and emerging words. ABCs, counting, shapes, colours and everyday vocabulary are introduced playfully, **not as required speech milestones**.
 
@@ -47,7 +47,7 @@ Status: **IN BUILD (prototype) on Aura3D 4.5.0; owner decision 2026-10-29: full 
 
 | Phase | Product slice | Exit condition | Build status (2026-10-29) |
 | --- | --- | --- | --- |
-| P0 Foundation | Pin Aura3D 4.5.0, asset strategy, character/scene proofs, stable mobile baseline | Engine consumer app builds and draws a verified first frame on target devices; no fabricated APIs/assets | Building now; target-device frames wait for the physical-device runs (`07`) |
+| P0 Foundation | Pin Aura3D 4.6.2, asset strategy, character/scene proofs, stable mobile baseline | Engine consumer app builds and draws a verified first frame on target devices; no fabricated APIs/assets | Building now; target-device frames wait for the physical-device runs (`07`) |
 | P1 Pilot | Momo, Lulu, Sheru + 6 episodes + Bubble, Train, Ball activities + parent panel | All flows pass child-safety, parent review, touch, audio, mobile and offline-activity exit gates; parent, caregiver and SLP review is recorded agent review (owner instruction) | Building now; the mobile gate waits for the physical-device runs (`07`) |
 | P2 Content expansion | Peeko, Lumi, GoGo; remainder of 20 episodes; 12 games total; optional bilingual packs | Content schema validated; every episode has scripted language + caregiver bridge and explicit QA receipts | Building now (owner decision 2026-10-29); bilingual packs still deferred |
 | P3 Optional voice | Parent-gated voice reactions (sound presence first, carefully scoped speech recognition later) | Compatibility/privacy audit, false-negative tests, clear controls and touch fallback; **do not ship otherwise** | Not built; microphone stays off |
@@ -62,7 +62,7 @@ No schedule promises. Implement and sign off by evidence gates, not by calendar 
 - `docs/api/audio-synth.md`: `createCueBank`, sample slices, music buses, single AudioContext; these are SFX/music primitives, **not** a ready-made toddler narrator or child ASR.
 - `docs/api/model-loader.md` and `docs/agents/asset-workflow.md`: typed, licensed, same-origin GLBs with hashes/provenance. Require real approved hero models, not primitive stand-ins for release.
 - `docs/agents/claims-and-boundaries.md`: no public claim without tested capture and runtime evidence.
-- Version: pin **Aura3D 4.5.0** (npm `latest`; published 2026-10-29 02:29 UTC, `CHANGELOG.md` `## 4.5.0 (2026-10-28)`). The stock Vite build fix (`"readFileSync" is not exported by "__vite-browser-external"`) shipped in 4.1.3 (`CHANGELOG.md` `## 4.1.3`) and 4.5.0 includes it. Inside the monorepo the app uses `workspace:*` dependencies (`apps/veer-wonder-world/package.json`).
+- Version: pin **Aura3D 4.6.2** (npm `latest`; published 2026-10-30 03:49 UTC, `CHANGELOG.md` `## 4.6.2 (2026-10-30)`). The build started on 4.5.0; the move to 4.6.2 needed no app change (`07` B40). The stock Vite build fix (`"readFileSync" is not exported by "__vite-browser-external"`) shipped in 4.1.3 (`CHANGELOG.md` `## 4.1.3`) and 4.6.2 includes it. Inside the monorepo the app uses `workspace:*` dependencies (`apps/veer-wonder-world/package.json`).
 - Workspace: `pnpm-workspace.yaml` lists only `packages/*` and `workers/*`, so `apps/*` are not pnpm workspace members and `pnpm --filter <app>` does not reach them. Build, test and check the app with the root-level commands in `06` section 4.
 - `README.md`: software-WebGL2 evidence is **not** real-GPU confirmation. Remote capture commands are preferred inside monorepo.
 

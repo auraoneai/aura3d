@@ -1,6 +1,6 @@
 # Wonder World (prototype)
 
-Wonder World is a toddler co-play app built on Aura3D 4.5.0: short 3D cartoon stories and tap games that a grown-up plays alongside a young child. The folder keeps the working name `veer-wonder-world`; the public title is **Wonder World**. No child's name appears in the app's routes, logs, story lines or strings; the one exception, at the owner's request, is the start screen's welcome, which takes the name from `WELCOME_NAME` in `src/personal.ts` (07 O8; set it to null to remove it).
+Wonder World is a toddler co-play app built on Aura3D 4.6.2: short 3D cartoon stories and tap games that a grown-up plays alongside a young child. The folder keeps the working name `veer-wonder-world`; the public title is **Wonder World**. No child's name appears in the app's routes, logs, story lines or strings; the one exception, at the owner's request, is the start screen's welcome, which takes the name from `WELCOME_NAME` in `src/personal.ts` (07 O8; set it to null to remove it).
 
 **Status: prototype.** It is play and language exposure, not therapy. It does not test, score, diagnose or teach a child to talk, and nothing here supports an efficacy claim. It runs as an unlisted preview, deployed at the owner's request on 2026-10-29. This repository is public, so the address is not written here; see [DEPLOYMENT.md](DEPLOYMENT.md) section 3. Every response carries `noindex`, it is not in the public site build, catalog, showcase index or sitemap, and publishing it is a separate owner decision ([DEPLOYMENT.md](DEPLOYMENT.md)). The specification is [`docs/prds/veer-wonder-world/`](../../docs/prds/veer-wonder-world/README.md); decisions and results are recorded in [`07-autonomous-decisions-and-build-record.md`](../../docs/prds/veer-wonder-world/07-autonomous-decisions-and-build-record.md).
 
@@ -51,7 +51,7 @@ Wonder World is a toddler co-play app built on Aura3D 4.5.0: short 3D cartoon st
 
 ## Checks
 
-The local checks use the published 4.5.0 packages, not the workspace. Install them once from the repo root:
+The local checks use the published 4.6.2 packages, not the workspace. Install them once from the repo root:
 
 ```bash
 apps/veer-wonder-world/tools/install-published-deps.sh   # tools/published-deps.json -> artifacts/wonder-deps/, linked as node_modules
@@ -63,7 +63,7 @@ From the app folder, everything that runs locally (no browser, no monorepo-wide 
 
 ```bash
 cd apps/veer-wonder-world
-./node_modules/.bin/tsc -p tsconfig.published.json --noEmit      # against the published 4.5.0 typings
+./node_modules/.bin/tsc -p tsconfig.published.json --noEmit      # against the published 4.6.2 typings
 ./node_modules/.bin/vitest run --config vitest.config.ts         # unit tests, including J01-J07
 node tools/validate-wonder-world-content.mjs                     # J14: every story, line, word, asset and rights record
 node tools/game-checks.mjs                                       # the repo's per-game static checks, for this unlisted prototype
