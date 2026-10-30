@@ -106,3 +106,27 @@ export function createPostDirector(row: LookRow, high: boolean, reducedMotion: b
     }
   };
 }
+
+export type CountdownShot = "planet" | "grid" | "chase";
+
+/**
+ * SO47-C2: the 3.2 s countdown (the sim's length; the PRD's 4 s would change the race clock) cuts planet wide ->
+ * grid pan -> chase. Reduced motion skips straight to the chase (PRD §6.3: sequences become cuts or are skipped).
+ */
+export function countdownShot(remaining: number, reducedMotion: boolean): { readonly shot: CountdownShot; readonly progress: number } {
+  if (reducedMotion) return { shot: "chase", progress: 1 };
+  if (remaining > 2.2) return { shot: "planet", progress: Math.min(1, (3.2 - remaining) / 1.0) };
+  if (remaining > 1.0) return { shot: "grid", progress: (2.2 - remaining) / 1.2 };
+  return { shot: "chase", progress: 1 };
+}
+
+/** SO47-C2 results orbit: angle around the player from its forward axis, kept 56..124 degrees away from the chase (pi). */
+export function resultsOrbitAngle(time: number, reducedMotion: boolean): number {
+  return Math.PI / 2 + (reducedMotion ? 0 : 0.6 * Math.sin(time * 0.3));
+}
+
+/** Letterbox bars on during the countdown sequence and the results orbit (never under reduced motion). */
+export function barsWanted(phase: string, remaining: number, reducedMotion: boolean): boolean {
+  if (reducedMotion) return false;
+  return (phase === "countdown" && countdownShot(remaining, false).shot !== "chase") || phase === "finished";
+}

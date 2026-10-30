@@ -33,7 +33,7 @@ import { mainFrame, routeFrame, surfaceNoise } from "./track";
 import { Vec3 } from "./vec3";
 import { LOOKS, SECTOR_LERP_SECONDS, type OrbitLook } from "./art/look";
 import { RIM, RIM_UNIT, buildCraterRim, rimScatter } from "./art/craterRim";
-import { createCameraFeel, createPostDirector, createSectorDirector, type PostFrame } from "./art/director";
+import { countdownShot, createCameraFeel, createPostDirector, createSectorDirector, resultsOrbitAngle, type PostFrame } from "./art/director";
 import { ORBIT_VFX_COLORS, orbitVfxFor, registerOrbitVfx } from "./art/vfx";
 
 export { lehmer };
@@ -893,6 +893,24 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       eye = frame.p.clone().addScaledVector(fwd, 4.5).addScaledVector(frame.side, -7).addScaledVector(frame.up, 2.7);
       look = frame.p.clone().addScaledVector(frame.side, 3.8).addScaledVector(frame.up, 1.1);
       fov = 48;
+    } else if (input.look === "gouache" && view === "chase" && state.phase === "countdown" && countdownShot(state.countdown, input.reducedMotion).shot !== "chase") {
+      // SO47-C2 countdown sequence: planet wide, then a pan across the grid.
+      const c = countdownShot(state.countdown, input.reducedMotion);
+      if (c.shot === "planet") {
+        eye = origin.clone().addScaledVector(fwd, 9 - c.progress * 2).addScaledVector(side, 5).addScaledVector(up, 2.2);
+        look = origin.clone().lerp(new Vec3(...row.planet.position), 0.06).addScaledVector(up, 6);
+        fov = 70;
+      } else {
+        eye = frame.p.clone().addScaledVector(fwd, 8).addScaledVector(side, 9 - 18 * c.progress).addScaledVector(up, 2.4);
+        look = origin.clone().addScaledVector(fwd, 6).addScaledVector(up, 0.8);
+        fov = 58;
+      }
+    } else if (input.look === "gouache" && state.phase === "finished") {
+      // SO47-C2 results orbit around the player, held well off the chase axis.
+      const a = resultsOrbitAngle(time, input.reducedMotion);
+      eye = origin.clone().addScaledVector(rig.forward, Math.cos(a) * 7).addScaledVector(cs, Math.sin(a) * 7).addScaledVector(cu, 2.4);
+      look = origin.clone().addScaledVector(cu, 0.9);
+      fov = 50;
     } else {
       eye = origin.clone().addScaledVector(rig.forward, -params.back).addScaledVector(cu, params.height - kick.punch);
       if (shake) eye.addScaledVector(cs, shake.x).addScaledVector(cu, shake.y);

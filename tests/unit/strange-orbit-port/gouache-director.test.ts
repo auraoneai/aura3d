@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createCameraFeel, createPostDirector, createSectorDirector } from "../../../examples/strange-orbit-port/art/director";
+import { barsWanted, countdownShot, createCameraFeel, createPostDirector, createSectorDirector, resultsOrbitAngle } from "../../../examples/strange-orbit-port/art/director";
 import { LOOKS, SECTORS } from "../../../examples/strange-orbit-port/art/look";
 
 /** GU47 WP-25 (lane g15): camera feel (SO47-C1), sector light (L3) and boost/menu post (P2, P3), incl. reduced motion. */
@@ -67,5 +67,16 @@ describe("strange-orbit-port gouache directors", () => {
     for (let i = 0; i < 120; i++) shift = sectors.update(450, 1 / 60).nebulaShift;
     expect(shift).toBeCloseTo(SECTORS.violet.nebulaShift, 2);
     expect(createSectorDirector("original").update(450, 1).changed).toBeNull();
+  });
+
+  it("cuts the countdown planet -> grid -> chase with bars, skipped under reduced motion (SO47-C2)", () => {
+    expect(countdownShot(3.1, false).shot).toBe("planet");
+    expect(countdownShot(1.8, false).shot).toBe("grid");
+    expect(countdownShot(0.5, false).shot).toBe("chase");
+    expect(countdownShot(3.1, true).shot).toBe("chase");
+    expect(barsWanted("countdown", 3.1, false)).toBe(true);
+    expect(barsWanted("countdown", 3.1, true)).toBe(false);
+    expect(barsWanted("racing", 0, false)).toBe(false);
+    for (let t = 0; t < 60; t += 0.25) expect(Math.abs(Math.PI - resultsOrbitAngle(t, false))).toBeGreaterThanOrEqual((30 * Math.PI) / 180);
   });
 });

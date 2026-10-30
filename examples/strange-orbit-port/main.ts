@@ -40,6 +40,7 @@ import { staticColliders } from "./obstacles";
 import { setActiveCourse } from "./track";
 import { buildWorld, type WorldRuntime } from "./world";
 import { lookFromSearch } from "./art/look";
+import { barsWanted } from "./art/director";
 
 const params = new URLSearchParams(location.search);
 const num = (key: string, fallback: number): number => {
@@ -322,6 +323,31 @@ function showBest(): void {
   if (el) el.textContent = best ? `Personal best here: ${formatTime(best.time)}${config.mode === "trial" && best.ghost ? " · your ghost rides with you" : ""}` : "";
 }
 
+/* ------------------------------------------------------------------ cinematic bars (SO47-C2) */
+
+/** Letterbox bars for the countdown sequence and the results orbit; DOM writes only when the state flips. */
+const bars = (() => {
+  if (config.look !== "gouache") return { sync: (): void => undefined };
+  const make = (edge: "top" | "bottom"): HTMLDivElement => {
+    const el = document.createElement("div");
+    el.className = `cine-bar cine-bar-${edge}`;
+    el.setAttribute("aria-hidden", "true");
+    Object.assign(el.style, { position: "fixed", left: "0", right: "0", [edge]: "0", height: "0", background: "#0b0a14", transition: "height 0.35s ease", pointerEvents: "none", zIndex: "2" });
+    document.body.appendChild(el);
+    return el;
+  };
+  const top = make("top"), bottom = make("bottom");
+  let shown = false;
+  return {
+    sync(): void {
+      const want = barsWanted(race.phase, race.countdown, config.reducedMotion);
+      if (want === shown) return;
+      shown = want;
+      top.style.height = bottom.style.height = want ? "9vh" : "0";
+    }
+  };
+})();
+
 /* ------------------------------------------------------------------ frame */
 
 let renderFailed = false;
@@ -333,6 +359,7 @@ function render(dt: number, live = false): void {
     const shown = live ? viewOf(race, presenter.present(loop, true)) : race;
     const ghostPose = ghost.length && race.mode === "trial" && race.phase !== "menu" ? ghostAt(ghost, race.time) : null;
     runtime.update(shown, dt, renderTime, view, canvas.clientWidth / Math.max(1, canvas.clientHeight), shake.update(dt), ghostPose);
+    bars.sync();
     app.step(0);
     frames++;
   } catch (error) {
