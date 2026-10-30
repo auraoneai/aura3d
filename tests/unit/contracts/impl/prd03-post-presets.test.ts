@@ -13,8 +13,8 @@ import type { AuraEffectNode } from "../../../../packages/engine/src/agent-api/n
 /**
  * PRD-03 Phase 5 §6.8: the seven presets are real `AuraPostPreset` data;
  * `output.preset` expands in the bridge with authored fields winning
- * field-by-field; agx/neutral presets report `preset-capability-degraded`
- * until C-05's operator selection is real.
+ * field-by-field; agx/neutral presets render their declared operator
+ * (GU47 E-C EC-3 removed the aces stand-in).
  */
 
 const C13_IDS = ["product-studio", "daylight-outdoor", "neon-night", "space", "underwater", "arena-fight", "cinematic-film"] as const;
@@ -107,13 +107,13 @@ describe("prd03 post presets (§6.8)", () => {
     expect(a.output).toEqual(b.output);
   });
 
-  it("agx/neutral presets degrade to aces unless the app authored an operator", () => {
-    const degraded = expandPostPreset({ preset: "daylight-outdoor" }, []);
-    expect(degraded.output?.toneMapping).toBe("aces");
-    expect(presetCapabilityDegraded(degraded.preset!, undefined)).toBe(true);
-    const authoredOp = expandPostPreset({ preset: "daylight-outdoor", toneMapping: "agx" }, []);
-    expect(authoredOp.output?.toneMapping).toBe("agx");
-    expect(presetCapabilityDegraded(authoredOp.preset!, "agx")).toBe(false);
+  it("agx/neutral presets render their declared operator; an authored operator still wins (GU47 EC-3)", () => {
+    const declared = expandPostPreset({ preset: "daylight-outdoor" }, []);
+    expect(declared.output?.toneMapping).toBe("agx");
+    expect(expandPostPreset({ preset: "product-studio" }, []).output?.toneMapping).toBe("neutral");
+    expect(presetCapabilityDegraded(declared.preset!, undefined)).toBe(false);
+    const authoredOp = expandPostPreset({ preset: "daylight-outdoor", toneMapping: "aces" }, []);
+    expect(authoredOp.output?.toneMapping).toBe("aces");
   });
 });
 
@@ -132,10 +132,10 @@ describe("bridge expansion (createRootPostPipeline)", () => {
     expect(options.toneMapping).toBe("aces");
   });
 
-  it("reports preset-capability-degraded for agx presets with no authored operator", () => {
+  it("an agx preset with no authored operator renders agx, with no degrade report (GU47 EC-3)", () => {
     const { diagnostics, options } = createRootPostPipeline(snapshot, camera, { preset: "cinematic-film" }, tier);
-    expect(options.toneMapping).toBe("aces");
-    expect(diagnostics.some((d) => d.code === "preset-capability-degraded" && d.field === "preset")).toBe(true);
+    expect(options.toneMapping).toBe("agx");
+    expect(diagnostics.some((d) => d.code === "preset-capability-degraded")).toBe(false);
   });
 
   it("no capability-degraded report when the app authored the operator", () => {

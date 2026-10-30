@@ -39,7 +39,7 @@ import type { BloomOptionsV2, PostTierResolution } from "@aura3d/rendering";
 import type { AuraCustomPostPass, AuraPostPassOrder, AuraPostSurface } from "../contracts/post.js";
 import type { AuraOutputOptions } from "../contracts/output.js";
 import { AuraRuntimeError, groups, type AuraApp, type AuraCreateAppOptions, type AuraEffectNode, type AuraSceneNode, type AuraSceneSnapshot } from "./index.js";
-import { expandPostPreset, presetCapabilityDegraded } from "./postPresets.js";
+import { expandPostPreset } from "./postPresets.js";
 import { mergeLookColorGrade } from "./looks/lookGrade.js";
 
 /* ------------------------------------------------------------------------- */
@@ -873,20 +873,12 @@ export function createRootPostPipeline(
   // §6.8 (Phase 5): `output.preset` expands into `output` + effect nodes.
   // Authored `output` fields win over the preset's; an authored effect node
   // overrides the preset's same-effect node field by field. Presets naming
-  // agx/neutral render aces while C-05's operator selection is a stub.
+  // agx/neutral render that operator (GU47 E-C, EC-3).
   // CR-4: a grade authored next to a look wins over the look's grade field by field (looks/lookGrade.ts).
   const authoredEffectNodes = mergeLookColorGrade(nodes.filter((node): node is AuraEffectNode => node.kind === "effect"));
   const expansion = expandPostPreset(output, authoredEffectNodes);
   const effectiveOutput = expansion.output;
   const effectNodes = expansion.nodes;
-  if (expansion.preset && presetCapabilityDegraded(expansion.preset, output?.toneMapping)) {
-    diagnostics.push({
-      code: "preset-capability-degraded",
-      effect: "output",
-      field: "preset",
-      message: `preset "${expansion.preset.id}" declares ${expansion.preset.output.toneMapping}; renders as "aces" until C-05's operator selection is real.`
-    });
-  }
 
   const tierDisabled = (stage: string, reason: string): void => {
     diagnostics.push({
