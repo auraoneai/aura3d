@@ -54,6 +54,7 @@ import {
   COURT_RIGS,
   LIGHTNING_NODE_ID,
   LIGHTNING_PEAK,
+  courtAtmosphereNodes,
   courtLampNodes,
   courtLensFlareNodes,
   courtLightningNodes,
@@ -864,6 +865,8 @@ function buildScene(v: VenueSpec): any {
     // H47-L4 lens flares (Venice sun, Rucker floods), H47-E4 Preetham sky (Venice, Athens), H47-E2 rain, wet ground and
     // the storm court's lightning light (reduced motion halves the rain; reduced flash keeps the lightning dark).
     s.addMany(courtLensFlareNodes(rig)).addMany(courtSkyNodes(rig)).addMany(courtWeatherNodes(rig, BOOT_REDUCED_MOTION)).addMany(courtLightningNodes(rig));
+    // H47-V2: Rucker flood cones and haze, Manila roof-gap god rays and dust motes.
+    s.addMany(courtAtmosphereNodes(rig, BOOT_REDUCED_MOTION));
   }
   s
     .add(effects.contactShadows({ intensity: 0.7, length: 0.28 }))

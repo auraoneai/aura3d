@@ -451,6 +451,48 @@ export function courtSkyNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
   return [sky.preetham({ name: `${rig.id}-preetham-sky`, sun: { elevationDeg: rig.sun.elevationDeg, azimuthDeg: rig.sun.azimuthDeg }, turbidity: rig.id === "venice" ? 6 : 2.4, rayleigh: rig.id === "venice" ? 2.2 : 1.1, captureEnvironment: false, affectsFog: true }) as unknown as AuraNodeBuilder<AuraSceneNode>];
 }
 
+/**
+ * H47-V2: flood cones and haze. Rucker: one soft sodium cone under each flood head plus a thin volumetric haze lit from
+ * the floods; Manila: volumetric god rays through the roof gap (sun side) and one slow dust-mote emitter in the beams.
+ * Draws: Rucker +4 cones (+ the fog stage), Manila +1 motes (+ the fog stage); +12 max per PRD. Reduced motion halves
+ * and stills the motes (PRD §6.3); the Low tier drops volumetric fog in the engine (forward fog only).
+ */
+export function courtAtmosphereNodes(rig: CourtRig, reducedMotion: boolean): AuraNodeBuilder<AuraSceneNode>[] {
+  const out: AuraNodeBuilder<AuraSceneNode>[] = [];
+  if (rig.id === "rucker") {
+    for (const p of rig.practicals) {
+      if (p.kind !== "spot") continue;
+      const dir: AuraVec3 = [p.target[0] - p.position[0], p.target[1] - p.position[1], p.target[2] - p.position[2]];
+      const len = Math.hypot(dir[0], dir[1], dir[2]) || 1;
+      out.push(effects.lightCone({ name: `${p.name}-cone`, position: p.position, direction: [dir[0] / len, dir[1] / len, dir[2] / len], color: p.color, intensity: 0.22, length: 11, coneAngle: p.angle * 0.8, softness: 0.7 } as Parameters<typeof effects.lightCone>[0]) as AuraNodeBuilder<AuraSceneNode>);
+    }
+    out.push(effects.volumetricFog({ name: "rucker flood haze", density: 0.08, color: "#5a5048", intensity: 0.45, lightPosition: [0, 9, -7], heightFalloff: 0.12, godRayDensity: 0.2 } as unknown as Parameters<typeof effects.volumetricFog>[0]) as AuraNodeBuilder<AuraSceneNode>);
+  } else if (rig.id === "manila") {
+    const el = (rig.sun.elevationDeg * Math.PI) / 180;
+    const az = (rig.sun.azimuthDeg * Math.PI) / 180;
+    const gap: AuraVec3 = [Math.sin(az) * Math.cos(el) * 30, 9.2 + Math.sin(el) * 30, Math.cos(az) * Math.cos(el) * 30 + 4];
+    out.push(effects.volumetricFog({ name: "manila roof-gap god rays", density: 0.12, color: "#c9d5e6", intensity: 0.6, lightPosition: gap, heightFalloff: 0.08, godRayDensity: 0.55 } as unknown as Parameters<typeof effects.volumetricFog>[0]) as AuraNodeBuilder<AuraSceneNode>);
+    out.push(effects.particles({
+      name: "manila-dust-motes",
+      position: [0, 3.2, 4],
+      shape: "box",
+      shapeSize: [12, 5, 22],
+      rate: reducedMotion ? 6 : 12,
+      maxParticles: reducedMotion ? 40 : 80,
+      lifetime: [5, 8],
+      speed: reducedMotion ? 0 : 0.05,
+      gravity: 0,
+      size: [0.012, 0.022],
+      color: "#f3e3c2",
+      sprite: "soft-dot",
+      alphaOverLife: [0, 0.5, 0],
+      loop: true,
+      seed: 0x6d07
+    }) as unknown as AuraNodeBuilder<AuraSceneNode>);
+  }
+  return out;
+}
+
 /** Runtime id of the storm court's lightning light (H47-E2; driven per frame by `lightningFlash`). */
 export const LIGHTNING_NODE_ID = "court-lightning";
 /** Peak intensity of the lightning light (reduced flash never reaches it: `lightningFlash` returns 0 there). */

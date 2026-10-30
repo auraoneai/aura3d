@@ -4,6 +4,7 @@ import {
   COURT_RIGS,
   LIGHTNING_NODE_ID,
   courtIdentityRow,
+  courtAtmosphereNodes,
   courtLightningNodes,
   courtLookNodes,
   courtWeatherNodes,
@@ -79,6 +80,24 @@ describe("Aura Hoops 3D GU47 look table", () => {
     expect(lightningFlash(rig, 41, false)).toBe(0);
     for (let t = 0; t < 120; t += 0.01) expect(lightningFlash(rig, t, true)).toBe(0);
     expect(lightningFlash(COURT_RIGS.rucker, 40.02, false)).toBe(0);
+  });
+});
+
+describe("Aura Hoops 3D GU47 atmosphere (H47-V2)", () => {
+  const json = (id: (typeof COURT_IDS)[number], reduced = false) => courtAtmosphereNodes(COURT_RIGS[id], reduced).map((n) => n.toJSON() as { effect?: string; name?: string; maxParticles?: number; godRayDensity?: number });
+  it("puts flood cones and haze on Rucker, god rays and motes on Manila, nothing elsewhere, within +12 nodes", () => {
+    expect(json("rucker").filter((n) => n.effect === "volumetric-fog")).toHaveLength(1);
+    expect(json("rucker").length).toBe(5);
+    const manila = json("manila");
+    expect(manila.find((n) => n.effect === "volumetric-fog")?.godRayDensity).toBeGreaterThan(0.3);
+    for (const id of COURT_IDS) {
+      expect(json(id).length).toBeLessThanOrEqual(12);
+      if (id !== "rucker" && id !== "manila") expect(json(id)).toEqual([]);
+    }
+  });
+  it("halves the Manila motes under reduced motion", () => {
+    const motes = (reduced: boolean) => json("manila", reduced).find((n) => n.name === "manila-dust-motes")!.maxParticles!;
+    expect(motes(true)).toBe(motes(false) / 2);
   });
 });
 
