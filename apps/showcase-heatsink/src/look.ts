@@ -122,9 +122,10 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     key: { color: "#ff9a4a", elevationDeg: 9, azimuthDeg: 35, intensity: 2.6 },
     rim: { color: PALETTE.coolantCyan, intensity: 0.35 },
     fog: { color: "#8a5a2e", density: 0.02 },
-    volumetricFog: { color: "#b97a3e", density: 0.16, intensity: 0.5, godRayDensity: 0.45 },
-    // GU47 phase 2: the after capture measured mean 94.2 (band 45-70, software WebGL2); the dust inscatter washed the frame.
-    exposureEv: -1,
+    volumetricFog: { color: "#b97a3e", density: 0.16, intensity: 0.4, godRayDensity: 0.45 },
+    // GU47 phase 2: the after capture measured mean 94.2 (band 45-70, software WebGL2); the dust inscatter washed the frame
+    // and hid the drone. Round 1 (-1 EV, inscatter 0.5) landed 68.8, too close to the ceiling; round 2 thins the dust further.
+    exposureEv: -1.1,
     grade: { contrast: 1.06, saturation: 0.9, temperature: 0.32, tint: 0.03 },
     lutIntensity: 0.4,
     bloom: { intensity: 0.55, threshold: 0.8, color: "#ff9a4a" },
