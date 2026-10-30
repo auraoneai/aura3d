@@ -2,9 +2,10 @@
  * C-20 — effects surface (engine side, CONTRACTS.md). Provider: PRD 07. Flag: A3D_QR_VFX.
  */
 
-import type { AuraVec3, AuraColor, AuraRuntimeNodeHandle } from "../agent-api/index";
+import type { AuraVec3, AuraColor, AuraRuntimeNodeHandle, AuraAssetRef } from "../agent-api/index";
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
 import type { AuraBlendMode } from "@aura3d/rendering/contracts";
+import type { AuraVfxBuiltinSequence } from "../agent-api/vfx/atlas";
 
 export type AuraVfxKind = "spark" | "dust" | "debris" | "ring" | "streak" | "pickup" | "explosion-small" | "muzzle" | "splash" | "bubble" | "impact-flash" | "super-flash" | "impact-decal" | "aura-burst";
 export interface AuraVfxEffectSpec { readonly name: string; readonly layers: readonly ({ readonly type: "emitter" | "mesh" | "ribbon" | "decal" | "light" | "camera"; readonly at?: number } & Readonly<Record<string, unknown>>)[]; }
@@ -116,7 +117,17 @@ export class StubAppEffects implements AuraAppEffects {
 export type AuraRange = number | readonly [min: number, max: number];
 export type AuraCurve = readonly number[];
 export interface AuraColorRamp { readonly stops: readonly { readonly t: number; readonly color: AuraColor }[]; }
-export type AuraVfxSpriteSource = string | { readonly atlas: string; readonly frame?: number };
+/**
+ * GU47 E-F emitter sprite, sampled by the particle pass: one of the 18 built-in sequences of the baked VFX
+ * atlas (`packages/engine/assets/vfx/aura-vfx-2k.png`; the 1k twin on low and medium tiers), or a texture
+ * sheet `{ atlas: assets.sheet, frame? }` whose grid is the emitter's `spriteColumns` × `spriteRows`
+ * (default 1 × 1) and whose `frame` picks one cell. `atlas` also takes a URL string. "soft-dot" keeps the
+ * analytic dot. Multi-frame built-ins animate: smoke-a, smoke-b, flame-loop and electric loop at their fps,
+ * fireball, splash and debris-chips play once over each particle's life.
+ */
+export type AuraVfxSpriteSource =
+  | AuraVfxBuiltinSequence
+  | { readonly atlas: AuraAssetRef<"texture"> | string; readonly frame?: number };
 export type AuraVfxShading = "unlit" | "lit" | "emissive";
 
 export interface AuraParticleEmitterOptions {

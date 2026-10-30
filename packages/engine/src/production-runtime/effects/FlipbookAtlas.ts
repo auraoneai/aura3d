@@ -7,6 +7,8 @@
 // rows bottom-up (GL upload order: v = 0 is the last image row), frame 0 in
 // the top-left cell — the particle program's `u_grid` lookup convention.
 
+import { Texture } from "@aura3d/rendering";
+import type { AuraVfxBuiltinSequence } from "../../agent-api/vfx/atlas";
 import { mulberry32 } from "./CpuEmitter";
 
 export interface FlipbookSheet {
@@ -86,4 +88,213 @@ export function proceduralFireballSheet(columns: number, rows: number, seed: num
   const sheet: FlipbookSheet = { width, height, columns: cols, rows: rws, data };
   cache.set(key, sheet);
   return sheet;
+}
+
+// ---------------------------------------------------------------------------
+// GU47 E-F: built-in atlas sprites (`sprite: "smoke-a"` on an emitter) and
+// texture-asset sheets (`sprite: { atlas }`, `effects.flipbook({ texture })`).
+// ---------------------------------------------------------------------------
+
+/** One built-in sequence on the baked VFX page: pixel rect on the 2048 page, frame grid and playback. */
+export interface VfxSpriteLayout {
+  readonly rect: readonly [number, number, number, number];
+  readonly columns: number;
+  readonly rows: number;
+  readonly frames: number;
+  /** Frames per second for looping sequences; absent on single-frame sprites. */
+  readonly fps?: number;
+  /** Wrap at the last frame (smoke, flame, electric). Other multi-frame sequences play once over the particle life. */
+  readonly loop?: boolean;
+}
+
+/**
+ * Where each of the 18 built-in sequences sits on `packages/engine/assets/vfx/aura-vfx-2k.png`.
+ * Mirrors `manifest.json` except for three sequences whose baked rows overlap: the bake tool advances one
+ * cell row per layout row, so a two-row sequence is partly overwritten by the next row (`fireball` covers the
+ * bottom-left cell of `smoke-a`, `flame-loop` covers the bottom row of `fireball`, `electric` and
+ * `debris-chips` cover the bottom row of `flame-loop`). Those three sample only their clean top row here,
+ * with the frame rate scaled so one cycle lasts as long as the baked sequence intends.
+ */
+export const VFX_SPRITE_LAYOUT: Readonly<Record<AuraVfxBuiltinSequence, VfxSpriteLayout>> = {
+  "soft-dot": { rect: [4, 4, 256, 256], columns: 1, rows: 1, frames: 1 },
+  glow: { rect: [264, 4, 256, 256], columns: 1, rows: 1, frames: 1 },
+  flare: { rect: [524, 4, 256, 256], columns: 1, rows: 1, frames: 1 },
+  "spark-streak": { rect: [784, 4, 256, 256], columns: 1, rows: 1, frames: 1 },
+  ring: { rect: [1044, 4, 256, 256], columns: 1, rows: 1, frames: 1 },
+  "ring-thin": { rect: [1304, 4, 256, 256], columns: 1, rows: 1, frames: 1 },
+  "dust-mote": { rect: [1564, 4, 256, 256], columns: 1, rows: 1, frames: 1 },
+  bubble: { rect: [4, 264, 256, 256], columns: 1, rows: 1, frames: 1 },
+  "rain-streak": { rect: [264, 264, 256, 256], columns: 1, rows: 1, frames: 1 },
+  snowflake: { rect: [524, 264, 256, 256], columns: 1, rows: 1, frames: 1 },
+  // Baked 2×2 at 12 fps; its bottom-left cell is overwritten by `fireball`.
+  "smoke-a": { rect: [784, 264, 512, 256], columns: 2, rows: 1, frames: 2, fps: 6, loop: true },
+  "smoke-b": { rect: [1304, 264, 512, 512], columns: 2, rows: 2, frames: 4, fps: 12, loop: true },
+  // Baked 4×2; its bottom row is overwritten by `flame-loop`.
+  fireball: { rect: [4, 524, 1024, 256], columns: 4, rows: 1, frames: 4, fps: 24 },
+  // Baked 4×2 at 16 fps; its bottom row is overwritten by `electric` and `debris-chips`.
+  "flame-loop": { rect: [4, 784, 1024, 256], columns: 4, rows: 1, frames: 4, fps: 8, loop: true },
+  muzzle: { rect: [1044, 784, 256, 256], columns: 1, rows: 1, frames: 1 },
+  splash: { rect: [1304, 784, 512, 512], columns: 2, rows: 2, frames: 4, fps: 10 },
+  electric: { rect: [4, 1044, 512, 256], columns: 2, rows: 1, frames: 2, fps: 30, loop: true },
+  "debris-chips": { rect: [524, 1044, 512, 256], columns: 2, rows: 1, frames: 2, fps: 6 }
+};
+
+/** True for the 18 built-in sequence names (`agent-api/vfx/atlas.ts`). */
+export function isVfxBuiltinSprite(name: unknown): name is AuraVfxBuiltinSequence {
+  return typeof name === "string" && Object.prototype.hasOwnProperty.call(VFX_SPRITE_LAYOUT, name);
+}
+
+/** Atlas page size per quality tier: the 1k twin on low and medium, the 2k page on high and ultra. */
+export function vfxSpritePageSize(tier: string): 1024 | 2048 {
+  return tier === "low" || tier === "medium" ? 1024 : 2048;
+}
+
+/**
+ * Pixel rect of a sequence on the page of `pageSize`. The 1k twin is baked with 128 px cells and the same
+ * 4 px gutter, so its cell pitch is 132 px, not half of 260: halving the 2k rect would sample 4 px off.
+ */
+export function vfxSpriteRect(layout: VfxSpriteLayout, pageSize: 1024 | 2048): readonly [number, number, number, number] {
+  if (pageSize >= 2048) return layout.rect;
+  const [x, y, w, h] = layout.rect;
+  const half = (v: number): number => 4 + Math.round((v - 4) / 260) * 132;
+  return [half(x), half(y), w / 2, h / 2];
+}
+
+/**
+ * Frame for one particle of a sprite emitter (written into the instance `frame` slot; the fraction blends
+ * into the next cell when the batch has `frameBlend`). Looping sequences run at their fps from the
+ * particle's birth; play-once sequences span the particle's life; a texture sheet holds its fixed `frame`.
+ */
+export function vfxSpriteFrame(
+  sprite: { readonly frames: number; readonly fps?: number; readonly loop?: boolean; readonly frame?: number },
+  age: number,
+  life: number
+): number {
+  const frames = Math.max(1, Math.floor(sprite.frames));
+  if (sprite.frame !== undefined) return Math.min(frames - 1, Math.max(0, Math.floor(sprite.frame)));
+  if (frames === 1) return 0;
+  if (sprite.loop && sprite.fps !== undefined && sprite.fps > 0) return (Math.max(0, age) * sprite.fps) % frames;
+  const t = life > 0 ? Math.min(1, Math.max(0, age / life)) : 1;
+  return t * (frames - 1);
+}
+
+/** Decoded image for a sprite texture: an uploadable image source (browser) or raw RGBA8 rows bottom-up (tests). */
+export interface VfxSpriteImage {
+  readonly width: number;
+  readonly height: number;
+  readonly source?: TexImageSource;
+  readonly data?: Uint8Array;
+}
+
+/** Loads `url` and returns the pixel rect `rect` (whole image when null), rows oriented for the GL upload. */
+export type VfxSpriteLoader = (url: string, rect: readonly [number, number, number, number] | null) => Promise<VfxSpriteImage>;
+
+const browserPages = new Map<string, Promise<ImageBitmap>>();
+
+/**
+ * Browser loader: one fetch and decode per page URL (shared by every sequence), then a cropped ImageBitmap per
+ * rect. `imageOrientation: "flipY"` puts the image's top row at v = 1 (WebGL ignores UNPACK_FLIP_Y for
+ * ImageBitmap sources), and decoding keeps the stored bytes as they are (the atlas is premultiplied sRGB).
+ */
+export const browserVfxSpriteLoader: VfxSpriteLoader = async (url, rect) => {
+  if (typeof fetch !== "function" || typeof createImageBitmap !== "function") {
+    throw new Error("fetch and createImageBitmap are unavailable in this runtime");
+  }
+  let page = browserPages.get(url);
+  if (!page) {
+    page = fetch(url)
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.blob();
+      })
+      .then((blob) => createImageBitmap(blob, { premultiplyAlpha: "none", colorSpaceConversion: "none" }));
+    browserPages.set(url, page);
+    page.catch(() => browserPages.delete(url));
+  }
+  const bitmap = await page;
+  const [x, y, w, h] = rect ?? [0, 0, bitmap.width, bitmap.height];
+  const crop = await createImageBitmap(bitmap, x, y, w, h, { imageOrientation: "flipY", premultiplyAlpha: "none", colorSpaceConversion: "none" });
+  return { width: crop.width, height: crop.height, source: crop };
+};
+
+/**
+ * URL of the baked page. Resolved against this module so Vite (dev and build) emits the PNG from
+ * `packages/engine/assets/vfx/`; `src/` and `dist/` sit at the same depth, so the package dist resolves it too.
+ */
+export function defaultVfxSpritePageUrl(pageSize: 1024 | 2048): string {
+  return pageSize >= 2048
+    ? new URL("../../../assets/vfx/aura-vfx-2k.png", import.meta.url).href
+    : new URL("../../../assets/vfx/aura-vfx-1k.png", import.meta.url).href;
+}
+
+export type VfxSpriteTextureState = "pending" | "ready" | "failed";
+
+interface SpriteTextureEntry {
+  state: VfxSpriteTextureState;
+  texture: Texture | null;
+  readonly done: Promise<void>;
+}
+
+/**
+ * Per-system cache of sprite textures. `builtin(name)` and `texture(url)` start the load on first use and
+ * return null until the image is decoded (the batch keeps the analytic soft-dot meanwhile) or after the load
+ * failed (`onError` is called once per key; the batch stays on the soft-dot).
+ */
+export class VfxSpriteTextures {
+  private readonly entries = new Map<string, SpriteTextureEntry>();
+
+  constructor(
+    private readonly loader: VfxSpriteLoader = browserVfxSpriteLoader,
+    readonly pageSize: 1024 | 2048 = 2048,
+    private readonly onError?: (key: string, message: string) => void,
+    private readonly pageUrl: (pageSize: 1024 | 2048) => string = defaultVfxSpritePageUrl
+  ) {}
+
+  /** Texture of a built-in sequence cropped from the tier page (premultiplied sRGB), or null while loading or failed. */
+  builtin(name: AuraVfxBuiltinSequence): Texture | null {
+    const layout = VFX_SPRITE_LAYOUT[name];
+    if (!layout) return null;
+    return this.load(`vfx:${name}`, this.pageUrl(this.pageSize), vfxSpriteRect(layout, this.pageSize));
+  }
+
+  /** Whole-image texture of a texture asset (straight-alpha sRGB sheet), or null while loading or failed. */
+  texture(url: string): Texture | null {
+    return this.load(`tex:${url}`, url, null);
+  }
+
+  /** Load state per key (`vfx:<name>` or `tex:<url>`). */
+  status(): Readonly<Record<string, VfxSpriteTextureState>> {
+    const out: Record<string, VfxSpriteTextureState> = {};
+    for (const [key, entry] of this.entries) out[key] = entry.state;
+    return out;
+  }
+
+  /** Resolves once every load requested so far has settled (tests and receipts wait on it). */
+  async settled(): Promise<void> {
+    await Promise.all([...this.entries.values()].map((entry) => entry.done));
+  }
+
+  private load(key: string, url: string, rect: readonly [number, number, number, number] | null): Texture | null {
+    const existing = this.entries.get(key);
+    if (existing) return existing.texture;
+    const entry: { state: VfxSpriteTextureState; texture: Texture | null; done: Promise<void> } = { state: "pending", texture: null, done: Promise.resolve() };
+    entry.done = this.loader(url, rect).then(
+      (image) => {
+        entry.texture = new Texture({
+          width: image.width,
+          height: image.height,
+          colorSpace: "srgb",
+          label: `a3d-vfx-sprite-${key}`,
+          ...(image.source ? { source: image.source } : { data: image.data ?? new Uint8Array(image.width * image.height * 4) })
+        });
+        entry.state = "ready";
+      },
+      (error: unknown) => {
+        entry.state = "failed";
+        this.onError?.(key, error instanceof Error ? error.message : String(error));
+      }
+    );
+    this.entries.set(key, entry);
+    return null;
+  }
 }

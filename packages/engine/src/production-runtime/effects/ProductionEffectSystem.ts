@@ -10,8 +10,8 @@ import { QUALITY_TIERS, type AuraQualityTier } from "@aura3d/rendering/contracts
 import type { ParticlePassDiagnostics } from "@aura3d/rendering";
 import { MeshParticleBatch, RibbonBatch, RibbonTrail, DecalBatch, DECAL_TIER_CAP, decalQuadGeometry, ribbonStripToDecalGeometry, PARTICLE_GPU_BUDGET_MS, ProceduralVolumeEmitter, type BeamDrawSpec, type MeshParticleFeed, type DecalVertexData, type GpuSimSpec } from "@aura3d/rendering";
 import { createEmitter, stepEmitter, writeEmitterInstances, type EmitterDescriptor, type EmitterState } from "./CpuEmitter";
-import { proceduralFireballSheet } from "./FlipbookAtlas";
-import { lowerEffectNode, srgbChannelToLinear, type LoweredEffect, type LoweredVolumeEffect, type EffectNodeLike } from "./EffectNodeLowering";
+import { proceduralFireballSheet, VfxSpriteTextures, vfxSpriteFrame, vfxSpritePageSize, type VfxSpriteLoader, type VfxSpriteTextureState } from "./FlipbookAtlas";
+import { lowerEffectNode, srgbChannelToLinear, type LoweredEffect, type LoweredSprite, type LoweredVolumeEffect, type EffectNodeLike } from "./EffectNodeLowering";
 import { EffectDiagnostics } from "./EffectDiagnostics";
 import { LiveAtmosphere } from "./LiveAtmosphere";
 import { TransientLightPool, type TransientLightFlash } from "./TransientLightPool";
@@ -45,6 +45,16 @@ interface EmitterBinding {
   readonly lowered: Extract<LoweredEffect, { type: "emitter" }>;
   readonly state: EmitterState;
   scratch: Float32Array;
+}
+
+/**
+ * GU47 E-F: overwrite the instance `frame` slot (float 13 of the §6.2.1 layout) of every live particle with
+ * its sprite frame. `writeEmitterInstances` packs particle i at `i * 16`, so `state.age[i]` / `state.life[i]`
+ * line up; rotation and the life fade stay as the emitter wrote them.
+ */
+export function writeSpriteFrames(state: EmitterState, out: Float32Array, live: number, sprite: LoweredSprite): void {
+  const fixed = sprite.kind === "texture" ? { frames: sprite.frames, frame: sprite.frame } : sprite;
+  for (let i = 0; i < live; i++) out[i * 16 + 13] = vfxSpriteFrame(fixed, state.age[i], state.life[i]);
 }
 
 /** §8.2 weather volume binding — stateless positions, packed fresh in feed. */
@@ -304,11 +314,28 @@ export class ProductionEffectSystem {
   private renderBridged = false;
   /** A renderer frame pulled the render source since the last endFrame. */
   private renderSincePrevFrame = false;
+  /** GU47 E-F: atlas-sprite and texture-sheet textures, loaded on first use (1k page on low/medium tiers). */
+  private readonly sprites: VfxSpriteTextures;
 
-  constructor(private readonly app: AppLike, options: { readonly tier?: AuraQualityTier } = {}) {
+  constructor(
+    private readonly app: AppLike,
+    options: {
+      readonly tier?: AuraQualityTier;
+      /** GU47 E-F: sprite image loader (default: fetch + createImageBitmap); tests inject a synchronous-data loader. */
+      readonly spriteLoader?: VfxSpriteLoader;
+      /** GU47 E-F: URL of the baked VFX page per size (default: resolved against the engine module). */
+      readonly spritePageUrl?: (pageSize: 1024 | 2048) => string;
+    } = {}
+  ) {
     // Resolved C-27 tier wins over the explicit option's fallback: callers pass
     // app.quality.tier; "high" remains only as the unresolved default.
     this.tier = options.tier ?? app.quality?.tier ?? "high";
+    this.sprites = new VfxSpriteTextures(
+      options.spriteLoader,
+      vfxSpritePageSize(this.tier),
+      (key, message) => this.diagnostics.note("VFX_SPRITE_UNAVAILABLE", key, `sprite texture ${key} failed to load (${message}); the batch keeps the soft-dot`),
+      options.spritePageUrl
+    );
     this.decals = new DecalBatch(DECAL_TIER_CAP[this.tier]);
     this.budgetCap = QUALITY_TIERS[this.tier].particleBudget;
     this.transientLights = new TransientLightPool(this.tier);
@@ -868,6 +895,7 @@ export class ProductionEffectSystem {
     const groups = new Map<string, { first: EmitterBinding; parts: { binding: EmitterBinding; live: number }[] }>();
     for (const binding of this.emitters.values()) {
       const live = writeEmitterInstances(binding.state, binding.scratch);
+      if (binding.lowered.sprite) writeSpriteFrames(binding.state, binding.scratch, live, binding.lowered.sprite);
       this.frameLive.set(binding.lowered.nodeId, live);
       const key = binding.lowered.emitter.key;
       let group = groups.get(key);
@@ -879,12 +907,19 @@ export class ProductionEffectSystem {
       seenKeys.add(key);
       const totalLive = group.parts.reduce((s, p) => s + p.live, 0);
       const flipbook = group.first.lowered.emitter.flipbook;
+      const sprite = group.first.lowered.sprite;
+      // GU47 E-F: atlas sprites sample their sequence once it has loaded; until then (or after a failed load)
+      // the batch draws the analytic soft-dot exactly as before.
+      const spriteTexture = sprite ? this.spriteTexture(sprite) : null;
       const desc: ParticleBatchDescriptor = {
         key,
         capacity: group.parts.reduce((s, p) => s + p.binding.lowered.emitter.capacity, 0),
         source: "cpu",
-        atlas: flipbook ? flipbookTexture(flipbook) : softDotTexture(),
+        atlas: flipbook ? flipbookTexture(flipbook) : spriteTexture ?? softDotTexture(),
         ...(flipbook ? { atlasGrid: [flipbook.columns ?? 1, flipbook.rows ?? 1] as const, atlasStraightAlpha: true } : {}),
+        ...(!flipbook && sprite && spriteTexture
+          ? { atlasGrid: [sprite.columns, sprite.rows] as const, ...(sprite.kind === "texture" ? { atlasStraightAlpha: true } : {}) }
+          : {}),
         blend: group.first.lowered.batch.blend,
         shading: group.first.lowered.batch.shading,
         softDepth: group.first.lowered.batch.softDepth,
@@ -952,6 +987,21 @@ export class ProductionEffectSystem {
         this.batchHandles.delete(key);
       }
     }
+  }
+
+  /** GU47 E-F: texture for a lowered sprite, or null while it loads (or after it failed). */
+  private spriteTexture(sprite: LoweredSprite): Texture | null {
+    return sprite.kind === "builtin" ? this.sprites.builtin(sprite.name) : this.sprites.texture(sprite.url);
+  }
+
+  /** GU47 E-F: load state of every sprite texture requested so far (`vfx:<name>` / `tex:<url>`). */
+  spriteStatus(): Readonly<Record<string, VfxSpriteTextureState>> {
+    return this.sprites.status();
+  }
+
+  /** GU47 E-F: resolves once every sprite texture requested so far has loaded or failed. */
+  spritesSettled(): Promise<void> {
+    return this.sprites.settled();
   }
 
   private concatScratch(key: string, floats: number, parts: { binding: EmitterBinding; live: number }[]): Float32Array {
