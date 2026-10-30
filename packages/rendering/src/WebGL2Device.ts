@@ -68,6 +68,16 @@ export interface TextureFilterAnisotropicExtension {
 export const WEBGL_CUBE_FACES: readonly TextureCubeFace[] = ["px", "nx", "py", "ny", "pz", "nz"];
 
 /**
+ * Whether a render target is a shadow depth target, for the `shadowRenderTargetsAllocated` counter that
+ * `diagnostics().renderer.shadows.mapRendered` reads. Legacy maps carry "shadow" in their label, legacy cascades
+ * `renderer-csm-cascade-*`, and the PRD-02 sun cascades `prd02-cascade-*` (DD-10: before this the PRD-02 path counted 0 targets,
+ * so the renderer row reported `enabled: false, mapRendered: false` on a game whose shadows were drawing).
+ */
+function isShadowRenderTargetLabel(label: string | undefined): boolean {
+  return /shadow|(?:^|-)csm(?:-|$)|^prd02-cascade-/i.test(label ?? "");
+}
+
+/**
  * #621 (01-RTARRAY): immutable storage (`texStorage2D/3D`) only accepts SIZED
  * internal formats. `resolveRenderTargetFormat("rgba8")` returns unsized
  * `gl.RGBA`, which is valid for the `texImage2D` 2d path but makes
@@ -1024,9 +1034,10 @@ export class WebGL2Device implements RenderDevice {
     this.renderTargets.add(target);
     // Shadow passes label their depth target after the shadow map texture, so the
     // label is the device-side signal that a shadow depth target was allocated.
-    // Cascaded maps use the established renderer-csm-cascade-* labels.
-    // Count their actual allocation too, including the first shadow frame.
-    if (/shadow|(?:^|-)csm(?:-|$)/i.test(descriptor.label ?? "")) this.host.counters.shadowRenderTargetsAllocated += 1;
+    // Cascaded maps use the established renderer-csm-cascade-* labels, and the
+    // PRD-02 sun cascades use prd02-cascade-*. Count their actual allocation too,
+    // including the first shadow frame.
+    if (isShadowRenderTargetLabel(descriptor.label)) this.host.counters.shadowRenderTargetsAllocated += 1;
     this.host.textureRegistry.textures.set(target.colorTexture, colorHandle);
     this.host.textureRegistry.textureUploadModes.set(target.colorTexture, "rgba8");
     if (depthTexture && depthTextureHandle) {
@@ -1328,7 +1339,7 @@ export class WebGL2Device implements RenderDevice {
       }
     }
     this.renderTargets.add(target);
-    if (/shadow|(?:^|-)csm(?:-|$)/i.test(label)) this.host.counters.shadowRenderTargetsAllocated += 1;
+    if (isShadowRenderTargetLabel(label)) this.host.counters.shadowRenderTargetsAllocated += 1;
     for (let attachment = 0; attachment < colorHandles.length; attachment += 1) {
       this.host.textureRegistry.textures.set(colorTextures[attachment], colorHandles[attachment]);
       this.host.textureRegistry.textureUploadModes.set(colorTextures[attachment], colorFormats[attachment]);
