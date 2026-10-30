@@ -53,6 +53,14 @@ No phase-1 lane runs `tools/remote-acr/run.sh`, `tools/real-gpu/run.sh`, a judge
 
 When a game item needs a NEW engine API from lane E-x, implement it now on 4.6.x APIs wherever possible, behind a small adapter in the game's own folder (for example `art/engineCompat.ts`), and mark the swap point with a `// GU47(E-x): ...` comment so wave 2 is a one-line change. Items with no interim path are recorded as `blocked (E-x)`. Items that need a new Meshy asset are written so the asset key drops in later (keep today's asset or a clearly named placeholder; never a primitive hero subject) and recorded as `blocked (WP-36)` for the asset part. Items that are measurements, captures, judging or posters are `phase 2`.
 
+## HDRI catalogue convention (E-A and every game)
+
+- E-A ships one 1k copy per catalogued id at `public/hdri/<id>_1k.hdr`, served at `/hdri/<id>_1k.hdr`. The ids are the `AuraHdriId` union in PRD §3.1 E-A: the corpus or library file stem without its size suffix (`belfast_sunset_puresky`, `venice_sunset`, `rooftop_night`, `outdoor-midday`, `sunset-dramatic`, `indoor-workshop`, ...). A game that needs a 2k copy asks E-A for `public/hdri/<id>_2k.hdr` in a handoff (`aura3d assets optimize --hdri 2k`).
+- Look-preset games use the NEW look override `hdri: "<id>"` behind their `art/engineCompat.ts` adapter until E-A merges. Hand-built games declare `{ type: "texture", format: "hdr", url: "/hdri/<id>_1k.hdr" }` in their asset table and pass it to `environments.hdri(...)`.
+- Those files 404 until E-A merges; that is expected in phase 1 (nothing runs). Do not vendor 2k HDRIs into game folders.
+- `public/hdri/*.hdr` is not LFS-tracked today. In wave 1, E-A owns the `.gitattributes` lines for `public/hdri/` (it may add LFS rules that match only the new catalogue files; the existing `autumn_field_puresky_1k`, `kloppenheim_06_puresky_1k`, `studio_small_08_1k` and `night-2k` stay regular blobs). WP-36 owns the rest of `.gitattributes`.
+- Primary-sky duplicates across games are resolved by WP-38 (PRD §6.1, last paragraph); use the HDRI your WP names.
+
 ## Hard rules
 
 - No local browsers, no local Playwright, no local Docker, no dev server opened in a browser. Phase 1 has no remote runs either.
