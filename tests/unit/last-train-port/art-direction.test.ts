@@ -65,4 +65,11 @@ describe("Lamplight Line art direction (GU47 WP-31 LT-19)", () => {
     expect(JSON.stringify(world.sceneFor("B").toJSON())).toContain("god-rays");
     expect(JSON.stringify(world.sceneFor("A").toJSON())).not.toContain("god-rays");
   });
+
+  it("dresses the band scenes: one catenary, signals, festoon bulbs and six nameboards matching the towns (LT-12)", () => {
+    const json = JSON.stringify(world.sceneFor("C").toJSON());
+    for (const name of ["catenary", "signal-posts", "signal-heads", "festoon-bulbs", "sky-lanterns"]) expect(json, name).toContain(`"${name}"`);
+    data.tables.towns.forEach((town, i) => { expect(json).toContain(`"nameboard-${i}"`); expect(json).toContain(town.name.toUpperCase()); });
+    expect(JSON.stringify(buildWorld(data, "original").scene.toJSON())).not.toContain('"catenary"');
+  });
 });

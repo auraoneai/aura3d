@@ -1175,6 +1175,30 @@
         "practical": false
       },
       {
+        "node": "nameboard-0",
+        "practical": false
+      },
+      {
+        "node": "nameboard-1",
+        "practical": false
+      },
+      {
+        "node": "nameboard-2",
+        "practical": false
+      },
+      {
+        "node": "nameboard-3",
+        "practical": false
+      },
+      {
+        "node": "nameboard-4",
+        "practical": false
+      },
+      {
+        "node": "nameboard-5",
+        "practical": false
+      },
+      {
         "node": "islands",
         "practical": false
       },
@@ -1211,6 +1235,24 @@
       {
         "node": "benches",
         "practical": false
+      },
+      {
+        "node": "catenary",
+        "practical": false
+      },
+      {
+        "node": "signal-posts",
+        "practical": false
+      },
+      {
+        "node": "signal-heads",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "festoon-bulbs",
+        "emissiveIntensity": 2.4,
+        "practical": true
       },
       {
         "node": "signboards",

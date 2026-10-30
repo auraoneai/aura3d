@@ -8,7 +8,7 @@
  * normals input, audit D-08); day/night re-aims the lights and moves the lighting runtime's environment intensity
  * and the output exposure. Everything the original fetched remotely is re-created or replaced with licensed assets.
  */
-import { camera, cameras, defineAuraAssets, effects, environments, geometry, lights, material, model, primitives, scene, type AuraApp, type AuraAssetRef } from "@aura3d/engine";
+import { camera, cameras, defineAuraAssets, effects, environments, geometry, lights, material, model, instances, primitives, scene, text3D, type AuraApp, type AuraAssetRef } from "@aura3d/engine";
 import { BANDS, HDRI_URL, bandFor, envRotationRad, keyPosition, parseBand, parseLook, rgb, shouldSwapBand, skySunDirection, townSky, type BandId, type LamplightHdri } from "./bands";
 import { LanternSky } from "./lanterns";
 import { registerLamplightVfx, vfxEvents, type VfxSimView } from "./vfx";
@@ -301,6 +301,7 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   const islandTop: Inst[] = [], islandRim: Inst[] = [], islandRock: Inst[] = [], islandColors: string[] = [];
   const platformAt: Inst[] = [], platformEdgeAt: Inst[] = [], canopyBoxAt: Inst[] = [], canopyBoxColors: string[] = [], canopyTrimAt: Inst[] = [];
   const postAt: Inst[] = [], lampAt: Inst[] = [], benchAt: Inst[] = [], signAt: Inst[] = [];
+  const signalAt: Inst[] = [], signalHeadAt: Inst[] = [], signalColors: string[] = [], festoonAt: Inst[] = [];
   towns.forEach((town, i) => {
     const s0 = sampleRoute(data.route, i, 0);
     const s1 = sampleRoute(data.route, i, 6);
@@ -330,6 +331,17 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
     }
     for (const k of [-6, 0, 6]) benchAt.push({ position: [s0.x + sx * 6.4 + fx * k, s0.y + 1.15, s0.z + sz * 6.4 + fz * k], rotation: [0, yaw, 0] });
     signAt.push({ position: [s0.x + sx * 8.1 + fx * 12, s0.y + 2.6, s0.z + sz * 8.1 + fz * 12], rotation: [0, yaw + Math.PI / 2, 0] });
+    if (row) {
+      // GU47 LT-12: SDF nameboard on the station sign (track-facing side), one text3D node per town
+      b.add(text3D(town.name.toUpperCase(), { name: `nameboard-${i}`, size: 0.34, depth: 0.03, backend: "sdf", position: [s0.x + sx * 7.98 + fx * 13.4, s0.y + 2.5, s0.z + sz * 7.98 + fz * 13.4], rotation: [0, yaw - Math.PI / 2, 0], material: pbr("#f3e6cc", 0.5), castShadow: false }));
+      // LT-12 signal posts: one red (stop) behind the platform, one green (clear) at the departure end
+      for (const [k, al] of [[0, -16], [1, 20]] as const) {
+        signalAt.push({ position: [s0.x - sx * 2.9 + fx * al, s0.y + 2.2, s0.z - sz * 2.9 + fz * al] });
+        signalHeadAt.push({ position: [s0.x - sx * 2.9 + fx * al, s0.y + 4.5, s0.z - sz * 2.9 + fz * al] }); signalColors.push(k === 0 ? "#ff3a2a" : "#3aff7a");
+      }
+      // LT-12 festoon bulbs along the canopy's track edge (lit in C/D/E)
+      for (let q = 0; q < 13; q++) festoonAt.push({ position: [s0.x + sx * 3.1 + fx * (-12 + q * 2), s0.y + 4.45 - 0.25 * Math.sin((q / 12) * Math.PI), s0.z + sz * 3.1 + fz * (-12 + q * 2)] });
+    }
 
     const at = (lateral: number, along: number): [number, number] => [s0.x + sx * lateral + fx * along, s0.z + sz * lateral + fz * along];
     groundDisc(cobbleMesh, s0.x, top + 0.04, s0.z, 62, 6);
@@ -470,6 +482,13 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   if (postAt.length > 0) b.add(primitives.cylinder({ name: "posts", size: [0.3, 4.4, 0.3], instances: postAt, material: pbr("#3b3d46", 0.5, 0.5), castShadow: false }));
   b.add(primitives.sphere({ name: "lamps", size: 0.7, instances: lampAt, material: glow("#ffd89a", row ? row.practicals.lampEmissive : night ? 3 : 0.5), castShadow: false }).runtime({ id: "lamps" }));
   b.add(primitives.box({ name: "benches", size: [0.6, 0.12, 2.0], instances: benchAt, material: pbr("#8a5a35", 0.8), castShadow: false }));
+  if (row) {
+    // GU47 LT-12: merged catenary wire over every leg (1 draw), signal posts and heads (2), festoon bulbs (1)
+    b.add(geometry.custom(dyn(mergeRibbons(legPts.map((pts) => ribbon(pts, 0.035, 6.9)))), { name: "catenary", material: pbr("#2b2e35", 0.5, 0.6), castShadow: false }));
+    b.add(primitives.cylinder({ name: "signal-posts", size: [0.18, 4.4, 0.18], instances: signalAt, material: pbr("#3d4047", 0.5, 0.5), castShadow: false }));
+    b.add(instances.sphere({ name: "signal-heads", size: 0.32, transforms: signalHeadAt, colors: signalColors, instanceColorTarget: "both", material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 2.2 }), castShadow: false }));
+    b.add(primitives.sphere({ name: "festoon-bulbs", size: 0.16, instances: festoonAt, material: glow("#ffc77a", row.practicals.platformPoint > 0 ? 2.4 : 0.3), castShadow: false }));
+  }
   b.add(primitives.box({ name: "signboards", size: [0.2, 1.0, 3.2], instances: signAt, material: pbr("#23423a", 0.6), castShadow: false }));
   b.add(primitives.sphere({ name: "flowers", size: 0.9, instances: flowerAt, instanceColors: flowerColors, material: pbr("#ffffff", 0.7), castShadow: false }));
   b.add(primitives.sphere({ name: "bushes", size: [2.4, 1.8, 2.4], instances: bushAt, instanceColors: bushColors, material: pbr("#ffffff", 0.95), castShadow: false }));
