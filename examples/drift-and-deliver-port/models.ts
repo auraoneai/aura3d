@@ -41,8 +41,12 @@ const CAR_LENGTH: Record<CarKey, number> = { courier: 4.4, sedan: 4.5, hatch: 3.
 export const TRAFFIC_MODEL: Record<CarKind, Exclude<CarKey, "courier">> = { sedan: "sedan", hatch: "hatch", van: "van", pickup: "truck" };
 
 /** A runtime-addressable car model: the app moves it with `nodes.require(id).setPosition/setRotation`. */
-export function carModel(id: string, key: CarKey, castShadow: boolean) {
-  return model(MODEL_ASSETS[key], { name: id, scale: CAR_LENGTH[key] / GLB_LENGTH, castShadow, receiveShadow: false }).runtime({ id });
+/**
+ * `bodyOrder` (GU47 WP-28 GC-AN1, shift look): "YXZ" applies yaw, then pitch and roll about the car's own axes; the
+ * default "ZYX" (the original look) rolls about the world z axis.
+ */
+export function carModel(id: string, key: CarKey, castShadow: boolean, bodyOrder?: "YXZ") {
+  return model(MODEL_ASSETS[key], { name: id, scale: CAR_LENGTH[key] / GLB_LENGTH, castShadow, receiveShadow: false, ...(bodyOrder ? { rotationOrder: bodyOrder } : {}) }).runtime({ id });
 }
 
 /** Uniform scale that brings a car GLB to its target length. */

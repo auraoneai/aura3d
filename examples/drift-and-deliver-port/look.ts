@@ -16,6 +16,7 @@ import { HDRI_URL, environmentRotationFor, lightDir, type LookMode, type PhaseRo
 import { KEY_DISTANCE, lookFrame } from "./daylight";
 import { waterSpec } from "./water";
 import { paintWetRoughness, wetRoad } from "./wet";
+import { HALO_COLOR, haloCount } from "./brakes";
 import { HEADLIGHT, SODIUM_COLOR, SODIUM_POOL, SODIUM_RANGE } from "./lamps";
 import { PALETTE_SLOTS, Palette, bakePaletteUVs, createMesh, quad, toArrays, type MeshData } from "./mesh";
 import { paintFacade, paintPalette, paintPark, paintPlaza, paintRoadTile, paintShopfront, paintSky, type FacadeKind } from "./textures";
@@ -193,6 +194,8 @@ export interface LookRig {
   coinMesh: ReturnType<typeof instances.mesh>;
   starMesh: ReturnType<typeof instances.mesh>;
   heartMesh: ReturnType<typeof instances.mesh>;
+  /** GU47 WP-28 GC-AN1/GC-L5: brake-lamp halos, two per car (courier first), one draw; null in the original look. */
+  tailHalos: ReturnType<typeof instances.mesh> | null;
   coins: Pickup[];
   stars: Pickup[];
   hearts: Pickup[];
@@ -427,6 +430,9 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
   const starMesh = instances.mesh("polyhedron", material.emissive({ color: "#fff0a8", emissive: "#ffd54a", emissiveIntensity: 1.3 }), stars.length);
   const heartMesh = instances.mesh("sphere", material.emissive({ color: "#ff8aa8", emissive: "#ff4d79", emissiveIntensity: 1.2 }), hearts.length);
   b.add(coinMesh).add(starMesh).add(heartMesh);
+  // GC-AN1 / GC-L5 (shift look): brake-lamp halos in tail red, hidden until a car brakes (+1 draw)
+  const tailHalos = shift ? instances.mesh("sphere", material.emissive({ color: HALO_COLOR, emissive: HALO_COLOR, emissiveIntensity: 2.4 }), haloCount(world.traffic.length)) : null;
+  if (tailHalos) b.add(tailHalos);
 
   return {
     builder: b,
@@ -436,6 +442,7 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
     coinMesh,
     starMesh,
     heartMesh,
+    tailHalos,
     coins,
     stars,
     hearts,
