@@ -198,7 +198,7 @@ const browserPages = new Map<string, Promise<ImageBitmap>>();
  */
 export const browserVfxSpriteLoader: VfxSpriteLoader = async (url, rect) => {
   if (typeof fetch !== "function" || typeof createImageBitmap !== "function") {
-    throw new Error("fetch and createImageBitmap are unavailable in this runtime");
+    throw new Error("this runtime has no fetch or createImageBitmap to decode the sprite page");
   }
   let page = browserPages.get(url);
   if (!page) {
