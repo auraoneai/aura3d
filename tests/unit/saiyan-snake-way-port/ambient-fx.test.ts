@@ -53,7 +53,7 @@ describe("serpentine-sky-run ambient weather and air (SSR-13)", () => {
 
   it("keeps rain streaks fast and narrow along the given direction and under 10k live particles", () => {
     const rain = serpentRainPreset([0.3, -0.95, 0]);
-    const layer = rain.layers[0] as { direction: number[]; spread: number; count: number; speed: number[]; life: number[] };
+    const layer = rain.layers[0] as unknown as { direction: number[]; spread: number; count: number; speed: number[]; life: number[] };
     expect(layer.direction).toEqual([0.3, -0.95, 0]);
     expect(layer.spread).toBeLessThan(0.1);
     // 8 bursts per 0.08 s x count x max life
