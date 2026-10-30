@@ -38,7 +38,7 @@ export const A3D_RIM_INTENSITY_RANGE: readonly [number, number] = [0, 16];
  */
 export const A3D_RIM_FUNCTION_GLSL = /* glsl */ `
 vec3 a3dRim(vec3 n, vec3 v, vec3 color, float power, float intensity) {
-  float facing = clamp(dot(normalize(n), normalize(v)), 0.0, 1.0);
+  float facing = clamp(dot(n / max(length(n), 1e-4), v / max(length(v), 1e-4)), 0.0, 1.0);
   float edge = exp2(clamp(power, 0.1, 16.0) * log2(max(1.0 - facing, 1e-4)));
   return color * (clamp(intensity, 0.0, 16.0) * edge);
 }

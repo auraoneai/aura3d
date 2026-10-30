@@ -34,7 +34,8 @@
  *     white fallback and is named in `customDiagnostics`
  *     (`CUSTOM_TEXTURE_UNBOUND`). The handle's `repeat/offset/rotation` are not
  *     applied: a custom shader receives raw UVs and owns its own transform.
- *   - `fog` is recorded in `customDiagnostics`, never silently applied.
+ *   - GU47 E-D: `fog: true` wraps the author's `main` and applies the scene fog to its `out vec4` (see `withSceneFog`);
+ *     a stage it cannot wrap is named in `customDiagnostics` (`CUSTOM_FOG_UNAPPLIED`).
  */
 
 import {
@@ -466,7 +467,7 @@ function injectPreamble(source: string, preamble: string, stage: "vertex" | "fra
   return `${head}${preamble}\n${body}`;
 }
 
-/** Include map for the adapter bake: built-ins < author chunks (`#include <a3d_math>`, `<a3d_noise>`, `<a3d_sky>`, `<a3d_fog>`, `<a3d_triplanar>`, `<a3d_toon>`, `<colorspace_decode>`, `<colorspace_encode>`) < global `registerShaderChunk` < `patch`. */
+/** Include map for the adapter bake: built-ins < author chunks (`#include <a3d_math>`, `<a3d_noise>`, `<a3d_sky>`, `<a3d_fog>`, `<a3d_triplanar>`, `<a3d_toon>`, `<a3d_scene>`, `<a3d_shadow>`, `<a3d_lights>`, `<a3d_ibl>`, `<a3d_rim>`, `<colorspace_decode>`, `<colorspace_encode>`) < global `registerShaderChunk` < `patch`. */
 function bakeIncludes(patch: Readonly<Record<string, string>> | undefined): Map<string, string> {
   const includes = new Map<string, string>();
   for (const chunk of SHADER_CHUNKS) includes.set(chunk.name, chunk.source);
@@ -474,6 +475,74 @@ function bakeIncludes(patch: Readonly<Record<string, string>> | undefined): Map<
   for (const [name, source] of globalShaderChunkEntries()) includes.set(name, source);
   for (const [name, source] of Object.entries(patch ?? {})) includes.set(name, source);
   return includes;
+}
+
+const AUTHOR_CHUNK_NAMES: ReadonlySet<string> = new Set(A3D_AUTHOR_GLSL_CHUNKS.map((chunk) => chunk.name));
+
+/**
+ * GU47 E-D: one stage's include map. An author chunk expands at most once per stage (later `#include`s of it expand to
+ * nothing), so chunks may include each other (`a3d_lights` -> `a3d_shadow` -> `a3d_scene`) and an author may include
+ * any combination. A stage that includes each chunk once bakes exactly as before.
+ */
+class AuthorIncludeOnceMap extends Map<string, string> {
+  private readonly expanded = new Set<string>();
+
+  override get(name: string): string | undefined {
+    const source = super.get(name);
+    if (source === undefined || !AUTHOR_CHUNK_NAMES.has(name)) return source;
+    if (this.expanded.has(name)) return "";
+    this.expanded.add(name);
+    return source;
+  }
+}
+
+/** The uniforms `environment_fog_common` reads; ForwardPass `applyEnvironmentFogUniforms` binds them when all are declared. */
+const SCENE_FOG_UNIFORM_DECLS: readonly string[] = [
+  "uniform float u_environmentFogEnabled;",
+  "uniform float u_environmentFogMode;",
+  "uniform vec3 u_environmentFogColor;",
+  "uniform float u_environmentFogNear;",
+  "uniform float u_environmentFogFar;",
+  "uniform float u_environmentFogDensity;",
+  "uniform float u_environmentFogHeightFalloff;",
+  "uniform float u_environmentFogHeightReference;",
+  "uniform float u_environmentFogMaxOpacity;",
+  "uniform float u_volumetricIntensity;",
+  "uniform vec3 u_volumetricLightDirection;",
+  "uniform vec3 u_volumetricLightColor;"
+];
+
+const AUTHOR_MAIN_PATTERN = /\bvoid\s+main\s*\(\s*(?:void\s*)?\)/;
+
+/** The author's colour output (`out vec4 name;`, optionally `layout(location = 0)`), the first one declared. */
+export function customFragmentOutputName(source: string): string | undefined {
+  return /(?:layout\s*\([^)]*\)\s*)?\bout\s+(?:(?:lowp|mediump|highp)\s+)?vec4\s+([A-Za-z_]\w*)\s*;/.exec(source)?.[1];
+}
+
+/**
+ * GU47 E-D: `fog: true` applies the scene fog. The author's `main` is renamed `a3dAuthorMain` and a wrapper `main` runs it,
+ * then mixes the fog the built-in lit programs apply (`environment_fog_common`: linear / exp / exp2 by distance, height
+ * falloff, max opacity, volumetric inscatter; bound per draw by the forward pass, off when the scene has no fog or the
+ * material sets `fog: false`) into the author's colour output, at the fragment's reconstructed world position. Returns
+ * the source unchanged (and `applied: false`) when the stage has no `void main()` or no `out vec4` to fog.
+ */
+function withSceneFog(spec: AuraCustomMaterialSpec, source: string): { readonly source: string; readonly applied: boolean } {
+  if (spec.fog !== true) return { source, applied: false };
+  const output = customFragmentOutputName(source);
+  if (!output || !AUTHOR_MAIN_PATTERN.test(source)) return { source, applied: false };
+  return {
+    applied: true,
+    source: [
+      source.replace(AUTHOR_MAIN_PATTERN, "void a3dAuthorMain()"),
+      "#include <a3d_shadow>",
+      ...SCENE_FOG_UNIFORM_DECLS,
+      "#include <environment_fog_common>",
+      "void main() {",
+      "  a3dAuthorMain();",
+      `  ${output}.rgb = a3dApplyEnvironmentFog(${output}.rgb, a3dFragWorldPosition());`,
+      "}"
+    ].join("\n")
+  };
 }
 
 /** WGSL `#include <name>` expansion — `patch` wins, else the registered wgsl half (or shared GLSL). */
@@ -599,7 +668,8 @@ function adapterLibraryFor(_name: string): ShaderLibrary {
  * WebGL2-only and the WebGPU device fails closed with `WGSL_PROGRAM_MISSING`.
  */
 export class AuraCustomShaderMaterial extends PortableShaderMaterial {
-  private readonly fogRequested: boolean;
+  /** `fog: true` on a fragment stage the fog wrapper could not wrap (no `void main()` or no `out vec4`). */
+  private readonly fogUnapplied: boolean;
   private readonly unusedUniformNames: readonly string[];
   /** The author's own GLSL per stage, so a compile error in the assembled program can be mapped back to the author's line (best effort: exact when no `#include` expands before the error line). Read by the renderer's shader-failure diagnostics. */
   readonly shaderAuthoredSource: { readonly vertex: string; readonly fragment: string };
@@ -613,13 +683,14 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
     const vertexSource = modernizeVertexAttributes(spec.glsl.vertex ?? DEFAULT_GLSL_VERTEX);
     const customAttributes = declaredCustomAttributes(vertexSource);
     const glslVertex = injectPreamble(
-      adapterPreprocessor.preprocess(vertexSource, { defines: spec.defines ?? {}, includes }).source,
+      adapterPreprocessor.preprocess(vertexSource, { defines: spec.defines ?? {}, includes: new AuthorIncludeOnceMap(includes) }).source,
       vertexPreamble(uniforms, vertexSource),
       "vertex"
     );
-    const fragmentSource = withShadowInclude(spec);
+    const fogged = withSceneFog(spec, withShadowInclude(spec));
+    const fragmentSource = fogged.source;
     const glslFragment = injectPreamble(
-      adapterPreprocessor.preprocess(fragmentSource, { defines: spec.defines ?? {}, includes }).source,
+      adapterPreprocessor.preprocess(fragmentSource, { defines: spec.defines ?? {}, includes: new AuthorIncludeOnceMap(includes) }).source,
       fragmentPreamble(uniforms, fragmentSource),
       "fragment"
     );
@@ -642,7 +713,7 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
       renderState: customRenderState(spec),
       requiredAttributes: ["a_position", ...customAttributes]
     });
-    this.fogRequested = spec.fog === true;
+    this.fogUnapplied = spec.fog === true && !fogged.applied;
     this.shaderAuthoredSource = { vertex: vertexSource, fragment: spec.glsl.fragment };
     const authoredSource = `${spec.glsl.vertex ?? ""}\n${spec.glsl.fragment}`;
     this.unusedUniformNames = uniforms
@@ -672,13 +743,15 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
   }
 
   /**
-   * Diagnostics authored-side: `fog` is recorded here, never silently applied,
-   * and a texture2d uniform with no texture is named (`CUSTOM_TEXTURE_UNBOUND`)
-   * because the shader then samples the renderer's white fallback.
+   * Diagnostics authored-side: a `fog: true` the adapter could not apply is named (`CUSTOM_FOG_UNAPPLIED`), and a
+   * texture2d uniform with no texture is named (`CUSTOM_TEXTURE_UNBOUND`) because the shader then samples the
+   * renderer's white fallback.
    */
   get customDiagnostics(): readonly string[] {
     const out: string[] = [];
-    if (this.fogRequested) out.push("material.custom: fog is not wired to custom shaders — the field is recorded, not applied");
+    if (this.fogUnapplied) {
+      out.push("[CUSTOM_FOG_UNAPPLIED] material.custom: fog: true needs a fragment stage with `void main()` and an `out vec4` colour output; scene fog was not applied");
+    }
     for (const publicName of this.unusedUniformNames) {
       out.push(`[CUSTOM_UNIFORM_UNUSED] material.custom: uniform "${publicName}" is declared but never read by the shader; it is not uploaded and the draw is not skipped`);
     }

@@ -48,6 +48,7 @@ import { FORWARD_DIRECT_LIGHT_CAPACITY, applyClusteredLightingUniforms, applyFor
 import { flushMultiDrawQueue, submitDraw } from "./forward/DrawSubmit.js";
 import { bindVelocityUniforms } from "./forward/Velocity.js";
 import { A3D_INSTANCE_EMISSIVE_ATTRIBUTE, materialInstanceColorTarget, registerInstanceColorTargetFeature } from "./shaders/chunks/instance_color_target.glsl";
+import { invertMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 
 export type { RenderItem };
 
@@ -381,11 +382,18 @@ export class ForwardPass extends BaseRenderPass {
     ensureGu47ForwardFeatures();
   }
 
-  /** GU47 E-D: `u_lightCount`/`u_lightData` for `material.custom` programs (`#include <a3d_lights>`), packed once per execute. */
-  private customLightPack: ReturnType<typeof LightUniforms.pack> | undefined;
+  /**
+   * GU47 E-D: per-execute values the `material.custom` built-ins share (`u_lightCount`/`u_lightData` for
+   * `#include <a3d_lights>`, `u_a3dInverseViewProjection` for `a3dFragWorldPosition`), computed once on first use.
+   */
+  private customFrame: { lights?: ReturnType<typeof LightUniforms.pack>; inverseViewProjection?: Float32Array } = {};
+  private readonly customFrameCache: CustomShaderFrameCache = {
+    lights: () => (this.customFrame.lights ??= LightUniforms.pack(this.options.lights ?? [])),
+    inverseViewProjection: () => (this.customFrame.inverseViewProjection ??= customShaderInverseViewProjection(this.options))
+  };
 
   execute(context: RenderPassContext): void {
-    this.customLightPack = undefined;
+    this.customFrame = {};
     this.skinningPaletteUploads.beginFrame();
     this.frameWidth = context.width;
     this.frameHeight = context.height;
@@ -562,7 +570,11 @@ export class ForwardPass extends BaseRenderPass {
     applyCustomShaderFrameUniforms(this.options, this.frameWidth, this.frameHeight, shader, uniforms);
     // GU47 E-D: `a3d_lights` / sun / hemisphere / fog built-ins for `material.custom` programs (reflection-guarded).
     if (baseMaterial instanceof PortableShaderMaterial) {
-      applyCustomShaderLightingUniforms(this.options, itemFog, shader, uniforms, () => (this.customLightPack ??= LightUniforms.pack(this.options.lights ?? [])));
+      applyCustomShaderLightingUniforms(this.options, itemFog, shader, uniforms, this.customFrameCache);
+      // `instanceColor` reads white unless this instanced draw carries per-instance colours.
+      if (shader.reflection.uniforms.has("u_a3dInstanceColors")) {
+        uniforms.set("u_a3dInstanceColors", authorInstancing && item.instanceColors !== undefined ? 1 : 0);
+      }
     }
     bindVelocityUniforms?.(item, uniforms);
     if (forwardDrawHooks.length > 0) {
@@ -2297,16 +2309,24 @@ const LINEAR_FOG_EXP2_EQUIVALENT = Math.sqrt(-Math.log(0.02));
  *     reaches 98% at `far`; 0 when the scene has no fog or the material opts out with `fog: false`).
  *   - `u_lightCount` / `u_lightData`: the packed direct lights `#include <a3d_lights>` loops over (same packing as the
  *     built-in lit programs; the clustered textures are bound by `applyClusteredLightingUniforms`).
+ *   - `u_a3dInverseViewProjection`: inverse(projection * view) of the camera the other custom built-ins describe, for
+ *     `a3dFragWorldPosition()`.
+ *   - `#include <a3d_ibl>`: `u_a3dEnvAmbient` (environment colour * intensity), `u_a3dEnvSh` / `u_a3dEnvShEnabled` (the
+ *     scene probe's SH9), `u_a3dEnvSky` / `u_a3dEnvHorizon` / `u_a3dEnvGround` (procedural map * intensity) and the
+ *     equirect `u_a3dEnvMap` with `u_a3dEnvMapEnabled` / `Intensity` / `Rotation` / `MaxLod` / `Encoding` (same values the
+ *     generated programs' `u_environmentMap*` get; the white fallback with enabled 0 when the scene has none).
  */
 export function applyCustomShaderLightingUniforms(
   options: Pick<ForwardPassOptions, "lights" | "environmentLighting">,
   fog: ForwardEnvironmentFogOptions | false | undefined,
   shader: RenderShaderProgram,
   uniforms: Map<string, UniformValue>,
-  packedLights: () => ReturnType<typeof LightUniforms.pack>
+  frame: CustomShaderFrameCache
 ): void {
   const reflected = shader.reflection.uniforms;
   const wants = (name: string) => reflected.has(name) && !uniforms.has(name);
+  if (wants("u_a3dInverseViewProjection")) uniforms.set("u_a3dInverseViewProjection", frame.inverseViewProjection());
+  applyCustomShaderEnvironmentUniforms(options.environmentLighting, wants, uniforms);
   if (wants("u_a3dSunColor") || wants("u_a3dSunIntensity")) {
     const sun = customShaderSun(options.lights);
     if (wants("u_a3dSunColor")) uniforms.set("u_a3dSunColor", sun ? [sun.color[0], sun.color[1], sun.color[2]] : [0, 0, 0]);
@@ -2323,10 +2343,75 @@ export function applyCustomShaderLightingUniforms(
     uniforms.set("u_a3dFogDensity", density);
   }
   if (wants("u_lightCount") || wants("u_lightData")) {
-    const packed = packedLights();
+    const packed = frame.lights();
     if (wants("u_lightCount")) uniforms.set("u_lightCount", packed.lightCount);
     if (wants("u_lightData")) uniforms.set("u_lightData", packed.data);
   }
+}
+
+/** GU47 E-D: per-execute values shared by every `material.custom` draw (computed on first use). */
+export interface CustomShaderFrameCache {
+  /** The packed direct lights (`LightUniforms.pack`). */
+  lights(): ReturnType<typeof LightUniforms.pack>;
+  /** inverse(projection * view) of the custom built-ins' camera (`customShaderInverseViewProjection`). */
+  inverseViewProjection(): Float32Array;
+}
+
+/** inverse(projection * view) of the camera `applyCustomShaderFrameUniforms` binds as `u_projectionMatrix` / `u_viewMatrix`. */
+export function customShaderInverseViewProjection(
+  options: Pick<ForwardPassOptions, "customFrameCamera" | "cameraViewMatrix" | "auraFrameCamera">
+): Float32Array {
+  const view = Array.from(options.customFrameCamera?.viewMatrix ?? options.cameraViewMatrix ?? identityMatrix());
+  const projection = Array.from(options.customFrameCamera?.projectionMatrix ?? options.auraFrameCamera?.projectionMatrix ?? identityMatrix());
+  if (view.length !== 16 || projection.length !== 16 || !isFiniteArrayLike(view) || !isFiniteArrayLike(projection)) return new Float32Array(identityMatrix());
+  const inverse = invertMat4(multiplyMat4(projection as unknown as Mat4, view as unknown as Mat4));
+  return new Float32Array(isFiniteArrayLike(inverse) ? inverse : identityMatrix());
+}
+
+const ZERO_SH9 = new Float32Array(27);
+const CUSTOM_ENV_MAP_FALLBACK = new TextureBinding({ name: "u_a3dEnvMap", required: false });
+
+/** `#include <a3d_ibl>` uniforms (see `applyCustomShaderLightingUniforms`). */
+function applyCustomShaderEnvironmentUniforms(
+  environment: EnvironmentLightingOptions | undefined,
+  wants: (name: string) => boolean,
+  uniforms: Map<string, UniformValue>
+): void {
+  if (wants("u_a3dEnvAmbient")) {
+    const k = environment && Number.isFinite(environment.intensity) ? Math.max(0, environment.intensity) : 0;
+    uniforms.set("u_a3dEnvAmbient", environment ? [environment.color[0] * k, environment.color[1] * k, environment.color[2] * k] : [0, 0, 0]);
+  }
+  if (wants("u_a3dEnvSh") || wants("u_a3dEnvShEnabled")) {
+    const sh9 = environment?.environmentProbe?.sh9;
+    const valid = sh9 !== undefined && sh9.length === 27 && isFiniteArrayLike(sh9);
+    if (wants("u_a3dEnvSh")) uniforms.set("u_a3dEnvSh", valid ? sh9 : ZERO_SH9);
+    if (wants("u_a3dEnvShEnabled")) uniforms.set("u_a3dEnvShEnabled", valid ? 1 : 0);
+  }
+  if (wants("u_a3dEnvSky") || wants("u_a3dEnvHorizon") || wants("u_a3dEnvGround")) {
+    const procedural = environment?.proceduralMap;
+    const k = procedural && Number.isFinite(procedural.intensity) ? Math.max(0, procedural.intensity) : 0;
+    const scaled = (color: readonly [number, number, number] | undefined) => color ? [color[0] * k, color[1] * k, color[2] * k] : [0, 0, 0];
+    if (wants("u_a3dEnvSky")) uniforms.set("u_a3dEnvSky", scaled(procedural?.skyColor));
+    if (wants("u_a3dEnvHorizon")) uniforms.set("u_a3dEnvHorizon", scaled(procedural?.horizonColor));
+    if (wants("u_a3dEnvGround")) uniforms.set("u_a3dEnvGround", scaled(procedural?.groundColor));
+  }
+  if (!wants("u_a3dEnvMap") && !wants("u_a3dEnvMapEnabled")) return;
+  const binding = environment?.environmentMapTexture;
+  const texture = binding?.texture;
+  const usable = texture !== null && texture !== undefined && texture.dimension !== "cube";
+  if (wants("u_a3dEnvMap")) {
+    uniforms.set("u_a3dEnvMap", usable && binding
+      ? new TextureBinding({ name: "u_a3dEnvMap", texture, sampler: binding.sampler, required: false, ready: binding.ready, expectedColorSpace: binding.expectedColorSpace, expectedDimension: "2d" })
+      : CUSTOM_ENV_MAP_FALLBACK);
+  }
+  if (wants("u_a3dEnvMapEnabled")) uniforms.set("u_a3dEnvMapEnabled", usable ? 1 : 0);
+  const intensity = environment?.environmentMapIntensity ?? 1;
+  const mipCount = environment?.environmentMapMipCount ?? 1;
+  const encoding = environment?.environmentMapEncoding ?? "srgb";
+  if (wants("u_a3dEnvMapIntensity")) uniforms.set("u_a3dEnvMapIntensity", usable && Number.isFinite(intensity) ? Math.max(0, intensity) : 0);
+  if (wants("u_a3dEnvMapRotation")) uniforms.set("u_a3dEnvMapRotation", Number.isFinite(environment?.environmentMapRotation) ? environment!.environmentMapRotation! : 0);
+  if (wants("u_a3dEnvMapMaxLod")) uniforms.set("u_a3dEnvMapMaxLod", Number.isInteger(mipCount) && mipCount >= 1 ? mipCount - 1 : 0);
+  if (wants("u_a3dEnvMapEncoding")) uniforms.set("u_a3dEnvMapEncoding", encoding === "rgbe" ? 1 : encoding === "linear" ? 2 : 0);
 }
 
 /** GU47 E-D: a `material.custom` vertex shader that reads `instanceMatrix` (the adapter declares these inputs for it). */
