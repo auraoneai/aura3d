@@ -151,6 +151,7 @@ import {
 } from "./scene";
 import { PARK_LOOKS, lookPlan, resolveDiamondTier, resolveLookVariant, resolveSkyMode } from "../art/look";
 import { BoardThrottle, boardModel, homeRunPhase } from "../art/board";
+import { cheerHop, earthYaw } from "../art/ambient";
 import { boardTexture } from "./boardTexture";
 import { isDiamondVfxKind, juiceFxKind, landingFxKind, registerDiamondVfx, type DiamondVfxKind } from "../art/vfx";
 import { CameraDirector, halfInningShot, homeRunShot, introShot, walkupShot, type Shot } from "../art/cameraDirector";
@@ -540,7 +541,8 @@ function boot(): void {
       catcherMitt: tryReq("catcher-mitt"),
       confetti: tryReq("confetti"),
       hrBurst: tryReq("hr-burst"),
-      flairBurst: tryReq("flair-burst")
+      flairBurst: tryReq("flair-burst"),
+      lunarEarth: tryReq("lunar-earth")
     };
     for (const id of FIELDER_IDS) H[id] = req(id);
     for (const id of GLOVE_OWNERS) H[`glove-${id}`] = tryReq(`glove-${id}`);
@@ -3173,9 +3175,12 @@ function boot(): void {
     ((H.wavers as AnyHandle[]) ?? []).forEach((w, i) => {
       if (!w) return;
       const c = crowd[i];
-      if (c) w.setPosition(c.x, 0, c.z).setRotation(0, c.yaw, 0);
-      setActorAnimation(`waver-${i}`, w, "Ready", 1.0);
+      // GU47 DIA-N1: staggered hops for 2.4 s after a home run (none under reduced motion or ?look=original).
+      const hop = sceneCtx.variant === "gu47" ? cheerHop(i, performance.now() / 1000 - boardHrAt, reducedMotion) : 0;
+      if (c) w.setPosition(c.x, hop, c.z).setRotation(0, c.yaw, 0);
+      setActorAnimation(`waver-${i}`, w, "Ready", hop > 0 ? 1.6 : 1.0);
     });
+    if (sceneCtx.variant === "gu47" && pk.id === "lunar") (H.lunarEarth as AnyHandle)?.setRotation(0, earthYaw(performance.now() / 1000, reducedMotion), 0);
     void t;
 
     // Ball + shadow + trail dots: drawn between the last two sim steps (fixed-step presenter, C14).
