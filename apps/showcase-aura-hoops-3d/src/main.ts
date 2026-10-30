@@ -72,6 +72,7 @@ import { advanceShotBall, aimError, createHoopWorld, crossedRimDownward, solveLa
 import { BALL_R, DRIB_SHOULDER_FALLBACK, dribbleCycleY } from "./dribble";
 import { createOnePress } from "./input";
 import { hoopMaterials } from "./hoopMaterials";
+import { projectCrops, type QaCropSubject } from "./qaCrops";
 import { MarkerPool, parkedTransforms, type MarkerSlot } from "./markerPools";
 import { LIVE_CAM, MAKE_FOV_KICK, ReplayRing, createBroadcast, createLetterbox, railPose, replayPose, replaySourceTime, type V3 as BroadcastV3 } from "./broadcast";
 import {
@@ -3327,11 +3328,29 @@ function handProbe(): Record<string, unknown> | null {
  */
 let lastPublishAt = -Infinity;
 let lastPublishedPhase = "";
+/** QA crops for E-I's luma capture: feet of the controlled athlete, the ball, the rim, the court floor and the lamp. */
+function publishQaCrops(): void {
+  const me = controlledAthlete() ?? athletes[0];
+  const subjects: QaCropSubject[] = [
+    { name: "floor", at: [0, 0, 4], half: [3, 2] },
+    { name: "rim", at: [RIM[0], RIM[1], RIM[2]], half: [0.9, 0.7] },
+    { name: "ball", at: [ball.x, ball.y, ball.z], half: [0.35, 0.35] }
+  ];
+  if (me) subjects.push({ name: "feet", at: [me.x, 0.15, me.z], half: [0.6, 0.25] });
+  const lamp = COURT_RIGS[venue.id].practicals[0];
+  if (lamp && !LOOK_ORIGINAL) subjects.push({ name: "lamp", at: lamp.position, half: [0.8, 0.6] });
+  const canvas = document.querySelector<HTMLCanvasElement>("#app canvas");
+  const aspect = canvas && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : 16 / 9;
+  const w = window as unknown as { __AURA_QA__?: Record<string, unknown> };
+  w.__AURA_QA__ = { ...(w.__AURA_QA__ ?? {}), crops: projectCrops(cam.eye, cam.target, cam.fov, aspect, subjects) };
+}
+
 function publishEvidence(force = false): void {
   const nowMs = performance.now();
   if (!force && framesRendered % 10 !== 0 && nowMs - lastPublishAt < 250 && game_.phase === lastPublishedPhase) return;
   lastPublishAt = nowMs;
   lastPublishedPhase = game_.phase;
+  try { publishQaCrops(); } catch { /* QA crops best-effort */ }
   const holder = holderAthlete();
   const evidence = {
     route: "showcase-aura-hoops-3d",
