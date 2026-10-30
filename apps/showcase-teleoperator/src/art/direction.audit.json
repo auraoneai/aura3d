@@ -369,16 +369,6 @@
         "practical": false
       },
       {
-        "node": "sf-horizon-sky",
-        "emissiveIntensity": 0.45,
-        "practical": true
-      },
-      {
-        "node": "sf-sun-disc",
-        "emissiveIntensity": 1.65,
-        "practical": true
-      },
-      {
         "node": "sf-pyramid-spire",
         "practical": false
       },

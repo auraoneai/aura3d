@@ -1,4 +1,4 @@
-import { camera, defineAuraAssets, effects, environments, game, instances, lights, material, model, primitives, scene, type AuraTransformSpec } from "@aura3d/engine";
+import { camera, defineAuraAssets, effects, environments, game, instances, lights, material, model, primitives, scene, sky, type AuraTransformSpec } from "@aura3d/engine";
 import { assets, type GridAssetKey } from "./aura-assets";
 import { KEY_SHADOW, SKY_LOOKS, hdriUrl, keyLightPosition, type HdriId, type SkyLook } from "./look";
 import { RIVALS, TRAFFIC_SPECS } from "./sim";
@@ -87,26 +87,21 @@ export const PLAYER_ASSET: Readonly<Record<PlayableCarId, GridAssetKey>> = {
 };
 
 interface WeatherLook {
+  /** Clear colour behind the sky node (shown only if the sky node does not draw). */
   readonly sky: string;
-  readonly horizonEmissive: string;
-  readonly horizonIntensity: number;
-  readonly sunColor: string;
-  readonly sunY: number;
-  readonly ground: string;
-  readonly water: string;
   readonly bloom: number;
   readonly label: string;
 }
 
 /**
- * Sky backdrop and bloom per sky. GU47 GD-01: the lights (IBL, key, hemisphere) come from the look table
- * (`SKY_LOOKS` in look.ts), not from a `looks.preset`.
+ * Clear colour and bloom per sky. GU47 GD-01/GD-04: the lights (IBL, key, hemisphere) and the sky come from the look
+ * table (`SKY_LOOKS` in look.ts), not from a `looks.preset`, a box sky or a sun sphere.
  */
 export const WEATHER: Readonly<Record<WeatherPreset, WeatherLook>> = {
-  noon: { sky: "#69abe0", horizonEmissive: "#bae6fd", horizonIntensity: 0.35, sunColor: "#fde047", sunY: 58, ground: "#1e293b", water: "#0c4a6e", bloom: 0.24, label: "Sunny noon" },
-  golden: { sky: "#d97757", horizonEmissive: "#fb923c", horizonIntensity: 0.45, sunColor: "#f97316", sunY: 28, ground: "#271c24", water: "#1e3a5f", bloom: 0.3, label: "Golden hour" },
-  fog: { sky: "#94a3b8", horizonEmissive: "#cbd5e1", horizonIntensity: 0.3, sunColor: "#e2e8f0", sunY: 46, ground: "#334155", water: "#3b5266", bloom: 0.18, label: "Marine fog" },
-  night: { sky: "#0d1424", horizonEmissive: "#2b4472", horizonIntensity: 0.45, sunColor: "#cbd5e1", sunY: 64, ground: "#0b0f19", water: "#081c2e", bloom: 0.42, label: "Neon night" }
+  noon: { sky: "#69abe0", bloom: 0.24, label: "Sunny noon" },
+  golden: { sky: "#c98a5a", bloom: 0.3, label: "Golden hour" },
+  fog: { sky: "#94a3b8", bloom: 0.18, label: "Marine fog" },
+  night: { sky: "#0d1424", bloom: 0.42, label: "Neon night" }
 };
 
 /** Image-based fill per sky (E-A catalogue HDRIs, `/hdri/<id>_1k.hdr`); never the visible background (GD-01). */
@@ -134,6 +129,32 @@ export function skyRig(look: SkyLook) {
     lights.hemisphere({ name: "grid hemisphere", skyColor: look.hemisphere.sky, groundColor: look.hemisphere.ground, intensity: look.hemisphere.intensity }),
     lights.directional({ name: "grid key light", color: look.key.color, intensity: look.key.intensity, position: keyLightPosition(look), target: [0, 0, 0], shadow: KEY_SHADOW })
   ] as const;
+}
+
+/**
+ * GD-04: the real sky of one row (E-G sky node, A3D_QR_VFX_SKY): a dusk gradient `#2b3a55` to `#f2a65e` with the low sun,
+ * a Preetham noon (turbidity 3), a grey fog gradient, a dark night gradient with a sodium horizon band and typed stars.
+ * The sun disc sits on the key light's ray. The HDRI stays the IBL (`captureEnvironment: false`).
+ */
+export function skyNode(look: SkyLook) {
+  const sun = { elevationDeg: look.sun.elevationDeg, azimuthDeg: look.sun.azimuthDeg, color: look.sun.color, intensity: look.sun.intensity, discSize: look.sun.discSize };
+  const spec = look.sky;
+  if (spec.model === "preetham") {
+    return sky.preetham({ name: "grid sky", sun, turbidity: spec.turbidity, rayleigh: spec.rayleigh, mieCoefficient: spec.mieCoefficient, mieDirectionalG: spec.mieDirectionalG, groundColor: spec.groundColor, captureEnvironment: false, affectsFog: true });
+  }
+  return sky.gradient({
+    name: "grid sky",
+    zenith: spec.zenith,
+    horizon: spec.horizon,
+    ground: spec.ground,
+    exponent: spec.exponent,
+    horizonGlow: spec.horizonGlow,
+    ...(look.sun.intensity > 0 ? { sun } : {}),
+    ...(spec.bands ? { bands: spec.bands } : {}),
+    ...(spec.stars ? { stars: spec.stars } : {}),
+    captureEnvironment: false,
+    affectsFog: true
+  });
 }
 
 /**
@@ -186,13 +207,13 @@ export function buildGridDispatchScene(weather: WeatherPreset): ReturnType<typeo
           : id.startsWith("sf-curb") ? graniteCurbMat
             : sidewalkMat;
   s.addMany([
-    primitives.box({ name: "sf-peninsula-ground", size: [1400, 0.2, 620], material: material.pbr({ color: w.ground, roughness: 0.94 }) }).position(0, -0.25, -180).runtime(game.runtimeNode("sf-peninsula-ground")),
-    primitives.box({ name: "sf-bay-water", size: [1400, 0.08, 220], material: material.pbr({ color: w.water, roughness: 0.22, metalness: 0.45 }) }).position(0, -0.1, -330).runtime(game.runtimeNode("sf-bay-water")),
+    primitives.box({ name: "sf-peninsula-ground", size: [1400, 0.2, 620], material: material.pbr({ color: look.street.ground, roughness: 0.94 }) }).position(0, -0.25, -180).runtime(game.runtimeNode("sf-peninsula-ground")),
+    primitives.box({ name: "sf-bay-water", size: [1400, 0.08, 220], material: material.pbr({ color: look.street.water, roughness: 0.22, metalness: 0.45 }) }).position(0, -0.1, -330).runtime(game.runtimeNode("sf-bay-water")),
     ...ROAD_STRIPS.map((strip) =>
       primitives.box({ name: strip.id, size: stripSize[strip.id] ?? [0.09, 0.025, 420], material: stripMat(strip.id) }).position(strip.x, strip.y, -160).runtime(game.runtimeNode(strip.id))
     ),
-    primitives.box({ name: "sf-horizon-sky", size: [1400, 340, 2], material: material.emissive({ color: w.sky, emissive: w.horizonEmissive, emissiveIntensity: w.horizonIntensity }) }).position(0, 72, -350).runtime(game.runtimeNode("sf-horizon-sky")),
-    primitives.sphere({ name: "sf-sun-disc", size: [26, 26, 4], material: material.emissive({ color: w.sunColor, emissive: w.sunColor, emissiveIntensity: weather === "night" ? 0.9 : 1.65 }) }).position(42, w.sunY, -320).runtime(game.runtimeNode("sf-sun-disc"))
+    // GD-04: the emissive box sky and the sun sphere are gone; the sky node below draws the sky and the sun disc.
+    skyNode(look)
   ]);
 
   // 2. Skyline landmarks: a white pyramid tower, a glass obelisk and two suspension-bridge towers on the bay

@@ -93,3 +93,32 @@ describe("grid dispatch GD-01 explicit rig per sky", () => {
     expect(Math.atan2(dusk[1], -dusk[2]) * (180 / Math.PI)).toBeLessThan(18);
   });
 });
+
+describe("grid dispatch GD-04 real sky node per sky", () => {
+  type SkyNode = Node & { spec?: { model: string; zenith?: string; horizon?: string; turbidity?: number; sun?: { elevationDeg: number; azimuthDeg: number }; stars?: { count: number }; bands?: unknown[] }; captureEnvironment?: boolean };
+  for (const sky of SKY_ORDER) {
+    it(`${sky}: one sky node, no emissive box sky and no sun sphere`, () => {
+      const nodes = flatNodes(sky) as SkyNode[];
+      const skies = nodes.filter((n) => n.kind === "sky");
+      expect(skies).toHaveLength(1);
+      expect(skies[0]!.captureEnvironment).toBe(false);
+      expect(skies[0]!.spec?.model).toBe(SKY_LOOKS[sky].sky.model);
+      expect(nodes.some((n) => n.name === "sf-horizon-sky" || n.name === "sf-sun-disc")).toBe(false);
+      const sun = skies[0]!.spec?.sun;
+      if (SKY_LOOKS[sky].sun.intensity > 0) {
+        expect(sun).toMatchObject({ elevationDeg: SKY_LOOKS[sky].sun.elevationDeg, azimuthDeg: SKY_LOOKS[sky].sun.azimuthDeg });
+      } else {
+        expect(sun).toBeUndefined();
+      }
+    });
+  }
+
+  it("dusk is the #2b3a55 to #f2a65e gradient, noon Preetham turbidity 3, night dark with typed stars", () => {
+    const spec = (sky: (typeof SKY_ORDER)[number]) => (flatNodes(sky) as SkyNode[]).find((n) => n.kind === "sky")!.spec!;
+    expect(spec("golden")).toMatchObject({ model: "gradient", zenith: "#2b3a55", horizon: "#f2a65e" });
+    expect(spec("noon")).toMatchObject({ model: "preetham", turbidity: 3 });
+    expect(spec("fog").model).toBe("gradient");
+    expect(spec("night")).toMatchObject({ model: "gradient", zenith: "#060a14", stars: { count: 220 } });
+    expect(spec("night").bands).toHaveLength(1);
+  });
+});
