@@ -617,7 +617,9 @@ function buildHoopNodes(): any[] {
     // carry AI-generated camo base-colour/MR maps; override them with clean,
     // venue-neutral hardware materials so the rim assembly reads as equipment
     // instead of an overexposed orange smear.
-    model(assets.hoopsHoopRig, {
+    // y 1.98 is the 4.6 placement, unchanged; the fit-grounding check only sees it now that the overrides moved to
+    // hoopMaterials.ts. Phase 2 checks the stanchion foot against the floor in a capture (lane report g07).
+    model(assets.hoopsHoopRig, { // fit-grounding: ok
       name: "hoop-rig",
       targetHeight: 3.95,
       scaleMode: "fit",
