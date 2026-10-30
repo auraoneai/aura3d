@@ -101,7 +101,7 @@
     "drawCallsDelta": "+5 geometry draws over the 39 before (walnut +1, mat +1, deck-edge strips -4, trace +1, lit trace overlay +1, can vents +1, lamp motes +1, silk labels +2, mounting holes +1; the pin pool replaces the rail pool) => ~44 plus the lamp's shadow pass; well under 110/90/70",
     "postPasses": "depth-of-field (High/Ultra only by PostQualityTiers), chromatic aberration, film grain, colour grade added to bloom + vignette",
     "particles": "<= 60 runtime VFX (worstCaseLive) + 60 lamp motes (30 on reduced motion)",
-    "textures": "0 bytes today (HDRI indoor-workshop_1k is the shared E-A catalogue file); baked board maps and LUTs pending (lane report, asset needs)",
+    "textures": "expected: 3 baked RGBA8 board maps with mips (albedo, normal, occlusion), ~12.8 MB at 1024x784 or ~3.2 MB at 512x392 on phones, one board resident; six .cube LUTs ~116 KB each (one fetched per board visited); DIN Pro Medium WOFF 46 KB. HDRI indoor-workshop_1k is the shared E-A catalogue file",
     "routeJsGzipDeltaKB": "~6 estimated (look.ts, traces.ts, motion.ts, vfx.ts), measured in phase 2"
   }
 }

@@ -19,8 +19,8 @@ Pixel numbers are software WebGL2 on the remote runner (phase 2).
 | DD47-P1 | bench cell variance <= 40% of centre; centre within 10% of DOF-off | phase 2 | crops `board-centre`, `bench-corner` |
 | DD47-P1 | stage trace after E-C | phase 2 |  |
 | DD47-P2 | p95 >= 200 (124); clip <= 0.01; mean 42-60; mean blue >= 30 | phase 2 | lens stack in buildScene; bands in `luma-bands.json` |
-| DD47-P3 | 6 per-board targets; each board's mean RGB differs >= 12 in a channel; garden >= 1.5x zerocore | partial (LUTs: asset need) | per-board grade via `setEffect("colorGrade")`; six .cube LUTs not admitted |
-| DD47-M1 | admission checks pass | partial | baked map set not produced (lane report) |
+| DD47-P3 | 6 per-board targets; each board's mean RGB differs >= 12 in a channel; garden >= 1.5x zerocore | done in code (pixels phase 2) | per-board grade plus six procedural .cube LUTs (`scripts/write-board-luts.mjs`, `luts.test.ts`) |
+| DD47-M1 | admission checks pass | done in code (pixels phase 2) | runtime bake `src/game/boardMaterial.ts` into live canvas maps, nothing admitted; `board-bake.test.ts`; PNG review via `scripts/bake-board-textures.mjs` |
 | DD47-M1 | passed corridors +25 over untouched 0.5 s later; no degradations | done in code (pixels phase 2) | `TraceField` + `traces lit` pool; traces.test.ts |
 | DD47-M2 | wall/corridor >= 1.8:1; pins 1 draw; material and composition >= 7 | done in code (pixels/judge phase 2) | epoxy roundedBox walls, pin pool (1 draw) |
 | DD47-M3 | lens >= 4x slab; halo > 128 at 3 px | done in code (pixels phase 2) | LED shards and can vents glow via instanceColorTarget |
@@ -32,7 +32,7 @@ Pixel numbers are software WebGL2 on the remote runner (phase 2).
 | DD47-AN1 | roll >= 8 deg in a turn; yaw step <= 45 deg/frame; reduced-motion probe passes | done | motion.test.ts (roll >= 8 deg, step <= 45 deg, 30% on reduced motion) |
 | DD47-AN2 | READY+0.6 s spawn half >= 3x far half; equal within 20% at +1.4 s | done in code (pixels phase 2) | `boardWave`, motion.test.ts |
 | DD47-C1 | sequences in evidence; captures within 2 of disabled; 19 columns at 390x844 | done in code (captures phase 2) | `maybePlayCinematic`, motion.test.ts |
-| DD47-H1 | contrast >= 4.5:1; HUD <= 14% at 390x844; ui_hud >= 7 | partial (DIN Pro: no WOFF2) | styles.css silkscreen chips; contrast >= 9:1 computed |
+| DD47-H1 | contrast >= 4.5:1; HUD <= 14% at 390x844; ui_hud >= 7 | done in code (pixels phase 2) | styles.css silkscreen chips; contrast >= 9:1 computed; DIN Pro Medium WOFF numerals (public/dd-fonts) |
 | DD47-W1 | label contrast >= 3:1; +6 draws max | done in code (pixels phase 2) | +3 draws |
 | DD47-PF1 | <= 110 / 90 / 70 draws by tier; JS +20 KB max; fps within 15% | done in code (measured phase 2) | budget.json `expected` |
 | DD47-PR1 | same_game false >= 0.8 vs all 6; every category >= 7; 0 warnings; poster no longer navy (11,24,77) | phase 2 |  |
