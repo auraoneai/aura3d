@@ -1,15 +1,34 @@
-import { game, material, model, primitives, scene, type AuraApp, type AuraRuntimeNodeHandle } from "@aura3d/engine";
-import { stadiumAssets as assets } from "./assets";
+import { effects, environments, game, material, model, primitives, scene, type AuraApp, type AuraRuntimeNodeHandle } from "@aura3d/engine";
+import { stadiumAssets as assets, venueHdriAssets } from "./assets";
 import { buildBallNodes } from "./ball";
 import { BASELINE_Z, DOUBLES_X, HIDDEN_SCALE, NET_POST_H, NET_POST_X, SERVICE_Z, SINGLES_X } from "./constants";
-import { cameraNode } from "./camera";
-import { postEffects, sceneLights } from "./lighting";
+import { CAMERA_CLASSIC, CAMERA_V2, cameraNode, type BroadcastCameraRig } from "./camera";
+import { originalPostEffects, originalSceneLights, postEffects, sceneLights } from "./lighting";
+import { EARTH, FLOOD_CONES, venueLook } from "./look";
 import { createStaticBoxes } from "./statics";
 import type { Vec3 } from "../contract/units";
 import type { AthleteRigPort } from "./rigPort";
 import { buildParticleNodes } from "./particles";
 import { buildBleacherNodes, buildSpectatorNodes } from "./spectators";
-import { VENUE_PALETTES } from "./venues";
+import { VENUE_PALETTES, venueKey } from "./venues";
+import { createWorldTourCrowd, type WorldTourCrowd } from "./crowd";
+import { LINE_COLOR, buildGrassStripesNode, feltBallMaterial, surfaceMaterial } from "./surfaces";
+import { buildBoardNodes, standLineText } from "./boards";
+import { buildNetMeshNode } from "./net";
+
+export interface TennisSceneOptions {
+  /** Boot venue: the authored environment, fog, key and grade are this venue's, so the first frame needs no swap. */
+  readonly venue?: string | null;
+  /** `"original"` (`?look=original`) keeps the 4.6.1 four-light rig, flat backdrop and post stack. */
+  readonly look?: "world-tour" | "original";
+  /** TT-AN1: the World Tour crowd whose nodes the scene mounts (the renderer keeps it to drive the head follow). */
+  readonly crowd?: WorldTourCrowd;
+  /** TT-C1: the broadcast camera (default: v2 in the World Tour look, classic with `?look=original` or `?cam=classic`). */
+  readonly camera?: BroadcastCameraRig;
+}
+
+/** GU47 TT-E1: the venue environment node (its HDRI is swapped at runtime with `app.lighting.setEnvironment`). */
+export const VENUE_ENVIRONMENT_NAME = "venue-hdri";
 
 /** Every node name the renderer resolves at runtime; kept in one place so the scene and the renderer cannot drift. */
 export const SCENE_NODE_IDS = [
@@ -23,16 +42,53 @@ export const STATIC_RUNTIME_IDS = { bleachers: "stadium-bleachers", sponsorTrim:
 export const GRANDSTAND_LENGTH = 24;
 export const FLOODLIGHT_MAST_H = 9;
 
-export function buildTennisScene(rig: AthleteRigPort): ReturnType<typeof scene> {
-  const lineMat = material.pbr({ color: "#f5f4e6", roughness: 0.58 });
+export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOptions = {}): ReturnType<typeof scene> {
+  const original = options.look === "original";
+  const boot = venueKey(options.venue);
+  const look = venueLook(boot);
+  // TT-M1: World Tour line paint #fbfbf5 and per-surface court materials; `?look=original` keeps the 4.6.1 flat colours.
+  const lineMat = material.pbr({ color: original ? "#f5f4e6" : LINE_COLOR, roughness: original ? 0.58 : 0.5 });
+  const courtMat = (part: "court" | "alley" | "apron" | "ground", flat: () => ReturnType<typeof material.pbr>) => (original ? flat() : surfaceMaterial(boot, part));
   const netPostMat = material.pbr({ color: "#1d322c", metalness: 0.42, roughness: 0.48 });
   // C9: the net mesh is see-through (blended, no depth write, no shadow) so it no longer reads as a black slab; the tape stays opaque.
   const netMeshMat = material.pbr({ color: "#1c2a26", roughness: 0.88, opacity: 0.42, alphaMode: "blend", depthWrite: false, doubleSided: true });
   const netTapeMat = material.pbr({ color: "#faf8ee", roughness: 0.46 });
 
-  const s = scene().background(VENUE_PALETTES.hard.background).camera(cameraNode());
-  for (const light of sceneLights()) s.add(light);
-  for (const effect of postEffects()) s.add(effect);
+  const camRig = original ? CAMERA_CLASSIC : options.camera ?? CAMERA_V2;
+  const s = scene().background(VENUE_PALETTES[original ? "hard" : boot]!.background).camera(cameraNode(camRig));
+  if (original) {
+    for (const light of originalSceneLights()) s.add(light);
+    for (const effect of originalPostEffects()) s.add(effect);
+  } else {
+    // TT-L1 / TT-L2 / TT-P1: one shadowed key + four floodlights (night court), the venue's grade, SMAA and contact shadows.
+    for (const light of sceneLights(boot)) s.add(light);
+    for (const effect of postEffects(boot)) s.add(effect);
+    // TT-E1: the venue HDRI lights the court (fill) and shows where the sky does; it replaces the flat backdrop wall.
+    s.add(environments.hdri({
+      name: VENUE_ENVIRONMENT_NAME,
+      texture: venueHdriAssets[look.hdri],
+      intensity: look.environmentIntensity,
+      rotation: (look.environmentRotationDeg * Math.PI) / 180,
+      background: look.background === "hdri"
+    }));
+    // TT-E2: the venue's air (none on the Moon); changed at runtime with app.atmosphere.setFog.
+    if (look.fog) s.add(effects.fog({ color: look.fog.color, density: look.fog.density }));
+    // TT-E2: a haze cone under each floodlight, shown on the night court only (venueRuntime.ts toggles them).
+    for (const cone of FLOOD_CONES) {
+      s.add(effects.lightCone({
+        name: cone.id, color: "#dfe8ff", intensity: 0.32, position: [...cone.position], direction: [...cone.direction],
+        length: cone.length, coneAngle: 0.5, softness: 0.65, visible: boot === "hard"
+      }).runtime(game.runtimeNode(cone.id)));
+    }
+    // TT-E3: the Earth over the lunar court (planet sphere inside an atmosphere shell), shown on the Moon only.
+    const earthShown = boot === "moon" ? ([1, 1, 1] as Vec3) : HIDDEN_SCALE;
+    const earthAt = camRig.id === "v2" ? EARTH.position : EARTH.classicPosition;
+    s.add(primitives.sphere({ name: EARTH.ids.planet, size: [EARTH.radius * 2, EARTH.radius * 2, EARTH.radius * 2], castShadow: false, receiveShadow: false, material: material.pbr({ color: "#2f6db3", roughness: 0.62, metalness: 0 }) })
+      .position(...earthAt).scale(earthShown).runtime(game.runtimeNode(EARTH.ids.planet)));
+    const shell = EARTH.radius * 2 * EARTH.atmosphere;
+    s.add(primitives.sphere({ name: EARTH.ids.shell, size: [shell, shell, shell], castShadow: false, receiveShadow: false, material: material.atmosphere({ color: "#8cc4ff", opacity: 0.24, emissiveIntensity: 0.45 }) })
+      .position(...earthAt).scale(earthShown).runtime(game.runtimeNode(EARTH.ids.shell)));
+  }
 
   // Outer stadium ground, apron, doubles court, and singles inner court
   s
@@ -41,7 +97,7 @@ export function buildTennisScene(rig: AthleteRigPort): ReturnType<typeof scene> 
         .plane({
           name: "stadium-outer-ground",
           size: [54, 1, 58],
-          material: material.pbr({ color: VENUE_PALETTES.hard.ground, roughness: 0.94 })
+          material: courtMat("ground", () => material.pbr({ color: VENUE_PALETTES.hard.ground, roughness: 0.94 }))
         })
         .position(0, -0.024, 0)
         .runtime(game.runtimeNode("stadium-outer-ground"))
@@ -51,7 +107,7 @@ export function buildTennisScene(rig: AthleteRigPort): ReturnType<typeof scene> 
         .box({
           castShadow: false, name: "court-apron",
           size: [19.8, 0.016, 26.8],
-          material: material.pbr({ color: VENUE_PALETTES.hard.apron, roughness: 0.88 })
+          material: courtMat("apron", () => material.pbr({ color: VENUE_PALETTES.hard.apron, roughness: 0.88 }))
         })
         .position(0, -0.012, 0)
         .runtime(game.runtimeNode("court-apron"))
@@ -61,7 +117,7 @@ export function buildTennisScene(rig: AthleteRigPort): ReturnType<typeof scene> 
         .box({
           castShadow: false, name: "court-doubles-surface",
           size: [DOUBLES_X * 2, 0.016, BASELINE_Z * 2],
-          material: material.pbr({ color: VENUE_PALETTES.hard.alley, roughness: 0.82 })
+          material: courtMat("alley", () => material.pbr({ color: VENUE_PALETTES.hard.alley, roughness: 0.82 }))
         })
         .position(0, -0.004, 0)
         .runtime(game.runtimeNode("court-doubles-surface"))
@@ -71,14 +127,15 @@ export function buildTennisScene(rig: AthleteRigPort): ReturnType<typeof scene> 
         .box({
           castShadow: false, name: "court-singles-surface",
           size: [SINGLES_X * 2, 0.018, BASELINE_Z * 2],
-          material: material.pbr({ color: VENUE_PALETTES.hard.court, roughness: 0.78 })
+          material: courtMat("court", () => material.pbr({ color: VENUE_PALETTES.hard.court, roughness: 0.78 }))
         })
         .position(0, 0, 0)
         .runtime(game.runtimeNode("court-singles-surface"))
     );
 
-  // Grass mower stripes (visible on grass court)
-  for (let i = 0; i < 8; i++) {
+  // Grass mower stripes (visible on grass court). TT-M1: the World Tour look draws them as one vertex-coloured mesh.
+  if (!original) s.add(buildGrassStripesNode());
+  for (let i = 0; original && i < 8; i++) {
     const stripeZ = -BASELINE_Z + (i + 0.5) * ((BASELINE_Z * 2) / 8);
     s.add(
       primitives
@@ -156,9 +213,11 @@ export function buildTennisScene(rig: AthleteRigPort): ReturnType<typeof scene> 
     const segW = (t1 - t0) * netHalfSpan;
     const segX = tm * netHalfSpan;
     const topH = 0.914 + (1.07 - 0.914) * tm * tm;
-    statics.box("netMesh", netMeshMat, [segW + 0.01, topH - 0.05, 0.022], [segX, (topH - 0.05) * 0.5 + 0.02, 0], false);
+    // TT-M2: the World Tour net is one textured strip (view/net.ts); `?look=original` keeps the nine 4.6.1 boxes.
+    if (original) statics.box("netMesh", netMeshMat, [segW + 0.01, topH - 0.05, 0.022], [segX, (topH - 0.05) * 0.5 + 0.02, 0], false);
     statics.box("netTape", netTapeMat, [segW + 0.015, 0.062, 0.036], [segX, topH - 0.02, 0]);
   }
+  if (!original) s.add(buildNetMeshNode());
 
   const chairWood = material.pbr({ color: "#8c613c", roughness: 0.78 });
   const chairFrame = material.pbr({ color: "#223b35", roughness: 0.65 });
@@ -193,6 +252,8 @@ export function buildTennisScene(rig: AthleteRigPort): ReturnType<typeof scene> 
     statics.box("sponsorTrim", sponsorTrimMat, [2.85, 0.18, 0.36], [bx, 0.42, -10.85]);
   }
   for (const bz of [-3.4, 3.4]) statics.box("wood", chairWood, [0.58, 0.46, 1.95], [-7.35, 0.23, bz]);
+  // TT-H2 / TT-A2: "AURA SLAM" / "WORLD TOUR" on the sponsor boards and the live venue + score line on the stand (3 draws).
+  if (!original) s.addMany(buildBoardNodes(standLineText(look.city, null)));
 
   // Typed Aura3D stadium dressing (view/assets.ts). C10: the seats GLB is 33.7 x 45.8 x 144.1 m with its length along Z, so it is
   // turned 90 degrees to run along the back of the court and fitted by length (24 m wide, about 7.6 m tall). The floodlight GLB
@@ -237,17 +298,26 @@ export function buildTennisScene(rig: AthleteRigPort): ReturnType<typeof scene> 
   ]);
 
   // C7: an unlit backdrop wall at the far edge of the outer ground carries the venue `background` colour (the clear colour is fixed
-  // at compile time). It only shows on tall canvases, where the aspect-aware FOV sees past the ground.
-  s.add(
-    primitives
-      .box({ castShadow: false, name: "stadium-backdrop", size: [140, 60, 0.5], material: material.pbr({ color: VENUE_PALETTES.hard.background, roughness: 1, unlit: true }) })
-      .position(0, 10, -29.5)
-      .runtime(game.runtimeNode("stadium-backdrop"))
-  );
+  // at compile time). It only shows on tall canvases, where the aspect-aware FOV sees past the ground. GU47 TT-E1: the World
+  // Tour look shows the venue HDRI there instead, so the wall is kept for `?look=original` only.
+  if (original) {
+    s.add(
+      primitives
+        .box({ castShadow: false, name: "stadium-backdrop", size: [140, 60, 0.5], material: material.pbr({ color: VENUE_PALETTES.hard.background, roughness: 1, unlit: true }) })
+        .position(0, 10, -29.5)
+        .runtime(game.runtimeNode("stadium-backdrop"))
+    );
+  }
 
   s.addMany(buildBleacherNodes(statics));
   s.addMany(statics.build("static", STATIC_RUNTIME_IDS));
-  s.addMany(buildSpectatorNodes());
+  if (original) {
+    s.addMany(buildSpectatorNodes());
+  } else {
+    // TT-AN1 / TT-A4: 240 seated spectators in two instanced crowds (bodies, heads that follow the rally): 2 draws.
+    const crowd = options.crowd ?? createWorldTourCrowd();
+    for (const node of [...crowd.bodies.nodes, ...crowd.heads.nodes]) s.add(node);
+  }
   s.addMany(buildParticleNodes());
 
   // Service Box Highlight, Aim Ring, Toss Ring, Beginner Landing Ring
@@ -289,7 +359,8 @@ export function buildTennisScene(rig: AthleteRigPort): ReturnType<typeof scene> 
       .runtime(game.runtimeNode("landing-indicator-ring"))
   ]);
 
-  s.addMany(buildBallNodes());
+  // TT-V1 / TT-V2: the World Tour look stamps decal marks and draws one trail ribbon instead of 8 cylinders and 8 spheres.
+  s.addMany(buildBallNodes({ trail: original, marks: original, ...(original ? {} : { ballMaterial: feltBallMaterial() }) }));
   s.addMany(rig.build("player", true));
   s.addMany(rig.build("rival", false));
 

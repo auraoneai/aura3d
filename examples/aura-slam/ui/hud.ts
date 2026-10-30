@@ -9,6 +9,7 @@ import {
 } from "./serveFeedback";
 import { SHOT_DEFAULTS, type ShotConstants, type HudState, type OutFeedbackBlock, type PracticeView, type ScoreboardNames, type ServeFeedback } from "./types";
 import { themeFor } from "./venues";
+import { createBroadcastHud, type BroadcastHud } from "./broadcast";
 
 export const practiceOf = (state: HudState): PracticeView | null => (state.practice as unknown as PracticeView | undefined) ?? null;
 export const outFeedbackOf = (state: HudState): OutFeedbackBlock | null => (state.outFeedback as unknown as OutFeedbackBlock | null) ?? null;
@@ -103,6 +104,8 @@ export interface HudDeps {
   shot?: Readonly<ShotConstants>;
   /** Fired once when a match finishes, for the shell to show results. */
   onResultsShown?: () => void;
+  /** GU47 TT-H1: add the World Tour venue chip and serve-speed strip to the scorebug (off in `?look=original`). */
+  broadcast?: boolean;
 }
 
 export interface Hud extends HudPort {
@@ -114,6 +117,7 @@ export interface Hud extends HudPort {
 export function createHud(deps: HudDeps): Hud {
   const text = createTextWriter();
   const shot = deps.shot ?? SHOT_DEFAULTS;
+  let broadcast: BroadcastHud | null = null;
 
   function renderPractice(state: HudState): void {
     const drill = practiceOf(state);
@@ -182,6 +186,7 @@ export function createHud(deps: HudDeps): Hud {
       }), text);
       const theme = themeFor(state.venue);
       text("hud-venue", `${theme.name} / ${theme.surface}`);
+      if (deps.broadcast) (broadcast ??= createBroadcastHud()).render(state);
     },
     update(state) { hud.render(state as HudState); },
     showResults(state) {

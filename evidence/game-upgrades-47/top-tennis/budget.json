@@ -1,0 +1,52 @@
+{
+  "slug": "top-tennis",
+  "wp": "WP-11",
+  "budget": {
+    "drawCalls1280High": 150,
+    "drawCalls390x844": 170,
+    "triangles": 450000,
+    "gpuTextureMB": 96,
+    "activeVenueDownloadMB": 18,
+    "frameTimeIncreaseMax": 0.2
+  },
+  "source": {
+    "before": "evidence/aura-slam/audit-2026-10-29/after/meta.jsonl (remote software WebGL2 capture of 4.6.1, quality high, settle-30s / settle-60s rows; triangles, texture bytes, page MB and route JS were not recorded there)",
+    "after": "phase 2: remote capture of the GU47 build (lane report, phase-2 plan)"
+  },
+  "rows": {
+    "hard": {
+      "before": { "drawCalls": { "1280": [117, 118], "390x844": [151, 165] }, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": null, "runnerFps": 60, "mean": [49.31, 53.3], "p95": [69, 129] },
+      "after": null
+    },
+    "grass": {
+      "before": { "drawCalls": { "1280": [125, 126] }, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": null, "runnerFps": 60, "mean": [59.39, 62.44], "p95": [105, 130] },
+      "after": null
+    },
+    "clay": {
+      "before": { "drawCalls": { "1280": [117, 124] }, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": null, "runnerFps": 60, "mean": [57.88, 61.04], "p95": [96, 130] },
+      "after": null
+    },
+    "desert": {
+      "before": { "drawCalls": { "1280": [117, 118] }, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": null, "runnerFps": 60, "mean": [75.53, 78.85], "p95": [97, 130] },
+      "after": null
+    },
+    "beach": {
+      "before": { "drawCalls": { "1280": [117, 124] }, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": null, "runnerFps": 60, "mean": [80.21, 83.59], "p95": [124, 131] },
+      "after": null
+    },
+    "moon": {
+      "before": { "drawCalls": { "1280": [108, 109] }, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": null, "runnerFps": 60, "mean": [52.51, 57.01], "p95": [78, 130] },
+      "after": null
+    }
+  },
+  "expectedDrawDelta": {
+    "note": "phase-1 estimate per row at 1280 High (measured in phase 2)",
+    "TT-L1": "+0 (one directional + 4 spots replace 4 lights; spots hidden off the night court keep their slot, no extra pass)",
+    "TT-L2": "-3 (two athlete shadow discs and the ball shadow disc leave the frame); contact shadows +1 pass",
+    "TT-E1": "-1 (backdrop wall removed) +1 (HDRI background)",
+    "TT-E2": "+0 fog (forward term); desert volumetric +1 pass at High+",
+    "TT-V1": "+1 decal batch, +1 runtime particle batch; -8 court-mark cylinders (hidden in 4.6.1, so 0 to -8)",
+    "TT-V2": "-8 trail spheres while the ball flies, +1 ribbon",
+    "TT-M1": "-8 stripe boxes on grass once turf stripes are a texture (pending)"
+  }
+}

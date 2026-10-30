@@ -216,15 +216,25 @@ describe("top-tennis-C7 / C9 / C10 / C13: scene structure", () => {
     const boot = readFileSync("examples/aura-slam/shell/boot.ts", "utf8");
     expect(boot).toContain('menu.quickStart("single", startSettings)');
   });
-  it("C7: backdrop, seats and sponsor trim are runtime nodes the venue can recolour", () => {
-    for (const id of ["stadium-backdrop", STATIC_RUNTIME_IDS.bleachers, STATIC_RUNTIME_IDS.sponsorTrim, "stadium-grandstand-rear", "spectators"]) expect(byRuntime(id), id).toBeDefined();
+  it("C7: backdrop, seats and sponsor trim are runtime nodes the venue can recolour (the backdrop in ?look=original; GU47 TT-E1 shows the venue HDRI instead)", () => {
+    for (const id of [STATIC_RUNTIME_IDS.bleachers, STATIC_RUNTIME_IDS.sponsorTrim, "stadium-grandstand-rear", "crowd-bodies:pose-0", "crowd-heads:pose-0"]) expect(byRuntime(id), id).toBeDefined();
+    expect(byRuntime("stadium-backdrop")).toBeUndefined();
+    const original = buildTennisScene(createPoseRig({ resolveAppearance }) as never, { look: "original" }).toJSON() as AuraSceneSnapshot;
+    for (const id of ["stadium-backdrop", "spectators"]) expect(original.nodes.find((n) => (n as { runtime?: { id?: string } }).runtime?.id === id), id).toBeDefined();
   });
   it("C9: the net mesh is blended at opacity 0.42 without depth write or shadow; the tape stays opaque", () => {
-    const net = snapshot.nodes.find((n) => (n as { name?: string }).name === "static-netMesh") as { material?: Record<string, unknown>; castShadow?: boolean };
+    // ?look=original keeps the C9 net; GU47 TT-M2's World Tour net (one textured strip, depth write on) is below.
+    const original = buildTennisScene(createPoseRig({ resolveAppearance }) as never, { look: "original" }).toJSON() as AuraSceneSnapshot;
+    const net = original.nodes.find((n) => (n as { name?: string }).name === "static-netMesh") as { material?: Record<string, unknown>; castShadow?: boolean };
     expect(net.material).toMatchObject({ opacity: 0.42, alphaMode: "blend", depthWrite: false });
     expect(net.castShadow).toBe(false);
-    const tape = snapshot.nodes.find((n) => (n as { name?: string }).name === "static-netTape") as { material?: Record<string, unknown> };
+    const tape = original.nodes.find((n) => (n as { name?: string }).name === "static-netTape") as { material?: Record<string, unknown> };
     expect(tape.material?.opacity ?? 1).toBe(1);
+    const worldTourNet = snapshot.nodes.find((n) => (n as { name?: string }).name === "net-mesh") as { material?: Record<string, unknown>; castShadow?: boolean };
+    expect(worldTourNet.material).toMatchObject({ alphaMode: "blend", depthWrite: true, doubleSided: true });
+    expect(worldTourNet.castShadow).toBe(false);
+    const worldTourTape = snapshot.nodes.find((n) => (n as { name?: string }).name === "static-netTape") as { material?: Record<string, unknown> };
+    expect(worldTourTape.material?.opacity ?? 1).toBe(1);
   });
   it("C10: the grandstand is turned to run along the back and fitted by length; the floodlights stand on masts", () => {
     const stand = snapshot.nodes.find((n) => (n as { name?: string }).name === "stadium-grandstand-rear") as { rotation?: number[]; targetLength?: number; targetMaxDimension?: number };
