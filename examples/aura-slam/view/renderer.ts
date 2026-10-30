@@ -4,6 +4,7 @@ import type { AthletePose, SceneRenderer } from "../contract/modules";
 import type { ActorState, BallState, MatchState } from "../contract/sim";
 import type { Vec3 } from "../contract/units";
 import { resolveBallHandles, updateBall, type BallHandles } from "./ball";
+import { createBroadcastDirector, createLetterbox, introParam, type BroadcastDirector, type DirectorFrame, type Letterbox } from "./intro";
 import { CAMERA_FAR, CAMERA_NEAR, acePunchOffset, nextPunchT, cameraFovForAspect, cameraRigFor, dampPan, panGoal, panLimitFor, panPose, projectWorldPoint, type CameraPose } from "./camera";
 import { COURT_X, COURT_Y, COURT_Z, HIDDEN_SCALE, SERVICE_Z, SINGLES_X, SPECTATOR_COUNT, clamp } from "./constants";
 import { QUALITY_REBUILD } from "./lighting";
@@ -161,6 +162,12 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
   let boards: BoardsController | null = null;
   let standText: AuraRuntimeNodeHandle | null = null;
   let acesSeen = 0;
+  // TT-C2: the director's cut-aways (match intro, changeover) with letterbox bars; `?intro=0` off, `?intro=1` at boot.
+  const introMode = introParam(pageSearch);
+  const director: BroadcastDirector | null = worldTour && introMode !== "off" ? createBroadcastDirector() : null;
+  let cutFrame: DirectorFrame | null = null;
+  let letterbox: Letterbox | null = null;
+  let removeSkipListeners: (() => void) | null = null;
   /** The crowd kit's update target: the app's node store (`nodes.get`, else a guarded `nodes.require` on test doubles). */
   const crowdTarget = { nodes: { get: (id: string) => (app ? optionalNode(app as unknown as VenueRuntimeApp, id) : undefined) } };
 
@@ -216,7 +223,27 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
 
   /** The FOV the frame uses: the aspect-aware rig FOV, narrowed while an ace punch runs. */
   function drawnFov(): number {
+    // A cut keeps the aspect compensation of the rig (portrait canvases widen it by the same ratio).
+    if (cutFrame) return Math.min(90, cutFrame.fov * (cameraFov / cameraRig.fovDeg));
     return cameraFov - acePunchOffset(punchT);
+  }
+
+  /** TT-C2: ends a running cut now and hands the frame back to the broadcast camera (key, pointer or touch). */
+  function skipCut(): void {
+    if (!director?.active && !cutFrame) return;
+    director?.skip();
+    cutFrame = null;
+    letterbox?.show(false);
+    pushCameraPose();
+  }
+
+  /** TT-C2: advances the director; the pose is re-sent every frame of a cut and once when it ends. */
+  function stepDirector(state: Readonly<MatchState>, dt: number | undefined): void {
+    if (!director) return;
+    const was = cutFrame;
+    cutFrame = director.step(state as never, Number.isFinite(dt) ? dt! : 1 / 60, reducedMotion());
+    letterbox?.show(cutFrame !== null);
+    if (cutFrame || was) pushCameraPose();
   }
 
   /** TT-V2: starts a punch on a new ace (World Tour only, never under reduced motion) and advances a running one. */
@@ -229,7 +256,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
 
   /** Pushes the live pose (rig + pan) and FOV to the camera controller. */
   function pushCameraPose(): void {
-    cameraPose = panPose(cameraRig, pan);
+    cameraPose = cutFrame ? cutFrame.pose : panPose(cameraRig, pan);
     posedPan = pan;
     try {
       app?.camera?.setPose({ position: [...cameraPose.eye], target: [...cameraPose.target], fov: drawnFov() }, { cut: true });
@@ -340,6 +367,15 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       }
       cameraFov = cameraRig.fovDeg;
       applyCameraFov();
+      if (director) {
+        letterbox = createLetterbox(target.parentElement, reducedMotion);
+        if (typeof window !== "undefined") {
+          const onSkip = (): void => skipCut();
+          for (const type of ["keydown", "pointerdown", "touchstart"]) window.addEventListener(type, onSkip, { passive: true });
+          removeSkipListeners = () => { for (const type of ["keydown", "pointerdown", "touchstart"]) window.removeEventListener(type, onSkip); };
+        }
+        if (introMode === "boot") director.start("intro");
+      }
     },
 
     setVenue(venueId: string): void {
@@ -361,6 +397,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       const [bx, by, bz] = lastBallWorld;
       const b = state.ball;
       stepCameraPan(bx, dt);
+      stepDirector(state, dt);
 
       const isPlayerServing = state.mode === "playing" && state.server === "player" && (state.phase === "serve" || state.phase === "serveToss");
       const serveAim = state.serveAttempt?.lockedAim || state.serveAttempt?.aim;
@@ -450,6 +487,8 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     },
 
     dispose(): void {
+      removeSkipListeners?.();
+      letterbox?.dispose();
       vfx?.dispose();
       vfx = null;
       net?.dispose();
@@ -468,7 +507,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
         engine: "@aura3d/engine",
         playerStyle: "3d",
         displayBall: [...lastBallWorld],
-        camera: { rig: cameraRig.id, position: [...cameraPose.eye], target: [...cameraPose.target], pan, fov: drawnFov(), baseFov: cameraFov, acePunch: acePunchOffset(punchT), near: CAMERA_NEAR, far: CAMERA_FAR, aspect: viewportWidth / Math.max(1, viewportHeight) },
+        camera: { rig: cameraRig.id, position: [...cameraPose.eye], target: [...cameraPose.target], pan, fov: drawnFov(), baseFov: cameraFov, acePunch: acePunchOffset(punchT), cut: director ? { active: director.active, shot: cutFrame?.shot ?? null, time: director.time, ...director.played } : null, near: CAMERA_NEAR, far: CAMERA_FAR, aspect: viewportWidth / Math.max(1, viewportHeight) },
         viewport: { width: viewportWidth, height: viewportHeight, bottom: 0, pixelRatio },
         audience: {
           visible: spectators ? spectators.visible !== false : audienceVisible,
