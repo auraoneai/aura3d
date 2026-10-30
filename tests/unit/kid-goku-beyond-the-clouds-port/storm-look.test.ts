@@ -118,3 +118,12 @@ describe("CD-14 sky pearls are the brightest objects; CD-03 hero PBR rim", () =>
     expect(CUMULUS_LOOK[1].heroRim).toBeNull();
   });
 });
+
+describe("CD-21 budget: earlier culling on the storm row", () => {
+  it("every storm cull range is shorter than today's and keeps the order", async () => {
+    const { CULL_RANGE, STORM_CULL_RANGE } = await import("../../../examples/kid-goku-beyond-the-clouds-port/world");
+    for (const k of ["flowers", "bushes", "rocks", "trees"] as const) expect(STORM_CULL_RANGE[k]).toBeLessThan(CULL_RANGE[k]);
+    expect(STORM_CULL_RANGE.flowers).toBeLessThan(STORM_CULL_RANGE.bushes);
+    expect(STORM_CULL_RANGE.bushes).toBeLessThanOrEqual(STORM_CULL_RANGE.trees);
+  });
+});

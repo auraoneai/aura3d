@@ -61,6 +61,9 @@ export interface WorldRuntime {
 interface Cullable { id: string; centre: V3; radius: number; range: number }
 /** Hide distances per scenery group (metres from the eye to the chunk's bounding sphere). */
 export const CULL_RANGE = { flowers: 150, bushes: 240, rocks: 240, trees: 400 } as const;
+/** CD-21: the storm row culls small scenery earlier (the 0.0032 haze hides it sooner) to pay for the flare, puddles and VFX. */
+export const STORM_CULL_RANGE = { flowers: 110, bushes: 190, rocks: 200, trees: 360 } as const;
+const CULL = ACTIVE_LOOK.id === "storm-washed" ? STORM_CULL_RANGE : CULL_RANGE;
 /** Look sun angles that point the outdoor-day key light along `SUN_POS`, the authored shadow sun (one light direction for shading and shadows). */
 export function sunAnglesOf(p: V3): { azimuthDeg: number; elevationDeg: number } {
   return { azimuthDeg: (Math.atan2(p[0], p[2]) * 180) / Math.PI, elevationDeg: (Math.atan2(p[1], Math.hypot(p[0], p[2])) * 180) / Math.PI };
@@ -200,10 +203,10 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   ground.grass.forEach((m, i) => addMesh(m, `grass-${i}`, scenerySpec({ map: grassMap, mapMix: 0.7, mapScale: 0.9, rim: 0.12, sun: 1.2 })));
   ground.slope.forEach((m, i) => addMesh(m, `slope-${i}`, scenerySpec({ map: rockMap, mapMix: 0.55, mapScale: 0.5, rim: 0.22 }), undefined, true));
   const scatter = buildScatter(ch);
-  scatter.trees.forEach((m, i) => addMesh(m, `trees-${i}`, scenerySpec({ rim: 0.34 }), undefined, false, CULL_RANGE.trees));
-  scatter.bushes.forEach((m, i) => addMesh(m, `bushes-${i}`, scenerySpec({ rim: 0.3 }), undefined, false, CULL_RANGE.bushes));
-  scatter.rocks.forEach((m, i) => addMesh(m, `rocks-${i}`, scenerySpec({ map: rockMap, mapMix: 0.5, mapScale: 1.2 }), undefined, false, CULL_RANGE.rocks));
-  scatter.flowers.forEach((m, i) => addMesh(m, `flowers-${i}`, scenerySpec({ sun: 1.6, rim: 0.1 }), undefined, false, CULL_RANGE.flowers));
+  scatter.trees.forEach((m, i) => addMesh(m, `trees-${i}`, scenerySpec({ rim: 0.34 }), undefined, false, CULL.trees));
+  scatter.bushes.forEach((m, i) => addMesh(m, `bushes-${i}`, scenerySpec({ rim: 0.3 }), undefined, false, CULL.bushes));
+  scatter.rocks.forEach((m, i) => addMesh(m, `rocks-${i}`, scenerySpec({ map: rockMap, mapMix: 0.5, mapScale: 1.2 }), undefined, false, CULL.rocks));
+  scatter.flowers.forEach((m, i) => addMesh(m, `flowers-${i}`, scenerySpec({ sun: 1.6, rim: 0.1 }), undefined, false, CULL.flowers));
   buildValleyForest(ch).forEach((m, i) => addMesh(m, `valley-forest-${i}`, scenerySpec({ rim: 0.2, sun: 1.0 })));
   const mesas = buildMesas(ch);
   mesas.meshes.forEach((m, i) => addMesh(m, `mesas-${i}`, scenerySpec({ map: rockMap, mapMix: 0.35, mapScale: 0.18, rim: 0.3 })));
