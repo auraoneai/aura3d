@@ -493,6 +493,8 @@ const qa = installQaHooks("last-train", {
   runLeg: (renderEvery = 0) => runLeg(renderEvery),
   finishStop: (renderEvery = 0) => finishStop(renderEvery),
   runCircuit: (renderEvery = 0) => runCircuit(renderEvery),
+  /** GU47 E-I crops (sky-top, platform, headlamp), normalised to the canvas and recomputed per capture as the camera moves. */
+  crops: () => runtime?.qaCrops(canvas.width / Math.max(1, canvas.height)) ?? [],
   routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SH-02", "SH-01", "SG-05", "R-23", "SR-02"] }) : null)
   }
 });

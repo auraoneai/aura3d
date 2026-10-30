@@ -20,6 +20,7 @@ import { applyMat3, axisRotation, matrixToEulerZYX, multiplyMat3, tramRotation, 
 import { cloudSpec, pointsSpec, rainSpec, skySpec } from "./materials";
 import { MeshData, boxAt, cylinderX, roofDome, gableRoof, groundDisc, makeTownTextures, pyramidRoof, stoneArch, wallBox, type TownTextures } from "./townkit";
 import { ShotDirector, type ShotKind } from "./shots";
+import { lamplightCrops, type QaCrop, type QaCameraPose } from "./qaCrops";
 import { sampleRoute, type SimData, type SimState, type Temperament } from "./sim";
 
 type Scene = ReturnType<typeof scene>;
@@ -137,6 +138,8 @@ export interface WorldRuntime {
   readonly shots: { readonly active: ShotKind | null; readonly started: Readonly<Record<ShotKind, number>> };
   /** LT-16: ends the current shot (any key or tap). */
   skipShot(): void;
+  /** E-I capture crops (`sky-top`, `platform`, `headlamp`), normalised to the canvas, from the pose of the last update. */
+  qaCrops(aspect: number): QaCrop[];
   /** Forces the band scene for the current state now (QA `setTimeOfDay`, `?band=`). */
   syncBand(sim: SimState): void;
 }
@@ -643,6 +646,10 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
   let platformsWet = false;
   /* GU47 LT-16: arrival rail, departure trackside, finale crane (band look only; ?shots=0 turns them off) */
   const shots = new ShotDirector(look === "bands" && QUERY.get("shots") !== "0");
+  /* QA crops (E-I capture): the camera pose on screen, the pool town and the headlamp of the last update */
+  let shownPose: QaCameraPose = { eye: [0, 30, 60], target: [0, 20, 0], fov: 58 };
+  let cropTown = 0;
+  let cropHeadlamp: V3 = [0, 0, 0];
   /** Builds the next town's band scene off the frame (a timer) so the docked swap does not build it. */
   const prefetch = (band: BandId): void => {
     if (prefetched.has(band)) return;
@@ -822,6 +829,9 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
     }
     const pose = chase.step({ wantEye, wantLook, fovTarget, ...(shakeOffset ? { shakeOffset } : {}) }, dt);
     cam.setPose({ position: pose.eye, target: pose.look, up: [0, 1, 0], fov: pose.fov }, { cut });
+    shownPose = { eye: [...pose.eye], target: [...pose.look], fov: pose.fov };
+    cropTown = poolTown(data, sim.leg, sim.distance, sim.phase);
+    cropHeadlamp = headlampPose(here, f).position;
 
     /* rain (Monsoon Exchange, index 4) or snow (Drowned Observatory, index 3) near those towns */
     const weatherNow = weatherOf(data, sim);
@@ -881,6 +891,7 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
     get enrouteSwaps() { return enrouteSwaps; },
     get shots() { return { active: shots.active, started: { ...shots.started } }; },
     skipShot() { shots.skip(); },
+    qaCrops(aspect: number) { return lamplightCrops(shownPose, aspect, platformLightPositions(data, cropTown), cropHeadlamp); },
     get lanterns() { return { aloft: lanternSky.aloft(), released: lanternSky.released }; },
     syncBand(sim: SimState) { forceSwap = true; update(sim, lastSeconds); }
   };
