@@ -1,5 +1,6 @@
-import { camera, effects, game, instances, lights, looks, material, model, primitives, scene, type AuraTransformSpec } from "@aura3d/engine";
+import { camera, defineAuraAssets, effects, environments, game, instances, lights, material, model, primitives, scene, type AuraTransformSpec } from "@aura3d/engine";
 import { assets, type GridAssetKey } from "./aura-assets";
+import { KEY_SHADOW, SKY_LOOKS, hdriUrl, keyLightPosition, type HdriId, type SkyLook } from "./look";
 import { RIVALS, TRAFFIC_SPECS } from "./sim";
 import { CURB_BEACON_X, PLAYABLE_FLEET, PLAYABLE_IDS, SCENE_CAM_FOV_DEG, SCENE_CAM_POS, SCENE_CAM_TARGET, type PlayableCarId, type Vec3, type WeatherPreset } from "./rules";
 
@@ -86,9 +87,6 @@ export const PLAYER_ASSET: Readonly<Record<PlayableCarId, GridAssetKey>> = {
 };
 
 interface WeatherLook {
-  readonly look: "outdoor-day" | "golden-hour" | "overcast" | "night-city";
-  readonly fogDensityScale: number;
-  readonly exposureEv: number;
   readonly sky: string;
   readonly horizonEmissive: string;
   readonly horizonIntensity: number;
@@ -96,36 +94,47 @@ interface WeatherLook {
   readonly sunY: number;
   readonly ground: string;
   readonly water: string;
-  readonly sun: { readonly color: string; readonly intensity: number; readonly position: Vec3 };
-  readonly hemisphere: { readonly sky: string; readonly ground: string; readonly intensity: number };
-  readonly fill: { readonly color: string; readonly intensity: number; readonly position: Vec3 };
   readonly bloom: number;
   readonly label: string;
 }
 
-/** Each sky preset brings its own look, lights and fog, so the lighting matches the sky (C8). */
+/**
+ * Sky backdrop and bloom per sky. GU47 GD-01: the lights (IBL, key, hemisphere) come from the look table
+ * (`SKY_LOOKS` in look.ts), not from a `looks.preset`.
+ */
 export const WEATHER: Readonly<Record<WeatherPreset, WeatherLook>> = {
-  noon: {
-    look: "outdoor-day", fogDensityScale: 0, exposureEv: 0, sky: "#69abe0", horizonEmissive: "#bae6fd", horizonIntensity: 0.35, sunColor: "#fde047", sunY: 58, ground: "#1e293b", water: "#0c4a6e",
-    sun: { color: "#fff1d6", intensity: 2.45, position: [36, 62, -48] }, hemisphere: { sky: "#8ed0ff", ground: "#2d3748", intensity: 0.92 },
-    fill: { color: "#3fd6c6", intensity: 1.65, position: [6, 5, -18] }, bloom: 0.24, label: "Sunny noon"
-  },
-  golden: {
-    look: "golden-hour", fogDensityScale: 0.3, exposureEv: 0, sky: "#d97757", horizonEmissive: "#fb923c", horizonIntensity: 0.45, sunColor: "#f97316", sunY: 28, ground: "#271c24", water: "#1e3a5f",
-    sun: { color: "#ffb070", intensity: 1.7, position: [70, 20, -60] }, hemisphere: { sky: "#ffcf9a", ground: "#3b2a2a", intensity: 0.6 },
-    fill: { color: "#ffb347", intensity: 1.2, position: [6, 5, -18] }, bloom: 0.3, label: "Golden hour"
-  },
-  fog: {
-    look: "overcast", fogDensityScale: 0.9, exposureEv: 0, sky: "#94a3b8", horizonEmissive: "#cbd5e1", horizonIntensity: 0.3, sunColor: "#e2e8f0", sunY: 46, ground: "#334155", water: "#3b5266",
-    sun: { color: "#e2e8f0", intensity: 0.9, position: [36, 62, -48] }, hemisphere: { sky: "#cbd5e1", ground: "#475569", intensity: 0.7 },
-    fill: { color: "#cbd5e1", intensity: 0.8, position: [6, 5, -18] }, bloom: 0.18, label: "Marine fog"
-  },
-  night: {
-    look: "night-city", fogDensityScale: 0.6, exposureEv: 0.5, sky: "#0d1424", horizonEmissive: "#2b4472", horizonIntensity: 0.45, sunColor: "#cbd5e1", sunY: 64, ground: "#0b0f19", water: "#081c2e",
-    sun: { color: "#9db4e0", intensity: 0.7, position: [-30, 60, -40] }, hemisphere: { sky: "#3b5b8f", ground: "#1a2030", intensity: 0.6 },
-    fill: { color: "#ffd9a0", intensity: 2.2, position: [0, 3.2, -9] }, bloom: 0.42, label: "Neon night"
-  }
+  noon: { sky: "#69abe0", horizonEmissive: "#bae6fd", horizonIntensity: 0.35, sunColor: "#fde047", sunY: 58, ground: "#1e293b", water: "#0c4a6e", bloom: 0.24, label: "Sunny noon" },
+  golden: { sky: "#d97757", horizonEmissive: "#fb923c", horizonIntensity: 0.45, sunColor: "#f97316", sunY: 28, ground: "#271c24", water: "#1e3a5f", bloom: 0.3, label: "Golden hour" },
+  fog: { sky: "#94a3b8", horizonEmissive: "#cbd5e1", horizonIntensity: 0.3, sunColor: "#e2e8f0", sunY: 46, ground: "#334155", water: "#3b5266", bloom: 0.18, label: "Marine fog" },
+  night: { sky: "#0d1424", horizonEmissive: "#2b4472", horizonIntensity: 0.45, sunColor: "#cbd5e1", sunY: 64, ground: "#0b0f19", water: "#081c2e", bloom: 0.42, label: "Neon night" }
 };
+
+/** Image-based fill per sky (E-A catalogue HDRIs, `/hdri/<id>_1k.hdr`); never the visible background (GD-01). */
+export const SKY_HDRI = defineAuraAssets({
+  gridHdriDusk: { type: "texture", format: "hdr", url: hdriUrl("belfast_sunset_puresky") },
+  gridHdriNoon: { type: "texture", format: "hdr", url: hdriUrl("outdoor-midday") },
+  gridHdriFog: { type: "texture", format: "hdr", url: hdriUrl("autumn_field_puresky") },
+  gridHdriNight: { type: "texture", format: "hdr", url: hdriUrl("cobblestone_street_night") }
+});
+const HDRI_BY_ID: Readonly<Record<HdriId, keyof typeof SKY_HDRI>> = {
+  belfast_sunset_puresky: "gridHdriDusk",
+  "outdoor-midday": "gridHdriNoon",
+  autumn_field_puresky: "gridHdriFog",
+  cobblestone_street_night: "gridHdriNight"
+};
+
+/**
+ * GD-01: the explicit rig of one sky in place of `looks.preset`: the sky's own HDRI as IBL fill, one shadowed key on the
+ * visible sun's ray (2048 map, 3 cascades, PCSS) and a hemisphere. No ambient light and no coloured fill point (the old
+ * teal fill leaked the objective colour into the noon light).
+ */
+export function skyRig(look: SkyLook) {
+  return [
+    environments.hdri({ name: `grid ibl ${look.hdri.id}`, texture: SKY_HDRI[HDRI_BY_ID[look.hdri.id]], intensity: look.hdri.intensity, rotation: (look.hdri.rotationDeg * Math.PI) / 180, background: false }),
+    lights.hemisphere({ name: "grid hemisphere", skyColor: look.hemisphere.sky, groundColor: look.hemisphere.ground, intensity: look.hemisphere.intensity }),
+    lights.directional({ name: "grid key light", color: look.key.color, intensity: look.key.intensity, position: keyLightPosition(look), target: [0, 0, 0], shadow: KEY_SHADOW })
+  ] as const;
+}
 
 /**
  * Renderer options for the mount. The game is tuned and captured at the "high" tier on every device,
@@ -146,14 +155,12 @@ const placed = (items: ReadonlyArray<readonly [number, number, number]>): AuraTr
 
 export function buildGridDispatchScene(weather: WeatherPreset): ReturnType<typeof scene> {
   const w = WEATHER[weather];
+  const look = SKY_LOOKS[weather];
   const s = scene()
-    .add(looks.preset(w.look, { fogDensityScale: w.fogDensityScale, exposureEv: w.exposureEv }))
     .background(w.sky)
     .camera(camera.perspective({ fov: SCENE_CAM_FOV_DEG, near: 0.25, far: 620, position: SCENE_CAM_POS, target: SCENE_CAM_TARGET }))
-    // No ambient light: the look's HDRI already fills the shadows, and an extra ambient blew out the white hero car (C14).
-    .add(lights.hemisphere({ skyColor: w.hemisphere.sky, groundColor: w.hemisphere.ground, intensity: w.hemisphere.intensity }))
-    .add(lights.directional({ color: w.sun.color, intensity: w.sun.intensity, position: w.sun.position, shadow: true }))
-    .add(lights.point({ color: w.fill.color, intensity: w.fill.intensity, position: w.fill.position, distance: 65 }))
+    // No ambient light: the sky's HDRI fills the shadows, and an extra ambient blew out the white hero car (C14).
+    .addMany([...skyRig(look)])
     .add(effects.bloom({ intensity: w.bloom, threshold: 0.78, radius: 0.45 }))
     .add(effects.vignette({ intensity: 0.16, smoothness: 0.65 }))
     .add(effects.colorGrade({ contrast: 1.06, saturation: 1.1 }));
