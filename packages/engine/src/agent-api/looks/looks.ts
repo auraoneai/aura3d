@@ -707,7 +707,9 @@ export function lookOutputPreset(nodes: readonly AuraSceneNode[]): AuraPostPrese
         readonly lookOutput?: boolean;
       };
       if (raw.kind === "look" && typeof raw.look === "string" && Object.prototype.hasOwnProperty.call(lookPresets, raw.look)) {
-        visit(expandLookChildren(raw.look, raw.overrides));
+        // Same rule as the v0 child (a valid `post` id override, else the preset's post), without expanding the look.
+        const post = raw.overrides?.post;
+        found = typeof post === "string" && Object.prototype.hasOwnProperty.call(LOOK_POST_PRESET_IDS, post) ? post : lookPresets[raw.look].post;
       } else if (raw.kind === "group") {
         if (raw.lookOutput === true && raw.output?.preset !== undefined) found = raw.output.preset;
         visit(raw.children ?? []);
