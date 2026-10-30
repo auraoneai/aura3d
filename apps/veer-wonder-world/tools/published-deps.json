@@ -1,12 +1,12 @@
 {
   "name": "wonder-world-published-deps",
   "private": true,
-  "description": "Published @aura3d 4.5.0 packages and tools for the app's fast consumer typecheck, unit tests and generators. tools/install-published-deps.sh installs them into the gitignored artifacts/wonder-deps/ and links apps/veer-wonder-world/node_modules to it; the monorepo build never uses them.",
+  "description": "Published @aura3d 4.6.2 packages and tools for the app's fast consumer typecheck, unit tests and generators. tools/install-published-deps.sh installs them into the gitignored artifacts/wonder-deps/ and links apps/veer-wonder-world/node_modules to it; the monorepo build never uses them.",
   "dependencies": {
-    "@aura3d/engine": "4.5.0",
-    "@aura3d/debug": "4.5.0",
-    "@aura3d/audio": "4.5.0",
-    "@aura3d/cli": "4.5.0",
+    "@aura3d/engine": "4.6.2",
+    "@aura3d/debug": "4.6.2",
+    "@aura3d/audio": "4.6.2",
+    "@aura3d/cli": "4.6.2",
     "typescript": "5.8.3",
     "vitest": "3.1.3",
     "vite": "7.3.7",
