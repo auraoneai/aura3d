@@ -33,7 +33,8 @@ import {
   model,
   primitives,
   scene,
-  text3D
+  text3D,
+  world
 } from "@aura3d/engine";
 import {
   createJuice,
@@ -90,7 +91,17 @@ import { defaultAimYaw, pinArrowDegrees, stepAimOffset, wrapAngle, yawToward } f
 import { applyGolferFit, buildGolferNodes, golferTelemetry, poseGolfer, resolveGolferRig, type GolferPhase } from "./game/rig";
 import { sweptClubContact, type ClubContact } from "./game/contact";
 import { commitStroke } from "./game/strokeCommit";
-import { contactShadowIntensity, courseFill } from "./game/lighting";
+import { COURSE_LOOKS, contactShadowIntensity, courseFill, flagFlutterAmplitude, type LinksTier } from "./game/lighting";
+import { buildCourseRig } from "./game/lookRig";
+import { landingVfxFor, registerLinksVfx, type LinksVfxId } from "./game/vfx";
+import { IMPACT_FOV_KICK_DEG, cupCamPose, flyoverAllowed, flyoverShots, tracerCamPose, wantsCupCam, wantsTracerCam } from "./game/broadcast";
+import { linksQaCrops } from "./game/qaCrops";
+import { discOnTerrain, ribbonAlongPath, terrainToMeshSpec, type SurfaceUvMode } from "./game/terrainMesh";
+import { MASK_COLOR_LIFT, TURF_SURFACES, type LinksSurfaceSlot } from "./game/turf";
+import { turfTexture } from "./game/turfTextures";
+import { coverWind, groundCover } from "./game/groundCover";
+import { lavaSpec, pondWaterOptions, reflectivePonds } from "./game/water";
+import { holeCardTransition, holeCardVisible, holeMap, holeMapSvg, holeSubtitle, holeTitle, shotStatsLabel } from "./game/holeCard";
 import { clubForShot, planShot, puttRange, type ShotPlan } from "./game/autopilot";
 import {
   bracketRows,
@@ -138,6 +149,23 @@ const BALL_R = 0.05;
 const CUP_R = 0.1;
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
+
+/* ------------------------------------------------------------------ *
+ *  Presentation mode (GU47 WP-20)                                     *
+ * ------------------------------------------------------------------ */
+
+const presentationParams = new URLSearchParams(window.location.search);
+/** `?look=original` mounts the 4.6.2 light, atmosphere and post rig (PRD §8 reversibility); default: the GU47 course look */
+const lookMode: "gu47" | "original" = presentationParams.get("look") === "original" ? "original" : "gu47";
+/**
+ * Presentation tier (PRD §6.4): `?aura3d-quality=low` (the engine's own tier override) or `?tier=low` builds the Low
+ * variant: 1 cascade PCF key, no grain, god rays, sun flare or ambient particles. The engine gates its post stages by
+ * its own resolved tier on top of this.
+ */
+const presentationTier: LinksTier =
+  presentationParams.get("aura3d-quality") === "low" || presentationParams.get("tier") === "low" ? "low" : "high";
+/** LINKS-14: index.html scopes the broadcast HUD (lower third, figures face, course accent) to body[data-look="gu47"] */
+document.body.dataset.look = lookMode;
 
 /* ------------------------------------------------------------------ *
  *  Game state                                                         *
@@ -196,116 +224,29 @@ const DIFF_AI_SKILL: Record<DifficultyId, number> = { amateur: 0.55, pro: 0.72, 
  *  Terrain → mesh builders                                            *
  * ------------------------------------------------------------------ */
 
-function terrainToMeshSpec(terrain: HoleTerrain, cols: number, rows: number, lift: number) {
-  const { minX, maxX, minZ, maxZ } = terrain.bounds;
-  const positions: [number, number, number][] = [];
-  const normals: [number, number, number][] = [];
-  const uvs: [number, number][] = [];
-  const indices: number[] = [];
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const x = minX + (maxX - minX) * (c / (cols - 1));
-      const z = minZ + (maxZ - minZ) * (r / (rows - 1));
-      const y = terrain.height(x, z) + lift;
-      positions.push([x, y, z]);
-      const [sx, sz] = terrain.slope(x, z);
-      const inv = 1 / Math.hypot(sx, 1, sz);
-      normals.push([-sx * inv, 1 * inv, -sz * inv]);
-      uvs.push([x / 18, z / 18]);
-    }
-  }
-  for (let r = 0; r < rows - 1; r++) {
-    for (let c = 0; c < cols - 1; c++) {
-      const i = r * cols + c;
-      // CCW winding when viewed from +Y so gl_FrontFacing is true and sun lighting hits the top surface
-      indices.push(i, i + cols, i + 1, i + 1, i + cols, i + cols + 1);
-    }
-  }
-  return { kind: "aura-custom-geometry" as const, positions, normals, uvs, indices };
-}
+// terrainToMeshSpec, ribbonAlongPath and discOnTerrain live in game/terrainMesh.ts (pure; LINKS-05 world-metre uv0)
 
-/** Multi-column ribbon strip conformed to terrain along the hole's intended line. */
-function ribbonAlongPath(terrain: HoleTerrain, path: readonly Vec2[], halfWidth: number, lift: number, step = 2.5, cols = 9) {
-  // Resample the polyline at fixed spacing with lateral offsets
-  const pts: { x: number; z: number; dx: number; dz: number }[] = [];
-  for (let i = 0; i < path.length - 1; i++) {
-    const [ax, az] = path[i]!;
-    const [bx, bz] = path[i + 1]!;
-    const segLen = Math.hypot(bx - ax, bz - az);
-    const n = Math.max(1, Math.round(segLen / step));
-    for (let s = 0; s < n; s++) {
-      const t = s / n;
-      pts.push({ x: lerp(ax, bx, t), z: lerp(az, bz, t), dx: (bx - ax) / segLen, dz: (bz - az) / segLen });
-    }
-  }
-  const last = path[path.length - 1]!;
-  const prev = path[path.length - 2]!;
-  const lastLen = Math.hypot(last[0] - prev[0], last[1] - prev[1]) || 1;
-  pts.push({ x: last[0], z: last[1], dx: (last[0] - prev[0]) / lastLen, dz: (last[1] - prev[1]) / lastLen });
+/** LINKS-05: the GU47 look tiles turf, sand, basalt and regolith in world metres; `?look=original` keeps 4.6.2 flat colour. */
+const turfOn = lookMode !== "original";
+const surfaceUv: SurfaceUvMode = turfOn ? "metres" : "legacy";
 
-  const positions: [number, number, number][] = [];
-  const normals: [number, number, number][] = [];
-  const uvs: [number, number][] = [];
-  const indices: number[] = [];
-  // Subdivide laterally across [-1, 1] so the ribbon follows the +0.15m fairway crown and tee pad without rough poke-through
-  pts.forEach((p, i) => {
-    const endDist = pts.length - 1 - i;
-    const taper = endDist < 4 ? clamp(endDist / 4, 0.78, 1) : 1;
-    const hw = halfWidth * taper;
-    const px = -p.dz, pz = p.dx; // lateral normal
-    for (let c = 0; c < cols; c++) {
-      const side = (c / (cols - 1)) * 2 - 1;
-      const x = p.x + px * hw * side;
-      const z = p.z + pz * hw * side;
-      positions.push([x, terrain.height(x, z) + lift, z]);
-      const [sx, sz] = terrain.slope(x, z);
-      const inv = 1 / Math.hypot(sx, 1, sz);
-      normals.push([-sx * inv, inv, -sz * inv]);
-      uvs.push([i * step / 10, side * 0.5 + 0.5]);
-    }
-    if (i > 0) {
-      const row0 = (i - 1) * cols;
-      const row1 = i * cols;
-      for (let c = 0; c < cols - 1; c++) {
-        const a = row0 + c;
-        // CCW winding when viewed from +Y
-        indices.push(a, row1 + c, a + 1, a + 1, row1 + c, row1 + c + 1);
-      }
-    }
+/**
+ * A course surface's material: on the GU47 look the theme's mask (mow stripes or rough mottling, colour lifted to keep
+ * the mean), its normal tile (High tier only; Low keeps the masks) and the cut-grass sheen; otherwise the 4.6.2 colour
+ * and roughness. Without canvases (no DOM) the textures drop out and the colour stays.
+ */
+function surfaceMaterial(course: CourseSpec, slot: LinksSurfaceSlot, color: string, legacyRoughness: number) {
+  if (!turfOn) return material.pbr({ color, roughness: legacyRoughness });
+  const s = TURF_SURFACES[course.dressing.theme][slot];
+  const mask = s.mask ? turfTexture(s.mask) : null;
+  const normal = s.normal && presentationTier === "high" ? turfTexture(s.normal) : null;
+  return material.pbr({
+    color: mask && s.mask ? shade(color, MASK_COLOR_LIFT[s.mask.kind]) : color,
+    roughness: s.roughness,
+    ...(mask ? { texture: mask as any } : {}),
+    ...(normal && s.normal ? { normal: normal as any, normalScale: s.normal.scale } : {}),
+    ...(s.sheen > 0 ? { sheen: s.sheen, sheenRoughness: 0.6, sheenColor: shade(color, 1.35) } : {})
   });
-  return { kind: "aura-custom-geometry" as const, positions, normals, uvs, indices };
-}
-
-/** Multi-ring disc conformed to terrain (green, fringe ring, and sand bunkers). */
-function discOnTerrain(terrain: HoleTerrain, cx: number, cz: number, radius: number, lift: number, segs = 32, innerRadius = 0) {
-  const positions: [number, number, number][] = [];
-  const normals: [number, number, number][] = [];
-  const uvs: [number, number][] = [];
-  const indices: number[] = [];
-  const rings = innerRadius > 0 ? [innerRadius, radius] : [0, radius * 0.35, radius * 0.7, radius];
-  for (const r of rings) {
-    for (let s = 0; s <= segs; s++) {
-      const a = (s / segs) * Math.PI * 2;
-      const x = cx + Math.cos(a) * r;
-      const z = cz + Math.sin(a) * r;
-      positions.push([x, terrain.height(x, z) + lift, z]);
-      const [sx, sz] = terrain.slope(x, z);
-      const inv = 1 / Math.hypot(sx, 1, sz);
-      normals.push([-sx * inv, inv, -sz * inv]);
-      uvs.push([0.5 + Math.cos(a) * r / (radius * 2), 0.5 + Math.sin(a) * r / (radius * 2)]);
-    }
-  }
-  const stride = segs + 1;
-  for (let ri = 0; ri < rings.length - 1; ri++) {
-    const baseA = ri * stride;
-    const baseB = (ri + 1) * stride;
-    for (let s = 0; s < segs; s++) {
-      const a0 = baseA + s, a1 = baseA + s + 1, b0 = baseB + s, b1 = baseB + s + 1;
-      // CCW winding when viewed from +Y
-      indices.push(a0, a1, b0, a1, b1, b0);
-    }
-  }
-  return { kind: "aura-custom-geometry" as const, positions, normals, uvs, indices };
 }
 
 /* ------------------------------------------------------------------ *
@@ -732,14 +673,17 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
           .rotate(0, Math.PI, 0)
       );
     });
-    // floodlight pylons around the green
+    // floodlight pylons around the green. The GU47 look lights the two behind the green as its mast spots
+    // (game/lookRig.ts neonMastPositions, LINKS-16); `?look=original` keeps the 4.6.2 four lamp spots.
     for (const [lx, lz] of [[-18, -8], [18, -8], [-18, 18], [18, 18]] as const) {
       const x = cx + lx, z = cz + lz;
       nodes.push(
         model(assets.neonStreetLampProp, { name: `lamp-${lx}-${lz}`, targetHeight: 7.5, role: "setDressing", scaleMode: "fit" })
-          .position(x, terrain.height(x, z), z),
-        lights.spot({ name: `lamp-spot-${lx}-${lz}`, position: [x, terrain.height(x, z) + 7.2, z], target: [cx, terrain.cup[1], cz], angle: 0.7, penumbra: 0.6, intensity: 1.6, color: "#bfe8ff", distance: 70 })
+          .position(x, terrain.height(x, z), z)
       );
+      if (lookMode === "original") {
+        nodes.push(lights.spot({ name: `lamp-spot-${lx}-${lz}`, position: [x, terrain.height(x, z) + 7.2, z], target: [cx, terrain.cup[1], cz], angle: 0.7, penumbra: 0.6, intensity: 1.6, color: "#bfe8ff", distance: 70 }));
+      }
     }
   } else if (theme === "lunar") {
     nodes.push(
@@ -816,34 +760,62 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   const nodes: any[] = [];
 
   // --- Base heightfield (rough) + outer ground shell ---
-  const base = terrainToMeshSpec(terrain, 112, 96, -0.04);
+  const base = terrainToMeshSpec(terrain, 112, 96, -0.04, surfaceUv);
   nodes.push(
-    geometry.custom(base, { name: "terrain-rough", material: material.pbr({ color: pal.rough, roughness: 0.92 }) })
+    geometry.custom(base, { name: "terrain-rough", material: surfaceMaterial(course, "rough", pal.rough, 0.92) })
   );
   const outerY = Math.min(terrain.tee[1], terrain.cup[1]) - 6;
   nodes.push(
     primitives.plane({ name: "outer-ground", size: [terrain.bounds.maxX * 4, terrain.bounds.maxZ * 4, 1], material: material.pbr({ color: theme4(course) === "lunar" ? "#43454c" : theme4(course) === "volcanic" ? "#2e2a26" : pal.rough, roughness: 0.96 }) }).position(0, outerY, (terrain.bounds.minZ + terrain.bounds.maxZ) / 2)
   );
 
+  // --- LINKS-09 ground cover (GU47 only): two instanced draws in the rough, the theme's tufts and its colour note ---
+  if (turfOn) {
+    for (const plan of groundCover(terrain, course.dressing.theme, hole.number, presentationTier)) {
+      if (plan.transforms.length === 0) continue;
+      const l = plan.layer;
+      const wind = coverWind(l, state.reducedMotion, COURSE_LOOKS[course.id].flagFlutter);
+      const mat = l.emissive > 0
+        ? material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: l.emissive, roughness: l.roughness } as any)
+        : material.pbr({ color: "#ffffff", roughness: l.roughness });
+      nodes.push(
+        (instances as any)[l.shape]({
+          name: `ground-cover-${l.name}`,
+          size: [...l.size],
+          material: mat,
+          transforms: plan.transforms.map((t) => ({ position: [...t.position], rotation: [...t.rotation], scale: [...t.scale] })),
+          colors: [...plan.colors],
+          ...(l.emissive > 0 ? { instanceColorTarget: "both" } : {}),
+          castShadow: false,
+          ...(wind ? { wind } : {})
+        })
+      );
+    }
+  }
+
   // --- Fairway ribbon (first-cut collar + two mow stripes) ---
-  const fairEdge = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2 + 1.7, 0.022);
-  const fairA = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2, 0.035);
-  const fairB = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2 - 3.2, 0.05);
+  // (LINKS-05: on the GU47 look the mow stripes are the fairway's mask, banded across the line of play, so the
+  // longitudinal stripe ribbon `fairway-b` is gone: one draw fewer)
+  const fairEdge = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2 + 1.7, 0.022, undefined, undefined, surfaceUv);
+  const fairA = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2, 0.035, undefined, undefined, surfaceUv);
   nodes.push(
-    geometry.custom(fairEdge, { name: "fairway-first-cut", material: material.pbr({ color: shade(pal.fairway, 0.8), roughness: 0.9 }) }),
-    geometry.custom(fairA, { name: "fairway-a", material: material.pbr({ color: pal.fairway, roughness: 0.84 }) }),
-    geometry.custom(fairB, { name: "fairway-b", material: material.pbr({ color: shade(pal.fairway, 1.22), roughness: 0.82 }) })
+    geometry.custom(fairEdge, { name: "fairway-first-cut", material: surfaceMaterial(course, "firstCut", shade(pal.fairway, 0.8), 0.9) }),
+    geometry.custom(fairA, { name: "fairway-a", material: surfaceMaterial(course, "fairway", pal.fairway, 0.84) })
   );
+  if (!turfOn) {
+    const fairB = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2 - 3.2, 0.05);
+    nodes.push(geometry.custom(fairB, { name: "fairway-b", material: material.pbr({ color: shade(pal.fairway, 1.22), roughness: 0.82 }) }));
+  }
 
   // --- Green + collar + fringe ---
   const [gx, gz] = [terrain.cup[0], terrain.cup[2]];
-  const collar = discOnTerrain(terrain, gx, gz, lay.greenRadius + 4.4, 0.045, 36, lay.greenRadius + 2.3);
-  const green = discOnTerrain(terrain, gx, gz, lay.greenRadius, 0.065, 36);
-  const fringe = discOnTerrain(terrain, gx, gz, lay.greenRadius + 2.5, 0.055, 36, lay.greenRadius * 0.96);
+  const collar = discOnTerrain(terrain, gx, gz, lay.greenRadius + 4.4, 0.045, 36, lay.greenRadius + 2.3, surfaceUv);
+  const green = discOnTerrain(terrain, gx, gz, lay.greenRadius, 0.065, 36, 0, surfaceUv);
+  const fringe = discOnTerrain(terrain, gx, gz, lay.greenRadius + 2.5, 0.055, 36, lay.greenRadius * 0.96, surfaceUv);
   nodes.push(
-    geometry.custom(collar, { name: "green-collar", material: material.pbr({ color: shade(pal.fringe, 0.82), roughness: 0.88 }) }),
-    geometry.custom(fringe, { name: "fringe", material: material.pbr({ color: pal.fringe, roughness: 0.85 }) }),
-    geometry.custom(green, { name: "green", material: material.pbr({ color: pal.green, roughness: 0.74 }) })
+    geometry.custom(collar, { name: "green-collar", material: surfaceMaterial(course, "firstCut", shade(pal.fringe, 0.82), 0.88) }),
+    geometry.custom(fringe, { name: "fringe", material: surfaceMaterial(course, "fringe", pal.fringe, 0.85) }),
+    geometry.custom(green, { name: "green", material: surfaceMaterial(course, "green", pal.green, 0.74) })
   );
 
   // --- Tee box + surround + markers ---
@@ -860,17 +832,32 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
 
   // --- Bunkers (bright sand bowls + dark, crisp grass lip) ---
   lay.bunkers.forEach((b, i) => {
-    const disc = discOnTerrain(terrain, b.center[0], b.center[1], b.radius, 0.09, 28);
+    const disc = discOnTerrain(terrain, b.center[0], b.center[1], b.radius, 0.09, 28, 0, surfaceUv);
     const lip = discOnTerrain(terrain, b.center[0], b.center[1], b.radius + 0.72, 0.075, 28, b.radius * 0.92);
     nodes.push(
       geometry.custom(lip, { name: `bunker-lip-${i}`, material: material.pbr({ color: shade(pal.sand, 0.64), roughness: 0.96 }) }),
-      geometry.custom(disc, { name: `bunker-${i}`, material: material.pbr({ color: shade(pal.sand, 1.08), roughness: 0.84 }) })
+      geometry.custom(disc, { name: `bunker-${i}`, material: surfaceMaterial(course, "bunker", shade(pal.sand, 1.08), 0.84) })
     );
   });
 
   // --- Water (dark wet bank, shadow rim, then a reflective pond surface) ---
+  // LINKS-17 (GU47): the two largest ponds of a hole reflect (E-G world.water lake, planar on High; game/water.ts), the
+  // rest keep the 4.6.2 water; Cinder Rim's pools are scrolling emissive lava on every tier.
+  const reflecting = reflectivePonds(terrain, hole, course.dressing.theme, { tier: presentationTier, look: lookMode });
+  const lava = lookMode !== "original" && theme4(course) === "volcanic" ? material.custom(lavaSpec(state.reducedMotion) as any) : null;
   lay.water.forEach((w, i) => {
     const { surfaceY: y, pondDiameter, rimDiameter } = pondGeometry(terrain, w);
+    const pond = reflecting.find((p) => p.index === i);
+    if (pond) {
+      // the bank and the dark rim (the pond floor seen through the water) stay; the lake replaces the water cylinder
+      const bank = discOnTerrain(terrain, w.center[0], w.center[1], w.radius + 1.5, 0.02, 32, w.radius * 0.94);
+      nodes.push(
+        geometry.custom(bank, { name: `pond-bank-${i}`, material: material.pbr({ color: shade(pal.rough, 0.55), roughness: 0.96 }) }),
+        primitives.cylinder({ name: `pond-rim-${i}`, size: [rimDiameter, 0.05, rimDiameter], material: material.pbr({ color: shade(pal.water, 0.5), roughness: 0.34, metalness: 0.2 }) }).position(w.center[0], y - 0.03, w.center[1]),
+        world.water(pondWaterOptions(pond, pal.water, state.reducedMotion) as any) as any
+      );
+      return;
+    }
     const bank = discOnTerrain(terrain, w.center[0], w.center[1], w.radius + 1.5, 0.02, 32, w.radius * 0.94);
     const waterMat = material.pbr({
       color: shade(pal.water, 1.22),
@@ -882,7 +869,7 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
     nodes.push(
       geometry.custom(bank, { name: `pond-bank-${i}`, material: material.pbr({ color: shade(pal.rough, 0.55), roughness: 0.96 }) }),
       primitives.cylinder({ name: `pond-rim-${i}`, size: [rimDiameter, 0.05, rimDiameter], material: material.pbr({ color: shade(pal.water, 0.5), roughness: 0.34, metalness: 0.2 }) }).position(w.center[0], y - 0.03, w.center[1]),
-      primitives.cylinder({ name: `pond-${i}`, size: [pondDiameter, 0.06, pondDiameter], material: waterMat }).position(w.center[0], y, w.center[1])
+      primitives.cylinder({ name: `pond-${i}`, size: [pondDiameter, 0.06, pondDiameter], material: lava ?? waterMat, ...(lava ? { castShadow: false } : {}) }).position(w.center[0], y, w.center[1])
     );
   });
 
@@ -893,10 +880,16 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   );
 
   // --- Ball + trail + shadow + aim aids ---
+  // (the GU47 look draws the shot tracer as a runtime trail per shot, startTracer(); `?look=original` keeps the
+  // authored ribbon node, which E-F now draws)
   nodes.push(
     model(assets.siegeGolfBall, { name: "golf-ball", targetHeight: BALL_R * 2 }).runtime(game.runtimeNode("golf-ball")),
-    primitives.cylinder({ name: "ball-shadow", size: [BALL_R * 2.4, 0.008, BALL_R * 2.4], material: material.pbr({ color: "#000000", opacity: 0.38, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow")),
-    effects.trail({ name: "ball-ribbon-trail", target: "golf-ball", color: "#ffffff", width: 0.07, maxPoints: 44, intensity: 0.9 } as any),
+    primitives.cylinder({ name: "ball-shadow", size: [BALL_R * 2.4, 0.008, BALL_R * 2.4], material: material.pbr({ color: "#000000", opacity: 0.38, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow"))
+  );
+  if (lookMode === "original") {
+    nodes.push(effects.trail({ name: "ball-ribbon-trail", target: "golf-ball", color: "#ffffff", width: 0.07, maxPoints: 44, intensity: 0.9 } as any));
+  }
+  nodes.push(
     // ground ring that marks the ball when the camera is far from it (the ball itself is near real size)
     primitives.torus({ name: "ball-marker", size: [0.5, 0.025, 0.025], material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.1, opacity: 0.8 }) }).scale(HIDDEN_SCALE).runtime(game.runtimeNode("ball-marker")),
     // Crisp white aim line + predicted landing ring (aim phase only)
@@ -940,60 +933,63 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   // --- Course dressing ---
   nodes.push(...buildDressingNodes(course, hole, terrain, rng));
 
-  // --- Theme-aware fill: sky/ground bounce + a cool rim so shadow sides keep form ---
+  // --- Course look (GU47 LINKS-01..04, 16, 18): the course's own HDRI, sun, shadowed key, rim, fog, grade and post
+  // from its look-table row (game/lighting.ts) as E-A look overrides, plus its practicals, god rays, flare and
+  // ambient particles (game/lookRig.ts). `?look=original` restores the 4.6.2 rig (PRD §8 reversibility).
+  if (lookMode === "original") return buildOriginalLookScene(course, terrain, nodes);
+  const rig = buildCourseRig(course, hole, terrain, { tier: presentationTier, reducedMotion: state.reducedMotion });
+  // LINKS-12: the broadcast depth of field, High only (the engine drops DOF below High); toggled at run time so it is on
+  // only in the flyover and the cup cam (setBroadcastDof)
+  if (presentationTier === "high") {
+    nodes.push(effects.depthOfField({ name: "broadcast depth of field", focusDistance: 70, fStop: 4, maxBlur: 3 }));
+  }
+  return scene()
+    .addMany(rig.before)
+    .add(rig.look)
+    .addMany(nodes)
+    .addMany(rig.nodes)
+    .camera(holeOpeningCamera(terrain))
+    .background(rig.background);
+}
+
+/** The hole's opening camera (the address cam takes over on the first frame). */
+function holeOpeningCamera(terrain: HoleTerrain) {
+  return camera.perspective({
+    position: [terrain.tee[0] - 2.0, terrain.tee[1] + 5.8, terrain.tee[2] - 8.6],
+    target: [terrain.tee[0] + Math.sin(terrain.lineYaw) * 40, terrain.tee[1] + 0.5, terrain.tee[2] + Math.cos(terrain.lineYaw) * 40],
+    fov: 40
+  });
+}
+
+/**
+ * `?look=original`: the 4.6.2 light, atmosphere and post rig, byte for byte (PRD §8 reversibility): the shared look
+ * preset with the course's 4.6.2 overrides, ambient + rim (+ hemisphere and floodlight at night), one gentle haze
+ * node in the look's fog colour and the blanket vignette.
+ */
+function buildOriginalLookScene(course: CourseSpec, terrain: HoleTerrain, nodes: any[]): any {
+  const isNight = course.look === "night-city" || course.look === "space";
   const fill = courseFill(course);
   nodes.push(lights.ambient({ name: "course ambient fill", color: fill.ambient, intensity: fill.ambientI }));
-  // The hemisphere only lights the no-HDRI looks (Neon Bay, Mare): next to an HDRI environment the engine drops
-  // it (audit LIGHT-05), so it is not authored there and an engine fix cannot silently brighten those courses.
   if (fill.hemiI > 0) {
     nodes.push(lights.hemisphere({ name: "course sky-ground fill", skyColor: fill.sky, groundColor: fill.ground, intensity: fill.hemiI, position: [0, 30, 0] }));
   }
   nodes.push(lights.directional({ name: "course rim fill", color: fill.rim, intensity: fill.rimI, position: fill.rimPos }));
-  // Neon Bay's floodlight key (no shadow: the look's moon keeps the shadow and the contact-shadow mask)
   if (fill.flood) {
     nodes.push(lights.directional({ name: "course floodlight key", color: fill.flood.color, intensity: fill.flood.intensity, position: fill.flood.position }));
   }
-
-  // --- Atmosphere + grounding ---
-  // Keep authored haze gentle: far fairways and tree belts recede toward the
-  // look's own fog colour without dimming the play corridor. The look preset's
-  // own fog is disabled above; this is the single fog node in the scene.
   const lookV0 = looks.describe(course.look).v0;
   const lookBg = lookV0.background;
-  const hazeColor = lookV0.fog?.color ?? lookBg;
   nodes.push(
-    effects.fog({
-      name: "course depth haze",
-      color: hazeColor,
-      density: isNight ? 0.0016 : 0.003,
-      intensity: isNight ? 0.16 : 0.22
-    }),
+    effects.fog({ name: "course depth haze", color: lookV0.fog?.color ?? lookBg, density: isNight ? 0.0016 : 0.003, intensity: isNight ? 0.16 : 0.22 }),
     effects.contactShadows({ intensity: contactShadowIntensity(course), length: 0.32, steps: 12, lights: "sun" }),
     effects.vignette({ name: "course vignette", intensity: 0.15, smoothness: 0.72, roundness: 0.92, color: "#061019" })
   );
-
-  // --- Look: preset sky/IBL, with a hair more downward framing for 16:10 ---
-  const lookOpts = {
-    exposureEv: -0.06,
-    ...(course.lookOverrides ?? {}),
-    fogDensityScale: 0
-  };
-  let s = scene()
+  const lookOpts = { exposureEv: -0.06, ...(course.lookOverrides ?? {}), fogDensityScale: 0 };
+  return scene()
     .add(looks.preset(course.look, lookOpts))
     .addMany(nodes)
-    .camera(
-      camera.perspective({
-        position: [terrain.tee[0] - 2.0, terrain.tee[1] + 5.8, terrain.tee[2] - 8.6],
-        target: [
-          terrain.tee[0] + Math.sin(terrain.lineYaw) * 40,
-          terrain.tee[1] + 0.5,
-          terrain.tee[2] + Math.cos(terrain.lineYaw) * 40
-        ],
-        fov: 40
-      })
-    );
-  s = s.background(lookBg);
-  return s;
+    .camera(holeOpeningCamera(terrain))
+    .background(lookBg);
 }
 
 function theme4(course: CourseSpec): string {
@@ -1057,6 +1053,8 @@ function resolveHoleHandles(): void {
   trailHandles = Array.from({ length: TRAIL_COUNT }, (_, i) => req(`ball-trail-${i}`));
   readArrowHandles = Array.from({ length: 12 }, (_, i) => req(`read-arrow-${i}`));
   rangeRingHandles = Array.from({ length: 4 }, (_, i) => tryReq(`range-ring-${i}`)).filter(Boolean);
+  // a new hole scene re-creates its depth-of-field node: keep it off outside the flyover and the cup cam (LINKS-12)
+  if (!flyover && broadcastCam?.kind !== "cup") setBroadcastDof(false);
 }
 
 /* ------------------------------------------------------------------ *
@@ -1162,6 +1160,48 @@ function updateModeChips(): void {
   }
 }
 
+/* LINKS-14: the broadcast lower third and the course accent (GU47 look only; index.html body[data-look="gu47"]) */
+
+let holeCardShown = false;
+
+function setText(id: string, text: string): void {
+  const el = $(id);
+  if (el) el.textContent = text;
+}
+
+/** Hole map, title and subtitle of the hole just started; the stats chip stays empty until its first shot rests. */
+function renderHoleCard(): void {
+  const t = state.terrain;
+  if (lookMode === "original" || !t) return;
+  const map = $("hc-map");
+  if (map) map.innerHTML = holeMapSvg(holeMap(state.hole, t));
+  setText("hc-title", holeTitle(state.hole));
+  setText("hc-sub", holeSubtitle(state.hole, state.course.name));
+  setText("hc-stats", "");
+  $("hole-card")?.classList.remove("has-stats");
+}
+
+/** The shot stats chip once a ball comes to rest on the hole (read-only values of the finished shot). */
+function showShotStats(club: string, carry: number, roll: number, toPin: number): void {
+  if (lookMode === "original") return;
+  setText("hc-stats", shotStatsLabel({ club, carry, roll, toPin }));
+  $("hole-card")?.classList.add("has-stats");
+}
+
+/** Shows or hides the lower third as the phase changes (one class toggle, only when the answer changes). */
+function syncHoleCard(): void {
+  const want = holeCardVisible({ look: lookMode, phase: state.phase, lab: state.lab !== null, hasRound: state.round !== null });
+  if (want === holeCardShown) return;
+  holeCardShown = want;
+  $("hole-card")?.classList.toggle("show", want);
+}
+
+/** The course's HUD accent (COURSE_LOOKS: hues >= 30 deg apart, >= 4.5:1 on the HUD panel); `?look=original` keeps the gold. */
+function applyCourseAccent(): void {
+  if (lookMode === "original") return;
+  document.body.style.setProperty("--accent", COURSE_LOOKS[state.courseId].accent);
+}
+
 /* ------------------------------------------------------------------ *
  *  Camera director                                                    *
  * ------------------------------------------------------------------ */
@@ -1180,10 +1220,80 @@ function camApply(): void {
   (auraApp as any)?.camera?.setPose?.({ position: cam.eye, target: cam.target, fov: cam.fov });
 }
 
+/* ------------------------------------------------------------------ *
+ *  Broadcast camera language (GU47 LINKS-12, the signature effect)    *
+ * ------------------------------------------------------------------ */
+
+const broadcastOn = lookMode !== "original";
+/** the running hole flyover (an `app.camera.play()` sequence of E-H rail rigs under letterbox bars) */
+let flyover: { skip(): void; readonly done: Promise<void> } | null = null;
+/** a flyover is due once the hole's scene is mounted (startHole sets it) */
+let pendingFlyover = false;
+/** tracer cam (drives) or cup cam (short putts) for the shot in the air */
+let broadcastCam: { readonly kind: "tracer" | "cup"; readonly launch: Vec3; readonly yaw: number } | null = null;
+
+/** Depth of field only in the flyover and the cup cam (E-C runtime post toggle; the node is High-only). */
+function setBroadcastDof(on: boolean, focusDistance?: number): void {
+  if (!broadcastOn || presentationTier !== "high") return;
+  const post = (auraApp as any)?.post;
+  try {
+    post?.setEffectEnabled?.("depthOfField", on);
+    if (on && focusDistance !== undefined) post?.setEffect?.("depthOfField", { focusDistance });
+  } catch { /* a post surface without runtime control keeps the node's state */ }
+}
+
+function startFlyover(): void {
+  pendingFlyover = false;
+  const t = state.terrain;
+  const director = (auraApp as any)?.camera;
+  const allowed = flyoverAllowed({
+    reducedMotion: state.reducedMotion,
+    qa: bootUrlParams.get("qa") === "1",
+    still: isStillMode,
+    disabled: bootUrlParams.get("flyover") === "0"
+  });
+  // reduced motion, labs and capture modes get the cut to the address cam instead (PRD §6.3)
+  if (!broadcastOn || !allowed || !t || state.lab || state.phase !== "address") return;
+  if (typeof director?.play !== "function" || typeof director?.rigs?.rail !== "function") return;
+  try {
+    const shots = flyoverShots(t, state.hole).map((s) => ({
+      rig: director.rigs.rail({ points: s.points, lookAt: s.lookAt, fov: s.fov, duration: s.duration, ease: "inOutSine" }),
+      duration: s.duration,
+      blendIn: 0,
+      bars: true
+    }));
+    // `use` clears the per-frame setPose overrides, so the rails (not the address cam) drive the camera
+    director.use?.(director.rig);
+    const playback = director.play({ id: `links-flyover-${state.hole.number}`, shots, onEnd: "return" });
+    flyover = playback;
+    setBroadcastDof(true, 70);
+    void playback.done.then(() => {
+      if (flyover === playback) {
+        flyover = null;
+        setBroadcastDof(false);
+      }
+    });
+  } catch {
+    flyover = null;
+  }
+}
+
+/** Skip within one frame: any key, tap, or the swing. */
+function skipFlyover(): void {
+  const running = flyover;
+  if (!running) return;
+  flyover = null;
+  try { running.skip(); } catch { /* already done */ }
+  setBroadcastDof(false);
+  camApply();
+}
+
 function updateCamera(dt: number): void {
   const t = state.terrain;
   const r = state.round;
   cam.t += dt;
+  // the flyover sequence owns the camera until it ends or is skipped
+  if (flyover) return;
   if (qaPondView) {
     // ?qa=1 pond check: straight down over the hazard, the zone radius filling about 70% of the frame height
     const p = qaPondView;
@@ -1221,7 +1331,18 @@ function updateCamera(dt: number): void {
   const strikeHold = state.phase === "flight" && inFlight && simTime - impactAt < 0.55;
 
   const mode = cameraModeFor({ phase: state.phase, ballMoving: Boolean(inFlight), strikeHold: Boolean(strikeHold), lie: r.lie });
-  if (mode === "flight" && ball) {
+  const shotCam = mode === "flight" && ball && broadcastCam
+    ? broadcastCam.kind === "cup"
+      ? cupCamPose(t, ball.pos)
+      : ball.status === "flight" ? tracerCamPose(t, broadcastCam.launch, broadcastCam.yaw, ball.pos) : null
+    : null;
+  if (shotCam) {
+    // GU47 LINKS-12: the cup cam on short putts, the locked-off tracer cam on drives (until the first bounce)
+    cam.mode = "flight";
+    cam.eye = [shotCam.position[0], shotCam.position[1], shotCam.position[2]];
+    cam.target = [shotCam.target[0], shotCam.target[1], shotCam.target[2]];
+    cam.fov = shotCam.fov;
+  } else if (mode === "flight" && ball) {
     cam.mode = "flight";
     // chase cam: behind the ball along its velocity, ahead low
     const v = ball.vel;
@@ -1498,6 +1619,10 @@ function beginAddress(): void {
   pendingCommit = null;
   heroCelebrate = false;
   autoPlan = null;
+  if (broadcastCam) {
+    broadcastCam = null;
+    setBroadcastDof(false);
+  }
   cam.mode = "aim";
   setPrompt("SPACE — SWING · A/D AIM (SHIFT FINE) · P PIN · Q/E CLUB");
   $("swing-meter")?.classList.remove("show");
@@ -1511,6 +1636,7 @@ function beginAddress(): void {
 }
 
 function startSwing(): void {
+  skipFlyover();
   state.phase = "swing";
   // the difficulty sets the pure strip of the accuracy needle (amateur wide, legend narrow)
   state.swing.setDeadZone(pureStrip(state.difficulty));
@@ -1582,6 +1708,21 @@ function fireImpact(): void {
   const qual = Math.abs(commit.accuracy);
   pushEvent("shot", `${clubLabel(commit.club.id)} · ${(commit.power * 100) | 0}% · ${contactLabel(qual)} · ${shapeLabel(commit.spin)}`, qual < 0.3 ? "success" : "warning");
   juiceFire("hit", { position: r.ballPos });
+  shotLanded = false;
+  if (lookMode !== "original") {
+    if (!commit.club.putter) linksBurst(state.courseId === "mareCourse" ? "links-lowg-dust" : "links-strike", r.ballPos);
+    startTracer();
+    // LINKS-12: cup cam on short putts (with depth of field on the ball), tracer cam on drives
+    skipFlyover();
+    const putter = commit.club.putter === true;
+    const launchAt: Vec3 = [r.ballPos[0], r.ballPos[1], r.ballPos[2]];
+    broadcastCam = wantsCupCam({ putter, distanceToCup: t.cupDistance(r.ballPos[0], r.ballPos[2]) })
+      ? { kind: "cup", launch: launchAt, yaw: commit.aimYaw }
+      : wantsTracerCam({ putter, carry: commit.club.carry * commit.power })
+        ? { kind: "tracer", launch: launchAt, yaw: commit.aimYaw }
+        : null;
+    if (broadcastCam?.kind === "cup") setBroadcastDof(true, 1.7 + t.cupDistance(r.ballPos[0], r.ballPos[2]) * 0.5);
+  }
   void audio?.cue(commit.club.putter ? "putt" : "drive");
   updateCardHud();
 }
@@ -1621,12 +1762,15 @@ function onBallEvents(events: BallEvent[]): void {
       juiceFire("bounce", { position: ev.pos });
       const zone = ev.zone;
       if (zone === "sand") { pushEvent("lie", "sand splash", "info"); }
-      spawnTurfPuff(ev.pos, zone);
+      if (lookMode === "original") spawnTurfPuff(ev.pos, zone);
+      else if (!shotLanded || zone === "sand") linksBurst(landingVfxFor(state.courseId, zone), ev.pos);
+      shotLanded = true;
     } else if (ev.kind === "holed") {
       onHoled();
     } else if (ev.kind === "water") {
       pushEvent("penalty", "water hazard — +1 stroke", "warning");
       juiceFire("splash", { position: ev.pos });
+      if (lookMode !== "original") linksBurst(landingVfxFor(state.courseId, "water"), ev.pos);
       void audio?.cue("splash");
       applyPenaltyDrop(ev.pos);
       return;
@@ -1664,6 +1808,7 @@ function onBallRest(pos: Vec3, zone: LieKind): void {
   const shot = Math.hypot(pos[0] - r.prevPos[0], pos[2] - r.prevPos[2]);
   const air = Math.min(shot, state.ball?.carry ?? shot);
   pushEvent("lie", `lie: ${zone} · ${air.toFixed(0)}m carry + ${(shot - air).toFixed(0)}m roll · ${state.terrain!.cupDistance(pos[0], pos[2]).toFixed(0)}m out`, "info");
+  showShotStats(state.commit?.club.label ?? CLUB_ORDER[r.clubIdx]!, air, shot - air, state.terrain!.cupDistance(pos[0], pos[2]));
   state.phase = "between";
   betweenUntil = nowMs() + 850;
 }
@@ -1679,6 +1824,12 @@ function onHoled(): void {
     window.setTimeout(() => { flash.style.opacity = "0"; }, 220);
   }
   juiceFire("holed", { position: state.terrain!.cup });
+  if (lookMode !== "original") {
+    linksBurst("links-holeout-ring", state.terrain!.cup);
+    // the hole-out orbit takes over (no depth of field outside the flyover and the cup cam)
+    broadcastCam = null;
+    setBroadcastDof(false);
+  }
   heroCelebrate = true;
   if (state.mode === "puttinglab") {
     state.lab = scorePuttingLab(state.lab!, true);
@@ -1861,7 +2012,11 @@ function startHole(idx: number): void {
     showMsg(`HOLE ${hole.number} — ${hole.name.toUpperCase()}`, `PAR ${hole.par} · ${hole.lengthM}M`, 2100);
   }
   pushEvent("hole", `hole ${hole.number}: ${hole.name} · par ${hole.par}`, "info");
+  renderHoleCard();
   beginAddress();
+  // LINKS-12: the hole flyover plays once this hole's scene is mounted (frame() starts it)
+  skipFlyover();
+  pendingFlyover = broadcastOn;
 }
 
 function advanceHole(): void {
@@ -1991,6 +2146,7 @@ function selectCourse(id: CourseId, restart = true): void {
   if (!COURSES[id]) return;
   state.courseId = id;
   state.course = COURSES[id]!;
+  applyCourseAccent();
   syncCourseButtons();
   if (restart) {
     startRound();
@@ -2046,7 +2202,7 @@ function juiceFire(ev: string, at?: Record<string, unknown>): void {
   try { juice?.fire(ev as never, at as never); } catch { /* best-effort */ }
 }
 
-const JUICE_EVENTS: Record<string, any> = {
+const JUICE_EVENTS_462: Record<string, any> = {
   hit:     { fx: { kind: "spark", count: 8, color: "#ffd257", speed: 2.6 }, cue: "drive", rumble: { ms: 26, weak: 0.4 }, punch: { fovDeg: 1.4, ms: 140 } },
   bounce:  { fx: { kind: "dust", count: 6, color: "#cfc8a8", speed: 1.6 } },
   splash:  { fx: { kind: "splash", count: 18, color: "#63e2ff", speed: 3.4 }, cue: "splash", flash: { color: "#63e2ff", peak: 0.1, ms: 120 } },
@@ -2054,9 +2210,47 @@ const JUICE_EVENTS: Record<string, any> = {
   eagle:   { cue: "win", shake: 0.5, punch: { fovDeg: 3.6, dolly: -0.5, ms: 380 }, flash: { color: "#ffd257", peak: 0.24, ms: 240 } }
 };
 
+/**
+ * GU47 LINKS-11: the course look fires the Links preset pack (game/vfx.ts) from the ball events, so the juice keeps
+ * only its cues, rumble, camera punch and flashes; `?look=original` keeps the 4.6.2 juice particles.
+ */
+const JUICE_EVENTS: Record<string, any> = lookMode === "original"
+  ? JUICE_EVENTS_462
+  : Object.fromEntries(Object.entries(JUICE_EVENTS_462).map(([k, { fx: _fx, ...rest }]) => [
+      k,
+      // LINKS-12: the 2-degree FOV kick at impact (the juice scales punches down under reduced motion)
+      k === "hit" ? { ...rest, punch: { fovDeg: IMPACT_FOV_KICK_DEG, ms: 140 } } : rest
+    ]));
+
 function spawnTurfPuff(pos: Vec3, zone: LieKind): void {
   const color = zone === "sand" ? "#e8d8a0" : zone === "green" || zone === "fringe" ? "#9be84e" : zone === "rough" ? "#4a6a3f" : "#7ab85a";
   try { fxCtlRef?.spawn("ground-dust", pos, { radius: 0.35, color, intensity: 1 }); } catch { /* optional */ }
+}
+
+/** One Links preset burst (LINKS-11). Divot and sand take the course's own turf and sand; the hole-out ring its accent. */
+function linksBurst(id: LinksVfxId, pos: Vec3): void {
+  const pal = state.course.palette;
+  const color = id === "links-divot" ? shade(pal.rough, 1.25)
+    : id === "links-sand-burst" ? shade(pal.sand, 1.12)
+    : id === "links-holeout-ring" ? COURSE_LOOKS[state.courseId].accent
+    : undefined;
+  try {
+    (auraApp as any)?.effects?.burst?.(id, [pos[0], pos[1] + 0.02, pos[2]], { camera: false, ...(color ? { color } : {}) });
+  } catch { /* optional */ }
+}
+
+/** First touchdown of the current shot (the landing effect and its pitch-mark decal fire once per shot). */
+let shotLanded = false;
+/** The broadcast shot tracer of the shot in the air (E-F `app.effects.trail` on the ball). */
+let tracerHandle: { stop(o?: { immediate?: boolean }): void } | null = null;
+
+function startTracer(): void {
+  tracerHandle?.stop({ immediate: true });
+  tracerHandle = null;
+  if (lookMode === "original") return;
+  try {
+    tracerHandle = (auraApp as any)?.effects?.trail?.("golf-ball", { width: 0.09, life: 2.4, color: state.fit.trail, widthOverSpeed: [2, 18] }) ?? null;
+  } catch { tracerHandle = null; }
 }
 
 let fxCtlRef: any = null;
@@ -2110,6 +2304,12 @@ function frame(dt: number): void {
 
   if (bannerTimer && now > bannerTimer) { $("banner")?.classList.remove("show"); bannerTimer = 0; }
   if (msgTimer && now > msgTimer) { $("msg")?.classList.remove("show"); msgTimer = 0; }
+  syncHoleCard();
+
+  // --- broadcast flyover (LINKS-12): any key skips it this frame (the key still does its usual job); a due flyover
+  // starts once the hole's scene is mounted ---
+  if (flyover && justPressed.size > 0) skipFlyover();
+  if (pendingFlyover && !pendingHoleScene) startFlyover();
 
   // --- input edges ---
   if (state.phase !== "menu") {
@@ -2222,12 +2422,12 @@ function frame(dt: number): void {
     const ss = clamp(1 - bh * 0.05, 0.4, 1);
     ballShadowHandle?.setPosition(bp[0], t.height(bp[0], bp[2]) + 0.02, bp[2]).setScale([ss, 1, ss]).setVisible(bh < 12);
 
-    // trail dots
+    // trail dots (`?look=original`; the GU47 look draws the tracer ribbon instead, 16 fewer draws in flight)
     for (let i = 0; i < TRAIL_COUNT; i++) {
       const pt = trailPts[trailPts.length - 1 - i];
       const h = trailHandles[i];
       if (!h) continue;
-      if (pt && state.phase === "flight" && state.ball?.status === "flight") {
+      if (lookMode === "original" && pt && state.phase === "flight" && state.ball?.status === "flight") {
         const s = Math.max(0.2, 1 - i / (TRAIL_COUNT + 1));
         h.setPosition(pt[0], pt[1], pt[2]).setScale([s, s, s]).setVisible(true);
       } else {
@@ -2326,8 +2526,10 @@ function frame(dt: number): void {
       checkClubContact(dt, g.yaw);
     }
 
-    // flag flutter (held still under reduced motion)
-    flagRotation = state.reducedMotion ? [0, 0, 0] : [0, Math.sin(now / 900) * 0.05, Math.sin(now / 700) * 0.03];
+    // flag flutter (held still under reduced motion). GU47 LINKS-13: the amplitude follows the hole's wind and the
+    // course's air (stiff on airless Mare); `?look=original` keeps the 4.6.2 fixed flutter.
+    const flutter = lookMode === "original" ? (state.reducedMotion ? 0 : 1) : flagFlutterAmplitude(COURSE_LOOKS[state.courseId], state.wind.speed, state.reducedMotion);
+    flagRotation = flutter === 0 ? [0, 0, 0] : [0, Math.sin(now / 900) * 0.05 * flutter, Math.sin(now / 700) * 0.03 * flutter];
     flagstickHandle?.setRotation?.(flagRotation[0], flagRotation[1], flagRotation[2]);
   }
 
@@ -2564,7 +2766,12 @@ function setupFxAndTouch(): void {
   const fx = createFxParticlePass({
     burst: (kind: string, position: any, o: any) => {
       try {
-        const map: Record<string, string> = { spark: "hit-spark", dust: "ground-dust", ring: "ring-shockwave", splash: "ground-dust", streak: "dash-trail" };
+        // LINKS-11: a water splash is the engine's splash burst, not ground dust (the 4.6.2 map sent it to dust)
+        if (kind === "splash") {
+          (auraApp as any)?.effects?.burst?.("splash", position, { count: o?.count, color: o?.color, camera: false });
+          return;
+        }
+        const map: Record<string, string> = { spark: "hit-spark", dust: "ground-dust", ring: "ring-shockwave", streak: "dash-trail" };
         fxCtlRef?.spawn(map[kind] ?? "hit-spark", position, { radius: Math.max(0.2, (o?.count ?? 10) / 24), color: o?.color, intensity: 1 });
       } catch { /* optional */ }
     },
@@ -2642,6 +2849,10 @@ function publishEvidence(): void {
     phase: state.phase,
     cameraMode: cam.mode,
     cameraEye: [...cam.eye],
+    // GU47 LINKS-12 broadcast camera (flyover running, tracer/cup cam of the shot in the air) and the look variant
+    broadcast: { flyover: Boolean(flyover), shotCam: broadcastCam?.kind ?? null, look: lookMode, tier: presentationTier },
+    // GU47 LINKS-14 broadcast HUD: the lower third's state and the course accent the HUD wears
+    hud: { holeCard: holeCardShown, accent: lookMode === "original" ? null : COURSE_LOOKS[state.courseId].accent },
     flagRotation,
     course: state.courseId,
     hole: state.hole.number,
@@ -2761,6 +2972,33 @@ function installQaHook(): void {
 }
 let qaPondView: { x: number; z: number; y: number; r: number } | null = null;
 
+/**
+ * GU47 LINKS-19 / E-I crop contract: `window.__AURA_QA__.crops` (read by the steady-state capture at every shot, so it
+ * is published on every boot, not only under ?qa=1): golfer, ball, turf, rough, green, ponds (lava on Cinder Rim) and
+ * the sky band, re-projected from the live camera pose (game/qaCrops.ts).
+ */
+function publishQaCrops(): void {
+  const w = window as any;
+  w.__AURA_QA__ = Object.assign(w.__AURA_QA__ ?? {}, {
+    crops: () => {
+      const t = state.terrain;
+      const r = state.round;
+      if (!t || !r) return [];
+      const canvas = document.querySelector("#app canvas") as HTMLCanvasElement | null;
+      const aspect = canvas && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : (window.innerWidth || 16) / (window.innerHeight || 9);
+      const ball = state.ball ? state.ball.pos : r.ballPos;
+      return linksQaCrops({ eye: cam.eye, target: cam.target, fov: cam.fov, aspect }, {
+        ball,
+        cup: t.cup,
+        aimYaw: aimYaw(),
+        fairwayHalfWidth: state.hole.layout.fairwayWidth / 2,
+        height: (x, z) => t.height(x, z),
+        ponds: state.hole.layout.water.map((p) => ({ center: p.center, radius: p.radius, y: pondGeometry(t, p).surfaceY }))
+      });
+    }
+  });
+}
+
 /* ------------------------------------------------------------------ *
  *  Boot                                                               *
  * ------------------------------------------------------------------ */
@@ -2806,6 +3044,14 @@ function boot(): void {
   state.hole = state.course.holes[0]!;
   state.terrain = buildHoleTerrain(state.course, state.hole);
 
+  // accessibility first: the course look halves its ambient emission under reduced motion (PRD §6.3)
+  state.reducedMotion = params.has("reducedMotion") || (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false);
+  state.reducedFlash = params.has("reducedFlash") || (window.matchMedia?.("(prefers-reduced-flash: reduce)")?.matches ?? false);
+  // LINKS-14: the course accent, and the lower third without its fade and rise under reduced motion
+  applyCourseAccent();
+  const holeCardEl = $("hole-card");
+  if (holeCardEl) holeCardEl.style.transition = holeCardTransition(state.reducedMotion);
+
   bootStage("scene-build");
   mountedHoleSig = `${state.course.id}|${state.hole.number}|round`;
   auraApp = createAuraApp("#app", {
@@ -2813,8 +3059,13 @@ function boot(): void {
     ...looks.appOptions(state.course.look),
     qualityRebuild: { flags: ["game"] }
   } as any);
-  // Runtime-spawned effect clouds are off by default until the floating-dot report is root-caused; `?vfx=on` re-enables them for diagnosis.
-  (auraApp as any).effects.runtime = "off";
+  // GU47 LINKS-11: runtime VFX are on again (E-F root-caused and fixed the floating dots in the engine; `?vfx=off` still
+  // turns them off). The Links preset pack registers on the app's effects surface.
+  registerLinksVfx((auraApp as any).effects, { reducedMotion: state.reducedMotion, reducedFlash: state.reducedFlash });
+  // LINKS-12: the broadcast depth of field starts off (only the flyover and the cup cam turn it on); a tap skips the flyover
+  setBroadcastDof(false);
+  window.addEventListener("pointerdown", () => skipFlyover());
+  publishQaCrops();
 
   bootStage("audio");
   setupAudio();
