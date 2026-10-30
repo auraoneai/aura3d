@@ -18,6 +18,7 @@ import { loadMeshy } from "./meshy";
 import { buildWorld, type World, type WorldRuntime } from "./world";
 import { lookModeFrom } from "./art/look";
 import { outputFor } from "./art/output";
+import { ROAD_PASS_NAME, autoExposureFor, roadPass, streakFor } from "./art/post";
 
 const params = new URLSearchParams(location.search);
 let levelIndex = Math.max(0, Math.min(LEVELS.length - 1, Number(params.get("level") ?? 0) | 0));
@@ -195,6 +196,7 @@ async function nextRoute(): Promise<void> {
     app.setScene(world.scene);
     runtime = world.bind(app);
     runtime.setReducedMotion(reducedMotion);
+    applyRoutePost();
     hud.reset();
     history.replaceState(null, "", `?${new URLSearchParams({ ...Object.fromEntries(params), level: String(levelIndex) }).toString()}`);
     buildMenu();
@@ -337,6 +339,10 @@ function render(dt: number, time: number, live = false): void {
   if (!ready || !app || !runtime) return;
   const shown = live ? (view = viewOf(run, presenter.present(loop, true), view)) : run;
   runtime.update(shown, dt, time, canvas.clientWidth / Math.max(1, canvas.clientHeight), pendingEvents);
+  if (removeRoadPass) {
+    app.post?.setPassUniform?.(ROAD_PASS_NAME, "u_streak", live ? streakFor(shown.v, run.boosting || run.nitro > 0, reducedMotion) : 0);
+    if (!reducedMotion) app.post?.setPassUniform?.(ROAD_PASS_NAME, "u_heatTime", time);
+  }
   app.step(0);
   updateHud();
   // The step that completes the run switches to the results screen; its events (the finish fanfare) still play here.
@@ -355,6 +361,17 @@ function render(dt: number, time: number, live = false): void {
 /** GU47 look (default) or today's (`?look=original`): output, device resolution, look rows. */
 const lookMode = lookModeFrom(location.search);
 const output = outputFor(lookMode);
+
+/** RH47-07/08: the route's one custom post pass and Halo's auto-exposure, re-applied on every in-place route change. */
+let removeRoadPass: (() => void) | undefined;
+function applyRoutePost(): void {
+  removeRoadPass?.();
+  removeRoadPass = undefined;
+  const row = world?.look.row ?? null;
+  if (!app || !row || params.get("post") === "0") return;
+  removeRoadPass = app.post?.addPostPass(roadPass(row));
+  app.setOutput?.({ autoExposure: autoExposureFor(row) });
+}
 
 function sizeCanvas(): void {
   const dpr = Math.min(window.devicePixelRatio || 1, output.maxDpr);
@@ -508,6 +525,7 @@ async function boot(): Promise<void> {
   await app.ready();
   runtime = world.bind(app);
   runtime.setReducedMotion(reducedMotion);
+  applyRoutePost();
   await settle();
   ready = true;
   $("loading").classList.add("hidden");
