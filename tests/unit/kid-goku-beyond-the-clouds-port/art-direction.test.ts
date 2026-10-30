@@ -79,11 +79,11 @@ describe("Cumulus Dash art direction (GU47 WP-35)", () => {
     expect(original.grade).toEqual({ exposure: 1.02, contrast: 1.07, saturation: 1.16 });
   });
 
-  it("registers all six presets; reduced motion halves every emission; a dense moment stays under the cap", () => {
+  it("registers all seven presets; reduced motion halves every emission; a dense moment stays under the cap", () => {
     const registered: string[] = [];
     const kinds = registerCumulusVfx({ registerPreset: (kind) => registered.push(kind) });
     expect(kinds).toEqual(CUMULUS_VFX_KINDS);
-    expect(registered).toEqual(["pearl-spark", "cloud-puff", "puddle-splash", "storm-mist", "speed-lines", "landing-dust"]);
+    expect(registered).toEqual(["pearl-spark", "cloud-puff", "puddle-splash", "storm-mist", "speed-lines", "landing-dust", "falls-spray"]);
     const full = cumulusVfxPresets(false), reduced = cumulusVfxPresets(true);
     let total = 0;
     for (const kind of CUMULUS_VFX_KINDS) {

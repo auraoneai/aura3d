@@ -234,6 +234,38 @@ void main() {
   outColor = vec4(col, 0.9 * smoothstep(0.0, 0.03, vUv.x) * smoothstep(1.0, 0.97, vUv.x));
 }`;
 
+/**
+ * GU47 WP-35 CD-16: the waterfall ribbon. Streaks scroll down `uv.y` (metres) at fall speed, white where the water thins
+ * over the lip, cool slate-blue in the body, edges and the tail fade so it dissolves into the cloud sea. `tClock` is
+ * slowed by world.ts on reduced motion.
+ */
+export const WATERFALL_VERTEX = /* glsl */ `
+out vec3 vW;
+out vec2 vUv;
+void main() {
+  vUv = uv;
+  vW = (modelMatrix * vec4(position, 1.0)).xyz;
+  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
+}`;
+
+export const WATERFALL_FRAGMENT = /* glsl */ `
+in vec3 vW;
+in vec2 vUv;
+out vec4 outColor;
+${NOISE}
+void main() {
+  float y = vUv.y;
+  float streak = vn(vec2(vUv.x * 14.0, y * 0.35 - tClock * 2.6));
+  float fine = vn(vec2(vUv.x * 38.0 + 3.0, y * 0.9 - tClock * 4.1));
+  float foam = clamp(smoothstep(0.45, 0.85, streak) * 0.7 + smoothstep(0.6, 0.95, fine) * 0.5, 0.0, 1.0);
+  vec3 body = mix(vec3(0.46, 0.6, 0.72), vec3(0.93, 0.96, 0.99), foam);
+  float across = smoothstep(0.0, 0.18, vUv.x) * smoothstep(1.0, 0.82, vUv.x);
+  float tail = 1.0 - smoothstep(fallLength * 0.72, fallLength, y);
+  float dist = length(vW - cameraPosition);
+  vec3 col = mix(body, hazeColor, clamp(1.0 - exp(-pow(dist * fogDensity, 2.0)), 0.0, 1.0));
+  outColor = vec4(col, across * tail * mix(0.55, 0.9, foam));
+}`;
+
 export const BALL_VERTEX = /* glsl */ `
 out vec3 vL;
 out vec3 vN;

@@ -85,6 +85,7 @@
     "CD-21 earlier culling (flowers 110, bushes 190, rocks 200, trees 360 m): fewer far chunks at s=60/520": "-4 to -8 (measured phase 2)",
     "CD-11 title/finale DOF and glider motion blur (post passes, High/Ultra only; no scene draws)": 0,
     "CD-15 speed-lines and landing-dust presets (same pooled emitter batches)": 0,
-    "CD-20 cairns, cord poles and hollow moss/flowers (one merged waymarks mesh; hollows add about 5.2k tris)": 1
+    "CD-20 cairns, cord poles and hollow moss/flowers (one merged waymarks mesh; hollows add about 5.2k tris)": 1,
+    "CD-16 waterfall ribbon (one transparent draw, under 200 tris) + lip spray (pooled emitter batch)": 1
   }
 }

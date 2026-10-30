@@ -1,7 +1,7 @@
 /** `material.custom` specs and the look constants (sky, haze, light) for the Cloud Runner. */
 import type { material } from "@aura3d/engine";
 import { ACTIVE_LOOK, lookRow, type CumulusLookRow } from "./art/look";
-import { BALL_FRAGMENT, BALL_VERTEX, SCENERY_FRAGMENT, SCENERY_SHADOWED_FRAGMENT, SCENERY_VERTEX, WARN_FRAGMENT, WARN_VERTEX, SHADOW_FRAGMENT, GLOW_FRAGMENT, GLOW_VERTEX, PUFF_FRAGMENT, PUDDLE_FRAGMENT, PUDDLE_VERTEX, SKY_FRAGMENT, SKY_VERTEX, STORM_SKY_FRAGMENT, VALLEY_FRAGMENT, VALLEY_VERTEX, WATER_FRAGMENT, WATER_VERTEX } from "./shaders";
+import { BALL_FRAGMENT, BALL_VERTEX, SCENERY_FRAGMENT, SCENERY_SHADOWED_FRAGMENT, SCENERY_VERTEX, WARN_FRAGMENT, WARN_VERTEX, SHADOW_FRAGMENT, GLOW_FRAGMENT, GLOW_VERTEX, PUFF_FRAGMENT, PUDDLE_FRAGMENT, PUDDLE_VERTEX, SKY_FRAGMENT, SKY_VERTEX, STORM_SKY_FRAGMENT, VALLEY_FRAGMENT, VALLEY_VERTEX, WATER_FRAGMENT, WATER_VERTEX, WATERFALL_FRAGMENT, WATERFALL_VERTEX } from "./shaders";
 
 export type CustomSpec = Parameters<typeof material.custom>[0];
 type Rgb = readonly [number, number, number];
@@ -58,6 +58,15 @@ export const valleySpec = (row: CumulusLookRow = ACTIVE_LOOK): CustomSpec => ({
 export const waterSpec = (row: CumulusLookRow = ACTIVE_LOOK): CustomSpec => ({
   glsl: { vertex: WATER_VERTEX, fragment: WATER_FRAGMENT },
   uniforms: { hazeColor: { type: "vec3", value: [...row.fog.haze] }, fogDensity: { type: "f32", value: row.fog.density }, tClock: { type: "f32", value: 0 } },
+  side: "double",
+  transparent: true,
+  depthWrite: false
+});
+
+/** CD-16 waterfall ribbon off the sun-side drop (storm-washed row); `fallLength` is the path length in metres. */
+export const waterfallSpec = (fallLength = 60, row: CumulusLookRow = ACTIVE_LOOK): CustomSpec => ({
+  glsl: { vertex: WATERFALL_VERTEX, fragment: WATERFALL_FRAGMENT },
+  uniforms: { hazeColor: { type: "vec3", value: [...row.fog.haze] }, fogDensity: { type: "f32", value: row.fog.density }, tClock: { type: "f32", value: 0 }, fallLength: { type: "f32", value: fallLength } },
   side: "double",
   transparent: true,
   depthWrite: false
@@ -137,6 +146,6 @@ export const shadowSpec = (): CustomSpec => ({
 });
 
 export const allProgramSpecs = (): readonly { readonly name: string; readonly spec: CustomSpec }[] => [
-  { name: "sky", spec: skySpec(lookRow("storm-washed")) }, { name: "sky-original", spec: skySpec(lookRow("original")) }, { name: "valley", spec: valleySpec() }, { name: "puddle", spec: puddleSpec() }, { name: "water", spec: waterSpec() },
+  { name: "sky", spec: skySpec(lookRow("storm-washed")) }, { name: "sky-original", spec: skySpec(lookRow("original")) }, { name: "valley", spec: valleySpec() }, { name: "puddle", spec: puddleSpec() }, { name: "water", spec: waterSpec() }, { name: "waterfall", spec: waterfallSpec() },
   { name: "ball", spec: ballSpec(4) }, { name: "scenery", spec: scenerySpec({}, lookRow("storm-washed")) }, { name: "scenery-original", spec: scenerySpec({}, lookRow("original")) }, { name: "warn", spec: warnSpec(false) }, { name: "shadow", spec: shadowSpec() }, { name: "glow", spec: glowSpec() }, { name: "puff", spec: puffSpec() }
 ];

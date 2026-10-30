@@ -2,19 +2,19 @@
  * GU47 WP-35 CD-15: the Cumulus Dash runtime effect pack (PRD §3.2 item 3), on E-F's registered-preset layers and the
  * built-in atlas sprites. Six presets, one per signature gameplay moment, coloured from the identity palette (amber only on
  * the pearl): pearl-spark (sky pearl pickup), cloud-puff (glider call / mount / dismount), puddle-splash (landing in a puddle
- * or the stream), storm-mist (launch off the ridge), speed-lines (launch and glider mount) and landing-dust (a dry
- * landing). Plus the glider trail options.
+ * or the stream), storm-mist (launch off the ridge), speed-lines (launch and glider mount), landing-dust (a dry
+ * landing) and falls-spray (the waterfall lip, CD-16). Plus the glider trail options.
  *
  * Counts keep a dense moment under the art direction's 96 live particles on High (spark 18 + puff 14 + splash 12 + mist 16 +
- * speed lines 10 + landing dust 10 = 80; splash and landing dust never fire together); reduced motion halves every
+ * speed lines 10 + landing dust 10 + falls spray 5 = 85; splash and landing dust never fire together); reduced motion halves every
  * emission (PRD §6.3). These run beside the port's pooled point sprites (fx.ts), which stay for the per-step dust and wisps.
  */
 import type { AuraTrailOptions, AuraVfxEffectSpec } from "@aura3d/engine";
 import { CUMULUS_PALETTE } from "./look";
 
-export type CumulusVfxKind = "pearl-spark" | "cloud-puff" | "puddle-splash" | "storm-mist" | "speed-lines" | "landing-dust";
+export type CumulusVfxKind = "pearl-spark" | "cloud-puff" | "puddle-splash" | "storm-mist" | "speed-lines" | "landing-dust" | "falls-spray";
 
-export const CUMULUS_VFX_KINDS: readonly CumulusVfxKind[] = ["pearl-spark", "cloud-puff", "puddle-splash", "storm-mist", "speed-lines", "landing-dust"];
+export const CUMULUS_VFX_KINDS: readonly CumulusVfxKind[] = ["pearl-spark", "cloud-puff", "puddle-splash", "storm-mist", "speed-lines", "landing-dust", "falls-spray"];
 
 /** Live-particle ceiling for a dense moment (CD-15 acceptance: <= 96). */
 export const CUMULUS_VFX_LIVE_CAP = 96;
@@ -83,9 +83,20 @@ export function cumulusVfxPresets(reducedMotion = false): Readonly<Record<Cumulu
       layers: [
         { type: "emitter", preset: "dust", count: n(10), speed: [0.8, 2], life: [0.4, 0.8], gravity: -1.5, size: [0.2, 0.45], color: "#c98a63", intensity: 0.9, sprite: "dust-mote", additive: false, direction: [0, 0.4, 0], spread: 1.3, drag: 2.8, maxScreen: 0.08 }
       ]
+    },
+    // CD-16: soft spray where the runnel tips over the drop (fired on a timer while the camera is near, not an event)
+    "falls-spray": {
+      name: "falls-spray",
+      layers: [
+        { type: "emitter", preset: "splash", count: n(5), speed: [0.6, 1.6], life: [0.6, 1.0], gravity: -2, size: [0.25, 0.6], color: CUMULUS_PALETTE.silver, intensity: 0.7, sprite: "smoke-a", additive: false, direction: [0, 0.6, 0], spread: 1.1, drag: 1.6, maxScreen: 0.1 }
+      ]
     }
   };
 }
+
+/** CD-16: spray cadence (seconds) and the camera range (metres) within which it runs. */
+export const FALLS_SPRAY_PERIOD = 0.35;
+export const FALLS_SPRAY_RANGE = 140;
 
 /** Anything with E-F's `registerPreset` (the app's `effects` extension). */
 export interface CumulusPresetRegistry {

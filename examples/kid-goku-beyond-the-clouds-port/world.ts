@@ -12,11 +12,11 @@ import { meatChunk } from "./creatures";
 import { createCameraClearance, createLocomotion } from "@aura3d/engine/game";
 import { Fx } from "./fx";
 import type { Game } from "./game";
-import { ACTIVE, ballSpec, puddleSpec, glowSpec, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, warnSpec } from "./materials";
+import { ACTIVE, ballSpec, puddleSpec, glowSpec, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, waterfallSpec, warnSpec } from "./materials";
 import { ACTIVE_LOOK, sunPosition, type CumulusLookRow } from "./art/look";
 import { launchFovKick, titleFlyover, traumaFor } from "./art/camera";
 import { CUMULUS_DOF, CUMULUS_FLARE_ELEMENTS, CUMULUS_GOD_RAY_DENSITY, CUMULUS_MOTION_BLUR, applyCumulusPostPlan, cumulusFocusDistance, cumulusPostPlan, needsRefocus, type CumulusMoment } from "./art/post";
-import { CUMULUS_GLIDER_TRAIL, cumulusVfxFor, registerCumulusVfx } from "./art/vfx";
+import { CUMULUS_GLIDER_TRAIL, FALLS_SPRAY_PERIOD, FALLS_SPRAY_RANGE, cumulusVfxFor, registerCumulusVfx } from "./art/vfx";
 import { Mesh, box, cylinder, hex } from "./mesh";
 import { LEG_CLIPS } from "./legcycle";
 import { CLIP_FOOT_SPEED, MAX_RATE, touchdowns } from "./locomotion";
@@ -25,6 +25,7 @@ import { MESHY } from "./models";
 import { buildBridges, buildClouds, buildGorgePosts, buildHut, buildMesas, buildObstacles, yawOf } from "./props";
 import { smooth } from "./sim";
 import { buildPuddles } from "./puddles";
+import { buildWaterfall, waterfallLip, waterfallPath } from "./waterfall";
 import { buildWaymarks } from "./waymarks";
 import { ROAD_HALF, buildGround, buildScatter, buildValleyForest, groundHeight } from "./terrain";
 
@@ -241,6 +242,13 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
     triangles += puddles.indices.length / 3; chunks++; drawNodes++;
   }
 
+  /* CD-16: a waterfall off the sun-side drop into the cloud sea, one ribbon (storm-washed row) */
+  if (ACTIVE_LOOK.id === "storm-washed") {
+    const falls = buildWaterfall(ch), path = waterfallPath(ch);
+    b.add(geometry.custom(plainGeometry(falls), { name: "waterfall", castShadow: false, material: material.custom(waterfallSpec(path[path.length - 1]!.v)) }).runtime({ id: "waterfall" }));
+    triangles += falls.indices.length / 3; chunks++; drawNodes++;
+  }
+
   /* water: a shallow stream across the track */
   ch.waters.forEach((w, i) => {
     const m = new Mesh();
@@ -322,6 +330,8 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
   let vfxMotion: boolean | null = null;
   let gliderTrail: { stop(): void } | null = null;
   const vfxFired: Record<string, number> = {};
+  const fallsLip = waterfallLip(ch);
+  let sprayT = 0;
   /* CD-09 / CD-11: god rays, DOF and glider motion blur on High/Ultra only, never on a phone; the plan is re-evaluated every
      frame (moment, riding, tier, reduced motion) and only changed states are written */
   const coarse = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
@@ -671,6 +681,15 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
       /* ---- water, sky and valley follow (footstep dust is emitted on foot touchdowns in play()) ---- */
       for (const id of riverIds) node(id).setUniform?.("tClock", clock);
       if (ACTIVE_LOOK.road.puddles) node("puddles").setUniform?.("tClock", g.reducedMotion ? 0 : clock);
+      if (cinematic) {
+        // CD-16: the fall keeps running at 35% on reduced motion; the lip spray fires on a timer while the camera is near
+        node("waterfall").setUniform?.("tClock", clock * (g.reducedMotion ? 0.35 : 1));
+        sprayT += dt;
+        if (sprayT >= FALLS_SPRAY_PERIOD && eye && Math.hypot(fallsLip[0] - eye[0], fallsLip[1] - eye[1], fallsLip[2] - eye[2]) < FALLS_SPRAY_RANGE) {
+          sprayT = 0;
+          try { app.effects?.burst("falls-spray", fallsLip, { camera: false }); vfxFired["falls-spray"] = (vfxFired["falls-spray"] ?? 0) + 1; } catch { /* effects runtime unavailable */ }
+        }
+      }
 
       /* ---- camera ---- */
       let wantEye: V3, wantLook: V3, fov = aspect < 1 ? 62 : 55 + s.speed * 0.2;
