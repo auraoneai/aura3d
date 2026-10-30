@@ -298,6 +298,10 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
     const id = `fx-${nextInstanceId++}`;
     const color = toVec3(options.color, recipe.color);
     const sizeScale = options.scale !== undefined && Number.isFinite(options.scale) && options.scale > 0 ? options.scale : 1;
+    // GU47 E-F: spent one-shots (retired by the system) leave the pool before the cap check.
+    for (const [instanceId, entry] of instances) {
+      if (entry.alive && entry.emitterId && !system.instanceAlive(entry.emitterId)) instances.delete(instanceId);
+    }
     // Pool cap: recycle the oldest live instance when the pool is full.
     if (instances.size >= EFFECT_INSTANCE_CAP) {
       const oldest = instances.keys().next().value!;
@@ -369,7 +373,8 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
     return {
       id,
       get alive() {
-        return instances.get(id)?.alive ?? false;
+        // GU47 E-F: a one-shot is alive until its particles are gone (the system retires spent emitters).
+        return (instances.get(id)?.alive ?? false) && system.instanceAlive(id);
       },
       stop: (o?: { immediate?: boolean }) => stopInstance(id, o?.immediate),
       setPosition: (p: AuraVec3) => system.setInstanceOrigin(id, p as readonly number[])
@@ -453,7 +458,7 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
     return {
       id: groupId,
       get alive() {
-        return !stopped && (members.some((member) => instances.get(member)?.alive === true) || timers.some((timer) => !timer.cancelled && !timer.done));
+        return !stopped && (members.some((member) => system.instanceAlive(member) && (instances.get(member)?.alive ?? true)) || timers.some((timer) => !timer.cancelled && !timer.done));
       },
       stop: (o?: { immediate?: boolean }) => {
         stopped = true;
@@ -574,6 +579,8 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
         if (entry.emitterId) system.removeInstance(entry.emitterId);
       }
       instances.clear();
+      // GU47 E-F: runtime trails and any other runtime emitter go too.
+      system.clearRuntimeParticles();
     }
   };
 }

@@ -69,6 +69,8 @@ interface TrailBinding {
   readonly node: EffectNodeLike;
   /** GU47 E-F: live-follow state (runtime `effects.trail` and scene trails with a `target`). */
   follow?: TrailFollow;
+  /** GU47 E-F: started by `app.effects.trail` (dropped by `runtime = "off"` and `clear()`). */
+  runtime?: boolean;
 }
 
 /** GU47 E-F: a ribbon that samples its target every frame and drops points older than `life`. */
@@ -774,7 +776,7 @@ export class ProductionEffectSystem {
       last: null,
       missingNoted: false
     };
-    this.trails.set(id, { trail, node: { kind: "effect", effect: "trail", id }, follow });
+    this.trails.set(id, { trail, node: { kind: "effect", effect: "trail", id }, follow, runtime: true });
     if (target !== undefined) {
       const at = this.resolveTarget(target);
       if (at) this.sampleTrail(follow, at);
@@ -892,6 +894,30 @@ export class ProductionEffectSystem {
   /** App-level switch for runtime-spawned effects (effects.burst/spawn, game effects, impact presets). The URL's `?vfx=on|off` overrides it. */
   setRuntimeEffects(mode: "on" | "off"): void {
     this.runtimeEffectsApp = mode === "off" ? "off" : "on";
+    // GU47 E-F (floating dots): "off" drops the runtime particles that are already running too. Before, only new
+    // spawns were refused, so a continuous emitter started before the switch kept emitting at its spot for good.
+    if (this.runtimeEffects === "off") this.clearRuntimeParticles();
+  }
+
+  /** GU47 E-F: remove every runtime-spawned emitter and runtime trail now (scene effects and decals stay). */
+  clearRuntimeParticles(): void {
+    for (const id of [...this.transients.keys()]) this.removeInstance(id);
+    for (const [id, binding] of [...this.trails]) {
+      if (binding.runtime) this.stopTrail(id, true);
+    }
+  }
+
+  /** GU47 E-F: true while a runtime instance still has an emitter (spent one-shots are retired at once). */
+  instanceAlive(id: string): boolean {
+    return this.emitters.has(id) || this.trails.has(id) || this.decalNodes.has(id);
+  }
+
+  /** Drop a spent runtime emitter: its batch leaves the particle pass on the next feed. */
+  private retireEmitter(id: string): void {
+    this.emitters.delete(id);
+    this.transients.delete(id);
+    this.attachments.delete(id);
+    this.diagnostics.untrack(id);
   }
 
   get runtimeEffects(): "on" | "off" {
@@ -1118,6 +1144,12 @@ export class ProductionEffectSystem {
       const binding = this.emitters.get(id);
       if (!binding) {
         this.transients.delete(id);
+        continue;
+      }
+      // GU47 E-F: a one-shot whose particles are all gone is retired now instead of idling in the system (and in
+      // the frame's batch list) until the 96-slot instance pool recycles it.
+      if (binding.state.live === 0 && binding.state.desc.emissionRate <= 0) {
+        this.retireEmitter(id);
         continue;
       }
       live += binding.state.live;
@@ -1347,7 +1379,17 @@ export class ProductionEffectSystem {
     if (this.disposed) return;
     this.disposed = true;
     this.offFrame();
+    // GU47 E-F: the particle pass is shared per device; leaving this system's batches in it kept the last frame's
+    // particles drawing (frozen dots) for as long as the device rendered.
+    if (this.lastHook) for (const handle of this.batchHandles.values()) this.lastHook.removeBatch(handle);
+    this.batchHandles.clear();
     this.emitters.clear();
     this.volumes.clear();
+    this.transients.clear();
+    this.attachments.clear();
+    this.trails.clear();
+    this.ribbons.clear();
+    this.beams.clear();
+    this.meshBatches.clear();
   }
 }
