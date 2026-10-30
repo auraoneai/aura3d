@@ -481,6 +481,8 @@ const hooks = {
   /** RH47-01: true once every textured material has uploaded (`textured === total`, 58 on Sunbreak with the generated models); judged shots wait for it. */
   texturesReady: () => { const t = summarizeTextureUpgrade(app?.diagnostics()); return t.total > 0 && t.textured === t.total; },
   lookMode: () => lookMode,
+  /** RH47-13: registered presets and bursts fired on this route. */
+  fx: () => runtime?.fx() ?? null,
   /** Cues played on recent frames (QA: proves the finish fanfare and the event cues fire). */
   cues: () => cueLog.map((c) => ({ ...c, sounds: [...c.sounds] })),
   /** Switch to the next route in place (no reload). */

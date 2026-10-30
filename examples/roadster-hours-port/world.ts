@@ -9,11 +9,13 @@ import {
   batched, camera, cameras, defineAuraAssets, effects, environments, geometry, instances, lights, lookHdriUrl, material, primitives, scene, type AuraApp
 } from "@aura3d/engine";
 import { SALTWIND_LOOK, directionFromAngles, lookModeFrom, type SaltwindLookRow } from "./art/look";
+import { SPRAY_POINTS, sprayAmount, sprayWind } from "./art/spray";
+import { NITRO_TRAIL, SKID_INTERVAL, fxForEvents, registerSaltwindFx, type SaltwindFxKind } from "./art/fx";
 import { levelLayout, roadProfile, trafficPiece, pieceSpec, type Level } from "./course";
 import { CAR_GROUPS, CAR_FOR_PIECE, carGroup, carNativeSize, type CarGroup, type CarKey } from "./cars";
 import { LEVELS } from "./data";
 import { hexLinear, lookFor, type Look } from "./look";
-import { beamSpec, blobFadeFor, blobSpec, citySpec, plumeSpec, rampSpec, roadSpec, skySpec, solidSpec, terrainSpec, towerSpec, townSpec, waterSpec, type FogLook } from "./materials";
+import { beamSpec, blobFadeFor, blobSpec, citySpec, plumeSpec, spraySpec, rampSpec, roadSpec, skySpec, solidSpec, terrainSpec, towerSpec, townSpec, waterSpec, type FogLook } from "./materials";
 import { hasMeshy, meshyGeometry, meshyMaterial, meshySize } from "./meshy";
 import type { Run, RunEvent as SimEvent } from "./sim";
 
@@ -409,6 +411,8 @@ export interface WorldRuntime {
   /** Draw calls with every vehicle hidden vs shown: the delta is what the batched meshes cost. */
   probeBatchedDraws(): { hidden: number; visible: number; delta: number; instances: number; texturedInstances: number; batchedGeometries: number; geometries: number; features: readonly string[] };
   readonly vehicleInstances: number;
+  /** GU47 RH47-13: presets registered for this route and the bursts fired (QA). */
+  fx(): { readonly kinds: readonly SaltwindFxKind[]; readonly fired: number; readonly last: string | null };
 }
 
 export interface World {
@@ -836,6 +840,12 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
     material: material.custom(plumeSpec({ color: [1, 0.62, 0.22], alpha: 1, life: [0.25, 0.6], size: [0.2, 0.06], width: 0.5, spread: 1.4, lift: 0.7, trail: 0.7, glow: 1, additive: true }))
   }).runtime({ id: "plume-sparks" }));
 
+  /* ---- GU47 RH47-12 signature: crosswind spray sheets off the sea-side cliff base (one points draw) ---- */
+  const spray = spraySpec(look, width);
+  if (spray && enabled("spray")) {
+    builder.add(geometry.custom(plumeGeometry(SPRAY_POINTS, 9), { name: "crosswind-spray", material: material.custom(spray), castShadow: false }).runtime({ id: "crosswind-spray" }));
+  }
+
   return {
     scene: builder,
     level,
@@ -864,6 +874,12 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       const beams = [-1, 1].map((sx) => node(`beam-${sx}`));
       const dust = node("plume-dust"), sparks = node("plume-sparks");
       const blob = row ? node("car-blob") : null;
+      const sprayNode = spray && enabled("spray") ? node("crosswind-spray") : null;
+      // RH47-13: the preset pack (re-registered when reduced motion changes; reduced flash follows reduced motion)
+      const vfx = row && enabled("vfx") ? app.effects : undefined;
+      let fxKinds = registerSaltwindFx(vfx, row);
+      let fxFired = 0, fxLast: string | null = null, skidClock = 0;
+      let nitroTrail: { stop(o?: { immediate?: boolean }): void } | null = null;
       const gantryLights = gantryPoints ? Array.from({ length: gantryPoints.count }, (_v, k) => node(`gantry-light-${k}`)) : [];
       let gantryGate = -1;
       let dustAmount = 0, sparkAmount = 0;
@@ -890,7 +906,12 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       return {
         vehicleInstances: allSlots.length,
         reset: () => { placeLineup(); director.cut(); chase.reset(); },
-        setReducedMotion: (on: boolean) => director.setReducedMotion(on),
+        fx: () => ({ kinds: fxKinds, fired: fxFired, last: fxLast }),
+        setReducedMotion: (on: boolean) => {
+          director.setReducedMotion(on);
+          fxKinds = registerSaltwindFx(vfx, row, { reducedMotion: on, reducedFlash: on });
+          if (sprayNode && row) { sprayNode.setUniform?.("spAmount", sprayAmount(row.spray, { reducedMotion: on })); sprayNode.setUniform?.("spWind", sprayWind(row.spray, on)); }
+        },
         probeBatchedDraws() {
           const draws = (): number => { app.step(0); return app.diagnostics().drawCalls ?? 0; };
           for (const s of allSlots) s.mesh.setVisibleAt(s.slot, false);
@@ -910,6 +931,13 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
           for (const part of parts) { part.setPosition(carP[0], carP[1], carP[2]); part.setRotation(pitch, psi, rollAngle); }
           const racing = run.phase === "running" || run.phase === "countdown";
           for (const beam of beams) { beam.setPosition(carP[0], carP[1], carP[2]); beam.setRotation(pitch, psi, rollAngle); beam.setVisible(racing); }
+          if (sprayNode) {
+            const o = roadPoint(level, run.s, 0, 0), ahead = roadPoint(level, run.s + 1, 0, 0), right = roadPoint(level, run.s, 1, 0);
+            sprayNode.setUniform?.("spOrigin", o);
+            const ax = ahead[0] - o[0], az = ahead[2] - o[2], al = Math.hypot(ax, az) || 1;
+            sprayNode.setUniform?.("spAlong", [ax / al, 0, az / al]);
+            sprayNode.setUniform?.("spAcross", [right[0] - o[0], right[1] - o[1], right[2] - o[2]]);
+          }
           if (blob) {
             const under = roadPoint(level, run.s, run.l, 0.04);
             blob.setPosition(under[0], under[1], under[2]);
@@ -929,6 +957,18 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
           const wall = roadPoint(level, run.s, run.l + (run.l >= 0 ? 1.1 : -1.1), run.h + 0.35);
           const sparkAt = scraping && !burning ? wall : [rear[0], rear[1] + 0.2, rear[2]];
           sparks.setUniform?.("ptPos", sparkAt); sparks.setUniform?.("ptBack", trailDir); sparks.setUniform?.("ptSpeed", run.v); sparks.setUniform?.("ptAmount", sparkAmount);
+          if (vfx && fxKinds.length) {
+            for (const kind of fxForEvents(events)) { vfx.burst(kind, carP); fxFired++; fxLast = kind; }
+            skidClock += dt;
+            if (rolling && run.drifting && run.grounded && skidClock >= SKID_INTERVAL) {
+              skidClock = 0;
+              vfx.burst("saltwind-skid", roadPoint(level, run.s - 1.4, run.l, 0.03), { normal: [0, 1, 0] });
+              fxFired++; fxLast = "saltwind-skid";
+            }
+            const nitroOn = rolling && run.nitro > 0;
+            if (nitroOn && !nitroTrail && playerIds[0]) nitroTrail = vfx.trail(playerIds[0], NITRO_TRAIL);
+            else if (!nitroOn && nitroTrail) { nitroTrail.stop(); nitroTrail = null; }
+          }
           for (let i = 0; i < cells.length; i++) cells[i]!.setVisible(!run.cells.has(i));
           if (gantryLights.length && run.nextGate !== gantryGate) {
             gantryGate = run.nextGate;

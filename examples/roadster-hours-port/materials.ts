@@ -1,6 +1,7 @@
 /** `material.custom` specs for the port's surfaces, apart from the scene so a unit test can compile exactly what the app draws. */
 import type { material } from "@aura3d/engine";
 import type { Look } from "./look";
+import { SPRAY_FRAGMENT, SPRAY_VERTEX, SPRAY_WINDOW, sprayAmount, sprayWind } from "./art/spray";
 import {
   BEAM_FRAGMENT, BEAM_VERTEX, BLOB_FRAGMENT, CITY_FRAGMENT, PLUME_FRAGMENT, PLUME_VERTEX, RAMP_FRAGMENT, ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX, TERRAIN_FRAGMENT, TERRAIN_VERTEX, TOWER_FRAGMENT, TOWN_FRAGMENT, TOWN_VERTEX, WATER_FRAGMENT, WATER_VERTEX
 } from "./shaders";
@@ -135,6 +136,27 @@ export const solidSpec = (look: Look, base: Rgb, glow: Rgb, glowAmount: number, 
   side: "double"
 });
 
+/** GU47 RH47-12: the crosswind spray sheets (signature); null on `?look=original`. */
+export const spraySpec = (look: Look, halfWidth: number, reducedMotion = false): CustomSpec | null => {
+  const spray = look.row?.spray;
+  if (!spray) return null;
+  const hex = parseInt(spray.color.slice(1), 16);
+  const lin = (c: number): number => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+  const color: Rgb = [lin(((hex >> 16) & 255) / 255), lin(((hex >> 8) & 255) / 255), lin((hex & 255) / 255)];
+  return {
+    glsl: { vertex: SPRAY_VERTEX, fragment: SPRAY_FRAGMENT },
+    uniforms: {
+      spOrigin: v3([0, -1000, 0]), spAlong: v3([0, 0, -1]), spAcross: v3([1, 0, 0]),
+      spWindow: v2(SPRAY_WINDOW), spHalfWidth: f32(halfWidth), spSeaSign: f32(look.seaSide),
+      spWind: f32(sprayWind(spray, reducedMotion)), spAmount: f32(sprayAmount(spray, { reducedMotion })), spAlpha: f32(spray.alpha),
+      spHeight: v2(spray.height), spSize: v2(spray.size), spColor: c3(color)
+    },
+    side: "double",
+    transparent: true,
+    depthWrite: false
+  };
+};
+
 /** One of each distinct program the scene uses. */
 export const allProgramSpecs = (look: Look): readonly { readonly name: string; readonly spec: CustomSpec }[] => [
   { name: "road", spec: roadSpec(look, [0.9, 0.9, 0.85], [0.2, 0.8, 0.9]) },
@@ -151,5 +173,6 @@ export const allProgramSpecs = (look: Look): readonly { readonly name: string; r
   { name: "plume-sparks", spec: plumeSpec({ color: [1, 0.6, 0.2], alpha: 1, life: [0.25, 0.55], size: [0.18, 0.05], width: 0.5, spread: 1.2, lift: 0.6, trail: 0.6, glow: 1, additive: true }) },
   { name: "beam", spec: beamSpec(look.beam * 0.2) },
   { name: "blob", spec: blobSpec() },
+  ...(look.row ? [{ name: "spray", spec: spraySpec(look, 11)! }] : []),
   { name: "rail-metal", spec: solidSpec(look, [0.7, 0.72, 0.75], [0, 0, 0], 0, 0.35, 0.9) }
 ];
