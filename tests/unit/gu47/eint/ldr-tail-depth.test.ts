@@ -104,7 +104,7 @@ function fakeHost(draws: DrawRecord[], registry: Map<Texture, WebGLTexture>): We
 function displayPass(id: string, inputs: PostPassDescriptor["inputs"]): PostPassDescriptor {
   return {
     id: `eint.${id}`,
-    owner: "eint",
+    owner: "prd03",
     flag: "A3D_QR_POST",
     insertAt: "after-tonemap",
     space: "display",
