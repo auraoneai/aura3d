@@ -81,14 +81,21 @@ import "../agent-api/compiler/environmentSourcesState.js";
 import { registerNodeHandler, registerOptionCoverage, type OptionCoverageRow, type SceneCompileContext, type RenderSourceContributions } from "../contracts/compiler.js";
 import { registerAppExtension } from "../contracts/app.js";
 import { registerDiagnosticsSection } from "../contracts/diagnostics.js";
-import { collectPrd02Lights, physicalLightDescriptor, prd02LightingOn, readLightingModelFromUrl } from "../agent-api/compiler/lights.js";
+import { collectPrd02Lights, physicalLightDescriptor, prd02LightingOn, readLightingModelFromUrl, recordRuntimeFrameLights, runtimeLightStats } from "../agent-api/compiler/lights.js";
 import { auraLightsCounters, auraLightsLastFrame } from "../../../rendering/src/LightUniforms.js";
 import type { RenderDevice } from "../../../rendering/src/RenderDevice.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
-import { prd02ShadowDiagnostics, prd02ContactShadowDiagnostics } from "@aura3d/rendering";
+import { prd02ShadowDiagnostics, prd02ContactShadowDiagnostics, type CollectedLight } from "@aura3d/rendering";
 import type { AuraEnvironmentNodeV2 } from "../agent-api/nodes/environments.js";
-import type { AuraLightingDiagnostics } from "../contracts/lighting.js";
+import type { AuraEnvironmentSwapOptions, AuraLightingDiagnostics } from "../contracts/lighting.js";
 import type { AuraProbeNode } from "../agent-api/nodes/probes.js";
+import type { AuraAssetRef } from "../agent-api/nodes/types.js";
+
+/** The mount context fields the per-frame handler updates read (MountSceneCompileContext, compileScene.ts). */
+interface Prd02FrameContext {
+  readonly runtimeNodes?: object;
+  readonly collectedLights?: readonly CollectedLight[];
+}
 
 // C-09 sources: `prd02.explicit` (400) resolves an authored environment node;
 // `prd02.neutral-room` (0) supplies the RoomEnvironment probe fallback.
@@ -137,6 +144,11 @@ registerNodeHandler({
     if (descriptor.shadowRequested && !descriptor.shadowDisabled) {
       out.feature(light.light === "spot" ? "shadows.spot" : light.light === "point" ? "shadows.point" : "shadows.directional");
     }
+  },
+  update(_node, _handle, ctx) {
+    // GU47 E-B: the frame's collected lights feed `app.lighting.diagnostics()` (punctualLights / localShadowLights).
+    const frame = ctx as unknown as Prd02FrameContext;
+    if (frame.runtimeNodes && frame.collectedLights) recordRuntimeFrameLights(frame.runtimeNodes, frame.collectedLights);
   }
 });
 
@@ -273,7 +285,9 @@ export class Prd02LightingRuntime {
 
   /** Observed values only — fields the runtime cannot measure are null (C-31). */
   diagnostics(): AuraLightingDiagnostics {
-    void this.rotation; void this.intensity;
+    void this.rotation; void this.intensity; void this.environmentRequest;
+    // GU47 E-B: counted from the collected lights the app's last frame submitted (visible lights only).
+    const stats = runtimeLightStats(this.scaleOwner);
     return {
       environment: {
         source: "prd02", faceSize: 0, mipCount: 0, format: "rgba16f",
@@ -283,9 +297,22 @@ export class Prd02LightingRuntime {
       droppedFeatures: prd02ShadowDiagnostics()?.droppedFeatures ?? [],
       contactShadows: prd02ContactShadowDiagnostics().contactShadows,
       programCompileCount: this.device?.getDiagnostics().programCompileCount ?? 0,
-      readPixelsCalls: this.device?.getDiagnostics().readPixelsCalls ?? 0
+      readPixelsCalls: this.device?.getDiagnostics().readPixelsCalls ?? 0,
+      punctualLights: stats.punctualLights,
+      localShadowLights: stats.localShadowLights
     };
   }
+
+  /**
+   * GU47 E-B: swap the environment to `texture` (an `.hdr` texture asset).
+   * Partial (first commit): the request is recorded; the per-frame swap lands with the environment update.
+   */
+  setEnvironment(texture: AuraAssetRef<"texture">, opts?: AuraEnvironmentSwapOptions): void {
+    this.environmentRequest = { texture, ...(opts ? { opts } : {}) };
+    if (opts?.rotationDeg !== undefined) this.rotation = (opts.rotationDeg * Math.PI) / 180;
+  }
+
+  private environmentRequest: { readonly texture: AuraAssetRef<"texture">; readonly opts?: AuraEnvironmentSwapOptions } | null = null;
 }
 
 registerAppExtension({
@@ -318,7 +345,11 @@ registerDiagnosticsSection({
       lightsDroppedByCap: counters?.lightsDroppedByCap ?? null,
       // §4.2 runtime collectedLights: one row per evaluated light.
       lights: auraLightsLastFrame() ?? null,
-      timings: lighting?.lightingTimings?.() ?? null
+      timings: lighting?.lightingTimings?.() ?? null,
+      // GU47 E-B (WP-2 acceptance reads `diagnostics().lighting.shadows`): the observed shadow rows and the light counts.
+      shadows: diag?.shadows ?? null,
+      punctualLights: diag?.punctualLights ?? null,
+      localShadowLights: diag?.localShadowLights ?? null
     };
   }
 });

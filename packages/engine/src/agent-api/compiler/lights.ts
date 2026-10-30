@@ -570,6 +570,39 @@ export function descriptorToAuraLightData(
   };
 }
 
+// ---------- GU47 E-B: per-app frame light registry (lighting diagnostics) ----------
+
+/**
+ * The collected lights each app submitted on its last frame, keyed by the app's runtime node registry
+ * (`app.nodes`, the object the mounted scene's per-frame update receives as `ctx.runtimeNodes`). The PRD-02
+ * light handler's per-frame update records them; `app.lighting.diagnostics()` counts them.
+ */
+const frameLightsByOwner = new WeakMap<object, readonly CollectedLight[]>();
+
+export function recordRuntimeFrameLights(owner: object, lights: readonly CollectedLight[]): void {
+  frameLightsByOwner.set(owner, lights);
+}
+
+const PUNCTUAL_LIGHT_KINDS: ReadonlySet<string> = new Set(["directional", "point", "spot", "rect-area"]);
+
+/**
+ * `punctualLights`: visible authored punctual lights (directional, point, spot, rect/softbox) of the last frame.
+ * `localShadowLights`: the visible spot/point lights among them that carry a shadow caster slot.
+ * A light hidden with `setVisible(false)` is in neither count.
+ */
+export function runtimeLightStats(owner: object | null | undefined): { readonly punctualLights: number; readonly localShadowLights: number } {
+  const lights = owner ? frameLightsByOwner.get(owner) : undefined;
+  if (!lights) return { punctualLights: 0, localShadowLights: 0 };
+  let punctualLights = 0;
+  let localShadowLights = 0;
+  for (const light of lights) {
+    if (light.source?.visible === false || !PUNCTUAL_LIGHT_KINDS.has(light.kind)) continue;
+    punctualLights += 1;
+    if (light.castsShadow && (light.kind === "spot" || light.kind === "point")) localShadowLights += 1;
+  }
+  return { punctualLights, localShadowLights };
+}
+
 /** Orthonormal (right, up) spanning the plane ⊥ direction (default up +Y). */
 function rectBasisFromDirection(direction: readonly [number, number, number]): {
   readonly right: readonly [number, number, number];
