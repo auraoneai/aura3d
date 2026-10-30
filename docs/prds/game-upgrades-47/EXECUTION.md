@@ -13,6 +13,8 @@ Source of truth: [`GameUpgrades47-PRD.md`](GameUpgrades47-PRD.md) and its capabi
 
 No phase-1 lane runs `tools/remote-acr/run.sh`, `tools/real-gpu/run.sh`, a judge, a poster build or a deploy.
 
+**Revision (2026-10-29, after the first 38-lane swarm stopped on the agent usage quota within an hour, with machine load near 100):** the waves are re-ordered for economy. (1) The ten engine lanes run first (lean briefs, targeted tests only) and merge. (2) The game lanes then run in batches of about six, cut from the merged integration branch, and code directly against the merged engine APIs, so they need no interim adapters and no wave-2 swap; the interim-path rule still applies to any engine item that slipped. (3) WP-36 asset generation runs beside the game batches. (4) The before-captures of the unchanged build (WP-38) run as a script on the remote runner, not as an agent. Every lane resumes from its predecessor's commits, uncommitted files and lane report. `node_modules/.bin/vitest` in every lane worktree is a guard that adds `--maxWorkers=2` when no cap is given and allows at most 12 concurrent vitest runs on the machine.
+
 ## Lanes
 
 | Lane | WP | PRD lines (WP; contract) | Owns |
