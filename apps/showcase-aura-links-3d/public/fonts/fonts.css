@@ -1,0 +1,37 @@
+/* Aura Links 3D HUD faces (GU47 WP-20 LINKS-14, PRD D9): licensed copies from the owner's font library, self-hosted.
+   Whitney web build (Hoefler&Co): whitney-regular.woff2 = sans/Whitney/24bda95d153a319704c33329f3ab84bb.woff2 (Book, declared 400;
+   the file's OS/2 weight reads one step low), whitney-medium.woff2 = sans/Whitney/cf4a8a10bbdf9b775fad41e0b9921c84.woff2 (Medium, 500).
+   DIN Pro web build: dinpro-regular.woff = sans/DIN-Pro/DINPro-Regular.woff (400), dinpro-medium.woff = sans/DIN-Pro/DINPro-Medium.woff (500).
+   Whitney sets every word; DIN Pro sets only stat figures (distances, strokes, scores) with tabular digits. */
+
+@font-face {
+  font-family: "Whitney";
+  src: url("./whitney-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Whitney";
+  src: url("./whitney-medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "DIN Pro";
+  src: url("./dinpro-regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "DIN Pro";
+  src: url("./dinpro-medium.woff") format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}

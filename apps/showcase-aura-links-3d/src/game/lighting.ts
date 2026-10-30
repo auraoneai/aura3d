@@ -212,7 +212,8 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     bloom: { intensity: 0.36, threshold: 0.74, scatter: 0.62 },
     vignette: { intensity: 0.14, color: "#1d1208" },
     grain: { intensity: 0.045, size: 1.4 },
-    accent: "#ff5c7f",
+    // lifted from #ff5c7f so it holds 4.5:1 on the HUD panel over the warm Maple sky
+    accent: "#ff7a95",
     palette: ["#3f6b3a", "#b8452c", "#e3c48f"],
     ambientParticles: "leaves",
     sunFlare: false,
@@ -258,7 +259,8 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     bloom: { intensity: 0.24, threshold: 0.86, scatter: 0.55 },
     vignette: null,
     grain: null,
-    accent: "#4d8bff",
+    // lifted from #4d8bff so it holds 4.5:1 on the HUD panel over the cobalt sky
+    accent: "#6fa0ff",
     palette: ["#6d9a58", "#e8f2f8", "#2f5fae"],
     ambientParticles: "spindrift",
     sunFlare: false,
