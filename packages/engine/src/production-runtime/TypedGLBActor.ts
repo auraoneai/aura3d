@@ -12,7 +12,11 @@ import type { GLTFImageDecoder, GLTFMaterialRenderStateOverride } from "@aura3d/
 import { createBoneMask } from "@aura3d/animation/lanes";
 import type { AuraPlayLayerOptions } from "../contracts/animation";
 import type { AuraAssetDecodersOption, AuraModelLodOption } from "../contracts/assets";
+import { registerNodeHandleExtension } from "../contracts/runtimeNodes";
+import type { AuraQuat } from "../contracts/sceneGraph";
+import type { AuraRuntimeNodeHandle, AuraVec3 } from "../agent-api/index";
 import { boneMaskSkeletonFor, toPoseBoneMaskSpec } from "../agent-api/animationMask.js";
+import { createRuntimeNodeHandle, type MutableAuraRuntimeSceneNode } from "../agent-api/app/runtimeNodes.js";
 import type { AuraResolvedMaterialInfo } from "../contracts/materials";
 import {
   applyMaterialOverrides,
@@ -34,7 +38,7 @@ import {
   type MeshConsolidationResult,
   type RenderItem
 } from "@aura3d/rendering";
-import { identityMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
+import { decomposeMat4, eulerXYZFromQuat, identityMat4, multiplyMat4, quatFromEulerXYZ, type Mat4, type SceneNode } from "@aura3d/scene";
 
 export interface TypedGLBActorAsset {
   readonly url: string;
@@ -240,6 +244,14 @@ export interface TypedGLBActor {
    * layers, pose constraints) onto the GLB scene and skinning palettes.
    */
   advance(dt: number): GLTFSceneAnimationApplyResult;
+  /**
+   * GU47 E-H — the GLB scene node named `name` (first depth-first match) as its own runtime
+   * handle: `setPosition` / `setRotation` / `setScale` / `setVisible` write the node's local
+   * transform inside the model and draw from the next frame; `getWorld*` compose the model matrix
+   * of the last drawn frame. `undefined` when the GLB has no such node or its meshes were merged
+   * by `consolidateStaticMeshes`. A clip that animates the node overwrites these writes.
+   */
+  part(name: string): AuraRuntimeNodeHandle | undefined;
   collectRenderItems(options?: TypedGLBActorTransformOptions): RenderItem[];
   snapshot(): GLTFSceneAnimationRuntimeSnapshot;
   /**
@@ -393,6 +405,9 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
   // GU47 E-H: the evidence reports whichever driver applied last (playClip or the mixer).
   let mixerDriven = false;
   let lastMixerApply: GLTFSceneAnimationApplyResult | null = null;
+  // GU47 E-H: named-part handles (one per name) and the model matrix of the last drawn frame.
+  const parts = new Map<string, AuraRuntimeNodeHandle>();
+  let lastModelMatrix: Mat4 | undefined;
 
   const actor: TypedGLBActor = {
     kind: "aura-typed-glb-actor",
@@ -457,6 +472,20 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
       lastMixerApply = animation.applyPoseMixer(Number.isFinite(dt) ? Math.max(0, dt) : 0, { label: options.id });
       return lastMixerApply;
     },
+    part(name) {
+      const cached = parts.get(name);
+      if (cached !== undefined) return cached;
+      // Merged static buffers have no per-node transform left to drive.
+      if (staticConsolidation !== undefined) return undefined;
+      let found: SceneNode | undefined;
+      pipeline.resources.scene.traverse((node) => {
+        if (found === undefined && node.name === name) found = node;
+      });
+      if (found === undefined) return undefined;
+      const handle = createGlbPartHandle(pipeline, found, `${options.id}/${name}`, () => lastModelMatrix);
+      parts.set(name, handle);
+      return handle;
+    },
     playRootMotionClip(name, motionOptions) {
       return animationTrack.playRootMotionClip(name, motionOptions);
     },
@@ -473,6 +502,10 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
       return animationTrack.applyMorphTargets(weights, options);
     },
     collectRenderItems(transformOptions = {}) {
+      // Kept by reference (no per-frame copy); read only by part world getters.
+      if (transformOptions.modelMatrix !== undefined && transformOptions.modelMatrix.length === 16) {
+        lastModelMatrix = transformOptions.modelMatrix as Mat4;
+      }
       let items = collectTypedGLBActorRenderItems(actor, transformOptions);
       for (const extension of typedGLBActorExtensions()) {
         items = extension.collectRenderItems?.(actor, items) ?? items;
@@ -531,16 +564,127 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
       for (const item of staticConsolidation?.renderItems ?? []) {
         if (staticConsolidation?.ownedGeometries.has(item.geometry)) item.geometry.dispose();
       }
+      parts.clear();
+      if (liveTypedGLBActors.get(actor.id) === actor) liveTypedGLBActors.delete(actor.id);
       pipeline.dispose();
       textureShare?.release();
     }
   };
 
   const animationTrack = createTypedGLBActorAnimationTrack(animation, actor);
+  liveTypedGLBActors.set(actor.id, actor);
   for (const extension of typedGLBActorExtensions()) {
     extension.onLoad?.(actor, pipeline);
   }
   return actor;
+}
+
+/* ------------------------------------------------- GU47 E-H: named GLB parts */
+
+/** Live actors by id (= the model node id for scene-graph models), for `handle.part(name)`. */
+const liveTypedGLBActors = new Map<string, TypedGLBActor>();
+
+/** The live actor created under `id`, if any (GU47 E-H; `handle.part` resolution). */
+export function liveTypedGLBActor(id: string): TypedGLBActor | undefined {
+  return liveTypedGLBActors.get(id);
+}
+
+/**
+ * GU47 E-H — local mirror of lane E-B's `AuraRuntimeNodeHandle.part?(name)` declaration
+ * (`agent-api/nodes/types/runtime.ts`) until the lanes merge: model handles carry `part`.
+ */
+export type AuraRuntimeNodeHandleParts = { part?(name: string): AuraRuntimeNodeHandle | undefined };
+
+declare module "../contracts/runtimeNodes" {
+  interface AuraNodeHandleExtensionMap {
+    /** GU47 E-H — named GLB sub-node handle (model nodes; `undefined` until the GLB loads). */
+    part: (name: string) => AuraRuntimeNodeHandle | undefined;
+  }
+}
+
+// C-37 handle member `part` on model nodes. Resolves the actor per call, so a
+// handle read before the GLB loaded starts answering once it has.
+registerNodeHandleExtension({
+  id: "gu47.glb-part",
+  owner: "prd05",
+  flag: "A3D_QR_COMPILER",
+  member: "part",
+  appliesTo: ["model"],
+  create: (handle) => (name: string) => liveTypedGLBActors.get(handle.id)?.part(name)
+});
+
+/**
+ * A runtime handle over one GLB scene node. Reuses the registry's handle factory over a
+ * proxy spec whose transform fields read and write the node's local TRS, so every handle
+ * member keeps its usual semantics (version bumps, snapshot, layers, userData). Members
+ * that need a model or primitive (materials, instances, clips, morphs) only record on the
+ * proxy and draw nothing; `traverse` visits the part itself.
+ */
+function createGlbPartHandle(
+  pipeline: ProductionGLTFRenderPipeline,
+  node: SceneNode,
+  id: string,
+  modelMatrix: () => Mat4 | undefined
+): AuraRuntimeNodeHandle {
+  const transform = node.transform;
+  const spec = {
+    kind: "group",
+    name: node.name,
+    children: [],
+    get position(): AuraVec3 {
+      return [transform.position[0], transform.position[1], transform.position[2]];
+    },
+    set position(next: AuraVec3) {
+      transform.setPosition(next[0], next[1], next[2]);
+    },
+    get rotation(): AuraVec3 {
+      const euler = eulerXYZFromQuat(transform.rotation);
+      return [euler[0], euler[1], euler[2]];
+    },
+    set rotation(next: AuraVec3) {
+      const q = quatFromEulerXYZ(next[0], next[1], next[2]);
+      transform.setRotation(q[0], q[1], q[2], q[3]);
+    },
+    get quaternion(): AuraQuat {
+      return [transform.rotation[0], transform.rotation[1], transform.rotation[2], transform.rotation[3]];
+    },
+    set quaternion(next: AuraQuat) {
+      transform.setRotation(next[0], next[1], next[2], next[3]);
+    },
+    get scale(): AuraVec3 {
+      return [transform.scale[0], transform.scale[1], transform.scale[2]];
+    },
+    set scale(next: number | AuraVec3) {
+      if (typeof next === "number") transform.setScale(next, next, next);
+      else transform.setScale(next[0], next[1], next[2]);
+    },
+    get visible(): boolean {
+      return node.visible;
+    },
+    set visible(next: boolean) {
+      node.visible = next !== false;
+    }
+  };
+  const handle = createRuntimeNodeHandle(spec as unknown as MutableAuraRuntimeSceneNode, { id });
+  const world = () => {
+    pipeline.resources.scene.updateWorldTransforms();
+    const root = modelMatrix();
+    return decomposeMat4(root ? multiplyMat4(root, transform.worldMatrix) : transform.worldMatrix);
+  };
+  return Object.assign(handle, {
+    getWorldPosition: (): AuraVec3 => {
+      const p = world().position;
+      return [p[0], p[1], p[2]];
+    },
+    getWorldQuaternion: (): AuraQuat => {
+      const q = world().rotation;
+      return [q[0], q[1], q[2], q[3]];
+    },
+    getWorldScale: (): AuraVec3 => {
+      const s = world().scale;
+      return [s[0], s[1], s[2]];
+    }
+  });
 }
 
 export function collectTypedGLBActorRenderItems(actor: TypedGLBActor, options: TypedGLBActorTransformOptions = {}): RenderItem[] {
