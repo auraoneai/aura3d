@@ -164,7 +164,8 @@ export function skyNode(look: SkyLook) {
  */
 export function marineHaze(look: SkyLook) {
   const f = look.fog;
-  return effects.fog({
+  // C-21 fog fields ride through `effects.fog` as data; `mode` there is typed by the shared effect node (anti-alias modes).
+  const spec: Record<string, unknown> = {
     name: "grid marine haze",
     mode: "height",
     color: f.color,
@@ -177,7 +178,8 @@ export function marineHaze(look: SkyLook) {
     sunInscatter: f.sunInscatter,
     anisotropy: 0.6,
     affectsBackground: true
-  });
+  };
+  return effects.fog(spec as Parameters<typeof effects.fog>[0]);
 }
 
 /**

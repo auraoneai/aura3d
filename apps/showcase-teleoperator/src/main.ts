@@ -60,6 +60,8 @@ import {
   probeBuildingModels
 } from "./scene";
 import { NO_INPUT, RIVALS, ROAD_USER_COUNT, TRAFFIC_COUNT, createSim, fareOf, roadUserFootprints, type DriveInput, type SimEvent } from "./sim";
+import { SKY_LOOKS } from "./look";
+import { installSensorPass, scanPulseAt } from "./scanPulse";
 import { mountTouchPads } from "./touch";
 
 export type { AutopilotLevel, PlayableCarId, WeatherPreset } from "./rules";
@@ -178,9 +180,16 @@ async function bootGridDispatch(): Promise<void> {
   let weather: WeatherPreset = "noon";
 
   await probeBuildingModels();
-  const auraApp = createAuraApp(canvas, { scene: buildGridDispatchScene(weather), renderer: GRID_DISPATCH_RENDERER, qualityRebuild: { flags: GRID_DISPATCH_FLAGS } });
+  // GU47(E-D): `qualityRebuild.flags` is typed `readonly string[]` but createAuraApp hands it to resolveQrFlags, which
+  // takes the record form (QrFlagInput); drop the cast once the option type is widened (lane report handoff).
+  const auraApp = createAuraApp(canvas, { scene: buildGridDispatchScene(weather), renderer: GRID_DISPATCH_RENDERER, qualityRebuild: { flags: GRID_DISPATCH_FLAGS as unknown as readonly string[] } });
   installSafetyNet({ safety: { selfHeal: false, panel: "query" }, app: auraApp });
   let N = bindNodes(auraApp);
+  // GD-05/GD-09: the sensor pass (marine deck aloft + LiDAR scan pulse); registered once, it survives sky remounts.
+  const sensor = installSensorPass(auraApp, SKY_LOOKS[weather]);
+  /** Low post tier (phones, E-G post-only tier): the scan ring runs at half strength. Read once the renderer is up. */
+  let lowTier = false;
+  let presentClock = 0;
 
   // ---------------------------------------------------------------- simulation
   const hitStop = createHitStop();
@@ -571,6 +580,17 @@ async function bootGridDispatch(): Promise<void> {
     const pos = (x: number, y: number, z: number): AuraTransformSpec => ({ position: [x, y, z] });
 
     N.cars[S.car].setPosition(rx(pose.px), ry(0), CAR_DRAW_Z + camOff.z).setRotation(pose.pitch, pose.yaw + qaYawAdd, pose.roll);
+    // Sensor pass: the deck follows the eye height (roof and bumper cameras), the ring leaves the car (presentation clock).
+    presentClock += frameSeconds;
+    const skyLook = SKY_LOOKS[weather];
+    sensor.update({
+      look: skyLook,
+      pulse: scanPulseAt({ t: presentClock, motionOk: motionOk(), roofCam: camMode === 2, lowTier, skyStrength: skyLook.scanStrength }),
+      eyeHeight: SCENE_CAM_POS[1] - ry(0),
+      fovDeg: SCENE_CAM_FOV_DEG,
+      carX: rx(pose.px),
+      carZ: CAR_DRAW_Z + camOff.z
+    });
     // Road strips follow the same lateral shift as everything else, so the car stays in its lane (C2).
     for (const strip of N.strips) strip.h.setPosition(rx(strip.x), ry(strip.y), -160 + camOff.z);
 
@@ -927,6 +947,7 @@ async function bootGridDispatch(): Promise<void> {
     qa.reportError(error);
     console.error("[grid-dispatch] scene assets failed to load; continuing with what rendered", error);
   }
+  lowTier = (auraApp.diagnostics() as unknown as { post?: { tier?: string } }).post?.tier === "low";
   // Settle every shader program before the boot screen goes (a draw whose program is still compiling is skipped).
   // Place the street first so the settle pass draws what the first game frame shows.
   present(0);
