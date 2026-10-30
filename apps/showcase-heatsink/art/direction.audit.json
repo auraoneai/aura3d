@@ -1,0 +1,705 @@
+{
+  "schema": "aura3d.art-direction-audit/1",
+  "source": "apps/showcase-heatsink/art/direction.ts",
+  "sourceSha256": "d300306417b232e8cbe1e4200f3a9840c791510fe8cbf4cef72a838fe36cb3d3",
+  "id": "showcase-heatsink",
+  "genre": "racing",
+  "signatureEffect": "Refraction heat haze: drone exhausts, lava curtains and foundry vents bend the megacity behind them, and the screen edge runs a thermal ramp as the core overheats.",
+  "palette": {
+    "primary": [
+      "#14110f",
+      "#3a2a22",
+      "#ff8a1f",
+      "#d2361c"
+    ],
+    "accent": "#35d6ff",
+    "reservedObjective": "#35d6ff"
+  },
+  "environment": {
+    "hdri": "rooftop_night",
+    "background": "hdri"
+  },
+  "violations": [],
+  "snapshot": {
+    "lights": [
+      {
+        "type": "directional",
+        "shadow": true,
+        "intensity": 0.7
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 1.8
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 1.5
+      }
+    ],
+    "hasAmbient": false,
+    "environment": {
+      "kind": "preset",
+      "background": true
+    },
+    "models": [
+      {
+        "assetKey": "heatsinkDroneOrion",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkDroneVolt",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkDroneBastion",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkDroneSpectre",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkDroneRazor",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkDroneNighthawk",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkDroneWraith",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkWeaponMine",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkGantryStart",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkArch",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkArch",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkOverpass",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkTunnelFrame",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkTunnelFrame",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkStatue",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkTowerL",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkTowerL",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkTowerT",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkTowerX",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkHoloBillboard",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkHoloBillboard",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkLavaFall",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkWaterEmitter",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkBarrierA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkCheckpointRing",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkBoostPad",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkCoolingCanister",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkShieldPickup",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkExplosiveBarrel",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsinkWeaponShockwave",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
+    "materials": [
+      {
+        "node": "sky-backdrop",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "megacity-abyss-floor",
+        "practical": false
+      },
+      {
+        "node": "horizon-band-a",
+        "emissiveIntensity": 0.75,
+        "practical": true
+      },
+      {
+        "node": "horizon-band-b",
+        "emissiveIntensity": 0.65,
+        "practical": true
+      },
+      {
+        "node": "road-deck-even",
+        "practical": false
+      },
+      {
+        "node": "road-deck-odd",
+        "practical": false
+      },
+      {
+        "node": "road-spine-a",
+        "emissiveIntensity": 1.45,
+        "practical": true
+      },
+      {
+        "node": "road-spine-b",
+        "emissiveIntensity": 1.45,
+        "practical": true
+      },
+      {
+        "node": "road-lanes",
+        "emissiveIntensity": 0.45,
+        "practical": true
+      },
+      {
+        "node": "track-walls",
+        "practical": false
+      },
+      {
+        "node": "wall-chevrons-a",
+        "emissiveIntensity": 1.65,
+        "practical": true
+      },
+      {
+        "node": "wall-chevrons-b",
+        "emissiveIntensity": 1.65,
+        "practical": true
+      },
+      {
+        "node": "rain-streaks",
+        "emissiveIntensity": 0.55,
+        "practical": true
+      },
+      {
+        "node": "laser-bolts",
+        "emissiveIntensity": 2.6,
+        "practical": true
+      },
+      {
+        "node": "player-shockwave-ring",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "homing-missile-active",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "incoming-missile",
+        "emissiveIntensity": 2.6,
+        "practical": true
+      }
+    ],
+    "drawCalls": 0
+  },
+  "direction": {
+    "id": "showcase-heatsink",
+    "genre": "racing",
+    "fantasy": "A combat-drone race through a foundry megacity seen through heat: molten channels, slag light and refracting exhaust.",
+    "rebuildTier": "S-presentation",
+    "wave": 4,
+    "references": [
+      {
+        "file": "references/foundry-night.json",
+        "source": "photographic reference: steel-mill casting floors and blast-furnace tapping at night (generic industrial photography)",
+        "licence": "reference-only",
+        "why": "Warm molten-amber key against soot-black iron, with slag-red falloff and steam catching the light; the MEGACITY palette"
+      },
+      {
+        "file": "references/dust-storm-sunset.json",
+        "source": "photographic reference: low sun through an ochre dust storm over an industrial plain (generic weather photography)",
+        "licence": "reference-only",
+        "why": "A 9-degree burnt sun behind suspended dust: god rays, height fog that eats the far road, ochre ground; the DUSTFALL mood"
+      },
+      {
+        "file": "references/heat-shimmer.json",
+        "source": "shipped comparable: exhaust heat shimmer and thermal-camera ramps in racing and flight games (generic genre convention)",
+        "licence": "reference-only",
+        "why": "Refraction behind hot exhausts and vents that bends the city without blurring the track, plus a thermal edge ramp near overheat"
+      }
+    ],
+    "palette": {
+      "primary": [
+        "#14110f",
+        "#3a2a22",
+        "#ff8a1f",
+        "#d2361c"
+      ],
+      "accent": "#35d6ff",
+      "reservedObjective": "#35d6ff"
+    },
+    "lighting": {
+      "key": {
+        "type": "directional",
+        "colorTemperatureK": 3000,
+        "shadow": true
+      },
+      "fill": "ibl",
+      "practicals": 6,
+      "environment": {
+        "hdri": "rooftop_night",
+        "background": "hdri"
+      },
+      "exposureEV": 0.4
+    },
+    "framing": {
+      "rig": "chase",
+      "subjectHeightFraction": [
+        0.15,
+        0.25
+      ],
+      "fovDeg": [
+        62,
+        84
+      ],
+      "mobile": "both"
+    },
+    "assets": [
+      {
+        "role": "vehicle",
+        "assetKey": "heatsinkDroneOrion",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "heatsinkDroneVolt",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "heatsinkDroneBastion",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "heatsinkDroneSpectre",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "heatsinkDroneRazor",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "heatsinkDroneNighthawk",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "heatsinkDroneWraith",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "heatsinkGantryStart",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "heatsinkArch",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "heatsinkOverpass",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "heatsinkTunnelFrame",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "heatsinkStatue",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "heatsinkTowerL",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "heatsinkTowerT",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "heatsinkTowerX",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "heatsinkHoloBillboard",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "heatsinkLavaFall",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "heatsinkWaterEmitter",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "heatsinkBarrierA",
+        "maxTriangles": 12000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "heatsinkCheckpointRing",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "heatsinkBoostPad",
+        "maxTriangles": 12000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "heatsinkCoolingCanister",
+        "maxTriangles": 12000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "heatsinkShieldPickup",
+        "maxTriangles": 12000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "heatsinkExplosiveBarrel",
+        "maxTriangles": 12000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "heatsinkWeaponShockwave",
+        "maxTriangles": 12000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "heatsinkWeaponMine",
+        "maxTriangles": 12000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 1024
+      }
+    ],
+    "vfx": [
+      {
+        "event": "barrel",
+        "kind": "td-slag-burst"
+      },
+      {
+        "event": "hit",
+        "kind": "td-ember-hit"
+      },
+      {
+        "event": "scrape",
+        "kind": "td-wall-scrape"
+      },
+      {
+        "event": "pickup-coolant",
+        "kind": "td-coolant-burst"
+      },
+      {
+        "event": "pickup-boost",
+        "kind": "td-boost-flare"
+      },
+      {
+        "event": "shock",
+        "kind": "td-shock"
+      },
+      {
+        "event": "takedown",
+        "kind": "td-slag-burst"
+      },
+      {
+        "event": "missile-flight",
+        "kind": "trail"
+      },
+      {
+        "event": "drone-exhaust",
+        "kind": "trail"
+      },
+      {
+        "event": "overheat",
+        "kind": "heat-haze-edge-ramp"
+      }
+    ],
+    "audio": [
+      {
+        "event": "countdown",
+        "cue": "tick",
+        "variants": 1
+      },
+      {
+        "event": "go",
+        "cue": "go",
+        "variants": 1
+      },
+      {
+        "event": "lap",
+        "cue": "lap",
+        "variants": 1
+      },
+      {
+        "event": "hit",
+        "cue": "hit",
+        "variants": 1
+      },
+      {
+        "event": "takedown",
+        "cue": "takedown",
+        "variants": 1
+      },
+      {
+        "event": "boost",
+        "cue": "drone-boost",
+        "variants": 1
+      }
+    ],
+    "signatureEffect": "Refraction heat haze: drone exhausts, lava curtains and foundry vents bend the megacity behind them, and the screen edge runs a thermal ramp as the core overheats.",
+    "criticalCategories": [
+      "lighting",
+      "atmospheric_effects",
+      "postprocessing",
+      "vfx",
+      "environment_world"
+    ],
+    "tiers": {
+      "low": {
+        "particles": 48,
+        "shadowMap": 1024,
+        "cascades": 1,
+        "textureMax": 1024
+      },
+      "medium": {
+        "particles": 72,
+        "shadowMap": 2048,
+        "cascades": 2,
+        "textureMax": 1024
+      },
+      "high": {
+        "particles": 96,
+        "shadowMap": 2048,
+        "cascades": 3,
+        "textureMax": 2048
+      },
+      "ultra": {
+        "particles": 96,
+        "shadowMap": 4096,
+        "cascades": 3,
+        "textureMax": 2048
+      }
+    }
+  }
+}
