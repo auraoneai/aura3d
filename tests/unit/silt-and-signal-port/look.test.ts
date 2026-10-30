@@ -55,7 +55,7 @@ describe("GU47 WP-34 look table", () => {
       const bloom = list.find((n) => n.effect === "bloom")!;
       expect(bloom.threshold).toBe(1);
       expect(bloom.postAuthored).not.toContain("radius");
-      expect(validatePostEffectNode(bloom) ?? []).toEqual([]);
+      expect(validatePostEffectNode(bloom as Parameters<typeof validatePostEffectNode>[0]) ?? []).toEqual([]);
       const grade = list.find((n) => n.effect === "color-grade")!;
       expect(grade.saturation).toBe(chapterLook(c).grade.saturation);
       expect(list.find((n) => n.effect === "vignette")?.intensity).toBe(0.22);
@@ -208,8 +208,8 @@ describe("GU47 WP-34 materials (DG-M1 interim, DG-M2)", () => {
     const hue = hueDeg([r, g, b]);
     expect(hue).toBeGreaterThanOrEqual(22);
     expect(hue).toBeLessThanOrEqual(45);
-    expect(nodes(0).find((n) => n.name === "terrain").material.texture.url).toMatch(/ground_Color\.jpg$/);
-    expect(nodes(0, { look: "original" }).find((n) => n.name === "terrain").material.texture.url).toMatch(/grass_Color\.jpg$/);
+    expect(nodes(0).find((n) => n.name === "terrain")!.material.texture.url).toMatch(/ground_Color\.jpg$/);
+    expect(nodes(0, { look: "original" }).find((n) => n.name === "terrain")!.material.texture.url).toMatch(/grass_Color\.jpg$/);
   });
   it("DG-M2: five wall hues at least 12 deg apart, plaster texture kept, base darkening and a sand-stain band", () => {
     const hues = PLASTER_INKED.map(hueDeg).sort((a, b) => a - b);

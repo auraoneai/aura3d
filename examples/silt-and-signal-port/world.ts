@@ -18,6 +18,7 @@ import { RING_FRAGMENT, RING_VERTEX, SKY_FRAGMENT, SKY_INK_FRAGMENT, SKY_VERTEX,
 import { createSiltFx, type SiltFx } from "./fx";
 import { createLightning } from "./storm";
 import { dressingFor } from "./dressing";
+import { DECAL_OPACITY, decalMesh, decalPlan } from "./decals";
 import { SILT_PALETTE, chapterHdri, chapterLook, keyDirection, linearOf, type SiltLookMode } from "./art/look";
 import { buildArchitecture, farDuneRings, farDunes, terrainColors, type ColoredMesh } from "./architecture";
 import { createTerrain, usesOriginalTerrain, type Column, type MeshData, type Placement, type Terrain } from "./terrain";
@@ -517,6 +518,17 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
     // pillar.glb is 1.9 m tall with its origin at the centre: squat drums, sunk a little
     if (drums.length) builder.add(instances.model(assets.pillar, { name: "dressing-drums", castShadow: true, receiveShadow: true, transforms: drums.map((d) => ({ position: [d.x, d.y + 0.35 * d.scale, d.z] as [number, number, number], rotation: [0, d.yaw, 0] as [number, number, number], scale: [d.scale, d.scale * 0.45, d.scale] as [number, number, number] })) }));
     if (ruins.length) builder.add(instances.model(assets.canyonrocks, { name: "dressing-ruins", castShadow: false, receiveShadow: true, transforms: ruins.map((d) => ({ position: [d.x, d.y + 0.3 * d.scale, d.z] as [number, number, number], rotation: [0, d.yaw, 0] as [number, number, number], scale: [d.scale, d.scale * 0.7, d.scale] as [number, number, number] })) }));
+  }
+  // GU47 DG-W2 (inked look, not Low): sand drifts, aqueduct water stains and lamp soot, merged into one soft-edged
+  // transparent mesh (+1 draw) instead of one root-decal draw each; <= 24 decals, inside the engine's 32-decal budget
+  if (inked && !buildOptions.low) {
+    const plan = decalPlan(chapter, terrain, props.walls, props.lamps, { wet });
+    if (plan.length) {
+      builder.add(geometry.custom(dynamicFrom(decalMesh(plan, terrain, wet ? WET_ROAD.color : "#e9d2a8")), {
+        name: "silt-decals", castShadow: false, receiveShadow: true,
+        material: pbr({ color: white, roughness: 1, opacity: DECAL_OPACITY, envMapIntensity: 0.4 })
+      }).runtime({ id: "silt-decals" }));
+    }
   }
   // GU47 DG-AN2 (part): E-G instance wind on today's trees in the inked look (reduced motion keeps 30% sway); the WP-36
   // palms and tamarisk take the same option when admitted. Same draw, wind variant of its program.

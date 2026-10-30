@@ -47,5 +47,5 @@ E-I captures / measured budgets on the remote runner; "WP-36" = waits for genera
 | DG-C3 | finish orbit | not done (C) |
 | DG-H1 | Graphik + Canela, no #19e6ff in the inked HUD, labels >= 13 px | unit; deployed font checks and overlap phase 2 |
 | DG-W1 | none within 40 m of a ring; >= 25; +2 draws | unit |
-| DG-W2 | decals | not done (C) |
+| DG-W2 | decals | done (one merged decal mesh, +1 draw; plaza stddev phase 2) |
 | DG-PF1 | budgets | phase 2 (budget.json before rows) |

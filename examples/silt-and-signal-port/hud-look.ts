@@ -48,7 +48,7 @@ export async function mountSiltHud(doc: Document = document): Promise<readonly s
   ];
   const loaded: string[] = [];
   await Promise.all(faces.map(async (face) => {
-    try { doc.fonts.add(await face.load()); loaded.push(`${face.family} ${face.weight}`); } catch { /* keep the fallback stack */ }
+    try { (doc.fonts as FontFaceSet & { add(face: FontFace): void }).add(await face.load()); loaded.push(`${face.family} ${face.weight}`); } catch { /* keep the fallback stack */ }
   }));
   return loaded;
 }

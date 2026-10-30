@@ -17,7 +17,7 @@
   "expectedDrawDelta": {
     "note": "phase-1 estimate per row; measured in phase 2",
     "DG-L1..L4": 0, "DG-S1": 0, "DG-S3": 0, "DG-P1": 0, "DG-P2": 0, "DG-P3": 0,
-    "DG-A3 thruster strips": 0, "DG-V1 wake + motes": 2, "DG-V2 twin trails": 2, "DG-V3 bursts": 1, "DG-C1 bars": 0
+    "DG-A3 thruster strips": 0, "DG-V1 wake + motes": 2, "DG-V2 twin trails": 2, "DG-V3 bursts": 1, "DG-C1 bars": 0, "DG-W1 dressing": 2, "DG-W2 decals (one merged mesh, <= 24 decals)": 1
   },
   "after": null
 }

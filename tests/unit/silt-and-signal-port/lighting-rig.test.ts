@@ -44,8 +44,8 @@ describe("GU47 DG-L1 CHAPTER_LIGHT: seven hours of one long day", () => {
       const p = key.position as number[];
       const len = Math.hypot(p[0]!, p[1]!, p[2]!);
       expect(p.map((v) => v / len)[1]).toBeCloseTo(dir[1], 5);
-      expect(skySpec(c, "inked").uniforms!.sunDir!.value).toEqual(dir);
-      expect(waterSpec(c, "inked").uniforms!.sunDir!.value).toEqual(dir);
+      expect((skySpec(c, "inked").uniforms!.sunDir as { value?: unknown }).value).toEqual(dir);
+      expect((waterSpec(c, "inked").uniforms!.sunDir as { value?: unknown }).value).toEqual(dir);
       expect(key.intensity).toBe(chapterLook(c).key.intensity);
     }
   });

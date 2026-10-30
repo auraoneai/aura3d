@@ -169,7 +169,7 @@ function archRelief(m: ColoredMesh, centre: V3, u: V3, n: V3, w: number, h: numb
   arch(r, lift + 0.03, WINDOW_DARK);
 }
 
-const isAqueduct = (w: Wall): boolean => {
+export const isAqueduct = (w: Wall): boolean => {
   const long = Math.max(w.halfX, w.halfZ) * 2, thin = Math.min(w.halfX, w.halfZ) * 2, h = w.top - w.bottom;
   return long >= 18 && thin <= 8 && h >= 9 && h <= 70;
 };
