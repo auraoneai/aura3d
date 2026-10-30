@@ -537,7 +537,8 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
           width: options.width,
           life: options.life,
           color: options.color ?? "#ffffff",
-          ...(options.widthOverSpeed !== undefined ? { widthOverSpeed: options.widthOverSpeed } : {})
+          ...(options.widthOverSpeed !== undefined ? { widthOverSpeed: options.widthOverSpeed } : {}),
+          ...(options.colorTail !== undefined ? { colorTail: options.colorTail } : {})
         });
       }
       return {
@@ -555,7 +556,8 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
         setPosition: (p: AuraVec3) => {
           system.trailPush(id, [p[0] ?? 0, p[1] ?? 0, p[2] ?? 0]);
         },
-        clear: () => system.clearTrail(id)
+        clear: () => system.clearTrail(id),
+        translate: (dx: number, dy: number, dz: number) => system.translateTrail(id, [dx, dy, dz])
       };
     },
     decal(at, options) {

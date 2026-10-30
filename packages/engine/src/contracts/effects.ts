@@ -34,6 +34,8 @@ export interface AuraTrailOptions {
   readonly color?: AuraColor;
   /** Width ramp by the target's speed in m/s: zero width at or below `[0]`, full `width` at or above `[1]`. */
   readonly widthOverSpeed?: readonly [number, number];
+  /** GU47 pass 4: colour at the tail; each point blends from `color` (head) to `colorTail` over its life. Default: `color`. */
+  readonly colorTail?: AuraColor;
 }
 /** GU47 E-F handle of a running trail. */
 export interface AuraTrailHandle extends AuraEffectInstanceHandle {
@@ -43,6 +45,12 @@ export interface AuraTrailHandle extends AuraEffectInstanceHandle {
   readonly pointCount: number;
   /** Drop every point; the ribbon restarts from the target's next position. */
   clear(): void;
+  /**
+   * GU47 pass 4: shift every live point by `(dx, dy, dz)` metres. A camera-anchored game that scrolls the world past a
+   * fixed subject calls it each frame with the world's frame offset, so the ribbon streams behind the subject. Engine
+   * handles always have it; optional so hand-written test doubles of this interface keep compiling.
+   */
+  translate?(dx: number, dy: number, dz: number): void;
 }
 /** `burst` options (GU47 E-F names the bag; `sprite` is new). */
 export interface AuraBurstOptions {
@@ -127,7 +135,7 @@ export class StubAppEffects implements AuraAppEffects {
     this.live.set(id, { handle: null, effect: "trail", count: 1 });
     void target; void options.life;
     const handle = this.makeHandle(id);
-    return { id, get alive() { return handle.alive; }, stop: handle.stop, setPosition: handle.setPosition, length: 0, pointCount: 0, clear: () => undefined };
+    return { id, get alive() { return handle.alive; }, stop: handle.stop, setPosition: handle.setPosition, length: 0, pointCount: 0, clear: () => undefined, translate: () => undefined };
   }
 
   decal(at: { position: AuraVec3; normal: AuraVec3; target?: string }, options: AuraDecalOptions): AuraEffectInstanceHandle {

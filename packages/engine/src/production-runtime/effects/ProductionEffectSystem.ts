@@ -74,17 +74,24 @@ interface TrailBinding {
 }
 
 /** GU47 E-F: a ribbon that samples its target every frame and drops points older than `life`. */
+/** Linear blend of two RGBA colours (`t` 0: `a`, 1: `b`). */
+function mixColor4(a: readonly [number, number, number, number], b: readonly [number, number, number, number], t: number): readonly [number, number, number, number] {
+  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t, a[3] + (b[3] - a[3]) * t];
+}
+
 interface TrailFollow {
   readonly target: unknown;
   /** Seconds a point lives (Infinity: ring only, no fade). */
   readonly life: number;
   readonly width: number;
   readonly color: readonly [number, number, number, number];
+  /** GU47 pass 4: tail colour (linear RGBA); points blend from `color` to it over their life. */
+  readonly colorTail?: readonly [number, number, number, number];
   /** Width ramp by target speed (m/s): zero at or below [0], full width at or above [1]. */
   readonly widthOverSpeed?: readonly [number, number];
   readonly maxPoints: number;
   readonly minVertexDistance: number;
-  readonly points: { readonly position: readonly [number, number, number]; readonly time: number; readonly speed: number }[];
+  readonly points: { position: readonly [number, number, number]; readonly time: number; readonly speed: number }[];
   /** False after a non-immediate stop: points expire, then the trail is removed. */
   following: boolean;
   last: { readonly position: readonly [number, number, number]; readonly time: number } | null;
@@ -755,7 +762,7 @@ export class ProductionEffectSystem {
   addTrail(
     id: string,
     target: unknown,
-    options: { readonly width: number; readonly life: number; readonly color?: unknown; readonly widthOverSpeed?: readonly [number, number]; readonly minVertexDistance?: number }
+    options: { readonly width: number; readonly life: number; readonly color?: unknown; readonly widthOverSpeed?: readonly [number, number]; readonly minVertexDistance?: number; readonly colorTail?: unknown }
   ): string {
     const life = Number.isFinite(options.life) && options.life > 0 ? options.life : 0.5;
     const width = Number.isFinite(options.width) && options.width > 0 ? options.width : 0.3;
@@ -771,6 +778,7 @@ export class ProductionEffectSystem {
       life,
       width,
       color,
+      ...(options.colorTail !== undefined ? { colorTail: effectColor4({ kind: "effect", color: options.colorTail as EffectNodeLike["color"] }) } : {}),
       ...(ramp && ramp.length >= 2 && Number.isFinite(ramp[0]) && Number.isFinite(ramp[1]) ? { widthOverSpeed: [ramp[0], ramp[1]] as const } : {}),
       maxPoints,
       minVertexDistance,
@@ -797,6 +805,16 @@ export class ProductionEffectSystem {
       length += Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1], points[i][2] - points[i - 1][2]);
     }
     return { length, pointCount: points.length };
+  }
+
+  /** GU47 pass 4: shift every live point (and the speed reference) of a trail by `offset` metres. */
+  translateTrail(id: string, offset: readonly [number, number, number]): void {
+    const follow = this.trails.get(id)?.follow;
+    const [dx, dy, dz] = offset;
+    if (!follow || !Number.isFinite(dx) || !Number.isFinite(dy) || !Number.isFinite(dz) || (dx === 0 && dy === 0 && dz === 0)) return;
+    const shift = (p: readonly [number, number, number]): readonly [number, number, number] => [p[0] + dx, p[1] + dy, p[2] + dz];
+    for (const point of follow.points) point.position = shift(point.position);
+    if (follow.last) follow.last = { position: shift(follow.last.position), time: follow.last.time };
   }
 
   /** GU47 E-F: drop every point of a trail (it restarts from the target's next position). */
@@ -867,7 +885,8 @@ export class ProductionEffectSystem {
       for (let i = follow.points.length - 1; i >= 0; i--) {
         const point = follow.points[i];
         const fade = Number.isFinite(follow.life) ? Math.max(0, 1 - (this.time - point.time) / follow.life) : 1;
-        binding.trail.push(point.position, point.time, follow.width * trailWidthScale(point.speed, follow.widthOverSpeed), [follow.color[0], follow.color[1], follow.color[2], follow.color[3] * fade]);
+        const c = follow.colorTail ? mixColor4(follow.color, follow.colorTail, 1 - fade) : follow.color;
+        binding.trail.push(point.position, point.time, follow.width * trailWidthScale(point.speed, follow.widthOverSpeed), [c[0], c[1], c[2], c[3] * fade]);
       }
     }
   }

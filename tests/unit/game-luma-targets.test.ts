@@ -37,7 +37,9 @@ describe("game luma capture targets (audit LIGHT-02)", () => {
       const m = text.match(new RegExp(`type ${typeName} =([^;]+);`));
       return [...(m?.[1] ?? "").matchAll(/"([^"]+)"/g)].map((x) => x[1]!);
     };
-    const variants = (slug: string) => GAME_LUMA_TARGETS.filter((t) => t.slug === slug).map((t) => t.variant);
+    // `look=original` before rows (pass 4) repeat a variant in the 4.6 look; they are not variants of their own.
+    const variantRows = GAME_LUMA_TARGETS.filter((t) => !t.url.includes("look=original"));
+    const variants = (slug: string) => variantRows.filter((t) => t.slug === slug).map((t) => t.variant);
     expect(variants("aura-hoops-3d").sort()).toEqual(ids(src("apps/showcase-aura-hoops-3d/src/main.ts"), "VenueId").sort());
     expect(variants("aura-diamond-3d").sort()).toEqual(ids(src("apps/showcase-aura-diamond-3d/src/rules.ts"), "ParkId").sort());
     expect(variants("aura-fc-3d").sort()).toEqual(ids(src("apps/showcase-aura-fc-3d/src/game/types.ts"), "VenueId").sort());
@@ -53,7 +55,7 @@ describe("game luma capture targets (audit LIGHT-02)", () => {
     const levels = [...levelsSrc.slice(levelsSrc.indexOf("export const LEVELS")).matchAll(/\{ id: `([a-z]+)`, name:/g)].map((m) => m[1]!);
     expect(levels.length).toBeGreaterThan(0);
     expect(variants("roadster-hours-port")).toEqual(levels);
-    expect(GAME_LUMA_TARGETS.filter((t) => t.slug === "roadster-hours-port").map((t) => t.url)).toEqual(levels.map((_, i) => `/apps/showcase-roadster-hours-port/?level=${i}&autostart=1&autopilot=1`));
+    expect(variantRows.filter((t) => t.slug === "roadster-hours-port").map((t) => t.url)).toEqual(levels.map((_, i) => `/apps/showcase-roadster-hours-port/?level=${i}&autostart=1&autopilot=1`));
   });
 });
 
@@ -74,15 +76,16 @@ describe("GU47 variant targets (WP-9 E-I)", () => {
   });
 
   it("drives every GU47 row through the game's declared variant param", async () => {
-    const { GU47_FIRST_GROUP, VARIANT_PARAMS } = await import("../browser/game-luma-targets");
+    const { GU47_FIRST_GROUP, VARIANT_PARAMS, EXTRA_VARIANT_PARAMS, GU47_READY_WAITS } = await import("../browser/game-luma-targets");
     const params = VARIANT_PARAMS as Record<string, string>;
     const rows = GAME_LUMA_TARGETS.filter((t) => groupNo(t) >= GU47_FIRST_GROUP);
     for (const t of rows) {
       const param = params[t.slug];
-      expect(param, t.name).toBeDefined();
       const query = new URLSearchParams(t.url.slice(t.url.indexOf("?") + 1));
-      expect(query.get(param!), t.name).toBeTruthy();
-      expect(t.prepare, t.name).toBeUndefined();
+      const accepted = [...(param ? [param] : []), ...(EXTRA_VARIANT_PARAMS[t.slug] ?? [])];
+      expect(accepted.length, t.name).toBeGreaterThan(0);
+      expect(accepted.some((p) => query.get(p)), t.name).toBe(true);
+      if (t.prepare) expect(GU47_READY_WAITS.includes(t.prepare), t.name).toBe(true);
     }
     // one row per distinct param value per game: no two rows of a game load the same URL
     const urls = rows.map((t) => t.url);
@@ -90,7 +93,7 @@ describe("GU47 variant targets (WP-9 E-I)", () => {
     const perGame = (slug: string) => rows.filter((t) => t.slug === slug).map((t) => t.variant);
     expect(perGame("bunker-zero")).toEqual(["floor1", "floor2", "floor3", "floor4", "floor5", "floor6", "killhouse"]);
     expect(perGame("last-train-port")).toEqual(["band-a", "band-b", "band-c", "band-d", "band-e"]);
-    expect(rows.filter((t) => t.slug === "drift-and-deliver-port").map((t) => t.url)).toEqual(
+    expect(rows.filter((t) => t.slug === "drift-and-deliver-port" && t.url.includes("?at=")).map((t) => t.url)).toEqual(
       [10, 120, 170].map((s) => `/apps/showcase-drift-and-deliver-port/?at=${s}`));
     expect(rows.filter((t) => t.slug === "slingshot-siege").map((t) => t.url.split("?")[1])).toEqual(
       ["level=0", "level=5", "level=10", "level=15", "level=20", "level=25"]);
@@ -113,6 +116,67 @@ describe("GU47 variant targets (WP-9 E-I)", () => {
     expect(src("examples/aura-slam/shell/boot.ts")).toMatch(/params\.get\("venue"\)/);
     expect(src("apps/showcase-slingshot-siege/src/main.ts")).toMatch(/params\.get\("level"\)/);
     expect(src("apps/showcase-dot-dash-3d/src/main.ts")).toMatch(/params\.get\("maze"\)/);
+  });
+});
+
+describe("GU47 pass-4 game-lane handoff targets", () => {
+  const byName = new Map(GAME_LUMA_TARGETS.map((t) => [t.name, t]));
+  const url = (name: string) => byName.get(name)?.url;
+  const src = (p: string) => readFileSync(resolve(root, p), "utf8");
+
+  it("adds the variant and before rows the game lanes asked for", () => {
+    expect(url("roadster-rush--dusk")).toBe("/apps/showcase-roadster-rush/?seed=42&capture=1&tod=dusk");
+    expect(url("roadster-rush--night")).toBe("/apps/showcase-roadster-rush/?seed=42&capture=1&tod=night");
+    expect(url("cross-hop--original")).toBe("/apps/showcase-cross-hop/?look=original");
+    expect(url("strange-orbit-port--original")).toBe("/apps/showcase-strange-orbit-port/?look=original");
+    expect(url("strange-orbit-port--neutral-env")).toBe("/apps/showcase-strange-orbit-port/?env=neutral");
+    expect(url("drift-and-deliver-port--original")).toBe("/apps/showcase-drift-and-deliver-port/?look=original");
+    expect(url("heatsink-port--original")).toBe("/apps/showcase-heatsink-port/?look=original");
+    expect(url("ninja-runner-port--original")).toBe("/apps/showcase-ninja-runner-port/?look=original");
+    expect(url("ninja-runner-port--village-lanterns-off")).toBe("/apps/showcase-ninja-runner-port/?at=100&lanterns=0");
+    expect(url("ninja-runner-port--gate-cones-off")).toBe("/apps/showcase-ninja-runner-port/?at=2500&cones=0");
+    expect(url("where-the-wind-wanders-port--bell")).toBe("/apps/showcase-where-the-wind-wanders-port/?found=bell");
+    for (const id of ["sunbreak", "redline", "halo"]) expect(url(`roadster-hours-port--${id}-original`)).toMatch(/&look=original$/);
+    for (let c = 0; c <= 6; c++) expect(url(`silt-and-signal-port--ch${c}-original`)).toBe(`/apps/showcase-silt-and-signal-port/?chapter=${c}&start=1&look=original`);
+    for (const b of ["a", "b", "c", "d", "e"]) expect(url(`last-train-port--band-${b}`)).toBe(`/apps/showcase-last-train-port/?band=${b.toUpperCase()}&title=0`);
+  });
+
+  it("boots teleoperator rows on their sky with the intro skipped (Marine dusk is the boot sky since GD-21)", () => {
+    for (const k of ["noon", "golden", "fog", "night"]) {
+      const row = byName.get(`teleoperator--${k}`)!;
+      expect(row.url).toBe(`/apps/showcase-teleoperator/?sky=${k}&intro=0`);
+      expect(row.prepare, k).toBeTypeOf("function");
+    }
+    const look = src("apps/showcase-teleoperator/src/look.ts");
+    expect(look).toMatch(/skyFromParam/);
+    expect(src("apps/showcase-teleoperator/src/intro.ts")).toMatch(/p\.get\("intro"\) === "0"/);
+  });
+
+  it("waits on Saltwind textures and gives its rows the chase-camera crops", () => {
+    const rows = GAME_LUMA_TARGETS.filter((t) => t.slug === "roadster-hours-port");
+    expect(rows).toHaveLength(6);
+    for (const r of rows) {
+      expect(r.prepare, r.name).toBeTypeOf("function");
+      expect(r.crops?.map((c) => c.name), r.name).toEqual(["car", "road", "sky", "sea"]);
+    }
+    expect(src("examples/roadster-hours-port/main.ts")).toMatch(/texturesReady: \(\) =>/);
+  });
+
+  it("only uses params the game sources read", () => {
+    expect(src("apps/showcase-roadster-rush/src/main.ts")).toMatch(/urlParams\.get\("tod"\)/);
+    expect(src("examples/strange-orbit-port/art/look.ts")).toMatch(/get\("look"\)/);
+    expect(src("examples/strange-orbit-port/world.ts")).toMatch(/get\("env"\) === "neutral"/);
+    expect(src("examples/drift-and-deliver-port/main.ts")).toMatch(/params\.get\("look"\)/);
+    expect(src("examples/heatsink-port/art/look.ts")).toMatch(/get\("look"\)/);
+    const ninja = src("examples/ninja-runner-port/main.ts");
+    expect(ninja).toMatch(/params\.get\("lanterns"\) !== "0"/);
+    expect(ninja).toMatch(/params\.get\("cones"\) !== "0"/);
+    expect(src("examples/ninja-runner-port/districtLook.ts")).toMatch(/params\.get\("look"\) === "original"/);
+    expect(src("examples/roadster-hours-port/art/look.ts")).toMatch(/get\("look"\) === "original"/);
+    expect(src("examples/silt-and-signal-port/art/look.ts")).toMatch(/get\("look"\) === "original"/);
+    expect(src("examples/last-train-port/main.ts")).toMatch(/params\.get\("title"\) !== "0"/);
+    expect(src("examples/where-the-wind-wanders-port/daylight.ts")).toMatch(/value === "bell"/);
+    expect(src("apps/showcase-cross-hop/src/main.ts")).toMatch(/params\.get\("look"\) === "original"/);
   });
 });
 

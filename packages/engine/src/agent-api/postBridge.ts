@@ -587,7 +587,10 @@ export const POST_RUNTIME_EFFECTS: Readonly<Record<string, string>> = Object.fre
   volumetricFog: "volumetric-fog",
   vignette: "vignette",
   // GU47 E-E handoff H4: retarget the outline at runtime (`setEffect("outline", { targets: [id] })`).
-  outline: "outline"
+  outline: "outline",
+  // GU47 pass 4 (g19): an fps governor drops GTAO and grain at runtime (`setEffectEnabled("ambientOcclusion", false)`).
+  ambientOcclusion: "ambient-occlusion",
+  filmGrain: "film-grain"
 });
 
 /** One `setEffect` patch value as stored: strings/numbers/booleans, number arrays, or a converted object (`tiltShift`). */
@@ -1277,7 +1280,8 @@ export function createRootPostPipeline(
         ...(godRayDensityOf(volumetricNode) !== undefined ? { density: godRayDensityOf(volumetricNode) } : {}),
         intensity: numberField(volumetricNode, "intensity", 0.7),
         color: rgbField(volumetricNode, "color", { r: 0.44, g: 0.52, b: 0.73 }),
-        lightWorld: Array.isArray(volumetricNode.lightPosition) ? volumetricNode.lightPosition.slice(0, 3) as unknown as readonly [number, number, number] : undefined,
+        // GU47 pass 4 (g08, g18): only a 3-number lightPosition is a world point; the UV pair is the forward anchor.
+        lightWorld: Array.isArray(volumetricNode.lightPosition) && volumetricNode.lightPosition.length === 3 ? volumetricNode.lightPosition.slice(0, 3) as unknown as readonly [number, number, number] : undefined,
         ...(godRayLightDirection ? { lightDirection: godRayLightDirection } : {})
       }
     } : {}),

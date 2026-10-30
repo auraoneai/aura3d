@@ -15,7 +15,7 @@ const STEP_KEYS = new Set(["click", "press", "down", "up", "hold", "wait", "shot
 
 describe("real-GPU scenarios (WP-9 E-I)", () => {
   it("covers every live game at its inventory URL", () => {
-    const bySlug = new Map(Object.entries(scenarios).filter(([k]) => !k.endsWith("-vfx")).map(([k, v]) => [ALIAS[k] ?? k, v]));
+    const bySlug = new Map(Object.entries(scenarios).filter(([k]) => !k.endsWith("-vfx") && !k.includes("--")).map(([k, v]) => [ALIAS[k] ?? k, v]));
     expect(live.filter((g) => !bySlug.has(g.slug)).map((g) => g.slug)).toEqual([]);
     expect(bySlug.size).toBe(live.length);
     for (const g of live) expect(bySlug.get(g.slug)!.path, g.slug).toBe(g.url);
@@ -29,6 +29,20 @@ describe("real-GPU scenarios (WP-9 E-I)", () => {
       expect(sc.steps.some((s) => s.shot || s.burst), key).toBe(true);
       for (const step of sc.steps) for (const k of Object.keys(step)) expect(STEP_KEYS.has(k), `${key}: ${k}`).toBe(true);
     }
+  });
+
+  it("gives each variant scenario (`<slug>--<variant>`, pass 4 game-lane handoffs) its game's path and a query", () => {
+    const variants = Object.entries(scenarios).filter(([k]) => k.includes("--"));
+    expect(variants.length).toBeGreaterThanOrEqual(15);
+    for (const [key, sc] of variants) {
+      const base = scenarios[key.slice(0, key.indexOf("--"))];
+      expect(base, key).toBeDefined();
+      expect(sc.path, key).toBe(base!.path);
+      expect(sc.query, key).toBeTruthy();
+    }
+    expect(scenarios["roadster-rush--night"]!.query).toBe("?seed=42&capture=1&tod=night");
+    expect(scenarios["last-train-port--band-d"]!.query).toBe("?band=D&title=0&autopilot=1");
+    expect(scenarios["roadster-hours-port"]!.steps.at(-1)!.evaluate).toMatch(/texturesReady/);
   });
 
   it("keeps the E-F VFX debug scenarios on FC, Links and Iron Crown", () => {

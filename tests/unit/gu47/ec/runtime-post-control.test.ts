@@ -29,9 +29,9 @@ const derive = (snapshot: never, target?: HTMLCanvasElement): LooseBag =>
 afterEach(() => resetRuntimePostOverrides());
 
 describe("app.post.setEffect (EC-5)", () => {
-  it("covers the seven PRD effects by factory name (plus the GU47 E-E outline, eint EE-H4)", () => {
+  it("covers the seven PRD effects by factory name (plus the GU47 E-E outline, eint EE-H4, and pass-4 AO and grain)", () => {
     expect(Object.keys(POST_RUNTIME_EFFECTS).sort()).toEqual(
-      ["bloom", "chromaticAberration", "colorGrade", "depthOfField", "motionBlur", "outline", "vignette", "volumetricFog"]
+      ["ambientOcclusion", "bloom", "chromaticAberration", "colorGrade", "depthOfField", "filmGrain", "motionBlur", "outline", "vignette", "volumetricFog"]
     );
   });
 
@@ -128,7 +128,7 @@ describe("app.post.setEffect (EC-5)", () => {
       }
       return "no-throw";
     };
-    expect(code(() => post.setEffect("ambientOcclusion", { intensity: 1 }))).toBe("POST_FIELD_UNSUPPORTED");
+    expect(code(() => post.setEffect("lensFlare", { intensity: 1 }))).toBe("POST_FIELD_UNSUPPORTED"); // ambientOcclusion became a runtime effect in GU47 pass 4
     expect(code(() => post.setEffect("toString", { intensity: 1 }))).toBe("POST_FIELD_UNSUPPORTED");
     expect(code(() => post.setEffect("bloom", { sharpness: 1 }))).toBe("POST_FIELD_UNSUPPORTED");
     expect(code(() => post.setEffect("bloom", { intensity: Number.NaN }))).toBe("POST_FIELD_UNSUPPORTED");

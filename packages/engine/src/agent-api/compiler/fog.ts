@@ -109,7 +109,7 @@ export function createProductionRuntimeEnvironmentFog(
     {
       density: volumetric.density,
       intensity: volumetric.intensity,
-      ...(volumetric.lightPosition ? { lightPosition: volumetric.lightPosition } : {}),
+      ...(volumetric.lightPosition?.length === 2 ? { lightPosition: volumetric.lightPosition } : {}),
       ...(volumetric.heightFalloff !== undefined ? { heightFalloff: volumetric.heightFalloff } : {}),
       ...(volumetric.heightReference !== undefined ? { heightReference: volumetric.heightReference } : {}),
       ...(volumetric.volumetricQuality ? { quality: volumetric.volumetricQuality } : {})

@@ -58,7 +58,9 @@ export function outlineTargetsOf(outline: unknown): readonly string[] | null {
 /**
  * Whether a render item belongs to one of the target nodes. The engine labels scene items
  * `primitive-<i>:<resource>:<node name>` and model meshes `actor-<i>:mesh-<j>:<model id>:<mesh>...` (the model id is
- * the node's runtime id, else its asset id); any other item matches only by its exact label.
+ * the node's runtime id, else its asset id). Root render sources (TypedGLBActors through `attachRootRenderSource`) label
+ * items `<actor id>:<node>...`, where the actor id is the target or `<target>-<n>` (for example `ninja-hero-0:Body`);
+ * those match `<target>:` and `<target>-<digits>:` prefixes. Any other item matches only by its exact label.
  */
 export function outlineTargetLabelMatches(label: string | undefined, targets: ReadonlySet<string>): boolean {
   if (!label || targets.size === 0) return false;
@@ -71,6 +73,11 @@ export function outlineTargetLabelMatches(label: string | undefined, targets: Re
   }
   if (/^primitive-\d+:/.test(label)) {
     for (const target of targets) if (label.endsWith(`:${target}`)) return true;
+    return false;
+  }
+  for (const target of targets) {
+    if (label.startsWith(`${target}:`)) return true;
+    if (label.startsWith(`${target}-`) && /^\d+:/.test(label.slice(target.length + 1))) return true;
   }
   return false;
 }
