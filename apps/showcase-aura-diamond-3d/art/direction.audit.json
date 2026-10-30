@@ -47,27 +47,6 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "diamondBase",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondBase",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondFoulPole",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
         "assetKey": "diamondFoulPole",
         "triangles": 0,
         "textures": 0,
@@ -76,27 +55,6 @@
       },
       {
         "assetKey": "diamondDugout",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondDugout",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondStadium",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondStadium",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -480,90 +438,24 @@
         "practical": false
       },
       {
-        "node": "infield-dirt",
+        "node": "field-clay",
         "practical": false
       },
       {
-        "node": "home-dirt",
+        "node": "field-basepaths",
         "practical": false
       },
       {
-        "node": "mound",
+        "node": "field-plates",
         "practical": false
       },
       {
-        "node": "mound-rubber",
-        "practical": false
-      },
-      {
-        "node": "basepath-6.6--6.6",
-        "practical": false
-      },
-      {
-        "node": "basepath-6.6--18.8",
-        "practical": false
-      },
-      {
-        "node": "basepath--6.6--18.8",
-        "practical": false
-      },
-      {
-        "node": "basepath--6.6--6.6",
-        "practical": false
-      },
-      {
-        "node": "base-dirt-0",
-        "practical": false
-      },
-      {
-        "node": "base-dirt-1",
-        "practical": false
-      },
-      {
-        "node": "base-dirt-2",
-        "practical": false
-      },
-      {
-        "node": "home-plate",
-        "practical": false
-      },
-      {
-        "node": "batters-box-l",
+        "node": "field-chalk",
         "emissiveIntensity": 0.05,
         "practical": false
       },
       {
-        "node": "batters-box-r",
-        "emissiveIntensity": 0.05,
-        "practical": false
-      },
-      {
-        "node": "batters-box-back",
-        "emissiveIntensity": 0.05,
-        "practical": false
-      },
-      {
-        "node": "catchers-box-back",
-        "emissiveIntensity": 0.05,
-        "practical": false
-      },
-      {
-        "node": "foul-line--1",
-        "emissiveIntensity": 0.05,
-        "practical": false
-      },
-      {
-        "node": "foul-pole-glow--1",
-        "emissiveIntensity": 0.25,
-        "practical": true
-      },
-      {
-        "node": "foul-line-1",
-        "emissiveIntensity": 0.05,
-        "practical": false
-      },
-      {
-        "node": "foul-pole-glow-1",
+        "node": "foul-pole-glows",
         "emissiveIntensity": 0.25,
         "practical": true
       },
