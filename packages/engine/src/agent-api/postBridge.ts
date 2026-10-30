@@ -601,7 +601,8 @@ export const POST_EFFECT_DEPRECATED_FIELDS: Readonly<Record<string, readonly str
 };
 
 export interface PostFieldDiagnostic {
-  readonly code: "POST_FIELD_UNSUPPORTED" | "post-field-deprecated" | "BLOOM_THRESHOLD_BELOW_HDR_WHITE" | "preset-capability-degraded" | "post-tier-disabled" | "EFFECT_PENDING_GPU_PASS" | "POST_DUPLICATE_STAGE";
+  readonly code: "POST_FIELD_UNSUPPORTED" | "post-field-deprecated" | "BLOOM_THRESHOLD_BELOW_HDR_WHITE" | "preset-capability-degraded" | "post-tier-disabled" | "EFFECT_PENDING_GPU_PASS" | "POST_DUPLICATE_STAGE"
+    | "POST_LUT_PENDING" | "POST_LUT_UNAVAILABLE";
   readonly effect: string;
   readonly field?: string;
   readonly message: string;
@@ -694,6 +695,109 @@ function gradeRgbField(node: AuraEffectNode, field: string, fallback: RgbLike): 
 
 /** Temperature / tint are normalised white-balance offsets in [-1, 1] (0 = neutral). */
 const clampUnit = (value: number): number => Math.min(1, Math.max(-1, value));
+
+/* ------------------------------------------------------------------------- */
+/* GU47 E-C (EC-2): `.cube` LUT delivery for `effects.colorGrade({ lut })`     */
+/* ------------------------------------------------------------------------- */
+
+interface PostLutRecord {
+  status: "pending" | "ready" | "failed";
+  cube?: string;
+  error?: string;
+  settled: Promise<void>;
+}
+
+/** Served `.cube` URL → load state. Shared by every app on the page (same URL, same bytes). */
+const postLutRecords = new Map<string, PostLutRecord>();
+
+/**
+ * The served URL of a `colorGrade({ lut })` value: a typed `.cube` asset
+ * (`aura3d assets add grade.cube --type lut` → `assets.grade`, whose `url` is
+ * the hashed public path) or a plain URL string. `null` for anything else.
+ */
+export function postLutUrl(lut: unknown): string | null {
+  if (typeof lut === "string") return lut.trim() ? lut.trim() : null;
+  if (lut && typeof lut === "object") {
+    const url = (lut as { readonly url?: unknown }).url;
+    if (typeof url === "string" && url.trim()) return url.trim();
+  }
+  return null;
+}
+
+/**
+ * Seeds a `.cube` by URL so the first frame binds it without a fetch (inline
+ * grades, tests, preloaders). A later `colorGrade({ lut: url })` uses it.
+ */
+export function preloadPostLut(url: string, cube: string): void {
+  postLutRecords.set(url, { status: "ready", cube, settled: Promise.resolve() });
+}
+
+/** Settles once every requested `.cube` has loaded or failed (capture specs await it). */
+export function postLutsSettled(): Promise<void> {
+  return Promise.all([...postLutRecords.values()].map((record) => record.settled)).then(() => undefined);
+}
+
+/** Test hook: forgets every requested / preloaded LUT. */
+export function resetPostLuts(): void {
+  postLutRecords.clear();
+}
+
+function requestPostLut(url: string): PostLutRecord {
+  const existing = postLutRecords.get(url);
+  if (existing) return existing;
+  const record: PostLutRecord = { status: "pending", settled: Promise.resolve() };
+  postLutRecords.set(url, record);
+  const host = globalThis as { fetch?: (input: string) => Promise<{ readonly ok: boolean; readonly status: number; text(): Promise<string> }> };
+  if (typeof host.fetch !== "function") {
+    record.status = "failed";
+    record.error = "fetch is unavailable";
+    return record;
+  }
+  record.settled = (async () => {
+    try {
+      const response = await host.fetch!(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      record.cube = await response.text();
+      record.status = "ready";
+    } catch (error) {
+      record.status = "failed";
+      record.error = error instanceof Error ? error.message : String(error);
+    }
+  })();
+  return record;
+}
+
+/** The `pipeline.lut` bag: `cube` once loaded, else the load `status` (the S10b tail then binds the identity LUT). */
+export interface PostPipelineLutBag {
+  readonly source: string;
+  readonly intensity: number;
+  readonly cube?: string;
+  readonly status?: "pending" | "failed";
+}
+
+/**
+ * `pipeline.lut` for the S10b display grade. With the `.cube` text loaded the
+ * bag carries it (the renderer parses and uploads once per source); while it
+ * loads, or after the load failed, the bag carries `status` instead, the tail
+ * binds the identity LUT exactly as an authored lut rendered before GU47, and
+ * a `POST_LUT_PENDING` / `POST_LUT_UNAVAILABLE` diagnostic says why.
+ */
+function resolvePipelineLut(gradeNode: AuraEffectNode, diagnostics: PostFieldDiagnostic[]): PostPipelineLutBag | undefined {
+  const value = (gradeNode as unknown as Record<string, unknown>).lut;
+  if (value === undefined || value === null || value === "") return undefined;
+  const url = postLutUrl(value);
+  if (!url) {
+    diagnostics.push({ code: "POST_LUT_UNAVAILABLE", effect: "color-grade", field: "lut", message: "colorGrade lut must be a typed .cube asset (aura3d assets add <file.cube> --type lut) or a served .cube URL." });
+    return undefined;
+  }
+  const intensity = Math.min(1, Math.max(0, numberField(gradeNode, "lutIntensity", 1)));
+  const record = requestPostLut(url);
+  if (record.status === "ready" && record.cube !== undefined) return { source: url, intensity, cube: record.cube };
+  diagnostics.push(record.status === "failed"
+    ? { code: "POST_LUT_UNAVAILABLE", effect: "color-grade", field: "lut", message: `colorGrade lut ${url} failed to load (${record.error ?? "unknown"}); S10b binds the identity LUT.` }
+    : { code: "POST_LUT_PENDING", effect: "color-grade", field: "lut", message: `colorGrade lut ${url} is loading; S10b binds the identity LUT until it arrives.` });
+  return { source: url, intensity, status: record.status === "failed" ? "failed" : "pending" };
+}
 
 /**
  * §6.6 v2 bloom mapping: authored fields win; fields absent from
@@ -864,6 +968,8 @@ export function createRootPostPipeline(
   const aeRequested = authoredAe !== undefined && authoredAe !== false;
   const aeEnabled = tierResolution === undefined || tierResolution.autoExposure;
   if (aeRequested && !aeEnabled) tierDisabled("S8-auto-exposure", "auto-exposure off on Low");
+  // GU47 E-C (EC-2): the S10b `.cube` LUT, once loaded.
+  const lutBag = gradeNode ? resolvePipelineLut(gradeNode, diagnostics) : undefined;
 
   const options: PostPipelineOptions = {
     antiAliasing: "off", // resolved by the caller through resolvePostAntiAlias
@@ -959,7 +1065,7 @@ export function createRootPostPipeline(
         lutIntensity: authoredNumber(gradeNode, "lutIntensity", 1)
       }
     } : {}),
-    ...(gradeNode?.lut ? { lut: { source: gradeNode.lut, intensity: numberField(gradeNode, "lutIntensity", 1) } } : {}),
+    ...(lutBag ? { lut: lutBag } : {}),
     ...(vignetteNode ? {
       vignette: {
         intensity: numberField(vignetteNode, "intensity", 0.3),

@@ -65,7 +65,9 @@ import { EXPOSURE_ADAPT_GLSL, EXPOSURE_LUMA_LOG_GLSL, EXPOSURE_MUL_GLSL, EXPOSUR
 import { HDR_GRADE_GLSL, resolveHdrGradeUniforms, type HdrGradeInput, type HdrGradeUniforms } from "./shaders/hdrGrade.glsl.js";
 import { SMAA_BLEND_GLSL, SMAA_EDGES_GLSL, SMAA_WEIGHTS_GLSL } from "./shaders/smaa.glsl.js";
 import { FXAA_185_FRAGMENT_GLSL } from "./shaders/fxaa.glsl.js";
-import { POST_INSERT_ANCHORS, type AutoExposureOptionsV2, type DofOptions, type GtaoOptions, type GodRayOptions, type MotionBlurOptions, type TaaOptions } from "./PostGraph";
+import { POST_INSERT_ANCHORS, type AutoExposureOptionsV2, type DofOptions, type GtaoOptions, type GodRayOptions, type LutTexture3D, type MotionBlurOptions, type TaaOptions } from "./PostGraph";
+import { DisplayLutCache } from "./DisplayLutCache";
+import { parseCubeLut } from "./CubeLut";
 
 export { vignetteColorRgb };
 
@@ -116,6 +118,102 @@ interface PostV2State {
   smaa: { area: WebGLTexture | null; search: WebGLTexture | null; requested: boolean };
   /** C-13 cross-pass publish/read surface for custom passes (per host). */
   readonly postBlackboard: Map<string, unknown>;
+  /** GU47 E-C (EC-2): uploaded user `.cube` LUTs, one TEXTURE_3D per source (LRU 4). */
+  lutCache?: DisplayLutCache<WebGLTexture>;
+  /** The LUT bag the in-flight `lutCache.acquire` bakes (set only around that call). */
+  lutBaking?: PostLutBag;
+  /** Sources whose `.cube` failed to parse; never retried per frame. */
+  readonly lutFailed: Set<string>;
+}
+
+/**
+ * GU47 E-C (EC-2): the `pipeline.lut` bag. The engine bridge emits it once the
+ * `.cube` text has loaded (`source` = the served URL); hosts may pass parsed
+ * `data` instead of `cube`. `intensity` (0..1, default 1) blends the LUT over
+ * the ungraded colour in the shader, so animating it never re-uploads.
+ */
+export interface PostLutBag {
+  readonly source: string;
+  readonly cube?: string;
+  readonly data?: LutTexture3D;
+  readonly intensity?: number;
+  /** Set by the bridge while the `.cube` is loading or after it failed (no `cube` then). */
+  readonly status?: "pending" | "failed";
+}
+
+/** A resolved S10b LUT: the TEXTURE_3D and the `u_lutBypass` (1 − intensity) value. */
+export interface PostLutBinding {
+  readonly texture: WebGLTexture;
+  readonly bypass: number;
+}
+
+/**
+ * Uploads a user `.cube` (lattice domain, sampled with `u_lutLattice = 1`) as
+ * an RGBA8 TEXTURE_3D, red-fastest like the file. WebGL2 rejects 3-D uploads
+ * from an ArrayBufferView while the FLIP_Y / PREMULTIPLY unpack flags are set,
+ * so both are cleared first.
+ */
+export function uploadCubeLutTexture(gl: WebGL2RenderingContext, lut: LutTexture3D): WebGLTexture {
+  const texture = gl.createTexture();
+  if (!texture) throw new RenderDeviceError("LUT texture allocation failed.", "POST_GRAPH_V2_UNSUPPORTED");
+  const n = lut.size;
+  const bytes = new Uint8Array(n * n * n * 4);
+  for (let i = 0; i < bytes.length; i += 1) {
+    const v = lut.data[i] ?? 1;
+    bytes[i] = Math.round(Math.min(1, Math.max(0, Number.isFinite(v) ? v : 0)) * 255);
+  }
+  gl.bindTexture(gl.TEXTURE_3D, texture);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+  gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
+  gl.texImage3D(gl.TEXTURE_3D, 0, gl.RGBA8, n, n, n, 0, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+  gl.bindTexture(gl.TEXTURE_3D, null);
+  return texture;
+}
+
+/**
+ * GU47 E-C (EC-2): resolves `pipeline.lut` to a bound TEXTURE_3D through the
+ * per-host `DisplayLutCache` (one parse + upload per source; the key holds the
+ * source with contrast/saturation/vibrance/intensity at identity because those
+ * run in the fused present and the shader). A bag without text/data records
+ * `LUT_PENDING`; a `.cube` the parser rejects records `LUT_INVALID` once and
+ * renders the identity grade.
+ */
+function displayLutBinding(host: WebGL2DeviceHost, state: PostV2State, lut: unknown): PostLutBinding | null {
+  if (!lut || typeof lut !== "object") return null;
+  const bag = lut as PostLutBag;
+  if (typeof bag.source !== "string" || (typeof bag.cube !== "string" && !bag.data)) {
+    recordPostSkipped(`${bag.status === "failed" ? "LUT_UNAVAILABLE" : "LUT_PENDING"}:${String(bag.source)}`);
+    return null;
+  }
+  if (state.lutFailed.has(bag.source)) return null;
+  const gl = host.gl;
+  state.lutCache ??= new DisplayLutCache<WebGLTexture>(
+    () => {
+      const baking = state.lutBaking!;
+      return uploadCubeLutTexture(gl, baking.data ?? parseCubeLut(baking.cube!));
+    },
+    (texture) => gl.deleteTexture(texture),
+    { maxEntries: 4 }
+  );
+  state.lutBaking = bag;
+  try {
+    const texture = state.lutCache.acquire({ contrast: 1, saturation: 1, vibrance: 0, lutIntensity: 1, userLut: bag.source });
+    const intensity = typeof bag.intensity === "number" && Number.isFinite(bag.intensity) ? Math.min(1, Math.max(0, bag.intensity)) : 1;
+    return { texture, bypass: 1 - intensity };
+  } catch (error) {
+    state.lutFailed.add(bag.source);
+    const code = error instanceof Error ? /^[A-Z0-9_]+/.exec(error.message)?.[0] ?? "LUT_UPLOAD_FAILED" : "LUT_UPLOAD_FAILED";
+    recordPostSkipped(`LUT_INVALID:${bag.source}:${code}`);
+    return null;
+  } finally {
+    state.lutBaking = undefined;
+  }
 }
 
 const states = new WeakMap<WebGL2DeviceHost, PostV2State>();
@@ -166,7 +264,8 @@ function v2State(host: WebGL2DeviceHost): PostV2State {
       evTargets: [undefined, undefined],
       evIndex: 0,
       evValid: false,
-      smaa: { area: null, search: null, requested: false }
+      smaa: { area: null, search: null, requested: false },
+      lutFailed: new Set()
     };
     states.set(host, state);
   }
@@ -1277,11 +1376,21 @@ export function runV2LdrTail(
   const aaSmaa = pipeline.antiAliasing === "smaa";
   const displayCustoms = sortCustomPassesAtAnchor(mergedCustomPasses(pipeline), "after-tonemap");
   const rcas = (pipeline.renderScale ?? 1) < 1 ? 0.2 : 0;
+  // GU47 E-C (EC-2): the user `.cube` LUT, uploaded once per source.
+  const lut = displayLutBinding(host, state, pipeline.lut);
+  const bindLut = (g: WebGL2RenderingContext, prog: WebGLProgram): void => {
+    g.activeTexture(g.TEXTURE1);
+    g.bindTexture(g.TEXTURE_3D, lut?.texture ?? state.identityLut);
+    g.uniform1i(g.getUniformLocation(prog, "u_lut3d"), 1);
+    g.uniform1i(g.getUniformLocation(prog, "u_hasLut"), lut ? 1 : 0);
+    g.uniform1i(g.getUniformLocation(prog, "u_lutLattice"), lut ? 1 : 0);
+    g.uniform1f(g.getUniformLocation(prog, "u_lutBypass"), lut?.bypass ?? 0);
+  };
   // GU47 E-C stage trace: the display stages that draw this frame.
   const vignetteOn = (vignette?.intensity ?? 0) > 0;
   const grainOn = (grain?.intensity ?? 0) > 0;
   const traceDisplayStages = (fused: boolean): void => {
-    if (vignetteOn || pipeline.lut) recordPostStage(`S10b:display-grade${vignetteOn ? ":vignette" : ""}${pipeline.lut ? ":lut" : ""}${fused ? ":fused-fxaa" : ""}`);
+    if (vignetteOn || lut) recordPostStage(`S10b:display-grade${vignetteOn ? ":vignette" : ""}${lut ? ":lut" : ""}${fused ? ":fused-fxaa" : ""}`);
     if (grainOn) recordPostStage(`S12:film-grain${fused ? ":fused-fxaa" : ""}`);
   };
 
@@ -1299,11 +1408,8 @@ export function runV2LdrTail(
     gl.disable(gl.BLEND);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, ldrGl.colorHandle);
-    gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_3D, state.identityLut);
+    bindLut(gl, prog);
     gl.uniform1i(gl.getUniformLocation(prog, "u_source"), 0);
-    gl.uniform1i(gl.getUniformLocation(prog, "u_lut3d"), 1);
-    gl.uniform1i(gl.getUniformLocation(prog, "u_hasLut"), 0);
     gl.uniform2f(gl.getUniformLocation(prog, "u_texelSize"), 1 / w, 1 / h);
     gl.uniform2f(gl.getUniformLocation(prog, "u_outputTexel"), 1 / w, 1 / h);
     gl.uniform1f(gl.getUniformLocation(prog, "u_frame"), state.frameIndex);
@@ -1326,17 +1432,14 @@ export function runV2LdrTail(
 
   let current = ldr;
   traceDisplayStages(false);
-  // S10b — display grade (vignette; the .cube LUT bakes in with S10b's real
-  // bake pass — until then u_hasLut stays 0 and the identity 3D tex binds).
+  // S10b — display grade: vignette plus the user `.cube` (GU47 E-C, EC-2;
+  // the identity 3-D texture binds with u_hasLut 0 while no LUT resolved).
   if (vignette || pipeline.lut) {
     const graded = state.pool.acquire({ width: w, height: h, format: "rgba8", samples: 1, depth: false });
     const prog = program(state, gl, "display-grade", DISPLAY_GRADE_GLSL);
     draw(host, state, prog, asGlTarget(graded), [ldrGl.colorHandle], (g) => {
       g.uniform1i(g.getUniformLocation(prog, "u_source"), 0);
-      gl.activeTexture(gl.TEXTURE1);
-      gl.bindTexture(gl.TEXTURE_3D, state.identityLut);
-      g.uniform1i(g.getUniformLocation(prog, "u_lut3d"), 1);
-      g.uniform1i(g.getUniformLocation(prog, "u_hasLut"), 0);
+      bindLut(g, prog);
       g.uniform1f(g.getUniformLocation(prog, "u_vignetteIntensity"), vignette?.intensity ?? 0);
       g.uniform1f(g.getUniformLocation(prog, "u_vignetteSmoothness"), vignette?.smoothness ?? 1);
       g.uniform1f(g.getUniformLocation(prog, "u_vignetteRoundness"), vignette?.roundness ?? 1);
