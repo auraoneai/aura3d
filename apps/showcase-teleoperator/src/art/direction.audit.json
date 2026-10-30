@@ -31,6 +31,16 @@
         "type": "directional",
         "shadow": true,
         "intensity": 2.2
+      },
+      {
+        "type": "spot",
+        "shadow": false,
+        "intensity": 34
+      },
+      {
+        "type": "spot",
+        "shadow": false,
+        "intensity": 34
       }
     ],
     "hasAmbient": false,
@@ -482,6 +492,11 @@
       {
         "node": "taxi-passenger-arm",
         "emissiveIntensity": 1.2,
+        "practical": true
+      },
+      {
+        "node": "player-tail-lamps",
+        "emissiveIntensity": 0.9,
         "practical": true
       }
     ],

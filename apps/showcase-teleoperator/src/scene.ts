@@ -1,8 +1,8 @@
 import { camera, defineAuraAssets, effects, environments, game, instances, lights, material, model, primitives, scene, sky, type AuraTransformSpec } from "@aura3d/engine";
 import { assets, type GridAssetKey } from "./aura-assets";
-import { KEY_SHADOW, SKY_LOOKS, hdriUrl, keyLightPosition, type HdriId, type SkyLook } from "./look";
+import { BRAKE_RED, KEY_SHADOW, SKY_LOOKS, hdriUrl, keyLightPosition, type HdriId, type SkyLook } from "./look";
 import { RIVALS, TRAFFIC_SPECS } from "./sim";
-import { CURB_BEACON_X, PLAYABLE_FLEET, PLAYABLE_IDS, SCENE_CAM_FOV_DEG, SCENE_CAM_POS, SCENE_CAM_TARGET, type PlayableCarId, type Vec3, type WeatherPreset } from "./rules";
+import { CAR_DRAW_Z, CURB_BEACON_X, PLAYABLE_FLEET, PLAYABLE_IDS, SCENE_CAM_FOV_DEG, SCENE_CAM_POS, SCENE_CAM_TARGET, type PlayableCarId, type Vec3, type WeatherPreset } from "./rules";
 
 export const HIDDEN_SCALE: Vec3 = [0.0001, 0.0001, 0.0001];
 export const HIDDEN_POS: Vec3 = [0, -90, 140];
@@ -204,6 +204,39 @@ export function skyOutput(look: SkyLook, supported?: readonly string[]): { reado
   return { toneMapping, exposure: look.output.exposure };
 }
 
+/** GD-03 headlight spots: the pair of spots ahead of the player car (2 of the GD-20 cap of 2 spots). */
+export const HEADLIGHT = { color: "#fff1d6", intensity: 34, angle: 0.42, penumbra: 0.55, distance: 34, aheadM: 18, heightM: 0.7, spreadM: 0.62 } as const;
+export const HEADLIGHT_IDS = ["player-headlight-l", "player-headlight-r"] as const;
+
+/** Headlight spot position and aim for a car whose nose sits at view (x, z). */
+export function headlightPose(side: -1 | 1, carX: number, noseZ: number, y = 0): { position: [number, number, number]; target: [number, number, number] } {
+  const x = carX + side * HEADLIGHT.spreadM;
+  return { position: [x, y + HEADLIGHT.heightM, noseZ], target: [x + side * 0.6, y, noseZ - HEADLIGHT.aheadM] };
+}
+
+/**
+ * GD-03 tail and brake lamps. The car GLBs carry no lamp material (`assets inspect`: veh-body/trim/glass/... or one
+ * BakedMaterial), so the lamps are an instanced pair of emissive bars at the rear corners (+1 draw) until WP-36 retextures
+ * the rear lamps; the material changes only when the sim's read-only `brakeLamp` flag flips.
+ * GU47(WP-36): swap to `materials.setEmissive("<rear-lamp material>", BRAKE_RED, ...)` on the retextured cars.
+ */
+export const TAIL_LAMP = { size: [0.3, 0.08, 0.04] as [number, number, number], heightFrac: 0.52, spreadFrac: 0.36, tail: 0.9, brake: 3.4 } as const;
+export function tailLampMaterial(look: SkyLook, braking: boolean) {
+  const lit = braking ? TAIL_LAMP.brake : TAIL_LAMP.tail * Math.max(0.35, look.street.headlights);
+  return material.emissive({ color: BRAKE_RED, emissive: BRAKE_RED, emissiveIntensity: lit });
+}
+
+/** GD-03: the two headlight spots of one sky (none at noon: `street.headlights` is 0). */
+export function headlightNodes(look: SkyLook) {
+  if (look.street.headlights <= 0) return [];
+  return HEADLIGHT_IDS.map((id, i) => {
+    const pose = headlightPose(i === 0 ? -1 : 1, 0, CAR_DRAW_Z - 2.3);
+    return lights
+      .spot({ name: id, position: pose.position, target: pose.target, angle: HEADLIGHT.angle, penumbra: HEADLIGHT.penumbra, distance: HEADLIGHT.distance, intensity: HEADLIGHT.intensity * look.street.headlights, color: HEADLIGHT.color })
+      .runtime(game.runtimeNode(id));
+  });
+}
+
 /**
  * Renderer options for the mount. The game is tuned and captured at the "high" tier on every device,
  * so it asks for that tier explicitly in object form: same tier as the old `quality: "high"` string,
@@ -341,7 +374,9 @@ export function buildGridDispatchScene(weather: WeatherPreset): ReturnType<typeo
         .position(i === 0 ? 0 : HIDDEN_POS[0], i === 0 ? 0 : HIDDEN_POS[1], i === 0 ? -0.8 : HIDDEN_POS[2])
         .scale(i === 0 ? [1, 1, 1] : HIDDEN_SCALE)
         .runtime(game.runtimeNode(`player-car-${id}`, i === 0 ? { tags: ["primarySubject", "primaryVehicle", "player"] } : undefined))
-    )
+    ),
+    instances.box({ name: "player-tail-lamps", size: TAIL_LAMP.size, material: tailLampMaterial(look, false), transforms: pool(2) }).runtime(game.runtimeNode("player-tail-lamps")),
+    ...headlightNodes(look)
   ]);
 
   // 8. Five AI rivals and ten traffic cars

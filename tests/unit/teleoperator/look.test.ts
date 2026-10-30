@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { resolveQrFlags } from "@aura3d/engine";
 import { BOOT_SKY, KEY_SHADOW, SKY_LOOKS, SKY_ORDER, hazeAt, hdriUrl, keyLightPosition, nextSky, skyFromParam, sunDirection } from "../../../apps/showcase-teleoperator/src/look";
-import { GRID_DISPATCH_FLAGS, WEATHER, buildGridDispatchScene, skyOutput } from "../../../apps/showcase-teleoperator/src/scene";
+import { GRID_DISPATCH_FLAGS, WEATHER, buildGridDispatchScene, skyOutput, tailLampMaterial } from "../../../apps/showcase-teleoperator/src/scene";
 
 type Node = { kind?: string; light?: string; name?: string; environment?: string; texture?: { url?: string }; shadow?: unknown; position?: number[]; color?: string; intensity?: number; children?: Node[] };
 const flatNodes = (sky: (typeof SKY_ORDER)[number]): Node[] => {
@@ -190,5 +190,21 @@ describe("grid dispatch GD-21 Marine dusk boot sky", () => {
     expect(SKY_LOOKS.golden.label).toBe("Marine dusk");
     expect(SKY_LOOKS.night.label).toBe("Sodium night");
     for (const sky of SKY_ORDER) expect(WEATHER[sky].label).toBe(SKY_LOOKS[sky].label);
+  });
+});
+
+describe("grid dispatch GD-03 headlights and tail lamps", () => {
+  it("two headlight spots on dusk, fog and night (none at noon); tail-lamp pair on every sky", () => {
+    for (const sky of SKY_ORDER) {
+      const spots = flatNodes(sky).filter((n) => n.kind === "light" && n.light === "spot");
+      expect(spots.length, sky).toBe(sky === "noon" ? 0 : 2);
+      for (const s of spots) expect(s.shadow ?? false).toBeFalsy();
+      expect(flatNodes(sky).some((n) => n.name === "player-tail-lamps"), sky).toBe(true);
+    }
+  });
+  it("brake lights are brighter than the tail lamps", () => {
+    const tail = tailLampMaterial(SKY_LOOKS.night, false) as { emissiveIntensity?: number };
+    const brake = tailLampMaterial(SKY_LOOKS.night, true) as { emissiveIntensity?: number };
+    expect(brake.emissiveIntensity!).toBeGreaterThan(tail.emissiveIntensity! * 2);
   });
 });

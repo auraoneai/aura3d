@@ -51,12 +51,16 @@ import {
   LAMP_PAIRS,
   LAMP_STRIDE_Z,
   PATH_RIBBON_COUNT,
+  HEADLIGHT_IDS,
   ROAD_STRIPS,
+  TAIL_LAMP,
   WEATHER,
   buildGridDispatchScene,
   buildingLayoutLeft,
   buildingLayoutRight,
+  headlightPose,
   probeBuildingModels,
+  tailLampMaterial,
   skyOutput
 } from "./scene";
 import { NO_INPUT, RIVALS, ROAD_USER_COUNT, TRAFFIC_COUNT, createSim, fareOf, roadUserFootprints, type DriveInput, type SimEvent } from "./sim";
@@ -154,6 +158,8 @@ function bindNodes(app: ReturnType<typeof createAuraApp>) {
     trunks: req("sf-tree-trunks"),
     crowns: req("sf-tree-crowns"),
     ribbons: req("route-ribbons"),
+    tailLamps: req("player-tail-lamps"),
+    headlights: HEADLIGHT_IDS.map((id) => (app.nodes.has(id) ? app.nodes.require(id) : null)),
     buildings: Array.from({ length: BUILDING_PAIRS }, (_, i) => {
       const left = req(`sf-bldg-l-${i}`).setRotation(0, Math.PI / 2, 0);
       const right = req(`sf-bldg-r-${i}`).setRotation(0, -Math.PI / 2, 0);
@@ -411,6 +417,8 @@ async function bootGridDispatch(): Promise<void> {
     appliedCar = null;
     lastSignalPhase = -1;
     lastBeaconMode = null;
+    lastBrakeLamp = null;
+    lastHeadlightX = Number.NaN;
     try {
       await Promise.race([auraApp.ready().then(() => warmPrograms(auraApp)), new Promise((resolve) => setTimeout(resolve, 60_000))]);
     } catch (error) {
@@ -527,6 +535,10 @@ async function bootGridDispatch(): Promise<void> {
   });
 
   let lastSignalPhase = -1;
+  /** GD-03: last brake-lamp state written to the lamp material (it changes only when the sim flag flips). */
+  let lastBrakeLamp: boolean | null = null;
+  /** GD-03: view x the headlight spots were last aimed at (setLight only when the car moved across lanes). */
+  let lastHeadlightX = Number.NaN;
   let lastBeaconMode: "pickup" | "dropoff" | null = null;
   let hudClock = 0;
   let avoidRects: Array<{ l: number; r: number; t: number; b: number }> = [];
@@ -681,6 +693,26 @@ async function bootGridDispatch(): Promise<void> {
       const visible = vz < 18 && vz > -220;
       N.users[i]!.setPosition(rx(u.laneX), ry(0), vz).setRotation(0, (u.direction === 1 ? 0 : Math.PI) + qaYawAdd, 0).setScale(visible ? [1, 1, 1] : HIDDEN_SCALE).setVisible(visible);
     });
+
+    // GD-03: tail and brake lamps at the rear corners; headlight spots follow the car across lanes.
+    const carX = rx(pose.px);
+    const carZ = CAR_DRAW_Z + camOff.z;
+    const lampY = ry(size.height * TAIL_LAMP.heightFrac);
+    const rearZ = carZ + size.length / 2;
+    N.tailLamps.setInstances([pos(carX - size.width * TAIL_LAMP.spreadFrac, lampY, rearZ), pos(carX + size.width * TAIL_LAMP.spreadFrac, lampY, rearZ)]);
+    if (S.brakeLamp !== lastBrakeLamp) {
+      lastBrakeLamp = S.brakeLamp;
+      N.tailLamps.setMaterial(tailLampMaterial(skyLook, S.brakeLamp));
+    }
+    if (Math.abs(carX - lastHeadlightX) > 0.08) {
+      lastHeadlightX = carX;
+      N.headlights.forEach((h, i) => {
+        const hp = headlightPose(i === 0 ? -1 : 1, carX, carZ - size.length / 2, ry(0));
+        const d = [hp.target[0] - hp.position[0], hp.target[1] - hp.position[1], hp.target[2] - hp.position[2]] as const;
+        const l = Math.hypot(d[0], d[1], d[2]) || 1;
+        h?.setLight?.({ position: hp.position, direction: [d[0] / l, d[1] / l, d[2] / l] });
+      });
+    }
 
     // GD-14 runtime VFX: queued impact and objective shots, plus the night tyre spray behind the rear wheels.
     vfx.tyres({ dt: frameSeconds, wet: skyLook.street.drizzle && S.phase === "driving", speed: S.player.speed, x: pose.px, z: pose.pz, width: size.width, length: size.length });
