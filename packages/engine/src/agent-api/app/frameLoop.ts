@@ -219,6 +219,10 @@ export async function startProductionRender(
     // simulated time; the meter counts one frame per task, so several steps inside one rAF callback count once.
     frameRate.sample(explicit ? performanceNow() : time);
     if (!explicit && !isPaused()) beforeRender?.(delta / 1000, "raf");
+    // An onFrame callback can call `setScene()` or `dispose()`, which disposes this controller and its renderer. Submitting the
+    // frame after that drew released materials ("Material a3d-production-sdf-text-label is disposed", g10 handoff, Aura Links
+    // hole changes). The async path has the same check; the new mount presents its own first frame.
+    if (disposed) return;
     /*
      * A paused app must not keep advancing time-driven rendering.
      *

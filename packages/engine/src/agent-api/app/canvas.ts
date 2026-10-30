@@ -107,8 +107,14 @@ export function configureCanvas(
   const parent = canvas.parentElement;
   const cssWidth = (own.width ? ownBox?.width : undefined) || rect.width || canvas.clientWidth || parent?.clientWidth || (typeof window !== "undefined" ? window.innerWidth : 960) || 960;
   const cssHeight = (own.height ? ownBox?.height : undefined) || rect.height || canvas.clientHeight || parent?.clientHeight || (typeof window !== "undefined" ? window.innerHeight : 540) || 540;
-  if (!own.width) canvas.style.width = `${cssWidth}px`;
-  if (!own.height) canvas.style.height = `${cssHeight}px`;
+  // With `resize: false` nothing re-measures the canvas later, so a pixel size written here stays forever: a page that grows
+  // after load (1280x720 to 1440x900) kept a 1280x720 canvas with black bands beside it, even when the game's own resize
+  // listener resized the backing store (g22 handoff, Saltwind Highway). Keep the percentage size so the canvas follows the
+  // page's layout; the author sizes the backing store and the frame loop forwards it (`authoredBackingResize`).
+  if (resize) {
+    if (!own.width) canvas.style.width = `${cssWidth}px`;
+    if (!own.height) canvas.style.height = `${cssHeight}px`;
+  }
   engineInlineSize.set(canvas, { authored, written: { width: canvas.style.width, height: canvas.style.height } });
   const width = Math.max(minimum.width, Math.round(cssWidth * pixelRatio));
   const height = Math.max(minimum.height, Math.round(cssHeight * pixelRatio));
