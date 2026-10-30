@@ -13,6 +13,7 @@ import { buildBleacherNodes, buildSpectatorNodes } from "./spectators";
 import { VENUE_PALETTES, venueKey } from "./venues";
 import { createWorldTourCrowd, type WorldTourCrowd } from "./crowd";
 import { LINE_COLOR, buildGrassStripesNode, feltBallMaterial, surfaceMaterial } from "./surfaces";
+import { buildBoardNodes, standLineText } from "./boards";
 
 export interface TennisSceneOptions {
   /** Boot venue: the authored environment, fog, key and grade are this venue's, so the first frame needs no swap. */
@@ -230,6 +231,8 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
     statics.box("sponsorTrim", sponsorTrimMat, [2.85, 0.18, 0.36], [bx, 0.42, -10.85]);
   }
   for (const bz of [-3.4, 3.4]) statics.box("wood", chairWood, [0.58, 0.46, 1.95], [-7.35, 0.23, bz]);
+  // TT-H2 / TT-A2: "AURA SLAM" / "WORLD TOUR" on the sponsor boards and the live venue + score line on the stand (3 draws).
+  if (!original) s.addMany(buildBoardNodes(standLineText(look.city, null)));
 
   // Typed Aura3D stadium dressing (view/assets.ts). C10: the seats GLB is 33.7 x 45.8 x 144.1 m with its length along Z, so it is
   // turned 90 degrees to run along the back of the court and fitted by length (24 m wide, about 7.6 m tall). The floodlight GLB

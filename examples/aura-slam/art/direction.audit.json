@@ -131,6 +131,21 @@
         "practical": false
       },
       {
+        "node": "board-aura-slam",
+        "emissiveIntensity": 0.55,
+        "practical": true
+      },
+      {
+        "node": "board-world-tour",
+        "emissiveIntensity": 0.55,
+        "practical": true
+      },
+      {
+        "node": "board-venue-score",
+        "emissiveIntensity": 0.55,
+        "practical": true
+      },
+      {
         "node": "stadium-floodlight-mast-left",
         "practical": false
       },

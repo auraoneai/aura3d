@@ -20,6 +20,7 @@ import { applyVenueRuntime, optionalNode, venueRuntimePlan, type VenueRuntimeApp
 import { createSlamVfx, registerSlamVfx, type SlamVfxController } from "./vfx";
 import { CROWD_SEAT_COUNT, createWorldTourCrowd, type WorldTourCrowd } from "./crowd";
 import { GRASS_STRIPES_ID, rigMaterialRole, surfaceMaterial, upgradeRigMaterial, type RigMaterialRole } from "./surfaces";
+import { BOARD_IDS, createBoardsController, standLineText, type BoardsController } from "./boards";
 
 /** TT-M2: forwards every write to the real handle, upgrading the materials the rig sets (kit fabric, racket clearcoat). */
 function materialUpgradeHandle(real: AuraRuntimeNodeHandle, role: Exclude<RigMaterialRole, null>): AuraRuntimeNodeHandle {
@@ -146,6 +147,10 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
   const crowd: WorldTourCrowd | null = worldTour ? createWorldTourCrowd() : null;
   let spectatorHeads: AuraRuntimeNodeHandle | null = null;
   let crowdDraws = 0;
+  // TT-H2 / TT-A2: the stand's live venue + score line and the LED ribbon pulse on aces.
+  let boards: BoardsController | null = null;
+  let standText: AuraRuntimeNodeHandle | null = null;
+  let acesSeen = 0;
   /** The crowd kit's update target: the app's node store (`nodes.get`, else a guarded `nodes.require` on test doubles). */
   const crowdTarget = { nodes: { get: (id: string) => (app ? optionalNode(app as unknown as VenueRuntimeApp, id) : undefined) } };
 
@@ -181,6 +186,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     audienceVisible = !isMoonVenue(key);
     spectators?.setVisible(audienceVisible);
     spectatorHeads?.setVisible(audienceVisible);
+    standText?.setVisible(audienceVisible);
     h.grandstand?.setVisible(audienceVisible);
     h.bleachers?.setVisible(audienceVisible);
   }
@@ -283,6 +289,8 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
         registerSlamVfx(effects);
         vfx = createSlamVfx(effects, { reducedMotion });
         vfx.startTrail("tennis-ball");
+        standText = optionalNode(app as unknown as VenueRuntimeApp, BOARD_IDS.stand) ?? null;
+        boards = createBoardsController(standText ?? undefined, h.sponsorTrim, standLineText(venueLook(bootVenue).city, null));
         // GU47: the boot venue's light visibility, grade and output apply before the first presented frame.
         applyVenue(bootVenue);
       }
@@ -364,6 +372,13 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       } else if (spectators && audienceVisible) spectatorUpdater.update(spectators, t, cheering);
       if (particles) particlesDrawn = particleUpdater.update(particles, s.particles as never);
       vfx?.update(s as never, venueLook(currentVenueKey));
+      if (boards) {
+        boards.setStandText(standLineText(venueLook(currentVenueKey).city, state.score));
+        const aces = vfx?.events.aces ?? 0;
+        if (aces > acesSeen) boards.pulse(reducedMotion());
+        acesSeen = aces;
+        boards.step(Number.isFinite(dt) ? dt! : 1 / 60, VENUE_PALETTES[currentVenueKey]?.trim ?? "#d8ff3e");
+      }
 
       // C13: the sim's screen shake drives a small camera trauma, skipped under reduced motion.
       const shake = Number(s.screenShake ?? 0);
@@ -436,6 +451,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
         },
         particles: { drawn: particlesDrawn },
         vfx: vfx ? { ...vfx.events } : null,
+        scoreboard: boards ? { text: boards.standText, ledPulse: boards.pulsing } : null,
         umpire: { visible: true },
         netPostLights: { active: lastFaultActive },
         outfits: { player: currentVenueKey === "moon" ? "apollo" : "tennis", rival: currentVenueKey === "moon" ? "apollo" : "tennis" },
