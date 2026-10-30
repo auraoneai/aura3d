@@ -85,3 +85,15 @@ describe("serpentine-sky-run speed and moment post (SSR-07)", () => {
     expect(dg.state.motionBlur).toBe(1);
   });
 });
+
+describe("serpentine-sky-run tier gating (SSR-19)", () => {
+  it("keeps the second sun cascade on High / Ultra only and mirrors the engine's auto tier rule", async () => {
+    const { sunCascades, autoTier } = await import("../../../examples/saiyan-snake-way-port/world");
+    expect(sunCascades("high")).toBe(2);
+    expect(sunCascades("ultra")).toBe(2);
+    expect(sunCascades("medium")).toBe(1);
+    expect(sunCascades("low")).toBe(1);
+    expect(autoTier(true)).toBe("medium");
+    expect(autoTier(false)).toBe("high");
+  });
+});

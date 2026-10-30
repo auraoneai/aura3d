@@ -12,17 +12,54 @@
     "gpuTextureMB": 80,
     "gpuTextureMBCapture": 70,
     "newGlbMB": 6,
-    "postHighOnly": ["god rays", "lens flare", "motion blur", "second shadow cascade"],
+    "postHighOnly": [
+      "god rays",
+      "lens flare",
+      "motion blur",
+      "second shadow cascade"
+    ],
     "frameTimeIncreaseMax": 0.2,
     "routeJsGzipDeltaKB": 25,
-    "note": "Budgets are never raised to pass (PRD D7). Low is 80% of the Medium worst stage (PRD 6.4). Measured numbers are phase 2 (software WebGL2)."
+    "note": "Budgets are never raised to pass (PRD D7). Low is 80% of the Medium worst stage (PRD 6.4). Measured numbers are phase 2 (software WebGL2).",
+    "tierGating": {
+      "high": "2 sun cascades (PCSS), god rays + lens flare at stages 1,2,3,8, motion blur above 60 m/s",
+      "medium": "1 sun cascade, no god rays, lens flare or motion blur",
+      "low": "as medium (engine Low tier caps map size and filter)",
+      "source": "examples/saiyan-snake-way-port/world.ts sunCascades/autoTier, art/lookRuntime.ts HIGH_POST_TIERS, art/cinePost.ts"
+    },
+    "expectedDrawDelta": {
+      "SSR-06 lens flare": "+4 sprites while shown (High, low-sun stages)",
+      "SSR-07 post": "0 draws (post passes)",
+      "SSR-13 wisps vs streaks": "-22 nodes; particles batch in the effect system",
+      "SSR-15/14": "0",
+      "SSR-16": "0 (DOM)"
+    }
   },
   "source": "docs/prds/game-upgrades-47/GameUpgrades47-PRD.md WP-27 Today line and docs/audits/lanes/g17.md (remote software WebGL2 captures, 1280x720, 360 idle steps, 50 s shot)",
   "before": {
     "default": {
-      "in-run": { "viewport": "1280x720", "drawCalls": 115, "instancedBatches": 0, "triangles": null, "textureMB": 105.8, "meanLuma": 191.3, "runnerCropLuma": 193.4, "verge": 206.0, "pageMB": null, "routeJsGzipKB": null, "fps": null }
+      "in-run": {
+        "viewport": "1280x720",
+        "drawCalls": 115,
+        "instancedBatches": 0,
+        "triangles": null,
+        "textureMB": 105.8,
+        "meanLuma": 191.3,
+        "runnerCropLuma": 193.4,
+        "verge": 206.0,
+        "pageMB": null,
+        "routeJsGzipKB": null,
+        "fps": null
+      }
     },
-    "stage1": null, "stage2": null, "stage3": null, "stage4": null, "stage5": null, "stage6": null, "stage7": null, "stage8": null
+    "stage1": null,
+    "stage2": null,
+    "stage3": null,
+    "stage4": null,
+    "stage5": null,
+    "stage6": null,
+    "stage7": null,
+    "stage8": null
   },
   "after": null
 }

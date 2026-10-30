@@ -158,7 +158,17 @@ export interface WorldOptions {
   readonly runner?: RunnerActor | null;
   /** GU47 look mode and pinned stage (default: read from `location.search`, see art/colorScript.ts). */
   readonly look?: LookParams;
+  /** GU47 SSR-19: the quality tier the app mounts at (default: the `renderer.quality: "auto"` rule, see `autoTier`). */
+  readonly tier?: string;
 }
+
+/** The engine's `quality: "auto"` rule (compiler/shadows.ts): "medium" on coarse pointers, else "high". */
+export function autoTier(coarse: boolean = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches): string {
+  return coarse ? "medium" : "high";
+}
+
+/** GU47 SSR-19: sun cascades per tier (2 on High / Ultra, 1 on Medium / Low; PRD §6.4). */
+export const sunCascades = (tier: string): 1 | 2 => (tier === "high" || tier === "ultra" ? 2 : 1);
 
 /** GU47: the look the last frame drew (QA hook `meta().look`). */
 export interface WorldLookState {
@@ -274,8 +284,9 @@ export function buildWorld(options: WorldOptions = {}): World {
     // camera-side fill (0.6, unshadowed) keeps the backlit runner readable; `?look=original` keeps today's rig.
     .add(lights.hemisphere({ name: "sky fill", skyColor: script ? first.hemisphere.sky : "#f6d0e6", groundColor: script ? first.hemisphere.ground : "#b98a2e", intensity: script ? first.hemisphere.intensity : 1.1 }).runtime({ id: "sky fill" }))
     .add(environments.neutral({ intensity: script && !envOverride() ? first.environmentIntensity : environmentIntensity() }))
-    // GU47 SSR-03: two cascades over 140 m with PCSS under the colour script (Low tier caps to 1 cascade, PCF).
-    .add(lights.directional({ name: "sun", position: [-40, 60, -70], target: [0, 0, 0], intensity: script ? first.sun.intensity : 2.2, color: script ? first.sun.color : "#fff0dc", shadow: (shadowOff() ? false : script ? { cascades: 2, maxDistance: 140, filter: "pcss", lightSize: 2 } : { cascades: 1, maxDistance: 80 }) as never }).runtime({ id: "sun" }));
+    // GU47 SSR-03 / SSR-19: two cascades over 140 m with PCSS under the colour script on High; the second cascade drops on
+    // the Medium / Low tiers (an explicit cascade count is never capped by the tier, so it is chosen here).
+    .add(lights.directional({ name: "sun", position: [-40, 60, -70], target: [0, 0, 0], intensity: script ? first.sun.intensity : 2.2, color: script ? first.sun.color : "#fff0dc", shadow: (shadowOff() ? false : script ? { cascades: sunCascades(options.tier ?? autoTier()), maxDistance: 140, filter: "pcss", lightSize: 2 } : { cascades: 1, maxDistance: 80 }) as never }).runtime({ id: "sun" }));
   if (script) {
     builder.add(lights.directional({ name: "fill", position: [0, 4, 20], target: [0, 1, 0], intensity: first.fill.intensity, color: first.fill.color, shadow: false }).runtime({ id: "fill" }));
     builder.add(effects.contactShadows({ length: 0.3, thickness: 0.06, intensity: 0.8, lights: "sun" }));
