@@ -1,0 +1,11 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "roadster-hours-port",
+  "note": "GU47 WP-32 acceptance bands (RH47-02, RH47-05, RH47-06, RH47-07). Targets are ?level=0..2&autostart=1&autopilot=1 (sunbreak, redline, halo); judge only steady-state shots after texturesReady() (PRD §6.5). Cell 1 is top-centre (sky), cell 7 bottom-centre (road).",
+  "default": { "clipFrac": [null, 0.02] },
+  "variants": {
+    "sunbreak": { "mean": [100, 125], "clipFrac": [null, 0.02] },
+    "redline": { "mean": [60, 85] },
+    "halo": { "mean": [32, 48], "darkFrac": [null, 0.4], "cells": { "7": { "mean": [45, null] } } }
+  }
+}

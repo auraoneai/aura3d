@@ -1,0 +1,35 @@
+{
+  "schema": "aura3d.gu47-budget/1",
+  "slug": "roadster-hours-port",
+  "game": "Saltwind Highway",
+  "wp": "WP-32",
+  "budget": {
+    "drawCalls": 170,
+    "drawCallsViewports": ["1280x720", "390x844"],
+    "lowTierDrawCalls": 136,
+    "triangles": 900000,
+    "transferMB": 12,
+    "newTextureMB1k": 24,
+    "programs": 12,
+    "particles": 2000,
+    "replayEndSeconds": 48.325,
+    "note": "Budgets are never raised to pass (PRD D7). Low is 80% of the High draw budget (PRD §6.4)."
+  },
+  "source": "evidence/roadster-hours-port/audit-fix/after-render/meta.jsonl (4.6.x, software WebGL2); textures were not uploaded in those shots (0 of 58/53/55)",
+  "before": {
+    "sunbreak": { "viewport": "1280x720", "drawCalls": 112, "meanLuma": 90.5, "phoneDrawCalls": 152, "phoneMeanLuma": 91.5, "texturesTotal": 58, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": null, "runnerFps": null },
+    "redline": { "viewport": "1280x720", "drawCalls": 150, "meanLuma": 33.5, "texturesTotal": 53, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": null, "runnerFps": null },
+    "halo": { "viewport": "1280x720", "drawCalls": 106, "meanLuma": 17.1, "texturesTotal": 55, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": null, "runnerFps": null }
+  },
+  "after": null,
+  "expectedDrawDelta": {
+    "RH47-02 fill swap (directional / hemisphere) and 2 Halo gantry points": 0,
+    "RH47-03 3 cascades (shadow draws, up to +30) and the contact blob": 31,
+    "RH47-04 route HDRI in place of the preset IBL": 0,
+    "RH47-06 Halo city carpet replaces the water plane": 0,
+    "RH47-07 one road shaderPass per route (fullscreen, not a scene draw)": 0,
+    "RH47-12 crosswind spray (one points draw)": 1,
+    "RH47-13 preset pack (runtime VFX batches, about 2-4 while bursts live)": 4
+  },
+  "expectedPrograms": "+4 custom programs (blob, spray, city on Halo only, the road pass); phase 2 measures diagnostics().programs against the 12 cap"
+}
