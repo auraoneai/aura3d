@@ -50,6 +50,7 @@ import {
   handBounceOverlayAngles
 } from "@aura3d/engine/game";
 import { assets } from "./aura-assets.route";
+import { COURT_RIGS, courtLampNodes, courtLookNodes, courtPracticalNodes } from "./courtRigs";
 import "../../showcase-port-shared/quickbar.css";
 import { createFrameErrorBoundary, installBlackFrameGuard } from "@aura3d/debug";
 import { pickLocomotion } from "./locomotionRates";
@@ -453,6 +454,8 @@ const QA_LEAD = initialParams.get("diag") === "1" ? Number(initialParams.get("qa
 const QA_AO = initialParams.get("diag") === "1" ? initialParams.get("qaAo") : null;
 /** ?diag=1&qaTarget=N plays to N points so a run reaches the results card quickly (measurement only). */
 const QA_TARGET = initialParams.get("diag") === "1" ? Number(initialParams.get("qaTarget")) || 0 : 0;
+/** ?look=original: the 4.6 look (presets, fog off, today's practicals and dressing) for GU47 before/after pairs. */
+const LOOK_ORIGINAL = initialParams.get("look") === "original";
 
 const game_ = {
   mode: "quick" as ModeId,
@@ -733,11 +736,14 @@ function buildVenueDressing(v: VenueSpec): any[] {
     nodes.push(
       model(assets.hoopsCanopy, { name: "manila-canopy", targetMaxDimension: 36, scaleMode: "fit", castShadow: false, receiveShadow: true }).position(0, 9.2, 4)
     );
-    for (const [x, z] of [[-13, -4], [13, -4], [-13, 12], [13, 12]] as const) {
-      nodes.push(
-        model(assets.hoopsFloodlight, { name: `flood-${x}-${z}`, targetHeight: 8.6 }).position(x, 0, z).rotate(0, Math.atan2(-x, -z), 0),
-        lights.spot({ name: `flood-s-${x}-${z}`, position: [x * 0.9, 8.4, z * 0.9], target: [0, 0, 4], angle: 0.6, penumbra: 0.5, intensity: 2.2, color: "#ffd9a8", distance: 55 })
-      );
+    // H47-L2: under the roof the court is lit by 12 tungsten bulbs on two strings (courtRigs.ts), not floodlights.
+    if (LOOK_ORIGINAL) {
+      for (const [x, z] of [[-13, -4], [13, -4], [-13, 12], [13, 12]] as const) {
+        nodes.push(
+          model(assets.hoopsFloodlight, { name: `flood-${x}-${z}`, targetHeight: 8.6 }).position(x, 0, z).rotate(0, Math.atan2(-x, -z), 0),
+          lights.spot({ name: `flood-s-${x}-${z}`, position: [x * 0.9, 8.4, z * 0.9], target: [0, 0, 4], angle: 0.6, penumbra: 0.5, intensity: 2.2, color: "#ffd9a8", distance: 55 })
+        );
+      }
     }
   }
 
@@ -745,10 +751,13 @@ function buildVenueDressing(v: VenueSpec): any[] {
     for (const [x, z] of [[-9, -3.2], [9, -3.2], [-9, 11.5], [9, 11.5], [-12, 4], [12, 4]] as const) {
       nodes.push(model(assets.hoopsLamp, { name: `neon-lamp-${x}-${z}`, targetHeight: 4.6 }).position(x, 0, z).rotate(0, Math.atan2(-x, 4 - z), 0));
     }
-    nodes.push(
-      lights.point({ name: "neon-fill-a", position: [-8, 5, 4], color: "#39d7ff", intensity: 1.6, distance: 40 }),
-      lights.point({ name: "neon-fill-b", position: [8, 5, 4], color: "#e26bff", intensity: 1.3, distance: 40 })
-    );
+    // H47-L3: sign rect lights (courtRigs.ts) replace the two neon point fills.
+    if (LOOK_ORIGINAL) {
+      nodes.push(
+        lights.point({ name: "neon-fill-a", position: [-8, 5, 4], color: "#39d7ff", intensity: 1.6, distance: 40 }),
+        lights.point({ name: "neon-fill-b", position: [8, 5, 4], color: "#e26bff", intensity: 1.3, distance: 40 })
+      );
+    }
   }
 
   if (v.id === "orbit") {
@@ -766,19 +775,18 @@ function buildVenueDressing(v: VenueSpec): any[] {
       const r = 120 + vrng() * 60;
       starT.push({ position: [Math.cos(a) * Math.cos(ph) * r, 20 + Math.sin(ph) * r, Math.sin(a) * Math.cos(ph) * r], scale: [0.5 + vrng(), 0.5 + vrng(), 0.5 + vrng()] });
     }
-    nodes.push((instances as any).sphere({ name: "starfield", transforms: starT, material: material.emissive({ color: "#cfe8ff", emissive: "#cfe8ff", emissiveIntensity: 1.4 }) }));
-    nodes.push(
-      lights.point({ name: "orbit-fill", position: [0, 12, 4], color: "#7dfcff", intensity: 2.0, distance: 60 }),
-      effects.lightCone({ name: "orbit-cone", position: [0, 10, -6], direction: [0, -1, 0.2], color: "#7dfcff", intensity: 0.25, length: 12, coneAngle: 0.5, softness: 0.6 } as any)
-    );
+    // H47-L1: the starfield HDRI is the sky now; the 140 emissive star spheres stay only on ?look=original.
+    if (LOOK_ORIGINAL) nodes.push((instances as any).sphere({ name: "starfield", transforms: starT, material: material.emissive({ color: "#cfe8ff", emissive: "#cfe8ff", emissiveIntensity: 1.4 }) }));
+    // H47-L3: station rib rect lights (courtRigs.ts) replace the orbit point fill.
+    if (LOOK_ORIGINAL) nodes.push(lights.point({ name: "orbit-fill", position: [0, 12, 4], color: "#7dfcff", intensity: 2.0, distance: 60 }));
+    nodes.push(effects.lightCone({ name: "orbit-cone", position: [0, 10, -6], direction: [0, -1, 0.2], color: "#7dfcff", intensity: 0.25, length: 12, coneAngle: 0.5, softness: 0.6 } as any));
   }
 
   if (v.id === "rucker") {
     for (const [x, z] of [[-11, -7], [11, -7], [-11, 13], [11, 13]] as const) {
-      nodes.push(
-        model(assets.hoopsFloodlight, { name: `flood-${x}-${z}`, targetHeight: 9.2 }).position(x, 0, z).rotate(0, Math.atan2(-x, 4 - z), 0),
-        lights.spot({ name: `flood-s-${x}-${z}`, position: [x * 0.92, 9.0, z * 0.92], target: [0, 0, 4], angle: 0.55, penumbra: 0.5, intensity: 1.9, color: "#ffd9b0", distance: 55 })
-      );
+      nodes.push(model(assets.hoopsFloodlight, { name: `flood-${x}-${z}`, targetHeight: 9.2 }).position(x, 0, z).rotate(0, Math.atan2(-x, 4 - z), 0));
+      // H47-L2: four sodium spots, two shadowed, from courtRigs.ts; the 4.6 warm-white spots stay on ?look=original.
+      if (LOOK_ORIGINAL) nodes.push(lights.spot({ name: `flood-s-${x}-${z}`, position: [x * 0.92, 9.0, z * 0.92], target: [0, 0, 4], angle: 0.55, penumbra: 0.5, intensity: 1.9, color: "#ffd9b0", distance: 55 }));
     }
     nodes.push(
       model(assets.hoopsScoreboard, { name: "scoreboard-rig", targetHeight: 5.4, castShadow: false }).position(0, 4.2, -12.5),
@@ -816,12 +824,24 @@ function buildCones(): any[] {
 }
 
 function buildScene(v: VenueSpec): any {
-  const lookOverrides = { fogDensityScale: 0, exposureEv: 0.16 };
-  const s = scene().background(v.bg);
-  if (QA_AO === "0" || QA_AO === "1") {
-    s.addMany(looks.nodes(v.look, lookOverrides).filter((n) => QA_AO === "1" || (n.toJSON() as { name?: string }).name !== "look ambient occlusion"));
+  const s = scene();
+  if (LOOK_ORIGINAL) {
+    // ?look=original: the 4.6 look (one preset per court, fog off) for before/after pairs.
+    const lookOverrides = { fogDensityScale: 0, exposureEv: 0.16 };
+    s.background(v.bg);
+    if (QA_AO === "0" || QA_AO === "1") {
+      s.addMany(looks.nodes(v.look, lookOverrides).filter((n) => QA_AO === "1" || (n.toJSON() as { name?: string }).name !== "look ambient occlusion"));
+    } else {
+      s.add(looks.preset(v.look, lookOverrides));
+    }
   } else {
-    s.add(looks.preset(v.look, lookOverrides));
+    // H47-L1: the court's own rig (courtRigs.ts): catalogue HDRI drawn as the sky, one PCSS key, fog to the horizon,
+    // explicit AO (dropped by ?diag=1&qaAo=0), the court's post preset, grade and day/night bloom.
+    const rig = COURT_RIGS[v.id];
+    s.background(rig.fog.color).addMany(courtLookNodes(rig, { ao: QA_AO !== "0" }));
+    // H47-L2 / H47-L3: the court's practicals (sodium spots, tungsten bulb clusters, sign and rib rect lights) and the
+    // emissive lamp heads they belong to (one instanced draw per court, two at Manila).
+    s.addMany(courtPracticalNodes(rig)).addMany(courtLampNodes(rig));
   }
   s
     .add(effects.contactShadows({ intensity: 0.7, length: 0.28 }))
@@ -2974,7 +2994,8 @@ function cameraObstacles(v: VenueSpec): readonly (readonly [number, number, numb
   switch (v.id) {
     // floodlights are fitted to 8.6-9.2 m tall, which makes the model about 3.2 m wide
     case "rucker": return [[-11, -7, 2.2], [11, -7, 2.2], [-11, 13, 2.2], [11, 13, 2.2]];
-    case "manila": return [[-13, -4, 2.2], [13, -4, 2.2], [-13, 12, 2.2], [13, 12, 2.2]];
+    // the Manila floodlights stand only on ?look=original (H47-L2 hangs bulb strings under the roof instead)
+    case "manila": return LOOK_ORIGINAL ? [[-13, -4, 2.2], [13, -4, 2.2], [-13, 12, 2.2], [13, 12, 2.2]] : [];
     case "shanghai": return [[-9, -3.2, 1.8], [9, -3.2, 1.8], [-9, 11.5, 1.8], [9, 11.5, 1.8], [-12, 4, 1.8], [12, 4, 1.8]];
     case "venice": return [[-12, -8, 2.2], [12.5, -10, 2.2], [-14, 12, 2.2], [14, 14, 2.2], [-9, 16, 2.2]];
     default: return [];
