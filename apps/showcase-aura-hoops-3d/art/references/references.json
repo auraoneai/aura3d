@@ -1,0 +1,25 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-aura-hoops-3d",
+  "note": "Generic genre references only (no brands, leagues, players or products). Reference-only: nothing is copied into the game.",
+  "entries": [
+    {
+      "file": "references/references.json#mixtape-broadcast",
+      "source": "generic genre reference: late-night summer-league streetball mixtape broadcasts (handheld sideline footage, low long lens, score bug over the frame)",
+      "licence": "reference-only",
+      "why": "Low long-lens sideline framing at 30-34 degrees, a stencil score bug and replay language for dunks; drives H47-C1 and H47-H1"
+    },
+    {
+      "file": "references/references.json#sodium-courts",
+      "source": "generic photographic genre: public outdoor courts at blue hour under sodium-vapour floodlights behind chain-link fences",
+      "licence": "reference-only",
+      "why": "Sodium #ffb347 pools against a cobalt sky, chain-link silhouettes and long flood shadows on charcoal asphalt; drives H47-L1, H47-L2 and H47-E1"
+    },
+    {
+      "file": "references/references.json#wet-asphalt",
+      "source": "generic photographic genre: rain on painted asphalt and acrylic courts at night (puddle mirrors, wet specular streaks, spray-paint murals)",
+      "licence": "reference-only",
+      "why": "Wet ground roughness near 0.12 with a puddle mask, neon reflections and rain streaks only on the rain courts; drives H47-E2, H47-M1 and the spray tag"
+    }
+  ]
+}
