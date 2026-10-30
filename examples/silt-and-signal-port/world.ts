@@ -197,6 +197,9 @@ export interface BuildOptions {
   readonly reducedMotion?: boolean;
 }
 
+/** DG-S4 shaft march fraction (E-C clamps it to 0.05..1). */
+export const GOD_RAY_DENSITY = 0.6;
+
 /** Amber practical colour for the night chapters' ring route (DG-L4). */
 export const PRACTICAL_COLOR = "#ffb35a";
 
@@ -250,6 +253,14 @@ function addInkedRig(builder: Scene, chapter: number, options: BuildOptions): vo
     mode: "height", color: look.fog.color, density: look.fog.density, heightFalloff: look.fog.heightFalloff,
     heightReference: look.fog.heightReference, maxOpacity: look.fog.maxOpacity
   } as unknown as Parameters<typeof effects.fog>[0]));
+  // DG-S4: god rays from the low sun (ch0) and moon shafts through the roots (ch2) only, never on Low. With
+  // A3D_QR_VFX_FOG on, forward fog stays the height fog above; this node only feeds the S4 shaft pass, which marches
+  // toward the strongest directional (the key). The engine also drops S4 below Medium. +0 draws, one post stage.
+  if (look.godRays && !options.low) {
+    builder.add(effects.volumetricFog({ name: "silt god rays", color: look.key.color, density: look.fog.density, intensity: look.night ? 0.35 : 0.5, godRayDensity: GOD_RAY_DENSITY }));
+  }
+  // DG-L5: screen-space contact shadows under the board, rider and props in every inked chapter (not on Low)
+  if (!options.low) builder.add(effects.contactShadows({ intensity: 0.7, length: 0.3 }));
   builder.add(effects.bloom({ intensity: look.bloom.intensity, threshold: look.bloom.threshold }));
   // exposure lives on the output (ACES, main.ts); the grade keeps 1 so the two never stack
   builder.add(effects.colorGrade({ contrast: look.grade.contrast, saturation: look.grade.saturation, exposure: 1, temperature: look.grade.temperature }));

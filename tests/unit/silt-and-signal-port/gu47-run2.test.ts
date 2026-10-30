@@ -3,8 +3,9 @@
  * inked look builds; pixels are phase 2 (E-I capture).
  */
 import { describe, expect, it } from "vitest";
+import { validatePostEffectNode } from "../../../packages/engine/src/agent-api/postBridge";
 import { FAR_DUNE_RINGS, farDuneRings, farDunes } from "../../../examples/silt-and-signal-port/architecture";
-import { buildWorld } from "../../../examples/silt-and-signal-port/world";
+import { GOD_RAY_DENSITY, buildWorld } from "../../../examples/silt-and-signal-port/world";
 
 type Node = Record<string, any>;
 const nodes = (chapter: number, options: Parameters<typeof buildWorld>[1] = {}): Node[] =>
@@ -39,5 +40,23 @@ describe("GU47 WP-34 DG-S2 horizon rings", () => {
     const original = nodes(0, { look: "original" }).filter((n) => n.name === "far-dunes");
     expect(inked.length).toBe(1);
     expect(original.length).toBe(1);
+  });
+});
+
+describe("GU47 WP-34 DG-S4 god rays and DG-L5 contact shadows", () => {
+  it("god rays only in ch0 and ch2, never on Low or in ?look=original", () => {
+    const rays = (c: number, o: Parameters<typeof buildWorld>[1] = {}) => nodes(c, o).filter((n) => n.effect === "volumetric-fog");
+    for (let c = 0; c < 7; c++) expect(rays(c).length, `ch${c}`).toBe(c === 0 || c === 2 ? 1 : 0);
+    expect(rays(0)[0]!.godRayDensity).toBe(GOD_RAY_DENSITY);
+    expect(validatePostEffectNode(rays(0)[0] as never) ?? []).toEqual([]);
+    expect(rays(0, { low: true }).length).toBe(0);
+    expect(rays(0, { look: "original" }).length).toBe(0);
+  });
+
+  it("contact shadows in every inked chapter except Low; none in ?look=original", () => {
+    const cs = (c: number, o: Parameters<typeof buildWorld>[1] = {}) => nodes(c, o).filter((n) => n.effect === "contact-shadows").length;
+    for (let c = 0; c < 7; c++) expect(cs(c)).toBe(1);
+    expect(cs(3, { low: true })).toBe(0);
+    expect(cs(3, { look: "original" })).toBe(0);
   });
 });
