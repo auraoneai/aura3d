@@ -67,9 +67,10 @@ describe("P1-T11 VfxAtlas", () => {
     });
     expect(requested).toEqual(["/aura-vfx/aura-vfx-1k.ktx2"]);
     const seq = atlas.sequence("fireball")!;
-    // Manifest rects are for the 2k page; the paged 1k twin halves them.
-    // "fireball" is index 12 → [4+5*260, 4+260, 256, 256] = [1304,264,256,256] on 2k → halved.
-    expect(seq.rect).toEqual([652, 132, 128, 128]);
+    // Manifest rects are for the 2k page; the paged 1k twin has 128 px cells and the same 4 px gutter.
+    // "fireball" is index 12 → [4+5*260, 4+260, 256, 256] = [1304,264,256,256] on 2k → column 5, row 1 on
+    // the 132 px 1k pitch (GU47 eint EF-7; plain halving gave [652, 132], 12/4 px off).
+    expect(seq.rect).toEqual([664, 136, 128, 128]);
   });
 
   it("falls back to PNG with VFX_ATLAS_PNG_FALLBACK when ktx2 decode fails", async () => {
