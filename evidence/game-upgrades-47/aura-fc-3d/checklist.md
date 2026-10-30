@@ -31,7 +31,7 @@ Every acceptance line of WP-19 with its phase-1 status. "phase 2" = needs remote
 | FC47-M3 | bottom row p5 <= 120 and >= 25 below top | phase 2 |
 | FC47-M3 | flipped player correlation >= 0.5 | phase 2 |
 | FC47-M3 | <= 480 draws | phase 2 (`?mirror=off` fallback ready) |
-| FC47-A1 | `primitives.` 34 -> <= 14 | partial: 30 in scene.ts after PF1 batching; rest blocked (WP-36 football kit) |
+| FC47-A1 | `primitives.` 34 -> <= 14 | partial: 26 lines with `primitives.` in scene.ts after PF1 batching; rest blocked (WP-36 football kit) |
 | FC47-A1 | no diamond/hoops keys | blocked (WP-36) |
 | FC47-A1 | game-checks 0 errors | done (0 errors) |
 | FC47-A2 | >= 3 venue-only props per venue; dome hash same; within PF1 | blocked (WP-36 venue sets) |
