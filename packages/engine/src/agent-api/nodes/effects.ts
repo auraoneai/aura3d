@@ -255,8 +255,8 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
   },
   /**
    * Additive thick light beam / fence strip (muse3jsparity-PRD D4): recorded
-   * with a validated quad-strip descriptor, but withheld — root has no native
-   * beam target yet, so no pass is submitted.
+   * with a validated quad-strip descriptor and drawn by the prd07.beams pass
+   * under A3D_QR_VFX (camera-facing strip from `from` to `to`).
    */
   beam: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) => {
     const descriptor = createBeamDescriptor({
