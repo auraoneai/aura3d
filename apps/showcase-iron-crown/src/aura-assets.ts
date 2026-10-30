@@ -15,14 +15,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "ironcrownBoulder": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/ironcrownBoulder.96f0aa08.glb",
-    hash: "sha256-96f0aa08c72dc3eee3dd768f72c19acf59286267c52f799faa7c24f3b5096f2b",
+    url: "/aura-assets/ironcrownBoulder.fd2890fc.glb",
+    hash: "sha256-fd2890fcca732eba2ce1df6a624013f20112963ee0ab89ea9ce4ea9a44c34d0b",
     bounds: [
       0.015,
       0.02,
       0.007
     ],
-    sizeBytes: 2018704,
+    sizeBytes: 2413244,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -37,7 +37,11 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "Block1",
         "Hit_Reaction",
         "Dead",
-        "Regular_Jump"
+        "Regular_Jump",
+        "Combat_Stance",
+        "CrouchLookAroundBow",
+        "Over_Shoulder_Throw",
+        "Victory_Fist_Pump"
       ],
       "animationClips": [
       "Idle",
@@ -49,10 +53,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "Block1",
       "Hit_Reaction",
       "Dead",
-      "Regular_Jump"
+      "Regular_Jump",
+      "Combat_Stance",
+      "CrouchLookAroundBow",
+      "Over_Shoulder_Throw",
+      "Victory_Fist_Pump"
     ],
       "animationMetadata": {
-        "clipCount": 10,
+        "clipCount": 14,
         "clips": [
           {
             "index": 0,
@@ -453,10 +461,170 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
             "duration": 1.8333333333333333,
             "hasRootMotionCandidate": true,
             "frameRate": 30.00000178813945
+          },
+          {
+            "index": 10,
+            "name": "Combat_Stance",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.6999999284744263,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 11,
+            "name": "CrouchLookAroundBow",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 5.866666793823242,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 12,
+            "name": "Over_Shoulder_Throw",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 2.5,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 13,
+            "name": "Victory_Fist_Pump",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.5333333015441895,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
           }
         ],
         "messages": [
-          "Detected 10 embedded animation clips."
+          "Detected 14 embedded animation clips."
         ]
       },
       "humanoid": true,
@@ -527,7 +695,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/ironcrownBoulder.96f0aa08.glb",
+        "sourcePath": "public/aura-assets/ironcrownBoulder.fd2890fc.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -538,12 +706,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "aura-evidence/meshy/ironcrownBoulder.rights.968cd708eaf2.json",
           "aura-evidence/meshy/ironcrownBoulder.metadata.53a33b921576.json",
           "aura-evidence/restyle/ironcrownBoulder.flatface.json",
-          "public/aura-assets/ironcrownBoulder.meshy-candidate.d5eb65ae.png"
+          "public/aura-assets/ironcrownBoulder.meshy-candidate.d5eb65ae.png",
+          "aura-evidence/meshy/ironcrownBoulder.ic12-clips.json"
         ],
         "checkedAt": "2026-10-17T09:34:55.132Z"
       },
-      "sourcePath": "public/aura-assets/ironcrownBoulder.96f0aa08.glb",
-      "outputPath": "public/aura-assets/ironcrownBoulder.96f0aa08.glb",
+      "sourcePath": "public/aura-assets/ironcrownBoulder.fd2890fc.glb",
+      "outputPath": "public/aura-assets/ironcrownBoulder.fd2890fc.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -765,14 +934,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "ironcrownJinx": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/ironcrownJinx.729361f1.glb",
-    hash: "sha256-729361f1ee3a8f1a665713538d24484961fcc8fbc86786fd3c827e26cfaece38",
+    url: "/aura-assets/ironcrownJinx.fdd67a19.glb",
+    hash: "sha256-fdd67a19e35221c86f9bc3a36de496eb893d0dc1f6ac0c1d5f9f489cc7387926",
     bounds: [
       0.008,
       0.017,
       0.008
     ],
-    sizeBytes: 2058444,
+    sizeBytes: 2453944,
     metadata: {
       "materials": [
         "Material_1"
@@ -787,7 +956,11 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "Block1",
         "Hit_Reaction",
         "Dead",
-        "Regular_Jump"
+        "Regular_Jump",
+        "Combat_Stance",
+        "CrouchLookAroundBow",
+        "Over_Shoulder_Throw",
+        "Victory_Fist_Pump"
       ],
       "animationClips": [
       "Idle",
@@ -799,10 +972,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "Block1",
       "Hit_Reaction",
       "Dead",
-      "Regular_Jump"
+      "Regular_Jump",
+      "Combat_Stance",
+      "CrouchLookAroundBow",
+      "Over_Shoulder_Throw",
+      "Victory_Fist_Pump"
     ],
       "animationMetadata": {
-        "clipCount": 10,
+        "clipCount": 14,
         "clips": [
           {
             "index": 0,
@@ -1203,10 +1380,170 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
             "duration": 1.9,
             "hasRootMotionCandidate": true,
             "frameRate": 30.00000178813945
+          },
+          {
+            "index": 10,
+            "name": "Combat_Stance",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront"
+            ],
+            "duration": 1.7000000476837158,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 11,
+            "name": "CrouchLookAroundBow",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront"
+            ],
+            "duration": 5.866666793823242,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 12,
+            "name": "Over_Shoulder_Throw",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront"
+            ],
+            "duration": 2.5,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 13,
+            "name": "Victory_Fist_Pump",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront"
+            ],
+            "duration": 1.5666667222976685,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
           }
         ],
         "messages": [
-          "Detected 10 embedded animation clips."
+          "Detected 14 embedded animation clips."
         ]
       },
       "humanoid": true,
@@ -1277,7 +1614,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/ironcrownJinx.729361f1.glb",
+        "sourcePath": "public/aura-assets/ironcrownJinx.fdd67a19.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -1287,12 +1624,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "evidence": [
           "aura-evidence/meshy/ironcrownJinx.rights.968cd708eaf2.json",
           "aura-evidence/meshy/ironcrownJinx.metadata.cc203f47c932.json",
-          "public/aura-assets/ironcrownJinx.meshy-candidate.fdeff851.png"
+          "public/aura-assets/ironcrownJinx.meshy-candidate.fdeff851.png",
+          "aura-evidence/meshy/ironcrownJinx.ic12-clips.json"
         ],
         "checkedAt": "2026-10-17T09:36:34.890Z"
       },
-      "sourcePath": "public/aura-assets/ironcrownJinx.729361f1.glb",
-      "outputPath": "public/aura-assets/ironcrownJinx.729361f1.glb",
+      "sourcePath": "public/aura-assets/ironcrownJinx.fdd67a19.glb",
+      "outputPath": "public/aura-assets/ironcrownJinx.fdd67a19.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -1379,14 +1717,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "ironcrownKenji": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/ironcrownKenji.bd4d2025.glb",
-    hash: "sha256-bd4d20251ef6a81d9ee8c3e683733748c40fa112503aee49b409945c75c553d4",
+    url: "/aura-assets/ironcrownKenji.a4163647.glb",
+    hash: "sha256-a4163647a1f7b92fd3a3241322a81e66264cd9a6a45cf63944f6b11e9495f72e",
     bounds: [
       0.012,
       0.018,
       0.008
     ],
-    sizeBytes: 3580244,
+    sizeBytes: 3975084,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -1401,7 +1739,11 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "Block1",
         "Hit_Reaction",
         "Dead",
-        "Regular_Jump"
+        "Regular_Jump",
+        "Combat_Stance",
+        "CrouchLookAroundBow",
+        "Over_Shoulder_Throw",
+        "Victory_Fist_Pump"
       ],
       "animationClips": [
       "Idle",
@@ -1413,10 +1755,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "Block1",
       "Hit_Reaction",
       "Dead",
-      "Regular_Jump"
+      "Regular_Jump",
+      "Combat_Stance",
+      "CrouchLookAroundBow",
+      "Over_Shoulder_Throw",
+      "Victory_Fist_Pump"
     ],
       "animationMetadata": {
-        "clipCount": 10,
+        "clipCount": 14,
         "clips": [
           {
             "index": 0,
@@ -1817,10 +2163,170 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
             "duration": 1.8333333333333333,
             "hasRootMotionCandidate": true,
             "frameRate": 30.00000178813945
+          },
+          {
+            "index": 10,
+            "name": "Combat_Stance",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.6999999284744263,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 11,
+            "name": "CrouchLookAroundBow",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 5.866666793823242,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 12,
+            "name": "Over_Shoulder_Throw",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 2.5,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 13,
+            "name": "Victory_Fist_Pump",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.5333333015441895,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
           }
         ],
         "messages": [
-          "Detected 10 embedded animation clips."
+          "Detected 14 embedded animation clips."
         ]
       },
       "humanoid": true,
@@ -1891,7 +2397,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/ironcrownKenji.bd4d2025.glb",
+        "sourcePath": "public/aura-assets/ironcrownKenji.a4163647.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -1902,12 +2408,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "aura-evidence/meshy/ironcrownKenji.rights.968cd708eaf2.json",
           "aura-evidence/meshy/ironcrownKenji.metadata.ad60daad72c2.json",
           "public/aura-assets/ironcrownKenji.meshy-candidate.5df2e356.png",
-          "aura-evidence/restyle/ironcrownKenji.restyle.json"
+          "aura-evidence/restyle/ironcrownKenji.restyle.json",
+          "aura-evidence/meshy/ironcrownKenji.ic12-clips.json"
         ],
         "checkedAt": "2026-10-17T09:34:31.036Z"
       },
-      "sourcePath": "public/aura-assets/ironcrownKenji.bd4d2025.glb",
-      "outputPath": "public/aura-assets/ironcrownKenji.bd4d2025.glb",
+      "sourcePath": "public/aura-assets/ironcrownKenji.a4163647.glb",
+      "outputPath": "public/aura-assets/ironcrownKenji.a4163647.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -1994,14 +2501,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "ironcrownSeraph": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/ironcrownSeraph.c6feb949.glb",
-    hash: "sha256-c6feb949c69be12dee9796e1af6775475a1bbb00c9ce4e2988af169e6960e261",
+    url: "/aura-assets/ironcrownSeraph.73a08da7.glb",
+    hash: "sha256-73a08da7a3decda8b2f02663b58f20b8f74de9afe69c98bf335a06d01c59e587",
     bounds: [
       0.011,
       0.019,
       0.007
     ],
-    sizeBytes: 2409624,
+    sizeBytes: 2804164,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -2016,7 +2523,11 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "Block1",
         "Hit_Reaction",
         "Dead",
-        "Regular_Jump"
+        "Regular_Jump",
+        "Combat_Stance",
+        "CrouchLookAroundBow",
+        "Over_Shoulder_Throw",
+        "Victory_Fist_Pump"
       ],
       "animationClips": [
       "Idle",
@@ -2028,10 +2539,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "Block1",
       "Hit_Reaction",
       "Dead",
-      "Regular_Jump"
+      "Regular_Jump",
+      "Combat_Stance",
+      "CrouchLookAroundBow",
+      "Over_Shoulder_Throw",
+      "Victory_Fist_Pump"
     ],
       "animationMetadata": {
-        "clipCount": 10,
+        "clipCount": 14,
         "clips": [
           {
             "index": 0,
@@ -2432,10 +2947,170 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
             "duration": 1.8333333333333333,
             "hasRootMotionCandidate": true,
             "frameRate": 30.00000178813945
+          },
+          {
+            "index": 10,
+            "name": "Combat_Stance",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.6999999284744263,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 11,
+            "name": "CrouchLookAroundBow",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 5.866666793823242,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 12,
+            "name": "Over_Shoulder_Throw",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 2.5,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 13,
+            "name": "Victory_Fist_Pump",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.5333333015441895,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
           }
         ],
         "messages": [
-          "Detected 10 embedded animation clips."
+          "Detected 14 embedded animation clips."
         ]
       },
       "humanoid": true,
@@ -2506,7 +3181,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/ironcrownSeraph.c6feb949.glb",
+        "sourcePath": "public/aura-assets/ironcrownSeraph.73a08da7.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -2517,12 +3192,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "aura-evidence/meshy/ironcrownSeraph.rights.968cd708eaf2.json",
           "aura-evidence/meshy/ironcrownSeraph.metadata.a345b576c622.json",
           "aura-evidence/restyle/ironcrownSeraph.flatface.json",
-          "public/aura-assets/ironcrownSeraph.meshy-candidate.51b3e26d.png"
+          "public/aura-assets/ironcrownSeraph.meshy-candidate.51b3e26d.png",
+          "aura-evidence/meshy/ironcrownSeraph.ic12-clips.json"
         ],
         "checkedAt": "2026-10-17T09:35:27.051Z"
       },
-      "sourcePath": "public/aura-assets/ironcrownSeraph.c6feb949.glb",
-      "outputPath": "public/aura-assets/ironcrownSeraph.c6feb949.glb",
+      "sourcePath": "public/aura-assets/ironcrownSeraph.73a08da7.glb",
+      "outputPath": "public/aura-assets/ironcrownSeraph.73a08da7.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -2609,14 +3285,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "ironcrownSovereign": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/ironcrownSovereign.3f0c20b1.glb",
-    hash: "sha256-3f0c20b11bfee92e999b65aa10cafc18abd864a348349667fbc39d11e8ae8fdd",
+    url: "/aura-assets/ironcrownSovereign.94776d6b.glb",
+    hash: "sha256-94776d6b820a1f9332381776074edf327dad37ab9d48f95321fa4915aea938e4",
     bounds: [
       0.019,
       0.02,
       0.016
     ],
-    sizeBytes: 2984852,
+    sizeBytes: 3379388,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -2631,7 +3307,11 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "Block1",
         "Hit_Reaction",
         "Dead",
-        "Regular_Jump"
+        "Regular_Jump",
+        "Combat_Stance",
+        "CrouchLookAroundBow",
+        "Over_Shoulder_Throw",
+        "Victory_Fist_Pump"
       ],
       "animationClips": [
       "Idle",
@@ -2643,10 +3323,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "Block1",
       "Hit_Reaction",
       "Dead",
-      "Regular_Jump"
+      "Regular_Jump",
+      "Combat_Stance",
+      "CrouchLookAroundBow",
+      "Over_Shoulder_Throw",
+      "Victory_Fist_Pump"
     ],
       "animationMetadata": {
-        "clipCount": 10,
+        "clipCount": 14,
         "clips": [
           {
             "index": 0,
@@ -3047,10 +3731,170 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
             "duration": 1.8333333333333333,
             "hasRootMotionCandidate": true,
             "frameRate": 30.00000178813945
+          },
+          {
+            "index": 10,
+            "name": "Combat_Stance",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.6999999284744263,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 11,
+            "name": "CrouchLookAroundBow",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 5.866666793823242,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 12,
+            "name": "Over_Shoulder_Throw",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 2.5,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 13,
+            "name": "Victory_Fist_Pump",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.5333333015441895,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
           }
         ],
         "messages": [
-          "Detected 10 embedded animation clips."
+          "Detected 14 embedded animation clips."
         ]
       },
       "humanoid": true,
@@ -3121,7 +3965,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/ironcrownSovereign.3f0c20b1.glb",
+        "sourcePath": "public/aura-assets/ironcrownSovereign.94776d6b.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -3132,12 +3976,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "aura-evidence/meshy/ironcrownSovereign.rights.968cd708eaf2.json",
           "aura-evidence/meshy/ironcrownSovereign.metadata.34d990cc2ffb.json",
           "aura-evidence/restyle/ironcrownSovereign.flatface.json",
-          "public/aura-assets/ironcrownSovereign.meshy-candidate.3931a35c.png"
+          "public/aura-assets/ironcrownSovereign.meshy-candidate.3931a35c.png",
+          "aura-evidence/meshy/ironcrownSovereign.ic12-clips.json"
         ],
         "checkedAt": "2026-10-17T09:35:44.853Z"
       },
-      "sourcePath": "public/aura-assets/ironcrownSovereign.3f0c20b1.glb",
-      "outputPath": "public/aura-assets/ironcrownSovereign.3f0c20b1.glb",
+      "sourcePath": "public/aura-assets/ironcrownSovereign.94776d6b.glb",
+      "outputPath": "public/aura-assets/ironcrownSovereign.94776d6b.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -3224,14 +4069,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "ironcrownVolt": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/ironcrownVolt.3318e498.glb",
-    hash: "sha256-3318e49815ab0feda3d604ad978318fa4182a8289e91e13b24125153f1b0ad86",
+    url: "/aura-assets/ironcrownVolt.aef7dd38.glb",
+    hash: "sha256-aef7dd38c8aad13eb962e2df860f29906ec4c06abad496c6c7ecf915cb340a40",
     bounds: [
       0.009,
       0.018,
       0.004
     ],
-    sizeBytes: 3467976,
+    sizeBytes: 3862816,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -3246,7 +4091,11 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "Block1",
         "Hit_Reaction",
         "Dead",
-        "Regular_Jump"
+        "Regular_Jump",
+        "Combat_Stance",
+        "CrouchLookAroundBow",
+        "Over_Shoulder_Throw",
+        "Victory_Fist_Pump"
       ],
       "animationClips": [
       "Idle",
@@ -3258,10 +4107,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "Block1",
       "Hit_Reaction",
       "Dead",
-      "Regular_Jump"
+      "Regular_Jump",
+      "Combat_Stance",
+      "CrouchLookAroundBow",
+      "Over_Shoulder_Throw",
+      "Victory_Fist_Pump"
     ],
       "animationMetadata": {
-        "clipCount": 10,
+        "clipCount": 14,
         "clips": [
           {
             "index": 0,
@@ -3662,10 +4515,170 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
             "duration": 1.8333333333333333,
             "hasRootMotionCandidate": true,
             "frameRate": 30.00000178813945
+          },
+          {
+            "index": 10,
+            "name": "Combat_Stance",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.6999999284744263,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.00000178813945
+          },
+          {
+            "index": 11,
+            "name": "CrouchLookAroundBow",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 5.866666793823242,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 12,
+            "name": "Over_Shoulder_Throw",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 2.5,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.000028610256777
+          },
+          {
+            "index": 13,
+            "name": "Victory_Fist_Pump",
+            "channelCount": 72,
+            "samplerCount": 72,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ],
+            "duration": 1.5333333015441895,
+            "hasRootMotionCandidate": true,
+            "frameRate": 30.00000178813945
           }
         ],
         "messages": [
-          "Detected 10 embedded animation clips."
+          "Detected 14 embedded animation clips."
         ]
       },
       "humanoid": true,
@@ -3736,7 +4749,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/ironcrownVolt.3318e498.glb",
+        "sourcePath": "public/aura-assets/ironcrownVolt.aef7dd38.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -3747,12 +4760,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
           "aura-evidence/meshy/ironcrownVolt.rights.968cd708eaf2.json",
           "aura-evidence/meshy/ironcrownVolt.metadata.293efdbc1f68.json",
           "public/aura-assets/ironcrownVolt.meshy-candidate.d97a012a.png",
-          "aura-evidence/restyle/ironcrownVolt.restyle.json"
+          "aura-evidence/restyle/ironcrownVolt.restyle.json",
+          "aura-evidence/meshy/ironcrownVolt.ic12-clips.json"
         ],
         "checkedAt": "2026-10-17T09:35:10.995Z"
       },
-      "sourcePath": "public/aura-assets/ironcrownVolt.3318e498.glb",
-      "outputPath": "public/aura-assets/ironcrownVolt.3318e498.glb",
+      "sourcePath": "public/aura-assets/ironcrownVolt.aef7dd38.glb",
+      "outputPath": "public/aura-assets/ironcrownVolt.aef7dd38.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [

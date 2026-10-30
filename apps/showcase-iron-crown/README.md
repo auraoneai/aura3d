@@ -59,10 +59,11 @@ CPU-vs-CPU attract bout behind the title card.
 All six fighters mount their own **bespoke Meshy-generated rig** — imported
 into the app-local catalog (`aura.assets.json` → `public/aura-assets/`,
 rights evidence under `aura-evidence/meshy/`, quality `candidate`). Every
-GLB ships the identical 10-clip fight set (`Idle`, `Walk_Fight_Forward`,
+GLB ships the identical 14-clip fight set (`Idle`, `Walk_Fight_Forward`,
 `Walk_Fight_Back`, `Left_Jab_from_Guard`, `Right_Uppercut_from_Guard`,
-`Triple_Combo_Attack`, `Block1`, `Hit_Reaction`, `Dead`, `Regular_Jump`),
-so a single shared clip map resolves every logical state:
+`Triple_Combo_Attack`, `Block1`, `Hit_Reaction`, `Dead`, `Regular_Jump`, and
+the IC-12 clips `Combat_Stance`, `CrouchLookAroundBow`, `Over_Shoulder_Throw`,
+`Victory_Fist_Pump`), so a single shared clip map resolves every logical state:
 
 | Fighter | Asset | Archetype | Special |
 | --- | --- | --- | --- |
@@ -134,11 +135,16 @@ three.js, GLTFLoader, or hand-rolled GL.
   (the `materialOverrides` field is declared on `AuraModelOptions` but not
   lowered by `model()`); tinting therefore re-mounts the model via
   `setScene` when a palette is applied.
-- **One shared clip map.** All six Meshy rigs embed the identical 10-clip
+- **One shared clip map.** All six Meshy rigs embed the identical 14-clip
   set, so `FIGHTER_CLIP_MAP` maps each logical state to a real embedded clip
-  once and marks stand-ins (dash → `Walk_Fight_Forward` at 2×, throw →
-  `Triple_Combo_Attack`, crouch → `Block1`, win → `Regular_Jump` — no
-  bespoke clips exist for those states). An asset whose animation metadata
+  once and marks the one stand-in (dash → `Walk_Fight_Forward` at 2×). Idle
+  (`Combat_Stance`), crouch (`CrouchLookAroundBow`), throw
+  (`Over_Shoulder_Throw`, its 2.5 s grab-lift-toss window at 4×) and win
+  (`Victory_Fist_Pump`) are Meshy animate clips added for audit IC-12;
+  `Block1` is guard only. The original rig tasks had expired, so the clips were
+  made on a fresh rig of the same mesh and retargeted onto the admitted
+  skeleton through the bind pose (`tools/iron-crown-clips/retarget-clips.mjs`,
+  records in `aura-evidence/meshy/ironcrown*.ic12-clips.json`). An asset whose animation metadata
   lacks a mapped clip throws `FIGHTER_CLIP_MISSING` at boot. Controllers
   cross-fade the embedded GLB clip names directly so the runtime's
   `animation.clip` spec resolves exactly under `A3D_QR_ANIMATION` clip-drive.
