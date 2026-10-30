@@ -14,6 +14,8 @@ import type { RendererHost } from "./RendererHost";
 import { Scene } from "@aura3d/scene";
 import type { PostPipelineOptions } from "../contracts/post";
 import { webgl2DeviceHost } from "../webgl2/Counters";
+import type { WebGL2DeviceHost } from "../webgl2/DeviceHost";
+import { type OutlineTargetOptions, outlineTargetPassFor, outlineTargetsOf } from "./OutlineTargets";
 import { executePostGraphWebGL2 } from "../webgl2/LegacyPost";
 import type { TemporalGpuBindings } from "../TemporalHistory";
 import { recordPostSkipped } from "./postSkipped";
@@ -197,8 +199,16 @@ function isHdrRenderTarget(target: RenderTarget): boolean {
   return target.colorTexture.format === "rgba16f" || target.colorTexture.format === "rgba32f";
 }
 
+/** GU47 E-E: the chain's options without the outline (a targeted outline runs after the chain instead). */
+function withoutOutline(postprocess: RendererPostProcessOptions): RendererPostProcessOptions {
+  const { outline: _outline, ...rest } = postprocess;
+  return rest;
+}
+
 export function postprocessRequiresDepthTexture(postprocess: RendererPostProcessOptions): boolean {
   return Boolean(
+    // GU47 E-E: a targeted outline tests its mask against scene depth so hidden target pixels get no ink.
+    outlineTargetsOf(postprocess.outline) !== null ||
     (postprocess.volumetricLight && !postprocess.volumetricLight.depth) ||
     (postprocess.depthOfField && !postprocess.depthOfField.depth) ||
     (postprocess.contactShadow && !postprocess.contactShadow.depth) ||
@@ -372,11 +382,54 @@ export class RendererPostprocessPipeline {
 
   executePostprocess(postprocess: RendererPostProcessOptions, ownedTargets: RenderTarget[], outputTarget?: RenderTarget): void {
     const pooled = qrTiersOn() ? [] as RenderTarget[] : null;
+    // GU47 E-E: an outline with `targets` inks only those nodes' silhouettes, so the chain runs without the
+    // full-frame luma outline and the target ink blends onto the chain's output afterwards. No `targets`: unchanged.
+    const outlineTargets = outlineTargetsOf(postprocess.outline);
     try {
-      this.executePostprocessChain(postprocess, ownedTargets, outputTarget, pooled);
+      this.executePostprocessChain(outlineTargets ? withoutOutline(postprocess) : postprocess, ownedTargets, outputTarget, pooled);
+      if (outlineTargets) this.executeOutlineTargets(postprocess, outlineTargets, ownedTargets[0], outputTarget);
     } finally {
       this.releaseChainTargets(pooled);
     }
+  }
+
+  /**
+   * GU47 E-E: the targeted outline pass (`OutlineTargets.ts`): a mask of only the target items, then a ring of the
+   * outline colour `width` px wide around the mask's visible silhouette, blended onto the final output.
+   */
+  private executeOutlineTargets(
+    postprocess: RendererPostProcessOptions,
+    targets: readonly string[],
+    forwardTarget: RenderTarget | undefined,
+    outputTarget: RenderTarget | undefined
+  ): void {
+    const device = this.host.device;
+    if (device.kind === "webgpu") {
+      recordPostSkipped("OUTLINE_TARGETS_WEBGL2_ONLY");
+      return;
+    }
+    const frame = postprocess.postFrameContext;
+    const viewProjection = postprocess.cameraFrame?.viewProjectionMatrix;
+    if (!frame || !viewProjection) {
+      recordPostSkipped("OUTLINE_TARGETS_FRAME_CONTEXT_MISSING");
+      return;
+    }
+    const sceneDepth = frame.sceneDepth.available ? frame.sceneDepth.texture : null;
+    // The forward target may be multisampled; its depth texture holds resolved depth only after the blit.
+    if (sceneDepth && forwardTarget) webgl2DeviceHost(device)?.resolveMultisampleTarget(forwardTarget as Parameters<WebGL2DeviceHost["resolveMultisampleTarget"]>[0]);
+    const outline = (typeof postprocess.outline === "object" ? postprocess.outline : {}) as OutlineTargetOptions;
+    outlineTargetPassFor(device).execute({
+      items: frame.items,
+      targets,
+      viewProjectionMatrix: viewProjection,
+      width: this.host.width,
+      height: this.host.height,
+      ...(outline.color ? { color: outline.color } : {}),
+      ...(outline.width !== undefined ? { radius: outline.width } : {}),
+      ...(outline.opacity !== undefined ? { opacity: outline.opacity } : {}),
+      sceneDepth,
+      output: outputTarget ?? null
+    });
   }
 
   private executePostprocessChain(postprocess: RendererPostProcessOptions, ownedTargets: RenderTarget[], outputTarget: RenderTarget | undefined, pooled: RenderTarget[] | null): void {
