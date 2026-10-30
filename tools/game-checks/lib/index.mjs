@@ -1,7 +1,10 @@
 // Static checks for shipped games. Pure Node, no dependencies. See docs/agents/lessons-learned.md for why each exists.
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { join, relative, sep } from "node:path";
+import { basename, join, relative, sep } from "node:path";
+import { LUMA_BANDS_SCHEMA, evaluateBands, loadCapture } from "../../look-metrics/region-luma.mjs";
+import { readArtDirectionAudit } from "./art-direction.mjs";
 
 const SOURCE_EXT = /\.(?:[cm]?[jt]sx?|html|css|json)$/;
 const SKIP_DIRS = new Set(["node_modules", "dist", ".vercel", "evidence", "tests", "scripts", "public", "assets", "dist-dev", ".candidate-assets", "art-candidates", "art-review"]);
@@ -380,7 +383,7 @@ export function gitFiles(root) {
   gitCache.set(root, list);
   return list;
 }
-export function resetGitCache() { gitCache = new Map(); releaseCache = new Map(); }
+export function resetGitCache() { gitCache = new Map(); releaseCache = new Map(); gu47Cache = new Map(); }
 
 function checkVercelignore({ root }) {
   const p = join(root, ".vercelignore");
@@ -746,6 +749,288 @@ function checkAppCatalog({ game, root }) {
   }
 }
 
+// ---------- GameUpgrades47 look checks (lane E-I, PRD WP-9 and D1/D2) ----------
+
+/**
+ * Severity of the four GU47 checks (art-direction, look-identity, borrowed-asset / prop-exclusivity, luma-band). They warn
+ * through wave 2; WP-38 flips this to "error" for the 4.7.0 release gate (`run.mjs --all --strict` must pass either way).
+ */
+export const GU47_CHECK_SEVERITY = "warn";
+const RECIPE = "docs/prds/game-upgrades-47/lanes/ei.md";
+const posix = (p) => p.split(sep).join("/");
+
+let gu47Cache = new Map();
+const cached = (key, make) => { if (!gu47Cache.has(key)) gu47Cache.set(key, make()); return gu47Cache.get(key); };
+const liveGames = (inventory) => inventory.games.filter((g) => g.kind === "game" && g.status === "live");
+/** gameSources memoised per run (look-identity and prop-exclusivity read every live game). */
+function sourcesOf(root, game) {
+  return cached(`src|${root}|${game.slug}`, () => gameSources(root, game));
+}
+
+/** Candidate art/direction.ts paths of a game, repo-relative: the app folder first, then the examples it mounts. */
+export function artDirectionCandidates(root, game, src) {
+  const own = [`apps/${game.appFolder}/art/direction.ts`, `apps/${game.appFolder}/src/art/direction.ts`];
+  const examples = src.dirs.map((d) => posix(relative(root, d))).filter((d) => d.startsWith("examples/")).map((d) => `${d}/art/direction.ts`);
+  return [...own, ...examples];
+}
+const findArtDirection = (root, game, src) => artDirectionCandidates(root, game, src).find((rel) => existsSync(join(root, rel))) ?? null;
+
+const AUDIT_PROBLEM = {
+  missing: "art/direction.audit.json is missing: run the game's art-direction unit test, which writes it with writeArtDirectionAudit (tools/game-checks/lib/art-direction.mjs)",
+  "invalid-json": "art/direction.audit.json is not valid JSON: rerun the art-direction unit test",
+  schema: "art/direction.audit.json is not schema aura3d.art-direction-audit/1: rerun the art-direction unit test",
+  stale: "art/direction.audit.json is stale (art/direction.ts changed since the audit): rerun the art-direction unit test and commit both files",
+  "no-violations-array": "art/direction.audit.json has no violations array: write it with writeArtDirectionAudit",
+  "no-id": "the art direction has no id",
+  "no-signature-effect": "the art direction has no signatureEffect (the one effect that survives every tier)",
+  "no-palette": "the art direction has no palette.primary"
+};
+
+/**
+ * Art direction (PRD D1, WP-9): every live game ships art/direction.ts (defineArtDirection) and proves it with
+ * auditArtDirection in a unit test that writes art/direction.audit.json (recipe: docs/prds/game-upgrades-47/lanes/ei.md).
+ * TypeScript is never evaluated here; the check reads the audit record and verifies its sha256 against direction.ts.
+ */
+function checkArtDirection({ game, src, root }) {
+  const rel = findArtDirection(root, game, src);
+  if (!rel) {
+    return [finding("art-direction", GU47_CHECK_SEVERITY, game, `apps/${game.appFolder}/art/direction.ts`, 0, `no art/direction.ts: ship defineArtDirection({ id, genre, palette, lighting, signatureEffect, ... }) in the game's folder and an auditArtDirection unit test that writes art/direction.audit.json (recipe: ${RECIPE})`)];
+  }
+  const audit = readArtDirectionAudit(join(root, rel), root);
+  const auditRel = posix(relative(root, audit.path));
+  return audit.problems.map((p) => {
+    if (p === "violations") {
+      const list = audit.record.violations;
+      const rules = [...new Set(list.map((v) => v?.rule ?? v?.code ?? "?"))].slice(0, 6).join(", ");
+      return finding("art-direction", GU47_CHECK_SEVERITY, game, auditRel, 0, `auditArtDirection reported ${list.length} violation(s) (${rules}): fix the scene or the direction, rerun the test`);
+    }
+    return finding("art-direction", GU47_CHECK_SEVERITY, game, p === "missing" ? rel : auditRel, 0, AUDIT_PROBLEM[p] ?? p);
+  });
+}
+
+const normText = (s) => String(s ?? "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+const normHex = (s) => {
+  const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(s ?? "").trim());
+  if (!m) return null;
+  const h = m[1].toLowerCase();
+  return `#${h.length === 3 ? h.split("").map((c) => c + c).join("") : h}`;
+};
+const normHdriId = (s) => basename(String(s)).replace(/\.(hdr|exr|png|jpg|ktx2)$/i, "").replace(/[_-](1k|2k|4k|8k)$/i, "").toLowerCase();
+
+/** The primary visible HDRI of an audit record: only `background: "hdri"` counts (PRD 6.1). { id, sha256, file } or null. */
+export function primaryHdriOf(root, appFolder, environment) {
+  if (!environment || environment.background !== "hdri" || !environment.hdri) return null;
+  const raw = String(environment.hdri);
+  const id = normHdriId(raw);
+  const candidates = raw.startsWith("/")
+    ? [`apps/${appFolder}/public${raw}`, `public${raw}`]
+    : raw.includes("/")
+      ? [raw]
+      : [1, 2].flatMap((k) => [`public/hdri/${raw}_${k}k.hdr`, `fixtures/environment-corpus/hdri/${raw}_${k}k.hdr`, `assets/library/hdri/${raw}_${k}k.hdr`, `assets/library/hdri/${raw}-${k}k.hdr`]).concat([`public/hdri/${raw}.hdr`]);
+  const file = candidates.find((c) => existsSync(join(root, c))) ?? null;
+  const sha256 = file ? cached(`sha|${root}|${file}`, () => createHash("sha256").update(readFileSync(join(root, file))).digest("hex")) : null;
+  return { id, sha256, file, raw };
+}
+
+/** Audit records of every live game (for look-identity), keyed by slug. */
+function liveArtRecords(root, inventory) {
+  return cached(`art|${root}`, () => {
+    const out = new Map();
+    for (const g of liveGames(inventory)) {
+      const rel = findArtDirection(root, g, sourcesOf(root, g));
+      if (!rel) continue;
+      const audit = readArtDirectionAudit(join(root, rel), root);
+      if (audit.record && audit.record.schema) out.set(g.slug, { game: g, record: audit.record, rel: posix(relative(root, audit.path)) });
+    }
+    return out;
+  });
+}
+
+/**
+ * Look identity (PRD D2, 6.1): no two live games share a primary HDRI (sha256 of the file, or the same catalogue id when
+ * the file is not on disk yet), a signature effect, or a palette (3 or more identical primary hexes, or every primary of the
+ * smaller palette). Reads the art-direction audit records; a game without one is the art-direction check's finding.
+ */
+function checkLookIdentity({ game, root, inventory }) {
+  const records = liveArtRecords(root, inventory);
+  const mine = records.get(game.slug);
+  if (!mine) return [];
+  const out = [];
+  const others = [...records.values()].filter((r) => r.game.slug !== game.slug);
+  const myHdri = primaryHdriOf(root, game.appFolder, mine.record.environment);
+  if (myHdri) {
+    const dup = others.filter((o) => {
+      const h = primaryHdriOf(root, o.game.appFolder, o.record.environment);
+      return h && ((h.sha256 && myHdri.sha256 && h.sha256 === myHdri.sha256) || h.id === myHdri.id);
+    });
+    if (dup.length) out.push(finding("look-identity", GU47_CHECK_SEVERITY, game, mine.rel, 0, `primary HDRI "${myHdri.raw}"${myHdri.sha256 ? ` (sha256 ${myHdri.sha256.slice(0, 12)})` : ""} is also the primary sky of ${dup.map((o) => o.game.slug).join(", ")}: pick a free HDRI in the same mood family or an authored sky (PRD 6.1)`));
+  }
+  const effect = normText(mine.record.signatureEffect);
+  if (effect) {
+    const dup = others.filter((o) => normText(o.record.signatureEffect) === effect);
+    if (dup.length) out.push(finding("look-identity", GU47_CHECK_SEVERITY, game, mine.rel, 0, `signatureEffect "${mine.record.signatureEffect}" is shared with ${dup.map((o) => o.game.slug).join(", ")}: each live game owns its signature effect`));
+  }
+  const primaries = new Set((mine.record.palette?.primary ?? []).map(normHex).filter(Boolean));
+  if (primaries.size) {
+    const dup = others.flatMap((o) => {
+      const theirs = new Set((o.record.palette?.primary ?? []).map(normHex).filter(Boolean));
+      const common = [...primaries].filter((h) => theirs.has(h));
+      const floor = Math.min(primaries.size, theirs.size);
+      return common.length >= 3 || (common.length >= 2 && common.length === floor) ? [`${o.game.slug} (${common.join(" ")})`] : [];
+    });
+    if (dup.length) out.push(finding("look-identity", GU47_CHECK_SEVERITY, game, mine.rel, 0, `palette.primary is shared with ${dup.join(", ")}: give the game its own primary hexes`));
+  }
+  return out;
+}
+
+/** Every asset id in the root and per-app / per-example manifests: id -> { root: bool, apps: Set<appFolder>, source }. */
+function assetUniverse(root) {
+  return cached(`assets|${root}`, () => {
+    const ids = new Map();
+    const add = (rel, app) => {
+      let json;
+      try { json = JSON.parse(readFileSync(join(root, rel), "utf8")); } catch { return; }
+      for (const a of Array.isArray(json?.assets) ? json.assets : []) {
+        if (typeof a?.id !== "string") continue;
+        const e = ids.get(a.id) ?? { root: false, apps: new Set(), source: null };
+        if (app) e.apps.add(app);
+        else { e.root = true; e.source = typeof a.source === "string" ? a.source : null; }
+        ids.set(a.id, e);
+      }
+    };
+    add("aura.assets.json", null);
+    for (const base of ["apps", "examples"]) {
+      if (!existsSync(join(root, base))) continue;
+      for (const d of readdirSync(join(root, base))) {
+        for (const rel of [`${base}/${d}/aura.assets.json`, `${base}/${d}/assets/aura.assets.json`]) if (existsSync(join(root, rel))) add(rel, `${base}/${d}`);
+      }
+    }
+    return ids;
+  });
+}
+
+/**
+ * Owner of an asset id: the longest `assetOwners.prefixes` entry it starts with (at a camel-case boundary), else the one app
+ * whose own manifest lists it, else the app its root-manifest source sits in. Owners are live slugs or retired app folders.
+ */
+export function assetOwnerOf(id, terms, universe, inventory) {
+  const prefixes = terms.assetOwners?.prefixes ?? {};
+  let best = null;
+  for (const p of Object.keys(prefixes)) {
+    if (id.startsWith(p) && (id.length === p.length || /[A-Z0-9_]/.test(id[p.length])) && (!best || p.length > best.length)) best = p;
+  }
+  if (best) return { owner: prefixes[best], via: `prefix ${best}` };
+  const slugOf = (dir) => liveGames(inventory).find((g) => `apps/${g.appFolder}` === dir)?.slug ?? dir;
+  const e = universe.get(id);
+  if (e && !e.root && e.apps.size === 1) return { owner: slugOf([...e.apps][0]), via: "its own manifest" };
+  const m = e?.source ? /^apps\/([^/]+)\//.exec(e.source) : null;
+  if (m) return { owner: slugOf(`apps/${m[1]}`), via: "manifest source" };
+  return null;
+}
+
+const isGenericAsset = (id, terms) => (terms.assetOwners?.generic ?? []).some((p) => id === p || (id.startsWith(p) && /[A-Z0-9_]/.test(id[p.length] ?? "")));
+const MULTI_WORD = /[a-z][A-Z0-9]/;
+
+/**
+ * Asset ids a game references: multi-word ids anywhere in its code, one-word ids only as `assets.<id>`, `assets["<id>"]` or a
+ * manifest `"id"`. An id that only another app's own manifest lists is not loadable here, so a match is a coincidence (an
+ * audio cue or a variable named like it) and is skipped.
+ */
+function assetKeysUsed(root, game) {
+  return cached(`used|${root}|${game.slug}`, () => {
+    const universe = assetUniverse(root);
+    const src = sourcesOf(root, game);
+    const ownDirs = new Set(src.dirs.map((d) => posix(relative(root, d))));
+    const used = new Map();
+    for (const f of src.files) {
+      if (!CODE_KIND.test(f.kind) && f.kind !== "json") continue;
+      const lines = f.text.split("\n");
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const hit = (id) => {
+          const e = universe.get(id);
+          if (!e || used.has(id) || (!e.root && ![...e.apps].some((a) => ownDirs.has(a)))) return;
+          used.set(id, { f, no: i + 1 });
+        };
+        for (const m of line.matchAll(/[A-Za-z_][A-Za-z0-9_]{2,}/g)) if (MULTI_WORD.test(m[0])) hit(m[0]);
+        for (const m of line.matchAll(/\bassets\s*(?:\.\s*([A-Za-z_]\w*)|\[\s*["'`]([A-Za-z_]\w*)["'`]\s*\])|"id"\s*:\s*"([A-Za-z_]\w*)"/g)) hit(m[1] ?? m[2] ?? m[3]);
+      }
+    }
+    return used;
+  });
+}
+
+/**
+ * Borrowed asset (PRD D2, IC47-A1, LINKS-08): a live game references an asset key owned by another game or app (by its
+ * id prefix in terms.json `assetOwners.prefixes`, its own manifest or its manifest source). Escape hatch on the line:
+ * `// borrowed-asset: ok`.
+ */
+function checkBorrowedAsset({ game, root, terms, inventory }) {
+  const universe = assetUniverse(root);
+  const out = [];
+  for (const [id, at] of assetKeysUsed(root, game)) {
+    if (isGenericAsset(id, terms) || okMarker(at.f, at.no, "borrowed-asset")) continue;
+    const owner = assetOwnerOf(id, terms, universe, inventory);
+    if (!owner || owner.owner === game.slug) continue;
+    out.push(finding("borrowed-asset", GU47_CHECK_SEVERITY, game, at.f.rel, at.no, `asset key "${id}" belongs to ${owner.owner} (${owner.via}): replace it with an asset this game owns (D2: no borrowed keys across games)`));
+  }
+  return out;
+}
+
+/**
+ * Prop exclusivity (PRD D2): no two live games reference the same non-generic asset key that neither owns (a key another
+ * game owns is reported to the borrower by borrowed-asset). Generic engine assets: terms.json `assetOwners.generic`.
+ * Escape hatch on the line: `// prop-exclusivity: ok`.
+ */
+function checkPropExclusivity({ game, root, terms, inventory }) {
+  const universe = assetUniverse(root);
+  const out = [];
+  const mine = assetKeysUsed(root, game);
+  const others = liveGames(inventory).filter((g) => g.slug !== game.slug);
+  for (const [id, at] of mine) {
+    if (isGenericAsset(id, terms) || okMarker(at.f, at.no, "prop-exclusivity")) continue;
+    const owner = assetOwnerOf(id, terms, universe, inventory);
+    if (owner && owner.owner !== game.slug) continue; // borrowed-asset reports it
+    const sharers = others.filter((g) => assetKeysUsed(root, g).has(id) && !(owner && owner.owner === g.slug)).map((g) => g.slug);
+    if (owner?.owner === game.slug || sharers.length === 0) continue;
+    out.push(finding("prop-exclusivity", GU47_CHECK_SEVERITY, game, at.f.rel, at.no, `asset key "${id}" is also used by ${sharers.join(", ")}: no two live games share a non-generic asset key (D2); give each game its own`));
+  }
+  return out;
+}
+
+const fmtMiss = (m) => `${m.region === "frame" ? "" : `${m.region} `}${m.metric}${m.value === null || m.value === undefined ? "" : `=${m.value}`}${m.reason ? ` (${m.reason})` : ` not in [${m.min ?? ""}, ${m.max ?? ""}]`}`;
+
+/**
+ * Luma band (PRD 1.5, 7.2, WP-9): the committed steady-state capture `evidence/game-upgrades-47/<slug>/luma-after.json`
+ * (decode-luma output) sits inside the bands the game declares in `luma-bands.json` (schema aura3d.luma-bands/1, see
+ * tools/look-metrics/region-luma.mjs), or the PRD default band when none is declared. Blank frames and shots taken while
+ * textures were still uploading always miss.
+ */
+function checkLumaBand({ game, root }) {
+  const dir = `evidence/game-upgrades-47/${game.slug}`;
+  const bandsRel = `${dir}/luma-bands.json`;
+  const captureRel = `${dir}/luma-after.json`;
+  const hasBands = existsSync(join(root, bandsRel));
+  const decode = `node evidence/audit-fix/e5/decode-luma.mjs after=<acr-run.log> --out ${dir}`;
+  if (!existsSync(join(root, captureRel))) {
+    return [finding("luma-band", GU47_CHECK_SEVERITY, game, captureRel, 0, hasBands
+      ? `luma-bands.json is declared but no steady-state capture is committed: capture remotely, then ${decode}`
+      : `no committed steady-state capture (luma-after.json) and no declared luma-bands.json: declare the WP's bands and commit the decoded after-capture (${decode})`)];
+  }
+  let spec = null;
+  if (hasBands) {
+    try { spec = JSON.parse(readFileSync(join(root, bandsRel), "utf8")); } catch { spec = undefined; }
+    if (!spec || spec.schema !== LUMA_BANDS_SCHEMA) return [finding("luma-band", GU47_CHECK_SEVERITY, game, bandsRel, 0, `luma-bands.json is not valid ${LUMA_BANDS_SCHEMA} JSON`)];
+  }
+  let rows;
+  try { rows = loadCapture(join(root, captureRel)).metas; } catch { rows = []; }
+  const results = evaluateBands(rows, spec, { slug: game.slug });
+  if (results.length === 0) return [finding("luma-band", GU47_CHECK_SEVERITY, game, captureRel, 0, `no steady-state GL_META rows for ${game.slug} (settle-<s>s shots with s >= 20) in luma-after.json`)];
+  const out = results.filter((r) => !r.pass).map((r) => finding("luma-band", GU47_CHECK_SEVERITY, game, captureRel, 0, `${r.target} ${r.id}: ${r.misses.slice(0, 3).map(fmtMiss).join("; ")}${r.misses.length > 3 ? ` (+${r.misses.length - 3} more)` : ""}`));
+  if (!hasBands) out.push(finding("luma-band", GU47_CHECK_SEVERITY, game, bandsRel, 0, "no luma-bands.json: the capture was checked against the PRD default band only (darkFrac <= 0.6, clipFrac <= 0.05); declare the WP's acceptance bands"));
+  return out;
+}
+
 function dedupe(list) {
   const seen = new Set();
   return list.filter((f) => { const k = `${f.check}|${f.game}|${f.file}|${f.line}|${f.message}`; if (seen.has(k)) return false; seen.add(k); return true; });
@@ -774,7 +1059,12 @@ export const GAME_CHECKS = {
   "brand-identifiers": checkBrandIdentifiers,
   "upgrade-guide": checkUpgradeGuide,
   "page-parity": checkPageParity,
-  "app-catalog": checkAppCatalog
+  "app-catalog": checkAppCatalog,
+  "art-direction": checkArtDirection,
+  "look-identity": checkLookIdentity,
+  "borrowed-asset": checkBorrowedAsset,
+  "prop-exclusivity": checkPropExclusivity,
+  "luma-band": checkLumaBand
 };
 export const GLOBAL_CHECKS = { vercelignore: checkVercelignore, counts: checkCounts, "meshy-cap": checkMeshyCap, skin: checkSkin };
 
@@ -794,8 +1084,9 @@ export function runChecks({ root, slugs = "all", only, global = slugs === "all",
   }
   const enabled = (id) => !only || only.includes(id);
   const findings = [];
+  gu47Cache = new Map(); // memoised sources, manifests and audit records live for one run only
   for (const game of games) {
-    const src = gameSources(root, game);
+    const src = sourcesOf(root, game);
     for (const [id, fn] of Object.entries(GAME_CHECKS)) if (enabled(id)) findings.push(...fn({ game, src, terms, root, inventory }));
   }
   if (global) for (const [id, fn] of Object.entries(GLOBAL_CHECKS)) if (enabled(id)) findings.push(...fn({ root, terms, inventory, env }));
