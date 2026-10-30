@@ -1,0 +1,22 @@
+{
+  "schema": "gu47.budget/1",
+  "slug": "drift-and-deliver-port",
+  "wp": "WP-28",
+  "limits": { "drawCalls": 130, "triangles": 1300000, "pageMB": 22, "fpsDropMaxPct": 15, "shadowPassDrawsReportedSeparately": true },
+  "note": "before: PRD WP-28 'Today' line (drive, 4.6.0, software WebGL2) and evidence/drift-and-deliver-port/README.md round 3; after: phase 2 (remote capture). Triangles before = 125,948 city + 135,844 props + GLB traffic/landmarks (not measured as a frame total).",
+  "variants": {
+    "golden":   { "before": { "drawCalls": 83, "triangles": null, "textureBytes": null, "pageMB": 16, "routeJsGzipDeltaKB": 0, "runnerFps": null, "meanLuma": 113, "p5": 66, "p95": 170, "saturation": 0.15 }, "after": null },
+    "sunset":   { "before": { "drawCalls": 83, "triangles": null, "textureBytes": null, "pageMB": 16, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null },
+    "bluehour": { "before": { "drawCalls": 83, "triangles": null, "textureBytes": null, "pageMB": 16, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null },
+    "original": { "before": { "drawCalls": 83, "triangles": null, "textureBytes": null, "pageMB": 16, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null }
+  },
+  "expectedDrawDelta": {
+    "GC-L4 sodium pool (5 points) + GC-L5 headlight spot": 0,
+    "GC-V1 skid ring (1 draw), tyre smoke + nitro (runtime VFX batches)": 3,
+    "GC-V2 beacon ring + objective ring": 1,
+    "GC-S4 harbour water (shader swap on the existing quad)": 0,
+    "GC-S1 sky shader (existing dome)": 0,
+    "GC-L2 third cascade (shadow pass, reported separately)": 0,
+    "GC-P1 grain + motion blur (post stages, not draws)": 0
+  }
+}
