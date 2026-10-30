@@ -465,6 +465,8 @@ export class Prd03PostSurface implements AuraPostSurface {
   private requestedTier: AuraQualityTier | "auto" | null = null;
   /** GU47 E-C (EC-5): this app's runtime effect overrides (`setEffect` / `setEffectEnabled`). */
   private readonly runtimeOverrides: RuntimePostOverrides;
+  /** Releases of the passes this surface registered and that are still live. */
+  private readonly releases = new Set<() => void>();
 
   constructor(
     private readonly flags: QrFlags,
@@ -477,13 +479,28 @@ export class Prd03PostSurface implements AuraPostSurface {
   addPostPass(pass: AuraCustomPostPass): () => void {
     if (!this.flags.on("A3D_QR_POST")) return () => { /* stub chain: release is a no-op */ };
     const descriptor = customPassToDescriptor(pass);
-    const release = registerPostPass(descriptor);
-    return () => {
+    const unregister = registerPostPass(descriptor);
+    const release = () => {
+      if (!this.releases.delete(release)) return;
       // SH-03: removing a pass leaves no residue — registry entry AND staged
       // setPassUniform overrides both go away.
       passUniformOverrides.delete(descriptor.id);
-      release();
+      unregister();
     };
+    this.releases.add(release);
+    return release;
+  }
+
+  /**
+   * GU47 phase 2: `app.dispose()` releases every pass this app added. The C-13
+   * registry is page-global, so a pass the app never released used to outlive
+   * it: the next app on the page that added a pass with the same name threw
+   * `REGISTRY_DUPLICATE:prd03.custom.<name>`, and any other app kept running
+   * the dead app's pass. Releasing is idempotent (the returned release and
+   * dispose may both run).
+   */
+  dispose(): void {
+    for (const release of [...this.releases]) release();
   }
 
   /**
