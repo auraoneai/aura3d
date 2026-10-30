@@ -12,6 +12,7 @@ import { SALTWIND_LOOK, directionFromAngles, lookModeFrom, type SaltwindLookRow 
 import { SPRAY_POINTS, sprayAmount, sprayWind } from "./art/spray";
 import { ROTOR_BLADES, landmarkPlacements, rotorAngle, type LandmarkKind, type LandmarkPlacement } from "./art/landmarks";
 import { createBodyLean } from "./art/lean";
+import { SALTWIND_LUT_INTENSITY } from "./art/lut";
 import { createShotDirector, orbitEye, type ShotFrame } from "./art/shots";
 import { NITRO_TRAIL, SKID_INTERVAL, fxForEvents, registerSaltwindFx, type SaltwindFxKind } from "./art/fx";
 import { levelLayout, roadProfile, trafficPiece, pieceSpec, type Level } from "./course";
@@ -484,6 +485,13 @@ export const ROUTE_HDRI = defineAuraAssets({
 });
 const HDRI_FOR_ROUTE = { sunbreak: ROUTE_HDRI.saltwindHdriSunbreak, redline: ROUTE_HDRI.saltwindHdriRedline, halo: ROUTE_HDRI.saltwindHdriHalo } as const;
 
+/** RH47-14: the per-route display LUTs (`art/lut.ts` writes them), served from the example's assets. */
+export const ROUTE_LUT_URL = {
+  sunbreak: new URL("./assets/luts/saltwind-sunbreak.cube", import.meta.url).pathname,
+  redline: new URL("./assets/luts/saltwind-redline.cube", import.meta.url).pathname,
+  halo: new URL("./assets/luts/saltwind-halo.cube", import.meta.url).pathname
+} as const;
+
 /** Name of the route IBL node: the route and the catalogue file, so `diagnostics().lighting.environment.source` names both. */
 export const routeIblName = (row: SaltwindLookRow): string => `route IBL ${row.id} ${row.hdri}_1k`;
 
@@ -538,7 +546,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
   if (enabled("post")) {
     builder
       .add(effects.bloom({ name: "bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold, scatter: look.bloom.radius }))
-      .add(effects.colorGrade({ name: "grade", exposure: look.grade.exposure, contrast: look.grade.contrast, saturation: look.grade.saturation, ...(row ? { temperature: row.grade.temperature, tint: row.grade.tint } : {}) }))
+      .add(effects.colorGrade({ name: "grade", exposure: look.grade.exposure, contrast: look.grade.contrast, saturation: look.grade.saturation, ...(row ? { temperature: row.grade.temperature, tint: row.grade.tint, ...(enabled("lut") ? { lut: ROUTE_LUT_URL[row.id], lutIntensity: SALTWIND_LUT_INTENSITY } : {}) } : {}) }))
       .add(effects.vignette({ name: "vignette", intensity: look.vignette, smoothness: 0.7 }))
       .add(effects.antiAlias({ name: "fxaa", mode: "fxaa" }));
     if (row && row.post.grain > 0) builder.add(effects.filmGrain({ name: "grain", intensity: row.post.grain }));
