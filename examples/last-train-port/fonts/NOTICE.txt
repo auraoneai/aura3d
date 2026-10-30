@@ -1,0 +1,11 @@
+Lamplight Line HUD fonts (GU47 WP-31 LT-17) - licensed web cuts, not open source
+
+Unmodified copies of packages/game/src/fonts (see that NOTICE.txt for the licence
+terms: AuraOne-served pages only, no redistribution, no conversion).
+
+file | face | foundry | library path | bytes | sha256
+national-2-narrow-400.woff2 | National 2 Narrow (400) | Klim Type Foundry | sans/National-2/National2NarrowWeb-Regular.woff2 | 37963 | 81f0e58f1c5a671a372690db671191408e989ce223446a0b24ec176e6cb3b09f
+national-2-narrow-700.woff2 | National 2 Narrow (700) | Klim Type Foundry | sans/National-2/National2NarrowWeb-Bold.woff2 | 39488 | 79330976e2b662903d820ae0879af81902867e4b82b6459f674399d6a0255b8e
+
+The departure-board results use "TT Commons Pro Mono" and body text "Graphik Web",
+both already served from /fonts/local.css.

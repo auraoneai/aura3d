@@ -18,7 +18,11 @@ import {
 } from "./sim";
 import { createTramPresenter, viewOf } from "./presentation";
 import { TrainSound, diffCues, type AudioState } from "./audio";
-import { TEMPERAMENT_COLORS, buildWorld, weatherOf, type WorldRuntime } from "./world";
+import { LOOK, TEMPERAMENT_COLORS, buildWorld, weatherOf, type WorldRuntime } from "./world";
+import "./enamel.css";
+
+/* GU47 LT-17: the railway-enamel HUD (enamel.css) dresses the band look; ?look=original keeps today's HUD. */
+if (LOOK === "bands") document.documentElement.classList.add("enamel");
 
 /** Loaded at boot with `fetch`: the example dev server serves `.json` as application/json, which module imports reject. */
 let data: SimData;
