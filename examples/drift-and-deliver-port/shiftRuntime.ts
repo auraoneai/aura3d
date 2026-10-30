@@ -12,7 +12,7 @@
  */
 import { geometry, material, type AuraApp } from "@aura3d/engine";
 import { createDaylight, lookFrame, type Daylight } from "./daylight";
-import { GOD_RAYS, facadeMaterial, festoonMaterial, godRayLightPosition, type LookRig } from "./look";
+import { GOD_RAYS, facadeMaterial, festoonMaterial, type LookRig } from "./look";
 import { festoonIntensity } from "./festoons";
 import { godRayStrength, phaseAt, phaseIdAt, todSeconds, type PhaseId, type PhaseRow } from "./phases";
 import { COURIER_TEAL, FX_KINDS, SMOKE_RATE, DRIZZLE, SPEED_LINES, SkidMarks, deliveryKind, drizzleAt, drizzleSpawn, fxScale, registerCourierFx, skidSpec, speedLineSpawn } from "./fx";
@@ -121,11 +121,11 @@ export function createShiftRuntime(app: AuraApp, look: LookRig, lamps: readonly 
         festoonShown = fe;
         node("festoons")?.setMaterial(festoonMaterial(row.festoon));
       }
-      // GC-S5 sunset god rays: intensity and light position only when the quantised strength steps
+      // GC-S5 sunset god rays: enabled and intensity only when the quantised strength steps
       const rays = godRayStrength(row.sun.elevationDeg);
       if (rays !== raysShown) {
         raysShown = rays;
-        app.post?.setEffect("volumetricFog", { enabled: rays > 0, intensity: GOD_RAYS.intensity * rays, lightPosition: godRayLightPosition(row.sun, car) });
+        app.post?.setEffect("volumetricFog", { enabled: rays > 0, intensity: GOD_RAYS.intensity * rays });
       }
       // GC-L4 sodium pool
       repick -= dt;

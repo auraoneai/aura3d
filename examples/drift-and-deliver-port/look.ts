@@ -174,7 +174,7 @@ export function paintTextures(quality: "high" | "low", look: LookMode = "origina
 function facadeNormal(albedo: CanvasRenderingContext2D, px: number): TextureHandle {
   const field = heightField(albedo.getImageData(0, 0, px, px).data, px, px, 2);
   const n = canvas(field.w, field.h);
-  n.g.putImageData(new ImageData(heightToNormal(field), field.w, field.h), 0, 0);
+  n.g.putImageData(new ImageData(heightToNormal(field) as Uint8ClampedArray<ArrayBuffer>, field.w, field.h), 0, 0);
   return repeating(texture.canvas({ canvas: n.c, colorSpace: "linear" }));
 }
 
@@ -291,13 +291,7 @@ export function shiftShadow(quality: "high" | "low") {
 export const TILT = { bandCenter: 0.56, bandWidth: 0.2, maxBlur: 6 } as const;
 
 /** GC-S5: the sunset shafts (thin warm inscatter, scaled by `godRayStrength`). */
-export const GOD_RAYS = { density: 0.06, color: "#ffb070", intensity: 0.6, godRayDensity: 0.35, distance: 1500 } as const;
-
-/** Where the volumetric pass puts its light: far out along the sun direction from `at`. */
-export function godRayLightPosition(sun: { azimuthDeg: number; elevationDeg: number }, at: { x: number; z: number }): [number, number, number] {
-  const d = lightDir(sun);
-  return [at.x + d[0] * GOD_RAYS.distance, Math.max(20, d[1] * GOD_RAYS.distance), at.z + d[2] * GOD_RAYS.distance];
-}
+export const GOD_RAYS = { density: 0.06, color: "#ffb070", intensity: 0.6, godRayDensity: 0.35 } as const;
 
 /** GC-V3: festoon bulb material at a festoon strength 0..1 (quantised). */
 export const festoonMaterial = (strength: number) => material.emissive({ color: FESTOON.color, emissive: FESTOON.color, emissiveIntensity: festoonIntensity(strength) });
@@ -364,9 +358,9 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
         b.add(effects.filmGrain({ name: "grain", intensity: row.grain }));
         b.add(effects.motionBlur({ name: "motion-blur", intensity: 0.3 }));
         // GC-P3 tilt-shift toy-city band on the title and results screens only (shiftRuntime.menu toggles it)
-        b.add(effects.depthOfField({ name: "title-tilt", enabled: true, maxBlur: TILT.maxBlur, tiltShift: { bandCenter: TILT.bandCenter, bandWidth: TILT.bandWidth } }));
+        b.add(effects.depthOfField({ name: "title-tilt", maxBlur: TILT.maxBlur, tiltShift: { bandCenter: TILT.bandCenter, bandWidth: TILT.bandWidth } }));
         // GC-S5 sunset god rays down the canyons (High only; intensity 0 away from sunset, driven by shiftRuntime)
-        b.add(effects.volumetricFog({ name: "god-rays", enabled: godRayStrength(row.sun.elevationDeg) > 0, density: GOD_RAYS.density, color: GOD_RAYS.color, intensity: GOD_RAYS.intensity * godRayStrength(row.sun.elevationDeg), godRayDensity: GOD_RAYS.godRayDensity, lightPosition: godRayLightPosition(row.sun, opts.start) }));
+        b.add(effects.volumetricFog({ name: "god-rays", density: GOD_RAYS.density, color: GOD_RAYS.color, intensity: GOD_RAYS.intensity * godRayStrength(row.sun.elevationDeg), godRayDensity: GOD_RAYS.godRayDensity }));
       }
       if (opts.aa !== false) b.add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
     }
