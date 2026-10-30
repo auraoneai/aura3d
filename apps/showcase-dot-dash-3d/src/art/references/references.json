@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "dot-dash-3d",
+  "entries": [
+    {
+      "file": "references/references.json#macro-board",
+      "source": "genre comparable: macro product photography of populated circuit boards (glossy solder mask, raised copper, a millimetre-thin focal plane)",
+      "licence": "reference-only",
+      "why": "Glossy solder mask, copper traces and silver pads read at macro scale while everything off the focal plane melts into blur"
+    },
+    {
+      "file": "references/references.json#lamp-bench",
+      "source": "genre comparable: a night-time electronics workbench lit by one articulated desk lamp (warm cone, dark room, walnut top)",
+      "licence": "reference-only",
+      "why": "One warm cone of light pools on the board from the left, the bench falls away into warm dark wood and the room stays dark"
+    },
+    {
+      "file": "references/references.json#maze-chase",
+      "source": "shipped comparable: top-down maze-chase arcade boards (dot corridors, four pursuer personalities, a power-up reversal)",
+      "licence": "reference-only",
+      "why": "Corridor, collectible and pursuer read at a glance from a fixed high camera; each pursuer keeps its own colour and silhouette"
+    }
+  ]
+}

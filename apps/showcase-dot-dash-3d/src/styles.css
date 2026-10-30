@@ -10,6 +10,9 @@
   --dd-red: #ff4040;
   --dd-panel: rgba(12, 20, 17, 0.92);
   --dd-edge: rgba(255, 178, 62, 0.3);
+  /* workbench silkscreen (GU47 WP-23) */
+  --dd-pad: #e2b54a;
+  --dd-silk: #d9d3bf;
 }
 
 * { box-sizing: border-box; }
@@ -100,23 +103,27 @@ html, body {
 
 .dd-row { display: flex; gap: 8px; align-items: stretch; }
 
+/* DD47-H1 silkscreen HUD: each chip is a patch of dark solder mask with a gold pad on its left edge and a cream
+   silkscreen label; lives are SMD LEDs. Contrast on #0d1e17: ink 14.7:1, silk 11.5:1, gold 9.0:1, LED cyan 13.0:1. */
 .dd-chip {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(180deg, rgba(14, 22, 19, 0.94), rgba(12, 20, 17, 0.82));
-  border: 1px solid var(--dd-edge);
-  border-radius: 8px;
-  padding: 6px 11px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  background: linear-gradient(180deg, rgba(13, 30, 23, 0.95), rgba(10, 22, 17, 0.88));
+  border: 1px solid rgba(201, 206, 214, 0.16);
+  border-left: 3px solid var(--dd-pad);
+  border-radius: 3px;
+  padding: 6px 11px 6px 9px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
-.dd-chip .k { font-size: 10px; font-weight: 800; letter-spacing: 0.12em; color: var(--dd-dim); }
-.dd-chip .v { font-size: clamp(15px, 1.15vw, 17px); font-weight: 800; font-variant-numeric: tabular-nums; color: var(--dd-ink); line-height: 1.05; }
-.dd-score-chip { border-color: rgba(69, 232, 255, 0.5); padding-right: 14px; }
+.dd-chip .k { font-size: 10px; font-weight: 500; letter-spacing: 0.14em; color: var(--dd-silk); }
+/* DD47-H1: DIN Pro Medium numerals (public/dd-fonts), tabular so the score does not jitter; Graphik is the fallback. */
+.dd-chip .v { font-family: "DIN Pro", "Graphik Web", sans-serif; font-size: clamp(15px, 1.15vw, 17px); font-weight: 500; font-variant-numeric: tabular-nums; color: var(--dd-ink); line-height: 1.05; }
+.dd-score-chip { border-left-color: var(--dd-cyan); padding-right: 14px; }
 .dd-score-chip .v { font-size: clamp(24px, 2vw, 30px); color: #ffffff; letter-spacing: 0.035em; text-shadow: 0 0 18px rgba(69, 232, 255, 0.3); }
 .dd-hi-chip .v { color: var(--dd-gold); }
-.dd-lives { color: var(--dd-gold) !important; letter-spacing: 0.1em; font-size: clamp(17px, 1.4vw, 21px) !important; }
+.dd-lives { color: var(--dd-cyan) !important; letter-spacing: 0.2em; font-size: clamp(15px, 1.2vw, 18px) !important; text-shadow: 0 0 6px rgba(95, 243, 255, 0.85), 0 0 14px rgba(95, 243, 255, 0.4); }
 
 .dd-orb-chip { border-color: var(--dd-cyan); }
 /* The surge chip shows only during a surge (`.dd-chip` sets display:flex, which beat the hidden attribute). */

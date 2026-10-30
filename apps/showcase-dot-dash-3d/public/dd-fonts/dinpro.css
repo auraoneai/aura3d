@@ -1,0 +1,9 @@
+/* Glint Courier HUD numerals (GU47 DD47-H1): DIN Pro Medium, licensed library font (fonts/sans/DIN-Pro), self-hosted
+   app-locally as WOFF because the library has no WOFF2 cut (E-J note). Labels stay Graphik. */
+@font-face {
+  font-family: "DIN Pro";
+  src: url("./dinpro-medium.woff") format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}

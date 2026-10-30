@@ -2,6 +2,7 @@
 import { game, installQaHooks } from "@aura3d/engine";
 import { createGame, sfxUrl } from "@aura3d/engine/game";
 import { buildScene, bindApp, syncVisuals, wx, wz, cameraPose, setMotionPrefs, tileToScreen } from "./game/world";
+import { registerVfxPack, VFX_KINDS, type VfxPrefs } from "./game/vfx";
 import { st, frame, startRun, bootToTitle, evidenceExtra, GHOST_LABEL } from "./game/sim";
 import { mountUI, tickUI, isPaused, autoPause } from "./game/hud";
 import { FRUIT_LABEL, type MazeId } from "./game/mazes";
@@ -186,11 +187,27 @@ mountUI();
 
 // Reduced motion / reduced flash: the session settings, or the OS preference when the session has none.
 const motionQuery = typeof matchMedia === "function" ? matchMedia("(prefers-reduced-motion: reduce)") : null;
+let vfxPrefs: VfxPrefs = { reducedMotion: false, reducedFlash: false };
 const syncMotionPrefs = (): void => {
   const session = g.session as unknown as { reducedMotion?: boolean; reducedFlash?: boolean } | undefined;
   const osReduce = motionQuery?.matches === true;
-  setMotionPrefs({ reducedMotion: session?.reducedMotion === true || osReduce, reducedFlash: session?.reducedFlash === true || osReduce });
+  const next = { reducedMotion: session?.reducedMotion === true || osReduce, reducedFlash: session?.reducedFlash === true || osReduce };
+  setMotionPrefs(next);
+  // DD47-V1: the preset pack follows the settings (halved counts on reduced motion, no flicker on reduced flash)
+  if (next.reducedMotion !== vfxPrefs.reducedMotion || next.reducedFlash !== vfxPrefs.reducedFlash || !vfxRegistered) {
+    vfxPrefs = next;
+    vfxRegistered = safeRegister(next);
+  }
 };
+let vfxRegistered = false;
+function safeRegister(prefs: VfxPrefs): boolean {
+  try { return registerVfxPack(app.effects, prefs); } catch { return false; }
+}
+/** Fires one pack preset at a tile (effects are optional: a missing runtime never breaks the game). */
+function fx(kind: string, x: number, y: number, h = 0.4): void {
+  if (!vfxRegistered) return;
+  try { app.effects?.burst(kind, [wx(x), h, wz(y)]); } catch { /* effects optional */ }
+}
 syncMotionPrefs();
 motionQuery?.addEventListener?.("change", syncMotionPrefs);
 try { (g.session as unknown as { on?(e: "settings", cb: () => void): void }).on?.("settings", syncMotionPrefs); } catch { /* optional */ }
@@ -243,6 +260,7 @@ if (AUTOSTART) {
 
 void g.ready().then(() => {
   appReady = true;
+  if (!vfxRegistered) vfxRegistered = safeRegister(vfxPrefs);
   document.body.dataset.aura3dReady = "true";
   syncVisuals(0);
   tickUI();
@@ -276,22 +294,27 @@ app.onFrame(({ dt }) => {
     const ev = st.events;
     // ---- sfx + juice on discrete events
     if (ev.dot) g.sound?.cue("dot");
-    if (ev.orb) { g.sound?.cue("orb"); g.juice?.fire("orb"); }
+    if (ev.orb) { g.sound?.cue("orb"); g.juice?.fire("orb"); fx(VFX_KINDS.surgeRing, st.player.px, st.player.py, 0.3); }
     if (ev.ghostEat) {
       g.sound?.cue("ghost"); g.juice?.fire("ghost");
+      const eaten = st.ghosts.find((gh) => gh.id === ev.ghostEat!.ghost);
+      if (eaten) fx(VFX_KINDS.shortCircuit, eaten.px, eaten.py, 0.45);
       eventLog.push({ type: "ghost-eat", label: `${GHOST_LABEL[ev.ghostEat.ghost]} +${ev.ghostEat.points}` });
     }
-    if (ev.fruit) { g.sound?.cue("fruit"); g.juice?.fire("fruit"); eventLog.push({ type: "fruit", label: `${FRUIT_LABEL[ev.fruit.kind as FruitKind]} +${ev.fruit.points}` }); }
+    if (ev.fruit) { fx(VFX_KINDS.solderSpark, st.player.px, st.player.py); g.sound?.cue("fruit"); g.juice?.fire("fruit"); eventLog.push({ type: "fruit", label: `${FRUIT_LABEL[ev.fruit.kind as FruitKind]} +${ev.fruit.points}` }); }
     if (ev.fruitSpawn) g.sound?.cue("fruitSpawn");
-    if (ev.dash) { g.sound?.cue("dash"); g.juice?.fire("dash"); }
+    if (ev.dash) { g.sound?.cue("dash"); g.juice?.fire("dash"); fx(VFX_KINDS.solderSpark, st.player.px, st.player.py, 0.3); }
     if (ev.ready) g.sound?.cue("ready");
     if (ev.eyesHome) g.sound?.cue("eyes");
     if (ev.death) {
       g.sound?.cue("death"); g.juice?.fire("death");
       killTrail();
-      try {
-        app.effects?.burst("debris", [wx(st.player.px), 0.5, wz(st.player.py)], { count: 44, speed: 6.2, scale: 0.95, color: "#ff5a6e" });
-      } catch { /* effects optional */ }
+      if (vfxRegistered) fx(VFX_KINDS.blownFuse, st.player.px, st.player.py, 0.5);
+      else {
+        try {
+          app.effects?.burst("debris", [wx(st.player.px), 0.5, wz(st.player.py)], { count: 44, speed: 6.2, scale: 0.95, color: "#ff5a6e" });
+        } catch { /* effects optional */ }
+      }
       eventLog.push({ type: "death", label: `caught @${st.score}` });
     }
     if (ev.clear) { g.sound?.cue("clear"); g.juice?.fire("clear"); }

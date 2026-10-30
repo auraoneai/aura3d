@@ -1,0 +1,18 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "dot-dash-3d",
+  "note": "WP-23 acceptance bands (PRD DD47-P2, DD47-E2, DD47-L1). Lamp side is the left third (cells left), the far side the right third. Crops are published by world.ts in window.__AURA_QA__.crops.",
+  "default": {
+    "mean": [42, 60],
+    "p95": [200, null],
+    "clipFrac": [null, 0.01],
+    "darkFrac": [null, 0.12],
+    "b": [30, null],
+    "cells": {
+      "0": { "mean": [10, null] }, "2": { "mean": [10, null] }, "6": { "mean": [10, null] }, "8": { "mean": [10, null] }
+    }
+  },
+  "variants": {
+    "classic": {}, "spiral": {}, "twin": {}, "garden": {}, "foundry": {}, "zerocore": {}
+  }
+}
