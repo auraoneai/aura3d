@@ -88,7 +88,7 @@ export const THEME_LOOKS: readonly ThemeLook[] = [
     sun: { elevationDeg: 55, azimuthDeg: 30, color: "#f4f1ea", intensity: 2.2 },
     hemi: { sky: "#dde3ea", ground: "#8a8a80", intensity: 0.45 },
     sky: { zenith: "#9fb0c2", horizon: "#dfe3e6", ground: "#9aa08c", horizonGlow: 0.25, clouds: { coverage: 0.2, speed: 0.3, color: "#eef0f2" } },
-    fog: { color: "#d4d9de", density: 0.013, heightFalloff: 0.3 },
+    fog: { color: "#d8d4c6", density: 0.013, heightFalloff: 0.3 },
     post: "daylight-outdoor",
     grade: { contrast: 1.05, saturation: 0.96, temperature: -0.04 },
     bloom: { intensity: 0.06, threshold: 1.6 },

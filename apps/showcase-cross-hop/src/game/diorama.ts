@@ -53,7 +53,7 @@ export function dioramaPose(i: CameraInputs): DioramaPose {
   const motion = i.reducedMotion ? 0 : 1;
   const intro = motion * c.introLift * (1 - smooth01(i.sinceStart / c.introSeconds));
   const lift = motion * c.themeLift * Math.sin(Math.PI * smooth01(i.sinceTheme / c.themeSeconds));
-  const push = motion * c.deathPush * smooth01(i.sinceDeath / c.deathSeconds);
+  const push = Number.isFinite(i.sinceDeath) ? motion * c.deathPush * smooth01(i.sinceDeath / c.deathSeconds) : 0;
   const y = c.y + intro + lift;
   const target: [number, number, number] = [i.x, c.targetY, i.z - c.ahead];
   const back: [number, number, number] = [i.x, y, i.z + c.back];

@@ -1,0 +1,11 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "cross-hop",
+  "note": "GU47 WP-24 acceptance bands (PRD CH47-01, CH47-02, CH47-05, CH47-06). Phase 2 commits luma-after.json from the remote capture.",
+  "default": { "darkFrac": [null, 0.05], "clipFrac": [null, 0.01], "spread": [140, null] },
+  "variants": {
+    "cross-hop--theme0": { "clipFrac": [null, 0.002] },
+    "cross-hop--theme3": { "p95": [170, null], "mean": [50, 80] },
+    "cross-hop--theme4": { "p95": [180, null], "mean": [50, 80], "clipFrac": [0.002, 0.02] }
+  }
+}
