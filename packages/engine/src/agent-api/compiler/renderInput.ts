@@ -23,6 +23,7 @@ import { isDirectRenderPath } from "../app/renderPath.js";
 import { authoredPostContextFor } from "../postBridge.js";
 import { createProductionInstanceColors, createProductionInstanceTransforms, createProductionInstanceTransformsFromMatrices, createProductionModelInstanceTransforms, resolveProductionPrimitiveRuntimeState, selectProductionPrimitiveResource } from "./primitives.js";
 import { createProductionRuntimeShadowOptions } from "./shadows.js";
+import { applyNodeMaterialExtras, setMaterialInstanceColorTarget } from "../../production-runtime/ModelMaterialOverrides.js";
 import { camera } from "../nodes/camera.js";
 import { instances } from "../nodes/instances.js";
 import { material } from "../nodes/material.js";
@@ -283,6 +284,11 @@ export function createProductionRuntimeRendererInput(
             ? { instanceColors: prd01InstanceColors(currentNode.instanceColors, modelInstances.length) }
             : {})
         };
+        // GU47 E-D: what the instance colours multiply (`instances.model({ instanceColorTarget })`).
+        for (const item of actorItems) {
+          const itemMaterial = item.material;
+          if (itemMaterial) setMaterialInstanceColorTarget("baseMaterial" in itemMaterial ? itemMaterial.baseMaterial : itemMaterial, currentNode.instanceColorTarget);
+        }
       }
     }
     if (currentNode.instancedModelWarning) runtimeWarnings.add(currentNode.instancedModelWarning);
@@ -351,10 +357,13 @@ export function createProductionRuntimeRendererInput(
         : [1, 1, 1];
       resource.texturedMaterial.setParameter("baseColor", [rgb[0], rgb[1], rgb[2], frame.opacity]);
     }
+    const drawMaterial = resource.texturedMaterial ?? resource.material;
+    // GU47 E-D: the spec's `rim` and the node's `instanceColorTarget` reach the material this draw uses (writes on change only).
+    applyNodeMaterialExtras(drawMaterial, currentState.node.material, currentState.node.instanceColorTarget);
     items.push({
       geometry: resource.geometry,
       ...(resource.shadowGeometry ? { shadowGeometry: resource.shadowGeometry } : {}),
-      material: resource.texturedMaterial ?? resource.material,
+      material: drawMaterial,
       modelMatrix: prd01ModelMatrixCache?.modelMatrix(instancedPrimitiveModelNode(currentState.node), resource.bounds, false, time) ?? createModelMatrix(instancedPrimitiveModelNode(currentState.node), resource.bounds, false, time),
       label: `primitive-${primitiveIndex}:${resource.name}:${currentState.node.name ?? currentState.node.primitive}`,
       castShadow: currentState.node.castShadow,

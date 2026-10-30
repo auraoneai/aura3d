@@ -47,8 +47,46 @@ import type { ContactShadowMaskScope } from "./forward/contactShadowMaskStore.js
 import { FORWARD_DIRECT_LIGHT_CAPACITY, applyClusteredLightingUniforms, applyForwardShadowMapUniforms, resolveForwardClusteredLighting, selectForwardShadowMap } from "./forward/Lighting.js";
 import { flushMultiDrawQueue, submitDraw } from "./forward/DrawSubmit.js";
 import { bindVelocityUniforms } from "./forward/Velocity.js";
+import { A3D_INSTANCE_EMISSIVE_ATTRIBUTE, materialInstanceColorTarget, registerInstanceColorTargetFeature } from "./shaders/chunks/instance_color_target.glsl";
 
 export type { RenderItem };
+
+/**
+ * GU47 E-D: the `prd04.instanceColorTarget` ShaderFeature. Registered when this module loads, so the renderer warmup
+ * sees it, and again (idempotently) by every ForwardPass in case a module cycle deferred the first call. It never selects
+ * for a material that does not carry its parameter, so existing programs are unchanged. (The rim term is the existing
+ * PRD-04 `prd04.rim` feature, registered by `lanes/prd04.ts`; see `shaders/chunks/rim.glsl.ts`.)
+ */
+function ensureGu47ForwardFeatures(): void {
+  registerInstanceColorTargetFeature();
+}
+try {
+  ensureGu47ForwardFeatures();
+} catch {
+  // contracts/program not initialised yet (import cycle): the ForwardPass constructor registers them.
+}
+
+/**
+ * GU47 E-D (ED-8): per-draw uniform extension point. A hook runs for every forward draw after the built-in binds and may
+ * write extra uniforms the program reflects (for example an object-ID mask a post pass reads). No hook is registered by
+ * default, so draws are unchanged. Generated programs can also use `ShaderFeature.bindUniforms`.
+ */
+export interface ForwardDrawHook {
+  readonly id: string;
+  bind(item: RenderItem, shader: RenderShaderProgram, set: (name: string, value: UniformValue) => void): void;
+}
+
+const forwardDrawHooks: ForwardDrawHook[] = [];
+
+/** Registers a per-draw uniform hook; returns its unregister function. A duplicate id throws. */
+export function registerForwardDrawHook(hook: ForwardDrawHook): () => void {
+  if (forwardDrawHooks.some((entry) => entry.id === hook.id)) throw new Error(`FORWARD_DRAW_HOOK_DUPLICATE:${hook.id}`);
+  forwardDrawHooks.push(hook);
+  return () => {
+    const index = forwardDrawHooks.indexOf(hook);
+    if (index >= 0) forwardDrawHooks.splice(index, 1);
+  };
+}
 
 export interface RenderItemDrawRange {
   readonly start: number;
@@ -340,9 +378,14 @@ export class ForwardPass extends BaseRenderPass {
       options.framePass?.writes ?? ["color"]
     );
     this.shaderLibrary = options.shaderLibrary ?? createLeanCoreShaderLibrary();
+    ensureGu47ForwardFeatures();
   }
 
+  /** GU47 E-D: `u_lightCount`/`u_lightData` for `material.custom` programs (`#include <a3d_lights>`), packed once per execute. */
+  private customLightPack: ReturnType<typeof LightUniforms.pack> | undefined;
+
   execute(context: RenderPassContext): void {
+    this.customLightPack = undefined;
     this.skinningPaletteUploads.beginFrame();
     this.frameWidth = context.width;
     this.frameHeight = context.height;
@@ -437,17 +480,20 @@ export class ForwardPass extends BaseRenderPass {
       }
       return;
     }
+    // GU47 E-D: a `material.custom` vertex shader that reads `instanceMatrix` / `instanceColor` draws every instance in
+    // one call from the same per-instance attribute buffer the generated path uses (no split, no per-instance expansion).
+    const authorInstancing = item.instanceTransforms !== undefined && !generated && supportsAuthorInstancing(shader);
     // Phase 6: generated programs only know attribute-matrix instancing — the
     // uniform fallback (`u_instanceMatrices[64]`) exists only in the frozen
     // legacy library, so the >64 split and no-support expansion never apply
     // on this path.
-    if (item.instanceTransforms && !generated && !supportsInstanceAttributes(shader) && instanceTransformCount(item) > MAX_GPU_INSTANCES) {
+    if (item.instanceTransforms && !generated && !authorInstancing && !supportsInstanceAttributes(shader) && instanceTransformCount(item) > MAX_GPU_INSTANCES) {
       for (const batch of splitInstanceTransforms(item.instanceTransforms)) {
         this.drawItem(device, { ...item, instanceTransforms: batch });
       }
       return;
     }
-    if (item.instanceTransforms && !generated && !supportsInstanceAttributes(shader) && !supportsInstanceUniforms(shader)) {
+    if (item.instanceTransforms && !generated && !authorInstancing && !supportsInstanceAttributes(shader) && !supportsInstanceUniforms(shader)) {
       for (const expanded of expandInstancedRenderItem(item)) {
         this.drawItem(device, expanded);
       }
@@ -514,7 +560,14 @@ export class ForwardPass extends BaseRenderPass {
     // may declare (u_time/u_resolution/u_viewMatrix/u_projectionMatrix) — bound
     // only when the program actually reflects them, mirroring applyCameraUniforms.
     applyCustomShaderFrameUniforms(this.options, this.frameWidth, this.frameHeight, shader, uniforms);
+    // GU47 E-D: `a3d_lights` / sun / hemisphere / fog built-ins for `material.custom` programs (reflection-guarded).
+    if (baseMaterial instanceof PortableShaderMaterial) {
+      applyCustomShaderLightingUniforms(this.options, itemFog, shader, uniforms, () => (this.customLightPack ??= LightUniforms.pack(this.options.lights ?? [])));
+    }
     bindVelocityUniforms?.(item, uniforms);
+    if (forwardDrawHooks.length > 0) {
+      for (const hook of forwardDrawHooks) hook.bind(item, shader, (name, value) => uniforms.set(name, value));
+    }
     if (generated && this.lastProgramFeatures) {
       // C-02 `ShaderFeature.bindUniforms` for the features this draw selected.
       bindShaderFeatureUniforms(this.lastProgramFeatures.features, rendererQrFlags(device), item, (name, value) => uniforms.set(name, value));
@@ -534,7 +587,8 @@ export class ForwardPass extends BaseRenderPass {
       // a generated draw without it has no skin attributes (featuresForGeometry).
       this.skinningPaletteUploads.bind(item, item.skinning, baseMaterial, shader, uniforms, device);
     }
-    const instanceBinding = item.instanceTransforms ? this.applyInstanceBinding(device, item, shader, uniforms, generated) : { count: 1 };
+    const instanceBinding = item.instanceTransforms ? this.applyInstanceBinding(device, item, shader, uniforms, generated || authorInstancing) : { count: 1 };
+    if (authorInstancing) uniforms.set("u_a3dInstancing", 1);
     const gpuMorph = item.morphTargets || item.morphWeights ? applyGpuMorphUniforms(item, shader, uniforms) : false;
     const geometry = gpuMorph ? item.geometry : resolveRenderGeometry(item);
     // Generated programs validate their selected attributes in MaterialBinding.
@@ -597,6 +651,8 @@ export class ForwardPass extends BaseRenderPass {
     }
     const bound = slot.buffer.bind();
     const extra = createExtraInstanceAttributeBindings(device, item, count, false);
+    // GU47 E-D: `instanceColorTarget: "emissive"` — the colours feed the emissive term only (prd04.instanceColorTarget).
+    const colorAttribute = materialInstanceColorTarget(item.material) === "emissive" ? A3D_INSTANCE_EMISSIVE_ATTRIBUTE : "a_instanceColor";
     return {
       count,
       attributes: [
@@ -610,7 +666,7 @@ export class ForwardPass extends BaseRenderPass {
         })),
         ...(bound.colorBuffer ? [{
           buffer: bound.colorBuffer,
-          shaderName: "a_instanceColor",
+          shaderName: colorAttribute,
           components: 4 as const,
           offset: 0,
           stride: 16,
@@ -770,7 +826,8 @@ export class ForwardPass extends BaseRenderPass {
       // Phase 6: instancing is item-driven — a material's own feature record
       // only declares it when authored instanced; the draw's program must
       // cover the union (attribute matrices are the only generated path).
-      ...(item?.instanceTransforms ? { instancing: { color: item.instanceColors !== undefined } } : {}),
+      // GU47 E-D: `instanceColorTarget: "emissive"` keeps the base colour (no USE_INSTANCING_COLOR base multiply).
+      ...(item?.instanceTransforms ? { instancing: { color: item.instanceColors !== undefined && materialInstanceColorTarget(material) !== "emissive" } } : {}),
       // #1140: a per-item probe cube (PRD-02 S12) is sampled as a cube.
       ...(item?.environmentCube?.texture?.dimension === "cube" ? { environment: "pmrem-cube" as const } : {}),
       backgroundCoverage: this.options.backgroundCoverage === true,
@@ -2211,15 +2268,70 @@ function applyCustomShaderFrameUniforms(
     uniforms.set("u_viewMatrix", toMat4Uniform(options.customFrameCamera?.viewMatrix ?? options.cameraViewMatrix ?? identityMatrix(), "cameraViewMatrix"));
   }
   if (reflected.has("u_a3dSunDirection") && !uniforms.has("u_a3dSunDirection")) {
-    // `#include <a3d_shadow>`: direction from the surface toward the shadow-casting directional light.
-    const sun = options.lights?.find((light) => light.castsShadow && light.kind === "directional");
-    const d = sun?.direction ?? [0, -1, 0];
+    // `#include <a3d_shadow>` and the GU47 sun built-ins: direction from the surface toward the sun (the shadow-casting
+    // directional light, else the first directional light; straight up when the scene has none).
+    const d = customShaderSun(options.lights)?.direction ?? [0, -1, 0];
     const length = Math.hypot(d[0], d[1], d[2]) || 1;
     uniforms.set("u_a3dSunDirection", [-d[0] / length, -d[1] / length, -d[2] / length]);
   }
   if (reflected.has("u_projectionMatrix") && !uniforms.has("u_projectionMatrix")) {
     uniforms.set("u_projectionMatrix", toMat4Uniform(options.customFrameCamera?.projectionMatrix ?? options.auraFrameCamera?.projectionMatrix ?? identityMatrix(), "auraFrameCamera.projectionMatrix"));
   }
+  // GU47 E-D: `instanceMatrix` / `instanceColor` read identity / white on a non-instanced draw (the instanced path sets 1).
+  if (reflected.has("u_a3dInstancing") && !uniforms.has("u_a3dInstancing")) uniforms.set("u_a3dInstancing", 0);
+}
+
+/** The light the custom-shader sun built-ins describe: the shadow-casting directional light, else the first directional one. */
+function customShaderSun(lights: readonly CollectedLight[] | undefined): CollectedLight | undefined {
+  return lights?.find((light) => light.castsShadow && light.kind === "directional") ?? lights?.find((light) => light.kind === "directional");
+}
+
+/** Exp2 density whose fog reaches 98% at `far`, so a linear-fog scene still gives `u_a3dFogDensity` a matching value. */
+const LINEAR_FOG_EXP2_EQUIVALENT = Math.sqrt(-Math.log(0.02));
+
+/**
+ * GU47 E-D (PRD §3.1): lighting built-ins for `material.custom` programs, each bound only when the program reflects it:
+ *   - `u_a3dSunColor` (linear rgb) / `u_a3dSunIntensity`: the sun `u_a3dSunDirection` points at (0 when there is none).
+ *   - `u_a3dHemiSky` / `u_a3dHemiGround`: the authored hemisphere pair (linear rgb, premultiplied by intensity; 0 when none).
+ *   - `u_a3dFogColor` / `u_a3dFogDensity`: the scene fog for this draw (exp2 density; a linear fog gets the density that
+ *     reaches 98% at `far`; 0 when the scene has no fog or the material opts out with `fog: false`).
+ *   - `u_lightCount` / `u_lightData`: the packed direct lights `#include <a3d_lights>` loops over (same packing as the
+ *     built-in lit programs; the clustered textures are bound by `applyClusteredLightingUniforms`).
+ */
+export function applyCustomShaderLightingUniforms(
+  options: Pick<ForwardPassOptions, "lights" | "environmentLighting">,
+  fog: ForwardEnvironmentFogOptions | false | undefined,
+  shader: RenderShaderProgram,
+  uniforms: Map<string, UniformValue>,
+  packedLights: () => ReturnType<typeof LightUniforms.pack>
+): void {
+  const reflected = shader.reflection.uniforms;
+  const wants = (name: string) => reflected.has(name) && !uniforms.has(name);
+  if (wants("u_a3dSunColor") || wants("u_a3dSunIntensity")) {
+    const sun = customShaderSun(options.lights);
+    if (wants("u_a3dSunColor")) uniforms.set("u_a3dSunColor", sun ? [sun.color[0], sun.color[1], sun.color[2]] : [0, 0, 0]);
+    if (wants("u_a3dSunIntensity")) uniforms.set("u_a3dSunIntensity", sun && Number.isFinite(sun.intensity) ? Math.max(0, sun.intensity) : 0);
+  }
+  const hemisphere = options.environmentLighting?.hemisphere;
+  if (wants("u_a3dHemiSky")) uniforms.set("u_a3dHemiSky", hemisphere ? [...hemisphere.sky] : [0, 0, 0]);
+  if (wants("u_a3dHemiGround")) uniforms.set("u_a3dHemiGround", hemisphere ? [...hemisphere.ground] : [0, 0, 0]);
+  if (wants("u_a3dFogColor")) uniforms.set("u_a3dFogColor", fog ? Array.from(fog.color) : [0, 0, 0]);
+  if (wants("u_a3dFogDensity")) {
+    const density = !fog ? 0
+      : fog.mode === "linear" ? (Number.isFinite(fog.far) && fog.far > 0 ? LINEAR_FOG_EXP2_EQUIVALENT / fog.far : 0)
+        : Math.max(0, Number.isFinite(fog.density) ? fog.density : 0);
+    uniforms.set("u_a3dFogDensity", density);
+  }
+  if (wants("u_lightCount") || wants("u_lightData")) {
+    const packed = packedLights();
+    if (wants("u_lightCount")) uniforms.set("u_lightCount", packed.lightCount);
+    if (wants("u_lightData")) uniforms.set("u_lightData", packed.data);
+  }
+}
+
+/** GU47 E-D: a `material.custom` vertex shader that reads `instanceMatrix` (the adapter declares these inputs for it). */
+function supportsAuthorInstancing(shader: RenderShaderProgram): boolean {
+  return shader.reflection.uniforms.has("u_a3dInstancing") && INSTANCE_MATRIX_ATTRIBUTE_NAMES.every((name) => shader.reflection.attributes.has(name));
 }
 
 export function toMat4Uniform(value: Float32Array | readonly number[], field: string, label?: string): Float32Array {
