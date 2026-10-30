@@ -451,6 +451,39 @@ const CAGE_GAP_HALF = CAGE_GOAL_GAP;
 export const GOAL_NET_GLB_MAX = 1.897;
 const CAGE_TAGS = ["w-n", "w-s", "e-n", "e-s", "n", "s"] as const;
 
+/** Sponsor hoarding ring transforms (FC47-PF1 batch). */
+export function hoardingTransforms(): { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] {
+  const hz = PITCH_HZ + 2.4;
+  const hx = PITCH_HX + 2.4;
+  return ([
+    [0, -hz, hx * 2, 0], [0, hz, hx * 2, 0],
+    [-hx, 0, hz * 2, Math.PI / 2], [hx, 0, hz * 2, Math.PI / 2]
+  ] as const).map(([x, z, w, rot]) => ({ position: [x, 0.4, z], rotation: [0, rot, 0], scale: [w, 0.8, 0.16] }));
+}
+
+/** Bleacher tier transforms for a venue: far and both end stands per tier < standCount, near stand tiers 0-1 at 3+. */
+export function standTransforms(v: VenueSpec): { position: [number, number, number]; scale: [number, number, number] }[] {
+  const out: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+  for (let tier = 0; tier < 4; tier++) {
+    if (v.standCount <= tier) continue;
+    const y = 0.9 + tier * 1.3;
+    const wFar = PITCH_HX * 2 + 8 + tier * 3.4;
+    const lEnd = PITCH_HZ * 2 + 6 + tier * 2;
+    out.push(
+      { position: [0, y, -(PITCH_HZ + 4.6 + tier * 2.2)], scale: [wFar, 0.55, 2.0] },
+      { position: [-(PITCH_HX + 4.6 + tier * 2.2), y, 0], scale: [2.0, 0.55, lEnd] },
+      { position: [PITCH_HX + 4.6 + tier * 2.2, y, 0], scale: [2.0, 0.55, lEnd] }
+    );
+  }
+  if (v.standCount >= 3) {
+    for (let tier = 0; tier < 2; tier++) {
+      const y = 0.9 + tier * 1.3;
+      out.push({ position: [0, y * 0.85, PITCH_HZ + 5.2 + tier * 2.0], scale: [PITCH_HX * 2 + 8 + tier * 3.4, 0.55, 1.8] });
+    }
+  }
+  return out;
+}
+
 function stadiumNodes(v: VenueSpec): any[] {
   const nodes: any[] = [];
 
@@ -478,45 +511,21 @@ function stadiumNodes(v: VenueSpec): any[] {
     );
   }
 
-  /* ---- Sponsor hoarding ring ---- */
-  const hoardMat = material.emissive({ color: v.hoarding, emissive: v.accent, emissiveIntensity: 0.38 });
-  const hz = PITCH_HZ + 2.4;
-  const hx = PITCH_HX + 2.4;
-  for (const [x, z, w, rot] of [
-    [0, -hz, hx * 2, 0], [0, hz, hx * 2, 0],
-    [-hx, 0, hz * 2, Math.PI / 2], [hx, 0, hz * 2, Math.PI / 2]
-  ] as const) {
-    nodes.push(
-      primitives.box({ name: `hoard-${Math.round(x)}-${Math.round(z)}`, size: [w, 0.8, 0.16], material: hoardMat })
-        .position(x, 0.4, z).rotate(0, rot, 0)
-        .runtime(gameRuntime(`hoard-${Math.round(x)}-${Math.round(z)}`))
-    );
-  }
+  /* ---- Sponsor hoarding ring: one instanced box batch (FC47-PF1, was 4 boxes) ---- */
+  nodes.push(
+    (instances as any).box({ name: "fc-hoardings", size: [1, 1, 1], transforms: hoardingTransforms(), material: material.emissive({ color: v.hoarding, emissive: v.accent, emissiveIntensity: 0.38 }) })
+      .runtime(gameRuntime("fc-hoardings"))
+  );
 
-  /* ---- Bleacher bowl (runtime handles — hidden on cage/flat venues) ---- */
-  const seatMat = material.pbr({ color: "#18202c", roughness: 0.9 });
+  /* ---- Bleacher bowl: the venue's tiers as one instanced box batch (FC47-PF1, was 14 boxes; the scene is rebuilt
+     per venue, so only the tiers this venue shows are in the batch) ---- */
   const MAX_TIERS = 4;
-  for (let tier = 0; tier < MAX_TIERS; tier++) {
-    const y = 0.9 + tier * 1.3;
-    const wFar = PITCH_HX * 2 + 8 + tier * 3.4;
+  const standT = standTransforms(v);
+  if (standT.length > 0) {
     nodes.push(
-      primitives.box({ name: `stand-far-${tier}`, size: [wFar, 0.55, 2.0], material: seatMat })
-        .position(0, y, -(PITCH_HZ + 4.6 + tier * 2.2))
-        .runtime(gameRuntime(`stand-far-${tier}`)),
-      primitives.box({ name: `stand-end-w-${tier}`, size: [2.0, 0.55, PITCH_HZ * 2 + 6 + tier * 2], material: seatMat })
-        .position(-(PITCH_HX + 4.6 + tier * 2.2), y, 0)
-        .runtime(gameRuntime(`stand-end-w-${tier}`)),
-      primitives.box({ name: `stand-end-e-${tier}`, size: [2.0, 0.55, PITCH_HZ * 2 + 6 + tier * 2], material: seatMat })
-        .position(PITCH_HX + 4.6 + tier * 2.2, y, 0)
-        .runtime(gameRuntime(`stand-end-e-${tier}`))
+      (instances as any).box({ name: "fc-stands", size: [1, 1, 1], transforms: standT, material: material.pbr({ color: "#18202c", roughness: 0.9 }) })
+        .runtime(gameRuntime("fc-stands"))
     );
-    if (tier < 2) {
-      nodes.push(
-        primitives.box({ name: `stand-near-${tier}`, size: [wFar, 0.55, 1.8], material: seatMat })
-          .position(0, y * 0.85, PITCH_HZ + 5.2 + tier * 2.0)
-          .runtime(gameRuntime(`stand-near-${tier}`))
-      );
-    }
   }
 
   /* ---- Crowd — instanced capsules over the bowl ---- */
@@ -738,7 +747,8 @@ export interface WorldHandles {
   stripes: any;
   cages: any[]; cageRails: any[];
   hoardings: any[];
-  stands: any[];
+  /** FC47-PF1: the venue's stand tiers as one instanced batch (null when the venue has no bowl). */
+  stands: any;
   crowd: any;
   scoreboard: any;
   nets: any[];
@@ -763,14 +773,8 @@ export function resolveWorld(app: any): WorldHandles {
     stripes: tryReq(app, "fc-stripes"),
     cages: CAGE_TAGS.map((t) => tryReq(app, `cage-${t}`)),
     cageRails: CAGE_TAGS.map((t) => tryReq(app, `cage-rail-${t}`)),
-    hoardings: [[0, -(PITCH_HZ + 2.4)], [0, PITCH_HZ + 2.4], [-(PITCH_HX + 2.4), 0], [PITCH_HX + 2.4, 0]]
-      .map(([x, z]) => tryReq(app, `hoard-${Math.round(x as number)}-${Math.round(z as number)}`)),
-    stands: [
-      ...Array.from({ length: 4 }, (_, i) => `stand-far-${i}`),
-      ...Array.from({ length: 4 }, (_, i) => `stand-end-w-${i}`),
-      ...Array.from({ length: 4 }, (_, i) => `stand-end-e-${i}`),
-      "stand-near-0", "stand-near-1"
-    ].map((n) => tryReq(app, n)),
+    hoardings: [tryReq(app, "fc-hoardings")],
+    stands: tryReq(app, "fc-stands"),
     crowd: tryReq(app, "fc-crowd"),
     scoreboard: tryReq(app, "fc-scoreboard-screen"),
     nets: ["net-back--1", "net-roof--1", "net-n--1", "net-s--1", "net-back-1", "net-roof-1", "net-n-1", "net-s-1"].map((n) => tryReq(app, n)),
@@ -803,12 +807,11 @@ export function applyVenue(h: WorldHandles, v: VenueSpec): void {
   }
   for (const c of h.cages) c?.setMaterial(cageWallMaterial(v)).setScale(v.walled ? [1, 1, 1] : [HIDDEN, HIDDEN, HIDDEN]).setVisible(v.walled);
   for (const c of h.cageRails) c?.setMaterial(material.emissive({ color: v.accent, emissive: v.accent, emissiveIntensity: 0.5 })).setScale(v.walled ? [1, 1, 1] : [HIDDEN, HIDDEN, HIDDEN]).setVisible(v.walled);
-  h.stands.forEach((s, i) => {
-    const isNear = i >= 12;
-    const tier = i % 4;
-    const vis = isNear ? v.standCount >= 3 && tier < 2 : v.standCount > tier;
-    s?.setScale(vis ? [1, 1, 1] : [HIDDEN, HIDDEN, HIDDEN]).setVisible(vis);
-  });
+  if (h.stands) {
+    const st = standTransforms(v);
+    if (st.length > 0) h.stands.setInstances?.(st);
+    h.stands.setVisible(st.length > 0);
+  }
   h.crowd?.setVisible(v.standCount > 0);
   h.wavers?.setVisible(v.standCount > 0);
   // Lower dome floor to y=-6.5 when active so its bottom never occludes the turf

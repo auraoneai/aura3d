@@ -154,3 +154,21 @@ describe("aura-fc-3d GU47 materials (FC47-M1)", () => {
     expect((byName("favela", "cage-n")!.material!.texture?.url ?? "")).toMatch(/fcConcreteColor/);
   });
 });
+
+describe("aura-fc-3d GU47 draw budget (FC47-PF1)", () => {
+  type Inst = Node & { instances?: unknown[] };
+  const find = (venue: VenueId, name: string) => sceneNodes(venue).find((n) => n.name === name) as Inst | undefined;
+
+  it("stands are one instanced batch holding only the venue's tiers; hoardings one batch of 4", () => {
+    expect(find("munich", "fc-stands")?.instances?.length).toBe(14);
+    expect(find("glacier", "fc-stands")?.instances?.length).toBe(14);
+    expect(find("kyoto", "fc-stands")?.instances?.length).toBe(11);
+    expect(find("lagos", "fc-stands")?.instances?.length).toBe(6);
+    expect(find("favela", "fc-stands")).toBeUndefined();
+    expect(find("munich", "fc-hoardings")?.instances?.length).toBe(4);
+    for (const v of VENUE_ORDER) {
+      const names = sceneNodes(v).map((n) => n.name ?? "");
+      expect(names.filter((n) => /^stand-|^hoard-/.test(n))).toEqual([]);
+    }
+  });
+});
