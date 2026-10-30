@@ -95,6 +95,7 @@ import { buildCourseRig } from "./game/lookRig";
 import { landingVfxFor, registerLinksVfx, type LinksVfxId } from "./game/vfx";
 import { IMPACT_FOV_KICK_DEG, cupCamPose, flyoverAllowed, flyoverShots, tracerCamPose, wantsCupCam, wantsTracerCam } from "./game/broadcast";
 import { linksQaCrops } from "./game/qaCrops";
+import { holeCardTransition, holeCardVisible, holeMap, holeMapSvg, holeSubtitle, holeTitle, shotStatsLabel } from "./game/holeCard";
 import { clubForShot, planShot, puttRange, type ShotPlan } from "./game/autopilot";
 import {
   bracketRows,
@@ -157,6 +158,8 @@ const lookMode: "gu47" | "original" = presentationParams.get("look") === "origin
  */
 const presentationTier: LinksTier =
   presentationParams.get("aura3d-quality") === "low" || presentationParams.get("tier") === "low" ? "low" : "high";
+/** LINKS-14: index.html scopes the broadcast HUD (lower third, figures face, course accent) to body[data-look="gu47"] */
+document.body.dataset.look = lookMode;
 
 /* ------------------------------------------------------------------ *
  *  Game state                                                         *
@@ -1195,6 +1198,48 @@ function updateModeChips(): void {
   }
 }
 
+/* LINKS-14: the broadcast lower third and the course accent (GU47 look only; index.html body[data-look="gu47"]) */
+
+let holeCardShown = false;
+
+function setText(id: string, text: string): void {
+  const el = $(id);
+  if (el) el.textContent = text;
+}
+
+/** Hole map, title and subtitle of the hole just started; the stats chip stays empty until its first shot rests. */
+function renderHoleCard(): void {
+  const t = state.terrain;
+  if (lookMode === "original" || !t) return;
+  const map = $("hc-map");
+  if (map) map.innerHTML = holeMapSvg(holeMap(state.hole, t));
+  setText("hc-title", holeTitle(state.hole));
+  setText("hc-sub", holeSubtitle(state.hole, state.course.name));
+  setText("hc-stats", "");
+  $("hole-card")?.classList.remove("has-stats");
+}
+
+/** The shot stats chip once a ball comes to rest on the hole (read-only values of the finished shot). */
+function showShotStats(club: string, carry: number, roll: number, toPin: number): void {
+  if (lookMode === "original") return;
+  setText("hc-stats", shotStatsLabel({ club, carry, roll, toPin }));
+  $("hole-card")?.classList.add("has-stats");
+}
+
+/** Shows or hides the lower third as the phase changes (one class toggle, only when the answer changes). */
+function syncHoleCard(): void {
+  const want = holeCardVisible({ look: lookMode, phase: state.phase, lab: state.lab !== null, hasRound: state.round !== null });
+  if (want === holeCardShown) return;
+  holeCardShown = want;
+  $("hole-card")?.classList.toggle("show", want);
+}
+
+/** The course's HUD accent (COURSE_LOOKS: hues >= 30 deg apart, >= 4.5:1 on the HUD panel); `?look=original` keeps the gold. */
+function applyCourseAccent(): void {
+  if (lookMode === "original") return;
+  document.body.style.setProperty("--accent", COURSE_LOOKS[state.courseId].accent);
+}
+
 /* ------------------------------------------------------------------ *
  *  Camera director                                                    *
  * ------------------------------------------------------------------ */
@@ -1801,6 +1846,7 @@ function onBallRest(pos: Vec3, zone: LieKind): void {
   const shot = Math.hypot(pos[0] - r.prevPos[0], pos[2] - r.prevPos[2]);
   const air = Math.min(shot, state.ball?.carry ?? shot);
   pushEvent("lie", `lie: ${zone} · ${air.toFixed(0)}m carry + ${(shot - air).toFixed(0)}m roll · ${state.terrain!.cupDistance(pos[0], pos[2]).toFixed(0)}m out`, "info");
+  showShotStats(state.commit?.club.label ?? CLUB_ORDER[r.clubIdx]!, air, shot - air, state.terrain!.cupDistance(pos[0], pos[2]));
   state.phase = "between";
   betweenUntil = nowMs() + 850;
 }
@@ -2004,6 +2050,7 @@ function startHole(idx: number): void {
     showMsg(`HOLE ${hole.number} — ${hole.name.toUpperCase()}`, `PAR ${hole.par} · ${hole.lengthM}M`, 2100);
   }
   pushEvent("hole", `hole ${hole.number}: ${hole.name} · par ${hole.par}`, "info");
+  renderHoleCard();
   beginAddress();
   // LINKS-12: the hole flyover plays once this hole's scene is mounted (frame() starts it)
   skipFlyover();
@@ -2137,6 +2184,7 @@ function selectCourse(id: CourseId, restart = true): void {
   if (!COURSES[id]) return;
   state.courseId = id;
   state.course = COURSES[id]!;
+  applyCourseAccent();
   syncCourseButtons();
   if (restart) {
     startRound();
@@ -2294,6 +2342,7 @@ function frame(dt: number): void {
 
   if (bannerTimer && now > bannerTimer) { $("banner")?.classList.remove("show"); bannerTimer = 0; }
   if (msgTimer && now > msgTimer) { $("msg")?.classList.remove("show"); msgTimer = 0; }
+  syncHoleCard();
 
   // --- broadcast flyover (LINKS-12): any key skips it this frame (the key still does its usual job); a due flyover
   // starts once the hole's scene is mounted ---
@@ -2840,6 +2889,8 @@ function publishEvidence(): void {
     cameraEye: [...cam.eye],
     // GU47 LINKS-12 broadcast camera (flyover running, tracer/cup cam of the shot in the air) and the look variant
     broadcast: { flyover: Boolean(flyover), shotCam: broadcastCam?.kind ?? null, look: lookMode, tier: presentationTier },
+    // GU47 LINKS-14 broadcast HUD: the lower third's state and the course accent the HUD wears
+    hud: { holeCard: holeCardShown, accent: lookMode === "original" ? null : COURSE_LOOKS[state.courseId].accent },
     flagRotation,
     course: state.courseId,
     hole: state.hole.number,
@@ -3034,6 +3085,10 @@ function boot(): void {
   // accessibility first: the course look halves its ambient emission under reduced motion (PRD §6.3)
   state.reducedMotion = params.has("reducedMotion") || (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false);
   state.reducedFlash = params.has("reducedFlash") || (window.matchMedia?.("(prefers-reduced-flash: reduce)")?.matches ?? false);
+  // LINKS-14: the course accent, and the lower third without its fade and rise under reduced motion
+  applyCourseAccent();
+  const holeCardEl = $("hole-card");
+  if (holeCardEl) holeCardEl.style.transition = holeCardTransition(state.reducedMotion);
 
   bootStage("scene-build");
   mountedHoleSig = `${state.course.id}|${state.hole.number}|round`;

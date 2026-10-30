@@ -35,12 +35,16 @@ export interface HoleMap {
   readonly scale: number;
 }
 
-/** Projects the hole into the map: along the opening line (tee to the end of the path) upward, lateral to the right. */
+/**
+ * Projects the hole into the map as the player sees it from the tee: the opening line runs up the map and the player's
+ * right is the map's right. Yaw 0 looks down +Z and turning left (A) raises the yaw toward +X (aim.ts), so the
+ * player's right is the yaw - 90 deg direction, (-cos yaw, sin yaw) in world x/z (+X is on the player's left).
+ */
 export function holeMap(hole: HoleSpec, terrain: HoleTerrain): HoleMap {
   const { w, h, pad } = HOLE_MAP_SIZE;
   const yaw = terrain.lineYaw;
   const f = [Math.sin(yaw), Math.cos(yaw)] as const;
-  const r = [Math.cos(yaw), -Math.sin(yaw)] as const;
+  const r = [-Math.cos(yaw), Math.sin(yaw)] as const;
   const tx = terrain.tee[0], tz = terrain.tee[2];
   const along = (x: number, z: number) => (x - tx) * f[0] + (z - tz) * f[1];
   const side = (x: number, z: number) => (x - tx) * r[0] + (z - tz) * r[1];
@@ -88,8 +92,27 @@ export function holeTitle(hole: HoleSpec): string {
   return `Hole ${hole.number} · ${hole.name}`;
 }
 
+/** The line under the title: par, length and the course. */
+export function holeSubtitle(hole: HoleSpec, courseName: string): string {
+  return `Par ${hole.par} · ${hole.lengthM} m · ${courseName}`;
+}
+
 /** The shot stats chip after a ball comes to rest. */
 export function shotStatsLabel(o: { readonly club: string; readonly carry: number; readonly roll: number; readonly toPin: number }): string {
   const club = o.club.charAt(0).toUpperCase() + o.club.slice(1).toLowerCase();
   return `${club} · ${Math.round(o.carry)} m carry · ${Math.round(o.roll)} m roll · ${Math.round(o.toPin)} m to pin`;
+}
+
+/**
+ * When the lower third is up (GU47 look only): at address (the hole flyover runs in that phase) and between shots,
+ * in a round on a real hole. Hidden during the swing and the ball flight (the tracer owns the frame), in the Range and
+ * Putting Labs (their rings and spots are not the hole), in the menu and on the closing card.
+ */
+export function holeCardVisible(o: { readonly look: "gu47" | "original"; readonly phase: string; readonly lab: boolean; readonly hasRound: boolean }): boolean {
+  return o.look !== "original" && o.hasRound && !o.lab && (o.phase === "address" || o.phase === "between");
+}
+
+/** The lower third's CSS transition: a short fade and rise; reduced motion cuts it (PRD §6.3: no slide, no fade). */
+export function holeCardTransition(reducedMotion: boolean): string {
+  return reducedMotion ? "none" : "opacity 0.22s ease-out, transform 0.22s ease-out";
 }

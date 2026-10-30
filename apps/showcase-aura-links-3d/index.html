@@ -18,7 +18,10 @@
       content="Aura Links 3D: three-click arcade golf on the Aura3D engine — six storybook courses from Scottish dunes to a lunar crater, Range & Putting Labs, and a 32-player Pro Circuit."
     />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="stylesheet" href="/fonts/aura-fonts.css" />
+    <!-- Licensed HUD faces, self-hosted in this app's public/fonts (served beside the route; the old /fonts/aura-fonts.css never existed) -->
+    <link rel="preload" href="./fonts/whitney-regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="./fonts/whitney-medium.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="./fonts/fonts.css" />
     <style>
       :root {
         --bg: #08110c;
@@ -36,6 +39,8 @@
         --font-display: "DIN Pro", "Whitney", -apple-system, BlinkMacSystemFont, sans-serif;
         --font-sans: "Whitney", -apple-system, BlinkMacSystemFont, sans-serif;
         --font-mono: "Monument Grotesk Mono", ui-monospace, SFMono-Regular, monospace;
+        /* DIN Pro digits, Whitney words (public/fonts/fonts.css "Links Figures") */
+        --font-figures: "Links Figures", "Whitney", -apple-system, BlinkMacSystemFont, sans-serif;
       }
 
       *,
@@ -832,7 +837,103 @@
         display: none;
       }
 
+      /* ---------- GU47 broadcast HUD (WP-20 LINKS-14) ----------
+         Scoped to body[data-look="gu47"]; ?look=original keeps the 4.6.2 HUD. Words in Whitney, every figure in DIN Pro
+         with tabular digits (--font-figures), only the 400 and 500 cuts, the course accent (main.ts sets --accent from
+         COURSE_LOOKS), panels at the HUD panel colour holeCard.ts tests the accent contrast against. */
+      body[data-look="gu47"] {
+        font-synthesis: none;
+      }
+      body[data-look="gu47"] #hud {
+        font-family: var(--font-figures);
+        font-variant-numeric: tabular-nums;
+      }
+      body[data-look="gu47"] .card-box,
+      body[data-look="gu47"] .shot-strip,
+      body[data-look="gu47"] .hud-chip {
+        background: rgba(6, 11, 8, 0.85);
+      }
+      body[data-look="gu47"] .cb-cell .cb-v {
+        font-family: var(--font-figures);
+        font-weight: 500;
+      }
+      body[data-look="gu47"] .hud-chip {
+        border-right-color: var(--accent);
+      }
+
+      /* Hole-card lower third: hole map, title, par and length, and the shot stats chip after each shot */
+      .hole-card {
+        display: none;
+      }
+      body[data-look="gu47"] .hole-card {
+        position: absolute;
+        left: 22px;
+        bottom: 56px;
+        display: flex;
+        align-items: stretch;
+        gap: 10px;
+        max-width: min(380px, calc(50vw - 200px));
+        padding: 8px 14px 8px 8px;
+        background: rgba(6, 11, 8, 0.9);
+        border-left: 2px solid var(--accent);
+        font-family: var(--font-figures);
+        font-variant-numeric: tabular-nums;
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      body[data-look="gu47"] .hole-card.show {
+        opacity: 1;
+        transform: none;
+      }
+      .hole-card .hc-map {
+        flex: none;
+        width: 40px;
+        height: 91px;
+      }
+      .hc-map .hm-fairway { stroke: rgba(242, 246, 234, 0.2); }
+      .hc-map .hm-water { fill: rgba(79, 160, 230, 0.75); }
+      .hc-map .hm-bunker { fill: rgba(227, 207, 154, 0.9); }
+      .hc-map .hm-green { fill: rgba(125, 227, 127, 0.5); }
+      .hc-map .hm-line { stroke: var(--accent); stroke-width: 0.9; stroke-dasharray: 2.2 1.6; }
+      .hc-map .hm-tee { fill: var(--ink); }
+      .hc-map .hm-pin { fill: var(--accent); }
+      .hole-card .hc-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 3px;
+        min-width: 0;
+      }
+      .hole-card .hc-title {
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1.2;
+        color: var(--ink);
+      }
+      .hole-card .hc-sub {
+        font-size: 12px;
+        line-height: 1.35;
+        color: var(--muted);
+      }
+      .hole-card .hc-stats {
+        display: none;
+        margin-top: 3px;
+        padding-top: 4px;
+        border-top: 1px solid var(--rule);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.35;
+        color: var(--accent);
+      }
+      .hole-card.has-stats .hc-stats {
+        display: block;
+      }
+
       @media (max-width: 760px) {
+        /* phones: the touch layer owns the bottom corners; the top-left card box already carries hole and par */
+        body[data-look="gu47"] .hole-card {
+          display: none;
+        }
         .aura3d-controls-hint {
           display: none;
         }
@@ -934,6 +1035,15 @@
         </div>
 
         <div class="hud-ticker" id="h-ticker"></div>
+
+        <section class="hole-card" id="hole-card" aria-label="Hole card">
+          <svg class="hc-map" id="hc-map" viewBox="0 0 44 100" aria-hidden="true"></svg>
+          <div class="hc-body">
+            <div class="hc-title" id="hc-title"></div>
+            <div class="hc-sub" id="hc-sub"></div>
+            <div class="hc-stats" id="hc-stats"></div>
+          </div>
+        </section>
 
         <div class="center-msg" id="msg">
           <div class="big" id="msg-text">AURA LINKS 3D</div>

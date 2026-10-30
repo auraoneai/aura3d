@@ -35,3 +35,23 @@
   font-style: normal;
   font-display: swap;
 }
+
+/* "Links Figures": the DIN Pro digits and figure signs only (unicode-range), so a stat line set in
+   "Links Figures", "Whitney" takes DIN Pro for its numbers and Whitney for its words (one HUD line, two roles). */
+@font-face {
+  font-family: "Links Figures";
+  src: url("./dinpro-regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0030-0039, U+002B, U+002D, U+002E, U+0025, U+2212;
+}
+
+@font-face {
+  font-family: "Links Figures";
+  src: url("./dinpro-medium.woff") format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0030-0039, U+002B, U+002D, U+002E, U+0025, U+2212;
+}
