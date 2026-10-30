@@ -12,8 +12,8 @@ Status: `done`, `partial`, `declined (reason)`, `already applied (lane, commit)`
 | ID | From -> to | File:symbol | Status | Commit | Notes |
 |---|---|---|---|---|---|
 | EA-1 | E-A -> E-C | `aura3d-cli/src/cli-help.ts` + `commands/prd05/index.ts` usage | pending | | `assets optimize --hdri 1k\|2k [--rgb9e5-cube]` |
-| EA-2 | E-A -> E-C | `agent-api/postBridge.ts:createRootPostPipeline` | pending | | `lookOutputPreset` when `output.preset` is unset |
-| EA-3 | E-A -> E-C | `agent-api/nodes/effects.post.ts:colorGrade/bloom` | pending | | copy temperature/tint/lutIntensity, knee/clampLuminance |
+| EA-2 | E-A -> E-C | `agent-api/postBridge.ts:createRootPostPipeline` | done (default change, own commit) | 5a87c2abc | `lookOutputPreset(snapshot.nodes)` when `output.preset` is unset; authored output fields and look grade/bloom nodes still win; `tests/unit/gu47/eint/look-output-preset.test.ts` |
+| EA-3 | E-A -> E-C | `agent-api/nodes/effects.post.ts:colorGrade/bloom` | done | b2c076133 | bloom copies `knee`/`clampLuminance`; colorGrade already forwarded temperature/tint/lut/lutIntensity (pinned); `tests/unit/gu47/eint/bloom-grade-fields.test.ts` |
 | EA-4 | E-A -> E-C/E-A | `contracts/post.ts AuraBloomOptions`, `AuraAssetType "lut"` swap in `contracts/looks.ts` | pending | | |
 | EA-5 | E-A -> E-B | `compiler/environment.ts` hdri rotation | already applied (E-B, 60ec60747) | | renderer half is EB-1 |
 | EA-6 | E-A -> E-G | `public/index.ts`: `AuraHdriId`, `lookHdriIds`, `lookHdriUrl`, `lookOutputPreset` | done | 166d4ee7a | |
@@ -31,7 +31,7 @@ Status: `done`, `partial`, `declined (reason)`, `already applied (lane, commit)`
 | EC-3 | E-C -> E-D | `nodes/types.ts AuraAssetType "lut"` | pending | | |
 | EC-4 | E-C -> E-D | forward fragment `alpha = u_bloomWeight` (selective bloom write) | pending | | |
 | EC-5 | E-C -> E-D | forward MRT roughness channel for SSR | pending | | |
-| EC-6 | E-C -> integration | `rendering/src/webgl2/LegacyPost.ts` selective-bloom weight read | pending | | |
+| EC-6 | E-C -> integration | `rendering/src/webgl2/LegacyPost.ts` selective-bloom weight read | done | 77ec234c9 | both HDR prefilters (`BLOOM_BRIGHT_EXTRACT_GLSL`, fused prefilter-downsample) multiply the excess by `auraBloomWeight(alpha, u_bloomSelective)`; `u_bloomSelective` from `options.selective`; `executePostGraphWebGL2` stamps `selective` from `pipeline.bloom.selective`; unstamped = factor 1.0. Optional SSR-descriptor filter not done (not needed). `tests/unit/gu47/eint/selective-bloom-read.test.ts` (incl. glslang) |
 | EC-7 | E-C -> E-G (optional) | export `POST_RUNTIME_EFFECTS`, ... | declined | | E-G declined; games use `app.post.*`; root stays lean |
 | ED-1 | E-D -> integration | `agent-api/diagnostics.ts` + `app/frameLoop.ts` triangles/textureBytes (ED-7) | pending | | |
 | ED-2 | E-D -> E-G | `instances.*({ instanceColorTarget })` | already applied (E-G, 17d5dbfa9) | | |
@@ -51,6 +51,10 @@ Status: `done`, `partial`, `declined (reason)`, `already applied (lane, commit)`
 | EH-7 | E-H -> integration | `createAuraApp.ts` clear the GLB cache on dispose | pending | | |
 | EI-1 | E-I -> E-C/integration | `cli-help.ts:60-61` certify categories | pending | | |
 | EI-2 | E-I -> integration | `tools/real-gpu/capture.mjs` `evaluate` step | pending | | |
+| EE-H0 | E-E -> E-C (blocking G16/G20/G24) | `agent-api/postBridge.ts:POST_EFFECT_FIELDS.outline` | done | c7d8b7a2b | admits `"targets"`; a scene authoring `outline({ targets })` no longer throws `POST_FIELD_UNSUPPORTED` on the strict v2 chain |
+| EE-H1 | E-E -> E-G (blocking) | `agent-api/compiler/postprocess.ts` outline object | done | c7d8b7a2b | `...outlineTargetsField(authoredOutline, nodes)` (flattened, override-applied nodes); no `targets` = byte-identical options; `tests/unit/gu47/eint/outline-targets-wiring.test.ts` |
+| EE-H2 | E-E -> E-C (blocking) | `rendering/src/post/v2Stages.ts:runV2LdrTail` | done | 929321878 | `displayCustomLinearDepth`: scene depth (C-13 `sceneDepth.texture` -> `host.textureRegistry`) linearised once per tail with `DEPTH_LINEARIZE_GLSL` into a pooled rgba32f target, bound as `u_depthLinear` for `after-tonemap` customs with `inputs` "depth", released after the loop; stage `S1:depth-prep:after-tonemap`; `tests/unit/gu47/eint/ldr-tail-depth.test.ts` |
+| EE-H4 | E-E -> E-C (optional) | `agent-api/postBridge.ts:POST_RUNTIME_EFFECTS` outline | pending | | runtime `setEffect("outline", { targets })` |
 
 ## Handoffs for game lanes and WP-38 release items (not applied here)
 
