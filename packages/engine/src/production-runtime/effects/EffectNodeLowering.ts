@@ -107,6 +107,8 @@ export interface EffectNodeLike {
    * texture sheet `{ atlas: assets.sheet | url, frame? }` (grid from `spriteColumns` × `spriteRows`).
    */
   readonly sprite?: string | { readonly atlas?: unknown; readonly frame?: number };
+  /** GU47 E-F `effects.flipbook({ texture })`: sprite-sheet texture asset ref or URL. */
+  readonly texture?: unknown;
 }
 
 /**
@@ -451,14 +453,21 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
       // re-emitted 2 sprites/s at random rotation with frame 0 pinned and
       // sampled the soft-dot fallback, so both flipbooks drew as plain discs.
       const count = Math.max(1, Math.min(64, Math.round(node.particleCount ?? 1)));
-      const columns = Math.max(1, Math.round(node.spriteColumns ?? 8));
-      const rows = Math.max(1, Math.round(node.spriteRows ?? 8));
-      const frames = columns * rows;
+      // GU47 E-F sheet source: `texture` asset (grid from spriteColumns × spriteRows), else a built-in
+      // atlas `sprite` (its own grid), else the procedural fireball sheet (unchanged default).
+      const textureUrl = textureAssetUrl(node.texture);
+      const builtin = !textureUrl ? lowerSprite({ sprite: typeof node.sprite === "string" ? node.sprite : undefined }) : undefined;
+      const columns = builtin ? builtin.columns : Math.max(1, Math.round(node.spriteColumns ?? 8));
+      const rows = builtin ? builtin.rows : Math.max(1, Math.round(node.spriteRows ?? 8));
+      const frames = builtin ? builtin.frames : columns * rows;
       const frameRate = node.frameRate ?? 24;
       const loop = node.loop !== false;
       const blend: Blend = node.blend && VALID_BLENDS.has(node.blend) ? (node.blend as Blend) : "alpha";
       const sheetSeed = (node.seed ?? hashSeed(nodeId)) >>> 0;
-      const atlasKey = `flipbook.${columns}x${rows}.${sheetSeed}`;
+      const sprite: LoweredSprite | undefined = textureUrl
+        ? { kind: "texture", url: textureUrl, columns, rows, frames, frame: 0 }
+        : builtin;
+      const atlasKey = sprite ? spriteAtlasKey(sprite) : `flipbook.${columns}x${rows}.${sheetSeed}`;
       return {
         type: "emitter",
         nodeId,
@@ -474,6 +483,7 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
           atlasKey,
           ...(node.lowRes === true ? { lowRes: true } : {})
         },
+        ...(sprite ? { sprite } : {}),
         emitter: {
           key: `eff.${blend}.${atlasKey}.0.0.${node.lowRes === true ? 1 : 0}`,
           nodeId,

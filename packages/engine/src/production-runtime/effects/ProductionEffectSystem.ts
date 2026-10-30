@@ -895,7 +895,8 @@ export class ProductionEffectSystem {
     const groups = new Map<string, { first: EmitterBinding; parts: { binding: EmitterBinding; live: number }[] }>();
     for (const binding of this.emitters.values()) {
       const live = writeEmitterInstances(binding.state, binding.scratch);
-      if (binding.lowered.sprite) writeSpriteFrames(binding.state, binding.scratch, live, binding.lowered.sprite);
+      // Flipbooks keep the frame the emitter wrote (age · frameRate); other sprite emitters get theirs here.
+      if (binding.lowered.sprite && !binding.lowered.emitter.flipbook) writeSpriteFrames(binding.state, binding.scratch, live, binding.lowered.sprite);
       this.frameLive.set(binding.lowered.nodeId, live);
       const key = binding.lowered.emitter.key;
       let group = groups.get(key);
@@ -910,14 +911,15 @@ export class ProductionEffectSystem {
       const sprite = group.first.lowered.sprite;
       // GU47 E-F: atlas sprites sample their sequence once it has loaded; until then (or after a failed load)
       // the batch draws the analytic soft-dot exactly as before.
+      // A flipbook with a `texture` or built-in `sprite` samples that sheet instead of the procedural fireball.
       const spriteTexture = sprite ? this.spriteTexture(sprite) : null;
       const desc: ParticleBatchDescriptor = {
         key,
         capacity: group.parts.reduce((s, p) => s + p.binding.lowered.emitter.capacity, 0),
         source: "cpu",
-        atlas: flipbook ? flipbookTexture(flipbook) : spriteTexture ?? softDotTexture(),
-        ...(flipbook ? { atlasGrid: [flipbook.columns ?? 1, flipbook.rows ?? 1] as const, atlasStraightAlpha: true } : {}),
-        ...(!flipbook && sprite && spriteTexture
+        atlas: flipbook && !sprite ? flipbookTexture(flipbook) : spriteTexture ?? softDotTexture(),
+        ...(flipbook && !sprite ? { atlasGrid: [flipbook.columns ?? 1, flipbook.rows ?? 1] as const, atlasStraightAlpha: true } : {}),
+        ...(sprite && spriteTexture
           ? { atlasGrid: [sprite.columns, sprite.rows] as const, ...(sprite.kind === "texture" ? { atlasStraightAlpha: true } : {}) }
           : {}),
         blend: group.first.lowered.batch.blend,

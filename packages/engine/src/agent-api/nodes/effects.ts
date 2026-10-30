@@ -1,6 +1,6 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraEffectNode, AuraVec3 } from "../nodes/types.js";
+import type { AuraAssetRef, AuraEffectNode, AuraVec3 } from "../nodes/types.js";
 import { AuraNodeBuilder } from "../nodes/builder.js";
 import { effects } from "../nodes/effects.composite.js";
 import { createBeamDescriptor, resolveFlipbookUv } from "@aura3d/rendering";
@@ -221,8 +221,13 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
    * Flipbook explosion/muzzle-flash sprite sheet (muse3jsparity-PRD D4).
    * Under A3D_QR_VFX it draws through the particle pass: one upright sprite
    * of world `size`, frame = age · `frameRate` over `spriteColumns ×
-   * spriteRows` (wrapping unless `loop: false`), sampling the built-in
-   * seeded `fireball` sheet. `prewarm` starts the sprite that many seconds in.
+   * spriteRows` (wrapping unless `loop: false`). The sheet is, in order:
+   * `texture` (GU47 E-F: a typed texture asset such as an `aura3d-game-art`
+   * sheet, straight alpha, frame 0 in the top-left cell, grid `spriteColumns ×
+   * spriteRows`), a built-in atlas `sprite` name (its own grid, e.g.
+   * "flame-loop"), else the built-in seeded `fireball` sheet. A texture or
+   * sprite draws the soft-dot until it has loaded. `prewarm` starts the
+   * sprite that many seconds in.
    */
   flipbook: (options: Omit<AuraEffectNode, "kind" | "effect"> & {
     readonly blend?: AuraBlendMode;
@@ -231,6 +236,8 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
     readonly loop?: boolean;
     readonly prewarm?: number;
     readonly sprite?: AuraParticleEmitterOptions["sprite"];
+    /** GU47 E-F: sprite-sheet texture asset (`assets.sheet`) or URL; grid from `spriteColumns × spriteRows`. */
+    readonly texture?: AuraAssetRef<"texture"> | string;
   } = {}) => {
     const columns = options.spriteColumns ?? 4;
     const rows = options.spriteRows ?? 4;
