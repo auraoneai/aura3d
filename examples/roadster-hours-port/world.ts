@@ -6,13 +6,14 @@
  * fallback when a generated model is unavailable (`meshy.ts`, `PORTING-NOTES.md`).
  */
 import {
-  batched, camera, cameras, effects, environments, geometry, instances, lights, material, primitives, scene, type AuraApp
+  batched, camera, cameras, defineAuraAssets, effects, environments, geometry, instances, lights, lookHdriUrl, material, primitives, scene, type AuraApp
 } from "@aura3d/engine";
+import { SALTWIND_LOOK, directionFromAngles, lookModeFrom, type SaltwindLookRow } from "./art/look";
 import { levelLayout, roadProfile, trafficPiece, pieceSpec, type Level } from "./course";
 import { CAR_GROUPS, CAR_FOR_PIECE, carGroup, carNativeSize, type CarGroup, type CarKey } from "./cars";
 import { LEVELS } from "./data";
-import { LOOKS, hexLinear, type Look } from "./look";
-import { beamSpec, plumeSpec, rampSpec, roadSpec, skySpec, solidSpec, terrainSpec, towerSpec, townSpec, waterSpec, type FogLook } from "./materials";
+import { hexLinear, lookFor, type Look } from "./look";
+import { beamSpec, blobFadeFor, blobSpec, citySpec, plumeSpec, rampSpec, roadSpec, skySpec, solidSpec, terrainSpec, towerSpec, townSpec, waterSpec, type FogLook } from "./materials";
 import { hasMeshy, meshyGeometry, meshyMaterial, meshySize } from "./meshy";
 import type { Run, RunEvent as SimEvent } from "./sim";
 
@@ -441,26 +442,76 @@ export const fogFor = (look: Look): FogLook => ({ fogColor: look.horizon, fogNea
 const PLAYER_SCALE = 1.12;
 const DUST_COLOUR: Record<string, readonly [number, number, number]> = { coast: [0.8, 0.78, 0.74], canyon: [0.62, 0.38, 0.28], skyway: [0.22, 0.28, 0.42] };
 
-export function buildWorld(levelIndex: number): World {
+/**
+ * GU47 (RH47-04): the route IBLs from the E-A catalogue (`/hdri/<id>_1k.hdr`). They light and reflect the engine-lit
+ * vehicles and props only; the custom dome stays the visible sky (background off).
+ */
+export const ROUTE_HDRI = defineAuraAssets({
+  saltwindHdriSunbreak: { type: "texture", format: "hdr", url: lookHdriUrl(SALTWIND_LOOK.sunbreak.hdri) },
+  saltwindHdriRedline: { type: "texture", format: "hdr", url: lookHdriUrl(SALTWIND_LOOK.redline.hdri) },
+  saltwindHdriHalo: { type: "texture", format: "hdr", url: lookHdriUrl(SALTWIND_LOOK.halo.hdri) }
+});
+const HDRI_FOR_ROUTE = { sunbreak: ROUTE_HDRI.saltwindHdriSunbreak, redline: ROUTE_HDRI.saltwindHdriRedline, halo: ROUTE_HDRI.saltwindHdriHalo } as const;
+
+/** Name of the route IBL node: the route and the catalogue file, so `diagnostics().lighting.environment.source` names both. */
+export const routeIblName = (row: SaltwindLookRow): string => `route IBL ${row.id} ${row.hdri}_1k`;
+
+/** Shadow of the GU47 key (RH47-03): 3 PCSS cascades over 260 m; the engine drops to 1 cascade and PCF on Low (PRD §6.4). */
+export const keyShadowFor = (row: SaltwindLookRow) => ({ cascades: row.shadow.cascades, maxDistance: row.shadow.maxDistance, filter: row.shadow.filter, mapSize: row.shadow.mapSize, softness: 1.2 });
+
+/** The relay gate glow per route (RH47-11: route-tinted gantries replace today's cyan emissive boxes). */
+export const gantryColours = (look: Look): { frame: Vec3; glow: Vec3; glowAmount: number } => {
+  if (!look.row) return { frame: hexLinear(0x2ad6ff) as Vec3, glow: hexLinear(0x2ad6ff) as Vec3, glowAmount: 1.8 };
+  const g = look.row.gantry;
+  return { frame: hexLinear(parseInt(g.frame.slice(1), 16)) as Vec3, glow: hexLinear(parseInt(g.glow.slice(1), 16)) as Vec3, glowAmount: g.glowAmount };
+};
+
+/** RH47-07: a small salt-toned flare (pixel sizes) instead of the 700 px default halo. */
+const SUN_FLARE = [
+  { size: 260, distance: 0, color: "#fff1d6" },
+  { size: 36, distance: 0.45, color: "#e9e4d6" },
+  { size: 64, distance: 0.7, color: "#9fd0cc" },
+  { size: 28, distance: 1.0, color: "#ffd2a8" }
+] as const;
+
+export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeof location !== "undefined" ? lookModeFrom(location.search) : "gu47"): World {
   const level = LEVELS[levelIndex]!;
-  const look = LOOKS[level.id]!;
+  const look = lookFor(level.id, mode);
+  const row = look.row;
   const seed = level.seed;
   const sunDirection = look.sunDir;
   const query = typeof location !== "undefined" ? new URLSearchParams(location.search) : new URLSearchParams();
   const enabled = (flag: string): boolean => query.get(flag) !== "0";
   const builder: Scene = scene()
-    .background(hexString(level.fog))
-    .camera(camera.perspective({ position: roadPoint(level, 0, 0, 6), target: roadPoint(level, 40, 0, 2), fov: 60, near: 0.4, far: 7000 }))
-    .add(lights.directional({ name: "sun", position: [sunDirection[0] * 500, sunDirection[1] * 500, sunDirection[2] * 500], target: [0, 0, 0], intensity: look.keyLight.intensity, color: look.keyLight.color, shadow: enabled("shadow") ? { cascades: 1, maxDistance: 90 } : false }))
-    .add(lights.directional({ name: "fill", position: [-sunDirection[0] * 300, 120, -sunDirection[2] * 300], target: [0, 0, 0], intensity: look.fillLight.intensity, color: look.fillLight.color, shadow: false }));
-  if (enabled("env")) builder.add(environments.preset(look.night ? "night" : look.id === "redline" ? "sunset" : "outdoor", { name: "route IBL", intensity: look.envIntensity, background: false }));
+    .background(row ? row.fog.color : hexString(level.fog))
+    .camera(camera.perspective({ position: roadPoint(level, 0, 0, 6), target: roadPoint(level, 40, 0, 2), fov: 60, near: 0.4, far: 7000 }));
+  if (row) {
+    // RH47-02/03: the look row's one shadowed key (the same sun the GLSL surfaces read) and its one unshadowed fill.
+    const fillDir = directionFromAngles(row.fill.elevationDeg, row.fill.azimuthDeg);
+    builder.add(lights.directional({ name: "sun", position: [sunDirection[0] * 500, sunDirection[1] * 500, sunDirection[2] * 500], target: [0, 0, 0], intensity: row.sun.intensity, color: row.sun.color, shadow: enabled("shadow") ? keyShadowFor(row) : false }));
+    if (row.fill.kind === "city-glow") {
+      builder.add(lights.hemisphere({ name: "city glow", skyColor: row.ambient.sky, groundColor: row.fill.color, intensity: row.fill.intensity }));
+    } else {
+      builder.add(lights.directional({ name: row.fill.kind === "sea-bounce" ? "sea bounce" : "violet rim", position: [fillDir[0] * 300, fillDir[1] * 300, fillDir[2] * 300], target: [0, 0, 0], intensity: row.fill.intensity, color: row.fill.color, shadow: false }));
+    }
+  } else {
+    builder
+      .add(lights.directional({ name: "sun", position: [sunDirection[0] * 500, sunDirection[1] * 500, sunDirection[2] * 500], target: [0, 0, 0], intensity: look.keyLight.intensity, color: look.keyLight.color, shadow: enabled("shadow") ? { cascades: 1, maxDistance: 90 } : false }))
+      .add(lights.directional({ name: "fill", position: [-sunDirection[0] * 300, 120, -sunDirection[2] * 300], target: [0, 0, 0], intensity: look.fillLight.intensity, color: look.fillLight.color, shadow: false }));
+  }
+  if (enabled("env")) {
+    if (row) builder.add(environments.hdri({ name: routeIblName(row), texture: HDRI_FOR_ROUTE[row.id], intensity: row.environmentIntensity, rotation: (row.environmentRotationDeg * Math.PI) / 180, background: false }));
+    else builder.add(environments.preset(look.night ? "night" : look.id === "redline" ? "sunset" : "outdoor", { name: "route IBL", intensity: look.envIntensity, background: false }));
+  }
   if (enabled("fog")) builder.add(effects.fog({ name: "haze", density: look.engineFogDensity, color: look.engineFog }));
   if (enabled("post")) {
     builder
       .add(effects.bloom({ name: "bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold, scatter: look.bloom.radius }))
-      .add(effects.colorGrade({ name: "grade", exposure: look.grade.exposure, contrast: look.grade.contrast, saturation: look.grade.saturation }))
+      .add(effects.colorGrade({ name: "grade", exposure: look.grade.exposure, contrast: look.grade.contrast, saturation: look.grade.saturation, ...(row ? { temperature: row.grade.temperature, tint: row.grade.tint } : {}) }))
       .add(effects.vignette({ name: "vignette", intensity: look.vignette, smoothness: 0.7 }))
       .add(effects.antiAlias({ name: "fxaa", mode: "fxaa" }));
+    if (row && row.post.grain > 0) builder.add(effects.filmGrain({ name: "grain", intensity: row.post.grain }));
+    if (row && row.post.flare > 0) builder.add(lights.lensFlare({ name: "sun flare", light: "sun", intensity: row.post.flare, occlusion: "frustum", elements: SUN_FLARE }));
   }
 
   const width = level.width;
@@ -598,10 +649,12 @@ export function buildWorld(levelIndex: number): World {
 
   /* ---- ocean ---- */
   const mid = roadPoint(level, level.length / 2, 0, 0);
-  builder.add(primitives.plane({ name: "water", position: [mid[0], 0, mid[2]], size: 9000, material: material.custom(waterSpec(look)) }));
+  // RH47-06: Halo's plane is the city carpet under the skyway; the coast routes keep the sea (one program either way).
+  builder.add(primitives.plane({ name: look.cityCarpet ? "city-carpet" : "water", position: [mid[0], 0, mid[2]], size: 9000, material: material.custom(look.cityCarpet ? citySpec(look) : waterSpec(look)) }));
 
   /* ---- relay gates, data cells, hazards ---- */
-  const gateMat = () => material.custom(solidSpec(look, hexLinear(0x2ad6ff), hexLinear(0x2ad6ff), 1.8, 0.4));
+  const gantry = gantryColours(look);
+  const gateMat = () => material.custom(solidSpec(look, gantry.frame, gantry.glow, gantry.glowAmount, 0.4));
   level.gates.forEach((g, i) => {
     const psi = -roadProfile(level, g.s).heading;
     const base = roadPoint(level, g.s, 0, 0);
@@ -611,6 +664,17 @@ export function buildWorld(levelIndex: number): World {
     }
     builder.add(primitives.box({ name: `gate-bar-${i}`, position: [base[0], base[1] + 12, base[2]], rotation: [0, psi, 0], size: [width * 2, 0.6, 0.6], material: gateMat(), castShadow: false }));
   });
+  // RH47-02 (Halo): cool gantry points ride with the next relay gate (two lights, unshadowed; moved in the runtime).
+  const gantryPoints = row?.gantryPoints ?? null;
+  const gantryLightAt = (gateIndex: number, k: number): Vec3 => {
+    const g = level.gates[Math.min(level.gates.length - 1, Math.max(0, gateIndex))]!;
+    return roadPoint(level, g.s, (k === 0 ? -1 : 1) * (width - 1.2), 10.5);
+  };
+  if (gantryPoints) {
+    for (let k = 0; k < gantryPoints.count; k++) {
+      builder.add(lights.point({ name: `gantry-light-${k}`, position: gantryLightAt(0, k), color: gantryPoints.color, intensity: gantryPoints.intensity, distance: gantryPoints.distance, shadow: false }).runtime({ id: `gantry-light-${k}` }));
+    }
+  }
   level.cells.forEach((c, i) => {
     const p = roadPoint(level, c.s, c.l, c.h);
     builder.add(primitives.sphere({ name: `cell-${i}`, position: p, size: 1.7, material: material.custom(solidSpec(look, hexLinear(0xf3b548), hexLinear(0xffa31a), 4.2, 0.35, 0.3)), castShadow: false }).runtime({ id: `cell-${i}` }));
@@ -746,6 +810,11 @@ export function buildWorld(levelIndex: number): World {
     }
   }
 
+  /* ---- GU47 RH47-03: contact blob under the roadster (one plane, fades with ride height) ---- */
+  if (row) {
+    builder.add(primitives.plane({ name: "car-blob", position: roadPoint(level, 0, 0, 0.04), size: [nativeSize[0] * PLAYER_SCALE * 1.5, 1, nativeSize[2] * PLAYER_SCALE * 1.25], material: material.custom(blobSpec()), castShadow: false, receiveShadow: false }).runtime({ id: "car-blob" }));
+  }
+
   /* ---- headlight beams (additive cones, same transform as the car) and particle emitters ---- */
   const lampX = (nativeSize[0] * PLAYER_SCALE) / 2 - 0.4, lampY = -playerHeight * 0.18, lampZ = -(nativeSize[2] * PLAYER_SCALE) / 2 + 0.1;
   const beamDir: Vec3 = [0, -0.05, -1];
@@ -794,6 +863,9 @@ export function buildWorld(levelIndex: number): World {
       const scaleVec: Vec3 = [nativeSize[0] * PLAYER_SCALE, nativeSize[1] * PLAYER_SCALE, nativeSize[2] * PLAYER_SCALE];
       const beams = [-1, 1].map((sx) => node(`beam-${sx}`));
       const dust = node("plume-dust"), sparks = node("plume-sparks");
+      const blob = row ? node("car-blob") : null;
+      const gantryLights = gantryPoints ? Array.from({ length: gantryPoints.count }, (_v, k) => node(`gantry-light-${k}`)) : [];
+      let gantryGate = -1;
       let dustAmount = 0, sparkAmount = 0;
       for (const part of parts) part.setScale(scaleVec);
 
@@ -838,6 +910,12 @@ export function buildWorld(levelIndex: number): World {
           for (const part of parts) { part.setPosition(carP[0], carP[1], carP[2]); part.setRotation(pitch, psi, rollAngle); }
           const racing = run.phase === "running" || run.phase === "countdown";
           for (const beam of beams) { beam.setPosition(carP[0], carP[1], carP[2]); beam.setRotation(pitch, psi, rollAngle); beam.setVisible(racing); }
+          if (blob) {
+            const under = roadPoint(level, run.s, run.l, 0.04);
+            blob.setPosition(under[0], under[1], under[2]);
+            blob.setRotation(0, psi, prof.bank);
+            blob.setUniform?.("blobFade", blobFadeFor(run.h));
+          }
           const trailDir: Vec3 = [Math.sin(psi), 0, Math.cos(psi)];
           const rear = roadPoint(level, run.s - 2.1, run.l, run.h + 0.3);
           const rolling = run.phase === "running";
@@ -852,6 +930,10 @@ export function buildWorld(levelIndex: number): World {
           const sparkAt = scraping && !burning ? wall : [rear[0], rear[1] + 0.2, rear[2]];
           sparks.setUniform?.("ptPos", sparkAt); sparks.setUniform?.("ptBack", trailDir); sparks.setUniform?.("ptSpeed", run.v); sparks.setUniform?.("ptAmount", sparkAmount);
           for (let i = 0; i < cells.length; i++) cells[i]!.setVisible(!run.cells.has(i));
+          if (gantryLights.length && run.nextGate !== gantryGate) {
+            gantryGate = run.nextGate;
+            gantryLights.forEach((light, k) => { const p = gantryLightAt(gantryGate, k); light.setPosition(p[0], p[1], p[2]); });
+          }
           for (let ci = 0; ci < trafficSlots.length; ci++) {
             const car = run.traffic[ci]!;
             for (const slot of trafficSlots[ci]!) writeVehicle(slot, car.s, car.l, 0);

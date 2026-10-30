@@ -195,10 +195,64 @@ void main() {
   vec3 sunSpec = sunColor * min(glitter, 30.0);
 
   float depthMix = clamp(0.5 + crest * 1.4, 0.0, 1.0);
-  vec3 body = mix(deepWater, shallowWater, depthMix * 0.6);
+  // GU47 RH47-06 depth colour: slow shoals of shallow teal over the deep body (whitecaps 0 keeps today's water)
+  float shoal = smoothstep(0.45, 0.8, rhFbm(p * 0.0032 + 3.7)) * min(whitecaps * 2.0, 1.0);
+  vec3 body = mix(deepWater, shallowWater, clamp(depthMix * 0.6 + shoal * 0.45, 0.0, 1.0));
   float sss = pow(clamp(dot(-V, sunDir), 0.0, 1.0), 3.0) * smoothstep(-0.2, 0.9, crest) * 0.45;
   vec3 lit = body * (ambSky * 1.5 + sunColor * 0.22 * max(sunDir.y, 0.0)) + shallowWater * sunColor * sss * 0.3;
+  // GU47 RH47-06 sun glitter path: a broad lobe toward the sun's azimuth on top of the sharp highlight
+  vec3 Rg = reflect(-V, N);
+  float path = pow(max(dot(Rg, sunDir), 0.0), 48.0) * min(whitecaps * 1.5, 1.0) * max(sunDir.y + 0.1, 0.0);
+  sunSpec += sunColor * path * 0.6;
   vec3 col = mix(lit, reflected, clamp(F, 0.0, 1.0)) + sunSpec;
+  // GU47 RH47-06 wind whitecaps: foam caps on the crests, streaked along the wind, faded by the pixel footprint
+  if (whitecaps > 0.0) {
+    vec2 wdir = normalize(windVec + vec2(1e-4, 0.0));
+    vec2 fq = vec2(dot(p, wdir) * 0.05, dot(p, vec2(-wdir.y, wdir.x)) * 0.16) + windVec * u_time * 0.02;
+    float caps = smoothstep(0.62, 0.86, rhFbm(fq) + crest * 0.55);
+    caps *= clamp(9.0 / (foot * 40.0 + 1.0), 0.15, 1.0);
+    vec3 foamLit = vec3(0.92, 0.93, 0.9) * (ambSky * 1.6 + sunColor * 0.32 * max(sunDir.y, 0.0) + 0.04);
+    col = mix(col, foamLit, caps * whitecaps * 0.85);
+  }
+  outColor = vec4(finish(fogIt(col, vWorld)), 1.0);
+}`;
+
+/**
+ * GU47 RH47-06 (Halo): the city carpet under the skyway, drawn on the ocean plane in place of the dark sea. Blocks of
+ * mercury-white and sea-glass lit roofs on a slate street grid, streetlight lines and sparse blinking red beacons; no amber
+ * and no neon. Every term fades by the pixel footprint so the far carpet resolves to its average glow without moire.
+ */
+export const CITY_FRAGMENT = /* glsl */ `
+in vec3 vWorld;
+out vec4 outColor;
+${ATMOS}
+void main() {
+  vec2 p = vWorld.xz;
+  float foot = length(fwidth(p)) + 1e-4;
+  vec2 cell = p / 64.0;
+  vec2 id = floor(cell);
+  vec2 f = fract(cell);
+  float h = rhHash(id + 11.0);
+  float h2 = rhHash(id + 37.0);
+  // streets: 8 m of every 64 m block, with a streetlight line down the middle
+  vec2 edge = min(f, 1.0 - f) * 64.0;
+  float street = 1.0 - smoothstep(3.5, 4.5 + foot, min(edge.x, edge.y));
+  float lamp = (1.0 - smoothstep(0.0, 0.6 + foot, abs(min(edge.x, edge.y) - 0.0))) * street;
+  // roofs: windows as a fine grid, faded to their mean as the footprint grows
+  vec2 w = fract(p / 3.0);
+  float win = step(0.35, w.x) * step(0.35, w.y) * step(0.45, rhHash(floor(p / 3.0)));
+  float fine = clamp(1.0 - foot / 3.0, 0.0, 1.0);
+  float lit = mix(0.28, win, fine);
+  vec3 mercury = vec3(0.86, 0.9, 0.92);
+  vec3 seaGlass = vec3(0.55, 0.82, 0.77);
+  vec3 roofTone = mix(mercury, seaGlass, step(0.55, h));
+  vec3 roof = mix(vec3(0.03, 0.04, 0.06), roofTone * (0.55 + 0.9 * h2), lit * step(0.18, h));
+  vec3 col = mix(roof, vec3(0.02, 0.025, 0.035), street) + mercury * lamp * 1.6;
+  // red beacons on the tallest roofs, blinking out of phase
+  float beacon = step(0.9, h2) * (1.0 - smoothstep(0.0, 1.6 + foot, length((f - 0.5) * 64.0)));
+  float blink = step(0.5, fract(u_time * 0.5 + h * 7.0));
+  col += vec3(0.78, 0.16, 0.1) * beacon * blink * 5.0;
+  col *= cityGain;
   outColor = vec4(finish(fogIt(col, vWorld)), 1.0);
 }`;
 
@@ -223,8 +277,29 @@ void main() {
     vec3 rock = mix(horizonColor, zenithColor * 0.7, 0.45) * mix(0.8, 1.15, rhFbm(vec2(az * 9.0, v.y * 40.0)));
     col = mix(col, rock, edge * mountainAmt * (1.0 - smoothstep(0.0, 0.12, v.y - ridge) ));
   }
+  // GU47 RH47-05: low sea-side band (salt haze by day, city glow at blue hour); bandSide 1 = sea side only, 0 = all round.
+  if (bandAmt > 0.0) {
+    float side = mix(1.0, smoothstep(-0.35, 0.75, v.x * seaSign), bandSide);
+    float low = exp(-max(v.y, 0.0) * 9.0) * smoothstep(-0.12, 0.0, v.y);
+    col = mix(col, bandColor, clamp(low * side * bandAmt, 0.0, 1.0));
+    // sun-side glow: a broad warm lift along the horizon under the sun's azimuth
+    vec2 sh = normalize(sunDir.xz + vec2(1e-4));
+    float az = max(dot(normalize(v.xz + vec2(1e-4)), sh), 0.0);
+    col += sunColor * pow(az, 6.0) * exp(-max(v.y, 0.0) * 5.0) * 0.05 * bandAmt * (1.0 - nightAmt);
+  }
+  // GU47 RH47-05: high cirrus streaks stretched along the wind (second cloud layer)
+  if (v.y > 0.01 && cloudHigh > 0.0) {
+    vec2 wdir = normalize(windVec + vec2(1e-4, 0.0));
+    vec2 qh = v.xz / (v.y + 0.3) * 0.9 + windVec * u_time * 0.0009;
+    vec2 st = vec2(dot(qh, wdir) * 0.35, dot(qh, vec2(-wdir.y, wdir.x)) * 2.4);
+    float nh = rhFbm(st * 1.6);
+    float coverH = smoothstep(0.5, 0.78, nh) * smoothstep(0.02, 0.25, v.y) * cloudHigh;
+    float sah = max(dot(v, sunDir), 0.0);
+    vec3 cirrus = mix(horizonColor, vec3(1.0), 0.35) + sunColor * 0.12 * pow(sah, 3.0);
+    col = mix(col, cirrus * mix(1.0, 0.35, nightAmt), coverH * 0.7);
+  }
   if (v.y > 0.005 && cloudAmt > 0.0) {
-    vec2 q = v.xz / (v.y + 0.14) * 1.15 + vec2(u_time * 0.006, u_time * 0.002);
+    vec2 q = v.xz / (v.y + 0.14) * 1.15 + vec2(u_time * 0.006, u_time * 0.002) + windVec * u_time * 0.0012;
     float n = rhFbm(q * 1.2);
     float cover = smoothstep(0.46, 0.8, n) * smoothstep(0.005, 0.14, v.y) * cloudAmt;
     float sa = max(dot(v, sunDir), 0.0);
@@ -360,6 +435,23 @@ void main() {
 
 
 /** Kicker / shortcut deck: dark steel with forward-pointing hazard chevrons. uv.x = lateral (-1..1), uv.y = arc length in metres. */
+/**
+ * GU47 RH47-03: soft contact shadow under the roadster (a plane on the road under the car, alpha-blended). `blobFade` is
+ * 1 on the ground and falls to 0 with ride height, so the car reads as planted between the cascade texels and lifts off
+ * the road visibly on a jump.
+ */
+export const BLOB_FRAGMENT = /* glsl */ `
+in vec2 vUv;
+in vec3 vNormal;
+in vec3 vWorld;
+out vec4 outColor;
+void main() {
+  vec2 q = (vUv - 0.5) * 2.0;
+  float r = length(q * vec2(1.0, 0.62));
+  float a = (1.0 - smoothstep(0.35, 1.0, r)) * blobFade * blobStrength;
+  outColor = vec4(0.0, 0.0, 0.0, clamp(a, 0.0, 0.9));
+}`;
+
 export const RAMP_FRAGMENT = /* glsl */ `
 in vec2 vUv;
 in vec3 vWorld;
