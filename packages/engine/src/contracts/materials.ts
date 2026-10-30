@@ -4,6 +4,7 @@
  */
 
 import type { AuraColor, AuraAssetRef, AuraRuntimeNodeHandle } from "../agent-api/index";
+import type { AuraMaterialRimSpec } from "../agent-api/nodes/types";
 
 // AuraMaterialSpec additions (PR 0a; owner tags in JSDoc):
 //   blend?: AuraBlendMode (C-04, PRD 01); depthWrite?: boolean (PRD 01); ior?: number (PRD 01, reaches F0)
@@ -23,6 +24,14 @@ export interface AuraModelMaterialOverride {
   readonly color?: AuraColor; readonly colorMode?: "multiply" | "replace"; readonly replaceTextures?: boolean;
   readonly roughness?: number; readonly metallic?: number; readonly emissive?: AuraColor; readonly emissiveIntensity?: number;
   readonly clearcoat?: number; readonly clearcoatRoughness?: number; readonly envMapIntensity?: number; readonly opacity?: number;
+  // GU47 E-D (PRD §3.1). Each applies only to materials that carry the matching parameter, except `rim`, which any
+  // generated-program PBR material accepts (and which `setMaterialOverrides([])` removes again).
+  /** Fresnel rim term, same shape as `AuraMaterialSpec.rim`. */
+  readonly rim?: AuraMaterialRimSpec;
+  /** KHR_materials_transmission factor 0..1 (rendered when `A3D_QR_MATERIALS_TRANSMISSION` is on). */
+  readonly transmission?: number;
+  /** KHR_materials_iridescence factor 0..1. */
+  readonly iridescence?: number;
 }
 // AuraModelOptions additions: materialOverrides?: readonly AuraModelMaterialOverride[]; variant?: string
 export interface AuraResolvedMaterialInfo { readonly name: string; readonly featureKey: string; readonly baseColorFactor: readonly [number, number, number, number]; readonly enabledMaps: readonly string[]; readonly extensions: readonly string[]; readonly lightsEvaluated: "uniform-16" | "clustered"; readonly warnings: readonly string[]; }
