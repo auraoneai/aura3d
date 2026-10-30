@@ -1,0 +1,488 @@
+{
+  "schema": "aura3d.art-direction-audit/1",
+  "source": "examples/heatsink-port/art/direction.ts",
+  "sourceSha256": "980966ae0de5dc62614f05cc4db7fd98dc04d84c241d2f9f7c880d580f8cf557",
+  "id": "heatsink-port",
+  "genre": "racing",
+  "signatureEffect": "ion-wake: a 60-segment cyan-to-violet ribbon trailing the drone's last 1.2 s, turning amber under the afterburner.",
+  "palette": {
+    "primary": [
+      "#0f3a40",
+      "#9f8cff",
+      "#ff5ab4",
+      "#ffb02e"
+    ],
+    "accent": "#c8743a",
+    "reservedObjective": "#40e0ff"
+  },
+  "environment": {
+    "preset": "aurora-planet-dome",
+    "background": "sky"
+  },
+  "violations": [],
+  "snapshot": {
+    "lights": [
+      {
+        "type": "directional",
+        "shadow": true,
+        "intensity": 2.9
+      },
+      {
+        "type": "hemisphere",
+        "shadow": false,
+        "intensity": 0.8
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 6
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 7
+      }
+    ],
+    "hasAmbient": false,
+    "environment": {
+      "kind": "hdri",
+      "background": false
+    },
+    "models": [
+      {
+        "assetKey": "plantCap",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "plantCoral",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ruinMonolith",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ruinArch",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pylon",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pickupShield",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pickupRepair",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pickupShield",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pickupRepair",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pickupShield",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pickupRepair",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "barrel",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "barrel",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "barrel",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "barrel",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "barrel",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "barrel",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "barrel",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "barrel",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "barrel",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "barrel",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "barrel",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "barrel",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "drone",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
+    "materials": [],
+    "drawCalls": 0
+  },
+  "direction": {
+    "id": "heatsink-port",
+    "genre": "racing",
+    "fantasy": "Anti-gravity drone race on an obsidian causeway through an alien blue-hour canyon under a ringed planet.",
+    "rebuildTier": "S-presentation",
+    "wave": 4,
+    "references": [
+      {
+        "file": "references/blue-hour-canyon.json",
+        "source": "generic reference: desert canyon photographed in the twenty minutes after sunset (violet zenith, warm band on the horizon)",
+        "licence": "reference-only",
+        "why": "The two-tone twilight sky the dome reproduces: a magenta-to-amber band at the sun azimuth under a violet zenith, rock lit from the sky"
+      },
+      {
+        "file": "references/anti-gravity-racer.json",
+        "source": "shipped comparable: anti-gravity racing presentation (WipEout HD / Redout chase framing and engine trails)",
+        "licence": "reference-only",
+        "why": "Low chase camera, bank roll on corners and a coloured engine wake that reads speed and boost state at a glance"
+      },
+      {
+        "file": "references/wet-obsidian.json",
+        "source": "generic reference: polished black volcanic glass and wet basalt reflecting a coloured sky",
+        "licence": "reference-only",
+        "why": "A dark glossy road that mirrors the sky at grazing angles (fresnel) so the causeway is bright at the horizon and dark underfoot"
+      },
+      {
+        "file": "references/bioluminescent-mineral.json",
+        "source": "generic reference: fluorescent mineral veins and glowing cave lichen under UV light",
+        "licence": "reference-only",
+        "why": "Thin cyan veins and lichen patches that glow above HDR white and light the rock, the only local colour in the dark canyon"
+      }
+    ],
+    "palette": {
+      "primary": [
+        "#0f3a40",
+        "#9f8cff",
+        "#ff5ab4",
+        "#ffb02e"
+      ],
+      "accent": "#c8743a",
+      "reservedObjective": "#40e0ff"
+    },
+    "lighting": {
+      "key": {
+        "type": "directional",
+        "colorTemperatureK": 3600,
+        "shadow": true
+      },
+      "fill": "ibl+bounce",
+      "practicals": 3,
+      "environment": {
+        "preset": "aurora-planet-dome",
+        "background": "sky"
+      },
+      "exposureEV": 0.07
+    },
+    "framing": {
+      "rig": "chase",
+      "subjectHeightFraction": [
+        0.08,
+        0.16
+      ],
+      "fovDeg": [
+        62,
+        84
+      ],
+      "mobile": "both"
+    },
+    "assets": [
+      {
+        "role": "vehicle",
+        "assetKey": "drone",
+        "maxTriangles": 60000,
+        "minTriangles": 12000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "enemy",
+        "assetKey": "heatsinkSentry",
+        "maxTriangles": 15000,
+        "minTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "enemy",
+        "assetKey": "heatsinkHeavy",
+        "maxTriangles": 15000,
+        "minTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "barrel",
+        "maxTriangles": 16000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "prop",
+        "assetKey": "pickupShield",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "prop",
+        "assetKey": "pickupRepair",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "prop",
+        "assetKey": "pylon",
+        "maxTriangles": 16000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "plantCap",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "plantCoral",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "ruinMonolith",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "ruinArch",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      }
+    ],
+    "vfx": [
+      {
+        "event": "cruise",
+        "kind": "trail"
+      },
+      {
+        "event": "afterburner",
+        "kind": "trail"
+      },
+      {
+        "event": "boost-pad",
+        "kind": "burst"
+      },
+      {
+        "event": "target-hit",
+        "kind": "burst"
+      },
+      {
+        "event": "target-kill",
+        "kind": "explosion"
+      },
+      {
+        "event": "barrel-blast",
+        "kind": "explosion"
+      },
+      {
+        "event": "checkpoint",
+        "kind": "ring"
+      },
+      {
+        "event": "ambient-spores",
+        "kind": "emitter"
+      }
+    ],
+    "audio": [
+      {
+        "event": "engine",
+        "cue": "drone-engine-voice",
+        "variants": 1
+      },
+      {
+        "event": "target-hit",
+        "cue": "bolt-hit",
+        "variants": 1
+      },
+      {
+        "event": "target-kill",
+        "cue": "sentry-kill",
+        "variants": 1
+      },
+      {
+        "event": "boost-pad",
+        "cue": "boost-whoosh",
+        "variants": 1
+      },
+      {
+        "event": "countdown",
+        "cue": "countdown-beep",
+        "variants": 2
+      }
+    ],
+    "signatureEffect": "ion-wake: a 60-segment cyan-to-violet ribbon trailing the drone's last 1.2 s, turning amber under the afterburner.",
+    "standIns": [
+      {
+        "feature": "sentry and heavy targets (primitive cores and rings)",
+        "file": "examples/heatsink-port/world.ts",
+        "request": "R-14-07",
+        "removeWhen": "WP-36 heatsinkSentry and heatsinkHeavy GLBs admitted"
+      },
+      {
+        "feature": "crystal clusters, ribcage arch, cliff dwellings and needle spires",
+        "file": "examples/heatsink-port/world.ts",
+        "request": "R-14-07",
+        "removeWhen": "WP-36 crystal, arch, dwelling and spire GLBs admitted"
+      },
+      {
+        "feature": "procedural basalt and lichen in the terrain shader",
+        "file": "examples/heatsink-port/shaders.ts",
+        "request": "R-14-13",
+        "removeWhen": "CC0 basalt set and lichen mask admitted"
+      }
+    ],
+    "criticalCategories": [
+      "lighting",
+      "atmospheric_effects",
+      "vfx"
+    ],
+    "tiers": {
+      "low": {
+        "particles": 240,
+        "shadowMap": 1024,
+        "cascades": 1,
+        "textureMax": 1024
+      },
+      "medium": {
+        "particles": 420,
+        "shadowMap": 2048,
+        "cascades": 2,
+        "textureMax": 2048
+      },
+      "high": {
+        "particles": 720,
+        "shadowMap": 2048,
+        "cascades": 3,
+        "textureMax": 2048
+      },
+      "ultra": {
+        "particles": 960,
+        "shadowMap": 4096,
+        "cascades": 3,
+        "textureMax": 2048
+      }
+    }
+  }
+}

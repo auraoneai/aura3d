@@ -8,7 +8,13 @@ import { createCameraShake } from "@aura3d/engine/game";
 import { camera, cameras, effects, environments, geometry, lights, material, primitives, scene, type AuraApp } from "@aura3d/engine";
 import { CFG } from "./config";
 import { buildArches, buildDividers, buildProps, buildRails, buildRoad, buildShards, buildShoulders, groundQuad, hexLinear, padQuad, veilQuad, type MeshData } from "./meshes";
-import { blobSpec, pointsSpec, roadSpec, skySpec, solidSpec, streakSpec, terrainSpec, veilSpec, type Rgb } from "./materials";
+import { beaconSpec, blobSpec, pointsSpec, roadSpec, setShading, skySpec, solidSpec, streakSpec, terrainSpec, veilSpec, wakeSpec, type Rgb } from "./materials";
+import { bankRoll, createIonWake, createSporeField, sporeField } from "./art/wake";
+import { districtFog, fogApproach } from "./art/look";
+import { afterburnerKick, directCamera, HEAT_STEPS, heatStep, VIGNETTE_PULSE, vignettePulse } from "./art/director";
+import { buildBeacons } from "./art/beacons";
+import { createPoolUniforms, glowEmitters, nearestPools } from "./art/pools";
+import { HEATSINK_VFX, registerHeatsinkVfx, vfxScale } from "./art/vfx";
 import { axisRotation, droneEuler, matrixToEulerZYX, multiplyMat3 } from "./orient";
 import type { Race } from "./race";
 import { barrelModel, droneHull, gatePylonNodes, modelSet, sceneryNodes, pickupModel } from "./models";
@@ -16,6 +22,7 @@ import { Operation, STRIKE } from "./operation";
 import { seededRandom } from "./rng";
 import { Track, type Frame } from "./track";
 import type { HudValues } from "./hud";
+import { lookFromSearch, lowTier, SHADER_SUN_DIR, type HeatsinkLookRow } from "./art/look";
 
 type Scene = ReturnType<typeof scene>;
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
@@ -68,13 +75,22 @@ const FRAMING = { dist: 7.6, height: 2.0 };
 export const BLOOM = { intensity: 0.6, threshold: 1.0 } as const;
 /** Neutral-room IBL intensity for the lit models (LIGHT-01); see the environment node in `buildWorld`. */
 export const NEUTRAL_FILL = 1.0;
+/** IC-04: the twilight IBL (E-A catalogue, served at /hdri/sunset-dramatic_1k.hdr); IBL only, never the background */
+export const TWILIGHT_HDRI = { type: "texture", format: "hdr", url: "/hdri/sunset-dramatic_1k.hdr" } as const;
 
 /** HP-13: motion the player can turn down (and `prefers-reduced-motion` turns down by default) */
 export interface MotionSettings {
   readonly reduced: boolean;
+  /** IC-22 countdown sweep and finish orbit; false under `manual=1` (deterministic capture driving). Default true */
+  readonly cinematic?: boolean;
 }
 /** with reduced motion: no camera shake, the speed FOV kick capped at this many degrees, speed streaks at half alpha */
 export const REDUCED_FOV_KICK = 6;
+
+/** the custom-shader nodes whose `fogColor` follows the district (IC-06); models and additive strips are not fogged */
+export const DISTRICT_FOG_NODES = ["road", "dividers", "rocks", "plains", "rails", "rail-posts", "arches", "arch-neon", "shards", "crystals", "abyss"] as const;
+/** the QA crop of the drone published to `window.__AURA_QA__.crops` (static: the chase camera keeps the drone there) */
+export const DRONE_CROP = { name: "drone", x: 0.38, y: 0.5, w: 0.24, h: 0.24 } as const;
 
 export interface WorldRuntime {
   update(race: Race, hud: HudValues, dt: number, time: number, aspect: number): void;
@@ -87,11 +103,20 @@ export interface WorldRuntime {
 export interface World {
   readonly scene: Scene;
   readonly track: Track;
+  readonly look: HeatsinkLookRow;
   bind(app: AuraApp): WorldRuntime;
 }
 
-export function buildWorld(track: Track, quality: "high" | "low" = "high"): World {
+/** the look row for a URL search string (`?look=original` is today's look) or an explicit row; Low gets `lowTier` */
+export function resolveLook(look: HeatsinkLookRow | string | undefined, quality: "high" | "low"): HeatsinkLookRow {
+  const row = typeof look === "object" ? look : lookFromSearch(look ?? (typeof location !== "undefined" ? location.search : ""));
+  return quality === "low" ? lowTier(row) : row;
+}
+
+export function buildWorld(track: Track, quality: "high" | "low" = "high", lookInput?: HeatsinkLookRow | string): World {
   const high = quality === "high";
+  const look = resolveLook(lookInput, quality);
+  setShading(look);
   const models = modelSet(quality);
   let minY = Infinity, maxY = -Infinity;
   for (let i = 0; i < track.n; i++) { minY = Math.min(minY, track.py[i] as number); maxY = Math.max(maxY, track.py[i] as number); }
@@ -125,24 +150,36 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high"): Worl
   b.add(geometry.custom(dynamicFrom(arches.neon), { name: "arch-neon", material: material.custom(solidSpec(hexLinear("#bff8ff"), hexLinear("#80f4ff"), 2.2)) }).runtime({ id: fogTracked("arch-neon", "arch-neon") }));
   b.add(geometry.custom(dynamicFrom(buildShards(track)), { name: "shards", material: material.custom(solidSpec(hexLinear("#1a1c26"), hexLinear("#241a3a"), 0.12)) }).runtime({ id: fogTracked("shards", "shards") }));
   b.add(geometry.custom(dynamicFrom(props.crystals), { name: "crystals", material: material.custom(solidSpec(hexLinear("#3ad8c8"), hexLinear("#4ff0e0"), 0.9)) }).runtime({ id: fogTracked("crystals", "crystals") }));
+  /* IC-24 lane beacons every 44 m on both edges, district-coloured, one merged draw (+1); twilight only */
+  if (look.dressing.beacons) b.add(geometry.custom(dynamicFrom(buildBeacons(track)), { name: "beacons", material: material.custom(beaconSpec()), castShadow: false }).runtime({ id: fogTracked("beacons", "beacons") }));
   b.add(geometry.custom(dynamicFrom(groundQuad(5000, minY - 90)), { name: "abyss", material: material.custom(solidSpec(hexLinear("#2a3a40"), hexLinear("#0b1a26"), 0.05)) }).runtime({ id: fogTracked("abyss", "abyss") }));
   /* the earlier black sky was the draw-skip on unused declared uniforms (fixed in 4.0.7); the dome is back-culled again */
   b.add(primitives.sphere({ name: "sky", size: 3000, material: material.custom(skySpec()) }).runtime({ id: "sky" }));
 
-  /* the Meshy models are lit surfaces: a cool sky fill and a warm low key, the custom (unlit) road/sky/neon shaders ignore both */
-  b.add(lights.hemisphere({ name: "sky-fill", skyColor: "#6fa8d8", groundColor: "#2a1a10", intensity: 1.1 }));
+  /* the Meshy models are lit surfaces: a sky fill and the key; the custom (unlit) road/sky/neon shaders evaluate their own `lit()` */
+  b.add(lights.hemisphere({ name: "sky-fill", skyColor: look.hemisphere.sky, groundColor: look.hemisphere.ground, intensity: look.hemisphere.intensity }));
   /*
-   * LIGHT-01: 4.5.0 gives a scene with authored lights and no environment no image-based light at all, so the lit Meshy
-   * models lost the neutral-room fill and reflections they had on 4.3.7. An explicit neutral room (background off, so
-   * the authored sky and the unlit shaders are untouched) brings it back; the intensity is calibrated against 4.3.7
-   * captures with the hemisphere contributing next to it (evidence/audit-fix/g19).
+   * LIGHT-01 / IC-04: the lit models need an image-based light (4.5.0 gives none to a scene with authored lights and no
+   * environment). `?look=original` keeps the calibrated neutral room (evidence/audit-fix/g19). The twilight look uses a
+   * dusk HDRI from the E-A catalogue, IBL only (background off: the authored dome stays the visible sky), rotated to the
+   * shader sun's azimuth so the warm side of the reflections faces the sunset band. environments.capture of the custom
+   * dome is unverified on custom-material domes (E-G, phase 2), so the HDRI is the PRD's fallback; `?env=capture` tries it.
    */
-  b.add(environments.neutral({ name: "model-fill", intensity: NEUTRAL_FILL }));
+  const envParam = typeof location !== "undefined" ? new URLSearchParams(location.search).get("env") : null;
+  if (look.environment.kind === "neutral") b.add(environments.neutral({ name: "model-fill", intensity: look.environment.intensity }));
+  else if (envParam === "capture") b.add(environments.capture({ name: "model-fill", intensity: look.environment.intensity, background: false, include: "all", resolution: 128, update: "once" }));
+  else b.add(environments.hdri({ name: "model-fill", texture: TWILIGHT_HDRI as never, intensity: look.environment.intensity, rotation: (look.environment.rotationDeg * Math.PI) / 180, background: false }));
   /*
-   * The Meshy models do not cast (models.ts, castShadow false), so this cascade shadow never darkens under the drone;
-   * the drone's contact cue is the blob quad below (HP-08). `?shadow=0` turns the cascades off.
+   * IC-03: the twilight key sits along the shader sun ([0.55, 0.23, -0.62], ~15 degrees up) with the map's sun colour
+   * and intensity, so engine shadows fall the way the custom shaders shade; 3 cascades over 220 m and the drone casts.
+   * `?look=original` keeps the 52-degree key, 2 cascades over 160 m and no model casters (blob only). `?shadow=0` turns the
+   * cascades off. Low tier: 1 cascade.
    */
-  b.add(lights.directional({ name: "key", position: [180, 260, -120], target: [0, 0, 0], intensity: 2.6, color: "#ffd9b0", shadow: (typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0" ? false : { cascades: 2, maxDistance: 160 } as never) }));
+  const shadowOff = typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0";
+  b.add(lights.directional({ name: "key", position: [...look.key.position], target: [0, 0, 0], intensity: look.key.intensity, color: look.key.color, shadow: (shadowOff ? false : { cascades: look.key.cascades, maxDistance: look.key.maxDistance }) as never }));
+  /* IC-02: moving points for the lit GLBs (twilight only, 1 on Low): the drone's exhaust glow and the nearest pad / gate pool */
+  if (look.glow.points > 0) b.add(lights.point({ name: "drone-glow", position: [0, -500, 0], intensity: 6, distance: 14, color: "#40e0ff" }).runtime({ id: "drone-glow" }));
+  if (look.glow.points > 1) b.add(lights.point({ name: "pool-glow", position: [0, -500, 0], intensity: 7, distance: 20, color: "#ffb02e" }).runtime({ id: "pool-glow" }));
   for (const n of sceneryNodes(track, undefined, models)) b.add(n);
 
   /* checkpoint gates: veil across the road + two pylons */
@@ -198,7 +235,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high"): Worl
 
   /* player drone */
   for (const part of DRONE_PARTS) {
-    if (part.model) { b.add(droneHull(models).runtime({ id: fogTracked(part.id, part.id) })); continue; }
+    if (part.model) { b.add(droneHull(models, look.key.droneCasts).runtime({ id: fogTracked(part.id, part.id) })); continue; }
     const extra = part.additive ? { transparent: true, blending: "additive" as const, depthWrite: false } : {};
     const mat = material.custom(solidSpec(hexLinear(part.base), hexLinear(part.glow), part.glowAmt, extra));
     const handle = part.prim === "box"
@@ -229,15 +266,89 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high"): Worl
     }
   }), { name: "exhaust", material: material.custom(pointsSpec()) }).runtime({ id: "exhaust" }));
 
-  /* HP-19: no deprecated `radius`; threshold at HDR white and intensity under the noise-risk line */
-  b.add(effects.bloom({ name: "bloom", intensity: BLOOM.intensity, threshold: BLOOM.threshold }));
-  b.add(effects.colorGrade({ name: "grade", exposure: 1.05, contrast: 1.08, saturation: 1.0 }));
-  b.add(effects.vignette({ name: "vignette" }));
+  /* IC-18 ion wake: one dynamic strip (+1 draw), rebuilt every frame from the drone's last 1.2 s; twilight look only */
+  if (look.wake.enabled) {
+    const wake = createIonWake(look);
+    b.add(geometry.custom(geometry.dynamic({
+      positions: f32(new Array<number>(wake.positions.length).fill(0)),
+      uvs: wake.uvs,
+      indices: wake.indices,
+      bounds: courseBounds,
+      attributes: { wakeColor: { itemSize: 3, data: f32(new Array<number>(wake.colors.length).fill(0)) }, wakeAlpha: { itemSize: 1, data: f32(new Array<number>(wake.alpha.length).fill(0)) } }
+    }), { name: "ion-wake", material: material.custom(wakeSpec()), castShadow: false }).runtime({ id: "ion-wake" }));
+  }
 
-  return { scene: b, track, bind: (app) => bindRuntime(app, track, POINTS) };
+  /* IC-20: slow bioluminescent spores in a camera-following 60 m box (one points draw, +1); twilight only, 120 on Low */
+  if (look.dressing.spores > 0) {
+    const n = look.dressing.spores;
+    b.add(geometry.custom(geometry.dynamic({
+      positions: f32(new Array<number>(n * 3).fill(0)),
+      topology: "points",
+      bounds: courseBounds,
+      attributes: {
+        size: { itemSize: 1, data: f32(new Array<number>(n).fill(0)) },
+        tint: { itemSize: 3, data: f32(new Array<number>(n * 3).fill(1)) },
+        fade: { itemSize: 1, data: f32(new Array<number>(n).fill(0)) }
+      }
+    }), { name: "spores", material: material.custom(pointsSpec()) }).runtime({ id: "spores" }));
+  }
+
+  /* HP-19: no deprecated `radius`; threshold at HDR white and intensity under the noise-risk line */
+  b.add(effects.bloom({ name: "bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold }));
+  /* IC-09: the twilight row adds the E-C split tone; the original row authors exactly today's three fields */
+  const g = look.grade;
+  const split = g.temperature !== 0 || g.tint !== 0 || g.shadows !== 1 || g.highlights !== 1;
+  b.add(effects.colorGrade({ name: "grade", exposure: g.exposure, contrast: g.contrast, saturation: g.saturation, ...(split ? { temperature: g.temperature, tint: g.tint, shadows: [...(typeof g.shadows === "number" ? [g.shadows, g.shadows, g.shadows] : g.shadows)] as [number, number, number], highlights: [...(typeof g.highlights === "number" ? [g.highlights, g.highlights, g.highlights] : g.highlights)] as [number, number, number] } : {}) }));
+  /* IC-08 / IC-07: the twilight post stack; Low drops AO, motion blur, god rays, grain and CA (lowTier); original mounts none */
+  if (look.post.vignette !== null) b.add(effects.vignette({ name: "vignette", intensity: look.post.vignette }));
+  else b.add(effects.vignette({ name: "vignette" }));
+  if (look.post.ao) b.add(effects.ambientOcclusion({ name: "gtao", intensity: 0.8, radius: 1.6 }));
+  if (look.post.motionBlur !== null) b.add(effects.motionBlur({ name: "motion blur", intensity: look.post.motionBlur, samples: 8 }));
+  if (look.post.chromaticAberration !== null) b.add(effects.chromaticAberration({ name: "chromatic aberration", intensity: look.post.chromaticAberration }));
+  if (look.post.grain !== null) b.add(effects.filmGrain({ name: "film grain", intensity: look.post.grain }));
+  if (look.post.godRays !== null) b.add(effects.volumetricFog({ name: "god rays", density: 0.08, intensity: look.post.godRays, color: "#ffb7a0", godRayDensity: look.post.godRays }));
+
+  /* IC-07 sun lens flare, kept on the shader sun's direction from the eye each frame (twilight High only; frustum occlusion) */
+  if (look.post.lensFlare !== null) {
+    b.add(lights.lensFlare({ name: "sun-flare", position: [...SUN_FLARE_OFFSET], intensity: look.post.lensFlare, edgeFade: 0.25, runtime: { id: "sun-flare" }, elements: [
+      { size: 380, distance: 0, color: "#ffb07a" }, { size: 60, distance: 0.45, color: "#ff5ab4" }, { size: 90, distance: 0.7, color: "#9f8cff" }, { size: 40, distance: 1, color: "#40e0ff" }
+    ] }));
+  }
+
+  return { scene: b, track, look, bind: (app) => bindRuntime(app, track, POINTS, look) };
 }
 
-function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
+/** IC-07: the flare source sits this far along the shader sun from the eye (inside the 4200 m far plane) */
+const SUN_FLARE_DISTANCE = 2000;
+const SUN_FLARE_OFFSET = ((): [number, number, number] => {
+  const l = Math.hypot(SHADER_SUN_DIR[0], SHADER_SUN_DIR[1], SHADER_SUN_DIR[2]);
+  return [SHADER_SUN_DIR[0] / l * SUN_FLARE_DISTANCE, SHADER_SUN_DIR[1] / l * SUN_FLARE_DISTANCE, SHADER_SUN_DIR[2] / l * SUN_FLARE_DISTANCE];
+})();
+
+/** linear rgb to an sRGB hex string (for `setLight`) */
+function rgbHex(c: readonly [number, number, number]): string {
+  const enc = (v: number): number => Math.round(255 * Math.max(0, Math.min(1, v <= 0.0031308 ? v * 12.92 : 1.055 * Math.pow(v, 1 / 2.4) - 0.055)));
+  return `#${((1 << 24) | (enc(c[0]) << 16) | (enc(c[1]) << 8) | enc(c[2])).toString(16).slice(1)}`;
+}
+
+function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLookRow): WorldRuntime {
+  const twilight = row.wake.enabled;
+  if (twilight) { try { if (app.effects) registerHeatsinkVfx(app as { effects: NonNullable<AuraApp["effects"]> }); } catch { /* effects runtime unavailable: the game's own points still burst */ } }
+  const wake = twilight ? createIonWake(row) : null;
+  const spores = row.dressing.spores > 0 ? createSporeField(row.dressing.spores) : null;
+  const fogNow: [number, number, number] = [...row.fog.color];
+  let fogReady = false;
+  const glowNow: [number, number, number] = [0.376, 0.957, 1];
+  const fogValue = [0, 0, 0];
+  /* IC-02 glow pools: the 4 emitters nearest the drone, written into every lit() node's poolPos / poolCol */
+  const emitters = row.glow.pools > 0 ? glowEmitters(track) : [];
+  const pools = createPoolUniforms();
+  let poolSlot0 = -2;
+  let droneGlowHot = -1;
+  const engineBurst = (kind: string, x: number, y: number, z: number, scale = 1): void => {
+    if (!twilight) return;
+    try { app.effects?.burst(kind, [x, y, z], { camera: false, scale: scale * vfxScale(motion.reduced) }); } catch { /* runtime effects off */ }
+  };
   const cam = app.camera;
   if (!cam) throw new Error("heatsink-port: the app exposes no camera controller");
   const cameraController: NonNullable<typeof cam> = cam;
@@ -280,6 +391,12 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
   const chaseIn = { wantEye: eye, wantLook: look, fovTarget: 0 };
   const blobGeo = new Float32Array(12);
   let motion: MotionSettings = { reduced: false };
+  let rollNow = 0;
+  let finishedFor = 0;
+  let vigEnv = 0;
+  let heatShown = 0;
+  let chaseShown = -1;
+  let vigShown = -1;
 
   function burst(x: number, y: number, z: number, count: number, r: number, g: number, bl: number, speed: number): void {
     for (let i = 0; i < count; i++) {
@@ -317,7 +434,12 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
       const local = yawNow || part.rollZ ? multiplyMat3(axisRotation("y", yawNow), axisRotation("z", part.rollZ ?? 0)) : null;
       const e = local ? matrixToEulerZYX(multiplyMat3(R, local)) : euler;
       h.setRotation(e[0], e[1], e[2]);
-      if (part.model) continue;
+      if (part.model) {
+        /* IC-12: heat glows on the hull in 8 steps (one setEmissive per step change, so no per-frame material churn) */
+        const step = heatStep(row, heatGlow);
+        if (step !== heatShown) { heatShown = step; const [hex, k] = HEAT_STEPS[step]!; try { (h as { materials?: { setEmissive(t: string, c: string, i: number): void } }).materials?.setEmissive("*", hex, k); } catch { /* materials runtime off */ } }
+        continue;
+      }
       h.setUniform?.("heat", heatGlow);
       h.setUniform?.("flash", p.invuln > 0 ? 0.5 + 0.5 * Math.sin(time * 30) : 0);
     }
@@ -337,15 +459,24 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
     eye[0] = p.position.x - fx * FRAMING.dist; eye[1] = p.position.y + FRAMING.height; eye[2] = p.position.z - fz * FRAMING.dist;
     look[0] = p.position.x + fx * c.lookAhead; look[1] = p.position.y + 0.8; look[2] = p.position.z + fz * c.lookAhead;
     const speed01 = Math.min(1, p.v / CFG.vehicle.maxSpeed);
-    const kick = (c.fovMax - c.fovBase) * speed01 * speed01 + (p.rjActive ? c.fovRamjet * 0.35 : 0);
+    const kick = (c.fovMax - c.fovBase) * speed01 * speed01 + (p.rjActive ? c.fovRamjet * 0.35 : 0) + afterburnerKick(row, p.abActive);
     const fovBase = c.fovBase + (motion.reduced ? Math.min(REDUCED_FOV_KICK, kick) : kick);
     chaseIn.fovTarget = Math.min(c.fovMax, aspect < 0.85 ? fovBase + 8 : fovBase);
     const pose = chase.step(chaseIn, dt);
     const sh = shake.update(dt);
     const shx = motion.reduced ? 0 : sh.x, shy = motion.reduced ? 0 : sh.y;
+    /* IC-22 bank roll: the up vector tilts about the heading with the steer (±6 deg cap); none on reduced motion or ?look=original */
+    const roll = motion.reduced ? 0 : bankRoll(row, p.steerVal, speed01);
+    rollNow += (roll - rollNow) * (1 - Math.exp(-dt * 5));
+    const up: [number, number, number] = [-fz * Math.sin(rollNow), Math.cos(rollNow), fx * Math.sin(rollNow)];
+    /* IC-22 countdown sweep into the chase pose and the finish orbit (twilight, full motion, not manual) */
+    finishedFor = race.state === "finished" ? finishedFor + dt : 0;
+    const dEye: [number, number, number] = [0, 0, 0], dLook: [number, number, number] = [0, 0, 0];
+    directCamera(row, !motion.reduced && motion.cinematic !== false, { state: race.state, countdown: race.countdown, finishedFor, target: [p.position.x, p.position.y, p.position.z], eye: pose.eye, look: pose.look }, dEye, dLook);
     /* fresh arrays here on purpose: the controller keeps the override object by reference */
-    cameraController.setPose({ position: [pose.eye[0] + fz * shx, pose.eye[1] + shy, pose.eye[2] - fx * shx], target: pose.look, up: [0, 1, 0], fov: pose.fov }, { cut: false });
-    node("sky").setPosition(pose.eye[0], pose.eye[1], pose.eye[2]);
+    cameraController.setPose({ position: [dEye[0] + fz * shx, dEye[1] + shy, dEye[2] - fx * shx], target: dLook, up, fov: pose.fov }, { cut: false });
+    node("sky").setPosition(dEye[0], dEye[1], dEye[2]);
+    if (row.post.lensFlare !== null) node("sun-flare").setPosition(dEye[0] + SUN_FLARE_OFFSET[0], dEye[1] + SUN_FLARE_OFFSET[1], dEye[2] + SUN_FLARE_OFFSET[2]);
 
     /* speed streaks radiate from the vanishing point: world-fixed lines along the heading, respawned ahead once passed */
     {
@@ -390,8 +521,8 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
     /* checkpoint, pad pulses from the sim's events */
     for (; seen < race.events.length; seen++) {
       const e = race.events[seen]!;
-      if (e.type === "checkpoint") { const i = track.checkpoints.indexOf(e.detail as number); if (i >= 0) gatePulse[i] = 1; }
-      if (e.type === "boostPad") { const i = track.boostPads.findIndex((q) => q.s === e.detail); if (i >= 0) padPulse[i] = 1; }
+      if (e.type === "checkpoint") { const i = track.checkpoints.indexOf(e.detail as number); if (i >= 0) gatePulse[i] = 1; engineBurst(HEATSINK_VFX.checkpoint, p.position.x, p.position.y + 1, p.position.z); }
+      if (e.type === "boostPad") { const i = track.boostPads.findIndex((q) => q.s === e.detail); if (i >= 0) padPulse[i] = 1; engineBurst(HEATSINK_VFX.boost, p.position.x, p.position.y, p.position.z); }
     }
     if (seen > race.events.length) seen = race.events.length;
     for (let i = 0; i < gatePulse.length; i++) { gatePulse[i] = Math.max(0, gatePulse[i]! - dt * 0.8); node(`gate-veil-${i}`).setUniform?.("veilPulse", gatePulse[i]!); }
@@ -406,6 +537,8 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
       const w = track.toWorld(pk.s, pk.x, track.frame(pk.s, scratchFrame).y + 1.6 + Math.sin(time * 2 + i) * 0.25, scratchWorld);
       h.setPosition(w.x, w.y, w.z);
       h.setRotation(0, time * 1.6 + i, 0);
+      /* IC-21 pickup pulse (twilight, full motion) */
+      if (row.dressing.archChase && !motion.reduced) h.setScale(1 + 0.08 * Math.sin(time * 4 + i));
     }
     for (let i = 0; i < race.barrels.length; i++) {
       const bar = race.barrels[i]!;
@@ -445,9 +578,9 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
       for (; opsSeen < ops.events.length; opsSeen++) {
         const ev = ops.events[opsSeen]!;
         if (!ev.world) continue;
-        if (ev.type === "hit") { targetFlash[ev.detail as number] = 1; burst(ev.world.x, ev.world.y, ev.world.z, 6, 1, 0.9, 0.4, 9); }
-        else if (ev.type === "kill") { if (!motion.reduced) shake.add(0.45); burst(ev.world.x, ev.world.y, ev.world.z, 36, 1, 0.45, 0.12, 22); }
-        else if (ev.type === "barrel") { if (!motion.reduced) shake.add(0.8); burst(ev.world.x, ev.world.y, ev.world.z, 60, 1, 0.6, 0.15, 30); }
+        if (ev.type === "hit") { targetFlash[ev.detail as number] = 1; burst(ev.world.x, ev.world.y, ev.world.z, 6, 1, 0.9, 0.4, 9); engineBurst(HEATSINK_VFX.hit, ev.world.x, ev.world.y, ev.world.z); }
+        else if (ev.type === "kill") { if (!motion.reduced) shake.add(0.45); burst(ev.world.x, ev.world.y, ev.world.z, 36, 1, 0.45, 0.12, 22); engineBurst(HEATSINK_VFX.kill, ev.world.x, ev.world.y, ev.world.z); }
+        else if (ev.type === "barrel") { if (!motion.reduced) shake.add(0.8); burst(ev.world.x, ev.world.y, ev.world.z, 60, 1, 0.6, 0.15, 30); engineBurst(HEATSINK_VFX.barrel, ev.world.x, ev.world.y, ev.world.z); }
       }
       for (const t of ops.targets) {
         const core = node(`target-${t.id}`), ring = node(`target-ring-${t.id}`), hp = node(`target-hp-${t.id}`);
@@ -480,7 +613,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
         const bolt = ops.bolts[k]!;
         const o = k * 12;
         if (!bolt.alive) { boltGeo.fill(0, o, o + 12); continue; }
-        const vx = bolt.x - pose.eye[0], vy = bolt.y - pose.eye[1], vz = bolt.z - pose.eye[2];
+        const vx = bolt.x - dEye[0], vy = bolt.y - dEye[1], vz = bolt.z - dEye[2];
         let wx = bolt.dy * vz - bolt.dz * vy, wy = bolt.dz * vx - bolt.dx * vz, wz = bolt.dx * vy - bolt.dy * vx;
         const wl = Math.hypot(wx, wy, wz) || 1;
         wx = (wx / wl) * BOLT_HALF_WIDTH; wy = (wy / wl) * BOLT_HALF_WIDTH; wz = (wz / wl) * BOLT_HALF_WIDTH;
@@ -493,6 +626,85 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
       const bn = node("bolts");
       bn.updateAttribute?.("position", { array: boltGeo, offset: 0 });
       bn.setUniform?.("streakAlpha", 1.6);
+    }
+
+    /* IC-06 district atmosphere: fog drifts 30% toward the district HUD colour over ~120 m; rail posts take its neon */
+    if (row.fog.districtMix > 0) {
+      const target = districtFog(row, fr.sec.hud.color);
+      const k = fogReady ? fogApproach(row, Math.abs(p.v) * dt) : 1;
+      fogReady = true;
+      for (let c = 0; c < 3; c++) fogNow[c] = fogNow[c]! + (target[c]! - fogNow[c]!) * k;
+      fogValue[0] = fogNow[0]; fogValue[1] = fogNow[1]; fogValue[2] = fogNow[2];
+      for (const id of DISTRICT_FOG_NODES) node(id).setUniform?.("fogColor", fogValue);
+      if (row.dressing.beacons) node("beacons").setUniform?.("fogColor", fogValue);
+      const hud = hexLinear(fr.sec.hud.color);
+      for (let c = 0; c < 3; c++) glowNow[c] = glowNow[c]! + ((0.5 * hud[c]! + 0.5 * [0.376, 0.957, 1][c]!) - glowNow[c]!) * k;
+      node("rail-posts").setUniform?.("glowColor", glowNow);
+      /* IC-10: the causeway's ion pulse runs at the drone's speed */
+      node("road").setUniform?.("ionSpeed", motion.reduced ? 0 : p.v);
+    }
+
+    /* IC-21 arch light chase (twilight, off on reduced motion): written only when it changes */
+    if (row.dressing.archChase) {
+      const ch = motion.reduced ? 0 : 1;
+      if (ch !== chaseShown) { chaseShown = ch; node("arch-neon").setUniform?.("chase", ch); }
+    }
+
+    /* IC-08 afterburner vignette pulse (none on reduced motion or ?look=original); written only when it changes */
+    if (row.post.vignette !== null) {
+      vigEnv = vignettePulse(row, motion.reduced, p.abActive && !p.crashed, vigEnv, dt);
+      const v = Math.round((row.post.vignette + VIGNETTE_PULSE.gain * vigEnv) * 200) / 200;
+      if (v !== vigShown) { vigShown = v; try { app.post?.setEffect("vignette", { intensity: v }); } catch { /* post runtime unavailable */ } }
+    }
+
+    /* IC-02 glow pools (+0 draws) and the two moving points */
+    if (emitters.length > 0) {
+      const pulseGain = motion.reduced ? 0.5 : 1;
+      nearestPools(emitters, p.position.x, p.position.z, pools, row.glow.pools, (kind, i) => (kind === "pad" ? padPulse[i]! : gatePulse[i]!) * pulseGain);
+      for (const id of DISTRICT_FOG_NODES) { const h = node(id); h.setUniform?.("poolPos", pools.pos); h.setUniform?.("poolCol", pools.col); }
+      if (row.dressing.beacons) { const h = node("beacons"); h.setUniform?.("poolPos", pools.pos); h.setUniform?.("poolCol", pools.col); }
+      if (row.glow.points > 0) {
+        const dg = node("drone-glow");
+        dg.setVisible(!p.crashed);
+        dg.setPosition(p.position.x - fx * 2.6, p.position.y - 0.2, p.position.z - fz * 2.6);
+        const hot = p.abActive || p.burstT > 0 ? 1 : 0;
+        if (hot !== droneGlowHot) { droneGlowHot = hot; dg.setLight?.({ color: hot ? "#ffb02e" : "#40e0ff", intensity: hot ? 9 : 6 }); }
+      }
+      if (row.glow.points > 1) {
+        const first = pools.slot[0]!;
+        if (first !== poolSlot0) {
+          poolSlot0 = first;
+          const e = first >= 0 ? emitters[first]! : null;
+          const pg = node("pool-glow");
+          pg.setVisible(e !== null);
+          if (e) { pg.setPosition(e.x, e.y + 1.5, e.z); pg.setLight?.({ color: rgbHex(e.color) }); }
+        }
+      }
+    }
+
+    /* IC-18 ion wake: cyan to violet at cruise, amber under the afterburner (and the drift burst) */
+    if (wake) {
+      if (!p.crashed) wake.push({ t: time, x: p.position.x - fx * 2.2, y: p.position.y + 0.15, z: p.position.z - fz * 2.2 });
+      else wake.clear();
+      wake.build(time, dEye, p.v, p.abActive || p.burstT > 0 ? 1 : 0, p.crashed ? 0 : 1);
+      const wn = node("ion-wake");
+      wn.updateAttribute?.("position", { array: wake.positions, offset: 0 });
+      wn.updateAttribute?.("wakeColor", { array: wake.colors, offset: 0 });
+      wn.updateAttribute?.("wakeAlpha", { array: wake.alpha, offset: 0 });
+    }
+
+    /* IC-20 spores: positions are a pure function of the seed, time and eye (wrapped into the box); reduced motion shows half */
+    if (spores) {
+      const live = motion.reduced ? Math.floor(spores.n / 2) : spores.n;
+      sporeField(spores, time, dEye, live);
+      const sn = node("spores");
+      sn.updateAttribute?.("position", { array: spores.pos, offset: 0 });
+      sn.updateAttribute?.("fade", { array: spores.fade, offset: 0 });
+      if (!spores.tinted) {
+        sn.updateAttribute?.("size", { array: spores.size, offset: 0 });
+        sn.updateAttribute?.("tint", { array: spores.tint, offset: 0 });
+        spores.tinted = true;
+      }
     }
 
     /* exhaust */
@@ -531,6 +743,17 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
 
   function resetCamera(): void {
     rigReady = false;
+    rollNow = 0;
+    finishedFor = 0;
+    vigEnv = 0;
+    vigShown = -1;
+    heatShown = -1;
+    chaseShown = -1;
+    fogReady = false;
+    poolSlot0 = -2;
+    droneGlowHot = -1;
+    wake?.clear();
+    if (spores) spores.tinted = false;
     seen = 0;
     opsSeen = 0;
     head = 0;

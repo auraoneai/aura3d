@@ -1,0 +1,69 @@
+{
+  "schema": "gu47.budget/1",
+  "slug": "heatsink-port",
+  "note": "before rows from the newest committed evidence (docs/audits/lanes/g19.md: remote g19-w3-after3 and the LIGHT-01 calibration, software WebGL2); null = not captured. after rows are phase 2.",
+  "budget": {
+    "high": {
+      "drawCalls": 140,
+      "triangles": 450000,
+      "textureBytes": 167772160
+    },
+    "low": {
+      "drawCalls": 90,
+      "dropped": [
+        "gtao",
+        "motion-blur",
+        "god-rays",
+        "grain",
+        "chromatic-aberration"
+      ],
+      "trigger": "coarse pointer, quality=low, or fps < 30 for 3 s"
+    }
+  },
+  "variants": {
+    "twilight": {
+      "before": {
+        "drawCalls": [
+          46,
+          88
+        ],
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": null,
+        "routeJsGzipDeltaKB": null,
+        "runnerFps": null,
+        "source": "docs/audits/lanes/g19.md HP-08 and LIGHT-01 rows (base look; twilight is new)"
+      },
+      "after": null,
+      "expectedDrawDelta": {
+        "IC-03 drone caster": "+1 per cascade (3)",
+        "IC-04 hdri": 0,
+        "IC-18 ion wake": 1,
+        "IC-20 spores": 1,
+        "IC-24 lane beacons": 1,
+        "IC-08 post": "post passes, no scene draws",
+        "IC-02 glow pools": 0,
+        "IC-02 moving points (2, 1 on Low)": "0 draws; 2 punctual lights in the forward pass of lit GLBs",
+        "IC-21 arch chase, pickup pulse": 0,
+        "IC-22 camera direction": 0,
+        "IC-23 HUD": "DOM only",
+        "IC-07 lens flare": 4
+      }
+    },
+    "original": {
+      "before": {
+        "drawCalls": [
+          46,
+          88
+        ],
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": null,
+        "routeJsGzipDeltaKB": null,
+        "runnerFps": null,
+        "source": "docs/audits/lanes/g19.md"
+      },
+      "after": null
+    }
+  }
+}

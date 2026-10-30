@@ -48,8 +48,9 @@ export const modelSet = (quality: "high" | "low"): ModelSet => (quality === "low
 /** the quad-rotor drone's largest dimension in metres (the old primitive craft was ~4.6 m across the arms) */
 export const DRONE_LENGTH = 4.2;
 
-export const droneHull = (set: ModelSet = MODELS): NodeB =>
-  model(set.drone, { name: "drone-hull", targetMaxDimension: DRONE_LENGTH, castShadow: false, receiveShadow: false });
+/** `casts` (IC-03, twilight look): the drone is the one model shadow caster under the key; `?look=original` keeps the blob only */
+export const droneHull = (set: ModelSet = MODELS, casts = false): NodeB =>
+  model(set.drone, { name: "drone-hull", targetMaxDimension: DRONE_LENGTH, castShadow: casts, receiveShadow: false });
 
 export const barrelModel = (i: number, set: ModelSet = MODELS): NodeB =>
   model(set.barrel, { name: `barrel-${i}`, targetHeight: 2.2, castShadow: false, receiveShadow: false });
