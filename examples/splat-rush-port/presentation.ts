@@ -103,3 +103,23 @@ export function drainPopups<T extends { readonly seq: number }>(list: readonly T
   for (const p of list) if (p.seq >= nextSeq) fresh.push(p);
   return { fresh, nextSeq: fresh.length > 0 ? (fresh[fresh.length - 1] as T).seq + 1 : nextSeq };
 }
+
+/**
+ * GU47 CR-AN1: the gate the ball just matched, read from values the sim already applied (presentation only). Mirrors the
+ * sim's hit test (`|laneOffset - laneX| < 1.2` and colour or rainbow); lanes are 2.3 apart, so at most one gate of a row
+ * qualifies outside the 0.05 overlap the sim resolves to the nearest gate.
+ */
+export function gateMatched(
+  o: { readonly laneOffset: number; readonly playerColorIndex: number; readonly isRainbowActive: boolean },
+  g: { readonly laneX: number; readonly colorIndex: number }
+): boolean {
+  return Math.abs(o.laneOffset - g.laneX) < 1.2 && (o.isRainbowActive || g.colorIndex === o.playerColorIndex);
+}
+
+/** CR-AN1 squash-and-splat of a matched gate: flattens and spreads over `seconds`, then `null` (the gate is gone). */
+export function gateSquash(t: number, seconds: number): { sx: number; sy: number; sz: number } | null {
+  if (!(seconds > 0) || t >= seconds) return null;
+  const k = Math.max(0, t) / seconds, e = k * k * (3 - 2 * k);
+  const spread = 1 + 0.45 * e;
+  return { sx: spread, sy: Math.max(0.02, 1 - e), sz: spread };
+}

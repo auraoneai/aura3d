@@ -10,6 +10,9 @@
  *
  * Settings (stored in localStorage): sound (M), colour symbols on gates and ball (C), reduced motion (follows
  * `prefers-reduced-motion` until changed). P or Esc pauses; hiding the tab pauses a run and suspends the audio.
+ *
+ * GU47 WP-26: `look=original|carnival` (default carnival, `look.ts`) is presentation only; the sim, its random stream,
+ * replays and traces are identical across looks.
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
 import { warmPrograms } from "@aura3d/engine/game";
@@ -18,12 +21,15 @@ import { SplatSound, diffSounds, type FrameState } from "./audio";
 import { ScreenFx, flashFor, flashStrength } from "./fx";
 import { COLORS, IDLE, PHASE_CODE, SplatRushSim, TRACE_COLUMNS, expandScript, parseScript, replay, type Input } from "./sim";
 import { SteadyCamera, createSplatPresenter, drainPopups } from "./presentation";
-import { buildWorld, type WorldRuntime } from "./world";
+import { TITLE_RAIL_SECONDS, buildWorld, type WorldRuntime } from "./world";
+import { LOOKS, QA_CROPS, parseLook } from "./look";
+import { MOTE_EVERY, fireMote, fireSplashes, moteFor, registerPaintPresets, splashesFor } from "./vfx3d";
+import { HUD_CARNIVAL_CLASS, comboTubeFill, letterbox } from "./hud";
 
 
 /* GT Walsheim Bold (licensed library, assets/GT-Walsheim-Bold.woff2): the heavy rounded face the HUD, popups and cards use */
 if (typeof FontFace !== "undefined" && typeof document !== "undefined") {
-  const face = new FontFace("Splat Display", `url(${new URL("./assets/GT-Walsheim-Bold.woff2", import.meta.url).href})`, { weight: "700" });
+  const face = new FontFace("Splat Display", `url(${new URL("./assets/GT-Walsheim-Bold.woff2", import.meta.url).href})`, { weight: "700", display: "block" });
   void face.load().then((f) => document.fonts.add(f)).catch(() => undefined);
 }
 const config = readQaParams({
@@ -43,6 +49,30 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   return el as T;
 };
 const canvas = $<HTMLCanvasElement>("world");
+/* GU47 CR-00: one look per page load, read once */
+const look = LOOKS[parseLook(typeof location === "undefined" ? "" : location.search)];
+/* CR-H1: the paint-world HUD rules in index.html are scoped to this body class (carnival only) */
+if (look.id === "carnival") document.body.classList.add(HUD_CARNIVAL_CLASS);
+/** CR-V1 bursts fired since load (QA). */
+let splashesFired = 0;
+/** CR-V4 mote puffs fired since load (QA) and the step of the last puff (frames that run several steps skip none). */
+let motesFired = 0;
+let lastMoteStep = -1;
+/** CR-V2 ball ribbon (E-F trail on the "ball" node), recreated when the ball colour changes; none on reduced motion. */
+let ribbon: { key: string; handle: { stop(o?: { immediate?: boolean }): void } } | null = null;
+function updateRibbon(): void {
+  const row = look.ribbon;
+  const fxApi = app?.effects;
+  const want = row && fxApi && !reducedMotion && !config.manual && sim.o.phase === "playing" && !sim.o.isRainbowActive;
+  const key = want ? `c${sim.o.playerColorIndex}` : "";
+  if (ribbon && ribbon.key === key) return;
+  ribbon?.handle.stop({ immediate: true });
+  ribbon = null;
+  if (!want || !row || !fxApi) return;
+  /* life covers the last ~12 ball positions at 60 Hz; width ramps in with road speed */
+  const handle = fxApi.trail("ball", { width: row.width, life: row.points / 60, color: COLORS[sim.o.playerColorIndex] ?? "#ffffff", widthOverSpeed: [2, 12] });
+  ribbon = { key, handle };
+}
 
 let sim = new SplatRushSim(config.seed);
 const presenter = createSplatPresenter(() => sim);
@@ -96,6 +126,8 @@ const changed = (key: string, value: string): boolean => {
   return true;
 };
 
+let barsPhase = "";
+let barsStart = 0;
 function updateHud(): void {
   const o = sim.o;
   const score = `SCORE: ${Math.floor(o.score)}`;
@@ -113,6 +145,22 @@ function updateHud(): void {
       combo.style.display = "block";
       combo.style.color = o.multiplier >= 4 ? "#f0433a" : o.multiplier === 3 ? "#b868e8" : o.multiplier === 2 ? "#5ecaf0" : "#f9c647";
     } else combo.style.display = "none";
+  }
+  if (look.id === "carnival") {
+    const swatch = o.isRainbowActive ? "linear-gradient(135deg, #f0433a, #f9c647, #5ecaf0, #b868e8)" : (COLORS[o.playerColorIndex] ?? "#f0433a");
+    if (changed("swatch", swatch)) $("hud-swatch").style.background = swatch;
+    const fill = `${Math.round(comboTubeFill(o.combo, o.multiplier) * 100)}%|${o.multiplier}`;
+    if (changed("tube", fill)) {
+      const el = $("hud-tube-fill");
+      el.style.width = fill.split("|")[0] as string;
+      el.style.background = o.multiplier >= 4 ? "#f0433a" : o.multiplier === 3 ? "#b868e8" : o.multiplier === 2 ? "#5ecaf0" : "#f9c647";
+    }
+  }
+  if (look.id === "carnival") {
+    /* CR-C2 letterbox during the title rail (the rail itself is in world.ts); none on reduced motion or manual=1 */
+    if (o.phase !== barsPhase) { barsPhase = o.phase; barsStart = sim.elapsed; }
+    const k = letterbox(o.phase, sim.elapsed - barsStart, TITLE_RAIL_SECONDS, !reducedMotion && !config.manual).toFixed(3);
+    if (changed("bars", k)) for (const id of ["bars-top", "bars-bottom"]) $(id).style.transform = `scaleY(${k})`;
   }
   let pills = "";
   if (o.rainbowTimer > 0) pills += `<span class="pu pu-rainbow">🌈 ${Math.ceil(o.rainbowTimer)}s</span>`;
@@ -180,7 +228,13 @@ function reactToFrame(perfect: boolean): void {
     rainbowTimer: o.rainbowTimer, scoreX2Timer: o.scoreX2Timer, playerColorIndex: o.playerColorIndex, milestone: o.milestone, perfect
   };
   const own = COLORS[o.playerColorIndex] ?? "#ffffff";
-  for (const event of diffSounds(prevFrame, frame)) {
+  const events = diffSounds(prevFrame, frame);
+  /* CR-V1: gate-coloured paint splashes at the ball, seeded from the sim step (presentation only) */
+  /* CR-V4: paint motes drifting up in front of the horizon (title and play; none on reduced motion or manual=1) */
+  const moteStep = Math.floor(sim.n / MOTE_EVERY) * MOTE_EVERY;
+  if (look.vfx && !config.manual && moteStep !== lastMoteStep) { lastMoteStep = moteStep; motesFired += fireMote(app?.effects, moteFor(moteStep, reducedMotion)); }
+  if (look.vfx) splashesFired += fireSplashes(app?.effects, splashesFor(events, [sim.player.x, sim.player.y, sim.player.z], o.playerColorIndex, sim.n, reducedMotion));
+  for (const event of events) {
     sound.play(event.sound, event.level);
     if (config.manual) continue;
     const flash = flashFor(event, o.playerColorIndex);
@@ -219,8 +273,9 @@ function render(live = false): void {
     const shown = live ? presenter.present(loop, true) : undefined;
     const camera = reducedMotion ? steady.at(live ? loop.alpha : 1) : undefined;
     runtime.update(sim, canvas.clientWidth / Math.max(1, canvas.clientHeight), {
-      ...(shown ? { shown } : {}), ...(camera ? { camera } : {}), reducedMotion, symbols, guide: !guided
+      ...(shown ? { shown } : {}), ...(camera ? { camera } : {}), reducedMotion, symbols, guide: !guided, cameraLayers: !config.manual
     });
+    updateRibbon();
     app.step(0);
   } catch (error) {
     renderFailed = true;
@@ -282,7 +337,7 @@ function sampleQuality(frameSeconds: number): void {
 }
 
 async function boot(): Promise<void> {
-  const world = buildWorld({ sim, aspect: canvas.clientWidth / Math.max(1, canvas.clientHeight) });
+  const world = buildWorld({ sim, aspect: canvas.clientWidth / Math.max(1, canvas.clientHeight), look });
   app = createAuraApp(canvas, {
     autoStart: false,
     /* the engine owns the backing size (lessons-learned R1: never assign canvas size after ready) */
@@ -293,6 +348,7 @@ async function boot(): Promise<void> {
     scene: world.scene
   });
   await app.ready();
+  if (look.vfx && app.effects) registerPaintPresets(app.effects);
   runtime = world.bind(app);
   /* C14: compile every program, the pooled pickups and overlays included, before the first frame is shown */
   runtime.update(sim, canvas.clientWidth / Math.max(1, canvas.clientHeight), { symbols: true });
@@ -552,7 +608,7 @@ const qa = installQaHooks("splat-rush", {
     },
     /** Presentation counters: popups shown and created, batch vertex uploads, pixel ratio, warm-up result. */
     presentation() {
-      return { popupsShown, popupSeq: sim.popupSeq, nextPopupSeq, uploadedVertices: runtime?.uploadedVertices ?? 0, pixelRatio, paused, reducedMotion, symbols, guided, warm: warmResult };
+      return { popupsShown, popupSeq: sim.popupSeq, nextPopupSeq, uploadedVertices: runtime?.uploadedVertices ?? 0, pixelRatio, paused, reducedMotion, symbols, guided, warm: warmResult, look: look.id, timeOfDayKey: runtime?.timeOfDayKey ?? -1, splashesFired, motesFired, vfxLive: app?.effects?.liveCount ?? 0 };
     },
     /** Change a setting without the UI (captures): `symbols`, `motion` or `guide`. */
     setting(which: "symbols" | "motion" | "guide", on: boolean) {
@@ -569,6 +625,12 @@ const qa = installQaHooks("splat-rush", {
     }
   }
 });
+
+/* GU47 E-I capture crops (normalised; the chase camera keeps the ball, deck and sky in the same screen bands) */
+{
+  const qaGlobal = (globalThis as { __AURA_QA__?: Record<string, unknown> }).__AURA_QA__;
+  if (qaGlobal) qaGlobal.crops = QA_CROPS[look.id];
+}
 
 function reportError(error: unknown): void {
   qa.reportError(error);

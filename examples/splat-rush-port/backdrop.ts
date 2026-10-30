@@ -3,14 +3,15 @@
  * road at the road's own scroll speed, following its curve. Placement is a pure function of the simulation's distance and
  * elapsed time, so it never touches the simulation or its random stream.
  */
-import { environments, lights, model, scene, type AuraApp } from "@aura3d/engine";
+import { defineAuraAssets, environments, lights, model, scene, type AuraApp, type AuraAssetRef, type AuraHdriId } from "@aura3d/engine";
+import { LOOKS, sunDirection, type SplatLook } from "./look";
 import { MODELS } from "./models";
 import { curve } from "./sim";
 
 type NodeHandle = ReturnType<AuraApp["nodes"]["require"]>;
 type Scene = ReturnType<typeof scene>;
 
-interface Piece {
+export interface Piece {
   readonly id: string;
   readonly kind: "islandTree" | "islandTower" | "balloon";
   readonly side: -1 | 1;
@@ -54,16 +55,63 @@ export const PIECES: readonly Piece[] = (() => {
  */
 export const BACKDROP_ENVIRONMENT_INTENSITY = 0.8;
 
-/** Scene nodes (models) plus the light rig the models need (the toon surfaces carry their own lighting). */
-export function addBackdrop(builder: Scene): void {
-  builder
-    .add(environments.neutral({ name: "backdrop-environment", intensity: BACKDROP_ENVIRONMENT_INTENSITY }))
-    .add(lights.hemisphere({ name: "backdrop-hemisphere", skyColor: "#ffffff", groundColor: "#7788aa", intensity: 1.15 }))
-    .add(lights.directional({ name: "backdrop-key", position: [6, 12, 6], target: [0, 0, 0], intensity: 1.6, color: "#ffffff" }))
-    .add(lights.directional({ name: "backdrop-fill", position: [-6, 8, -6], target: [0, 0, 0], intensity: 0.5, color: "#99bbff" }));
-  for (const p of PIECES) {
-    builder.add(model(MODELS[p.kind], { name: p.id, targetMaxDimension: p.size, castShadow: false, receiveShadow: false }).runtime({ id: p.id }));
+/** Served E-A catalogue HDRI (`/hdri/<id>_1k.hdr`, CC0 Poly Haven; attribution in `public/hdri/ATTRIBUTION.md`). */
+export const hdriAsset = (id: AuraHdriId): AuraAssetRef<"texture"> =>
+  defineAuraAssets({ sky: { type: "texture", format: "hdr", url: `/hdri/${id}_1k.hdr`, metadata: { license: `CC0 1.0, Poly Haven ${id} (1k)` } } }).sky;
+
+/** Distance of the engine key light from the origin along the sun direction. */
+const SUN_DISTANCE = 100;
+
+/**
+ * Engine lights for the GLBs (the toon surfaces carry their own lighting). CR-L1: in the carnival look the key is the
+ * same sun the toon shaders use (direction from `look.ts`, golden-stage colour and intensity scaled to the PBR path),
+ * plus the rose bounce; CR-L3: the sky fill comes from the kloppenheim_06 IBL (background off).
+ */
+export function backdropLightRig(look: SplatLook) {
+  if (look.backdropLights === "original" || !look.toon || !look.sky) {
+    return [
+      lights.hemisphere({ name: "backdrop-hemisphere", skyColor: "#ffffff", groundColor: "#7788aa", intensity: 1.15 }),
+      lights.directional({ name: "backdrop-key", position: [6, 12, 6], target: [0, 0, 0], intensity: 1.6, color: "#ffffff" }),
+      lights.directional({ name: "backdrop-fill", position: [-6, 8, -6], target: [0, 0, 0], intensity: 0.5, color: "#99bbff" })
+    ];
   }
+  const golden = look.sky.stages[0];
+  if (!golden) throw new Error("splat-rush-port: the carnival look has no sky stages");
+  const d = sunDirection(golden.sunElevationDeg, look.toon.sunAzimuthDeg);
+  const b = look.toon.bounceDirection;
+  return [
+    lights.directional({
+      name: "backdrop-key", position: [d[0] * SUN_DISTANCE, d[1] * SUN_DISTANCE, d[2] * SUN_DISTANCE], target: [0, 0, 0],
+      intensity: BACKDROP_KEY_SCALE * golden.sunIntensity, color: golden.sunColor, shadow: { cascades: 1, maxDistance: 160 }
+    }),
+    lights.directional({ name: "backdrop-bounce", position: [b[0] * SUN_DISTANCE, b[1] * SUN_DISTANCE, b[2] * SUN_DISTANCE], target: [0, 0, 0], intensity: BACKDROP_KEY_SCALE * look.toon.bounceIntensity, color: golden.bounce })
+  ];
+}
+
+/** Toon sun intensity 0.75 is a display-referred factor; the GLBs' PBR key needs about 3x for the same luma (phase-2 calibration). */
+export const BACKDROP_KEY_SCALE = 3.2;
+
+/** Scene nodes (models) plus the light rig the models need. `look` defaults to the 4.6.0 rig (tests). */
+export function addBackdrop(builder: Scene, look: SplatLook = LOOKS.original): void {
+  const env = look.environment;
+  builder.add(env.kind === "hdri"
+    ? environments.hdri({ name: "backdrop-environment", texture: hdriAsset(env.id), intensity: env.intensity, rotation: (env.rotationDeg * Math.PI) / 180, background: false })
+    : environments.neutral({ name: "backdrop-environment", intensity: env.intensity }));
+  for (const light of backdropLightRig(look)) builder.add(light);
+  const shadows = look.backdropLights === "from-toon";
+  for (const p of PIECES) {
+    const island = p.kind !== "balloon";
+    builder.add(model(MODELS[p.kind], { name: p.id, targetMaxDimension: p.size, castShadow: shadows && island, receiveShadow: shadows }).runtime({ id: p.id }));
+  }
+}
+
+/** CR-AN2: balloon sway and island rocking, pure functions of time (radians, within ±amplitude). */
+export function backdropSway(look: SplatLook, piece: Piece, elapsed: number): { readonly x: number; readonly z: number } {
+  if (!look.sway) return { x: 0, z: 0 };
+  const deg = piece.kind === "balloon" ? look.sway.balloonDeg : look.sway.islandDeg;
+  const a = (deg * Math.PI) / 180, phase = piece.z0 * 0.37;
+  const speed = piece.kind === "balloon" ? 0.9 : 0.45;
+  return { x: a * Math.sin(elapsed * speed + phase), z: a * Math.sin(elapsed * speed * 0.73 + phase * 1.7) };
 }
 
 /** Smooth 0..1 ramp so a piece grows in at the far end and shrinks out near the camera instead of popping. */
@@ -72,16 +120,17 @@ const ramp = (t: number): number => {
   return x * x * (3 - 2 * x);
 };
 
-export function updateBackdrop(node: (id: string) => NodeHandle, distance: number, elapsed: number): void {
+export function updateBackdrop(node: (id: string) => NodeHandle, distance: number, elapsed: number, look: SplatLook = LOOKS.original): void {
   for (const p of PIECES) {
     const z = ((((p.z0 + distance * 0.55) % SPAN) + SPAN) % SPAN) + FAR;
     const x = p.side * p.offset + curve(-distance + z);
     const fade = ramp((z - FAR) / 24) * ramp((NEAR - z) / 26);
     const bob = Math.sin(elapsed * 0.8 + p.z0) * (p.kind === "balloon" ? 0.5 : 0.25);
+    const sway = backdropSway(look, p, elapsed);
     node(p.id)
       .setVisible(fade > 0.02)
       .setPosition(x, p.y + bob, z)
-      .setRotation(0, elapsed * p.spin + p.z0, 0)
+      .setRotation(sway.x, elapsed * p.spin + p.z0, sway.z)
       .setScale(Math.max(0.001, fade));
   }
 }
