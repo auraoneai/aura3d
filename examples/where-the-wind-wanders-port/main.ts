@@ -300,6 +300,16 @@ installQaHooks("wind", {
   app: () => app,
   routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: PARITY_IDS }) : null),
   extras: {
+    /** GU47 E-I crop contract (normalised to the canvas): fixed regions of the follow framing used by the WP-33 acceptance. */
+    crops: () => [
+      { name: "sky", x: 0, y: 0, w: 1, h: 0.3 },
+      { name: "meadow", x: 0.1, y: 0.55, w: 0.8, h: 0.35 },
+      { name: "traveller", x: 0.38, y: 0.4, w: 0.24, h: 0.4 },
+      { name: "horizon", x: 0, y: 0.25, w: 1, h: 0.2 }
+    ],
+    /** The daylight key on screen (WW47-L1) and the running camera sequence (WW47-C1). */
+    get daylight() { const d = runtime?.daylight; return d ? { key: d.key, blend: d.blend, sunDir: d.sunDir } : null; },
+    get sequence() { return runtime?.sequence ?? null; },
     /** The hero's current animation command and the render clock (null without the hero model); motion specs derive foot slide from it. */
     heroRig(): { renderTime: number; animation: unknown } | null {
       const hero = app?.nodes.get?.("hero");
