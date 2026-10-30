@@ -94,6 +94,8 @@ export interface WorldLook {
    * `pixels` px that is strongest at the bottom of the frame and gone above `band`.
    */
   readonly heatShimmer?: { readonly pixels: number; readonly band: number; readonly speed: number };
+  /** PBL-E4 (w2): the millpond as a horizontal mirror under its tinted glass, with a felt foam ring. */
+  readonly millpond?: { readonly tint: string; readonly foam: string; readonly resolution: number };
   /** Land-dust felt colour for the VFX pack (PBL-V1). */
   readonly dust: string;
 }
@@ -213,6 +215,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     practicals: [],
     lensFlare: { intensity: 0.55 },
     shafts: { density: 0.4, intensity: 0.4, color: "#ffc98a" },
+    millpond: { tint: "#b8d8c8", foam: "#f2ead8", resolution: 256 },
     dust: "#b99a6a"
   },
   w3: {

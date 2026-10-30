@@ -987,6 +987,11 @@
         "materials": [
           {
             "name": "felt",
+            "node": "pbl-millpond-foam",
+            "practical": false
+          },
+          {
+            "name": "felt",
             "node": "pbl-base-felt",
             "practical": false
           },

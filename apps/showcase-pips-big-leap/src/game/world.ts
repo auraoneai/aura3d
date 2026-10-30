@@ -35,6 +35,7 @@ import {
   hazardMaterial,
   hemisphereNode,
   lensFlareNode,
+  millpondNodes,
   miniatureDofNode,
   practicalNodes,
   skyNode,
@@ -558,6 +559,7 @@ function addDioramaAtmosphere(builder: SceneBuilder, spec: WorldSpec, look: Worl
   if (sky) builder.add(sky);
   const aurora = auroraNode(spec, look, scale);
   if (aurora) builder.add(aurora);
+  for (const n of millpondNodes(spec, look)) builder.add(n);
   builder.add(effects.contactShadows({ intensity: 0.75, length: 0.3 }));
   for (const node of base.nodes) builder.add(node);
   builder.add(vignetteNode(look));

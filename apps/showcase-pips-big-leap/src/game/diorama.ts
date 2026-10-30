@@ -16,6 +16,7 @@ import {
   material,
   primitives,
   sky,
+  surfaces,
   type AuraCustomPostPass,
   type AuraMaterialSpec,
   type AuraModelMaterialOverride,
@@ -52,6 +53,8 @@ export const dioramaName = {
   shafts: "pbl-sun-shafts",
   lensFlare: "pbl-sun-flare",
   aurora: "pbl-aurora",
+  millpondMirror: "pbl-millpond-mirror",
+  millpondFoam: "pbl-millpond-foam",
   heatShimmer: "pbl-heat-shimmer",
   flora: (layer: string) => `pbl-flora-${layer}`
 } as const;
@@ -488,6 +491,35 @@ export function heatShimmerPass(look: WorldLook, scale: PresentationScale, lowTi
     glsl: HEAT_SHIMMER_GLSL,
     uniforms: { u_pixels: look.heatShimmer.pixels, u_band: look.heatShimmer.band, u_speed: look.heatShimmer.speed }
   });
+}
+
+/**
+ * PBL-E4 (w2): each pond's surface as a horizontal planar mirror 2 cm under the top of its
+ * tinted glass volume, plus a ring of felt foam tufts around the rim (one instanced draw).
+ * Visual only: the water zones and colliders come from the same spec unchanged.
+ */
+export function millpondNodes(spec: WorldSpec, look: WorldLook): readonly DioramaNode[] {
+  if (!look.millpond || spec.waters.length === 0) return [];
+  const out: DioramaNode[] = [];
+  const foam: AuraTransformSpec[] = [];
+  for (const w of spec.waters) {
+    out.push(surfaces.mirror({ name: `${dioramaName.millpondMirror}:${w.id}`, position: [w.x, w.y - 0.02, w.z], size: [w.w * 0.98, w.d * 0.98], resolution: look.millpond.resolution, tint: look.millpond.tint }));
+    const perimeter = 2 * (w.w + w.d);
+    const count = Math.max(12, Math.round(perimeter / 0.45));
+    for (let i = 0; i < count; i += 1) {
+      // Walk the rectangle's rim at even arc length.
+      let u = (i / count) * perimeter;
+      let x: number, z: number;
+      if (u < w.w) { x = w.x - w.w / 2 + u; z = w.z - w.d / 2; }
+      else if ((u -= w.w) < w.d) { x = w.x + w.w / 2; z = w.z - w.d / 2 + u; }
+      else if ((u -= w.d) < w.w) { x = w.x + w.w / 2 - u; z = w.z + w.d / 2; }
+      else { u -= w.w; x = w.x - w.w / 2; z = w.z + w.d / 2 - u; }
+      const s = 0.8 + 0.4 * ((i * 7919) % 13) / 12;
+      foam.push({ position: [x, w.y + 0.01, z], scale: [0.16 * s, 0.035, 0.16 * s] });
+    }
+  }
+  out.push(instances.sphere({ name: dioramaName.millpondFoam, transforms: foam, material: felt(look.millpond.foam), castShadow: false, receiveShadow: true }));
+  return out;
 }
 
 // ---------------------------------------------------------------- PBL-W1 flora dressing
