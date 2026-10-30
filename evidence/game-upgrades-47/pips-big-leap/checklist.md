@@ -22,7 +22,8 @@ Status legend: **done** (code and unit test in this branch), **phase 2** (needs 
 | PBL-E3 | exactly one emitter per world | done | `diorama.test.ts` |
 | PBL-E3 | live > 0 at 35 s, <= 600 | done (<= 600 authored), phase 2 (live count) | |
 | PBL-E3 | top row diff >= 1/255 over 0.5 s; mean within 4 | phase 2 | GL_PAIR |
-| PBL-E4 | water crop sd >= 18; +1 pass +3 draws max; swim tests unchanged | not done (C row) | `water` QA crop published |
+| PBL-E4 | +1 pass +3 draws max; swim tests unchanged | done | `millpond.test.ts` (+1 pass, +2 draws) |
+| PBL-E4 | water crop sd >= 18 | phase 2 | `water` QA crop published |
 | PBL-P1 | S2-gtao, S9-bloom, S10b in stagesRan everywhere; no duplicate stage | phase 2 | one bloom per world (`diorama.test.ts`) |
 | PBL-P1 | L1 bands hold | phase 2 | |
 | PBL-P2 | S6-dof at High | phase 2 | DOF node + focus follow (`presentation.test.ts`) |
@@ -33,10 +34,11 @@ Status legend: **done** (code and unit test in this branch), **phase 2** (needs 
 | PBL-M1 | no face crop > 230 | phase 2 | |
 | PBL-M1 | no flat-palette or primitive-subject | phase 2 | judge |
 | PBL-M1 | material_quality >= 7 | phase 2 | judge |
-| PBL-M2 | lava p95 >= 240, clip < 0.03 | phase 2 | practical emissive lava |
+| PBL-M2 | lava p95 >= 240, clip < 0.03 | phase 2 | crusted lava shader, HDR crack peak 3.2 (`materials-m2.test.ts`) |
 | PBL-M2 | seed +30 over platform | phase 2 | |
 | PBL-M2 | hazard hue outside 290-330 | done | plum `#5b3a7a`, hue about 271 |
-| PBL-M2 | bramble model, crusted scrolling lava shader | blocked (WP-36) / not done | |
+| PBL-M2 | crusted scrolling lava shader, iridescent crystals, gold seeds | done | `materials-m2.test.ts` |
+| PBL-M2 | bramble model | blocked (WP-36) | |
 | PBL-A1 | <= 8k tris, <= 2 textures each; validate --release; collision tests unchanged; 0 box platforms; <= 420 draws | blocked (WP-36) | slabs keep the colliders |
 | PBL-A2 | rg for borrowed prefixes returns 0; likeness, shared-catalog, asset-provenance 0 errors; modeling >= 7 | blocked (WP-36) | |
 | PBL-A3 | validate-animation --require-rig; >= 2 clips per villager in 10 s | blocked (WP-36) | |
@@ -48,10 +50,11 @@ Status legend: **done** (code and unit test in this branch), **phase 2** (needs 
 | PBL-V1 | feet crop sd +8 vs vfx=off | phase 2 | `feet` crop |
 | PBL-V2 | glide crop sd +6 | phase 2 | `glide` crop |
 | PBL-V2 | trail stopped within 0.5 s of landing | done | stopped on the landing frame (`vfx.test.ts`, `presentation.test.ts`) |
-| PBL-V3 | pass in w4 only; mean shift <= 3 | not done (C row) | |
+| PBL-V3 | pass in w4 only | done | `heat-shimmer.test.ts` |
+| PBL-V3 | mean shift <= 3 | phase 2 | resample-only fragment, <= 1.6 px |
 | PBL-AN1 | scale.y < 0.9 on land, > 1.05 at takeoff | done | `presentation.test.ts` |
 | PBL-AN1 | foliage diff >= 1.5/255 | phase 2 | flora wind (`instances.*({ wind })`) |
-| PBL-AN1 | animation >= 7; collisions unchanged | phase 2 (judge); collisions done | pinwheels, mill wheel, banners, leaf pads: not done (WP-36 props) |
+| PBL-AN1 | animation >= 7; collisions unchanged | phase 2 (judge); collisions done | banners sway, fans spin, leaf pads bob (`prop-motion.test.ts`); pinwheels, mill wheel: blocked (WP-36 props) |
 | PBL-C1 | rail rig for 3.5 s then game pose; skip within 1 frame | done | `presentation.test.ts` |
 | PBL-C1 | no inside-geometry frames | done (rail above the course), phase 2 (frames) | |
 | PBL-C2 | Pip 18-25% of frame height | phase 2 | fov 46, lift 1.7 |
