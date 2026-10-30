@@ -10,6 +10,7 @@ import {
 } from "@aura3d/engine";
 import { SALTWIND_LOOK, directionFromAngles, lookModeFrom, type SaltwindLookRow } from "./art/look";
 import { SPRAY_POINTS, sprayAmount, sprayWind } from "./art/spray";
+import { createShotDirector, orbitEye, type ShotFrame } from "./art/shots";
 import { NITRO_TRAIL, SKID_INTERVAL, fxForEvents, registerSaltwindFx, type SaltwindFxKind } from "./art/fx";
 import { levelLayout, roadProfile, trafficPiece, pieceSpec, type Level } from "./course";
 import { CAR_GROUPS, CAR_FOR_PIECE, carGroup, carNativeSize, type CarGroup, type CarKey } from "./cars";
@@ -413,6 +414,11 @@ export interface WorldRuntime {
   readonly vehicleInstances: number;
   /** GU47 RH47-13: presets registered for this route and the bursts fired (QA). */
   fx(): { readonly kinds: readonly SaltwindFxKind[]; readonly fired: number; readonly last: string | null };
+  /** GU47 RH47-16 shots (no-ops on `?look=original`): the menu intro rail, any-input skip, the finish shot, the last frame. */
+  startIntro(): void;
+  skipIntro(): void;
+  startFinish(): void;
+  shot(): ShotFrame | null;
 }
 
 export interface World {
@@ -880,6 +886,8 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       let fxKinds = registerSaltwindFx(vfx, row);
       let fxFired = 0, fxLast: string | null = null, skidClock = 0;
       let nitroTrail: { stop(o?: { immediate?: boolean }): void } | null = null;
+      const shots = row ? createShotDirector({ seaSide: look.seaSide }) : null;
+      let lastShot: ShotFrame | null = null;
       const gantryLights = gantryPoints ? Array.from({ length: gantryPoints.count }, (_v, k) => node(`gantry-light-${k}`)) : [];
       let gantryGate = -1;
       let dustAmount = 0, sparkAmount = 0;
@@ -905,10 +913,15 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       const offCentre = 0;
       return {
         vehicleInstances: allSlots.length,
-        reset: () => { placeLineup(); director.cut(); chase.reset(); },
+        reset: () => { placeLineup(); director.cut(); chase.reset(); shots?.play(); },
+        startIntro: () => shots?.startIntro(),
+        skipIntro: () => shots?.skipIntro(),
+        startFinish: () => shots?.startFinish(),
+        shot: () => lastShot,
         fx: () => ({ kinds: fxKinds, fired: fxFired, last: fxLast }),
         setReducedMotion: (on: boolean) => {
           director.setReducedMotion(on);
+          shots?.setReducedMotion(on);
           fxKinds = registerSaltwindFx(vfx, row, { reducedMotion: on, reducedFlash: on });
           if (sprayNode && row) { sprayNode.setUniform?.("spAmount", sprayAmount(row.spray, { reducedMotion: on })); sprayNode.setUniform?.("spWind", sprayWind(row.spray, on)); }
         },
@@ -991,7 +1004,17 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
           // shake offset along the road's lateral axis at the eye (the same axis `roadPoint` uses) and world up
           const dx = roadProfile(level, eyeS).dx, inv = 1 / Math.sqrt(1 + dx * dx);
           const shake: [number, number, number] = [cam.shakeRight * inv, cam.shakeUp, cam.shakeRight * dx * inv];
-          const pose = chase.step({ wantEye: [eye[0], eye[1], eye[2]], wantLook: [look2[0], look2[1], look2[2]], fovTarget: (aspect < 1 ? 70 : 58) + cam.fovKick, cut: cam.cut, shakeOffset: shake }, dt);
+          const shot = shots ? shots.step(dt, run, events) : null;
+          lastShot = shot;
+          if (shot && (shot.eye || shot.orbit) && shot.look) {
+            // RH47-16: a shot owns the camera (intro rail, finish trackside or orbit); the chase rig resumes with a cut
+            const target = roadPoint(level, shot.look.s, shot.look.l, shot.look.h);
+            const at = shot.orbit ? orbitEye(carP, shot.orbit) : roadPoint(level, shot.eye!.s, shot.eye!.l, shot.eye!.h);
+            sky.setPosition(at[0], at[1], at[2]);
+            camCtl.setPose({ position: at, target, up: [0, 1, 0], fov: shot.fov ?? 58 }, { cut: true });
+            return;
+          }
+          const pose = chase.step({ wantEye: [eye[0], eye[1], eye[2]], wantLook: [look2[0], look2[1], look2[2]], fovTarget: (aspect < 1 ? 70 : 58) + cam.fovKick + (shot?.fovPush ?? 0), cut: cam.cut || (shot?.cut ?? false), shakeOffset: shake }, dt);
           sky.setPosition(pose.eye[0], pose.eye[1], pose.eye[2]);
           camCtl.setPose({ position: pose.eye, target: pose.look, up: [0, 1, 0], fov: pose.fov }, { cut: pose.cut });
         }

@@ -97,6 +97,7 @@ addEventListener("keydown", (e) => {
     return;
   }
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
+  runtime?.skipIntro();
   if (!e.code.startsWith("touch:")) void sound.unlock();
   if (e.repeat) return;
   const action = input.actionOf(e.code);
@@ -178,6 +179,7 @@ function stepOnce(stepInput: RunInput): void {
   }
   if (run.phase === "complete" && screen === "play") {
     saveResults(career, storage);
+    runtime?.startFinish();
     screen = "results";
     panels();
   }
@@ -313,7 +315,22 @@ function updateHud(): void {
 /* ------------------------------------------------------------------ frame loop */
 
 /** Steps only on the play screen and never in manual mode; frames always render. The loop drains its clock otherwise. */
+/**
+ * RH47-16 slow-motion on kicker hang time: the loop reads a virtual clock that runs at the shot's time scale, so it runs
+ * fewer fixed steps per wall second. Every step is the same SIM_STEP, so the sim and replays are unchanged (PRD D8).
+ */
+let timeScale = 1;
+let virtualMs = 0;
+let lastRealMs: number | undefined;
+const virtualClock = (realMs: number): number => {
+  if (lastRealMs !== undefined) virtualMs += Math.max(0, realMs - lastRealMs) * timeScale;
+  lastRealMs = realMs;
+  return virtualMs;
+};
 const loop = createFixedStepLoop({
+  now: () => virtualClock(performance.now()),
+  schedule: (callback) => requestAnimationFrame((t) => callback(virtualClock(t))),
+  cancel: (handle) => cancelAnimationFrame(handle as number),
   stepSeconds: SIM_STEP,
   maxFrameSeconds: 0.05,
   maxCatchUpSteps: 8,
@@ -333,12 +350,17 @@ const blankFrame = (): AudioFrame => ({
 });
 const audioFrames = [blankFrame(), blankFrame()] as const;
 let view: Run | undefined;
+let barsShown = 0;
 
 /** `live` draws the car and traffic between the last two steps (smooth on 144 Hz displays); everything else draws the exact latest step. */
 function render(dt: number, time: number, live = false): void {
   if (!ready || !app || !runtime) return;
   const shown = live ? (view = viewOf(run, presenter.present(loop, true), view)) : run;
   runtime.update(shown, dt, time, canvas.clientWidth / Math.max(1, canvas.clientHeight), pendingEvents);
+  const shot = runtime.shot();
+  timeScale = shot && live ? shot.timeScale : 1;
+  const bars = shot ? shot.bars : 0;
+  if (bars !== barsShown) { barsShown = bars; document.body.style.setProperty("--shot-bars", bars.toFixed(3)); document.body.classList.toggle("shot-bars", bars > 0); }
   if (removeRoadPass) {
     app.post?.setPassUniform?.(ROAD_PASS_NAME, "u_streak", live ? streakFor(shown.v, run.boosting || run.nitro > 0, reducedMotion) : 0);
     if (!reducedMotion) app.post?.setPassUniform?.(ROAD_PASS_NAME, "u_heatTime", time);
@@ -361,6 +383,7 @@ function render(dt: number, time: number, live = false): void {
 /** GU47 look (default) or today's (`?look=original`): output, device resolution, look rows. */
 const lookMode = lookModeFrom(location.search);
 const output = outputFor(lookMode);
+document.body.classList.toggle("look-original", lookMode === "original");
 
 /** RH47-07/08: the route's one custom post pass and Halo's auto-exposure, re-applied on every in-place route change. */
 let removeRoadPass: (() => void) | undefined;
@@ -532,6 +555,7 @@ async function boot(): Promise<void> {
   ready = true;
   $("loading").classList.add("hidden");
   $<HTMLButtonElement>("start").disabled = false;
+  if (!config.autostart && !config.manual) runtime.startIntro();
   render(0, 0);
   panels();
   if (config.autostart) begin();
@@ -548,6 +572,7 @@ $("controls-close").addEventListener("click", () => { remapping = null; $("contr
 $("controls-reset").addEventListener("click", () => { input.bindings = loadBindings(null); saveBindings(input.bindings, storage); remapping = null; renderControls(); });
 $("next").addEventListener("click", () => { void nextRoute(); });
 canvas.addEventListener("pointerdown", () => { void sound.unlock(); });
+document.addEventListener("pointerdown", () => runtime?.skipIntro(), { passive: true });
 addEventListener("resize", sizeCanvas);
 setReducedMotion(reducedMotion);
 if (touch) bindTouch();
