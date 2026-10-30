@@ -240,7 +240,9 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   /* ---- ui modules ---- */
   const hud = createHud({
     names: () => menu.names(), controls, hitKeyLabel, modernServe, serveFeedback: () => serveFeedback(),
-    smashAvailable, strategicDifficulty: (s) => strategic(s), intentionalLobAllLevels, swipeActive, shot: engine.SHOT ?? SHOT_DEFAULTS
+    smashAvailable, strategicDifficulty: (s) => strategic(s), intentionalLobAllLevels, swipeActive, shot: engine.SHOT ?? SHOT_DEFAULTS,
+    // GU47 TT-H1: the World Tour scorebug additions (`?look=original` keeps the 4.6.1 HUD; same rule as view/look.ts lookMode).
+    broadcast: typeof location === "undefined" || new URLSearchParams(location.search).get("look") !== "original"
   });
 
   const pause = createPauseUi({

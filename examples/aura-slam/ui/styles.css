@@ -737,3 +737,10 @@ body:has(.game-shell[data-mode=playing]) #feedback-widget-button{display:none!im
 .coach-card strong{display:block;margin-bottom:6px;color:#d8ff3e;font-size:10px;letter-spacing:.14em}
 .coach-card ol{margin:0 0 10px;padding-left:18px}
 .coach-card button{padding:6px 14px;border:1px solid #d8ff3e;border-radius:4px;background:transparent;color:#d8ff3e;font:inherit;font-weight:700;cursor:pointer}
+/* GU47 TT-H1: World Tour scorebug additions (ui/broadcast.ts): venue chip + set label in the top line, serve-speed strip over the footer. */
+.slam-venue-chip{margin-left:auto;margin-right:8px;padding:2px 6px;border-radius:2px;background:var(--slam-venue-accent,#d7f55b);color:#0d2032;font-family:var(--font-display);font-size:8px;font-weight:700;letter-spacing:.1em;white-space:nowrap}
+.slam-set-label{margin-right:8px;color:#e5f3ff;font-family:var(--font-display);font-size:8px;font-weight:700;letter-spacing:.12em}
+.slam-serve-strip{position:absolute;left:0;right:0;bottom:0;min-height:27px;display:flex;align-items:center;justify-content:space-between;padding:0 13px;background:#d7f55b;color:#0d2032;font-size:8px;font-weight:700;letter-spacing:.1em;transform:translateY(100%);transition:transform 160ms ease-out;pointer-events:none}
+.slam-serve-strip.shown{transform:none}
+.slam-serve-strip-speed{font-family:var(--font-display);font-size:13px;font-weight:700;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+@media(prefers-reduced-motion:reduce){.slam-serve-strip{transition:none}}
