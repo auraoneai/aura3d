@@ -653,6 +653,7 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
         app.setScene(sceneFor(wanted));
         handles.clear();
         lightTown = -1;
+        platformsWet = false; lastLanternCount = -1; flashOn = false;
       }
       forceSwap = false;
       if (!PINNED_BAND) prefetch(bandFor((sim.leg + 1) % towns.length, sim.timeOfDay));
