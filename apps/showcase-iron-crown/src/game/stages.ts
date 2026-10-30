@@ -3,6 +3,7 @@ import { stageAssets } from "./stage-assets";
 import { assets } from "../aura-assets";
 import { stageLook } from "./look";
 import { venueBackdrop } from "./backdrop";
+import { CROWD_IDS } from "./ambientMotion";
 
 /**
  * IRON CROWN venues.
@@ -539,8 +540,9 @@ function buildCrownTheater(palette: StagePalette): readonly AuraSceneNode[] {
     }
   }
   nodes.push(
-    primitives.box({ name: "cr-crowd-bodies", material: material.pbr({ color: "#ffffff", roughness: 0.94 }), instances: bodies, instanceColors: bodyColors, castShadow: false, receiveShadow: false }).toJSON(),
-    primitives.sphere({ name: "cr-crowd-heads", material: material.pbr({ color: "#ffffff", roughness: 0.9 }), instances: heads, instanceColors: headColors, castShadow: false, receiveShadow: false }).toJSON()
+    // IC47-AN2: runtime ids so the crowd can bob (game/ambientMotion.ts).
+    primitives.box({ name: "cr-crowd-bodies", material: material.pbr({ color: "#ffffff", roughness: 0.94 }), instances: bodies, instanceColors: bodyColors, castShadow: false, receiveShadow: false }).runtime({ id: CROWD_IDS.bodies }).toJSON(),
+    primitives.sphere({ name: "cr-crowd-heads", material: material.pbr({ color: "#ffffff", roughness: 0.9 }), instances: heads, instanceColors: headColors, castShadow: false, receiveShadow: false }).runtime({ id: CROWD_IDS.heads }).toJSON()
   );
 
   // Sparse phone/arena lights in the stands.
