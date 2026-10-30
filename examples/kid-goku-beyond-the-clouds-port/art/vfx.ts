@@ -1,35 +1,46 @@
 /**
  * GU47 WP-35 CD-15: the Cumulus Dash runtime effect pack (PRD §3.2 item 3), on E-F's registered-preset layers and the
- * built-in atlas sprites. Four presets, one per signature gameplay moment, coloured from the identity palette (amber only on
+ * built-in atlas sprites. Six presets, one per signature gameplay moment, coloured from the identity palette (amber only on
  * the pearl): pearl-spark (sky pearl pickup), cloud-puff (glider call / mount / dismount), puddle-splash (landing in a puddle
- * or the stream) and storm-mist (launch off the ridge). Plus the glider trail options.
+ * or the stream), storm-mist (launch off the ridge), speed-lines (launch and glider mount) and landing-dust (a dry
+ * landing). Plus the glider trail options.
  *
- * Counts keep a dense moment under the art direction's 96 live particles on High (spark 18 + puff 14 + splash 12 + mist 16
- * = 60); reduced motion halves every emission (PRD §6.3). These run beside the port's pooled point sprites (fx.ts), which
- * stay for the per-step dust and wisps.
+ * Counts keep a dense moment under the art direction's 96 live particles on High (spark 18 + puff 14 + splash 12 + mist 16 +
+ * speed lines 10 + landing dust 10 = 80; splash and landing dust never fire together); reduced motion halves every
+ * emission (PRD §6.3). These run beside the port's pooled point sprites (fx.ts), which stay for the per-step dust and wisps.
  */
 import type { AuraTrailOptions, AuraVfxEffectSpec } from "@aura3d/engine";
 import { CUMULUS_PALETTE } from "./look";
 
-export type CumulusVfxKind = "pearl-spark" | "cloud-puff" | "puddle-splash" | "storm-mist";
+export type CumulusVfxKind = "pearl-spark" | "cloud-puff" | "puddle-splash" | "storm-mist" | "speed-lines" | "landing-dust";
 
-export const CUMULUS_VFX_KINDS: readonly CumulusVfxKind[] = ["pearl-spark", "cloud-puff", "puddle-splash", "storm-mist"];
+export const CUMULUS_VFX_KINDS: readonly CumulusVfxKind[] = ["pearl-spark", "cloud-puff", "puddle-splash", "storm-mist", "speed-lines", "landing-dust"];
 
 /** Live-particle ceiling for a dense moment (CD-15 acceptance: <= 96). */
 export const CUMULUS_VFX_LIVE_CAP = 96;
 
-/** Gameplay events (read-only, from `Game.frame`) mapped to the preset they fire. */
-export const CUMULUS_VFX_EVENTS: Readonly<Record<string, CumulusVfxKind>> = {
-  skypearl: "pearl-spark",
-  "glider-call": "cloud-puff",
-  "glider-mount": "cloud-puff",
-  "glider-end": "cloud-puff",
-  dismount: "cloud-puff",
-  splash: "puddle-splash",
-  land: "puddle-splash",
-  launch: "storm-mist",
-  "power-launch": "storm-mist"
+/**
+ * Gameplay events (read-only, from `Game.frame`) mapped to the presets they fire. `land` fires the puddle splash on the wet
+ * stretch and the sandstone landing dust everywhere else (world.ts picks one by the read-only track position).
+ */
+export const CUMULUS_VFX_EVENTS: Readonly<Record<string, readonly CumulusVfxKind[]>> = {
+  skypearl: ["pearl-spark"],
+  "glider-call": ["cloud-puff"],
+  "glider-mount": ["cloud-puff", "speed-lines"],
+  "glider-end": ["cloud-puff"],
+  dismount: ["cloud-puff"],
+  splash: ["puddle-splash"],
+  land: ["puddle-splash", "landing-dust"],
+  launch: ["storm-mist", "speed-lines"],
+  "power-launch": ["storm-mist", "speed-lines"]
 };
+
+/** Which of an event's presets fire at this spot: the puddle splash only on the wet stretch, the landing dust only off it. */
+export function cumulusVfxFor(event: string, wet: boolean): readonly CumulusVfxKind[] {
+  const kinds = CUMULUS_VFX_EVENTS[event] ?? [];
+  if (event !== "land") return kinds;
+  return kinds.filter((k) => (wet ? k === "puddle-splash" : k === "landing-dust"));
+}
 
 export function cumulusVfxPresets(reducedMotion = false): Readonly<Record<CumulusVfxKind, AuraVfxEffectSpec>> {
   const n = (count: number): number => Math.max(1, Math.round(reducedMotion ? count / 2 : count));
@@ -57,6 +68,20 @@ export function cumulusVfxPresets(reducedMotion = false): Readonly<Record<Cumulu
       name: "storm-mist",
       layers: [
         { type: "emitter", preset: "dust", count: n(16), speed: [1, 3], life: [0.7, 1.3], size: [0.4, 1.0], color: CUMULUS_PALETTE.haze, intensity: 0.9, sprite: "smoke-b", additive: false, drag: 1.8, maxScreen: 0.14 }
+      ]
+    },
+    // Thin silver wind streaks thrown back past the runner on a launch or a glider mount (no camera layer, no flash).
+    "speed-lines": {
+      name: "speed-lines",
+      layers: [
+        { type: "emitter", preset: "streak", count: n(10), speed: [9, 14], life: [0.18, 0.32], size: [0.03, 0.06], color: CUMULUS_PALETTE.silver, intensity: 0.8, sprite: "spark-streak", additive: true, direction: [0, 0.15, -1], spread: 0.35, drag: 0.6, maxScreen: 0.04 }
+      ]
+    },
+    // Low sandstone-coloured dust ring on a dry landing.
+    "landing-dust": {
+      name: "landing-dust",
+      layers: [
+        { type: "emitter", preset: "dust", count: n(10), speed: [0.8, 2], life: [0.4, 0.8], gravity: -1.5, size: [0.2, 0.45], color: "#c98a63", intensity: 0.9, sprite: "dust-mote", additive: false, direction: [0, 0.4, 0], spread: 1.3, drag: 2.8, maxScreen: 0.08 }
       ]
     }
   };

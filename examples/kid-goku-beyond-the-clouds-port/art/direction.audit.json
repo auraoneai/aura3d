@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/kid-goku-beyond-the-clouds-port/art/direction.ts",
-  "sourceSha256": "210da41575718d71e14d0aacb1ef209b4736de76b0a783357dcb535c4a3f58b4",
+  "sourceSha256": "481abb5fa5e67afae89db94660bf570092f58900614b50e69ea0d3b8c708c0da",
   "id": "showcase-cloud-runner-port",
   "genre": "platformer",
   "signatureEffect": "A rainbow over silver-lined storm towers: a 40-42 degree bow in the antisolar sky over rain curtains and sunward silver cloud edges.",
@@ -254,7 +254,11 @@
       },
       {
         "event": "land",
-        "kind": "dust"
+        "kind": "landing-dust"
+      },
+      {
+        "event": "power-launch",
+        "kind": "speed-lines"
       },
       {
         "event": "hit",

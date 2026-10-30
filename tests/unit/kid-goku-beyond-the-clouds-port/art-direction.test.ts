@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { auditArtDirection, type ArtDirectionSnapshot } from "@aura3d/game/art";
 import direction from "../../../examples/kid-goku-beyond-the-clouds-port/art/direction";
 import { ACTIVE_LOOK, CUMULUS_LOOK, CUMULUS_PALETTE, lookIdFrom, lookRow } from "../../../examples/kid-goku-beyond-the-clouds-port/art/look";
-import { CUMULUS_VFX_EVENTS, CUMULUS_VFX_KINDS, CUMULUS_VFX_LIVE_CAP, cumulusVfxPresets, registerCumulusVfx } from "../../../examples/kid-goku-beyond-the-clouds-port/art/vfx";
+import { CUMULUS_VFX_EVENTS, CUMULUS_VFX_KINDS, CUMULUS_VFX_LIVE_CAP, cumulusVfxFor, cumulusVfxPresets, registerCumulusVfx } from "../../../examples/kid-goku-beyond-the-clouds-port/art/vfx";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 
 /**
@@ -79,11 +79,11 @@ describe("Cumulus Dash art direction (GU47 WP-35)", () => {
     expect(original.grade).toEqual({ exposure: 1.02, contrast: 1.07, saturation: 1.16 });
   });
 
-  it("registers all four presets; reduced motion halves every emission; a dense moment stays under the cap", () => {
+  it("registers all six presets; reduced motion halves every emission; a dense moment stays under the cap", () => {
     const registered: string[] = [];
     const kinds = registerCumulusVfx({ registerPreset: (kind) => registered.push(kind) });
     expect(kinds).toEqual(CUMULUS_VFX_KINDS);
-    expect(registered).toEqual(["pearl-spark", "cloud-puff", "puddle-splash", "storm-mist"]);
+    expect(registered).toEqual(["pearl-spark", "cloud-puff", "puddle-splash", "storm-mist", "speed-lines", "landing-dust"]);
     const full = cumulusVfxPresets(false), reduced = cumulusVfxPresets(true);
     let total = 0;
     for (const kind of CUMULUS_VFX_KINDS) {
@@ -98,7 +98,19 @@ describe("Cumulus Dash art direction (GU47 WP-35)", () => {
       });
     }
     expect(total).toBeLessThanOrEqual(CUMULUS_VFX_LIVE_CAP);
-    for (const kind of Object.values(CUMULUS_VFX_EVENTS)) expect(CUMULUS_VFX_KINDS).toContain(kind);
+    for (const kind of Object.values(CUMULUS_VFX_EVENTS).flat()) expect(CUMULUS_VFX_KINDS).toContain(kind);
     expect(registerCumulusVfx(undefined)).toEqual([]);
+  });
+
+  it("CD-15: a landing fires the puddle splash on the wet stretch and the landing dust off it; launches throw speed lines", () => {
+    expect(cumulusVfxFor("land", true)).toEqual(["puddle-splash"]);
+    expect(cumulusVfxFor("land", false)).toEqual(["landing-dust"]);
+    expect(cumulusVfxFor("launch", false)).toEqual(["storm-mist", "speed-lines"]);
+    expect(cumulusVfxFor("glider-mount", true)).toContain("speed-lines");
+    expect(cumulusVfxFor("not-an-event", false)).toEqual([]);
+    const presets = cumulusVfxPresets(false);
+    for (const kind of ["speed-lines", "landing-dust"] as const) {
+      expect(presets[kind].layers.some((l) => l.type === "camera" || l.type === "light")).toBe(false); // no shake, no flash
+    }
   });
 });

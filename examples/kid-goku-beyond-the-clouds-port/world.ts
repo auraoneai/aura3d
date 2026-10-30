@@ -16,7 +16,7 @@ import { ACTIVE, ballSpec, puddleSpec, glowSpec, scenerySpec, shadowSpec, skySpe
 import { ACTIVE_LOOK, sunPosition, type CumulusLookRow } from "./art/look";
 import { launchFovKick, titleFlyover, traumaFor } from "./art/camera";
 import { CUMULUS_FLARE_ELEMENTS, CUMULUS_GOD_RAY_DENSITY, applyCumulusPostPlan, cumulusPostPlan } from "./art/post";
-import { CUMULUS_GLIDER_TRAIL, CUMULUS_VFX_EVENTS, registerCumulusVfx } from "./art/vfx";
+import { CUMULUS_GLIDER_TRAIL, cumulusVfxFor, registerCumulusVfx } from "./art/vfx";
 import { Mesh, box, cylinder, hex } from "./mesh";
 import { LEG_CLIPS } from "./legcycle";
 import { CLIP_FOOT_SPEED, MAX_RATE, touchdowns } from "./locomotion";
@@ -384,10 +384,10 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
     if (!cinematic) return;
     if (vfxMotion !== g.reducedMotion) { vfxMotion = g.reducedMotion; registerCumulusVfx(app.effects, g.reducedMotion); }
     for (const e of events) {
-      const kind = CUMULUS_VFX_EVENTS[e];
-      if (!kind) continue;
-      if (e === "land" && !ch.waters.some((w) => g.state.s >= w.start - 2 && g.state.s <= w.end + 2)) continue; // puddle splash only on the wet stretch
-      try { app.effects?.burst(kind, [p[0], p[1] + 0.2, p[2]], { camera: false }); vfxFired[kind] = (vfxFired[kind] ?? 0) + 1; } catch { /* effects runtime unavailable */ }
+      const wet = e === "land" && ch.waters.some((w) => g.state.s >= w.start - 2 && g.state.s <= w.end + 2);
+      for (const kind of cumulusVfxFor(e, wet)) {
+        try { app.effects?.burst(kind, [p[0], p[1] + 0.2, p[2]], { camera: false }); vfxFired[kind] = (vfxFired[kind] ?? 0) + 1; } catch { /* effects runtime unavailable */ }
+      }
     }
   }
 

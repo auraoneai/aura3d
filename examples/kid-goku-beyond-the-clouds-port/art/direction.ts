@@ -62,7 +62,8 @@ export default defineArtDirection({
     { event: "splash", kind: "puddle-splash" },
     { event: "launch", kind: "storm-mist" },
     { event: "glider", kind: "trail" },
-    { event: "land", kind: "dust" },
+    { event: "land", kind: "landing-dust" },
+    { event: "power-launch", kind: "speed-lines" },
     { event: "hit", kind: "burst" }
   ],
   audio: [
