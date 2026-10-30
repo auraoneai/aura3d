@@ -25,6 +25,7 @@ import {
   type TypedGLBActorMaterialOverride
 } from "./ModelMaterialOverrides";
 import { modelTextureShareKey, sharedModelTextures } from "./actor/ModelTextureShare";
+import { estimateGlbResourceBytes, glbResourceCache, glbResourceCacheKey } from "./GlbResourceCache";
 import { createGLBActorAnimationMaterialResolver, createTypedGLBActorAnimationTrack, createTypedGLBActorEvidence, type TypedGLBActorMorphApplyOptions } from "./actor/TypedGLBActorAnimation";
 import { typedGLBActorExtensions, typedGLBActorQrFlags } from "./actor/extensions";
 import "./actor/TypedGLBActorLod.js";
@@ -308,6 +309,13 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     ? sharedModelTextures.acquire(modelTextureShareKey(options))
     : undefined;
   const sharedTextures = options.sharedTextures ?? textureShare?.cache;
+  // GU47 E-H: GLB resource cache across setScene. A kept entry still holds this asset's parse and
+  // texture leases, so the load below reuses them; a kept GLB without draco / meshopt / KTX2 needs
+  // no decoders, so its decoder pre-scan (a GLB fetch) is skipped.
+  const cacheKey = glbResourceCacheKey(options);
+  const kept = glbResourceCache.peek(cacheKey);
+  glbResourceCache.noteLoad(cacheKey);
+  const decoders = kept?.uncompressed === true ? undefined : options.decoders;
   let pipeline: Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>;
   try {
     pipeline = await loadProductionGLTFRenderPipeline({
@@ -321,7 +329,7 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
       ...(renderStateOverrides.length > 0 ? { materialRenderStateOverrides: renderStateOverrides } : {}),
       ...(options.textureBudget !== undefined ? { textureBudget: options.textureBudget } : {}),
       ...(options.maxTextureSize !== undefined ? { maxTextureSize: options.maxTextureSize } : {}),
-      ...(options.decoders ? { decoders: options.decoders } : {}),
+      ...(decoders ? { decoders } : {}),
       ...(options.compressedTextureCapabilities ? { compressedTextureCapabilities: options.compressedTextureCapabilities } : {}),
       ...(options.tangents !== undefined ? { tangents: options.tangents } : {}),
       ...(qrMaterials ? { materialsR185: true } : {}),
@@ -337,6 +345,8 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     }
     throw error;
   }
+  // This actor now holds its own parse and texture leases: the kept copy has done its job.
+  glbResourceCache.consume(cacheKey);
   // P5-1/P5-4: resource-level load issues (colorspace-conflict, tangent-derivative-fallback)
   // surface through inspectMaterials() warnings alongside variant issues.
   for (const issue of pipeline.resources.loadIssues) {
@@ -408,6 +418,7 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
   // GU47 E-H: named-part handles (one per name) and the model matrix of the last drawn frame.
   const parts = new Map<string, AuraRuntimeNodeHandle>();
   let lastModelMatrix: Mat4 | undefined;
+  let actorDisposed = false;
 
   const actor: TypedGLBActor = {
     kind: "aura-typed-glb-actor",
@@ -558,6 +569,9 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     },
     setTint,
     dispose() {
+      // Idempotent: a second call must not dispose resources the GLB resource cache now keeps.
+      if (actorDisposed) return;
+      actorDisposed = true;
       for (const extension of typedGLBActorExtensions()) {
         extension.dispose?.(actor);
       }
@@ -566,8 +580,19 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
       }
       parts.clear();
       if (liveTypedGLBActors.get(actor.id) === actor) liveTypedGLBActors.delete(actor.id);
-      pipeline.dispose();
-      textureShare?.release();
+      // GU47 E-H: hand the parse + texture leases to the GLB resource cache so the next scene that
+      // mounts this asset loads it without a fetch; disposed here when the cache declines.
+      const releaseResources = (): void => {
+        pipeline.dispose();
+        textureShare?.release();
+      };
+      const compression = pipeline.asset.loaderDiagnostics.compression;
+      const keptByCache = glbResourceCache.keep(cacheKey, {
+        bytes: estimateGlbResourceBytes(options.asset.sizeBytes, pipeline.asset.loaderDiagnostics),
+        uncompressed: !compression.draco && !compression.meshopt && !compression.ktx2Basis,
+        dispose: releaseResources
+      });
+      if (!keptByCache) releaseResources();
     }
   };
 
