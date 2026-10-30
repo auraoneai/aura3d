@@ -11,12 +11,15 @@ import type { AthleteRigPort } from "./rigPort";
 import { buildParticleNodes } from "./particles";
 import { buildBleacherNodes, buildSpectatorNodes } from "./spectators";
 import { VENUE_PALETTES, venueKey } from "./venues";
+import { createWorldTourCrowd, type WorldTourCrowd } from "./crowd";
 
 export interface TennisSceneOptions {
   /** Boot venue: the authored environment, fog, key and grade are this venue's, so the first frame needs no swap. */
   readonly venue?: string | null;
   /** `"original"` (`?look=original`) keeps the 4.6.1 four-light rig, flat backdrop and post stack. */
   readonly look?: "world-tour" | "original";
+  /** TT-AN1: the World Tour crowd whose nodes the scene mounts (the renderer keeps it to drive the head follow). */
+  readonly crowd?: WorldTourCrowd;
 }
 
 /** GU47 TT-E1: the venue environment node (its HDRI is swapped at runtime with `app.lighting.setEnvironment`). */
@@ -280,7 +283,13 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
 
   s.addMany(buildBleacherNodes(statics));
   s.addMany(statics.build("static", STATIC_RUNTIME_IDS));
-  s.addMany(buildSpectatorNodes());
+  if (original) {
+    s.addMany(buildSpectatorNodes());
+  } else {
+    // TT-AN1 / TT-A4: 240 seated spectators in two instanced crowds (bodies, heads that follow the rally): 2 draws.
+    const crowd = options.crowd ?? createWorldTourCrowd();
+    for (const node of [...crowd.bodies.nodes, ...crowd.heads.nodes]) s.add(node);
+  }
   s.addMany(buildParticleNodes());
 
   // Service Box Highlight, Aim Ring, Toss Ring, Beginner Landing Ring

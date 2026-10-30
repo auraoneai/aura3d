@@ -203,7 +203,11 @@
         "practical": false
       },
       {
-        "node": "spectators",
+        "node": "crowd-bodies-pose-0",
+        "practical": false
+      },
+      {
+        "node": "crowd-heads-pose-0",
         "practical": false
       },
       {

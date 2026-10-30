@@ -28,7 +28,10 @@ describe("aura-slam view: scene composition", () => {
   it("contains every node the renderer resolves at runtime", () => {
     for (const id of SCENE_NODE_IDS) expect(names.has(id), id).toBe(true);
     for (let i = 0; i < 8; i++) expect(names.has(`grass-stripe-${i}`)).toBe(true);
-    expect(names.has("spectators")).toBe(true);
+    // GU47 TT-AN1: the World Tour crowd (bodies + heads) replaces the 24 capsules, which stay in ?look=original.
+    expect(names.has("crowd-bodies-pose-0")).toBe(true);
+    expect(names.has("crowd-heads-pose-0")).toBe(true);
+    expect(names.has("spectators")).toBe(false);
     for (const n of ["tennis-ball", "tennis-ball-shadow", "retiring-ball"]) expect(names.has(n)).toBe(true);
     // GU47 TT-V1 / TT-V2: marks are decals and the trail is one ribbon; the 8 + 8 primitives stay in ?look=original only.
     for (let i = 0; i < MARK_COUNT; i++) expect(names.has(`court-mark-${i}`)).toBe(false);
@@ -36,6 +39,7 @@ describe("aura-slam view: scene composition", () => {
     const original = new Set(flatten((buildTennisScene(createPoseRig(), { look: "original" }).toJSON() as unknown as Doc).nodes));
     for (let i = 0; i < MARK_COUNT; i++) expect(original.has(`court-mark-${i}`)).toBe(true);
     for (let i = 0; i < TRAIL_COUNT; i++) expect(original.has(`ball-trail-${i}`)).toBe(true);
+    expect(original.has("spectators")).toBe(true);
   });
 
   it("builds both athletes with the full rig", () => {

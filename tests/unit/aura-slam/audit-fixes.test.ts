@@ -217,10 +217,10 @@ describe("top-tennis-C7 / C9 / C10 / C13: scene structure", () => {
     expect(boot).toContain('menu.quickStart("single", startSettings)');
   });
   it("C7: backdrop, seats and sponsor trim are runtime nodes the venue can recolour (the backdrop in ?look=original; GU47 TT-E1 shows the venue HDRI instead)", () => {
-    for (const id of [STATIC_RUNTIME_IDS.bleachers, STATIC_RUNTIME_IDS.sponsorTrim, "stadium-grandstand-rear", "spectators"]) expect(byRuntime(id), id).toBeDefined();
+    for (const id of [STATIC_RUNTIME_IDS.bleachers, STATIC_RUNTIME_IDS.sponsorTrim, "stadium-grandstand-rear", "crowd-bodies:pose-0", "crowd-heads:pose-0"]) expect(byRuntime(id), id).toBeDefined();
     expect(byRuntime("stadium-backdrop")).toBeUndefined();
     const original = buildTennisScene(createPoseRig({ resolveAppearance }) as never, { look: "original" }).toJSON() as AuraSceneSnapshot;
-    expect(original.nodes.find((n) => (n as { runtime?: { id?: string } }).runtime?.id === "stadium-backdrop"), "stadium-backdrop").toBeDefined();
+    for (const id of ["stadium-backdrop", "spectators"]) expect(original.nodes.find((n) => (n as { runtime?: { id?: string } }).runtime?.id === id), id).toBeDefined();
   });
   it("C9: the net mesh is blended at opacity 0.42 without depth write or shadow; the tape stays opaque", () => {
     const net = snapshot.nodes.find((n) => (n as { name?: string }).name === "static-netMesh") as { material?: Record<string, unknown>; castShadow?: boolean };

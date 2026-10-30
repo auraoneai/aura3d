@@ -16,8 +16,9 @@ import { STATIC_RUNTIME_IDS, buildTennisScene } from "./scene";
 import { createSpectatorUpdater } from "./spectators";
 import { VENUE_PALETTES, isMoonVenue, venueKey } from "./venues";
 import { lookMode, venueLook } from "./look";
-import { applyVenueRuntime, venueRuntimePlan, type VenueRuntimeApp, type VenueRuntimePlan } from "./venueRuntime";
+import { applyVenueRuntime, optionalNode, venueRuntimePlan, type VenueRuntimeApp, type VenueRuntimePlan } from "./venueRuntime";
 import { createSlamVfx, registerSlamVfx, type SlamVfxController } from "./vfx";
+import { CROWD_SEAT_COUNT, createWorldTourCrowd, type WorldTourCrowd } from "./crowd";
 
 /** Rig parts the World Tour look removes from the frame (TT-L2: contact shadows and the key's shadow replace the discs). */
 export const SHADOW_DISC_IDS = ["player-shadow", "rival-shadow"] as const;
@@ -120,6 +121,12 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
   let venuePlan: VenueRuntimePlan | null = null;
   let venueChanges = 0;
   let vfx: SlamVfxController | null = null;
+  // TT-AN1: the World Tour crowd (heads follow the ball); `?look=original` keeps the 24 capsule spectators.
+  const crowd: WorldTourCrowd | null = worldTour ? createWorldTourCrowd() : null;
+  let spectatorHeads: AuraRuntimeNodeHandle | null = null;
+  let crowdDraws = 0;
+  /** The crowd kit's update target: the app's node store (`nodes.get`, else a guarded `nodes.require` on test doubles). */
+  const crowdTarget = { nodes: { get: (id: string) => (app ? optionalNode(app as unknown as VenueRuntimeApp, id) : undefined) } };
 
   function applyVenue(venue: string): void {
     const key = venueKey(venue);
@@ -144,6 +151,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     h.sponsorTrim?.setMaterial(material.pbr({ color: pal.trim, roughness: 0.55 }));
     audienceVisible = !isMoonVenue(key);
     spectators?.setVisible(audienceVisible);
+    spectatorHeads?.setVisible(audienceVisible);
     h.grandstand?.setVisible(audienceVisible);
     h.bleachers?.setVisible(audienceVisible);
   }
@@ -182,7 +190,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     async mount(target: HTMLCanvasElement): Promise<void> {
       canvas = target;
       app = createAuraApp(target, {
-        scene: buildTennisScene(rig, { venue: bootVenue, look }),
+        scene: buildTennisScene(rig, { venue: bootVenue, look, ...(crowd ? { crowd } : {}) }),
         // C11: a governed tier ("auto") instead of the old string, which resolveMountQuality ignored; coarse-pointer devices get "medium".
         renderer: { quality: { tier: "auto" } },
         qualityRebuild: QUALITY_REBUILD,
@@ -218,7 +226,8 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       h.faultLeft = req("net-fault-left");
       h.faultRight = req("net-fault-right");
       grassStripes = Array.from({ length: 8 }, (_, i) => req(`grass-stripe-${i}`));
-      spectators = req("spectators");
+      spectators = req(crowd ? crowd.bodies.nodeIds[0]! : "spectators");
+      if (crowd) spectatorHeads = req(crowd.heads.nodeIds[0]!);
       particles = req("hit-particles");
       particles.setVisible(false);
       // TT-E1: the backdrop wall exists in `?look=original` only (the venue HDRI shows there in the World Tour look).
@@ -259,7 +268,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       if (ready) applyVenue(venueId);
     },
 
-    render(state: Readonly<MatchState>, _dt?: number, serveCue?: ServeCue): void {
+    render(state: Readonly<MatchState>, dt?: number, serveCue?: ServeCue): void {
       if (!state || !app || !ready || !ball || !rigs) {
         if (canvas) delete canvas.dataset.ready;
         return;
@@ -313,7 +322,13 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
 
       const t = Number(state.time ?? 0);
       const cheering = (state.phase as string) === "pointOver" || state.mode === "gameover";
-      if (spectators && audienceVisible) spectatorUpdater.update(spectators, t, cheering);
+      if (crowd) {
+        // TT-AN1: heads follow the ball with a per-seat lag; the crowd stands on a cheer (no rise under reduced motion).
+        if (audienceVisible && app) {
+          crowd.follow(bx, bz, Number.isFinite(dt) ? dt! : 1 / 60, cheering, reducedMotion());
+          crowdDraws = crowd.update(crowdTarget, t);
+        }
+      } else if (spectators && audienceVisible) spectatorUpdater.update(spectators, t, cheering);
       if (particles) particlesDrawn = particleUpdater.update(particles, s.particles as never);
       vfx?.update(s as never, venueLook(currentVenueKey));
 
@@ -368,7 +383,11 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
         displayBall: [...lastBallWorld],
         camera: { position: [...CAMERA_EYE], target: [...CAMERA_TARGET], fov: cameraFov, near: CAMERA_NEAR, far: CAMERA_FAR, aspect: viewportWidth / Math.max(1, viewportHeight) },
         viewport: { width: viewportWidth, height: viewportHeight, bottom: 0, pixelRatio },
-        audience: { visible: spectators ? spectators.visible !== false : audienceVisible, count: SPECTATOR_COUNT },
+        audience: {
+          visible: spectators ? spectators.visible !== false : audienceVisible,
+          count: crowd ? CROWD_SEAT_COUNT : SPECTATOR_COUNT,
+          ...(crowd ? { draws: crowdDraws, meanHeadYawDeg: (crowd.meanHeadYaw() * 180) / Math.PI, standing: crowd.standing() } : {})
+        },
         environment: { venue: currentVenueKey || "hard", background: VENUE_PALETTES[currentVenueKey || "hard"]?.background ?? null },
         look: {
           mode: look,
