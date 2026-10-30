@@ -83,8 +83,8 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, FcVenueLook>> = {
   // Munich: storm navy night, cold-white floods, lime accent, rain slanting through the shafts.
   munich: {
     look: "night-city", timeOfDay: "21:30 storm night",
-    background: "#0a1422", nightIbl: { source: "night-2k", intensity: 0.22, rotationDeg: 35 },
-    exposureEv: 0.15, sun: { elevationDeg: 40, azimuthDeg: 15 }, key: { color: "#9fb4d6", intensity: 0.4, shadowed: false },
+    background: "#0a1422", nightIbl: { source: "night-2k", intensity: 0.4, rotationDeg: 35 },
+    exposureEv: 1.15, sun: { elevationDeg: 40, azimuthDeg: 15 }, key: { color: "#9fb4d6", intensity: 0.4, shadowed: false },
     flood: 3.8, floodColor: "#e4f0ff", floodShadow: true,
     rim: { color: "#8fc8ff", intensity: 1.1, azimuthDeg: 200 },
     fog: 1.3, fogColor: "#16243a",
@@ -95,8 +95,8 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, FcVenueLook>> = {
   // Kyoto: lantern red and magenta in drizzle.
   kyoto: {
     look: "night-city", timeOfDay: "22:00 drizzle",
-    background: "#120814", nightIbl: { source: "cobblestone_street_night", intensity: 0.18, rotationDeg: 210 },
-    exposureEv: 0.1, sun: { elevationDeg: 45, azimuthDeg: 340 }, key: { color: "#d9a3c8", intensity: 0.4, shadowed: false },
+    background: "#120814", nightIbl: { source: "cobblestone_street_night", intensity: 0.34, rotationDeg: 210 },
+    exposureEv: 1.1, sun: { elevationDeg: 45, azimuthDeg: 340 }, key: { color: "#d9a3c8", intensity: 0.4, shadowed: false },
     flood: 3.4, floodColor: "#ffe2d0", floodShadow: true,
     rim: { color: "#ff5fa2", intensity: 0.9, azimuthDeg: 160 },
     fog: 1.0, fogColor: "#2a1020",
@@ -107,8 +107,8 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, FcVenueLook>> = {
   // Favela: sodium floods and dust in a walled cage.
   favela: {
     look: "night-city", timeOfDay: "20:45 dry heat",
-    background: "#140d07", nightIbl: { source: "rooftop_night", intensity: 0.16, rotationDeg: 120 },
-    exposureEv: 0.12, sun: { elevationDeg: 50, azimuthDeg: 30 }, key: { color: "#e0a868", intensity: 0.4, shadowed: false },
+    background: "#140d07", nightIbl: { source: "rooftop_night", intensity: 0.3, rotationDeg: 120 },
+    exposureEv: 1.1, sun: { elevationDeg: 50, azimuthDeg: 30 }, key: { color: "#e0a868", intensity: 0.4, shadowed: false },
     flood: 3.5, floodColor: "#ffb066", floodShadow: true,
     rim: { color: "#ffc27a", intensity: 0.8, azimuthDeg: 190 },
     fog: 0.8, fogColor: "#3a2814",
@@ -120,7 +120,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, FcVenueLook>> = {
   lagos: {
     look: "golden-hour", timeOfDay: "18:40 copper sunset",
     background: "#c27a4a",
-    exposureEv: -0.35, sun: { elevationDeg: 8, azimuthDeg: 250 }, key: { color: "#ff9a52", intensity: 2.4, shadowed: true },
+    exposureEv: 1.35, sun: { elevationDeg: 8, azimuthDeg: 250 }, key: { color: "#ff9a52", intensity: 2.4, shadowed: true },
     flood: 0.9, floodColor: "#ffcf9e", floodShadow: false,
     rim: null,
     fog: 0.15, fogColor: "#c98a5a",
@@ -128,24 +128,25 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, FcVenueLook>> = {
     bloom: { intensity: 0.08, threshold: 0.96 }, vignette: 0.25, grain: 0, chromaticAberration: 0,
     weather: "none", shafts: 0, cones: 0, turfRoughness: 0.95, surface: "plain", mirror: null
   },
-  // Uyuni: pale dawn on a mirror flat (spruit_sunrise drawn as the sky, low warm cascaded key, exposure -0.9).
+  // Uyuni: pale dawn on a mirror flat (spruit_sunrise drawn as the sky, low warm cascaded key). Phase 2: the PRD's
+  // exposure -0.9 measured mean 29 on software WebGL2 (band 150-190), so the exposure is tuned from the capture.
   uyuni: {
     look: "outdoor-day", timeOfDay: "06:40 pale dawn",
     background: "#c9d4e0", skyHdri: "spruit_sunrise",
-    exposureEv: -0.9, sun: { elevationDeg: 7, azimuthDeg: 100 }, key: { color: "#ffd0a0", intensity: 2.2, shadowed: true },
+    exposureEv: 1.45, sun: { elevationDeg: 7, azimuthDeg: 100 }, key: { color: "#ffd0a0", intensity: 2.2, shadowed: true },
     flood: 0, floodColor: "#f4f8ff", floodShadow: false,
     rim: null,
     fog: 0.15, fogColor: "#d6dde6",
     post: "daylight-outdoor", grade: { contrast: 1.0, saturation: 0.92, temperature: 0.12, tint: 0 },
     bloom: { intensity: 0.06, threshold: 0.97 }, vignette: 0.25, grain: 0, chromaticAberration: 0,
-    weather: "none", shafts: 0, cones: 0, turfRoughness: 0.2, surface: "plain", mirror: { resolution: 256, tint: "#d6e0ea" }
+    weather: "none", shafts: 0, cones: 0, turfRoughness: 0.2, surface: "plain", mirror: { resolution: 256, tint: "#eef3f8" }
   },
   // Glacier: polar night under a live aurora, with snow; real star sky.
   glacier: {
     look: "polar-night", timeOfDay: "23:00 polar night",
-    background: "#050b14", nightIbl: { source: "night-2k", intensity: 0.2, rotationDeg: 300 },
+    background: "#050b14", nightIbl: { source: "night-2k", intensity: 0.36, rotationDeg: 300 },
     starSky: { hour: 23, starLimit: 120 },
-    exposureEv: 0.1, sun: { elevationDeg: 35, azimuthDeg: 10 }, key: { color: "#8fb0d8", intensity: 0.4, shadowed: false },
+    exposureEv: 1.1, sun: { elevationDeg: 35, azimuthDeg: 10 }, key: { color: "#8fb0d8", intensity: 0.4, shadowed: false },
     flood: 3.6, floodColor: "#cfe8ff", floodShadow: true,
     rim: { color: "#7fe8c9", intensity: 0.9, azimuthDeg: 170 },
     fog: 1.2, fogColor: "#0b1a26",

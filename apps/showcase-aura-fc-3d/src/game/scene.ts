@@ -30,6 +30,32 @@ export const REFEREE_TARGET_HEIGHT = 1.84;
 export interface FcSceneOptions {
   /** prefers-reduced-motion / ?reducedMotion: weather emission halves, no motion blur, no chromatic aberration. */
   readonly reducedMotion?: boolean;
+  /** Engine-defect gates (default: read from the URL, see `fcEngineGates`). */
+  readonly engineGates?: Partial<FcEngineGates>;
+}
+
+/**
+ * GU47 phase-2 fallbacks for three engine defects found by the WP-38 receipts (software WebGL2, image
+ * gu47-after-10301502). Each feature stays authored; it is mounted only when its gate is on, and every gate is off by
+ * default until the owning engine lane lands its fix:
+ * - `spotShadow`: the main-stand flood's PCSS spot shadow. Any bound local shadow uploads `u_localShadowTexelScale`
+ *   as a Float32Array(8), which `MultiDraw.ts` rejects, so Munich, Kyoto, Favela and Glacier failed to mount
+ *   (RENDERER_MOUNT_FAILED, nothing drawn). E-B. Opt in with `?spotShadow=on`.
+ * - `stars`: Glacier's `sky.dayNight` star sky; a sky with no bands uploads a length-0 `u_bandParams` and throws.
+ *   E-G. Opt in with `?stars=on`.
+ * - `lut`: the per-venue display LUT (FC47-P2); the LUT stays pending, then unavailable, so every shot carried
+ *   texPending 1 and the luma-band check rejects it. E-C. Opt in with `?lut=on`.
+ */
+export interface FcEngineGates {
+  readonly spotShadow: boolean;
+  readonly stars: boolean;
+  readonly lut: boolean;
+}
+
+export function fcEngineGates(search: string = typeof location === "undefined" ? "" : location.search, override: Partial<FcEngineGates> = {}): FcEngineGates {
+  const q = new URLSearchParams(search);
+  const on = (k: string) => q.get(k) === "on";
+  return { spotShadow: on("spotShadow"), stars: on("stars"), lut: on("lut"), ...override };
 }
 
 const HIDDEN = 0.0001;
@@ -69,7 +95,7 @@ function venueIdOf(vl: FcVenueLook): VenueId {
   return (Object.keys(VENUE_LOOKS) as VenueId[]).find((id) => VENUE_LOOKS[id] === vl) ?? "munich";
 }
 
-export function venueLookOverrides(vl: FcVenueLook): AuraLookOverrides {
+export function venueLookOverrides(vl: FcVenueLook, gates: FcEngineGates = fcEngineGates()): AuraLookOverrides {
   const drawSky = vl.skyHdri !== undefined || vl.look === "golden-hour";
   const ibl = vl.nightIbl;
   return {
@@ -85,7 +111,7 @@ export function venueLookOverrides(vl: FcVenueLook): AuraLookOverrides {
     },
     ...(vl.rim ? { rim: { color: vl.rim.color, intensity: vl.rim.intensity, azimuthDeg: vl.rim.azimuthDeg } } : {}),
     // FC47-P2: the venue's split-tone display LUT rides on the look grade (E-C binds it in the display grade)
-    grade: { contrast: vl.grade.contrast, saturation: vl.grade.saturation, temperature: vl.grade.temperature, tint: vl.grade.tint, lut: VENUE_LUT_ASSETS[venueIdOf(vl)] },
+    grade: { contrast: vl.grade.contrast, saturation: vl.grade.saturation, temperature: vl.grade.temperature, tint: vl.grade.tint, ...(gates.lut ? { lut: VENUE_LUT_ASSETS[venueIdOf(vl)] } : {}) },
     post: vl.post,
     ...(vl.skyHdri !== undefined ? { hdri: vl.skyHdri } : {}),
     ...(ibl ? {
@@ -96,9 +122,9 @@ export function venueLookOverrides(vl: FcVenueLook): AuraLookOverrides {
   };
 }
 
-export function venueLookNode(venue: VenueId): any {
+export function venueLookNode(venue: VenueId, gates: FcEngineGates = fcEngineGates()): any {
   const vl = VENUE_LOOKS[venue];
-  const group = looks.preset(vl.look, venueLookOverrides(vl)).toJSON() as any;
+  const group = looks.preset(vl.look, venueLookOverrides(vl, gates)).toJSON() as any;
   if (vl.key.shadowed) return group;
   // The look key always requests a shadow; on night venues it is the unshadowed front fill (FC47-L2).
   return {
@@ -175,7 +201,7 @@ export function floodFlareNodes(venue: VenueId): any[] {
   });
 }
 
-function floodNodes(v: VenueSpec): any[] {
+function floodNodes(v: VenueSpec, gates: FcEngineGates): any[] {
   const vl = VENUE_LOOKS[v.id];
   const nodes: any[] = [];
   FLOOD_TOWERS.forEach(([x, z], i) => {
@@ -198,7 +224,7 @@ function floodNodes(v: VenueSpec): any[] {
       lights.spot({
         name: "fc-main-flood", position: mainFloodPosition(), target: [-6, 0, 4], angle: 0.62, penumbra: 0.55,
         intensity: vl.flood, color: vl.floodColor, distance: 120,
-        ...(vl.floodShadow ? { shadow: { filter: "pcss", mapSize: 2048, softness: 1.2 } } : {})
+        ...(vl.floodShadow && gates.spotShadow ? { shadow: { filter: "pcss", mapSize: 2048, softness: 1.2 } } : {})
       } as any)
     );
   }
@@ -267,7 +293,7 @@ export function atmosphereNodes(venue: VenueId, opts: FcSceneOptions = {}): any[
   const vl = VENUE_LOOKS[venue];
   const reducedMotion = opts.reducedMotion === true;
   const nodes: any[] = [];
-  if (vl.starSky) {
+  if (vl.starSky && fcEngineGates(undefined, opts.engineGates).stars) {
     // FC47-S1: the polar-night star sky (sky node only; dayNight's legacy spheres and its extra moon light stay out)
     const night = sky.dayNight({ hour: vl.starSky.hour, starLimit: vl.starSky.starLimit });
     const skyNode = night.nodes.find((n: any) => n.kind === "sky");
@@ -553,7 +579,7 @@ export function standTransforms(v: VenueSpec): { position: [number, number, numb
   return out;
 }
 
-function stadiumNodes(v: VenueSpec): any[] {
+function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates()): any[] {
   const nodes: any[] = [];
 
   /* ---- Favela cage walls (ball bounces off these) ---- */
@@ -637,7 +663,7 @@ function stadiumNodes(v: VenueSpec): any[] {
   }
 
   /* ---- Floodlight towers: one real flood, a light-pool batch for the rest, cones (FC47-L2, S2) ---- */
-  nodes.push(...floodNodes(v));
+  nodes.push(...floodNodes(v, gates));
   nodes.push(...floodFlareNodes(v.id));
 
   /* ---- Scoreboard gantry + emissive screen ---- */
@@ -760,11 +786,11 @@ export function buildFcScene(venue: VenueId = "munich", opts: FcSceneOptions = {
   const s = scene()
     // The night venues show their storm / lantern / dust / polar sky colour; Lagos and Uyuni draw their sky HDRI.
     .background(vl.background)
-    .add(venueLookNode(venue))
+    .add(venueLookNode(venue, fcEngineGates(undefined, opts.engineGates)))
     .addMany(pitchNodes(v))
     .addMany(goalNodes(-1))
     .addMany(goalNodes(1))
-    .addMany(stadiumNodes(v))
+    .addMany(stadiumNodes(v, fcEngineGates(undefined, opts.engineGates)))
     .addMany(ballNodes());
   for (const id of ATHLETE_IDS) s.addMany(athleteNodes(id));
   s.addMany(atmosphereNodes(venue, opts))
