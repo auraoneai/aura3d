@@ -74,6 +74,7 @@ import { BALL_R, DRIB_SHOULDER_FALLBACK, dribbleCycleY } from "./dribble";
 import { createOnePress } from "./input";
 import { hoopMaterials } from "./hoopMaterials";
 import { SprayTags } from "./sprayTags";
+import { SCOREBOARD_NODE_ID, courtNameNode, scoreboardNode, scoreboardText } from "./diegetic";
 import { projectCrops, type QaCropSubject } from "./qaCrops";
 import { MarkerPool, parkedTransforms, type MarkerSlot } from "./markerPools";
 import { LIVE_CAM, MAKE_FOV_KICK, ReplayRing, createBroadcast, createLetterbox, railPose, replayPose, replaySourceTime, type V3 as BroadcastV3 } from "./broadcast";
@@ -495,6 +496,8 @@ let letterbox: { show(on: boolean): void } | null = null;
 let broadcastPostOn = false;
 /** H47-V3: the Jam-dunk spray tags (new look). */
 const sprayTags = new SprayTags();
+/** H47-H1: the score text the in-world Rucker board shows (set at build, kept equal to the DOM score by syncHud). */
+let shownBoardScore = "";
 const BOOT_REDUCED_MOTION = initialParams.has("reducedMotion") || (typeof window !== "undefined" && (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false));
 
 const game_ = {
@@ -854,7 +857,15 @@ function buildVenueDressing(v: VenueSpec): any[] {
       model(assets.hoopsScoreboard, { name: "scoreboard-rig", targetHeight: 5.4, castShadow: false }).position(0, 4.2, -12.5),
       primitives.box({ name: "scoreboard-glow", size: [6.4, 2.2, 0.24], material: material.emissive({ color: "#1a0f04", emissive: "#ff7a1a", emissiveIntensity: 0.5 }) }).position(0, 5.4, -12.3).runtime(game.runtimeNode("scoreboard-glow"))
     );
+    // H47-H1: SDF score on the scoreboard rig, rebuilt by syncHud when the score changes.
+    if (!LOOK_ORIGINAL) {
+      shownBoardScore = currentBoardScore();
+      nodes.push(scoreboardNode(shownBoardScore));
+    }
   }
+
+  // H47-H1: the court name painted on the far apron in the court's tag colour.
+  if (!LOOK_ORIGINAL) nodes.push(courtNameNode(v.label, COURT_RIGS[v.id].sprayTag.color, COURT_Z1 + 1.3));
 
   // Courtside dressing shared by all courts: ball rack and trophy case (no static sideline athlete clones)
   nodes.push(
@@ -888,6 +899,7 @@ function buildCones(): any[] {
 
 function buildScene(v: VenueSpec): any {
   const s = scene();
+  shownBoardScore = "";
   if (LOOK_ORIGINAL) {
     // ?look=original: the 4.6 look (one preset per court, fog off) for before/after pairs.
     const lookOverrides = { fogDensityScale: 0, exposureEv: 0.16 };
@@ -3257,7 +3269,23 @@ function setStyle(node: HTMLElement | null | undefined, prop: "width" | "left" |
   node.style[prop] = value;
 }
 
+/** H47-H1: the score text the in-world board shows (equal to the DOM score bug). */
+function currentBoardScore(): string {
+  return scoreboardText(game_.scoreHome, game_.scoreAway, game_.mode === "dunklab" || game_.mode === "handleslab");
+}
+function syncBoardScore(): void {
+  if (LOOK_ORIGINAL || venue.id !== "rucker" || !auraApp) return;
+  const text = currentBoardScore();
+  if (text === shownBoardScore) return;
+  try {
+    const nodes = auraApp.nodes as unknown as { remove(id: string): boolean; add(node: unknown): unknown };
+    nodes.remove(SCOREBOARD_NODE_ID);
+    nodes.add(scoreboardNode(text));
+    shownBoardScore = text;
+  } catch { /* in-world score best-effort */ }
+}
 function syncHud(): void {
+  syncBoardScore();
   const lab = game_.mode === "dunklab" || game_.mode === "handleslab";
   setText(hudHomeName, game_.homeSquad.short);
   setText(hudAwayName, lab ? "LAB" : game_.awaySquad.short);
@@ -3369,6 +3397,8 @@ function publishEvidence(force = false): void {
     framesRendered,
     frameErrors: frameBoundary.stats(),
     shotStats: { ...shotStats },
+    // H47-H1: the in-world board text (Rucker, new look) next to the DOM score it must equal
+    inWorldScore: shownBoardScore ? { board: shownBoardScore, dom: currentBoardScore() } : null,
     footSlide: footEvidence(),
     autopilot: game_.autopilot,
     look: venue.look,
