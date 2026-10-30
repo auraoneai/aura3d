@@ -10,6 +10,7 @@
 import { camera, effects, geometry, material, scene, type AuraApp } from "@aura3d/engine";
 import { BELL, CAMERA_OFFSET, LETTERS, START, type WindState } from "./sim";
 import { GLOW_FRAGMENT, GLOW_VERTEX, HAZE_FRAGMENT, HAZE_VERTEX, MOTE_FRAGMENT, MOTE_VERTEX, PAINT_FRAGMENT, PAINT_VERTEX, PROP_FRAGMENT, PROP_VERTEX, SEA_FRAGMENT, SHAFT_FRAGMENT, SKY_FRAGMENT, STREAM_FRAGMENT, SKY_VERTEX, TRAVELLER_VERTEX, WIND_FRAGMENT, WIND_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX } from "./shaders";
+import { ORIGINAL_KEY, createDaylightDriver, daylightKeyFor, frameOfKey, type DaylightFrame } from "./daylight";
 import { lin, toGeometryInput, type Mesh, type Rgb } from "./meshkit";
 import { buildScenery } from "./scenery";
 import { addAnimatedModels, addStaticModels, availableModels, createHeroAnimator, type ModelSet } from "./models";
@@ -20,35 +21,64 @@ type Scene = ReturnType<typeof scene>;
 
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
 
+/**
+ * WW47-L1: the uniforms every COMMON-based program reads, written each frame from the daylight driver (daylight.ts).
+ * The defaults are the 4.6 constants, so a program drawn before the first write looks as it did.
+ */
+const ORIGINAL = frameOfKey(ORIGINAL_KEY);
+export const daylightUniforms = (): NonNullable<CustomSpec["uniforms"]> => ({
+  sunDir: { type: "vec3", value: [...ORIGINAL.sunDir] },
+  sunCol: { type: "vec3", value: [...ORIGINAL.sunColor] },
+  sunGain: { type: "f32", value: ORIGINAL.sunIntensity },
+  skyCol: { type: "vec3", value: [...ORIGINAL.hemiSky] },
+  gndCol: { type: "vec3", value: [...ORIGINAL.hemiGround] },
+  fogCol: { type: "vec3", value: [...ORIGINAL.fogColor] },
+  fogDensity: { type: "f32", value: ORIGINAL.fogDensity },
+  fogHeight: { type: "f32", value: 0 },
+  cloudShadowAmt: { type: "f32", value: 0 }
+});
+/** Writes one daylight frame into a COMMON-based program's uniforms. */
+export function writeDaylightUniforms(handle: { setUniform?(name: string, value: number | readonly number[]): unknown }, f: DaylightFrame): void {
+  handle.setUniform?.("sunDir", f.sunDir);
+  handle.setUniform?.("sunCol", f.sunColor);
+  handle.setUniform?.("sunGain", f.sunIntensity);
+  handle.setUniform?.("skyCol", f.hemiSky);
+  handle.setUniform?.("gndCol", f.hemiGround);
+  handle.setUniform?.("fogCol", f.fogColor);
+  handle.setUniform?.("fogDensity", f.fogDensity);
+  handle.setUniform?.("fogHeight", f.fogHeight);
+  handle.setUniform?.("cloudShadowAmt", f.cloudShadow);
+}
+
 export const windSpec = (): CustomSpec => ({
   glsl: { vertex: WIND_VERTEX, fragment: WIND_FRAGMENT },
-  uniforms: { windTime: { type: "f32", value: 0 }, windStrength: { type: "f32", value: 1 }, playerPos: { type: "vec3", value: [1e4, 0, 1e4] } },
+  uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 }, windStrength: { type: "f32", value: 1 }, playerPos: { type: "vec3", value: [1e4, 0, 1e4] } },
   side: "double"
 });
 export const paintSpec = (): CustomSpec => ({
   glsl: { vertex: PAINT_VERTEX, fragment: PAINT_FRAGMENT },
-  uniforms: { windTime: { type: "f32", value: 0 } }
+  uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 } }
 });
 export const seaSpec = (): CustomSpec => ({
   glsl: { vertex: PAINT_VERTEX, fragment: SEA_FRAGMENT },
-  uniforms: { windTime: { type: "f32", value: 0 } },
+  uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 } },
   transparent: true,
   depthWrite: false
 });
 export const skySpec = (): CustomSpec => ({
   glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT },
-  uniforms: { windTime: { type: "f32", value: 0 } },
+  uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 } },
   depthWrite: false,
   side: "double"
 });
 export const propSpec = (): CustomSpec => ({
   glsl: { vertex: PROP_VERTEX, fragment: PROP_FRAGMENT },
-  uniforms: { windTime: { type: "f32", value: 0 }, playerPos: { type: "vec3", value: [1e4, 0, 1e4] } },
+  uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 }, playerPos: { type: "vec3", value: [1e4, 0, 1e4] } },
   side: "double"
 });
 export const travellerSpec = (): CustomSpec => ({
   glsl: { vertex: TRAVELLER_VERTEX, fragment: PROP_FRAGMENT },
-  uniforms: {
+  uniforms: { ...daylightUniforms(),
     windTime: { type: "f32", value: 0 },
     playerPos: { type: "vec3", value: [1e4, 0, 1e4] },
     gait: { type: "f32", value: 0 },
@@ -60,7 +90,7 @@ export const travellerSpec = (): CustomSpec => ({
 });
 export const glowSpec = (color: Rgb, amount: number, seed: number): CustomSpec => ({
   glsl: { vertex: GLOW_VERTEX, fragment: GLOW_FRAGMENT },
-  uniforms: {
+  uniforms: { ...daylightUniforms(),
     windTime: { type: "f32", value: 0 },
     glowColor: { type: "color3", value: [...color] },
     glowAmount: { type: "f32", value: amount },
@@ -73,7 +103,7 @@ export const glowSpec = (color: Rgb, amount: number, seed: number): CustomSpec =
 });
 export const moteSpec = (): CustomSpec => ({
   glsl: { vertex: MOTE_VERTEX, fragment: MOTE_FRAGMENT },
-  uniforms: { windTime: { type: "f32", value: 0 } },
+  uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 } },
   transparent: true,
   depthWrite: false,
   blending: "additive",
@@ -81,7 +111,7 @@ export const moteSpec = (): CustomSpec => ({
 });
 export const hazeSpec = (phase: number): CustomSpec => ({
   glsl: { vertex: HAZE_VERTEX, fragment: HAZE_FRAGMENT },
-  uniforms: {
+  uniforms: { ...daylightUniforms(),
     windTime: { type: "f32", value: 0 },
     hazePhase: { type: "f32", value: phase },
     hazeOpacity: { type: "f32", value: 0.34 }
@@ -92,14 +122,14 @@ export const hazeSpec = (phase: number): CustomSpec => ({
 });
 export const streamSpec = (): CustomSpec => ({
   glsl: { vertex: HAZE_VERTEX, fragment: STREAM_FRAGMENT },
-  uniforms: { windTime: { type: "f32", value: 0 } },
+  uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 } },
   transparent: true,
   depthWrite: false,
   side: "double"
 });
 export const shaftSpec = (seed: number, opacity: number): CustomSpec => ({
   glsl: { vertex: HAZE_VERTEX, fragment: SHAFT_FRAGMENT },
-  uniforms: {
+  uniforms: { ...daylightUniforms(),
     windTime: { type: "f32", value: 0 },
     shaftSeed: { type: "f32", value: seed },
     shaftOpacity: { type: "f32", value: opacity }
@@ -157,6 +187,8 @@ export interface WorldRuntime {
   readonly stats: { trees: number; propTriangles: number; foliageTriangles: number; terrainTriangles: number };
   /** The bell's current swing angle (radians about z), for QA. */
   readonly bellAngle: number;
+  /** The daylight frame on screen (WW47-L1). */
+  readonly daylight: DaylightFrame;
 }
 
 /**
@@ -182,8 +214,24 @@ const FACING_YAW: Record<string, number> = { front: 0, frontRight: Math.PI / 4, 
 
 const dynamic = (m: Mesh, withLimb = false) => geometry.dynamic(toGeometryInput(m, withLimb, !withLimb));
 
-export function buildWorld(options: { density?: number; models?: boolean; reducedMotion?: () => boolean } = {}): World {
+export interface BuildWorldOptions {
+  density?: number;
+  models?: boolean;
+  reducedMotion?: () => boolean;
+  /** `original` is the 4.6 look (`?look=original`): fixed midday constants, no engine lights, the 4.6 post. */
+  look?: "gu47" | "original";
+  /** Pins the daylight key (`?found=0..3|epilogue`, capture variants); null follows the story. */
+  daylightKey?: number | null;
+  /** `low` drops shadows, god rays, particles and the paper pass (PRD §6.4). */
+  quality?: "low" | "high";
+}
+
+export function buildWorld(options: BuildWorldOptions = {}): World {
   const density = options.density ?? 1;
+  const original = options.look === "original";
+  /** Every node drawn with a COMMON-based program: each gets the daylight uniforms every frame. */
+  const daylightIds: string[] = [];
+  const lit = (id: string): string => { daylightIds.push(id); return id; };
   /** Reduced motion: smaller bell swing, slower grass and leaf sway, a gentler voyage camera. */
   const motion = (): number => (options.reducedMotion?.() ? 0.3 : 1);
   const rand = lehmer(20261022);
@@ -201,7 +249,7 @@ export function buildWorld(options: { density?: number; models?: boolean; reduce
     normals: terrain.normals,
     indices: terrain.indices,
     attributes: { tint: { itemSize: 3, data: terrain.tint } }
-  }), { name: "terrain", material: material.custom(paintSpec()) }));
+  }), { name: "terrain", material: material.custom(paintSpec()) }).runtime({ id: lit("terrain") }));
 
   /* ---- sea ---- */
   const S = 360;
@@ -210,7 +258,7 @@ export function buildWorld(options: { density?: number; models?: boolean; reduce
     normals: f32([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]),
     indices: [0, 2, 1, 0, 3, 2],
     attributes: { tint: { itemSize: 3, data: f32([0.3, 0.55, 0.6, 0.3, 0.55, 0.6, 0.3, 0.55, 0.6, 0.3, 0.55, 0.6]) } }
-  }), { name: "sea", material: material.custom(seaSpec()) }).runtime({ id: "sea" }));
+  }), { name: "sea", material: material.custom(seaSpec()) }).runtime({ id: lit("sea") }));
 
   /* ---- sky dome (follows the camera) ---- */
   {
@@ -228,7 +276,7 @@ export function buildWorld(options: { density?: number; models?: boolean; reduce
       const a = j * (seg + 1) + i, b = a + 1, c = a + seg + 1, d = c + 1;
       idx.push(a, c, b, b, c, d);
     }
-    builder.add(geometry.custom(geometry.dynamic({ positions: f32(pos), normals: f32(nrm), indices: new Uint32Array(idx) }), { name: "sky", material: material.custom(skySpec()) }).runtime({ id: "sky" }));
+    builder.add(geometry.custom(geometry.dynamic({ positions: f32(pos), normals: f32(nrm), indices: new Uint32Array(idx) }), { name: "sky", material: material.custom(skySpec()) }).runtime({ id: lit("sky") }));
   }
 
   /* ---- foliage cards: one merged mesh, one wind material ---- */
@@ -323,7 +371,7 @@ export function buildWorld(options: { density?: number; models?: boolean; reduce
       tint: { itemSize: 3, data: f32(f.tint) }, sway: { itemSize: 1, data: f32(f.sway) }, phase: { itemSize: 1, data: f32(f.phase) }, kind: { itemSize: 1, data: f32(f.kind) }
     }
   });
-  builder.add(geometry.custom(foliageGeometry, { name: "foliage", material: material.custom(windSpec()) }).runtime({ id: "foliage" }));
+  builder.add(geometry.custom(foliageGeometry, { name: "foliage", material: material.custom(windSpec()) }).runtime({ id: lit("foliage") }));
 
   /* ---- the stream: a ribbon of water laid in the carved bed ---- */
   {
@@ -347,31 +395,31 @@ export function buildWorld(options: { density?: number; models?: boolean; reduce
       uv.push(0, s.run, 1, s.run);
       if (i > 0) { const b = (i - 1) * 2; idx.push(b, b + 1, b + 2, b + 1, b + 3, b + 2); }
     });
-    builder.add(geometry.custom(geometry.dynamic({ positions: f32(pos), normals: f32(pos.map((_, i) => (i % 3 === 1 ? 1 : 0))), uvs: f32(uv), indices: new Uint32Array(idx) }), { name: "stream", material: material.custom(streamSpec()) }).runtime({ id: "stream" }));
+    builder.add(geometry.custom(geometry.dynamic({ positions: f32(pos), normals: f32(pos.map((_, i) => (i % 3 === 1 ? 1 : 0))), uvs: f32(uv), indices: new Uint32Array(idx) }), { name: "stream", material: material.custom(streamSpec()) }).runtime({ id: lit("stream") }));
   }
 
   /* ---- merged scenery ---- */
-  builder.add(geometry.custom(dynamic(sc.props), { name: "scenery", material: material.custom(propSpec()) }).runtime({ id: "props" }));
-  builder.add(geometry.custom(dynamic(sc.sails), { name: "windmill-sails", material: material.custom(propSpec()) }).runtime({ id: "sails" }));
-  builder.add(geometry.custom(dynamic(sc.bellMesh), { name: "bell", material: material.custom(propSpec()) }).runtime({ id: "bell" }));
-  if (!set.boat) builder.add(geometry.custom(dynamic(sc.boat), { name: "boat", material: material.custom(propSpec()) }).runtime({ id: "boat" }));
+  builder.add(geometry.custom(dynamic(sc.props), { name: "scenery", material: material.custom(propSpec()) }).runtime({ id: lit("props") }));
+  builder.add(geometry.custom(dynamic(sc.sails), { name: "windmill-sails", material: material.custom(propSpec()) }).runtime({ id: lit("sails") }));
+  builder.add(geometry.custom(dynamic(sc.bellMesh), { name: "bell", material: material.custom(propSpec()) }).runtime({ id: lit("bell") }));
+  if (!set.boat) builder.add(geometry.custom(dynamic(sc.boat), { name: "boat", material: material.custom(propSpec()) }).runtime({ id: lit("boat") }));
   addStaticModels(builder, sc, set);
   LETTERS.forEach((_, i) => {
-    if (!set.letter) builder.add(geometry.custom(dynamic(sc.envelope), { name: `letter-${i}`, material: material.custom(propSpec()) }).runtime({ id: `letter-${i}` }));
-    builder.add(geometry.custom(geometry.dynamic(quad(1.5)), { name: `letter-glow-${i}`, material: material.custom(glowSpec(lin("#ffe9a0"), 1.5, i * 2.1)) }).runtime({ id: `letter-glow-${i}` }));
-    builder.add(geometry.custom(geometry.dynamic(beam(0.5, 12)), { name: `letter-beam-${i}`, material: material.custom(shaftSpec(i * 3.7, 0.2)) }).runtime({ id: `letter-beam-${i}` }));
+    if (!set.letter) builder.add(geometry.custom(dynamic(sc.envelope), { name: `letter-${i}`, material: material.custom(propSpec()) }).runtime({ id: lit(`letter-${i}`) }));
+    builder.add(geometry.custom(geometry.dynamic(quad(1.5)), { name: `letter-glow-${i}`, material: material.custom(glowSpec(lin("#ffe9a0"), 1.5, i * 2.1)) }).runtime({ id: lit(`letter-glow-${i}`) }));
+    builder.add(geometry.custom(geometry.dynamic(beam(0.5, 12)), { name: `letter-beam-${i}`, material: material.custom(shaftSpec(i * 3.7, 0.2)) }).runtime({ id: lit(`letter-beam-${i}`) }));
   });
-  builder.add(geometry.custom(geometry.dynamic(quad(2.4)), { name: "bell-glow", material: material.custom(glowSpec(lin("#ffd37a"), 0.0, 4.2)) }).runtime({ id: "bell-glow" }));
+  builder.add(geometry.custom(geometry.dynamic(quad(2.4)), { name: "bell-glow", material: material.custom(glowSpec(lin("#ffd37a"), 0.0, 4.2)) }).runtime({ id: lit("bell-glow") }));
   sc.lanterns.forEach((_, i) => {
-    builder.add(geometry.custom(geometry.dynamic(quad(1.5)), { name: `lantern-glow-${i}`, material: material.custom(glowSpec(lin("#ffbf66"), 1.0, 1.3 + i)) }).runtime({ id: `lantern-glow-${i}` }));
+    builder.add(geometry.custom(geometry.dynamic(quad(1.5)), { name: `lantern-glow-${i}`, material: material.custom(glowSpec(lin("#ffbf66"), 1.0, 1.3 + i)) }).runtime({ id: lit(`lantern-glow-${i}`) }));
   });
 
   /* ---- traveller and contact shadow ---- */
-  if (!set.hero) builder.add(geometry.custom(dynamic(sc.traveller, true), { name: "traveller", material: material.custom(travellerSpec()) }).runtime({ id: "traveller" }));
+  if (!set.hero) builder.add(geometry.custom(dynamic(sc.traveller, true), { name: "traveller", material: material.custom(travellerSpec()) }).runtime({ id: lit("traveller") }));
   builder.add(geometry.custom(geometry.dynamic(ground(0.8)), { name: "traveller-shadow", material: material.custom(blobSpec()) }).runtime({ id: "shadow" }));
-  if (!set.wisp) builder.add(geometry.custom(dynamic(sc.wisp), { name: "wisp", material: material.custom(propSpec()) }).runtime({ id: "wisp" }));
+  if (!set.wisp) builder.add(geometry.custom(dynamic(sc.wisp), { name: "wisp", material: material.custom(propSpec()) }).runtime({ id: lit("wisp") }));
   addAnimatedModels(builder, set, LETTERS.length);
-  builder.add(geometry.custom(geometry.dynamic(quad(1.1)), { name: "wisp-glow", material: material.custom(glowSpec(lin("#b78cff"), 1.1, 2.7)) }).runtime({ id: "wisp-glow" }));
+  builder.add(geometry.custom(geometry.dynamic(quad(1.1)), { name: "wisp-glow", material: material.custom(glowSpec(lin("#b78cff"), 1.1, 2.7)) }).runtime({ id: lit("wisp-glow") }));
 
   /* ---- floating pollen ---- */
   {
@@ -385,7 +433,7 @@ export function buildWorld(options: { density?: number; models?: boolean; reduce
       for (const [u, v] of [[0, 0], [1, 0], [1, 1], [0, 1]] as const) { pos.push(x, y, z); uv.push(u, v); tint.push(seed, size, 0); }
       idx.push(b, b + 1, b + 2, b, b + 2, b + 3);
     }
-    builder.add(geometry.custom(geometry.dynamic({ positions: f32(pos), normals: f32(pos.map(() => 0)), uvs: f32(uv), indices: new Uint32Array(idx), attributes: { tint: { itemSize: 3, data: f32(tint) } } }), { name: "pollen", material: material.custom(moteSpec()) }).runtime({ id: "motes" }));
+    builder.add(geometry.custom(geometry.dynamic({ positions: f32(pos), normals: f32(pos.map(() => 0)), uvs: f32(uv), indices: new Uint32Array(idx), attributes: { tint: { itemSize: 3, data: f32(tint) } } }), { name: "pollen", material: material.custom(moteSpec()) }).runtime({ id: lit("motes") }));
   }
 
   /* ---- post: a gentle bloom for the glow, grade and vignette ---- */
@@ -416,7 +464,16 @@ export function buildWorld(options: { density?: number; models?: boolean; reduce
       let bellAngle = 0;
       let swayTime = 0, lastTime = 0;
       const wisp = { x: START.x - 1.1, y: 2.4, z: START.z + 0.6 };
-      const allUniformNodes = ["foliage", "sea", "sky", "props", "motes", "stream"];
+      const allUniformNodes = ["foliage", "sea", "sky", "props", "motes", "stream", "terrain"];
+      // WW47-L1: one daylight state for every painted program, eased over 6 s between story keys
+      const daylight = createDaylightDriver({ original });
+      daylight.snap(options.daylightKey ?? 0);
+      let shownDaylight: DaylightFrame | null = null;
+      const applyDaylight = (f: DaylightFrame): void => {
+        if (f === shownDaylight) return;
+        shownDaylight = f;
+        for (const id of daylightIds) writeDaylightUniforms(node(id), f);
+      };
       return {
         foliageCards: cardCount,
         stats: { trees: sc.treeCount, propTriangles, foliageTriangles: f.indices.length / 3, terrainTriangles: terrain.indices.length / 3 },
@@ -424,11 +481,14 @@ export function buildWorld(options: { density?: number; models?: boolean; reduce
         get bellAngle() { return bellAngle; },
         setEpilogue(seconds) { epilogue = seconds; },
         snap(state) { heroAnim?.reset(state.pos.x, state.pos.z); look.x = state.pos.x + 2; look.y = terrainHeight(state.pos.x, state.pos.z) + 1.8; look.z = state.pos.z - 3.5; epilogue = null; },
+        get daylight() { return daylight.frame; },
         reset() {
+          daylight.snap(options.daylightKey ?? 0);
           look.x = START.x + 2; look.y = 2.2; look.z = START.z - 3.5;
           lastFound = -1; lastX = START.x; lastZ = START.z; lastStep = -1; lastStepTime = -1; heroAnim?.reset(START.x, START.z, 0); gait = 0; walkAmt = 0; yaw = 0; epilogue = null; wisp.x = START.x - 1.1; wisp.y = 2.4; wisp.z = START.z + 0.6;
         },
         update(state, dt, time, aspect) {
+          applyDaylight(daylight.update(options.daylightKey ?? daylightKeyFor({ found: state.found.length, complete: state.complete, epilogue: epilogue !== null }), dt));
           const { x, z } = state.pos;
           const y = terrainHeight(x, z);
           const hop = state.hop.height;

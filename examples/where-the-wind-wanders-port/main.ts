@@ -2,7 +2,7 @@
  * Where the Wind Wanders on Aura3D: boot, fixed-step loop, input, HUD and capture hooks.
  * The simulation lives in `sim.ts` (pure); `world.ts` draws it through the public engine surface.
  *
- * Query parameters: `manual=1` (the sim only advances through `__AURA_WIND__.stepFrames`; no title
+ * Query parameters (GU47 adds `look=original` for the 4.6 look and `found=0..3|epilogue` to pin the daylight key): `manual=1` (the sim only advances through `__AURA_WIND__.stepFrames`; no title
  * card, no sound), `start=1` (skip the title card), `quality=low`. The hooks mirror the capture harness: `applyInput(keys, act)` then
  * `stepFrames(n)`, or `runScript(segments)` to replay a recorded key script; `realtime(seconds)` advances the game clock
  * (captions, the bell-to-epilogue wait, the voyage) without drawing a frame per tick.
@@ -19,10 +19,14 @@ import { buildWorld, type WorldRuntime } from "./world";
 import { createAudio } from "./audio";
 import { STORY, createUi } from "./ui";
 import { MODEL_ASSETS } from "./model-assets";
+import { parseFoundParam } from "./daylight";
 
 const params = new URLSearchParams(location.search);
 const manual = params.get("manual") === "1";
 const lowQuality = params.get("quality") === "low";
+/** `?look=original` is the 4.6 look; `?found=0..3|epilogue` pins the daylight key for captures (presentation only, the sim is untouched). */
+const originalLook = params.get("look") === "original";
+const daylightKey = parseFoundParam(params.get("found"));
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
   if (!el) throw new Error(`where-the-wind-wanders-port: #${id} is missing`);
@@ -402,7 +406,7 @@ function watchModelLoads(): () => void {
 async function boot(): Promise<void> {
   sizeCanvas();
   const stopWatching = watchModelLoads();
-  const world = buildWorld({ density: lowQuality ? 0.5 : 1, reducedMotion: () => reducedMotion.matches });
+  const world = buildWorld({ density: lowQuality ? 0.5 : 1, reducedMotion: () => reducedMotion.matches, look: originalLook ? "original" : "gu47", daylightKey, quality: lowQuality ? "low" : "high" });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,

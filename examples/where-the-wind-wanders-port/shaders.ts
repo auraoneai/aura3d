@@ -16,6 +16,8 @@
  *   BLOB_*      the traveller's contact shadow
  */
 
+import { CLOUD_GLSL, WIND_GLSL } from "./wind";
+
 const PLAYER_FADE = /* glsl */ `
 bool playerFade(vec3 world) {
   float t = smoothstep(0.9, 3.4, distance(world.xz, playerPos.xz));
@@ -24,15 +26,16 @@ bool playerFade(vec3 world) {
 }
 `;
 
+/**
+ * GU47 WW47-L1: the light is no longer hard-coded. `sunDir`, `sunCol`, `sunGain`, `skyCol`, `gndCol`, `fogCol`,
+ * `fogDensity`, `fogHeight` and `cloudShadowAmt` are spec uniforms (`daylightUniforms()` in world.ts) written every
+ * frame from the daylight driver (daylight.ts), so the painted surfaces and the engine sun share one key.
+ * A fragment that defines `WIND_SUN_SHADOW` and includes `<a3d_shadow>` before COMMON receives the engine sun's shadow.
+ */
 export const COMMON = /* glsl */ `
-const vec3 SUN_DIR = vec3(-0.468, 0.802, 0.374);
-const vec3 SUN_COL = vec3(1.0, 0.831, 0.429);
-const vec3 SKY_COL = vec3(0.78, 0.89, 0.62);
-const vec3 GND_COL = vec3(0.04, 0.095, 0.03);
-const vec3 FOG_COL = vec3(0.46, 0.66, 0.62);
-const float FOG_DENSITY = 0.0030;
-
+#include <a3d_fog>
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+
 float vnoise(vec2 p) {
   vec2 i = floor(p), f = fract(p);
   f = f * f * (3.0 - 2.0 * f);
@@ -44,13 +47,26 @@ float fbm(vec2 p) {
   return s / 0.9375;
 }
 
-vec3 lightSurface(vec3 albedo, vec3 n, float ao, float wrap, float sss, vec3 view) {
-  float ndl = dot(n, SUN_DIR);
+${WIND_GLSL}
+${CLOUD_GLSL}
+/** The share of the sun reaching a ground point: the engine sun shadow (when received) times the drifting cloud shadow. */
+float sunVisibility(vec3 world, vec3 n) {
+  float clouds = 1.0 - cloudShadowAmt * cloudCover(world.xz, windTime);
+#ifdef WIND_SUN_SHADOW
+  return clouds * a3dSunShadowAuto(world, n);
+#else
+  return clouds;
+#endif
+}
+
+vec3 lightSurface(vec3 albedo, vec3 n, float ao, float wrap, float sss, vec3 view, vec3 world) {
+  float ndl = dot(n, sunDir);
   float lam = clamp((ndl + wrap) / (1.0 + wrap), 0.0, 1.0);
-  vec3 hemi = mix(GND_COL, SKY_COL, n.y * 0.5 + 0.5) * 0.92;
-  vec3 sun = SUN_COL * 1.3 * lam;
-  float back = sss * pow(clamp(dot(-view, SUN_DIR), 0.0, 1.0), 2.0) * 0.8;
-  return albedo * (hemi * ao + sun * mix(1.0, ao, 0.7) + SUN_COL * back);
+  vec3 hemi = mix(gndCol, skyCol, n.y * 0.5 + 0.5) * 0.92;
+  float vis = sunVisibility(world, n);
+  vec3 sun = sunCol * sunGain * lam * vis;
+  float back = sss * pow(clamp(dot(-view, sunDir), 0.0, 1.0), 2.0) * 0.8 * vis;
+  return albedo * (hemi * ao + sun * mix(1.0, ao, 0.7) + sunCol * back);
 }
 
 bool nearFade(vec3 world, float d0, float d1) {
@@ -61,8 +77,10 @@ bool nearFade(vec3 world, float d0, float d1) {
 
 vec3 applyFog(vec3 c, vec3 world, float scale) {
   float d = distance(cameraPosition, world);
-  float f = 1.0 - exp(-pow(FOG_DENSITY * scale * d, 2.0));
-  return mix(c, FOG_COL, clamp(f, 0.0, 1.0));
+  float f = 1.0 - exp(-pow(fogDensity * scale * d, 2.0));
+  c = mix(c, fogCol, clamp(f, 0.0, 1.0));
+  // WW47-S3: low fog pooling over the sea and the stream (sea level -0.55) at golden hour and dusk; 0 at midday
+  return a3dFogHeight(c, mix(fogCol, sunCol, 0.18), d, world.y, 0.0, 0.016 * fogHeight * scale, -0.55, 0.9, 0.6 * fogHeight);
 }
 `;
 
@@ -218,7 +236,7 @@ void main() {
   if (cover < 0.5) discard;
   vec3 view = normalize(cameraPosition - vWorld);
   vec3 n = normalize(vec3(0.0, 1.0, 0.0) + vec3((uv.x - 0.5) * 0.5, 0.0, 0.0));
-  vec3 lit = lightSurface(col, n, 0.55 + 0.45 * uv.y, 0.6, 0.55, view);
+  vec3 lit = lightSurface(col, n, 0.55 + 0.45 * uv.y, 0.6, 0.55, view, vWorld);
   outColor = vec4(applyFog(lit, vWorld, 1.0), 1.0);
 }`;
 
@@ -262,7 +280,7 @@ void main() {
   float h0 = vnoise(p * 2.4);
   vec3 n = normalize(vNormal + vec3((vnoise(p * 2.4 + vec2(e, 0.0)) - h0), 0.0, (vnoise(p * 2.4 + vec2(0.0, e)) - h0)) * 0.9);
   vec3 view = normalize(cameraPosition - vWorld);
-  vec3 lit = lightSurface(albedo, n, 0.9 + 0.1 * brush, 0.35, 0.0, view);
+  vec3 lit = lightSurface(albedo, n, 0.9 + 0.1 * brush, 0.35, 0.0, view, vWorld);
   outColor = vec4(applyFog(lit, vWorld, 1.0), 1.0);
 }`;
 
@@ -296,9 +314,9 @@ void main() {
   vec3 refl = reflect(-view, n);
   vec3 skyc = mix(vec3(0.6, 0.8, 0.86), vec3(0.14, 0.4, 0.82), clamp(refl.y * 1.6, 0.0, 1.0));
   col = mix(col, skyc, fres * 0.55);
-  float glint = pow(max(dot(refl, SUN_DIR), 0.0), 140.0) * 5.0;
+  float glint = pow(max(dot(refl, sunDir), 0.0), 140.0) * 5.0;
   float tw = smoothstep(0.78, 0.98, vnoise(p * vec2(5.0, 9.0) + vec2(t * 0.6, t * 0.4)));
-  col += SUN_COL * (glint + tw * 0.18 * (1.0 - depth * 0.5));
+  col += sunCol * (glint + tw * 0.18 * (1.0 - depth * 0.5));
   // foam breathes along the shore
   float breathe = 0.5 + 0.5 * sin(t * 1.1 + off * 1.6 + a0 * 6.0);
   float foam = (1.0 - smoothstep(0.0, 2.4, off + 0.6 * breathe)) * step(-0.8, off) * (0.35 + 0.65 * breathe) * smoothstep(0.35, 0.7, vnoise(p * 1.6 + t * 0.2));
@@ -351,11 +369,11 @@ void main() {
   vec3 zenith = vec3(0.045, 0.20, 0.72);
   vec3 sky = mix(horizon, mid, smoothstep(0.0, 0.3, up));
   sky = mix(sky, zenith, smoothstep(0.22, 0.85, up));
-  float sunAmt = max(dot(dir, SUN_DIR), 0.0);
-  sky += SUN_COL * (pow(sunAmt, 6.0) * 0.16 + pow(sunAmt, 90.0) * 0.7 + pow(sunAmt, 2000.0) * 8.0);
+  float sunAmt = max(dot(dir, sunDir), 0.0);
+  sky += sunCol * (pow(sunAmt, 6.0) * 0.16 + pow(sunAmt, 90.0) * 0.7 + pow(sunAmt, 2000.0) * 8.0);
   vec2 cp = dir.xz / max(dir.y + 0.09, 0.035) * 0.62 + vec2(windTime * 0.011, windTime * 0.004);
   float c = fbm(cp * 1.15);
-  float cs = fbm((cp + SUN_DIR.xz * 0.16) * 1.15);
+  float cs = fbm((cp + sunDir.xz * 0.16) * 1.15);
   float cov = smoothstep(0.6, 0.76, c + 0.08 * fbm(cp * 4.0));
   cov *= smoothstep(0.0, 0.2, dir.y);
   float lit = clamp(0.55 + (c - cs) * 5.5, 0.0, 1.0);
@@ -478,15 +496,15 @@ void main() {
     albedo = vTint;
     wrap = 0.5; sss = 0.3;
   }
-  vec3 lit = lightSurface(albedo, n, ao, wrap, sss, view);
+  vec3 lit = lightSurface(albedo, n, ao, wrap, sss, view, wp);
   if (spec > 0.0) {
-    vec3 h = normalize(SUN_DIR + view);
-    lit += SUN_COL * pow(max(dot(n, h), 0.0), 36.0) * spec * 0.9;
+    vec3 h = normalize(sunDir + view);
+    lit += sunCol * pow(max(dot(n, h), 0.0), 36.0) * spec * 0.9;
   }
   lit += albedo * vec3(1.0, 0.75, 0.4) * emissive;
   // sky-coloured rim keeps silhouettes from going muddy against the haze
   float rim = pow(1.0 - max(dot(n, view), 0.0), 3.0);
-  lit += SKY_COL * albedo * rim * 0.1;
+  lit += skyCol * albedo * rim * 0.1;
   outColor = vec4(applyFog(lit, wp, 1.0), 1.0);
 }`;
 
@@ -625,7 +643,7 @@ void main() {
   float edge = smoothstep(0.0, 0.08, vUv.x) * (1.0 - smoothstep(0.92, 1.0, vUv.x));
   float height = smoothstep(0.0, 0.16, vUv.y) * (1.0 - smoothstep(0.40, 1.0, vUv.y));
   float a = edge * height * (0.3 + n * 0.7) * hazeOpacity;
-  vec3 col = mix(FOG_COL * 1.35, vec3(1.0, 0.96, 0.82), 0.35);
+  vec3 col = mix(fogCol * 1.35, vec3(1.0, 0.96, 0.82), 0.35);
   outColor = vec4(col, a);
 }`;
 
@@ -640,7 +658,7 @@ void main() {
   float along = smoothstep(0.0, 0.18, vUv.y) * (1.0 - smoothstep(0.55, 1.0, vUv.y));
   float flicker = 0.7 + 0.3 * vnoise(vec2(vUv.x * 6.0 + shaftSeed, windTime * 0.12 + shaftSeed));
   float a = across * along * flicker * shaftOpacity;
-  outColor = vec4(SUN_COL * 1.0 + vec3(0.1), a);
+  outColor = vec4(sunCol * 1.0 + vec3(0.1), a);
 }`;
 
 export const BLOB_VERTEX = /* glsl */ `
