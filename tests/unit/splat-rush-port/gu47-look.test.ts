@@ -4,7 +4,7 @@ import { Autopilot } from "../../../examples/splat-rush-port/autopilot";
 import { PIECES, addBackdrop, backdropSway } from "../../../examples/splat-rush-port/backdrop";
 import { GATE_COLORS, LOOKS, QA_CROPS, parseLook, sunDirection, timeOfDay, type SplatLook } from "../../../examples/splat-rush-port/look";
 import { IDLE, SplatRushSim } from "../../../examples/splat-rush-port/sim";
-import { PAINT_SPLASH, PAINT_SPLASH_RING, SPLASH_COUNT, fireSplashes, splashesFor } from "../../../examples/splat-rush-port/vfx3d";
+import { MOTE_COLORS, MOTE_EVERY, PAINT_MOTE, PAINT_MOTE_SPEC, PAINT_SPLASH, PAINT_SPLASH_RING, SPLASH_COUNT, fireMote, fireSplashes, moteFor, splashesFor } from "../../../examples/splat-rush-port/vfx3d";
 import { BUNTING_COLORS, DECK_DRIPS, spireRingMesh, DECK_EDGE_X, TITLE_RAIL_SECONDS, buildWorld, presentationPose, buntingMesh, cameraLayers, carnivalToonSpec, rolledUp } from "../../../examples/splat-rush-port/world";
 import { deltaE2000 } from "../../../tools/look-metrics/region-luma.mjs";
 
@@ -243,5 +243,26 @@ describe("GU47 CR-W2 horizon spires", () => {
   it("the spires take the time-of-day uniforms during a run", () => {
     const run = runLook(LOOKS.carnival, 60);
     expect(run.rec.uniforms.get("spires")?.has("crFogColor")).toBe(true);
+  });
+});
+
+describe("GU47 CR-V4 paint motes", () => {
+  it("a puff every 24 steps keeps >= 20 specks alive, off on reduced motion, deterministic, never a gate colour", () => {
+    const layer = PAINT_MOTE_SPEC.layers[0] as { count: number; life: number };
+    expect(Math.floor((layer.life * 60) / MOTE_EVERY) * layer.count).toBeGreaterThanOrEqual(20);
+    expect(moteFor(MOTE_EVERY * 3, false)).toEqual(moteFor(MOTE_EVERY * 3, false));
+    expect(moteFor(MOTE_EVERY * 3 + 1, false)).toBeNull();
+    expect(moteFor(MOTE_EVERY * 3, true)).toBeNull();
+    for (const c of MOTE_COLORS) expect(GATE_COLORS as readonly string[]).not.toContain(c);
+    for (let k = 0; k < 50; k++) {
+      const m = moteFor(k * MOTE_EVERY, false)!;
+      expect(m.position[2]).toBeLessThan(-55);
+      expect(Math.abs(m.position[0])).toBeLessThanOrEqual(34);
+    }
+    const calls: unknown[][] = [];
+    expect(fireMote({ burst: (...a: unknown[]) => { calls.push(a); return {} as never; } }, moteFor(0, false))).toBe(1);
+    expect(calls[0]?.[0]).toBe(PAINT_MOTE);
+    expect(calls[0]?.[2]).toMatchObject({ camera: false });
+    expect(fireMote(undefined, moteFor(0, false))).toBe(0);
   });
 });

@@ -23,7 +23,7 @@ import { COLORS, IDLE, PHASE_CODE, SplatRushSim, TRACE_COLUMNS, expandScript, pa
 import { SteadyCamera, createSplatPresenter, drainPopups } from "./presentation";
 import { TITLE_RAIL_SECONDS, buildWorld, type WorldRuntime } from "./world";
 import { LOOKS, QA_CROPS, parseLook } from "./look";
-import { fireSplashes, registerPaintPresets, splashesFor } from "./vfx3d";
+import { MOTE_EVERY, fireMote, fireSplashes, moteFor, registerPaintPresets, splashesFor } from "./vfx3d";
 import { HUD_CARNIVAL_CLASS, comboTubeFill, letterbox } from "./hud";
 
 
@@ -55,6 +55,9 @@ const look = LOOKS[parseLook(typeof location === "undefined" ? "" : location.sea
 if (look.id === "carnival") document.body.classList.add(HUD_CARNIVAL_CLASS);
 /** CR-V1 bursts fired since load (QA). */
 let splashesFired = 0;
+/** CR-V4 mote puffs fired since load (QA) and the step of the last puff (frames that run several steps skip none). */
+let motesFired = 0;
+let lastMoteStep = -1;
 /** CR-V2 ball ribbon (E-F trail on the "ball" node), recreated when the ball colour changes; none on reduced motion. */
 let ribbon: { key: string; handle: { stop(o?: { immediate?: boolean }): void } } | null = null;
 function updateRibbon(): void {
@@ -227,6 +230,9 @@ function reactToFrame(perfect: boolean): void {
   const own = COLORS[o.playerColorIndex] ?? "#ffffff";
   const events = diffSounds(prevFrame, frame);
   /* CR-V1: gate-coloured paint splashes at the ball, seeded from the sim step (presentation only) */
+  /* CR-V4: paint motes drifting up in front of the horizon (title and play; none on reduced motion or manual=1) */
+  const moteStep = Math.floor(sim.n / MOTE_EVERY) * MOTE_EVERY;
+  if (look.vfx && !config.manual && moteStep !== lastMoteStep) { lastMoteStep = moteStep; motesFired += fireMote(app?.effects, moteFor(moteStep, reducedMotion)); }
   if (look.vfx) splashesFired += fireSplashes(app?.effects, splashesFor(events, [sim.player.x, sim.player.y, sim.player.z], o.playerColorIndex, sim.n, reducedMotion));
   for (const event of events) {
     sound.play(event.sound, event.level);
@@ -602,7 +608,7 @@ const qa = installQaHooks("splat-rush", {
     },
     /** Presentation counters: popups shown and created, batch vertex uploads, pixel ratio, warm-up result. */
     presentation() {
-      return { popupsShown, popupSeq: sim.popupSeq, nextPopupSeq, uploadedVertices: runtime?.uploadedVertices ?? 0, pixelRatio, paused, reducedMotion, symbols, guided, warm: warmResult, look: look.id, timeOfDayKey: runtime?.timeOfDayKey ?? -1, splashesFired, vfxLive: app?.effects?.liveCount ?? 0 };
+      return { popupsShown, popupSeq: sim.popupSeq, nextPopupSeq, uploadedVertices: runtime?.uploadedVertices ?? 0, pixelRatio, paused, reducedMotion, symbols, guided, warm: warmResult, look: look.id, timeOfDayKey: runtime?.timeOfDayKey ?? -1, splashesFired, motesFired, vfxLive: app?.effects?.liveCount ?? 0 };
     },
     /** Change a setting without the UI (captures): `symbols`, `motion` or `guide`. */
     setting(which: "symbols" | "motion" | "guide", on: boolean) {
