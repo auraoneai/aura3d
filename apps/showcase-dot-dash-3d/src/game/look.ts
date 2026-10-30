@@ -37,6 +37,18 @@ export const BENCH = {
   wood: { size: [180, 1, 130] as const, y: -0.9 }
 } as const;
 
+/**
+ * Moving practicals (DD47-L2): a cyan point rides the courier; four pooled points sit amber on live surge cells and
+ * turn slate on the sentries while a surge runs. Six non-key lights with the bounce (art direction `practicals: 6`).
+ * Unshadowed; the engine caps punctual lights per tier.
+ */
+export const PRACTICALS = {
+  courier: { color: "#5ff3ff", intensity: 3.2, distance: 4.5, decay: 2, height: 1.1 },
+  surge: { color: "#ffb23e", intensity: 2.4, distance: 3.6, decay: 2, height: 0.9 },
+  sentry: { color: "#8fa6b8", intensity: 1.6, distance: 3.2, decay: 2, height: 1.2 },
+  pooled: 4
+} as const;
+
 /** Parallax-corrected reflection probe over the board (DD47-E1). */
 export const BOARD_PROBE = {
   position: [0, 2.5, 0] as const,
