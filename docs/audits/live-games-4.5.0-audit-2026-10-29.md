@@ -12,13 +12,13 @@ Counts are per table row: 562 rows, 52 in the release tables and 510 in the game
 
 | Status | P0 | P1 | P2 | P3 | No severity | Total |
 |---|---|---|---|---|---|---|
-| done | 8 | 99 | 232 | 212 | 0 | 551 |
-| not done | 0 | 0 | 3 | 4 | 0 | 7 |
+| done | 8 | 99 | 233 | 213 | 0 | 553 |
+| not done | 0 | 0 | 2 | 3 | 0 | 5 |
 | not a defect | 0 | 0 | 0 | 2 | 0 | 2 |
 | withdrawn | 0 | 0 | 1 | 0 | 1 | 2 |
 | total | 8 | 99 | 236 | 218 | 1 | 562 |
 
-RH-01 is listed with no severity because the owner withdrew it. Of the 551 done rows, 327 shipped in 4.6.0 and 224 ship in 4.6.1.
+RH-01 is listed with no severity because the owner withdrew it. Of the 553 done rows, 327 shipped in 4.6.0 and 226 ship in 4.6.1. SO-6 and WW-16 were closed in wave 3 after the first count (a51efc5ea; fae2d5510 and 1452dcdc7). Every remaining "not done" row needs the owner: real-GPU hardware, Meshy credentials, or deleting other people's branches.
 
 ### Not done
 
@@ -26,9 +26,7 @@ RH-01 is listed with no severity because the owner withdrew it. Of the 551 done 
 - **IC-07 (Iron Crown)**, P2: needs a real-GPU check (`?vfx=on&vfxdebug=1`); the remote runner is software GL, so the override stays; owner runs `tools/real-gpu/run.sh`
 - **IC-12 (Iron Crown)**, P3: needs new Meshy `animate` clips; no Meshy credentials in the lane environment and agents may not log in (owner action)
 - **LIVE-1 (Aura Diamond 3D)**, P2: needs a 15-minute real-GPU session; the software-GL runner cannot reproduce a renderer crash (park-switch heap measured at 468 MB, no page errors)
-- **SO-6 (Craterline GP)**, P2: the sentence is in the E5-owned `evidence/exposure-parity/README.md:42`, which still does not name Craterline GP or Ion Circuit; the handoff from G15 has not been applied
 - **P-3 (Serpentine Sky Run)**, P3: the fix asks for a real-GPU re-judge first and the lane has only software GL; on software GL the runner crop is back at the 4.3.7 contrast (193.4 against 206.0)
-- **WW-16 (The Bellkeeper's Walk)**, P3: the public `effects.bloom` options have no `scatter` field, so the replacement for `radius` cannot be authored; engine handoff to E2
 
 ### Withdrawn and not a defect
 
@@ -39,6 +37,8 @@ RH-01 is listed with no severity because the owner withdrew it. Of the 551 done 
 
 ### Done in part
 
+Wave 3 closed the open handoffs of DD-7 (a665a8ebb), DD-10 (8c35fdeef), HP-04 (a51efc5ea), S-04 (12d4cd717), C9 (56b22eba1) and C11 (1452dcdc7); those rows are fully done. The rows below still have an open part.
+
 These rows count as done; the part named in the Status cell is still open (mostly owner-only real-GPU checks and handoffs to files lane E5 owns).
 
 - **LIGHT-02 (release audit)**: no real-GPU capture, owner runs `tools/real-gpu/run.sh`
@@ -46,17 +46,11 @@ These rows count as done; the part named in the Status cell is still open (mostl
 - **RH-07 (release audit)**: the `kid-goku-beyond-the-clouds-port` folder rename is an open handoff to E5
 - **RH-09 (release audit)**: the CHANGELOG states the gate result; editing the published GitHub release body is an owner action
 - **RR-E5 (Apex Overdrive)**: speed gauge and distance bar added; light still does not follow time of day, the game does not yet call `app.lighting.setEnvironmentIntensity`, which E2 made live in 7e3b36b5d
-- **DD-7 (Glint Courier)**: the CHANGELOG correction is an open handoff to E5
-- **DD-10 (Glint Courier)**: the A/B proves the shadow map renders; `diagnostics().renderer.shadows` still reports `mapRendered:false`, open handoff to E3
 - **C8 (Serpentine Sky Run)**: orbs, sparks and streaks are not instanced (custom GLSL has no per-instance matrix) and no KTX2 (no Basis encoder)
 - **C12 (Gridlock Courier)**: the route-health `qualityGate` needs a human reviewer
-- **HP-04 (Ion Circuit)**: the `evidence/exposure-parity/README.md:42` line is an open handoff to E5
 - **S-01 (Shadowstep Gauntlet)**: the sky dome no longer casts; the shadow-fit opt-in stays (measured) and no real-GPU frame was taken
-- **S-04 (Shadowstep Gauntlet)**: cache headers (`vercel.json`) are an open handoff to E5
 - **E-03 (Shadowstep Gauntlet)**: a low-quality link, not an automatic switch; no real low-end GPU measured
 - **C6 (Saltwind Highway)**: no person has listened to the new cues
-- **C9 (Saltwind Highway)**: `tools/site/games.catalog.json` and `names.json` copy is an open handoff to E5
-- **C11 (Saltwind Highway)**: `bloom.radius` stays because `effects.bloom` has no public `scatter` field (same as WW-16)
 - **C12 (Duneglide)**: no real-GPU or phone profile
 - **C14 (Duneglide)**: key remapping not added
 - **CR-8 (Cumulus Dash)**: the example and evidence folder rename is an open handoff to E5
@@ -1049,7 +1043,7 @@ The upgrade guide records remote steady-state luma: Shanghai 53.5 to 55.6 (+3.9%
 | SO-3 | P2 | Difficulty does not work: a trivial autopilot wins every difficulty by a wide margin | I re-ran `/tmp/so-probe/a.probe.ts` (vitest, using race.ts `autopilot`: pedal, steer, boost when energy > 40). Explorer bike finished 1st with 2nd place a lap behind. Racer bike won by 1,248 m. Expert bike won by 1,071 m and Expert skate by 728 m. All six runs got gold despite 10-12 meteor hits. Rival cruise is `(34 ± 1.4 + seed) * rules.ai` with ai 0.86/0.96/1.0 (race.ts:855-857, course.ts:172-174). The player target adds `rider.speed`, `equipment.speed` and a +12 landing surge (race.ts:1059-1064). The UI promises "relentless rivals" on Expert (ui.ts:63). | Raise `rules.ai` (for example 0.98/1.06/1.12), give rivals a landing surge, and rubber-band rivals when the player leads by more than 150 m. Add a unit test that the autopilot finishes no better than 3rd on Expert and wins Explorer by less than 30 s. | done 96e769acb [4.6.0] |
 | SO-4 | P2 | 4.5.0 lighting change on the GLB models was never measured, and the recommended environment fix was not applied | world.ts:187-189 sets hemisphere 1.1, key 2.6 and fill 1.0, with no environment. The CHANGELOG 4.5.0 entry says a scene with lights and no environment is lit by those lights only. The 4.3.7 neutral-room IBL (diffuse 1, specular 1) is now 0/0, so the GLBs at world.ts:272, :318 and :373 lose specular entirely. The upgrade note (strange-orbit-port.md:62) says "I did not render it". The exposure harness row (evidence/exposure-parity/frames/scenes.json:494-505) used `/apps/showcase-strange-orbit-port/`, which is not the live route, and logged identical luma 25.69, so it never drew the models. | Add `environments.studio({ intensity: 0.6, background: false })` to the builder at world.ts:181-183. Capture menu and racing frames on 4.3.7 and 4.5.0 on the remote runner, compare mean luma inside the rider bounding box, and tune the intensity until it matches. Severity is P2 rather than P1 until a capture shows visible darkening. | done a12b49a22, f25c63f67 [4.6.0] |
 | SO-5 | P2 | On a 390 px phone screen, the menu bike sits behind the Expert chip and the difficulty blurb | evidence/strange-orbit-port/screens/final/title-390.jpg. screens/final/README.md lists this as Medium under "Problems still visible". The menu camera is fixed (world.ts:569-572, fov 48) with no portrait case. | When aspect < 0.85, move the menu camera so the riders sit in the lower third, or give the menu panel an opaque backdrop on narrow screens. Re-capture title-390. | done 3f5f54883, cacf50fc6 [4.6.0] |
-| SO-6 | P2 | 4.5.0 exposure claim "All 26 showcase games ... bring an environment" is false for this game | evidence/exposure-parity/README.md:42 makes the claim. Line 48 of the same README lists strange-orbit-port as affected (-2%). world.ts:181-193 has no look, environment or kit. | Correct the sentence to name the showcase games that author lights without an environment (at least Craterline GP and heatsink-port), and link their upgrade notes. | not done: the sentence is in the E5-owned `evidence/exposure-parity/README.md:42`, which still does not name Craterline GP or Ion Circuit; the handoff from G15 has not been applied |
+| SO-6 | P2 | 4.5.0 exposure claim "All 26 showcase games ... bring an environment" is false for this game | evidence/exposure-parity/README.md:42 makes the claim. Line 48 of the same README lists strange-orbit-port as affected (-2%). world.ts:181-193 has no look, environment or kit. | Correct the sentence to name the showcase games that author lights without an environment (at least Craterline GP and heatsink-port), and link their upgrade notes. | done a51efc5ea [4.6.1] |
 | SO-7 | P3 | Skate loop entry fires a `gate` event with no gate id, so replays log phantom checkpoints and the gate sound plays | race.ts:612 pushes `{ type: "gate", text: "LOOP LOCK ..." }`. main.ts:160 guards with `typeof ev.gate === "number"`, but replayScript (main.ts:372) pushes `gate: ev.gate!` for every gate event. | Give loop entry its own `loop` event type and sound cue, or apply the same guard in replayScript. | done 96e769acb, 3f5f54883 [4.6.0] |
 | SO-8 | P3 | Onboarding text names a "Rise" control that does not exist, and holding only accelerate ends the run within seconds | race.ts:413 says "hold Rise / Brake to change height". Rise is Space (`input.jump`). Probe: pedal-only on Racer ends in `lost` at 15.3 s race time. The live probe flew off at about 70 m with 3 gravity charges unused. The menu says "3 rescues" (ui.ts:62), but these are charges the player must trigger with G within `rescue: 12` s (course.ts:173). | Change the text to "hold Space to rise / S to sink · G to sling back". Show a "Press G" prompt during flight. Consider one automatic rescue on the first fall. | done 96e769acb, 3f5f54883, c73902f0e [4.6.0] |
 | SO-9 | P3 | Mute works only with the M key, has no on-screen control, and resets whenever a menu choice reloads the page | main.ts:128 (`KeyM`). audio.ts:194-198 keeps the mute state in a closure. The Bike/Skate and difficulty buttons set `location.search` (main.ts:497-498, ui.ts:93), which reloads the page. `rg visibilitychange\|localStorage` finds nothing, so audio keeps playing in hidden tabs. | Add a mute button to the HUD and the pause panel, save it in localStorage, and suspend the AudioContext when `document.hidden` is true. | done 3f5f54883 [4.6.0] |
@@ -1450,7 +1444,7 @@ The upgrade guide records remote steady-state luma: Shanghai 53.5 to 55.6 (+3.9%
 | WW-13 | P3 | Ambience keeps playing while paused and in hidden tabs. | A search of the game for `visibilitychange` finds nothing. The bird timers reschedule forever (`audio.ts:96-100`), and the wind and sea loops (`audio.ts:49-62`) never stop. Pause does not touch audio. | Duck the master gain on pause, and call `ctx.suspend()` while `document.hidden`. | done febd9dbb7 [4.6.1] |
 | WW-14 | P3 | Accessibility: Tab is taken over, there is no reduced-motion handling, and arrow keys can scroll the host page. | `main.ts:167` maps Tab to the journal with `preventDefault`. A search of the game for `prefers-reduced-motion` and `aria-` finds nothing. Arrow keys are not `preventDefault`-ed (`main.ts:170-172`). | Open the journal on J only. Honour reduced motion (epilogue camera, sway, bell shake). Call `preventDefault` on arrow keys, and add `aria-live` to the caption. | done febd9dbb7 [4.6.1] |
 | WW-15 | P3 | The GLB models are lit by the implicit engine fill, while the painted scenery uses the shader's own key light. Their `castShadow` settings do nothing. | `world.ts` authors no lights. Live diagnostics report "Scene has no lights". `models.ts:34,36` set `castShadow: true`, but no shadow light exists. | Add a directional light and a hemisphere light that match the `shaders.ts` COMMON key, or drop `castShadow`. Then capture again. | done 7698289b3 [4.6.1] |
-| WW-16 | P3 | The deprecated bloom field is still used. | Live diagnostics report `post-field-deprecated:bloom.radius`, which comes from `world.ts:376` `radius: 0.55`. | Remove `radius` or switch it to the current field. | not done: the public `effects.bloom` options have no `scatter` field, so the replacement for `radius` cannot be authored; engine handoff to E2 |
+| WW-16 | P3 | The deprecated bloom field is still used. | Live diagnostics report `post-field-deprecated:bloom.radius`, which comes from `world.ts:376` `radius: 0.55`. | Remove `radius` or switch it to the current field. | done fae2d5510, 1452dcdc7 [4.6.1] |
 | WW-17 | P3 | The per-instance frustum cull allocates new arrays every frame for the 535-instance pine set. | Shared finding SI-2: `packages/rendering/src/renderer/InstanceFrustumCull.ts:129-130` allocates new `Float32Array`s whenever anything is culled, and the pines are over the 512 threshold. | This is an engine-side fix (scratch buffers that grow as needed), shared with dot-dash-3d and last-train-port. | done d3550c133 (engine, SI-2) [4.6.0] |
 | WW-18 | P3 | A typo in `?aura3d-render=` stops the game from mounting. | Shared finding RP-04: `renderPath.ts:142` throws `QUALITY_OPTION_INVALID` for URL values. | Engine-side: for URL values, warn and fall back to the default. | done 0c563444e (engine, RP-04) [4.6.0] |
 
