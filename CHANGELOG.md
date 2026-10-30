@@ -1,10 +1,12 @@
 # Changelog
 
-Version: 4.6.1
+Version: 4.6.2
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
-## 4.6.2 (unreleased)
+## 4.6.2 (2026-10-30)
+
+A game patch on the 4.6.1 engine; the published packages carry no runtime change from 4.6.1 (version and doc-path updates only).
 
 - **Iron Crown (IC-12).** Idle, crouch, throw and win play their own Meshy clips on all six fighters (Block1 is guard only, dash stays the one stand-in); on the remote runner crouch lowers the hips from 0.88-1.01 m to 0.54-0.63 m and the throw bends the torso to 49-54 degrees, with geometry, textures and the ten shipped clips unchanged.
 

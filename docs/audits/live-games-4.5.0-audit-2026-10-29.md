@@ -12,17 +12,16 @@ Counts are per table row: 562 rows, 52 in the release tables and 510 in the game
 
 | Status | P0 | P1 | P2 | P3 | No severity | Total |
 |---|---|---|---|---|---|---|
-| done | 8 | 99 | 233 | 214 | 0 | 554 |
-| not done | 0 | 0 | 2 | 2 | 0 | 4 |
+| done | 8 | 99 | 233 | 215 | 0 | 555 |
+| not done | 0 | 0 | 2 | 1 | 0 | 3 |
 | not a defect | 0 | 0 | 0 | 2 | 0 | 2 |
 | withdrawn | 0 | 0 | 1 | 0 | 1 | 2 |
 | total | 8 | 99 | 236 | 218 | 1 | 562 |
 
-RH-01 is listed with no severity because the owner withdrew it. Of the 554 done rows, 327 shipped in 4.6.0, 226 ship in 4.6.1 and 1 (IC-12) ships in 4.6.2. SO-6 and WW-16 were closed in wave 3 after the first count (a51efc5ea; fae2d5510 and 1452dcdc7). IC-12 was closed after that, once Meshy access through Kiro Prism was available (296d7b781). Every remaining "not done" row needs the owner: real-GPU hardware or deleting other people's branches.
+RH-01 is listed with no severity because the owner withdrew it. Of the 555 done rows, 327 shipped in 4.6.0, 226 in 4.6.1 and 1 (IC-12) in 4.6.2; RH-13 was done by the owner's own agent. SO-6 and WW-16 were closed in wave 3 after the first count (a51efc5ea; fae2d5510 and 1452dcdc7). IC-12 was closed after that, once Meshy access through Kiro Prism was available (296d7b781). Every remaining "not done" row needs the owner: real-GPU hardware or deleting other people's branches.
 
 ### Not done
 
-- **RH-13 (release audit)**, P3: owner action: deleting other people's remote branches and worktrees and moving local `main`; read-only counts and steps in 8f7f440e2 (`evidence/audit-fix/e5/rh13-branches.md`)
 - **IC-07 (Iron Crown)**, P2: needs a real-GPU check (`?vfx=on&vfxdebug=1`); the remote runner is software GL, so the override stays; owner runs `tools/real-gpu/run.sh`
 - **LIVE-1 (Aura Diamond 3D)**, P2: needs a 15-minute real-GPU session; the software-GL runner cannot reproduce a renderer crash (park-switch heap measured at 468 MB, no page errors)
 - **P-3 (Serpentine Sky Run)**, P3: the fix asks for a real-GPU re-judge first and the lane has only software GL; on software GL the runner crop is back at the 4.3.7 contrast (193.4 against 206.0)
@@ -262,7 +261,7 @@ Verified correct: all 24 public packages have `latest=4.5.0` and every earlier v
 | RH-10 | P3 | The homepage tagline evidence was measured on 4.3.5 | tagline-check/README.md:5 | Re-run pinned to 4.5.0 | none | done 0636ba9de, 5b54fdda7 [4.6.0] |
 | RH-11 | P3 | Iron Crown luma evidence depends on a spec that only existed in /tmp | iron-crown-neo-tokyo.md:35 | Add an iron-crown target to game-luma-capture.spec.ts | iron-crown | done 6434f0941 [4.6.0] |
 | RH-12 | P3 | The after-4.5.0 PRD depends on companion bundle work that has not started (42 of 81 failing rows) and has no games lane | PRD-3:7,23,26; tools/bundle-report absent | Start WP-C1; add a games lane for RH-03 to RH-06 | none | done 5c207785e [4.6.0] |
-| RH-13 | P3 | Branch and worktree sprawl: 778 remote branches, 1 unmerged branch, 60 worktrees, local main 133 commits behind | `git ls-remote --heads origin \| wc -l`; `git worktree list` | Owner prunes merged branches and worktrees; fast-forward main | none | not done: owner action: deleting other people's remote branches and worktrees and moving local `main`; read-only counts and steps in 8f7f440e2 (`evidence/audit-fix/e5/rh13-branches.md`) |
+| RH-13 | P3 | Branch and worktree sprawl: 778 remote branches, 1 unmerged branch, 60 worktrees, local main 133 commits behind | `git ls-remote --heads origin \| wc -l`; `git worktree list` | Owner prunes merged branches and worktrees; fast-forward main | none | done by the owner's own agent (branch and worktree pruning, local `main` update), outside this program; read-only counts and steps in 8f7f440e2 (`evidence/audit-fix/e5/rh13-branches.md`) [owner] |
 | RH-14 | P3 | create-aura3d is 101.9 MB unpacked (unchanged) and @aura3d/engine 46.4 MB | `npm view ... dist.unpackedSize` | Fetch template assets on demand | none | done 264fffdbc [4.6.0] |
 
 # Per-game audit
