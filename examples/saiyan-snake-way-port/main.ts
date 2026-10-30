@@ -427,7 +427,7 @@ const qa = installQaHooks(QA_HOOK_NAME, {
     meta: () => ({
       steps, renderTime, entityNodes: runtime?.entityNodes ?? 0, nodeCount: runtime?.nodeCount ?? 0, visibilityWrites: runtime?.visibilityWrites ?? 0,
       renderErrors: guard.total, renderFailed: guard.failed, lastRenderError: guard.lastError,
-      look: runtime?.look ?? null
+      look: runtime?.look ?? null, vfxFired: runtime?.vfxFired ?? 0
     }),
     /** GU47 E-I crop contract: named, normalised capture regions for the steady-state chase framing. */
     crops: () => serpentCrops(canvas.clientWidth / Math.max(1, canvas.clientHeight)),

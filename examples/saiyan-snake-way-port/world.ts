@@ -17,6 +17,8 @@ import type { RunnerStyle } from "./styles";
 import { ENTITY_MODELS, ISLAND_COUNT, LANTERN_COUNT, MESHY } from "./models";
 import { STAGE_LOOK, lookAt, lookDistance, lookParams, type LookParams, type ResolvedLook } from "./art/colorScript";
 import { createLookDriver, type LookAppLike, type LookNodeHandle } from "./art/lookRuntime";
+import { SERPENT_RUNNER_TRAIL, registerSerpentVfx } from "./art/vfx";
+import { createVfxEventTracker } from "./art/vfxEvents";
 
 type Scene = ReturnType<typeof scene>;
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
@@ -157,6 +159,8 @@ export interface WorldRuntime {
   readonly nodeCount: number;
   readonly entityNodes: number;
   readonly look: WorldLookState;
+  /** GU47 SSR-12: runtime effect bursts fired so far (QA hook). */
+  readonly vfxFired: number;
 }
 
 export interface World {
@@ -281,8 +285,9 @@ export function buildWorld(options: WorldOptions = {}): World {
   builder.add(primitives.cylinder({ name: "aura-outer", size: [3.4, 5.6, 3.4], material: material.custom(auraSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.auraLit), hexLinear(PALETTE.aura), 0.8)) }).runtime({ id: "aura-outer" }));
   builder.add(primitives.cylinder({ name: "aura-inner", size: [2.5, 4.8, 2.5], material: material.custom(auraSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.auraLit), hexLinear(PALETTE.aura), 0.8)) }).runtime({ id: "aura-inner" }));
   builder.add(primitives.cylinder({ name: "contact-shadow", size: [4, 0.02, 4], material: material.custom(blobSpec(1.9, 0.5)) }).runtime({ id: "contact-shadow" }));
-  for (let i = 0; i < SPARKS; i++) builder.add(primitives.sphere({ name: `spark-${i}`, size: 0.3, material: material.custom(flatSpec(hexLinear(PALETTE.auraLit), 0.85)) }).position(0, -500, 0).runtime({ id: `spark-${i}` }));
-  for (let i = 0; i < BURSTS; i++) builder.add(primitives.sphere({ name: `burst-${i}`, size: 0.34, material: material.custom(flatSpec(hexLinear(0xfff0b0), 0.9)) }).position(0, -500, 0).runtime({ id: `burst-${i}` }));
+  // GU47 SSR-12: under the colour script the engine's runtime effects (art/vfx.ts) replace the spark and burst pools
+  if (!script) for (let i = 0; i < SPARKS; i++) builder.add(primitives.sphere({ name: `spark-${i}`, size: 0.3, material: material.custom(flatSpec(hexLinear(PALETTE.auraLit), 0.85)) }).position(0, -500, 0).runtime({ id: `spark-${i}` }));
+  if (!script) for (let i = 0; i < BURSTS; i++) builder.add(primitives.sphere({ name: `burst-${i}`, size: 0.34, material: material.custom(flatSpec(hexLinear(0xfff0b0), 0.9)) }).position(0, -500, 0).runtime({ id: `burst-${i}` }));
   for (let i = 0; i < STREAKS; i++) builder.add(primitives.box({ name: `streak-${i}`, size: [0.04, 0.04, 6], material: material.custom(flatSpec(hexLinear(0xfff0f6), 0.2)) }).position(0, -500, 0).runtime({ id: `streak-${i}` }));
 
   /* entity pools: every slot is a small multi-part prop */
@@ -342,6 +347,14 @@ export function buildWorld(options: WorldOptions = {}): World {
       /* GU47 SSR-01: the colour-script driver (script mode only; `?look=original` writes nothing) */
       const lookDriver = script ? createLookDriver(app as unknown as LookAppLike, (id) => node(id) as unknown as LookNodeHandle) : null;
       let lookShown: ResolvedLook | null = null;
+      /* GU47 SSR-12: runtime effect events and the runner trail (script mode only) */
+      const vfxEvents = script ? createVfxEventTracker() : null;
+      const fx = script ? app.effects : undefined;
+      const reducedFlash = typeof location !== "undefined" && new URLSearchParams(location.search).get("flash") === "0";
+      const registerVfx = (): void => { try { registerSerpentVfx(fx, { reducedMotion, reducedFlash: reducedFlash || reducedMotion }); } catch (error) { console.warn("serpentine-sky-run: VFX presets unavailable", error); } };
+      registerVfx();
+      let trail: { stop(o?: { immediate?: boolean }): void } | null = null;
+      let vfxFired = 0;
       /* C8: the visible state each pooled node was last given, so a frame only writes the slots that change */
       const shown = new Map<string, boolean>();
       let visibilityWrites = 0;
@@ -456,7 +469,7 @@ export function buildWorld(options: WorldOptions = {}): World {
         shadow.setUniform?.("blobAlpha", 0.5);
 
         /* ki sparks rising off the runner while the aura is up */
-        for (let i = 0; i < SPARKS; i++) {
+        for (let i = 0; i < (script ? 0 : SPARKS); i++) {
           if (surge < 0.12) { hide(`spark-${i}`); continue; }
           const ph = mod(time * 0.9 + i / SPARKS, 1);
           const sp = toWorld([Math.sin(i * 7.13) * 0.95, 0.5 + ph * 3.4, 0.2 + ph * (1.4 + 0.04 * S.speed)]);
@@ -467,13 +480,28 @@ export function buildWorld(options: WorldOptions = {}): World {
         if (S.kiPulse > prevPulse + 0.3) burstT = 0;
         prevPulse = S.kiPulse;
         burstT += dt;
-        for (let i = 0; i < BURSTS; i++) {
+        for (let i = 0; i < (script ? 0 : BURSTS); i++) {
           if (burstT >= 0.5) { hide(`burst-${i}`); continue; }
           const h = show(`burst-${i}`, true);
           const a = (i / BURSTS) * Math.PI * 2;
           const r = burstT * 7;
           const bp = toWorld([Math.cos(a) * r * 0.8, 2.3 + Math.sin(a) * r * 0.8, 0.4 + (i % 3) * 0.3]);
           h.setPosition(bp[0], bp[1], bp[2]).setScale(Math.max(0.05, 1 - burstT / 0.5));
+        }
+
+        /* GU47 SSR-12: engine runtime effects for this frame's events, and the surge / flight trail */
+        if (vfxEvents && fx) {
+          for (const event of vfxEvents.step(S)) {
+            let at: V3;
+            if (event.entity) {
+              const ent = event.entity;
+              const es = ent.type === "sweeper" || ent.type === "soul" || ent.type === "oni" ? ent.s + ent.rel : ent.s;
+              at = onRoad(frameAt(samples, Math.min(Math.max(es, 0), ROAD_LENGTH)), entityLateral(ent), entityHeight(ent) + 0.6);
+            } else at = toWorld(event.kind === "serpent-cloud-puff" ? [0, 0.2, 0.3] : [0, 1.6, 0]);
+            try { fx.burst(event.kind, at); vfxFired++; } catch { /* preset missing on this build: skip the cue */ }
+          }
+          if (vfxEvents.trailOn && !trail) { try { trail = fx.trail("aura-inner", SERPENT_RUNNER_TRAIL); } catch { trail = null; } }
+          else if (!vfxEvents.trailOn && trail) { trail.stop(); trail = null; }
         }
 
         /* speed streaks fixed to the road so they sweep past the camera */
@@ -576,7 +604,7 @@ export function buildWorld(options: WorldOptions = {}): World {
       return {
         update,
         resetCamera() { rig = null; prevS = null; },
-        setReducedMotion(on: boolean) { reducedMotion = on; },
+        setReducedMotion(on: boolean) { const changed = reducedMotion !== on; reducedMotion = on; if (changed && fx) registerVfx(); },
         get visibilityWrites() { return visibilityWrites; },
         setRunnerStyle(style: RunnerStyle) {
           const colorOf: Record<HeroColor, number> = { gi: style.gi, giDark: style.giDark, skin: style.skin, hair: style.hair, teal: style.belt, boot: style.boot, sash: style.sash };
@@ -591,11 +619,12 @@ export function buildWorld(options: WorldOptions = {}): World {
             h.setUniform?.("auraMid", [...hexLinear(style.auraLit)]);
             h.setUniform?.("auraEdge", [...hexLinear(style.aura)]);
           }
-          for (let i = 0; i < SPARKS; i++) node(`spark-${i}`).setUniform?.("flatColor", [...hexLinear(style.auraLit)]);
+          if (!script) for (let i = 0; i < SPARKS; i++) node(`spark-${i}`).setUniform?.("flatColor", [...hexLinear(style.auraLit)]);
           runner?.actor.setTint({ baseColor: [style.tint[0], style.tint[1], style.tint[2], 1], emissiveColor: [style.wash[0], style.wash[1], style.wash[2]], emissiveStrength: 0.12 });
         },
         get nodeCount() { return handles.size; },
         get entityNodes() { return alive; },
+        get vfxFired() { return vfxFired; },
         get look(): WorldLookState {
           return { mode: lookConfig.mode, id: lookShown?.id ?? "original", stageIndex: lookShown?.stageIndex ?? 0, godRays: lookDriver?.godRaysOn ?? false, writes: lookDriver?.writes ?? 0 };
         }

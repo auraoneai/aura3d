@@ -126,3 +126,42 @@ describe("serpentine-sky-run QA crops (E-I crop contract)", () => {
     }
   });
 });
+
+import { createVfxEventTracker } from "../../../examples/saiyan-snake-way-port/art/vfxEvents";
+import { createRun } from "../../../examples/saiyan-snake-way-port/sim";
+import { buildWorld } from "../../../examples/saiyan-snake-way-port/world";
+
+describe("serpentine-sky-run VFX events (SSR-12)", () => {
+  it("fires one event per scripted state change and never writes the run state", () => {
+    const tracker = createVfxEventTracker();
+    const S = createRun();
+    expect(tracker.step(S)).toEqual([]);
+    const before = JSON.stringify(S);
+    S.kiPulse += 1;
+    expect(tracker.step(S).map((e) => e.kind)).toEqual(["serpent-orb"]);
+    S.stumble = 0.8;
+    expect(tracker.step(S).map((e) => e.kind)).toEqual(["serpent-hit"]);
+    S.surge = "on";
+    expect(tracker.step(S).map((e) => e.kind)).toEqual(["serpent-surge"]);
+    expect(tracker.trailOn).toBe(true);
+    S.grounded = false;
+    tracker.step(S);
+    S.grounded = true;
+    expect(tracker.step(S).map((e) => e.kind)).toEqual(["serpent-cloud-puff"]);
+    const power = { type: "power", s: 10, lane: 0, dead: false, t: 0, drift: 0, swerve: false, sweepDir: 0, rel: 0, spin: 0, brute: false };
+    S.ents.push(power);
+    tracker.step(S);
+    power.dead = true;
+    expect(tracker.step(S).map((e) => e.kind)).toEqual(["serpent-power"]);
+    expect(tracker.step(S)).toEqual([]);
+    S.kiPulse -= 1; S.stumble = 0; S.surge = "off"; S.ents.pop();
+    expect(JSON.stringify(S)).toBe(before);
+  });
+
+  it("the colour-script scene drops the 32 spark and burst primitives (nodeCount -32)", () => {
+    const count = (mode: "script" | "original") =>
+      (buildWorld({ look: { mode, pinnedStage: null } }).scene as unknown as { toJSON(): { nodes: { name?: string }[] } }).toJSON().nodes.filter((n) => /^(spark|burst)-\d+$/.test(n.name ?? "")).length;
+    expect(count("original")).toBe(32);
+    expect(count("script")).toBe(0);
+  });
+});
