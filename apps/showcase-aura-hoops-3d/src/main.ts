@@ -72,6 +72,7 @@ import { advanceShotBall, aimError, createHoopWorld, crossedRimDownward, solveLa
 import { BALL_R, DRIB_SHOULDER_FALLBACK, dribbleCycleY } from "./dribble";
 import { createOnePress } from "./input";
 import { MarkerPool, parkedTransforms, type MarkerSlot } from "./markerPools";
+import { LIVE_CAM, MAKE_FOV_KICK, ReplayRing, createBroadcast, createLetterbox, railPose, replayPose, replaySourceTime, type V3 as BroadcastV3 } from "./broadcast";
 import {
   CHECK_SHOT_GUARD, CPU_DUNK_RATE, SIM_STEP, advanceMeter, blendPose, canBlockRelease, clearTarget, decayRimShake,
   deadBallPossession, dunkRejectChance, isCleared, isDeadBall, makeCosmeticRng, matchDifficulty, meterQuality,
@@ -475,6 +476,19 @@ const LOOK_ORIGINAL = initialParams.get("look") === "original";
  * Reduced motion / flash as the boot scene sees them (`buildScene` runs before `setupSystems` sets the live flags):
  * the same URL params and media queries, read once.
  */
+/* H47-C1 / H47-P2: broadcast intro rail and Jam-dunk replay (broadcast.ts). Off on ?look=original, under reduced motion,
+ * with ?intro=0 and on every measurement path (?diag=1, ?simsteps=N), so captures and probes keep their stepping. */
+const BROADCAST_OFF = initialParams.get("look") === "original" || initialParams.get("intro") === "0" || initialParams.get("diag") === "1" ||
+  Number(initialParams.get("simsteps")) > 0 || initialParams.has("reducedMotion") ||
+  (typeof window !== "undefined" && (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false));
+const broadcast = createBroadcast({ disabled: BROADCAST_OFF });
+/** Recorded presenter steps for the replay (1.2 s at the sim step; the replay shows the last 0.96 s). */
+const replayRing = new ReplayRing(Math.ceil(1.2 * 60));
+let replayClip: ReplayRing | null = null;
+/** Set when a Jam dunk takes off; finishDunk starts the replay (a read of the dunk branch, no sim change). */
+let jamDunkPending = false;
+let letterbox: { show(on: boolean): void } | null = null;
+let broadcastPostOn = false;
 const BOOT_REDUCED_MOTION = initialParams.has("reducedMotion") || (typeof window !== "undefined" && (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false));
 
 const game_ = {
@@ -1737,6 +1751,8 @@ function awardPoints(team: TeamId, pts: number, label: string): void {
     return;
   }
   if (team === "home") game_.scoreHome += pts; else game_.scoreAway += pts;
+  // H47-C1: FOV kick on every make (camera only; reduced motion keeps the lens still).
+  if (!LOOK_ORIGINAL && !reducedMotion) cam.punch = Math.max(cam.punch, MAKE_FOV_KICK);
   pushEvent("score", `${label} — ${team === "home" ? game_.homeSquad.name : game_.awaySquad.name} +${pts}`, "success", pts);
   const target = game_.target;
   const score = team === "home" ? game_.scoreHome : game_.scoreAway;
@@ -1782,6 +1798,9 @@ function endGame(winner: TeamId): void {
 
 function startMatch(mode: ModeId): void {
   game_.mode = mode;
+  jamDunkPending = false;
+  replayRing.clear();
+  broadcast.startIntro(venue.id);
   game_.scoreHome = 0;
   game_.scoreAway = 0;
   game_.matchT = 0;
@@ -1971,6 +1990,7 @@ function startDunk(a: AthleteState, kind: string): void {
     jamWrap?.classList.remove("full");
     juiceFire("jam", { position: [a.x, 2, a.z] });
     cue("fireIgnite");
+    jamDunkPending = true;
   } else {
     juiceFire("dunk", { position: [a.x, 2, a.z] });
   }
@@ -2004,6 +2024,10 @@ function finishDunk(a: AthleteState): void {
   game_.stats[a.team].dunks += 1;
   game_.jam = clamp(game_.jam + 0.22, 0, 1);
   juiceFire("dunk", { position: [RIM[0], RIM[1], RIM[2]] });
+  if (jamDunkPending) {
+    jamDunkPending = false;
+    if (replayRing.size > 1 && broadcast.startReplay()) replayClip = replayRing.snapshot();
+  }
   netPulse = 1;
   rimShake = 1;
   pushEvent("dunk", `${a.dunkKind || "dunk"} — ${a.team === "home" ? game_.homeSquad.name : game_.awaySquad.name}`, "success");
@@ -3169,10 +3193,12 @@ function updateCamera(dt: number): void {
     // framed instead of leaving the tighter view.
     const shotNow = game_.phase === "shot" || game_.phase === "score";
     if (shotNow) {
+      // H47-C1: long-lens shot cam on the new look (fov 34, 2 m lower, farther out); ?look=original keeps 4.6.
+      const so = LOOK_ORIGINAL ? [7.6, 4.9, 5.2] : LIVE_CAM.shot.offset;
       want = {
-        eye: [ball.x + 7.6, 4.9 + cam.punch * 0.2, ball.z + 5.2],
+        eye: [ball.x + so[0]!, so[1]! + cam.punch * 0.2, ball.z + so[2]!],
         target: [ball.x - 0.2, Math.max(1.5, ball.y), ball.z - 0.8],
-        fov: 44 + cam.punch
+        fov: (LOOK_ORIGINAL ? 44 : LIVE_CAM.shot.fov) + cam.punch
       };
     } else {
       const hx = holder?.x ?? ball.x;
@@ -3184,11 +3210,14 @@ function updateCamera(dt: number): void {
           const at = (lx: number, ly: number, lz: number): Vec3 => [holder.x + cy * lx + sn * lz, ly, holder.z - sn * lx + cy * lz];
           return { eye: at(-1.9, 1.8, 2.3), target: at(-0.05, 0.75, 0.2), fov: 40 };
         })()
-        : {
-          eye: [hx + 5.6, 3.0, hz + 4.2],
-          target: [hx - 0.2, 1.1, hz - 0.9],
-          fov: 38 + cam.punch
-        };
+        : LOOK_ORIGINAL
+          ? { eye: [hx + 5.6, 3.0, hz + 4.2], target: [hx - 0.2, 1.1, hz - 0.9], fov: 38 + cam.punch }
+          // H47-C1: long-lens chase (fov 32, eye 0.8 m lower and farther out)
+          : {
+            eye: [hx + LIVE_CAM.chase.offset[0], LIVE_CAM.chase.offset[1], hz + LIVE_CAM.chase.offset[2]],
+            target: [hx + LIVE_CAM.chase.targetOffset[0], LIVE_CAM.chase.targetOffset[1], hz + LIVE_CAM.chase.targetOffset[2]],
+            fov: LIVE_CAM.chase.fov + cam.punch
+          };
     }
   }
   // The low chase eye (handler + (5.6, 3.0, 4.2)) can look straight through a courtside pole: the Rucker floodlight at
@@ -3637,6 +3666,7 @@ function recordStep(): void {
     pushShown(sh, a.x, a.y, a.z, a.yaw);
   }
   pushShown(shownBall, ball.x, ball.y, ball.z, 0);
+  if (!BROADCAST_OFF) replayRing.push({ time: game_.time, athletes: athletes.map((a) => ({ x: a.x, y: a.y, z: a.z, yaw: a.yaw })), ball: [ball.x, ball.y, ball.z] });
   pushShown(shownEye, cam.eye[0], cam.eye[1], cam.eye[2], cam.fov);
   pushShown(shownTarget, cam.target[0], cam.target[1], cam.target[2], 0);
 }
@@ -3681,6 +3711,71 @@ const simLoop = createFixedStepLoop({
   cancel: () => undefined
 });
 
+/** Draw one replay frame: recorded athlete and ball poses, the low rim-side camera. */
+function drawReplayFrame(t: number): BroadcastV3 | null {
+  const f = replayClip?.at(replaySourceTime(t));
+  if (!f) return null;
+  f.athletes.forEach((p, i) => {
+    const r = rigs[i];
+    if (!r?.root) return;
+    r.root.setPosition(p.x, p.y, p.z).setRotation(0, p.yaw, 0);
+    r.shadow?.setPosition(p.x, 0.012, p.z);
+    r.ring?.setPosition(p.x, 0.018, p.z);
+    r.aura?.setPosition(p.x, p.y + 0.95, p.z); // fit-grounding: ok (a centre-based cylinder primitive)
+  });
+  placeBall(f.ball[0], f.ball[1], f.ball[2]);
+  return f.ball;
+}
+/** DOF (focused on the subject) and motion blur only while a broadcast shot runs (H47-P2, E-C runtime toggles). */
+function setBroadcastPost(on: boolean, eye?: BroadcastV3, focus?: BroadcastV3): void {
+  const post = (auraApp as any)?.post;
+  if (!post?.setEffectEnabled) return;
+  try {
+    const want = broadcast.post(eye, focus);
+    if (on && want.focusDistance !== undefined) post.setEffect("depthOfField", { focusDistance: want.focusDistance, aperture: 0.5, maxBlur: 4 });
+    if (on !== broadcastPostOn) {
+      post.setEffectEnabled("depthOfField", on && want.depthOfField);
+      post.setEffectEnabled("motionBlur", on && want.motionBlur);
+      broadcastPostOn = on;
+    }
+  } catch { /* post toggles best-effort */ }
+}
+/**
+ * H47-C1: run the intro rail or the Jam-dunk replay this frame. The sim is held (no steps) while a shot runs; returns false
+ * once nothing runs, and the live camera and sim resume on the same frame.
+ */
+let broadcastRan = false;
+function runBroadcast(dt: number): boolean {
+  if (!broadcast.active && !broadcastRan) return false;
+  const shot = broadcast.active ? broadcast.update(dt) : null;
+  broadcastRan = shot !== null;
+  if (!shot) {
+    letterbox?.show(false);
+    setBroadcastPost(false);
+    replayClip = null;
+    present(0.99);
+    simLoop.resetAccumulator();
+    return false;
+  }
+  letterbox ??= createLetterbox(document.getElementById("game-stage") ?? document.body);
+  letterbox.show(true);
+  let pose;
+  if (shot.kind === "intro") pose = railPose(shot.court, shot.t);
+  else {
+    const b = drawReplayFrame(shot.t) ?? [ball.x, ball.y, ball.z] as BroadcastV3;
+    pose = replayPose(shot.t, b, [RIM[0], RIM[1], RIM[2]]);
+  }
+  setBroadcastPost(true, pose.eye, shot.kind === "intro" ? pose.target : [ball.x, ball.y, ball.z]);
+  try { (auraApp as any).camera?.setPose?.({ position: pose.eye, target: pose.target, fov: pose.fov }); } catch { /* camera ext optional */ }
+  return true;
+}
+/** Any key or pointer skips the running intro or replay; the next frame is live. */
+if (typeof window !== "undefined") {
+  const skipBroadcast = () => { if (broadcast.active) broadcast.skip(); };
+  window.addEventListener("keydown", skipBroadcast, { capture: true });
+  window.addEventListener("pointerdown", skipBroadcast, { capture: true });
+}
+
 const frameBoundary = createFrameErrorBoundary({
   onFatal: () => { if (renderError) (renderError as HTMLElement).hidden = false; }
 });
@@ -3704,6 +3799,7 @@ auraApp.onFrame(({ dt }) => {
       frame(dt);
       return;
     }
+    if (runBroadcast(dt)) return;
     simLoop.tick(performance.now());
   });
   frameBoundary.run(flushMarkerPools);
