@@ -29,6 +29,7 @@ import { beaconMaterial, createShiftRuntime, padMaterial, shiftSceneNodes, type 
 import { shiftCrops } from "./qa";
 import { createAudio } from "./audio";
 import { BOARD, boardPose, textOrigin, textWidth } from "./board";
+import { INTRO, introPose, introWanted, orbitPose } from "./cinema";
 import { courierBraking, createPitch, placeHalos, stepPitch } from "./brakes";
 import { createBlackFrameWatch, healParams, healStage, type BlackFrameWatch } from "@aura3d/debug";
 import { carModel } from "./models";
@@ -124,7 +125,8 @@ clearPickups(pickups, solids, 1.5);
 const traffic = buildTraffic();
 const trafficStart = traffic.map((t) => ({ ...t }));
 const car = createCar();
-type Phase = "splash" | "playing" | "paused" | "results";
+/** `intro` (GU47 WP-28 GC-C1): the 6 s camera intro after Start; the sim does not step until it ends or is skipped. */
+type Phase = "splash" | "intro" | "playing" | "paused" | "results";
 const game = { phase: "splash" as Phase, score: 0, collected: 0 };
 let shift = createShift(config.shiftSeconds);
 const audio = config.manual ? null : createAudio();
@@ -437,12 +439,25 @@ function placeNodes(dt: number, shown: Presented): void {
   app!.camera!.setPose({ position: eye, target: [...camState.look], up, fov: camState.fov }, { cut: false });
 }
 
+/** GC-C1: the intro and the results orbit override the chase pose (camera only; a blocked eye falls back to chase). */
+function placeCinema(dt: number, shown: Presented): void {
+  cinemaTime += dt;
+  const carPose = { x: shown.car.x, z: shown.car.z, heading: shown.car.heading };
+  const chase = { position: [...shownEye] as [number, number, number], target: [...camState.look] as [number, number, number], fov: camState.fov };
+  const reduced = document.body.classList.contains("reduced-motion");
+  let pose = game.phase === "intro" ? introPose(cinemaTime, carPose, chase) : orbitPose(cinemaTime, carPose, reduced, cameraBlocked);
+  if (cameraBlocked(...pose.position)) pose = chase;
+  app!.camera!.setPose({ position: pose.position, target: pose.target, fov: pose.fov }, { cut: false });
+  if (game.phase === "intro" && cinemaTime >= INTRO.seconds) endIntro();
+}
+
 function render(dt: number, alpha = 1): void {
   if (!app || !ready || renderFailed) return;
   try {
     const live = !config.manual && game.phase === "playing";
     const shown = live && alpha < 1 ? presenter.sample(alpha) ?? presentedNow() : presentedNow();
     placeNodes(dt, shown);
+    if (look.shift && (game.phase === "intro" || game.phase === "results")) placeCinema(dt, shown);
     if (shiftRuntime) {
       // GU47 WP-28: time of day, sodium pool, headlight spot, beacon, VFX (presentation reads only)
       const lampsOn = shiftRuntime.row().lamps;
@@ -562,6 +577,11 @@ const minimapCoins: [number, number][] = [];
 /* ------------------------------------------------------------------ input */
 
 const onKey = (down: boolean) => (e: KeyboardEvent) => {
+  if (down && game.phase === "intro") {
+    endIntro();
+    e.preventDefault();
+    return;
+  }
   const action = down ? keyAction(e) : undefined;
   if (action === "headlights") {
     headlightAmount = beamAmount(shiftRuntime?.row().lamps ?? 0) > 0 ? 0 : 1;
@@ -590,10 +610,20 @@ const touch = mountTouchControls(document, keys, { pause: () => togglePause(), m
 
 function begin(): void {
   if (game.phase !== "splash") return;
-  game.phase = "playing";
+  // GC-C1: a player start plays the skippable intro first (QA starts, manual and reduced motion go straight in)
+  game.phase = introWanted(shiftLook, config.manual, config.autostart, document.body.classList.contains("reduced-motion")) ? "intro" : "playing";
+  cinemaTime = 0;
   $("splash").classList.add("hidden");
   audio?.resume();
 }
+
+/** GC-C1: end the intro (its last frame or any key / tap); the shift clock starts on the next fixed step. */
+function endIntro(): void {
+  if (game.phase !== "intro") return;
+  game.phase = "playing";
+  cinemaTime = 0;
+}
+let cinemaTime = 0;
 
 function silence(): void {
   Object.assign(keys, NO_KEYS);
@@ -618,6 +648,7 @@ function togglePause(): void {
 function endShift(): void {
   if (game.phase === "results") return;
   game.phase = "results";
+  cinemaTime = 0;
   silence();
   const { best, isNew } = recordBest(safeStorage(), BEST_KEY, game.score);
   $("r-title").textContent = shift.reason === "cleared" ? "City cleared" : "Shift over";
@@ -891,6 +922,8 @@ function tick(now: number): void {
 }
 
 $("start").addEventListener("click", begin);
+// GC-C1: a tap or click skips the intro in one frame
+addEventListener("pointerdown", () => endIntro());
 $("resume").addEventListener("click", togglePause);
 $("restart").addEventListener("click", restart);
 addEventListener("blur", () => {
