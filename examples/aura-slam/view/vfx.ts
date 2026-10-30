@@ -14,7 +14,7 @@ import type { AuraAppEffects, AuraEffectInstanceHandle, AuraTrailHandle, AuraVec
 import { COURT_X, COURT_Z } from "./constants";
 import type { VenueBurstKind, VenueLook } from "./look";
 
-export type SlamVfxKind = VenueBurstKind | "out-ring" | "ace-flash";
+export type SlamVfxKind = VenueBurstKind | "out-ring" | "ace-flash" | "win-confetti";
 
 /** Registered effect kinds: one bounce burst per surface family, the out-call ring and the ace flash. */
 export const SLAM_VFX_PRESETS: Readonly<Record<SlamVfxKind, AuraVfxEffectSpec>> = {
@@ -44,6 +44,14 @@ export const SLAM_VFX_PRESETS: Readonly<Record<SlamVfxKind, AuraVfxEffectSpec>> 
     layers: [
       { type: "emitter", preset: "spark", count: 10, speed: 2.2, life: 0.35, size: 0.06, color: "#f2ff7a", additive: true, sprite: "spark-streak" },
       { type: "light", intensity: 2.5, range: 4, duration: 0.18, color: "#f2ff7a" }
+    ]
+  },
+  // TT-V3: match-won confetti over the net (tour lime and white chips drifting down; one sprite batch).
+  "win-confetti": {
+    name: "win-confetti",
+    layers: [
+      { type: "emitter", preset: "debris", count: 60, speed: 4.2, life: 2.6, gravity: -2.2, size: 0.09, spread: 0.9, drag: 1.2, direction: [0, 1, 0], color: "#d7f55b", sprite: "debris-chips" },
+      { type: "emitter", preset: "debris", count: 40, speed: 3.6, life: 2.6, gravity: -2.2, size: 0.08, spread: 0.9, drag: 1.2, direction: [0, 1, 0], color: "#fbfbf5", sprite: "debris-chips" }
     ]
   }
 };
@@ -82,7 +90,7 @@ interface SimStateLike {
   readonly score?: { readonly playerGames?: number; readonly aiGames?: number; readonly playerPoints?: number; readonly aiPoints?: number };
 }
 
-export interface SlamVfxEvents { bounces: number; outCalls: number; aces: number; marks: number }
+export interface SlamVfxEvents { bounces: number; outCalls: number; aces: number; marks: number; wins: number }
 
 export interface SlamVfxController {
   /** Per frame: fires the bounce / out / ace effects the sim state implies. Allocation-light (one array per spawned effect). */
@@ -115,7 +123,8 @@ export function createSlamVfx(
   let lastAceKey = "";
   let lastGames = -1;
   let lastMarkPos: AuraVec3 = [0, MARK_Y, 0];
-  const events: SlamVfxEvents = { bounces: 0, outCalls: 0, aces: 0, marks: 0 };
+  const events: SlamVfxEvents = { bounces: 0, outCalls: 0, aces: 0, marks: 0, wins: 0 };
+  let celebrated = false;
   const live = (): boolean => Boolean(effects) && effects!.runtime !== "off";
 
   const clearMarks = (): void => {
@@ -133,6 +142,14 @@ export function createSlamVfx(
       // A new set (games back to 0-0) or the menu clears the court: clay marks last the set.
       const games = (state.score?.playerGames ?? 0) + (state.score?.aiGames ?? 0);
       if ((lastGames > 0 && games < lastGames) || state.mode === "menu") clearMarks();
+      // TT-V3: one confetti burst when the match ends (halved under reduced motion); a new match re-arms it.
+      if (state.mode === "gameover" && !celebrated) {
+        celebrated = true;
+        events.wins += 1;
+        if (live()) {
+          try { effects.burst("win-confetti", [0, 1.4, 0], { count: burstCount("win-confetti", reducedMotion()), camera: false }); } catch { /* unavailable */ }
+        }
+      } else if (state.mode !== "gameover") celebrated = false;
       lastGames = games;
 
       const list = Array.isArray(state.marks) ? state.marks : [];

@@ -258,7 +258,7 @@ describe("GU47 TT-V1 / TT-V2: signature VFX controller", () => {
   it("registers one preset per surface family plus the out ring and the ace flash", () => {
     const f = fakeEffects();
     expect(registerSlamVfx(f.effects as never)).toEqual(Object.keys(SLAM_VFX_PRESETS));
-    expect(f.registered).toEqual(["clay-puff", "grass-flick", "hard-skid", "regolith-drift", "out-ring", "ace-flash"]);
+    expect(f.registered).toEqual(["clay-puff", "grass-flick", "hard-skid", "regolith-drift", "out-ring", "ace-flash", "win-confetti"]);
   });
 
   it("a 6-bounce clay rally leaves 6 clay marks and 6 clay puffs in the venue particle colour; marks outlive the point", () => {
@@ -325,6 +325,25 @@ describe("GU47 TT-V1 / TT-V2: signature VFX controller", () => {
     expect(f.bursts).toHaveLength(0);
     expect(f.decals).toHaveLength(0);
     expect(f.trails).toHaveLength(0);
+  });
+
+  it("TT-V3: the match end fires one confetti burst (halved under reduced motion); a new match re-arms it", () => {
+    const f = fakeEffects();
+    const vfx = createSlamVfx(f.effects as never);
+    vfx.update({ mode: "playing", phase: "point" }, VENUE_LOOKS.grass);
+    vfx.update({ mode: "gameover", phase: "complete" }, VENUE_LOOKS.grass);
+    vfx.update({ mode: "gameover", phase: "complete" }, VENUE_LOOKS.grass);
+    expect(f.bursts.filter((b) => b.kind === "win-confetti")).toHaveLength(1);
+    expect(f.bursts.find((b) => b.kind === "win-confetti")!.count).toBe(burstCount("win-confetti", false));
+    vfx.update({ mode: "menu" }, VENUE_LOOKS.grass);
+    vfx.update({ mode: "gameover" }, VENUE_LOOKS.grass);
+    expect(vfx.events.wins).toBe(2);
+    const r = fakeEffects();
+    createSlamVfx(r.effects as never, { reducedMotion: () => true }).update({ mode: "gameover" }, VENUE_LOOKS.grass);
+    expect(r.bursts[0]!.count).toBe(burstCount("win-confetti", true));
+    const off = fakeEffects("off");
+    createSlamVfx(off.effects as never).update({ mode: "gameover" }, VENUE_LOOKS.grass);
+    expect(off.bursts).toHaveLength(0);
   });
 
   it("the trail follows the ball node; marks are capped", () => {
