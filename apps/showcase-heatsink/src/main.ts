@@ -42,6 +42,7 @@ import {
 } from "./scene";
 import { CHEVRON_HEAT_UNIFORM, quantisedHeat } from "./shaders";
 import { SECTOR_CROSSFADE_SECONDS, sectorTargets } from "./sectors";
+import { droneBob, holoVisible, stepBoostPitch } from "./motion";
 import {
   autopilot,
   collectedPass,
@@ -396,6 +397,7 @@ async function boot(): Promise<void> {
    *  page draws a frame every few seconds; the camera smoothing keeps the clamped frame time. */
   let lastHudAt = performance.now();
   let resultsSeconds = 0;
+  let boostPitch = 0;
   function draw(frameSeconds: number): void {
     const now = performance.now();
     const hudSeconds = Math.min(1, Math.max(0, (now - lastHudAt) / 1000));
@@ -423,8 +425,10 @@ async function boot(): Promise<void> {
     const playerHandle = droneHandles[race.drone];
     track.place(0.4, shown.player[1]!, shown.player[2]!, pose);
     const blink = p.respawn <= 0 && race.time - p.lastHitTime < 0.6 && Math.floor(race.time * 20) % 2 === 0;
-    playerHandle.setPosition(pose.x, pose.y, pose.z).setVisible(p.respawn <= 0 && !blink);
-    droneRotation(playerHandle, pose.heading, shown.player[4]!, shown.player[5]!, shown.player[3]! + (reduced ? 0 : rollAngle(race)));
+    // HS-19: hover bob and the smoothed boost pitch (presentation only).
+    boostPitch = stepBoostPitch(boostPitch, race.phase === "racing" && p.boosting, frameSeconds, reduced);
+    playerHandle.setPosition(pose.x, pose.y + droneBob(now / 1000, reduced), pose.z).setVisible(p.respawn <= 0 && !blink);
+    droneRotation(playerHandle, pose.heading, shown.player[4]! + boostPitch, shown.player[5]!, shown.player[3]! + (reduced ? 0 : rollAngle(race)));
     const dronePos: [number, number, number] = [pose.x, pose.y, pose.z];
 
     // Rivals: drawn set onto the six other drone models; a rival keeps its model while it stays drawn.
@@ -489,7 +493,9 @@ async function boot(): Promise<void> {
       track.place(d, anchor.lateralX, anchor.baseY, pose2);
       anchorDistance[anchor.id] = d;
       const collected = anchor.kind !== "decor" && collectedPass(race, anchor.id) === k;
-      handle.setPosition(pose2.x, pose2.y, pose2.z).setVisible(!collected);
+      // HS-19: the holo billboards flicker (never on reduced motion).
+      const flickerOff = anchor.assetKey === "heatsinkHoloBillboard" && !holoVisible(now / 1000, anchor.s, reduced);
+      handle.setPosition(pose2.x, pose2.y, pose2.z).setVisible(!collected && !flickerOff);
       if (anchor.kind === "lava" && d > 0) {
         // HS-11: the lava curtain is a heat source; its hot core sits about a third of the way up.
         lavaVisible = true;
