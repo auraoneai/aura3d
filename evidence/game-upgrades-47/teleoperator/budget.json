@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d.gu47-budget/1",
+  "slug": "teleoperator",
+  "app": "apps/showcase-teleoperator",
+  "renderer": "software WebGL2 (remote runner), 1280x720 chase camera",
+  "budget": {
+    "drawCalls": { "noon": 480, "golden": 480, "fog": 480, "night": 560, "nightWithMirror": 650 },
+    "lowTierDrawCalls": { "noon": 384, "golden": 384, "fog": 384, "night": 448 },
+    "textureBytesMax": 67108864,
+    "routeJsGzipDeltaMaxBytes": 25600,
+    "lights": { "points": 6, "spots": 2, "shadowedKeys": 1 }
+  },
+  "before": {
+    "source": "evidence/teleoperator/audit-fix-2026-10-29/wave2/e2probe-weather-meta.jsonl (run g04w2-e2probe-weather, 4.6.x)",
+    "rows": {
+      "noon": { "drawCalls": 411, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": 0, "runnerFps": null, "luma": { "mean": 100.79, "p5": 35, "p95": 192, "darkFrac": 0.0003, "clipFrac": 0, "carCropP95": 217 } },
+      "golden": { "drawCalls": 410, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": 0, "runnerFps": null, "luma": { "mean": 86.69, "p5": 27, "p95": 166, "darkFrac": 0, "clipFrac": 0, "carCropP95": 202 } },
+      "fog": { "drawCalls": 411, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": 0, "runnerFps": null, "luma": { "mean": 108.6, "p5": 69, "p95": 154, "darkFrac": 0, "clipFrac": 0, "carCropP95": 199 } },
+      "night": { "drawCalls": 386, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": 0, "runnerFps": null, "luma": { "mean": 27.76, "p5": 0, "p95": 168, "darkFrac": 0.5173, "clipFrac": 0, "carCropP95": 221 } }
+    },
+    "note": "triangles, textureBytes, page MB and runner fps were not recorded by the 4.6.x probe; WP-38's before-capture fills them"
+  },
+  "expectedDrawDelta": {
+    "note": "phase-1 estimate per row (measured in phase 2); negative is fewer draws",
+    "rows": {
+      "D2 skyline": -18,
+      "GD-01": -1,
+      "GD-04": -1,
+      "GD-05": 0,
+      "GD-06": 2,
+      "GD-02": 1,
+      "GD-03": 0,
+      "GD-09": 1,
+      "GD-10": 1,
+      "GD-13": 2,
+      "GD-14": 1,
+      "GD-15": 1,
+      "GD-18": 0,
+      "GD-19": 3
+    }
+  },
+  "after": null
+}

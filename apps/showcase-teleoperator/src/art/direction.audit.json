@@ -1,0 +1,904 @@
+{
+  "schema": "aura3d.art-direction-audit/1",
+  "source": "apps/showcase-teleoperator/src/art/direction.ts",
+  "sourceSha256": "8fc554c3d274690c3b7a48738579bffb1241bc9aa3d4590dbd838a713ad14398",
+  "id": "showcase-teleoperator",
+  "genre": "racing",
+  "signatureEffect": "Marine-layer fog deck that swallows the bay-city tower tops above a clear street, swept by a teal LiDAR scan pulse from the robotaxi's sensor feed.",
+  "palette": {
+    "primary": [
+      "#5f7f8c",
+      "#2b3a55",
+      "#ffb15a",
+      "#b3262b"
+    ],
+    "accent": "#b59449",
+    "reservedObjective": "#3fd6c6"
+  },
+  "environment": {
+    "hdri": "belfast_sunset_puresky",
+    "background": "sky"
+  },
+  "violations": [],
+  "snapshot": {
+    "lights": [
+      {
+        "type": "hemisphere",
+        "shadow": false,
+        "intensity": 0.32
+      },
+      {
+        "type": "directional",
+        "shadow": true,
+        "intensity": 2.2
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 8
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 8
+      },
+      {
+        "type": "spot",
+        "shadow": false,
+        "intensity": 34
+      },
+      {
+        "type": "spot",
+        "shadow": false,
+        "intensity": 34
+      }
+    ],
+    "hasAmbient": false,
+    "environment": {
+      "kind": "hdri",
+      "background": true
+    },
+    "models": [
+      {
+        "assetKey": "gridBldgGlassTower",
+        "triangles": 7831,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBldgArtDeco",
+        "triangles": 5558,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBldgGlassTower",
+        "triangles": 7831,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBldgVictorian",
+        "triangles": 5858,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBldgGlassTower",
+        "triangles": 7831,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBldgGlassTower",
+        "triangles": 7831,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBldgMidrise",
+        "triangles": 5940,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBldgMidrise",
+        "triangles": 5940,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBldgArtDeco",
+        "triangles": 5558,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBldgArtDeco",
+        "triangles": 5558,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBldgVictorian",
+        "triangles": 5858,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBldgVictorian",
+        "triangles": 5858,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBldgGlassTower",
+        "triangles": 7831,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBldgGlassTower",
+        "triangles": 7831,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBldgMidrise",
+        "triangles": 5940,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBldgMidrise",
+        "triangles": 5940,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBldgArtDeco",
+        "triangles": 5558,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBldgArtDeco",
+        "triangles": 5558,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBldgVictorian",
+        "triangles": 5858,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridSedan",
+        "triangles": 17656,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridHatch",
+        "triangles": 17237,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridCruiser",
+        "triangles": 29543,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridCoupe",
+        "triangles": 17237,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridTruck",
+        "triangles": 15064,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridGt",
+        "triangles": 25353,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridInterceptor",
+        "triangles": 14470,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridRivalCruiser",
+        "triangles": 29543,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridCoupe",
+        "triangles": 17237,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridInterceptor",
+        "triangles": 14470,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridCablecar",
+        "triangles": 19398,
+        "textures": 2,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridGt",
+        "triangles": 25353,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridSedan",
+        "triangles": 17656,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridTaxi",
+        "triangles": 17656,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridSedan",
+        "triangles": 17656,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridHatch",
+        "triangles": 17237,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridHatch",
+        "triangles": 17237,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridTaxi",
+        "triangles": 17656,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridVan",
+        "triangles": 15491,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridPickup",
+        "triangles": 15064,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridPickup",
+        "triangles": 15064,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBoxTruck",
+        "triangles": 14008,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
+    "materials": [
+      {
+        "node": "sf-peninsula-ground",
+        "practical": false
+      },
+      {
+        "node": "sf-bay-water",
+        "practical": false
+      },
+      {
+        "node": "sf-avenue-asphalt",
+        "practical": false
+      },
+      {
+        "node": "sf-center-yellow-l",
+        "emissiveIntensity": 0.42,
+        "practical": true
+      },
+      {
+        "node": "sf-center-yellow-r",
+        "emissiveIntensity": 0.42,
+        "practical": true
+      },
+      {
+        "node": "sf-cable-rail-1",
+        "practical": false
+      },
+      {
+        "node": "sf-cable-rail-2",
+        "practical": false
+      },
+      {
+        "node": "sf-cable-rail-3",
+        "practical": false
+      },
+      {
+        "node": "sf-cable-rail-4",
+        "practical": false
+      },
+      {
+        "node": "sf-curb-left",
+        "practical": false
+      },
+      {
+        "node": "sf-curb-right",
+        "practical": false
+      },
+      {
+        "node": "sf-sidewalk-left",
+        "practical": false
+      },
+      {
+        "node": "sf-sidewalk-right",
+        "practical": false
+      },
+      {
+        "node": "sf-pyramid-spire",
+        "practical": false
+      },
+      {
+        "node": "sf-pyramid-wing",
+        "practical": false
+      },
+      {
+        "node": "sf-pyramid-crown",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
+        "node": "sf-glass-obelisk",
+        "practical": false
+      },
+      {
+        "node": "sf-glass-obelisk-crown",
+        "emissiveIntensity": 1.65,
+        "practical": true
+      },
+      {
+        "node": "sf-bridge-towers",
+        "practical": false
+      },
+      {
+        "node": "sf-bridge-struts",
+        "practical": false
+      },
+      {
+        "node": "sf-bridge-deck",
+        "practical": false
+      },
+      {
+        "node": "sf-road-patches",
+        "practical": false
+      },
+      {
+        "node": "sf-road-joints",
+        "practical": false
+      },
+      {
+        "node": "sf-dashes",
+        "emissiveIntensity": 0.45,
+        "practical": true
+      },
+      {
+        "node": "sf-cross-roads",
+        "practical": false
+      },
+      {
+        "node": "sf-manholes",
+        "practical": false
+      },
+      {
+        "node": "sf-crosswalks",
+        "emissiveIntensity": 0.4,
+        "practical": true
+      },
+      {
+        "node": "sf-signal-poles",
+        "practical": false
+      },
+      {
+        "node": "sf-signal-arms",
+        "practical": false
+      },
+      {
+        "node": "sf-signal-lights",
+        "emissiveIntensity": 2.1,
+        "practical": true
+      },
+      {
+        "node": "sf-lamp-poles",
+        "practical": false
+      },
+      {
+        "node": "sf-lamp-globes",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "sf-tree-trunks",
+        "practical": false
+      },
+      {
+        "node": "sf-tree-crowns",
+        "practical": false
+      },
+      {
+        "node": "sf-catenary-wires",
+        "practical": false
+      },
+      {
+        "node": "sf-catenary-spans",
+        "practical": false
+      },
+      {
+        "node": "sf-sign-plates",
+        "practical": false
+      },
+      {
+        "node": "sf-sign-0-0",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-0-1",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-1-0",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-1-1",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-2-0",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-2-1",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-3-0",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-3-1",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-4-0",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-4-1",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-5-0",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-5-1",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "route-ribbons",
+        "emissiveIntensity": 2.1,
+        "practical": true
+      },
+      {
+        "node": "taxi-beacon-ring",
+        "emissiveIntensity": 2.1,
+        "practical": true
+      },
+      {
+        "node": "taxi-beacon-disc",
+        "emissiveIntensity": 1.35,
+        "practical": true
+      },
+      {
+        "node": "taxi-beacon-beam",
+        "emissiveIntensity": 1.35,
+        "practical": true
+      },
+      {
+        "node": "taxi-beacon-core",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "taxi-passenger-body",
+        "practical": false
+      },
+      {
+        "node": "taxi-passenger-head",
+        "practical": false
+      },
+      {
+        "node": "taxi-passenger-arm",
+        "emissiveIntensity": 1.2,
+        "practical": true
+      },
+      {
+        "node": "player-tail-lamps",
+        "emissiveIntensity": 0.9,
+        "practical": true
+      }
+    ],
+    "drawCalls": 0
+  },
+  "direction": {
+    "id": "showcase-teleoperator",
+    "genre": "racing",
+    "fantasy": "A remote operator's sensor feed over a bay-city avenue at dusk, where a marine fog bank swallows the tower tops.",
+    "rebuildTier": "S-presentation",
+    "wave": 4,
+    "references": [
+      {
+        "file": "references/marine-layer-dusk.json",
+        "source": "generic reference: coastal city at dusk under a low marine fog layer (photography genre, no specific work)",
+        "licence": "reference-only",
+        "why": "A grey fog deck at 30-40 m swallows tower tops while the street below stays clear and lit, sun glow under the deck"
+      },
+      {
+        "file": "references/sodium-avenue.json",
+        "source": "generic reference: wet sodium-lit avenue with cable-car rails at night (street photography genre)",
+        "licence": "reference-only",
+        "why": "Warm sodium lamp pools and lit bay windows against cool slate-teal fog; red and brass cable cars as the street accent"
+      },
+      {
+        "file": "references/sensor-feed-overlay.json",
+        "source": "generic reference: autonomous-vehicle LiDAR visualisation and remote-operation console feeds",
+        "licence": "reference-only",
+        "why": "A teal depth-ring scan sweeping out from the vehicle and a console bezel; teal is reserved for the sensor and objective"
+      }
+    ],
+    "palette": {
+      "primary": [
+        "#5f7f8c",
+        "#2b3a55",
+        "#ffb15a",
+        "#b3262b"
+      ],
+      "accent": "#b59449",
+      "reservedObjective": "#3fd6c6"
+    },
+    "lighting": {
+      "key": {
+        "type": "directional",
+        "colorTemperatureK": 2600,
+        "shadow": true
+      },
+      "fill": "ibl",
+      "practicals": 6,
+      "environment": {
+        "hdri": "belfast_sunset_puresky",
+        "background": "sky"
+      },
+      "exposureEV": 0
+    },
+    "framing": {
+      "rig": "chase",
+      "subjectHeightFraction": [
+        0.12,
+        0.3
+      ],
+      "fovDeg": [
+        56,
+        62
+      ],
+      "mobile": "both"
+    },
+    "assets": [
+      {
+        "role": "vehicle",
+        "assetKey": "gridCruiser",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gridCoupe",
+        "maxTriangles": 40000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gridTruck",
+        "maxTriangles": 40000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gridGt",
+        "maxTriangles": 40000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gridInterceptor",
+        "maxTriangles": 40000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gridRivalCruiser",
+        "maxTriangles": 60000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "gridCablecar",
+        "maxTriangles": 40000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "prop",
+        "assetKey": "gridSedan",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "gridTaxi",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "gridHatch",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "gridVan",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "gridPickup",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "gridBoxTruck",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "gridBldgVictorian",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "gridBldgMidrise",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "gridBldgGlassTower",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "gridBldgArtDeco",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      }
+    ],
+    "vfx": [
+      {
+        "event": "collision",
+        "kind": "grid-impact"
+      },
+      {
+        "event": "pickup",
+        "kind": "grid-objective-ring"
+      },
+      {
+        "event": "dropoff",
+        "kind": "grid-objective-ring"
+      },
+      {
+        "event": "night-wet-tyres",
+        "kind": "grid-tyre-splash"
+      },
+      {
+        "event": "manhole-steam",
+        "kind": "grid-manhole-steam"
+      },
+      {
+        "event": "driving",
+        "kind": "trail"
+      },
+      {
+        "event": "sensor-sweep",
+        "kind": "lidar-scan-pulse"
+      }
+    ],
+    "audio": [
+      {
+        "event": "collision",
+        "cue": "collision",
+        "variants": 1
+      },
+      {
+        "event": "pickup",
+        "cue": "pickup",
+        "variants": 1
+      },
+      {
+        "event": "dropoff",
+        "cue": "dropoff",
+        "variants": 1
+      },
+      {
+        "event": "fare-paid",
+        "cue": "earn",
+        "variants": 1
+      },
+      {
+        "event": "missed-kerb",
+        "cue": "miss",
+        "variants": 1
+      },
+      {
+        "event": "penalty",
+        "cue": "warn",
+        "variants": 1
+      },
+      {
+        "event": "near-miss",
+        "cue": "nearMiss",
+        "variants": 1
+      }
+    ],
+    "signatureEffect": "Marine-layer fog deck that swallows the bay-city tower tops above a clear street, swept by a teal LiDAR scan pulse from the robotaxi's sensor feed.",
+    "criticalCategories": [
+      "atmospheric_effects",
+      "lighting",
+      "postprocessing",
+      "vfx"
+    ],
+    "tiers": {
+      "low": {
+        "particles": 300,
+        "shadowMap": 1024,
+        "cascades": 1,
+        "textureMax": 1024
+      },
+      "medium": {
+        "particles": 600,
+        "shadowMap": 2048,
+        "cascades": 2,
+        "textureMax": 2048
+      },
+      "high": {
+        "particles": 1200,
+        "shadowMap": 2048,
+        "cascades": 3,
+        "textureMax": 2048
+      },
+      "ultra": {
+        "particles": 2000,
+        "shadowMap": 4096,
+        "cascades": 3,
+        "textureMax": 4096
+      }
+    }
+  }
+}

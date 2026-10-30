@@ -1,0 +1,11 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "teleoperator",
+  "default": { "darkFrac": [null, 0.6], "clipFrac": [null, 0.01] },
+  "variants": {
+    "golden": { "mean": [75, 100], "p95": [210, null], "clipFrac": [null, 0.01] },
+    "noon": { "mean": [95, 120], "clipFrac": [null, 0.005], "crops": { "car": { "p95": [null, 235], "spread": [175, null], "mean": [120, 150] } } },
+    "fog": { "mean": [105, 135], "clipFrac": [null, 0.01] },
+    "night": { "mean": [40, 65], "p95": [180, null], "darkFrac": [null, 0.35], "clipFrac": [null, 0.01] }
+  }
+}

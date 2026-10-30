@@ -178,3 +178,36 @@ describe("grid dispatch signals and assists (C19)", () => {
     }
   });
 });
+
+describe("grid dispatch GD-03 read-only brake-lamp flag", () => {
+  it("lights on the brake pedal and at a held standstill, stays off while coasting and on throttle", () => {
+    const sim = make("MAN");
+    clearRoad(sim);
+    run(sim, 0.5, { throttle: true });
+    expect(sim.state.brakeLamp).toBe(false);
+    run(sim, 2);
+    expect(sim.state.brakeLamp).toBe(false);
+    run(sim, 0.2, { brake: true });
+    expect(sim.state.brakeLamp).toBe(true);
+    run(sim, 3, { brake: true });
+    expect(sim.state.player.speed).toBe(0);
+    expect(sim.state.brakeLamp).toBe(true);
+    run(sim, 0.1);
+    expect(sim.state.brakeLamp).toBe(false);
+  });
+
+  it("the sim never reads it: scrambling the flag before every step leaves every result byte-identical", () => {
+    const script: Partial<DriveInput>[] = [{ throttle: true }, {}, { brake: true }, { left: true }, { throttle: true, boost: true }, { right: true, brake: true }];
+    const drive = (scramble: boolean): string => {
+      const sim = make("L3");
+      const events: SimEvent[] = [];
+      for (let i = 0; i < 60 * 45; i++) {
+        if (scramble) sim.state.brakeLamp = (i * 7919) % 3 === 0;
+        events.push(...sim.step(DT, { ...NO_INPUT, ...script[Math.floor(i / 240) % script.length]! }));
+      }
+      const { brakeLamp: _ignored, ...rest } = sim.state;
+      return JSON.stringify({ rest, events });
+    };
+    expect(drive(true)).toBe(drive(false));
+  });
+});

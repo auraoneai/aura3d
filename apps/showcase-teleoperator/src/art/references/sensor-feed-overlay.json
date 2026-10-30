@@ -1,0 +1,7 @@
+{
+  "id": "sensor-feed-overlay",
+  "kind": "generic-reference",
+  "subject": "autonomous-vehicle LiDAR visualisation and remote-operation console feeds",
+  "matched": ["teal depth ring sweeping out from the vehicle", "console bezel with CAM label, clock, link bars, REC dot", "teal reserved for sensor and objective"],
+  "licence": "reference-only (no image vendored)"
+}

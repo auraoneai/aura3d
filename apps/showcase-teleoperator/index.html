@@ -1316,7 +1316,31 @@
       #results .best { text-align: center; margin-top: 6px; color: var(--acc2); font-size: 12px; }
       #results .resBtns { display: flex; justify-content: center; margin-top: 12px; }
       #results .resBtns button { appearance: none; min-height: 44px; padding: 0 22px; border-radius: var(--r-pill); border: 1px solid var(--acc); background: var(--acc); color: #051816; font: 600 13px var(--font-ui); cursor: pointer; }
-      #wrongWay { background: rgba(255, 58, 58, 0.9); border-color: #ff5a4f; color: #ffffff; top: 38%; }
+      /* GD-18 operator-console bezel (feed white, red REC; teal stays the objective, amber the warnings) */
+      #opBezel { inset: 0; z-index: 4; }
+      #opBezel .br { position: absolute; width: 28px; height: 28px; border: 0 solid rgba(235, 242, 246, 0.55); }
+      #opBezel .tl { left: 6px; top: 6px; border-left-width: 2px; border-top-width: 2px; }
+      #opBezel .tr { right: 6px; top: 6px; border-right-width: 2px; border-top-width: 2px; }
+      #opBezel .bl { left: 6px; bottom: 6px; border-left-width: 2px; border-bottom-width: 2px; }
+      #opBezel .bri { right: 6px; bottom: 6px; border-right-width: 2px; border-bottom-width: 2px; }
+      #opBezel .strip { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 3px 10px; border-radius: var(--r-sm); background: rgba(6, 10, 16, 0.72); color: #ebf2f6; font: 500 11px var(--font-metric); letter-spacing: 0.08em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+      #opBezel .rec { width: 8px; height: 8px; border-radius: 50%; background: #ff3b30; }
+      #opBezel .rec.off { background: rgba(255, 59, 48, 0.25); }
+      #opBezel .bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 10px; }
+      #opBezel .bars i { width: 3px; background: #ebf2f6; }
+      #opBezel .bars i:nth-child(1) { height: 3px; } #opBezel .bars i:nth-child(2) { height: 5px; } #opBezel .bars i:nth-child(3) { height: 7px; } #opBezel .bars i:nth-child(4) { height: 10px; }
+      #opBezel .bars[data-bars="3"] i:nth-child(4), #opBezel .bars[data-bars="2"] i:nth-child(n+3) { background: rgba(235, 242, 246, 0.25); }
+      body.touch #opBezel .strip { display: none; }
+      @media (max-width: 760px) { #opBezel .strip { left: 8px; bottom: 8px; transform: none; gap: 6px; font-size: 10px; max-width: 200px; } #opBezel .br { width: 18px; height: 18px; } }
+      /* GD-18: warnings are amber, objectives teal; rival tags are bracketed in feed white, not teal */
+      #wrongWay { background: rgba(255, 179, 71, 0.92); border-color: var(--warn); color: #120c03; top: 38%; }
+      #brakeCue { background: rgba(255, 179, 71, 0.92); color: #120c03; box-shadow: 0 0 16px 3px rgba(255, 179, 71, 0.45); }
+      .mpTag { border-color: transparent; border-radius: 2px; background:
+        linear-gradient(#ebf2f6, #ebf2f6) top left / 8px 1.5px no-repeat, linear-gradient(#ebf2f6, #ebf2f6) top left / 1.5px 8px no-repeat,
+        linear-gradient(#ebf2f6, #ebf2f6) top right / 8px 1.5px no-repeat, linear-gradient(#ebf2f6, #ebf2f6) top right / 1.5px 8px no-repeat,
+        linear-gradient(#ebf2f6, #ebf2f6) bottom left / 8px 1.5px no-repeat, linear-gradient(#ebf2f6, #ebf2f6) bottom left / 1.5px 8px no-repeat,
+        linear-gradient(#ebf2f6, #ebf2f6) bottom right / 8px 1.5px no-repeat, linear-gradient(#ebf2f6, #ebf2f6) bottom right / 1.5px 8px no-repeat,
+        rgba(8, 11, 16, 0.72); }
       #skyChange { left: 50%; top: 46%; transform: translateX(-50%); padding: 8px 16px; border-radius: var(--r-pill); background: var(--glass-strong); border: 1px solid var(--line-strong); font: 500 13px var(--font-ui); opacity: 0; transition: opacity 0.2s; z-index: 11; }
       #skyChange.on { opacity: 1; }
       #mini { cursor: default; }
@@ -1438,6 +1462,12 @@
       </div>
     </div>
 
+    <!-- GD-18 operator-console bezel: corner brackets, REC dot, camera label, feed clock and link bars -->
+    <div class="ov" id="opBezel" aria-hidden="true">
+      <i class="br tl"></i><i class="br tr"></i><i class="br bl"></i><i class="br bri"></i>
+      <div class="strip" id="bzStrip"><b class="rec" id="bzRec"></b><span>REC</span><span id="bzCam">CAM 1 · CHASE</span><span id="bzClock">19:42:00</span><span class="bars" id="bzBars" data-bars="4"><i></i><i></i><i></i><i></i></span></div>
+    </div>
+
     <!-- Floating rival tags -->
     <div class="ov" id="mpTags"></div>
 
@@ -1473,10 +1503,10 @@
         <button type="button" data-cam="3" aria-pressed="false">Bumper</button>
         <span class="dock-sep" aria-hidden="true"></span>
         <span class="dock-label">Sky</span>
-        <button type="button" data-tod="noon" class="active" aria-pressed="true">Noon</button>
-        <button type="button" data-tod="golden" aria-pressed="false">Golden Hour</button>
+        <button type="button" data-tod="golden" class="active" aria-pressed="true">Marine Dusk</button>
+        <button type="button" data-tod="noon" aria-pressed="false">Noon</button>
         <button type="button" data-tod="fog" aria-pressed="false">Fog</button>
-        <button type="button" data-tod="night" aria-pressed="false">Night</button>
+        <button type="button" data-tod="night" aria-pressed="false">Sodium Night</button>
       </div>
     </div>
 

@@ -151,7 +151,9 @@ async function boot(page: Page, server: ExampleDevServer, target: string, vp: { 
   page.on("framenavigated", (f) => { if (f === page.mainFrame()) log(`GL_NAV ${target} ${f.url().replace(server.origin, "")}`); });
   await page.setViewportSize(vp);
   const t0 = Date.now();
-  await page.goto(`${server.origin}${ROUTE}${query}`, { waitUntil: "domcontentloaded" });
+  // GD-17: the boot intro (3 x 1.4 s camera shots) stays out of these frames.
+  const url = query ? `${query}${query.includes("?") ? "&" : "?"}intro=0` : "?intro=0";
+  await page.goto(`${server.origin}${ROUTE}${url}`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(READY, undefined, { timeout: 900_000, polling: 1000 });
   log(`GL_NOTE ${target} ready after ${Date.now() - t0} ms`);
 }
@@ -220,8 +222,9 @@ test.describe("grid dispatch audit-fix capture", () => {
     const T = "weather";
     await boot(page, server, T, { width: 1280, height: 720 });
     await runFrames(page, 4, 45_000);
-    await shot(page, T, "weather-noon0", { canvasOnly: true, crop: true });
-    for (const tod of ["golden", "fog", "night"]) {
+    // GU47 GD-21: Marine dusk (`golden`) is the boot sky.
+    await shot(page, T, "weather-golden0", { canvasOnly: true, crop: true });
+    for (const tod of ["noon", "fog", "night"]) {
       await resume(page);
       await click(page, `#teleopDock button[data-tod="${tod}"]`);
       await page.waitForTimeout(2000);

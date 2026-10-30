@@ -54,6 +54,9 @@ export interface DriveInput {
   readonly boost: boolean;
 }
 
+/** GD-03: deceleration (m/s^2) above which the brake lamps light; coasting down to cruise is 3.2. */
+export const BRAKE_LAMP_DECEL = 4;
+
 export const NO_INPUT: DriveInput = { throttle: false, brake: false, left: false, right: false, boost: false };
 
 export interface RivalMeta {
@@ -189,6 +192,11 @@ export interface SimState {
   signal: 0 | 1 | 2;
   wrongWay: boolean;
   brakeCue: boolean;
+  /**
+   * GU47 GD-03: read-only presentation flag, true while the player car decelerates harder than coasting (brake pedal,
+   * brake assist, autopilot stop) or holds the brake at a standstill. Written after the drive step; the sim never reads it.
+   */
+  brakeLamp: boolean;
   collisionCount: number;
   lastPenaltyAt: number;
   lastScore: number | null;
@@ -202,7 +210,7 @@ export function createSimState(o: { car?: PlayableCarId; level?: AutopilotLevel;
   return {
     time: 0, steps: 0, phase: "driving", car: o.car ?? "cruiser", level: o.level ?? "MAN", style: "comfort",
     player, ride: newRide(player.z), shift: createShift(), career: o.career ?? emptyCareer(),
-    users: createRoadUsers(player.z), signal: 0, wrongWay: false, brakeCue: false, collisionCount: 0, lastPenaltyAt: -10, lastScore: null
+    users: createRoadUsers(player.z), signal: 0, wrongWay: false, brakeCue: false, brakeLamp: false, collisionCount: 0, lastPenaltyAt: -10, lastScore: null
   };
 }
 
@@ -288,6 +296,7 @@ export function createSim(contacts: TrafficContacts, init: { car?: PlayableCarId
       prevRel = state.users.map((u) => u.z - state.player.z);
       state.phase = "driving";
       state.wrongWay = false;
+      state.brakeLamp = false;
       state.lastScore = null;
       contacts.reset();
     },
@@ -418,6 +427,7 @@ export function createSim(contacts: TrafficContacts, init: { car?: PlayableCarId
         p.speed = Math.max(0, p.speed - Math.min(16, need) * dt);
         if (playerDrives) state.brakeCue = true;
       }
+      state.brakeLamp = (dt > 0 && (speedBefore - p.speed) / dt > BRAKE_LAMP_DECEL) || (playerDrives && input.brake && p.speed < 0.5);
       const prevZ = p.z;
       p.z -= p.speed * dt;
 
