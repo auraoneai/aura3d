@@ -39,6 +39,7 @@ import { installBlackFrameGuard } from "@aura3d/debug";
 import { SHIELD_SIZE, shieldSpec } from "./art/shield";
 import { HAZE_FLOOR_Y, groundSpec } from "./art/ground";
 import { PYLON_KIT, PYLON_ROWS, pylonLayout } from "./render/pylons";
+import { TOWER_CAPACITY_PER_VARIANT, TOWER_VARIANTS, towerGlassSpec, towerLayout, type TowerVariant } from "./render/towers";
 import { meshyFarVehicles, meshyVehicles } from "./meshy-vehicles";
 import { SKY_DOME_SIZE, skyLook, skySpec } from "./art/sky";
 import { createCameraShake, createHitStop, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
@@ -135,9 +136,6 @@ const PARAPET_RAIL_SIZE: Vec3 = [0.16, 0.14, 380];
 const TRIM_X = 10.32;
 const TRIM_Y = 1.07;
 
-/** Skyline: world-anchored rows every 140 m, one row behind the camera and four ahead, so a building only recycles after it has passed the camera (audit RR-8). */
-const SKYLINE_ROWS = 5;
-const SKYLINE_STRIDE_Z = 140;
 
 /** Overhead gantry geometry, built from the collision band so what crashes the car is what is drawn (audit RR-6). */
 const GANTRY_BOXES = gantryBoxes();
@@ -448,10 +446,13 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     instances
       .box({ name: "deck-pylon-caps", size: [...PYLON_KIT.cap.size], material: material.pbr({ color: "#2c2e36", roughness: 0.8, metalness: 0.05 }), castShadow: false, receiveShadow: false, transforms: parked(PYLON_ROWS) })
       .runtime(game.runtimeNode(poolId("pylon-caps"))),
-    // The skyline model has 75 meshes; instancing draws all buildings in 75 calls, and it casts no shadow (it stands 42 m off the road).
-    instances
-      .model(assets.showcaseModernBuildingOne, { name: "freeway-skyline", role: "setDressing", scaleMode: "fit", targetMaxDimension: 38, castShadow: false, transforms: parked(SKYLINE_ROWS * 2) })
-      .runtime(game.runtimeNode(poolId("skyline")))
+    // AO-A1: glass tower skyline rising from the haze, one instanced curtain-wall node per variant (3 draws; it replaces the
+    // borrowed 75-mesh townhouse model). No shadows: the nearest tower stands 40 m off the road.
+    ...TOWER_VARIANTS.map((variant) =>
+      instances
+        .box({ name: `skyline-tower-${variant}`, size: [1, 1, 1], material: material.custom(towerGlassSpec(variant)), castShadow: false, receiveShadow: false, transforms: parked(TOWER_CAPACITY_PER_VARIANT) })
+        .runtime(game.runtimeNode(poolId(`tower-${variant}`)))
+    )
   ]);
 
   // 3. Player Roadster Assembly (Primary Car + Lightbar + Headlights + Cold-Gas Plumes + Powerups + Shadow)
@@ -760,7 +761,10 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const polePool = pool("poles", POLE_ROWS * 2);
   const armPool = pool("pole-arms", POLE_ROWS * 2);
   const lampPool = pool("pole-lamps", POLE_ROWS * 2);
-  const skylinePool = pool("skyline", SKYLINE_ROWS * 2);
+  const towerPools = {} as Record<TowerVariant, InstancePool>;
+  for (const variant of TOWER_VARIANTS) towerPools[variant] = pool(`tower-${variant}`, TOWER_CAPACITY_PER_VARIANT);
+  const towerHandles = {} as Record<TowerVariant, AuraRuntimeNodeHandle>;
+  for (const variant of TOWER_VARIANTS) towerHandles[variant] = req(poolId(`tower-${variant}`));
   const pylonColumns = pool("pylon-columns", PYLON_ROWS * 2);
   const pylonCaps = pool("pylon-caps", PYLON_ROWS);
 
@@ -848,6 +852,18 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       /* post surface without runtime overrides */
     }
     lookFrame = frame;
+
+    // AO-A1: the tower glass reflects the same dome row and lights its floors toward night
+    for (const variant of TOWER_VARIANTS) {
+      const tower = towerHandles[variant];
+      tower.setUniform?.("glassSky", look.skyTop as never);
+      tower.setUniform?.("glassHorizon", look.skyHorizon as never);
+      tower.setUniform?.("sunDirection", look.sunDir as never);
+      tower.setUniform?.("sunTint", look.sunColor as never);
+      tower.setUniform?.("sunGlint", round3(1.2 * (1 - look.nightAmount)) as never);
+      tower.setUniform?.("windowsLit", round3(frame.signature.windowSpecks) as never);
+      tower.setUniform?.("hazeColor", hexToUnit(frame.signature.hazeColor) as never);
+    }
 
     // AO-E2: the haze floor takes the row's haze colour and window-speck strength (cool lavender haze, no red-pink floor)
     const groundHex = lerpHexColor("#14141c", "#07080d", tod);
@@ -1178,15 +1194,14 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     armPool.commit();
     lampPool.commit();
 
-    // Skyline, world-anchored rows from one behind the camera to four ahead (audit RR-8)
-    skylinePool.begin();
-    const skylineBaseZ = Math.floor(pz / SKYLINE_STRIDE_Z) * SKYLINE_STRIDE_Z;
-    for (let row = -1; row < SKYLINE_ROWS - 1; row++) {
-      const sz = rz(skylineBaseZ - 65 - row * SKYLINE_STRIDE_Z);
-      skylinePool.add(rx(-42), ry(-0.2), sz);
-      skylinePool.add(rx(42), ry(-0.2), sz);
+    // AO-A1: glass towers, world-anchored rows from one behind the camera to ~560 m ahead (audit RR-8 recycling rule)
+    for (const variant of TOWER_VARIANTS) towerPools[variant].begin();
+    const towers = towerLayout(pz);
+    for (let i = 0; i < towers.length; i++) {
+      const t = towers[i]!;
+      towerPools[t.variant].add(rx(t.x), ry(t.y), rz(t.z), 0, t.yaw, 0, t.width, t.height, t.depth);
     }
-    skylinePool.commit();
+    for (const variant of TOWER_VARIANTS) towerPools[variant].commit();
 
     updateAtmosphereForTod(Number(g.world?.timeOfDay ?? 0));
 

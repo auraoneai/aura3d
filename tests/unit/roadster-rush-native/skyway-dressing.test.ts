@@ -1,6 +1,45 @@
 import { describe, expect, it } from "vitest";
 import { HAZE_FLOOR_Y, groundSpec } from "../../../apps/showcase-roadster-rush/src/art/ground";
 import { PYLON_KIT, PYLON_ROWS, PYLON_STRIDE_Z, PYLON_X, pylonLayout } from "../../../apps/showcase-roadster-rush/src/render/pylons";
+import { TOWER_CAPACITY_PER_VARIANT, TOWER_VARIANTS, towerGlassSpec, towerHash, towerLayout } from "../../../apps/showcase-roadster-rush/src/render/towers";
+
+describe("Apex Overdrive glass tower skyline (GU47 AO-A1)", () => {
+  it("fills three variants within their pool capacity, clear of the road, rising from the haze floor", () => {
+    for (const pz of [0, -777, -5321.5, -20000]) {
+      const towers = towerLayout(pz);
+      for (const variant of TOWER_VARIANTS) {
+        expect(towers.filter((t) => t.variant === variant).length).toBeLessThanOrEqual(TOWER_CAPACITY_PER_VARIANT);
+      }
+      for (const t of towers) {
+        expect(Math.abs(t.x) - Math.max(t.width, t.depth) / 2).toBeGreaterThan(24);
+        expect(t.y - t.height / 2).toBeCloseTo(HAZE_FLOOR_Y, 6);
+        expect(t.y + t.height / 2).toBeGreaterThanOrEqual(20);
+        expect(t.y + t.height / 2).toBeLessThanOrEqual(96);
+      }
+    }
+    const seen = new Set(towerLayout(-3000).map((t) => t.variant));
+    expect([...seen].sort()).toEqual([...TOWER_VARIANTS].sort());
+  });
+
+  it("is world-anchored: the same towers stand at the same world spots as the player advances", () => {
+    const key = (t: { x: number; z: number; height: number }) => `${t.x.toFixed(3)}:${t.z.toFixed(3)}:${t.height.toFixed(3)}`;
+    const a = new Set(towerLayout(-1000).map(key));
+    const b = towerLayout(-1030).map(key);
+    const shared = b.filter((k) => a.has(k)).length;
+    expect(shared).toBeGreaterThanOrEqual(b.length - 4 * 2);
+    expect(towerHash(3, 4)).toBe(towerHash(3, 4));
+    expect(towerHash(3, 4)).not.toBe(towerHash(4, 3));
+  });
+
+  it("shades instanced glass with the scene fog and no reversed smoothstep edges", () => {
+    for (const variant of TOWER_VARIANTS) {
+      const spec = towerGlassSpec(variant);
+      expect(spec.fog).toBe(true);
+      expect(spec.glsl.vertex).toContain("instanceMatrix");
+      expect(spec.glsl.fragment).not.toMatch(/smoothstep\(1\.0,/);
+    }
+  });
+});
 
 describe("Apex Overdrive skyway dressing (GU47 AO-E2)", () => {
   it("drops the city floor 28 m below the deck and scrolls its plan with the run", () => {
