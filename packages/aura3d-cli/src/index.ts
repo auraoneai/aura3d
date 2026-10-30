@@ -9,6 +9,7 @@ import { inflateSync } from "node:zlib";
 import { writeAgentSkills, type AuraSkillMode } from "create-aura3d";
 import { measureLoudness } from "@aura3d/audio";
 import { admitAssetForRole } from "./asset-role-admission.js";
+import { CERTIFY_CATEGORY_RULES } from "./commands/assets/certifyCategories.js";
 import { hasStylizedFlatApproval } from "./admission/artDirection.js";
 import { AUDIO_SYNTH_RELEASE_ALLOWLIST, isSynthesizedAudioProvenance } from "./admission/audio.js";
 import { profileForRole, requiresPbrTextures } from "./admission/profiles.js";
@@ -689,11 +690,9 @@ export async function certifyGameGeometry(options: CertifyGameGeometryOptions): 
       };
     }
 
-    const visualCertification = options.category === "racing" && asset.role === "vehicle"
-      ? { role: "vehicle" as const, certification: "certified-racing-vehicle" as const, label: "racing-vehicle" as const }
-      : options.category === "platformer" && asset.role === "character"
-        ? { role: "character" as const, certification: "certified-platformer-character" as const, label: "platformer-character" as const }
-        : undefined;
+    // GU47 WP-9: category rules live in commands/assets/certifyCategories.ts (racing and platformer unchanged).
+    const rule = CERTIFY_CATEGORY_RULES[options.category];
+    const visualCertification = rule.subject && asset.role === rule.subject.role ? rule.subject : undefined;
     if (visualCertification) {
       const blockers = retainedGameSubjectCertificationBlockers(projectDir, manifest, asset, visualCertification.role, visualCertification.label);
       const probe = asset.renderedProbe;
@@ -725,15 +724,15 @@ export async function certifyGameGeometry(options: CertifyGameGeometryOptions): 
       };
     }
 
-    const probe = probeShowcaseGameGeometry(assetId, options.category, { projectDir });
+    const probe = probeShowcaseGameGeometry(assetId, rule.surface.probe, { projectDir });
     const gameGeometry = probe.extraction.ok
       ? {
-        certification: options.category === "racing" ? "certified-racing-track" as const : "certified-platformer-world" as const,
+        certification: rule.surface.certification,
         evidence: {
           manifestHash: asset.hash,
           blockers: []
         },
-        ...(options.category === "racing"
+        ...(rule.surface.probe === "racing"
           ? { racingTopology: probe.extraction.value as unknown as Readonly<Record<string, unknown>> }
           : { playableSurfaceMap: probe.extraction.value as unknown as Readonly<Record<string, unknown>> })
       }
@@ -788,7 +787,7 @@ function retainedGameSubjectCertificationBlockers(
   manifest: AuraCliAssetManifest,
   asset: AuraCliAssetEntry,
   role: "vehicle" | "character",
-  label: "racing-vehicle" | "platformer-character"
+  label: string
 ): readonly string[] {
   const blockers: string[] = [];
   if (asset.role !== role) {
@@ -864,7 +863,7 @@ function retainedGameSubjectCertificationBlockers(
 function roleAdmissionCertificationBlockers(
   asset: AuraCliAssetEntry,
   role: "vehicle" | "character",
-  label: "racing-vehicle" | "platformer-character"
+  label: string
 ): readonly string[] {
   const bounds = asset.bounds;
   if (!bounds || bounds.length < 3) return [];

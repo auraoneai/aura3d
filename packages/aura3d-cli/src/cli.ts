@@ -36,6 +36,7 @@ import { LADDER_ROLES, printLadderReport, runResolveLadder, type LadderRole } fr
 import { cliCommandFor, cliCommandNames } from "./contracts/commands.js";
 import "./commands/registry.js";
 import { importMeshyIsolated, importMeshyIsolatedUsage, isAuraMonorepoRoot } from "./commands/assets/importMeshy.js";
+import { CERTIFY_CATEGORY_USAGE, isCertifyCategory } from "./commands/assets/certifyCategories.js";
 import { ALL_SKIN_CODES, checkAssetSkin, checkProjectSkins, formatProjectSkinReport, parseMaterialMap, readSkinAllowlist, resolveAssetFile, runRepairSkin, SKIN_HELP, type SkinCliOptions } from "./skin/command.js";
 import type { SkinCode } from "./skin/analysis.js";
 
@@ -182,8 +183,8 @@ async function main(): Promise<void> {
       const assetId = readOption("--asset");
       const assetIds = readOption("--assets")?.split(",").map((id) => id.trim()).filter(Boolean);
       const category = readOption("--category");
-      if (category !== "racing" && category !== "platformer") {
-        throw new Error("Usage: aura3d assets certify-game-geometry (--asset <id> | --assets <csv>) --category racing|platformer");
+      if (!isCertifyCategory(category)) {
+        throw new Error(`Usage: aura3d assets certify-game-geometry (--asset <id> | --assets <csv>) --category ${CERTIFY_CATEGORY_USAGE}`);
       }
       if (Boolean(assetId) === Boolean(assetIds)) {
         throw new Error("Pass exactly one of --asset <id> or read-only --assets <csv>.");
