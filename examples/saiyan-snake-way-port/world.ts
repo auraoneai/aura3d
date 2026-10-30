@@ -19,6 +19,7 @@ import { STAGE_LOOK, lookAt, lookDistance, lookParams, type LookParams, type Res
 import { createLookDriver, type LookAppLike, type LookNodeHandle } from "./art/lookRuntime";
 import { SERPENT_RUNNER_TRAIL, registerSerpentVfx } from "./art/vfx";
 import { createVfxEventTracker } from "./art/vfxEvents";
+import { createCinePostDriver, type CinePostState } from "./art/cinePost";
 
 type Scene = ReturnType<typeof scene>;
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
@@ -178,6 +179,8 @@ export interface WorldRuntime {
   readonly nodeCount: number;
   readonly entityNodes: number;
   readonly look: WorldLookState;
+  /** GU47 SSR-07: motion blur, aberration and DOF state (QA hook; null under `?look=original`). */
+  readonly cinePost: CinePostState | null;
   /** GU47 SSR-12: runtime effect bursts fired so far (QA hook). */
   readonly vfxFired: number;
 }
@@ -367,6 +370,11 @@ export function buildWorld(options: WorldOptions = {}): World {
       .add(effects.colorGrade({ name: "grade", temperature: first.grade.temperature, tint: first.grade.tint, saturation: first.grade.saturation, contrast: first.grade.contrast }))
       .add(effects.vignette({ name: "vignette", intensity: 0.22 }))
       .add(effects.volumetricFog({ name: "god rays", density: 0.02, intensity: 0.35, color: first.sun.color, godRayDensity: 0.35 }))
+      // GU47 SSR-07: motion blur above 60 m/s (High only), aberration pulses, outro DOF; art/cinePost.ts disables them
+      // on the first frame and enables each only when its moment comes.
+      .add(effects.motionBlur({ name: "motion blur", intensity: 0.25, shutter: 0.5, maxBlur: 12 }))
+      .add(effects.chromaticAberration({ name: "aberration", intensity: 0.003 }))
+      .add(effects.depthOfField({ name: "outro focus", focusDistance: 9, fStop: 2.8, maxBlur: 6 }))
       .add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
   }
 
@@ -398,6 +406,8 @@ export function buildWorld(options: WorldOptions = {}): World {
       /* GU47 SSR-01: the colour-script driver (script mode only; `?look=original` writes nothing) */
       const lookDriver = script ? createLookDriver(app as unknown as LookAppLike, (id) => node(id) as unknown as LookNodeHandle) : null;
       let lookShown: ResolvedLook | null = null;
+      /* GU47 SSR-07: speed and moment post (script mode only) */
+      const cinePost = script ? createCinePostDriver(app as unknown as LookAppLike) : null;
       /* GU47 SSR-12: runtime effect events and the runner trail (script mode only) */
       const vfxEvents = script ? createVfxEventTracker() : null;
       const fx = script ? app.effects : undefined;
@@ -709,6 +719,7 @@ export function buildWorld(options: WorldOptions = {}): World {
           lookShown = lookAt(lookDistance(S.s, S.leg), lookConfig);
           lookDriver.apply(lookShown, { forward: rig.f, time, eye, reducedMotion });
         }
+        cinePost?.step({ S, dt, reducedMotion, reducedFlash });
       };
 
       return {
@@ -735,6 +746,7 @@ export function buildWorld(options: WorldOptions = {}): World {
         get nodeCount() { return handles.size; },
         get entityNodes() { return alive; },
         get vfxFired() { return vfxFired; },
+        get cinePost() { return cinePost?.state ?? null; },
         get look(): WorldLookState {
           return { mode: lookConfig.mode, id: lookShown?.id ?? "original", stageIndex: lookShown?.stageIndex ?? 0, godRays: lookDriver?.godRaysOn ?? false, writes: lookDriver?.writes ?? 0 };
         }
