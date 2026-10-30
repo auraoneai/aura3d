@@ -118,7 +118,8 @@ html, body {
 }
 
 .dd-chip .k { font-size: 10px; font-weight: 500; letter-spacing: 0.14em; color: var(--dd-silk); }
-.dd-chip .v { font-size: clamp(15px, 1.15vw, 17px); font-weight: 800; font-variant-numeric: tabular-nums; color: var(--dd-ink); line-height: 1.05; }
+/* DD47-H1: DIN Pro Medium numerals (public/dd-fonts), tabular so the score does not jitter; Graphik is the fallback. */
+.dd-chip .v { font-family: "DIN Pro", "Graphik Web", sans-serif; font-size: clamp(15px, 1.15vw, 17px); font-weight: 500; font-variant-numeric: tabular-nums; color: var(--dd-ink); line-height: 1.05; }
 .dd-score-chip { border-left-color: var(--dd-cyan); padding-right: 14px; }
 .dd-score-chip .v { font-size: clamp(24px, 2vw, 30px); color: #ffffff; letter-spacing: 0.035em; text-shadow: 0 0 18px rgba(69, 232, 255, 0.3); }
 .dd-hi-chip .v { color: var(--dd-gold); }
