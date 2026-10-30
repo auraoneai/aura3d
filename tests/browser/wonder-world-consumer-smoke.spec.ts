@@ -7,18 +7,18 @@
  *   npx -y @aura3d/cli@4.6.2 check-deploy --dist dist
  *   npx -y @aura3d/cli@4.6.2 check-deploy --dist dist --browser --route / --browser-timeout 180000 --browser-settle 300000
  * Every step must exit 0 (the run stops at the first that does not), with one recorded exception: the --browser pass of
- * the mini-game scaffold may fail on 404s for the template's own demo media (seen on 4.5.0: its game-sfx-core pack and
- * audio-codec probes under /packs/ and /probes/, and the external Textures/colormap.png one Kenney GLB names), which the
- * scaffold does not ship. That is an upstream template defect (07 B32), not the SDK: those failures are listed in the record
- * and any other failure still fails the test. The same pass reports the template's hero GLB request as aborted
- * (net::ERR_ABORTED) on software WebGL2; a direct visit of the built site (a static server here, the test's own page)
- * then tells a lost hero from a cancelled duplicate request: the abort counts as upstream only when that visit sees the
- * hero GLB finish downloading and the template report the hero's animation clips. `npm ls @aura3d/engine @aura3d/cli --json` is
- * recorded, and the engine must resolve to 4.6.2; npm ls itself exits 1 here because the scaffold does not list the
- * CLI (consumers run it with npx), so its exit status is recorded, not gated. The browser pass loads the built site
- * from a static server in the scaffold's own Playwright Chromium (software WebGL2 on the runner) and fails on HTTP
- * errors, failed requests, uncaught errors and console errors. npm runs with the runner's pnpm and Playwright
- * variables removed, so it behaves as in a fresh shell.
+ * the mini-game scaffold may fail on 404s for the template's own demo media (seen on 4.5.0 and 4.6.2: its
+ * game-sfx-core pack and audio-codec probes under /packs/ and /probes/, and the external Textures/colormap.png one
+ * Kenney GLB names), which the scaffold does not ship. That is an upstream template defect (07 B32), not the SDK: those
+ * failures are listed in the record and any other failure still fails the test. The same pass reports the template's
+ * hero GLB request as aborted (net::ERR_ABORTED) on software WebGL2; a direct visit of the built site (a static server
+ * here, the test's own page) then tells a lost hero from a cancelled duplicate request: the abort counts as upstream
+ * only when that visit sees the hero GLB finish downloading and the template report the hero's animation clips.
+ * `npm ls @aura3d/engine @aura3d/cli --json` is recorded, and the engine must resolve to 4.6.2; npm ls can exit 1 here
+ * (it did on 4.5.0) because the scaffold does not list the CLI (consumers run it with npx), so its exit status is
+ * recorded, not gated. The browser pass loads the built site from a static server in the scaffold's own Playwright
+ * Chromium (software WebGL2 on the runner) and fails on HTTP errors, failed requests, uncaught errors and console
+ * errors. npm runs with the runner's pnpm and Playwright variables removed, so it behaves as in a fresh shell.
  * Remote runner only (needs the npm registry): apps/veer-wonder-world/tools/remote-run.sh consumer-smoke
  * (estimated 8-12 min)
  *
@@ -99,7 +99,7 @@ function fileList(dir: string): { readonly path: string; readonly bytes: number 
 }
 
 /**
- * --browser failures that come from the mini-game template's own demo media (seen on 4.5.0), not from the SDK (07 B32): the
+ * --browser failures that come from the mini-game template's own demo media (seen on 4.5.0 and 4.6.2), not from the SDK (07 B32): the
  * template plays its game-sfx-core pack and the audio-codec probes from /packs/ and /probes/, and one Kenney GLB names
  * an external Textures/colormap.png; the scaffold ships none of them.
  */
