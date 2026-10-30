@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { HDRI_ID, HDRI_SUN_AZIMUTH_DEG, HDRI_URL, ORIGINAL, PHASES, environmentRotationFor, hexToRgb, lightDir, mixHex, parseAt, parseLook, phaseAt, phaseIdAt, todSeconds } from "../../../examples/drift-and-deliver-port/phases";
+import { HDRI_ID, HDRI_SUN_AZIMUTH_DEG, HDRI_URL, ORIGINAL, PHASES, environmentRotationFor, godRayStrength, hexToRgb, lightDir, mixHex, parseAt, parseLook, phaseAt, phaseIdAt, todSeconds } from "../../../examples/drift-and-deliver-port/phases";
 
 const hue = (hex: string): { h: number; s: number } => {
   const [r, g, b] = hexToRgb(hex);
@@ -81,5 +81,13 @@ describe("gridlock courier look table (GU47 WP-28)", () => {
     expect(ORIGINAL.grade.saturation).toBe(1.38);
     expect(mixHex("#000000", "#ffffff", 0.5)).toBe("#bcbcbc");
     expect(mixHex("#123456", "#abcdef", 0)).toBe("#123456");
+  });
+});
+
+describe("gridlock courier sunset god rays (GU47 WP-28 GC-S5)", () => {
+  it("shows only at sunset", () => {
+    expect(godRayStrength(phaseAt(10).sun.elevationDeg)).toBe(0);
+    expect(godRayStrength(phaseAt(120).sun.elevationDeg)).toBeGreaterThanOrEqual(0.8);
+    expect(godRayStrength(phaseAt(170).sun.elevationDeg)).toBe(0);
   });
 });

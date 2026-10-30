@@ -12,7 +12,7 @@ import { TRAFFIC_MODEL, carScale, trafficInstances } from "./models";
 import { planProps, propNodes, type PropPlan } from "./props";
 import { GROUND_HALF, SIDEWALK_MID, WALLS, blockDecals, buildCity, buildFurniture, buildProps, facadeKey, farCity, roadPlane, type Furniture } from "./city";
 import { farCitySpec, shiftFarSpec, shiftSkySpec, skySpec } from "./sky";
-import { HDRI_URL, environmentRotationFor, lightDir, type LookMode, type PhaseRow } from "./phases";
+import { HDRI_URL, environmentRotationFor, godRayStrength, lightDir, type LookMode, type PhaseRow } from "./phases";
 import { KEY_DISTANCE, lookFrame } from "./daylight";
 import { waterSpec } from "./water";
 import { paintWetRoughness, wetRoad } from "./wet";
@@ -287,6 +287,15 @@ export function shiftShadow(quality: "high" | "low") {
     : { cascades: 1 as const, maxDistance: 110, mapSize: 1024 as const, filter: "pcf" as const };
 }
 
+/** GC-S5: the sunset shafts (thin warm inscatter, scaled by `godRayStrength`). */
+export const GOD_RAYS = { density: 0.06, color: "#ffb070", intensity: 0.6, godRayDensity: 0.35, distance: 1500 } as const;
+
+/** Where the volumetric pass puts its light: far out along the sun direction from `at`. */
+export function godRayLightPosition(sun: { azimuthDeg: number; elevationDeg: number }, at: { x: number; z: number }): [number, number, number] {
+  const d = lightDir(sun);
+  return [at.x + d[0] * GOD_RAYS.distance, Math.max(20, d[1] * GOD_RAYS.distance), at.z + d[2] * GOD_RAYS.distance];
+}
+
 /** GC-V3: festoon bulb material at a festoon strength 0..1 (quantised). */
 export const festoonMaterial = (strength: number) => material.emissive({ color: FESTOON.color, emissive: FESTOON.color, emissiveIntensity: festoonIntensity(strength) });
 
@@ -351,6 +360,8 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
         b.add(effects.screenSpaceReflections({ name: "wet-ssr", maxDistance: 60, roughness: 0.35, thickness: 0.5 }));
         b.add(effects.filmGrain({ name: "grain", intensity: row.grain }));
         b.add(effects.motionBlur({ name: "motion-blur", intensity: 0.3 }));
+        // GC-S5 sunset god rays down the canyons (High only; intensity 0 away from sunset, driven by shiftRuntime)
+        b.add(effects.volumetricFog({ name: "god-rays", enabled: godRayStrength(row.sun.elevationDeg) > 0, density: GOD_RAYS.density, color: GOD_RAYS.color, intensity: GOD_RAYS.intensity * godRayStrength(row.sun.elevationDeg), godRayDensity: GOD_RAYS.godRayDensity, lightPosition: godRayLightPosition(row.sun, opts.start) }));
       }
       if (opts.aa !== false) b.add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
     }

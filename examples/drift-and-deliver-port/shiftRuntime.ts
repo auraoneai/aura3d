@@ -12,9 +12,9 @@
  */
 import { geometry, material, type AuraApp } from "@aura3d/engine";
 import { createDaylight, lookFrame, type Daylight } from "./daylight";
-import { facadeMaterial, festoonMaterial, type LookRig } from "./look";
+import { GOD_RAYS, facadeMaterial, festoonMaterial, godRayLightPosition, type LookRig } from "./look";
 import { festoonIntensity } from "./festoons";
-import { phaseAt, phaseIdAt, todSeconds, type PhaseId, type PhaseRow } from "./phases";
+import { godRayStrength, phaseAt, phaseIdAt, todSeconds, type PhaseId, type PhaseRow } from "./phases";
 import { COURIER_TEAL, FX_KINDS, SMOKE_RATE, DRIZZLE, SPEED_LINES, SkidMarks, deliveryKind, drizzleAt, drizzleSpawn, fxScale, registerCourierFx, skidSpec, speedLineSpawn } from "./fx";
 import { HEADLIGHT, LAMP_HEAD_Y, REPICK_SECONDS, SODIUM_INTENSITY, SODIUM_POOL, nearestLamps } from "./lamps";
 
@@ -89,6 +89,7 @@ export function createShiftRuntime(app: AuraApp, look: LookRig, lamps: readonly 
   let drizzleSeed = 0;
   let beaconShown = -1;
   let festoonShown = -1;
+  let raysShown = -1;
   let writes = 0;
   let wasDrifting = false;
   const burst = (kind: string, p: [number, number, number], count?: number) => {
@@ -116,6 +117,12 @@ export function createShiftRuntime(app: AuraApp, look: LookRig, lamps: readonly 
       if (fe !== festoonShown) {
         festoonShown = fe;
         node("festoons")?.setMaterial(festoonMaterial(row.festoon));
+      }
+      // GC-S5 sunset god rays: intensity and light position only when the quantised strength steps
+      const rays = godRayStrength(row.sun.elevationDeg);
+      if (rays !== raysShown) {
+        raysShown = rays;
+        app.post?.setEffect("volumetricFog", { enabled: rays > 0, intensity: GOD_RAYS.intensity * rays, lightPosition: godRayLightPosition(row.sun, car) });
       }
       // GC-L4 sodium pool
       repick -= dt;

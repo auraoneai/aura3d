@@ -273,6 +273,15 @@ export function mixPhase(a: PhaseRow, b: PhaseRow, t: number): PhaseRow {
   };
 }
 
+/**
+ * GC-S5 sunset god rays: strength 0..1 from the sun's elevation, peaking at 5 deg (sunset on the harbour line) and 0
+ * from 11 deg up (golden) and below -1 deg (blue hour), so the shafts only show at sunset. Quantised to 0.05.
+ */
+export function godRayStrength(sunElevationDeg: number): number {
+  const v = Math.max(0, 1 - Math.abs(sunElevationDeg - 5) / 6);
+  return Math.round(v * 20) / 20;
+}
+
 const smooth = (t: number): number => t * t * (3 - 2 * t);
 /** Seconds before sunset over which the practicals switch on. */
 export const LIGHTS_ON_LEAD = 40;
