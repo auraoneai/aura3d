@@ -30,7 +30,8 @@ import { framingFor } from "./game/framing.js";
 import { createInputLatch } from "./game/simInput.js";
 import { deriveWorldMotion } from "./game/motion.js";
 import { worldSpec } from "./game/worlds.js";
-import { lookModeFromSearch, worldFromSearch } from "./game/looks.js";
+import { MINIATURE_LIFT, lookModeFromSearch, miniatureFramingFor, worldFromSearch } from "./game/looks.js";
+import { createDioramaPresentation, type QaCrop } from "./game/presentation.js";
 import type { ModeId, WorldId } from "./game/types.js";
 import { installBlackFrameGuard } from "@aura3d/debug";
 
@@ -130,6 +131,8 @@ function makeRun(worldId: WorldId, mode: ModeId): Run {
 declare global {
   interface Window {
     __AURA3D_SHOWCASE_PIPS_BIG_LEAP__?: Record<string, unknown>;
+    /** E-I crop contract: named rects (0..1, top-left origin) read at every steady-state shot. */
+    __AURA_QA__?: { crops: () => readonly QaCrop[] };
   }
 }
 
@@ -216,6 +219,15 @@ const pipsGame = createGame({
 const app = pipsGame.app;
 pipsGame.start();
 
+// GU47 WP-16 runtime presentation (post preset, fog, DOF focus, flicker, VFX, trails,
+// squash/stretch, camera sequences, QA crops). `?look=original` makes every call a no-op.
+const presentation = createDioramaPresentation(app, {
+  mode: LOOK_MODE,
+  reducedMotion: REDUCED_MOTION,
+  heroNode: nodeName.hero,
+  gateRingNode: nodeName.gateRing
+});
+
 const input = pipsGame.input;
 const hud = createHud();
 const feel = gameFeel.create({ app, time: app.time });
@@ -295,6 +307,7 @@ function loadWorld(id: WorldId, mode?: ModeId): void {
         swapping = false;
         // The new scene's nodes exist only now: re-apply this run's state.
         if (run === target) applyRunNodeState();
+        presentation.worldMounted(built);
       })
       .catch((error: unknown) => {
         // C10: the old world's visuals are still mounted, so put the old run
@@ -409,18 +422,21 @@ const cue = (name: CueName) => void pipsGame.sound?.cue(name);
 const juice = (name: "jump" | "double-jump" | "land" | "collect" | "checkpoint" | "hurt" | "gate" | "boss-hit") => pipsGame.juice.fire(name);
 
 function handleEvent(e: import("./game/player.js").PlayerEvent): void {
-  const { spec } = ensureWorld(run.world);
+  const { spec, built } = ensureWorld(run.world);
+  // GU47 WP-16 PBL-V1: presentation-only feedback (VFX, squash/stretch, camera); never feeds the sim.
+  const fx = (): void => presentation.event(e, built, [run.player.x, run.player.y, run.player.z]);
   switch (e.kind) {
-    case "jump": cue("whoosh"); juice("jump"); break;
-    case "double-jump": cue("whoosh"); juice("double-jump"); break;
-    case "land": juice("land"); break;
+    case "jump": cue("whoosh"); juice("jump"); fx(); break;
+    case "double-jump": cue("whoosh"); juice("double-jump"); fx(); break;
+    case "land": juice("land"); fx(); break;
     case "glide-start": cue("whoosh"); break;
     case "dive": cue("whoosh"); break;
     case "pound": break;
-    case "pound-land": cue("thud"); juice("land"); break;
-    case "spring": cue("bounce"); juice("jump"); break;
+    case "pound-land": cue("thud"); juice("land"); fx(); break;
+    case "spring": cue("bounce"); juice("jump"); fx(); break;
     case "swim": cue("bounce"); break;
     case "hurt": case "boss-contact": {
+      fx();
       hud.setHearts(run.player.hearts);
       juice("hurt");
       cue("bumper");
@@ -444,6 +460,7 @@ function handleEvent(e: import("./game/player.js").PlayerEvent): void {
       break;
     }
     case "checkpoint": {
+      fx();
       cue("checkpoint");
       juice("checkpoint");
       node(nodeName.checkpointFlag(e.id ?? ""))?.setMaterial(
@@ -456,6 +473,7 @@ function handleEvent(e: import("./game/player.js").PlayerEvent): void {
       const id = e.id ?? "";
       if (run.seeds.has(id)) return;
       run.seeds.add(id);
+      fx();
       node(nodeName.seed(id))?.setVisible(false);
       save = saves.commit(recordSeeds(save, run.world, [id]));
       run.save = save;
@@ -469,8 +487,10 @@ function handleEvent(e: import("./game/player.js").PlayerEvent): void {
         const gate = gateState({ seeds: run.seeds.size, gateSeeds: spec.gateSeeds, boss: Boolean(spec.boss), bossHp: run.bossHp });
         run.gateUnlocked = gate.unlocked;
         node(nodeName.gateLock)?.setVisible(gate.lockVisible);
-        if (gate.unlocked) hud.toast("The Sun-Gate is open!", 2.4);
-        else if (gate.bossBarring) hud.toast("The gate hums — but Brambleback bars the way!", 2.6);
+        if (gate.unlocked) {
+          hud.toast("The Sun-Gate is open!", 2.4);
+          presentation.gateUnlocked(built);
+        } else if (gate.bossBarring) hud.toast("The gate hums — but Brambleback bars the way!", 2.6);
         hud.setObjective(objectiveText());
       }
       break;
@@ -480,6 +500,7 @@ function handleEvent(e: import("./game/player.js").PlayerEvent): void {
       if (run.acorns.has(id)) return;
       run.acorns.add(id);
       run.acornCount += 1;
+      fx();
       node(nodeName.acorn(id))?.setVisible(false);
       hud.setAcorns(run.acornCount);
       cue("coin");
@@ -514,6 +535,7 @@ function handleEvent(e: import("./game/player.js").PlayerEvent): void {
         const gate = gateState({ seeds: run.seeds.size, gateSeeds: spec.gateSeeds, boss: true, bossHp: 0 });
         run.gateUnlocked = gate.unlocked;
         node(nodeName.gateLock)?.setVisible(gate.lockVisible);
+        if (gate.unlocked) presentation.gateUnlocked(built);
         const short = spec.gateSeeds - run.seeds.size;
         hud.banner("BRAMBLEBACK DOWN!", gate.unlocked ? "The Sun-Gate is unlatched." : `Find ${short} more sun-seed${short === 1 ? "" : "s"} to open the Sun-Gate.`, 3);
         hud.setObjective(objectiveText());
@@ -539,11 +561,12 @@ function handleEvent(e: import("./game/player.js").PlayerEvent): void {
 }
 
 function completeWorld(): void {
-  const { spec } = ensureWorld(run.world);
+  const { spec, built } = ensureWorld(run.world);
   run.complete = true;
   run.player.state = "celebrate";
   cue("win");
   juice("gate");
+  presentation.gateOpened(built);
   const completed = { ...save.completed, [run.world]: true as const };
   let next: PipSave = { ...save, completed };
   if (run.world === "academy" && !next.academyDone) {
@@ -883,9 +906,10 @@ function driveAnimation(p: PlayerState, dt: number): void {
   const camFwdX = Math.sin(p.camYaw);
   const camFwdZ = Math.cos(p.camYaw);
   const built = ensureWorld(run.world).built;
-  // C18: portrait screens get a wider vertical FOV and a longer boom.
-  const framing = framingFor(viewAspect());
-  const camY = p.y + 2.25;
+  // C18: portrait screens get a wider vertical FOV and a longer boom. GU47 PBL-C2: the
+  // diorama look frames Pip from 1.7 m with fov 46 (the original keeps 2.25 m / 52).
+  const framing = LOOK_MODE === "diorama" ? miniatureFramingFor(viewAspect()) : framingFor(viewAspect());
+  const camY = p.y + (LOOK_MODE === "diorama" ? MINIATURE_LIFT : 2.25);
   const desiredX = p.x - camFwdX * framing.boom;
   const desiredZ = p.z - camFwdZ * framing.boom;
   const targetClearance = cameraClearance(p, built, desiredX, desiredZ, camY);
@@ -899,6 +923,8 @@ function driveAnimation(p: PlayerState, dt: number): void {
     cameraRig.clearance += (targetClearance - cameraRig.clearance) * (1 - Math.exp(-rate * dt));
   }
   const boom = framing.boom * Math.max(CAM_MIN_CLEARANCE, cameraRig.clearance);
+  // PBL-C1: a playing camera sequence (world fly-over, gate cut) owns the lens.
+  if (presentation.cameraBusy()) return;
   app.camera?.setPose({
     position: [p.x - camFwdX * boom, camY, p.z - camFwdZ * boom],
     target: [p.x + camFwdX * 3.2, p.y + 0.55, p.z + camFwdZ * 3.2],
@@ -1101,6 +1127,8 @@ app.onFrame(() => {
   inputLatch.latch({ jumpPressed, divePressed, poundPressed });
   if (Math.abs(moveX) > 0.15 || Math.abs(moveZ) > 0.15 || jumpPressed || jumpHeld || divePressed || poundPressed || orbitRate !== 0) {
     userEngaged = true;
+    // PBL-C1: any play input ends a running camera sequence within the frame.
+    presentation.skipSequence();
     if (autopilot) {
       setAutopilot(false);
     }
@@ -1258,6 +1286,16 @@ function present(frameSeconds: number): void {
   }
   Object.assign(drawnPlayer, run.player, pipPresenter.present(simLoop));
   driveAnimation(drawnPlayer, frameSeconds);
+  presentation.frame({
+    dt: frameSeconds,
+    time: run.worldClock,
+    state: drawnPlayer.state,
+    grounded: drawnPlayer.grounded,
+    position: [drawnPlayer.x, drawnPlayer.y, drawnPlayer.z],
+    aspect: viewAspect(),
+    clearance: Math.max(CAM_MIN_CLEARANCE, cameraRig.clearance),
+    gateUnlocked: run.gateUnlocked
+  }, ensureWorld(run.world).built, node);
   feel.update(frameSeconds * 1000);
   hud.setTimer(run.levelTime, run.mode === "trial" ? spec.medals : undefined);
   publishEvidence();
@@ -1332,7 +1370,17 @@ function publishEvidence(force = false): void {
     },
     save: { demo: saves.demo, worldsDone: Object.keys(save.completed).length, academyDone: save.academyDone, doubleJump: save.doubleJump, studio: save.studio },
     hero: { assetId: "pipsPip", hash: assets.pip.hash, clips: Object.values(PIP_CLIPS) },
-    bossAsset: run.boss ? { assetId: "pipsBrambleback", hash: assets.boss.hash, clips: Object.values(BOSS_CLIPS) } : null
+    bossAsset: run.boss ? { assetId: "pipsBrambleback", hash: assets.boss.hash, clips: Object.values(BOSS_CLIPS) } : null,
+    // GU47 WP-16: look mode, per-world look facts and the runtime presentation counters.
+    diorama: {
+      look: LOOK_MODE,
+      hour: built.presentation.look.hour,
+      postPreset: LOOK_MODE === "diorama" ? built.presentation.look.post.preset : null,
+      baseTop: built.presentation.baseTop,
+      floraCount: built.presentation.floraCount,
+      instancedPlatforms: built.presentation.instancedPlatforms,
+      ...presentation.evidence()
+    }
   };
 }
 
@@ -1361,6 +1409,9 @@ void app.ready().then(async () => {
   nodeCache.clear();
   applyRunNodeState();
   appReady = true;
+  presentation.worldMounted(ensureWorld(run.world).built);
+  // E-I crop contract, read at every steady-state shot (projected each read).
+  window.__AURA_QA__ = { crops: () => presentation.crops(ensureWorld(run.world).built, [drawnPlayer.x, drawnPlayer.y, drawnPlayer.z]) };
   publishEvidence(true);
   document.body.dataset.aura3dReady = "true";
   try {
