@@ -159,7 +159,8 @@ describe("PRD-03 Phase 4 — prd03.velocity chunk + feature", () => {
     });
     const mrtOn = resolveQrFlags({ options: { A3D_QR_POST: true, A3D_QR_POST_VELOCITY_MRT: true } });
     expect(velocityFeature.select(selectInput(mrtOn))).toBe("velocity");
-    expect(velocityFeature.select(selectInput(POST_ON))).toBeUndefined(); // opt-in until Q-01-2
+    // GU47 WP-7: A3D_QR_POST_VELOCITY_MRT is default-on, so the off case is explicit.
+    expect(velocityFeature.select(selectInput(resolveQrFlags({ options: { A3D_QR_POST: true, A3D_QR_POST_VELOCITY_MRT: false } })))).toBeUndefined();
     expect(velocityFeature.select({ ...selectInput(mrtOn), pass: "depth" as never })).toBeUndefined();
     expect(velocityFeature.defines("velocity")).toEqual({ [VELOCITY_MRT.define]: true });
   });
