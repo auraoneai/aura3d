@@ -14,7 +14,9 @@ import {
   type AuraRuntimeNodeHandle,
   type AuraSceneSnapshot
 } from "@aura3d/engine";
-import { createFixedStepPresenter, createGame, createRecordBlend, sfxUrl } from "@aura3d/engine/game";
+import { createFixedStepPresenter, createGame, createRecordBlend, HUD_THEMES, hudThemeFontFaces, registerGameFonts, sfxUrl } from "@aura3d/engine/game";
+import gtWalsheimUrl from "./fonts/gt-walsheim-400.woff2?url";
+import canelaUrl from "./fonts/canela-400.woff2?url";
 import { createLocomotionKit } from "@aura3d/animation";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
@@ -44,6 +46,18 @@ installBlackFrameGuard();
 const LOOK_MODE = lookModeFromSearch(window.location.search);
 const REDUCED_MOTION = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const BOOT_WORLD: WorldId = worldFromSearch(window.location.search) ?? "w1";
+
+// PBL-H1: the diorama HUD is the E-J `storybook` theme: licensed GT Walsheim text and
+// Canela display cuts (copied from packages/game/src/fonts, provenance in its NOTICE.txt)
+// on parchment chips (styles.css, scoped by data-pbl-look). `?look=original` keeps today's HUD.
+document.documentElement.dataset.pblLook = LOOK_MODE;
+if (LOOK_MODE === "diorama") {
+  const fontUrls: Readonly<Record<string, string>> = { "gt-walsheim-400.woff2": gtWalsheimUrl, "canela-400.woff2": canelaUrl };
+  // The DOM's FontFaceSet / FontFace are the registry at runtime; their lib.dom types do not
+  // match E-J's narrow FontRegistry shape (handoff to E-J), hence the one cast.
+  const registry = { fonts: document.fonts, FontFace: window.FontFace } as unknown as Parameters<typeof registerGameFonts>[1];
+  void registerGameFonts("", registry, hudThemeFontFaces("storybook").map((face) => ({ ...face, file: fontUrls[face.file] ?? face.file })));
+}
 
 interface WorldRuntime {
   readonly spec: ReturnType<typeof worldSpec>;
@@ -159,7 +173,9 @@ const pipsGame = createGame({
     },
     bufferMs: 140
   },
-  hud: { theme: "sci-fi-telemetry", widgets: [] },
+  // The engine's CreateGameOptions theme union predates E-J's storybook preset (handoff), so
+  // the diorama passes the storybook vars record, which HudKit applies the same way.
+  hud: { theme: LOOK_MODE === "diorama" ? HUD_THEMES.storybook : "sci-fi-telemetry", widgets: [] },
   touch: {
     preset: "dpad-2btn",
     // Control-ids: dpad buttons + the left stick's four directions (platform
