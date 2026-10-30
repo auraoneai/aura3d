@@ -581,43 +581,42 @@ export function scatterInstanceTransform(p: ScatterInstance): AuraTransformSpec 
 const GRASS_HEIGHTFIELD_RESOLUTION = 65;
 
 /**
- * GU47 E-G: bake a heightfield sampler over `bounds` into a hidden terrain
- * record (normalized heights, `heightScale` = range, origin y = minimum) and
- * return its handle. The record exists only for the GPU blades to sample.
+ * GU47 E-G: bake a heightfield sampler over `bounds` into a sampling-only
+ * terrain record and return its handle. Heights are stored raw in metres with
+ * `heightScale` 1: the terrain handle and the grass shader both read
+ * `grid * heightScale` and ignore `origin[1]`, so a normalized grid offset by
+ * its minimum would float or sink every blade by that minimum.
  */
 function bakeGrassHeightfield(id: string, heightAt: AuraHeightfieldSampler, bounds: AuraGrassBounds, resolution: number): AuraTerrainHandle {
   const [x0, z0] = bounds.min;
   const [x1, z1] = bounds.max;
   if (!(x1 > x0) || !(z1 > z0)) throw new Error("world.grass: bounds.max must exceed bounds.min on x and z");
   const n = Math.max(2, Math.min(513, Math.round(resolution)));
-  const raw = new Float32Array(n * n);
-  let min = Infinity;
-  let max = -Infinity;
+  const heights = new Float32Array(n * n);
   for (let row = 0; row < n; row += 1) {
     const z = z0 + ((z1 - z0) * row) / (n - 1);
     for (let col = 0; col < n; col += 1) {
       const x = x0 + ((x1 - x0) * col) / (n - 1);
       const y = heightAt(x, z);
-      const v = Number.isFinite(y) ? y : 0;
-      raw[row * n + col] = v;
-      if (v < min) min = v;
-      if (v > max) max = v;
+      heights[row * n + col] = Number.isFinite(y) ? y : 0;
     }
   }
-  const range = max - min;
-  const heights = new Float32Array(n * n);
-  for (let i = 0; i < raw.length; i += 1) heights[i] = range > 0 ? (raw[i]! - min) / range : 0;
-  return worldTerrain({
+  const handle = worldTerrain({
     id: `${id}.heightfield`,
     name: `${id} heightfield`,
     height: { kind: "array", columns: n, rows: n, heights },
     size: [x1 - x0, z1 - z0],
-    heightScale: range > 0 ? range : 1,
-    origin: [x0, min, z0],
+    heightScale: 1,
+    origin: [x0, 0, z0],
     layers: [{ name: "grass-meadow", preset: "grass-meadow" }],
     collider: false,
     castShadow: false
   }).handle;
+  // The terrain pass draws every listed record whether or not its node is in
+  // the scene; mark this one sampling-only so only the blades use it.
+  const record = terrainRecordFor(handle.id);
+  if (record) record.samplingOnly = true;
+  return handle;
 }
 
 /**
