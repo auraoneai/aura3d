@@ -1,0 +1,993 @@
+{
+  "log": "ic12-before-v",
+  "shots": [
+    "ic12-volt/idle-1",
+    "ic12-volt/idle-2",
+    "ic12-volt/crouch-1",
+    "ic12-volt/crouch-2",
+    "ic12-volt/throw-1",
+    "ic12-volt/throw-2"
+  ],
+  "meta": [
+    {
+      "target": "ic12-volt",
+      "id": "idle-1",
+      "size": [
+        1280,
+        720
+      ],
+      "state": "idle",
+      "mean": 62.97,
+      "game": {
+        "frame": 177,
+        "mode": "lab",
+        "phase": "fight",
+        "lab": {
+          "stance": "stand",
+          "frameData": false
+        },
+        "p1": {
+          "id": "volt",
+          "clip": "idle",
+          "embeddedClip": "Block1",
+          "x": -2.2,
+          "grounded": true
+        },
+        "cpu": {
+          "id": "boulder",
+          "clip": "idle",
+          "embeddedClip": "Block1",
+          "x": 2.2,
+          "grounded": true
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "standIns": {
+          "p1": [
+            "idle→\"Block1\"",
+            "dash→\"Walk_Fight_Forward\"",
+            "crouch→\"Block1\"",
+            "throw→\"Triple_Combo_Attack\"",
+            "win→\"Regular_Jump\""
+          ],
+          "cpu": [
+            "idle→\"Block1\"",
+            "dash→\"Walk_Fight_Forward\"",
+            "crouch→\"Block1\"",
+            "throw→\"Triple_Combo_Attack\"",
+            "win→\"Regular_Jump\""
+          ]
+        }
+      },
+      "player": {
+        "bones": {
+          "Hips": [
+            0.0468,
+            0.9164,
+            0.0524
+          ],
+          "Spine02": [
+            0.0476,
+            1.0345,
+            0.0531
+          ],
+          "Head": [
+            -0.0429,
+            1.4274,
+            0.197
+          ],
+          "LeftHand": [
+            -0.077,
+            1.2541,
+            0.5903
+          ],
+          "RightHand": [
+            -0.3281,
+            1.2788,
+            0.4083
+          ],
+          "LeftFoot": [
+            0.223,
+            0.1422,
+            0.3265
+          ],
+          "RightFoot": [
+            -0.1324,
+            0.1335,
+            -0.2515
+          ]
+        },
+        "state": {
+          "activeClip": "Block1",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "Block1",
+              "layer": "",
+              "weight": 1,
+              "time": 1.912971775665246
+            }
+          ],
+          "timeScale": 1.15
+        }
+      },
+      "rival": {
+        "bones": {
+          "Hips": [
+            0.0447,
+            1.0163,
+            0.0107
+          ],
+          "Spine02": [
+            0.0454,
+            1.1561,
+            0.0115
+          ],
+          "Head": [
+            -0.0611,
+            1.6016,
+            0.2066
+          ],
+          "LeftHand": [
+            -0.0137,
+            1.4388,
+            0.6632
+          ],
+          "RightHand": [
+            -0.4496,
+            1.4661,
+            0.3873
+          ],
+          "LeftFoot": [
+            0.2471,
+            0.115,
+            0.3033
+          ],
+          "RightFoot": [
+            -0.1612,
+            0.1413,
+            -0.3307
+          ]
+        },
+        "state": {
+          "activeClip": "Block1",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "Block1",
+              "layer": "",
+              "weight": 1,
+              "time": 1.912971775665246
+            }
+          ],
+          "timeScale": 1.15
+        }
+      }
+    },
+    {
+      "target": "ic12-volt",
+      "id": "idle-2",
+      "size": [
+        1280,
+        720
+      ],
+      "state": "idle",
+      "mean": 62.92,
+      "game": {
+        "frame": 182,
+        "mode": "lab",
+        "phase": "fight",
+        "lab": {
+          "stance": "stand",
+          "frameData": false
+        },
+        "p1": {
+          "id": "volt",
+          "clip": "idle",
+          "embeddedClip": "Block1",
+          "x": -2.2,
+          "grounded": true
+        },
+        "cpu": {
+          "id": "boulder",
+          "clip": "idle",
+          "embeddedClip": "Block1",
+          "x": 2.2,
+          "grounded": true
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "standIns": {
+          "p1": [
+            "idle→\"Block1\"",
+            "dash→\"Walk_Fight_Forward\"",
+            "crouch→\"Block1\"",
+            "throw→\"Triple_Combo_Attack\"",
+            "win→\"Regular_Jump\""
+          ],
+          "cpu": [
+            "idle→\"Block1\"",
+            "dash→\"Walk_Fight_Forward\"",
+            "crouch→\"Block1\"",
+            "throw→\"Triple_Combo_Attack\"",
+            "win→\"Regular_Jump\""
+          ]
+        }
+      },
+      "player": {
+        "bones": {
+          "Hips": [
+            0.0426,
+            0.9235,
+            0.0517
+          ],
+          "Spine02": [
+            0.0424,
+            1.0416,
+            0.05
+          ],
+          "Head": [
+            -0.0491,
+            1.4395,
+            0.1789
+          ],
+          "LeftHand": [
+            -0.0517,
+            1.3187,
+            0.5847
+          ],
+          "RightHand": [
+            -0.3145,
+            1.3293,
+            0.3916
+          ],
+          "LeftFoot": [
+            0.2214,
+            0.1414,
+            0.3265
+          ],
+          "RightFoot": [
+            -0.1333,
+            0.1317,
+            -0.253
+          ]
+        },
+        "state": {
+          "activeClip": "Block1",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "Block1",
+              "layer": "",
+              "weight": 1,
+              "time": 2.008805108998579
+            }
+          ],
+          "timeScale": 1.15
+        }
+      },
+      "rival": {
+        "bones": {
+          "Hips": [
+            0.0404,
+            1.0236,
+            0.01
+          ],
+          "Spine02": [
+            0.0399,
+            1.1634,
+            0.0079
+          ],
+          "Head": [
+            -0.0675,
+            1.6159,
+            0.1862
+          ],
+          "LeftHand": [
+            0.0102,
+            1.5099,
+            0.6556
+          ],
+          "RightHand": [
+            -0.436,
+            1.5221,
+            0.3706
+          ],
+          "LeftFoot": [
+            0.245,
+            0.1133,
+            0.3046
+          ],
+          "RightFoot": [
+            -0.1616,
+            0.1387,
+            -0.3324
+          ]
+        },
+        "state": {
+          "activeClip": "Block1",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "Block1",
+              "layer": "",
+              "weight": 1,
+              "time": 2.008805108998579
+            }
+          ],
+          "timeScale": 1.15
+        }
+      }
+    },
+    {
+      "target": "ic12-volt",
+      "id": "crouch-1",
+      "size": [
+        1280,
+        720
+      ],
+      "state": "crouch",
+      "mean": 52.37,
+      "game": {
+        "frame": 202,
+        "mode": "lab",
+        "phase": "fight",
+        "lab": {
+          "stance": "crouch",
+          "frameData": false
+        },
+        "p1": {
+          "id": "volt",
+          "clip": "crouch",
+          "embeddedClip": "Block1",
+          "x": -2.2,
+          "grounded": true
+        },
+        "cpu": {
+          "id": "boulder",
+          "clip": "crouch",
+          "embeddedClip": "Block1",
+          "x": 2.2,
+          "grounded": true
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "standIns": {
+          "p1": [
+            "idle→\"Block1\"",
+            "dash→\"Walk_Fight_Forward\"",
+            "crouch→\"Block1\"",
+            "throw→\"Triple_Combo_Attack\"",
+            "win→\"Regular_Jump\""
+          ],
+          "cpu": [
+            "idle→\"Block1\"",
+            "dash→\"Walk_Fight_Forward\"",
+            "crouch→\"Block1\"",
+            "throw→\"Triple_Combo_Attack\"",
+            "win→\"Regular_Jump\""
+          ]
+        }
+      },
+      "player": {
+        "bones": {
+          "Hips": [
+            0.0215,
+            0.91,
+            0.0233
+          ],
+          "Spine02": [
+            0.0259,
+            1.0279,
+            0.0162
+          ],
+          "Head": [
+            -0.0615,
+            1.4363,
+            0.1107
+          ],
+          "LeftHand": [
+            -0.0579,
+            1.3698,
+            0.5119
+          ],
+          "RightHand": [
+            -0.3096,
+            1.378,
+            0.3167
+          ],
+          "LeftFoot": [
+            0.2208,
+            0.1415,
+            0.3262
+          ],
+          "RightFoot": [
+            -0.1277,
+            0.1367,
+            -0.2523
+          ]
+        },
+        "state": {
+          "activeClip": "Block1",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "Block1",
+              "layer": "",
+              "weight": 1,
+              "time": 2.383805108998577
+            }
+          ],
+          "timeScale": 1.1
+        }
+      },
+      "rival": {
+        "bones": {
+          "Hips": [
+            0.0184,
+            1.0097,
+            -0.0196
+          ],
+          "Spine02": [
+            0.0234,
+            1.1491,
+            -0.028
+          ],
+          "Head": [
+            -0.0789,
+            1.6165,
+            0.1113
+          ],
+          "LeftHand": [
+            0.003,
+            1.5741,
+            0.5751
+          ],
+          "RightHand": [
+            -0.4289,
+            1.5768,
+            0.2874
+          ],
+          "LeftFoot": [
+            0.2456,
+            0.1143,
+            0.3076
+          ],
+          "RightFoot": [
+            -0.1546,
+            0.1451,
+            -0.3288
+          ]
+        },
+        "state": {
+          "activeClip": "Block1",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "Block1",
+              "layer": "",
+              "weight": 1,
+              "time": 2.383805108998577
+            }
+          ],
+          "timeScale": 1.1
+        }
+      }
+    },
+    {
+      "target": "ic12-volt",
+      "id": "crouch-2",
+      "size": [
+        1280,
+        720
+      ],
+      "state": "crouch",
+      "mean": 52.4,
+      "game": {
+        "frame": 207,
+        "mode": "lab",
+        "phase": "fight",
+        "lab": {
+          "stance": "crouch",
+          "frameData": false
+        },
+        "p1": {
+          "id": "volt",
+          "clip": "crouch",
+          "embeddedClip": "Block1",
+          "x": -2.2,
+          "grounded": true
+        },
+        "cpu": {
+          "id": "boulder",
+          "clip": "crouch",
+          "embeddedClip": "Block1",
+          "x": 2.2,
+          "grounded": true
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "standIns": {
+          "p1": [
+            "idle→\"Block1\"",
+            "dash→\"Walk_Fight_Forward\"",
+            "crouch→\"Block1\"",
+            "throw→\"Triple_Combo_Attack\"",
+            "win→\"Regular_Jump\""
+          ],
+          "cpu": [
+            "idle→\"Block1\"",
+            "dash→\"Walk_Fight_Forward\"",
+            "crouch→\"Block1\"",
+            "throw→\"Triple_Combo_Attack\"",
+            "win→\"Regular_Jump\""
+          ]
+        }
+      },
+      "player": {
+        "bones": {
+          "Hips": [
+            0.0235,
+            0.9135,
+            0.0317
+          ],
+          "Spine02": [
+            0.0274,
+            1.0314,
+            0.0253
+          ],
+          "Head": [
+            -0.0563,
+            1.4404,
+            0.1206
+          ],
+          "LeftHand": [
+            -0.0611,
+            1.3414,
+            0.5332
+          ],
+          "RightHand": [
+            -0.3161,
+            1.365,
+            0.3345
+          ],
+          "LeftFoot": [
+            0.2188,
+            0.141,
+            0.324
+          ],
+          "RightFoot": [
+            -0.1283,
+            0.1355,
+            -0.2532
+          ]
+        },
+        "state": {
+          "activeClip": "Block1",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "Block1",
+              "layer": "",
+              "weight": 1,
+              "time": 2.475471775665243
+            }
+          ],
+          "timeScale": 1.1
+        }
+      },
+      "rival": {
+        "bones": {
+          "Hips": [
+            0.0205,
+            1.0133,
+            -0.0108
+          ],
+          "Spine02": [
+            0.0249,
+            1.1528,
+            -0.0185
+          ],
+          "Head": [
+            -0.0735,
+            1.6208,
+            0.1217
+          ],
+          "LeftHand": [
+            0.0005,
+            1.541,
+            0.5982
+          ],
+          "RightHand": [
+            -0.4351,
+            1.5641,
+            0.3052
+          ],
+          "LeftFoot": [
+            0.2431,
+            0.1134,
+            0.3039
+          ],
+          "RightFoot": [
+            -0.1553,
+            0.1436,
+            -0.3307
+          ]
+        },
+        "state": {
+          "activeClip": "Block1",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "Block1",
+              "layer": "",
+              "weight": 1,
+              "time": 2.475471775665243
+            }
+          ],
+          "timeScale": 1.1
+        }
+      }
+    },
+    {
+      "target": "ic12-volt",
+      "id": "throw-1",
+      "size": [
+        1280,
+        720
+      ],
+      "state": "throw",
+      "before": {
+        "frame": 227,
+        "p1": "idle",
+        "cpu": "idle",
+        "p1Id": "volt",
+        "cpuId": "boulder",
+        "mode": "lab"
+      },
+      "mean": 52.37,
+      "game": {
+        "frame": 257,
+        "mode": "lab",
+        "phase": "fight",
+        "lab": {
+          "stance": "stand",
+          "frameData": false
+        },
+        "p1": {
+          "id": "volt",
+          "clip": "throw",
+          "embeddedClip": "Triple_Combo_Attack",
+          "x": -2.2,
+          "grounded": true
+        },
+        "cpu": {
+          "id": "boulder",
+          "clip": "idle",
+          "embeddedClip": "Block1",
+          "x": 2.2,
+          "grounded": true
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 1,
+          "specials": 0
+        },
+        "standIns": {
+          "p1": [
+            "idle→\"Block1\"",
+            "dash→\"Walk_Fight_Forward\"",
+            "crouch→\"Block1\"",
+            "throw→\"Triple_Combo_Attack\"",
+            "win→\"Regular_Jump\""
+          ],
+          "cpu": [
+            "idle→\"Block1\"",
+            "dash→\"Walk_Fight_Forward\"",
+            "crouch→\"Block1\"",
+            "throw→\"Triple_Combo_Attack\"",
+            "win→\"Regular_Jump\""
+          ]
+        }
+      },
+      "player": {
+        "bones": {
+          "Hips": [
+            0.0282,
+            0.8121,
+            -0.0271
+          ],
+          "Spine02": [
+            0.0257,
+            0.9285,
+            -0.0072
+          ],
+          "Head": [
+            -0.1785,
+            1.291,
+            0.0864
+          ],
+          "LeftHand": [
+            -0.3783,
+            1.0204,
+            0.5559
+          ],
+          "RightHand": [
+            -0.0242,
+            0.9092,
+            -0.5643
+          ],
+          "LeftFoot": [
+            0.2182,
+            0.1929,
+            0.3111
+          ],
+          "RightFoot": [
+            -0.1184,
+            0.1995,
+            -0.4245
+          ]
+        },
+        "state": {
+          "activeClip": "Triple_Combo_Attack",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "Triple_Combo_Attack",
+              "layer": "",
+              "weight": 1,
+              "time": 0.9999999999999963
+            }
+          ],
+          "timeScale": 2.4
+        }
+      },
+      "rival": {
+        "bones": {
+          "Hips": [
+            0.0133,
+            1.0222,
+            -0.0182
+          ],
+          "Spine02": [
+            0.016,
+            1.1619,
+            -0.0227
+          ],
+          "Head": [
+            -0.0778,
+            1.6316,
+            0.1159
+          ],
+          "LeftHand": [
+            0.0331,
+            1.5842,
+            0.5657
+          ],
+          "RightHand": [
+            -0.4336,
+            1.5733,
+            0.3162
+          ],
+          "LeftFoot": [
+            0.2401,
+            0.1099,
+            0.3087
+          ],
+          "RightFoot": [
+            -0.1552,
+            0.1407,
+            -0.3294
+          ]
+        },
+        "state": {
+          "activeClip": "Block1",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "Block1",
+              "layer": "",
+              "weight": 1,
+              "time": 3.4254717756652404
+            }
+          ],
+          "timeScale": 1.15
+        }
+      }
+    },
+    {
+      "target": "ic12-volt",
+      "id": "throw-2",
+      "size": [
+        1280,
+        720
+      ],
+      "state": "throw",
+      "before": {
+        "frame": 227,
+        "p1": "idle",
+        "cpu": "idle",
+        "p1Id": "volt",
+        "cpuId": "boulder",
+        "mode": "lab"
+      },
+      "mean": 52.26,
+      "game": {
+        "frame": 267,
+        "mode": "lab",
+        "phase": "fight",
+        "lab": {
+          "stance": "stand",
+          "frameData": false
+        },
+        "p1": {
+          "id": "volt",
+          "clip": "throw",
+          "embeddedClip": "Triple_Combo_Attack",
+          "x": -2.2,
+          "grounded": true
+        },
+        "cpu": {
+          "id": "boulder",
+          "clip": "idle",
+          "embeddedClip": "Block1",
+          "x": 2.2,
+          "grounded": true
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 1,
+          "specials": 0
+        },
+        "standIns": {
+          "p1": [
+            "idle→\"Block1\"",
+            "dash→\"Walk_Fight_Forward\"",
+            "crouch→\"Block1\"",
+            "throw→\"Triple_Combo_Attack\"",
+            "win→\"Regular_Jump\""
+          ],
+          "cpu": [
+            "idle→\"Block1\"",
+            "dash→\"Walk_Fight_Forward\"",
+            "crouch→\"Block1\"",
+            "throw→\"Triple_Combo_Attack\"",
+            "win→\"Regular_Jump\""
+          ]
+        }
+      },
+      "player": {
+        "bones": {
+          "Hips": [
+            0.0319,
+            0.9013,
+            0.3678
+          ],
+          "Spine02": [
+            0.0592,
+            1.0154,
+            0.3544
+          ],
+          "Head": [
+            0.1273,
+            1.4297,
+            0.3723
+          ],
+          "LeftHand": [
+            0.6826,
+            1.103,
+            0.6018
+          ],
+          "RightHand": [
+            -0.393,
+            1.6451,
+            0.326
+          ],
+          "LeftFoot": [
+            0.2004,
+            0.166,
+            0.1836
+          ],
+          "RightFoot": [
+            -0.1608,
+            0.2156,
+            0.6571
+          ]
+        },
+        "state": {
+          "activeClip": "Triple_Combo_Attack",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "Triple_Combo_Attack",
+              "layer": "",
+              "weight": 1,
+              "time": 1.3999999999999946
+            }
+          ],
+          "timeScale": 2.4
+        }
+      },
+      "rival": {
+        "bones": {
+          "Hips": [
+            0.0179,
+            1.0403,
+            -0.0026
+          ],
+          "Spine02": [
+            0.018,
+            1.1801,
+            -0.0018
+          ],
+          "Head": [
+            -0.0791,
+            1.6465,
+            0.1458
+          ],
+          "LeftHand": [
+            0.0337,
+            1.5878,
+            0.5883
+          ],
+          "RightHand": [
+            -0.4395,
+            1.584,
+            0.3185
+          ],
+          "LeftFoot": [
+            0.236,
+            0.1066,
+            0.3103
+          ],
+          "RightFoot": [
+            -0.1538,
+            0.132,
+            -0.3246
+          ]
+        },
+        "state": {
+          "activeClip": "Block1",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "Block1",
+              "layer": "",
+              "weight": 1,
+              "time": 0.15047174387609594
+            }
+          ],
+          "timeScale": 1.15
+        }
+      }
+    }
+  ],
+  "probes": [],
+  "other": [
+    "GL_READY ic12-volt 46413ms"
+  ]
+}

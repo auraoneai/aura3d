@@ -4,6 +4,10 @@ Version: 4.6.1
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 4.6.2 (unreleased)
+
+- **Iron Crown (IC-12).** Idle, crouch, throw and win play their own Meshy clips on all six fighters (Block1 is guard only, dash stays the one stand-in); on the remote runner crouch lowers the hips from 0.88-1.01 m to 0.54-0.63 m and the throw bends the torso to 49-54 degrees, with geometry, textures and the ten shipped clips unchanged.
+
 ## 4.6.1 (2026-10-29)
 
 The other twelve games from the live-games and 4.5.0 audit (`docs/audits/live-games-4.5.0-audit-2026-10-29.md`; lane reports `docs/audits/lanes/g10.md` to `g25.md`), on the 4.6.0 engine, plus the follow-up test and site work. All browser measurements are software WebGL2 on the remote runner; no real-GPU run has been made.

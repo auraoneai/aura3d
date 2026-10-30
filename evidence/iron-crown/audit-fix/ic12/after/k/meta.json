@@ -1,0 +1,945 @@
+{
+  "log": "ic12-after-k",
+  "shots": [
+    "ic12-kenji/idle-1",
+    "ic12-kenji/idle-2",
+    "ic12-kenji/crouch-1",
+    "ic12-kenji/crouch-2",
+    "ic12-kenji/throw-1",
+    "ic12-kenji/throw-2"
+  ],
+  "meta": [
+    {
+      "target": "ic12-kenji",
+      "id": "idle-1",
+      "size": [
+        1280,
+        720
+      ],
+      "state": "idle",
+      "mean": 55.05,
+      "game": {
+        "frame": 46,
+        "mode": "lab",
+        "phase": "fight",
+        "lab": {
+          "stance": "stand",
+          "frameData": false
+        },
+        "p1": {
+          "id": "kenji",
+          "clip": "idle",
+          "embeddedClip": "Combat_Stance",
+          "x": -2.2,
+          "grounded": true
+        },
+        "cpu": {
+          "id": "volt",
+          "clip": "idle",
+          "embeddedClip": "Combat_Stance",
+          "x": 2.2,
+          "grounded": true
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "standIns": {
+          "p1": [
+            "dash→\"Walk_Fight_Forward\""
+          ],
+          "cpu": [
+            "dash→\"Walk_Fight_Forward\""
+          ]
+        }
+      },
+      "player": {
+        "bones": {
+          "Hips": [
+            0.3428,
+            0.8796,
+            -0.1909
+          ],
+          "Spine02": [
+            0.3577,
+            0.9795,
+            -0.1833
+          ],
+          "Head": [
+            0.1871,
+            1.4231,
+            0.0437
+          ],
+          "LeftHand": [
+            0.1706,
+            1.001,
+            0.3764
+          ],
+          "RightHand": [
+            -0.124,
+            0.8928,
+            -0.4379
+          ],
+          "LeftFoot": [
+            0.5335,
+            0.1245,
+            0.0604
+          ],
+          "RightFoot": [
+            0.2146,
+            0.1491,
+            -0.5324
+          ]
+        },
+        "state": {
+          "activeClip": "Combat_Stance",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "Combat_Stance",
+              "layer": "",
+              "weight": 1,
+              "time": 1.527815429153412
+            }
+          ],
+          "timeScale": 1.15
+        }
+      },
+      "rival": {
+        "bones": {
+          "Hips": [
+            0.3957,
+            0.909,
+            -0.0218
+          ],
+          "Spine02": [
+            0.3923,
+            1.0257,
+            -0.0065
+          ],
+          "Head": [
+            0.2585,
+            1.3981,
+            0.1559
+          ],
+          "LeftHand": [
+            0.1961,
+            1.0541,
+            0.5411
+          ],
+          "RightHand": [
+            -0.0896,
+            0.9383,
+            -0.2682
+          ],
+          "LeftFoot": [
+            0.5509,
+            0.1449,
+            0.3277
+          ],
+          "RightFoot": [
+            0.1957,
+            0.1769,
+            -0.3871
+          ]
+        },
+        "state": {
+          "activeClip": "Combat_Stance",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "Combat_Stance",
+              "layer": "",
+              "weight": 1,
+              "time": 1.527815429153412
+            }
+          ],
+          "timeScale": 1.15
+        }
+      }
+    },
+    {
+      "target": "ic12-kenji",
+      "id": "idle-2",
+      "size": [
+        1280,
+        720
+      ],
+      "state": "idle",
+      "mean": 55.61,
+      "game": {
+        "frame": 51,
+        "mode": "lab",
+        "phase": "fight",
+        "lab": {
+          "stance": "stand",
+          "frameData": false
+        },
+        "p1": {
+          "id": "kenji",
+          "clip": "idle",
+          "embeddedClip": "Combat_Stance",
+          "x": -2.2,
+          "grounded": true
+        },
+        "cpu": {
+          "id": "volt",
+          "clip": "idle",
+          "embeddedClip": "Combat_Stance",
+          "x": 2.2,
+          "grounded": true
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "standIns": {
+          "p1": [
+            "dash→\"Walk_Fight_Forward\""
+          ],
+          "cpu": [
+            "dash→\"Walk_Fight_Forward\""
+          ]
+        }
+      },
+      "player": {
+        "bones": {
+          "Hips": [
+            0.3434,
+            0.8766,
+            -0.1904
+          ],
+          "Spine02": [
+            0.3578,
+            0.9765,
+            -0.1829
+          ],
+          "Head": [
+            0.1783,
+            1.4139,
+            0.0493
+          ],
+          "LeftHand": [
+            0.1623,
+            0.9859,
+            0.3749
+          ],
+          "RightHand": [
+            -0.1237,
+            0.8832,
+            -0.437
+          ],
+          "LeftFoot": [
+            0.5338,
+            0.1245,
+            0.0598
+          ],
+          "RightFoot": [
+            0.215,
+            0.1494,
+            -0.5328
+          ]
+        },
+        "state": {
+          "activeClip": "Combat_Stance",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "Combat_Stance",
+              "layer": "",
+              "weight": 1,
+              "time": 1.6236487624867453
+            }
+          ],
+          "timeScale": 1.15
+        }
+      },
+      "rival": {
+        "bones": {
+          "Hips": [
+            0.3966,
+            0.9061,
+            -0.0209
+          ],
+          "Spine02": [
+            0.3926,
+            1.0227,
+            -0.006
+          ],
+          "Head": [
+            0.2519,
+            1.3912,
+            0.1599
+          ],
+          "LeftHand": [
+            0.1883,
+            1.0396,
+            0.5395
+          ],
+          "RightHand": [
+            -0.089,
+            0.9292,
+            -0.2672
+          ],
+          "LeftFoot": [
+            0.5512,
+            0.1449,
+            0.327
+          ],
+          "RightFoot": [
+            0.1959,
+            0.1773,
+            -0.3875
+          ]
+        },
+        "state": {
+          "activeClip": "Combat_Stance",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "Combat_Stance",
+              "layer": "",
+              "weight": 1,
+              "time": 1.6236487624867453
+            }
+          ],
+          "timeScale": 1.15
+        }
+      }
+    },
+    {
+      "target": "ic12-kenji",
+      "id": "crouch-1",
+      "size": [
+        1280,
+        720
+      ],
+      "state": "crouch",
+      "mean": 56.14,
+      "game": {
+        "frame": 76,
+        "mode": "lab",
+        "phase": "fight",
+        "lab": {
+          "stance": "crouch",
+          "frameData": false
+        },
+        "p1": {
+          "id": "kenji",
+          "clip": "crouch",
+          "embeddedClip": "CrouchLookAroundBow",
+          "x": -2.2,
+          "grounded": true
+        },
+        "cpu": {
+          "id": "volt",
+          "clip": "crouch",
+          "embeddedClip": "CrouchLookAroundBow",
+          "x": 2.2,
+          "grounded": true
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "standIns": {
+          "p1": [
+            "dash→\"Walk_Fight_Forward\""
+          ],
+          "cpu": [
+            "dash→\"Walk_Fight_Forward\""
+          ]
+        }
+      },
+      "player": {
+        "bones": {
+          "Hips": [
+            -0.0018,
+            0.5421,
+            -0.2666
+          ],
+          "Spine02": [
+            -0.0183,
+            0.6387,
+            -0.2411
+          ],
+          "Head": [
+            -0.2521,
+            1.0486,
+            -0.0289
+          ],
+          "LeftHand": [
+            -0.0585,
+            0.6136,
+            0.4405
+          ],
+          "RightHand": [
+            -0.275,
+            0.6379,
+            -0.7187
+          ],
+          "LeftFoot": [
+            0.133,
+            0.1061,
+            -0.0309
+          ],
+          "RightFoot": [
+            -0.1674,
+            0.1508,
+            -0.4201
+          ]
+        },
+        "state": {
+          "activeClip": "CrouchLookAroundBow",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "CrouchLookAroundBow",
+              "layer": "",
+              "weight": 1,
+              "time": 0.274999999999999
+            }
+          ],
+          "timeScale": 1.1
+        }
+      },
+      "rival": {
+        "bones": {
+          "Hips": [
+            0.0556,
+            0.5835,
+            -0.0934
+          ],
+          "Spine02": [
+            0.0152,
+            0.6893,
+            -0.061
+          ],
+          "Head": [
+            -0.1585,
+            1.0464,
+            0.0832
+          ],
+          "LeftHand": [
+            -0.0317,
+            0.6538,
+            0.6063
+          ],
+          "RightHand": [
+            -0.2461,
+            0.6637,
+            -0.5437
+          ],
+          "LeftFoot": [
+            0.0932,
+            0.1457,
+            0.2039
+          ],
+          "RightFoot": [
+            -0.188,
+            0.1669,
+            -0.2806
+          ]
+        },
+        "state": {
+          "activeClip": "CrouchLookAroundBow",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "CrouchLookAroundBow",
+              "layer": "",
+              "weight": 1,
+              "time": 0.274999999999999
+            }
+          ],
+          "timeScale": 1.1
+        }
+      }
+    },
+    {
+      "target": "ic12-kenji",
+      "id": "crouch-2",
+      "size": [
+        1280,
+        720
+      ],
+      "state": "crouch",
+      "mean": 56.14,
+      "game": {
+        "frame": 81,
+        "mode": "lab",
+        "phase": "fight",
+        "lab": {
+          "stance": "crouch",
+          "frameData": false
+        },
+        "p1": {
+          "id": "kenji",
+          "clip": "crouch",
+          "embeddedClip": "CrouchLookAroundBow",
+          "x": -2.2,
+          "grounded": true
+        },
+        "cpu": {
+          "id": "volt",
+          "clip": "crouch",
+          "embeddedClip": "CrouchLookAroundBow",
+          "x": 2.2,
+          "grounded": true
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 0,
+          "specials": 0
+        },
+        "standIns": {
+          "p1": [
+            "dash→\"Walk_Fight_Forward\""
+          ],
+          "cpu": [
+            "dash→\"Walk_Fight_Forward\""
+          ]
+        }
+      },
+      "player": {
+        "bones": {
+          "Hips": [
+            -0.0025,
+            0.5444,
+            -0.2657
+          ],
+          "Spine02": [
+            -0.0186,
+            0.641,
+            -0.2399
+          ],
+          "Head": [
+            -0.2508,
+            1.0516,
+            -0.0272
+          ],
+          "LeftHand": [
+            -0.0562,
+            0.6158,
+            0.4406
+          ],
+          "RightHand": [
+            -0.2808,
+            0.6433,
+            -0.7181
+          ],
+          "LeftFoot": [
+            0.1326,
+            0.106,
+            -0.0316
+          ],
+          "RightFoot": [
+            -0.1678,
+            0.151,
+            -0.4199
+          ]
+        },
+        "state": {
+          "activeClip": "CrouchLookAroundBow",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "CrouchLookAroundBow",
+              "layer": "",
+              "weight": 1,
+              "time": 0.36666666666666525
+            }
+          ],
+          "timeScale": 1.1
+        }
+      },
+      "rival": {
+        "bones": {
+          "Hips": [
+            0.0549,
+            0.5857,
+            -0.0925
+          ],
+          "Spine02": [
+            0.0148,
+            0.6916,
+            -0.0598
+          ],
+          "Head": [
+            -0.1576,
+            1.049,
+            0.0848
+          ],
+          "LeftHand": [
+            -0.0297,
+            0.6557,
+            0.6065
+          ],
+          "RightHand": [
+            -0.2514,
+            0.669,
+            -0.543
+          ],
+          "LeftFoot": [
+            0.093,
+            0.1456,
+            0.2034
+          ],
+          "RightFoot": [
+            -0.1882,
+            0.1669,
+            -0.2804
+          ]
+        },
+        "state": {
+          "activeClip": "CrouchLookAroundBow",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "CrouchLookAroundBow",
+              "layer": "",
+              "weight": 1,
+              "time": 0.36666666666666525
+            }
+          ],
+          "timeScale": 1.1
+        }
+      }
+    },
+    {
+      "target": "ic12-kenji",
+      "id": "throw-1",
+      "size": [
+        1280,
+        720
+      ],
+      "state": "throw",
+      "before": {
+        "frame": 106,
+        "p1": "idle",
+        "cpu": "idle",
+        "p1Id": "kenji",
+        "cpuId": "volt",
+        "mode": "lab"
+      },
+      "mean": 56.44,
+      "game": {
+        "frame": 136,
+        "mode": "lab",
+        "phase": "fight",
+        "lab": {
+          "stance": "stand",
+          "frameData": false
+        },
+        "p1": {
+          "id": "kenji",
+          "clip": "throw",
+          "embeddedClip": "Over_Shoulder_Throw",
+          "x": -2.2,
+          "grounded": true
+        },
+        "cpu": {
+          "id": "volt",
+          "clip": "idle",
+          "embeddedClip": "Combat_Stance",
+          "x": 2.2,
+          "grounded": true
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 1,
+          "specials": 0
+        },
+        "standIns": {
+          "p1": [
+            "dash→\"Walk_Fight_Forward\""
+          ],
+          "cpu": [
+            "dash→\"Walk_Fight_Forward\""
+          ]
+        }
+      },
+      "player": {
+        "bones": {
+          "Hips": [
+            -0.1087,
+            0.8514,
+            -0.0281
+          ],
+          "Spine02": [
+            -0.1255,
+            0.9509,
+            -0.02
+          ],
+          "Head": [
+            -0.2283,
+            1.3984,
+            0.2354
+          ],
+          "LeftHand": [
+            -0.2244,
+            1.0563,
+            0.4994
+          ],
+          "RightHand": [
+            -0.3009,
+            0.8484,
+            0.2197
+          ],
+          "LeftFoot": [
+            -0.0325,
+            0.235,
+            -0.4391
+          ],
+          "RightFoot": [
+            -0.187,
+            0.1237,
+            0.3695
+          ]
+        },
+        "state": {
+          "activeClip": "Over_Shoulder_Throw",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "Over_Shoulder_Throw",
+              "layer": "",
+              "weight": 1,
+              "time": 1.6666666666666616
+            }
+          ],
+          "timeScale": 4
+        }
+      },
+      "rival": {
+        "bones": {
+          "Hips": [
+            0.3835,
+            0.9095,
+            -0.0263
+          ],
+          "Spine02": [
+            0.3784,
+            1.0266,
+            -0.0161
+          ],
+          "Head": [
+            0.2417,
+            1.4099,
+            0.1155
+          ],
+          "LeftHand": [
+            0.136,
+            1.0587,
+            0.5001
+          ],
+          "RightHand": [
+            -0.0676,
+            0.9237,
+            -0.3375
+          ],
+          "LeftFoot": [
+            0.5528,
+            0.1438,
+            0.3299
+          ],
+          "RightFoot": [
+            0.1978,
+            0.1755,
+            -0.3863
+          ]
+        },
+        "state": {
+          "activeClip": "Combat_Stance",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "Combat_Stance",
+              "layer": "",
+              "weight": 1,
+              "time": 0.8624999999999974
+            }
+          ],
+          "timeScale": 1.15
+        }
+      }
+    },
+    {
+      "target": "ic12-kenji",
+      "id": "throw-2",
+      "size": [
+        1280,
+        720
+      ],
+      "state": "throw",
+      "before": {
+        "frame": 106,
+        "p1": "idle",
+        "cpu": "idle",
+        "p1Id": "kenji",
+        "cpuId": "volt",
+        "mode": "lab"
+      },
+      "mean": 56.11,
+      "game": {
+        "frame": 146,
+        "mode": "lab",
+        "phase": "fight",
+        "lab": {
+          "stance": "stand",
+          "frameData": false
+        },
+        "p1": {
+          "id": "kenji",
+          "clip": "throw",
+          "embeddedClip": "Over_Shoulder_Throw",
+          "x": -2.2,
+          "grounded": true
+        },
+        "cpu": {
+          "id": "volt",
+          "clip": "idle",
+          "embeddedClip": "Combat_Stance",
+          "x": 2.2,
+          "grounded": true
+        },
+        "stats": {
+          "p1Hits": 0,
+          "cpuHits": 0,
+          "maxCombo": 0,
+          "throws": 1,
+          "specials": 0
+        },
+        "standIns": {
+          "p1": [
+            "dash→\"Walk_Fight_Forward\""
+          ],
+          "cpu": [
+            "dash→\"Walk_Fight_Forward\""
+          ]
+        }
+      },
+      "player": {
+        "bones": {
+          "Hips": [
+            0.0156,
+            0.6038,
+            -0.1624
+          ],
+          "Spine02": [
+            0.0431,
+            0.6994,
+            -0.1809
+          ],
+          "Head": [
+            0.1245,
+            0.9453,
+            -0.6195
+          ],
+          "LeftHand": [
+            -0.3945,
+            0.9958,
+            -0.2206
+          ],
+          "RightHand": [
+            0.304,
+            0.2553,
+            -0.3944
+          ],
+          "LeftFoot": [
+            -0.1015,
+            0.1558,
+            -0.4583
+          ],
+          "RightFoot": [
+            -0.0583,
+            0.1643,
+            0.4199
+          ]
+        },
+        "state": {
+          "activeClip": "Over_Shoulder_Throw",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "Over_Shoulder_Throw",
+              "layer": "",
+              "weight": 1,
+              "time": 2.333333333333325
+            }
+          ],
+          "timeScale": 4
+        }
+      },
+      "rival": {
+        "bones": {
+          "Hips": [
+            0.3851,
+            0.919,
+            -0.0255
+          ],
+          "Spine02": [
+            0.3816,
+            1.036,
+            -0.0141
+          ],
+          "Head": [
+            0.256,
+            1.4226,
+            0.1176
+          ],
+          "LeftHand": [
+            0.1615,
+            1.0843,
+            0.511
+          ],
+          "RightHand": [
+            -0.0727,
+            0.9483,
+            -0.3281
+          ],
+          "LeftFoot": [
+            0.5519,
+            0.1435,
+            0.3301
+          ],
+          "RightFoot": [
+            0.1966,
+            0.1747,
+            -0.3861
+          ]
+        },
+        "state": {
+          "activeClip": "Combat_Stance",
+          "tracksApplied": 90,
+          "activeActions": [
+            {
+              "clip": "Combat_Stance",
+              "layer": "",
+              "weight": 1,
+              "time": 1.0541666666666634
+            }
+          ],
+          "timeScale": 1.15
+        }
+      }
+    }
+  ],
+  "probes": [],
+  "other": [
+    "GL_READY ic12-kenji 37516ms"
+  ]
+}
