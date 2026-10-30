@@ -23,6 +23,8 @@ interface HarnessWindow {
 
 export interface WorldReceiptSession {
   readonly consoleProblems: string[];
+  /** console.warn lines (engine degradations such as a failed water program). */
+  readonly consoleWarnings: string[];
   render(id: Gu47WorldVariant): Promise<Gu47WorldFrame>;
   compare(a: Gu47WorldVariant, b: Gu47WorldVariant, rect?: Rect): Promise<Gu47WorldComparison>;
   stats(key: Gu47WorldVariant, rect: Rect): Promise<Gu47RegionStats>;
@@ -36,8 +38,9 @@ export async function openWorldReceipts(browser: Browser): Promise<WorldReceiptS
   const server: ExampleDevServer = await startExampleDevServer();
   const page: Page = await browser.newPage({ viewport: { width: 640, height: 400 } });
   const consoleProblems: string[] = [];
+  const consoleWarnings: string[] = [];
   page.on("pageerror", (error) => consoleProblems.push(`pageerror: ${error.message}`));
-  page.on("console", (message) => { if (message.type() === "error") consoleProblems.push(`console.error: ${message.text()}`); });
+  page.on("console", (message) => { if (message.type() === "error") consoleProblems.push(`console.error: ${message.text()}`); if (message.type() === "warning") consoleWarnings.push(message.text().slice(0, 600)); });
   await page.goto(`${server.origin}${HARNESS}`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => Boolean((window as unknown as HarnessWindow).__GU47_WORLD_RECEIPTS__), undefined, { timeout: 60_000 });
   const rawRenderer = await page.evaluate(() => {
@@ -47,6 +50,7 @@ export async function openWorldReceipts(browser: Browser): Promise<WorldReceiptS
   });
   return {
     consoleProblems,
+    consoleWarnings,
     render: (id) => page.evaluate((variant) => (window as unknown as HarnessWindow).__GU47_WORLD_RECEIPTS__!.render(variant), id),
     compare: (a, b, rect) => page.evaluate(([first, second, region]) =>
       (window as unknown as HarnessWindow).__GU47_WORLD_RECEIPTS__!.compare(first!, second!, region as Rect | undefined), [a, b, rect] as const),
