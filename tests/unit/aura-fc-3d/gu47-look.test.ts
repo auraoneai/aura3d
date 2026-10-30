@@ -218,3 +218,13 @@ describe("aura-fc-3d GU47 rim (FC47-L3)", () => {
     expect(rimNode!.shadow ?? false).toBeFalsy();
   });
 });
+
+describe("aura-fc-3d GU47 kit fabric (FC47-M2 interim)", () => {
+  it("shirt and shorts overrides carry the 0.45 fabric rim; skin and socks do not", async () => {
+    const { athleteNodes, KIT_FABRIC_RIM } = await import("../../../apps/showcase-aura-fc-3d/src/game/rig");
+    const body = athleteNodes("h-fw")[0].toJSON() as { materialOverrides?: { target: RegExp; rim?: unknown }[] };
+    const o = body.materialOverrides!;
+    expect(o.filter((m) => m.rim === KIT_FABRIC_RIM).map((m) => String(m.target))).toEqual(["/-kit$/", "/-shorts$/"]);
+    expect(KIT_FABRIC_RIM.intensity).toBe(0.45);
+  });
+});

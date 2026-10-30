@@ -96,6 +96,9 @@ const idHash = (id: string): number => {
 
 /* ------------------------------------------------------------------ */
 
+/** FC47-M2 interim fabric term on shirts and shorts (sheen 0.45 target; rim until model overrides carry sheen). */
+export const KIT_FABRIC_RIM = { color: "#e8eef6", power: 4, intensity: 0.45 } as const;
+
 /** Scene nodes for one athlete: the skinned body, its contact shadow and its team ring. */
 export function athleteNodes(id: string): RigNode[] {
   const isKeeper = id.endsWith("-gk");
@@ -107,8 +110,10 @@ export function athleteNodes(id: string): RigNode[] {
       name: `${id}-body`,
       targetHeight: isKeeper ? 2.32 : isPower ? 2.26 : 2.22,
       materialOverrides: [
-        { target: /-kit$/, color: kit.shirt, colorMode: "replace", replaceTextures: true, roughness: 0.62, metallic: 0.04 },
-        { target: /-shorts$/, color: kit.shorts, colorMode: "replace", replaceTextures: true, roughness: 0.7, metallic: 0 },
+        // FC47-M2 interim: a soft fabric fresnel rim (0.45) stands in for sheen, which AuraModelMaterialOverride does not
+        // carry yet (handoff E-D); it catches the main-stand flood on shirt edges
+        { target: /-kit$/, color: kit.shirt, colorMode: "replace", replaceTextures: true, roughness: 0.62, metallic: 0.04, rim: KIT_FABRIC_RIM },
+        { target: /-shorts$/, color: kit.shorts, colorMode: "replace", replaceTextures: true, roughness: 0.7, metallic: 0, rim: KIT_FABRIC_RIM },
         { target: /-socks$/, color: kit.socks, colorMode: "replace", replaceTextures: true, roughness: 0.75, metallic: 0 },
         { target: /-skin$/, color: skinFor(id), colorMode: "replace", replaceTextures: true, roughness: 0.62, metallic: 0 }
       ]
