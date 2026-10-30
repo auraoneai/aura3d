@@ -74,6 +74,7 @@ import { advanceLadder, createLadder, currentRung, type LadderState } from "./ga
 import { createHud, type MenuId, type ModeId } from "./game/hud";
 import "./styles.css";
 import { installBlackFrameGuard } from "@aura3d/debug";
+import { fightCrops, type QaCrop } from "./game/qaCrops";
 
 installBlackFrameGuard();
 
@@ -83,6 +84,7 @@ type IronCrownWindow = Window & {
   __AURA3D_GAME_EVIDENCE__?: unknown;
   __AURA3D_GAME_RUNTIME__?: unknown;
   __AURA3D_SHOWCASE_IRON_CROWN__?: unknown;
+  __AURA_QA__?: { crops?: readonly QaCrop[]; [key: string]: unknown };
 };
 
 const gameWindow = window as IronCrownWindow;
@@ -1600,6 +1602,17 @@ function playerHasManualInput(): boolean {
     input.buffered("throw", 160)
   );
 }
+
+// E-I capture hook: the IC47-L1 fighter, foot and outer-ring crops, following the presented camera. Read-only.
+app.onFrame(() => {
+  const vp = app.camera?.evidence().viewProjection;
+  if (!P1 || !CPU || !vp || vp.length !== 16) return;
+  const qa = (gameWindow.__AURA_QA__ ??= {});
+  qa.crops = fightCrops(vp, [
+    { id: "p1", position: [P1.body.position[0], P1.body.position[1], P1.body.position[2]] },
+    { id: "p2", position: [CPU.body.position[0], CPU.body.position[1], CPU.body.position[2]] }
+  ]);
+});
 
 app.onFrame(({ dt }) => {
   if (!P1 || !CPU || !state) return;
