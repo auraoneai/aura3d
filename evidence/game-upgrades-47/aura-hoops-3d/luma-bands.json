@@ -1,0 +1,85 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "aura-hoops-3d",
+  "source": "PRD WP-17 acceptance (H47-L1, L2, L3, E1, E2, M2); per-court mean bands are not numbered in the PRD and stay open except Shanghai (L3)",
+  "default": {
+    "darkFrac": [
+      null,
+      0.6
+    ],
+    "clipFrac": [
+      null,
+      0.03
+    ]
+  },
+  "variants": {
+    "rucker": {
+      "p95": [
+        215,
+        null
+      ],
+      "crops": {
+        "lamp": {
+          "p95": [
+            245,
+            null
+          ]
+        }
+      }
+    },
+    "venice": {
+      "p95": [
+        215,
+        null
+      ]
+    },
+    "athens": {
+      "p95": [
+        215,
+        null
+      ],
+      "crops": {
+        "ball": {
+          "p95": [
+            220,
+            null
+          ]
+        }
+      }
+    },
+    "manila": {
+      "p95": [
+        215,
+        null
+      ]
+    },
+    "shanghai": {
+      "mean": [
+        45,
+        65
+      ],
+      "darkFrac": [
+        null,
+        0.1
+      ],
+      "crops": {
+        "floor": {
+          "p95": [
+            200,
+            null
+          ]
+        }
+      }
+    },
+    "orbit": {
+      "p95": [
+        215,
+        null
+      ]
+    }
+  },
+  "notes": {
+    "p95-five-courts": "L1 asks p95 >= 215 on 5 courts: every court but Shanghai (night, L3 mean 45-65)",
+    "not-bandable": "L3 left/right columns differ >= 12, L1 AO feet -4%, L2 feet p5 -8% and >= 3 Rucker shadow rows, E1 top third p95-p5 >= 60 (cells carry no percentiles), E1 far crop spread 15% below near, E3 ocean crop moves >= 2 over 10 s are deltas between shots or variants: checked by hand in phase 2 (region-luma compare)"
+  }
+}
