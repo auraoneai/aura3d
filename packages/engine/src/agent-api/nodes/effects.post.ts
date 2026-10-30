@@ -48,7 +48,8 @@ export const postEffectBuilders = {
       postAuthored: options.postAuthored ?? Object.keys(options).filter((key) => key !== "postAuthored"),
       ...(options.quality !== undefined ? { quality: options.quality } : {}),
       ...(options.softKnee !== undefined ? { softKnee: options.softKnee } : {}),
-      ...(options.shoulder !== undefined ? { shoulder: options.shoulder } : {})
+      ...(options.shoulder !== undefined ? { shoulder: options.shoulder } : {}),
+      ...(options.scatter !== undefined ? { scatter: options.scatter } : {})
     });
   },
   neonBloom: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>

@@ -50,7 +50,10 @@ const TARGETS: readonly Target[] = [
   { name: "p4-crosshop-theme3", url: "/apps/showcase-cross-hop/?theme=3", rows: "LIGHT-04" },
   { name: "p4-crosshop-theme4", url: "/apps/showcase-cross-hop/?theme=4", rows: "LIGHT-04" },
   // SSAO normals input.
-  { name: "p3-last-train-port", url: "/examples/last-train-port/index.html", rows: "SSAO" }
+  { name: "p3-last-train-port", url: "/examples/last-train-port/index.html", rows: "SSAO" },
+  // Wave 3 (G25 CR-4): the two live games that author a colour grade next to a look.
+  { name: "w3-cloud-runner-port", url: "/examples/kid-goku-beyond-the-clouds-port/index.html", rows: "CR-4 vignette" },
+  { name: "w3-teleoperator", url: "/apps/showcase-teleoperator/", rows: "CR-4" }
 ];
 
 const REPO_ROOT = process.cwd();
@@ -121,7 +124,10 @@ async function engineInfo(page: Page) {
         renderPath: dg?.renderPath?.path ?? null,
         drawCalls: dg?.drawCalls ?? null,
         post: post ? { pipeline: post.pipeline, requested: post.requestedPasses, submitted: post.submittedPasses, dropped: post.droppedPasses, missing: post.missingInputs, stagesRan: post.stagesRan ?? null, skipped: (post.skipped ?? []).slice(0, 8) } : null,
-        warnings
+        warnings,
+        // Wave 3: the consumer each post-type effect node reports (vignette was "none" before G25's handoff).
+        effects: ((dg?.effects?.nodes ?? []) as { effect: string; consumer: string }[])
+          .filter((n) => /vignette|grain|chromatic|grade|bloom/.test(n.effect)).map((n) => `${n.effect}:${n.consumer}`)
       };
     } catch (e) { return { app: true, diagErr: String(e) }; }
   });

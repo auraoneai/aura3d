@@ -6,6 +6,7 @@ import type { AuraAntiAliasMode } from "../../contracts/post.js";
 import { colorToRgba } from "../colorUtils.js";
 import { clampNumber, resolveNativeBloomRadius } from "../compiler/observations.js";
 import { groups } from "../nodes/groups.js";
+import { mergeLookColorGrade } from "../looks/lookGrade.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
 import { QUALITY_TIERS, resolvePostAntiAlias, resolvePostTier, resolveVolumetricFog, postVelocityCoverage, type CollectedLight, type RendererPostProcessOptions } from "@aura3d/rendering";
 import { lights } from "../nodes/lights.js";
@@ -75,7 +76,8 @@ export function createProductionRuntimePostprocess(
   const authoredOcclusion = authoredAmbientOcclusion ?? authoredContactOcclusion;
   // The renderer owns temporal GPU inputs. Root checks actual drawable
   // geometry before requesting them; unsupported scenes retain ordinary output.
-  const authoredColorGrade = nodes.find(
+  // CR-4: a grade authored next to a look wins over the look's grade field by field (looks/lookGrade.ts).
+  const authoredColorGrade = mergeLookColorGrade(nodes).find(
     (node): node is AuraEffectNode => node.kind === "effect" && node.effect === "color-grade"
   );
   const authoredAntiAlias = nodes.find(

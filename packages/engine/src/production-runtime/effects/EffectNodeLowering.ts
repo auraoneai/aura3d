@@ -453,6 +453,11 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
     case "screen-space-reflections":
     case "depth-of-field":
     case "motion-blur":
+    // The post bridge renders these display stages too (postBridge.ts reads
+    // `vignette`, `film-grain` and `chromatic-aberration` nodes).
+    case "vignette":
+    case "film-grain":
+    case "chromatic-aberration":
       return { type: "other", nodeId, effect, consumer: "post", sim: "none" };
     default:
       return { type: "other", nodeId, effect, consumer: "none", sim: "none" };

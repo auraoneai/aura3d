@@ -907,6 +907,8 @@ export interface AuraEffectNode extends AuraTransformSpec {
   readonly threshold?: number;
   readonly antiBlowout?: boolean;
   readonly maxIntensity?: number;
+  /** Bloom spread in [0, 1] on the v2 post chain (replaces the deprecated bloom `radius`). */
+  readonly scatter?: number;
   /** Native bloom path (muse3jsparity-PRD A1): performance keeps the legacy single-scale ping-pong; balanced/cinematic use the mip pyramid. */
   readonly quality?: "performance" | "balanced" | "cinematic";
   /** HDR bright-extract knee width in [0, 0.5]; 0 keeps the hard threshold step. */
