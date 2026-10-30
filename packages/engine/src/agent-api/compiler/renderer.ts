@@ -191,7 +191,11 @@ export async function createProductionRuntimeSceneRenderer(
           hdriWarnings.add(`HDRI upgrade failed for ${hdriUrl} (${error instanceof Error ? error.message : String(error)}); studio procedural fallback retained`);
         });
     }
-    const productionRuntimeLights = createProductionRuntimeCollectedLights(snapshot, flags, { hemisphereAsEnvironment: true });
+    // GU47 E-B handoff: an explicit app quality tier caps the local shadow
+    // casters (low 0 / medium 1 / high 2 / ultra 4); auto/unset keeps the
+    // shadow config's own resolution (medium on a coarse pointer, else high).
+    const mountShadowTier = explicitMountQualityTier(rendererOptions);
+    const productionRuntimeLights = createProductionRuntimeCollectedLights(snapshot, flags, { hemisphereAsEnvironment: true, ...(mountShadowTier ? { shadowTier: mountShadowTier } : {}) });
     // threejs-parity L7/SG-10: `scene().background({ texture | cube })` —
     // async decode like the C1/B3 upgrades; feeds `source.environmentBackground`
     // without ever touching `environmentLighting` (no implicit IBL).
@@ -539,11 +543,18 @@ export async function createProductionRuntimeSceneRenderer(
 export function resolveMountQuality(
   rendererOptions?: AuraCreateAppRendererOptions
 ): MountSceneCompileContext["quality"] {
+  const tier: AuraQualityTier = explicitMountQualityTier(rendererOptions) ?? "high";
+  return { ...resolveTierSettings(tier), tier };
+}
+
+/**
+ * The tier the app named in `renderer.quality` (the string form or `{ tier }`), or `undefined` for `"auto"`, unset or
+ * an unknown name — callers with their own auto resolution (the shadow caster cap) keep it then.
+ */
+export function explicitMountQualityTier(rendererOptions?: AuraCreateAppRendererOptions): AuraQualityTier | undefined {
   const option = rendererOptions?.quality as unknown;
   const governed = typeof option === "string" ? option : (option as { tier?: unknown } | undefined)?.tier;
-  const tier: AuraQualityTier =
-    typeof governed === "string" && governed !== "auto" && governed in QUALITY_TIERS ? (governed as AuraQualityTier) : "high";
-  return { ...resolveTierSettings(tier), tier };
+  return typeof governed === "string" && governed !== "auto" && governed in QUALITY_TIERS ? (governed as AuraQualityTier) : undefined;
 }
 
 /**

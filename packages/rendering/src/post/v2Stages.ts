@@ -1533,14 +1533,18 @@ export function runV2LdrTail(
     current = graded;
   }
 
-  // §6.1 insertion "after-tonemap" (display-referred RGBA8 customs).
+  // §6.1 insertion "after-tonemap" (display-referred RGBA8 customs). GU47 E-E
+  // handoff H2: a display custom declaring `inputs` "depth" reads the frame's
+  // scene depth, linearised once per tail (the HDR stages' linZ is gone by now).
+  const tailLinZ = displayCustomLinearDepth(host, state, displayCustoms, frameContext, w, h);
   for (const pass of displayCustoms) {
-    const out = runCustomPass(host, state, pass, current, {}, null, frameContext);
+    const out = runCustomPass(host, state, pass, current, tailLinZ ? { linZ: tailLinZ } : {}, null, frameContext);
     if (out !== current) {
       if (current !== ldr) state.pool.release(current);
       current = out;
     }
   }
+  if (tailLinZ) state.pool.release(tailLinZ);
 
   // S11 — SMAA 1x three-pass (§8.14). The lazy textures warm on first use;
   // until both land, the stage skips (same first-frames window as three's
@@ -1613,6 +1617,40 @@ export function runV2LdrTail(
   // stage leaves GL nothing like the cache believes.
   host.stateCache.invalidate();
   if (current !== ldr) state.pool.release(current);
+}
+
+/**
+ * GU47 E-E handoff H2: linear depth (RGBA32F `.r` = view-space metres, the S1
+ * pass A program) for the LDR tail's `after-tonemap` customs that declare
+ * `inputs` "depth", from the C-13 `sceneDepth` (the forward target's depth
+ * texture; the present already resolved it). `null` — the pass keeps the 1×1
+ * blank, as before — when no display custom reads depth or the frame has no
+ * scene depth. The caller releases the target after the custom loop.
+ */
+function displayCustomLinearDepth(
+  host: WebGL2DeviceHost,
+  state: PostV2State,
+  passes: readonly PostPassDescriptor[],
+  frameContext: PostFrameContextBag | undefined,
+  width: number,
+  height: number
+): RenderTarget | null {
+  if (!passes.some((pass) => pass.inputs.includes("depth"))) return null;
+  const sceneDepth = frameContext?.sceneDepth;
+  if (!sceneDepth?.available || !sceneDepth.texture) return null;
+  const depthHandle = host.textureRegistry?.textures.get(sceneDepth.texture);
+  if (!depthHandle) return null;
+  const gl = host.gl;
+  recordPostStage("S1:depth-prep:after-tonemap");
+  const linZ = state.pool.acquire({ width, height, format: "rgba32f", samples: 1, depth: false });
+  const linProg = program(state, gl, "depth-linearize", DEPTH_LINEARIZE_GLSL);
+  draw(host, state, linProg, asGlTarget(linZ), [depthHandle], (g) => {
+    g.uniform1i(g.getUniformLocation(linProg, "u_depth"), 0);
+    g.uniform1f(g.getUniformLocation(linProg, "u_near"), sceneDepth.linearize.near);
+    g.uniform1f(g.getUniformLocation(linProg, "u_far"), sceneDepth.linearize.far);
+    g.uniform1i(g.getUniformLocation(linProg, "u_ortho"), sceneDepth.linearize.orthographic ? 1 : 0);
+  });
+  return linZ;
 }
 
 function bindOut(host: WebGL2DeviceHost, outTarget: RenderTarget | undefined, w: number, h: number): void {
