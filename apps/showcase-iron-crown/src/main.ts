@@ -30,6 +30,7 @@ import {
   fighterDriveClipId,
   fighterFacingYaw,
   FIGHTERS,
+  isLacquerSwatch,
   isLoopingFighterClip,
   PALETTE_SWATCHES,
   resolveTypedFighterAssets,
@@ -223,7 +224,7 @@ function studioPaletteFor(fighter: FighterId): FighterPalette | undefined {
   const sw = PALETTE_SWATCHES.find((p) => p.id === studioSelection.palette);
   if (!sw) return undefined;
   const def = fighterById(fighter);
-  return { ...def.palette, color: sw.color, emissive: sw.emissive || def.palette.emissive };
+  return { ...def.palette, color: sw.color, emissive: sw.emissive || def.palette.emissive, lacquer: isLacquerSwatch(sw.id) };
 }
 
 /* ================================================================ */

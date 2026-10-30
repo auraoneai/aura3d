@@ -155,6 +155,8 @@ export interface FighterPalette {
   readonly emissiveIntensity: number;
   readonly roughness: number;
   readonly metallic: number;
+  /** Studio palettes with a lacquered finish (IC47-M2: Gilded and Crimson). */
+  readonly lacquer?: boolean;
 }
 
 export interface FighterSpecialSpec {
@@ -297,6 +299,27 @@ export const PALETTE_SWATCHES: readonly { readonly id: string; readonly label: s
 ] as const;
 
 export type PaletteId = (typeof PALETTE_SWATCHES)[number]["id"];
+
+/** Studio swatches with a lacquered finish (IC47-M2: clearcoat on Gilded and Crimson). */
+export function isLacquerSwatch(id: string): boolean {
+  return id === "gilded" || id === "crimson";
+}
+
+/**
+ * GU47 IC47-M2: the fighter's surface extras. A Fresnel rim (E-D `rim`) in the fighter's own emissive colour so the
+ * silhouette separates from the dark venues (on top of the back-rim lights), and a clearcoat on the Gilded and
+ * Crimson studio palettes. Visual only.
+ */
+export function fighterSurface(palette: FighterPalette): {
+  readonly rim: { readonly color: string; readonly power: number; readonly intensity: number };
+  readonly clearcoat?: { readonly clearcoat: number; readonly clearcoatRoughness: number };
+} {
+  const lacquer = palette.lacquer === true;
+  return {
+    rim: { color: palette.emissive, power: 3.2, intensity: 0.85 },
+    ...(lacquer ? { clearcoat: { clearcoat: 0.6, clearcoatRoughness: 0.22 } } : {})
+  };
+}
 
 export function resolveTypedFighterAssets(assetManifest: TypedFighterAssets) {
   const typedFighterAssets: TypedFighterAssets = {};
@@ -477,6 +500,7 @@ export function createFighterNode(
   });
   const palette = tint ?? fighter.palette;
   const yaw = fighterFacingYaw(facing);
+  const surface = fighterSurface(palette);
 
   if (asset) {
     return model(asset, {
@@ -488,10 +512,12 @@ export function createFighterNode(
               color: tint.color,
               roughness: tint.roughness,
               metallic: tint.metallic,
-              ...(tint.emissive ? { emissive: tint.emissive, emissiveIntensity: tint.emissiveIntensity } : {})
+              ...(tint.emissive ? { emissive: tint.emissive, emissiveIntensity: tint.emissiveIntensity } : {}),
+              ...surface.clearcoat,
+              rim: surface.rim
             })
           }
-        : {})
+        : { materialOverrides: [{ rim: surface.rim }] })
     })
       .position(position[0], position[1], position[2])
       .rotate(0, yaw, 0)
