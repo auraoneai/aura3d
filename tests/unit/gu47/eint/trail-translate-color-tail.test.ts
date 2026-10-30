@@ -25,7 +25,7 @@ describe("trail translate (pass 4)", () => {
     const h = harness();
     const wake = h.fx.trail("car", { width: 0.4, life: 1 });
     for (let i = 0; i < 90; i++) {
-      wake.translate(0, 0, 20 / 60);
+      wake.translate!(0, 0, 20 / 60);
       h.step(1 / 60);
     }
     expect(wake.length).toBeGreaterThan(15);
@@ -35,8 +35,8 @@ describe("trail translate (pass 4)", () => {
   it("ignores a zero or non-finite offset", () => {
     const h = harness();
     const trail = h.fx.trail("car", { width: 0.4, life: 1 });
-    trail.translate(0, 0, 0);
-    trail.translate(Number.NaN, 0, 1);
+    trail.translate!(0, 0, 0);
+    trail.translate!(Number.NaN, 0, 1);
     h.step(1 / 60);
     expect(trail.length).toBe(0);
   });

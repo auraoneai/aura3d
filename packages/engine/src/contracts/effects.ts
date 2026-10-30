@@ -47,9 +47,10 @@ export interface AuraTrailHandle extends AuraEffectInstanceHandle {
   clear(): void;
   /**
    * GU47 pass 4: shift every live point by `(dx, dy, dz)` metres. A camera-anchored game that scrolls the world past a
-   * fixed subject calls it each frame with the world's frame offset, so the ribbon streams behind the subject.
+   * fixed subject calls it each frame with the world's frame offset, so the ribbon streams behind the subject. Engine
+   * handles always have it; optional so hand-written test doubles of this interface keep compiling.
    */
-  translate(dx: number, dy: number, dz: number): void;
+  translate?(dx: number, dy: number, dz: number): void;
 }
 /** `burst` options (GU47 E-F names the bag; `sprite` is new). */
 export interface AuraBurstOptions {
