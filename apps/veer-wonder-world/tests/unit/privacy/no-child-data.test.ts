@@ -12,7 +12,8 @@
 // - storage holds only the parent-settings allow-list, under a key that names
 //   the app, never a child;
 // - no child name in titles, routes, UI text, story lines, strings, storage
-//   keys or QA globals, nor anywhere in the shipped sources;
+//   keys or QA globals, nor anywhere in the shipped sources, but for the
+//   owner's welcome (07 O8): one WELCOME_NAME constant in src/personal.ts;
 // - nothing is logged.
 //
 // The child's name is not written in this file: it is the prefix of the app's
@@ -307,11 +308,14 @@ describe("J07: no child name", () => {
     expect(childNameIn(QA_GLOBAL_NAME)).toBe(false);
   });
 
-  it("keeps the child's name out of every shipped source file: code, string literals and comments", () => {
+  it("keeps the child's name out of every shipped source file but the owner's welcome: code, string literals and comments", () => {
     const hits = SOURCES.flatMap((file) => CHILD_NAME_PATTERNS.flatMap((pattern) => hitsIn(file.rel, file.raw, pattern)));
+    // 07 O8: the start screen greets the child by name, from one constant in src/personal.ts and nowhere else.
+    const welcome = hits.filter((hit) => hit.file === "src/personal.ts" && /^export const WELCOME_NAME: string \| null = "[^"]+";$/.test(hit.text));
+    expect(welcome.length, "src/personal.ts names the child once, in WELCOME_NAME").toBeLessThanOrEqual(1);
     expect(
-      describeHits(hits),
-      "MASTER-PROMPT section 6: no child name in source or builds. A name guard list belongs in tools/validate-wonder-world-content.mjs or in a unit test, which are never bundled (07 section 2.4 finding)"
+      describeHits(hits.filter((hit) => !welcome.includes(hit))),
+      "MASTER-PROMPT section 6: no child name in source or builds. A name guard list belongs in tools/validate-wonder-world-content.mjs or in a unit test, which are never bundled (07 section 2.4 finding); the one exception is WELCOME_NAME in src/personal.ts (07 O8)"
     ).toBe("");
   });
 });

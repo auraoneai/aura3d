@@ -8,13 +8,13 @@ export type ModelKey = (typeof MODEL_KEYS)[number];
 
 export const models = defineModelAssets(
   {
-    momo: { url: new URL("./assets/models/momo.3b7a02aa.glb", import.meta.url).pathname, sha256: "3b7a02aa5a5be628f2c939e9faf77ad9490c8db5b0ad7c12b7b43874b6599799", sizeBytes: 1937816 },
-    lulu: { url: new URL("./assets/models/lulu.95ef56f6.glb", import.meta.url).pathname, sha256: "95ef56f602f6d888317469c253770962c81542d81cc936a73535b901830f78c0", sizeBytes: 2060128 },
-    sheru: { url: new URL("./assets/models/sheru.e0e039ec.glb", import.meta.url).pathname, sha256: "e0e039ecf1bc16922040f3bb5a33cb638c410d172741d656541b00d3888bc13d", sizeBytes: 2157616 },
+    momo: { url: new URL("./assets/models/momo.9e38ee8e.glb", import.meta.url).pathname, sha256: "9e38ee8e48b687843a6861e94b845f177b8f99f5ab717c770cdbf9ef27ead0a9", sizeBytes: 1011932 },
+    lulu: { url: new URL("./assets/models/lulu.5cfa945c.glb", import.meta.url).pathname, sha256: "5cfa945cb96ce66de389d4cb8ccf84849d1ea672c75af6f0cab3ea7de5f00eab", sizeBytes: 1156828 },
+    sheru: { url: new URL("./assets/models/sheru.fc538703.glb", import.meta.url).pathname, sha256: "fc538703b105461c645698e59df6e84846c5064b72881555053a3b53017db5b1", sizeBytes: 1123060 },
     gogo: { url: new URL("./assets/models/gogo.a229380d.glb", import.meta.url).pathname, sha256: "a229380d1a9a9fede2a56ba3c4be44156b8e27cf37fcf5485d744cf8b0656cb8", sizeBytes: 984984 },
     gogoCarriage: { url: new URL("./assets/models/gogoCarriage.f4165978.glb", import.meta.url).pathname, sha256: "f4165978aa95292a564270beef659b74dbaadd096fb1c9cf02711cb1a180cb27", sizeBytes: 383332 },
-    lumi: { url: new URL("./assets/models/lumi.d65cb9e6.glb", import.meta.url).pathname, sha256: "d65cb9e69abf3776bf02761f3cb4cf23ba38ad0c2d87a0c430172a5a0b5212b9", sizeBytes: 1751416 },
-    peeko: { url: new URL("./assets/models/peeko.016097bc.glb", import.meta.url).pathname, sha256: "016097bccbc0aad659ba0d62f6161204e49a46be7332ada7fb4d86a7505fffa9", sizeBytes: 2426404 },
+    lumi: { url: new URL("./assets/models/lumi.1ba7cc4a.glb", import.meta.url).pathname, sha256: "1ba7cc4a900c4fe5a66fdb09a8aa32b2fd774dd13b13dc24c99bd6440801f20c", sizeBytes: 964852 },
+    peeko: { url: new URL("./assets/models/peeko.febd9228.glb", import.meta.url).pathname, sha256: "febd9228c5ee11fdeda4300d6ed12383e8180a92d5664c08191540bec71daa80", sizeBytes: 1272148 },
     teddy: { url: new URL("./assets/models/teddy.49af2add.glb", import.meta.url).pathname, sha256: "49af2addc5633b4186ccf59511b02ba17db1887891221f73fc9027531acee159", sizeBytes: 348408 },
     robot: { url: new URL("./assets/models/robot.3be01f4b.glb", import.meta.url).pathname, sha256: "3be01f4bec052ba9502fd90ea7859e73f50dd227073737cfa0b8a2b413542480", sizeBytes: 473160 },
     cow: { url: new URL("./assets/models/cow.133d9ae8.glb", import.meta.url).pathname, sha256: "133d9ae858400afe8ff55e21da5d74e202b6b7cd38b4fdabd9318f67b04d2bcb", sizeBytes: 338732 },

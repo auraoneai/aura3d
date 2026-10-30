@@ -12,6 +12,13 @@
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="/fonts/local.css" />
     <link rel="stylesheet" href="./src/ui/styles.css" />
+    <script>
+      // Wonder World draws with WebGL 2 and uses JavaScript that Safari has had since 15.4 (Array at, Object.hasOwn,
+      // structuredClone): iPadOS 15.4 or later, or any current desktop browser. Without them the app cannot run, so
+      // the splash below shows a notice instead of waiting forever.
+      if (!("WebGL2RenderingContext" in window && "at" in Array.prototype && "hasOwn" in Object && "structuredClone" in window))
+        document.documentElement.classList.add("ww-unsupported");
+    </script>
   </head>
   <body>
     <!--
@@ -23,7 +30,31 @@
     -->
     <main class="ww-app">
       <div id="stage"></div>
-      <div id="ui"></div>
+      <div id="ui">
+        <!--
+          Static splash (data-ui="boot"): visible from the first paint while the
+          bundle downloads, so the page is never blank. src/main.ts removes it
+          once the first screen has faded in over it. The dots are the six
+          character colours of src/ui/accessibility.ts CHARACTER_COLOURS.
+        -->
+        <div class="ww-screen ww-start ww-boot" data-ui="boot" aria-hidden="true">
+          <div class="ww-start-inner">
+            <div class="ww-cast">
+              <span class="ww-cast-dot" style="--ww-dot: #cdbcf2"></span>
+              <span class="ww-cast-dot" style="--ww-dot: #a9e5d1"></span>
+              <span class="ww-cast-dot" style="--ww-dot: #e8c9a2"></span>
+              <span class="ww-cast-dot" style="--ww-dot: #f3aba4"></span>
+              <span class="ww-cast-dot" style="--ww-dot: #f7dc82"></span>
+              <span class="ww-cast-dot" style="--ww-dot: #f9cd92"></span>
+            </div>
+            <p class="ww-start-title">Wonder World</p>
+            <p class="ww-boot-unsupported">
+              This browser is too old for Wonder World. On an iPad it needs iPadOS 15.4 or later; on a computer, a
+              current Chrome, Edge, Firefox or Safari.
+            </p>
+          </div>
+        </div>
+      </div>
     </main>
     <noscript><p class="ww-noscript">Wonder World needs JavaScript to run.</p></noscript>
     <script type="module" src="./src/main.ts"></script>

@@ -3,37 +3,40 @@
   "file": "src/assets/portraits/momo.webp",
   "sha256": "ee427adc00473d4e9185849cf978dbc8bf0f22de0fe641cde7097f2769fcc9af",
   "source": "wonder-characters-20261029T163852Z capture char-momo-turn-front: the app stage rendering the admitted model (software WebGL2), cropped square and scaled to 256 px",
-  "model": "src/assets/models/momo.3b7a02aa.glb",
+  "model": "src/assets/models/momo.9e38ee8e.glb",
   "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
   "review": {
    "status": "approved",
    "reviewer": "agent:claude-opus-5.5",
    "date": "2026-10-29"
-  }
+  },
+  "renderedFrom": "src/assets/models/momo.3b7a02aa.glb: the same model before its normal map was stored as JPEG"
  },
  "lulu": {
   "file": "src/assets/portraits/lulu.webp",
   "sha256": "8e504dc59ede9dc245ca09e8a357e94f35c39c22b872774fc4655f010c681f13",
   "source": "wonder-characters-20261029T163852Z capture char-lulu-turn-front: the app stage rendering the admitted model (software WebGL2), cropped square and scaled to 256 px",
-  "model": "src/assets/models/lulu.95ef56f6.glb",
+  "model": "src/assets/models/lulu.5cfa945c.glb",
   "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
   "review": {
    "status": "approved",
    "reviewer": "agent:claude-opus-5.5",
    "date": "2026-10-29"
-  }
+  },
+  "renderedFrom": "src/assets/models/lulu.95ef56f6.glb: the same model before its normal map was stored as JPEG"
  },
  "sheru": {
   "file": "src/assets/portraits/sheru.webp",
   "sha256": "4356a4b7edf4486dddeccb5d42d1e00a9088370adeac1ae950e4cd84e9751612",
   "source": "wonder-characters-2-20261029T163852Z capture char-sheru-turn-front: the app stage rendering the admitted model (software WebGL2), cropped square and scaled to 256 px",
-  "model": "src/assets/models/sheru.e0e039ec.glb",
+  "model": "src/assets/models/sheru.fc538703.glb",
   "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
   "review": {
    "status": "approved",
    "reviewer": "agent:claude-opus-5.5",
    "date": "2026-10-29"
-  }
+  },
+  "renderedFrom": "src/assets/models/sheru.e0e039ec.glb: the same model before its normal map was stored as JPEG"
  },
  "gogo": {
   "file": "src/assets/portraits/gogo.webp",
@@ -51,24 +54,26 @@
   "file": "src/assets/portraits/lumi.webp",
   "sha256": "3b0b354ee67180eae92641b51de54fa66450132ff586b496ac926b196bcb89c9",
   "source": "wonder-characters-3-20261029T163852Z capture char-lumi-turn-front: the app stage rendering the admitted model (software WebGL2), cropped square and scaled to 256 px",
-  "model": "src/assets/models/lumi.d65cb9e6.glb",
+  "model": "src/assets/models/lumi.1ba7cc4a.glb",
   "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
   "review": {
    "status": "approved",
    "reviewer": "agent:claude-opus-5.5",
    "date": "2026-10-29"
-  }
+  },
+  "renderedFrom": "src/assets/models/lumi.d65cb9e6.glb: the same model before its normal map was stored as JPEG"
  },
  "peeko": {
   "file": "src/assets/portraits/peeko.webp",
   "sha256": "6355440b92da33c16cc6c5987ef0eaa42846ace2fc61a4523e045438f416aded",
   "source": "wonder-characters-3-20261029T163852Z capture char-peeko-turn-front: the app stage rendering the admitted model (software WebGL2), cropped square and scaled to 256 px",
-  "model": "src/assets/models/peeko.016097bc.glb",
+  "model": "src/assets/models/peeko.febd9228.glb",
   "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
   "review": {
    "status": "approved",
    "reviewer": "agent:claude-opus-5.5",
    "date": "2026-10-29"
-  }
+  },
+  "renderedFrom": "src/assets/models/peeko.016097bc.glb: the same model before its normal map was stored as JPEG"
  }
 }

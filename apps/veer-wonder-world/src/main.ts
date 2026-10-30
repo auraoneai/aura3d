@@ -27,7 +27,7 @@ import { createApp, type WonderApp } from "./app.js";
 import { installWonderQaHooks } from "./qa/install-hooks.js";
 import { readFlags } from "./runtime/feature-flags.js";
 import type { PlayMode } from "./types.js";
-import { prefersMoreContrast, prefersReducedMotion } from "./ui/accessibility.js";
+import { REDUCED_MOTION_CLASS, prefersMoreContrast, prefersReducedMotion } from "./ui/accessibility.js";
 import { loadSettings, safeLocalStorage } from "./ui/settings-store.js";
 
 const QA_PARAMS = {
@@ -51,6 +51,37 @@ function bootErrorText(error: unknown): string {
 
 function markBootError(error: unknown): void {
   document.body.dataset["aura3dError"] = bootErrorText(error);
+}
+
+/**
+ * index.html shows a static splash (`data-ui="boot"`) from the first paint, so the page is not blank while the
+ * bundle downloads and the stage boots. The app's first screen fades in above it, and the splash goes when that
+ * fade ends, so no blank gap opens between the two. In reduced motion nothing fades: the first screen is already
+ * fully drawn above the splash, which goes at once. SPLASH_MAX_MS is only a backstop for a screen that never
+ * finishes its fade.
+ */
+const SPLASH_MAX_MS = 10_000;
+
+function removeSplashUnderFirstScreen(uiRoot: HTMLElement): void {
+  const splash = uiRoot.querySelector('[data-ui="boot"]');
+  if (!splash) return;
+  if (document.documentElement.classList.contains(REDUCED_MOTION_CLASS) || prefersReducedMotion(window)) {
+    splash.remove();
+    return;
+  }
+  // The first screen is already fading in: the splash's own content fades out under it (styles.css).
+  splash.classList.add("ww-boot-leaving");
+  let timer = 0;
+  const remove = (): void => {
+    window.clearTimeout(timer);
+    uiRoot.removeEventListener("animationend", onAnimationEnd);
+    splash.remove();
+  };
+  const onAnimationEnd = (event: AnimationEvent): void => {
+    if (event.target instanceof Element && event.target.classList.contains("ww-screen")) remove();
+  };
+  uiRoot.addEventListener("animationend", onAnimationEnd);
+  timer = window.setTimeout(remove, SPLASH_MAX_MS);
 }
 
 function boot(): void {
@@ -91,6 +122,7 @@ function boot(): void {
   });
   app = created;
   const qa = installWonderQaHooks(created, { seed: params.seed });
+  removeSplashUnderFirstScreen(uiRoot);
 
   created.whenReady().catch((error: unknown) => {
     qa.reportError(error);

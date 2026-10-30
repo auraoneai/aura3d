@@ -7,6 +7,7 @@
  * minutes come from the 2026-10-29 runs, "est." where no run has measured the file yet):
  *   apps/veer-wonder-world/tools/remote-run.sh first-frame build                     (10 min)
  *   apps/veer-wonder-world/tools/remote-run.sh touch-and-layout                      (26 min)
+ *   apps/veer-wonder-world/tools/remote-run.sh start-screen                          (the welcome at 13 sizes, est. 15 min)
  *   apps/veer-wonder-world/tools/remote-run.sh audio-and-pausing                     (est. 8 min)
  *   apps/veer-wonder-world/tools/remote-run.sh low-motion                            (URL flag, about 26 min)
  *   apps/veer-wonder-world/tools/remote-run.sh low-motion-2                          (parent setting, about 27 min)
@@ -21,6 +22,8 @@
  *   apps/veer-wonder-world/tools/remote-run.sh characters-3                          (lumi, peeko, est. 35 min)
  *   apps/veer-wonder-world/tools/remote-run.sh stills / stills-2 / stills-3 / stills-4   (8 stories each, est. 20-30 min)
  *   apps/veer-wonder-world/tools/remote-run.sh parent-panel consumer-smoke           (est. 20 min)
+ * After a deploy of the unlisted preview (apps/veer-wonder-world/tools/deploy-preview.sh), outside the suite above:
+ *   apps/veer-wonder-world/tools/remote-run.sh live                                  (the deployed address, est. 10 min)
  * The ACR task step stops at 60 minutes and one spec file runs inside one run, so no file may need more than about
  * 35 minutes: the long suites are split across files (and runs) instead of one SPECS glob.
  *

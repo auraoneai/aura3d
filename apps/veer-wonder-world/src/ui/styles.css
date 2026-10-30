@@ -169,17 +169,22 @@ b {
   display: none !important;
 }
 
-#ui h1,
-#ui h2,
-#ui h3,
-#ui p,
-#ui ul,
-#ui fieldset {
+/*
+ * Element resets carry no specificity (`:where`), so every component rule below wins over them. Written as
+ * `#ui button`, the reset out-ranked every class: each purple button showed its parent's dark ink at about 2:1
+ * instead of its white label, and lost its own size and weight.
+ */
+:where(#ui) h1,
+:where(#ui) h2,
+:where(#ui) h3,
+:where(#ui) p,
+:where(#ui) ul,
+:where(#ui) fieldset {
   margin: 0;
 }
 
-#ui button,
-#ui input {
+:where(#ui) button,
+:where(#ui) input {
   font: inherit;
   color: inherit;
 }
@@ -585,21 +590,332 @@ b {
   background: linear-gradient(180deg, var(--ww-sky) 0%, var(--ww-meadow) 100%);
 }
 
+/*
+ * The static splash in index.html: the start screen's background, dots and title, shown from the first paint
+ * while the bundle downloads. It never fades (a fade would hold it invisible while the main thread is busy),
+ * takes no taps, and sits under every screen; src/main.ts removes it once the first screen has faded in.
+ */
+.ww-start.ww-boot {
+  z-index: 0;
+  pointer-events: none;
+  animation: none;
+}
+
+/* Once the first screen starts to fade in over it, the splash's dots and title fade out first, so the two layouts
+   never show through each other; its background, the same as the start screen's, stays until it is removed. */
+.ww-boot.ww-boot-leaving .ww-start-inner {
+  opacity: 0;
+  transition: opacity 160ms ease-out;
+}
+
+/* Shown only when the browser has no WebGL 2 (the check in index.html): the app cannot run there. */
+.ww-boot-unsupported {
+  display: none;
+  max-width: 28rem;
+  color: var(--ww-ink);
+  font-size: 1.125rem;
+  line-height: 1.45;
+}
+
+.ww-unsupported .ww-boot-unsupported {
+  display: block;
+}
+
 .ww-start-inner {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
-  width: min(100%, 34rem);
+  gap: clamp(16px, 3vh, 24px);
+  width: min(100%, 36rem);
   text-align: center;
 }
 
+/* The welcome (portraits and title) and the controls; side by side on short landscape screens (end of this file). */
+.ww-start-hero,
+.ww-start-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(16px, 3vh, 24px);
+  width: 100%;
+  min-width: 0;
+}
+
 .ww-start-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   color: var(--ww-ink);
   font-size: clamp(2.25rem, 8vw, 3.25rem);
   font-weight: 600;
   line-height: 1.1;
   letter-spacing: -0.02em;
+}
+
+/*
+ * The welcome (07 O8): a sky behind the start screen (sun glow, a rainbow in the six character colours, three
+ * slow clouds), the six characters' portraits, and "Welcome to" over the big "<name>'s Wonder World". Every
+ * colour stop of the big line keeps at least 3:1 against the sky (large text), and neighbouring stops are close
+ * in hue, so no blend between them turns grey. Entrances run once; the slow loops (faces 3.6 s, clouds 48-60 s)
+ * settle after a few rounds, so a tablet left on the welcome stops redrawing; reduced motion stops all of it (end
+ * of this file).
+ *
+ * The sky is fixed to the window, so it stays put if a small screen has to scroll the welcome.
+ */
+.ww-start-sky {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ww-start-sun {
+  position: absolute;
+  top: -22vmin;
+  right: -14vmin;
+  width: 64vmin;
+  height: 64vmin;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 236, 170, 0.95) 0%, rgba(255, 236, 170, 0.5) 36%, rgba(255, 236, 170, 0) 70%);
+}
+
+/*
+ * The rainbow is sized by the window's height, not its width, so its top stays at about half the height on any
+ * screen: below the title, behind the controls. Six bands, one per character colour, in rainbow order from the
+ * outside in. Short landscape screens use a smaller one (end of this file).
+ */
+.ww-start-rainbow {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 100vh;
+  height: 50vh;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    circle at 50% 100%,
+    transparent 0 40%,
+    #cdbcf2 40% 44.5%,
+    #a9e5d1 44.5% 49%,
+    #e8c9a2 49% 53.5%,
+    #f7dc82 53.5% 58%,
+    #f9cd92 58% 62.5%,
+    #f3aba4 62.5% 67%,
+    transparent 67%
+  );
+  opacity: 0.7;
+}
+
+.ww-start-cloud {
+  position: absolute;
+  width: 18vmin;
+  height: 6vmin;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(91, 70, 163, 0.08);
+  animation-name: ww-drift;
+  animation-duration: 48s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: 2;
+  animation-direction: alternate;
+  animation-fill-mode: both;
+}
+
+.ww-start-cloud::before,
+.ww-start-cloud::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: inherit;
+}
+
+.ww-start-cloud::before {
+  left: 14%;
+  bottom: 30%;
+  width: 45%;
+  height: 140%;
+}
+
+.ww-start-cloud::after {
+  right: 16%;
+  bottom: 35%;
+  width: 34%;
+  height: 110%;
+}
+
+/* Clouds keep to the corners, clear of the portraits and the title: two along the top, one low on the left. */
+.ww-start-cloud-1 {
+  top: 4%;
+  left: 4%;
+}
+
+.ww-start-cloud-2 {
+  top: 4%;
+  right: 4%;
+  width: 14vmin;
+  height: 5vmin;
+  animation-duration: 60s;
+  animation-delay: -20s;
+}
+
+.ww-start-cloud-3 {
+  bottom: 3%;
+  left: 5%;
+  width: 11vmin;
+  height: 4vmin;
+  animation-duration: 54s;
+  animation-delay: -35s;
+}
+
+/* The top-left cloud's tall puff rises 0.7 of its height above its box: keep it inside the top edge. */
+@media (min-height: 600px) {
+  .ww-start-cloud-1 {
+    top: 6%;
+  }
+}
+
+/* Portraits in a gentle arc: the middle faces stand a little higher. */
+.ww-start-parade {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(6px, 1.6vw, 14px);
+}
+
+.ww-start-face {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: clamp(46px, 11vw, 76px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 4px solid var(--ww-dot, #d5d9e2);
+  border-radius: 50%;
+  background: var(--ww-surface);
+  box-shadow: 0 6px 16px rgba(42, 38, 56, 0.12);
+  animation-name: ww-hello, ww-bob;
+  animation-duration: 600ms, 3.6s;
+  animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1), ease-in-out;
+  animation-delay: calc(var(--ww-i, 0) * 110ms), calc(700ms + var(--ww-i, 0) * 300ms);
+  animation-iteration-count: 1, 4;
+  animation-fill-mode: both, none;
+}
+
+.ww-start-face:nth-child(2),
+.ww-start-face:nth-child(5) {
+  margin-bottom: 10px;
+}
+
+.ww-start-face:nth-child(3),
+.ww-start-face:nth-child(4) {
+  margin-bottom: 18px;
+}
+
+/* The portraits are full-body renders on their own backdrops: the image is drawn at 1.5 times the ring, centred on
+   the character (a size and offsets, not a transform, so the round clip holds in every browser; --ww-face-shift
+   looks lower for a character drawn low in its picture), so each ring holds the character. */
+.ww-start-face {
+  position: relative;
+}
+
+.ww-start-face-img {
+  position: absolute;
+  top: calc(-25% - var(--ww-face-shift, 0%));
+  left: -25%;
+  width: 150%;
+  max-width: none;
+  height: 150%;
+  object-fit: cover;
+}
+
+.ww-start-welcome {
+  color: var(--ww-primary);
+  font-size: clamp(1.25rem, 3.4vw, 1.875rem);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+
+.ww-start-product {
+  white-space: nowrap;
+}
+
+.ww-start-name {
+  padding-bottom: 0.06em;
+  background: linear-gradient(100deg, #5b46a3 0%, #8a3fb0 30%, #b8407a 62%, #c0562a 85%, #a86a00 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-size: clamp(2.25rem, 10vw, 5.25rem);
+  line-height: 1.02;
+  text-wrap: balance;
+  filter: drop-shadow(0 2px 0 rgba(255, 255, 255, 0.95)) drop-shadow(0 12px 24px rgba(91, 70, 163, 0.2));
+  animation-name: ww-rise;
+  animation-duration: 700ms;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation-delay: 120ms;
+  animation-fill-mode: both;
+}
+
+.high-contrast .ww-start-sky {
+  display: none;
+}
+
+.high-contrast .ww-start-name {
+  background: none;
+  color: var(--ww-ink);
+  -webkit-text-fill-color: currentColor;
+  filter: none;
+}
+
+.high-contrast .ww-start-face {
+  border-color: #000000;
+  box-shadow: none;
+}
+
+@keyframes ww-hello {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ww-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes ww-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ww-drift {
+  from {
+    transform: translateX(-3vmin);
+  }
+  to {
+    transform: translateX(3vmin);
+  }
 }
 
 .ww-start-head,
@@ -615,6 +931,7 @@ b {
   padding: 2px 12px;
   border: 1px solid var(--ww-line-strong);
   border-radius: 999px;
+  background: var(--ww-surface);
   color: var(--ww-ink-soft);
   font-size: 0.8125rem;
   font-weight: 500;
@@ -632,6 +949,22 @@ b {
 
 .ww-start .ww-legend {
   justify-content: center;
+}
+
+/* Over the sky, the question and the hint under the button sit on a soft backing, so no rainbow band edge runs
+   through their text (one-column layouts put the bands behind the controls). */
+.ww-start .ww-legend-text,
+.ww-start-hint {
+  padding: 2px 12px;
+  border-radius: 999px;
+  background: rgba(255, 253, 249, 0.88);
+}
+
+/* Over the sky the chosen mode is filled in, so it cannot read as a gap in the row. */
+html:not(.high-contrast) .ww-start .ww-choice-input:checked + .ww-segment-face {
+  border-color: var(--ww-primary);
+  background: var(--ww-primary);
+  color: var(--ww-on-primary);
 }
 
 .ww-start-button {
@@ -663,10 +996,17 @@ b {
   height: 30px;
 }
 
+/* The button takes focus when the screen opens; its ring stands clear of the pill, in the pill's own colour. */
+#ui .ww-start-button:focus-visible {
+  outline-color: var(--ww-primary);
+  outline-offset: 4px;
+}
+
 .ww-start-note {
   display: grid;
   gap: 8px;
   width: 100%;
+  max-width: 26rem;
   padding: 16px 20px;
   border: 1px solid var(--ww-line);
   border-radius: var(--ww-radius);
@@ -674,6 +1014,10 @@ b {
   font-size: 0.9375rem;
   line-height: 1.5;
   text-align: left;
+}
+
+.ww-start-note p {
+  text-wrap: pretty;
 }
 
 /* Loading ---------------------------------------------------------------------- */
@@ -1298,6 +1642,30 @@ html.high-contrast .ww-caption-line {
   }
 }
 
+/* Phones: one cloud, peeking in above the portraits, and a softer sun that leaves their rings their own colours. */
+@media (max-width: 560px) {
+  .ww-start-cloud-1 {
+    top: 1%;
+    left: -5%;
+  }
+
+  .ww-start-cloud-2,
+  .ww-start-cloud-3 {
+    display: none;
+  }
+
+  .ww-start-sun {
+    opacity: 0.6;
+  }
+}
+
+/* Short phones: the welcome fills the height, so the portraits sit at the top edge where the cloud would be. */
+@media (max-width: 560px) and (max-height: 700px) {
+  .ww-start-cloud-1 {
+    display: none;
+  }
+}
+
 @media (max-width: 360px) {
   .ww-pill-button {
     padding: 0 12px 0 10px;
@@ -1306,19 +1674,95 @@ html.high-contrast .ww-caption-line {
   .ww-controls-group {
     gap: 6px;
   }
+
+  /* Six faces and their gaps fit a 320 px phone. */
+  .ww-start-parade {
+    gap: 4px;
+  }
+
+  .ww-start-face {
+    width: 40px;
+    border-width: 3px;
+  }
+
+  /* "Watch and sing" stays on one line in a 320 px phone's half-width segment. */
+  .ww-start .ww-segment-face {
+    padding-inline: 6px;
+  }
+
+  .ww-start-cloud-1 {
+    display: none;
+  }
+}
+
+/*
+ * Landscape screens up to 840 px tall (laptops, iPads held sideways, phones on their side): the welcome stands beside
+ * the controls, so the start screen fits without scrolling; in one column it is about 800 px tall. The big line
+ * scales with the narrower column, and the rainbow is smaller, so its top stays under the title.
+ */
+@media (orientation: landscape) and (max-height: 840px) and (min-width: 640px) {
+  .ww-start:not(.ww-boot) > .ww-start-inner {
+    flex-direction: row;
+    gap: clamp(24px, 5vw, 72px);
+    width: min(100%, 68rem);
+  }
+
+  .ww-start-hero {
+    flex: 1.2 1 0;
+  }
+
+  .ww-start-panel {
+    flex: 1 1 0;
+    max-width: 26rem;
+  }
+
+  .ww-start-name {
+    font-size: clamp(2.25rem, 6.4vw, 5.25rem);
+  }
+
+  /* The portrait row stays inside its column: 65 px rings at 1024 px wide, full size from about 1190 px. */
+  .ww-start-face {
+    width: clamp(46px, 6.4vw, 76px);
+  }
+
+  .ww-start-rainbow {
+    width: 48vh;
+    height: 24vh;
+  }
 }
 
 @media (orientation: landscape) and (max-height: 560px) {
-  .ww-start-inner {
+  .ww-start-hero,
+  .ww-start-panel {
     gap: 12px;
   }
 
-  .ww-start .ww-cast {
-    display: none;
+  /* The welcome's column has height to spare beside the controls: the portraits stay readable. */
+  .ww-start-face {
+    width: clamp(36px, 5.6vw, 52px);
+    border-width: 3px;
+  }
+
+  .ww-start-face:nth-child(2),
+  .ww-start-face:nth-child(5) {
+    margin-bottom: 5px;
+  }
+
+  .ww-start-face:nth-child(3),
+  .ww-start-face:nth-child(4) {
+    margin-bottom: 9px;
   }
 
   .ww-start-title {
     font-size: 2rem;
+  }
+
+  .ww-start-welcome {
+    font-size: 1.125rem;
+  }
+
+  .ww-start-name {
+    font-size: clamp(2rem, 10vh, 3rem);
   }
 
   .ww-start-button {
@@ -1328,6 +1772,17 @@ html.high-contrast .ww-caption-line {
 
   .ww-start-note {
     padding: 12px 16px;
+    font-size: 0.875rem;
+  }
+
+  /* The controls reach the top and bottom edges here: the top-right cloud would rest on the question above them,
+     and a centred rainbow would sit behind the note card. The rainbow stands under the welcome's column instead. */
+  .ww-start-cloud-2 {
+    display: none;
+  }
+
+  .ww-start-rainbow {
+    left: 27%;
   }
 
   .ww-parent-overlay {
@@ -1422,5 +1877,16 @@ html.high-contrast .ww-caption-line {
 
   .ww-hold-progress {
     stroke: Highlight;
+  }
+
+  .ww-start-sky {
+    display: none;
+  }
+
+  .ww-start-name {
+    background: none;
+    color: CanvasText;
+    -webkit-text-fill-color: CanvasText;
+    filter: none;
   }
 }

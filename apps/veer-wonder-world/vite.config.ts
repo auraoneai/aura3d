@@ -134,7 +134,12 @@ export default defineConfig({
   server: { host: "127.0.0.1", port: 5191, strictPort: false, fs: { allow: [repoRoot] } },
   preview: { host: "127.0.0.1", port: 4191, strictPort: false },
   build: {
-    target: "es2022",
+    // The oldest browsers the app supports, so esbuild lowers whatever syntax they lack. With "es2022" the engine's
+    // class static blocks (`static { this.zero = ... }` in its math classes) shipped as written: Safari parses those
+    // only from 16.4, so on iPadOS 15 and 16.0-16.3 the whole bundle failed to load and the page stayed on its
+    // splash. Safari 15 still needs 15.4 or later at run time (Array.prototype.at, structuredClone, Object.hasOwn),
+    // which every iPadOS 15 device can install; older devices lack WebGL2 and get the notice in index.html.
+    target: ["safari15", "chrome100", "edge100", "firefox100"],
     outDir: path.resolve(appDir, "dist"),
     emptyOutDir: true,
     assetsInlineLimit: 0,

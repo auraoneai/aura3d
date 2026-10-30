@@ -73,7 +73,12 @@ export interface AssetPreloaderOptions {
   readonly fetch?: FetchLike;
   /** How long one preload waits for a model before it is drawn as a stand-in. Default 10000 ms. */
   readonly timeoutMs?: number;
-  /** Cap on one download; one still running then is aborted and retried by the next preload. Default 120000 ms. */
+  /**
+   * Cap on one download; one still running then is aborted and retried by the next preload. Default 900000 ms (15
+   * minutes): the cap is for a download that is stuck, not slow. A page whose main thread is held (software WebGL
+   * compiling shaders while the welcome animates) can leave a small, fully sent model unread for minutes, and a
+   * 2-minute cap then aborted it (runs wonder-exp-a/b/c-20261029T222803Z, check-deploy --browser).
+   */
   readonly maxMs?: number;
   /** SHA-256 hex of the bytes; null skips the check. Default: Web Crypto when available. */
   readonly digest?: ((bytes: ArrayBuffer) => Promise<string>) | null;
@@ -143,7 +148,7 @@ function defaultSource(key: ModelKey): ModelSource | undefined {
 export function createAssetPreloader(options: AssetPreloaderOptions = {}): AssetPreloader {
   const fetchFn = options.fetch ?? defaultFetch();
   const timeoutMs = options.timeoutMs ?? 10_000;
-  const maxMs = Math.max(timeoutMs, options.maxMs ?? 120_000);
+  const maxMs = Math.max(timeoutMs, options.maxMs ?? 900_000);
   const digest = options.digest === undefined ? defaultDigest() : options.digest;
   const enabled = options.enabled ?? models.enabled;
   const source = options.source ?? defaultSource;

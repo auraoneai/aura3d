@@ -1,6 +1,6 @@
 # Wonder World evidence (prototype)
 
-Wonder World is the toddler story app in `apps/<app>/`, with its PRDs in `docs/prds/<app>/`. `<app>` stands for the app's folder name, which every record here redacts. Its label is **prototype**. It carries `noindex` and is not in the site catalog, sitemap or game inventory.
+Wonder World is the toddler story app in `apps/<app>/`, with its PRDs in `docs/prds/<app>/`. `<app>` stands for the app's folder name, which every record here redacts. Its label is **prototype**. It carries `noindex` and is not in the site catalog, sitemap or game inventory. Since 2026-10-29 it also runs as an unlisted preview ([`deployments.md`](deployments.md)).
 
 **What these runs are.** Every browser result here comes from headless Chromium on the remote runner (`tools/remote-acr/run.sh`, ACR Tasks) with software WebGL2:
 
@@ -22,5 +22,6 @@ That is **not real-GPU or physical-device evidence**. Frame times and load times
 | [`p0/`](p0/README.md) | Foundation: build, content lint, privacy scan, `check-deploy --browser`, first frame with models and with stand-ins, the `?diag=1` panel, consumer smoke on `create-aura3d@4.5.0` |
 | [`p1/`](p1/README.md) | P1 pilot (E01, E02, E05, E06, E09, E17, G01-G03) and every app-wide run: playback, no-speech, touch and layout, audio and pausing, low motion, grown-up panel, character sheets, look-dev, stills, issue log |
 | [`p2/`](p2/README.md) | The other 14 episodes and 9 activities: the same runs, story by story |
+| [`deployments.md`](deployments.md) | The unlisted preview: every deployment, the gates its build passed on the deploy host, its live checks, and the rollback target |
 
 Screenshots live under `<phase>/screens/2026-10-29/<run>/` next to their JSON records, the only image folder the repo tracks (`.gitignore`: `!evidence/**/screens/**/*.jpg`).
