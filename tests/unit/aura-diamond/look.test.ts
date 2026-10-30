@@ -179,3 +179,17 @@ describe("aura-diamond look plan", () => {
     }
   });
 });
+
+describe("aura-diamond GU47 HUD (DIA-H1)", () => {
+  it("gives every park its own HUD accent and keeps the 4.6.2 amber under ?look=original; no Barlow, in-play text >= 12 px", async () => {
+    const { hudAccent, ORIGINAL_HUD_ACCENT } = await import("../../../apps/showcase-aura-diamond-3d/art/look");
+    const { PARK_ORDER } = await import("../../../apps/showcase-aura-diamond-3d/src/rules");
+    const accents = PARK_ORDER.map((p) => hudAccent(p, "gu47").toLowerCase());
+    expect(new Set(accents).size).toBe(PARK_ORDER.length);
+    for (const p of PARK_ORDER) expect(hudAccent(p, "original")).toBe(ORIGINAL_HUD_ACCENT);
+    const html = readFileSync(join(__dirname, "../../../apps/showcase-aura-diamond-3d/index.html"), "utf8");
+    expect(/barlow/i.test(html)).toBe(false);
+    const tick = /\.tick\s*\{[^}]*font-size:\s*([\d.]+)px/.exec(html);
+    expect(Number(tick?.[1])).toBeGreaterThanOrEqual(12);
+  });
+});

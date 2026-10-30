@@ -539,3 +539,11 @@ export function lookPlan(parkId: ParkId, variant: DiamondLookVariant, tier: Diam
 export function resolveSkyMode(search: string): DiamondSkyMode {
   return new URLSearchParams(search).get("sky") === "hdri" ? "hdri" : "analytic";
 }
+
+/** 4.6.2 HUD accent (`--amber` in index.html), kept under `?look=original`. */
+export const ORIGINAL_HUD_ACCENT = "#ffb03a";
+
+/** DIA-H1: the HUD accent per park (the park's own accent in GU47, the 4.6.2 amber under `?look=original`). */
+export function hudAccent(park: ParkId, variant: DiamondLookVariant): string {
+  return variant === "gu47" ? PARK_LOOKS[park].accent : ORIGINAL_HUD_ACCENT;
+}

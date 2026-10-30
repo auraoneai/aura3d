@@ -149,7 +149,7 @@ import {
   buildParkScene,
   type DiamondSceneContext
 } from "./scene";
-import { PARK_LOOKS, lookPlan, resolveDiamondTier, resolveLookVariant, resolveSkyMode } from "../art/look";
+import { PARK_LOOKS, hudAccent, lookPlan, resolveDiamondTier, resolveLookVariant, resolveSkyMode } from "../art/look";
 import { BoardThrottle, boardModel, homeRunPhase } from "../art/board";
 import { cheerHop, earthYaw } from "../art/ambient";
 import { boardTexture } from "./boardTexture";
@@ -405,6 +405,8 @@ function boot(): void {
    */
   function applyParkLook(id: ParkId): void {
     const plan = lookPlan(id, sceneCtx.variant, sceneCtx.tier, sceneCtx.skyMode);
+    // DIA-H1: the HUD accent (index.html --amber: count pill, linescore, chips) follows the park.
+    document.documentElement.style.setProperty("--amber", hudAccent(id, sceneCtx.variant));
     if (!plan.output) return;
     try {
       (app as any).setOutput?.(plan.output);
