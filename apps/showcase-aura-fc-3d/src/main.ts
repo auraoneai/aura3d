@@ -24,6 +24,7 @@ import { createSim, PITCH_HX, PITCH_HZ, PEN_X, BALL_R, BALL_VIS_R, SIM_DT } from
 import { buildFcScene, resolveWorld, applyVenue, tickWorld, ATHLETE_IDS, VENUE_LOOKS, withoutLookAo, applyPostAccessibility } from "./game/scene";
 import { mountFcTouch } from "./game/touch";
 import { fireFcVfx, registerFcVfxPack, type FcVfxEvent } from "./game/vfx";
+import { fcQaCrops } from "./game/qaCrops";
 import { fitCameraToAspect } from "./game/camera";
 import { loadSave } from "./game/save";
 import { resolveAthlete, applyAthleteKit, poseAthlete, skinFor, teamKitForId, type AthleteRig } from "./game/rig";
@@ -766,6 +767,19 @@ function boot(): void {
   const frameFn = frame();
   app.onFrame((f) => frameFn(f));
 
+  // GU47 E-I crop contract: named crops, projected through the shown camera whenever the capture reads them
+  {
+    const g = window as unknown as { __AURA_QA__?: Record<string, unknown> };
+    g.__AURA_QA__ = {
+      ...(g.__AURA_QA__ ?? {}),
+      crops: () => {
+        const s = sim.state;
+        const me = (s.players as PlayerState[]).find((p) => p.id === s.controlledId) ?? null;
+        const aspect = canvas && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : 16 / 9;
+        return fcQaCrops({ eye: cam.shownEye, target: cam.target, fovDeg: cam.shownFov, aspect }, me, [s.ball.x, s.ball.y, s.ball.z]);
+      }
+    };
+  }
   installQaHooks("aura-fc-3d", {
     ready: () => appReady,
     app: () => app,
