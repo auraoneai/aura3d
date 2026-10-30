@@ -87,7 +87,7 @@ const FEATURE: ShaderFeature = {
   flag: "A3D_QR_MATERIALS",
   order: 10,
   select: (input) => selectInstanceColorTargetFeature(input.item, input.pass),
-  defines: (value) => value === "emissive"
+  defines: (value): Readonly<Record<string, string | number | true>> => value === "emissive"
     ? { A3D_INSTANCE_COLOR_EMISSIVE: true, A3D_INSTANCE_EMISSIVE_ATTRIBUTE: true }
     : { A3D_INSTANCE_COLOR_EMISSIVE: true },
   chunks: [A3D_INSTANCE_EMISSIVE_VTX_PARS_CHUNK, A3D_INSTANCE_EMISSIVE_VTX_END_CHUNK, A3D_INSTANCE_EMISSIVE_FRAG_PARS_CHUNK, A3D_INSTANCE_EMISSIVE_FRAG_CALL_CHUNK],
