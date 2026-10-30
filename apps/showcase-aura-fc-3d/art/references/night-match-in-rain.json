@@ -1,0 +1,15 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-aura-fc-3d",
+  "file": "references/night-match-in-rain.json",
+  "source": "generic reference: a televised European night match in heavy rain under four steel floodlight banks",
+  "licence": "reference-only (description, no image)",
+  "why": "Rain streaks are only visible where they cross a floodlight shaft, back-lit toward the camera against a dark sky",
+  "match": [
+    "rain reads as thin slanted streaks inside the flood cones and disappears against the dark sky outside them",
+    "one dominant flood bank behind the far stand casts long player shadows toward the camera",
+    "haze glows around each bank; the sky above the roofline stays dark storm navy (top row luma <= 45)",
+    "the pitch stays the brightest large area of the frame (pitch cells 55-95), never a flat grey wash"
+  ],
+  "used_by": ["FC47-L1", "FC47-L2", "FC47-S2", "FC47-S3"]
+}

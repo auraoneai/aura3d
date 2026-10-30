@@ -1,0 +1,15 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-aura-fc-3d",
+  "file": "references/wet-turf-specular.json",
+  "source": "generic reference: a mown pitch soaked by rain, photographed from the main-stand gantry",
+  "licence": "reference-only (description, no image)",
+  "why": "Wet turf throws long specular streaks from each flood bank while the mow stripes stay readable underneath",
+  "match": [
+    "turf roughness drops (about 0.35) so each flood bank leaves an elongated highlight on the grass",
+    "mow stripes stay visible as a tint change of about 30 percent, not as hard painted bands",
+    "grass shows texture (blade noise) at broadcast distance: pitch luma stddev >= 6",
+    "on the dry venues (Favela dust, Lagos sand) the surface stays matte"
+  ],
+  "used_by": ["FC47-M1", "FC47-M3"]
+}
