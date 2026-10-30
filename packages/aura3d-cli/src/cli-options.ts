@@ -96,11 +96,11 @@ export function createCliOptionReaders(args: readonly string[]) {
     return parts;
   }
 
-  function readAssetType(): "model" | "texture" | "environment" | "audio" | "navigation" | undefined {
+  function readAssetType(): "model" | "texture" | "environment" | "audio" | "navigation" | "lut" | undefined {
     const value = readOption("--type");
     if (!value) return undefined;
-    if (value === "model" || value === "texture" || value === "environment" || value === "audio" || value === "navigation") return value;
-    throw new Error(`Unsupported --type value "${value}". Use model, texture, environment, audio, or navigation.`);
+    if (value === "model" || value === "texture" || value === "environment" || value === "audio" || value === "navigation" || value === "lut") return value;
+    throw new Error(`Unsupported --type value "${value}". Use model, texture, environment, audio, navigation, or lut.`);
   }
 
   function readAssetQuality(): AuraAssetQuality | undefined {

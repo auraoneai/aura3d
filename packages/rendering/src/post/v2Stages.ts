@@ -62,9 +62,13 @@ import { TAA_RESOLVE_GLSL, TAA_UPSCALE_GLSL } from "./shaders/taa.glsl.js";
 import { DOF_COMPOSITE_GLSL, DOF_GATHER_GLSL, DOF_NEAR_TILE_GLSL, DOF_PREFILTER_GLSL } from "./shaders/dof.glsl.js";
 import { MB_NEIGHBOR_GLSL, MB_RECONSTRUCT_GLSL, MB_TILE_MAX_GLSL } from "./shaders/motionBlur.glsl.js";
 import { EXPOSURE_ADAPT_GLSL, EXPOSURE_LUMA_LOG_GLSL, EXPOSURE_MUL_GLSL, EXPOSURE_REDUCE_GLSL } from "./shaders/exposure.glsl.js";
+import { HDR_GRADE_GLSL, resolveHdrGradeUniforms, type HdrGradeInput, type HdrGradeUniforms } from "./shaders/hdrGrade.glsl.js";
+import { SSR_COMPOSITE_GLSL, SSR_DEFAULT_STEPS, SSR_DEFAULT_THICKNESS, SSR_TRACE_GLSL } from "./shaders/ssr.glsl.js";
 import { SMAA_BLEND_GLSL, SMAA_EDGES_GLSL, SMAA_WEIGHTS_GLSL } from "./shaders/smaa.glsl.js";
 import { FXAA_185_FRAGMENT_GLSL } from "./shaders/fxaa.glsl.js";
-import { POST_INSERT_ANCHORS, type AutoExposureOptionsV2, type DofOptions, type GtaoOptions, type GodRayOptions, type MotionBlurOptions, type TaaOptions } from "./PostGraph";
+import { POST_INSERT_ANCHORS, type AutoExposureOptionsV2, type DofOptions, type GtaoOptions, type GodRayOptions, type LutTexture3D, type MotionBlurOptions, type TaaOptions } from "./PostGraph";
+import { DisplayLutCache } from "./DisplayLutCache";
+import { parseCubeLut } from "./CubeLut";
 
 export { vignetteColorRgb };
 
@@ -115,6 +119,102 @@ interface PostV2State {
   smaa: { area: WebGLTexture | null; search: WebGLTexture | null; requested: boolean };
   /** C-13 cross-pass publish/read surface for custom passes (per host). */
   readonly postBlackboard: Map<string, unknown>;
+  /** GU47 E-C (EC-2): uploaded user `.cube` LUTs, one TEXTURE_3D per source (LRU 4). */
+  lutCache?: DisplayLutCache<WebGLTexture>;
+  /** The LUT bag the in-flight `lutCache.acquire` bakes (set only around that call). */
+  lutBaking?: PostLutBag;
+  /** Sources whose `.cube` failed to parse; never retried per frame. */
+  readonly lutFailed: Set<string>;
+}
+
+/**
+ * GU47 E-C (EC-2): the `pipeline.lut` bag. The engine bridge emits it once the
+ * `.cube` text has loaded (`source` = the served URL); hosts may pass parsed
+ * `data` instead of `cube`. `intensity` (0..1, default 1) blends the LUT over
+ * the ungraded colour in the shader, so animating it never re-uploads.
+ */
+export interface PostLutBag {
+  readonly source: string;
+  readonly cube?: string;
+  readonly data?: LutTexture3D;
+  readonly intensity?: number;
+  /** Set by the bridge while the `.cube` is loading or after it failed (no `cube` then). */
+  readonly status?: "pending" | "failed";
+}
+
+/** A resolved S10b LUT: the TEXTURE_3D and the `u_lutBypass` (1 − intensity) value. */
+export interface PostLutBinding {
+  readonly texture: WebGLTexture;
+  readonly bypass: number;
+}
+
+/**
+ * Uploads a user `.cube` (lattice domain, sampled with `u_lutLattice = 1`) as
+ * an RGBA8 TEXTURE_3D, red-fastest like the file. WebGL2 rejects 3-D uploads
+ * from an ArrayBufferView while the FLIP_Y / PREMULTIPLY unpack flags are set,
+ * so both are cleared first.
+ */
+export function uploadCubeLutTexture(gl: WebGL2RenderingContext, lut: LutTexture3D): WebGLTexture {
+  const texture = gl.createTexture();
+  if (!texture) throw new RenderDeviceError("LUT texture allocation failed.", "POST_GRAPH_V2_UNSUPPORTED");
+  const n = lut.size;
+  const bytes = new Uint8Array(n * n * n * 4);
+  for (let i = 0; i < bytes.length; i += 1) {
+    const v = lut.data[i] ?? 1;
+    bytes[i] = Math.round(Math.min(1, Math.max(0, Number.isFinite(v) ? v : 0)) * 255);
+  }
+  gl.bindTexture(gl.TEXTURE_3D, texture);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+  gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
+  gl.texImage3D(gl.TEXTURE_3D, 0, gl.RGBA8, n, n, n, 0, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+  gl.bindTexture(gl.TEXTURE_3D, null);
+  return texture;
+}
+
+/**
+ * GU47 E-C (EC-2): resolves `pipeline.lut` to a bound TEXTURE_3D through the
+ * per-host `DisplayLutCache` (one parse + upload per source; the key holds the
+ * source with contrast/saturation/vibrance/intensity at identity because those
+ * run in the fused present and the shader). A bag without text/data records
+ * `LUT_PENDING`; a `.cube` the parser rejects records `LUT_INVALID` once and
+ * renders the identity grade.
+ */
+function displayLutBinding(host: WebGL2DeviceHost, state: PostV2State, lut: unknown): PostLutBinding | null {
+  if (!lut || typeof lut !== "object") return null;
+  const bag = lut as PostLutBag;
+  if (typeof bag.source !== "string" || (typeof bag.cube !== "string" && !bag.data)) {
+    recordPostSkipped(`${bag.status === "failed" ? "LUT_UNAVAILABLE" : "LUT_PENDING"}:${String(bag.source)}`);
+    return null;
+  }
+  if (state.lutFailed.has(bag.source)) return null;
+  const gl = host.gl;
+  state.lutCache ??= new DisplayLutCache<WebGLTexture>(
+    () => {
+      const baking = state.lutBaking!;
+      return uploadCubeLutTexture(gl, baking.data ?? parseCubeLut(baking.cube!));
+    },
+    (texture) => gl.deleteTexture(texture),
+    { maxEntries: 4 }
+  );
+  state.lutBaking = bag;
+  try {
+    const texture = state.lutCache.acquire({ contrast: 1, saturation: 1, vibrance: 0, lutIntensity: 1, userLut: bag.source });
+    const intensity = typeof bag.intensity === "number" && Number.isFinite(bag.intensity) ? Math.min(1, Math.max(0, bag.intensity)) : 1;
+    return { texture, bypass: 1 - intensity };
+  } catch (error) {
+    state.lutFailed.add(bag.source);
+    const code = error instanceof Error ? /^[A-Z0-9_]+/.exec(error.message)?.[0] ?? "LUT_UPLOAD_FAILED" : "LUT_UPLOAD_FAILED";
+    recordPostSkipped(`LUT_INVALID:${bag.source}:${code}`);
+    return null;
+  } finally {
+    state.lutBaking = undefined;
+  }
 }
 
 const states = new WeakMap<WebGL2DeviceHost, PostV2State>();
@@ -165,7 +265,8 @@ function v2State(host: WebGL2DeviceHost): PostV2State {
       evTargets: [undefined, undefined],
       evIndex: 0,
       evValid: false,
-      smaa: { area: null, search: null, requested: false }
+      smaa: { area: null, search: null, requested: false },
+      lutFailed: new Set()
     };
     states.set(host, state);
   }
@@ -191,6 +292,44 @@ export function godRayColor(color: unknown): [number, number, number] {
   }
   if (!rgb) return fallback;
   return [0, 1, 2].map((i) => (typeof rgb![i] === "number" && Number.isFinite(rgb![i]) ? (rgb![i] as number) : fallback[i]!)) as [number, number, number];
+}
+
+/**
+ * GU47 E-C (EC-6): S3 options from `pipeline.ssr`: `intensity` (default
+ * 0.9, [0, 2]), `maxDistance` metres (18, [0.5, 200]), `roughness` hint
+ * (0; the trace fades out between 0.35 and the 0.5 cutoff), `thickness`
+ * metres (0.25) and march `steps` snapped to 16 | 24 | 32 (24).
+ */
+export function resolveSsrOptions(ssr: unknown): { readonly intensity: number; readonly maxDistance: number; readonly roughness: number; readonly thickness: number; readonly steps: 16 | 24 | 32 } {
+  const bag = (ssr && typeof ssr === "object" ? ssr : {}) as Record<string, unknown>;
+  const num = (key: string, fallback: number, min: number, max: number): number => {
+    const value = bag[key];
+    return typeof value === "number" && Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : fallback;
+  };
+  const steps = num("steps", SSR_DEFAULT_STEPS, 1, 64);
+  return {
+    intensity: num("intensity", 0.9, 0, 2),
+    maxDistance: num("maxDistance", 18, 0.5, 200),
+    roughness: num("roughness", 0, 0, 1),
+    thickness: num("thickness", SSR_DEFAULT_THICKNESS, 0.01, 10),
+    steps: steps <= 16 ? 16 : steps <= 24 ? 24 : 32
+  };
+}
+
+/** GU47 E-C (EC-8): S4 `u_density` — the authored god-ray density clamped to [0.05, 1]; omitted or invalid = 1 (full march). */
+export function godRayDensity(density: unknown): number {
+  return typeof density === "number" && Number.isFinite(density) ? Math.min(1, Math.max(0.05, density)) : 1;
+}
+
+/**
+ * GU47 E-C (EC-8): S6 `u_tiltShift` = [bandCenter, bandWidth, angle (rad), 1]
+ * for a valid band (centre and width clamped to [0, 1]), else all zeros
+ * (the thin-lens CoC).
+ */
+export function dofTiltShiftUniform(tilt: DofOptions["tiltShift"] | undefined): [number, number, number, number] {
+  if (!tilt || !Number.isFinite(tilt.bandCenter) || !Number.isFinite(tilt.bandWidth)) return [0, 0, 0, 0];
+  const angle = typeof tilt.angleDeg === "number" && Number.isFinite(tilt.angleDeg) ? tilt.angleDeg : 0;
+  return [Math.min(1, Math.max(0, tilt.bandCenter)), Math.min(1, Math.max(0, tilt.bandWidth)), angle * Math.PI / 180, 1];
 }
 
 /**
@@ -297,6 +436,60 @@ function draw(host: WebGL2DeviceHost, state: PostV2State, prog: WebGLProgram, ta
 
 /** §6.3 multi-bounce ρ and AO metadata shared by the apply draw. */
 const AO_RHO = 0.5;
+
+/**
+ * GU47 E-C: one fullscreen draw for S8's `exp2(ev)` multiply and/or the S10
+ * linear grade. AE-only frames keep the original `EXPOSURE_MUL_GLSL` program
+ * (byte-identical); a non-identity grade runs `HDR_GRADE_GLSL`, with the EV
+ * multiply folded in when S8 is active (`ev` non-null).
+ */
+function runHdrGradeDraw(
+  host: WebGL2DeviceHost,
+  state: PostV2State,
+  target: RenderTarget,
+  input: RenderTarget,
+  ev: RenderTarget | null,
+  grade: HdrGradeUniforms | null
+): void {
+  const gl = host.gl;
+  if (!grade) {
+    if (!ev) return;
+    const mulProg = program(state, gl, "exposure-mul", EXPOSURE_MUL_GLSL);
+    draw(host, state, mulProg, asGlTarget(target), [asGlTarget(input).colorHandle, asGlTarget(ev).colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(mulProg, "u_hdr"), 0);
+      g.uniform1i(g.getUniformLocation(mulProg, "u_ev"), 1);
+    });
+    return;
+  }
+  const prog = program(state, gl, "hdr-grade", HDR_GRADE_GLSL);
+  draw(host, state, prog, asGlTarget(target), [asGlTarget(input).colorHandle, ev ? asGlTarget(ev).colorHandle : state.blankTex], (g) => {
+    g.uniform1i(g.getUniformLocation(prog, "u_hdr"), 0);
+    g.uniform1i(g.getUniformLocation(prog, "u_ev"), 1);
+    g.uniform1i(g.getUniformLocation(prog, "u_hasEv"), ev ? 1 : 0);
+    g.uniform1i(g.getUniformLocation(prog, "u_hasGrade"), 1);
+    writeHdrGradeUniforms(g, prog, grade);
+  });
+}
+
+/** The S10 grade uniform writer (`u_whiteBalance` … `u_highlights`). Exported for the mock-GL unit gate. */
+export function writeHdrGradeUniforms(g: WebGL2RenderingContext, prog: WebGLProgram, grade: HdrGradeUniforms): void {
+  const v3 = (name: string, value: readonly [number, number, number]): void => {
+    g.uniform3f(g.getUniformLocation(prog, name), value[0], value[1], value[2]);
+  };
+  v3("u_whiteBalance", grade.whiteBalance);
+  v3("u_lift", grade.lift);
+  v3("u_gamma", grade.gamma);
+  v3("u_gain", grade.gain);
+  v3("u_shadows", grade.shadows);
+  v3("u_midtones", grade.midtones);
+  v3("u_highlights", grade.highlights);
+}
+
+/** Stage-trace suffix for S9: the authored mip count when the bag carries one. */
+function bloomMipsTag(bloom: unknown): string {
+  const mips = bloom && typeof bloom === "object" ? (bloom as { mips?: unknown }).mips : undefined;
+  return typeof mips === "number" && Number.isFinite(mips) ? `-${mips}mips` : "";
+}
 
 /* ------------------------------------------------------------------------ */
 /* Phase 6 — C-13 custom passes, S8 auto-exposure, S11 SMAA                   */
@@ -597,10 +790,16 @@ export function runV2HdrStages(
   const wantsTaa = pipeline.antiAliasing === "taa" || Boolean(pipeline.taa);
   const wantsDof = Boolean(pipeline.dof);
   const wantsMb = Boolean(pipeline.motionBlur);
+  // GU47 E-C (EC-6): S3 SSR runs only for an authored screenSpaceReflections node.
+  const wantsSsr = Boolean(pipeline.ssr);
   // Phase 6: S8 auto-exposure + C-13 HDR-domain custom passes at their §6.1
   // insertion anchors (`after-tonemap` runs in the LDR tail instead).
   const autoExposure = pipeline.autoExposure as AutoExposureOptionsV2 | false | undefined;
   const wantsAutoExposure = autoExposure !== undefined && autoExposure !== false;
+  // GU47 E-C: the linear grade (white balance, lift/gamma/gain, shadows/
+  // midtones/highlights). Identity → null → no draw (byte-identical frames).
+  const gradeUniforms = resolveHdrGradeUniforms(pipeline.grade as HdrGradeInput | undefined);
+  const wantsGrade = gradeUniforms !== null;
   const customs = mergedCustomPasses(pipeline);
   const customsAt = (anchor: PostPassDescriptor["insertAt"]): readonly PostPassDescriptor[] =>
     sortCustomPassesAtAnchor(customs, anchor);
@@ -613,13 +812,18 @@ export function runV2HdrStages(
   const mbActive = wantsMb && temporalOk;
   beginPostStageTrace();
   recordPostStage(`enter:taa=${String(wantsTaa)}:mb=${String(wantsMb)}:temporal=${String(temporalOk)}`);
+  // GU47 E-C stage trace: S9 bloom executes inside the fused present right
+  // after this driver returns. The executor sets `deferBeforeTonemap` exactly
+  // when its pass list carries an HDR bloom pass (LegacyPost
+  // `executePostGraphWebGL2`), so that flag — not the authored bag — records it.
+  if (options?.deferBeforeTonemap) recordPostStage(`S9:bloom${bloomMipsTag(pipeline.bloom)}`);
   if (wantsTaa && !temporalOk) { skipped.push("TAA_VELOCITY_COVERAGE"); recordPostSkipped("TAA_VELOCITY_COVERAGE:v2-hdr-stages"); }
   if (wantsMb && !temporalOk) { skipped.push("S7_VELOCITY_UNAVAILABLE"); recordPostSkipped("S7_VELOCITY_UNAVAILABLE:v2-hdr-stages"); }
-  const needsLinZ = wantsAo || wantsGodRays || wantsDof || taaActive || mbActive
+  const needsLinZ = wantsAo || wantsGodRays || wantsDof || taaActive || mbActive || wantsSsr
     || hdrCustoms.some((pass) => pass.inputs.includes("depth"));
   const needsVelocity = ((taaActive || mbActive) && temporalOk)
     || (hdrCustoms.some((pass) => pass.inputs.includes("velocity")) && temporalOk);
-  if (!wantsAo && !wantsGodRays && !wantsCa && !taaActive && !wantsDof && !mbActive && !wantsAutoExposure && hdrCustoms.length === 0) return { target: source, aoPending: false, skipped };
+  if (!wantsAo && !wantsGodRays && !wantsCa && !taaActive && !wantsDof && !mbActive && !wantsSsr && !wantsAutoExposure && !wantsGrade && hdrCustoms.length === 0) return { target: source, aoPending: false, skipped };
 
   // T0-15: the forward HDR target is multisampled by default (`sampleCount` 4
   // in `Renderer`), so its `colorHandle`/`depthTextureHandle` only contain
@@ -636,7 +840,7 @@ export function runV2HdrStages(
     recordPostSkipped("WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED:v2-hdr-stages");
     return { target: source, aoPending: false, skipped: [...skipped, "V2_DEPTH_UNAVAILABLE"] };
   }
-  if ((wantsAo || wantsGodRays || needsVelocity) && !camera) {
+  if ((wantsAo || wantsGodRays || wantsSsr || needsVelocity) && !camera) {
     recordPostSkipped("POST_GRAPH_V2_CAMERA_REQUIRED:v2-hdr-stages");
     return { target: source, aoPending: false, skipped: [...skipped, "V2_CAMERA_UNAVAILABLE"] };
   }
@@ -654,6 +858,7 @@ export function runV2HdrStages(
   let minmaxHalf: RenderTarget | null = null;
   let linZOwnedByPool = false;
   if (needsLinZ) {
+    recordPostStage("S1:depth-prep");
     // Temporal frames write this frame's linear Z into the history ping-pong's
     // `linZOutput` slot so commit() promotes it for next frame's disocclusion.
     linZFull = temporal?.v2?.linZOutput
@@ -786,6 +991,43 @@ export function runV2HdrStages(
     void AO_RHO;
   }
 
+  // ── S3: GU47 E-C screen-space reflections (half-res trace + composite) ───
+  if (wantsSsr && camera && linZFull) {
+    const ssr = resolveSsrOptions(pipeline.ssr);
+    // Reprojected previous colour: the TAA history (last frame's resolved
+    // HDR) through prevViewProj · inv(view); without TAA history the trace
+    // samples this frame's HDR at the hit.
+    const history = taaActive && temporal?.historyValid && temporal.v2 ? temporal : undefined;
+    const viewToPrevClip = history
+      ? Float32Array.from(multiplyMat4(Array.from(history.v2!.previous) as unknown as Mat4, invertMat4(Array.from(camera.viewMatrix) as unknown as Mat4)))
+      : IDENTITY_MAT4_F32;
+    const trace = state.pool.acquire({ width: hw, height: hh, format: "rgba16f", samples: 1, depth: false });
+    const traceProg = program(state, gl, `ssr-trace-${ssr.steps}`, withDefines(SSR_TRACE_GLSL, { AURA_SSR_STEPS: ssr.steps }));
+    recordPostStage(`S3:ssr-${ssr.steps}${history ? ":history" : ""}`);
+    draw(host, state, traceProg, asGlTarget(trace), [asGlTarget(history ? history.history : hdr).colorHandle, asGlTarget(linZFull).colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(traceProg, "u_color"), 0);
+      g.uniform1i(g.getUniformLocation(traceProg, "u_linearDepth"), 1);
+      g.uniformMatrix4fv(g.getUniformLocation(traceProg, "u_projection"), false, camera.projectionMatrix);
+      g.uniformMatrix4fv(g.getUniformLocation(traceProg, "u_viewToPrevClip"), false, viewToPrevClip);
+      g.uniform1i(g.getUniformLocation(traceProg, "u_reproject"), history ? 1 : 0);
+      g.uniform1i(g.getUniformLocation(traceProg, "u_ortho"), ortho ? 1 : 0);
+      g.uniform1f(g.getUniformLocation(traceProg, "u_far"), far);
+      g.uniform1f(g.getUniformLocation(traceProg, "u_maxDistance"), ssr.maxDistance);
+      g.uniform1f(g.getUniformLocation(traceProg, "u_thickness"), ssr.thickness);
+      g.uniform1f(g.getUniformLocation(traceProg, "u_roughness"), ssr.roughness);
+    });
+    const composited = state.pool.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
+    const ssrCompProg = program(state, gl, "ssr-composite", SSR_COMPOSITE_GLSL);
+    draw(host, state, ssrCompProg, asGlTarget(composited), [asGlTarget(hdr).colorHandle, asGlTarget(trace).colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(ssrCompProg, "u_color"), 0);
+      g.uniform1i(g.getUniformLocation(ssrCompProg, "u_reflection"), 1);
+      g.uniform1f(g.getUniformLocation(ssrCompProg, "u_intensity"), ssr.intensity);
+    });
+    state.pool.release(trace);
+    if (hdr !== source) state.pool.release(hdr);
+    hdr = composited;
+  }
+
   // ── S4: god rays, half-res radial march → additive onto HDR ─────────────
   if (wantsGodRays && camera && minmaxHalf) {
     const god = pipeline.godRays as GodRayOptions;
@@ -811,6 +1053,7 @@ export function runV2HdrStages(
       : [0.5, 0.5];
     const godSrc = withDefines(GODRAYS_GLSL, { AURA_GODRAY_SAMPLES: samples });
     const godProg = program(state, gl, `godrays-${samples}`, godSrc);
+    recordPostStage(`S4:god-rays-${samples}`);
     draw(host, state, godProg, asGlTarget(godTarget), [asGlTarget(hdr).colorHandle, asGlTarget(minmaxHalf).colorHandle], (g) => {
       g.uniform1i(g.getUniformLocation(godProg, "u_hdr"), 0);
       g.uniform1i(g.getUniformLocation(godProg, "u_depthHalf"), 1);
@@ -824,6 +1067,8 @@ export function runV2HdrStages(
       g.uniform1f(g.getUniformLocation(godProg, "u_weight"), god.weight ?? god.intensity ?? 0.7);
       g.uniform1f(g.getUniformLocation(godProg, "u_diskOuter"), 0.08);
       g.uniform1f(g.getUniformLocation(godProg, "u_diskInner"), 0.02);
+      // GU47 E-C (EC-8): `godRayDensity`; omitted keeps the full march (1).
+      g.uniform1f(g.getUniformLocation(godProg, "u_density"), godRayDensity(god.density));
     });
     // Additive blend onto the working HDR target.
     const blended = state.pool.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
@@ -858,6 +1103,7 @@ export function runV2HdrStages(
     const ca = pipeline.chromaticAberration as { intensity?: number };
     const caTarget = state.pool.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
     const caProg = program(state, gl, "ca-pass", CA_PASS_GLSL);
+    recordPostStage("CA:chromatic-aberration");
     draw(host, state, caProg, asGlTarget(caTarget), [asGlTarget(hdr).colorHandle], (g) => {
       g.uniform1i(g.getUniformLocation(caProg, "u_hdr"), 0);
       g.uniform1f(g.getUniformLocation(caProg, "u_caIntensity"), ca.intensity ?? 0.0015);
@@ -943,6 +1189,9 @@ export function runV2HdrStages(
     const dw = Math.max(1, Math.round(w / 2)), dh = Math.max(1, Math.round(h / 2));
     const prefilter = state.pool.acquire({ width: dw, height: dh, format: "rgba16f", samples: 1, depth: false });
     const prefilterProg = program(state, gl, "dof-prefilter", DOF_PREFILTER_GLSL);
+    // GU47 E-C (EC-8): the tilt-shift band replaces the thin-lens CoC.
+    const tilt = dofTiltShiftUniform(dof.tiltShift);
+    recordPostStage(tilt[3] > 0 ? `S6:dof-tilt-shift-rings${rings}` : `S6:dof-rings${rings}`);
     draw(host, state, prefilterProg, asGlTarget(prefilter), [asGlTarget(hdr).colorHandle, asGlTarget(linZFull).colorHandle], (g) => {
       g.uniform1i(g.getUniformLocation(prefilterProg, "u_color"), 0);
       g.uniform1i(g.getUniformLocation(prefilterProg, "u_linearDepth"), 1);
@@ -952,6 +1201,7 @@ export function runV2HdrStages(
       g.uniform1f(g.getUniformLocation(prefilterProg, "u_sensorHeightMm"), dof.sensorHeightMm ?? 24);
       g.uniform1f(g.getUniformLocation(prefilterProg, "u_frameHeightPx"), h);
       g.uniform1f(g.getUniformLocation(prefilterProg, "u_maxBlurPx"), maxBlur);
+      g.uniform4f(g.getUniformLocation(prefilterProg, "u_tiltShift"), tilt[0], tilt[1], tilt[2], tilt[3]);
     });
     const tileW = Math.max(1, Math.ceil(dw / 8)), tileH = Math.max(1, Math.ceil(dh / 8));
     const nearTile = state.pool.acquire({ width: tileW, height: tileH, format: "rgba16f", samples: 1, depth: false });
@@ -984,6 +1234,7 @@ export function runV2HdrStages(
     const tile = mb.tileSize ?? 16;
     const samples = mb.samples ?? 12;
     const tw = Math.max(1, Math.ceil(w / tile)), th = Math.max(1, Math.ceil(h / tile));
+    recordPostStage(`S7:motion-blur-${samples}x${tile}`);
     const tileMax = state.pool.acquire({ width: tw, height: th, format: "rgba16f", samples: 1, depth: false });
     const tileProg = program(state, gl, `mb-tile-${tile}`, withDefines(MB_TILE_MAX_GLSL, { MB_TILE_SIZE: tile }));
     draw(host, state, tileProg, asGlTarget(tileMax), [asGlTarget(dilatedVelocity).colorHandle], (g) => {
@@ -1073,16 +1324,23 @@ export function runV2HdrStages(
     state.evValid = true;
     state.pool.release(luma);
     if (reduceTmp) state.pool.release(reduceTmp);
+    recordPostStage("S8:auto-exposure");
     // Apply: hdr *= exp2(ev) — the composite's autoExp factor, ahead of the
-    // fused present's own §6.4 exposure (linear multipliers commute).
+    // fused present's own §6.4 exposure (linear multipliers commute). GU47
+    // E-C: the S10 linear grade folds into this same draw (one fullscreen
+    // pass for AE + grade).
     const multiplied = state.pool.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
-    const mulProg = program(state, gl, "exposure-mul", EXPOSURE_MUL_GLSL);
-    draw(host, state, mulProg, asGlTarget(multiplied), [asGlTarget(hdr).colorHandle, asGlTarget(evWrite).colorHandle], (g) => {
-      g.uniform1i(g.getUniformLocation(mulProg, "u_hdr"), 0);
-      g.uniform1i(g.getUniformLocation(mulProg, "u_ev"), 1);
-    });
+    runHdrGradeDraw(host, state, multiplied, hdr, evWrite, gradeUniforms);
+    if (gradeUniforms) recordPostStage("S10:hdr-grade:folded-s8");
     if (hdr !== source) state.pool.release(hdr);
     hdr = multiplied;
+  } else if (gradeUniforms) {
+    // ── S10 linear grade (no S8 this frame): one fullscreen draw ─────────────
+    const graded = state.pool.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
+    runHdrGradeDraw(host, state, graded, hdr, null, gradeUniforms);
+    recordPostStage("S10:hdr-grade");
+    if (hdr !== source) state.pool.release(hdr);
+    hdr = graded;
   }
 
   // ── §6.1 insertion "before-tonemap" (linear HDR, exposure applied) ────────
@@ -1201,11 +1459,30 @@ export function runV2LdrTail(
   const aaSmaa = pipeline.antiAliasing === "smaa";
   const displayCustoms = sortCustomPassesAtAnchor(mergedCustomPasses(pipeline), "after-tonemap");
   const rcas = (pipeline.renderScale ?? 1) < 1 ? 0.2 : 0;
+  // GU47 E-C (EC-2): the user `.cube` LUT, uploaded once per source.
+  const lut = displayLutBinding(host, state, pipeline.lut);
+  const bindLut = (g: WebGL2RenderingContext, prog: WebGLProgram): void => {
+    g.activeTexture(g.TEXTURE1);
+    g.bindTexture(g.TEXTURE_3D, lut?.texture ?? state.identityLut);
+    g.uniform1i(g.getUniformLocation(prog, "u_lut3d"), 1);
+    g.uniform1i(g.getUniformLocation(prog, "u_hasLut"), lut ? 1 : 0);
+    g.uniform1i(g.getUniformLocation(prog, "u_lutLattice"), lut ? 1 : 0);
+    g.uniform1f(g.getUniformLocation(prog, "u_lutBypass"), lut?.bypass ?? 0);
+  };
+  // GU47 E-C stage trace: the display stages that draw this frame.
+  const vignetteOn = (vignette?.intensity ?? 0) > 0;
+  const grainOn = (grain?.intensity ?? 0) > 0;
+  const traceDisplayStages = (fused: boolean): void => {
+    if (vignetteOn || lut) recordPostStage(`S10b:display-grade${vignetteOn ? ":vignette" : ""}${lut ? ":lut" : ""}${fused ? ":fused-fxaa" : ""}`);
+    if (grainOn) recordPostStage(`S12:film-grain${fused ? ":fused-fxaa" : ""}`);
+  };
 
   // §6.1 fuse: FXAA + S10b + S12 in a single draw — only when nothing sits
   // between the stages (an after-tonemap custom pass splices S10b→S11).
   if (aaFxaa && displayCustoms.length === 0) {
     const prog = program(state, gl, "finalize-fxaa-fused", FINALIZE_FXAA_FUSED_GLSL);
+    traceDisplayStages(true);
+    recordPostStage("S11:fxaa:fused");
     bindOut(host, outTarget, w, h);
     gl.useProgram(prog);
     gl.bindVertexArray(state.vao);
@@ -1214,11 +1491,8 @@ export function runV2LdrTail(
     gl.disable(gl.BLEND);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, ldrGl.colorHandle);
-    gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_3D, state.identityLut);
+    bindLut(gl, prog);
     gl.uniform1i(gl.getUniformLocation(prog, "u_source"), 0);
-    gl.uniform1i(gl.getUniformLocation(prog, "u_lut3d"), 1);
-    gl.uniform1i(gl.getUniformLocation(prog, "u_hasLut"), 0);
     gl.uniform2f(gl.getUniformLocation(prog, "u_texelSize"), 1 / w, 1 / h);
     gl.uniform2f(gl.getUniformLocation(prog, "u_outputTexel"), 1 / w, 1 / h);
     gl.uniform1f(gl.getUniformLocation(prog, "u_frame"), state.frameIndex);
@@ -1240,17 +1514,15 @@ export function runV2LdrTail(
   }
 
   let current = ldr;
-  // S10b — display grade (vignette; the .cube LUT bakes in with S10b's real
-  // bake pass — until then u_hasLut stays 0 and the identity 3D tex binds).
+  traceDisplayStages(false);
+  // S10b — display grade: vignette plus the user `.cube` (GU47 E-C, EC-2;
+  // the identity 3-D texture binds with u_hasLut 0 while no LUT resolved).
   if (vignette || pipeline.lut) {
     const graded = state.pool.acquire({ width: w, height: h, format: "rgba8", samples: 1, depth: false });
     const prog = program(state, gl, "display-grade", DISPLAY_GRADE_GLSL);
     draw(host, state, prog, asGlTarget(graded), [ldrGl.colorHandle], (g) => {
       g.uniform1i(g.getUniformLocation(prog, "u_source"), 0);
-      gl.activeTexture(gl.TEXTURE1);
-      gl.bindTexture(gl.TEXTURE_3D, state.identityLut);
-      g.uniform1i(g.getUniformLocation(prog, "u_lut3d"), 1);
-      g.uniform1i(g.getUniformLocation(prog, "u_hasLut"), 0);
+      bindLut(g, prog);
       g.uniform1f(g.getUniformLocation(prog, "u_vignetteIntensity"), vignette?.intensity ?? 0);
       g.uniform1f(g.getUniformLocation(prog, "u_vignetteSmoothness"), vignette?.smoothness ?? 1);
       g.uniform1f(g.getUniformLocation(prog, "u_vignetteRoundness"), vignette?.roundness ?? 1);
@@ -1274,6 +1546,7 @@ export function runV2LdrTail(
   // until both land, the stage skips (same first-frames window as three's
   // async Image load — never a silent FXAA substitution).
   if (aaSmaa && smaaTexturesReady(host, state)) {
+    recordPostStage("S11:smaa");
     const edges = state.pool.acquire({ width: w, height: h, format: "rgba8", samples: 1, depth: false });
     const edgesProg = program(state, gl, "smaa-edges", SMAA_EDGES_GLSL);
     draw(host, state, edgesProg, asGlTarget(edges), [asGlTarget(current).colorHandle], (g) => {
@@ -1304,6 +1577,7 @@ export function runV2LdrTail(
     current = blended;
   } else if (aaFxaa && displayCustoms.length > 0) {
     // FXAA unfused: an after-tonemap custom already consumed the fused slot.
+    recordPostStage("S11:fxaa");
     const aa = state.pool.acquire({ width: w, height: h, format: "rgba8", samples: 1, depth: false });
     const fxaaProg = program(state, gl, "fxaa-standalone-nodither",
       FXAA_185_FRAGMENT_GLSL.replace("#version 300 es", "#version 300 es\n#define AURA_FXAA_NO_DITHER"));

@@ -7,8 +7,9 @@
  * node overrides the preset's same-effect node field by field (via
  * `postAuthored`, CCR-03-3).
  *
- * Presets naming `agx` or `neutral` report `preset-capability-degraded` and
- * expand with `aces` until C-05's operator selection is real (§6.8 note).
+ * Presets naming `agx` or `neutral` render that operator (GU47 E-C, EC-3: the
+ * OUT stage selects agx/neutral through `pipeline.toneMapping`, so the old
+ * `aces` stand-in and its `preset-capability-degraded` report are gone).
  */
 
 import type { AuraEffectNode } from "./nodes/types.js";
@@ -198,16 +199,16 @@ export function expandPostPreset(
   });
   for (const node of presetNodes) if (!used.has(node)) merged.push(node);
 
-  // §6.8: presets naming agx/neutral render aces with a capability-degraded
-  // report until C-05's operator selection is real. An authored
-  // `output.toneMapping` wins untouched — the degrade is preset-declared only.
-  const mergedOutput: AuraOutputOptions = { ...preset.output, ...output,
-    ...(output?.toneMapping === undefined && (preset.output.toneMapping === "agx" || preset.output.toneMapping === "neutral")
-      ? { toneMapping: "aces" as const } : {}) };
+  // GU47 E-C (EC-3): the preset's declared operator (agx/neutral included) is
+  // rendered as declared; an authored `output.toneMapping` still wins.
+  const mergedOutput: AuraOutputOptions = { ...preset.output, ...output };
   return { output: mergedOutput, nodes: merged, preset };
 }
 
-/** True when the preset's declared operator degrades to aces (C-05 stub). */
-export function presetCapabilityDegraded(preset: AuraPostPreset, authoredOperator: string | undefined): boolean {
-  return authoredOperator === undefined && (preset.output.toneMapping === "agx" || preset.output.toneMapping === "neutral");
+/**
+ * @deprecated GU47 E-C (EC-3): agx/neutral presets no longer degrade to aces,
+ * so this is always false. Kept for callers of the 4.6 export.
+ */
+export function presetCapabilityDegraded(_preset: AuraPostPreset, _authoredOperator: string | undefined): boolean {
+  return false;
 }

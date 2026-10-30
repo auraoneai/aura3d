@@ -8,6 +8,31 @@
  * from `.a` instead of recomputing it per tap.
  */
 
+/**
+ * GU47 E-C (EC-2): the S10b LUT fetch shared by `DISPLAY_GRADE_GLSL` and the
+ * fused FXAA finalize. Declares `u_lutLattice` / `u_lutBypass` and
+ * `a3dDisplayLut(disp)`; the caller declares `u_lut3d` and `u_hasLut`.
+ *
+ * - `u_lutLattice = 1` for a user `.cube` uploaded as-is: its rows are lattice
+ *   samples at i/(N−1), so the coordinate gets the half-texel remap
+ *   `c·(N−1)/N + 0.5/N`. `0` (default) keeps the texel-centre convention of
+ *   the analytic bake (`LUT_BAKE_GLSL` writes texel i at (i+0.5)/N).
+ * - `u_lutBypass` is the fraction of the ungraded colour kept, i.e.
+ *   `1 − lutIntensity`; the default 0 applies the LUT fully, so callers that
+ *   predate it render exactly as before.
+ */
+export const DISPLAY_LUT_FETCH_GLSL = /* glsl */ `uniform int u_lutLattice;
+uniform float u_lutBypass;
+vec3 a3dDisplayLut(vec3 disp) {
+  vec3 lutCoord = clamp(disp, 0.0, 1.0);
+  if (u_lutLattice != 0) {
+    vec3 lutSize = vec3(textureSize(u_lut3d, 0));
+    lutCoord = lutCoord * ((lutSize - 1.0) / lutSize) + 0.5 / lutSize;
+  }
+  return mix(texture(u_lut3d, lutCoord).rgb, disp, u_lutBypass);
+}
+`;
+
 export const DISPLAY_GRADE_GLSL = /* glsl */ `#version 300 es
 precision highp float;
 // GLSL ES 3.00 has no default precision for sampler3D (CI: "'sampler3D' : No precision specified").
@@ -24,11 +49,11 @@ in vec2 v_uv;
 out vec4 outColor;
 
 float luma(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
-
+${DISPLAY_LUT_FETCH_GLSL}
 void main() {
   vec3 disp = texture(u_source, v_uv).rgb;
   if (u_hasLut != 0) {
-    disp = texture(u_lut3d, clamp(disp, 0.0, 1.0)).rgb;
+    disp = a3dDisplayLut(disp);
   }
   if (u_vignetteIntensity > 0.0) {
     // §8.12: roundness-aspect corrected len, mix toward vignetteColor.
