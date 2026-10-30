@@ -8,6 +8,7 @@ import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
+import { evaluateStep } from "./evaluate-step.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
@@ -69,7 +70,7 @@ for (const key of wanted) {
   if (!sc) { console.error(`unknown game ${key}`); continue; }
   const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: dpr });
   const page = await ctx.newPage();
-  const log = { console: [], pageErrors: [], failed: [], badResponses: [], shots: [] };
+  const log = { console: [], pageErrors: [], failed: [], badResponses: [], shots: [], evaluations: [] };
   page.on("console", (m) => { if (["error", "warning"].includes(m.type())) log.console.push(`${m.type()}: ${m.text().slice(0, 300)}`); });
   page.on("pageerror", (e) => log.pageErrors.push(String(e).slice(0, 300)));
   page.on("requestfailed", (r) => log.failed.push(`${r.url().slice(0, 160)} ${r.failure()?.errorText}`));
@@ -104,6 +105,9 @@ for (const key of wanted) {
     if (step.wait) await sleep(step.wait);
     if (step.shot) await shot(step.shot);
     if (step.burst) for (let i = 0; i < step.burst.count; i++) { await shot(`${step.burst.label}${i}`); await sleep(step.burst.everyMs); }
+    // GU47 E-I/E-F: `{ "evaluate": "<expression>" }` records the expression's JSON result (e.g. `__AURA_VFX_DEBUG__()`)
+    // in report.json, after the step's shot so it describes the captured frame.
+    if (step.evaluate) log.evaluations.push(await evaluateStep(page, step.evaluate, step.shot));
   }
   report.games[key] = { url, nonCanvas: !(await page.$("canvas")), ...log };
   await ctx.close();

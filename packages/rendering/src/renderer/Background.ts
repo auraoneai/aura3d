@@ -40,7 +40,30 @@ type RenderSourceWithProbe = RenderSource & {
   readonly environmentProbeAmbient?: { readonly color: readonly [number, number, number]; readonly intensity: number } | null;
   /** LIGHT-05/08: authored hemisphere lights as a directional sky/ground pair (linear, premultiplied), additive. */
   readonly environmentProbeHemisphere?: EnvironmentLightingOptions["hemisphere"];
+  /**
+   * GU47 E-B: the frame's environment yaw (radians about +Y; `setEnvironmentRotation`, `setEnvironment({ rotationDeg })`,
+   * the authored hdri `rotation`). Absent = unrotated.
+   */
+  readonly environmentProbeRotation?: number;
 };
+
+/**
+ * GU47 E-B handoff: the source's environment yaw as the renderer's rotation unit (turns: the background shader and
+ * `EnvironmentLightingOptions.environmentMapRotation` multiply by 2π). `undefined` when the source carries none.
+ */
+function environmentProbeRotationTurns(source: RenderSource): number | undefined {
+  const radians = (source as RenderSourceWithProbe).environmentProbeRotation;
+  return typeof radians === "number" && Number.isFinite(radians) ? radians / (2 * Math.PI) : undefined;
+}
+
+/**
+ * The probe background's rotation (turns): an explicit background rotation wins, else the environment yaw (the IBL
+ * turns with it), else the pre-GU47 value (the explicit background's unset rotation, or 0 without one).
+ */
+function probeBackgroundRotation(source: RenderSource, explicit: RenderSource["environmentBackground"]): number | undefined {
+  if (typeof explicit === "object" && explicit.rotation !== undefined) return explicit.rotation;
+  return environmentProbeRotationTurns(source) ?? (typeof explicit === "object" ? undefined : 0);
+}
 
 type HemispherePair = NonNullable<EnvironmentLightingOptions["hemisphere"]>;
 
@@ -113,12 +136,13 @@ export function resolvePrd02EnvironmentBackground(
   // give the factory a half-float equirect background and drop this gate.
   const equirectFilterable = probe.background?.format !== "rgba32f";
   const e3Conjunction = rendererQrFlags().on("A3D_QR_COMPILER") && rendererQrFlags().on("A3D_QR_LIGHTING");
+  const rotation = probeBackgroundRotation(source, explicit);
   if (probe.background && blurriness === 0 && !(e3Conjunction && !equirectFilterable)) {
     return {
       projection: "equirect",
       texture: new TextureBinding({ name: "u_environmentBackgroundTexture", texture: probe.background, required: true }),
       intensity: typeof explicit === "object" ? explicit.intensity : 1,
-      rotation: typeof explicit === "object" ? explicit.rotation : 0,
+      rotation,
       inverseViewProjectionMatrix: typeof explicit === "object" ? explicit.inverseViewProjectionMatrix : undefined
     };
   }
@@ -131,7 +155,7 @@ export function resolvePrd02EnvironmentBackground(
       sampler: PRD02_BACKGROUND_SAMPLER
     }),
     intensity: typeof explicit === "object" ? explicit.intensity : 1,
-    rotation: typeof explicit === "object" ? explicit.rotation : 0,
+    rotation,
     blurriness,
     mipCount: probe.mipCount,
     inverseViewProjectionMatrix: typeof explicit === "object" ? explicit.inverseViewProjectionMatrix : undefined
@@ -206,6 +230,8 @@ const prd02LightingMemo = new WeakMap<EnvironmentProbe, {
   readonly ambient: readonly [number, number, number, number] | null;
   readonly withProbe: boolean;
   readonly hemisphere: HemispherePair | null;
+  /** GU47 E-B: environment yaw in turns (`undefined` = the source carries none). */
+  readonly rotation: number | undefined;
   readonly result: EnvironmentLightingOptions;
 }>();
 
@@ -223,11 +249,15 @@ export function resolvePrd02EnvironmentLighting(source: RenderSource): Environme
   const hemisphere = meta.environmentProbeHemisphere ?? null;
   const ambient = ambientWithHemisphereMean(meta.environmentProbeAmbient ?? null, hemisphere);
   const withProbe = rendererQrFlags().on("A3D_QR_COMPILER") && rendererQrFlags().on("A3D_QR_LIGHTING");
+  // GU47 E-B handoff: the environment yaw rotates probe/IBL sampling
+  // (`environmentMapRotation` turns -> ForwardPass `u_envRotation` radians).
+  const rotation = environmentProbeRotationTurns(source);
   const memo = prd02LightingMemo.get(probe);
   if (memo
     && memo.diffuse === diffuse
     && memo.specular === specular
     && memo.withProbe === withProbe
+    && memo.rotation === rotation
     && sameHemisphere(memo.hemisphere, hemisphere)
     && (memo.ambient === null
       ? ambient === null
@@ -257,6 +287,7 @@ export function resolvePrd02EnvironmentLighting(source: RenderSource): Environme
     environmentMapSpecularIntensity: specular,
     environmentMapMipCount: equirect.mipLevels.length,
     environmentMapEncoding: "linear",
+    ...(rotation !== undefined ? { environmentMapRotation: rotation } : {}),
     // E3 stage-2b: carry the probe itself (cube + SH9) to ForwardPass for
     // the PRD-02 IBL pack. Attached only under the conjunction so the
     // LIGHTING-only lighting object stays byte-identical.
@@ -269,6 +300,7 @@ export function resolvePrd02EnvironmentLighting(source: RenderSource): Environme
     diffuse,
     specular,
     withProbe,
+    rotation,
     hemisphere: hemisphere ? { sky: [...hemisphere.sky], ground: [...hemisphere.ground], direction: [...hemisphere.direction] } as HemispherePair : null,
     ambient: ambient ? [ambient.color[0], ambient.color[1], ambient.color[2], ambient.intensity] : null,
     result

@@ -7,6 +7,29 @@
 import type { Texture } from "../Texture";
 import type { AuraQualityTier } from "../contracts/quality";
 
+/** The bake's cell gutter (`tools/vfx-atlas-bake/bake.mjs`): the same 4 px on every page size. */
+export const VFX_ATLAS_GUTTER = 4;
+
+/**
+ * GU47 E-F follow-up (eint EF-7): a sequence rect moved onto the tier twin page (`scale` = twin / declared page size).
+ * The bake places cells at `gutter + k * (cell + gutter)` with the same 4 px gutter at both sizes, so the 1k pitch is
+ * 132 px, not half of 260: plain halving drifted 2 px per cell (4 px off on the second column). Positions snap to the
+ * twin's pitch; sizes scale (a rect is `columns * cell` wide, frames contiguous). Matches E-F's
+ * `FlipbookAtlas.vfxSpriteRect`, whose 1k centroids are checked against the decoded PNG.
+ */
+export function vfxAtlasTwinRect(
+  rect: readonly [number, number, number, number],
+  columns: number,
+  scale: number
+): [number, number, number, number] {
+  const [x, y, w, h] = rect;
+  const cell = w / Math.max(1, columns);
+  const pitch = cell + VFX_ATLAS_GUTTER;
+  const twinPitch = cell * scale + VFX_ATLAS_GUTTER;
+  const place = (value: number): number => VFX_ATLAS_GUTTER + Math.round((value - VFX_ATLAS_GUTTER) / pitch) * twinPitch;
+  return [place(x), place(y), w * scale, h * scale];
+}
+
 export interface VfxAtlasManifestSequence {
   readonly page: string;
   readonly rect: readonly [number, number, number, number];
@@ -128,9 +151,7 @@ export class VfxAtlas {
     const declaredSize = this.manifest.pages.find((page) => page.id === entry.page)?.size;
     const twinSize = this.pageSizes.get(twinId);
     if (!declaredSize || !twinSize) return null;
-    const scale = twinSize / declaredSize;
-    const [x, y, w, h] = entry.rect;
-    return { name, texture: twinTexture, ...entry, rect: [x * scale, y * scale, w * scale, h * scale] };
+    return { name, texture: twinTexture, ...entry, rect: vfxAtlasTwinRect(entry.rect, entry.columns, twinSize / declaredSize) };
   }
 
   /** P6-T2 — decal entry (scorch/crack/tyre-track/puddle), rect scaled to the paged channel size. */

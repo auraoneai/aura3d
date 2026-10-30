@@ -164,6 +164,31 @@ export function requiredGLTFDecoders(extensionsUsed: readonly string[]): readonl
   return [...required];
 }
 
+type SharedDecoderRegistry = ReturnType<typeof createAssetDecoderRegistry>;
+const sharedDecoderRegistries = new Map<string, SharedDecoderRegistry>();
+
+/**
+ * GU47 E-H handoff (eint EH-6): one decoder registry per decode configuration (base path, worker count, texture cap,
+ * compressed-texture capabilities). A registry lazy-loads each decoder once, so repeated loads (and every `setScene`
+ * remount) reuse the same draco / meshopt decoder instances and the parsed-GLB cache (`GLTFAssetParseCache`, keyed
+ * on decoder identity) hits instead of re-fetching and re-parsing compressed GLBs. A failed load drops its registry.
+ */
+export function sharedGLTFDecoderRegistry(options: Parameters<typeof createAssetDecoderRegistry>[0]): SharedDecoderRegistry {
+  const caps = options.capabilities;
+  const key = [options.basePath, options.workerCount, options.maxTextureSize, caps.astc, caps.bptc, caps.etc2, caps.s3tc, caps.s3tcSrgb].join("|");
+  let registry = sharedDecoderRegistries.get(key);
+  if (!registry) {
+    registry = createAssetDecoderRegistry(options);
+    sharedDecoderRegistries.set(key, registry);
+  }
+  return registry;
+}
+
+/** Forgets a shared decoder registry (after a decoder failed to load, so the next load retries). */
+export function dropSharedGLTFDecoderRegistry(registry: SharedDecoderRegistry): void {
+  for (const [key, value] of sharedDecoderRegistries) if (value === registry) sharedDecoderRegistries.delete(key);
+}
+
 export async function loadProductionGLTFRenderPipeline(options: ProductionGLTFRenderPipelineOptions): Promise<ProductionGLTFRenderPipeline> {
   const loadWarnings: ProductionGLTFRenderWarning[] = [];
   let dracoDecoder = options.dracoDecoder;
@@ -189,7 +214,7 @@ export async function loadProductionGLTFRenderPipeline(options: ProductionGLTFRe
       });
       throw new AssetDecoderUnavailable(id, options.url);
     }
-    const registry = createAssetDecoderRegistry({
+    const registry = sharedGLTFDecoderRegistry({
       basePath: options.decoders.basePath ?? "/aura-decoders/",
       capabilities: options.compressedTextureCapabilities ?? NO_COMPRESSED_CAPABILITIES,
       maxTextureSize: options.maxTextureSize ?? 4096,
@@ -207,6 +232,8 @@ export async function loadProductionGLTFRenderPipeline(options: ProductionGLTFRe
         ktx2BasisTranscoderOptions = { targetFormat: imageDecoderHint.targetFormat, ...ktx2BasisTranscoderOptions };
       }
     } catch (error) {
+      // A shared registry caches its decoder promises; drop it so the next load retries from scratch.
+      dropSharedGLTFDecoderRegistry(registry);
       if (error instanceof AssetDecoderUnavailable) {
         loadWarnings.push({
           code: "decoder-missing",
