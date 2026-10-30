@@ -212,6 +212,14 @@ export function environmentIntensity(search: string | undefined = typeof locatio
   return Number.isFinite(value) && value >= 0 ? value : ENV_INTENSITY;
 }
 
+/** GU47 SSR-06: warm sun glow plus three small ghosts in the serpent palette (gold, jade, coral). */
+const SUN_FLARE_ELEMENTS = [
+  { size: 420, distance: 0, color: "#ffe2b0" },
+  { size: 48, distance: 0.55, color: "#f2b33d" },
+  { size: 70, distance: 0.8, color: "#7fe0c4" },
+  { size: 36, distance: 1, color: "#ff7a6b" }
+] as const;
+
 const STREAKS = 22;
 const SPARKS = 18;
 const BURSTS = 14;
@@ -271,6 +279,8 @@ export function buildWorld(options: WorldOptions = {}): World {
   if (script) {
     builder.add(lights.directional({ name: "fill", position: [0, 4, 20], target: [0, 1, 0], intensity: first.fill.intensity, color: first.fill.color, shadow: false }).runtime({ id: "fill" }));
     builder.add(effects.contactShadows({ length: 0.3, thickness: 0.06, intensity: 0.8, lights: "sun" }));
+    // GU47 SSR-06: sun lens flare (positioned on the sun each frame; shown with the god rays: High / Ultra, low-sun stages)
+    builder.add(lights.lensFlare({ name: "sun flare", position: [0, -500, 0], intensity: 0.55, edgeFade: 0.25, elements: SUN_FLARE_ELEMENTS }).runtime({ id: "sun-flare" }));
   }
 
   /* road + sky */
@@ -801,6 +811,11 @@ export function buildWorld(options: WorldOptions = {}): World {
         if (lookDriver) {
           lookShown = lookAt(lookDistance(S.s, S.leg), lookConfig);
           lookDriver.apply(exposureBoost ? { ...lookShown, exposure: lookShown.exposure + exposureBoost } : lookShown, { forward: rig.f, time, eye, reducedMotion });
+          const flare = show("sun-flare", lookDriver.godRaysOn);
+          if (lookDriver.godRaysOn) {
+            const d = lookDriver.sunDir;
+            flare.setPosition(eye[0] + d[0] * 4000, eye[1] + d[1] * 4000, eye[2] + d[2] * 4000);
+          }
         }
         cinePost?.step({ S, dt, reducedMotion, reducedFlash });
       };
