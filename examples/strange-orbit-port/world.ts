@@ -715,8 +715,10 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
   }
   /** QA crops for E-I's capture (normalised 0..1, updated as the camera moves): rider, sky band, planet. */
   const publishCrops = (aspect: number): void => {
-    const qa = (globalThis as { __AURA_QA__?: { crops?: unknown } }).__AURA_QA__;
-    if (!qa) return;
+    // GU47 phase 2: nothing else creates `__AURA_QA__` on this page, so the old `if (!qa) return` never published the
+    // crops and the luma capture saw no `rider` crop. Create the hook object on first use (QA only, no gameplay read).
+    const g = globalThis as { __AURA_QA__?: { crops?: unknown } };
+    const qa = (g.__AURA_QA__ ??= {});
     const crops: { name: string; x: number; y: number; w: number; h: number }[] = [{ name: "sky", x: 0, y: 0, w: 1, h: 0.3 }];
     const rider = projectPoint(riderAt[0]!, aspect);
     if (rider) crops.push(boxAround("rider", rider, 0.22 / Math.max(0.6, aspect), 0.24));
