@@ -10,7 +10,7 @@ import { registerDiagnosticsSection } from "../contracts/diagnostics";
 import { registerNodeHandler } from "../contracts/compiler";
 import { registerNodeHandleExtension } from "../contracts/runtimeNodes";
 import type { AuraHeightFogSpec } from "../contracts/atmosphere";
-import { createEffectsExtension, prd07AppDisposed } from "../agent-api/vfx/effects-api";
+import { createEffectsExtension, prd07AppDisposed, prd07SystemFor } from "../agent-api/vfx/effects-api";
 import { createAtmosphereExtension } from "../agent-api/vfx/atmosphere-api";
 import { collectEffectsSection, collectAtmosphereSection } from "../agent-api/vfx/diagnostics";
 import { registerPrd07LookLintRules } from "../agent-api/vfx/lookLint";
@@ -46,7 +46,9 @@ try {
   registerAppExtension({
     id: "prd07.atmosphere",
     owner: "prd07",
-    flag: "A3D_QR_VFX_SKY",
+    // GU47 E-B: the real atmosphere (live fog state and the compiler/fog.ts binding) installs under A3D_QR_VFX,
+    // A3D_QR_VFX_SKY or A3D_QR_VFX_FOG alone (createAtmosphereExtension); it is not a sky-flag extension.
+    flag: "A3D_QR_VFX",
     member: "atmosphere",
     create: (app, ctx) => createAtmosphereExtension(app, ctx)
   });
@@ -66,7 +68,7 @@ try {
   registerDiagnosticsSection({
     id: "prd07.atmosphere",
     owner: "prd07",
-    flag: "A3D_QR_VFX_SKY",
+    flag: "A3D_QR_VFX",
     key: "atmosphere",
     collect: (app) => collectAtmosphereSection(app)
   });
@@ -82,16 +84,18 @@ try {
 }
 
 // C-36 — handle.setFog for fog effect nodes: node-handle writes merge into the
-// app's live fog state.
+// app's live fog state. GU47 E-B: into the spec of the handle's own fog node
+// (app-level setFog only applies to node-free scenes or with overrideSceneFog).
 registerNodeHandleExtension({
   id: "prd07.setFog",
   owner: "prd07",
   flag: "A3D_QR_VFX",
   member: "setFog",
   appliesTo: ["effect"],
-  create: (_handle, app) => (partial: Partial<AuraHeightFogSpec>) => {
-    const atmosphere = (app as { atmosphere?: { setFog(s: Partial<AuraHeightFogSpec>): void } }).atmosphere;
-    atmosphere?.setFog(partial);
+  create: (handle, app) => (partial: Partial<AuraHeightFogSpec>) => {
+    if (app && prd07SystemFor(app)?.atmosphere.setNodeFogByRuntimeId(handle.id, partial)) return;
+    const atmosphere = (app as { atmosphere?: { setFog(s: Partial<AuraHeightFogSpec>, o?: { overrideSceneFog?: boolean }): void } } | undefined)?.atmosphere;
+    atmosphere?.setFog(partial, { overrideSceneFog: true });
   }
 });
 
