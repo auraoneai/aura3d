@@ -28,8 +28,8 @@ import {
   type AuraActorAnimationStateSnapshot,
   type AuraAnimationDiagnostics,
   type AuraBoneAttachSpec,
-  type AuraBoneMaskSpec,
   type AuraBoneSocket,
+  type AuraPlayLayerOptions,
   type AuraResolvedClipInfo
 } from "../../contracts/animation.js";
 import type { AuraApp, AuraRuntimeNodeHandle } from "../index.js";
@@ -487,11 +487,7 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
     return this;
   }
 
-  override playLayer(
-    layer: string,
-    clip: string,
-    options?: { weight?: number; fadeIn?: number; mask?: AuraBoneMaskSpec; blendMode?: "override" | "additive" }
-  ): this {
+  override playLayer(layer: string, clip: string, options?: AuraPlayLayerOptions): this {
     const mixer = this.mixer();
     if (mixer === undefined) return super.playLayer(layer, clip, options);
     const runtime = this.actor!.animation;
@@ -508,6 +504,9 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
       blendMode: options?.blendMode,
       additive: additiveWanted,
       mask,
+      // GU47 E-H: the layer clip's playback rate (1 = authored, 0 = frozen); a
+      // non-finite value would poison the mixer clock, so it reads as 1.
+      ...(options?.speed !== undefined ? { timeScale: Number.isFinite(options.speed) ? options.speed : 1 } : {}),
       // A replaced clip on the same layer fades out while the new one fades in (anim-phys-03).
       ...(options?.fadeIn !== undefined && options.fadeIn > 0 ? { fadeOutPrevious: options.fadeIn } : {})
     });
