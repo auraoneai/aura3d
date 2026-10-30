@@ -9,7 +9,7 @@
  */
 import "../../showcase-port-shared/quickbar.css";
 import {
-  camera, effects, environments, game, gameFeel, lights, material, model,
+  camera, decals, effects, environments, game, gameFeel, lights, material, model,
   primitives, scene, type AuraNodeBuilder, type AuraSceneNode
 } from "@aura3d/engine";
 import { createGame, sfxUrl, type ForwardAxis } from "@aura3d/engine/game";
@@ -34,6 +34,10 @@ import { buildLightRig, createLightRigDriver, type QualityTierName, type RigLigh
 import { BZ_FLOOR_TEXTURES, bunkerTexture } from "./art/textures";
 import { damageArcDeg, deathFade, deathRoll, descentSeconds, doorOffset, reloadDip, viewmodelSway } from "./art/motion";
 import { BZ_VFX_EVENTS, atmosphereEmitters, registerBunkerVfx, type BunkerVfxKind } from "./art/vfx";
+import {
+  BZ_BULLET_HOLES, BZ_FLOOR_DECAL_COUNT, bulletHoleId, bulletHolePose, decalUrl, decalsForTier, floorDecalId, floorDecalKind,
+  floorDecals, holeExpired, nextHoleSlot, type DecalKind
+} from "./art/decals";
 import { BLUEPRINT, blueprintEdges, type Segment } from "./art/minimap";
 import { BZ_CA_PULSE, caPulseLevel, lutOfSlot, lutUrlOfSlot } from "./art/lut";
 import { HATCH_BACKDROP, HATCH_COLLAR, hatchBackdrop, hatchCeiling, hatchCollar, hatchShaftSpec, shaftOnSlot } from "./art/hatch";
@@ -100,6 +104,7 @@ const pickupGlow = (color: string, emissive: string, emissiveIntensity: number, 
 
 // ---------------------------------------------------------------------------
 // scene graph — everything exists from boot; runtime nodes move per frame
+const floorDefOf = (slot: number): FloorDef => (slot === 6 ? KILL_HOUSE : FLOORS[slot]!);
 function cellX(slot: number, cx: number) { return cellCenter(cx) + slot * FLOOR_SPAN; }
 /** Wall height of each floor slot (floor 6 is the tall silo): the door sink uses it (C15). */
 const SLOT_WALL_H = ALL_FLOORS.map(({ def }) => (def.id === 5 ? SILO_H : WALL_H));
@@ -428,6 +433,22 @@ function buildScene() {
     lights.point({ name: "warden vent light", color: "#ff5a1a", intensity: 7, distance: 9, decay: 1.6, position: [0, -50, 0] })
       .runtime(game.runtimeNode("vent-light", { tags: ["vfx"] }))
   );
+  // BZ-10: one shared pool of 12 floor decals (moved to the active floor by placeFloorDecals) and a ring of 12 bullet holes
+  const decalTex = (kind: DecalKind) => ({ type: "texture", format: "png", url: decalUrl(kind) }) as unknown as Parameters<typeof decals.project>[0]["texture"];
+  const bootDecals = floorDecals(floorDefOf(BOOT_SLOT));
+  for (let i = 0; i < BZ_FLOOR_DECAL_COUNT; i++) {
+    const kind = floorDecalKind(i), pose = bootDecals[i];
+    nodes.push(decals.project({
+      name: `bunker floor ${kind} ${i}`, texture: decalTex(kind), color: "#ffffff", opacity: kind === "scorch" ? 0.8 : 0.9, roughness: 0.9,
+      size: pose?.size ?? 1, position: pose ? pose.position : [0, -50, 0], rotation: [0, pose?.yaw ?? 0, 0], normal: [0, 1, 0]
+    }).runtime(game.runtimeNode(floorDecalId(i), { tags: ["decal"] })) as unknown as AuraNodeBuilder<AuraSceneNode>);
+  }
+  for (let i = 0; i < BZ_BULLET_HOLES; i++) {
+    nodes.push(decals.project({
+      name: `bunker bullet hole ${i}`, texture: decalTex("bullet"), color: "#ffffff", opacity: 0.9, roughness: 0.95,
+      size: 0.16, position: [0, -50, 0], normal: [0, 1, 0]
+    }).runtime(game.runtimeNode(bulletHoleId(i), { tags: ["decal"] })) as unknown as AuraNodeBuilder<AuraSceneNode>);
+  }
   // C8: enemy gunshots get a tracer, misses included; the muzzle flash at the shooter is the bz-enemy-muzzle preset (BZ-03)
   for (let i = 0; i < ENEMY_TRACERS; i++)
     nodes.push(
@@ -612,6 +633,37 @@ function applyFloorLook(slot: number, transitionSeconds = 0) {
   try { app.post?.setEffectEnabled("volumetricFog", shaftOnSlot(slot)); } catch { /* post runtime not mounted */ }
   document.documentElement.style.setProperty("--bz-lamp", look.lamp.color);
   startAtmosphere(slot);
+  placeFloorDecals(slot);
+}
+/** BZ-10: move the floor-decal pool to this floor's 12 seeded poses (6 on Low) and clear the bullet holes. */
+const holeSpawnedAt: number[] = Array.from({ length: BZ_BULLET_HOLES }, () => -1e9);
+function placeFloorDecals(slot: number) {
+  const poses = floorDecals(floorDefOf(slot));
+  const { floor } = decalsForTier(qualityTier());
+  for (let i = 0; i < BZ_FLOOR_DECAL_COUNT; i++) {
+    const node = opt(floorDecalId(i)), pose = poses[i];
+    if (!node) continue;
+    if (!pose || i >= floor) { node.setVisible(false); continue; }
+    node.setPosition(pose.position[0], pose.position[1], pose.position[2]).setRotation(0, pose.yaw, 0).setScale([pose.size, 1, pose.size]).setVisible(true);
+  }
+  for (let i = 0; i < BZ_BULLET_HOLES; i++) { holeSpawnedAt[i] = -1e9; opt(bulletHoleId(i))?.setVisible(false); }
+}
+/** BZ-10: a player shot that hit a wall leaves a hole on that face for 20 s (ring of 12, 6 on Low). */
+function addBulletHole(x: number, z: number) {
+  const st = sim.state;
+  const pose = bulletHolePose(st.grid, st.w, st.h, x, z);
+  if (!pose) return;
+  const ring = holeSpawnedAt.slice(0, decalsForTier(qualityTier()).holes);
+  const i = nextHoleSlot(ring);
+  const node = opt(bulletHoleId(i));
+  if (!node) return;
+  holeSpawnedAt[i] = performance.now() / 1000;
+  node.setPosition(pose.position[0], pose.position[1], pose.position[2]).setRotation(pose.rotation[0], pose.rotation[1], pose.rotation[2]).setVisible(true);
+}
+function expireBulletHoles(nowSeconds: number) {
+  for (let i = 0; i < BZ_BULLET_HOLES; i++) {
+    if (holeSpawnedAt[i]! > -1e8 && holeExpired(holeSpawnedAt[i]!, nowSeconds)) { holeSpawnedAt[i] = -1e9; opt(bulletHoleId(i))?.setVisible(false); }
+  }
 }
 /** BZ-09: 2-3 looping emitters on the active floor, none on the hidden ones (stopped and respawned per floor). */
 let atmosphere: { stop(o?: { immediate?: boolean }): void }[] = [];
@@ -1206,6 +1258,7 @@ function syncScenePose(inp: SimInput) {
     if (s.t >= 0.25 || !firstSight(s)) continue;
     fireVfx("bullet-impact", [s.x + ox, 1.18, s.z]);
     fireVfx("wall-chip", [s.x + ox, 1.18, s.z]);
+    addBulletHole(s.x, s.z);
   }
 }
 
@@ -1342,6 +1395,7 @@ app.onFrame(({ dt }) => {
   if (bannerT <= 0) elBanner.classList.remove("show");
   if (mapOpen) { mapDrawT -= wallDt; if (mapDrawT <= 0) { mapDrawT = 0.2; drawMap(); } }
   tickCaPulse(now);
+  expireBulletHoles(now / 1000);
 });
 
 // ---------------------------------------------------------------------------
