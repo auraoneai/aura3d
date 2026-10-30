@@ -134,3 +134,36 @@ html, body { margin: 0; padding: 0; height: 100%; background: #0b0e14; overflow:
 
 /* Quick bar accent and the active world button (the bar itself comes from apps/showcase-port-shared/quickbar.css). */
 :root { --a3d-accent: #2ee6a6; --a3d-accent-ink: #04140e; --a3d-accent-2: #ffd94a; --a3d-accent-2-ink: #1a1404; }
+
+/* GU47 CH47-17: tabletop HUD (diorama look). Suisse Works (Swiss Typefaces, licensed; copied from
+   packages/game/src/fonts, sha256 f9ac1fff...8f372d), paper-tag score, painted theme banner, text >= 12 px. */
+@font-face {
+  font-family: "A3G Suisse Works";
+  src: url("./fonts/suisse-works-400.woff2") format("woff2");
+  font-weight: 400 900;
+  font-display: swap;
+}
+body.ch-diorama #hud { font-family: "A3G Suisse Works", Georgia, serif; }
+body.ch-diorama #ch-top { text-shadow: none; }
+body.ch-diorama #ch-score-wrap {
+  background: #f6efe0;
+  border: 1px solid #c9b896;
+  border-radius: 4px 4px 4px 14px;
+  box-shadow: 0 3px 0 #c8693f, 0 8px 18px rgba(40, 30, 20, .28);
+  backdrop-filter: none;
+  transform: rotate(-1.5deg);
+}
+body.ch-diorama .ch-cap { color: #4f5d6b; opacity: .9; }
+body.ch-diorama #ch-score { color: #2b3440; font-weight: 400; }
+body.ch-diorama #ch-theme {
+  background: #f4dc8a;
+  color: #2b3440;
+  border-radius: 3px;
+  box-shadow: 0 2px 0 #c8693f;
+  font-size: 13px;
+  letter-spacing: .14em;
+  transition: opacity .2s ease-out;
+}
+body.ch-diorama .ch-pill { background: #f6efe0; color: #2b3440; border-color: #c9b896; }
+body.ch-diorama #ch-msg { color: #f4dc8a; text-shadow: 0 2px 6px rgba(20, 16, 12, .8); }
+body.ch-diorama #ch-ticker, body.ch-diorama #ch-help { font-size: 13px; opacity: .9; }
