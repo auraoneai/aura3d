@@ -45,6 +45,9 @@ const TEMPERAMENTS = Object.keys(TEMPERAMENT_COLORS) as Temperament[];
 /** Seat layout in tram-local coordinates (x side, y up, z forward): two benches of six, torso centre height. */
 export const SEATS: V3[] = Array.from({ length: 12 }, (_, i) => [i < 6 ? -0.85 : 0.85, 2.3, -3.4 + (i % 6) * 1.36] as V3);
 
+/** GU47 LT-09: the snowing town (Drowned Observatory, see `weatherOf`) and its snow-dusted roof colour (band look). */
+export const SNOW_TOWN = 3;
+export const SNOW_ROOF_COLOR = "#eef1f4";
 /** Particles around the camera for the monsoon rain and the observatory snow. */
 export const WEATHER_COUNT = 360;
 const MOTE_COUNT = 160;
@@ -105,7 +108,7 @@ export type SceneLook = BandId | "day" | "night";
 export function weatherOf(data: SimData, sim: SimState): "clear" | "rain" | "snow" {
   const k = smooth(0.22, 0.82, sim.distance / data.route.legs[sim.leg]!.length);
   const near = k < 0.5 ? sim.leg : (sim.leg + 1) % data.tables.towns.length;
-  return near === 4 ? "rain" : near === 3 ? "snow" : "clear";
+  return near === 4 ? "rain" : near === SNOW_TOWN ? "snow" : "clear";
 }
 
 /**
@@ -304,6 +307,9 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   const ROOF_TINTS = ["#b4523d", "#9a4a3a", "#5f6f86"];
   const facadeMesh = FACADE_TINTS.map(() => new MeshData());
   const roofMesh = ROOF_TINTS.map(() => new MeshData());
+  /* GU47 LT-09: the Drowned Observatory's roofs carry snow in the band look (one merged mesh, +1 draw; the roof draws keep their count) */
+  const snowRoofMesh = new MeshData();
+  const roofOf = (town: number, ri: number): MeshData => (row && town === SNOW_TOWN ? snowRoofMesh : roofMesh[ri]!);
   const stoneMesh = new MeshData(), cobbleMesh = new MeshData(), clockMesh = new MeshData();
   const trunkAt: Inst[] = [], canopyAt: Inst[] = [], pineAt: Inst[] = [], stoneAt: Inst[] = [];
   const canopyColors: string[] = [], pineColors: string[] = [];
@@ -369,7 +375,7 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
         const ti = Math.floor(rand() * FACADE_TINTS.length), ri = Math.floor(rand() * ROOF_TINTS.length);
         const rise = 3 + rand() * 1.8;
         wallBox(facadeMesh[ti]!, bx, top, bz, w, h, d, yawB, { gables: true, uOffset: rand() }, rise);
-        gableRoof(roofMesh[ri]!, bx, top + h, bz, w, d, rise, yawB);
+        gableRoof(roofOf(i, ri), bx, top + h, bz, w, d, rise, yawB);
         if (rand() < 0.5) { const [cxm, czm] = at(lat - side * d * 0.2, mid + w * 0.25); wallBox(stoneMesh, cxm, top + h + rise * 0.3, czm, 1.2, rise + 2.4, 1.2, yawB, { uTile: 3, vTile: 3 }); }
       }
     };
@@ -395,7 +401,7 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
       const [tx, tz] = at(-21, TOWER_ALONG);
       const th = 27, tw = 7;
       wallBox(stoneMesh, tx, top, tz, tw, th, tw, yaw, { uTile: 4, vTile: 4 });
-      pyramidRoof(roofMesh[0]!, tx, top + th, tz, tw, 9.5, yaw, 0.9);
+      pyramidRoof(roofOf(i, 0), tx, top + th, tz, tw, 9.5, yaw, 0.9);
       for (const [lx, lz, nx, nz] of [[0, tw / 2 + 0.05, 0, 1], [0, -tw / 2 - 0.05, 0, -1], [tw / 2 + 0.05, 0, 1, 0], [-tw / 2 - 0.05, 0, -1, 0]] as const) {
         const cy = top + th - 5.2, half = 2.3;
         const px = (u: number, v: number): V3 => {
@@ -511,6 +517,7 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   const texMat = (t: unknown, color: string, roughness: number) => t ? material.pbr({ color, roughness, texture: asRef(t), textureAnisotropy: 8 }) : pbr(color, roughness);
   FACADE_TINTS.forEach((tint, k) => b.add(geometry.custom(facadeMesh[k]!.toGeometry(), { name: `facades-${k}`, material: facadeMat(tint, row ? row.practicals.windowEmissive : night ? 1.8 : 0), castShadow: true, receiveShadow: true }).runtime({ id: `facades-${k}` })));
   ROOF_TINTS.forEach((tint, k) => b.add(geometry.custom(roofMesh[k]!.toGeometry(), { name: `roofs-${k}`, material: texMat(tex?.roof, tint, 0.72), castShadow: true, receiveShadow: true })));
+  if (row) b.add(geometry.custom(snowRoofMesh.toGeometry(), { name: "roofs-snow", material: material.pbr({ color: SNOW_ROOF_COLOR, roughness: 0.62 }), castShadow: true, receiveShadow: true }));
   b.add(geometry.custom(stoneMesh.toGeometry(), { name: "stonework", material: texMat(tex?.stone, "#ffffff", 0.9), castShadow: true, receiveShadow: true }));
   b.add(geometry.custom(cobbleMesh.toGeometry(), { name: "plaza-cobbles", material: texMat(tex?.cobble, "#ffffff", 0.92), castShadow: false, receiveShadow: true }));
   if (!MESHY_ENABLED) b.add(geometry.custom(clockMesh.toGeometry(), { name: "clock-faces", material: texMat(tex?.clock, "#ffffff", 0.55), castShadow: false, receiveShadow: false }));
