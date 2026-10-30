@@ -92,6 +92,25 @@ float lineMask(float x, float centre, float hw, float aa) {
 }
 `;
 
+/**
+ * GU47 RH47-10: packed CC0 detail map taps (R luminance detail, G/B NormalGL x/y; see art/detail.ts). The engine binds asset
+ * textures with a clamp, un-mipmapped sampler, so each tap wraps with `fract` and fades out by its texel footprint: a scale
+ * is gone before one pixel covers 2 texels, so the detail cannot alias into moire at distance. Returns (albedo, nx, ny) deltas.
+ */
+const detailChunk = /* glsl */ `
+vec4 rhDetailTap(sampler2D tex, vec2 p, float tile) {
+  vec2 uv = p / tile;
+  float texels = length(fwidth(uv)) * 512.0;
+  float w = 1.0 - smoothstep(0.75, 2.0, texels);
+  return vec4(texture(tex, fract(uv)).rgb - 0.5, w);
+}
+vec3 rhDetail(sampler2D tex, vec2 p, vec2 tiles) {
+  vec4 a = rhDetailTap(tex, p, tiles.x);
+  vec4 b = rhDetailTap(tex, p, tiles.y);
+  return a.xyz * a.w + b.xyz * (b.w * 0.6);
+}
+`;
+
 /** uv.x = lateral position across the road (-1..1), uv.y = arc length in metres. */
 export const ROAD_FRAGMENT = /* glsl */ `
 in vec2 vUv;
@@ -100,6 +119,7 @@ in vec3 vNormal;
 out vec4 outColor;
 ${ATMOS}
 ${lineMask}
+${detailChunk}
 void main() {
   vec3 V = normalize(cameraPosition - vWorld);
   float lat = vUv.x;
@@ -112,9 +132,11 @@ void main() {
   float g1 = rhNoise(vWorld.xz * 16.0), g2 = rhNoise(vWorld.xz * 3.7 + 7.0), g3 = rhNoise(vWorld.xz * 0.42 + 3.0);
   float tone = (g1 - 0.5) * 0.4 * fade + (g2 - 0.5) * 0.28 * fade + (g3 - 0.5) * 0.2;
   vec3 albedo = asphalt * (1.0 + tone);
+  vec3 dt = detailAmt > 0.0 ? rhDetail(roadDetail, vWorld.xz, detailTiles) * detailAmt : vec3(0.0);
+  albedo *= 1.0 + dt.x * 0.9;
   float wheel = exp(-sq((abs(lat) - 0.25) / 0.08)) + exp(-sq((abs(lat) - 0.73) / 0.08));
   albedo *= 1.0 - wheel * 0.28;
-  float rough = clamp(roadGloss + (g2 - 0.5) * 0.2 * fade - wheel * 0.22 + (1.0 - fade) * 0.18, 0.28, 0.95);
+  float rough = clamp(roadGloss + (g2 - 0.5) * 0.2 * fade - wheel * 0.22 + (1.0 - fade) * 0.18 - dt.x * 0.3, 0.28, 0.95);
 
   float period = 15.0;
   float ph = fract(arc / period);
@@ -133,7 +155,7 @@ void main() {
   albedo = mix(albedo, glowColor * 0.35, neon);
   vec3 emis = glowColor * neon * 2.6;
 
-  vec3 N = normalize(vNormal);
+  vec3 N = normalize(normalize(vNormal) + vec3(dt.y, 0.0, -dt.z) * 1.2 * (1.0 - paint) * (1.0 - curb));
   vec2 dl = vWorld.xz - carPos.xz;
   float along = dot(dl, carDir);
   float side = dl.x * carDir.y - dl.y * carDir.x;
@@ -331,10 +353,18 @@ in vec3 vNormal;
 in vec3 vWorld;
 out vec4 outColor;
 ${ATMOS}
+${detailChunk}
 void main() {
   vec3 V = normalize(cameraPosition - vWorld);
   vec3 N = normalize(vNormal);
   if (dot(N, V) < 0.0) N = -N;
+  float dAlb = 0.0;
+  if (detailAmt > 0.0) {
+    vec3 tw = pow(abs(N), vec3(4.0)); tw /= tw.x + tw.y + tw.z;
+    vec3 dx = rhDetail(rockDetail, vWorld.zy, detailTiles), dy = rhDetail(rockDetail, vWorld.xz, detailTiles), dz = rhDetail(rockDetail, vWorld.xy, detailTiles);
+    dAlb = (dx.x * tw.x + dy.x * tw.y + dz.x * tw.z) * detailAmt;
+    N = normalize(N + (vec3(0.0, dx.z, dx.y) * tw.x + vec3(dy.y, 0.0, -dy.z) * tw.y + vec3(dz.y, dz.z, 0.0) * tw.z) * 1.4 * detailAmt);
+  }
   float foot = length(fwidth(vWorld)) + 1e-4;
   float fade = 1.0 - smoothstep(0.5, 6.0, foot);
   float blotch = rhFbm(vWorld.xz * 0.03 + vWorld.y * 0.02);
@@ -350,6 +380,7 @@ void main() {
   vec3 turf = grass * (0.75 + 0.5 * blotch);
   vec3 albedo = mix(rock, turf, flat_ * high * 0.85);
   albedo = mix(albedo, sand, flat_ * (1.0 - high) * 0.9);
+  albedo *= 1.0 + dAlb * 0.9;
   float ao = mix(0.62, 1.0, smoothstep(-2.0, 14.0, vWorld.y)) * (0.8 + 0.2 * blotch);
   gSunShadow = a3dSunShadowAuto(vWorld, N);
   vec3 lit = lightSurface(albedo * ao, N, V, 0.9, 0.0, vec3(0.0));

@@ -76,6 +76,8 @@ export interface SaltwindLookRow {
     /** Whitecap and surf-line amount on the water (0..1). */
     readonly whitecaps: number;
     readonly beam: number;
+    /** RH47-10: CC0 detail maps (asphalt plus one rock set) and their strength on the custom road and terrain surfaces. */
+    readonly detail: { readonly rock: "limestone" | "sandstone"; readonly amount: number };
   };
   /** Relay gantry tint (RH47-11): the gate frame and its glow. */
   readonly gantry: { readonly frame: string; readonly glow: string; readonly glowAmount: number };
@@ -113,7 +115,8 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
     surfaces: {
       asphalt: [0.05, 0.056, 0.07], roadGloss: 0.45,
       rockA: "#e3d9c0", rockB: "#c9a25e", grass: "#b49c5a", sand: "#e9e4d6",
-      deepWater: "#0d4b58", shallowWater: "#1f8c8c", whitecaps: 0.75, beam: 0.3
+      deepWater: "#0d4b58", shallowWater: "#1f8c8c", whitecaps: 0.75, beam: 0.3,
+      detail: { rock: "limestone", amount: 1 }
     },
     gantry: { frame: "#e9e4d6", glow: "#c8321f", glowAmount: 0.6 },
     post: { bloom: { intensity: 0.3, threshold: 1.1, scatter: 0.55 }, flare: 0.5, grain: 0, heat: { amount: 0, startMetres: 40 }, autoExposure: false, vignette: 0.18 },
@@ -137,7 +140,8 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
     surfaces: {
       asphalt: [0.09, 0.07, 0.065], roadGloss: 0.65,
       rockA: "#c97a4c", rockB: "#8a4128", grass: "#9a8344", sand: "#d8a46e",
-      deepWater: "#12606e", shallowWater: "#3a9a9c", whitecaps: 0.3, beam: 0.45
+      deepWater: "#12606e", shallowWater: "#3a9a9c", whitecaps: 0.3, beam: 0.45,
+      detail: { rock: "sandstone", amount: 1 }
     },
     gantry: { frame: "#2b2a2e", glow: "#c8321f", glowAmount: 0.9 },
     post: { bloom: { intensity: 0.45, threshold: 1.0, scatter: 0.6 }, flare: 0.75, grain: 0.06, heat: { amount: 1, startMetres: 40 }, autoExposure: false, vignette: 0.24 },
@@ -161,7 +165,8 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
     surfaces: {
       asphalt: [0.05, 0.056, 0.075], roadGloss: 0.5,
       rockA: "#3a4560", rockB: "#262e44", grass: "#26343a", sand: "#46506a",
-      deepWater: "#0c2236", shallowWater: "#1b4a5c", whitecaps: 0, beam: 1.3
+      deepWater: "#0c2236", shallowWater: "#1b4a5c", whitecaps: 0, beam: 1.3,
+      detail: { rock: "limestone", amount: 0.7 }
     },
     gantry: { frame: "#cfd8de", glow: "#c8321f", glowAmount: 1.2 },
     post: { bloom: { intensity: 0.8, threshold: 0.9, scatter: 0.65 }, flare: 0, grain: 0, heat: { amount: 0, startMetres: 40 }, autoExposure: true, vignette: 0.26 },

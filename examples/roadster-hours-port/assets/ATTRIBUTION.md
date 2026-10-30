@@ -19,3 +19,13 @@ Generated 2026-10-23 through the AuraOne Meshy account via Kiro Prism (`/v1/mesh
 | boulders | scenery | a cluster of weathered sandstone boulders in warm orange-brown tones, stylised game prop | 01a169e4-ce0f-7559-9046-1af095d825f8 | 01a169e6-7938-76be-9ee2-95eadeaea611 | 2573 | boulders.jpg |
 
 Credits are tracked by the program-wide ledger (`/tmp/meshy/ledger.jsonl`, tag `roadster`); this port's total is recorded in `PORTING-NOTES.md`. The first villa preview (a house on a rock plinth) was rejected and regenerated with a sharper prompt; its task ids are in the same ledger.
+
+## CC0 surface detail (GU47 RH47-10)
+
+| file | source | licence | maps used |
+| --- | --- | --- | --- |
+| detail/asphalt.jpg | ambientCG Asphalt033, 1K-JPG (https://ambientcg.com/a/Asphalt033) | CC0-1.0 | Color (luminance), NormalGL |
+| detail/limestone.jpg | ambientCG Rock063, 1K-JPG (https://ambientcg.com/a/Rock063) | CC0-1.0 | Color (luminance), NormalGL |
+| detail/sandstone.jpg | ambientCG Rock064, 1K-JPG (https://ambientcg.com/a/Rock064) | CC0-1.0 | Color (luminance), NormalGL |
+
+Packed to 512 px by `tools/pack-detail.mjs` (R = luminance detail re-centred on 0.5, G/B = normal x/y); sha256 and download urls in `detail/detail.json`. Found with `aura3d assets resolve "<need>" --role texture --dry-run` (ambientCG rung), downloaded at 1K instead of the suggested 2K to stay inside the texture budget.

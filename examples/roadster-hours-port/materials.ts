@@ -1,6 +1,7 @@
 /** `material.custom` specs for the port's surfaces, apart from the scene so a unit test can compile exactly what the app draws. */
 import type { material } from "@aura3d/engine";
 import type { Look } from "./look";
+import { DETAIL_ASSETS, DETAIL_TILES } from "./art/detail";
 import { SPRAY_FRAGMENT, SPRAY_VERTEX, SPRAY_WINDOW, sprayAmount, sprayWind } from "./art/spray";
 import {
   BEAM_FRAGMENT, BEAM_VERTEX, BLOB_FRAGMENT, CITY_FRAGMENT, PLUME_FRAGMENT, PLUME_VERTEX, RAMP_FRAGMENT, ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX, TERRAIN_FRAGMENT, TERRAIN_VERTEX, TOWER_FRAGMENT, TOWN_FRAGMENT, TOWN_VERTEX, WATER_FRAGMENT, WATER_VERTEX
@@ -13,6 +14,7 @@ export interface FogLook { readonly fogColor: Rgb; readonly fogNear: number; rea
 
 const c3 = (value: Rgb) => ({ type: "color3" as const, value: [...value] as [number, number, number] });
 const f32 = (value: number) => ({ type: "f32" as const, value });
+const v2 = (value: readonly [number, number]) => ({ type: "vec2" as const, value: [...value] as [number, number] });
 const v3 = (value: readonly [number, number, number]) => ({ type: "vec3" as const, value: [...value] as [number, number, number] });
 
 /** The uniforms every lit program reads (see `ATMOS` in shaders.ts). */
@@ -21,18 +23,23 @@ export const atmosphereUniforms = (look: Look) => ({
   ambSky: c3(look.ambSky), ambGround: c3(look.ambGround), nightAmt: f32(look.night), fogNear: f32(look.fogNear), fogFar: f32(look.fogFar)
 });
 
+/** RH47-10: the detail strength of a look (0 on `?look=original`, which keeps today's procedural-only surfaces). */
+export const detailAmount = (look: Look): number => look.row?.surfaces.detail.amount ?? 0;
+/** RH47-10: the rock detail set of a look (sandstone on Redline, limestone elsewhere and on the original look). */
+export const rockDetailKey = (look: Look): "limestone" | "sandstone" => look.row?.surfaces.detail.rock ?? "limestone";
+
 export const roadSpec = (look: Look, line: Rgb, glow: Rgb): CustomSpec => ({
   receiveShadow: true,
   glsl: { vertex: ROAD_VERTEX, fragment: ROAD_FRAGMENT },
   uniforms: {
     asphalt: c3(look.asphalt), lineColor: c3(line), glowColor: c3(glow), roadGloss: f32(look.roadGloss),
     carPos: v3([0, -1000, 0]), carDir: { type: "vec2" as const, value: [0, -1] as [number, number] }, beamAmt: f32(look.beam),
+    roadDetail: { type: "texture2d" as const, value: DETAIL_ASSETS.asphalt }, detailAmt: f32(detailAmount(look)), detailTiles: v2(DETAIL_TILES.road),
     ...atmosphereUniforms(look)
   },
   side: "double"
 });
 
-const v2 = (value: readonly [number, number]) => ({ type: "vec2" as const, value: [...value] as [number, number] });
 
 export const waterSpec = (look: Look): CustomSpec => ({
   glsl: { vertex: WATER_VERTEX, fragment: WATER_FRAGMENT },
@@ -62,7 +69,11 @@ export const skySpec = (look: Look): CustomSpec => ({
 export const terrainSpec = (look: Look): CustomSpec => ({
   receiveShadow: true,
   glsl: { vertex: TERRAIN_VERTEX, fragment: TERRAIN_FRAGMENT },
-  uniforms: { rockA: c3(look.rockA), rockB: c3(look.rockB), grass: c3(look.grass), sand: c3(look.sand), ...atmosphereUniforms(look) },
+  uniforms: {
+    rockA: c3(look.rockA), rockB: c3(look.rockB), grass: c3(look.grass), sand: c3(look.sand),
+    rockDetail: { type: "texture2d" as const, value: DETAIL_ASSETS[rockDetailKey(look)] }, detailAmt: f32(detailAmount(look)), detailTiles: v2(DETAIL_TILES.rock),
+    ...atmosphereUniforms(look)
+  },
   side: "double"
 });
 
