@@ -4,8 +4,16 @@ import { ASPHALT_HALF, TILE_M, type Ctx2D } from "../../../examples/drift-and-de
 
 function stub() {
   const fills: { x: number; y: number; w: number; h: number; color: string }[] = [];
-  const g = { fillStyle: "", strokeStyle: "", lineWidth: 1, globalAlpha: 1, fillRect(x: number, y: number, w: number, h: number) { fills.push({ x, y, w, h, color: String(this.fillStyle) }); } } as unknown as Ctx2D;
-  return { g, fills };
+  const g = {
+    fillStyle: "",
+    strokeStyle: "",
+    lineWidth: 1,
+    globalAlpha: 1,
+    fillRect(x: number, y: number, w: number, h: number) {
+      fills.push({ x, y, w, h, color: String(g.fillStyle) });
+    }
+  };
+  return { g: g as unknown as Ctx2D, fills };
 }
 
 describe("gridlock courier road paint (GU47 WP-28 GC-H2)", () => {

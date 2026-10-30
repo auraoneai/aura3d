@@ -2,13 +2,63 @@
   "schema": "gu47.budget/1",
   "slug": "drift-and-deliver-port",
   "wp": "WP-28",
-  "limits": { "drawCalls": 130, "triangles": 1300000, "pageMB": 22, "fpsDropMaxPct": 15, "shadowPassDrawsReportedSeparately": true },
+  "limits": {
+    "drawCalls": 130,
+    "triangles": 1300000,
+    "pageMB": 22,
+    "fpsDropMaxPct": 15,
+    "shadowPassDrawsReportedSeparately": true
+  },
   "note": "before: PRD WP-28 'Today' line (drive, 4.6.0, software WebGL2) and evidence/drift-and-deliver-port/README.md round 3; after: phase 2 (remote capture). Triangles before = 125,948 city + 135,844 props + GLB traffic/landmarks (not measured as a frame total).",
   "variants": {
-    "golden":   { "before": { "drawCalls": 83, "triangles": null, "textureBytes": null, "pageMB": 16, "routeJsGzipDeltaKB": 0, "runnerFps": null, "meanLuma": 113, "p5": 66, "p95": 170, "saturation": 0.15 }, "after": null },
-    "sunset":   { "before": { "drawCalls": 83, "triangles": null, "textureBytes": null, "pageMB": 16, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null },
-    "bluehour": { "before": { "drawCalls": 83, "triangles": null, "textureBytes": null, "pageMB": 16, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null },
-    "original": { "before": { "drawCalls": 83, "triangles": null, "textureBytes": null, "pageMB": 16, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null }
+    "golden": {
+      "before": {
+        "drawCalls": 83,
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": 16,
+        "routeJsGzipDeltaKB": 0,
+        "runnerFps": null,
+        "meanLuma": 113,
+        "p5": 66,
+        "p95": 170,
+        "saturation": 0.15
+      },
+      "after": null
+    },
+    "sunset": {
+      "before": {
+        "drawCalls": 83,
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": 16,
+        "routeJsGzipDeltaKB": 0,
+        "runnerFps": null
+      },
+      "after": null
+    },
+    "bluehour": {
+      "before": {
+        "drawCalls": 83,
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": 16,
+        "routeJsGzipDeltaKB": 0,
+        "runnerFps": null
+      },
+      "after": null
+    },
+    "original": {
+      "before": {
+        "drawCalls": 83,
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": 16,
+        "routeJsGzipDeltaKB": 0,
+        "runnerFps": null
+      },
+      "after": null
+    }
   },
   "expectedDrawDelta": {
     "GC-L4 sodium pool (5 points) + GC-L5 headlight spot": 0,
@@ -17,6 +67,15 @@
     "GC-S4 harbour water (shader swap on the existing quad)": 0,
     "GC-S1 sky shader (existing dome)": 0,
     "GC-L2 third cascade (shadow pass, reported separately)": 0,
-    "GC-P1 grain + motion blur (post stages, not draws)": 0
-  }
+    "GC-P1 grain + motion blur (post stages, not draws)": 0,
+    "GC-AN1 braking tail halos (1 instanced draw)": 1,
+    "GC-V2 SDF drop-off board (panel + text)": 2,
+    "GC-V3 festoons (1 instanced draw)": 1,
+    "GC-S5 god rays, GC-P3 tilt-shift (post passes, not draws)": 0,
+    "GC-H1 dispatch HUD (DOM and 2D canvas, no scene draws)": 0,
+    "GC-L5 results-orbit lens flare (4 sprites, results screen only; 0 in play)": 0,
+    "GC-C1 first-delivery side shot (camera only)": 0,
+    "GC-H2 road paint (road tile texture) + 3 SDF district banners (panel + text each)": 6
+  },
+  "expectedDrawDeltaTotal": 14
 }
