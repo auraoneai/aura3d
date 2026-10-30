@@ -245,10 +245,17 @@ function programFor(device: RenderDevice, ds: WaterDeviceState, key: string, mak
     p = make();
     ds.programs.set(key, p);
     return p;
-  } catch {
+  } catch (error) {
+    // GU47 E-G phase 2: a failed water program used to skip the draw silently.
+    if (!warnedProgramKeys.has(key) && typeof console !== "undefined") {
+      warnedProgramKeys.add(key);
+      console.warn(`prd10.water: water program "${key}" failed to build; the water surface is not drawn. ${error instanceof Error ? error.message : String(error)}`);
+    }
     return null;
   }
 }
+
+const warnedProgramKeys = new Set<string>();
 
 function reflectionRequest(st: WaterGpuState, tier: AuraWorldQualityTier): ReflectionRequest | null {
   const mode = resolveTierValue<"ibl" | "ssr" | "planar">(st.record.options.reflection ?? { low: "ibl", medium: "ibl", high: "planar", ultra: "planar" }, tier);
