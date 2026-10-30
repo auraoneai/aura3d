@@ -48,7 +48,6 @@ import { FORWARD_DIRECT_LIGHT_CAPACITY, applyClusteredLightingUniforms, applyFor
 import { flushMultiDrawQueue, submitDraw } from "./forward/DrawSubmit.js";
 import { bindVelocityUniforms } from "./forward/Velocity.js";
 import { A3D_INSTANCE_EMISSIVE_ATTRIBUTE, materialInstanceColorTarget, registerInstanceColorTargetFeature } from "./shaders/chunks/instance_color_target.glsl";
-import { invertMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 
 export type { RenderItem };
 
@@ -2364,8 +2363,13 @@ export function customShaderInverseViewProjection(
   const view = Array.from(options.customFrameCamera?.viewMatrix ?? options.cameraViewMatrix ?? identityMatrix());
   const projection = Array.from(options.customFrameCamera?.projectionMatrix ?? options.auraFrameCamera?.projectionMatrix ?? identityMatrix());
   if (view.length !== 16 || projection.length !== 16 || !isFiniteArrayLike(view) || !isFiniteArrayLike(projection)) return new Float32Array(identityMatrix());
-  const inverse = invertMat4(multiplyMat4(projection as unknown as Mat4, view as unknown as Mat4));
-  return new Float32Array(isFiniteArrayLike(inverse) ? inverse : identityMatrix());
+  try {
+    const inverse = invertMat4(multiplyMat4(projection as Mat4, view as Mat4));
+    return new Float32Array(isFiniteArrayLike(inverse) ? inverse : identityMatrix());
+  } catch {
+    // Singular camera (degenerate projection): `a3dFragWorldPosition` reads clip space instead of NaN.
+    return new Float32Array(identityMatrix());
+  }
 }
 
 const ZERO_SH9 = new Float32Array(27);

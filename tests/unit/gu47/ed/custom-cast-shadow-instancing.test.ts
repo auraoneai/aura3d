@@ -73,7 +73,7 @@ describe("GU47 ED-4 castShadow on material.custom", () => {
     const [first] = runDepth([caster], 1.25);
     const [second] = runDepth([caster], 2.5);
     expect(first!.label).toBe("card:custom-depth");
-    expect(first!.shader.reflection.uniforms.has("u_uSway")).toBe(true);
+    expect(first!.shader?.reflection.uniforms.has("u_uSway")).toBe(true);
     const uniforms = first!.uniforms!;
     expect(uniforms.get("u_uSway")).toBe(0.35);
     expect(uniforms.get("u_time")).toBe(1.25);
