@@ -25,9 +25,14 @@ export interface AuraToonOptions {
    * GU47 E-E: edge source for the ink. `"color"` (default) is the luma Sobel on the image; `"depth"` inks
    * linear-depth silhouettes (inverse-depth Laplacian, so flat ground and creases stay clean); `"both"` inks either.
    * Depth comes from the post chain's linear depth (`u_depthLinear`); while it is not bound the pass keeps colour ink.
+   * The v2 chain binds it at the HDR slots (`order: "before-tonemap"`, `"after-bloom"`, ...); the `after-tonemap` tail
+   * does not bind depth yet (lane E-C handoff), so a depth toon there inks colour edges without a fade.
    */
   readonly inkSource?: AuraToonInkSource;
-  /** GU47 E-E: view distance in metres where the ink reaches zero; full strength up to half of it. Absent = no fade. */
+  /**
+   * GU47 E-E: view distance in metres where the ink reaches zero; full strength up to half of it. Absent = no fade.
+   * Needs bound depth like `inkSource: "depth"`.
+   */
   readonly fadeDistance?: number;
   /** GU47 E-E: ink colour "#rrggbb" (wins over `ink`); display sRGB on the after-tonemap slot, linearised on earlier slots. */
   readonly inkColor?: string;
