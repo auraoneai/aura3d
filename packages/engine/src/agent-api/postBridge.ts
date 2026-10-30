@@ -675,6 +675,27 @@ function rgbField(node: AuraEffectNode, field: string, fallback: RgbLike): RgbLi
 }
 
 /**
+ * GU47 E-C: grade terms (`lift`, `gamma`, `gain`, `shadows`, `midtones`,
+ * `highlights`) also accept a scalar applied to all three channels — the
+ * `AuraEffectNode` field had been typed `number` for shadows/highlights while
+ * the bridge only read RGB, so a numeric value never reached a pixel.
+ * Non-finite channels fall back per channel.
+ */
+function gradeRgbField(node: AuraEffectNode, field: string, fallback: RgbLike): RgbLike {
+  const value = (node as unknown as Record<string, unknown>)[field];
+  if (typeof value === "number") return Number.isFinite(value) ? { r: value, g: value, b: value } : fallback;
+  const rgb = rgbField(node, field, fallback);
+  return {
+    r: Number.isFinite(rgb.r) ? rgb.r : fallback.r,
+    g: Number.isFinite(rgb.g) ? rgb.g : fallback.g,
+    b: Number.isFinite(rgb.b) ? rgb.b : fallback.b
+  };
+}
+
+/** Temperature / tint are normalised white-balance offsets in [-1, 1] (0 = neutral). */
+const clampUnit = (value: number): number => Math.min(1, Math.max(-1, value));
+
+/**
  * §6.6 v2 bloom mapping: authored fields win; fields absent from
  * `postAuthored` take the v2 defaults (factory defaults are legacy). A
  * threshold < 1 is honored as linear HDR and reported
@@ -922,17 +943,19 @@ export function createRootPostPipeline(
     ...(ssrNode && ssrEnabled ? { ssr: { intensity: numberField(ssrNode, "intensity", 0.9), maxDistance: numberField(ssrNode, "maxDistance", 18) } } : {}),
     ...(gradeNode ? {
       grade: {
-        temperature: authoredNumber(gradeNode, "temperature", 0),
-        tint: authoredNumber(gradeNode, "tint", 0),
+        // GU47 E-C: these reach pixels in the S10 linear grade (v2Stages
+        // `runHdrGradeDraw`); an all-default bag resolves to no draw.
+        temperature: clampUnit(authoredNumber(gradeNode, "temperature", 0)),
+        tint: clampUnit(authoredNumber(gradeNode, "tint", 0)),
         contrast: authoredNumber(gradeNode, "contrast", 1),
         saturation: authoredNumber(gradeNode, "saturation", 1),
         vibrance: authoredNumber(gradeNode, "vibrance", 0),
-        lift: rgbField(gradeNode, "lift", { r: 0, g: 0, b: 0 }),
-        gamma: rgbField(gradeNode, "gamma", { r: 1, g: 1, b: 1 }),
-        gain: rgbField(gradeNode, "gain", { r: 1, g: 1, b: 1 }),
-        shadows: rgbField(gradeNode, "shadows", { r: 1, g: 1, b: 1 }),
-        midtones: rgbField(gradeNode, "midtones", { r: 1, g: 1, b: 1 }),
-        highlights: rgbField(gradeNode, "highlights", { r: 1, g: 1, b: 1 }),
+        lift: gradeRgbField(gradeNode, "lift", { r: 0, g: 0, b: 0 }),
+        gamma: gradeRgbField(gradeNode, "gamma", { r: 1, g: 1, b: 1 }),
+        gain: gradeRgbField(gradeNode, "gain", { r: 1, g: 1, b: 1 }),
+        shadows: gradeRgbField(gradeNode, "shadows", { r: 1, g: 1, b: 1 }),
+        midtones: gradeRgbField(gradeNode, "midtones", { r: 1, g: 1, b: 1 }),
+        highlights: gradeRgbField(gradeNode, "highlights", { r: 1, g: 1, b: 1 }),
         lutIntensity: authoredNumber(gradeNode, "lutIntensity", 1)
       }
     } : {}),

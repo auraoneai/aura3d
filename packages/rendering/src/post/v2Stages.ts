@@ -62,6 +62,7 @@ import { TAA_RESOLVE_GLSL, TAA_UPSCALE_GLSL } from "./shaders/taa.glsl.js";
 import { DOF_COMPOSITE_GLSL, DOF_GATHER_GLSL, DOF_NEAR_TILE_GLSL, DOF_PREFILTER_GLSL } from "./shaders/dof.glsl.js";
 import { MB_NEIGHBOR_GLSL, MB_RECONSTRUCT_GLSL, MB_TILE_MAX_GLSL } from "./shaders/motionBlur.glsl.js";
 import { EXPOSURE_ADAPT_GLSL, EXPOSURE_LUMA_LOG_GLSL, EXPOSURE_MUL_GLSL, EXPOSURE_REDUCE_GLSL } from "./shaders/exposure.glsl.js";
+import { HDR_GRADE_GLSL, resolveHdrGradeUniforms, type HdrGradeInput, type HdrGradeUniforms } from "./shaders/hdrGrade.glsl.js";
 import { SMAA_BLEND_GLSL, SMAA_EDGES_GLSL, SMAA_WEIGHTS_GLSL } from "./shaders/smaa.glsl.js";
 import { FXAA_185_FRAGMENT_GLSL } from "./shaders/fxaa.glsl.js";
 import { POST_INSERT_ANCHORS, type AutoExposureOptionsV2, type DofOptions, type GtaoOptions, type GodRayOptions, type MotionBlurOptions, type TaaOptions } from "./PostGraph";
@@ -297,6 +298,60 @@ function draw(host: WebGL2DeviceHost, state: PostV2State, prog: WebGLProgram, ta
 
 /** §6.3 multi-bounce ρ and AO metadata shared by the apply draw. */
 const AO_RHO = 0.5;
+
+/**
+ * GU47 E-C: one fullscreen draw for S8's `exp2(ev)` multiply and/or the S10
+ * linear grade. AE-only frames keep the original `EXPOSURE_MUL_GLSL` program
+ * (byte-identical); a non-identity grade runs `HDR_GRADE_GLSL`, with the EV
+ * multiply folded in when S8 is active (`ev` non-null).
+ */
+function runHdrGradeDraw(
+  host: WebGL2DeviceHost,
+  state: PostV2State,
+  target: RenderTarget,
+  input: RenderTarget,
+  ev: RenderTarget | null,
+  grade: HdrGradeUniforms | null
+): void {
+  const gl = host.gl;
+  if (!grade) {
+    if (!ev) return;
+    const mulProg = program(state, gl, "exposure-mul", EXPOSURE_MUL_GLSL);
+    draw(host, state, mulProg, asGlTarget(target), [asGlTarget(input).colorHandle, asGlTarget(ev).colorHandle], (g) => {
+      g.uniform1i(g.getUniformLocation(mulProg, "u_hdr"), 0);
+      g.uniform1i(g.getUniformLocation(mulProg, "u_ev"), 1);
+    });
+    return;
+  }
+  const prog = program(state, gl, "hdr-grade", HDR_GRADE_GLSL);
+  draw(host, state, prog, asGlTarget(target), [asGlTarget(input).colorHandle, ev ? asGlTarget(ev).colorHandle : state.blankTex], (g) => {
+    g.uniform1i(g.getUniformLocation(prog, "u_hdr"), 0);
+    g.uniform1i(g.getUniformLocation(prog, "u_ev"), 1);
+    g.uniform1i(g.getUniformLocation(prog, "u_hasEv"), ev ? 1 : 0);
+    g.uniform1i(g.getUniformLocation(prog, "u_hasGrade"), 1);
+    writeHdrGradeUniforms(g, prog, grade);
+  });
+}
+
+/** The S10 grade uniform writer (`u_whiteBalance` … `u_highlights`). Exported for the mock-GL unit gate. */
+export function writeHdrGradeUniforms(g: WebGL2RenderingContext, prog: WebGLProgram, grade: HdrGradeUniforms): void {
+  const v3 = (name: string, value: readonly [number, number, number]): void => {
+    g.uniform3f(g.getUniformLocation(prog, name), value[0], value[1], value[2]);
+  };
+  v3("u_whiteBalance", grade.whiteBalance);
+  v3("u_lift", grade.lift);
+  v3("u_gamma", grade.gamma);
+  v3("u_gain", grade.gain);
+  v3("u_shadows", grade.shadows);
+  v3("u_midtones", grade.midtones);
+  v3("u_highlights", grade.highlights);
+}
+
+/** Stage-trace suffix for S9: the authored mip count when the bag carries one. */
+function bloomMipsTag(bloom: unknown): string {
+  const mips = bloom && typeof bloom === "object" ? (bloom as { mips?: unknown }).mips : undefined;
+  return typeof mips === "number" && Number.isFinite(mips) ? `-${mips}mips` : "";
+}
 
 /* ------------------------------------------------------------------------ */
 /* Phase 6 — C-13 custom passes, S8 auto-exposure, S11 SMAA                   */
@@ -601,6 +656,10 @@ export function runV2HdrStages(
   // insertion anchors (`after-tonemap` runs in the LDR tail instead).
   const autoExposure = pipeline.autoExposure as AutoExposureOptionsV2 | false | undefined;
   const wantsAutoExposure = autoExposure !== undefined && autoExposure !== false;
+  // GU47 E-C: the linear grade (white balance, lift/gamma/gain, shadows/
+  // midtones/highlights). Identity → null → no draw (byte-identical frames).
+  const gradeUniforms = resolveHdrGradeUniforms(pipeline.grade as HdrGradeInput | undefined);
+  const wantsGrade = gradeUniforms !== null;
   const customs = mergedCustomPasses(pipeline);
   const customsAt = (anchor: PostPassDescriptor["insertAt"]): readonly PostPassDescriptor[] =>
     sortCustomPassesAtAnchor(customs, anchor);
@@ -613,13 +672,18 @@ export function runV2HdrStages(
   const mbActive = wantsMb && temporalOk;
   beginPostStageTrace();
   recordPostStage(`enter:taa=${String(wantsTaa)}:mb=${String(wantsMb)}:temporal=${String(temporalOk)}`);
+  // GU47 E-C stage trace: S9 bloom executes inside the fused present right
+  // after this driver returns. The executor sets `deferBeforeTonemap` exactly
+  // when its pass list carries an HDR bloom pass (LegacyPost
+  // `executePostGraphWebGL2`), so that flag — not the authored bag — records it.
+  if (options?.deferBeforeTonemap) recordPostStage(`S9:bloom${bloomMipsTag(pipeline.bloom)}`);
   if (wantsTaa && !temporalOk) { skipped.push("TAA_VELOCITY_COVERAGE"); recordPostSkipped("TAA_VELOCITY_COVERAGE:v2-hdr-stages"); }
   if (wantsMb && !temporalOk) { skipped.push("S7_VELOCITY_UNAVAILABLE"); recordPostSkipped("S7_VELOCITY_UNAVAILABLE:v2-hdr-stages"); }
   const needsLinZ = wantsAo || wantsGodRays || wantsDof || taaActive || mbActive
     || hdrCustoms.some((pass) => pass.inputs.includes("depth"));
   const needsVelocity = ((taaActive || mbActive) && temporalOk)
     || (hdrCustoms.some((pass) => pass.inputs.includes("velocity")) && temporalOk);
-  if (!wantsAo && !wantsGodRays && !wantsCa && !taaActive && !wantsDof && !mbActive && !wantsAutoExposure && hdrCustoms.length === 0) return { target: source, aoPending: false, skipped };
+  if (!wantsAo && !wantsGodRays && !wantsCa && !taaActive && !wantsDof && !mbActive && !wantsAutoExposure && !wantsGrade && hdrCustoms.length === 0) return { target: source, aoPending: false, skipped };
 
   // T0-15: the forward HDR target is multisampled by default (`sampleCount` 4
   // in `Renderer`), so its `colorHandle`/`depthTextureHandle` only contain
@@ -654,6 +718,7 @@ export function runV2HdrStages(
   let minmaxHalf: RenderTarget | null = null;
   let linZOwnedByPool = false;
   if (needsLinZ) {
+    recordPostStage("S1:depth-prep");
     // Temporal frames write this frame's linear Z into the history ping-pong's
     // `linZOutput` slot so commit() promotes it for next frame's disocclusion.
     linZFull = temporal?.v2?.linZOutput
@@ -811,6 +876,7 @@ export function runV2HdrStages(
       : [0.5, 0.5];
     const godSrc = withDefines(GODRAYS_GLSL, { AURA_GODRAY_SAMPLES: samples });
     const godProg = program(state, gl, `godrays-${samples}`, godSrc);
+    recordPostStage(`S4:god-rays-${samples}`);
     draw(host, state, godProg, asGlTarget(godTarget), [asGlTarget(hdr).colorHandle, asGlTarget(minmaxHalf).colorHandle], (g) => {
       g.uniform1i(g.getUniformLocation(godProg, "u_hdr"), 0);
       g.uniform1i(g.getUniformLocation(godProg, "u_depthHalf"), 1);
@@ -858,6 +924,7 @@ export function runV2HdrStages(
     const ca = pipeline.chromaticAberration as { intensity?: number };
     const caTarget = state.pool.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
     const caProg = program(state, gl, "ca-pass", CA_PASS_GLSL);
+    recordPostStage("CA:chromatic-aberration");
     draw(host, state, caProg, asGlTarget(caTarget), [asGlTarget(hdr).colorHandle], (g) => {
       g.uniform1i(g.getUniformLocation(caProg, "u_hdr"), 0);
       g.uniform1f(g.getUniformLocation(caProg, "u_caIntensity"), ca.intensity ?? 0.0015);
@@ -943,6 +1010,7 @@ export function runV2HdrStages(
     const dw = Math.max(1, Math.round(w / 2)), dh = Math.max(1, Math.round(h / 2));
     const prefilter = state.pool.acquire({ width: dw, height: dh, format: "rgba16f", samples: 1, depth: false });
     const prefilterProg = program(state, gl, "dof-prefilter", DOF_PREFILTER_GLSL);
+    recordPostStage(`S6:dof-rings${rings}`);
     draw(host, state, prefilterProg, asGlTarget(prefilter), [asGlTarget(hdr).colorHandle, asGlTarget(linZFull).colorHandle], (g) => {
       g.uniform1i(g.getUniformLocation(prefilterProg, "u_color"), 0);
       g.uniform1i(g.getUniformLocation(prefilterProg, "u_linearDepth"), 1);
@@ -984,6 +1052,7 @@ export function runV2HdrStages(
     const tile = mb.tileSize ?? 16;
     const samples = mb.samples ?? 12;
     const tw = Math.max(1, Math.ceil(w / tile)), th = Math.max(1, Math.ceil(h / tile));
+    recordPostStage(`S7:motion-blur-${samples}x${tile}`);
     const tileMax = state.pool.acquire({ width: tw, height: th, format: "rgba16f", samples: 1, depth: false });
     const tileProg = program(state, gl, `mb-tile-${tile}`, withDefines(MB_TILE_MAX_GLSL, { MB_TILE_SIZE: tile }));
     draw(host, state, tileProg, asGlTarget(tileMax), [asGlTarget(dilatedVelocity).colorHandle], (g) => {
@@ -1073,16 +1142,23 @@ export function runV2HdrStages(
     state.evValid = true;
     state.pool.release(luma);
     if (reduceTmp) state.pool.release(reduceTmp);
+    recordPostStage("S8:auto-exposure");
     // Apply: hdr *= exp2(ev) — the composite's autoExp factor, ahead of the
-    // fused present's own §6.4 exposure (linear multipliers commute).
+    // fused present's own §6.4 exposure (linear multipliers commute). GU47
+    // E-C: the S10 linear grade folds into this same draw (one fullscreen
+    // pass for AE + grade).
     const multiplied = state.pool.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
-    const mulProg = program(state, gl, "exposure-mul", EXPOSURE_MUL_GLSL);
-    draw(host, state, mulProg, asGlTarget(multiplied), [asGlTarget(hdr).colorHandle, asGlTarget(evWrite).colorHandle], (g) => {
-      g.uniform1i(g.getUniformLocation(mulProg, "u_hdr"), 0);
-      g.uniform1i(g.getUniformLocation(mulProg, "u_ev"), 1);
-    });
+    runHdrGradeDraw(host, state, multiplied, hdr, evWrite, gradeUniforms);
+    if (gradeUniforms) recordPostStage("S10:hdr-grade:folded-s8");
     if (hdr !== source) state.pool.release(hdr);
     hdr = multiplied;
+  } else if (gradeUniforms) {
+    // ── S10 linear grade (no S8 this frame): one fullscreen draw ─────────────
+    const graded = state.pool.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
+    runHdrGradeDraw(host, state, graded, hdr, null, gradeUniforms);
+    recordPostStage("S10:hdr-grade");
+    if (hdr !== source) state.pool.release(hdr);
+    hdr = graded;
   }
 
   // ── §6.1 insertion "before-tonemap" (linear HDR, exposure applied) ────────
@@ -1201,11 +1277,20 @@ export function runV2LdrTail(
   const aaSmaa = pipeline.antiAliasing === "smaa";
   const displayCustoms = sortCustomPassesAtAnchor(mergedCustomPasses(pipeline), "after-tonemap");
   const rcas = (pipeline.renderScale ?? 1) < 1 ? 0.2 : 0;
+  // GU47 E-C stage trace: the display stages that draw this frame.
+  const vignetteOn = (vignette?.intensity ?? 0) > 0;
+  const grainOn = (grain?.intensity ?? 0) > 0;
+  const traceDisplayStages = (fused: boolean): void => {
+    if (vignetteOn || pipeline.lut) recordPostStage(`S10b:display-grade${vignetteOn ? ":vignette" : ""}${pipeline.lut ? ":lut" : ""}${fused ? ":fused-fxaa" : ""}`);
+    if (grainOn) recordPostStage(`S12:film-grain${fused ? ":fused-fxaa" : ""}`);
+  };
 
   // §6.1 fuse: FXAA + S10b + S12 in a single draw — only when nothing sits
   // between the stages (an after-tonemap custom pass splices S10b→S11).
   if (aaFxaa && displayCustoms.length === 0) {
     const prog = program(state, gl, "finalize-fxaa-fused", FINALIZE_FXAA_FUSED_GLSL);
+    traceDisplayStages(true);
+    recordPostStage("S11:fxaa:fused");
     bindOut(host, outTarget, w, h);
     gl.useProgram(prog);
     gl.bindVertexArray(state.vao);
@@ -1240,6 +1325,7 @@ export function runV2LdrTail(
   }
 
   let current = ldr;
+  traceDisplayStages(false);
   // S10b — display grade (vignette; the .cube LUT bakes in with S10b's real
   // bake pass — until then u_hasLut stays 0 and the identity 3D tex binds).
   if (vignette || pipeline.lut) {
@@ -1274,6 +1360,7 @@ export function runV2LdrTail(
   // until both land, the stage skips (same first-frames window as three's
   // async Image load — never a silent FXAA substitution).
   if (aaSmaa && smaaTexturesReady(host, state)) {
+    recordPostStage("S11:smaa");
     const edges = state.pool.acquire({ width: w, height: h, format: "rgba8", samples: 1, depth: false });
     const edgesProg = program(state, gl, "smaa-edges", SMAA_EDGES_GLSL);
     draw(host, state, edgesProg, asGlTarget(edges), [asGlTarget(current).colorHandle], (g) => {
@@ -1304,6 +1391,7 @@ export function runV2LdrTail(
     current = blended;
   } else if (aaFxaa && displayCustoms.length > 0) {
     // FXAA unfused: an after-tonemap custom already consumed the fused slot.
+    recordPostStage("S11:fxaa");
     const aa = state.pool.acquire({ width: w, height: h, format: "rgba8", samples: 1, depth: false });
     const fxaaProg = program(state, gl, "fxaa-standalone-nodither",
       FXAA_185_FRAGMENT_GLSL.replace("#version 300 es", "#version 300 es\n#define AURA_FXAA_NO_DITHER"));
