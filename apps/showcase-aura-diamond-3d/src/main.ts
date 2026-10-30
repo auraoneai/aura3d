@@ -149,6 +149,7 @@ import {
   type DiamondSceneContext
 } from "./scene";
 import { lookPlan, resolveDiamondTier, resolveLookVariant, resolveSkyMode } from "../art/look";
+import { isDiamondVfxKind, juiceFxKind, landingFxKind, registerDiamondVfx, type DiamondVfxKind } from "../art/vfx";
 
 const HOME_PLATE: Vec3 = [0, 0.05, 0.4];
 
@@ -642,9 +643,74 @@ function boot(): void {
     burst: "aura-burst",
     flash: "super-flash"
   };
+  /**
+   * GU47 DIA-V1: the park's preset pack (art/vfx.ts) on `app.effects`, re-registered on every park switch. Bursts use their
+   * own seed counter (never G.rng) and leave the camera to the juice. `?look=original` keeps the 4.6.2 effects.
+   */
+  const appFx = (app as any).effects as
+    | {
+        burst?: (kind: string, at: readonly number[], o?: Record<string, unknown>) => unknown;
+        registerPreset?: (kind: string, spec: unknown) => void;
+        trail?: (target: string, o: { width: number; life: number; color?: string; widthOverSpeed?: readonly [number, number] }) => { clear(): void; stop(o?: { immediate?: boolean }): void };
+      }
+    | undefined;
+  const gu47Fx = sceneCtx.variant === "gu47";
+  let vfxSeed = 1;
+  function registerParkVfx(id: ParkId): void {
+    if (!gu47Fx || typeof appFx?.registerPreset !== "function") return;
+    try {
+      registerDiamondVfx({ registerPreset: (kind, spec) => appFx.registerPreset!(kind, spec) }, id, { reducedMotion, reducedFlash });
+    } catch {
+      /* fx best-effort */
+    }
+  }
+  registerParkVfx(bootPark);
+  /**
+   * GU47 DIA-V1: one runtime ribbon on the ball (E-F `app.effects.trail`), restarted after every scene build. It is zero
+   * width below 8 m/s, so a held or rolling ball leaves nothing; `noteBallForTrail` clears it on every teleport.
+   */
+  let ballTrail: { clear(): void; stop(o?: { immediate?: boolean }): void } | null = null;
+  let ballTrailShown = false;
+  let ballTrailLast: Vec3 = [0, -60, 0];
+  function restartBallTrail(): void {
+    if (!gu47Fx || typeof appFx?.trail !== "function") return;
+    try {
+      ballTrail?.stop({ immediate: true });
+      ballTrail = appFx.trail("ball", { width: 0.08, life: 0.28, color: "#f5f1e4", widthOverSpeed: [8, 34] });
+    } catch {
+      ballTrail = null;
+    }
+  }
+  restartBallTrail();
+  /** A ball shown or hidden, or moved more than 6 m in one frame, restarts the ribbon (no streak ever crosses the field). */
+  function noteBallForTrail(at: Vec3): void {
+    const shown = at[1] > -30;
+    if (ballTrail && (shown !== ballTrailShown || Math.hypot(at[0] - ballTrailLast[0], at[1] - ballTrailLast[1], at[2] - ballTrailLast[2]) > 6)) {
+      try {
+        ballTrail.clear();
+      } catch {
+        /* fx best-effort */
+      }
+    }
+    ballTrailShown = shown;
+    ballTrailLast = at;
+  }
+  function burstVfx(kind: DiamondVfxKind, at: Vec3): void {
+    if (!gu47Fx || typeof appFx?.burst !== "function") return;
+    try {
+      appFx.burst(kind, at, { seed: vfxSeed++, camera: false });
+    } catch {
+      /* fx best-effort */
+    }
+  }
   const fx = createFxParticlePass({
     burst: (kind: string, position: any, o: any) => {
       try {
+        // Juice events mapped onto the pack fire the registered preset (its own counts); the rest use the game effects.
+        if (isDiamondVfxKind(kind)) {
+          burstVfx(kind, position as Vec3);
+          return;
+        }
         fxCtl.spawn(FX_KIND[kind] ?? "hit-spark", position, { radius: Math.max(0.2, (o?.count ?? 10) / 24), color: o?.color, intensity: 1 });
       } catch {
         /* fx best-effort */
@@ -652,8 +718,9 @@ function boot(): void {
     }
   } as any);
   const JUICE_EVENTS: Record<string, any> = {
-    crack: { fx: { kind: "spark", count: 14, color: "#ffd76a", speed: 4 }, cue: "crack", shake: 0.35, punch: { fovDeg: 2.4, ms: 200 }, rumble: { ms: 50, strong: 0.5, weak: 0.8 } },
-    homer: { fx: { kind: "ring", count: 26, color: "#ffb03a", speed: 6.5 }, cue: "homer", hitStop: 0.09, shake: 0.55, punch: { fovDeg: 3.6, dolly: -0.5, ms: 320 }, flash: { color: "#ffb03a", peak: 0.22, ms: 180 } },
+    // GU47: the crack is the signature splinter flash; the home-run celebration is fired at the ball (fireHrBurst).
+    crack: { fx: gu47Fx ? { kind: juiceFxKind("crack", bootPark) } : { kind: "spark", count: 14, color: "#ffd76a", speed: 4 }, cue: "crack", shake: 0.35, punch: { fovDeg: 2.4, ms: 200 }, rumble: { ms: 50, strong: 0.5, weak: 0.8 } },
+    homer: { ...(gu47Fx ? {} : { fx: { kind: "ring", count: 26, color: "#ffb03a", speed: 6.5 } }), cue: "homer", hitStop: 0.09, shake: 0.55, punch: { fovDeg: 3.6, dolly: -0.5, ms: 320 }, flash: { color: "#ffb03a", peak: 0.22, ms: 180 } },
     strikeout: { cue: "strikeout", flash: { color: "#ff5252", peak: 0.12, ms: 130 } },
     pop: { cue: "pop", punch: { fovDeg: 1.2, ms: 140 } },
     foul: { cue: "foul", flash: { color: "#ff9f47", peak: 0.1, ms: 110 } },
@@ -1198,7 +1265,9 @@ function boot(): void {
     try {
       app.setScene(buildParkScene(PARKS[id], sceneCtx));
       applyParkLook(id);
+      registerParkVfx(id);
       bindHandles();
+      restartBallTrail();
       G.lastBatColor = "";
       G.lastFieldColor = "";
       applyUniforms();
@@ -1261,7 +1330,21 @@ function boot(): void {
     confettiUntil = performance.now() / 1000 + 5;
     H.confetti?.setVisible(true);
   }
-  function fireHrBurst(): void {
+  /**
+   * Home-run celebration. GU47 (DIA-V1): the park's own beat from the pack, where the crowd sees it: fireworks over the
+   * wall the ball cleared, confetti from the Dome roof, regolith thrown up where the moonshot lands. The 4.6.2 fountain
+   * at the plate stays for `?look=original`.
+   */
+  function fireHrBurst(landPos?: Vec3): void {
+    if (gu47Fx && landPos) {
+      const kind = juiceFxKind("homer", G.park);
+      const at: Vec3 =
+        kind === "diamond-dome-confetti" ? [0, 24, -26]
+        : kind === "diamond-regolith-arc" ? [landPos[0], 0.2, landPos[2]]
+        : [landPos[0] * 0.8, 16, landPos[2] * 0.8];
+      burstVfx(kind, at);
+      return;
+    }
     hrBurstUntil = performance.now() / 1000 + 2.4;
     H.hrBurst?.setVisible(true);
   }
@@ -1918,7 +2001,7 @@ function boot(): void {
         showBanner(`HOME RUN — ${distFt} FT`, 2.2);
         cue(distFt > 420 ? "homerBig" : "homer");
         juiceFire("homer", { position: ball.landPos });
-        fireHrBurst();
+        fireHrBurst(ball.landPos);
         tick(`derby HR #${G.derby.hrs} — ${distFt} ft`, "success", distFt);
       } else {
         G.derby.outs += 1;
@@ -1939,7 +2022,7 @@ function boot(): void {
       if (o === "homerun") {
         showBanner(`${distFt} FT MOONSHOT`, 2.0);
         cue("homer");
-        fireHrBurst();
+        fireHrBurst(ball.landPos);
       }
       nextBatter();
       return;
@@ -1958,7 +2041,7 @@ function boot(): void {
         showBanner(`HOME RUN — ${distFt} FT`, 2.6);
         cue(distFt > 420 || park().id === "lunar" ? "homerBig" : "homer");
         juiceFire("homer", { position: landPos });
-        fireHrBurst();
+        fireHrBurst(landPos);
         applyRunnerPlan(planRunnerMoves("homerun"));
         tick(`${isPlayerHit ? "you" : clubById(G.cpuClub).abbr} go deep — ${distFt} ft (${runs} RBI)`, "success", distFt);
         if (park().id === "skyline" && ball.landTheta > -30 && ball.landTheta < 30 && crossed) {
@@ -2299,6 +2382,9 @@ function boot(): void {
     }
     const landed = ball.pos[1] <= 0.05 || ball.age >= ball.resolveAt + 0.6 || (ball.crossedFence && ball.wallHit === false && ball.pos[1] <= park().wallH * 0.5 && ball.vel[1] < 0 && r >= fenceR + 4);
     if (landed && !ball.dead) {
+      // DIA-V1: what a ball landing in the park kicks up (clay, chalk on a foul line, canyon dust, regolith). Reads the
+      // ball only; the sim state and G.rng are untouched.
+      if (ball.pos[1] <= 0.05 && !ball.crossedFence) burstVfx(landingFxKind(G.park, ball.landTheta, FOUL_DEG), [ball.pos[0], 0.05, ball.pos[2]]);
       ball.dead = true;
       classifyBatted(ball);
       el.catchPrompt?.classList.remove("show");
@@ -3033,6 +3119,7 @@ function boot(): void {
     if (qaBall) ballWorld = qaBall;
     G.lastBallPos = ballWorld;
     H.ball?.setPosition(ballWorld[0], ballWorld[1], ballWorld[2]).setVisible(ballWorld[1] > -30);
+    noteBallForTrail(ballWorld);
     const shScale = clamp(1.15 - ballWorld[1] * 0.02, 0.4, 1.1);
     // C17: the key light already casts the ball's real shadow near the ground; the fake disc only marks a high fly ball's spot.
     H.ballShadow?.setPosition(ballWorld[0], 0.04, ballWorld[2]).setScale([shScale, 1, shScale]).setVisible(ballWorld[1] > 3 && ballWorld[1] < 60);

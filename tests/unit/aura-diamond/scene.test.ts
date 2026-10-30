@@ -129,6 +129,12 @@ describe("aura-diamond GU47 scene (DIA-L1, E1, E2, E3, P1)", () => {
     }
   });
 
+  it("drops the 16-sphere fake tracer and the scene ribbon in GU47 (main.ts runs one runtime trail); the original keeps both", () => {
+    const tracer = (ctx: DiamondSceneContext) => flat("sandlot", ctx).nodes.filter((n) => /^ball-trail-\d+$/.test(String(n.name)) || n.name === "ball-ribbon").length;
+    expect(tracer(DEFAULT_SCENE_CONTEXT)).toBe(0);
+    expect(tracer(ORIGINAL)).toBe(17);
+  });
+
   it("paints the ball, and only the ball, in the reserved #f5f1e4", () => {
     for (const park of PARK_ORDER) {
       const owners = flat(park).nodes.filter((n) => JSON.stringify((n as { material?: unknown }).material ?? {}).toLowerCase().includes("#f5f1e4"));

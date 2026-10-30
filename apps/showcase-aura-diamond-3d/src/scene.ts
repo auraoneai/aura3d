@@ -533,14 +533,18 @@ export function buildActorsNodes(ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEX
   // camera the seams of the GLB were never visible. The sphere is centred on its node (the GLB was grounded by fit).
   nodes.push(
     primitives.sphere({ name: "ball", size: [0.15, 0.15, 0.15], params: { widthSegments: 16, heightSegments: 12 }, material: material.pbr({ color: ballColor, roughness: 0.55 }) } as any).position(0, -60, 0).runtime(game.runtimeNode("ball")),
-    primitives.cylinder({ name: "ball-shadow", size: [0.34, 0.006, 0.34], material: material.pbr({ color: "#000000", opacity: 0.28, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow")),
-    effects.trail({ name: "ball-ribbon", target: "ball", color: "#f5f1e4", width: 0.1, maxPoints: 40, intensity: 0.85 } as any)
+    primitives.cylinder({ name: "ball-shadow", size: [0.34, 0.006, 0.34], material: material.pbr({ color: "#000000", opacity: 0.28, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow"))
   );
 
-  for (let i = 0; i < TRAIL_COUNT; i++) {
-    nodes.push(
-      primitives.sphere({ name: `ball-trail-${i}`, size: [0.09, 0.09, 0.09], material: material.emissive({ color: "#ffd76a", emissive: "#ffd76a", emissiveIntensity: 0.5 }) }).scale(HIDDEN_SCALE).runtime(game.runtimeNode(`ball-trail-${i}`))
-    );
+  // 4.6.2 ball tracer: a scene ribbon plus 16 glowing spheres. Scene trails with a target now draw (E-F), so GU47 keeps
+  // neither and main.ts runs one runtime `app.effects.trail` on the ball that it clears whenever the ball teleports.
+  if (!gu47) {
+    nodes.push(effects.trail({ name: "ball-ribbon", target: "ball", color: "#f5f1e4", width: 0.1, maxPoints: 40, intensity: 0.85 } as any));
+    for (let i = 0; i < TRAIL_COUNT; i++) {
+      nodes.push(
+        primitives.sphere({ name: `ball-trail-${i}`, size: [0.09, 0.09, 0.09], material: material.emissive({ color: "#ffd76a", emissive: "#ffd76a", emissiveIntensity: 0.5 }) }).scale(HIDDEN_SCALE).runtime(game.runtimeNode(`ball-trail-${i}`))
+      );
+    }
   }
 
   // Strike-zone helpers: PCI ring (batting) + aim dot (pitching) + landing ring
