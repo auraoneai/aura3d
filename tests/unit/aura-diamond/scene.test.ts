@@ -129,6 +129,19 @@ describe("aura-diamond GU47 scene (DIA-L1, E1, E2, E3, P1)", () => {
     }
   });
 
+  it("instances the Dome rafters and banners and the lunar regolith, and lets Canyon's rocks keep their textures (DIA-A1, M2, W2)", () => {
+    const names = (park: ParkId, ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEXT) => flat(park, ctx).nodes.map((n) => String(n.name));
+    expect(names("dome").filter((n) => /^dome-(rafter|banner)-\d$/.test(n))).toHaveLength(0);
+    expect(names("dome").filter((n) => n === "dome-rafters" || n === "dome-banners")).toHaveLength(2);
+    expect(names("lunar").filter((n) => /^regolith-\d$/.test(n))).toHaveLength(0);
+    expect(names("lunar").filter((n) => n === "regolith-mounds")).toHaveLength(1);
+    expect(names("dome", ORIGINAL).filter((n) => /^dome-(rafter|banner)-\d$/.test(n))).toHaveLength(9);
+    const rocks = flat("canyon").nodes.filter((n) => /^canyon-rock-\d$/.test(String(n.name)));
+    expect(rocks).toHaveLength(5);
+    for (const rock of rocks) expect((rock as { materialOverrides?: unknown }).materialOverrides).toBeUndefined();
+    expect(flat("lunar").nodes.find((n) => n.name === "lunar-earth")?.runtime).toBeDefined();
+  });
+
   it("drizzles over Midtown only (DIA-E4), lighter on Low and under reduced motion", () => {
     const rain = (park: ParkId, ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEXT) => flat(park, ctx).nodes.filter((n) => n.effect === "rain");
     for (const park of PARK_ORDER) expect(rain(park)).toHaveLength(park === "skyline" ? 1 : 0);

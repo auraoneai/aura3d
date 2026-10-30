@@ -385,8 +385,10 @@ export function practicalNodes(park: ParkSpec, tier: DiamondTier): any[] {
   return nodes;
 }
 
-export function buildParkExtras(park: ParkSpec): any[] {
+export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEXT): any[] {
   const nodes: any[] = [];
+  const gu47 = ctx.variant === "gu47";
+  const lookRow = PARK_LOOKS[park.id];
   // Photoreal rock GLBs carry warm AI textures that fight the flat-shaded
   // players. Knock them back to a restrained desert palette and reduce their
   // silhouettes so the field stays the subject.
@@ -432,11 +434,12 @@ export function buildParkExtras(park: ParkSpec): any[] {
     }
     case "canyon": {
       const rocks: [number, number][] = [[13, 0.3], [15, -0.7], [7.5, 1.1], [6.5, -0.4], [22, 0]];
+      // GU47 DIA-M2: the hard noon reads the rock GLB's own textures (the 4.6.2 flat override painted them out).
       rocks.forEach(([h, r], i) => {
         const [x, z] = at(`canyon-rock-${i}`);
         nodes.push(model(assets.diamondRock, {
           name: `canyon-rock-${i}`, targetHeight: h, role: "setDressing", scaleMode: "fit",
-          materialOverrides: i % 2 ? rockOverrideAlt : rockOverride
+          ...(gu47 ? {} : { materialOverrides: i % 2 ? rockOverrideAlt : rockOverride })
         }).position(x, 0, z).rotate(0, r, 0));
       });
       for (const [tx, tz] of [[-108, -40], [110, -44], [-88, -20], [88, -16]] as const) {
@@ -468,20 +471,49 @@ export function buildParkExtras(park: ParkSpec): any[] {
       break;
     }
     case "dome": {
-      nodes.push(
-        model(assets.diamondTyphoonDome, { name: "typhoon-dome-shell", targetHeight: 60, role: "setDressing", scaleMode: "fit" }).position(0, -0.4, -42).rotate(0, Math.PI, 0),
-        ...Array.from({ length: 5 }, (_, i) => primitives.box({ name: `dome-rafter-${i}`, size: [1.2, 1.2, 190], material: material.pbr({ color: "#233046", roughness: 0.6, metalness: 0.4 }) }).position(-60 + i * 30, 26, -50)),
-        ...Array.from({ length: 4 }, (_, i) => primitives.box({ name: `dome-banner-${i}`, size: [3.2, 7, 0.2], material: material.emissive({ color: "#ffb03a", emissive: i % 2 ? "#35d6ff" : "#ffb03a", emissiveIntensity: 0.7 }) }).position(-18 + i * 12, 14, 18))
-      );
+      nodes.push(model(assets.diamondTyphoonDome, { name: "typhoon-dome-shell", targetHeight: 60, role: "setDressing", scaleMode: "fit" }).position(0, -0.4, -42).rotate(0, Math.PI, 0));
+      if (gu47) {
+        // GU47 DIA-A1 / DIA-W2: the five rafters and four banners as two instanced draws (-7); banners in the Dome accent
+        // and the crowd's gold, tinting the emissive too.
+        nodes.push(
+          instances.box({ name: "dome-rafters", size: [1.2, 1.2, 190], material: material.pbr({ color: "#233046", roughness: 0.6, metalness: 0.4 }), transforms: Array.from({ length: 5 }, (_, i) => ({ position: [-60 + i * 30, 26, -50] as Vec3 })) }),
+          instances.box({
+            name: "dome-banners",
+            size: [3.2, 7, 0.2],
+            material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.7 }),
+            transforms: Array.from({ length: 4 }, (_, i) => ({ position: [-18 + i * 12, 14, 18] as Vec3 })),
+            colors: Array.from({ length: 4 }, (_, i) => (i % 2 ? lookRow.accent : lookRow.crowd[2] ?? lookRow.accent)),
+            instanceColorTarget: "both"
+          })
+        );
+      } else {
+        nodes.push(
+          ...Array.from({ length: 5 }, (_, i) => primitives.box({ name: `dome-rafter-${i}`, size: [1.2, 1.2, 190], material: material.pbr({ color: "#233046", roughness: 0.6, metalness: 0.4 }) }).position(-60 + i * 30, 26, -50)),
+          ...Array.from({ length: 4 }, (_, i) => primitives.box({ name: `dome-banner-${i}`, size: [3.2, 7, 0.2], material: material.emissive({ color: "#ffb03a", emissive: i % 2 ? "#35d6ff" : "#ffb03a", emissiveIntensity: 0.7 }) }).position(-18 + i * 12, 14, 18))
+        );
+      }
       break;
     }
     case "lunar": {
       nodes.push(
-        model(assets.diamondEarthRise, { name: "lunar-earth", targetHeight: 90, role: "primaryWorld", scaleMode: "fit" }).position(-30, 66, -260),
+        // Runtime id: DIA-N1 turns the Earth slowly (main.ts).
+        model(assets.diamondEarthRise, { name: "lunar-earth", targetHeight: 90, role: "primaryWorld", scaleMode: "fit" }).position(-30, 66, -260).runtime(game.runtimeNode("lunar-earth")),
         model(assets.diamondLunarRover, { name: "lunar-rover", targetHeight: 2.6, role: "setDressing", scaleMode: "fit" }).position(-17, 0, 9).rotate(0, 0.8, 0),
-        ...Array.from({ length: 6 }, (_, i) => primitives.cylinder({ name: `regolith-${i}`, size: [4 + i, 0.5, 4 + i * 0.7], material: material.pbr({ color: "#5d6378", roughness: 1 }) }).position(at(`regolith-${i}`)[0], 0.1, at(`regolith-${i}`)[1])),
         model(assets.diamondMoonDome, { name: "lunar-comms", targetHeight: 15, role: "setDressing", scaleMode: "fit" }).position(at("lunar-comms")[0], 0, at("lunar-comms")[1]).rotate(0, -0.5, 0)
       );
+      if (gu47) {
+        // GU47 DIA-M2 / DIA-W2: grey regolith mounds (the park's regolith, not blue-grey) in one instanced draw (-5).
+        nodes.push(
+          instances.cylinder({
+            name: "regolith-mounds",
+            size: [1, 0.5, 1],
+            material: material.pbr({ color: lookRow.turf.track, roughness: 1 }),
+            transforms: Array.from({ length: 6 }, (_, i) => ({ position: [at(`regolith-${i}`)[0], 0.1, at(`regolith-${i}`)[1]] as Vec3, scale: [4 + i, 1, 4 + i * 0.7] as Vec3 }))
+          })
+        );
+      } else {
+        nodes.push(...Array.from({ length: 6 }, (_, i) => primitives.cylinder({ name: `regolith-${i}`, size: [4 + i, 0.5, 4 + i * 0.7], material: material.pbr({ color: "#5d6378", roughness: 1 }) }).position(at(`regolith-${i}`)[0], 0.1, at(`regolith-${i}`)[1])));
+      }
       break;
     }
   }
@@ -695,6 +727,6 @@ export function buildParkScene(park: ParkSpec, ctx: DiamondSceneContext = DEFAUL
     .camera(camera.perspective({ fov: 42, near: 0.2, far: 700, position: [0, 26, 42], target: [0, 0, -14] }))
     .addMany(buildFieldNodes(park, ctx))
     .addMany(buildStandsNodes(park, ctx))
-    .addMany(buildParkExtras(park))
+    .addMany(buildParkExtras(park, ctx))
     .addMany(buildActorsNodes(ctx, park.id));
 }
