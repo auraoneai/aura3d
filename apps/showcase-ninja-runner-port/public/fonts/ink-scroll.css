@@ -1,0 +1,15 @@
+/* GU47 NR-19: the E-J "ink-scroll" faces under the theme's registered family names (packages/game/src/hud/themes.ts). */
+@font-face {
+  font-family: "A3G Suisse Works Italic";
+  src: url("./suisse-works-italic-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "A3G Domaine Display";
+  src: url("./domaine-display-700.woff2") format("woff2");
+  font-weight: 700 900;
+  font-style: normal;
+  font-display: swap;
+}

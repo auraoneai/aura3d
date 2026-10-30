@@ -65,6 +65,8 @@ const store = {
 };
 const reducedMotion = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 document.documentElement.classList.toggle("reduced-motion", reducedMotion);
+// GU47 NR-19: the ink-scroll HUD theme goes with the evening look; `?look=original` keeps the previous HUD.
+document.documentElement.classList.toggle("ink-scroll", config.look === "evening");
 interface Best { score: number; distance: number; combo: number; kills: number }
 const readBest = (): Best | null => { try { const v = JSON.parse(store.get(`best:${config.seed}`) ?? "null") as Best | null; return v && typeof v.score === "number" ? v : null; } catch { return null; } };
 const bestLine = (b: Best | null): string => (b ? `Best: ${b.score} points · ${b.distance} m · ${b.kills} defeated · ${b.combo}x combo` : "");
@@ -242,7 +244,8 @@ const hud = {
   announceTitle: $("announce-title"), announceSmall: $("announce-small"), result: $("result"), resultLabel: $("result-label"),
   resultTitle: $("result-title"), resultCopy: $("result-copy"), resultStats: $("result-stats"), formCycle: document.getElementById("form-cycle"),
   forms: Array.from(document.querySelectorAll<HTMLButtonElement>("#forms button")),
-  abilities: Array.from(document.querySelectorAll<HTMLButtonElement>("#abilities button[data-action]"))
+  abilities: Array.from(document.querySelectorAll<HTMLButtonElement>("#abilities button[data-action]")),
+  seals: Array.from(document.querySelectorAll<HTMLElement>("#progress em[data-seal]"))
 };
 const written = new Map<HTMLElement, Map<string, string>>();
 const put = (el: HTMLElement, key: string, value: string, write: () => void): void => {
@@ -265,6 +268,7 @@ function updateHud(): void {
   width(hud.spiritBar, (z.spirit / TUNING.maxSpirit) * 100);
   text(hud.hearts, "♥".repeat(Math.max(0, z.health)) + "♡".repeat(Math.max(0, TUNING.health - z.health)));
   width(hud.progressFill, Math.min(100, (z.s / TUNING.length) * 100));
+  for (const seal of hud.seals) flag(seal, "passed", z.s >= Number(seal.dataset.seal));
   const district = districtLabel(z.s);
   text(hud.district, district);
   if (district !== shownDistrict && z.phase === "running") {
