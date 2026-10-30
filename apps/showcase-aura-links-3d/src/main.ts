@@ -99,6 +99,7 @@ import { linksQaCrops } from "./game/qaCrops";
 import { discOnTerrain, ribbonAlongPath, terrainToMeshSpec, type SurfaceUvMode } from "./game/terrainMesh";
 import { MASK_COLOR_LIFT, TURF_SURFACES, type LinksSurfaceSlot } from "./game/turf";
 import { turfTexture } from "./game/turfTextures";
+import { coverWind, groundCover } from "./game/groundCover";
 import { lavaSpec, pondWaterOptions, reflectivePonds } from "./game/water";
 import { holeCardTransition, holeCardVisible, holeMap, holeMapSvg, holeSubtitle, holeTitle, shotStatsLabel } from "./game/holeCard";
 import { clubForShot, planShot, puttRange, type ShotPlan } from "./game/autopilot";
@@ -767,6 +768,30 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   nodes.push(
     primitives.plane({ name: "outer-ground", size: [terrain.bounds.maxX * 4, terrain.bounds.maxZ * 4, 1], material: material.pbr({ color: theme4(course) === "lunar" ? "#43454c" : theme4(course) === "volcanic" ? "#2e2a26" : pal.rough, roughness: 0.96 }) }).position(0, outerY, (terrain.bounds.minZ + terrain.bounds.maxZ) / 2)
   );
+
+  // --- LINKS-09 ground cover (GU47 only): two instanced draws in the rough, the theme's tufts and its colour note ---
+  if (turfOn) {
+    for (const plan of groundCover(terrain, course.dressing.theme, hole.number, presentationTier)) {
+      if (plan.transforms.length === 0) continue;
+      const l = plan.layer;
+      const wind = coverWind(l, state.reducedMotion, COURSE_LOOKS[course.id].flagFlutter);
+      const mat = l.emissive > 0
+        ? material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: l.emissive, roughness: l.roughness } as any)
+        : material.pbr({ color: "#ffffff", roughness: l.roughness });
+      nodes.push(
+        (instances as any)[l.shape]({
+          name: `ground-cover-${l.name}`,
+          size: [...l.size],
+          material: mat,
+          transforms: plan.transforms.map((t) => ({ position: [...t.position], rotation: [...t.rotation], scale: [...t.scale] })),
+          colors: [...plan.colors],
+          ...(l.emissive > 0 ? { instanceColorTarget: "both" } : {}),
+          castShadow: false,
+          ...(wind ? { wind } : {})
+        })
+      );
+    }
+  }
 
   // --- Fairway ribbon (first-cut collar + two mow stripes) ---
   // (LINKS-05: on the GU47 look the mow stripes are the fairway's mask, banded across the line of play, so the
