@@ -11,6 +11,7 @@
 import { camera, cameras, defineAuraAssets, effects, environments, geometry, lights, material, model, instances, primitives, scene, text3D, type AuraApp, type AuraAssetRef } from "@aura3d/engine";
 import { BANDS, HDRI_URL, bandFor, envRotationRad, keyPosition, parseBand, parseLook, rgb, shouldSwapBand, skySunDirection, townSky, type BandId, type LamplightHdri } from "./bands";
 import { LanternSky } from "./lanterns";
+import { RiderMotion, tramBob } from "./riderMotion";
 import { registerLamplightVfx, vfxEvents, type VfxSimView } from "./vfx";
 import { BOUNCE_ID, HEADLAMP_COLOR, HEADLAMP_ID, PLATFORM_LIGHT_COLOR, PLATFORM_LIGHT_IDS, PLATFORM_LIGHT_RANGE, headlampPose, platformLightPositions, poolTown } from "./lights";
 import { MESHY_ASSETS, MESHY_ENABLED, PAX_SCALE, TRAM } from "./models";
@@ -620,6 +621,7 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
   if (look === "bands" && fx) { fx.runtime = "on"; registerLamplightVfx(fx, reduced); }
   let prevVfx: VfxSimView | null = null;
   let pantographAt = -1;
+  const riders = new RiderMotion();
   /** Builds the next town's band scene off the frame (a timer) so the docked swap does not build it. */
   const prefetch = (band: BandId): void => {
     if (prefetched.has(band)) return;
@@ -656,24 +658,28 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
     if (Math.abs(nightLevel - night) < 0.01) nightLevel = night;
 
     const here = sampleRoute(data.route, sim.leg, sim.distance);
+    /* GU47 LT-15: rider counter-lean with a 0.25 s lag and a 1.5 cm tram bob (band look only; reduced motion 30%) */
+    const rm = options.reducedMotion === true;
+    const riderLean = shownBand !== null ? riders.step(sim.roll, dt, rm) : 0;
+    const bob = shownBand !== null ? tramBob(seconds, sim.speed, rm) : 0;
     const f = dockForward(data, sim.leg, sim.distance);
     const rot = tramRotation(f, -sim.roll);
     const euler = matrixToEulerZYX(rot);
     if (MESHY_ENABLED) {
       const body = node("tram-body"), bodyEuler = matrixToEulerZYX(multiplyMat3(rot, axisRotation("y", TRAM.yaw))), c = applyMat3(rot, [0, TRAM.centerY, 0]);
-      body.setPosition(here.x + c[0], here.y + 0.2 + c[1], here.z + c[2]); body.setRotation(bodyEuler[0], bodyEuler[1], bodyEuler[2]);
+      body.setPosition(here.x + c[0], here.y + 0.2 + bob + c[1], here.z + c[2]); body.setRotation(bodyEuler[0], bodyEuler[1], bodyEuler[2]);
     } else for (const id of TRAM_GROUP_IDS) { const h = node(id); h.setPosition(here.x, here.y + 0.2, here.z); h.setRotation(euler[0], euler[1], euler[2]); }
     const seated = new Set(sim.trips.map((t) => t.seat));
     SEATS.forEach((seat, i) => {
       const trip = sim.trips.find((t) => t.seat === i);
       if (MESHY_ENABLED) {
         const standing = applyMat3(rot, [seat[0], TRAM.floorY + PAX_SCALE * 0.951, seat[2]]);
-        const paxEuler = matrixToEulerZYX(multiplyMat3(rot, axisRotation("y", seat[0] < 0 ? Math.PI / 2 : -Math.PI / 2)));
+        const paxEuler = matrixToEulerZYX(multiplyMat3(multiplyMat3(rot, axisRotation("z", riderLean)), axisRotation("y", seat[0] < 0 ? Math.PI / 2 : -Math.PI / 2)));
         for (const t of TEMPERAMENTS) {
           const h = node(`pax-${i}-${t}`);
           const on = seated.has(i) && trip?.temperament === t;
           h.setVisible(on);
-          if (on) { h.setPosition(here.x + standing[0], here.y + standing[1] + 0.2, here.z + standing[2]); h.setRotation(paxEuler[0], paxEuler[1], paxEuler[2]); }
+          if (on) { h.setPosition(here.x + standing[0], here.y + standing[1] + 0.2 + bob, here.z + standing[2]); h.setRotation(paxEuler[0], paxEuler[1], paxEuler[2]); }
         }
         return;
       }
