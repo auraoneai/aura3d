@@ -5,7 +5,7 @@ import { PIECES, addBackdrop, backdropSway } from "../../../examples/splat-rush-
 import { GATE_COLORS, LOOKS, QA_CROPS, parseLook, sunDirection, timeOfDay, type SplatLook } from "../../../examples/splat-rush-port/look";
 import { IDLE, SplatRushSim } from "../../../examples/splat-rush-port/sim";
 import { MOTE_COLORS, MOTE_EVERY, PAINT_MOTE, PAINT_MOTE_SPEC, PAINT_SPLASH, PAINT_SPLASH_RING, SPLASH_COUNT, fireMote, fireSplashes, moteFor, splashesFor } from "../../../examples/splat-rush-port/vfx3d";
-import { BUNTING_COLORS, DECK_DRIPS, spireRingMesh, DECK_EDGE_X, TITLE_RAIL_SECONDS, buildWorld, presentationPose, buntingMesh, cameraLayers, carnivalToonSpec, rolledUp } from "../../../examples/splat-rush-port/world";
+import { BUNTING_COLORS, DECK_DRIPS, TITLE_DOF, dofFocus, spireRingMesh, DECK_EDGE_X, TITLE_RAIL_SECONDS, buildWorld, presentationPose, buntingMesh, cameraLayers, carnivalToonSpec, rolledUp } from "../../../examples/splat-rush-port/world";
 import { deltaE2000 } from "../../../tools/look-metrics/region-luma.mjs";
 
 const g = globalThis as { document?: unknown };
@@ -264,5 +264,37 @@ describe("GU47 CR-V4 paint motes", () => {
     expect(calls[0]?.[0]).toBe(PAINT_MOTE);
     expect(calls[0]?.[2]).toMatchObject({ camera: false });
     expect(fireMote(undefined, moteFor(0, false))).toBe(0);
+  });
+});
+
+describe("GU47 CR-P3 title-only depth of field", () => {
+  it("carnival authors one DOF node on the ball; original has none", () => {
+    const json = (look: SplatLook) => withDocument(() => JSON.stringify(buildWorld({ sim: new SplatRushSim(1), aspect: 1.6, look }).scene.toJSON()));
+    expect(json(LOOKS.carnival)).toContain('"depth-of-field"');
+    expect(json(LOOKS.original)).not.toContain("depth-of-field");
+    expect(dofFocus(0, 15, 18, { x: 0, y: 0.55, z: 0 })).toBeCloseTo(Math.hypot(14.45, 18), 1);
+  });
+
+  it("DOF follows the ball on the title and is switched off once play starts", () => {
+    withDocument(() => {
+      const sim = new SplatRushSim(20261023);
+      const world = buildWorld({ sim, aspect: 16 / 9, look: LOOKS.carnival });
+      const toggles: [string, boolean][] = [], patches: [string, Record<string, unknown>][] = [];
+      const h: Record<string, unknown> = {};
+      const chain = () => h;
+      Object.assign(h, { setPosition: chain, setRotation: chain, setScale: chain, setVisible: chain, updateAttribute: chain, setUniform: chain, setLight: chain });
+      const app = {
+        nodes: { require: () => h }, camera: { setPose: () => undefined },
+        post: { setEffectEnabled: (n: string, on: boolean) => { toggles.push([n, on]); }, setEffect: (n: string, p: Record<string, unknown>) => { patches.push([n, p]); } }
+      };
+      const rt = world.bind(app as never);
+      for (let i = 0; i < 30; i++) { sim.advance(IDLE); rt.update(sim, 16 / 9, { cameraLayers: true }); }
+      expect(toggles).toEqual([]);
+      expect(patches.length).toBeGreaterThan(0);
+      expect(patches.every(([n, p]) => n === TITLE_DOF && typeof p.focusDistance === "number" && Object.keys(p).length === 1)).toBe(true);
+      sim.advance({ ...IDLE, start: true });
+      for (let i = 0; i < 5; i++) { sim.advance(IDLE); rt.update(sim, 16 / 9, { cameraLayers: true }); }
+      expect(toggles).toEqual([[TITLE_DOF, false]]);
+    });
   });
 });

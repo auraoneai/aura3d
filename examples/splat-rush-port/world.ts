@@ -521,6 +521,14 @@ export function spireRingMesh(row: NonNullable<SplatLook["spires"]>): { mesh: Me
   return { mesh: mergeMeshes(parts), tones };
 }
 
+export const CAMERA_FAR = 500;
+/** CR-P3: DOF focus distance on the ball (metres, 0.05 m steps so the runtime patch is written only when it moves). */
+export function dofFocus(x: number, y: number, z: number, ball: { readonly x: number; readonly y: number; readonly z: number }): number {
+  return Math.round(Math.hypot(x - ball.x, y - ball.y, z - ball.z) * 20) / 20;
+}
+/** CR-P3 runtime post name of the DOF effect (`app.post.setEffectEnabled`). */
+export const TITLE_DOF = "depth-of-field";
+
 /* ---------------------------------------------------------------- build */
 
 export interface WorldOptions {
@@ -658,7 +666,7 @@ export function buildWorld(options: WorldOptions): World {
   const rampTex = texture.canvas({ canvas: paintRampCanvas(sim), colorSpace: "linear" });
   const builder: Scene = scene()
     .background(look.background)
-    .camera(camera.perspective({ position: [0, 15, 18], target: [0, 0, 0], fov: 55, near: 0.1, far: 500 }));
+    .camera(camera.perspective({ position: [0, 15, 18], target: [0, 0, 0], fov: 55, near: 0.1, far: CAMERA_FAR }));
 
   const add = (id: string, mesh: MeshData, spec: CustomSpec): void => {
     builder.add(geometry.custom(dynamicFrom(mesh), { name: id, material: material.custom(spec) }).runtime({ id }));
@@ -759,7 +767,8 @@ export function buildWorld(options: WorldOptions): World {
       .add(effects.bloom({ name: "bloom", intensity: post.bloom.intensity, threshold: post.bloom.threshold, scatter: post.bloom.scatter }))
       .add(effects.colorGrade({ name: "grade", contrast: post.grade.contrast, saturation: post.grade.saturation, temperature: post.grade.temperature }))
       .add(effects.vignette({ name: "vignette", intensity: post.vignette.intensity, color: post.vignette.color }))
-      .add(effects.outline({ name: "ink", color: post.outline.color, width: post.outline.width, targets: post.outline.targets }));
+      .add(effects.outline({ name: "ink", color: post.outline.color, width: post.outline.width, targets: post.outline.targets }))
+      .add(effects.depthOfField({ name: "title-dof", focusDistance: dofFocus(0, 15, 18, { x: 0, y: 0.55, z: 0 }), fStop: post.dof.fStop, focalLength: post.dof.focalLength, maxBlur: post.dof.maxBlur }));
   }
 
   return {
@@ -803,6 +812,9 @@ export function buildWorld(options: WorldOptions): World {
       let todKey = -1;
       let phaseName = "";
       let phaseStart = 0;
+      /* CR-P3: the authored DOF node starts enabled (the app opens on the title) */
+      let dofOn = true;
+      let dofLast = -1;
 
       /** GU47: rewrite the time-of-day uniforms (and the GLB key light) when the stage moved by a visible step. */
       function applyTimeOfDay(tod: TimeOfDay): void {
@@ -1032,6 +1044,13 @@ export function buildWorld(options: WorldOptions): World {
         const fov = baseFov + (view.reducedMotion ? 0 : o._fovApplied) + cam.fovDeg;
         const up = cam.rollDeg === 0 ? [0, 1, 0] as const : rolledUp([c.x, c.y, c.z], [c.lookX, c.lookY, c.lookZ], cam.rollDeg);
         controller.setPose({ position: [c.x, c.y, c.z], target: [c.lookX, c.lookY, c.lookZ], up: [...up], fov }, { cut: false });
+        /* CR-P3: depth of field only on the title, focused on the ball; the play frames never run it */
+        if (look.post) {
+          const title = o.phase === "splash";
+          if (title !== dofOn) { app.post?.setEffectEnabled?.(TITLE_DOF, title); dofOn = title; }
+          const focus = title ? dofFocus(c.x, c.y, c.z, p) : dofLast;
+          if (title && focus !== dofLast) { app.post?.setEffect?.(TITLE_DOF, { focusDistance: focus }); dofLast = focus; }
+        }
       }
       const batches = [deck, rails, dashes, gates, gateSymbols, ballSymbol, splats, particles, clouds, streaks];
       const parked = [...pickupNodeIds(), "shield", "guide", "ball-symbol"];

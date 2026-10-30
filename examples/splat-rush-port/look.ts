@@ -89,6 +89,8 @@ export interface SplatLook {
     readonly vignette: { readonly intensity: number; readonly color: string };
     readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number };
     readonly outline: { readonly color: string; readonly width: number; readonly targets: readonly string[] };
+    /** CR-P3 title-only depth of field on the ball (thin lens; `focusDistance` is written per frame from the camera). */
+    readonly dof: { readonly fStop: number; readonly focalLength: number; readonly maxBlur: number };
   };
   readonly clouds: { readonly high: string; readonly low: string };
   /** CR-S2 scrolling cloud-sea plane under the road. */
@@ -181,7 +183,8 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
       bloom: { intensity: 0.45, threshold: 0.92, scatter: 0.5 },
       vignette: { intensity: 0.22, color: "#3a2440" },
       grade: { contrast: 1.06, saturation: 1.08, temperature: 0.06 },
-      outline: { color: "#3b1f3f", width: 2, targets: ["ball", "gates", "rails"] }
+      outline: { color: "#3b1f3f", width: 2, targets: ["ball", "gates", "rails"] },
+      dof: { fStop: 2, focalLength: 50, maxBlur: 6 }
     },
     clouds: { high: "#ffffff", low: "#ffffff" },
     cloudSea: { y: -22, color: "#a99bc9", scroll: 0.35 },
