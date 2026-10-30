@@ -7,12 +7,12 @@
  * lease evicts the parse and the textures, and a scene that mounts the same assets again fetches,
  * parses and decodes every GLB a second time.
  *
- * This cache keeps, per asset key, the resources of the last disposed actor of that asset (its
- * pipeline: the parse lease and render resources, plus its shared-texture lease) instead of
- * disposing them. The next actor of the same asset finds the parse still referenced, so it loads
- * with 0 GLB fetches and 0 parses (and reuses the decoded textures when its texture-share key
- * matches), and then hands the kept entry back for disposal (`consume`), so at most one kept copy
- * exists per asset and none while an actor of that asset is live.
+ * This cache keeps, per asset key, the parse lease of the last disposed actor of that asset (its
+ * render resources and textures are freed at once, as before). The next actor of the same asset
+ * finds the parse still referenced, so it loads with 0 GLB fetches and 0 parses, and then hands
+ * the kept lease back (`consume`), so at most one kept lease exists per asset and none while an
+ * actor of that asset is live. Memory held is the parsed GLB (about its file size), which is what
+ * `bytes` charges.
  *
  * Keys: the asset content hash (typed asset tables carry one), the URL and every decode option by
  * value (see `glbResourceCacheKey`), so different decode settings never alias.

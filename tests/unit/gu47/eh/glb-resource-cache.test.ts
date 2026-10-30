@@ -123,9 +123,13 @@ describe("GLB resource cache across a scene swap (typed GLB actors)", () => {
     // Scene 1: two actors of one asset share one fetch (parse cache).
     const first = await Promise.all([load(car, "car-a"), load(car, "car-b")]);
     expect(fetches.filter((url) => url === car.url)).toHaveLength(1);
-    // setScene: every actor of scene 1 is disposed; one copy is kept.
+    // setScene: every actor of scene 1 is disposed; one parse lease is kept, while every
+    // actor's render resources are freed at once as before.
+    const geometries = first.flatMap((actor) => [...actor.pipeline.resources.geometryLibrary.values()]);
     for (const actor of first) actor.dispose();
     expect(glbResourceCacheSnapshot()).toMatchObject({ entries: 1, kept: 1 });
+    expect(geometries.every((geometry) => (geometry as unknown as { vertexBuffer: { disposed: boolean } }).vertexBuffer.disposed)).toBe(true);
+    expect(first[0]!.pipeline.asset.disposed).toBe(false);
     // Scene 2 mounts the same asset: no fetch at all.
     const second = await Promise.all([load(car, "car-a"), load(car, "car-b")]);
     expect(fetches.filter((url) => url === car.url)).toHaveLength(1);

@@ -580,19 +580,24 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
       }
       parts.clear();
       if (liveTypedGLBActors.get(actor.id) === actor) liveTypedGLBActors.delete(actor.id);
-      // GU47 E-H: hand the parse + texture leases to the GLB resource cache so the next scene that
-      // mounts this asset loads it without a fetch; disposed here when the cache declines.
-      const releaseResources = (): void => {
-        pipeline.dispose();
+      // GU47 E-H: GLB resource cache. Render resources and textures are freed now as before; only
+      // the parse lease (held by the pipeline) is handed to the cache, so the next scene that mounts
+      // this asset loads it without a fetch. One kept lease per asset is enough.
+      if (glbResourceCache.enabled && glbResourceCache.peek(cacheKey) === undefined) {
+        pipeline.resources.dispose();
         textureShare?.release();
-      };
-      const compression = pipeline.asset.loaderDiagnostics.compression;
-      const keptByCache = glbResourceCache.keep(cacheKey, {
-        bytes: estimateGlbResourceBytes(options.asset.sizeBytes, pipeline.asset.loaderDiagnostics),
-        uncompressed: !compression.draco && !compression.meshopt && !compression.ktx2Basis,
-        dispose: releaseResources
-      });
-      if (!keptByCache) releaseResources();
+        const compression = pipeline.asset.loaderDiagnostics.compression;
+        const kept = glbResourceCache.keep(cacheKey, {
+          bytes: estimateGlbResourceBytes(options.asset.sizeBytes, pipeline.asset.loaderDiagnostics),
+          uncompressed: !compression.draco && !compression.meshopt && !compression.ktx2Basis,
+          // Re-disposing the resources inside is a no-op; this releases the parse lease.
+          dispose: () => pipeline.dispose()
+        });
+        if (!kept) pipeline.dispose();
+        return;
+      }
+      pipeline.dispose();
+      textureShare?.release();
     }
   };
 
