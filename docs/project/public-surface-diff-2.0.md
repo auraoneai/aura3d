@@ -4,7 +4,7 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 
 - Baseline packages: **26**; current packages: **24**
 - Baseline export subpaths: **68**; current export subpaths: **75**
-- Baseline symbols: **13007**; current symbols: **13251**
+- Baseline symbols: **13007**; current symbols: **13255**
 - Classified removals: **2129**; unclassified removals: **0**
 - Incompatible retained-symbol declaration changes: **0**
 - Compatible retained-symbol declaration additions: **0**

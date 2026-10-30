@@ -245,6 +245,11 @@ export { bakeCrowdPoses, clearCrowdPoseCache, createCrowd, loadCrowdPoses, sampl
 export type { AuraCrowd, AuraCrowdAsset, AuraCrowdBakeActor, AuraCrowdBakeOptions, AuraCrowdBakePoseFrame, AuraCrowdBakePrimitive, AuraCrowdDrawPlan, AuraCrowdLoadOptions, AuraCrowdNodeHandle, AuraCrowdOptions, AuraCrowdPoseSet, AuraCrowdSampleOptions, AuraCrowdSpectator, AuraCrowdTarget } from "../instances-model/CrowdKit.js";
 export { clearGlbResourceCache, configureGlbResourceCache, GLB_RESOURCE_CACHE_DEFAULTS, glbResourceCacheSnapshot } from "../production-runtime/GlbResourceCache.js";
 export type { GlbResourceCacheOptions, GlbResourceCacheSnapshot } from "../production-runtime/GlbResourceCache.js";
+// GU47 pass 4 (game-lane handoffs): cinematic letterbox bars (`controller.addLayer`, release / open) and the rain and
+// snow option type (size, seed).
+export { createCinematicBarsLayer } from "../agent-api/index.js";
+export type { AuraCinematicBarsLayer, AuraCinematicBarsOptions } from "../agent-api/index.js";
+export type { AuraWeatherEffectOptions } from "../agent-api/nodes/effects.js";
 
 // threejs-parity ST-01 (lane L4): the `texture.*` namespace + live handle type.
 export { texture, TextureHandle } from "../agent-api/index.js";

@@ -37,6 +37,8 @@ export interface AuraCinematicBarsLayer extends AuraCameraLayer {
   rect(): { readonly top: number; readonly bottom: number; readonly aspect: number };
   /** Fully close the bars (eases back to 0). */
   release(): void;
+  /** Ease the bars back in after `release()` (GU47 pass 4); the layer stays on the controller in between. */
+  open(): void;
 }
 
 export const LETTERBOX_BLACKBOARD_KEY = "prd08.letterbox";
@@ -104,6 +106,10 @@ export function createCinematicBarsLayer(options: AuraCinematicBarsOptions = {})
     },
     release() {
       direction = -1;
+    },
+    open() {
+      direction = 1;
+      activeBars.add(layer);
     }
   };
   activeBars.add(layer);
