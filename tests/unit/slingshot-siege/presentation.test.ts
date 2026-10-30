@@ -1,6 +1,8 @@
 // GU47 WP-22 (lane g12): pure presentation helpers — the signature tilt-shift band (SS47-P1) and the E-I QA crops.
 import { describe, expect, it } from "vitest";
-import { QA_WORLD_BOXES, bandChanged, boxCorners, screenCrop, tiltShiftBand } from "../../../apps/showcase-slingshot-siege/src/game/presentation";
+import {
+  INTRO_CUT_SECONDS, INTRO_SECONDS, QA_WORLD_BOXES, bandChanged, boxCorners, introEnabled, introShot, releaseKick, screenCrop, tiltShiftBand
+} from "../../../apps/showcase-slingshot-siege/src/game/presentation";
 
 describe("slingshot-siege tilt-shift band (SS47-P1)", () => {
   it("holds every point inside the band and never drops below the chapter width", () => {
@@ -42,5 +44,25 @@ describe("slingshot-siege QA crops (E-I)", () => {
   it("box corners span the box; the fixed boxes are well formed", () => {
     expect(boxCorners([0, 0, 0], [1, 2, 3])).toHaveLength(8);
     for (const box of Object.values(QA_WORLD_BOXES)) for (let i = 0; i < 3; i += 1) expect(box.max[i]!).toBeGreaterThanOrEqual(box.min[i]!);
+  });
+});
+
+describe("slingshot-siege intro and release kick (SS47-C1, PRD §6.3)", () => {
+  it("frames the fort wide, then cuts to the sling, inside 3 s", () => {
+    expect(INTRO_SECONDS).toBe(3);
+    expect(introShot(0).shot).toBe("fort");
+    expect(introShot(INTRO_CUT_SECONDS - 0.01).shot).toBe("fort");
+    expect(introShot(INTRO_CUT_SECONDS).shot).toBe("sling");
+    expect(introShot(0).tgt[0]).toBeGreaterThan(5);
+    expect(introShot(2.5).tgt[0]).toBeLessThan(-6);
+  });
+
+  it("reduced motion, demo and ?intro=0 skip the intro; reduced motion has no FOV kick or punch", () => {
+    expect(introEnabled({ reducedMotion: false, demo: false, param: null })).toBe(true);
+    expect(introEnabled({ reducedMotion: true, demo: false, param: null })).toBe(false);
+    expect(introEnabled({ reducedMotion: false, demo: true, param: null })).toBe(false);
+    expect(introEnabled({ reducedMotion: false, demo: false, param: "0" })).toBe(false);
+    expect(releaseKick(true)).toEqual({ fovDeg: 0, punch: 0 });
+    expect(releaseKick(false).fovDeg).toBeGreaterThan(0);
   });
 });

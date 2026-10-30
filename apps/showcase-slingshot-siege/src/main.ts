@@ -30,7 +30,10 @@ import {
 import { sanitizeRenderParams } from "./game/urlGuard";
 import { AMMO_TRAIL_COLOR, SIEGE_VFX, abilityPreset, breakPreset, registerSiegeVfx } from "./game/vfx";
 import { chapterLook } from "./game/look";
-import { QA_WORLD_BOXES, bandChanged, boxCorners, screenCrop, tiltShiftBand, type QaCrop, type TiltShiftBand } from "./game/presentation";
+import {
+  INTRO_SECONDS, QA_WORLD_BOXES, bandChanged, boxCorners, introEnabled, introShot, releaseKick, screenCrop, tiltShiftBand,
+  type QaCrop, type TiltShiftBand
+} from "./game/presentation";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { installGameBeacon } from "@aura3d/engine/game";
 
@@ -281,6 +284,20 @@ let camPos: [number, number, number] = [-2.5, 4.0, 15.5];
 let camTgt: [number, number, number] = [-0.5, 1.5, 0];
 let trauma = 0;
 let orbitT = 0;
+/** SS47-C1: the 3 s opening move (fort wide, cut to the sling); any key or pointer skips it. Camera only. */
+const intro = { t: 0, done: !introEnabled({ reducedMotion: REDUCED, demo: DEMO || autoPlay, param: params.get("intro") }), skipped: false, shot: "aim" as string };
+/** The next camera update cuts instead of easing (after the intro). */
+let cutNext = false;
+function finishIntro(skipped: boolean): void {
+  if (intro.done) return;
+  intro.done = true;
+  intro.skipped = skipped;
+  intro.shot = "aim";
+  cutNext = true;
+}
+/** SS47-C1 release kick (FOV degrees, pull-back metres), decayed every frame; zero on reduced motion. */
+const KICK = releaseKick(REDUCED);
+let kick = 0;
 
 const CAM: Record<CamState, { pos: [number, number, number]; tgt: [number, number, number] }> = {
   orbit: { pos: [-2.6, 4.1, 15.4], tgt: [-0.5, 1.5, 0] },
@@ -290,6 +307,24 @@ const CAM: Record<CamState, { pos: [number, number, number]; tgt: [number, numbe
 };
 
 function updateCamera(dt: number, elapsed: number): void {
+  if (!intro.done) {
+    intro.t += dt;
+    if (intro.t >= INTRO_SECONDS || camState !== "aim") {
+      finishIntro(false);
+    } else {
+      const shot = introShot(intro.t);
+      intro.shot = shot.shot;
+      camPos = shot.pos;
+      camTgt = shot.tgt;
+      app.camera?.setPose({ position: camPos, target: camTgt, fov: shot.fov });
+      const live = app.scene.camera as unknown as Record<string, unknown>;
+      live.mode = "perspective";
+      live.position = camPos;
+      live.target = camTgt;
+      live.fov = shot.fov;
+      return;
+    }
+  }
   const spec = CAM[camState === "follow" ? "follow" : camState];
   let dp = spec.pos;
   let dtg = spec.tgt;
@@ -331,7 +366,8 @@ function updateCamera(dt: number, elapsed: number): void {
   }
   if (Math.abs(orbitYaw) > 1e-4 || Math.abs(orbitPitch) > 1e-4) dp = orbitAround(dp, dtg, orbitYaw, orbitPitch);
 
-  const k = 1 - Math.exp(-dt * (camState === "follow" ? 7 : 3.2));
+  const k = cutNext ? 1 : 1 - Math.exp(-dt * (camState === "follow" ? 7 : 3.2));
+  cutNext = false;
   camPos = [camPos[0] + (dp[0] - camPos[0]) * k, camPos[1] + (dp[1] - camPos[1]) * k, camPos[2] + (dp[2] - camPos[2]) * k];
   camTgt = [camTgt[0] + (dtg[0] - camTgt[0]) * k, camTgt[1] + (dtg[1] - camTgt[1]) * k, camTgt[2] + (dtg[2] - camTgt[2]) * k];
 
@@ -344,10 +380,16 @@ function updateCamera(dt: number, elapsed: number): void {
     h ^= h >>> 13;
     return (h >>> 0) / 4294967296 - 0.5;
   };
-  const px = camPos[0] + n(0) * sh;
-  const py = camPos[1] + n(1) * sh;
-  const pz = camPos[2] + n(2) * sh;
-  const fov = camState === "follow" ? 50 : 55;
+  // Release punch: pull back along the view ray while the kick decays.
+  kick = Math.max(0, kick - dt * 2.8);
+  const kk = kick * kick;
+  const vx = camPos[0] - camTgt[0], vy = camPos[1] - camTgt[1], vz = camPos[2] - camTgt[2];
+  const vl = Math.hypot(vx, vy, vz) || 1;
+  const pb = (KICK.punch * kk) / vl;
+  const px = camPos[0] + n(0) * sh + vx * pb;
+  const py = camPos[1] + n(1) * sh + vy * pb;
+  const pz = camPos[2] + n(2) * sh + vz * pb;
+  const fov = (camState === "follow" ? 50 : 55) + KICK.fovDeg * kk;
 
   app.camera?.setPose({ position: [px, py, pz], target: camTgt, fov });
   /*
@@ -542,6 +584,7 @@ function projectWorld(p: readonly [number, number, number]): { x: number; y: num
 
 stageEl.addEventListener("pointerdown", (ev) => {
   autoPlay = false;
+  finishIntro(true);
   void audio.unlock();
   refreshVp();
   const rect = stageEl.getBoundingClientRect();
@@ -577,6 +620,7 @@ const heldKeys = new Set<string>();
 const justPressedKeys = new Set<string>();
 window.addEventListener("keydown", (ev) => {
   autoPlay = false;
+  finishIntro(true);
   // A key press is a user gesture too: keyboard-only players get sound (and the wind loop).
   void audio.unlock();
   // Space launches; keep it from scrolling the page. Tab is left alone so keyboard focus still moves.
@@ -1100,6 +1144,7 @@ function consumeEvents(): void {
       case "shot-fired": {
         hud.toast(`${AMMO[ev.ammo].name} away!`);
         burst(SIEGE_VFX.launchDust, [SLING_REST[0], 0.62, 0]);
+        kick = 1;
         startShotTrail(ev.ammo);
         break;
       }
@@ -1270,6 +1315,8 @@ function evidence(): Record<string, unknown> {
     seed: SEED,
     level: { id: level.id, chapter: level.chapter, name: level.name, sandbox: mode === "range" },
     cameraState: camState,
+    intro: { done: intro.done, skipped: intro.skipped, shot: intro.shot, t: Math.round(intro.t * 100) / 100 },
+    fortFraction: qaCrops.find((c) => c.name === "fort")?.h ?? null,
     score: Math.round(levelScore),
     starsEarned: starRating(levelScore, level.stars),
     shotsUsed,

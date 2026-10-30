@@ -83,3 +83,43 @@ export function tiltShiftBand(ys: readonly number[], minWidth: number, margin = 
 export function bandChanged(a: TiltShiftBand | null, b: TiltShiftBand, eps = 0.004): boolean {
   return !a || Math.abs(a.bandCenter - b.bandCenter) > eps || Math.abs(a.bandWidth - b.bandWidth) > eps;
 }
+
+// ------------------------------------------------------------ intro (C1) --
+
+/** SS47-C1: length of the opening camera move (fort wide, then a cut to the sling), seconds. */
+export const INTRO_SECONDS = 3;
+/** Time of the cut from the fort wide to the sling. */
+export const INTRO_CUT_SECONDS = 1.8;
+
+export interface IntroShot {
+  readonly shot: "fort" | "sling";
+  readonly pos: [number, number, number];
+  readonly tgt: [number, number, number];
+  readonly fov: number;
+}
+
+const lerp3 = (a: readonly number[], b: readonly number[], t: number): [number, number, number] =>
+  [a[0]! + (b[0]! - a[0]!) * t, a[1]! + (b[1]! - a[1]!) * t, a[2]! + (b[2]! - a[2]!) * t];
+
+/**
+ * The intro camera at time `t` (seconds since the first rendered frame): a slow push on the fort wide, then a hard
+ * cut to the sling. Pure (no easing state), so a frame-rate change only moves the cut by one frame.
+ */
+export function introShot(t: number): IntroShot {
+  if (t < INTRO_CUT_SECONDS) {
+    const k = Math.min(1, Math.max(0, t / INTRO_CUT_SECONDS));
+    return { shot: "fort", pos: lerp3([2.2, 5.2, 14.6], [2.8, 4.7, 13.0], k), tgt: [6.4, 1.8, -0.2], fov: 50 };
+  }
+  const k = Math.min(1, (t - INTRO_CUT_SECONDS) / (INTRO_SECONDS - INTRO_CUT_SECONDS));
+  return { shot: "sling", pos: lerp3([-10.8, 2.7, 5.6], [-10.2, 2.5, 5.0], k), tgt: [-7.2, 1.7, 0], fov: 50 };
+}
+
+/** Whether the intro plays at all: reduced motion, demo/autoplay and `?intro=0` start on the aim view (PRD §6.3). */
+export function introEnabled(options: { readonly reducedMotion: boolean; readonly demo: boolean; readonly param: string | null }): boolean {
+  return !options.reducedMotion && !options.demo && options.param !== "0";
+}
+
+/** SS47-C1 release kick: FOV degrees added on launch and the pull-back punch in metres; zero on reduced motion. */
+export function releaseKick(reducedMotion: boolean): { readonly fovDeg: number; readonly punch: number } {
+  return reducedMotion ? { fovDeg: 0, punch: 0 } : { fovDeg: 5, punch: 0.35 };
+}
