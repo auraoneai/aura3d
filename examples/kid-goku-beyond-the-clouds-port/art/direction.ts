@@ -21,7 +21,7 @@ export default defineArtDirection({
       why: "A low 28-degree side sun rakes wet terracotta sandstone, puddles mirror the sky and the air is rain-washed and saturated"
     },
     {
-      file: "references/rainbow-over-cumulonimbus.json",
+      file: "references/rainbow-over-storm-towers.json",
       source: "photographic genre: a primary rainbow in the antisolar sky in front of silver-lined cumulonimbus towers and rain shafts",
       licence: "reference-only",
       why: "The 40-42 degree bow sits on the dark rain curtain under the towers, whose sunward edges carry a bright silver lining"
@@ -74,8 +74,8 @@ export default defineArtDirection({
   ],
   signatureEffect: "A rainbow over silver-lined storm towers: a 40-42 degree bow in the antisolar sky over rain curtains and sunward silver cloud edges.",
   standIns: [
-    { feature: "storm towers and cloud sea drawn in the sky dome until the Meshy cumulus towers and deck tiles land", file: "examples/kid-goku-beyond-the-clouds-port/shaders.ts", request: "R-14-07", removeWhen: "WP-36 cumulus towers and cloud-deck tiles admitted" },
-    { feature: "procedural staff, hut, bridges and cord posts until the Meshy set pieces land", file: "examples/kid-goku-beyond-the-clouds-port/props.ts", request: "R-14-07", removeWhen: "WP-36 staff, hut, bridge, arch, waystone and cord pole admitted" }
+    { feature: "storm towers and cloud sea drawn in the sky dome until the Meshy cumulus towers and deck tiles land", file: "shaders.ts", request: "R-14-07", removeWhen: "WP-36 cumulus towers and cloud-deck tiles admitted" },
+    { feature: "procedural staff, hut, bridges and cord posts until the Meshy set pieces land", file: "props.ts", request: "R-14-07", removeWhen: "WP-36 staff, hut, bridge, arch, waystone and cord pole admitted" }
   ],
   criticalCategories: ["lighting", "environment_world", "atmospheric_effects", "shadows"],
   tiers: {
