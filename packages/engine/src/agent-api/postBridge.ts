@@ -41,6 +41,7 @@ import type { AuraOutputOptions } from "../contracts/output.js";
 import { AuraRuntimeError, groups, type AuraApp, type AuraCreateAppOptions, type AuraEffectNode, type AuraSceneNode, type AuraSceneSnapshot } from "./index.js";
 import { expandPostPreset } from "./postPresets.js";
 import { mergeLookColorGrade } from "./looks/lookGrade.js";
+import { lookOutputPreset } from "./looks/looks.js";
 import { colorToRgba } from "./colorUtils.js";
 
 /* ------------------------------------------------------------------------- */
@@ -519,7 +520,7 @@ export class Prd03PostSurface implements AuraPostSurface {
    * next frame's post derivation (`createRootPostPipeline`) applies it to the
    * effect node — no scene rebuild, no shader rebuild.
    */
-  setEffect(name: string, patch: Record<string, number | string | boolean | number[]>): void {
+  setEffect(name: string, patch: Record<string, number | string | boolean | number[] | readonly string[]>): void {
     writeRuntimePostEffect(this.runtimeOverrides, name, patch, undefined);
   }
 
@@ -584,11 +585,13 @@ export const POST_RUNTIME_EFFECTS: Readonly<Record<string, string>> = Object.fre
   motionBlur: "motion-blur",
   chromaticAberration: "chromatic-aberration",
   volumetricFog: "volumetric-fog",
-  vignette: "vignette"
+  vignette: "vignette",
+  // GU47 E-E handoff H4: retarget the outline at runtime (`setEffect("outline", { targets: [id] })`).
+  outline: "outline"
 });
 
 /** One `setEffect` patch value as stored: strings/numbers/booleans, number arrays, or a converted object (`tiltShift`). */
-type RuntimePostValue = number | string | boolean | readonly number[] | Readonly<Record<string, number>>;
+type RuntimePostValue = number | string | boolean | readonly number[] | readonly string[] | Readonly<Record<string, number>>;
 
 interface RuntimePostEffectState {
   /** `undefined` = follow the scene (present when authored or patched). */
@@ -636,16 +639,24 @@ function runtimeEffectId(name: string): string {
     `app.post: "${String(name)}" is not a runtime post effect (use ${Object.keys(POST_RUNTIME_EFFECTS).join(", ")}).`);
 }
 
-function runtimePatchValue(effectName: string, key: string, value: unknown): RuntimePostValue {
+function runtimePatchValue(effectName: string, key: string, value: unknown, effectId?: string): RuntimePostValue {
   const reject = (why: string): never => {
     throw new AuraRuntimeError("POST_FIELD_UNSUPPORTED", `app.post.setEffect(${effectName}, { ${key} }) ${why}`);
   };
+  // GU47 E-E handoff H4: outline `targets` is a list of node names / runtime ids (an empty list inks nothing).
+  if (key === "targets") {
+    if (!Array.isArray(value) || !value.every((entry) => typeof entry === "string" && entry.trim().length > 0)) {
+      reject("expects an array of node names");
+    }
+    return Object.freeze([...(value as string[])]);
+  }
   if (typeof value === "number") return Number.isFinite(value) ? value : reject("expects a finite number");
   if (typeof value === "boolean") return value;
   if (typeof value === "string") {
     if (!value.trim()) reject("expects a non-empty string");
-    // A CSS-style colour string becomes the RGB triple the bridge reads.
-    if (key === "color") {
+    // A CSS-style colour string becomes the RGB triple the bridge reads (the
+    // compiled outline parses the colour string itself).
+    if (key === "color" && effectId !== "outline") {
       const [r, g, b] = colorToRgba(value);
       return [r, g, b];
     }
@@ -669,7 +680,7 @@ function runtimePatchValue(effectName: string, key: string, value: unknown): Run
 function writeRuntimePostEffect(
   store: RuntimePostOverrides,
   name: string,
-  patch: Record<string, number | string | boolean | number[]> | undefined,
+  patch: Record<string, number | string | boolean | number[] | readonly string[]> | undefined,
   enabled: boolean | undefined
 ): void {
   const effectId = runtimeEffectId(name);
@@ -684,7 +695,7 @@ function writeRuntimePostEffect(
         throw new AuraRuntimeError("POST_FIELD_UNSUPPORTED",
           `app.post.setEffect(${name}): "${key}" is not a ${effectId} field (fields: intensity, ${allowed.join(", ")}).`);
       }
-      values.set(key, runtimePatchValue(name, key, value));
+      values.set(key, runtimePatchValue(name, key, value, effectId));
     }
   }
   let state = store.get(effectId);
@@ -781,7 +792,9 @@ export const POST_EFFECT_FIELDS: Readonly<Record<string, readonly string[]>> = {
   "motion-blur": ["shutter", "maxBlur", "samples", "tileSize", "timeScale"],
   // GU47 E-C (EC-6): S3 roughness hint (cutoff 0.5) and hit thickness.
   "screen-space-reflections": ["maxDistance", "intensity", "roughness", "thickness"],
-  outline: ["color", "width", "threshold"]
+  // GU47 E-E (WP-5): `targets` names the nodes whose silhouettes get ink
+  // (compiled to renderer match keys by `nodes/outlineTargets.ts`).
+  outline: ["color", "width", "threshold", "targets"]
 };
 
 /**
@@ -1124,7 +1137,12 @@ export function createRootPostPipeline(
   // agx/neutral render that operator (GU47 E-C, EC-3).
   // CR-4: a grade authored next to a look wins over the look's grade field by field (looks/lookGrade.ts).
   const authoredEffectNodes = mergeLookColorGrade(nodes.filter((node): node is AuraEffectNode => node.kind === "effect"));
-  const expansion = expandPostPreset(output, authoredEffectNodes);
+  // GU47 E-A handoff: a look's declared post preset (the `output.preset` child
+  // `looks.preset` emits, or a v1 look node's preset) applies when the app
+  // authors no `output.preset`. Authored `output` fields still win over the
+  // preset's, and the look's own grade/bloom nodes win field by field.
+  const lookPreset = output?.preset === undefined ? lookOutputPreset(snapshot.nodes) : undefined;
+  const expansion = expandPostPreset(lookPreset === undefined ? output : { ...output, preset: lookPreset }, authoredEffectNodes);
   const effectiveOutput = expansion.output;
   const effectNodes = applyRuntimePostOverrides(expansion.nodes, canvas);
 

@@ -51,6 +51,9 @@ const prd01InstanceTransformCache = new WeakMap<readonly AuraTransformSpec[], { 
 const prd01InstanceColorCache = new WeakMap<readonly AuraColor[], { fp: number; count: number; result: Float32Array | undefined }>();
 const prd01ModelInstanceCache = new WeakMap<readonly AuraTransformSpec[], { fp: number; node: object; bounds: Float64Array; result: Float32Array }>();
 
+/** GU47 E-H: appended to the skinned-instancing fallback warning (skinned GLBs do not instance; the crowd kit does). */
+export const SKINNED_CROWD_HINT = "Skinned GLBs do not instance: for skinned crowds use the crowd kit (loadCrowdPoses + createCrowd from @aura3d/engine, one draw per pose).";
+
 /*
  * Instanced primitives: `createProductionInstanceTransforms` already folds the
  * node `size` into every instance matrix (T_i·R_i·S(scale_i ⊙ size)), and the
@@ -275,7 +278,8 @@ export function createProductionRuntimeRendererInput(
           requestedInstances: modelInstances.length,
           drawnBatches: Math.max(1, actorItems.length),
           reason: "skinned-palette-overflow-cpu-fallback",
-          onWarning: (message) => runtimeWarnings.add(message)
+          // GU47 E-H handoff: point authors at the supported skinned-crowd path.
+          onWarning: (message) => runtimeWarnings.add(`${message} ${SKINNED_CROWD_HINT}`)
         });
       } else {
         modelInstanceAttach = {

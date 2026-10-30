@@ -43,7 +43,7 @@ Commands:
   aura3d assets import-meshy artifacts/meshy/run --into examples/<game>/assets --prefix <game> --name <role> [--rights-evidence rights.json] [--profile prop|environment|vehicle|humanoid] [--overwrite] [--keep-temp]
       Isolated mode (the default inside the Aura3D monorepo): admits in a temporary project and copies only the hashed GLB and its evidence into the game folder; shared root manifests are never written (pass --shared-manifest to opt out).
   aura3d assets optimize --file in.glb --out out.glb [--role hero|vehicle|character|prop|background] [--max-verts N] [--tex N] [--no-simplify] [--meshopt] [--json]
-  aura3d assets optimize --hdri <1k|2k> [--rgb9e5-cube]
+  aura3d assets optimize --hdri <1k|2k> [--rgb9e5-cube] --file in.hdr --out out_1k.hdr [--json]
       HDRI delivery: writes a downsized .hdr (2k sources to <= 1.5 MB at 1k) and, with --rgb9e5-cube, an RGB9E5 cube map for environments.hdri(...).
   aura3d assets merge-clips --base rigged.glb --out hero.glb run=animation_run.glb idle=animation_idle.glb [--keep-base-animations] [--tex 1024] [--json]
   aura3d meshy ledger status|reserve|settle|reconcile|baseline|list [--ledger path] [--global-cap N] [--game-cap N]   (caps are opt-in; default uncapped)
@@ -60,8 +60,8 @@ Commands:
   aura3d assets list
   aura3d assets typegen
   aura3d assets bind-game-route-evidence --route <id> --category racing|platformer --assets <id,id,...> --screenshot <png> --geometry-report <json> --composition-report <json> --visual-review <json>
-  aura3d assets certify-game-geometry --asset <id> --category racing|platformer
-  aura3d assets certify-game-geometry --assets <id,id,...> --category racing|platformer
+  aura3d assets certify-game-geometry --asset <id> --category racing|platformer|sports|fighting|arena|puzzle
+  aura3d assets certify-game-geometry --assets <id,id,...> --category racing|platformer|sports|fighting|arena|puzzle
   aura3d assets thumbnail
   aura3d assets search <query> [--profile ${profileUsage}] [--license cc0|cc-by] [--max-tris N] [--animated] [--json]
   aura3d assets resolve <query> --name <name> [--profile ${profileUsage}] [--license cc0|cc-by] [--max-tris N] [--animated] [--index N] [--candidate-id ID]

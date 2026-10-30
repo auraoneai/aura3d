@@ -1,4 +1,5 @@
 import { GLTFSharedTextureCache } from "@aura3d/assets/browser";
+import { valueToken } from "../GlbResourceCache.js";
 
 /**
  * Ref-counted registry of one `GLTFSharedTextureCache` per (asset, decode options), so repeated
@@ -82,8 +83,10 @@ export function modelTextureShareKey(options: {
     identityOf(options.maxTextureSize),
     identityOf(options.textureBudget),
     identityOf(options.imageDecoder),
-    identityOf(options.decoders),
-    identityOf(options.compressedTextureCapabilities)
+    // GU47 E-H handoff: plain-data decoder / transcoder options by value, like `glbResourceCacheKey`
+    // (`typedGLBActorDecoderOptions` builds a fresh `decoders: {}` per mount, so identity never matched across setScene).
+    valueToken(options.decoders),
+    valueToken(options.compressedTextureCapabilities)
   ].join("|");
 }
 
