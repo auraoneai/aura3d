@@ -7,7 +7,7 @@
 
 import {
   camera, decals, effects, game, instances, lights, looks, material, model, primitives, scene, sky, surfaces as engineSurfaces,
-  type AuraLookOverrides
+  type AuraAssetRef, type AuraLookOverrides
 } from "@aura3d/engine";
 import { assets } from "../aura-assets-v2";
 import { VENUES, type VenueSpec } from "./content";
@@ -58,6 +58,16 @@ export function mainFloodPosition(): [number, number, number] {
  * turn the look key into a 0.4 unshadowed front fill (the main-stand flood is the one shadowed key); day venues keep a
  * cascaded sun.
  */
+/** FC47-P2: display LUT asset per venue. */
+export const VENUE_LUT_ASSETS: Readonly<Record<VenueId, AuraAssetRef<"lut">>> = {
+  munich: assets.fcLutMunich, kyoto: assets.fcLutKyoto, favela: assets.fcLutFavela,
+  lagos: assets.fcLutLagos, uyuni: assets.fcLutUyuni, glacier: assets.fcLutGlacier
+};
+
+function venueIdOf(vl: FcVenueLook): VenueId {
+  return (Object.keys(VENUE_LOOKS) as VenueId[]).find((id) => VENUE_LOOKS[id] === vl) ?? "munich";
+}
+
 export function venueLookOverrides(vl: FcVenueLook): AuraLookOverrides {
   const drawSky = vl.skyHdri !== undefined || vl.look === "golden-hour";
   const ibl = vl.nightIbl;
@@ -73,7 +83,8 @@ export function venueLookOverrides(vl: FcVenueLook): AuraLookOverrides {
       ...(vl.key.shadowed ? { shadow: { cascades: 3, mapSize: 2048, filter: "pcf" } } : {})
     },
     ...(vl.rim ? { rim: { color: vl.rim.color, intensity: vl.rim.intensity, azimuthDeg: vl.rim.azimuthDeg } } : {}),
-    grade: { contrast: vl.grade.contrast, saturation: vl.grade.saturation, temperature: vl.grade.temperature, tint: vl.grade.tint },
+    // FC47-P2: the venue's split-tone display LUT rides on the look grade (E-C binds it in the display grade)
+    grade: { contrast: vl.grade.contrast, saturation: vl.grade.saturation, temperature: vl.grade.temperature, tint: vl.grade.tint, lut: VENUE_LUT_ASSETS[venueIdOf(vl)] },
     post: vl.post,
     ...(vl.skyHdri !== undefined ? { hdri: vl.skyHdri } : {}),
     ...(ibl ? {
