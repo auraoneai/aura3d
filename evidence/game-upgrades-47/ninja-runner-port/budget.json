@@ -1,0 +1,44 @@
+{
+  "schema": "aura3d.gu47-budget/1",
+  "slug": "ninja-runner-port",
+  "source": "PRD WP-30 Today line (GameUpgrades47-PRD.md:1137) and evidence/ninja-runner-port/audit-2026-10-29; software WebGL2",
+  "budget": {
+    "drawCalls": 150,
+    "lowDrawCalls": 120,
+    "glbMB": 24,
+    "hdriMB": 3
+  },
+  "before": {
+    "default": {
+      "drawCalls": 93,
+      "triangles": null,
+      "textureBytes": null,
+      "pageMB": null,
+      "glbMB": 20.2,
+      "routeJsGzipDeltaKB": 0,
+      "runnerFps": null,
+      "meanLuma": 121.2,
+      "p5": 52,
+      "p95": 173
+    }
+  },
+  "expectedDrawDelta": {
+    "NR-01": 0,
+    "NR-02": 0,
+    "NR-03": 0,
+    "NR-05": 0,
+    "NR-06": 0,
+    "NR-08": "+0 draws; post passes +grain +outline",
+    "NR-09": "+1 post pass",
+    "NR-14": "+1-2 particle batches while live",
+    "NR-15": "+1 ribbon draw +0 (anchor hidden)",
+    "NR-22": 0,
+    "NR-10": 0,
+    "NR-11": "+2 (lantern layer split in three glow groups)",
+    "NR-16": "+4 gate cones; +1 aurora on the win screen only",
+    "NR-17": 0,
+    "NR-18": 0,
+    "NR-19": 0
+  },
+  "after": null
+}

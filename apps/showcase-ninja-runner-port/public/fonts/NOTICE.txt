@@ -1,0 +1,7 @@
+Shadowstep Gauntlet HUD fonts (GU47 NR-19, E-J theme "ink-scroll"). Copied byte for byte from
+packages/game/src/fonts/ (provenance and licence notes in packages/game/src/fonts/NOTICE.txt).
+
+suisse-works-italic-400.woff2 | Suisse Works Italic (400) | Swiss Typefaces | 32912 bytes | f592f23c5527ffb35c6f2712126c9706fa6d0a72b3ccb427f6f30e87f07e45ff
+domaine-display-700.woff2     | Domaine Display (700)     | Klim Type Foundry | 40621 bytes | c6d9dfb72b6e472ebeb203dd417881111857efcf360c8c782cccce0689434ada
+
+Web use only, self-hosted from this app; not for redistribution as desktop fonts.

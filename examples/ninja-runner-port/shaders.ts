@@ -109,13 +109,25 @@ ${NOISE}
 void main() {
   vec3 d = normalize(vDir);
   float up = max(d.y, 0.0);
-  vec3 c = mix(vec3(0.44, 0.67, 0.80), vec3(0.065, 0.28, 0.54), pow(up, 0.45));
+  // GU47 NR-05: zenith / horizon / glow / cloud tints come from the district look table; the defaults in
+  // materials.ts (ORIGINAL_SKY) are the original constants, so ?look=original renders unchanged.
+  vec3 c = mix(skyHorizon, skyZenith, pow(up, 0.45));
   vec2 q = d.xz / max(0.08, d.y) * 1.2;
   float cl = vnoise(q) + vnoise(q * 2.1) * 0.5 + vnoise(q * 4.5) * 0.2;
   float cloud = smoothstep(0.87, 1.16, cl) * smoothstep(0.02, 0.16, up);
-  c = mix(c, vec3(0.94, 0.95, 0.89), cloud * 0.80);
-  float s = pow(max(0.0, dot(d, sunDirection)), 700.0);
-  c += vec3(1.0, 0.8, 0.5) * s * 1.5;
+  c = mix(c, skyCloud, cloud * 0.80);
+  float sd = max(0.0, dot(d, sunDirection));
+  float s = pow(sd, 700.0);
+  c += skyGlow * s * 1.5;
+  // Low-sun horizon glow (zero at the original's default strength).
+  c += skyGlow * pow(sd, 6.0) * skyGlowWide * (1.0 - up);
+  // Stars above 15 degrees, thinned by the clouds; a moon disc with a soft halo.
+  float above = smoothstep(0.22, 0.4, d.y);
+  vec2 sq = floor(d.xz / max(0.2, d.y) * 260.0);
+  float star = step(0.9965, hash21(sq)) * (0.55 + 0.45 * hash21(sq + 7.3));
+  c += vec3(0.85, 0.9, 1.0) * star * skyStars * above * (1.0 - cloud);
+  float md = max(0.0, dot(d, moonDirection));
+  c += vec3(0.92, 0.95, 1.0) * (smoothstep(0.9993, 0.9996, md) * 1.6 + pow(md, 90.0) * 0.18) * skyMoon;
   outColor = vec4(c, 1.0);
 }`;
 
@@ -138,10 +150,12 @@ void main() {
   vec3 n = normalize(vec3(a * 0.035, 1.0, b * 0.045));
   vec3 v = normalize(cameraPosition - vWorld);
   float fres = pow(1.0 - max(0.0, dot(n, v)), 3.0);
-  vec3 sun = normalize(vec3(-0.5, 0.8, 0.3));
+  vec3 sun = normalize(mix(vec3(-0.5, 0.8, 0.3), waterKey, waterSky));
   float spec = pow(max(0.0, dot(reflect(-sun, n), v)), 160.0);
   float caustic = pow(max(0.0, sin(vWorld.x * 3.0 + a) * sin(vWorld.z * 2.5 + b)), 9.0);
+  // GU47 NR-20: the river takes the sky colours (waterSky = 0 keeps the original water).
   vec3 col = mix(vec3(0.022, 0.095, 0.07), vec3(0.14, 0.28, 0.31), fres);
+  col = mix(col, mix(waterZenith * 0.35, waterHorizon * 0.9, fres), waterSky);
   col += caustic * 0.025 + spec * 0.4;
   outColor = vec4(col, 0.94);
 }`;

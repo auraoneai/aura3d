@@ -9,7 +9,7 @@
  * (hero, soldier, brute, sage; one `cloneSkinned` call each): the hero, three shadow clones, six soldiers, two brutes and
  * the sage stand-in have independent skeletons and animation, told apart by tint, scale and attached weapons.
  */
-import { attachRootRenderSource, camera, cameras, cloneSkinned, defineAuraAssets, effects, environments, geometry, instances, lights, material, primitives, scene, texture, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
+import { attachRootRenderSource, camera, cameras, cloneSkinned, effects, geometry, instances, material, primitives, scene, texture, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
 import { groundFrame, laneOffset, smooth, COURSE_LENGTH } from "./course";
 import { auraSpec, ballSpec, fallsSpec, flameSpec, particleSpec, skySpec, solidSpec, sparksSpec, waterSpec } from "./materials";
 import { buildRouteGroups, buildSheet, buildTownFloor, buildWater } from "./meshes";
@@ -21,6 +21,10 @@ import type { CameraShake } from "@aura3d/engine/game";
 import { TIER_FEEDBACK, pieceScale, spawnPieces, stepPieces, type Piece } from "./impact";
 import { TUNING, crosshairTarget, isEnemy, seededRandom, type RamTier, type Entity, type EnemyKind, type SimEvent, type SimState } from "./sim";
 import { CHARACTER_URLS, PROP_ASSETS, SLOT_MODEL, type CharacterId } from "./models";
+import { EVENING_SURFACES, LANTERN_GLOW, LANTERN_POOL, WOODBLOCK_POST, DISTRICT_LOOKS, lanternGlowAt, linearToHex, lookAtDistance, nearestLanterns, type DistrictId, type LanternGlow, type LookMode } from "./districtLook";
+import { lanternPoolSize, lightRig } from "./lighting";
+import { SCARF, registerNinjaVfx, type NinjaVfx, type NinjaVfxEvent } from "./vfx";
+import { DASH_KICK_DEG, DASH_KICK_HALFLIFE, ROLL_HALFLIFE, blendIntro, cinematicsOn, gateConeLanterns, laneRoll, winPose, type ShotPose } from "./cinematics";
 
 /** The rig faces +Z; characters are turned so +Z points along the route (or back at the runner). */
 const MODEL_YAW_OFFSET = 0;
@@ -34,6 +38,8 @@ const BRUTE_SLOTS = [10, 11] as const;
 const SOLDIER_SLOTS = [4, 5, 6, 7, 8, 9] as const;
 const BONES = { handR: "RightHand", foreR: "RightForeArm", handL: "LeftHand" } as const;
 const PARTICLES = 480;
+/** NR-17 cross-fade time between looping hero clips (s). */
+const LOCOMOTION_FADE = 0.15;
 const BARRIER_POOL = 8;
 const BEAM_POOL = 8;
 const PLANK_POOL = 32, STRAP_POOL = 12, BEAM_PIECE_POOL = 12;
@@ -108,10 +114,15 @@ const layerSurface = (key: SurfaceKey, repeat: readonly [number, number]): Surfa
   }
 };
 
-const layerMaterial = (l: LayerSpec) => {
+/** A layer's material; the evening (GU47 NR-11) adds lacquer to the roofs and a damp coat to the rocks. */
+const layerMaterial = (l: LayerSpec, evening = false) => {
   if (l.emissive) return material.emissive({ color: "#ffffff", emissive: l.emissive });
-  if (l.map) return mapped(layerSurface(l.map, l.repeat ?? [1, 1]), "#ffffff", l.roughness, { metallic: l.metalness });
-  return material.pbr({ color: "#ffffff", roughness: l.roughness, metallic: l.metalness });
+  const coat = evening ? EVENING_SURFACES[l.id] : undefined;
+  const roughness = coat?.roughness ?? l.roughness;
+  const base = l.map
+    ? mapped(layerSurface(l.map, l.repeat ?? [1, 1]), "#ffffff", roughness, { metallic: l.metalness })
+    : material.pbr({ color: "#ffffff", roughness, metallic: l.metalness });
+  return coat ? { ...base, clearcoat: coat.clearcoat, clearcoatRoughness: coat.clearcoatRoughness } : base;
 };
 
 /** Column-major model matrix: uniform scale, yaw about +Y, translation. */
@@ -216,15 +227,28 @@ export async function loadActors(canvas: HTMLCanvasElement, onProgress?: (done: 
   };
 }
 
-export interface WorldOptions { readonly canvas: HTMLCanvasElement; readonly actors: ActorAssets; readonly entities: readonly Entity[]; readonly quality?: "low" | "high"; /** Camera shake the loop's impact feedback adds trauma to. */ readonly shake: CameraShake }
+export interface WorldOptions {
+  readonly canvas: HTMLCanvasElement; readonly actors: ActorAssets; readonly entities: readonly Entity[]; readonly quality?: "low" | "high";
+  /** Camera shake the loop's impact feedback adds trauma to. */ readonly shake: CameraShake;
+  /** GU47: `evening` (default) or `original` (`?look=original`, the pre-GU47 midday look). */ readonly mode?: LookMode;
+  /** prefers-reduced-motion: VFX emission halves (PRD §6.3). */ readonly reducedMotion?: boolean;
+  /** `?lanterns=0`: no pooled lantern lights (NR-03 comparison). */ readonly lanterns?: boolean;
+  /** `?scarf=0`: no scarf ribbon (NR-15 comparison). */ readonly scarf?: boolean;
+  /** `?godrays=0`: no god rays (NR-07 comparison). */ readonly godRays?: boolean;
+  /** `?cones=0`: no gate light cones (NR-16 comparison). */ readonly cones?: boolean;
+}
 
 export interface WorldRuntime {
   update(state: SimState, dt: number, time: number, events: readonly SimEvent[]): void;
   resetCamera(): void;
+  /** GU47 NR-18 intro: 0 on the title card, rising to 1 at the end of the countdown; null once the run is live. */
+  setIntro(k: number | null): void;
   /** A new run starts: every spirit flame is back, debris and enemy slots clear. */
   resetRun(): void;
   /** World translation of `joint` on every actor after posing each at a staggered clip phase (independence probe). */
   probeBones(joint?: string): { joint: string; translations: [number, number, number][]; distinct: number };
+  /** GU47: the active look, district, scarf ribbon and lantern pool (QA). */
+  readonly look: () => { mode: LookMode; district: DistrictId | null; scarf: { length: number; points: number } | null; lights: { amber: number; cyan: number } };
   readonly stats: () => { visibleActors: number; actors: number; pickups: number; particles: number; debris: number; threat: { target: number; from: number; to: number } | null };
   dispose(): void;
 }
@@ -242,31 +266,44 @@ const SUN_SHADOW = !(typeof location !== "undefined" && new URLSearchParams(loca
 if (SUN_SHADOW) (globalThis as { __A3D_SHADOW_FIT__?: string }).__A3D_SHADOW_FIT__ = "current";
 /** `?ibl=hdri`: light with the authored HDRI (a real asset ref) instead of the neutral room. */
 const IBL_HDRI = typeof location !== "undefined" && new URLSearchParams(location.search).get("ibl") === "hdri";
-const SKY = defineAuraAssets({ autumn: { type: "texture", format: "hdr", url: "/hdri/autumn_field_puresky_1k.hdr", metadata: { license: "CC0 1.0, Poly Haven autumn_field_puresky (1k)" } } });
 
 export interface World { readonly scene: Scene; bind(app: AuraApp): WorldRuntime }
 
 export function buildWorld(options: WorldOptions): World {
   const high = options.quality !== "low";
+  const evening = (options.mode ?? "evening") === "evening";
+  const village = DISTRICT_LOOKS[0]!;
   const flameMap = texture.canvas({ canvas: (() => { const c = document.createElement("canvas"); c.width = c.height = 128; drawFlame(c.getContext("2d")!); return c; })(), colorSpace: "srgb" });
   const builder: Scene = scene()
     .background("#8fb7c9")
     .camera(camera.perspective({ position: [0, 6, 12], target: [0, 2, -20], fov: 57, near: 0.1, far: 3200 }))
-    // The "sky ibl" texture is a plain object, not an asset ref, so the engine never loads this HDRI: the explicit source
-    // returns nothing and the scene lights through the neutral room, which counts the hemisphere "sky fill" as ambient.
-    // `?ibl=hdri` loads the HDRI through a real asset ref instead (then the hemisphere is dropped, LIGHT-05).
-    .add(environments.hdri({ name: "sky ibl", intensity: 0.7, background: false, texture: (IBL_HDRI ? SKY.autumn : { type: "texture", format: "hdr", url: "/hdri/autumn_field_puresky_1k.hdr" }) as never }))
-    // The sun casts cascaded shadows (`?shadow=0` turns them off). The sky dome and the glow effects opt out of casting.
-    .add(lights.directional({ name: "sun", position: [-40, 67, 56], target: [0, 0, 0], intensity: 2.8, color: "#ffe3b1", shadow: (SUN_SHADOW ? { cascades: 2, maxDistance: 90 } : false) as never }))
-    .add(lights.hemisphere({ name: "sky fill", skyColor: "#d3ebf3", groundColor: "#80715b", intensity: 0.5 }))
-    .add(lights.directional({ name: "cool rim", position: [30, 20, -40], intensity: 0.4, color: "#bcd9ff" }))
-    .add(effects.fog({ name: "haze", color: "#b5c8c4", density: 0.0028 }));
+    .background(evening ? village.sky.horizon : "#8fb7c9");
+  // GU47 NR-01/NR-02: the evening rig (real HDRI, one shadowed key, pooled lantern points); `?look=original` keeps
+  // the pre-GU47 rig (see lighting.ts). The sky dome and the glow effects opt out of casting.
+  for (const node of lightRig({ mode: evening ? "evening" : "original", quality: high ? "high" : "low", shadow: SUN_SHADOW, originalHdri: IBL_HDRI, lanterns: options.lanterns !== false })) builder.add(node);
+  builder.add(effects.fog({ name: "haze", color: evening ? village.fog.color : "#b5c8c4", density: evening ? village.fog.density : 0.0028 }));
   if (high) builder.add(effects.ambientOcclusion({ name: "ao" }));
-  builder
-    .add(effects.bloom({ name: "bloom", intensity: 0.35, threshold: 1.0, radius: 0.4 }))
-    .add(effects.colorGrade({ name: "grade", contrast: 1.06, saturation: 1.08 }))
-    .add(effects.vignette({ name: "vignette", intensity: 0.22, smoothness: 0.7 }))
-    .add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
+  if (evening) {
+    // GU47 NR-08 woodblock grade (agx is set on the app output in main.ts) and NR-09 indigo ink line (full frame:
+    // the hero is a root render source, not a scene node, so per-target outline has no node name to match yet).
+    const post = WOODBLOCK_POST;
+    builder
+      .add(effects.bloom({ name: "bloom", intensity: post.bloom.intensity, threshold: post.bloom.threshold, radius: post.bloom.radius }))
+      .add(effects.colorGrade({ name: "grade", contrast: post.grade.contrast, saturation: post.grade.saturation }))
+      .add(effects.vignette({ name: "vignette", intensity: post.vignette.intensity, smoothness: post.vignette.smoothness }))
+      .add(effects.outline({ name: "ink", color: post.outline.color, width: post.outline.width, threshold: post.outline.threshold, intensity: village.ink }));
+    // Low drops the grain (PRD §6.4); the ink line, palette, sky and scarf stay.
+    if (high) builder.add(effects.filmGrain({ name: "grain", intensity: post.grain.intensity }));
+    // NR-07: god rays only in Rooftop Run and the forest entry (switched by distance at runtime); High only (§6.4).
+    if (high && options.godRays !== false) builder.add(effects.volumetricFog({ name: "god rays", density: 0.08, color: "#ffb48a", intensity: 0.45, godRayDensity: 0.35 }));
+    builder.add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
+  } else {
+    builder
+      .add(effects.bloom({ name: "bloom", intensity: 0.35, threshold: 1.0, radius: 0.4 }))
+      .add(effects.colorGrade({ name: "grade", contrast: 1.06, saturation: 1.08 }))
+      .add(effects.vignette({ name: "vignette", intensity: 0.22, smoothness: 0.7 }))
+      .add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
+  }
 
   const ground = paintSurfaces();
   /* ground groups that share a surface and tint become one mesh (one draw call) */
@@ -294,14 +331,29 @@ export function buildWorld(options: WorldOptions): World {
   }));
 
   const modelSink: ModelSink = {};
+  const lanternSpots: Vec3[] = [];
   for (const layer of buildScenery(modelSink)) {
+    if (layer.id === "lanterns") for (const p of layer.placements) lanternSpots.push([p.matrix[12]!, p.matrix[13]!, p.matrix[14]!]);
     const spec = LAYERS.find((l) => l.id === layer.id)!;
-    const mesh = instances.mesh(defineShape(SHAPES[layer.shape]()), layerMaterial(spec), layer.placements.length);
-    layer.placements.forEach((p, i) => { mesh.setMatrixAt(i, p.matrix); mesh.setColorAt(i, [...hexLinear(p.color), 1]); });
-    mesh.computeBoundingSphere();
-    builder.add(spec.castShadow ? mesh : ({ ...mesh.toJSON(), castShadow: false } as ReturnType<typeof mesh.toJSON>));
+    // NR-11: in the evening the lantern layer splits into its three glow groups (day / dusk / night, +2 draws).
+    const groups: { material: ReturnType<typeof layerMaterial>; placements: typeof layer.placements }[] = [];
+    if (evening && layer.id === "lanterns") {
+      const glowOf = courseDistances(layer.placements.map((p) => [p.matrix[12]!, p.matrix[13]!, p.matrix[14]!] as Vec3)).map(lanternGlowAt);
+      for (const glow of Object.keys(LANTERN_GLOW) as LanternGlow[]) {
+        const placements = layer.placements.filter((_, i) => glowOf[i] === glow);
+        const g = LANTERN_GLOW[glow];
+        if (placements.length > 0) groups.push({ material: material.emissive({ color: "#ffffff", emissive: g.emissive, emissiveIntensity: g.intensity }), placements });
+      }
+    } else groups.push({ material: layerMaterial(spec, evening), placements: layer.placements });
+    for (const group of groups) {
+      const mesh = instances.mesh(defineShape(SHAPES[layer.shape]()), group.material, group.placements.length);
+      group.placements.forEach((p, i) => { mesh.setMatrixAt(i, p.matrix); mesh.setColorAt(i, [...hexLinear(p.color), 1]); });
+      mesh.computeBoundingSphere();
+      builder.add(spec.castShadow ? mesh : ({ ...mesh.toJSON(), castShadow: false } as ReturnType<typeof mesh.toJSON>));
+    }
   }
 
+  for (const p of modelSink.lantern ?? []) lanternSpots.push([p.position[0], p.position[1] + p.scale[1] * 0.8, p.position[2]]);
   for (const [id, list] of Object.entries(modelSink)) {
     if (list.length === 0) continue;
     const asset = PROP_ASSETS[id as keyof typeof PROP_ASSETS];
@@ -370,13 +422,26 @@ export function buildWorld(options: WorldOptions): World {
   for (let i = 0; i < THREAT_POOL; i++) builder.add(geometry.custom(disc, { name: `threat-${i}`, material: material.custom(threat), castShadow: false, receiveShadow: false }).runtime({ id: `threat-${i}` }));
   for (let i = 0; i < ACTOR_COUNT; i++) builder.add(geometry.custom(disc, { name: `blob-${i}`, material: material.custom(blobShadow), castShadow: false, receiveShadow: false }).runtime({ id: `blob-${i}` }));
 
+  // GU47 NR-15: the scarf ribbon's anchor, moved to the hero's upper spine every frame (hidden: +0 draws).
+  builder.add(primitives.sphere({ name: SCARF.anchor, size: 0.01, material: material.pbr({ color: "#1b2236", roughness: 1 }), castShadow: false, receiveShadow: false }).runtime({ id: SCARF.anchor }));
   builder.add(geometry.custom(geometry.dynamic({
     positions: f32(new Array(PARTICLES * 3).fill(0)),
     topology: "points",
     attributes: { tone: { itemSize: 3, data: f32(new Array(PARTICLES * 3).fill(1)) }, aSize: { itemSize: 1, data: f32(new Array(PARTICLES).fill(0)) }, aAlpha: { itemSize: 1, data: f32(new Array(PARTICLES).fill(0)) } }
   }), { name: "particles", material: material.custom(particleSpec()) }).runtime({ id: "particles" }));
 
-  return { scene: builder, bind: (app) => bindRuntime(app, options, pickups) };
+  const lanternIndex = indexLanterns(lanternSpots);
+  if (evening) {
+    // NR-16: soft light cones under the four gate lanterns (+4 draws, additive, no depth write); `?cones=0` drops them.
+    if (options.cones !== false) gateConeLanterns(lanternIndex).forEach((l, i) => builder.add(effects.lightCone({
+      name: `gate-cone-${i}`, color: LANTERN_POOL.amberColor, intensity: 0.7, position: [l.position[0], l.position[1] - 0.15, l.position[2]], direction: [0, -1, 0], length: 3.2, coneAngle: 0.42, softness: 0.55
+    })));
+    // NR-16: a faint aurora over the gate, shown only on the win screen (+1 draw while visible).
+    const gate = groundFrame(COURSE_LENGTH - 20, 0, 34);
+    builder.add(effects.auroraRibbon({ name: "win-aurora", color: "#51dfff", colorTop: "#2b3550", intensity: 0.5, width: 90, height: 18, position: [gate.x, gate.y, gate.z] }).runtime({ id: "win-aurora" }));
+  }
+
+  return { scene: builder, bind: (app) => bindRuntime(app, options, pickups, lanternIndex) };
 }
 
 interface Particle { life: number; max: number; vx: number; vy: number; vz: number; gravity: number; size: number; r: number; g: number; b: number; x: number; y: number; z: number }
@@ -385,7 +450,35 @@ interface SceneNodeLike { transform: { worldMatrix: ArrayLike<number> } }
 
 const normalize = (v: Vec3): Vec3 => { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; };
 
-function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly SpiritPickup[]): WorldRuntime {
+/** Lantern world positions with their course distance, sorted by distance (for the pooled lights, NR-03). */
+interface LanternSpot { readonly s: number; readonly position: Vec3 }
+
+/** Course distance of each point: the nearest route sample (every 2 m), in input order. */
+export function courseDistances(points: readonly Vec3[]): number[] {
+  const samples: { s: number; x: number; z: number }[] = [];
+  for (let d = 0; d <= COURSE_LENGTH; d += 2) { const f = groundFrame(d, 0, 0); samples.push({ s: d, x: f.x, z: f.z }); }
+  return points.map((p) => {
+    let best = 0, bestD = Infinity;
+    for (const q of samples) { const d = (q.x - p[0]) ** 2 + (q.z - p[2]) ** 2; if (d < bestD) { bestD = d; best = q.s; } }
+    return best;
+  });
+}
+
+/** Course distance of each lantern, sorted along the route. */
+export function indexLanterns(spots: readonly Vec3[]): LanternSpot[] {
+  const s = courseDistances(spots);
+  return spots.map((position, i) => ({ s: s[i]!, position })).sort((a, b) => a.s - b.s);
+}
+
+/** NR-07: god rays from the low sun over Rooftop Run (from 470 m; the PRD's 1100 m start is the rooftops' far end) through the forest entry (to 1700 m), off at the river. */
+export function godRaysAt(s: number): boolean {
+  return (s >= 470 && s < 1120) || (s >= 1510 && s < 1700);
+}
+
+/** Upper-spine joint the scarf anchors to (Meshy rigs name it Spine02). */
+const SCARF_BONES = ["Spine02", "Spine01", "Spine"] as const;
+
+function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly SpiritPickup[], lanternSpots: readonly LanternSpot[]): WorldRuntime {
   const cameraController = app.camera;
   if (!cameraController) throw new Error("ninja-runner-port: the app exposes no camera controller");
   const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
@@ -412,12 +505,102 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
   let lastDamage = -10, lostAt = -1, lastFormShift = -10, dustClock = 0, auraClock = 0;
   let pieces: Piece[] = [];
   let threatShown: { target: number; from: number; to: number } | null = null;
+  const cinematic = cinematicsOn((options.mode ?? "evening") === "evening", options.reducedMotion === true);
+  /** NR-17: the evening hero blends its looping clips (the original look keeps today's clip scrubbing). */
+  const blendHero = (options.mode ?? "evening") === "evening";
+  const mixerClip = new Array<string>(actors.length).fill("");
+  let introBlend: number | null = null, wonAt = -1, lastX = 0, lastRoll = 0, barsShown = false, kicking = false, auroraShown = true;
   const shake = options.shake;
   const POOL_CAP: Record<Piece["kind"], number> = { plank: PLANK_POOL, strap: STRAP_POOL, beam: BEAM_PIECE_POOL };
   const addPieces = (list: Piece[]): void => { pieces = pieces.concat(list); for (const k of ["plank", "strap", "beam"] as const) { let over = pieces.filter((q) => q.kind === k).length - POOL_CAP[k]; if (over > 0) pieces = pieces.filter((q) => (q.kind === k && over > 0 ? (over--, false) : true)); } };
   /** Enemies in the render window this frame, by id, taken from the state passed to `update` (never the boot state). */
   const inWindow = new Map<number, Entity>();
   const windowList: Entity[] = [];
+
+  /* GU47 evening look state */
+  const evening = (options.mode ?? "evening") === "evening";
+  const quality = options.quality === "low" ? "low" : "high";
+  const vfx: NinjaVfx | null = evening ? registerNinjaVfx(app.effects, { reducedMotion: options.reducedMotion === true, quality }) : null;
+  const lightPool = lanternPoolSize({ mode: evening ? "evening" : "original", quality, shadow: true, lanterns: options.lanterns !== false });
+  const pickupOrder = pickups.map((p, i) => ({ s: p.s, i })).sort((a, b) => a.s - b.s);
+  const poolShown = new Array<string>(lightPool.amber + lightPool.cyan).fill("");
+  const moonDir = (() => { const g = DISTRICT_LOOKS[DISTRICT_LOOKS.length - 1]!.key; const e = (g.elevationDeg * Math.PI) / 180, a = (g.azimuthDeg * Math.PI) / 180; return [Math.cos(e) * Math.sin(a), Math.sin(e), Math.cos(e) * Math.cos(a)]; })();
+  let lastLookS = -1e9, ambientClock = 0;
+  const godRaysAuthored = evening && quality === "high" && options.godRays !== false;
+  let godRaysOn: boolean | null = null;
+  let district: DistrictId | null = null;
+  if (vfx) node(SCARF.anchor).setVisible(false);
+  /** Moves the pooled point `id` to `p` at `intensity`; patches only on change (no per-frame light churn). */
+  const placePoolLight = (slot: number, id: string, p: Vec3 | null, intensity: number): void => {
+    const key = p ? `${p[0].toFixed(1)},${p[1].toFixed(1)},${p[2].toFixed(1)}|${intensity.toFixed(2)}` : "off";
+    if (poolShown[slot] === key) return;
+    poolShown[slot] = key;
+    const h = node(id);
+    if (!p || intensity <= 0.01) { h.setLight?.({ intensity: 0 }); return; }
+    h.setPosition(p[0], p[1], p[2]);
+    h.setLight?.({ intensity });
+  };
+  const applyLook = (s: number, x: number, y: number, dt: number, form: string): void => {
+    const look = lookAtDistance(s);
+    district = look.district;
+    const sky = node("sky");
+    sky.setUniform?.("skyZenith", [...look.skyZenith]);
+    sky.setUniform?.("skyHorizon", [...look.skyHorizon]);
+    sky.setUniform?.("skyGlow", [...look.skyGlow]);
+    sky.setUniform?.("skyCloud", [...look.skyCloud]);
+    sky.setUniform?.("skyGlowWide", 0.6 * (1 - look.stars));
+    sky.setUniform?.("skyStars", look.stars);
+    sky.setUniform?.("skyMoon", look.moon);
+    sky.setUniform?.("sunDirection", [...look.toKey]);
+    sky.setUniform?.("moonDirection", moonDir);
+    const river = node("river");
+    river.setUniform?.("waterSky", 1);
+    river.setUniform?.("waterZenith", [...look.skyZenith]);
+    river.setUniform?.("waterHorizon", [...look.skyHorizon]);
+    river.setUniform?.("waterKey", [...look.toKey]);
+    // Key, environment and fog: re-applied every 3 m with a short blend, so the light follows the distance smoothly.
+    if (Math.abs(s - lastLookS) >= 3) {
+      lastLookS = s;
+      node("sun").setLight?.({ color: linearToHex(look.keyColor), intensity: look.keyIntensity, direction: [-look.toKey[0], -look.toKey[1], -look.toKey[2]] }, { transitionSeconds: 0.3 });
+      app.lighting?.setEnvironmentIntensity(look.environmentIntensity);
+      app.atmosphere?.setFog({ color: linearToHex(look.fogColor), density: look.fogDensity }, { transitionSeconds: 0.5 });
+      const rays = godRaysAuthored && godRaysAt(s);
+      if (godRaysAuthored && rays !== godRaysOn) { godRaysOn = rays; app.post?.setEffectEnabled("volumetricFog", rays); }
+    }
+    // NR-03 pooled lantern points (amber, on from the river) and spirit points (cyan, on the nearest live flames).
+    const lanterns = nearestLanterns(lanternSpots, s, lightPool.amber);
+    for (let i = 0; i < lightPool.amber; i++) {
+      const j = lanterns[i];
+      placePoolLight(i, `lantern-light-${i}`, j === undefined ? null : lanternSpots[j]!.position, LANTERN_POOL.amberIntensity * look.lanterns);
+    }
+    if (lightPool.cyan > 0) {
+      const near = nearestLanterns(pickupOrder, s, lightPool.cyan * 4).map((k) => pickupOrder[k]!.i).filter((i) => aliveFlags[i] === 1);
+      for (let i = 0; i < lightPool.cyan; i++) {
+        const j = near[i];
+        placePoolLight(lightPool.amber + i, `spirit-light-${i}`, j === undefined ? null : pickups[j]!.position as Vec3, LANTERN_POOL.cyanIntensity * Math.max(0.35, look.lanterns));
+      }
+    }
+    // NR-14 district ambients (petals, embers, fireflies, falls spray), one puff every 0.45 s ahead of the runner.
+    if (vfx?.ambientOn) {
+      ambientClock += dt;
+      if (ambientClock >= 0.45) {
+        ambientClock = 0;
+        const f = groundFrame(s + 10 + rng() * 14, x + (rng() - 0.5) * 8, 1.6 + rng() * 2.2);
+        vfx.ambient(look.district, [f.x, f.y, f.z]);
+      }
+    }
+    // NR-15 scarf: the anchor follows the hero's upper spine; the ribbon turns cyan for the spirit forms.
+    if (vfx && options.scarf !== false) {
+      refresh(activeHero);
+      let at: Vec3 | null = null;
+      for (const b of SCARF_BONES) { at = boneWorld(activeHero, b); if (at) break; }
+      if (!at) { const f = groundFrame(s, x, y + 1.35); at = [f.x, f.y, f.z]; }
+      node(SCARF.anchor).setPosition(at[0], at[1], at[2]);
+      scarfTrail = vfx.scarf(form === "base" ? "base" : form === "beast" ? "beast" : "sage");
+    }
+  };
+  let scarfTrail: ReturnType<NinjaVfx["scarf"]> = null;
+  const VFX_EVENT: Partial<Record<string, NinjaVfxEvent>> = { pickup: "pickup", land: "land", damage: "damage", ram: "crate-break", break: "crate-break", windImpact: "wind-impact", cloneStrike: "wind-impact", dash: "dash", form: "form", unlock: "form" };
   const mm = actors.map(() => modelMatrix(0, -1000, 0, 0, 1));
   const graphs = actors.map((a) => a.pipeline.resources.scene);
   const boneCache = actors.map(() => new Map<string, SceneNodeLike | undefined>());
@@ -462,8 +645,16 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
     const clip = has(anim.clip, slot);
     const length = clipLength(clip, slot);
     let t = anim.t;
-    if (t === undefined) { loopClock[slot] = (loopClock[slot]! + dt * (anim.rate ?? 1)) % length; t = loopClock[slot]!; }
-    actor.playClip(clip, Math.max(0, Math.min(length, t)) % (length + 1e-6));
+    if (blendHero && (slot === HERO || slot === SAGE) && t === undefined) {
+      // NR-17: looping hero clips (run, jump, slide, idle) cross-fade through the actor's mixer (inertialized) instead of
+      // snapping; scrubbed clips (attacks, hit, death) keep sampling the sim's time below.
+      if (mixerClip[slot] !== clip) { mixerClip[slot] = clip; actor.crossFadeTo(clip, LOCOMOTION_FADE, { speed: anim.rate ?? 1, transition: "inertialize" }); }
+      actor.advance(dt);
+    } else {
+      mixerClip[slot] = "";
+      if (t === undefined) { loopClock[slot] = (loopClock[slot]! + dt * (anim.rate ?? 1)) % length; t = loopClock[slot]!; }
+      actor.playClip(clip, Math.max(0, Math.min(length, t)) % (length + 1e-6));
+    }
     modelMatrixInto(mm[slot]!, f.x, f.y, f.z, Math.atan2(f.dx, f.dz) + MODEL_YAW_OFFSET + yawExtra, scale);
     (actor as TypedGLBActor & { __mm?: number[] }).__mm = mm[slot];
     const g = groundFrame(entity.s, entity.x, 0.1);
@@ -513,6 +704,13 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       /* events -> particles, pickups */
       for (const ev of events) {
         const at = (es: number, lane: number, y = 0.9): [number, number, number] => { const p = groundFrame(es, lane * laneOffset(es), y); return [p.x, p.y, p.z]; };
+        if (vfx) {
+          const kind: NinjaVfxEvent | undefined = ev.type === "kill" ? (ev.heavy ? "kill-heavy" : "kill") : VFX_EVENT[ev.type];
+          if (kind) {
+            const where = typeof ev.s === "number" && typeof ev.lane === "number" ? at(ev.s, ev.lane, 1) : (() => { const p = groundFrame(s, state.x, 1); return [p.x, p.y, p.z] as [number, number, number]; })();
+            vfx.fire(kind, where);
+          }
+        }
         if (ev.type === "pickup") {
           const i = pickupIndex.get(ev.entity as number);
           if (i !== undefined) { aliveFlags[i] = 0; flamesDirty = true; const p = pickups[i]!.position; emit(p[0], p[1], p[2], 12, [0.3, 0.85, 1], 3, 0.18, 0.55, -2); }
@@ -559,6 +757,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       setTint(heroSlot, flash ? "flash" : state.form, heroTint);
       place(heroSlot, { s, x: state.x, y: Math.max(state.y, state.falling ? state.y : 0) }, MODEL_YAW_OFFSET, heroScale * (state.slide > 0 ? 0.9 : 1), anim, dt, true);
       place(heroSlot === HERO ? SAGE : HERO, { s, x: state.x, y: 0 }, 0, 1, anim, dt, false);
+      if (evening) applyLook(s, state.x, state.y, dt, state.form);
 
       /* shadow clones */
       CLONE_SLOTS.forEach((slot, k) => {
@@ -764,11 +963,34 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       const pose = chase.step({
         wantEye: [eyeF.x, eyeF.y, eyeF.z],
         wantLook: [lookF.x, lookF.y, lookF.z],
-        fovTarget: 57 + (state.dash > 0 ? 5 : 0),
+        fovTarget: 57 + (state.dash > 0 && !cinematic ? 5 : 0),
         shakeOffset: [jolt.x, jolt.y, jolt.x * 0.4]
       }, dt);
-      cameraController.setPose({ position: pose.eye, target: pose.look, fov: pose.fov }, { cut: false });
+      // NR-18: title shot over the roofs blending into the chase through the 3-2-1, three win shots at the gate, and a
+      // lane-change roll (<= 3 deg). Reduced motion and ?look=original keep today's chase with no roll.
+      let shot: ShotPose = { eye: pose.eye as Vec3, look: pose.look as Vec3, fov: pose.fov };
+      let roll = 0;
+      if (cinematic) {
+        if (state.phase === "won") { if (wonAt < 0) wonAt = time; shot = winPose(s, state.x, time - wonAt); }
+        else {
+          wonAt = -1;
+          if (introBlend !== null) shot = blendIntro(shot, s, time, introBlend);
+          else if (state.phase === "running" && dt > 0) roll = laneRoll((state.x - lastX) / dt);
+        }
+      }
+      lastX = state.x;
+      const bars = state.phase === "won" || (introBlend !== null && introBlend < 1);
+      if (cinematic && bars !== barsShown) { barsShown = bars; document.documentElement.classList.toggle("shot-bars", bars); }
+      cameraController.setPose({ position: shot.eye, target: shot.look, fov: shot.fov }, { cut: false });
+      if (cinematic && roll !== lastRoll) { lastRoll = roll; cameraController.setRoll(roll, { halflife: ROLL_HALFLIFE }); }
+      // NR-10: the dash kicks the FOV through the controller's fovKick layer (only while dashing; never with reduced motion).
+      const kick = cinematic && state.phase === "running" && state.dash > 0;
+      if (kick !== kicking) { kicking = kick; cameraController.fovKick.set("dash", kick ? DASH_KICK_DEG : 0, DASH_KICK_HALFLIFE); }
+      // NR-16: the aurora shows on the win screen only.
+      const aurora = state.phase === "won";
+      if (evening && aurora !== auroraShown) { auroraShown = aurora; node("win-aurora").setVisible(aurora); }
     },
+    setIntro(k) { introBlend = k === null ? null : Math.max(0, Math.min(1, k)); },
     resetCamera() { chase.reset(); },
     resetRun() {
       aliveFlags.fill(1);
@@ -776,6 +998,10 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       pieces = [];
       slotEntity.clear();
       for (const p of pool) p.life = 0;
+      scarfTrail?.clear();
+      mixerClip.fill("");
+      lastLookS = -1e9;
+      godRaysOn = null;
     },
     probeBones(joint) {
       const names = actors[0]!.animation.skeletonJointNames();
@@ -792,6 +1018,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       });
       return { joint: name, translations, distinct: new Set(translations.map((t) => t.map((v) => v.toFixed(4)).join(","))).size };
     },
+    look: () => ({ mode: evening ? "evening" : "original", district, scarf: scarfTrail ? { length: scarfTrail.length, points: scarfTrail.pointCount } : null, lights: { amber: lightPool.amber, cyan: lightPool.cyan } }),
     stats: () => ({ visibleActors: visible.filter(Boolean).length, actors: actors.length, pickups: pickups.length, particles: pool.filter((p) => p.life > 0).length, debris: pieces.length, threat: threatShown }),
     dispose() { detach(); }
   };

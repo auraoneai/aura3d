@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="/fonts/local.css" />
+    <link rel="stylesheet" href="../../apps/showcase-ninja-runner-port/public/fonts/ink-scroll.css" />
     <title>Shadowstep Gauntlet</title>
     <style>
       :root { color-scheme: dark; --ink: #fff0cc; --muted: #cbd5d1; --panel: rgba(16, 30, 40, 0.74); --panel-solid: #14232d; --line: rgba(255, 240, 204, 0.2); --warm: #ffa135; --warm-deep: #ff7a1f; --cyan: #83ebff; --danger: #ff5a4a; }
@@ -87,10 +88,54 @@
         #controls { top: auto; left: auto; right: max(8px, env(safe-area-inset-right)); bottom: calc(66px + env(safe-area-inset-bottom)); }
       }
     </style>
+    <style>
+      /* GU47 NR-19 ink-scroll HUD (E-J theme "ink-scroll"): mist-paper panels, indigo ink text, vermilion seals, brush
+         district card. Scoped to html.ink-scroll, which main.ts sets for the evening look; ?look=original keeps the HUD above. */
+      .ink-scroll { --a3g-font: "A3G Suisse Works Italic", "Suisse Works", Georgia, serif; --a3g-font-display: "A3G Domaine Display", "Domaine Display", Georgia, serif;
+        --ink: #1f1d24; --muted: #524f5b; --panel: rgba(237, 230, 214, 0.94); --panel-solid: #ede6d6; --line: rgba(31, 29, 36, 0.6); --warm: #c23b22; --warm-deep: #9e2a16; --cyan: #1d8fb0; --danger: #9e1b1b; --indigo: #2b3550; }
+      .ink-scroll body { font-family: var(--a3g-font); }
+      .ink-scroll .glass, .ink-scroll .card { background: var(--panel); border: 1px solid var(--line); border-radius: 2px; box-shadow: 0 1px 0 rgba(31, 29, 36, 0.45); backdrop-filter: none; -webkit-backdrop-filter: none; color: var(--ink); }
+      .ink-scroll h1, .ink-scroll h2, .ink-scroll #stats strong, .ink-scroll #countdown { font-family: var(--a3g-font-display); font-weight: 700; }
+      .ink-scroll button { font-family: var(--a3g-font); color: var(--ink); background: rgba(31, 29, 36, 0.06); border-color: var(--line); border-radius: 2px; min-height: 44px; }
+      .ink-scroll button:hover:not(:disabled) { background: rgba(31, 29, 36, 0.12); }
+      .ink-scroll button.primary, .ink-scroll #forms button.selected { background: var(--warm); color: #f6efe0; border-color: var(--warm-deep); }
+      .ink-scroll #forms button.selected small { color: #f6efe0; }
+      .ink-scroll #abilities button::after { background: var(--indigo); }
+      .ink-scroll #abilities button.live { border-color: var(--warm); box-shadow: 0 0 0 2px rgba(194, 59, 34, 0.45); }
+      .ink-scroll .bar { background: rgba(31, 29, 36, 0.14); border-radius: 1px; }
+      .ink-scroll .bar > i { background: linear-gradient(90deg, #2f7f9a, #51dfff); }
+      .ink-scroll #combo { color: var(--warm); }
+      /* the paper progress scroll: rolled ends, a vermilion ink fill and one seal per district */
+      .ink-scroll #progress { height: 10px; border-radius: 1px; background: #ede6d6; border: 1px solid var(--line); box-shadow: -6px 0 0 -1px var(--indigo), 6px 0 0 -1px var(--indigo); }
+      .ink-scroll #progress > i { border-radius: 0; background: linear-gradient(90deg, #e07a4e, var(--warm)); }
+      .ink-scroll #progress > b { background: var(--indigo); top: -4px; height: 16px; }
+      .ink-scroll #progress > span { color: var(--ink); background: var(--panel); border-color: var(--line); border-radius: 2px; backdrop-filter: none; -webkit-backdrop-filter: none; }
+      #progress > em { display: none; }
+      .ink-scroll #progress > em { display: grid; place-items: center; position: absolute; top: -18px; width: 14px; height: 14px; transform: translateX(-50%); font: 700 9px/1 var(--a3g-font-display); font-style: normal; color: var(--warm); border: 1px solid var(--warm); background: #ede6d6; border-radius: 1px; }
+      .ink-scroll #progress > em.passed { color: #f6efe0; background: var(--warm); }
+      /* the brush district card */
+      .ink-scroll #district-banner { left: 50%; right: auto; transform: translateX(-50%); padding: 10px 44px; font: 700 30px/1.1 var(--a3g-font-display); letter-spacing: 0.16em; color: #1b2236; text-shadow: none;
+        background: linear-gradient(90deg, rgba(237, 230, 214, 0), rgba(237, 230, 214, 0.92) 14%, rgba(237, 230, 214, 0.92) 86%, rgba(237, 230, 214, 0)); border-top: 2px solid rgba(27, 34, 54, 0.75); border-bottom: 2px solid rgba(27, 34, 54, 0.75); }
+      .ink-scroll #announce { text-shadow: 0 1px 0 rgba(237, 230, 214, 0.9); color: #1b2236; }
+      .ink-scroll #announce strong { font-family: var(--a3g-font-display); font-weight: 700; }
+      .ink-scroll #countdown { color: #ede6d6; text-shadow: 0 0 0 #1b2236, 0 3px 0 #1b2236; }
+      .ink-scroll .overlay { background: radial-gradient(ellipse at center, rgba(27, 34, 54, 0.25), rgba(27, 34, 54, 0.7)); }
+      .ink-scroll .keys dt { color: var(--warm); }
+      .ink-scroll #intro-card a { color: var(--indigo); }
+      /* NR-18 shot bars on the title-to-chase blend and the win shots (set by world.ts; never with reduced motion) */
+      html::before, html::after { content: ""; position: fixed; left: 0; right: 0; height: 0; background: #0d1328; z-index: 1; pointer-events: none; transition: height 0.5s ease; }
+      html::before { top: 0; } html::after { bottom: 0; }
+      html.shot-bars::before, html.shot-bars::after { height: 9vh; }
+      @media (max-width: 760px) {
+        /* the bottom HUD on phones is the single ability row (<= 90 px); pause and mute move up under the scroll */
+        .ink-scroll #controls { bottom: auto; top: calc(204px + env(safe-area-inset-top)); }
+        .ink-scroll #district-banner { font-size: 22px; padding: 8px 28px; }
+      }
+    </style>
   </head>
   <body>
     <canvas id="world"></canvas>
-    <div id="progress" class="hidden"><i id="progress-fill"></i><b style="left:22.7%"></b><span style="left:22.7%">Sunfire</span><b style="left:61.4%"></b><span style="left:61.4%">Ember</span></div>
+    <div id="progress" class="hidden"><i id="progress-fill"></i><b style="left:22.7%"></b><span style="left:22.7%">Sunfire</span><b style="left:61.4%"></b><span style="left:61.4%">Ember</span><em data-seal="0" style="left:0%" aria-hidden="true">V</em><em data-seal="470" style="left:17.8%" aria-hidden="true">R</em><em data-seal="1120" style="left:42.4%" aria-hidden="true">C</em><em data-seal="1510" style="left:57.2%" aria-hidden="true">F</em><em data-seal="2260" style="left:85.6%" aria-hidden="true">G</em></div>
     <div id="stats" class="hidden glass"><div><span class="meta">DISTANCE</span><strong class="num"><span id="distance">0</span> m</strong></div><div><span class="meta">DEFEATED</span><strong class="num" id="kills">00</strong></div><div><span class="meta">SCORE</span><strong class="num" id="score">0</strong></div><div id="combo" class="num"></div></div>
     <div id="vitals" class="hidden glass"><span class="meta">SPIRIT</span><div class="bar"><i id="spirit-bar"></i></div><span class="num" id="spirit">300 / 300</span><div class="meta" style="margin-top:8px">HEALTH</div><div id="hearts">&#9829;&#9829;&#9829;&#9829;&#9829;</div><div class="meta" id="district">Lantern Village</div></div>
     <div id="forms" class="hidden glass"><button data-form="base" class="selected">Runner<small>Space cycles</small></button><button data-form="sage">Sunfire<small>from 600 m</small></button><button data-form="beast">Ember<small>from 1,620 m</small></button></div>

@@ -49,3 +49,12 @@ export function resultCopy(won: boolean, falling: boolean): { label: string; tit
   if (won) return { label: "RUN COMPLETE", title: "The village is safe.", copy: "From the lantern gate to the valley falls." };
   return { label: "RUN REPORT", title: "The lanterns flicker.", copy: falling ? "Missed the jump. Jump before the edge to clear rooftop and branch gaps." : "Gather your spirit and go again." };
 }
+
+/** GU47 NR-19: one vermilion seal per district on the ink-scroll progress bar (index.html `#progress > em[data-seal]`). */
+export const DISTRICT_SEALS: readonly { readonly at: number; readonly letter: string; readonly district: string }[] = [
+  { at: 0, letter: "V", district: "Lantern Village" },
+  { at: 470, letter: "R", district: "Rooftop Run" },
+  { at: 1120, letter: "C", district: "River Crossing" },
+  { at: 1510, letter: "F", district: "Whispering Forest" },
+  { at: 2260, letter: "G", district: "Valley Gate" }
+];
