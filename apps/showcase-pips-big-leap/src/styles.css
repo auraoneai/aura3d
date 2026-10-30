@@ -348,6 +348,63 @@ html, body {
   .aura3d-controls-hint { display: none; }
 }
 
+/* ----------------------------------------------------- storybook HUD (GU47 PBL-H1) */
+/* The diorama look (html[data-pbl-look="diorama"]) dresses the HUD as the E-J storybook
+   theme: parchment chips in birch cream with clay edges, licensed GT Walsheim text and
+   Canela display titles (registered by main.ts as "A3G GT Walsheim" / "A3G Canela").
+   Sun-seed gold stays the seed and gate accent. `?look=original` keeps the rules above. */
+:root[data-pbl-look="diorama"] {
+  --pbl-font: "A3G GT Walsheim", "Graphik", sans-serif;
+  --pbl-display: "A3G Canela", "A3G GT Walsheim", "Graphik", serif;
+  --pbl-parchment: rgba(239, 227, 200, 0.94);
+  --pbl-parchment-edge: rgba(122, 90, 62, 0.55);
+  --pbl-ink: #2a1f14;
+  --pbl-moss: #4f7a3a;
+  --pbl-toadstool: #c8432f;
+  --pbl-panel: rgba(42, 31, 20, 0.9);
+}
+
+:root[data-pbl-look="diorama"] .pbl-chip,
+:root[data-pbl-look="diorama"] .pbl-mode-tag,
+:root[data-pbl-look="diorama"] .pbl-objective,
+:root[data-pbl-look="diorama"] .pbl-toast {
+  background: var(--pbl-parchment);
+  color: var(--pbl-ink);
+  border: 1px solid var(--pbl-parchment-edge);
+  font-family: var(--pbl-font);
+  box-shadow: 0 2px 0 rgba(62, 44, 30, 0.35), 0 6px 14px rgba(0, 0, 0, 0.22);
+}
+
+:root[data-pbl-look="diorama"] .pbl-objective { border-left: 3px solid var(--pbl-moss); }
+:root[data-pbl-look="diorama"] .pbl-mode-tag { background: var(--pbl-moss); color: #efe3c8; border-color: rgba(42, 31, 20, 0.4); }
+:root[data-pbl-look="diorama"] .pbl-chip .k { color: rgba(42, 31, 20, 0.62); }
+:root[data-pbl-look="diorama"] .pbl-chip .v { color: var(--pbl-toadstool); }
+:root[data-pbl-look="diorama"] .pbl-seed-chip .v { color: #8a5a00; }
+:root[data-pbl-look="diorama"] .pbl-hearts .on { color: var(--pbl-toadstool); text-shadow: none; }
+:root[data-pbl-look="diorama"] .pbl-hearts .off { color: rgba(42, 31, 20, 0.25); }
+
+:root[data-pbl-look="diorama"] .pbl-banner .big {
+  font-family: var(--pbl-display);
+  font-weight: 400;
+  color: #efe3c8;
+  text-shadow: 0 2px 0 rgba(62, 44, 30, 0.85), 0 8px 26px rgba(0, 0, 0, 0.5);
+}
+
+:root[data-pbl-look="diorama"] .pbl-banner .small,
+:root[data-pbl-look="diorama"] .pbl-stat,
+:root[data-pbl-look="diorama"] .pbl-btns button,
+:root[data-pbl-look="diorama"] .pbl-atlas-card { font-family: var(--pbl-font); }
+
+:root[data-pbl-look="diorama"] .pbl-panel h2,
+:root[data-pbl-look="diorama"] .pbl-atlas-card .n { font-family: var(--pbl-display); font-weight: 400; }
+
+:root[data-pbl-look="diorama"] .pbl-pause-btn {
+  background: var(--pbl-parchment);
+  color: var(--pbl-ink);
+  border-color: var(--pbl-parchment-edge);
+  font-family: var(--pbl-font);
+}
+
 /* Reduced motion: banners and toasts fade in place without sliding or scaling. */
 @media (prefers-reduced-motion: reduce) {
   .pbl-banner, .pbl-banner.show { transform: translate(-50%, -50%); transition: opacity 0.2s; }
