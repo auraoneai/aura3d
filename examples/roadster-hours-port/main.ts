@@ -504,6 +504,16 @@ const hooks = {
   /** RH47-01: true once every textured material has uploaded (`textured === total`, 58 on Sunbreak with the generated models); judged shots wait for it. */
   texturesReady: () => { const t = summarizeTextureUpgrade(app?.diagnostics()); return t.total > 0 && t.textured === t.total; },
   lookMode: () => lookMode,
+  /**
+   * GU47 QA crops for the steady-state capture (E-I crop contract, normalised to the canvas): the chase camera keeps the
+   * car low-centre, the road below it, the sky on top and the sea on the left of every route (Halo: the city carpet).
+   */
+  crops: () => [
+    { name: "car", x: 0.4, y: 0.55, w: 0.2, h: 0.25 },
+    { name: "road", x: 0.3, y: 0.75, w: 0.4, h: 0.25 },
+    { name: "sky", x: 0, y: 0, w: 1, h: 0.3 },
+    { name: "sea", x: 0, y: 0.4, w: 0.3, h: 0.3 }
+  ],
   /** RH47-13: registered presets and bursts fired on this route. */
   fx: () => runtime?.fx() ?? null,
   /** Cues played on recent frames (QA: proves the finish fanfare and the event cues fire). */
