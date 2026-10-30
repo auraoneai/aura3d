@@ -140,6 +140,42 @@ void main() {
   outColor = vec4(col, a);
 }`;
 
+/**
+ * GU47 SSR-18: the same glow on an instanced node (one draw for every orb, soul or power-up). The vertex applies the
+ * per-instance matrix; `glowTint` 1 takes the shell colour from the instance colour (power-up types), 0 ignores it.
+ * SSR-09: the core is HDR (x2.2 under the colour script's bloom) with a fresnel shell.
+ */
+export const GLOW_INSTANCED_VERTEX = /* glsl */ `
+out vec3 vNormal;
+out vec3 vWorld;
+out vec3 vTint;
+void main() {
+  vec4 wp = modelMatrix * instanceMatrix * vec4(position, 1.0);
+  vWorld = wp.xyz;
+  vNormal = normalize(mat3(modelMatrix) * mat3(instanceMatrix) * normal);
+  vTint = instanceColor.rgb;
+  gl_Position = projectionMatrix * viewMatrix * wp;
+}`;
+
+export const GLOW_INSTANCED_FRAGMENT = /* glsl */ `
+in vec3 vNormal;
+in vec3 vWorld;
+in vec3 vTint;
+out vec4 outColor;
+${ATMOSPHERE}
+void main() {
+  vec3 N = normalize(vNormal);
+  vec3 V = normalize(cameraPosition - vWorld);
+  float facing = abs(dot(N, V));
+  float rim = pow(1.0 - facing, 1.6);
+  float core = pow(facing, 3.0);
+  vec3 shell = mix(glowShell, vTint, glowTint);
+  vec3 hot = mix(glowCore, mix(vTint, vec3(1.0), 0.75), glowTint) * glowHdr;
+  vec3 col = mix(shell * 0.9, hot, core) + shell * rim * 0.7;
+  float a = (mix(0.5 + 0.25 * core, 0.12, glowHollow) + 0.45 * rim) * glowAlpha * (1.0 - fogAmount(length(cameraPosition - vWorld)));
+  outColor = vec4(col, a);
+}`;
+
 /** Flat additive colour for speed streaks and ki sparks. */
 export const FLAT_VERTEX = /* glsl */ `
 out vec3 vWorld;

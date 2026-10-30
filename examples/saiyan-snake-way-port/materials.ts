@@ -5,7 +5,7 @@
 import type { material } from "@aura3d/engine";
 import { ORIGINAL_SUN_DIR, STAGE_LOOK, linearOf } from "./art/colorScript";
 import {
-  AURA_FRAGMENT, AURA_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX, FLAT_FRAGMENT, FLAT_VERTEX, GLOW_FRAGMENT, GLOW_VERTEX,
+  AURA_FRAGMENT, AURA_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX, FLAT_FRAGMENT, FLAT_VERTEX, GLOW_FRAGMENT, GLOW_INSTANCED_FRAGMENT, GLOW_INSTANCED_VERTEX, GLOW_VERTEX,
   ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX
 } from "./shaders";
 
@@ -62,6 +62,19 @@ export const solidSpec = (base: Rgb, glow: Rgb = [0, 0, 0], glowAmount = 0, extr
 export const glowSpec = (core: Rgb, shell: Rgb, alpha = 1, hollow = 0): CustomSpec => ({
   glsl: { vertex: GLOW_VERTEX, fragment: GLOW_FRAGMENT },
   uniforms: { glowCore: { type: "color3", value: [...core] }, glowShell: { type: "color3", value: [...shell] }, glowAlpha: { type: "f32", value: alpha }, glowHollow: { type: "f32", value: hollow } },
+  side: "double",
+  transparent: true,
+  depthWrite: false,
+  blending: "additive"
+});
+
+/** GU47 SSR-18: `glowSpec` for an instanced node; `tint` 1 reads the shell colour from the instance colour; `hdr` scales the core (SSR-09). */
+export const glowInstancedSpec = (core: Rgb, shell: Rgb, alpha = 1, hollow = 0, tint = 0, hdr = 2.2): CustomSpec => ({
+  glsl: { vertex: GLOW_INSTANCED_VERTEX, fragment: GLOW_INSTANCED_FRAGMENT },
+  uniforms: {
+    glowCore: { type: "color3", value: [...core] }, glowShell: { type: "color3", value: [...shell] }, glowAlpha: { type: "f32", value: alpha },
+    glowHollow: { type: "f32", value: hollow }, glowTint: { type: "f32", value: tint }, glowHdr: { type: "f32", value: hdr }
+  },
   side: "double",
   transparent: true,
   depthWrite: false,
@@ -154,6 +167,7 @@ export function allProgramSpecs(): { name: string; spec: CustomSpec }[] {
     { name: "road", spec: roadSpec() },
     { name: "solid", spec: solidSpec(c(PALETTE.gi), c(PALETTE.auraLit), 0.2) },
     { name: "glow", spec: glowSpec(c(PALETTE.kiCore), c(PALETTE.ki)) },
+    { name: "glow-instanced", spec: glowInstancedSpec(c(PALETTE.kiCore), c(PALETTE.ki), 1, 0, 1) },
     { name: "aura", spec: auraSpec(c(PALETTE.auraCore), c(PALETTE.auraLit), c(PALETTE.aura), 0.8) },
     { name: "sky", spec: skySpec() },
     { name: "flat", spec: flatSpec(c(PALETTE.kiCore), 0.4) },

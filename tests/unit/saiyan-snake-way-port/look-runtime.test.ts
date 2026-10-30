@@ -165,3 +165,17 @@ describe("serpentine-sky-run VFX events (SSR-12)", () => {
     expect(count("script")).toBe(0);
   });
 });
+
+describe("serpentine-sky-run instanced pickups (SSR-18)", () => {
+  it("draws orbs, souls and power-ups as 5 instanced nodes instead of 340 pooled slots under the colour script", () => {
+    const nodesOf = (mode: "script" | "original") =>
+      (buildWorld({ look: { mode, pinnedStage: null } }).scene as unknown as { toJSON(): { nodes: { name?: string; instances?: unknown[] }[] } }).toJSON().nodes;
+    const script = nodesOf("script");
+    const inst = script.filter((n) => /^inst-(orb|soul|power)-\d$/.test(n.name ?? ""));
+    expect(inst.map((n) => n.name).sort()).toEqual(["inst-orb-0", "inst-power-0", "inst-power-1", "inst-soul-0", "inst-soul-1"]);
+    expect(script.some((n) => /^ent-(orb|soul|power)-/.test(n.name ?? ""))).toBe(false);
+    const original = nodesOf("original");
+    expect(original.filter((n) => /^ent-(orb|soul|power)-/.test(n.name ?? "")).length).toBe(150 + 40 * 2 + 10 * 2);
+    expect(original.some((n) => /^inst-/.test(n.name ?? ""))).toBe(false);
+  });
+});

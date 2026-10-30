@@ -247,8 +247,10 @@ describe("C3 / LIGHT-01: neutral environment", () => {
 });
 
 describe("C8: pooled slots write visibility only on change", () => {
-  it("a second update of the same state writes no visibility", () => {
-    const world = buildWorld();
+  for (const mode of ["original", "script"] as const) it(`a second update of the same state writes no visibility (${mode} look)`, () => {
+    // GU47 SSR-12/18: the colour script draws orbs, souls and power-ups instanced and drops the spark/burst pools,
+    // so its first frame writes far fewer slots than the original's 200+
+    const world = buildWorld({ look: { mode, pinnedStage: null } });
     const writes = new Map<string, number>();
     const handle = (id: string) => {
       const h: Record<string, unknown> = {};
@@ -266,7 +268,7 @@ describe("C8: pooled slots write visibility only on change", () => {
     runtime.update(S, STEP, 1, 16 / 9);
     const first = runtime.visibilityWrites;
     runtime.update(S, STEP, 1 + STEP, 16 / 9);
-    expect(first).toBeGreaterThan(200);
+    expect(first).toBeGreaterThan(mode === "original" ? 200 : 60);
     expect(runtime.visibilityWrites).toBeLessThan(20);
   });
 });

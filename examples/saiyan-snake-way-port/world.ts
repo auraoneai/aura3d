@@ -4,11 +4,11 @@
  * fallback) with its aura shell, ki sparks and speed streaks, pooled multi-part props for the road's entities, the
  * chase camera and the post stack. The simulation (`sim.ts`) never imports this file.
  */
-import { attachRootRenderSource, camera, cloneSkinned, effects, environments, geometry, lights, material, model, primitives, scene, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
+import { attachRootRenderSource, camera, cloneSkinned, effects, environments, geometry, instances, lights, material, model, primitives, scene, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
 import { gapAhead } from "./hud";
 import { HERO_PARTS, apply, mul, poseHero, rx, ry, rz, type HeroColor, type HeroPartSpec, type M3, type V3 as LV3 } from "./hero";
 import {
-  PALETTE, auraSpec, blobSpec, flatSpec, glowSpec, hexLinear, roadSpec, skySpec, solidSpec, type CustomSpec, type Rgb
+  PALETTE, auraSpec, blobSpec, flatSpec, glowInstancedSpec, glowSpec, hexLinear, roadSpec, skySpec, solidSpec, type CustomSpec, type Rgb
 } from "./materials";
 import { PROFILE, buildRoadMesh, buildRoadSamples, frameAt, onRoad, type RoadFrame, type V3 } from "./road";
 import { advanceRunPhase, stepChaseRig, withSample, type ChaseRig, type PresentSample } from "./presentation";
@@ -77,6 +77,17 @@ const ENTITY_PARTS: Readonly<Record<string, readonly PartSpec[]>> = {
   ],
   feast: [{ shape: "model", model: "feast", mat: "", at: [0, -ENTITY_MODELS.feast!.baseY, 0], rot: [0, ENTITY_MODELS.feast!.yaw, 0], spin: 0.6 }]
 };
+
+/** GU47 SSR-18: entity types drawn as one instanced node per part under the colour script (one draw each). */
+export const INSTANCED_TYPES: ReadonlySet<string> = new Set(["orb", "soul", "power"]);
+
+/** Column-major mat4 (T·R·S) from a column-major M3 basis, a position and a uniform scale, written at `out[o..o+15]`. */
+function writeMatrix(out: Float32Array, o: number, m: M3, p: V3, k: number): void {
+  out[o] = m[0] * k; out[o + 1] = m[1] * k; out[o + 2] = m[2] * k; out[o + 3] = 0;
+  out[o + 4] = m[3] * k; out[o + 5] = m[4] * k; out[o + 6] = m[5] * k; out[o + 7] = 0;
+  out[o + 8] = m[6] * k; out[o + 9] = m[7] * k; out[o + 10] = m[8] * k; out[o + 11] = 0;
+  out[o + 12] = p[0]; out[o + 13] = p[1]; out[o + 14] = p[2]; out[o + 15] = 1;
+}
 
 /** Matrix columns (x, y, z axes) to the engine's ZYX Euler angles (R = Rz·Ry·Rx). */
 function basisToEuler(x: V3, y: V3, z: V3): V3 {
@@ -290,8 +301,33 @@ export function buildWorld(options: WorldOptions = {}): World {
   if (!script) for (let i = 0; i < BURSTS; i++) builder.add(primitives.sphere({ name: `burst-${i}`, size: 0.34, material: material.custom(flatSpec(hexLinear(0xfff0b0), 0.9)) }).position(0, -500, 0).runtime({ id: `burst-${i}` }));
   for (let i = 0; i < STREAKS; i++) builder.add(primitives.box({ name: `streak-${i}`, size: [0.04, 0.04, 6], material: material.custom(flatSpec(hexLinear(0xfff0f6), 0.2)) }).position(0, -500, 0).runtime({ id: `streak-${i}` }));
 
+  /* GU47 SSR-18/SSR-09: orbs, souls and power-ups as instanced glow nodes (HDR cores, fresnel shells) */
+  const instancedMaterials: Readonly<Record<string, CustomSpec>> = {
+    orb: glowInstancedSpec(hexLinear(0xf2fff8), hexLinear(0x7fe0c4)),
+    soul: glowInstancedSpec(hexLinear(PALETTE.spirit), hexLinear(PALETTE.bone), 0.95, 1, 0, 1.4),
+    power: glowInstancedSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.aura), 1, 0, 1, 2.4),
+    powerHalo: glowInstancedSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.aura), 0.8, 1, 1, 1.6)
+  };
+  if (script) {
+    for (const type of INSTANCED_TYPES) {
+      const count = POOLS[type] ?? 0;
+      (ENTITY_PARTS[type] ?? []).forEach((part, j) => {
+        const id = `inst-${type}-${j}`;
+        const transforms = Array.from({ length: count }, () => ({ position: [0, -500, 0] as [number, number, number], scale: 1e-4 }));
+        const mat = material.custom((type === "power" ? instancedMaterials[part.mat] : instancedMaterials[type]) as CustomSpec);
+        const size = part.size ?? 1;
+        const node =
+          part.shape === "cone" ? instances.cone({ name: id, transforms, params: { radius: part.cone?.radius ?? 0.2, height: part.cone?.height ?? 0.6, radialSegments: 8 }, material: mat })
+          : part.shape === "octahedron" ? instances.polyhedron({ name: id, transforms, params: { variant: "octahedron", detail: 0, radius: typeof size === "number" ? size : 0.9 }, material: mat })
+          : instances.sphere({ name: id, transforms, size: size as number, material: mat });
+        builder.add(node.runtime({ id }));
+      });
+    }
+  }
+
   /* entity pools: every slot is a small multi-part prop */
   for (const [type, count] of Object.entries(POOLS)) {
+    if (script && INSTANCED_TYPES.has(type)) continue;
     (ENTITY_PARTS[type] ?? []).forEach((part, j) => {
       for (let i = 0; i < count; i++) {
         if (part.shape === "model") {
@@ -355,6 +391,12 @@ export function buildWorld(options: WorldOptions = {}): World {
       registerVfx();
       let trail: { stop(o?: { immediate?: boolean }): void } | null = null;
       let vfxFired = 0;
+      /* GU47 SSR-18: per-frame instance buffers (allocated once; `count` instances written each frame) */
+      const instBuffers = new Map<string, { data: Float32Array; rgba: Float32Array; count: number }>();
+      if (script) for (const type of INSTANCED_TYPES) (ENTITY_PARTS[type] ?? []).forEach((_part, j) => {
+        const cap = POOLS[type] ?? 0;
+        instBuffers.set(`inst-${type}-${j}`, { data: new Float32Array(cap * 16), rgba: new Float32Array(cap * 4).fill(1), count: 0 });
+      });
       /* C8: the visible state each pooled node was last given, so a frame only writes the slots that change */
       const shown = new Map<string, boolean>();
       let visibilityWrites = 0;
@@ -540,6 +582,7 @@ export function buildWorld(options: WorldOptions = {}): World {
         /* entities: assign the nearest alive ones to the pooled slots, hide the rest */
         const used: Record<string, number> = {};
         alive = 0;
+        for (const buf of instBuffers.values()) buf.count = 0;
         for (const ent of S.ents as readonly Entity[]) {
           if (ent.dead) continue;
           const s = ent.type === "sweeper" || ent.type === "soul" || ent.type === "oni" ? ent.s + ent.rel : ent.s;
@@ -559,7 +602,19 @@ export function buildWorld(options: WorldOptions = {}): World {
           const pulse = ent.type === "orb" ? 1 + 0.08 * Math.sin(time * 6 + ent.spin) : 1;
           const tumble = ent.punt ? eulerMatrix([ent.punt.t * 9, ent.punt.t * 5, 0]) : null;
           const style = ent.type === "power" ? POWER_STYLE[ent.kind ?? "surge"] : undefined;
+          const instanced = script && INSTANCED_TYPES.has(ent.type);
           parts3.forEach((part, j) => {
+            if (instanced) {
+              let local: M3 = part.rot ? eulerMatrix(part.rot) : eulerMatrix([0, 0, 0]);
+              if (part.spin) local = mul(ry(time * part.spin + ent.spin), local);
+              const off = apply(EB, part.at);
+              const buf = instBuffers.get(`inst-${ent.type}-${j}`)!;
+              const i = buf.count++;
+              writeMatrix(buf.data, i * 16, mul(EB, local), [base[0] + off[0], base[1] + off[1], base[2] + off[2]], pulse);
+              const shell = style?.shell ?? [1, 1, 1];
+              buf.rgba[i * 4] = shell[0]; buf.rgba[i * 4 + 1] = shell[1]; buf.rgba[i * 4 + 2] = shell[2]; buf.rgba[i * 4 + 3] = 1;
+              return;
+            }
             const handle = show(`ent-${ent.type}-${idx}-${j}`, true);
             let local: M3 = part.rot ? eulerMatrix(part.rot) : eulerMatrix([0, 0, 0]);
             if (part.spin) local = mul(ry(time * part.spin + ent.spin), local);
@@ -575,7 +630,9 @@ export function buildWorld(options: WorldOptions = {}): World {
             }
           });
         }
+        for (const [id, buf] of instBuffers) (node(id) as Partial<ReturnType<typeof node>>).setInstanceMatrices?.(buf.data, buf.count, buf.rgba);
         for (const [type, count] of Object.entries(POOLS)) {
+          if (script && INSTANCED_TYPES.has(type)) continue;
           const partCount = (ENTITY_PARTS[type] ?? []).length;
           for (let i = used[type] ?? 0; i < count; i++) for (let j = 0; j < partCount; j++) hide(`ent-${type}-${i}-${j}`);
         }
