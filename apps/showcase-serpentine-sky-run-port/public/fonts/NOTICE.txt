@@ -1,0 +1,6 @@
+Serpentine Sky Run HUD title font (GU47 SSR-16, the E-J "storybook" display face). Copied byte for byte from
+packages/game/src/fonts/ (provenance and licence notes in packages/game/src/fonts/NOTICE.txt).
+
+canela-400.woff2 | Canela (400) | Commercial Type | 31756 bytes | c5db098e47f0113d6d8b75bdb3b216ad36918fc7156848754e4e2cf8b5fd847a
+
+Web use only, self-hosted from this app; not for redistribution as desktop fonts.

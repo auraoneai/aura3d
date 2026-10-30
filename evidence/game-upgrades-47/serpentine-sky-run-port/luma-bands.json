@@ -1,0 +1,14 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "serpentine-sky-run-port",
+  "note": "GU47 WP-27 acceptance bands (SSR-02 mean 140-170, SSR-05 clip <= 0.03 and darkFrac <= 0.4, DROWSE darkFrac <= 0.6). Variants are E-I's ?stage=1..8 rows; stage7 is THE DROWSE.",
+  "default": { "darkFrac": [null, 0.4], "clipFrac": [null, 0.03] },
+  "variants": {
+    "default": { "mean": [140, 170] },
+    "stage1": { "mean": [140, 170] },
+    "stage2": { "mean": [140, 170] },
+    "stage3": { "mean": [140, 170] },
+    "stage8": { "mean": [140, 170] },
+    "stage7": { "darkFrac": [null, 0.6] }
+  }
+}

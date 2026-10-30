@@ -3,10 +3,26 @@
  * and compile exactly what the app draws with.
  */
 import type { material } from "@aura3d/engine";
+import { ORIGINAL_SUN_DIR, STAGE_LOOK, linearOf } from "./art/colorScript";
 import {
-  AURA_FRAGMENT, AURA_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX, FLAT_FRAGMENT, FLAT_VERTEX, GLOW_FRAGMENT, GLOW_VERTEX,
+  AURA_FRAGMENT, AURA_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX, FLAG_INSTANCED_FRAGMENT, FLAG_INSTANCED_VERTEX, ISLAND_INSTANCED_FRAGMENT, ISLAND_INSTANCED_VERTEX, FLAT_FRAGMENT, FLAT_VERTEX, GLOW_FRAGMENT, GLOW_INSTANCED_FRAGMENT, GLOW_INSTANCED_VERTEX, GLOW_VERTEX,
   ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX
 } from "./shaders";
+
+/**
+ * GU47 SSR-01: colour-script uniforms shared by the road and sky. The defaults are the pre-GU47 constants with
+ * `lookMode` 0, so a spec renders today's look until world.ts writes the stage look (`?look=original` keeps it).
+ */
+export const lookUniforms = () => ({
+  lookMode: { type: "f32" as const, value: 0 },
+  lookSunDir: { type: "vec3" as const, value: [...ORIGINAL_SUN_DIR] },
+  lookSunColor: { type: "color3" as const, value: [1, 0.82, 0.9] },
+  lookFogColor: { type: "color3" as const, value: [0.8, 0.62, 0.8] },
+  lookFogNear: { type: "f32" as const, value: 430 },
+  lookFogFar: { type: "f32" as const, value: 1010 },
+  lookHemiSky: { type: "color3" as const, value: [1, 0.93, 0.9] },
+  lookHemiGround: { type: "color3" as const, value: [0.62, 0.52, 0.5] }
+});
 
 /** World height of the cloud deck's base (the sky shader marches up to 55 m above it). */
 export const DECK_BASE = -115;
@@ -52,6 +68,43 @@ export const glowSpec = (core: Rgb, shell: Rgb, alpha = 1, hollow = 0): CustomSp
   blending: "additive"
 });
 
+/** GU47 SSR-18: `glowSpec` for an instanced node; `tint` 1 reads the shell colour from the instance colour; `hdr` scales the core (SSR-09). */
+export const glowInstancedSpec = (core: Rgb, shell: Rgb, alpha = 1, hollow = 0, tint = 0, hdr = 2.2): CustomSpec => ({
+  glsl: { vertex: GLOW_INSTANCED_VERTEX, fragment: GLOW_INSTANCED_FRAGMENT },
+  uniforms: {
+    glowCore: { type: "color3", value: [...core] }, glowShell: { type: "color3", value: [...shell] }, glowAlpha: { type: "f32", value: alpha },
+    glowHollow: { type: "f32", value: hollow }, glowTint: { type: "f32", value: tint }, glowHdr: { type: "f32", value: hdr }
+  },
+  side: "double",
+  transparent: true,
+  depthWrite: false,
+  blending: "additive"
+});
+
+/** GU47 SSR-11: instanced spire islands for the mid / far parallax bands (instance colour .r = extra fog). */
+export const islandInstancedSpec = (): CustomSpec => ({
+  glsl: { vertex: ISLAND_INSTANCED_VERTEX, fragment: ISLAND_INSTANCED_FRAGMENT },
+  uniforms: {
+    islandLit: { type: "color3", value: [...hexLinear(0xc89a8a)] },
+    islandDark: { type: "color3", value: [...hexLinear(0x2a1c3a)] },
+    islandSunDir: { type: "vec3", value: [...ORIGINAL_SUN_DIR] },
+    islandSunColor: { type: "color3", value: [1, 0.8, 0.6] },
+    islandFogColor: { type: "color3", value: [0.8, 0.62, 0.8] }
+  }
+});
+
+/** GU47 SSR-11: instanced prayer-flag cloth (colour per instance). */
+export const flagInstancedSpec = (): CustomSpec => ({
+  glsl: { vertex: FLAG_INSTANCED_VERTEX, fragment: FLAG_INSTANCED_FRAGMENT },
+  uniforms: {
+    flagTime: { type: "f32", value: 0 },
+    flagSunDir: { type: "vec3", value: [...ORIGINAL_SUN_DIR] },
+    flagSunColor: { type: "color3", value: [1, 0.8, 0.6] },
+    flagFogColor: { type: "color3", value: [0.8, 0.62, 0.8] }
+  },
+  side: "double"
+});
+
 export const roadSpec = (): CustomSpec => ({
   receiveShadow: true,
   glsl: { vertex: ROAD_VERTEX, fragment: ROAD_FRAGMENT },
@@ -63,6 +116,15 @@ export const roadSpec = (): CustomSpec => ({
     /** Road distance `s` of the next missing plate and the 0..1 strength of its edge warning (hud.ts `gapAhead`). */
     gapAt: { type: "f32", value: -1e6 },
     gapWarn: { type: "f32", value: 0 },
+    /** GU47 SSR-17: 0..1 cracked-plate glow (THE BROKEN SPINE; colour script `storm`). */
+    roadCrack: { type: "f32", value: 0 },
+    ...lookUniforms(),
+    /** GU47 SSR-08 per-stage scale tints (rose row by default; used only when lookMode is 1) and the spine wave clock. */
+    roadPearl: { type: "color3", value: [...linearOf(STAGE_LOOK[0]!.road.pearl)] },
+    roadJade: { type: "color3", value: [...linearOf(STAGE_LOOK[0]!.road.jade)] },
+    roadSpine: { type: "color3", value: [...linearOf(STAGE_LOOK[0]!.road.spine)] },
+    roadBelly: { type: "color3", value: [...linearOf(STAGE_LOOK[0]!.road.belly)] },
+    roadTime: { type: "f32", value: 0 }
   },
   side: "double"
 });
@@ -111,7 +173,14 @@ export const skySpec = (): CustomSpec => ({
     cloudMid: { type: "color3", value: [...hexLinear(PALETTE.cloud)] },
     cloudDark: { type: "color3", value: [...hexLinear(PALETTE.cloudDark)] },
     deckBase: { type: "f32", value: DECK_BASE },
-    skyTime: { type: "f32", value: 0 }
+    skyTime: { type: "f32", value: 0 },
+    ...lookUniforms(),
+    /** GU47 SSR-04 (used only when lookMode is 1). */
+    skyBand: { type: "color3", value: [...linearOf(STAGE_LOOK[0]!.sky.band)] },
+    skySunDisc: { type: "color3", value: [...linearOf(STAGE_LOOK[0]!.sun.disc)] },
+    skyCorona: { type: "f32", value: STAGE_LOOK[0]!.sun.corona },
+    skyStars: { type: "f32", value: STAGE_LOOK[0]!.sky.stars },
+    skyMoon: { type: "f32", value: 0 }
   },
   side: "double",
   depthWrite: false
@@ -124,6 +193,9 @@ export function allProgramSpecs(): { name: string; spec: CustomSpec }[] {
     { name: "road", spec: roadSpec() },
     { name: "solid", spec: solidSpec(c(PALETTE.gi), c(PALETTE.auraLit), 0.2) },
     { name: "glow", spec: glowSpec(c(PALETTE.kiCore), c(PALETTE.ki)) },
+    { name: "flag-instanced", spec: flagInstancedSpec() },
+    { name: "island-instanced", spec: islandInstancedSpec() },
+    { name: "glow-instanced", spec: glowInstancedSpec(c(PALETTE.kiCore), c(PALETTE.ki), 1, 0, 1) },
     { name: "aura", spec: auraSpec(c(PALETTE.auraCore), c(PALETTE.auraLit), c(PALETTE.aura), 0.8) },
     { name: "sky", spec: skySpec() },
     { name: "flat", spec: flatSpec(c(PALETTE.kiCore), 0.4) },

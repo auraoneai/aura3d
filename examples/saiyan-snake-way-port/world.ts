@@ -4,17 +4,25 @@
  * fallback) with its aura shell, ki sparks and speed streaks, pooled multi-part props for the road's entities, the
  * chase camera and the post stack. The simulation (`sim.ts`) never imports this file.
  */
-import { attachRootRenderSource, camera, cloneSkinned, effects, environments, geometry, lights, material, model, primitives, scene, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
+import { attachRootRenderSource, camera, cloneSkinned, effects, environments, geometry, instances, lights, material, model, primitives, scene, text3D, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
 import { gapAhead } from "./hud";
 import { HERO_PARTS, apply, mul, poseHero, rx, ry, rz, type HeroColor, type HeroPartSpec, type M3, type V3 as LV3 } from "./hero";
 import {
-  PALETTE, auraSpec, blobSpec, flatSpec, glowSpec, hexLinear, roadSpec, skySpec, solidSpec, type CustomSpec, type Rgb
+  PALETTE, auraSpec, blobSpec, flagInstancedSpec, islandInstancedSpec, flatSpec, glowInstancedSpec, glowSpec, hexLinear, roadSpec, skySpec, solidSpec, type CustomSpec, type Rgb
 } from "./materials";
 import { PROFILE, buildRoadMesh, buildRoadSamples, frameAt, onRoad, type RoadFrame, type V3 } from "./road";
 import { advanceRunPhase, stepChaseRig, withSample, type ChaseRig, type PresentSample } from "./presentation";
-import { ROAD_LENGTH, entityHeight, entityLateral, type Entity, type RunState } from "./sim";
+import { ROAD_LENGTH, STAGES, entityHeight, entityLateral, type Entity, type RunState } from "./sim";
 import type { RunnerStyle } from "./styles";
 import { ENTITY_MODELS, ISLAND_COUNT, LANTERN_COUNT, MESHY } from "./models";
+import { STAGE_LOOK, lookAt, lookDistance, lookParams, type LookParams, type ResolvedLook } from "./art/colorScript";
+import { createLookDriver, type LookAppLike, type LookNodeHandle } from "./art/lookRuntime";
+import { SERPENT_RUNNER_TRAIL, registerSerpentVfx, serpentRainPreset } from "./art/vfx";
+import { createAmbientFx } from "./art/ambientFx";
+import { createVfxEventTracker } from "./art/vfxEvents";
+import { createCinePostDriver, type CinePostState } from "./art/cinePost";
+import { createShotDirector, type Shot } from "./art/shots";
+import { BEND_PROBE, auraPulse, createRunnerAnimator, runnerLean, type MixerActorLike, type RunnerAnimator } from "./art/motion";
 
 type Scene = ReturnType<typeof scene>;
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
@@ -74,6 +82,45 @@ const ENTITY_PARTS: Readonly<Record<string, readonly PartSpec[]>> = {
   feast: [{ shape: "model", model: "feast", mat: "", at: [0, -ENTITY_MODELS.feast!.baseY, 0], rot: [0, ENTITY_MODELS.feast!.yaw, 0], spin: 0.6 }]
 };
 
+/** GU47 SSR-18: entity types drawn as one instanced node per part under the colour script (one draw each). */
+export const INSTANCED_TYPES: ReadonlySet<string> = new Set(["orb", "soul", "power"]);
+
+/** GU47 SSR-11: verge dressing spacing (m), how far ahead / behind it is kept, and flags per post span. */
+export const VERGE_SPACING = 18;
+const VERGE_AHEAD = 324;
+const VERGE_BEHIND = 18;
+const FLAGS_PER_SPAN = 4;
+export const VERGE_POSTS = 2 * Math.ceil((VERGE_AHEAD + VERGE_BEHIND) / VERGE_SPACING);
+/**
+ * GU47 SSR-11: island parallax bands beyond the six near Meshy islands. Each band is one instanced draw of inverted spire
+ * cones recycled along the road: `count` islands every `spacing` m, `lateral` m out, `up` m above the road, `fog` the
+ * minimum fog (far band reads as a silhouette layer).
+ */
+export const ISLAND_BANDS = [
+  { id: "islands-mid", count: 12, spacing: 120, lateral: [70, 130], up: [8, 40], radius: [9, 16], height: [22, 40], fog: 0.25 },
+  { id: "islands-far", count: 18, spacing: 110, lateral: [180, 320], up: [20, 90], radius: [18, 34], height: [45, 90], fog: 0.55 }
+] as const;
+/**
+ * GU47 SSR-17: TRAFFIC's soul column, souls spiralling up from the cloud sea beside the road (one instanced glow draw),
+ * shown while it is within `SOUL_COLUMN.show` m ahead.
+ */
+export const SOUL_COLUMN = { s: 2150, lateral: -70, count: 36, height: 140, radius: 7, show: 900 } as const;
+
+/** GU47 SSR-11: SDF stage boards hung over the road at each stage boundary (shown within this many metres ahead). */
+export const BOARD_SHOW_AHEAD = 520;
+export const BOARD_HEIGHT = 9;
+/** Stage boards: every stage after the first, at its boundary (outbound distance). */
+export const STAGE_BOARDS: readonly { readonly id: string; readonly s: number; readonly text: string }[] = STAGES.slice(1).map((stage, i) => ({ id: `stage-board-${i + 1}`, s: stage.from, text: stage.name }));
+const FLAG_COLORS: readonly Rgb[] = [hexLinear(0xff7a6b), hexLinear(0xf2b33d), hexLinear(0x7fe0c4), hexLinear(0xf4eefa), hexLinear(0x6a5ad8)];
+
+/** Column-major mat4 (T·R·S) from a column-major M3 basis, a position and a uniform scale, written at `out[o..o+15]`. */
+function writeMatrix(out: Float32Array, o: number, m: M3, p: V3, k: number): void {
+  out[o] = m[0] * k; out[o + 1] = m[1] * k; out[o + 2] = m[2] * k; out[o + 3] = 0;
+  out[o + 4] = m[3] * k; out[o + 5] = m[4] * k; out[o + 6] = m[5] * k; out[o + 7] = 0;
+  out[o + 8] = m[6] * k; out[o + 9] = m[7] * k; out[o + 10] = m[8] * k; out[o + 11] = 0;
+  out[o + 12] = p[0]; out[o + 13] = p[1]; out[o + 14] = p[2]; out[o + 15] = 1;
+}
+
 /** Matrix columns (x, y, z axes) to the engine's ZYX Euler angles (R = Rz·Ry·Rx). */
 function basisToEuler(x: V3, y: V3, z: V3): V3 {
   const m11 = x[0], m12 = y[0], m21 = x[1], m22 = y[1], m31 = x[2], m32 = y[2], m33 = z[2];
@@ -129,6 +176,27 @@ export async function loadRunner(canvas: HTMLCanvasElement): Promise<RunnerActor
 export interface WorldOptions {
   readonly canvas?: HTMLCanvasElement;
   readonly runner?: RunnerActor | null;
+  /** GU47 look mode and pinned stage (default: read from `location.search`, see art/colorScript.ts). */
+  readonly look?: LookParams;
+  /** GU47 SSR-19: the quality tier the app mounts at (default: the `renderer.quality: "auto"` rule, see `autoTier`). */
+  readonly tier?: string;
+}
+
+/** The engine's `quality: "auto"` rule (compiler/shadows.ts): "medium" on coarse pointers, else "high". */
+export function autoTier(coarse: boolean = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches): string {
+  return coarse ? "medium" : "high";
+}
+
+/** GU47 SSR-19: sun cascades per tier (2 on High / Ultra, 1 on Medium / Low; PRD §6.4). */
+export const sunCascades = (tier: string): 1 | 2 => (tier === "high" || tier === "ultra" ? 2 : 1);
+
+/** GU47: the look the last frame drew (QA hook `meta().look`). */
+export interface WorldLookState {
+  readonly mode: LookParams["mode"];
+  readonly id: string;
+  readonly stageIndex: number;
+  readonly godRays: boolean;
+  readonly writes: number;
 }
 
 export interface WorldRuntime {
@@ -143,6 +211,15 @@ export interface WorldRuntime {
   readonly visibilityWrites: number;
   readonly nodeCount: number;
   readonly entityNodes: number;
+  readonly look: WorldLookState;
+  /** GU47 SSR-07: motion blur, aberration and DOF state (QA hook; null under `?look=original`). */
+  readonly cinePost: CinePostState | null;
+  /** GU47 SSR-15: the camera shot the last frame drew (null under `?look=original`). */
+  readonly shot: Shot | null;
+  /** GU47 SSR-13: lightning strikes so far (QA hook). */
+  readonly strikes: number;
+  /** GU47 SSR-12: runtime effect bursts fired so far (QA hook). */
+  readonly vfxFired: number;
 }
 
 export interface World {
@@ -165,19 +242,77 @@ export function environmentIntensity(search: string | undefined = typeof locatio
   return Number.isFinite(value) && value >= 0 ? value : ENV_INTENSITY;
 }
 
+/** GU47 SSR-06: warm sun glow plus three small ghosts in the serpent palette (gold, jade, coral). */
+const SUN_FLARE_ELEMENTS = [
+  { size: 420, distance: 0, color: "#ffe2b0" },
+  { size: 48, distance: 0.55, color: "#f2b33d" },
+  { size: 70, distance: 0.8, color: "#7fe0c4" },
+  { size: 36, distance: 1, color: "#ff7a6b" }
+] as const;
+
 const STREAKS = 22;
 const SPARKS = 18;
 const BURSTS = 14;
 
+/** True when the page asks for `?shadow=0` (calibration captures). */
+const shadowOff = (): boolean => typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0";
+/** True when `?env=<n>` overrides the environment intensity (calibration captures). */
+const envOverride = (): boolean => typeof location !== "undefined" && new URLSearchParams(location.search).has("env");
+
+/** Rotates `v` about the unit axis `k` by `a` radians (Rodrigues). */
+function rotateAbout(v: V3, k: V3, a: number): V3 {
+  const c = Math.cos(a), s = Math.sin(a), d = (v[0] * k[0] + v[1] * k[1] + v[2] * k[2]) * (1 - c);
+  return [v[0] * c + (k[1] * v[2] - k[2] * v[1]) * s + k[0] * d, v[1] * c + (k[2] * v[0] - k[0] * v[2]) * s + k[1] * d, v[2] * c + (k[0] * v[1] - k[1] * v[0]) * s + k[2] * d];
+}
+
+/**
+ * GU47 SSR-15: the shot applied to the chase pose: leap orbit about the runner, the intro (from 40 m ahead and 14 m up,
+ * looking back at the runner) blended into the chase, and the bank roll of the up vector about the view axis.
+ */
+export function applyShot(shot: Shot, eye: V3, look: V3, runner: V3, forward: V3, up: V3): [V3, V3, V3] {
+  let e = eye, l = look;
+  if (shot.orbit) {
+    const off = rotateAbout([e[0] - runner[0], e[1] - runner[1], e[2] - runner[2]], up, shot.orbit);
+    e = [runner[0] + off[0], runner[1] + off[1], runner[2] + off[2]];
+  }
+  if (shot.intro > 0) {
+    const w = shot.intro;
+    const introEye: V3 = [runner[0] + forward[0] * 40 + up[0] * 14, runner[1] + forward[1] * 40 + up[1] * 14, runner[2] + forward[2] * 40 + up[2] * 14];
+    const introLook: V3 = [runner[0] + up[0] * 1.5, runner[1] + up[1] * 1.5, runner[2] + up[2] * 1.5];
+    e = [e[0] + (introEye[0] - e[0]) * w, e[1] + (introEye[1] - e[1]) * w, e[2] + (introEye[2] - e[2]) * w];
+    l = [l[0] + (introLook[0] - l[0]) * w, l[1] + (introLook[1] - l[1]) * w, l[2] + (introLook[2] - l[2]) * w];
+  }
+  let u = up;
+  if (shot.roll) {
+    const v: V3 = [l[0] - e[0], l[1] - e[1], l[2] - e[2]];
+    const n = Math.hypot(v[0], v[1], v[2]) || 1;
+    u = rotateAbout(up, [v[0] / n, v[1] / n, v[2] / n], shot.roll);
+  }
+  return [e, l, u];
+}
+
 export function buildWorld(options: WorldOptions = {}): World {
   const samples = buildRoadSamples();
+  const lookConfig = options.look ?? lookParams();
+  const script = lookConfig.mode === "script";
+  const first = STAGE_LOOK[lookConfig.pinnedStage ?? 0]!;
   const builder: Scene = scene()
     .background("#f2c6de")
     .camera(camera.perspective({ position: [0, 6, 14], target: [0, 1, 0], fov: 62, near: 0.5, far: 6000 }))
-    // the custom materials are unlit; these light the rigged runner (hemisphere colours are the look spec's)
-    .add(lights.hemisphere({ name: "sky fill", skyColor: "#f6d0e6", groundColor: "#b98a2e", intensity: 1.1 }))
-    .add(environments.neutral({ intensity: environmentIntensity() }))
-    .add(lights.directional({ name: "sun", position: [-40, 60, -70], target: [0, 0, 0], intensity: 2.2, color: "#fff0dc", shadow: (typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0" ? false : { cascades: 1, maxDistance: 80 } as never) }));
+    // the custom materials are unlit; these light the rigged runner (hemisphere colours are the look spec's).
+    // GU47 SSR-02: under the colour script the hemisphere drops 1.1 -> 0.6 and the environment 0.9 -> ~0.6, and a violet
+    // camera-side fill (0.6, unshadowed) keeps the backlit runner readable; `?look=original` keeps today's rig.
+    .add(lights.hemisphere({ name: "sky fill", skyColor: script ? first.hemisphere.sky : "#f6d0e6", groundColor: script ? first.hemisphere.ground : "#b98a2e", intensity: script ? first.hemisphere.intensity : 1.1 }).runtime({ id: "sky fill" }))
+    .add(environments.neutral({ intensity: script && !envOverride() ? first.environmentIntensity : environmentIntensity() }))
+    // GU47 SSR-03 / SSR-19: two cascades over 140 m with PCSS under the colour script on High; the second cascade drops on
+    // the Medium / Low tiers (an explicit cascade count is never capped by the tier, so it is chosen here).
+    .add(lights.directional({ name: "sun", position: [-40, 60, -70], target: [0, 0, 0], intensity: script ? first.sun.intensity : 2.2, color: script ? first.sun.color : "#fff0dc", shadow: (shadowOff() ? false : script ? { cascades: sunCascades(options.tier ?? autoTier()), maxDistance: 140, filter: "pcss", lightSize: 2 } : { cascades: 1, maxDistance: 80 }) as never }).runtime({ id: "sun" }));
+  if (script) {
+    builder.add(lights.directional({ name: "fill", position: [0, 4, 20], target: [0, 1, 0], intensity: first.fill.intensity, color: first.fill.color, shadow: false }).runtime({ id: "fill" }));
+    builder.add(effects.contactShadows({ length: 0.3, thickness: 0.06, intensity: 0.8, lights: "sun" }));
+    // GU47 SSR-06: sun lens flare (positioned on the sun each frame; shown with the god rays: High / Ultra, low-sun stages)
+    builder.add(lights.lensFlare({ name: "sun flare", position: [0, -500, 0], intensity: 0.55, edgeFade: 0.25, elements: SUN_FLARE_ELEMENTS }).runtime({ id: "sun-flare" }));
+  }
 
   /* road + sky */
   const mesh = buildRoadMesh(samples);
@@ -252,12 +387,61 @@ export function buildWorld(options: WorldOptions = {}): World {
   builder.add(primitives.cylinder({ name: "aura-outer", size: [3.4, 5.6, 3.4], material: material.custom(auraSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.auraLit), hexLinear(PALETTE.aura), 0.8)) }).runtime({ id: "aura-outer" }));
   builder.add(primitives.cylinder({ name: "aura-inner", size: [2.5, 4.8, 2.5], material: material.custom(auraSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.auraLit), hexLinear(PALETTE.aura), 0.8)) }).runtime({ id: "aura-inner" }));
   builder.add(primitives.cylinder({ name: "contact-shadow", size: [4, 0.02, 4], material: material.custom(blobSpec(1.9, 0.5)) }).runtime({ id: "contact-shadow" }));
-  for (let i = 0; i < SPARKS; i++) builder.add(primitives.sphere({ name: `spark-${i}`, size: 0.3, material: material.custom(flatSpec(hexLinear(PALETTE.auraLit), 0.85)) }).position(0, -500, 0).runtime({ id: `spark-${i}` }));
-  for (let i = 0; i < BURSTS; i++) builder.add(primitives.sphere({ name: `burst-${i}`, size: 0.34, material: material.custom(flatSpec(hexLinear(0xfff0b0), 0.9)) }).position(0, -500, 0).runtime({ id: `burst-${i}` }));
-  for (let i = 0; i < STREAKS; i++) builder.add(primitives.box({ name: `streak-${i}`, size: [0.04, 0.04, 6], material: material.custom(flatSpec(hexLinear(0xfff0f6), 0.2)) }).position(0, -500, 0).runtime({ id: `streak-${i}` }));
+  // GU47 SSR-12: under the colour script the engine's runtime effects (art/vfx.ts) replace the spark and burst pools
+  if (!script) for (let i = 0; i < SPARKS; i++) builder.add(primitives.sphere({ name: `spark-${i}`, size: 0.3, material: material.custom(flatSpec(hexLinear(PALETTE.auraLit), 0.85)) }).position(0, -500, 0).runtime({ id: `spark-${i}` }));
+  if (!script) for (let i = 0; i < BURSTS; i++) builder.add(primitives.sphere({ name: `burst-${i}`, size: 0.34, material: material.custom(flatSpec(hexLinear(0xfff0b0), 0.9)) }).position(0, -500, 0).runtime({ id: `burst-${i}` }));
+  // GU47 SSR-13: under the colour script runtime cloud wisps (art/ambientFx.ts) replace the box streaks
+  if (!script) for (let i = 0; i < STREAKS; i++) builder.add(primitives.box({ name: `streak-${i}`, size: [0.04, 0.04, 6], material: material.custom(flatSpec(hexLinear(0xfff0f6), 0.2)) }).position(0, -500, 0).runtime({ id: `streak-${i}` }));
+
+  /* GU47 SSR-18/SSR-09: orbs, souls and power-ups as instanced glow nodes (HDR cores, fresnel shells) */
+  const instancedMaterials: Readonly<Record<string, CustomSpec>> = {
+    orb: glowInstancedSpec(hexLinear(0xf2fff8), hexLinear(0x7fe0c4)),
+    soul: glowInstancedSpec(hexLinear(PALETTE.spirit), hexLinear(PALETTE.bone), 0.95, 1, 0, 1.4),
+    power: glowInstancedSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.aura), 1, 0, 1, 2.4),
+    powerHalo: glowInstancedSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.aura), 0.8, 1, 1, 1.6)
+  };
+  if (script) {
+    for (const type of INSTANCED_TYPES) {
+      const count = POOLS[type] ?? 0;
+      (ENTITY_PARTS[type] ?? []).forEach((part, j) => {
+        const id = `inst-${type}-${j}`;
+        const transforms = Array.from({ length: count }, () => ({ position: [0, -500, 0] as [number, number, number], scale: 1e-4 }));
+        const mat = material.custom((type === "power" ? instancedMaterials[part.mat] : instancedMaterials[type]) as CustomSpec);
+        const size = part.size ?? 1;
+        const node =
+          part.shape === "cone" ? instances.cone({ name: id, transforms, params: { radius: part.cone?.radius ?? 0.2, height: part.cone?.height ?? 0.6, radialSegments: 8 }, material: mat })
+          : part.shape === "octahedron" ? instances.polyhedron({ name: id, transforms, params: { variant: "octahedron", detail: 0, radius: typeof size === "number" ? size : 0.9 }, material: mat })
+          : instances.sphere({ name: id, transforms, size: size as number, material: mat });
+        builder.add(node.runtime({ id }));
+      });
+    }
+  }
+
+  /* GU47 SSR-11: prayer-flag lines and hanging lanterns every 18 m along both verges (2 instanced draws) */
+  if (script) {
+    const hidden = (n: number) => Array.from({ length: n }, () => ({ position: [0, -500, 0] as [number, number, number], scale: 1e-4 }));
+    builder.add(instances.box({ name: "verge-flags", size: [1, 1, 1], transforms: hidden(VERGE_POSTS * FLAGS_PER_SPAN), colors: Array.from({ length: VERGE_POSTS * FLAGS_PER_SPAN }, () => "#ffffff"), material: material.custom(flagInstancedSpec()) }).runtime({ id: "verge-flags" }));
+    // SDF stage boards: an indigo lacquer board with gold-rimmed gold lettering, facing the oncoming runner
+    for (const board of STAGE_BOARDS) {
+      const bf = frameAt(samples, Math.min(board.s, ROAD_LENGTH));
+      const e = matrixEuler(frameBasis(bf));
+      const at = onRoad(bf, 0, BOARD_HEIGHT);
+      const width = Math.max(10, board.text.length * 1.05 + 3);
+      const face = onRoad(bf, 0, BOARD_HEIGHT - 0.55);
+      const faceAt: V3 = [face[0] - bf.F[0] * 0.2, face[1] - bf.F[1] * 0.2, face[2] - bf.F[2] * 0.2];
+      builder.add(primitives.box({ name: board.id, size: [width, 3.2, 0.3], material: material.custom(solidSpec(hexLinear(0x1c1640), hexLinear(0xf2b33d), 0.08)) }).position(at[0], at[1], at[2]).rotate(e[0], e[1], e[2]).runtime({ id: board.id }));
+      builder.add(text3D(board.text, { name: `${board.id}-text`, size: 1.5, depth: 0.05, letterSpacing: 0.06, backend: "sdf", material: material.emissive({ color: "#f2b33d", emissive: "#f2b33d", emissiveIntensity: 1.2 }) }).position(faceAt[0], faceAt[1], faceAt[2]).rotate(e[0], e[1], e[2]).runtime({ id: `${board.id}-text` }));
+    }
+    builder.add(instances.sphere({ name: "soul-column", size: 1.3, transforms: hidden(SOUL_COLUMN.count), material: material.custom(glowInstancedSpec(hexLinear(PALETTE.spirit), hexLinear(PALETTE.bone), 0.85, 1, 0, 1.6)) }).runtime({ id: "soul-column" }));
+    for (const band of ISLAND_BANDS) {
+      builder.add(instances.cone({ name: band.id, params: { radius: 1, height: 1, radialSegments: 7 }, transforms: hidden(band.count), colors: Array.from({ length: band.count }, () => "#ffffff"), material: material.custom(islandInstancedSpec()) }).runtime({ id: band.id }));
+    }
+    builder.add(instances.sphere({ name: "verge-lanterns", size: 0.55, transforms: hidden(VERGE_POSTS), material: material.custom(glowInstancedSpec(hexLinear(0xfff0c8), hexLinear(0xf2b33d), 0.9, 0, 0, 1.8)) }).runtime({ id: "verge-lanterns" }));
+  }
 
   /* entity pools: every slot is a small multi-part prop */
   for (const [type, count] of Object.entries(POOLS)) {
+    if (script && INSTANCED_TYPES.has(type)) continue;
     (ENTITY_PARTS[type] ?? []).forEach((part, j) => {
       for (let i = 0; i < count; i++) {
         if (part.shape === "model") {
@@ -269,10 +453,26 @@ export function buildWorld(options: WorldOptions = {}): World {
     });
   }
 
-  /* post: the look spec records no composer, so only a faint bloom for the glows and FXAA for the primitive edges */
-  builder
-    .add(effects.bloom({ name: "bloom", intensity: 0.12, threshold: 0.95, radius: 0.4 }))
-    .add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
+  /* post: the original look records no composer, so only a faint bloom for the glows and FXAA for the primitive edges */
+  if (!script) {
+    builder
+      .add(effects.bloom({ name: "bloom", intensity: 0.12, threshold: 0.95, radius: 0.4 }))
+      .add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
+  } else {
+    // GU47 SSR-05/06: bloom 0.45 / 0.85, per-stage grade (written each frame by art/lookRuntime.ts), vignette 0.22, and
+    // the god-ray volumetric pass (enabled at runtime on High / Ultra tiers and low-sun stages only).
+    builder
+      .add(effects.bloom({ name: "bloom", intensity: first.bloom.intensity, threshold: first.bloom.threshold, radius: 0.5 }))
+      .add(effects.colorGrade({ name: "grade", temperature: first.grade.temperature, tint: first.grade.tint, saturation: first.grade.saturation, contrast: first.grade.contrast }))
+      .add(effects.vignette({ name: "vignette", intensity: 0.22 }))
+      .add(effects.volumetricFog({ name: "god rays", density: 0.02, intensity: 0.35, color: first.sun.color, godRayDensity: 0.35 }))
+      // GU47 SSR-07: motion blur above 60 m/s (High only), aberration pulses, outro DOF; art/cinePost.ts disables them
+      // on the first frame and enables each only when its moment comes.
+      .add(effects.motionBlur({ name: "motion blur", intensity: 0.25, shutter: 0.5, maxBlur: 12 }))
+      .add(effects.chromaticAberration({ name: "aberration", intensity: 0.003 }))
+      .add(effects.depthOfField({ name: "outro focus", focusDistance: 9, fStop: 2.8, maxBlur: 6 }))
+      .add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
+  }
 
   return {
     scene: builder,
@@ -299,6 +499,41 @@ export function buildWorld(options: WorldOptions = {}): World {
       let prevPulse = 0;
       let burstT = 1;
       let reducedMotion = false;
+      /* GU47 SSR-01: the colour-script driver (script mode only; `?look=original` writes nothing) */
+      const lookDriver = script ? createLookDriver(app as unknown as LookAppLike, (id) => node(id) as unknown as LookNodeHandle) : null;
+      let lookShown: ResolvedLook | null = null;
+      let lastShot: Shot | null = null;
+      /* GU47 SSR-07: speed and moment post (script mode only) */
+      const cinePost = script ? createCinePostDriver(app as unknown as LookAppLike) : null;
+      /* GU47 SSR-14: the rigged runner on the E-H mixer (script mode; `?look=original` keeps playClip) */
+      const mixerActor = runner?.actor as unknown as Partial<MixerActorLike> | undefined;
+      /* GU47 SSR-15: camera shots layered on the chase camera (script mode) */
+      const shots = script ? createShotDirector() : null;
+      const animator: RunnerAnimator | null = script && runner && typeof mixerActor?.crossFadeTo === "function" && typeof mixerActor.advance === "function"
+        ? createRunnerAnimator(mixerActor as MixerActorLike, CLIP.hit) : null;
+      /* GU47 SSR-12: runtime effect events and the runner trail (script mode only) */
+      const vfxEvents = script ? createVfxEventTracker() : null;
+      const fx = script ? app.effects : undefined;
+      const reducedFlash = typeof location !== "undefined" && new URLSearchParams(location.search).get("flash") === "0";
+      const registerVfx = (): void => { try { registerSerpentVfx(fx, { reducedMotion, reducedFlash: reducedFlash || reducedMotion }); } catch (error) { console.warn("serpentine-sky-run: VFX presets unavailable", error); } };
+      registerVfx();
+      let trail: { stop(o?: { immediate?: boolean }): void } | null = null;
+      /* GU47 SSR-13: wisps, petals, embers, rain and lightning (script mode only) */
+      const ambient = script ? createAmbientFx() : null;
+      let rainKey = "";
+      let exposureBoost = 0;
+      let vfxFired = 0;
+      /* GU47 SSR-11: verge buffers */
+      const flagBuf = script ? { data: new Float32Array(VERGE_POSTS * FLAGS_PER_SPAN * 16), rgba: new Float32Array(VERGE_POSTS * FLAGS_PER_SPAN * 4) } : null;
+      const lampBuf = script ? new Float32Array(VERGE_POSTS * 16) : null;
+      const soulBuf = script ? new Float32Array(SOUL_COLUMN.count * 16) : null;
+      const islandBufs = script ? ISLAND_BANDS.map((b) => ({ band: b, data: new Float32Array(b.count * 16), rgba: new Float32Array(b.count * 4) })) : [];
+      /* GU47 SSR-18: per-frame instance buffers (allocated once; `count` instances written each frame) */
+      const instBuffers = new Map<string, { data: Float32Array; rgba: Float32Array; count: number }>();
+      if (script) for (const type of INSTANCED_TYPES) (ENTITY_PARTS[type] ?? []).forEach((_part, j) => {
+        const cap = POOLS[type] ?? 0;
+        instBuffers.set(`inst-${type}-${j}`, { data: new Float32Array(cap * 16), rgba: new Float32Array(cap * 4).fill(1), count: 0 });
+      });
       /* C8: the visible state each pooled node was last given, so a frame only writes the slots that change */
       const shown = new Map<string, boolean>();
       let visibilityWrites = 0;
@@ -342,6 +577,13 @@ export function buildWorld(options: WorldOptions = {}): World {
         const tumbleM: M3 | null = falling ? rx(-tf * 5) : null;
         const flying = S.puff > 0 || falling;
         const lean = Math.max(-0.35, Math.min(0.35, S.laneVel * 0.02));
+        // GU47 SSR-14: lean into the bend and the lane change, capped at 12 deg (the road's yaw rate over BEND_PROBE m)
+        let scriptLean = 0;
+        if (script) {
+          const ahead = frameAt(samples, Math.min(S.s + BEND_PROBE, ROAD_LENGTH));
+          const curvature = (ahead.F[0] * frame.R[0] + ahead.F[1] * frame.R[1] + ahead.F[2] * frame.R[2]) / BEND_PROBE;
+          scriptLean = runnerLean(S.laneVel, curvature, S.speed, reducedMotion);
+        }
         if (prevS === null) prevS = S.s;
         const ds = S.s - prevS;
         prevS = S.s;
@@ -350,7 +592,7 @@ export function buildWorld(options: WorldOptions = {}): World {
         const B = frameBasis(frame, -lean);
         const parts = poseHero({
           phase: phaseAcc, time, grounded: S.grounded && !leaping, vy: airVy, sliding: S.sliding > 0, flying, diving: S.dive || falling,
-          lean: Math.max(-0.3, Math.min(0.3, S.laneVel * 0.012)) + (falling ? 0.5 * Math.sin(time * 5) : 0),
+          lean: (script ? scriptLean : Math.max(-0.3, Math.min(0.3, S.laneVel * 0.012))) + (falling ? 0.5 * Math.sin(time * 5) : 0),
           surge, stumble: Math.max(0, Math.min(1, S.stumble)), speed: S.speed
         });
         const TUMBLE_CENTRE: LV3 = [0, 1.9, 0];
@@ -373,13 +615,17 @@ export function buildWorld(options: WorldOptions = {}): World {
           /* rigged runner: pick a clip from the sim state, then orient the model on the road frame */
           const moving = ds > 1e-5;
           const rate = Math.max(0.6, S.speed / 32);
-          const clip = S.stumble > 0.3 ? CLIP.hit : S.sliding > 0 ? CLIP.slide : S.dive || falling ? CLIP.dive : flying || leaping ? CLIP.fly : !S.grounded ? CLIP.air : moving ? CLIP.run : CLIP.idle;
-          const length = runner.durations[clip] ?? 1;
-          actorClock = (actorClock + dt * (moving ? 1.5 * rate : 1)) % length;
-          const t = clip === CLIP.hit ? Math.min(length, Math.max(0, (0.75 - S.stumble) * 1.5)) : actorClock;
-          runner.actor.playClip(clip, Math.max(0, Math.min(length, t)) % (length + 1e-6));
+          const base = S.sliding > 0 ? CLIP.slide : S.dive || falling ? CLIP.dive : flying || leaping ? CLIP.fly : !S.grounded ? CLIP.air : moving ? CLIP.run : CLIP.idle;
+          if (animator) animator.step({ clip: base, rate: moving ? 1.5 * rate : 1, stumble: S.stumble, dt });
+          else {
+            const clip = S.stumble > 0.3 ? CLIP.hit : base;
+            const length = runner.durations[clip] ?? 1;
+            actorClock = (actorClock + dt * (moving ? 1.5 * rate : 1)) % length;
+            const t = clip === CLIP.hit ? Math.min(length, Math.max(0, (0.75 - S.stumble) * 1.5)) : actorClock;
+            runner.actor.playClip(clip, Math.max(0, Math.min(length, t)) % (length + 1e-6));
+          }
           const pitch = flying ? (S.dive || falling ? 2.3 : 1.32) : 0;
-          const lateralLean = Math.max(-0.3, Math.min(0.3, S.laneVel * 0.012)) + (falling ? 0.5 * Math.sin(time * 5) : 0);
+          const lateralLean = (script ? scriptLean : Math.max(-0.3, Math.min(0.3, S.laneVel * 0.012))) + (falling ? 0.5 * Math.sin(time * 5) : 0);
           let body = mul(rz(-lateralLean), rx(-pitch));
           if (tumbleM) body = mul(tumbleM, body);
           const centre: LV3 = [0, 1.7, 0];
@@ -400,7 +646,7 @@ export function buildWorld(options: WorldOptions = {}): World {
           show(id, surge > 4e-3);
           h.setPosition(auraCentre[0], auraCentre[1], auraCentre[2]).setRotation(auraEuler[0], auraEuler[1], auraEuler[2]).setScale(scale);
           h.setUniform?.("auraTime", id === "aura-inner" ? 1.37 * time + 4 : time);
-          h.setUniform?.("auraIntensity", surge * 0.7);
+          h.setUniform?.("auraIntensity", surge * 0.7 * (script ? auraPulse(S.kiPulse, reducedMotion) : 1));
           h.setUniform?.("auraSolid", S.puff > 0 ? 0.24 : solidAmount);
         }
 
@@ -413,7 +659,7 @@ export function buildWorld(options: WorldOptions = {}): World {
         shadow.setUniform?.("blobAlpha", 0.5);
 
         /* ki sparks rising off the runner while the aura is up */
-        for (let i = 0; i < SPARKS; i++) {
+        for (let i = 0; i < (script ? 0 : SPARKS); i++) {
           if (surge < 0.12) { hide(`spark-${i}`); continue; }
           const ph = mod(time * 0.9 + i / SPARKS, 1);
           const sp = toWorld([Math.sin(i * 7.13) * 0.95, 0.5 + ph * 3.4, 0.2 + ph * (1.4 + 0.04 * S.speed)]);
@@ -424,7 +670,7 @@ export function buildWorld(options: WorldOptions = {}): World {
         if (S.kiPulse > prevPulse + 0.3) burstT = 0;
         prevPulse = S.kiPulse;
         burstT += dt;
-        for (let i = 0; i < BURSTS; i++) {
+        for (let i = 0; i < (script ? 0 : BURSTS); i++) {
           if (burstT >= 0.5) { hide(`burst-${i}`); continue; }
           const h = show(`burst-${i}`, true);
           const a = (i / BURSTS) * Math.PI * 2;
@@ -433,9 +679,41 @@ export function buildWorld(options: WorldOptions = {}): World {
           h.setPosition(bp[0], bp[1], bp[2]).setScale(Math.max(0.05, 1 - burstT / 0.5));
         }
 
+        /* GU47 SSR-12: engine runtime effects for this frame's events, and the surge / flight trail */
+        if (vfxEvents && fx) {
+          for (const event of vfxEvents.step(S)) {
+            let at: V3;
+            if (event.entity) {
+              const ent = event.entity;
+              const es = ent.type === "sweeper" || ent.type === "soul" || ent.type === "oni" ? ent.s + ent.rel : ent.s;
+              at = onRoad(frameAt(samples, Math.min(Math.max(es, 0), ROAD_LENGTH)), entityLateral(ent), entityHeight(ent) + 0.6);
+            } else at = toWorld(event.kind === "serpent-cloud-puff" ? [0, 0.2, 0.3] : [0, 1.6, 0]);
+            try { fx.burst(event.kind, at); vfxFired++; } catch { /* preset missing on this build: skip the cue */ }
+          }
+          if (vfxEvents.trailOn && !trail) { try { trail = fx.trail("aura-inner", SERPENT_RUNNER_TRAIL); } catch { trail = null; } }
+          else if (!vfxEvents.trailOn && trail) { trail.stop(); trail = null; }
+        }
+
         /* speed streaks fixed to the road so they sweep past the camera */
         const fast = surge > 0.3 || flying;
-        for (let i = 0; i < STREAKS; i++) {
+        if (ambient && fx) {
+          const air = ambient.step({ S, look: lookShown ?? { stageIndex: 0, storm: 0 }, time, dt, fast, reducedMotion, reducedFlash });
+          exposureBoost = air.exposureBoost;
+          if (air.raining) {
+            // rain falls along the road's down axis, slanted across the road by the sim's gust; re-registered on change
+            const d: V3 = [-frame.U[0] + frame.R[0] * air.rainSlant, -frame.U[1] + frame.R[1] * air.rainSlant, -frame.U[2] + frame.R[2] * air.rainSlant];
+            const dl = Math.hypot(d[0], d[1], d[2]) || 1;
+            const q: [number, number, number] = [Math.round((d[0] / dl) * 10) / 10, Math.round((d[1] / dl) * 10) / 10, Math.round((d[2] / dl) * 10) / 10];
+            const key = q.join(",");
+            if (key !== rainKey) { try { fx.registerPreset("serpent-rain", serpentRainPreset(q, reducedMotion)); } catch { /* registry missing */ } rainKey = key; }
+          }
+          for (const spawn of air.spawns) {
+            const sf = frameAt(samples, Math.min(Math.max(S.s + spawn.rel, -40), ROAD_LENGTH));
+            const at = onRoad(sf, S.laneX * (spawn.kind === "serpent-rain" ? 1 : 0) + spawn.lateral, spawn.up);
+            try { fx.burst(spawn.kind, at); vfxFired++; } catch { /* preset missing on this build: skip */ }
+          }
+        }
+        for (let i = 0; i < (script ? 0 : STREAKS); i++) {
           if (!fast) { hide(`streak-${i}`); continue; }
           const h = show(`streak-${i}`, true);
           const rel = mod(i * 37.7 - S.s, 90) - 12;
@@ -466,9 +744,105 @@ export function buildWorld(options: WorldOptions = {}): World {
           h.setPosition(ip[0], ip[1], ip[2]).setRotation(ie[0], ie[1], ie[2]).setScale(1 + (i % 3) * 0.35);
         }
 
+        /* GU47 SSR-11: flag lines strung between verge posts every 18 m, a lantern hanging at each post */
+        if (flagBuf && lampBuf) {
+          let fi = 0, li = 0;
+          const first = Math.floor((S.s - VERGE_BEHIND) / VERGE_SPACING);
+          for (let k = 0; k < VERGE_POSTS / 2; k++) {
+            const s0 = (first + k) * VERGE_SPACING;
+            for (const side of [-1, 1]) {
+              const lf = frameAt(samples, Math.min(Math.max(s0, 0), ROAD_LENGTH));
+              const lampAt = onRoad(lf, side * 9.6, 3.2);
+              writeMatrix(lampBuf, li++ * 16, frameBasis(lf), lampAt, 1);
+              for (let q = 0; q < FLAGS_PER_SPAN; q++) {
+                const sq = s0 + ((q + 0.5) / FLAGS_PER_SPAN) * VERGE_SPACING;
+                const ff = frameAt(samples, Math.min(Math.max(sq, 0), ROAD_LENGTH));
+                const sag = Math.sin(((q + 0.5) / FLAGS_PER_SPAN) * Math.PI) * 0.7;
+                const at = onRoad(ff, side * 9.6, 3.6 - sag);
+                // cloth: 1.1 m long along the road, 0.7 m tall, 0.02 m thick; its local x runs along the road
+                const B = frameBasis(ff, Math.PI / 2);
+                const m: M3 = [B[0] * 1.1, B[1] * 1.1, B[2] * 1.1, B[3] * 0.7, B[4] * 0.7, B[5] * 0.7, B[6] * 0.02, B[7] * 0.02, B[8] * 0.02];
+                writeMatrix(flagBuf.data, fi * 16, m, at, 1);
+                const c = FLAG_COLORS[mod(first + k + q + (side > 0 ? 2 : 0), FLAG_COLORS.length)]!;
+                flagBuf.rgba[fi * 4] = c[0]; flagBuf.rgba[fi * 4 + 1] = c[1]; flagBuf.rgba[fi * 4 + 2] = c[2]; flagBuf.rgba[fi * 4 + 3] = 1;
+                fi++;
+              }
+            }
+          }
+          const flags = node("verge-flags") as Partial<ReturnType<typeof node>>;
+          flags.setInstanceMatrices?.(flagBuf.data, fi, flagBuf.rgba);
+          flags.setUniform?.("flagTime", reducedMotion ? time * 0.3 : time);
+          if (lookDriver) {
+            flags.setUniform?.("flagSunDir", [...lookDriver.sunDir]);
+            if (lookShown) { flags.setUniform?.("flagSunColor", [...lookShown.sunColor]); flags.setUniform?.("flagFogColor", [...lookShown.fogColor]); }
+          }
+          (node("verge-lanterns") as Partial<ReturnType<typeof node>>).setInstanceMatrices?.(lampBuf, li);
+        }
+
+        /* GU47 SSR-11: stage boards only while within BOARD_SHOW_AHEAD m ahead (and 20 m behind) */
+        if (script) {
+          const sOut = lookDistance(S.s, S.leg);
+          for (const board of STAGE_BOARDS) {
+            const near = sOut > board.s - BOARD_SHOW_AHEAD && sOut < board.s + 20 && S.leg === "out";
+            show(board.id, near);
+            show(`${board.id}-text`, near);
+          }
+        }
+
+        /* GU47 SSR-17: the soul column (souls rise and spiral; slowed on reduced motion) */
+        if (soulBuf) {
+          const sOut = lookDistance(S.s, S.leg);
+          const near = S.leg === "out" && sOut > SOUL_COLUMN.s - SOUL_COLUMN.show && sOut < SOUL_COLUMN.s + 60;
+          const h = show("soul-column", near) as Partial<ReturnType<typeof node>>;
+          if (near) {
+            const cf = frameAt(samples, SOUL_COLUMN.s);
+            const clock = reducedMotion ? time * 0.3 : time;
+            for (let i = 0; i < SOUL_COLUMN.count; i++) {
+              const ph = mod(i / SOUL_COLUMN.count + clock * 0.03, 1);
+              const a = i * 2.39996 + clock * 0.4;
+              const r = SOUL_COLUMN.radius * (0.6 + 0.4 * Math.sin(i * 1.7));
+              const p = onRoad(cf, SOUL_COLUMN.lateral + Math.cos(a) * r, -30 + ph * SOUL_COLUMN.height);
+              const q: V3 = [p[0] + cf.F[0] * Math.sin(a) * r, p[1] + cf.F[1] * Math.sin(a) * r, p[2] + cf.F[2] * Math.sin(a) * r];
+              writeMatrix(soulBuf, i * 16, frameBasis(cf), q, 0.6 + 0.8 * Math.sin(Math.PI * ph));
+            }
+            h.setInstanceMatrices?.(soulBuf, SOUL_COLUMN.count);
+          }
+        }
+
+        /* GU47 SSR-11: mid and far island bands (inverted spires, slow bob), recycled ahead along the road */
+        for (const { band, data, rgba } of islandBufs) {
+          const span = band.count * band.spacing;
+          for (let i = 0; i < band.count; i++) {
+            const h = (k: number): number => { const x = Math.sin((i + 1) * 12.9898 + k * 78.233 + band.spacing) * 43758.5453; return x - Math.floor(x); };
+            const rel = mod(i * band.spacing - S.s, span) - 160;
+            const sf = frameAt(samples, Math.min(Math.max(S.s + rel, -40), ROAD_LENGTH));
+            const side = i % 2 ? 1 : -1;
+            const bob = reducedMotion ? 0 : Math.sin(time * 0.25 + i * 1.3) * 1.5;
+            const at = onRoad(sf, side * (band.lateral[0] + (band.lateral[1] - band.lateral[0]) * h(1)), band.up[0] + (band.up[1] - band.up[0]) * h(2) + bob);
+            const r = band.radius[0] + (band.radius[1] - band.radius[0]) * h(3);
+            const ht = band.height[0] + (band.height[1] - band.height[0]) * h(4);
+            const B = mul(frameBasis(sf, h(5) * Math.PI * 2), rx(Math.PI));
+            const m: M3 = [B[0] * r, B[1] * r, B[2] * r, B[3] * ht, B[4] * ht, B[5] * ht, B[6] * r, B[7] * r, B[8] * r];
+            writeMatrix(data, i * 16, m, at, 1);
+            rgba[i * 4] = band.fog; rgba[i * 4 + 1] = 0; rgba[i * 4 + 2] = 0; rgba[i * 4 + 3] = 1;
+          }
+          const n = node(band.id) as Partial<ReturnType<typeof node>>;
+          n.setInstanceMatrices?.(data, band.count, rgba);
+          if (lookDriver) {
+            n.setUniform?.("islandSunDir", [...lookDriver.sunDir]);
+            if (lookShown) {
+              n.setUniform?.("islandSunColor", [...lookShown.sunColor]);
+              n.setUniform?.("islandFogColor", [...lookShown.fogColor]);
+              n.setUniform?.("islandLit", [...lookShown.cloudLit]);
+              n.setUniform?.("islandDark", [...lookShown.belly]);
+            }
+          }
+        }
+
         /* entities: assign the nearest alive ones to the pooled slots, hide the rest */
         const used: Record<string, number> = {};
         alive = 0;
+        for (const buf of instBuffers.values()) buf.count = 0;
         for (const ent of S.ents as readonly Entity[]) {
           if (ent.dead) continue;
           const s = ent.type === "sweeper" || ent.type === "soul" || ent.type === "oni" ? ent.s + ent.rel : ent.s;
@@ -488,7 +862,19 @@ export function buildWorld(options: WorldOptions = {}): World {
           const pulse = ent.type === "orb" ? 1 + 0.08 * Math.sin(time * 6 + ent.spin) : 1;
           const tumble = ent.punt ? eulerMatrix([ent.punt.t * 9, ent.punt.t * 5, 0]) : null;
           const style = ent.type === "power" ? POWER_STYLE[ent.kind ?? "surge"] : undefined;
+          const instanced = script && INSTANCED_TYPES.has(ent.type);
           parts3.forEach((part, j) => {
+            if (instanced) {
+              let local: M3 = part.rot ? eulerMatrix(part.rot) : eulerMatrix([0, 0, 0]);
+              if (part.spin) local = mul(ry(time * part.spin + ent.spin), local);
+              const off = apply(EB, part.at);
+              const buf = instBuffers.get(`inst-${ent.type}-${j}`)!;
+              const i = buf.count++;
+              writeMatrix(buf.data, i * 16, mul(EB, local), [base[0] + off[0], base[1] + off[1], base[2] + off[2]], pulse);
+              const shell = style?.shell ?? [1, 1, 1];
+              buf.rgba[i * 4] = shell[0]; buf.rgba[i * 4 + 1] = shell[1]; buf.rgba[i * 4 + 2] = shell[2]; buf.rgba[i * 4 + 3] = 1;
+              return;
+            }
             const handle = show(`ent-${ent.type}-${idx}-${j}`, true);
             let local: M3 = part.rot ? eulerMatrix(part.rot) : eulerMatrix([0, 0, 0]);
             if (part.spin) local = mul(ry(time * part.spin + ent.spin), local);
@@ -504,30 +890,48 @@ export function buildWorld(options: WorldOptions = {}): World {
             }
           });
         }
+        for (const [id, buf] of instBuffers) (node(id) as Partial<ReturnType<typeof node>>).setInstanceMatrices?.(buf.data, buf.count, buf.rgba);
         for (const [type, count] of Object.entries(POOLS)) {
+          if (script && INSTANCED_TYPES.has(type)) continue;
           const partCount = (ENTITY_PARTS[type] ?? []).length;
           for (let i = used[type] ?? 0; i < count; i++) for (let j = 0; j < partCount; j++) hide(`ent-${type}-${i}-${j}`);
         }
 
         /* chase camera */
         rig = stepChaseRig(rig, frame.F, frame.U, dt);
-        const back = flying ? 9.5 : 7 + Math.min(1.6, S.speed * 0.03);
+        const shot = shots?.step({ S, dt, lean: scriptLean, outro: tf, reducedMotion }) ?? null;
+        const back = (flying ? 9.5 : 7 + Math.min(1.6, S.speed * 0.03)) * (shot?.back ?? 1);
         const rise = flying ? 4.4 : 3.4;
         const shake = reducedMotion ? 0 : Math.min(1, Math.max(0, S.shake ?? 0)) * 0.25;
         const jx = shake * Math.sin(time * 61), jy = shake * Math.sin(time * 47 + 1.3);
         const lift = falling ? Math.min(tf, 2.2) * 2.2 : leaping ? Math.min(tf, 2) * 1.2 : 0;
-        const eye: V3 = [pose[0] - rig.f[0] * back + rig.u[0] * (rise + lift) + frame.R[0] * jx, pose[1] - rig.f[1] * back + rig.u[1] * (rise + lift) + frame.R[1] * jx + jy, pose[2] - rig.f[2] * back + rig.u[2] * (rise + lift) + frame.R[2] * jx];
+        let eye: V3 = [pose[0] - rig.f[0] * back + rig.u[0] * (rise + lift) + frame.R[0] * jx, pose[1] - rig.f[1] * back + rig.u[1] * (rise + lift) + frame.R[1] * jx + jy, pose[2] - rig.f[2] * back + rig.u[2] * (rise + lift) + frame.R[2] * jx];
         const ahead = falling || leaping ? 3 : 12;
         const aim = falling ? -1.4 : 1.6;
-        const look: V3 = [pose[0] + rig.f[0] * ahead + rig.u[0] * aim, pose[1] + rig.f[1] * ahead + rig.u[1] * aim, pose[2] + rig.f[2] * ahead + rig.u[2] * aim];
-        const fov = (aspect < 0.85 ? 74 : 62) + (reducedMotion ? 0 : Math.min(10, Math.max(0, S.speed - 60) * 0.06));
-        cameraController.setPose({ position: eye, target: look, up: rig.u, fov }, { cut: false });
+        let look: V3 = [pose[0] + rig.f[0] * ahead + rig.u[0] * aim, pose[1] + rig.f[1] * ahead + rig.u[1] * aim, pose[2] + rig.f[2] * ahead + rig.u[2] * aim];
+        let up: V3 = rig.u;
+        if (shot) [eye, look, up] = applyShot(shot, eye, look, pose, rig.f, rig.u);
+        const fov = (aspect < 0.85 ? 74 : 62) + (reducedMotion ? 0 : Math.min(10, Math.max(0, S.speed - 60) * 0.06)) + (shot?.fovAdd ?? 0);
+        cameraController.setPose({ position: eye, target: look, up, fov }, { cut: false });
+        lastShot = shot;
+
+        /* GU47 SSR-01: stage colour script, read-only from the run's distance */
+        if (lookDriver) {
+          lookShown = lookAt(lookDistance(S.s, S.leg), lookConfig);
+          lookDriver.apply(exposureBoost ? { ...lookShown, exposure: lookShown.exposure + exposureBoost } : lookShown, { forward: rig.f, time, eye, reducedMotion });
+          const flare = show("sun-flare", lookDriver.godRaysOn);
+          if (lookDriver.godRaysOn) {
+            const d = lookDriver.sunDir;
+            flare.setPosition(eye[0] + d[0] * 4000, eye[1] + d[1] * 4000, eye[2] + d[2] * 4000);
+          }
+        }
+        cinePost?.step({ S, dt, reducedMotion, reducedFlash });
       };
 
       return {
         update,
         resetCamera() { rig = null; prevS = null; },
-        setReducedMotion(on: boolean) { reducedMotion = on; },
+        setReducedMotion(on: boolean) { const changed = reducedMotion !== on; reducedMotion = on; if (changed && fx) { registerVfx(); rainKey = ""; } },
         get visibilityWrites() { return visibilityWrites; },
         setRunnerStyle(style: RunnerStyle) {
           const colorOf: Record<HeroColor, number> = { gi: style.gi, giDark: style.giDark, skin: style.skin, hair: style.hair, teal: style.belt, boot: style.boot, sash: style.sash };
@@ -542,11 +946,18 @@ export function buildWorld(options: WorldOptions = {}): World {
             h.setUniform?.("auraMid", [...hexLinear(style.auraLit)]);
             h.setUniform?.("auraEdge", [...hexLinear(style.aura)]);
           }
-          for (let i = 0; i < SPARKS; i++) node(`spark-${i}`).setUniform?.("flatColor", [...hexLinear(style.auraLit)]);
+          if (!script) for (let i = 0; i < SPARKS; i++) node(`spark-${i}`).setUniform?.("flatColor", [...hexLinear(style.auraLit)]);
           runner?.actor.setTint({ baseColor: [style.tint[0], style.tint[1], style.tint[2], 1], emissiveColor: [style.wash[0], style.wash[1], style.wash[2]], emissiveStrength: 0.12 });
         },
         get nodeCount() { return handles.size; },
-        get entityNodes() { return alive; }
+        get entityNodes() { return alive; },
+        get vfxFired() { return vfxFired; },
+        get strikes() { return ambient?.strikes ?? 0; },
+        get cinePost() { return cinePost?.state ?? null; },
+        get shot() { return lastShot; },
+        get look(): WorldLookState {
+          return { mode: lookConfig.mode, id: lookShown?.id ?? "original", stageIndex: lookShown?.stageIndex ?? 0, godRays: lookDriver?.godRaysOn ?? false, writes: lookDriver?.writes ?? 0 };
+        }
       };
     }
   };

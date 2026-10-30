@@ -10,6 +10,8 @@
  * W/S/A/D to steer), P/Esc pauses, M mutes, R/Enter restarts from the results screen. Touch: swipe for lanes, tap to
  * jump, swipe down to slide; while flying, hold the left or right half to steer and drag up or down to climb or dive.
  * `env=<n>` overrides the neutral-environment intensity (calibration captures only, see world.ts).
+ * GU47: `stage=1..8` pins the stage colour script to one stage's look (the run is unchanged) and `look=original` keeps the
+ * pre-GU47 look (art/colorScript.ts).
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { createRenderInterpolator } from "@aura3d/engine/game";
@@ -23,12 +25,17 @@ import { blendSamples, sampleOf, type PresentSample } from "./presentation";
 import { createSfx } from "./sfx";
 import { RUNNER_STYLES, hexCss } from "./styles";
 import { buildWorld, loadRunner, type WorldRuntime } from "./world";
+import { STAGE_LOOK, lookParams } from "./art/colorScript";
+import { serpentCrops } from "./art/crops";
 
 /** QA hook name: `window.__AURA_SERPENTINE_SKY_RUN__` (and `__AURA_SERPENTINE_SKY_RUN_ERROR__` for the first error). */
 export const QA_HOOK_NAME = "serpentine-sky-run";
 
 const params = new URLSearchParams(location.search);
 const config = { autostart: params.get("autostart") === "1", manual: params.get("manual") === "1" };
+const look = lookParams(location.search);
+// GU47 SSR-16: the indigo lacquer HUD theme follows the colour script; `?look=original` keeps the old HUD
+if (look.mode === "script") document.documentElement.classList.add("serpent-hud");
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
@@ -52,6 +59,7 @@ const guard = createRenderGuard();
 let outroT = 0;
 let counting = 0;
 let resultsShown = false;
+let barsShown = 0;
 let runnerIndex = 0;
 
 /* ------------------------------------------------------------------ best score */
@@ -306,6 +314,9 @@ function render(dt: number, blend = false): void {
   try {
     const alpha = blend ? Math.min(1, loop.accumulator / STEP) : 1;
     runtime.update(state, dt, renderTime + (alpha < 1 ? loop.accumulator : 0), canvas.clientWidth / Math.max(1, canvas.clientHeight), outroT, alpha < 1 ? interpolator.sample(alpha) : undefined);
+    // GU47 SSR-15: intro cinema bars (written only when the height moves)
+    const bars = Math.round((runtime.shot?.bars ?? 0) * 100) / 100;
+    if (bars !== barsShown) { document.getElementById("cinebars")?.style.setProperty("--bars", String(bars)); barsShown = bars; }
     app.step(0);
     guard.ok();
   } catch (error) {
@@ -421,8 +432,11 @@ const qa = installQaHooks(QA_HOOK_NAME, {
     outro: (seconds: number) => { outroT = seconds; render(0); return qaSnapshot(state, steps); },
     meta: () => ({
       steps, renderTime, entityNodes: runtime?.entityNodes ?? 0, nodeCount: runtime?.nodeCount ?? 0, visibilityWrites: runtime?.visibilityWrites ?? 0,
-      renderErrors: guard.total, renderFailed: guard.failed, lastRenderError: guard.lastError
+      renderErrors: guard.total, renderFailed: guard.failed, lastRenderError: guard.lastError,
+      look: runtime?.look ?? null, vfxFired: runtime?.vfxFired ?? 0
     }),
+    /** GU47 E-I crop contract: named, normalised capture regions for the steady-state chase framing. */
+    crops: () => serpentCrops(canvas.clientWidth / Math.max(1, canvas.clientHeight)),
     /** Test seam for the touch and keyboard input (C6, C10). */
     input: () => ({ held: [...input.held], taps: [...input.taps] }),
     capture: async () => {
@@ -447,13 +461,14 @@ function sizeCanvas(): void {
 async function boot(): Promise<void> {
   sizeCanvas();
   const runner = await loadRunner(canvas);
-  const world = buildWorld({ canvas, runner });
+  const world = buildWorld({ canvas, runner, look });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
     pixelRatio: 1,
     renderer: { quality: "auto" },
-    output: { toneMapping: "none", dither: false },
+    // GU47 SSR-05: ACES under the colour script (exposure per stage from the look table); `?look=original` stays untonemapped
+    output: look.mode === "original" ? { toneMapping: "none", dither: false } : { toneMapping: "aces", exposure: STAGE_LOOK[look.pinnedStage ?? 0]!.exposure, dither: true },
     scene: world.scene
   });
   await app.ready();

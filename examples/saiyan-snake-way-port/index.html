@@ -30,6 +30,35 @@
       #speedfx, #fallfx, #drowsefx { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.18s linear; }
       #speedfx { background: radial-gradient(ellipse at 50% 55%, transparent 52%, rgba(255, 214, 236, 0.5) 100%); }
       #fallfx { background: radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(60, 20, 90, 0.7) 100%); }
+      /* GU47 SSR-15: cinema bars for the intro shot (height driven by --bars, 0..1) */
+      #cinebars { position: fixed; inset: 0; pointer-events: none; --bars: 0; }
+      #cinebars::before, #cinebars::after { content: ""; position: absolute; left: 0; right: 0; height: calc(10vh * var(--bars)); background: #0c0a24; }
+      #cinebars::before { top: 0; }
+      #cinebars::after { bottom: 0; }
+      /* GU47 SSR-16: indigo lacquer HUD with gold hairlines, Canela titles, a serpent progress bar, jade SPARK and coral
+         STRAIN. Scoped to html.serpent-hud (colour-script mode); ?look=original keeps the HUD above. */
+      .serpent-hud { --ink: #fbf3e4; --muted: #d9cfe8; --panel: rgba(28, 22, 64, 0.86); --panel-hi: rgba(28, 22, 64, 0.94); --line: rgba(242, 179, 61, 0.55);
+        --gold: #f2b33d; --spark: #7fe0c4; --warm: #ff7a6b; --warm-hi: #ff9c8e; --deep: #1c1640; --a3g-font-display: "A3G Canela", "Canela", Georgia, serif; }
+      .serpent-hud .card-hud, .serpent-hud .card { background: var(--panel); border: 1px solid var(--line); border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(28, 22, 64, 0.9), inset 0 0 0 2px rgba(242, 179, 61, 0.18), 0 6px 20px rgba(12, 8, 32, 0.45); }
+      .serpent-hud .card h1, .serpent-hud .card h2, .serpent-hud #banner, .serpent-hud #count, .serpent-hud #side .big, .serpent-hud #side .score { font-family: var(--a3g-font-display); font-weight: 400; }
+      .serpent-hud #banner { color: var(--gold); letter-spacing: 0.06em; text-shadow: 0 2px 0 #1c1640, 0 0 2px #1c1640, 0 6px 18px rgba(12, 8, 32, 0.7); }
+      .serpent-hud #sub, .serpent-hud #prompt, .serpent-hud #gust { background: var(--panel); border: 1px solid var(--line); border-radius: 2px; color: var(--ink); }
+      .serpent-hud #side .tag { background: var(--warm); color: #1c1640; border-radius: 2px; }
+      .serpent-hud #side .chip { border-color: rgba(127, 224, 196, 0.6); color: var(--spark); background: rgba(28, 22, 64, 0.7); }
+      .serpent-hud #badge { border-color: var(--gold); background: radial-gradient(circle at 35% 30%, #7fe0c4, #1f7a6a 70%); }
+      .serpent-hud #ki-label { color: var(--spark); }
+      .serpent-hud #strain-label { color: var(--warm); }
+      .serpent-hud #ki-bar { background: linear-gradient(90deg, #2fa88e, #7fe0c4 70%, #e6fff6); }
+      .serpent-hud #strain-bar { background: linear-gradient(90deg, #ffb08a, #ff7a6b 60%, #e84a4a); }
+      .serpent-hud #surge-chip.hot { border-color: var(--gold); box-shadow: 0 0 18px rgba(242, 179, 61, 0.55); color: var(--gold); }
+      /* serpent progress: a scaled body that fills with gold, a pearl head at the run's front */
+      .serpent-hud #progress .track { height: 8px; border-radius: 4px; overflow: visible; background: radial-gradient(circle at 50% 120%, rgba(127, 224, 196, 0.35) 0 3px, transparent 4px) 0 0 / 8px 8px, rgba(28, 22, 64, 0.85); border: 1px solid var(--line); }
+      .serpent-hud #progress .track i { border-radius: 4px; position: relative; background: radial-gradient(circle at 50% 120%, rgba(255, 246, 220, 0.55) 0 3px, transparent 4px) 0 0 / 8px 8px, linear-gradient(90deg, #7fe0c4, #f2b33d); }
+      .serpent-hud #progress .track i::after { content: ""; position: absolute; right: -6px; top: 50%; width: 12px; height: 12px; transform: translateY(-50%); border-radius: 50% 60% 60% 50%; background: radial-gradient(circle at 35% 35%, #fffaf0, #f2b33d); box-shadow: 0 0 8px rgba(242, 179, 61, 0.8); }
+      .serpent-hud #progress .rowp { color: var(--muted); text-shadow: 0 1px 6px rgba(12, 8, 32, 0.8); }
+      .serpent-hud button { color: #1c1640; background: linear-gradient(180deg, #ffd68a, var(--gold)); border-radius: 3px; box-shadow: 0 2px 10px rgba(242, 179, 61, 0.35); }
+      .serpent-hud button.ghost, .serpent-hud #pause-btn, .serpent-hud #mute-btn { color: var(--ink); background: var(--panel); border: 1px solid var(--line); box-shadow: none; }
+      .serpent-hud .overlay { background: radial-gradient(ellipse at 50% 40%, rgba(28, 22, 64, 0.35), rgba(12, 8, 32, 0.78)); }
       #drowsefx { background: radial-gradient(ellipse at 50% 50%, transparent 38%, rgba(26, 14, 48, 0.92) 100%); }
       .bar-row .mlabel { grid-column: 1 / -1; font-size: 11px; line-height: 12px; color: var(--muted); letter-spacing: 0.08em; margin-bottom: -2px; }
       #drowse-bar { background: linear-gradient(90deg, #9a8cff, #3a2a8a); }
@@ -114,6 +143,7 @@
     <canvas id="world"></canvas>
     <div id="speedfx"></div>
     <div id="fallfx"></div>
+    <div id="cinebars"></div>
     <div id="drowsefx"></div>
     <section id="loading"><div class="card"><h2>Serpentine Sky Run</h2><p id="loading-status" class="meta">Laying the road</p></div></section>
     <section id="title" class="overlay">
