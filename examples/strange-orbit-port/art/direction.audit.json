@@ -422,6 +422,18 @@
         "practical": false
       },
       {
+        "node": "crater-rim",
+        "practical": false
+      },
+      {
+        "node": "rim-rocks",
+        "practical": false
+      },
+      {
+        "node": "rim-spires",
+        "practical": false
+      },
+      {
         "node": "crystal-0-0",
         "practical": false
       },

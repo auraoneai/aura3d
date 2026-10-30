@@ -5,7 +5,7 @@
  * points (`topology: "points"`), six riders and the chase camera. Visual assets
  * the original fetched as remote GLB/PNG files are re-created procedurally.
  */
-import { camera, defineAuraAssets, effects, environments, geometry, lights, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
+import { camera, defineAuraAssets, effects, environments, geometry, instances, lights, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
 import {
   COURSE_LENGTH,
   GATES,
@@ -32,6 +32,7 @@ import { atmosphereSpec, mineralSpec, pointsSpec, skySpec, solidSpec, trackSpec,
 import { mainFrame, routeFrame, surfaceNoise } from "./track";
 import { Vec3 } from "./vec3";
 import { LOOKS, SECTOR_LERP_SECONDS, type OrbitLook } from "./art/look";
+import { RIM, RIM_UNIT, buildCraterRim, rimScatter } from "./art/craterRim";
 import { createCameraFeel, createPostDirector, createSectorDirector, type PostFrame } from "./art/director";
 import { ORBIT_VFX_COLORS, orbitVfxFor, registerOrbitVfx } from "./art/vfx";
 
@@ -389,6 +390,39 @@ export function buildWorld(options: WorldOptions): World {
       material: solidMaterial(hexLinear("#f3ddaf"), hexLinear("#ecb75f"), 2.6)
     }));
   });
+
+  /* ---- GU47 SO47-W1: jagged crater rim at 600-900 m + instanced rocks and spires (gouache; 3 draws) ---- */
+  if (look === "gouache" && !off.has("rim")) {
+    const rim = buildCraterRim(high ? RIM.segments : 128);
+    builder.add(geometry.custom(geometry.dynamic({
+      positions: f32(rim.positions),
+      normals: f32(rim.normals),
+      uvs: f32(rim.uvs),
+      indices: Uint32Array.from(rim.indices)
+    }), { name: "crater-rim", scale: RIM_UNIT, material: mineralMaterial(hexLinear("#b9785e"), false) }));
+    const scatter = rimScatter(high);
+    const rockColors = ["#a8644c", "#7d5a4e", "#c58a6a", "#5d5a66"];
+    builder.add(instances.polyhedron({
+      name: "rim-rocks",
+      params: { variant: "dodecahedron", detail: 0 },
+      transforms: scatter.rocks.map((r) => ({ position: [...r.position], rotation: [...r.rotation], scale: [...r.scale] })),
+      colors: scatter.rocks.map((_, i) => rockColors[i % rockColors.length]!),
+      castShadow: false,
+      receiveShadow: false,
+      material: material.pbr({ color: "#ffffff", roughness: 0.95, metallic: 0 })
+    }));
+    builder.add(instances.cone({
+      name: "rim-spires",
+      params: { radius: 0.5, height: 1, radialSegments: 5 },
+      transforms: scatter.spires.map((r) => ({ position: [...r.position], rotation: [...r.rotation], scale: [...r.scale] })),
+      colors: scatter.spires.map((_, i) => (i % 3 === 0 ? "#6f5a74" : "#9a6650")),
+      castShadow: false,
+      receiveShadow: false,
+      material: material.pbr({ color: "#ffffff", roughness: 0.9, metallic: 0 })
+    }));
+  }
+  // SO47-P3: sun lens flare on the key (High gouache); frustum occlusion drops it when the sun is off screen.
+  if (look === "gouache" && high && !off.has("flare")) builder.add(lights.lensFlare({ name: "sun-flare", light: "key", position: [...row.key.position], intensity: 0.55, occlusion: "frustum" }));
 
   /* ---- crystal resonance clusters ---- */
   RESONANCE_GATES.forEach((gate, i) => {
