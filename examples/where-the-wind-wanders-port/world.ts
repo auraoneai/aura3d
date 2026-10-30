@@ -9,6 +9,8 @@
  */
 import { camera, effects, environments, geometry, lights, material, scene, type AuraApp } from "@aura3d/engine";
 import { ENV_ASSETS, VALLEY_IBL_INTENSITY } from "./env-assets";
+import { createWindVfx } from "./vfx";
+import { gustAt } from "./wind";
 import { BELL, CAMERA_OFFSET, LETTERS, START, type WindState } from "./sim";
 import { GLOW_FRAGMENT, GLOW_VERTEX, HAZE_FRAGMENT, HAZE_VERTEX, MOTE_FRAGMENT, MOTE_VERTEX, PAINT_FRAGMENT, PAINT_VERTEX, PROP_FRAGMENT, PROP_VERTEX, SEA_FRAGMENT, SHAFT_FRAGMENT, SKY_FRAGMENT, STREAM_FRAGMENT, SKY_VERTEX, TRAVELLER_VERTEX, WIND_FRAGMENT, WIND_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX } from "./shaders";
 import { DAYLIGHT_KEYS, ORIGINAL_KEY, createDaylightDriver, daylightKeyFor, frameOfKey, linearToHex, type DaylightFrame } from "./daylight";
@@ -53,7 +55,7 @@ export function writeDaylightUniforms(handle: { setUniform?(name: string, value:
 
 export const windSpec = (): CustomSpec => ({
   glsl: { vertex: WIND_VERTEX, fragment: WIND_FRAGMENT },
-  uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 }, windStrength: { type: "f32", value: 1 }, playerPos: { type: "vec3", value: [1e4, 0, 1e4] } },
+  uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 }, windStrength: { type: "f32", value: 1 }, playerPos: { type: "vec3", value: [1e4, 0, 1e4] }, gustAmt: { type: "f32", value: 0 } },
   side: "double"
 });
 export const paintSpec = (): CustomSpec => ({
@@ -68,7 +70,16 @@ export const seaSpec = (): CustomSpec => ({
 });
 export const skySpec = (): CustomSpec => ({
   glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT },
-  uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 } },
+  uniforms: {
+    ...daylightUniforms(),
+    windTime: { type: "f32", value: 0 },
+    skyHorizon: { type: "vec3", value: [...ORIGINAL.skyHorizon] },
+    skyMid: { type: "vec3", value: [...ORIGINAL.skyMid] },
+    skyZenith: { type: "vec3", value: [...ORIGINAL.skyZenith] },
+    cloudTint: { type: "vec3", value: [1, 1, 1] },
+    starAmt: { type: "f32", value: 0 },
+    skyPainted: { type: "f32", value: 0 }
+  },
   depthWrite: false,
   side: "double"
 });
@@ -500,11 +511,21 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       // WW47-L1: one daylight state for every painted program, eased over 6 s between story keys
       const daylight = createDaylightDriver({ original });
       daylight.snap(options.daylightKey ?? 0);
+      if (!original) { node("sky").setUniform?.("skyPainted", 1); node("foliage").setUniform?.("gustAmt", 1); }
+      // WW47-V1..V3: the wind's particles and the event bursts (none on Low or under ?look=original)
+      const vfx = original ? null : createWindVfx(app, { low: options.quality === "low", reducedMotion: () => motion() < 1, reducedFlash: () => motion() < 1 });
+      let vfxFound = 0, vfxComplete = false, vfxHop = "idle", vfxTime = -1, vfxLantern = 1, sailAngle = 0;
       let shownDaylight: DaylightFrame | null = null;
       const applyDaylight = (f: DaylightFrame): void => {
         if (f === shownDaylight) return;
         shownDaylight = f;
         for (const id of daylightIds) writeDaylightUniforms(node(id), f);
+        const sky = node("sky");
+        sky.setUniform?.("skyHorizon", f.skyHorizon);
+        sky.setUniform?.("skyMid", f.skyMid);
+        sky.setUniform?.("skyZenith", f.skyZenith);
+        sky.setUniform?.("cloudTint", f.cloudTint);
+        sky.setUniform?.("starAmt", f.stars);
         if (original) return;
         // WW47-L4: the engine sun follows the day (E-B setLight); its direction is the uniform's, negated (light travel)
         node("sun").setLight?.({ direction: [-f.sunDir[0], -f.sunDir[1], -f.sunDir[2]], color: linearToHex(f.sunColor), intensity: f.engineSunIntensity });
@@ -526,6 +547,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         get daylight() { return daylight.frame; },
         reset() {
           daylight.snap(options.daylightKey ?? 0);
+          vfxFound = 0; vfxComplete = false; vfxHop = "idle"; vfxTime = -1;
           look.x = START.x + 2; look.y = 2.2; look.z = START.z - 3.5;
           lastFound = -1; lastX = START.x; lastZ = START.z; lastStep = -1; lastStepTime = -1; heroAnim?.reset(START.x, START.z, 0); gait = 0; walkAmt = 0; yaw = 0; epilogue = null; wisp.x = START.x - 1.1; wisp.y = 2.4; wisp.z = START.z + 0.6;
         },
@@ -587,7 +609,21 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           const wg = node("wisp-glow");
           wg.setPosition(wisp.x, wisp.y, wisp.z);
           wg.setUniform?.("windTime", time);
-          node("sails").setPosition(sc.windmillHub.x, sc.windmillHub.y, sc.windmillHub.z).setRotation(0, 0, time * 0.38);
+          // WW47-AN1: the sails turn with the gust at the hub (calm 0.38 rad/s, up to 2.5x in a gust; 0.3x under reduced motion)
+          if (original) sailAngle = time * 0.38;
+          else sailAngle += Math.max(0, Math.min(0.25, dt)) * 0.38 * gustAt(sc.windmillHub.x, sc.windmillHub.z, time) * motion();
+          node("sails").setPosition(sc.windmillHub.x, sc.windmillHub.y, sc.windmillHub.z).setRotation(0, 0, sailAngle);
+          if (vfx) {
+            if (state.found.length > vfxFound) { const l = LETTERS[state.found[state.found.length - 1]!]; if (l) vfx.letterFound([l.x, terrainHeight(l.x, l.z) + 1.3, l.z]); }
+            if (state.complete && !vfxComplete) vfx.bellRing([sc.bellHang.x, sc.bellHang.y - 0.4, sc.bellHang.z]);
+            if (state.hop.phase === "landing" && vfxHop !== "landing") vfx.hopLanding([x, y + 0.05, z], streamInfo(x, z).dist < 1.6 || y < SEA_LEVEL + 0.15);
+            if (vfxTime >= 0 && time > vfxTime) vfx.update([x, y, z], time, time - vfxTime);
+            // each lantern flares once as dusk lights it
+            const lv = daylight.frame.lanterns;
+            if (lv >= 0.5 && vfxLantern < 0.5) sc.lanterns.forEach((p) => vfx.lanternFlare([p.x, p.y, p.z]));
+            vfxLantern = lv;
+            vfxFound = state.found.length; vfxComplete = state.complete; vfxHop = state.hop.phase; vfxTime = time;
+          }
           const complete = state.complete;
           if (set.bellModel) {
             bellAngle = bellSwing(time, complete, MODEL_BELL_AMPLITUDE, motion());

@@ -96,6 +96,8 @@ out vec2 vUv;
 out vec3 vWorld;
 out float vKind;
 out float vPhase;
+out float vGust;
+${WIND_GLSL}
 void main() {
   vTint = tint;
   vUv = uv;
@@ -103,6 +105,10 @@ void main() {
   vPhase = phase;
   vec3 p = position;
   float gust = 0.55 + 0.45 * sin(windTime * 0.31 + position.x * 0.045 + position.z * 0.03);
+  // WW47-S2: the signature gust band rolls downwind (wind.ts); gustAmt 0 keeps the 4.6 sway (?look=original)
+  float band = windGustBand(position.xz, windTime);
+  vGust = band * gustAmt;
+  gust = mix(gust, gust * (0.55 + 0.45 * windGust(position.xz, windTime)), gustAmt);
   float w = windTime * 1.7 + phase + position.x * 0.12;
   float bend = uv.y * uv.y;
   p.x += (sin(w) * 0.7 + sin(w * 2.3 + phase) * 0.3) * sway * bend * windStrength * gust * 1.3;
@@ -117,6 +123,7 @@ in vec2 vUv;
 in vec3 vWorld;
 in float vKind;
 in float vPhase;
+in float vGust;
 out vec4 outColor;
 #define WIND_SUN_SHADOW 1
 #include <a3d_shadow>
@@ -238,6 +245,8 @@ void main() {
   if (cover < 0.5) discard;
   vec3 view = normalize(cameraPosition - vWorld);
   vec3 n = normalize(vec3(0.0, 1.0, 0.0) + vec3((uv.x - 0.5) * 0.5, 0.0, 0.0));
+  // a passing gust bends the blades over and shows their paler undersides: a light sheen that travels downwind
+  col = mix(col, col * vec3(1.18, 1.16, 1.02) + vec3(0.03, 0.035, 0.015), vGust * uv.y * 0.85);
   vec3 lit = lightSurface(col, n, 0.55 + 0.45 * uv.y, 0.6, 0.55, view, vWorld);
   outColor = vec4(applyFog(lit, vWorld, 1.0), 1.0);
 }`;
@@ -365,24 +374,34 @@ export const SKY_FRAGMENT = /* glsl */ `
 in vec3 vWorld;
 out vec4 outColor;
 ${COMMON}
+#include <a3d_sky>
 void main() {
   vec3 dir = normalize(vWorld - cameraPosition);
   float up = clamp(dir.y, 0.0, 1.0);
-  vec3 horizon = vec3(0.60, 0.80, 0.86);
-  vec3 mid = vec3(0.17, 0.46, 0.88);
-  vec3 zenith = vec3(0.045, 0.20, 0.72);
+  // WW47-S1: the gradient comes from the daylight key (the 4.6 colours under ?look=original)
+  vec3 horizon = skyHorizon;
+  vec3 mid = skyMid;
+  vec3 zenith = skyZenith;
   vec3 sky = mix(horizon, mid, smoothstep(0.0, 0.3, up));
   sky = mix(sky, zenith, smoothstep(0.22, 0.85, up));
   float sunAmt = max(dot(dir, sunDir), 0.0);
-  sky += sunCol * (pow(sunAmt, 6.0) * 0.16 + pow(sunAmt, 90.0) * 0.7 + pow(sunAmt, 2000.0) * 8.0);
+  vec3 sunLegacy = sunCol * (pow(sunAmt, 6.0) * 0.16 + pow(sunAmt, 90.0) * 0.7 + pow(sunAmt, 2000.0) * 8.0);
+  // painted sun: a soft disc (0.6 deg radius) inside a wide warm glow, plus warm haze along the horizon
+  vec3 sunPainted = sunCol * (a3dSunGlow(dir, sunDir, 9.0) * 0.22 + a3dSunGlow(dir, sunDir, 160.0) * 0.6 + a3dSunDisc(dir, sunDir, 0.0105) * 6.0)
+    + a3dHorizonHaze(dir, mix(horizon, sunCol, 0.35) * 0.18, 0.16);
+  sky += mix(sunLegacy, sunPainted, skyPainted);
   vec2 cp = dir.xz / max(dir.y + 0.09, 0.035) * 0.62 + vec2(windTime * 0.011, windTime * 0.004);
+  // the painted clouds drift with the prevailing wind (wind.ts) instead of the fixed 4.6 drift
+  cp += skyPainted * WIND_DIR * windTime * 0.006;
   float c = fbm(cp * 1.15);
   float cs = fbm((cp + sunDir.xz * 0.16) * 1.15);
   float cov = smoothstep(0.6, 0.76, c + 0.08 * fbm(cp * 4.0));
   cov *= smoothstep(0.0, 0.2, dir.y);
   float lit = clamp(0.55 + (c - cs) * 5.5, 0.0, 1.0);
-  vec3 cloud = mix(vec3(0.55, 0.64, 0.78), vec3(1.25, 1.17, 1.02), lit);
+  vec3 cloud = mix(vec3(0.55, 0.64, 0.78), vec3(1.25, 1.17, 1.02), lit) * cloudTint;
   cloud = mix(cloud, horizon * 1.05, smoothstep(0.1, 0.0, dir.y) * 0.8);
+  // stars after the bell: the a3d_sky hash field, faded under clouds and toward the horizon
+  sky += vec3(0.9, 0.92, 1.0) * a3dStars(dir, 0.012 * starAmt) * starAmt * 1.6 * (1.0 - cov);
   sky = mix(sky, cloud, cov * 0.92);
   sky = mix(horizon, sky, smoothstep(-0.12, 0.0, dir.y));
   outColor = vec4(sky, 1.0);

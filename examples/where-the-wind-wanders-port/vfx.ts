@@ -8,7 +8,8 @@
 import type { AuraApp } from "@aura3d/engine";
 import { WIND_DIR, gustAt } from "./wind";
 
-type EffectSpec = Parameters<AuraApp["effects"]["registerPreset"]>[1];
+type AppEffects = NonNullable<AuraApp["effects"]>;
+type EffectSpec = Parameters<AppEffects["registerPreset"]>[1];
 type Vec3 = [number, number, number];
 
 const DOWNWIND: Vec3 = [WIND_DIR[0], 0.12, WIND_DIR[1]];
@@ -89,9 +90,12 @@ export interface WindVfx {
 
 export function createWindVfx(app: AuraApp, options: { readonly low: boolean; readonly reducedMotion: () => boolean; readonly reducedFlash: () => boolean }): WindVfx {
   const effects = app.effects;
+  if (!effects) return { letterFound() {}, bellRing() {}, lanternFlare() {}, hopLanding() {}, update() {}, stop() {} };
+  // the floating-dot cause is fixed in the engine (E-F): runtime effects stay on
+  effects.runtime = "on";
   for (const [kind, spec] of Object.entries(WIND_VFX_PRESETS)) effects.registerPreset(kind, spec);
   const scale = (): number => emissionScale({ low: options.low, reducedMotion: options.reducedMotion() });
-  let petals: ReturnType<AuraApp["effects"]["spawn"]> | null = null;
+  let petals: ReturnType<AppEffects["spawn"]> | null = null;
   let petalMotion = -1;
   let lastGust = 0;
   let flashLeft = 0;
