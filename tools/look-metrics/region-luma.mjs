@@ -246,7 +246,7 @@ export function checkBand(stats, band, region = "frame") {
 /** Check a GL_META row against a full band (frame metrics, `cells`, `crops`). */
 export function checkRowBand(row, band) {
   const misses = [];
-  if (row.blank === true) misses.push({ region: "frame", metric: "blank", value: true, min: null, max: null, reason: "blank frame (black or one colour): discard and recapture (lesson V1, check GL_LFS and RENDERER_MOUNT_FAILED)" });
+  if (row.blank === true) misses.push({ region: "frame", metric: "blank", value: true, min: null, max: null, reason: "blank frame (black or one colour): discard and recapture (lessons V1 and V8, check GL_LFS and RENDERER_MOUNT_FAILED)" });
   const pending = row.info?.texPending;
   if (typeof pending === "number" && pending > 0) misses.push({ region: "frame", metric: "texPending", value: pending, min: null, max: 0, reason: "textures still uploading at this shot (lesson R4): recapture with GL_TEX_WAIT_S" });
   misses.push(...checkBand(row, band, "frame"));

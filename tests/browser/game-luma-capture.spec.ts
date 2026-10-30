@@ -15,7 +15,7 @@ import { GAME_LUMA_TARGETS, type GameLumaTarget } from "./game-luma-targets";
  *   GL_PAIR <json>                         with GL_PAIR_MS=<ms>: a second screenshot <ms> after each shot and the
  *                                          frame, per-cell and per-crop difference (mean |dY|, changed fraction, SSIM)
  *   GL_JPG  <target> <shot> <i>/<n> <b64>  canvas-only JPEG, chunked (`<shot>-pair` for the second shot of a pair)
- *   GL_LFS  <target> <path>                a binary asset served as a Git LFS pointer stub (lesson V1: black frame)
+ *   GL_LFS  <target> <path>                a binary asset served as a Git LFS pointer stub (lesson V8: black frame)
  * Decode with evidence/audit-fix/e5/decode-luma.mjs (frames and v1 table) and tools/look-metrics/region-luma.mjs (cells,
  * crops, bands, pairs, before/after compare).
  * Crops: a game publishes named rects normalised to its main canvas in `window.__AURA_QA__.crops` or as a `crops` extra on
@@ -120,7 +120,7 @@ test.describe("game luma capture", () => {
       page.on("response", (r) => {
         const path = new URL(r.url()).pathname;
         if (r.status() >= 400) { log(`GL_HTTP ${target.name} ${r.status()} ${path}`); return; }
-        // Lesson V1: an LFS pointer stub (a ~130-byte text file) served in place of a model or texture blanks the scene.
+        // Lesson V8: an LFS pointer stub (a ~130-byte text file) served in place of a model or texture blanks the scene.
         if (r.status() !== 200 || !BINARY_ASSET.test(path)) return;
         const length = Number(r.headers()["content-length"] ?? NaN);
         if (Number.isFinite(length) && length > 1024) return;

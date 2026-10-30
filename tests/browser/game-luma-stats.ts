@@ -92,7 +92,7 @@ export interface GlMetaV2 extends LumaHistograms {
   readonly h: number;
   /** The main canvas in screenshot pixels (crops are relative to it). */
   readonly canvas: { readonly x: number; readonly y: number; readonly w: number; readonly h: number };
-  /** Black or single-colour frame: discard it (lesson V1; often an LFS pointer stub behind RENDERER_MOUNT_FAILED). */
+  /** Black or single-colour frame: discard it (lessons V1 and V8; often an LFS pointer stub behind RENDERER_MOUNT_FAILED). */
   readonly blank: boolean;
   readonly std: number;
   readonly p1: number;
