@@ -436,8 +436,11 @@ const boxMesh = (w: number, h: number, d: number): MeshData => {
 
 /* ---------------------------------------------------------------- CR-W1 festival bunting */
 
-/** Gate colours softened towards cream so a pennant never reads as a gate (dE >= 25 to its gate colour). */
-export const BUNTING_COLORS = ["#f7a39b", "#fbe0a0", "#aee2f6", "#dcb6f2"] as const;
+/**
+ * Pastel pink and mint pennants: lightened gate colours stay within dE 25 of their gate (yellow and blue never get
+ * there), so the pennants use the two pastel hue families that sit >= 27 dE2000 from all four gate colours.
+ */
+export const BUNTING_COLORS = ["#f3bac8", "#a0eeb3", "#ebc2c2", "#baf3c8"] as const;
 const BUNTING_POLE = "#6a3a6c";
 const BUNTING_MAX = 18;
 
