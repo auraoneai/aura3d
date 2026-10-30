@@ -912,6 +912,25 @@ function dofTiltShiftOf(node: AuraEffectNode): AuraDofTiltShiftLocal | undefined
   };
 }
 
+/**
+ * GU47 E-C (EC-7): every material `bloom` weight in the scene. `bloom` is
+ * E-D's new `AuraMaterialSpec` field (0..2, default 1), read structurally
+ * until that merges.
+ */
+function materialBloomWeights(nodes: readonly AuraSceneNode[]): unknown[] {
+  const weights: unknown[] = [];
+  for (const node of nodes) {
+    const material = (node as { readonly material?: unknown }).material;
+    if (material && typeof material === "object" && "bloom" in material) weights.push((material as { readonly bloom?: unknown }).bloom);
+  }
+  return weights;
+}
+
+/** Mirrors `NativeBloomPyramid.selectiveBloomActive`: a weight that clamps to anything but 1 needs the prefilter's alpha weight. */
+function selectiveBloomActive(weights: readonly unknown[]): boolean {
+  return weights.some((weight) => typeof weight === "number" && Number.isFinite(weight) && Math.min(2, Math.max(0, weight)) !== 1);
+}
+
 /** volumetricFog `godRayDensity` (S4 march fraction) clamped to [0.05, 1]; `undefined` when not authored. */
 function godRayDensityOf(node: AuraEffectNode): number | undefined {
   const value = (node as unknown as { readonly godRayDensity?: unknown }).godRayDensity;
@@ -1160,6 +1179,9 @@ export function createRootPostPipeline(
 
   const bloom = bloomNode ? mapBloomOptionsV2(bloomNode, tierSettings.bloomMipLevels) : undefined;
   if (bloom) diagnostics.push(...bloom.diagnostics);
+  // GU47 E-C (EC-7): a material `bloom` weight other than 1 turns on the
+  // prefilter's alpha weight; all-default scenes keep the bag unchanged.
+  const selectiveBloom = Boolean(bloom) && selectiveBloomActive(materialBloomWeights(nodes));
 
   const exposure = (effectiveOutput?.exposure ?? 1) * authoredNumber(gradeNode ?? ({} as AuraEffectNode), "exposure", 1);
   const toneMapping = effectiveOutput?.toneMapping ?? "aces";
@@ -1205,7 +1227,7 @@ export function createRootPostPipeline(
     // prd03-taa 1-px line moved ~1 px and spread over five rows, promote run
     // 38203056326) and armed the S12 RCAS sharpen on every frame.
     renderScale: 1,
-    ...(bloom ? { bloom: bloom.options } : {}),
+    ...(bloom ? { bloom: selectiveBloom ? { ...bloom.options, selective: true } : bloom.options } : {}),
     exposure,
     toneMapping: toneMapping as PostPipelineOptions["toneMapping"],
     dither: effectiveOutput?.dither !== false,

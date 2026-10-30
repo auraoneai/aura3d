@@ -133,6 +133,46 @@ export function bloomNormalization(mips: number, scatter: number): number {
   return 1 / mips;
 }
 
+/**
+ * GU47 E-C (EC-7) selective bloom: per-material `bloom` weight in [0, 2]
+ * (`AuraMaterialSpec.bloom`, default 1). Opaque surfaces write the weight
+ * into the HDR target's alpha (blend is off for them, so RGB is untouched)
+ * and the bloom prefilter multiplies its above-threshold excess by
+ * `auraBloomWeight(alpha, selective)`. `selective` is on only when a scene
+ * material declares a weight other than 1; off, the factor is exactly 1.0,
+ * so weight 1 everywhere reproduces today's bloom bit for bit.
+ */
+export const BLOOM_WEIGHT_DEFAULT = 1;
+export const BLOOM_WEIGHT_MAX = 2;
+
+/** A material `bloom` value as the prefilter sees it: clamped to [0, 2]; missing or non-finite = 1. */
+export function resolveBloomWeight(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) ? Math.min(BLOOM_WEIGHT_MAX, Math.max(0, value)) : BLOOM_WEIGHT_DEFAULT;
+}
+
+/** True when any weight differs from 1, i.e. the prefilter must read the alpha weight. */
+export function selectiveBloomActive(weights: Iterable<unknown>): boolean {
+  for (const weight of weights) if (resolveBloomWeight(weight) !== BLOOM_WEIGHT_DEFAULT) return true;
+  return false;
+}
+
+/** GLSL ES 3.00 prefilter helper (include before `main`): the bloom weight carried in HDR alpha, or 1.0 when selective bloom is off. */
+export const BLOOM_WEIGHT_GLSL = /* glsl */ `
+float auraBloomWeight(float alpha, int selective) {
+  return selective == 1 ? clamp(alpha, 0.0, ${BLOOM_WEIGHT_MAX.toFixed(1)}) : 1.0;
+}
+`;
+
+/** CPU mirror of the weighted soft-knee prefilter excess (u_excess path) for one HDR texel. */
+export function bloomPrefilterExcess(rgb: readonly [number, number, number], alpha: number, threshold: number, softKnee: number, selective: boolean): [number, number, number] {
+  const luma = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+  const knee = Math.max(softKnee, 0);
+  let soft = Math.min(2 * knee, Math.max(0, luma - threshold + knee));
+  soft = (soft * soft) / (4 * knee + 1e-5);
+  const excessWeight = (Math.max(soft, luma - threshold) / Math.max(luma, 1e-5)) * (selective ? Math.min(BLOOM_WEIGHT_MAX, Math.max(0, alpha)) : 1);
+  return [rgb[0] * excessWeight, rgb[1] * excessWeight, rgb[2] * excessWeight];
+}
+
 /** PRD-03 §6.6 flag-on: per-mip Gaussian kernel radii of the UnrealBloomPass-class halo (three r185 `kernelSizeArray`). */
 export const BLOOM_V2_BLUR_RADII: readonly number[] = [6, 10, 14, 18, 22];
 /** PRD-03 §6.6 flag-on: base per-mip factors mirrored by `spread` (three r185 `bloomFactors`). */
