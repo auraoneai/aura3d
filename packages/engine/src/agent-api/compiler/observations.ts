@@ -14,8 +14,10 @@ import { groups } from "../nodes/groups.js";
 import { primitive } from "../nodes/primitives.js";
 import type { AuraLightNode, AuraSceneSnapshot, ProductionRuntimeLightDescriptor } from "../nodes/types.js";
 import { normalize3 } from "../sceneMath.js";
-import { collectPrd02Lights, createProductionRuntimeCollectedLight, createProductionRuntimeFallbackLights, createProductionRuntimeStudioLightDescriptors, prd02LightingOn } from "./lights.js";
+import { bindAuthoredLight, collectPrd02Lights, createProductionRuntimeCollectedLight, createProductionRuntimeFallbackLights, createProductionRuntimeStudioLightDescriptors, prd02DescriptorNode, prd02LightingOn } from "./lights.js";
 import { describeTextureStreamingResidency } from "./primitives.js";
+import { mediaMatches } from "../platform.js";
+import { QUALITY_TIERS, type AuraQualityTier } from "@aura3d/rendering/contracts";
 
 interface AuraProductionBridgeEligibility {
   readonly eligible: boolean;
@@ -250,6 +252,17 @@ export interface ProductionRuntimeCollectedLightsOptions {
    * builder below keeps turning it into a rect spot proxy, which the flag-off goldens pin.
    */
   readonly hemisphereAsEnvironment?: boolean;
+  /**
+   * GU47 E-B: quality tier whose `shadow.localShadowLights` caps the local shadow casters on the physical path
+   * (low 0, medium 1, high 2, ultra 4). Default: the PRD-02 shadow config's own resolution ("medium" on a coarse
+   * pointer, else "high").
+   */
+  readonly shadowTier?: AuraQualityTier;
+}
+
+/** The tier `createPrd02ShadowOptions` resolves when none is given (compiler/shadows.ts `prd02ResolveTier`). */
+function defaultShadowTier(): AuraQualityTier {
+  return mediaMatches("(pointer: coarse)") ? "medium" : "high";
 }
 
 export function createProductionRuntimeCollectedLights(
@@ -265,19 +278,72 @@ export function createProductionRuntimeCollectedLights(
   if (flags !== undefined && flags.on("A3D_QR_COMPILER") && prd02LightingOn(flags)) {
     const physical = collectPrd02Lights(snapshot).descriptors;
     if (physical.length === 0) return createProductionRuntimeFallbackLights(flags);
-    const shadowCasterIndex = resolveProductionShadowCasterIndex(physical);
-    return physical.map((descriptor, index) =>
-      createProductionRuntimeCollectedLight(descriptor, index === shadowCasterIndex)
-    );
+    // GU47 E-B: the PRD-02 shadow system renders the sun plus local tiles, so the physical path selects the single
+    // legacy caster plus up to the tier's `localShadowLights` explicitly shadowed spot / point lights.
+    const localShadowLights = QUALITY_TIERS[options?.shadowTier ?? defaultShadowTier()].shadow.localShadowLights;
+    const casters = new Set(resolveProductionShadowCasterIndices(physical, localShadowLights));
+    return physical.map((descriptor, index) => {
+      const light = createProductionRuntimeCollectedLight(descriptor, casters.has(index));
+      // GU47 E-B: the per-frame light update drives this light from the node's runtime handle.
+      const node = prd02DescriptorNode(descriptor);
+      return node ? bindAuthoredLight(light, node, 0, (position) => productionRuntimeLightDirection(node, position)) : light;
+    });
   }
   const authoredLights = groups.flatten(snapshot.nodes).filter((node): node is AuraLightNode => node.kind === "light");
-  const descriptors = authoredLights.flatMap((node, index) => createProductionRuntimeLightDescriptors(node, index, options));
+  const authored = authoredLights.flatMap((node, index) =>
+    createProductionRuntimeLightDescriptors(node, index, options).map((descriptor, part) => ({ node, descriptor, part }))
+  );
+  const descriptors = authored.map((entry) => entry.descriptor);
   if (descriptors.length === 0) return createProductionRuntimeFallbackLights(flags);
 
   const shadowCasterIndex = resolveProductionShadowCasterIndex(descriptors);
-  return descriptors.map((descriptor, index) =>
-    createProductionRuntimeCollectedLight(descriptor, index === shadowCasterIndex)
+  return authored.map(({ node, descriptor, part }, index) =>
+    bindAuthoredLight(createProductionRuntimeCollectedLight(descriptor, index === shadowCasterIndex), node, part, legacyLightAim(node, part))
   );
+}
+
+/** The legacy descriptor builder's aim rule per light (GU47 E-B re-aims a moved light the same way it was built). */
+function legacyLightAim(node: AuraLightNode, part: number): (position: AuraVec3) => AuraVec3 {
+  if (node.light === "spot") {
+    const target = node.target ?? node.lookAt ?? [0, 0.75, 0];
+    return (position) => normalize3([target[0] - position[0], target[1] - position[1], target[2] - position[2]]);
+  }
+  if (node.light === "studio" && part > 0) {
+    const target = node.lookAt ?? [0, 0.75, 0];
+    return (position) => normalizedDirection(position, target);
+  }
+  return (position) => productionRuntimeLightDirection(node, position);
+}
+
+/**
+ * GU47 E-B multi-caster selection (pure): the single N1 caster (`resolveProductionShadowCasterIndex`, so one-caster
+ * scenes are unchanged) plus explicitly shadowed local (spot / point) lights until `localShadowLights` local casters
+ * are selected, in shadow-priority, then intensity, then authored order. The single caster keeps its slot even on a
+ * tier with no local slots (a scene whose only shadow request is one spot keeps that spot's shadow on Low). No second
+ * directional and no unrequested light is added. Returns ascending light indices.
+ */
+export function resolveProductionShadowCasterIndices(
+  descriptors: readonly {
+    readonly kind: string;
+    readonly shadowPriority: number;
+    readonly shadowRequested: boolean;
+    readonly shadowDisabled?: boolean;
+    readonly intensity: number;
+  }[],
+  localShadowLights: number
+): readonly number[] {
+  const primary = resolveProductionShadowCasterIndex(descriptors);
+  if (primary < 0) return [];
+  const isLocal = (kind: string): boolean => kind === "spot" || kind === "point";
+  const slots = Math.max(0, Math.floor(Number.isFinite(localShadowLights) ? localShadowLights : 0)) - (isLocal(descriptors[primary]!.kind) ? 1 : 0);
+  if (slots <= 0) return [primary];
+  const extra = descriptors
+    .map((descriptor, index) => ({ descriptor, index }))
+    .filter(({ descriptor, index }) => index !== primary && isLocal(descriptor.kind) && descriptor.shadowRequested && descriptor.shadowDisabled !== true)
+    .sort((a, b) => b.descriptor.shadowPriority - a.descriptor.shadowPriority || b.descriptor.intensity - a.descriptor.intensity || a.index - b.index)
+    .slice(0, slots)
+    .map(({ index }) => index);
+  return [primary, ...extra].sort((a, b) => a - b);
 }
 
 /**

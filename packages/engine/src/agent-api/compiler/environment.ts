@@ -493,7 +493,212 @@ export function setRuntimeEnvironmentIntensity(owner: object, value: number): vo
 }
 
 export function runtimeEnvironmentIntensity(owner: object | null | undefined): number {
-  return owner ? runtimeEnvironmentIntensities.get(owner) ?? 1 : 1;
+  if (!owner) return 1;
+  // GU47 E-B: a running `setEnvironment` crossfade multiplies the environment term (1 outside a swap).
+  return (runtimeEnvironmentIntensities.get(owner) ?? 1) * (runtimeEnvironmentStates.get(owner)?.crossfade ?? 1);
+}
+
+// ---------- GU47 E-B: app.lighting.setEnvironment / setEnvironmentRotation (runtime environment) ----------
+
+/** A `setEnvironment` swap in flight: fade the environment term out, swap, wait for the probe, fade it back in. */
+interface RuntimeEnvironmentSwap {
+  readonly texture: AuraAssetRef<"texture">;
+  readonly url: string;
+  readonly background?: boolean;
+  readonly intensity?: number;
+  readonly rotation?: number;
+  readonly seconds: number;
+  /** Crossfade multiplier when the swap was requested (the fade-out starts there). */
+  readonly fadeFrom: number;
+  phase: "fade-out" | "apply" | "loading" | "fade-in";
+  t0: number | undefined;
+}
+
+/** Per-app runtime environment state, keyed like the intensity scale (the app's runtime node registry). */
+interface RuntimeEnvironmentState {
+  /** Absolute yaw (radians, about +Y) from `setEnvironmentRotation`; undefined = the node's authored `rotation`. */
+  rotation?: number;
+  swap?: RuntimeEnvironmentSwap;
+  /** The environment swapped in, laid over the authored environment node the resolution picks. */
+  override?: { readonly texture: AuraAssetRef<"texture">; readonly background?: boolean };
+  /** Multiplier on the environment term while a swap fades (1 = none). */
+  crossfade: number;
+}
+
+const runtimeEnvironmentStates = new WeakMap<object, RuntimeEnvironmentState>();
+
+function runtimeEnvironmentStateFor(owner: object): RuntimeEnvironmentState {
+  let state = runtimeEnvironmentStates.get(owner);
+  if (!state) {
+    state = { crossfade: 1 };
+    runtimeEnvironmentStates.set(owner, state);
+  }
+  return state;
+}
+
+/** `app.lighting.setEnvironmentRotation(radians)`: absolute yaw applied to probe / IBL sampling every frame. */
+export function setRuntimeEnvironmentRotation(owner: object, radians: number): void {
+  if (!Number.isFinite(radians)) throw new RangeError(`setEnvironmentRotation expects a finite number of radians, got ${String(radians)}.`);
+  runtimeEnvironmentStateFor(owner).rotation = radians;
+}
+
+/** The yaw set with `setEnvironmentRotation` (or a swap's `rotationDeg`); undefined until set. */
+export function runtimeEnvironmentRotation(owner: object | null | undefined): number | undefined {
+  return owner ? runtimeEnvironmentStates.get(owner)?.rotation : undefined;
+}
+
+/** Options of `app.lighting.setEnvironment` (contracts/lighting.ts `AuraEnvironmentSwapOptions`). */
+export interface RuntimeEnvironmentSwapOptions {
+  readonly intensity?: number;
+  readonly background?: boolean;
+  readonly rotationDeg?: number;
+  readonly crossfadeSeconds?: number;
+}
+
+/** The `.hdr` url of a texture asset ref, validated (throws on anything else). */
+export function runtimeEnvironmentTextureUrl(texture: AuraAssetRef<"texture">): string {
+  const ref = texture as { readonly kind?: string; readonly url?: string } | null | undefined;
+  if (!ref || ref.kind !== "aura-asset-ref" || typeof ref.url !== "string" || ref.url.length === 0) {
+    throw new TypeError("setEnvironment expects a texture asset ref with a url (an .hdr from the asset table).");
+  }
+  return ref.url;
+}
+
+/**
+ * Queue a `setEnvironment` swap for the app (validated here). The per-frame environment update runs it: with
+ * `crossfadeSeconds` the environment term fades out over the first half, the texture swaps, and once the new probe
+ * is ready (or failed, or 10 s passed) it fades back in over the second half; one probe is bound per frame.
+ */
+export function requestRuntimeEnvironmentSwap(owner: object, texture: AuraAssetRef<"texture">, opts: RuntimeEnvironmentSwapOptions = {}): void {
+  const url = runtimeEnvironmentTextureUrl(texture);
+  const seconds = opts.crossfadeSeconds ?? 0;
+  if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError(`setEnvironment crossfadeSeconds expects a finite number >= 0, got ${String(seconds)}.`);
+  if (opts.intensity !== undefined && (!Number.isFinite(opts.intensity) || opts.intensity < 0)) {
+    throw new RangeError(`setEnvironment intensity expects a finite number >= 0, got ${String(opts.intensity)}.`);
+  }
+  if (opts.rotationDeg !== undefined && !Number.isFinite(opts.rotationDeg)) {
+    throw new RangeError(`setEnvironment rotationDeg expects a finite number, got ${String(opts.rotationDeg)}.`);
+  }
+  const state = runtimeEnvironmentStateFor(owner);
+  state.swap = {
+    texture,
+    url,
+    ...(opts.background !== undefined ? { background: opts.background } : {}),
+    ...(opts.intensity !== undefined ? { intensity: opts.intensity } : {}),
+    ...(opts.rotationDeg !== undefined ? { rotation: (opts.rotationDeg * Math.PI) / 180 } : {}),
+    seconds,
+    // A swap requested while another one fades starts its fade-out from the term shown now.
+    fadeFrom: state.crossfade,
+    phase: seconds > 0 ? "fade-out" : "apply",
+    t0: undefined
+  };
+}
+
+/** Maximum wait for the swapped-in probe before the environment fades back in regardless (seconds). */
+const SWAP_PROBE_WAIT_SECONDS = 10;
+
+/** Swap state for tests and diagnostics: phase and the current crossfade multiplier. */
+export function runtimeEnvironmentSwapState(owner: object | null | undefined): { readonly phase: RuntimeEnvironmentSwap["phase"] | "idle"; readonly crossfade: number; readonly url?: string } {
+  const state = owner ? runtimeEnvironmentStates.get(owner) : undefined;
+  return { phase: state?.swap?.phase ?? "idle", crossfade: state?.crossfade ?? 1, ...(state?.override ? { url: (state.override.texture as { url?: string }).url ?? "" } : {}) };
+}
+
+/**
+ * Advance the app's swap at the frame time (the PRD-02 environment handler's update, before the probe bind reads
+ * `runtimeEnvironmentIntensity`). `probeOutcome(url)` reports whether the swapped-in probe has landed on this device.
+ */
+export function stepRuntimeEnvironment(
+  owner: object,
+  timeSeconds: number,
+  probeOutcome: (url: string) => "ready" | "failed" | undefined
+): void {
+  const state = runtimeEnvironmentStates.get(owner);
+  const swap = state?.swap;
+  if (!state || !swap) return;
+  swap.t0 ??= timeSeconds;
+  const half = swap.seconds / 2;
+  const elapsed = Math.max(0, timeSeconds - swap.t0);
+  if (swap.phase === "fade-out") {
+    if (elapsed < half) {
+      state.crossfade = swap.fadeFrom * (1 - elapsed / half);
+      return;
+    }
+    swap.phase = "apply";
+  }
+  if (swap.phase === "apply") {
+    state.override = { texture: swap.texture, ...(swap.background !== undefined ? { background: swap.background } : {}) };
+    if (swap.intensity !== undefined) setRuntimeEnvironmentIntensity(owner, swap.intensity);
+    if (swap.rotation !== undefined) state.rotation = swap.rotation;
+    if (swap.seconds <= 0) {
+      state.crossfade = 1;
+      state.swap = undefined;
+      return;
+    }
+    state.crossfade = 0;
+    swap.phase = "loading";
+    swap.t0 = timeSeconds;
+    return;
+  }
+  if (swap.phase === "loading") {
+    state.crossfade = 0;
+    if (probeOutcome(swap.url) === undefined && elapsed < SWAP_PROBE_WAIT_SECONDS) return;
+    swap.phase = "fade-in";
+    swap.t0 = timeSeconds;
+    return;
+  }
+  // fade-in
+  if (elapsed < half) {
+    state.crossfade = elapsed / half;
+    return;
+  }
+  state.crossfade = 1;
+  state.swap = undefined;
+}
+
+/** Authored environment node -> the app (runtime node registry) whose per-frame update last saw it. */
+const environmentNodeOwners = new WeakMap<object, object>();
+
+/** The PRD-02 environment handler records which app an environment node belongs to (its runtime state applies). */
+export function noteRuntimeEnvironmentNode(node: object, owner: object): void {
+  environmentNodeOwners.set(node, owner);
+}
+
+/** The environment node as the frame resolves it: the app's swapped-in texture / background laid over the authored node. */
+export function runtimeEnvironmentNode<T extends object>(node: T): T {
+  const owner = environmentNodeOwners.get(node);
+  const override = owner ? runtimeEnvironmentStates.get(owner)?.override : undefined;
+  if (!override) return node;
+  const { reflectionTexture: _reflection, ...rest } = node as T & { readonly reflectionTexture?: unknown };
+  return {
+    ...rest,
+    environment: "hdri",
+    texture: override.texture,
+    ...(override.background !== undefined ? { background: override.background } : {})
+  } as unknown as T;
+}
+
+/**
+ * The yaw the frame applies to probe / IBL sampling: `setEnvironmentRotation` (absolute) when set, else the resolved
+ * node's authored `rotation` (radians; `looks.preset(..., { environmentRotationDeg })` emits it), else 0.
+ */
+export function runtimeEnvironmentFrameRotation(owner: object | null | undefined, node: { readonly rotation?: number } | undefined): number {
+  return runtimeEnvironmentRotation(owner) ?? node?.rotation ?? 0;
+}
+
+/** Probe outcomes per device and request url (the swap waits for its probe on the app's own device). */
+const environmentProbeOutcomes = new WeakMap<object, Map<string, "ready" | "failed">>();
+
+function recordEnvironmentProbeOutcome(device: object, key: string, outcome: "ready" | "failed"): void {
+  let outcomes = environmentProbeOutcomes.get(device);
+  if (!outcomes) {
+    outcomes = new Map();
+    environmentProbeOutcomes.set(device, outcomes);
+  }
+  outcomes.set(key, outcome);
+}
+
+export function environmentProbeOutcome(device: object | undefined, url: string): "ready" | "failed" | undefined {
+  return device ? environmentProbeOutcomes.get(device)?.get(url) : undefined;
 }
 
 /** The environment-map terms of a legacy knob object times `scale`; the ambient colour/intensity is untouched. */
@@ -619,22 +824,26 @@ export function bindPrd02EnvironmentProbe(
   // three.js PMREM-style async upgrade: the floor draws until the probe lands.
   // A failure (including the C-09 stub still pending) keeps the floor and is
   // handled here, so no frame ever sees an unhandled rejection.
+  const tier = options.tier;
+  const request = resolution.probe;
+  // GU47 E-B: the outcome per device + request lets a `setEnvironment` crossfade wait for its probe.
+  const outcomeKey = typeof request === "object" && request !== null && "hdri" in request ? request.hdri : JSON.stringify(request);
   const upgrade = (acquired: Promise<EnvironmentProbe>): Promise<EnvironmentProbe> => {
     markTiming("a3d:env:upgrade:start");
     const pending = acquired.then((probe) => {
       markTiming("a3d:env:upgrade:ready");
+      recordEnvironmentProbeOutcome(options.device, outcomeKey, "ready");
       options.onUpgrade?.(probe);
       return probe;
     });
     pending.catch((error: unknown) => {
       const retryable = isEnvironmentProbePendingError(error);
+      if (!retryable) recordEnvironmentProbeOutcome(options.device, outcomeKey, "failed");
       warnEnvironmentUpgradeFailureOnce(error instanceof Error ? error.message : String(error));
       options.onUpgradeFailed?.(error, retryable);
     });
     return pending;
   };
-  const tier = options.tier;
-  const request = resolution.probe;
   // §6.5 `pmrem=cpu`: the CPU prefilter is the lane's sole impl today — the
   // mode is echoed so the capture report can label it (toggle-delta reads it).
   const pmremMode: "cpu" | "auto" = readLightingKillSwitches().pmrem === "cpu" ? "cpu" : "auto";
@@ -680,10 +889,12 @@ export function registerPrd02EnvironmentSources(): void {
     flag: "A3D_QR_LIGHTING",
     priority: 400,
     resolve(snapshot) {
-      const node = groups.flatten(lightingNodes(snapshot)).find(
+      const authored = groups.flatten(lightingNodes(snapshot)).find(
         (n): n is AuraEnvironmentNode => n.kind === "environment"
       ) as AuraEnvironmentNodeV2 | undefined;
-      if (!node) return undefined;
+      if (!authored) return undefined;
+      // GU47 E-B: an `app.lighting.setEnvironment` swap lays its texture / background over the authored node.
+      const node = runtimeEnvironmentNode(authored);
       // LIGHT-05: authored hemisphere lights contribute next to an environment too (they were dropped here before).
       const terms = prd02LightTerms(snapshot);
       const resolution = explicitEnvironmentResolution(node, terms.ambient);
