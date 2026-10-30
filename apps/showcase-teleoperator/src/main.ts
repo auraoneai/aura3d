@@ -1,4 +1,4 @@
-import { createAuraApp, createFixedStepLoop, installQaHooks, material, type AuraModelMaterialHandle, type AuraRuntimeNodeHandle, type AuraTransformSpec, type AuraVec3 } from "@aura3d/engine";
+import { camera, createAuraApp, createFixedStepLoop, installQaHooks, material, type AuraModelMaterialHandle, type AuraRuntimeNodeHandle, type AuraTransformSpec, type AuraVec3 } from "@aura3d/engine";
 import { installBlackFrameGuard, installSafetyNet } from "@aura3d/debug";
 import { createCameraShake, createFixedStepPresenter, createHitStop, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
 import { createGridAudio } from "./audio";
@@ -75,6 +75,7 @@ import { installSensorPass, scanPulseAt } from "./scanPulse";
 import { createGridVfxQueue, headlightMotesSpec, installGridVfx, manholeLayout, motesAnchor, type GridVfxShot } from "./vfx";
 import { mountTouchPads } from "./touch";
 import { bezelState } from "./bezel";
+import { INTRO_SHOT_S, introEnabled, introShots, resultsDof } from "./intro";
 import { CATENARY, DISTRICTS, PARKED, SIGN, SIGN_SLOTS, districtAt, parkedLayout, signAssignments, signNodeId } from "./dressing";
 import { STATIC_CROPS, carCrop, type QaCrop } from "./qaCrops";
 import { FOV_KICK_HALFLIFE_S, FOV_KICK_MAX_DEG, ROLL_HALFLIFE_S, cameraFeel } from "./cameraFeel";
@@ -236,6 +237,8 @@ async function bootGridDispatch(): Promise<void> {
   installGridVfx(auraApp.effects);
   const vfx = createGridVfxQueue();
   /** GD-15 looping headlight motes (one handle; `sky` and `lowTier` say which spec it was spawned with). */
+  /** GD-17: the boot intro owns the camera; rival tags (projected with the scene camera) hide meanwhile. */
+  let introPlaying = false;
   const motes: { handle: { stop(o?: { immediate?: boolean }): void; setPosition(p: AuraVec3): void } | null; sky: WeatherPreset | null; lowTier: boolean; motionOk: boolean } = { handle: null, sky: null, lowTier: false, motionOk: true };
   let audio: ReturnType<typeof createGridAudio> | null = null;
   const contacts = createTrafficContacts(
@@ -338,11 +341,27 @@ async function bootGridDispatch(): Promise<void> {
       else if (e.kind === "fare") {
         hud.showSummary(S.ride.fareIndex, e.style, e.outcome, S.ride.comfort, S.ride.multiplier);
         saveCareer(storage, S.career);
-      } else if (e.kind === "shiftOver") hud.showResults(S.shift, e.score, e.best, e.newBest);
+      } else if (e.kind === "shiftOver") {
+        hud.showResults(S.shift, e.score, e.best, e.newBest);
+        setResultsDof(true);
+      }
+    }
+  }
+
+  /** GD-17: depth of field on the results screen (focus on the car); off on reduced motion and when the shift restarts. */
+  function setResultsDof(on: boolean): void {
+    try {
+      if (on && motionOk()) {
+        auraApp.post?.setEffect("depthOfField", resultsDof(Math.hypot(SCENE_CAM_POS[0] - carView.x, SCENE_CAM_POS[1] - carView.y, SCENE_CAM_POS[2] - carView.z)));
+        auraApp.post?.setEffectEnabled("depthOfField", true);
+      } else auraApp.post?.setEffectEnabled("depthOfField", false);
+    } catch {
+      /* no runtime post control on this path: the results screen stays sharp */
     }
   }
 
   function retry(): void {
+    setResultsDof(false);
     sim.restart();
     presenter.reset();
     hud.hideResults();
@@ -834,7 +853,7 @@ async function bootGridDispatch(): Promise<void> {
       const tag = tagEls[k]!;
       const vz = rz(pose.uz[TRAFFIC_COUNT + k] ?? u.z);
       const proj = projectViewPointToScreen([rx(u.laneX), ry(RIVALS[k]!.isCableCar ? 3.9 : 2.3), vz], vw, vh, presentedFov);
-      if (!proj.visible || S.phase !== "driving") {
+      if (!proj.visible || S.phase !== "driving" || introPlaying) {
         if (tag.shown) { tag.el.style.display = "none"; tag.shown = false; }
         return;
       }
@@ -1116,6 +1135,25 @@ async function bootGridDispatch(): Promise<void> {
   canvas.dataset.ready = "true";
   auraApp.resume();
   if (autoplay) setAutopilotLevel("L5");
+  // GD-17: skippable 3-shot intro over the live first seconds (the sim is untouched); any key or tap skips it.
+  if (introEnabled({ motionOk: motionOk(), params }) && auraApp.camera) {
+    const playback = auraApp.camera.play({
+      id: "grid-intro",
+      shots: introShots(carView.x, carView.z).map((pose) => ({ rig: camera.rigs.static(pose), duration: INTRO_SHOT_S })),
+      onEnd: "return"
+    });
+    introPlaying = true;
+    const skip = (): void => {
+      if (introPlaying) playback.skip();
+    };
+    window.addEventListener("keydown", skip, { capture: true, once: true });
+    window.addEventListener("pointerdown", skip, { capture: true, once: true });
+    void playback.done.then(() => {
+      introPlaying = false;
+      window.removeEventListener("keydown", skip, { capture: true });
+      window.removeEventListener("pointerdown", skip, { capture: true });
+    });
+  }
 }
 
 void bootGridDispatch();
