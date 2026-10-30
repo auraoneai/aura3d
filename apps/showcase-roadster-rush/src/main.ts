@@ -112,7 +112,7 @@ const TOD_PARAM = parseTodParam(urlParams.get("tod"));
 const REDUCED_FLASH = REDUCED_MOTION || urlParams.get("flash") === "0";
 const COARSE_POINTER = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
 /** AO-H1: the Showcase chip (scenario and time-of-day buttons) exists only for developers and captures. */
-const SHOWCASE_CHIP = urlParams.get("dev") === "1" || urlParams.get("capture") === "1";
+const SHOWCASE_CHIP = ["dev", "capture"].some((k) => urlParams.get(k) === "1");
 
 /** Meshy model for a vehicle type when it is shipped and enabled (`?models=0` turns it off), else the original showcase asset. */
 const pickVehicleAsset = (key: string, fallback: AuraAssetRef<"model">): AuraAssetRef<"model"> =>

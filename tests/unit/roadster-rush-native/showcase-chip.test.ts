@@ -15,7 +15,7 @@ describe("Apex Overdrive Showcase chip (GU47 AO-H1)", () => {
   });
 
   it("opens only with ?dev=1 or ?capture=1", () => {
-    expect(main).toMatch(/SHOWCASE_CHIP = urlParams\.get\("dev"\) === "1" \|\| urlParams\.get\("capture"\) === "1"/);
+    expect(main).toContain('SHOWCASE_CHIP = ["dev", "capture"].some((k) => urlParams.get(k) === "1")');
     expect(main).toContain("bar.hidden = !SHOWCASE_CHIP");
   });
 
