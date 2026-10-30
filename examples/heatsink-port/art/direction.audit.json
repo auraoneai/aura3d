@@ -31,6 +31,16 @@
         "type": "hemisphere",
         "shadow": false,
         "intensity": 0.8
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 6
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 7
       }
     ],
     "hasAmbient": false,
