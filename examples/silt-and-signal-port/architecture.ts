@@ -335,18 +335,31 @@ export function inkedTerrainColors(positions: readonly number[]): number[] {
 }
 
 /** A ring of distant dunes and mesas that gives the horizon a silhouette; vertex colours fade into the haze. */
-export function farDunes(cx: number, cz: number, innerR: number, outerR: number, haze: Rgb): ColoredMesh {
+/** Shape knobs for one horizon ring (defaults are today's single ring). */
+export interface FarDuneShape {
+  /** multiplies the ridge and mesa heights */
+  readonly heightScale?: number;
+  /** haze mix at the ring's inner and outer edge (today 0.55 and 0.95) */
+  readonly hazeNear?: number;
+  readonly hazeFar?: number;
+  /** shifts the noise so stacked rings do not repeat one skyline */
+  readonly seed?: number;
+}
+
+export function farDunes(cx: number, cz: number, innerR: number, outerR: number, haze: Rgb, shape: FarDuneShape = {}): ColoredMesh {
   const m = newMesh();
   const A = 160, R = 6;
+  const k = shape.heightScale ?? 1, s0 = shape.seed ?? 0;
+  const h0 = shape.hazeNear ?? 0.55, h1 = shape.hazeFar ?? 0.95;
   for (let r = 0; r <= R; r++) {
     for (let a = 0; a <= A; a++) {
       const t = r / R, ang = (a / A) * Math.PI * 2;
       const rad = innerR + (outerR - innerR) * t;
       const x = cx + Math.cos(ang) * rad, z = cz + Math.sin(ang) * rad;
-      const ridge = fbm(Math.cos(ang) * 3 + 20, Math.sin(ang) * 3 + 5, 4);
-      const mesa = smooth(0.58, 0.64, fbm(Math.cos(ang) * 6 + 3, Math.sin(ang) * 6 - 8, 3)) * 90;
-      const height = (r === 0 ? -20 : 25 + ridge * 190 * Math.sin(Math.min(1, t * 2.2) * Math.PI / 2) + mesa * smooth(0.1, 0.5, t)) - (r === R ? 40 : 0);
-      const c = mix([0.74, 0.58, 0.44], haze, 0.55 + 0.4 * t);
+      const ridge = fbm(Math.cos(ang) * 3 + 20 + s0, Math.sin(ang) * 3 + 5 - s0, 4);
+      const mesa = smooth(0.58, 0.64, fbm(Math.cos(ang) * 6 + 3 + s0, Math.sin(ang) * 6 - 8, 3)) * 90;
+      const height = (r === 0 ? -20 : 25 + (ridge * 190 * Math.sin(Math.min(1, t * 2.2) * Math.PI / 2) + mesa * smooth(0.1, 0.5, t)) * k) - (r === R ? 40 : 0);
+      const c = mix([0.74, 0.58, 0.44], haze, h0 + (h1 - h0) * t);
       pushVertex(m, [x, height, z], [0, 1, 0], [x / 120, z / 120], scale(c, 0.85 + 0.25 * ridge));
     }
   }
@@ -375,4 +388,27 @@ export function farDunes(cx: number, cz: number, innerR: number, outerR: number,
     if (cross(e1, e2)[1] < 0) { m.indices[i + 1] = c; m.indices[i + 2] = b; }
   }
   return m;
+}
+
+/**
+ * GU47 DG-S2 (inked look): three stacked horizon rings between 1500 and 2150 m (the PRD's 1500/1800/2150 m, kept inside today's 2150 m outer edge so the
+ * 4200 m sky dome never covers them), each taller and closer to the fog
+ * colour than the one in front, so the horizon reads as three flat poster plateaus. Merged into one mesh: the same one
+ * draw as today's single ring (+0 draws).
+ */
+export const FAR_DUNE_RINGS: readonly { readonly inner: number; readonly outer: number; readonly shape: FarDuneShape }[] = [
+  { inner: 1500, outer: 1640, shape: { heightScale: 0.55, hazeNear: 0.4, hazeFar: 0.5, seed: 0 } },
+  { inner: 1720, outer: 1880, shape: { heightScale: 0.85, hazeNear: 0.62, hazeFar: 0.7, seed: 7.3 } },
+  { inner: 1960, outer: 2150, shape: { heightScale: 1.2, hazeNear: 0.82, hazeFar: 0.9, seed: 13.9 } }
+];
+
+export function farDuneRings(cx: number, cz: number, haze: Rgb): ColoredMesh {
+  const out = newMesh();
+  for (const ring of FAR_DUNE_RINGS) {
+    const m = farDunes(cx, cz, ring.inner, ring.outer, haze, ring.shape);
+    const base = out.positions.length / 3;
+    out.positions.push(...m.positions); out.normals.push(...m.normals); out.uvs.push(...m.uvs); out.colors.push(...m.colors);
+    for (const i of m.indices) out.indices.push(i + base);
+  }
+  return out;
 }

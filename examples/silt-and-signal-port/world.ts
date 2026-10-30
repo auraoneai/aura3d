@@ -18,7 +18,7 @@ import { RING_FRAGMENT, RING_VERTEX, SKY_FRAGMENT, SKY_INK_FRAGMENT, SKY_VERTEX,
 import { createSiltFx, type SiltFx } from "./fx";
 import { dressingFor } from "./dressing";
 import { SILT_PALETTE, chapterHdri, chapterLook, keyDirection, linearOf, type SiltLookMode } from "./art/look";
-import { buildArchitecture, farDunes, terrainColors, type ColoredMesh } from "./architecture";
+import { buildArchitecture, farDuneRings, farDunes, terrainColors, type ColoredMesh } from "./architecture";
 import { createTerrain, usesOriginalTerrain, type Column, type MeshData, type Placement, type Terrain } from "./terrain";
 
 type Scene = ReturnType<typeof scene>;
@@ -418,7 +418,8 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   {
     const mid = -terrain.length / 2;
     const haze = inked ? linearOf(look.fog.color) : hexLinear(chapter === 0 ? 0xdcc5b1 : palette.fog!);
-    builder.add(geometry.custom(dynamicFrom(farDunes(0, mid, 1500, 2150, haze)), {
+    // DG-S2 (part): the inked look stacks three rings tinted toward the fog (one merged draw); mesa and arch silhouettes are WP-36
+    builder.add(geometry.custom(dynamicFrom(inked ? farDuneRings(0, mid, haze) : farDunes(0, mid, 1500, 2150, haze)), {
       name: "far-dunes", castShadow: false, receiveShadow: false,
       material: pbr({ color: white, roughness: 1, envMapIntensity: 0.3 })
     }).runtime({ id: "far-dunes" }));
