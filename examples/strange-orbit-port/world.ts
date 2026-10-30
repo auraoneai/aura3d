@@ -135,6 +135,10 @@ export const LEAN_GAIN = 1.8;
 export const LANDING_SQUASH = 0.09;
 const PLANET_SPIN = 0.01;
 
+/** SO47-W2: beacon lamp glow steps (rest, then the leader pulse); quantised so the material is rewritten only on a step. */
+export const BEACON_GLOW: readonly number[] = [2.2, 2.8, 3.5, 4.2];
+const beaconLampMaterial = (glow: number) => material.pbr({ color: "#ecb75f", emissive: "#ecb75f", emissiveIntensity: glow, roughness: 0.5, metallic: 0, practical: true });
+
 /** SO47-W2: metres between amber beacon posts. */
 export const BEACON_SPACING = 40;
 
@@ -464,7 +468,7 @@ export function buildWorld(options: WorldOptions): World {
       size: 0.42,
       transforms: lamps,
       castShadow: false,
-      material: material.pbr({ color: "#ecb75f", emissive: "#ecb75f", emissiveIntensity: 2.2, roughness: 0.5, metallic: 0, practical: true })
+      material: beaconLampMaterial(BEACON_GLOW[0])
     }).runtime({ id: "beacon-lamps" }));
   }
   // SO47-P3: sun lens flare on the key (High gouache); frustum occlusion drops it when the sun is off screen.
@@ -694,6 +698,8 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
   const keyLight = app.nodes.get("key");
   const skyDome = app.nodes.get("sky-dome");
   const planetNode = app.nodes.get("planet");
+  const beaconLamps = app.nodes.get("beacon-lamps");
+  let beaconStep = 0;
   let lastPost = "";
   let lastShift = Number.NaN;
   if (input.look === "gouache") registerOrbitVfx(app.effects ?? { registerPreset: () => undefined });
@@ -1009,6 +1015,12 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       app.effects.burst("streak", [Math.cos(a) * 700, 260 + skyRng() * 200, Math.sin(a) * 700], { count: 6, speed: 60, scale: 6, color: "#ffe6c4", camera: false });
     }
     if (input.look === "gouache") planetNode?.setRotation(0.1, 0.4 + time * PLANET_SPIN, 1.12);
+    // SO47-W2: the beacons pulse while the player leads (a steady glow under reduced flash/motion).
+    if (beaconLamps) {
+      const leading = state.phase === "racing" && state.mode !== "trial" && state.place === 1 && !input.reducedMotion;
+      const step = leading ? 1 + Math.floor((Math.sin(time * 5) * 0.5 + 0.5) * (BEACON_GLOW.length - 1.001)) : 0;
+      if (step !== beaconStep) { beaconStep = step; beaconLamps.setMaterial(beaconLampMaterial(BEACON_GLOW[step]!)); }
+    }
 
     /* GU47 SO47-L3 / E2: sector key tint, haze and nebula hue; SO47-P2 / P3 boost and menu post */
     const sector = sectors.update(sForPlayer, dt);
