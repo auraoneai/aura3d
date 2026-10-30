@@ -217,6 +217,8 @@ export type {
 // biomes) and `world.useAppFlags` for builder-time flag reads.
 export { world } from "../agent-api/world/index.js";
 export type { AuraGrassBounds, AuraGrassInput, AuraGrassOptions, AuraHeightfieldSampler, AuraScatterAsset, AuraScatterLayer, AuraScatterOptions, AuraScatterResult, AuraTerrainHandle, AuraTerrainOptions, AuraWaterHandle, AuraWaterOptions, AuraWindOptions, AuraWorldBuilderFlagSource, AuraWorldShape } from "../agent-api/world/index.js";
+// GU47 E-G (WP-7): typed `stars` / `clouds` on `sky.preetham` / `sky.gradient`.
+export type { AuraSkyCloudsOptions, AuraSkyGradientOptions, AuraSkyNodeOptions, AuraSkyPreethamOptions, AuraSkyStarsOptions } from "../agent-api/nodes/sky.js";
 
 // threejs-parity ST-01 (lane L4): the `texture.*` namespace + live handle type.
 export { texture, TextureHandle } from "../agent-api/index.js";
