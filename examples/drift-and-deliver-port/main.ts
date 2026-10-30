@@ -30,6 +30,7 @@ import { shiftCrops } from "./qa";
 import { createAudio } from "./audio";
 import { districtLayers, drawDial, slamStamp, ticketText } from "./hud";
 import { BOARD, boardPose, textOrigin, textWidth } from "./board";
+import { bannerNodes } from "./banners";
 import { INTRO, SIDE_SHOT, headlightFlare, introPose, introWanted, orbitPose, sideShotPose, sideShotWanted, type CarPose } from "./cinema";
 import { courierBraking, createPitch, placeHalos, stepPitch } from "./brakes";
 import { createBlackFrameWatch, healParams, healStage, type BlackFrameWatch } from "@aura3d/debug";
@@ -212,6 +213,8 @@ function buildScene() {
   s.add(primitives.cylinder({ name: "dropoff-pad", size: [2 * DROP_PAD_RADIUS, 0.06, 2 * DROP_PAD_RADIUS], position: [car.x, -60, car.z], material: look.shift ? padMaterial() : material.emissive({ color: "#5ce1ff", emissive: "#2fc9ff", emissiveIntensity: 1.4 }), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-pad" }));
   s.add(primitives.cylinder({ name: "dropoff-beacon", size: look.shift ? [1.6, 70, 1.6] : [0.9, 70, 0.9], position: [car.x, -60, car.z], material: look.shift ? beaconMaterial(row.beacon) : material.emissive({ color: "#9cefff", emissive: "#46d6ff", emissiveIntensity: 1.8 }), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-beacon" }));
   if (look.shift) s.add(primitives.torus({ name: "dropoff-ring", size: [2 * DROP_PAD_RADIUS + 1.2, 0.5, 2 * DROP_PAD_RADIUS + 1.2], position: [car.x, -60, car.z], rotation: [Math.PI / 2, 0, 0], material: beaconMaterial(2.2), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-ring" }));
+  // GC-H2: three SDF district banners over the avenues (static, +6 draws)
+  if (look.shift) for (const n of bannerNodes()) s.add(n);
   if (look.shift) {
     // GC-V2 address board: an SDF "DROP-OFF" sign on a dark teal panel by the pillar, turned to the camera (+2 draws)
     s.add(primitives.box({ name: "dropoff-board", size: [BOARD.panel[0], BOARD.panel[1], BOARD.panel[2]], position: [car.x, -60, car.z], material: material.emissive({ color: "#123c40", emissive: "#0c2f33", emissiveIntensity: 0.6 }), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-board" }));
