@@ -2,6 +2,7 @@ import { games, material, model, primitives, type AuraLookId, type AuraSceneNode
 import { stageAssets } from "./stage-assets";
 import { assets } from "../aura-assets";
 import { stageLook } from "./look";
+import { venueBackdrop } from "./backdrop";
 
 /**
  * IRON CROWN venues.
@@ -306,7 +307,8 @@ function makeStage(
       message: issue.message
     })),
     bounds: { minX: stage.combatBounds.minX, maxX: stage.combatBounds.maxX },
-    dressing: [...buildArenaFloorDeck(id, palette), ...dressing]
+    // IC47-W1: the far backdrop (10-60 m) sits behind the dressing.
+    dressing: [...buildArenaFloorDeck(id, palette), ...dressing, ...venueBackdrop(id)]
   };
 }
 
