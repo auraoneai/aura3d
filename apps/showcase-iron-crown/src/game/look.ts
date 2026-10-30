@@ -18,6 +18,7 @@
 import {
   lights,
   looks,
+  type AuraAssetRef,
   type AuraColor,
   type AuraHdriId,
   type AuraLocalShadowOptions,
@@ -27,6 +28,7 @@ import {
   type AuraSceneNode,
   type AuraVec3
 } from "@aura3d/engine";
+import { assets } from "../aura-assets";
 import type { StageId } from "./stages";
 
 /** Core palette (PRD §6.1 G05): black iron, molten gold, ember crimson. */
@@ -126,7 +128,17 @@ export interface StageLookRow {
   readonly fog: { readonly color: AuraColor; readonly near: number; readonly far: number };
   readonly fogDensityScale: number;
   readonly exposureEv: number;
-  readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly tint: number };
+  /**
+   * One grade per venue. `lut` (IC47-P2): a typed `.cube` asset written by `scripts/make-luts.mjs` (luminance-keeping
+   * split tone) on the four open-air day/dusk venues; the Crown and Neo-Tokyo grade by the numbers only.
+   */
+  readonly grade: {
+    readonly contrast: number;
+    readonly saturation: number;
+    readonly temperature: number;
+    readonly tint: number;
+    readonly lut?: AuraAssetRef<"lut">;
+  };
   readonly bloom: { readonly intensity: number; readonly threshold: number; readonly knee: number; readonly scatter: number };
   readonly vignette: number;
   /** Film grain intensity, 0 = none (grain is the Crown's alone). */
@@ -226,7 +238,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     fog: { color: "#c47a4e", near: 18, far: 120 },
     fogDensityScale: 1,
     exposureEv: 0.05,
-    grade: { contrast: 1.1, saturation: 1.12, temperature: 0.3, tint: -0.02 },
+    grade: { contrast: 1.1, saturation: 1.12, temperature: 0.3, tint: -0.02, lut: assets.ironcrownLutDockDusk },
     bloom: { intensity: 0.38, threshold: 1.2, knee: 0.5, scatter: 0.68 },
     vignette: 0.2,
     grain: 0,
@@ -250,7 +262,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     fog: { color: "#c9a46a", near: 8, far: 70 },
     fogDensityScale: 1,
     exposureEv: 0,
-    grade: { contrast: 1.18, saturation: 0.92, temperature: 0.18, tint: 0 },
+    grade: { contrast: 1.18, saturation: 0.92, temperature: 0.18, tint: 0, lut: assets.ironcrownLutColosseumOchre },
     bloom: { intensity: 0.2, threshold: 1.4, knee: 0.45, scatter: 0.6 },
     vignette: 0.16,
     grain: 0,
@@ -273,7 +285,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     fog: { color: "#b8724a", near: 15, far: 110 },
     fogDensityScale: 1,
     exposureEv: 0,
-    grade: { contrast: 1.14, saturation: 1.06, temperature: 0.24, tint: 0 },
+    grade: { contrast: 1.14, saturation: 1.06, temperature: 0.24, tint: 0, lut: assets.ironcrownLutAirbaseHaze },
     bloom: { intensity: 0.34, threshold: 1.25, knee: 0.5, scatter: 0.66 },
     vignette: 0.2,
     grain: 0,
@@ -296,7 +308,7 @@ export const STAGE_LOOKS: Readonly<Record<StageId, StageLookRow>> = {
     fog: { color: "#b9c8d8", near: 14, far: 90 },
     fogDensityScale: 1,
     exposureEv: 0,
-    grade: { contrast: 1.04, saturation: 0.9, temperature: -0.22, tint: 0 },
+    grade: { contrast: 1.04, saturation: 0.9, temperature: -0.22, tint: 0, lut: assets.ironcrownLutMonasteryFrost },
     bloom: { intensity: 0.26, threshold: 1.3, knee: 0.45, scatter: 0.62 },
     vignette: 0.18,
     grain: 0,

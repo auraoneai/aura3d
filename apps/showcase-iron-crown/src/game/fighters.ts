@@ -321,10 +321,12 @@ export function fighterSurface(palette: FighterPalette): {
   };
 }
 
-export function resolveTypedFighterAssets(assetManifest: TypedFighterAssets) {
+/** The manifest also carries the venue LUTs (IC47-P2); only `model` entries count as fighter assets. */
+export function resolveTypedFighterAssets(assetManifest: Partial<Record<string, AuraAssetRef>>) {
   const typedFighterAssets: TypedFighterAssets = {};
   for (const key of REQUIRED_FIGHTER_ASSETS) {
-    typedFighterAssets[key] = assetManifest[key];
+    const entry = assetManifest[key];
+    if (entry?.type === "model") typedFighterAssets[key] = entry as AuraAssetRef<"model">;
   }
   const missingFighterAssets = REQUIRED_FIGHTER_ASSETS.filter((key) => !typedFighterAssets[key]);
   return {
