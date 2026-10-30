@@ -34,10 +34,15 @@ vec3 applyFog(vec3 color, vec3 world) {
   return a3dFogHeight(color, fogColor, length(world - cameraPosition), world.y, 0.0004, 0.0022, 18.0, 0.031, 0.96);
 }
 float gSun = 1.0; // sun-shadow factor, set per fragment by a3dSunShadowAuto in specs with receiveShadow: true
+// GU47 IC-01: twilight terms. bounceColor is the warm sunset light thrown back off the horizon on the sun side,
+// topFill the violet sky above; both are zero and litScale is 0.26 under ?look=original (today's lit()).
 vec3 lit(vec3 albedo, vec3 N) {
   vec3 hemi = mix(groundAmbient, skyAmbient, N.y * 0.5 + 0.5);
   float ndl = max(dot(N, normalize(sunDir)), 0.0);
-  return albedo * (hemi + sunColor * ndl * gSun) * 0.26;
+  vec3 sunFlat = normalize(vec3(sunDir.x, 0.0, sunDir.z) + vec3(1e-4, 0.0, 0.0));
+  float bounceW = max(dot(N, sunFlat), 0.0) * (1.0 - abs(N.y)) + 0.25 * max(-N.y, 0.0);
+  float topW = max(N.y, 0.0);
+  return albedo * (hemi + sunColor * ndl * gSun + bounceColor * bounceW + topFill * topW) * litScale;
 }
 `;
 
@@ -71,7 +76,7 @@ void main() {
   // dark blue-grey asphalt with large soft mottling and fine grain
   float mottle = fbm(vec2(u * 3.0 + 1.7, s * 0.05));
   float grain = fbm(vec2(u * 38.0, s * 1.4));
-  vec3 asphalt = vec3(0.20, 0.23, 0.29) * (0.62 + 0.55 * mottle) * (0.9 + 0.2 * grain);
+  vec3 asphalt = vec3(0.20, 0.23, 0.29) * (roadAlbedo / 0.23) * (0.62 + 0.55 * mottle) * (0.9 + 0.2 * grain);
   // cyan neon tracery: thin iso-lines of a slow noise field, strongest mid-road, glowing a little
   float field = fbm(vec2(u * 2.4 + 3.0, s * 0.028));
   float vein = 1.0 - smoothstep(0.0, 0.007, abs(field - 0.52));
@@ -85,6 +90,19 @@ void main() {
   vec3 neon = mix(vRoad, vec3(0.80, 0.95, 1.0), 0.7);
   gSun = a3dSunShadowAuto(vWorld, N);
   vec3 color = lit(asphalt, N) * 1.55;
+  // GU47 IC-10 obsidian glass (glass = 0 under ?look=original): darker base, fresnel reflection of the twilight sky,
+  // lit hex seams and an ion pulse running along the veins at the drone's speed
+  vec3 V = normalize(cameraPosition - vWorld);
+  float fres = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 4.0);
+  vec3 Rv = reflect(-V, N);
+  vec3 mirror = mix(vec3(0.06, 0.16, 0.18), mix(vec3(0.42, 0.20, 0.36), vec3(0.16, 0.12, 0.36), smoothstep(0.0, 0.3, Rv.y)), smoothstep(-0.05, 0.08, Rv.y));
+  vec2 hx = vec2(u * 9.0, s * 0.22);
+  vec2 hc = abs(fract(vec2(hx.x + 0.5 * floor(hx.y), hx.y)) - 0.5);
+  float seam = (1.0 - smoothstep(0.0, 0.035, 0.5 - max(hc.x, hc.y))) * (1.0 - smoothstep(0.7, 0.92, abs(u)));
+  float pulse = 0.5 + 0.5 * sin(s * 0.09 - u_time * ionSpeed * 0.09);
+  color = mix(color, color * 0.55 + mirror * (0.35 + 1.6 * fres), glass);
+  color += vRoad * seam * 0.12 * seams;
+  color += mix(vec3(0.10, 0.85, 0.80), vRoad, 0.5) * clamp(vein, 0.0, 1.0) * veinHdr * (0.6 + 0.6 * pulse) * glass;
   color += vec3(0.10, 0.85, 0.80) * clamp(vein, 0.0, 1.0) * 0.20;
   color += vec3(0.78, 0.88, 0.95) * edgeLine * 0.55;
   color += vec3(0.75, 0.9, 1.0) * dash * 0.28;
@@ -165,6 +183,15 @@ void main() {
   vec3 mid = vec3(0.022, 0.120, 0.175);
   vec3 hor = vec3(0.150, 0.420, 0.450);
   vec3 sky = h > 0.0 ? mix(hor, mix(mid, zen, smoothstep(0.12, 0.8, h)), smoothstep(0.0, 0.34, h)) : mix(hor, vec3(0.07, 0.20, 0.24), smoothstep(0.0, 0.25, -h));
+  // GU47 IC-05 (twilight = 0 under ?look=original): violet zenith, a magenta-to-amber band centred on the sun azimuth,
+  // teal haze below the horizon
+  vec3 sd = normalize(sunDir);
+  float sunAz = cos(az - atan(sd.z, sd.x)) * 0.5 + 0.5;
+  float bandW = pow(sunAz, 2.2) * (1.0 - smoothstep(0.0, 0.32, h)) * smoothstep(-0.06, 0.02, h);
+  vec3 band = mix(bandLow, bandHigh, smoothstep(0.0, 0.2, h));
+  vec3 twSky = mix(vec3(0.05, 0.16, 0.18), mix(vec3(0.09, 0.07, 0.26), vec3(0.03, 0.02, 0.10), smoothstep(0.25, 0.9, h)), smoothstep(-0.02, 0.18, h));
+  twSky += band * bandW * 0.85 + vec3(0.10, 0.08, 0.22) * (1.0 - smoothstep(0.0, 0.5, abs(h)));
+  sky = mix(sky, twSky, twilight);
   // cloud layer hugging the horizon
   float cl = fbm(vec2(az * 2.4 + u_time * 0.008, h * 6.0));
   float cmask = smoothstep(0.0, 0.16, h) * (1.0 - smoothstep(0.22, 0.65, h));
@@ -175,22 +202,26 @@ void main() {
   float r1 = exp(-(((h - c1) / 0.05) * ((h - c1) / 0.05)));
   float r2 = exp(-(((h - c2) / 0.07) * ((h - c2) / 0.07)));
   float tex = 0.40 + 0.60 * fbm(vec2(az * 7.0, h * 14.0 + u_time * 0.03));
-  vec3 aur = vec3(0.60, 0.24, 0.85) * r1 * tex * 1.0 + vec3(0.12, 0.80, 0.68) * r2 * tex * 0.8 + vec3(0.2, 0.75, 0.65) * r1 * 0.14;
+  vec3 aur = (vec3(0.60, 0.24, 0.85) * r1 * tex * 1.0 + vec3(0.12, 0.80, 0.68) * r2 * tex * 0.8 + vec3(0.2, 0.75, 0.65) * r1 * 0.14) * auroraGain;
   // ringed planet
   vec3 pd = normalize(planetDir);
   vec3 pr = normalize(cross(vec3(0.0, 1.0, 0.0), pd));
   vec3 pu = cross(pd, pr);
-  vec2 pp = vec2(dot(d, pr), dot(d, pu)) / 0.17;
+  vec2 pp = vec2(dot(d, pr), dot(d, pu)) / (0.17 * planetScale);
   float facing = step(0.0, dot(d, pd));
   float disk = (1.0 - smoothstep(0.96, 1.0, length(pp))) * facing;
   vec2 q = mat2(0.94, -0.34, 0.34, 0.94) * pp;
   float ringR = length(vec2(q.x, q.y * 3.4));
   float ring = (1.0 - smoothstep(0.0, 0.16, abs(ringR - 1.85))) * facing * (1.0 - disk * 0.6);
-  vec3 planet = mix(vec3(0.12, 0.08, 0.22), vec3(0.50, 0.34, 0.52), fbm(pp * 3.0 + 4.0)) * disk * 0.95 + vec3(0.55, 0.50, 0.62) * ring * 0.55;
+  // twilight: a lit crescent on the sun side of the disk and the planet's shadow across the far ring
+  vec2 sunP = normalize(vec2(dot(sd, pr), dot(sd, pu)) + vec2(1e-4, 0.0));
+  float crescent = mix(1.0, 0.25 + 1.4 * smoothstep(-0.2, 0.7, dot(pp, sunP)), twilight);
+  float ringShadow = mix(1.0, 1.0 - 0.7 * step(q.y, 0.0) * (1.0 - smoothstep(0.7, 1.05, abs(q.x))), twilight);
+  vec3 planet = mix(vec3(0.12, 0.08, 0.22), vec3(0.50, 0.34, 0.52), fbm(pp * 3.0 + 4.0)) * disk * 0.95 * crescent + vec3(0.55, 0.50, 0.62) * ring * 0.55 * ringShadow;
   float moonMask = 1.0 - smoothstep(0.022, 0.026, acos(clamp(dot(d, normalize(moonDir)), -1.0, 1.0)));
   float sun = pow(max(dot(d, normalize(sunDir)), 0.0), 160.0);
   vec2 g = floor(d.xz * 700.0 + d.y * 300.0);
-  float star = step(0.9988, hash21(g)) * smoothstep(0.1, 0.4, h);
+  float star = step(0.9988, hash21(g)) * smoothstep(0.1, 0.4, h) * (1.0 - twilight * 0.5 * (0.5 + 0.5 * sin(u_time * 3.0 + hash21(g + 7.0) * 40.0)));
   vec3 color = sky + aur + planet + vec3(1.0, 1.1, 1.5) * moonMask + sunColor * sun * 0.3 + vec3(star) * 0.9 + glowColor * 0.08 * (1.0 - abs(h));
   outColor = vec4(color, 1.0);
 }`;
@@ -295,4 +326,30 @@ void main() {
   float r = length(vUv * 2.0 - 1.0);
   float a = (1.0 - smoothstep(0.2, 1.0, r)) * blobAlpha;
   outColor = vec4(0.0, 0.0, 0.0, a);
+}`;
+
+/** GU47 IC-18 ion wake: a camera-facing ribbon with a per-vertex colour ramp, additive and above HDR white at the head. */
+export const WAKE_VERTEX = /* glsl */ `
+attribute vec3 wakeColor;
+attribute float wakeAlpha;
+out vec2 vUv;
+out vec3 vColor;
+out float vAlpha;
+void main() {
+  vUv = uv;
+  vColor = wakeColor;
+  vAlpha = wakeAlpha;
+  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
+}`;
+
+export const WAKE_FRAGMENT = /* glsl */ `
+in vec2 vUv;
+in vec3 vColor;
+in float vAlpha;
+out vec4 outColor;
+void main() {
+  float across = 1.0 - abs(vUv.x * 2.0 - 1.0);
+  float core = pow(across, 0.6) + 1.4 * pow(across, 6.0);
+  float a = clamp(core * vAlpha * wakeGain, 0.0, 4.0);
+  outColor = vec4(vColor * a, min(a, 1.0));
 }`;

@@ -3,8 +3,9 @@
  * app draws with. Lighting values come from the Vesper Heights `lighting` block.
  */
 import type { material } from "@aura3d/engine";
+import { LOOKS, type HeatsinkLookRow } from "./art/look";
 import { VESPER } from "./map";
-import { BLOB_FRAGMENT, BLOB_VERTEX, POINTS_FRAGMENT, POINTS_VERTEX, ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX, STREAK_FRAGMENT, STREAK_VERTEX, TERRAIN_FRAGMENT, VEIL_FRAGMENT, VEIL_VERTEX } from "./shaders";
+import { BLOB_FRAGMENT, BLOB_VERTEX, POINTS_FRAGMENT, POINTS_VERTEX, ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX, STREAK_FRAGMENT, STREAK_VERTEX, TERRAIN_FRAGMENT, VEIL_FRAGMENT, VEIL_VERTEX, WAKE_FRAGMENT, WAKE_VERTEX } from "./shaders";
 
 export type CustomSpec = Parameters<typeof material.custom>[0];
 export type Rgb = readonly [number, number, number];
@@ -23,15 +24,39 @@ export const GROUND_AMBIENT: Rgb = intLinear(hemi.ground).map((c) => c * hemi.in
 /** the five uniforms every shader built on COMMON (fog + hemisphere/sun lighting) must author */
 /** the map's `atmosphere.low` is the haze colour seen near the ground (teal grey); the per-district `fog` ints are lighter lavender tints the original does not show at ground level */
 export const FOG_LOW: Rgb = (VESPER.atmosphere as unknown as { low: Rgb }).low;
-export const lightUniforms = (fog: Rgb = FOG_LOW): NonNullable<CustomSpec["uniforms"]> => ({
+
+/**
+ * GU47: the look row every spec below reads (twilight terms in `lit()`, fog, sky, causeway). `buildWorld` sets it before
+ * it builds the scene; the default is `original`, so a spec built outside a world is today's program.
+ */
+let shading: HeatsinkLookRow = LOOKS.original;
+export const setShading = (row: HeatsinkLookRow): void => { shading = row; };
+export const currentShading = (): HeatsinkLookRow => shading;
+
+export const lightUniforms = (fog: Rgb = shading.fog.color): NonNullable<CustomSpec["uniforms"]> => ({
   fogColor: { type: "color3", value: [...fog] },
+  litScale: { type: "f32", value: shading.lit.scale },
+  bounceColor: { type: "color3", value: [...shading.lit.bounce] },
+  topFill: { type: "color3", value: [...shading.lit.topFill] },
   sunDir: { type: "vec3", value: [...SUN_DIR] },
   sunColor: { type: "color3", value: [...SUN_COLOR] },
   skyAmbient: { type: "color3", value: [...SKY_AMBIENT] },
   groundAmbient: { type: "color3", value: [...GROUND_AMBIENT] }
 });
 
-export const roadSpec = (): CustomSpec => ({ receiveShadow: true, glsl: { vertex: ROAD_VERTEX, fragment: ROAD_FRAGMENT }, uniforms: lightUniforms(), side: "double" });
+export const roadSpec = (): CustomSpec => ({
+  receiveShadow: true,
+  glsl: { vertex: ROAD_VERTEX, fragment: ROAD_FRAGMENT },
+  uniforms: {
+    ...lightUniforms(),
+    roadAlbedo: { type: "f32", value: shading.lit.roadAlbedo },
+    glass: { type: "f32", value: shading.causeway.glass },
+    veinHdr: { type: "f32", value: shading.causeway.veinHdr },
+    seams: { type: "f32", value: shading.causeway.seams },
+    ionSpeed: { type: "f32", value: 0 }
+  },
+  side: "double"
+});
 
 export interface SolidExtra {
   readonly transparent?: boolean;
@@ -77,6 +102,11 @@ export const skySpec = (): CustomSpec => ({
     horizon: { type: "color3", value: [...sky.horizon] },
     glowColor: { type: "color3", value: [...sky.glow] },
     planetDir: { type: "vec3", value: [...sky.alien.planet.dir] },
+    twilight: { type: "f32", value: shading.sky.twilight },
+    planetScale: { type: "f32", value: shading.sky.planetScale },
+    auroraGain: { type: "f32", value: shading.sky.aurora },
+    bandLow: { type: "color3", value: [...shading.sky.bandLow] },
+    bandHigh: { type: "color3", value: [...shading.sky.bandHigh] },
     moonDir: { type: "vec3", value: [...sky.moon.dir] }
   },
   side: "back",
@@ -125,7 +155,18 @@ export const blobSpec = (): CustomSpec => ({
   side: "double"
 });
 
+/** GU47 IC-18: the ion wake ribbon (additive, no depth write) */
+export const wakeSpec = (): CustomSpec => ({
+  glsl: { vertex: WAKE_VERTEX, fragment: WAKE_FRAGMENT },
+  uniforms: { wakeGain: { type: "f32", value: 1.8 } },
+  transparent: true,
+  depthWrite: false,
+  blending: "additive",
+  side: "double"
+});
+
 export const allProgramSpecs = (): readonly { readonly name: string; readonly spec: CustomSpec }[] => [
+  ...withShading(LOOKS.twilight, () => [{ name: "road-twilight", spec: roadSpec() }, { name: "sky-twilight", spec: skySpec() }, { name: "terrain-twilight", spec: terrainSpec(80) }]),
   { name: "road", spec: roadSpec() },
   { name: "solid", spec: solidSpec([0.5, 0.5, 0.5]) },
   { name: "solid-glow", spec: solidSpec([0.5, 0.5, 0.5], [1, 0.8, 0.4], 1.4) },
@@ -136,5 +177,13 @@ export const allProgramSpecs = (): readonly { readonly name: string; readonly sp
   { name: "terrain", spec: terrainSpec(80, [1, 1, 1]) },
   { name: "streak", spec: streakSpec() },
   { name: "points", spec: pointsSpec() },
-  { name: "blob", spec: blobSpec() }
+  { name: "blob", spec: blobSpec() },
+  { name: "wake", spec: wakeSpec() }
 ];
+
+/** builds specs under one look row and restores the previous one (tests bake both looks) */
+export function withShading<T>(row: HeatsinkLookRow, build: () => T): T {
+  const prev = shading;
+  shading = row;
+  try { return build(); } finally { shading = prev; }
+}

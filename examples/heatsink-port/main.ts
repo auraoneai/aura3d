@@ -18,7 +18,8 @@ import { FRAME, Race } from "./race";
 import { createHeatsinkPresenter, viewOf } from "./presentation";
 import { Track } from "./track";
 import { IDLE, type Input } from "./vehicle";
-import { buildWorld, type WorldRuntime } from "./world";
+import { DRONE_CROP, buildWorld, type WorldRuntime } from "./world";
+import { postToggles } from "./art/look";
 
 const params = new URLSearchParams(location.search);
 const coarse = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
@@ -137,8 +138,17 @@ function renderBinds(): void {
 const prefersReduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 const motionParam = params.get("motion");
 let reducedMotion = motionParam === "reduced" ? true : motionParam === "full" ? false : store.get(STORE.motion) === "reduced" ? true : store.get(STORE.motion) === "full" ? false : prefersReduced;
+let lowFps = false;
+/** GU47 IC-08/IC-25: reduced motion drops motion blur and CA; fps < 30 for 3 s drops GTAO, motion blur, god rays, grain and CA */
+function applyPost(): void {
+  if (!app?.post) return;
+  for (const [name, on] of postToggles(lookRow, { reducedMotion, lowFps })) {
+    try { app.post.setEffectEnabled(name, on); } catch { /* effect not mounted on this tier */ }
+  }
+}
 function applyMotion(): void {
   runtime?.setMotion({ reduced: reducedMotion });
+  applyPost();
   setText(el.motion, reducedMotion ? "Reduced motion: on" : "Reduced motion: off");
   el.motion.setAttribute("aria-pressed", String(reducedMotion));
 }
@@ -327,6 +337,7 @@ function govern(dt: number): void {
   if (governor.sum < 3) return;
   const mean = governor.sum / governor.n;
   governor.sum = 0; governor.n = 0;
+  if (mean > 1 / 30 && !lowFps) { lowFps = true; applyPost(); }
   if (mean > 1 / 40 && governor.cap > 1) {
     governor.cap = Math.max(1, +(governor.cap - 0.3).toFixed(2));
     governor.drops++;
@@ -372,7 +383,7 @@ const state = () => {
   const p = race.player;
   return {
     state: race.state, step: race.frames, raceTime: race.raceTime, countdown: race.countdown, goT: race.goT, lapIdx: race.lapIdx, bestLap: race.bestLap,
-    paused, faulted, touchMode, reducedMotion, quality: config.quality, qualityReason: config.qualityReason, pixelRatioCap: governor.cap,
+    paused, faulted, touchMode, reducedMotion, lowFps, look: lookRow?.id ?? null, quality: config.quality, qualityReason: config.qualityReason, pixelRatioCap: governor.cap,
     player: { s: p.s, x: p.x, dist: p.dist, v: p.v, ab: p.ab, heat: p.heat, shield: p.shield, gunHeat: p.gunHeat, theta: p.theta, phi: p.phi, yW: p.yW, vyW: p.vyW, steerVal: p.steerVal, burning: p.burning, invuln: p.invuln, burstT: p.burstT, landT: p.landT, crashT: p.crashT, crashes: p.crashes, crashed: p.crashed, finished: p.finished, takedowns: p.takedowns },
     events: race.events.length,
     ops: { score: race.ops.score, kills: race.ops.kills, barrels: race.ops.barrelsShot, shots: race.ops.shots, hits: race.ops.hits, chain: race.ops.chain, bestChain: race.ops.bestChain, medal: race.ops.medal, targetsAlive: race.ops.targets.filter((t) => t.alive).length, hash: race.ops.hash() }
@@ -494,6 +505,7 @@ const hooks = installQaHooks("heatsink", {
 /* ------------------------------------------------------------------ boot */
 
 let ready = false;
+let lookRow: import("./art/look").HeatsinkLookRow | undefined;
 
 function sizeCanvas(): void {
   const dpr = Math.min(devicePixelRatio || 1, governor.cap);
@@ -504,6 +516,7 @@ function sizeCanvas(): void {
 async function boot(): Promise<void> {
   sizeCanvas();
   const world = buildWorld(track, config.quality);
+  lookRow = world.look;
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
@@ -515,6 +528,8 @@ async function boot(): Promise<void> {
   await app.ready();
   runtime = world.bind(app);
   applyMotion();
+  /* QA crops for the E-I steady-state capture (normalised to the canvas; the chase camera holds the drone there) */
+  (window as unknown as { __AURA_QA__?: Record<string, unknown> }).__AURA_QA__ = { ...((window as unknown as { __AURA_QA__?: Record<string, unknown> }).__AURA_QA__ ?? {}), crops: [DRONE_CROP, { name: "road", x: 0.3, y: 0.72, w: 0.4, h: 0.26 }, { name: "sky", x: 0, y: 0, w: 1, h: 0.25 }] };
   ready = true;
   el.loading.classList.add("hidden");
   $<HTMLButtonElement>("start").disabled = false;

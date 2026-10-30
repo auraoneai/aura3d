@@ -102,7 +102,8 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     hemisphere: { sky: "#8a7cd8", ground: "#3a2418", intensity: 0.8 },
     environment: { kind: "hdri", hdri: "sunset-dramatic", intensity: 0.7, rotationDeg: SUN_AZIMUTH_DEG },
     lit: { scale: 0.45, bounce: [0.30, 0.13, 0.06], topFill: [0.16, 0.12, 0.34], roadAlbedo: 0.34 },
-    fog: { color: linearOf(PALETTE.tealHaze), districtMix: 0.3, districtMetres: 120 },
+    /* the haze stays the map's `atmosphere.low` (linear; sRGB ~#457b7f) so the distance does not go dark; #0f3a40 is the deep haze below the horizon in the dome */
+    fog: { color: [0.06, 0.19, 0.21], districtMix: 0.3, districtMetres: 120 },
     causeway: { glass: 1, veinHdr: 1.7, seams: 1 },
     bloom: { intensity: 0.6, threshold: 1.0 },
     grade: { exposure: 1.05, contrast: 1.08, saturation: 1.08, temperature: 0, tint: 0, shadows: 1, highlights: 1 },
@@ -172,4 +173,14 @@ export function districtFog(row: HeatsinkLookRow, hudHex: string): Rgb {
 /** IC-06: per-metre approach rate; after `districtMetres` the fog is ~95% of the way to the new district colour */
 export function fogApproach(row: HeatsinkLookRow, metres: number): number {
   return 1 - Math.exp((-3 * Math.max(0, metres)) / Math.max(1, row.fog.districtMetres));
+}
+
+/** runtime post switches (engine post effect names) for the reduced-motion and low-fps states; empty under `original` */
+export function postToggles(row: HeatsinkLookRow | undefined, state: { readonly reducedMotion: boolean; readonly lowFps: boolean }): readonly (readonly [string, boolean])[] {
+  if (!row) return [];
+  const out: (readonly [string, boolean])[] = [];
+  if (row.post.motionBlur !== null) out.push(["motionBlur", !state.reducedMotion && !state.lowFps]);
+  if (row.post.chromaticAberration !== null) out.push(["chromaticAberration", !state.reducedMotion && !state.lowFps]);
+  if (row.post.godRays !== null) out.push(["volumetricFog", !state.lowFps]);
+  return out;
 }

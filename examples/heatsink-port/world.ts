@@ -8,7 +8,10 @@ import { createCameraShake } from "@aura3d/engine/game";
 import { camera, cameras, effects, environments, geometry, lights, material, primitives, scene, type AuraApp } from "@aura3d/engine";
 import { CFG } from "./config";
 import { buildArches, buildDividers, buildProps, buildRails, buildRoad, buildShards, buildShoulders, groundQuad, hexLinear, padQuad, veilQuad, type MeshData } from "./meshes";
-import { blobSpec, pointsSpec, roadSpec, skySpec, solidSpec, streakSpec, terrainSpec, veilSpec, type Rgb } from "./materials";
+import { blobSpec, pointsSpec, roadSpec, setShading, skySpec, solidSpec, streakSpec, terrainSpec, veilSpec, wakeSpec, type Rgb } from "./materials";
+import { bankRoll, createIonWake } from "./art/wake";
+import { districtFog, fogApproach } from "./art/look";
+import { HEATSINK_VFX, registerHeatsinkVfx, vfxScale } from "./art/vfx";
 import { axisRotation, droneEuler, matrixToEulerZYX, multiplyMat3 } from "./orient";
 import type { Race } from "./race";
 import { barrelModel, droneHull, gatePylonNodes, modelSet, sceneryNodes, pickupModel } from "./models";
@@ -79,6 +82,11 @@ export interface MotionSettings {
 /** with reduced motion: no camera shake, the speed FOV kick capped at this many degrees, speed streaks at half alpha */
 export const REDUCED_FOV_KICK = 6;
 
+/** the custom-shader nodes whose `fogColor` follows the district (IC-06); models and additive strips are not fogged */
+export const DISTRICT_FOG_NODES = ["road", "dividers", "rocks", "plains", "rails", "rail-posts", "arches", "arch-neon", "shards", "crystals", "abyss"] as const;
+/** the QA crop of the drone published to `window.__AURA_QA__.crops` (static: the chase camera keeps the drone there) */
+export const DRONE_CROP = { name: "drone", x: 0.38, y: 0.5, w: 0.24, h: 0.24 } as const;
+
 export interface WorldRuntime {
   update(race: Race, hud: HudValues, dt: number, time: number, aspect: number): void;
   /** forget the camera rig and event cursors and clear every per-frame buffer (particles, streaks, bolts), so a new race never inherits bad values (HP-05) */
@@ -90,6 +98,7 @@ export interface WorldRuntime {
 export interface World {
   readonly scene: Scene;
   readonly track: Track;
+  readonly look: HeatsinkLookRow;
   bind(app: AuraApp): WorldRuntime;
 }
 
@@ -102,6 +111,7 @@ export function resolveLook(look: HeatsinkLookRow | string | undefined, quality:
 export function buildWorld(track: Track, quality: "high" | "low" = "high", lookInput?: HeatsinkLookRow | string): World {
   const high = quality === "high";
   const look = resolveLook(lookInput, quality);
+  setShading(look);
   const models = modelSet(quality);
   let minY = Infinity, maxY = -Infinity;
   for (let i = 0; i < track.n; i++) { minY = Math.min(minY, track.py[i] as number); maxY = Math.max(maxY, track.py[i] as number); }
@@ -246,15 +256,45 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
     }
   }), { name: "exhaust", material: material.custom(pointsSpec()) }).runtime({ id: "exhaust" }));
 
-  /* HP-19: no deprecated `radius`; threshold at HDR white and intensity under the noise-risk line */
-  b.add(effects.bloom({ name: "bloom", intensity: BLOOM.intensity, threshold: BLOOM.threshold }));
-  b.add(effects.colorGrade({ name: "grade", exposure: 1.05, contrast: 1.08, saturation: 1.0 }));
-  b.add(effects.vignette({ name: "vignette" }));
+  /* IC-18 ion wake: one dynamic strip (+1 draw), rebuilt every frame from the drone's last 1.2 s; twilight look only */
+  if (look.wake.enabled) {
+    const wake = createIonWake(look);
+    b.add(geometry.custom(geometry.dynamic({
+      positions: f32(new Array<number>(wake.positions.length).fill(0)),
+      uvs: wake.uvs,
+      indices: wake.indices,
+      bounds: courseBounds,
+      attributes: { wakeColor: { itemSize: 3, data: f32(new Array<number>(wake.colors.length).fill(0)) }, wakeAlpha: { itemSize: 1, data: f32(new Array<number>(wake.alpha.length).fill(0)) } }
+    }), { name: "ion-wake", material: material.custom(wakeSpec()), castShadow: false }).runtime({ id: "ion-wake" }));
+  }
 
-  return { scene: b, track, bind: (app) => bindRuntime(app, track, POINTS) };
+  /* HP-19: no deprecated `radius`; threshold at HDR white and intensity under the noise-risk line */
+  b.add(effects.bloom({ name: "bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold }));
+  b.add(effects.colorGrade({ name: "grade", exposure: look.grade.exposure, contrast: look.grade.contrast, saturation: look.grade.saturation }));
+  /* IC-08 / IC-07: the twilight post stack; Low drops AO, motion blur, god rays, grain and CA (lowTier); original mounts none */
+  if (look.post.vignette !== null) b.add(effects.vignette({ name: "vignette", intensity: look.post.vignette }));
+  else b.add(effects.vignette({ name: "vignette" }));
+  if (look.post.ao) b.add(effects.ambientOcclusion({ name: "gtao", intensity: 0.8, radius: 1.6 }));
+  if (look.post.motionBlur !== null) b.add(effects.motionBlur({ name: "motion blur", intensity: look.post.motionBlur, samples: 8 }));
+  if (look.post.chromaticAberration !== null) b.add(effects.chromaticAberration({ name: "chromatic aberration", intensity: look.post.chromaticAberration }));
+  if (look.post.grain !== null) b.add(effects.filmGrain({ name: "film grain", intensity: look.post.grain }));
+  if (look.post.godRays !== null) b.add(effects.volumetricFog({ name: "god rays", density: 0.08, intensity: look.post.godRays, color: "#ffb7a0", godRayDensity: look.post.godRays }));
+
+  return { scene: b, track, look, bind: (app) => bindRuntime(app, track, POINTS, look) };
 }
 
-function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
+function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLookRow): WorldRuntime {
+  const twilight = row.wake.enabled;
+  if (twilight) { try { if (app.effects) registerHeatsinkVfx(app as { effects: NonNullable<AuraApp["effects"]> }); } catch { /* effects runtime unavailable: the game's own points still burst */ } }
+  const wake = twilight ? createIonWake(row) : null;
+  const fogNow: [number, number, number] = [...row.fog.color];
+  let fogReady = false;
+  const glowNow: [number, number, number] = [0.376, 0.957, 1];
+  const fogValue = [0, 0, 0];
+  const engineBurst = (kind: string, x: number, y: number, z: number, scale = 1): void => {
+    if (!twilight) return;
+    try { app.effects?.burst(kind, [x, y, z], { camera: false, scale: scale * vfxScale(motion.reduced) }); } catch { /* runtime effects off */ }
+  };
   const cam = app.camera;
   if (!cam) throw new Error("heatsink-port: the app exposes no camera controller");
   const cameraController: NonNullable<typeof cam> = cam;
@@ -297,6 +337,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
   const chaseIn = { wantEye: eye, wantLook: look, fovTarget: 0 };
   const blobGeo = new Float32Array(12);
   let motion: MotionSettings = { reduced: false };
+  let rollNow = 0;
 
   function burst(x: number, y: number, z: number, count: number, r: number, g: number, bl: number, speed: number): void {
     for (let i = 0; i < count; i++) {
@@ -360,8 +401,12 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
     const pose = chase.step(chaseIn, dt);
     const sh = shake.update(dt);
     const shx = motion.reduced ? 0 : sh.x, shy = motion.reduced ? 0 : sh.y;
+    /* IC-22 bank roll: the up vector tilts about the heading with the steer (±6 deg cap); none on reduced motion or ?look=original */
+    const roll = motion.reduced ? 0 : bankRoll(row, p.steerVal, speed01);
+    rollNow += (roll - rollNow) * (1 - Math.exp(-dt * 5));
+    const up: [number, number, number] = [-fz * Math.sin(rollNow), Math.cos(rollNow), fx * Math.sin(rollNow)];
     /* fresh arrays here on purpose: the controller keeps the override object by reference */
-    cameraController.setPose({ position: [pose.eye[0] + fz * shx, pose.eye[1] + shy, pose.eye[2] - fx * shx], target: pose.look, up: [0, 1, 0], fov: pose.fov }, { cut: false });
+    cameraController.setPose({ position: [pose.eye[0] + fz * shx, pose.eye[1] + shy, pose.eye[2] - fx * shx], target: pose.look, up, fov: pose.fov }, { cut: false });
     node("sky").setPosition(pose.eye[0], pose.eye[1], pose.eye[2]);
 
     /* speed streaks radiate from the vanishing point: world-fixed lines along the heading, respawned ahead once passed */
@@ -407,8 +452,8 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
     /* checkpoint, pad pulses from the sim's events */
     for (; seen < race.events.length; seen++) {
       const e = race.events[seen]!;
-      if (e.type === "checkpoint") { const i = track.checkpoints.indexOf(e.detail as number); if (i >= 0) gatePulse[i] = 1; }
-      if (e.type === "boostPad") { const i = track.boostPads.findIndex((q) => q.s === e.detail); if (i >= 0) padPulse[i] = 1; }
+      if (e.type === "checkpoint") { const i = track.checkpoints.indexOf(e.detail as number); if (i >= 0) gatePulse[i] = 1; engineBurst(HEATSINK_VFX.checkpoint, p.position.x, p.position.y + 1, p.position.z); }
+      if (e.type === "boostPad") { const i = track.boostPads.findIndex((q) => q.s === e.detail); if (i >= 0) padPulse[i] = 1; engineBurst(HEATSINK_VFX.boost, p.position.x, p.position.y, p.position.z); }
     }
     if (seen > race.events.length) seen = race.events.length;
     for (let i = 0; i < gatePulse.length; i++) { gatePulse[i] = Math.max(0, gatePulse[i]! - dt * 0.8); node(`gate-veil-${i}`).setUniform?.("veilPulse", gatePulse[i]!); }
@@ -462,9 +507,9 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
       for (; opsSeen < ops.events.length; opsSeen++) {
         const ev = ops.events[opsSeen]!;
         if (!ev.world) continue;
-        if (ev.type === "hit") { targetFlash[ev.detail as number] = 1; burst(ev.world.x, ev.world.y, ev.world.z, 6, 1, 0.9, 0.4, 9); }
-        else if (ev.type === "kill") { if (!motion.reduced) shake.add(0.45); burst(ev.world.x, ev.world.y, ev.world.z, 36, 1, 0.45, 0.12, 22); }
-        else if (ev.type === "barrel") { if (!motion.reduced) shake.add(0.8); burst(ev.world.x, ev.world.y, ev.world.z, 60, 1, 0.6, 0.15, 30); }
+        if (ev.type === "hit") { targetFlash[ev.detail as number] = 1; burst(ev.world.x, ev.world.y, ev.world.z, 6, 1, 0.9, 0.4, 9); engineBurst(HEATSINK_VFX.hit, ev.world.x, ev.world.y, ev.world.z); }
+        else if (ev.type === "kill") { if (!motion.reduced) shake.add(0.45); burst(ev.world.x, ev.world.y, ev.world.z, 36, 1, 0.45, 0.12, 22); engineBurst(HEATSINK_VFX.kill, ev.world.x, ev.world.y, ev.world.z); }
+        else if (ev.type === "barrel") { if (!motion.reduced) shake.add(0.8); burst(ev.world.x, ev.world.y, ev.world.z, 60, 1, 0.6, 0.15, 30); engineBurst(HEATSINK_VFX.barrel, ev.world.x, ev.world.y, ev.world.z); }
       }
       for (const t of ops.targets) {
         const core = node(`target-${t.id}`), ring = node(`target-ring-${t.id}`), hp = node(`target-hp-${t.id}`);
@@ -512,6 +557,32 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
       bn.setUniform?.("streakAlpha", 1.6);
     }
 
+    /* IC-06 district atmosphere: fog drifts 30% toward the district HUD colour over ~120 m; rail posts take its neon */
+    if (row.fog.districtMix > 0) {
+      const target = districtFog(row, fr.sec.hud.color);
+      const k = fogReady ? fogApproach(row, Math.abs(p.v) * dt) : 1;
+      fogReady = true;
+      for (let c = 0; c < 3; c++) fogNow[c] = fogNow[c]! + (target[c]! - fogNow[c]!) * k;
+      fogValue[0] = fogNow[0]; fogValue[1] = fogNow[1]; fogValue[2] = fogNow[2];
+      for (const id of DISTRICT_FOG_NODES) node(id).setUniform?.("fogColor", fogValue);
+      const hud = hexLinear(fr.sec.hud.color);
+      for (let c = 0; c < 3; c++) glowNow[c] = glowNow[c]! + ((0.5 * hud[c]! + 0.5 * [0.376, 0.957, 1][c]!) - glowNow[c]!) * k;
+      node("rail-posts").setUniform?.("glowColor", glowNow);
+      /* IC-10: the causeway's ion pulse runs at the drone's speed */
+      node("road").setUniform?.("ionSpeed", motion.reduced ? 0 : p.v);
+    }
+
+    /* IC-18 ion wake: cyan to violet at cruise, amber under the afterburner (and the drift burst) */
+    if (wake) {
+      if (!p.crashed) wake.push({ t: time, x: p.position.x - fx * 2.2, y: p.position.y + 0.15, z: p.position.z - fz * 2.2 });
+      else wake.clear();
+      wake.build(time, pose.eye, p.v, p.abActive || p.burstT > 0 ? 1 : 0, p.crashed ? 0 : 1);
+      const wn = node("ion-wake");
+      wn.updateAttribute?.("position", { array: wake.positions, offset: 0 });
+      wn.updateAttribute?.("wakeColor", { array: wake.colors, offset: 0 });
+      wn.updateAttribute?.("wakeAlpha", { array: wake.alpha, offset: 0 });
+    }
+
     /* exhaust */
     if (!p.crashed && p.v > 4) {
       budget += Math.min(0.1, dt) * (p.abActive ? 520 : 90 + p.v * 1.4);
@@ -548,6 +619,9 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
 
   function resetCamera(): void {
     rigReady = false;
+    rollNow = 0;
+    fogReady = false;
+    wake?.clear();
     seen = 0;
     opsSeen = 0;
     head = 0;

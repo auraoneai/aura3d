@@ -6,7 +6,8 @@
 import type { AuraApp } from "@aura3d/engine";
 import { PALETTE } from "./look";
 
-type Spec = Parameters<AuraApp["effects"]["registerPreset"]>[1];
+type Effects = NonNullable<AuraApp["effects"]>;
+type Spec = Parameters<Effects["registerPreset"]>[1];
 
 export const HEATSINK_VFX = {
   hit: "heatsink-hit",
@@ -55,7 +56,7 @@ export const HEATSINK_VFX_PRESETS: Readonly<Record<HeatsinkVfxKind, Spec>> = {
 };
 
 /** registers every preset once on the app (idempotent: a re-register overwrites with the same spec) */
-export function registerHeatsinkVfx(app: Pick<AuraApp, "effects">): readonly HeatsinkVfxKind[] {
+export function registerHeatsinkVfx(app: { readonly effects: Effects }): readonly HeatsinkVfxKind[] {
   const kinds = Object.keys(HEATSINK_VFX_PRESETS) as HeatsinkVfxKind[];
   for (const kind of kinds) app.effects.registerPreset(kind, HEATSINK_VFX_PRESETS[kind]);
   return kinds;
