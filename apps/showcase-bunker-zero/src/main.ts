@@ -61,6 +61,9 @@ const EYE = 1.55;
 const FLOOR_SPAN = 0;
 const MAX_ROCKETS = 18;
 const ENEMY_TRACERS = 8;
+/** BZ-06: F2 standing water, and the wet-ground amount per floor slot (F2 flooded cellars, F6 the hatch rain). */
+const BZ_WATER = { color: "#0b1714", roughness: 0.06 } as const;
+const BZ_WETNESS = [0, 0.7, 0, 0, 0, 0.45, 0] as const;
 const ALL_FLOORS: { def: FloorDef; slot: number }[] = [
   ...FLOORS.map((def, i) => ({ def, slot: i })),
   { def: KILL_HOUSE, slot: 6 }
@@ -201,9 +204,13 @@ function buildScene() {
     if (faltInst.length) {
       nodes.push(primitives.box({
         name: `f${slot} floor-alt`, instances: faltInst,
-        material: def.palette.floorEmissive
+        // BZ-06: only the F3 forge grates glow. F2's flood is dark standing water (a near-black, glossy tint that the
+        // lamps and the IBL catch as highlights) instead of the cyan emissive slab.
+        material: slot === 2 && def.palette.floorEmissive
           ? material.emissive({ color: def.palette.floorAlt, emissive: def.palette.floorEmissive, emissiveIntensity: 1.6, roughness: 0.4 })
-          : material.pbr({ color: def.palette.floorAlt, roughness: 0.75 })
+          : slot === 1
+            ? material.pbr({ color: BZ_WATER.color, roughness: BZ_WATER.roughness, metalness: 0 })
+            : material.pbr({ color: def.palette.floorAlt, roughness: 0.75 })
       }).runtime(staticNode(slot, "floor-alt")));
     }
     // ---- per-cell runtime 3D Meshy entities & props -----------------------
@@ -581,6 +588,7 @@ function applyFloorLook(slot: number, transitionSeconds = 0) {
   lightRig.applyFloor(slot);
   try { app.atmosphere?.setFog({ color: look.fog.color, density: look.fog.density }, { transitionSeconds }); } catch { /* fog runtime not mounted */ }
   try { app.lighting?.setEnvironmentIntensity(look.environmentIntensity / BZ_ENV_INTENSITY); } catch { /* lighting runtime not mounted */ }
+  try { app.atmosphere?.setWetness(BZ_WETNESS[slot] ?? 0, { transitionSeconds }); } catch { /* wetness not mounted */ }
   try { app.post?.setEffect("colorGrade", { temperature: look.grade.temperature, tint: look.grade.tint }); } catch { /* post runtime not mounted */ }
   document.documentElement.style.setProperty("--bz-lamp", look.lamp.color);
 }
@@ -1261,9 +1269,9 @@ function handleEvent(ev: string) {
     case "hurt": cue("hurt"); mg.juice?.fire("hurt"); break;
     case "dog": cue("bite"); break;
     case "step": cue("step"); break;
-    case "secret": cue("secret"); mg.juice?.fire("secret"); feed("push-wall revealed a secret"); break;
-    case "pickup": cue(a === "key" ? "key" : a === "mg" || a === "rocket" ? "weapon" : "pickup"); feed(a === "key" ? "brass key secured" : `${a} collected`); break;
-    case "door": cue("door"); break;
+    case "secret": cue("secret"); mg.juice?.fire("secret"); feed("push-wall revealed a secret"); eventVfx("push-wall"); break;
+    case "pickup": cue(a === "key" ? "key" : a === "mg" || a === "rocket" ? "weapon" : "pickup"); feed(a === "key" ? "brass key secured" : `${a} collected`); eventVfx("pickup"); break;
+    case "door": cue("door"); eventVfx("door-slide"); break;
     case "reload": cue("reload"); break;
     case "weapon": cue("switch"); break;
     case "rocket": cue("boom"); break;
@@ -1279,6 +1287,22 @@ function handleEvent(ev: string) {
     case "guard": case "gunner": if (b === "hit" || b === "miss") positional("enemyShot", shooterPos(a as "guard" | "gunner")); break;
     default: break;
   }
+}
+/** BZ-03/BZ-15: dust off a sliding door, debris off a push wall, a glint on a pickup; placed from read-only sim state. */
+function eventVfx(event: "door-slide" | "push-wall" | "pickup") {
+  const st = sim.state, p = st.player, ox = st.ox;
+  const near = <T extends { cx: number; cz: number }>(list: readonly T[], ok: (v: T) => boolean): T | undefined => {
+    let best: T | undefined, bd = Infinity;
+    for (const v of list) {
+      if (!ok(v)) continue;
+      const d = Math.hypot(cellCenter(v.cx) - p.x, cellCenter(v.cz) - p.z);
+      if (d < bd) { bd = d; best = v; }
+    }
+    return best;
+  };
+  if (event === "pickup") { fireVfx("pickup", [p.x + ox, 0.9, p.z]); return; }
+  const cell = event === "door-slide" ? near(st.doors, (d) => d.target !== d.open || d.open < 1) : near(st.pushWalls, (w) => w.state === "sliding");
+  if (cell) fireVfx(event, [cellCenter(cell.cx) + ox, event === "door-slide" ? 0.2 : 1.2, cellCenter(cell.cz)]);
 }
 function positional(id: CueId, at: [number, number, number] | null) {
   if (!at || !mg.sound?.playPositional) { cue(id); return; }
