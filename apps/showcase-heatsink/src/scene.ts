@@ -23,7 +23,6 @@ export const ROAD_TILE_SPACING = 12;
 export const ROAD_TILE_LENGTH = ROAD_TILE_SPACING + 1.1;
 export const WALL_SEGMENT_COUNT = 14;
 export const WALL_SPACING = 13.5;
-export const RAIN_STREAK_COUNT = 18;
 
 /** Runtime ids of the rig nodes E-B drives at runtime (sector cross-fades, HS-16). */
 export const RIG_IDS = {
@@ -46,7 +45,6 @@ export const IDS = {
   walls: "track-walls",
   chevA: "wall-chevrons-a",
   chevB: "wall-chevrons-b",
-  rain: "rain-streaks",
   bolts: "laser-bolts",
   floor: "megacity-abyss-floor",
   ring: "player-shockwave-ring",
@@ -66,7 +64,6 @@ export const INSTANCE_COUNTS = {
   walls: WALL_SEGMENT_COUNT * 2,
   chevA: WALL_SEGMENT_COUNT,
   chevB: WALL_SEGMENT_COUNT,
-  rain: RAIN_STREAK_COUNT,
   bolts: LASER_BOLTS
 } as const;
 
@@ -90,6 +87,8 @@ export interface SceneOptions {
   readonly exposureEv?: number;
   /** QA: drop the explicit ambient-occlusion pass (`?qaAo=off`) for the LIGHT-06 on/off pair. */
   readonly ambientOcclusion?: boolean;
+  /** `prefers-reduced-motion`: no weather system (HS-06). */
+  readonly reducedMotion?: boolean;
 }
 
 const degToRad = (deg: number): number => (deg * Math.PI) / 180;
@@ -175,6 +174,48 @@ export function circuitReflections(look: CircuitLook): AuraNodeBuilder<AuraScene
   return out;
 }
 
+/**
+ * HS-06 weather, one system per circuit, replacing the 18 rain boxes: sodium-lit rain with splashes on MEGACITY, a
+ * wind-driven ochre dust field on DUSTFALL (the camera-following snow volume, recoloured), rising additive embers on
+ * VESPER. Reduced motion mounts none (live count 0). Each is one particle draw.
+ *
+ * The embers spawn on a 26 m disc below the deck (the legacy `radius` disc: the production lowering does not consume
+ * the PRD-07 `shape`/`shapeSize` fields yet) and accelerate upwards (`gravity` is the signed y acceleration), so they
+ * rise from the vents past the causeway edges.
+ */
+export const EMBER_SPAWN = { position: [0, -2.5, -26] as [number, number, number], radius: 26 } as const;
+
+export function circuitWeather(look: CircuitLook, reducedMotion: boolean): AuraNodeBuilder<AuraSceneNode>[] {
+  if (reducedMotion) return [];
+  switch (look.weather) {
+    case "rain":
+      return [effects.rain({ name: "td rain", intensity: 0.55, density: 0.45, color: "#d9b08a", speed: 1.3, wind: [-0.4, -6, 2.5], particleCount: 900, splashes: true, mist: true })];
+    case "dust":
+      return [effects.snow({ name: "td dust", intensity: 0.5, density: 0.55, color: "#c8925a", speed: 0.6, wind: [-6, -0.3, 3], particleCount: 700, splashes: false, mist: true })];
+    case "embers":
+      return [effects.particles({
+        name: "td embers",
+        position: EMBER_SPAWN.position,
+        radius: EMBER_SPAWN.radius,
+        rate: 30,
+        maxParticles: 90,
+        loop: true,
+        prewarm: 3,
+        lifetime: [2.5, 4.5],
+        // A scalar speed lowers to the range [0.7 x, x] (the node type narrows `speed` to a number).
+        speed: 1.5,
+        gravity: 1.2,
+        drag: 0.4,
+        size: [0.04, 0.09],
+        color: "#ff7a2e",
+        intensity: 3.5,
+        blend: "additive"
+      })];
+    default:
+      return [];
+  }
+}
+
 /** HS-05 atmosphere and HS-12 post for a circuit (AO is HS-01's explicit pass). */
 export function circuitPost(look: CircuitLook, options: { readonly exposureEv?: number; readonly ambientOcclusion?: boolean } = {}): AuraNodeBuilder<AuraSceneNode>[] {
   const out: AuraNodeBuilder<AuraSceneNode>[] = [
@@ -212,7 +253,8 @@ export function buildThermalDriftScene(options: SceneOptions) {
       ...(options.exposureEv !== undefined ? { exposureEv: options.exposureEv } : {}),
       ...(options.ambientOcclusion === false ? { ambientOcclusion: false } : {})
     }))
-    .addMany(circuitReflections(look));
+    .addMany(circuitReflections(look))
+    .addMany(circuitWeather(look, options.reducedMotion === true));
 
   // Ground far below the elevated road (the HDRI is the sky; no backdrop wall or horizon bands).
   s.add(
@@ -243,8 +285,6 @@ export function buildThermalDriftScene(options: SceneOptions) {
       .runtime(game.runtimeNode(IDS.chevA)),
     instances.box({ name: IDS.chevB, size: [0.22, 0.36, 9.6], material: chevronMaterial(look.accents.secondary), transforms: along(INSTANCE_COUNTS.chevB, -10.72, 0.72, WALL_SPACING), ...unshadowed })
       .runtime(game.runtimeNode(IDS.chevB)),
-    instances.box({ name: IDS.rain, size: [0.03, 1.35, 0.03], material: emissive("#60a5fa", 0.55), transforms: along(INSTANCE_COUNTS.rain, 0, 4, 4), ...unshadowed })
-      .runtime(game.runtimeNode(IDS.rain)),
     instances.box({ name: IDS.bolts, size: [0.14, 0.14, 2.8], material: emissive("#ff4d1f", 2.6), transforms: along(INSTANCE_COUNTS.bolts, 0, 1.4, 20), ...unshadowed })
       .runtime(game.runtimeNode(IDS.bolts))
   ]);

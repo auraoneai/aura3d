@@ -83,11 +83,29 @@ describe("heatsink scene", () => {
     const total = instanced.reduce((sum, n) => sum + n.instances!.length, 0);
     expect(instanced.length).toBe(Object.keys(INSTANCE_COUNTS).length);
     expect(total).toBe(Object.values(INSTANCE_COUNTS).reduce((a, b) => a + b, 0));
-    for (const name of ["road-spine-a", "road-spine-b", "road-lanes", "wall-chevrons-a", "wall-chevrons-b", "rain-streaks", "laser-bolts"]) {
+    for (const name of ["road-spine-a", "road-spine-b", "road-lanes", "wall-chevrons-a", "wall-chevrons-b", "laser-bolts"]) {
       expect(nodes.find((n) => n.name === name)?.castShadow, name).toBe(false);
     }
     const primitives = nodes.filter((n) => n.kind === "primitive" && !Array.isArray(n.instances));
     expect(primitives.length).toBeLessThan(10);
+  });
+  it("mounts rain only on MEGACITY, dust only on DUSTFALL, embers only on VESPER, and no weather on reduced motion (HS-06)", () => {
+    const weatherOf = (id: keyof typeof CIRCUITS, reducedMotion = false) =>
+      flatten((buildThermalDriftScene({ circuit: CIRCUITS[id], reducedMotion }).toJSON() as unknown as { nodes: Node[] }).nodes)
+        .filter((n) => n.kind === "effect" && ["rain", "snow", "particles"].includes(String(n.effect)))
+        .map((n) => n.effect);
+    expect(weatherOf("grand")).toEqual(["rain"]);
+    expect(weatherOf("dustfall")).toEqual(["snow"]);
+    expect(weatherOf("vesper")).toEqual(["particles"]);
+    for (const id of ["grand", "dustfall", "vesper"] as const) expect(weatherOf(id, true), id).toEqual([]);
+    expect(nodes.find((n) => n.name === "rain-streaks")).toBeUndefined();
+    // The embers rise (positive y acceleration) from a disc below the deck, capped well under the VFX live budget.
+    const embers = sceneOf("vesper").find((n) => n.kind === "effect" && n.effect === "particles") as unknown as { position: number[]; radius: number; gravity: number; maxParticles: number; blend: string };
+    expect(embers.position[1]).toBeLessThan(0);
+    expect(embers.radius).toBeGreaterThan(11.2);
+    expect(embers.gravity).toBeGreaterThan(0);
+    expect(embers.maxParticles).toBeLessThanOrEqual(96);
+    expect(embers.blend).toBe("additive");
   });
   it("drops the shadow casters of far towers and emissive pieces, keeps them on arches, tunnels and drones (HS-20)", () => {
     const models = nodes.filter((n) => n.kind === "model") as unknown as { name: string; castShadow?: boolean }[];

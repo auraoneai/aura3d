@@ -27,7 +27,6 @@ import {
   IDS,
   INSTANCE_COUNTS,
   MODEL_NODE_COUNT,
-  RAIN_STREAK_COUNT,
   ROAD_TILE_COUNT,
   ROAD_TILE_SPACING,
   WALL_SEGMENT_COUNT,
@@ -82,7 +81,11 @@ let race = newRace();
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
 
 async function boot(): Promise<void> {
-  const sceneOptions = (id: CircuitId) => ({ circuit: CIRCUITS[id], ...(qaEv !== undefined ? { exposureEv: qaEv } : {}), ...(qaAoOff ? { ambientOcclusion: false } : {}) });
+  let sceneReducedMotion = reducedMotionQuery?.matches ?? false;
+  const sceneOptions = (id: CircuitId) => {
+    sceneReducedMotion = reducedMotionQuery?.matches ?? false;
+    return { circuit: CIRCUITS[id], reducedMotion: sceneReducedMotion, ...(qaEv !== undefined ? { exposureEv: qaEv } : {}), ...(qaAoOff ? { ambientOcclusion: false } : {}) };
+  };
   const auraApp = createAuraApp("#app", {
     scene: buildThermalDriftScene(sceneOptions(selectedCircuit)),
     // "auto" mounts at the "high" tier today (the same as the old "high" string) and lets the tier follow the device once the
@@ -104,7 +107,6 @@ async function boot(): Promise<void> {
     walls: new InstanceWriter(req(IDS.walls), INSTANCE_COUNTS.walls),
     chevA: new InstanceWriter(req(IDS.chevA), INSTANCE_COUNTS.chevA),
     chevB: new InstanceWriter(req(IDS.chevB), INSTANCE_COUNTS.chevB),
-    rain: new InstanceWriter(req(IDS.rain), INSTANCE_COUNTS.rain),
     bolts: new InstanceWriter(req(IDS.bolts), INSTANCE_COUNTS.bolts)
   });
   const makeScenery = () => SCENERY_ANCHORS.map((anchor) => ({ anchor, handle: req(anchor.id) }));
@@ -361,8 +363,10 @@ async function boot(): Promise<void> {
     const hudSeconds = Math.min(1, Math.max(0, (now - lastHudAt) / 1000));
     lastHudAt = now;
     const circuit = CIRCUITS[race.circuit];
-    if (shownCircuit !== race.circuit) remountCircuit(race.circuit);
     const reduced = reducedMotionQuery?.matches ?? false;
+    // HS-06: weather is a scene node per circuit (rain, dust or embers), so a change of the motion preference remounts
+    // like a circuit change (before any handle is written this frame).
+    if (shownCircuit !== race.circuit || reduced !== sceneReducedMotion) remountCircuit(race.circuit);
     const shown = presenter.present(loop, !qaManual && race.phase === "racing");
     const p = race.player;
     track.update(circuit, shown.player[0]!);
@@ -501,17 +505,6 @@ async function boot(): Promise<void> {
       }
       fireVfx(target, dronePos, reduced);
     }
-
-    // Rain (off with reduced motion)
-    writers.rain.begin();
-    for (let i = 0; i < RAIN_STREAK_COUNT; i += 1) {
-      if (reduced) { writers.rain.park(); continue; }
-      const rx = ((i * 7.3) % 26) - 13 + dronePos[0] * 0.35;
-      const ry = (((12 - race.time * 26 - i * 1.9) % 12) + 12) % 12 + 0.5;
-      const rz = -3 - ((((race.time * 88 + i * 6.7) % 65) + 65) % 65);
-      writers.rain.push(rx, ry, rz, 0, 1);
-    }
-    writers.rain.end();
 
     // Camera
     track.place(18, shown.player[1]! * 0.4, 1.8, pose2);
