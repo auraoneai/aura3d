@@ -9,10 +9,11 @@ import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { strings as enUiStrings } from "../../../src/localization/en/ui.js";
-import { UI_STRINGS, fillTemplate, humanizeId, speakerName, storyText, uiText, type UiLocale } from "../../../src/ui/accessibility.js";
+import { CHARACTER_COLOURS, UI_STRINGS, fillTemplate, humanizeId, speakerName, storyText, uiText, type UiLocale } from "../../../src/ui/accessibility.js";
 import { speakerColour } from "../../../src/ui/captions.js";
 import { menuSection, type MenuItem } from "../../../src/ui/episode-menu.js";
 import { GROWN_UP_LINKS, formatSeconds, waitChoicesMs } from "../../../src/ui/parent-panel.js";
+import { welcomeNameLine } from "../../../src/ui/start-screen.js";
 
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const uiDir = join(appRoot, "src/ui");
@@ -108,7 +109,9 @@ const PACK_UI_KEYS = [
   "ui.speaker.gogo",
   "ui.speaker.lumi",
   "ui.speaker.peeko",
-  "ui.speaker.robot"
+  "ui.speaker.robot",
+  "ui.start.welcome",
+  "ui.start.welcomeNamed"
 ] as const;
 
 /** Every `ui.*` key the UI uses. */
@@ -228,6 +231,13 @@ describe("English fallbacks", () => {
     for (const [key, text] of Object.entries(UI_STRINGS)) {
       for (const rule of FORBIDDEN_COPY) expect(text, `${key}: ${rule}`).not.toMatch(rule);
     }
+  });
+
+  it("greet by name only through src/personal.ts (07 O8): the string keeps a {name} placeholder", () => {
+    expect(UI_STRINGS["ui.start.welcome"]).toBe("Welcome to");
+    expect(UI_STRINGS["ui.start.welcomeNamed"]).toBe("{name}’s Wonder World");
+    expect(welcomeNameLine(englishOnly, "Sam")).toBe("Sam’s Wonder World");
+    expect(welcomeNameLine(englishOnly, null)).toBe("Wonder World");
   });
 
   it("carry the PRD notes: touch works without speaking, not therapy, settings stay on the device", () => {
@@ -428,6 +438,52 @@ describe("styles.css", () => {
       expect(seconds, match[1]).toBeGreaterThanOrEqual(2);
     }
   });
+
+  it("keeps the element resets at zero specificity, so each control's own colour, size and weight win", () => {
+    // `#ui button { color: inherit }` once out-ranked every class: the purple buttons showed dark ink at about 2:1.
+    const rules = Array.from(css.matchAll(/([^{}]+)\{([^}]*)\}/g), (match) => ({ selector: (match[1] ?? "").trim(), body: match[2] ?? "" }));
+    const idScoped = rules.filter(
+      (rule) =>
+        rule.selector.split(",").some((part) => /(^|\s)#ui\s+(button|input|h[1-6]|p|ul|fieldset)\s*$/.test(part.trim())) &&
+        /(^|;)\s*(color|font|font-size|font-weight|margin)\s*:/.test(rule.body)
+    );
+    expect(idScoped.map((rule) => rule.selector)).toEqual([]);
+    expect(css).toMatch(/:where\(#ui\) button,\s*:where\(#ui\) input\s*\{\s*font: inherit;\s*color: inherit;/);
+  });
+
+  it("gives every filled control a readable label in both palettes (WCAG AA, at least 4.5:1)", () => {
+    const tokens = (block: string): Map<string, string> =>
+      new Map(Array.from(block.matchAll(/(--ww-[\w-]+):\s*(#[0-9a-fA-F]{6})\s*;/g), (match) => [match[1] ?? "", match[2] ?? ""]));
+    const luminance = (hex: string): number => {
+      const channel = (offset: number): number => {
+        const value = Number.parseInt(hex.slice(offset, offset + 2), 16) / 255;
+        return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+      };
+      return 0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5);
+    };
+    const contrast = (a: string, b: string): number => {
+      const [light, dark] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+      return ((light ?? 0) + 0.05) / ((dark ?? 0) + 0.05);
+    };
+    const base = tokens(/:root\s*\{([^}]*)\}/.exec(css)?.[1] ?? "");
+    const highContrast = new Map([...base, ...tokens(/\.high-contrast\s*\{([^}]*)\}/.exec(css)?.[1] ?? "")]);
+    const pairs = [
+      ["--ww-primary", "--ww-on-primary"],
+      ["--ww-primary-hover", "--ww-on-primary"],
+      ["--ww-selected-bg", "--ww-selected-ink"],
+      ["--ww-surface", "--ww-ink"],
+      ["--ww-surface", "--ww-ink-soft"]
+    ] as const;
+    for (const [palette, values] of [["default", base], ["high contrast", highContrast]] as const) {
+      for (const [background, text] of pairs) {
+        const bg = values.get(background);
+        const ink = values.get(text);
+        expect(bg, `${palette} ${background}`).toMatch(/^#/);
+        expect(ink, `${palette} ${text}`).toMatch(/^#/);
+        expect(contrast(bg ?? "", ink ?? ""), `${palette}: ${text} on ${background}`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
 });
 
 describe("index.html", () => {
@@ -440,8 +496,47 @@ describe("index.html", () => {
     expect(html).toMatch(/<title>Wonder World \(prototype\)<\/title>/);
     expect(html).toMatch(/href="\/fonts\/local\.css"/);
     expect(html).toMatch(/<div id="stage"><\/div>/);
-    expect(html).toMatch(/<div id="ui"><\/div>/);
+    expect(html).toMatch(/<div id="ui">\s*<div class="ww-screen ww-start ww-boot" data-ui="boot" aria-hidden="true">/);
     expect(html).toMatch(/<script type="module" src="\.\/src\/main\.ts"><\/script>/);
+  });
+
+  it("tells a browser without WebGL 2 or Safari 15.4's JavaScript that it is too old, instead of leaving the splash up", () => {
+    const script = /<script>([\s\S]*?)<\/script>/.exec(html)?.[1] ?? "";
+    const flagsUnsupported = (win: object, arrayPrototype: object, object: object): boolean => {
+      const added: string[] = [];
+      const doc = { documentElement: { classList: { add: (name: string) => added.push(name) } } };
+      new Function("window", "document", "Array", "Object", script)(win, doc, { prototype: arrayPrototype }, object);
+      return added.includes("ww-unsupported");
+    };
+    const webgl2 = { WebGL2RenderingContext: class {} };
+    const clone = { structuredClone: (value: unknown) => value };
+    const at = { at: () => undefined };
+    const hasOwn = { hasOwn: () => true };
+    expect(flagsUnsupported({ ...webgl2, ...clone }, at, hasOwn)).toBe(false);
+    expect(flagsUnsupported(clone, at, hasOwn)).toBe(true); // iPadOS 14 and older: no WebGL 2
+    expect(flagsUnsupported({ ...webgl2, ...clone }, {}, hasOwn)).toBe(true); // iPadOS 15.0-15.3: no Array at
+    expect(flagsUnsupported({ ...webgl2, ...clone }, at, {})).toBe(true);
+    expect(flagsUnsupported(webgl2, at, hasOwn)).toBe(true);
+    expect(html).toMatch(/<p class="ww-boot-unsupported">\s*This browser is too old for Wonder World\. On an iPad it needs iPadOS 15\.4 or later/);
+    const css = readFileSync(join(uiDir, "styles.css"), "utf8");
+    expect(css).toMatch(/\.ww-boot-unsupported \{\s*display: none;/);
+    expect(css).toMatch(/\.ww-unsupported \.ww-boot-unsupported \{\s*display: block;/);
+  });
+
+  it("builds for Safari 15, so iPadOS 15 and 16.0-16.3 can parse the bundle (no class static blocks)", () => {
+    const config = readFileSync(join(appRoot, "vite.config.ts"), "utf8");
+    expect(config).toMatch(/target: \["safari15", "chrome100", "edge100", "firefox100"\]/);
+    expect(readFileSync(join(appRoot, "tools/check-dist.mjs"), "utf8")).toMatch(/class static block/);
+  });
+
+  it("shows a static splash from the first paint: the start screen's dots and title, nothing to tap", () => {
+    const splash = /<div class="ww-screen ww-start ww-boot"[^>]*>([\s\S]*?)<\/p>\s*<\/div>\s*<\/div>/.exec(html)?.[1] ?? "";
+    expect(splash).not.toBe("");
+    expect(splash).not.toMatch(/<(button|a|input|select|textarea)\b/);
+    const dots = Array.from(splash.matchAll(/--ww-dot:\s*(#[0-9a-f]{6})/g), (match) => match[1]);
+    expect(dots).toEqual(["momo", "lulu", "sheru", "gogo", "lumi", "peeko"].map((id) => CHARACTER_COLOURS[id as keyof typeof CHARACTER_COLOURS]));
+    expect(splash).toContain(`<p class="ww-start-title">${enUiStrings["ui.start.title"]}`);
+    expect(readFileSync(join(appRoot, "src/main.ts"), "utf8")).toMatch(/removeSplashUnderFirstScreen\(uiRoot\)/);
   });
 
   it("has no SEO or social tags, no autoplay media, no third-party script and no child name", () => {

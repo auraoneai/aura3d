@@ -1,9 +1,9 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "lulu",
-  "file": "src/assets/models/lulu.95ef56f6.glb",
-  "sha256": "95ef56f602f6d888317469c253770962c81542d81cc936a73535b901830f78c0",
-  "sizeBytes": 2060128,
+  "file": "src/assets/models/lulu.5cfa945c.glb",
+  "sha256": "5cfa945cb96ce66de389d4cb8ccf84849d1ea672c75af6f0cab3ea7de5f00eab",
+  "sizeBytes": 1156828,
   "rigged": false,
   "clips": [],
   "heightM": 1,
@@ -72,6 +72,25 @@
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "normalMapJpeg": {
+      "quality": 95,
+      "chromaSubsampling": "4:4:4",
+      "mozjpeg": true,
+      "encoder": "sharp",
+      "textures": [
+        {
+          "texture": "normal",
+          "pngBytes": 1297883,
+          "jpegBytes": 394586
+        }
+      ],
+      "geometrySha256": "f835778918190b1c2c5833354579a299f2047a01a26c289feab9691775b839fe",
+      "previous": {
+        "file": "src/assets/models/lulu.95ef56f6.glb",
+        "sha256": "95ef56f602f6d888317469c253770962c81542d81cc936a73535b901830f78c0",
+        "sizeBytes": 2060128
+      }
     }
   },
   "inspection": {

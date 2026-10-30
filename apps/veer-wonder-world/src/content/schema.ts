@@ -252,7 +252,8 @@ export const REQUIRED_UI_KEYS: readonly string[] = [
 /** UI strings that carry placeholders the UI fills in. */
 const UI_PLACEHOLDERS: Readonly<Record<string, readonly string[]>> = {
   "ui.parent.seconds": ["{s}"],
-  "ui.parent.wordsCount": ["{n}", "{max}"]
+  "ui.parent.wordsCount": ["{n}", "{max}"],
+  "ui.start.welcomeNamed": ["{name}"]
 };
 
 // ---------------------------------------------------------------------------

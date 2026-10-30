@@ -5,7 +5,7 @@
 //
 //   each sound: source -> own gain (clip level, fades) -> bus
 //   voice bus 1.0 -----------------------------------------+
-//   song bus  0.7 (0.25 while a voice line plays) ---------+
+//   song bus  1.0 (0.25 while a voice line plays) ---------+
 //   sfx bus   0.6 -----------------------------------------+-> master 0.9 -> createMasterChain
 //   bed bus   0.25 (0.08 while speaking, 0 under a song) --+   (-1 dBFS limiter) -> destination
 //
@@ -28,10 +28,11 @@
 //   Calling unlock() again from later taps is cheap while audio runs and brings
 //   it back after an OS interruption (iOS phone call, Bluetooth switch).
 // - Levels: SFX bus (0.6) sits below the voice bus (1.0). Every decoded clip
-//   also gets a one-time level check: voice lines are evened out, SFX and music
-//   are only ever turned down (CLIP_LEVELS), so a loud generated bark can never
-//   come out louder than speech. The bed ducks under speech and fades out under
-//   a song; songs dip under speech. Two pieces of music never layer.
+//   also gets a one-time level check: voice lines are evened out, songs are
+//   evened out to the same loudness as speech, and SFX and the bed are only
+//   ever turned down (CLIP_LEVELS), so a loud generated bark can never come out
+//   louder than speech. The bed ducks under speech and fades out under a song;
+//   songs dip under speech. Two pieces of music never layer.
 // - SFX are rate limited: the same id never restarts within 0.3 s, at most 3
 //   play at once, and an SFX whose decode finishes late (> 0.5 s) is dropped
 //   instead of playing out of sync. Repeated taps cannot build a cacophony.
@@ -83,7 +84,8 @@ export type AudioManifest = typeof AUDIO_MANIFEST;
 export const AUDIO_LEVELS = {
   master: 0.9,
   voice: 1,
-  song: 0.7,
+  /** Level with the voice bus: each song's own gain (CLIP_LEVELS.songTargetRms) sets how loud it sings. */
+  song: 1,
   /** Song level while a voice line plays, so sung tracks never mask speech. */
   songUnderVoice: 0.25,
   sfx: 0.6,
@@ -95,15 +97,26 @@ export const AUDIO_LEVELS = {
 
 /**
  * One-time per-clip level rules (applied on the clip's own gain node).
- * Voice lines are evened out to about -18 dBFS RMS; SFX and music are only
- * ever turned down. The loudest 50 ms of any SFX (0.1 x SFX bus 0.6 = 0.06)
- * stays below the average level of a normalised voice line (0.125).
+ * Voice lines are evened out to about -18 dBFS RMS. Songs are evened out to
+ * the loudness of those voice lines, within the same gain and peak limits;
+ * SFX and the bed are only ever turned down. The loudest 50 ms of any SFX
+ * (0.1 x SFX bus 0.6 = 0.06) stays below the average level of a normalised
+ * voice line (0.125).
  */
 export const CLIP_LEVELS = {
   voiceTargetRms: 0.125,
   voiceMinGain: 0.5,
   voiceMaxGain: 2,
   voicePeak: 0.9,
+  /**
+   * A song's gated RMS target. It is lower than the voice target because a 50 ms
+   * RMS reads speech louder than a loudness meter does (its windows catch whole
+   * syllables, and the pauses between them do not count), while a song's level
+   * is steady. From each file's EBU R128 loudness and these gains, 0.083 plays
+   * all 16 sung tracks within 0.4 dB of the average of 60 voice lines; 0.7 on
+   * the song bus with no song gain had left them 4 to 6 dB below it.
+   */
+  songTargetRms: 0.083,
   sfxMaxWindowRms: 0.1,
   sfxMaxPeak: 0.5,
   musicMaxRms: 0.18
@@ -319,10 +332,11 @@ export function measureClipLevels(buffer: AudioBuffer): ClipLevels {
 }
 
 /** The gain a clip plays at on its own gain node (before its bus and the master). */
-export function clipGain(levels: ClipLevels, kind: "voice" | "sfx" | "music"): number {
-  if (kind === "voice") {
+export function clipGain(levels: ClipLevels, kind: "voice" | "song" | "sfx" | "music"): number {
+  if (kind === "voice" || kind === "song") {
     if (!(levels.gatedRms > 0)) return 1;
-    let gain = Math.min(CLIP_LEVELS.voiceMaxGain, Math.max(CLIP_LEVELS.voiceMinGain, CLIP_LEVELS.voiceTargetRms / levels.gatedRms));
+    const target = kind === "voice" ? CLIP_LEVELS.voiceTargetRms : CLIP_LEVELS.songTargetRms;
+    let gain = Math.min(CLIP_LEVELS.voiceMaxGain, Math.max(CLIP_LEVELS.voiceMinGain, target / levels.gatedRms));
     if (levels.peak > 0) gain = Math.min(gain, CLIP_LEVELS.voicePeak / levels.peak);
     return gain;
   }
@@ -566,7 +580,7 @@ export function createAudioMixer(options: AudioMixerOptions): AudioMixer {
     if (known !== undefined) return known;
     let level = 1;
     try {
-      level = clipGain(measureClipLevels(clip.buffer), kind === "voice" ? "voice" : kind === "sfx" ? "sfx" : "music");
+      level = clipGain(measureClipLevels(clip.buffer), kind === "bed" ? "music" : kind);
     } catch {
       level = 1;
     }

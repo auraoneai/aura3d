@@ -27,6 +27,8 @@ export interface UiLocale {
  */
 export const UI_STRINGS = {
   "ui.start.title": "Wonder World",
+  "ui.start.welcome": "Welcome to",
+  "ui.start.welcomeNamed": "{name}’s Wonder World",
   "ui.start.tap": "Tap to start",
   "ui.mode.label": "How do you want to play?",
   "ui.mode.play": "Play together",
@@ -153,7 +155,8 @@ export const CHARACTER_COLOURS: Readonly<Record<CharacterId, string>> = {
 /** Neutral dot for speakers without a character colour (the baby robot). */
 export const NEUTRAL_COLOUR = "#d5d9e2";
 
-const CHARACTER_IDS: readonly CharacterId[] = ["momo", "lulu", "sheru", "gogo", "lumi", "peeko"];
+/** The six characters, in the order the UI shows them (the cast dots, the welcome parade). */
+export const CHARACTER_IDS: readonly CharacterId[] = ["momo", "lulu", "sheru", "gogo", "lumi", "peeko"];
 
 export function isCharacterId(value: string): value is CharacterId {
   return CHARACTER_IDS.some((id) => id === value);
@@ -270,7 +273,8 @@ export function buildModeChoice(doc: Document, locale: UiLocale, selected: PlayM
   const name = uniqueId("ww-mode");
   const fieldset = el(doc, "fieldset", { className: "ww-field ww-segmented", attrs: { "data-setting": "mode" } });
   const options = el(doc, "div", { className: "ww-segmented-options" });
-  fieldset.append(el(doc, "legend", { className: "ww-legend", text: uiText(locale, "ui.mode.label") }), options);
+  // The label sits in its own span, so the start screen can give it a soft backing over the sky (styles.css).
+  fieldset.append(el(doc, "legend", { className: "ww-legend" }, [el(doc, "span", { className: "ww-legend-text", text: uiText(locale, "ui.mode.label") })]), options);
   const inputs = new Map<PlayMode, HTMLInputElement>();
   for (const choice of MODE_CHOICES) {
     const input = el(doc, "input", {

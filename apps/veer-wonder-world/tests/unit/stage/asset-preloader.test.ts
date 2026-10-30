@@ -88,6 +88,21 @@ describe("asset preloader dispose", () => {
     expect(timers.pending()).toBe(0);
   });
 
+  it("by default lets a slow download run for 15 minutes before calling it stuck", async () => {
+    const { fetch, calls } = stuckFetch();
+    const timers = manualTimers();
+    const preloader = createAssetPreloader({ fetch, source, digest: null, enabled: true, schedule: timers.schedule });
+    const first = preloader.preload(["tree"]);
+    timers.fire(10_000);
+    expect((await first).status.get("tree")).toBe("timeout");
+    // Two minutes is no cap: a page held by a slow software renderer can leave a sent model unread that long.
+    timers.fire(120_000);
+    expect(calls[0]?.signal?.aborted).toBe(false);
+    timers.fire(900_000);
+    expect(calls[0]?.signal?.aborted).toBe(true);
+    preloader.dispose();
+  });
+
   it("settles even when the fetch ignores its abort signal", async () => {
     const calls: string[] = [];
     const deaf: FetchLike = (url) => {

@@ -1,0 +1,228 @@
+/**
+ * Wonder World live preview (apps/veer-wonder-world/DEPLOYMENT.md sections 3 and 4): the deployed address, not a
+ * local build. Remote runner only, after a deploy (apps/veer-wonder-world/tools/deploy-preview.sh --prod):
+ *   apps/veer-wonder-world/tools/remote-run.sh live                                  (est. 10 min)
+ * The address is WONDER_LIVE_URL, else the one apps/veer-wonder-world/tools/deploy-preview.sh --prod wrote to the app's
+ * gitignored .preview-url (the repository is public and never writes it down; DEPLOYMENT.md section 3).
+ *
+ * 1. A visitor's load in headless Chromium with software WebGL2:
+ *    - the start screen, once its fade-in has finished: the static splash is gone and the Start button's label reads
+ *      at 4.5:1 or better against the button (a reset once left these labels dark on purple);
+ *    - a tap on Start, then the story menu with its 32 cards and their portraits;
+ *    - a tap on E17's card, then the story on stage.
+ *    The visit must show no console error, page error or bad response, and no failed request besides ones the page
+ *    cancelled itself (net::ERR_ABORTED, recorded). Every request must stay on the preview's own origin, and the page
+ *    must store nothing but the settings record.
+ * 2. The hosting rules on what the page fetched (plain requests, no browser): every response carries X-Robots-Tag
+ *    noindex; the page revalidates (no-cache); hashed assets are immutable; models, sounds, fonts and the HDRIs have
+ *    their content types; a missing file answers 404 rather than the page (no SPA fallback).
+ * Records: WWJSON live-visit (live-visit-partial when a step fails) and live-hosting; WWSHOT live-start, live-menu and
+ * live-story.
+ */
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
+import {
+  APP_DIR,
+  E17,
+  SELECTORS,
+  attachPageLog,
+  captureView,
+  emitJson,
+  emitShot,
+  expectPagePrivacy,
+  readBootError,
+  runContext,
+  waitForHooks,
+  waitForStoryOnStage,
+  type PageLog
+} from "./wonder-world-lib";
+
+/** The deployed address: WONDER_LIVE_URL, else the app's gitignored .preview-url that a --prod deploy writes. */
+function liveUrl(): URL {
+  const fromEnv = process.env["WONDER_LIVE_URL"];
+  if (fromEnv) return new URL(fromEnv);
+  const file = join(APP_DIR, ".preview-url");
+  if (!existsSync(file)) throw new Error(`no preview address: set WONDER_LIVE_URL, or deploy with deploy-preview.sh --prod (it writes ${file})`);
+  return new URL(readFileSync(file, "utf8").trim());
+}
+
+const LIVE_URL = liveUrl();
+const VIEWPORT = { width: 800, height: 600 } as const;
+// Software WebGL2 holds the main thread for long stretches during boot, so a UI step gets two minutes.
+const UI_TIMEOUT_MS = 120_000;
+const STORY_CARDS = 32;
+
+/** Content types the hosting rules require, by file extension (DEPLOYMENT.md section 3). */
+const CONTENT_TYPES: Readonly<Record<string, RegExp>> = {
+  glb: /^model\/gltf-binary/,
+  mp3: /^audio\/mpeg/,
+  woff2: /^font\/woff2/,
+  hdr: /^application\/octet-stream/,
+  webp: /^image\/webp/,
+  js: /^(?:text|application)\/javascript/,
+  css: /^text\/css/
+};
+
+/** Waits until the start screen has finished its fade-in (computed opacity 1). */
+async function startScreenShown(page: Page): Promise<void> {
+  await page.waitForFunction(
+    () => {
+      const screen = document.querySelector('[data-ui="start"]');
+      return screen !== null && getComputedStyle(screen).opacity === "1";
+    },
+    undefined,
+    { timeout: UI_TIMEOUT_MS }
+  );
+}
+
+/** The computed text and background colours of the first element matching `selector`, and their WCAG contrast. */
+async function labelContrast(page: Page, selector: string): Promise<{ readonly color: string; readonly background: string; readonly ratio: number }> {
+  return page.evaluate((target) => {
+    const element = document.querySelector(target);
+    if (!element) throw new Error(`${target} is not on the page`);
+    const style = getComputedStyle(element);
+    const luminance = (css: string): number => {
+      const [r = 0, g = 0, b = 0] = (css.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
+      const channel = (value: number): number => {
+        const s = value / 255;
+        return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+      };
+      return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+    };
+    const text = luminance(style.color);
+    const background = luminance(style.backgroundColor);
+    const ratio = (Math.max(text, background) + 0.05) / (Math.min(text, background) + 0.05);
+    return { color: style.color, background: style.backgroundColor, ratio: Math.round(ratio * 100) / 100 };
+  }, selector);
+}
+
+async function menuCards(page: Page): Promise<{ readonly cards: number; readonly portraits: number; readonly loaded: number }> {
+  return page.evaluate(async () => {
+    const images = [...document.querySelectorAll<HTMLImageElement>(".ww-card img.ww-card-portrait")];
+    await Promise.all(
+      images.map(
+        (image) =>
+          new Promise<void>((resolve) => {
+            if (image.complete) resolve();
+            else {
+              image.addEventListener("load", () => resolve(), { once: true });
+              image.addEventListener("error", () => resolve(), { once: true });
+            }
+          })
+      )
+    );
+    return {
+      cards: document.querySelectorAll(".ww-card").length,
+      portraits: images.length,
+      loaded: images.filter((image) => image.naturalWidth > 0).length
+    };
+  });
+}
+
+/** One URL of each kind the page fetched from the preview's origin, plus the page itself. */
+function sampleUrls(log: PageLog): string[] {
+  const urls = new Set<string>([LIVE_URL.href, new URL("index.html", LIVE_URL).href]);
+  const seen = new Set<string>();
+  for (const request of log.requests) {
+    if (request.origin !== "same-origin") continue;
+    const extension = new URL(request.url).pathname.split(".").pop() ?? "";
+    if (!(extension in CONTENT_TYPES) || seen.has(extension)) continue;
+    seen.add(extension);
+    urls.add(request.url);
+  }
+  return [...urls];
+}
+
+async function hostingRules(request: APIRequestContext, log: PageLog): Promise<{ readonly checked: readonly Record<string, unknown>[]; readonly problems: readonly string[] }> {
+  const problems: string[] = [];
+  const checked: Record<string, unknown>[] = [];
+  for (const url of sampleUrls(log)) {
+    const response = await request.get(url, { maxRedirects: 0 });
+    const headers = response.headers();
+    const path = new URL(url).pathname;
+    const extension = path.endsWith("/") ? "html" : path.split(".").pop() ?? "";
+    const row = {
+      path,
+      status: response.status(),
+      contentType: headers["content-type"] ?? null,
+      cacheControl: headers["cache-control"] ?? null,
+      robots: headers["x-robots-tag"] ?? null
+    };
+    checked.push(row);
+    if (row.status !== 200) problems.push(`${path}: status ${row.status}`);
+    if (!/\bnoindex\b/.test(row.robots ?? "")) problems.push(`${path}: no X-Robots-Tag noindex`);
+    if (extension === "html" && row.cacheControl !== "no-cache") problems.push(`${path}: cache-control ${row.cacheControl}, not no-cache`);
+    if (path.startsWith("/assets/") && row.cacheControl !== "public, max-age=31536000, immutable") {
+      problems.push(`${path}: cache-control ${row.cacheControl}, not immutable`);
+    }
+    const expected = CONTENT_TYPES[extension];
+    if (expected && !expected.test(row.contentType ?? "")) problems.push(`${path}: content-type ${row.contentType}`);
+  }
+  // A missing file must answer 404, not the page (no SPA fallback, DEPLOYMENT.md section 3).
+  const missing = await request.get(new URL("assets/no-such-file.js", LIVE_URL).href, { maxRedirects: 0 });
+  checked.push({ path: "/assets/no-such-file.js", status: missing.status(), robots: missing.headers()["x-robots-tag"] ?? null });
+  if (missing.status() !== 404) problems.push(`a missing file answered ${missing.status()}, not 404`);
+  return { checked, problems };
+}
+
+test.describe("Wonder World live preview", () => {
+  test.setTimeout(30 * 60_000);
+
+  test("a visitor's load of the deployed preview, then its hosting rules", async ({ page, request }) => {
+    await page.setViewportSize(VIEWPORT);
+    const log = attachPageLog(page, LIVE_URL.origin);
+    const visit: Record<string, unknown> = {};
+    let passed = false;
+    try {
+      await page.goto(LIVE_URL.href, { waitUntil: "commit", timeout: 120_000 });
+      await waitForHooks(page, log);
+      const start = page.locator(SELECTORS.start);
+      await start.waitFor({ state: "visible", timeout: UI_TIMEOUT_MS });
+      // The button is "visible" as soon as it is in the page; the screen is drawn once its fade-in has finished.
+      await startScreenShown(page);
+      await page.locator('[data-ui="boot"]').waitFor({ state: "detached", timeout: UI_TIMEOUT_MS });
+      const startLabel = await labelContrast(page, SELECTORS.start);
+      visit["startButton"] = startLabel;
+      emitShot("live-start", await captureView(page), "jpg");
+      expect(startLabel.ratio, `Start label ${startLabel.color} on ${startLabel.background}`).toBeGreaterThanOrEqual(4.5);
+
+      await start.click({ timeout: UI_TIMEOUT_MS });
+      await page.locator(SELECTORS.menu).waitFor({ state: "visible", timeout: UI_TIMEOUT_MS });
+      const menu = await menuCards(page);
+      visit["menu"] = menu;
+      expect(menu.cards, "the story menu lists every story").toBe(STORY_CARDS);
+      expect(menu.portraits, "every card has its host's portrait").toBe(STORY_CARDS);
+      expect(menu.loaded, "every portrait loaded").toBe(STORY_CARDS);
+      emitShot("live-menu", await captureView(page), "jpg");
+
+      await page.locator(`.ww-card[data-story-id="${E17.id}"]`).click({ timeout: UI_TIMEOUT_MS });
+      const state = await waitForStoryOnStage(page, log, E17.id);
+      visit["story"] = { screen: state.screen, storyId: state.storyId, phase: state.director?.phase ?? null };
+      emitShot("live-story", await captureView(page), "jpg");
+
+      visit["privacy"] = await expectPagePrivacy(page, log, "live preview");
+      expect(await readBootError(page), "__AURA_WONDER_WORLD_ERROR__").toBeNull();
+      expect(log.pageErrors, "page errors").toEqual([]);
+      expect(log.consoleErrors, "console errors").toEqual([]);
+      expect(log.badResponses, "responses with an error status").toEqual([]);
+      expect(log.failedRequests.filter((failure) => !failure.startsWith("net::ERR_ABORTED")), "failed requests").toEqual([]);
+      passed = true;
+    } finally {
+      emitJson(passed ? "live-visit" : "live-visit-partial", {
+        ...(await runContext(page, "live").catch(() => ({}))),
+        url: LIVE_URL.href,
+        ...visit,
+        consoleErrors: log.consoleErrors,
+        pageErrors: log.pageErrors,
+        badResponses: log.badResponses,
+        failedRequests: log.failedRequests,
+        requests: log.requests.length
+      });
+    }
+
+    const hosting = await hostingRules(request, log);
+    emitJson("live-hosting", { url: LIVE_URL.href, ...hosting });
+    expect(hosting.problems, "hosting rules").toEqual([]);
+  });
+});

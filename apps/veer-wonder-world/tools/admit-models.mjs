@@ -4,7 +4,8 @@
 //   aura3d assets optimize (role budget, texture size), apply the review recolor (sharp hue/saturation shift of the
 //   base colour texture) or tint (glTF baseColorFactor, sRGB hex -> linear)
 //   for washed-out generations, then strip normal/metallic-roughness maps on
-//   everything except the main cast (matte clay look; keeps the art budget near the PRD's ~25 MB),
+//   everything except the main cast (matte clay look; keeps the art budget near the PRD's ~25 MB) and store the main
+//   cast's PNG normal maps as JPEG (tools/jpeg-normal-maps.mjs),
 //   stamp asset.extras.aura3d.orientation (Meshy exports face +z), inspect, validate --skin (rigged),
 //   copy to src/assets/models/<key>.<sha8>.glb and write provenance/models/<key>.json.
 // Finally regenerates src/aura-assets.ts.
@@ -18,6 +19,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, wri
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
+import { jpegNormalMaps, NORMAL_MAP_JPEG } from "./jpeg-normal-maps.mjs";
 
 const app = join(dirname(fileURLToPath(import.meta.url)), "..");
 const repo = join(app, "..", "..");
@@ -105,10 +107,11 @@ async function finish(input, output, key, tint, recolor) {
     }
     await doc.transform(prune());
   }
+  const normalMaps = MAIN_CAST.has(key) ? await jpegNormalMaps(doc, sharp) : [];
   const asset = root.getAsset();
   asset.extras = { ...(asset.extras ?? {}), aura3d: { orientation: { forwardAxis: "+z", upAxis: "+y", source: "Meshy export convention (faces +z)" } } };
   await io.write(output, doc);
-  return stripped;
+  return { stripped, normalMaps };
 }
 
 const admitted = [];
@@ -142,7 +145,7 @@ for (const a of spec.assets) {
   const optimized = join(work, "optimized.glb");
   const opt = auraJson(["assets", "optimize", "--file", source, "--out", optimized, "--role", role, "--tex", String(tex), ...(a.rig ? ["--no-simplify"] : []), ...(fromRefine ? ["--max-verts", String(Math.round((a.poly ?? 6000) * 0.7))] : []), "--json"]);
   const finalPath = join(work, "final.glb");
-  const stripped = await finish(optimized, finalPath, a.key, r.tint, r.recolor);
+  const { stripped, normalMaps } = await finish(optimized, finalPath, a.key, r.tint, r.recolor);
   const inspection = auraJson(["assets", "inspect", finalPath, "--animation", "--skeleton", "--morphs"]);
   clips = (inspection.animations ?? []).filter((n) => typeof n === "string");
   let skin = null;
@@ -171,6 +174,7 @@ for (const a of spec.assets) {
       merge,
       optimize: { role: opt.role, tex: opt.tex, maxVerts: opt.maxVerts, simplify: opt.simplify, simplified: opt.simplified, vertsBefore: opt.vertsBefore, vertsAfter: opt.vertsAfter, bytesIn: opt.bytesIn, bytesOut: opt.bytesOut },
       strippedNormalAndRoughnessMaps: stripped,
+      normalMapJpeg: normalMaps.length > 0 ? { ...NORMAL_MAP_JPEG, encoder: "sharp", textures: normalMaps } : null,
       tint: r.tint ?? null,
       recolor: r.recolor ?? null,
       source: r.source === "refine" ? "refine model simplified locally (the remesh task could not run: its pinned Meshy key returned 402)" : "remesh",

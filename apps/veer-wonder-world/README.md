@@ -1,8 +1,8 @@
 # Wonder World (prototype)
 
-Wonder World is a toddler co-play app built on Aura3D 4.5.0: short 3D cartoon stories and tap games that a grown-up plays alongside a young child. The folder keeps the working name `veer-wonder-world`; the public title is **Wonder World**, and no child's name appears in the app, its routes, its logs or its default lines.
+Wonder World is a toddler co-play app built on Aura3D 4.5.0: short 3D cartoon stories and tap games that a grown-up plays alongside a young child. The folder keeps the working name `veer-wonder-world`; the public title is **Wonder World**. No child's name appears in the app's routes, logs, story lines or strings; the one exception, at the owner's request, is the start screen's welcome, which takes the name from `WELCOME_NAME` in `src/personal.ts` (07 O8; set it to null to remove it).
 
-**Status: prototype.** It is play and language exposure, not therapy. It does not test, score, diagnose or teach a child to talk, and nothing here supports an efficacy claim. The route carries `noindex`, it is not in the public site build, catalog, showcase index or sitemap, and publishing it is a separate owner decision ([DEPLOYMENT.md](DEPLOYMENT.md)). The specification is [`docs/prds/veer-wonder-world/`](../../docs/prds/veer-wonder-world/README.md); decisions and results are recorded in [`07-autonomous-decisions-and-build-record.md`](../../docs/prds/veer-wonder-world/07-autonomous-decisions-and-build-record.md).
+**Status: prototype.** It is play and language exposure, not therapy. It does not test, score, diagnose or teach a child to talk, and nothing here supports an efficacy claim. It runs as an unlisted preview, deployed at the owner's request on 2026-10-29. This repository is public, so the address is not written here; see [DEPLOYMENT.md](DEPLOYMENT.md) section 3. Every response carries `noindex`, it is not in the public site build, catalog, showcase index or sitemap, and publishing it is a separate owner decision ([DEPLOYMENT.md](DEPLOYMENT.md)). The specification is [`docs/prds/veer-wonder-world/`](../../docs/prds/veer-wonder-world/README.md); decisions and results are recorded in [`07-autonomous-decisions-and-build-record.md`](../../docs/prds/veer-wonder-world/07-autonomous-decisions-and-build-record.md).
 
 ## What is in it
 
@@ -78,15 +78,18 @@ pnpm exec tsc -p apps/veer-wonder-world/tsconfig.json --noEmit
 node apps/veer-wonder-world/tools/gen-aura-assets.mjs && node apps/veer-wonder-world/tools/gen-audio-manifest.mjs && git diff --exit-code apps/veer-wonder-world/src
 ```
 
-Browser specs (J08-J13) and the production build with `aura3d check-deploy --browser` run only on the remote runner, never on a developer Mac. One run takes the spec files named by their stems; the runner stops a run at 60 minutes, so run one line of the list in `tests/browser/wonder-world-lib.ts` per run (21 spec files in 20 runs):
+Browser specs (J08-J13) and the production build with `aura3d check-deploy --browser` run only on the remote runner, never on a developer Mac. One run takes the spec files named by their stems; the runner stops a run at 60 minutes, so run one line of the list in `tests/browser/wonder-world-lib.ts` per run (22 spec files in 21 runs):
 
 ```bash
 apps/veer-wonder-world/tools/remote-run.sh first-frame build       # first frame, Vite build, served-bundle privacy scan, check-deploy --browser
 apps/veer-wonder-world/tools/remote-run.sh touch-and-layout
+apps/veer-wonder-world/tools/remote-run.sh start-screen            # the welcome fits and stays clear at 13 screen sizes
 apps/veer-wonder-world/tools/remote-run.sh look                    # look-dev frames of the six worlds (src/scenes/LOOK-BRIEF.md)
 ```
 
 Results land in `tests/reports/remote-acr/<RUN_ID>/`; copy what you keep into `evidence/veer-wonder-world/`. Software WebGL2 results are not real-GPU or device evidence.
+
+The unlisted preview deploys with `apps/veer-wonder-world/tools/deploy-preview.sh --prod`; the deploy host builds it (DEPLOYMENT.md section 3). Afterwards `apps/veer-wonder-world/tools/remote-run.sh live` opens the deployed address on the remote runner and checks its hosting rules. That spec file is outside the 20-run suite above.
 
 ## Running it
 
