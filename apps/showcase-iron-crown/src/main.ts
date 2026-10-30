@@ -1,15 +1,9 @@
 import "../../showcase-port-shared/quickbar.css";
 import {
   camera,
-  effects,
   game,
   gameFeel,
   games,
-  lights,
-  looks,
-  material,
-  primitives,
-  scene,
   type AuraRuntimeNodeHandle,
   type AuraVec3,
   type GameCombatWorldSnapshot,
@@ -29,13 +23,14 @@ import {
 } from "./game/ai";
 import {
   animationLayer,
+  attackLayerEnabled,
   createFighterAnimationController,
-  createFighterNode,
   embeddedClipFor,
   fighterById,
   fighterDriveClipId,
   fighterFacingYaw,
   FIGHTERS,
+  isLacquerSwatch,
   isLoopingFighterClip,
   PALETTE_SWATCHES,
   resolveTypedFighterAssets,
@@ -70,10 +65,26 @@ import {
 import { mountControlsSheet } from "./game/controlsSheet";
 import { mountExtraTouchButtons } from "./game/touchExtras";
 import { DEFAULT_STAGE, stageById, type IronStage, type StageId } from "./game/stages";
+import { CROWD_IDS, crowdBob, signFlicker } from "./game/ambientMotion";
+import { buildArenaScene } from "./game/arena";
+import {
+  cinematicPost,
+  cinematicShot,
+  createCinematicClock,
+  FIGHT_LENS,
+  hudSlamFor,
+  letterboxWanted,
+  type CinematicPost,
+  type CinematicShot
+} from "./game/cinematics";
+import { backRimPose, FOLLOW_SPOT_ID, followSpotPose, LETTERBOX_BAR, panelLightId, poseDirection, RIM_IDS, stageLook, type SpotPose } from "./game/look";
+import { AMBIENT_EMITTERS, createAmbientVfx, installIronCrownVfx, type IronCrownVfxKind } from "./game/vfx";
 import { advanceLadder, createLadder, currentRung, type LadderState } from "./game/ladder";
 import { createHud, type MenuId, type ModeId } from "./game/hud";
 import "./styles.css";
 import { installBlackFrameGuard } from "@aura3d/debug";
+import { fightCrops, type QaCrop } from "./game/qaCrops";
+import { KO_SCORCH_ID, SCORCH_PARKED, scorchAt } from "./game/flareScorch";
 
 installBlackFrameGuard();
 
@@ -83,6 +94,7 @@ type IronCrownWindow = Window & {
   __AURA3D_GAME_EVIDENCE__?: unknown;
   __AURA3D_GAME_RUNTIME__?: unknown;
   __AURA3D_SHOWCASE_IRON_CROWN__?: unknown;
+  __AURA_QA__?: { crops?: readonly QaCrop[]; [key: string]: unknown };
 };
 
 const gameWindow = window as IronCrownWindow;
@@ -142,12 +154,10 @@ const STAGE_AMBIENCE: Record<StageId, "amb-city-night" | "amb-city-day" | "amb-c
 const debugHooks = params.get("icdebug") === "1";
 /** `?iccontact=0` drops the contact-shadow effect, to measure what the 4.5.0 mask adds on a stage. */
 const contactShadowsOn = params.get("iccontact") !== "0";
-/**
- * `?iclayer=1` plays attacks on the declared upper-body layer over the locomotion clip (audit IC-15). It is opt-in until
- * the node `playLayer` forwards a playback speed: the attack clips run 1.0 to 4.3 s at 1x, while the moves' hit frames
- * expect them at 1.85x to 2.8x (clipPlaybackSpec), so a 1x layered jab would land long after its hitbox.
- */
-const attackLayerWanted = params.get("iclayer") === "1";
+/** PRD §6.4: `?tier=low` halves weather and VFX particles (the engine tier drops local shadows, AO, DOF and grain). */
+const lowTier = params.get("tier") === "low";
+/** Upper-body attack layering is on by default (IC47-AN1, `attackLayerEnabled`); `?iclayer=0` turns it off. */
+const attackLayerWanted = attackLayerEnabled(params);
 
 /* ================================================================ */
 /* state                                                             */
@@ -227,102 +237,31 @@ function studioPaletteFor(fighter: FighterId): FighterPalette | undefined {
   const sw = PALETTE_SWATCHES.find((p) => p.id === studioSelection.palette);
   if (!sw) return undefined;
   const def = fighterById(fighter);
-  return { ...def.palette, color: sw.color, emissive: sw.emissive || def.palette.emissive };
+  return { ...def.palette, color: sw.color, emissive: sw.emissive || def.palette.emissive, lacquer: isLacquerSwatch(sw.id) };
 }
 
 /* ================================================================ */
 /* scene                                                             */
 /* ================================================================ */
 
+/**
+ * The venue scene (GU47 WP-15): its own look row, floor, dressing, fighters, follow-spot or sun key, two back rims in
+ * the fighters' colours, shafts, weather and post (game/arena.ts, game/look.ts).
+ */
 function buildArena(cfg: BoutConfig) {
-  const s = cfg.stage;
-  // The fighting kit ships debug-style markers (camera safe-zone posts, a centre aura beam, start-lane slabs).
-  // They read as stray geometry in a finished arena, so drop them and mark the spawn points with proper rings.
-  const KIT_MARKER_NODES = new Set(["left camera safe boundary marker", "right camera safe boundary marker", "center aura combat lane"]);
-  const spawnRing = (id: string, x: number, color: string) => [
-    primitives
-      .cylinder({ name: `${id}-outer`, material: material.emissive({ color, emissive: color, emissiveIntensity: 0.55, roughness: 0.4 }), castShadow: false, receiveShadow: false })
-      .position(x, 0.012, 0.02)
-      .scale([1.15, 0.012, 1.15])
-      .toJSON(),
-    primitives
-      .cylinder({ name: `${id}-inner`, material: material.pbr({ color: "#15121a", roughness: 0.7 }), castShadow: false, receiveShadow: true })
-      .position(x, 0.016, 0.02)
-      .scale([0.96, 0.012, 0.96])
-      .toJSON()
-  ];
-  const floorStageNodes = s.stage.nodes
-    .filter((n: any) => {
-      const py = n?.transform?.position?.[1] ?? n?.position?.[1] ?? 0;
-      return py <= 0.35 && !KIT_MARKER_NODES.has(n?.name);
-    })
-    .flatMap((n: any) => {
-      if (n?.name === "fighting foreground floor plane") {
-        return [{
-          ...n,
-          position: [0, -0.055, 0] as [number, number, number],
-          scale: [44, 1, 32] as [number, number, number]
-        }];
-      }
-      if (n?.name === "player start lane glow") return spawnRing("player-spawn", PLAYER_START[0], s.palette.lane);
-      if (n?.name === "opponent start lane glow") return spawnRing("rival-spawn", RIVAL_START[0], s.palette.warning);
-      return [n];
-    });
-  return scene()
-    .add(looks.preset(s.lookId, s.lookOverrides ?? {}))
-    .addMany(floorStageNodes)
-    .addMany(s.dressing)
-    .add(createFighterNode("player", cfg.p1, `${cfg.p1.name} (P1)`, PLAYER_START, 1, typedFighterAssets, cfg.p1Tint))
-    .add(createFighterNode("rival", cfg.cpu, `${cfg.cpu.name} (CPU)`, RIVAL_START, -1, typedFighterAssets, cfg.cpuTint))
-    .addMany([
-      ...(contactShadowsOn ? [effects.contactShadows({ intensity: 0.75, length: 0.3 })] : []),
-      effects.vignette({ intensity: 0.16, smoothness: 0.65 }),
-      effects.bloom({ intensity: 0.24, threshold: 0.86 }),
-      effects.lightCone({
-        name: "crown key cone left",
-        position: [-6.3, 4.8, -5.5],
-        direction: [0.65, -0.42, 0.63],
-        color: s.palette.warning,
-        intensity: 0.24,
-        length: 8.5,
-        coneAngle: 0.34,
-        softness: 0.6
-      }),
-      effects.lightCone({
-        name: "crown key cone right",
-        position: [6.3, 4.8, -5.5],
-        direction: [-0.65, -0.42, 0.63],
-        color: s.accent,
-        intensity: 0.2,
-        length: 8.5,
-        coneAngle: 0.32,
-        softness: 0.6
-      }),
-      lights.directional({ name: "iron crown rim", color: s.accent, intensity: 0.75 }).position(0, 4.2, 3),
-      lights.spot({
-        name: "crown ring key",
-        position: [-3.9, 5.4, 1.6],
-        target: [0, 0.5, 0],
-        angle: 0.46,
-        penumbra: 0.85,
-        distance: 15,
-        decay: 1.3,
-        intensity: 12,
-        color: s.palette.warning
-      }),
-      lights.spot({
-        name: "crown ring fill",
-        position: [3.9, 5.4, 1.6],
-        target: [0, 0.5, 0],
-        angle: 0.46,
-        penumbra: 0.85,
-        distance: 15,
-        decay: 1.3,
-        intensity: 9,
-        color: s.accent
-      })
-    ])
-    .camera(camera.perspective({ position: [0, 1.6, 5.6], target: [0, 0.82, 0], fov: 40 }));
+  return buildArenaScene({
+    stage: cfg.stage,
+    p1: cfg.p1,
+    cpu: cfg.cpu,
+    p1Tint: cfg.p1Tint,
+    cpuTint: cfg.cpuTint,
+    typedFighterAssets,
+    playerStart: PLAYER_START,
+    rivalStart: RIVAL_START,
+    contactShadows: contactShadowsOn,
+    reducedMotion,
+    lowTier
+  });
 }
 
 const initialConfig: BoutConfig = {
@@ -396,8 +335,12 @@ const fightingGame = createGame({
 });
 
 const app = fightingGame.app;
-// Runtime-spawned effect clouds are off by default until the floating-dot report is root-caused; `?vfx=on` re-enables them for diagnosis.
-(app as any).effects.runtime = "off";
+// IC47-V1: runtime VFX back on with the Iron Crown preset pack (the floating-dot cause is fixed in the engine, E-F);
+// `?vfx=off` turns them off. Reduced motion halves the counts, reduced flash drops the flash lights (game/vfx.ts).
+const vfxComfort = { reducedMotion, reducedFlash, lowTier };
+const vfxLive = installIronCrownVfx(app.effects, vfxComfort, params.get("vfx"));
+/** IC47-V2: the venue's ambient embers, motes or dust (one-shot bursts on a fixed cadence; reset per bout). */
+let ambientVfx = createAmbientVfx(AMBIENT_EMITTERS[DEFAULT_STAGE], vfxComfort);
 fightingGame.start();
 const input = fightingGame.input as GameInputController;
 if (!input) throw new Error("Iron Crown: createGame failed to create runtime-owned input.");
@@ -429,14 +372,72 @@ const baseFightingRig = camera.rigs.fighting({
   fighters: ["player", "rival"],
   minDistance: 4.9,
   maxDistance: 7.0,
-  fov: 40
+  fov: FIGHT_LENS.fov
 });
+// IC47-C1: letterboxed intro, K.O. and win shots (camera only; the phase windows are unchanged). The bars are two DOM
+// strips over the canvas, LETTERBOX_BAR of the viewport each.
+const cineClock = createCinematicClock();
+const letterbox = (["top", "bottom"] as const).map((edge) => {
+  const bar = document.createElement("div");
+  bar.className = `ic-letterbox ic-letterbox-${edge}`;
+  bar.setAttribute("aria-hidden", "true");
+  bar.style.setProperty("--ic-bar", `${LETTERBOX_BAR * 100}vh`);
+  document.body.appendChild(bar);
+  return bar;
+});
+let letterboxOn = false;
+/** IC47-H1: the last shot's name, for the HUD slams synced to the intro. */
+let lastShotName: CinematicShot["name"] | null = null;
+/** IC47-P3: real time of the last special or K.O. (the CA and vignette pulse); the last post cue sent. */
+let postPulseAt = Number.NEGATIVE_INFINITY;
+/** IC47-AN2: real time of the last K.O. (the Crown crowd jumps). */
+let crowdCheerAt = Number.NEGATIVE_INFINITY;
+let postSent: { dof: string; ca: number; vignette: number } | null = null;
+function applyPostCue(cue: CinematicPost): void {
+  const post = app.post;
+  if (!post) return;
+  const dofKey = cue.dof ? `${cue.dof.focusDistance}/${cue.dof.fStop}` : "off";
+  if (postSent?.dof !== dofKey) {
+    if (cue.dof) post.setEffect("depthOfField", { focusDistance: cue.dof.focusDistance, fStop: cue.dof.fStop });
+    post.setEffectEnabled("depthOfField", cue.dof !== null);
+  }
+  if (postSent?.ca !== cue.chromaticAberration) {
+    if (cue.chromaticAberration > 0) post.setEffect("chromaticAberration", { intensity: cue.chromaticAberration });
+    post.setEffectEnabled("chromaticAberration", cue.chromaticAberration > 0);
+  }
+  if (postSent?.vignette !== cue.vignette) post.setEffect("vignette", { intensity: cue.vignette });
+  postSent = { dof: dofKey, ca: cue.chromaticAberration, vignette: cue.vignette };
+}
+function setLetterbox(on: boolean): void {
+  if (on === letterboxOn) return;
+  letterboxOn = on;
+  for (const bar of letterbox) bar.classList.toggle("on", on);
+}
+
 app.camera?.use({
   ...baseFightingRig,
   update(ctx) {
     const pose = baseFightingRig.update(ctx);
-    const position: [number, number, number] = [pose.position[0], pose.position[1] + 0.82, pose.position[2] - 0.15];
-    const target: [number, number, number] = [pose.target[0], pose.target[1] + 0.72, pose.target[2]];
+    if (state && P1 && CPU) {
+      const phase = state.phase;
+      const winnerSide = phase === "boutEnd" ? (state.pipsP1 >= ROUNDS_TO_WIN ? P1 : state.pipsCpu >= ROUNDS_TO_WIN ? CPU : null) : null;
+      const shot = cinematicShot({
+        phase,
+        t: cineClock.tick(phase, ctx.dt),
+        p1: P1.body.position,
+        p2: CPU.body.position,
+        winner: winnerSide ? winnerSide.body.position : null,
+        reducedMotion
+      });
+      setLetterbox(letterboxWanted(phase, winnerSide !== null));
+      const slam = hudSlamFor(lastShotName, shot?.name ?? null);
+      lastShotName = shot?.name ?? null;
+      if (slam) hud.slam(slam);
+      applyPostCue(cinematicPost(shot, performance.now() / 1000 - postPulseAt, stageLook(state.config.stage.id).vignette, reducedMotion));
+      if (shot) return { ...pose, position: shot.position, target: shot.target, fov: shot.fov };
+    }
+    const position: [number, number, number] = [pose.position[0], pose.position[1] + FIGHT_LENS.lift, pose.position[2] - 0.15];
+    const target: [number, number, number] = [pose.target[0], pose.target[1] + FIGHT_LENS.aim, pose.target[2]];
     // Portrait phones: the rig frames by vertical FOV, so at 390x844 the fighters' start marks (x ±2.2) sat outside the
     // frame. Pull the camera back along its view line until both fighters plus a margin fit the horizontal FOV.
     const aspect = window.innerWidth / Math.max(1, window.innerHeight);
@@ -686,12 +687,16 @@ async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<voi
   newBout(config);
   playStageAmbience(config.stage.id);
   currentStageId = config.stage.id;
+  ambientVfx = createAmbientVfx(AMBIENT_EMITTERS[config.stage.id], vfxComfort);
   studioSelection.fighter = config.p1.id;
   const sig = arenaSignature(config);
   if (sig !== mountedArenaSig) {
     mountedArenaSig = sig;
     await fightingGame.setScene(buildArena(config).toJSON());
   }
+  resetStageLights();
+  // IC47-V3: a re-bout on the mounted scene parks the last bout's scorch again.
+  (app.nodes.get(KO_SCORCH_ID) as AuraRuntimeNodeHandle | undefined)?.setPosition(SCORCH_PARKED[0], SCORCH_PARKED[1], SCORCH_PARKED[2]);
   P1 = makeFighter("p1", config.p1, PLAYER_START, config.p1Tint);
   CPU = makeFighter("cpu", config.cpu, RIVAL_START, config.cpuTint);
   P1.brain = createCpuBrain(config.p1, "scrapper", APP_SEED + 7);
@@ -981,6 +986,8 @@ function tryAttack(f: FighterRuntime, foe: FighterRuntime, kind: AttackKind): vo
     const pos = f.body.position;
     runtimeEffects.auraBurst([pos[0], pos[1] + 0.9, 0], { ownerId: f.nodeId, intensity: 0.85, color: f.def.special.color });
     runtimeEffects.ringShockwave([pos[0] + facingTo(f, foe) * 0.5, pos[1] + 0.9, 0], { ownerId: f.nodeId, intensity: 0.7, color: f.def.special.color });
+    fxBurst("ic-special-burst", [pos[0], pos[1] + 0.9, 0], f.def.special.color);
+    postPulseAt = performance.now() / 1000;
     director.special([pos[0], pos[1] + 0.9, 0], 0.5);
     fightingGame.juice.fire("special");
     void fightingGame.sound?.cue("special");
@@ -1162,6 +1169,7 @@ function handleEvents(): void {
       lastStunFromHit[tKey] = true;
       if (attacker.attack) attacker.attack.connected = true;
       runtimeEffects.hitSpark(ev.position, { ownerId: ev.attackerId, intensity: 1.05 });
+      fxBurst("ic-forge-spark", ev.position);
       director.impact(0.42, 0.16);
       fightingGame.juice.fire("hit");
       void fightingGame.sound?.cue(hitCueFor(ev.moveId));
@@ -1185,6 +1193,7 @@ function handleEvents(): void {
     if (ev.type === "blocked" && target) {
       lastStunFromHit[target.nodeId] = false;
       runtimeEffects.blockSpark(ev.position, { ownerId: ev.attackerId, intensity: 0.7 });
+      fxBurst("ic-guard-ember", ev.position);
       director.impact(0.16, 0.12);
       fightingGame.juice.fire("blocked");
       void fightingGame.sound?.cue("blocked");
@@ -1206,6 +1215,8 @@ function handleEvents(): void {
 }
 
 function onKnockout(winner: "p1" | "cpu"): void {
+  postPulseAt = performance.now() / 1000;
+  crowdCheerAt = postPulseAt;
   if (state.phase !== "fight") return;
   state.phase = "ko";
   state.koTimer = 0;
@@ -1218,6 +1229,11 @@ function onKnockout(winner: "p1" | "cpu"): void {
   void fightingGame.sound?.cue("ko-voice");
   director.impact(0.7, 0.5);
   runtimeEffects.impactFlash([0, 1.2, -0.4], { intensity: 1.1, color: "#ffd76a" });
+  const loser = winner === "p1" ? CPU : P1;
+  fxBurst("ic-ko-shower", [loser.body.position[0], loser.body.position[1] + 1.0, 0]);
+  // IC47-V3: the scorch lands under the loser and stays for the rest of the scene.
+  const scorch = scorchAt(loser.body.position);
+  (app.nodes.get(KO_SCORCH_ID) as AuraRuntimeNodeHandle | undefined)?.setPosition(scorch[0], scorch[1], scorch[2]);
   fightingGame.juice.fire("ko");
   app.feel?.emit("ko", { strength: 1 });
 }
@@ -1235,6 +1251,9 @@ function endRound(winner: "p1" | "cpu" | "draw"): void {
     state.phaseT = 0;
     const p1Won = award.p1Won;
     void fightingGame.sound?.cue(p1Won ? "win" : "lose");
+    // IC47-V2: gold confetti over the winner on the hero shot.
+    const champ = p1Won ? P1 : CPU;
+    fxBurst("ic-win-confetti", [champ.body.position[0], champ.body.position[1] + 2.4, 0]);
     hud.announce(p1Won ? "YOU WIN" : "YOU LOSE", state.config.mode === "ladder" ? "the crown waits" : "", "hold");
     boutResultTimer.schedule(() => {
       if (state.phase === "boutEnd") showBoutResult(p1Won);
@@ -1511,6 +1530,72 @@ function syncNodes(): void {
   }
 }
 
+/**
+ * IC47-L1: the Crown's follow-spot tracks the pair's midpoint and each back rim tracks its fighter (E-B `setLight`;
+ * read-only fighter positions). The lights ease after the fighters like a spot operator (6/s); a new bout snaps them.
+ */
+const lightFollow = { mid: Number.NaN, p1: Number.NaN, p2: Number.NaN, p1y: 0, p2y: 0 };
+const LIGHT_FOLLOW_RATE = 6;
+const LIGHT_EPSILON = 0.004;
+const lightPosesSent = new Map<string, SpotPose>();
+
+function patchSpot(id: string, pose: SpotPose): void {
+  const last = lightPosesSent.get(id);
+  if (last && Math.abs(last.position[0] - pose.position[0]) < LIGHT_EPSILON && Math.abs(last.position[1] - pose.position[1]) < LIGHT_EPSILON) return;
+  const node = app.nodes.get(id) as AuraRuntimeNodeHandle | undefined;
+  if (!node?.setLight) return;
+  node.setLight({ position: pose.position, direction: poseDirection(pose) });
+  lightPosesSent.set(id, pose);
+}
+
+function updateStageLights(dt: number): void {
+  if (!P1 || !CPU || !state) return;
+  const row = stageLook(state.config.stage.id);
+  const x1 = P1.body.position[0];
+  const x2 = CPU.body.position[0];
+  const k = Number.isNaN(lightFollow.mid) ? 1 : Math.min(1, dt * LIGHT_FOLLOW_RATE);
+  const ease = (from: number, to: number) => (Number.isNaN(from) ? to : from + (to - from) * k);
+  lightFollow.mid = ease(lightFollow.mid, (x1 + x2) / 2);
+  lightFollow.p1 = ease(lightFollow.p1, x1);
+  lightFollow.p2 = ease(lightFollow.p2, x2);
+  lightFollow.p1y = P1.body.position[1];
+  lightFollow.p2y = CPU.body.position[1];
+  if (row.key.kind === "follow-spot") patchSpot(FOLLOW_SPOT_ID, followSpotPose(row.key, lightFollow.mid));
+  patchSpot(RIM_IDS.p1, backRimPose(row.backRim, lightFollow.p1, lightFollow.p1y));
+  patchSpot(RIM_IDS.p2, backRimPose(row.backRim, lightFollow.p2, lightFollow.p2y));
+}
+
+/** IC47-AN2: Neo-Tokyo's neon panels stutter (`signFlicker`); held steady on reduced motion or reduced flash. */
+const panelGainSent = new Map<string, number>();
+function updatePanelFlicker(): void {
+  if (!state || reducedMotion || reducedFlash) return;
+  const row = stageLook(state.config.stage.id);
+  const now = performance.now() / 1000;
+  row.panels.forEach((panel, index) => {
+    const id = panelLightId(index);
+    const gain = signFlicker(now, index, false);
+    if (panelGainSent.get(id) === gain) return;
+    const node = app.nodes.get(id) as AuraRuntimeNodeHandle | undefined;
+    if (!node?.setLight) return;
+    node.setLight({ intensity: panel.intensity * gain });
+    panelGainSent.set(id, gain);
+  });
+}
+
+function resetStageLights(): void {
+  lightFollow.mid = Number.NaN;
+  lightFollow.p1 = Number.NaN;
+  lightFollow.p2 = Number.NaN;
+  lightPosesSent.clear();
+  panelGainSent.clear();
+}
+
+/** IC47-V1: one-shot bursts of the Iron Crown pack on read-only combat events (the caller owns the camera). */
+function fxBurst(kind: IronCrownVfxKind, at: readonly number[], color?: string): void {
+  if (!vfxLive) return;
+  app.effects?.burst(kind, [at[0] ?? 0, at[1] ?? 0, at[2] ?? 0], { camera: false, seed: frameCount, ...(color ? { color } : {}) });
+}
+
 /* ================================================================ */
 /* frame loop                                                        */
 /* ================================================================ */
@@ -1556,6 +1641,17 @@ function playerHasManualInput(): boolean {
   );
 }
 
+// E-I capture hook: the IC47-L1 fighter, foot and outer-ring crops, following the presented camera. Read-only.
+app.onFrame(() => {
+  const vp = app.camera?.evidence().viewProjection;
+  if (!P1 || !CPU || !vp || vp.length !== 16) return;
+  const qa = (gameWindow.__AURA_QA__ ??= {});
+  qa.crops = fightCrops(vp, [
+    { id: "p1", position: [P1.body.position[0], P1.body.position[1], P1.body.position[2]] },
+    { id: "p2", position: [CPU.body.position[0], CPU.body.position[1], CPU.body.position[2]] }
+  ]);
+});
+
 app.onFrame(({ dt }) => {
   if (!P1 || !CPU || !state) return;
   lastFrameSnapshots = snapshotsThisFrame;
@@ -1582,6 +1678,13 @@ app.onFrame(({ dt }) => {
   }
   frameCount += 1;
   elapsedMs += dt * 1000;
+  ambientVfx.step(dt, (kind, at) => fxBurst(kind, at));
+  if (currentStageId === "crown-arena" && !reducedMotion) {
+    const now = performance.now() / 1000;
+    (app.nodes.get(CROWD_IDS.bodies) as AuraRuntimeNodeHandle | undefined)?.setPosition(0, crowdBob(now, now - crowdCheerAt, false), 0);
+    (app.nodes.get(CROWD_IDS.heads) as AuraRuntimeNodeHandle | undefined)?.setPosition(0, crowdBob(now, now - crowdCheerAt, false, 0.06), 0);
+  }
+  updatePanelFlicker();
   if (freezeMs !== null && elapsedMs >= freezeMs) {
     frozenByQuery = true;
     const pSnap = actorSnap("player");
@@ -1754,6 +1857,7 @@ app.onFrame(({ dt }) => {
   updateAttackLayer(P1, simDt);
   updateAttackLayer(CPU, simDt);
   syncNodes();
+  updateStageLights(dt);
 
   for (const side of ["p1", "cpu"] as const) {
     if (combo[side].timer > 0) {

@@ -1,0 +1,832 @@
+{
+  "schema": "aura3d.art-direction-audit/1",
+  "source": "apps/showcase-iron-crown/src/art/direction.ts",
+  "sourceSha256": "8fe9b675804d5ff9bf4326d66927a3580b55b29fa4d6772b120a502127cb0fb8",
+  "id": "showcase-iron-crown",
+  "genre": "fighting",
+  "signatureEffect": "Single follow-spot chiaroscuro: one hard overhead spot through forge smoke holds the pair on black iron, with letterboxed intro and K.O. cinematics.",
+  "palette": {
+    "primary": [
+      "#0e0b0d",
+      "#d9a441",
+      "#9e1b22"
+    ],
+    "accent": "#ff4d1f",
+    "reservedObjective": "#ffe08a"
+  },
+  "environment": {
+    "hdri": "warm_bar",
+    "background": "enclosed"
+  },
+  "violations": [],
+  "snapshot": {
+    "lights": [
+      {
+        "type": "spot",
+        "shadow": true,
+        "intensity": 44
+      },
+      {
+        "type": "spot",
+        "shadow": false,
+        "intensity": 18
+      },
+      {
+        "type": "spot",
+        "shadow": false,
+        "intensity": 18
+      }
+    ],
+    "hasAmbient": false,
+    "environment": {
+      "kind": "hdri",
+      "background": true
+    },
+    "models": [
+      {
+        "assetKey": "billiardsClubChairMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ironcrownCrown",
+        "triangles": 0,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "clashDragonStatueMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "clashDragonStatueMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "auraClashCornerBrazierPylonMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "auraClashCornerBrazierPylonMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "auraClashStageSpeakerTowerMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "auraClashStageSpeakerTowerMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ironcrownKenji",
+        "triangles": 0,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ironcrownVolt",
+        "triangles": 0,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
+    "materials": [
+      {
+        "node": "fighting foreground floor plane",
+        "practical": false
+      },
+      {
+        "node": "player-spawn-outer",
+        "emissiveIntensity": 0.55,
+        "practical": true
+      },
+      {
+        "node": "player-spawn-inner",
+        "practical": false
+      },
+      {
+        "node": "rival-spawn-outer",
+        "emissiveIntensity": 0.55,
+        "practical": true
+      },
+      {
+        "node": "rival-spawn-inner",
+        "practical": false
+      },
+      {
+        "node": "crown-arena-subfloor",
+        "practical": false
+      },
+      {
+        "node": "crown-arena-floor-planks-a",
+        "practical": false
+      },
+      {
+        "node": "crown-arena-floor-planks-b",
+        "practical": false
+      },
+      {
+        "node": "crown-arena-inlay-combat-edge",
+        "emissiveIntensity": 0.46,
+        "practical": true
+      },
+      {
+        "node": "crown-arena-inlay-courses",
+        "emissiveIntensity": 0.17600000000000002,
+        "practical": true
+      },
+      {
+        "node": "crown-arena-stage-ring",
+        "emissiveIntensity": 0.62,
+        "practical": true
+      },
+      {
+        "node": "crown-arena-stage-ring-inner",
+        "emissiveIntensity": 0.3,
+        "practical": true
+      },
+      {
+        "node": "crown-arena-stage-medallion",
+        "practical": false
+      },
+      {
+        "node": "crown-arena-stage-medallion-hub",
+        "emissiveIntensity": 0.36,
+        "practical": true
+      },
+      {
+        "node": "crown-arena-stage-star",
+        "emissiveIntensity": 0.22,
+        "practical": true
+      },
+      {
+        "node": "crown-arena-ring-lip-front",
+        "practical": false
+      },
+      {
+        "node": "crown-arena-ring-lip-back",
+        "practical": false
+      },
+      {
+        "node": "crown-arena-ring-lip-glow",
+        "emissiveIntensity": 0.3,
+        "practical": true
+      },
+      {
+        "node": "crown-arena-approach-rails",
+        "emissiveIntensity": 0.2,
+        "practical": true
+      },
+      {
+        "node": "cr-back-wall",
+        "practical": false
+      },
+      {
+        "node": "cr-back-wall-band",
+        "emissiveIntensity": 0.34,
+        "practical": true
+      },
+      {
+        "node": "cr-crowd-deck-0",
+        "practical": false
+      },
+      {
+        "node": "cr-crowd-deck-1",
+        "practical": false
+      },
+      {
+        "node": "cr-crowd-deck-2",
+        "practical": false
+      },
+      {
+        "node": "cr-crowd-bodies",
+        "practical": false
+      },
+      {
+        "node": "cr-crowd-heads",
+        "practical": false
+      },
+      {
+        "node": "cr-crowd-lights",
+        "emissiveIntensity": 1.15,
+        "practical": true
+      },
+      {
+        "node": "cr-truss-post-l",
+        "practical": false
+      },
+      {
+        "node": "cr-truss-foot-l",
+        "practical": false
+      },
+      {
+        "node": "cr-truss-lens-l",
+        "emissiveIntensity": 1.1,
+        "practical": true
+      },
+      {
+        "node": "cr-truss-post-r",
+        "practical": false
+      },
+      {
+        "node": "cr-truss-foot-r",
+        "practical": false
+      },
+      {
+        "node": "cr-truss-lens-r",
+        "emissiveIntensity": 1.1,
+        "practical": true
+      },
+      {
+        "node": "cr-truss-beam",
+        "practical": false
+      },
+      {
+        "node": "cr-lamp-can--3.6",
+        "practical": false
+      },
+      {
+        "node": "cr-lamp-lens--3.6",
+        "emissiveIntensity": 1.4,
+        "practical": true
+      },
+      {
+        "node": "cr-lamp-can-0",
+        "practical": false
+      },
+      {
+        "node": "cr-lamp-lens-0",
+        "emissiveIntensity": 1.4,
+        "practical": true
+      },
+      {
+        "node": "cr-lamp-can-3.6",
+        "practical": false
+      },
+      {
+        "node": "cr-lamp-lens-3.6",
+        "emissiveIntensity": 1.4,
+        "practical": true
+      },
+      {
+        "node": "cr-drape-l",
+        "practical": false
+      },
+      {
+        "node": "cr-drape-r",
+        "practical": false
+      },
+      {
+        "node": "cr-throne-plinth-base",
+        "practical": false
+      },
+      {
+        "node": "cr-throne-plinth-column",
+        "practical": false
+      },
+      {
+        "node": "cr-throne-plinth-band",
+        "practical": false
+      },
+      {
+        "node": "cr-throne-plinth-cap",
+        "practical": false
+      },
+      {
+        "node": "cr-cabinet-frame",
+        "practical": false
+      },
+      {
+        "node": "cr-cabinet-back",
+        "practical": false
+      },
+      {
+        "node": "cr-cabinet-shelves",
+        "practical": false
+      },
+      {
+        "node": "cr-cabinet-trim",
+        "practical": false
+      },
+      {
+        "node": "cr-cabinet-cups",
+        "practical": false
+      },
+      {
+        "node": "cr-cabinet-banner-border",
+        "practical": false
+      },
+      {
+        "node": "cr-cabinet-banner",
+        "practical": false
+      },
+      {
+        "node": "ko scorch",
+        "practical": false
+      }
+    ],
+    "drawCalls": 0
+  },
+  "direction": {
+    "id": "showcase-iron-crown",
+    "genre": "fighting",
+    "fantasy": "A theatrical tournament fight in black iron, molten gold and ember crimson, under one hard follow-spot through forge smoke.",
+    "rebuildTier": "S-presentation",
+    "wave": 4,
+    "references": [
+      {
+        "file": "references/single-follow-spot.json",
+        "source": "generic reference: a title fight in a dark arena under one hard overhead follow-spot through haze (event photography genre)",
+        "licence": "reference-only",
+        "why": "One shadowed overhead key whose pool holds the pair while the outer ring falls to black iron; the beam reads in the haze"
+      },
+      {
+        "file": "references/forge-at-night.json",
+        "source": "generic reference: a blacksmith forge and foundry pour at night (industrial photography genre)",
+        "licence": "reference-only",
+        "why": "Molten-gold highlights and ember-crimson glow on black iron, spark showers on impact and embers rising through smoke"
+      },
+      {
+        "file": "references/letterbox-fight-cinematics.json",
+        "source": "generic reference: letterboxed round intros and knockout replays of arcade versus fighters (genre convention)",
+        "licence": "reference-only",
+        "why": "Black bars only while the camera performs: a venue dolly, fighter close-ups, a K.O. orbit and a winner hero shot"
+      }
+    ],
+    "palette": {
+      "primary": [
+        "#0e0b0d",
+        "#d9a441",
+        "#9e1b22"
+      ],
+      "accent": "#ff4d1f",
+      "reservedObjective": "#ffe08a"
+    },
+    "lighting": {
+      "key": {
+        "type": "spot",
+        "colorTemperatureK": 3200,
+        "shadow": true
+      },
+      "fill": "ibl",
+      "practicals": 4,
+      "environment": {
+        "hdri": "warm_bar",
+        "background": "enclosed"
+      },
+      "exposureEV": 0
+    },
+    "framing": {
+      "rig": "fighting",
+      "subjectHeightFraction": [
+        0.2,
+        0.3
+      ],
+      "fovDeg": [
+        40,
+        45
+      ],
+      "mobile": "both"
+    },
+    "assets": [
+      {
+        "role": "character",
+        "maxTriangles": 40000,
+        "minTriangles": 20000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 2048,
+        "assetKey": "ironcrownKenji",
+        "animated": {
+          "clips": [
+            "Combat_Stance",
+            "Walk_Fight_Forward",
+            "Left_Jab_from_Guard",
+            "Dead"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "maxTriangles": 40000,
+        "minTriangles": 20000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 2048,
+        "assetKey": "ironcrownVolt",
+        "animated": {
+          "clips": [
+            "Combat_Stance",
+            "Walk_Fight_Forward",
+            "Left_Jab_from_Guard",
+            "Dead"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "maxTriangles": 40000,
+        "minTriangles": 20000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 2048,
+        "assetKey": "ironcrownBoulder",
+        "animated": {
+          "clips": [
+            "Combat_Stance",
+            "Walk_Fight_Forward",
+            "Left_Jab_from_Guard",
+            "Dead"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "maxTriangles": 40000,
+        "minTriangles": 20000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 2048,
+        "assetKey": "ironcrownSeraph",
+        "animated": {
+          "clips": [
+            "Combat_Stance",
+            "Walk_Fight_Forward",
+            "Left_Jab_from_Guard",
+            "Dead"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "maxTriangles": 40000,
+        "minTriangles": 20000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 2048,
+        "assetKey": "ironcrownJinx",
+        "animated": {
+          "clips": [
+            "Combat_Stance",
+            "Walk_Fight_Forward",
+            "Left_Jab_from_Guard",
+            "Dead"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "maxTriangles": 40000,
+        "minTriangles": 20000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 2048,
+        "assetKey": "ironcrownSovereign",
+        "animated": {
+          "clips": [
+            "Combat_Stance",
+            "Walk_Fight_Forward",
+            "Left_Jab_from_Guard",
+            "Dead"
+          ]
+        }
+      },
+      {
+        "role": "prop",
+        "assetKey": "ironcrownCrown",
+        "maxTriangles": 30000,
+        "textureSet": "BC",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "prop",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048,
+        "assetKey": "auraClashCornerBrazierPylonMeshy"
+      },
+      {
+        "role": "prop",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048,
+        "assetKey": "auraClashStageSpeakerTowerMeshy"
+      },
+      {
+        "role": "prop",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048,
+        "assetKey": "auroraFuelDepotTankMeshy"
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "auroraPadBeacon",
+        "maxTriangles": 2000,
+        "textureSet": "BC",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "prop",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048,
+        "assetKey": "billiardsClubChairMeshy"
+      },
+      {
+        "role": "prop",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048,
+        "assetKey": "bunkerBarrelMeshy"
+      },
+      {
+        "role": "prop",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048,
+        "assetKey": "bunkerCrateMeshy"
+      },
+      {
+        "role": "prop",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 2048,
+        "assetKey": "clashDragonStatueMeshy"
+      },
+      {
+        "role": "prop",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048,
+        "assetKey": "courierDeliveryKioskMeshy"
+      },
+      {
+        "role": "prop",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 2048,
+        "assetKey": "courierNeonStorefrontMeshy"
+      },
+      {
+        "role": "prop",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048,
+        "assetKey": "galleryMarbleBustExhibitMeshy"
+      },
+      {
+        "role": "prop",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048,
+        "assetKey": "gullsiegeBarrelMeshy"
+      },
+      {
+        "role": "prop",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048,
+        "assetKey": "gullsiegeCrateMeshy"
+      },
+      {
+        "role": "world",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048,
+        "assetKey": "gullsiegeGatehouseMeshy"
+      },
+      {
+        "role": "world",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048,
+        "assetKey": "gullsiegeWatchtowerMeshy"
+      },
+      {
+        "role": "world",
+        "assetKey": "heatsinkArch",
+        "maxTriangles": 2000,
+        "textureSet": "BC",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "heatsinkHoloBillboard",
+        "maxTriangles": 2000,
+        "textureSet": "BC",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "prop",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048,
+        "assetKey": "neonCyberPylonMeshy"
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "neonStreetLampProp",
+        "maxTriangles": 280000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048,
+        "assetKey": "patrolCoastalRadarTowerMeshy"
+      },
+      {
+        "role": "prop",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 2048,
+        "assetKey": "patrolJetAircraftMeshy"
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "propBoulder",
+        "maxTriangles": 12000,
+        "textureSet": "BC",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "propPineTree",
+        "maxTriangles": 50000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "propRockA",
+        "maxTriangles": 32000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "prop",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 2048,
+        "assetKey": "reactorFusionTurbineMeshy"
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "showcaseModernBuildingOne",
+        "maxTriangles": 8000,
+        "textureSet": "BC",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "showcaseModernOfficeBuilding",
+        "maxTriangles": 230000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "showcaseTeaHouse",
+        "maxTriangles": 120000,
+        "textureSet": "BC",
+        "maxTextureSize": 1024
+      }
+    ],
+    "vfx": [
+      {
+        "event": "hit",
+        "kind": "ic-forge-spark"
+      },
+      {
+        "event": "blocked",
+        "kind": "ic-guard-ember"
+      },
+      {
+        "event": "special",
+        "kind": "ic-special-burst"
+      },
+      {
+        "event": "knockout",
+        "kind": "ic-ko-shower"
+      },
+      {
+        "event": "crown-ambient-embers",
+        "kind": "ic-forge-embers"
+      },
+      {
+        "event": "dock-lantern-motes",
+        "kind": "ic-lantern-motes"
+      },
+      {
+        "event": "colosseum-noon-dust",
+        "kind": "ic-dust-devil"
+      },
+      {
+        "event": "win-hero-shot",
+        "kind": "ic-win-confetti"
+      }
+    ],
+    "audio": [
+      {
+        "event": "hit",
+        "cue": "hit-light / hit / hit-heavy / hit-special",
+        "variants": 4
+      },
+      {
+        "event": "blocked",
+        "cue": "blocked",
+        "variants": 1
+      },
+      {
+        "event": "special",
+        "cue": "special",
+        "variants": 1
+      },
+      {
+        "event": "throw",
+        "cue": "throw",
+        "variants": 1
+      },
+      {
+        "event": "throw-tech",
+        "cue": "tech",
+        "variants": 1
+      },
+      {
+        "event": "knockout",
+        "cue": "ko + ko-voice",
+        "variants": 2
+      },
+      {
+        "event": "round-start",
+        "cue": "round + fight",
+        "variants": 2
+      },
+      {
+        "event": "bout-end",
+        "cue": "win / lose",
+        "variants": 2
+      },
+      {
+        "event": "venue-ambience",
+        "cue": "amb-* per stage",
+        "variants": 6
+      }
+    ],
+    "signatureEffect": "Single follow-spot chiaroscuro: one hard overhead spot through forge smoke holds the pair on black iron, with letterboxed intro and K.O. cinematics.",
+    "criticalCategories": [
+      "lighting",
+      "character_presentation",
+      "camera",
+      "vfx",
+      "atmospheric_effects"
+    ],
+    "tiers": {
+      "low": {
+        "particles": 600,
+        "shadowMap": 1024,
+        "cascades": 1,
+        "textureMax": 1024
+      },
+      "medium": {
+        "particles": 1200,
+        "shadowMap": 2048,
+        "cascades": 2,
+        "textureMax": 2048
+      },
+      "high": {
+        "particles": 2000,
+        "shadowMap": 2048,
+        "cascades": 3,
+        "textureMax": 2048
+      },
+      "ultra": {
+        "particles": 2000,
+        "shadowMap": 4096,
+        "cascades": 4,
+        "textureMax": 4096
+      }
+    }
+  }
+}

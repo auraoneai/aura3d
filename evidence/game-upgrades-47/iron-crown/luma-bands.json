@@ -1,0 +1,60 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "iron-crown",
+  "default": {
+    "darkFrac": [
+      null,
+      0.6
+    ],
+    "clipFrac": [
+      null,
+      0.05
+    ]
+  },
+  "variants": {
+    "crown-arena": {
+      "p95": [
+        170,
+        null
+      ]
+    },
+    "neo-tokyo-rooftop": {
+      "mean": [
+        45,
+        65
+      ],
+      "darkFrac": [
+        null,
+        0.2
+      ],
+      "clipFrac": [
+        null,
+        0.06
+      ]
+    },
+    "bangkok-dock": {
+      "spread": [
+        140,
+        null
+      ]
+    },
+    "colosseum-ruins": {
+      "spread": [
+        140,
+        null
+      ]
+    },
+    "desert-airbase": {
+      "spread": [
+        140,
+        null
+      ]
+    },
+    "himalayan-monastery": {
+      "spread": [
+        140,
+        null
+      ]
+    }
+  }
+}

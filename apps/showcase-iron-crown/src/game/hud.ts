@@ -64,6 +64,8 @@ export interface Hud {
   setHint(text: string): void;
   combo(side: "p1" | "p2", count: number): void;
   announce(main: string, sub?: string, variant?: "pop" | "hold"): void;
+  /** IC47-H1: slam a plate or the round timer in (C1 intro sync); CSS stills it on reduced motion. */
+  slam(target: "p1" | "p2" | "center"): void;
   setInputs(inputs: readonly { label: string; attack?: boolean }[]): void;
   showLab(show: boolean): void;
   setLabStance(stance: string): void;
@@ -375,6 +377,14 @@ export function createHud(doc: Document, cb: HudCallbacks): Hud {
       const b = box.querySelector("b");
       if (b) b.textContent = String(count);
       box.classList.toggle("show", count >= 2);
+    },
+    slam(target) {
+      const node = target === "center" ? timer : doc.querySelector<HTMLElement>(`.fh-plate-${target}`);
+      if (!node) return;
+      node.classList.remove("ic-slam");
+      // Restart the keyframes on a repeated slam.
+      void node.offsetWidth;
+      node.classList.add("ic-slam");
     },
     announce(main, sub = "", variant = "pop") {
       announceMain.textContent = main;

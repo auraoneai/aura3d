@@ -6,6 +6,11 @@ type AuraGeneratedAssetDefinitions = {
   readonly "ironcrownCrown": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "ironcrownJinx": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "ironcrownKenji": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "ironcrownKoScorch": AuraAssetDefinition & { readonly type: "texture"; readonly format: "webp"; readonly url: string; readonly hash: string; };
+  readonly "ironcrownLutAirbaseHaze": AuraAssetDefinition & { readonly type: "lut"; readonly format: "cube"; readonly url: string; readonly hash: string; };
+  readonly "ironcrownLutColosseumOchre": AuraAssetDefinition & { readonly type: "lut"; readonly format: "cube"; readonly url: string; readonly hash: string; };
+  readonly "ironcrownLutDockDusk": AuraAssetDefinition & { readonly type: "lut"; readonly format: "cube"; readonly url: string; readonly hash: string; };
+  readonly "ironcrownLutMonasteryFrost": AuraAssetDefinition & { readonly type: "lut"; readonly format: "cube"; readonly url: string; readonly hash: string; };
   readonly "ironcrownSeraph": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "ironcrownSovereign": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "ironcrownVolt": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -2496,6 +2501,386 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "sha256": "sha256-5df2e35621017ca68572f5e7027bacaa7f54698d4386ee038e887ebf1d30e80e",
         "checkedAt": "2026-10-17T09:38:56.543Z"
       }
+    },
+  },
+  "ironcrownKoScorch": {
+    type: "texture",
+    format: "webp",
+    url: "/aura-assets/ironcrownKoScorch.57c0c330.webp",
+    hash: "sha256-57c0c3300ffb16710673d7bdd8e8ce483c1f28c6c3ddf102ec431a484ad54692",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 38224,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownKoScorch.57c0c330.webp",
+        "checkedAt": "2026-10-30T14:18:08.489Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownKoScorch.57c0c330.webp",
+      "outputPath": "public/aura-assets/ironcrownKoScorch.57c0c330.webp",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/ironcrownKoScorch.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "ironcrownLutAirbaseHaze": {
+    type: "lut",
+    format: "cube",
+    url: "/aura-assets/ironcrownLutAirbaseHaze.80f071ef.cube",
+    hash: "sha256-80f071efe5c5c6f75bea5d469bb6393f348c1fcad830de4e2a383fc0a05b3376",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 103312,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownLutAirbaseHaze.80f071ef.cube",
+        "checkedAt": "2026-10-30T13:51:55.610Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownLutAirbaseHaze.80f071ef.cube",
+      "outputPath": "public/aura-assets/ironcrownLutAirbaseHaze.80f071ef.cube",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/ironcrownLutAirbaseHaze.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "ironcrownLutColosseumOchre": {
+    type: "lut",
+    format: "cube",
+    url: "/aura-assets/ironcrownLutColosseumOchre.cf791107.cube",
+    hash: "sha256-cf791107c06f2d743c8676ecfca1c73ab6643b9e61f9883f335abd11e602aa6e",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 103306,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownLutColosseumOchre.cf791107.cube",
+        "checkedAt": "2026-10-30T13:51:56.596Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownLutColosseumOchre.cf791107.cube",
+      "outputPath": "public/aura-assets/ironcrownLutColosseumOchre.cf791107.cube",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/ironcrownLutColosseumOchre.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "ironcrownLutDockDusk": {
+    type: "lut",
+    format: "cube",
+    url: "/aura-assets/ironcrownLutDockDusk.a114c6bb.cube",
+    hash: "sha256-a114c6bbdd1c5302f3522ca533ef8f3d7ef58ce3cf182c906b9ec9b2ecade357",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 103315,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownLutDockDusk.a114c6bb.cube",
+        "checkedAt": "2026-10-30T13:51:57.631Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownLutDockDusk.a114c6bb.cube",
+      "outputPath": "public/aura-assets/ironcrownLutDockDusk.a114c6bb.cube",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/ironcrownLutDockDusk.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
+    },
+  },
+  "ironcrownLutMonasteryFrost": {
+    type: "lut",
+    format: "cube",
+    url: "/aura-assets/ironcrownLutMonasteryFrost.7bff466c.cube",
+    hash: "sha256-7bff466c37411782948152d5467f7f2c07bd590ff341fc47ddcde5b3cef4c11a",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 103315,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownLutMonasteryFrost.7bff466c.cube",
+        "checkedAt": "2026-10-30T13:51:58.673Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownLutMonasteryFrost.7bff466c.cube",
+      "outputPath": "public/aura-assets/ironcrownLutMonasteryFrost.7bff466c.cube",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/ironcrownLutMonasteryFrost.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
     },
   },
   "ironcrownSeraph": {

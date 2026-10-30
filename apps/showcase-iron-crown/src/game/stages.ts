@@ -1,12 +1,16 @@
-import { games, material, model, primitives, type AuraSceneNode } from "@aura3d/engine";
+import { games, material, model, primitives, type AuraLookId, type AuraSceneNode } from "@aura3d/engine";
 import { stageAssets } from "./stage-assets";
 import { assets } from "../aura-assets";
+import { stageLook } from "./look";
+import { venueBackdrop } from "./backdrop";
+import { floorDetailFields } from "./surfaces";
+import { CROWD_IDS } from "./ambientMotion";
 
 /**
  * IRON CROWN venues.
  *
  * Each stage composes three layers:
- *  1. a biome `looks.preset` (world/lighting/fog/post)
+ *  1. its own look row (look.ts STAGE_LOOKS: HDRI, time of day, key, fog, post, grade; GU47 WP-15)
  *  2. a `games.fighting.stagePreset` build (fight lane, floor, combat bounds)
  *     re-paletted per venue
  *  3. bespoke 3D GLB dressing nodes — all parked behind the fight plane (z <= -1.1)
@@ -36,11 +40,11 @@ export interface IronStage {
   readonly id: StageId;
   readonly label: string;
   readonly venue: string;
-  readonly lookId: "night-city" | "golden-hour" | "outdoor-day" | "overcast" | "alpine-snow" | "arena-fight";
-  readonly lookOverrides?: { readonly accent?: string; readonly exposureEv?: number; readonly fogDensityScale?: number };
+  /** The look preset of the venue's row in look.ts (its overrides live there too). */
+  readonly lookId: AuraLookId;
   readonly preset: PresetName;
   readonly palette: StagePalette;
-  /** Rim-light accent (the fight-lane "aura" colour). */
+  /** The venue's one accent (look.ts STAGE_LOOKS[id].accent). */
   readonly accent: string;
   readonly stage: ReturnType<typeof games.fighting.stagePreset>;
   readonly issues: readonly { readonly severity: string; readonly code: string; readonly message: string }[];
@@ -48,6 +52,12 @@ export interface IronStage {
   readonly dressing: readonly AuraSceneNode[];
 }
 
+/**
+ * A static dressing prop. `role: "primaryWorld"` consolidates the GLB's static meshes per material at load (engine
+ * `consolidateStaticMeshes`; animated, skinned or morphing GLBs are left as they are), so a many-mesh prop such as the
+ * tea house or the office tower costs a handful of draws instead of thousands (IC47-PF1 / IC47-A2 interim until the
+ * WP-36 single-material remeshes land).
+ */
 function modelProp(
   asset: Parameters<typeof model>[0],
   name: string,
@@ -55,22 +65,29 @@ function modelProp(
   targetMaxDimension: number,
   rotY = 0
 ): AuraSceneNode {
-  return model(asset, { name, targetMaxDimension })
+  return model(asset, { name, targetMaxDimension, role: "primaryWorld" })
     .position(pos[0], pos[1], pos[2])
     .rotate(0, rotY, 0)
     .toJSON();
 }
 
+type FloorPart = { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] };
+const floorPart = (position: [number, number, number], scale: [number, number, number]): FloorPart => ({ position, rotation: [0, 0, 0], scale });
+
+/**
+ * The hero floor deck (IC47-M1, IC47-PF1): the venue's own finish from its look row (obsidian with a gold inlay, wet
+ * concrete, oiled teak, packed sand, sun-baked tarmac, frosted slate) on one subfloor, two instanced plank courses and
+ * two instanced inlay courses (the combat edge in the venue accent). Instancing takes the deck from 38 draws to 14.
+ */
 function buildArenaFloorDeck(id: StageId, palette: StagePalette): readonly AuraSceneNode[] {
+  const look = stageLook(id);
+  const finish = look.floor;
   const nodes: AuraSceneNode[] = [
     primitives
       .box({
-        name: `${id}-obsidian-subfloor`,
-        material: material.pbr({
-          color: palette.floor,
-          roughness: 0.4,
-          metallic: 0.32
-        })
+        name: `${id}-subfloor`,
+        material: material.pbr({ color: finish.base, roughness: Math.min(1, finish.roughness + 0.12), metallic: finish.metallic }),
+        castShadow: false
       })
       .position(0, -0.14, 0)
       .scale([44, 0.2, 32])
@@ -78,66 +95,69 @@ function buildArenaFloorDeck(id: StageId, palette: StagePalette): readonly AuraS
   ];
 
   const plankZs = [-13.2, -11.0, -8.8, -6.6, -4.4, -2.2, 0.0, 2.2, 4.4, 6.6, 8.8, 11.0, 13.2];
-  plankZs.forEach((z, idx) => {
-    const even = idx % 2 === 0;
-    nodes.push(
-      primitives
-        .box({
-          name: `${id}-stone-plank-${idx}`,
-          material: material.pbr({
-            color: even ? palette.floor : palette.skyline,
-            roughness: even ? 0.34 : 0.46,
-            metallic: even ? 0.36 : 0.24,
-            clearcoat: even ? 0.18 : 0.08,
-            clearcoatRoughness: 0.42
-          })
-        })
-        .position(0, -0.036, z)
-        .scale([38, 0.055, 2.06])
-        .toJSON()
-    );
-  });
+  const planks = (even: boolean) => plankZs.filter((_, idx) => (idx % 2 === 0) === even).map((z) => floorPart([0, -0.036, z], [38, 0.055, 2.06]));
+  nodes.push(
+    primitives
+      .box({
+        name: `${id}-floor-planks-a`,
+        material: material.pbr({
+          color: finish.base,
+          roughness: finish.roughness,
+          metallic: finish.metallic,
+          clearcoat: finish.clearcoat,
+          clearcoatRoughness: 0.18,
+          ...floorDetailFields(id)
+        }),
+        instances: planks(true),
+        castShadow: false,
+        receiveShadow: true
+      })
+      .toJSON(),
+    primitives
+      .box({
+        name: `${id}-floor-planks-b`,
+        material: material.pbr({
+          color: finish.plank,
+          roughness: Math.min(1, finish.roughness + 0.08),
+          metallic: finish.metallic * 0.8,
+          clearcoat: finish.clearcoat * 0.6,
+          clearcoatRoughness: 0.3,
+          ...floorDetailFields(id)
+        }),
+        instances: planks(false),
+        castShadow: false,
+        receiveShadow: true
+      })
+      .toJSON()
+  );
 
+  // Inlaid light strips: practicals, not fill (art-direction `emissive-fill` rule).
   const trimZs = [-12.1, -9.9, -7.7, -5.5, -3.3, -1.32, 1.32, 3.3, 5.5, 7.7, 9.9, 12.1];
-  trimZs.forEach((z, idx) => {
-    const isCombatEdge = Math.abs(Math.abs(z) - 1.32) < 0.1;
-    const trimColor = isCombatEdge ? palette.lane : palette.warning;
-    nodes.push(
-      primitives
-        .box({
-          name: `${id}-gold-trim-z-${idx}`,
-          material: material.pbr({
-            color: trimColor,
-            emissive: trimColor,
-            emissiveIntensity: isCombatEdge ? 0.42 : 0.18,
-            roughness: 0.28,
-            metallic: 0.65
-          })
-        })
-        .position(0, -0.012, z)
-        .scale([36, 0.022, isCombatEdge ? 0.09 : 0.055])
-        .toJSON()
-    );
-  });
-
-  for (const side of [-1, 1] as const) {
-    nodes.push(
-      primitives
-        .box({
-          name: `${id}-ring-border-x-${side > 0 ? "r" : "l"}`,
-          material: material.pbr({
-            color: palette.warning,
-            emissive: palette.warning,
-            emissiveIntensity: 0.25,
-            roughness: 0.3,
-            metallic: 0.62
-          })
-        })
-        .position(side * 3.9, -0.01, 0)
-        .scale([0.08, 0.024, 28])
-        .toJSON()
-    );
-  }
+  const isCombatEdge = (z: number) => Math.abs(Math.abs(z) - 1.32) < 0.1;
+  nodes.push(
+    primitives
+      .box({
+        name: `${id}-inlay-combat-edge`,
+        material: material.pbr({ color: look.accent, emissive: look.accent, emissiveIntensity: finish.inlayGlow + 0.14, roughness: 0.28, metallic: 0.65, practical: true }),
+        instances: trimZs.filter(isCombatEdge).map((z) => floorPart([0, -0.012, z], [36, 0.022, 0.09])),
+        castShadow: false,
+        receiveShadow: false
+      })
+      .toJSON(),
+    primitives
+      .box({
+        name: `${id}-inlay-courses`,
+        material: material.pbr({ color: finish.inlay, emissive: finish.inlay, emissiveIntensity: finish.inlayGlow * 0.55, roughness: 0.28, metallic: 0.65, practical: true }),
+        instances: [
+          ...trimZs.filter((z) => !isCombatEdge(z)).map((z) => floorPart([0, -0.012, z], [36, 0.022, 0.055])),
+          floorPart([-3.9, -0.01, 0], [0.08, 0.024, 28]),
+          floorPart([3.9, -0.01, 0], [0.08, 0.024, 28])
+        ],
+        castShadow: false,
+        receiveShadow: false
+      })
+      .toJSON()
+  );
 
   // Elliptical ring apron: two inlaid light lines frame the fight lane and
   // read as a real arena ring instead of an unmarked slab.
@@ -158,7 +178,7 @@ function buildArenaFloorDeck(id: StageId, palette: StagePalette): readonly AuraS
     primitives
       .box({
         name: `${id}-stage-ring`,
-        material: material.emissive({ color: palette.warning, emissive: palette.warning, emissiveIntensity: 0.62, roughness: 0.28, metalness: 0.5 }),
+        material: material.emissive({ color: finish.inlay, emissive: finish.inlay, emissiveIntensity: 0.62, roughness: 0.28, metalness: 0.5 }),
         instances: ringA,
         castShadow: false,
         receiveShadow: false
@@ -167,7 +187,7 @@ function buildArenaFloorDeck(id: StageId, palette: StagePalette): readonly AuraS
     primitives
       .box({
         name: `${id}-stage-ring-inner`,
-        material: material.emissive({ color: palette.lane, emissive: palette.lane, emissiveIntensity: 0.3, roughness: 0.3, metalness: 0.45 }),
+        material: material.emissive({ color: look.accent, emissive: look.accent, emissiveIntensity: 0.3, roughness: 0.3, metalness: 0.45 }),
         instances: ringB,
         castShadow: false,
         receiveShadow: false
@@ -199,7 +219,7 @@ function buildArenaFloorDeck(id: StageId, palette: StagePalette): readonly AuraS
     primitives
       .cylinder({
         name: `${id}-stage-medallion-hub`,
-        material: material.emissive({ color: palette.warning, emissive: palette.warning, emissiveIntensity: 0.36, roughness: 0.25, metalness: 0.55 }),
+        material: material.emissive({ color: finish.inlay, emissive: finish.inlay, emissiveIntensity: 0.36, roughness: 0.25, metalness: 0.55 }),
         castShadow: false,
         receiveShadow: false
       })
@@ -209,7 +229,7 @@ function buildArenaFloorDeck(id: StageId, palette: StagePalette): readonly AuraS
     primitives
       .box({
         name: `${id}-stage-star`,
-        material: material.emissive({ color: palette.warning, emissive: palette.warning, emissiveIntensity: 0.22, roughness: 0.3, metalness: 0.5 }),
+        material: material.emissive({ color: finish.inlay, emissive: finish.inlay, emissiveIntensity: 0.22, roughness: 0.3, metalness: 0.5 }),
         instances: star,
         castShadow: false,
         receiveShadow: false
@@ -239,28 +259,23 @@ function buildArenaFloorDeck(id: StageId, palette: StagePalette): readonly AuraS
     primitives
       .box({
         name: `${id}-ring-lip-glow`,
-        material: material.emissive({ color: palette.lane, emissive: palette.lane, emissiveIntensity: 0.3, roughness: 0.3, metalness: 0.4 }),
+        material: material.emissive({ color: look.accent, emissive: look.accent, emissiveIntensity: 0.3, roughness: 0.3, metalness: 0.4 }),
         castShadow: false,
         receiveShadow: false
       })
       .position(0, 0.067, 3.28)
       .scale([13.4, 0.012, 0.06])
+      .toJSON(),
+    primitives
+      .box({
+        name: `${id}-approach-rails`,
+        material: material.emissive({ color: look.accent, emissive: look.accent, emissiveIntensity: 0.2, roughness: 0.32, metalness: 0.4 }),
+        instances: [floorPart([-3.35, -0.002, 5.05], [0.055, 0.012, 3.5]), floorPart([3.35, -0.002, 5.05], [0.055, 0.012, 3.5])],
+        castShadow: false,
+        receiveShadow: false
+      })
       .toJSON()
   );
-  for (const side of [-1, 1] as const) {
-    nodes.push(
-      primitives
-        .box({
-          name: `${id}-approach-rail-${side > 0 ? "r" : "l"}`,
-          material: material.emissive({ color: palette.lane, emissive: palette.lane, emissiveIntensity: 0.2, roughness: 0.32, metalness: 0.4 }),
-          castShadow: false,
-          receiveShadow: false
-        })
-        .position(side * 3.35, -0.002, 5.05)
-        .scale([0.055, 0.012, 3.5])
-        .toJSON()
-    );
-  }
 
   return nodes;
 }
@@ -269,11 +284,9 @@ function makeStage(
   id: StageId,
   label: string,
   venue: string,
-  lookId: IronStage["lookId"],
   preset: PresetName,
   palette: StagePalette,
-  dressing: readonly AuraSceneNode[],
-  lookOverrides?: IronStage["lookOverrides"]
+  dressing: readonly AuraSceneNode[]
 ): IronStage {
   const stage = games.fighting.stagePreset(preset, {
     id,
@@ -282,15 +295,15 @@ function makeStage(
     safeInset: 0.5,
     palette
   });
+  const look = stageLook(id);
   return {
     id,
     label,
     venue,
-    lookId,
-    lookOverrides,
+    lookId: look.look,
     preset,
     palette,
-    accent: palette.aura,
+    accent: look.accent,
     stage,
     issues: games.fighting.validateStage(stage).map((issue) => ({
       severity: issue.severity,
@@ -298,7 +311,8 @@ function makeStage(
       message: issue.message
     })),
     bounds: { minX: stage.combatBounds.minX, maxX: stage.combatBounds.maxX },
-    dressing: [...buildArenaFloorDeck(id, palette), ...dressing]
+    // IC47-W1: the far backdrop (10-60 m) sits behind the dressing.
+    dressing: [...buildArenaFloorDeck(id, palette), ...dressing, ...venueBackdrop(id)]
   };
 }
 
@@ -308,8 +322,7 @@ function makeStage(
 const NEO_TOKYO = makeStage(
   "neo-tokyo-rooftop",
   "Neo-Tokyo Rooftop",
-  "Shinjuku ward · night",
-  "night-city",
+  "Shinjuku ward · midnight rain",
   "rooftop-city",
   { floor: "#0d1119", lane: "#ff5cbe", aura: "#6ee7ff", warning: "#ffd166", skyline: "#141c33", fog: "#060a14" },
   [
@@ -324,8 +337,7 @@ const NEO_TOKYO = makeStage(
     modelProp(stageAssets.neonStreetLampProp, "nt-lamp-l", [-3.2, 0, -1.4], 2.2, 0),
     modelProp(stageAssets.neonStreetLampProp, "nt-lamp-r", [3.2, 0, -1.4], 2.2, Math.PI),
     modelProp(stageAssets.auraClashStageSpeakerTowerMeshy, "nt-speaker-c", [0, 0, -2.9], 2.5, 0)
-  ],
-  { accent: "#ff5cbe", exposureEv: 0.05, fogDensityScale: 0.9 }
+  ]
 );
 
 /* ------------------------------------------------------------------ */
@@ -334,8 +346,7 @@ const NEO_TOKYO = makeStage(
 const BANGKOK = makeStage(
   "bangkok-dock",
   "Lantern Dock Market",
-  "Stilt pier · golden hour",
-  "golden-hour",
+  "Stilt pier · dusk over water",
   "training-grid",
   { floor: "#241a12", lane: "#ffab4d", aura: "#ffe08a", warning: "#ff6b4a", skyline: "#3a2418", fog: "#1c1008" },
   [
@@ -348,8 +359,7 @@ const BANGKOK = makeStage(
     modelProp(stageAssets.auraClashCornerBrazierPylonMeshy, "bk-lan-r", [3.1, 0, -1.4], 1.9, 0),
     modelProp(stageAssets.gullsiegeCrateMeshy, "bk-crate-l", [-1.5, 0, -1.45], 0.85, 0.4),
     modelProp(stageAssets.gullsiegeBarrelMeshy, "bk-barrel-r", [1.5, 0, -1.45], 0.8, -0.3)
-  ],
-  { accent: "#ffab4d", exposureEv: 0.1, fogDensityScale: 0.55 }
+  ]
 );
 
 /* ------------------------------------------------------------------ */
@@ -358,8 +368,7 @@ const BANGKOK = makeStage(
 const COLOSSEUM = makeStage(
   "colosseum-ruins",
   "Colosseum Ruins",
-  "Rome · midday dust",
-  "outdoor-day",
+  "Rome · harsh-noon dust",
   "industrial-arena",
   { floor: "#3a2f22", lane: "#e8c98a", aura: "#ffe9b0", warning: "#c86a3a", skyline: "#6b5636", fog: "#caa66a" },
   [
@@ -372,8 +381,7 @@ const COLOSSEUM = makeStage(
     modelProp(stageAssets.galleryMarbleBustExhibitMeshy, "co-bust-r", [1.6, 0, -1.55], 1.45, -0.35),
     modelProp(stageAssets.propBoulder, "co-rubble-l", [-2.9, 0, -1.45], 1.1, 0.5),
     modelProp(stageAssets.propRockA, "co-rubble-r", [2.9, 0, -1.45], 1.0, -0.4)
-  ],
-  { accent: "#e8c98a", exposureEv: 0.14, fogDensityScale: 0.4 }
+  ]
 );
 
 /* ------------------------------------------------------------------ */
@@ -382,8 +390,7 @@ const COLOSSEUM = makeStage(
 const AIRBASE = makeStage(
   "desert-airbase",
   "Dustline Airstrip",
-  "Salt flat range · dusk ops",
-  "overcast",
+  "Salt flat range · sunset haze",
   "industrial-arena",
   { floor: "#2b2620", lane: "#ffb03c", aura: "#ffe08a", warning: "#ff5c3c", skyline: "#54402a", fog: "#241a10" },
   [
@@ -395,8 +402,7 @@ const AIRBASE = makeStage(
     modelProp(stageAssets.bunkerCrateMeshy, "ab-crate-1", [2.5, 0, -1.5], 0.95, 0.3),
     modelProp(stageAssets.auroraPadBeacon, "ab-light-l", [-3.5, 0, -1.25], 0.9, 0),
     modelProp(stageAssets.auroraPadBeacon, "ab-light-r", [3.5, 0, -1.25], 0.9, 0)
-  ],
-  { accent: "#ffb03c", exposureEv: 0.02, fogDensityScale: 0.5 }
+  ]
 );
 
 /* ------------------------------------------------------------------ */
@@ -405,8 +411,7 @@ const AIRBASE = makeStage(
 const MONASTERY = makeStage(
   "himalayan-monastery",
   "Cloudstep Monastery",
-  "High pass · thin air",
-  "alpine-snow",
+  "High pass · cold dawn snow",
   "training-grid",
   { floor: "#1c2230", lane: "#7dd7ff", aura: "#bfeaff", warning: "#ffb84d", skyline: "#2c3a55", fog: "#0d1420" },
   [
@@ -419,8 +424,7 @@ const MONASTERY = makeStage(
     modelProp(stageAssets.propPineTree, "mo-pine-r", [4.3, 0, -2.6], 3.2, -0.2),
     modelProp(stageAssets.propBoulder, "mo-peak-l", [-3.5, 0, -4.4], 2.8, 0.3),
     modelProp(stageAssets.propBoulder, "mo-peak-r", [3.5, 0, -4.4], 2.6, -0.3)
-  ],
-  { accent: "#7dd7ff", exposureEv: 0.1, fogDensityScale: 0.75 }
+  ]
 );
 
 
@@ -539,8 +543,9 @@ function buildCrownTheater(palette: StagePalette): readonly AuraSceneNode[] {
     }
   }
   nodes.push(
-    primitives.box({ name: "cr-crowd-bodies", material: material.pbr({ color: "#ffffff", roughness: 0.94 }), instances: bodies, instanceColors: bodyColors, castShadow: false, receiveShadow: false }).toJSON(),
-    primitives.sphere({ name: "cr-crowd-heads", material: material.pbr({ color: "#ffffff", roughness: 0.9 }), instances: heads, instanceColors: headColors, castShadow: false, receiveShadow: false }).toJSON()
+    // IC47-AN2: runtime ids so the crowd can bob (game/ambientMotion.ts).
+    primitives.box({ name: "cr-crowd-bodies", material: material.pbr({ color: "#ffffff", roughness: 0.94 }), instances: bodies, instanceColors: bodyColors, castShadow: false, receiveShadow: false }).runtime({ id: CROWD_IDS.bodies }).toJSON(),
+    primitives.sphere({ name: "cr-crowd-heads", material: material.pbr({ color: "#ffffff", roughness: 0.9 }), instances: heads, instanceColors: headColors, castShadow: false, receiveShadow: false }).runtime({ id: CROWD_IDS.heads }).toJSON()
   );
 
   // Sparse phone/arena lights in the stands.
@@ -600,8 +605,7 @@ const CROWN_PALETTE: StagePalette = { floor: "#241421", lane: "#ffd76a", aura: "
 const CROWN = makeStage(
   "crown-arena",
   "Crown Arena",
-  "The throne · final venue",
-  "arena-fight",
+  "The throne · forge-smoke night",
   "neon-dojo",
   CROWN_PALETTE,
   [
@@ -624,8 +628,7 @@ const CROWN = makeStage(
     ...buildTrophyCabinets(),
     modelProp(stageAssets.auraClashStageSpeakerTowerMeshy, "cr-speaker-l", [-4.9, 0, -2.2], 2.5, 0.35),
     modelProp(stageAssets.auraClashStageSpeakerTowerMeshy, "cr-speaker-r", [4.9, 0, -2.2], 2.5, -0.35)
-  ],
-  { accent: "#ffd76a", exposureEv: 0.08, fogDensityScale: 0.7 }
+  ]
 );
 
 
