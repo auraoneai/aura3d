@@ -90,6 +90,8 @@ export const postEffectBuilders = {
     return new AuraNodeBuilder<AuraEffectNode>({
       kind: "effect",
       effect: "bloom",
+      // GU47 pass 4 (g07, g08, g12): keep an authored name so rigs can find or replace the look's bloom.
+      ...(options.name !== undefined ? { name: options.name } : {}),
       intensity,
       // §7.1: the v2 chain does not cap intensity (antiBlowout/maxIntensity
       // map to clampLuminance), so keep the authored value when capped.

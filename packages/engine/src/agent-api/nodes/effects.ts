@@ -79,6 +79,24 @@ function withDefinedField<T extends AuraEffectNode>(value: T, key: string, field
   return value;
 }
 
+/**
+ * Authored rain/snow fields the weather-volume lowering reads (EffectNodeLowering: `size`, `radius`, `seed`) and the
+ * node `name` (so a game can find or replace the volume), copied only when the caller wrote them (GU47 pass 4: g09, g12).
+ */
+export type AuraWeatherEffectOptions = Omit<AuraEffectNode, "kind" | "effect"> & {
+  /** Flake or drop world size, metres (a `[min, max]` range uses its midpoint); default: the weather preset. */
+  readonly size?: number | readonly [number, number];
+  /** Volume seed; default: a hash of the node id. */
+  readonly seed?: number;
+};
+
+const weatherAuthored = (options: AuraWeatherEffectOptions): Partial<AuraEffectNode> => ({
+  ...(options.name !== undefined ? { name: options.name } : {}),
+  ...(options.size !== undefined ? { size: options.size } : {}),
+  ...(options.radius !== undefined ? { radius: options.radius } : {}),
+  ...(options.seed !== undefined ? { seed: options.seed } : {})
+}) as Partial<AuraEffectNode>;
+
 export const vfxEffectBuilders = lazyNamespace(() => ({
   /**
    * §6.6/F-07-01 — the builder records ONLY authored fields; C-21 defaults are
@@ -204,7 +222,7 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
       ...(options.timeScale !== undefined ? { timeScale: options.timeScale } : {}),
       postAuthored: options.postAuthored ?? Object.keys(options).filter((key) => key !== "postAuthored")
     }),
-  rain: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
+  rain: (options: AuraWeatherEffectOptions = {}) =>
     new AuraNodeBuilder<AuraEffectNode>({
       kind: "effect",
       effect: "rain",
@@ -215,9 +233,10 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
       wind: options.wind ?? [-0.32, -5.4, -0.16],
       particleCount: options.particleCount,
       splashes: options.splashes ?? true,
-      mist: options.mist ?? true
+      mist: options.mist ?? true,
+      ...weatherAuthored(options)
     }),
-  snow: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
+  snow: (options: AuraWeatherEffectOptions = {}) =>
     new AuraNodeBuilder<AuraEffectNode>({
       kind: "effect",
       effect: "snow",
@@ -228,7 +247,8 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
       wind: options.wind ?? [-0.85, -1.1, -0.22],
       particleCount: options.particleCount,
       splashes: options.splashes ?? false,
-      mist: options.mist ?? true
+      mist: options.mist ?? true,
+      ...weatherAuthored(options)
     }),
   /**
    * Flipbook explosion/muzzle-flash sprite sheet (muse3jsparity-PRD D4).
