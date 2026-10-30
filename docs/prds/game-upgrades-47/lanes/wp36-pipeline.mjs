@@ -280,6 +280,17 @@ function classifyCreateFailure(code, err, pinned) {
 // ---------- run-wide control ----------
 let STOP_NEW = false; // no new unpinned paid calls (pool exhausted / exit 9)
 let STOP_ALL = false; // no paid calls at all (auth refusal, signal)
+let refusalStreak = 0; // consecutive Prism quota refusals on unpinned creates
+async function poolHasCapacity(cost) {
+  const raw = await poolSnapshot("refusal check");
+  if (raw) poolMax = maxUsable(raw);
+  return Boolean(raw && (raw.keys ?? []).some((k) => k.state === "ok" && k.remaining - (k.inflight ?? 0) >= cost));
+}
+// Largest balance on a usable key. Prism puts a new task on the fullest key and pins follow-ups (refine, rig, animate)
+// to it, so a preview is only started while some key can also pay its refine (20 + 10), avoiding stranded previews.
+let poolMax;
+const maxUsable = (raw) => Math.max(0, ...(raw.keys ?? []).filter((k) => k.state === "ok").map((k) => k.remaining - (k.inflight ?? 0)));
+const NEW_COST = { "text-to-3d": 30, retexture: 10, rig: 5 };
 let concurrency = Number(opt("--concurrency", "6"));
 const maxConcurrency = Math.min(12, Number(opt("--max-concurrency", "12")));
 let last429 = 0;
@@ -352,6 +363,7 @@ async function paidTask(st, row, name, { resource, op, args, pinned }) {
     const r = await meshy([resource, "create", ...args, "--async"], { timeoutMs: 15 * 60e3 });
     const id = r.json?.task_id;
     if (r.code === 0 && id) {
+      refusalStreak = 0;
       t.taskId = id;
       t.submittedAt = iso();
       saveState(st);
@@ -446,7 +458,7 @@ async function finishModel(st, row, input, { clips = [], metaFrom, thumbFrom } =
     mkdirSync(optDir, { recursive: true });
     const r = await aura(["assets", "optimize", "--file", input, "--out", out, "--role", row.role, "--json"]);
     const report = parseJson(r.stdout);
-    st.optimize = { exit: r.code, before: report?.before, after: report?.after, error: r.code ? short(r.stderr || r.stdout, 400) : undefined };
+    st.optimize = { exit: r.code, vertsBefore: report?.vertsBefore, vertsAfter: report?.vertsAfter, bytesIn: report?.bytesIn, bytesOut: report?.bytesOut, simplified: report?.simplified, skinned: report?.skinned, error: r.code ? short(r.stderr || r.stdout, 400) : undefined };
     saveState(st);
     if (r.code !== 0 || !existsSync(out)) throw new Error(`optimize failed: ${st.optimize.error}`);
     log(row.key, `optimized ${Math.round(statSync(input).size / 1024)}KB -> ${Math.round(statSync(out).size / 1024)}KB`);
@@ -471,18 +483,23 @@ async function finishModel(st, row, input, { clips = [], metaFrom, thumbFrom } =
   if (!st.admission) {
     const r = await aura(["assets", "import-meshy", optDir, "--into", join(BASE, row.slug, "_admit"), "--prefix", row.slug, "--name", row.key, "--rights-evidence", rights, "--profile", row.profile]);
     const j = parseJson(r.stdout);
+    const messages = j?.messages ?? [];
+    const blockers = messages.filter((m) => /^Admission blocker:/.test(m)).map((m) => short(m.replace(/^Admission blocker:\s*/, ""), 200));
     st.admission = {
       exit: r.code,
       ok: Boolean(j?.ok),
+      routeReady: Boolean(j?.ok) && blockers.length === 0,
+      blockers,
+      unproven: messages.filter((m) => /^Admission unproven:/.test(m)).map((m) => short(m.replace(/^Admission unproven:\s*/, ""), 160)),
       typedKey: j?.typedKey,
       model: j?.model,
       sha256: j?.sha256,
       failures: (j?.failures ?? []).slice(0, 8).map((f) => short(f, 200)),
       warnings: (j?.warnings ?? []).slice(0, 6).map((f) => short(f, 200)),
-      notes: (j?.messages ?? []).filter((m) => /blocker|unproven|routeReady|admission/i.test(m)).slice(0, 6).map((m) => short(m, 200)),
+
       error: j ? undefined : short(r.stderr || r.stdout, 400)
     };
-    log(row.key, `admission ${st.admission.ok ? "ok" : "FAIL"} ${st.admission.failures?.[0] ?? st.admission.error ?? ""}`);
+    log(row.key, `admission ${st.admission.ok ? `ok, ${blockers.length} blockers` : "FAIL"} ${blockers[0] ?? st.admission.failures?.[0] ?? st.admission.error ?? ""}`);
   }
   st.status = "done";
   st.reason = undefined;
@@ -633,10 +650,20 @@ async function processRow(row, runInfo) {
     const kind = e instanceof StepError ? e.kind : "post";
     const message = short(e.message, 300);
     if (kind === "credits") {
-      if (!STOP_NEW) log(row.key, `pool refused (${message}); no new unpinned paid calls this run`);
-      STOP_NEW = true;
+      // Prism tries only a few keys per call: keys that report a balance but answer 402 get parked after the refusal,
+      // so a refusal while usable keys still hold credits is retried; a refusal streak or an empty pool stops new work.
+      refusalStreak += 1;
+      const cost = { "text-to-3d": 20, retexture: 10, rig: 5 }[row.op] ?? 20;
       st.status = "pending";
-      st.reason = "pool exhausted: retry after keys reset";
+      if (refusalStreak <= 8 && (await poolHasCapacity(cost))) {
+        st.reason = "Prism refused while usable keys hold credits; retrying";
+        runInfo.retryAt.set(row.key, Date.now() + 20_000 * refusalStreak);
+        log(row.key, `Prism refusal ${refusalStreak} with pool capacity left; retry`);
+      } else {
+        if (!STOP_NEW) log(row.key, `pool refused (${message}); no new unpinned paid calls this run`);
+        STOP_NEW = true;
+        st.reason = "pool exhausted: retry after keys reset";
+      }
     } else if (kind === "auth") {
       STOP_ALL = true;
       st.status = "pending";
@@ -754,6 +781,8 @@ async function runPipeline() {
   let started = 0;
   let lastBeat = 0;
   let lastPool = Date.now();
+  let lastPoolMax = Date.now();
+  if (pool) poolMax = maxUsable(pool);
   const pick = () => {
     const now = Date.now();
     for (const row of queue) {
@@ -776,7 +805,7 @@ async function runPipeline() {
         }
       }
       if (STOP_ALL) return undefined;
-      if (STOP_NEW && needsNewUnpinned(row, st)) continue;
+      if (needsNewUnpinned(row, st) && (STOP_NEW || (poolMax !== undefined && poolMax < (NEW_COST[row.op] ?? 30)))) continue;
       return row;
     }
     return undefined;
@@ -796,6 +825,11 @@ async function runPipeline() {
     }
     await Promise.race([...active.values(), sleep(10_000)]);
     maybeRaise();
+    if (Date.now() - lastPoolMax > 120_000) {
+      lastPoolMax = Date.now();
+      const p = await poolSnapshot("capacity");
+      if (p) poolMax = maxUsable(p);
+    }
     if (Date.now() - lastBeat > 5 * 60e3) {
       lastBeat = Date.now();
       let poolLine = "";
@@ -858,7 +892,8 @@ function catalogue() {
       const st = loadState(r.key);
       const s = st.summary ?? {};
       const tasks = Object.entries(st.tasks ?? {}).filter(([, t]) => t.taskId || t.rid);
-      const adm = st.admission ? (st.admission.ok ? `ok ${st.admission.typedKey ?? ""}` : `fail: ${st.admission.failures?.[0] ?? st.admission.error ?? ""}`) : "";
+      const a = st.admission;
+      const adm = a ? (a.ok ? `admitted (candidate) \`${a.typedKey ?? ""}\`${a.blockers?.length ? `; ${a.blockers.length} blocker(s): ${short(a.blockers[0], 110)}` : "; no blockers"}` : `fail: ${short(a.failures?.[0] ?? a.error ?? "", 140)}`) : "";
       const val = st.validation ? ` / anim ${st.validation.ok ? "pass" : "fail"}` : "";
       const geo = st.geometry ? ` / geometry ${st.geometry.untouched ? "untouched" : "changed"}` : "";
       lines.push(`| \`${r.key}\` | ${r.op} | ${r.priority} | ${cell(st.status === "done" ? "done" : `${st.status}${st.reason ? `: ${short(st.reason, 90)}` : ""}`)} | ${st.files?.opt && existsSync(st.files.opt) ? `\`${st.files.opt}\`` : ""} | ${st.files?.rights ? `\`${st.files.rights}\`` : ""} | ${r.profile} | ${s.tris ?? ""} | ${cell((s.images ?? []).join(", "))} | ${s.bounds ? s.bounds.join(" x ") : ""} | ${cell((s.anims ?? []).join(", "))} | ${cell(adm + val + geo)} | ${tasks.map(([n, t]) => `${n}:${t.rid ?? ""}`).join(" ")} | ${tasks.map(([n, t]) => `${n}:${t.taskId ?? ""}`).join(" ")} |`);
