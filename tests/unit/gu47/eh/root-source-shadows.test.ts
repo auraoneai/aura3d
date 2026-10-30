@@ -74,7 +74,8 @@ describe("GU47 E-H root render sources and shadows", () => {
         expect(item.modelMatrix?.[13]).toBeGreaterThan(0.5 - 1e-6);
       }
       // The sun in the scene drives the shadow map that the attached casters render into.
-      expect(input.source.shadow?.enabled).toBe(true);
+      const shadow = input.source.shadow;
+      expect(typeof shadow === "object" && shadow !== null ? shadow.enabled : shadow).toBe(true);
       // Attached items are counted with the scene's meshes in the frame metadata.
       expect(input.metadata.primitiveCount).toBeGreaterThanOrEqual(attached.length);
     } finally {
