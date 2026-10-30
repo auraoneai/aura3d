@@ -5,7 +5,7 @@
 import type { material } from "@aura3d/engine";
 import { ORIGINAL_SUN_DIR, STAGE_LOOK, linearOf } from "./art/colorScript";
 import {
-  AURA_FRAGMENT, AURA_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX, FLAG_INSTANCED_FRAGMENT, FLAG_INSTANCED_VERTEX, FLAT_FRAGMENT, FLAT_VERTEX, GLOW_FRAGMENT, GLOW_INSTANCED_FRAGMENT, GLOW_INSTANCED_VERTEX, GLOW_VERTEX,
+  AURA_FRAGMENT, AURA_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX, FLAG_INSTANCED_FRAGMENT, FLAG_INSTANCED_VERTEX, ISLAND_INSTANCED_FRAGMENT, ISLAND_INSTANCED_VERTEX, FLAT_FRAGMENT, FLAT_VERTEX, GLOW_FRAGMENT, GLOW_INSTANCED_FRAGMENT, GLOW_INSTANCED_VERTEX, GLOW_VERTEX,
   ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX
 } from "./shaders";
 
@@ -79,6 +79,18 @@ export const glowInstancedSpec = (core: Rgb, shell: Rgb, alpha = 1, hollow = 0, 
   transparent: true,
   depthWrite: false,
   blending: "additive"
+});
+
+/** GU47 SSR-11: instanced spire islands for the mid / far parallax bands (instance colour .r = extra fog). */
+export const islandInstancedSpec = (): CustomSpec => ({
+  glsl: { vertex: ISLAND_INSTANCED_VERTEX, fragment: ISLAND_INSTANCED_FRAGMENT },
+  uniforms: {
+    islandLit: { type: "color3", value: [...hexLinear(0xc89a8a)] },
+    islandDark: { type: "color3", value: [...hexLinear(0x2a1c3a)] },
+    islandSunDir: { type: "vec3", value: [...ORIGINAL_SUN_DIR] },
+    islandSunColor: { type: "color3", value: [1, 0.8, 0.6] },
+    islandFogColor: { type: "color3", value: [0.8, 0.62, 0.8] }
+  }
 });
 
 /** GU47 SSR-11: instanced prayer-flag cloth (colour per instance). */
@@ -180,6 +192,7 @@ export function allProgramSpecs(): { name: string; spec: CustomSpec }[] {
     { name: "solid", spec: solidSpec(c(PALETTE.gi), c(PALETTE.auraLit), 0.2) },
     { name: "glow", spec: glowSpec(c(PALETTE.kiCore), c(PALETTE.ki)) },
     { name: "flag-instanced", spec: flagInstancedSpec() },
+    { name: "island-instanced", spec: islandInstancedSpec() },
     { name: "glow-instanced", spec: glowInstancedSpec(c(PALETTE.kiCore), c(PALETTE.ki), 1, 0, 1) },
     { name: "aura", spec: auraSpec(c(PALETTE.auraCore), c(PALETTE.auraLit), c(PALETTE.aura), 0.8) },
     { name: "sky", spec: skySpec() },

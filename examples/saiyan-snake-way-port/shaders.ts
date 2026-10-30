@@ -211,6 +211,42 @@ void main() {
   outColor = vec4(mix(col, flagFogColor, fogAmount(length(cameraPosition - vWorld))), 1.0);
 }`;
 
+/**
+ * GU47 SSR-11: floating spire islands in the mid and far parallax bands, one instanced draw per band (impostor-weight:
+ * a 7-sided inverted cone). Lit tops toward the low sun, a dark under-deck, a hot sun rim on the silhouette edge, and
+ * heavy fog so the far band reads as layered silhouettes against the colour-script sky. `vTint` (instance colour) lifts
+ * the far band toward the fog.
+ */
+export const ISLAND_INSTANCED_VERTEX = /* glsl */ `
+out vec3 vWorld;
+out vec3 vNormal;
+out vec3 vTint;
+void main() {
+  vec4 wp = modelMatrix * instanceMatrix * vec4(position, 1.0);
+  vWorld = wp.xyz;
+  vNormal = normalize(mat3(modelMatrix) * mat3(instanceMatrix) * normal);
+  vTint = instanceColor.rgb;
+  gl_Position = projectionMatrix * viewMatrix * wp;
+}`;
+
+export const ISLAND_INSTANCED_FRAGMENT = /* glsl */ `
+in vec3 vWorld;
+in vec3 vNormal;
+in vec3 vTint;
+out vec4 outColor;
+${ATMOSPHERE}
+void main() {
+  vec3 V = normalize(cameraPosition - vWorld);
+  vec3 N = normalize(vNormal);
+  vec3 L = normalize(islandSunDir);
+  float lit = smoothstep(-0.35, 0.65, N.y) * (0.55 + 0.45 * max(dot(N, L), 0.0));
+  vec3 rock = mix(islandDark, islandLit, lit);
+  float rim = pow(1.0 - abs(dot(N, V)), 3.0) * pow(max(dot(-V, L), 0.0), 2.0);
+  vec3 col = rock + islandSunColor * rim * 1.6;
+  float fog = max(fogAmount(length(cameraPosition - vWorld)), vTint.r);
+  outColor = vec4(mix(col, islandFogColor, fog), 1.0);
+}`;
+
 /** Flat additive colour for speed streaks and ki sparks. */
 export const FLAT_VERTEX = /* glsl */ `
 out vec3 vWorld;
