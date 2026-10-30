@@ -4,7 +4,7 @@
 
 import {
   game, lights, effects, scene, camera, instances, environments, defineAuraAssets,
-  primitives, material, text3D, type AuraApp
+  primitives, material, text3D, texture, type AuraApp
 } from "@aura3d/engine";
 import { idx, type ParsedMaze } from "./grid.js";
 import type { MazeId } from "./mazes.js";
@@ -16,7 +16,7 @@ import { fitDistanceScale, projectNdc, scalePose, type CameraPose } from "./came
 import { hexToRgb, pylonLayout } from "./palette.js";
 import {
   BASE_FOCUS_DISTANCE, BENCH, BOARD_LOOKS, BOARD_PARTS, BOARD_PROBE, BOUNCE, LAMP, LENS, LOOK_HDRI, MACRO_DOF,
-  LUT_INTENSITY, PRACTICALS, focusDistance, type BoardLookRow
+  LUT_INTENSITY, PEDESTALS, PRACTICALS, focusDistance, type BoardLookRow
 } from "./look.js";
 import { TraceField } from "./traces.js";
 import { dustMotesOptions } from "./vfx.js";
@@ -25,6 +25,7 @@ import {
   type CourierPose, type ShotPlan
 } from "./motion.js";
 import { boxReflectionProbe } from "./engineCompat.js";
+import { BOARD_BAKE, BOARD_BAKE_LOW, bakeBoardMaps, type BoardMaps } from "./boardMaterial.js";
 
 /** The E-A catalogue HDRI (CC0, Poly Haven "vintage_measuring_lab", public/hdri/ATTRIBUTION.md): IBL fill only. */
 const lookAssets = defineAuraAssets({
@@ -179,11 +180,73 @@ const DYNAMIC_POOLS = (Object.keys(CAP) as (keyof typeof CAP)[]).filter((k) => !
 const pad = (n: number) => Array.from({ length: n }, () => ({ position: [0, -999, 0] as [number, number, number], scale: [0.001, 0.001, 0.001] as [number, number, number] }));
 
 /**
- * The PCB itself (DD47-M1, interim): glossy solder mask in the board's colour, lit only by the lamp and the IBL (no
- * emissive fill). The baked albedo/normal/ORM/trace-mask set replaces this flat mask once the bake script lands.
+ * The PCB itself (DD47-M1): glossy solder mask lit only by the lamp and the IBL (no emissive fill). With a DOM the
+ * slab carries the baked board (boardMaterial.ts): albedo, normal and occlusion in three live canvas textures that
+ * are repainted in place on a board change, so only the active board's maps are resident. The textured material is
+ * built once at mount (its roughness and clearcoat stay the mount board's; only the maps follow the board). Without
+ * a DOM, or if the bake fails, the slab falls back to the flat mask colour.
  */
-const boardMaterial = (look: BoardLookRow) =>
-  material.pbr({ color: look.mask, roughness: look.maskRoughness, metalness: 0.04, clearcoat: 0.75, clearcoatRoughness: 0.14 });
+interface BoardTextures {
+  readonly maps: readonly { readonly canvas: HTMLCanvasElement; readonly handle: ReturnType<typeof texture.canvas> }[];
+  readonly width: number;
+  readonly height: number;
+  bakedFor: MazeId | "";
+}
+let boardTextures: BoardTextures | null | undefined;
+
+function bakeSize(): { readonly width: number; readonly height: number } {
+  // Phones and coarse pointers bake at half size (a quarter of the texture memory); the engine tier is not known yet.
+  const small = typeof window !== "undefined" && (window.innerWidth < 700 || window.matchMedia?.("(pointer: coarse)").matches === true);
+  return small ? BOARD_BAKE_LOW : BOARD_BAKE;
+}
+
+/** Bakes the board into the live canvases (creating them on first use). Returns null without a DOM. */
+function paintBoardTextures(m: ParsedMaze): BoardTextures | null {
+  if (boardTextures === null) return null;
+  const id = m.def.id as MazeId;
+  try {
+    if (!boardTextures) {
+      if (typeof document === "undefined") { boardTextures = null; return null; }
+      const { width, height } = bakeSize();
+      const maps = (["srgb", "linear", "linear"] as const).map((colorSpace) => {
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const handle = texture.canvas({ canvas, colorSpace });
+        handle.anisotropy = 8;
+        return { canvas, handle };
+      });
+      boardTextures = { maps, width, height, bakedFor: "" };
+    }
+    if (boardTextures.bakedFor === id) return boardTextures;
+    const baked: BoardMaps = bakeBoardMaps({
+      maze: m,
+      look: BOARD_LOOKS[id],
+      pads: pylonLayout(m.def.id, m.def.theme).map((p) => ({ x: p.x, z: p.z, w: p.w })),
+      outlines: PEDESTALS.map(([x, z]) => ({ x, z, w: 1.25 })),
+      width: boardTextures.width,
+      height: boardTextures.height
+    });
+    [baked.albedo, baked.normal, baked.occlusion].forEach((pixels, i) => {
+      const { canvas, handle } = boardTextures!.maps[i]!;
+      canvas.getContext("2d")!.putImageData(new ImageData(pixels, baked.width, baked.height), 0, 0);
+      handle.needsUpdate = true;
+    });
+    boardTextures.bakedFor = id;
+    return boardTextures;
+  } catch {
+    boardTextures = null;
+    return null;
+  }
+}
+
+const boardMaterial = (look: BoardLookRow, baked: BoardTextures | null) => baked
+  ? material.pbr({
+    color: "#ffffff", texture: baked.maps[0]!.handle as never, normal: baked.maps[1]!.handle, normalScale: 1,
+    occlusionMap: baked.maps[2]!.handle, occlusionStrength: 1, textureAnisotropy: 8,
+    roughness: look.maskRoughness, metalness: 0.04, clearcoat: 0.75, clearcoatRoughness: 0.14
+  })
+  : material.pbr({ color: look.mask, roughness: look.maskRoughness, metalness: 0.04, clearcoat: 0.75, clearcoatRoughness: 0.14 });
 /** Copper traces between the corridor tiles: bare metal, no glow until the courier passes (traceLit). */
 const traceMaterial = () => material.pbr({ color: "#ffffff", roughness: 0.34, metalness: 0.9 });
 
@@ -271,7 +334,7 @@ export function buildScene(): unknown {
     primitives.box({ name: "anti-static mat", size: [...BENCH.mat.size], material: material.pbr({ color: P.mat.color, roughness: P.mat.roughness, metalness: 0 }), castShadow: false, receiveShadow: true })
       .position(0, BENCH.mat.y, 0),
     // the PCB: glossy solder mask in the board's colour
-    primitives.box({ name: "board", size: [...BENCH.board.size], material: boardMaterial(look), receiveShadow: true })
+    primitives.box({ name: "board", size: [...BENCH.board.size], material: boardMaterial(look, paintBoardTextures(st.maze)), receiveShadow: true })
       .position(0, BENCH.board.y, 0)
       .runtime(game.runtimeNode("board")),
     // instanced pools
@@ -385,13 +448,6 @@ function paintMaze(m: ParsedMaze): void {
   } catch { /* boot race */ }
 }
 
-const PEDESTALS: readonly (readonly [number, number])[] = [
-  [-10.8, 9.2], [10.8, 9.2],
-  [-10.8, 6.0], [10.8, 6.0],
-  [-10.8, 1.5], [10.8, 1.5],
-  [-10.8, -3.5], [10.8, -3.5],
-  [-10.8, -8.5], [10.8, -8.5]
-];
 
 /** Perimeter components per board theme: epoxy pedestals under spinning gems with LED caps, plus component stubs. */
 function paintDressing(m: ParsedMaze): void {
@@ -805,7 +861,7 @@ function applyBoardLook(id: MazeId): boolean {
   }
   if (id === builtLook) return true;
   try {
-    nodes.require("board").setMaterial(boardMaterial(look));
+    nodes.require("board").setMaterial(boardMaterial(look, paintBoardTextures(st.maze)));
     nodes.get("lamp")?.setLight?.({ color: look.lamp.color, intensity: look.lamp.intensity }, { transitionSeconds: 0.4 });
   } catch { return false; }
   try { app?.post?.setEffect("colorGrade", { contrast: look.grade.contrast, saturation: look.grade.saturation, temperature: look.grade.temperature, tint: look.grade.tint, lut: look.grade.lut, lutIntensity: LUT_INTENSITY }); } catch { /* post optional */ }

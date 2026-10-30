@@ -178,6 +178,15 @@ export const BOARD_PARTS = {
   vent: "#ffb23e"
 } as const;
 
+/** Perimeter gem pedestals (x, z), 1.25 wide: drawn by world.ts, outlined in silkscreen by the board bake. */
+export const PEDESTALS: readonly (readonly [number, number])[] = [
+  [-10.8, 9.2], [10.8, 9.2],
+  [-10.8, 6.0], [10.8, 6.0],
+  [-10.8, 1.5], [10.8, 1.5],
+  [-10.8, -3.5], [10.8, -3.5],
+  [-10.8, -8.5], [10.8, -8.5]
+];
+
 /** sRGB hex to [r, g, b] in 0..1. */
 export function hexRgb(hex: string): readonly [number, number, number] {
   const v = parseInt(hex.slice(1), 16);
