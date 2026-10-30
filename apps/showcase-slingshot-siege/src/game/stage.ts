@@ -13,6 +13,7 @@ import {
   lights,
   looks,
   material,
+  instances,
   model,
   primitives,
   scene,
@@ -29,6 +30,7 @@ import { assets } from "../aura-assets.route";
 import { MATERIALS, type SiegeMaterialId } from "./materials";
 import type { ChapterDef } from "./levels";
 import { chapterLook, sunDirection, type ChapterLook } from "./look";
+import { beachDressing } from "./dressing";
 
 // ----------------------------------------------------------------- pools --
 
@@ -103,20 +105,33 @@ export const PROP_IDS = {
 // ------------------------------------------------------------- materials --
 
 /**
- * GLB material overrides for a pooled piece node. Model nodes take their look
- * through the actor's override list (applied on every level load, so a pooled
- * node never keeps the previous level's material). Wood and stone keep the
- * authored GLB textures; glass and ice get a flat pale tint with their
- * opacity; obsidian a dark multiply.
+ * GLB material overrides for a pooled piece node (GU47 SS47-M1: five readable block families). Model nodes take
+ * their look through the actor's override list (applied on every level load, so a pooled node never keeps the
+ * previous level's material). Painted wood and chalky stone keep the authored GLB texture under a multiply tint;
+ * glass is a clear clearcoat pane at 0.55 opacity with transmission (drawn when `A3D_QR_MATERIALS_TRANSMISSION`
+ * is on; the opacity reads without it) and a pale rim; ice is pale and faintly emissive; obsidian is glossy black
+ * glass with a violet rim. Gameplay never reads these: the sim's material table (materials.ts) is unchanged.
  */
+export const BLOCK_LOOKS: Readonly<Record<SiegeMaterialId, readonly AuraModelMaterialOverride[]>> = {
+  wood: [{ color: "#efc996", colorMode: "multiply", roughness: 0.78, metallic: 0 }],
+  stone: [{ color: "#c9c4b8", colorMode: "multiply", roughness: 0.95, metallic: 0 }],
+  glass: [{
+    color: "#c4ecf6", colorMode: "replace", replaceTextures: true, roughness: 0.06, metallic: 0, opacity: 0.55,
+    clearcoat: 1, clearcoatRoughness: 0.05, transmission: 0.6, envMapIntensity: 1.4,
+    rim: { color: "#e8fbff", power: 3, intensity: 0.6 }
+  }],
+  ice: [{
+    color: "#d6f0ff", colorMode: "replace", replaceTextures: true, roughness: 0.22, metallic: 0, opacity: 0.82,
+    emissive: "#bfe6ff", emissiveIntensity: 0.35, rim: { color: "#f0fbff", power: 2.5, intensity: 0.5 }
+  }],
+  obsidian: [{
+    color: "#221d30", colorMode: "replace", replaceTextures: true, roughness: 0.1, metallic: 0.15,
+    clearcoat: 1, clearcoatRoughness: 0.04, rim: { color: "#a874ff", power: 4, intensity: 0.35 }
+  }]
+};
+
 export function blockLook(id: SiegeMaterialId): readonly AuraModelMaterialOverride[] {
-  const m = MATERIALS[id];
-  if (id === "glass" || id === "ice") {
-    return [{ color: m.color, colorMode: "replace", replaceTextures: true, roughness: 0.16, metallic: 0.05, opacity: m.opacity ?? 0.85 }];
-  }
-  if (id === "obsidian") return [{ color: m.color, colorMode: "multiply", roughness: 0.35, metallic: 0.35 }];
-  if (id === "stone") return [{ color: "#d6dde6", colorMode: "multiply" }];
-  return [];
+  return BLOCK_LOOKS[id] ?? BLOCK_LOOKS.wood;
 }
 
 /** Debris chips take the colour of the material they broke off. */
@@ -297,6 +312,58 @@ export function seaNode(row: ChapterLook, options: StageOptions): StageNode {
   return water.toJSON() as unknown as AuraSceneNode;
 }
 
+/**
+ * SS47-E4 chapter weather: drizzle (ch4), drifting dust motes (ch1) and a low sea mist (ch2); nothing on the other
+ * chapters. Reduced motion drops the moving layers (no rain streaks, no motes); the mist stays because it is still.
+ */
+export function chapterWeather(row: ChapterLook, options: StageOptions): StageNode[] {
+  if (row.weather === "drizzle") {
+    return options.reducedMotion ? [] : [effects.rain({ name: "siege drizzle", intensity: 0.22, density: 0.35, color: "#c9d6e6", speed: 0.8, wind: [-0.9, -5, -0.2], splashes: true, mist: false })];
+  }
+  if (row.weather === "dust") {
+    return options.reducedMotion ? [] : [effects.particles({
+      name: "siege dust motes", emitter: "ambient", shape: "box", shapeSize: [22, 2.4, 16], position: [1.5, 1.2, 0],
+      rate: 18, maxParticles: 120, lifetime: [4, 7], speed: 0.12, size: [0.03, 0.07], gravity: 0, wind: [0.25, 0.02, 0],
+      color: "#efe2c2", intensity: 0.5, particleCount: 120, materialMode: "soft-alpha", seed: 1414
+    })];
+  }
+  if (row.weather === "mist") {
+    return [effects.fog({ name: "siege sea mist", density: 0.035, color: row.fog.color, height: 1.2, falloff: 0.9 })];
+  }
+  return [];
+}
+
+/** SS47-W1: one instanced draw per dressing kind; the grass sways in the wind except on reduced motion. */
+export function beachDressingNodes(row: ChapterLook, options: StageOptions): StageNode[] {
+  const d = beachDressing();
+  const t = row.terrain;
+  const tone = (base: string, n: number, mix: string, amt: number): string[] =>
+    Array.from({ length: n }, (_, i) => mixHex(base, mix, (i % 3) * amt));
+  return [
+    instances.cone({
+      name: "dressing-sea-grass", material: pbr("#ffffff", { roughness: 0.9 }), transforms: d.grass,
+      colors: tone(mixHex(t.turf, "#c8c27a", 0.25), d.grass.length, "#556b34", 0.18),
+      castShadow: false, receiveShadow: true, ...(options.reducedMotion ? {} : { wind: { assetHeight: 0.5 } })
+    }),
+    instances.sphere({
+      name: "dressing-shells", material: pbr("#ffffff", { roughness: 0.55 }), transforms: d.shell,
+      colors: tone("#f4e7d6", d.shell.length, "#e9b9a0", 0.2), castShadow: false, receiveShadow: true
+    }),
+    instances.cylinder({
+      name: "dressing-driftwood", material: pbr(t.driftwood, { roughness: 0.92 }), transforms: d.driftwood,
+      colors: tone(t.driftwood, d.driftwood.length, "#d8cbb2", 0.2), castShadow: true, receiveShadow: true
+    }),
+    instances.cylinder({
+      name: "dressing-rope-posts", material: pbr("#7c6248", { roughness: 0.88 }), transforms: d.ropePost,
+      castShadow: true, receiveShadow: true
+    }),
+    instances.box({
+      name: "dressing-lobster-pots", material: pbr("#8f6b45", { roughness: 0.85 }), transforms: d.lobsterPot,
+      colors: tone("#8f6b45", d.lobsterPot.length, row.accent, 0.12), castShadow: true, receiveShadow: true
+    })
+  ];
+}
+
 export function buildStage(chapter: ChapterDef, options: StageOptions): StageNodes {
   const nodes: StageNode[] = [];
   const row = chapterLook(chapter.id);
@@ -416,9 +483,16 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
     primitives.sphere({ name: "distant-headlands", material: pbr("#ffffff", { roughness: 1, metallic: 0 }), instances: headlandInst, instanceColors: headlandColors, castShadow: false, receiveShadow: false }),
     model(assets.gullsiegeBridgeMeshy, { name: "launch-knoll", position: [-7.4, -0.1, 0], rotation: [0, 0, 0] })
       .scale([2.2, 1.1, 2.2]).runtime({ id: "launch-knoll", tags: ["stage"] }),
-    model(assets.gullsiegeBridgeMeshy, { name: "fortress-pad", position: [7.2, -0.22, 0], rotation: [0, 0, 0] })
+    model(assets.gullsiegeBridgeMeshy, {
+      name: "fortress-pad", position: [7.2, -0.22, 0], rotation: [0, 0, 0],
+      // SS47-E4: the drizzle chapter wets the fort pad (darker, glossier); a tint only, the pad stays above 70 luma.
+      ...(row.weather === "drizzle" ? { materialOverrides: [{ color: "#b9b3a8", colorMode: "multiply" as const, roughness: 0.28, clearcoat: 0.6, clearcoatRoughness: 0.15 }] } : {})
+    })
       .scale([4.2, 0.55, 3.8]).runtime({ id: "fortress-pad", tags: ["stage"] })
   );
+
+  // SS47-W1: seeded instanced beach dressing (5 draws), clear of the flight lane; wind bends the sea grass.
+  nodes.push(...beachDressingNodes(row, options), ...chapterWeather(row, options));
 
   // Stylized chapter rocks: the photoreal GLBs keep their silhouettes but get
   // flat palette-derived materials so they read as the same art style as the fort.

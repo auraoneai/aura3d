@@ -37,7 +37,8 @@ describe("slingshot-siege pools (SS-5)", () => {
 
 describe("slingshot-siege block looks (SS-4, SS-16)", () => {
   it("every material sets an explicit override list, so a pooled node is always reset", () => {
-    expect(blockLook("wood")).toEqual([]);
+    // GU47 SS47-M1: painted wood now carries a multiply tint too (every family has its own list).
+    expect(blockLook("wood")[0]!.colorMode).toBe("multiply");
     const glass = blockLook("glass")[0]!;
     expect(glass.opacity).toBeLessThan(1);
     expect(glass.colorMode).toBe("replace");

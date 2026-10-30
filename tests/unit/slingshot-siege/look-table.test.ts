@@ -173,3 +173,34 @@ describe("slingshot-siege VFX pack (SS47-V1, V2)", () => {
     expect(stage(0).some((n) => (n.name ?? "").startsWith("v-puff-"))).toBe(false);
   });
 });
+
+describe("slingshot-siege block families (SS47-M1)", () => {
+  it("five distinct looks: painted wood, chalky stone, clearcoat glass at 0.55, pale-emissive ice, glossy obsidian", async () => {
+    const { BLOCK_LOOKS } = await import("../../../apps/showcase-slingshot-siege/src/game/stage");
+    const glass = BLOCK_LOOKS.glass[0]!;
+    expect(glass.opacity).toBe(0.55);
+    expect(glass.clearcoat).toBeGreaterThan(0.5);
+    expect(glass.transmission).toBeGreaterThan(0);
+    expect(BLOCK_LOOKS.ice[0]!.emissiveIntensity).toBeGreaterThan(0);
+    expect(BLOCK_LOOKS.obsidian[0]!.roughness).toBeLessThan(0.2);
+    expect(BLOCK_LOOKS.wood[0]!.roughness).toBeGreaterThan(0.6);
+    const keys = Object.values(BLOCK_LOOKS).map((l) => JSON.stringify(l));
+    expect(new Set(keys).size).toBe(5);
+  });
+});
+
+describe("slingshot-siege chapter weather (SS47-E4)", () => {
+  const names = (c: number, rm = false) => stage(c, rm).map((n) => n.name ?? "");
+  it("drizzle only on ch4, dust only on ch1, mist only on ch2", () => {
+    for (let c = 0; c < 6; c += 1) {
+      expect(names(c).includes("siege drizzle")).toBe(c === 4);
+      expect(names(c).includes("siege dust motes")).toBe(c === 1);
+      expect(names(c).includes("siege sea mist")).toBe(c === 2);
+    }
+  });
+  it("reduced motion drops the drizzle streaks and the motes; the still mist stays", () => {
+    expect(names(4, true)).not.toContain("siege drizzle");
+    expect(names(1, true)).not.toContain("siege dust motes");
+    expect(names(2, true)).toContain("siege sea mist");
+  });
+});

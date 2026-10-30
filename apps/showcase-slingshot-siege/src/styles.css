@@ -642,3 +642,29 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
   .ss-banner.in { animation: none; opacity: 1; }
   .ss-toast.in { transform: none; }
 }
+
+/* GU47 WP-22 SS47-H1: nautical parchment and rope HUD (presentation only; sizes unchanged, min 11 px kept).
+   Parchment cards with a twisted-rope border, sea-teal ink, pennant-red accents; the brand mark is a pennant. */
+:root {
+  --ss-parchment: #f1e4c6;
+  --ss-parchment-edge: #d9c69c;
+  --ss-rope: #a08466;
+  --ss-rope-dark: #6f5a43;
+  --ss-sea-ink: #1f4f57;
+  --ss-pennant: #e2483d;
+}
+.ss-score-card, .ss-level-tag, .ss-gull-pip {
+  background: radial-gradient(120% 140% at 30% 20%, var(--ss-parchment) 0%, var(--ss-parchment-edge) 100%);
+  color: var(--ss-sea-ink);
+  border: 3px solid transparent;
+  border-image: repeating-linear-gradient(45deg, var(--ss-rope) 0 4px, var(--ss-rope-dark) 4px 7px) 3;
+  box-shadow: 0 3px 0 rgba(40, 28, 16, 0.35);
+}
+.ss-gull-pip { border-radius: 0; }
+.ss-score-label { color: var(--ss-rope-dark); }
+.ss-score { color: var(--ss-pennant); }
+.ss-star { color: rgba(31, 79, 87, 0.28); }
+.ss-level-tag { color: var(--ss-sea-ink); }
+.ss-level-tag b { color: var(--ss-pennant); }
+.ss-gull-pip.down { color: var(--ss-pennant); }
+.ss-brand-mark { color: var(--ss-pennant); display: inline-flex; vertical-align: -1px; }
