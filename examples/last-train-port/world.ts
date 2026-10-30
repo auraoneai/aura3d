@@ -8,7 +8,11 @@
  * normals input, audit D-08); day/night re-aims the lights and moves the lighting runtime's environment intensity
  * and the output exposure. Everything the original fetched remotely is re-created or replaced with licensed assets.
  */
-import { camera, cameras, defineAuraAssets, effects, environments, geometry, lights, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
+import { camera, cameras, defineAuraAssets, effects, environments, geometry, lights, material, model, primitives, scene, type AuraApp, type AuraAssetRef } from "@aura3d/engine";
+import { BANDS, HDRI_URL, bandFor, envRotationRad, keyPosition, parseBand, parseLook, rgb, shouldSwapBand, skySunDirection, townSky, type BandId, type LamplightHdri } from "./bands";
+import { LanternSky } from "./lanterns";
+import { registerLamplightVfx, vfxEvents, type VfxSimView } from "./vfx";
+import { BOUNCE_ID, HEADLAMP_COLOR, HEADLAMP_ID, PLATFORM_LIGHT_COLOR, PLATFORM_LIGHT_IDS, PLATFORM_LIGHT_RANGE, headlampPose, platformLightPositions, poolTown } from "./lights";
 import { MESHY_ASSETS, MESHY_ENABLED, PAX_SCALE, TRAM } from "./models";
 import { applyMat3, axisRotation, matrixToEulerZYX, multiplyMat3, tramRotation, type V3 } from "./orient";
 import { cloudSpec, pointsSpec, rainSpec, skySpec } from "./materials";
@@ -83,8 +87,16 @@ const ASSETS = defineAuraAssets({
     sha256: "f682cf1b45ee70e663eecd5cc84b58fbfa60f555e34450472ee91b5a57336006", sizeBytes: 803968,
     metadata: { license: LICENSE_CATALOG, provenance: { sourcePath: "public/aura-assets/gullsiegeWatchtowerMeshy.546ee761.glb" } }
   },
-  skyHdr: { type: "texture", format: "hdr", url: new URL("./assets/sky.hdr", import.meta.url).href, metadata: { license: "CC0 1.0, Poly Haven kloppenheim_06_puresky (1k)" } }
+  skyHdr: { type: "texture", format: "hdr", url: new URL("./assets/sky.hdr", import.meta.url).href, metadata: { license: "CC0 1.0, Poly Haven kloppenheim_06_puresky (1k)" } },
+  /* GU47 LT-04: the band HDRIs from the E-A catalogue (served at /hdri/<id>_1k.hdr; CC0, Poly Haven, public/hdri/ATTRIBUTION.md) */
+  belfast_sunset_puresky: { type: "texture", format: "hdr", url: HDRI_URL("belfast_sunset_puresky"), metadata: { license: "CC0 1.0, Poly Haven belfast_sunset_puresky (1k, E-A catalogue)" } },
+  industrial_sunset_puresky: { type: "texture", format: "hdr", url: HDRI_URL("industrial_sunset_puresky"), metadata: { license: "CC0 1.0, Poly Haven industrial_sunset_puresky (1k, E-A catalogue)" } },
+  rooftop_night: { type: "texture", format: "hdr", url: HDRI_URL("rooftop_night"), metadata: { license: "CC0 1.0, Poly Haven rooftop_night (1k, E-A catalogue)" } }
 });
+const BAND_HDRI: Readonly<Record<LamplightHdri, AuraAssetRef<"texture">>> = { belfast_sunset_puresky: ASSETS.belfast_sunset_puresky, industrial_sunset_puresky: ASSETS.industrial_sunset_puresky, rooftop_night: ASSETS.rooftop_night };
+
+/** A scene look: a GU47 time band (A-E), or today's `day` / `night` look (`?look=original`). */
+export type SceneLook = BandId | "day" | "night";
 
 /** Rain near Monsoon Exchange (town 4), snow near the Drowned Observatory (town 3), judged at the nearer town of the current leg. */
 export function weatherOf(data: SimData, sim: SimState): "clear" | "rain" | "snow" {
@@ -93,13 +105,30 @@ export function weatherOf(data: SimData, sim: SimState): "clear" | "rain" | "sno
   return near === 4 ? "rain" : near === 3 ? "snow" : "clear";
 }
 
-/** `scene` is the day scene; `nightScene` has the same node ids with the moon, a dim environment, night fog and grading, and lit windows (the lighting nodes cannot be re-aimed at runtime, so night swaps scenes). */
-export interface World { readonly scene: Scene; readonly nightScene: Scene; bind(app: AuraApp, data: SimData, startNight?: boolean): WorldRuntime }
+/**
+ * `scene` is the first scene shown (band A, or today's day look under `?look=original`); `nightScene` is the night one (band E,
+ * or today's night). `sceneFor(look)` builds any band scene on first use and caches it: every band scene has the same node
+ * ids, so the runtime swaps them with `setScene` while the tram is docked (GU47 LT-01).
+ */
+export interface World {
+  readonly scene: Scene;
+  readonly nightScene: Scene;
+  readonly look: "bands" | "original";
+  sceneFor(look: SceneLook): Scene;
+  bind(app: AuraApp, data: SimData, startNight?: boolean): WorldRuntime;
+}
 export interface WorldRuntime {
   /** `orbit` swings the camera slowly around the tram (title screen) instead of chasing it; `reducedMotion` holds the title camera still and drops the dock sway. */
   update(sim: SimState, seconds: number, options?: { readonly orbit?: boolean; readonly reducedMotion?: boolean }): void;
   readonly nodeCount: number;
   readonly camera: { eye: V3; target: V3 };
+  /** The band scene on screen (`null` under `?look=original`) and how many scene swaps happened while en route (LT-01: 0). */
+  readonly band: BandId | null;
+  readonly enrouteSwaps: number;
+  /** LT-13: lanterns aloft now and released this session. */
+  readonly lanterns: { readonly aloft: number; readonly released: number };
+  /** Forces the band scene for the current state now (QA `setTimeOfDay`, `?band=`). */
+  syncBand(sim: SimState): void;
 }
 
 /** Sun and moon rig directions (the directional lights are re-aimed, not toggled). */
@@ -165,16 +194,56 @@ function alongRoute(data: SimData, step: number, offset: number, lift: number): 
 }
 
 /** Debug switches for look-dev captures: `?fx=ao,nofog,nobloom,nograde,novignette,nohdri,skyflat`. */
-const FX = new Set((typeof location !== "undefined" ? new URLSearchParams(location.search).get("fx") ?? "" : "").split(","));
+const QUERY = typeof location !== "undefined" ? new URLSearchParams(location.search) : new URLSearchParams();
+const FX = new Set((QUERY.get("fx") ?? "").split(","));
+/** GU47 LT-01: `?band=A..E` pins a band; `?look=original` keeps today's day / night look. */
+export const PINNED_BAND = parseBand(QUERY.get("band"));
+export const LOOK = parseLook(QUERY.get("look"));
 
-function buildScene(data: SimData, mode: "day" | "night", tex: TownTextures | null): Scene {
-  const night = mode === "night";
+/** GU47 LT-07: the tilt-shift band (screen rows in focus) and the grain; DOF and god rays drop below High in the engine's post tiers. */
+export const TILT_SHIFT = { bandCenter: 0.56, bandWidth: 0.34, angleDeg: 0 } as const;
+export const GRAIN = 0.03;
+
+/** GU47 bands A-E (bands.ts): band HDRI, PCSS key, hemisphere bounce, the practical pool (C/D/E), fog and the band's post. */
+function addBandLighting(b: Scene, data: SimData, band: BandId): void {
+  const row = BANDS[band];
+  b.add(FX.has("nohdri") ? environments.neutral({ intensity: row.envIntensity }) : environments.hdri({ name: "env-sky", texture: BAND_HDRI[row.hdri], intensity: row.envIntensity, rotation: envRotationRad(row), background: false }));
+  b.add(lights.directional({ name: row.key.name, position: keyPosition(row), target: [0, 0, 0], intensity: row.key.intensity, color: row.key.color, shadow: FX.has("noshadow") ? false : { cascades: 3, maxDistance: 190, blend: 0.12, filter: "pcss" } }));
+  b.add(lights.hemisphere({ name: BOUNCE_ID, skyColor: row.hemisphere.sky, groundColor: row.hemisphere.ground, intensity: row.hemisphere.intensity }));
+  if (row.practicals.platformPoint > 0) {
+    const at = platformLightPositions(data, 0);
+    PLATFORM_LIGHT_IDS.forEach((id, i) => b.add(lights.point({ name: id, position: at[i]!, intensity: row.practicals.platformPoint, distance: PLATFORM_LIGHT_RANGE, decay: 2, color: PLATFORM_LIGHT_COLOR, shadow: false }).runtime({ id })));
+    const s0 = sampleRoute(data.route, 0, 0), pose = headlampPose(s0, dockForward(data, 0, 0));
+    // The art direction allows one shadowed light (the key, lesson R22), so the headlamp spot is unshadowed (LT-02 partial).
+    b.add(lights.spot({ name: HEADLAMP_ID, position: pose.position, target: pose.target, angle: 0.42, penumbra: 0.55, distance: 70, decay: 2, intensity: row.practicals.headlamp, color: HEADLAMP_COLOR, shadow: false }).runtime({ id: HEADLAMP_ID }));
+  }
+  if (!FX.has("nofog")) b.add(effects.fog({ name: "haze", color: row.fog.color, density: row.fog.density }));
+  // GU47 LT-07: GTAO default-on in the band look (`?fx=noao` drops it); the engine drops it on the Low tier.
+  if (!FX.has("noao")) b.add(effects.ambientOcclusion({ name: "ao" }));
+  if (!FX.has("nobloom")) b.add(effects.bloom({ name: "bloom", intensity: row.bloom.intensity, threshold: row.bloom.threshold }));
+  // GU47 LT-07: E-C white balance (temperature / tint) is the split tone: warm A/B highlights, blue D/E shadows; exposure per band.
+  if (!FX.has("nograde")) b.add(effects.colorGrade({ name: "grade", contrast: row.grade.contrast, saturation: row.grade.saturation, exposure: row.exposure, temperature: row.grade.temperature, tint: row.grade.tint }));
+  if (!FX.has("novignette")) b.add(effects.vignette({ name: "vignette", intensity: row.vignette, smoothness: 0.7 }));
+  if (!FX.has("nograin")) b.add(effects.filmGrain({ name: "grain", intensity: GRAIN }));
+  // GU47 LT-07: tilt-shift miniature band (E-C S6 dof-tilt-shift); High only via the post tiers.
+  if (!FX.has("nodof")) b.add(effects.depthOfField({ name: "tilt-shift", tiltShift: { ...TILT_SHIFT } }));
+  // GU47 LT-06: god rays in band B only (High only in the post tiers); the sun flare in A/B, moved with the camera.
+  if (row.godRays && !FX.has("nogodrays")) b.add(effects.volumetricFog({ name: "god-rays", density: 0.12, color: row.key.color, intensity: 0.55, godRayDensity: 0.35 }));
+  if (row.flare && !FX.has("noflare")) b.add(lights.lensFlare({ name: "sun-flare", position: keyPosition(row, 3000), intensity: 0.55, runtime: { id: "sun-flare" } }));
+}
+
+function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): Scene {
+  const original = look === "day" || look === "night";
+  const row = original ? null : BANDS[look];
+  const night = look === "night";
   const towns = data.tables.towns;
   const b: Scene = scene()
-    .background(night ? "#0b1230" : "#a9d4ee")
+    .background(row ? row.sky.top : night ? "#0b1230" : "#a9d4ee")
     .camera(camera.perspective({ position: [0, 30, 60], target: [0, 20, 0], fov: 58, near: 0.3, far: 7500 }));
 
-  /* ---- lighting: HDRI IBL, cascaded-shadow sun, moon fill, fog, AO, bloom, grade, vignette ---- */
+  if (row) addBandLighting(b, data, row.id);
+  else {
+  /* ---- lighting (?look=original): HDRI IBL, cascaded-shadow sun, moon fill, fog, AO, bloom, grade, vignette ---- */
   // `?fx=nohdri` (look-dev) swaps the sky HDRI for the built-in neutral environment: since 4.5.0 a scene with lights and no
   // environment node gets no implicit fill, so dropping the only environment would darken the frame instead of isolating the HDRI.
   b.add(FX.has("nohdri") ? environments.neutral({ intensity: night ? 0.2 : 0.8 }) : environments.hdri({ name: "env-sky", texture: ASSETS.skyHdr, intensity: night ? 0.2 : 0.8, background: false }));
@@ -187,6 +256,7 @@ function buildScene(data: SimData, mode: "day" | "night", tex: TownTextures | nu
   if (!FX.has("nobloom")) b.add(effects.bloom({ name: "bloom", intensity: night ? 0.85 : 0.5, threshold: night ? 0.6 : 0.82 }));
   if (!FX.has("nograde")) b.add(effects.colorGrade({ name: "grade", contrast: night ? 1.1 : 1.08, saturation: night ? 0.95 : 1.12, ...(night ? { exposure: 0.95 } : {}) }));
   if (!FX.has("novignette")) b.add(effects.vignette({ name: "vignette", intensity: night ? 0.34 : 0.22, smoothness: 0.7 }));
+  }
 
   /* ---- sky dome, cloud sea ---- */
   b.add(primitives.sphere({ name: "sky", size: 6400, material: material.custom(skySpec()) }).runtime({ id: "sky" }));
@@ -392,24 +462,24 @@ function buildScene(data: SimData, mode: "day" | "night", tex: TownTextures | nu
   });
   b.add(primitives.cylinder({ name: "islands", size: [150, 6, 150], instances: islandTop, instanceColors: islandColors, material: pbr("#ffffff", 0.95), castShadow: false }));
   b.add(primitives.cylinder({ name: "island-rims", size: [146, 3.2, 146], instances: islandRim, material: pbr("#b59a78", 1), castShadow: false }));
-  b.add(primitives.cone({ name: "island-rocks", size: [136, 108, 136], params: { radialSegments: 11 }, instances: islandRock, material: material.pbr({ color: "#d3c9c0", roughness: 1, emissive: "#8c8793", emissiveIntensity: 0.55 }), castShadow: false }));
+  b.add(primitives.cone({ name: "island-rocks", size: [136, 108, 136], params: { radialSegments: 11 }, instances: islandRock, material: material.pbr({ color: "#d3c9c0", roughness: 1, emissive: "#8c8793", emissiveIntensity: row ? 0.08 : 0.55 }), castShadow: false }));
   b.add(primitives.box({ name: "platforms", size: [4.4, 0.9, 30], instances: platformAt, material: pbr("#d9cfba", 0.82), castShadow: false }));
   b.add(primitives.box({ name: "platform-edges", size: [0.3, 0.06, 30], instances: platformEdgeAt, material: pbr("#e9c24a", 0.6), castShadow: false }));
   b.add(primitives.box({ name: "canopies", size: [5.4, 0.3, 24], instances: canopyBoxAt, instanceColors: canopyBoxColors, material: pbr("#ffffff", 0.6), castShadow: true }));
   b.add(primitives.box({ name: "canopy-trims", size: [5.6, 0.14, 24.4], instances: canopyTrimAt, material: pbr("#f4ead2", 0.6), castShadow: false }));
   if (postAt.length > 0) b.add(primitives.cylinder({ name: "posts", size: [0.3, 4.4, 0.3], instances: postAt, material: pbr("#3b3d46", 0.5, 0.5), castShadow: false }));
-  b.add(primitives.sphere({ name: "lamps", size: 0.7, instances: lampAt, material: glow("#ffd89a", night ? 3 : 0.5), castShadow: false }).runtime({ id: "lamps" }));
+  b.add(primitives.sphere({ name: "lamps", size: 0.7, instances: lampAt, material: glow("#ffd89a", row ? row.practicals.lampEmissive : night ? 3 : 0.5), castShadow: false }).runtime({ id: "lamps" }));
   b.add(primitives.box({ name: "benches", size: [0.6, 0.12, 2.0], instances: benchAt, material: pbr("#8a5a35", 0.8), castShadow: false }));
   b.add(primitives.box({ name: "signboards", size: [0.2, 1.0, 3.2], instances: signAt, material: pbr("#23423a", 0.6), castShadow: false }));
   b.add(primitives.sphere({ name: "flowers", size: 0.9, instances: flowerAt, instanceColors: flowerColors, material: pbr("#ffffff", 0.7), castShadow: false }));
   b.add(primitives.sphere({ name: "bushes", size: [2.4, 1.8, 2.4], instances: bushAt, instanceColors: bushColors, material: pbr("#ffffff", 0.95), castShadow: false }));
-  b.add(primitives.sphere({ name: "cloud-puffs", size: [2.2, 1.0, 2.2], instances: puffs, material: material.pbr({ color: "#fbfaf6", roughness: 1, emissive: "#e8ecf6", emissiveIntensity: 0.28 }), castShadow: false }));
+  b.add(primitives.sphere({ name: "cloud-puffs", size: [2.2, 1.0, 2.2], instances: puffs, material: material.pbr({ color: "#fbfaf6", roughness: 1, emissive: "#e8ecf6", emissiveIntensity: row ? 0.06 : 0.28 }), castShadow: false }));
   const asRef = (t: unknown): never => t as never;
   const facadeMat = (tint: string, glowK: number) => tex
-    ? material.pbr({ color: tint, roughness: 0.86, texture: asRef(tex.facade), emissiveMap: tex.facadeEmissive as never, emissive: "#ffffff", emissiveIntensity: glowK, textureAnisotropy: 8 })
+    ? material.pbr({ color: tint, roughness: 0.86, texture: asRef(tex.facade), emissiveMap: tex.facadeEmissive as never, emissive: "#ffffff", emissiveIntensity: glowK, textureAnisotropy: 8, ...(row ? { practical: true } : {}) })
     : pbr(tint, 0.86);
   const texMat = (t: unknown, color: string, roughness: number) => t ? material.pbr({ color, roughness, texture: asRef(t), textureAnisotropy: 8 }) : pbr(color, roughness);
-  FACADE_TINTS.forEach((tint, k) => b.add(geometry.custom(facadeMesh[k]!.toGeometry(), { name: `facades-${k}`, material: facadeMat(tint, night ? 1.8 : 0), castShadow: true, receiveShadow: true }).runtime({ id: `facades-${k}` })));
+  FACADE_TINTS.forEach((tint, k) => b.add(geometry.custom(facadeMesh[k]!.toGeometry(), { name: `facades-${k}`, material: facadeMat(tint, row ? row.practicals.windowEmissive : night ? 1.8 : 0), castShadow: true, receiveShadow: true }).runtime({ id: `facades-${k}` })));
   ROOF_TINTS.forEach((tint, k) => b.add(geometry.custom(roofMesh[k]!.toGeometry(), { name: `roofs-${k}`, material: texMat(tex?.roof, tint, 0.72), castShadow: true, receiveShadow: true })));
   b.add(geometry.custom(stoneMesh.toGeometry(), { name: "stonework", material: texMat(tex?.stone, "#ffffff", 0.9), castShadow: true, receiveShadow: true }));
   b.add(geometry.custom(cobbleMesh.toGeometry(), { name: "plaza-cobbles", material: texMat(tex?.cobble, "#ffffff", 0.92), castShadow: false, receiveShadow: true }));
@@ -435,6 +505,9 @@ function buildScene(data: SimData, mode: "day" | "night", tex: TownTextures | nu
     b.add(primitives.sphere({ name: `head-${i}`, size: 0.42, material: pbr("#f0c9a4", 0.6), castShadow: false }).runtime({ id: `head-${i}` }));
     for (const t of TEMPERAMENTS) b.add(primitives.capsule({ name: `pax-${i}-${t}`, size: [0.55, 1.1, 0.55], material: pbr(TEMPERAMENT_COLORS[t], 0.65), castShadow: false }).runtime({ id: `pax-${i}-${t}` }));
   });
+
+  /* ---- GU47 LT-13 signature: earned sky lanterns, one instanced emissive node (parked under the cloud sea until released) ---- */
+  if (row) b.add(primitives.capsule({ name: "sky-lanterns", size: [0.9, 1.2, 0.9], instances: [{ position: [0, -400, 0], scale: 0.001 }], material: material.emissive({ color: "#ffb35c", emissive: "#ffc77a", emissiveIntensity: row.lanternGlow }), castShadow: false }).runtime({ id: "sky-lanterns" }));
 
   /* ---- weather points (rain / snow around the camera) and ambient motes ---- */
   b.add(geometry.custom(geometry.dynamic({
@@ -462,10 +535,19 @@ function buildScene(data: SimData, mode: "day" | "night", tex: TownTextures | nu
   return b;
 }
 
-export function buildWorld(data: SimData): World {
+export function buildWorld(data: SimData, look: "bands" | "original" = LOOK): World {
   const tex = makeTownTextures();
-  const day = buildScene(data, "day", tex), night = buildScene(data, "night", tex);
-  return { scene: day, nightScene: night, bind: (app, d, startNight = false) => bindRuntime(app, d, { day, night }, startNight) };
+  const cache = new Map<SceneLook, Scene>();
+  const sceneFor = (l: SceneLook): Scene => { let sc = cache.get(l); if (!sc) cache.set(l, sc = buildScene(data, l, tex)); return sc; };
+  const first: SceneLook = look === "original" ? "day" : bandFor(0, "day", PINNED_BAND);
+  const nightLook: SceneLook = look === "original" ? "night" : bandFor(0, "night", PINNED_BAND);
+  return {
+    get scene() { return sceneFor(first); },
+    get nightScene() { return sceneFor(nightLook); },
+    look,
+    sceneFor,
+    bind: (app, d, startNight = false) => bindRuntime(app, d, sceneFor, look, startNight)
+  };
 }
 
 type Handle = ReturnType<AuraApp["nodes"]["require"]>;
@@ -483,7 +565,7 @@ export function dockForward(data: SimData, leg: number, distance: number): V3 {
   return [dx / l, dy / l, dz / l];
 }
 
-function bindRuntime(app: AuraApp, data: SimData, scenes: { readonly day: Scene; readonly night: Scene }, startNight: boolean): WorldRuntime {
+function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) => Scene, look: "bands" | "original", startNight: boolean): WorldRuntime {
   const maybeCamera = app.camera;
   if (!maybeCamera) throw new Error("last-train-port: the app exposes no camera controller");
   const cam: NonNullable<typeof maybeCamera> = maybeCamera;
@@ -505,16 +587,51 @@ function bindRuntime(app: AuraApp, data: SimData, scenes: { readonly day: Scene;
   let dockBlend = -1;
   const rig = { eye: [0, 0, 0] as V3, target: [0, 0, 0] as V3 };
   let weatherWasOn = true;
+  /* GU47 LT-01: the band on screen; swaps only while docked (or when forced by ?band= / the QA hook) */
+  let shownBand: BandId | null = look === "bands" ? bandFor(0, startNight ? "night" : "day", PINNED_BAND) : null;
+  let enrouteSwaps = 0;
+  let forceSwap = false;
+  let lightTown = -1;
+  const prefetched = new Set<BandId>();
+  /* GU47 LT-13 / LT-14: the lantern sky and the effect pack (registered once per app; spawned from read-only sim events) */
+  const lanternSky = new LanternSky();
+  let lastLanternCount = -1;
+  const fx = app.effects;
+  const reduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (look === "bands" && fx) { fx.runtime = "on"; registerLamplightVfx(fx, reduced); }
+  let prevVfx: VfxSimView | null = null;
+  let pantographAt = -1;
+  /** Builds the next town's band scene off the frame (a timer) so the docked swap does not build it. */
+  const prefetch = (band: BandId): void => {
+    if (prefetched.has(band)) return;
+    prefetched.add(band);
+    setTimeout(() => { sceneFor(band); }, 0);
+  };
 
   function update(sim: SimState, seconds: number, options: { readonly orbit?: boolean; readonly reducedMotion?: boolean } = {}): void {
     const dt = Math.max(0, Math.min(0.1, seconds - lastSeconds));
     lastSeconds = seconds;
-    /* day / night: the lighting rig differs per scene, so the app swaps scenes (node ids are identical); the sky and clouds blend smoothly */
-    const night = sim.timeOfDay === "night" ? 1 : 0;
-    if (night !== shownNight) {
-      shownNight = night;
-      app.setScene(night ? scenes.night : scenes.day);
-      handles.clear();
+    /* day / night (?look=original) or bands A-E: the lighting rig differs per scene, so the app swaps scenes (node ids are identical); the sky and clouds blend smoothly */
+    let night: number;
+    if (shownBand === null) {
+      night = sim.timeOfDay === "night" ? 1 : 0;
+      if (night !== shownNight) {
+        shownNight = night;
+        app.setScene(sceneFor(night ? "night" : "day"));
+        handles.clear();
+      }
+    } else {
+      const wanted = bandFor(sim.leg, sim.timeOfDay, PINNED_BAND);
+      if (shouldSwapBand(shownBand, wanted, sim.phase, forceSwap)) {
+        if (sim.phase === "enroute") enrouteSwaps++;
+        shownBand = wanted;
+        app.setScene(sceneFor(wanted));
+        handles.clear();
+        lightTown = -1;
+      }
+      forceSwap = false;
+      if (!PINNED_BAND) prefetch(bandFor((sim.leg + 1) % towns.length, sim.timeOfDay));
+      night = shownBand === "E" ? 1 : 0;
     }
     nightLevel = dt > 0 ? nightLevel + (night - nightLevel) * Math.min(1, dt * 2.4) : night;
     if (Math.abs(nightLevel - night) < 0.01) nightLevel = night;
@@ -557,8 +674,16 @@ function bindRuntime(app: AuraApp, data: SimData, scenes: { readonly day: Scene;
     /* sky blends the two towns' palettes along the leg (smoothstep 0.22..0.82 of the leg, as the original) */
     const a = towns[sim.leg]!, nb = towns[(sim.leg + 1) % towns.length]!;
     const k = smooth(0.22, 0.82, sim.distance / data.route.legs[sim.leg]!.length);
-    const top = mixRgb(hexToRgb(a.sky[0]), hexToRgb(nb.sky[0]), k), hor = mixRgb(hexToRgb(a.sky[1]), hexToRgb(nb.sky[1]), k);
-    const dir = night ? MOON_NIGHT : SUN_DAY;
+    let top: [number, number, number], hor: [number, number, number], dir: readonly number[];
+    if (shownBand === null) {
+      top = mixRgb(hexToRgb(a.sky[0]), hexToRgb(nb.sky[0]), k); hor = mixRgb(hexToRgb(a.sky[1]), hexToRgb(nb.sky[1]), k);
+      dir = night ? MOON_NIGHT : SUN_DAY;
+    } else {
+      // GU47 LT-05: the band's sky pushed toward each town's own hue, blended along the leg
+      const sa = townSky(shownBand, sim.leg), sb = townSky(shownBand, (sim.leg + 1) % towns.length);
+      top = mixRgb(rgb(sa.top), rgb(sb.top), k); hor = mixRgb(rgb(sa.horizon), rgb(sb.horizon), k);
+      dir = skySunDirection(BANDS[shownBand]);
+    }
     const dl = Math.hypot(...dir);
     if (FX.has("skyflat")) { sky.setUniform?.("skyTop", [0.26, 0.66, 0.93]); sky.setUniform?.("skyHorizon", [0.26, 0.66, 0.93]); } else { sky.setUniform?.("skyTop", top); sky.setUniform?.("skyHorizon", hor); } sky.setUniform?.("nightMix", nightLevel);
     sky.setUniform?.("sunDir", [dir[0] / dl, dir[1] / dl, dir[2] / dl]);
@@ -585,6 +710,46 @@ function bindRuntime(app: AuraApp, data: SimData, scenes: { readonly day: Scene;
       : mix3(chaseEye, dockEye, kd);
     const target: V3 = options.orbit ? [here.x, here.y + 2.6, here.z] : mix3(chaseTarget, dockAim, kd);
     rig.eye = eye; rig.target = target;
+
+    /* GU47 LT-13: release lanterns on clean arrivals, drop one on a catch; one setInstances when the set or its motion changes */
+    if (shownBand !== null) {
+      const plat = sampleRoute(data.route, sim.leg, 0);
+      lanternSky.observe({ leg: sim.leg, phase: sim.phase, catches: sim.attempt.catches }, seconds, [plat.x, plat.y, plat.z], sim.attempt.streak);
+      const ts = lanternSky.transforms(seconds, still);
+      if (ts.length > 0 || lastLanternCount !== 0) {
+        node("sky-lanterns").setInstances(ts.length > 0 ? ts : [{ position: [0, -400, 0], scale: 0.001 }]);
+        lastLanternCount = ts.length;
+      }
+      /* GU47 LT-14: effect pack from read-only sim events (pantograph sparks at most every 0.25 s) */
+      const view: VfxSimView = { phase: sim.phase, fares: sim.attempt.fares, catches: sim.attempt.catches, speed: sim.speed, roll: sim.roll, leg: sim.leg };
+      if (fx && prevVfx) {
+        for (const kind of vfxEvents(prevVfx, view, weatherOf(data, sim))) {
+          if (kind === "lamplight-pantograph") { if (seconds - pantographAt < 0.25) continue; pantographAt = seconds; }
+          const up = kind === "lamplight-pantograph" ? 4.7 : kind === "lamplight-gutter" ? 30 : 0.9;
+          fx.spawn(kind, [here.x, here.y + up, here.z]);
+        }
+      }
+      prevVfx = view;
+    }
+
+    /* GU47 LT-02: move the practical pool (platform points to the nearest town, the headlamp with the tram); LT-06 flare follows the sky sun */
+    if (shownBand !== null) {
+      const row = BANDS[shownBand];
+      if (row.practicals.platformPoint > 0) {
+        const t = poolTown(data, sim.leg, sim.distance, sim.phase);
+        if (t !== lightTown) {
+          lightTown = t;
+          const at = platformLightPositions(data, t);
+          PLATFORM_LIGHT_IDS.forEach((id, i) => moveLight(node(id), at[i]!));
+        }
+        const pose = headlampPose(here, f);
+        moveLight(node(HEADLAMP_ID), pose.position, pose.direction);
+      }
+      if (row.flare && !FX.has("noflare")) {
+        const sd = skySunDirection(row);
+        node("sun-flare").setPosition(eye[0] + sd[0] * 3000, eye[1] + sd[1] * 3000, eye[2] + sd[2] * 3000);
+      }
+    }
     const pose = chase.step({ wantEye: eye, wantLook: target, fovTarget: 56 - 4 * kd + Math.min(8, Math.abs(sim.speed) * 0.35) }, dt);
     cam.setPose({ position: pose.eye, target: pose.look, up: [0, 1, 0], fov: pose.fov }, { cut: false });
 
@@ -636,5 +801,19 @@ function bindRuntime(app: AuraApp, data: SimData, scenes: { readonly day: Scene;
     motes.updateAttribute?.("size", { array: msize, offset: 0 });
   }
 
-  return { update, get nodeCount() { return seenIds.size; }, camera: rig };
+  return {
+    update,
+    get nodeCount() { return seenIds.size; },
+    camera: rig,
+    get band() { return shownBand; },
+    get enrouteSwaps() { return enrouteSwaps; },
+    get lanterns() { return { aloft: lanternSky.aloft(), released: lanternSky.released }; },
+    syncBand(sim: SimState) { forceSwap = true; update(sim, lastSeconds); }
+  };
+}
+
+/** E-B `setLight` moves a light node; `setPosition` is the fallback where the extension is not attached. */
+function moveLight(h: Handle, position: V3, direction?: V3): void {
+  if (h.setLight) h.setLight(direction ? { position, direction } : { position });
+  else h.setPosition(position[0], position[1], position[2]);
 }

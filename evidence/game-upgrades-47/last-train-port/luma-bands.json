@@ -1,0 +1,14 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "last-train-port",
+  "note": "GU47 WP-31 LT-01 acceptance bands per time band (targets last-train-port--band-a .. band-e, ?band=A..E). default is band A (Mango Tide, late afternoon). p95/p5 >= 3.5 in A/B is checked from the decoded rows in phase 2.",
+  "default": { "darkFrac": [null, 0.35], "clipFrac": [null, 0.01] },
+  "variants": {
+    "default": { "mean": [100, 125] },
+    "band-a": { "mean": [100, 125] },
+    "band-b": { "mean": [85, 110] },
+    "band-c": { "mean": [60, 85] },
+    "band-d": { "mean": [40, 60], "cells": { "1": { "mean": [25, null] } } },
+    "band-e": { "mean": [28, 40] }
+  }
+}
