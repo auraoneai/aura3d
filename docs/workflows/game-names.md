@@ -11,7 +11,7 @@ Status: 2026-10-24. Every playable game on the showcase index carries its own na
 | `apps/showcase-heatsink-port` | Ion Circuit | `/apps/ion-circuit/` | Anti-gravity time trial with boost pads, pickups, barrels and heat management. |
 | `apps/showcase-ninja-runner-port` | Shadowstep Gauntlet | `/apps/shadowstep-gauntlet/` | Lane-running combat with a dozen skinned clones, form changes and a full course finish. |
 | `apps/showcase-last-train-port` | Lamplight Line | `/apps/lamplight-line/` | Tram-driving loop with day and night, passengers, fares and tips. |
-| `apps/showcase-roadster-hours-port` | Saltwind Highway | `/apps/saltwind-highway/` | Coastal drive among 92 vehicles in one batched mesh, with sky, ocean and a lit road. |
+| `apps/showcase-roadster-hours-port` | Saltwind Highway | `/apps/saltwind-highway/` | Coastal highway drive with jumps, traffic and relay gates: 33 to 35 vehicles per route in batched meshes, with sun shadows, sky and ocean. |
 | `apps/showcase-where-the-wind-wanders-port` | The Bellkeeper's Walk | `/apps/the-bellkeepers-walk/` | Meadow walk: collect three letters and ring the bell. |
 | `apps/showcase-silt-and-signal-port` | Duneglide | `/apps/duneglide/` | Free-ride flight over a silt world, through ring beacons. |
 | `apps/showcase-cloud-runner-port` | Cumulus Dash | `/apps/cumulus-dash/` | Obstacle runner on a cloud: creatures, boulders, a duel and a finale. |

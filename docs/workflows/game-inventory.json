@@ -184,7 +184,7 @@
         "set": "final",
         "dir": "evidence/aura-links-3d/screens/final",
         "card": "card/card-2x.jpg",
-        "frameCount": 27
+        "frameCount": 29
       }
     },
     {
@@ -439,7 +439,7 @@
         "set": "final",
         "dir": "evidence/kid-goku-beyond-the-clouds-port/screens/final",
         "card": "card.2x.1440x900.jpg",
-        "frameCount": 12
+        "frameCount": 13
       }
     }
   ]

@@ -15,7 +15,8 @@ export const MAX_STRIPE = Number(process.env.BANDING_MAX ?? 40);
 interface Game {
   readonly id: string;
   readonly url: string;
-  readonly hook?: string;
+  /** QA hook global; the first name whose hook is ready wins (new name first, then the pre-rename one for older trees). */
+  readonly hook?: string | readonly string[];
   readonly begin?: string;
   readonly step?: string;
   readonly harness?: boolean;
@@ -30,9 +31,9 @@ const GAMES: readonly Game[] = [
   { id: "strange-orbit", url: "/examples/strange-orbit-port/?manual=1&autostart=1&mode=trial&quality=high", hook: "__AURA_STRANGE_ORBIT__", begin: "begin", step: "h.stepFrames(120)" },
   { id: "drift-and-deliver", url: "/examples/drift-and-deliver-port/?manual=1&quality=high&autostart=1", hook: "__AURA_DRIFT_AND_DELIVER__", begin: "begin", step: "h.stepFrames(120)" },
   { id: "last-train", url: "/examples/last-train-port/?manual=1", hook: "__AURA_LAST_TRAIN__", begin: "begin", step: "h.stepFrames(120)" },
-  { id: "kid-goku", url: "/examples/kid-goku-beyond-the-clouds-port/?manual=1", hook: "__AURA_KID_GOKU__", begin: "begin", step: "h.stepFrames(120)" },
+  { id: "kid-goku", url: "/examples/kid-goku-beyond-the-clouds-port/?manual=1", hook: ["__AURA_CUMULUS_DASH__", "__AURA_KID_GOKU__"], begin: "begin", step: "h.stepFrames(120)" },
   { id: "silt", url: "/examples/silt-and-signal-port/?manual=1&start=1", hook: "__AURA_SILT__", begin: "begin", step: "h.stepFrames(120)" },
-  { id: "serpentine-sky-run", url: "/examples/saiyan-snake-way-port/?manual=1&autostart=1", hook: "__AURA_SAIYAN_SNAKE_WAY__", begin: "start", step: "h.stepFrames(90)" }
+  { id: "serpentine-sky-run", url: "/examples/saiyan-snake-way-port/?manual=1&autostart=1", hook: ["__AURA_SERPENTINE_SKY_RUN__", "__AURA_SAIYAN_SNAKE_WAY__"], begin: "start", step: "h.stepFrames(90)" }
 ];
 
 // Env knobs do not reach the remote container; the same knobs may live in tests/browser/shadow-banding.config.json.
@@ -71,12 +72,17 @@ test.describe("shadow banding", () => {
           await page.evaluate(() => (window as unknown as { __AURA_SLAM_RENDER__: { show(v: string): Promise<void> } }).__AURA_SLAM_RENDER__.show("hard"));
           await page.waitForTimeout(4000);
         } else if (game.hook) {
-          await page.waitForFunction((hook) => {
+          const hookNames = typeof game.hook === "string" ? [game.hook] : [...game.hook];
+          const readyHook = await page.waitForFunction((names) => {
             const w = window as unknown as Record<string, { ready?: (() => boolean) | boolean } | undefined>;
-            const ready = w[hook]?.ready;
-            return typeof ready === "function" ? ready() : ready === true;
-          }, game.hook, { timeout: 900_000 });
-          await page.evaluate(`(() => { const h = window.${game.hook}; if (typeof h.${game.begin} === "function") h.${game.begin}(); ${game.step}; })()`);
+            for (const name of names) {
+              const ready = w[name]?.ready;
+              if (typeof ready === "function" ? ready() : ready === true) return name;
+            }
+            return false;
+          }, hookNames, { timeout: 900_000 });
+          const hook = (await readyHook.jsonValue()) as string;
+          await page.evaluate(`(() => { const h = window.${hook}; if (typeof h.${game.begin} === "function") h.${game.begin}(); ${game.step}; })()`);
           await page.evaluate(async (hook) => {
             const h = (window as unknown as Record<string, { textures?: () => { pending: number } | null; renderNow?: () => void }>)[hook];
             if (typeof h?.textures !== "function") return;
@@ -86,7 +92,7 @@ test.describe("shadow banding", () => {
               if ((h.textures()?.pending ?? 0) === 0) break;
               await new Promise((r) => setTimeout(r, 1000));
             }
-          }, game.hook);
+          }, hook);
           await page.waitForTimeout(1500);
         } else {
           await page.waitForSelector("canvas", { timeout: 600_000 });

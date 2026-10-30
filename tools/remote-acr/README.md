@@ -92,7 +92,9 @@ Output: `tests/reports/remote-acr/<RUN_ID>/` (gitignored) —
   backquote and `$` would be executed (one run failed in 3 s on a `|`). `run.sh` now refuses them. Select tests with a
   plain tag (`--grep=@g3`).
 - **Step limit.** One ACR step stops after 3600 s. On software GL a game presents one frame every several seconds, so
-  split long captures into groups selected by tag.
+  split long captures into groups selected by tag. One SwiftShader game test (load, ready, two or three steady-state
+  shots) takes 15 to 30 minutes, so a shard should hold at most two game tests; the luma harness groups of nine
+  (`@g1`..) finish only when the targets are light, and otherwise stop at the limit with the shots taken so far.
 
 ## WebGPU on this runner: use `@headed-xvfb`
 

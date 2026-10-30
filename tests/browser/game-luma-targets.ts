@@ -46,8 +46,21 @@ export const LINKS_COURSES = ["stAuroras", "mapleHollow", "cinderRim", "cloudTer
 export const IRON_CROWN_STAGES = ["crown-arena", "neo-tokyo-rooftop", "bangkok-dock", "colosseum-ruins", "desert-airbase", "himalayan-monastery"] as const;
 export const PIPS_WORLDS = ["w1", "w2", "w3", "w4", "w5", "w6"] as const;
 export const CROSS_HOP_THEMES = [0, 1, 2, 3, 4, 5] as const;
+/** Saltwind Highway levels (`LEVELS` in examples/roadster-hours-port/data.ts); each has its own sky, fog and sun. */
+export const SALTWIND_LEVELS = ["sunbreak", "redline", "halo"] as const;
 /** Grid Dispatch sky presets (`#teleopDock button[data-tod]`); noon is the boot state. */
 export const TELEOP_SKIES = ["noon", "golden", "fog", "night"] as const;
+
+/** Shadowstep Gauntlet in manual mode: the sim advances only through the hook, so the shots see the run at step 300. */
+const gauntletRun = async (page: Page): Promise<void> => {
+  await page.waitForFunction("window.__AURA_NINJA_RUNNER__ && window.__AURA_NINJA_RUNNER__.ready() === true", undefined, { timeout: 420_000, polling: 500 });
+  await page.evaluate("(() => { const h = window.__AURA_NINJA_RUNNER__; h.begin(); h.stepFrames(300); h.settle(4, 1 / 60); })()");
+};
+
+/** Saltwind Highway boots on the level from `?level=`; wait for its own ready flag, which follows the first frame. */
+const saltwindReady = async (page: Page): Promise<void> => {
+  await page.waitForFunction("(() => { const r = window.__AURA_ROADSTER_HOURS__?.ready; return typeof r === 'function' ? r() : r === true; })()", undefined, { timeout: 420_000, polling: 500 });
+};
 
 const DRAFTS: readonly Draft[] = [
   t("top-tennis", "default", "/apps/showcase-top-tennis/"),
@@ -70,10 +83,13 @@ const DRAFTS: readonly Draft[] = [
   t("splat-rush-port", "default", "/apps/showcase-splat-rush-port/"),
   t("serpentine-sky-run-port", "default", "/apps/showcase-serpentine-sky-run-port/"),
   t("drift-and-deliver-port", "default", "/apps/showcase-drift-and-deliver-port/"),
+  // ?env=0 drops the HDRI (main.ts `env`), so the hemisphere and sun light the city alone.
+  t("drift-and-deliver-port", "noenv", "/apps/showcase-drift-and-deliver-port/?env=0"),
   t("heatsink-port", "default", "/apps/showcase-heatsink-port/"),
   t("ninja-runner-port", "default", "/apps/showcase-ninja-runner-port/"),
+  t("ninja-runner-port", "gauntlet-run", "/apps/showcase-ninja-runner-port/?manual=1", gauntletRun),
   t("last-train-port", "default", "/apps/showcase-last-train-port/"),
-  t("roadster-hours-port", "default", "/apps/showcase-roadster-hours-port/"),
+  ...SALTWIND_LEVELS.map((id, i) => t("roadster-hours-port", id, `/apps/showcase-roadster-hours-port/?level=${i}&autostart=1&autopilot=1`, saltwindReady)),
   t("where-the-wind-wanders-port", "default", "/apps/showcase-where-the-wind-wanders-port/"),
   t("silt-and-signal-port", "default", "/apps/showcase-silt-and-signal-port/"),
   t("cloud-runner-port", "default", "/apps/showcase-cloud-runner-port/")
