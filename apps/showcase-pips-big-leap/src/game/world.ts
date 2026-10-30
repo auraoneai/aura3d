@@ -173,8 +173,9 @@ function solidOf(p: PlatSpec): SolidBox {
 // ---------------------------------------------------------------- decor
 
 /**
- * `tinyShadows: false` (diorama look, PBL-PF1) stops the small props (crates, barrels,
- * banners, star cores) from casting shadow-map shadows; contact shadows still ground them.
+ * Today's decor, one model node per prop (`?look=original`). The diorama look draws the
+ * same props through `decorInstance` + `propInstanceNodes` (PBL-PF1), where the small
+ * props (crates, barrels, banners, star cores) cast no shadow-map shadows.
  */
 function decorNodes(d: DecorSpec, tinyShadows = true): readonly SceneNodeArg[] {
   const s = d.s ?? 1;
@@ -304,6 +305,104 @@ function decorNodes(d: DecorSpec, tinyShadows = true): readonly SceneNodeArg[] {
     default:
       return [];
   }
+}
+
+// ---------------------------------------------------------------- PBL-PF1 instanced props (diorama)
+
+type ModelAsset = Parameters<typeof model>[0];
+
+/**
+ * One static prop (decor, hazard dressing, pedestal) as an instance of its asset, in the
+ * diorama look (PBL-PF1). The same asset, fit measure and shadow flags share one
+ * `instances.model` draw class; every instance keeps today's position, yaw and fitted size.
+ */
+export interface PropInstance {
+  readonly asset: ModelAsset;
+  /** The fit the size sets: the node fits a unit target and each instance scales to `size`. */
+  readonly measure: "height" | "maxDimension";
+  readonly size: number;
+  readonly position: readonly [number, number, number];
+  readonly yaw: number;
+  readonly castShadow: boolean;
+  readonly receiveShadow: boolean;
+}
+
+/** The diorama decor table: today's asset and fitted size per kind; tiny props cast no shadow-map shadows. */
+export function decorInstance(d: DecorSpec): PropInstance | null {
+  const s = d.s ?? 1;
+  const at = (asset: ModelAsset, measure: PropInstance["measure"], size: number, castShadow = true, receiveShadow = true, lift = 0): PropInstance =>
+    ({ asset, measure, size, position: [d.x, d.y + lift, d.z], yaw: d.yaw ?? 0, castShadow, receiveShadow });
+  switch (d.kind) {
+    case "tree": return at(assets.props.conifer, "height", 3.2 * s);
+    case "conifer": return at(assets.props.conifer, "height", 3.4 * s);
+    case "hawk": return at(assets.hawk, "maxDimension", 1.5 * s);
+    case "mushroom": return at(assets.props.crystalShard, "height", 1.05 * s);
+    case "flower": return at(assets.sunseed, "height", 0.72 * s, false);
+    case "rock": return at(assets.props.boulder, "maxDimension", 1.15 * s);
+    case "windmill": return at(assets.props.windmill, "height", 3.6 * s);
+    case "sail": return at(assets.props.watchtower, "height", 2.6 * s);
+    case "cloud": return at(assets.props.rockB, "maxDimension", 1.9 * s, false, false);
+    case "fan": return at(assets.props.turbine, "height", 2.2 * s);
+    case "vent": return at(assets.props.brazier, "height", 1.35 * s);
+    case "pillar": return at(assets.props.pylon, "height", 3.4 * s);
+    case "arch": return at(d.id.includes("vista") ? assets.sungate : assets.props.arch, "height", 3.4 * s);
+    case "crystal": return at(assets.props.crystalShard, "height", 1.9 * s);
+    case "star": return at(assets.props.energyCore, "maxDimension", 0.9 * s, false, true, 0.55 * s);
+    case "lantern": return at(assets.props.streetLamp, "height", 2.3 * s);
+    case "crate": return at(assets.props.crate, "maxDimension", 0.95 * s, false);
+    case "barrel": return at(assets.props.barrel, "height", 0.98 * s, false);
+    case "banner": return at(assets.checkpointFlag, "height", 2.2 * s, false);
+    default: return null;
+  }
+}
+
+/** A hazard's dressing mesh (crystal shard, or a brazier on lava) at today's place and size. */
+export function hazardInstance(hz: HazardSpec): PropInstance {
+  const h = hz.h ?? 0.5;
+  return {
+    asset: hz.type === "lava" ? assets.props.brazier : assets.props.crystalShard,
+    measure: "height",
+    size: Math.max(0.55, Math.min(1.1, h * 1.4)),
+    position: [hz.x, hz.y - Math.min(h, 0.24), hz.z],
+    yaw: 0,
+    castShadow: true,
+    receiveShadow: true
+  };
+}
+
+/** A spring base or checkpoint pad (the shared pedestal); tiny, so it casts no shadow-map shadow. */
+export function pedestalInstance(x: number, y: number, z: number, size: number): PropInstance {
+  return { asset: assets.props.pedestal, measure: "maxDimension", size, position: [x, y, z], yaw: 0, castShadow: false, receiveShadow: true };
+}
+
+/** Group key and node name suffix: one draw class per asset, fit measure and shadow flags. */
+export function propGroupKey(p: PropInstance): string {
+  return `${p.asset.id}:${p.measure === "height" ? "h" : "max"}:${p.castShadow ? "cast" : "nocast"}:${p.receiveShadow ? "recv" : "norecv"}`;
+}
+
+/**
+ * Lower the props to instanced models. `createModelMatrix` folds each instance's
+ * position, yaw and scale over the node's unit fit and grounding, so an instance of
+ * `size` stands exactly where today's `model(asset, { targetHeight: size })` stood.
+ */
+export function propInstanceNodes(props: readonly PropInstance[]): readonly SceneNodeArg[] {
+  const groups = new Map<string, PropInstance[]>();
+  for (const p of props) {
+    const key = propGroupKey(p);
+    const list = groups.get(key);
+    if (list) list.push(p);
+    else groups.set(key, [p]);
+  }
+  return [...groups.entries()].map(([key, list]) => {
+    const first = list[0]!;
+    return instances.model(first.asset, {
+      name: `pbl-props:${key}`,
+      ...(first.measure === "height" ? { targetHeight: 1 } : { targetMaxDimension: 1 }),
+      castShadow: first.castShadow,
+      receiveShadow: first.receiveShadow,
+      transforms: list.map((p) => ({ position: [p.position[0], p.position[1], p.position[2]] as const, rotation: [0, p.yaw, 0] as const, scale: p.size }))
+    });
+  });
 }
 
 // ---------------------------------------------------------------- world build
@@ -515,6 +614,10 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     }
   }
 
+  // PBL-PF1 (diorama): hazard dressing, pedestals and decor are collected here and drawn
+  // as instanced models below; the original look keeps one model node each.
+  const props: PropInstance[] = [];
+
   // Hazards — hurt volumes + 3D GLB crystal/brazier hazard clusters (diorama: plum
   // bramble mat, glowing practical lava and embers, clearcoat frost; PBL-M2 interim).
   const hazards: HazardBox[] = spec.hazards.map((hz) => {
@@ -529,15 +632,19 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
           : material.emissive({ color: HAZARD_STYLE[hz.type], emissive: HAZARD_STYLE[hz.type], emissiveIntensity: 0.85, roughness: 0.5 })
       })
     );
-    const hazardRef = hz.type === "lava" ? assets.props.brazier : assets.props.crystalShard;
-    builder.add(
-      model(hazardRef, {
-        name: `hazard:${hz.id}:mesh`,
-        castShadow: true,
-        receiveShadow: true,
-        targetHeight: Math.max(0.55, Math.min(1.1, h * 1.4))
-      }).position(hz.x, hz.y - Math.min(h, 0.24), hz.z)
-    );
+    if (diorama) {
+      props.push(hazardInstance(hz));
+    } else {
+      const hazardRef = hz.type === "lava" ? assets.props.brazier : assets.props.crystalShard;
+      builder.add(
+        model(hazardRef, {
+          name: `hazard:${hz.id}:mesh`,
+          castShadow: true,
+          receiveShadow: true,
+          targetHeight: Math.max(0.55, Math.min(1.1, h * 1.4))
+        }).position(hz.x, hz.y - Math.min(h, 0.24), hz.z)
+      );
+    }
     return { spec: hz, x: hz.x, y: hz.y - h / 2, z: hz.z, hx: hz.w / 2, hy: h / 2, hz: hz.d / 2 };
   });
 
@@ -590,10 +697,14 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   // shadow-map shadows, PBL-PF1; contact shadows still ground them).
   for (const spr of spec.springs) {
     const base = [spr.x, spr.y, spr.z] as const;
-    builder.add(
-      model(assets.props.pedestal, { name: `${nodeName.spring(spr.id)}:base`, castShadow: !diorama, receiveShadow: true, targetMaxDimension: 0.92 })
-        .position(base[0], base[1], base[2])
-    );
+    if (diorama) {
+      props.push(pedestalInstance(base[0], base[1], base[2], 0.92));
+    } else {
+      builder.add(
+        model(assets.props.pedestal, { name: `${nodeName.spring(spr.id)}:base`, castShadow: !diorama, receiveShadow: true, targetMaxDimension: 0.92 })
+          .position(base[0], base[1], base[2])
+      );
+    }
     builder.add(
       model(assets.props.boostPad, { name: nodeName.spring(spr.id), castShadow: !diorama, receiveShadow: true, targetMaxDimension: 0.82 })
         .position(base[0], base[1] + 0.14, base[2])
@@ -608,10 +719,14 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
         .position(cp.x, cp.y, cp.z)
         .runtime(game.runtimeNode(nodeName.checkpointFlag(cp.id), { tags: ["checkpoint"] }))
     );
-    builder.add(
-      model(assets.props.pedestal, { name: `${nodeName.checkpoint(cp.id)}:pad`, castShadow: !diorama, receiveShadow: true, targetMaxDimension: 0.78 })
-        .position(cp.x, cp.y, cp.z)
-    );
+    if (diorama) {
+      props.push(pedestalInstance(cp.x, cp.y, cp.z, 0.78));
+    } else {
+      builder.add(
+        model(assets.props.pedestal, { name: `${nodeName.checkpoint(cp.id)}:pad`, castShadow: !diorama, receiveShadow: true, targetMaxDimension: 0.78 })
+          .position(cp.x, cp.y, cp.z)
+      );
+    }
   }
 
   // Sun-Gate — bespoke Meshy seed-arch portal + retained emissive ring + 3D energy core lock.
@@ -637,8 +752,15 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   for (const d of spec.decor) {
     const obstacle = cameraObstacleFor(d);
     if (obstacle) cameraObstacles.push(obstacle);
-    for (const node of decorNodes(d, !diorama)) builder.add(node);
+    if (diorama) {
+      const prop = decorInstance(d);
+      if (prop) props.push(prop);
+    } else {
+      for (const node of decorNodes(d)) builder.add(node);
+    }
   }
+  // PBL-PF1: one instanced draw class per prop asset (diorama only).
+  for (const node of propInstanceNodes(props)) builder.add(node);
   for (const n of spec.npcs) {
     // C19: NPCs are camera obstacles too, so the boom shortens instead of
     // letting a 1.35 m runner fill the foreground.
