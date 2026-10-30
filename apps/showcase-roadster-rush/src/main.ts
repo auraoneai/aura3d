@@ -35,6 +35,7 @@ import {
 import { apexFlash, apexFlashAlpha, apexPostPlan, applyApexPostPlan, type ApexFlashKind } from "./art/post";
 import { APEX_LUT_INTENSITY, apexGradePatch } from "./art/lut";
 import { APEX_PLUMES, plumeSpec } from "./art/plume";
+import { DECAL_CAPACITY, DECAL_KIND_CODE, DECAL_SIZE, DECAL_Y, decalLayout, decalSpec } from "./render/decals";
 import { createNativeRoadster, findDrawCalls } from "./native";
 import { FIXED_DT, POWERUP_SECONDS } from "./native/constants";
 import { GANTRY_COUNT } from "./native/world";
@@ -490,6 +491,10 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
 
   // 2. Lane dashes, light poles, gantries and skyline: one instanced node each (audit RR-E1: these were 150+ separate nodes)
   s.addMany([
+    // AO-W2: recycled skid marks, oil stains and lane arrows, procedural, one instanced plane (1 draw, <= 32 live)
+    instances
+      .plane({ name: "apex-road-decals", material: material.custom(decalSpec()), castShadow: false, receiveShadow: false, transforms: parked(DECAL_CAPACITY) })
+      .runtime(game.runtimeNode(poolId("road-decals"))),
     instances
       .box({ name: "lane-dashes", size: [0.14, 0.02, 4.2], material: material.emissive({ color: "#f8fafc", emissive: "#e2e8f0", emissiveIntensity: 0.1 }), castShadow: false, transforms: parked(LANE_DIVIDER_X.length * DASH_COUNT_PER_DIVIDER) })
       .runtime(game.runtimeNode(poolId("dashes"))),
@@ -908,6 +913,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   };
 
   const dashPool = pool("dashes", LANE_DIVIDER_X.length * DASH_COUNT_PER_DIVIDER);
+  const decalPool = pool("road-decals", DECAL_CAPACITY);
   const gantrySteel = pool("gantry-steel", GANTRY_COUNT * 3);
   const gantryBoards = pool("gantry-boards", GANTRY_COUNT * 2);
   const gantryTrims = pool("gantry-trims", GANTRY_COUNT * 4);
@@ -1406,6 +1412,12 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       for (let i = 0; i < DASH_COUNT_PER_DIVIDER; i++) dashPool.add(lx, ry(0.015), rz(dashBaseZ - i * DASH_STRIDE_Z));
     }
     dashPool.commit();
+    decalPool.begin();
+    for (const d of decalLayout(pz)) {
+      const size = DECAL_SIZE[d.kind];
+      decalPool.add(rx(d.x), ry(DECAL_Y), rz(d.z), 0, d.yaw, 0, size[0], DECAL_KIND_CODE[d.kind], size[1]);
+    }
+    decalPool.commit();
 
     // Overhead sign gantries: one per collidable world slot (audit RR-2); empty slots are not drawn
     gantrySteel.begin();

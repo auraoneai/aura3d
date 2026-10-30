@@ -130,7 +130,7 @@ describe("Apex Overdrive wakes (GU47 AO-V1)", () => {
     const main = readFileSync(resolve(__dirname, "../../../apps/showcase-roadster-rush/src/main.ts"), "utf8");
     expect(main).toContain('name: "apex-player-wake"');
     expect(main).toContain('name: "apex-rival-wakes"');
-    expect(main.match(/instances\s*\.plane\(/g) ?? []).toHaveLength(2);
+    expect(main.match(/instances\s*\.plane\(\{ name: "apex-(player-wake|rival-wakes)"/g) ?? []).toHaveLength(2);
     expect(main).toContain("prevZ: Number(sc.prevZ");
     expect(main).not.toMatch(/sc\.prevZ\s*=/);
   });
