@@ -74,6 +74,7 @@ import { BOOT_SKY, SKY_LOOKS, nextSky, skyFromParam } from "./look";
 import { installSensorPass, scanPulseAt } from "./scanPulse";
 import { createGridVfxQueue, installGridVfx, type GridVfxShot } from "./vfx";
 import { mountTouchPads } from "./touch";
+import { STATIC_CROPS, carCrop, type QaCrop } from "./qaCrops";
 
 export type { AutopilotLevel, PlayableCarId, WeatherPreset } from "./rules";
 
@@ -589,6 +590,8 @@ async function bootGridDispatch(): Promise<void> {
   const rivalAccents = RIVALS.map((r) => r.accent);
   const carSizes = Object.fromEntries(PLAYABLE_IDS.map((id) => [id, fittedSize(PLAYABLE_FLEET[id].bounds, PLAYABLE_FLEET[id].maxDim)])) as Record<PlayableCarId, ReturnType<typeof fittedSize>>;
   let shakeNow = { x: 0, y: 0 };
+  /** View-space box of the player car this frame, for the QA car crop. */
+  let carView = { x: 0, y: 0, z: CAR_DRAW_Z, width: 2, height: 1.5, length: 4.6 };
   /** QA review only: extra yaw on the player car and every road user so each side of a model can be framed. */
   let qaYawAdd = 0;
 
@@ -739,6 +742,7 @@ async function bootGridDispatch(): Promise<void> {
     // GD-03: tail and brake lamps at the rear corners; headlight spots follow the car across lanes.
     const carX = rx(pose.px);
     const carZ = CAR_DRAW_Z + camOff.z;
+    carView = { x: carX, y: ry(0), z: carZ, width: size.width, height: size.height, length: size.length };
     const lampY = ry(size.height * TAIL_LAMP.heightFrac);
     const rearZ = carZ + size.length / 2;
     N.tailLamps.setInstances([pos(carX - size.width * TAIL_LAMP.spreadFrac, lampY, rearZ), pos(carX + size.width * TAIL_LAMP.spreadFrac, lampY, rearZ)]);
@@ -963,7 +967,14 @@ async function bootGridDispatch(): Promise<void> {
       present(0);
       return evidence();
     },
-    evidence
+    evidence,
+    /** GU47 QA crops (E-I capture contract), read after every screenshot. */
+    crops: (): QaCrop[] => {
+      const vw = window.innerWidth || 1280;
+      const vh = window.innerHeight || 720;
+      const car = carCrop((p) => projectViewPointToScreen([p[0], p[1], p[2]], vw, vh), vw, vh, carView);
+      return car ? [car, ...STATIC_CROPS] : [...STATIC_CROPS];
+    }
   };
   const qa = installQaHooks("grid-dispatch", {
     ready: () => ready,
@@ -1008,6 +1019,7 @@ async function bootGridDispatch(): Promise<void> {
     qaCollisions: () => ({ count: S.collisionCount, player: { x: S.player.x, z: S.player.z, speed: S.player.speed }, cars: S.users.map((c) => ({ laneX: c.laneX, z: c.z, speed: c.speed, direction: c.direction })) })
   };
   (window as unknown as Record<string, unknown>).__AURA3D_SHOWCASE_TELEOPERATOR__ = legacy;
+  (window as unknown as { __AURA_QA__?: Record<string, unknown> }).__AURA_QA__ = { ...((window as unknown as { __AURA_QA__?: Record<string, unknown> }).__AURA_QA__ ?? {}), crops: extras.crops };
 
   // ---------------------------------------------------------------- start
   initSpeedometerDial(false);
