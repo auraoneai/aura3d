@@ -219,6 +219,7 @@ function handleEvents(events: readonly RaceEvent[]): void {
       if (race.mode === "free" && checkpointOrder.length > FREE_MODE_HISTORY * 5) checkpointOrder.splice(0, checkpointOrder.length - FREE_MODE_HISTORY * 5);
     }
     if (ev.text) { notice = touchWanted ? touchText(ev) : ev.text; noticeTime = 3; }
+    runtime?.event(ev);
     if (ev.impact !== undefined) {
       if (ev.normal) runtime?.impact(ev.normal);
       impactFeedback.handle({ colliderId: ev.colliderId ?? "", tag: undefined, point: ev.point ?? [0, 0, 0], normal: ev.normal ?? [0, 1, 0], speed: ev.impact, impulse: ev.impact });

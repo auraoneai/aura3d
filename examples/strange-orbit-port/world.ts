@@ -31,7 +31,9 @@ import type { GhostPose } from "./progress";
 import { atmosphereSpec, mineralSpec, pointsSpec, skySpec, solidSpec, trackSpec, veilSpec, type SolidExtra } from "./materials";
 import { mainFrame, routeFrame, surfaceNoise } from "./track";
 import { Vec3 } from "./vec3";
-import { LOOKS, type OrbitLook } from "./art/look";
+import { LOOKS, SECTOR_LERP_SECONDS, type OrbitLook } from "./art/look";
+import { createCameraFeel, createPostDirector, createSectorDirector, type PostFrame } from "./art/director";
+import { ORBIT_VFX_COLORS, orbitVfxFor, registerOrbitVfx } from "./art/vfx";
 
 export { lehmer };
 
@@ -182,6 +184,8 @@ export interface WorldRuntime {
   resetCamera(): void;
   /** A zero-G crash along `normal`: push the drawn rider out along it for `IMPACT_REBOUND.seconds`. */
   impact(normal: readonly [number, number, number]): void;
+  /** GU47 SO47-V1 / C1: a race event for the VFX pack and the camera kicks (presentation only). */
+  event(ev: { readonly type: string; readonly point?: readonly [number, number, number] }): void;
   /** QA: where the rider at `index` (6 = trial ghost) would land on screen with the last camera pose (x, y in 0..1 from top left). */
   projectRider(index: number, aspect: number): { x: number; y: number; depth: number } | null;
   readonly nodeCount: number;
@@ -252,6 +256,13 @@ export function buildWorld(options: WorldOptions): World {
   if (!off.has("vignette")) builder.add(effects.vignette({ name: "vignette", ...row.post.vignette }));
   // SO47-P1 grain on every tier but Low (PRD §6.4).
   if (row.post.grain && high && !off.has("grain")) builder.add(effects.filmGrain({ name: "grain", intensity: row.post.grain.intensity, size: row.post.grain.size }));
+  // SO47-P2 / P3 (High gouache only): boost motion blur and CA start at 0 and are driven at runtime through
+  // app.post.setEffect (art/director.ts); menu/results depth of field focuses the grid riders 8 m out.
+  if (look === "gouache" && high && !options.reducedMotion && !off.has("boostpost")) {
+    builder.add(effects.motionBlur({ name: "boost-motion-blur", intensity: 0 }));
+    builder.add(effects.chromaticAberration({ name: "boost-ca", intensity: 0 }));
+  }
+  if (look === "gouache" && high && !off.has("dof")) builder.add(effects.depthOfField({ name: "menu-dof", focusDistance: 8, fStop: 2.8, focalLength: 50 }));
 
   /* ---- track, rails, islands, ramps, loops ---- */
   const course = buildCourse(high ? 1.3 : 2.1);
@@ -529,7 +540,7 @@ export function buildWorld(options: WorldOptions): World {
   return {
     scene: builder,
     bind(app: AuraApp): WorldRuntime {
-      return bindRuntime(app, { vehicle, riders, meteors, dustBase, dustUp, dustItems, exhaust: EXHAUST, ghost: Boolean(options.ghost), reducedMotion: Boolean(options.reducedMotion) });
+      return bindRuntime(app, { vehicle, riders, meteors, dustBase, dustUp, dustItems, exhaust: EXHAUST, ghost: Boolean(options.ghost), reducedMotion: Boolean(options.reducedMotion), look, high });
     }
   };
 }
@@ -544,6 +555,8 @@ interface BindInput {
   readonly reducedMotion: boolean;
   readonly dustItems: ReturnType<typeof collectibles>;
   readonly exhaust: number;
+  readonly look: OrbitLook;
+  readonly high: boolean;
 }
 
 interface Pose { position: Vec3; forward: Vec3; up: Vec3 }
@@ -576,6 +589,51 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
   const rebound = { t: 0, x: 0, y: 0, z: 0 };
   let lastCamera: { eye: Vec3; look: Vec3; up: Vec3; fov: number } | null = null;
   const riderAt: Vec3[] = Array.from({ length: 7 }, () => new Vec3()); // 0 player, 1..5 rivals, 6 ghost
+  /* GU47 WP-25 presentation directors (read-only race values; art/director.ts). */
+  const row = LOOKS[input.look];
+  const feel = createCameraFeel(input.look, input.reducedMotion);
+  const sectors = createSectorDirector(input.look);
+  const postDirector = createPostDirector(row, input.high, input.reducedMotion);
+  const keyLight = app.nodes.get("key");
+  const skyDome = app.nodes.get("sky-dome");
+  let lastPost = "";
+  let lastShift = Number.NaN;
+  if (input.look === "gouache") registerOrbitVfx(app.effects ?? { registerPreset: () => undefined });
+  /** QA crops for E-I's capture (normalised 0..1, updated as the camera moves): rider, sky band, planet. */
+  const publishCrops = (aspect: number): void => {
+    const qa = (globalThis as { __AURA_QA__?: { crops?: unknown } }).__AURA_QA__;
+    if (!qa) return;
+    const crops: { name: string; x: number; y: number; w: number; h: number }[] = [{ name: "sky", x: 0, y: 0, w: 1, h: 0.3 }];
+    const rider = projectPoint(riderAt[0]!, aspect);
+    if (rider) crops.push(boxAround("rider", rider, 0.22 / Math.max(0.6, aspect), 0.24));
+    const planet = projectPoint(new Vec3(...row.planet.position), aspect);
+    if (planet) crops.push(boxAround("planet", planet, (row.planet.size / Math.max(1, planet.depth)) / Math.max(0.6, aspect), row.planet.size / Math.max(1, planet.depth)));
+    qa.crops = crops;
+  };
+  const projectPoint = (p: Vec3, aspect: number): { x: number; y: number; depth: number } | null => {
+    const c = lastCamera;
+    if (!c) return null;
+    const f = c.look.clone().sub(c.eye).normalize();
+    const r = new Vec3().crossVectors(f, c.up).normalize();
+    const u = new Vec3().crossVectors(r, f).normalize();
+    const d = p.clone().sub(c.eye);
+    const depth = d.dot(f);
+    if (depth <= 0) return null;
+    const t = Math.tan((c.fov * Math.PI) / 360);
+    return { x: 0.5 + (d.dot(r) / (depth * t * aspect)) / 2, y: 0.5 - (d.dot(u) / (depth * t)) / 2, depth };
+  };
+  const applyPost = (frame: PostFrame): void => {
+    const key = `${frame.motionBlur}|${frame.chromaticAberration}|${frame.depthOfField}`;
+    if (key === lastPost || !app.post) return;
+    lastPost = key;
+    if (input.high && input.look === "gouache" && !input.reducedMotion) {
+      app.post.setEffectEnabled("motion-blur", frame.motionBlur > 0);
+      app.post.setEffect("motion-blur", { intensity: frame.motionBlur });
+      app.post.setEffectEnabled("chromatic-aberration", frame.chromaticAberration > 0);
+      app.post.setEffect("chromatic-aberration", { intensity: frame.chromaticAberration });
+    }
+    if (input.high && input.look === "gouache") app.post.setEffectEnabled("depth-of-field", frame.depthOfField);
+  };
 
   /** Group pose for a rider standing at (`s`, `lane`) on `route`. */
   const poseAt = (s: number, lane: number, route: Route, height: number, heading: number, lean: number): Pose => {
@@ -699,7 +757,9 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     }
     const cs = new Vec3().crossVectors(rig.forward, rig.up).normalize();
     const cu = new Vec3().crossVectors(cs, rig.forward).normalize();
-    const params = view === "wide" ? { back: 4.5, height: 4, fov: 82, portraitFov: 82 } : { back: 4.5, height: 3, fov: 72, portraitFov: 76 };
+    // SO47-C1: chase base fov from the look table (gouache 64, original 72) plus the boost/landing kicks and lean roll.
+    const kick = feel.update(dt, { boosting: Boolean(state.boosting), lean: state.lean, racing: state.phase === "racing" && !state.flight });
+    const params = view === "wide" ? { back: 4.5, height: 4, fov: 82, portraitFov: 82 } : { back: 4.5, height: 3, fov: feel.baseFov, portraitFov: feel.baseFov + 4 };
     const origin = playerPose.position;
     let eye: Vec3, look: Vec3, fov: number;
     if (menu && aspect < 0.85) {
@@ -714,16 +774,17 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       look = frame.p.clone().addScaledVector(frame.side, 3.8).addScaledVector(frame.up, 1.1);
       fov = 48;
     } else {
-      eye = origin.clone().addScaledVector(rig.forward, -params.back).addScaledVector(cu, params.height);
+      eye = origin.clone().addScaledVector(rig.forward, -params.back).addScaledVector(cu, params.height - kick.punch);
       if (shake) eye.addScaledVector(cs, shake.x).addScaledVector(cu, shake.y);
       look = origin.clone().addScaledVector(rig.forward, 3).addScaledVector(cu, 1.4);
-      fov = aspect < 0.85 ? params.portraitFov : params.fov;
+      fov = (aspect < 0.85 ? params.portraitFov : params.fov) + kick.fovOffset;
     }
+    const camRoll = (shake?.roll ?? 0) + kick.roll;
     lastCamera = { eye: eye.clone(), look: look.clone(), up: menu ? frame.up.clone() : cu.clone(), fov };
     cameraController.setPose({
       position: [eye.x, eye.y, eye.z],
       target: [look.x, look.y, look.z],
-      up: menu ? [frame.up.x, frame.up.y, frame.up.z] : [cu.x + cs.x * (shake?.roll ?? 0), cu.y + cs.y * (shake?.roll ?? 0), cu.z + cs.z * (shake?.roll ?? 0)],
+      up: menu ? [frame.up.x, frame.up.y, frame.up.z] : [cu.x + cs.x * camRoll, cu.y + cs.y * camRoll, cu.z + cs.z * camRoll],
       fov
     }, { cut: false });
 
@@ -789,6 +850,19 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       halo.setRotation(e[0], e[1], e[2]);
     }
 
+    /* GU47 SO47-L3 / E2: sector key tint, haze and nebula hue; SO47-P2 / P3 boost and menu post */
+    const sector = sectors.update(sForPlayer, dt);
+    if (sector.changed) {
+      keyLight?.setLight?.({ color: sector.changed.keyColor, intensity: sector.changed.keyIntensity }, { transitionSeconds: SECTOR_LERP_SECONDS });
+      app.atmosphere?.setFog({ color: sector.changed.fogColor, density: sector.changed.fogDensity }, { transitionSeconds: SECTOR_LERP_SECONDS, overrideSceneFog: true });
+    }
+    if (Math.abs(sector.nebulaShift - lastShift) > 0.002 || Number.isNaN(lastShift)) {
+      skyDome?.setUniform?.("nebulaShift", sector.nebulaShift);
+      lastShift = sector.nebulaShift;
+    }
+    applyPost(postDirector.update(dt, { boosting: Boolean(state.boosting), zeroG: Boolean(state.flight), phase: state.phase }));
+    publishCrops(aspect);
+
     /* exhaust */
     if (!state.flight && !state.air && !menu && state.phase === "racing" && state.speed > 4) {
       exhaustBudget += Math.min(0.1, dt) * (state.boosting ? 600 : 110 + state.speed * 3);
@@ -824,17 +898,17 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     update,
     resetCamera() { rig = null; rebound.t = 0; },
     projectRider(index, aspect) {
-      const c = lastCamera;
       const p = riderAt[index];
-      if (!c || !p) return null;
-      const f = c.look.clone().sub(c.eye).normalize();
-      const r = new Vec3().crossVectors(f, c.up).normalize();
-      const u = new Vec3().crossVectors(r, f).normalize();
-      const d = p.clone().sub(c.eye);
-      const depth = d.dot(f);
-      if (depth <= 0) return null;
-      const t = Math.tan((c.fov * Math.PI) / 360);
-      return { x: 0.5 + (d.dot(r) / (depth * t * aspect)) / 2, y: 0.5 - (d.dot(u) / (depth * t)) / 2, depth };
+      return p ? projectPoint(p, aspect) : null;
+    },
+    event(ev) {
+      if (ev.type === "land" || ev.type === "stunt") feel.landing(ev.type === "stunt");
+      if (input.look !== "gouache" || !app.effects) return;
+      const vfx = orbitVfxFor(ev.type, input.reducedMotion);
+      if (!vfx) return;
+      const p0 = riderAt[0]!;
+      const at = ev.point ?? [p0.x, p0.y, p0.z];
+      app.effects.burst(vfx.kind, [at[0], at[1], at[2]], { count: vfx.count, color: ORBIT_VFX_COLORS[vfx.kind], camera: false });
     },
     impact(normal) {
       const len = Math.hypot(normal[0], normal[1], normal[2]) || 1;
@@ -853,6 +927,12 @@ export function menuPortraitCamera(_aspect: number): { forward: number; side: nu
   // Behind the grid, aimed 8 m above the track 14 m ahead: at 390x844 this projects the player to (0.50, 0.84) and the
   // rivals to y 0.71 to 0.75 (fractions of the screen from the top left), below the menu panel.
   return { forward: -12, side: 0, height: 3.4, lookForward: 14, lookSide: 0, lookHeight: 8, fov: 60 };
+}
+
+function boxAround(name: string, p: { x: number; y: number }, w: number, h: number): { name: string; x: number; y: number; w: number; h: number } {
+  const x = Math.max(0, Math.min(1, p.x - w / 2));
+  const y = Math.max(0, Math.min(1, p.y - h / 2));
+  return { name, x, y, w: Math.max(0, Math.min(1 - x, w)), h: Math.max(0, Math.min(1 - y, h)) };
 }
 
 function loopFramePose(state: RaceState): Pose {
