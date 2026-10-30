@@ -125,6 +125,30 @@ export interface MutableDiagnostics {
   labels?: readonly ProjectedLabel[];
   labelTelemetry?: LabelTelemetry;
   textBuckets?: TextBucketSummary;
+  /** GU47 E-D (ED-7): the device's triangles drawn last frame (every pass); set lazily by the mounted frame loop. */
+  triangles?: number;
+  /** GU47 E-D (ED-7): the device's live texture bytes; set lazily by the mounted frame loop. */
+  textureBytes?: number;
+}
+
+/** GU47 E-D (ED-7): the two device counters `app.diagnostics()` reports (`RenderDeviceDiagnostics.triangles/textureBytes`). */
+export interface DeviceFrameCounters {
+  readonly triangles?: number;
+  readonly textureBytes?: number;
+}
+
+/**
+ * GU47 E-D (ED-7): reads the counters off the mounted lane Renderer (`controller.auraRenderer.device`); `undefined` when
+ * the backend exposes no device diagnostics (headless, mocks).
+ */
+export function deviceFrameCounters(auraRenderer: unknown): DeviceFrameCounters | undefined {
+  const device = (auraRenderer as { readonly device?: { getDiagnostics?(): unknown } } | null | undefined)?.device;
+  const diagnostics = device?.getDiagnostics?.() as { readonly triangles?: unknown; readonly textureBytes?: unknown } | undefined;
+  if (!diagnostics) return undefined;
+  return {
+    ...(typeof diagnostics.triangles === "number" ? { triangles: diagnostics.triangles } : {}),
+    ...(typeof diagnostics.textureBytes === "number" ? { textureBytes: diagnostics.textureBytes } : {})
+  };
 }
 
 export interface LazyFrameDiagnostics {
@@ -150,12 +174,32 @@ export function bindLazyFrameDiagnostics(
     readonly renderer: () => AuraRendererDiagnosticReport;
     readonly evidence: () => AuraSceneEvidence;
     readonly busy: () => boolean;
+    /** GU47 E-D (ED-7): the device's triangle / texture-byte counters (one device read per inspected frame). */
+    readonly deviceCounters?: () => DeviceFrameCounters | undefined;
   }
 ): LazyFrameDiagnostics {
   let rendererValue = state.renderer;
   let evidenceValue = state.evidence;
   let rendererFresh = true;
   let evidenceFresh = true;
+  let countersValue: DeviceFrameCounters | undefined;
+  let countersFresh = false;
+  const deviceCounters = sources.deviceCounters;
+  const counters = (): DeviceFrameCounters | undefined => {
+    if (!countersFresh && !sources.busy() && deviceCounters) { countersValue = deviceCounters(); countersFresh = true; }
+    return countersValue;
+  };
+  if (deviceCounters) {
+    for (const field of ["triangles", "textureBytes"] as const) {
+      Object.defineProperty(state, field, {
+        configurable: true,
+        enumerable: true,
+        get: () => { const value = counters()?.[field]; return typeof value === "number" && Number.isFinite(value) ? value : undefined; },
+        // Like `renderer` / `evidence`: a write overrides the counter until the next frame.
+        set: (value: number | undefined) => { countersValue = { ...counters(), [field]: value }; countersFresh = true; }
+      });
+    }
+  }
   Object.defineProperty(state, "renderer", {
     configurable: true,
     enumerable: true,
@@ -175,12 +219,18 @@ export function bindLazyFrameDiagnostics(
     set: (value: AuraSceneEvidence) => { evidenceValue = value; evidenceFresh = true; }
   });
   return {
-    invalidate() { rendererFresh = false; evidenceFresh = false; },
+    invalidate() { rendererFresh = false; evidenceFresh = false; countersFresh = false; },
     freeze() {
       const finalRenderer = state.renderer;
       const finalEvidence = state.evidence;
       Object.defineProperty(state, "renderer", { configurable: true, enumerable: true, writable: true, value: finalRenderer });
       Object.defineProperty(state, "evidence", { configurable: true, enumerable: true, writable: true, value: finalEvidence });
+      if (deviceCounters) {
+        const finalTriangles = state.triangles;
+        const finalTextureBytes = state.textureBytes;
+        Object.defineProperty(state, "triangles", { configurable: true, enumerable: true, writable: true, value: finalTriangles });
+        Object.defineProperty(state, "textureBytes", { configurable: true, enumerable: true, writable: true, value: finalTextureBytes });
+      }
     }
   };
 }
@@ -227,6 +277,8 @@ export function snapshotDiagnostics(value: MutableDiagnostics): AuraDiagnostics 
     ...(shaderFailures.length > 0 ? { shaderFailures } : {}),
     ...(value.labels ? { labels: value.labels } : {}),
     ...(value.labelTelemetry ? { labelTelemetry: value.labelTelemetry } : {}),
-    ...(value.textBuckets ? { textBuckets: value.textBuckets } : {})
+    ...(value.textBuckets ? { textBuckets: value.textBuckets } : {}),
+    ...(value.triangles !== undefined ? { triangles: value.triangles } : {}),
+    ...(value.textureBytes !== undefined ? { textureBytes: value.textureBytes } : {})
   };
 }

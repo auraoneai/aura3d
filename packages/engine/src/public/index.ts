@@ -236,7 +236,7 @@ export type { AuraCustomMaterialSpec, AuraInstanceColorTarget, AuraMaterialRimSp
 // effect-node option types (tilt-shift DOF, god-ray density, outline targets).
 export { AURA_VFX_GENRE_VARIANTS } from "../agent-api/vfx/effects-api.js";
 export type { AuraBurstOptions, AuraTrailHandle, AuraTrailOptions, AuraVfxBuiltinSequence, AuraVfxGenreVariant, AuraVfxSpriteSource } from "../agent-api/index.js";
-export type { AuraDepthOfFieldOptions, AuraDepthOfFieldTiltShift, AuraOutlineOptions, AuraVolumetricFogOptions } from "../agent-api/nodes/effects.js";
+export type { AuraDepthOfFieldOptions, AuraDepthOfFieldTiltShift, AuraOutlineOptions, AuraScreenSpaceReflectionsOptions, AuraVolumetricFogOptions } from "../agent-api/nodes/effects.js";
 // GU47 E-H (WP-8): layered animation speed, procedural bone overrides, typed GLB actor
 // cross-fades and named parts, the pose-baked crowd kit and the GLB resource cache.
 export type { AuraActorPoseApi, AuraPlayLayerOptions } from "../agent-api/index.js";

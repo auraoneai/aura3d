@@ -62,7 +62,8 @@ describe("createAuraApp production bridge boundary", () => {
     expect(runtimeRenderer).toContain("productionRenderer.render(");
     expect(runtimeRenderer).toContain("productionRenderer.renderAsync(");
     expect(runtimeRenderer).toContain("rendererInteractiveFeatureReport");
-    expect(runtimeRenderer).toContain("createProductionRuntimeCollectedLights(snapshot, flags, { hemisphereAsEnvironment: true })");
+    // GU47 eint EB-2: an explicit renderer.quality tier rides along as the local shadow caster cap.
+    expect(runtimeRenderer).toContain("createProductionRuntimeCollectedLights(snapshot, flags, { hemisphereAsEnvironment: true, ...(mountShadowTier ? { shadowTier: mountShadowTier } : {}) })");
     expect(runtimeRenderer).toContain("productionRuntimeLights");
     expect(runtimeRenderer).toContain("productionRenderer.resize");
     expect(runtimeRenderer).toContain("productionRenderer.onDeviceLost");
