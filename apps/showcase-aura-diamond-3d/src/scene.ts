@@ -3,8 +3,9 @@
  * Moved out of main.ts unchanged (GU47 WP-18) so unit tests can build and audit the real scene without booting the game.
  * Presentation only: the sim in main.ts reads the field constants exported here (BASES, FIELDER_SPOTS) unchanged.
  */
-import { camera, effects, game, instances, lights, looks, material, model, primitives, scene } from "@aura3d/engine";
+import { camera, effects, game, instances, lights, looks, material, model, primitives, scene, sky, type AuraLookOverrides } from "@aura3d/engine";
 import { assets } from "./aura-assets.route";
+import { PARK_LOOKS, lookPlan, type DiamondLookPlan, type DiamondLookVariant, type DiamondSkyMode, type DiamondTier } from "../art/look";
 import {
   makeRng,
   MOUND_Z,
@@ -41,16 +42,40 @@ export const HIDDEN_SCALE = 0.0001;
  *  Scene construction                                                 *
  * ================================================================== */
 
-const chalkMat = () => material.pbr({ color: "#f5f1e4", roughness: 0.6, emissive: "#f5f1e4", emissiveIntensity: 0.18 });
+/** How a park is dressed: the look variant (`?look=original` is the 4.6.2 look), the quality tier and the sky mode. */
+export interface DiamondSceneContext {
+  readonly variant: DiamondLookVariant;
+  readonly tier: DiamondTier;
+  readonly skyMode: DiamondSkyMode;
+}
 
-export function buildFieldNodes(park: ParkSpec): any[] {
+export const DEFAULT_SCENE_CONTEXT: DiamondSceneContext = { variant: "gu47", tier: "high", skyMode: "analytic" };
+
+/** GU47 parks whose stadium lights are on (the LED wall cap glows; day parks paint it). */
+const NIGHT_LOOK: Readonly<Record<ParkId, boolean>> = { sandlot: false, skyline: true, canyon: false, ivy: false, dome: true, lunar: true };
+
+/** Chalk lines: the 4.6.2 glowing chalk, or GU47's park chalk with a 0.05 lift (DIA-M1) so it never reads as a light. */
+const chalkMat = (park: ParkSpec, ctx: DiamondSceneContext) =>
+  ctx.variant === "original"
+    ? material.pbr({ color: "#f5f1e4", roughness: 0.6, emissive: "#f5f1e4", emissiveIntensity: 0.18 })
+    : material.pbr({ color: PARK_LOOKS[park.id].turf.chalk, roughness: 0.7, emissive: PARK_LOOKS[park.id].turf.chalk, emissiveIntensity: 0.05 });
+
+export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEXT): any[] {
   const nodes: any[] = [];
-  const grass = material.pbr({ color: park.grass, roughness: 0.94 });
-  const grassAlt = material.pbr({ color: park.grassAlt, roughness: 0.94 });
-  const dirt = material.pbr({ color: park.dirt, roughness: 0.96 });
+  const gu47 = ctx.variant === "gu47";
+  const turf = PARK_LOOKS[park.id].turf;
+  const grass = material.pbr({ color: gu47 ? turf.grass : park.grass, roughness: 0.94 });
+  const grassAlt = material.pbr({ color: gu47 ? turf.stripe : park.grassAlt, roughness: 0.94 });
+  const dirt = material.pbr({ color: gu47 ? turf.clay : park.dirt, roughness: 0.96 });
   const wallMat = material.pbr({ color: park.wall, roughness: 0.7 });
-  const wallTopMat = material.emissive({ color: park.wallTop, emissive: park.wallTop, emissiveIntensity: park.night ? 0.85 : 0.2 });
+  const accent = PARK_LOOKS[park.id].accent;
+  const wallTopMat = !gu47
+    ? material.emissive({ color: park.wallTop, emissive: park.wallTop, emissiveIntensity: park.night ? 0.85 : 0.2 })
+    : NIGHT_LOOK[park.id]
+      ? material.emissive({ color: accent, emissive: accent, emissiveIntensity: 0.6 })
+      : material.pbr({ color: accent, roughness: 0.55 });
   const bagMat = material.pbr({ color: "#ece8d8", roughness: 0.65 });
+  const chalk = () => chalkMat(park, ctx);
 
   // Ground, mow stripes, infield dirt, home circle, mound
   nodes.push(
@@ -90,10 +115,10 @@ export function buildFieldNodes(park: ParkSpec): any[] {
   }
   nodes.push(
     primitives.box({ name: "home-plate", size: [0.44, 0.03, 0.44], material: bagMat }).position(0, 0.045, 0).rotate(0, Math.PI / 4, 0),
-    primitives.box({ name: "batters-box-l", size: [0.06, 0.02, 1.7], material: chalkMat() }).position(-1.15, 0.05, 0.35),
-    primitives.box({ name: "batters-box-r", size: [0.06, 0.02, 1.7], material: chalkMat() }).position(1.15, 0.05, 0.35),
-    primitives.box({ name: "batters-box-back", size: [2.3, 0.02, 0.06], material: chalkMat() }).position(0, 0.05, 1.2),
-    primitives.box({ name: "catchers-box-back", size: [1.4, 0.02, 0.06], material: chalkMat() }).position(0, 0.05, 2.1)
+    primitives.box({ name: "batters-box-l", size: [0.06, 0.02, 1.7], material: chalk() }).position(-1.15, 0.05, 0.35),
+    primitives.box({ name: "batters-box-r", size: [0.06, 0.02, 1.7], material: chalk() }).position(1.15, 0.05, 0.35),
+    primitives.box({ name: "batters-box-back", size: [2.3, 0.02, 0.06], material: chalk() }).position(0, 0.05, 1.2),
+    primitives.box({ name: "catchers-box-back", size: [1.4, 0.02, 0.06], material: chalk() }).position(0, 0.05, 2.1)
   );
 
   // Foul lines + poles
@@ -102,7 +127,7 @@ export function buildFieldNodes(park: ParkSpec): any[] {
     const fx = Math.sin((side * FOUL_DEG * Math.PI) / 180);
     const fz = -Math.cos((side * FOUL_DEG * Math.PI) / 180);
     nodes.push(
-      primitives.box({ name: `foul-line-${side}`, size: [0.09, 0.02, len], material: chalkMat() }).position((fx * len) / 2, 0.05, (fz * len) / 2).rotate(0, (side * FOUL_DEG * Math.PI) / 180, 0),
+      primitives.box({ name: `foul-line-${side}`, size: [0.09, 0.02, len], material: chalk() }).position((fx * len) / 2, 0.05, (fz * len) / 2).rotate(0, (side * FOUL_DEG * Math.PI) / 180, 0),
       primitives
         .cylinder({ name: `foul-pole-glow-${side}`, size: [0.14, 11, 0.14], material: material.emissive({ color: "#ffd76a", emissive: "#ffd76a", emissiveIntensity: park.night ? 0.9 : 0.25 }) })
         .position(fx * park.fenceCorner, 5.5, fz * park.fenceCorner),
@@ -375,7 +400,12 @@ export const FIELDER_SPOTS: Record<string, Vec3> = {
   "f-rf": [30, 0, -52]
 };
 
-export function buildActorsNodes(): any[] {
+export function buildActorsNodes(ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEXT, parkId: ParkId = "sandlot"): any[] {
+  const gu47 = ctx.variant === "gu47";
+  // GU47: the ball alone wears the reserved objective colour; the zone frame takes the park chalk, the landing ring its accent.
+  const ballColor = gu47 ? "#f5f1e4" : "#f4f1e8";
+  const zoneColor = gu47 ? PARK_LOOKS[parkId].turf.chalk : "#f5f1e4";
+  const landColor = gu47 ? PARK_LOOKS[parkId].accent : "#7dfcff";
   const nodes: any[] = [
     ...buildAthleteNodes("pitcher", assets.diamondAthlete, "Crouch_Idle_Loop"),
     ...buildAthleteNodes("batter", assets.diamondAthlete, "Idle_Loop"),
@@ -441,7 +471,7 @@ export function buildActorsNodes(): any[] {
   // Ball: a 16x12 sphere (about 360 triangles) instead of the 20,326-triangle GLB (C12); at 15 cm on the broadcast
   // camera the seams of the GLB were never visible. The sphere is centred on its node (the GLB was grounded by fit).
   nodes.push(
-    primitives.sphere({ name: "ball", size: [0.15, 0.15, 0.15], params: { widthSegments: 16, heightSegments: 12 }, material: material.pbr({ color: "#f4f1e8", roughness: 0.55 }) } as any).position(0, -60, 0).runtime(game.runtimeNode("ball")),
+    primitives.sphere({ name: "ball", size: [0.15, 0.15, 0.15], params: { widthSegments: 16, heightSegments: 12 }, material: material.pbr({ color: ballColor, roughness: 0.55 }) } as any).position(0, -60, 0).runtime(game.runtimeNode("ball")),
     primitives.cylinder({ name: "ball-shadow", size: [0.34, 0.006, 0.34], material: material.pbr({ color: "#000000", opacity: 0.28, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow")),
     effects.trail({ name: "ball-ribbon", target: "ball", color: "#f5f1e4", width: 0.1, maxPoints: 40, intensity: 0.85 } as any)
   );
@@ -456,8 +486,8 @@ export function buildActorsNodes(): any[] {
   nodes.push(
     primitives.torus({ name: "pci-ring", size: [0.42, 0.045] as any, material: material.emissive({ color: "#ffb03a", emissive: "#ffb03a", emissiveIntensity: 1.1 }) }).runtime(game.runtimeNode("pci-ring")),
     primitives.sphere({ name: "aim-dot", size: [0.16, 0.16, 0.16], material: material.emissive({ color: "#35d6ff", emissive: "#35d6ff", emissiveIntensity: 1.2 }) }).runtime(game.runtimeNode("aim-dot")),
-    primitives.torus({ name: "land-ring", size: [0.5, 0.04] as any, material: material.emissive({ color: "#7dfcff", emissive: "#7dfcff", emissiveIntensity: 1.15 }) }).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("land-ring")),
-    primitives.torus({ name: "zone-frame", size: [0.62, 0.03] as any, material: material.emissive({ color: "#f5f1e4", emissive: "#f5f1e4", emissiveIntensity: 0.3 }) }).position(0, ZONE_CY, 0.1).runtime(game.runtimeNode("zone-frame"))
+    primitives.torus({ name: "land-ring", size: [0.5, 0.04] as any, material: material.emissive({ color: landColor, emissive: landColor, emissiveIntensity: 1.15 }) }).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("land-ring")),
+    primitives.torus({ name: "zone-frame", size: [0.62, 0.03] as any, material: material.emissive({ color: zoneColor, emissive: zoneColor, emissiveIntensity: 0.3 }) }).position(0, ZONE_CY, 0.1).runtime(game.runtimeNode("zone-frame"))
   );
 
   // Celebration particle fountains (hidden until fired)
@@ -475,40 +505,68 @@ const QA_FLAGS = (() => {
   return { noAo: q.get("qa-ao") === "0", noContact: q.get("qa-contact") === "0" };
 })();
 
-export function buildParkScene(park: ParkSpec): any {
-  // fogDensityScale 0 removes the preset's volumetric fog: at stadium
-  // distances even a heavily scaled density washed the stands out in white.
-  const lookOverrides: Record<string, any> = {
-    sandlot: { fogDensityScale: 0, exposureEv: 0.14 },
-    skyline: { fogDensityScale: 0, exposureEv: 0.12 },
-    canyon: { fogDensityScale: 0, exposureEv: 0.1 },
-    ivy: { fogDensityScale: 0, exposureEv: 0.12 },
-    dome: { fogDensityScale: 0, exposureEv: 0.14 },
-    lunar: { fogDensityScale: 0, exposureEv: 0.16 }
-  };
-  // Match each look's own horizon instead of the old near-black navy slab.
-  const backdrop: Record<ParkId, string> = {
-    sandlot: "#c98a5a",
-    skyline: "#070a12",
-    canyon: "#8f9aa3",
-    ivy: "#9db8cf",
-    dome: "#101216",
-    lunar: "#04070d"
-  };
-  // QA-only switches for the AO and contact-shadow on/off capture pairs (LIGHT-06, C17): `?qa-ao=0`, `?qa-contact=0`.
-  const look = looks.preset(park.look as any, lookOverrides[park.id] ?? { fogDensityScale: 0 });
-  let lookNode: any = look;
-  if (QA_FLAGS.noAo) {
-    const g = look.toJSON() as any;
-    lookNode = { ...g, children: (g.children ?? []).filter((c: any) => c.effect !== "ambient-occlusion") };
+/**
+ * The park's look group (E-A `looks.preset` with the look-plan overrides). `?look=original` is the 4.6.2 call exactly:
+ * the park's engine look with fog removed and the old exposure. QA `?qa-ao=0` drops the look's AO node; a drawn HDRI
+ * whose row dims the background (the Dome) gets that intensity on its background only.
+ */
+function lookGroupNode(plan: DiamondLookPlan): any {
+  const group = looks.preset(plan.baseLook, plan.overrides as AuraLookOverrides).toJSON() as any;
+  let children: any[] = group.children ?? [];
+  if (QA_FLAGS.noAo) children = children.filter((c: any) => c.effect !== "ambient-occlusion");
+  if (plan.hdriBackgroundIntensity !== 1) {
+    children = children.map((c: any) =>
+      c.kind === "environment" && c.background !== false ? { ...c, background: { visible: true, intensity: plan.hdriBackgroundIntensity } } : c
+    );
   }
-  const sc = scene().add(lookNode).background(backdrop[park.id]);
+  return { ...group, children };
+}
+
+/** DIA-E2: the park's analytic sky (the HDRI then lights only). It neither captures the IBL nor tints the fog. */
+function skyNode(plan: DiamondLookPlan): any | null {
+  const s = plan.sky;
+  if (!s) return null;
+  if (s.model === "preetham") {
+    return sky.preetham({ name: "diamond sky", sun: s.sun, turbidity: s.turbidity, rayleigh: s.rayleigh, captureEnvironment: false, affectsFog: false });
+  }
+  return sky.gradient({
+    name: "diamond sky",
+    zenith: s.zenith,
+    horizon: s.horizon,
+    ground: s.ground,
+    ...(s.sun ? { sun: s.sun } : {}),
+    ...(s.stars ? { stars: s.stars } : {}),
+    captureEnvironment: false,
+    affectsFog: false
+  });
+}
+
+/**
+ * One ballpark (DIA-L1, E1, E2, E3, P1). GU47: the park's own HDRI, sun, key, rim, fog and grade from art/look.ts, its
+ * analytic sky where the row has one, Dome god rays on High, broadcast film grain; the output preset is applied by
+ * main.ts through `app.setOutput` (it is app state, not a scene node).
+ */
+export function buildParkScene(park: ParkSpec, ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEXT): any {
+  const plan = lookPlan(park.id, ctx.variant, ctx.tier, ctx.skyMode);
+  const clear = plan.clearColor === "look" ? looks.describe(plan.baseLook).v0.background : plan.clearColor;
+  const sc = scene();
+  // The god-ray node is also a scene-fog node (last visible wins), so it goes before the look and the look's fog stays active.
+  // No `lightPosition`: its type is a UV anchor while the bridge reads a world point, so S4 aims along the strongest
+  // directional light instead, which in the Dome is the key through the roof (look.ts row).
+  if (plan.godRays) {
+    sc.add(effects.volumetricFog({ name: "dome god rays", density: plan.godRays.density, intensity: plan.godRays.intensity, color: plan.godRays.color, godRayDensity: 0.35 }));
+  }
+  sc.add(lookGroupNode(plan)).background(clear);
+  const skyN = skyNode(plan);
+  if (skyN) sc.add(skyN);
+  // QA-only switches for the AO and contact-shadow on/off capture pairs (LIGHT-06, C17): `?qa-ao=0`, `?qa-contact=0`.
   if (!QA_FLAGS.noContact) sc.add(effects.contactShadows({ intensity: 0.75, length: 0.3 }));
+  sc.add(effects.vignette({ intensity: plan.vignette, smoothness: 0.7 }));
+  if (plan.grain !== null) sc.add(effects.filmGrain({ intensity: plan.grain }));
   return sc
-    .add(effects.vignette({ intensity: 0.16, smoothness: 0.7 }))
     .camera(camera.perspective({ fov: 42, near: 0.2, far: 700, position: [0, 26, 42], target: [0, 0, -14] }))
-    .addMany(buildFieldNodes(park))
+    .addMany(buildFieldNodes(park, ctx))
     .addMany(buildStandsNodes(park))
     .addMany(buildParkExtras(park))
-    .addMany(buildActorsNodes());
+    .addMany(buildActorsNodes(ctx, park.id));
 }

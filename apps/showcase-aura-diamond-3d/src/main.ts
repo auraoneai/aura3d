@@ -145,8 +145,10 @@ import {
   CAP_ATTACH_POS,
   BELT_ATTACH_POS,
   FIELDER_SPOTS,
-  buildParkScene
+  buildParkScene,
+  type DiamondSceneContext
 } from "./scene";
+import { lookPlan, resolveDiamondTier, resolveLookVariant, resolveSkyMode } from "../art/look";
 
 const HOME_PLATE: Vec3 = [0, 0.05, 0.4];
 
@@ -198,7 +200,7 @@ interface ClubSpec {
 }
 
 const CLUBS: readonly ClubSpec[] = [
-  { id: "wash", name: "Harbor Wash", abbr: "HBW", color: "#2e8fa8", tag: "Patient contact club — a line-drive machine.", rep: ["fourseam", "changeup", "curve"], power: 0.42, contact: 0.8, pitching: 0.6 },
+  { id: "wash", name: "Harbor Wash", abbr: "HBW", color: "#2a86a0", tag: "Patient contact club — a line-drive machine.", rep: ["fourseam", "changeup", "curve"], power: 0.42, contact: 0.8, pitching: 0.6 },
   { id: "liners", name: "Midtown Skyliners", abbr: "MSC", color: "#ffb03a", tag: "Window-shattering power bats.", rep: ["fourseam", "slider", "changeup"], power: 0.88, contact: 0.56, pitching: 0.64 },
   { id: "riders", name: "Canyon Rim Riders", abbr: "CRR", color: "#a8593a", tag: "Gap hunters — they live in the deep alleys.", rep: ["curve", "slider", "fourseam"], power: 0.62, contact: 0.7, pitching: 0.68 },
   { id: "classics", name: "Ivy Classics", abbr: "IVC", color: "#2e6b3f", tag: "Small-ball artisans. Death by a thousand singles.", rep: ["curve", "changeup"], power: 0.36, contact: 0.86, pitching: 0.56 },
@@ -360,12 +362,23 @@ const getEl = <T extends HTMLElement>(id: string): T | null => document.getEleme
 function boot(): void {
   const mountPoint = document.getElementById("app");
   const renderError = getEl("render-error");
+  // GU47 (WP-18): `?look=original` keeps the 4.6.2 look, `?tier=` forces the quality tier, `?sky=hdri` the HDRI sky.
+  const bootSearch = window.location.search;
+  const sceneCtx: DiamondSceneContext = {
+    variant: resolveLookVariant(bootSearch),
+    tier: resolveDiamondTier(bootSearch, window.matchMedia?.("(pointer: coarse)")?.matches ?? false, window.innerWidth),
+    skyMode: resolveSkyMode(bootSearch)
+  };
+  // Boot straight into the `?park=` park so a park link fetches only its own HDRI (DIA-E1), not Harbor's first.
+  const bootParkParam = new URLSearchParams(bootSearch).get("park") as ParkId | null;
+  const bootPark: ParkId = bootParkParam && PARKS[bootParkParam] ? bootParkParam : "sandlot";
   let auraApp: ReturnType<typeof createAuraApp>;
   try {
     auraApp = createAuraApp("#app", {
-      scene: buildParkScene(PARKS.sandlot),
-      qualityRebuild: { flags: ["game", "animation"] },
-      renderer: { quality: "high" }
+      scene: buildParkScene(PARKS[bootPark], sceneCtx),
+      // `post` is default-on since 4.5; named so `diagnostics().post.stagesRan` is reported whatever the defaults (DIA-P1).
+      qualityRebuild: { flags: ["game", "animation", "post"] },
+      renderer: { quality: sceneCtx.tier }
     } as any);
   } catch (err) {
     if (renderError) {
@@ -376,6 +389,23 @@ function boot(): void {
   }
   if (!mountPoint) return;
   const app = auraApp;
+
+  /**
+   * The park's broadcast output (DIA-P1): output preset, operator and exposure through C-05 `setOutput` (app state, so
+   * it is re-applied on every park switch). The cinematic-film preset carries a DOF stage; live play never blurs
+   * (DIA-P2: DOF only in the walk-up and home-run shots). `?look=original` leaves the output untouched.
+   */
+  function applyParkLook(id: ParkId): void {
+    const plan = lookPlan(id, sceneCtx.variant, sceneCtx.tier, sceneCtx.skyMode);
+    if (!plan.output) return;
+    try {
+      (app as any).setOutput?.(plan.output);
+      (app as any).post?.setEffectEnabled?.("depth-of-field", false);
+    } catch {
+      /* output is presentation only; a missing surface keeps the default output */
+    }
+  }
+  applyParkLook(bootPark);
 
   /* ---------- DOM refs ---------- */
   const el = {
@@ -626,7 +656,7 @@ function boot(): void {
     homer: { fx: { kind: "ring", count: 26, color: "#ffb03a", speed: 6.5 }, cue: "homer", hitStop: 0.09, shake: 0.55, punch: { fovDeg: 3.6, dolly: -0.5, ms: 320 }, flash: { color: "#ffb03a", peak: 0.22, ms: 180 } },
     strikeout: { cue: "strikeout", flash: { color: "#ff5252", peak: 0.12, ms: 130 } },
     pop: { cue: "pop", punch: { fovDeg: 1.2, ms: 140 } },
-    foul: { cue: "foul", flash: { color: "#ff9a3d", peak: 0.1, ms: 110 } },
+    foul: { cue: "foul", flash: { color: "#ff9f47", peak: 0.1, ms: 110 } },
     pitch: { cue: "pitch" },
     swing: { cue: "swing", punch: { fovDeg: 0.8, ms: 100 } },
     walkoff: { cue: "homerBig", shake: 0.5, punch: { fovDeg: 3.2, ms: 380 }, flash: { color: "#ffd76a", peak: 0.24, ms: 260 } },
@@ -735,7 +765,7 @@ function boot(): void {
     mode: "quick",
     pendingMode: "quick",
     phase: "menu",
-    park: "sandlot",
+    park: bootPark,
     diff: "pro",
     playerClub: "seals",
     cpuClub: "liners",
@@ -1166,7 +1196,8 @@ function boot(): void {
     if (!PARKS[id] || G.park === id) return;
     G.park = id;
     try {
-      app.setScene(buildParkScene(PARKS[id]));
+      app.setScene(buildParkScene(PARKS[id], sceneCtx));
+      applyParkLook(id);
       bindHandles();
       G.lastBatColor = "";
       G.lastFieldColor = "";
@@ -3569,6 +3600,10 @@ function boot(): void {
       framesRendered,
       autopilot: G.autopilot,
       look: park().look,
+      // GU47 (WP-18): which look is mounted, on which quality tier and with which sky.
+      lookVariant: sceneCtx.variant,
+      lookTier: sceneCtx.tier,
+      lookSky: sceneCtx.skyMode,
       mode: G.mode,
       phase: G.phase,
       cameraMode: G.cam.mode,

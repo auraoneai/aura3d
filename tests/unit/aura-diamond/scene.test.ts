@@ -1,0 +1,123 @@
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
+import { describe, expect, it } from "vitest";
+import { PARK_LOOKS } from "../../../apps/showcase-aura-diamond-3d/art/look";
+import { buildParkScene, DEFAULT_SCENE_CONTEXT, type DiamondSceneContext } from "../../../apps/showcase-aura-diamond-3d/src/scene";
+import { PARKS, PARK_ORDER, type ParkId } from "../../../apps/showcase-aura-diamond-3d/src/rules";
+
+const ROOT = join(__dirname, "../../..");
+
+type Node = { readonly kind: string; readonly name?: string; readonly effect?: string; readonly children?: readonly Node[]; readonly [k: string]: unknown };
+
+function flat(park: ParkId, ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEXT): { nodes: Node[]; background: unknown } {
+  const snap = buildParkScene(PARKS[park], ctx).toJSON() as { nodes: Node[]; background?: unknown };
+  const out: Node[] = [];
+  const walk = (list: readonly Node[]): void => {
+    for (const n of list) {
+      out.push(n);
+      if (n.children) walk(n.children);
+    }
+  };
+  walk(snap.nodes);
+  return { nodes: out, background: snap.background };
+}
+
+const ORIGINAL: DiamondSceneContext = { variant: "original", tier: "high", skyMode: "analytic" };
+
+function filesUnder(dir: string): string[] {
+  const out: string[] = [];
+  for (const name of readdirSync(dir)) {
+    if (name === "node_modules" || name === "public") continue;
+    const full = join(dir, name);
+    if (statSync(full).isDirectory()) out.push(...filesUnder(full));
+    else if (/\.(ts|html|css|json)$/.test(name)) out.push(full);
+  }
+  return out;
+}
+
+describe("aura-diamond GU47 scene (DIA-L1, E1, E2, E3, P1)", () => {
+  it("lights each park with exactly its own 1k HDRI", () => {
+    for (const park of PARK_ORDER) {
+      const envs = flat(park).nodes.filter((n) => n.kind === "environment");
+      expect(envs.map((n) => n.name)).toEqual([`look hdri ${PARK_LOOKS[park].hdri.id}_1k`]);
+    }
+  });
+
+  it("draws the analytic sky on Harbor, Canyon and Lunar and hides their HDRI; Midtown, Ivy and the Dome draw the HDRI", () => {
+    for (const park of PARK_ORDER) {
+      const { nodes } = flat(park);
+      const skies = nodes.filter((n) => n.kind === "sky");
+      const env = nodes.find((n) => n.kind === "environment");
+      if (park === "sandlot" || park === "canyon" || park === "lunar") {
+        expect(skies).toHaveLength(1);
+        expect(env?.background).toBe(false);
+      } else {
+        expect(skies).toHaveLength(0);
+        expect(env?.background).not.toBe(false);
+      }
+    }
+    const dome = flat("dome").nodes.find((n) => n.kind === "environment");
+    expect(dome?.background).toEqual({ visible: true, intensity: 0.85 });
+    const lunarSky = flat("lunar").nodes.find((n) => n.kind === "sky") as { spec?: { stars?: { count: number }; sun?: unknown } } | undefined;
+    expect(lunarSky?.spec?.stars?.count).toBe(1800);
+    expect(lunarSky?.spec?.sun).toBeUndefined();
+  });
+
+  it("fogs every park but Lunar, keeps the look fog the active scene fog, and adds the Dome god rays on High only", () => {
+    for (const park of PARK_ORDER) {
+      const { nodes } = flat(park);
+      const fogs = nodes.filter((n) => n.kind === "effect" && (n.effect === "fog" || n.effect === "volumetric-fog"));
+      if (park === "lunar") {
+        expect(fogs).toHaveLength(0);
+        continue;
+      }
+      // LiveAtmosphere uses the last visible fog node in scene order: it must be the look's fog.
+      expect(fogs.at(-1)?.name).toBe("look fog");
+      expect(fogs.at(-1)?.color).toBe(PARK_LOOKS[park].fog ? (PARK_LOOKS[park].fog as { color: string }).color : undefined);
+    }
+    const godRays = (ctx: DiamondSceneContext) => flat("dome", ctx).nodes.filter((n) => n.effect === "volumetric-fog");
+    expect(godRays(DEFAULT_SCENE_CONTEXT)).toHaveLength(1);
+    expect(godRays({ ...DEFAULT_SCENE_CONTEXT, tier: "medium" })).toHaveLength(0);
+  });
+
+  it("grades each park with its own key, rim and broadcast grain (none on Low)", () => {
+    for (const park of PARK_ORDER) {
+      const { nodes, background } = flat(park);
+      const key = nodes.find((n) => n.name === "look key light");
+      expect(key?.color).toBe(PARK_LOOKS[park].sun.color);
+      expect(key?.intensity).toBe(PARK_LOOKS[park].sun.intensity);
+      expect(nodes.some((n) => n.name === "look rim light")).toBe(PARK_LOOKS[park].rim !== false);
+      expect(nodes.find((n) => n.effect === "film-grain")?.intensity).toBe(0.03);
+      // `effects.bloom` does not copy `name`, so the look's bloom node is found by its effect.
+      const bloom = nodes.find((n) => n.effect === "bloom");
+      expect(bloom?.threshold).toBe(PARK_LOOKS[park].post.bloom.threshold);
+      expect(bloom?.intensity).toBe(PARK_LOOKS[park].post.bloom.intensity);
+      expect(background).toBe(PARK_LOOKS[park].background);
+      expect(flat(park, { ...DEFAULT_SCENE_CONTEXT, tier: "low" }).nodes.some((n) => n.effect === "film-grain")).toBe(false);
+    }
+  });
+
+  it("keeps ?look=original on the 4.6.2 look: the park's engine look, no fog, no sky, the look's own backdrop", () => {
+    const backdrops: Record<ParkId, string> = { sandlot: "golden-hour", skyline: "night-city", canyon: "overcast", ivy: "outdoor-day", dome: "interior-industrial", lunar: "polar-night" };
+    for (const park of PARK_ORDER) {
+      const { nodes, background } = flat(park, ORIGINAL);
+      expect(nodes.some((n) => n.kind === "group" && n.name === `aura-look:${backdrops[park]}`)).toBe(true);
+      expect(nodes.some((n) => n.kind === "sky")).toBe(false);
+      expect(nodes.some((n) => n.effect === "fog" || n.effect === "film-grain" || n.effect === "volumetric-fog")).toBe(false);
+      expect(typeof background).toBe("string");
+    }
+    expect(flat("sandlot", ORIGINAL).nodes.find((n) => n.name === "ball")?.material).toMatchObject({ color: "#f4f1e8" });
+  });
+
+  it("paints the ball, and only the ball, in the reserved #f5f1e4", () => {
+    for (const park of PARK_ORDER) {
+      const owners = flat(park).nodes.filter((n) => JSON.stringify((n as { material?: unknown }).material ?? {}).toLowerCase().includes("#f5f1e4"));
+      expect(owners.map((n) => n.name)).toEqual(["ball"]);
+    }
+  });
+
+  it("has removed the three backdrop hexes copied from Hoops from the whole app folder (DIA-E1)", () => {
+    const text = filesUnder(join(ROOT, "apps/showcase-aura-diamond-3d")).map((f) => readFileSync(f, "utf8").toLowerCase()).join("\n");
+    for (const h of ["#c98a5a", "#070a12", "#9db8cf"]) expect(text.includes(h)).toBe(false);
+  });
+});
