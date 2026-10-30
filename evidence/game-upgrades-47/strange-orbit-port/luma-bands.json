@@ -1,0 +1,9 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "strange-orbit-port",
+  "note": "WP-25 SO47-X1 / L2 bands (software WebGL2). Menu 80-110 and race 60-95 share one target, so the frame band is the union; the per-shot split is checked from the shot id in phase 2.",
+  "default": { "mean": [60, 110], "darkFrac": [null, 0.3], "clipFrac": [null, 0.02], "crops": { "rider": { "mean": [95, 125] } } },
+  "variants": {
+    "strange-orbit-port--original": { "mean": [35, 95], "darkFrac": [null, 0.6], "clipFrac": [null, 0.05], "crops": {} }
+  }
+}
