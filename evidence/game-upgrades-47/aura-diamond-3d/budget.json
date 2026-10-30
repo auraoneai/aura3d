@@ -1,0 +1,44 @@
+{
+  "schema": "aura3d-gu47-budget/1",
+  "slug": "aura-diamond-3d",
+  "lane": "g08",
+  "scope": "software WebGL2 (remote headless Chromium, SwiftShader); engine draw calls from app.diagnostics().drawCalls at steady state. Not a GPU frame-time or real-device claim.",
+  "budget": {
+    "drawCalls": { "1280x720": 450, "390x844": 260 },
+    "triangles": 1200000,
+    "steadyHeapMB": 300,
+    "routeTransferDeltaMB": 12,
+    "effectInstances": 96
+  },
+  "beforeSource": "apps/showcase-aura-diamond-3d/route-health.json performance (runs g08-w2-after-grp1..grp3, evidence/aura-diamond-3d/audit-fix/after/meta.jsonl); null where the run did not record the metric",
+  "variants": {
+    "sandlot": {
+      "before": { "drawCalls": { "1280x720": 528, "390x844": 276 }, "triangles": null, "textureBytes": null, "pageMB": null, "jsHeapMB": 273, "routeJsGzipDeltaKB": 0, "runnerFps": null },
+      "after": null
+    },
+    "skyline": {
+      "before": { "drawCalls": { "1280x720": 370, "390x844": 177 }, "triangles": null, "textureBytes": null, "pageMB": null, "jsHeapMB": 215, "routeJsGzipDeltaKB": 0, "runnerFps": null },
+      "after": null
+    },
+    "canyon": {
+      "before": { "drawCalls": { "1280x720": 505, "390x844": null }, "triangles": null, "textureBytes": null, "pageMB": null, "jsHeapMB": 242, "routeJsGzipDeltaKB": 0, "runnerFps": null },
+      "after": null
+    },
+    "ivy": {
+      "before": { "drawCalls": { "1280x720": 394, "390x844": null }, "triangles": null, "textureBytes": null, "pageMB": null, "jsHeapMB": 257, "routeJsGzipDeltaKB": 0, "runnerFps": null },
+      "after": null
+    },
+    "dome": {
+      "before": { "drawCalls": { "1280x720": 337, "390x844": null }, "triangles": null, "textureBytes": null, "pageMB": null, "jsHeapMB": 242, "routeJsGzipDeltaKB": 0, "runnerFps": null },
+      "after": null
+    },
+    "lunar": {
+      "before": { "drawCalls": { "1280x720": 379, "390x844": null }, "triangles": null, "textureBytes": null, "pageMB": null, "jsHeapMB": 228, "routeJsGzipDeltaKB": 0, "runnerFps": null },
+      "after": null
+    }
+  },
+  "expectedDrawDelta": {
+    "note": "Phase-1 estimate per row (lane report g08.md); measured after-rows are phase 2.",
+    "rows": {}
+  }
+}

@@ -1,0 +1,1008 @@
+{
+  "schema": "aura3d.art-direction-audit/1",
+  "source": "apps/showcase-aura-diamond-3d/art/direction.ts",
+  "sourceSha256": "0813c47521221f471ed473723962653b43d567dbd9475f0e79ab4cf7c9d87c4f",
+  "id": "showcase-aura-diamond-3d",
+  "genre": "golf-physics",
+  "signatureEffect": "bat-crack splinter flash",
+  "palette": {
+    "primary": [
+      "#3d7a35",
+      "#b4623c",
+      "#e8e2cf",
+      "#24302a"
+    ],
+    "accent": "#f2a93b",
+    "reservedObjective": "#f5f1e4"
+  },
+  "environment": {
+    "hdri": "belfast_sunset_puresky",
+    "background": "sky"
+  },
+  "violations": [],
+  "snapshot": {
+    "lights": [
+      {
+        "type": "directional",
+        "shadow": true,
+        "intensity": 2.5
+      },
+      {
+        "type": "directional",
+        "shadow": false,
+        "intensity": 0.45
+      }
+    ],
+    "hasAmbient": false,
+    "environment": {
+      "kind": "hdri",
+      "background": true
+    },
+    "models": [
+      {
+        "assetKey": "diamondBase",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondFoulPole",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondDugout",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondStadium",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "showcaseStadiumSeats",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondCrowdAthlete",
+        "triangles": 3809,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondCrowdAthlete",
+        "triangles": 3809,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondCrowdAthlete",
+        "triangles": 3809,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondCrowdAthlete",
+        "triangles": 3809,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondCrowdAthlete",
+        "triangles": 3809,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondCrowdAthlete",
+        "triangles": 3809,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondCrowdAthlete",
+        "triangles": 3809,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondCrowdAthlete",
+        "triangles": 3809,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondCrowdAthlete",
+        "triangles": 3809,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondCrowdAthlete",
+        "triangles": 3809,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondCrowdAthlete",
+        "triangles": 3809,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondCrowdAthlete",
+        "triangles": 3809,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondCrowdAthlete",
+        "triangles": 3809,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondCrowdAthlete",
+        "triangles": 3809,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondCrowdAthlete",
+        "triangles": 3809,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondCrowdAthlete",
+        "triangles": 3809,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondCrowdAthlete",
+        "triangles": 3809,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondCrowdAthlete",
+        "triangles": 3809,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondScoreboard",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondHarborPier",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondTower",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondCanyonArch",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondRock",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondRock",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondFloodlight",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondAthlete",
+        "triangles": 31758,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondAthlete",
+        "triangles": 31758,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondAthlete",
+        "triangles": 31758,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondAthlete",
+        "triangles": 31758,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondAthlete",
+        "triangles": 31758,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondAthlete",
+        "triangles": 31758,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondAthlete",
+        "triangles": 31758,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondAthlete",
+        "triangles": 31758,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondAthlete",
+        "triangles": 31758,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondAthlete",
+        "triangles": 31758,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondAthlete",
+        "triangles": 31758,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondAthlete",
+        "triangles": 31758,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondAthlete",
+        "triangles": 31758,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondAthlete",
+        "triangles": 31758,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondAthlete",
+        "triangles": 31758,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondGlove",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondGlove",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondGlove",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondGlove",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondGlove",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondGlove",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondGlove",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondGlove",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondGlove",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondGlove",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondBat",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
+    "materials": [
+      {
+        "node": "field-grass",
+        "practical": false
+      },
+      {
+        "node": "field-clay",
+        "practical": false
+      },
+      {
+        "node": "field-basepaths",
+        "practical": false
+      },
+      {
+        "node": "field-plates",
+        "practical": false
+      },
+      {
+        "node": "field-chalk",
+        "emissiveIntensity": 0.05,
+        "practical": false
+      },
+      {
+        "node": "foul-pole-glows",
+        "emissiveIntensity": 0.25,
+        "practical": true
+      },
+      {
+        "node": "outfield-wall",
+        "practical": false
+      },
+      {
+        "node": "outfield-wall-cap",
+        "practical": false
+      },
+      {
+        "node": "wall-park-name",
+        "emissiveIntensity": 0.12,
+        "practical": true
+      },
+      {
+        "node": "warning-track",
+        "practical": false
+      },
+      {
+        "node": "ondeck-l",
+        "practical": false
+      },
+      {
+        "node": "ondeck-r",
+        "practical": false
+      },
+      {
+        "node": "bleacher-risers",
+        "practical": false
+      },
+      {
+        "node": "bleacher-benches",
+        "practical": false
+      },
+      {
+        "node": "stand-fans",
+        "practical": false
+      },
+      {
+        "node": "stand-fan-heads",
+        "practical": false
+      },
+      {
+        "node": "scoreboard-screen",
+        "emissiveIntensity": 0.9,
+        "practical": true
+      },
+      {
+        "node": "harbor-headland",
+        "practical": false
+      },
+      {
+        "node": "pitcher-cap",
+        "practical": false
+      },
+      {
+        "node": "pitcher-belt",
+        "practical": false
+      },
+      {
+        "node": "f-c-cap",
+        "practical": false
+      },
+      {
+        "node": "f-c-belt",
+        "practical": false
+      },
+      {
+        "node": "f-1b-cap",
+        "practical": false
+      },
+      {
+        "node": "f-1b-belt",
+        "practical": false
+      },
+      {
+        "node": "f-2b-cap",
+        "practical": false
+      },
+      {
+        "node": "f-2b-belt",
+        "practical": false
+      },
+      {
+        "node": "f-ss-cap",
+        "practical": false
+      },
+      {
+        "node": "f-ss-belt",
+        "practical": false
+      },
+      {
+        "node": "f-3b-cap",
+        "practical": false
+      },
+      {
+        "node": "f-3b-belt",
+        "practical": false
+      },
+      {
+        "node": "f-lf-cap",
+        "practical": false
+      },
+      {
+        "node": "f-lf-belt",
+        "practical": false
+      },
+      {
+        "node": "f-cf-cap",
+        "practical": false
+      },
+      {
+        "node": "f-cf-belt",
+        "practical": false
+      },
+      {
+        "node": "f-rf-cap",
+        "practical": false
+      },
+      {
+        "node": "f-rf-belt",
+        "practical": false
+      },
+      {
+        "node": "batter-cap",
+        "practical": false
+      },
+      {
+        "node": "batter-belt",
+        "practical": false
+      },
+      {
+        "node": "runner-0-cap",
+        "practical": false
+      },
+      {
+        "node": "runner-0-belt",
+        "practical": false
+      },
+      {
+        "node": "runner-1-cap",
+        "practical": false
+      },
+      {
+        "node": "runner-1-belt",
+        "practical": false
+      },
+      {
+        "node": "runner-2-cap",
+        "practical": false
+      },
+      {
+        "node": "runner-2-belt",
+        "practical": false
+      },
+      {
+        "node": "bat-cal",
+        "practical": false
+      },
+      {
+        "node": "ball",
+        "practical": false
+      },
+      {
+        "node": "ball-shadow",
+        "practical": false
+      },
+      {
+        "node": "pci-ring",
+        "emissiveIntensity": 1.1,
+        "practical": true
+      },
+      {
+        "node": "aim-dot",
+        "emissiveIntensity": 1.2,
+        "practical": true
+      },
+      {
+        "node": "land-ring",
+        "emissiveIntensity": 1.15,
+        "practical": true
+      },
+      {
+        "node": "zone-frame",
+        "emissiveIntensity": 0.3,
+        "practical": true
+      }
+    ],
+    "drawCalls": 0
+  },
+  "direction": {
+    "id": "showcase-aura-diamond-3d",
+    "genre": "golf-physics",
+    "fantasy": "Summer baseball on broadcast TV: six ballparks, each a postcard with its own hour, sky and light.",
+    "rebuildTier": "S-presentation",
+    "wave": 4,
+    "references": [
+      {
+        "file": "references/broadcast-baseball.json",
+        "source": "generic reference: centre-field broadcast camera of a professional ballgame (any league, any season)",
+        "licence": "reference-only",
+        "why": "Mown turf stripes, terracotta infield clay, chalk lines and a warm broadcast film grade under one hard key"
+      },
+      {
+        "file": "references/ballpark-postcards.json",
+        "source": "generic reference: mid-century travel postcards of ballparks at golden hour, night and indoors",
+        "licence": "reference-only",
+        "why": "One hour and one sky per venue, a visible horizon behind the stands and a single accent colour per park"
+      },
+      {
+        "file": "references/bat-crack.json",
+        "source": "generic reference: slow-motion footage of a wooden bat meeting a pitched ball",
+        "licence": "reference-only",
+        "why": "The contact frame: ash splinters leaving the barrel and a short white flash read as the moment of the swing"
+      }
+    ],
+    "palette": {
+      "primary": [
+        "#3d7a35",
+        "#b4623c",
+        "#e8e2cf",
+        "#24302a"
+      ],
+      "accent": "#f2a93b",
+      "reservedObjective": "#f5f1e4"
+    },
+    "lighting": {
+      "key": {
+        "type": "directional",
+        "colorTemperatureK": 2600,
+        "shadow": true
+      },
+      "fill": "ibl",
+      "practicals": 6,
+      "environment": {
+        "hdri": "belfast_sunset_puresky",
+        "background": "sky"
+      },
+      "exposureEV": 0.1
+    },
+    "framing": {
+      "rig": "static",
+      "subjectHeightFraction": [
+        0.18,
+        0.45
+      ],
+      "fovDeg": [
+        40,
+        48
+      ],
+      "mobile": "both"
+    },
+    "assets": [
+      {
+        "role": "character",
+        "assetKey": "diamondAthlete",
+        "maxTriangles": 32000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048,
+        "animated": {
+          "clips": [
+            "Idle_Loop",
+            "Crouch_Idle_Loop",
+            "Ready"
+          ]
+        }
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "diamondCrowdAthlete",
+        "maxTriangles": 4000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "Idle_Loop"
+          ]
+        }
+      },
+      {
+        "role": "prop",
+        "assetKey": "diamondBat",
+        "maxTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "diamondGlove",
+        "maxTriangles": 12000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "diamondBase",
+        "maxTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "diamondFoulPole",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "diamondDugout",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "diamondStadium",
+        "maxTriangles": 120000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "diamondScoreboard",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "diamondFloodlight",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "showcaseStadiumSeats",
+        "maxTriangles": 8000,
+        "textureSet": "BC",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "diamondHarborPier",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "diamondTower",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "diamondCanyonArch",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "diamondRock",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "diamondIvyWall",
+        "maxTriangles": 120000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "diamondTrophy",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "diamondTyphoonDome",
+        "maxTriangles": 150000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "diamondEarthRise",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "diamondLunarRover",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "diamondMoonDome",
+        "maxTriangles": 120000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      }
+    ],
+    "vfx": [
+      {
+        "event": "bat-contact",
+        "kind": "diamond-bat-crack",
+        "flipbook": "debris-chips"
+      },
+      {
+        "event": "ball-landing",
+        "kind": "diamond-clay-puff",
+        "flipbook": "smoke-a"
+      },
+      {
+        "event": "foul-line-landing",
+        "kind": "diamond-chalk-puff",
+        "flipbook": "smoke-b"
+      },
+      {
+        "event": "home-run",
+        "kind": "diamond-hr-firework",
+        "flipbook": "spark-streak"
+      },
+      {
+        "event": "canyon-landing",
+        "kind": "diamond-canyon-dust",
+        "flipbook": "smoke-b"
+      },
+      {
+        "event": "dome-home-run",
+        "kind": "diamond-dome-confetti",
+        "flipbook": "debris-chips"
+      },
+      {
+        "event": "lunar-landing",
+        "kind": "diamond-regolith-arc",
+        "flipbook": "dust-mote"
+      },
+      {
+        "event": "ball-flight",
+        "kind": "trail"
+      }
+    ],
+    "audio": [
+      {
+        "event": "bat-contact",
+        "cue": "crack",
+        "variants": 1
+      },
+      {
+        "event": "foul-tip",
+        "cue": "contact",
+        "variants": 1
+      },
+      {
+        "event": "pitch",
+        "cue": "pitch",
+        "variants": 1
+      },
+      {
+        "event": "mitt-catch",
+        "cue": "pop",
+        "variants": 1
+      },
+      {
+        "event": "foul-ball",
+        "cue": "foul",
+        "variants": 1
+      },
+      {
+        "event": "strikeout",
+        "cue": "strikeout",
+        "variants": 1
+      },
+      {
+        "event": "home-run",
+        "cue": "homer",
+        "variants": 2
+      },
+      {
+        "event": "crowd-bed",
+        "cue": "crowd",
+        "variants": 1
+      },
+      {
+        "event": "swing",
+        "cue": "swing",
+        "variants": 1
+      },
+      {
+        "event": "win",
+        "cue": "win",
+        "variants": 1
+      },
+      {
+        "event": "walk",
+        "cue": "walk",
+        "variants": 1
+      }
+    ],
+    "signatureEffect": "bat-crack splinter flash",
+    "criticalCategories": [
+      "lighting",
+      "environment_world",
+      "atmospheric_effects",
+      "vfx",
+      "camera"
+    ],
+    "tiers": {
+      "low": {
+        "particles": 400,
+        "shadowMap": 1024,
+        "cascades": 1,
+        "textureMax": 1024
+      },
+      "medium": {
+        "particles": 800,
+        "shadowMap": 2048,
+        "cascades": 2,
+        "textureMax": 2048
+      },
+      "high": {
+        "particles": 1200,
+        "shadowMap": 2048,
+        "cascades": 3,
+        "textureMax": 2048
+      },
+      "ultra": {
+        "particles": 1600,
+        "shadowMap": 4096,
+        "cascades": 4,
+        "textureMax": 4096
+      }
+    }
+  }
+}

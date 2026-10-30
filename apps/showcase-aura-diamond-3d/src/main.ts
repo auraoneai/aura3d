@@ -21,19 +21,12 @@
  *   field geometry. The DOM HUD is wired every frame to the ids in index.html.
  */
 import {
-  camera,
   createAuraApp,
   createFixedStepLoop,
   createGameAudio,
   effects,
   game,
-  instances,
-  lights,
-  looks,
-  material,
-  model,
-  primitives,
-  scene
+  material
 } from "@aura3d/engine";
 import {
   createJuice,
@@ -90,12 +83,7 @@ import {
   shouldResumeClassic,
   currentFixture,
   crowdPlacements,
-  bleacherPlacements,
-  shellPlacements,
-  scoreboardPlacement,
-  propSpot,
   countAfterPitch,
-  HARBOR_WATER,
   type Vec3,
   type ParkId,
   type ParkSpec,
@@ -132,7 +120,8 @@ type Phase =
   | "pitchSelect"
   | "pitchMeter"
   | "gameover";
-type CamMode = "menuOrbit" | "batting" | "pitching" | "track" | "celebrate";
+/** `sequence`: a GU47 broadcast shot between plays (art/cameraDirector.ts). */
+type CamMode = "menuOrbit" | "batting" | "pitching" | "track" | "celebrate" | "sequence";
 
 const smoothstep = (t: number): number => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
 const mix3 = (a: Vec3, b: Vec3, t: number): Vec3 => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
@@ -146,15 +135,29 @@ const jitter = (rng: () => number): number => rng() + rng() - 1;
  *  Field geometry (metres, compact-but-proportional diamond)          *
  * ================================================================== */
 
-const BASE_PATH = 12.73; // home→1B legs at 45°, ~18 m paths
-const BASES: readonly Vec3[] = [
-  [BASE_PATH, 0.09, -BASE_PATH], // 1B
-  [0, 0.09, -BASE_PATH * 2], // 2B
-  [-BASE_PATH, 0.09, -BASE_PATH] // 3B
-];
+// The scene builders and the field constants they share with the sim live in ./scene (moved unchanged, GU47 WP-18).
+import {
+  BASES,
+  TRAIL_COUNT,
+  HIDDEN_SCALE,
+  FIELDER_IDS,
+  GLOVE_OWNERS,
+  KIT_OWNERS,
+  CAP_ATTACH_POS,
+  BELT_ATTACH_POS,
+  FIELDER_SPOTS,
+  buildParkScene,
+  type DiamondSceneContext
+} from "./scene";
+import { PARK_LOOKS, hudAccent, lookPlan, resolveDiamondTier, resolveLookVariant, resolveSkyMode } from "../art/look";
+import { BoardThrottle, boardModel, homeRunPhase } from "../art/board";
+import { cheerHop, earthYaw } from "../art/ambient";
+import { boardTexture } from "./boardTexture";
+import { isDiamondVfxKind, juiceFxKind, landingFxKind, registerDiamondVfx, type DiamondVfxKind } from "../art/vfx";
+import { CameraDirector, halfInningShot, homeRunShot, introShot, walkupShot, type Shot } from "../art/cameraDirector";
+import { diamondCrops } from "../art/qaCrops";
+
 const HOME_PLATE: Vec3 = [0, 0.05, 0.4];
-const TRAIL_COUNT = 16;
-const HIDDEN_SCALE = 0.0001;
 
 import {
   RIG,
@@ -204,7 +207,7 @@ interface ClubSpec {
 }
 
 const CLUBS: readonly ClubSpec[] = [
-  { id: "wash", name: "Harbor Wash", abbr: "HBW", color: "#2e8fa8", tag: "Patient contact club — a line-drive machine.", rep: ["fourseam", "changeup", "curve"], power: 0.42, contact: 0.8, pitching: 0.6 },
+  { id: "wash", name: "Harbor Wash", abbr: "HBW", color: "#2a86a0", tag: "Patient contact club — a line-drive machine.", rep: ["fourseam", "changeup", "curve"], power: 0.42, contact: 0.8, pitching: 0.6 },
   { id: "liners", name: "Midtown Skyliners", abbr: "MSC", color: "#ffb03a", tag: "Window-shattering power bats.", rep: ["fourseam", "slider", "changeup"], power: 0.88, contact: 0.56, pitching: 0.64 },
   { id: "riders", name: "Canyon Rim Riders", abbr: "CRR", color: "#a8593a", tag: "Gap hunters — they live in the deep alleys.", rep: ["curve", "slider", "fourseam"], power: 0.62, contact: 0.7, pitching: 0.68 },
   { id: "classics", name: "Ivy Classics", abbr: "IVC", color: "#2e6b3f", tag: "Small-ball artisans. Death by a thousand singles.", rep: ["curve", "changeup"], power: 0.36, contact: 0.86, pitching: 0.56 },
@@ -358,482 +361,6 @@ interface BattedBall {
 }
 
 /* ================================================================== *
- *  Scene construction                                                 *
- * ================================================================== */
-
-const chalkMat = () => material.pbr({ color: "#f5f1e4", roughness: 0.6, emissive: "#f5f1e4", emissiveIntensity: 0.18 });
-
-function buildFieldNodes(park: ParkSpec): any[] {
-  const nodes: any[] = [];
-  const grass = material.pbr({ color: park.grass, roughness: 0.94 });
-  const grassAlt = material.pbr({ color: park.grassAlt, roughness: 0.94 });
-  const dirt = material.pbr({ color: park.dirt, roughness: 0.96 });
-  const wallMat = material.pbr({ color: park.wall, roughness: 0.7 });
-  const wallTopMat = material.emissive({ color: park.wallTop, emissive: park.wallTop, emissiveIntensity: park.night ? 0.85 : 0.2 });
-  const bagMat = material.pbr({ color: "#ece8d8", roughness: 0.65 });
-
-  // Ground, mow stripes, infield dirt, home circle, mound
-  nodes.push(
-    primitives.plane({ name: "field-grass", size: [340, 340] as any, material: grass }).position(0, -0.02, -60),
-    ...Array.from({ length: 9 }, (_, i) =>
-      primitives
-        .plane({ name: `mow-${i}`, size: [340 / 9, 340] as any, material: i % 2 ? grass : grassAlt })
-        .position(-170 + (340 / 9) * (i + 0.5), -0.005 - 0.001 * i, -60)
-    ),
-    primitives.cylinder({ name: "infield-dirt", size: [26, 0.05, 26], material: dirt }).position(0, 0.012, -BASE_PATH - 1.5),
-    primitives.cylinder({ name: "home-dirt", size: [7.4, 0.06, 7.4], material: dirt }).position(0, 0.018, 0.4),
-    primitives.cylinder({ name: "mound", size: [5.6, MOUND_TOP, 5.6], material: dirt }).position(0, MOUND_TOP / 2 + 0.02, MOUND_Z),
-    primitives.box({ name: "mound-rubber", size: [0.6, 0.03, 0.16], material: bagMat }).position(0, MOUND_TOP + 0.045, MOUND_Z - 0.35)
-  );
-
-  // Base paths — thin dirt strips between the bases
-  for (const [x0, z0, x1, z1] of [
-    [0.9, -0.9, BASE_PATH - 0.4, -BASE_PATH + 0.4],
-    [BASE_PATH - 0.4, -BASE_PATH - 0.4, 0.9, -BASE_PATH * 2 + 0.9],
-    [-0.9, -BASE_PATH * 2 + 0.9, -BASE_PATH + 0.4, -BASE_PATH - 0.4],
-    [-BASE_PATH + 0.4, -BASE_PATH + 0.4, -0.9, -0.9]
-  ] as const) {
-    const mx = (x0 + x1) / 2;
-    const mz = (z0 + z1) / 2;
-    const len = Math.hypot(x1 - x0, z1 - z0);
-    const yaw = Math.atan2(x1 - x0, z1 - z0);
-    nodes.push(primitives.box({ name: `basepath-${mx.toFixed(1)}-${mz.toFixed(1)}`, size: [2.4, 0.04, len], material: dirt }).position(mx, 0.025, mz).rotate(0, yaw, 0));
-  }
-
-  // Base dirt circles + bags + home plate + boxes
-  for (let i = 0; i < 3; i++) {
-    const [bx, , bz] = BASES[i]!;
-    nodes.push(
-      primitives.cylinder({ name: `base-dirt-${i}`, size: [4.6, 0.05, 4.6], material: dirt }).position(bx, 0.02, bz),
-      model(assets.diamondBase, { name: `base-bag-${i}`, targetHeight: 0.16, scaleMode: "fit" }).position(bx, 0.06, bz)
-    );
-  }
-  nodes.push(
-    primitives.box({ name: "home-plate", size: [0.44, 0.03, 0.44], material: bagMat }).position(0, 0.045, 0).rotate(0, Math.PI / 4, 0),
-    primitives.box({ name: "batters-box-l", size: [0.06, 0.02, 1.7], material: chalkMat() }).position(-1.15, 0.05, 0.35),
-    primitives.box({ name: "batters-box-r", size: [0.06, 0.02, 1.7], material: chalkMat() }).position(1.15, 0.05, 0.35),
-    primitives.box({ name: "batters-box-back", size: [2.3, 0.02, 0.06], material: chalkMat() }).position(0, 0.05, 1.2),
-    primitives.box({ name: "catchers-box-back", size: [1.4, 0.02, 0.06], material: chalkMat() }).position(0, 0.05, 2.1)
-  );
-
-  // Foul lines + poles
-  for (const side of [-1, 1]) {
-    const len = park.fenceCorner * 1.02;
-    const fx = Math.sin((side * FOUL_DEG * Math.PI) / 180);
-    const fz = -Math.cos((side * FOUL_DEG * Math.PI) / 180);
-    nodes.push(
-      primitives.box({ name: `foul-line-${side}`, size: [0.09, 0.02, len], material: chalkMat() }).position((fx * len) / 2, 0.05, (fz * len) / 2).rotate(0, (side * FOUL_DEG * Math.PI) / 180, 0),
-      primitives
-        .cylinder({ name: `foul-pole-glow-${side}`, size: [0.14, 11, 0.14], material: material.emissive({ color: "#ffd76a", emissive: "#ffd76a", emissiveIntensity: park.night ? 0.9 : 0.25 }) })
-        .position(fx * park.fenceCorner, 5.5, fz * park.fenceCorner),
-      model(assets.diamondFoulPole, { name: `foul-pole-${side}`, targetHeight: 11, role: "setDressing", scaleMode: "fit" }).position(fx * park.fenceCorner, 0, fz * park.fenceCorner)
-    );
-  }
-
-  // Outfield wall — segmented arc from foul pole to foul pole
-  // One instanced draw for the wall and one for its cap (C12); each segment is a unit-length box scaled to its chord.
-  const segs = park.fenceSegments;
-  const wallT: { position: Vec3; rotation: Vec3; scale: Vec3 }[] = [];
-  const capT: { position: Vec3; rotation: Vec3; scale: Vec3 }[] = [];
-  for (let i = 0; i < segs; i++) {
-    const t0 = -FOUL_DEG + (2 * FOUL_DEG * i) / segs;
-    const t1 = -FOUL_DEG + (2 * FOUL_DEG * (i + 1)) / segs;
-    const tm = (t0 + t1) / 2;
-    const p0 = fencePoint(park, t0, 0);
-    const p1 = fencePoint(park, t1, 0);
-    const pm = fencePoint(park, tm, 0);
-    const segLen = Math.hypot(p1[0] - p0[0], p1[2] - p0[2]) + 0.35;
-    const yaw = Math.atan2(p1[0] - p0[0], p1[2] - p0[2]);
-    wallT.push({ position: [pm[0], park.wallH / 2, pm[2]], rotation: [0, yaw + Math.PI / 2, 0], scale: [segLen, 1, 1] });
-    capT.push({ position: [pm[0], park.wallH + 0.07, pm[2]], rotation: [0, yaw + Math.PI / 2, 0], scale: [segLen, 1, 1] });
-  }
-  nodes.push(
-    instances.box({ name: "outfield-wall", size: [1, park.wallH, 0.5], material: wallMat, transforms: wallT }),
-    instances.box({ name: "outfield-wall-cap", size: [1, 0.14, 0.56], material: wallTopMat, transforms: capT })
-  );
-
-  // On-deck rings + side dugouts. Keep the circles as painted chalk outlines
-  // (a filled disc read as an oversized white target in the foreground) and
-  // push the dugout boxes to the side touchlines so they frame instead of
-  // blocking the lower third of the broadcast camera.
-  const ondeckMat = material.pbr({ color: "#eee6d2", roughness: 1, opacity: 0.5 });
-  nodes.push(
-    primitives.torus({ name: "ondeck-l", size: [1.5, 1.5, 0.26], material: ondeckMat }).position(-7.1, 0.028, 2.2).rotate(Math.PI / 2, 0, 0),
-    primitives.torus({ name: "ondeck-r", size: [1.5, 1.5, 0.26], material: ondeckMat }).position(7.1, 0.028, 2.2).rotate(Math.PI / 2, 0, 0),
-    model(assets.diamondDugout, {
-      name: "dugout-l", targetHeight: 2.0, role: "setDressing", scaleMode: "fit",
-      materialOverrides: [{ color: "#4b5259", colorMode: "replace", replaceTextures: true, roughness: 0.82, metallic: 0.08 }]
-    }).position(-28, 0, -6).rotate(0, Math.PI / 2, 0),
-    model(assets.diamondDugout, {
-      name: "dugout-r", targetHeight: 2.0, role: "setDressing", scaleMode: "fit",
-      materialOverrides: [{ color: "#4b5259", colorMode: "replace", replaceTextures: true, roughness: 0.82, metallic: 0.08 }]
-    }).position(28, 0, -6).rotate(0, -Math.PI / 2, 0)
-  );
-
-  return nodes;
-}
-
-function buildStandsNodes(park: ParkSpec): any[] {
-  const nodes: any[] = [];
-  const rng = makeRng(0xbeef);
-
-  // Grandstand stadium shells framing the outer ballpark skyline, placed behind each park's own fence (rules.ts shellPlacements).
-  nodes.push(
-    ...shellPlacements(park).map((sh) =>
-      model(assets.diamondStadium, { name: sh.name, targetMaxDimension: sh.name.endsWith("-c") ? 30 : 28, role: "setDressing", scaleMode: "fit" })
-        .position(sh.x, 0, sh.z)
-        .rotate(0, sh.yaw, 0)
-    ),
-    // Hidden dugout seat asset reference so route asset validation sees showcaseStadiumSeats
-    model(assets.showcaseStadiumSeats, {
-      name: "dugout-seat-ref",
-      targetMaxDimension: 1.2,
-      role: "setDressing",
-      scaleMode: "fit",
-      visible: false
-    })
-      .position(0, -80, 0)
-      .scale(HIDDEN_SCALE)
-  );
-
-  // Grounded tiered stadium bleachers wrapping the outfield arc
-  const deckMat = material.pbr({ color: "#1c2638", roughness: 0.78, metalness: 0.22 });
-  const benchMat = material.pbr({ color: "#2d3e5a", roughness: 0.62, metalness: 0.28 });
-  // Each section starts a fixed distance behind the fence at its own angle, so no row stands inside the wall (C3).
-  // Instanced risers and benches: two draws instead of 42 (C12).
-  const bleachers = bleacherPlacements(park);
-  nodes.push(
-    instances.box({
-      name: "bleacher-risers",
-      size: [11.5, 1, 2.2],
-      material: deckMat,
-      transforms: bleachers.map((b) => ({ position: [b.x, b.tierH * 0.5, b.z] as Vec3, rotation: [0, b.yaw, 0] as Vec3, scale: [1, b.tierH, 1] as Vec3 }))
-    }),
-    instances.box({
-      name: "bleacher-benches",
-      size: [11.2, 0.22, 0.85],
-      material: benchMat,
-      transforms: bleachers.map((b) => ({ position: b.bench, rotation: [0, b.yaw, 0] as Vec3 }))
-    })
-  );
-
-  // Animated front-row wavers — real admitted 3D Meshy athletes grounded at y = 0
-  void rng;
-  for (const [i, c] of crowdPlacements(park).entries()) {
-    nodes.push(
-      model(assets.diamondCrowdAthlete, {
-        name: `waver-${i}`,
-        targetHeight: 1.88,
-        role: "setDressing",
-        scaleMode: "fit"
-      })
-        .position(c.x, 0, c.z)
-        .rotate(0, c.yaw, 0)
-        .animate({ clip: "Idle_Loop", loop: true, speed: 1.1 })
-        .runtime(game.runtimeNode(`waver-${i}`))
-    );
-  }
-
-  // Scoreboard + floodlight towers
-  // Behind the centre bleacher section, at the same rig-to-screen spacing the art was tuned with.
-  const sb = scoreboardPlacement(park);
-  nodes.push(
-    model(assets.diamondScoreboard, { name: "scoreboard-rig", targetHeight: 11, role: "setDressing", scaleMode: "fit" }).position(sb.rig[0], sb.rig[1], sb.rig[2]).rotate(0, Math.PI, 0).runtime(game.runtimeNode("scoreboard-rig")),
-    primitives.box({ name: "scoreboard-screen", size: [10.5, 3.4, 0.4], material: material.emissive({ color: "#0d2436", emissive: "#1b4a66", emissiveIntensity: 0.9 }) }).position(sb.screen[0], sb.screen[1], sb.screen[2]).runtime(game.runtimeNode("scoreboard-screen"))
-  );
-
-  if (park.flood) {
-    const towers: Vec3[] = [
-      [-park.fenceCorner * 0.72, 0, -park.fenceCorner * 0.55 - 6],
-      [park.fenceCorner * 0.72, 0, -park.fenceCorner * 0.55 - 6],
-      [-park.fenceCorner * 0.5, 0, 14],
-      [park.fenceCorner * 0.5, 0, 14]
-    ];
-    towers.forEach(([tx, , tz], i) => {
-      nodes.push(
-        model(assets.diamondFloodlight, { name: `flood-${i}`, targetHeight: 16, role: "setDressing", scaleMode: "fit" }).position(tx, 0, tz).rotate(0, Math.atan2(-tx, 10 - tz) + Math.PI, 0),
-        lights.spot({ name: `flood-spot-${i}`, position: [tx * 0.9, 15, tz * 0.9], target: [0, 0, -10], angle: 0.6, penumbra: 0.55, intensity: 2.0, color: park.id === "lunar" ? "#bfe0ff" : "#fff2d4", distance: 160 }),
-        effects.lightCone({ name: `flood-cone-${i}`, position: [tx * 0.9, 14.6, tz * 0.9], direction: [-tx * 0.05, -1, (10 - tz) * 0.05], color: "#bfe0ff", intensity: 0.22, length: 15, coneAngle: 0.5, softness: 0.6 } as any)
-      );
-    });
-  }
-
-  return nodes;
-}
-
-function buildParkExtras(park: ParkSpec): any[] {
-  const nodes: any[] = [];
-  // Photoreal rock GLBs carry warm AI textures that fight the flat-shaded
-  // players. Knock them back to a restrained desert palette and reduce their
-  // silhouettes so the field stays the subject.
-  const rockOverride = [{ color: "#745845", colorMode: "replace" as const, replaceTextures: true, roughness: 0.96, metallic: 0 }];
-  const rockOverrideAlt = [{ color: "#82644e", colorMode: "replace" as const, replaceTextures: true, roughness: 0.94, metallic: 0 }];
-  // Outfield props come from rules.ts PROP_SPOTS, pushed behind each park's fence (C3).
-  const at = (name: string): [number, number] => propSpot(park, name);
-  switch (park.id) {
-    case "sandlot": {
-      const W = HARBOR_WATER;
-      nodes.push(
-        model(assets.diamondHarborPier, { name: "harbor-pier", targetHeight: 8, role: "setDressing", scaleMode: "fit" }).position(at("harbor-pier")[0], -0.3, at("harbor-pier")[1]).rotate(0, 0.3, 0),
-        primitives.plane({ name: "harbor-water", size: [W.w, W.d] as any, material: material.pbr({ color: "#2e5d7a", roughness: 0.35, metalness: 0.3 }) }).position(W.x, W.y, W.z),
-        model(assets.diamondTower, { name: "sandlot-windmill", targetHeight: 13, role: "setDressing", scaleMode: "fit" }).position(at("sandlot-windmill")[0], 0, at("sandlot-windmill")[1]).rotate(0, 0.6, 0),
-        model(assets.diamondCanyonArch, { name: "sandlot-tower", targetHeight: 12, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverrideAlt }).position(at("sandlot-tower")[0], 0, at("sandlot-tower")[1]).rotate(0, -0.4, 0),
-        model(assets.diamondRock, { name: "pine-a", targetHeight: 7, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverride }).position(at("pine-a")[0], 0, at("pine-a")[1]),
-        model(assets.diamondRock, { name: "pine-b", targetHeight: 6.5, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverrideAlt }).position(at("pine-b")[0], 0, at("pine-b")[1]).rotate(0, 1.2, 0),
-        model(assets.diamondFloodlight, { name: "sandlot-lamp", targetHeight: 5.4, role: "setDressing", scaleMode: "fit" }).position(at("sandlot-lamp")[0], 0, at("sandlot-lamp")[1])
-      );
-      break;
-    }
-    case "skyline": {
-      const buildings: [number, number][] = [[46, 0.5], [52, -0.4], [38, 0.9], [30, -0.9], [60, 0.1]];
-      buildings.forEach(([h, r], i) => {
-        const [x, z] = at(`skyline-bldg-${i}`);
-        nodes.push(model(assets.diamondTower, { name: `skyline-bldg-${i}`, targetHeight: h, role: "setDressing", scaleMode: "fit" }).position(x, 0, z).rotate(0, r, 0));
-      });
-      for (let i = 0; i < 4; i++) {
-        const theta = -24 + i * 16;
-        const pm = fencePoint(park, theta, 0);
-        nodes.push(
-          primitives
-            .box({ name: `window-target-${i}`, size: [7.5, 4.6, 0.5], material: material.emissive({ color: "#16324a", emissive: "#35d6ff", emissiveIntensity: 0.55 }) })
-            .position(pm[0] * 1.18, 9.5 + i * 2.2, pm[2] * 1.18 - 3)
-            .rotate(0, (theta * Math.PI) / 180, 0)
-            .runtime(game.runtimeNode(`window-target-${i}`))
-        );
-      }
-      for (const [lx, lz] of [[-26, 8], [26, 8], [-46, -30], [46, -30]] as const) {
-        nodes.push(model(assets.diamondFloodlight, { name: `lamp-${lx}`, targetHeight: 6, role: "setDressing", scaleMode: "fit" }).position(lx, 0, lz));
-      }
-      break;
-    }
-    case "canyon": {
-      const rocks: [number, number][] = [[13, 0.3], [15, -0.7], [7.5, 1.1], [6.5, -0.4], [22, 0]];
-      rocks.forEach(([h, r], i) => {
-        const [x, z] = at(`canyon-rock-${i}`);
-        nodes.push(model(assets.diamondRock, {
-          name: `canyon-rock-${i}`, targetHeight: h, role: "setDressing", scaleMode: "fit",
-          materialOverrides: i % 2 ? rockOverrideAlt : rockOverride
-        }).position(x, 0, z).rotate(0, r, 0));
-      });
-      for (const [tx, tz] of [[-108, -40], [110, -44], [-88, -20], [88, -16]] as const) {
-        nodes.push(model(assets.diamondRock, {
-          name: `canyon-pine-${tx}`, targetHeight: 8.5, role: "setDressing", scaleMode: "fit",
-          materialOverrides: rockOverride
-        }).position(tx, 0, tz));
-      }
-      break;
-    }
-    case "ivy": {
-      nodes.push(
-        model(assets.diamondStadium, { name: "ivy-grandstand", targetHeight: 14, role: "setDressing", scaleMode: "fit" }).position(0, 0, 26).rotate(0, Math.PI, 0),
-        model(assets.diamondTrophy, { name: "ivy-trophy", targetHeight: 2.4, role: "setDressing", scaleMode: "fit" }).position(-9.5, 0, 8.4).rotate(0, 0.9, 0),
-        model(assets.diamondTrophy, { name: "ivy-statue", targetHeight: 4.2, role: "primaryWorld", scaleMode: "fit" }).position(14, 0, 10).rotate(0, -2.4, 0),
-        ...Array.from({ length: 7 }, (_, i) => {
-          const theta = -36 + i * 12;
-          const pm = fencePoint(park, theta, 0);
-          return model(assets.diamondIvyWall, {
-            name: `ivy-vine-${i}`,
-            targetHeight: park.wallH + 1.2,
-            role: "setDressing",
-            scaleMode: "fit"
-          })
-            .position(pm[0] * 0.995, 0, pm[2] * 0.995)
-            .rotate(0, (theta * Math.PI) / 180, 0);
-        })
-      );
-      break;
-    }
-    case "dome": {
-      nodes.push(
-        model(assets.diamondTyphoonDome, { name: "typhoon-dome-shell", targetHeight: 60, role: "setDressing", scaleMode: "fit" }).position(0, -0.4, -42).rotate(0, Math.PI, 0),
-        ...Array.from({ length: 5 }, (_, i) => primitives.box({ name: `dome-rafter-${i}`, size: [1.2, 1.2, 190], material: material.pbr({ color: "#233046", roughness: 0.6, metalness: 0.4 }) }).position(-60 + i * 30, 26, -50)),
-        ...Array.from({ length: 4 }, (_, i) => primitives.box({ name: `dome-banner-${i}`, size: [3.2, 7, 0.2], material: material.emissive({ color: "#ffb03a", emissive: i % 2 ? "#35d6ff" : "#ffb03a", emissiveIntensity: 0.7 }) }).position(-18 + i * 12, 14, 18))
-      );
-      break;
-    }
-    case "lunar": {
-      nodes.push(
-        model(assets.diamondEarthRise, { name: "lunar-earth", targetHeight: 90, role: "primaryWorld", scaleMode: "fit" }).position(-30, 66, -260),
-        model(assets.diamondLunarRover, { name: "lunar-rover", targetHeight: 2.6, role: "setDressing", scaleMode: "fit" }).position(-17, 0, 9).rotate(0, 0.8, 0),
-        ...Array.from({ length: 6 }, (_, i) => primitives.cylinder({ name: `regolith-${i}`, size: [4 + i, 0.5, 4 + i * 0.7], material: material.pbr({ color: "#5d6378", roughness: 1 }) }).position(at(`regolith-${i}`)[0], 0.1, at(`regolith-${i}`)[1])),
-        model(assets.diamondMoonDome, { name: "lunar-comms", targetHeight: 15, role: "setDressing", scaleMode: "fit" }).position(at("lunar-comms")[0], 0, at("lunar-comms")[1]).rotate(0, -0.5, 0)
-      );
-      break;
-    }
-  }
-  return nodes;
-}
-
-/** An admitted 3D catalog athlete grounded cleanly with skeletal animation. */
-function buildAthleteNodes(id: string, asset: any, initialClip = "Ready"): any[] {
-  return [
-    model(asset, { name: id, targetHeight: 1.88, role: "primaryCharacter", scaleMode: "fit" })
-      .position(0, -80, 0)
-      .animate({ clip: initialClip, loop: true, speed: 1.0 })
-      .runtime(game.runtimeNode(id))
-  ];
-}
-
-const FIELDER_IDS = ["f-c", "f-1b", "f-2b", "f-ss", "f-3b", "f-lf", "f-cf", "f-rf"] as const;
-/** Everyone who wears a glove except the catcher (his mitt has its own node and calibrated offsets). */
-const GLOVE_OWNERS = ["pitcher", "f-1b", "f-2b", "f-ss", "f-3b", "f-lf", "f-cf", "f-rf"] as const;
-/** Everyone in uniform who gets a team cap and belt. */
-const KIT_OWNERS = ["pitcher", ...FIELDER_IDS, "batter", "runner-0", "runner-1", "runner-2"] as const;
-/** Cap and belt offsets in bone space (Head and Hips bones point up the body in this rig). */
-const CAP_ATTACH_POS: Vec3 = [0, 0.135, 0.012];
-const BELT_ATTACH_POS: Vec3 = [0, 0.045, 0];
-const FIELDER_SPOTS: Record<string, Vec3> = {
-  // The single catcher crouches behind the plate, offset to the camera-right
-  // of the batter so it never crosses the batting-camera line.
-  "f-c": [0.55, 0, 2.45],
-  "f-1b": [14.2, 0, -14.2],
-  "f-2b": [7.4, 0, -19.5],
-  "f-ss": [-8.2, 0, -19.5],
-  "f-3b": [-14.2, 0, -14.2],
-  "f-lf": [-30, 0, -52],
-  "f-cf": [0, 0, -68],
-  "f-rf": [30, 0, -52]
-};
-
-function buildActorsNodes(): any[] {
-  const nodes: any[] = [
-    ...buildAthleteNodes("pitcher", assets.diamondAthlete, "Crouch_Idle_Loop"),
-    ...buildAthleteNodes("batter", assets.diamondAthlete, "Idle_Loop"),
-    ...FIELDER_IDS.flatMap((id) =>
-      buildAthleteNodes(id, assets.diamondAthlete, id === "f-lf" || id === "f-cf" || id === "f-rf" ? "Ready" : "Crouch_Idle_Loop")
-    ),
-    ...Array.from({ length: 3 }, (_, i) => buildAthleteNodes(`runner-${i}`, assets.diamondAthlete, "Crouch_Idle_Loop")).flat(),
-    model(assets.diamondAthlete, { name: "coach-1b", targetHeight: 1.88, role: "primaryCharacter", scaleMode: "fit" })
-      .position(21.5, 0, -14.8)
-      .rotate(0, -Math.PI * 0.72, 0)
-      .animate({ clip: "Crouch_Idle_Loop", loop: true, speed: 1.0 })
-      .runtime(game.runtimeNode("coach-1b")),
-    model(assets.diamondAthlete, { name: "coach-3b", targetHeight: 1.88, role: "primaryCharacter", scaleMode: "fit" })
-      .position(-21.5, 0, -14.8)
-      .rotate(0, Math.PI * 0.72, 0)
-      .animate({ clip: "Crouch_Idle_Loop", loop: true, speed: 1.0 })
-      .runtime(game.runtimeNode("coach-3b")),
-    // Hidden dugout glove reference so route asset validation sees diamondGlove without floating mitts in front of fielders
-    model(assets.diamondGlove, { name: "dugout-glove-ref", targetMaxDimension: 0.34, role: "setDressing", scaleMode: "fit", visible: false })
-      .position(0, -80, 0)
-      .scale(HIDDEN_SCALE),
-    // Catcher's mitt — socketed to the crouched catcher's left forearm at runtime
-    model(assets.diamondGlove, { name: "catcher-mitt", targetMaxDimension: 0.36, role: "setDressing", scaleMode: "fit" })
-      .position(0.25, 0.55, 2.1)
-      .rotate(0, Math.PI, 0.3)
-      .runtime(game.runtimeNode("catcher-mitt"))
-  ];
-
-  // Fielder and pitcher gloves — each rides its owner's left forearm through the kit attach (no world-authored spot).
-  for (const id of GLOVE_OWNERS) {
-    nodes.push(
-      model(assets.diamondGlove, { name: `glove-${id}`, targetMaxDimension: 0.34, role: "setDressing", scaleMode: "fit" })
-        .position(0, -80, 0)
-        .runtime(game.runtimeNode(`glove-${id}`))
-    );
-  }
-
-  // Team cap and belt per athlete (C5): primitives that ride the Head and Hips bones (attached in attachBatSocket) and take the
-  // team colour through setMaterial in applyUniforms. The athlete GLB has one mesh and one material, so a tint would recolour skin too.
-  for (const id of KIT_OWNERS) {
-    nodes.push(
-      primitives.sphere({ name: `${id}-cap`, size: [0.205, 0.11, 0.225], material: material.pbr({ color: "#f2eee3", roughness: 0.6 }) }).position(0, -80, 0).runtime(game.runtimeNode(`${id}-cap`)),
-      primitives.cylinder({ name: `${id}-belt`, size: [0.33, 0.05, 0.25], material: material.pbr({ color: "#f2eee3", roughness: 0.6 }) }).position(0, -80, 0).runtime(game.runtimeNode(`${id}-belt`))
-    );
-  }
-
-  // Bat — socketed to the batter's right forearm (knob at the palm); authored
-  // transform is only a sane first frame before the socket takes ownership.
-  nodes.push(
-    model(assets.diamondBat, { name: "bat", targetMaxDimension: 1.02, scaleMode: "fit" })
-      .position(-0.51, 1.52, 0.18)
-      .rotate(0, BATTER_YAW + 0.15, 1.0)
-      .runtime(game.runtimeNode("bat")),
-    // Hidden root-level probe pinned to the same bone to calibrate the
-    // actor fit scale / normalization shift for world⇄actor conversions.
-    primitives
-      .sphere({ name: "bat-cal", size: [0.02, 0.02, 0.02], material: material.pbr({ color: "#000000", opacity: 0.0, roughness: 1 }) })
-      .position(0, -80, 0)
-      .scale(HIDDEN_SCALE)
-      .runtime(game.runtimeNode("bat-cal"))
-  );
-
-  // Ball: a 16x12 sphere (about 360 triangles) instead of the 20,326-triangle GLB (C12); at 15 cm on the broadcast
-  // camera the seams of the GLB were never visible. The sphere is centred on its node (the GLB was grounded by fit).
-  nodes.push(
-    primitives.sphere({ name: "ball", size: [0.15, 0.15, 0.15], params: { widthSegments: 16, heightSegments: 12 }, material: material.pbr({ color: "#f4f1e8", roughness: 0.55 }) } as any).position(0, -60, 0).runtime(game.runtimeNode("ball")),
-    primitives.cylinder({ name: "ball-shadow", size: [0.34, 0.006, 0.34], material: material.pbr({ color: "#000000", opacity: 0.28, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow")),
-    effects.trail({ name: "ball-ribbon", target: "ball", color: "#f5f1e4", width: 0.1, maxPoints: 40, intensity: 0.85 } as any)
-  );
-
-  for (let i = 0; i < TRAIL_COUNT; i++) {
-    nodes.push(
-      primitives.sphere({ name: `ball-trail-${i}`, size: [0.09, 0.09, 0.09], material: material.emissive({ color: "#ffd76a", emissive: "#ffd76a", emissiveIntensity: 0.5 }) }).scale(HIDDEN_SCALE).runtime(game.runtimeNode(`ball-trail-${i}`))
-    );
-  }
-
-  // Strike-zone helpers: PCI ring (batting) + aim dot (pitching) + landing ring
-  nodes.push(
-    primitives.torus({ name: "pci-ring", size: [0.42, 0.045] as any, material: material.emissive({ color: "#ffb03a", emissive: "#ffb03a", emissiveIntensity: 1.1 }) }).runtime(game.runtimeNode("pci-ring")),
-    primitives.sphere({ name: "aim-dot", size: [0.16, 0.16, 0.16], material: material.emissive({ color: "#35d6ff", emissive: "#35d6ff", emissiveIntensity: 1.2 }) }).runtime(game.runtimeNode("aim-dot")),
-    primitives.torus({ name: "land-ring", size: [0.5, 0.04] as any, material: material.emissive({ color: "#7dfcff", emissive: "#7dfcff", emissiveIntensity: 1.15 }) }).rotate(Math.PI / 2, 0, 0).runtime(game.runtimeNode("land-ring")),
-    primitives.torus({ name: "zone-frame", size: [0.62, 0.03] as any, material: material.emissive({ color: "#f5f1e4", emissive: "#f5f1e4", emissiveIntensity: 0.3 }) }).position(0, ZONE_CY, 0.1).runtime(game.runtimeNode("zone-frame"))
-  );
-
-  // Celebration particle fountains (hidden until fired)
-  nodes.push(
-    effects.particles({ name: "confetti", emitter: "fountain", position: [0, 4, 0], color: "#ffd76a", intensity: 1, visible: false, particleCount: 260, speed: 1.2, radius: 3.2, gravity: -1.2 } as any).runtime(game.runtimeNode("confetti")),
-    effects.particles({ name: "hr-burst", emitter: "fountain", position: [0, 1.2, -2], color: "#ffb03a", intensity: 1, visible: false, particleCount: 200, speed: 1.6, radius: 1.6, gravity: -2.4 } as any).runtime(game.runtimeNode("hr-burst")),
-    effects.particles({ name: "flair-burst", emitter: "fountain", position: [-0.8, 1.4, 0.4], color: "#35d6ff", intensity: 1, visible: false, particleCount: 160, speed: 1.1, radius: 0.8, gravity: -0.8 } as any).runtime(game.runtimeNode("flair-burst"))
-  );
-
-  return nodes;
-}
-
-const QA_FLAGS = (() => {
-  const q = typeof window === "undefined" ? new URLSearchParams() : new URLSearchParams(window.location.search);
-  return { noAo: q.get("qa-ao") === "0", noContact: q.get("qa-contact") === "0" };
-})();
-
-function buildParkScene(park: ParkSpec): any {
-  // fogDensityScale 0 removes the preset's volumetric fog: at stadium
-  // distances even a heavily scaled density washed the stands out in white.
-  const lookOverrides: Record<string, any> = {
-    sandlot: { fogDensityScale: 0, exposureEv: 0.14 },
-    skyline: { fogDensityScale: 0, exposureEv: 0.12 },
-    canyon: { fogDensityScale: 0, exposureEv: 0.1 },
-    ivy: { fogDensityScale: 0, exposureEv: 0.12 },
-    dome: { fogDensityScale: 0, exposureEv: 0.14 },
-    lunar: { fogDensityScale: 0, exposureEv: 0.16 }
-  };
-  // Match each look's own horizon instead of the old near-black navy slab.
-  const backdrop: Record<ParkId, string> = {
-    sandlot: "#c98a5a",
-    skyline: "#070a12",
-    canyon: "#8f9aa3",
-    ivy: "#9db8cf",
-    dome: "#101216",
-    lunar: "#04070d"
-  };
-  // QA-only switches for the AO and contact-shadow on/off capture pairs (LIGHT-06, C17): `?qa-ao=0`, `?qa-contact=0`.
-  const look = looks.preset(park.look as any, lookOverrides[park.id] ?? { fogDensityScale: 0 });
-  let lookNode: any = look;
-  if (QA_FLAGS.noAo) {
-    const g = look.toJSON() as any;
-    lookNode = { ...g, children: (g.children ?? []).filter((c: any) => c.effect !== "ambient-occlusion") };
-  }
-  const sc = scene().add(lookNode).background(backdrop[park.id]);
-  if (!QA_FLAGS.noContact) sc.add(effects.contactShadows({ intensity: 0.75, length: 0.3 }));
-  return sc
-    .add(effects.vignette({ intensity: 0.16, smoothness: 0.7 }))
-    .camera(camera.perspective({ fov: 42, near: 0.2, far: 700, position: [0, 26, 42], target: [0, 0, -14] }))
-    .addMany(buildFieldNodes(park))
-    .addMany(buildStandsNodes(park))
-    .addMany(buildParkExtras(park))
-    .addMany(buildActorsNodes());
-}
-
-/* ================================================================== *
  *  Boot                                                               *
  * ================================================================== */
 
@@ -842,12 +369,24 @@ const getEl = <T extends HTMLElement>(id: string): T | null => document.getEleme
 function boot(): void {
   const mountPoint = document.getElementById("app");
   const renderError = getEl("render-error");
+  // GU47 (WP-18): `?look=original` keeps the 4.6.2 look, `?tier=` forces the quality tier, `?sky=hdri` the HDRI sky.
+  const bootSearch = window.location.search;
+  const sceneCtx: DiamondSceneContext = {
+    variant: resolveLookVariant(bootSearch),
+    tier: resolveDiamondTier(bootSearch, window.matchMedia?.("(pointer: coarse)")?.matches ?? false, window.innerWidth),
+    skyMode: resolveSkyMode(bootSearch),
+    reducedMotion: new URLSearchParams(bootSearch).has("reducedMotion") || (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false)
+  };
+  // Boot straight into the `?park=` park so a park link fetches only its own HDRI (DIA-E1), not Harbor's first.
+  const bootParkParam = new URLSearchParams(bootSearch).get("park") as ParkId | null;
+  const bootPark: ParkId = bootParkParam && PARKS[bootParkParam] ? bootParkParam : "sandlot";
   let auraApp: ReturnType<typeof createAuraApp>;
   try {
     auraApp = createAuraApp("#app", {
-      scene: buildParkScene(PARKS.sandlot),
-      qualityRebuild: { flags: ["game", "animation"] },
-      renderer: { quality: "high" }
+      scene: buildParkScene(PARKS[bootPark], sceneCtx),
+      // `post` is default-on since 4.5; named so `diagnostics().post.stagesRan` is reported whatever the defaults (DIA-P1).
+      qualityRebuild: { flags: ["game", "animation", "post"] },
+      renderer: { quality: sceneCtx.tier }
     } as any);
   } catch (err) {
     if (renderError) {
@@ -858,6 +397,25 @@ function boot(): void {
   }
   if (!mountPoint) return;
   const app = auraApp;
+
+  /**
+   * The park's broadcast output (DIA-P1): output preset, operator and exposure through C-05 `setOutput` (app state, so
+   * it is re-applied on every park switch). The cinematic-film preset carries a DOF stage; live play never blurs
+   * (DIA-P2: DOF only in the walk-up and home-run shots). `?look=original` leaves the output untouched.
+   */
+  function applyParkLook(id: ParkId): void {
+    const plan = lookPlan(id, sceneCtx.variant, sceneCtx.tier, sceneCtx.skyMode);
+    // DIA-H1: the HUD accent (index.html --amber: count pill, linescore, chips) follows the park.
+    document.documentElement.style.setProperty("--amber", hudAccent(id, sceneCtx.variant));
+    if (!plan.output) return;
+    try {
+      (app as any).setOutput?.(plan.output);
+      (app as any).post?.setEffectEnabled?.("depth-of-field", false);
+    } catch {
+      /* output is presentation only; a missing surface keeps the default output */
+    }
+  }
+  applyParkLook(bootPark);
 
   /* ---------- DOM refs ---------- */
   const el = {
@@ -985,7 +543,8 @@ function boot(): void {
       catcherMitt: tryReq("catcher-mitt"),
       confetti: tryReq("confetti"),
       hrBurst: tryReq("hr-burst"),
-      flairBurst: tryReq("flair-burst")
+      flairBurst: tryReq("flair-burst"),
+      lunarEarth: tryReq("lunar-earth")
     };
     for (const id of FIELDER_IDS) H[id] = req(id);
     for (const id of GLOVE_OWNERS) H[`glove-${id}`] = tryReq(`glove-${id}`);
@@ -1085,6 +644,8 @@ function boot(): void {
     document.body.appendChild(fxLayer);
   }
   let hitStopUntil = 0;
+  /** GU47 DIA-V2: time of the last home run, for the board's 2 s HOME RUN card. */
+  let boardHrAt = -Infinity;
   const fxCtl = (game as any).effects({ app, reducedMotion, reducedFlash });
   const FX_KIND: Record<string, string> = {
     spark: "hit-spark",
@@ -1094,9 +655,74 @@ function boot(): void {
     burst: "aura-burst",
     flash: "super-flash"
   };
+  /**
+   * GU47 DIA-V1: the park's preset pack (art/vfx.ts) on `app.effects`, re-registered on every park switch. Bursts use their
+   * own seed counter (never G.rng) and leave the camera to the juice. `?look=original` keeps the 4.6.2 effects.
+   */
+  const appFx = (app as any).effects as
+    | {
+        burst?: (kind: string, at: readonly number[], o?: Record<string, unknown>) => unknown;
+        registerPreset?: (kind: string, spec: unknown) => void;
+        trail?: (target: string, o: { width: number; life: number; color?: string; widthOverSpeed?: readonly [number, number] }) => { clear(): void; stop(o?: { immediate?: boolean }): void };
+      }
+    | undefined;
+  const gu47Fx = sceneCtx.variant === "gu47";
+  let vfxSeed = 1;
+  function registerParkVfx(id: ParkId): void {
+    if (!gu47Fx || typeof appFx?.registerPreset !== "function") return;
+    try {
+      registerDiamondVfx({ registerPreset: (kind, spec) => appFx.registerPreset!(kind, spec) }, id, { reducedMotion, reducedFlash });
+    } catch {
+      /* fx best-effort */
+    }
+  }
+  registerParkVfx(bootPark);
+  /**
+   * GU47 DIA-V1: one runtime ribbon on the ball (E-F `app.effects.trail`), restarted after every scene build. It is zero
+   * width below 8 m/s, so a held or rolling ball leaves nothing; `noteBallForTrail` clears it on every teleport.
+   */
+  let ballTrail: { clear(): void; stop(o?: { immediate?: boolean }): void } | null = null;
+  let ballTrailShown = false;
+  let ballTrailLast: Vec3 = [0, -60, 0];
+  function restartBallTrail(): void {
+    if (!gu47Fx || typeof appFx?.trail !== "function") return;
+    try {
+      ballTrail?.stop({ immediate: true });
+      ballTrail = appFx.trail("ball", { width: 0.08, life: 0.28, color: "#f5f1e4", widthOverSpeed: [8, 34] });
+    } catch {
+      ballTrail = null;
+    }
+  }
+  restartBallTrail();
+  /** A ball shown or hidden, or moved more than 6 m in one frame, restarts the ribbon (no streak ever crosses the field). */
+  function noteBallForTrail(at: Vec3): void {
+    const shown = at[1] > -30;
+    if (ballTrail && (shown !== ballTrailShown || Math.hypot(at[0] - ballTrailLast[0], at[1] - ballTrailLast[1], at[2] - ballTrailLast[2]) > 6)) {
+      try {
+        ballTrail.clear();
+      } catch {
+        /* fx best-effort */
+      }
+    }
+    ballTrailShown = shown;
+    ballTrailLast = at;
+  }
+  function burstVfx(kind: DiamondVfxKind, at: Vec3): void {
+    if (!gu47Fx || typeof appFx?.burst !== "function") return;
+    try {
+      appFx.burst(kind, at, { seed: vfxSeed++, camera: false });
+    } catch {
+      /* fx best-effort */
+    }
+  }
   const fx = createFxParticlePass({
     burst: (kind: string, position: any, o: any) => {
       try {
+        // Juice events mapped onto the pack fire the registered preset (its own counts); the rest use the game effects.
+        if (isDiamondVfxKind(kind)) {
+          burstVfx(kind, position as Vec3);
+          return;
+        }
         fxCtl.spawn(FX_KIND[kind] ?? "hit-spark", position, { radius: Math.max(0.2, (o?.count ?? 10) / 24), color: o?.color, intensity: 1 });
       } catch {
         /* fx best-effort */
@@ -1104,11 +730,12 @@ function boot(): void {
     }
   } as any);
   const JUICE_EVENTS: Record<string, any> = {
-    crack: { fx: { kind: "spark", count: 14, color: "#ffd76a", speed: 4 }, cue: "crack", shake: 0.35, punch: { fovDeg: 2.4, ms: 200 }, rumble: { ms: 50, strong: 0.5, weak: 0.8 } },
-    homer: { fx: { kind: "ring", count: 26, color: "#ffb03a", speed: 6.5 }, cue: "homer", hitStop: 0.09, shake: 0.55, punch: { fovDeg: 3.6, dolly: -0.5, ms: 320 }, flash: { color: "#ffb03a", peak: 0.22, ms: 180 } },
+    // GU47: the crack is the signature splinter flash; the home-run celebration is fired at the ball (fireHrBurst).
+    crack: { fx: gu47Fx ? { kind: juiceFxKind("crack", bootPark) } : { kind: "spark", count: 14, color: "#ffd76a", speed: 4 }, cue: "crack", shake: 0.35, punch: { fovDeg: 2.4, ms: 200 }, rumble: { ms: 50, strong: 0.5, weak: 0.8 } },
+    homer: { ...(gu47Fx ? {} : { fx: { kind: "ring", count: 26, color: "#ffb03a", speed: 6.5 } }), cue: "homer", hitStop: 0.09, shake: 0.55, punch: { fovDeg: 3.6, dolly: -0.5, ms: 320 }, flash: { color: "#ffb03a", peak: 0.22, ms: 180 } },
     strikeout: { cue: "strikeout", flash: { color: "#ff5252", peak: 0.12, ms: 130 } },
     pop: { cue: "pop", punch: { fovDeg: 1.2, ms: 140 } },
-    foul: { cue: "foul", flash: { color: "#ff9a3d", peak: 0.1, ms: 110 } },
+    foul: { cue: "foul", flash: { color: "#ff9f47", peak: 0.1, ms: 110 } },
     pitch: { cue: "pitch" },
     swing: { cue: "swing", punch: { fovDeg: 0.8, ms: 100 } },
     walkoff: { cue: "homerBig", shake: 0.5, punch: { fovDeg: 3.2, ms: 380 }, flash: { color: "#ffd76a", peak: 0.24, ms: 260 } },
@@ -1133,6 +760,73 @@ function boot(): void {
       /* juice best-effort */
     }
   };
+
+  /**
+   * GU47 DIA-C1 / DIA-P2: broadcast sequences between plays (art/cameraDirector.ts) with letterbox bars for the home run
+   * and depth of field in the walk-up and home-run shots (High tier). Any key or tap skips a shot; the game reads the same
+   * input as before. Never on `?look=original`.
+   */
+  const director = new CameraDirector(reducedMotion);
+  const playShot = (shot: Shot): void => {
+    if (sceneCtx.variant === "gu47") director.play(shot, performance.now() / 1000);
+  };
+  const cineBars = document.createElement("div");
+  cineBars.id = "diamond-cine-bars";
+  cineBars.setAttribute("aria-hidden", "true");
+  cineBars.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:25;";
+  const barTop = document.createElement("div");
+  const barBottom = document.createElement("div");
+  for (const [bar, edge] of [[barTop, "top"], [barBottom, "bottom"]] as const) {
+    bar.style.cssText = `position:absolute;left:0;right:0;${edge}:0;height:0;background:#000;`;
+    cineBars.appendChild(bar);
+  }
+  document.body.appendChild(cineBars);
+  let barsShown = -1;
+  function applyCineBars(amount: number): void {
+    const v = Math.round(amount * 100) / 100;
+    if (v === barsShown) return;
+    barsShown = v;
+    const h = `${(v * 11).toFixed(2)}vh`;
+    barTop.style.height = h;
+    barBottom.style.height = h;
+  }
+  let shotDofOn = false;
+  let shotDofFocus = 0;
+  function applyShotDof(on: boolean, focus: number): void {
+    const want = on && sceneCtx.tier === "high" && sceneCtx.variant === "gu47";
+    try {
+      if (want && (!shotDofOn || Math.abs(focus - shotDofFocus) > 0.25)) {
+        (app as any).post?.setEffect?.("depth-of-field", { focusDistance: focus });
+        shotDofFocus = focus;
+      }
+      if (want !== shotDofOn) (app as any).post?.setEffectEnabled?.("depth-of-field", want);
+    } catch {
+      /* post is presentation only */
+    }
+    shotDofOn = want;
+  }
+  // DIA-P2: motion blur on the home-run track only (High, GU47), through the E-C runtime switch; the engine declares the
+  // stage when the scene authors none and keeps it off below High (postBridge S7 tier gate).
+  let shotBlurOn = false;
+  function applyShotBlur(on: boolean): void {
+    const want = on && sceneCtx.tier === "high" && sceneCtx.variant === "gu47";
+    if (want === shotBlurOn) return;
+    try {
+      if (want) (app as any).post?.setEffect?.("motion-blur", { shutter: 0.5, samples: 8 });
+      (app as any).post?.setEffectEnabled?.("motion-blur", want);
+    } catch {
+      /* post is presentation only */
+    }
+    shotBlurOn = want;
+  }
+  const skipShot = (): void => {
+    if (director.active) director.skip();
+  };
+  window.addEventListener("keydown", (e) => {
+    if (e.code === "Space" || e.code === "Enter" || e.code === "Escape") skipShot();
+  });
+  window.addEventListener("pointerdown", skipShot);
+
   let touchControls: any = null;
   try {
     touchControls = mountTouchControls(
@@ -1217,7 +911,7 @@ function boot(): void {
     mode: "quick",
     pendingMode: "quick",
     phase: "menu",
-    park: "sandlot",
+    park: bootPark,
     diff: "pro",
     playerClub: "seals",
     cpuClub: "liners",
@@ -1538,6 +1232,8 @@ function boot(): void {
     el.hud?.classList.add("on");
     el.goCard?.classList.remove("show");
     setPhase("between");
+    // GU47 DIA-C1: the park intro rail opens every match (it ends when the first pitch is under way).
+    playShot(introShot(park()));
     cue("uiConfirm");
     cue("crowd");
     if (mode === "studio") fireFlair();
@@ -1648,8 +1344,11 @@ function boot(): void {
     if (!PARKS[id] || G.park === id) return;
     G.park = id;
     try {
-      app.setScene(buildParkScene(PARKS[id]));
+      app.setScene(buildParkScene(PARKS[id], sceneCtx));
+      applyParkLook(id);
+      registerParkVfx(id);
       bindHandles();
+      restartBallTrail();
       G.lastBatColor = "";
       G.lastFieldColor = "";
       applyUniforms();
@@ -1658,6 +1357,7 @@ function boot(): void {
       attachBatSocket();
       tick(`ballpark — ${PARKS[id].name.toLowerCase()}`, "info");
       showBanner(PARKS[id].name, 1.8);
+      if (G.phase !== "menu") playShot(introShot(PARKS[id]));
     } catch (err) {
       console.warn("[diamond] park rebuild failed", err);
     }
@@ -1712,7 +1412,22 @@ function boot(): void {
     confettiUntil = performance.now() / 1000 + 5;
     H.confetti?.setVisible(true);
   }
-  function fireHrBurst(): void {
+  /**
+   * Home-run celebration. GU47 (DIA-V1): the park's own beat from the pack, where the crowd sees it: fireworks over the
+   * wall the ball cleared, confetti from the Dome roof, regolith thrown up where the moonshot lands. The 4.6.2 fountain
+   * at the plate stays for `?look=original`.
+   */
+  function fireHrBurst(landPos?: Vec3): void {
+    boardHrAt = performance.now() / 1000;
+    if (gu47Fx && landPos) {
+      const kind = juiceFxKind("homer", G.park);
+      const at: Vec3 =
+        kind === "diamond-dome-confetti" ? [0, 24, -26]
+        : kind === "diamond-regolith-arc" ? [landPos[0], 0.2, landPos[2]]
+        : [landPos[0] * 0.8, 16, landPos[2] * 0.8];
+      burstVfx(kind, at);
+      return;
+    }
     hrBurstUntil = performance.now() / 1000 + 2.4;
     H.hrBurst?.setVisible(true);
   }
@@ -2369,7 +2084,8 @@ function boot(): void {
         showBanner(`HOME RUN — ${distFt} FT`, 2.2);
         cue(distFt > 420 ? "homerBig" : "homer");
         juiceFire("homer", { position: ball.landPos });
-        fireHrBurst();
+        fireHrBurst(ball.landPos);
+        playShot(homeRunShot(park(), ball.landPos));
         tick(`derby HR #${G.derby.hrs} — ${distFt} ft`, "success", distFt);
       } else {
         G.derby.outs += 1;
@@ -2390,7 +2106,8 @@ function boot(): void {
       if (o === "homerun") {
         showBanner(`${distFt} FT MOONSHOT`, 2.0);
         cue("homer");
-        fireHrBurst();
+        fireHrBurst(ball.landPos);
+        playShot(homeRunShot(park(), ball.landPos));
       }
       nextBatter();
       return;
@@ -2409,7 +2126,8 @@ function boot(): void {
         showBanner(`HOME RUN — ${distFt} FT`, 2.6);
         cue(distFt > 420 || park().id === "lunar" ? "homerBig" : "homer");
         juiceFire("homer", { position: landPos });
-        fireHrBurst();
+        fireHrBurst(landPos);
+        playShot(homeRunShot(park(), landPos));
         applyRunnerPlan(planRunnerMoves("homerun"));
         tick(`${isPlayerHit ? "you" : clubById(G.cpuClub).abbr} go deep — ${distFt} ft (${runs} RBI)`, "success", distFt);
         if (park().id === "skyline" && ball.landTheta > -30 && ball.landTheta < 30 && crossed) {
@@ -2750,6 +2468,9 @@ function boot(): void {
     }
     const landed = ball.pos[1] <= 0.05 || ball.age >= ball.resolveAt + 0.6 || (ball.crossedFence && ball.wallHit === false && ball.pos[1] <= park().wallH * 0.5 && ball.vel[1] < 0 && r >= fenceR + 4);
     if (landed && !ball.dead) {
+      // DIA-V1: what a ball landing in the park kicks up (clay, chalk on a foul line, canyon dust, regolith). Reads the
+      // ball only; the sim state and G.rng are untouched.
+      if (ball.pos[1] <= 0.05 && !ball.crossedFence) burstVfx(landingFxKind(G.park, ball.landTheta, FOUL_DEG), [ball.pos[0], 0.05, ball.pos[2]]);
       ball.dead = true;
       classifyBatted(ball);
       el.catchPrompt?.classList.remove("show");
@@ -3470,9 +3191,12 @@ function boot(): void {
     ((H.wavers as AnyHandle[]) ?? []).forEach((w, i) => {
       if (!w) return;
       const c = crowd[i];
-      if (c) w.setPosition(c.x, 0, c.z).setRotation(0, c.yaw, 0);
-      setActorAnimation(`waver-${i}`, w, "Ready", 1.0);
+      // GU47 DIA-N1: staggered hops for 2.4 s after a home run (none under reduced motion or ?look=original).
+      const hop = sceneCtx.variant === "gu47" ? cheerHop(i, performance.now() / 1000 - boardHrAt, reducedMotion) : 0;
+      if (c) w.setPosition(c.x, hop, c.z).setRotation(0, c.yaw, 0);
+      setActorAnimation(`waver-${i}`, w, "Ready", hop > 0 ? 1.6 : 1.0);
     });
+    if (sceneCtx.variant === "gu47" && pk.id === "lunar") (H.lunarEarth as AnyHandle)?.setRotation(0, earthYaw(performance.now() / 1000, reducedMotion), 0);
     void t;
 
     // Ball + shadow + trail dots: drawn between the last two sim steps (fixed-step presenter, C14).
@@ -3484,6 +3208,7 @@ function boot(): void {
     if (qaBall) ballWorld = qaBall;
     G.lastBallPos = ballWorld;
     H.ball?.setPosition(ballWorld[0], ballWorld[1], ballWorld[2]).setVisible(ballWorld[1] > -30);
+    noteBallForTrail(ballWorld);
     const shScale = clamp(1.15 - ballWorld[1] * 0.02, 0.4, 1.1);
     // C17: the key light already casts the ball's real shadow near the ground; the fake disc only marks a high fly ball's spot.
     H.ballShadow?.setPosition(ballWorld[0], 0.04, ballWorld[2]).setScale([shScale, 1, shScale]).setVisible(ballWorld[1] > 3 && ballWorld[1] < 60);
@@ -3555,6 +3280,9 @@ function boot(): void {
   let qaBall: Vec3 | null = null;
   let qaRunT: number | null = null;
   let qaCam: { eye: Vec3; target: Vec3; fov: number } | null = null;
+  let lastCamPhase: Phase = G.phase;
+  let lastCamHalf: "top" | "bottom" = G.half;
+  let lastSeqActive = false;
   function updateCamera(dt: number): void {
     const c = G.cam;
     const pk = park();
@@ -3596,12 +3324,35 @@ function boot(): void {
       target = [-0.5 + drift * 0.4, 1.28 + (G.pitch?.t ?? 0) * 0.1, -7.2];
       fov = 40;
     }
+    // GU47 DIA-C1: broadcast sequences between plays. A new half-inning opens with the wide, a new at-bat (0-0 count) with
+    // the walk-up; the home run and the park intro are started where they happen. Menus, the final whistle and every
+    // interactive phase keep the game's own camera.
+    if (G.phase !== "menu" && !G.over) {
+      if (G.half !== lastCamHalf) playShot(halfInningShot());
+      else if (G.phase === "between" && lastCamPhase !== "between" && G.balls === 0 && G.strikes === 0) playShot(walkupShot());
+    }
+    lastCamHalf = G.half;
+    lastCamPhase = G.phase;
+    const gameCam = G.phase === "menu" || G.over || G.phase === "windup" || G.phase === "pitch" || G.phase === "batted" || G.phase === "pitchSelect" || G.phase === "pitchMeter";
+    const seq = director.update(performance.now() / 1000, gameCam);
+    if (seq) {
+      c.mode = "sequence";
+      eye = seq.pose.eye;
+      target = seq.pose.target;
+      fov = seq.pose.fov;
+    }
+    applyCineBars(seq?.bars ?? 0);
+    applyShotDof(seq?.dof ?? false, seq ? Math.hypot(eye[0] - target[0], eye[1] - target[1], eye[2] - target[2]) : 0);
+    applyShotBlur(seq?.motionBlur ?? false);
+    // Reduced motion (PRD 6.3): entering or leaving a sequence is a cut, not an eased move.
+    const cut = reducedMotion && (seq !== null) !== lastSeqActive;
+    lastSeqActive = seq !== null;
     if (qaCam) {
       eye = qaCam.eye;
       target = qaCam.target;
       fov = qaCam.fov;
     }
-    const k = qaCam ? 1 : 1 - Math.pow(0.001, dt);
+    const k = qaCam || cut ? 1 : 1 - Math.pow(0.001, dt);
     c.eye = mix3(c.eye, eye, k);
     c.target = mix3(c.target, target, k);
     c.fov = lerp(c.fov, fov, k);
@@ -3621,7 +3372,35 @@ function boot(): void {
     elRef.textContent = v;
   };
 
+  /* ---------- GU47 DIA-V2 outfield board ---------- */
+  // The live linescore canvas on the scoreboard screen (read-only game values), repainted only on change and at most
+  // 4 times a second, with a 2 s HOME RUN card (steady under reduced flash). Never on ?look=original.
+  const boardThrottle = new BoardThrottle();
+  function updateBoard(now: number): void {
+    if (sceneCtx.variant !== "gu47") return;
+    const board = boardTexture();
+    if (!board) return;
+    const model = boardModel({
+      parkName: park().name,
+      teams: { away: clubAbbr("player"), home: clubAbbr("cpu") },
+      linescore: { away: G.linescore.player, home: G.linescore.cpu },
+      runs: { away: G.score.player, home: G.score.cpu },
+      hits: { away: G.hits.player, home: G.hits.cpu },
+      inning: G.inning,
+      inningsTotal: G.inningsTotal,
+      half: G.half,
+      balls: G.balls,
+      strikes: G.strikes,
+      outs: G.outs
+    });
+    const hr = homeRunPhase(now - boardHrAt, reducedFlash);
+    if (!boardThrottle.due(now, model.key, hr)) return;
+    board.paint(model, { accent: PARK_LOOKS[G.park].accent, font: '"DIN Pro", "Whitney", sans-serif' }, hr);
+    boardThrottle.painted(now, model.key, hr);
+  }
+
   function updateHud(dt: number): void {
+    updateBoard(performance.now() / 1000);
     const inGame = G.phase !== "menu" && !G.over;
     el.hud?.classList.toggle("on", inGame);
     renderLinescore();
@@ -4051,6 +3830,12 @@ function boot(): void {
       framesRendered,
       autopilot: G.autopilot,
       look: park().look,
+      // GU47 (WP-18): which look is mounted, on which quality tier and with which sky.
+      lookVariant: sceneCtx.variant,
+      lookTier: sceneCtx.tier,
+      lookSky: sceneCtx.skyMode,
+      // DIA-C1 QA: the running broadcast sequence and how many of each played (>= 4 per QA match).
+      sequence: { active: director.active, played: { ...director.played } },
       mode: G.mode,
       phase: G.phase,
       cameraMode: G.cam.mode,
@@ -4134,6 +3919,17 @@ function boot(): void {
     };
     publishBeacon(evidence);
   });
+
+  // GU47 QA crops (E-I crop contract): infield, outfield-wall, board, batter and sky rects, recomputed from the current
+  // broadcast camera every time the steady-state capture asks (a function, so they follow the camera).
+  {
+    const qa = ((window as any).__AURA_QA__ ??= {});
+    qa.crops = () => {
+      const canvas = document.querySelector("#app canvas") as HTMLCanvasElement | null;
+      const aspect = canvas && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : window.innerWidth / Math.max(1, window.innerHeight);
+      return diamondCrops(park(), { eye: G.cam.eye, target: G.cam.target, fov: G.cam.fov }, aspect);
+    };
+  }
 
   {
     (window as any).__AURA3D_GAME_DIAMOND__ = {
