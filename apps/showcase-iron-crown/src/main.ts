@@ -39,6 +39,7 @@ import {
   isLoopingFighterClip,
   PALETTE_SWATCHES,
   resolveTypedFighterAssets,
+  THROW_CLIP_SPEED,
   type FighterClip,
   type FighterDef,
   type FighterId,
@@ -1416,7 +1417,7 @@ function clipPlaybackSpec(f: FighterRuntime, clip: FighterClip): { clip: string;
     case "special":
       return { clip: baseEmbedded, loop: false, speed: 2.8 };
     case "throw":
-      return { clip: baseEmbedded, loop: false, speed: 2.4 };
+      return { clip: baseEmbedded, loop: false, speed: THROW_CLIP_SPEED };
     case "hitstun":
       return { clip: baseEmbedded, loop: false, speed: 1.6 };
     case "ko":
@@ -1459,7 +1460,7 @@ type LayerApi = {
   animationState?(): { activeActions?: readonly { clip: string; layer: string }[] } | undefined;
 };
 const ATTACK_LAYER = "upper-body";
-const ATTACK_LAYER_SPEED: Record<AttackKind, number> = { light: 2.6, heavy: 1.85, special: 2.8, throw: 2.4 };
+const ATTACK_LAYER_SPEED: Record<AttackKind, number> = { light: 2.6, heavy: 1.85, special: 2.8, throw: THROW_CLIP_SPEED };
 const ATTACK_LAYER_HOLD: Record<AttackKind, number> = { light: 0.52, heavy: 0.62, special: 0.85, throw: 0.62 };
 
 function layerApi(f: FighterRuntime): LayerApi | undefined {

@@ -30,7 +30,7 @@ describe("N1 lights.spot root builder", () => {
 });
 
 describe("D4 flipbook/beam root builders", () => {
-  it("records validated flipbook geometry and warns withheld", () => {
+  it("records validated flipbook geometry and no longer warns withheld (GU47 E-F: drawn by the particle pass)", () => {
     const snapshot = scene().add(effects.flipbook({ spriteColumns: 8, spriteRows: 4, frameRate: 30 })).toJSON();
     expect(snapshot.nodes.find((entry) => entry.kind === "effect")).toMatchObject({
       effect: "flipbook-sprite",
@@ -40,10 +40,10 @@ describe("D4 flipbook/beam root builders", () => {
     });
     expect(() => scene().add(effects.flipbook({ spriteColumns: 0 })).toJSON()).toThrow(RangeError);
     const report = renderer.diagnostics(scene().add(effects.flipbook()));
-    expect(report.warnings.some((warning) => warning.includes("flipbook-sprite is recorded but withheld"))).toBe(true);
+    expect(report.warnings.some((warning) => warning.includes("flipbook-sprite is recorded but withheld"))).toBe(false);
   });
 
-  it("records a validated beam descriptor and warns withheld", () => {
+  it("records a validated beam descriptor and no longer warns withheld (GU47 E-F: drawn by the prd07.beams pass)", () => {
     const snapshot = scene().add(effects.beam({ from: [0, 1, 0], to: [0, 1, -6], widthWorld: 0.3, segmentCount: 12 })).toJSON();
     expect(snapshot.nodes.find((entry) => entry.kind === "effect")).toMatchObject({
       effect: "light-beam",
@@ -52,7 +52,7 @@ describe("D4 flipbook/beam root builders", () => {
     });
     expect(() => scene().add(effects.beam({ widthWorld: -1 })).toJSON()).toThrow(RangeError);
     const report = renderer.diagnostics(scene().add(effects.beam()));
-    expect(report.warnings.some((warning) => warning.includes("light-beam is recorded but withheld"))).toBe(true);
+    expect(report.warnings.some((warning) => warning.includes("light-beam is recorded but withheld"))).toBe(false);
   });
 });
 

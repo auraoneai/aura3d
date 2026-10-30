@@ -13,10 +13,12 @@ import {
  *
  * All six fighters mount bespoke Meshy-generated rigs imported into the
  * app-local catalog (assets.ironcrown<Name>) — no borrowed library rigs.
- * Every GLB ships the identical 10-clip set (Idle, Walk_Fight_Forward,
+ * Every GLB ships the identical 14-clip set (Idle, Walk_Fight_Forward,
  * Walk_Fight_Back, Left_Jab_from_Guard, Right_Uppercut_from_Guard,
- * Triple_Combo_Attack, Block1, Hit_Reaction, Dead, Regular_Jump), so one
- * shared clip map resolves every logical state.
+ * Triple_Combo_Attack, Block1, Hit_Reaction, Dead, Regular_Jump, plus the
+ * IC-12 Meshy animate clips Combat_Stance, CrouchLookAroundBow,
+ * Over_Shoulder_Throw, Victory_Fist_Pump), so one shared clip map resolves
+ * every logical state.
  *
  * Clip-map contract (adapted from the create-aura3d fighting template,
  * Q-06-8 / #488): every required logical state must resolve to a clip that
@@ -99,29 +101,34 @@ interface AuraClipMapEntry {
 }
 
 /**
- * Best embedded clip per logical state — shared across the roster because
- * every bespoke Meshy rig ships the identical 10-clip set. `standIn: true`
- * marks states where the GLB has no bespoke clip (there is no dedicated
- * dash/throw/win/crouch animation — a walk/combo/block/jump clip sells the
- * pose instead).
+ * Best embedded clip per logical state, shared across the roster because
+ * every bespoke Meshy rig ships the identical 14-clip set. `standIn: true`
+ * marks the one state whose clip was made for something else: dash plays the
+ * forward fight walk at double speed.
+ *
+ * IC-12: idle, crouch, throw and win have their own Meshy animate clips
+ * (action ids 89, 258, 421, 403; aura-evidence/meshy/ironcrown*.ic12-clips.json).
+ * Block1 is guard only. Over_Shoulder_Throw is trimmed to its grab-lift-toss
+ * window (2.5 s), played at THROW_CLIP_SPEED so it fits the 0.62 s throw hold.
  */
 export const FIGHTER_CLIP_MAP: Record<FighterClip, AuraClipMapEntry> = {
-  // The bare "Idle" clip leaves both fighters' hands hanging at their sides.
-  // The guard pose reads as an intentional combat stance between exchanges.
-  idle: { clip: "Block1", standIn: true },
+  idle: { clip: "Combat_Stance" },
   walk: { clip: "Walk_Fight_Forward" },
   jump: { clip: "Regular_Jump" },
   dash: { clip: "Walk_Fight_Forward", standIn: true },
-  crouch: { clip: "Block1", standIn: true },
+  crouch: { clip: "CrouchLookAroundBow" },
   guard: { clip: "Block1" },
   light: { clip: "Left_Jab_from_Guard" },
   heavy: { clip: "Right_Uppercut_from_Guard" },
   special: { clip: "Triple_Combo_Attack" },
-  throw: { clip: "Triple_Combo_Attack", standIn: true },
+  throw: { clip: "Over_Shoulder_Throw" },
   hitstun: { clip: "Hit_Reaction" },
   ko: { clip: "Dead" },
-  win: { clip: "Regular_Jump", standIn: true }
+  win: { clip: "Victory_Fist_Pump" }
 };
+
+/** Playback speed of the throw clip: its 2.5 s grab-lift-toss over the 0.62 s throw hold. */
+export const THROW_CLIP_SPEED = 4;
 
 function validateClipMap(
   map: Record<FighterClip, AuraClipMapEntry>,

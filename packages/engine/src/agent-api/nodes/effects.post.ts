@@ -20,6 +20,55 @@ export interface PostV3EffectOptions extends Omit<AuraEffectNode, "kind" | "effe
   readonly size?: number;
   readonly luminanceResponse?: number;
 }
+
+/** GU47 E-C: a per-channel grade term — a scalar applies to all three channels. */
+export type AuraGradeRgb = number | readonly [number, number, number] | { readonly r: number; readonly g: number; readonly b: number };
+
+/**
+ * GU47 E-C (PRD §3.1): `colorGrade({ lut })` takes a typed `.cube` asset
+ * (`aura3d assets add <file.cube> --type lut` → `assets.<name>`), i.e.
+ * `AuraAssetRef<"lut">`. `AuraAssetType` gains `"lut"` in `nodes/types.ts`
+ * (lane E-D handoff); until that merges this structural local type stands in
+ * for it, and a plain served URL string (`"/luts/venue.cube"`) is accepted too.
+ */
+export interface AuraLutAssetRef {
+  readonly kind: "aura-asset-ref";
+  readonly id: string;
+  readonly type: "lut";
+  readonly url: string;
+  readonly format?: string;
+  readonly hash?: string;
+  readonly sha256?: string;
+}
+
+/**
+ * GU47 E-C: `effects.colorGrade` options. `exposure`/`contrast`/`saturation`
+ * as before; the HDR terms reach pixels through the S10 linear grade
+ * (`post/shaders/hdrGrade.glsl.ts`): `temperature`/`tint` in [-1, 1]
+ * (0 neutral, +temperature warmer, +tint magenta; 0.2 ≈ a "+20" white-balance
+ * slider), `lift` (additive, default 0), `gamma`/`gain` (default 1) and the
+ * `shadows`/`midtones`/`highlights` multipliers (default 1). `lut` binds a
+ * `.cube` in the S10b display grade at `lutIntensity` (0..1, default 1).
+ * The `AuraEffectNode` field widening is a lane E-D `nodes/types.ts` handoff;
+ * this local type keeps the factory typed until it lands.
+ */
+export interface AuraColorGradeOptions extends Omit<AuraEffectNode, "kind" | "effect" | "shadows" | "highlights" | "lut"> {
+  readonly temperature?: number;
+  readonly tint?: number;
+  readonly vibrance?: number;
+  readonly lift?: AuraGradeRgb;
+  readonly gamma?: AuraGradeRgb;
+  readonly gain?: AuraGradeRgb;
+  readonly shadows?: AuraGradeRgb;
+  readonly midtones?: AuraGradeRgb;
+  readonly highlights?: AuraGradeRgb;
+  readonly lut?: AuraLutAssetRef | string;
+  readonly lutIntensity?: number;
+}
+
+/** Grade fields the factory forwards verbatim when authored (the v2 bridge reads them; §7.1 allowlist). */
+const COLOR_GRADE_PASS_THROUGH = ["temperature", "tint", "vibrance", "lift", "gamma", "gain", "shadows", "midtones", "highlights", "lut", "lutIntensity"] as const;
+
 import { effects } from "../nodes/effects.composite.js";
 import { shadows } from "./shadows.js";
 
@@ -93,12 +142,18 @@ export const postEffectBuilders = {
       ...(options.multiBounce !== undefined ? { multiBounce: options.multiBounce } : {})
     }),
   /**
-   * Root color-grade node (muse3jsparity-PRD A3). contrast/saturation execute
-   * natively; exposure/shadows/highlights/lut are recorded on the node and
-   * warned (no native grade target yet — never silently accepted).
+   * Root color-grade node (muse3jsparity-PRD A3). contrast/saturation run in
+   * the fused present; GU47 E-C: temperature/tint/lift/gamma/gain/shadows/
+   * midtones/highlights run in the S10 linear grade and `lut` (a `.cube`
+   * asset or URL) in the S10b display grade on the v2 chain.
    */
-  colorGrade: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
-    new AuraNodeBuilder<AuraEffectNode>({
+  colorGrade: (options: AuraColorGradeOptions = {}) => {
+    const fields = options as unknown as Record<string, unknown>;
+    const passThrough: Record<string, unknown> = {};
+    for (const key of COLOR_GRADE_PASS_THROUGH) {
+      if (fields[key] !== undefined) passThrough[key] = fields[key];
+    }
+    return new AuraNodeBuilder<AuraEffectNode>({
       kind: "effect",
       effect: "color-grade",
       name: options.name ?? "color grade",
@@ -107,10 +162,9 @@ export const postEffectBuilders = {
       contrast: options.contrast ?? 1,
       saturation: options.saturation ?? 1,
       postAuthored: options.postAuthored ?? Object.keys(options).filter((key) => key !== "postAuthored"),
-      ...(options.shadows !== undefined ? { shadows: options.shadows } : {}),
-      ...(options.highlights !== undefined ? { highlights: options.highlights } : {}),
-      ...(options.lut !== undefined ? { lut: options.lut } : {})
-    }),
+      ...passThrough
+    } as unknown as AuraEffectNode);
+  },
   /**
    * Root anti-alias node (muse3jsparity-PRD A3). `fxaa` executes natively;
    * `off` submits nothing; `taa` uses renderer-owned velocity/history for opaque

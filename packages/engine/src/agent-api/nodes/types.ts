@@ -300,7 +300,53 @@ export interface AuraMaterialSpec {
   readonly kind?: "custom";
   /** SH-02 payload: the portable custom-shader spec (see AuraCustomMaterialSpec). */
   readonly custom?: AuraCustomMaterialSpec;
+  // ── GameUpgrades47 (4.7.0) additions, PRD §3.1 E-C / E-D. Optional; absent = today's behaviour.
+  /**
+   * GU47 E-D: fresnel rim term on the forward PBR program (see `AuraMaterialRimSpec`). Also on `material.toon`,
+   * `model(asset, { material: { rim } })` and `materialOverrides: [{ rim }]`. A material without `rim` compiles to
+   * the same program as before.
+   */
+  readonly rim?: AuraMaterialRimSpec;
+  /**
+   * GU47 E-C: selective-bloom weight in 0..2, default 1 (today's bloom). The bloom prefilter
+   * (`NativeBloomPyramid`) scales this material's contribution by it: 0 keeps a bright wall out of bloom,
+   * 2 doubles an emissive lamp's glow. Values outside 0..2 are clamped.
+   */
+  readonly bloom?: number;
 }
+
+/**
+ * GU47 E-D (PRD §3.1): `rim: { color, power?, intensity? }`. Adds `color * intensity * (1 - N·V)^power` to the
+ * surface's emitted light (no light needed), so a character or ball reads against a busy backdrop.
+ * `power` defaults to 3 (clamped to 0.1..16; higher = thinner rim), `intensity` to 1 (clamped to 0..16).
+ */
+export interface AuraMaterialRimSpec {
+  readonly color: AuraColor;
+  readonly power?: number;
+  readonly intensity?: number;
+}
+
+/**
+ * GU47 E-D (PRD §3.1): `material.toon(opts)`. Cel-shaded surface lit by every scene light (sun shadow included),
+ * banded into `steps` (1..8, default 3) between `shadowColor` and `color`, plus a soft hemisphere fill and the optional
+ * fresnel `rim`. `ramp` (a texture asset, a 1D gradient read left = unlit to right = fully lit) replaces the bands: the
+ * colour is `color * ramp(light)`. Scene fog applies; it casts shadows with its own vertex stage and works on
+ * instanced nodes. `color` defaults to "#d7dee8", `shadowColor` to `color` at 35%.
+ */
+export interface AuraToonMaterialOptions {
+  readonly color?: AuraColor;
+  readonly steps?: number;
+  readonly ramp?: AuraAssetRef<"texture">;
+  readonly shadowColor?: AuraColor;
+  readonly rim?: AuraMaterialSpec["rim"];
+}
+
+/**
+ * GU47 E-D: what a per-instance colour (`instances.*({ colors })`) multiplies. `"base"` (default, today's behaviour):
+ * the base colour. `"emissive"`: the emissive term only (the base keeps the material colour), so each instance glows its
+ * own colour. `"both"`: base and emissive. The option lives on `instances.*` (lane E-G); the shader side is E-D's.
+ */
+export type AuraInstanceColorTarget = "base" | "emissive" | "both";
 
 export interface AuraEditableMaterialParameters {
   readonly kind: "aura-material-parameters";
@@ -801,6 +847,8 @@ export interface AuraModelNode extends AuraTransformSpec {
   /** P2 model instancing (muse3jsparity-PRD): per-instance transforms consumed at mount exactly like primitive nodes. */
   readonly instances?: readonly AuraTransformSpec[];
   readonly instanceColors?: readonly AuraColor[];
+  /** GU47 E-D: what `instanceColors` multiply; stamped by `instances.model({ instanceColorTarget })` (lane E-G). Absent = `"base"`. */
+  readonly instanceColorTarget?: AuraInstanceColorTarget;
   readonly instanceLod?: { readonly levels: readonly { readonly maxDistance: number }[]; readonly hysteresis?: number };
   /** P2 culling telemetry stamped by `instances.model`: centroid + bounding radius over instance positions. */
   readonly instanceCulling?: { readonly instanceCount: number; readonly centroid: AuraVec3; readonly boundingRadius: number; readonly cullable: true };
@@ -838,6 +886,8 @@ export interface AuraPrimitiveNode extends AuraTransformSpec {
   readonly runtime?: AuraRuntimeNodeSpec;
   readonly instances?: readonly AuraTransformSpec[];
   readonly instanceColors?: readonly AuraColor[];
+  /** GU47 E-D: what `instanceColors` multiply; stamped by `instances.*({ instanceColorTarget })` (lane E-G). Absent = `"base"`. */
+  readonly instanceColorTarget?: AuraInstanceColorTarget;
   readonly geometry?: AuraCustomGeometrySpec;
   readonly text3D?: Omit<AuraText3DGeometry, "geometry">;
   readonly lod?: AuraRootLodSpec;
@@ -2559,6 +2609,16 @@ export interface AuraDiagnostics {
   readonly degradations?: readonly import("../../contracts/compiler").AuraDegradation[];
   readonly compiledFeatures?: readonly string[];
   readonly qrFlags?: readonly string[];
+  /**
+   * GU47 E-D (budget rows, PRD §3.2): triangles the renderer submitted in the last rendered frame, every pass
+   * (forward, shadow cascades, probes), the same counter as `app.info.render.triangles`. Present once a frame rendered.
+   */
+  readonly triangles?: number;
+  /**
+   * GU47 E-D (budget rows, PRD §3.2): bytes of GPU texture memory the renderer holds (uploaded textures plus
+   * render-target colour attachments, as counted by the device). Present once a frame rendered.
+   */
+  readonly textureBytes?: number;
 }
 
 export interface AuraAssetProvenance {
@@ -2679,6 +2739,13 @@ export interface AuraCustomMaterialSpec {
    * Honours the light's `shadow` options (cascades, bias, normalBias, filter). GLSL only.
    */
   readonly receiveShadow?: boolean;
+  /**
+   * GU47 E-D: cast shadows with the author vertex shader. The shadow depth pass then runs this material's
+   * `glsl.vertex` (the matrix built-ins carry the light's view-projection) with a depth-only fragment, so vertex
+   * displacement (sway, wind, waves) moves the shadow too. Absent or false: the plain position-only depth program
+   * (today's behaviour). Whether the node casts at all is still the node's `castShadow`. GLSL only.
+   */
+  readonly castShadow?: boolean;
 }
 
 // ── SG-05 dynamic geometry (L2) ────────────────────────────────────────────

@@ -9,8 +9,10 @@ import { inflateSync } from "node:zlib";
 import { writeAgentSkills, type AuraSkillMode } from "create-aura3d";
 import { measureLoudness } from "@aura3d/audio";
 import { admitAssetForRole } from "./asset-role-admission.js";
+import { CERTIFY_CATEGORY_RULES } from "./commands/assets/certifyCategories.js";
 import { hasStylizedFlatApproval } from "./admission/artDirection.js";
 import { AUDIO_SYNTH_RELEASE_ALLOWLIST, isSynthesizedAudioProvenance } from "./admission/audio.js";
+import { validateCubeLut } from "./admission/cubeLut.js";
 import { profileForRole, requiresPbrTextures } from "./admission/profiles.js";
 import {
   DEFAULT_AURA_ASSET_MANIFEST,
@@ -386,6 +388,7 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
   const hash = hashFile(sourcePath);
   const format = extname(sourcePath).slice(1).toLowerCase();
   const type = options.type ?? inferAssetType(format);
+  if (type === "lut") admitCubeLut(sourcePath, format);
   const inspection = inspectAssetFile(sourcePath, format);
   const outputFileName = `${options.name}.${hash.slice(0, 8)}.${format}`;
   const outputPath = join(outputDir, outputFileName);
@@ -689,11 +692,9 @@ export async function certifyGameGeometry(options: CertifyGameGeometryOptions): 
       };
     }
 
-    const visualCertification = options.category === "racing" && asset.role === "vehicle"
-      ? { role: "vehicle" as const, certification: "certified-racing-vehicle" as const, label: "racing-vehicle" as const }
-      : options.category === "platformer" && asset.role === "character"
-        ? { role: "character" as const, certification: "certified-platformer-character" as const, label: "platformer-character" as const }
-        : undefined;
+    // GU47 WP-9: category rules live in commands/assets/certifyCategories.ts (racing and platformer unchanged).
+    const rule = CERTIFY_CATEGORY_RULES[options.category];
+    const visualCertification = rule.subject && asset.role === rule.subject.role ? rule.subject : undefined;
     if (visualCertification) {
       const blockers = retainedGameSubjectCertificationBlockers(projectDir, manifest, asset, visualCertification.role, visualCertification.label);
       const probe = asset.renderedProbe;
@@ -725,15 +726,15 @@ export async function certifyGameGeometry(options: CertifyGameGeometryOptions): 
       };
     }
 
-    const probe = probeShowcaseGameGeometry(assetId, options.category, { projectDir });
+    const probe = probeShowcaseGameGeometry(assetId, rule.surface.probe, { projectDir });
     const gameGeometry = probe.extraction.ok
       ? {
-        certification: options.category === "racing" ? "certified-racing-track" as const : "certified-platformer-world" as const,
+        certification: rule.surface.certification,
         evidence: {
           manifestHash: asset.hash,
           blockers: []
         },
-        ...(options.category === "racing"
+        ...(rule.surface.probe === "racing"
           ? { racingTopology: probe.extraction.value as unknown as Readonly<Record<string, unknown>> }
           : { playableSurfaceMap: probe.extraction.value as unknown as Readonly<Record<string, unknown>> })
       }
@@ -788,7 +789,7 @@ function retainedGameSubjectCertificationBlockers(
   manifest: AuraCliAssetManifest,
   asset: AuraCliAssetEntry,
   role: "vehicle" | "character",
-  label: "racing-vehicle" | "platformer-character"
+  label: string
 ): readonly string[] {
   const blockers: string[] = [];
   if (asset.role !== role) {
@@ -864,7 +865,7 @@ function retainedGameSubjectCertificationBlockers(
 function roleAdmissionCertificationBlockers(
   asset: AuraCliAssetEntry,
   role: "vehicle" | "character",
-  label: "racing-vehicle" | "platformer-character"
+  label: string
 ): readonly string[] {
   const bounds = asset.bounds;
   if (!bounds || bounds.length < 3) return [];
@@ -3839,13 +3840,26 @@ function writeThumbnail(projectDir: string, outputDir: string, publicPath: strin
   return `${publicPath}${fileName}`;
 }
 
+/** GU47 E-C: `--type lut` admits only a valid 3-D `.cube` (the S10b display-grade LUT). */
+function admitCubeLut(sourcePath: string, format: string): void {
+  if (format !== "cube") {
+    throw new Error(`Aura3D assets add failed: --type lut expects a .cube file, got ".${format || "unknown"}". Suggested fix: export a 3-D .cube LUT (LUT_3D_SIZE 17, 33 or 65) from your grading tool.`);
+  }
+  try {
+    validateCubeLut(readFileSync(sourcePath, "utf8"));
+  } catch (error) {
+    throw new Error(`Aura3D assets add failed: ${error instanceof Error ? error.message : String(error)} Suggested fix: export a 3-D .cube LUT with LUT_3D_SIZE in [2, 65].`);
+  }
+}
+
 function inferAssetType(format: string): AuraCliAssetType {
   if (["glb", "gltf"].includes(format)) return "model";
   if (["png", "jpg", "jpeg", "webp", "ktx2"].includes(format)) return "texture";
   if (["hdr", "exr"].includes(format)) return "environment";
   if (["mp3", "wav", "ogg"].includes(format)) return "audio";
   if (format === "navmesh") return "navigation";
-  throw new Error(`Unsupported Aura3D asset format: ${format || "unknown"}. Suggested fix: use glb, gltf, png, jpg, webp, ktx2, hdr, exr, mp3, wav, ogg, or navmesh.`);
+  if (format === "cube") return "lut";
+  throw new Error(`Unsupported Aura3D asset format: ${format || "unknown"}. Suggested fix: use glb, gltf, png, jpg, webp, ktx2, hdr, exr, mp3, wav, ogg, navmesh, or cube.`);
 }
 
 function hashFile(path: string): string {

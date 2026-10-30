@@ -15,6 +15,7 @@
 
 import { POST_COMMON_GLSL } from "./common.glsl.js";
 import { FXAA_185_FNS_GLSL } from "./fxaa.glsl.js";
+import { DISPLAY_LUT_FETCH_GLSL } from "./displayGrade.glsl.js";
 
 const FINALIZE_FNS_GLSL = /* glsl */ `
 float luma709(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
@@ -96,12 +97,12 @@ ${FXAA_185_FNS_GLSL}
 
 ${POST_COMMON_GLSL}
 ${FINALIZE_FNS_GLSL}
-
+${DISPLAY_LUT_FETCH_GLSL}
 vec4 sampleGraded(sampler2D tex, vec2 uv) {
   vec4 c = texture(tex, uv);
   vec3 disp = c.rgb;
   if (u_hasLut != 0) {
-    disp = texture(u_lut3d, clamp(disp, 0.0, 1.0)).rgb;
+    disp = a3dDisplayLut(disp);
   }
   if (u_vignetteIntensity > 0.0) {
     vec2 p = (uv - 0.5) * 2.0;

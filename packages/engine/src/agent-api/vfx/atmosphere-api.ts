@@ -4,7 +4,7 @@
 
 import type { AuraApp } from "../index";
 import type { QrFlags } from "@aura3d/rendering/contracts";
-import type { AuraHeightFogSpec, AuraSkySpec } from "../../contracts/atmosphere";
+import type { AuraSetFogOptions, AuraSetFogSpec, AuraSkySpec } from "../../contracts/atmosphere";
 import { StubAppAtmosphere } from "../../contracts/atmosphere";
 import { ProductionEffectSystem, type AppLike } from "../../production-runtime/effects/ProductionEffectSystem";
 import { attachVfxBridge } from "./bridge";
@@ -22,14 +22,15 @@ export function createAtmosphereExtension(app: AuraApp, ctx: { flags: QrFlags })
   // §8.6 — flag-on hides the tagged prd07.legacyWeather.* primitives.
   system.setWeatherFlagOn(ctx.flags.on("A3D_QR_VFX"));
   system.setDecalFlagOn(ctx.flags.on("A3D_QR_VFX_DECALS"));
-  // §6.6 — flag-on makes the carved compiler/fog.ts read this app's live fog.
+  // §6.6 — A3D_QR_VFX_FOG makes the carved compiler/fog.ts read this app's live fog. GU47 E-B: the binding is made for
+  // every real atmosphere (A3D_QR_VFX, A3D_QR_VFX_SKY or A3D_QR_VFX_FOG alone); it never depends on the sky flag.
   bindPrd07FogRuntime({ flags: ctx.flags, atmosphere: system.atmosphere });
   // The effects extension already bridged this app's system; a second attach
   // of the same system only recorded a spurious VFX_APP_BINDING_AMBIGUOUS.
   if (app.canvas && !existing) attachVfxBridge(app.canvas, system);
   const atmosphere = system.atmosphere;
   return {
-    setFog: (spec: AuraHeightFogSpec | null, o?: { transitionSeconds?: number }) => atmosphere.setFog(spec, o),
+    setFog: (spec: AuraSetFogSpec | null, o?: AuraSetFogOptions) => atmosphere.setFog(spec, o),
     setSky: (spec: Partial<AuraSkySpec>, o?: { transitionSeconds?: number }) => atmosphere.setSky(spec, o),
     setWetness: (value: number, o?: { transitionSeconds?: number }) => atmosphere.setWetness(value, o),
     state: () => atmosphere.state()
@@ -51,7 +52,7 @@ function requireAppAtmosphere(app: AuraApp): import("../../contracts/atmosphere"
 }
 
 export const atmosphere = {
-  setFog: (app: AuraApp, spec: AuraHeightFogSpec | null, o?: { transitionSeconds?: number }): void =>
+  setFog: (app: AuraApp, spec: AuraSetFogSpec | null, o?: AuraSetFogOptions): void =>
     requireAppAtmosphere(app).setFog(spec, o),
   setSky: (app: AuraApp, spec: Partial<AuraSkySpec>, o?: { transitionSeconds?: number }): void =>
     requireAppAtmosphere(app).setSky(spec, o),

@@ -119,12 +119,12 @@ test.describe("D4 flipbook explosion + thick beam routes — root browser proof"
     });
     expect(Number(result?.checks?.beamLength ?? 0)).toBeCloseTo(2.5, 5);
 
-    // Honest labels: both stay recorded-but-withheld at root (no native targets yet).
+    // GU47 E-F: flipbooks draw through the particle pass and beams through prd07.beams, so the old "recorded but withheld" warnings are gone.
     for (const capture of (result?.captures ?? []).filter((entry) => entry.id.startsWith("blast-"))) {
-      expect(capture.warnings.some((warning) => warning.includes("flipbook-sprite is recorded but withheld")), capture.id).toBe(true);
+      expect(capture.warnings.some((warning) => warning.includes("flipbook-sprite is recorded but withheld")), capture.id).toBe(false);
     }
     for (const capture of (result?.captures ?? []).filter((entry) => entry.id.startsWith("beam-"))) {
-      expect(capture.warnings.some((warning) => warning.includes("light-beam is recorded but withheld")), capture.id).toBe(true);
+      expect(capture.warnings.some((warning) => warning.includes("light-beam is recorded but withheld")), capture.id).toBe(false);
     }
   });
 });

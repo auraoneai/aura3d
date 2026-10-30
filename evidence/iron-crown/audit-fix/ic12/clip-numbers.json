@@ -1,0 +1,632 @@
+{
+ "kenji": {
+  "before": {
+   "idle": {
+    "clip": "Block1",
+    "sampled": 3.467,
+    "hipY": 0.886,
+    "headY": 1.474,
+    "headYMin": 1.4,
+    "handYMax": 1.579,
+    "handYMean": 1.443,
+    "torsoPitchDeg": 16.2,
+    "torsoPitchMaxDeg": 23.8
+   },
+   "crouch": {
+    "clip": "Block1",
+    "sampled": 3.467,
+    "hipY": 0.886,
+    "headY": 1.474,
+    "headYMin": 1.4,
+    "handYMax": 1.579,
+    "handYMean": 1.443,
+    "torsoPitchDeg": 16.2,
+    "torsoPitchMaxDeg": 23.8
+   },
+   "throw": {
+    "clip": "Triple_Combo_Attack",
+    "sampled": 1.488,
+    "hipY": 0.838,
+    "headY": 1.406,
+    "headYMin": 1.27,
+    "handYMax": 1.759,
+    "handYMean": 1.294,
+    "torsoPitchDeg": 19.3,
+    "torsoPitchMaxDeg": 34
+   },
+   "win": {
+    "clip": "Regular_Jump",
+    "sampled": 1.833,
+    "hipY": 0.945,
+    "headY": 1.55,
+    "headYMin": 1.274,
+    "handYMax": 2.07,
+    "handYMean": 1.202,
+    "torsoPitchDeg": 9.3,
+    "torsoPitchMaxDeg": 20.6
+   }
+  },
+  "after": {
+   "idle": {
+    "clip": "Combat_Stance",
+    "sampled": 1.7,
+    "hipY": 0.876,
+    "headY": 1.418,
+    "headYMin": 1.379,
+    "handYMax": 1.034,
+    "handYMean": 0.986,
+    "torsoPitchDeg": 27.4,
+    "torsoPitchMaxDeg": 31.8
+   },
+   "crouch": {
+    "clip": "CrouchLookAroundBow",
+    "sampled": 5.867,
+    "hipY": 0.545,
+    "headY": 1.058,
+    "headYMin": 1.037,
+    "handYMax": 0.731,
+    "handYMean": 0.646,
+    "torsoPitchDeg": 33.3,
+    "torsoPitchMaxDeg": 35.6
+   },
+   "throw": {
+    "clip": "Over_Shoulder_Throw",
+    "sampled": 2.48,
+    "hipY": 0.86,
+    "headY": 1.423,
+    "headYMin": 0.891,
+    "handYMax": 1.738,
+    "handYMean": 1.293,
+    "torsoPitchDeg": 19.9,
+    "torsoPitchMaxDeg": 61.9
+   },
+   "win": {
+    "clip": "Victory_Fist_Pump",
+    "sampled": 1.533,
+    "hipY": 0.97,
+    "headY": 1.558,
+    "headYMin": 1.434,
+    "handYMax": 1.504,
+    "handYMean": 1.134,
+    "torsoPitchDeg": 10.4,
+    "torsoPitchMaxDeg": 26.2
+   },
+   "guard": {
+    "clip": "Block1",
+    "sampled": 3.467,
+    "hipY": 0.886,
+    "headY": 1.474,
+    "headYMin": 1.4,
+    "handYMax": 1.579,
+    "handYMean": 1.443,
+    "torsoPitchDeg": 16.2,
+    "torsoPitchMaxDeg": 23.8
+   }
+  }
+ },
+ "volt": {
+  "before": {
+   "idle": {
+    "clip": "Block1",
+    "sampled": 3.467,
+    "hipY": 0.922,
+    "headY": 1.445,
+    "headYMin": 1.356,
+    "handYMax": 1.56,
+    "handYMean": 1.406,
+    "torsoPitchDeg": 14.6,
+    "torsoPitchMaxDeg": 25.2
+   },
+   "crouch": {
+    "clip": "Block1",
+    "sampled": 3.467,
+    "hipY": 0.922,
+    "headY": 1.445,
+    "headYMin": 1.356,
+    "handYMax": 1.56,
+    "handYMean": 1.406,
+    "torsoPitchDeg": 14.6,
+    "torsoPitchMaxDeg": 25.2
+   },
+   "throw": {
+    "clip": "Triple_Combo_Attack",
+    "sampled": 1.488,
+    "hipY": 0.872,
+    "headY": 1.375,
+    "headYMin": 1.257,
+    "handYMax": 1.798,
+    "handYMean": 1.326,
+    "torsoPitchDeg": 17.8,
+    "torsoPitchMaxDeg": 31.6
+   },
+   "win": {
+    "clip": "Regular_Jump",
+    "sampled": 1.833,
+    "hipY": 0.983,
+    "headY": 1.518,
+    "headYMin": 1.246,
+    "handYMax": 2.104,
+    "handYMean": 1.238,
+    "torsoPitchDeg": 6.9,
+    "torsoPitchMaxDeg": 17.9
+   }
+  },
+  "after": {
+   "idle": {
+    "clip": "Combat_Stance",
+    "sampled": 1.7,
+    "hipY": 0.905,
+    "headY": 1.394,
+    "headYMin": 1.363,
+    "handYMax": 1.086,
+    "handYMean": 1.04,
+    "torsoPitchDeg": 24.7,
+    "torsoPitchMaxDeg": 28.3
+   },
+   "crouch": {
+    "clip": "CrouchLookAroundBow",
+    "sampled": 5.867,
+    "hipY": 0.587,
+    "headY": 1.052,
+    "headYMin": 1.035,
+    "handYMax": 0.749,
+    "handYMean": 0.677,
+    "torsoPitchDeg": 30.3,
+    "torsoPitchMaxDeg": 32.4
+   },
+   "throw": {
+    "clip": "Over_Shoulder_Throw",
+    "sampled": 2.48,
+    "hipY": 0.89,
+    "headY": 1.39,
+    "headYMin": 0.958,
+    "handYMax": 1.751,
+    "handYMean": 1.324,
+    "torsoPitchDeg": 18.2,
+    "torsoPitchMaxDeg": 55.9
+   },
+   "win": {
+    "clip": "Victory_Fist_Pump",
+    "sampled": 1.533,
+    "hipY": 0.991,
+    "headY": 1.519,
+    "headYMin": 1.431,
+    "handYMax": 1.523,
+    "handYMean": 1.164,
+    "torsoPitchDeg": 6.9,
+    "torsoPitchMaxDeg": 19.3
+   },
+   "guard": {
+    "clip": "Block1",
+    "sampled": 3.467,
+    "hipY": 0.922,
+    "headY": 1.445,
+    "headYMin": 1.356,
+    "handYMax": 1.56,
+    "handYMean": 1.406,
+    "torsoPitchDeg": 14.6,
+    "torsoPitchMaxDeg": 25.2
+   }
+  }
+ },
+ "boulder": {
+  "before": {
+   "idle": {
+    "clip": "Block1",
+    "sampled": 3.467,
+    "hipY": 1.022,
+    "headY": 1.628,
+    "headYMin": 1.552,
+    "handYMax": 1.827,
+    "handYMean": 1.617,
+    "torsoPitchDeg": 16.1,
+    "torsoPitchMaxDeg": 22.2
+   },
+   "crouch": {
+    "clip": "Block1",
+    "sampled": 3.467,
+    "hipY": 1.022,
+    "headY": 1.628,
+    "headYMin": 1.552,
+    "handYMax": 1.827,
+    "handYMean": 1.617,
+    "torsoPitchDeg": 16.1,
+    "torsoPitchMaxDeg": 22.2
+   },
+   "throw": {
+    "clip": "Triple_Combo_Attack",
+    "sampled": 1.488,
+    "hipY": 0.97,
+    "headY": 1.552,
+    "headYMin": 1.411,
+    "handYMax": 2.009,
+    "handYMean": 1.499,
+    "torsoPitchDeg": 19.9,
+    "torsoPitchMaxDeg": 34.4
+   },
+   "win": {
+    "clip": "Regular_Jump",
+    "sampled": 1.833,
+    "hipY": 1.086,
+    "headY": 1.708,
+    "headYMin": 1.415,
+    "handYMax": 2.393,
+    "handYMean": 1.484,
+    "torsoPitchDeg": 8.6,
+    "torsoPitchMaxDeg": 20.2
+   }
+  },
+  "after": {
+   "idle": {
+    "clip": "Combat_Stance",
+    "sampled": 1.7,
+    "hipY": 0.986,
+    "headY": 1.541,
+    "headYMin": 1.503,
+    "handYMax": 1.213,
+    "handYMean": 1.159,
+    "torsoPitchDeg": 28.3,
+    "torsoPitchMaxDeg": 31.6
+   },
+   "crouch": {
+    "clip": "CrouchLookAroundBow",
+    "sampled": 5.867,
+    "hipY": 0.631,
+    "headY": 1.161,
+    "headYMin": 1.141,
+    "handYMax": 0.899,
+    "handYMean": 0.808,
+    "torsoPitchDeg": 32,
+    "torsoPitchMaxDeg": 34.2
+   },
+   "throw": {
+    "clip": "Over_Shoulder_Throw",
+    "sampled": 2.48,
+    "hipY": 0.971,
+    "headY": 1.552,
+    "headYMin": 1.051,
+    "handYMax": 1.978,
+    "handYMean": 1.521,
+    "torsoPitchDeg": 19,
+    "torsoPitchMaxDeg": 56.8
+   },
+   "win": {
+    "clip": "Victory_Fist_Pump",
+    "sampled": 1.533,
+    "hipY": 1.082,
+    "headY": 1.692,
+    "headYMin": 1.586,
+    "handYMax": 1.752,
+    "handYMean": 1.361,
+    "torsoPitchDeg": 9,
+    "torsoPitchMaxDeg": 20.6
+   },
+   "guard": {
+    "clip": "Block1",
+    "sampled": 3.467,
+    "hipY": 1.022,
+    "headY": 1.628,
+    "headYMin": 1.552,
+    "handYMax": 1.827,
+    "handYMean": 1.617,
+    "torsoPitchDeg": 16.1,
+    "torsoPitchMaxDeg": 22.2
+   }
+  }
+ },
+ "seraph": {
+  "before": {
+   "idle": {
+    "clip": "Block1",
+    "sampled": 3.467,
+    "hipY": 0.962,
+    "headY": 1.448,
+    "headYMin": 1.387,
+    "handYMax": 1.536,
+    "handYMean": 1.407,
+    "torsoPitchDeg": 18.1,
+    "torsoPitchMaxDeg": 24.1
+   },
+   "crouch": {
+    "clip": "Block1",
+    "sampled": 3.467,
+    "hipY": 0.962,
+    "headY": 1.448,
+    "headYMin": 1.387,
+    "handYMax": 1.536,
+    "handYMean": 1.407,
+    "torsoPitchDeg": 18.1,
+    "torsoPitchMaxDeg": 24.1
+   },
+   "throw": {
+    "clip": "Triple_Combo_Attack",
+    "sampled": 1.488,
+    "hipY": 0.913,
+    "headY": 1.382,
+    "headYMin": 1.249,
+    "handYMax": 1.7,
+    "handYMean": 1.295,
+    "torsoPitchDeg": 21.3,
+    "torsoPitchMaxDeg": 37.4
+   },
+   "win": {
+    "clip": "Regular_Jump",
+    "sampled": 1.833,
+    "hipY": 1.023,
+    "headY": 1.524,
+    "headYMin": 1.244,
+    "handYMax": 2.032,
+    "handYMean": 1.223,
+    "torsoPitchDeg": 11.2,
+    "torsoPitchMaxDeg": 23.5
+   }
+  },
+  "after": {
+   "idle": {
+    "clip": "Combat_Stance",
+    "sampled": 1.7,
+    "hipY": 0.921,
+    "headY": 1.366,
+    "headYMin": 1.329,
+    "handYMax": 1.06,
+    "handYMean": 1.016,
+    "torsoPitchDeg": 29.7,
+    "torsoPitchMaxDeg": 34
+   },
+   "crouch": {
+    "clip": "CrouchLookAroundBow",
+    "sampled": 5.867,
+    "hipY": 0.564,
+    "headY": 0.972,
+    "headYMin": 0.952,
+    "handYMax": 0.705,
+    "handYMean": 0.637,
+    "torsoPitchDeg": 36.2,
+    "torsoPitchMaxDeg": 38.6
+   },
+   "throw": {
+    "clip": "Over_Shoulder_Throw",
+    "sampled": 2.48,
+    "hipY": 0.904,
+    "headY": 1.37,
+    "headYMin": 0.868,
+    "handYMax": 1.647,
+    "handYMean": 1.266,
+    "torsoPitchDeg": 20.7,
+    "torsoPitchMaxDeg": 62.1
+   },
+   "win": {
+    "clip": "Victory_Fist_Pump",
+    "sampled": 1.533,
+    "hipY": 1.019,
+    "headY": 1.505,
+    "headYMin": 1.385,
+    "handYMax": 1.466,
+    "handYMean": 1.152,
+    "torsoPitchDeg": 13.2,
+    "torsoPitchMaxDeg": 28.4
+   },
+   "guard": {
+    "clip": "Block1",
+    "sampled": 3.467,
+    "hipY": 0.962,
+    "headY": 1.448,
+    "headYMin": 1.387,
+    "handYMax": 1.536,
+    "handYMean": 1.407,
+    "torsoPitchDeg": 18.1,
+    "torsoPitchMaxDeg": 24.1
+   }
+  }
+ },
+ "jinx": {
+  "before": {
+   "idle": {
+    "clip": "Block1",
+    "sampled": 3.467,
+    "hipY": 0.797,
+    "headY": 1.342,
+    "headYMin": 1.161,
+    "handYMax": 1.594,
+    "handYMean": 1.533,
+    "torsoPitchDeg": 9.3,
+    "torsoPitchMaxDeg": 27.3
+   },
+   "crouch": {
+    "clip": "Block1",
+    "sampled": 3.467,
+    "hipY": 0.797,
+    "headY": 1.342,
+    "headYMin": 1.161,
+    "handYMax": 1.594,
+    "handYMean": 1.533,
+    "torsoPitchDeg": 9.3,
+    "torsoPitchMaxDeg": 27.3
+   },
+   "throw": {
+    "clip": "Triple_Combo_Attack",
+    "sampled": 1.488,
+    "hipY": 0.826,
+    "headY": 1.355,
+    "headYMin": 1.27,
+    "handYMax": 1.608,
+    "handYMean": 1.431,
+    "torsoPitchDeg": 15.2,
+    "torsoPitchMaxDeg": 25
+   },
+   "win": {
+    "clip": "Regular_Jump",
+    "sampled": 1.9,
+    "hipY": 0.899,
+    "headY": 1.453,
+    "headYMin": 1.162,
+    "handYMax": 1.853,
+    "handYMean": 1.476,
+    "torsoPitchDeg": 4.4,
+    "torsoPitchMaxDeg": 12.8
+   }
+  },
+  "after": {
+   "idle": {
+    "clip": "Combat_Stance",
+    "sampled": 1.7,
+    "hipY": 0.87,
+    "headY": 1.391,
+    "headYMin": 1.369,
+    "handYMax": 1.515,
+    "handYMean": 1.488,
+    "torsoPitchDeg": 19,
+    "torsoPitchMaxDeg": 21.9
+   },
+   "crouch": {
+    "clip": "CrouchLookAroundBow",
+    "sampled": 5.867,
+    "hipY": 0.489,
+    "headY": 1.003,
+    "headYMin": 0.99,
+    "handYMax": 1.253,
+    "handYMean": 1.181,
+    "torsoPitchDeg": 22.8,
+    "torsoPitchMaxDeg": 25.1
+   },
+   "throw": {
+    "clip": "Over_Shoulder_Throw",
+    "sampled": 2.48,
+    "hipY": 0.735,
+    "headY": 1.263,
+    "headYMin": 0.964,
+    "handYMax": 1.666,
+    "handYMean": 1.41,
+    "torsoPitchDeg": 14.9,
+    "torsoPitchMaxDeg": 47.5
+   },
+   "win": {
+    "clip": "Victory_Fist_Pump",
+    "sampled": 1.567,
+    "hipY": 0.854,
+    "headY": 1.402,
+    "headYMin": 1.328,
+    "handYMax": 1.62,
+    "handYMean": 1.575,
+    "torsoPitchDeg": 4.2,
+    "torsoPitchMaxDeg": 9.1
+   },
+   "guard": {
+    "clip": "Block1",
+    "sampled": 3.467,
+    "hipY": 0.797,
+    "headY": 1.342,
+    "headYMin": 1.161,
+    "handYMax": 1.594,
+    "handYMean": 1.533,
+    "torsoPitchDeg": 9.3,
+    "torsoPitchMaxDeg": 27.3
+   }
+  }
+ },
+ "sovereign": {
+  "before": {
+   "idle": {
+    "clip": "Block1",
+    "sampled": 3.467,
+    "hipY": 1.004,
+    "headY": 1.353,
+    "headYMin": 1.257,
+    "handYMax": 1.785,
+    "handYMean": 1.602,
+    "torsoPitchDeg": 5.9,
+    "torsoPitchMaxDeg": 28.7
+   },
+   "crouch": {
+    "clip": "Block1",
+    "sampled": 3.467,
+    "hipY": 1.004,
+    "headY": 1.353,
+    "headYMin": 1.257,
+    "handYMax": 1.785,
+    "handYMean": 1.602,
+    "torsoPitchDeg": 5.9,
+    "torsoPitchMaxDeg": 28.7
+   },
+   "throw": {
+    "clip": "Triple_Combo_Attack",
+    "sampled": 1.488,
+    "hipY": 0.954,
+    "headY": 1.288,
+    "headYMin": 1.199,
+    "handYMax": 1.977,
+    "handYMean": 1.412,
+    "torsoPitchDeg": 11.9,
+    "torsoPitchMaxDeg": 19.4
+   },
+   "win": {
+    "clip": "Regular_Jump",
+    "sampled": 1.833,
+    "hipY": 1.066,
+    "headY": 1.419,
+    "headYMin": 1.159,
+    "handYMax": 2.27,
+    "handYMean": 1.232,
+    "torsoPitchDeg": 6.6,
+    "torsoPitchMaxDeg": 12.1
+   }
+  },
+  "after": {
+   "idle": {
+    "clip": "Combat_Stance",
+    "sampled": 1.7,
+    "hipY": 0.982,
+    "headY": 1.317,
+    "headYMin": 1.293,
+    "handYMax": 1.041,
+    "handYMean": 0.989,
+    "torsoPitchDeg": 16,
+    "torsoPitchMaxDeg": 18.1
+   },
+   "crouch": {
+    "clip": "CrouchLookAroundBow",
+    "sampled": 5.867,
+    "hipY": 0.609,
+    "headY": 0.954,
+    "headYMin": 0.939,
+    "handYMax": 0.716,
+    "handYMean": 0.604,
+    "torsoPitchDeg": 19.1,
+    "torsoPitchMaxDeg": 21.1
+   },
+   "throw": {
+    "clip": "Over_Shoulder_Throw",
+    "sampled": 2.48,
+    "hipY": 0.967,
+    "headY": 1.313,
+    "headYMin": 0.96,
+    "handYMax": 1.914,
+    "handYMean": 1.394,
+    "torsoPitchDeg": 14.6,
+    "torsoPitchMaxDeg": 39.1
+   },
+   "win": {
+    "clip": "Victory_Fist_Pump",
+    "sampled": 1.533,
+    "hipY": 1.096,
+    "headY": 1.446,
+    "headYMin": 1.389,
+    "handYMax": 1.669,
+    "handYMean": 1.201,
+    "torsoPitchDeg": 7,
+    "torsoPitchMaxDeg": 11.6
+   },
+   "guard": {
+    "clip": "Block1",
+    "sampled": 3.467,
+    "hipY": 1.004,
+    "headY": 1.353,
+    "headYMin": 1.257,
+    "handYMax": 1.785,
+    "handYMean": 1.602,
+    "torsoPitchDeg": 5.9,
+    "torsoPitchMaxDeg": 28.7
+   }
+  }
+ }
+}

@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/cli",
-  "version": "4.6.1",
+  "version": "4.6.2",
   "type": "module",
   "bin": {
     "aura3d": "dist/cli.js",

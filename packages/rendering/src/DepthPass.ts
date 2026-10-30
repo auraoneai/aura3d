@@ -1,4 +1,5 @@
 import { Material } from "./Material";
+import { MaterialInstance } from "./MaterialInstance";
 import { type DrawCommand, type InstanceVertexAttribute, type RenderBuffer, type RenderCommandState, type RenderDevice, RenderDeviceError, type RenderShaderProgram, type UniformValue } from "./RenderDevice";
 import { BaseRenderPass, type RenderPassContext } from "./RenderPass";
 import { ShaderModule } from "./ShaderModule";
@@ -24,6 +25,23 @@ export interface DepthPassOptions {
   readonly depthVariantFeatures?: readonly DepthVariantFeature[];
   /** Scissor rect (px) applied to every draw — atlas tile rendering. */
   readonly scissor?: { readonly x: number; readonly y: number; readonly width: number; readonly height: number };
+  /**
+   * GU47 E-D: `u_time` for `castShadow` custom-material casters. Defaults to the clock the forward pass binds
+   * (`performance.now() / 1000`), so a time-driven sway is in the same phase in the shadow and on screen.
+   */
+  readonly timeSeconds?: number;
+}
+
+/**
+ * GU47 E-D: the depth program of a `material.custom({ castShadow: true })` caster (`customDepthShaderKey` on the engine's
+ * custom material: its baked vertex stage with a depth-only fragment, published in the global shader-source registry).
+ * Undefined for every other material, which keeps the position-only depth program.
+ */
+export function customDepthShaderKeyOf(material: RenderItem["material"] | undefined): string | undefined {
+  const base = material instanceof MaterialInstance ? material.baseMaterial : material;
+  if (!base || base.disposed) return undefined;
+  const key = (base as { readonly customDepthShaderKey?: unknown }).customDepthShaderKey;
+  return typeof key === "string" && key.length > 0 ? key : undefined;
 }
 
 export class DepthMaterial extends Material {
@@ -99,8 +117,12 @@ export class DepthPass extends BaseRenderPass {
    */
   private static readonly shaderModules = new WeakMap<ShaderLibrary, ShaderModule>();
 
+  /** GU47 E-D: compiled `castShadow` custom depth programs, per library and depth key (keys are content hashes). */
+  private static readonly customShaderModules = new WeakMap<ShaderLibrary, Map<string, ShaderModule>>();
+
   private readonly shaderLibrary: ShaderLibrary;
   private readonly material = new DepthMaterial();
+  private frameSize: readonly [number, number] = [1, 1];
 
   constructor(private readonly options: DepthPassOptions) {
     super("depth", [], ["depth"]);
@@ -108,18 +130,25 @@ export class DepthPass extends BaseRenderPass {
   }
 
   execute(context: RenderPassContext): void {
+    this.frameSize = [Math.max(1, context.width), Math.max(1, context.height)];
     for (const caster of this.options.casters) {
       this.drawCaster(context.device, caster);
     }
   }
 
   private drawCaster(device: RenderDevice, source: RenderItem): void {
-    const caster = source.shadowGeometry !== undefined && source.drawRange === undefined ? { ...source, geometry: source.shadowGeometry } : source;
+    // A `castShadow` custom caster keeps its real geometry: the author's vertex stage reads its attributes.
+    const customKey = customDepthShaderKeyOf(source.material);
+    const caster = !customKey && source.shadowGeometry !== undefined && source.drawRange === undefined ? { ...source, geometry: source.shadowGeometry } : source;
     const vertexBuffer = caster.geometry.vertexBuffer.upload(device);
     const indexBuffer = caster.geometry.indexBuffer?.upload(device);
     const drawRange = resolveDepthDrawRange(caster.geometry, caster.drawRange);
     const modelMatrix = toMat4(caster.modelMatrix ?? identityMat4(), caster.label);
     const viewProjection = toMat4(this.options.viewProjectionMatrix ?? identityMat4(), caster.label);
+    if (customKey) {
+      this.drawCustomCaster(device, caster, customKey, vertexBuffer, indexBuffer, drawRange, modelMatrix, viewProjection);
+      return;
+    }
     const mvp = multiplyMat4(viewProjection, modelMatrix);
     const variant = this.options.variantResolver?.(caster) ?? null;
     if (!variant) {
@@ -241,6 +270,136 @@ export class DepthPass extends BaseRenderPass {
     }
     return module.compile(device);
   }
+
+  private customShader(device: RenderDevice, key: string): RenderShaderProgram {
+    let modules = DepthPass.customShaderModules.get(this.shaderLibrary);
+    if (!modules) {
+      modules = new Map();
+      DepthPass.customShaderModules.set(this.shaderLibrary, modules);
+    }
+    let module = modules.get(key);
+    if (!module) {
+      module = ShaderModule.fromLibrary(this.shaderLibrary, key);
+      modules.set(key, module);
+    }
+    return module.compile(device);
+  }
+
+  /**
+   * GU47 E-D: a `material.custom({ castShadow: true })` caster draws with its own vertex stage, so author displacement
+   * (sway, wind, waves) moves the shadow. The matrix built-ins carry the light: `u_viewMatrix` is identity and
+   * `u_projectionMatrix` the light's view-projection, so `projectionMatrix * viewMatrix * modelMatrix * p`,
+   * `projectionMatrix * modelViewMatrix * p` and `modelViewProjectionMatrix * p` all land in light clip space. The
+   * material's own uniforms (including runtime `setUniform` writes) and `u_time` (the forward pass clock) are bound too.
+   * An instanced caster whose vertex stage reads `instanceMatrix` is one instanced draw; one that does not draws each
+   * instance with the instance folded into `modelMatrix`. Culling follows the material's side.
+   */
+  private drawCustomCaster(
+    device: RenderDevice,
+    caster: RenderItem,
+    key: string,
+    vertexBuffer: DrawCommand["vertexBuffer"],
+    indexBuffer: DrawCommand["indexBuffer"],
+    drawRange: { readonly start: number; readonly count: number },
+    modelMatrix: Mat4,
+    viewProjection: Mat4
+  ): void {
+    const shader = this.customShader(device, key);
+    const reflected = shader.reflection.uniforms;
+    const base = caster.material instanceof MaterialInstance ? caster.material.baseMaterial : caster.material;
+    const shared = new Map<string, UniformValue>();
+    for (const [name, value] of base?.getParameters() ?? []) {
+      if (reflected.has(name)) shared.set(name, value);
+    }
+    const set = (name: string, value: UniformValue): void => {
+      if (reflected.has(name)) shared.set(name, value);
+    };
+    set("u_viewMatrix", identityMatrix());
+    set("u_projectionMatrix", new Float32Array(viewProjection));
+    set("u_cameraPosition", [0, 0, 0]);
+    set("u_time", this.options.timeSeconds ?? (typeof performance !== "undefined" ? performance.now() / 1000 : Date.now() / 1000));
+    set("u_resolution", [this.frameSize[0], this.frameSize[1]]);
+    set("u_a3dInstanceColors", 0);
+    const cullMode = base?.renderState.cullMode;
+    const renderState: RenderCommandState = { ...depthRenderState(this.options.scissor, cullMode === "none"), ...(cullMode === "front" ? { cullMode: "front" as const } : {}) };
+    const transforms = caster.instanceTransforms instanceof Float32Array ? caster.instanceTransforms : caster.instanceTransforms ? Float32Array.from(caster.instanceTransforms) : null;
+    const instanceTotal = transforms ? Math.floor(transforms.length / 16) : 0;
+    const authorInstancing = transforms !== null && instanceTotal > 0 && reflected.has("u_a3dInstancing")
+      && DEPTH_INSTANCE_ATTRIBUTE_NAMES.every((name) => shader.reflection.attributes.has(name));
+    const instanceBuffer = authorInstancing && transforms ? depthInstanceBufferFor(device, caster.instanceTransforms as object, transforms).bind().matrixBuffer : null;
+    const draw = (model: Mat4, label: string, instanced: boolean): void => {
+      const uniforms = new Map(shared);
+      if (reflected.has("u_modelViewProjection")) uniforms.set("u_modelViewProjection", multiplyMat4(viewProjection, model));
+      if (reflected.has("u_modelMatrix")) uniforms.set("u_modelMatrix", model);
+      if (reflected.has("u_normalMatrix")) uniforms.set("u_normalMatrix", normalMatrix4(model));
+      if (reflected.has("u_a3dInstancing")) uniforms.set("u_a3dInstancing", instanced ? 1 : 0);
+      const command: DrawCommand = {
+        label,
+        topology: caster.geometry.topology,
+        vertexBuffer,
+        vertexFormat: caster.geometry.vertexBuffer.format,
+        vertexCount: indexBuffer ? caster.geometry.vertexBuffer.vertexCount : drawRange.count,
+        ...(indexBuffer === undefined && drawRange.start > 0 ? { firstVertex: drawRange.start } : {}),
+        ...(instanced && instanceBuffer
+          ? {
+            instanceCount: instanceTotal,
+            instanceAttributes: DEPTH_INSTANCE_ATTRIBUTE_NAMES.map((shaderName, column) => ({
+              buffer: instanceBuffer,
+              shaderName,
+              components: 4 as const,
+              offset: column * 16,
+              stride: 64,
+              divisor: 1
+            }))
+          }
+          : {}),
+        shader,
+        uniforms,
+        renderState
+      };
+      if (indexBuffer) {
+        Object.assign(command, {
+          indexBuffer,
+          indexType: caster.geometry.indexBuffer?.type,
+          indexCount: drawRange.count,
+          ...(drawRange.start > 0 ? { firstIndex: drawRange.start } : {})
+        });
+      }
+      device.draw(command);
+    };
+    const label = `${caster.label ?? "shadow-caster"}:custom-depth`;
+    if (authorInstancing || !transforms || instanceTotal === 0) {
+      draw(modelMatrix, label, authorInstancing);
+      return;
+    }
+    for (let index = 0; index < instanceTotal; index += 1) {
+      const instance = Array.from(transforms.subarray(index * 16, index * 16 + 16)) as unknown as Mat4;
+      draw(multiplyMat4(modelMatrix, instance), `${label}:${index}`, false);
+    }
+  }
+}
+
+/** Inverse-transpose of the upper 3x3 of a column-major model matrix, padded into a mat4 (the custom `u_normalMatrix`). */
+function normalMatrix4(m: Mat4): Float32Array {
+  const a00 = m[0], a01 = m[1], a02 = m[2];
+  const a10 = m[4], a11 = m[5], a12 = m[6];
+  const a20 = m[8], a21 = m[9], a22 = m[10];
+  const b01 = a22 * a11 - a12 * a21;
+  const b11 = -a22 * a10 + a12 * a20;
+  const b21 = a21 * a10 - a11 * a20;
+  const det = a00 * b01 + a01 * b11 + a02 * b21;
+  if (!Number.isFinite(det) || Math.abs(det) < 1e-12) return new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+  const inv = 1 / det;
+  // inverse (column-major), then transpose
+  const i00 = b01 * inv, i01 = (-a22 * a01 + a02 * a21) * inv, i02 = (a12 * a01 - a02 * a11) * inv;
+  const i10 = b11 * inv, i11 = (a22 * a00 - a02 * a20) * inv, i12 = (-a12 * a00 + a02 * a10) * inv;
+  const i20 = b21 * inv, i21 = (-a21 * a00 + a01 * a20) * inv, i22 = (a11 * a00 - a01 * a10) * inv;
+  return new Float32Array([
+    i00, i10, i20, 0,
+    i01, i11, i21, 0,
+    i02, i12, i22, 0,
+    0, 0, 0, 1
+  ]);
 }
 
 /**

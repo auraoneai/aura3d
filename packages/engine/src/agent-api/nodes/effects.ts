@@ -1,6 +1,6 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraEffectNode, AuraVec3 } from "../nodes/types.js";
+import type { AuraAssetRef, AuraEffectNode, AuraVec3 } from "../nodes/types.js";
 import { AuraNodeBuilder } from "../nodes/builder.js";
 import { effects } from "../nodes/effects.composite.js";
 import { createBeamDescriptor, resolveFlipbookUv } from "@aura3d/rendering";
@@ -38,6 +38,35 @@ function withEmitterOptions<T extends AuraEffectNode>(value: T, options: Readonl
   for (const [key, optionValue] of Object.entries(options)) {
     if (optionValue !== undefined) target[key] = optionValue;
   }
+  return value;
+}
+
+/**
+ * GU47 (PRD §3.1 E-C): tilt-shift focus band on `effects.depthOfField`. The
+ * builder only records it on the node; the post bridge (lane E-C) executes it
+ * and defines the band units.
+ */
+export interface AuraDepthOfFieldTiltShift {
+  readonly bandCenter: number;
+  readonly bandWidth: number;
+  readonly angleDeg?: number;
+}
+
+/** GU47 E-C: `effects.depthOfField` options (adds `tiltShift`). */
+export type AuraDepthOfFieldOptions = Omit<AuraEffectNode, "kind" | "effect"> & { readonly tiltShift?: AuraDepthOfFieldTiltShift };
+/** GU47 E-C: `effects.volumetricFog` options (adds `godRayDensity`, decoupled from scene-fog density; behaviour in E-C). */
+export type AuraVolumetricFogOptions = Omit<AuraEffectNode, "kind" | "effect"> & { readonly godRayDensity?: number };
+/** GU47 E-E: `effects.outline` options (adds `targets`: node names written to the outline ID mask; behaviour in E-E). */
+export type AuraOutlineOptions = Omit<AuraEffectNode, "kind" | "effect"> & { readonly targets?: readonly string[] };
+
+/**
+ * Record a GU47 option field on the node only when the caller passed it, so
+ * existing scenes keep byte-identical node snapshots. `AuraEffectNode` (E-D
+ * owned) has no typed slot for these fields yet; they ride as data like the
+ * §6.2 emitter options above.
+ */
+function withDefinedField<T extends AuraEffectNode>(value: T, key: string, fieldValue: unknown): T {
+  if (fieldValue !== undefined) (value as Record<string, unknown>)[key] = fieldValue;
   return value;
 }
 
@@ -79,8 +108,8 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
    * node (never plain fog) that submits the depth-aware inscatter pass plus
    * forward GPU height-fog terms. quality "off" keeps forward exp2 fog only.
    */
-  volumetricFog: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
-    new AuraNodeBuilder<AuraEffectNode>({
+  volumetricFog: (options: AuraVolumetricFogOptions = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>(withDefinedField({
       kind: "effect",
       effect: "volumetric-fog",
       name: options.name ?? "volumetric fog inscatter",
@@ -91,7 +120,7 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
       ...(options.lightPosition ? { lightPosition: options.lightPosition } : {}),
       ...(options.heightFalloff !== undefined ? { heightFalloff: options.heightFalloff } : {}),
       ...(options.heightReference !== undefined ? { heightReference: options.heightReference } : {})
-    }),
+    }, "godRayDensity", options.godRayDensity)),
   depthFog: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
     effects.fog({
       density: options.density ?? 0.14,
@@ -102,8 +131,8 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
    * Root outline node (muse3jsparity-PRD A3): native outline pass, width in
    * pixels clamped to the device range 1-6 by the bridge.
    */
-  outline: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
-    new AuraNodeBuilder<AuraEffectNode>({
+  outline: (options: AuraOutlineOptions = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>(withDefinedField({
       kind: "effect",
       effect: "outline",
       name: options.name ?? "outline",
@@ -111,7 +140,7 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
       width: options.width ?? 3,
       threshold: options.threshold ?? 0.12,
       intensity: options.intensity ?? 0.9
-    }),
+    }, "targets", options.targets !== undefined ? [...options.targets] : undefined)),
   /**
    * Root screen-space reflections node (muse3jsparity-PRD A3): submits the
    * native SSR pass against renderer-owned depth where available.
@@ -128,8 +157,8 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
    * linear-distance fraction (0 = near plane, 1 = far plane); aperture widens
    * the focus transition band (game-tuned control, not a physical f-stop).
    */
-  depthOfField: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
-    new AuraNodeBuilder<AuraEffectNode>({
+  depthOfField: (options: AuraDepthOfFieldOptions = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>(withDefinedField({
       kind: "effect",
       effect: "depth-of-field",
       name: options.name ?? "depth of field",
@@ -142,7 +171,7 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
       ...(options.fStop !== undefined ? { fStop: options.fStop } : {}),
       ...(options.focalLength !== undefined ? { focalLength: options.focalLength } : {}),
       postAuthored: options.postAuthored ?? Object.keys(options).filter((key) => key !== "postAuthored")
-    }),
+    }, "tiltShift", options.tiltShift !== undefined ? { ...options.tiltShift } : undefined)),
   /**
    * Root motion-blur node: renderer-owned GPU velocity for opaque rigid geometry.
    * Unsupported deforming/transparent/instanced geometry emits a named warning.
@@ -192,8 +221,13 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
    * Flipbook explosion/muzzle-flash sprite sheet (muse3jsparity-PRD D4).
    * Under A3D_QR_VFX it draws through the particle pass: one upright sprite
    * of world `size`, frame = age · `frameRate` over `spriteColumns ×
-   * spriteRows` (wrapping unless `loop: false`), sampling the built-in
-   * seeded `fireball` sheet. `prewarm` starts the sprite that many seconds in.
+   * spriteRows` (wrapping unless `loop: false`). The sheet is, in order:
+   * `texture` (GU47 E-F: a typed texture asset such as an `aura3d-game-art`
+   * sheet, straight alpha, frame 0 in the top-left cell, grid `spriteColumns ×
+   * spriteRows`), a built-in atlas `sprite` name (its own grid, e.g.
+   * "flame-loop"), else the built-in seeded `fireball` sheet. A texture or
+   * sprite draws the soft-dot until it has loaded. `prewarm` starts the
+   * sprite that many seconds in.
    */
   flipbook: (options: Omit<AuraEffectNode, "kind" | "effect"> & {
     readonly blend?: AuraBlendMode;
@@ -202,6 +236,8 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
     readonly loop?: boolean;
     readonly prewarm?: number;
     readonly sprite?: AuraParticleEmitterOptions["sprite"];
+    /** GU47 E-F: sprite-sheet texture asset (`assets.sheet`) or URL; grid from `spriteColumns × spriteRows`. */
+    readonly texture?: AuraAssetRef<"texture"> | string;
   } = {}) => {
     const columns = options.spriteColumns ?? 4;
     const rows = options.spriteRows ?? 4;
@@ -219,8 +255,8 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
   },
   /**
    * Additive thick light beam / fence strip (muse3jsparity-PRD D4): recorded
-   * with a validated quad-strip descriptor, but withheld — root has no native
-   * beam target yet, so no pass is submitted.
+   * with a validated quad-strip descriptor and drawn by the prd07.beams pass
+   * under A3D_QR_VFX (camera-facing strip from `from` to `to`).
    */
   beam: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) => {
     const descriptor = createBeamDescriptor({
@@ -274,8 +310,11 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
   /**
    * P2-T5 §6.2.9 trail ribbon: the node carries the ring options; lowering
    * maps it to a `RibbonTrail` on the prd07 RibbonBatch. `target` is a runtime
-   * node id, `handle.socket(bone)` (C-19), or a callback — resolved by the
-   * production system, never by the builder.
+   * node id or `{ node, socket }` — resolved by the production system every
+   * frame (GU47 E-F), never by the builder. Optional `life` (seconds) fades
+   * and drops old points (absent: a ring of `maxPoints`); optional
+   * `widthOverSpeed: [min, max]` (m/s) ramps the width by the target's speed.
+   * For a trail started from game code use `app.effects.trail(target, opts)`.
    */
   trail: (options: VfxNodeOptions = {}) =>
     new AuraNodeBuilder<AuraEffectNode>(withEmitterOptions({

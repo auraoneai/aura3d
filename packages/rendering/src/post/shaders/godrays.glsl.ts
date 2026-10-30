@@ -11,6 +11,11 @@
  *
  * The half-res output is added into HDR by the S10 composite. On the v2 path
  * this supersedes `VolumetricFog.ts:105-144` (lane 07, deletion = Q-07-1).
+ *
+ * GU47 E-C (EC-8): `u_density` is the shaft density (GPU Gems 3 §13): the
+ * march covers `density` of the way to the light, so lower values give
+ * shorter, tighter shafts. It comes from volumetricFog `godRayDensity`, never
+ * from the fog density; 1 (and an unset 0) is the full march used before.
  */
 
 const HEADER = `#version 300 es
@@ -29,6 +34,7 @@ uniform float u_decay;
 uniform float u_weight;
 uniform float u_diskOuter;           // r1: disk feather outer radius (uv)
 uniform float u_diskInner;           // r0: disk core radius (uv)
+uniform float u_density;             // GU47: march fraction toward the light, (0, 1]; <= 0 reads as 1
 out vec4 o_color;
 
 #ifndef AURA_GODRAY_SAMPLES
@@ -39,7 +45,8 @@ void main() {
   vec2 uv = gl_FragCoord.xy / vec2(textureSize(u_hdr, 0));
   vec2 dir = u_lightUv - uv;
   float dist = length(dir);
-  vec2 stepUv = dist > 0.0 ? dir / float(AURA_GODRAY_SAMPLES) : vec2(0.0);
+  float density = u_density > 0.0 ? u_density : 1.0;
+  vec2 stepUv = dist > 0.0 ? dir * density / float(AURA_GODRAY_SAMPLES) : vec2(0.0);
 
   // Off-screen / behind-camera fade: step(0, w) zeroes lights behind the eye,
   // the linear ramp fades across 25% uv past the frame edge.

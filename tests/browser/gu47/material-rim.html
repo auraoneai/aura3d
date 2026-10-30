@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aura3D GU47 material-rim receipt</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #05070d;
+      }
+
+      /* Explicit size and min-height: the engine's default mount layout applies min-height: 100vh to an unstyled container. */
+      #rim-stage {
+        width: 480px;
+        height: 270px;
+        min-height: 0;
+        position: relative;
+        overflow: hidden;
+        background: #05070d;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="rim-stage"></div>
+    <script type="module" src="./material-rim-harness.ts"></script>
+  </body>
+</html>

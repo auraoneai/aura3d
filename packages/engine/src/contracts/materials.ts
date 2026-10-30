@@ -4,6 +4,7 @@
  */
 
 import type { AuraColor, AuraAssetRef, AuraRuntimeNodeHandle } from "../agent-api/index";
+import type { AuraMaterialRimSpec } from "../agent-api/nodes/types";
 
 // AuraMaterialSpec additions (PR 0a; owner tags in JSDoc):
 //   blend?: AuraBlendMode (C-04, PRD 01); depthWrite?: boolean (PRD 01); ior?: number (PRD 01, reaches F0)
@@ -23,6 +24,14 @@ export interface AuraModelMaterialOverride {
   readonly color?: AuraColor; readonly colorMode?: "multiply" | "replace"; readonly replaceTextures?: boolean;
   readonly roughness?: number; readonly metallic?: number; readonly emissive?: AuraColor; readonly emissiveIntensity?: number;
   readonly clearcoat?: number; readonly clearcoatRoughness?: number; readonly envMapIntensity?: number; readonly opacity?: number;
+  // GU47 E-D (PRD §3.1). Each applies only to materials that carry the matching parameter, except `rim`, which any
+  // generated-program PBR material accepts (and which `setMaterialOverrides([])` removes again).
+  /** Fresnel rim term, same shape as `AuraMaterialSpec.rim`. */
+  readonly rim?: AuraMaterialRimSpec;
+  /** KHR_materials_transmission factor 0..1 (rendered when `A3D_QR_MATERIALS_TRANSMISSION` is on). */
+  readonly transmission?: number;
+  /** KHR_materials_iridescence factor 0..1. */
+  readonly iridescence?: number;
 }
 // AuraModelOptions additions: materialOverrides?: readonly AuraModelMaterialOverride[]; variant?: string
 export interface AuraResolvedMaterialInfo { readonly name: string; readonly featureKey: string; readonly baseColorFactor: readonly [number, number, number, number]; readonly enabledMaps: readonly string[]; readonly extensions: readonly string[]; readonly lightsEvaluated: "uniform-16" | "clustered"; readonly warnings: readonly string[]; }
@@ -32,6 +41,13 @@ export interface AuraModelMaterialHandle {
   setMaterialVariant(name: string | null): void;
   setMaterialOverrides(o: readonly AuraModelMaterialOverride[]): void;   // idempotent, re-applied from the authored snapshot
   inspectMaterials(): readonly AuraResolvedMaterialInfo[];
+  /**
+   * GU47 E-D: set the emissive colour and intensity of the materials named `target` (`"*"`: every material of the
+   * model), on the parameters each material carries. A live write with no snapshot re-apply, cheap enough to call every
+   * frame (brake lights, blinking signs, a charging glow). A later `setMaterialOverrides` / `setMaterialVariant`
+   * re-applies from the authored snapshot and replaces it. Flag-off (`A3D_QR_MATERIALS` off) it is recorded only.
+   */
+  setEmissive(target: string, color: string, intensity: number): void;
 }
 // AuraRuntimeNodeHandle.materials?: AuraModelMaterialHandle   (via C-37 extension, model nodes only)
 export interface AuraRendererMaterialOptions { readonly materialStrictness?: "warn" | "strict"; readonly materialModel?: "legacy" | "physical-r185"; readonly transmission?: "auto" | "env" | "off"; readonly alphaToCoverage?: boolean; readonly debugView?: "baseColor" | "normal" | "roughness" | "metallic" | "clearcoat" | "clearcoatRoughness" | "clearcoatRoughnessEffective" | "sheen" | "F0" | "tangent" | "anisotropyDirection"; }
@@ -52,6 +68,9 @@ export class StubModelMaterialHandle implements AuraModelMaterialHandle {
   materialVariants(): readonly string[] { return []; }
   setMaterialVariant(name: string | null): void { this.variant = name; }
   setMaterialOverrides(o: readonly AuraModelMaterialOverride[]): void { this.overrides = o; }
+  /** GU47 E-D: recorded only on the stub (reported as `STUB_MATERIAL_HANDLE` by `inspectMaterials`). */
+  setEmissive(target: string, color: string, intensity: number): void { this.emissive = { target, color, intensity }; }
+  private emissive: { readonly target: string; readonly color: string; readonly intensity: number } | null = null;
   inspectMaterials(): readonly AuraResolvedMaterialInfo[] {
     return this.names.map((name) => ({
       name,
@@ -60,7 +79,7 @@ export class StubModelMaterialHandle implements AuraModelMaterialHandle {
       enabledMaps: [],
       extensions: [],
       lightsEvaluated: "uniform-16" as const,
-      warnings: this.overrides.length > 0 || this.variant !== null ? ["STUB_MATERIAL_HANDLE"] : []
+      warnings: this.overrides.length > 0 || this.variant !== null || this.emissive !== null ? ["STUB_MATERIAL_HANDLE"] : []
     }));
   }
 }

@@ -22,24 +22,47 @@ export function displayGradeKey(params: DisplayGradeParams): string {
   return `c${params.contrast}|s${params.saturation}|v${params.vibrance}|i${params.lutIntensity}|u${String(params.userLut)}`;
 }
 
+export interface DisplayLutCacheOptions {
+  /**
+   * GU47 E-C: least-recently-used bound on resident handles; the oldest is
+   * destroyed when a new bake would exceed it. Default unbounded.
+   */
+  readonly maxEntries?: number;
+}
+
 export class DisplayLutCache<THandle> {
   private readonly entries = new Map<string, THandle>();
+  private readonly maxEntries: number;
   /** Number of bakes actually performed — the phase-2 metric. */
   public bakeCount = 0;
 
   public constructor(
     private readonly bake: (params: DisplayGradeParams) => THandle,
-    private readonly destroy: (handle: THandle) => void
-  ) {}
+    private readonly destroy: (handle: THandle) => void,
+    options: DisplayLutCacheOptions = {}
+  ) {
+    this.maxEntries = options.maxEntries !== undefined && options.maxEntries >= 1 ? Math.floor(options.maxEntries) : Number.POSITIVE_INFINITY;
+  }
 
-  /** The handle for `params`, baking only on a miss. */
+  /** The handle for `params`, baking only on a miss. A failed bake caches nothing. */
   public acquire(params: DisplayGradeParams): THandle {
     const key = displayGradeKey(params);
     const existing = this.entries.get(key);
-    if (existing !== undefined) return existing;
+    if (existing !== undefined) {
+      // LRU touch: re-insert so iteration order is oldest-first.
+      this.entries.delete(key);
+      this.entries.set(key, existing);
+      return existing;
+    }
     const handle = this.bake(params);
     this.entries.set(key, handle);
     this.bakeCount += 1;
+    while (this.entries.size > this.maxEntries) {
+      const oldest = this.entries.keys().next().value as string;
+      const evicted = this.entries.get(oldest) as THandle;
+      this.entries.delete(oldest);
+      this.destroy(evicted);
+    }
     return handle;
   }
 

@@ -136,6 +136,21 @@ export interface AuraRuntimeNodeSnapshot {
   readonly instanceRgba?: Float32Array;
 }
 
+/** GU47 E-B: `handle.setLight` patch (PRD §3.1 E-B). */
+export interface AuraLightPatch {
+  readonly color?: string;
+  readonly intensity?: number;
+  readonly power?: number;
+  readonly distance?: number;
+  readonly direction?: AuraVec3;
+  readonly position?: AuraVec3;
+}
+
+/** GU47 E-B: `handle.setLight` options. */
+export interface AuraLightTransitionOptions {
+  readonly transitionSeconds?: number;
+}
+
 export interface AuraRuntimeNodeHandle {
   readonly id: string;
   readonly kind: AuraSceneNode["kind"];
@@ -153,6 +168,19 @@ export interface AuraRuntimeNodeHandle {
   setScale(scale: number | AuraVec3): this;
   setVisible(visible: boolean): this;
   setMaterial(material: AuraMaterialSpec): this;
+  /**
+   * GU47 E-B (light nodes; attached under A3D_QR_LIGHTING): retune the light at runtime. Every field is optional and
+   * absolute: `color` (sRGB, blended in linear light), `intensity`, `power` (lumens-style unit converted with the
+   * light's kind, point: power / 4π, spot: power / π, rect: power / (π·width·height); ignored when `intensity` is
+   * given), `distance` (range), `direction` (aims a directional / spot light; the aim then stays fixed while the
+   * light moves, where an unpatched light re-aims at its authored target) and `position` (written through
+   * `setPosition`). With `transitionSeconds` the change blends linearly from the value shown on the next frame;
+   * otherwise it applies on the next frame. Ambient / hemisphere / probe lights take `color` and `intensity`.
+   * Every light node follows `setPosition` each frame, and `setVisible(false)` removes its light and shadow.
+   */
+  setLight?(patch: AuraLightPatch, opts?: AuraLightTransitionOptions): void;
+  /** GU47 (declared by E-B, implemented by E-H): a named part of a model node as its own handle. */
+  part?(name: string): AuraRuntimeNodeHandle | undefined;
   setInstances(transforms: readonly AuraTransformSpec[], colors?: readonly AuraColor[]): this;
   /**
    * Dense per-frame instance write: `matrices` holds `count` column-major mat4s (T·R·S per instance, without the

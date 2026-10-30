@@ -36,6 +36,17 @@ export interface AuraCustomPostPass { readonly name: string; readonly insertAt: 
 export interface AuraPostSurface { addPostPass(p: AuraCustomPostPass): () => void; setQualityTier(t: AuraQualityTier | "auto"): void;
   /** SH-03: mutate one numeric uniform of a registered custom pass by name; staged onto the live descriptor — no re-registration or shader rebuild. Optional on stub surfaces. */
   setPassUniform?(passName: string, key: string, value: number | readonly number[]): void;
+  /**
+   * GU47 E-C: patch one post effect at runtime — `bloom`, `colorGrade`, `depthOfField`, `motionBlur`,
+   * `chromaticAberration`, `volumetricFog` or `vignette` (the factory name; the effect id such as
+   * `"color-grade"` works too). `patch` keys are the effect's node fields (`app.post.setEffect("bloom",
+   * { intensity: 1.4 })`); later calls merge over earlier ones. Applied on the next frame, no scene
+   * rebuild. An effect the scene does not declare is added with the patch over its defaults. Unknown
+   * names, fields or non-finite values throw `AuraRuntimeError("POST_FIELD_UNSUPPORTED")`.
+   */
+  setEffect(name: string, patch: Record<string, number | string | boolean | number[]>): void;
+  /** GU47 E-C: switch one of the `setEffect` effects off (dropped from the chain) or back on (authored node plus patches, or the defaults when the scene declares none). Next frame, no scene rebuild. */
+  setEffectEnabled(name: string, enabled: boolean): void;
 }
 export interface AuraPostDiagnostics { readonly tier: AuraQualityTier; readonly antiAlias: AuraAntiAliasMode; readonly renderPixels: number; readonly pixelRatio: number; readonly renderScale: number; readonly stages: PostGraphReport["stages"]; readonly skipped: PostGraphReport["skipped"]; readonly velocityCoverage: { readonly items: number; readonly withVelocity: number }; }
 // effects factories (bloom, ambientOcclusion, antiAlias, colorGrade, vignette, filmGrain, chromaticAberration, depthOfField, motionBlur): field lists frozen in PRD 03 §APIs; unknown fields throw AuraRuntimeError("POST_FIELD_UNSUPPORTED") before first frame when A3D_QR_POST is on, warn (option-ignored) when off.
@@ -46,4 +57,6 @@ export class StubPostSurface implements AuraPostSurface {
     return () => { /* pass release on the stub chain is a no-op */ void p; };
   }
   setQualityTier(_t: AuraQualityTier | "auto"): void { /* recorded; the legacy chain does not retier */ }
+  setEffect(_name: string, _patch: Record<string, number | string | boolean | number[]>): void { /* the stub chain has no runtime post control */ }
+  setEffectEnabled(_name: string, _enabled: boolean): void { /* the stub chain has no runtime post control */ }
 }

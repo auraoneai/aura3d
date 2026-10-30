@@ -15,7 +15,8 @@ import type {
   AuraCliLookDevRecord,
 } from "./contracts/assetManifest.js";
 
-export type AuraCliAssetType = "model" | "texture" | "environment" | "audio" | "navigation";
+/** GU47 E-C: `lut` is a display-domain `.cube` colour LUT (`effects.colorGrade({ lut: assets.<id> })`). */
+export type AuraCliAssetType = "model" | "texture" | "environment" | "audio" | "navigation" | "lut";
 export type AuraAssetQuality = "ungraded" | "blocked" | "prototype" | "candidate" | "release";
 // PRD-05 §7.2 — the C-17 union plus the legacy 1.0 roles. Roles outside the
 // C-17 set ("product", "weapon", "track", "environment", "unknown",
@@ -50,7 +51,15 @@ export type AuraCliGameAssetCertification =
   | "certified-racing-vehicle"
   | "certified-platformer-world"
   | "certified-platformer-character"
-  | "certified-generated-game-world";
+  | "certified-generated-game-world"
+  // GU47 WP-9: certify-game-geometry --category sports|fighting|arena|puzzle
+  | "certified-sports-venue"
+  | "certified-sports-athlete"
+  | "certified-fighting-stage"
+  | "certified-fighting-character"
+  | "certified-arena-world"
+  | "certified-arena-character"
+  | "certified-puzzle-board";
 
 export interface AuraCliGameGeometryEvidence {
   readonly routePrimaryScreenshot?: string;
@@ -70,17 +79,19 @@ export interface AuraCliGameGeometryMetadata {
 }
 
 export type AuraCliGameGeometryCategory = "racing" | "platformer";
+/** Categories `assets certify-game-geometry` accepts (route evidence binding stays racing | platformer). */
+export type AuraCliCertifyCategory = AuraCliGameGeometryCategory | "sports" | "fighting" | "arena" | "puzzle";
 
 export interface CertifyGameGeometryOptions {
   readonly projectDir?: string;
-  readonly category: AuraCliGameGeometryCategory;
+  readonly category: AuraCliCertifyCategory;
   readonly assetId?: string;
   readonly assetIds?: readonly string[];
 }
 
 export interface GameGeometryCertificationRow {
   readonly assetId: string;
-  readonly category: AuraCliGameGeometryCategory;
+  readonly category: AuraCliCertifyCategory;
   readonly pass: boolean;
   readonly reasons: readonly string[];
   readonly blockers: readonly string[];

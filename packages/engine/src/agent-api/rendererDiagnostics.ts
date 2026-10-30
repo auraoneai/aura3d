@@ -49,8 +49,6 @@ export function createRendererDiagnosticReport(
   const ssrNode = flattened.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "screen-space-reflections");
   const dofNode = flattened.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "depth-of-field");
   const motionBlurNode = flattened.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "motion-blur");
-  const flipbookNode = flattened.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "flipbook-sprite");
-  const beamNode = flattened.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "light-beam");
   const sdfTextRequested = flattened.some((node) => node.kind === "primitive" && node.text3D?.backend === "sdf");
   const fxaaRequested = (antiAliasNode?.mode ?? "fxaa") === "fxaa" && Boolean(antiAliasNode);
   const taaRequested = (antiAliasNode?.mode ?? "fxaa") === "taa";
@@ -89,8 +87,10 @@ export function createRendererDiagnosticReport(
   if (!contactOcclusion) warnings.push("scene has no contact shadow or contact-occlusion grounding cue");
   if (bloom && (bloom.intensity ?? 0) > 0.95 && bloom.antiBlowout !== true) warnings.push("bloom is high without anti-blowout safeguards");
   if (motionBlurWithheld) warnings.push("TEMPORAL_INPUTS_UNAVAILABLE: motion-blur has no native submission");
-  if (flipbookNode) warnings.push("flipbook-sprite is recorded but withheld: root has no native sprite-sheet sampler yet, so no flipbook pass is submitted");
-  if (beamNode) warnings.push("light-beam is recorded but withheld: root has no native beam target yet, so no beam pass is submitted");
+  // GU47 E-F: the old "flipbook-sprite / light-beam is recorded but withheld" warnings were stale. Under the
+  // default-on A3D_QR_VFX flipbooks draw through the particle pass (built-in, atlas-sprite or texture sheet)
+  // and light-beam / lightCone / auroraRibbon through the prd07.beams pass; with the flag off the effect
+  // system reports EFFECT_ZERO_PIXELS for them instead.
   // G1: the baked-SDF sampler mounts synchronously on the production bridge.
   // Warn only when the SDF request cannot be pixel-backed (non-production
   // mount, or the sampler fell back to the extruded mesh at runtime).

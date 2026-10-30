@@ -10,8 +10,8 @@ import { QUALITY_TIERS, type AuraQualityTier } from "@aura3d/rendering/contracts
 import type { ParticlePassDiagnostics } from "@aura3d/rendering";
 import { MeshParticleBatch, RibbonBatch, RibbonTrail, DecalBatch, DECAL_TIER_CAP, decalQuadGeometry, ribbonStripToDecalGeometry, PARTICLE_GPU_BUDGET_MS, ProceduralVolumeEmitter, type BeamDrawSpec, type MeshParticleFeed, type DecalVertexData, type GpuSimSpec } from "@aura3d/rendering";
 import { createEmitter, stepEmitter, writeEmitterInstances, type EmitterDescriptor, type EmitterState } from "./CpuEmitter";
-import { proceduralFireballSheet } from "./FlipbookAtlas";
-import { lowerEffectNode, srgbChannelToLinear, type LoweredEffect, type LoweredVolumeEffect, type EffectNodeLike } from "./EffectNodeLowering";
+import { proceduralFireballSheet, VfxSpriteTextures, vfxSpriteFrame, vfxSpritePageSize, type VfxSpriteLoader, type VfxSpriteTextureState } from "./FlipbookAtlas";
+import { lowerEffectNode, srgbChannelToLinear, type LoweredEffect, type LoweredSprite, type LoweredVolumeEffect, type EffectNodeLike } from "./EffectNodeLowering";
 import { EffectDiagnostics } from "./EffectDiagnostics";
 import { LiveAtmosphere } from "./LiveAtmosphere";
 import { TransientLightPool, type TransientLightFlash } from "./TransientLightPool";
@@ -47,6 +47,16 @@ interface EmitterBinding {
   scratch: Float32Array;
 }
 
+/**
+ * GU47 E-F: overwrite the instance `frame` slot (float 13 of the §6.2.1 layout) of every live particle with
+ * its sprite frame. `writeEmitterInstances` packs particle i at `i * 16`, so `state.age[i]` / `state.life[i]`
+ * line up; rotation and the life fade stay as the emitter wrote them.
+ */
+export function writeSpriteFrames(state: EmitterState, out: Float32Array, live: number, sprite: LoweredSprite): void {
+  const fixed = sprite.kind === "texture" ? { frames: sprite.frames, frame: sprite.frame } : sprite;
+  for (let i = 0; i < live; i++) out[i * 16 + 13] = vfxSpriteFrame(fixed, state.age[i], state.life[i]);
+}
+
 /** §8.2 weather volume binding — stateless positions, packed fresh in feed. */
 interface VolumeBinding {
   readonly lowered: LoweredVolumeEffect;
@@ -57,6 +67,68 @@ interface VolumeBinding {
 interface TrailBinding {
   readonly trail: RibbonTrail;
   readonly node: EffectNodeLike;
+  /** GU47 E-F: live-follow state (runtime `effects.trail` and scene trails with a `target`). */
+  follow?: TrailFollow;
+  /** GU47 E-F: started by `app.effects.trail` (dropped by `runtime = "off"` and `clear()`). */
+  runtime?: boolean;
+}
+
+/** GU47 E-F: a ribbon that samples its target every frame and drops points older than `life`. */
+interface TrailFollow {
+  readonly target: unknown;
+  /** Seconds a point lives (Infinity: ring only, no fade). */
+  readonly life: number;
+  readonly width: number;
+  readonly color: readonly [number, number, number, number];
+  /** Width ramp by target speed (m/s): zero at or below [0], full width at or above [1]. */
+  readonly widthOverSpeed?: readonly [number, number];
+  readonly maxPoints: number;
+  readonly minVertexDistance: number;
+  readonly points: { readonly position: readonly [number, number, number]; readonly time: number; readonly speed: number }[];
+  /** False after a non-immediate stop: points expire, then the trail is removed. */
+  following: boolean;
+  last: { readonly position: readonly [number, number, number]; readonly time: number } | null;
+  missingNoted: boolean;
+}
+
+/** GU47 E-F: follow state of a scene `effects.trail({ target })` node (ring of maxPoints, optional life fade). */
+function sceneTrailFollow(node: EffectNodeLike, color: readonly [number, number, number, number]): TrailFollow {
+  const ramp = node.widthOverSpeed;
+  return {
+    target: node.target,
+    life: typeof node.life === "number" && node.life > 0 ? node.life : Number.POSITIVE_INFINITY,
+    width: typeof node.width === "number" && node.width > 0 ? node.width : 0.3,
+    color,
+    ...(ramp && ramp.length >= 2 && Number.isFinite(ramp[0]) && Number.isFinite(ramp[1]) ? { widthOverSpeed: [ramp[0], ramp[1]] as const } : {}),
+    maxPoints: Math.max(2, Math.round(node.maxPoints ?? 48)),
+    minVertexDistance: typeof node.minVertexDistance === "number" && node.minVertexDistance >= 0 ? node.minVertexDistance : 0.05,
+    points: [],
+    following: true,
+    last: null,
+    missingNoted: false
+  };
+}
+
+/** Width multiplier for a point sampled at `speed` m/s under `widthOverSpeed` [min, max]. */
+export function trailWidthScale(speed: number, ramp: readonly [number, number] | undefined): number {
+  if (!ramp) return 1;
+  const [lo, hi] = ramp;
+  if (!(hi > lo)) return speed >= lo ? 1 : 0;
+  return Math.min(1, Math.max(0, (speed - lo) / (hi - lo)));
+}
+
+/** GU47 E-F: what an attach target resolves through (runtime node handle, or a bone socket on its actor). */
+interface AttachHandleLike {
+  getWorldPosition?(): readonly number[];
+  readonly position?: readonly number[];
+  readonly animation?: { socket?(bone: string): { readonly valid: boolean; worldMatrix(out?: Float32Array): Float32Array } };
+}
+
+/** GU47 E-F: an emitter that follows a runtime node; `offset` is the node's authored `position`. */
+interface AttachBinding {
+  readonly target: unknown;
+  readonly offset: readonly [number, number, number];
+  missingNoted: boolean;
 }
 
 function hexToRgb(c: string): readonly [number, number, number] {
@@ -304,11 +376,31 @@ export class ProductionEffectSystem {
   private renderBridged = false;
   /** A renderer frame pulled the render source since the last endFrame. */
   private renderSincePrevFrame = false;
+  /** GU47 E-F: atlas-sprite and texture-sheet textures, loaded on first use (1k page on low/medium tiers). */
+  private readonly sprites: VfxSpriteTextures;
+  /** GU47 E-F: emitters that follow a runtime node (`attachTo`), keyed by emitter id. */
+  private readonly attachments = new Map<string, AttachBinding>();
+  private readonly socketScratch = new Float32Array(16);
 
-  constructor(private readonly app: AppLike, options: { readonly tier?: AuraQualityTier } = {}) {
+  constructor(
+    private readonly app: AppLike,
+    options: {
+      readonly tier?: AuraQualityTier;
+      /** GU47 E-F: sprite image loader (default: fetch + createImageBitmap); tests inject a synchronous-data loader. */
+      readonly spriteLoader?: VfxSpriteLoader;
+      /** GU47 E-F: URL of the baked VFX page per size (default: resolved against the engine module). */
+      readonly spritePageUrl?: (pageSize: 1024 | 2048) => string;
+    } = {}
+  ) {
     // Resolved C-27 tier wins over the explicit option's fallback: callers pass
     // app.quality.tier; "high" remains only as the unresolved default.
     this.tier = options.tier ?? app.quality?.tier ?? "high";
+    this.sprites = new VfxSpriteTextures(
+      options.spriteLoader,
+      vfxSpritePageSize(this.tier),
+      (key, message) => this.diagnostics.note("VFX_SPRITE_UNAVAILABLE", key, `sprite texture ${key} failed to load (${message}); the batch keeps the soft-dot`),
+      options.spritePageUrl
+    );
     this.decals = new DecalBatch(DECAL_TIER_CAP[this.tier]);
     this.budgetCap = QUALITY_TIERS[this.tier].particleBudget;
     this.transientLights = new TransientLightPool(this.tier);
@@ -325,6 +417,9 @@ export class ProductionEffectSystem {
           return { id, age: Number((this.time - record.born).toFixed(2)), live: binding?.state.live ?? 0, emissionRate: binding?.state.desc.emissionRate ?? 0 };
         }),
         scene: [...this.emitters.keys()].filter((id) => !this.transients.has(id)),
+        // GU47 E-F: sprite texture load state and live trails (receipts vfx-atlas-sprites, vfx-trail).
+        sprites: this.spriteStatus(),
+        trails: [...this.trails.keys()].map((id) => ({ id, ...(this.trailInfo(id) ?? { length: 0, pointCount: 0 }) })),
         notes: this.diagnostics.report().errors
       });
     }
@@ -470,7 +565,7 @@ export class ProductionEffectSystem {
     const fogVolumes: EffectNodeLike[] = [];
     this.walkNodes((node, visible) => {
       if (!visible || node.kind !== "effect") return;
-      const lowered = lowerEffectNode(node);
+      const lowered = lowerEffectNode(this.placeAttached(node));
       this.diagnostics.track({
         nodeId: lowered.nodeId,
         effect: lowered.effect,
@@ -481,6 +576,7 @@ export class ProductionEffectSystem {
       });
       if (lowered.type === "emitter") {
         this.attachEmitter(lowered);
+        this.trackAttachment(lowered.nodeId, node);
       } else if (lowered.type === "volume") {
         this.attachVolume(lowered);
       } else {
@@ -519,7 +615,12 @@ export class ProductionEffectSystem {
         const step = points.length > 1 ? 0.02 : 0;
         points.forEach((p, i) => trail.push([p[0] ?? 0, p[1] ?? 0, p[2] ?? 0], i * step));
       }
-      this.trails.set(lowered.nodeId, { trail, node });
+      // GU47 E-F: a scene trail with a `target` (and no static `path`) follows that runtime node every frame;
+      // `life` fades and drops old points (absent: a ring of maxPoints). Follow state survives scene rebuilds.
+      const follow = node.target !== undefined && !Array.isArray(node.path)
+        ? this.trails.get(lowered.nodeId)?.follow ?? sceneTrailFollow(node, color)
+        : undefined;
+      this.trails.set(lowered.nodeId, { trail, node, ...(follow ? { follow } : {}) });
     } else if (lowered.consumer === "mesh-pass") {
       this.meshBatches.set(lowered.nodeId, seedMeshBatch(node));
     } else if (lowered.consumer === "decal-pass") {
@@ -638,7 +739,137 @@ export class ProductionEffectSystem {
   trailPush(nodeId: string, position: readonly [number, number, number], width?: number, color?: readonly [number, number, number, number]): boolean {
     const binding = this.trails.get(nodeId);
     if (!binding) return false;
+    if (binding.follow) {
+      this.sampleTrail(binding.follow, position);
+      return true;
+    }
     return binding.trail.push(position, this.time, width, color);
+  }
+
+  /**
+   * GU47 E-F `app.effects.trail`: a camera-facing ribbon on the RibbonBatch that follows `target` (runtime node
+   * id, `{ node, socket }` or a node handle; undefined: points come from `trailPush`). Points older than `life`
+   * seconds drop off, so the ribbon is as long as the distance the target covered in `life`. The head is
+   * opaque and the tail fades; `widthOverSpeed` ramps the width by the target's speed.
+   */
+  addTrail(
+    id: string,
+    target: unknown,
+    options: { readonly width: number; readonly life: number; readonly color?: unknown; readonly widthOverSpeed?: readonly [number, number]; readonly minVertexDistance?: number }
+  ): string {
+    const life = Number.isFinite(options.life) && options.life > 0 ? options.life : 0.5;
+    const width = Number.isFinite(options.width) && options.width > 0 ? options.width : 0.3;
+    // One point per frame at up to 120 Hz over the life, capped per tier.
+    const cap = this.tier === "low" ? 120 : 360;
+    const maxPoints = Math.max(8, Math.min(cap, Math.ceil(life * 120) + 2));
+    const minVertexDistance = options.minVertexDistance !== undefined && options.minVertexDistance >= 0 ? options.minVertexDistance : 0.05;
+    const color = effectColor4({ kind: "effect", color: options.color as EffectNodeLike["color"] });
+    const trail = this.ribbons.upsertTrail({ id, maxPoints, minVertexDistance, width, color, orientation: "camera" });
+    const ramp = options.widthOverSpeed;
+    const follow: TrailFollow = {
+      target,
+      life,
+      width,
+      color,
+      ...(ramp && ramp.length >= 2 && Number.isFinite(ramp[0]) && Number.isFinite(ramp[1]) ? { widthOverSpeed: [ramp[0], ramp[1]] as const } : {}),
+      maxPoints,
+      minVertexDistance,
+      points: [],
+      following: true,
+      last: null,
+      missingNoted: false
+    };
+    this.trails.set(id, { trail, node: { kind: "effect", effect: "trail", id }, follow, runtime: true });
+    if (target !== undefined) {
+      const at = this.resolveTarget(target);
+      if (at) this.sampleTrail(follow, at);
+    }
+    return id;
+  }
+
+  /** GU47 E-F: live length (metres along the points) and point count of a trail, or null once it is gone. */
+  trailInfo(id: string): { readonly length: number; readonly pointCount: number } | null {
+    const binding = this.trails.get(id);
+    if (!binding) return null;
+    const points = binding.follow ? binding.follow.points.map((p) => p.position) : binding.trail.getPoints().map((p) => p.position);
+    let length = 0;
+    for (let i = 1; i < points.length; i++) {
+      length += Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1], points[i][2] - points[i - 1][2]);
+    }
+    return { length, pointCount: points.length };
+  }
+
+  /** GU47 E-F: drop every point of a trail (it restarts from the target's next position). */
+  clearTrail(id: string): void {
+    const binding = this.trails.get(id);
+    if (!binding) return;
+    if (binding.follow) {
+      binding.follow.points.length = 0;
+      binding.follow.last = null;
+    }
+    binding.trail.clear();
+  }
+
+  /** GU47 E-F: stop following; `immediate` removes the ribbon now, otherwise it fades out over `life`. */
+  stopTrail(id: string, immediate = false): void {
+    const binding = this.trails.get(id);
+    if (!binding) return;
+    if (immediate || !binding.follow || !Number.isFinite(binding.follow.life)) {
+      binding.trail.clear();
+      this.ribbons.removeTrail(id);
+      this.trails.delete(id);
+      return;
+    }
+    binding.follow.following = false;
+  }
+
+  /** Append the target's position when it moved at least `minVertexDistance` since the last point. */
+  private sampleTrail(follow: TrailFollow, position: readonly [number, number, number]): void {
+    const p: readonly [number, number, number] = [position[0], position[1], position[2]];
+    const last = follow.last;
+    const elapsed = last ? this.time - last.time : 0;
+    const speed = last && elapsed > 1e-6 ? Math.hypot(p[0] - last.position[0], p[1] - last.position[1], p[2] - last.position[2]) / elapsed : 0;
+    if (!last || elapsed > 1e-6 || follow.points.length === 0) follow.last = { position: p, time: this.time };
+    const head = follow.points[follow.points.length - 1];
+    if (!head || Math.hypot(p[0] - head.position[0], p[1] - head.position[1], p[2] - head.position[2]) >= follow.minVertexDistance) {
+      follow.points.push({ position: p, time: this.time, speed });
+      while (follow.points.length > follow.maxPoints) follow.points.shift();
+    }
+  }
+
+  /** GU47 E-F: sample every following trail, expire old points and rebuild the ribbon rings (head first). */
+  private stepTrails(): void {
+    for (const [id, binding] of this.trails) {
+      const follow = binding.follow;
+      if (!follow) continue;
+      if (follow.following && follow.target !== undefined) {
+        const at = this.resolveTarget(follow.target);
+        if (at) this.sampleTrail(follow, at);
+        else if (!follow.missingNoted) {
+          follow.missingNoted = true;
+          this.diagnostics.note("VFX_ATTACH_TARGET_MISSING", id, "trail target does not resolve to a runtime node; the ribbon stops growing");
+        }
+      }
+      if (Number.isFinite(follow.life)) {
+        const cutoff = this.time - follow.life;
+        let drop = 0;
+        while (drop < follow.points.length && follow.points[drop].time < cutoff) drop++;
+        if (drop > 0) follow.points.splice(0, drop);
+      }
+      if (!follow.following && follow.points.length === 0) {
+        binding.trail.clear();
+        this.ribbons.removeTrail(id);
+        this.trails.delete(id);
+        continue;
+      }
+      binding.trail.clear();
+      // Newest first: the batch alpha curve 0.45·(1 − i/maxPoints) then peaks at the target and fades to the tail.
+      for (let i = follow.points.length - 1; i >= 0; i--) {
+        const point = follow.points[i];
+        const fade = Number.isFinite(follow.life) ? Math.max(0, 1 - (this.time - point.time) / follow.life) : 1;
+        binding.trail.push(point.position, point.time, follow.width * trailWidthScale(point.speed, follow.widthOverSpeed), [follow.color[0], follow.color[1], follow.color[2], follow.color[3] * fade]);
+      }
+    }
   }
 
   private attachEmitter(lowered: Extract<LoweredEffect, { type: "emitter" }>): EmitterBinding {
@@ -666,16 +897,113 @@ export class ProductionEffectSystem {
   /** App-level switch for runtime-spawned effects (effects.burst/spawn, game effects, impact presets). The URL's `?vfx=on|off` overrides it. */
   setRuntimeEffects(mode: "on" | "off"): void {
     this.runtimeEffectsApp = mode === "off" ? "off" : "on";
+    // GU47 E-F (floating dots): "off" drops the runtime particles that are already running too. Before, only new
+    // spawns were refused, so a continuous emitter started before the switch kept emitting at its spot for good.
+    if (this.runtimeEffects === "off") this.clearRuntimeParticles();
+  }
+
+  /** GU47 E-F: remove every runtime-spawned emitter and runtime trail now (scene effects and decals stay). */
+  clearRuntimeParticles(): void {
+    for (const id of [...this.transients.keys()]) this.removeInstance(id);
+    for (const [id, binding] of [...this.trails]) {
+      if (binding.runtime) this.stopTrail(id, true);
+    }
+  }
+
+  /** GU47 E-F: true while a runtime instance still has an emitter (spent one-shots are retired at once). */
+  instanceAlive(id: string): boolean {
+    return this.emitters.has(id) || this.trails.has(id) || this.decalNodes.has(id);
+  }
+
+  /** Drop a spent runtime emitter: its batch leaves the particle pass on the next feed. */
+  private retireEmitter(id: string): void {
+    this.emitters.delete(id);
+    this.transients.delete(id);
+    this.attachments.delete(id);
+    this.diagnostics.untrack(id);
   }
 
   get runtimeEffects(): "on" | "off" {
     return this.runtimeEffectsUrl ?? this.runtimeEffectsApp;
   }
 
+  /**
+   * GU47 E-F: world position of an attach target: a runtime node id, `{ node, socket }` (the actor's bone
+   * socket when it resolves, else the node), or a node handle. Null when nothing resolves.
+   */
+  resolveTarget(target: unknown): [number, number, number] | null {
+    let handle: AttachHandleLike | undefined;
+    let socket: string | undefined;
+    if (typeof target === "string") {
+      handle = this.app.nodes?.get(target) as AttachHandleLike | undefined;
+    } else if (typeof target === "object" && target !== null) {
+      const ref = target as { readonly node?: unknown; readonly socket?: unknown };
+      if (typeof ref.node === "string") {
+        handle = this.app.nodes?.get(ref.node) as AttachHandleLike | undefined;
+        socket = typeof ref.socket === "string" ? ref.socket : undefined;
+      } else {
+        handle = target as AttachHandleLike;
+      }
+    }
+    if (!handle) return null;
+    if (socket !== undefined) {
+      const bone = handle.animation?.socket?.(socket);
+      if (bone?.valid) {
+        const m = bone.worldMatrix(this.socketScratch);
+        if (Number.isFinite(m[12]) && Number.isFinite(m[13]) && Number.isFinite(m[14])) return [m[12], m[13], m[14]];
+      }
+    }
+    const p = typeof handle.getWorldPosition === "function" ? handle.getWorldPosition() : handle.position;
+    if (!p || p.length < 3 || !Number.isFinite(p[0]) || !Number.isFinite(p[1]) || !Number.isFinite(p[2])) return null;
+    return [p[0], p[1], p[2]];
+  }
+
+  /** GU47 E-F: an `attachTo` node starts at its target (plus its `position` offset); others pass unchanged. */
+  private placeAttached(node: EffectNodeLike): EffectNodeLike {
+    if (node.attachTo === undefined) return node;
+    const at = this.resolveTarget(node.attachTo);
+    if (!at) return node;
+    const offset = node.position ?? [0, 0, 0];
+    return { ...node, position: [at[0] + offset[0], at[1] + offset[1], at[2] + offset[2]] };
+  }
+
+  private trackAttachment(emitterId: string, node: EffectNodeLike): void {
+    if (node.attachTo === undefined) {
+      this.attachments.delete(emitterId);
+      return;
+    }
+    const offset = node.position ?? [0, 0, 0];
+    this.attachments.set(emitterId, { target: node.attachTo, offset: [offset[0], offset[1], offset[2]], missingNoted: false });
+  }
+
+  /** GU47 E-F: move every attached emitter's origin to its target before the sim step spawns. */
+  private updateAttachments(): void {
+    for (const [emitterId, attachment] of this.attachments) {
+      const binding = this.emitters.get(emitterId);
+      if (!binding) {
+        this.attachments.delete(emitterId);
+        continue;
+      }
+      const at = this.resolveTarget(attachment.target);
+      if (!at) {
+        if (!attachment.missingNoted) {
+          attachment.missingNoted = true;
+          this.diagnostics.note("VFX_ATTACH_TARGET_MISSING", emitterId, "attachTo target does not resolve to a runtime node; the emitter keeps its last position");
+        }
+        continue;
+      }
+      const x = at[0] + attachment.offset[0];
+      const y = at[1] + attachment.offset[1];
+      const z = at[2] + attachment.offset[2];
+      const origin = binding.state.desc.origin;
+      if (origin[0] !== x || origin[1] !== y || origin[2] !== z) binding.state.desc = { ...binding.state.desc, origin: [x, y, z] };
+    }
+  }
+
   /** Add a transient effect-instance emitter (effects.burst/spawn). */
   addInstance(nodeId: string, node: EffectNodeLike): string {
     if (this.runtimeEffects === "off") return nodeId;
-    const lowered = lowerEffectNode(node);
+    const lowered = lowerEffectNode(this.placeAttached(node));
     this.diagnostics.track({
       nodeId,
       effect: lowered.effect,
@@ -686,6 +1014,7 @@ export class ProductionEffectSystem {
     });
     if (lowered.type === "emitter") {
       this.attachEmitter({ ...lowered, nodeId });
+      this.trackAttachment(nodeId, node);
       this.transients.set(nodeId, { born: this.time, warned: false });
       this.lastTransientAt = this.time;
     } else if (lowered.type === "volume") {
@@ -699,6 +1028,8 @@ export class ProductionEffectSystem {
   setInstanceOrigin(nodeId: string, origin: readonly number[]): void {
     const binding = this.emitters.get(nodeId);
     if (binding) {
+      // An explicit position wins over `attachTo`: the emitter stops following its node.
+      this.attachments.delete(nodeId);
       binding.state.desc = { ...binding.state.desc, origin: [origin[0] ?? 0, origin[1] ?? 0, origin[2] ?? 0] as never };
       return;
     }
@@ -708,6 +1039,7 @@ export class ProductionEffectSystem {
 
   removeInstance(nodeId: string): void {
     this.transients.delete(nodeId);
+    this.attachments.delete(nodeId);
     const binding = this.emitters.get(nodeId);
     if (!binding) {
       this.volumes.delete(nodeId);
@@ -754,6 +1086,8 @@ export class ProductionEffectSystem {
     // capped at 30 s of simulation per frame like createEmitter's prewarm.
     const substeps = dt > 0 ? Math.min(Math.ceil(dt * 60 - 1e-6), 1800) : 0;
     const h = substeps > 0 ? dt / substeps : 0;
+    if (this.attachments.size > 0) this.updateAttachments();
+    if (this.trails.size > 0) this.stepTrails();
     for (const binding of this.emitters.values()) {
       for (let s = 0; s < substeps; s++) stepEmitter(binding.state, h);
       this.diagnostics.track({
@@ -815,6 +1149,12 @@ export class ProductionEffectSystem {
         this.transients.delete(id);
         continue;
       }
+      // GU47 E-F: a one-shot whose particles are all gone is retired now instead of idling in the system (and in
+      // the frame's batch list) until the 96-slot instance pool recycles it.
+      if (binding.state.live === 0 && binding.state.desc.emissionRate <= 0) {
+        this.retireEmitter(id);
+        continue;
+      }
       live += binding.state.live;
       const age = this.time - record.born;
       if (!record.warned && age > UNSTOPPED_EMITTER_SECONDS && binding.state.desc.emissionRate > 0 && binding.state.live > 0) {
@@ -868,6 +1208,8 @@ export class ProductionEffectSystem {
     const groups = new Map<string, { first: EmitterBinding; parts: { binding: EmitterBinding; live: number }[] }>();
     for (const binding of this.emitters.values()) {
       const live = writeEmitterInstances(binding.state, binding.scratch);
+      // Flipbooks keep the frame the emitter wrote (age · frameRate); other sprite emitters get theirs here.
+      if (binding.lowered.sprite && !binding.lowered.emitter.flipbook) writeSpriteFrames(binding.state, binding.scratch, live, binding.lowered.sprite);
       this.frameLive.set(binding.lowered.nodeId, live);
       const key = binding.lowered.emitter.key;
       let group = groups.get(key);
@@ -879,12 +1221,20 @@ export class ProductionEffectSystem {
       seenKeys.add(key);
       const totalLive = group.parts.reduce((s, p) => s + p.live, 0);
       const flipbook = group.first.lowered.emitter.flipbook;
+      const sprite = group.first.lowered.sprite;
+      // GU47 E-F: atlas sprites sample their sequence once it has loaded; until then (or after a failed load)
+      // the batch draws the analytic soft-dot exactly as before.
+      // A flipbook with a `texture` or built-in `sprite` samples that sheet instead of the procedural fireball.
+      const spriteTexture = sprite ? this.spriteTexture(sprite) : null;
       const desc: ParticleBatchDescriptor = {
         key,
         capacity: group.parts.reduce((s, p) => s + p.binding.lowered.emitter.capacity, 0),
         source: "cpu",
-        atlas: flipbook ? flipbookTexture(flipbook) : softDotTexture(),
-        ...(flipbook ? { atlasGrid: [flipbook.columns ?? 1, flipbook.rows ?? 1] as const, atlasStraightAlpha: true } : {}),
+        atlas: flipbook && !sprite ? flipbookTexture(flipbook) : spriteTexture ?? softDotTexture(),
+        ...(flipbook && !sprite ? { atlasGrid: [flipbook.columns ?? 1, flipbook.rows ?? 1] as const, atlasStraightAlpha: true } : {}),
+        ...(sprite && spriteTexture
+          ? { atlasGrid: [sprite.columns, sprite.rows] as const, ...(sprite.kind === "texture" ? { atlasStraightAlpha: true } : {}) }
+          : {}),
         blend: group.first.lowered.batch.blend,
         shading: group.first.lowered.batch.shading,
         softDepth: group.first.lowered.batch.softDepth,
@@ -954,6 +1304,21 @@ export class ProductionEffectSystem {
     }
   }
 
+  /** GU47 E-F: texture for a lowered sprite, or null while it loads (or after it failed). */
+  private spriteTexture(sprite: LoweredSprite): Texture | null {
+    return sprite.kind === "builtin" ? this.sprites.builtin(sprite.name) : this.sprites.texture(sprite.url);
+  }
+
+  /** GU47 E-F: load state of every sprite texture requested so far (`vfx:<name>` / `tex:<url>`). */
+  spriteStatus(): Readonly<Record<string, VfxSpriteTextureState>> {
+    return this.sprites.status();
+  }
+
+  /** GU47 E-F: resolves once every sprite texture requested so far has loaded or failed. */
+  spritesSettled(): Promise<void> {
+    return this.sprites.settled();
+  }
+
   private concatScratch(key: string, floats: number, parts: { binding: EmitterBinding; live: number }[]): Float32Array {
     let buf = this.groupScratch.get(key);
     if (!buf || buf.length < floats) {
@@ -1017,7 +1382,17 @@ export class ProductionEffectSystem {
     if (this.disposed) return;
     this.disposed = true;
     this.offFrame();
+    // GU47 E-F: the particle pass is shared per device; leaving this system's batches in it kept the last frame's
+    // particles drawing (frozen dots) for as long as the device rendered.
+    if (this.lastHook) for (const handle of this.batchHandles.values()) this.lastHook.removeBatch(handle);
+    this.batchHandles.clear();
     this.emitters.clear();
     this.volumes.clear();
+    this.transients.clear();
+    this.attachments.clear();
+    this.trails.clear();
+    this.ribbons.clear();
+    this.beams.clear();
+    this.meshBatches.clear();
   }
 }

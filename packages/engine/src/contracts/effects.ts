@@ -2,18 +2,76 @@
  * C-20 — effects surface (engine side, CONTRACTS.md). Provider: PRD 07. Flag: A3D_QR_VFX.
  */
 
-import type { AuraVec3, AuraColor, AuraRuntimeNodeHandle } from "../agent-api/index";
+import type { AuraVec3, AuraColor, AuraRuntimeNodeHandle, AuraAssetRef } from "../agent-api/index";
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
 import type { AuraBlendMode } from "@aura3d/rendering/contracts";
+import type { AuraVfxBuiltinSequence } from "../agent-api/vfx/atlas";
 
 export type AuraVfxKind = "spark" | "dust" | "debris" | "ring" | "streak" | "pickup" | "explosion-small" | "muzzle" | "splash" | "bubble" | "impact-flash" | "super-flash" | "impact-decal" | "aura-burst";
-export interface AuraVfxEffectSpec { readonly name: string; readonly layers: readonly ({ readonly type: "emitter" | "mesh" | "ribbon" | "decal" | "light" | "camera"; readonly at?: number } & Readonly<Record<string, unknown>>)[]; }
+/** GU47 E-F: genre-coloured variants of `spark`, `dust` and `pickup` (same motion and life, genre palette). */
+export type AuraVfxGenreVariant =
+  | "spark-fire" | "spark-electric" | "spark-gold" | "spark-magic" | "spark-ice"
+  | "dust-sand" | "dust-turf" | "dust-snow" | "dust-ash" | "dust-clay"
+  | "pickup-gold" | "pickup-gem" | "pickup-power" | "pickup-star" | "pickup-heart";
+export interface AuraVfxEffectSpec {
+  readonly name: string;
+  readonly layers: readonly ({ readonly type: "emitter" | "mesh" | "ribbon" | "decal" | "light" | "camera"; readonly at?: number } & Readonly<Record<string, unknown>>)[];
+  /**
+   * GU47 E-F: the effect's emitters follow this runtime node (id, or `{ node, socket }` for a bone socket on
+   * its actor) every frame; spawn positions become offsets from it. `spawn(spec, { node, socket })` does the same.
+   */
+  readonly attachTo?: string | { readonly node: string; readonly socket?: string };
+}
 export interface AuraEffectInstanceHandle { readonly id: string; readonly alive: boolean; stop(o?: { immediate?: boolean }): void; setPosition(p: AuraVec3): void; setDirection?(n: AuraVec3): void; }
 export interface AuraDecalOptions { readonly kind?: string; readonly size?: number; readonly lifetime?: number; readonly color?: AuraColor; readonly opacity?: number; }
+/** GU47 E-F `effects.trail` options. */
+export interface AuraTrailOptions {
+  /** Ribbon width in metres at full speed. */
+  readonly width: number;
+  /** Seconds each ribbon point lives. */
+  readonly life: number;
+  /** Ribbon colour (hex is sRGB; default white). */
+  readonly color?: AuraColor;
+  /** Width ramp by the target's speed in m/s: zero width at or below `[0]`, full `width` at or above `[1]`. */
+  readonly widthOverSpeed?: readonly [number, number];
+}
+/** GU47 E-F handle of a running trail. */
+export interface AuraTrailHandle extends AuraEffectInstanceHandle {
+  /** Ribbon length in metres along its live points. */
+  readonly length: number;
+  /** Live ribbon points. */
+  readonly pointCount: number;
+  /** Drop every point; the ribbon restarts from the target's next position. */
+  clear(): void;
+}
+/** `burst` options (GU47 E-F names the bag; `sprite` is new). */
+export interface AuraBurstOptions {
+  readonly count?: number;
+  readonly speed?: number;
+  readonly scale?: number;
+  readonly color?: AuraColor;
+  readonly normal?: AuraVec3;
+  readonly seed?: number;
+  readonly intensity?: number;
+  /** false: do not add the preset's camera shake/punch (the caller owns the camera) */
+  readonly camera?: boolean;
+  /** GU47 E-F: atlas sprite for this burst's particles (overrides the preset's sprite). */
+  readonly sprite?: AuraVfxSpriteSource;
+}
 export interface AuraAppEffects {
-  burst(kind: AuraVfxKind, position: AuraVec3, options?: { count?: number; speed?: number; scale?: number; color?: AuraColor; normal?: AuraVec3; seed?: number; intensity?: number; /** false: do not add the preset's camera shake/punch (the caller owns the camera) */ camera?: boolean }): AuraEffectInstanceHandle;
-  spawn(effect: AuraVfxEffectSpec | AuraVfxKind, at: AuraVec3 | { node: string; socket?: string }, options?: { seed?: number; scale?: number; color?: AuraColor }): AuraEffectInstanceHandle;
-  trail(target: string | { node: string; socket?: string }, options: { width: number; life: number; color?: AuraColor }): AuraEffectInstanceHandle;
+  /**
+   * One-shot effect at `position`. GU47 E-F: `kind` resolves a `registerPreset` name first (every layer of the
+   * registered spec fires), then a built-in kind or genre variant; an unknown name falls back to `spark`.
+   */
+  burst(kind: AuraVfxKind | AuraVfxGenreVariant | (string & {}), position: AuraVec3, options?: AuraBurstOptions): AuraEffectInstanceHandle;
+  /** A named preset (registered first) is one-shot; an authored spec object loops until its handle stops. */
+  spawn(effect: AuraVfxEffectSpec | AuraVfxKind | AuraVfxGenreVariant | (string & {}), at: AuraVec3 | { node: string; socket?: string }, options?: { seed?: number; scale?: number; color?: AuraColor; sprite?: AuraVfxSpriteSource }): AuraEffectInstanceHandle;
+  /**
+   * GU47 E-F: a camera-facing ribbon that follows `target` (runtime node id, node handle, or `{ node, socket }`).
+   * Points live `life` seconds, so the ribbon is as long as the distance the target covered in that time;
+   * the head is opaque and the tail fades. Under `runtime: "off"` it returns an inert handle.
+   */
+  trail(target: string | AuraRuntimeNodeHandle | { node: string; socket?: string }, options: AuraTrailOptions): AuraTrailHandle;
   decal(at: { position: AuraVec3; normal: AuraVec3; target?: string }, options: AuraDecalOptions): AuraEffectInstanceHandle;
   readonly presets: Readonly<Record<AuraVfxKind, AuraVfxEffectSpec>>;
   registerPreset(kind: string, spec: AuraVfxEffectSpec): void;
@@ -42,7 +100,7 @@ export class StubAppEffects implements AuraAppEffects {
 
   constructor(private readonly addNode: (kind: "sphere" | "quad" | "line", at: AuraVec3, options?: { color?: AuraColor; scale?: number }) => AuraRuntimeNodeHandle | null) {}
 
-  burst(kind: AuraVfxKind, position: AuraVec3, options?: { count?: number; speed?: number; scale?: number; color?: AuraColor; normal?: AuraVec3; seed?: number; intensity?: number; /** false: do not add the preset's camera shake/punch (the caller owns the camera) */ camera?: boolean }): AuraEffectInstanceHandle {
+  burst(kind: AuraVfxKind | AuraVfxGenreVariant | (string & {}), position: AuraVec3, options?: AuraBurstOptions): AuraEffectInstanceHandle {
     const id = `fx-${this.nextId++}`;
     if (this.runtime === "off") return this.makeHandle(id);
     const count = options?.count ?? 8;
@@ -53,7 +111,7 @@ export class StubAppEffects implements AuraAppEffects {
     return this.makeHandle(id);
   }
 
-  spawn(effect: AuraVfxEffectSpec | AuraVfxKind, at: AuraVec3 | { node: string; socket?: string }, options?: { seed?: number; scale?: number; color?: AuraColor }): AuraEffectInstanceHandle {
+  spawn(effect: AuraVfxEffectSpec | AuraVfxKind | AuraVfxGenreVariant | (string & {}), at: AuraVec3 | { node: string; socket?: string }, options?: { seed?: number; scale?: number; color?: AuraColor }): AuraEffectInstanceHandle {
     const id = `fx-${this.nextId++}`;
     const kind = typeof effect === "string" ? effect : effect.name;
     const position: AuraVec3 = Array.isArray(at) ? (at as AuraVec3) : ([0, 0, 0] as AuraVec3);
@@ -63,12 +121,13 @@ export class StubAppEffects implements AuraAppEffects {
     return this.makeHandle(id);
   }
 
-  trail(target: string | { node: string; socket?: string }, options: { width: number; life: number; color?: AuraColor }): AuraEffectInstanceHandle {
+  trail(target: string | AuraRuntimeNodeHandle | { node: string; socket?: string }, options: AuraTrailOptions): AuraTrailHandle {
     const id = `fx-${this.nextId++}`;
     this.addNode("line", [0, 0, 0], { color: options.color, scale: options.width });
     this.live.set(id, { handle: null, effect: "trail", count: 1 });
     void target; void options.life;
-    return this.makeHandle(id);
+    const handle = this.makeHandle(id);
+    return { id, get alive() { return handle.alive; }, stop: handle.stop, setPosition: handle.setPosition, length: 0, pointCount: 0, clear: () => undefined };
   }
 
   decal(at: { position: AuraVec3; normal: AuraVec3; target?: string }, options: AuraDecalOptions): AuraEffectInstanceHandle {
@@ -116,7 +175,17 @@ export class StubAppEffects implements AuraAppEffects {
 export type AuraRange = number | readonly [min: number, max: number];
 export type AuraCurve = readonly number[];
 export interface AuraColorRamp { readonly stops: readonly { readonly t: number; readonly color: AuraColor }[]; }
-export type AuraVfxSpriteSource = string | { readonly atlas: string; readonly frame?: number };
+/**
+ * GU47 E-F emitter sprite, sampled by the particle pass: one of the 18 built-in sequences of the baked VFX
+ * atlas (`packages/engine/assets/vfx/aura-vfx-2k.png`; the 1k twin on low and medium tiers), or a texture
+ * sheet `{ atlas: assets.sheet, frame? }` whose grid is the emitter's `spriteColumns` × `spriteRows`
+ * (default 1 × 1) and whose `frame` picks one cell. `atlas` also takes a URL string. "soft-dot" keeps the
+ * analytic dot. Multi-frame built-ins animate: smoke-a, smoke-b, flame-loop and electric loop at their fps,
+ * fireball, splash and debris-chips play once over each particle's life.
+ */
+export type AuraVfxSpriteSource =
+  | AuraVfxBuiltinSequence
+  | { readonly atlas: AuraAssetRef<"texture"> | string; readonly frame?: number };
 export type AuraVfxShading = "unlit" | "lit" | "emissive";
 
 export interface AuraParticleEmitterOptions {

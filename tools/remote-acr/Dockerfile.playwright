@@ -47,6 +47,29 @@ RUN pnpm install --frozen-lockfile
 RUN npm install --prefix /opt/iwer iwer@2.7.0 --no-audit --no-fund --ignore-scripts >/dev/null \
  && test -f /opt/iwer/node_modules/iwer/build/iwer.js
 
+# 2c) Basis Universal / KTX2 encoder (GU47 WP-9 E-I): Khronos KTX-Software, pinned to the
+#     same release and sha256 as tools/asset-optimize/tool-versions.json (keep the two in
+#     step). The archive keeps bin/ and lib/ side by side (libktx.so.4 must stay reachable),
+#     so it is unpacked whole under /opt/ktx and its tools are linked onto PATH: `ktx create
+#     --encode basis-lz|uastc` (tools/asset-optimize, A3D_KTX_BINARY) and the legacy `toktx`
+#     (tools/vfx-atlas-bake). The version check fails the build, not a later run.
+ARG KTX_VERSION=4.4.2
+ARG KTX_SHA256=a8781bad05f9624edbf910b7f258cd0a4ba7d3e63b49ecc0a0ab440bf6a0a245
+RUN set -eux; \
+    if ! command -v curl >/dev/null || ! command -v bzip2 >/dev/null; then \
+      apt-get update; apt-get install -y --no-install-recommends ca-certificates curl bzip2; rm -rf /var/lib/apt/lists/*; \
+    fi; \
+    curl -fsSL -o /tmp/ktx.tar.bz2 "https://github.com/KhronosGroup/KTX-Software/releases/download/v${KTX_VERSION}/KTX-Software-${KTX_VERSION}-Linux-x86_64.tar.bz2"; \
+    echo "${KTX_SHA256}  /tmp/ktx.tar.bz2" | sha256sum -c -; \
+    mkdir -p /opt/ktx; \
+    tar -xjf /tmp/ktx.tar.bz2 -C /opt/ktx --strip-components=1; \
+    rm /tmp/ktx.tar.bz2; \
+    for tool in /opt/ktx/bin/*; do ln -sf "$tool" "/usr/local/bin/$(basename "$tool")"; done; \
+    LD_LIBRARY_PATH=/opt/ktx/lib ktx --version | grep -F "${KTX_VERSION}"; \
+    if command -v toktx >/dev/null; then LD_LIBRARY_PATH=/opt/ktx/lib toktx --version; else echo "toktx not shipped in ${KTX_VERSION} (vfx-atlas-bake falls back to PNG)"; fi
+ENV A3D_KTX_BINARY=/opt/ktx/bin/ktx \
+    LD_LIBRARY_PATH=/opt/ktx/lib
+
 # 3) Sources the tests actually serve/execute. tests/browser/example-dev-
 #    server.ts transpiles packages/*/src on the fly (esbuild + typescript)
 #    and resolves @aura3d/* specifiers to src entry points, falling back to

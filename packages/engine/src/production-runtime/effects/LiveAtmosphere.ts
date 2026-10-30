@@ -2,7 +2,7 @@
 // Owns the spec-level AuraApp.atmosphere surface and the values published to
 // the render source; resolution/tweening is per PRD-07 §6.6/§8.2.
 
-import type { AuraHeightFogSpec, AuraSkySpec } from "../../contracts/atmosphere";
+import type { AuraHeightFogSpec, AuraSetFogOptions, AuraSetFogSpec, AuraSkySpec } from "../../contracts/atmosphere";
 import type { EffectNodeLike } from "./EffectNodeLowering";
 
 export interface AtmosphereFrameState {
@@ -93,6 +93,11 @@ export class LiveAtmosphere {
   private fogVolumeNodes: EffectNodeLike[] = [];
   private fogTransition: FogTransition | null = null;
   private lastFogTarget: AuraHeightFogSpec | null = null;
+  /** GU47 E-B: `setFog(null, { overrideSceneFog })` hides the scene's fog nodes until the next override. */
+  private sceneFogCleared = false;
+  private sceneFogOverrideApplied = false;
+  /** GU47 E-B: transition of the next target change when it comes from a scene-fog override. */
+  private nextTransitionSeconds: number | undefined = undefined;
   private clockSeconds = 0;
   private cameraPosition: readonly [number, number, number] = [0, 0, 0];
   private cameraForward: readonly [number, number, number] = [0, 0, -1];
@@ -163,6 +168,19 @@ export class LiveAtmosphere {
     state.spec = { ...state.spec, ...partial };
   }
 
+  /**
+   * GU47 E-B: `handle.setFog(partial)` for the tracked fog node with this runtime id (its own `transitionSeconds`
+   * blends the change). False when no tracked fog node carries the id.
+   */
+  setNodeFogByRuntimeId(runtimeId: string, partial: Partial<AuraHeightFogSpec>): boolean {
+    const node = this.fogNodes.find((candidate) => (candidate as { readonly runtime?: { readonly id?: string } }).runtime?.id === runtimeId);
+    if (!node) return false;
+    const { transitionSeconds, ...fields } = partial;
+    this.setNodeFog(node, fields);
+    if (transitionSeconds !== undefined) this.nextTransitionSeconds = transitionSeconds;
+    return true;
+  }
+
   /** Last *visible* fog node in scene order (§6.6). */
   activeFogNode(): EffectNodeLike | null {
     for (let i = this.fogNodes.length - 1; i >= 0; i--) {
@@ -175,14 +193,27 @@ export class LiveAtmosphere {
   /**
    * The spec the frame should render (§6.6): when the scene declares fog
    * nodes the last *visible* one wins and all-hidden means no fog; the
-   * app-level `setFog` value applies only on node-free scenes.
+   * app-level `setFog` value applies on node-free scenes, and on node scenes
+   * through `overrideSceneFog` (GU47 E-B: merged into the active node's spec,
+   * or `null` = the scene fog cleared until the next override).
    */
   private fogTarget(): AuraHeightFogSpec | null {
     if (this.fogNodes.length > 0) {
+      if (this.sceneFogCleared) return null;
       const node = this.activeFogNode();
       return node ? this.fogStates.get(node as object)?.spec ?? null : null;
     }
     return this.fog;
+  }
+
+  /** GU47 E-B: `overrideSceneFog` default — true when every tracked fog node is a plain `effects.fog`. */
+  private sceneFogIsPlainFog(): boolean {
+    return this.fogNodes.length > 0 && this.fogNodes.every((node) => (node as { readonly effect?: string }).effect === "fog");
+  }
+
+  /** GU47 E-B: true once `setFog` overrode the scene's fog node (or cleared it). */
+  sceneFogOverridden(): boolean {
+    return this.sceneFogOverrideApplied;
   }
 
   /**
@@ -193,7 +224,9 @@ export class LiveAtmosphere {
   resolveFog(nowSeconds = this.clockSeconds): AuraHeightFogSpec | null {
     const target = this.fogTarget();
     if (target !== this.lastFogTarget) {
-      const seconds = Math.max(0, target?.transitionSeconds ?? 0);
+      // A scene-fog override carries its own transition (setFog option), not the node's authored one.
+      const seconds = Math.max(0, this.nextTransitionSeconds ?? target?.transitionSeconds ?? 0);
+      this.nextTransitionSeconds = undefined;
       this.fogTransition = this.lastFogTarget && target && seconds > 0
         ? { from: this.lastFogTarget, to: target, t0: nowSeconds, seconds }
         : null;
@@ -229,10 +262,24 @@ export class LiveAtmosphere {
     return { position: this.cameraPosition, forward: this.cameraForward };
   }
 
-  setFog(spec: AuraHeightFogSpec | null, o?: { transitionSeconds?: number }): void {
+  setFog(spec: AuraSetFogSpec | null, o?: AuraSetFogOptions): void {
     this.fog = spec
       ? { ...spec, ...(o?.transitionSeconds !== undefined ? { transitionSeconds: o.transitionSeconds } : {}) }
       : null;
+    // GU47 E-B: on a scene with fog nodes, `overrideSceneFog` (default: the scene's only fog is effects.fog) merges
+    // the spec into the active node's live spec (the C-37 `handle.setFog` path) or, for `null`, clears the scene fog.
+    if (this.fogNodes.length > 0 && (o?.overrideSceneFog ?? this.sceneFogIsPlainFog())) {
+      if (spec === null) {
+        this.sceneFogCleared = true;
+      } else {
+        this.sceneFogCleared = false;
+        const node = this.activeFogNode() ?? this.fogNodes[this.fogNodes.length - 1]!;
+        const { transitionSeconds: _ignored, ...fields } = spec;
+        this.setNodeFog(node, fields);
+      }
+      this.sceneFogOverrideApplied = true;
+      this.nextTransitionSeconds = o?.transitionSeconds ?? spec?.transitionSeconds ?? 0;
+    }
     this.emit();
   }
 

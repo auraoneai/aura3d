@@ -72,7 +72,21 @@ registerLookLintRule({
 
 // ---------- PRD-02 Phase 2 — C-09/C-36/C-38/C-31 registrations ----------
 
-import { registerPrd02EnvironmentSources, explicitEnvironmentResolution, prd02AmbientTerm, setRuntimeEnvironmentIntensity } from "../agent-api/compiler/environment.js";
+import {
+  registerPrd02EnvironmentSources,
+  explicitEnvironmentResolution,
+  prd02AmbientTerm,
+  setRuntimeEnvironmentIntensity,
+  environmentProbeOutcome,
+  noteRuntimeEnvironmentNode,
+  requestRuntimeEnvironmentSwap,
+  runtimeEnvironmentFrameRotation,
+  runtimeEnvironmentNode,
+  runtimeEnvironmentRotation,
+  runtimeEnvironmentTextureUrl,
+  setRuntimeEnvironmentRotation,
+  stepRuntimeEnvironment
+} from "../agent-api/compiler/environment.js";
 // Ordering guarantee: the registration flag lives in this leaf so the
 // self-registration below cannot touch uninitialised `let` state when a
 // cyclic import order runs this lane while compiler/environment.ts is
@@ -81,14 +95,23 @@ import "../agent-api/compiler/environmentSourcesState.js";
 import { registerNodeHandler, registerOptionCoverage, type OptionCoverageRow, type SceneCompileContext, type RenderSourceContributions } from "../contracts/compiler.js";
 import { registerAppExtension } from "../contracts/app.js";
 import { registerDiagnosticsSection } from "../contracts/diagnostics.js";
-import { collectPrd02Lights, physicalLightDescriptor, prd02LightingOn, readLightingModelFromUrl } from "../agent-api/compiler/lights.js";
+import { collectPrd02Lights, physicalLightDescriptor, prd02LightingOn, queueRuntimeLightPatch, readLightingModelFromUrl, recordRuntimeFrameLights, runtimeLightStats, updateRuntimeLight } from "../agent-api/compiler/lights.js";
+import { registerNodeHandleExtension } from "../contracts/runtimeNodes.js";
+import type { AuraLightPatch, AuraLightTransitionOptions } from "../agent-api/nodes/types/runtime.js";
 import { auraLightsCounters, auraLightsLastFrame } from "../../../rendering/src/LightUniforms.js";
 import type { RenderDevice } from "../../../rendering/src/RenderDevice.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
-import { prd02ShadowDiagnostics, prd02ContactShadowDiagnostics } from "@aura3d/rendering";
+import { prd02ShadowDiagnostics, prd02ContactShadowDiagnostics, type CollectedLight } from "@aura3d/rendering";
 import type { AuraEnvironmentNodeV2 } from "../agent-api/nodes/environments.js";
-import type { AuraLightingDiagnostics } from "../contracts/lighting.js";
+import type { AuraEnvironmentSwapOptions, AuraLightingDiagnostics } from "../contracts/lighting.js";
 import type { AuraProbeNode } from "../agent-api/nodes/probes.js";
+import type { AuraAssetRef } from "../agent-api/nodes/types.js";
+
+/** The mount context fields the per-frame handler updates read (MountSceneCompileContext, compileScene.ts). */
+interface Prd02FrameContext {
+  readonly runtimeNodes?: object;
+  readonly collectedLights?: readonly CollectedLight[];
+}
 
 // C-09 sources: `prd02.explicit` (400) resolves an authored environment node;
 // `prd02.neutral-room` (0) supplies the RoomEnvironment probe fallback.
@@ -137,7 +160,31 @@ registerNodeHandler({
     if (descriptor.shadowRequested && !descriptor.shadowDisabled) {
       out.feature(light.light === "spot" ? "shadows.spot" : light.light === "point" ? "shadows.point" : "shadows.directional");
     }
+  },
+  update(node, handle, ctx, _out, timeSeconds) {
+    const frame = ctx as unknown as Prd02FrameContext;
+    const lights = frame.collectedLights ?? [];
+    // GU47 E-B: the light follows its runtime handle (setPosition, setVisible, setLight blends) every frame.
+    updateRuntimeLight(node as unknown as AuraLightNode, handle, lights, timeSeconds);
+    // The frame's collected lights feed `app.lighting.diagnostics()` (punctualLights / localShadowLights).
+    if (frame.runtimeNodes) recordRuntimeFrameLights(frame.runtimeNodes, lights);
   }
+});
+
+// GU47 E-B: `handle.setLight(patch, opts)` on light nodes (declared optional on AuraRuntimeNodeHandle).
+declare module "../contracts/runtimeNodes.js" {
+  interface AuraNodeHandleExtensionMap {
+    setLight: (patch: AuraLightPatch, opts?: AuraLightTransitionOptions) => void;
+  }
+}
+
+registerNodeHandleExtension({
+  id: "prd02.setLight",
+  owner: "prd02",
+  flag: "A3D_QR_LIGHTING",
+  member: "setLight",
+  appliesTo: ["light"],
+  create: (handle) => (patch: AuraLightPatch, opts?: AuraLightTransitionOptions) => queueRuntimeLightPatch(handle, patch, opts)
 });
 
 registerNodeHandler({
@@ -150,8 +197,31 @@ registerNodeHandler({
     if (!resolution) return;
     out.feature("environment.ibl");
     if (resolution.background !== false && resolution.background.visible) out.feature("environment.background");
+  },
+  update(node, _handle, ctx, out, timeSeconds) {
+    // GU47 E-B: runtime environment control. The swap (crossfade + texture override the `prd02.explicit` source lays
+    // over this node) advances here, before the probe bind reads the environment scale; the frame's yaw rides on the
+    // source as `environmentProbeRotation` (radians) for the renderer's probe / IBL sampling and background.
+    const owner = (ctx as unknown as Prd02FrameContext).runtimeNodes;
+    if (!owner) return;
+    noteRuntimeEnvironmentNode(node, owner);
+    if (!firstEnvironmentNodeOfFrame(owner, node, timeSeconds)) return;
+    const device = (ctx.renderer as { readonly device?: object } | undefined)?.device;
+    stepRuntimeEnvironment(owner, timeSeconds, (url) => environmentProbeOutcome(device, url));
+    const rotation = runtimeEnvironmentFrameRotation(owner, runtimeEnvironmentNode(node as unknown as AuraEnvironmentNodeV2));
+    if (rotation !== 0 || runtimeEnvironmentRotation(owner) !== undefined) out.set("environmentProbeRotation", rotation);
   }
 });
+
+/** The resolution uses the first environment node in scene order; the per-frame swap / rotation follow that one. */
+const environmentFrameFirst = new WeakMap<object, { readonly time: number; readonly node: object }>();
+
+function firstEnvironmentNodeOfFrame(owner: object, node: object, timeSeconds: number): boolean {
+  const seen = environmentFrameFirst.get(owner);
+  if (seen && seen.time === timeSeconds) return seen.node === node;
+  environmentFrameFirst.set(owner, { time: timeSeconds, node });
+  return true;
+}
 
 registerNodeHandler({
   kind: "probe",
@@ -220,7 +290,7 @@ export class Prd02LightingRuntime {
    * diagnostics sections report the app's flag state — not a second
    * ambient `?a3d-qr=` / env resolution.
    */
-  constructor(readonly flags?: QrFlags, private readonly scaleOwner?: object) {}
+  constructor(readonly flags?: QrFlags, private readonly scaleOwner?: object, private readonly app?: Prd02LightingApp) {}
 
   /**
    * C-28 counters are consumed from the bound device, never counted here
@@ -230,7 +300,16 @@ export class Prd02LightingRuntime {
 
   updateProbe(name: string): Promise<void> { this.pendingProbes.add(name); return Promise.resolve(); }
   rebakeIrradiance(name?: string): Promise<void> { if (name) this.pendingProbes.add(name); return Promise.resolve(); }
-  setEnvironmentRotation(radians: number): void { this.rotation = radians; }
+  /**
+   * GU47 E-B: absolute yaw (radians, about +Y) of the active environment. The mounted scene's per-frame update puts it
+   * on the render source as `environmentProbeRotation` for probe / IBL sampling and the background (it wins over the
+   * environment node's authored `rotation`).
+   */
+  setEnvironmentRotation(radians: number): void {
+    if (this.scaleOwner) setRuntimeEnvironmentRotation(this.scaleOwner, radians);
+    else if (!Number.isFinite(radians)) throw new RangeError(`setEnvironmentRotation expects a finite number of radians, got ${String(radians)}.`);
+    this.rotation = radians;
+  }
   /**
    * Live scale on the environment term (image-based diffuse and specular), applied by the mounted scene's
    * per-frame update. Lights, the ambient term and the background keep their authored values.
@@ -273,7 +352,9 @@ export class Prd02LightingRuntime {
 
   /** Observed values only — fields the runtime cannot measure are null (C-31). */
   diagnostics(): AuraLightingDiagnostics {
-    void this.rotation; void this.intensity;
+    void this.rotation; void this.intensity; void this.environmentRequest;
+    // GU47 E-B: counted from the collected lights the app's last frame submitted (visible lights only).
+    const stats = runtimeLightStats(this.scaleOwner);
     return {
       environment: {
         source: "prd02", faceSize: 0, mipCount: 0, format: "rgba16f",
@@ -283,9 +364,61 @@ export class Prd02LightingRuntime {
       droppedFeatures: prd02ShadowDiagnostics()?.droppedFeatures ?? [],
       contactShadows: prd02ContactShadowDiagnostics().contactShadows,
       programCompileCount: this.device?.getDiagnostics().programCompileCount ?? 0,
-      readPixelsCalls: this.device?.getDiagnostics().readPixelsCalls ?? 0
+      readPixelsCalls: this.device?.getDiagnostics().readPixelsCalls ?? 0,
+      punctualLights: stats.punctualLights,
+      localShadowLights: stats.localShadowLights
     };
   }
+
+  /**
+   * GU47 E-B: swap the scene environment to `texture` (an `.hdr` texture asset). On a scene with an environment node
+   * the per-frame update lays the texture over it (the probe rebinds), fading the environment term out over the first
+   * half of `crossfadeSeconds` and back in over the second half once the new probe is ready. A scene without one gets
+   * an hdri environment node added (no fade; the neutral floor lights the scene until the probe lands).
+   */
+  setEnvironment(texture: AuraAssetRef<"texture">, opts?: AuraEnvironmentSwapOptions): void {
+    runtimeEnvironmentTextureUrl(texture);
+    this.environmentRequest = { texture, ...(opts ? { opts } : {}) };
+    if (this.app && !this.addedEnvironment && !sceneHasEnvironment(this.app.scene)) {
+      if (opts?.crossfadeSeconds !== undefined && (!Number.isFinite(opts.crossfadeSeconds) || opts.crossfadeSeconds < 0)) {
+        throw new RangeError(`setEnvironment crossfadeSeconds expects a finite number >= 0, got ${String(opts.crossfadeSeconds)}.`);
+      }
+      if (opts?.rotationDeg !== undefined && !Number.isFinite(opts.rotationDeg)) {
+        throw new RangeError(`setEnvironment rotationDeg expects a finite number, got ${String(opts.rotationDeg)}.`);
+      }
+      if (opts?.intensity !== undefined) this.setEnvironmentIntensity(opts.intensity);
+      this.app.nodes?.add({
+        kind: "environment",
+        environment: "hdri",
+        name: "runtime environment",
+        intensity: 1,
+        texture,
+        background: opts?.background ?? false,
+        ...(opts?.rotationDeg !== undefined ? { rotation: (opts.rotationDeg * Math.PI) / 180 } : {}),
+        runtime: { id: RUNTIME_ENVIRONMENT_NODE_ID }
+      } as unknown as AuraSceneNode);
+      this.addedEnvironment = true;
+      return;
+    }
+    if (this.scaleOwner) requestRuntimeEnvironmentSwap(this.scaleOwner, texture, opts ?? {});
+    else if (opts?.rotationDeg !== undefined) this.rotation = (opts.rotationDeg * Math.PI) / 180;
+  }
+
+  private environmentRequest: { readonly texture: AuraAssetRef<"texture">; readonly opts?: AuraEnvironmentSwapOptions } | null = null;
+  private addedEnvironment = false;
+}
+
+/** Runtime id of the environment node `setEnvironment` adds to a scene that had none. */
+export const RUNTIME_ENVIRONMENT_NODE_ID = "a3d-runtime-environment";
+
+/** The app members the lighting runtime reads (the scene for its environment node, the registry to add one). */
+export interface Prd02LightingApp {
+  readonly scene?: { readonly nodes: readonly AuraSceneNode[] };
+  readonly nodes?: { add(node: AuraSceneNode): unknown };
+}
+
+function sceneHasEnvironment(scene: Prd02LightingApp["scene"]): boolean {
+  return scene ? groups.flatten(scene.nodes).some((node) => node.kind === "environment") : false;
 }
 
 registerAppExtension({
@@ -294,7 +427,7 @@ registerAppExtension({
   owner: "prd02",
   flag: "A3D_QR_LIGHTING",
   // The scale is keyed by `app.nodes`, the runtime registry the mounted scene's update receives.
-  create: (app, ctx) => new Prd02LightingRuntime(ctx.flags, (app as { readonly nodes?: object }).nodes)
+  create: (app, ctx) => new Prd02LightingRuntime(ctx.flags, (app as { readonly nodes?: object }).nodes, app as unknown as Prd02LightingApp)
 });
 
 // ---------- C-31 diagnostics sections ("lighting" / "shadows") ----------
@@ -318,7 +451,11 @@ registerDiagnosticsSection({
       lightsDroppedByCap: counters?.lightsDroppedByCap ?? null,
       // §4.2 runtime collectedLights: one row per evaluated light.
       lights: auraLightsLastFrame() ?? null,
-      timings: lighting?.lightingTimings?.() ?? null
+      timings: lighting?.lightingTimings?.() ?? null,
+      // GU47 E-B (WP-2 acceptance reads `diagnostics().lighting.shadows`): the observed shadow rows and the light counts.
+      shadows: diag?.shadows ?? null,
+      punctualLights: diag?.punctualLights ?? null,
+      localShadowLights: diag?.localShadowLights ?? null
     };
   }
 });
