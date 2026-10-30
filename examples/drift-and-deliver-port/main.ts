@@ -30,7 +30,7 @@ import { shiftCrops } from "./qa";
 import { createAudio } from "./audio";
 import { districtLayers, drawDial, slamStamp, ticketText } from "./hud";
 import { BOARD, boardPose, textOrigin, textWidth } from "./board";
-import { INTRO, headlightFlare, introPose, introWanted, orbitPose, type CarPose } from "./cinema";
+import { INTRO, SIDE_SHOT, headlightFlare, introPose, introWanted, orbitPose, sideShotPose, sideShotWanted, type CarPose } from "./cinema";
 import { courierBraking, createPitch, placeHalos, stepPitch } from "./brakes";
 import { createBlackFrameWatch, healParams, healStage, type BlackFrameWatch } from "@aura3d/debug";
 import { carModel } from "./models";
@@ -282,6 +282,7 @@ function simulateStep(input: Keys): void {
 function onShiftEvent(e: ShiftEvent): void {
   if (e.kind === "delivered") {
     if (!config.manual) shiftRuntime?.delivered(e.job.x, e.job.z);
+    if (sideShotWanted(look.shift, shift.deliveries, config.manual, config.autostart, document.body.classList.contains("reduced-motion"))) sideShotTime = 0;
     game.score += e.score;
     if (shiftLook && !config.manual) slamStamp(hud.stamp, `DELIVERED  +${e.score}`);
     else popup(`DELIVERED  +${e.score}`, "job");
@@ -454,6 +455,18 @@ function placeCinema(dt: number, shown: Presented): void {
   if (game.phase === "intro" && cinemaTime >= INTRO.seconds) endIntro();
 }
 
+/** GC-C1: first-delivery side shot clock (seconds into the shot; Infinity when none is playing). */
+let sideShotTime = Infinity;
+function placeSideShot(dt: number, shown: Presented): void {
+  sideShotTime += dt;
+  if (sideShotTime >= SIDE_SHOT.seconds) {
+    sideShotTime = Infinity;
+    return;
+  }
+  const pose = sideShotPose(sideShotTime, { x: shown.car.x, z: shown.car.z, heading: shown.car.heading }, cameraBlocked);
+  if (pose) app!.camera!.setPose({ position: pose.position, target: pose.target, fov: pose.fov }, { cut: false });
+}
+
 /** GC-L5: the results-orbit headlight flare; `eye` null hides it. Writes only on a change (starts shown, so the first call hides it). */
 let flareShown = true;
 function placeFlare(eye: [number, number, number] | null, car?: CarPose): void {
@@ -476,6 +489,7 @@ function render(dt: number, alpha = 1): void {
     placeNodes(dt, shown);
     if (look.shift && (game.phase === "intro" || game.phase === "results")) placeCinema(dt, shown);
     if (look.shift && game.phase !== "results") placeFlare(null);
+    if (look.shift && game.phase === "playing" && sideShotTime < Infinity) placeSideShot(dt, shown);
     if (shiftRuntime) {
       // GU47 WP-28: time of day, sodium pool, headlight spot, beacon, VFX (presentation reads only)
       const lampsOn = shiftRuntime.row().lamps;
@@ -639,6 +653,7 @@ function begin(): void {
   // GC-C1: a player start plays the skippable intro first (QA starts, manual and reduced motion go straight in)
   game.phase = introWanted(shiftLook, config.manual, config.autostart, document.body.classList.contains("reduced-motion")) ? "intro" : "playing";
   cinemaTime = 0;
+  sideShotTime = Infinity;
   $("splash").classList.add("hidden");
   audio?.resume();
 }

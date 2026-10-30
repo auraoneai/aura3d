@@ -72,3 +72,23 @@ export function headlightFlare(car: CarPose, eye: V3, beams: number): { position
   const facing = (s * dx + c * dz) / len;
   return { position, visible: beams >= FLARE.minBeams && facing >= FLARE.minFacing };
 }
+
+/**
+ * GC-C1: the first-delivery side shot, 1.2 s beside the courier tracking forward with it (camera only; the sim keeps
+ * stepping). Tries the right side, then the left; returns null when both eyes are blocked (the chase pose stays).
+ */
+export const SIDE_SHOT = { seconds: 1.2, side: 7, height: 1.6, lead: 3, fov: 52 } as const;
+export function sideShotPose(t: number, car: CarPose, blocked: (x: number, y: number, z: number) => boolean = () => false): CamPose | null {
+  const s = Math.sin(car.heading), c = Math.cos(car.heading);
+  const k = Math.max(0, Math.min(1, t / SIDE_SHOT.seconds));
+  const along = SIDE_SHOT.lead * (1 - 2 * k);
+  for (const side of [1, -1]) {
+    const position: V3 = [car.x + s * along + c * SIDE_SHOT.side * side, SIDE_SHOT.height, car.z + c * along - s * SIDE_SHOT.side * side];
+    if (!blocked(...position)) return { position, target: [car.x, 1, car.z], fov: SIDE_SHOT.fov };
+  }
+  return null;
+}
+
+/** True when the side shot should play: shift look, the first delivery, a player run, motion allowed. */
+export const sideShotWanted = (shiftLook: boolean, deliveries: number, manual: boolean, autostart: boolean, reducedMotion: boolean): boolean =>
+  shiftLook && deliveries === 1 && !manual && !autostart && !reducedMotion;

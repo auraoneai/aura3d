@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { FLARE, INTRO, ORBIT, headlightFlare, introPose, introWanted, orbitPose } from "../../../examples/drift-and-deliver-port/cinema";
+import { FLARE, INTRO, ORBIT, SIDE_SHOT, headlightFlare, introPose, introWanted, orbitPose, sideShotPose, sideShotWanted } from "../../../examples/drift-and-deliver-port/cinema";
 
 const car = { x: 30, z: -90, heading: 0 };
 const chase = { position: [30, 2.1, -95] as [number, number, number], target: [30, 1.2, -80] as [number, number, number], fov: 60 };
@@ -46,5 +46,25 @@ describe("gridlock courier results headlight flare (GU47 WP-28 GC-L5)", () => {
     expect(headlightFlare(car, [30, 6, -70], 1).visible).toBe(true);
     expect(headlightFlare(car, [30, 6, -110], 1).visible).toBe(false);
     expect(headlightFlare(car, [30, 6, -70], 0).visible).toBe(false);
+  });
+});
+
+describe("gridlock courier first-delivery side shot (GU47 WP-28 GC-C1)", () => {
+  it("plays only on the first delivery of a player run with motion allowed", () => {
+    expect(sideShotWanted(true, 1, false, false, false)).toBe(true);
+    expect(sideShotWanted(true, 2, false, false, false)).toBe(false);
+    expect(sideShotWanted(false, 1, false, false, false)).toBe(false);
+    expect(sideShotWanted(true, 1, true, false, false)).toBe(false);
+    expect(sideShotWanted(true, 1, false, true, false)).toBe(false);
+    expect(sideShotWanted(true, 1, false, false, true)).toBe(false);
+  });
+
+  it("stands 7 m beside the car, falls to the other side, and gives up when both are blocked", () => {
+    const right = sideShotPose(0, car)!;
+    expect(Math.hypot(right.position[0] - car.x, right.position[2] - car.z)).toBeCloseTo(Math.hypot(SIDE_SHOT.side, SIDE_SHOT.lead), 6);
+    expect(right.target).toEqual([car.x, 1, car.z]);
+    const left = sideShotPose(0, car, (x) => x > car.x)!;
+    expect(left.position[0]).toBeLessThan(car.x);
+    expect(sideShotPose(0, car, () => true)).toBeNull();
   });
 });
