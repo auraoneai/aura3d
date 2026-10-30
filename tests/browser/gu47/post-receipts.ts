@@ -43,7 +43,9 @@ export interface Gu47Comparison {
   readonly region?: { readonly meanAbsDeltaRgb: number; readonly p95AbsDelta: number; readonly meanLumaDelta: number };
 }
 
-const LUT_URL = "/tests/qr/prd03/fixtures/luts/teal-orange-33.cube";
+// Served from tests/browser (the remote image COPYs tests/browser and tests/support only; the
+// tests/qr/prd03 original never reached it, so every remote load 404ed: LUT_UNAVAILABLE).
+const LUT_URL = "/tests/browser/gu47/luts/teal-orange-33.cube";
 const pixels = new Map<string, { data: Uint8ClampedArray; width: number; height: number }>();
 type App = ReturnType<typeof createAuraApp>;
 

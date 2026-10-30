@@ -42,7 +42,7 @@ import type { RenderItem } from "../ForwardPass";
 import type { Texture } from "../Texture";
 import type { TemporalGpuBindings } from "../TemporalHistory";
 import { rendererQrFlags } from "../renderer/FrameGraph";
-import { beginPostStageTrace, markTaaHistoryWritten, recordPostSkipped, recordPostStage } from "../renderer/postSkipped";
+import { beginPostStageTrace, clearPostSkipped, markTaaHistoryWritten, recordPostSkipped, recordPostStage } from "../renderer/postSkipped";
 import { PostResources } from "./PostResources";
 import { QUALITY_TIERS } from "../contracts/quality";
 import {
@@ -189,9 +189,12 @@ function displayLutBinding(host: WebGL2DeviceHost, state: PostV2State, lut: unkn
   if (!lut || typeof lut !== "object") return null;
   const bag = lut as PostLutBag;
   if (typeof bag.source !== "string" || (typeof bag.cube !== "string" && !bag.data)) {
+    if (bag.status === "failed") clearPostSkipped(`LUT_PENDING:${String(bag.source)}`);
     recordPostSkipped(`${bag.status === "failed" ? "LUT_UNAVAILABLE" : "LUT_PENDING"}:${String(bag.source)}`);
     return null;
   }
+  // The load settled: the first frames' `LUT_PENDING` no longer describes it.
+  clearPostSkipped(`LUT_PENDING:${bag.source}`);
   if (state.lutFailed.has(bag.source)) return null;
   const gl = host.gl;
   state.lutCache ??= new DisplayLutCache<WebGLTexture>(

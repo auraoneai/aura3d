@@ -3,7 +3,7 @@ import { HARNESS_SCENE, openPostReceipts, type PostReceiptSession } from "./post
 
 /**
  * GU47 E-C receipt effects-lut (PRD WP-3 item 2): a non-identity .cube
- * (tests/qr/prd03/fixtures/luts/teal-orange-33.cube) bound in the S10b
+ * (tests/browser/gu47/luts/teal-orange-33.cube, a copy of the tests/qr/prd03 fixture) bound in the S10b
  * display grade must change the frame's mean |dRGB| by >= 6 against the same
  * colorGrade without a lut (software WebGL2, remote runner only).
  */
