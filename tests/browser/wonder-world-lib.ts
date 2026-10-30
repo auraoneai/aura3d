@@ -1363,8 +1363,9 @@ export function silhouetteContrast(image: DecodedImage, box: Box): SilhouetteRep
 export const DOWNLOADS_SETTLED_MS = 150_000;
 
 /**
- * Makes sure the story's admitted models are drawn. Software WebGL2 starves the page, so a large GLB can outlast the
- * preload's 10 s wait; the app then draws its stand-in for that mount and keeps downloading it. When any of `ids` is
+ * Makes sure the story's admitted models are drawn. Software WebGL2 starves the page's main thread, so a GLB whose bytes
+ * have arrived can still be unread when the preload's 10 s wait ends (07 B41); the app then draws its stand-in for that
+ * mount and keeps loading it. When any of `ids` is
  * a stand-in, this waits for the downloads to settle and starts the story again (the app's own path for a late
  * model). Returns what the first mount drew, or null when it already drew every model.
  */
