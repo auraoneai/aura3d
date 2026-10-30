@@ -247,3 +247,20 @@ describe("grid dispatch GD-13 road bays", () => {
     expect(a).toEqual(b);
   });
 });
+
+describe("grid dispatch GD-06 god rays and GD-10 grounding", () => {
+  type FxNode = Node & { effect?: string; godRayDensity?: number };
+  const fx = (sky: (typeof SKY_ORDER)[number], effect: string) => (flatNodes(sky) as FxNode[]).filter((n) => n.kind === "effect" && n.effect === effect);
+  it("god rays (density 0.08, #ffb878) on Marine dusk and fog only", () => {
+    expect(fx("golden", "volumetric-fog")[0]).toMatchObject({ godRayDensity: 0.08, color: "#ffb878" });
+    expect(fx("fog", "volumetric-fog")).toHaveLength(1);
+    expect(fx("noon", "volumetric-fog")).toHaveLength(0);
+    expect(fx("night", "volumetric-fog")).toHaveLength(0);
+  });
+  it("contact shadows and an explicit AO on every sky", () => {
+    for (const sky of SKY_ORDER) {
+      expect(fx(sky, "contact-shadows"), sky).toHaveLength(1);
+      expect(fx(sky, "ambient-occlusion"), sky).toHaveLength(1);
+    }
+  });
+});

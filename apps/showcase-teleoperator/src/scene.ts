@@ -181,6 +181,29 @@ export function marineHaze(look: SkyLook) {
 }
 
 /**
+ * GD-06: god rays down the avenue on Marine dusk and Marine fog (`look.godRays`; none at noon or night): the E-C
+ * volumetric-fog inscatter (the bridge aims the shafts along the key light) with `godRayDensity` 0.08. The post tiers drop it below
+ * High (PRD 6.4). +2 draws max (inscatter + composite).
+ */
+export function godRayNodes(look: SkyLook) {
+  if (!look.godRays) return [];
+  return [
+    effects.volumetricFog({ name: "grid god rays", density: look.godRays.density, color: look.godRays.color, intensity: 0.35, godRayDensity: look.godRays.density })
+  ];
+}
+
+/**
+ * GD-10: contact shadows under the cars and an explicit SSAO (the old look preset's AO went with looks.preset). Low tier
+ * drops AO (PRD 6.4); contact shadows follow the shadowed key.
+ */
+export function groundingNodes() {
+  return [
+    effects.contactShadows({ length: 0.3, thickness: 0.06, steps: 12, intensity: 0.85, lights: "shadowed" }),
+    effects.ambientOcclusion({ name: "grid ao", intensity: 0.45, radius: 0.8, density: 0.6, color: "#05080d" })
+  ];
+}
+
+/**
  * GD-08: the post stack of one row: bloom (noon threshold 0.95 keeps the white pod out of it, fog low, night 0.55), the
  * E-C linear grade (contrast, saturation, white balance) and a vignette. Tone mapping and exposure are output settings,
  * applied with `app.setOutput` after every `setScene` (`skyOutput`).
@@ -347,6 +370,8 @@ export function buildGridDispatchScene(weather: WeatherPreset): ReturnType<typeo
     // No ambient light: the sky's HDRI fills the shadows, and an extra ambient blew out the white hero car (C14).
     .addMany([...skyRig(look)])
     .add(marineHaze(look))
+    .addMany([...godRayNodes(look)])
+    .addMany([...groundingNodes()])
     .addMany([...skyPost(look)]);
 
   // 1. Ground, bay, avenue asphalt, centre line, cable-car rails, kerbs and pavements
