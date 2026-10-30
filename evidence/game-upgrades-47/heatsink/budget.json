@@ -1,0 +1,29 @@
+{
+  "schema": "gu47-budget/1",
+  "slug": "heatsink",
+  "app": "apps/showcase-heatsink",
+  "wp": "WP-13",
+  "budget": {
+    "lapDrawCalls1280": 520,
+    "lapDrawCalls390": 420,
+    "titleDrawCalls": 700,
+    "triangles": 1200000,
+    "modelNodes": 32,
+    "addedPayloadMB": 18
+  },
+  "source": "before: PRD WP-13 'Today' line and evidence/thermal-drift/audit-fix/final-g03w3 (software WebGL2); after: phase 2 remote captures",
+  "rows": {
+    "grand": {
+      "before": { "drawCalls": { "laps1280": [436, 555], "title": 915 }, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": { "title1280": 0.25, "title390": 0.421 }, "luma1280": { "mean": [31.5, 46.8], "darkFrac": [0.25, 0.39] }, "cardMean": 26.9 },
+      "after": null
+    },
+    "dustfall": {
+      "before": { "drawCalls": { "laps1280": [436, 555], "title": 915 }, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null, "note": "not captured before GU47; the three circuits differed only in four hex colours, so the MEGACITY draw range applies" },
+      "after": null
+    },
+    "vesper": {
+      "before": { "drawCalls": { "laps1280": [436, 555], "title": 915 }, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null, "note": "not captured before GU47; the three circuits differed only in four hex colours, so the MEGACITY draw range applies" },
+      "after": null
+    }
+  }
+}
