@@ -106,7 +106,15 @@ describe("GLB resource cache across a scene swap (typed GLB actors)", () => {
   afterEach(() => {
     globalThis.fetch = nativeFetch;
     clearGlbResourceCache();
-    configureGlbResourceCache({ maxEntries: 0 });
+    configureGlbResourceCache(GLB_RESOURCE_CACHE_DEFAULTS);
+  });
+
+  it("is on by default with the documented bounds", () => {
+    expect(glbResourceCache.enabled).toBe(true);
+    expect(glbResourceCacheSnapshot()).toMatchObject({
+      maxEntries: GLB_RESOURCE_CACHE_DEFAULTS.maxEntries,
+      maxBytes: GLB_RESOURCE_CACHE_DEFAULTS.maxBytes
+    });
   });
 
   let serial = 0;
@@ -164,7 +172,7 @@ describe("GLB resource cache across a scene swap (typed GLB actors)", () => {
     expect(fetches.filter((url) => url === a.url)).toHaveLength(2);
   });
 
-  it("off (maxEntries 0, the module default in this commit): a remount fetches again", async () => {
+  it("off (maxEntries 0): a remount fetches again", async () => {
     configureGlbResourceCache({ maxEntries: 0 });
     const tree = asset("tree");
     (await load(tree, "tree")).dispose();

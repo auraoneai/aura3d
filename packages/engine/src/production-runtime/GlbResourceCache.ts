@@ -194,10 +194,11 @@ function disposeQuietly(entry: GlbResourceCacheEntry): void {
 }
 
 /**
- * The process-wide cache every typed GLB actor uses. Off (`maxEntries: 0`) until an app opts in
- * with `configureGlbResourceCache(GLB_RESOURCE_CACHE_DEFAULTS)`.
+ * The process-wide cache every typed GLB actor uses, on by default (GU47 E-H: a second `setScene`
+ * with the same assets makes 0 GLB fetches). `configureGlbResourceCache({ maxEntries: 0 })` turns
+ * it off.
  */
-export const glbResourceCache = new GlbResourceCache({ maxEntries: 0 });
+export const glbResourceCache = new GlbResourceCache(GLB_RESOURCE_CACHE_DEFAULTS);
 
 /** Tune the cache bounds (`{ maxEntries: 0 }` turns it off and disposes what it kept). */
 export function configureGlbResourceCache(options: GlbResourceCacheOptions): void {

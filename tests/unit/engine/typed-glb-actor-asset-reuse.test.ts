@@ -4,6 +4,7 @@ import {
   createTypedGLBActor,
   type TypedGLBActor
 } from "../../../packages/engine/src/production-runtime/TypedGLBActor";
+import { GLB_RESOURCE_CACHE_DEFAULTS, configureGlbResourceCache } from "../../../packages/engine/src/production-runtime/GlbResourceCache";
 
 /**
  * Performance mission section 27 (asset reuse), measured on `showcase-deep-recovery`: five typed GLB
@@ -123,6 +124,9 @@ describe("typed GLB actor parsed-asset reuse", () => {
       expect(second.evidence.url).toBe(asset.url);
 
       // The last lease is gone, so the next actor re-parses rather than reading a released asset.
+      // (GU47 E-H: the GLB resource cache, on by default, keeps the last parse lease for the next
+      // scene; turning it off here pins the uncached reference-count lifecycle.)
+      configureGlbResourceCache({ maxEntries: 0 });
       second.dispose();
       const reloaded = await createActor(asset, "wreck-after-release");
       expect(fetchCalls.filter((url) => url === asset.url)).toHaveLength(2);
@@ -131,6 +135,7 @@ describe("typed GLB actor parsed-asset reuse", () => {
       reloaded.dispose();
     } finally {
       second.dispose();
+      configureGlbResourceCache(GLB_RESOURCE_CACHE_DEFAULTS);
     }
   });
 });
