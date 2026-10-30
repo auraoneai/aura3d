@@ -118,6 +118,17 @@ function beginWalk(): void {
   audio.resume();
   ui.setSound(audio.muted, audio.started);
   captions.play(STORY.intro.map((text, i) => ({ text, at: INTRO_CUES[i] ?? i * 5.6, seconds: 5 })));
+  runtime?.playSequence("intro");
+}
+
+/** WW47-C1: letterbox bars while a camera sequence runs (DOM, so they never touch the frame's pixels or post). */
+const bars = document.createElement("div");
+bars.setAttribute("aria-hidden", "true");
+bars.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:5;transition:box-shadow .6s ease";
+document.body.appendChild(bars);
+function updateBars(): void {
+  const on = runtime?.sequence != null;
+  bars.style.boxShadow = on ? "inset 0 9vh 0 0 #1b140e, inset 0 -9vh 0 0 #1b140e" : "inset 0 0 0 0 #1b140e";
 }
 
 function startEpilogue(): void {
@@ -205,6 +216,7 @@ function advance(frame: FrameInput, dtMs = VIRTUAL_STEP_MS, tickTime = true): vo
 function render(dtMs: number, live = false): void {
   if (!app || !runtime) return;
   runtime.update(live ? viewOf(state, presenter.present(loop, true)) : state, dtMs / 1000, renderTime, canvas.clientWidth / Math.max(1, canvas.clientHeight));
+  updateBars();
   app.step(0);
   frames++;
 }
@@ -224,6 +236,8 @@ const loop = createFixedStepLoop({
 
 window.addEventListener("keydown", (e) => {
   audio.resume();
+  // any key skips a running camera sequence; the next frame shows the follow camera
+  if (runtime?.sequence && !ui.titleVisible) runtime.skipSequence();
   // arrows and Space walk and hop: they must not scroll a page that hosts the game
   if (e.code in KEY_LETTER || e.code === "Space") e.preventDefault();
   if (e.repeat) return;
@@ -244,6 +258,7 @@ window.addEventListener("keydown", (e) => {
 window.addEventListener("keyup", (e) => { held.delete(e.code); });
 window.addEventListener("blur", () => held.clear());
 window.addEventListener("pointerdown", () => audio.resume(), { once: true });
+window.addEventListener("pointerdown", () => { if (runtime?.sequence && !ui.titleVisible) runtime.skipSequence(); });
 ui.onBegin(beginWalk);
 ui.onContinue(leaveEpilogue);
 ui.onWalkAgain(walkAgain);
@@ -407,7 +422,7 @@ function watchModelLoads(): () => void {
 async function boot(): Promise<void> {
   sizeCanvas();
   const stopWatching = watchModelLoads();
-  const world = buildWorld({ density: lowQuality ? 0.5 : 1, reducedMotion: () => reducedMotion.matches, look: originalLook ? "original" : "gu47", daylightKey, quality: lowQuality ? "low" : "high" });
+  const world = buildWorld({ density: lowQuality ? 0.5 : 1, reducedMotion: () => reducedMotion.matches, look: originalLook ? "original" : "gu47", daylightKey, quality: lowQuality ? "low" : "high", sequences: !started });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,

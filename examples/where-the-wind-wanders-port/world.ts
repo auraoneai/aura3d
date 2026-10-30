@@ -10,6 +10,7 @@
 import { camera, effects, environments, geometry, lights, material, scene, type AuraApp } from "@aura3d/engine";
 import { ENV_ASSETS, VALLEY_IBL_INTENSITY } from "./env-assets";
 import { createWindVfx } from "./vfx";
+import { createCameraSequencer, type SequenceId } from "./camera-seq";
 import { gustAt } from "./wind";
 import { BELL, CAMERA_OFFSET, LETTERS, START, type WindState } from "./sim";
 import { GLOW_FRAGMENT, GLOW_VERTEX, HAZE_FRAGMENT, HAZE_VERTEX, MOTE_FRAGMENT, MOTE_VERTEX, PAINT_FRAGMENT, PAINT_VERTEX, PROP_FRAGMENT, PROP_VERTEX, SEA_FRAGMENT, SHAFT_FRAGMENT, SKY_FRAGMENT, STREAM_FRAGMENT, SKY_VERTEX, TRAVELLER_VERTEX, WIND_FRAGMENT, WIND_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX } from "./shaders";
@@ -202,6 +203,10 @@ export interface WorldRuntime {
   readonly bellAngle: number;
   /** The daylight frame on screen (WW47-L1). */
   readonly daylight: DaylightFrame;
+  /** WW47-C1: start a camera sequence (no-op under reduced motion or ?look=original), or skip the running one. */
+  playSequence(id: SequenceId): void;
+  skipSequence(): void;
+  readonly sequence: SequenceId | null;
 }
 
 /**
@@ -247,6 +252,8 @@ export interface BuildWorldOptions {
   daylightKey?: number | null;
   /** `low` drops shadows, god rays, particles and the paper pass (PRD §6.4). */
   quality?: "low" | "high";
+  /** WW47-C1 camera sequences (intro crane, bell finale); off for captures (`manual=1`, `start=1`). */
+  sequences?: boolean;
 }
 
 export function buildWorld(options: BuildWorldOptions = {}): World {
@@ -531,6 +538,8 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       if (!original) { node("sky").setUniform?.("skyPainted", 1); node("foliage").setUniform?.("gustAmt", 1); }
       // WW47-V1..V3: the wind's particles and the event bursts (none on Low or under ?look=original)
       const vfx = original ? null : createWindVfx(app, { low: options.quality === "low", reducedMotion: () => motion() < 1, reducedFlash: () => motion() < 1 });
+      const sequencer = createCameraSequencer({ reducedMotion: () => original || options.sequences !== true || motion() < 1 });
+      let seqComplete = false;
       let vfxFound = 0, vfxComplete = false, vfxHop = "idle", vfxTime = -1, vfxLantern = 1, sailAngle = 0;
       let shownDaylight: DaylightFrame | null = null;
       const applyDaylight = (f: DaylightFrame): void => {
@@ -560,10 +569,14 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         get nodeCount() { return handles.size; },
         get bellAngle() { return bellAngle; },
         setEpilogue(seconds) { epilogue = seconds; },
-        snap(state) { heroAnim?.reset(state.pos.x, state.pos.z); look.x = state.pos.x + 2; look.y = terrainHeight(state.pos.x, state.pos.z) + 1.8; look.z = state.pos.z - 3.5; epilogue = null; },
+        snap(state) { sequencer.skip(); heroAnim?.reset(state.pos.x, state.pos.z); look.x = state.pos.x + 2; look.y = terrainHeight(state.pos.x, state.pos.z) + 1.8; look.z = state.pos.z - 3.5; epilogue = null; },
         get daylight() { return daylight.frame; },
+        get sequence() { return sequencer.active; },
+        playSequence(id) { sequencer.start(id); },
+        skipSequence() { sequencer.skip(); },
         reset() {
           daylight.snap(options.daylightKey ?? 0);
+          sequencer.skip(); seqComplete = false;
           vfxFound = 0; vfxComplete = false; vfxHop = "idle"; vfxTime = -1;
           look.x = START.x + 2; look.y = 2.2; look.z = START.z - 3.5;
           lastFound = -1; lastX = START.x; lastZ = START.z; lastStep = -1; lastStepTime = -1; heroAnim?.reset(START.x, START.z, 0); gait = 0; walkAmt = 0; yaw = 0; epilogue = null; wisp.x = START.x - 1.1; wisp.y = 2.4; wisp.z = START.z + 0.6;
@@ -706,12 +719,17 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           look.y += (ty - look.y) * k;
           look.z += (tz - look.z) * k;
           const cp: [number, number, number] = [look.x + CAMERA_OFFSET.x, look.y + CAMERA_OFFSET.y, look.z + CAMERA_OFFSET.z];
-          node("sky").setPosition(cp[0], cp[1], cp[2]);
+          // WW47-C1: the bell's finale orbit starts when it rings; a running sequence overrides the follow pose
+          if (state.complete && !seqComplete) sequencer.start("finale");
+          seqComplete = state.complete;
+          const follow = { position: cp, target: [look.x, look.y, look.z] as [number, number, number], fov: aspect < 1 ? 50 : 43 };
+          const shown = sequencer.update(dt, follow) ?? follow;
+          node("sky").setPosition(shown.position[0], shown.position[1], shown.position[2]);
           cam.setPose({
-            position: cp,
-            target: [look.x, look.y, look.z],
+            position: shown.position,
+            target: shown.target,
             up: [0, 1, 0],
-            fov: aspect < 1 ? 50 : 43
+            fov: shown.fov
           }, { cut: false });
         }
       };
