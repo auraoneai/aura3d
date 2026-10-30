@@ -57,6 +57,7 @@ const guard = createRenderGuard();
 let outroT = 0;
 let counting = 0;
 let resultsShown = false;
+let barsShown = 0;
 let runnerIndex = 0;
 
 /* ------------------------------------------------------------------ best score */
@@ -311,6 +312,9 @@ function render(dt: number, blend = false): void {
   try {
     const alpha = blend ? Math.min(1, loop.accumulator / STEP) : 1;
     runtime.update(state, dt, renderTime + (alpha < 1 ? loop.accumulator : 0), canvas.clientWidth / Math.max(1, canvas.clientHeight), outroT, alpha < 1 ? interpolator.sample(alpha) : undefined);
+    // GU47 SSR-15: intro cinema bars (written only when the height moves)
+    const bars = Math.round((runtime.shot?.bars ?? 0) * 100) / 100;
+    if (bars !== barsShown) { document.getElementById("cinebars")?.style.setProperty("--bars", String(bars)); barsShown = bars; }
     app.step(0);
     guard.ok();
   } catch (error) {

@@ -30,6 +30,11 @@
       #speedfx, #fallfx, #drowsefx { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.18s linear; }
       #speedfx { background: radial-gradient(ellipse at 50% 55%, transparent 52%, rgba(255, 214, 236, 0.5) 100%); }
       #fallfx { background: radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(60, 20, 90, 0.7) 100%); }
+      /* GU47 SSR-15: cinema bars for the intro shot (height driven by --bars, 0..1) */
+      #cinebars { position: fixed; inset: 0; pointer-events: none; --bars: 0; }
+      #cinebars::before, #cinebars::after { content: ""; position: absolute; left: 0; right: 0; height: calc(10vh * var(--bars)); background: #0c0a24; }
+      #cinebars::before { top: 0; }
+      #cinebars::after { bottom: 0; }
       #drowsefx { background: radial-gradient(ellipse at 50% 50%, transparent 38%, rgba(26, 14, 48, 0.92) 100%); }
       .bar-row .mlabel { grid-column: 1 / -1; font-size: 11px; line-height: 12px; color: var(--muted); letter-spacing: 0.08em; margin-bottom: -2px; }
       #drowse-bar { background: linear-gradient(90deg, #9a8cff, #3a2a8a); }
@@ -114,6 +119,7 @@
     <canvas id="world"></canvas>
     <div id="speedfx"></div>
     <div id="fallfx"></div>
+    <div id="cinebars"></div>
     <div id="drowsefx"></div>
     <section id="loading"><div class="card"><h2>Serpentine Sky Run</h2><p id="loading-status" class="meta">Laying the road</p></div></section>
     <section id="title" class="overlay">

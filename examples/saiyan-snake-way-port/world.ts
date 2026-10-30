@@ -20,6 +20,7 @@ import { createLookDriver, type LookAppLike, type LookNodeHandle } from "./art/l
 import { SERPENT_RUNNER_TRAIL, registerSerpentVfx } from "./art/vfx";
 import { createVfxEventTracker } from "./art/vfxEvents";
 import { createCinePostDriver, type CinePostState } from "./art/cinePost";
+import { createShotDirector, type Shot } from "./art/shots";
 import { BEND_PROBE, auraPulse, createRunnerAnimator, runnerLean, type MixerActorLike, type RunnerAnimator } from "./art/motion";
 
 type Scene = ReturnType<typeof scene>;
@@ -182,6 +183,8 @@ export interface WorldRuntime {
   readonly look: WorldLookState;
   /** GU47 SSR-07: motion blur, aberration and DOF state (QA hook; null under `?look=original`). */
   readonly cinePost: CinePostState | null;
+  /** GU47 SSR-15: the camera shot the last frame drew (null under `?look=original`). */
+  readonly shot: Shot | null;
   /** GU47 SSR-12: runtime effect bursts fired so far (QA hook). */
   readonly vfxFired: number;
 }
@@ -214,6 +217,38 @@ const BURSTS = 14;
 const shadowOff = (): boolean => typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0";
 /** True when `?env=<n>` overrides the environment intensity (calibration captures). */
 const envOverride = (): boolean => typeof location !== "undefined" && new URLSearchParams(location.search).has("env");
+
+/** Rotates `v` about the unit axis `k` by `a` radians (Rodrigues). */
+function rotateAbout(v: V3, k: V3, a: number): V3 {
+  const c = Math.cos(a), s = Math.sin(a), d = (v[0] * k[0] + v[1] * k[1] + v[2] * k[2]) * (1 - c);
+  return [v[0] * c + (k[1] * v[2] - k[2] * v[1]) * s + k[0] * d, v[1] * c + (k[2] * v[0] - k[0] * v[2]) * s + k[1] * d, v[2] * c + (k[0] * v[1] - k[1] * v[0]) * s + k[2] * d];
+}
+
+/**
+ * GU47 SSR-15: the shot applied to the chase pose: leap orbit about the runner, the intro (from 40 m ahead and 14 m up,
+ * looking back at the runner) blended into the chase, and the bank roll of the up vector about the view axis.
+ */
+export function applyShot(shot: Shot, eye: V3, look: V3, runner: V3, forward: V3, up: V3): [V3, V3, V3] {
+  let e = eye, l = look;
+  if (shot.orbit) {
+    const off = rotateAbout([e[0] - runner[0], e[1] - runner[1], e[2] - runner[2]], up, shot.orbit);
+    e = [runner[0] + off[0], runner[1] + off[1], runner[2] + off[2]];
+  }
+  if (shot.intro > 0) {
+    const w = shot.intro;
+    const introEye: V3 = [runner[0] + forward[0] * 40 + up[0] * 14, runner[1] + forward[1] * 40 + up[1] * 14, runner[2] + forward[2] * 40 + up[2] * 14];
+    const introLook: V3 = [runner[0] + up[0] * 1.5, runner[1] + up[1] * 1.5, runner[2] + up[2] * 1.5];
+    e = [e[0] + (introEye[0] - e[0]) * w, e[1] + (introEye[1] - e[1]) * w, e[2] + (introEye[2] - e[2]) * w];
+    l = [l[0] + (introLook[0] - l[0]) * w, l[1] + (introLook[1] - l[1]) * w, l[2] + (introLook[2] - l[2]) * w];
+  }
+  let u = up;
+  if (shot.roll) {
+    const v: V3 = [l[0] - e[0], l[1] - e[1], l[2] - e[2]];
+    const n = Math.hypot(v[0], v[1], v[2]) || 1;
+    u = rotateAbout(up, [v[0] / n, v[1] / n, v[2] / n], shot.roll);
+  }
+  return [e, l, u];
+}
 
 export function buildWorld(options: WorldOptions = {}): World {
   const samples = buildRoadSamples();
@@ -407,10 +442,13 @@ export function buildWorld(options: WorldOptions = {}): World {
       /* GU47 SSR-01: the colour-script driver (script mode only; `?look=original` writes nothing) */
       const lookDriver = script ? createLookDriver(app as unknown as LookAppLike, (id) => node(id) as unknown as LookNodeHandle) : null;
       let lookShown: ResolvedLook | null = null;
+      let lastShot: Shot | null = null;
       /* GU47 SSR-07: speed and moment post (script mode only) */
       const cinePost = script ? createCinePostDriver(app as unknown as LookAppLike) : null;
       /* GU47 SSR-14: the rigged runner on the E-H mixer (script mode; `?look=original` keeps playClip) */
       const mixerActor = runner?.actor as unknown as Partial<MixerActorLike> | undefined;
+      /* GU47 SSR-15: camera shots layered on the chase camera (script mode) */
+      const shots = script ? createShotDirector() : null;
       const animator: RunnerAnimator | null = script && runner && typeof mixerActor?.crossFadeTo === "function" && typeof mixerActor.advance === "function"
         ? createRunnerAnimator(mixerActor as MixerActorLike, CLIP.hit) : null;
       /* GU47 SSR-12: runtime effect events and the runner trail (script mode only) */
@@ -718,17 +756,21 @@ export function buildWorld(options: WorldOptions = {}): World {
 
         /* chase camera */
         rig = stepChaseRig(rig, frame.F, frame.U, dt);
-        const back = flying ? 9.5 : 7 + Math.min(1.6, S.speed * 0.03);
+        const shot = shots?.step({ S, dt, lean: scriptLean, outro: tf, reducedMotion }) ?? null;
+        const back = (flying ? 9.5 : 7 + Math.min(1.6, S.speed * 0.03)) * (shot?.back ?? 1);
         const rise = flying ? 4.4 : 3.4;
         const shake = reducedMotion ? 0 : Math.min(1, Math.max(0, S.shake ?? 0)) * 0.25;
         const jx = shake * Math.sin(time * 61), jy = shake * Math.sin(time * 47 + 1.3);
         const lift = falling ? Math.min(tf, 2.2) * 2.2 : leaping ? Math.min(tf, 2) * 1.2 : 0;
-        const eye: V3 = [pose[0] - rig.f[0] * back + rig.u[0] * (rise + lift) + frame.R[0] * jx, pose[1] - rig.f[1] * back + rig.u[1] * (rise + lift) + frame.R[1] * jx + jy, pose[2] - rig.f[2] * back + rig.u[2] * (rise + lift) + frame.R[2] * jx];
+        let eye: V3 = [pose[0] - rig.f[0] * back + rig.u[0] * (rise + lift) + frame.R[0] * jx, pose[1] - rig.f[1] * back + rig.u[1] * (rise + lift) + frame.R[1] * jx + jy, pose[2] - rig.f[2] * back + rig.u[2] * (rise + lift) + frame.R[2] * jx];
         const ahead = falling || leaping ? 3 : 12;
         const aim = falling ? -1.4 : 1.6;
-        const look: V3 = [pose[0] + rig.f[0] * ahead + rig.u[0] * aim, pose[1] + rig.f[1] * ahead + rig.u[1] * aim, pose[2] + rig.f[2] * ahead + rig.u[2] * aim];
-        const fov = (aspect < 0.85 ? 74 : 62) + (reducedMotion ? 0 : Math.min(10, Math.max(0, S.speed - 60) * 0.06));
-        cameraController.setPose({ position: eye, target: look, up: rig.u, fov }, { cut: false });
+        let look: V3 = [pose[0] + rig.f[0] * ahead + rig.u[0] * aim, pose[1] + rig.f[1] * ahead + rig.u[1] * aim, pose[2] + rig.f[2] * ahead + rig.u[2] * aim];
+        let up: V3 = rig.u;
+        if (shot) [eye, look, up] = applyShot(shot, eye, look, pose, rig.f, rig.u);
+        const fov = (aspect < 0.85 ? 74 : 62) + (reducedMotion ? 0 : Math.min(10, Math.max(0, S.speed - 60) * 0.06)) + (shot?.fovAdd ?? 0);
+        cameraController.setPose({ position: eye, target: look, up, fov }, { cut: false });
+        lastShot = shot;
 
         /* GU47 SSR-01: stage colour script, read-only from the run's distance */
         if (lookDriver) {
@@ -763,6 +805,7 @@ export function buildWorld(options: WorldOptions = {}): World {
         get entityNodes() { return alive; },
         get vfxFired() { return vfxFired; },
         get cinePost() { return cinePost?.state ?? null; },
+        get shot() { return lastShot; },
         get look(): WorldLookState {
           return { mode: lookConfig.mode, id: lookShown?.id ?? "original", stageIndex: lookShown?.stageIndex ?? 0, godRays: lookDriver?.godRaysOn ?? false, writes: lookDriver?.writes ?? 0 };
         }
