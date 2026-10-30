@@ -127,6 +127,9 @@ export const RIVAL_COLORS: readonly (readonly [string, string])[] = [
 ];
 
 /** GU47 SO47-M2: gouache rival liveries (cobalt, vermilion, violet, chalk, deep teal); none uses the amber/jade objective colours. */
+/** SO47-L4: tail points on the nearest rivals (the art direction caps practicals at 6). */
+export const TAIL_LIGHTS = 3;
+
 export const GOUACHE_LIVERIES: readonly string[] = ["#3f78c0", "#c4503c", "#8a62cc", "#e2d6bb", "#2f7464"];
 
 const IDENTITY: Mat3 = [1, 0, 0, 0, 1, 0, 0, 0, 1];
@@ -243,6 +246,12 @@ export function buildWorld(options: WorldOptions): World {
       }).runtime({ id: "key" }));
     if (row.fill) builder.add(lights.directional({ name: "fill", position: [...row.fill.position], target: [0, 0, 0], intensity: row.fill.intensity, color: row.fill.color, shadow: false }));
     if (row.planetshine) builder.add(lights.directional({ name: "planetshine", position: [...row.planetshine.position], target: [0, 0, 0], intensity: row.planetshine.intensity, color: row.planetshine.color, shadow: false }));
+    // SO47-L4 (gouache, `?off=headlight` removes them): an unshadowed headlight spot on the player and red tail points
+    // on the three nearest rivals (re-assigned every frame), so the art direction's 6-practical cap holds.
+    if (look === "gouache" && !off.has("headlight")) {
+      builder.add(lights.spot({ name: "headlight", position: [0, 1, 0], target: [0, 0, 6], angle: 0.45, penumbra: 0.5, distance: 34, intensity: 5, color: "#fff2d8", shadow: false }).runtime({ id: "headlight" }));
+      for (let k = 0; k < TAIL_LIGHTS; k++) builder.add(lights.point({ name: `tail-${k}`, position: [0, -500, 0], distance: 7, intensity: 2.2, color: "#ff3b2a", shadow: false }).runtime({ id: `tail-${k}` }));
+    }
   }
   // Image-based fill for the lit GLBs (riders, pylons, boulders, props) (LIGHT-01). Gouache (SO47-E1): the nebula dome,
   // gas giant and track are captured once into a 128 px probe with no background, so the riders pick up the painted sky;
@@ -585,7 +594,7 @@ export function buildWorld(options: WorldOptions): World {
   return {
     scene: builder,
     bind(app: AuraApp): WorldRuntime {
-      return bindRuntime(app, { vehicle, riders, meteors, dustBase, dustUp, dustItems, exhaust: EXHAUST, ghost: Boolean(options.ghost), reducedMotion: Boolean(options.reducedMotion), look, high });
+      return bindRuntime(app, { vehicle, riders, meteors, dustBase, dustUp, dustItems, exhaust: EXHAUST, ghost: Boolean(options.ghost), reducedMotion: Boolean(options.reducedMotion), look, high, headlight: look === "gouache" && !off.has("headlight") && !off.has("lights") });
     }
   };
 }
@@ -602,6 +611,7 @@ interface BindInput {
   readonly exhaust: number;
   readonly look: OrbitLook;
   readonly high: boolean;
+  readonly headlight: boolean;
 }
 
 interface Pose { position: Vec3; forward: Vec3; up: Vec3 }
@@ -634,6 +644,9 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
   const rebound = { t: 0, x: 0, y: 0, z: 0 };
   let lastCamera: { eye: Vec3; look: Vec3; up: Vec3; fov: number } | null = null;
   const riderAt: Vec3[] = Array.from({ length: 7 }, () => new Vec3()); // 0 player, 1..5 rivals, 6 ghost
+  const riderFwd: Vec3[] = Array.from({ length: 7 }, () => new Vec3(1, 0, 0));
+  const riderUp: Vec3[] = Array.from({ length: 7 }, () => new Vec3(0, 1, 0));
+  const riderShown: boolean[] = Array.from({ length: 6 }, () => true);
   /* GU47 WP-25 presentation directors (read-only race values; art/director.ts). */
   const row = LOOKS[input.look];
   const feel = createCameraFeel(input.look, input.reducedMotion);
@@ -698,6 +711,8 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     if (extraPitch) base = multiplyMat3(base, axisRotation("z", extraPitch));
     if (extraRoll) base = multiplyMat3(base, axisRotation("x", extraRoll));
     riderAt[index]!.copy(pose.position).addScaledVector(up, 0.8 * scale);
+    riderFwd[index]!.copy(pose.forward);
+    riderUp[index]!.copy(up);
     const rigDef = input.riders[index]!;
     for (const part of rigDef.parts) {
       const [dx, dy, dz] = part.offset;
@@ -714,10 +729,29 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
   };
 
   const hideRider = (index: number): void => {
+    riderShown[index] = false;
     for (const part of input.riders[index]!.parts) node(part.id).setVisible(false);
   };
   const showRider = (index: number): void => {
+    riderShown[index] = true;
     for (const part of input.riders[index]!.parts) node(part.id).setVisible(true);
+  };
+  /** SO47-L4: headlight 0.6 m ahead aimed 6 m down the road; tail points behind the nearest visible rivals. */
+  const updateRiderLights = (menu: boolean): void => {
+    if (!input.headlight) return;
+    const p = riderAt[0]!, f = riderFwd[0]!, u = riderUp[0]!;
+    const head = node("headlight");
+    head.setPosition(p.x + f.x * 0.6 - u.x * 0.1, p.y + f.y * 0.6 - u.y * 0.1, p.z + f.z * 0.6 - u.z * 0.1);
+    const aim = f.clone().multiplyScalar(6).addScaledVector(u, -0.9).normalize();
+    head.setLight?.({ direction: [aim.x, aim.y, aim.z] });
+    const near = [1, 2, 3, 4, 5].filter((i) => riderShown[i]).sort((a, b) => riderAt[a]!.distanceToSquared(p) - riderAt[b]!.distanceToSquared(p));
+    for (let k = 0; k < TAIL_LIGHTS; k++) {
+      const i = near[k];
+      const tail = node(`tail-${k}`);
+      if (i === undefined || menu) { tail.setPosition(0, -500, 0); continue; }
+      const r = riderAt[i]!, rf = riderFwd[i]!, ru = riderUp[i]!;
+      tail.setPosition(r.x - rf.x * 1.0 - ru.x * 0.2, r.y - rf.y * 1.0 - ru.y * 0.2, r.z - rf.z * 1.0 - ru.z * 0.2);
+    }
   };
 
   function update(state: RaceState, dt: number, time: number, view: "chase" | "wide", aspect: number, shake?: { readonly x: number; readonly y: number; readonly roll: number }, ghost?: GhostPose | null): void {
@@ -787,6 +821,8 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       const ground = menu ? 0 : rival.air?.height ?? (islandHeight(rival.s, rival.route) ?? 0);
       placeRider(i + 1, poseAt(s, lane, menu ? "main" : rival.route, ground, 0, menu ? 0 : rival.lean ?? 0), scale);
     }
+
+    updateRiderLights(menu);
 
     /* camera */
     const frame = routeFrame(sForPlayer, menu ? "main" : state.route);

@@ -57,6 +57,13 @@ describe("strange-orbit-port lighting (gouache, GU47 WP-25)", () => {
     expect(high.find((n) => n.name === "fill")).toBeUndefined();
   });
 
+  it("adds an unshadowed headlight spot and three red tail points (SO47-L4)", () => {
+    expect(high.find((n) => n.name === "headlight")).toMatchObject({ light: "spot", color: "#fff2d8" });
+    const tails = high.filter((n) => n.name?.startsWith("tail-"));
+    expect(tails).toHaveLength(3);
+    for (const n of [...tails, high.find((m) => m.name === "headlight")!]) expect(n.shadow ?? false).toBe(false);
+  });
+
   it("captures the painted sky once at 128 px without a background", () => {
     const env = high.find((n) => n.kind === "environment")!;
     expect(env).toMatchObject({ environment: "capture", background: false, capture: { resolution: 128, update: "once" } });

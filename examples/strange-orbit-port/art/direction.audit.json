@@ -36,6 +36,26 @@
         "type": "directional",
         "shadow": false,
         "intensity": 0.8
+      },
+      {
+        "type": "spot",
+        "shadow": false,
+        "intensity": 5
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 2.2
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 2.2
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 2.2
       }
     ],
     "hasAmbient": false,
