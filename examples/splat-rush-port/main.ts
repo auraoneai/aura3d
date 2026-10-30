@@ -21,10 +21,10 @@ import { SplatSound, diffSounds, type FrameState } from "./audio";
 import { ScreenFx, flashFor, flashStrength } from "./fx";
 import { COLORS, IDLE, PHASE_CODE, SplatRushSim, TRACE_COLUMNS, expandScript, parseScript, replay, type Input } from "./sim";
 import { SteadyCamera, createSplatPresenter, drainPopups } from "./presentation";
-import { buildWorld, type WorldRuntime } from "./world";
+import { TITLE_RAIL_SECONDS, buildWorld, type WorldRuntime } from "./world";
 import { LOOKS, QA_CROPS, parseLook } from "./look";
 import { fireSplashes, registerPaintPresets, splashesFor } from "./vfx3d";
-import { HUD_CARNIVAL_CLASS, comboTubeFill } from "./hud";
+import { HUD_CARNIVAL_CLASS, comboTubeFill, letterbox } from "./hud";
 
 
 /* GT Walsheim Bold (licensed library, assets/GT-Walsheim-Bold.woff2): the heavy rounded face the HUD, popups and cards use */
@@ -123,6 +123,8 @@ const changed = (key: string, value: string): boolean => {
   return true;
 };
 
+let barsPhase = "";
+let barsStart = 0;
 function updateHud(): void {
   const o = sim.o;
   const score = `SCORE: ${Math.floor(o.score)}`;
@@ -150,6 +152,12 @@ function updateHud(): void {
       el.style.width = fill.split("|")[0] as string;
       el.style.background = o.multiplier >= 4 ? "#f0433a" : o.multiplier === 3 ? "#b868e8" : o.multiplier === 2 ? "#5ecaf0" : "#f9c647";
     }
+  }
+  if (look.id === "carnival") {
+    /* CR-C2 letterbox during the title rail (the rail itself is in world.ts); none on reduced motion or manual=1 */
+    if (o.phase !== barsPhase) { barsPhase = o.phase; barsStart = sim.elapsed; }
+    const k = letterbox(o.phase, sim.elapsed - barsStart, TITLE_RAIL_SECONDS, !reducedMotion && !config.manual).toFixed(3);
+    if (changed("bars", k)) for (const id of ["bars-top", "bars-bottom"]) $(id).style.transform = `scaleY(${k})`;
   }
   let pills = "";
   if (o.rainbowTimer > 0) pills += `<span class="pu pu-rainbow">🌈 ${Math.ceil(o.rainbowTimer)}s</span>`;

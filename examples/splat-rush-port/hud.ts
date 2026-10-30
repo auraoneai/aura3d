@@ -29,3 +29,13 @@ export function contrastRatio(a: string, b: string): number {
   const la = luminance(a), lb = luminance(b);
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
 }
+
+/** CR-C2 title rail letterbox: full bars while the 3 s rail flies in on the title, then they slide out over 0.5 s. */
+export const LETTERBOX_OUT_SECONDS = 0.5;
+export function letterbox(phase: string, phaseSeconds: number, railSeconds: number, enabled: boolean): number {
+  if (!enabled || phase !== "splash") return 0;
+  const out = (phaseSeconds - railSeconds) / LETTERBOX_OUT_SECONDS;
+  if (out <= 0) return 1;
+  if (out >= 1) return 0;
+  return 1 - out * out * (3 - 2 * out);
+}

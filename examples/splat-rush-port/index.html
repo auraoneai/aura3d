@@ -67,6 +67,9 @@
       #hud-tube { position: relative; width: 120px; height: 18px; background: #fdf0e0; border: 3px solid #3b1f3f; border-radius: 4px 10px 10px 4px; box-shadow: 2px 3px 0 #3b1f3f; overflow: hidden; }
       #hud-tube::after { content: ""; position: absolute; right: -9px; top: 3px; width: 6px; height: 6px; background: #3b1f3f; }
       #hud-tube-fill { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 0 9px 9px 0; transition: width 0.18s ease-out; }
+      #bars-top, #bars-bottom { position: fixed; left: 0; right: 0; height: 9vh; background: #2a1530; z-index: 4; pointer-events: none; transform: scaleY(0); }
+      #bars-top { top: 0; transform-origin: top; }
+      #bars-bottom { bottom: 0; transform-origin: bottom; }
       @media (prefers-reduced-motion: reduce) { #hud-tube-fill { transition: none; } }
     </style>
   </head>
@@ -79,6 +82,7 @@
       <div id="hud-score" class="hud-text">SCORE: 0</div>
       <div id="hud-combo" class="hud-text" style="position:absolute;top:clamp(44px,9.5vh,70px);right:20px;color:#f9c647;font-size:clamp(20px,4.6vh,30px);display:none"></div>
     </div>
+    <div id="bars-top" class="paint-only" aria-hidden="true"></div><div id="bars-bottom" class="paint-only" aria-hidden="true"></div>
     <div id="hud-paint" class="paint-only" aria-hidden="true"><div id="hud-swatch"></div><div id="hud-tube"><div id="hud-tube-fill"></div></div></div>
     <div id="hud-powerups" style="position:fixed;bottom:calc(40px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:none;z-index:6;pointer-events:none"></div>
     <div id="popups" style="position:fixed;inset:0;pointer-events:none;z-index:15;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;padding-top:clamp(120px,16vh,200px);box-sizing:border-box"></div>

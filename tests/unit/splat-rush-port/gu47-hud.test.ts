@@ -27,7 +27,7 @@ describe("GU47 CR-H1 paint-world HUD", () => {
     expect(carnivalCss).toContain("'Splat Display'");
     for (const rule of carnivalCss.split("}").map((r) => r.trim()).filter((r) => r.includes("{") && !r.startsWith("@media") && !r.startsWith("/*"))) {
       const selector = rule.slice(0, rule.indexOf("{")).replace(/\/\*[\s\S]*?\*\//g, "").trim();
-      if (/^#hud-|^\.paint-only$/.test(selector)) continue; // carnival-only elements, hidden unless .look-carnival
+      if (/^#(hud-|bars-)|^\.paint-only$/.test(selector)) continue; // carnival-only elements, hidden unless .look-carnival
       expect(selector, rule).toMatch(new RegExp(`\\.${HUD_CARNIVAL_CLASS}`));
     }
     expect(html).toMatch(/id="hud-paint" class="paint-only"/);
@@ -35,5 +35,17 @@ describe("GU47 CR-H1 paint-world HUD", () => {
 
   it("the mute and pause buttons keep their size and spot (hit test unchanged)", () => {
     expect(carnivalCss).not.toMatch(/icon-btn[^{]*\{[^}]*(width|height|left|bottom|position)/);
+  });
+});
+
+describe("GU47 CR-C2 title letterbox", () => {
+  it("full bars during the 3 s rail, gone 0.5 s later, never in play, on reduced motion or manual", async () => {
+    const { letterbox, LETTERBOX_OUT_SECONDS } = await import("../../../examples/splat-rush-port/hud");
+    expect(letterbox("splash", 0, 3, true)).toBe(1);
+    expect(letterbox("splash", 2.9, 3, true)).toBe(1);
+    expect(letterbox("splash", 3 + LETTERBOX_OUT_SECONDS / 2, 3, true)).toBeCloseTo(0.5, 6);
+    expect(letterbox("splash", 3 + LETTERBOX_OUT_SECONDS, 3, true)).toBe(0);
+    expect(letterbox("playing", 0, 3, true)).toBe(0);
+    expect(letterbox("splash", 0, 3, false)).toBe(0);
   });
 });
