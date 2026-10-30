@@ -318,7 +318,7 @@ export function seaNode(row: ChapterLook, options: StageOptions): StageNode {
  */
 export function chapterWeather(row: ChapterLook, options: StageOptions): StageNode[] {
   if (row.weather === "drizzle") {
-    return options.reducedMotion ? [] : [effects.rain({ name: "siege drizzle", intensity: 0.22, density: 0.35, color: "#c9d6e6", speed: 0.8, wind: [-0.9, -5, -0.2], splashes: true, mist: false })];
+    return options.reducedMotion ? [] : [{ ...effects.rain({ intensity: 0.22, density: 0.35, color: "#c9d6e6", speed: 0.8, wind: [-0.9, -5, -0.2], splashes: true, mist: false }).toJSON(), name: "siege drizzle" }];
   }
   if (row.weather === "dust") {
     return options.reducedMotion ? [] : [effects.particles({
