@@ -75,6 +75,7 @@ import { installSensorPass, scanPulseAt } from "./scanPulse";
 import { createGridVfxQueue, headlightMotesSpec, installGridVfx, manholeLayout, motesAnchor, type GridVfxShot } from "./vfx";
 import { mountTouchPads } from "./touch";
 import { bezelState } from "./bezel";
+import { SIGNAL_COLORS, SIGNAL_FADE_S, createPitchSpring, signalFadeColor } from "./carMotion";
 import { INTRO_SHOT_S, introEnabled, introShots, resultsDof } from "./intro";
 import { CATENARY, DISTRICTS, PARKED, SIGN, SIGN_SLOTS, districtAt, parkedLayout, signAssignments, signNodeId } from "./dressing";
 import { STATIC_CROPS, carCrop, type QaCrop } from "./qaCrops";
@@ -483,6 +484,7 @@ async function bootGridDispatch(): Promise<void> {
     N = bindNodes(auraApp, next);
     appliedCar = null;
     lastSignalPhase = -1;
+    signalShown = "";
     lastBeaconMode = null;
     lastBrakeLamp = null;
     lastHeadlightX = Number.NaN;
@@ -602,6 +604,10 @@ async function bootGridDispatch(): Promise<void> {
   });
 
   let lastSignalPhase = -1;
+  let signalShown = "";
+  let signalFade: { from: string; to: string; t: number } | null = null;
+  /** GD-16: body pitch spring over the sim's read-only pitch. */
+  const pitchSpring = createPitchSpring();
   /** GD-03: last brake-lamp state written to the lamp material (it changes only when the sim flag flips). */
   let lastBrakeLamp: boolean | null = null;
   /** GD-03: view x the headlight spots were last aimed at (setLight only when the car moved across lanes). */
@@ -676,7 +682,7 @@ async function bootGridDispatch(): Promise<void> {
     const rz = (wz: number) => wz - pose.pz + camOff.z;
     const pos = (x: number, y: number, z: number): AuraTransformSpec => ({ position: [x, y, z] });
 
-    N.cars[S.car].setPosition(rx(pose.px), ry(0), CAR_DRAW_Z + camOff.z).setRotation(pose.pitch, pose.yaw + qaYawAdd, pose.roll);
+    N.cars[S.car].setPosition(rx(pose.px), ry(0), CAR_DRAW_Z + camOff.z).setRotation(pitchSpring.update(pose.pitch, frameSeconds, motionOk()), pose.yaw + qaYawAdd, pose.roll);
     // GD-17: speed FOV kick and lane roll on the fixed scene camera; off on reduced motion.
     const feel = cameraFeel({ speed: S.player.speed, maxSpeed: PLAYABLE_FLEET[S.car].maxSpeedMps, steer: S.player.steer, motionOk: motionOk() });
     try {
@@ -710,10 +716,19 @@ async function bootGridDispatch(): Promise<void> {
     N.roadPatches.setInstances(tiles.patches.map(([x, z]) => pos(rx(x), ry(0.004), rz(z))));
     N.roadJoints.setInstances(tiles.joints.map((z) => pos(rx(0), ry(0.005), rz(z))));
 
+    // GD-16: signal heads fade 120 ms between phases (a remount, lastSignalPhase -1, snaps to the current colour).
     if (S.signal !== lastSignalPhase) {
+      signalFade = { from: lastSignalPhase < 0 ? SIGNAL_COLORS[S.signal]! : signalShown, to: SIGNAL_COLORS[S.signal]!, t: 0 };
       lastSignalPhase = S.signal;
-      const c = S.signal === 0 ? "#43d17a" : S.signal === 1 ? "#ffb347" : "#ff4a3d";
-      N.signalLights.setMaterial(material.emissive({ color: c, emissive: c, emissiveIntensity: 2.2 }));
+    }
+    if (signalFade) {
+      signalFade.t += frameSeconds;
+      const c = signalFadeColor(signalFade.from, signalFade.to, signalFade.t);
+      if (c !== signalShown) {
+        signalShown = c;
+        N.signalLights.setMaterial(material.emissive({ color: c, emissive: c, emissiveIntensity: 2.2 }));
+      }
+      if (signalFade.t >= SIGNAL_FADE_S) signalFade = null;
     }
     const interBaseZ = Math.floor(pose.pz / INTERSECTION_STRIDE_Z) * INTERSECTION_STRIDE_Z;
     const iz = Array.from({ length: INTERSECTION_COUNT }, (_, i) => rz(interBaseZ - i * INTERSECTION_STRIDE_Z));
