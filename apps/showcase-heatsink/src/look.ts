@@ -17,6 +17,8 @@ export const PALETTE = {
 } as const;
 
 export type WeatherKind = "rain" | "dust" | "embers";
+/** The three E-A catalogue skies this game uses (aura-assets.ts `HDRI_BY_ID`). */
+export type CircuitHdriId = Extract<AuraHdriId, "rooftop_night" | "industrial_sunset_puresky" | "spruit_sunrise">;
 
 export interface KeyLightRow {
   readonly color: string;
@@ -29,7 +31,7 @@ export interface CircuitLook {
   readonly circuit: CircuitId;
   readonly timeOfDay: string;
   /** E-A catalogue HDRI (`/hdri/<id>_1k.hdr`), drawn as the sky (HS-03). */
-  readonly hdri: AuraHdriId;
+  readonly hdri: CircuitHdriId;
   readonly environmentIntensity: number;
   readonly environmentRotationDeg: number;
   /** The one shadowed light: PCSS, 3 cascades (HS-01). */

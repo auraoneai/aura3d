@@ -7,8 +7,8 @@ import { ChaseCamera, projectToScreen, type ScreenPoint } from "./camera";
 import { CIRCUITS, DRONE_ORDER, DRONE_SPECS, SCENERY_ANCHORS, TOTAL_LAPS, type CircuitId, type DroneId, type ModeId } from "./data";
 import { createInputs } from "./input";
 import { createHud } from "./hud";
-import { circuitFromParam } from "./look";
-import { applyCircuitLook, InstanceWriter, slotRivals } from "./view";
+import { CIRCUIT_LOOKS, circuitFromParam } from "./look";
+import { InstanceWriter, slotRivals } from "./view";
 import {
   anchorPosition,
   burstOptions,
@@ -79,8 +79,9 @@ let race = newRace();
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
 
 async function boot(): Promise<void> {
+  const sceneOptions = (id: CircuitId) => ({ circuit: CIRCUITS[id], ...(qaEv !== undefined ? { exposureEv: qaEv } : {}), ...(qaAoOff ? { ambientOcclusion: false } : {}) });
   const auraApp = createAuraApp("#app", {
-    scene: buildThermalDriftScene({ circuit: CIRCUITS[selectedCircuit], ...(qaEv !== undefined ? { exposureEv: qaEv } : {}), ...(qaAoOff ? { ambientOcclusion: false } : {}) }),
+    scene: buildThermalDriftScene(sceneOptions(selectedCircuit)),
     // "auto" mounts at the "high" tier today (the same as the old "high" string) and lets the tier follow the device once the
     // quality-tier lane is on; a fixed "high" would keep phones on the desktop tier and logs RENDERER_QUALITY_STRING.
     renderer: { quality: { tier: "auto" } },
@@ -89,8 +90,9 @@ async function boot(): Promise<void> {
   });
   const req = (id: string): AuraRuntimeNodeHandle => auraApp.nodes.require(id);
 
-  const droneHandles = Object.fromEntries(DRONE_ORDER.map((id) => [id, req(DRONE_SPECS[id].nodeId)])) as Record<DroneId, AuraRuntimeNodeHandle>;
-  const writers = {
+  // Every handle the draw writes; rebound after a circuit remount (HS-03).
+  const makeDrones = () => Object.fromEntries(DRONE_ORDER.map((id) => [id, req(DRONE_SPECS[id].nodeId)])) as Record<DroneId, AuraRuntimeNodeHandle>;
+  const makeWriters = () => ({
     deckEven: new InstanceWriter(req(IDS.deckEven), INSTANCE_COUNTS.deckEven),
     deckOdd: new InstanceWriter(req(IDS.deckOdd), INSTANCE_COUNTS.deckOdd),
     spineA: new InstanceWriter(req(IDS.spineA), INSTANCE_COUNTS.spineA),
@@ -101,13 +103,24 @@ async function boot(): Promise<void> {
     chevB: new InstanceWriter(req(IDS.chevB), INSTANCE_COUNTS.chevB),
     rain: new InstanceWriter(req(IDS.rain), INSTANCE_COUNTS.rain),
     bolts: new InstanceWriter(req(IDS.bolts), INSTANCE_COUNTS.bolts)
-  };
-  const ringHandle = req(IDS.ring);
-  const missileHandle = req(IDS.missile);
-  const incomingHandle = req(IDS.incoming);
-  const mineHandle = req(IDS.mine);
-  const sceneryHandles = SCENERY_ANCHORS.map((anchor) => ({ anchor, handle: req(anchor.id) }));
-  const lookHandles = { backdrop: req(IDS.backdrop), floor: req(IDS.floor), bandA: req(IDS.bandA), bandB: req(IDS.bandB), spineA: req(IDS.spineA), spineB: req(IDS.spineB), chevA: req(IDS.chevA), chevB: req(IDS.chevB) };
+  });
+  const makeScenery = () => SCENERY_ANCHORS.map((anchor) => ({ anchor, handle: req(anchor.id) }));
+  let droneHandles = makeDrones();
+  let writers = makeWriters();
+  let ringHandle = req(IDS.ring);
+  let missileHandle = req(IDS.missile);
+  let incomingHandle = req(IDS.incoming);
+  let mineHandle = req(IDS.mine);
+  let sceneryHandles = makeScenery();
+  function bindHandles(): void {
+    droneHandles = makeDrones();
+    writers = makeWriters();
+    ringHandle = req(IDS.ring);
+    missileHandle = req(IDS.missile);
+    incomingHandle = req(IDS.incoming);
+    mineHandle = req(IDS.mine);
+    sceneryHandles = makeScenery();
+  }
 
   const track = new TrackView();
   const chase = new ChaseCamera();
@@ -127,8 +140,8 @@ async function boot(): Promise<void> {
   const vfxAt: [number, number, number] = [0, 0, 0];
   let vfxSeed = 1;
   registerThermalDriftVfx(auraApp.effects);
-  const missileTrail = auraApp.effects?.trail(IDS.missile, MISSILE_TRAIL);
-  const incomingTrail = auraApp.effects?.trail(IDS.incoming, INCOMING_TRAIL);
+  let missileTrail = auraApp.effects?.trail(IDS.missile, MISSILE_TRAIL);
+  let incomingTrail = auraApp.effects?.trail(IDS.incoming, INCOMING_TRAIL);
   let missileWasActive = false;
   let incomingWasActive = false;
   let plume: { drone: DroneId; reduced: boolean; handle: { stop(o?: { immediate?: boolean }): void } | undefined } | null = null;
@@ -148,6 +161,38 @@ async function boot(): Promise<void> {
       vfxLedger.note(kind);
     }
     pendingVfx.length = 0;
+  }
+
+  // HS-12: motion blur only while boosting (E-C runtime post control; the engine drops it below High; never on
+  // reduced motion).
+  let boostBlurOn = false;
+  function syncBoostBlur(on: boolean): void {
+    if (on === boostBlurOn) return;
+    boostBlurOn = on;
+    try {
+      if (on) auraApp.post?.setEffect("motionBlur", { intensity: CIRCUIT_LOOKS[race.circuit].boostMotionBlur });
+      auraApp.post?.setEffectEnabled("motionBlur", on);
+    } catch {
+      // A post surface without runtime control keeps the chain unchanged.
+    }
+  }
+
+  /**
+   * HS-03: a circuit change remounts the scene with that circuit's sky, rig, fog, post and weather (the GLB cache makes
+   * the second mount fetch-free), rebinds every handle and restarts the trails and the plume on the new nodes.
+   */
+  function remountCircuit(id: CircuitId): void {
+    syncBoostBlur(false);
+    auraApp.setScene(buildThermalDriftScene(sceneOptions(id)));
+    bindHandles();
+    registerThermalDriftVfx(auraApp.effects);
+    missileTrail?.stop({ immediate: true });
+    incomingTrail?.stop({ immediate: true });
+    missileTrail = auraApp.effects?.trail(IDS.missile, MISSILE_TRAIL);
+    incomingTrail = auraApp.effects?.trail(IDS.incoming, INCOMING_TRAIL);
+    plume?.handle?.stop({ immediate: true });
+    plume = null;
+    shownCircuit = id;
   }
 
   // ------------------------------------------------------------------------------------------ input
@@ -215,6 +260,7 @@ async function boot(): Promise<void> {
     if (!CIRCUITS[id]) return;
     selectedCircuit = id;
     hud.selectCircuit(id);
+    if (id !== shownCircuit) remountCircuit(id);
     restart();
     audio.play("chime", 640);
   }
@@ -298,11 +344,7 @@ async function boot(): Promise<void> {
     const hudSeconds = Math.min(1, Math.max(0, (now - lastHudAt) / 1000));
     lastHudAt = now;
     const circuit = CIRCUITS[race.circuit];
-    if (shownCircuit !== race.circuit) {
-      applyCircuitLook(lookHandles, circuit);
-      auraApp.setClearColor?.(circuit.skyColor);
-      shownCircuit = race.circuit;
-    }
+    if (shownCircuit !== race.circuit) remountCircuit(race.circuit);
     const reduced = reducedMotionQuery?.matches ?? false;
     const shown = presenter.present(loop, !qaManual && race.phase === "racing");
     const p = race.player;
@@ -419,6 +461,7 @@ async function boot(): Promise<void> {
     if (inc.active && !incomingWasActive) incomingTrail?.clear();
     incomingWasActive = inc.active;
     syncPlume(race.drone, reduced);
+    syncBoostBlur(!reduced && race.phase === "racing" && p.boosting);
     if (pendingVfx.length > 0) {
       let target: [number, number, number] | null = null;
       if (race.locked >= 0) {

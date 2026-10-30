@@ -1,17 +1,19 @@
 /**
- * Thermal Drift scene: the night-city look, the instanced road, walls, rain and bolts, and the 30 model nodes.
+ * Thermal Drift scene: the per-circuit foundry rig, the instanced road, walls, rain and bolts, and the 30 model nodes.
  *
- * C12: the game used the daytime `outdoor-day` look (an HDRI and a shadowed key) and then added its own shadowed sun,
- * a second bloom and colour grade (never used, the compiler takes the first) and a hemisphere light the shader drops
- * next to an environment (LIGHT-05). It now uses `night-city` alone for key, fill, grade, AO and bloom, keeps one
- * shadowed light (the look's key), adds only a vignette, a light fog and two unshadowed accent lights, and recolours
- * the sky band, backdrop, floor and accents per circuit (applyCircuitLook).
+ * GU47 WP-13 (look table: look.ts; art direction: ../art/direction.ts):
+ * HS-01: a per-circuit rig replaces the `night-city` look: one PCSS 3-cascade key (the only shadowed light), an
+ *   unshadowed coolant counter-rim, the VESPER vent up-fill and an explicit AO node; the two point lights are gone.
+ * HS-03: the circuit HDRI is the sky (background on) and the image-based fill; the backdrop wall and the two emissive
+ *   horizon bands are gone. A circuit change remounts the scene (main.ts), so every per-circuit node is authored here.
+ * HS-05: per-circuit exponential fog; DUSTFALL adds a volumetric inscatter with god rays from its 9-degree sun.
+ * HS-12: per-circuit post: warm bloom, grade (with the exposure), vignette, grain on MEGACITY only.
  * C13: about 150 repeated primitives become 9 instanced nodes; emissive decor casts no shadow.
- * C4: a light fog hides the far end of the scenery window.
  */
-import { camera, effects, instances, lights, looks, material, model, primitives, scene, game, type AuraAssetRef } from "@aura3d/engine";
-import { assets } from "./aura-assets";
+import { camera, effects, environments, instances, lights, material, model, primitives, scene, game, type AuraAssetRef, type AuraNodeBuilder, type AuraSceneNode } from "@aura3d/engine";
+import { assets, HDRI_BY_ID } from "./aura-assets";
 import { DRONE_ORDER, DRONE_SPECS, SCENERY_ANCHORS, type CircuitSpec } from "./data";
+import { CIRCUIT_LOOKS, rimPosition, sunPosition, type CircuitLook } from "./look";
 import { LASER_BOLTS } from "./sim";
 
 export const ROAD_TILE_COUNT = 16;
@@ -21,9 +23,18 @@ export const ROAD_TILE_LENGTH = ROAD_TILE_SPACING + 1.1;
 export const WALL_SEGMENT_COUNT = 14;
 export const WALL_SPACING = 13.5;
 export const RAIN_STREAK_COUNT = 18;
-/** Default exposure for the night look, chosen from the calibration captures (evidence/thermal-drift/audit-fix). */
-export const NIGHT_EXPOSURE_EV = 0.4;
-export const FOG_COLOR = "#121826";
+
+/** Runtime ids of the rig nodes E-B drives at runtime (sector cross-fades, HS-16). */
+export const RIG_IDS = {
+  key: "td-key-light",
+  rim: "td-rim-light",
+  upFill: "td-vent-up-fill",
+  sky: "td-sky"
+} as const;
+/** Where the key light aims: the road about 20 m ahead of the drone (the drone stays near the origin). */
+export const KEY_TARGET: [number, number, number] = [0, 0, -20];
+/** HS-01: PCSS soft shadows over three cascades (the engine drops to 1 cascade PCF on the Low tier). */
+export const KEY_SHADOW = { filter: "pcss", cascades: 3, mapSize: 2048, maxDistance: 160, lightSize: 1.5 } as const;
 
 export const IDS = {
   deckEven: "road-deck-even",
@@ -36,9 +47,6 @@ export const IDS = {
   chevB: "wall-chevrons-b",
   rain: "rain-streaks",
   bolts: "laser-bolts",
-  backdrop: "sky-backdrop",
-  bandA: "horizon-band-a",
-  bandB: "horizon-band-b",
   floor: "megacity-abyss-floor",
   ring: "player-shockwave-ring",
   missile: "homing-missile-active",
@@ -79,39 +87,95 @@ export interface SceneOptions {
   readonly circuit: CircuitSpec;
   /** QA: exposure override for calibration (`?qaEv=`). */
   readonly exposureEv?: number;
-  /** QA: drop the look's ambient-occlusion pass (`?qaAo=off`) for the LIGHT-06 on/off pair. */
+  /** QA: drop the explicit ambient-occlusion pass (`?qaAo=off`) for the LIGHT-06 on/off pair. */
   readonly ambientOcclusion?: boolean;
+}
+
+const degToRad = (deg: number): number => (deg * Math.PI) / 180;
+const add3 = (a: readonly [number, number, number], b: readonly [number, number, number]): [number, number, number] => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+
+/** HS-01 lighting rig: one shadowed key, the unshadowed counter-rim, the VESPER up-fill. Fill is the HDRI (no ambient). */
+export function circuitLights(look: CircuitLook): AuraNodeBuilder<AuraSceneNode>[] {
+  const out: AuraNodeBuilder<AuraSceneNode>[] = [
+    lights.directional({
+      name: "td key light",
+      position: add3(KEY_TARGET, sunPosition(look.key.elevationDeg, look.key.azimuthDeg)),
+      target: KEY_TARGET,
+      color: look.key.color,
+      intensity: look.key.intensity,
+      shadow: KEY_SHADOW
+    }).runtime(game.runtimeNode(RIG_IDS.key)),
+    lights.directional({
+      name: "td coolant rim",
+      position: add3(KEY_TARGET, rimPosition(look)),
+      target: KEY_TARGET,
+      color: look.rim.color,
+      intensity: look.rim.intensity,
+      shadow: false
+    }).runtime(game.runtimeNode(RIG_IDS.rim))
+  ];
+  if (look.upFill) {
+    // Vents below the causeway: a warm light travelling upwards, so undersides and arches glow from beneath.
+    out.push(lights.directional({ name: "td vent up-fill", position: [0, -40, -12], target: KEY_TARGET, color: look.upFill.color, intensity: look.upFill.intensity, shadow: false })
+      .runtime(game.runtimeNode(RIG_IDS.upFill)));
+  }
+  return out;
+}
+
+/** HS-03 sky: the circuit HDRI drawn as the background and used as the image-based fill. */
+export function circuitSky(look: CircuitLook): AuraNodeBuilder<AuraSceneNode> {
+  return environments.hdri({
+    name: `td sky ${look.hdri}`,
+    texture: HDRI_BY_ID[look.hdri],
+    intensity: look.environmentIntensity,
+    rotation: degToRad(look.environmentRotationDeg),
+    background: true
+  }).runtime(game.runtimeNode(RIG_IDS.sky));
+}
+
+/** HS-05 atmosphere and HS-12 post for a circuit (AO is HS-01's explicit pass). */
+export function circuitPost(look: CircuitLook, options: { readonly exposureEv?: number; readonly ambientOcclusion?: boolean } = {}): AuraNodeBuilder<AuraSceneNode>[] {
+  const out: AuraNodeBuilder<AuraSceneNode>[] = [
+    effects.fog({ name: "td fog", color: look.fog.color, density: look.fog.density, intensity: 0.6 }),
+    effects.colorGrade({
+      name: "td grade",
+      exposure: Math.pow(2, options.exposureEv ?? look.exposureEv),
+      contrast: look.grade.contrast,
+      saturation: look.grade.saturation,
+      temperature: look.grade.temperature,
+      tint: look.grade.tint
+    }),
+    effects.bloom({ name: "td warm bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold, color: look.bloom.color }),
+    effects.vignette({ name: "td vignette", intensity: look.vignette, smoothness: 0.65 })
+  ];
+  if (options.ambientOcclusion !== false) out.push(effects.ambientOcclusion({ name: "td ambient occlusion", intensity: 0.5, radius: 0.7 }));
+  if (look.grain > 0) out.push(effects.filmGrain({ name: "td film grain", intensity: look.grain }));
+  if (look.volumetricFog) {
+    const v = look.volumetricFog;
+    // God rays take their direction from the shadowed key (the 9-degree burnt sun); no screen anchor is authored.
+    out.push(effects.volumetricFog({ name: "td dust god rays", color: v.color, density: v.density, intensity: v.intensity, godRayDensity: v.godRayDensity }));
+  }
+  return out;
 }
 
 export function buildThermalDriftScene(options: SceneOptions) {
   const circuit = options.circuit;
-  const overrides = { exposureEv: options.exposureEv ?? NIGHT_EXPOSURE_EV, fogDensityScale: 0, accent: circuit.accentColor };
-  const look = options.ambientOcclusion === false
-    ? looks.nodes("night-city", overrides).filter((n) => !/ambient occlusion/i.test(String((n.toJSON() as { name?: string }).name ?? "")))
-    : [looks.preset("night-city", overrides)];
+  const look = CIRCUIT_LOOKS[circuit.id];
   const s = scene()
-    .addMany(look)
-    .background(circuit.skyColor)
+    .background(look.fog.color)
     .camera(camera.perspective({ fov: 68, near: 0.25, far: 650, position: [0, 4.2, 9.5], target: [0, 1.8, -18] }))
-    .addMany([
-      // Two unshadowed accent lights over the road; the look's key is the one shadowed light.
-      lights.point({ color: "#ff7a1f", intensity: 1.8, position: [0, 6, -10], distance: 75 }),
-      lights.point({ color: "#35d6ff", intensity: 1.5, position: [0, 8, -32], distance: 85 }),
-      effects.vignette({ intensity: 0.22, smoothness: 0.65 }),
-      effects.fog({ color: FOG_COLOR, density: 0.008, intensity: 0.6 })
-    ]);
+    .add(circuitSky(look))
+    .addMany(circuitLights(look))
+    .addMany(circuitPost(look, {
+      ...(options.exposureEv !== undefined ? { exposureEv: options.exposureEv } : {}),
+      ...(options.ambientOcclusion === false ? { ambientOcclusion: false } : {})
+    }));
 
-  // Sky: a backdrop wall in the circuit's sky colour with two emissive horizon bands in front of it.
-  s.addMany([
-    primitives.box({ name: IDS.backdrop, size: [1100, 260, 2], material: emissive(circuit.skyColor, 0.6), castShadow: false, receiveShadow: false })
-      .position(0, 70, -300).runtime(game.runtimeNode(IDS.backdrop)),
-    primitives.box({ name: IDS.floor, size: [520, 0.5, 460], material: material.pbr({ color: circuit.fogTint, roughness: 0.92, metalness: 0.12 }), castShadow: false })
-      .position(0, -8.5, -150).runtime(game.runtimeNode(IDS.floor)),
-    primitives.box({ name: IDS.bandA, size: [520, 26, 2], material: emissive(circuit.accentColor, 0.75), castShadow: false, receiveShadow: false })
-      .position(0, 18, -260).runtime(game.runtimeNode(IDS.bandA)),
-    primitives.box({ name: IDS.bandB, size: [520, 10, 2], material: emissive(circuit.horizonColor, 0.65), castShadow: false, receiveShadow: false })
-      .position(0, 6, -257).runtime(game.runtimeNode(IDS.bandB))
-  ]);
+  // Ground far below the elevated road (the HDRI is the sky; no backdrop wall or horizon bands).
+  s.add(
+    primitives.box({ name: IDS.floor, size: [520, 0.5, 460], material: material.pbr({ color: look.ground, roughness: 0.92, metalness: 0.12 }), castShadow: false })
+      .position(0, -8.5, -150).runtime(game.runtimeNode(IDS.floor))
+  );
 
   // Road, lanes, walls and chevrons: one instanced node per material.
   const unshadowed = { castShadow: false, frustumCulled: false } as const;
@@ -120,17 +184,18 @@ export function buildThermalDriftScene(options: SceneOptions) {
       .runtime(game.runtimeNode(IDS.deckEven)),
     instances.box({ name: IDS.deckOdd, size: [22.4, 0.36, ROAD_TILE_LENGTH], material: material.pbr({ color: "#141922", roughness: 0.38, metalness: 0.36 }), transforms: along(INSTANCE_COUNTS.deckOdd, 0, -0.186, ROAD_TILE_SPACING * 2), frustumCulled: false })
       .runtime(game.runtimeNode(IDS.deckOdd)),
-    instances.box({ name: IDS.spineA, size: [0.42, 0.05, ROAD_TILE_SPACING * 0.58], material: spineMaterial(circuit.horizonColor), transforms: along(INSTANCE_COUNTS.spineA, 0, 0.03, ROAD_TILE_SPACING * 3), ...unshadowed })
+    // Warm foundry accents per circuit (look.ts); coolant cyan stays off the road.
+    instances.box({ name: IDS.spineA, size: [0.42, 0.05, ROAD_TILE_SPACING * 0.58], material: spineMaterial(look.accents.secondary), transforms: along(INSTANCE_COUNTS.spineA, 0, 0.03, ROAD_TILE_SPACING * 3), ...unshadowed })
       .runtime(game.runtimeNode(IDS.spineA)),
-    instances.box({ name: IDS.spineB, size: [0.42, 0.05, ROAD_TILE_SPACING * 0.58], material: spineMaterial(circuit.accentColor), transforms: along(INSTANCE_COUNTS.spineB, 0, 0.03, ROAD_TILE_SPACING), ...unshadowed })
+    instances.box({ name: IDS.spineB, size: [0.42, 0.05, ROAD_TILE_SPACING * 0.58], material: spineMaterial(look.accents.primary), transforms: along(INSTANCE_COUNTS.spineB, 0, 0.03, ROAD_TILE_SPACING), ...unshadowed })
       .runtime(game.runtimeNode(IDS.spineB)),
-    instances.box({ name: IDS.lanes, size: [0.18, 0.04, ROAD_TILE_SPACING * 0.45], material: emissive("#94a3b8", 0.45), transforms: along(INSTANCE_COUNTS.lanes, 5.2, 0.025, ROAD_TILE_SPACING / 2), ...unshadowed })
+    instances.box({ name: IDS.lanes, size: [0.18, 0.04, ROAD_TILE_SPACING * 0.45], material: emissive(look.accents.lanes, 0.45), transforms: along(INSTANCE_COUNTS.lanes, 5.2, 0.025, ROAD_TILE_SPACING / 2), ...unshadowed })
       .runtime(game.runtimeNode(IDS.lanes)),
     instances.box({ name: IDS.walls, size: [0.95, 1.35, 12.8], material: material.pbr({ color: "#232936", roughness: 0.52, metalness: 0.45 }), transforms: along(INSTANCE_COUNTS.walls, 11.3, 0.55, WALL_SPACING / 2), frustumCulled: false })
       .runtime(game.runtimeNode(IDS.walls)),
-    instances.box({ name: IDS.chevA, size: [0.22, 0.36, 9.6], material: chevronMaterial(circuit.accentColor), transforms: along(INSTANCE_COUNTS.chevA, 10.72, 0.72, WALL_SPACING), ...unshadowed })
+    instances.box({ name: IDS.chevA, size: [0.22, 0.36, 9.6], material: chevronMaterial(look.accents.primary), transforms: along(INSTANCE_COUNTS.chevA, 10.72, 0.72, WALL_SPACING), ...unshadowed })
       .runtime(game.runtimeNode(IDS.chevA)),
-    instances.box({ name: IDS.chevB, size: [0.22, 0.36, 9.6], material: chevronMaterial(circuit.horizonColor), transforms: along(INSTANCE_COUNTS.chevB, -10.72, 0.72, WALL_SPACING), ...unshadowed })
+    instances.box({ name: IDS.chevB, size: [0.22, 0.36, 9.6], material: chevronMaterial(look.accents.secondary), transforms: along(INSTANCE_COUNTS.chevB, -10.72, 0.72, WALL_SPACING), ...unshadowed })
       .runtime(game.runtimeNode(IDS.chevB)),
     instances.box({ name: IDS.rain, size: [0.03, 1.35, 0.03], material: emissive("#60a5fa", 0.55), transforms: along(INSTANCE_COUNTS.rain, 0, 4, 4), ...unshadowed })
       .runtime(game.runtimeNode(IDS.rain)),

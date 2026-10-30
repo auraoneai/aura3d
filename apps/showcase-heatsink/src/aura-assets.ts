@@ -1,7 +1,7 @@
 // Thermal Drift's own asset manifest: the 26 admitted `heatsink*` models, copied verbatim from the root catalog
 // (src/aura-assets.ts, generated from aura.assets.json). Importing only these keeps the 2.6 MB shared catalog
 // chunk out of this page (release audit RH-06). Regenerate when a heatsink entry changes in aura.assets.json.
-import { defineAuraAssets, type AuraAssetDefinition } from "@aura3d/engine";
+import { defineAuraAssets, type AuraAssetDefinition, type AuraAssetRef } from "@aura3d/engine";
 
 const definitions = {
   "heatsinkArch": {
@@ -1074,3 +1074,19 @@ const definitions = {
 
 export const assets = defineAuraAssets(definitions);
 export const HEATSINK_ASSET_KEYS = Object.keys(definitions) as readonly (keyof typeof definitions)[];
+
+// GU47 WP-13 HS-03: the three circuit skies, from the E-A HDRI catalogue (1k copies served at /hdri/<id>_1k.hdr;
+// licences in public/hdri/ATTRIBUTION.md). Kept apart from the 26 models so HEATSINK_ASSET_KEYS stays the model list.
+const hdriDefinitions = {
+  heatsinkHdriRooftopNight: { type: "texture", format: "hdr", url: "/hdri/rooftop_night_1k.hdr" },
+  heatsinkHdriIndustrialSunset: { type: "texture", format: "hdr", url: "/hdri/industrial_sunset_puresky_1k.hdr" },
+  heatsinkHdriSpruitSunrise: { type: "texture", format: "hdr", url: "/hdri/spruit_sunrise_1k.hdr" }
+} satisfies Record<string, AuraAssetDefinition>;
+
+export const hdris = defineAuraAssets(hdriDefinitions);
+/** Circuit sky texture by catalogue id (src/look.ts `CircuitLook.hdri`). */
+export const HDRI_BY_ID: Readonly<Record<"rooftop_night" | "industrial_sunset_puresky" | "spruit_sunrise", AuraAssetRef<"texture">>> = {
+  rooftop_night: hdris.heatsinkHdriRooftopNight,
+  industrial_sunset_puresky: hdris.heatsinkHdriIndustrialSunset,
+  spruit_sunrise: hdris.heatsinkHdriSpruitSunrise
+};
