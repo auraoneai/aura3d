@@ -79,6 +79,9 @@ export interface CumulusLookRow {
   /** CD-14: sky-pearl brightness multiplier (HDR, above the bloom threshold) and the hero's PBR rim (CD-03, E-D). */
   readonly pearlGlow: number;
   /** CD-12 track: PBR tint and roughness of the road deck, and whether rain puddles are laid on it. */
+  /** CD-17: hero-tree wind (E-G instance wind; null = static) and the two cloud drift rates (sky dome, cloud sea below). */
+  readonly wind: { readonly strength: number; readonly gustStrength: number; readonly directionDeg: number } | null;
+  readonly cloudDrift: { readonly sky: number; readonly sea: number };
   readonly road: { readonly color: string; readonly roughness: number; readonly puddles: boolean };
   readonly heroRim: { readonly color: string; readonly power: number; readonly intensity: number } | null;
 }
@@ -113,6 +116,8 @@ export const CUMULUS_LOOK: readonly [CumulusLookRow, CumulusLookRow] = [
     vignette: { intensity: 0.2, smoothness: 0.7 },
     signature: { rainbowDeg: [40, 42], towerCount: 3, silverLining: 1 },
     pearlGlow: 1.55,
+    wind: { strength: 0.45, gustStrength: 0.4, directionDeg: 232 },
+    cloudDrift: { sky: 1, sea: 0.45 },
     road: { color: "#d9c4b4", roughness: 0.72, puddles: true },
     heroRim: { color: CUMULUS_PALETTE.rim, power: 3, intensity: 0.6 }
   },
@@ -139,6 +144,8 @@ export const CUMULUS_LOOK: readonly [CumulusLookRow, CumulusLookRow] = [
     vignette: { intensity: 0.2, smoothness: 0.7 },
     signature: { rainbowDeg: [0, 0], towerCount: 0, silverLining: 0 },
     pearlGlow: 1,
+    wind: null,
+    cloudDrift: { sky: 1, sea: 1 },
     road: { color: "#ffffff", roughness: 1, puddles: false },
     heroRim: null
   }

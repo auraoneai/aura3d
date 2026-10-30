@@ -25,6 +25,7 @@ import { MESHY } from "./models";
 import { buildBridges, buildClouds, buildGorgePosts, buildHut, buildMesas, buildObstacles, yawOf } from "./props";
 import { smooth } from "./sim";
 import { buildPuddles } from "./puddles";
+import { buildWaymarks } from "./waymarks";
 import { ROAD_HALF, buildGround, buildScatter, buildValleyForest, groundHeight } from "./terrain";
 
 const LICENSE_ACG = "CC0 1.0, ambientCG";
@@ -213,8 +214,11 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   /* generated hero set pieces along the road: instanced, one draw each */
   const place = (list: readonly { pos: V3; scale: number; yaw: number }[]) => list.map((p) => ({ position: p.pos, rotation: [0, p.yaw, 0] as V3, scale: p.scale }));
   const heroSet = { targetHeight: 1, castShadow: true, receiveShadow: false, instancingAware: true } as const;
-  if (HERO_SET && scatter.roundTrees.length) b.add(instances.model(MESHY.treeRound, { name: "hero-trees-round", ...heroSet, transforms: place(scatter.roundTrees) }));
-  if (HERO_SET && scatter.pineTrees.length) b.add(instances.model(MESHY.treePine, { name: "hero-trees-pine", ...heroSet, transforms: place(scatter.pineTrees) }));
+  /* CD-17: the storm row sways the instanced hero trees in the post-squall breeze (E-G instance wind;
+     the row sets the strength) */
+  const treeWind = ACTIVE_LOOK.wind ? { wind: { strength: ACTIVE_LOOK.wind.strength, gustStrength: ACTIVE_LOOK.wind.gustStrength, directionDeg: ACTIVE_LOOK.wind.directionDeg } } : {};
+  if (HERO_SET && scatter.roundTrees.length) b.add(instances.model(MESHY.treeRound, { name: "hero-trees-round", ...heroSet, ...treeWind, transforms: place(scatter.roundTrees) }));
+  if (HERO_SET && scatter.pineTrees.length) b.add(instances.model(MESHY.treePine, { name: "hero-trees-pine", ...heroSet, ...treeWind, transforms: place(scatter.pineTrees) }));
   if (HERO_SET && scatter.boulders.length) b.add(instances.model(MESHY.boulder, { name: "hero-rocks", ...heroSet, castShadow: false, transforms: place(scatter.boulders) }));
   if (HERO_SET && mesas.placements.length) b.add(instances.model(MESHY.mesa, { name: "hero-mesas", targetHeight: 1, castShadow: false, receiveShadow: false, instancingAware: true, transforms: mesas.placements.map((m) => ({ position: m.pos, rotation: [0, m.yaw, 0] as V3, scale: [m.width / 0.55, m.height, m.width / 0.55] as V3 })) }));
   buildClouds(ch).forEach((m, i) => addMesh(m, `clouds-${i}`, scenerySpec({ sun: 0.85, rim: 0.5 })));
@@ -224,6 +228,8 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   const hut = buildHut(ch);
   if (hut) addMesh(hut, "home", scenerySpec({ rim: 0.2 }));
   addMesh(buildCheckpointFlags(ch), "checkpoint-flags", scenerySpec({ rim: 0.3, sun: 1.3 }));
+  /* CD-20: cairns and cloth-strip cord poles at the gorges, one merged draw (storm-washed row) */
+  if (ACTIVE_LOOK.id === "storm-washed") addMesh(buildWaymarks(ch), "waymarks", scenerySpec({ rim: 0.25 }));
 
   /* CD-12: rain puddles on the wet track, one merged mesh (storm-washed row) */
   if (ACTIVE_LOOK.road.puddles) {
@@ -744,9 +750,11 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
 
       sky.setPosition(shook[0], shook[1], shook[2]);
       if (cinematic) { const d = ACTIVE_LOOK.scenery.sunDir; node(SUN_FLARE_ID).setPosition(shook[0] + d[0] * 2000, shook[1] + d[1] * 2000, shook[2] + d[2] * 2000); }
-      sky.setUniform?.("cloudPhase", clock);
+      // CD-17: two drift speeds (sky dome vs the cloud sea below); reduced motion slows both to 30%
+      const drift = cinematic && g.reducedMotion ? 0.3 : 1;
+      sky.setUniform?.("cloudPhase", clock * ACTIVE_LOOK.cloudDrift.sky * drift);
       valley.setPosition(shook[0], f.point[1] - 43, shook[2]);
-      valley.setUniform?.("cloudPhase", clock);
+      valley.setUniform?.("cloudPhase", clock * ACTIVE_LOOK.cloudDrift.sea * drift);
 
       fx.update(dt, app);
     }
