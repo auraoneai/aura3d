@@ -9,14 +9,14 @@
 
 | ID | Pri | Status | Commit | Notes / evidence |
 |---|---|---|---|---|
-| E-B.0 predecessor contract | M | done | (this commit) | Predecessor's uncommitted `contracts/lighting.ts` reviewed and kept (diagnostics fields, `AuraEnvironmentSwapOptions`, `setEnvironment`, stub); doc of `localShadowLights` corrected (rows are `local-<i>`), `intensity` defined as the environment-term scale. |
-| E-B.5 lighting diagnostics | M | done | (this commit) | `punctualLights` / `localShadowLights` counted from the frame's collected lights (`runtimeLightStats`, `lights.ts`); `diagnostics().lighting` also carries `shadows`, `punctualLights`, `localShadowLights`. |
-| E-B.1 setLight + per-frame light follow | M | in progress | - | |
-| E-B.2 setEnvironment + rotation | M | pending | - | |
-| E-B.3 setFog on effects.fog scenes | M | pending | - | |
-| E-B.4 multi-caster shadows | M | pending | - | |
-| E-B.6 declarations for E-H / E-G | M | pending | - | |
-| E-B.7 tests + receipt spec | M | pending | - | |
+| E-B.0 predecessor contract | M | done | `c95d4a170` | Predecessor's uncommitted `contracts/lighting.ts` reviewed and kept (diagnostics fields, `AuraEnvironmentSwapOptions`, `setEnvironment`, stub); doc of `localShadowLights` corrected (rows are `local-<i>`), `intensity` defined as the environment-term scale. |
+| E-B.5 lighting diagnostics | M | done | `c95d4a170` | `punctualLights` / `localShadowLights` counted from the frame's collected lights (`runtimeLightStats`, `lights.ts`); `diagnostics().lighting` also carries `shadows`, `punctualLights`, `localShadowLights`. |
+| E-B.1 setLight + per-frame light follow | M | done | `5f9efcb6c` | Lights follow `setPosition` / `setVisible` every frame; `handle.setLight` blends. `tests/unit/lighting/set-light.test.ts` (15). |
+| E-B.2 setEnvironment + rotation | M | done (renderer consumption handed off) | `60ec60747` | Swap + crossfade + rotation on the source as `environmentProbeRotation`; `renderer/Background.ts` must apply it (handoff, no GU47 owner). `tests/unit/gu47/eb/set-environment.test.ts` (9). |
+| E-B.3 setFog on effects.fog scenes | M | done | `a5b0e892f` | `overrideSceneFog`; `handle.setFog` writes its node; binding without VFX_SKY. `tests/unit/gu47/eb/set-fog.test.ts` (9). |
+| E-B.4 multi-caster shadows | M | in progress | - | |
+| E-B.6 declarations for E-H / E-G | M | done | `5f9efcb6c`, `a5b0e892f` | `part?` on the handle; typed sky `stars` / `clouds`. |
+| E-B.7 tests + receipt spec | M | in progress | - | |
 
 ## Verification (base)
 
