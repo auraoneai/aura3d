@@ -1,8 +1,9 @@
-import { camera, defineAuraAssets, effects, environments, game, instances, lights, material, model, primitives, scene, sky, type AuraModelMaterialOverride, type AuraTransformSpec } from "@aura3d/engine";
+import { camera, defineAuraAssets, effects, environments, game, instances, lights, material, model, primitives, scene, sky, text3D, type AuraModelMaterialOverride, type AuraTransformSpec } from "@aura3d/engine";
 import { assets, type GridAssetKey } from "./aura-assets";
 import { BRAKE_RED, KEY_SHADOW, SODIUM, SKY_LOOKS, hdriUrl, keyLightPosition, type HdriId, type SkyLook } from "./look";
 import { RIVALS, TRAFFIC_SPECS } from "./sim";
 import { MANHOLES } from "./vfx";
+import { CATENARY, DISTRICTS, PARKED, SIGN, SIGN_SLOTS, crossStreetName, signNodeId } from "./dressing";
 import { CAR_DRAW_Z, CURB_BEACON_X, PLAYABLE_FLEET, PLAYABLE_IDS, SCENE_CAM_FOV_DEG, SCENE_CAM_POS, SCENE_CAM_TARGET, type PlayableCarId, type Vec3, type WeatherPreset } from "./rules";
 
 export const HIDDEN_SCALE: Vec3 = [0.0001, 0.0001, 0.0001];
@@ -476,6 +477,24 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
       buildingNode(spec, `sf-bldg-l-${i}`, lay, -lay.centerX, bz).runtime(game.runtimeNode(`sf-bldg-l-${i}`)),
       buildingNode(specR, `sf-bldg-r-${i}`, layR, layR.centerX, bz).runtime(game.runtimeNode(`sf-bldg-r-${i}`))
     ]);
+  }
+
+  // 5b. GD-19 dressing: trolley catenary, parked cars on the cross streets, SDF street-name signs (text = HUD cross street).
+  const wireMat = material.pbr({ color: "#15181c", metalness: 0.4, roughness: 0.6 });
+  s.addMany([
+    instances.box({ name: "sf-catenary-wires", size: CATENARY.wire, material: wireMat, transforms: pool(CATENARY.wiresX.length) }).runtime(game.runtimeNode("sf-catenary-wires")),
+    instances.box({ name: "sf-catenary-spans", size: CATENARY.span, material: wireMat, transforms: pool(LAMP_PAIRS) }).runtime(game.runtimeNode("sf-catenary-spans")),
+    ...PARKED.map((p, k) =>
+      instances.model(assets[p.asset], { name: `sf-parked-${k}`, transforms: pool(INTERSECTION_COUNT * p.slots.length), targetMaxDimension: p.maxDim, castShadow: true }).runtime(game.runtimeNode(`sf-parked-${k}`))
+    ),
+    instances.box({ name: "sf-sign-plates", size: SIGN.plate, material: material.pbr({ color: SIGN.plateColor, roughness: 0.5 }), transforms: pool(INTERSECTION_COUNT) }).runtime(game.runtimeNode("sf-sign-plates"))
+  ]);
+  const signMat = material.emissive({ color: SIGN.textColor, emissive: SIGN.textColor, emissiveIntensity: look.street.headlights > 0 ? 0.6 : 0.2 });
+  for (let d = 0; d < DISTRICTS.length; d++) {
+    for (let slot = 0; slot < SIGN_SLOTS; slot++) {
+      const id = signNodeId(d, slot);
+      s.add(text3D(crossStreetName(d), { name: id, size: SIGN.size, depth: 0.02, backend: "sdf", material: signMat }).position(0, -50, 200).runtime(game.runtimeNode(id)));
+    }
   }
 
   // 6. Kerb beacon (ring, floor disc, beam, core), the waiting passenger and the route ribbon

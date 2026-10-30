@@ -75,6 +75,7 @@ import { installSensorPass, scanPulseAt } from "./scanPulse";
 import { createGridVfxQueue, headlightMotesSpec, installGridVfx, manholeLayout, motesAnchor, type GridVfxShot } from "./vfx";
 import { mountTouchPads } from "./touch";
 import { bezelState } from "./bezel";
+import { CATENARY, DISTRICTS, PARKED, SIGN, SIGN_SLOTS, districtAt, parkedLayout, signAssignments, signNodeId } from "./dressing";
 import { STATIC_CROPS, carCrop, type QaCrop } from "./qaCrops";
 import { FOV_KICK_HALFLIFE_S, FOV_KICK_MAX_DEG, ROLL_HALFLIFE_S, cameraFeel } from "./cameraFeel";
 
@@ -162,6 +163,11 @@ function bindNodes(app: ReturnType<typeof createAuraApp>, sky: WeatherPreset) {
     crossRoads: req("sf-cross-roads"),
     crosswalks: req("sf-crosswalks"),
     manholes: req("sf-manholes"),
+    wires: req("sf-catenary-wires"),
+    spans: req("sf-catenary-spans"),
+    parked: PARKED.map((_, k) => req(`sf-parked-${k}`)),
+    signPlates: req("sf-sign-plates"),
+    signs: new Map(DISTRICTS.flatMap((_, d) => Array.from({ length: SIGN_SLOTS }, (_, slot) => [signNodeId(d, slot), req(signNodeId(d, slot))] as const))),
     signalPoles: req("sf-signal-poles"),
     signalArms: req("sf-signal-arms"),
     signalLights: req("sf-signal-lights"),
@@ -697,6 +703,17 @@ async function bootGridDispatch(): Promise<void> {
     // GD-15: manhole covers past each crossing; steam puffs only while the car is nearly stopped (see MANHOLES).
     const manholes = manholeLayout(Array.from({ length: INTERSECTION_COUNT }, (_, i) => interBaseZ - i * INTERSECTION_STRIDE_Z));
     N.manholes.setInstances(manholes.map(([x, z]) => pos(rx(x), ry(0.012), rz(z))));
+    // GD-19: parked cars on the cross streets and the street-name sign at each crossing (text = the HUD cross street).
+    const interZs = Array.from({ length: INTERSECTION_COUNT }, (_, i) => interBaseZ - i * INTERSECTION_STRIDE_Z);
+    N.parked.forEach((h, k) => h.setInstances(parkedLayout(k, interZs).map((c) => ({ position: [rx(c.x), ry(0), rz(c.z)], rotation: [0, c.yaw, 0] }) as AuraTransformSpec)));
+    const signs = signAssignments(interZs);
+    N.signPlates.setInstances(signs.map(([, z]) => pos(rx(SIGN.x), ry(SIGN.y), rz(z + SIGN.dz) - 0.04)));
+    const shown = new Set<string>();
+    for (const [id, z] of signs) {
+      shown.add(id);
+      N.signs.get(id)?.setPosition(rx(SIGN.x), ry(SIGN.y - SIGN.size * 0.35), rz(z + SIGN.dz)).setVisible(true);
+    }
+    for (const [id, h] of N.signs) if (!shown.has(id)) h.setVisible(false);
     vfx.steam({ dt: frameSeconds, speed: S.phase === "driving" ? S.player.speed : 0, z: pose.pz, manholes });
     N.signalPoles.setInstances(iz.flatMap((z) => [pos(rx(11.4), ry(3.4), z - 9.2), pos(rx(-11.4), ry(3.4), z - 9.2)]));
     N.signalArms.setInstances(iz.flatMap((z) => [pos(rx(8.6), ry(6.5), z - 9.2), pos(rx(-8.6), ry(6.5), z - 9.2)]));
@@ -714,6 +731,9 @@ async function bootGridDispatch(): Promise<void> {
     N.lampGlobes.setInstances(lz.flatMap((z) => [pos(rx(-10.8), ry(6.25), z), pos(rx(10.8), ry(6.25), z)]));
     // GD-02: sodium points ride on the nearest lamp globes in front of the camera.
     if (N.sodium.length) nearestLamps(lz, N.sodium.length).forEach(([x, z], i) => N.sodium[i]!.setLight?.({ position: [rx(x), ry(6.1), z] }));
+    // GD-19: trolley catenary: wires along the avenue (like the road strips) and a span at every lamp pair.
+    N.wires.setInstances(CATENARY.wiresX.map((x) => pos(rx(x), ry(CATENARY.wireY), -160 + camOff.z)));
+    N.spans.setInstances(lz.map((z) => pos(rx(0), ry(CATENARY.spanY), z)));
     N.trunks.setInstances(lz.map((z) => pos(rx(12.2), ry(1.6), z - 14)));
     N.crowns.setInstances(lz.map((z) => pos(rx(12.2), ry(4.1), z - 14)));
 
@@ -878,7 +898,7 @@ async function bootGridDispatch(): Promise<void> {
       const bars = $("bzBars");
       if (bars && bars.dataset.bars !== String(bz.bars)) bars.dataset.bars = String(bz.bars);
       readAvoidRects();
-      const distIdx = Math.abs(Math.floor(-p.z / 160)) % DISTRICTS.length;
+      const distIdx = districtAt(p.z);
       const di = DISTRICTS[distIdx]!;
       setText("wHood", di[0]);
       setText("wSt", di[1]);
@@ -889,14 +909,6 @@ async function bootGridDispatch(): Promise<void> {
     }
   }
 
-  const DISTRICTS: ReadonlyArray<readonly [string, string, string, string]> = [
-    ["Nob Hill", "California Street", "→ Mason St", "37.7919° N · 122.4102° W"],
-    ["Chinatown", "California Street", "→ Grant Ave", "37.7924° N · 122.4058° W"],
-    ["Financial District", "California Street", "→ Montgomery St", "37.7931° N · 122.4026° W"],
-    ["SoMa", "Market Street", "→ Fremont St", "37.7897° N · 122.3972° W"],
-    ["The Embarcadero", "The Embarcadero", "→ Washington St · Ferry Terminal", "37.7955° N · 122.3937° W"],
-    ["North Beach", "Columbus Avenue", "→ Broadway", "37.7992° N · 122.4076° W"]
-  ];
   const textCache = new Map<string, string>();
   function setText(id: string, text: string): void {
     if (textCache.get(id) === text) return;
