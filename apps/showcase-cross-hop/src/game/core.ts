@@ -636,8 +636,9 @@ function poolNodes(diorama: boolean) {
     model(assets.rescuePod, { name: "pod", targetHeight: 1.15, castShadow: true })
       .position(0, -999, 0)
       .runtime(game.runtimeNode("pod")),
-    // 3D Meshy spectator critters cheering along the outer meadow banks!
-    ...SPECTATOR_CRITTERS.map((key, idx) =>
+    // 3D Meshy spectator critters cheering along the outer meadow banks! The diorama look mounts them after the
+    // first frame (CH47-18 lazy load, `mountSpectators`).
+    ...(diorama ? [] : SPECTATOR_CRITTERS).map((key, idx) =>
       model(assets[key], { name: `spectator-${idx}`, targetHeight: 0.92, castShadow: true, ...critterMaterial(key, diorama) })
         .position((idx % 2 === 0 ? -1 : 1) * (SCENERY_X + 0.6 + (idx % 3) * 1.1), FLOOR_Y, -idx * 2.2)
         .rotate(0, idx % 2 === 0 ? Math.PI * 0.45 : -Math.PI * 0.45, 0)
@@ -658,6 +659,24 @@ function poolNodes(diorama: boolean) {
     );
   }
   return out;
+}
+
+/** CH47-18: the diorama look loads the 11 spectator critters after the app is ready, so they stay off the boot path. */
+let spectatorsMounted = false;
+export function mountSpectators(): void {
+  if (!app || lookMode !== "diorama" || spectatorsMounted) return;
+  spectatorsMounted = true;
+  const n0 = app.nodes as unknown as { add(n: never): void };
+  SPECTATOR_CRITTERS.forEach((key, idx) => {
+    try {
+      n0.add(model(assets[key], { name: `spectator-${idx}`, targetHeight: 0.92, castShadow: true, ...critterMaterial(key, true) })
+        .position((idx % 2 === 0 ? -1 : 1) * (SCENERY_X + 0.6 + (idx % 3) * 1.1), FLOOR_Y, -idx * 2.2)
+        .rotate(0, idx % 2 === 0 ? Math.PI * 0.45 : -Math.PI * 0.45, 0)
+        .animate({ clip: "Idle", loop: true })
+        .runtime(game.runtimeNode(`spectator-${idx}`))
+        .toJSON() as never);
+    } catch { /* runtime add unsupported: no spectators */ }
+  });
 }
 
 /** CH47-08: the diorama keeps each critter's textures with a per-surface override; the original look paints them cream. */
@@ -1638,7 +1657,7 @@ export function swapCritter(c: CritterDef): void {
     const py = playerBaseY(lane(st.playerRow));
     n0.remove("player");
     n0.add(
-      model(assets[c.asset], { name: "player", targetHeight: 1.05, castShadow: true, material: CRITTER_MAT })
+      model(assets[c.asset], { name: "player", targetHeight: 1.05, castShadow: true, ...critterMaterial(c.asset, lookMode === "diorama") })
         .position(st.playerCol * COL_W, py, pz).rotate(0, Math.PI, 0)
         .animate({ clip: "Idle", loop: true })
         .runtime(game.runtimeNode("player"))

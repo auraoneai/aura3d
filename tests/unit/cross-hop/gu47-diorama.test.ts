@@ -147,8 +147,8 @@ describe("VFX preset pack (CH47-13) and ambient emitters (CH47-14)", () => {
   });
 
   it("reduced motion halves particle counts", () => {
-    const full = crossHopPresets(false)[CROSS_HOP_VFX.deathDrowned].layers[0] as { count: number };
-    const half = crossHopPresets(true)[CROSS_HOP_VFX.deathDrowned].layers[0] as { count: number };
+    const full = crossHopPresets(false)[CROSS_HOP_VFX.deathDrowned].layers[0] as unknown as { count: number };
+    const half = crossHopPresets(true)[CROSS_HOP_VFX.deathDrowned].layers[0] as unknown as { count: number };
     expect(half.count).toBe(Math.round(full.count / 2));
     const a = ambientEmitter("rain", false)!, b = ambientEmitter("rain", true)!;
     expect(b.rate).toBe(a.rate / 2);

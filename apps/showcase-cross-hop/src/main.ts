@@ -1,7 +1,7 @@
 /** Cross Hop — endless lane-hopper showcase (PRD: docs/prd/cross-hop.md). */
 import { game, createFixedStepLoop } from "@aura3d/engine";
 import { createGame, sfxUrl } from "@aura3d/engine/game";
-import { buildScene, probeScene, bindApp, step, syncVisuals, st, startRun, evidenceExtra, setPaused, setReducedMotion, setLookMode, getLookMode, deathEffect, dioramaView, SIM_STEP } from "./game/core";
+import { buildScene, probeScene, bindApp, step, syncVisuals, st, startRun, evidenceExtra, setPaused, setReducedMotion, setLookMode, getLookMode, deathEffect, dioramaView, mountSpectators, SIM_STEP } from "./game/core";
 import { qaCrops } from "./game/qa";
 import { mountUI, tickUI, setUiSound } from "./game/ui";
 import "../../showcase-port-shared/quickbar.css";
@@ -130,6 +130,7 @@ if (AUTOSTART) {
 
 void g.ready().then(() => {
   appReady = true;
+  mountSpectators();
   syncVisuals(1);
   document.body.dataset.aura3dReady = "true";
 });
