@@ -13,6 +13,10 @@ import type { Block, Building } from "./world";
 /** radius (metres, from the start) inside which furniture is drawn from the generated models */
 export const NEAR = { lamp: 180, signal: 170, tree: 230, hydrant: 190 } as const;
 
+/** GU47 WP-28 GC-A2: street furniture heights, metres (longest side of the generated GLB). */
+export const LAMP_M = 5;
+export const SIGNAL_M = 4.2;
+
 type Transform = ReturnType<typeof propTransform>;
 
 export interface PropPlan {
@@ -41,7 +45,8 @@ export function planProps(f: Furniture, blocks: readonly Block[], buildings: rea
   // the lamp arm points across the street along (sin yaw, cos yaw); the generated lamp's arm points along +x
   f.lamps.forEach((p, i) => {
     if (!nearLamp(p.x, p.z)) return;
-    add("lamp", propTransform("lamp", p.x, p.z, p.yaw - Math.PI / 2, 5.6));
+    // GU47 WP-28 GC-A2: street lamps 5 m (were 5.6 m); signals stay 4.2 m
+    add("lamp", propTransform("lamp", p.x, p.z, p.yaw - Math.PI / 2, LAMP_M));
     // a hydrant beside every sixth lamp, a bus shelter beside every eightieth
     const along: [number, number] = [Math.cos(p.yaw), -Math.sin(p.yaw)];
     const across: [number, number] = [Math.sin(p.yaw), Math.cos(p.yaw)];
@@ -65,7 +70,7 @@ export function planProps(f: Furniture, blocks: readonly Block[], buildings: rea
     solids.push({ x: sx, z: sz, hw: alongX ? 2.1 : 0.7, hd: alongX ? 0.7 : 2.1, kind: "prop" });
   });
   f.signals.forEach((p) => {
-    if (nearSignal(p.x, p.z)) add("signal", propTransform("signal", p.x, p.z, p.yaw, 4.2));
+    if (nearSignal(p.x, p.z)) add("signal", propTransform("signal", p.x, p.z, p.yaw, SIGNAL_M));
   });
   const streetTree = (t: { x: number; z: number; yaw: number; seed: number }): void => {
     if (!nearTree(t.x, t.z)) return;
@@ -101,11 +106,14 @@ export function planProps(f: Furniture, blocks: readonly Block[], buildings: rea
   };
 }
 
+/** Prop kinds that cast in the shift look (GU47 WP-28 GC-L2); trees and palms stay non-casting (leaf cards). */
+export const CASTING_PROPS: readonly PropKey[] = ["lamp", "signal", "shelter", "hydrant", "clocktower", "lighthouse", "watertank"];
+
 /** One instanced draw per prop kind. */
-export function propNodes(plan: PropPlan) {
+export function propNodes(plan: PropPlan, cast = false) {
   const nodes = [];
   for (const [key, transforms] of plan.placements) {
-    nodes.push(instances.model(MODEL_ASSETS[key], { name: `model-${key}`, transforms, castShadow: false, receiveShadow: false }));
+    nodes.push(instances.model(MODEL_ASSETS[key], { name: `model-${key}`, transforms, castShadow: cast && CASTING_PROPS.includes(key), receiveShadow: false }));
   }
   return nodes;
 }

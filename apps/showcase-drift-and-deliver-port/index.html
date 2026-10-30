@@ -100,18 +100,40 @@
         body.touch #job { top: 94px; left: 14px; transform: none; letter-spacing: 1px; }
         body.touch #minimap { width: 96px; height: 96px; }
       }
+      /* GU47 GC-H1 dispatch HUD (shift look only: body.dispatch); fonts from /fonts/local.css */
+      #dial, #stamp { display: none; }
+      body.dispatch #dial { display: block; width: 112px; height: 112px; margin: 0 auto -58px; }
+      body.dispatch #speedbox { bottom: 18px; }
+      body.dispatch #speed { position: relative; font-size: 34px; }
+      body.dispatch #job { top: 52px; padding: 7px 14px 8px; min-width: 168px; text-align: center; color: #2b2f36; font: 400 14px/1.35 "TT Commons Pro Mono", "Graphik Web", monospace; letter-spacing: 1px; text-shadow: none; border-radius: 3px; background: radial-gradient(circle at 0 50%, transparent 5px, #efe3cf 5.5px) left / 51% 100% no-repeat, radial-gradient(circle at 100% 50%, transparent 5px, #efe3cf 5.5px) right / 51% 100% no-repeat; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35); border-top: 2px dashed rgba(43, 47, 54, 0.35); }
+      body.dispatch #job:empty { display: none; }
+      body.dispatch #job.low { color: #b2321f; }
+      body.dispatch #stamp { position: absolute; top: 46px; left: 50%; display: block; opacity: 0; transform: translateX(-50%) rotate(-8deg); padding: 4px 12px; border: 3px solid #d9765f; border-radius: 4px; color: #d9765f; font: 600 22px/1.1 "Graphik Web", sans-serif; letter-spacing: 3px; background: rgba(239, 227, 207, 0.9); }
+      body.dispatch #stamp.on { animation: stamp 1.3s ease-out forwards; }
+      body.dispatch.reduced-motion #stamp.on { animation-name: stamp-fade; }
+      @media (prefers-reduced-motion: reduce) { body.dispatch #stamp.on { animation-name: stamp-fade; } }
+      @keyframes stamp { 0% { opacity: 0; transform: translateX(-50%) rotate(-8deg) scale(1.7); } 14% { opacity: 1; transform: translateX(-50%) rotate(-8deg) scale(1); } 75% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) rotate(-8deg) scale(1); } }
+      @keyframes stamp-fade { 0%, 75% { opacity: 1; } 100% { opacity: 0; } }
+      body.dispatch #minimap { border-radius: 18px; box-shadow: 0 0 0 2px rgba(239, 227, 207, 0.55); }
+      @media (max-width: 640px) {
+        body.dispatch #job { top: 92px; left: 14px; transform: none; min-width: 0; font-size: 13px; }
+        body.dispatch #stamp { top: 88px; left: 14px; transform: rotate(-8deg); font-size: 18px; }
+        body.dispatch #dial { width: 84px; height: 84px; margin: 0 0 -44px auto; }
+        body.dispatch #speed { font-size: 28px; }
+      }
     </style>
   </head>
   <body>
     <canvas id="world"></canvas>
     <div id="hud">
       <div id="nitro"><div class="label">NITRO</div><div class="track"><div id="nitro-fill"></div></div></div>
-      <div id="speedbox"><div id="speed">0</div><div class="meta">KM/H</div></div>
+      <div id="speedbox"><canvas id="dial" width="112" height="112" aria-hidden="true"></canvas><div id="speed">0</div><div class="meta">KM/H</div></div>
       <div id="score-box"><div id="score">0</div><div id="streak" style="opacity: 0">x0  STREAK</div><div id="drift" style="opacity: 0">DRIFT  0</div><div class="meta" id="count">0 / 174</div></div>
       <canvas id="minimap" width="240" height="240"></canvas>
       <div id="mute">Sound on (M)</div>
       <div id="clock">3:00</div>
       <div id="job"></div>
+      <div id="stamp" role="status" aria-live="polite"></div>
       <div id="popups"></div>
     </div>
     <div id="touch" hidden>

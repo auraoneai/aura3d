@@ -30,31 +30,44 @@ export interface ChaseState {
 const OFFSET = { back: 5.9, backPerSpeed: 0.048, backBoost: 1.2, up: 2.5, upPerSpeed: 0.013, minAboveGround: 1.9, lead: 5, leadPerSpeed: 0.3, lookUp: 1.25 } as const;
 const LAG = { heading: CONFIG.CAMERA_CHASE, headingMinFollow: 0.34, headingFullSpeed: 15, eye: 8, look: 10, fov: 4 } as const;
 const SNAP = { back: 10.6, up: 4.3, lead: 5, lookUp: 1.25, fov: 56 } as const;
-const fullRig = cameras.chase({
-  offset: OFFSET,
-  lag: LAG,
-  fovKick: { base: 56, perSpeed: 0.28, maxSpeedKick: 12, boost: 7 },
-  shake: { perShake: 0.9, speedStart: 22, speedRange: 40, speedAmp: 0.075, boostAmp: 0.05, threshold: 2e-3, verticalScale: 0.7, verticalPhase: 1.3, mode: "accumulate" },
-  snapOffset: SNAP
-});
+/** GU47 WP-28 GC-C2: the shift look's tighter chase (back 5.0, up 2.1, fov 60) so the courier fills 15-20% of the height. */
+const SHIFT_OFFSET = { ...OFFSET, back: 5.0, up: 2.1 } as const;
+export const SHIFT_FOV = 60;
 /** `prefers-reduced-motion`: no shake at all and the speed/nitro field-of-view kick capped at 3 degrees. */
 export const REDUCED_FOV_KICK = 3;
-const calmRig = cameras.chase({
-  offset: OFFSET,
-  lag: LAG,
-  fovKick: { base: 56, perSpeed: 0.28, maxSpeedKick: REDUCED_FOV_KICK, boost: 0 },
-  shake: { perShake: 0, speedStart: 22, speedRange: 40, speedAmp: 0, boostAmp: 0, threshold: 2e-3, verticalScale: 0.7, verticalPhase: 1.3, mode: "accumulate" },
-  snapOffset: SNAP
-});
-fullRig.snap({});
-calmRig.snap({});
-let rig = fullRig;
+const makeRig = (offset: { readonly [K in keyof typeof OFFSET]: number }, base: number, calm: boolean) =>
+  cameras.chase({
+    offset,
+    lag: LAG,
+    fovKick: calm ? { base, perSpeed: 0.28, maxSpeedKick: REDUCED_FOV_KICK, boost: 0 } : { base, perSpeed: 0.28, maxSpeedKick: 12, boost: 7 },
+    shake: calm
+      ? { perShake: 0, speedStart: 22, speedRange: 40, speedAmp: 0, boostAmp: 0, threshold: 2e-3, verticalScale: 0.7, verticalPhase: 1.3, mode: "accumulate" }
+      : { perShake: 0.9, speedStart: 22, speedRange: 40, speedAmp: 0.075, boostAmp: 0.05, threshold: 2e-3, verticalScale: 0.7, verticalPhase: 1.3, mode: "accumulate" },
+    snapOffset: SNAP
+  });
+const rigs = {
+  original: { full: makeRig(OFFSET, 56, false), calm: makeRig(OFFSET, 56, true) },
+  shift: { full: makeRig(SHIFT_OFFSET, SHIFT_FOV, false), calm: makeRig(SHIFT_OFFSET, SHIFT_FOV, true) }
+};
+for (const set of Object.values(rigs)) {
+  set.full.snap({});
+  set.calm.snap({});
+}
+let framing: keyof typeof rigs = "original";
+let calm = false;
+let rig = rigs.original.full;
 
 /** Switch to the calm rig (no shake, capped FOV kick) for players who ask the OS for reduced motion. */
 export function setReducedMotion(on: boolean): void {
-  rig = on ? calmRig : fullRig;
+  calm = on;
+  rig = rigs[framing][calm ? "calm" : "full"];
 }
-export const reducedMotion = (): boolean => rig === calmRig;
+/** GU47 WP-28 GC-C2: "shift" takes the tighter chase framing; "original" keeps the 4.6.1 rig (default). */
+export function setChaseFraming(next: "shift" | "original"): void {
+  framing = next;
+  rig = rigs[framing][calm ? "calm" : "full"];
+}
+export const reducedMotion = (): boolean => calm;
 
 const target = (c: ChaseInput, groundAt?: (x: number, z: number) => number) => ({
   position: [c.x, c.y, c.z] as const,

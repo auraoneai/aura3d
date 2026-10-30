@@ -1,0 +1,466 @@
+{
+  "schema": "aura3d.art-direction-audit/1",
+  "source": "examples/drift-and-deliver-port/art/direction.ts",
+  "sourceSha256": "37a858aac40974d6c5f459f4bc293b5899413974a25374a594e2c4cb54fbab3a",
+  "id": "drift-and-deliver-port",
+  "genre": "vehicle-delivery",
+  "signatureEffect": "delivery-beacon",
+  "palette": {
+    "primary": [
+      "#2b2f36",
+      "#d9765f",
+      "#9fd8c4",
+      "#efe3cf"
+    ],
+    "accent": "#ffb347",
+    "reservedObjective": "#22c3c9"
+  },
+  "environment": {
+    "hdri": "venice_sunset",
+    "background": "sky"
+  },
+  "violations": [],
+  "snapshot": {
+    "lights": [
+      {
+        "type": "directional",
+        "shadow": true,
+        "intensity": 4.4
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 0
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 0
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 0
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 0
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 0
+      },
+      {
+        "type": "spot",
+        "shadow": false,
+        "intensity": 0
+      }
+    ],
+    "hasAmbient": false,
+    "environment": {
+      "kind": "hdri",
+      "background": false
+    },
+    "models": [
+      {
+        "assetKey": "courier",
+        "triangles": 37470,
+        "textures": 2,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "sedan",
+        "triangles": 6920,
+        "textures": 2,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hatch",
+        "triangles": 7065,
+        "textures": 2,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "van",
+        "triangles": 7055,
+        "textures": 2,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "truck",
+        "triangles": 8589,
+        "textures": 2,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "lamp",
+        "triangles": 5507,
+        "textures": 2,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "signal",
+        "triangles": 3941,
+        "textures": 2,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "tree",
+        "triangles": 1844,
+        "textures": 2,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "palm",
+        "triangles": 2695,
+        "textures": 2,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "shelter",
+        "triangles": 5141,
+        "textures": 2,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hydrant",
+        "triangles": 4150,
+        "textures": 2,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "clocktower",
+        "triangles": 19196,
+        "textures": 2,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "lighthouse",
+        "triangles": 19987,
+        "textures": 2,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "watertank",
+        "triangles": 5838,
+        "textures": 2,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
+    "materials": [
+      {
+        "node": "city-*-facade",
+        "emissiveIntensity": 1.4,
+        "practical": true
+      },
+      {
+        "node": "city-*-shop",
+        "emissiveIntensity": 0.7,
+        "practical": true
+      },
+      {
+        "node": "dropoff-beacon",
+        "emissiveIntensity": 2.6,
+        "lightSource": true
+      },
+      {
+        "node": "dropoff-pad",
+        "emissiveIntensity": 1.4,
+        "lightSource": true
+      },
+      {
+        "node": "pickups",
+        "emissiveIntensity": 1.2,
+        "lightSource": true
+      },
+      {
+        "node": "car-tail",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "node": "road-tiles",
+        "emissiveIntensity": 0
+      }
+    ],
+    "drawCalls": 130
+  },
+  "direction": {
+    "id": "drift-and-deliver-port",
+    "genre": "vehicle-delivery",
+    "fantasy": "Last courier shift in a rain-washed pastel harbour town, racing the sun from golden hour into blue hour.",
+    "rebuildTier": "S-presentation",
+    "wave": 2,
+    "references": [
+      {
+        "file": "evidence/game-upgrades-47/drift-and-deliver-port/identity.md#references",
+        "source": "generic reference: Mediterranean hillside port towns at golden hour after a summer shower (travel photography)",
+        "licence": "reference-only",
+        "why": "Terracotta, mint and cream stucco blocks stepping down to a harbour, with wet charcoal streets mirroring a warm sky"
+      },
+      {
+        "file": "evidence/game-upgrades-47/drift-and-deliver-port/identity.md#references",
+        "source": "generic reference: blue-hour street photography of sodium-lit old towns",
+        "licence": "reference-only",
+        "why": "Sodium lamp pools and shop windows switching on block by block against an ink-blue sky with the last rose glow"
+      },
+      {
+        "file": "evidence/game-upgrades-47/drift-and-deliver-port/identity.md#references",
+        "source": "shipped comparable: arcade delivery and taxi games with a tall objective pillar over the rooftops",
+        "licence": "reference-only",
+        "why": "A single reserved-colour light pillar you can read from 300 m above the skyline, with a ring burst on delivery"
+      }
+    ],
+    "palette": {
+      "primary": [
+        "#2b2f36",
+        "#d9765f",
+        "#9fd8c4",
+        "#efe3cf"
+      ],
+      "accent": "#ffb347",
+      "reservedObjective": "#22c3c9"
+    },
+    "lighting": {
+      "key": {
+        "type": "directional",
+        "colorTemperatureK": 3200,
+        "shadow": true
+      },
+      "fill": "ibl",
+      "practicals": 6,
+      "environment": {
+        "hdri": "venice_sunset",
+        "background": "sky"
+      },
+      "exposureEV": 0
+    },
+    "framing": {
+      "rig": "chase",
+      "subjectHeightFraction": [
+        0.15,
+        0.2
+      ],
+      "fovDeg": [
+        58,
+        72
+      ],
+      "mobile": "both"
+    },
+    "assets": [
+      {
+        "role": "vehicle",
+        "assetKey": "courier",
+        "maxTriangles": 60000,
+        "minTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "sedan",
+        "maxTriangles": 12000,
+        "minTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "hatch",
+        "maxTriangles": 12000,
+        "minTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "van",
+        "maxTriangles": 12000,
+        "minTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "truck",
+        "maxTriangles": 14000,
+        "minTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "lamp",
+        "maxTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "signal",
+        "maxTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "tree",
+        "maxTriangles": 6000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "palm",
+        "maxTriangles": 6000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "shelter",
+        "maxTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "hydrant",
+        "maxTriangles": 6000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "clocktower",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "lighthouse",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "watertank",
+        "maxTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      }
+    ],
+    "vfx": [
+      {
+        "event": "drift",
+        "kind": "courier-tyre-smoke"
+      },
+      {
+        "event": "drift-skid",
+        "kind": "skid-ribbon"
+      },
+      {
+        "event": "nitro",
+        "kind": "courier-nitro-streak"
+      },
+      {
+        "event": "delivered",
+        "kind": "courier-delivery-ring"
+      },
+      {
+        "event": "job-missed",
+        "kind": "courier-job-missed"
+      },
+      {
+        "event": "pickup-coin",
+        "kind": "courier-pickup-parcel"
+      },
+      {
+        "event": "pickup-star",
+        "kind": "courier-pickup-express"
+      },
+      {
+        "event": "pickup-heart",
+        "kind": "courier-pickup-care"
+      },
+      {
+        "event": "traffic-bump",
+        "kind": "courier-traffic-bump"
+      }
+    ],
+    "audio": [
+      {
+        "event": "pickup",
+        "cue": "pickup-chime",
+        "variants": 3
+      },
+      {
+        "event": "delivered",
+        "cue": "delivery-chime",
+        "variants": 1
+      },
+      {
+        "event": "traffic-bump",
+        "cue": "thud",
+        "variants": 1
+      },
+      {
+        "event": "engine",
+        "cue": "engine-bed",
+        "variants": 1
+      }
+    ],
+    "signatureEffect": "delivery-beacon",
+    "criticalCategories": [
+      "lighting",
+      "environment_world",
+      "atmospheric_effects",
+      "vfx",
+      "gameplay_readability"
+    ],
+    "tiers": {
+      "low": {
+        "particles": 200,
+        "shadowMap": 1024,
+        "cascades": 1,
+        "textureMax": 1024
+      },
+      "medium": {
+        "particles": 400,
+        "shadowMap": 2048,
+        "cascades": 2,
+        "textureMax": 2048
+      },
+      "high": {
+        "particles": 800,
+        "shadowMap": 2048,
+        "cascades": 3,
+        "textureMax": 2048
+      },
+      "ultra": {
+        "particles": 1200,
+        "shadowMap": 4096,
+        "cascades": 3,
+        "textureMax": 2048
+      }
+    }
+  }
+}

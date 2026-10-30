@@ -14,7 +14,7 @@
  * are `prop` solids. The original's QA surface (`__sim`, `__dbg.nearSolids`) keeps the building-only world the reference
  * capture was recorded against, so the recorded replay hashes are unchanged.
  */
-import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, geometry, installQaHooks, material, primitives, type AuraApp } from "@aura3d/engine";
+import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, geometry, installQaHooks, material, primitives, text3D, type AuraApp } from "@aura3d/engine";
 import { createCameraClearance, createRenderInterpolator, drawCanvasMinimap, summarizeTextureUpgrade, warmPrograms } from "@aura3d/engine/game";
 import { blendPresentedInto, createPresented, type Presented } from "./presentation";
 import { buildLook, coinMatInto, mat, matInto, type LookRig } from "./look";
@@ -22,8 +22,17 @@ import { furnitureSolids } from "./city";
 import { createShift, formatClock, recordBest, stepShift, type ShiftEvent } from "./shift";
 import { mountTouchControls } from "./touch";
 import { drivingKey, keyAction } from "./input";
-import { setReducedMotion } from "./chase";
+import { setChaseFraming, setReducedMotion } from "./chase";
+import { parseAt, parseLook, phaseAt, todSeconds } from "./phases";
+import { SkidMarks, COURIER_TEAL } from "./fx";
+import { beaconMaterial, createShiftRuntime, padMaterial, shiftSceneNodes, type ShiftRuntime } from "./shiftRuntime";
+import { shiftCrops } from "./qa";
 import { createAudio } from "./audio";
+import { districtLayers, drawDial, slamStamp, ticketText } from "./hud";
+import { BOARD, boardPose, textOrigin, textWidth } from "./board";
+import { bannerNodes } from "./banners";
+import { INTRO, SIDE_SHOT, headlightFlare, introPose, introWanted, orbitPose, sideShotPose, sideShotWanted, type CarPose } from "./cinema";
+import { courierBraking, createPitch, placeHalos, stepPitch } from "./brakes";
 import { createBlackFrameWatch, healParams, healStage, type BlackFrameWatch } from "@aura3d/debug";
 import { carModel } from "./models";
 import { toArrays } from "./mesh";
@@ -84,8 +93,17 @@ const config = {
   /** `shift=N`: shift length in seconds (default 180; probes shorten it to reach the results screen) */
   shiftSeconds: Math.max(5, Number(params.get("shift")) || 180),
   /** `props=0` leaves the street furniture without colliders (diagnostics) */
-  props: params.get("props") !== "0"
+  props: params.get("props") !== "0",
+  /** GU47 WP-28: `look=original` keeps the 4.6.1 look; default is the time-of-day shift look */
+  look: parseLook(params.get("look")),
+  /** GU47 WP-28: `at=N` pins the time-of-day clock at N seconds of 180 (visual only; golden 10, sunset 120, bluehour 170) */
+  at: parseAt(params.get("at")),
+  /** `flash=reduced` caps the delivery flash (PRD §6.3 reduced flash); reduced motion implies it */
+  reducedFlash: params.get("flash") === "reduced"
 };
+const shiftLook = config.look === "shift";
+const skid = new SkidMarks();
+let shiftRuntime: ShiftRuntime | null = null;
 const BEST_KEY = "gridlock-courier-best";
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
@@ -109,7 +127,8 @@ clearPickups(pickups, solids, 1.5);
 const traffic = buildTraffic();
 const trafficStart = traffic.map((t) => ({ ...t }));
 const car = createCar();
-type Phase = "splash" | "playing" | "paused" | "results";
+/** `intro` (GU47 WP-28 GC-C1): the 6 s camera intro after Start; the sim does not step until it ends or is skipped. */
+type Phase = "splash" | "intro" | "playing" | "paused" | "results";
 const game = { phase: "splash" as Phase, score: 0, collected: 0 };
 let shift = createShift(config.shiftSeconds);
 const audio = config.manual ? null : createAudio();
@@ -175,10 +194,13 @@ const shellGeometry = (m: LookRig["playerShell"]["paint"]) => {
 let look: LookRig;
 
 function buildScene() {
-  look = buildLook({ blocks, buildings, traffic, pickups }, { models: config.models, quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, skyFill: config.skyFill, neutral: config.neutral, roadCells: config.roadCells, start: { x: car.x, z: car.z } });
+  const row = phaseAt(todSeconds(shift.elapsed, shift.length, config.at));
+  look = buildLook({ blocks, buildings, traffic, pickups }, { models: config.models, quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, skyFill: config.skyFill, neutral: config.neutral, roadCells: config.roadCells, start: { x: car.x, z: car.z }, look: config.look, row });
+  setChaseFraming(look.shift ? "shift" : "original");
   const s = look.builder;
+  if (look.shift) for (const n of shiftSceneNodes(skid, { reducedFlash: config.reducedFlash })) s.add(n);
   if (config.models) {
-    s.add(carModel("car-rig", "courier", true));
+    s.add(carModel("car-rig", "courier", true, look.shift ? "YXZ" : undefined));
   } else {
     s.add(geometry.custom(shellGeometry(look.playerShell.paint), { name: "car-paint", material: material.carPaint({ color: "#1d1e24", roughness: 0.28, envMapIntensity: 0.6 }), castShadow: true, receiveShadow: true }).runtime({ id: "car-paint" }));
     s.add(geometry.custom(shellGeometry(look.playerShell.detail), { name: "car-detail", material: material.pbr({ color: "#ffffff", roughness: 0.4, metallic: 0.1, texture: look.palette as never }), castShadow: true, receiveShadow: true }).runtime({ id: "car-detail" }));
@@ -187,8 +209,17 @@ function buildScene() {
   }
   s.add(geometry.custom(geometry.dynamic({ positions: beam.positions, normals: beam.normals, uvs: beam.uvs, indices: beam.indices }), { name: "car-beams", material: material.custom(beamSpec(headlightAmount)) }).runtime({ id: "car-beams" }));
   // delivery drop-off: a glowing pad and a tall beacon you can see over the roofs (moved to each new job)
-  s.add(primitives.cylinder({ name: "dropoff-pad", size: [2 * DROP_PAD_RADIUS, 0.06, 2 * DROP_PAD_RADIUS], position: [car.x, -60, car.z], material: material.emissive({ color: "#5ce1ff", emissive: "#2fc9ff", emissiveIntensity: 1.4 }), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-pad" }));
-  s.add(primitives.cylinder({ name: "dropoff-beacon", size: [0.9, 70, 0.9], position: [car.x, -60, car.z], material: material.emissive({ color: "#9cefff", emissive: "#46d6ff", emissiveIntensity: 1.8 }), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-beacon" }));
+  // GU47 WP-28 GC-V2 (shift look): the pillar and pad in reserved courier teal, a 1.6 m pillar plus an objective ring
+  s.add(primitives.cylinder({ name: "dropoff-pad", size: [2 * DROP_PAD_RADIUS, 0.06, 2 * DROP_PAD_RADIUS], position: [car.x, -60, car.z], material: look.shift ? padMaterial() : material.emissive({ color: "#5ce1ff", emissive: "#2fc9ff", emissiveIntensity: 1.4 }), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-pad" }));
+  s.add(primitives.cylinder({ name: "dropoff-beacon", size: look.shift ? [1.6, 70, 1.6] : [0.9, 70, 0.9], position: [car.x, -60, car.z], material: look.shift ? beaconMaterial(row.beacon) : material.emissive({ color: "#9cefff", emissive: "#46d6ff", emissiveIntensity: 1.8 }), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-beacon" }));
+  if (look.shift) s.add(primitives.torus({ name: "dropoff-ring", size: [2 * DROP_PAD_RADIUS + 1.2, 0.5, 2 * DROP_PAD_RADIUS + 1.2], position: [car.x, -60, car.z], rotation: [Math.PI / 2, 0, 0], material: beaconMaterial(2.2), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-ring" }));
+  // GC-H2: three SDF district banners over the avenues (static, +6 draws)
+  if (look.shift) for (const n of bannerNodes()) s.add(n);
+  if (look.shift) {
+    // GC-V2 address board: an SDF "DROP-OFF" sign on a dark teal panel by the pillar, turned to the camera (+2 draws)
+    s.add(primitives.box({ name: "dropoff-board", size: [BOARD.panel[0], BOARD.panel[1], BOARD.panel[2]], position: [car.x, -60, car.z], material: material.emissive({ color: "#123c40", emissive: "#0c2f33", emissiveIntensity: 0.6 }), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-board" }));
+    s.add(text3D(BOARD.text, { name: "dropoff-board-text", size: BOARD.size, depth: 0.06, backend: "sdf", material: material.emissive({ color: "#efe3cf", emissive: "#efe3cf", emissiveIntensity: 1.6 }), castShadow: false, receiveShadow: false }).position(car.x, -60, car.z).runtime({ id: "dropoff-board-text" }));
+  }
   if (config.props) {
     const extra = [...furnitureSolids(look.furniture), ...look.propSolids];
     for (const sol of extra) insert(playGrid, sol);
@@ -212,6 +243,9 @@ let renderFailed = false;
 /** Headlight beam strength 0..1 (the original ties it to night; `L` toggles it here). */
 let beamsUncullable = false;
 let headlightAmount = Math.max(0, Math.min(1, Number(new URLSearchParams(location.search).get("beams") ?? 0) || 0));
+/** GU47 WP-28 GC-L5: in the shift look the beams come on with the street lamps (from sunset); `L` still forces them on. */
+let headlightForced = params.has("beams");
+const beamAmount = (lampsOn: number): number => (shiftLook && !headlightForced ? Math.max(headlightAmount, Math.min(1, lampsOn * 1.4)) : headlightAmount);
 /** True once the full warm-up (environment HDRI and texture upgrades) has finished; `ready` only needs the programs. */
 let settled = false;
 const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
@@ -234,6 +268,10 @@ function simulateStep(input: Keys): void {
     if (struck) audio.thud();
     for (const e of picked) audio.chime(e.kind, ps.combo);
   }
+  if (shiftRuntime && !config.manual) {
+    if (struck) shiftRuntime.bump(car.x, car.z);
+    for (const e of picked) shiftRuntime.pickup(e.kind, pickups[e.index]!.x, pickups[e.index]!.z);
+  }
   for (const e of picked) popup(`+${e.score}${ps.combo > 1 ? `  x${ps.combo}` : ""}`, e.kind);
   game.collected = ps.collected;
   game.score = ps.score;
@@ -246,8 +284,11 @@ function simulateStep(input: Keys): void {
 
 function onShiftEvent(e: ShiftEvent): void {
   if (e.kind === "delivered") {
+    if (!config.manual) shiftRuntime?.delivered(e.job.x, e.job.z);
+    if (sideShotWanted(look.shift, shift.deliveries, config.manual, config.autostart, document.body.classList.contains("reduced-motion"))) sideShotTime = 0;
     game.score += e.score;
-    popup(`DELIVERED  +${e.score}`, "job");
+    if (shiftLook && !config.manual) slamStamp(hud.stamp, `DELIVERED  +${e.score}`);
+    else popup(`DELIVERED  +${e.score}`, "job");
     audio?.chime("star", 4);
   } else if (e.kind === "missed") popup("JOB MISSED", "miss");
   else if (e.kind === "drift") {
@@ -326,6 +367,12 @@ function placeTraffic(shown: Float64Array): void {
 const trafficTransforms = new Map<string, { position: [number, number, number]; rotation: [number, number, number]; scale: number }[]>();
 
 const HIDDEN = mat(0, -50, 0, 0, 0, 0, 0, 0);
+/** GC-C2 drift bank, radians. */
+const DRIFT_BANK = (3 * Math.PI) / 180;
+let bank = 0;
+/** GC-AN1 body pitch state and the lit brake halos (QA). */
+const pitchState = createPitch();
+let brakeLit = 0;
 const scratch = new Float32Array(16);
 function placePickups(): void {
   look.coins.forEach((p, i) => look.coinMesh.setMatrixAt(i, p.taken ? HIDDEN : coinMatInto(scratch, p.x, 1.15 + 0.18 * Math.sin(2.4 * renderTime + p.spin), p.z, p.spin + renderTime * 2.4, 0.95, 0.14)));
@@ -339,18 +386,30 @@ function placeDropoff(): void {
   const y = job ? 0.03 : -60;
   node("dropoff-pad").setPosition(job?.x ?? 0, y, job?.z ?? 0);
   node("dropoff-beacon").setPosition(job?.x ?? 0, job ? 35 : -60, job?.z ?? 0);
+  if (look.shift) node("dropoff-ring").setPosition(job?.x ?? 0, job ? 0.35 : -60, job?.z ?? 0);
+}
+
+const BOARD_TEXT_W = textWidth(BOARD.text, BOARD.size);
+/** GC-V2: the address board faces the shown eye (yaw only); under the road with no open job. */
+function placeBoard(eye: readonly [number, number, number]): void {
+  const pose = boardPose(shift.job, eye);
+  node("dropoff-board").setPosition(pose.x, pose.y, pose.z).setRotation(0, pose.yaw, 0);
+  const o = textOrigin(pose, BOARD_TEXT_W, BOARD.size);
+  node("dropoff-board-text").setPosition(o[0], o[1], o[2]).setRotation(0, pose.yaw, 0);
 }
 
 function placeNodes(dt: number, shown: Presented): void {
   const view = shown.car;
   const yaw = view.heading + 0.72 * view.lean;
   const roll = -Math.max(-0.16, Math.min(0.16, view.steer * Math.min(1, Math.abs(view.speed) / 34) * 0.09 + 0.1 * view.lean));
+  // GU47 WP-28 GC-AN1 (shift look): nose dips under braking, lifts under throttle, from the presented speed only
+  const pitch = look.shift ? stepPitch(pitchState, view.speed, dt, document.body.classList.contains("reduced-motion")) : 0;
   const place = (id: string, ox: number, oy: number, oz: number, extra: [number, number, number] = [0, 0, 0]) => {
     const s = Math.sin(yaw);
     const c = Math.cos(yaw);
     const h = node(id);
     h.setPosition(view.x + ox * c + oz * s, oy, view.z - ox * s + oz * c);
-    h.setRotation(extra[0], yaw + extra[1], roll + extra[2]);
+    h.setRotation(pitch + extra[0], yaw + extra[1], roll + extra[2]);
   };
   if (config.models) {
     place("car-rig", 0, 0, 0);
@@ -365,21 +424,81 @@ function placeNodes(dt: number, shown: Presented): void {
     node("car-beams").frustumCulled = false;
     beamsUncullable = true;
   }
-  node("car-beams").setUniform?.("beamAmount", headlightAmount);
+  node("car-beams").setUniform?.("beamAmount", beamAmount(shiftRuntime?.row().lamps ?? 0));
   placeTraffic(shown.traffic);
   placePickups();
+  if (look.tailHalos) {
+    const halos = look.tailHalos;
+    const live = !config.manual && game.phase === "playing";
+    brakeLit = placeHalos({ x: view.x, z: view.z, yaw, halfW: FOOTPRINT.halfW, halfD: FOOTPRINT.halfD, braking: live && courierBraking(keys.s, view.speed) }, shown.traffic, traffic, (i, x, y, z, ry, sx, sy, sz) => halos.setMatrixAt(i, matInto(scratch, x, y, z, ry, 0, sx, sy, sz)));
+  }
   stepChase(camState, { x: view.x, z: view.z, y: 0, heading: view.heading, speed: view.speed, boosting: car.boosting, shake: car.shake }, dt);
   // never put the eye inside a building at a corner (lesson M9)
   const eye = clearance.update(dt, { focus: [view.x, 1.4, view.z], eye: camState.eye, blocked: cameraBlocked });
   shownEye = eye;
-  app!.camera!.setPose({ position: eye, target: [...camState.look], up: [0, 1, 0], fov: camState.fov }, { cut: false });
+  // GU47 WP-28 GC-C2: a 3 deg bank into a drift (shift look; 0 under reduced motion)
+  const wantBank = look.shift && car.drifting && !document.body.classList.contains("reduced-motion") ? -Math.sign(view.steer) * DRIFT_BANK : 0;
+  bank += (wantBank - bank) * Math.min(1, dt * 4);
+  const hs = Math.sin(view.heading), hc = Math.cos(view.heading);
+  const up: [number, number, number] = [Math.sin(bank) * hc, Math.cos(bank), -Math.sin(bank) * hs];
+  if (look.shift) placeBoard(eye);
+  app!.camera!.setPose({ position: eye, target: [...camState.look], up, fov: camState.fov }, { cut: false });
+}
+
+/** GC-C1: the intro and the results orbit override the chase pose (camera only; a blocked eye falls back to chase). */
+function placeCinema(dt: number, shown: Presented): void {
+  cinemaTime += dt;
+  const carPose = { x: shown.car.x, z: shown.car.z, heading: shown.car.heading };
+  const chase = { position: [...shownEye] as [number, number, number], target: [...camState.look] as [number, number, number], fov: camState.fov };
+  const reduced = document.body.classList.contains("reduced-motion");
+  let pose = game.phase === "intro" ? introPose(cinemaTime, carPose, chase) : orbitPose(cinemaTime, carPose, reduced, cameraBlocked);
+  if (cameraBlocked(...pose.position)) pose = chase;
+  app!.camera!.setPose({ position: pose.position, target: pose.target, fov: pose.fov }, { cut: false });
+  if (game.phase === "results") placeFlare(pose.position, carPose);
+  if (game.phase === "intro" && cinemaTime >= INTRO.seconds) endIntro();
+}
+
+/** GC-C1: first-delivery side shot clock (seconds into the shot; Infinity when none is playing). */
+let sideShotTime = Infinity;
+function placeSideShot(dt: number, shown: Presented): void {
+  sideShotTime += dt;
+  if (sideShotTime >= SIDE_SHOT.seconds) {
+    sideShotTime = Infinity;
+    return;
+  }
+  const pose = sideShotPose(sideShotTime, { x: shown.car.x, z: shown.car.z, heading: shown.car.heading }, cameraBlocked);
+  if (pose) app!.camera!.setPose({ position: pose.position, target: pose.target, fov: pose.fov }, { cut: false });
+}
+
+/** GC-L5: the results-orbit headlight flare; `eye` null hides it. Writes only on a change (starts shown, so the first call hides it). */
+let flareShown = true;
+function placeFlare(eye: [number, number, number] | null, car?: CarPose): void {
+  const handle = app?.nodes.get("results-flare");
+  if (!handle) return;
+  const f = eye && car ? headlightFlare(car, eye, beamAmount(shiftRuntime?.row().lamps ?? 0)) : null;
+  const on = Boolean(f?.visible);
+  if (on && f) handle.setPosition(...f.position);
+  if (on !== flareShown) {
+    handle.setVisible(on);
+    flareShown = on;
+  }
 }
 
 function render(dt: number, alpha = 1): void {
   if (!app || !ready || renderFailed) return;
   try {
     const live = !config.manual && game.phase === "playing";
-    placeNodes(dt, live && alpha < 1 ? presenter.sample(alpha) ?? presentedNow() : presentedNow());
+    const shown = live && alpha < 1 ? presenter.sample(alpha) ?? presentedNow() : presentedNow();
+    placeNodes(dt, shown);
+    if (look.shift && (game.phase === "intro" || game.phase === "results")) placeCinema(dt, shown);
+    if (look.shift && game.phase !== "results") placeFlare(null);
+    if (look.shift && game.phase === "playing" && sideShotTime < Infinity) placeSideShot(dt, shown);
+    if (shiftRuntime) {
+      // GU47 WP-28: time of day, sodium pool, headlight spot, beacon, VFX (presentation reads only)
+      const lampsOn = shiftRuntime.row().lamps;
+      shiftRuntime.menu(game.phase === "splash" || game.phase === "results");
+      shiftRuntime.frame(dt, shift, { x: shown.car.x, z: shown.car.z, heading: shown.car.heading, speed: shown.car.speed, drifting: car.drifting && live, boosting: car.boosting && live, braking: keys.s }, beamAmount(lampsOn));
+    }
     app.step(0);
     frames++;
     blackWatch?.sample(frames);
@@ -392,7 +511,7 @@ function render(dt: number, alpha = 1): void {
 
 /* ------------------------------------------------------------------ HUD */
 
-const hud = { nitro: $("nitro-fill"), speed: $("speed"), score: $("score"), streak: $("streak"), count: $("count"), map: $<HTMLCanvasElement>("minimap"), clock: $("clock"), job: $("job"), drift: $("drift"), popups: $("popups") };
+const hud = { dial: $<HTMLCanvasElement>("dial"), stamp: $("stamp"), nitro: $("nitro-fill"), speed: $("speed"), score: $("score"), streak: $("streak"), count: $("count"), map: $<HTMLCanvasElement>("minimap"), clock: $("clock"), job: $("job"), drift: $("drift"), popups: $("popups") };
 const reducedMotionQuery = typeof matchMedia === "function" ? matchMedia("(prefers-reduced-motion: reduce)") : null;
 const applyReducedMotion = (): void => {
   const on = Boolean(reducedMotionQuery?.matches) || params.get("motion") === "reduced";
@@ -430,11 +549,15 @@ function updateHud(): void {
   const job = shift.job;
   if (job) {
     const d = Math.hypot(job.x - car.x, job.z - car.z);
-    hud.job.textContent = `DELIVER  ${Math.round(d)} m  ${formatClock(job.timeLeft)}`;
+    hud.job.textContent = shiftLook ? ticketText(shift.deliveries + shift.missed + 1, d, formatClock(job.timeLeft)) : `DELIVER  ${Math.round(d)} m  ${formatClock(job.timeLeft)}`;
     hud.job.classList.toggle("low", job.timeLeft <= 10);
   } else hud.job.textContent = "";
   hud.drift.style.opacity = shift.drift > 0 ? "1" : "0";
   hud.drift.textContent = `DRIFT  ${Math.round(shift.drift)}`;
+  if (shiftLook) {
+    const dial = hud.dial.getContext("2d");
+    if (dial) drawDial(dial, hud.dial.width, kmh(), car.boost);
+  }
   const ctx = hud.map.getContext("2d");
   if (!ctx) return;
   minimapCoins.length = 0;
@@ -444,11 +567,12 @@ function updateHud(): void {
     bounds: MINIMAP_BOUNDS,
     background: { fill: "rgba(38,30,26,.82)", radius: 18 },
     layers: [
+      ...(shiftLook ? DISTRICT_LAYERS : []),
       { kind: "lines", segments: MINIMAP_GRID, stroke: "rgba(255,226,175,.5)", width: 2.5 },
       { kind: "rect", rect: [-510, 506, 510, 510], fill: "rgba(70,160,205,.55)" },
       { kind: "points", points: minimapCoins, fill: "#ffd15c", size: 2.8 }
     ],
-    marker: { x: car.x, z: car.z, heading: car.heading, fill: "#ff9a2e" }
+    marker: { x: car.x, z: car.z, heading: car.heading, fill: shiftLook ? COURIER_TEAL : "#ff9a2e" }
   });
   // stars and hearts get their own shapes (a white diamond and a pink dot), the drop-off a cyan ring and an arrow
   const mx = (x: number): number => ((x - MINIMAP_BOUNDS[0]) / (MINIMAP_BOUNDS[2] - MINIMAP_BOUNDS[0])) * 240;
@@ -468,7 +592,7 @@ function updateHud(): void {
   }
   if (job) {
     const jx = mx(job.x), jy = mz(job.z), cx = mx(car.x), cy = mz(car.z);
-    ctx.strokeStyle = "#5ce1ff";
+    ctx.strokeStyle = shiftLook ? COURIER_TEAL : "#5ce1ff";
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.arc(jx, jy, 7, 0, Math.PI * 2);
@@ -477,7 +601,7 @@ function updateHud(): void {
     if (len > 22) {
       const ux = dx / len, uy = dy / len;
       const tipX = cx + ux * 20, tipY = cy + uy * 20;
-      ctx.fillStyle = "#5ce1ff";
+      ctx.fillStyle = shiftLook ? COURIER_TEAL : "#5ce1ff";
       ctx.beginPath();
       ctx.moveTo(tipX, tipY);
       ctx.lineTo(tipX - ux * 8 - uy * 5, tipY - uy * 8 + ux * 5);
@@ -488,13 +612,24 @@ function updateHud(): void {
   }
 }
 const MINIMAP_BOUNDS: [number, number, number, number] = [-510, -510, 510, 510];
+/** GC-H1: district paper tints under the street grid (shift look only, built once). */
+const DISTRICT_LAYERS = shiftLook ? districtLayers(blocks) : [];
+if (shiftLook) document.body.classList.add("dispatch");
 const minimapCoins: [number, number][] = [];
 
 /* ------------------------------------------------------------------ input */
 
 const onKey = (down: boolean) => (e: KeyboardEvent) => {
+  if (down && game.phase === "intro") {
+    endIntro();
+    e.preventDefault();
+    return;
+  }
   const action = down ? keyAction(e) : undefined;
-  if (action === "headlights") headlightAmount = headlightAmount > 0 ? 0 : 1;
+  if (action === "headlights") {
+    headlightAmount = beamAmount(shiftRuntime?.row().lamps ?? 0) > 0 ? 0 : 1;
+    headlightForced = true;
+  }
   else if (action === "pause") togglePause();
   else if (action === "mute") toggleMute();
   else if (action === "restart" && game.phase === "results") restart();
@@ -518,10 +653,21 @@ const touch = mountTouchControls(document, keys, { pause: () => togglePause(), m
 
 function begin(): void {
   if (game.phase !== "splash") return;
-  game.phase = "playing";
+  // GC-C1: a player start plays the skippable intro first (QA starts, manual and reduced motion go straight in)
+  game.phase = introWanted(shiftLook, config.manual, config.autostart, document.body.classList.contains("reduced-motion")) ? "intro" : "playing";
+  cinemaTime = 0;
+  sideShotTime = Infinity;
   $("splash").classList.add("hidden");
   audio?.resume();
 }
+
+/** GC-C1: end the intro (its last frame or any key / tap); the shift clock starts on the next fixed step. */
+function endIntro(): void {
+  if (game.phase !== "intro") return;
+  game.phase = "playing";
+  cinemaTime = 0;
+}
+let cinemaTime = 0;
 
 function silence(): void {
   Object.assign(keys, NO_KEYS);
@@ -546,6 +692,7 @@ function togglePause(): void {
 function endShift(): void {
   if (game.phase === "results") return;
   game.phase = "results";
+  cinemaTime = 0;
   silence();
   const { best, isNew } = recordBest(safeStorage(), BEST_KEY, game.score);
   $("r-title").textContent = shift.reason === "cleared" ? "City cleared" : "Shift over";
@@ -579,6 +726,7 @@ function restart(): void {
   Object.assign(keys, NO_KEYS);
   Object.assign(camState, snapChase({ x: car.x, z: car.z, y: 0, heading: car.heading, speed: 0, boosting: false, shake: 0 }));
   clearance.reset();
+  shiftRuntime?.reset();
   presenter.reset(presentedNow());
   placeDropoff();
   $("results").classList.add("hidden");
@@ -638,6 +786,9 @@ function status() {
   syncQa();
   return {
     phase: game.phase, state: stateVector(car), score: game.score, collected: game.collected, total: pickups.length, combo: car.combo, boost: car.boost, speedKmh: kmh(), frames, ready, settled, warm: warmResult,
+    look: config.look,
+    daylight: shiftRuntime?.state() ?? null,
+    brakes: { lit: brakeLit, pitch: pitchState.pitch },
     shift: { timeLeft: shift.timeLeft, elapsed: shift.elapsed, deliveries: shift.deliveries, missed: shift.missed, job: shift.job ? { ...shift.job } : null, drift: shift.drift, bestStreak: shift.bestStreak, over: shift.over, reason: shift.reason },
     touch: touch.enabled,
     bootTimings: { ...bootTimings }
@@ -708,6 +859,8 @@ const hooks = installQaHooks("drift-and-deliver", {
     },
     /** the chase eye the rig wanted and the eye shown after the building clearance, and whether each is inside a building */
     camera: () => ({ wanted: [...camState.eye], shown: [...shownEye], wantedBlocked: cameraBlocked(...camState.eye), shownBlocked: cameraBlocked(...shownEye), factor: clearance.factor }),
+    /** GU47 WP-28: named QA crops (normalised, top-left) for E-I's capture; also published on window.__AURA_QA__ */
+    crops: () => qaCrops(),
     /** move the car onto the current drop-off (delivery probes) */
     toDropoff() {
       if (!shift.job) return status();
@@ -716,6 +869,12 @@ const hooks = installQaHooks("drift-and-deliver", {
     }
   }
 });
+
+function qaCrops() {
+  const aspect = canvas.clientWidth > 0 && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : 16 / 9;
+  return shiftCrops({ x: car.x, z: car.z, heading: car.heading }, { eye: shownEye, target: camState.look as [number, number, number], fovDeg: camState.fov, aspect }, shift.job ? { x: shift.job.x, z: shift.job.z } : null);
+}
+(window as unknown as { __AURA_QA__?: Record<string, unknown> }).__AURA_QA__ = { ...((window as unknown as { __AURA_QA__?: Record<string, unknown> }).__AURA_QA__ ?? {}), get crops() { return qaCrops(); } };
 
 /* ------------------------------------------------------------------ boot */
 
@@ -751,6 +910,7 @@ async function boot(): Promise<void> {
   if (config.warm) warmResult = await warmPrograms(app, { waitForEnvironment: false, waitForTextures: false });
   mark("programsSettled");
   clearInterval(progressTimer);
+  if (look.shift) shiftRuntime = createShiftRuntime(app, look, look.furniture.lamps, skid, { reducedMotion: () => document.body.classList.contains("reduced-motion"), reducedFlash: () => config.reducedFlash || document.body.classList.contains("reduced-motion"), ...(config.at !== undefined ? { at: config.at } : {}) });
   ready = true;
   blackWatch = createBlackFrameWatch(canvas, { enabled: config.heal, storageKey: HEAL_STORAGE_KEY, ...(config.healFrames ? { fastFrames: config.healFrames } : {}) });
   $("loading").classList.add("hidden");
@@ -806,6 +966,8 @@ function tick(now: number): void {
 }
 
 $("start").addEventListener("click", begin);
+// GC-C1: a tap or click skips the intro in one frame
+addEventListener("pointerdown", () => endIntro());
 $("resume").addEventListener("click", togglePause);
 $("restart").addEventListener("click", restart);
 addEventListener("blur", () => {
