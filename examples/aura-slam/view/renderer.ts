@@ -17,6 +17,7 @@ import { createSpectatorUpdater } from "./spectators";
 import { VENUE_PALETTES, isMoonVenue, venueKey } from "./venues";
 import { lookMode, venueLook } from "./look";
 import { applyVenueRuntime, venueRuntimePlan, type VenueRuntimeApp, type VenueRuntimePlan } from "./venueRuntime";
+import { createSlamVfx, registerSlamVfx, type SlamVfxController } from "./vfx";
 
 /** Rig parts the World Tour look removes from the frame (TT-L2: contact shadows and the key's shadow replace the discs). */
 export const SHADOW_DISC_IDS = ["player-shadow", "rival-shadow"] as const;
@@ -118,6 +119,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
   const bootVenue = venueKey(new URLSearchParams(pageSearch).get("venue"));
   let venuePlan: VenueRuntimePlan | null = null;
   let venueChanges = 0;
+  let vfx: SlamVfxController | null = null;
 
   function applyVenue(venue: string): void {
     const key = venueKey(venue);
@@ -127,6 +129,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     if (worldTour && app) {
       venuePlan = applyVenueRuntime(app as unknown as VenueRuntimeApp, venueRuntimePlan(venueLook(key), activeTier(app)), { initial: first && key === bootVenue });
       if (!first) venueChanges += 1;
+      vfx?.clearMarks();
     }
     const pal = VENUE_PALETTES[key]!;
     h.ground!.setMaterial(material.pbr({ color: pal.ground, roughness: 0.94 }));
@@ -202,7 +205,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
         : req;
       const resolver = options.wrapHandle || worldTour ? ({ nodes: { require: rigReq } } as unknown as AuraApp) : app;
       rigs = { player: rig.resolve(resolver, "player"), rival: rig.resolve(resolver, "rival") };
-      ball = resolveBallHandles(req);
+      ball = resolveBallHandles(req, { trail: !worldTour, marks: !worldTour });
       h.ground = req("stadium-outer-ground");
       h.apron = req("court-apron");
       h.doubles = req("court-doubles-surface");
@@ -232,8 +235,15 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
         ...(options.search !== undefined ? { search: options.search } : {})
       });
       ready = true;
-      // GU47: the boot venue's light visibility, grade and output apply before the first presented frame.
-      if (worldTour) applyVenue(bootVenue);
+      if (worldTour) {
+        // GU47 TT-V1 / TT-V2: the registered bounce bursts, the decal marks and the ball's trail ribbon.
+        const effects = (app as { effects?: Parameters<typeof createSlamVfx>[0] & Parameters<typeof registerSlamVfx>[0] }).effects;
+        registerSlamVfx(effects);
+        vfx = createSlamVfx(effects, { reducedMotion });
+        vfx.startTrail("tennis-ball");
+        // GU47: the boot venue's light visibility, grade and output apply before the first presented frame.
+        applyVenue(bootVenue);
+      }
       // Hand layout back to the stylesheet (the mount froze the CSS size in px) and track the CSS box from now on.
       if (target.style) { target.style.width = ""; target.style.height = ""; }
       syncBacking();
@@ -305,6 +315,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       const cheering = (state.phase as string) === "pointOver" || state.mode === "gameover";
       if (spectators && audienceVisible) spectatorUpdater.update(spectators, t, cheering);
       if (particles) particlesDrawn = particleUpdater.update(particles, s.particles as never);
+      vfx?.update(s as never, venueLook(currentVenueKey));
 
       // C13: the sim's screen shake drives a small camera trauma, skipped under reduced motion.
       const shake = Number(s.screenShake ?? 0);
@@ -337,6 +348,8 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     },
 
     dispose(): void {
+      vfx?.dispose();
+      vfx = null;
       net?.dispose();
       net = null;
       ready = false;
@@ -370,6 +383,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
           floodlights: venuePlan ? venuePlan.floods.filter((f) => f.visible).length : 0
         },
         particles: { drawn: particlesDrawn },
+        vfx: vfx ? { ...vfx.events } : null,
         umpire: { visible: true },
         netPostLights: { active: lastFaultActive },
         outfits: { player: currentVenueKey === "moon" ? "apollo" : "tennis", rival: currentVenueKey === "moon" ? "apollo" : "tennis" },

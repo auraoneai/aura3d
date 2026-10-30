@@ -322,7 +322,8 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
       .runtime(game.runtimeNode("landing-indicator-ring"))
   ]);
 
-  s.addMany(buildBallNodes());
+  // TT-V1 / TT-V2: the World Tour look stamps decal marks and draws one trail ribbon instead of 8 cylinders and 8 spheres.
+  s.addMany(buildBallNodes({ trail: original, marks: original }));
   s.addMany(rig.build("player", true));
   s.addMany(rig.build("rival", false));
 

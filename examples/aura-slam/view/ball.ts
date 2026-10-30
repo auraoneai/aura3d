@@ -4,7 +4,16 @@ import type { Vec3 } from "../contract/units";
 import type { NodeInput } from "./rigPort";
 import { COURT_X, COURT_Y, COURT_Z, HIDDEN_SCALE, MARK_COUNT, TRAIL_COUNT, clamp } from "./constants";
 
-export function buildBallNodes(): NodeInput[] {
+export interface BallNodeOptions {
+  /** The eight trail spheres (`?look=original`; GU47 TT-V2 draws one `app.effects.trail` ribbon instead). */
+  readonly trail?: boolean;
+  /** The eight court-mark cylinders (`?look=original`; GU47 TT-V1 stamps `app.effects.decal` marks instead). */
+  readonly marks?: boolean;
+}
+
+export function buildBallNodes(options: BallNodeOptions = {}): NodeInput[] {
+  const withTrail = options.trail !== false;
+  const withMarks = options.marks !== false;
   const nodes: NodeInput[] = [
     primitives
       .sphere({ name: "tennis-ball", size: [0.156, 0.156, 0.156], material: material.emissive({ color: "#d8ff3e", emissive: "#d8ff3e", emissiveIntensity: 0.42 }) })
@@ -19,7 +28,7 @@ export function buildBallNodes(): NodeInput[] {
       .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("retiring-ball"))
   ];
-  for (let i = 0; i < TRAIL_COUNT; i++) {
+  for (let i = 0; withTrail && i < TRAIL_COUNT; i++) {
     nodes.push(
       primitives
         .sphere({ name: `ball-trail-${i}`, size: [0.096, 0.096, 0.096], material: material.emissive({ color: "#e6eb8d", emissive: "#e6eb8d", emissiveIntensity: 0.35 }) })
@@ -27,7 +36,7 @@ export function buildBallNodes(): NodeInput[] {
         .runtime(game.runtimeNode(`ball-trail-${i}`))
     );
   }
-  for (let i = 0; i < MARK_COUNT; i++) {
+  for (let i = 0; withMarks && i < MARK_COUNT; i++) {
     nodes.push(
       primitives
         .cylinder({ name: `court-mark-${i}`, size: [0.144, 0.006, 0.144], material: material.pbr({ color: "#d6bb95", roughness: 0.75 }) })
@@ -46,13 +55,13 @@ export interface BallHandles {
   marks: AuraRuntimeNodeHandle[];
 }
 
-export function resolveBallHandles(req: (id: string) => AuraRuntimeNodeHandle): BallHandles {
+export function resolveBallHandles(req: (id: string) => AuraRuntimeNodeHandle, options: BallNodeOptions = {}): BallHandles {
   return {
     ball: req("tennis-ball"),
     shadow: req("tennis-ball-shadow"),
     retiring: req("retiring-ball"),
-    trail: Array.from({ length: TRAIL_COUNT }, (_, i) => req(`ball-trail-${i}`)),
-    marks: Array.from({ length: MARK_COUNT }, (_, i) => req(`court-mark-${i}`))
+    trail: options.trail === false ? [] : Array.from({ length: TRAIL_COUNT }, (_, i) => req(`ball-trail-${i}`)),
+    marks: options.marks === false ? [] : Array.from({ length: MARK_COUNT }, (_, i) => req(`court-mark-${i}`))
   };
 }
 
@@ -89,7 +98,7 @@ export function updateBall(h: BallHandles, state: Readonly<MatchState>, options:
   }
 
   const trail = Array.isArray(ball?.trail) ? ball.trail : [];
-  for (let i = 0; i < TRAIL_COUNT; i++) {
+  for (let i = 0; i < h.trail.length; i++) {
     const pt = trail[trail.length - 1 - i];
     if (pt && state.mode === "playing" && (ball.active || state.phase === "serveToss")) {
       const s = Math.max(0.25, 1 - i / (TRAIL_COUNT + 1));
@@ -100,7 +109,7 @@ export function updateBall(h: BallHandles, state: Readonly<MatchState>, options:
   }
 
   const marks = (Array.isArray(state.marks) ? state.marks : []) as Array<{ x: number; y: number; life: number }>;
-  for (let i = 0; i < MARK_COUNT; i++) {
+  for (let i = 0; i < h.marks.length; i++) {
     const mk = marks[i];
     if (mk && state.mode !== "menu" && mk.life > 0) {
       h.marks[i]!.setPosition(mk.x * COURT_X, 0.016, mk.y * COURT_Z).setScale([1, 1, 1]).setVisible(true);

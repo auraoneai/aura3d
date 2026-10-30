@@ -3,7 +3,7 @@
 //
 // Genre: `GameGenre` has no racket or court-sports entry; "basketball" is the nearest broadcast court-ball genre and only
 // selects the rubric fallback (handoff to E-J in docs/prds/game-upgrades-47/lanes/g01.md: add a "tennis" genre).
-import { defineArtDirection } from "@aura3d/engine/game/art";
+import { defineArtDirection } from "@aura3d/game/art";
 
 export default defineArtDirection({
   id: "showcase-top-tennis",
