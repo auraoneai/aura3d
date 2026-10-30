@@ -3,7 +3,7 @@
 // worldX = tile.x - 9, worldZ = tile.y - 10.
 
 import {
-  game, looks, lights, effects, scene, camera, instances,
+  game, lights, effects, scene, camera, instances, environments, defineAuraAssets,
   primitives, material, type AuraApp
 } from "@aura3d/engine";
 import { idx, type ParsedMaze } from "./grid.js";
@@ -14,6 +14,38 @@ import {
 import type { FruitKind } from "./grid.js";
 import { fitDistanceScale, projectNdc, scalePose, type CameraPose } from "./camera.js";
 import { boardLook, hexToRgb, pylonLayout, REFERENCE_LOOK, type BoardLook } from "./palette.js";
+import { BOARD_LOOKS, BOARD_PROBE, BOUNCE, LAMP, LOOK_HDRI, type BoardLookRow } from "./look.js";
+import { boxReflectionProbe } from "./engineCompat.js";
+
+/** The E-A catalogue HDRI (CC0, Poly Haven "vintage_measuring_lab", public/hdri/ATTRIBUTION.md): IBL fill only. */
+const lookAssets = defineAuraAssets({
+  workshopHdr: {
+    type: "texture",
+    format: "hdr",
+    url: LOOK_HDRI.url,
+    hash: "sha256-3a7dd0110ad011289abae4f4637aa0a0e58abcbd8a3fe1f5f3ba664276dbb351",
+    metadata: { license: "CC0-1.0", sourcePath: "public/hdri/indoor-workshop_1k.hdr" }
+  }
+});
+
+/**
+ * Desk-lamp key (DD47-L1): one shadowed PCSS spot from the upper left. The engine drops local-light shadows on the Low
+ * tier (quality.ts `localShadowLights: 0`), where the lamp still pools light but casts none.
+ */
+function lampLight(look: BoardLookRow) {
+  return lights.spot({
+    name: "desk lamp",
+    position: [...LAMP.position],
+    target: [...LAMP.target],
+    angle: LAMP.angle,
+    penumbra: LAMP.penumbra,
+    distance: LAMP.distance,
+    decay: LAMP.decay,
+    intensity: look.lamp.intensity,
+    color: look.lamp.color,
+    shadow: { filter: "pcss", mapSize: 2048, lightSize: 1.2, softness: 0.6, bias: 0.0004, normalBias: 0.02 }
+  }).runtime(game.runtimeNode("lamp"));
+}
 
 export const TILE = 1;
 export const OX = -9, OZ = -10; // world offset of tile(0,0)
@@ -137,6 +169,7 @@ const boardMaterial = (color: string, emissive: string) => material.pbr({ color,
 // Scene definition — one static graph; instanced pools get re-filled per frame.
 // ---------------------------------------------------------------------------
 export function buildScene(): unknown {
+  const look = BOARD_LOOKS[st.mazeId];
   const s = scene()
     // Punchier neon without clipping the maze: lift mid-tones, keep whites in
     // the rails/orbs, and add a soft frame to focus the eye on the board.
@@ -145,13 +178,22 @@ export function buildScene(): unknown {
     // Gentle haze so the far maze rows settle into the deck tone without
     // dimming hazards at the top of the board.
     .add(effects.fog({ color: "#0e1a17", density: 0.0035 }))
-    .add(looks.preset("neon-arcade", { fogDensityScale: 0, exposureEv: 0.05, background: "#0e1a17", accent: "#ffb23e" }).runtime(game.runtimeNode("look")))
-    .add(lights.ambient({ color: "#ffe9cc", intensity: 0.92 }))
-    // 0.5, not 0.85: since the engine applies the hemisphere per normal (sky on up-facing
-    // surfaces), 0.85 lifted the board from 29.5 to 31.5 mean luma. 0.5 holds the audited 4.5.0
-    // look (remote runs g13w2-before / g13w2-grid / g13w2-after, docs/audits/lanes/g13.md).
-    .add(lights.hemisphere({ skyColor: "#ffe3b8", groundColor: "#2a3a32", intensity: 0.5 }))
-    .add(lights.directional({ position: [8, 22, 12], target: [0, 0, 0], color: "#fff2dc", intensity: 1.25, shadow: true }))
+    // DD47-E1: the workshop HDRI fills and reflects at 0.35 and is never drawn (the bench is the surround); a box
+    // probe over the board gives the glossy mask and the pins a parallax-correct reflection. No look preset: a look
+    // always adds a shadowed directional key (a second caster next to the lamp). GU47(E-A): looks.preset
+    // ("workbench-night") once E-A ships that look.
+    .add(environments.hdri({
+      name: "workshop ibl",
+      texture: lookAssets.workshopHdr,
+      intensity: look.hdri.intensity,
+      rotation: (look.hdri.rotationDeg * Math.PI) / 180,
+      background: false
+    }).runtime(game.runtimeNode("workshop-ibl")))
+    .add(boxReflectionProbe({ name: "board probe", ...BOARD_PROBE }))
+    // DD47-L1: the desk lamp is the only key and the only shadow caster; the old directional is a cool unshadowed
+    // bounce from the far side of the room; no ambient or hemisphere light.
+    .add(lampLight(look))
+    .add(lights.directional({ name: "cool bounce", position: [...BOUNCE.position], target: [...BOUNCE.target], color: BOUNCE.color, intensity: BOUNCE.intensity, shadow: false }))
     .camera(camera.perspective({ position: CAMERA_RIG.position, target: CAMERA_RIG.target, fov: CAMERA_RIG.fov }));
 
   // IMPORTANT: In Aura3D's instanced shader, v_instanceColor multiplies u_baseColor (color), NOT u_emissiveColor!
