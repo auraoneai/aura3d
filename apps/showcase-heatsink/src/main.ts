@@ -8,6 +8,7 @@ import { CIRCUITS, DRONE_ORDER, DRONE_SPECS, SCENERY_ANCHORS, TOTAL_LAPS, type C
 import { createInputs } from "./input";
 import { createHud } from "./hud";
 import { CIRCUIT_LOOKS, circuitFromParam } from "./look";
+import { HeatHazeController, hazeQaCrops, type GameQaCrop } from "./heatHaze";
 import { InstanceWriter, slotRivals } from "./view";
 import {
   anchorPosition,
@@ -57,6 +58,8 @@ const qaManual = params.get("qaManual") === "1";
 const qaEvRaw = Number(params.get("qaEv"));
 const qaEv = params.has("qaEv") && Number.isFinite(qaEvRaw) ? Math.min(2, Math.max(-2, qaEvRaw)) : undefined;
 const qaAoOff = params.get("qaAo") === "off";
+/** HS-11 QA on/off pair: `?qaHaze=off` keeps the heat-haze pass registered but disabled. */
+const qaHazeOff = params.get("qaHaze") === "off";
 const reducedMotionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)");
 
 const hud = createHud(document);
@@ -163,6 +166,19 @@ async function boot(): Promise<void> {
     pendingVfx.length = 0;
   }
 
+  // ------------------------------------------------------------------------------------------ heat haze (HS-11)
+  const haze = new HeatHazeController(auraApp, CIRCUIT_LOOKS[selectedCircuit].haze, !qaHazeOff);
+  const hotRivals: [number, number, number][] = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+  let hotRivalCount = 0;
+  const lavaAt: [number, number, number] = [0, 0, 0];
+  let lavaVisible = false;
+  const missileAt: [number, number, number] = [0, 0, 0];
+  const incomingAt: [number, number, number] = [0, 0, 0];
+  const exhaustAt: [number, number, number] = [0, 0, 0];
+  /** Named crops for the phase-2 capture (E-I crop contract), re-projected every frame. */
+  let qaCrops: readonly GameQaCrop[] = [];
+  (window as unknown as { __AURA_QA__?: { crops: () => readonly GameQaCrop[] } }).__AURA_QA__ = { crops: () => qaCrops };
+
   // HS-12: motion blur only while boosting (E-C runtime post control; the engine drops it below High; never on
   // reduced motion).
   let boostBlurOn = false;
@@ -192,6 +208,7 @@ async function boot(): Promise<void> {
     incomingTrail = auraApp.effects?.trail(IDS.incoming, INCOMING_TRAIL);
     plume?.handle?.stop({ immediate: true });
     plume = null;
+    haze.mount(CIRCUIT_LOOKS[id].haze);
     shownCircuit = id;
   }
 
@@ -360,6 +377,7 @@ async function boot(): Promise<void> {
 
     // Rivals: drawn set onto the six other drone models; a rival keeps its model while it stays drawn.
     const slots = slotRivals(race.drawn, rivalSlots, rivalModelsFor[race.drone], slotOut);
+    hotRivalCount = 0;
     for (const id of DRONE_ORDER) {
       if (id === race.drone) continue;
       const h = droneHandles[id];
@@ -370,6 +388,10 @@ async function boot(): Promise<void> {
       const d = shown.rivals[base]! - shown.player[0]!;
       track.place(d + 0.4, shown.rivals[base + 1]!, shown.rivals[base + 2]!, pose2);
       h.setPosition(pose2.x, pose2.y, pose2.z).setVisible(true);
+      if (hotRivalCount < hotRivals.length) {
+        const hot = hotRivals[hotRivalCount++]!;
+        hot[0] = pose2.x; hot[1] = pose2.y + 0.1; hot[2] = pose2.z + 1.5;
+      }
       droneRotation(h, pose2.heading, -0.04, 0, Math.max(-0.45, Math.min(0.45, (r.x - r.targetX) * 0.22)));
     }
 
@@ -405,6 +427,7 @@ async function boot(): Promise<void> {
 
     // Scenery: the copy in the window [-(10 + maxDim/2), period - (10 + maxDim/2)) metres around the player. A copy is
     // hidden only once it is behind the camera (C4), or after its pickup was collected on this pass (C14).
+    lavaVisible = false;
     for (const { anchor, handle } of sceneryHandles) {
       const behind = 10 + anchor.maxDim / 2;
       const k = Math.ceil((progress - behind - anchor.s) / anchor.period);
@@ -412,6 +435,11 @@ async function boot(): Promise<void> {
       track.place(d, anchor.lateralX, anchor.baseY, pose2);
       const collected = anchor.kind !== "decor" && collectedPass(race, anchor.id) === k;
       handle.setPosition(pose2.x, pose2.y, pose2.z).setVisible(!collected);
+      if (anchor.kind === "lava" && d > 0) {
+        // HS-11: the lava curtain is a heat source; its hot core sits about a third of the way up.
+        lavaVisible = true;
+        lavaAt[0] = pose2.x; lavaAt[1] = pose2.y + anchor.maxDim * 0.35; lavaAt[2] = pose2.z;
+      }
       handle.setRotation(0, -pose2.heading + anchor.yaw + (anchor.spinSpeed && !reduced ? race.time * anchor.spinSpeed : 0), 0);
     }
 
@@ -437,6 +465,7 @@ async function boot(): Promise<void> {
     if (m.active) {
       track.place(m.progress - progress, m.x, m.y, pose2);
       missileHandle.setPosition(pose2.x, pose2.y, pose2.z).setRotation(Math.PI * 0.5, -pose2.heading, 0).setVisible(true);
+      missileAt[0] = pose2.x; missileAt[1] = pose2.y; missileAt[2] = pose2.z + 1;
     } else missileHandle.setVisible(false);
 
     // Incoming missile: flies from the shooter to the player over the warning time.
@@ -447,6 +476,7 @@ async function boot(): Promise<void> {
       const d = (shooter.progress - progress) * (1 - t) + 0.4 * t;
       track.place(d, shooter.x + (p.x - shooter.x) * t, shooter.y + (p.y - shooter.y) * t + Math.sin(t * Math.PI) * 1.2, pose2);
       incomingHandle.setPosition(pose2.x, pose2.y, pose2.z).setRotation(Math.PI * 0.5, -pose2.heading, 0).setVisible(true);
+      incomingAt[0] = pose2.x; incomingAt[1] = pose2.y; incomingAt[2] = pose2.z - 1;
     } else incomingHandle.setVisible(false);
 
     // Shockwave ring
@@ -508,6 +538,20 @@ async function boot(): Promise<void> {
       const off = screen.depth <= 0 || screen.x < 0.04 || screen.x > 0.96 || screen.y < 0.08 || screen.y > 0.92;
       lock = { x: Math.min(0.96, Math.max(0.04, screen.x)), y: Math.min(0.92, Math.max(0.08, screen.y)), offscreen: off, name: lr.name, dist: Math.round(lr.progress - p.progress) };
     }
+
+    // HS-11 heat haze: project the heat sources through the presented camera and write the pass uniforms.
+    const heat01 = Math.min(1, Math.max(0, p.heat / 100));
+    const hs = haze.sources;
+    hs.begin();
+    exhaustAt[0] = dronePos[0]; exhaustAt[1] = dronePos[1] + 0.15; exhaustAt[2] = dronePos[2] + 1.5;
+    if (p.respawn <= 0) hs.add(camPose, aspect, exhaustAt, 1.3, 0.55 + (p.boosting ? 0.25 : 0) + heat01 * 0.35);
+    for (let i = 0; i < hotRivalCount; i += 1) hs.add(camPose, aspect, hotRivals[i]!, 1.1, 0.5);
+    if (lavaVisible) hs.add(camPose, aspect, lavaAt, 6, 0.9);
+    if (m.active) hs.add(camPose, aspect, missileAt, 0.8, 0.7);
+    if (inc.active && inc.from >= 0) hs.add(camPose, aspect, incomingAt, 0.8, 0.7);
+    hs.end();
+    haze.write({ heat01, reducedMotion: reduced, lowTier: auraApp.quality?.tier === "low", timeSeconds: now / 1000, aspect });
+    qaCrops = hazeQaCrops(camPose, aspect, exhaustAt, dronePos);
 
     hud.frame(race, {
       sector: sectorNameAt(circuit, Math.max(0, p.progress)),
@@ -597,6 +641,7 @@ async function boot(): Promise<void> {
 
   await auraApp.ready();
   ready = true;
+  haze.mount(CIRCUIT_LOOKS[shownCircuit].haze);
   hud.selectCircuit(selectedCircuit);
   hud.resetRace(race);
   hud.setAutopilot(autopilotOn);
