@@ -67,7 +67,16 @@ import { mountExtraTouchButtons } from "./game/touchExtras";
 import { DEFAULT_STAGE, stageById, type IronStage, type StageId } from "./game/stages";
 import { CROWD_IDS, crowdBob, signFlicker } from "./game/ambientMotion";
 import { buildArenaScene } from "./game/arena";
-import { cinematicPost, cinematicShot, createCinematicClock, FIGHT_LENS, letterboxWanted, type CinematicPost } from "./game/cinematics";
+import {
+  cinematicPost,
+  cinematicShot,
+  createCinematicClock,
+  FIGHT_LENS,
+  hudSlamFor,
+  letterboxWanted,
+  type CinematicPost,
+  type CinematicShot
+} from "./game/cinematics";
 import { backRimPose, FOLLOW_SPOT_ID, followSpotPose, LETTERBOX_BAR, panelLightId, poseDirection, RIM_IDS, stageLook, type SpotPose } from "./game/look";
 import { AMBIENT_EMITTERS, createAmbientVfx, installIronCrownVfx, type IronCrownVfxKind } from "./game/vfx";
 import { advanceLadder, createLadder, currentRung, type LadderState } from "./game/ladder";
@@ -376,6 +385,8 @@ const letterbox = (["top", "bottom"] as const).map((edge) => {
   return bar;
 });
 let letterboxOn = false;
+/** IC47-H1: the last shot's name, for the HUD slams synced to the intro. */
+let lastShotName: CinematicShot["name"] | null = null;
 /** IC47-P3: real time of the last special or K.O. (the CA and vignette pulse); the last post cue sent. */
 let postPulseAt = Number.NEGATIVE_INFINITY;
 /** IC47-AN2: real time of the last K.O. (the Crown crowd jumps). */
@@ -418,6 +429,9 @@ app.camera?.use({
         reducedMotion
       });
       setLetterbox(letterboxWanted(phase, winnerSide !== null));
+      const slam = hudSlamFor(lastShotName, shot?.name ?? null);
+      lastShotName = shot?.name ?? null;
+      if (slam) hud.slam(slam);
       applyPostCue(cinematicPost(shot, performance.now() / 1000 - postPulseAt, stageLook(state.config.stage.id).vignette, reducedMotion));
       if (shot) return { ...pose, position: shot.position, target: shot.target, fov: shot.fov };
     }

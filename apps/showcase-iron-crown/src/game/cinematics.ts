@@ -154,3 +154,18 @@ export function cinematicPost(shot: CinematicShot | null, pulseAge: number, base
     vignette: Number((baseVignette + pulse * POST_PULSE.vignette).toFixed(3))
   };
 }
+
+/** IC47-H1: which HUD element slams in when the shot changes (synced to the C1 intro), `null` for none. */
+export type HudSlam = "p1" | "p2" | "center";
+
+/**
+ * The P1 plate slams in on the P1 close-up, the P2 plate on the P2 close-up, and the round timer when the intro hands
+ * over to the fight lens. Pure: main.ts feeds it the previous and current shot names each frame.
+ */
+export function hudSlamFor(prev: CinematicShot["name"] | null, next: CinematicShot["name"] | null): HudSlam | null {
+  if (prev === next) return null;
+  if (next === "p1-closeup") return "p1";
+  if (next === "p2-closeup") return "p2";
+  if (next === null && (prev === "venue-dolly" || prev === "p1-closeup" || prev === "p2-closeup")) return "center";
+  return null;
+}

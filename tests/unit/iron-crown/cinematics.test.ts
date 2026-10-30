@@ -8,6 +8,7 @@ import {
   cinematicShot,
   createCinematicClock,
   FIGHT_LENS,
+  hudSlamFor,
   INTRO_SECONDS,
   INTRO_SHOTS,
   letterboxWanted,
@@ -107,5 +108,30 @@ describe("iron-crown cinematic post (GU47 IC47-P3)", () => {
     const cue = cinematicPost(null, 0, 0.2, true);
     expect(cue.chromaticAberration).toBe(0);
     expect(cue.vignette).toBe(0.2);
+  });
+});
+
+describe("IRON CROWN HUD slams synced to the intro (IC47-H1)", () => {
+  it("slams P1 on the P1 close-up, P2 on the P2 close-up and the timer when the fight lens returns", () => {
+    expect(hudSlamFor(null, "venue-dolly")).toBeNull();
+    expect(hudSlamFor("venue-dolly", "p1-closeup")).toBe("p1");
+    expect(hudSlamFor("p1-closeup", "p1-closeup")).toBeNull();
+    expect(hudSlamFor("p1-closeup", "p2-closeup")).toBe("p2");
+    expect(hudSlamFor("p2-closeup", null)).toBe("center");
+    expect(hudSlamFor("ko-orbit", null)).toBeNull();
+    expect(hudSlamFor(null, null)).toBeNull();
+  });
+
+  it("walks one intro: three slams in order", () => {
+    const slams: string[] = [];
+    let prev: Parameters<typeof hudSlamFor>[0] = null;
+    for (let t = 0; t <= INTRO_SECONDS + 0.2; t += 1 / 60) {
+      const phase = t < INTRO_SECONDS ? "intro" : "fight";
+      const shot = cinematicShot({ phase, t, p1: [-2.2, 0, 0], p2: [2.2, 0, 0], winner: null, reducedMotion: false });
+      const slam = hudSlamFor(prev, shot?.name ?? null);
+      prev = shot?.name ?? null;
+      if (slam) slams.push(slam);
+    }
+    expect(slams).toEqual(["p1", "p2", "center"]);
   });
 });

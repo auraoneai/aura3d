@@ -551,7 +551,15 @@
 .fh-meter-right .fh-meter-fill { background: linear-gradient(270deg, #b8701c, #ffe08a); }
 .fh-meter-txt { color: #ffe08a; }
 .fh-pips i.won { background: radial-gradient(circle at 35% 35%, #fff6d8, #ffe08a 55%, #d9a441); box-shadow: 0 0 8px rgba(255, 224, 138, 0.7); }
+/* Slams synced to the C1 intro: each plate lands on its fighter's close-up, the timer when the fight lens returns. */
+@keyframes ic-slam {
+  0% { transform: translateY(-14px) scale(1.16); opacity: 0.2; box-shadow: 0 0 0 rgba(217, 164, 65, 0); }
+  55% { transform: translateY(2px) scale(0.98); opacity: 1; box-shadow: 0 0 26px rgba(217, 164, 65, 0.65); }
+  100% { transform: none; }
+}
+.ic-slam { animation: ic-slam 280ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
 @media (prefers-reduced-motion: reduce) {
+  .ic-slam { animation: none; }
   .fh-meter.full .fh-meter-fill { animation: none; filter: brightness(1.3); }
   .fh-health-chip, .fh-health-fill, .fh-meter-fill { transition: none; }
 }
