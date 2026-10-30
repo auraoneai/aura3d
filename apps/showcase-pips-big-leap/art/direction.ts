@@ -2,10 +2,11 @@
 // Fantasy: a hand-made felt-and-clay woodland diorama seen through a macro lens, Pip acorn-sized.
 //
 // The contract object is type-checked against `GameArtDirection` here and validated with
-// `defineArtDirection` at boot (src/main.ts) and in tests/unit/pips-big-leap/art-direction.test.ts,
-// which also runs `auditArtDirection` on every world's mounted scene. The import is type-only
-// so the unit suite can load this file (vitest has no `@aura3d/engine/game/art` alias; see the
-// lane report handoff to E-I).
+// `defineArtDirection` in tests/unit/pips-big-leap/art-direction.test.ts, which also runs
+// `auditArtDirection` on every world's authored diorama scene and writes
+// art/direction.audit.json (E-I recipe). The import is type-only so the unit suite can load
+// this file: vitest maps `@aura3d/engine/game` by prefix, so `@aura3d/engine/game/art` does
+// not resolve there (lane report handoff to E-I).
 import type { GameArtDirection } from "@aura3d/engine/game/art";
 
 const direction: GameArtDirection = {

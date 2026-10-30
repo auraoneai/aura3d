@@ -3,11 +3,16 @@
 // A world is lowered into (a) an `AuraSceneBuilder` that owns presentation and
 // (b) a plain-data collision world the player controller simulates against.
 // Both come from the same spec, so what you see is what you collide with.
+//
+// GU47 WP-16: the default presentation is the felt-and-clay diorama (`diorama.ts`,
+// per-world look table in `looks.ts`); `look: "original"` (`?look=original`) keeps the
+// pre-GU47 scene exactly. The collision world is identical in both.
 
 import {
   camera,
   effects,
   game,
+  instances,
   looks,
   material,
   model,
@@ -16,6 +21,34 @@ import {
 } from "@aura3d/engine";
 import { assets, BOSS_CLIPS, PIP_CLIPS } from "../aura-assets.js";
 import { deriveWorldMotion, type WorldMotion } from "./motion.js";
+import {
+  GATE_RING_MATERIAL,
+  SLAB_RADIUS,
+  SURFACES,
+  ambientEmitterNode,
+  dioramaBase,
+  floraLayers,
+  floraNodes,
+  hazardMaterial,
+  hemisphereNode,
+  lensFlareNode,
+  miniatureDofNode,
+  practicalNodes,
+  skyNode,
+  slabTransforms,
+  sunShaftsNode,
+  vignetteNode
+} from "./diorama.js";
+import {
+  MINIATURE_LIFT,
+  baseDepthFor,
+  lookOverridesFor,
+  presentationScale,
+  worldLook,
+  type PipLookMode,
+  type PresentationScale,
+  type WorldLook
+} from "./looks.js";
 import type {
   CheckpointSpec, DecorSpec, HazardBox, HazardSpec, PickupSpec,
   PlatformKind, PlatSpec, SolidBox, SpringSpec, WaterSpec, WorldSpec
@@ -114,6 +147,8 @@ export interface BuiltWorld {
   readonly timedSolids: readonly SolidBox[];
   readonly cameraObstacles: readonly CameraObstacle[];
   readonly bossArenaZ: number | null;
+  /** GU47 WP-16 presentation facts (never read by the sim). */
+  readonly presentation: WorldPresentation;
 }
 
 const PLAT_H = 0.55;
@@ -136,7 +171,11 @@ function solidOf(p: PlatSpec): SolidBox {
 
 // ---------------------------------------------------------------- decor
 
-function decorNodes(d: DecorSpec): readonly SceneNodeArg[] {
+/**
+ * `tinyShadows: false` (diorama look, PBL-PF1) stops the small props (crates, barrels,
+ * banners, star cores) from casting shadow-map shadows; contact shadows still ground them.
+ */
+function decorNodes(d: DecorSpec, tinyShadows = true): readonly SceneNodeArg[] {
   const s = d.s ?? 1;
   const yaw = d.yaw ?? 0;
 
@@ -233,7 +272,7 @@ function decorNodes(d: DecorSpec): readonly SceneNodeArg[] {
       ];
     case "star":
       return [
-        model(assets.props.energyCore, { name: `${d.id}:star`, castShadow: true, targetMaxDimension: 0.9 * s })
+        model(assets.props.energyCore, { name: `${d.id}:star`, castShadow: tinyShadows, targetMaxDimension: 0.9 * s })
           .position(d.x, d.y + 0.55 * s, d.z)
           .rotate(0, yaw, 0)
       ];
@@ -245,19 +284,19 @@ function decorNodes(d: DecorSpec): readonly SceneNodeArg[] {
       ];
     case "crate":
       return [
-        model(assets.props.crate, { name: `${d.id}:crate`, castShadow: true, receiveShadow: true, targetMaxDimension: 0.95 * s })
+        model(assets.props.crate, { name: `${d.id}:crate`, castShadow: tinyShadows, receiveShadow: true, targetMaxDimension: 0.95 * s })
           .position(d.x, d.y, d.z)
           .rotate(0, yaw, 0)
       ];
     case "barrel":
       return [
-        model(assets.props.barrel, { name: `${d.id}:barrel`, castShadow: true, receiveShadow: true, targetHeight: 0.98 * s })
+        model(assets.props.barrel, { name: `${d.id}:barrel`, castShadow: tinyShadows, receiveShadow: true, targetHeight: 0.98 * s })
           .position(d.x, d.y, d.z)
           .rotate(0, yaw, 0)
       ];
     case "banner":
       return [
-        model(assets.checkpointFlag, { name: `${d.id}:banner`, castShadow: true, receiveShadow: true, targetHeight: 2.2 * s })
+        model(assets.checkpointFlag, { name: `${d.id}:banner`, castShadow: tinyShadows, receiveShadow: true, targetHeight: 2.2 * s })
           .position(d.x, d.y, d.z)
           .rotate(0, yaw, 0)
       ];
@@ -302,13 +341,29 @@ export interface BuildWorldOptions {
    * can pair AO on and off at the same frame (LIGHT-06). Default true.
    */
   readonly ambientOcclusion?: boolean;
+  /** GU47 WP-16: the felt-and-clay diorama (default) or today's scene (`?look=original`). */
+  readonly look?: PipLookMode;
+  /** PRD 6.3: halve the ambient emission and cap flora sway at 30%. */
+  readonly reducedMotion?: boolean;
 }
 
-export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): BuiltWorld {
-  const motion = deriveWorldMotion(spec);
-  const skyColor = spec.background ?? "#1e4d78";
-  const builder = scene().background(skyColor);
+/** Presentation facts the runtime and the evidence read (diorama look only). */
+export interface WorldPresentation {
+  readonly mode: PipLookMode;
+  readonly look: WorldLook;
+  /** Top of the diorama base (PBL-E1), null in the original look. */
+  readonly baseTop: number | null;
+  /** Practical light node names (PBL-L2 flicker), with their authored intensity and flicker depth. */
+  readonly practicals: readonly { readonly name: string; readonly intensity: number; readonly flicker: number }[];
+  /** Instanced flora tufts (PBL-W1). */
+  readonly floraCount: number;
+  /** Static platforms drawn through instanced slabs (PBL-PF1). */
+  readonly instancedPlatforms: number;
+}
 
+/** Today's atmosphere (`?look=original`), unchanged. */
+function addOriginalAtmosphere(builder: SceneBuilder, spec: WorldSpec, options: BuildWorldOptions): void {
+  const skyColor = spec.background ?? "#1e4d78";
   // Look preset — fog itself is authored below so its color tracks the sky
   // exactly instead of the preset's generic haze tint.
   const look = looks.preset(spec.look as Parameters<typeof looks.preset>[0], {
@@ -331,40 +386,124 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     builder.add(effects.bloom({ intensity: 0.28 }));
   }
   if (spec.ambientFx === "snow") builder.add(effects.snow({}));
+}
+
+/**
+ * The diorama atmosphere: sun shafts first (so the look's height fog stays the active fog
+ * node), the per-world look (E-A overrides: HDRI, PCSS key, rim, base height fog, grade,
+ * post preset), hemisphere, practicals, lens flare, sky, contact shadows, the diorama base,
+ * vignette, the miniature DOF and the ambient emitter. The authored extra bloom is gone
+ * (PBL-P1): the look's bloom is the only one.
+ */
+function addDioramaAtmosphere(builder: SceneBuilder, spec: WorldSpec, look: WorldLook, depth: number, options: BuildWorldOptions, scale: PresentationScale): number {
+  const shafts = sunShaftsNode(look);
+  if (shafts) builder.add(shafts);
+  const base = dioramaBase(spec, look, depth);
+  const preset = looks.preset(look.baseLook, lookOverridesFor(look, base.top));
+  if (options.ambientOcclusion === false) {
+    const group = preset.toJSON();
+    builder.add({ ...group, children: group.children.filter((child) => (child as { readonly name?: string }).name !== "look ambient occlusion") });
+  } else {
+    builder.add(preset);
+  }
+  builder.add(hemisphereNode(look));
+  for (const node of practicalNodes(look)) builder.add(node);
+  const flare = lensFlareNode(look);
+  if (flare) builder.add(flare);
+  const sky = skyNode(look);
+  if (sky) builder.add(sky);
+  builder.add(effects.contactShadows({ intensity: 0.75, length: 0.3 }));
+  for (const node of base.nodes) builder.add(node);
+  builder.add(vignetteNode(look));
+  builder.add(miniatureDofNode());
+  builder.add(ambientEmitterNode(look, scale, nodeName.hero, 4700 + spec.order));
+  return base.top;
+}
+
+/**
+ * PBL-M1 + PBL-PF1: static platforms of one kind share two instanced rounded-slab draws
+ * (clay body, felt top); movers and timed platforms keep their own runtime nodes so
+ * `tickPlatforms` can move and hide them exactly as before.
+ */
+function addDioramaPlatforms(builder: SceneBuilder, spec: WorldSpec): number {
+  const groups = new Map<PlatformKind, { body: ReturnType<typeof slabTransforms>["body"][]; top: ReturnType<typeof slabTransforms>["top"][] }>();
+  let instanced = 0;
+  for (const p of spec.platforms) {
+    const kind = p.kind ?? "grass";
+    const surface = SURFACES[kind];
+    const slab = slabTransforms(p, PLAT_H);
+    if (p.mover || p.timed) {
+      const h = p.h ?? PLAT_H;
+      builder.add(
+        primitives.roundedBox({ name: nodeName.platform(p.id), size: [p.w, h, p.d], position: [p.x, p.y - h / 2, p.z], params: { radius: SLAB_RADIUS }, material: surface.body, castShadow: true, receiveShadow: true })
+          .runtime(game.runtimeNode(nodeName.platform(p.id), { tags: ["platform"] }))
+      );
+      builder.add(
+        primitives.roundedBox({ name: nodeName.platformTop(p.id), size: [p.w * 0.98, 0.12, p.d * 0.98], position: [p.x, p.y - 0.05, p.z], params: { radius: 0.05 }, material: surface.top, receiveShadow: true })
+          .runtime(game.runtimeNode(nodeName.platformTop(p.id), { tags: ["platform"] }))
+      );
+      continue;
+    }
+    let group = groups.get(kind);
+    if (!group) groups.set(kind, (group = { body: [], top: [] }));
+    group.body.push(slab.body);
+    group.top.push(slab.top);
+    instanced += 1;
+  }
+  for (const [kind, group] of groups) {
+    const surface = SURFACES[kind];
+    builder.add(instances.roundedBox({ name: `plats:${kind}`, transforms: group.body, params: { radius: SLAB_RADIUS }, material: surface.body, castShadow: true, receiveShadow: true }));
+    builder.add(instances.roundedBox({ name: `plat-tops:${kind}`, transforms: group.top, params: { radius: 0.3 }, material: surface.top, castShadow: false, receiveShadow: true }));
+  }
+  return instanced;
+}
+
+export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): BuiltWorld {
+  const motion = deriveWorldMotion(spec);
+  const mode: PipLookMode = options.look ?? "diorama";
+  const diorama = mode === "diorama";
+  const look = worldLook(spec.id);
+  const scale = presentationScale(options.reducedMotion === true);
+  const builder = scene().background(diorama ? look.background : (spec.background ?? "#1e4d78"));
+  const baseTop = diorama ? addDioramaAtmosphere(builder, spec, look, baseDepthFor(spec), options, scale) : null;
+  if (!diorama) addOriginalAtmosphere(builder, spec, options);
 
   // NOTE: the Kenney "world" backdrop GLBs ship with kit-space bounds that
   // scale into enormous near-field slabs (the floating moss patch in the
   // previous build). The fog + tree line now own the horizon, so those
   // backdrops are intentionally not mounted.
 
-  // Platforms.
+  // Platforms (presentation per look; the collision list is the same spec walk for both).
   const solids: SolidBox[] = [];
   const moving: SolidBox[] = [];
   const timed: SolidBox[] = [];
+  const instancedPlatforms = diorama ? addDioramaPlatforms(builder, spec) : 0;
   for (const p of spec.platforms) {
-    const style = KIND_STYLE[p.kind ?? "grass"];
-    const h = p.h ?? PLAT_H;
-    const plat = primitives.box({
-      name: nodeName.platform(p.id),
-      size: [p.w, h, p.d],
-      position: [p.x, p.y - h / 2, p.z],
-      material: material.pbr({ color: style.body, roughness: 0.75 }),
-      castShadow: true,
-      receiveShadow: true
-    });
-    const top = primitives.box({
-      name: nodeName.platformTop(p.id),
-      size: [p.w * 0.98, 0.12, p.d * 0.98],
-      position: [p.x, p.y - 0.05, p.z],
-      material: material.pbr({ color: style.top, roughness: 0.75 }),
-      receiveShadow: true
-    });
-    if (p.mover || p.timed) {
-      const spec2 = game.runtimeNode(nodeName.platform(p.id), { tags: ["platform"] });
-      plat.runtime(spec2);
-      top.runtime(game.runtimeNode(nodeName.platformTop(p.id), { tags: ["platform"] }));
+    if (!diorama) {
+      const style = KIND_STYLE[p.kind ?? "grass"];
+      const h = p.h ?? PLAT_H;
+      const plat = primitives.box({
+        name: nodeName.platform(p.id),
+        size: [p.w, h, p.d],
+        position: [p.x, p.y - h / 2, p.z],
+        material: material.pbr({ color: style.body, roughness: 0.75 }),
+        castShadow: true,
+        receiveShadow: true
+      });
+      const top = primitives.box({
+        name: nodeName.platformTop(p.id),
+        size: [p.w * 0.98, 0.12, p.d * 0.98],
+        position: [p.x, p.y - 0.05, p.z],
+        material: material.pbr({ color: style.top, roughness: 0.75 }),
+        receiveShadow: true
+      });
+      if (p.mover || p.timed) {
+        const spec2 = game.runtimeNode(nodeName.platform(p.id), { tags: ["platform"] });
+        plat.runtime(spec2);
+        top.runtime(game.runtimeNode(nodeName.platformTop(p.id), { tags: ["platform"] }));
+      }
+      builder.add(plat).add(top);
     }
-    builder.add(plat).add(top);
     if (!p.ghost) {
       const s = solidOf(p);
       solids.push(s);
@@ -373,7 +512,8 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     }
   }
 
-  // Hazards — emissive hurt volumes + 3D GLB crystal/brazier hazard clusters.
+  // Hazards — hurt volumes + 3D GLB crystal/brazier hazard clusters (diorama: plum
+  // bramble mat, glowing practical lava and embers, clearcoat frost; PBL-M2 interim).
   const hazards: HazardBox[] = spec.hazards.map((hz) => {
     const h = hz.h ?? 0.5;
     builder.add(
@@ -381,7 +521,9 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
         name: `hazard:${hz.id}`,
         size: [hz.w, Math.min(h, 0.24), hz.d],
         position: [hz.x, hz.y - Math.min(h, 0.24) / 2, hz.z],
-        material: material.emissive({ color: HAZARD_STYLE[hz.type], emissive: HAZARD_STYLE[hz.type], emissiveIntensity: 0.85, roughness: 0.5 })
+        material: diorama
+          ? hazardMaterial(hz.type)
+          : material.emissive({ color: HAZARD_STYLE[hz.type], emissive: HAZARD_STYLE[hz.type], emissiveIntensity: 0.85, roughness: 0.5 })
       })
     );
     const hazardRef = hz.type === "lava" ? assets.props.brazier : assets.props.crystalShard;
@@ -441,15 +583,16 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     spinNodes.push(nodeName.heart(hpt.id));
   }
 
-  // Springs — 3D Meshy boost pad + pedestal base.
+  // Springs — 3D Meshy boost pad + pedestal base (diorama: tiny props cast no
+  // shadow-map shadows, PBL-PF1; contact shadows still ground them).
   for (const spr of spec.springs) {
     const base = [spr.x, spr.y, spr.z] as const;
     builder.add(
-      model(assets.props.pedestal, { name: `${nodeName.spring(spr.id)}:base`, castShadow: true, receiveShadow: true, targetMaxDimension: 0.92 })
+      model(assets.props.pedestal, { name: `${nodeName.spring(spr.id)}:base`, castShadow: !diorama, receiveShadow: true, targetMaxDimension: 0.92 })
         .position(base[0], base[1], base[2])
     );
     builder.add(
-      model(assets.props.boostPad, { name: nodeName.spring(spr.id), castShadow: true, receiveShadow: true, targetMaxDimension: 0.82 })
+      model(assets.props.boostPad, { name: nodeName.spring(spr.id), castShadow: !diorama, receiveShadow: true, targetMaxDimension: 0.82 })
         .position(base[0], base[1] + 0.14, base[2])
         .runtime(game.runtimeNode(nodeName.spring(spr.id), { tags: ["spring"] }))
     );
@@ -463,12 +606,13 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
         .runtime(game.runtimeNode(nodeName.checkpointFlag(cp.id), { tags: ["checkpoint"] }))
     );
     builder.add(
-      model(assets.props.pedestal, { name: `${nodeName.checkpoint(cp.id)}:pad`, castShadow: true, receiveShadow: true, targetMaxDimension: 0.78 })
+      model(assets.props.pedestal, { name: `${nodeName.checkpoint(cp.id)}:pad`, castShadow: !diorama, receiveShadow: true, targetMaxDimension: 0.78 })
         .position(cp.x, cp.y, cp.z)
     );
   }
 
   // Sun-Gate — bespoke Meshy seed-arch portal + retained emissive ring + 3D energy core lock.
+  // Diorama: the ring is sun-seed gold and marked practical (a light source, not fill).
   const g = spec.gate;
   builder.add(
     model(assets.sungate, { name: nodeName.gate, castShadow: true, targetHeight: 3.4, scaleMode: "fit" })
@@ -476,7 +620,7 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
       .runtime(game.runtimeNode(nodeName.gate, { tags: ["gate"] }))
   );
   builder.add(
-    primitives.torus({ name: nodeName.gateRing, size: [1.9, 1.9, 0.4], position: [g.x, g.y + 1.5, g.z], material: material.emissive({ color: "#ffcf3d", emissive: "#ffc52e", emissiveIntensity: 0.9 }), castShadow: false })
+    primitives.torus({ name: nodeName.gateRing, size: [1.9, 1.9, 0.4], position: [g.x, g.y + 1.5, g.z], material: diorama ? GATE_RING_MATERIAL : material.emissive({ color: "#ffcf3d", emissive: "#ffc52e", emissiveIntensity: 0.9 }), castShadow: false })
       .runtime(game.runtimeNode(nodeName.gateRing, { tags: ["gate"] }))
   );
   builder.add(
@@ -490,7 +634,7 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
   for (const d of spec.decor) {
     const obstacle = cameraObstacleFor(d);
     if (obstacle) cameraObstacles.push(obstacle);
-    for (const node of decorNodes(d)) builder.add(node);
+    for (const node of decorNodes(d, !diorama)) builder.add(node);
   }
   for (const n of spec.npcs) {
     // C19: NPCs are camera obstacles too, so the boom shortens instead of
@@ -544,12 +688,29 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     }
   }
 
+  // PBL-W1: seeded felt-and-clay flora tufts on the static platform rims (diorama only).
+  let floraCount = 0;
+  if (diorama) {
+    const layers = floraLayers(spec, look, 9100 + spec.order * 31);
+    for (const node of floraNodes(layers, scale.motion)) builder.add(node);
+    floraCount = layers.reduce((sum, layer) => sum + layer.transforms.length, 0);
+  }
+
   builder.camera(
-    camera.perspective({
-      position: [spec.spawn[0], spec.spawn[1] + 1.95, spec.spawn[2] + 4.2],
-      target: [spec.spawn[0], spec.spawn[1] + 0.95, spec.spawn[2] - 2.4],
-      fov: 52
-    })
+    camera.perspective(
+      diorama
+        ? {
+            // PBL-C2 miniature framing (lens 1.7 m above Pip's feet, fov 46).
+            position: [spec.spawn[0], spec.spawn[1] + MINIATURE_LIFT, spec.spawn[2] + 4.5],
+            target: [spec.spawn[0], spec.spawn[1] + 0.55, spec.spawn[2] - 3.2],
+            fov: 46
+          }
+        : {
+            position: [spec.spawn[0], spec.spawn[1] + 1.95, spec.spawn[2] + 4.2],
+            target: [spec.spawn[0], spec.spawn[1] + 0.95, spec.spawn[2] - 2.4],
+            fov: 52
+          }
+    )
   );
 
   return {
@@ -558,7 +719,15 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     springs: spec.springs, checkpoints: spec.checkpoints,
     spinNodes, movingSolids: moving, timedSolids: timed,
     cameraObstacles,
-    bossArenaZ: spec.boss ? -69 : null
+    bossArenaZ: spec.boss ? -69 : null,
+    presentation: {
+      mode,
+      look,
+      baseTop,
+      practicals: diorama ? look.practicals.map((p) => ({ name: p.name, intensity: p.intensity, flicker: p.flicker })) : [],
+      floraCount,
+      instancedPlatforms
+    }
   };
 }
 

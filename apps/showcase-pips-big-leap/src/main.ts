@@ -30,6 +30,7 @@ import { framingFor } from "./game/framing.js";
 import { createInputLatch } from "./game/simInput.js";
 import { deriveWorldMotion } from "./game/motion.js";
 import { worldSpec } from "./game/worlds.js";
+import { lookModeFromSearch, worldFromSearch } from "./game/looks.js";
 import type { ModeId, WorldId } from "./game/types.js";
 import { installBlackFrameGuard } from "@aura3d/debug";
 
@@ -37,7 +38,11 @@ installBlackFrameGuard();
 
 // --------------------------------------------------------------------- boot
 
-const BOOT_WORLD: WorldId = "w1";
+// GU47 WP-16: the felt-and-clay diorama is the default; `?look=original` keeps the
+// pre-GU47 presentation. `?world=<id>` boots straight into a world (capture convenience).
+const LOOK_MODE = lookModeFromSearch(window.location.search);
+const REDUCED_MOTION = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const BOOT_WORLD: WorldId = worldFromSearch(window.location.search) ?? "w1";
 
 interface WorldRuntime {
   readonly spec: ReturnType<typeof worldSpec>;
@@ -52,7 +57,7 @@ function ensureWorld(id: WorldId): WorldRuntime {
   let w = cache.get(id);
   if (!w) {
     const spec = worldSpec(id);
-    const built = buildWorld(spec, { ambientOcclusion: !AO_OFF });
+    const built = buildWorld(spec, { ambientOcclusion: !AO_OFF, look: LOOK_MODE, reducedMotion: REDUCED_MOTION });
     w = { spec, built, cert: certifyWorld(spec, built.motion) };
     cache.set(id, w);
   }
@@ -198,7 +203,9 @@ const pipsGame = createGame({
     gate: { flash: { color: "#ffd95e", peak: 0.22, ms: 420 } },
     "boss-hit": { punch: { fovDeg: 2.4, ms: 320 } }
   },
-  qualityRebuild: { flags: ["game"] },
+  // PBL-E1/E2: the diorama declares the live height-fog and sky paths explicitly (both
+  // default-on since E-G, so a reverted flip cannot drop them); the original keeps ["game"].
+  qualityRebuild: { flags: LOOK_MODE === "diorama" ? ["game", "vfx.fog", "vfx.sky"] : ["game"] },
   evidence: {
     schema: 1,
     sections: { pipsBigLeap: () => window.__AURA3D_SHOWCASE_PIPS_BIG_LEAP__ ?? { status: "unbound" } }
