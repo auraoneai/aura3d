@@ -122,8 +122,8 @@ describe("Aura Hoops 3D GU47 VFX pack (H47-V1)", () => {
         const c = capped.layers[i]!;
         if (layer.type === "light") {
           expect(c.type).toBe("light");
-          expect((c as { intensity: number }).intensity).toBeCloseTo(((layer as { intensity?: number }).intensity ?? 1) * REDUCED_FLASH_PEAK);
-          expect((c as { duration: number }).duration).toBeLessThanOrEqual(REDUCED_FLASH_SECONDS);
+          expect((c as unknown as { intensity: number }).intensity).toBeCloseTo(((layer as { intensity?: number }).intensity ?? 1) * REDUCED_FLASH_PEAK);
+          expect((c as unknown as { duration: number }).duration).toBeLessThanOrEqual(REDUCED_FLASH_SECONDS);
         } else expect(c).toBe(layer);
       });
     }
