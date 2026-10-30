@@ -35,6 +35,13 @@
       #hud .sub { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
       #h-hull { letter-spacing: 2px; color: #6dffb0; }
       #h-hull.warn { color: var(--warn); }
+      /* GU47 IC-23 ion telemetry (twilight look only; body.ion-telemetry): hairline panels, district accent bar and banner, TT Commons Pro Mono numerals, glowing heat meter */
+      body.ion-telemetry #hud .block, body.ion-telemetry #hud .bottom { background: rgba(6, 10, 20, 0.5); border-width: 0 0 1px; border-color: rgba(64, 224, 255, 0.35); border-radius: 0; }
+      body.ion-telemetry #hud .value { font-family: "TT Commons Pro Mono", "Graphik Web", sans-serif; letter-spacing: 0.02em; }
+      body.ion-telemetry #h-heat { box-shadow: 0 0 8px 1px rgba(255, 138, 58, 0.75); }
+      #district { position: absolute; top: 64px; left: 12px; right: 12px; height: 2px; background: var(--district, var(--cyan)); opacity: 0.85; }
+      #district-banner { position: absolute; top: 120px; left: 50%; transform: translateX(-50%); padding: 6px 14px; border-left: 2px solid var(--district, var(--cyan)); background: rgba(6, 10, 20, 0.55); font-size: 13px; font-weight: 500; letter-spacing: 0.14em; white-space: nowrap; max-width: 92vw; overflow: hidden; text-overflow: ellipsis; }
+      body:not(.ion-telemetry) #district, body:not(.ion-telemetry) #district-banner { display: none; }
       #hud .bottom { position: absolute; left: 12px; bottom: 12px; display: grid; gap: 4px; width: 260px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
       .meter { display: grid; grid-template-columns: 74px 1fr 38px; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); }
       .meter.locked { color: var(--warn); }
@@ -117,6 +124,8 @@
         <div class="block"><div class="meta">HULL</div><div class="value" id="h-hull" aria-label="hull 4 of 4">■■■■</div></div>
       </div>
       <div id="objective" class="meta"></div>
+      <div id="district" aria-hidden="true"></div>
+      <div id="district-banner" class="hidden" role="status"></div>
       <div id="notice" class="meta" role="status"></div>
       <div class="bottom">
         <div class="meter"><span>AFTERBURNER</span><div class="bar"><i id="h-ab"></i></div><span id="h-ab-p" class="num">100%</span></div>

@@ -20,6 +20,7 @@ import { Track } from "./track";
 import { IDLE, type Input } from "./vehicle";
 import { DRONE_CROP, buildWorld, type WorldRuntime } from "./world";
 import { postToggles } from "./art/look";
+import { createTelemetry, stepTelemetry } from "./art/telemetry";
 
 const params = new URLSearchParams(location.search);
 const coarse = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
@@ -47,6 +48,7 @@ const el = {
   ab: $("h-ab"), heat: $("h-heat"), shield: $("h-shield"), gun: $("h-gun"), gunRow: $("h-gun-row"),
   menu: $("menu"), results: $("results"), resultsTitle: $("results-title"), medalLine: $("medal-line"), resultsBody: $("results-body"), medalRules: $("medal-rules"),
   pause: $("pause"), error: $("error"), errorText: $("error-text"), loading: $("loading"), loadingStatus: $("loading-status"),
+  district: $("district"), districtBanner: $("district-banner"),
   touch: $("touch"), mute: $<HTMLButtonElement>("mute"), motion: $<HTMLButtonElement>("motion-toggle"), binds: $("binds"),
   menuObjective: $("menu-objective"), menuControls: $("menu-controls")
 };
@@ -279,6 +281,8 @@ function updateNotice(dt: number): void {
   if (noticeT > 0) { noticeT -= dt; if (noticeT <= 0) { setText(el.notice, ""); el.notice.classList.remove("warn"); } }
 }
 
+const telemetry = createTelemetry();
+const telemetryFrame: Parameters<Track["frame"]>[1] = {};
 function updateHud(v: NonNullable<typeof lastHud>, dt: number): void {
   setText(el.score, v.score); setText(el.mult, v.multiplier); setText(el.targets, v.targets); setText(el.objective, v.objective);
   el.mult.classList.toggle("hot", v.chain >= 2);
@@ -293,6 +297,12 @@ function updateHud(v: NonNullable<typeof lastHud>, dt: number): void {
   const count = countText(race);
   if (count !== lastCount) { lastCount = count; el.count.textContent = count; el.count.classList.toggle("hidden", !count); }
   updateNotice(dt);
+  /* GU47 IC-23: district accent and banner (twilight HUD only) */
+  if (lookRow?.id === "twilight" && stepTelemetry(telemetry, track.frame(race.player.s, telemetryFrame).sec, race.state === "race", dt)) {
+    document.body.style.setProperty("--district", telemetry.color);
+    el.districtBanner.textContent = telemetry.label;
+    el.districtBanner.classList.toggle("hidden", telemetry.bannerT <= 0);
+  }
   if (race.resultsOpen && el.results.classList.contains("hidden")) {
     el.results.classList.remove("hidden");
     const ops = race.ops;
@@ -517,6 +527,7 @@ async function boot(): Promise<void> {
   sizeCanvas();
   const world = buildWorld(track, config.quality);
   lookRow = world.look;
+  document.body.classList.toggle("ion-telemetry", lookRow.id === "twilight");
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
