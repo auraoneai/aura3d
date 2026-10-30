@@ -131,7 +131,7 @@ export const APEX_LOOK: readonly [ApexLookRow, ApexLookRow, ApexLookRow] = [
     post: "cinematic-film",
     grade: { ...APEX_GRADE, temperature: -0.06, tint: 0 },
     bloom: { ...APEX_BLOOM },
-    dome: { horizon: "#3a2a3e", mid: "#121a46", top: "#060a1e", sun: "#9fb4e8", glow: "#ffa040" },
+    dome: { horizon: "#40281e", mid: "#121a46", top: "#060a1e", sun: "#9fb4e8", glow: "#ffa040" },
     signature: { hazeColor: "#1a1622", windowSpecks: 1, sodium: 1, headlights: 1, tailGain: 1.7 }
   }
 ];
