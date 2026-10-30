@@ -41,6 +41,7 @@ import type { AuraOutputOptions } from "../contracts/output.js";
 import { AuraRuntimeError, groups, type AuraApp, type AuraCreateAppOptions, type AuraEffectNode, type AuraSceneNode, type AuraSceneSnapshot } from "./index.js";
 import { expandPostPreset } from "./postPresets.js";
 import { mergeLookColorGrade } from "./looks/lookGrade.js";
+import { colorToRgba } from "./colorUtils.js";
 
 /* ------------------------------------------------------------------------- */
 /* Submitted postprocess telemetry                                           */
@@ -461,12 +462,16 @@ function customPassToDescriptor(pass: AuraCustomPostPass): PostPassDescriptor {
  */
 export class Prd03PostSurface implements AuraPostSurface {
   private requestedTier: AuraQualityTier | "auto" | null = null;
+  /** GU47 E-C (EC-5): this app's runtime effect overrides (`setEffect` / `setEffectEnabled`). */
+  private readonly runtimeOverrides: RuntimePostOverrides;
 
   constructor(
     private readonly flags: QrFlags,
     private readonly canvas?: HTMLCanvasElement,
     private readonly app?: AuraApp
-  ) { }
+  ) {
+    this.runtimeOverrides = adoptRuntimePostOverrides(canvas);
+  }
 
   addPostPass(pass: AuraCustomPostPass): () => void {
     if (!this.flags.on("A3D_QR_POST")) return () => { /* stub chain: release is a no-op */ };
@@ -508,6 +513,24 @@ export class Prd03PostSurface implements AuraPostSurface {
     overrides.set(key, value);
   }
 
+  /**
+   * GU47 E-C (EC-5): `app.post.setEffect("bloom", { intensity: 1.4 })`. The
+   * patch is validated now and merged into this app's override store; the
+   * next frame's post derivation (`createRootPostPipeline`) applies it to the
+   * effect node — no scene rebuild, no shader rebuild.
+   */
+  setEffect(name: string, patch: Record<string, number | string | boolean | number[]>): void {
+    writeRuntimePostEffect(this.runtimeOverrides, name, patch, undefined);
+  }
+
+  /** GU47 E-C (EC-5): drop one runtime-controllable effect from the chain, or restore it. */
+  setEffectEnabled(name: string, enabled: boolean): void {
+    if (typeof enabled !== "boolean") {
+      throw new AuraRuntimeError("POST_FIELD_UNSUPPORTED", `app.post.setEffectEnabled(${String(name)}) expects a boolean`);
+    }
+    writeRuntimePostEffect(this.runtimeOverrides, name, undefined, enabled);
+  }
+
   setQualityTier(tier: AuraQualityTier | "auto"): void {
     this.requestedTier = tier;
     // The compiler reads the shared context store when resolving tier AA (Phase 1).
@@ -547,6 +570,177 @@ export function createPrd03PostSurface(app: AuraApp, ctx: { readonly flags: QrFl
   // custom passes). A failed load is retried by the frame path.
   if (ctx.flags.on("A3D_QR_POST")) postV2ModulesReady().catch(() => undefined);
   return new Prd03PostSurface(ctx.flags, app.canvas ?? undefined, app);
+}
+
+/* ------------------------------------------------------------------------- */
+/* GU47 E-C (EC-5): runtime post control (`app.post.setEffect`)               */
+/* ------------------------------------------------------------------------- */
+
+/** `app.post.setEffect` / `setEffectEnabled` names (factory names) → the effect node id they drive. */
+export const POST_RUNTIME_EFFECTS: Readonly<Record<string, string>> = Object.freeze({
+  bloom: "bloom",
+  colorGrade: "color-grade",
+  depthOfField: "depth-of-field",
+  motionBlur: "motion-blur",
+  chromaticAberration: "chromatic-aberration",
+  volumetricFog: "volumetric-fog",
+  vignette: "vignette"
+});
+
+/** One `setEffect` patch value as stored: strings/numbers/booleans, number arrays, or a converted object (`tiltShift`). */
+type RuntimePostValue = number | string | boolean | readonly number[] | Readonly<Record<string, number>>;
+
+interface RuntimePostEffectState {
+  /** `undefined` = follow the scene (present when authored or patched). */
+  enabled: boolean | undefined;
+  readonly patch: Map<string, RuntimePostValue>;
+}
+
+/** Effect node id → runtime state, per app. */
+export type RuntimePostOverrides = Map<string, RuntimePostEffectState>;
+
+const canvasRuntimeOverrides = new WeakMap<HTMLCanvasElement, RuntimePostOverrides>();
+/**
+ * The store a canvas-less derivation reads: the most recently created or
+ * written app's. Exact for one app per page (every live game); the compiler
+ * passes the canvas once E-G's `compiler/postprocess.ts` hook lands, which
+ * scopes two apps on one page exactly.
+ */
+let latestRuntimeOverrides: RuntimePostOverrides = new Map();
+
+/** A fresh store for a new post surface; it becomes the canvas-less default. */
+function adoptRuntimePostOverrides(canvas: HTMLCanvasElement | undefined): RuntimePostOverrides {
+  const store: RuntimePostOverrides = new Map();
+  if (canvas) canvasRuntimeOverrides.set(canvas, store);
+  latestRuntimeOverrides = store;
+  return store;
+}
+
+function runtimePostOverridesFor(canvas: HTMLCanvasElement | undefined): RuntimePostOverrides {
+  return (canvas ? canvasRuntimeOverrides.get(canvas) : undefined) ?? latestRuntimeOverrides;
+}
+
+/** Test hook: forgets the canvas-less runtime overrides (per-canvas stores go with their canvas). */
+export function resetRuntimePostOverrides(): void {
+  latestRuntimeOverrides = new Map();
+}
+
+const RUNTIME_EFFECT_IDS = new Set(Object.values(POST_RUNTIME_EFFECTS));
+
+function runtimeEffectId(name: string): string {
+  if (typeof name === "string") {
+    if (Object.prototype.hasOwnProperty.call(POST_RUNTIME_EFFECTS, name)) return POST_RUNTIME_EFFECTS[name]!;
+    if (RUNTIME_EFFECT_IDS.has(name)) return name;
+  }
+  throw new AuraRuntimeError("POST_FIELD_UNSUPPORTED",
+    `app.post: "${String(name)}" is not a runtime post effect (use ${Object.keys(POST_RUNTIME_EFFECTS).join(", ")}).`);
+}
+
+function runtimePatchValue(effectName: string, key: string, value: unknown): RuntimePostValue {
+  const reject = (why: string): never => {
+    throw new AuraRuntimeError("POST_FIELD_UNSUPPORTED", `app.post.setEffect(${effectName}, { ${key} }) ${why}`);
+  };
+  if (typeof value === "number") return Number.isFinite(value) ? value : reject("expects a finite number");
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") {
+    if (!value.trim()) reject("expects a non-empty string");
+    // A CSS-style colour string becomes the RGB triple the bridge reads.
+    if (key === "color") {
+      const [r, g, b] = colorToRgba(value);
+      return [r, g, b];
+    }
+    return value;
+  }
+  if (Array.isArray(value)) {
+    if (value.length === 0 || value.length > 4 || !value.every((entry) => typeof entry === "number" && Number.isFinite(entry))) {
+      reject("expects 1-4 finite numbers");
+    }
+    // `tiltShift` is an object on the node; the flat patch carries [bandCenter, bandWidth, angleDeg?].
+    if (key === "tiltShift") {
+      if (value.length < 2) reject("expects [bandCenter, bandWidth, angleDeg?]");
+      return { bandCenter: value[0]!, bandWidth: value[1]!, ...(value.length > 2 ? { angleDeg: value[2]! } : {}) };
+    }
+    return Object.freeze([...value]);
+  }
+  return reject("expects a number, string, boolean or number array");
+}
+
+/** Validates and merges one `setEffect` / `setEffectEnabled` call into `store`. */
+function writeRuntimePostEffect(
+  store: RuntimePostOverrides,
+  name: string,
+  patch: Record<string, number | string | boolean | number[]> | undefined,
+  enabled: boolean | undefined
+): void {
+  const effectId = runtimeEffectId(name);
+  const values = new Map<string, RuntimePostValue>();
+  if (patch !== undefined) {
+    if (patch === null || typeof patch !== "object" || Array.isArray(patch)) {
+      throw new AuraRuntimeError("POST_FIELD_UNSUPPORTED", `app.post.setEffect(${name}) expects a field patch object`);
+    }
+    const allowed = POST_EFFECT_FIELDS[effectId] ?? [];
+    for (const [key, value] of Object.entries(patch)) {
+      if (key !== "intensity" && !allowed.includes(key)) {
+        throw new AuraRuntimeError("POST_FIELD_UNSUPPORTED",
+          `app.post.setEffect(${name}): "${key}" is not a ${effectId} field (fields: intensity, ${allowed.join(", ")}).`);
+      }
+      values.set(key, runtimePatchValue(name, key, value));
+    }
+  }
+  let state = store.get(effectId);
+  if (!state) {
+    state = { enabled: undefined, patch: new Map() };
+    store.set(effectId, state);
+  }
+  for (const [key, value] of values) state.patch.set(key, value);
+  if (enabled !== undefined) state.enabled = enabled;
+  latestRuntimeOverrides = store;
+}
+
+function patchedEffectNode(node: AuraEffectNode, state: RuntimePostEffectState): AuraEffectNode {
+  if (state.patch.size === 0) return node;
+  const patch: Record<string, unknown> = Object.fromEntries(state.patch);
+  // The v2 bloom mapping and the compiler's bloom bag read the pre-cap
+  // `postIntensity` and the `radius` spread alias; mirror them so a runtime
+  // intensity / scatter reaches both.
+  if (node.effect === "bloom") {
+    if (state.patch.has("intensity")) patch.postIntensity = patch.intensity;
+    if (state.patch.has("scatter")) patch.radius = patch.scatter;
+  }
+  // `postAuthored` (CCR-03-3) marks authored keys; patched keys count as authored.
+  const postAuthored = node.postAuthored === undefined ? undefined : [...new Set([...node.postAuthored, ...state.patch.keys()])];
+  return { ...node, ...patch, ...(postAuthored ? { postAuthored } : {}) } as AuraEffectNode;
+}
+
+/**
+ * Applies the runtime post overrides (`app.post.setEffect` /
+ * `setEffectEnabled`) to a flattened node list: patched effects get their
+ * fields (marked authored), disabled effects are dropped, and an effect that
+ * was patched or enabled but is not declared is appended over its defaults.
+ * Non-effect nodes pass through; with no overrides the input is returned as
+ * is. Idempotent, so the compiler and the bridge may both apply it.
+ */
+export function applyRuntimePostOverrides<TNode extends AuraSceneNode>(nodes: readonly TNode[], canvas?: HTMLCanvasElement): readonly TNode[] {
+  const store = runtimePostOverridesFor(canvas);
+  if (store.size === 0) return nodes;
+  const result: TNode[] = [];
+  const present = new Set<string>();
+  for (const node of nodes) {
+    const state = (node as AuraSceneNode).kind === "effect" ? store.get((node as AuraEffectNode).effect) : undefined;
+    if (!state) {
+      result.push(node);
+      continue;
+    }
+    present.add((node as AuraEffectNode).effect);
+    if (state.enabled === false) continue;
+    result.push(patchedEffectNode(node as AuraEffectNode, state) as unknown as TNode);
+  }
+  for (const [effectId, state] of store) {
+    if (present.has(effectId) || state.enabled === false || (state.enabled !== true && state.patch.size === 0)) continue;
+    const declared = { kind: "effect", effect: effectId, postAuthored: [] } as unknown as AuraEffectNode;
+    result.push(patchedEffectNode(declared, state) as unknown as TNode);
+  }
+  return result;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -849,6 +1043,11 @@ export function mapBloomOptionsV2(node: AuraEffectNode, mipLevels: 3 | 5 | 6): {
  * `AuraRuntimeError("POST_FIELD_UNSUPPORTED", ...)` on an unknown effect-node
  * field — this runs inside the compile, so `app.ready()` rejects before the
  * first frame instead of the error dying inside `diagnostics.errors`.
+ *
+ * GU47 E-C (EC-5): the runtime overrides of `app.post.setEffect` /
+ * `setEffectEnabled` apply after the look-grade merge and preset expansion,
+ * every derivation (the compiler derives once per frame). `canvas` scopes
+ * them to one app; without it the latest app's overrides apply.
  */
 export function createRootPostPipeline(
   snapshot: AuraSceneSnapshot,
@@ -856,7 +1055,8 @@ export function createRootPostPipeline(
   output: AuraOutputOptions | undefined,
   tierSettings: AuraQualityTierSettings,
   lights: readonly CollectedLight[] = [],
-  tierResolution?: PostTierResolution
+  tierResolution?: PostTierResolution,
+  canvas?: HTMLCanvasElement
 ): { readonly options: PostPipelineOptions; readonly diagnostics: readonly PostFieldDiagnostic[] } {
   const nodes = groups.flatten(snapshot.nodes);
   const diagnostics: PostFieldDiagnostic[] = [];
@@ -878,7 +1078,7 @@ export function createRootPostPipeline(
   const authoredEffectNodes = mergeLookColorGrade(nodes.filter((node): node is AuraEffectNode => node.kind === "effect"));
   const expansion = expandPostPreset(output, authoredEffectNodes);
   const effectiveOutput = expansion.output;
-  const effectNodes = expansion.nodes;
+  const effectNodes = applyRuntimePostOverrides(expansion.nodes, canvas);
 
   const tierDisabled = (stage: string, reason: string): void => {
     diagnostics.push({
