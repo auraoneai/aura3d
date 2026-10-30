@@ -1,0 +1,15 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "slingshot-siege",
+  "note": "GU47 WP-22 acceptance as bands (SS47-L1, L3, E1, E4, P2, P3). Day chapters ch0-ch4: one shadowed sun opens the spread and lifts the fort cell (grid[5]) above the old 77; the night chapter ch5 is dark with bright lantern and star highlights. Crops come from window.__AURA_QA__.crops (fort, sling, far-headland, sand, sea). Not expressible as bands, checked by hand in phase 2: P1 fort crop >= 2.5x sharper (lap) than far-headland; E1 neighbours differ >= 12; E2 top-row stddev and top-minus-middle; E3 bottom-row change 25 s vs 60 s; M1 glass vs stone. Steady-state captures are phase 2.",
+  "default": { "darkFrac": [null, 0.6], "clipFrac": [null, 0.05] },
+  "variants": {
+    "default": { "spread": [170, null], "darkFrac": [null, 0.03], "clipFrac": [null, 0.01], "cells": { "5": { "mean": [100, null] } }, "note": "level 1 = ch0 (SS47-L1, P3)" },
+    "ch0": { "spread": [170, null], "darkFrac": [null, 0.03], "clipFrac": [null, 0.01], "cells": { "5": { "mean": [100, null] } }, "note": "SS47-L1 crisp morning; P3 day clip <= 0.01" },
+    "ch1": { "mean": [115, null], "spread": [170, null], "darkFrac": [null, 0.03], "clipFrac": [null, 0.01], "cells": { "5": { "mean": [100, null] } }, "note": "SS47-E1 dusty noon mean >= 115" },
+    "ch2": { "spread": [170, null], "darkFrac": [null, 0.03], "clipFrac": [null, 0.01], "cells": { "5": { "mean": [100, null] } }, "note": "SS47-L1 misty overcast" },
+    "ch3": { "spread": [170, null], "darkFrac": [null, 0.03], "clipFrac": [null, 0.01], "cells": { "5": { "mean": [100, null] } }, "crops": { "sand": { "rb": [1.25, null] } }, "note": "SS47-P2 golden hour sand R/B >= 1.25" },
+    "ch4": { "clipFrac": [null, 0.01], "crops": { "sand": { "rb": [1.25, null] }, "fort": { "mean": [70, null] } }, "note": "SS47-P2 sand R/B >= 1.25; E4 wet fort pad stays >= 70 under drizzle (low sun at 8 deg, so the L1 spread band is not applied)" },
+    "ch5": { "mean": [null, 70], "p95": [200, null], "clipFrac": [null, 0.03], "crops": { "sand": { "rb": [null, 0.95] } }, "note": "SS47-E1/L3/P3 starry night: mean <= 70, lantern/star p95 >= 200, clip <= 0.03; P2 sand R/B <= 0.95" }
+  }
+}
