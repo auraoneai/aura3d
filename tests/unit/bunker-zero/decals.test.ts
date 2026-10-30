@@ -1,9 +1,10 @@
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { CELL, FLOORS, KILL_HOUSE, isSolid } from "../../../apps/showcase-bunker-zero/src/maps";
 import {
-  BZ_BULLET_HOLES, BZ_BULLET_HOLE_SECONDS, BZ_DECAL_FILES, BZ_DECAL_NODES, BZ_FLOOR_DECAL_COUNT, bulletHolePose, decalPixel,
+  BZ_BULLET_HOLES, BZ_BULLET_HOLE_SECONDS, BZ_DECAL_FILES, BZ_HAZARD_DECALS, hazardPoses, BZ_DECAL_NODES, BZ_FLOOR_DECAL_COUNT, bulletHolePose, decalPixel,
   decalsForTier, floorDecals, holeExpired, nextHoleSlot
 } from "../../../apps/showcase-bunker-zero/src/art/decals";
 
@@ -13,7 +14,7 @@ const DIR = path.resolve("apps/showcase-bunker-zero/public/aura-assets/decals");
 describe("Bunker Zero wear decals (BZ-10)", () => {
   it("stays inside the 32-decal forward budget with one shared floor pool and a 12-hole ring", () => {
     expect(BZ_DECAL_NODES).toBeLessThanOrEqual(32);
-    expect((MAIN.match(/decals\.project\(/g) ?? []).length).toBe(2); // two pool loops, no per-floor copies
+    expect((MAIN.match(/decals\.project\(/g) ?? []).length).toBe(3); // three pool loops, no per-floor copies
     expect(decalsForTier("low")).toEqual({ floor: 6, holes: 6 });
   });
 
@@ -58,11 +59,13 @@ describe("Bunker Zero wear decals (BZ-10)", () => {
     expect(MAIN).toContain("addBulletHole(s.x, s.z)");
   });
 
-  it("ships the three generated RGBA textures with transparent corners", () => {
+  it("ships the four generated RGBA textures (round ones with transparent corners)", () => {
     for (const file of Object.values(BZ_DECAL_FILES)) {
       const buf = readFileSync(path.join(DIR, file));
       expect(buf.subarray(1, 4).toString("ascii"), file).toBe("PNG");
       expect(buf[25], `${file} colour type RGBA`).toBe(6);
+      // *.png is git-ignored repo-wide: the files are force-added and must stay tracked
+      expect(execFileSync("git", ["ls-files", "--", path.join(DIR, file)], { encoding: "utf8" }).trim(), `${file} tracked`).not.toBe("");
     }
     for (const kind of ["scorch", "crack", "bullet"] as const) expect(decalPixel(kind, 0.01, 0.01)[3], kind).toBe(0);
   });
@@ -80,5 +83,20 @@ describe("Bunker Zero floor stencils (BZ-10)", () => {
       expect(isSolid(ch), def.name).toBe(false);
     }
     expect(MAIN).toContain('backend: "sdf"');
+  });
+});
+
+describe("Bunker Zero hazard thresholds (BZ-10)", () => {
+  it("bands every door and the exit across the passage, within the pool", () => {
+    for (const def of [...FLOORS, KILL_HOUSE]) {
+      const doors = def.rows.join("").split("").filter((c) => c === "D" || c === "E").length;
+      const poses = hazardPoses(def);
+      expect(poses.length, def.name).toBe(Math.min(doors, BZ_HAZARD_DECALS));
+      for (const p of poses) {
+        const x = Math.floor(p.position[0] / CELL), z = Math.floor(p.position[2] / CELL);
+        const sideSolid = isSolid(def.rows[z]![x - 1] ?? "#") && isSolid(def.rows[z]![x + 1] ?? "#");
+        expect(p.yaw, `${def.name} ${x},${z}`).toBe(sideSolid ? 0 : Math.PI / 2);
+      }
+    }
   });
 });

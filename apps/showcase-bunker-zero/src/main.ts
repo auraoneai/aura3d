@@ -35,8 +35,8 @@ import { BZ_FLOOR_TEXTURES, bunkerTexture } from "./art/textures";
 import { damageArcDeg, deathFade, deathRoll, descentSeconds, doorOffset, reloadDip, viewmodelSway } from "./art/motion";
 import { BZ_VFX_EVENTS, atmosphereEmitters, registerBunkerVfx, type BunkerVfxKind } from "./art/vfx";
 import {
-  BZ_BULLET_HOLES, BZ_FLOOR_DECAL_COUNT, bulletHoleId, bulletHolePose, decalUrl, decalsForTier, floorDecalId, floorDecalKind,
-  floorDecals, floorStencil, holeExpired, nextHoleSlot, type DecalKind
+  BZ_BULLET_HOLES, BZ_FLOOR_DECAL_COUNT, BZ_HAZARD_DECALS, BZ_HAZARD_SIZE, bulletHoleId, bulletHolePose, decalUrl, decalsForTier, floorDecalId, floorDecalKind,
+  floorDecals, floorStencil, hazardDecalId, hazardPoses, holeExpired, nextHoleSlot, type DecalKind
 } from "./art/decals";
 import { BLUEPRINT, blueprintEdges, type Segment } from "./art/minimap";
 import { BZ_CA_PULSE, caPulseLevel, lutOfSlot, lutUrlOfSlot } from "./art/lut";
@@ -453,6 +453,14 @@ function buildScene() {
       size: pose?.size ?? 1, position: pose ? pose.position : [0, -50, 0], rotation: [0, pose?.yaw ?? 0, 0], normal: [0, 1, 0]
     }).runtime(game.runtimeNode(floorDecalId(i), { tags: ["decal"] })) as unknown as AuraNodeBuilder<AuraSceneNode>);
   }
+  const bootHazard = hazardPoses(floorDefOf(BOOT_SLOT));
+  for (let i = 0; i < BZ_HAZARD_DECALS; i++) {
+    const pose = bootHazard[i];
+    nodes.push(decals.project({
+      name: `bunker hazard stripe ${i}`, texture: decalTex("hazard"), color: "#ffffff", opacity: 0.9, roughness: 0.7,
+      size: BZ_HAZARD_SIZE, position: pose ? pose.position : [0, -50, 0], rotation: [0, pose?.yaw ?? 0, 0], normal: [0, 1, 0]
+    }).runtime(game.runtimeNode(hazardDecalId(i), { tags: ["decal"] })) as unknown as AuraNodeBuilder<AuraSceneNode>);
+  }
   for (let i = 0; i < BZ_BULLET_HOLES; i++) {
     nodes.push(decals.project({
       name: `bunker bullet hole ${i}`, texture: decalTex("bullet"), color: "#ffffff", opacity: 0.9, roughness: 0.95,
@@ -655,6 +663,13 @@ function placeFloorDecals(slot: number) {
     if (!node) continue;
     if (!pose || i >= floor) { node.setVisible(false); continue; }
     node.setPosition(pose.position[0], pose.position[1], pose.position[2]).setRotation(0, pose.yaw, 0).setScale([pose.size, 1, pose.size]).setVisible(true);
+  }
+  const hazards = hazardPoses(floorDefOf(slot));
+  for (let i = 0; i < BZ_HAZARD_DECALS; i++) {
+    const node = opt(hazardDecalId(i)), pose = hazards[i];
+    if (!node) continue;
+    if (!pose) { node.setVisible(false); continue; }
+    node.setPosition(pose.position[0], pose.position[1], pose.position[2]).setRotation(0, pose.yaw, 0).setVisible(true);
   }
   for (let i = 0; i < BZ_BULLET_HOLES; i++) { holeSpawnedAt[i] = -1e9; opt(bulletHoleId(i))?.setVisible(false); }
 }

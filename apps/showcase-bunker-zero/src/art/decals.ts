@@ -9,7 +9,7 @@
 import { CELL, isSolid, type FloorDef } from "../maps";
 
 export const BZ_DECAL_TEXTURE_SIZE = 128;
-export const BZ_DECAL_FILES = { scorch: "bz-scorch.png", crack: "bz-crack.png", bullet: "bz-bullet-hole.png" } as const;
+export const BZ_DECAL_FILES = { scorch: "bz-scorch.png", crack: "bz-crack.png", bullet: "bz-bullet-hole.png", hazard: "bz-hazard-stripe.png" } as const;
 export type DecalKind = keyof typeof BZ_DECAL_FILES;
 export const decalUrl = (kind: DecalKind): string => `/aura-assets/decals/${BZ_DECAL_FILES[kind]}`;
 
@@ -18,7 +18,12 @@ export const BZ_FLOOR_DECALS = { scorch: 8, crack: 4 } as const;
 export const BZ_FLOOR_DECAL_COUNT = BZ_FLOOR_DECALS.scorch + BZ_FLOOR_DECALS.crack;
 export const BZ_BULLET_HOLES = 12;
 export const BZ_BULLET_HOLE_SECONDS = 20;
-export const BZ_DECAL_NODES = BZ_FLOOR_DECAL_COUNT + BZ_BULLET_HOLES;
+/** Hazard-stripe thresholds: every door plus the elevator exit (at most 6 doors on a floor). */
+export const BZ_HAZARD_DECALS = 7;
+export const BZ_DECAL_NODES = BZ_FLOOR_DECAL_COUNT + BZ_BULLET_HOLES + BZ_HAZARD_DECALS;
+export const hazardDecalId = (i: number): string => `bz-hazard-decal-${i}`;
+/** Hazard band size across the opening and along the travel direction, metres. */
+export const BZ_HAZARD_SIZE = [CELL * 0.86, 0.7] as const;
 export const decalsForTier = (tier: string): { floor: number; holes: number } =>
   (tier === "low" ? { floor: BZ_FLOOR_DECAL_COUNT / 2, holes: BZ_BULLET_HOLES / 2 } : { floor: BZ_FLOOR_DECAL_COUNT, holes: BZ_BULLET_HOLES });
 
@@ -97,6 +102,24 @@ export function nextHoleSlot(spawnedAt: readonly number[]): number {
 }
 export const holeExpired = (spawnedAt: number, now: number): boolean => now - spawnedAt >= BZ_BULLET_HOLE_SECONDS;
 
+/**
+ * BZ-10: the hazard-stripe band on the floor under every door and before the exit. `yaw` 0 lays the band along x (a
+ * passage that runs along z); pi/2 along z.
+ */
+export function hazardPoses(def: FloorDef): { position: [number, number, number]; yaw: number }[] {
+  const out: { position: [number, number, number]; yaw: number }[] = [];
+  const solid = (x: number, z: number) => isSolid(def.rows[z]?.[x] ?? "#");
+  def.rows.forEach((r, z) => {
+    for (let x = 0; x < r.length; x++) {
+      const ch = r[x]!;
+      if (ch !== "D" && ch !== "E") continue;
+      const passageAlongZ = solid(x - 1, z) && solid(x + 1, z);
+      out.push({ position: [(x + 0.5) * CELL, 0.03 + out.length * 0.002, (z + 0.5) * CELL], yaw: passageAlongZ ? 0 : Math.PI / 2 });
+    }
+  });
+  return out.slice(0, BZ_HAZARD_DECALS);
+}
+
 // ---- texture patterns (RGBA 0..255), used by scripts/make-decals.ts --------------------------------------------------
 
 function vnoise(x: number, y: number, seed: number): number {
@@ -129,6 +152,14 @@ export function decalPixel(kind: DecalKind, u: number, v: number): [number, numb
       a = Math.max(a, d < width ? 1 : Math.max(0, 1 - (d - width) / 0.02) * 0.35);
     }
     return [22, 21, 19, Math.round(255 * a * Math.max(0, 1 - Math.max(0, r - 0.85) / 0.15))];
+  }
+  if (kind === "hazard") {
+    // 45-degree yellow-black stripes, worn by noise at the edges
+    const n = fbm(u * 8, v * 8, 53);
+    const yellow = ((u + v) * 4) % 1 < 0.5;
+    const edge = Math.min(u, 1 - u, v, 1 - v);
+    const a = Math.round(255 * Math.min(1, edge / 0.06) * (n > 0.28 ? 0.92 : 0.35));
+    return yellow ? [232, 180, 0, a] : [22, 21, 15, a];
   }
   // bullet hole: dark core, chipped light ring, soot falloff
   const n = fbm(u * 10, v * 10, 41);
