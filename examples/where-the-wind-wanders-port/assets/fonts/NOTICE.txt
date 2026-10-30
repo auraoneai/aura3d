@@ -1,0 +1,3 @@
+Licensed faces copied from packages/game/src/fonts/ (lane E-J storybook theme; provenance, bytes and sha256 in that NOTICE.txt):
+gt-walsheim-400.woff2 | GT Walsheim (400) | Grilli Type | 40000 | d5833892a75ef71b7fad7d1ca40d9ab88651fd8c80023476718dfd5d6fbbbeff
+canela-400.woff2 | Canela (400) | Commercial Type | 31756 | c5db098e47f0113d6d8b75bdb3b216ad36918fc7156848754e4e2cf8b5fd847a

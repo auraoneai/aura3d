@@ -31,7 +31,10 @@ export const STORY = {
 } as const;
 
 const CSS = `
-.wwui { position: fixed; inset: 0; pointer-events: none; font: 400 13px/1.45 "Graphik Web", system-ui, sans-serif; color: #2b2a24; z-index: 5; }
+.wwui { position: fixed; inset: 0; pointer-events: none; font: 400 13px/1.45 "A3G GT Walsheim", "Graphik Web", sans-serif; color: #2b2a24; z-index: 5; }
+.wwui #wwui-title h1, .wwui #wwui-epilogue .big { font-family: "A3G Canela", "A3G GT Walsheim", serif; font-weight: 400; }
+/* WW47-H1 storybook caption: a cream deckled card (uneven corners, soft torn-edge shadow) */
+.wwui #wwui-caption { background: #fbf3dc; border-radius: 10px 4px 12px 5px / 5px 11px 4px 10px; box-shadow: 0 1px 0 rgba(120, 90, 50, 0.25), 0 0 0 1px rgba(120, 90, 50, 0.12), 2px 3px 8px rgba(60, 40, 20, 0.14); font-size: 16px; }
 .wwui * { box-sizing: border-box; }
 .wwui .p { background: rgba(255, 252, 240, 0.86); border: 1px solid rgba(43, 42, 36, 0.16); border-radius: 8px; padding: 8px 12px; backdrop-filter: blur(6px); pointer-events: auto; }
 .wwui button { font: inherit; font-weight: 500; color: #2b2a24; background: #f6efd2; border: 1px solid rgba(43, 42, 36, 0.28); border-radius: 6px; padding: 5px 12px; cursor: pointer; }
@@ -99,7 +102,23 @@ export interface WindUi {
   setSound(muted: boolean, started: boolean): void;
 }
 
+/** WW47-H1: the E-J storybook faces (GT Walsheim text, Canela display), self-hosted beside the game (assets/fonts/NOTICE.txt). */
+const FONT_FACES = [
+  { family: "A3G GT Walsheim", url: new URL("./assets/fonts/gt-walsheim-400.woff2", import.meta.url).href },
+  { family: "A3G Canela", url: new URL("./assets/fonts/canela-400.woff2", import.meta.url).href }
+] as const;
+
+function registerStorybookFonts(): void {
+  if (typeof FontFace === "undefined" || typeof document === "undefined" || !document.fonts) return;
+  for (const face of FONT_FACES) {
+    const f = new FontFace(face.family, `url(${face.url}) format("woff2")`, { weight: "400", display: "swap" });
+    document.fonts.add(f);
+    void f.load().catch(() => undefined);
+  }
+}
+
 export function createUi(): WindUi {
+  registerStorybookFonts();
   const style = document.createElement("style");
   style.textContent = CSS;
   document.head.appendChild(style);

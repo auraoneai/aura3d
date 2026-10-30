@@ -722,7 +722,8 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           // WW47-C1: the bell's finale orbit starts when it rings; a running sequence overrides the follow pose
           if (state.complete && !seqComplete) sequencer.start("finale");
           seqComplete = state.complete;
-          const follow = { position: cp, target: [look.x, look.y, look.z] as [number, number, number], fov: aspect < 1 ? 50 : 43 };
+          // WW47-C2 (part): a storybook 40-degree lens on landscape; portrait keeps 50 so the traveller stays in frame
+          const follow = { position: cp, target: [look.x, look.y, look.z] as [number, number, number], fov: aspect < 1 ? 50 : original ? 43 : 40 };
           const shown = sequencer.update(dt, follow) ?? follow;
           node("sky").setPosition(shown.position[0], shown.position[1], shown.position[2]);
           cam.setPose({
