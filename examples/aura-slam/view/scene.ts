@@ -12,6 +12,7 @@ import { buildParticleNodes } from "./particles";
 import { buildBleacherNodes, buildSpectatorNodes } from "./spectators";
 import { VENUE_PALETTES, venueKey } from "./venues";
 import { createWorldTourCrowd, type WorldTourCrowd } from "./crowd";
+import { LINE_COLOR, buildGrassStripesNode, feltBallMaterial, surfaceMaterial } from "./surfaces";
 
 export interface TennisSceneOptions {
   /** Boot venue: the authored environment, fog, key and grade are this venue's, so the first frame needs no swap. */
@@ -41,7 +42,9 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
   const original = options.look === "original";
   const boot = venueKey(options.venue);
   const look = venueLook(boot);
-  const lineMat = material.pbr({ color: "#f5f4e6", roughness: 0.58 });
+  // TT-M1: World Tour line paint #fbfbf5 and per-surface court materials; `?look=original` keeps the 4.6.1 flat colours.
+  const lineMat = material.pbr({ color: original ? "#f5f4e6" : LINE_COLOR, roughness: original ? 0.58 : 0.5 });
+  const courtMat = (part: "court" | "alley" | "apron" | "ground", flat: () => ReturnType<typeof material.pbr>) => (original ? flat() : surfaceMaterial(boot, part));
   const netPostMat = material.pbr({ color: "#1d322c", metalness: 0.42, roughness: 0.48 });
   // C9: the net mesh is see-through (blended, no depth write, no shadow) so it no longer reads as a black slab; the tape stays opaque.
   const netMeshMat = material.pbr({ color: "#1c2a26", roughness: 0.88, opacity: 0.42, alphaMode: "blend", depthWrite: false, doubleSided: true });
@@ -74,7 +77,7 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
         .plane({
           name: "stadium-outer-ground",
           size: [54, 1, 58],
-          material: material.pbr({ color: VENUE_PALETTES.hard.ground, roughness: 0.94 })
+          material: courtMat("ground", () => material.pbr({ color: VENUE_PALETTES.hard.ground, roughness: 0.94 }))
         })
         .position(0, -0.024, 0)
         .runtime(game.runtimeNode("stadium-outer-ground"))
@@ -84,7 +87,7 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
         .box({
           castShadow: false, name: "court-apron",
           size: [19.8, 0.016, 26.8],
-          material: material.pbr({ color: VENUE_PALETTES.hard.apron, roughness: 0.88 })
+          material: courtMat("apron", () => material.pbr({ color: VENUE_PALETTES.hard.apron, roughness: 0.88 }))
         })
         .position(0, -0.012, 0)
         .runtime(game.runtimeNode("court-apron"))
@@ -94,7 +97,7 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
         .box({
           castShadow: false, name: "court-doubles-surface",
           size: [DOUBLES_X * 2, 0.016, BASELINE_Z * 2],
-          material: material.pbr({ color: VENUE_PALETTES.hard.alley, roughness: 0.82 })
+          material: courtMat("alley", () => material.pbr({ color: VENUE_PALETTES.hard.alley, roughness: 0.82 }))
         })
         .position(0, -0.004, 0)
         .runtime(game.runtimeNode("court-doubles-surface"))
@@ -104,14 +107,15 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
         .box({
           castShadow: false, name: "court-singles-surface",
           size: [SINGLES_X * 2, 0.018, BASELINE_Z * 2],
-          material: material.pbr({ color: VENUE_PALETTES.hard.court, roughness: 0.78 })
+          material: courtMat("court", () => material.pbr({ color: VENUE_PALETTES.hard.court, roughness: 0.78 }))
         })
         .position(0, 0, 0)
         .runtime(game.runtimeNode("court-singles-surface"))
     );
 
-  // Grass mower stripes (visible on grass court)
-  for (let i = 0; i < 8; i++) {
+  // Grass mower stripes (visible on grass court). TT-M1: the World Tour look draws them as one vertex-coloured mesh.
+  if (!original) s.add(buildGrassStripesNode());
+  for (let i = 0; original && i < 8; i++) {
     const stripeZ = -BASELINE_Z + (i + 0.5) * ((BASELINE_Z * 2) / 8);
     s.add(
       primitives
@@ -332,7 +336,7 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
   ]);
 
   // TT-V1 / TT-V2: the World Tour look stamps decal marks and draws one trail ribbon instead of 8 cylinders and 8 spheres.
-  s.addMany(buildBallNodes({ trail: original, marks: original }));
+  s.addMany(buildBallNodes({ trail: original, marks: original, ...(original ? {} : { ballMaterial: feltBallMaterial() }) }));
   s.addMany(rig.build("player", true));
   s.addMany(rig.build("rival", false));
 

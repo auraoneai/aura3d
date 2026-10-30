@@ -19,6 +19,26 @@ import { lookMode, venueLook } from "./look";
 import { applyVenueRuntime, optionalNode, venueRuntimePlan, type VenueRuntimeApp, type VenueRuntimePlan } from "./venueRuntime";
 import { createSlamVfx, registerSlamVfx, type SlamVfxController } from "./vfx";
 import { CROWD_SEAT_COUNT, createWorldTourCrowd, type WorldTourCrowd } from "./crowd";
+import { GRASS_STRIPES_ID, rigMaterialRole, surfaceMaterial, upgradeRigMaterial, type RigMaterialRole } from "./surfaces";
+
+/** TT-M2: forwards every write to the real handle, upgrading the materials the rig sets (kit fabric, racket clearcoat). */
+function materialUpgradeHandle(real: AuraRuntimeNodeHandle, role: Exclude<RigMaterialRole, null>): AuraRuntimeNodeHandle {
+  const wrapped = new Map<PropertyKey, unknown>();
+  const self: AuraRuntimeNodeHandle = new Proxy(real, {
+    get(target, prop) {
+      const cached = wrapped.get(prop);
+      if (cached !== undefined) return cached;
+      const value = Reflect.get(target, prop) as unknown;
+      if (typeof value !== "function") return value;
+      const fn = prop === "setMaterial"
+        ? (spec: unknown) => { target.setMaterial(upgradeRigMaterial(role, spec as never) as never); return self; }
+        : (...args: unknown[]) => { const out = (value as (...a: unknown[]) => unknown).apply(target, args); return out === target ? self : out; };
+      wrapped.set(prop, fn);
+      return fn;
+    }
+  });
+  return self;
+}
 
 /** Rig parts the World Tour look removes from the frame (TT-L2: contact shadows and the key's shadow replace the discs). */
 export const SHADOW_DISC_IDS = ["player-shadow", "rival-shadow"] as const;
@@ -26,12 +46,13 @@ export const SHADOW_DISC_IDS = ["player-shadow", "rival-shadow"] as const;
 /** A handle that ignores every write: the rig keeps driving its disc, which stays hidden (rig code and parity unchanged). */
 function inertHandle(real: AuraRuntimeNodeHandle): AuraRuntimeNodeHandle {
   const inert: Record<string, unknown> = {};
+  const noop = (): unknown => self;
   const self = new Proxy(inert, {
     get(_target, prop) {
       if (prop === "visible") return false;
       if (prop === "id") return real.id;
       const value = (real as unknown as Record<string | symbol, unknown>)[prop];
-      return typeof value === "function" ? () => self : value;
+      return typeof value === "function" ? noop : value;
     }
   });
   return self as unknown as AuraRuntimeNodeHandle;
@@ -139,10 +160,18 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       vfx?.clearMarks();
     }
     const pal = VENUE_PALETTES[key]!;
-    h.ground!.setMaterial(material.pbr({ color: pal.ground, roughness: 0.94 }));
-    h.apron!.setMaterial(material.pbr({ color: pal.apron, roughness: 0.88 }));
-    h.doubles!.setMaterial(material.pbr({ color: pal.alley, roughness: 0.82 }));
-    h.singles!.setMaterial(material.pbr({ color: pal.court, roughness: 0.78 }));
+    if (worldTour) {
+      // TT-M1: the venue's surface family (acrylic clearcoat, turf sheen, clay 0.95, regolith) in the palette colours.
+      h.ground!.setMaterial(surfaceMaterial(key, "ground"));
+      h.apron!.setMaterial(surfaceMaterial(key, "apron"));
+      h.doubles!.setMaterial(surfaceMaterial(key, "alley"));
+      h.singles!.setMaterial(surfaceMaterial(key, "court"));
+    } else {
+      h.ground!.setMaterial(material.pbr({ color: pal.ground, roughness: 0.94 }));
+      h.apron!.setMaterial(material.pbr({ color: pal.apron, roughness: 0.88 }));
+      h.doubles!.setMaterial(material.pbr({ color: pal.alley, roughness: 0.82 }));
+      h.singles!.setMaterial(material.pbr({ color: pal.court, roughness: 0.78 }));
+    }
     const isGrass = key === "grass";
     for (const stripe of grassStripes) stripe.setScale(isGrass ? [1, 1, 1] : HIDDEN_SCALE).setVisible(isGrass);
     // C7: the rest of the venue palette, and no crowd or grandstand on the Moon.
@@ -202,13 +231,17 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       await app.ready();
       const req = (id: string): AuraRuntimeNodeHandle => (options.wrapHandle ? options.wrapHandle(id, app!.nodes.require(id)) : app!.nodes.require(id));
       // TT-L2: in the World Tour look the athletes' cylinder shadow discs leave the frame (hidden once; the rig writes to an inert
-      // handle), so the PCSS key shadow and the contact-shadow pass ground the athletes instead.
+      // handle), so the PCSS key shadow and the contact-shadow pass ground the athletes instead. TT-M2: kit and racket parts
+      // get their fabric / clearcoat materials where the rig sets them. The rig code (and its parity) is unchanged.
       const rigReq = worldTour
         ? (id: string): AuraRuntimeNodeHandle => {
             const handle = req(id);
-            if (!(SHADOW_DISC_IDS as readonly string[]).includes(id)) return handle;
-            handle.setScale(HIDDEN_SCALE).setVisible(false);
-            return inertHandle(handle);
+            if ((SHADOW_DISC_IDS as readonly string[]).includes(id)) {
+              handle.setScale(HIDDEN_SCALE).setVisible(false);
+              return inertHandle(handle);
+            }
+            const role = rigMaterialRole(id);
+            return role ? materialUpgradeHandle(handle, role) : handle;
           }
         : req;
       const resolver = options.wrapHandle || worldTour ? ({ nodes: { require: rigReq } } as unknown as AuraApp) : app;
@@ -225,7 +258,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       h.umpireHead = req("umpire-head");
       h.faultLeft = req("net-fault-left");
       h.faultRight = req("net-fault-right");
-      grassStripes = Array.from({ length: 8 }, (_, i) => req(`grass-stripe-${i}`));
+      grassStripes = worldTour ? [req(GRASS_STRIPES_ID)] : Array.from({ length: 8 }, (_, i) => req(`grass-stripe-${i}`));
       spectators = req(crowd ? crowd.bodies.nodeIds[0]! : "spectators");
       if (crowd) spectatorHeads = req(crowd.heads.nodeIds[0]!);
       particles = req("hit-particles");

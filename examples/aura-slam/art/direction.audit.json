@@ -101,35 +101,7 @@
         "practical": false
       },
       {
-        "node": "grass-stripe-0",
-        "practical": false
-      },
-      {
-        "node": "grass-stripe-1",
-        "practical": false
-      },
-      {
-        "node": "grass-stripe-2",
-        "practical": false
-      },
-      {
-        "node": "grass-stripe-3",
-        "practical": false
-      },
-      {
-        "node": "grass-stripe-4",
-        "practical": false
-      },
-      {
-        "node": "grass-stripe-5",
-        "practical": false
-      },
-      {
-        "node": "grass-stripe-6",
-        "practical": false
-      },
-      {
-        "node": "grass-stripe-7",
+        "node": "grass-stripes",
         "practical": false
       },
       {
@@ -235,9 +207,10 @@
         "practical": true
       },
       {
+        "name": "felt",
         "node": "tennis-ball",
-        "emissiveIntensity": 0.42,
-        "practical": true
+        "emissiveIntensity": 0.1,
+        "practical": false
       },
       {
         "node": "tennis-ball-shadow",

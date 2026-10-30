@@ -1,4 +1,4 @@
-import { game, material, primitives, type AuraRuntimeNodeHandle } from "@aura3d/engine";
+import { game, material, primitives, type AuraMaterialSpec, type AuraRuntimeNodeHandle } from "@aura3d/engine";
 import type { MatchState } from "../contract/sim";
 import type { Vec3 } from "../contract/units";
 import type { NodeInput } from "./rigPort";
@@ -9,6 +9,8 @@ export interface BallNodeOptions {
   readonly trail?: boolean;
   /** The eight court-mark cylinders (`?look=original`; GU47 TT-V1 stamps `app.effects.decal` marks instead). */
   readonly marks?: boolean;
+  /** GU47 TT-M2: the ball's material (felt in the World Tour look; the 4.6.1 emissive ball by default). */
+  readonly ballMaterial?: AuraMaterialSpec;
 }
 
 export function buildBallNodes(options: BallNodeOptions = {}): NodeInput[] {
@@ -16,7 +18,7 @@ export function buildBallNodes(options: BallNodeOptions = {}): NodeInput[] {
   const withMarks = options.marks !== false;
   const nodes: NodeInput[] = [
     primitives
-      .sphere({ name: "tennis-ball", size: [0.156, 0.156, 0.156], material: material.emissive({ color: "#d8ff3e", emissive: "#d8ff3e", emissiveIntensity: 0.42 }) })
+      .sphere({ name: "tennis-ball", size: [0.156, 0.156, 0.156], material: options.ballMaterial ?? material.emissive({ color: "#d8ff3e", emissive: "#d8ff3e", emissiveIntensity: 0.42 }) })
       .position(0, 0.8, 6.4)
       .runtime(game.runtimeNode("tennis-ball")),
     primitives

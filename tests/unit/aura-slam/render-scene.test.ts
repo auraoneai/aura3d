@@ -27,7 +27,9 @@ describe("aura-slam view: scene composition", () => {
 
   it("contains every node the renderer resolves at runtime", () => {
     for (const id of SCENE_NODE_IDS) expect(names.has(id), id).toBe(true);
-    for (let i = 0; i < 8; i++) expect(names.has(`grass-stripe-${i}`)).toBe(true);
+    // GU47 TT-M1: one vertex-coloured stripe mesh in the World Tour look; the 8 boxes in ?look=original.
+    expect(names.has("grass-stripes")).toBe(true);
+    for (let i = 0; i < 8; i++) expect(names.has(`grass-stripe-${i}`)).toBe(false);
     // GU47 TT-AN1: the World Tour crowd (bodies + heads) replaces the 24 capsules, which stay in ?look=original.
     expect(names.has("crowd-bodies-pose-0")).toBe(true);
     expect(names.has("crowd-heads-pose-0")).toBe(true);
@@ -40,6 +42,7 @@ describe("aura-slam view: scene composition", () => {
     for (let i = 0; i < MARK_COUNT; i++) expect(original.has(`court-mark-${i}`)).toBe(true);
     for (let i = 0; i < TRAIL_COUNT; i++) expect(original.has(`ball-trail-${i}`)).toBe(true);
     expect(original.has("spectators")).toBe(true);
+    for (let i = 0; i < 8; i++) expect(original.has(`grass-stripe-${i}`)).toBe(true);
   });
 
   it("builds both athletes with the full rig", () => {
