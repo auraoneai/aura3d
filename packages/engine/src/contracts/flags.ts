@@ -66,15 +66,36 @@ function flagValueOn(v: QrFlagValue | undefined): boolean {
   return v !== undefined && v !== false && v !== "0" && v !== "off" && v !== "";
 }
 
-/** #266: fill unset default-on sub-flags of every lane flag that resolved on. */
+/**
+ * GU47 E-G: the lane flag a sub-flag belongs to (`A3D_QR_VFX_FOG` →
+ * `A3D_QR_VFX`, `A3D_QR_WORLD_WATER` → `A3D_QR_WORLD`), or null for lane flags
+ * and names outside the lane table.
+ */
+function qrParentLaneFlag(name: string): QrFlagName | null {
+  if ((LANE_FLAGS as readonly string[]).includes(name)) return null;
+  for (const lane of LANE_FLAGS) {
+    if (name.startsWith(`${lane}_`)) return lane;
+  }
+  return null;
+}
+
 /**
  * Promotion (§5.3, owner decision 2026-10-11): a flag whose state is
  * `default-on` in flags.state.ts is on unless some source set it explicitly.
  * Runs after every source, so `none`, `-x` and `A3D_QR_X=0` still turn it off.
+ *
+ * GU47 E-G: a promoted SUB-flag (e.g. `A3D_QR_VFX_FOG`) also stays off when a
+ * source explicitly turned its lane flag off (`none`, `-vfx`, `A3D_QR_VFX=0`),
+ * so the kill switches keep meaning "everything in that lane off". A lane
+ * that no source set (WORLD is `dev`) does not block it: that is how
+ * `A3D_QR_WORLD_WATER` can be default-on alone.
  */
 function applyDefaultOnStates(out: Record<string, QrFlagValue>): void {
   for (const [name, state] of Object.entries(QR_FLAG_STATES)) {
-    if (state === "default-on") setEntry(out, name as QrFlagName, true);
+    if (state !== "default-on") continue;
+    const parent = qrParentLaneFlag(name);
+    if (parent !== null && parent in out && !flagValueOn(out[parent])) continue;
+    setEntry(out, name as QrFlagName, true);
   }
 }
 

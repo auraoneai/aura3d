@@ -13,6 +13,7 @@ import { invertMat4, identityMat4 } from "@aura3d/scene";
 import { evaluateSky, skyFrame, skyProgramDefines, skyProgramKey, type SkyFrame } from "./SkyEval";
 import { SKY_SHADER_MARKER, skyFragmentSource, skyVertexSource } from "./sky.glsl";
 import type { PackedFogUniforms } from "./HeightFog";
+import { starVisibilityAtSunElevation } from "./StarField";
 
 /** P4-T7 — packed §8.4 fog state the sky fragment consumes when SKY_FOG=1. */
 export interface SkyFogState {
@@ -229,7 +230,7 @@ export function skyUniforms(
   uniforms.set("u_invViewProj", invViewProj);
   uniforms.set("u_sunDirection", pre?.sunDirection ?? grad?.sunDirection ?? [0, 1, 0]);
   uniforms.set("u_sunE", pre?.sunE ?? 0);
-  uniforms.set("u_sunfade", pre?.sunfade ?? 1);
+  uniforms.set("u_sunfade", pre?.sunfade ?? (grad ? gradientSunfade(grad) : 1));
   uniforms.set("u_betaR", pre?.betaR ?? [0, 0, 0]);
   uniforms.set("u_betaM", pre?.betaM ?? [0, 0, 0]);
   uniforms.set("u_mieDirectionalG", pre?.mieDirectionalG ?? 0.8);
@@ -251,6 +252,7 @@ export function skyUniforms(
   uniforms.set("u_cloudDensity", frame.clouds.density);
   uniforms.set("u_cloudElevation", frame.clouds.elevation);
   uniforms.set("u_cloudScaleSpeed", [frame.clouds.scale, frame.clouds.speed]);
+  uniforms.set("u_cloudTint", [frame.clouds.color[0], frame.clouds.color[1], frame.clouds.color[2]]);
   const moon = frame.moon;
   uniforms.set("u_moonDirection", moon?.direction ?? [0, -1, 0]);
   uniforms.set("u_moonColor", moon?.color ?? [0, 0, 0]);
@@ -258,6 +260,21 @@ export function skyUniforms(
   uniforms.set("u_moonIntensity", moon?.intensity ?? 0);
   uniforms.set("u_moonAngularCos", moon ? Math.cos(moon.size) : 1);
   return uniforms;
+}
+
+/**
+ * GU47 E-G (WP-7): the night term for gradient skies. The program shows stars
+ * and the moon by `(1 - u_sunfade)`, and a gradient frame has no Preetham
+ * `sunfade`, so the old constant 1 hid both on every gradient sky. Day (sun
+ * above 6°) stays 1; night (no sun, or sun below the horizon) is 0.5, which
+ * makes the star term `starfield * intensity * 1` — the intensity already
+ * carries the StarField twilight fade (SkyEval).
+ */
+export function gradientSunfade(grad: { readonly sunDirection: readonly [number, number, number] | null }): number {
+  const elevationDeg = grad.sunDirection
+    ? (Math.asin(Math.max(-1, Math.min(1, grad.sunDirection[1]))) * 180) / Math.PI
+    : -90;
+  return 1 - 0.5 * starVisibilityAtSunElevation(elevationDeg);
 }
 
 /** View-projection for the current context's camera (identity when absent). */
