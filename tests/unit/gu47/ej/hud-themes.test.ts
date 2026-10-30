@@ -136,6 +136,13 @@ describe("GU47 WP-10 HUD theme fonts (PRD D9)", () => {
     expect(mirrors.sort()).toEqual([...PRESETS].sort());
   });
 
+  it("the package stylesheet's shell default face is the plain theme's licensed stack", () => {
+    const css = readFileSync("packages/game/src/styles.css", "utf8");
+    const rootFont = /:root\s*\{[^}]*?--a3g-font:\s*([^;]+);/.exec(css)?.[1]?.trim();
+    expect(rootFont).toBe(HUD_THEMES.plain["--a3g-font"]);
+    expect(rootFont).not.toMatch(FORBIDDEN_FACE);
+  });
+
   it("the new paper and sky panels keep text readable over dark and bright scenes", () => {
     const backdrops: readonly (readonly [number, number, number])[] = [[0, 0, 0], [255, 255, 255], [47, 111, 184], [79, 122, 58]];
     for (const preset of NEW_PRESETS) {
