@@ -2,7 +2,7 @@
 // Summer-league streetball shot like a late-night mixtape broadcast: asphalt and acrylic, chain-link, sodium floods,
 // spray paint and rain, a low long-lens sideline camera. The per-court look table is src/courtRigs.ts; the runtime VFX
 // pack is src/fxPack.ts. Audited by tests/unit/aura-hoops/art-direction.test.ts, which writes art/direction.audit.json.
-import { defineArtDirection } from "@aura3d/engine/game/art";
+import { defineArtDirection } from "@aura3d/game/art";
 
 export default defineArtDirection({
   id: "showcase-aura-hoops-3d",
@@ -64,6 +64,8 @@ export default defineArtDirection({
     { role: "set-dressing", assetKey: "hoopsLamp", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "hoopsPalm", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "hoopsCanopy", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    // Borrowed from the showcase library until the WP-36 bleacher and spectator kit lands (H47-A1; lane report assets).
+    { role: "set-dressing", assetKey: "showcaseStadiumSeats", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "backdrop", assetKey: "hoopsSkyline", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "backdrop", assetKey: "hoopsTower", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "backdrop", assetKey: "hoopsEarth", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },

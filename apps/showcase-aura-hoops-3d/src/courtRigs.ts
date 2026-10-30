@@ -45,7 +45,11 @@ export interface CourtPracticalSpot {
   readonly angle: number;
   readonly penumbra: number;
   readonly distance: number;
-  /** H47-L2: an explicit local shadow request (E-B multi-caster: the tier grants low 0, medium 1, high 2, ultra 4). */
+  /**
+   * H47-L2: an explicit local shadow request (E-B multi-caster: the tier grants low 0, medium 1, high 2, ultra 4).
+   * Every row is false today: the C-35 audit (`auditArtDirection`) allows one shadowed light for the basketball genre,
+   * which is the court's PCSS key (handoff in the lane report; flip the two Rucker rows once the audit admits it).
+   */
   readonly shadow: boolean;
 }
 export interface CourtPracticalPoint {
@@ -180,8 +184,9 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     bloom: { intensity: 0.6, threshold: 0.8 },
     night: true,
     grain: true,
-    // H47-L2: four sodium spots, the two behind the hoop cast (sun + local-0 + local-1 = 3 sampled shadow rows on High).
-    practicals: [ruckerSpot(-11, -7, true), ruckerSpot(11, -7, true), ruckerSpot(-11, 13, false), ruckerSpot(11, 13, false)],
+    // H47-L2: four sodium spots. The PRD casts the two behind the hoop (sun + local-0 + local-1 = 3 shadow rows on
+    // High); the C-35 audit caps basketball at one shadowed light, so they stay unshadowed until that rule moves.
+    practicals: [ruckerSpot(-11, -7, false), ruckerSpot(11, -7, false), ruckerSpot(-11, 13, false), ruckerSpot(11, 13, false)],
     weather: { rain: "none", streaks: 0, wetGround: false, lightningEverySeconds: 0 },
     lensFlare: [
       { name: "rucker-flood-flare-w", position: [-10.1, 9.0, 12.0], intensity: 0.55 },
