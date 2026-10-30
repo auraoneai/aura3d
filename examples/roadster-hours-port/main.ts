@@ -11,11 +11,14 @@ import { DEFAULT_PARAMS, autopilot } from "./autopilot";
 import { RoadsterSound, type AudioFrame, type GameSound } from "./audio";
 import { LEVELS } from "./data";
 import { ACTIONS, ACTION_LABELS, InputState, TOUCH_BUTTONS, keyLabel, loadBindings, promptText, rebind, runInput, saveBindings, touchCode, type Action } from "./input";
-import { bestLine, coachLine, createHudWriter, loadResults, nitroLabel, saveResults } from "./hud";
+import { bestLine, coachLine, createHudWriter, loadResults, nitroLabel, saveResults, speedoArc } from "./hud";
 import { SIM_STEP, createRun, defaultCareer, stepRun, type Career, type MedalResult, type Run, type RunEvent, type RunInput } from "./sim";
 import { createRoadsterPresenter, viewOf } from "./presentation";
 import { loadMeshy } from "./meshy";
 import { buildWorld, type World, type WorldRuntime } from "./world";
+import { lookModeFrom } from "./art/look";
+import { outputFor } from "./art/output";
+import { ROAD_PASS_NAME, autoExposureFor, roadPass, streakFor } from "./art/post";
 
 const params = new URLSearchParams(location.search);
 let levelIndex = Math.max(0, Math.min(LEVELS.length - 1, Number(params.get("level") ?? 0) | 0));
@@ -94,6 +97,7 @@ addEventListener("keydown", (e) => {
     return;
   }
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
+  runtime?.skipIntro();
   if (!e.code.startsWith("touch:")) void sound.unlock();
   if (e.repeat) return;
   const action = input.actionOf(e.code);
@@ -175,6 +179,7 @@ function stepOnce(stepInput: RunInput): void {
   }
   if (run.phase === "complete" && screen === "play") {
     saveResults(career, storage);
+    runtime?.startFinish();
     screen = "results";
     panels();
   }
@@ -193,6 +198,7 @@ async function nextRoute(): Promise<void> {
     app.setScene(world.scene);
     runtime = world.bind(app);
     runtime.setReducedMotion(reducedMotion);
+    applyRoutePost();
     hud.reset();
     history.replaceState(null, "", `?${new URLSearchParams({ ...Object.fromEntries(params), level: String(levelIndex) }).toString()}`);
     buildMenu();
@@ -211,6 +217,7 @@ async function nextRoute(): Promise<void> {
 const fmt = (t: number): string => `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, "0")}`;
 const hud = createHudWriter((id) => $(id));
 let nitroWindowShown = false;
+let speedoNitroShown = false;
 function buildMenu(): void {
   const level = LEVELS[levelIndex]!;
   $("level-name").textContent = level.name;
@@ -290,6 +297,9 @@ function panels(): void {
 function updateHud(): void {
   hud.text("timer", fmt(run.time));
   hud.text("speed", String(Math.round(run.v * 3.6)));
+  const arc = speedoArc(run.v * 3.6, run.boosting || run.nitro > 0);
+  hud.style("speedo-fill", "stroke-dasharray", arc.dash);
+  if (arc.nitro !== speedoNitroShown) { speedoNitroShown = arc.nitro; $("speedo").classList.toggle("nitro", arc.nitro); }
   hud.text("score", Math.round(run.score).toLocaleString());
   hud.text("gate", `Relay ${Math.min(run.nextGate + 1, run.level.gates.length)} / ${run.level.gates.length}`);
   hud.text("act", run.act);
@@ -309,7 +319,22 @@ function updateHud(): void {
 /* ------------------------------------------------------------------ frame loop */
 
 /** Steps only on the play screen and never in manual mode; frames always render. The loop drains its clock otherwise. */
+/**
+ * RH47-16 slow-motion on kicker hang time: the loop reads a virtual clock that runs at the shot's time scale, so it runs
+ * fewer fixed steps per wall second. Every step is the same SIM_STEP, so the sim and replays are unchanged (PRD D8).
+ */
+let timeScale = 1;
+let virtualMs = 0;
+let lastRealMs: number | undefined;
+const virtualClock = (realMs: number): number => {
+  if (lastRealMs !== undefined) virtualMs += Math.max(0, realMs - lastRealMs) * timeScale;
+  lastRealMs = realMs;
+  return virtualMs;
+};
 const loop = createFixedStepLoop({
+  now: () => virtualClock(performance.now()),
+  schedule: (callback) => requestAnimationFrame((t) => callback(virtualClock(t))),
+  cancel: (handle) => cancelAnimationFrame(handle as number),
   stepSeconds: SIM_STEP,
   maxFrameSeconds: 0.05,
   maxCatchUpSteps: 8,
@@ -329,12 +354,21 @@ const blankFrame = (): AudioFrame => ({
 });
 const audioFrames = [blankFrame(), blankFrame()] as const;
 let view: Run | undefined;
+let barsShown = 0;
 
 /** `live` draws the car and traffic between the last two steps (smooth on 144 Hz displays); everything else draws the exact latest step. */
 function render(dt: number, time: number, live = false): void {
   if (!ready || !app || !runtime) return;
   const shown = live ? (view = viewOf(run, presenter.present(loop, true), view)) : run;
   runtime.update(shown, dt, time, canvas.clientWidth / Math.max(1, canvas.clientHeight), pendingEvents);
+  const shot = runtime.shot();
+  timeScale = shot && live ? shot.timeScale : 1;
+  const bars = shot ? shot.bars : 0;
+  if (bars !== barsShown) { barsShown = bars; document.body.style.setProperty("--shot-bars", bars.toFixed(3)); document.body.classList.toggle("shot-bars", bars > 0); }
+  if (removeRoadPass) {
+    app.post?.setPassUniform?.(ROAD_PASS_NAME, "u_streak", live ? streakFor(shown.v, run.boosting || run.nitro > 0, reducedMotion) : 0);
+    if (!reducedMotion) app.post?.setPassUniform?.(ROAD_PASS_NAME, "u_heatTime", time);
+  }
   app.step(0);
   updateHud();
   // The step that completes the run switches to the results screen; its events (the finish fanfare) still play here.
@@ -350,8 +384,24 @@ function render(dt: number, time: number, live = false): void {
   frames++;
 }
 
+/** GU47 look (default) or today's (`?look=original`): output, device resolution, look rows. */
+const lookMode = lookModeFrom(location.search);
+const output = outputFor(lookMode);
+document.body.classList.toggle("look-original", lookMode === "original");
+
+/** RH47-07/08: the route's one custom post pass and Halo's auto-exposure, re-applied on every in-place route change. */
+let removeRoadPass: (() => void) | undefined;
+function applyRoutePost(): void {
+  removeRoadPass?.();
+  removeRoadPass = undefined;
+  const row = world?.look.row ?? null;
+  if (!app || !row || params.get("post") === "0") return;
+  removeRoadPass = app.post?.addPostPass(roadPass(row));
+  app.setOutput?.({ autoExposure: autoExposureFor(row) });
+}
+
 function sizeCanvas(): void {
-  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+  const dpr = Math.min(window.devicePixelRatio || 1, output.maxDpr);
   canvas.width = Math.max(2, Math.round(canvas.clientWidth * dpr));
   canvas.height = Math.max(2, Math.round(canvas.clientHeight * dpr));
 }
@@ -455,6 +505,21 @@ const hooks = {
   appInfo: () => app?.info ?? null,
   /** Texture upgrade status per node: textures upload one material at a time after mount, so an early frame shows white models until these read `textured`. */
   textures: () => summarizeTextureUpgrade(app?.diagnostics()),
+  /** RH47-01: true once every textured material has uploaded (`textured === total`, 58 on Sunbreak with the generated models); judged shots wait for it. */
+  texturesReady: () => { const t = summarizeTextureUpgrade(app?.diagnostics()); return t.total > 0 && t.textured === t.total; },
+  lookMode: () => lookMode,
+  /**
+   * GU47 QA crops for the steady-state capture (E-I crop contract, normalised to the canvas): the chase camera keeps the
+   * car low-centre, the road below it, the sky on top and the sea on the left of every route (Halo: the city carpet).
+   */
+  crops: () => [
+    { name: "car", x: 0.4, y: 0.55, w: 0.2, h: 0.25 },
+    { name: "road", x: 0.3, y: 0.75, w: 0.4, h: 0.25 },
+    { name: "sky", x: 0, y: 0, w: 1, h: 0.3 },
+    { name: "sea", x: 0, y: 0.4, w: 0.3, h: 0.3 }
+  ],
+  /** RH47-13: registered presets and bursts fired on this route. */
+  fx: () => runtime?.fx() ?? null,
   /** Cues played on recent frames (QA: proves the finish fanfare and the event cues fire). */
   cues: () => cueLog.map((c) => ({ ...c, sounds: [...c.sounds] })),
   /** Switch to the next route in place (no reload). */
@@ -490,19 +555,21 @@ async function boot(): Promise<void> {
   world = buildWorld(levelIndex);
   buildMenu();
   app = createAuraApp(canvas, {
-    autoStart: false, resize: false, pixelRatio: 1,
+    autoStart: false, resize: false, pixelRatio: output.pixelRatio,
     // 4.5.0 pipeline on purpose (bloom pass fusion); measured against `production` in evidence/roadster-hours-port/audit-fix.
     quality: "auto",
-    output: { toneMapping: "aces", dither: false },
+    output: output.output,
     scene: world.scene
   });
   await app.ready();
   runtime = world.bind(app);
   runtime.setReducedMotion(reducedMotion);
+  applyRoutePost();
   await settle();
   ready = true;
   $("loading").classList.add("hidden");
   $<HTMLButtonElement>("start").disabled = false;
+  if (!config.autostart && !config.manual) runtime.startIntro();
   render(0, 0);
   panels();
   if (config.autostart) begin();
@@ -519,6 +586,7 @@ $("controls-close").addEventListener("click", () => { remapping = null; $("contr
 $("controls-reset").addEventListener("click", () => { input.bindings = loadBindings(null); saveBindings(input.bindings, storage); remapping = null; renderControls(); });
 $("next").addEventListener("click", () => { void nextRoute(); });
 canvas.addEventListener("pointerdown", () => { void sound.unlock(); });
+document.addEventListener("pointerdown", () => runtime?.skipIntro(), { passive: true });
 addEventListener("resize", sizeCanvas);
 setReducedMotion(reducedMotion);
 if (touch) bindTouch();

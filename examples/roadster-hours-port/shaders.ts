@@ -92,6 +92,25 @@ float lineMask(float x, float centre, float hw, float aa) {
 }
 `;
 
+/**
+ * GU47 RH47-10: packed CC0 detail map taps (R luminance detail, G/B NormalGL x/y; see art/detail.ts). The engine binds asset
+ * textures with a clamp, un-mipmapped sampler, so each tap wraps with `fract` and fades out by its texel footprint: a scale
+ * is gone before one pixel covers 2 texels, so the detail cannot alias into moire at distance. Returns (albedo, nx, ny) deltas.
+ */
+const detailChunk = /* glsl */ `
+vec4 rhDetailTap(sampler2D tex, vec2 p, float tile) {
+  vec2 uv = p / tile;
+  float texels = length(fwidth(uv)) * 512.0;
+  float w = 1.0 - smoothstep(0.75, 2.0, texels);
+  return vec4(texture(tex, fract(uv)).rgb - 0.5, w);
+}
+vec3 rhDetail(sampler2D tex, vec2 p, vec2 tiles) {
+  vec4 a = rhDetailTap(tex, p, tiles.x);
+  vec4 b = rhDetailTap(tex, p, tiles.y);
+  return a.xyz * a.w + b.xyz * (b.w * 0.6);
+}
+`;
+
 /** uv.x = lateral position across the road (-1..1), uv.y = arc length in metres. */
 export const ROAD_FRAGMENT = /* glsl */ `
 in vec2 vUv;
@@ -100,6 +119,7 @@ in vec3 vNormal;
 out vec4 outColor;
 ${ATMOS}
 ${lineMask}
+${detailChunk}
 void main() {
   vec3 V = normalize(cameraPosition - vWorld);
   float lat = vUv.x;
@@ -112,9 +132,11 @@ void main() {
   float g1 = rhNoise(vWorld.xz * 16.0), g2 = rhNoise(vWorld.xz * 3.7 + 7.0), g3 = rhNoise(vWorld.xz * 0.42 + 3.0);
   float tone = (g1 - 0.5) * 0.4 * fade + (g2 - 0.5) * 0.28 * fade + (g3 - 0.5) * 0.2;
   vec3 albedo = asphalt * (1.0 + tone);
+  vec3 dt = detailAmt > 0.0 ? rhDetail(roadDetail, vWorld.xz, detailTiles) * detailAmt : vec3(0.0);
+  albedo *= 1.0 + dt.x * 0.9;
   float wheel = exp(-sq((abs(lat) - 0.25) / 0.08)) + exp(-sq((abs(lat) - 0.73) / 0.08));
   albedo *= 1.0 - wheel * 0.28;
-  float rough = clamp(roadGloss + (g2 - 0.5) * 0.2 * fade - wheel * 0.22 + (1.0 - fade) * 0.18, 0.28, 0.95);
+  float rough = clamp(roadGloss + (g2 - 0.5) * 0.2 * fade - wheel * 0.22 + (1.0 - fade) * 0.18 - dt.x * 0.3, 0.28, 0.95);
 
   float period = 15.0;
   float ph = fract(arc / period);
@@ -133,7 +155,7 @@ void main() {
   albedo = mix(albedo, glowColor * 0.35, neon);
   vec3 emis = glowColor * neon * 2.6;
 
-  vec3 N = normalize(vNormal);
+  vec3 N = normalize(normalize(vNormal) + vec3(dt.y, 0.0, -dt.z) * 1.2 * (1.0 - paint) * (1.0 - curb));
   vec2 dl = vWorld.xz - carPos.xz;
   float along = dot(dl, carDir);
   float side = dl.x * carDir.y - dl.y * carDir.x;
@@ -195,10 +217,64 @@ void main() {
   vec3 sunSpec = sunColor * min(glitter, 30.0);
 
   float depthMix = clamp(0.5 + crest * 1.4, 0.0, 1.0);
-  vec3 body = mix(deepWater, shallowWater, depthMix * 0.6);
+  // GU47 RH47-06 depth colour: slow shoals of shallow teal over the deep body (whitecaps 0 keeps today's water)
+  float shoal = smoothstep(0.45, 0.8, rhFbm(p * 0.0032 + 3.7)) * min(whitecaps * 2.0, 1.0);
+  vec3 body = mix(deepWater, shallowWater, clamp(depthMix * 0.6 + shoal * 0.45, 0.0, 1.0));
   float sss = pow(clamp(dot(-V, sunDir), 0.0, 1.0), 3.0) * smoothstep(-0.2, 0.9, crest) * 0.45;
   vec3 lit = body * (ambSky * 1.5 + sunColor * 0.22 * max(sunDir.y, 0.0)) + shallowWater * sunColor * sss * 0.3;
+  // GU47 RH47-06 sun glitter path: a broad lobe toward the sun's azimuth on top of the sharp highlight
+  vec3 Rg = reflect(-V, N);
+  float path = pow(max(dot(Rg, sunDir), 0.0), 48.0) * min(whitecaps * 1.5, 1.0) * max(sunDir.y + 0.1, 0.0);
+  sunSpec += sunColor * path * 0.6;
   vec3 col = mix(lit, reflected, clamp(F, 0.0, 1.0)) + sunSpec;
+  // GU47 RH47-06 wind whitecaps: foam caps on the crests, streaked along the wind, faded by the pixel footprint
+  if (whitecaps > 0.0) {
+    vec2 wdir = normalize(windVec + vec2(1e-4, 0.0));
+    vec2 fq = vec2(dot(p, wdir) * 0.05, dot(p, vec2(-wdir.y, wdir.x)) * 0.16) + windVec * u_time * 0.02;
+    float caps = smoothstep(0.62, 0.86, rhFbm(fq) + crest * 0.55);
+    caps *= clamp(9.0 / (foot * 40.0 + 1.0), 0.15, 1.0);
+    vec3 foamLit = vec3(0.92, 0.93, 0.9) * (ambSky * 1.6 + sunColor * 0.32 * max(sunDir.y, 0.0) + 0.04);
+    col = mix(col, foamLit, caps * whitecaps * 0.85);
+  }
+  outColor = vec4(finish(fogIt(col, vWorld)), 1.0);
+}`;
+
+/**
+ * GU47 RH47-06 (Halo): the city carpet under the skyway, drawn on the ocean plane in place of the dark sea. Blocks of
+ * mercury-white and sea-glass lit roofs on a slate street grid, streetlight lines and sparse blinking red beacons; no amber
+ * and no neon. Every term fades by the pixel footprint so the far carpet resolves to its average glow without moire.
+ */
+export const CITY_FRAGMENT = /* glsl */ `
+in vec3 vWorld;
+out vec4 outColor;
+${ATMOS}
+void main() {
+  vec2 p = vWorld.xz;
+  float foot = length(fwidth(p)) + 1e-4;
+  vec2 cell = p / 64.0;
+  vec2 id = floor(cell);
+  vec2 f = fract(cell);
+  float h = rhHash(id + 11.0);
+  float h2 = rhHash(id + 37.0);
+  // streets: 8 m of every 64 m block, with a streetlight line down the middle
+  vec2 edge = min(f, 1.0 - f) * 64.0;
+  float street = 1.0 - smoothstep(3.5, 4.5 + foot, min(edge.x, edge.y));
+  float lamp = (1.0 - smoothstep(0.0, 0.6 + foot, abs(min(edge.x, edge.y) - 0.0))) * street;
+  // roofs: windows as a fine grid, faded to their mean as the footprint grows
+  vec2 w = fract(p / 3.0);
+  float win = step(0.35, w.x) * step(0.35, w.y) * step(0.45, rhHash(floor(p / 3.0)));
+  float fine = clamp(1.0 - foot / 3.0, 0.0, 1.0);
+  float lit = mix(0.28, win, fine);
+  vec3 mercury = vec3(0.86, 0.9, 0.92);
+  vec3 seaGlass = vec3(0.55, 0.82, 0.77);
+  vec3 roofTone = mix(mercury, seaGlass, step(0.55, h));
+  vec3 roof = mix(vec3(0.03, 0.04, 0.06), roofTone * (0.55 + 0.9 * h2), lit * step(0.18, h));
+  vec3 col = mix(roof, vec3(0.02, 0.025, 0.035), street) + mercury * lamp * 1.6;
+  // red beacons on the tallest roofs, blinking out of phase
+  float beacon = step(0.9, h2) * (1.0 - smoothstep(0.0, 1.6 + foot, length((f - 0.5) * 64.0)));
+  float blink = step(0.5, fract(u_time * 0.5 + h * 7.0));
+  col += vec3(0.78, 0.16, 0.1) * beacon * blink * 5.0;
+  col *= cityGain;
   outColor = vec4(finish(fogIt(col, vWorld)), 1.0);
 }`;
 
@@ -223,8 +299,29 @@ void main() {
     vec3 rock = mix(horizonColor, zenithColor * 0.7, 0.45) * mix(0.8, 1.15, rhFbm(vec2(az * 9.0, v.y * 40.0)));
     col = mix(col, rock, edge * mountainAmt * (1.0 - smoothstep(0.0, 0.12, v.y - ridge) ));
   }
+  // GU47 RH47-05: low sea-side band (salt haze by day, city glow at blue hour); bandSide 1 = sea side only, 0 = all round.
+  if (bandAmt > 0.0) {
+    float side = mix(1.0, smoothstep(-0.35, 0.75, v.x * seaSign), bandSide);
+    float low = exp(-max(v.y, 0.0) * 9.0) * smoothstep(-0.12, 0.0, v.y);
+    col = mix(col, bandColor, clamp(low * side * bandAmt, 0.0, 1.0));
+    // sun-side glow: a broad warm lift along the horizon under the sun's azimuth
+    vec2 sh = normalize(sunDir.xz + vec2(1e-4));
+    float az = max(dot(normalize(v.xz + vec2(1e-4)), sh), 0.0);
+    col += sunColor * pow(az, 6.0) * exp(-max(v.y, 0.0) * 5.0) * 0.05 * bandAmt * (1.0 - nightAmt);
+  }
+  // GU47 RH47-05: high cirrus streaks stretched along the wind (second cloud layer)
+  if (v.y > 0.01 && cloudHigh > 0.0) {
+    vec2 wdir = normalize(windVec + vec2(1e-4, 0.0));
+    vec2 qh = v.xz / (v.y + 0.3) * 0.9 + windVec * u_time * 0.0009;
+    vec2 st = vec2(dot(qh, wdir) * 0.35, dot(qh, vec2(-wdir.y, wdir.x)) * 2.4);
+    float nh = rhFbm(st * 1.6);
+    float coverH = smoothstep(0.5, 0.78, nh) * smoothstep(0.02, 0.25, v.y) * cloudHigh;
+    float sah = max(dot(v, sunDir), 0.0);
+    vec3 cirrus = mix(horizonColor, vec3(1.0), 0.35) + sunColor * 0.12 * pow(sah, 3.0);
+    col = mix(col, cirrus * mix(1.0, 0.35, nightAmt), coverH * 0.7);
+  }
   if (v.y > 0.005 && cloudAmt > 0.0) {
-    vec2 q = v.xz / (v.y + 0.14) * 1.15 + vec2(u_time * 0.006, u_time * 0.002);
+    vec2 q = v.xz / (v.y + 0.14) * 1.15 + vec2(u_time * 0.006, u_time * 0.002) + windVec * u_time * 0.0012;
     float n = rhFbm(q * 1.2);
     float cover = smoothstep(0.46, 0.8, n) * smoothstep(0.005, 0.14, v.y) * cloudAmt;
     float sa = max(dot(v, sunDir), 0.0);
@@ -256,10 +353,18 @@ in vec3 vNormal;
 in vec3 vWorld;
 out vec4 outColor;
 ${ATMOS}
+${detailChunk}
 void main() {
   vec3 V = normalize(cameraPosition - vWorld);
   vec3 N = normalize(vNormal);
   if (dot(N, V) < 0.0) N = -N;
+  float dAlb = 0.0;
+  if (detailAmt > 0.0) {
+    vec3 tw = pow(abs(N), vec3(4.0)); tw /= tw.x + tw.y + tw.z;
+    vec3 dx = rhDetail(rockDetail, vWorld.zy, detailTiles), dy = rhDetail(rockDetail, vWorld.xz, detailTiles), dz = rhDetail(rockDetail, vWorld.xy, detailTiles);
+    dAlb = (dx.x * tw.x + dy.x * tw.y + dz.x * tw.z) * detailAmt;
+    N = normalize(N + (vec3(0.0, dx.z, dx.y) * tw.x + vec3(dy.y, 0.0, -dy.z) * tw.y + vec3(dz.y, dz.z, 0.0) * tw.z) * 1.4 * detailAmt);
+  }
   float foot = length(fwidth(vWorld)) + 1e-4;
   float fade = 1.0 - smoothstep(0.5, 6.0, foot);
   float blotch = rhFbm(vWorld.xz * 0.03 + vWorld.y * 0.02);
@@ -275,9 +380,22 @@ void main() {
   vec3 turf = grass * (0.75 + 0.5 * blotch);
   vec3 albedo = mix(rock, turf, flat_ * high * 0.85);
   albedo = mix(albedo, sand, flat_ * (1.0 - high) * 0.9);
+  albedo *= 1.0 + dAlb * 0.9;
+  // GU47 RH47-06: shoreline foam where the rock meets the sea (water plane at y = 0): a wash band that surges up the rock
+  // with the swell, broken by wind-driven froth; low-frequency terms only, the froth fades by the pixel footprint.
+  float foam = 0.0;
+  if (surfAmt > 0.0) {
+    float tt = u_time * surfSpeed;
+    float surge = 0.35 + 0.3 * sin(tt * 0.9 + vWorld.x * 0.045 + vWorld.z * 0.037) + 0.15 * sin(tt * 1.7 + vWorld.x * 0.11);
+    float band = smoothstep(-0.6, -0.05, vWorld.y) * (1.0 - smoothstep(0.1, 0.25 + surge, vWorld.y));
+    float froth = rhNoise(vWorld.xz * 0.9 + vec2(tt * 0.35, -tt * 0.2)) * 0.6 + rhNoise(vWorld.xz * 2.7 - tt * 0.5) * 0.4;
+    froth = mix(0.6, smoothstep(0.3, 0.7, froth), 1.0 - smoothstep(0.4, 2.0, foot));
+    foam = clamp(band * froth * surfAmt, 0.0, 1.0);
+  }
+  albedo = mix(albedo, vec3(0.86, 0.9, 0.88), foam);
   float ao = mix(0.62, 1.0, smoothstep(-2.0, 14.0, vWorld.y)) * (0.8 + 0.2 * blotch);
   gSunShadow = a3dSunShadowAuto(vWorld, N);
-  vec3 lit = lightSurface(albedo * ao, N, V, 0.9, 0.0, vec3(0.0));
+  vec3 lit = lightSurface(albedo * mix(ao, 1.0, foam), N, V, mix(0.9, 0.6, foam), 0.0, vec3(0.0));
   outColor = vec4(finish(fogIt(lit, vWorld)), 1.0);
 }`;
 
@@ -300,8 +418,18 @@ void main() {
   vec3 N = normalize(vNormal);
   if (dot(N, V) < 0.0) N = -N;
   float flicker = glowAmount * (0.85 + 0.15 * sin(u_time * 4.0 + vWorld.z * 0.05));
+  // GU47 RH47-10: galvanised spangle (crystal patches a few cm across) on the guardrails, faded by the pixel footprint.
+  vec3 base = baseColor;
+  float rough = surfaceRough;
+  if (spangle > 0.0) {
+    vec2 q = vec2(vWorld.x + vWorld.z, vWorld.y) * 28.0;
+    float sfade = (1.0 - smoothstep(0.4, 1.5, length(fwidth(q)))) * spangle;
+    float cell = rhHash(q) - 0.5, grain = rhNoise(q * 3.1) - 0.5;
+    base *= 1.0 + (cell * 0.22 + grain * 0.08) * sfade;
+    rough = clamp(rough + cell * 0.2 * sfade, 0.05, 1.0);
+  }
   gSunShadow = a3dSunShadowAuto(vWorld, N);
-  vec3 lit = lightSurface(baseColor, N, V, surfaceRough, surfaceMetal, glowColor * flicker);
+  vec3 lit = lightSurface(base, N, V, rough, surfaceMetal, glowColor * flicker);
   outColor = vec4(finish(fogIt(lit, vWorld)), 1.0);
 }`;
 
@@ -360,6 +488,23 @@ void main() {
 
 
 /** Kicker / shortcut deck: dark steel with forward-pointing hazard chevrons. uv.x = lateral (-1..1), uv.y = arc length in metres. */
+/**
+ * GU47 RH47-03: soft contact shadow under the roadster (a plane on the road under the car, alpha-blended). `blobFade` is
+ * 1 on the ground and falls to 0 with ride height, so the car reads as planted between the cascade texels and lifts off
+ * the road visibly on a jump.
+ */
+export const BLOB_FRAGMENT = /* glsl */ `
+in vec2 vUv;
+in vec3 vNormal;
+in vec3 vWorld;
+out vec4 outColor;
+void main() {
+  vec2 q = (vUv - 0.5) * 2.0;
+  float r = length(q * vec2(1.0, 0.62));
+  float a = (1.0 - smoothstep(0.35, 1.0, r)) * blobFade * blobStrength;
+  outColor = vec4(0.0, 0.0, 0.0, clamp(a, 0.0, 0.9));
+}`;
+
 export const RAMP_FRAGMENT = /* glsl */ `
 in vec2 vUv;
 in vec3 vWorld;

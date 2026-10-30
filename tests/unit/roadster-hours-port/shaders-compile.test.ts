@@ -5,14 +5,15 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { createCustomShaderMaterial } from "../../../packages/engine/src/agent-api/compiler/customMaterial";
 import { allProgramSpecs } from "../../../examples/roadster-hours-port/materials";
-import { LOOKS } from "../../../examples/roadster-hours-port/look";
+import { LOOKS, ORIGINAL_LOOKS } from "../../../examples/roadster-hours-port/look";
 
 /** Bakes every `material.custom` program through the engine's prelude and compiles it with the reference GLSL compiler. */
 const available = spawnSync("glslangValidator", ["--version"]).status === 0;
 
 describe("roadster-hours-port GLSL bakes under #version 300 es", () => {
-  for (const look of Object.values(LOOKS)) for (const { name: programName, spec } of allProgramSpecs(look)) {
-    const name = `${look.id}-${programName}`;
+  const looks = [...Object.values(LOOKS).map((look) => ["", look] as const), ...Object.values(ORIGINAL_LOOKS).map((look) => ["original-", look] as const)];
+  for (const [prefix, look] of looks) for (const { name: programName, spec } of allProgramSpecs(look)) {
+    const name = `${prefix}${look.id}-${programName}`;
     it(`${name} bakes with its version header first`, () => {
       const material = createCustomShaderMaterial(spec, `rh-port-${name}`);
       try {

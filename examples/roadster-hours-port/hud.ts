@@ -55,6 +55,19 @@ export function nitroLabel(run: Pick<Run, "nitro" | "nitroWindow">): string {
   return run.nitro > 0 ? "Nitro" : "";
 }
 
+/* ------------------------------------------------------------------ arc speedo (GU47 RH47-17) */
+
+/** The arc's full-scale speed: the top nitro speed (100 m/s). */
+export const SPEEDO_MAX_KMH = 360;
+/** Share of the circle the arc sweeps (270 degrees, open at the bottom); the SVG circles use `pathLength="100"`. */
+export const SPEEDO_SWEEP = 75;
+
+/** The speedo arc for a speed in km/h: the filled length in path units (0..SPEEDO_SWEEP) and whether nitro lights it red. */
+export function speedoArc(kmh: number, nitro: boolean): { readonly dash: string; readonly nitro: boolean } {
+  const fill = Math.max(0, Math.min(1, kmh / SPEEDO_MAX_KMH)) * SPEEDO_SWEEP;
+  return { dash: `${fill.toFixed(1)} 100`, nitro };
+}
+
 /* ------------------------------------------------------------------ best times */
 
 const RESULTS_KEY = "saltwind-highway:results";

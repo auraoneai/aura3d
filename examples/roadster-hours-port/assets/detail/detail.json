@@ -1,0 +1,53 @@
+{
+  "asphalt": {
+    "file": "asphalt.jpg",
+    "bytes": 246088,
+    "sha256": "1741470a34547c75b4fabd12cf67a6b239babfd5b1d43496086bcb13c7305ddb",
+    "size": 512,
+    "source": {
+      "id": "ambientcg:Asphalt033",
+      "page": "https://ambientcg.com/a/Asphalt033",
+      "download": "https://ambientcg.com/get?file=Asphalt033_1K-JPG.zip",
+      "maps": [
+        "Color",
+        "NormalGL"
+      ],
+      "license": "CC0-1.0",
+      "author": "ambientCG"
+    }
+  },
+  "limestone": {
+    "file": "limestone.jpg",
+    "bytes": 155425,
+    "sha256": "95894966dd52e060731eda59fdfe31735bcf861cee31667955b85f1c9573e172",
+    "size": 512,
+    "source": {
+      "id": "ambientcg:Rock063",
+      "page": "https://ambientcg.com/a/Rock063",
+      "download": "https://ambientcg.com/get?file=Rock063_1K-JPG.zip",
+      "maps": [
+        "Color",
+        "NormalGL"
+      ],
+      "license": "CC0-1.0",
+      "author": "ambientCG"
+    }
+  },
+  "sandstone": {
+    "file": "sandstone.jpg",
+    "bytes": 181985,
+    "sha256": "0110b19402f211078dfdd187a24f458260b6b03909bf444bc6cffe308bd1f52e",
+    "size": 512,
+    "source": {
+      "id": "ambientcg:Rock064",
+      "page": "https://ambientcg.com/a/Rock064",
+      "download": "https://ambientcg.com/get?file=Rock064_1K-JPG.zip",
+      "maps": [
+        "Color",
+        "NormalGL"
+      ],
+      "license": "CC0-1.0",
+      "author": "ambientCG"
+    }
+  }
+}

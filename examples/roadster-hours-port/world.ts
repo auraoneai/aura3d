@@ -6,13 +6,21 @@
  * fallback when a generated model is unavailable (`meshy.ts`, `PORTING-NOTES.md`).
  */
 import {
-  batched, camera, cameras, effects, environments, geometry, instances, lights, material, primitives, scene, type AuraApp
+  batched, camera, cameras, defineAuraAssets, effects, environments, geometry, instances, lights, lookHdriUrl, material, primitives, scene, text3D, type AuraApp
 } from "@aura3d/engine";
+import { SALTWIND_LOOK, SALTWIND_PALETTE, directionFromAngles, lookModeFrom, type SaltwindLookRow } from "./art/look";
+import { SPRAY_POINTS, sprayAmount, sprayWind } from "./art/spray";
+import { ROTOR_BLADES, landmarkPlacements, rotorAngle, type LandmarkKind, type LandmarkPlacement } from "./art/landmarks";
+import { createBodyLean } from "./art/lean";
+import { SIGN_DEPTH, SIGN_DROP, SIGN_LETTER_SPACING, SIGN_SIZE, signOrigin, signSpan, signText } from "./art/signs";
+import { SALTWIND_LUT_INTENSITY } from "./art/lut";
+import { createShotDirector, orbitEye, type ShotFrame } from "./art/shots";
+import { NITRO_TRAIL, SKID_INTERVAL, fxForEvents, registerSaltwindFx, type SaltwindFxKind } from "./art/fx";
 import { levelLayout, roadProfile, trafficPiece, pieceSpec, type Level } from "./course";
 import { CAR_GROUPS, CAR_FOR_PIECE, carGroup, carNativeSize, type CarGroup, type CarKey } from "./cars";
 import { LEVELS } from "./data";
-import { LOOKS, hexLinear, type Look } from "./look";
-import { beamSpec, plumeSpec, rampSpec, roadSpec, skySpec, solidSpec, terrainSpec, towerSpec, townSpec, waterSpec, type FogLook } from "./materials";
+import { hexLinear, lookFor, type Look } from "./look";
+import { beamSpec, blobFadeFor, blobSpec, citySpec, plumeSpec, spraySpec, rampSpec, roadSpec, skySpec, solidSpec, surfAmount, surfSpeedFor, terrainSpec, towerSpec, townSpec, waterSpec, type FogLook } from "./materials";
 import { hasMeshy, meshyGeometry, meshyMaterial, meshySize } from "./meshy";
 import type { Run, RunEvent as SimEvent } from "./sim";
 
@@ -318,6 +326,13 @@ function beamCone(apex: Vec3, dir: Vec3, length: number, endRadius: number, segm
 /* ------------------------------------------------------------------ vehicles */
 
 const CAR_COLOURS = ["#d9dde6", "#1f2a3d", "#b3202a", "#e0b13a", "#2f6f4a", "#4a6b8a", "#f0f0f0", "#7d8896", "#c46a2b", "#3b3f48"];
+/**
+ * GU47 RH47-09: salt-faded traffic. Paint colours for the baked CC0 cars (no signal red: it is the objective accent), and
+ * pale per-instance tints that multiply the generated models' base colour so a lineup reads as sun-bleached coastal
+ * traffic in at least four hue families (sand, sea glass, slate, clay, sage).
+ */
+export const SALT_FADED_PAINT = ["#e9e4d6", "#9fb7b5", "#c9a25e", "#8a9aa6", "#b9786a", "#5f6f6a", "#d8d2c2", "#3e4a4f", "#a8b59a", "#7f8f9c"];
+export const SALT_FADED_TINTS = ["#f4efe4", "#dbe9e6", "#efe0c8", "#e0e4e8", "#f0dcd4", "#e3e6d2"];
 const RIG_COLOURS: Record<string, string> = { box_truck: "#e8e8e8", bus: "#e6b020", semi_tractor: "#2f3e55", tanker: "#c9ced6", semi: "#b9c0cc", car_carrier: "#7d8896" };
 
 const unionBox = (boxes: readonly LocalBox[]): LocalBox => {
@@ -408,6 +423,13 @@ export interface WorldRuntime {
   /** Draw calls with every vehicle hidden vs shown: the delta is what the batched meshes cost. */
   probeBatchedDraws(): { hidden: number; visible: number; delta: number; instances: number; texturedInstances: number; batchedGeometries: number; geometries: number; features: readonly string[] };
   readonly vehicleInstances: number;
+  /** GU47 RH47-13: presets registered for this route and the bursts fired (QA). */
+  fx(): { readonly kinds: readonly SaltwindFxKind[]; readonly fired: number; readonly last: string | null };
+  /** GU47 RH47-16 shots (no-ops on `?look=original`): the menu intro rail, any-input skip, the finish shot, the last frame. */
+  startIntro(): void;
+  skipIntro(): void;
+  startFinish(): void;
+  shot(): ShotFrame | null;
 }
 
 export interface World {
@@ -436,31 +458,100 @@ export function matrixFor(psi: number, centre: Vec3, size: Vec3, out: Float32Arr
   return out;
 }
 
+/** RH47-15: one rotor blade (22 m) turning about the world x axis at the hub, as an instance matrix written into `out`. */
+export function bladeMatrix(hub: readonly number[], angle: number, out: Float32Array = new Float32Array(16)): Float32Array {
+  const c = Math.cos(angle), s = Math.sin(angle);
+  const w = 0.5, len = 22, t = 1.4;
+  // columns: x (blade thickness), y (blade length along (0, c, s)), z (chord along (0, -s, c))
+  out[0] = w; out[1] = 0; out[2] = 0; out[3] = 0;
+  out[4] = 0; out[5] = c * len; out[6] = s * len; out[7] = 0;
+  out[8] = 0; out[9] = -s * t; out[10] = c * t; out[11] = 0;
+  out[12] = hub[0]!; out[13] = hub[1]! + c * len / 2; out[14] = hub[2]! + s * len / 2; out[15] = 1;
+  return out;
+}
+
 export const fogFor = (look: Look): FogLook => ({ fogColor: look.horizon, fogNear: look.fogNear, fogFar: look.fogFar });
 
 const PLAYER_SCALE = 1.12;
 const DUST_COLOUR: Record<string, readonly [number, number, number]> = { coast: [0.8, 0.78, 0.74], canyon: [0.62, 0.38, 0.28], skyway: [0.22, 0.28, 0.42] };
 
-export function buildWorld(levelIndex: number): World {
+/**
+ * GU47 (RH47-04): the route IBLs from the E-A catalogue (`/hdri/<id>_1k.hdr`). They light and reflect the engine-lit
+ * vehicles and props only; the custom dome stays the visible sky (background off).
+ */
+export const ROUTE_HDRI = defineAuraAssets({
+  saltwindHdriSunbreak: { type: "texture", format: "hdr", url: lookHdriUrl(SALTWIND_LOOK.sunbreak.hdri) },
+  saltwindHdriRedline: { type: "texture", format: "hdr", url: lookHdriUrl(SALTWIND_LOOK.redline.hdri) },
+  saltwindHdriHalo: { type: "texture", format: "hdr", url: lookHdriUrl(SALTWIND_LOOK.halo.hdri) }
+});
+const HDRI_FOR_ROUTE = { sunbreak: ROUTE_HDRI.saltwindHdriSunbreak, redline: ROUTE_HDRI.saltwindHdriRedline, halo: ROUTE_HDRI.saltwindHdriHalo } as const;
+
+/** RH47-14: the per-route display LUTs (`art/lut.ts` writes them), served from the example's assets. */
+export const ROUTE_LUT_URL = {
+  sunbreak: new URL("./assets/luts/saltwind-sunbreak.cube", import.meta.url).pathname,
+  redline: new URL("./assets/luts/saltwind-redline.cube", import.meta.url).pathname,
+  halo: new URL("./assets/luts/saltwind-halo.cube", import.meta.url).pathname
+} as const;
+
+/** Name of the route IBL node: the route and the catalogue file, so `diagnostics().lighting.environment.source` names both. */
+export const routeIblName = (row: SaltwindLookRow): string => `route IBL ${row.id} ${row.hdri}_1k`;
+
+/** Shadow of the GU47 key (RH47-03): 3 PCSS cascades over 260 m; the engine drops to 1 cascade and PCF on Low (PRD §6.4). */
+export const keyShadowFor = (row: SaltwindLookRow) => ({ cascades: row.shadow.cascades, maxDistance: row.shadow.maxDistance, filter: row.shadow.filter, mapSize: row.shadow.mapSize, softness: 1.2 });
+
+/** The relay gate glow per route (RH47-11: route-tinted gantries replace today's cyan emissive boxes). */
+export const gantryColours = (look: Look): { frame: Vec3; glow: Vec3; glowAmount: number } => {
+  if (!look.row) return { frame: hexLinear(0x2ad6ff) as Vec3, glow: hexLinear(0x2ad6ff) as Vec3, glowAmount: 1.8 };
+  const g = look.row.gantry;
+  return { frame: hexLinear(parseInt(g.frame.slice(1), 16)) as Vec3, glow: hexLinear(parseInt(g.glow.slice(1), 16)) as Vec3, glowAmount: g.glowAmount };
+};
+
+/** RH47-07: a small salt-toned flare (pixel sizes) instead of the 700 px default halo. */
+const SUN_FLARE = [
+  { size: 260, distance: 0, color: "#fff1d6" },
+  { size: 36, distance: 0.45, color: "#e9e4d6" },
+  { size: 64, distance: 0.7, color: "#9fd0cc" },
+  { size: 28, distance: 1.0, color: "#ffd2a8" }
+] as const;
+
+export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeof location !== "undefined" ? lookModeFrom(location.search) : "gu47"): World {
   const level = LEVELS[levelIndex]!;
-  const look = LOOKS[level.id]!;
+  const look = lookFor(level.id, mode);
+  const row = look.row;
   const seed = level.seed;
   const sunDirection = look.sunDir;
   const query = typeof location !== "undefined" ? new URLSearchParams(location.search) : new URLSearchParams();
   const enabled = (flag: string): boolean => query.get(flag) !== "0";
   const builder: Scene = scene()
-    .background(hexString(level.fog))
-    .camera(camera.perspective({ position: roadPoint(level, 0, 0, 6), target: roadPoint(level, 40, 0, 2), fov: 60, near: 0.4, far: 7000 }))
-    .add(lights.directional({ name: "sun", position: [sunDirection[0] * 500, sunDirection[1] * 500, sunDirection[2] * 500], target: [0, 0, 0], intensity: look.keyLight.intensity, color: look.keyLight.color, shadow: enabled("shadow") ? { cascades: 1, maxDistance: 90 } : false }))
-    .add(lights.directional({ name: "fill", position: [-sunDirection[0] * 300, 120, -sunDirection[2] * 300], target: [0, 0, 0], intensity: look.fillLight.intensity, color: look.fillLight.color, shadow: false }));
-  if (enabled("env")) builder.add(environments.preset(look.night ? "night" : look.id === "redline" ? "sunset" : "outdoor", { name: "route IBL", intensity: look.envIntensity, background: false }));
+    .background(row ? row.fog.color : hexString(level.fog))
+    .camera(camera.perspective({ position: roadPoint(level, 0, 0, 6), target: roadPoint(level, 40, 0, 2), fov: 60, near: 0.4, far: 7000 }));
+  if (row) {
+    // RH47-02/03: the look row's one shadowed key (the same sun the GLSL surfaces read) and its one unshadowed fill.
+    const fillDir = directionFromAngles(row.fill.elevationDeg, row.fill.azimuthDeg);
+    builder.add(lights.directional({ name: "sun", position: [sunDirection[0] * 500, sunDirection[1] * 500, sunDirection[2] * 500], target: [0, 0, 0], intensity: row.sun.intensity, color: row.sun.color, shadow: enabled("shadow") ? keyShadowFor(row) : false }));
+    if (row.fill.kind === "city-glow") {
+      builder.add(lights.hemisphere({ name: "city glow", skyColor: row.ambient.sky, groundColor: row.fill.color, intensity: row.fill.intensity }));
+    } else {
+      builder.add(lights.directional({ name: row.fill.kind === "sea-bounce" ? "sea bounce" : "violet rim", position: [fillDir[0] * 300, fillDir[1] * 300, fillDir[2] * 300], target: [0, 0, 0], intensity: row.fill.intensity, color: row.fill.color, shadow: false }));
+    }
+  } else {
+    builder
+      .add(lights.directional({ name: "sun", position: [sunDirection[0] * 500, sunDirection[1] * 500, sunDirection[2] * 500], target: [0, 0, 0], intensity: look.keyLight.intensity, color: look.keyLight.color, shadow: enabled("shadow") ? { cascades: 1, maxDistance: 90 } : false }))
+      .add(lights.directional({ name: "fill", position: [-sunDirection[0] * 300, 120, -sunDirection[2] * 300], target: [0, 0, 0], intensity: look.fillLight.intensity, color: look.fillLight.color, shadow: false }));
+  }
+  if (enabled("env")) {
+    if (row) builder.add(environments.hdri({ name: routeIblName(row), texture: HDRI_FOR_ROUTE[row.id], intensity: row.environmentIntensity, rotation: (row.environmentRotationDeg * Math.PI) / 180, background: false }));
+    else builder.add(environments.preset(look.night ? "night" : look.id === "redline" ? "sunset" : "outdoor", { name: "route IBL", intensity: look.envIntensity, background: false }));
+  }
   if (enabled("fog")) builder.add(effects.fog({ name: "haze", density: look.engineFogDensity, color: look.engineFog }));
   if (enabled("post")) {
     builder
       .add(effects.bloom({ name: "bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold, scatter: look.bloom.radius }))
-      .add(effects.colorGrade({ name: "grade", exposure: look.grade.exposure, contrast: look.grade.contrast, saturation: look.grade.saturation }))
+      .add(effects.colorGrade({ name: "grade", exposure: look.grade.exposure, contrast: look.grade.contrast, saturation: look.grade.saturation, ...(row ? { temperature: row.grade.temperature, tint: row.grade.tint, ...(enabled("lut") ? { lut: ROUTE_LUT_URL[row.id], lutIntensity: SALTWIND_LUT_INTENSITY } : {}) } : {}) }))
       .add(effects.vignette({ name: "vignette", intensity: look.vignette, smoothness: 0.7 }))
       .add(effects.antiAlias({ name: "fxaa", mode: "fxaa" }));
+    if (row && row.post.grain > 0) builder.add(effects.filmGrain({ name: "grain", intensity: row.post.grain }));
+    if (row && row.post.flare > 0) builder.add(lights.lensFlare({ name: "sun flare", light: "sun", intensity: row.post.flare, occlusion: "frustum", elements: SUN_FLARE }));
   }
 
   const width = level.width;
@@ -488,10 +579,10 @@ export function buildWorld(levelIndex: number): World {
 
   /* ---- terrain, guardrails, towers ---- */
   const seaKind = look.style === "canyon" ? "cliff" : "sea";
-  builder.add(geometry.custom(dyn(flank(level, look, look.seaSide, seaKind, seed)), { name: "flank-sea", material: material.custom(terrainSpec(look)) }));
+  builder.add(geometry.custom(dyn(flank(level, look, look.seaSide, seaKind, seed)), { name: "flank-sea", material: material.custom(terrainSpec(look)) }).runtime({ id: "flank-sea" }));
   if (look.style !== "skyway") builder.add(geometry.custom(dyn(flank(level, look, (look.seaSide * -1) as -1 | 1, look.style === "coast" ? "hills" : "cliff", seed + 101)), { name: "flank-cliff", material: material.custom(terrainSpec(look)) }));
   else builder.add(geometry.custom(dyn(flank(level, look, (look.seaSide * -1) as -1 | 1, "sea", seed + 101)), { name: "flank-far", material: material.custom(terrainSpec(look)) }));
-  builder.add(geometry.custom(dyn(guardrails(level)), { name: "guardrails", material: material.custom(solidSpec(look, [0.72, 0.74, 0.77], [0, 0, 0], 0, 0.32, 0.9)) }));
+  builder.add(geometry.custom(dyn(guardrails(level)), { name: "guardrails", material: material.custom(solidSpec(look, [0.72, 0.74, 0.77], [0, 0, 0], 0, 0.32, 0.9, look.row ? 1 : 0)) }));
   if (look.style === "skyway") builder.add(geometry.custom(dyn(towers(level, seed)), { name: "towers", material: material.custom(towerSpec(look)) }));
   if (look.style !== "canyon") {
     const lamps = streetLamps(level);
@@ -541,7 +632,9 @@ export function buildWorld(levelIndex: number): World {
     if (!data || !items.length) return;
     texturedScenery++;
     builder.add(instances.custom(geometry.dynamic({ positions: data.positions, normals: data.normals, uvs: data.uvs, indices: data.indices }) as never, {
-      name, material: meshyMaterial(key, options), transforms: items.map((item) => ({ position: item.p, rotation: [0, item.yaw, 0] as Vec3, scale: item.size }))
+      name, material: meshyMaterial(key, options), transforms: items.map((item) => ({ position: item.p, rotation: [0, item.yaw, 0] as Vec3, scale: item.size })),
+      // RH47-15: palms and pines sway in the route wind (E-G instance wind; weaker on Halo, none on ?look=original)
+      ...(row && (key === "palm" || key === "pine") ? { wind: { strength: row.id === "halo" ? 0.3 : 0.6, directionDeg: (Math.atan2(row.wind[0], row.wind[1]) * 180) / Math.PI, assetHeight: 1 } } : {})
     } as never));
   };
   if (look.style === "coast" && hasMeshy("lighthouse")) {
@@ -596,12 +689,59 @@ export function buildWorld(levelIndex: number): World {
     scatter("boulders", "boulders", rocks, { roughness: 0.95 });
   }
 
+  /* ---- GU47 RH47-11: route landmarks (instanced engine-lit stand-ins for the WP-36 models, off the road) ---- */
+  const turbineHubs: Vec3[] = [];
+  if (row && enabled("landmarks")) {
+    const landBase = (p: LandmarkPlacement): Vec3 => {
+      const [x, , z] = roadPoint(level, p.s, p.l, 0);
+      const side = (Math.sign(p.l) || 1) as -1 | 1;
+      const d = Math.max(0, Math.abs(p.l) - width);
+      const kind = side === look.seaSide ? seaKind : look.style === "coast" ? "hills" : "cliff";
+      const y = look.style === "skyway" ? p.y : flankY(level, look, side, kind, side === look.seaSide ? seed : seed + 101, p.s, d) + p.y;
+      return [x, y, z];
+    };
+    const place = (kind: LandmarkKind, lift = 0.5) => landmarkPlacements(kind, level.length, width, look.seaSide, seed).map((p) => {
+      const b = landBase(p);
+      return { position: [b[0], b[1] + p.size[1] * lift, b[2]] as Vec3, rotation: [0, p.yaw - roadProfile(level, p.s).heading, 0] as Vec3, scale: [...p.size] as Vec3 };
+    });
+    const pbr = (color: string, roughness = 0.85, metallic = 0) => material.pbr({ color, roughness, metallic });
+    const s = row.surfaces;
+    if (look.style === "coast") {
+      const towers = place("turbine");
+      builder.add(instances.cylinder({ name: "turbine-towers", transforms: towers, material: pbr("#ecebe6", 0.45, 0.1), castShadow: false }));
+      builder.add(instances.box({ name: "turbine-nacelles", transforms: towers.map((t) => ({ position: [t.position[0], t.position[1] + t.scale[1] / 2 + 1, t.position[2]] as Vec3, rotation: [0, 0, 0] as Vec3, scale: [5, 2.4, 2.4] as Vec3 })), material: pbr("#ecebe6", 0.45, 0.1), castShadow: false }));
+      for (const t of towers) turbineHubs.push([t.position[0] - 3, t.position[1] + t.scale[1] / 2 + 1, t.position[2]]);
+      builder.add(instances.cone({ name: "sea-stacks", transforms: place("sea-stack"), material: material.custom(terrainSpec(look)), castShadow: false }));
+    } else if (look.style === "canyon") {
+      builder.add(instances.cylinder({ name: "mesas", transforms: place("mesa"), material: material.custom(terrainSpec(look)), castShadow: false }));
+      builder.add(instances.capsule({ name: "hoodoos", transforms: place("hoodoo"), material: pbr(s.rockA), castShadow: true }));
+      builder.add(instances.torus({ name: "arch", transforms: place("arch", 0), material: pbr(s.rockB), castShadow: false }));
+      builder.add(instances.cylinder({ name: "uplink-masts", transforms: place("uplink-mast"), material: pbr("#3a3b40", 0.5, 0.6), castShadow: false }));
+    } else {
+      const masts = place("antenna");
+      builder.add(instances.cylinder({ name: "antenna-masts", transforms: masts, material: pbr("#9aa6b2", 0.4, 0.7), castShadow: false }));
+      builder.add(instances.sphere({ name: "antenna-beacons", transforms: masts.map((m) => ({ position: [m.position[0], m.position[1] + m.scale[1] / 2 + 1, m.position[2]] as Vec3, rotation: [0, 0, 0] as Vec3, scale: [2.4, 2.4, 2.4] as Vec3 })), material: material.pbr({ color: "#3a0a06", roughness: 0.4, emissive: row.gantry.glow, emissiveIntensity: 3 }), castShadow: false }));
+      const rings = landmarkPlacements("tube-ring", level.length, width, look.seaSide, seed).map((p) => {
+        const c = roadPoint(level, p.s, 0, p.size[1] * 0.42);
+        return { position: c, rotation: [0, -roadProfile(level, p.s).heading, 0] as Vec3, scale: [p.size[0], p.size[1], 60] as Vec3 };
+      });
+      builder.add(instances.torus({ name: "tube-rings", transforms: rings, material: pbr("#cfd8de", 0.3, 0.8), castShadow: false }));
+    }
+  }
+  // RH47-15: turbine rotors (one batched mesh of blades, spun in the runtime)
+  const rotors = turbineHubs.length ? batched.mesh({ name: "turbine-rotors", maxInstances: turbineHubs.length * ROTOR_BLADES + 4, maxVertices: 64, maxIndices: 64, material: material.pbr({ color: "#ecebe6", roughness: 0.45, metallic: 0.1 }) }) : null;
+  const rotorGeo = rotors ? rotors.addGeometry("box") : -1;
+  const rotorSlots = rotors ? turbineHubs.flatMap(() => Array.from({ length: ROTOR_BLADES }, () => rotors.addInstance(rotorGeo))) : [];
+  if (rotors) builder.add(rotors);
+
   /* ---- ocean ---- */
   const mid = roadPoint(level, level.length / 2, 0, 0);
-  builder.add(primitives.plane({ name: "water", position: [mid[0], 0, mid[2]], size: 9000, material: material.custom(waterSpec(look)) }));
+  // RH47-06: Halo's plane is the city carpet under the skyway; the coast routes keep the sea (one program either way).
+  builder.add(primitives.plane({ name: look.cityCarpet ? "city-carpet" : "water", position: [mid[0], 0, mid[2]], size: 9000, material: material.custom(look.cityCarpet ? citySpec(look) : waterSpec(look)) }));
 
   /* ---- relay gates, data cells, hazards ---- */
-  const gateMat = () => material.custom(solidSpec(look, hexLinear(0x2ad6ff), hexLinear(0x2ad6ff), 1.8, 0.4));
+  const gantry = gantryColours(look);
+  const gateMat = () => material.custom(solidSpec(look, gantry.frame, gantry.glow, gantry.glowAmount, 0.4));
   level.gates.forEach((g, i) => {
     const psi = -roadProfile(level, g.s).heading;
     const base = roadPoint(level, g.s, 0, 0);
@@ -610,7 +750,28 @@ export function buildWorld(levelIndex: number): World {
       builder.add(primitives.box({ name: `gate-post-${i}-${side}`, position: p, rotation: [0, psi, 0], size: [0.7, 12, 0.7], material: gateMat(), castShadow: false }));
     }
     builder.add(primitives.box({ name: `gate-bar-${i}`, position: [base[0], base[1] + 12, base[2]], rotation: [0, psi, 0], size: [width * 2, 0.6, 0.6], material: gateMat(), castShadow: false }));
+    // RH47-17: the relay's name in SDF text under the bar (salt white, signal-red glow), only the next gate's sign shows.
+    if (row) {
+      const text = signText(g.name);
+      builder.add(text3D(text, {
+        name: `gate-sign-${i}`, size: SIGN_SIZE, depth: SIGN_DEPTH, letterSpacing: SIGN_LETTER_SPACING, backend: "sdf",
+        sdfStyle: { glowRadiusEm: 0.12 }, position: signOrigin([base[0], base[1] + 12 - SIGN_DROP, base[2]], psi, signSpan(text)), rotation: [0, psi, 0],
+        material: material.emissive({ color: SALTWIND_PALETTE.saltWhite, emissive: SALTWIND_PALETTE.saltWhite, emissiveIntensity: 0.8 }),
+        castShadow: false
+      }).runtime({ id: `gate-sign-${i}` }));
+    }
   });
+  // RH47-02 (Halo): cool gantry points ride with the next relay gate (two lights, unshadowed; moved in the runtime).
+  const gantryPoints = row?.gantryPoints ?? null;
+  const gantryLightAt = (gateIndex: number, k: number): Vec3 => {
+    const g = level.gates[Math.min(level.gates.length - 1, Math.max(0, gateIndex))]!;
+    return roadPoint(level, g.s, (k === 0 ? -1 : 1) * (width - 1.2), 10.5);
+  };
+  if (gantryPoints) {
+    for (let k = 0; k < gantryPoints.count; k++) {
+      builder.add(lights.point({ name: `gantry-light-${k}`, position: gantryLightAt(0, k), color: gantryPoints.color, intensity: gantryPoints.intensity, distance: gantryPoints.distance, shadow: false }).runtime({ id: `gantry-light-${k}` }));
+    }
+  }
   level.cells.forEach((c, i) => {
     const p = roadPoint(level, c.s, c.l, c.h);
     builder.add(primitives.sphere({ name: `cell-${i}`, position: p, size: 1.7, material: material.custom(solidSpec(look, hexLinear(0xf3b548), hexLinear(0xffa31a), 4.2, 0.35, 0.3)), castShadow: false }).runtime({ id: `cell-${i}` }));
@@ -631,7 +792,8 @@ export function buildWorld(levelIndex: number): World {
     const idx = defs.length;
     const meshy = meshyFor(piece, idx);
     const car = meshy ? null : carFor(piece, idx);
-    defs.push({ piece, variant, car, meshy, colour: car ? CAR_COLOURS[(idx * 7 + piece.length) % CAR_COLOURS.length]! : (RIG_COLOURS[piece] ?? "#cccccc") });
+    const paint = row ? SALT_FADED_PAINT : CAR_COLOURS;
+    defs.push({ piece, variant, car, meshy, colour: car ? paint[(idx * 7 + piece.length) % paint.length]! : meshy && row ? SALT_FADED_TINTS[(idx * 5 + piece.length) % SALT_FADED_TINTS.length]! : (RIG_COLOURS[piece] ?? "#cccccc") });
     return idx;
   };
   const lineupDefs = layout.vehicles.map((v) => addDef(v.piece, v.v));
@@ -700,7 +862,9 @@ export function buildWorld(levelIndex: number): World {
     const slots: Slot[] = [];
     if (def.meshy) {
       const handle = meshyBatches.get(def.meshy)!;
-      slots.push({ mesh: handle.mesh, slot: handle.mesh.addInstance(handle.geo), box: unionBox(pieceSpec(def.piece, def.variant)!.boxes), size: [0, 0, 0] });
+      const slot = handle.mesh.addInstance(handle.geo);
+      if (row) handle.mesh.setColorAt(slot, def.colour);
+      slots.push({ mesh: handle.mesh, slot, box: unionBox(pieceSpec(def.piece, def.variant)!.boxes), size: [0, 0, 0] });
     } else if (def.car) {
       const box = unionBox(pieceSpec(def.piece, def.variant)!.boxes);
       for (const g of CAR_GROUPS) {
@@ -746,6 +910,11 @@ export function buildWorld(levelIndex: number): World {
     }
   }
 
+  /* ---- GU47 RH47-03: contact blob under the roadster (one plane, fades with ride height) ---- */
+  if (row) {
+    builder.add(primitives.plane({ name: "car-blob", position: roadPoint(level, 0, 0, 0.04), size: [nativeSize[0] * PLAYER_SCALE * 1.5, 1, nativeSize[2] * PLAYER_SCALE * 1.25], material: material.custom(blobSpec()), castShadow: false, receiveShadow: false }).runtime({ id: "car-blob" }));
+  }
+
   /* ---- headlight beams (additive cones, same transform as the car) and particle emitters ---- */
   const lampX = (nativeSize[0] * PLAYER_SCALE) / 2 - 0.4, lampY = -playerHeight * 0.18, lampZ = -(nativeSize[2] * PLAYER_SCALE) / 2 + 0.1;
   const beamDir: Vec3 = [0, -0.05, -1];
@@ -766,6 +935,12 @@ export function buildWorld(levelIndex: number): World {
     name: "plume-sparks",
     material: material.custom(plumeSpec({ color: [1, 0.62, 0.22], alpha: 1, life: [0.25, 0.6], size: [0.2, 0.06], width: 0.5, spread: 1.4, lift: 0.7, trail: 0.7, glow: 1, additive: true }))
   }).runtime({ id: "plume-sparks" }));
+
+  /* ---- GU47 RH47-12 signature: crosswind spray sheets off the sea-side cliff base (one points draw) ---- */
+  const spray = spraySpec(look, width);
+  if (spray && enabled("spray")) {
+    builder.add(geometry.custom(plumeGeometry(SPRAY_POINTS, 9), { name: "crosswind-spray", material: material.custom(spray), castShadow: false }).runtime({ id: "crosswind-spray" }));
+  }
 
   return {
     scene: builder,
@@ -794,6 +969,22 @@ export function buildWorld(levelIndex: number): World {
       const scaleVec: Vec3 = [nativeSize[0] * PLAYER_SCALE, nativeSize[1] * PLAYER_SCALE, nativeSize[2] * PLAYER_SCALE];
       const beams = [-1, 1].map((sx) => node(`beam-${sx}`));
       const dust = node("plume-dust"), sparks = node("plume-sparks");
+      const blob = row ? node("car-blob") : null;
+      const sprayNode = spray && enabled("spray") ? node("crosswind-spray") : null;
+      // RH47-13: the preset pack (re-registered when reduced motion changes; reduced flash follows reduced motion)
+      const vfx = row && enabled("vfx") ? app.effects : undefined;
+      let fxKinds = registerSaltwindFx(vfx, row);
+      let fxFired = 0, fxLast: string | null = null, skidClock = 0;
+      let nitroTrail: { stop(o?: { immediate?: boolean }): void } | null = null;
+      const shots = row ? createShotDirector({ seaSide: look.seaSide }) : null;
+      let lastShot: ShotFrame | null = null;
+      let reducedMotionOn = false;
+      const lean = row ? createBodyLean() : null;
+      const gantryLights = gantryPoints ? Array.from({ length: gantryPoints.count }, (_v, k) => node(`gantry-light-${k}`)) : [];
+      let gantryGate = -1;
+      const gateSigns = row ? level.gates.map((_g, i) => node(`gate-sign-${i}`)) : [];
+      let signGate = 0;
+      gateSigns.forEach((sign, k) => sign.setVisible(k === 0));
       let dustAmount = 0, sparkAmount = 0;
       for (const part of parts) part.setScale(scaleVec);
 
@@ -817,8 +1008,21 @@ export function buildWorld(levelIndex: number): World {
       const offCentre = 0;
       return {
         vehicleInstances: allSlots.length,
-        reset: () => { placeLineup(); director.cut(); chase.reset(); },
-        setReducedMotion: (on: boolean) => director.setReducedMotion(on),
+        reset: () => { placeLineup(); director.cut(); chase.reset(); shots?.play(); lean?.reset(); signGate = 0; gateSigns.forEach((sign, k) => sign.setVisible(k === 0)); },
+        startIntro: () => shots?.startIntro(),
+        skipIntro: () => shots?.skipIntro(),
+        startFinish: () => shots?.startFinish(),
+        shot: () => lastShot,
+        fx: () => ({ kinds: fxKinds, fired: fxFired, last: fxLast }),
+        setReducedMotion: (on: boolean) => {
+          reducedMotionOn = on;
+          lean?.setReducedMotion(on);
+          director.setReducedMotion(on);
+          shots?.setReducedMotion(on);
+          fxKinds = registerSaltwindFx(vfx, row, { reducedMotion: on, reducedFlash: on });
+          if (row && surfAmount(look) > 0) node("flank-sea").setUniform?.("surfSpeed", surfSpeedFor(on));
+          if (sprayNode && row) { sprayNode.setUniform?.("spAmount", sprayAmount(row.spray, { reducedMotion: on })); sprayNode.setUniform?.("spWind", sprayWind(row.spray, on)); }
+        },
         probeBatchedDraws() {
           const draws = (): number => { app.step(0); return app.diagnostics().drawCalls ?? 0; };
           for (const s of allSlots) s.mesh.setVisibleAt(s.slot, false);
@@ -835,9 +1039,28 @@ export function buildWorld(levelIndex: number): World {
           const pitch = run.flip;
           const carP = roadPoint(level, run.s, run.l, run.h + playerHeight / 2 + 0.03);
           const rollAngle = run.roll + prof.bank;
-          for (const part of parts) { part.setPosition(carP[0], carP[1], carP[2]); part.setRotation(pitch, psi, rollAngle); }
+          const body = lean ? lean.step(run, dt) : { roll: 0, pitch: 0 };
+          for (const part of parts) { part.setPosition(carP[0], carP[1], carP[2]); part.setRotation(pitch + body.pitch, psi, rollAngle + body.roll); }
           const racing = run.phase === "running" || run.phase === "countdown";
           for (const beam of beams) { beam.setPosition(carP[0], carP[1], carP[2]); beam.setRotation(pitch, psi, rollAngle); beam.setVisible(racing); }
+          if (rotors) {
+            turbineHubs.forEach((hub, ti) => {
+              for (let b = 0; b < ROTOR_BLADES; b++) rotors.setMatrixAt(rotorSlots[ti * ROTOR_BLADES + b]!, bladeMatrix(hub, rotorAngle(time, ti, reducedMotionOn) + (b * Math.PI * 2) / ROTOR_BLADES, scratch));
+            });
+          }
+          if (sprayNode) {
+            const o = roadPoint(level, run.s, 0, 0), ahead = roadPoint(level, run.s + 1, 0, 0), right = roadPoint(level, run.s, 1, 0);
+            sprayNode.setUniform?.("spOrigin", o);
+            const ax = ahead[0] - o[0], az = ahead[2] - o[2], al = Math.hypot(ax, az) || 1;
+            sprayNode.setUniform?.("spAlong", [ax / al, 0, az / al]);
+            sprayNode.setUniform?.("spAcross", [right[0] - o[0], right[1] - o[1], right[2] - o[2]]);
+          }
+          if (blob) {
+            const under = roadPoint(level, run.s, run.l, 0.04);
+            blob.setPosition(under[0], under[1], under[2]);
+            blob.setRotation(0, psi, prof.bank);
+            blob.setUniform?.("blobFade", blobFadeFor(run.h));
+          }
           const trailDir: Vec3 = [Math.sin(psi), 0, Math.cos(psi)];
           const rear = roadPoint(level, run.s - 2.1, run.l, run.h + 0.3);
           const rolling = run.phase === "running";
@@ -851,7 +1074,27 @@ export function buildWorld(levelIndex: number): World {
           const wall = roadPoint(level, run.s, run.l + (run.l >= 0 ? 1.1 : -1.1), run.h + 0.35);
           const sparkAt = scraping && !burning ? wall : [rear[0], rear[1] + 0.2, rear[2]];
           sparks.setUniform?.("ptPos", sparkAt); sparks.setUniform?.("ptBack", trailDir); sparks.setUniform?.("ptSpeed", run.v); sparks.setUniform?.("ptAmount", sparkAmount);
+          if (vfx && fxKinds.length) {
+            for (const kind of fxForEvents(events)) { vfx.burst(kind, carP); fxFired++; fxLast = kind; }
+            skidClock += dt;
+            if (rolling && run.drifting && run.grounded && skidClock >= SKID_INTERVAL) {
+              skidClock = 0;
+              vfx.burst("saltwind-skid", roadPoint(level, run.s - 1.4, run.l, 0.03), { normal: [0, 1, 0] });
+              fxFired++; fxLast = "saltwind-skid";
+            }
+            const nitroOn = rolling && run.nitro > 0;
+            if (nitroOn && !nitroTrail && playerIds[0]) nitroTrail = vfx.trail(playerIds[0], NITRO_TRAIL);
+            else if (!nitroOn && nitroTrail) { nitroTrail.stop(); nitroTrail = null; }
+          }
           for (let i = 0; i < cells.length; i++) cells[i]!.setVisible(!run.cells.has(i));
+          if (gateSigns.length && run.nextGate !== signGate) {
+            signGate = run.nextGate;
+            gateSigns.forEach((sign, k) => sign.setVisible(k === signGate));
+          }
+          if (gantryLights.length && run.nextGate !== gantryGate) {
+            gantryGate = run.nextGate;
+            gantryLights.forEach((light, k) => { const p = gantryLightAt(gantryGate, k); light.setPosition(p[0], p[1], p[2]); });
+          }
           for (let ci = 0; ci < trafficSlots.length; ci++) {
             const car = run.traffic[ci]!;
             for (const slot of trafficSlots[ci]!) writeVehicle(slot, car.s, car.l, 0);
@@ -869,7 +1112,17 @@ export function buildWorld(levelIndex: number): World {
           // shake offset along the road's lateral axis at the eye (the same axis `roadPoint` uses) and world up
           const dx = roadProfile(level, eyeS).dx, inv = 1 / Math.sqrt(1 + dx * dx);
           const shake: [number, number, number] = [cam.shakeRight * inv, cam.shakeUp, cam.shakeRight * dx * inv];
-          const pose = chase.step({ wantEye: [eye[0], eye[1], eye[2]], wantLook: [look2[0], look2[1], look2[2]], fovTarget: (aspect < 1 ? 70 : 58) + cam.fovKick, cut: cam.cut, shakeOffset: shake }, dt);
+          const shot = shots ? shots.step(dt, run, events) : null;
+          lastShot = shot;
+          if (shot && (shot.eye || shot.orbit) && shot.look) {
+            // RH47-16: a shot owns the camera (intro rail, finish trackside or orbit); the chase rig resumes with a cut
+            const target = roadPoint(level, shot.look.s, shot.look.l, shot.look.h);
+            const at = shot.orbit ? orbitEye(carP, shot.orbit) : roadPoint(level, shot.eye!.s, shot.eye!.l, shot.eye!.h);
+            sky.setPosition(at[0], at[1], at[2]);
+            camCtl.setPose({ position: at, target, up: [0, 1, 0], fov: shot.fov ?? 58 }, { cut: true });
+            return;
+          }
+          const pose = chase.step({ wantEye: [eye[0], eye[1], eye[2]], wantLook: [look2[0], look2[1], look2[2]], fovTarget: (aspect < 1 ? 70 : 58) + cam.fovKick + (shot?.fovPush ?? 0), cut: cam.cut || (shot?.cut ?? false), shakeOffset: shake }, dt);
           sky.setPosition(pose.eye[0], pose.eye[1], pose.eye[2]);
           camCtl.setPose({ position: pose.eye, target: pose.look, up: [0, 1, 0], fov: pose.fov }, { cut: pose.cut });
         }

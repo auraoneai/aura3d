@@ -19,6 +19,26 @@
   <title>Saltwind Highway — Coastal Highway Drive</title>
   <style>
     :root { --ink: rgba(255,255,255,.92); --ink-2: rgba(255,255,255,.64); --line: rgba(255,255,255,.14); --glass: rgba(10,14,24,.62); --accent: #ffb347; --cyan: #6fe4e6; --heat: #ff6b3b; --red: #e31937; }
+    /* GU47 RH47-17: Saltwind identity tokens (salt white panels, sea teal bars, signal red as the only accent). ?look=original keeps the tokens above. */
+    body:not(.look-original) { --accent: #c8321f; --cyan: #5fb3ad; --heat: #c9a25e; --red: #c8321f; --salt: rgba(233,228,214,.9); --salt-ink: #1c2427; --salt-ink-2: rgba(28,36,39,.68); --salt-line: rgba(28,36,39,.16); }
+    body:not(.look-original) .keys, body:not(.look-original) .modal, body:not(.look-original) .routes a, body:not(.look-original) button.ghost { background: var(--salt); color: var(--salt-ink); border-color: var(--salt-line); text-shadow: none; }
+    body:not(.look-original) .keys dd, body:not(.look-original) .modal .meta, body:not(.look-original) .stats dt, body:not(.look-original) .remap-row span { color: var(--salt-ink-2); }
+    body:not(.look-original) .modal { border-left: 4px solid var(--accent); }
+    body:not(.look-original) .routes a[aria-current="true"] { box-shadow: inset 0 -3px 0 var(--accent); }
+    body:not(.look-original) #score { color: #f3efe4; }
+    body:not(.look-original) #thrust-bar.window i { background: var(--accent); box-shadow: 0 0 10px rgba(200,50,31,.7); }
+    body:not(.look-original) #speedo { position: relative; width: 112px; padding-top: 30px; }
+    body:not(.look-original) #speedo-arc { display: block; position: absolute; left: 0; top: -6px; width: 112px; height: 112px; pointer-events: none; }
+    #speedo-arc { display: none; }
+    #speedo-arc circle { fill: none; stroke-width: 5; stroke-linecap: round; transform: rotate(135deg); transform-origin: 50% 50%; }
+    #speedo-arc .track { stroke: rgba(233,228,214,.22); stroke-dasharray: 75 100; }
+    #speedo-fill { stroke: #e9e4d6; stroke-dasharray: 0 100; transition: stroke .15s ease; }
+    #speedo.nitro #speedo-fill { stroke: var(--accent); filter: drop-shadow(0 0 4px rgba(200,50,31,.85)); }
+    body:not(.look-original) #speedo small { letter-spacing: .14em; text-transform: uppercase; font-size: 11px; }
+    /* GU47 RH47-16: letterbox bars for the intro rail (none on reduced motion: the director never raises them). */
+    body.shot-bars::before, body.shot-bars::after { content: ""; position: fixed; left: 0; right: 0; height: calc(var(--shot-bars, 0) * 10vh); background: #050607; z-index: 1; pointer-events: none; }
+    body.shot-bars::before { top: 0; }
+    body.shot-bars::after { bottom: 0; }
     html, body { margin: 0; height: 100%; background: #0b0d12; overflow: hidden; font: 400 14px/1.4 "DIN Pro", sans-serif; font-synthesis: none; color: var(--ink); -webkit-font-smoothing: antialiased; }
     canvas#world { position: fixed; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
     .hidden { display: none !important; }
@@ -131,7 +151,7 @@
     <div id="count"></div>
     <div id="dash">
       <div class="gauge"><div class="row"><span>Thrust</span><span id="nitro-label"></span></div><div class="bar" id="thrust-bar"><i id="thrust-fill"></i></div></div>
-      <div id="speedo"><span id="speed" class="num">0</span><small>km/h</small></div>
+      <div id="speedo"><svg id="speedo-arc" viewBox="0 0 100 100" aria-hidden="true"><circle class="track" cx="50" cy="50" r="44" pathLength="100" /><circle id="speedo-fill" cx="50" cy="50" r="44" pathLength="100" /></svg><span id="speed" class="num">0</span><small>km/h</small></div>
       <div class="gauge"><div class="row"><span>Heat</span><span id="heat-label"></span></div><div class="bar"><i id="heat-fill"></i></div></div>
     </div>
     <span id="phase"></span>
