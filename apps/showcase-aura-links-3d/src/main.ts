@@ -92,6 +92,7 @@ import { sweptClubContact, type ClubContact } from "./game/contact";
 import { commitStroke } from "./game/strokeCommit";
 import { COURSE_LOOKS, contactShadowIntensity, courseFill, flagFlutterAmplitude, type LinksTier } from "./game/lighting";
 import { buildCourseRig } from "./game/lookRig";
+import { landingVfxFor, registerLinksVfx, type LinksVfxId } from "./game/vfx";
 import { clubForShot, planShot, puttRange, type ShotPlan } from "./game/autopilot";
 import {
   bracketRows,
@@ -912,10 +913,16 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   );
 
   // --- Ball + trail + shadow + aim aids ---
+  // (the GU47 look draws the shot tracer as a runtime trail per shot, startTracer(); `?look=original` keeps the
+  // authored ribbon node, which E-F now draws)
   nodes.push(
     model(assets.siegeGolfBall, { name: "golf-ball", targetHeight: BALL_R * 2 }).runtime(game.runtimeNode("golf-ball")),
-    primitives.cylinder({ name: "ball-shadow", size: [BALL_R * 2.4, 0.008, BALL_R * 2.4], material: material.pbr({ color: "#000000", opacity: 0.38, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow")),
-    effects.trail({ name: "ball-ribbon-trail", target: "golf-ball", color: "#ffffff", width: 0.07, maxPoints: 44, intensity: 0.9 } as any),
+    primitives.cylinder({ name: "ball-shadow", size: [BALL_R * 2.4, 0.008, BALL_R * 2.4], material: material.pbr({ color: "#000000", opacity: 0.38, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow"))
+  );
+  if (lookMode === "original") {
+    nodes.push(effects.trail({ name: "ball-ribbon-trail", target: "golf-ball", color: "#ffffff", width: 0.07, maxPoints: 44, intensity: 0.9 } as any));
+  }
+  nodes.push(
     // ground ring that marks the ball when the camera is far from it (the ball itself is near real size)
     primitives.torus({ name: "ball-marker", size: [0.5, 0.025, 0.025], material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.1, opacity: 0.8 }) }).scale(HIDDEN_SCALE).runtime(game.runtimeNode("ball-marker")),
     // Crisp white aim line + predicted landing ring (aim phase only)
@@ -1599,6 +1606,11 @@ function fireImpact(): void {
   const qual = Math.abs(commit.accuracy);
   pushEvent("shot", `${clubLabel(commit.club.id)} · ${(commit.power * 100) | 0}% · ${contactLabel(qual)} · ${shapeLabel(commit.spin)}`, qual < 0.3 ? "success" : "warning");
   juiceFire("hit", { position: r.ballPos });
+  shotLanded = false;
+  if (lookMode !== "original") {
+    if (!commit.club.putter) linksBurst(state.courseId === "mareCourse" ? "links-lowg-dust" : "links-strike", r.ballPos);
+    startTracer();
+  }
   void audio?.cue(commit.club.putter ? "putt" : "drive");
   updateCardHud();
 }
@@ -1638,12 +1650,15 @@ function onBallEvents(events: BallEvent[]): void {
       juiceFire("bounce", { position: ev.pos });
       const zone = ev.zone;
       if (zone === "sand") { pushEvent("lie", "sand splash", "info"); }
-      spawnTurfPuff(ev.pos, zone);
+      if (lookMode === "original") spawnTurfPuff(ev.pos, zone);
+      else if (!shotLanded || zone === "sand") linksBurst(landingVfxFor(state.courseId, zone), ev.pos);
+      shotLanded = true;
     } else if (ev.kind === "holed") {
       onHoled();
     } else if (ev.kind === "water") {
       pushEvent("penalty", "water hazard — +1 stroke", "warning");
       juiceFire("splash", { position: ev.pos });
+      if (lookMode !== "original") linksBurst(landingVfxFor(state.courseId, "water"), ev.pos);
       void audio?.cue("splash");
       applyPenaltyDrop(ev.pos);
       return;
@@ -1696,6 +1711,7 @@ function onHoled(): void {
     window.setTimeout(() => { flash.style.opacity = "0"; }, 220);
   }
   juiceFire("holed", { position: state.terrain!.cup });
+  if (lookMode !== "original") linksBurst("links-holeout-ring", state.terrain!.cup);
   heroCelebrate = true;
   if (state.mode === "puttinglab") {
     state.lab = scorePuttingLab(state.lab!, true);
@@ -2063,7 +2079,7 @@ function juiceFire(ev: string, at?: Record<string, unknown>): void {
   try { juice?.fire(ev as never, at as never); } catch { /* best-effort */ }
 }
 
-const JUICE_EVENTS: Record<string, any> = {
+const JUICE_EVENTS_462: Record<string, any> = {
   hit:     { fx: { kind: "spark", count: 8, color: "#ffd257", speed: 2.6 }, cue: "drive", rumble: { ms: 26, weak: 0.4 }, punch: { fovDeg: 1.4, ms: 140 } },
   bounce:  { fx: { kind: "dust", count: 6, color: "#cfc8a8", speed: 1.6 } },
   splash:  { fx: { kind: "splash", count: 18, color: "#63e2ff", speed: 3.4 }, cue: "splash", flash: { color: "#63e2ff", peak: 0.1, ms: 120 } },
@@ -2071,9 +2087,43 @@ const JUICE_EVENTS: Record<string, any> = {
   eagle:   { cue: "win", shake: 0.5, punch: { fovDeg: 3.6, dolly: -0.5, ms: 380 }, flash: { color: "#ffd257", peak: 0.24, ms: 240 } }
 };
 
+/**
+ * GU47 LINKS-11: the course look fires the Links preset pack (game/vfx.ts) from the ball events, so the juice keeps
+ * only its cues, rumble, camera punch and flashes; `?look=original` keeps the 4.6.2 juice particles.
+ */
+const JUICE_EVENTS: Record<string, any> = lookMode === "original"
+  ? JUICE_EVENTS_462
+  : Object.fromEntries(Object.entries(JUICE_EVENTS_462).map(([k, { fx: _fx, ...rest }]) => [k, rest]));
+
 function spawnTurfPuff(pos: Vec3, zone: LieKind): void {
   const color = zone === "sand" ? "#e8d8a0" : zone === "green" || zone === "fringe" ? "#9be84e" : zone === "rough" ? "#4a6a3f" : "#7ab85a";
   try { fxCtlRef?.spawn("ground-dust", pos, { radius: 0.35, color, intensity: 1 }); } catch { /* optional */ }
+}
+
+/** One Links preset burst (LINKS-11). Divot and sand take the course's own turf and sand; the hole-out ring its accent. */
+function linksBurst(id: LinksVfxId, pos: Vec3): void {
+  const pal = state.course.palette;
+  const color = id === "links-divot" ? shade(pal.rough, 1.25)
+    : id === "links-sand-burst" ? shade(pal.sand, 1.12)
+    : id === "links-holeout-ring" ? COURSE_LOOKS[state.courseId].accent
+    : undefined;
+  try {
+    (auraApp as any)?.effects?.burst?.(id, [pos[0], pos[1] + 0.02, pos[2]], { camera: false, ...(color ? { color } : {}) });
+  } catch { /* optional */ }
+}
+
+/** First touchdown of the current shot (the landing effect and its pitch-mark decal fire once per shot). */
+let shotLanded = false;
+/** The broadcast shot tracer of the shot in the air (E-F `app.effects.trail` on the ball). */
+let tracerHandle: { stop(o?: { immediate?: boolean }): void } | null = null;
+
+function startTracer(): void {
+  tracerHandle?.stop({ immediate: true });
+  tracerHandle = null;
+  if (lookMode === "original") return;
+  try {
+    tracerHandle = (auraApp as any)?.effects?.trail?.("golf-ball", { width: 0.09, life: 2.4, color: state.fit.trail, widthOverSpeed: [2, 18] }) ?? null;
+  } catch { tracerHandle = null; }
 }
 
 let fxCtlRef: any = null;
@@ -2239,12 +2289,12 @@ function frame(dt: number): void {
     const ss = clamp(1 - bh * 0.05, 0.4, 1);
     ballShadowHandle?.setPosition(bp[0], t.height(bp[0], bp[2]) + 0.02, bp[2]).setScale([ss, 1, ss]).setVisible(bh < 12);
 
-    // trail dots
+    // trail dots (`?look=original`; the GU47 look draws the tracer ribbon instead, 16 fewer draws in flight)
     for (let i = 0; i < TRAIL_COUNT; i++) {
       const pt = trailPts[trailPts.length - 1 - i];
       const h = trailHandles[i];
       if (!h) continue;
-      if (pt && state.phase === "flight" && state.ball?.status === "flight") {
+      if (lookMode === "original" && pt && state.phase === "flight" && state.ball?.status === "flight") {
         const s = Math.max(0.2, 1 - i / (TRAIL_COUNT + 1));
         h.setPosition(pt[0], pt[1], pt[2]).setScale([s, s, s]).setVisible(true);
       } else {
@@ -2583,7 +2633,12 @@ function setupFxAndTouch(): void {
   const fx = createFxParticlePass({
     burst: (kind: string, position: any, o: any) => {
       try {
-        const map: Record<string, string> = { spark: "hit-spark", dust: "ground-dust", ring: "ring-shockwave", splash: "ground-dust", streak: "dash-trail" };
+        // LINKS-11: a water splash is the engine's splash burst, not ground dust (the 4.6.2 map sent it to dust)
+        if (kind === "splash") {
+          (auraApp as any)?.effects?.burst?.("splash", position, { count: o?.count, color: o?.color, camera: false });
+          return;
+        }
+        const map: Record<string, string> = { spark: "hit-spark", dust: "ground-dust", ring: "ring-shockwave", streak: "dash-trail" };
         fxCtlRef?.spawn(map[kind] ?? "hit-spark", position, { radius: Math.max(0.2, (o?.count ?? 10) / 24), color: o?.color, intensity: 1 });
       } catch { /* optional */ }
     },
@@ -2825,6 +2880,10 @@ function boot(): void {
   state.hole = state.course.holes[0]!;
   state.terrain = buildHoleTerrain(state.course, state.hole);
 
+  // accessibility first: the course look halves its ambient emission under reduced motion (PRD §6.3)
+  state.reducedMotion = params.has("reducedMotion") || (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false);
+  state.reducedFlash = params.has("reducedFlash") || (window.matchMedia?.("(prefers-reduced-flash: reduce)")?.matches ?? false);
+
   bootStage("scene-build");
   mountedHoleSig = `${state.course.id}|${state.hole.number}|round`;
   auraApp = createAuraApp("#app", {
@@ -2832,8 +2891,9 @@ function boot(): void {
     ...looks.appOptions(state.course.look),
     qualityRebuild: { flags: ["game"] }
   } as any);
-  // Runtime-spawned effect clouds are off by default until the floating-dot report is root-caused; `?vfx=on` re-enables them for diagnosis.
-  (auraApp as any).effects.runtime = "off";
+  // GU47 LINKS-11: runtime VFX are on again (E-F root-caused and fixed the floating dots in the engine; `?vfx=off` still
+  // turns them off). The Links preset pack registers on the app's effects surface.
+  registerLinksVfx((auraApp as any).effects, { reducedMotion: state.reducedMotion, reducedFlash: state.reducedFlash });
 
   bootStage("audio");
   setupAudio();
