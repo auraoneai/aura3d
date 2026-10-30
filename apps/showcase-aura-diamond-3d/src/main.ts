@@ -152,6 +152,7 @@ import {
 import { lookPlan, resolveDiamondTier, resolveLookVariant, resolveSkyMode } from "../art/look";
 import { isDiamondVfxKind, juiceFxKind, landingFxKind, registerDiamondVfx, type DiamondVfxKind } from "../art/vfx";
 import { CameraDirector, halfInningShot, homeRunShot, introShot, walkupShot, type Shot } from "../art/cameraDirector";
+import { diamondCrops } from "../art/qaCrops";
 
 const HOME_PLATE: Vec3 = [0, 0.05, 0.4];
 
@@ -3862,6 +3863,17 @@ function boot(): void {
     };
     publishBeacon(evidence);
   });
+
+  // GU47 QA crops (E-I crop contract): infield, outfield-wall, board, batter and sky rects, recomputed from the current
+  // broadcast camera every time the steady-state capture asks (a function, so they follow the camera).
+  {
+    const qa = ((window as any).__AURA_QA__ ??= {});
+    qa.crops = () => {
+      const canvas = document.querySelector("#app canvas") as HTMLCanvasElement | null;
+      const aspect = canvas && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : window.innerWidth / Math.max(1, window.innerHeight);
+      return diamondCrops(park(), { eye: G.cam.eye, target: G.cam.target, fov: G.cam.fov }, aspect);
+    };
+  }
 
   {
     (window as any).__AURA3D_GAME_DIAMOND__ = {
