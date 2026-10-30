@@ -411,108 +411,253 @@ export function lookHdriFiles(id: AuraLookId, flags: QrFlags = resolveFlags()): 
   return hdri === null ? [] : [`${hdri}.hdr`];
 }
 
-function applyOverrides(preset: AuraLookPreset, overrides: AuraLookOverrides | undefined): AuraLookPreset["v0"] {
-  if (overrides === undefined) return preset.v0;
-  const v0 = {
-    ...preset.v0,
-    key: { ...preset.v0.key },
-    fog: preset.v0.fog ? { ...preset.v0.fog } : undefined,
-    grade: { ...preset.v0.grade }
+type LookV0 = AuraLookPreset["v0"];
+type LookKeyShadow = true | AuraDirectionalShadowOptions;
+
+/**
+ * A look's v0 rig after overrides: the preset's §7.1.1 values with every C-34 and GU47 E-A override folded in, which is
+ * exactly what `v0Children` emits. An unset override leaves the preset's value, and so the emitted node, unchanged.
+ */
+interface LookRig {
+  /** The HDRI the look emits (null: its procedural fill, or nothing). `background` undefined = the builder default (drawn). */
+  readonly hdri: { readonly texture: AuraAssetRef<"texture">; readonly label: string; readonly background?: boolean } | null;
+  readonly environmentIntensity: number;
+  /** Radians about +Y (environmentRotationDeg); undefined = unrotated. */
+  readonly environmentRotation?: number;
+  readonly fill?: LookV0["fill"];
+  readonly key: { readonly position: AuraVec3; readonly intensity: number; readonly color: AuraColor; readonly shadow: LookKeyShadow };
+  readonly rim?: { readonly position: AuraVec3; readonly intensity: number; readonly color: AuraColor };
+  /**
+   * near/far are the look range (the density is 24/far, scaled by fogDensityScale). `range` is set when the fog
+   * override authored near/far (they then ride on the node for the C-21 linear mode); `height` makes it a C-21 height fog.
+   */
+  readonly fog?: { readonly color: AuraColor; readonly near: number; readonly far: number; readonly range: boolean; readonly height?: AuraHeightFogSpec };
+  readonly background: AuraColor;
+  readonly effects: LookV0["effects"];
+  /** temperature/tint/lut are emitted only when defined (the v2 grade reads them, E-C). */
+  readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature?: number; readonly tint?: number; readonly lut?: AuraAssetRef };
+  /** undefined: the look's default bloom node; false: none; options: a retuned bloom node. */
+  readonly bloom?: false | LookBloomOptions;
+  /** The `output.preset` child (C-13 id); undefined: no child. */
+  readonly outputPreset?: AuraPostPresetId;
+}
+
+/** Elevation of a rim a look override adds when the preset has none (the character-showcase rim). */
+const ADDED_RIM_ELEVATION_DEG = 35;
+const ADDED_RIM_INTENSITY = 1.4;
+/** Range of a fog a look override adds when the preset has none: 24/200 = the engine fog's own 0.12 density. */
+const ADDED_FOG_FAR = 200;
+
+function overrideEnvironment(
+  preset: AuraLookPreset,
+  overrides: AuraLookOverrides | undefined,
+  flags: QrFlags
+): Pick<LookRig, "hdri" | "environmentIntensity"> {
+  const v0 = preset.v0;
+  const intensity = overrides?.environmentIntensity;
+  if (overrides?.hdri !== undefined) {
+    // A no-HDRI look declares environmentIntensity 0 (a fill lights it); an HDRI it gains starts at 1.
+    return { hdri: resolveLookHdri(overrides.hdri), environmentIntensity: intensity ?? (v0.hdri === null ? 1 : v0.environmentIntensity) };
+  }
+  const upgrade = flags.on("A3D_QR_LOOKS") ? LOOK_QR_UPGRADES[preset.id] : undefined;
+  if (upgrade !== undefined) {
+    return {
+      hdri: { texture: HDRI_ASSET[upgrade.hdri], label: upgrade.hdri, background: upgrade.background },
+      environmentIntensity: intensity ?? upgrade.environmentIntensity
+    };
+  }
+  return {
+    hdri: v0.hdri === null ? null : { texture: HDRI_ASSET[v0.hdri], label: v0.hdri },
+    environmentIntensity: intensity ?? v0.environmentIntensity
   };
-  if (overrides.sun) {
-    const base = sunAngles(preset.v0.key.position);
-    const az = overrides.sun.azimuthDeg ?? base.azimuthDeg;
-    const el = overrides.sun.elevationDeg ?? base.elevationDeg;
-    v0.key = { ...v0.key, position: sunPosition(el, az) };
+}
+
+function overrideRim(preset: AuraLookPreset, overrides: AuraLookOverrides | undefined, key: LookRig["key"]): LookRig["rim"] {
+  const base = preset.v0.rim;
+  const rim = overrides?.rim;
+  if (rim === false) return undefined;
+  const accent = overrides?.accent;
+  if (rim === undefined) return base ? { ...base, color: accent ?? base.color } : undefined;
+  if (base) {
+    const angles = sunAngles(base.position);
+    return {
+      position: rim.azimuthDeg !== undefined ? sunPosition(angles.elevationDeg, rim.azimuthDeg) : base.position,
+      intensity: rim.intensity ?? base.intensity,
+      color: rim.color ?? accent ?? base.color
+    };
   }
-  if (overrides.fogDensityScale !== undefined && v0.fog) {
-    const scale = overrides.fogDensityScale;
+  // A rim on a look without one: opposite the key unless an azimuth is given, in the look's accent colour.
+  const keyAzimuth = sunAngles(key.position).azimuthDeg;
+  return {
+    position: sunPosition(ADDED_RIM_ELEVATION_DEG, rim.azimuthDeg ?? wrapDegrees(keyAzimuth + 180)),
+    intensity: rim.intensity ?? ADDED_RIM_INTENSITY,
+    color: rim.color ?? accent ?? preset.palette.accent
+  };
+}
+
+function overrideFog(preset: AuraLookPreset, overrides: AuraLookOverrides | undefined, background: AuraColor): LookRig["fog"] {
+  const base = preset.v0.fog;
+  const fog = overrides?.fog;
+  if (base === undefined && fog === undefined) return undefined;
+  let near = fog?.near ?? base?.near ?? 0;
+  let far = Math.max(near, fog?.far ?? base?.far ?? ADDED_FOG_FAR);
+  if (overrides?.fogDensityScale !== undefined) {
     // near/far stored in the preset: density scales inversely with range.
-    v0.fog = { ...v0.fog, near: v0.fog.near / Math.max(scale, 1e-3), far: v0.fog.far / Math.max(scale, 1e-3) };
+    const scale = Math.max(overrides.fogDensityScale, 1e-3);
+    near /= scale;
+    far /= scale;
   }
-  if (overrides.background !== undefined && overrides.background !== "look") {
-    v0.background = overrides.background;
+  return {
+    color: fog?.color ?? base?.color ?? background,
+    near,
+    far,
+    range: fog?.near !== undefined || fog?.far !== undefined,
+    ...(fog?.height !== undefined ? { height: fog.height } : {})
+  };
+}
+
+function applyOverrides(preset: AuraLookPreset, overrides: AuraLookOverrides | undefined, flags: QrFlags): LookRig {
+  const v0 = preset.v0;
+  let keyPosition = v0.key.position;
+  if (overrides?.sun) {
+    const base = sunAngles(v0.key.position);
+    keyPosition = sunPosition(overrides.sun.elevationDeg ?? base.elevationDeg, overrides.sun.azimuthDeg ?? base.azimuthDeg);
   }
-  return v0;
+  const key: LookRig["key"] = {
+    position: keyPosition,
+    intensity: overrides?.key?.intensity ?? v0.key.intensity,
+    color: overrides?.key?.color ?? v0.key.color,
+    shadow: overrides?.key?.shadow ?? true
+  };
+  const background = overrides?.background !== undefined && overrides.background !== "look" ? overrides.background : v0.background;
+  const post = overrides?.post;
+  const grade = overrides?.grade;
+  return {
+    ...overrideEnvironment(preset, overrides, flags),
+    ...(overrides?.environmentRotationDeg !== undefined ? { environmentRotation: (overrides.environmentRotationDeg * Math.PI) / 180 } : {}),
+    ...(v0.fill !== undefined ? { fill: v0.fill } : {}),
+    key,
+    rim: overrideRim(preset, overrides, key),
+    fog: overrideFog(preset, overrides, background),
+    background,
+    effects: v0.effects,
+    grade: {
+      contrast: grade?.contrast ?? v0.grade.contrast,
+      saturation: grade?.saturation ?? v0.grade.saturation,
+      ...(grade?.temperature !== undefined ? { temperature: grade.temperature } : {}),
+      ...(grade?.tint !== undefined ? { tint: grade.tint } : {}),
+      ...(grade?.lut !== undefined ? { lut: grade.lut } : {})
+    },
+    ...(post !== undefined && typeof post !== "string" && post.bloom !== undefined ? { bloom: post.bloom } : {}),
+    ...(typeof post === "string" ? { outputPreset: post } : {})
+  };
+}
+
+/** Append authored keys a builder does not copy (the v2 bridge reads only `postAuthored` fields). */
+function withAuthoredFields(node: AuraSceneNode, fields: Readonly<Record<string, unknown>>): AuraSceneNode {
+  const defined = Object.entries(fields).filter(([, value]) => value !== undefined);
+  if (defined.length === 0) return node;
+  const authored = (node as { postAuthored?: readonly string[] }).postAuthored ?? [];
+  return {
+    ...node,
+    ...Object.fromEntries(defined),
+    postAuthored: [...authored, ...defined.map(([field]) => field).filter((field) => !authored.includes(field))]
+  } as AuraSceneNode;
+}
+
+/**
+ * GU47 E-A: the look's post preset as an `output.preset` child. An empty group, so no compile path draws or drops it;
+ * the post pipeline reads it through `lookOutputPreset` when the app authors no `output.preset` (E-C applies it).
+ */
+function lookOutputPresetNode(preset: AuraPostPresetId): AuraSceneNode {
+  return { kind: "group", name: "look output preset", children: [], output: { preset }, lookOutput: true } as AuraGroupNode;
 }
 
 /** Flat v0 children for a preset (the group's contents, and `looks.nodes`). */
 function v0Children(preset: AuraLookPreset, overrides: AuraLookOverrides | undefined, flags: QrFlags): AuraSceneNode[] {
-  const v0 = applyOverrides(preset, overrides);
+  const rig = applyOverrides(preset, overrides, flags);
   const children: AuraSceneNode[] = [];
-  const upgrade = flags.on("A3D_QR_LOOKS") ? LOOK_QR_UPGRADES[preset.id] : undefined;
-  if (upgrade !== undefined) {
+  if (rig.hdri !== null) {
     children.push(
       environments.hdri({
-        name: `look hdri ${upgrade.hdri}`,
-        intensity: upgrade.environmentIntensity,
-        texture: HDRI_ASSET[upgrade.hdri],
-        background: upgrade.background
+        name: `look hdri ${rig.hdri.label}`,
+        intensity: rig.environmentIntensity,
+        texture: rig.hdri.texture,
+        ...(rig.environmentRotation !== undefined ? { rotation: rig.environmentRotation } : {}),
+        ...(rig.hdri.background !== undefined ? { background: rig.hdri.background } : {})
       }).toJSON()
     );
-  } else if (v0.hdri !== null) {
-    children.push(
-      environments.hdri({
-        name: `look hdri ${v0.hdri}`,
-        intensity: v0.environmentIntensity,
-        texture: HDRI_ASSET[v0.hdri]
-      }).toJSON()
-    );
-  } else if (v0.fill !== undefined) {
+  } else if (rig.fill !== undefined) {
     // No HDRI: a faint procedural fill, so the look is not lit by its key light alone.
-    const fill = v0.fill.preset === "night" ? environments.nightCinematic : v0.fill.preset === "neutral" ? environments.neutral : environments.studio;
+    const fill = rig.fill.preset === "night" ? environments.nightCinematic : rig.fill.preset === "neutral" ? environments.neutral : environments.studio;
+    const intensity = overrides?.environmentIntensity ?? rig.fill.intensity;
     // `lookFill` lets the scene drop the fill when it authors an ambient light (lookFill.ts).
-    children.push({ ...fill({ name: `look fill ${v0.fill.preset}`, intensity: v0.fill.intensity }).toJSON(), lookFill: true } as AuraSceneNode);
+    children.push({ ...fill({ name: `look fill ${rig.fill.preset}`, intensity }).toJSON(), lookFill: true } as AuraSceneNode);
   }
   children.push(
     lights.directional({
       name: "look key light",
-      position: v0.key.position,
-      intensity: v0.key.intensity,
-      color: v0.key.color,
-      shadow: true
+      position: rig.key.position,
+      intensity: rig.key.intensity,
+      color: rig.key.color,
+      shadow: rig.key.shadow
     }).toJSON()
   );
-  if (v0.rim) {
+  if (rig.rim) {
     children.push(
       lights.directional({
         name: "look rim light",
-        position: v0.rim.position,
-        intensity: v0.rim.intensity,
-        color: overrides?.accent ?? v0.rim.color
+        position: rig.rim.position,
+        intensity: rig.rim.intensity,
+        color: rig.rim.color
       }).toJSON()
     );
   }
-  if (v0.fog && (overrides?.fogDensityScale ?? 1) > 0) {
+  if (rig.fog && (overrides?.fogDensityScale ?? 1) > 0) {
+    const height = rig.fog.height;
     children.push(
       effects.fog({
         name: "look fog",
-        color: v0.fog.color,
+        // C-21 height-fog fields ride on the node (compiler/fog.ts resolves them under A3D_QR_VFX_FOG).
+        ...(height !== undefined ? { ...height, mode: height.mode ?? "height" } : {}),
+        color: rig.fog.color,
         // Base density derived from the preset range; fogDensityScale applies on top.
-        density: 24 / Math.max(v0.fog.far, 1)
+        density: height?.density ?? 24 / Math.max(rig.fog.far, 1),
+        ...(rig.fog.range ? { near: rig.fog.near, far: rig.fog.far } : {})
       }).toJSON()
     );
   }
-  if (v0.effects.includes("colorGrade")) {
+  if (rig.effects.includes("colorGrade")) {
     // `lookGrade` lets an authored grade next to the look take precedence field by field (lookGrade.ts).
+    const grade = effects.colorGrade({
+      name: "look color grade",
+      contrast: rig.grade.contrast,
+      saturation: rig.grade.saturation,
+      exposure: Math.pow(2, overrides?.exposureEv ?? 0)
+    }).toJSON();
     children.push({
-      ...effects.colorGrade({
-        name: "look color grade",
-        contrast: v0.grade.contrast,
-        saturation: v0.grade.saturation,
-        exposure: Math.pow(2, overrides?.exposureEv ?? 0)
-      }).toJSON(),
+      // temperature/tint/lut: GU47(E-C) the v2 grade writer reads them; effects.colorGrade does not copy them yet.
+      ...withAuthoredFields(grade, { temperature: rig.grade.temperature, tint: rig.grade.tint, lut: rig.grade.lut }),
       lookGrade: true
     } as AuraSceneNode);
   }
-  if (v0.effects.includes("ambientOcclusion")) {
+  if (rig.effects.includes("ambientOcclusion")) {
     children.push(effects.ambientOcclusion({ name: "look ambient occlusion" }).toJSON());
   }
-  if (v0.effects.includes("bloom")) {
-    children.push(
-      effects.bloom({ name: "look bloom", ...(overrides?.accent ? { color: overrides.accent } : {}) }).toJSON()
-    );
+  if (rig.effects.includes("bloom") && rig.bloom !== false) {
+    const bloom = rig.bloom;
+    const color = bloom?.color ?? overrides?.accent;
+    const node = effects.bloom({
+      name: "look bloom",
+      ...(color ? { color } : {}),
+      ...(bloom?.intensity !== undefined ? { intensity: bloom.intensity } : {}),
+      ...(bloom?.threshold !== undefined ? { threshold: bloom.threshold } : {}),
+      ...(bloom?.scatter !== undefined ? { scatter: bloom.scatter } : {})
+    }).toJSON();
+    // knee/clampLuminance are v2 bloom fields effects.bloom does not copy (GU47(E-C)).
+    children.push(withAuthoredFields(node, { knee: bloom?.knee, clampLuminance: bloom?.clampLuminance }));
   }
+  if (rig.outputPreset !== undefined) children.push(lookOutputPresetNode(rig.outputPreset));
   // "antiAlias-msaa" is a renderer setting, not a node — it flows through
   // looks.appOptions().renderer, never as an authored fxaa node.
   return children;
@@ -533,6 +678,35 @@ export function expandLookChildren(
   flags: QrFlags = resolveFlags()
 ): readonly AuraSceneNode[] {
   return v0Children(describeOrThrow(id), clampLookOverrides(overrides), flags);
+}
+
+/**
+ * GU47 E-A: the post preset the last look in `nodes` declares through its `output.preset` child (v0 `aura-look:<id>`
+ * groups at any depth and v1 `look` nodes), or undefined. GU47(E-C): the post pipeline applies it when the app authors
+ * no `output.preset`.
+ */
+export function lookOutputPreset(nodes: readonly AuraSceneNode[]): AuraPostPresetId | undefined {
+  let found: AuraPostPresetId | undefined;
+  const visit = (list: readonly AuraSceneNode[]): void => {
+    for (const node of list) {
+      const raw = node as unknown as {
+        readonly kind?: string;
+        readonly look?: AuraLookId;
+        readonly overrides?: AuraLookOverrides;
+        readonly children?: readonly AuraSceneNode[];
+        readonly output?: { readonly preset?: AuraPostPresetId };
+        readonly lookOutput?: boolean;
+      };
+      if (raw.kind === "look" && typeof raw.look === "string" && Object.prototype.hasOwnProperty.call(lookPresets, raw.look)) {
+        visit(expandLookChildren(raw.look, raw.overrides));
+      } else if (raw.kind === "group") {
+        if (raw.lookOutput === true && raw.output?.preset !== undefined) found = raw.output.preset;
+        visit(raw.children ?? []);
+      }
+    }
+  };
+  visit(nodes);
+  return found;
 }
 
 function presetImpl(
