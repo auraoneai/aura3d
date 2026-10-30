@@ -16,6 +16,7 @@ import type { ResolvedLook } from "./colorScript";
 export const WISP_INTERVAL = 0.12;
 export const AIR_INTERVAL = 0.3;
 export const RAIN_INTERVAL = 0.08;
+export const MIST_INTERVAL = 0.2;
 export const RAIN_BURSTS = 8;
 export const LIGHTNING_WINDOW = 5.5;
 export const FLASH_SECONDS = 0.04;
@@ -24,7 +25,7 @@ export const FLASH_EXPOSURE = 0.7;
 export const PETAL_STAGES: ReadonlySet<number> = new Set([0, 7]);
 export const EMBER_STAGES: ReadonlySet<number> = new Set([2, 3]);
 
-export type AmbientKind = "serpent-wisp" | "serpent-petals" | "serpent-embers" | "serpent-rain" | "serpent-lightning";
+export type AmbientKind = "serpent-wisp" | "serpent-petals" | "serpent-embers" | "serpent-rain" | "serpent-lightning" | "serpent-mist";
 
 /** A spawn in the road frame of the runner: `rel` metres ahead, `lateral` metres right, `up` metres above the road. */
 export interface AmbientSpawn {
@@ -36,7 +37,7 @@ export interface AmbientSpawn {
 
 export interface AmbientInput {
   readonly S: Pick<RunState, "phase" | "time" | "wind">;
-  readonly look: Pick<ResolvedLook, "stageIndex" | "storm">;
+  readonly look: Pick<ResolvedLook, "stageIndex" | "storm"> & { readonly mist?: number };
   readonly time: number;
   readonly dt: number;
   readonly fast: boolean;
@@ -72,7 +73,7 @@ export const strikeOffset = (w: number): number => 0.4 + 4 * hash01(w);
 export const gustOf = (S: Pick<RunState, "time" | "wind">): number => Math.sin(0.9 * S.time) * Math.sin(2.3 * S.time + 1.1) * S.wind;
 
 export function createAmbientFx(): AmbientFx {
-  const clocks = { wisp: 0, air: 0, rain: 0 };
+  const clocks = { wisp: 0, air: 0, rain: 0, mist: 0 };
   let n = 0;
   let strikes = 0;
   let lastWindow = -1;
@@ -102,6 +103,12 @@ export function createAmbientFx(): AmbientFx {
       const airKind: AmbientKind | null = PETAL_STAGES.has(look.stageIndex) ? "serpent-petals" : EMBER_STAGES.has(look.stageIndex) ? "serpent-embers" : null;
       if (live && airKind) for (let i = 0; i < air; i++) {
         spawns.push({ kind: airKind, rel: 8 + 30 * r(), lateral: (r() - 0.5) * 22, up: airKind === "serpent-petals" ? 4 + 5 * r() : 0.5 + r() });
+      }
+
+      // SSR-17: THE DROWSE's low mist drifting over the road
+      const mist = tick("mist", MIST_INTERVAL);
+      if (live && (look.mist ?? 0) > 0.5) for (let i = 0; i < mist; i++) {
+        spawns.push({ kind: "serpent-mist", rel: 6 + 40 * r(), lateral: (r() - 0.5) * 16, up: 0.3 + 0.5 * r() });
       }
 
       const raining = live && look.storm > 0.5;

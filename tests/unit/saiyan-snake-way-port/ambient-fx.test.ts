@@ -61,3 +61,27 @@ describe("serpentine-sky-run ambient weather and air (SSR-13)", () => {
     expect(serpentVfxPresets()["serpent-rain"].name).toBe("serpent-rain");
   });
 });
+
+describe("serpentine-sky-run set pieces (SSR-17)", () => {
+  it("drifts mist over the road only at THE DROWSE and cracks the plates only at THE BROKEN SPINE", async () => {
+    expect(run(2, { look: { stageIndex: 6, storm: 0, mist: 1 } }).kinds["serpent-mist"]).toBeGreaterThan(5);
+    expect(run(2, { look: { stageIndex: 5, storm: 1, mist: 0 } }).kinds["serpent-mist"]).toBeUndefined();
+    const { lookAt } = await import("../../../examples/saiyan-snake-way-port/art/colorScript");
+    const { createLookDriver } = await import("../../../examples/saiyan-snake-way-port/art/lookRuntime");
+    const writes = new Map<string, unknown>();
+    const driver = createLookDriver({}, (id) => ({ setUniform: (n: string, v: unknown) => { writes.set(`${id}.${n}`, v); } }));
+    const frame = { forward: [0, 0, -1] as const, time: 0, reducedMotion: false };
+    driver.apply(lookAt(0, { mode: "script", pinnedStage: 5 }), frame);
+    expect(writes.get("road.roadCrack")).toBe(1);
+    driver.apply(lookAt(0, { mode: "script", pinnedStage: 4 }), frame);
+    expect(writes.get("road.roadCrack")).toBe(0);
+  });
+
+  it("keeps the soul column to one instanced node shown near its stage", async () => {
+    const { SOUL_COLUMN } = await import("../../../examples/saiyan-snake-way-port/world");
+    const { STAGES } = await import("../../../examples/saiyan-snake-way-port/sim");
+    expect(SOUL_COLUMN.s).toBeGreaterThan(STAGES[2]!.from);
+    expect(SOUL_COLUMN.s).toBeLessThan(STAGES[3]!.from);
+    expect(SOUL_COLUMN.count).toBeLessThanOrEqual(40);
+  });
+});

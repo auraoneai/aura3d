@@ -23,11 +23,12 @@ export type SerpentVfxKind =
   | "serpent-wisp"
   | "serpent-petals"
   | "serpent-embers"
-  | "serpent-rain";
+  | "serpent-rain"
+  | "serpent-mist";
 
 export const SERPENT_VFX_KINDS: readonly SerpentVfxKind[] = [
   "serpent-orb", "serpent-power", "serpent-pearl-chips", "serpent-cloud-puff", "serpent-surge", "serpent-hit", "serpent-soul", "serpent-lightning",
-  "serpent-wisp", "serpent-petals", "serpent-embers", "serpent-rain"
+  "serpent-wisp", "serpent-petals", "serpent-embers", "serpent-rain", "serpent-mist"
 ];
 
 /** Pack colours (sRGB hex). */
@@ -42,7 +43,8 @@ export const SERPENT_VFX_COLORS = {
   wisp: "#fff4ec",
   petal: "#ffb4c0",
   ember: "#ffa040",
-  rain: "#c8d4f0"
+  rain: "#c8d4f0",
+  mist: "#8a96c8"
 } as const;
 
 /** Live-particle ceiling for a dense moment on High (art direction tiers.high.particles). */
@@ -143,7 +145,13 @@ export function serpentVfxPresets(options: SerpentVfxOptions = {}): Readonly<Rec
         { type: "emitter", preset: "spark-fire", count: n(3), speed: [0.6, 1.6], life: [1.4, 2.2], gravity: 1.2, size: [0.04, 0.08], color: c.ember, intensity: 2.2, sprite: "soft-dot", additive: true, direction: [0, 1, 0], spread: 0.5, maxScreen: 0.02 }
       ]
     },
-    "serpent-rain": serpentRainPreset(options.rainDirection, options.reducedMotion)
+    "serpent-rain": serpentRainPreset(options.rainDirection, options.reducedMotion),
+    "serpent-mist": {
+      name: "serpent-mist",
+      layers: [
+        { type: "emitter", preset: "dust", count: n(2), speed: [0.1, 0.4], life: [2.2, 3.2], gravity: 0, size: [2.4, 3.6], color: c.mist, intensity: 0.7, sprite: "smoke-a", additive: false, drag: 1, maxScreen: 0.25 }
+      ]
+    }
   };
 }
 

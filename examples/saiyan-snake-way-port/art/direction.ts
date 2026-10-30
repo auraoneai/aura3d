@@ -65,6 +65,7 @@ export default defineArtDirection({
     { event: "petal-drift", kind: "serpent-petals" },
     { event: "ember-drift", kind: "serpent-embers" },
     { event: "storm-rain", kind: "serpent-rain" },
+    { event: "drowse-mist", kind: "serpent-mist" },
     { event: "surge-and-flight", kind: "trail" }
   ],
   audio: [

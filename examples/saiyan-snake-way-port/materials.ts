@@ -116,6 +116,8 @@ export const roadSpec = (): CustomSpec => ({
     /** Road distance `s` of the next missing plate and the 0..1 strength of its edge warning (hud.ts `gapAhead`). */
     gapAt: { type: "f32", value: -1e6 },
     gapWarn: { type: "f32", value: 0 },
+    /** GU47 SSR-17: 0..1 cracked-plate glow (THE BROKEN SPINE; colour script `storm`). */
+    roadCrack: { type: "f32", value: 0 },
     ...lookUniforms(),
     /** GU47 SSR-08 per-stage scale tints (rose row by default; used only when lookMode is 1) and the spine wave clock. */
     roadPearl: { type: "color3", value: [...linearOf(STAGE_LOOK[0]!.road.pearl)] },

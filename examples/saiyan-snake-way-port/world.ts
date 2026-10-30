@@ -100,6 +100,12 @@ export const ISLAND_BANDS = [
   { id: "islands-mid", count: 12, spacing: 120, lateral: [70, 130], up: [8, 40], radius: [9, 16], height: [22, 40], fog: 0.25 },
   { id: "islands-far", count: 18, spacing: 110, lateral: [180, 320], up: [20, 90], radius: [18, 34], height: [45, 90], fog: 0.55 }
 ] as const;
+/**
+ * GU47 SSR-17: TRAFFIC's soul column, souls spiralling up from the cloud sea beside the road (one instanced glow draw),
+ * shown while it is within `SOUL_COLUMN.show` m ahead.
+ */
+export const SOUL_COLUMN = { s: 2150, lateral: -70, count: 36, height: 140, radius: 7, show: 900 } as const;
+
 /** GU47 SSR-11: SDF stage boards hung over the road at each stage boundary (shown within this many metres ahead). */
 export const BOARD_SHOW_AHEAD = 520;
 export const BOARD_HEIGHT = 9;
@@ -426,6 +432,7 @@ export function buildWorld(options: WorldOptions = {}): World {
       builder.add(primitives.box({ name: board.id, size: [width, 3.2, 0.3], material: material.custom(solidSpec(hexLinear(0x1c1640), hexLinear(0xf2b33d), 0.08)) }).position(at[0], at[1], at[2]).rotate(e[0], e[1], e[2]).runtime({ id: board.id }));
       builder.add(text3D(board.text, { name: `${board.id}-text`, size: 1.5, depth: 0.05, letterSpacing: 0.06, backend: "sdf", material: material.emissive({ color: "#f2b33d", emissive: "#f2b33d", emissiveIntensity: 1.2 }) }).position(faceAt[0], faceAt[1], faceAt[2]).rotate(e[0], e[1], e[2]).runtime({ id: `${board.id}-text` }));
     }
+    builder.add(instances.sphere({ name: "soul-column", size: 1.3, transforms: hidden(SOUL_COLUMN.count), material: material.custom(glowInstancedSpec(hexLinear(PALETTE.spirit), hexLinear(PALETTE.bone), 0.85, 1, 0, 1.6)) }).runtime({ id: "soul-column" }));
     for (const band of ISLAND_BANDS) {
       builder.add(instances.cone({ name: band.id, params: { radius: 1, height: 1, radialSegments: 7 }, transforms: hidden(band.count), colors: Array.from({ length: band.count }, () => "#ffffff"), material: material.custom(islandInstancedSpec()) }).runtime({ id: band.id }));
     }
@@ -519,6 +526,7 @@ export function buildWorld(options: WorldOptions = {}): World {
       /* GU47 SSR-11: verge buffers */
       const flagBuf = script ? { data: new Float32Array(VERGE_POSTS * FLAGS_PER_SPAN * 16), rgba: new Float32Array(VERGE_POSTS * FLAGS_PER_SPAN * 4) } : null;
       const lampBuf = script ? new Float32Array(VERGE_POSTS * 16) : null;
+      const soulBuf = script ? new Float32Array(SOUL_COLUMN.count * 16) : null;
       const islandBufs = script ? ISLAND_BANDS.map((b) => ({ band: b, data: new Float32Array(b.count * 16), rgba: new Float32Array(b.count * 4) })) : [];
       /* GU47 SSR-18: per-frame instance buffers (allocated once; `count` instances written each frame) */
       const instBuffers = new Map<string, { data: Float32Array; rgba: Float32Array; count: number }>();
@@ -778,6 +786,26 @@ export function buildWorld(options: WorldOptions = {}): World {
             const near = sOut > board.s - BOARD_SHOW_AHEAD && sOut < board.s + 20 && S.leg === "out";
             show(board.id, near);
             show(`${board.id}-text`, near);
+          }
+        }
+
+        /* GU47 SSR-17: the soul column (souls rise and spiral; slowed on reduced motion) */
+        if (soulBuf) {
+          const sOut = lookDistance(S.s, S.leg);
+          const near = S.leg === "out" && sOut > SOUL_COLUMN.s - SOUL_COLUMN.show && sOut < SOUL_COLUMN.s + 60;
+          const h = show("soul-column", near) as Partial<ReturnType<typeof node>>;
+          if (near) {
+            const cf = frameAt(samples, SOUL_COLUMN.s);
+            const clock = reducedMotion ? time * 0.3 : time;
+            for (let i = 0; i < SOUL_COLUMN.count; i++) {
+              const ph = mod(i / SOUL_COLUMN.count + clock * 0.03, 1);
+              const a = i * 2.39996 + clock * 0.4;
+              const r = SOUL_COLUMN.radius * (0.6 + 0.4 * Math.sin(i * 1.7));
+              const p = onRoad(cf, SOUL_COLUMN.lateral + Math.cos(a) * r, -30 + ph * SOUL_COLUMN.height);
+              const q: V3 = [p[0] + cf.F[0] * Math.sin(a) * r, p[1] + cf.F[1] * Math.sin(a) * r, p[2] + cf.F[2] * Math.sin(a) * r];
+              writeMatrix(soulBuf, i * 16, frameBasis(cf), q, 0.6 + 0.8 * Math.sin(Math.PI * ph));
+            }
+            h.setInstanceMatrices?.(soulBuf, SOUL_COLUMN.count);
           }
         }
 

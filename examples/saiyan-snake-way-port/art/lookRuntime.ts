@@ -116,6 +116,7 @@ export function createLookDriver(app: LookAppLike, node: (id: string) => LookNod
       uniform("road", "roadJade", look.jade);
       uniform("road", "roadSpine", look.spine);
       uniform("road", "roadBelly", look.belly);
+      uniform("road", "roadCrack", look.storm, 5e-3);
       node("road")?.setUniform?.("roadTime", clock);
       writes++;
 

@@ -377,6 +377,11 @@ void main() {
   float wave = 0.55 + 0.45 * sin(s * 0.18 - roadTime * 5.0);
   col = mix(col, roadSpine * (1.2 + 0.9 * wave), spine * 0.9);
 
+  // GU47 SSR-17: THE BROKEN SPINE's cracked plates: thin coral-gold veins glowing through some of the top plates
+  float cracked = step(0.58, fbm(floor(g) * 0.37 + 7.3)) * top * detail * roadCrack * lookMode;
+  float vein = 1.0 - smoothstep(0.0, 0.05 + fwm * 1.5, abs(n2(g * 2.3 + 1.7) - 0.5));
+  col += mix(vec3(1.0, 0.48, 0.42), roadSpine, 0.5) * vein * cracked * (1.1 + 0.5 * wave);
+
   // gap telegraph: the edges of the 30 m of road before the next missing plate glow warm while gapWarn is up
   float ahead = gapAt - s;
   float edge = smoothstep(2.6, 3.5, abs(vCross.x)) * top;

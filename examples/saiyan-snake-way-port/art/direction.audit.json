@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/saiyan-snake-way-port/art/direction.ts",
-  "sourceSha256": "1c3a13f98eb01a3d4be4349116325153328068cd19b5af736f93a817a6a587aa",
+  "sourceSha256": "edb81f854f62a920db284c6cc134b795f1ee82b4c59c4f69303bd64c1127819f",
   "id": "serpentine-sky-run-port",
   "genre": "platformer",
   "signatureEffect": "Stage colour script on a scaled serpent road: eight evening looks blended along pearl-and-jade scales with a pulsing gold spine.",
@@ -282,6 +282,10 @@
       {
         "event": "storm-rain",
         "kind": "serpent-rain"
+      },
+      {
+        "event": "drowse-mist",
+        "kind": "serpent-mist"
       },
       {
         "event": "surge-and-flight",
