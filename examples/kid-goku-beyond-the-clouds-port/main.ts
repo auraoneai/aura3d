@@ -9,6 +9,7 @@
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, texture, type AuraApp } from "@aura3d/engine";
 import { hudThemeFontFaces, registerGameFonts, warmPrograms } from "@aura3d/engine/game";
 import { ACTIVE_LOOK } from "./art/look";
+import { cumulusCrops } from "./art/qa";
 import { CUMULUS_RIDGE } from "./chapter";
 import { Game, type Difficulty } from "./game";
 import { createGoPresenter, viewOf } from "./presentation";
@@ -252,6 +253,8 @@ const qa = installQaHooks("cumulus-dash", {
       return btoa(bin);
     },
     stats: () => runtime?.stats ?? null,
+    /** GU47 crop contract: named 0..1 rects re-read at every shot (the hero box follows the camera). */
+    crops: () => cumulusCrops(runtime ? runtime.view : null),
     /** CD-15: preset pack registration, fired presets, glider trail and the engine's live particle count. */
     vfx: () => runtime?.vfx() ?? null,
     /** CD-09: post effects switched by the tier plan (god rays High/Ultra only). */
