@@ -38,9 +38,10 @@ import {
 import { createOrbitPresenter, viewOf } from "./presentation";
 import { staticColliders } from "./obstacles";
 import { setActiveCourse } from "./track";
-import { buildWorld, type WorldRuntime } from "./world";
+import { GOUACHE_LIVERIES, buildWorld, type WorldRuntime } from "./world";
 import { lookFromSearch } from "./art/look";
 import { barsWanted } from "./art/director";
+import { mountOrbitHud } from "./art/hud";
 
 const params = new URLSearchParams(location.search);
 const num = (key: string, fallback: number): number => {
@@ -312,7 +313,22 @@ function updateHud(dt: number): void {
     ? raceOrder(race).map((r) => `<li class="${r.id === 0 ? "you" : ""}"><span>${r.place}</span><span>${r.name === "YOU" ? "You" : r.name[0] + r.name.slice(1).toLowerCase()}</span><span>${r.gap}</span></li>`).join("")
     : "";
   if (rows !== shownOrder) { hud.order.innerHTML = rows; shownOrder = rows; }
+  if (gouacheHud) {
+    const order = race.rivals.length ? raceOrder(race) : [];
+    const mine = order.findIndex((r) => r.id === 0);
+    const ahead = mine > 0 ? order[mine - 1] : undefined;
+    gouacheHud.update({
+      s: race.s,
+      speedKmh: race.speed * 3.6,
+      energy: race.energy,
+      gapAhead: ahead ? Math.max(0, ahead.s - race.s) : null,
+      riders: [{ s: race.s, color: RIDERS[config.rider]!.color, you: true }, ...(race.mode === "trial" ? [] : race.rivals.map((r, i) => ({ s: r.s, color: GOUACHE_LIVERIES[i]!, you: false })))]
+    });
+  }
 }
+
+/** SO47-H1: the gouache HUD additions (arc, sector chip, gap, orbit minimap); not mounted on `?look=original`. */
+const gouacheHud = config.look === "gouache" ? mountOrbitHud(panels.hud) : null;
 
 let shownNotice = "";
 let shownOrder = "";
