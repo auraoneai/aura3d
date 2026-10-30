@@ -16,6 +16,7 @@ import {
   material,
   primitives,
   sky,
+  type AuraCustomPostPass,
   type AuraMaterialSpec,
   type AuraTransformSpec,
   type AuraVfxBuiltinSequence,
@@ -50,6 +51,7 @@ export const dioramaName = {
   shafts: "pbl-sun-shafts",
   lensFlare: "pbl-sun-flare",
   aurora: "pbl-aurora",
+  heatShimmer: "pbl-heat-shimmer",
   flora: (layer: string) => `pbl-flora-${layer}`
 } as const;
 
@@ -375,6 +377,42 @@ export function auroraNode(spec: WorldSpec, look: WorldLook, scale: Presentation
     sway: 0.8 * scale.motion,
     shimmer: 0.5 * scale.motion
   }).position((b.minX + b.maxX) / 2, b.topY + 7, b.minZ - 16);
+}
+
+/**
+ * PBL-V3 (w4) heat-shimmer fragment. The engine prelude supplies `u_color`, `u_texelSize`,
+ * `u_time` and `v_uv` (bottom-left origin). The ripple is a sum of two slow sines,
+ * displaced by at most `u_pixels` px, full at the bottom of the frame (the lava cellar
+ * floor) and gone above `u_band`; colour is only resampled, never added, so the frame
+ * mean barely moves.
+ */
+export const HEAT_SHIMMER_GLSL = /* glsl */ `
+uniform float u_pixels;
+uniform float u_band;
+uniform float u_speed;
+void main() {
+  float w = 1.0 - smoothstep(0.0, u_band, v_uv.y);
+  float t = u_time * u_speed;
+  float dx = sin(v_uv.y * 92.0 - t * 3.1) * 0.6 + sin(v_uv.y * 171.0 + v_uv.x * 29.0 - t * 4.7) * 0.4;
+  float dy = sin(v_uv.x * 63.0 + t * 2.3) * 0.35;
+  vec2 offset = vec2(dx, dy) * w * u_pixels * u_texelSize;
+  vec4 c = texture(u_color, clamp(v_uv + offset, vec2(0.0), vec2(1.0)));
+  outColor = c;
+}`;
+
+/**
+ * PBL-V3 (w4): the heat-shimmer post pass for `app.post.addPostPass`, or null. Off under
+ * reduced motion (a moving screen distortion is exactly what PRD 6.3 removes) and on the
+ * Low tier (one extra full-screen pass the budget does not pay for there).
+ */
+export function heatShimmerPass(look: WorldLook, scale: PresentationScale, lowTier = false): AuraCustomPostPass | null {
+  if (!look.heatShimmer || scale.motion < 1 || lowTier) return null;
+  return effects.shaderPass({
+    name: dioramaName.heatShimmer,
+    order: "after-bloom",
+    glsl: HEAT_SHIMMER_GLSL,
+    uniforms: { u_pixels: look.heatShimmer.pixels, u_band: look.heatShimmer.band, u_speed: look.heatShimmer.speed }
+  });
 }
 
 // ---------------------------------------------------------------- PBL-W1 flora dressing

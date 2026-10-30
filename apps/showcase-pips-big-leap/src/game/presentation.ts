@@ -11,6 +11,7 @@
 
 import { camera, type AuraApp, type AuraCameraSequencePlayback, type AuraVec3 } from "@aura3d/engine";
 import { focusDistanceFor, heightFogFor, miniatureFramingFor, presentationScale, type PipLookMode, type PresentationScale } from "./looks.js";
+import { heatShimmerPass } from "./diorama.js";
 import { createPipVfx, registerPipVfx, type PipEffectsLike, type PipVfxController } from "./vfx.js";
 import type { PlayerEvent } from "./player.js";
 import type { MoveState, WorldId } from "./types.js";
@@ -41,6 +42,8 @@ export interface PresentationOptions {
   readonly reducedMotion: boolean;
   readonly heroNode: string;
   readonly gateRingNode: string;
+  /** Low quality tier: drops the w4 heat-shimmer pass (PBL-V3). No public tier read yet, so main passes nothing. */
+  readonly lowTier?: boolean;
 }
 
 export interface QaCrop {
@@ -146,7 +149,7 @@ export function flyoverRail(built: BuiltWorld): { readonly points: readonly Aura
 
 interface AppSlice {
   readonly effects?: AuraApp["effects"];
-  readonly post?: AuraApp["post"];
+  readonly post?: Partial<Pick<NonNullable<AuraApp["post"]>, "setEffect" | "addPostPass">>;
   readonly atmosphere?: AuraApp["atmosphere"];
   readonly camera?: AuraApp["camera"];
   setOutput?: AuraApp["setOutput"];
@@ -167,7 +170,8 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
   let wasGrounded = true;
   let kick: "glide" | "dive" | null = null;
   let mountedWorld: WorldId | null = null;
-  const counts = { mounted: 0, flyovers: 0, gateCuts: 0, focusWrites: 0, flickerWrites: 0 };
+  let removeShimmer: (() => void) | null = null;
+  const counts = { mounted: 0, flyovers: 0, gateCuts: 0, focusWrites: 0, flickerWrites: 0, shimmerPasses: 0 };
 
   const ensureVfx = (): PipVfxController | null => {
     if (!diorama || !fx || typeof fx.burst !== "function") return null;
@@ -219,6 +223,14 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
         } catch {
           // A stub atmosphere (flag off) keeps the authored fog node.
         }
+      }
+      // PBL-V3: the w4 heat-shimmer pass lives only while w4 is mounted.
+      removeShimmer?.();
+      removeShimmer = null;
+      const shimmer = heatShimmerPass(look, scale, options.lowTier === true);
+      if (shimmer && typeof app.post?.addPostPass === "function") {
+        removeShimmer = app.post.addPostPass(shimmer);
+        counts.shimmerPasses += 1;
       }
       ensureVfx()?.stopTrails();
       focus = -1;
@@ -375,6 +387,7 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
         vfxFired: vfx ? { ...vfx.fired } : null,
         liveCount: fx?.liveCount ?? 0,
         cameraSequence: playback !== null,
+        heatShimmer: removeShimmer !== null,
         ...counts
       };
     }

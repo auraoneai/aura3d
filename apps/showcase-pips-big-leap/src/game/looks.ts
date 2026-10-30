@@ -89,6 +89,11 @@ export interface WorldLook {
   readonly shafts?: { readonly density: number; readonly intensity: number; readonly color: string };
   /** PBL-V3 (w6): an aurora curtain hung behind the far end of the night garden. */
   readonly aurora?: { readonly color: string; readonly colorTop: string; readonly intensity: number };
+  /**
+   * PBL-V3 (w4): heat shimmer over the lava cellar, a screen-space ripple of at most
+   * `pixels` px that is strongest at the bottom of the frame and gone above `band`.
+   */
+  readonly heatShimmer?: { readonly pixels: number; readonly band: number; readonly speed: number };
   /** Land-dust felt colour for the VFX pack (PBL-V1). */
   readonly dust: string;
 }
@@ -248,6 +253,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
       { name: "pbl-lava-glow-c", type: "point", position: [-2.6, 1.7, -40], color: "#ff5a22", intensity: 12, distance: 7, flicker: 0.3 },
       { name: "pbl-lava-glow-d", type: "point", position: [2.6, 1.7, -40], color: "#ff8a3a", intensity: 12, distance: 7, flicker: 0.3 }
     ],
+    heatShimmer: { pixels: 1.6, band: 0.55, speed: 1 },
     dust: "#5a4038"
   },
   w5: {
