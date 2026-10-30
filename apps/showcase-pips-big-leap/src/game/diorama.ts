@@ -49,6 +49,7 @@ export const dioramaName = {
   dof: "pbl-miniature-dof",
   shafts: "pbl-sun-shafts",
   lensFlare: "pbl-sun-flare",
+  aurora: "pbl-aurora",
   flora: (layer: string) => `pbl-flora-${layer}`
 } as const;
 
@@ -354,6 +355,26 @@ export function sunShaftsNode(look: WorldLook): DioramaNode | null {
     intensity: look.shafts.intensity,
     godRayDensity: look.shafts.density
   });
+}
+
+/**
+ * PBL-V3 (w6): one aurora curtain hung high behind the far end of the course (one draw).
+ * Reduced motion keeps it but cuts its sway and shimmer to 30%.
+ */
+export function auroraNode(spec: WorldSpec, look: WorldLook, scale: PresentationScale): DioramaNode | null {
+  if (!look.aurora) return null;
+  const b = courseBounds(spec);
+  return effects.auroraRibbon({
+    name: dioramaName.aurora,
+    color: look.aurora.color,
+    colorTop: look.aurora.colorTop,
+    intensity: look.aurora.intensity,
+    width: 46,
+    height: 7,
+    segments: 64,
+    sway: 0.8 * scale.motion,
+    shimmer: 0.5 * scale.motion
+  }).position((b.minX + b.maxX) / 2, b.topY + 7, b.minZ - 16);
 }
 
 // ---------------------------------------------------------------- PBL-W1 flora dressing

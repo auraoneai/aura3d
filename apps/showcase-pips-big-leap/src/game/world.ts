@@ -26,6 +26,7 @@ import {
   SLAB_RADIUS,
   SURFACES,
   ambientEmitterNode,
+  auroraNode,
   dioramaBase,
   floraLayers,
   floraNodes,
@@ -412,6 +413,8 @@ function addDioramaAtmosphere(builder: SceneBuilder, spec: WorldSpec, look: Worl
   if (flare) builder.add(flare);
   const sky = skyNode(look);
   if (sky) builder.add(sky);
+  const aurora = auroraNode(spec, look, scale);
+  if (aurora) builder.add(aurora);
   builder.add(effects.contactShadows({ intensity: 0.75, length: 0.3 }));
   for (const node of base.nodes) builder.add(node);
   builder.add(vignetteNode(look));

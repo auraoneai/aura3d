@@ -87,6 +87,8 @@ export interface WorldLook {
   readonly lensFlare?: { readonly intensity: number };
   /** PBL-P3 sun shafts (w1, w2, w5): S4 god rays with their own march density (E-C `godRayDensity`). */
   readonly shafts?: { readonly density: number; readonly intensity: number; readonly color: string };
+  /** PBL-V3 (w6): an aurora curtain hung behind the far end of the night garden. */
+  readonly aurora?: { readonly color: string; readonly colorTop: string; readonly intensity: number };
   /** Land-dust felt colour for the VFX pack (PBL-V1). */
   readonly dust: string;
 }
@@ -290,6 +292,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
       { name: "pbl-crystal-glow-b", type: "point", position: [-4.6, 3.3, -21], color: "#7af0ff", intensity: 8, distance: 6, flicker: 0.12 },
       { name: "pbl-crystal-glow-c", type: "point", position: [4.6, 4.4, -42], color: "#5fd8ff", intensity: 8, distance: 6, flicker: 0.12 }
     ],
+    aurora: { color: "#5fe8c0", colorTop: "#7a6ad8", intensity: 0.55 },
     dust: "#5a6a9a"
   }
 };

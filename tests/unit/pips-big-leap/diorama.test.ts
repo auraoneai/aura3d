@@ -96,6 +96,13 @@ describe("pips-big-leap diorama scene", () => {
     for (const id of ["academy", "w1", "w4", "w5"] as const) expect(skyOf(id)).toBeUndefined();
   });
 
+  it("hangs the aurora curtain in the w6 night garden only (PBL-V3, aurora half)", () => {
+    for (const id of WORLD_IDS) {
+      const aurora = sceneOf(id).filter((n) => n.name === dioramaName.aurora);
+      expect(aurora.length, id).toBe(id === "w6" ? 1 : 0);
+    }
+  });
+
   it("mounts exactly one seeded ambient emitter per world that follows Pip, within 600 particles (PBL-E3)", () => {
     for (const id of WORLD_IDS) {
       const emitters = sceneOf(id).filter((n) => n.kind === "effect" && n.effect === "particles");
