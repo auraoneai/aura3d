@@ -32,6 +32,7 @@ import type { ChapterDef } from "./levels";
 import { chapterLook, sunDirection, type ChapterLook } from "./look";
 import { beachDressing } from "./dressing";
 import { islandSurface } from "../art/surfaces";
+import { levelSignNodes } from "./sign";
 
 // ----------------------------------------------------------------- pools --
 
@@ -499,6 +500,8 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
 
   // SS47-W1: seeded instanced beach dressing (5 draws), clear of the flight lane; wind bends the sea grass.
   nodes.push(...beachDressingNodes(row, options), ...chapterWeather(row, options));
+  // SS47-H1: the wooden level sign with the chapter name in SDF text (+3 draws).
+  nodes.push(...levelSignNodes(chapter.id));
 
   // Stylized chapter rocks: the photoreal GLBs keep their silhouettes but get
   // flat palette-derived materials so they read as the same art style as the fort.

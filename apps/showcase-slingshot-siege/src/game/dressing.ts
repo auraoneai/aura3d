@@ -25,7 +25,9 @@ export const LANE_X: readonly [number, number] = [-9.5, 11];
 export const DRESSING_KEEP_OUT: readonly (readonly [number, number, number])[] = [
   [-7.4, 0, 2.2], [7.2, 0, 3.6], [-12.4, 4.2, 1.6], [9.8, -2.4, 1.8], [4.2, -3.2, 1.4], [0.2, -2.4, 1.6], [5.2, 2.1, 1.0],
   [-6.0, -5.4, 2.6], [9.4, -4.8, 2.8], [-11.6, -3.0, 1.6], [8.1, 2.9, 1.4],
-  [-10.2, -2.8, 0.8], [-5.0, -3.6, 0.8], [3.8, -3.8, 0.8], [10.8, -2.6, 0.8], [11.6, 2.2, 0.8]
+  [-10.2, -2.8, 0.8], [-5.0, -3.6, 0.8], [3.8, -3.8, 0.8], [10.8, -2.6, 0.8], [11.6, 2.2, 0.8],
+  // SS47-H1 wooden level sign (sign.ts SIGN_KEEP_OUT).
+  [-5.6, 3.2, 1.2]
 ];
 
 /** Mulberry32: the same seed gives the same layout on every machine. */

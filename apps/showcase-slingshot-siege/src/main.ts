@@ -30,6 +30,7 @@ import {
 import { sanitizeRenderParams } from "./game/urlGuard";
 import { AMMO_TRAIL_COLOR, SIEGE_VFX, abilityPreset, breakPreset, registerSiegeVfx } from "./game/vfx";
 import { chapterLook } from "./game/look";
+import { SIGN_PARK, signTextNodeId, signTextPlacement } from "./game/sign";
 import {
   INTRO_SECONDS, QA_WORLD_BOXES, bandChanged, boxCorners, introEnabled, introShot, releaseKick, screenCrop, tiltShiftBand,
   type QaCrop, type TiltShiftBand
@@ -245,6 +246,16 @@ function assignPieceVisuals(): void {
   }
 }
 
+/** SS47-H1: the wooden sign shows the current chapter's name; the other chapter texts stay parked under the island. */
+function showLevelSign(chapterId: number): void {
+  for (const ch of CHAPTERS) {
+    const h = node(signTextNodeId(ch.id));
+    if (!h) continue;
+    if (ch.id === chapterId) h.setPosition(...signTextPlacement(ch.name.toUpperCase()).position).setVisible(true);
+    else h.setPosition(...SIGN_PARK).setVisible(false);
+  }
+}
+
 function loadLevel(id: number, opts: { announce?: boolean } = {}): void {
   // The Trajectory Range sandbox (id 99) is not a campaign level: levelById would clamp it to level 30.
   level = id === SANDBOX_LEVEL.id ? SANDBOX_LEVEL : levelById(id);
@@ -260,6 +271,7 @@ function loadLevel(id: number, opts: { announce?: boolean } = {}): void {
   hud.hideResult();
   hud.setPaused(false);
   paused = false;
+  showLevelSign(level.chapter);
   if (opts.announce !== false) {
     const ch = CHAPTERS[level.chapter]!;
     hud.showBanner(`${ch.name}`, `Level ${level.slot + 1} — ${level.name}`);
