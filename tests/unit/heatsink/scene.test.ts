@@ -4,7 +4,7 @@
 import { readFileSync, statSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { buildThermalDriftScene, INSTANCE_COUNTS, MODEL_NODE_COUNT } from "../../../apps/showcase-heatsink/src/scene";
-import { CIRCUITS } from "../../../apps/showcase-heatsink/src/data";
+import { CIRCUITS, DRONE_SPECS } from "../../../apps/showcase-heatsink/src/data";
 import { CIRCUIT_LOOKS } from "../../../apps/showcase-heatsink/src/look";
 import { assets, HEATSINK_ASSET_KEYS } from "../../../apps/showcase-heatsink/src/aura-assets";
 
@@ -94,6 +94,25 @@ describe("heatsink scene", () => {
     const castOf = (name: string) => models.find((m) => m.name === name)?.castShadow;
     for (const name of ["prop-tower-l-left", "prop-tower-t-left", "prop-tower-x-right", "prop-billboard-left", "prop-checkpoint-ring", "prop-lava-fall"]) expect(castOf(name), name).toBe(false);
     for (const name of ["prop-arch-a", "prop-tunnel-a", "prop-overpass", "prop-gantry-start", "drone-orion"]) expect(castOf(name), name).not.toBe(false);
+  });
+  it("tints every drone towards its DRONE_SPECS colour (hue within 20 deg) under a clearcoat, keeping its textures (HS-10)", () => {
+    const hue = (hex: string) => {
+      const n = Number.parseInt(hex.slice(1), 16);
+      const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => v / 255) as [number, number, number];
+      const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+      if (d === 0) return 0;
+      const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+      return (h * 60 + 360) % 360;
+    };
+    for (const id of Object.keys(DRONE_SPECS) as (keyof typeof DRONE_SPECS)[]) {
+      const node = nodes.find((n) => n.name === DRONE_SPECS[id].nodeId) as unknown as { materialOverrides?: { color: string; colorMode: string; clearcoat: number; replaceTextures?: boolean }[] };
+      const o = node.materialOverrides?.[0];
+      expect(o?.colorMode, id).toBe("multiply");
+      expect(o?.replaceTextures, id).not.toBe(true);
+      expect(o!.clearcoat, id).toBeGreaterThan(0.5);
+      const delta = Math.abs(hue(o!.color) - hue(DRONE_SPECS[id].color));
+      expect(Math.min(delta, 360 - delta), id).toBeLessThanOrEqual(20);
+    }
   });
   it("stays inside the route budget of 32 model nodes", () => {
     expect(nodes.filter((n) => n.kind === "model")).toHaveLength(MODEL_NODE_COUNT);

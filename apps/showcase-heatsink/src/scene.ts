@@ -10,7 +10,7 @@
  * HS-12: per-circuit post: warm bloom, grade (with the exposure), vignette, grain on MEGACITY only.
  * C13: about 150 repeated primitives become 9 instanced nodes; emissive decor casts no shadow.
  */
-import { AuraNodeBuilder, camera, effects, environments, instances, lights, material, model, primitives, scene, game, type AuraAssetRef, type AuraMaterialSpec, type AuraSceneNode } from "@aura3d/engine";
+import { AuraNodeBuilder, camera, effects, environments, instances, lights, material, model, primitives, scene, game, type AuraAssetRef, type AuraMaterialSpec, type AuraModelMaterialOverride, type AuraSceneNode } from "@aura3d/engine";
 import { ASPHALT_ROUGHNESS_MEAN, assets, HDRI_BY_ID, textures } from "./aura-assets";
 import { DRONE_ORDER, DRONE_SPECS, SCENERY_ANCHORS, type CircuitSpec } from "./data";
 import { CIRCUIT_LOOKS, rimPosition, sunPosition, type CircuitLook } from "./look";
@@ -259,11 +259,13 @@ export function buildThermalDriftScene(options: SceneOptions) {
       .position(0, -60, 0).rotate(Math.PI * 0.5, 0, 0).runtime(game.runtimeNode(IDS.incoming))
   ]);
 
-  // 1-7: the drones (one is the player, six stand in for the drawn rivals).
+  // 1-7: the drones (one is the player, six stand in for the drawn rivals). HS-10 interim: each grey GLB is tinted
+  // (multiply, textures kept) towards its DRONE_SPECS colour under a clearcoat lacquer until the wp36 livery retextures
+  // (with emissive nozzles) are admitted.
   for (const id of DRONE_ORDER) {
     const spec = DRONE_SPECS[id];
     s.add(
-      model(asset(spec.assetKey), { name: spec.nodeId, role: "primaryVehicle", scaleMode: "fit", targetMaxDimension: spec.maxDim })
+      model(asset(spec.assetKey), { name: spec.nodeId, role: "primaryVehicle", scaleMode: "fit", targetMaxDimension: spec.maxDim, materialOverrides: [droneLivery(spec.color)] })
         .position(0, 1.45, id === "orion" ? -0.4 : -24)
         .runtime(game.runtimeNode(spec.nodeId, id === "orion" ? { tags: ["primarySubject", "primaryVehicle", "player"] } : undefined))
     );
@@ -282,6 +284,18 @@ export function buildThermalDriftScene(options: SceneOptions) {
     );
   }
   return s;
+}
+
+/** sRGB mix of a hex colour towards white (keeps the hue, lifts the value so a multiply tint keeps texture detail). */
+export function liftTowardsWhite(hex: string, amount: number): string {
+  const n = Number.parseInt(hex.replace("#", ""), 16);
+  const ch = (shift: number) => Math.round(((n >> shift) & 255) + (255 - ((n >> shift) & 255)) * amount);
+  return `#${[ch(16), ch(8), ch(0)].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
+}
+
+/** HS-10 interim livery: DRONE_SPECS colour (lifted 30% towards white) multiplied over the authored maps, lacquered. */
+export function droneLivery(color: string): AuraModelMaterialOverride {
+  return { color: liftTowardsWhite(color, 0.3), colorMode: "multiply", clearcoat: 0.65, clearcoatRoughness: 0.16 };
 }
 
 /** HS-20: anchors drawn without a shadow caster (far side towers, emissive holo, checkpoint ring and lava curtain). */
