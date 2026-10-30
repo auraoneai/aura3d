@@ -1,0 +1,490 @@
+{
+  "schema": "aura3d.art-direction-audit/1",
+  "source": "examples/roadster-hours-port/art/direction.ts",
+  "sourceSha256": "b08d90334594c85c285386c8c0ef89e7ce4d68a89b7b231f8417d2211d8b7c94",
+  "id": "roadster-hours-port",
+  "genre": "racing",
+  "signatureEffect": "Crosswind salt spray: sheets of salt, sand or mist lift off the sea-side cliff base and blow across the highway with the route wind.",
+  "palette": {
+    "primary": [
+      "#e9e4d6",
+      "#12606e",
+      "#c9a25e"
+    ],
+    "accent": "#c8321f",
+    "reservedObjective": "#c8321f"
+  },
+  "environment": {
+    "hdri": "belfast_sunset_puresky",
+    "background": "sky"
+  },
+  "violations": [],
+  "snapshot": {
+    "lights": [
+      {
+        "type": "directional",
+        "shadow": true,
+        "intensity": 0.6
+      },
+      {
+        "type": "hemisphere",
+        "shadow": false,
+        "intensity": 0.45
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 6
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 6
+      }
+    ],
+    "hasAmbient": false,
+    "environment": {
+      "kind": "hdri",
+      "background": false
+    },
+    "models": [
+      {
+        "assetKey": "roadster",
+        "triangles": 37236,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "sedan",
+        "triangles": 3554,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hatch",
+        "triangles": 3012,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "suv",
+        "triangles": 3280,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pickup",
+        "triangles": 3423,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "bus",
+        "triangles": 4287,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "boxtruck",
+        "triangles": 3526,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "lighthouse",
+        "triangles": 5956,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "townhouse",
+        "triangles": 2610,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pine",
+        "triangles": 3808,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "villa",
+        "triangles": 3086,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "palm",
+        "triangles": 4083,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "boulders",
+        "triangles": 2573,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "semi",
+        "triangles": 5982,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "tanker",
+        "triangles": 5735,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
+    "materials": [
+      {
+        "node": "lamp-heads",
+        "emissiveIntensity": 2.4,
+        "practical": true
+      },
+      {
+        "node": "gate-posts",
+        "emissiveIntensity": 0.9,
+        "practical": true
+      },
+      {
+        "node": "cells",
+        "emissiveIntensity": 4.2,
+        "practical": true
+      },
+      {
+        "node": "vehicles-head",
+        "emissiveIntensity": 5,
+        "lightSource": true
+      },
+      {
+        "node": "vehicles-tail",
+        "emissiveIntensity": 4,
+        "lightSource": true
+      }
+    ],
+    "drawCalls": 0
+  },
+  "direction": {
+    "id": "roadster-hours-port",
+    "genre": "racing",
+    "fantasy": "A wind-scoured maritime road trip: salt haze, limestone cliffs and a teal Atlantic, from 4 pm to blue hour.",
+    "rebuildTier": "S-presentation",
+    "wave": 4,
+    "references": [
+      {
+        "file": "evidence/game-upgrades-47/roadster-hours-port/identity.md#references",
+        "source": "generic reference: Atlantic coast road photography in late-afternoon side light (limestone cliffs, surf lines, lighthouse)",
+        "licence": "reference-only",
+        "why": "Low side sun through salt haze: bleached limestone and ochre cliffs, a deep teal sea with white surf lines and a red-white lighthouse"
+      },
+      {
+        "file": "evidence/game-upgrades-47/roadster-hours-port/identity.md#references",
+        "source": "generic reference: desert canyon highway at last light with heat shimmer over the asphalt",
+        "licence": "reference-only",
+        "why": "A 7-degree orange sun with a violet rim on the far side, heat shimmer beyond 40 m and blown sand crossing the road"
+      },
+      {
+        "file": "evidence/game-upgrades-47/roadster-hours-port/identity.md#references",
+        "source": "generic reference: elevated city expressway photographed at blue hour from above the skyline",
+        "licence": "reference-only",
+        "why": "Indigo zenith with a pale city-glow band, a mercury-white and sea-glass city carpet below and sparse red aircraft beacons"
+      }
+    ],
+    "palette": {
+      "primary": [
+        "#e9e4d6",
+        "#12606e",
+        "#c9a25e"
+      ],
+      "accent": "#c8321f",
+      "reservedObjective": "#c8321f"
+    },
+    "lighting": {
+      "key": {
+        "type": "directional",
+        "colorTemperatureK": 4300,
+        "shadow": true
+      },
+      "fill": "ibl+bounce",
+      "practicals": 3,
+      "environment": {
+        "hdri": "belfast_sunset_puresky",
+        "background": "sky"
+      },
+      "exposureEV": 0
+    },
+    "framing": {
+      "rig": "chase",
+      "subjectHeightFraction": [
+        0.08,
+        0.2
+      ],
+      "fovDeg": [
+        56,
+        74
+      ],
+      "mobile": "both"
+    },
+    "assets": [
+      {
+        "role": "hero",
+        "assetKey": "roadster",
+        "maxTriangles": 60000,
+        "minTriangles": 20000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "sedan",
+        "maxTriangles": 8000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "hatch",
+        "maxTriangles": 8000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "suv",
+        "maxTriangles": 8000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "pickup",
+        "maxTriangles": 8000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "bus",
+        "maxTriangles": 8000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "boxtruck",
+        "maxTriangles": 8000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "semi",
+        "maxTriangles": 12000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "tanker",
+        "maxTriangles": 12000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "lighthouse",
+        "maxTriangles": 12000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "townhouse",
+        "maxTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "villa",
+        "maxTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "pine",
+        "maxTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "palm",
+        "maxTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "boulders",
+        "maxTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "sportsCar",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "baked-cc0-cars",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024
+      }
+    ],
+    "vfx": [
+      {
+        "event": "crosswind",
+        "kind": "spray-sheet"
+      },
+      {
+        "event": "launch",
+        "kind": "burst"
+      },
+      {
+        "event": "land",
+        "kind": "ring"
+      },
+      {
+        "event": "landingFlare",
+        "kind": "light"
+      },
+      {
+        "event": "scrape",
+        "kind": "sparks"
+      },
+      {
+        "event": "nitro",
+        "kind": "trail"
+      },
+      {
+        "event": "checkpoint",
+        "kind": "flare"
+      },
+      {
+        "event": "impact",
+        "kind": "burst"
+      },
+      {
+        "event": "cell",
+        "kind": "pickup"
+      },
+      {
+        "event": "recover",
+        "kind": "burst"
+      },
+      {
+        "event": "finish",
+        "kind": "burst"
+      },
+      {
+        "event": "drift",
+        "kind": "decal"
+      }
+    ],
+    "audio": [
+      {
+        "event": "engine",
+        "cue": "roadster-engine-loop",
+        "variants": 1
+      },
+      {
+        "event": "land",
+        "cue": "suspension-thump",
+        "variants": 3
+      },
+      {
+        "event": "checkpoint",
+        "cue": "relay-chime",
+        "variants": 1
+      },
+      {
+        "event": "nitro",
+        "cue": "nitro-burst",
+        "variants": 3
+      },
+      {
+        "event": "wind",
+        "cue": "coastal-wind-bed",
+        "variants": 1
+      }
+    ],
+    "signatureEffect": "Crosswind salt spray: sheets of salt, sand or mist lift off the sea-side cliff base and blow across the highway with the route wind.",
+    "criticalCategories": [
+      "atmospheric_effects",
+      "lighting",
+      "environment_world",
+      "vfx"
+    ],
+    "tiers": {
+      "low": {
+        "particles": 800,
+        "shadowMap": 1024,
+        "cascades": 1,
+        "textureMax": 1024
+      },
+      "medium": {
+        "particles": 1400,
+        "shadowMap": 2048,
+        "cascades": 2,
+        "textureMax": 1024
+      },
+      "high": {
+        "particles": 2000,
+        "shadowMap": 2048,
+        "cascades": 3,
+        "textureMax": 2048
+      },
+      "ultra": {
+        "particles": 2000,
+        "shadowMap": 4096,
+        "cascades": 3,
+        "textureMax": 2048
+      }
+    }
+  }
+}
