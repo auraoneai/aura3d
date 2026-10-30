@@ -29,6 +29,8 @@ import {
 } from "./game/stage";
 import { sanitizeRenderParams } from "./game/urlGuard";
 import { AMMO_TRAIL_COLOR, SIEGE_VFX, abilityPreset, breakPreset, registerSiegeVfx } from "./game/vfx";
+import { chapterLook } from "./game/look";
+import { QA_WORLD_BOXES, bandChanged, boxCorners, screenCrop, tiltShiftBand, type QaCrop, type TiltShiftBand } from "./game/presentation";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { installGameBeacon } from "@aura3d/engine/game";
 
@@ -921,6 +923,65 @@ function clearRuntimeVfx(): void {
   try { app.effects?.clear(); } catch { /* presentation only */ }
 }
 
+// --------------------------------------------------- miniature focus ----
+
+/** The chapter row the scene was built from (the look is chosen at boot from `?level=`). */
+const LOOK_ROW = chapterLook(chapter.id);
+let lastBand: TiltShiftBand | null = null;
+let qaCrops: readonly QaCrop[] = [];
+
+/** World box around the standing fort pieces (read-only over the sim), padded for block size. */
+function fortBox(): { min: [number, number, number]; max: [number, number, number] } | null {
+  let x0 = Infinity, y0 = Infinity, z0 = Infinity, x1 = -Infinity, y1 = -Infinity, z1 = -Infinity;
+  for (const p of sim.pieceList()) {
+    if (!p.alive) continue;
+    const q = p.body.position;
+    x0 = Math.min(x0, q[0]); y0 = Math.min(y0, q[1]); z0 = Math.min(z0, q[2]);
+    x1 = Math.max(x1, q[0]); y1 = Math.max(y1, q[1]); z1 = Math.max(z1, q[2]);
+  }
+  if (!Number.isFinite(x0)) return null;
+  const pad = 0.4;
+  return { min: [x0 - pad, Math.max(0, y0 - pad), z0 - pad], max: [x1 + pad, y1 + pad, z1 + pad] };
+}
+
+/**
+ * SS47-P1: retarget the signature tilt-shift band to hold the fort, the sling and the live shot, and publish the
+ * E-I QA crops (fort, sling, far headland, sand, sea) for the capture. Runs after the camera moved this frame.
+ */
+function updateMiniatureFocus(): void {
+  const w = stageEl.clientWidth || 1;
+  const h = stageEl.clientHeight || 1;
+  const project = (pts: readonly (readonly [number, number, number])[]) => pts.map((q) => projectWorld(q as [number, number, number]));
+  const fort = fortBox();
+  const fortPts = fort ? project(boxCorners(fort.min, fort.max)) : [];
+  const slingPts = project(boxCorners([SLING_REST[0] - 0.6, 0, -0.5], [SLING_REST[0] + 0.6, SLING_REST[1] + 0.4, 0.5]));
+  const ys: number[] = [];
+  for (const q of [...fortPts, ...slingPts]) if (!q.behind) ys.push(q.y / h);
+  const proj = sim.activeProjectile();
+  if (proj && !proj.dead) {
+    const q = projectWorld(proj.body.position as [number, number, number]);
+    if (!q.behind) ys.push(q.y / h);
+  }
+  const band = tiltShiftBand(ys, LOOK_ROW.dof.bandWidth);
+  if (bandChanged(lastBand, band)) {
+    lastBand = band;
+    try { app.post?.setEffect("depthOfField", { tiltShift: [band.bandCenter, band.bandWidth, 0] }); } catch { /* post is presentation only */ }
+  }
+  const crops: QaCrop[] = [];
+  const add = (c: QaCrop | null): void => { if (c) crops.push(c); };
+  add(screenCrop("fort", fortPts, w, h));
+  add(screenCrop("sling", slingPts, w, h));
+  add(screenCrop("far-headland", project(boxCorners(QA_WORLD_BOXES.farHeadland.min, QA_WORLD_BOXES.farHeadland.max)), w, h, 0));
+  add(screenCrop("sand", project(boxCorners(QA_WORLD_BOXES.sand.min, QA_WORLD_BOXES.sand.max)), w, h, 0));
+  add(screenCrop("sea", project(boxCorners(QA_WORLD_BOXES.sea.min, QA_WORLD_BOXES.sea.max)), w, h, 0));
+  qaCrops = crops;
+  const qaHost = window as unknown as { __AURA_QA__?: Record<string, unknown> };
+  const qa = (qaHost.__AURA_QA__ ??= {});
+  qa.crops = qaCrops;
+  qa.tiltShift = band;
+  qa.chapterLook = LOOK_ROW.chapter;
+}
+
 // ------------------------------------------------------------------ hud --
 
 const hud = new SiegeHud(document.getElementById("hud") ?? stageEl, {
@@ -1382,6 +1443,7 @@ gameApp.onFrame(({ dt }) => {
     syncSling(dt);
     updateCamera(dt, elapsed);
     refreshVp();
+    if (frames % 2 === 0) updateMiniatureFocus();
     if (frames % 4 === 0) refreshHud();
     if (frames % 10 === 0) publishEvidence();
   } catch (err) {
