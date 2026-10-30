@@ -26,3 +26,16 @@ neue-haas-grotesk-text-500.woff2 | Neue Haas Grotesk Text (500) | Linotype (Mono
 suisse-works-400.woff2 | Suisse Works (400) | Swiss Typefaces | serif/Suisse-Works/SuisseWorks.woff2 | 31228 | f9ac1fffba6406fea3b28b1851ef4f990217b5b366a5a6c7ac57d5d9da8f372d
 untitled-sans-400.woff2 | Untitled Sans (400) | Klim Type Foundry | sans/Untitled-Sans/UntitledSansWeb-Regular.woff2 | 34774 | efead66f84e3f9c14283eb68bfa5106d9bd6bd2d27fe08a15e6d5f4d7bfaae08
 untitled-sans-700.woff2 | Untitled Sans (700) | Klim Type Foundry | sans/Untitled-Sans/UntitledSansWeb-Bold.woff2 | 35394 | 585f25bfc44819261be778ce0390a52a3595c3319c28feff05627984cff1f2e4
+gt-walsheim-400.woff2 | GT Walsheim (400) | Grilli Type | sans/GT-Walsheim/GT-Walsheim-Regular.woff2 | 40000 | d5833892a75ef71b7fad7d1ca40d9ab88651fd8c80023476718dfd5d6fbbbeff
+canela-400.woff2 | Canela (400) | Commercial Type | display/Canela/Canela-Regular.woff2 | 31756 | c5db098e47f0113d6d8b75bdb3b216ad36918fc7156848754e4e2cf8b5fd847a
+suisse-works-italic-400.woff2 | Suisse Works Italic (400) | Swiss Typefaces | serif/Suisse-Works/SuisseWorks-Italic.woff2 | 32912 | f592f23c5527ffb35c6f2712126c9706fa6d0a72b3ccb427f6f30e87f07e45ff
+domaine-display-700.woff2 | Domaine Display (700) | Klim Type Foundry | display/Domaine/domaine-display-web-bold.woff2 | 40621 | c6d9dfb72b6e472ebeb203dd417881111857efcf360c8c782cccce0689434ada
+roobert-400.woff2 | Roobert (400) | Displaay Type Foundry | sans/Roobert/roobert-regular.woff2 | 28784 | 896c62dfc1bca14aa76c1b535aac1b7638e71c91a3dd96f3bd2b5593e41a4e8a
+roobert-700.woff2 | Roobert (700) | Displaay Type Foundry | sans/Roobert/roobert-bold.woff2 | 28640 | 4acdec158e34073fcca412cf3428e8327eef9a8c581b462540189895e8667061
+
+Notes:
+- suisse-works-italic-400.woff2 is the italic design registered as its own
+  family ("A3G Suisse Works Italic", style normal) so the ink-scroll theme can
+  set it without the HUD requesting font-style: italic.
+- domaine-display-700.woff2 carries the foundry's "Not Licensed for Desktop
+  Use" web marker: web self-hosting only, as above.

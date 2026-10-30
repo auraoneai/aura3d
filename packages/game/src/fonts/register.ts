@@ -3,8 +3,10 @@
  * `NOTICE.txt`) loaded through `FontFace` before the title screen shows.
  * `baseUrl` points at the directory the app serves its copies from (a game
  * copies the files it needs into its own app folder, e.g. `/fonts/`).
+ * Pass `hudThemeFontFaces(theme)` as `faces` to load only the files of the
+ * theme the game uses; the default loads every face in `HUD_FONT_FACES`.
  */
-import { HUD_FONT_FACES } from "../hud/themes.js";
+import { HUD_FONT_FACES, type HudFontFace } from "../hud/themes.js";
 
 export interface FontFaceLike {
   load(): Promise<unknown>;
@@ -17,12 +19,13 @@ export interface FontRegistry {
 
 export async function registerGameFonts(
   baseUrl: string,
-  registry: FontRegistry
+  registry: FontRegistry,
+  faces: readonly HudFontFace[] = HUD_FONT_FACES
 ): Promise<{ loaded: readonly string[]; failed: readonly string[] }> {
   const loaded: string[] = [];
   const failed: string[] = [];
   await Promise.all(
-    HUD_FONT_FACES.map(async ({ family, file, weight }) => {
+    faces.map(async ({ family, file, weight }) => {
       try {
         const face = new registry.FontFace(family, `url(${baseUrl}${file})`, {
           weight: String(weight),

@@ -1,6 +1,7 @@
 /* §7.7 theme "sci-fi-telemetry" — mirror of HUD_THEMES["sci-fi-telemetry"] in hud/themes.ts (runtime source of truth). */
 .a3g-hud.a3g-theme-sci-fi-telemetry {
   --a3g-font: "A3G Neue Haas Grotesk Text","Neue Haas Grotesk Text",Arial,sans-serif;
+  --a3g-font-display: "A3G Neue Haas Grotesk Text","Neue Haas Grotesk Text",Arial,sans-serif;
   --a3g-fg: #c9ffe8;
   --a3g-fg-dim: #6fbf9d;
   --a3g-accent: #00ff9f;

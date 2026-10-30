@@ -172,7 +172,7 @@ export type { SfxId, SfxPack } from "./sfx";
 
 // PRD-09 Phase 4 — HUD surface (§7.7, §17).
 export { mountHud } from "./hud/HudKit.js";
-export { HUD_THEMES, HUD_FONT_FACES } from "./hud/themes.js";
+export { HUD_THEMES, HUD_FONT_FACES, hudThemeFontFaces } from "./hud/themes.js";
 export { screenFraction } from "./hud/screenFraction.js";
 export { compassBearing, compassRotationDeg, updateCompass } from "./hud/compass.js";
 export type { CompassPoint, CompassNeedle } from "./hud/compass.js";
@@ -187,7 +187,7 @@ export type {
   HudKitDeps,
   Vec3Like as HudVec3Like
 } from "./hud/HudKit.js";
-export type { HudThemePreset, HudThemeVars } from "./hud/themes.js";
+export type { HudThemePreset, HudThemeVars, HudFontFace } from "./hud/themes.js";
 export type {
   HudAnchor,
   HudWidgetBase,

@@ -1,0 +1,15 @@
+/* §7.7 theme "storybook" — mirror of HUD_THEMES["storybook"] in hud/themes.ts (runtime source of truth). */
+.a3g-hud.a3g-theme-storybook {
+  --a3g-font: "A3G GT Walsheim","GT Walsheim",Arial,sans-serif;
+  --a3g-font-display: "A3G Canela","Canela",Georgia,serif;
+  --a3g-fg: #3d2a17;
+  --a3g-fg-dim: #6b4f30;
+  --a3g-accent: #c8432f;
+  --a3g-accent2: #4f7a3a;
+  --a3g-warn: #8a4508;
+  --a3g-danger: #a8241c;
+  --a3g-bg: rgba(247,236,212,0.92);
+  --a3g-edge: rgba(107,79,48,0.45);
+  --a3g-glow: 0 2px 0 rgba(61,42,23,0.35);
+  --a3g-radius: 14px;
+}

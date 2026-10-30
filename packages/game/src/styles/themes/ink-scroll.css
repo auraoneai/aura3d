@@ -1,0 +1,15 @@
+/* §7.7 theme "ink-scroll" — mirror of HUD_THEMES["ink-scroll"] in hud/themes.ts (runtime source of truth). */
+.a3g-hud.a3g-theme-ink-scroll {
+  --a3g-font: "A3G Suisse Works Italic","Suisse Works",Georgia,serif;
+  --a3g-font-display: "A3G Domaine Display","Domaine Display",Georgia,serif;
+  --a3g-fg: #1f1d24;
+  --a3g-fg-dim: #524f5b;
+  --a3g-accent: #c23b22;
+  --a3g-accent2: #2b3550;
+  --a3g-warn: #874610;
+  --a3g-danger: #9e1b1b;
+  --a3g-bg: rgba(237,230,214,0.94);
+  --a3g-edge: rgba(31,29,36,0.6);
+  --a3g-glow: 0 1px 0 rgba(31,29,36,0.45);
+  --a3g-radius: 2px;
+}
