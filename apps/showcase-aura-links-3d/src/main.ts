@@ -94,6 +94,7 @@ import { COURSE_LOOKS, contactShadowIntensity, courseFill, flagFlutterAmplitude,
 import { buildCourseRig } from "./game/lookRig";
 import { landingVfxFor, registerLinksVfx, type LinksVfxId } from "./game/vfx";
 import { IMPACT_FOV_KICK_DEG, cupCamPose, flyoverAllowed, flyoverShots, tracerCamPose, wantsCupCam, wantsTracerCam } from "./game/broadcast";
+import { linksQaCrops } from "./game/qaCrops";
 import { clubForShot, planShot, puttRange, type ShotPlan } from "./game/autopilot";
 import {
   bracketRows,
@@ -2958,6 +2959,33 @@ function installQaHook(): void {
 }
 let qaPondView: { x: number; z: number; y: number; r: number } | null = null;
 
+/**
+ * GU47 LINKS-19 / E-I crop contract: `window.__AURA_QA__.crops` (read by the steady-state capture at every shot, so it
+ * is published on every boot, not only under ?qa=1): golfer, ball, turf, rough, green, ponds (lava on Cinder Rim) and
+ * the sky band, re-projected from the live camera pose (game/qaCrops.ts).
+ */
+function publishQaCrops(): void {
+  const w = window as any;
+  w.__AURA_QA__ = Object.assign(w.__AURA_QA__ ?? {}, {
+    crops: () => {
+      const t = state.terrain;
+      const r = state.round;
+      if (!t || !r) return [];
+      const canvas = document.querySelector("#app canvas") as HTMLCanvasElement | null;
+      const aspect = canvas && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : (window.innerWidth || 16) / (window.innerHeight || 9);
+      const ball = state.ball ? state.ball.pos : r.ballPos;
+      return linksQaCrops({ eye: cam.eye, target: cam.target, fov: cam.fov, aspect }, {
+        ball,
+        cup: t.cup,
+        aimYaw: aimYaw(),
+        fairwayHalfWidth: state.hole.layout.fairwayWidth / 2,
+        height: (x, z) => t.height(x, z),
+        ponds: state.hole.layout.water.map((p) => ({ center: p.center, radius: p.radius, y: pondGeometry(t, p).surfaceY }))
+      });
+    }
+  });
+}
+
 /* ------------------------------------------------------------------ *
  *  Boot                                                               *
  * ------------------------------------------------------------------ */
@@ -3020,6 +3048,7 @@ function boot(): void {
   // LINKS-12: the broadcast depth of field starts off (only the flyover and the cup cam turn it on); a tap skips the flyover
   setBroadcastDof(false);
   window.addEventListener("pointerdown", () => skipFlyover());
+  publishQaCrops();
 
   bootStage("audio");
   setupAudio();
