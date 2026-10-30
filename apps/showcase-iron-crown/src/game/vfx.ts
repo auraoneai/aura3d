@@ -18,8 +18,9 @@
  * motion halves every count (PRD §6.3); reduced flash drops every light layer and the impact flash (PRD §6.3); Low tier
  * halves the counts again (PRD §6.4). The worst case of all live presets stays far under the 2,000-particle budget.
  */
-import type { AuraVfxEffectSpec } from "@aura3d/engine";
+import type { AuraVec3, AuraVfxEffectSpec } from "@aura3d/engine";
 import { MOLTEN_GOLD } from "./look";
+import type { StageId } from "./stages";
 
 export type IronCrownVfxKind =
   | "ic-forge-spark"
@@ -161,4 +162,57 @@ export function installIronCrownVfx(effects: EffectsLike | undefined, comfort: V
   for (const [kind, spec] of Object.entries(ironCrownVfxPresets(comfort))) effects.registerPreset(kind, spec);
   effects.runtime = vfxParam === "off" ? "off" : "on";
   return effects.runtime === "on";
+}
+
+/** A venue's ambient emitter (IC47-V2): one preset fired at a fixed cadence, cycling through its spawn points. */
+export interface AmbientEmitter {
+  readonly kind: IronCrownVfxKind;
+  /** Seconds between bursts at full motion (reduced motion doubles it). */
+  readonly interval: number;
+  readonly points: readonly AuraVec3[];
+}
+
+/**
+ * Ambient emitters per venue: embers off the Crown's corner braziers (y 2.0 is the bowl at targetMaxDimension 2.2),
+ * motes off the Dock's lanterns, dust gusts across the Colosseum sand. Neo-Tokyo and the Monastery carry rain and snow
+ * volumes instead; the Airstrip's heat shimmer is a post pass (not shipped by the engine yet).
+ */
+export const AMBIENT_EMITTERS: Readonly<Record<StageId, readonly AmbientEmitter[]>> = {
+  "crown-arena": [{ kind: "ic-forge-embers", interval: 0.55, points: [[-3.5, 2.0, -1.65], [3.5, 2.0, -1.65]] }],
+  "neo-tokyo-rooftop": [],
+  "bangkok-dock": [{ kind: "ic-lantern-motes", interval: 0.8, points: [[-3.1, 1.7, -1.4], [3.1, 1.7, -1.4]] }],
+  "colosseum-ruins": [{ kind: "ic-dust-devil", interval: 2.4, points: [[-6.5, 0.15, -3.2], [5.5, 0.15, -4.6], [-1.5, 0.15, -6]] }],
+  "desert-airbase": [],
+  "himalayan-monastery": []
+};
+
+/**
+ * The ambient clock: `step(dt, fire)` calls `fire(kind, point)` whenever an emitter is due. Allocation-free per frame;
+ * the cadence (not the count, which the preset table already halves) slows down on reduced motion.
+ */
+export function createAmbientVfx(emitters: readonly AmbientEmitter[], comfort: Pick<VfxComfort, "reducedMotion">) {
+  const timers = emitters.map(() => 0);
+  const cursors = emitters.map(() => 0);
+  const slow = comfort.reducedMotion ? 2 : 1;
+  return {
+    step(dt: number, fire: (kind: IronCrownVfxKind, at: AuraVec3) => void): void {
+      for (let i = 0; i < emitters.length; i += 1) {
+        const emitter = emitters[i]!;
+        timers[i]! += Math.max(0, dt);
+        const interval = emitter.interval * slow;
+        if (timers[i]! < interval || emitter.points.length === 0) continue;
+        timers[i]! -= interval;
+        if (timers[i]! > interval) timers[i] = 0; // a long hitch never fires a backlog
+        fire(emitter.kind, emitter.points[cursors[i]! % emitter.points.length]!);
+        cursors[i]! += 1;
+      }
+    }
+  };
+}
+
+/** Steady-state live particles of a venue's ambient emitters (count x life / interval), for the 2,000 budget. */
+export function ambientLiveParticles(emitters: readonly AmbientEmitter[], comfort: VfxComfort): number {
+  const presets = ironCrownVfxPresets(comfort);
+  const slow = comfort.reducedMotion ? 2 : 1;
+  return emitters.reduce((sum, e) => sum + (presetParticles(presets[e.kind]) * presetLifeSeconds(presets[e.kind])) / (e.interval * slow), 0);
 }

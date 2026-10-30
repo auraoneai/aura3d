@@ -67,7 +67,7 @@ import { DEFAULT_STAGE, stageById, type IronStage, type StageId } from "./game/s
 import { buildArenaScene } from "./game/arena";
 import { cinematicShot, createCinematicClock, letterboxWanted } from "./game/cinematics";
 import { backRimPose, FOLLOW_SPOT_ID, followSpotPose, LETTERBOX_BAR, poseDirection, RIM_IDS, stageLook, type SpotPose } from "./game/look";
-import { installIronCrownVfx, type IronCrownVfxKind } from "./game/vfx";
+import { AMBIENT_EMITTERS, createAmbientVfx, installIronCrownVfx, type IronCrownVfxKind } from "./game/vfx";
 import { advanceLadder, createLadder, currentRung, type LadderState } from "./game/ladder";
 import { createHud, type MenuId, type ModeId } from "./game/hud";
 import "./styles.css";
@@ -325,6 +325,8 @@ const app = fightingGame.app;
 // `?vfx=off` turns them off. Reduced motion halves the counts, reduced flash drops the flash lights (game/vfx.ts).
 const vfxComfort = { reducedMotion, reducedFlash, lowTier };
 const vfxLive = installIronCrownVfx(app.effects, vfxComfort, params.get("vfx"));
+/** IC47-V2: the venue's ambient embers, motes or dust (one-shot bursts on a fixed cadence; reset per bout). */
+let ambientVfx = createAmbientVfx(AMBIENT_EMITTERS[DEFAULT_STAGE], vfxComfort);
 fightingGame.start();
 const input = fightingGame.input as GameInputController;
 if (!input) throw new Error("Iron Crown: createGame failed to create runtime-owned input.");
@@ -645,6 +647,7 @@ async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<voi
   newBout(config);
   playStageAmbience(config.stage.id);
   currentStageId = config.stage.id;
+  ambientVfx = createAmbientVfx(AMBIENT_EMITTERS[config.stage.id], vfxComfort);
   studioSelection.fighter = config.p1.id;
   const sig = arenaSignature(config);
   if (sig !== mountedArenaSig) {
@@ -1200,6 +1203,9 @@ function endRound(winner: "p1" | "cpu" | "draw"): void {
     state.phaseT = 0;
     const p1Won = award.p1Won;
     void fightingGame.sound?.cue(p1Won ? "win" : "lose");
+    // IC47-V2: gold confetti over the winner on the hero shot.
+    const champ = p1Won ? P1 : CPU;
+    fxBurst("ic-win-confetti", [champ.body.position[0], champ.body.position[1] + 2.4, 0]);
     hud.announce(p1Won ? "YOU WIN" : "YOU LOSE", state.config.mode === "ladder" ? "the crown waits" : "", "hold");
     boutResultTimer.schedule(() => {
       if (state.phase === "boutEnd") showBoutResult(p1Won);
@@ -1595,6 +1601,7 @@ app.onFrame(({ dt }) => {
   }
   frameCount += 1;
   elapsedMs += dt * 1000;
+  ambientVfx.step(dt, (kind, at) => fxBurst(kind, at));
   if (freezeMs !== null && elapsedMs >= freezeMs) {
     frozenByQuery = true;
     const pSnap = actorSnap("player");
