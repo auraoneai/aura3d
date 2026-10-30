@@ -1,12 +1,13 @@
-import { games, material, model, primitives, type AuraSceneNode } from "@aura3d/engine";
+import { games, material, model, primitives, type AuraLookId, type AuraSceneNode } from "@aura3d/engine";
 import { stageAssets } from "./stage-assets";
 import { assets } from "../aura-assets";
+import { stageLook } from "./look";
 
 /**
  * IRON CROWN venues.
  *
  * Each stage composes three layers:
- *  1. a biome `looks.preset` (world/lighting/fog/post)
+ *  1. its own look row (look.ts STAGE_LOOKS: HDRI, time of day, key, fog, post, grade; GU47 WP-15)
  *  2. a `games.fighting.stagePreset` build (fight lane, floor, combat bounds)
  *     re-paletted per venue
  *  3. bespoke 3D GLB dressing nodes — all parked behind the fight plane (z <= -1.1)
@@ -36,11 +37,11 @@ export interface IronStage {
   readonly id: StageId;
   readonly label: string;
   readonly venue: string;
-  readonly lookId: "night-city" | "golden-hour" | "outdoor-day" | "overcast" | "alpine-snow" | "arena-fight";
-  readonly lookOverrides?: { readonly accent?: string; readonly exposureEv?: number; readonly fogDensityScale?: number };
+  /** The look preset of the venue's row in look.ts (its overrides live there too). */
+  readonly lookId: AuraLookId;
   readonly preset: PresetName;
   readonly palette: StagePalette;
-  /** Rim-light accent (the fight-lane "aura" colour). */
+  /** The venue's one accent (look.ts STAGE_LOOKS[id].accent). */
   readonly accent: string;
   readonly stage: ReturnType<typeof games.fighting.stagePreset>;
   readonly issues: readonly { readonly severity: string; readonly code: string; readonly message: string }[];
@@ -111,7 +112,9 @@ function buildArenaFloorDeck(id: StageId, palette: StagePalette): readonly AuraS
             emissive: trimColor,
             emissiveIntensity: isCombatEdge ? 0.42 : 0.18,
             roughness: 0.28,
-            metallic: 0.65
+            metallic: 0.65,
+            // Inlaid light strip: a practical, not fill (art-direction `emissive-fill` rule).
+            practical: true
           })
         })
         .position(0, -0.012, z)
@@ -130,7 +133,8 @@ function buildArenaFloorDeck(id: StageId, palette: StagePalette): readonly AuraS
             emissive: palette.warning,
             emissiveIntensity: 0.25,
             roughness: 0.3,
-            metallic: 0.62
+            metallic: 0.62,
+            practical: true
           })
         })
         .position(side * 3.9, -0.01, 0)
@@ -269,11 +273,9 @@ function makeStage(
   id: StageId,
   label: string,
   venue: string,
-  lookId: IronStage["lookId"],
   preset: PresetName,
   palette: StagePalette,
-  dressing: readonly AuraSceneNode[],
-  lookOverrides?: IronStage["lookOverrides"]
+  dressing: readonly AuraSceneNode[]
 ): IronStage {
   const stage = games.fighting.stagePreset(preset, {
     id,
@@ -282,15 +284,15 @@ function makeStage(
     safeInset: 0.5,
     palette
   });
+  const look = stageLook(id);
   return {
     id,
     label,
     venue,
-    lookId,
-    lookOverrides,
+    lookId: look.look,
     preset,
     palette,
-    accent: palette.aura,
+    accent: look.accent,
     stage,
     issues: games.fighting.validateStage(stage).map((issue) => ({
       severity: issue.severity,
@@ -308,8 +310,7 @@ function makeStage(
 const NEO_TOKYO = makeStage(
   "neo-tokyo-rooftop",
   "Neo-Tokyo Rooftop",
-  "Shinjuku ward · night",
-  "night-city",
+  "Shinjuku ward · midnight rain",
   "rooftop-city",
   { floor: "#0d1119", lane: "#ff5cbe", aura: "#6ee7ff", warning: "#ffd166", skyline: "#141c33", fog: "#060a14" },
   [
@@ -324,8 +325,7 @@ const NEO_TOKYO = makeStage(
     modelProp(stageAssets.neonStreetLampProp, "nt-lamp-l", [-3.2, 0, -1.4], 2.2, 0),
     modelProp(stageAssets.neonStreetLampProp, "nt-lamp-r", [3.2, 0, -1.4], 2.2, Math.PI),
     modelProp(stageAssets.auraClashStageSpeakerTowerMeshy, "nt-speaker-c", [0, 0, -2.9], 2.5, 0)
-  ],
-  { accent: "#ff5cbe", exposureEv: 0.05, fogDensityScale: 0.9 }
+  ]
 );
 
 /* ------------------------------------------------------------------ */
@@ -334,8 +334,7 @@ const NEO_TOKYO = makeStage(
 const BANGKOK = makeStage(
   "bangkok-dock",
   "Lantern Dock Market",
-  "Stilt pier · golden hour",
-  "golden-hour",
+  "Stilt pier · dusk over water",
   "training-grid",
   { floor: "#241a12", lane: "#ffab4d", aura: "#ffe08a", warning: "#ff6b4a", skyline: "#3a2418", fog: "#1c1008" },
   [
@@ -348,8 +347,7 @@ const BANGKOK = makeStage(
     modelProp(stageAssets.auraClashCornerBrazierPylonMeshy, "bk-lan-r", [3.1, 0, -1.4], 1.9, 0),
     modelProp(stageAssets.gullsiegeCrateMeshy, "bk-crate-l", [-1.5, 0, -1.45], 0.85, 0.4),
     modelProp(stageAssets.gullsiegeBarrelMeshy, "bk-barrel-r", [1.5, 0, -1.45], 0.8, -0.3)
-  ],
-  { accent: "#ffab4d", exposureEv: 0.1, fogDensityScale: 0.55 }
+  ]
 );
 
 /* ------------------------------------------------------------------ */
@@ -358,8 +356,7 @@ const BANGKOK = makeStage(
 const COLOSSEUM = makeStage(
   "colosseum-ruins",
   "Colosseum Ruins",
-  "Rome · midday dust",
-  "outdoor-day",
+  "Rome · harsh-noon dust",
   "industrial-arena",
   { floor: "#3a2f22", lane: "#e8c98a", aura: "#ffe9b0", warning: "#c86a3a", skyline: "#6b5636", fog: "#caa66a" },
   [
@@ -372,8 +369,7 @@ const COLOSSEUM = makeStage(
     modelProp(stageAssets.galleryMarbleBustExhibitMeshy, "co-bust-r", [1.6, 0, -1.55], 1.45, -0.35),
     modelProp(stageAssets.propBoulder, "co-rubble-l", [-2.9, 0, -1.45], 1.1, 0.5),
     modelProp(stageAssets.propRockA, "co-rubble-r", [2.9, 0, -1.45], 1.0, -0.4)
-  ],
-  { accent: "#e8c98a", exposureEv: 0.14, fogDensityScale: 0.4 }
+  ]
 );
 
 /* ------------------------------------------------------------------ */
@@ -382,8 +378,7 @@ const COLOSSEUM = makeStage(
 const AIRBASE = makeStage(
   "desert-airbase",
   "Dustline Airstrip",
-  "Salt flat range · dusk ops",
-  "overcast",
+  "Salt flat range · sunset haze",
   "industrial-arena",
   { floor: "#2b2620", lane: "#ffb03c", aura: "#ffe08a", warning: "#ff5c3c", skyline: "#54402a", fog: "#241a10" },
   [
@@ -395,8 +390,7 @@ const AIRBASE = makeStage(
     modelProp(stageAssets.bunkerCrateMeshy, "ab-crate-1", [2.5, 0, -1.5], 0.95, 0.3),
     modelProp(stageAssets.auroraPadBeacon, "ab-light-l", [-3.5, 0, -1.25], 0.9, 0),
     modelProp(stageAssets.auroraPadBeacon, "ab-light-r", [3.5, 0, -1.25], 0.9, 0)
-  ],
-  { accent: "#ffb03c", exposureEv: 0.02, fogDensityScale: 0.5 }
+  ]
 );
 
 /* ------------------------------------------------------------------ */
@@ -405,8 +399,7 @@ const AIRBASE = makeStage(
 const MONASTERY = makeStage(
   "himalayan-monastery",
   "Cloudstep Monastery",
-  "High pass · thin air",
-  "alpine-snow",
+  "High pass · cold dawn snow",
   "training-grid",
   { floor: "#1c2230", lane: "#7dd7ff", aura: "#bfeaff", warning: "#ffb84d", skyline: "#2c3a55", fog: "#0d1420" },
   [
@@ -419,8 +412,7 @@ const MONASTERY = makeStage(
     modelProp(stageAssets.propPineTree, "mo-pine-r", [4.3, 0, -2.6], 3.2, -0.2),
     modelProp(stageAssets.propBoulder, "mo-peak-l", [-3.5, 0, -4.4], 2.8, 0.3),
     modelProp(stageAssets.propBoulder, "mo-peak-r", [3.5, 0, -4.4], 2.6, -0.3)
-  ],
-  { accent: "#7dd7ff", exposureEv: 0.1, fogDensityScale: 0.75 }
+  ]
 );
 
 
@@ -600,8 +592,7 @@ const CROWN_PALETTE: StagePalette = { floor: "#241421", lane: "#ffd76a", aura: "
 const CROWN = makeStage(
   "crown-arena",
   "Crown Arena",
-  "The throne · final venue",
-  "arena-fight",
+  "The throne · forge-smoke night",
   "neon-dojo",
   CROWN_PALETTE,
   [
@@ -624,8 +615,7 @@ const CROWN = makeStage(
     ...buildTrophyCabinets(),
     modelProp(stageAssets.auraClashStageSpeakerTowerMeshy, "cr-speaker-l", [-4.9, 0, -2.2], 2.5, 0.35),
     modelProp(stageAssets.auraClashStageSpeakerTowerMeshy, "cr-speaker-r", [4.9, 0, -2.2], 2.5, -0.35)
-  ],
-  { accent: "#ffd76a", exposureEv: 0.08, fogDensityScale: 0.7 }
+  ]
 );
 
 
