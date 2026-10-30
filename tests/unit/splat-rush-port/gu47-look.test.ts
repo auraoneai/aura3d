@@ -177,7 +177,7 @@ describe("GU47 reduced motion (PRD §6.3)", () => {
 
 describe("GU47 CR-W1: festival bunting", () => {
   it("one bunting batch in carnival only; pennants stay >= 25 dE from every gate colour", () => {
-    const names = (look: SplatLook) => withDocument(() => (buildWorld({ sim: new SplatRushSim(1), aspect: 1.6, look }).scene.toJSON().nodes as { name?: string }[]).map((n) => n.name));
+    const names = (look: SplatLook) => withDocument(() => (buildWorld({ sim: new SplatRushSim(1), aspect: 1.6, look }).scene.toJSON().nodes as unknown as { name?: string }[]).map((n) => n.name));
     expect(names(LOOKS.carnival).filter((n) => n === "bunting")).toHaveLength(1);
     expect(names(LOOKS.original)).not.toContain("bunting");
     const rgb = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
