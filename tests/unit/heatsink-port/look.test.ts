@@ -149,4 +149,11 @@ describe("heatsink-port spores (IC-20)", () => {
     expect(og.shadows).toBeUndefined();
     expect(og.temperature).toBeUndefined();
   });
+
+  it("IC-07 sun flare on twilight High only", () => {
+    const has = (q: string, quality: "high" | "low" = "high") => nodes(q, quality).some((n) => n.name === "sun-flare");
+    expect(has("")).toBe(true);
+    expect(has("", "low")).toBe(false);
+    expect(has("?look=original")).toBe(false);
+  });
 });

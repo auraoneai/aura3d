@@ -46,7 +46,8 @@
         "IC-02 moving points (2, 1 on Low)": "0 draws; 2 punctual lights in the forward pass of lit GLBs",
         "IC-21 arch chase, pickup pulse": 0,
         "IC-22 camera direction": 0,
-        "IC-23 HUD": "DOM only"
+        "IC-23 HUD": "DOM only",
+        "IC-07 lens flare": 4
       }
     },
     "original": {

@@ -22,7 +22,7 @@ import { Operation, STRIKE } from "./operation";
 import { seededRandom } from "./rng";
 import { Track, type Frame } from "./track";
 import type { HudValues } from "./hud";
-import { lookFromSearch, lowTier, type HeatsinkLookRow } from "./art/look";
+import { lookFromSearch, lowTier, SHADER_SUN_DIR, type HeatsinkLookRow } from "./art/look";
 
 type Scene = ReturnType<typeof scene>;
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
@@ -308,8 +308,22 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   if (look.post.grain !== null) b.add(effects.filmGrain({ name: "film grain", intensity: look.post.grain }));
   if (look.post.godRays !== null) b.add(effects.volumetricFog({ name: "god rays", density: 0.08, intensity: look.post.godRays, color: "#ffb7a0", godRayDensity: look.post.godRays }));
 
+  /* IC-07 sun lens flare, kept on the shader sun's direction from the eye each frame (twilight High only; frustum occlusion) */
+  if (look.post.lensFlare !== null) {
+    b.add(lights.lensFlare({ name: "sun-flare", position: [...SUN_FLARE_OFFSET], intensity: look.post.lensFlare, edgeFade: 0.25, runtime: { id: "sun-flare" }, elements: [
+      { size: 380, distance: 0, color: "#ffb07a" }, { size: 60, distance: 0.45, color: "#ff5ab4" }, { size: 90, distance: 0.7, color: "#9f8cff" }, { size: 40, distance: 1, color: "#40e0ff" }
+    ] }));
+  }
+
   return { scene: b, track, look, bind: (app) => bindRuntime(app, track, POINTS, look) };
 }
+
+/** IC-07: the flare source sits this far along the shader sun from the eye (inside the 4200 m far plane) */
+const SUN_FLARE_DISTANCE = 2000;
+const SUN_FLARE_OFFSET = ((): [number, number, number] => {
+  const l = Math.hypot(SHADER_SUN_DIR[0], SHADER_SUN_DIR[1], SHADER_SUN_DIR[2]);
+  return [SHADER_SUN_DIR[0] / l * SUN_FLARE_DISTANCE, SHADER_SUN_DIR[1] / l * SUN_FLARE_DISTANCE, SHADER_SUN_DIR[2] / l * SUN_FLARE_DISTANCE];
+})();
 
 /** linear rgb to an sRGB hex string (for `setLight`) */
 function rgbHex(c: readonly [number, number, number]): string {
@@ -462,6 +476,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     /* fresh arrays here on purpose: the controller keeps the override object by reference */
     cameraController.setPose({ position: [dEye[0] + fz * shx, dEye[1] + shy, dEye[2] - fx * shx], target: dLook, up, fov: pose.fov }, { cut: false });
     node("sky").setPosition(dEye[0], dEye[1], dEye[2]);
+    if (row.post.lensFlare !== null) node("sun-flare").setPosition(dEye[0] + SUN_FLARE_OFFSET[0], dEye[1] + SUN_FLARE_OFFSET[1], dEye[2] + SUN_FLARE_OFFSET[2]);
 
     /* speed streaks radiate from the vanishing point: world-fixed lines along the heading, respawned ahead once passed */
     {

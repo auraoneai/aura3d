@@ -72,6 +72,8 @@ export interface HeatsinkLookRow {
     readonly grain: number | null;
     readonly vignette: number | null;
     readonly godRays: number | null;
+    /** IC-07 sun lens flare intensity (null = none) */
+    readonly lensFlare: number | null;
   };
   /** signature effect: the ion wake (IC-18) */
   readonly wake: { readonly enabled: boolean; readonly seconds: number; readonly segments: number; readonly cruise: Rgb; readonly cruiseTail: Rgb; readonly afterburner: Rgb; readonly width: number };
@@ -111,7 +113,7 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     bloom: { intensity: 0.6, threshold: 1.0 },
     /* IC-09 split tone: teal shadows, amber highlights, a touch cooler overall so the warm band stays the only warm field */
     grade: { exposure: 1.05, contrast: 1.08, saturation: 1.08, temperature: -0.04, tint: 0.02, shadows: [0.92, 1.03, 1.06], highlights: [1.06, 1.0, 0.9] },
-    post: { ao: true, motionBlur: 0.35, chromaticAberration: 0.0012, grain: 0.025, vignette: 0.28, godRays: 0.35 },
+    post: { ao: true, motionBlur: 0.35, chromaticAberration: 0.0012, grain: 0.025, vignette: 0.28, godRays: 0.35, lensFlare: 0.55 },
     wake: { enabled: true, seconds: 1.2, segments: 60, cruise: linearOf(PALETTE.ionCyan), cruiseTail: linearOf(PALETTE.violet), afterburner: linearOf(PALETTE.amber), width: 0.9 },
     camera: { rollDeg: 6, countdownSweep: true },
     glow: { pools: 1, points: 2 },
@@ -129,7 +131,7 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     causeway: { glass: 0, veinHdr: 0, seams: 0 },
     bloom: { intensity: 0.6, threshold: 1.0 },
     grade: { exposure: 1.05, contrast: 1.08, saturation: 1.0, temperature: 0, tint: 0, shadows: 1, highlights: 1 },
-    post: { ao: false, motionBlur: null, chromaticAberration: null, grain: null, vignette: null, godRays: null },
+    post: { ao: false, motionBlur: null, chromaticAberration: null, grain: null, vignette: null, godRays: null, lensFlare: null },
     wake: { enabled: false, seconds: 1.2, segments: 60, cruise: [0, 0, 0], cruiseTail: [0, 0, 0], afterburner: [0, 0, 0], width: 0 },
     camera: { rollDeg: 0, countdownSweep: false },
     glow: { pools: 0, points: 0 },
@@ -151,7 +153,7 @@ export function lowTier(row: HeatsinkLookRow): HeatsinkLookRow {
   return {
     ...row,
     key: { ...row.key, cascades: 1, maxDistance: Math.min(row.key.maxDistance, 140) },
-    post: { ...row.post, ao: false, motionBlur: null, godRays: null, grain: null, chromaticAberration: null },
+    post: { ...row.post, ao: false, motionBlur: null, godRays: null, grain: null, chromaticAberration: null, lensFlare: null },
     glow: { ...row.glow, points: Math.min(row.glow.points, 1) },
     dressing: { ...row.dressing, spores: Math.min(row.dressing.spores, 120) }
   };
