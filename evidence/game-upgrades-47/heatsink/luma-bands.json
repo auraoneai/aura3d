@@ -1,0 +1,11 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "heatsink",
+  "source": "PRD WP-13 HS-12 acceptance: desktop mean 45-70, darkFrac <= 0.20, clipFrac <= 0.02 on every circuit; HS-01 drone R/B >= 1.4 on MEGACITY and DUSTFALL (centre-bottom cell 7 holds the drone in the chase framing)",
+  "default": { "mean": [45, 70], "darkFrac": [null, 0.2], "clipFrac": [null, 0.02] },
+  "variants": {
+    "default": { "mean": [45, 70], "darkFrac": [null, 0.2], "clipFrac": [null, 0.02], "cells": { "7": { "rb": [1.4, null] } } },
+    "dustfall": { "mean": [45, 70], "darkFrac": [null, 0.2], "clipFrac": [null, 0.02], "cells": { "7": { "rb": [1.4, null] } } },
+    "vesper": { "mean": [45, 70], "darkFrac": [null, 0.2], "clipFrac": [null, 0.02] }
+  }
+}
