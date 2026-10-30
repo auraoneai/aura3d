@@ -3,6 +3,7 @@ import {
   createAuraApp,
   effects,
   game,
+  gameFeel,
   instances,
   lights,
   looks,
@@ -10,22 +11,82 @@ import {
   model,
   primitives,
   scene,
+  text3D,
   type AuraAssetRef,
-  type AuraRuntimeNodeHandle
+  type AuraRuntimeNodeHandle,
+  type AuraSceneNode
 } from "@aura3d/engine";
+import {
+  APEX_BLOOM,
+  APEX_FOG_DENSITY_SCALE,
+  APEX_GOD_RAY_DENSITY,
+  APEX_GRADE,
+  APEX_IBL_HDRI,
+  APEX_IBL_ROTATION_DEG,
+  APEX_LOOK,
+  APEX_MOTION_BLUR,
+  APEX_PALETTE,
+  APEX_PRACTICALS,
+  APEX_SUN,
+  apexLookAt,
+  hexToUnit,
+  parseTodParam
+} from "./art/look";
+import { apexFlash, apexFlashAlpha, apexPostPlan, applyApexPostPlan, type ApexFlashKind } from "./art/post";
+import { APEX_LUT_INTENSITY, apexGradePatch } from "./art/lut";
+import { APEX_PLUMES, plumeSpec } from "./art/plume";
+import { DECAL_CAPACITY, DECAL_KIND_CODE, DECAL_SIZE, DECAL_Y, decalLayout, decalSpec } from "./render/decals";
 import { createNativeRoadster, findDrawCalls } from "./native";
-import { POWERUP_SECONDS } from "./native/constants";
+import { FIXED_DT, POWERUP_SECONDS } from "./native/constants";
 import { GANTRY_COUNT } from "./native/world";
 import { gantryBoxes } from "./render/gantry";
 import { assets } from "./assets";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { SHIELD_SIZE, shieldSpec } from "./art/shield";
-import { groundSpec } from "./art/ground";
+import { HAZE_FLOOR_Y, groundSpec } from "./art/ground";
+import { asphaltMaterial, concreteMaterial } from "./art/surfaces";
+import { apexHeroPaint, apexRivalPaint } from "./art/paint";
+import { PYLON_KIT, PYLON_ROWS, pylonLayout } from "./render/pylons";
+import {
+  BILLBOARD_FACE_SIZE,
+  BILLBOARD_FRAME_SIZE,
+  BILLBOARD_SLOTS,
+  GANTRY_LABELS,
+  GANTRY_LABEL_OFFSET,
+  RING_ROWS,
+  RING_SIZE,
+  SPAN_DECK_SIZE,
+  SPAN_PIER_SIZE,
+  SPAN_SLOTS,
+  billboardLayout,
+  ringLayout,
+  spanLayout
+} from "./render/dressing";
+import { TOWER_CAPACITY_PER_VARIANT, TOWER_VARIANTS, towerGlassSpec, towerLayout, type TowerVariant } from "./render/towers";
 import { meshyFarVehicles, meshyVehicles } from "./meshy-vehicles";
 import { SKY_DOME_SIZE, skyLook, skySpec } from "./art/sky";
 import { createCameraShake, createHitStop, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
-import { createRoadsterPresenter, viewOf } from "./native/presentation";
+import { createRoadsterPresenter, displayRoll, viewOf } from "./native/presentation";
+import { apexSpeedLines, apexVfxEvents, countSkyDodges, type ApexVfxFrame } from "./render/vfxDirector";
+import { APEX_CHASE_POSE, SLOW_MO_SECONDS, apexTitleDurationSeconds, apexTitleSequence, chaseCameraOffsets, createApexSlowMo } from "./render/cinematics";
+import { registerApexVfx } from "./art/vfx";
 import { InstancePool, parked } from "./render/instancePool";
+import { apexQaCrops, type QaCrop } from "./render/qa";
+import {
+  APEX_PLAYER_WAKE,
+  APEX_RIVAL_WAKE,
+  APEX_WAKE_CAPACITY,
+  PLAYER_WAKE_COLOR,
+  RIVAL_WAKE_COLOR,
+  WakeTrail,
+  playerWakeStrength,
+  rivalWake,
+  stripRotation,
+  wakeIntensity,
+  wakeLife,
+  wakeSpec,
+  type WakeSegment
+} from "./render/wakes";
 import {
   DRAW_WINDOW,
   NEAR_CAPACITY,
@@ -63,6 +124,18 @@ const urlParams = new URLSearchParams(window.location.search);
 /** Start the run at once only for demos and captures; everyone else gets the title card (audit RR-10). */
 const AUTOSTART = ["autoplay", "demo", "capture"].some((k) => urlParams.get(k) === "1");
 const REDUCED_MOTION = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+/** `?tod=sunset|dusk|night|0..1` pins the presented time of day (capture variants); presentation only, like the quick bar. */
+const TOD_PARAM = parseTodParam(urlParams.get("tod"));
+/** Reduced flash (PRD §6.3): reduced motion or `?flash=0` skips the output-overlay flashes. */
+const REDUCED_FLASH = REDUCED_MOTION || urlParams.get("flash") === "0";
+const COARSE_POINTER = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+/** AO-H1: the Showcase chip (scenario and time-of-day buttons) exists only for developers and captures. */
+const SHOWCASE_CHIP = ["dev", "capture"].some((k) => urlParams.get(k) === "1");
+/**
+ * AO-P1: the game's own display LUT (src/art/lut.ts, written by tools/make-apex-lut.ts), served beside the app like the CC0
+ * deck textures; E-C fetches it once and binds it in the S10b display grade (identity until it arrives).
+ */
+const APEX_LUT_URL = new URL("./assets/luts/apex-bluehour.cube", import.meta.url).pathname;
 
 /** Meshy model for a vehicle type when it is shipped and enabled (`?models=0` turns it off), else the original showcase asset. */
 const pickVehicleAsset = (key: string, fallback: AuraAssetRef<"model">): AuraAssetRef<"model"> =>
@@ -89,6 +162,10 @@ const MODEL_WIDTH_OVER_SPEC: Partial<Record<VehicleType, number>> = { boxtruck: 
 const MODEL_WIDTH_FIT = 1.25;
 const TRAFFIC_YAW = trafficYawOffset(meshyVehicles.enabled);
 
+/** AO-L3 practical intensities at full night (phase 2 calibrates against the night bottom-centre cell). */
+const SODIUM_INTENSITY = 26;
+const HEADLIGHT_INTENSITY = 18;
+
 const BRAKE_BAR_CAPACITY = 48;
 const BLINKER_CAPACITY = 24;
 /** Brake bars and blinkers are small; draw them for traffic up to this far ahead. */
@@ -103,9 +180,14 @@ const DASH_STRIDE_Z = 14;
 const POLE_ROWS = 11;
 const POLE_STRIDE_Z = 34;
 
-/** Skyline: world-anchored rows every 140 m, one row behind the camera and four ahead, so a building only recycles after it has passed the camera (audit RR-8). */
-const SKYLINE_ROWS = 5;
-const SKYLINE_STRIDE_Z = 140;
+/** AO-E2: steel parapet rail on each Jersey barrier (the old 2.5 m sound walls hid the drop to the haze floor). */
+const PARAPET_X = 10.6;
+const PARAPET_Y = 1.16;
+const PARAPET_RAIL_SIZE: Vec3 = [0.16, 0.14, 380];
+/** The LED trims sit on the barrier tops, inside the rails. */
+const TRIM_X = 10.32;
+const TRIM_Y = 1.07;
+
 
 /** Overhead gantry geometry, built from the collision band so what crashes the car is what is drawn (audit RR-6). */
 const GANTRY_BOXES = gantryBoxes();
@@ -115,7 +197,7 @@ const POWERUP_LOOK: Record<PowerupKind, { color: string; shape: "capsule" | "con
   air: { color: "#2f7dff", shape: "capsule", size: [0.62, 1.15, 0.62] },
   rocket: { color: "#ff6a3d", shape: "cone", size: [0.8, 1.2, 0.8] },
   shield: { color: "#5fe6ff", shape: "sphere", size: [1.0, 1.0, 1.0] },
-  magnet: { color: "#c06bff", shape: "torus", size: [1.0, 1.0, 0.34] },
+  magnet: { color: "#c8d2e0", shape: "torus", size: [1.0, 1.0, 0.34] },
   multiplier: { color: "#ffd24d", shape: "box", size: [0.78, 0.78, 0.78] }
 };
 
@@ -125,6 +207,10 @@ function clamp(v: number, min: number, max: number): number {
 
 function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
+}
+
+function round3(v: number): number {
+  return Math.round(v * 1000) / 1000;
 }
 
 function hexToRgb(hex: string): [number, number, number] {
@@ -187,18 +273,59 @@ interface PlayerHandles {
   shieldSphere: AuraRuntimeNodeHandle;
   rocketCone: AuraRuntimeNodeHandle;
   magnetRing: AuraRuntimeNodeHandle;
-  contactShadow: AuraRuntimeNodeHandle;
 }
 
 /** Runtime node id of an instanced pool node. */
 const poolId = (name: string): string => `pool-${name}`;
 
+/** Runtime ids of the look's key light and the camera-side fill (AO-L2 retunes both per time of day with setLight). */
+const KEY_LIGHT_ID = "apex-sun-key";
+const FILL_LIGHT_ID = "apex-camera-fill";
+const SUN_FLARE_ID = "apex-sun-flare";
+
+/** Where the dome draws the sun (inside the 760 m dome; the camera stays at the origin and the world moves past it). */
+function sunWorldPosition(tod: number): Vec3 {
+  const d = apexLookAt(tod).sunDir;
+  return [d[0] * 340, d[1] * 340, d[2] * 340];
+}
+
+/**
+ * GU47 AO-L1: one golden-hour look whose sun sits where the dome draws the disc (7 deg, azimuth 175: dead ahead), so key,
+ * disc and shadows agree; its HDRI lights the scene without being drawn (the dome is the sky). The key light gets a runtime
+ * id so the time of day can retune it (AO-L2); no ambient light, no cyan point (look-lint ambient-flattens).
+ */
+function apexLookNode(): AuraSceneNode {
+  const sunset = APEX_LOOK[0];
+  const look = looks
+    .preset("golden-hour", {
+      sun: APEX_SUN,
+      fogDensityScale: APEX_FOG_DENSITY_SCALE,
+      hdri: APEX_IBL_HDRI,
+      environmentIntensity: sunset.environmentIntensity,
+      environmentRotationDeg: APEX_IBL_ROTATION_DEG,
+      background: APEX_PALETTE.charcoal,
+      // AO-L4: 3 cascades to 140 m with PCSS soft shadows (the tier table drops to 1 cascade / PCF on Low)
+      key: { color: sunset.sun.color, intensity: sunset.sun.intensity, shadow: { cascades: 3, maxDistance: 140, filter: "pcss", mapSize: 2048 } },
+      // AO-E3: the preset's 30/180 range under the 0.7 density scale = near 43 / far 257; colour follows the time of day
+      fog: { color: sunset.fog.color, near: 30, far: 180 },
+      // AO-P1: the game's own grade replaces the look's (one grade stage); the white balance follows the time of day
+      grade: { contrast: APEX_GRADE.contrast, saturation: APEX_GRADE.saturation, temperature: sunset.grade.temperature, tint: sunset.grade.tint },
+      // AO-P2: racer bloom for the corona, brake bars, plumes and lamps (the look's one bloom node, retuned)
+      post: { bloom: { intensity: APEX_BLOOM.intensity, threshold: APEX_BLOOM.threshold, scatter: APEX_BLOOM.scatter } }
+    })
+    .toJSON();
+  const children = (look.children ?? []).map((child) =>
+    child.kind === "light" && child.name === "look key light" ? ({ ...child, runtime: { id: KEY_LIGHT_ID } } as AuraSceneNode) : child
+  );
+  return { ...look, children } as AuraSceneNode;
+}
+
 function buildRoadsterRushScene(): ReturnType<typeof scene> {
   const s = scene()
-    // One look: its HDRI, its shadowed key light, its AO, bloom and colour grade. The authored warm sun below adds colour
-    // without a second shadow map, and no second bloom or grade stacks on the look's (audit RR-11).
-    .add(looks.preset("outdoor-day", { fogDensityScale: 0, exposureEv: 0.08 }))
-    .background("#1b1026")
+    // One look: its IBL, its one shadowed key light, its AO, bloom and colour grade; nothing authored stacks a second bloom,
+    // grade or shadowed light on it (audit RR-11, GU47 AO-L1).
+    .add(apexLookNode())
+    .background(APEX_PALETTE.charcoal)
     .camera(
       camera.perspective({
         fov: 58,
@@ -208,39 +335,80 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         target: [0, 0.9, -6.0]
       })
     )
-    .add(lights.ambient({ color: "#ffd8c4", intensity: 0.5 }))
+    // Camera-side fill: the sun is dead ahead, so the faces the chase camera sees are lit by this unshadowed 0.6 fill from
+    // behind the camera (cobalt skylight colour), not by an ambient term.
     .add(
-      lights.directional({
-        color: "#ffb178",
-        intensity: 1.9,
-        position: [22, 38, -45],
-        target: [0, 0, -10]
-      })
+      lights
+        .directional({
+          name: FILL_LIGHT_ID,
+          color: APEX_LOOK[0].fill.color,
+          intensity: APEX_LOOK[0].fill.intensity,
+          position: [0, 9, 40],
+          target: [0, 0, -12],
+          shadow: false
+        })
+        .runtime({ id: FILL_LIGHT_ID })
     )
-    .add(
-      lights.point({
-        color: "#4df0ff",
-        intensity: 1.5,
-        position: [0, 8, -12],
-        distance: 65
+    .add(effects.vignette({ intensity: 0.2, smoothness: 0.65 }))
+    // AO-L4: screen-space contact shadows from the sun replace the black disc under the hero
+    .add(effects.contactShadows({ length: 0.3, thickness: 0.05, steps: 12, intensity: 0.9, lights: "sun" }))
+    // AO-P3 / AO-P4: motion blur (S7) and god rays through the haze (S4). art/post.ts switches both per tier: High and Ultra
+    // only, never on a phone, and motion blur never under reduced motion. The inscatter density stays tiny: the look fog owns
+    // the haze, this node only feeds the shafts (godRayDensity is decoupled from fog density, E-C EC-8).
+    .add(effects.motionBlur({ shutter: APEX_MOTION_BLUR, maxBlur: 24 }))
+    .add(effects.volumetricFog({ density: 0.004, color: APEX_LOOK[0].dome.sun, intensity: 0.45, godRayDensity: APEX_GOD_RAY_DENSITY }));
+  // AO-P3: the low sun's lens flare in the identity palette; skipped under reduced motion, hidden at night.
+  if (!REDUCED_MOTION) {
+    s.add(
+      lights.lensFlare({
+        name: SUN_FLARE_ID,
+        position: sunWorldPosition(0),
+        intensity: 0.32,
+        edgeFade: 0.2,
+        elements: [
+          { size: 210, distance: 0, color: APEX_PALETTE.tangerine },
+          { size: 42, distance: 0.42, color: "#ffb066" },
+          { size: 76, distance: 0.72, color: "#6a4fa8" },
+          { size: 30, distance: 1, color: APEX_PALETTE.tangerine }
+        ],
+        runtime: { id: SUN_FLARE_ID }
       })
-    )
-    .add(effects.vignette({ intensity: 0.2, smoothness: 0.65 }));
+    );
+  }
+
+  // AO-L3: night practicals (art direction: 6 = the fill above + these 5): three sodium spots that ride the pole rows ahead
+  // and the hero's two headlights. All start dark; the time of day scales them and the frame loop moves them.
+  for (let i = 0; i < APEX_PRACTICALS.sodiumSpots; i++) {
+    s.add(
+      lights
+        .spot({ name: `apex-sodium-${i}`, color: APEX_PALETTE.sodium, intensity: 0, position: [0, 7.4, -20 - i * 34], target: [0, 0, -20 - i * 34], angle: 0.85, penumbra: 0.55, distance: 34, decay: 2, shadow: false })
+        .runtime({ id: `apex-sodium-${i}` })
+    );
+  }
+  for (const side of ["l", "r"] as const) {
+    s.add(
+      lights
+        .spot({ name: `apex-headlight-${side}`, color: "#e8eeff", intensity: 0, position: [side === "l" ? -0.74 : 0.74, 0.56, -3.2], target: [side === "l" ? -1.2 : 1.2, 0, -30], angle: 0.42, penumbra: 0.5, distance: 60, decay: 2, shadow: false })
+        .runtime({ id: `apex-headlight-${side}` })
+    );
+  }
 
   // 1. Endless Scrolling 5-Lane Sunset Freeway Deck, Shoulders, Jersey Barriers & Neon Sound Walls
   s.addMany([
+    // AO-E2: the city 28 m below the deck, seen past the parapets as a haze floor with lit window specks (art/ground.ts)
     primitives
       .box({
         name: "freeway-outer-ground",
-        size: [1200, 0.12, 520],
-        material: material.custom(groundSpec()), castShadow: false })
-      .position(0, -0.22, -160)
+        size: [1400, 0.12, 900],
+        material: material.custom(groundSpec()), castShadow: false, receiveShadow: false })
+      .position(0, HAZE_FLOOR_Y, -300)
       .runtime(game.runtimeNode("freeway-outer-ground")),
     primitives
       .box({
         name: "freeway-asphalt-deck",
         size: [24, 0.12, 380],
-        material: material.pbr({ color: "#1c1f28", roughness: 0.84, metalness: 0.08 }), castShadow: false })
+        // AO-M2: CC0 asphalt, roughness 0.55, so the low sun lays a glare streak down the centre lanes
+        material: asphaltMaterial(), castShadow: false })
       .position(0, -0.06, -150)
       .runtime(game.runtimeNode("freeway-asphalt-deck")),
     primitives
@@ -261,7 +429,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .box({
         name: "freeway-barrier-left",
         size: [0.65, 1.05, 380],
-        material: material.pbr({ color: "#393e4a", roughness: 0.78 })
+        material: concreteMaterial()
       })
       .position(-10.6, 0.52, -150)
       .runtime(game.runtimeNode("freeway-barrier-left")),
@@ -269,39 +437,44 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .box({
         name: "freeway-barrier-right",
         size: [0.65, 1.05, 380],
-        material: material.pbr({ color: "#393e4a", roughness: 0.78 })
+        material: concreteMaterial()
       })
       .position(10.6, 0.52, -150)
       .runtime(game.runtimeNode("freeway-barrier-right")),
+    // AO-E2: the 2.5 m sound walls hid the drop; a steel parapet rail on each barrier lets the camera see down to the haze
+    // floor (runtime ids kept, so the sync below is unchanged)
     primitives
       .box({
         name: "freeway-soundwall-left",
-        size: [0.45, 2.5, 380],
-        material: material.pbr({ color: "#232634", roughness: 0.72 })
+        size: PARAPET_RAIL_SIZE,
+        material: material.pbr({ color: "#4a4f5c", roughness: 0.42, metalness: 0.7 }),
+        castShadow: false
       })
-      .position(-11.6, 1.25, -150)
+      .position(-PARAPET_X, PARAPET_Y, -150)
       .runtime(game.runtimeNode("freeway-soundwall-left")),
     primitives
       .box({
         name: "freeway-soundwall-right",
-        size: [0.45, 2.5, 380],
-        material: material.pbr({ color: "#232634", roughness: 0.72 })
+        size: PARAPET_RAIL_SIZE,
+        material: material.pbr({ color: "#4a4f5c", roughness: 0.42, metalness: 0.7 }),
+        castShadow: false
       })
-      .position(11.6, 1.25, -150)
+      .position(PARAPET_X, PARAPET_Y, -150)
       .runtime(game.runtimeNode("freeway-soundwall-right")),
     primitives
       .box({
         name: "freeway-neon-trim-left",
         size: [0.12, 0.14, 380],
-        material: material.emissive({ color: "#38bdf8", emissive: "#38bdf8", emissiveIntensity: 1.35 }), castShadow: false })
-      .position(-11.3, 2.42, -150)
+        // AO-M2: LED trims on the barrier tops: cyan on the sky-lane side, amber on the other; no magenta anywhere
+        material: material.emissive({ color: APEX_PALETTE.cyan, emissive: APEX_PALETTE.cyan, emissiveIntensity: 1.1 }), castShadow: false })
+      .position(-TRIM_X, TRIM_Y, -150)
       .runtime(game.runtimeNode("freeway-neon-trim-left")),
     primitives
       .box({
         name: "freeway-neon-trim-right",
         size: [0.12, 0.14, 380],
-        material: material.emissive({ color: "#ff2a6d", emissive: "#ff2a6d", emissiveIntensity: 1.35 }), castShadow: false })
-      .position(11.3, 2.42, -150)
+        material: material.emissive({ color: APEX_PALETTE.sodium, emissive: APEX_PALETTE.sodium, emissiveIntensity: 1.1 }), castShadow: false })
+      .position(TRIM_X, TRIM_Y, -150)
       .runtime(game.runtimeNode("freeway-neon-trim-right")),
     // Sunset / Dusk / Night sky dome: gradient, lit clouds, sun disc and corona, haze, city glow and stars (art/sky.ts)
     primitives
@@ -318,8 +491,12 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
 
   // 2. Lane dashes, light poles, gantries and skyline: one instanced node each (audit RR-E1: these were 150+ separate nodes)
   s.addMany([
+    // AO-W2: recycled skid marks, oil stains and lane arrows, procedural, one instanced plane (1 draw, <= 32 live)
     instances
-      .box({ name: "lane-dashes", size: [0.14, 0.02, 4.2], material: material.emissive({ color: "#f8fafc", emissive: "#e2e8f0", emissiveIntensity: 0.45 }), castShadow: false, transforms: parked(LANE_DIVIDER_X.length * DASH_COUNT_PER_DIVIDER) })
+      .plane({ name: "apex-road-decals", material: material.custom(decalSpec()), castShadow: false, receiveShadow: false, transforms: parked(DECAL_CAPACITY) })
+      .runtime(game.runtimeNode(poolId("road-decals"))),
+    instances
+      .box({ name: "lane-dashes", size: [0.14, 0.02, 4.2], material: material.emissive({ color: "#f8fafc", emissive: "#e2e8f0", emissiveIntensity: 0.1 }), castShadow: false, transforms: parked(LANE_DIVIDER_X.length * DASH_COUNT_PER_DIVIDER) })
       .runtime(game.runtimeNode(poolId("dashes"))),
     instances
       .box({ name: "gantry-steel", size: [1, 1, 1], material: material.pbr({ color: "#64748b", metalness: 0.65, roughness: 0.38 }), transforms: parked(GANTRY_COUNT * 3) })
@@ -339,35 +516,62 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     instances
       .sphere({ name: "light-lamps", size: [0.36, 0.18, 0.48], material: material.emissive({ color: "#ffd28a", emissive: "#ffae52", emissiveIntensity: 1.65 }), castShadow: false, transforms: parked(POLE_ROWS * 2) })
       .runtime(game.runtimeNode(poolId("pole-lamps"))),
-    // The skyline model has 75 meshes; instancing draws all buildings in 75 calls, and it casts no shadow (it stands 42 m off the road).
+    // AO-E2: hammerhead deck piers every 40 m (render/pylons.ts): columns + cap beams, two instanced nodes
     instances
-      .model(assets.showcaseModernBuildingOne, { name: "freeway-skyline", role: "setDressing", scaleMode: "fit", targetMaxDimension: 38, castShadow: false, transforms: parked(SKYLINE_ROWS * 2) })
-      .runtime(game.runtimeNode(poolId("skyline")))
+      .box({ name: "deck-pylon-columns", size: [...PYLON_KIT.column.size], material: material.pbr({ color: APEX_PALETTE.charcoal, roughness: 0.82, metalness: 0.05 }), castShadow: false, receiveShadow: false, transforms: parked(PYLON_ROWS * 2) })
+      .runtime(game.runtimeNode(poolId("pylon-columns"))),
+    instances
+      .box({ name: "deck-pylon-caps", size: [...PYLON_KIT.cap.size], material: material.pbr({ color: "#2c2e36", roughness: 0.8, metalness: 0.05 }), castShadow: false, receiveShadow: false, transforms: parked(PYLON_ROWS) })
+      .runtime(game.runtimeNode(poolId("pylon-caps"))),
+    // AO-W1: cyan beacon rings over the piers (sky-lane edges), interchange spans every 600 m above the flight ceiling and
+    // shadowless billboard frames beside the deck (render/dressing.ts); 5 instanced nodes
+    instances
+      .torus({ name: "beacon-rings", size: [...RING_SIZE], material: material.emissive({ color: APEX_PALETTE.cyan, emissive: APEX_PALETTE.cyan, emissiveIntensity: 1.4 }), castShadow: false, receiveShadow: false, transforms: parked(RING_ROWS * 2) })
+      .runtime(game.runtimeNode(poolId("beacon-rings"))),
+    instances
+      .box({ name: "interchange-span-decks", size: [...SPAN_DECK_SIZE], material: material.pbr({ color: "#2c2e36", roughness: 0.78, metalness: 0.1 }), castShadow: false, receiveShadow: false, transforms: parked(SPAN_SLOTS) })
+      .runtime(game.runtimeNode(poolId("span-decks"))),
+    instances
+      .box({ name: "interchange-span-piers", size: [...SPAN_PIER_SIZE], material: material.pbr({ color: APEX_PALETTE.charcoal, roughness: 0.82 }), castShadow: false, receiveShadow: false, transforms: parked(SPAN_SLOTS * 2) })
+      .runtime(game.runtimeNode(poolId("span-piers"))),
+    instances
+      .box({ name: "billboard-frames", size: [...BILLBOARD_FRAME_SIZE], material: material.pbr({ color: "#3a3d46", roughness: 0.5, metalness: 0.6 }), castShadow: false, receiveShadow: false, transforms: parked(BILLBOARD_SLOTS) })
+      .runtime(game.runtimeNode(poolId("billboard-frames"))),
+    instances
+      .box({ name: "billboard-faces", size: [...BILLBOARD_FACE_SIZE], material: material.emissive({ color: "#ffb066", emissive: APEX_PALETTE.tangerine, emissiveIntensity: 0.9 }), castShadow: false, receiveShadow: false, transforms: parked(BILLBOARD_SLOTS) })
+      .runtime(game.runtimeNode(poolId("billboard-faces"))),
+    // AO-A1: glass tower skyline rising from the haze, one instanced curtain-wall node per variant (3 draws; it replaces the
+    // borrowed 75-mesh townhouse model). No shadows: the nearest tower stands 40 m off the road.
+    ...TOWER_VARIANTS.map((variant) =>
+      instances
+        .box({ name: `skyline-tower-${variant}`, size: [1, 1, 1], material: material.custom(towerGlassSpec(variant)), castShadow: false, receiveShadow: false, transforms: parked(TOWER_CAPACITY_PER_VARIANT) })
+        .runtime(game.runtimeNode(poolId(`tower-${variant}`)))
+    )
   ]);
 
+  // AO-W1: SDF gantry labels, one per gantry slot (positioned by the frame loop)
+  GANTRY_LABELS.slice(0, GANTRY_COUNT).forEach((label, i) => {
+    s.add(
+      text3D(label, { backend: "sdf", size: 0.85, name: `gantry-label-${i}`, material: material.emissive({ color: "#f4f6fb", emissive: "#e8eef8", emissiveIntensity: 0.6 }), castShadow: false })
+        .position(GANTRY_LABEL_OFFSET[0], GANTRY_LABEL_OFFSET[1], -200 - i * 155)
+        .runtime(game.runtimeNode(`gantry-label-${i}`))
+    );
+  });
+
   // 3. Player Roadster Assembly (Primary Car + Lightbar + Headlights + Cold-Gas Plumes + Powerups + Shadow)
-  const rearPlumeMat = material.emissive({
-    color: "#67f3ff",
-    emissive: "#38bdf8",
-    emissiveIntensity: 1.9
-  });
-  const downPlumeMat = material.emissive({
-    color: "#38bdf8",
-    emissive: "#0ea5e9",
-    emissiveIntensity: 1.75
-  });
-  const sidePlumeMat = material.emissive({
-    color: "#7dd3fc",
-    emissive: "#38bdf8",
-    emissiveIntensity: 1.7
-  });
+  // AO-M4: additive fresnel energy cones with scrolling noise and a hot core (src/art/plume.ts); same nodes, same draws
+  const rearPlumeMat = material.custom(plumeSpec(APEX_PLUMES.rear, REDUCED_MOTION));
+  const downPlumeMat = material.custom(plumeSpec(APEX_PLUMES.down, REDUCED_MOTION));
+  const sidePlumeMat = material.custom(plumeSpec(APEX_PLUMES.side, REDUCED_MOTION));
 
   s.addMany([
     model(pickVehicleAsset("hero", assets.roadsterRushPlayerCar), {
       name: "player-roadster-car",
       role: "primaryVehicle",
       scaleMode: "fit",
-      targetMaxDimension: 4.35
+      targetMaxDimension: 4.35,
+      // AO-M1: cobalt metallic clearcoat (material.carPaint values) with a warm tangerine rim (E-D); same model, same bounds
+      materialOverrides: apexHeroPaint()
     })
       .position(0, 0, 0)
       .runtime(game.runtimeNode("player-roadster-car", { tags: ["primarySubject", "primaryVehicle", "player"] })),
@@ -427,25 +631,16 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .cylinder({
         name: "player-power-rocket",
         size: [0.68, 2.6, 0.68],
-        material: material.emissive({ color: "#ff6b1a", emissive: "#ff3b00", emissiveIntensity: 2.3 }), castShadow: false })
+        material: material.custom(plumeSpec(APEX_PLUMES.rocket, REDUCED_MOTION)), castShadow: false })
       .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("player-power-rocket")),
     primitives
       .torus({
         name: "player-power-magnet",
         size: [1.65, 1.65, 0.08],
-        material: material.emissive({ color: "#a855f7", emissive: "#c084fc", emissiveIntensity: 1.5 }), castShadow: false })
+        material: material.emissive({ color: "#c8d2e0", emissive: "#dfe7f2", emissiveIntensity: 1.5 }), castShadow: false })
       .scale(HIDDEN_SCALE)
-      .runtime(game.runtimeNode("player-power-magnet")),
-
-    // Ground Contact Shadow
-    primitives
-      .cylinder({
-        name: "player-contact-shadow",
-        size: [2.25, 0.012, 4.45],
-        material: material.pbr({ color: "#07090f", roughness: 0.96 }), castShadow: false })
-      .position(0, 0.03, 0)
-      .runtime(game.runtimeNode("player-contact-shadow"))
+      .runtime(game.runtimeNode("player-power-magnet"))
   ]);
 
   // 4 Ventral Down-Thruster Plumes
@@ -516,18 +711,27 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
   // 5. Sky-lane traffic: lethal, so every sky car in the window gets a slot (audit RR-1)
   s.addMany([
     instances
-      .model(assets.roadsterRushSkyCar, { name: "sky-cars", role: "primaryVehicle", scaleMode: "fit", targetMaxDimension: 4.3, transforms: parked(POOL_CAPACITY.skyCar) })
+      // AO-A2 interim: graphite paint with the rival-red rim until the WP-36 interceptor (ducted fans, far LOD) replaces the asset
+      .model(assets.roadsterRushSkyCar, { name: "sky-cars", role: "primaryVehicle", scaleMode: "fit", targetMaxDimension: 4.3, materialOverrides: apexRivalPaint(), transforms: parked(POOL_CAPACITY.skyCar) })
       .runtime(game.runtimeNode(poolId("sky-cars"))),
     // sky cars beyond 90 m: the far LOD, no shadow
     instances
       .model(meshyVehicles.enabled ? (meshyFarVehicles.refs as Record<string, AuraAssetRef<"model">>).skycar! : assets.roadsterRushSkyCar, { name: "sky-cars-far", role: "setDressing", scaleMode: "fit", targetMaxDimension: 4.3, castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
       .runtime(game.runtimeNode(poolId("sky-cars-far"))),
     instances
-      .cylinder({ name: "sky-plumes", size: [0.42, 1.65, 0.42], material: rearPlumeMat, castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
+      .cylinder({ name: "sky-plumes", size: [0.42, 1.65, 0.42], material: material.custom(plumeSpec(APEX_PLUMES.sky, REDUCED_MOTION)), castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
       .runtime(game.runtimeNode(poolId("sky-plumes"))),
     instances
       .torus({ name: "sky-halos", size: [1.55, 1.55, 0.075], material: material.emissive({ color: "#ff2a3c", emissive: "#ff2a3c", emissiveIntensity: 1.65 }), castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
-      .runtime(game.runtimeNode(poolId("sky-halos")))
+      .runtime(game.runtimeNode(poolId("sky-halos"))),
+    // AO-V1: wakes drawn game-side (render/wakes.ts): the cyan twin-thruster wake of the player (world-anchored points, so it
+    // streams back past the camera and bends with lane changes) and one red streak behind each drawn rival. 2 draws.
+    instances
+      .plane({ name: "apex-player-wake", material: material.custom(wakeSpec(PLAYER_WAKE_COLOR, 0.2, [40, 90])), castShadow: false, receiveShadow: false, transforms: parked(APEX_WAKE_CAPACITY) })
+      .runtime(game.runtimeNode(poolId("player-wake"))),
+    instances
+      .plane({ name: "apex-rival-wakes", material: material.custom(wakeSpec(RIVAL_WAKE_COLOR, 1, [140, 320])), castShadow: false, receiveShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
+      .runtime(game.runtimeNode(poolId("rival-wakes")))
   ]);
 
   // 6. Pickups: every bolt in the window, nearest first (audit RR-4), and one shaped pool per power-up kind (audit RR-E3)
@@ -595,8 +799,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     sidePlumesR: Array.from({ length: 2 }, (_, i) => req(`player-plume-side-r-${i}`)),
     shieldSphere: req("player-power-shield"),
     rocketCone: req("player-power-rocket"),
-    magnetRing: req("player-power-magnet"),
-    contactShadow: req("player-contact-shadow")
+    magnetRing: req("player-power-magnet")
   };
 
   // Resolve Freeway & Environment Handles
@@ -611,15 +814,124 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const neonTrimLeftHandle = req("freeway-neon-trim-left");
   const neonTrimRightHandle = req("freeway-neon-trim-right");
   const horizonWallHandle = req("horizon-sky-wall");
+  // Light handles for the time of day (AO-L2): `get`, not `require`, so a renderer without runtime lights still boots.
+  const keyLight = auraApp.nodes.get(KEY_LIGHT_ID);
+  const fillLight = auraApp.nodes.get(FILL_LIGHT_ID);
+  /** The look row the last time-of-day bucket resolved (practicals, emissive gains and the QA hook read it). */
+  let lookFrame = apexLookAt(0);
+  const sunFlare = auraApp.nodes.get(SUN_FLARE_ID);
+  // AO-L3 practicals; an explicit direction keeps each beam fixed while the frame loop carries the light (E-B setLight)
+  const sodiumSpots = Array.from({ length: APEX_PRACTICALS.sodiumSpots }, (_, i) => auraApp.nodes.get(`apex-sodium-${i}`));
+  const headlights = (["l", "r"] as const).map((side) => auraApp.nodes.get(`apex-headlight-${side}`));
+  sodiumSpots.forEach((spot, i) => spot?.setLight?.({ direction: [i % 2 === 0 ? 0.32 : -0.32, -1, 0] }));
+  headlights.forEach((light) => light?.setLight?.({ direction: [0, -0.1, -1] }));
+
+  // AO-P3 / AO-P4 / AO-PF1: High-only motion blur and god rays, no DOF; re-applied when the quality tier changes.
+  let postStates: Readonly<Record<string, boolean>> = {};
+  const applyPost = (): void => {
+    postStates = applyApexPostPlan(auraApp.post, apexPostPlan({ tier: auraApp.quality?.tier, reducedMotion: REDUCED_MOTION, coarsePointer: COARSE_POINTER }));
+  };
+  applyPost();
+  auraApp.quality?.onChange?.(() => applyPost());
+
+  // AO-P4: warm crash / cyan rocket output-overlay flash, peak <= 0.3 for <= 180 ms; skipped under reduced flash.
+  let flash: { kind: ApexFlashKind; startMs: number } | null = null;
+  const startFlash = (kind: ApexFlashKind): void => {
+    if (!REDUCED_FLASH) flash = { kind, startMs: performance.now() };
+  };
+  const updateFlash = (nowMs: number): void => {
+    if (!flash) return;
+    const alpha = apexFlashAlpha(flash.kind, nowMs - flash.startMs, REDUCED_FLASH);
+    if (alpha <= 0) {
+      flash = null;
+      auraApp.setOutputOverlay?.({});
+      return;
+    }
+    const f = apexFlash(flash.kind);
+    auraApp.setOutputOverlay?.({ flash: [f.rgb[0], f.rgb[1], f.rgb[2], alpha] });
+  };
+  let lastRocketActive = false;
+
+  // AO-C1: slow-mo and letterbox moments, and the title intro (render/cinematics.ts)
+  const slowMo = createApexSlowMo(REDUCED_MOTION);
+  let lastFlipping = false;
+  let cinematicPlayback: { skip(): void } | null = null;
+  const staticShot = (pose: { position: Vec3; target: Vec3; fov: number; near: number; far: number }) => camera.rigs.static(pose);
+  const playSequence = (sequence: Parameters<NonNullable<typeof auraApp.camera>["play"]>[0]): { skip(): void } | null => {
+    try {
+      return auraApp.camera?.play(sequence) ?? null;
+    } catch {
+      return null;
+    }
+  };
+  const startSlowMo = (nowMs: number): void => {
+    if (!slowMo.trigger(nowMs)) return;
+    playSequence({
+      id: "apex-slowmo-bars",
+      shots: [{ rig: staticShot({ position: [...APEX_CHASE_POSE.position], target: [...APEX_CHASE_POSE.target], fov: APEX_CHASE_POSE.fov, near: APEX_CHASE_POSE.near, far: APEX_CHASE_POSE.far }), duration: SLOW_MO_SECONDS, blendIn: 0, bars: true }],
+      onEnd: "return"
+    });
+  };
+  function playTitleIntro(isOver: () => boolean): void {
+    cinematicPlayback = playSequence(apexTitleSequence(staticShot) as Parameters<NonNullable<typeof auraApp.camera>["play"]>[0]);
+    if (!cinematicPlayback) return;
+    const skip = (): void => {
+      cinematicPlayback?.skip();
+      cinematicPlayback = null;
+      for (const name of ["keydown", "pointerdown"] as const) window.removeEventListener(name, skip, true);
+      window.clearInterval(watch);
+    };
+    for (const name of ["keydown", "pointerdown"] as const) window.addEventListener(name, skip, true);
+    const watch = window.setInterval(() => {
+      if (isOver()) skip();
+    }, 120);
+    window.setTimeout(() => {
+      for (const name of ["keydown", "pointerdown"] as const) window.removeEventListener(name, skip, true);
+      window.clearInterval(watch);
+      cinematicPlayback = null;
+    }, Math.ceil(apexTitleDurationSeconds() * 1000) + 200);
+  }
+
+  // AO-V1 / AO-V2: the apex preset pack (halved under reduced motion), fired from read-only state transitions; speed lines
+  // through gameFeel (feel bus -> C-20 VFX), never under reduced motion.
+  const vfxKinds = registerApexVfx(auraApp.effects, REDUCED_MOTION);
+  const feel = gameFeel.create({ app: auraApp });
+  let vfxPrev: ApexVfxFrame | null = null;
+  let airSeconds = 0;
+  let skyDodges = 0;
+  const skyGaps = new Map<string, number>();
+  let lastSpeedLinesMs = 0;
+  let speedLinesAccepted = 0;
+  const vfxFired: Record<string, number> = {};
+  const fireVfx = (kind: string, at: Vec3): void => {
+    try {
+      auraApp.effects?.burst(kind, at);
+      vfxFired[kind] = (vfxFired[kind] ?? 0) + 1;
+    } catch {
+      /* effects runtime unavailable */
+    }
+  };
 
   const dashPool = pool("dashes", LANE_DIVIDER_X.length * DASH_COUNT_PER_DIVIDER);
+  const decalPool = pool("road-decals", DECAL_CAPACITY);
   const gantrySteel = pool("gantry-steel", GANTRY_COUNT * 3);
   const gantryBoards = pool("gantry-boards", GANTRY_COUNT * 2);
   const gantryTrims = pool("gantry-trims", GANTRY_COUNT * 4);
   const polePool = pool("poles", POLE_ROWS * 2);
   const armPool = pool("pole-arms", POLE_ROWS * 2);
   const lampPool = pool("pole-lamps", POLE_ROWS * 2);
-  const skylinePool = pool("skyline", SKYLINE_ROWS * 2);
+  const towerPools = {} as Record<TowerVariant, InstancePool>;
+  for (const variant of TOWER_VARIANTS) towerPools[variant] = pool(`tower-${variant}`, TOWER_CAPACITY_PER_VARIANT);
+  const ringPool = pool("beacon-rings", RING_ROWS * 2);
+  const spanDecks = pool("span-decks", SPAN_SLOTS);
+  const spanPiers = pool("span-piers", SPAN_SLOTS * 2);
+  const billboardFrames = pool("billboard-frames", BILLBOARD_SLOTS);
+  const billboardFaces = pool("billboard-faces", BILLBOARD_SLOTS);
+  const gantryLabels = GANTRY_LABELS.slice(0, GANTRY_COUNT).map((_, i) => auraApp.nodes.get(`gantry-label-${i}`));
+  const towerHandles = {} as Record<TowerVariant, AuraRuntimeNodeHandle>;
+  for (const variant of TOWER_VARIANTS) towerHandles[variant] = req(poolId(`tower-${variant}`));
+  const pylonColumns = pool("pylon-columns", PYLON_ROWS * 2);
+  const pylonCaps = pool("pylon-caps", PYLON_ROWS);
 
   const trafficNear = {} as Record<VehicleType, InstancePool>;
   const trafficFar = {} as Record<VehicleType, InstancePool>;
@@ -634,6 +946,15 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const skyCarFarPool = pool("sky-cars-far", POOL_CAPACITY.skyCar);
   const skyPlumePool = pool("sky-plumes", POOL_CAPACITY.skyCar);
   const skyHaloPool = pool("sky-halos", POOL_CAPACITY.skyCar);
+  // AO-V1 wakes: world-anchored twin-thruster histories (simulation time) and the rival streak pool
+  const playerWakePool = pool("player-wake", APEX_WAKE_CAPACITY);
+  const rivalWakePool = pool("rival-wakes", POOL_CAPACITY.skyCar);
+  const wakeHandles = [req(poolId("player-wake")), req(poolId("rival-wakes"))];
+  const playerWakeOptions = { life: wakeLife(APEX_PLAYER_WAKE.life, REDUCED_MOTION), headWidth: APEX_PLAYER_WAKE.headWidth, tailWidth: APEX_PLAYER_WAKE.tailWidth };
+  const rivalWakeLife = wakeLife(APEX_RIVAL_WAKE.life, REDUCED_MOTION);
+  const wakeTrails = APEX_PLAYER_WAKE.nozzles.map(() => new WakeTrail(playerWakeOptions.life, APEX_PLAYER_WAKE.segments));
+  const wakeScratch: WakeSegment[] = [];
+  const wakeDrawn = { player: 0, rivals: 0 };
   const boltPool = pool("bolts", POOL_CAPACITY.bolt);
   const powerPools = {} as Record<PowerupKind, InstancePool>;
   for (const kind of POWERUP_KINDS) powerPools[kind] = pool(`power-${kind}`, POOL_CAPACITY.powerup[kind]);
@@ -649,7 +970,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   let autopilot = urlParams.get("autoplay") === "1" || urlParams.get("demo") === "1";
   let framesRendered = 0;
   let lastTodBucket = -1;
-  let manualTodOverride: number | null = null;
+  let manualTodOverride: number | null = TOD_PARAM;
   let lastLightbarHot = false;
   let lastAutopilotTickMs = 0;
   let lastAutopilotStuntMs = 0;
@@ -662,6 +983,8 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   let hitStopHeld = false;
   let lastMode = "";
   let chaseX = 0;
+  let camDrop = 0;
+  let lastBank = 0;
   let lastFrameMs = 0;
   let lastFovKick = -1;
 
@@ -684,12 +1007,61 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     ];
     for (const [name, value] of skyUniforms) horizonWallHandle.setUniform?.(name, value as never);
 
-    let groundHex: string;
-    if (tod <= 0.5) groundHex = lerpHexColor("#190f24", "#100d1e", tod * 2);
-    else groundHex = lerpHexColor("#100d1e", "#070912", (tod - 0.5) * 2);
+    // GU47 AO-L2: the scene light follows the same row as the dome. The look's key keeps the disc's direction and takes the
+    // row's colour and intensity; the camera-side fill and the IBL (1.0 / 0.55 / 0.18) dim with it. AO-E3: fog colour too.
+    const frame = apexLookAt(tod);
+    const toward = frame.sunDir;
+    const blend = { transitionSeconds: 0.35 };
+    keyLight?.setLight?.({ color: frame.sun.color, intensity: frame.sun.intensity, direction: [-toward[0], -toward[1], -toward[2]] }, blend);
+    fillLight?.setLight?.({ color: frame.fill.color, intensity: frame.fill.intensity }, blend);
+    auraApp.lighting?.setEnvironmentIntensity?.(frame.environmentIntensity);
+    // overrideSceneFog: the volumetric god-ray node would otherwise make setFog skip the look's fog node (E-B default)
+    auraApp.atmosphere?.setFog?.({ color: frame.fog.color, near: frame.fog.near, far: frame.fog.far }, { ...blend, overrideSceneFog: true });
+    if (sunFlare) {
+      const at = sunWorldPosition(tod);
+      sunFlare.setPosition(at[0], at[1], at[2]).setVisible(look.nightAmount < 0.5);
+    }
+    // AO-P1: time-of-day white balance through E-C's grade writer plus the apex-bluehour display LUT (S10b), both patched
+    // onto the one look grade node (still a single color-grade stage)
+    try {
+      auraApp.post?.setEffect?.("colorGrade", apexGradePatch(frame, APEX_LUT_URL));
+    } catch {
+      /* post surface without runtime overrides */
+    }
+    lookFrame = frame;
+    syncTodButtons(tod);
+    // AO-V1: the wakes brighten toward night with the tail-light gain (the red rivers)
+    for (const handle of wakeHandles) handle.setUniform?.("wakeIntensity", wakeIntensity(frame.signature.tailGain) as never);
+    // AO-L3: sodium pool and headlights scale with the row (sodium 0 / 0.35 / 1, headlights on from dusk); dark lights hide
+    const sodium = frame.signature.sodium;
+    for (const spot of sodiumSpots) {
+      spot?.setLight?.({ intensity: round3(SODIUM_INTENSITY * sodium) }, blend);
+      spot?.setVisible(sodium > 0.02);
+    }
+    const beams = frame.signature.headlights;
+    for (const light of headlights) {
+      light?.setLight?.({ intensity: round3(HEADLIGHT_INTENSITY * beams) }, blend);
+      light?.setVisible(beams > 0.02);
+    }
+
+    // AO-A1: the tower glass reflects the same dome row and lights its floors toward night
+    for (const variant of TOWER_VARIANTS) {
+      const tower = towerHandles[variant];
+      tower.setUniform?.("glassSky", look.skyTop as never);
+      tower.setUniform?.("glassHorizon", look.skyHorizon as never);
+      tower.setUniform?.("sunDirection", look.sunDir as never);
+      tower.setUniform?.("sunTint", look.sunColor as never);
+      tower.setUniform?.("sunGlint", round3(1.2 * (1 - look.nightAmount)) as never);
+      tower.setUniform?.("windowsLit", round3(frame.signature.windowSpecks) as never);
+      tower.setUniform?.("hazeColor", hexToUnit(frame.signature.hazeColor) as never);
+    }
+
+    // AO-E2: the haze floor takes the row's haze colour and window-speck strength (cool lavender haze, no red-pink floor)
+    const groundHex = lerpHexColor("#14141c", "#07080d", tod);
     const [gr, gg, gb] = hexToRgb(groundHex);
     outerGroundHandle.setUniform?.("groundColor", [gr / 255, gg / 255, gb / 255] as never);
-    outerGroundHandle.setUniform?.("groundFogColor", [look.skyHorizon[0] * 0.8, look.skyHorizon[1] * 0.75, look.skyHorizon[2] * 0.8] as never);
+    outerGroundHandle.setUniform?.("groundFogColor", hexToUnit(frame.signature.hazeColor) as never);
+    outerGroundHandle.setUniform?.("windowSpecks", round3(frame.signature.windowSpecks) as never);
   }
 
   function runSmartFreewayAutopilot(g: any): void {
@@ -873,6 +1245,65 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   };
   (window as any).__AURA3D_SHOWCASE_ROADSTER_RUSH__ = { app: auraApp, evidence: runtimeEvidence, triggerScenario };
 
+  // GU47 QA hook (E-I capture): named crops the WP-12 acceptance reads, plus the look state a judged shot needs.
+  const qaGlobal = window as unknown as { __AURA_QA__?: Record<string, unknown> };
+  const qa = (qaGlobal.__AURA_QA__ ??= {}) as { crops?: QaCrop[]; apex?: Record<string, unknown> };
+  qa.crops = [];
+  const qaApex: Record<string, unknown> = {
+    variant: "sunset",
+    tod: 0,
+    post: postStates,
+    grade: { lut: APEX_LUT_URL, lutIntensity: APEX_LUT_INTENSITY },
+    reducedMotion: REDUCED_MOTION,
+    reducedFlash: REDUCED_FLASH
+  };
+  qa.apex = qaApex;
+  const publishQa = (heroRoot: Vec3): void => {
+    const aspect = canvas.clientWidth > 0 && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : 16 / 9;
+    qa.crops = apexQaCrops(sunWorldPosition(lookFrame.tod), [heroRoot[0], heroRoot[1] + 0.66, heroRoot[2]], aspect);
+    qaApex.variant = lookFrame.variant;
+    qaApex.tod = lookFrame.tod;
+    qaApex.post = postStates;
+    qaApex.vfx = { presets: vfxKinds, fired: vfxFired, liveCount: auraApp.effects?.liveCount ?? 0, speedLinesAccepted, wakes: { ...wakeDrawn } };
+    qaApex.cinematics = { slowMoTriggered: slowMo.triggered, introPlaying: cinematicPlayback !== null };
+  };
+
+  /** AO-V1 / AO-V2: fire the apex presets and speed lines from this frame's (read-only) simulation state. */
+  function driveVfx(real: any, nowMs: number, realDt: number): void {
+    const p = real.player;
+    const grounded = Boolean(p.grounded);
+    airSeconds = grounded ? 0 : airSeconds + realDt;
+    const pos = { x: Number(p.position?.x ?? 0), y: Number(p.position?.y ?? 0), z: Number(p.position?.z ?? 0) };
+    const skyCars: any[] = Array.isArray(real.traffic?.skyCars) ? real.traffic.skyCars : [];
+    if (real.mode === "playing") skyDodges += countSkyDodges(pos, skyCars, skyGaps);
+    const frame: ApexVfxFrame = {
+      mode: String(real.mode),
+      bolts: Number(real.bolts ?? 0),
+      grounded,
+      airSeconds,
+      rocketActive: Number(p.rocketTimer ?? 0) > 0,
+      skyDodges
+    };
+    // effects spawn where the car is drawn: the chase anchor keeps it near x = px * 0.35, y ~ 0, z = -1.15
+    const carAt: Vec3 = [pos.x - chaseX, Math.max(0, pos.y * 0.15) + 0.4 + camDrop, -1.15];
+    for (const kind of apexVfxEvents(vfxPrev, frame)) {
+      if (kind === "apex-land") fireVfx(kind, [carAt[0], 0.05, carAt[2]]);
+      else if (kind === "apex-rocket") fireVfx(kind, [carAt[0], carAt[1], carAt[2] + 2.6]);
+      else if (kind === "apex-skykill") fireVfx(kind, [carAt[0], carAt[1] + 1.2, carAt[2] - 3]);
+      else fireVfx(kind, carAt);
+    }
+    vfxPrev = frame;
+    const lines = real.mode === "playing" ? apexSpeedLines(Number(p.speed ?? 0), Boolean(p.boosting), frame.rocketActive, REDUCED_MOTION) : 0;
+    if (lines > 0 && nowMs - lastSpeedLinesMs > 240) {
+      lastSpeedLinesMs = nowMs;
+      try {
+        if (feel.speedLines(lines, [carAt[0], 1.2, -6]).accepted) speedLinesAccepted++;
+      } catch {
+        /* feel bus not bound */
+      }
+    }
+  }
+
   function syncRoadsterWorld(real: any, g: any = real): void {
     if (!real || !real.player) return;
     framesRendered += 1;
@@ -896,8 +1327,23 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       real.player.shakePulse = 0;
     }
     const sh = shake.update(realDt);
-    if (real.mode === "crashed" && lastMode === "playing" && !real.manual) hitStop.trigger(110);
+    if (real.mode === "crashed" && lastMode === "playing" && !real.manual) {
+      hitStop.trigger(110);
+      startFlash("crash");
+    }
     lastMode = real.mode;
+    const rocketActive = Number(real.player.rocketTimer ?? 0) > 0;
+    if (rocketActive && !lastRocketActive && real.mode === "playing") {
+      startFlash("rocket");
+      startSlowMo(nowMs);
+    }
+    // a ramp launch starts the flip (read-only): slow-mo with letterbox bars
+    const flipping = Boolean(real.player.flipping);
+    if (flipping && !lastFlipping && real.mode === "playing") startSlowMo(nowMs);
+    lastFlipping = flipping;
+    lastRocketActive = rocketActive;
+    updateFlash(nowMs);
+    driveVfx(real, nowMs, realDt);
     hitStop.update(realDt);
     if (hitStop.active !== hitStopHeld) {
       hitStopHeld = hitStop.active;
@@ -919,23 +1365,45 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     const targetX = px * 0.65;
     chaseX = real.manual ? targetX : chaseX + (targetX - chaseX) * (1 - Math.exp(-9 * realDt));
     const camAnchorX = chaseX + sh.x;
-    const camAnchorY = Math.max(0, py * 0.85) + sh.y;
+    // AO-C2: the camera drops from 3.6 to 2.7 m with speed (the world lifts by the drop) and banks into lane changes
+    const chase = chaseCameraOffsets(Number(p.speed ?? 0), Number(real.player._laneVel ?? 0), REDUCED_MOTION);
+    camDrop += (chase.drop - camDrop) * (1 - Math.exp(-3 * realDt));
+    const bank = Math.round(chase.roll * 2000) / 2000;
+    if (bank !== lastBank) {
+      lastBank = bank;
+      try {
+        auraApp.camera?.setRoll(bank, { halflife: 0.14 });
+      } catch {
+        /* camera controller not mounted */
+      }
+    }
+    const camAnchorY = Math.max(0, py * 0.85) + sh.y - camDrop;
     const rx = (wx: number) => wx - camAnchorX;
     const ry = (wy: number) => wy - camAnchorY;
     const rz = (wz: number) => wz - pz;
 
     // 1. Freeway deck, walls and trims
     const centerZ = -150;
-    outerGroundHandle.setPosition(rx(0), ry(-0.22), centerZ);
+    outerGroundHandle.setPosition(rx(0), ry(HAZE_FLOOR_Y), -300);
+    outerGroundHandle.setUniform?.("scroll", [camAnchorX, pz] as never);
     asphaltDeckHandle.setPosition(rx(0), ry(-0.06), centerZ);
     shoulderLeftHandle.setPosition(rx(-9.0), ry(0.012), centerZ);
     shoulderRightHandle.setPosition(rx(9.0), ry(0.012), centerZ);
     barrierLeftHandle.setPosition(rx(-10.6), ry(0.52), centerZ);
     barrierRightHandle.setPosition(rx(10.6), ry(0.52), centerZ);
-    soundwallLeftHandle.setPosition(rx(-11.6), ry(1.25), centerZ);
-    soundwallRightHandle.setPosition(rx(11.6), ry(1.25), centerZ);
-    neonTrimLeftHandle.setPosition(rx(-11.3), ry(2.42), centerZ);
-    neonTrimRightHandle.setPosition(rx(11.3), ry(2.42), centerZ);
+    soundwallLeftHandle.setPosition(rx(-PARAPET_X), ry(PARAPET_Y), centerZ);
+    soundwallRightHandle.setPosition(rx(PARAPET_X), ry(PARAPET_Y), centerZ);
+    neonTrimLeftHandle.setPosition(rx(-TRIM_X), ry(TRIM_Y), centerZ);
+    neonTrimRightHandle.setPosition(rx(TRIM_X), ry(TRIM_Y), centerZ);
+
+    // AO-E2: deck pylons, world-anchored rows (2 instanced nodes)
+    pylonColumns.begin();
+    pylonCaps.begin();
+    const piers = pylonLayout(pz);
+    for (const c of piers.columns) pylonColumns.add(rx(c.x), ry(c.y), rz(c.z));
+    for (const c of piers.caps) pylonCaps.add(rx(c.x), ry(c.y), rz(c.z));
+    pylonColumns.commit();
+    pylonCaps.commit();
 
     dashPool.begin();
     const dashBaseZ = Math.floor(pz / DASH_STRIDE_Z) * DASH_STRIDE_Z + DASH_STRIDE_Z;
@@ -944,6 +1412,12 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       for (let i = 0; i < DASH_COUNT_PER_DIVIDER; i++) dashPool.add(lx, ry(0.015), rz(dashBaseZ - i * DASH_STRIDE_Z));
     }
     dashPool.commit();
+    decalPool.begin();
+    for (const d of decalLayout(pz)) {
+      const size = DECAL_SIZE[d.kind];
+      decalPool.add(rx(d.x), ry(DECAL_Y), rz(d.z), 0, d.yaw, 0, size[0], DECAL_KIND_CODE[d.kind], size[1]);
+    }
+    decalPool.commit();
 
     // Overhead sign gantries: one per collidable world slot (audit RR-2); empty slots are not drawn
     gantrySteel.begin();
@@ -963,6 +1437,36 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     gantrySteel.commit();
     gantryBoards.commit();
     gantryTrims.commit();
+    // AO-W1: one SDF label per gantry slot on the left board's face; empty slots hide theirs
+    for (let i = 0; i < gantryLabels.length; i++) {
+      const label = gantryLabels[i];
+      if (!label) continue;
+      const wz = Number(worldGantries[i]?.position?.z ?? 1e5);
+      const gz = rz(wz);
+      const shown = wz < 1e4 && gz > -560 && gz < 40;
+      if (shown) label.setPosition(rx(GANTRY_LABEL_OFFSET[0]), ry(GANTRY_LABEL_OFFSET[1]), gz + GANTRY_LABEL_OFFSET[2]);
+      label.setVisible(shown);
+    }
+
+    // AO-W1: beacon rings, interchange spans and billboards (world-anchored rows)
+    ringPool.begin();
+    for (const r of ringLayout(pz)) ringPool.add(rx(r.x), ry(r.y), rz(r.z));
+    ringPool.commit();
+    spanDecks.begin();
+    spanPiers.begin();
+    const spans = spanLayout(pz);
+    for (const d of spans.decks) spanDecks.add(rx(d.x), ry(d.y), rz(d.z));
+    for (const d of spans.piers) spanPiers.add(rx(d.x), ry(d.y), rz(d.z));
+    spanDecks.commit();
+    spanPiers.commit();
+    billboardFrames.begin();
+    billboardFaces.begin();
+    for (const b of billboardLayout(pz)) {
+      billboardFrames.add(rx(b.x), ry(b.y), rz(b.z));
+      billboardFaces.add(rx(b.x), ry(b.y), rz(b.z) + 0.3);
+    }
+    billboardFrames.commit();
+    billboardFaces.commit();
 
     // Highway light poles, world-anchored rows
     polePool.begin();
@@ -981,23 +1485,31 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     polePool.commit();
     armPool.commit();
     lampPool.commit();
-
-    // Skyline, world-anchored rows from one behind the camera to four ahead (audit RR-8)
-    skylinePool.begin();
-    const skylineBaseZ = Math.floor(pz / SKYLINE_STRIDE_Z) * SKYLINE_STRIDE_Z;
-    for (let row = -1; row < SKYLINE_ROWS - 1; row++) {
-      const sz = rz(skylineBaseZ - 65 - row * SKYLINE_STRIDE_Z);
-      skylinePool.add(rx(-42), ry(-0.2), sz);
-      skylinePool.add(rx(42), ry(-0.2), sz);
+    // AO-L3: the sodium spots hang under the lamp heads of the next three pole rows, alternating sides
+    for (let k = 0; k < sodiumSpots.length; k++) {
+      const spot = sodiumSpots[k];
+      if (!spot) continue;
+      const side = k % 2 === 0 ? -1 : 1;
+      spot.setPosition(rx(side * 10.55), ry(7.3), rz(poleBaseZ - (k + 1) * POLE_STRIDE_Z));
     }
-    skylinePool.commit();
+
+    // AO-A1: glass towers, world-anchored rows from one behind the camera to ~560 m ahead (audit RR-8 recycling rule)
+    for (const variant of TOWER_VARIANTS) towerPools[variant].begin();
+    const towers = towerLayout(pz);
+    for (let i = 0; i < towers.length; i++) {
+      const t = towers[i]!;
+      towerPools[t.variant].add(rx(t.x), ry(t.y), rz(t.z), 0, t.yaw, 0, t.width, t.height, t.depth);
+    }
+    for (const variant of TOWER_VARIANTS) towerPools[variant].commit();
 
     updateAtmosphereForTod(Number(g.world?.timeOfDay ?? 0));
 
     // 3. Sync Player Roadster Assembly, Thruster Plumes, Active Powerups & Contact Shadow
     const pitch = Number(p.pivot?.rotation?.x ?? p._pitch ?? 0);
     const yaw = Number(p.mesh?.rotation?.y ?? p._yaw ?? 0);
-    const roll = Number(p.pivot?.rotation?.z ?? p._bank ?? 0) + sh.roll;
+    // AO-AN1: a lane change leans the hero up to 6 degrees (barrel rolls keep their full turn); hop pitch and landing squash
+    // are the simulation's own pose
+    const roll = displayRoll(Number(p.pivot?.rotation?.z ?? p._bank ?? 0), Boolean(p.rolling)) + sh.roll;
     const squash: Vec3 = [
       Number(p.squashGroup?.scale?.x ?? 1),
       Number(p.squashGroup?.scale?.y ?? 1),
@@ -1039,6 +1551,8 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       .setPosition(hlRightW[0], hlRightW[1], hlRightW[2])
       .setRotation(pitch, yaw, roll)
       .setVisible(true);
+    headlights[0]?.setPosition(hlLeftW[0], hlLeftW[1], hlLeftW[2] - 0.2);
+    headlights[1]?.setPosition(hlRightW[0], hlRightW[1], hlRightW[2] - 0.2);
 
     // Cold-Gas Thruster Plumes (no 8.8 Hz flicker under reduced motion, audit RR-E4)
     const rearPlumeLevel = clamp(
@@ -1166,15 +1680,29 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       playerHandles.magnetRing.setScale(HIDDEN_SCALE).setVisible(false);
     }
 
-    // Ground Contact Shadow
-    const groundBelow = Number(p.groundBelow ?? 0);
-    const alt = Math.max(0, py - groundBelow);
-    const shadowScale = clamp(1 - alt * 0.045, 0.35, 1.05);
-    playerHandles.contactShadow
-      .setPosition(pRoot[0], ry(groundBelow + 0.035), pRoot[2])
-      .setRotation(0, yaw, 0)
-      .setScale([shadowScale, 1, shadowScale])
-      .setVisible(alt < 20);
+    // AO-V1: the cyan twin-thruster wake. Points are dropped in world space at the nozzles (the hero is drawn at world
+    // [px, py, pz - 1.15]) and drawn through rx/ry/rz like the deck, so they stream back at the run's speed.
+    playerWakePool.begin();
+    const wakeStrength = playerWakeStrength(Number(p.speed ?? 0), g.mode === "playing");
+    const heroWorld: Vec3 = [px, py, pz - 1.15];
+    for (let n = 0; n < wakeTrails.length; n++) {
+      const trail = wakeTrails[n]!;
+      const nozzle = rotateLocalOffset(heroWorld, pitch, yaw, roll, [...APEX_PLAYER_WAKE.nozzles[n]!] as Vec3);
+      if (wakeStrength <= 0) {
+        trail.clear();
+        continue;
+      }
+      trail.sample(nozzle[0], nozzle[1], nozzle[2], simTime);
+      trail.segmentsFrom(nozzle, simTime, playerWakeOptions, wakeStrength, wakeScratch);
+      for (const seg of wakeScratch) {
+        const rot = stripRotation(seg.axis);
+        playerWakePool.add(rx(seg.center[0]), ry(seg.center[1]), rz(seg.center[2]), rot[0], rot[1], rot[2], seg.width, Math.max(0.001, seg.strength), seg.length);
+      }
+    }
+    wakeDrawn.player = playerWakePool.count;
+    playerWakePool.commit();
+
+    // AO-L4: the hero's ground contact comes from the sun's cascades and the contact-shadow pass (the black disc is gone)
 
     // 4. Ground traffic: every vehicle in the window, in its own type's pool (audit RR-1), facing its travel direction (RR-3)
     const rawVehicles: any[] = Array.isArray(g.traffic?.vehicles) ? g.traffic.vehicles : [];
@@ -1251,6 +1779,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     skyCarFarPool.begin();
     skyPlumePool.begin();
     skyHaloPool.begin();
+    rivalWakePool.begin();
     for (let i = 0; i < skySlots.length; i++) {
       const sc = skySlots[i];
       const sx = rx(Number(sc.x ?? 0));
@@ -1263,11 +1792,24 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       const tailZ = oncoming ? sz - 2.35 : sz + 2.35;
       skyPlumePool.add(sx, sy + 0.45, tailZ, oncoming ? -Math.PI * 0.5 : Math.PI * 0.5, 0, 0, 0.9, 1.2 * flicker, 0.9);
       if (oncoming) skyHaloPool.add(sx, sy + 0.55, sz + 2.15, 0, 0, REDUCED_MOTION ? 0 : simTime * 4);
+      // AO-V1: a red streak behind the rival's jet, as long as its own world speed times the wake life (read-only prevZ)
+      const wake = rivalWake(
+        { x: Number(sc.x ?? 0), y: Number(sc.y ?? 12) + 0.45, z: Number(sc.z ?? 0), prevZ: Number(sc.prevZ ?? sc.z ?? 0), length: 4.7, dir: Number(sc.dir ?? 1) },
+        FIXED_DT,
+        rivalWakeLife
+      );
+      if (wake) {
+        const axis: Vec3 = [wake.jet[0] - wake.far[0], wake.jet[1] - wake.far[1], wake.jet[2] - wake.far[2]];
+        const rot = stripRotation(axis);
+        rivalWakePool.add(rx((wake.jet[0] + wake.far[0]) / 2), ry((wake.jet[1] + wake.far[1]) / 2), rz((wake.jet[2] + wake.far[2]) / 2), rot[0], rot[1], rot[2], APEX_RIVAL_WAKE.width, 1, wake.length);
+      }
     }
     skyCarPool.commit();
     skyCarFarPool.commit();
     skyPlumePool.commit();
     skyHaloPool.commit();
+    wakeDrawn.rivals = rivalWakePool.count;
+    rivalWakePool.commit();
 
     // 6. Bolts and power-ups, nearest ahead first (audit RR-4)
     const rawPickups: any[] = Array.isArray(g.traffic?.pickups) ? g.traffic.pickups : [];
@@ -1325,6 +1867,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     ev.visiblePools.powerups = powerDrawn;
     lastPz = pz;
     lastGantries = worldGantries;
+    if (framesRendered % 10 === 1) publishQa(pRoot);
     publishBeacon(ev);
   }
 
@@ -1441,15 +1984,36 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     }
   }
 
+  /** Time-of-day buttons (AO-H1): the active one is always the variant the presented time of day shows (the beacon's
+   *  `timeOfDay`), so no button sticks; `aria-pressed` marks a pinned time of day. */
+  const todButtons = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-aura-tod]"));
+  function syncTodButtons(presentedTod: number): void {
+    const variant = apexLookAt(presentedTod).variant;
+    for (const b of todButtons) {
+      const value = parseFloat(b.dataset.auraTod ?? "0");
+      b.classList.toggle("active", apexLookAt(value).variant === variant);
+      b.setAttribute("aria-pressed", String(manualTodOverride !== null && Math.abs(manualTodOverride - value) < 1e-6));
+    }
+  }
+
   function bindToolbar(): void {
+    const bar = document.querySelector<HTMLElement>(".aura3d-top-bar");
+    const chip = document.getElementById("aura-showcase-chip");
+    const panel = document.getElementById("aura-showcase-panel");
+    // AO-H1: one Showcase chip, only for ?dev=1 or ?capture=1; players see the HUD alone
+    if (bar) bar.hidden = !SHOWCASE_CHIP;
+    chip?.addEventListener("click", () => {
+      if (!panel) return;
+      panel.hidden = !panel.hidden;
+      chip.setAttribute("aria-expanded", String(!panel.hidden));
+      (chip as HTMLButtonElement).blur();
+    });
     const btnFreeway = document.getElementById("aura-btn-freeway");
     const btnSky = document.getElementById("aura-btn-sky");
     const btnRamp = document.getElementById("aura-btn-ramp");
     const btnRoll = document.getElementById("aura-btn-roll");
     const btnRocket = document.getElementById("aura-btn-rocket");
     const btnAuto = document.getElementById("aura-btn-auto") as HTMLButtonElement | null;
-    const modeBtns = [btnFreeway, btnSky, btnRamp];
-    const todBtns = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-aura-tod]"));
 
     if (btnAuto) {
       btnAuto.classList.toggle("active", autopilot);
@@ -1463,12 +2027,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       });
     }
 
-    const setActiveBtn = (target: HTMLElement | null) => {
-      for (const b of modeBtns) {
-        b?.classList.toggle("active", b === target);
-      }
-    };
-    /** One-shot actions flash briefly and drop focus, so they never look held on (audit RR-14). */
+    /** Scenario actions flash briefly and drop focus, so none looks held on (audit RR-14, AO-H1). */
     const momentary = (btn: HTMLElement | null, run: () => void) => {
       btn?.addEventListener("click", () => {
         run();
@@ -1477,35 +2036,24 @@ async function bootRoadsterRushAura3D(): Promise<void> {
         (btn as HTMLButtonElement).blur();
       });
     };
-
-    btnFreeway?.addEventListener("click", () => {
-      setActiveBtn(btnFreeway);
-      triggerScenario("freeway");
-      btnFreeway.blur();
-    });
-    btnSky?.addEventListener("click", () => {
-      setActiveBtn(btnSky);
-      triggerScenario("sky");
-      btnSky.blur();
-    });
-    btnRamp?.addEventListener("click", () => {
-      setActiveBtn(btnRamp);
-      triggerScenario("ramp");
-      btnRamp.blur();
-    });
+    momentary(btnFreeway, () => triggerScenario("freeway"));
+    momentary(btnSky, () => triggerScenario("sky"));
+    momentary(btnRamp, () => triggerScenario("ramp"));
     momentary(btnRoll, () => triggerScenario("roll"));
     momentary(btnRocket, () => triggerScenario("rocket"));
 
-    for (const btn of todBtns) {
+    for (const btn of todButtons) {
       btn.addEventListener("click", () => {
-        for (const b of todBtns) b.classList.toggle("active", b === btn);
         const todVal = parseFloat(btn.dataset.auraTod ?? "0");
-        manualTodOverride = Number.isFinite(todVal) ? todVal : 0;
-        const g = (window as any).__GAME__?.game;
-        g?.world?.setTimeOfDay?.(manualTodOverride);
+        const value = Number.isFinite(todVal) ? todVal : 0;
+        // pressing the pinned time of day again releases it: the sky follows the run again (presentation only)
+        manualTodOverride = manualTodOverride !== null && Math.abs(manualTodOverride - value) < 1e-6 ? null : value;
+        lastTodBucket = -1;
+        syncTodButtons(manualTodOverride ?? Number((window as any).__GAME__?.game?.world?.timeOfDay ?? 0));
         btn.blur();
       });
     }
+    syncTodButtons(manualTodOverride ?? 0);
   }
 
   bindToolbar();
@@ -1529,8 +2077,14 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   // Register Aura3D 60 FPS dynamic render loop callback after assets & simulation are ready
   const presenter = createRoadsterPresenter(() => nativeGame);
   nativeGame.afterStep = () => presenter.afterStep();
+  // AO-C1: the simulation is fed a clock that slow-mo slows down (same fixed steps, presented later; replays unchanged)
+  let lastClockMs = 0;
+  let simClockMs = performance.now();
   auraApp.onFrame(() => {
-    nativeGame.frameTick(performance.now());
+    const clockNow = performance.now();
+    simClockMs += (lastClockMs ? clockNow - lastClockMs : 0) * slowMo.scale(clockNow);
+    lastClockMs = clockNow;
+    nativeGame.frameTick(simClockMs);
     // draw the poses between the last two simulation steps (smooth on 120 and 144 Hz displays); manual and paused runs draw the exact latest step
     const live = !nativeGame.manual && !nativeGame.paused && !nativeGame.simPaused;
     syncRoadsterWorld(nativeGame, live ? viewOf(nativeGame, presenter.present(nativeGame, true)) : nativeGame);
@@ -1541,6 +2095,8 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   syncRoadsterWorld(nativeGame);
   // Compile every program (and wait for the environment) before the boot veil lifts (checklist R2)
   await warmPrograms(auraApp);
+  // AO-C1: three-shot letterboxed title intro on the title card (skippable; none for captures or reduced motion)
+  if (!AUTOSTART && !REDUCED_MOTION && nativeGame.mode === "title") playTitleIntro(() => nativeGame.mode !== "title");
   document.getElementById("boot")?.classList.add("done");
   document.body.dataset.aura3dReady = "true";
   canvas.dataset.ready = "true";

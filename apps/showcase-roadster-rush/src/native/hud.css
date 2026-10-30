@@ -2,39 +2,56 @@
 .rr-hud { position: fixed; inset: 0; pointer-events: none; z-index: 40; font-family: var(--font, "Whitney", "Graphik", sans-serif); color: #f4f6fb; }
 .rr-hud.rr-idle .rr-run, .rr-hud.rr-idle .rr-right { opacity: 0; }
 .rr-hud .rr-hidden { display: none !important; }
-.rr-card { background: rgba(11, 12, 20, 0.72); border: 1px solid rgba(95, 230, 255, 0.22); border-radius: 12px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4); }
+/* GU47 AO-H2: cards in the identity palette (charcoal #22232a, a cobalt #1f3fa8 edge, a tangerine #ff8a3d top rule). */
+.rr-card { background: rgba(34, 35, 42, 0.78); border: 1px solid rgba(31, 63, 168, 0.55); border-top: 2px solid rgba(255, 138, 61, 0.85); border-radius: 10px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4); }
 .rr-micro { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #9fb4c8; }
 .rr-left { position: absolute; top: 64px; left: 16px; display: flex; flex-direction: column; gap: 8px; width: 210px; }
 .rr-score-card { padding: 10px 12px; }
 .rr-head { display: flex; justify-content: space-between; align-items: baseline; }
 .rr-mult { font-family: var(--font-display, "DIN Pro", sans-serif); font-weight: 500; color: #9fb4c8; }
-.rr-mult.rr-hot { color: #ffb347; }
+.rr-mult.rr-hot { color: #ff8a3d; }
 .rr-score { font-family: var(--font-display, "DIN Pro", sans-serif); font-size: 32px; line-height: 1.1; font-weight: 500; font-variant-numeric: tabular-nums; }
 .rr-sub { font-size: 13px; color: #cdd8e4; display: flex; gap: 4px; align-items: baseline; }
 .rr-combo { height: 3px; margin: 8px 0; background: rgba(255, 255, 255, 0.1); border-radius: 2px; overflow: hidden; }
-.rr-combo i { display: block; height: 100%; background: #ffb347; transform-origin: left; transform: scaleX(0); }
-.rr-air { display: flex; align-items: center; gap: 8px; }
-.rr-air-track { flex: 1; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.12); overflow: hidden; }
-.rr-air-fill { height: 100%; background: linear-gradient(90deg, #5fe6ff, #2f7dff); transform-origin: left; }
-.rr-air.rr-low .rr-air-fill { background: #ff4d5e; }
+.rr-combo i { display: block; height: 100%; background: #ff8a3d; transform-origin: left; transform: scaleX(0); }
+/* GU47 AO-H2: motorsport cluster, an arc speedometer beside an AIR ladder (src/native/hudCluster.ts). */
+.rr-cluster { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 10px; margin-top: 6px; }
+.rr-gauge { position: relative; width: 96px; height: 76px; }
+.rr-gauge-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.rr-gauge-track, .rr-gauge-value { fill: none; stroke-width: 7; stroke-linecap: round; }
+.rr-gauge-track { stroke: rgba(244, 246, 251, 0.14); }
+.rr-gauge-value { stroke-dasharray: 0.5 100; transition: stroke-dasharray 0.12s linear; }
+.rr-gauge .rr-speed { position: absolute; left: 0; right: 0; top: 30px; text-align: center; font-size: 22px; line-height: 1; }
+.rr-gauge-unit { position: absolute; left: 0; right: 0; top: 55px; text-align: center; font-size: 10px; }
+.rr-ladder { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.rr-ladder-label { display: inline-flex; align-items: center; gap: 3px; color: #4df0ff; }
+.rr-rungs { display: flex; flex-direction: column-reverse; gap: 2px; }
+.rr-rung { display: block; width: 26px; height: 5px; border-radius: 1px; background: rgba(244, 246, 251, 0.12); }
+.rr-rung.rr-on { background: #4df0ff; box-shadow: 0 0 6px rgba(77, 240, 255, 0.45); }
+.rr-air.rr-low .rr-ladder-label { color: #ff8a3d; }
+.rr-air.rr-low .rr-rung.rr-on { background: #ff8a3d; box-shadow: 0 0 6px rgba(255, 138, 61, 0.5); animation: rr-rung-pulse 0.8s ease-in-out infinite; }
+@keyframes rr-rung-pulse { 50% { opacity: 0.45; } }
+.rr-glyph { flex: none; display: inline-block; vertical-align: -2px; }
 .rr-air.rr-flash { animation: rr-flash 0.6s ease-out; }
 @keyframes rr-flash { 0% { filter: brightness(2.4); } 100% { filter: none; } }
 .rr-powerups { display: flex; flex-direction: column; gap: 6px; }
 .rr-pu { display: flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px; background: rgba(11, 12, 20, 0.72); border: 1px solid rgba(255, 255, 255, 0.16); font-size: 12px; }
 .rr-pu div { flex: 1; height: 4px; background: rgba(255, 255, 255, 0.12); border-radius: 2px; overflow: hidden; }
-.rr-pu i { display: block; height: 100%; background: #5fe6ff; transform-origin: left; }
-.rr-pu-rocket i { background: #ff6a3d; } .rr-pu-shield i { background: #5fe6ff; } .rr-pu-magnet i { background: #c06bff; } .rr-pu-multiplier i { background: #ffd24d; }
+.rr-pu i { display: block; height: 100%; background: #4df0ff; transform-origin: left; }
+.rr-pu-rocket i { background: #ff8a3d; } .rr-pu-shield i { background: #4df0ff; } .rr-pu-magnet i { background: #c8d2e0; } .rr-pu-multiplier i { background: #ffc61f; }
+.rr-pu-rocket .rr-glyph { color: #ff8a3d; } .rr-pu-shield .rr-glyph { color: #4df0ff; } .rr-pu-magnet .rr-glyph { color: #c8d2e0; } .rr-pu-multiplier .rr-glyph { color: #ffc61f; }
 .rr-right { position: absolute; top: 64px; right: 16px; display: flex; gap: 8px; align-items: center; pointer-events: auto; }
-.rr-icon-btn { width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(244, 246, 251, 0.25); background: rgba(11, 12, 20, 0.72); color: #f4f6fb; font-size: 13px; cursor: pointer; }
+/* AO-H2: 44 px targets on every pointer (PRD §6.2). */
+.rr-icon-btn { width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(244, 246, 251, 0.25); background: rgba(34, 35, 42, 0.78); color: #f4f6fb; font-size: 14px; cursor: pointer; }
 .rr-icon-btn.rr-off { opacity: 0.55; }
 .rr-bolts { padding: 6px 12px; display: flex; gap: 8px; align-items: baseline; }
-.rr-bolts b { font-family: var(--font-display, "DIN Pro", sans-serif); font-size: 18px; font-weight: 500; color: #ffd24d; font-variant-numeric: tabular-nums; }
-.rr-popups { position: absolute; top: 24%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.rr-popup { display: flex; gap: 10px; align-items: baseline; padding: 6px 14px; border-radius: 999px; background: rgba(11, 12, 20, 0.72); border: 1px solid rgba(95, 230, 255, 0.3); animation: rr-pop 1.8s ease-out forwards; font-size: 15px; }
+.rr-bolts b { font-family: var(--font-display, "DIN Pro", sans-serif); font-size: 18px; font-weight: 500; color: #ffc61f; font-variant-numeric: tabular-nums; }
+.rr-popups { position: absolute; top: 31%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.rr-popup { display: flex; gap: 10px; align-items: baseline; padding: 6px 14px; border-radius: 999px; background: rgba(11, 12, 20, 0.72); border: 1px solid rgba(77, 240, 255, 0.3); animation: rr-pop 1.8s ease-out forwards; font-size: 15px; }
 .rr-popup b { font-family: var(--font-display, "DIN Pro", sans-serif); font-weight: 500; }
-.rr-popup span { color: #ffd24d; font-variant-numeric: tabular-nums; }
+.rr-popup span { color: #ffc61f; font-variant-numeric: tabular-nums; }
 .rr-popup.small { font-size: 12px; }
-.rr-popup.hot { border-color: #ff6a3d; }
+.rr-popup.hot { border-color: #ff8a3d; }
 @keyframes rr-pop { 0% { opacity: 0; transform: translateY(8px) scale(0.92); } 12% { opacity: 1; transform: none; } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-14px); } }
 .rr-layer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(8, 6, 16, 0.45); pointer-events: auto; }
 .rr-dialog { padding: 22px 28px; min-width: 280px; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center; }
@@ -43,16 +60,16 @@
 .rr-dialog small { color: #9fb4c8; font-size: 12px; }
 .rr-big { font-family: var(--font-display, "DIN Pro", sans-serif); font-size: 40px; font-weight: 500; font-variant-numeric: tabular-nums; }
 .rr-best { color: #9fb4c8; font-size: 13px; }
-.rr-new { color: #ffd24d; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+.rr-new { color: #ffc61f; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
 .rr-stats { display: flex; gap: 18px; }
 .rr-stats div { display: flex; flex-direction: column; align-items: center; }
 .rr-stats b { font-family: var(--font-display, "DIN Pro", sans-serif); font-size: 18px; font-weight: 500; }
 .rr-stats span { color: #9fb4c8; font-size: 11px; }
-.rr-btn { height: 34px; padding: 0 22px; border-radius: 999px; border: 0; background: #ff2a3a; color: #fff; font-size: 13px; font-weight: 500; cursor: pointer; }
+.rr-btn { height: 44px; padding: 0 24px; border-radius: 999px; border: 0; background: #ff8a3d; color: #22232a; font-size: 14px; font-weight: 600; cursor: pointer; }
 .rr-touch { display: none; position: absolute; left: 0; right: 0; bottom: 12px; padding: 0 12px; justify-content: space-between; pointer-events: none; }
 .rr-hud.rr-touchy .rr-touch { display: flex; }
 .rr-touch button { pointer-events: auto; touch-action: none; min-width: 54px; height: 44px; margin: 3px; border-radius: 12px; border: 1px solid rgba(244, 246, 251, 0.25); background: rgba(11, 12, 20, 0.6); color: #f4f6fb; font-size: 12px; }
-.rr-touch button.active { background: rgba(95, 230, 255, 0.35); }
+.rr-touch button.active { background: rgba(77, 240, 255, 0.35); }
 .rr-touch .rr-fly { width: 100%; height: 60px; }
 @media (max-width: 760px) { .rr-left { top: 56px; left: 8px; width: 170px; } .rr-score { font-size: 26px; } }
 
@@ -62,7 +79,7 @@
 .boot-mark { font-family: var(--font-display, "DIN Pro", sans-serif); font-size: 28px; font-weight: 600; letter-spacing: 0.04em; }
 .boot-meter { width: 220px; }
 .boot-line { height: 3px; border-radius: 2px; background: rgba(255, 255, 255, 0.14); overflow: hidden; }
-.boot-line i { display: block; height: 100%; width: 100%; background: #5fe6ff; transform-origin: left; animation: boot-fill 1.4s ease-out forwards; }
+.boot-line i { display: block; height: 100%; width: 100%; background: #4df0ff; transform-origin: left; animation: boot-fill 1.4s ease-out forwards; }
 .boot-label { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: #9fb4c8; }
 @keyframes boot-fill { from { transform: scaleX(0.1); } to { transform: scaleX(1); } }
 
@@ -74,23 +91,34 @@
 .rr-controls { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 13px; color: #cdd8e4; }
 .rr-controls b { color: #f4f6fb; font-weight: 500; }
 .rr-title { cursor: pointer; }
-/* Speed and next-kilometre bar (audit RR-E5). */
-.rr-speedo { display: grid; grid-template-columns: auto auto 1fr; align-items: baseline; gap: 4px 6px; margin-top: 8px; }
+/* Speed (in the AO-H2 arc gauge) and the next-kilometre bar (audit RR-E5). */
+.rr-mile { display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 4px 6px; margin-top: 6px; }
 .rr-speed { font-family: var(--font-display, "DIN Pro", sans-serif); font-size: 18px; font-weight: 500; font-variant-numeric: tabular-nums; }
 .rr-mile-label { justify-self: end; }
 .rr-mile-track { grid-column: 1 / -1; height: 3px; border-radius: 2px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
-.rr-mile-fill { height: 100%; background: #5fe6ff; transform-origin: left; transform: scaleX(0); }
+.rr-mile-fill { height: 100%; background: #4df0ff; transform-origin: left; transform: scaleX(0); }
 /* Screen-reader only live region for trick popups (audit RR-12). */
 .rr-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 /* Touch targets of at least 44 px on touch screens (audit RR-E4, checklist U1). */
 @media (pointer: coarse) {
-  .rr-icon-btn { width: 44px; height: 44px; font-size: 15px; }
-  .rr-btn { height: 44px; }
+  .rr-icon-btn { font-size: 15px; }
 }
 /* Reduced motion: no popup slide, no air flash (the page also stops plume flicker, shield blink and camera shake). */
 @media (prefers-reduced-motion: reduce) {
   .rr-popup { animation: none; }
   .rr-air.rr-flash { animation: none; }
+  .rr-air.rr-low .rr-rung.rr-on { animation: none; }
+  .rr-gauge-value { transition: none; }
   .boot { transition: none; }
   .boot-line i { animation: none; }
+}
+/* AO-H2 on phones (last, so it wins over the base rules above): a smaller gauge and ladder and a tighter card, so the HUD stays under 12% of a 390 x 844 canvas. */
+@media (max-width: 760px) {
+  .rr-score-card { padding: 8px 10px; }
+  .rr-combo { margin: 6px 0; }
+  .rr-gauge { width: 84px; height: 67px; }
+  .rr-gauge .rr-speed { top: 26px; font-size: 19px; }
+  .rr-gauge-unit { top: 48px; }
+  .rr-rung { width: 22px; height: 4px; }
+  .rr-mile { margin-top: 4px; gap: 2px 6px; }
 }

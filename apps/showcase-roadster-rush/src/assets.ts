@@ -25,8 +25,8 @@ const definitions = {
   roadsterRushBus: glb("roadsterRushBus.9fd16d90.glb", "1618d848bbe68977143b2dab6012fa02f25b169fcd14fe0e4c528503eb1f6168", [2.6, 3.16, 12.22], 664780),
   roadsterRushCarrier: glb("roadsterRushCarrier.de50f36f.glb", "73ce0880680c5b12a4e3855bc26e8a1cd939d78c1ec6244a5e71e2360bcd04a3", [2.61, 2.98, 16.12], 664780),
   roadsterRushPlayerCar: glb("roadsterRushPlayerCar.c7f9617d.glb", "e97ea46a364607f0e45cca7bcb8e95b5f909d62a427447f18822647747e0953e", [2.23, 1.27, 4.3], 2260208),
-  roadsterRushSkyCar: glb("roadsterRushSkyCar.295dcba7.glb", "b60183eae657d723efa31ffd8e0fad85962cf1b06c1d99b78250d369db406ce7", [2.23, 1.27, 4.3], 2260276),
-  showcaseModernBuildingOne: glb("showcaseModernBuildingOne.d3216bb2.glb", "d3216bb2d6d73964a5e9ec6dc888ea0bbe68eeb2d20921902d67e7f2e4a1ab1d", [1231.446, 1318.901, 1372.78], 347940)
+  roadsterRushSkyCar: glb("roadsterRushSkyCar.295dcba7.glb", "b60183eae657d723efa31ffd8e0fad85962cf1b06c1d99b78250d369db406ce7", [2.23, 1.27, 4.3], 2260276)
+  // GU47 AO-A1: the borrowed showcaseModernBuildingOne skyline is retired; the glass towers are src/render/towers.ts
 } as const;
 
 export const assets: AuraAssetMap<typeof definitions> = defineAuraAssets(definitions as never) as AuraAssetMap<typeof definitions>;

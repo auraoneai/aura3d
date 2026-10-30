@@ -1,0 +1,101 @@
+{
+  "schema": "aura3d.gu47-budget/1",
+  "slug": "roadster-rush",
+  "game": "Apex Overdrive",
+  "wp": "WP-12",
+  "budget": {
+    "desktopDenseDrawCalls": 230,
+    "phoneDenseDrawCalls": 190,
+    "lowTierDrawCalls": 184,
+    "postHighOnly": [
+      "S4 god rays",
+      "S7 motion blur"
+    ],
+    "textureMaxPx": 2048,
+    "routeJsGzipDelta": "reported (tools/bundle-report/report.mjs), phase 2",
+    "note": "Budgets are never raised to pass (PRD D7). Low tier is 80% of the High desktop budget (PRD \u00a76.4)."
+  },
+  "source": "evidence/apex-overdrive/audit-2026-10-29/summary.tsv (after rows: the instanced build on 4.6.x, software WebGL2)",
+  "before": {
+    "sunset": {
+      "title": {
+        "viewport": "1280x720",
+        "drawCalls": 114,
+        "meanLuma": 80.27,
+        "darkFrac": 0.0095
+      },
+      "gameplay-early": {
+        "viewport": "1280x720",
+        "drawCalls": 150,
+        "meanLuma": 77.58,
+        "darkFrac": 0.0174
+      },
+      "key-ramp": {
+        "viewport": "1280x720",
+        "drawCalls": 159,
+        "meanLuma": 85.04,
+        "darkFrac": 0.0161
+      },
+      "mid-drive": {
+        "viewport": "1280x720",
+        "drawCalls": 168,
+        "meanLuma": 76.87,
+        "darkFrac": 0.0148
+      },
+      "dense-50s": {
+        "viewport": "1280x720",
+        "drawCalls": 175,
+        "meanLuma": 79.46,
+        "darkFrac": 0.0001
+      },
+      "sky": {
+        "viewport": "1280x720",
+        "drawCalls": 173,
+        "meanLuma": 48.39,
+        "darkFrac": 0.3567
+      },
+      "phone-title": {
+        "viewport": "390x844",
+        "drawCalls": 108,
+        "meanLuma": 110.56,
+        "darkFrac": 0
+      },
+      "phone-gameplay-early": {
+        "viewport": "390x844",
+        "drawCalls": 139,
+        "meanLuma": 115,
+        "darkFrac": 0
+      },
+      "phone-dense-50s": {
+        "viewport": "390x844",
+        "drawCalls": 159,
+        "meanLuma": 101.38,
+        "darkFrac": 0
+      },
+      "triangles": null,
+      "textureBytes": null,
+      "pageMB": null,
+      "routeJsGzipDelta": null,
+      "runnerFps": null
+    },
+    "dusk": null,
+    "night": null,
+    "note": "No committed before capture pins dusk or night (the quick bar had no URL param); WP-38's before run on 4.6.0 shows sunset for ?tod= rows. Time-of-day spread 22.65 (PRD WP-12 Today line)."
+  },
+  "after": null,
+  "expectedDrawDelta": {
+    "AO-A1 glass towers replace showcaseModernBuildingOne (75 meshes)": -72,
+    "AO-E2 deck pylons (one instanced node; cap rings share it)": 1,
+    "AO-W1 beacon rings (one instanced node)": 1,
+    "AO-W1 interchange spans (one instanced node)": 1,
+    "AO-V1 player + rival trails (2 ribbons) and the preset pack (pooled emitters)": 4,
+    "AO-L1 remove ambient + cyan point; add camera-side fill and practical spots (lights, no draws)": 0,
+    "AO-L4 contact disc removed (one node)": -1,
+    "AO-P3/P4 motion blur and god rays (post stages, High only; no scene draws)": 0,
+    "AO-M4 energy plumes (material swap on the same nodes)": 0,
+    "AO-V2 Rocket Send heat shimmer (inside the rocket plume shader)": 0,
+    "AO-W2 road decals (one instanced plane, <= 32 live)": 1,
+    "net scene draws (expected, desktop dense)": -65,
+    "note": "Expected deltas from the authored node list; measured numbers are phase 2 (diagnostics().drawCalls in the remote capture)."
+  }
+}

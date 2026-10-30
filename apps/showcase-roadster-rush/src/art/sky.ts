@@ -1,4 +1,5 @@
 import type { material } from "@aura3d/engine";
+import { apexLookAt, hexToUnit } from "./look";
 
 type CustomSpec = Parameters<typeof material.custom>[0];
 type V3 = [number, number, number];
@@ -30,8 +31,14 @@ void main() {
   vec3 horizon = a3dSrgbToLinear(skyHorizon);
   vec3 mid = a3dSrgbToLinear(skyMid);
   vec3 top = a3dSrgbToLinear(skyTop);
-  vec3 col = a3dSkyGradient(d, horizon, mix(mid, top, a3dSaturate(d.y * 1.4)), horizon * 0.35);
-  col = mix(col, horizon, (1.0 - smoothstep(0.0, 0.22, d.y)) * 0.55);
+  // GU47 AO-E1 blue hour: violet mid sky into a cobalt zenith over a thin tangerine band (about 6 deg: sin 6 deg = 0.105),
+  // brightest toward the sun's azimuth; below the horizon the city haze (the haze floor shader draws the ground itself).
+  float up = max(d.y, 0.0);
+  vec3 col = mix(mid, top, smoothstep(0.06, 0.62, up));
+  float sunSide = 0.55 + 0.45 * a3dSaturate(dot(normalize(vec2(d.x, d.z) + 1e-5), normalize(sunDirXZ + 1e-5)));
+  float band = (1.0 - smoothstep(0.0, 0.105, up)) * sunSide;
+  col = mix(col, horizon, band);
+  col = mix(col, horizon * 0.35, 1.0 - smoothstep(-0.08, 0.0, d.y));
 
   // high clouds lit from below by the low sun
   float h = max(d.y, 0.0);
@@ -46,51 +53,40 @@ void main() {
   vec3 cloud = mix(mid * 0.55, lightTint * 1.25, lit);
   col = mix(col, cloud, dens * 0.82);
 
-  // sun disc, bloom-friendly corona and horizon haze (the sun turns into a dim moon at night)
+  // sun disc, a bloom-sized corona (the racer bloom's 0.85 threshold catches the inner glow only) and horizon haze
+  // (the sun turns into a dim moon at night)
   float sunPower = 1.0 - nightAmount * 0.82;
-  float disc = a3dSunDisc(d, sunDir, 0.052);
-  float glow = a3dSunGlow(d, sunDir, 26.0);
-  float wide = a3dSunGlow(d, sunDir, 5.5);
-  col += lightTint * (disc * 3.2 + glow * 0.95 + wide * 0.22) * sunPower;
-  col += a3dHorizonHaze(d, lightTint * 0.38, 0.12) * (1.0 - nightAmount * 0.7);
+  float disc = a3dSunDisc(d, sunDir, 0.04);
+  float glow = a3dSunGlow(d, sunDir, 34.0);
+  float wide = a3dSunGlow(d, sunDir, 6.0);
+  col += lightTint * (disc * 2.6 + glow * 0.8 + wide * 0.2) * sunPower;
+  col += a3dHorizonHaze(d, lightTint * 0.3, 0.09) * (1.0 - nightAmount * 0.7);
 
-  // city glow under the horizon and stars by night
-  col += a3dSrgbToLinear(cityGlow) * (1.0 - smoothstep(0.0, 0.1, abs(d.y))) * (0.15 + nightAmount * 0.55);
+  // sodium city glow rising from under the horizon (strongest at night) and stars by night
+  col += a3dSrgbToLinear(cityGlow) * (1.0 - smoothstep(0.0, 0.08, abs(d.y))) * (0.1 + nightAmount * 0.6);
   col += vec3(0.8, 0.88, 1.0) * starField(d) * nightAmount * (1.0 - dens);
 
   outColor = vec4(a3dFinite(col), 1.0);
 }`;
 
 export function skySpec(): CustomSpec {
+  const boot = skyLook(0);
   return {
     glsl: { vertex: VERTEX, fragment: FRAGMENT },
     uniforms: {
-      skyHorizon: { type: "vec3", value: [1, 0.55, 0.38] },
-      skyMid: { type: "vec3", value: [0.7, 0.32, 0.42] },
-      skyTop: { type: "vec3", value: [0.2, 0.12, 0.3] },
-      sunDir: { type: "vec3", value: [0.08, 0.12, -0.99] },
-      sunDirXZ: { type: "vec2", value: [0.08, -0.99] },
-      sunColor: { type: "vec3", value: [1, 0.62, 0.36] },
-      cityGlow: { type: "vec3", value: [1, 0.42, 0.55] },
+      skyHorizon: { type: "vec3", value: boot.skyHorizon },
+      skyMid: { type: "vec3", value: boot.skyMid },
+      skyTop: { type: "vec3", value: boot.skyTop },
+      sunDir: { type: "vec3", value: boot.sunDir },
+      sunDirXZ: { type: "vec2", value: boot.sunDirXZ },
+      sunColor: { type: "vec3", value: boot.sunColor },
+      cityGlow: { type: "vec3", value: boot.cityGlow },
       nightAmount: { type: "f32", value: 0 }
     },
     side: "back",
     depthWrite: false
   };
 }
-
-const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
-const mix3 = (a: V3, b: V3, t: number): V3 => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
-const hex = (h: string): V3 => {
-  const n = parseInt(h.replace("#", ""), 16);
-  return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
-};
-
-const STOPS = [
-  { horizon: hex("#ff9a5c"), mid: hex("#b84a6a"), top: hex("#3a2354"), sun: hex("#ffb066"), glow: hex("#ff6a5a") },
-  { horizon: hex("#d8527a"), mid: hex("#5c2a62"), top: hex("#1b1538"), sun: hex("#ff5c88"), glow: hex("#ff3f86") },
-  { horizon: hex("#2a2f66"), mid: hex("#12183f"), top: hex("#050818"), sun: hex("#5ec8ff"), glow: hex("#4aa8ff") }
-];
 
 export interface SkyLook {
   skyHorizon: V3;
@@ -103,22 +99,20 @@ export interface SkyLook {
   nightAmount: number;
 }
 
-/** Time of day 0 (sunset) .. 1 (night) to the dome palette; the sun sinks with the same curve the old sun disc used. */
+/**
+ * Time of day 0 (sunset) .. 1 (night) to the dome palette, from the look table (src/art/look.ts) so the dome, the key light
+ * and the fog read the same row. The disc sits on the key's direction (GU47 AO-L1: key, disc and shadows agree).
+ */
 export function skyLook(todRaw: number): SkyLook {
-  const tod = Math.min(1, Math.max(0, todRaw));
-  const k = tod <= 0.5 ? tod * 2 : (tod - 0.5) * 2;
-  const a = STOPS[tod <= 0.5 ? 0 : 1]!;
-  const b = STOPS[tod <= 0.5 ? 1 : 2]!;
-  const sunY = lerp(34, 6, tod);
-  const dir: V3 = [24, sunY, -290];
-  const len = Math.hypot(dir[0], dir[1], dir[2]);
-  const sunDir: V3 = [dir[0] / len, dir[1] / len, dir[2] / len];
+  const frame = apexLookAt(todRaw);
+  const tod = frame.tod;
+  const sunDir = frame.sunDir;
   return {
-    skyHorizon: mix3(a.horizon, b.horizon, k),
-    skyMid: mix3(a.mid, b.mid, k),
-    skyTop: mix3(a.top, b.top, k),
-    sunColor: mix3(a.sun, b.sun, k),
-    cityGlow: mix3(a.glow, b.glow, k),
+    skyHorizon: hexToUnit(frame.dome.horizon),
+    skyMid: hexToUnit(frame.dome.mid),
+    skyTop: hexToUnit(frame.dome.top),
+    sunColor: hexToUnit(frame.dome.sun),
+    cityGlow: hexToUnit(frame.dome.glow),
     sunDir,
     sunDirXZ: [sunDir[0], sunDir[2]],
     nightAmount: Math.min(1, Math.max(0, (tod - 0.45) / 0.55))

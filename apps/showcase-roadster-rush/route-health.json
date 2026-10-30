@@ -36,16 +36,6 @@
       "typedRef": "assets.roadsterRushSedan",
       "quality": "production",
       "role": "setDressing"
-    },
-    {
-      "typedRef": "assets.rooftopFloodlightTowerMeshy",
-      "quality": "production",
-      "role": "setDressing"
-    },
-    {
-      "typedRef": "assets.showcaseModernBuildingOne",
-      "quality": "production",
-      "role": "setDressing"
     }
   ],
   "notes": "Aura3D 4.0.2 full 3D endless freeway & sky-lane reimplementation on a native Aura3D simulation (no third-party engine bundle) with 11 typed GLB vehicles, cold-gas thruster plumes, carrier ramp launches, sky dogfights, smart idle autopilot, and quick-switcher toolbar."
