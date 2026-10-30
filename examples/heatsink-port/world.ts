@@ -9,7 +9,7 @@ import { camera, cameras, effects, environments, geometry, lights, material, pri
 import { CFG } from "./config";
 import { buildArches, buildDividers, buildProps, buildRails, buildRoad, buildShards, buildShoulders, groundQuad, hexLinear, padQuad, veilQuad, type MeshData } from "./meshes";
 import { blobSpec, pointsSpec, roadSpec, setShading, skySpec, solidSpec, streakSpec, terrainSpec, veilSpec, wakeSpec, type Rgb } from "./materials";
-import { bankRoll, createIonWake } from "./art/wake";
+import { bankRoll, createIonWake, createSporeField, sporeField } from "./art/wake";
 import { districtFog, fogApproach } from "./art/look";
 import { HEATSINK_VFX, registerHeatsinkVfx, vfxScale } from "./art/vfx";
 import { axisRotation, droneEuler, matrixToEulerZYX, multiplyMat3 } from "./orient";
@@ -268,6 +268,21 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
     }), { name: "ion-wake", material: material.custom(wakeSpec()), castShadow: false }).runtime({ id: "ion-wake" }));
   }
 
+  /* IC-20: slow bioluminescent spores in a camera-following 60 m box (one points draw, +1); twilight only, 120 on Low */
+  if (look.dressing.spores > 0) {
+    const n = look.dressing.spores;
+    b.add(geometry.custom(geometry.dynamic({
+      positions: f32(new Array<number>(n * 3).fill(0)),
+      topology: "points",
+      bounds: courseBounds,
+      attributes: {
+        size: { itemSize: 1, data: f32(new Array<number>(n).fill(0)) },
+        tint: { itemSize: 3, data: f32(new Array<number>(n * 3).fill(1)) },
+        fade: { itemSize: 1, data: f32(new Array<number>(n).fill(0)) }
+      }
+    }), { name: "spores", material: material.custom(pointsSpec()) }).runtime({ id: "spores" }));
+  }
+
   /* HP-19: no deprecated `radius`; threshold at HDR white and intensity under the noise-risk line */
   b.add(effects.bloom({ name: "bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold }));
   b.add(effects.colorGrade({ name: "grade", exposure: look.grade.exposure, contrast: look.grade.contrast, saturation: look.grade.saturation }));
@@ -287,6 +302,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
   const twilight = row.wake.enabled;
   if (twilight) { try { if (app.effects) registerHeatsinkVfx(app as { effects: NonNullable<AuraApp["effects"]> }); } catch { /* effects runtime unavailable: the game's own points still burst */ } }
   const wake = twilight ? createIonWake(row) : null;
+  const spores = row.dressing.spores > 0 ? createSporeField(row.dressing.spores) : null;
   const fogNow: [number, number, number] = [...row.fog.color];
   let fogReady = false;
   const glowNow: [number, number, number] = [0.376, 0.957, 1];
@@ -583,6 +599,20 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       wn.updateAttribute?.("wakeAlpha", { array: wake.alpha, offset: 0 });
     }
 
+    /* IC-20 spores: positions are a pure function of the seed, time and eye (wrapped into the box); reduced motion shows half */
+    if (spores) {
+      const live = motion.reduced ? Math.floor(spores.n / 2) : spores.n;
+      sporeField(spores, time, pose.eye, live);
+      const sn = node("spores");
+      sn.updateAttribute?.("position", { array: spores.pos, offset: 0 });
+      sn.updateAttribute?.("fade", { array: spores.fade, offset: 0 });
+      if (!spores.tinted) {
+        sn.updateAttribute?.("size", { array: spores.size, offset: 0 });
+        sn.updateAttribute?.("tint", { array: spores.tint, offset: 0 });
+        spores.tinted = true;
+      }
+    }
+
     /* exhaust */
     if (!p.crashed && p.v > 4) {
       budget += Math.min(0.1, dt) * (p.abActive ? 520 : 90 + p.v * 1.4);
@@ -622,6 +652,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     rollNow = 0;
     fogReady = false;
     wake?.clear();
+    if (spores) spores.tinted = false;
     seen = 0;
     opsSeen = 0;
     head = 0;

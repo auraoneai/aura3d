@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { LOOKS, districtFog, fogApproach, lookFromSearch, lowTier, postToggles, reducedMotionLook } from "../../../examples/heatsink-port/art/look";
-import { bankRoll, createIonWake } from "../../../examples/heatsink-port/art/wake";
+import { SPORE_BOX, bankRoll, createIonWake, createSporeField, sporeField } from "../../../examples/heatsink-port/art/wake";
 import { HEATSINK_VFX_MAX_LIVE, HEATSINK_VFX_PRESETS, registerHeatsinkVfx, vfxScale } from "../../../examples/heatsink-port/art/vfx";
 import { allProgramSpecs } from "../../../examples/heatsink-port/materials";
 import { Track } from "../../../examples/heatsink-port/track";
@@ -124,5 +124,19 @@ describe("heatsink-port VFX presets (IC-19)", () => {
     expect(seen.sort()).toEqual(Object.keys(HEATSINK_VFX_PRESETS).sort());
     const total = Object.values(HEATSINK_VFX_PRESETS).reduce((n, spec) => n + spec.layers.reduce((m, l) => m + (typeof l.count === "number" ? l.count : 0), 0), 0);
     expect(total).toBeLessThanOrEqual(HEATSINK_VFX_MAX_LIVE);
+  });
+});
+
+describe("heatsink-port spores (IC-20)", () => {
+  it("keeps 300 spores inside the camera box, deterministic, half shown on reduced motion", () => {
+    const a = createSporeField(300), b = createSporeField(300);
+    sporeField(a, 3.5, [100, 20, -40]); sporeField(b, 3.5, [100, 20, -40]);
+    expect(Array.from(a.pos)).toEqual(Array.from(b.pos));
+    for (let i = 0; i < 300; i++) expect(Math.abs(a.pos[i * 3]! - 100)).toBeLessThanOrEqual(SPORE_BOX / 2 + 1e-3);
+    expect(Array.from(a.fade).filter((v) => v > 0).length).toBeGreaterThanOrEqual(40);
+    sporeField(a, 3.5, [0, 0, 0], 150);
+    expect(Array.from(a.fade).slice(150).every((v) => v === 0)).toBe(true);
+    expect(nodes("").some((n) => n.name === "spores")).toBe(true);
+    expect(nodes("?look=original").some((n) => n.name === "spores")).toBe(false);
   });
 });

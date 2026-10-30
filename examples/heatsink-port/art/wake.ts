@@ -123,3 +123,35 @@ export function bankRoll(look: HeatsinkLookRow, steer: number, speed01: number):
   const s = Math.max(-1, Math.min(1, steer));
   return (-s * Math.min(1, speed01 * 1.4) * look.camera.rollDeg * Math.PI) / 180;
 }
+
+/** IC-20: spores in a camera-following box; seeds fixed, motion a pure function of time (no sim access) */
+export interface SporeField { readonly n: number; readonly seed: Float32Array; readonly pos: Float32Array; readonly fade: Float32Array; readonly size: Float32Array; readonly tint: Float32Array; tinted: boolean }
+export const SPORE_BOX = 60;
+
+export function createSporeField(n: number, seed = 1913): SporeField {
+  let a = seed >>> 0;
+  const rnd = (): number => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  const seedArr = new Float32Array(n * 4), size = new Float32Array(n), tint = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    seedArr.set([rnd(), rnd(), rnd(), rnd()], i * 4);
+    size[i] = 2 + rnd() * 3;
+    const violet = rnd() < 0.3;
+    tint.set(violet ? [0.36, 0.26, 1] : [0.05, 0.75, 1], i * 3);
+  }
+  return { n, seed: seedArr, pos: new Float32Array(n * 3), fade: new Float32Array(n), size, tint, tinted: false };
+}
+
+export function sporeField(f: SporeField, time: number, eye: readonly [number, number, number], live = f.n): void {
+  const B = SPORE_BOX;
+  const wrap = (v: number, c: number): number => c + (((v - c + B / 2) % B) + B) % B - B / 2;
+  for (let i = 0; i < f.n; i++) {
+    const s0 = f.seed[i * 4]!, s1 = f.seed[i * 4 + 1]!, s2 = f.seed[i * 4 + 2]!, s3 = f.seed[i * 4 + 3]!;
+    const x = s0 * 1000 + Math.sin(time * 0.3 + s3 * 6.28) * 2;
+    const y = s1 * B + time * (0.2 + s3 * 0.3);
+    const z = s2 * 1000 + Math.cos(time * 0.25 + s3 * 6.28) * 2;
+    f.pos[i * 3] = wrap(x, eye[0]);
+    f.pos[i * 3 + 1] = wrap(y, eye[1] + 6);
+    f.pos[i * 3 + 2] = wrap(z, eye[2]);
+    f.fade[i] = i < live ? 0.35 + 0.35 * Math.sin(time * 1.3 + s3 * 20) ** 2 : 0;
+  }
+}

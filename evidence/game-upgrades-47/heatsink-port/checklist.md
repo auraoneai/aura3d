@@ -23,7 +23,7 @@ Status: done = code in phase 1; P2 = needs a phase-2 capture, judge or measureme
 | IC-17 | cliff dwellings, needle spires | blocked (WP-36) |
 | IC-18 | wake >= 1.5% of frame at >= 100 km/h; amber under afterburner; +1 draw | code done (unit tests: 60 segments, 1.2 s, cyan/amber head hue); frame share P2 |
 | IC-19 | kill area +40 over 0.3 s; liveCount <= 96; vfx=off still passes | code done (preset counts sum to 96); P2 |
-| IC-20 | 300 spores, >= 40 points, +1 draw | not done (look row carries the count) |
+| IC-20 | 300 spores, >= 40 points, +1 draw | code done; emitter warning check P2 |
 | IC-21 | rotor blur, landing overshoot, crystal wind, pickup pulse, arch chase | not done |
 | IC-22 | roll ±3 deg; kick energy; replay pins unchanged; early vs race SSIM < 0.6 | partial: bank roll ±6 deg done; countdown sweep, finish orbit not done |
 | IC-23 | ion telemetry HUD, licensed numerals | not done |
