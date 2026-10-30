@@ -486,6 +486,240 @@
         "practical": true
       },
       {
+        "name": "fc score digits",
+        "node": "fc-score-dash",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h1-1",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h1-2",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h1-3",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h1-4",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h1-5",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h1-6",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h1-7",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h1-8",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h1-9",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h0-0",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h0-1",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h0-2",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h0-3",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h0-4",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h0-5",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h0-6",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h0-7",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h0-8",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h0-9",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a1-1",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a1-2",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a1-3",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a1-4",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a1-5",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a1-6",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a1-7",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a1-8",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a1-9",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a0-0",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a0-1",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a0-2",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a0-3",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a0-4",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a0-5",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a0-6",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a0-7",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a0-8",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a0-9",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
         "node": "fc-trophy-plinth",
         "practical": false
       },
