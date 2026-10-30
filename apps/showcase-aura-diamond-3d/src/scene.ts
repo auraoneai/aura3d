@@ -9,6 +9,7 @@ import { PARK_LOOKS, lookPlan, parkPracticals, type DiamondLookPlan, type Diamon
 import { turfTextures } from "./turfTextures";
 import { boardTexture } from "./boardTexture";
 import { windowTexture } from "./windowTexture";
+import { probes } from "@aura3d/engine/lanes";
 import { horizonBand, horizonForTier, type HorizonBand } from "../art/horizon";
 import { FAN_BODY, FAN_HEAD, fanColors, fanSeats } from "../art/crowd";
 import {
@@ -83,7 +84,7 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
     : material.pbr({ color: park.grass, roughness: 0.94 });
   const grassAlt = material.pbr({ color: park.grassAlt, roughness: 0.94 });
   const dirt = gu47
-    ? material.pbr({ color: turf.clay, roughness: 0.96, ...(tex ? { normal: tex.clayNormal as any, normalScale: 0.5 } : {}) })
+    ? material.pbr({ color: turf.clay, roughness: turf.clayRoughness ?? 0.96, ...(tex ? { normal: tex.clayNormal as any, normalScale: 0.5 } : {}) })
     : material.pbr({ color: park.dirt, roughness: 0.96 });
   const wallMat = material.pbr({ color: park.wall, roughness: 0.7 });
   const accent = PARK_LOOKS[park.id].accent;
@@ -521,6 +522,7 @@ export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
     }
     case "dome": {
       nodes.push(model(assets.diamondTyphoonDome, { name: "typhoon-dome-shell", targetHeight: 60, role: "setDressing", scaleMode: "fit" }).position(0, -0.4, -42).rotate(0, Math.PI, 0));
+      if (gu47) nodes.push(domeInfieldProbe());
       if (gu47) {
         // GU47 DIA-A1 / DIA-W2: the five rafters and four banners as two instanced draws (-7); banners in the Dome accent
         // and the crowd's gold, tinting the emissive too.
@@ -606,6 +608,23 @@ export function wallNameNode(park: ParkSpec): any {
   return node
     .position(face[0] - (width / 2) * Math.cos(yaw), (park.wallH - size) / 2, face[2] + (width / 2) * Math.sin(yaw))
     .rotate(0, yaw, 0);
+}
+
+/**
+ * DIA-M2: one box-projected reflection probe over the Dome's sealed (0.42 roughness) infield so it mirrors the truss
+ * panels and banners instead of the HDRI hangar. Captured once at mount (6 faces at 128 px, about +2 draws' worth of
+ * work on the first frame only); the parallax box is the dome interior around the diamond. A3D_QR_LIGHTING (default-on).
+ */
+export function domeInfieldProbe(): any {
+  return probes.reflection({
+    name: "dome-infield-probe",
+    position: [0, 6, -14],
+    box: { min: [-95, -0.5, -120], max: [95, 40, 30] },
+    resolution: 128,
+    update: "once",
+    blendDistance: 6,
+    intensity: 0.85
+  });
 }
 
 /**

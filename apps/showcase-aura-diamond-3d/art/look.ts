@@ -94,7 +94,16 @@ export interface ParkLook {
     readonly lut: string;
   };
   /** Field surfaces: real turf, terracotta clay, chalk and a darker warning track. */
-  readonly turf: { readonly grass: string; readonly stripe: string; readonly clay: string; readonly track: string; readonly trackRoughness: number; readonly chalk: string };
+  readonly turf: {
+    readonly grass: string;
+    readonly stripe: string;
+    readonly clay: string;
+    /** Infield roughness when not the 0.96 natural clay (DIA-M2: the Dome's sealed synthetic infield). */
+    readonly clayRoughness?: number;
+    readonly track: string;
+    readonly trackRoughness: number;
+    readonly chalk: string;
+  };
   /** Shirt colours of the instanced stands, one per section (7 sections). */
   readonly crowd: readonly string[];
   readonly weather?: { readonly kind: "drizzle"; readonly intensity: number; readonly density: number; readonly color: string };
@@ -254,7 +263,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
       grade: { contrast: 1.1, saturation: 0.98, temperature: 0, tint: 0.02 },
       lut: "diamond-dome-storm.cube"
     },
-    turf: { grass: "#2f6a4a", stripe: "#357553", clay: "#5a5f6b", track: "#383c46", trackRoughness: 0.4, chalk: "#e4e3dc" },
+    turf: { grass: "#2f6a4a", stripe: "#357553", clay: "#5a5f6b", clayRoughness: 0.42, track: "#383c46", trackRoughness: 0.4, chalk: "#e4e3dc" },
     crowd: ["#8f83f2", "#e4e3dc", "#f0b44a", "#2c3550", "#d0546b", "#4fa3a0", "#a7adbd"],
     signature: { splinter: "#cfb790", flash: "#eef0ff", flashIntensity: 1.2, gravityScale: 1 },
     landingFx: "diamond-clay-puff",

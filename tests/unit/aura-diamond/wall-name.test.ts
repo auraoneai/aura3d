@@ -42,3 +42,19 @@ describe("aura-diamond park name on the wall (DIA-V2)", () => {
     }
   });
 });
+
+describe("aura-diamond Dome infield reflections (DIA-M2)", () => {
+  it("mounts one box probe in the GU47 Dome only, over a sealed 0.42-roughness infield", () => {
+    for (const p of PARK_ORDER) {
+      const probesIn = nodesOf(p, "gu47").filter((n) => n.kind === "probe");
+      expect(probesIn).toHaveLength(p === "dome" ? 1 : 0);
+    }
+    const probe = nodesOf("dome", "gu47").find((n) => n.kind === "probe");
+    expect(probe.probe).toBe("reflection");
+    expect(probe.options.box.min[1]).toBeLessThan(0);
+    expect(probe.options.update).toBe("once");
+    expect(nodesOf("dome", "original").some((n) => n.kind === "probe")).toBe(false);
+    const json = JSON.stringify(nodesOf("dome", "gu47"));
+    expect(json).toContain('"roughness":0.42');
+  });
+});
