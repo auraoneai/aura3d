@@ -71,6 +71,7 @@ import { pickLocomotion } from "./locomotionRates";
 import { advanceShotBall, aimError, createHoopWorld, crossedRimDownward, solveLaunch } from "./shotPhysics";
 import { BALL_R, DRIB_SHOULDER_FALLBACK, dribbleCycleY } from "./dribble";
 import { createOnePress } from "./input";
+import { hoopMaterials } from "./hoopMaterials";
 import { MarkerPool, parkedTransforms, type MarkerSlot } from "./markerPools";
 import { LIVE_CAM, MAKE_FOV_KICK, ReplayRing, createBroadcast, createLetterbox, railPose, replayPose, replaySourceTime, type V3 as BroadcastV3 } from "./broadcast";
 import {
@@ -614,9 +615,7 @@ function buildHoopNodes(): any[] {
       scaleMode: "fit",
       castShadow: true,
       receiveShadow: true,
-      materialOverrides: [
-        { color: "#2f3439", colorMode: "replace", replaceTextures: true, roughness: 0.52, metallic: 0.58, envMapIntensity: 0.8 }
-      ]
+      materialOverrides: hoopMaterials(LOOK_ORIGINAL).rig
     })
       .position(0, 1.98, -1.08)
       .rotate(0, Math.PI, 0),
@@ -625,9 +624,7 @@ function buildHoopNodes(): any[] {
       scaleMode: "world",
       castShadow: true,
       receiveShadow: true,
-      materialOverrides: [
-        { color: "#eef3f7", colorMode: "replace", replaceTextures: true, roughness: 0.34, metallic: 0.02, clearcoat: 0.45, clearcoatRoughness: 0.22, envMapIntensity: 0.7 }
-      ]
+      materialOverrides: hoopMaterials(LOOK_ORIGINAL).backboard
     })
       .position(0, 3.35, BOARD_Z)
       .runtime(game.runtimeNode("backboard-assembly")),
@@ -635,9 +632,7 @@ function buildHoopNodes(): any[] {
       name: "hoop-rim",
       scaleMode: "world",
       castShadow: true,
-      materialOverrides: [
-        { color: "#c65a1e", colorMode: "replace", replaceTextures: true, roughness: 0.38, metallic: 0.42, envMapIntensity: 0.85 }
-      ]
+      materialOverrides: hoopMaterials(LOOK_ORIGINAL).rim
     })
       .position(RIM[0], RIM[1], RIM[2])
       .runtime(game.runtimeNode("rim-assembly")),
@@ -652,7 +647,7 @@ function buildHoopNodes(): any[] {
 
 function buildBallNodes(): any[] {
   const nodes: any[] = [
-    model(assets.hoopsBall, { name: "ball-live", scaleMode: "fit", targetMaxDimension: 0.26, castShadow: true })
+    model(assets.hoopsBall, { name: "ball-live", scaleMode: "fit", targetMaxDimension: 0.26, castShadow: true, ...(LOOK_ORIGINAL ? {} : { materialOverrides: hoopMaterials(false).ball }) })
       .position(0, 0.98, CHECK_SPOT[2])
       .runtime(game.runtimeNode("ball-live")),
     primitives.cylinder({ name: "ball-shadow", size: [0.34, 0.008, 0.34], material: material.pbr({ color: "#000000", opacity: 0.28, roughness: 1 }) }).position(0, 0.012, CHECK_SPOT[2]).runtime(game.runtimeNode("ball-shadow"))
