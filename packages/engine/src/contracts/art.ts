@@ -6,7 +6,7 @@
 
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
 
-export type GameGenre = "fighting" | "falling-blocks" | "platformer" | "racing" | "golf-physics" | "lander" | "twin-stick" | "orbital-puzzle" | "vehicle-delivery" | "rhythm-runner" | "mech-fighting" | "pinball" | "basketball" | "stealth" | "underwater-salvage" | "flight" | "billiards" | "arena-shooter";
+export type GameGenre = "fighting" | "falling-blocks" | "platformer" | "racing" | "golf-physics" | "lander" | "twin-stick" | "orbital-puzzle" | "vehicle-delivery" | "rhythm-runner" | "mech-fighting" | "pinball" | "basketball" | "stealth" | "underwater-salvage" | "flight" | "billiards" | "arena-shooter" | "maze-arcade";
 export type RebuildTier = "S-presentation" | "S-world" | "F";
 export interface GameAcceptance { readonly minOverall: 7; readonly minVisualCategory: 5; readonly critical: Readonly<Record<string, number>>; readonly minNonVisual: { readonly sound_audio: 6; readonly controls: 7; readonly game_feel: 6.5; readonly loading_transitions: 6; readonly physics_feel?: 6 }; }
 export interface GameBudgets { readonly transferToPlayableMB: number; readonly routeJsGzipKB: number; readonly drawCalls: Readonly<Record<AuraQualityTier, number>>; readonly gameLogicCpuMs: number; }

@@ -1,4 +1,4 @@
-# Look recipes — 13 genre rows
+# Look recipes — 14 genre rows
 
 One row per genre. Use the row's look id verbatim, take its camera/framing/palette
 as the starting point, then iterate in the look-dev loop. Palettes: 3 base tones +
@@ -11,6 +11,7 @@ is the subject's share of frame height.
 | racing | `golden-hour` | `chase`, fov 60 | 15–25 | 12° / 35° (low sun) | warm asphalt, burnt orange, charcoal + headlight amber | fog 30–180 m | `cinematic-film` | brake glow, speed dust | `webgl_materials_car` |
 | fighting | `arena-fight` | `follow` (side-on), fov 45 | 20–30 (pair) | top spot 60° / 0° | arena dark, rope colour, crowd shadow + spotlight rim | haze cone | `arena-fight` | hit sparks, knockback flash | `webgl_animation_skinning_morph` |
 | arena shooter | `space` | `orthographic` (top-down) 60°, fov 55 | 10–15 (field) | rim 70° / 210° | deep space blue, graphite, teal + laser magenta | none (space background exception) | `space` | model muzzle flash, shield segments | `webgl_shaders_sky` |
+| maze-arcade | `neon-arcade` | `orthographic` (top-down) 55°, fov 40 | 70–85 (maze board) | 55° / 210° (one shadowed key) | ink navy floor, slate walls, graphite trim + pellet cyan | fog 60–320 m (half night-city) | `neon-night` | pellet pickup sparkle, emissive wall trace along the runner's path | `webgl_lights_spotlights` |
 | sports/table | `interior-industrial` | broadcast `orthographic` (top-down) 70°, fov 40 | 25–40 (table) | flood 55° / 45° | turf green, line white, crowd dark + ball accent | indoor haze | `arena-fight` | scoreboard pulse | `webgl_materials_lightmap` |
 | product | `product-studio` | `orbit` autoframe, fov 35 | 45–70 | softbox 45° / 30° | neutral grey, white, metal + one brand accent | none | `product-studio` | sweep highlight on turn | `webgl_materials_video` |
 | character | `character-showcase` | `orbit`, fov 40 | 50–70 | 3-point 50° / 35° | costume-driven neutrals + rim pick | light room haze | `product-studio` | cloth/hair motion settle | `webgl_animation_skinning_blending` |
