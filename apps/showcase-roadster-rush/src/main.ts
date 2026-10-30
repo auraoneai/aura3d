@@ -26,6 +26,7 @@ import {
   APEX_PALETTE,
   APEX_SUN,
   apexLookAt,
+  hexToUnit,
   parseTodParam
 } from "./art/look";
 import { apexFlash, apexFlashAlpha, apexPostPlan, applyApexPostPlan, type ApexFlashKind } from "./art/post";
@@ -36,7 +37,8 @@ import { gantryBoxes } from "./render/gantry";
 import { assets } from "./assets";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { SHIELD_SIZE, shieldSpec } from "./art/shield";
-import { groundSpec } from "./art/ground";
+import { HAZE_FLOOR_Y, groundSpec } from "./art/ground";
+import { PYLON_KIT, PYLON_ROWS, pylonLayout } from "./render/pylons";
 import { meshyFarVehicles, meshyVehicles } from "./meshy-vehicles";
 import { SKY_DOME_SIZE, skyLook, skySpec } from "./art/sky";
 import { createCameraShake, createHitStop, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
@@ -124,6 +126,14 @@ const DASH_STRIDE_Z = 14;
 /** Light poles: world-anchored rows every 34 m from one row behind the camera to about 320 m ahead, both sides. */
 const POLE_ROWS = 11;
 const POLE_STRIDE_Z = 34;
+
+/** AO-E2: steel parapet rail on each Jersey barrier (the old 2.5 m sound walls hid the drop to the haze floor). */
+const PARAPET_X = 10.6;
+const PARAPET_Y = 1.16;
+const PARAPET_RAIL_SIZE: Vec3 = [0.16, 0.14, 380];
+/** The LED trims sit on the barrier tops, inside the rails. */
+const TRIM_X = 10.32;
+const TRIM_Y = 1.07;
 
 /** Skyline: world-anchored rows every 140 m, one row behind the camera and four ahead, so a building only recycles after it has passed the camera (audit RR-8). */
 const SKYLINE_ROWS = 5;
@@ -316,12 +326,13 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
 
   // 1. Endless Scrolling 5-Lane Sunset Freeway Deck, Shoulders, Jersey Barriers & Neon Sound Walls
   s.addMany([
+    // AO-E2: the city 28 m below the deck, seen past the parapets as a haze floor with lit window specks (art/ground.ts)
     primitives
       .box({
         name: "freeway-outer-ground",
-        size: [1200, 0.12, 520],
-        material: material.custom(groundSpec()), castShadow: false })
-      .position(0, -0.22, -160)
+        size: [1400, 0.12, 900],
+        material: material.custom(groundSpec()), castShadow: false, receiveShadow: false })
+      .position(0, HAZE_FLOOR_Y, -300)
       .runtime(game.runtimeNode("freeway-outer-ground")),
     primitives
       .box({
@@ -360,35 +371,39 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       })
       .position(10.6, 0.52, -150)
       .runtime(game.runtimeNode("freeway-barrier-right")),
+    // AO-E2: the 2.5 m sound walls hid the drop; a steel parapet rail on each barrier lets the camera see down to the haze
+    // floor (runtime ids kept, so the sync below is unchanged)
     primitives
       .box({
         name: "freeway-soundwall-left",
-        size: [0.45, 2.5, 380],
-        material: material.pbr({ color: "#232634", roughness: 0.72 })
+        size: PARAPET_RAIL_SIZE,
+        material: material.pbr({ color: "#4a4f5c", roughness: 0.42, metalness: 0.7 }),
+        castShadow: false
       })
-      .position(-11.6, 1.25, -150)
+      .position(-PARAPET_X, PARAPET_Y, -150)
       .runtime(game.runtimeNode("freeway-soundwall-left")),
     primitives
       .box({
         name: "freeway-soundwall-right",
-        size: [0.45, 2.5, 380],
-        material: material.pbr({ color: "#232634", roughness: 0.72 })
+        size: PARAPET_RAIL_SIZE,
+        material: material.pbr({ color: "#4a4f5c", roughness: 0.42, metalness: 0.7 }),
+        castShadow: false
       })
-      .position(11.6, 1.25, -150)
+      .position(PARAPET_X, PARAPET_Y, -150)
       .runtime(game.runtimeNode("freeway-soundwall-right")),
     primitives
       .box({
         name: "freeway-neon-trim-left",
         size: [0.12, 0.14, 380],
         material: material.emissive({ color: "#38bdf8", emissive: "#38bdf8", emissiveIntensity: 1.35 }), castShadow: false })
-      .position(-11.3, 2.42, -150)
+      .position(-TRIM_X, TRIM_Y, -150)
       .runtime(game.runtimeNode("freeway-neon-trim-left")),
     primitives
       .box({
         name: "freeway-neon-trim-right",
         size: [0.12, 0.14, 380],
         material: material.emissive({ color: "#ff2a6d", emissive: "#ff2a6d", emissiveIntensity: 1.35 }), castShadow: false })
-      .position(11.3, 2.42, -150)
+      .position(TRIM_X, TRIM_Y, -150)
       .runtime(game.runtimeNode("freeway-neon-trim-right")),
     // Sunset / Dusk / Night sky dome: gradient, lit clouds, sun disc and corona, haze, city glow and stars (art/sky.ts)
     primitives
@@ -426,6 +441,13 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     instances
       .sphere({ name: "light-lamps", size: [0.36, 0.18, 0.48], material: material.emissive({ color: "#ffd28a", emissive: "#ffae52", emissiveIntensity: 1.65 }), castShadow: false, transforms: parked(POLE_ROWS * 2) })
       .runtime(game.runtimeNode(poolId("pole-lamps"))),
+    // AO-E2: hammerhead deck piers every 40 m (render/pylons.ts): columns + cap beams, two instanced nodes
+    instances
+      .box({ name: "deck-pylon-columns", size: [...PYLON_KIT.column.size], material: material.pbr({ color: APEX_PALETTE.charcoal, roughness: 0.82, metalness: 0.05 }), castShadow: false, receiveShadow: false, transforms: parked(PYLON_ROWS * 2) })
+      .runtime(game.runtimeNode(poolId("pylon-columns"))),
+    instances
+      .box({ name: "deck-pylon-caps", size: [...PYLON_KIT.cap.size], material: material.pbr({ color: "#2c2e36", roughness: 0.8, metalness: 0.05 }), castShadow: false, receiveShadow: false, transforms: parked(PYLON_ROWS) })
+      .runtime(game.runtimeNode(poolId("pylon-caps"))),
     // The skyline model has 75 meshes; instancing draws all buildings in 75 calls, and it casts no shadow (it stands 42 m off the road).
     instances
       .model(assets.showcaseModernBuildingOne, { name: "freeway-skyline", role: "setDressing", scaleMode: "fit", targetMaxDimension: 38, castShadow: false, transforms: parked(SKYLINE_ROWS * 2) })
@@ -739,6 +761,8 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const armPool = pool("pole-arms", POLE_ROWS * 2);
   const lampPool = pool("pole-lamps", POLE_ROWS * 2);
   const skylinePool = pool("skyline", SKYLINE_ROWS * 2);
+  const pylonColumns = pool("pylon-columns", PYLON_ROWS * 2);
+  const pylonCaps = pool("pylon-caps", PYLON_ROWS);
 
   const trafficNear = {} as Record<VehicleType, InstancePool>;
   const trafficFar = {} as Record<VehicleType, InstancePool>;
@@ -825,12 +849,12 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     }
     lookFrame = frame;
 
-    let groundHex: string;
-    if (tod <= 0.5) groundHex = lerpHexColor("#190f24", "#100d1e", tod * 2);
-    else groundHex = lerpHexColor("#100d1e", "#070912", (tod - 0.5) * 2);
+    // AO-E2: the haze floor takes the row's haze colour and window-speck strength (cool lavender haze, no red-pink floor)
+    const groundHex = lerpHexColor("#14141c", "#07080d", tod);
     const [gr, gg, gb] = hexToRgb(groundHex);
     outerGroundHandle.setUniform?.("groundColor", [gr / 255, gg / 255, gb / 255] as never);
-    outerGroundHandle.setUniform?.("groundFogColor", [look.skyHorizon[0] * 0.8, look.skyHorizon[1] * 0.75, look.skyHorizon[2] * 0.8] as never);
+    outerGroundHandle.setUniform?.("groundFogColor", hexToUnit(frame.signature.hazeColor) as never);
+    outerGroundHandle.setUniform?.("windowSpecks", round3(frame.signature.windowSpecks) as never);
   }
 
   function runSmartFreewayAutopilot(g: any): void {
@@ -1088,16 +1112,26 @@ async function bootRoadsterRushAura3D(): Promise<void> {
 
     // 1. Freeway deck, walls and trims
     const centerZ = -150;
-    outerGroundHandle.setPosition(rx(0), ry(-0.22), centerZ);
+    outerGroundHandle.setPosition(rx(0), ry(HAZE_FLOOR_Y), -300);
+    outerGroundHandle.setUniform?.("scroll", [camAnchorX, pz] as never);
     asphaltDeckHandle.setPosition(rx(0), ry(-0.06), centerZ);
     shoulderLeftHandle.setPosition(rx(-9.0), ry(0.012), centerZ);
     shoulderRightHandle.setPosition(rx(9.0), ry(0.012), centerZ);
     barrierLeftHandle.setPosition(rx(-10.6), ry(0.52), centerZ);
     barrierRightHandle.setPosition(rx(10.6), ry(0.52), centerZ);
-    soundwallLeftHandle.setPosition(rx(-11.6), ry(1.25), centerZ);
-    soundwallRightHandle.setPosition(rx(11.6), ry(1.25), centerZ);
-    neonTrimLeftHandle.setPosition(rx(-11.3), ry(2.42), centerZ);
-    neonTrimRightHandle.setPosition(rx(11.3), ry(2.42), centerZ);
+    soundwallLeftHandle.setPosition(rx(-PARAPET_X), ry(PARAPET_Y), centerZ);
+    soundwallRightHandle.setPosition(rx(PARAPET_X), ry(PARAPET_Y), centerZ);
+    neonTrimLeftHandle.setPosition(rx(-TRIM_X), ry(TRIM_Y), centerZ);
+    neonTrimRightHandle.setPosition(rx(TRIM_X), ry(TRIM_Y), centerZ);
+
+    // AO-E2: deck pylons, world-anchored rows (2 instanced nodes)
+    pylonColumns.begin();
+    pylonCaps.begin();
+    const piers = pylonLayout(pz);
+    for (const c of piers.columns) pylonColumns.add(rx(c.x), ry(c.y), rz(c.z));
+    for (const c of piers.caps) pylonCaps.add(rx(c.x), ry(c.y), rz(c.z));
+    pylonColumns.commit();
+    pylonCaps.commit();
 
     dashPool.begin();
     const dashBaseZ = Math.floor(pz / DASH_STRIDE_Z) * DASH_STRIDE_Z + DASH_STRIDE_Z;

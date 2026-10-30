@@ -102,7 +102,7 @@ export const APEX_LOOK: readonly [ApexLookRow, ApexLookRow, ApexLookRow] = [
     grade: { ...APEX_GRADE, temperature: 0.18, tint: 0.02 },
     bloom: { ...APEX_BLOOM },
     dome: { horizon: "#ff8a3d", mid: "#6a4fa8", top: "#1f3fa8", sun: "#ffb066", glow: "#ff7a3a" },
-    signature: { hazeColor: "#b8705a", windowSpecks: 0.25, sodium: 0, headlights: 0, tailGain: 1 }
+    signature: { hazeColor: "#6f6a86", windowSpecks: 0.25, sodium: 0, headlights: 0, tailGain: 1 }
   },
   {
     id: "dusk",
@@ -117,7 +117,7 @@ export const APEX_LOOK: readonly [ApexLookRow, ApexLookRow, ApexLookRow] = [
     grade: { ...APEX_GRADE, temperature: 0.02, tint: 0.03 },
     bloom: { ...APEX_BLOOM },
     dome: { horizon: "#f2703a", mid: "#3c2f86", top: "#14246e", sun: "#ff7a3e", glow: "#ff8a3d" },
-    signature: { hazeColor: "#4c3f6a", windowSpecks: 0.6, sodium: 0.35, headlights: 1, tailGain: 1.35 }
+    signature: { hazeColor: "#3a3a62", windowSpecks: 0.6, sodium: 0.35, headlights: 1, tailGain: 1.35 }
   },
   {
     id: "night",
@@ -132,7 +132,7 @@ export const APEX_LOOK: readonly [ApexLookRow, ApexLookRow, ApexLookRow] = [
     grade: { ...APEX_GRADE, temperature: -0.06, tint: 0 },
     bloom: { ...APEX_BLOOM },
     dome: { horizon: "#40281e", mid: "#121a46", top: "#060a1e", sun: "#9fb4e8", glow: "#ffa040" },
-    signature: { hazeColor: "#1a1622", windowSpecks: 1, sodium: 1, headlights: 1, tailGain: 1.7 }
+    signature: { hazeColor: "#16161f", windowSpecks: 1, sodium: 1, headlights: 1, tailGain: 1.7 }
   }
 ];
 
