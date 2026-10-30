@@ -32,6 +32,7 @@ import {
 } from "./art/look";
 import { buildLightRig, createLightRigDriver, type QualityTierName, type RigLightHandle } from "./art/lightRig";
 import { BZ_FLOOR_TEXTURES, bunkerTexture } from "./art/textures";
+import { damageArcDeg, deathFade, deathRoll, descentSeconds, doorOffset, reloadDip, viewmodelSway } from "./art/motion";
 import { BZ_VFX_EVENTS, atmosphereEmitters, registerBunkerVfx, type BunkerVfxKind } from "./art/vfx";
 
 installBlackFrameGuard();
@@ -619,6 +620,23 @@ function fireVfx(event: keyof typeof BZ_VFX_EVENTS, at: [number, number, number]
 const seenFx = new WeakSet<object>();
 const firstSight = (o: object) => { if (seenFx.has(o)) return false; seenFx.add(o); return true; };
 let muzzleWasLit = false;
+let deadAt = -1;
+let deathFadeLevel = 0;
+/** BZ-15: a door slides along x when its open neighbours are north/south (the frame spans x). */
+function doorAlongX(cx: number, cz: number): boolean {
+  const st = sim.state;
+  const solid = (x: number, z: number) => x < 0 || z < 0 || x >= st.w || z >= st.h || isSolid(st.grid[z * st.w + x] ?? "#");
+  return solid(cx - 1, cz) || solid(cx + 1, cz) ? !(solid(cx, cz - 1) && solid(cx, cz + 1)) : false;
+}
+/** BZ-16: letterbox bars over the elevator descent between floors; skipped under reduced motion. */
+let descentTimer = 0;
+function playDescent() {
+  const secs = descentSeconds(reducedMotion());
+  if (secs <= 0 || DEMO || BOOT_FLOOR) return;
+  document.body.classList.add("bz-descending");
+  clearTimeout(descentTimer);
+  descentTimer = window.setTimeout(() => document.body.classList.remove("bz-descending"), secs * 1000);
+}
 
 const enemyYaw = new Map<string, number>();
 const forwardOverride: Partial<Record<string, ForwardAxis>> = {};
@@ -702,7 +720,8 @@ const elHud = $<HTMLElement>("bz-hud"), elHp = $("bz-hp"), elArmor = $("bz-armor
   elWeapon = $("bz-weapon-name"), elScore = $("bz-score"), elKills = $("bz-kills"), elTime = $("bz-time"),
   elVign = $("bz-vignette"), elBanner = $("bz-banner"), elTag = $("bz-floor-tag"), elFeed = $("bz-feed"),
   elCross = $("bz-crosshair"), elMenu = $("bz-menu"), elPause = $("bz-pause"), elResults = $("bz-results"),
-  elIntro = $("bz-intro"), elMap = $<HTMLCanvasElement>("bz-map"), elVuln = $("bz-vulnerable"), elTouch = $("bz-touch");
+  elIntro = $("bz-intro"), elMap = $<HTMLCanvasElement>("bz-map"), elVuln = $("bz-vulnerable"), elTouch = $("bz-touch"),
+  elArc = $("bz-damage-arc");
 let bannerT = 0;
 function banner(big: string, small = "") {
   elBanner.textContent = big;
@@ -938,11 +957,16 @@ function syncScenePose(inp: SimInput) {
   const eyeY = EYE + Math.sin(sim.state.time * 8.4) * 0.024 * moveMag * motion;
   const ox = sim.state.ox;
   const fx = Math.sin(p.yaw + shakeYaw), fz = -Math.cos(p.yaw + shakeYaw);
+  // BZ-16: death roll 12 deg (reduced motion: none); no sprint in the sim, so no sprint FOV
+  if (p.alive) deadAt = -1; else if (deadAt < 0) deadAt = sim.state.time;
+  const sinceDeath = deadAt < 0 ? 0 : sim.state.time - deadAt;
   app.camera?.setPose({
     position: [p.x + ox, eyeY + p.pitch * 0.4, p.z],
     target: [p.x + ox + fx, eyeY + Math.tan(p.pitch), p.z + fz],
+    roll: deathRoll(sinceDeath, reducedMotion()),
     fov: 72
   });
+  deathFadeLevel = deathFade(sinceDeath, reducedMotion());
   try { mg.sound?.setListener?.({ position: [p.x + ox, EYE, p.z], forward: [fx, 0, fz], up: [0, 1, 0] }); } catch { /* audio not ready */ }
   // BZ-01: the rig follows the camera (carried lamp, fixture pool, flicker, F6 beacon); cosmetic, never the sim's RNG
   lightRig.update({ x: p.x + ox, y: eyeY, z: p.z, fx, fz }, sim.state.time);
@@ -955,9 +979,12 @@ function syncScenePose(inp: SimInput) {
   // portrait screens see a narrow horizontal slice: pull the weapon toward the centre so it stays in frame (C12)
   const aspect = window.innerWidth / Math.max(1, window.innerHeight);
   const side = 0.26 * Math.max(0.3, Math.min(1, aspect / 1.6));
-  const vmx = p.x + ox + fx * (0.62 - recoil) + rx * side;
-  const vmy = EYE - 0.34 + bob - p.pitch * 0.12 + recoil * 0.38;
-  const vmz = p.z + fz * (0.62 - recoil) + rz * side;
+  // BZ-15: sway from the turn rate and a reload dip (both off under reduced motion)
+  const [swayX, swayY] = viewmodelSway(inp.turn / Math.max(poseDt, 1 / 240), sim.state.time, moveMag, reducedMotion());
+  const dip = reloadDip(p.reloading, p.weapon === "rocket" ? 1.4 : 1.1, reducedMotion());
+  const vmx = p.x + ox + fx * (0.62 - recoil) + rx * (side + swayX);
+  const vmy = EYE - 0.34 + bob - p.pitch * 0.12 + recoil * 0.38 + swayY - dip;
+  const vmz = p.z + fz * (0.62 - recoil) + rz * (side + swayX);
   for (const [id, node] of Object.entries(vmNodes) as [WeaponId, typeof vmNodes.knife][]) {
     if (id === p.weapon && p.alive) {
       node.setPosition(vmx, vmy, vmz);
@@ -1054,12 +1081,14 @@ function syncScenePose(inp: SimInput) {
     node.setVisible(true);
   }
 
-  // ---- doors sink by this floor's wall height (C15: the floor-6 silo doors are 5.2 m tall)
-  const wallH = SLOT_WALL_H[slot]!;
+  // ---- doors (C15 sized them per floor height; BZ-15 slides them sideways)
   for (const d of sim.state.doors) {
     const node = opt(`f${slot}-door-${d.cx}-${d.cz}`);
     if (!node) continue;
-    node.setPosition(cellX(slot, d.cx), -d.open * wallH * 0.97, cellCenter(d.cz));
+    // BZ-15: blast doors slide sideways into the wall along their frame (y constant), not down through the floor
+    const alongX = doorAlongX(d.cx, d.cz);
+    const [offX, offZ] = doorOffset(d.open, alongX, CELL);
+    node.setPosition(cellX(slot, d.cx) + offX, 0, cellCenter(d.cz) + offZ);
     node.setVisible(true);
   }
 
@@ -1241,7 +1270,7 @@ function runPending() {
     case "retry": startFloor(floorIdx, mode, { loadout: entryLoadout }); break;
     case "killhouse-retry": startFloor(0, "killhouse"); break;
     case "to-descent": startFloor(0, "descent", { newRun: true }); break;
-    case "next": startFloor(floorIdx + 1, "descent", { loadout: captureLoadout(sim) }); break;
+    case "next": playDescent(); startFloor(floorIdx + 1, "descent", { loadout: captureLoadout(sim) }); break;
     case "results": showResults(); break;
   }
 }
@@ -1354,7 +1383,12 @@ function renderHud() {
     }
     elTag.append(small);
   }
-  const vign = String(Math.max(p.hurtT * 1.6, p.alive && p.hp <= 30 ? 0.4 : 0));
+  const vign = String(Math.max(p.hurtT * 1.6, p.alive && p.hp <= 30 ? 0.4 : 0, deathFadeLevel));
+  // BZ-17: directional damage arc toward the shooter that hurt the player (last enemy shot), read-only
+  if (p.hurtT > 0.3 && p.alive) {
+    const src = sim.state.enemyShots[sim.state.enemyShots.length - 1];
+    if (src) { elArc.style.transform = `rotate(${damageArcDeg(p, { x: src.x0, z: src.z0 }).toFixed(1)}deg)`; elArc.classList.add("on"); }
+  } else elArc.classList.remove("on");
   if (elVign.style.opacity !== vign) elVign.style.opacity = vign;
   if (sim.state.msg) feed2(sim.state.msg);
 }

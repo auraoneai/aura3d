@@ -100,8 +100,9 @@ describe("bunker zero flow and wiring", () => {
     expect(MAIN).toMatch(/now - lastEvidenceAt < 250/);
   });
 
-  it("C15/C18: doors sink by their floor's wall height; inactive floors are hidden", () => {
-    expect(MAIN).toMatch(/-d\.open \* wallH \* 0\.97/);
+  it("C15/C18 (GU47 BZ-15): doors slide sideways with y constant; inactive floors are hidden", () => {
+    expect(MAIN).toMatch(/doorOffset\(d\.open, alongX, CELL\)/);
+    expect(MAIN).toMatch(/node\.setPosition\(cellX\(slot, d\.cx\) \+ offX, 0, cellCenter\(d\.cz\) \+ offZ\)/);
     expect(MAIN).not.toMatch(/-d\.open \* WALL_H/);
     expect(MAIN).toMatch(/for \(const id of SLOT_IDS\[s\]!\) opt\(id\)\?\.setVisible\(false\)/);
   });
