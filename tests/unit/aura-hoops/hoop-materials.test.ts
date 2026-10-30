@@ -37,3 +37,12 @@ describe("Aura Hoops hoop materials (H47-M2 code part)", () => {
     expect(MAIN).toContain("hoopMaterials(false).ball");
   });
 });
+
+describe("Aura Hoops backboard shake (H47-AN1 part)", () => {
+  it("shakes only on the new look, without a cosmetic RNG draw, and holds still under reduced motion", () => {
+    expect(MAIN).toMatch(/backboardNode = LOOK_ORIGINAL \? undefined : req\("backboard-assembly"\)/);
+    const block = MAIN.slice(MAIN.indexOf("if (backboardNode) {"), MAIN.indexOf("if (backboardNode) {") + 260);
+    expect(block).toContain("reducedMotion ? 0 : rimShake");
+    expect(block).not.toContain("fxRng");
+  });
+});

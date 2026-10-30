@@ -960,6 +960,8 @@ let rigs: Rig[] = [];
 let refereeNode: AnyHandle;
 let ballNode: AnyHandle;
 let ballShadow: AnyHandle;
+/** H47-AN1: the glass shakes with the rim after a dunk or a hard rim hit (new look; a sine of game time, no RNG draw). */
+let backboardNode: AnyHandle;
 let rimHalo: AnyHandle;
 let rimNode: AnyHandle;
 let netTop: AnyHandle;
@@ -1142,6 +1144,7 @@ function resolveHandles(): void {
   ballShadow = req("ball-shadow");
   rimHalo = req("rim-halo");
   rimNode = req("rim-assembly");
+  backboardNode = LOOK_ORIGINAL ? undefined : req("backboard-assembly");
   netTop = req("net-top");
   netBottom = req("net-bottom");
   netSkirt = req("net-skirt");
@@ -3602,6 +3605,10 @@ function frame(dtRaw: number): void {
   netSkirt?.setScale([1 + netPulse * 0.3, 1 + netPulse * 0.55, 1 + netPulse * 0.3]);
   rimHalo?.setScale([1 + rimShake * 0.12, 1 + rimShake * 0.12, 1]);
   rimNode?.setPosition(RIM[0] + (fxRng() - 0.5) * rimShake * 0.03, RIM[1] + rimShake * 0.02, RIM[2]);
+  if (backboardNode) {
+    const shake = reducedMotion ? 0 : rimShake;
+    backboardNode.setPosition(Math.sin(game_.time * 61) * shake * 0.018, 3.35 + Math.sin(game_.time * 47) * shake * 0.012, BOARD_Z);
+  }
   planetEarth?.setRotation(0, game_.time * 0.02, 0);
 
   // Cones
