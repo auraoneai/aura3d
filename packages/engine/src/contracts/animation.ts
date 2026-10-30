@@ -5,6 +5,7 @@
 
 import type { AuraRuntimeNodeHandle } from "../agent-api/index";
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
+import type { AuraQuat } from "./sceneGraph";
 
 // AuraAnimationSpec (index.ts:1288-1304) additions (PR 0a):
 //   crossFade?: number | false; transition?: "crossfade" | "inertialize"; warp?: boolean; syncGroup?: string; layer?: string;
@@ -30,10 +31,29 @@ export interface AuraBoneAttachSpec {
   readonly rotation?: readonly [number, number, number];
   readonly scale?: number;
 }
+/** `playLayer` options. `speed` (GU47 E-H) is the layer clip's playback rate: 1 = authored, 2 = twice as fast, 0 = frozen. */
+export interface AuraPlayLayerOptions { weight?: number; fadeIn?: number; mask?: AuraBoneMaskSpec; blendMode?: "override" | "additive"; speed?: number }
+/**
+ * GU47 E-H — `actor.pose`: procedural per-bone overrides applied every frame
+ * after clips, layers, IK and spring bones (the last pose-space write before
+ * skinning), so a route can aim a head or a spine without authoring a clip.
+ */
+export interface AuraActorPoseApi {
+  /**
+   * Override `bone`'s local rotation (parent space) with `quat` = [x, y, z, w]
+   * (normalised on write). Holds until replaced or cleared; a bone the rig does
+   * not have is ignored with one `ANIMATION_POSE_UNKNOWN_BONE` warning.
+   */
+  setLocalRotation(bone: string, quat: AuraQuat): void;
+  /** Release one bone's override, or every override with no argument. */
+  clear(bone?: string): void;
+}
 export interface AuraActorAnimationApi {
   crossFadeTo(clip: string, seconds: number, options?: { transition?: "crossfade" | "inertialize"; warp?: boolean }): this;
-  playLayer(layer: string, clip: string, options?: { weight?: number; fadeIn?: number; mask?: AuraBoneMaskSpec; blendMode?: "override" | "additive" }): this;
+  playLayer(layer: string, clip: string, options?: AuraPlayLayerOptions): this;
   stopLayer(layer: string, fadeOut?: number): this;
+  /** GU47 E-H: procedural bone overrides (see {@link AuraActorPoseApi}). */
+  readonly pose: AuraActorPoseApi;
   resolveAnimationClips(): Promise<readonly AuraResolvedClipInfo[]>;
   animationState(): AuraActorAnimationStateSnapshot | undefined;
   socket(bone: string): AuraBoneSocket;
@@ -71,7 +91,7 @@ export class StubActorAnimationApi implements AuraActorAnimationApi {
     this.clip = clip;
     return this;
   }
-  playLayer(layer: string, clip: string, _options?: { weight?: number; fadeIn?: number; mask?: AuraBoneMaskSpec; blendMode?: "override" | "additive" }): this {
+  playLayer(layer: string, clip: string, _options?: AuraPlayLayerOptions): this {
     void layer;
     this.clip = clip;
     return this;
@@ -79,6 +99,8 @@ export class StubActorAnimationApi implements AuraActorAnimationApi {
   stopLayer(_layer: string, _fadeOut?: number): this {
     return this;
   }
+  /** Stub: overrides are accepted and dropped (no pose pipeline without PRD 06). */
+  readonly pose: AuraActorPoseApi = { setLocalRotation: () => { /* noop */ }, clear: () => { /* noop */ } };
   async resolveAnimationClips(): Promise<readonly AuraResolvedClipInfo[]> {
     return [];
   }

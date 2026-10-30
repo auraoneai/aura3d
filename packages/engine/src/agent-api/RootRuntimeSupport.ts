@@ -98,6 +98,13 @@ const bridges = new WeakMap<HTMLCanvasElement, RootRenderSourceBridge>();
 // `collectedLights`, which concatenates both sides.
 const overlays = new WeakMap<HTMLCanvasElement, RenderSource>();
 const merged = new WeakMap<HTMLCanvasElement, RootRenderSourceBridge>();
+/**
+ * Attach app-drawn render items (a TypedGLBActor driven outside the scene graph, a custom mesh
+ * batch) to the canvas's frame. The items join the frame's single item list ahead of the scene's,
+ * so they are lit, shadowed and post-processed like scene items: they cast sun and local shadows
+ * unless an item says `castShadow: false`, and receive the shadow map and the contact-shadow mask
+ * unless it says `receiveShadow: false` (GU47 E-H verified; `tests/unit/gu47/eh/root-source-shadows.test.ts`).
+ */
 export function attachRootRenderSource(canvas: HTMLCanvasElement, bridge: RootRenderSourceBridge): () => void {
   if (bridges.has(canvas)) throw new Error("A canvas already has a production-runtime source bridge.");
   bridges.set(canvas, bridge);

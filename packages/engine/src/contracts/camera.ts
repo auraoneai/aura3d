@@ -3,6 +3,11 @@
  */
 
 import type { AuraVec3, AuraRuntimeNodeHandle } from "../agent-api/index";
+// GU47 E-H (WP-8): the rail factory below is the real controller rail. Every
+// value import of rail.ts is cycle-safe (its contract imports are type-only),
+// and the S19 "typical game" fixture never value-imports this module, so the
+// rail/Spline tree-shake gate is unaffected.
+import { createRailRig } from "../agent-api/camera/rigs/rail.js";
 
 export interface AuraCameraPose { readonly position: AuraVec3; readonly target: AuraVec3; readonly up: AuraVec3; readonly roll: number; readonly fov: number; readonly near: number; readonly far: number; readonly orthographicSize?: number; }
 export type AuraEaseName = "linear" | "inQuad" | "outQuad" | "inOutQuad" | "inCubic" | "outCubic" | "inOutCubic" | "outBack" | "outElastic" | "inOutSine" | "outExpo";
@@ -84,9 +89,15 @@ const DEFAULT_POSE: AuraCameraPose = {
 };
 
 /**
- * PR 0a stub factories: `static` and `fromSpec` are real; the others return a
- * static rig at the subject's bounds plus the spec offset (with a
+ * PR 0a stub factories: `static`, `fromSpec` and `rail` are real; the others
+ * return a static rig at the subject's bounds plus the spec offset (with a
  * `capability-degraded` degradation recorded by the host).
+ *
+ * GU47 E-H (WP-8): `rail({ points, lookAt, duration, ease?, fov? })` returns the
+ * controller's arc-length Catmull-Rom rail (`agent-api/camera/rigs/rail.ts`),
+ * the same rig `app.camera.rigs.rail` and `camera.rigs.rail` hand out, instead
+ * of a static pose at `points[0]` (which also mis-read a `lookAt` track as one
+ * point). It keeps the controller's contract: fewer than 2 points throw.
  */
 export const stubCameraRigFactories: AuraCameraRigFactories = {
   chase: (o) => staticRig({ target: [0, 0, 0], position: [0, 2, 6] }, `chase:${o.target}`),
@@ -97,7 +108,7 @@ export const stubCameraRigFactories: AuraCameraRigFactories = {
   orbit: (_o) => staticRig({ target: [0, 0, 0], position: [3, 2, 3] }, "orbit"),
   topDown: (o) => staticRig({ target: [0, 0, 0], position: [0, 10, 0.001], up: [0, 0, -1] }, `topDown:${o.target ?? ""}`),
   altitude: (o) => staticRig({ target: [0, 0, 0], position: [0, 6, 6] }, `altitude:${o.target}`),
-  rail: (o) => staticRig({ target: (o.lookAt as AuraVec3) ?? [0, 0, 0], position: o.points[0] ?? [0, 1, 5] }, "rail"),
+  rail: (o) => createRailRig(o),
   static: (pose) => staticRig(pose, "static"),
   fromSpec: (spec) => staticRig(spec as Partial<AuraCameraPose>, "fromSpec")
 };

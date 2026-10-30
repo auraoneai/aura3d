@@ -9,7 +9,14 @@ import {
 } from "@aura3d/assets/gltf-runtime";
 
 import type { GLTFImageDecoder, GLTFMaterialRenderStateOverride } from "@aura3d/assets";
+import { createBoneMask } from "@aura3d/animation/lanes";
+import type { AuraPlayLayerOptions } from "../contracts/animation";
 import type { AuraAssetDecodersOption, AuraModelLodOption } from "../contracts/assets";
+import { registerNodeHandleExtension } from "../contracts/runtimeNodes";
+import type { AuraQuat } from "../contracts/sceneGraph";
+import type { AuraRuntimeNodeHandle, AuraVec3 } from "../agent-api/index";
+import { boneMaskSkeletonFor, toPoseBoneMaskSpec } from "../agent-api/animationMask.js";
+import { createRuntimeNodeHandle, type MutableAuraRuntimeSceneNode } from "../agent-api/app/runtimeNodes.js";
 import type { AuraResolvedMaterialInfo } from "../contracts/materials";
 import {
   applyMaterialOverrides,
@@ -18,6 +25,7 @@ import {
   type TypedGLBActorMaterialOverride
 } from "./ModelMaterialOverrides";
 import { modelTextureShareKey, sharedModelTextures } from "./actor/ModelTextureShare";
+import { estimateGlbResourceBytes, glbResourceCache, glbResourceCacheKey } from "./GlbResourceCache";
 import { createGLBActorAnimationMaterialResolver, createTypedGLBActorAnimationTrack, createTypedGLBActorEvidence, type TypedGLBActorMorphApplyOptions } from "./actor/TypedGLBActorAnimation";
 import { typedGLBActorExtensions, typedGLBActorQrFlags } from "./actor/extensions";
 import "./actor/TypedGLBActorLod.js";
@@ -31,7 +39,7 @@ import {
   type MeshConsolidationResult,
   type RenderItem
 } from "@aura3d/rendering";
-import { identityMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
+import { decomposeMat4, eulerXYZFromQuat, identityMat4, multiplyMat4, quatFromEulerXYZ, type Mat4, type SceneNode } from "@aura3d/scene";
 
 export interface TypedGLBActorAsset {
   readonly url: string;
@@ -164,6 +172,18 @@ export interface TypedGLBActorEvidence {
   };
 }
 
+/** GU47 E-H — `TypedGLBActor.crossFadeTo` options. */
+export interface TypedGLBActorCrossFadeOptions {
+  /** Playback rate of the new clip (1 = authored, 0 = frozen). */
+  readonly speed?: number;
+  /** `false` plays the clip once and holds its last frame (default: loop). */
+  readonly loop?: boolean;
+  /** Warp the outgoing and incoming time scales over the fade (`node.play` semantics). */
+  readonly warp?: boolean;
+  /** `"inertialize"` blends from the captured pose offset instead of a weight cross-fade. */
+  readonly transition?: "crossfade" | "inertialize";
+}
+
 export interface TypedGLBActorMorphApplyResult {
   readonly requestedTargets: readonly string[];
   readonly appliedTargets: readonly string[];
@@ -206,6 +226,33 @@ export interface TypedGLBActor {
    */
   playRetargetedClip(pose: GLTFScenePose, time?: number): GLTFSceneAnimationApplyResult;
   applyMorphTargets(weights: Readonly<Record<string, number>>, options?: TypedGLBActorMorphApplyOptions): TypedGLBActorMorphApplyResult;
+  /**
+   * GU47 E-H — mixer playback for actors the app drives itself (root render sources, clones):
+   * fade the base clip to `clip` over `seconds` (0 = cut). Once `crossFadeTo` / `playLayer` is
+   * used, call {@link advance} once per frame instead of `playClip`.
+   */
+  crossFadeTo(clip: string, seconds: number, options?: TypedGLBActorCrossFadeOptions): TypedGLBActor;
+  /**
+   * GU47 E-H — blend `clip` over the base clip on a named layer (`weight`, `fadeIn`, `mask`,
+   * `blendMode`, `speed`, the same options as `node.animation.playLayer`). A second clip on the
+   * same layer replaces the first (fading it out over `fadeIn`).
+   */
+  playLayer(layer: string, clip: string, options?: AuraPlayLayerOptions): TypedGLBActor;
+  /** GU47 E-H — fade a layer out over `fadeOut` seconds (default 0: stop now). */
+  stopLayer(layer: string, fadeOut?: number): TypedGLBActor;
+  /**
+   * GU47 E-H — step the actor's mixer by `dt` seconds and write the blended pose (base cross-fade,
+   * layers, pose constraints) onto the GLB scene and skinning palettes.
+   */
+  advance(dt: number): GLTFSceneAnimationApplyResult;
+  /**
+   * GU47 E-H — the GLB scene node named `name` (first depth-first match) as its own runtime
+   * handle: `setPosition` / `setRotation` / `setScale` / `setVisible` write the node's local
+   * transform inside the model and draw from the next frame; `getWorld*` compose the model matrix
+   * of the last drawn frame. `undefined` when the GLB has no such node or its meshes were merged
+   * by `consolidateStaticMeshes`. A clip that animates the node overwrites these writes.
+   */
+  part(name: string): AuraRuntimeNodeHandle | undefined;
   collectRenderItems(options?: TypedGLBActorTransformOptions): RenderItem[];
   snapshot(): GLTFSceneAnimationRuntimeSnapshot;
   /**
@@ -262,6 +309,13 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     ? sharedModelTextures.acquire(modelTextureShareKey(options))
     : undefined;
   const sharedTextures = options.sharedTextures ?? textureShare?.cache;
+  // GU47 E-H: GLB resource cache across setScene. A kept entry still holds this asset's parse and
+  // texture leases, so the load below reuses them; a kept GLB without draco / meshopt / KTX2 needs
+  // no decoders, so its decoder pre-scan (a GLB fetch) is skipped.
+  const cacheKey = glbResourceCacheKey(options);
+  const kept = glbResourceCache.peek(cacheKey);
+  glbResourceCache.noteLoad(cacheKey);
+  const decoders = kept?.uncompressed === true ? undefined : options.decoders;
   let pipeline: Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>;
   try {
     pipeline = await loadProductionGLTFRenderPipeline({
@@ -275,7 +329,7 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
       ...(renderStateOverrides.length > 0 ? { materialRenderStateOverrides: renderStateOverrides } : {}),
       ...(options.textureBudget !== undefined ? { textureBudget: options.textureBudget } : {}),
       ...(options.maxTextureSize !== undefined ? { maxTextureSize: options.maxTextureSize } : {}),
-      ...(options.decoders ? { decoders: options.decoders } : {}),
+      ...(decoders ? { decoders } : {}),
       ...(options.compressedTextureCapabilities ? { compressedTextureCapabilities: options.compressedTextureCapabilities } : {}),
       ...(options.tangents !== undefined ? { tangents: options.tangents } : {}),
       ...(qrMaterials ? { materialsR185: true } : {}),
@@ -291,6 +345,8 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     }
     throw error;
   }
+  // This actor now holds its own parse and texture leases: the kept copy has done its job.
+  glbResourceCache.consume(cacheKey);
   // P5-1/P5-4: resource-level load issues (colorspace-conflict, tangent-derivative-fallback)
   // surface through inspectMaterials() warnings alongside variant issues.
   for (const issue of pipeline.resources.loadIssues) {
@@ -356,6 +412,13 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
   const staticConsolidation = options.consolidateStaticMeshes
     ? createTypedGLBActorStaticConsolidation(pipeline, options.id)
     : undefined;
+  // GU47 E-H: the evidence reports whichever driver applied last (playClip or the mixer).
+  let mixerDriven = false;
+  let lastMixerApply: GLTFSceneAnimationApplyResult | null = null;
+  // GU47 E-H: named-part handles (one per name) and the model matrix of the last drawn frame.
+  const parts = new Map<string, AuraRuntimeNodeHandle>();
+  let lastModelMatrix: Mat4 | undefined;
+  let actorDisposed = false;
 
   const actor: TypedGLBActor = {
     kind: "aura-typed-glb-actor",
@@ -374,10 +437,65 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
       }
     } : {}),
     get evidence() {
-      return createTypedGLBActorEvidence(actor, animationTrack.lastApply, animationTrack.lastMorphApply);
+      return createTypedGLBActorEvidence(actor, mixerDriven ? lastMixerApply : animationTrack.lastApply, animationTrack.lastMorphApply);
     },
     playClip(name, time) {
+      mixerDriven = false;
       return animationTrack.playClip(name, time);
+    },
+    crossFadeTo(clip, seconds, fadeOptions = {}) {
+      const action = animation.mixer().crossFadeTo(clip, Math.max(0, seconds), {
+        ...(fadeOptions.warp !== undefined ? { warp: fadeOptions.warp } : {}),
+        ...(fadeOptions.transition !== undefined ? { transition: fadeOptions.transition } : {})
+      });
+      if (fadeOptions.speed !== undefined) action.setEffectiveTimeScale(finiteRate(fadeOptions.speed));
+      if (fadeOptions.loop === false) {
+        action.setLoop("once", 1);
+        action.clampWhenFinished = true;
+      }
+      return actor;
+    },
+    playLayer(layer, clip, layerOptions = {}) {
+      const mixer = animation.mixer();
+      const maskSkeleton = layerOptions.mask !== undefined ? boneMaskSkeletonFor(animation) : undefined;
+      const mask = layerOptions.mask !== undefined && maskSkeleton !== undefined
+        ? createBoneMask(toPoseBoneMaskSpec(layerOptions.mask), maskSkeleton)
+        : undefined;
+      const additive = layerOptions.blendMode === "additive";
+      const fadeIn = layerOptions.fadeIn !== undefined && layerOptions.fadeIn > 0 ? layerOptions.fadeIn : 0;
+      const action = mixer.playLayer(layer, additive ? animation.ensureAdditiveClip(clip) : clip, {
+        ...(layerOptions.weight !== undefined ? { weight: layerOptions.weight } : {}),
+        ...(layerOptions.blendMode !== undefined ? { blendMode: layerOptions.blendMode } : {}),
+        additive,
+        ...(mask !== undefined ? { mask } : {}),
+        ...(layerOptions.speed !== undefined ? { timeScale: finiteRate(layerOptions.speed) } : {}),
+        ...(fadeIn > 0 ? { fadeOutPrevious: fadeIn } : {})
+      });
+      if (fadeIn > 0) action.fadeIn(fadeIn);
+      return actor;
+    },
+    stopLayer(layer, fadeOut = 0) {
+      animation.mixer().stopLayer(layer, Math.max(0, fadeOut));
+      return actor;
+    },
+    advance(dt) {
+      mixerDriven = true;
+      lastMixerApply = animation.applyPoseMixer(Number.isFinite(dt) ? Math.max(0, dt) : 0, { label: options.id });
+      return lastMixerApply;
+    },
+    part(name) {
+      const cached = parts.get(name);
+      if (cached !== undefined) return cached;
+      // Merged static buffers have no per-node transform left to drive.
+      if (staticConsolidation !== undefined) return undefined;
+      let found: SceneNode | undefined;
+      pipeline.resources.scene.traverse((node) => {
+        if (found === undefined && node.name === name) found = node;
+      });
+      if (found === undefined) return undefined;
+      const handle = createGlbPartHandle(pipeline, found, `${options.id}/${name}`, () => lastModelMatrix);
+      parts.set(name, handle);
+      return handle;
     },
     playRootMotionClip(name, motionOptions) {
       return animationTrack.playRootMotionClip(name, motionOptions);
@@ -395,6 +513,10 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
       return animationTrack.applyMorphTargets(weights, options);
     },
     collectRenderItems(transformOptions = {}) {
+      // Kept by reference (no per-frame copy); read only by part world getters.
+      if (transformOptions.modelMatrix !== undefined && transformOptions.modelMatrix.length === 16) {
+        lastModelMatrix = transformOptions.modelMatrix as Mat4;
+      }
       let items = collectTypedGLBActorRenderItems(actor, transformOptions);
       for (const extension of typedGLBActorExtensions()) {
         items = extension.collectRenderItems?.(actor, items) ?? items;
@@ -447,11 +569,32 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     },
     setTint,
     dispose() {
+      // Idempotent: a second call must not dispose resources the GLB resource cache now keeps.
+      if (actorDisposed) return;
+      actorDisposed = true;
       for (const extension of typedGLBActorExtensions()) {
         extension.dispose?.(actor);
       }
       for (const item of staticConsolidation?.renderItems ?? []) {
         if (staticConsolidation?.ownedGeometries.has(item.geometry)) item.geometry.dispose();
+      }
+      parts.clear();
+      if (liveTypedGLBActors.get(actor.id) === actor) liveTypedGLBActors.delete(actor.id);
+      // GU47 E-H: GLB resource cache. Render resources and textures are freed now as before; only
+      // the parse lease (held by the pipeline) is handed to the cache, so the next scene that mounts
+      // this asset loads it without a fetch. One kept lease per asset is enough.
+      if (glbResourceCache.enabled && glbResourceCache.peek(cacheKey) === undefined) {
+        pipeline.resources.dispose();
+        textureShare?.release();
+        const compression = pipeline.asset.loaderDiagnostics.compression;
+        const kept = glbResourceCache.keep(cacheKey, {
+          bytes: estimateGlbResourceBytes(options.asset.sizeBytes, pipeline.asset.loaderDiagnostics),
+          uncompressed: !compression.draco && !compression.meshopt && !compression.ktx2Basis,
+          // Re-disposing the resources inside is a no-op; this releases the parse lease.
+          dispose: () => pipeline.dispose()
+        });
+        if (!kept) pipeline.dispose();
+        return;
       }
       pipeline.dispose();
       textureShare?.release();
@@ -459,10 +602,119 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
   };
 
   const animationTrack = createTypedGLBActorAnimationTrack(animation, actor);
+  liveTypedGLBActors.set(actor.id, actor);
   for (const extension of typedGLBActorExtensions()) {
     extension.onLoad?.(actor, pipeline);
   }
   return actor;
+}
+
+/* ------------------------------------------------- GU47 E-H: named GLB parts */
+
+/** Live actors by id (= the model node id for scene-graph models), for `handle.part(name)`. */
+const liveTypedGLBActors = new Map<string, TypedGLBActor>();
+
+/** The live actor created under `id`, if any (GU47 E-H; `handle.part` resolution). */
+export function liveTypedGLBActor(id: string): TypedGLBActor | undefined {
+  return liveTypedGLBActors.get(id);
+}
+
+/**
+ * GU47 E-H — local mirror of lane E-B's `AuraRuntimeNodeHandle.part?(name)` declaration
+ * (`agent-api/nodes/types/runtime.ts`) until the lanes merge: model handles carry `part`.
+ */
+export type AuraRuntimeNodeHandleParts = { part?(name: string): AuraRuntimeNodeHandle | undefined };
+
+declare module "../contracts/runtimeNodes" {
+  interface AuraNodeHandleExtensionMap {
+    /** GU47 E-H — named GLB sub-node handle (model nodes; `undefined` until the GLB loads). */
+    part: (name: string) => AuraRuntimeNodeHandle | undefined;
+  }
+}
+
+// C-37 handle member `part` on model nodes. Resolves the actor per call, so a
+// handle read before the GLB loaded starts answering once it has.
+registerNodeHandleExtension({
+  id: "gu47.glb-part",
+  owner: "prd05",
+  flag: "A3D_QR_COMPILER",
+  member: "part",
+  appliesTo: ["model"],
+  create: (handle) => (name: string) => liveTypedGLBActors.get(handle.id)?.part(name)
+});
+
+/**
+ * A runtime handle over one GLB scene node. Reuses the registry's handle factory over a
+ * proxy spec whose transform fields read and write the node's local TRS, so every handle
+ * member keeps its usual semantics (version bumps, snapshot, layers, userData). Members
+ * that need a model or primitive (materials, instances, clips, morphs) only record on the
+ * proxy and draw nothing; `traverse` visits the part itself.
+ */
+function createGlbPartHandle(
+  pipeline: ProductionGLTFRenderPipeline,
+  node: SceneNode,
+  id: string,
+  modelMatrix: () => Mat4 | undefined
+): AuraRuntimeNodeHandle {
+  const transform = node.transform;
+  const spec = {
+    kind: "group",
+    name: node.name,
+    children: [],
+    get position(): AuraVec3 {
+      return [transform.position[0], transform.position[1], transform.position[2]];
+    },
+    set position(next: AuraVec3) {
+      transform.setPosition(next[0], next[1], next[2]);
+    },
+    get rotation(): AuraVec3 {
+      const euler = eulerXYZFromQuat(transform.rotation);
+      return [euler[0], euler[1], euler[2]];
+    },
+    set rotation(next: AuraVec3) {
+      const q = quatFromEulerXYZ(next[0], next[1], next[2]);
+      transform.setRotation(q[0], q[1], q[2], q[3]);
+    },
+    get quaternion(): AuraQuat {
+      return [transform.rotation[0], transform.rotation[1], transform.rotation[2], transform.rotation[3]];
+    },
+    set quaternion(next: AuraQuat) {
+      transform.setRotation(next[0], next[1], next[2], next[3]);
+    },
+    get scale(): AuraVec3 {
+      return [transform.scale[0], transform.scale[1], transform.scale[2]];
+    },
+    set scale(next: number | AuraVec3) {
+      if (typeof next === "number") transform.setScale(next, next, next);
+      else transform.setScale(next[0], next[1], next[2]);
+    },
+    get visible(): boolean {
+      return node.visible;
+    },
+    set visible(next: boolean) {
+      node.visible = next !== false;
+    }
+  };
+  const handle = createRuntimeNodeHandle(spec as unknown as MutableAuraRuntimeSceneNode, { id });
+  const world = () => {
+    pipeline.resources.scene.updateWorldTransforms();
+    const root = modelMatrix();
+    return decomposeMat4(root ? multiplyMat4(root, transform.worldMatrix) : transform.worldMatrix);
+  };
+  return Object.assign(handle, {
+    getWorldPosition: (): AuraVec3 => {
+      const p = world().position;
+      return [p[0], p[1], p[2]];
+    },
+    getWorldQuaternion: (): AuraQuat => {
+      const q = world().rotation;
+      return [q[0], q[1], q[2], q[3]];
+    },
+    getWorldScale: (): AuraVec3 => {
+      const s = world().scale;
+      return [s[0], s[1], s[2]];
+    }
+  });
 }
 
 export function collectTypedGLBActorRenderItems(actor: TypedGLBActor, options: TypedGLBActorTransformOptions = {}): RenderItem[] {
@@ -532,6 +784,11 @@ function createTypedGLBActorStaticConsolidation(
 function resolveTypedGLBActorModelMatrix(nodeMatrix: Mat4, rootMatrix?: Mat4 | readonly number[]): Mat4 {
   if (!rootMatrix) return nodeMatrix;
   return multiplyMat4(toTypedGLBActorMat4(rootMatrix), nodeMatrix);
+}
+
+/** GU47 E-H: a playback rate the mixer clock can take (a non-finite rate reads as 1). */
+function finiteRate(rate: number): number {
+  return Number.isFinite(rate) ? rate : 1;
 }
 
 function toTypedGLBActorMat4(value: Mat4 | readonly number[]): Mat4 {

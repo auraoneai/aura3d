@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aura3D GU47 crowd-kit receipt</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #0b0f17;
+      }
+
+      /* Explicit size and min-height: the engine's default mount layout applies min-height: 100vh to an unstyled container. */
+      #crowd-stage {
+        width: 640px;
+        height: 360px;
+        min-height: 0;
+        position: relative;
+        overflow: hidden;
+        background: #0b0f17;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="crowd-stage"></div>
+    <script type="module" src="./crowd-kit-harness.ts"></script>
+  </body>
+</html>
