@@ -18,7 +18,8 @@
       content="Aura Hoops 3D: 5v5 streetball on the Aura3D engine — check ball, a timed shot meter, Jam Meter dunk packages, team kits, six world courts, Dunk Lab, Handles Lab and a 32-team Street Tour."
     />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="stylesheet" href="/fonts/aura-fonts.css" />
+    <link rel="preload" href="/fonts/hoops-calibre-600.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/fonts/hoops-fonts.css" />
     <style>
       :root {
         --bg: #0b0d12;
@@ -33,9 +34,10 @@
         --cyan: #39d7ff;
         --danger: #ff3b5c;
         --ok: #66e37f;
-        --font-display: "DIN Pro", "Whitney", -apple-system, BlinkMacSystemFont, sans-serif;
-        --font-sans: "Whitney", -apple-system, BlinkMacSystemFont, sans-serif;
-        --font-mono: "Monument Grotesk Mono", ui-monospace, SFMono-Regular, monospace;
+        /* GU47 H47-H1: licensed self-hosted faces only (public/fonts/hoops-fonts.css); no system stack. */
+        --font-display: "Hoops Calibre", sans-serif;
+        --font-sans: "Hoops Calibre", sans-serif;
+        --font-mono: "Hoops Mono", monospace;
       }
 
       *,
