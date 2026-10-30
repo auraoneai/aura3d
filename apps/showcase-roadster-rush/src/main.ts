@@ -48,6 +48,7 @@ import { SKY_DOME_SIZE, skyLook, skySpec } from "./art/sky";
 import { createCameraShake, createHitStop, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
 import { createRoadsterPresenter, viewOf } from "./native/presentation";
 import { apexSpeedLines, apexVfxEvents, countSkyDodges, type ApexVfxFrame } from "./render/vfxDirector";
+import { APEX_CHASE_POSE, SLOW_MO_SECONDS, apexTitleDurationSeconds, apexTitleSequence, createApexSlowMo } from "./render/cinematics";
 import { registerApexVfx } from "./art/vfx";
 import { InstancePool, parked } from "./render/instancePool";
 import { apexQaCrops, type QaCrop } from "./render/qa";
@@ -766,6 +767,46 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   };
   let lastRocketActive = false;
 
+  // AO-C1: slow-mo and letterbox moments, and the title intro (render/cinematics.ts)
+  const slowMo = createApexSlowMo(REDUCED_MOTION);
+  let lastFlipping = false;
+  let cinematicPlayback: { skip(): void } | null = null;
+  const staticShot = (pose: { position: Vec3; target: Vec3; fov: number; near: number; far: number }) => camera.rigs.static(pose);
+  const playSequence = (sequence: Parameters<NonNullable<typeof auraApp.camera>["play"]>[0]): { skip(): void } | null => {
+    try {
+      return auraApp.camera?.play(sequence) ?? null;
+    } catch {
+      return null;
+    }
+  };
+  const startSlowMo = (nowMs: number): void => {
+    if (!slowMo.trigger(nowMs)) return;
+    playSequence({
+      id: "apex-slowmo-bars",
+      shots: [{ rig: staticShot({ position: [...APEX_CHASE_POSE.position], target: [...APEX_CHASE_POSE.target], fov: APEX_CHASE_POSE.fov, near: APEX_CHASE_POSE.near, far: APEX_CHASE_POSE.far }), duration: SLOW_MO_SECONDS, blendIn: 0, bars: true }],
+      onEnd: "return"
+    });
+  };
+  function playTitleIntro(isOver: () => boolean): void {
+    cinematicPlayback = playSequence(apexTitleSequence(staticShot) as Parameters<NonNullable<typeof auraApp.camera>["play"]>[0]);
+    if (!cinematicPlayback) return;
+    const skip = (): void => {
+      cinematicPlayback?.skip();
+      cinematicPlayback = null;
+      for (const name of ["keydown", "pointerdown"] as const) window.removeEventListener(name, skip, true);
+      window.clearInterval(watch);
+    };
+    for (const name of ["keydown", "pointerdown"] as const) window.addEventListener(name, skip, true);
+    const watch = window.setInterval(() => {
+      if (isOver()) skip();
+    }, 120);
+    window.setTimeout(() => {
+      for (const name of ["keydown", "pointerdown"] as const) window.removeEventListener(name, skip, true);
+      window.clearInterval(watch);
+      cinematicPlayback = null;
+    }, Math.ceil(apexTitleDurationSeconds() * 1000) + 200);
+  }
+
   // AO-V1 / AO-V2: the apex preset pack (halved under reduced motion), fired from read-only state transitions; speed lines
   // through gameFeel (feel bus -> C-20 VFX), never under reduced motion.
   const vfxKinds = registerApexVfx(auraApp.effects, REDUCED_MOTION);
@@ -1100,6 +1141,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     qaApex.tod = lookFrame.tod;
     qaApex.post = postStates;
     qaApex.vfx = { presets: vfxKinds, fired: vfxFired, liveCount: auraApp.effects?.liveCount ?? 0, speedLinesAccepted };
+    qaApex.cinematics = { slowMoTriggered: slowMo.triggered, introPlaying: cinematicPlayback !== null };
   };
 
   /** AO-V1 / AO-V2: fire the apex presets and speed lines from this frame's (read-only) simulation state. */
@@ -1167,7 +1209,14 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     }
     lastMode = real.mode;
     const rocketActive = Number(real.player.rocketTimer ?? 0) > 0;
-    if (rocketActive && !lastRocketActive && real.mode === "playing") startFlash("rocket");
+    if (rocketActive && !lastRocketActive && real.mode === "playing") {
+      startFlash("rocket");
+      startSlowMo(nowMs);
+    }
+    // a ramp launch starts the flip (read-only): slow-mo with letterbox bars
+    const flipping = Boolean(real.player.flipping);
+    if (flipping && !lastFlipping && real.mode === "playing") startSlowMo(nowMs);
+    lastFlipping = flipping;
     lastRocketActive = rocketActive;
     updateFlash(nowMs);
     driveVfx(real, nowMs, realDt);
@@ -1817,8 +1866,14 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   // Register Aura3D 60 FPS dynamic render loop callback after assets & simulation are ready
   const presenter = createRoadsterPresenter(() => nativeGame);
   nativeGame.afterStep = () => presenter.afterStep();
+  // AO-C1: the simulation is fed a clock that slow-mo slows down (same fixed steps, presented later; replays unchanged)
+  let lastClockMs = 0;
+  let simClockMs = performance.now();
   auraApp.onFrame(() => {
-    nativeGame.frameTick(performance.now());
+    const clockNow = performance.now();
+    simClockMs += (lastClockMs ? clockNow - lastClockMs : 0) * slowMo.scale(clockNow);
+    lastClockMs = clockNow;
+    nativeGame.frameTick(simClockMs);
     // draw the poses between the last two simulation steps (smooth on 120 and 144 Hz displays); manual and paused runs draw the exact latest step
     const live = !nativeGame.manual && !nativeGame.paused && !nativeGame.simPaused;
     syncRoadsterWorld(nativeGame, live ? viewOf(nativeGame, presenter.present(nativeGame, true)) : nativeGame);
@@ -1829,6 +1884,8 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   syncRoadsterWorld(nativeGame);
   // Compile every program (and wait for the environment) before the boot veil lifts (checklist R2)
   await warmPrograms(auraApp);
+  // AO-C1: three-shot letterboxed title intro on the title card (skippable; none for captures or reduced motion)
+  if (!AUTOSTART && !REDUCED_MOTION && nativeGame.mode === "title") playTitleIntro(() => nativeGame.mode !== "title");
   document.getElementById("boot")?.classList.add("done");
   document.body.dataset.aura3dReady = "true";
   canvas.dataset.ready = "true";
