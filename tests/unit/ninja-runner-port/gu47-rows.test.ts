@@ -115,3 +115,17 @@ describe("ninja-runner-port camera shots (GU47 NR-18)", async () => {
     expect(cine.cinematicsOn(false, false)).toBe(false);
   });
 });
+
+describe("ninja-runner-port gate cones and dash kick (GU47 NR-16, NR-10)", async () => {
+  const cine = await import("../../../examples/ninja-runner-port/cinematics");
+  it("picks the last four lanterns from the Valley Gate on, in course order", () => {
+    const lanterns = [100, 900, 2250, 2300, 2400, 2500, 2550, 2600].map((s) => ({ s }));
+    expect(cine.gateConeLanterns(lanterns).map((l) => l.s)).toEqual([2400, 2500, 2550, 2600]);
+    expect(cine.gateConeLanterns(lanterns.slice(0, 3))).toEqual([]);
+  });
+  it("kicks the dash FOV by a few degrees, quickly", () => {
+    expect(cine.DASH_KICK_DEG).toBeGreaterThan(0);
+    expect(cine.DASH_KICK_DEG).toBeLessThanOrEqual(8);
+    expect(cine.DASH_KICK_HALFLIFE).toBeLessThan(0.2);
+  });
+});

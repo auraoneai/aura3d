@@ -8,7 +8,7 @@
  * the hooks), `seed=N` (course seed, default 17), `daily=1` (today's course: the seed is the UTC date as YYYYMMDD),
  * `quality=low`. GU47 (WP-30): `look=original` (the pre-GU47 midday look; the default is the evening that moves with
  * distance), `at=<metres>` (boots straight into a run held at that distance through the capture policy; the sim then
- * holds still like `manual=1`, for the district luma targets), `lanterns=0` (no pooled lantern lights), `scarf=0` (no scarf ribbon), `godrays=0`.
+ * holds still like `manual=1`, for the district luma targets), `lanterns=0` (no pooled lantern lights), `scarf=0` (no scarf ribbon), `godrays=0`, `cones=0` (no gate light cones).
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp, createFixedStepLoop, installQaHooks } from "@aura3d/engine";
 import { DEFAULT_POLICY, policyActions, type PolicyParams } from "./autopilot";
@@ -44,7 +44,8 @@ const config = {
   at: atDistance(params),
   lanterns: params.get("lanterns") !== "0",
   scarf: params.get("scarf") !== "0",
-  godRays: params.get("godrays") !== "0"
+  godRays: params.get("godrays") !== "0",
+  cones: params.get("cones") !== "0"
 };
 // A district target holds the run where it lands (captures drive nothing), so it behaves like `manual=1`.
 if (config.at !== null) config.manual = true;
@@ -585,7 +586,7 @@ async function boot(): Promise<void> {
   const status = $("loading-status");
   actors = await loadActors(canvas, (done, total) => { status.textContent = done < total ? `Loading the runners (${done + 1} of ${total})…` : "Building the village…"; });
   status.textContent = "Building the village…";
-  const world = buildWorld({ canvas, actors, entities: z.entities, quality: config.quality, shake, mode: config.look, reducedMotion, lanterns: config.lanterns, scarf: config.scarf, godRays: config.godRays });
+  const world = buildWorld({ canvas, actors, entities: z.entities, quality: config.quality, shake, mode: config.look, reducedMotion, lanterns: config.lanterns, scarf: config.scarf, godRays: config.godRays, cones: config.cones });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,

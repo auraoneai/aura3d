@@ -24,7 +24,7 @@ import { CHARACTER_URLS, PROP_ASSETS, SLOT_MODEL, type CharacterId } from "./mod
 import { EVENING_SURFACES, LANTERN_GLOW, LANTERN_POOL, WOODBLOCK_POST, DISTRICT_LOOKS, lanternGlowAt, linearToHex, lookAtDistance, nearestLanterns, type DistrictId, type LanternGlow, type LookMode } from "./districtLook";
 import { lanternPoolSize, lightRig } from "./lighting";
 import { SCARF, registerNinjaVfx, type NinjaVfx, type NinjaVfxEvent } from "./vfx";
-import { ROLL_HALFLIFE, blendIntro, cinematicsOn, laneRoll, winPose, type ShotPose } from "./cinematics";
+import { DASH_KICK_DEG, DASH_KICK_HALFLIFE, ROLL_HALFLIFE, blendIntro, cinematicsOn, gateConeLanterns, laneRoll, winPose, type ShotPose } from "./cinematics";
 
 /** The rig faces +Z; characters are turned so +Z points along the route (or back at the runner). */
 const MODEL_YAW_OFFSET = 0;
@@ -233,6 +233,7 @@ export interface WorldOptions {
   /** `?lanterns=0`: no pooled lantern lights (NR-03 comparison). */ readonly lanterns?: boolean;
   /** `?scarf=0`: no scarf ribbon (NR-15 comparison). */ readonly scarf?: boolean;
   /** `?godrays=0`: no god rays (NR-07 comparison). */ readonly godRays?: boolean;
+  /** `?cones=0`: no gate light cones (NR-16 comparison). */ readonly cones?: boolean;
 }
 
 export interface WorldRuntime {
@@ -427,7 +428,18 @@ export function buildWorld(options: WorldOptions): World {
     attributes: { tone: { itemSize: 3, data: f32(new Array(PARTICLES * 3).fill(1)) }, aSize: { itemSize: 1, data: f32(new Array(PARTICLES).fill(0)) }, aAlpha: { itemSize: 1, data: f32(new Array(PARTICLES).fill(0)) } }
   }), { name: "particles", material: material.custom(particleSpec()) }).runtime({ id: "particles" }));
 
-  return { scene: builder, bind: (app) => bindRuntime(app, options, pickups, indexLanterns(lanternSpots)) };
+  const lanternIndex = indexLanterns(lanternSpots);
+  if (evening) {
+    // NR-16: soft light cones under the four gate lanterns (+4 draws, additive, no depth write); `?cones=0` drops them.
+    if (options.cones !== false) gateConeLanterns(lanternIndex).forEach((l, i) => builder.add(effects.lightCone({
+      name: `gate-cone-${i}`, color: LANTERN_POOL.amberColor, intensity: 0.7, position: [l.position[0], l.position[1] - 0.15, l.position[2]], direction: [0, -1, 0], length: 3.2, coneAngle: 0.42, softness: 0.55
+    })));
+    // NR-16: a faint aurora over the gate, shown only on the win screen (+1 draw while visible).
+    const gate = groundFrame(COURSE_LENGTH - 20, 0, 34);
+    builder.add(effects.auroraRibbon({ name: "win-aurora", color: "#51dfff", colorTop: "#2b3550", intensity: 0.5, width: 90, height: 18, position: [gate.x, gate.y, gate.z] }).runtime({ id: "win-aurora" }));
+  }
+
+  return { scene: builder, bind: (app) => bindRuntime(app, options, pickups, lanternIndex) };
 }
 
 interface Particle { life: number; max: number; vx: number; vy: number; vz: number; gravity: number; size: number; r: number; g: number; b: number; x: number; y: number; z: number }
@@ -492,7 +504,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
   let pieces: Piece[] = [];
   let threatShown: { target: number; from: number; to: number } | null = null;
   const cinematic = cinematicsOn((options.mode ?? "evening") === "evening", options.reducedMotion === true);
-  let introBlend: number | null = null, wonAt = -1, lastX = 0, lastRoll = 0, barsShown = false;
+  let introBlend: number | null = null, wonAt = -1, lastX = 0, lastRoll = 0, barsShown = false, kicking = false, auroraShown = true;
   const shake = options.shake;
   const POOL_CAP: Record<Piece["kind"], number> = { plank: PLANK_POOL, strap: STRAP_POOL, beam: BEAM_PIECE_POOL };
   const addPieces = (list: Piece[]): void => { pieces = pieces.concat(list); for (const k of ["plank", "strap", "beam"] as const) { let over = pieces.filter((q) => q.kind === k).length - POOL_CAP[k]; if (over > 0) pieces = pieces.filter((q) => (q.kind === k && over > 0 ? (over--, false) : true)); } };
@@ -938,7 +950,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       const pose = chase.step({
         wantEye: [eyeF.x, eyeF.y, eyeF.z],
         wantLook: [lookF.x, lookF.y, lookF.z],
-        fovTarget: 57 + (state.dash > 0 ? 5 : 0),
+        fovTarget: 57 + (state.dash > 0 && !cinematic ? 5 : 0),
         shakeOffset: [jolt.x, jolt.y, jolt.x * 0.4]
       }, dt);
       // NR-18: title shot over the roofs blending into the chase through the 3-2-1, three win shots at the gate, and a
@@ -958,6 +970,12 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       if (cinematic && bars !== barsShown) { barsShown = bars; document.documentElement.classList.toggle("shot-bars", bars); }
       cameraController.setPose({ position: shot.eye, target: shot.look, fov: shot.fov }, { cut: false });
       if (cinematic && roll !== lastRoll) { lastRoll = roll; cameraController.setRoll(roll, { halflife: ROLL_HALFLIFE }); }
+      // NR-10: the dash kicks the FOV through the controller's fovKick layer (only while dashing; never with reduced motion).
+      const kick = cinematic && state.phase === "running" && state.dash > 0;
+      if (kick !== kicking) { kicking = kick; cameraController.fovKick.set("dash", kick ? DASH_KICK_DEG : 0, DASH_KICK_HALFLIFE); }
+      // NR-16: the aurora shows on the win screen only.
+      const aurora = state.phase === "won";
+      if (evening && aurora !== auroraShown) { auroraShown = aurora; node("win-aurora").setVisible(aurora); }
     },
     setIntro(k) { introBlend = k === null ? null : Math.max(0, Math.min(1, k)); },
     resetCamera() { chase.reset(); },

@@ -70,3 +70,15 @@ export function laneRoll(lateralSpeed: number): number {
 export function cinematicsOn(evening: boolean, reducedMotion: boolean): boolean {
   return evening && !reducedMotion;
 }
+
+/** NR-10: dash FOV kick (degrees) and its halflife; replaces the chase's +5 widening in the evening look. */
+export const DASH_KICK_DEG = 6;
+export const DASH_KICK_HALFLIFE = 0.06;
+
+/**
+ * NR-16: the gate lanterns that get a light cone: the `count` lanterns furthest along the course from `from` metres on
+ * (the Valley Gate), in course order. Input is sorted by course distance.
+ */
+export function gateConeLanterns<T extends { readonly s: number }>(sorted: readonly T[], count = 4, from = 2260): T[] {
+  return sorted.filter((l) => l.s >= from).slice(-count);
+}
