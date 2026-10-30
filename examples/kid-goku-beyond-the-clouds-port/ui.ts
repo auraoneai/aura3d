@@ -17,7 +17,7 @@ export interface UiHandlers {
 }
 
 /** Menu and result options the UI shows; `main.ts` owns the values and persists them. */
-export interface UiOptions { soundOn: boolean; reducedMotion: boolean; difficulty: Difficulty; best: number; bestTime: number; bestPearls: number }
+export interface UiOptions { soundOn: boolean; reducedMotion: boolean; difficulty: Difficulty; best: number; bestTime: number; bestPearls: number; /** CD-19: parchment-and-sandstone HUD in the licensed sky-expedition face (storm-washed look). */ storm?: boolean }
 
 /**
  * Prompt, hint and toast text for the current input mode. The sim and encounter layers write keyboard text; on a touch
@@ -115,6 +115,15 @@ const CSS = `
 #cr-ui .panel .orbs{justify-content:center;background:none;border:0;padding:0}
 #cr-ui .badge{display:inline-block;margin:4px 0 0;padding:2px 10px;border-radius:999px;background:#ffd75e;color:#4a2a05;font-size:12px;font-weight:500}
 #cr-ui .caption{position:absolute;left:0;right:0;bottom:14%;text-align:center;font-size:clamp(18px,2.6vw,28px);font-weight:500;text-shadow:0 2px 12px rgba(0,0,0,.7);opacity:0;transition:opacity .6s}
+#cr-ui.storm{font-family:"A3G Roobert","Roobert",Arial,sans-serif}
+#cr-ui.storm kbd{font-family:"A3G Roobert","Roobert",Arial,sans-serif}
+#cr-ui.storm .glass{background:rgba(92,48,28,.6);border-color:rgba(255,236,204,.32)}
+#cr-ui.storm button.primary{background:linear-gradient(#ffc56e,#ffb347)}
+#cr-ui.storm .title h1 span,#cr-ui.storm .combo{color:#ffb347}
+#cr-ui.storm .title h1{text-shadow:0 3px 0 #b5643c,0 6px 18px rgba(0,0,0,.35)}
+#cr-ui.storm .orb.got{background:radial-gradient(circle at 35% 30%,#ffe2b8,#ffb347 70%);border-color:#ffe2b8;color:#6a3010;box-shadow:0 0 8px rgba(255,179,71,.85)}
+#cr-ui.storm .prog .fill,#cr-ui.storm .gauge .gfill{background:linear-gradient(90deg,#ffe2b8,#ffb347)}
+#cr-ui.storm .prog .me{border-color:#ffb347}
 #cr-ui .caption.on{opacity:1}
 #cr-ui .bars{position:absolute;left:0;right:0;height:9vh;background:#000;transition:transform .6s}
 #cr-ui .bars.t{top:0;transform:translateY(-100%)}#cr-ui .bars.b{bottom:0;transform:translateY(100%)}
@@ -153,6 +162,7 @@ export class Ui {
     this.reducedMotion = opts.reducedMotion;
     this.difficulty = opts.difficulty;
     this.root.id = "cr-ui";
+    if (opts.storm) this.root.classList.add("storm");
     this.touchMode = matchMedia("(pointer: coarse)").matches;
     if (this.touchMode) this.root.classList.add("coarse");
     const style = el("style"); style.textContent = CSS; this.root.appendChild(style);

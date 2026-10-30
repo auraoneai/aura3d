@@ -7,7 +7,8 @@
  * even in manual mode), `autostart=1` (skip the title), `chapterStart=<s>` (start the run at distance s).
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, texture, type AuraApp } from "@aura3d/engine";
-import { warmPrograms } from "@aura3d/engine/game";
+import { hudThemeFontFaces, registerGameFonts, warmPrograms } from "@aura3d/engine/game";
+import { ACTIVE_LOOK } from "./art/look";
 import { CUMULUS_RIDGE } from "./chapter";
 import { Game, type Difficulty } from "./game";
 import { createGoPresenter, viewOf } from "./presentation";
@@ -253,6 +254,8 @@ const qa = installQaHooks("cumulus-dash", {
     stats: () => runtime?.stats ?? null,
     /** CD-15: preset pack registration, fired presets, glider trail and the engine's live particle count. */
     vfx: () => runtime?.vfx() ?? null,
+    /** CD-09: post effects switched by the tier plan (god rays High/Ultra only). */
+    post: () => runtime?.post() ?? null,
     /** Camera eye, target and fov plus the hero, ride-log and hut positions this frame (framing checks project these). */
     view: () => (runtime ? JSON.parse(JSON.stringify(runtime.view)) as typeof runtime.view : null),
     /** The program warm-up result from boot (null until it ran). */
@@ -267,6 +270,18 @@ void createState;
 void qa;
 
 let warmResult: Awaited<ReturnType<typeof warmPrograms>> | null = null;
+
+const STORM = ACTIVE_LOOK.id === "storm-washed";
+/** CD-19: the licensed sky-expedition faces (Roobert 400/700, copied app-locally with their NOTICE), registered as "A3G Roobert". */
+function registerHudFonts(): void {
+  const urls: Readonly<Record<string, string>> = {
+    "roobert-400.woff2": new URL("./assets/fonts/roobert-400.woff2", import.meta.url).pathname,
+    "roobert-700.woff2": new URL("./assets/fonts/roobert-700.woff2", import.meta.url).pathname
+  };
+  // the DOM FontFaceSet / FontFace are the registry at runtime; lib.dom types do not match E-J's narrow FontRegistry shape
+  const registry = { fonts: document.fonts, FontFace: window.FontFace } as unknown as Parameters<typeof registerGameFonts>[1];
+  void registerGameFonts("", registry, hudThemeFontFaces("sky-expedition").map((face) => ({ ...face, file: urls[face.file] ?? face.file }))).catch(() => undefined);
+}
 
 async function boot(): Promise<void> {
   ui = new Ui(CH, {
@@ -285,7 +300,8 @@ async function boot(): Promise<void> {
       else if (key === "right") { if (down) held.add("ArrowRight"); else held.delete("ArrowRight"); }
       else if (down) { if (game.phase === "paused") game.resume(); else if (key === "jump") oneShot.jump = true; else if (key === "pole") oneShot.pole = true; else oneShot.glider = true; }
     }
-  }, { soundOn: saved.sound, reducedMotion: game.reducedMotion, difficulty: game.difficulty, best: saved.best, bestTime: saved.bestTime, bestPearls: saved.bestPearls });
+  }, { soundOn: saved.sound, reducedMotion: game.reducedMotion, difficulty: game.difficulty, best: saved.best, bestTime: saved.bestTime, bestPearls: saved.bestPearls, storm: STORM });
+  if (STORM) registerHudFonts();
   const rockMap = await texture.load(new URL("./assets/textures/rock-color.jpg", import.meta.url).pathname, { colorSpace: "srgb" });
   rockMap.wrapS = "repeat"; rockMap.wrapT = "repeat";
   const grassMap = await texture.load(new URL("./assets/textures/grass-color.jpg", import.meta.url).pathname, { colorSpace: "srgb" });
