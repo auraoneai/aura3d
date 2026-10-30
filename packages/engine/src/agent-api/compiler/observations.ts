@@ -14,7 +14,7 @@ import { groups } from "../nodes/groups.js";
 import { primitive } from "../nodes/primitives.js";
 import type { AuraLightNode, AuraSceneSnapshot, ProductionRuntimeLightDescriptor } from "../nodes/types.js";
 import { normalize3 } from "../sceneMath.js";
-import { collectPrd02Lights, createProductionRuntimeCollectedLight, createProductionRuntimeFallbackLights, createProductionRuntimeStudioLightDescriptors, prd02LightingOn } from "./lights.js";
+import { bindAuthoredLight, collectPrd02Lights, createProductionRuntimeCollectedLight, createProductionRuntimeFallbackLights, createProductionRuntimeStudioLightDescriptors, prd02DescriptorNode, prd02LightingOn } from "./lights.js";
 import { describeTextureStreamingResidency } from "./primitives.js";
 
 interface AuraProductionBridgeEligibility {
@@ -266,18 +266,37 @@ export function createProductionRuntimeCollectedLights(
     const physical = collectPrd02Lights(snapshot).descriptors;
     if (physical.length === 0) return createProductionRuntimeFallbackLights(flags);
     const shadowCasterIndex = resolveProductionShadowCasterIndex(physical);
-    return physical.map((descriptor, index) =>
-      createProductionRuntimeCollectedLight(descriptor, index === shadowCasterIndex)
-    );
+    return physical.map((descriptor, index) => {
+      const light = createProductionRuntimeCollectedLight(descriptor, index === shadowCasterIndex);
+      // GU47 E-B: the per-frame light update drives this light from the node's runtime handle.
+      const node = prd02DescriptorNode(descriptor);
+      return node ? bindAuthoredLight(light, node, 0, (position) => productionRuntimeLightDirection(node, position)) : light;
+    });
   }
   const authoredLights = groups.flatten(snapshot.nodes).filter((node): node is AuraLightNode => node.kind === "light");
-  const descriptors = authoredLights.flatMap((node, index) => createProductionRuntimeLightDescriptors(node, index, options));
+  const authored = authoredLights.flatMap((node, index) =>
+    createProductionRuntimeLightDescriptors(node, index, options).map((descriptor, part) => ({ node, descriptor, part }))
+  );
+  const descriptors = authored.map((entry) => entry.descriptor);
   if (descriptors.length === 0) return createProductionRuntimeFallbackLights(flags);
 
   const shadowCasterIndex = resolveProductionShadowCasterIndex(descriptors);
-  return descriptors.map((descriptor, index) =>
-    createProductionRuntimeCollectedLight(descriptor, index === shadowCasterIndex)
+  return authored.map(({ node, descriptor, part }, index) =>
+    bindAuthoredLight(createProductionRuntimeCollectedLight(descriptor, index === shadowCasterIndex), node, part, legacyLightAim(node, part))
   );
+}
+
+/** The legacy descriptor builder's aim rule per light (GU47 E-B re-aims a moved light the same way it was built). */
+function legacyLightAim(node: AuraLightNode, part: number): (position: AuraVec3) => AuraVec3 {
+  if (node.light === "spot") {
+    const target = node.target ?? node.lookAt ?? [0, 0.75, 0];
+    return (position) => normalize3([target[0] - position[0], target[1] - position[1], target[2] - position[2]]);
+  }
+  if (node.light === "studio" && part > 0) {
+    const target = node.lookAt ?? [0, 0.75, 0];
+    return (position) => normalizedDirection(position, target);
+  }
+  return (position) => productionRuntimeLightDirection(node, position);
 }
 
 /**

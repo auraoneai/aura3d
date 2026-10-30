@@ -81,7 +81,9 @@ import "../agent-api/compiler/environmentSourcesState.js";
 import { registerNodeHandler, registerOptionCoverage, type OptionCoverageRow, type SceneCompileContext, type RenderSourceContributions } from "../contracts/compiler.js";
 import { registerAppExtension } from "../contracts/app.js";
 import { registerDiagnosticsSection } from "../contracts/diagnostics.js";
-import { collectPrd02Lights, physicalLightDescriptor, prd02LightingOn, readLightingModelFromUrl, recordRuntimeFrameLights, runtimeLightStats } from "../agent-api/compiler/lights.js";
+import { collectPrd02Lights, physicalLightDescriptor, prd02LightingOn, queueRuntimeLightPatch, readLightingModelFromUrl, recordRuntimeFrameLights, runtimeLightStats, updateRuntimeLight } from "../agent-api/compiler/lights.js";
+import { registerNodeHandleExtension } from "../contracts/runtimeNodes.js";
+import type { AuraLightPatch, AuraLightTransitionOptions } from "../agent-api/nodes/types/runtime.js";
 import { auraLightsCounters, auraLightsLastFrame } from "../../../rendering/src/LightUniforms.js";
 import type { RenderDevice } from "../../../rendering/src/RenderDevice.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
@@ -145,11 +147,30 @@ registerNodeHandler({
       out.feature(light.light === "spot" ? "shadows.spot" : light.light === "point" ? "shadows.point" : "shadows.directional");
     }
   },
-  update(_node, _handle, ctx) {
-    // GU47 E-B: the frame's collected lights feed `app.lighting.diagnostics()` (punctualLights / localShadowLights).
+  update(node, handle, ctx, _out, timeSeconds) {
     const frame = ctx as unknown as Prd02FrameContext;
-    if (frame.runtimeNodes && frame.collectedLights) recordRuntimeFrameLights(frame.runtimeNodes, frame.collectedLights);
+    const lights = frame.collectedLights ?? [];
+    // GU47 E-B: the light follows its runtime handle (setPosition, setVisible, setLight blends) every frame.
+    updateRuntimeLight(node as unknown as AuraLightNode, handle, lights, timeSeconds);
+    // The frame's collected lights feed `app.lighting.diagnostics()` (punctualLights / localShadowLights).
+    if (frame.runtimeNodes) recordRuntimeFrameLights(frame.runtimeNodes, lights);
   }
+});
+
+// GU47 E-B: `handle.setLight(patch, opts)` on light nodes (declared optional on AuraRuntimeNodeHandle).
+declare module "../contracts/runtimeNodes.js" {
+  interface AuraNodeHandleExtensionMap {
+    setLight: (patch: AuraLightPatch, opts?: AuraLightTransitionOptions) => void;
+  }
+}
+
+registerNodeHandleExtension({
+  id: "prd02.setLight",
+  owner: "prd02",
+  flag: "A3D_QR_LIGHTING",
+  member: "setLight",
+  appliesTo: ["light"],
+  create: (handle) => (patch: AuraLightPatch, opts?: AuraLightTransitionOptions) => queueRuntimeLightPatch(handle, patch, opts)
 });
 
 registerNodeHandler({
