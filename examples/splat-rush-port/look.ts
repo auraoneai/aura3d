@@ -87,7 +87,8 @@ export interface SplatLook {
   readonly post: null | {
     readonly bloom: { readonly intensity: number; readonly threshold: number; readonly scatter: number };
     readonly vignette: { readonly intensity: number; readonly color: string };
-    readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number };
+    /** `gain`: linear exposure multiply in the HDR grade (GU47 phase 2: lifts the steady frame into the 125-150 mean band). */
+    readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly gain: number };
     readonly outline: { readonly color: string; readonly width: number; readonly targets: readonly string[] };
     /** CR-P3 title-only depth of field on the ball (thin lens; `focusDistance` is written per frame from the camera). */
     readonly dof: { readonly fStop: number; readonly focalLength: number; readonly maxBlur: number };
@@ -182,7 +183,7 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
     post: {
       bloom: { intensity: 0.45, threshold: 0.92, scatter: 0.5 },
       vignette: { intensity: 0.22, color: "#3a2440" },
-      grade: { contrast: 1.06, saturation: 1.08, temperature: 0.06 },
+      grade: { contrast: 1.06, saturation: 1.08, temperature: 0.06, gain: 1.38 },
       outline: { color: "#3b1f3f", width: 2, targets: ["ball", "gates", "rails"] },
       dof: { fStop: 2, focalLength: 50, maxBlur: 6 }
     },

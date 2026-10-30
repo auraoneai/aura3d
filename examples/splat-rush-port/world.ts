@@ -765,7 +765,7 @@ export function buildWorld(options: WorldOptions): World {
     const post = look.post;
     builder
       .add(effects.bloom({ name: "bloom", intensity: post.bloom.intensity, threshold: post.bloom.threshold, scatter: post.bloom.scatter }))
-      .add(effects.colorGrade({ name: "grade", contrast: post.grade.contrast, saturation: post.grade.saturation, temperature: post.grade.temperature }))
+      .add(effects.colorGrade({ name: "grade", contrast: post.grade.contrast, saturation: post.grade.saturation, temperature: post.grade.temperature, gain: post.grade.gain }))
       .add(effects.vignette({ name: "vignette", intensity: post.vignette.intensity, color: post.vignette.color }))
       .add(effects.outline({ name: "ink", color: post.outline.color, width: post.outline.width, targets: post.outline.targets }))
       .add(effects.depthOfField({ name: "title-dof", focusDistance: dofFocus(0, 15, 18, { x: 0, y: 0.55, z: 0 }), fStop: post.dof.fStop, focalLength: post.dof.focalLength, maxBlur: post.dof.maxBlur }));
