@@ -3,6 +3,7 @@ import {
   createAuraApp,
   effects,
   game,
+  gameFeel,
   instances,
   lights,
   looks,
@@ -46,6 +47,8 @@ import { meshyFarVehicles, meshyVehicles } from "./meshy-vehicles";
 import { SKY_DOME_SIZE, skyLook, skySpec } from "./art/sky";
 import { createCameraShake, createHitStop, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
 import { createRoadsterPresenter, viewOf } from "./native/presentation";
+import { apexSpeedLines, apexVfxEvents, countSkyDodges, type ApexVfxFrame } from "./render/vfxDirector";
+import { registerApexVfx } from "./art/vfx";
 import { InstancePool, parked } from "./render/instancePool";
 import { apexQaCrops, type QaCrop } from "./render/qa";
 import {
@@ -761,6 +764,26 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   };
   let lastRocketActive = false;
 
+  // AO-V1 / AO-V2: the apex preset pack (halved under reduced motion), fired from read-only state transitions; speed lines
+  // through gameFeel (feel bus -> C-20 VFX), never under reduced motion.
+  const vfxKinds = registerApexVfx(auraApp.effects, REDUCED_MOTION);
+  const feel = gameFeel.create({ app: auraApp });
+  let vfxPrev: ApexVfxFrame | null = null;
+  let airSeconds = 0;
+  let skyDodges = 0;
+  const skyGaps = new Map<string, number>();
+  let lastSpeedLinesMs = 0;
+  let speedLinesAccepted = 0;
+  const vfxFired: Record<string, number> = {};
+  const fireVfx = (kind: string, at: Vec3): void => {
+    try {
+      auraApp.effects?.burst(kind, at);
+      vfxFired[kind] = (vfxFired[kind] ?? 0) + 1;
+    } catch {
+      /* effects runtime unavailable */
+    }
+  };
+
   const dashPool = pool("dashes", LANE_DIVIDER_X.length * DASH_COUNT_PER_DIVIDER);
   const gantrySteel = pool("gantry-steel", GANTRY_COUNT * 3);
   const gantryBoards = pool("gantry-boards", GANTRY_COUNT * 2);
@@ -1073,7 +1096,44 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     qaApex.variant = lookFrame.variant;
     qaApex.tod = lookFrame.tod;
     qaApex.post = postStates;
+    qaApex.vfx = { presets: vfxKinds, fired: vfxFired, liveCount: auraApp.effects?.liveCount ?? 0, speedLinesAccepted };
   };
+
+  /** AO-V1 / AO-V2: fire the apex presets and speed lines from this frame's (read-only) simulation state. */
+  function driveVfx(real: any, nowMs: number, realDt: number): void {
+    const p = real.player;
+    const grounded = Boolean(p.grounded);
+    airSeconds = grounded ? 0 : airSeconds + realDt;
+    const pos = { x: Number(p.position?.x ?? 0), y: Number(p.position?.y ?? 0), z: Number(p.position?.z ?? 0) };
+    const skyCars: any[] = Array.isArray(real.traffic?.skyCars) ? real.traffic.skyCars : [];
+    if (real.mode === "playing") skyDodges += countSkyDodges(pos, skyCars, skyGaps);
+    const frame: ApexVfxFrame = {
+      mode: String(real.mode),
+      bolts: Number(real.bolts ?? 0),
+      grounded,
+      airSeconds,
+      rocketActive: Number(p.rocketTimer ?? 0) > 0,
+      skyDodges
+    };
+    // effects spawn where the car is drawn: the chase anchor keeps it near x = px * 0.35, y ~ 0, z = -1.15
+    const carAt: Vec3 = [pos.x - chaseX, Math.max(0, pos.y * 0.15) + 0.4, -1.15];
+    for (const kind of apexVfxEvents(vfxPrev, frame)) {
+      if (kind === "apex-land") fireVfx(kind, [carAt[0], 0.05, carAt[2]]);
+      else if (kind === "apex-rocket") fireVfx(kind, [carAt[0], carAt[1], carAt[2] + 2.6]);
+      else if (kind === "apex-skykill") fireVfx(kind, [carAt[0], carAt[1] + 1.2, carAt[2] - 3]);
+      else fireVfx(kind, carAt);
+    }
+    vfxPrev = frame;
+    const lines = real.mode === "playing" ? apexSpeedLines(Number(p.speed ?? 0), Boolean(p.boosting), frame.rocketActive, REDUCED_MOTION) : 0;
+    if (lines > 0 && nowMs - lastSpeedLinesMs > 240) {
+      lastSpeedLinesMs = nowMs;
+      try {
+        if (feel.speedLines(lines, [carAt[0], 1.2, -6]).accepted) speedLinesAccepted++;
+      } catch {
+        /* feel bus not bound */
+      }
+    }
+  }
 
   function syncRoadsterWorld(real: any, g: any = real): void {
     if (!real || !real.player) return;
@@ -1107,6 +1167,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     if (rocketActive && !lastRocketActive && real.mode === "playing") startFlash("rocket");
     lastRocketActive = rocketActive;
     updateFlash(nowMs);
+    driveVfx(real, nowMs, realDt);
     hitStop.update(realDt);
     if (hitStop.active !== hitStopHeld) {
       hitStopHeld = hitStop.active;
