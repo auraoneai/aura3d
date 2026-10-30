@@ -434,6 +434,36 @@ const boxMesh = (w: number, h: number, d: number): MeshData => {
   return m;
 };
 
+/* ---------------------------------------------------------------- CR-W1 festival bunting */
+
+/** Gate colours softened towards cream so a pennant never reads as a gate (dE >= 25 to its gate colour). */
+export const BUNTING_COLORS = ["#f7a39b", "#fbe0a0", "#aee2f6", "#dcb6f2"] as const;
+const BUNTING_POLE = "#6a3a6c";
+const BUNTING_MAX = 18;
+
+/**
+ * One pole with a string of four pennants running back along the road (local -z), all in one mesh with a per-vertex
+ * tone. `side` +1 / -1 mirrors the pennants so they hang over the deck edge.
+ */
+export function buntingMesh(): { mesh: MeshData; tones: number[] } {
+  const pole = transformMesh(cylinderMesh(0.07, 0.09, 3.2, 8), { ty: 1.6 });
+  const mesh: MeshData = { positions: [...pole.positions], normals: [...pole.normals], uvs: [...pole.uvs], indices: [...pole.indices] };
+  const tones: number[] = [];
+  const plum = hexLinear(BUNTING_POLE);
+  for (let v = 0; v < pole.positions.length / 3; v++) tones.push(...plum);
+  for (let k = 0; k < 4; k++) {
+    const z0 = -0.3 - k * 1.4, z1 = z0 - 1.1, top = 3.05 - k * 0.12;
+    const base = mesh.positions.length / 3;
+    mesh.positions.push(0, top, z0, 0, top - 0.04, z1, 0, top - 0.95, (z0 + z1) / 2);
+    for (let i = 0; i < 3; i++) mesh.normals.push(1, 0, 0);
+    mesh.uvs.push(0, 1, 1, 1, 0.5, 0);
+    mesh.indices.push(base, base + 1, base + 2);
+    const c = hexLinear(BUNTING_COLORS[k] as string);
+    for (let i = 0; i < 3; i++) tones.push(...c);
+  }
+  return { mesh, tones };
+}
+
 /* ---------------------------------------------------------------- build */
 
 export interface WorldOptions {
@@ -489,7 +519,7 @@ export let splatVertexCount = 0;
 /** Ids of the merged batch nodes. */
 export const BATCH_IDS = ["deck", "rails", "dashes", "gates", "gate-symbols", "splats", "particles", "clouds", "streaks"] as const;
 /** Carnival toon nodes whose light uniforms follow the time of day. */
-export const TOON_NODE_IDS = ["ball", "deck", "rails", "dashes", "gates", "splats", "particles"] as const;
+export const TOON_NODE_IDS = ["ball", "deck", "rails", "dashes", "gates", "splats", "particles", "bunting"] as const;
 /** CR-M2 plum enamel rails (carnival). */
 export const RAIL_PLUM = "#6a3a6c";
 /** CR-S2 cloud-sea disc radius (inside the 120 m sky dome). */
@@ -594,6 +624,10 @@ export function buildWorld(options: WorldOptions): World {
   /* C18 first-run guide ring under the matching gate */
   add("guide", cylinderMesh(1, 1, 0.02, 32), flatSpec([1, 1, 1], 0.5));
 
+  /* CR-W1 bunting poles every `spacing` segments on both deck edges (carnival only, +1 draw) */
+  const bunting = carnival && look.bunting ? (() => { const b = buntingMesh(); return new Batch(b.mesh, BUNTING_MAX, b.tones); })() : null;
+  if (bunting) addBatch("bunting", bunting, toon([1, 1, 1], { tone: true }));
+
   /* power-ups: Meshy toy models, one pool per type (pickups.ts) */
   addPickups(builder);
 
@@ -656,6 +690,8 @@ export function buildWorld(options: WorldOptions): World {
 
       const segSlots = new Slots<Segment>(MAX_SEG);
       const dashSlots = new Slots<Segment>(DASH_MAX);
+      const buntingSlots = new Slots<Segment>(BUNTING_MAX / 2);
+      const buntingEvery = look.bunting ? Math.max(1, Math.round(look.bunting.spacing)) : 0;
       const gateSlots = new Slots<Gate>(GATE_MAX);
       const splatSlots = new Slots<Splatter>(POOL.splatters);
       const gateColor: number[] = Array.from({ length: GATE_MAX }, () => -1);
@@ -733,6 +769,7 @@ export function buildWorld(options: WorldOptions): World {
         const scroll = simNow.scroll;
         segSlots.retain(simNow.segments, (slot) => { deck.collapse(slot); rails.collapse(slot * 2); rails.collapse(slot * 2 + 1); });
         dashSlots.retain(simNow.segments.filter((s) => s.index % 4 === 0), (slot) => dashes.collapse(slot));
+        if (bunting) buntingSlots.retain(simNow.segments.filter((s) => s.index % buntingEvery === 0), (slot) => { bunting.collapse(slot * 2); bunting.collapse(slot * 2 + 1); });
         for (const s of simNow.segments) {
           const { slot, fresh } = segSlots.use(s);
           if (fresh) {
@@ -741,6 +778,15 @@ export function buildWorld(options: WorldOptions): World {
             const cx = 4.3 * Math.cos(yaw), cz = 4.3 * Math.sin(yaw);
             rails.place(slot * 2, x - cx, 0.3, r + cz, yaw, 0.32, 0.32, 0.235);
             rails.place(slot * 2 + 1, x + cx, 0.3, r - cz, yaw, 0.32, 0.32, 0.235);
+          }
+          if (bunting && s.index % buntingEvery === 0) {
+            const bs = buntingSlots.use(s);
+            if (bs.fresh) {
+              const r = s.z - scroll, x = curve(-o.distance + s.z), yaw = roadYaw(-o.distance + s.z);
+              const cx = 4.75 * Math.cos(yaw), cz = 4.75 * Math.sin(yaw);
+              bunting.place(bs.slot * 2, x - cx, 0, r + cz, yaw, 1, 1, 1);
+              bunting.place(bs.slot * 2 + 1, x + cx, 0, r - cz, yaw + Math.PI, 1, 1, -1);
+            }
           }
           if (s.index % 4 === 0) {
             const d = dashSlots.use(s);
@@ -836,6 +882,7 @@ export function buildWorld(options: WorldOptions): World {
         node("deck").setPosition(0, 0, roadZ);
         node("rails").setPosition(0, 0, roadZ);
         node("dashes").setPosition(0, 0, roadZ);
+        if (bunting) node("bunting").setPosition(0, 0, roadZ);
         node("gates").setPosition(0, 0, roadZ);
         node("gate-symbols").setPosition(0, 0, roadZ);
         node("splats").setPosition(0, 0, roadZ);
@@ -843,6 +890,7 @@ export function buildWorld(options: WorldOptions): World {
         deck.flush(node("deck"));
         rails.flush(node("rails"));
         dashes.flush(node("dashes"));
+        if (bunting) bunting.flush(node("bunting"));
         gates.flush(node("gates"));
         gateSymbols.flush(node("gate-symbols"), false);
         ballSymbol.flush(node("ball-symbol"), false);

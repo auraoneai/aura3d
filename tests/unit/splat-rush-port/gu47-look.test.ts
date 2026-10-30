@@ -2,10 +2,11 @@ import { describe, expect, it } from "vitest";
 import { scene } from "@aura3d/engine";
 import { Autopilot } from "../../../examples/splat-rush-port/autopilot";
 import { PIECES, addBackdrop, backdropSway } from "../../../examples/splat-rush-port/backdrop";
-import { LOOKS, QA_CROPS, parseLook, sunDirection, timeOfDay, type SplatLook } from "../../../examples/splat-rush-port/look";
+import { GATE_COLORS, LOOKS, QA_CROPS, parseLook, sunDirection, timeOfDay, type SplatLook } from "../../../examples/splat-rush-port/look";
 import { IDLE, SplatRushSim } from "../../../examples/splat-rush-port/sim";
 import { PAINT_SPLASH, PAINT_SPLASH_RING, SPLASH_COUNT, fireSplashes, splashesFor } from "../../../examples/splat-rush-port/vfx3d";
-import { buildWorld, cameraLayers, carnivalToonSpec, rolledUp } from "../../../examples/splat-rush-port/world";
+import { BUNTING_COLORS, buildWorld, buntingMesh, cameraLayers, carnivalToonSpec, rolledUp } from "../../../examples/splat-rush-port/world";
+import { deltaE2000 } from "../../../tools/look-metrics/region-luma.mjs";
 
 const g = globalThis as { document?: unknown };
 function withDocument<T>(fn: () => T): T {
@@ -171,5 +172,22 @@ describe("GU47 reduced motion (PRD §6.3)", () => {
       expect(backdropSway(LOOKS.carnival, p, t)).toEqual(s);
     }
     expect(backdropSway(LOOKS.original, PIECES[0] as (typeof PIECES)[number], 3)).toEqual({ x: 0, z: 0 });
+  });
+});
+
+describe("GU47 CR-W1: festival bunting", () => {
+  it("one bunting batch in carnival only; pennants stay >= 25 dE from their gate colour", () => {
+    const names = (look: SplatLook) => withDocument(() => (buildWorld({ sim: new SplatRushSim(1), aspect: 1.6, look }).scene.toJSON().nodes as { name?: string }[]).map((n) => n.name));
+    expect(names(LOOKS.carnival).filter((n) => n === "bunting")).toHaveLength(1);
+    expect(names(LOOKS.original)).not.toContain("bunting");
+    const rgb = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    GATE_COLORS.forEach((gate, i) => expect((deltaE2000 as (a: number[], b: number[]) => number)(rgb(gate), rgb(BUNTING_COLORS[i] as string))).toBeGreaterThanOrEqual(25));
+    const { mesh, tones } = buntingMesh();
+    expect(tones.length).toBe(mesh.positions.length);
+  });
+
+  it("bunting poles appear on both sides during a run", () => {
+    const run = runLook(LOOKS.carnival, 240);
+    expect(run.rec.uniforms.get("bunting")?.has("crSunDir")).toBe(true);
   });
 });
