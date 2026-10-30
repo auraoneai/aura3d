@@ -248,7 +248,7 @@ describe("GU47 CR-W2 horizon spires", () => {
 
 describe("GU47 CR-V4 paint motes", () => {
   it("a puff every 24 steps keeps >= 20 specks alive, off on reduced motion, deterministic, never a gate colour", () => {
-    const layer = PAINT_MOTE_SPEC.layers[0] as { count: number; life: number };
+    const layer = PAINT_MOTE_SPEC.layers[0] as unknown as { count: number; life: number };
     expect(Math.floor((layer.life * 60) / MOTE_EVERY) * layer.count).toBeGreaterThanOrEqual(20);
     expect(moteFor(MOTE_EVERY * 3, false)).toEqual(moteFor(MOTE_EVERY * 3, false));
     expect(moteFor(MOTE_EVERY * 3 + 1, false)).toBeNull();
