@@ -53,6 +53,8 @@ export const QR_FLAG_STATES: Readonly<Partial<Record<QrFlagName, QrFlagState>>> 
   // a source turned its lane flag off (`none`, `-vfx`, ...).
   A3D_QR_VFX_SKY: "default-on",
   A3D_QR_VFX_FOG: "default-on",
+  // Alone: A3D_QR_WORLD stays `dev`; water draws through prd10.waterOnly.
+  A3D_QR_WORLD_WATER: "default-on",
   // threejs-parity lanes (docs/workflows/threejs-parity-gaps.md §5.0). Each new
   // node kind/material/texture/runtime surface compiles to a
   // "not yet implemented (A3D_PARITY_*)" validate error until its lane lands

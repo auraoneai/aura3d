@@ -62,6 +62,8 @@ describe("GU47 E-G builder-time world flags", () => {
 
   it("water.surface follows the declared app flags at build time", () => {
     vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    // GU47 WP-7: A3D_QR_WORLD_WATER is default-on (alone), so the legacy fixture needs an explicit off.
+    world.useAppFlags({ flags: ["-world.water"] });
     const legacy = water.surface({ preset: "calm" });
     expect(legacy.bandCount).toBeGreaterThan(0);
     expect(legacy.nodes.some((n) => (n as { kind?: string }).kind === "water")).toBe(false);
@@ -70,5 +72,15 @@ describe("GU47 E-G builder-time world flags", () => {
     expect(upgraded.bandCount).toBe(0);
     expect(upgraded.nodes).toHaveLength(1);
     expect((upgraded.nodes[0] as { kind?: string }).kind).toBe("water");
+  });
+
+  it("with the promoted water sub-flag, water.surface upgrades by default without the WORLD lane", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    expect(worldBuilderFlagOn("A3D_QR_WORLD")).toBe(false);
+    expect(worldBuilderSubflagOn("A3D_QR_WORLD_WATER")).toBe(true);
+    expect((water.surface({ preset: "calm" }).nodes[0] as { kind?: string }).kind).toBe("water");
+    // `-world` still turns the whole lane off, water included.
+    world.useAppFlags({ flags: ["-world"] });
+    expect(worldBuilderSubflagOn("A3D_QR_WORLD_WATER")).toBe(false);
   });
 });
