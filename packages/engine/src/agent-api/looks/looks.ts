@@ -436,7 +436,7 @@ interface LookRig {
   readonly background: AuraColor;
   readonly effects: LookV0["effects"];
   /** temperature/tint/lut are emitted only when defined (the v2 grade reads them, E-C). */
-  readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature?: number; readonly tint?: number; readonly lut?: AuraAssetRef };
+  readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature?: number; readonly tint?: number; readonly lut?: AuraAssetRef<"lut"> };
   /** undefined: the look's default bloom node; false: none; options: a retuned bloom node. */
   readonly bloom?: false | LookBloomOptions;
   /** The `output.preset` child (C-13 id); undefined: no child. */
