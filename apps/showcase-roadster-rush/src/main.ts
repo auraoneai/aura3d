@@ -49,7 +49,7 @@ import { SKY_DOME_SIZE, skyLook, skySpec } from "./art/sky";
 import { createCameraShake, createHitStop, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
 import { createRoadsterPresenter, viewOf } from "./native/presentation";
 import { apexSpeedLines, apexVfxEvents, countSkyDodges, type ApexVfxFrame } from "./render/vfxDirector";
-import { APEX_CHASE_POSE, SLOW_MO_SECONDS, apexTitleDurationSeconds, apexTitleSequence, createApexSlowMo } from "./render/cinematics";
+import { APEX_CHASE_POSE, SLOW_MO_SECONDS, apexTitleDurationSeconds, apexTitleSequence, chaseCameraOffsets, createApexSlowMo } from "./render/cinematics";
 import { registerApexVfx } from "./art/vfx";
 import { InstancePool, parked } from "./render/instancePool";
 import { apexQaCrops, type QaCrop } from "./render/qa";
@@ -901,6 +901,8 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   let hitStopHeld = false;
   let lastMode = "";
   let chaseX = 0;
+  let camDrop = 0;
+  let lastBank = 0;
   let lastFrameMs = 0;
   let lastFovKick = -1;
 
@@ -1191,7 +1193,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       skyDodges
     };
     // effects spawn where the car is drawn: the chase anchor keeps it near x = px * 0.35, y ~ 0, z = -1.15
-    const carAt: Vec3 = [pos.x - chaseX, Math.max(0, pos.y * 0.15) + 0.4, -1.15];
+    const carAt: Vec3 = [pos.x - chaseX, Math.max(0, pos.y * 0.15) + 0.4 + camDrop, -1.15];
     for (const kind of apexVfxEvents(vfxPrev, frame)) {
       if (kind === "apex-land") fireVfx(kind, [carAt[0], 0.05, carAt[2]]);
       else if (kind === "apex-rocket") fireVfx(kind, [carAt[0], carAt[1], carAt[2] + 2.6]);
@@ -1271,7 +1273,19 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     const targetX = px * 0.65;
     chaseX = real.manual ? targetX : chaseX + (targetX - chaseX) * (1 - Math.exp(-9 * realDt));
     const camAnchorX = chaseX + sh.x;
-    const camAnchorY = Math.max(0, py * 0.85) + sh.y;
+    // AO-C2: the camera drops from 3.6 to 2.7 m with speed (the world lifts by the drop) and banks into lane changes
+    const chase = chaseCameraOffsets(Number(p.speed ?? 0), Number(real.player._laneVel ?? 0), REDUCED_MOTION);
+    camDrop += (chase.drop - camDrop) * (1 - Math.exp(-3 * realDt));
+    const bank = Math.round(chase.roll * 2000) / 2000;
+    if (bank !== lastBank) {
+      lastBank = bank;
+      try {
+        auraApp.camera?.setRoll(bank, { halflife: 0.14 });
+      } catch {
+        /* camera controller not mounted */
+      }
+    }
+    const camAnchorY = Math.max(0, py * 0.85) + sh.y - camDrop;
     const rx = (wx: number) => wx - camAnchorX;
     const ry = (wy: number) => wy - camAnchorY;
     const rz = (wz: number) => wz - pz;

@@ -78,3 +78,26 @@ describe("Apex Overdrive cinematics (GU47 AO-C1)", () => {
     expect(normal - slowed).toBeLessThanOrEqual(Math.ceil((SLOW_MO_SECONDS * (1 - SLOW_MO_SCALE)) * 60) + 1); // ... by at most the slowed share
   });
 });
+
+describe("Apex Overdrive chase camera (GU47 AO-C2)", () => {
+  it("drops to <= 2.8 m at 64 m/s and stays at 3.6 m when slow", async () => {
+    const { CHASE_BASE_HEIGHT, chaseCameraOffsets } = await import("../../../apps/showcase-roadster-rush/src/render/cinematics");
+    expect(CHASE_BASE_HEIGHT - chaseCameraOffsets(64, 0, false).drop).toBeLessThanOrEqual(2.8);
+    expect(chaseCameraOffsets(20, 0, false).drop).toBe(0);
+    let last = -1;
+    for (let v = 0; v <= 80; v += 4) {
+      const d = chaseCameraOffsets(v, 0, false).drop;
+      expect(d).toBeGreaterThanOrEqual(last);
+      last = d;
+    }
+  });
+
+  it("banks 0.5-3 degrees into a lane change, never under reduced motion", async () => {
+    const { chaseCameraOffsets } = await import("../../../apps/showcase-roadster-rush/src/render/cinematics");
+    const deg = (r: number) => (Math.abs(r) * 180) / Math.PI;
+    expect(deg(chaseCameraOffsets(40, 12, false).roll)).toBeGreaterThan(0.5);
+    expect(deg(chaseCameraOffsets(40, 40, false).roll)).toBeLessThanOrEqual(3);
+    expect(Math.sign(chaseCameraOffsets(40, 12, false).roll)).toBe(-Math.sign(chaseCameraOffsets(40, -12, false).roll));
+    expect(chaseCameraOffsets(40, 12, true).roll).toBe(0);
+  });
+});

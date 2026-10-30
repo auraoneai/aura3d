@@ -91,3 +91,25 @@ export function createApexSlowMo(reducedMotion: boolean): ApexSlowMo {
     }
   };
 }
+
+/** GU47 AO-C2: authored chase height above the deck (main.ts camera position y). */
+export const CHASE_BASE_HEIGHT = 3.6;
+/** Height at full speed (64 m/s): the camera drops to 2.7 m so the deck rushes past. */
+export const CHASE_FAST_HEIGHT = 2.7;
+export const CHASE_SPEED_RANGE: readonly [number, number] = [26, 64];
+/** Bank limit (radians): 2.6 degrees. */
+export const CHASE_MAX_BANK = (2.6 * Math.PI) / 180;
+
+/**
+ * Chase camera offsets for a speed (m/s) and lateral velocity (m/s, + right): how far the camera drops below its authored
+ * height and how much it banks into the lane change. Reduced motion keeps the drop (a framing change, not a motion effect)
+ * but never rolls (PRD §6.3).
+ */
+export function chaseCameraOffsets(speed: number, lateralVelocity: number, reducedMotion: boolean): { readonly drop: number; readonly roll: number } {
+  const [lo, hi] = CHASE_SPEED_RANGE;
+  const t = Math.min(1, Math.max(0, (speed - lo) / (hi - lo)));
+  const eased = t * t * (3 - 2 * t);
+  const drop = (CHASE_BASE_HEIGHT - CHASE_FAST_HEIGHT) * eased;
+  const roll = reducedMotion ? 0 : Math.max(-CHASE_MAX_BANK, Math.min(CHASE_MAX_BANK, -lateralVelocity * 0.0042));
+  return { drop, roll };
+}
