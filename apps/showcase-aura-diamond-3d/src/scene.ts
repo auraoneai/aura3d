@@ -3,11 +3,13 @@
  * Moved out of main.ts unchanged (GU47 WP-18) so unit tests can build and audit the real scene without booting the game.
  * Presentation only: the sim in main.ts reads the field constants exported here (BASES, FIELDER_SPOTS) unchanged.
  */
-import { camera, effects, game, instances, lights, looks, material, model, primitives, scene, sky, type AuraLookOverrides } from "@aura3d/engine";
+import { camera, effects, game, instances, lights, looks, material, model, primitives, scene, sky, world, type AuraLookOverrides } from "@aura3d/engine";
 import { assets } from "./aura-assets.route";
 import { PARK_LOOKS, lookPlan, parkPracticals, type DiamondLookPlan, type DiamondLookVariant, type DiamondSkyMode, type DiamondTier } from "../art/look";
 import { turfTextures } from "./turfTextures";
 import { boardTexture } from "./boardTexture";
+import { windowTexture } from "./windowTexture";
+import { horizonBand, horizonForTier, type HorizonBand } from "../art/horizon";
 import { FAN_BODY, FAN_HEAD, fanColors, fanSeats } from "../art/crowd";
 import {
   makeRng,
@@ -444,7 +446,7 @@ export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
       const W = HARBOR_WATER;
       nodes.push(
         model(assets.diamondHarborPier, { name: "harbor-pier", targetHeight: 8, role: "setDressing", scaleMode: "fit" }).position(at("harbor-pier")[0], -0.3, at("harbor-pier")[1]).rotate(0, 0.3, 0),
-        primitives.plane({ name: "harbor-water", size: [W.w, W.d] as any, material: material.pbr({ color: "#2e5d7a", roughness: 0.35, metalness: 0.3 }) }).position(W.x, W.y, W.z),
+        gu47 ? harborWater() : primitives.plane({ name: "harbor-water", size: [W.w, W.d] as any, material: material.pbr({ color: "#2e5d7a", roughness: 0.35, metalness: 0.3 }) }).position(W.x, W.y, W.z),
         model(assets.diamondTower, { name: "sandlot-windmill", targetHeight: 13, role: "setDressing", scaleMode: "fit" }).position(at("sandlot-windmill")[0], 0, at("sandlot-windmill")[1]).rotate(0, 0.6, 0),
         model(assets.diamondCanyonArch, { name: "sandlot-tower", targetHeight: 12, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverrideAlt }).position(at("sandlot-tower")[0], 0, at("sandlot-tower")[1]).rotate(0, -0.4, 0),
         model(assets.diamondRock, { name: "pine-a", targetHeight: 7, role: "setDressing", scaleMode: "fit", materialOverrides: rockOverride }).position(at("pine-a")[0], 0, at("pine-a")[1]),
@@ -560,7 +562,53 @@ export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
       break;
     }
   }
+  if (gu47) {
+    const band = horizonBand(park.id);
+    if (band) nodes.push(horizonNode(horizonForTier(band, ctx.tier === "low")));
+  }
   return nodes;
+}
+
+/**
+ * DIA-W1: Harbor's bay as `world.water` (E-G; `A3D_QR_WORLD_WATER` is default-on and draws without the world lane),
+ * calm Gerstner swell that mirrors the sunset IBL. Planar reflection would redraw the park (about +400 draws), so it
+ * is Ultra only. Same footprint and rest height as the 4.6.2 plane (rules.ts HARBOR_WATER).
+ */
+export function harborWater(): any {
+  const W = HARBOR_WATER;
+  const x0 = W.x - W.w / 2, x1 = W.x + W.w / 2, z0 = W.z - W.d / 2, z1 = W.z + W.d / 2;
+  return world
+    .water({
+      id: "harbor-water",
+      name: "harbor-water",
+      kind: "ocean",
+      shape: { kind: "polygon", points: [[x0, z0], [x1, z0], [x1, z1], [x0, z1]] },
+      height: W.y,
+      shallowColor: "#3f7488",
+      deepColor: "#173a52",
+      waves: "calm",
+      reflection: { low: "ibl", medium: "ibl", high: "ibl", ultra: "planar" },
+      refraction: { low: false, medium: false, high: true, ultra: true }
+    })
+    .toJSON();
+}
+
+/** DIA-W1: one park's horizon band as one instanced draw (art/horizon.ts). */
+export function horizonNode(band: HorizonBand): any {
+  const windows = band.windows ? windowTexture() : null;
+  const mat = band.windows
+    ? windows
+      ? material.emissive({ color: band.color, emissive: band.windows.emissive, emissiveMap: windows as any, emissiveIntensity: band.windows.intensity, roughness: band.roughness })
+      : material.emissive({ color: band.color, emissive: band.windows.emissive, emissiveIntensity: band.windows.intensity / 3, roughness: band.roughness })
+    : material.pbr({ color: band.color, roughness: band.roughness, metalness: 0 });
+  const options = {
+    name: band.name,
+    size: [1, 1, 1] as Vec3,
+    material: mat,
+    transforms: band.instances.map((i) => ({ position: i.position, rotation: i.rotation, scale: i.scale })),
+    ...(band.colors ? { colors: band.instances.map((_, i) => band.colors![i % band.colors!.length]!) } : {})
+  };
+  return band.shape === "box" ? instances.box(options) : instances.cylinder(options);
 }
 
 /** An admitted 3D catalog athlete grounded cleanly with skeletal animation. */
