@@ -26,6 +26,7 @@
  */
 import type { ShaderChunk, ShaderFeature } from "../../contracts/program";
 import { VELOCITY_MRT } from "../../contracts/velocity";
+import { velocityFramePrepared } from "../../forward/Velocity";
 
 export const velocityParsVertexChunk: ShaderChunk = {
   name: "a3d_prd03_velocityParsVertex",
@@ -108,6 +109,17 @@ export const velocityFeature: ShaderFeature = {
   }
 };
 
+/**
+ * GU47 E-G (WP-7): the registered form of `velocityFeature` also requires a
+ * prepared temporal frame (`velocityFramePrepared`), so promoting
+ * `A3D_QR_POST_VELOCITY_MRT` leaves scenes without TAA / motion blur on
+ * their current programs. `velocityFeature.select` keeps the flag-only rule.
+ */
+export const registeredVelocityFeature: ShaderFeature = {
+  ...velocityFeature,
+  select: (input) => (velocityFramePrepared() ? velocityFeature.select(input) : undefined)
+};
+
 export function registerVelocityShader(
   registerChunk: (c: ShaderChunk) => void,
   registerFeature: (f: ShaderFeature) => () => void
@@ -116,5 +128,5 @@ export function registerVelocityShader(
   registerChunk(velocityWriteVertexChunk);
   registerChunk(velocityParsFragmentChunk);
   registerChunk(velocityWriteFragmentChunk);
-  return registerFeature(velocityFeature);
+  return registerFeature(registeredVelocityFeature);
 }
