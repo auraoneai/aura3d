@@ -25,6 +25,7 @@ import type { AuraRuntimeNodeAnimationBindingMetadata, AuraRuntimeNodeAnimationP
 import {
   StubActorAnimationApi,
   type AuraActorAnimationApi,
+  type AuraActorPoseApi,
   type AuraActorAnimationStateSnapshot,
   type AuraAnimationDiagnostics,
   type AuraBoneAttachSpec,
@@ -32,6 +33,7 @@ import {
   type AuraPlayLayerOptions,
   type AuraResolvedClipInfo
 } from "../../contracts/animation.js";
+import type { AuraQuat } from "../../contracts/sceneGraph.js";
 import type { AuraApp, AuraRuntimeNodeHandle } from "../index.js";
 import type { TypedGLBActor } from "../../production-runtime/TypedGLBActor.js";
 
@@ -444,9 +446,123 @@ const prd06AnimationActors = new Map<string, TypedGLBActor>();
 
 export function registerPrd06AnimationActor(actor: TypedGLBActor): () => void {
   prd06AnimationActors.set(actor.id, actor);
+  // GU47 E-H: overrides set before the actor loaded attach now.
+  syncPoseOverrides(actor.id);
   return () => {
+    // A replacement actor that registered under the same id (scene swap order)
+    // keeps its entry and its overrides.
+    if (prd06AnimationActors.get(actor.id) !== actor) return;
     prd06AnimationActors.delete(actor.id);
+    // The runtime (and its constraint list) dies with the actor; overrides
+    // last for the loaded actor's lifetime, so a new scene starts clean.
+    poseOverrideStates.delete(actor.id);
   };
+}
+
+/* ------------------------------------------- GU47 E-H: actor.pose overrides */
+
+/** Warning code for a `pose.setLocalRotation` bone the loaded rig does not have (GU47 E-H). */
+export const ANIMATION_POSE_UNKNOWN_BONE = "ANIMATION_POSE_UNKNOWN_BONE";
+
+type PoseQuat = readonly [number, number, number, number];
+
+interface PoseOverrideState {
+  /** Authored overrides by bone name (normalised), resolved against the rig on sync. */
+  readonly byName: Map<string, PoseQuat>;
+  /** Resolved joint index → quaternion, written by the constraint each evaluate. */
+  readonly byJoint: Map<number, PoseQuat>;
+  /** Bone name → joint index for the registered runtime (the per-frame update fast path). */
+  readonly jointByName: Map<string, number>;
+  /** The constraint's `bones` (read by the runtime every evaluate, so mutated in place). */
+  readonly bones: number[];
+  /** The runtime the constraint is registered on, and its disposer. */
+  runtime?: object;
+  dispose?: () => void;
+}
+
+const poseOverrideStates = new Map<string, PoseOverrideState>();
+const poseUnknownBoneWarned = new Set<string>();
+
+interface PoseOverrideRuntime {
+  skeletons(): readonly { readonly jointIndicesByName: ReadonlyMap<string, readonly number[]> }[];
+  addPoseConstraint(constraint: {
+    readonly bones: readonly number[];
+    evaluate(pose: { readonly rotations: Float32Array }): void;
+  }): () => void;
+}
+
+function poseOverrideRuntime(actor: TypedGLBActor | undefined): PoseOverrideRuntime | undefined {
+  const runtime = actor?.animation as Partial<PoseOverrideRuntime> | undefined;
+  return runtime !== undefined && typeof runtime.skeletons === "function" && typeof runtime.addPoseConstraint === "function"
+    ? (runtime as PoseOverrideRuntime)
+    : undefined;
+}
+
+/**
+ * Resolve the node's authored overrides against the loaded rig and make sure
+ * one pose constraint writes them. The constraint is (re)registered last, so it
+ * evaluates after the mixer, IK and spring constraints: the final pose-space
+ * write before skinning. Unknown bones warn once and are dropped.
+ */
+function syncPoseOverrides(nodeId: string, forceReregister = false): void {
+  const state = poseOverrideStates.get(nodeId);
+  if (state === undefined) return;
+  const runtime = poseOverrideRuntime(prd06AnimationActors.get(nodeId));
+  if (runtime === undefined) return;
+  const binding = runtime.skeletons()[0];
+  if (binding === undefined) return;
+  state.byJoint.clear();
+  state.jointByName.clear();
+  for (const [bone, quat] of state.byName) {
+    const joint = binding.jointIndicesByName.get(bone)?.[0];
+    if (joint === undefined) {
+      state.byName.delete(bone);
+      const key = `${nodeId}:${bone}`;
+      if (!poseUnknownBoneWarned.has(key)) {
+        poseUnknownBoneWarned.add(key);
+        if (typeof console !== "undefined") console.warn(`${ANIMATION_POSE_UNKNOWN_BONE}: node "${nodeId}" has no bone "${bone}".`);
+      }
+      continue;
+    }
+    state.byJoint.set(joint, quat);
+    state.jointByName.set(bone, joint);
+  }
+  state.bones.length = 0;
+  state.bones.push(...state.byJoint.keys());
+  if (state.byJoint.size === 0) {
+    state.dispose?.();
+    state.dispose = undefined;
+    state.runtime = undefined;
+    return;
+  }
+  if (!forceReregister && state.runtime === runtime && state.dispose !== undefined) return;
+  state.dispose?.();
+  state.runtime = runtime;
+  state.dispose = runtime.addPoseConstraint({
+    bones: state.bones,
+    evaluate: (pose) => {
+      for (const [joint, quat] of state.byJoint) pose.rotations.set(quat, joint * 4);
+    }
+  });
+}
+
+/** Re-append the node's pose override after another constraint was added or the list was cleared. */
+function keepPoseOverridesLast(nodeId: string, listCleared = false): void {
+  const state = poseOverrideStates.get(nodeId);
+  if (state === undefined || state.dispose === undefined) return;
+  if (listCleared) {
+    // `clearPoseConstraints` already dropped it; the stale disposer would no-op.
+    state.dispose = undefined;
+    state.runtime = undefined;
+  }
+  syncPoseOverrides(nodeId, true);
+}
+
+function normalisedQuat(quat: readonly number[]): PoseQuat | undefined {
+  const [x = 0, y = 0, z = 0, w = 1] = quat;
+  const length = Math.hypot(x, y, z, w);
+  if (!Number.isFinite(length) || length < 1e-8) return undefined;
+  return [x / length, y / length, z / length, w / length];
 }
 
 /** The mixer's synthesized additive key reports back as the authored clip name. */
@@ -596,14 +712,58 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
       if (!qrAnimationFlags().on("A3D_QR_ANIMATION") || actor === undefined || actor.animation === undefined) {
         return () => { /* stub no-op */ };
       }
-      return addPrd06ActorConstraint(actor, spec as Prd06ConstraintSpec, (ref) =>
+      const dispose = addPrd06ActorConstraint(actor, spec as Prd06ConstraintSpec, (ref) =>
         prd06ConstraintTargetPosition(actor, ref, this.app)
       );
+      keepPoseOverridesLast(this.nodeId);
+      return dispose;
     },
     clear: (): void => {
       const actor = this.actor;
       if (actor === undefined) return;
       clearPrd06ActorConstraints(actor);
+      keepPoseOverridesLast(this.nodeId, true);
+    }
+  };
+
+  /**
+   * GU47 E-H — `node.animation.pose`: procedural local-rotation overrides,
+   * written by one pose constraint kept last in the actor's list (after the
+   * mixer, IK and spring bones; before skinning). Set before load, they attach
+   * when the actor loads; they last for the loaded actor's lifetime. Degrades
+   * to the no-op stub while the flag is off.
+   */
+  override readonly pose: AuraActorPoseApi = {
+    setLocalRotation: (bone: string, quat: AuraQuat): void => {
+      if (!qrAnimationFlags().on("A3D_QR_ANIMATION")) return;
+      const normalised = normalisedQuat(quat);
+      if (normalised === undefined) return;
+      let state = poseOverrideStates.get(this.nodeId);
+      if (state === undefined) {
+        state = { byName: new Map(), byJoint: new Map(), jointByName: new Map(), bones: [] };
+        poseOverrideStates.set(this.nodeId, state);
+      }
+      state.byName.set(bone, normalised);
+      const joint = state.jointByName.get(bone);
+      if (joint !== undefined && state.dispose !== undefined) {
+        // Hot path (a route aiming a head every frame): the joint is resolved
+        // and the constraint registered, so only the value changes.
+        state.byJoint.set(joint, normalised);
+        return;
+      }
+      syncPoseOverrides(this.nodeId);
+    },
+    clear: (bone?: string): void => {
+      const state = poseOverrideStates.get(this.nodeId);
+      if (state === undefined) return;
+      if (bone === undefined) state.byName.clear();
+      else state.byName.delete(bone);
+      if (state.byName.size > 0) {
+        syncPoseOverrides(this.nodeId);
+        return;
+      }
+      state.dispose?.();
+      poseOverrideStates.delete(this.nodeId);
     }
   };
 
@@ -620,7 +780,9 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
       if (!qrAnimationFlags().on("A3D_QR_ANIMATION") || actor === undefined || actor.animation === undefined) {
         return () => { /* stub no-op */ };
       }
-      return addPrd06ActorSpringBones(actor, spec as Prd06SpringBonesSpec);
+      const dispose = addPrd06ActorSpringBones(actor, spec as Prd06SpringBonesSpec);
+      keepPoseOverridesLast(this.nodeId);
+      return dispose;
     },
     clear: (): void => {
       const actor = this.actor;
@@ -793,4 +955,6 @@ export function resetActorClipInfoSources(): void {
   actorClipInfoSources.clear();
   actorClipInfoWaiters.clear();
   prd06AnimationActors.clear();
+  poseOverrideStates.clear();
+  poseUnknownBoneWarned.clear();
 }
