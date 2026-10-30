@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { resolveQrFlags } from "@aura3d/engine";
+import { createAuraApp, resolveQrFlags } from "@aura3d/engine";
 import { BOOT_SKY, KEY_SHADOW, SKY_LOOKS, SODIUM, SKY_ORDER, hazeAt, hdriUrl, keyLightPosition, nextSky, skyFromParam, sunDirection } from "../../../apps/showcase-teleoperator/src/look";
-import { DRIZZLE, GRID_DISPATCH_FLAGS, SODIUM_POINT_MAX, drizzleNodes, WEATHER, buildGridDispatchScene, nearestLamps, roadTileLayout, skyOutput, tailLampMaterial, windowGlowOverride } from "../../../apps/showcase-teleoperator/src/scene";
+import { DRIZZLE, GRID_DISPATCH_FLAGS, WET_SSR, wetReflectionNodes, SODIUM_POINT_MAX, drizzleNodes, WEATHER, buildGridDispatchScene, nearestLamps, roadTileLayout, skyOutput, tailLampMaterial, windowGlowOverride } from "../../../apps/showcase-teleoperator/src/scene";
 
 type Node = { kind?: string; light?: string; name?: string; environment?: string; texture?: { url?: string }; shadow?: unknown; position?: number[]; color?: string; intensity?: number; children?: Node[] };
 const flatNodes = (sky: (typeof SKY_ORDER)[number]): Node[] => {
@@ -277,5 +277,15 @@ describe("grid dispatch GD-07 wet Sodium night", () => {
     const b = JSON.stringify(drizzleNodes(SKY_LOOKS.night, false));
     expect(a).toContain(`"particleCount":${DRIZZLE.particles}`);
     expect(b).toContain(`"particleCount":${DRIZZLE.particles / 2}`);
+  });
+});
+
+describe("grid dispatch GD-07 wet reflections", () => {
+  it("only Sodium night gets the SSR stage, and the wet asphalt is under its roughness fade", () => {
+    expect(wetReflectionNodes(SKY_LOOKS.night)).toHaveLength(1);
+    for (const sky of ["golden", "noon", "fog"] as const) expect(wetReflectionNodes(SKY_LOOKS[sky])).toHaveLength(0);
+    expect(SKY_LOOKS.night.street.asphalt.roughness).toBeLessThan(WET_SSR.roughness);
+    const app = createAuraApp(undefined, { scene: buildGridDispatchScene("night"), autoStart: false });
+    app.dispose?.();
   });
 });

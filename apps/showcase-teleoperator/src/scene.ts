@@ -216,6 +216,18 @@ export function drizzleNodes(look: SkyLook, motionOk = true) {
 }
 
 /**
+ * GD-07: screen-space reflections on the wet Sodium night asphalt (eint EC-6), in place of the box probe: a probe
+ * rendered once would freeze the lamp reflections while the street scrolls past the fixed camera, and one refreshed
+ * every few frames costs six scene renders. The asphalt roughness (0.22) sits under the 0.4 fade so the road reflects;
+ * cars and facades stay matte. One post stage, no scene draws; the post tiers drop it below High (PRD 6.4).
+ */
+export const WET_SSR = { maxDistance: 24, roughness: 0.4, thickness: 0.3, intensity: 0.55 } as const;
+export function wetReflectionNodes(look: SkyLook) {
+  if (!look.street.drizzle) return [];
+  return [effects.screenSpaceReflections({ name: "grid wet ssr", ...WET_SSR })];
+}
+
+/**
  * GD-08: the post stack of one row: bloom (noon threshold 0.95 keeps the white pod out of it, fog low, night 0.55), the
  * E-C linear grade (contrast, saturation, white balance) and a vignette. Tone mapping and exposure are output settings,
  * applied with `app.setOutput` after every `setScene` (`skyOutput`).
@@ -383,7 +395,7 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
     .addMany([...skyRig(look)])
     .add(marineHaze(look))
     .addMany([...godRayNodes(look)])
-    .addMany([...drizzleNodes(look, opts.motionOk ?? true)])
+    .addMany([...drizzleNodes(look, opts.motionOk ?? true), ...wetReflectionNodes(look)])
     .addMany([...groundingNodes()])
     .addMany([...skyPost(look)]);
 
