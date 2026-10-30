@@ -126,6 +126,21 @@ export function nextPunchT(punchT: number, aces: number, acesSeen: number, dt: n
   return punchT;
 }
 
+/**
+ * TT-P2 long-lens depth of field (the engine runs the DOF stage at High and Ultra only). A 120 mm lens at f/4 focused
+ * 34 m out holds about 26.5-47.4 m sharp (hyperfocal f^2 / (N c), c = 0.03 mm): both athletes (about 27-45 m from the v2
+ * eye) stay sharp while the far stands (50 m and beyond) soften. Cut-aways (TT-C2 intro and changeover) open to f/2 and
+ * focus on their shot's target.
+ */
+export const BROADCAST_DOF = { focusDistance: 34, fStop: 4, focalLength: 120 } as const;
+export const CUT_DOF_FSTOP = 2;
+
+/** Sharp range of a thin lens (metres) for a focus distance, f-number and focal length (mm), circle of confusion 0.03 mm. */
+export function dofSharpRange(focusDistance: number, fStop: number, focalLengthMm: number): { near: number; far: number } {
+  const h = (focalLengthMm * focalLengthMm) / (fStop * 0.03) / 1000;
+  return { near: (h * focusDistance) / (h + focusDistance), far: focusDistance >= h ? Number.POSITIVE_INFINITY : (h * focusDistance) / (h - focusDistance) };
+}
+
 /** A live camera pose (the rig moved by the pan). */
 export interface CameraPose { readonly eye: Vec3; readonly target: Vec3 }
 

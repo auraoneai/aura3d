@@ -5,9 +5,9 @@ import type { ActorState, BallState, MatchState } from "../contract/sim";
 import type { Vec3 } from "../contract/units";
 import { resolveBallHandles, updateBall, type BallHandles } from "./ball";
 import { createBroadcastDirector, createLetterbox, introParam, type BroadcastDirector, type DirectorFrame, type Letterbox } from "./intro";
-import { CAMERA_FAR, CAMERA_NEAR, acePunchOffset, nextPunchT, cameraFovForAspect, cameraRigFor, dampPan, panGoal, panLimitFor, panPose, projectWorldPoint, type CameraPose } from "./camera";
+import { BROADCAST_DOF, CAMERA_FAR, CAMERA_NEAR, CUT_DOF_FSTOP, acePunchOffset, nextPunchT, cameraFovForAspect, cameraRigFor, dampPan, panGoal, panLimitFor, panPose, projectWorldPoint, type CameraPose } from "./camera";
 import { COURT_X, COURT_Y, COURT_Z, HIDDEN_SCALE, SERVICE_Z, SINGLES_X, SPECTATOR_COUNT, clamp } from "./constants";
-import { QUALITY_REBUILD } from "./lighting";
+import { POST_EFFECT, QUALITY_REBUILD } from "./lighting";
 import { resolveAppearance } from "./appearance";
 import { createPoseRig } from "./poseRig";
 import type { AthleteRigPort } from "./rigPort";
@@ -235,6 +235,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     cutFrame = null;
     letterbox?.show(false);
     pushCameraPose();
+    syncCutDof();
   }
 
   /** TT-C2: advances the director; the pose is re-sent every frame of a cut and once when it ends. */
@@ -244,6 +245,20 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     cutFrame = director.step(state as never, Number.isFinite(dt) ? dt! : 1 / 60, reducedMotion());
     letterbox?.show(cutFrame !== null);
     if (cutFrame || was) pushCameraPose();
+    syncCutDof();
+  }
+
+  /** TT-P2: cut-aways open the lens to f/2 focused on the shot's target; the broadcast DOF returns when the cut ends. */
+  let dofShot: string | null = null;
+  function syncCutDof(): void {
+    const shot = cutFrame?.shot ?? null;
+    if (shot === dofShot) return;
+    dofShot = shot;
+    const post = (app as unknown as VenueRuntimeApp | null)?.post;
+    const patch = cutFrame
+      ? { focusDistance: Math.hypot(cutFrame.pose.target[0] - cutFrame.pose.eye[0], cutFrame.pose.target[1] - cutFrame.pose.eye[1], cutFrame.pose.target[2] - cutFrame.pose.eye[2]), fStop: CUT_DOF_FSTOP, focalLength: BROADCAST_DOF.focalLength }
+      : { ...BROADCAST_DOF };
+    try { post?.setEffect?.(POST_EFFECT.depthOfField, patch); } catch { /* post surface optional */ }
   }
 
   /** TT-V2: starts a punch on a new ace (World Tour only, never under reduced motion) and advances a running one. */

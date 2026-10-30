@@ -1,5 +1,6 @@
 import { effects, game, lights } from "@aura3d/engine";
 import { venueLutUrl } from "./assets";
+import { BROADCAST_DOF } from "./camera";
 import { FLOODLIGHTS, sunPosition, venueLook, type VenueLook, type VenueSun } from "./look";
 
 /**
@@ -108,7 +109,7 @@ export function lutFields(g: VenueLook["grade"]): { lut?: string; lutIntensity: 
 }
 
 /** Runtime post effect names (E-C `app.post.setEffect`). */
-export const POST_EFFECT = { bloom: "bloom", grade: "colorGrade", vignette: "vignette", volumetricFog: "volumetricFog" } as const;
+export const POST_EFFECT = { bloom: "bloom", grade: "colorGrade", vignette: "vignette", volumetricFog: "volumetricFog", depthOfField: "depthOfField" } as const;
 
 /**
  * TT-P1 / TT-L2: the World Tour post chain, authored for the boot venue and retuned per venue at runtime
@@ -125,7 +126,9 @@ export function postEffects(venueId?: string | null) {
     effects.vignette({ intensity: g.vignette, smoothness: 0.65 }),
     // TT-P3: the venue's authored .cube on top of the contrast / saturation / white-balance grade.
     effects.colorGrade({ contrast: g.contrast, saturation: g.saturation, temperature: g.temperature, tint: g.tint, ...lutFields(g) }),
-    effects.contactShadows({ length: 0.35, thickness: 0.06, intensity: 0.9, lights: "sun" })
+    effects.contactShadows({ length: 0.35, thickness: 0.06, intensity: 0.9, lights: "sun" }),
+    // TT-P2: long-lens DOF (the engine's tier resolution runs it at High / Ultra only; no stage on Medium or Low).
+    effects.depthOfField({ focusDistance: BROADCAST_DOF.focusDistance, fStop: BROADCAST_DOF.fStop, focalLength: BROADCAST_DOF.focalLength })
   ];
 }
 
