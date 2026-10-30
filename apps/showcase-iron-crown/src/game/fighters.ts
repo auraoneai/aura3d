@@ -334,6 +334,16 @@ export function animationLayer(clip: FighterClip): "base" | "upper-body" {
   return ATTACK_CLIPS.has(clip) ? "upper-body" : "base";
 }
 
+/**
+ * GU47 IC47-AN1: attacks play on the upper-body layer over the locomotion clip by default, now that the engine's
+ * `playLayer` forwards `speed` to the layer's time scale (the moves' hit frames expect the attack clips at 1.85x to
+ * 2.8x). `?iclayer=0` keeps the full-body attack clips (today's look). Visual only: hitboxes and frames come from the
+ * combat sim, not the clip.
+ */
+export function attackLayerEnabled(params: Pick<URLSearchParams, "get">): boolean {
+  return params.get("iclayer") !== "0";
+}
+
 export const fighterAnimationClips: readonly AuraNamedAnimationClipDefinition<FighterClip>[] = REQUIRED_FIGHTER_CLIPS.map((id) => ({
   id,
   /** GLB clip name — lets clipSamples resolve the real embedded clip when this logical state is the active one. */

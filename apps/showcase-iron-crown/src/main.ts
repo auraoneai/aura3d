@@ -23,6 +23,7 @@ import {
 } from "./game/ai";
 import {
   animationLayer,
+  attackLayerEnabled,
   createFighterAnimationController,
   embeddedClipFor,
   fighterById,
@@ -140,12 +141,8 @@ const debugHooks = params.get("icdebug") === "1";
 const contactShadowsOn = params.get("iccontact") !== "0";
 /** PRD §6.4: `?tier=low` halves weather and VFX particles (the engine tier drops local shadows, AO, DOF and grain). */
 const lowTier = params.get("tier") === "low";
-/**
- * `?iclayer=1` plays attacks on the declared upper-body layer over the locomotion clip (audit IC-15). It is opt-in until
- * the node `playLayer` forwards a playback speed: the attack clips run 1.0 to 4.3 s at 1x, while the moves' hit frames
- * expect them at 1.85x to 2.8x (clipPlaybackSpec), so a 1x layered jab would land long after its hitbox.
- */
-const attackLayerWanted = params.get("iclayer") === "1";
+/** Upper-body attack layering is on by default (IC47-AN1, `attackLayerEnabled`); `?iclayer=0` turns it off. */
+const attackLayerWanted = attackLayerEnabled(params);
 
 /* ================================================================ */
 /* state                                                             */
