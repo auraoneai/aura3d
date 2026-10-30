@@ -71,6 +71,9 @@ export function registerApexVfx(effects: ApexPresetRegistry | undefined, reduced
   return APEX_VFX_KINDS;
 }
 
-/** Player wake (cyan, the sky-lane colour) and rival wake (red): ribbons that only show at speed. */
+/**
+ * Player wake (cyan, the sky-lane colour) and rival wake (red) as E-F trail options, kept for the E-F `worldOffset` handoff:
+ * an engine trail cannot follow this camera-anchored game today, so src/render/wakes.ts draws both wakes game-side.
+ */
 export const APEX_PLAYER_TRAIL: AuraTrailOptions = { width: 0.32, life: 0.28, color: APEX_PALETTE.cyan, widthOverSpeed: [30, 60] };
 export const APEX_RIVAL_TRAIL: AuraTrailOptions = { width: 0.28, life: 0.22, color: APEX_PALETTE.rival, widthOverSpeed: [10, 40] };

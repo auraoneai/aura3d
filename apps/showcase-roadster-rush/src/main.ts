@@ -35,7 +35,7 @@ import {
 import { apexFlash, apexFlashAlpha, apexPostPlan, applyApexPostPlan, type ApexFlashKind } from "./art/post";
 import { APEX_LUT_INTENSITY, apexGradePatch } from "./art/lut";
 import { createNativeRoadster, findDrawCalls } from "./native";
-import { POWERUP_SECONDS } from "./native/constants";
+import { FIXED_DT, POWERUP_SECONDS } from "./native/constants";
 import { GANTRY_COUNT } from "./native/world";
 import { gantryBoxes } from "./render/gantry";
 import { assets } from "./assets";
@@ -70,6 +70,21 @@ import { APEX_CHASE_POSE, SLOW_MO_SECONDS, apexTitleDurationSeconds, apexTitleSe
 import { registerApexVfx } from "./art/vfx";
 import { InstancePool, parked } from "./render/instancePool";
 import { apexQaCrops, type QaCrop } from "./render/qa";
+import {
+  APEX_PLAYER_WAKE,
+  APEX_RIVAL_WAKE,
+  APEX_WAKE_CAPACITY,
+  PLAYER_WAKE_COLOR,
+  RIVAL_WAKE_COLOR,
+  WakeTrail,
+  playerWakeStrength,
+  rivalWake,
+  stripRotation,
+  wakeIntensity,
+  wakeLife,
+  wakeSpec,
+  type WakeSegment
+} from "./render/wakes";
 import {
   DRAW_WINDOW,
   NEAR_CAPACITY,
@@ -713,7 +728,15 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .runtime(game.runtimeNode(poolId("sky-plumes"))),
     instances
       .torus({ name: "sky-halos", size: [1.55, 1.55, 0.075], material: material.emissive({ color: "#ff2a3c", emissive: "#ff2a3c", emissiveIntensity: 1.65 }), castShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
-      .runtime(game.runtimeNode(poolId("sky-halos")))
+      .runtime(game.runtimeNode(poolId("sky-halos"))),
+    // AO-V1: wakes drawn game-side (render/wakes.ts): the cyan twin-thruster wake of the player (world-anchored points, so it
+    // streams back past the camera and bends with lane changes) and one red streak behind each drawn rival. 2 draws.
+    instances
+      .plane({ name: "apex-player-wake", material: material.custom(wakeSpec(PLAYER_WAKE_COLOR, 0.2, [40, 90])), castShadow: false, receiveShadow: false, transforms: parked(APEX_WAKE_CAPACITY) })
+      .runtime(game.runtimeNode(poolId("player-wake"))),
+    instances
+      .plane({ name: "apex-rival-wakes", material: material.custom(wakeSpec(RIVAL_WAKE_COLOR, 1, [140, 320])), castShadow: false, receiveShadow: false, transforms: parked(POOL_CAPACITY.skyCar) })
+      .runtime(game.runtimeNode(poolId("rival-wakes")))
   ]);
 
   // 6. Pickups: every bolt in the window, nearest first (audit RR-4), and one shaped pool per power-up kind (audit RR-E3)
@@ -927,6 +950,15 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const skyCarFarPool = pool("sky-cars-far", POOL_CAPACITY.skyCar);
   const skyPlumePool = pool("sky-plumes", POOL_CAPACITY.skyCar);
   const skyHaloPool = pool("sky-halos", POOL_CAPACITY.skyCar);
+  // AO-V1 wakes: world-anchored twin-thruster histories (simulation time) and the rival streak pool
+  const playerWakePool = pool("player-wake", APEX_WAKE_CAPACITY);
+  const rivalWakePool = pool("rival-wakes", POOL_CAPACITY.skyCar);
+  const wakeHandles = [req(poolId("player-wake")), req(poolId("rival-wakes"))];
+  const playerWakeOptions = { life: wakeLife(APEX_PLAYER_WAKE.life, REDUCED_MOTION), headWidth: APEX_PLAYER_WAKE.headWidth, tailWidth: APEX_PLAYER_WAKE.tailWidth };
+  const rivalWakeLife = wakeLife(APEX_RIVAL_WAKE.life, REDUCED_MOTION);
+  const wakeTrails = APEX_PLAYER_WAKE.nozzles.map(() => new WakeTrail(playerWakeOptions.life, APEX_PLAYER_WAKE.segments));
+  const wakeScratch: WakeSegment[] = [];
+  const wakeDrawn = { player: 0, rivals: 0 };
   const boltPool = pool("bolts", POOL_CAPACITY.bolt);
   const powerPools = {} as Record<PowerupKind, InstancePool>;
   for (const kind of POWERUP_KINDS) powerPools[kind] = pool(`power-${kind}`, POOL_CAPACITY.powerup[kind]);
@@ -1002,6 +1034,8 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     }
     lookFrame = frame;
     syncTodButtons(tod);
+    // AO-V1: the wakes brighten toward night with the tail-light gain (the red rivers)
+    for (const handle of wakeHandles) handle.setUniform?.("wakeIntensity", wakeIntensity(frame.signature.tailGain) as never);
     // AO-L3: sodium pool and headlights scale with the row (sodium 0 / 0.35 / 1, headlights on from dusk); dark lights hide
     const sodium = frame.signature.sodium;
     for (const spot of sodiumSpots) {
@@ -1234,7 +1268,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     qaApex.variant = lookFrame.variant;
     qaApex.tod = lookFrame.tod;
     qaApex.post = postStates;
-    qaApex.vfx = { presets: vfxKinds, fired: vfxFired, liveCount: auraApp.effects?.liveCount ?? 0, speedLinesAccepted };
+    qaApex.vfx = { presets: vfxKinds, fired: vfxFired, liveCount: auraApp.effects?.liveCount ?? 0, speedLinesAccepted, wakes: { ...wakeDrawn } };
     qaApex.cinematics = { slowMoTriggered: slowMo.triggered, introPlaying: cinematicPlayback !== null };
   };
 
@@ -1644,6 +1678,28 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       playerHandles.magnetRing.setScale(HIDDEN_SCALE).setVisible(false);
     }
 
+    // AO-V1: the cyan twin-thruster wake. Points are dropped in world space at the nozzles (the hero is drawn at world
+    // [px, py, pz - 1.15]) and drawn through rx/ry/rz like the deck, so they stream back at the run's speed.
+    playerWakePool.begin();
+    const wakeStrength = playerWakeStrength(Number(p.speed ?? 0), g.mode === "playing");
+    const heroWorld: Vec3 = [px, py, pz - 1.15];
+    for (let n = 0; n < wakeTrails.length; n++) {
+      const trail = wakeTrails[n]!;
+      const nozzle = rotateLocalOffset(heroWorld, pitch, yaw, roll, [...APEX_PLAYER_WAKE.nozzles[n]!] as Vec3);
+      if (wakeStrength <= 0) {
+        trail.clear();
+        continue;
+      }
+      trail.sample(nozzle[0], nozzle[1], nozzle[2], simTime);
+      trail.segmentsFrom(nozzle, simTime, playerWakeOptions, wakeStrength, wakeScratch);
+      for (const seg of wakeScratch) {
+        const rot = stripRotation(seg.axis);
+        playerWakePool.add(rx(seg.center[0]), ry(seg.center[1]), rz(seg.center[2]), rot[0], rot[1], rot[2], seg.width, Math.max(0.001, seg.strength), seg.length);
+      }
+    }
+    wakeDrawn.player = playerWakePool.count;
+    playerWakePool.commit();
+
     // AO-L4: the hero's ground contact comes from the sun's cascades and the contact-shadow pass (the black disc is gone)
 
     // 4. Ground traffic: every vehicle in the window, in its own type's pool (audit RR-1), facing its travel direction (RR-3)
@@ -1721,6 +1777,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     skyCarFarPool.begin();
     skyPlumePool.begin();
     skyHaloPool.begin();
+    rivalWakePool.begin();
     for (let i = 0; i < skySlots.length; i++) {
       const sc = skySlots[i];
       const sx = rx(Number(sc.x ?? 0));
@@ -1733,11 +1790,24 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       const tailZ = oncoming ? sz - 2.35 : sz + 2.35;
       skyPlumePool.add(sx, sy + 0.45, tailZ, oncoming ? -Math.PI * 0.5 : Math.PI * 0.5, 0, 0, 0.9, 1.2 * flicker, 0.9);
       if (oncoming) skyHaloPool.add(sx, sy + 0.55, sz + 2.15, 0, 0, REDUCED_MOTION ? 0 : simTime * 4);
+      // AO-V1: a red streak behind the rival's jet, as long as its own world speed times the wake life (read-only prevZ)
+      const wake = rivalWake(
+        { x: Number(sc.x ?? 0), y: Number(sc.y ?? 12) + 0.45, z: Number(sc.z ?? 0), prevZ: Number(sc.prevZ ?? sc.z ?? 0), length: 4.7, dir: Number(sc.dir ?? 1) },
+        FIXED_DT,
+        rivalWakeLife
+      );
+      if (wake) {
+        const axis: Vec3 = [wake.jet[0] - wake.far[0], wake.jet[1] - wake.far[1], wake.jet[2] - wake.far[2]];
+        const rot = stripRotation(axis);
+        rivalWakePool.add(rx((wake.jet[0] + wake.far[0]) / 2), ry((wake.jet[1] + wake.far[1]) / 2), rz((wake.jet[2] + wake.far[2]) / 2), rot[0], rot[1], rot[2], APEX_RIVAL_WAKE.width, 1, wake.length);
+      }
     }
     skyCarPool.commit();
     skyCarFarPool.commit();
     skyPlumePool.commit();
     skyHaloPool.commit();
+    wakeDrawn.rivals = rivalWakePool.count;
+    rivalWakePool.commit();
 
     // 6. Bolts and power-ups, nearest ahead first (audit RR-4)
     const rawPickups: any[] = Array.isArray(g.traffic?.pickups) ? g.traffic.pickups : [];
