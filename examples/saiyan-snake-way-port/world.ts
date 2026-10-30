@@ -20,6 +20,7 @@ import { createLookDriver, type LookAppLike, type LookNodeHandle } from "./art/l
 import { SERPENT_RUNNER_TRAIL, registerSerpentVfx } from "./art/vfx";
 import { createVfxEventTracker } from "./art/vfxEvents";
 import { createCinePostDriver, type CinePostState } from "./art/cinePost";
+import { BEND_PROBE, auraPulse, createRunnerAnimator, runnerLean, type MixerActorLike, type RunnerAnimator } from "./art/motion";
 
 type Scene = ReturnType<typeof scene>;
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
@@ -408,6 +409,10 @@ export function buildWorld(options: WorldOptions = {}): World {
       let lookShown: ResolvedLook | null = null;
       /* GU47 SSR-07: speed and moment post (script mode only) */
       const cinePost = script ? createCinePostDriver(app as unknown as LookAppLike) : null;
+      /* GU47 SSR-14: the rigged runner on the E-H mixer (script mode; `?look=original` keeps playClip) */
+      const mixerActor = runner?.actor as unknown as Partial<MixerActorLike> | undefined;
+      const animator: RunnerAnimator | null = script && runner && typeof mixerActor?.crossFadeTo === "function" && typeof mixerActor.advance === "function"
+        ? createRunnerAnimator(mixerActor as MixerActorLike, CLIP.hit) : null;
       /* GU47 SSR-12: runtime effect events and the runner trail (script mode only) */
       const vfxEvents = script ? createVfxEventTracker() : null;
       const fx = script ? app.effects : undefined;
@@ -468,6 +473,13 @@ export function buildWorld(options: WorldOptions = {}): World {
         const tumbleM: M3 | null = falling ? rx(-tf * 5) : null;
         const flying = S.puff > 0 || falling;
         const lean = Math.max(-0.35, Math.min(0.35, S.laneVel * 0.02));
+        // GU47 SSR-14: lean into the bend and the lane change, capped at 12 deg (the road's yaw rate over BEND_PROBE m)
+        let scriptLean = 0;
+        if (script) {
+          const ahead = frameAt(samples, Math.min(S.s + BEND_PROBE, ROAD_LENGTH));
+          const curvature = (ahead.F[0] * frame.R[0] + ahead.F[1] * frame.R[1] + ahead.F[2] * frame.R[2]) / BEND_PROBE;
+          scriptLean = runnerLean(S.laneVel, curvature, S.speed, reducedMotion);
+        }
         if (prevS === null) prevS = S.s;
         const ds = S.s - prevS;
         prevS = S.s;
@@ -476,7 +488,7 @@ export function buildWorld(options: WorldOptions = {}): World {
         const B = frameBasis(frame, -lean);
         const parts = poseHero({
           phase: phaseAcc, time, grounded: S.grounded && !leaping, vy: airVy, sliding: S.sliding > 0, flying, diving: S.dive || falling,
-          lean: Math.max(-0.3, Math.min(0.3, S.laneVel * 0.012)) + (falling ? 0.5 * Math.sin(time * 5) : 0),
+          lean: (script ? scriptLean : Math.max(-0.3, Math.min(0.3, S.laneVel * 0.012))) + (falling ? 0.5 * Math.sin(time * 5) : 0),
           surge, stumble: Math.max(0, Math.min(1, S.stumble)), speed: S.speed
         });
         const TUMBLE_CENTRE: LV3 = [0, 1.9, 0];
@@ -499,13 +511,17 @@ export function buildWorld(options: WorldOptions = {}): World {
           /* rigged runner: pick a clip from the sim state, then orient the model on the road frame */
           const moving = ds > 1e-5;
           const rate = Math.max(0.6, S.speed / 32);
-          const clip = S.stumble > 0.3 ? CLIP.hit : S.sliding > 0 ? CLIP.slide : S.dive || falling ? CLIP.dive : flying || leaping ? CLIP.fly : !S.grounded ? CLIP.air : moving ? CLIP.run : CLIP.idle;
-          const length = runner.durations[clip] ?? 1;
-          actorClock = (actorClock + dt * (moving ? 1.5 * rate : 1)) % length;
-          const t = clip === CLIP.hit ? Math.min(length, Math.max(0, (0.75 - S.stumble) * 1.5)) : actorClock;
-          runner.actor.playClip(clip, Math.max(0, Math.min(length, t)) % (length + 1e-6));
+          const base = S.sliding > 0 ? CLIP.slide : S.dive || falling ? CLIP.dive : flying || leaping ? CLIP.fly : !S.grounded ? CLIP.air : moving ? CLIP.run : CLIP.idle;
+          if (animator) animator.step({ clip: base, rate: moving ? 1.5 * rate : 1, stumble: S.stumble, dt });
+          else {
+            const clip = S.stumble > 0.3 ? CLIP.hit : base;
+            const length = runner.durations[clip] ?? 1;
+            actorClock = (actorClock + dt * (moving ? 1.5 * rate : 1)) % length;
+            const t = clip === CLIP.hit ? Math.min(length, Math.max(0, (0.75 - S.stumble) * 1.5)) : actorClock;
+            runner.actor.playClip(clip, Math.max(0, Math.min(length, t)) % (length + 1e-6));
+          }
           const pitch = flying ? (S.dive || falling ? 2.3 : 1.32) : 0;
-          const lateralLean = Math.max(-0.3, Math.min(0.3, S.laneVel * 0.012)) + (falling ? 0.5 * Math.sin(time * 5) : 0);
+          const lateralLean = (script ? scriptLean : Math.max(-0.3, Math.min(0.3, S.laneVel * 0.012))) + (falling ? 0.5 * Math.sin(time * 5) : 0);
           let body = mul(rz(-lateralLean), rx(-pitch));
           if (tumbleM) body = mul(tumbleM, body);
           const centre: LV3 = [0, 1.7, 0];
@@ -526,7 +542,7 @@ export function buildWorld(options: WorldOptions = {}): World {
           show(id, surge > 4e-3);
           h.setPosition(auraCentre[0], auraCentre[1], auraCentre[2]).setRotation(auraEuler[0], auraEuler[1], auraEuler[2]).setScale(scale);
           h.setUniform?.("auraTime", id === "aura-inner" ? 1.37 * time + 4 : time);
-          h.setUniform?.("auraIntensity", surge * 0.7);
+          h.setUniform?.("auraIntensity", surge * 0.7 * (script ? auraPulse(S.kiPulse, reducedMotion) : 1));
           h.setUniform?.("auraSolid", S.puff > 0 ? 0.24 : solidAmount);
         }
 
