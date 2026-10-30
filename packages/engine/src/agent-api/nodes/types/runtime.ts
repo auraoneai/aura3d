@@ -521,7 +521,8 @@ export interface AuraCreateAppOptions {
   readonly resize?: boolean;
   // C-38 additions (PR 0a, all optional)
   readonly pixelRatio?: number | { readonly max?: number; readonly min?: number };
-  readonly qualityRebuild?: { readonly flags?: readonly string[]; readonly allowUrlFlags?: boolean };
+  /** `flags`: a flag list, `"all"` / `"none"`, or the record form (`{ A3D_QR_POST: true }`); see `resolveQrFlags`. */
+  readonly qualityRebuild?: { readonly flags?: import("../../../contracts/flags").QrFlagInput; readonly allowUrlFlags?: boolean };
   readonly lighting?: import("../../../contracts/lighting").AuraLightingOptions;
   readonly output?: import("../../../contracts/output").AuraOutputOptions;
   readonly assets?: import("../../../contracts/assets").AuraAssetsOption;
