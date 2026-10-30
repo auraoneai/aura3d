@@ -30,7 +30,7 @@ import { shiftCrops } from "./qa";
 import { createAudio } from "./audio";
 import { districtLayers, drawDial, slamStamp, ticketText } from "./hud";
 import { BOARD, boardPose, textOrigin, textWidth } from "./board";
-import { INTRO, introPose, introWanted, orbitPose } from "./cinema";
+import { INTRO, headlightFlare, introPose, introWanted, orbitPose, type CarPose } from "./cinema";
 import { courierBraking, createPitch, placeHalos, stepPitch } from "./brakes";
 import { createBlackFrameWatch, healParams, healStage, type BlackFrameWatch } from "@aura3d/debug";
 import { carModel } from "./models";
@@ -197,7 +197,7 @@ function buildScene() {
   look = buildLook({ blocks, buildings, traffic, pickups }, { models: config.models, quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, skyFill: config.skyFill, neutral: config.neutral, roadCells: config.roadCells, start: { x: car.x, z: car.z }, look: config.look, row });
   setChaseFraming(look.shift ? "shift" : "original");
   const s = look.builder;
-  if (look.shift) for (const n of shiftSceneNodes(skid)) s.add(n);
+  if (look.shift) for (const n of shiftSceneNodes(skid, { reducedFlash: config.reducedFlash })) s.add(n);
   if (config.models) {
     s.add(carModel("car-rig", "courier", true, look.shift ? "YXZ" : undefined));
   } else {
@@ -450,7 +450,22 @@ function placeCinema(dt: number, shown: Presented): void {
   let pose = game.phase === "intro" ? introPose(cinemaTime, carPose, chase) : orbitPose(cinemaTime, carPose, reduced, cameraBlocked);
   if (cameraBlocked(...pose.position)) pose = chase;
   app!.camera!.setPose({ position: pose.position, target: pose.target, fov: pose.fov }, { cut: false });
+  if (game.phase === "results") placeFlare(pose.position, carPose);
   if (game.phase === "intro" && cinemaTime >= INTRO.seconds) endIntro();
+}
+
+/** GC-L5: the results-orbit headlight flare; `eye` null hides it. Writes only on a change (starts shown, so the first call hides it). */
+let flareShown = true;
+function placeFlare(eye: [number, number, number] | null, car?: CarPose): void {
+  const handle = app?.nodes.get("results-flare");
+  if (!handle) return;
+  const f = eye && car ? headlightFlare(car, eye, beamAmount(shiftRuntime?.row().lamps ?? 0)) : null;
+  const on = Boolean(f?.visible);
+  if (on && f) handle.setPosition(...f.position);
+  if (on !== flareShown) {
+    handle.setVisible(on);
+    flareShown = on;
+  }
 }
 
 function render(dt: number, alpha = 1): void {
@@ -460,6 +475,7 @@ function render(dt: number, alpha = 1): void {
     const shown = live && alpha < 1 ? presenter.sample(alpha) ?? presentedNow() : presentedNow();
     placeNodes(dt, shown);
     if (look.shift && (game.phase === "intro" || game.phase === "results")) placeCinema(dt, shown);
+    if (look.shift && game.phase !== "results") placeFlare(null);
     if (shiftRuntime) {
       // GU47 WP-28: time of day, sodium pool, headlight spot, beacon, VFX (presentation reads only)
       const lampsOn = shiftRuntime.row().lamps;

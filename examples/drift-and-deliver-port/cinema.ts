@@ -57,3 +57,18 @@ export function orbitPose(t: number, car: CarPose, reducedMotion: boolean, block
   }
   return { position, target: [car.x, 1.1, car.z], fov: ORBIT.fov };
 }
+
+/**
+ * GC-L5: the courier's headlight lens flare in the results orbit. The source sits between the two lamps; the flare
+ * shows only while the beams are on and the eye is in front of the car (`lights.lensFlare` does not test depth, so
+ * the facing test stands in for the body hiding the lamps from behind).
+ */
+export const FLARE = { ahead: 2.25, height: 0.72, minBeams: 0.2, minFacing: 0.25 } as const;
+export function headlightFlare(car: CarPose, eye: V3, beams: number): { position: V3; visible: boolean } {
+  const s = Math.sin(car.heading), c = Math.cos(car.heading);
+  const position: V3 = [car.x + s * FLARE.ahead, FLARE.height, car.z + c * FLARE.ahead];
+  const dx = eye[0] - position[0], dz = eye[2] - position[2];
+  const len = Math.hypot(dx, dz) || 1;
+  const facing = (s * dx + c * dz) / len;
+  return { position, visible: beams >= FLARE.minBeams && facing >= FLARE.minFacing };
+}

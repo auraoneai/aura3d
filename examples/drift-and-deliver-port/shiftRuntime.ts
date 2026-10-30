@@ -10,7 +10,7 @@
  *
  * Presentation only: every input is a read of the sim or the shift; nothing is written back (PRD D8).
  */
-import { geometry, material, type AuraApp } from "@aura3d/engine";
+import { geometry, lights, material, type AuraApp } from "@aura3d/engine";
 import { createDaylight, lookFrame, type Daylight } from "./daylight";
 import { GOD_RAYS, facadeMaterial, festoonMaterial, type LookRig } from "./look";
 import { festoonIntensity } from "./festoons";
@@ -38,9 +38,24 @@ export interface ShiftRuntimeOptions {
 }
 
 /** The scene nodes the runtime adds next to the look (`main.ts` `buildScene`, shift look only). */
-export function shiftSceneNodes(skid: SkidMarks) {
+export function shiftSceneNodes(skid: SkidMarks, opts: { reducedFlash?: boolean } = {}) {
   return [
-    geometry.custom(geometry.dynamic({ positions: skid.positions, normals: skid.normals, uvs: skid.uvs, indices: skid.indices }), { name: "skid-marks", material: material.custom(skidSpec()), castShadow: false, receiveShadow: false }).runtime({ id: "skid-marks" })
+    geometry.custom(geometry.dynamic({ positions: skid.positions, normals: skid.normals, uvs: skid.uvs, indices: skid.indices }), { name: "skid-marks", material: material.custom(skidSpec()), castShadow: false, receiveShadow: false }).runtime({ id: "skid-marks" }),
+    // GC-L5: headlight flare for the results orbit (hidden in play; `main.ts` placeFlare). Warm halogen, small ghosts.
+    lights
+      .lensFlare({
+        name: "results-flare",
+        position: [0, -50, 0],
+        elements: [
+          { size: 220, distance: 0, color: "#fff1d6" },
+          { size: 36, distance: 0.45, color: "#ffb347" },
+          { size: 54, distance: 0.75, color: "#9fd8c4" },
+          { size: 28, distance: 1, color: "#ffd9b0" }
+        ],
+        intensity: opts.reducedFlash ? 0.25 : 0.55,
+        edgeFade: 0.2
+      })
+      .runtime({ id: "results-flare" })
   ];
 }
 

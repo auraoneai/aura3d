@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { INTRO, ORBIT, introPose, introWanted, orbitPose } from "../../../examples/drift-and-deliver-port/cinema";
+import { FLARE, INTRO, ORBIT, headlightFlare, introPose, introWanted, orbitPose } from "../../../examples/drift-and-deliver-port/cinema";
 
 const car = { x: 30, z: -90, heading: 0 };
 const chase = { position: [30, 2.1, -95] as [number, number, number], target: [30, 1.2, -80] as [number, number, number], fov: 60 };
@@ -31,5 +31,20 @@ describe("gridlock courier intro and results orbit (GU47 WP-28 GC-C1)", () => {
     expect(orbitPose(0, car, true).position).toEqual(orbitPose(5, car, true).position);
     const near = orbitPose(0, car, false, (x, _y, z) => Math.hypot(x - car.x, z - car.z) > 8);
     expect(Math.hypot(near.position[0] - car.x, near.position[2] - car.z)).toBeCloseTo(6, 6);
+  });
+});
+
+describe("gridlock courier results headlight flare (GU47 WP-28 GC-L5)", () => {
+  it("sits between the lamps ahead of the car", () => {
+    const f = headlightFlare(car, [30, 6, -70], 1);
+    expect(f.position[0]).toBeCloseTo(30, 6);
+    expect(f.position[1]).toBe(FLARE.height);
+    expect(f.position[2]).toBeCloseTo(-90 + FLARE.ahead, 6);
+  });
+
+  it("shows only with the beams on and the eye in front of the car", () => {
+    expect(headlightFlare(car, [30, 6, -70], 1).visible).toBe(true);
+    expect(headlightFlare(car, [30, 6, -110], 1).visible).toBe(false);
+    expect(headlightFlare(car, [30, 6, -70], 0).visible).toBe(false);
   });
 });
