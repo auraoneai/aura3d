@@ -127,3 +127,154 @@ Status: `done`, `partial`, `declined (reason)`, `already applied (lane, commit)`
 - Real-GPU `fc-vfx` / `links-vfx` / `iron-crown-vfx`: `report.json` now carries `evaluations` (`__AURA_VFX_DEBUG__()`).
 - 1k-tier VFX sprites (`?quality=low`): sprite cells centred (EF-7), no 4 px bleed from the neighbouring cell.
 
+
+## Pass 4 (game-lane handoffs)
+
+Base: `gu47/integration` at bcc1c7d79 (all engine and game lanes merged). Input: the 108 handoff rows of `/tmp/gu47-gates/game-handoffs.txt` (25 lane reports, header rows dropped). Target column abbreviated to the first file or symbol.
+
+| # | lane | to | target | status | commit | reason / note |
+|---|---|---|---|---|---|---|
+| 1 | g01 | E-B / integration | `packages/rendering/src/shadows/Prd02ShadowBridge.ts:executePrd02BridgedShadowMap` | applied | 2d07ee6e9 (pass 3) | EB-3 renders shadowed spot/point tiles on the default forward path; pixels phase 2 |
+| 2 | g01 | E-C | `packages/engine/src/lanes/prd01/outputSurface.ts:toRendererOutput` / `setOutput` | deferred | - | runtime `setOutput({ preset })` needs the preset expansion applied outside mount (E-C); `app.post.setEffect` covers per-venue effect patches today |
+| 3 | g01 | E-C | `packages/engine/src/agent-api/compiler/postprocess.ts` (SMAA) and the `anti-alias` nod... | declined | - | SMAA is a new post pass (shader, edge/blend targets); not small |
+| 4 | g01 | E-A | `public/hdri/` | deferred | - | WP-36/E-A asset job: 2k HDRI copies via `aura3d assets optimize --hdri 2k` |
+| 5 | g01 | E-B / E-G | `agent-api/nodes/probes.ts:probes`, `rendering/src/probes/Prd02ProbesContributor.ts:spe... | declined | - | root `probes` export plus box/dirty wiring only make sense once mounted apps install a probe face renderer (row 92); until then the node draws nothing |
+| 6 | g01 | E-J | `packages/engine/src/contracts/art.ts:GameGenre`, `packages/game/src/art/define.ts:GAME... | deferred | - | E-J/WP-38: a new GameGenre needs its own look recipe and audit rules |
+| 7 | g02 | E-F (ef) | `packages/engine/src/contracts/effects.ts:AuraAppEffects.trail` / `ProductionEffectSyst... | applied | 970499d4d, 2082f3913 | `AuraTrailHandle.translate(dx, dy, dz)` (call per frame with the world offset); instanced rivals: see row 75 |
+| 8 | g02 | E-A (ea) | `packages/engine/src/agent-api/looks/looks.ts:applyOverrides` / `AuraLookOverrides.key` | deferred | - | E-A: `key.runtime` on look overrides changes the look child ids; the name-mapped child works today |
+| 9 | g02 | E-C (ec) | post chain | declined | - | screen-space distortion stage is a new post pass; not small |
+| 10 | g02 | E-I (ei) | `tests/browser/game-luma-targets.ts:VARIANT_PARAMS`, `GAME_LUMA_TARGETS` | applied | 2b0946cee | `VARIANT_PARAMS["roadster-rush"] = "tod"`, rows `roadster-rush--dusk` / `--night` |
+| 11 | g02 | E-I (ei) | `tools/real-gpu/scenarios.json` | applied | ec17f1814 | `roadster-rush--dusk` / `--night` scenarios plus an evaluate step (draws, apex QA) on the base scenario |
+| 12 | g02 | WP-38 | `CHANGELOG.md` | deferred | - | WP-38 release text |
+| 13 | g02 | WP-36 | asset table below | deferred | - | WP-36 assets |
+| 14 | g03 | E-G | `packages/engine/src/public/index.ts`: `probes` | declined | - | same as row 5 |
+| 15 | g03 | G/E-I (art contract) | `packages/game/src/art/define.ts:186` `lighting.practicals` <= 6 | declined | - | practicals cap is the C-35 art contract; WP-38 decides (budgets are not raised to pass, PRD D7) |
+| 16 | g03 | E-A | `public/hdri/rooftop_night_1k.hdr`, `public/hdri/spruit_sunrise_1k.hdr` | deferred | - | E-A/WP-38: HDRI re-encode under 1.5 MB |
+| 17 | g04 | E-I | `tests/browser/game-luma-targets.ts`: teleoperator rows (`TELEOP_SKIES`, line 127) | applied | 2b0946cee | teleoperator rows load `?sky=<k>&intro=0` and click the dock button (works on 4.6.0 and 4.7); comment says Marine dusk boots |
+| 18 | g04 | E-B | engine height fog (`compiler/fog.ts`, `HeightFog.ts` legacy pack) | declined | - | aloft fog layer is a new fog model (shader + pack); not small |
+| 19 | g04 | E-F | `AuraAppEffects.trail` | applied | 970499d4d | `translate()` covers the scrolling-world wake; a view-space trail mode is not added |
+| 20 | g04 | E-I | `tests/browser/game-luma-targets.ts` teleoperator crops | applied | 2b0946cee | no code change: the capture already reads `window.__AURA_QA__.crops` and every `__AURA_<NAME>__.crops` hook |
+| 21 | g04 | E-F | `ProductionEffectSystem` `beamSpec` / beam-family nodes | declined | - | runtime position for beam-family effects needs a beam handle API (E-F); not small |
+| 22 | g04 | E-F | emitters (`AuraBurstOptions` / spawn) | declined | - | emitter frame velocity needs a per-emitter world offset in the CPU/GPU sims; not small |
+| 23 | g04 | E-I | teleoperator luma capture | applied | 2b0946cee | `intro=0` on every teleoperator row |
+| 24 | g04 | E-D | `createAuraApp` option `qualityRebuild.flags` type | applied | c45d7f589 | `qualityRebuild.flags?: QrFlagInput`; the GD-00 cast can go |
+| 25 | g05 | E-G / eint | `packages/engine/src/index.ts`: `probes` | declined | - | same as row 5 |
+| 26 | g05 | E-H / eint | `agent-api/camera/layers/cinematicBars.ts`: `createCinematicBarsLayer` | applied | f41e9722e | root export of `createCinematicBarsLayer` + types; `open()` after `release()` |
+| 27 | g05 | E-C | `effects.post.ts` | declined | - | same as row 9 |
+| 28 | g05 | E-I / owner | `apps/showcase-iron-crown/src/aura-assets.ts` | deferred | - | game folder and owner decision (typegen shape); not an engine file |
+| 29 | g05 | E-I | `tools/game-checks` `borrowed-asset` | applied | - | no change needed (warnings clear when WP-36 assets land) |
+| 30 | g06 | E-C / eint | `contracts/post.ts:AuraPostSurface` | applied | - | no change needed: `app.quality.tier` and `app.quality.onChange` already exist (A3D_QR_TIERS, prd11) |
+| 31 | g06 | E-B | local spot shadows on the default bridge path | applied | 2d07ee6e9 (pass 3) | same as row 1 |
+| 32 | g06 | wp36 | assets below | deferred | - | WP-36 assets |
+| 33 | g07 | E-I / C-35 owner | `packages/game/src/art/audit.ts` (shadowed-light rule for `basketball`) | declined | - | same as row 15 (shadowed-light rule is the C-35 audit) |
+| 34 | g07 | E-A | HDRI catalogue | deferred | - | same as row 4 |
+| 35 | g07 | E-C | `effects.bloom` | applied | 2ccfb4823 | `effects.bloom({ name })` keeps the name |
+| 36 | g07 | E-G | `weather.precipitation` / `wetGround` | deferred | - | E-G: an option to omit the legacy weather primitives; games drop them by tag meanwhile |
+| 37 | g08 | E-I | `packages/game/src/art/audit.ts:auditArtDirection` (maxShadowed) | declined | - | same as row 33 |
+| 38 | g08 | E-J | `packages/engine/src/contracts/art.ts:GameGenre`, `packages/game/src/art/define.ts:GAME... | deferred | - | same as row 6 |
+| 39 | g08 | E-A | `public/hdri/<id>_2k.hdr` for belfast_sunset_puresky, rooftop_night, outdoor-midday, sp... | deferred | - | same as row 4 |
+| 40 | g08 | E-B / E-G | `packages/engine/src/public/index.ts` | declined | - | same as row 5 |
+| 41 | g08 | E-C | `packages/engine/src/agent-api/postBridge.ts:createRootPostPipeline` | applied | 5a87c2abc (pass 2) | `createRootPostPipeline` applies `lookOutputPreset` when `output.preset` is unset |
+| 42 | g08 | E-C / E-F | `packages/engine/src/agent-api/nodes/effects.post.ts:bloom`, `nodes/types.ts:AuraEffect... | applied | 2ccfb4823, c8d47804c | bloom keeps `name`; `lightPosition` is `[u, v]` (forward UV anchor) or `[x, y, z]` (v2 god-ray world point) |
+| 43 | g09 | eint / E-B | `packages/engine/src/public/index.ts` | declined | - | same as row 5 |
+| 44 | g09 | eint / E-C | look `output.preset` child | deferred | - | the root pipeline reads the look preset from each snapshot it derives; a venue switch that keeps the boot operator needs an E-C trace of where the operator is latched (phase 2 capture first) |
+| 45 | g09 | eint / E-D | `contracts/materials.ts:AuraModelMaterialOverride` | applied | 4048800e4 | `sheen`, `sheenColor`, `sheenRoughness` on `AuraModelMaterialOverride` |
+| 46 | g09 | eint / E-F | `agent-api/nodes/effects.ts:snow` | applied | 2ccfb4823 | `effects.snow({ size })` (also `radius`, `seed`, `name`) reaches the volume lowering |
+| 47 | g09 | E-J | `contracts/art.ts:GameGenre` | deferred | - | same as row 6 |
+| 48 | g09 | eint / E-G | `agent-api/nodes/text3d.ts` | declined | - | runtime `setText` on text3D needs geometry rebuild and handle plumbing; not small |
+| 49 | g09 | eint / E-C | `compiler/lensFlare.ts` | declined | - | depth-occluded lens flares need a depth read in the flare pass; not small |
+| 50 | g09 | repo owner | `.gitignore` | deferred | - | repo owner (.gitignore) |
+| 51 | g09 | wp36 | asset needs below | deferred | - | WP-36 assets |
+| 52 | g10 | E-A | `public/hdri/` | deferred | - | same as row 4; the 2k id in the `hdri` override waits for the files |
+| 53 | g10 | E-J / E-I | `packages/game/src/art/audit.ts:auditArtDirection` (`SHADOWED_SPOT_GENRES`) | declined | - | same as row 33 |
+| 54 | g11 | E-B / eint | rendering forward program, local spot shadow lookup | applied | 2d07ee6e9 (pass 3) | same as row 1 (PCSS filter per tier unchanged) |
+| 55 | g11 | E-G / eint | `agent-api/compiler/paritySurfaces.ts` mirror capture | declined | - | mirror capture honouring runtime visibility needs the parity-surface compiler to track handles; not small |
+| 56 | g11 | E-J | `packages/game/src/art/audit.ts` | declined | - | same as row 33 |
+| 57 | g11 | E-B / eint | `packages/engine/src/public/index.ts` | declined | - | same as row 5 |
+| 58 | g11 | E-C / eint | `agent-api/compiler/fog.ts` | declined | - | changes forward fog colour for every scene that authors both `fog` and `volumetricFog` (a default change); needs a phase-2 capture before it lands |
+| 59 | g12 | E-C/E-F | `effects.post.ts:bloom`, `effects.ts:rain` | applied | 2ccfb4823 | bloom and rain keep `options.name` |
+| 60 | g12 | E-J | `packages/game/src/art/define.ts` genre list | deferred | - | same as row 6 |
+| 61 | g13 | E-G | `packages/engine/src/public/index.ts` | declined | - | same as row 5 |
+| 62 | g13 | E-F | `packages/engine/src/agent-api/nodes/effects.ts:particles` | applied | 868ddc9e3 | `effects.particles({ speed: [min, max] })` type-checks |
+| 63 | g13 | E-A | `contracts/looks.ts` | deferred | - | E-A: a new look id (`workbench-night`) is a look-catalogue change |
+| 64 | g13 | WP-36 | asset table above | deferred | - | WP-36 assets |
+| 65 | g14 | E-D | `packages/engine/src/contracts/materials.ts:AuraModelMaterialOverride` | applied | 4048800e4 | same as row 45 |
+| 66 | g14 | E-G / E-B | `packages/engine/src/agent-api/nodes/sky.ts` | declined | - | runtime sky handle (`setSky`) is a new node-handle API; not small |
+| 67 | g14 | E-G | app surface | applied | - | same as row 30 |
+| 68 | g14 | E-I | `tests/browser/game-luma-targets.ts` | applied | 2b0946cee | `cross-hop--original` (`?look=original`) in the GU47 groups (not next to theme0: groups follow list order and `@g1..@g8` stay fixed); crops come from `__AURA_QA__.crops` |
+| 69 | g14 | WP-38 | `art/direction.ts` `lighting.practicals` | deferred | - | WP-38 decision |
+| 70 | g15 | E-I | `tests/browser/game-luma-targets.ts` strange-orbit-port rows | applied | 2b0946cee | `strange-orbit-port--original`, `--neutral-env` on the dev route |
+| 71 | g15 | E-I | `tools/real-gpu/scenarios.json` | applied | ec17f1814 | `strange-orbit-port--autopilot` (`/apps/craterline-gp/?autostart=1&autopilot=1`, shots at 25 s and 60 s); the `?boost` window is not scripted (no boost param in the game) |
+| 72 | g15 | E-G | (verify) `environments.capture` with `include: "all"` | deferred | - | verification only; phase-2 capture |
+| 73 | g16 | E-I | `tests/browser/game-luma-targets.ts` | applied | 2b0946cee | no code change: the `sun` crop comes from the game hook, which the capture reads |
+| 74 | g16 | E-B | engine | deferred | - | E-B: a fallback environment on HDRI load failure needs a node `fallback` field consumed by the probe upgrade-failed path; today the procedural floor stays |
+| 75 | g17 | E-F | `agent-api/vfx/effects-api.ts` `trail` | declined | - | instanced trail targets need an instance-matrix resolver in the effect system; not small |
+| 76 | g17 | E-B | `contracts/lighting.ts` shadow options | declined | - | runtime shadow cascades change the shadow atlas layout at runtime; larger feature |
+| 77 | g17 | E-I | `tools/game-checks/data/terms.json` `assetOwners.prefixes` | applied | 80638b510 | prefix `serpent` |
+| 78 | g18 | E-B / E-D (probes owner) | `packages/engine/src/agent-api/nodes/probes.ts` `probes.reflection`, compiler | declined | - | same as row 5 (reflection-probe consumer is a larger feature) |
+| 79 | g18 | WP-38 / C-35 owner | `packages/game/src/art/define.ts` practicals rule, `audit.ts` too-many-practicals | declined | - | same as row 15 |
+| 80 | g18 | E-B | `ForwardPass.ts` equirect `u_environmentMapRotation` vs cube path | applied | - | checked, no change: `indirect_default.glsl` treats the uniform as turns on both the equirect (u offset) and cube (angle = turns x 2 pi) paths; the background converts turns to radians (`ForwardPass.ts:1937`) |
+| 81 | g18 | E-C | `nodes/types.ts` `lightPosition` vs `postBridge.ts:1280` `lightWorld` | applied | c8d47804c | same as row 42; `AuraDepthOfFieldOptions.enabled` declined: no consumer reads a node-level `enabled`, use `app.post.setEffectEnabled("depthOfField", false)` |
+| 82 | g18 | E-I | `tests/browser/game-luma-targets.ts` | applied | 2b0946cee | `drift-and-deliver-port--original`; crops come from the hook |
+| 83 | g19 | E-I | `tests/browser/game-luma-targets.ts` | applied | 2b0946cee | `heatsink-port--original`; district rows deferred until the game reads `?at=` |
+| 84 | g19 | E-F | `contracts/effects.ts` `AuraTrailOptions` | applied | 970499d4d | `AuraTrailOptions.colorTail` |
+| 85 | g19 | E-C | post runtime | applied | e53e6dcd9 | `POST_RUNTIME_EFFECTS.ambientOcclusion`, `.filmGrain` |
+| 86 | g20 | E-E / E-H | `production-runtime` root render sources | applied | d68b9014a | the mask pass selects from the frame's collected `items` (`Renderer.ts` postFrameContext), where root sources contribute; label matching was the gap (row 87); pixels phase 2 |
+| 87 | g20 | E-E | `packages/rendering/src/renderer/OutlineTargets.ts:outlineTargetLabelMatches` | applied | d68b9014a | `<target>:` and `<target>-<n>:` prefixes match root-source actor labels |
+| 88 | g20 | E-H | `TypedGLBActor` | declined | - | bone pose overrides on mixer-driven actors are a new animation API; larger feature |
+| 89 | g20 | E-I | `tests/browser/game-luma-targets.ts` | applied | 2b0946cee | `ninja-runner-port--gate-cones-off` (`?at=2500&cones=0`) |
+| 90 | g20 | E-I | `tests/browser/game-luma-targets.ts` | applied | 2b0946cee | `ninja-runner-port--original`, `--village-lanterns-off` (`?at=100&lanterns=0`) |
+| 91 | g21 | E-I | `tests/browser/game-luma-targets.ts` `last-train-port--band-*` | applied | 2b0946cee | band rows now `?band=<X>&title=0` (ids unchanged) |
+| 92 | g21 | E-B | `production-runtime` frame host: `installPrd02ProbeRenderer` (`packages/rendering/src/p... | declined | - | installing a scene face renderer for mounted apps (six-face capture per probe) is a larger feature |
+| 93 | g21 | E-F | `production-runtime/effects/EffectNodeLowering.ts` rain/snow volume | declined | - | runtime weather on/off through the node handle needs volume-handle plumbing (E-F); not small |
+| 94 | g21 | WP-36 | assets | deferred | - | WP-36 assets |
+| 95 | g21 | WP-38 | PRD §6.1 duplicates | deferred | - | WP-38 |
+| 96 | g22 | E-C | `packages/engine/src/agent-api/nodes/effects.post.ts:bloom` | declined | - | no warning fires: the deprecation check reads `postAuthored` only, and `effects.bloom({ scatter })` validates clean (test in 2ccfb4823); dropping the `radius` default would change the legacy bridge |
+| 97 | g22 | E-C | velocity MRT for `material.custom` | declined | - | velocity MRT for custom shader programs is a new material output; not small |
+| 98 | g22 | E-I | `tests/browser/game-luma-targets.ts` | applied | 2b0946cee | Saltwind waits on `texturesReady()` when the hook has it; `--sunbreak\|redline\|halo-original` rows; static crops car/road/sky/sea |
+| 99 | g22 | E-I | `tools/real-gpu/scenarios.json` | applied | ec17f1814 | evaluate `fx()` and `texturesReady()` on the `roadster-hours-port` scenario |
+| 100 | g23 | E-I | `tools/game-checks/data/terms.json` `assetOwners.prefixes` | applied | 80638b510 | prefix `wind` |
+| 101 | g23 | E-I | `tests/browser/game-luma-targets.ts` | applied | 2b0946cee | `where-the-wind-wanders-port--bell` (`?found=bell`) |
+| 102 | g23 | E-C | `packages/engine/src/agent-api/nodes/effects.ts` volumetricFog (P2 now patches density ... | applied | c8d47804c | no new field: the v2 god-ray stage already takes its direction from the strongest directional key; a 3-number `lightPosition` now gives a world anchor |
+| 103 | g24 | E-A / WP-38 | `public/hdri/kloppenheim_02_1k.hdr`, `spruit_sunrise_1k.hdr` | deferred | - | same as row 16 |
+| 104 | g24 | E-I | `tests/browser/game-luma-targets.ts` | applied | 2b0946cee | `silt-and-signal-port--ch0-original` .. `--ch6-original` |
+| 105 | g24 | E-I | `tools/real-gpu/scenarios.json` | applied | ec17f1814 | `silt-and-signal-port--ch4` storm scenario (ch0 is the base scenario) |
+| 106 | g24 | E-E | `effects.toon.ts` | applied | - | no change: E-E H2 binds depth at the default slot (pass 2) |
+| 107 | g25 | E-C | `compiler/customMaterial.ts` / bloom weight | declined | - | per-material bloom weight for `material.custom` waits for forward passes to write the weight at all (EC-4 declined in pass 2) |
+| 108 | g25 | E-I | `tools/game-checks/data/terms.json` `assetOwners.prefixes` | applied | 80638b510 | `cumulus` already routes to cloud-runner-port (test pins it); `drift` added for g18 |
+
+Counts: applied 48 (of which no code change needed: rows 20, 29, 30, 67, 73, 80, 106; done in earlier passes: rows 1, 31, 41, 54), declined 33, deferred 27 (WP-36 assets, WP-38 release items, E-A HDRI files, E-J genres, owner decisions).
+
+Also fixed: `tests/unit/splat-rush-port/gu47-look.test.ts` TS2352 (5fac88b9f), the one NEW_ERRORS row of the engine typecheck delta on the merged base.
+
+### Pass 4 API as shipped
+
+- `AuraTrailOptions.colorTail?: AuraColor`; `AuraTrailHandle.translate?(dx: number, dy: number, dz: number): void` (always present on engine handles).
+- `AuraModelMaterialOverride.sheen?: number` (0..1, scales `sheenColor`, default white), `sheenColor?: AuraColor`, `sheenRoughness?: number`.
+- `POST_RUNTIME_EFFECTS.ambientOcclusion = "ambient-occlusion"`, `.filmGrain = "film-grain"` (`app.post.setEffect` / `setEffectEnabled`).
+- `AuraEffectNode.lightPosition?: readonly [number, number] | readonly [number, number, number]` (UV anchor or v2 god-ray world point).
+- `AuraWeatherEffectOptions` (root type) = rain/snow options plus `size?: number | readonly [number, number]`, `seed?: number`; rain/snow/bloom keep an authored `name`.
+- `effects.particles` option type: `Omit<AuraEffectNode, "kind" | "effect" | "speed">` (emitter `speed: AuraRange`).
+- `AuraCreateAppOptions.qualityRebuild.flags?: QrFlagInput`.
+- Root: `createCinematicBarsLayer`, types `AuraCinematicBarsLayer` (new `open()`), `AuraCinematicBarsOptions`.
+- Outline targets: `outlineTargetLabelMatches` also matches `<target>:` and `<target>-<digits>:` label prefixes (root-source actors).
+- Tools: `GAME_LUMA_TARGETS` 148 rows (68 pre-GU47 unchanged in `@g1..@g8`; GU47 rows `@g9..@g17`), new exports `EXTRA_VARIANT_PARAMS`, `GU47_READY_WAITS`, `SALTWIND_CROPS`, `ROADSTER_RUSH_TODS`; `tools/real-gpu/scenarios.json` variant keys `<slug>--<variant>` (15); `terms.json` prefixes `serpent`, `drift`, `wind`.
+
+### Pass 4 CHANGELOG text for WP-38
+
+- Trails: `handle.translate(dx, dy, dz)` shifts a running trail, so games that scroll the world past a fixed subject get a wake; `trail(target, { colorTail })` fades the ribbon from its head colour to a tail colour.
+- Model material overrides take `sheen`, `sheenColor` and `sheenRoughness` (fabric, fur, felt).
+- `app.post.setEffectEnabled("ambientOcclusion" | "filmGrain", false)` drops ambient occlusion and film grain at runtime without a rebuild.
+- `effects.volumetricFog({ lightPosition: [x, y, z] })` aims the god rays at a world point; a two-number `lightPosition` stays the screen anchor.
+- `effects.bloom({ name })`, `effects.rain({ name })` and `effects.snow({ name, size, radius, seed })` keep those fields.
+- `effects.particles({ speed: [min, max] })` type-checks; `createAuraApp({ qualityRebuild: { flags: { A3D_QR_POST: true } } })` accepts the record form.
+- `createCinematicBarsLayer` is exported from `@aura3d/engine`; `bars.open()` brings the letterbox back after `release()`.
+- `effects.outline({ targets: ["hero"] })` inks typed GLB actors drawn through `attachRootRenderSource` (actor ids `hero` or `hero-0`).
+
+### Pass 4 verification
+
+- Typecheck delta (engine and tools): NEW_ERRORS 0 at the head (58 errors, baseline 58; the merged base had 1 new error, fixed in 5fac88b9f). `--app` delta NEW_ERRORS 0 for all 25 live game app folders.
+- New tests (pass): `tests/unit/gu47/eint/{game-checks-prefixes (2), outline-root-source-labels (3), effect-builder-passthrough (4), runtime-ao-grain (1), quality-rebuild-flags-type (1), volumetric-light-position (2), cinematic-bars-reopen (2), material-sheen-override (2), trail-translate-color-tail (3)}`; `tests/unit/game-luma-targets.test.ts` (12, 4 new); `tests/unit/gu47/ei/real-gpu-scenarios.test.ts` (4, 1 new).
+- Touched or covering suites, run one file at a time (vitest --maxWorkers=1, timeout 600), all pass: ninja-runner-port/gu47-look, bunker-zero/art-direction, game-checks/gu47-checks, gu47/ee/{outline-targets, outline-targets-engine}, gu47/eint/{outline-targets-wiring, outline-runtime-targets, real-gpu-evaluate-step, bloom-grade-fields, public-surface}, agent-api/{agent-api, e2-wave3-post-handoffs, published-union}, contracts/impl/{prd03-post-diagnostics, prd03-post-v2-codemod, prd03-post-authored, prd03-post-exposure-aa, prd03-post-presets, prd03-post-bridge, prd03-t0-29-dual-ao-mount, prd04-overrides}, gu47/eg/{post-runtime-hook, post-only-tiers}, rendering/{bloom-fusion-select, volumetric-fog, volumetric-light, shadow-family-b1, shadow-filter-tier}, gu47/ec/{ssr, selective-bloom, runtime-post-control (key list and the unknown-effect example updated), tilt-shift-god-ray-density, hdr-grade-and-stage-trace}, gu47/ea/optimize-hdri, gu47/ed/{emissive-overrides, material-rim}, gu47/ef/{trail, floating-dot, vfx-atlas-sprites}, game/rumble-fxpass, pips-big-leap/vfx, splat-rush-port/gu47-look, bunker-zero/hatch, engine/external-parity-public-api-stability.
+- Public surface: `tools/public-surface-diff` PASS (0 unclassified removals, report regenerated); `docs/api/root-exports.md` regenerated (297 value exports, 255 live); `tools/agent-api-surface` ran clean. `tests/qr/prd01/unit/t0-1140-*` not run (separate vitest config).
+- eslint clean on every touched file. Not run: browsers, Playwright, real-GPU harness, remote runs (phase 1 rules).
