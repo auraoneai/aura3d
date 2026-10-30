@@ -457,7 +457,7 @@ export function buildWorld(levelIndex: number): World {
   if (enabled("fog")) builder.add(effects.fog({ name: "haze", density: look.engineFogDensity, color: look.engineFog }));
   if (enabled("post")) {
     builder
-      .add(effects.bloom({ name: "bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold, radius: look.bloom.radius }))
+      .add(effects.bloom({ name: "bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold, scatter: look.bloom.radius }))
       .add(effects.colorGrade({ name: "grade", exposure: look.grade.exposure, contrast: look.grade.contrast, saturation: look.grade.saturation }))
       .add(effects.vignette({ name: "vignette", intensity: look.vignette, smoothness: 0.7 }))
       .add(effects.antiAlias({ name: "fxaa", mode: "fxaa" }));

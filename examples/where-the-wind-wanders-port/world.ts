@@ -390,7 +390,7 @@ export function buildWorld(options: { density?: number; models?: boolean; reduce
 
   /* ---- post: a gentle bloom for the glow, grade and vignette ---- */
   builder
-    .add(effects.bloom({ name: "bloom", intensity: 0.32, threshold: 1.05, radius: 0.55 }))
+    .add(effects.bloom({ name: "bloom", intensity: 0.32, threshold: 1.05, scatter: 0.55 }))
     .add(effects.colorGrade({ name: "grade", contrast: 1.12, saturation: 1.28 }))
     .add(effects.vignette({ name: "vignette", intensity: 0.1, smoothness: 0.8 }));
 
