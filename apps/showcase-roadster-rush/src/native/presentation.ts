@@ -76,3 +76,15 @@ export function viewOf<G extends GameLike>(g: G, shown: Shown): G {
 export function createRoadsterPresenter(getGame: () => GameLike): FixedStepPresenter<Shown> {
   return createFixedStepPresenter<Shown>({ snapshot: () => shownOf(getGame()), blend: blendShown });
 }
+
+/** GU47 AO-AN1: the lean a lane change shows, in radians (6 degrees). */
+export const DISPLAY_LEAN_MAX = (6 * Math.PI) / 180;
+
+/**
+ * Roll to draw for the hero: the simulation's bank (up to about 22 degrees, it also drives the barrel roll) is capped at a
+ * 6-degree lean for lane changes; a barrel roll keeps its full turn. Read-only: the simulation's own value is untouched.
+ */
+export function displayRoll(simRoll: number, rolling: boolean): number {
+  if (rolling || !Number.isFinite(simRoll)) return Number.isFinite(simRoll) ? simRoll : 0;
+  return Math.max(-DISPLAY_LEAN_MAX, Math.min(DISPLAY_LEAN_MAX, simRoll));
+}

@@ -63,7 +63,7 @@ import { TOWER_CAPACITY_PER_VARIANT, TOWER_VARIANTS, towerGlassSpec, towerLayout
 import { meshyFarVehicles, meshyVehicles } from "./meshy-vehicles";
 import { SKY_DOME_SIZE, skyLook, skySpec } from "./art/sky";
 import { createCameraShake, createHitStop, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
-import { createRoadsterPresenter, viewOf } from "./native/presentation";
+import { createRoadsterPresenter, displayRoll, viewOf } from "./native/presentation";
 import { apexSpeedLines, apexVfxEvents, countSkyDodges, type ApexVfxFrame } from "./render/vfxDirector";
 import { APEX_CHASE_POSE, SLOW_MO_SECONDS, apexTitleDurationSeconds, apexTitleSequence, chaseCameraOffsets, createApexSlowMo } from "./render/cinematics";
 import { registerApexVfx } from "./art/vfx";
@@ -1457,7 +1457,9 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     // 3. Sync Player Roadster Assembly, Thruster Plumes, Active Powerups & Contact Shadow
     const pitch = Number(p.pivot?.rotation?.x ?? p._pitch ?? 0);
     const yaw = Number(p.mesh?.rotation?.y ?? p._yaw ?? 0);
-    const roll = Number(p.pivot?.rotation?.z ?? p._bank ?? 0) + sh.roll;
+    // AO-AN1: a lane change leans the hero up to 6 degrees (barrel rolls keep their full turn); hop pitch and landing squash
+    // are the simulation's own pose
+    const roll = displayRoll(Number(p.pivot?.rotation?.z ?? p._bank ?? 0), Boolean(p.rolling)) + sh.roll;
     const squash: Vec3 = [
       Number(p.squashGroup?.scale?.x ?? 1),
       Number(p.squashGroup?.scale?.y ?? 1),
