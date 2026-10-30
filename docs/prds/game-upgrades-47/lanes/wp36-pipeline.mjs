@@ -20,6 +20,7 @@ import { spawn } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { NEW_COST, PRISM_REFUSAL, classifyCreateFailure, followUpRecovery, idleDecision, maxUsable, poolExhausted } from "./wp36-decisions.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 function findRoot(start) {
@@ -154,6 +155,7 @@ async function poolSnapshot(label) {
   try {
     const raw = await poolRaw();
     writeFileSync(join(STATE, "pool-latest.json"), JSON.stringify({ at: iso(), label, ...raw }, null, 1));
+    lastPool = raw;
     return raw;
   } catch (e) {
     log("pool", `read failed: ${e.message}`);
@@ -269,15 +271,7 @@ class StepError extends Error {
     this.kind = kind;
   }
 }
-function classifyCreateFailure(code, err, pinned) {
-  if (code === 9 || /\b402\b/.test(err)) return pinned ? "pinned-exhausted" : "credits";
-  if (/quota_exhausted/.test(err)) return pinned ? "pinned-exhausted" : "credits";
-  if (code === 3 || /all_keys_invalid|not_configured|\b401\b|\b403\b/.test(err)) return "auth";
-  if (code === 6 || /\b429\b|rate_limited/.test(err)) return "rate";
-  if (code === 4) return "invalid";
-  if (code === 2) return "usage";
-  return "transient";
-}
+// classifyCreateFailure, followUpRecovery and the idle/pool rules live in wp36-decisions.mjs (unit-tested).
 
 // ---------- run-wide control ----------
 let STOP_NEW = false; // no new unpinned paid calls (pool exhausted / exit 9)
@@ -288,11 +282,12 @@ async function poolHasCapacity(cost) {
   if (raw) poolMax = maxUsable(raw);
   return Boolean(raw && (raw.keys ?? []).some((k) => k.state === "ok" && k.remaining - (k.inflight ?? 0) >= cost));
 }
-// Largest balance on a usable key. Prism puts a new task on the fullest key and pins follow-ups (refine, rig, animate)
-// to it, so a preview is only started while some key can also pay its refine (20 + 10), avoiding stranded previews.
+// Largest balance on a usable key. Prism puts a new task on the fullest key and pins refine and animate to it, so a
+// preview is only started while some key can also pay its refine (20 + 10). Rigging/retexture/remesh go by model URL,
+// and a refine or animate whose parent account drained restarts its chain (new preview / new rig) on a funded key.
 let poolMax;
-const maxUsable = (raw) => Math.max(0, ...(raw.keys ?? []).filter((k) => k.state === "ok").map((k) => k.remaining - (k.inflight ?? 0)));
-const NEW_COST = { "text-to-3d": 30, retexture: 10, rig: 5 };
+let lastPool;
+let idleRechecks = 0; // consecutive idle re-checks without a successful submit (backs off 10 -> 60 min)
 let concurrency = Number(opt("--concurrency", "6"));
 const maxConcurrency = Math.min(12, Number(opt("--max-concurrency", "12")));
 let last429 = 0;
@@ -343,6 +338,15 @@ async function getTask(row, resource, id) {
   throw new StepError("transient", `get ${id} failed`);
 }
 
+/** The current (signed) GLB URL of a finished task; a GET runs on the owning account and is free even when drained. */
+async function modelUrl(row, resource, id) {
+  const j = await getTask(row, resource, id);
+  const url = resource === "rigging" ? j.result?.rigged_character_glb_url : j.model_urls?.glb ?? j.result?.model_urls?.glb;
+  if (typeof url !== "string" || !url.startsWith("https://")) throw new StepError("transient", `no GLB URL on ${resource} task ${id} (${j.status})`);
+  return url;
+}
+const isParentDrained = (e) => e instanceof StepError && e.kind === "pinned-exhausted";
+
 /** One paid Meshy call: reserve -> create --async -> wait -> settle. Resumes from the row state. */
 async function paidTask(st, row, name, { resource, op, args, pinned }) {
   const L = await ledger();
@@ -366,13 +370,14 @@ async function paidTask(st, row, name, { resource, op, args, pinned }) {
     const id = r.json?.task_id;
     if (r.code === 0 && id) {
       refusalStreak = 0;
+      idleRechecks = 0;
       t.taskId = id;
       t.submittedAt = iso();
       saveState(st);
       log(row.key, `${name} submitted ${id}`);
     } else {
       // Prism refusing before any key accepted the call (pool/key exhausted, no valid key) is a confirmed no-charge outcome.
-      const refused = /"detail":"(quota_exhausted|all_keys_invalid|not_configured|busy)"/.exec(r.err)?.[1];
+      const refused = PRISM_REFUSAL.exec(r.err)?.[1];
       const outcome = refused ? { status: "failed", note: `Prism refused before a task existed: ${refused}` } : L.classifyMeshyOutcome({ exitCode: r.code, errorText: r.err });
       await settle(t.rid, outcome);
       st.history.push({ name, rid: t.rid, settled: outcome.status, exit: r.code, error: short(r.err, 300), at: iso() });
@@ -511,12 +516,25 @@ async function finishModel(st, row, input, { clips = [], metaFrom, thumbFrom } =
 
 // ---------- ops ----------
 async function opTextTo3d(st, row) {
-  const preview = ["--mode", "preview", "--prompt", row.prompt];
-  if (row.poseMode) preview.push("--pose-mode", row.poseMode);
-  await paidTask(st, row, "preview", { resource: "text-to-3d", op: "preview", args: preview, pinned: false });
-  const refine = ["--mode", "refine", "--preview-task-id", st.tasks.preview.taskId, "--enable-pbr", "true", "--texture-resolution", row.textureRes ?? "2k", "--remove-lighting", "true"];
-  if (row.texturePrompt) refine.push("--texture-prompt", row.texturePrompt);
-  await paidTask(st, row, "refine", { resource: "text-to-3d", op: "refine", args: refine, pinned: true });
+  for (;;) {
+    const preview = ["--mode", "preview", "--prompt", row.prompt];
+    if (row.poseMode) preview.push("--pose-mode", row.poseMode);
+    await paidTask(st, row, "preview", { resource: "text-to-3d", op: "preview", args: preview, pinned: false });
+    const refine = ["--mode", "refine", "--preview-task-id", st.tasks.preview.taskId, "--enable-pbr", "true", "--texture-resolution", row.textureRes ?? "2k", "--remove-lighting", "true"];
+    if (row.texturePrompt) refine.push("--texture-prompt", row.texturePrompt);
+    try {
+      await paidTask(st, row, "refine", { resource: "text-to-3d", op: "refine", args: refine, pinned: true });
+      break;
+    } catch (e) {
+      // the preview's account is drained: a refine cannot move, so start a new preview (lands on a funded key)
+      if (!isParentDrained(e) || followUpRecovery("refine", st.chainRestarts) !== "new-preview") throw e;
+      st.chainRestarts = (st.chainRestarts ?? 0) + 1;
+      st.history.push({ name: "preview", ...st.tasks.preview, dropped: "refine refused: preview account drained; new preview", at: iso() });
+      st.tasks.preview = {};
+      saveState(st);
+      log(row.key, `preview account drained; new preview then refine (restart ${st.chainRestarts})`);
+    }
+  }
   const raw = await download(row, "text-to-3d", st.tasks.refine.taskId, "raw");
   await finishModel(st, row, join(raw, "model.glb"), { metaFrom: join(raw, "meta.json"), thumbFrom: join(raw, "thumbnail.png") });
 }
@@ -548,8 +566,8 @@ async function opRig(st, row) {
   if (row.dependsOn) {
     const refineId = depState(row)?.tasks?.refine?.taskId;
     if (!refineId) throw new StepError("dep", `dependency ${row.dependsOn} has no refine task`);
-    args = ["--input-task-id", refineId];
-    pinned = true;
+    // by the refine's model URL, not its task id: the rig then lands on any funded key
+    args = st.tasks.rig?.taskId ? [] : ["--model-url", await modelUrl(row, "text-to-3d", refineId)];
   } else {
     const source = sourcePath(row.source ?? "");
     if (!row.source || !existsSync(source)) throw new StepError("usage", `rig source missing: ${row.source}`);
@@ -588,35 +606,78 @@ async function opRig(st, row) {
   await finishModel(st, row, input, { clips: existsSync(merged) ? clips : [], metaFrom: join(raw, "meta.json") });
 }
 
+/** Model to re-rig when an animate's rig account is drained: the rig row's own input, else the old rigged GLB. */
+async function rerigSource(row, oldRigTaskId) {
+  const dep = row.dependsOn ? byKey.get(row.dependsOn) : undefined;
+  if (dep?.dependsOn) {
+    const refineId = loadState(dep.dependsOn)?.tasks?.refine?.taskId;
+    if (refineId) return modelUrl(row, "text-to-3d", refineId);
+  }
+  if (dep?.source && existsSync(sourcePath(dep.source))) return sourcePath(dep.source);
+  return modelUrl(row, "rigging", oldRigTaskId);
+}
+
 async function opAnimate(st, row) {
-  let rigTaskId = row.rigTaskId;
-  let base;
-  if (!rigTaskId) {
-    const dep = depState(row);
-    rigTaskId = dep?.tasks?.rig?.taskId;
-    if (!rigTaskId) throw new StepError("dep", `dependency ${row.dependsOn} has no rig task`);
-    base = join(rowDir(byKey.get(row.dependsOn)), "raw", "rigged_character_glb.glb");
-  } else {
-    const rigDir = await download(row, "rigging", rigTaskId, "rig");
-    base = join(rigDir, "rigged_character_glb.glb");
+  for (;;) {
+    const n = st.chainRestarts ?? 0;
+    let rigTaskId;
+    let base;
+    if (n > 0) {
+      // re-rig on a funded account (resumes a submitted re-rig after a restart)
+      const name = `rerig-${n}`;
+      if (!st.tasks[name]?.taskId && !st.rerigArgs) throw new StepError("dep", `${name} has no source recorded`);
+      await paidTask(st, row, name, { resource: "rigging", op: "rigging", args: st.rerigArgs ?? [], pinned: false });
+      rigTaskId = st.tasks[name].taskId;
+      st.rerig = { taskId: rigTaskId, restart: n };
+      saveState(st);
+      base = join(await download(row, "rigging", rigTaskId, name), "rigged_character_glb.glb");
+    } else if (!row.rigTaskId) {
+      const dep = depState(row);
+      rigTaskId = dep?.tasks?.rig?.taskId;
+      if (!rigTaskId) throw new StepError("dep", `dependency ${row.dependsOn} has no rig task`);
+      base = join(rowDir(byKey.get(row.dependsOn)), "raw", "rigged_character_glb.glb");
+    } else {
+      rigTaskId = row.rigTaskId;
+      const rigDir = await download(row, "rigging", rigTaskId, "rig");
+      base = join(rigDir, "rigged_character_glb.glb");
+    }
+    const pairs = [];
+    let firstMeta;
+    try {
+      for (const clip of row.clips ?? []) {
+        const name = `anim-${clip.clip}`;
+        await paidTask(st, row, name, { resource: "animate", op: "animate", args: ["--rig-task-id", rigTaskId, "--action-id", String(clip.actionId)], pinned: true });
+        const dir = await download(row, "animate", st.tasks[name].taskId, n > 0 ? join(`clips-r${n}`, clip.clip) : join("clips", clip.clip));
+        firstMeta ??= join(dir, "meta.json");
+        pairs.push(`${clip.clip}=${join(dir, "animation_glb.glb")}`);
+      }
+    } catch (e) {
+      // the rig's account is drained: animations cannot move, so re-rig (~5) and animate on the new rig (~3 per clip)
+      if (!isParentDrained(e) || followUpRecovery("animate", n) !== "rerig") throw e;
+      const src = await rerigSource(row, rigTaskId);
+      const height = row.heightMeters ?? (row.dependsOn ? byKey.get(row.dependsOn)?.heightMeters : undefined) ?? 1.7;
+      for (const name of Object.keys(st.tasks)) {
+        if (!name.startsWith("anim-")) continue;
+        st.history.push({ name, ...st.tasks[name], dropped: `rig ${rigTaskId} account drained; clips redone on a new rig`, at: iso() });
+        delete st.tasks[name];
+      }
+      st.chainRestarts = n + 1;
+      st.rerigArgs = ["--model-url", src, "--height-meters", String(height)];
+      st.rerig = undefined;
+      saveState(st);
+      log(row.key, `rig account drained; re-rig then animate (restart ${st.chainRestarts})`);
+      continue;
+    }
+    const merged = join(rowDir(row), "merged", "model.glb");
+    if (!existsSync(merged)) {
+      const r = await aura(["assets", "merge-clips", "--base", base, "--out", merged, ...pairs, "--json"]);
+      st.merge = { exit: r.code, report: parseJson(r.stdout)?.clips, error: r.code ? short(r.stderr || r.stdout, 300) : undefined };
+      saveState(st);
+      if (r.code !== 0 || !existsSync(merged)) throw new Error(`merge-clips failed: ${st.merge.error}`);
+    }
+    await finishModel(st, row, merged, { clips: (row.clips ?? []).map((c) => c.clip), metaFrom: firstMeta });
+    return;
   }
-  const pairs = [];
-  let firstMeta;
-  for (const clip of row.clips ?? []) {
-    const name = `anim-${clip.clip}`;
-    await paidTask(st, row, name, { resource: "animate", op: "animate", args: ["--rig-task-id", rigTaskId, "--action-id", String(clip.actionId)], pinned: true });
-    const dir = await download(row, "animate", st.tasks[name].taskId, join("clips", clip.clip));
-    firstMeta ??= join(dir, "meta.json");
-    pairs.push(`${clip.clip}=${join(dir, "animation_glb.glb")}`);
-  }
-  const merged = join(rowDir(row), "merged", "model.glb");
-  if (!existsSync(merged)) {
-    const r = await aura(["assets", "merge-clips", "--base", base, "--out", merged, ...pairs, "--json"]);
-    st.merge = { exit: r.code, report: parseJson(r.stdout)?.clips, error: r.code ? short(r.stderr || r.stdout, 300) : undefined };
-    saveState(st);
-    if (r.code !== 0 || !existsSync(merged)) throw new Error(`merge-clips failed: ${st.merge.error}`);
-  }
-  await finishModel(st, row, merged, { clips: (row.clips ?? []).map((c) => c.clip), metaFrom: firstMeta });
 }
 
 const OPS = { "text-to-3d": opTextTo3d, retexture: opRetexture, rig: opRig, animate: opAnimate };
@@ -635,7 +696,8 @@ const startedPaid = (st) => Boolean(st && Object.values(st.tasks ?? {}).some((t)
 function needsNewUnpinned(row, st) {
   if (row.op === "text-to-3d") return !st?.tasks?.preview?.taskId;
   if (row.op === "retexture") return !st?.tasks?.retexture?.taskId;
-  if (row.op === "rig") return !row.dependsOn && !st?.tasks?.rig?.taskId;
+  if (row.op === "rig") return !st?.tasks?.rig?.taskId; // rigs go by model URL now, so every new rig is unpinned
+  if (row.op === "animate") return (st?.chainRestarts ?? 0) > 0 && !st?.tasks?.[`rerig-${st.chainRestarts}`]?.taskId;
   return false;
 }
 
@@ -672,8 +734,10 @@ async function processRow(row, runInfo) {
       st.reason = `Prism/Meshy auth refusal: ${message}`;
       log(row.key, `AUTH refusal, stopping: ${message}`);
     } else if (kind === "stopped") {
+      // a chain restart (new rig / new preview) needs a new unpinned call while STOP_NEW holds: back off, never spin
       st.status = "pending";
       st.reason = "stopped before a new paid call";
+      runInfo.retryAt.set(row.key, Date.now() + 5 * 60e3);
     } else if (kind === "rate" || kind === "transient" || kind === "slow" || kind === "lost-task") {
       runInfo.transient.set(row.key, (runInfo.transient.get(row.key) ?? 0) + 1);
       const n = runInfo.transient.get(row.key);
@@ -683,10 +747,11 @@ async function processRow(row, runInfo) {
       if (n >= 3) runInfo.skip.add(row.key);
       log(row.key, `${kind} (${n}): ${message}`);
     } else if (kind === "pinned-exhausted") {
+      // only reached once the row's chain-restart budget is used up; a per-account failure never parks the queue
       st.status = "deferred";
-      st.reason = `parent task's Meshy key is out of credits: ${message}`;
-      runInfo.skip.add(row.key);
-      log(row.key, `deferred: ${message}`);
+      st.reason = `parent task's Meshy account is out of credits after ${st.chainRestarts ?? 0} chain restarts: ${message}`;
+      runInfo.retryAt.set(row.key, Date.now() + 30 * 60e3);
+      log(row.key, `deferred 30 min: ${message}`);
     } else if (kind === "task-failed") {
       st.status = (st.attempts ?? 0) >= 2 ? "failed" : "pending";
       st.reason = message;
@@ -821,30 +886,43 @@ async function runPipeline() {
     }
     if (active.size === 0) {
       const waiting = queue.filter((r) => !runInfo.skip.has(r.key) && !["done", "blocked", "failed"].includes(loadState(r.key)?.status) && (runInfo.retryAt.get(r.key) ?? 0) > Date.now());
-      if (waiting.length === 0 && has("--wait-for-credits") && !STOP_ALL && !(limit && started >= limit)) {
-        // opt-in: everything left is blocked by the pool, so sleep and resume when a key can pay again (monthly resets)
-        const blocked = queue.filter((r) => !["done", "blocked", "failed"].includes(loadState(r.key)?.status) && (needsNewUnpinned(r, loadState(r.key)) || loadState(r.key)?.status === "deferred"));
-        if (blocked.length > 0) {
-          // Keys that answer 402 while reporting a balance flip back to "ok" between refreshes, so the pool is only
-          // re-tried after the next key reset Prism reports (then every 30 min), not on every flip.
-          const before = await poolSnapshot("wait for credits");
-          const reset = Date.parse(before?.totals?.next_reset_at ?? "");
-          const until = Number.isFinite(reset) && reset > Date.now() ? reset + 5 * 60e3 : Date.now() + 30 * 60e3;
-          log("==", `${blocked.length} rows wait for credits until ${new Date(until).toISOString()} (next key reset)`);
-          while (Date.now() < until && !STOP_ALL) await sleep(Math.min(30 * 60e3, until - Date.now()));
-          const p = await poolSnapshot("wait for credits");
-          if (p && maxUsable(p) >= 30 && (p.totals?.remaining_credits ?? 0) >= 30) {
-            poolMax = maxUsable(p);
-            STOP_NEW = false;
-            refusalStreak = 0;
-            for (const r of blocked) if (loadState(r.key)?.status === "deferred") { runInfo.skip.delete(r.key); runInfo.transient.delete(r.key); }
-            log("==", `pool can pay again (largest usable key ${poolMax}); resuming`);
-          }
-          continue;
-        }
+      if (STOP_ALL || (limit && started >= limit)) break;
+      if (waiting.length > 0) {
+        await sleep(Math.max(1000, Math.min(...waiting.map((r) => runInfo.retryAt.get(r.key))) - Date.now() + 1000));
+        continue;
       }
-      if (waiting.length === 0 || (limit && started >= limit) || STOP_ALL) break;
-      await sleep(Math.min(...waiting.map((r) => runInfo.retryAt.get(r.key))) - Date.now() + 1000);
+      const remaining = queue.filter((r) => !["done", "blocked", "failed"].includes(loadState(r.key)?.status));
+      const pool = await poolSnapshot("idle");
+      if (pool) poolMax = maxUsable(pool);
+      const decision = idleDecision({ remaining: remaining.length, stopNew: STOP_NEW, pool, waitForCredits: has("--wait-for-credits") });
+      if (decision === "end") break;
+      const reopen = () => {
+        STOP_NEW = false;
+        refusalStreak = 0;
+        for (const r of remaining) { runInfo.skip.delete(r.key); runInfo.transient.delete(r.key); }
+      };
+      if (decision === "wait-reset") {
+        // genuine whole-pool exhaustion: park until the next key reset, re-reading the pool every 15 min
+        const reset = Date.parse(pool?.totals?.next_reset_at ?? "");
+        const until = Number.isFinite(reset) && reset > Date.now() ? reset + 5 * 60e3 : Date.now() + 30 * 60e3;
+        log("==", `pool exhausted (largest usable key ${poolMax}); ${remaining.length} rows wait until ${new Date(until).toISOString()} (next key reset), re-checking every 15 min`);
+        while (Date.now() < until && !STOP_ALL) {
+          await sleep(Math.min(15 * 60e3, until - Date.now()));
+          const p = await poolSnapshot("wait for credits");
+          if (p && !poolExhausted(p)) break;
+        }
+        poolMax = lastPool ? maxUsable(lastPool) : poolMax;
+        reopen();
+        log("==", `resuming (largest usable key ${poolMax})`);
+        continue;
+      }
+      // recheck: the pool reports credits, rows are only held (deferred, transient, cost gate, keys that answer 402
+      // but flip back to "ok"): retry with backoff 10, 20, 40, 60 min; a successful submit resets it
+      const mins = Math.min(60, 10 * 2 ** idleRechecks);
+      idleRechecks += 1;
+      log("==", `${remaining.length} rows held while the pool reports credits (largest usable key ${poolMax}); re-checking in ${mins} min`);
+      await sleep(mins * 60e3);
+      reopen();
       continue;
     }
     await Promise.race([...active.values(), sleep(10_000)]);

@@ -1,8 +1,8 @@
 # WP-36 asset catalogue (GU47)
 
-Generated 2026-10-30T09:12:19.387Z by `wp36-pipeline.mjs --catalogue` from `artifacts/gu47-meshy/_state/rows/`. Plan: [wp36-plan.md](wp36-plan.md). Paths are absolute in the wp36 worktree; `artifacts/` is gitignored, so wave-2 game lanes copy from `<slug>/_admit/models/<typedKey>.glb` (admitted, hashed) or re-admit `opt/model.glb` into their own asset folder.
+Generated 2026-10-30T11:16:34.539Z by `wp36-pipeline.mjs --catalogue` from `artifacts/gu47-meshy/_state/rows/`. Plan: [wp36-plan.md](wp36-plan.md). Paths are absolute in the wp36 worktree; `artifacts/` is gitignored, so wave-2 game lanes copy from `<slug>/_admit/models/<typedKey>.glb` (admitted, hashed) or re-admit `opt/model.glb` into their own asset folder.
 
-Rows: 697; done 28, active 0, pending 659, deferred 10, failed 0, blocked 0.
+Rows: 697; done 28, active 0, pending 669, deferred 0, failed 0, blocked 0.
 
 Columns: optimized GLB (`aura3d assets optimize --role <role>`), rights evidence, admission profile, triangles, embedded textures, local bounds in metres (x, y, z), clips, isolated admission result (`import-meshy --into <slug>/_admit`), ledger reservation ids and Meshy task ids.
 
@@ -13,6 +13,7 @@ Columns: optimized GLB (`aura3d assets optimize --role <role>`), rights evidence
 | Key | Op | Pri | Status | Optimized GLB | rights.json | Profile | Tris | Textures | Bounds | Clips | Admission | Ledger rids | Task ids |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `tennisSegTorso` | text-to-3d | P1 | done | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/top-tennis/tennisSegTorso/opt/model.glb` | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/top-tennis/tennisSegTorso/rights.json` | prop | 12194 | jpeg:1024x1024, jpeg:1024x1024, jpeg:1024x1024 | 1.163 x 1.903 x 0.561 |  | admitted (candidate) `top_tennis_tennisSegTorso`; no blockers | preview:1793350743753-oh3gky refine:1793350782871-ykg8kt | preview:01a18c08-b8ed-7747-8be6-9bff9a89f1e6 refine:01a18c09-50fa-73b0-b0e0-eaf01c0be4e6 |
+| `tennisSegPelvis` | text-to-3d | P1 | pending: Prism refused while usable keys hold credits; retrying |  |  | prop |  |  |  |  |  |  |  |
 
 ## G02 roadster-rush (prefix `apex`)
 
@@ -21,6 +22,7 @@ Columns: optimized GLB (`aura3d assets optimize --role <role>`), rights evidence
 | Key | Op | Pri | Status | Optimized GLB | rights.json | Profile | Tris | Textures | Bounds | Clips | Admission | Ledger rids | Task ids |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `apexHeroCobalt` | retexture | P1 | done | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/roadster-rush/apexHeroCobalt/opt/model.glb` | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/roadster-rush/apexHeroCobalt/rights.json` | vehicle | 37512 | jpeg:2048x2048, jpeg:2048x2048, jpeg:2048x2048 | 0.833 x 0.522 x 2 |  | admitted (candidate) `roadster_rush_apexHeroCobalt`; 1 blocker(s): vehicle-parts:wheel-like geometry reaches only 0 corners; inspect wheel/body separation and collider plan / geometry changed | retexture:1793350389852-q9pla0 | retexture:01a18c03-589d-726b-b9af-eb07aba08989 |
+| `apexRivalInterceptor` | text-to-3d | P1 | pending: Prism refused while usable keys hold credits; retrying |  |  | vehicle |  |  |  |  |  |  |  |
 
 ## G03 heatsink (prefix `thermal`)
 
@@ -29,6 +31,7 @@ Columns: optimized GLB (`aura3d assets optimize --role <role>`), rights evidence
 | Key | Op | Pri | Status | Optimized GLB | rights.json | Profile | Tris | Textures | Bounds | Clips | Admission | Ledger rids | Task ids |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `thermalArchIron` | retexture | P1 | done | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/heatsink/thermalArchIron/opt/model.glb` | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/heatsink/thermalArchIron/rights.json` | environment | 608 | jpeg:1024x1024, jpeg:1024x1024, jpeg:1024x1024 | 2 x 1.913 x 0.375 |  | admitted (candidate) `heatsink_thermalArchIron`; no blockers / geometry changed | retexture:1793350743756-0essht | retexture:01a18c08-b8f0-776e-8724-0b2f347bc012 |
+| `thermalTowerLIron` | retexture | P1 | pending: Prism refused while usable keys hold credits; retrying |  |  | environment |  |  |  |  |  |  |  |
 
 ## G04 teleoperator (prefix `dispatch`)
 
@@ -37,6 +40,7 @@ Columns: optimized GLB (`aura3d assets optimize --role <role>`), rights evidence
 | Key | Op | Pri | Status | Optimized GLB | rights.json | Profile | Tris | Textures | Bounds | Clips | Admission | Ledger rids | Task ids |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `dispatchPodPearl` | retexture | P1 | done | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/teleoperator/dispatchPodPearl/opt/model.glb` | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/teleoperator/dispatchPodPearl/rights.json` | vehicle | 29479 | jpeg:2048x2048, jpeg:2048x2048, jpeg:2048x2048 | 0.938 x 1.486 x 2 |  | admitted (candidate) `teleoperator_dispatchPodPearl`; 1 blocker(s): vehicle-parts:wheel-like geometry reaches only 0 corners; inspect wheel/body separation and collider plan / geometry changed | retexture:1793350743758-x3ud8c | retexture:01a18c08-b9fd-7093-9aba-9b772b1ff46c |
+| `dispatchFacadeVictorian` | retexture | P1 | pending: pool exhausted: retry after keys reset |  |  | environment |  |  |  |  |  |  |  |
 
 ## G05 iron-crown (prefix `crown`)
 
@@ -45,12 +49,13 @@ Columns: optimized GLB (`aura3d assets optimize --role <role>`), rights evidence
 | Key | Op | Pri | Status | Optimized GLB | rights.json | Profile | Tris | Textures | Bounds | Clips | Admission | Ledger rids | Task ids |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `crownBrazierPylon` | text-to-3d | P1 | done | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/iron-crown/crownBrazierPylon/opt/model.glb` | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/iron-crown/crownBrazierPylon/rights.json` | prop | 31018 | jpeg:1024x1024, jpeg:1024x1024, jpeg:1024x1024 | 0.826 x 1.904 x 0.832 |  | admitted (candidate) `iron_crown_crownBrazierPylon`; no blockers | preview:1793350550033-c4v0za refine:1793350589798-v2a337 | preview:01a18c05-c3c6-72c8-bd63-3baf0d63a1e5 refine:01a18c06-5e71-711b-a4d5-a38803b76764 |
-| `crownTauntF1` | animate | P2 | deferred: parent task's Meshy key is out of credits: anim-taunt create exit 1: error: meshy api 503  |  |  | humanoid |  |  |  |  |  |  |  |
-| `crownTauntF2` | animate | P2 | deferred: parent task's Meshy key is out of credits: anim-taunt create exit 1: error: meshy api 503  |  |  | humanoid |  |  |  |  |  |  |  |
-| `crownTauntF3` | animate | P2 | deferred: parent task's Meshy key is out of credits: anim-taunt create exit 1: error: meshy api 503  |  |  | humanoid |  |  |  |  |  |  |  |
-| `crownTauntF4` | animate | P2 | deferred: parent task's Meshy key is out of credits: anim-taunt create exit 1: error: meshy api 503  |  |  | humanoid |  |  |  |  |  |  |  |
-| `crownTauntF5` | animate | P2 | deferred: parent task's Meshy key is out of credits: anim-taunt create exit 1: error: meshy api 503  |  |  | humanoid |  |  |  |  |  |  |  |
-| `crownTauntF6` | animate | P2 | deferred: parent task's Meshy key is out of credits: anim-taunt create exit 1: error: meshy api 503  |  |  | humanoid |  |  |  |  |  |  |  |
+| `crownForgeAnvil` | text-to-3d | P1 | pending: Prism refused while usable keys hold credits; retrying |  |  | prop |  |  |  |  |  |  |  |
+| `crownTauntF1` | animate | P2 | pending: stopped before a new paid call |  |  | humanoid |  |  |  |  |  |  |  |
+| `crownTauntF2` | animate | P2 | pending: stopped before a new paid call |  |  | humanoid |  |  |  |  |  |  |  |
+| `crownTauntF3` | animate | P2 | pending: stopped before a new paid call |  |  | humanoid |  |  |  |  |  |  |  |
+| `crownTauntF4` | animate | P2 | pending: stopped before a new paid call |  |  | humanoid |  |  |  |  |  |  |  |
+| `crownTauntF5` | animate | P2 | pending: stopped before a new paid call |  |  | humanoid |  |  |  |  |  |  |  |
+| `crownTauntF6` | animate | P2 | pending: stopped before a new paid call |  |  | humanoid |  |  |  |  |  |  |  |
 
 ## G06 pips-big-leap (prefix `leap`)
 
@@ -59,6 +64,7 @@ Columns: optimized GLB (`aura3d assets optimize --role <role>`), rights evidence
 | Key | Op | Pri | Status | Optimized GLB | rights.json | Profile | Tris | Textures | Bounds | Clips | Admission | Ledger rids | Task ids |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `leapTileMossDisc` | text-to-3d | P1 | done | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/pips-big-leap/leapTileMossDisc/opt/model.glb` | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/pips-big-leap/leapTileMossDisc/rights.json` | prop | 21164 | jpeg:1024x1024, jpeg:1024x1024, jpeg:1024x1024 | 1.901 x 0.323 x 1.894 |  | admitted (candidate) `pips_big_leap_leapTileMossDisc`; no blockers | preview:1793350744824-fisgph refine:1793350783526-qbtije | preview:01a18c08-bc7a-708a-8605-296902109dad refine:01a18c09-53a3-7294-bcac-b3f8de55a680 |
+| `leapTileStump` | text-to-3d | P1 | pending: Prism refused while usable keys hold credits; retrying |  |  | prop |  |  |  |  |  |  |  |
 | `leapPipRig` | rig | P2 | pending: transient: rig create exit 1: error: meshy api 503 on /rigging: {"detail":"busy"} meshy ap |  |  | humanoid |  |  |  |  |  |  |  |
 
 ## G07 aura-hoops-3d (prefix `blacktop`)
@@ -68,6 +74,7 @@ Columns: optimized GLB (`aura3d assets optimize --role <role>`), rights evidence
 | Key | Op | Pri | Status | Optimized GLB | rights.json | Profile | Tris | Textures | Bounds | Clips | Admission | Ledger rids | Task ids |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `blacktopFloodlightRig` | retexture | P1 | done | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/aura-hoops-3d/blacktopFloodlightRig/opt/model.glb` | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/aura-hoops-3d/blacktopFloodlightRig/rights.json` | prop | 6064 | jpeg:1024x1024, jpeg:1024x1024, jpeg:1024x1024 | 0.695 x 2 x 0.687 |  | admitted (candidate) `aura_hoops_3d_blacktopFloodlightRig`; no blockers / geometry changed | retexture:1793350744828-kba4cj | retexture:01a18c08-bf09-7258-ba76-dba7ee699e4b |
+| `blacktopHoopRig` | retexture | P1 | pending: pool exhausted: retry after keys reset |  |  | prop |  |  |  |  |  |  |  |
 
 ## G08 aura-diamond-3d (prefix `ballpark`)
 
@@ -76,6 +83,7 @@ Columns: optimized GLB (`aura3d assets optimize --role <role>`), rights evidence
 | Key | Op | Pri | Status | Optimized GLB | rights.json | Profile | Tris | Textures | Bounds | Clips | Admission | Ledger rids | Task ids |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `ballparkFanA` | text-to-3d | P1 | done | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/aura-diamond-3d/ballparkFanA/opt/model.glb` | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/aura-diamond-3d/ballparkFanA/rights.json` | humanoid | 16874 | jpeg:1024x1024, jpeg:1024x1024, jpeg:1024x1024 | 1.062 x 1.903 x 1.242 |  | admitted (candidate) `aura_diamond_3d_ballparkFanA`; 1 blocker(s): humanoid-structure:No humanoid skeleton signals detected. | preview:1793350745700-vym4jc refine:1793350783863-kxulgm | preview:01a18c08-bff1-715f-bd5c-3d58cd41e718 refine:01a18c09-54f2-75ac-a0c1-03d9511e9664 |
+| `ballparkFanB` | text-to-3d | P1 | pending: Prism refused while usable keys hold credits; retrying |  |  | humanoid |  |  |  |  |  |  |  |
 
 ## G09 aura-fc-3d (prefix `pitch`)
 
@@ -84,6 +92,7 @@ Columns: optimized GLB (`aura3d assets optimize --role <role>`), rights evidence
 | Key | Op | Pri | Status | Optimized GLB | rights.json | Profile | Tris | Textures | Bounds | Clips | Admission | Ledger rids | Task ids |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `pitchStandModule` | text-to-3d | P1 | done | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/aura-fc-3d/pitchStandModule/opt/model.glb` | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/aura-fc-3d/pitchStandModule/rights.json` | environment | 83822 | jpeg:1024x1024, jpeg:1024x1024, jpeg:1024x1024 | 1.903 x 0.847 x 0.563 |  | admitted (candidate) `aura_fc_3d_pitchStandModule`; no blockers | preview:1793350787746-t4brzq refine:1793350866634-5c7byd | preview:01a18c09-646f-7556-a52d-6074235ee1b7 refine:01a18c0a-997e-7103-9690-bfdbd94aebc1 |
+| `pitchDugout` | text-to-3d | P1 | pending: Prism refused while usable keys hold credits; retrying |  |  | prop |  |  |  |  |  |  |  |
 
 ## G10 aura-links-3d (prefix `golf`)
 
@@ -92,6 +101,7 @@ Columns: optimized GLB (`aura3d assets optimize --role <role>`), rights evidence
 | Key | Op | Pri | Status | Optimized GLB | rights.json | Profile | Tris | Textures | Bounds | Clips | Admission | Ledger rids | Task ids |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `golfMarram` | text-to-3d | P1 | done | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/aura-links-3d/golfMarram/opt/model.glb` | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/aura-links-3d/golfMarram/rights.json` | prop | 159492 | jpeg:1024x1024, jpeg:1024x1024, jpeg:1024x1024 | 1.778 x 1.273 x 1.876 |  | admitted (candidate) `aura_links_3d_golfMarram`; 1 blocker(s): triangle-budget:159492 triangles exceed the prop candidate budget of 100000 | preview:1793350812121-pmqiw6 refine:1793350891454-cdtgbf | preview:01a18c09-c61e-7373-a611-1d786e321189 refine:01a18c0a-f96d-741c-8a26-ae2d142d62fb |
+| `golfGorse` | text-to-3d | P1 | pending: pool exhausted: retry after keys reset |  |  | prop |  |  |  |  |  |  |  |
 
 ## G11 bunker-zero (prefix `bz`)
 
@@ -100,12 +110,13 @@ Columns: optimized GLB (`aura3d assets optimize --role <role>`), rights evidence
 | Key | Op | Pri | Status | Optimized GLB | rights.json | Profile | Tris | Textures | Bounds | Clips | Admission | Ledger rids | Task ids |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `bzBlastDoor` | text-to-3d | P1 | done | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/bunker-zero/bzBlastDoor/opt/model.glb` | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/bunker-zero/bzBlastDoor/rights.json` | environment | 27516 | jpeg:1024x1024, jpeg:1024x1024, jpeg:1024x1024 | 1.901 x 1.902 x 0.721 |  | admitted (candidate) `bunker_zero_bzBlastDoor`; no blockers | preview:1793350529078-qr1v7i refine:1793350566923-gyxqss | preview:01a18c05-7143-7592-a544-8707d1529973 refine:01a18c06-05e9-7474-898c-bfb9bf5cb9a4 |
+| `bzFreightElevator` | text-to-3d | P1 | pending: pool exhausted: retry after keys reset |  |  | environment |  |  |  |  |  |  |  |
 | `bzGuardRig` | rig | P1 | done | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/bunker-zero/bzGuardRig/opt/model.glb` | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/bunker-zero/bzGuardRig/rights.json` | humanoid | 10059 | jpeg:1024x1024, jpeg:1024x1024, jpeg:1024x1024 | 0.958 x 1.8 x 0.77 | walk, run | admitted (candidate) `bunker_zero_bzGuardRig`; no blockers / anim fail | rig:1793351119198-c3m2th | rig:01a18c0e-7468-747b-b278-86d7b2914603 |
 | `bzGunnerRig` | rig | P1 | done | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/bunker-zero/bzGunnerRig/opt/model.glb` | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/bunker-zero/bzGunnerRig/rights.json` | humanoid | 9725 | jpeg:1024x1024, jpeg:1024x1024, jpeg:1024x1024 | 1.029 x 1.82 x 1.155 | walk, run | admitted (candidate) `bunker_zero_bzGunnerRig`; no blockers / anim fail | rig:1793351123670-7j82z4 | rig:01a18c0e-852d-7196-bfd9-4a769018c20e |
 | `bzWardenRig` | rig | P1 | done | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/bunker-zero/bzWardenRig/opt/model.glb` | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/bunker-zero/bzWardenRig/rights.json` | humanoid | 9481 | jpeg:1024x1024, jpeg:1024x1024, jpeg:1024x1024 | 1.006 x 1.9 x 0.587 | walk, run | admitted (candidate) `bunker_zero_bzWardenRig`; no blockers / anim fail | rig:1793351137557-5al6tg | rig:01a18c0e-bb31-7624-8631-f87d0b3f39bd |
-| `bzGuardAnim` | animate | P1 | deferred: parent task's Meshy key is out of credits: anim-idle create exit 1: error: meshy api 503 o |  |  | humanoid |  |  |  |  |  |  |  |
-| `bzGunnerAnim` | animate | P1 | deferred: parent task's Meshy key is out of credits: anim-idle create exit 1: error: meshy api 503 o |  |  | humanoid |  |  |  |  |  |  |  |
-| `bzWardenAnim` | animate | P1 | deferred: parent task's Meshy key is out of credits: anim-idle create exit 1: error: meshy api 503 o |  |  | humanoid |  |  |  |  |  |  |  |
+| `bzGuardAnim` | animate | P1 | pending: Prism refused while usable keys hold credits; retrying |  |  | humanoid |  |  |  |  |  |  |  |
+| `bzGunnerAnim` | animate | P1 | pending: pool exhausted: retry after keys reset |  |  | humanoid |  |  |  |  |  |  |  |
+| `bzWardenAnim` | animate | P1 | pending: pool exhausted: retry after keys reset |  |  | humanoid |  |  |  |  |  |  |  |
 
 ## G12 slingshot-siege (prefix `sling`)
 
@@ -114,6 +125,7 @@ Columns: optimized GLB (`aura3d assets optimize --role <role>`), rights evidence
 | Key | Op | Pri | Status | Optimized GLB | rights.json | Profile | Tris | Textures | Bounds | Clips | Admission | Ledger rids | Task ids |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `slingSeaStackIsland` | text-to-3d | P1 | done | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/slingshot-siege/slingSeaStackIsland/opt/model.glb` | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/slingshot-siege/slingSeaStackIsland/rights.json` | environment | 27778 | jpeg:1024x1024, jpeg:1024x1024, jpeg:1024x1024 | 1.903 x 1.506 x 1.903 |  | admitted (candidate) `slingshot_siege_slingSeaStackIsland`; no blockers | preview:1793350813074-5b5kv7 refine:1793350851949-4y6bly | preview:01a18c09-c7a4-754d-ba9a-dd88a1321272 refine:01a18c0a-601a-7067-b7cb-4d734dd52575 |
+| `slingBlockWood` | text-to-3d | P1 | pending: pool exhausted: retry after keys reset |  |  | prop |  |  |  |  |  |  |  |
 
 ## G13 dot-dash-3d (prefix `dotdash`)
 
@@ -122,6 +134,7 @@ Columns: optimized GLB (`aura3d assets optimize --role <role>`), rights evidence
 | Key | Op | Pri | Status | Optimized GLB | rights.json | Profile | Tris | Textures | Bounds | Clips | Admission | Ledger rids | Task ids |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `dotdashCourierPod` | text-to-3d | P1 | done | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/dot-dash-3d/dotdashCourierPod/opt/model.glb` | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/dot-dash-3d/dotdashCourierPod/rights.json` | prop | 27550 | jpeg:1024x1024, jpeg:1024x1024, jpeg:1024x1024 | 1.327 x 1.902 x 0.758 |  | admitted (candidate) `dot_dash_3d_dotdashCourierPod`; no blockers | preview:1793350856158-5x1f9i refine:1793350894730-pcx653 | preview:01a18c0a-7039-7150-9413-c286511f58c6 refine:01a18c0b-0637-7752-8b7b-b16088c69507 |
+| `dotdashSentryBeetle` | text-to-3d | P1 | pending: pool exhausted: retry after keys reset |  |  | prop |  |  |  |  |  |  |  |
 
 ## G14 cross-hop (prefix `xhop`)
 
@@ -197,7 +210,7 @@ Columns: optimized GLB (`aura3d assets optimize --role <role>`), rights evidence
 
 | Key | Op | Pri | Status | Optimized GLB | rights.json | Profile | Tris | Textures | Bounds | Clips | Admission | Ledger rids | Task ids |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `saltwindBusSalt` | retexture | P1 | pending: absolute source now read in place |  |  | vehicle |  |  |  |  |  |  |  |
+| `saltwindBusSalt` | retexture | P1 | pending: Prism refused while usable keys hold credits; retrying |  |  | vehicle |  |  |  |  |  |  |  |
 
 ## G23 where-the-wind-wanders-port (prefix `bell`)
 
@@ -215,7 +228,7 @@ Columns: optimized GLB (`aura3d assets optimize --role <role>`), rights evidence
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `duneCourierOchre` | retexture | P1 | done | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/silt-and-signal-port/duneCourierOchre/opt/model.glb` | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/silt-and-signal-port/duneCourierOchre/rights.json` | humanoid | 12485 | jpeg:2048x2048, jpeg:2048x2048, jpeg:2048x2048 | 1.104 x 2 x 0.631 |  | admitted (candidate) `silt_and_signal_port_duneCourierOchre`; 1 blocker(s): humanoid-structure:No humanoid skeleton signals detected. / geometry changed | retexture:1793351055207-r0a5uq | retexture:01a18c0d-7a38-75c2-a7d1-390556fb11d8 |
 | `duneCourierRig` | rig | P1 | done | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/silt-and-signal-port/duneCourierRig/opt/model.glb` | `/Users/gurbakshchahal/platforms/aura3d-gu47/wp36/artifacts/gu47-meshy/silt-and-signal-port/duneCourierRig/rights.json` | humanoid | 12485 | png:1024x1024, jpeg:1024x1024, jpeg:1024x1024 | 0.966 x 1.75 x 0.553 | walk, run | admitted (candidate) `silt_and_signal_port_duneCourierRig`; no blockers / anim fail | rig:1793351114178-px0pyo | rig:01a18c0e-64a0-737b-8d58-77300a1d602c |
-| `duneCourierAnim` | animate | P1 | deferred: parent task's Meshy key is out of credits: anim-lean create exit 1: error: meshy api 503 o |  |  | humanoid |  |  |  |  |  | anim-boost:1793351147849-a2f8v4 | anim-boost:01a18c0e-e2f9-7024-a33b-b2292a80905a |
+| `duneCourierAnim` | animate | P1 | pending: stopped before a new paid call |  |  | humanoid |  |  |  |  |  |  |  |
 
 ## G25 cloud-runner-port (prefix `cumulus`)
 
