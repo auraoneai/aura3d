@@ -1,4 +1,4 @@
-import { createAuraApp, createFixedStepLoop, installQaHooks, material, type AuraModelMaterialHandle, type AuraRuntimeNodeHandle, type AuraTransformSpec } from "@aura3d/engine";
+import { createAuraApp, createFixedStepLoop, installQaHooks, material, type AuraModelMaterialHandle, type AuraRuntimeNodeHandle, type AuraTransformSpec, type AuraVec3 } from "@aura3d/engine";
 import { installBlackFrameGuard, installSafetyNet } from "@aura3d/debug";
 import { createCameraShake, createFixedStepPresenter, createHitStop, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
 import { createGridAudio } from "./audio";
@@ -72,7 +72,7 @@ import {
 import { NO_INPUT, RIVALS, ROAD_USER_COUNT, TRAFFIC_COUNT, TRAFFIC_SPECS, createSim, fareOf, roadUserFootprints, type DriveInput, type SimEvent } from "./sim";
 import { BOOT_SKY, SKY_LOOKS, nextSky, skyFromParam } from "./look";
 import { installSensorPass, scanPulseAt } from "./scanPulse";
-import { createGridVfxQueue, installGridVfx, type GridVfxShot } from "./vfx";
+import { createGridVfxQueue, headlightMotesSpec, installGridVfx, manholeLayout, motesAnchor, type GridVfxShot } from "./vfx";
 import { mountTouchPads } from "./touch";
 import { STATIC_CROPS, carCrop, type QaCrop } from "./qaCrops";
 import { FOV_KICK_HALFLIFE_S, FOV_KICK_MAX_DEG, ROLL_HALFLIFE_S, cameraFeel } from "./cameraFeel";
@@ -160,6 +160,7 @@ function bindNodes(app: ReturnType<typeof createAuraApp>, sky: WeatherPreset) {
     roadJoints: req("sf-road-joints"),
     crossRoads: req("sf-cross-roads"),
     crosswalks: req("sf-crosswalks"),
+    manholes: req("sf-manholes"),
     signalPoles: req("sf-signal-poles"),
     signalArms: req("sf-signal-arms"),
     signalLights: req("sf-signal-lights"),
@@ -227,6 +228,8 @@ async function bootGridDispatch(): Promise<void> {
   // space, so a burst lands where the street is drawn this frame.
   installGridVfx(auraApp.effects);
   const vfx = createGridVfxQueue();
+  /** GD-15 looping headlight motes (one handle; `sky` and `lowTier` say which spec it was spawned with). */
+  const motes: { handle: { stop(o?: { immediate?: boolean }): void; setPosition(p: AuraVec3): void } | null; sky: WeatherPreset | null; lowTier: boolean; motionOk: boolean } = { handle: null, sky: null, lowTier: false, motionOk: true };
   let audio: ReturnType<typeof createGridAudio> | null = null;
   const contacts = createTrafficContacts(
     ROAD_USER_COUNT,
@@ -690,6 +693,10 @@ async function bootGridDispatch(): Promise<void> {
     const iz = Array.from({ length: INTERSECTION_COUNT }, (_, i) => rz(interBaseZ - i * INTERSECTION_STRIDE_Z));
     N.crossRoads.setInstances(iz.map((z) => pos(rx(0), ry(0.01), z)));
     N.crosswalks.setInstances(iz.flatMap((z) => [pos(rx(0), ry(0.022), z - 8.2), pos(rx(0), ry(0.022), z + 8.2)]));
+    // GD-15: manhole covers past each crossing; steam puffs only while the car is nearly stopped (see MANHOLES).
+    const manholes = manholeLayout(Array.from({ length: INTERSECTION_COUNT }, (_, i) => interBaseZ - i * INTERSECTION_STRIDE_Z));
+    N.manholes.setInstances(manholes.map(([x, z]) => pos(rx(x), ry(0.012), rz(z))));
+    vfx.steam({ dt: frameSeconds, speed: S.phase === "driving" ? S.player.speed : 0, z: pose.pz, manholes });
     N.signalPoles.setInstances(iz.flatMap((z) => [pos(rx(11.4), ry(3.4), z - 9.2), pos(rx(-11.4), ry(3.4), z - 9.2)]));
     N.signalArms.setInstances(iz.flatMap((z) => [pos(rx(8.6), ry(6.5), z - 9.2), pos(rx(-8.6), ry(6.5), z - 9.2)]));
     N.signalLights.setInstances(iz.flatMap((z) => [pos(rx(6.4), ry(6.25), z - 9.1), pos(rx(-6.4), ry(6.25), z - 9.1)]));
@@ -776,6 +783,17 @@ async function bootGridDispatch(): Promise<void> {
         h?.setLight?.({ position: hp.position, direction: [d[0] / l, d[1] / l, d[2] / l] });
       });
     }
+
+    // GD-15: headlight-cone motes ride ahead of the nose (dusk, fog, night); respawned after a sky, tier or reduced-motion change.
+    if (motes.sky !== weather || motes.lowTier !== lowTier || motes.motionOk !== motionOk()) {
+      motes.handle?.stop({ immediate: true });
+      const spec = headlightMotesSpec({ headlights: skyLook.street.headlights, motionOk: motionOk(), lowTier });
+      motes.handle = spec ? auraApp.effects?.spawn(spec, motesAnchor(carX, carZ - size.length / 2, ry(0))) ?? null : null;
+      motes.sky = weather;
+      motes.lowTier = lowTier;
+      motes.motionOk = motionOk();
+    }
+    motes.handle?.setPosition(motesAnchor(carX, carZ - size.length / 2, ry(0)));
 
     // GD-14 runtime VFX: queued impact and objective shots, plus the night tyre spray behind the rear wheels.
     vfx.tyres({ dt: frameSeconds, wet: skyLook.street.drizzle && S.phase === "driving", speed: S.player.speed, x: pose.px, z: pose.pz, width: size.width, length: size.length });

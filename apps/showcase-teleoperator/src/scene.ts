@@ -2,6 +2,7 @@ import { camera, defineAuraAssets, effects, environments, game, instances, light
 import { assets, type GridAssetKey } from "./aura-assets";
 import { BRAKE_RED, KEY_SHADOW, SODIUM, SKY_LOOKS, hdriUrl, keyLightPosition, type HdriId, type SkyLook } from "./look";
 import { RIVALS, TRAFFIC_SPECS } from "./sim";
+import { MANHOLES } from "./vfx";
 import { CAR_DRAW_Z, CURB_BEACON_X, PLAYABLE_FLEET, PLAYABLE_IDS, SCENE_CAM_FOV_DEG, SCENE_CAM_POS, SCENE_CAM_TARGET, type PlayableCarId, type Vec3, type WeatherPreset } from "./rules";
 
 export const HIDDEN_SCALE: Vec3 = [0.0001, 0.0001, 0.0001];
@@ -452,6 +453,8 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
     instances.box({ name: "sf-road-joints", size: ROAD_TILE.joint, material: roadTileMaterials(look).joint, transforms: pool(ROAD_TILE.rows) }).runtime(game.runtimeNode("sf-road-joints")),
     instances.box({ name: "sf-dashes", size: [0.14, 0.02, 4.2], material: dashMat, transforms: pool(DASH_ROWS * DASH_LINES_X.length) }).runtime(game.runtimeNode("sf-dashes")),
     instances.box({ name: "sf-cross-roads", size: [140, 0.03, 14], material: material.pbr({ color: "#222834", roughness: 0.84 }), transforms: pool(INTERSECTION_COUNT) }).runtime(game.runtimeNode("sf-cross-roads")),
+    // GD-15: cast-iron manhole covers past each crossing (steam source); +1 draw.
+    instances.cylinder({ name: "sf-manholes", size: MANHOLES.size, material: material.pbr({ color: "#2b2f33", metalness: 0.6, roughness: look.street.drizzle ? 0.3 : 0.55 }), transforms: pool(INTERSECTION_COUNT * MANHOLES.offsets.length) }).runtime(game.runtimeNode("sf-manholes")),
     instances.box({ name: "sf-crosswalks", size: [19.6, 0.035, 2.2], material: zebraMat, transforms: pool(INTERSECTION_COUNT * 2) }).runtime(game.runtimeNode("sf-crosswalks")),
     instances.cylinder({ name: "sf-signal-poles", size: [0.24, 6.8, 0.24], material: signalPoleMat, transforms: pool(INTERSECTION_COUNT * 2) }).runtime(game.runtimeNode("sf-signal-poles")),
     instances.box({ name: "sf-signal-arms", size: [5.6, 0.16, 0.16], material: signalPoleMat, transforms: pool(INTERSECTION_COUNT * 2) }).runtime(game.runtimeNode("sf-signal-arms")),

@@ -9,6 +9,8 @@
  * - `grid-tyre-splash`: night tyre spray off the wet asphalt (GD-14, GD-07).
  * - `grid-manhole-steam`: soft grey steam puff from a manhole (GD-15).
  * - tail trails: red ribbons behind the player car (GD-14), `TAIL_TRAIL`.
+ * - headlight motes: a looping spec (`HEADLIGHT_MOTES`) spawned with `effects.spawn` and moved into the headlight cones
+ *   every frame (GD-15, dusk/fog/night only).
  *
  * Reduced motion and Low tier halve every particle count (PRD §6.3, §6.4); reduced flash drops the impact light.
  */
@@ -46,6 +48,48 @@ export const GRID_VFX_PRESETS: Readonly<Record<GridVfxKind, AuraVfxEffectSpec>> 
     ]
   }
 };
+
+/**
+ * GD-15 headlight-cone motes: a looping emitter (an authored spec object, so `effects.spawn` keeps it alive) of tiny warm
+ * dust specks, drifting back towards the camera through the headlight cones. `count` is the emission budget before
+ * `vfxCountScale`; the runtime emits `2 x count` per second into a pool of at least 64.
+ */
+export const HEADLIGHT_MOTES: AuraVfxEffectSpec = {
+  name: "grid-headlight-motes",
+  layers: [
+    { type: "emitter", preset: "dust", count: 14, speed: [0.25, 0.6], life: [0.9, 1.5], gravity: -0.05, color: "#ffe9c4", intensity: 1.4, size: [0.015, 0.035], spread: 0.6, additive: true, direction: [0, 0.05, 1], maxScreen: 0.008 }
+  ]
+};
+/** Metres ahead of the nose where the mote emitter sits (inside both headlight cones, before they reach the road). */
+export const MOTES_AHEAD_M = 6;
+
+/** Mote emitter position in view space for a car whose nose sits at (carX, noseZ). */
+export function motesAnchor(carX: number, noseZ: number, y = 0): AuraVec3 {
+  return [carX, y + 0.75, noseZ - MOTES_AHEAD_M];
+}
+
+/** The mote spec scaled for comfort and tier; `null` when the sky has no headlights (noon). */
+export function headlightMotesSpec(o: { readonly headlights: number; readonly motionOk: boolean; readonly lowTier: boolean }): AuraVfxEffectSpec | null {
+  if (o.headlights <= 0) return null;
+  const scale = vfxCountScale(o);
+  return {
+    name: HEADLIGHT_MOTES.name,
+    layers: HEADLIGHT_MOTES.layers.map((l) => (l.type === "emitter" ? { ...l, count: Math.max(2, Math.round(Number((l as { count?: number }).count ?? 0) * scale)) } : l))
+  };
+}
+
+/**
+ * GD-15 manholes: two covers just past each intersection (world x, z offset from the intersection centre), recycled on
+ * the intersection stride with the crossings. Steam rises only while the car is nearly stopped (signals, kerb stops):
+ * particles live in view space and the street scrolls past a fixed camera, so a plume at speed would ride with the car
+ * (handoff E-F: emitter velocity in a scrolling frame).
+ */
+export const MANHOLES = { offsets: [[-2.7, 12.5], [3.1, 15.5]] as const, size: [0.9, 0.03, 0.9] as [number, number, number], steamMaxSpeed: 2, steamIntervalS: 0.8, reach: [6, 70] as const } as const;
+
+/** World (x, z) of every manhole for the intersections at `intersectionZs`. */
+export function manholeLayout(intersectionZs: readonly number[]): [number, number][] {
+  return intersectionZs.flatMap((z) => MANHOLES.offsets.map(([x, dz]) => [x, z + dz] as [number, number]));
+}
 
 /** GD-14: red tail-lamp trails behind the player car; full width only above 6 m/s. */
 export const TAIL_TRAIL = { width: 0.16, life: 0.35, color: BRAKE_RED, widthOverSpeed: [6, 18] as const } as const;
@@ -94,6 +138,7 @@ export function createGridVfxQueue() {
   const queue: { kind: GridVfxKind; at: AuraVec3; count?: number; speed?: number; normal?: AuraVec3; seed: number }[] = [];
   let seed = 1;
   let tyreClock = 0;
+  let steamClock = 0;
   return {
     /** Collision burst from the contact model (`ParticleBurst`: point, normal, count, approach speed). */
     impact(burst: { readonly point: readonly [number, number, number]; readonly normal: readonly [number, number, number]; readonly count: number; readonly speed: number }): void {
@@ -115,6 +160,23 @@ export function createGridVfxQueue() {
       const rearZ = o.z + o.length * 0.36;
       const spray = Math.min(10, 1.5 + o.speed * 0.25);
       for (const side of [-1, 1]) queue.push({ kind: "grid-tyre-splash", at: [o.x + side * o.width * 0.38, 0.08, rearZ], speed: spray, normal: [side * 0.25, 0.55, 1], seed: seed++ });
+    },
+    /**
+     * GD-15 manhole steam: below `MANHOLES.steamMaxSpeed`, one puff per manhole that sits `MANHOLES.reach` metres ahead
+     * of the car, every `MANHOLES.steamIntervalS` seconds. `manholes` are world (x, z); `z` is the car's world z.
+     */
+    steam(o: { readonly dt: number; readonly speed: number; readonly z: number; readonly manholes: readonly (readonly [number, number])[] }): void {
+      if (o.speed >= MANHOLES.steamMaxSpeed) {
+        steamClock = 0;
+        return;
+      }
+      steamClock += o.dt;
+      if (steamClock < MANHOLES.steamIntervalS) return;
+      steamClock = 0;
+      for (const [x, mz] of o.manholes) {
+        const ahead = o.z - mz;
+        if (ahead >= MANHOLES.reach[0] && ahead <= MANHOLES.reach[1]) queue.push({ kind: "grid-manhole-steam", at: [x, 0.05, mz], seed: seed++ });
+      }
     },
     /** Hands every queued shot to `fire`, scaled by `vfxCountScale`; empties the queue. */
     drain(o: { readonly motionOk: boolean; readonly lowTier: boolean }, fire: (shot: GridVfxShot) => void): void {

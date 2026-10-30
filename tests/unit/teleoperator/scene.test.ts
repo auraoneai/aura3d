@@ -4,7 +4,7 @@ import { buildGridDispatchScene, ROAD_STRIPS } from "../../../apps/showcase-tele
 import { PLAYABLE_IDS } from "../../../apps/showcase-teleoperator/src/rules";
 import { RIVALS, TRAFFIC_COUNT } from "../../../apps/showcase-teleoperator/src/sim";
 
-const INSTANCED = ["sf-dashes", "sf-cross-roads", "sf-crosswalks", "sf-signal-poles", "sf-signal-arms", "sf-signal-lights", "sf-lamp-poles", "sf-lamp-globes", "sf-tree-trunks", "sf-tree-crowns", "route-ribbons", "sf-road-patches", "sf-road-joints"];
+const INSTANCED = ["sf-dashes", "sf-cross-roads", "sf-crosswalks", "sf-signal-poles", "sf-signal-arms", "sf-signal-lights", "sf-lamp-poles", "sf-lamp-globes", "sf-tree-trunks", "sf-tree-crowns", "route-ribbons", "sf-road-patches", "sf-road-joints", "sf-manholes"];
 const NODES = [
   ...PLAYABLE_IDS.map((id) => `player-car-${id}`),
   ...ROAD_STRIPS.map((s) => s.id),
