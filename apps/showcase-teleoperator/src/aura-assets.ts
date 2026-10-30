@@ -127,35 +127,8 @@ export const assets = defineAuraAssets({
     url: "/aura-assets/teleopBldg_artdeco.9b8dc08f.glb",
     hash: "sha256-9b8dc08f5391bb79295dff5807225448e84876aa9c515439429b951218495771",
     bounds: [0.952, 1.902, 0.951]
-  },
-  gridSkylineTowerL: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/heatsinkTowerL.48cef1cc.glb",
-    hash: "sha256-48cef1cc6f54ab2e2f2d3a57c51279101b90b0364b4ae57fe7aba0bde6a6d1de",
-    bounds: [40, 202.8, 40]
-  },
-  gridSkylineTowerT: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/heatsinkTowerT.3e5f0a0c.glb",
-    hash: "sha256-3e5f0a0cbf4bbef5e8b0f7cfdb028fd1f18c4044efc079f44f1a3d943cf9c452",
-    bounds: [51, 177.4632, 19.3]
-  },
-  gridSkylineTowerX: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/heatsinkTowerX.69d0e56e.glb",
-    hash: "sha256-69d0e56ed3fec36848c16ddfec4f3953d52a27fab19eefaa5995cb64639d816c",
-    bounds: [29.8922, 183.9244, 20.1828]
-  },
-  gridBayOverpass: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/heatsinkOverpass.c6bb161f.glb",
-    hash: "sha256-c6bb161fecdc3f00f006903a20433d1905804ce99277686cbcfe9a5ff867687b",
-    bounds: [80, 26.2, 12.2]
   }
+  // GU47 (D2): the borrowed Heatsink skyline towers and overpass were removed; the skyline uses this game's own towers.
 });
 
 export type GridAssetKey = keyof typeof assets;
@@ -178,9 +151,5 @@ export const CATALOG_IDS: Readonly<Record<GridAssetKey, string>> = {
   gridBldgVictorian: "teleopBldg_victorian",
   gridBldgMidrise: "teleopBldg_midrise",
   gridBldgGlassTower: "teleopBldg_glasstower",
-  gridBldgArtDeco: "teleopBldg_artdeco",
-  gridSkylineTowerL: "heatsinkTowerL",
-  gridSkylineTowerT: "heatsinkTowerT",
-  gridSkylineTowerX: "heatsinkTowerX",
-  gridBayOverpass: "heatsinkOverpass"
+  gridBldgArtDeco: "teleopBldg_artdeco"
 };

@@ -203,12 +203,12 @@ export function buildGridDispatchScene(weather: WeatherPreset): ReturnType<typeo
     primitives.box({ name: "sf-bridge-deck", size: [260, 2.2, 12], material: bridgeMat }).position(0, 36, -315)
   ]);
 
-  // 3. Skyline and overpass models
+  // 3. Skyline towers: this game's own glass and art-deco towers at skyline scale (GU47: the borrowed Heatsink towers
+  // and overpass are gone, D2). The marine layer swallows their tops. GU47(WP-36): Meshy pyramid and glass landmark towers.
   s.addMany([
-    model(assets.gridSkylineTowerL, { name: "sf-skyline-tower-l", role: "setDressing", scaleMode: "fit", targetMaxDimension: 72 }).position(-58, 0, -145),
-    model(assets.gridSkylineTowerT, { name: "sf-skyline-tower-t", role: "setDressing", scaleMode: "fit", targetMaxDimension: 68 }).position(58, 0, -135),
-    model(assets.gridSkylineTowerX, { name: "sf-skyline-tower-x", role: "setDressing", scaleMode: "fit", targetMaxDimension: 74 }).position(-62, 0, -255),
-    model(assets.gridBayOverpass, { name: "sf-bay-overpass", role: "setDressing", scaleMode: "fit", targetMaxDimension: 64 }).position(0, 0, -275)
+    model(assets.gridBldgGlassTower, { name: "sf-skyline-tower-l", role: "setDressing", scaleMode: "fit", targetMaxDimension: 72 }).position(-58, 0, -145),
+    model(assets.gridBldgArtDeco, { name: "sf-skyline-tower-t", role: "setDressing", scaleMode: "fit", targetMaxDimension: 68 }).position(58, 0, -135),
+    model(assets.gridBldgGlassTower, { name: "sf-skyline-tower-x", role: "setDressing", scaleMode: "fit", targetMaxDimension: 74 }).position(-62, 0, -255)
   ]);
 
   // 4. Repeated street furniture as instanced nodes (C12): lane dashes, intersections, signal masts, lamps and trees.
