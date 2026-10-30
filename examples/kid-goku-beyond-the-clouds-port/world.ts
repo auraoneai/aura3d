@@ -15,7 +15,7 @@ import type { Game } from "./game";
 import { ACTIVE, ballSpec, puddleSpec, glowSpec, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, warnSpec } from "./materials";
 import { ACTIVE_LOOK, sunPosition, type CumulusLookRow } from "./art/look";
 import { launchFovKick, titleFlyover, traumaFor } from "./art/camera";
-import { CUMULUS_FLARE_ELEMENTS, CUMULUS_GOD_RAY_DENSITY, applyCumulusPostPlan, cumulusPostPlan } from "./art/post";
+import { CUMULUS_DOF, CUMULUS_FLARE_ELEMENTS, CUMULUS_GOD_RAY_DENSITY, CUMULUS_MOTION_BLUR, applyCumulusPostPlan, cumulusFocusDistance, cumulusPostPlan, needsRefocus, type CumulusMoment } from "./art/post";
 import { CUMULUS_GLIDER_TRAIL, cumulusVfxFor, registerCumulusVfx } from "./art/vfx";
 import { Mesh, box, cylinder, hex } from "./mesh";
 import { LEG_CLIPS } from "./legcycle";
@@ -158,6 +158,9 @@ export function lookNodes(row: CumulusLookRow): unknown[] {
   // CD-09: low god rays through the storm towers (High/Ultra only, switched by art/post.ts) and the sun's lens flare, which
   // world.ts keeps on the sun direction from the camera every frame
   out.push(effects.volumetricFog({ name: "god-rays", density: 0.002, color: row.sun.color, intensity: 0.4, godRayDensity: CUMULUS_GOD_RAY_DENSITY }));
+  // CD-11: title/finale depth of field and glider motion blur; both start disabled at bind and art/post.ts switches them
+  out.push(effects.depthOfField({ name: "title-dof", ...CUMULUS_DOF }));
+  out.push(effects.motionBlur({ name: "glider-blur", ...CUMULUS_MOTION_BLUR }));
   out.push(lights.lensFlare({ name: SUN_FLARE_ID, position: sunPosition(row.scenery.sunDir, 2000) as V3, intensity: 0.28, edgeFade: 0.2, elements: CUMULUS_FLARE_ELEMENTS.map((e) => ({ ...e })), runtime: { id: SUN_FLARE_ID } }));
   return out;
 }
@@ -319,15 +322,13 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
   let vfxMotion: boolean | null = null;
   let gliderTrail: { stop(): void } | null = null;
   const vfxFired: Record<string, number> = {};
-  /* CD-09: god rays on High/Ultra only, never on a phone; re-applied when the quality tier changes */
+  /* CD-09 / CD-11: god rays, DOF and glider motion blur on High/Ultra only, never on a phone; the plan is re-evaluated every
+     frame (moment, riding, tier, reduced motion) and only changed states are written */
   const coarse = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
   let postStates: Readonly<Record<string, boolean>> = {};
+  let dofFocus: number | null = null;
   const quality = (app as unknown as { quality?: { tier?: string; onChange?(cb: () => void): unknown } }).quality;
-  if (cinematic) {
-    const applyPost = (): void => { postStates = applyCumulusPostPlan(app.post, cumulusPostPlan({ tier: quality?.tier, coarsePointer: coarse })); };
-    applyPost();
-    quality?.onChange?.(applyPost);
-  }
+  if (cinematic) postStates = applyCumulusPostPlan(app.post, cumulusPostPlan({ tier: quality?.tier, coarsePointer: coarse }));
   const cullShown = new Map<string, boolean>();
   let footsteps = 0;
   /* finale camera: the hut and its mound are solid, and the eye stays above the ground around the home frame */
@@ -738,6 +739,15 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
       cam.setPose({ position: [shook[0], shook[1], shook[2]], target: [look[0], look[1], look[2]], up: [0, 1, 0], fov: pose.fov }, { cut: pose.cut });
       camPos.eye = shook; camPos.target = look;
       view.eye = shook; view.target = look; view.fov = pose.fov; view.aspect = aspect; view.hero = pos; view.hut = hutCentre;
+      if (cinematic) {
+        const moment: CumulusMoment = fly ? "title" : phase === "finale" ? "finale" : "play";
+        const plan = cumulusPostPlan({ tier: quality?.tier, coarsePointer: coarse, moment, riding, reducedMotion: g.reducedMotion });
+        postStates = applyCumulusPostPlan(app.post, plan, postStates);
+        if (plan.dof) {
+          const focus = cumulusFocusDistance(shook, look);
+          if (needsRefocus(dofFocus, focus)) { dofFocus = focus; try { app.post?.setEffect("depthOfField", { focusDistance: focus }); } catch { /* not patchable on this chain */ } }
+        } else dofFocus = null;
+      }
 
       /* distance culling of the small merged scenery (frustum culling alone keeps every chunk ahead on the winding course) */
       let culled = 0;
