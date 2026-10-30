@@ -10,6 +10,7 @@ import {
 } from "@aura3d/engine";
 import { SALTWIND_LOOK, directionFromAngles, lookModeFrom, type SaltwindLookRow } from "./art/look";
 import { SPRAY_POINTS, sprayAmount, sprayWind } from "./art/spray";
+import { ROTOR_BLADES, landmarkPlacements, rotorAngle, type LandmarkKind, type LandmarkPlacement } from "./art/landmarks";
 import { createShotDirector, orbitEye, type ShotFrame } from "./art/shots";
 import { NITRO_TRAIL, SKID_INTERVAL, fxForEvents, registerSaltwindFx, type SaltwindFxKind } from "./art/fx";
 import { levelLayout, roadProfile, trafficPiece, pieceSpec, type Level } from "./course";
@@ -454,6 +455,18 @@ export function matrixFor(psi: number, centre: Vec3, size: Vec3, out: Float32Arr
   return out;
 }
 
+/** RH47-15: one rotor blade (22 m) turning about the world x axis at the hub, as an instance matrix written into `out`. */
+export function bladeMatrix(hub: readonly number[], angle: number, out: Float32Array = new Float32Array(16)): Float32Array {
+  const c = Math.cos(angle), s = Math.sin(angle);
+  const w = 0.5, len = 22, t = 1.4;
+  // columns: x (blade thickness), y (blade length along (0, c, s)), z (chord along (0, -s, c))
+  out[0] = w; out[1] = 0; out[2] = 0; out[3] = 0;
+  out[4] = 0; out[5] = c * len; out[6] = s * len; out[7] = 0;
+  out[8] = 0; out[9] = -s * t; out[10] = c * t; out[11] = 0;
+  out[12] = hub[0]!; out[13] = hub[1]! + c * len / 2; out[14] = hub[2]! + s * len / 2; out[15] = 1;
+  return out;
+}
+
 export const fogFor = (look: Look): FogLook => ({ fogColor: look.horizon, fogNear: look.fogNear, fogFar: look.fogFar });
 
 const PLAYER_SCALE = 1.12;
@@ -663,6 +676,51 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
     }
     scatter("boulders", "boulders", rocks, { roughness: 0.95 });
   }
+
+  /* ---- GU47 RH47-11: route landmarks (instanced engine-lit stand-ins for the WP-36 models, off the road) ---- */
+  const turbineHubs: Vec3[] = [];
+  if (row && enabled("landmarks")) {
+    const landBase = (p: LandmarkPlacement): Vec3 => {
+      const [x, , z] = roadPoint(level, p.s, p.l, 0);
+      const side = (Math.sign(p.l) || 1) as -1 | 1;
+      const d = Math.max(0, Math.abs(p.l) - width);
+      const kind = side === look.seaSide ? seaKind : look.style === "coast" ? "hills" : "cliff";
+      const y = look.style === "skyway" ? p.y : flankY(level, look, side, kind, side === look.seaSide ? seed : seed + 101, p.s, d) + p.y;
+      return [x, y, z];
+    };
+    const place = (kind: LandmarkKind, lift = 0.5) => landmarkPlacements(kind, level.length, width, look.seaSide, seed).map((p) => {
+      const b = landBase(p);
+      return { position: [b[0], b[1] + p.size[1] * lift, b[2]] as Vec3, rotation: [0, p.yaw - roadProfile(level, p.s).heading, 0] as Vec3, scale: [...p.size] as Vec3 };
+    });
+    const pbr = (color: string, roughness = 0.85, metallic = 0) => material.pbr({ color, roughness, metallic });
+    const s = row.surfaces;
+    if (look.style === "coast") {
+      const towers = place("turbine");
+      builder.add(instances.cylinder({ name: "turbine-towers", transforms: towers, material: pbr("#ecebe6", 0.45, 0.1), castShadow: false }));
+      builder.add(instances.box({ name: "turbine-nacelles", transforms: towers.map((t) => ({ position: [t.position[0], t.position[1] + t.scale[1] / 2 + 1, t.position[2]] as Vec3, rotation: [0, 0, 0] as Vec3, scale: [5, 2.4, 2.4] as Vec3 })), material: pbr("#ecebe6", 0.45, 0.1), castShadow: false }));
+      for (const t of towers) turbineHubs.push([t.position[0] - 3, t.position[1] + t.scale[1] / 2 + 1, t.position[2]]);
+      builder.add(instances.cone({ name: "sea-stacks", transforms: place("sea-stack"), material: material.custom(terrainSpec(look)), castShadow: false }));
+    } else if (look.style === "canyon") {
+      builder.add(instances.cylinder({ name: "mesas", transforms: place("mesa"), material: material.custom(terrainSpec(look)), castShadow: false }));
+      builder.add(instances.capsule({ name: "hoodoos", transforms: place("hoodoo"), material: pbr(s.rockA), castShadow: true }));
+      builder.add(instances.torus({ name: "arch", transforms: place("arch", 0), material: pbr(s.rockB), castShadow: false }));
+      builder.add(instances.cylinder({ name: "uplink-masts", transforms: place("uplink-mast"), material: pbr("#3a3b40", 0.5, 0.6), castShadow: false }));
+    } else {
+      const masts = place("antenna");
+      builder.add(instances.cylinder({ name: "antenna-masts", transforms: masts, material: pbr("#9aa6b2", 0.4, 0.7), castShadow: false }));
+      builder.add(instances.sphere({ name: "antenna-beacons", transforms: masts.map((m) => ({ position: [m.position[0], m.position[1] + m.scale[1] / 2 + 1, m.position[2]] as Vec3, rotation: [0, 0, 0] as Vec3, scale: [2.4, 2.4, 2.4] as Vec3 })), material: material.pbr({ color: "#3a0a06", roughness: 0.4, emissive: row.gantry.glow, emissiveIntensity: 3 }), castShadow: false }));
+      const rings = landmarkPlacements("tube-ring", level.length, width, look.seaSide, seed).map((p) => {
+        const c = roadPoint(level, p.s, 0, p.size[1] * 0.42);
+        return { position: c, rotation: [0, -roadProfile(level, p.s).heading, 0] as Vec3, scale: [p.size[0], p.size[1], 60] as Vec3 };
+      });
+      builder.add(instances.torus({ name: "tube-rings", transforms: rings, material: pbr("#cfd8de", 0.3, 0.8), castShadow: false }));
+    }
+  }
+  // RH47-15: turbine rotors (one batched mesh of blades, spun in the runtime)
+  const rotors = turbineHubs.length ? batched.mesh({ name: "turbine-rotors", maxInstances: turbineHubs.length * ROTOR_BLADES + 4, maxVertices: 64, maxIndices: 64, material: material.pbr({ color: "#ecebe6", roughness: 0.45, metallic: 0.1 }) }) : null;
+  const rotorGeo = rotors ? rotors.addGeometry("box") : -1;
+  const rotorSlots = rotors ? turbineHubs.flatMap(() => Array.from({ length: ROTOR_BLADES }, () => rotors.addInstance(rotorGeo))) : [];
+  if (rotors) builder.add(rotors);
 
   /* ---- ocean ---- */
   const mid = roadPoint(level, level.length / 2, 0, 0);
@@ -898,6 +956,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       let nitroTrail: { stop(o?: { immediate?: boolean }): void } | null = null;
       const shots = row ? createShotDirector({ seaSide: look.seaSide }) : null;
       let lastShot: ShotFrame | null = null;
+      let reducedMotionOn = false;
       const gantryLights = gantryPoints ? Array.from({ length: gantryPoints.count }, (_v, k) => node(`gantry-light-${k}`)) : [];
       let gantryGate = -1;
       let dustAmount = 0, sparkAmount = 0;
@@ -930,6 +989,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
         shot: () => lastShot,
         fx: () => ({ kinds: fxKinds, fired: fxFired, last: fxLast }),
         setReducedMotion: (on: boolean) => {
+          reducedMotionOn = on;
           director.setReducedMotion(on);
           shots?.setReducedMotion(on);
           fxKinds = registerSaltwindFx(vfx, row, { reducedMotion: on, reducedFlash: on });
@@ -954,6 +1014,11 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
           for (const part of parts) { part.setPosition(carP[0], carP[1], carP[2]); part.setRotation(pitch, psi, rollAngle); }
           const racing = run.phase === "running" || run.phase === "countdown";
           for (const beam of beams) { beam.setPosition(carP[0], carP[1], carP[2]); beam.setRotation(pitch, psi, rollAngle); beam.setVisible(racing); }
+          if (rotors) {
+            turbineHubs.forEach((hub, ti) => {
+              for (let b = 0; b < ROTOR_BLADES; b++) rotors.setMatrixAt(rotorSlots[ti * ROTOR_BLADES + b]!, bladeMatrix(hub, rotorAngle(time, ti, reducedMotionOn) + (b * Math.PI * 2) / ROTOR_BLADES, scratch));
+            });
+          }
           if (sprayNode) {
             const o = roadPoint(level, run.s, 0, 0), ahead = roadPoint(level, run.s + 1, 0, 0), right = roadPoint(level, run.s, 1, 0);
             sprayNode.setUniform?.("spOrigin", o);
