@@ -88,5 +88,9 @@ Game usage: `effects.outline({ color: "#1b2236", width: 2, targets: ["rider"] })
 ## Verification
 
 - Before the first edit: `tests/unit/toon/toon.test.ts`, `tests/unit/silt-and-signal-port/shaders-compile.test.ts`: 9/9 pass (with the predecessor's uncommitted file in place; its default path is byte-identical).
-- New suites: `tests/unit/gu47/ee/outline-targets.test.ts` 10/10, `outline-targets-engine.test.ts` 6/6, `toon-ink.test.ts` 14/14.
-- Typecheck delta and the final touched-suite run: see below (updated at the end of the run).
+- New suites: `tests/unit/gu47/ee/outline-targets.test.ts` 10/10, `outline-targets-engine.test.ts` 8/8, `toon-ink.test.ts` 14/14 (its two `glslangValidator` compile tests ran; they skip where the validator is absent).
+- Touched-code suites on the branch, all green (130 tests): `tests/unit/toon/toon.test.ts`, `tests/unit/silt-and-signal-port/shaders-compile.test.ts`, `tests/unit/gu47/ef/effect-option-fields.test.ts`, `tests/unit/gu47/ed/forward-draw-hook.test.ts`, `tests/unit/rendering/renderer-postprocess-plan.test.ts`, `tests/unit/agent-api/root-effects-a3.test.ts`, `tests/unit/contracts/impl/{prd03-s18c-custom-passes,prd03-phase3,prd03-issues-91-95,pcpost-post-graph-migration,prd03-t0-17-no-perframe-throws}.test.ts`.
+- `tests/unit/rendering/renderer.test.ts` (23 failures, WebGPU shader sources / float readback) and `tests/unit/engine/phase2-root-bridge.test.ts` (1 failure, spot builder): the same 24 tests fail with the base versions of `PostprocessExecution.ts` and `effects.toon.ts` checked out (diffed failure lists identical); pre-existing, unrelated.
+- Typecheck delta: `NEW_ERRORS 0` (58 baseline) after the item groups and again at the end.
+- ESLint on every touched file: clean.
+- No skill doc edited (no `pnpm check:skills` needed).
