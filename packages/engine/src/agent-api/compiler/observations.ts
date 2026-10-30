@@ -302,6 +302,33 @@ export function createProductionRuntimeCollectedLights(
   );
 }
 
+/**
+ * GU47 E-B handoff (eint EB-4): collected lights for light nodes added at runtime (`app.nodes.add(lights.*)` on the
+ * compiled path), built and bound like the mount's (`createProductionRuntimeCollectedLights`), so they render and their
+ * handle (`setLight`, `setPosition`, `setVisible`) drives them. Never the fallback rig and never a shadow caster (the
+ * mount selected the frame's casters). Ambient / hemisphere / probe nodes yield none: the environment path reads them
+ * from the live snapshot. One entry per node that produced lights, keyed by the node object passed in.
+ */
+export function createRuntimeAddedCollectedLights(
+  nodes: readonly AuraSceneNode[],
+  flags?: { on(name: string): boolean },
+  options?: ProductionRuntimeCollectedLightsOptions
+): { readonly node: AuraLightNode; readonly lights: readonly CollectedLight[] }[] {
+  const physical = flags !== undefined && flags.on("A3D_QR_COMPILER") && prd02LightingOn(flags);
+  const added: { readonly node: AuraLightNode; readonly lights: readonly CollectedLight[] }[] = [];
+  nodes.forEach((candidate, index) => {
+    if (candidate.kind !== "light") return;
+    const node = candidate as AuraLightNode;
+    const lights = physical
+      ? collectPrd02Lights({ nodes: [node] } as unknown as AuraSceneSnapshot).descriptors.map((descriptor) =>
+        bindAuthoredLight(createProductionRuntimeCollectedLight(descriptor, false), node, 0, (position) => productionRuntimeLightDirection(node, position)))
+      : createProductionRuntimeLightDescriptors(node, index, options).map((descriptor, part) =>
+        bindAuthoredLight(createProductionRuntimeCollectedLight(descriptor, false), node, part, legacyLightAim(node, part)));
+    if (lights.length > 0) added.push({ node, lights });
+  });
+  return added;
+}
+
 /** The legacy descriptor builder's aim rule per light (GU47 E-B re-aims a moved light the same way it was built). */
 function legacyLightAim(node: AuraLightNode, part: number): (position: AuraVec3) => AuraVec3 {
   if (node.light === "spot") {

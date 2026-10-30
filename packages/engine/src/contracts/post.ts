@@ -38,13 +38,14 @@ export interface AuraPostSurface { addPostPass(p: AuraCustomPostPass): () => voi
   setPassUniform?(passName: string, key: string, value: number | readonly number[]): void;
   /**
    * GU47 E-C: patch one post effect at runtime — `bloom`, `colorGrade`, `depthOfField`, `motionBlur`,
-   * `chromaticAberration`, `volumetricFog` or `vignette` (the factory name; the effect id such as
+   * `chromaticAberration`, `volumetricFog`, `vignette` or `outline` (`{ targets: [nodeName] }` retargets
+   * the outline, GU47 E-E) (the factory name; the effect id such as
    * `"color-grade"` works too). `patch` keys are the effect's node fields (`app.post.setEffect("bloom",
    * { intensity: 1.4 })`); later calls merge over earlier ones. Applied on the next frame, no scene
    * rebuild. An effect the scene does not declare is added with the patch over its defaults. Unknown
    * names, fields or non-finite values throw `AuraRuntimeError("POST_FIELD_UNSUPPORTED")`.
    */
-  setEffect(name: string, patch: Record<string, number | string | boolean | number[]>): void;
+  setEffect(name: string, patch: Record<string, number | string | boolean | number[] | readonly string[]>): void;
   /** GU47 E-C: switch one of the `setEffect` effects off (dropped from the chain) or back on (authored node plus patches, or the defaults when the scene declares none). Next frame, no scene rebuild. */
   setEffectEnabled(name: string, enabled: boolean): void;
 }

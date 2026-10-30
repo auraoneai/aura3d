@@ -34,6 +34,7 @@ import { normalizeCreateAppRendererOptions, rendererQualityWarnings } from "./re
 import { qrFlagsWithAnimationMixer, resolveQrFlags } from "../../contracts/flags.js";
 import { setTypedGLBActorQrFlags } from "../../production-runtime/actor/extensions.js";
 import { setQrAnimationFlags } from "./actorAnimationHandle.js";
+import { setWorldBuilderFlags } from "../world/flags.js";
 import { appExtensionsAll } from "../../contracts/app.js";
 import { diagnosticsSectionsAll } from "../../contracts/diagnostics.js";
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
@@ -109,6 +110,10 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   // pattern as setPrd01ModelMatrixCache below.
   setQrAnimationFlags(qrFlags);
   setTypedGLBActorQrFlags(qrFlags);
+  // GU47 E-G handoff: world builders called after the app exists (runtime
+  // `app.nodes.add(water.surface())`, scene rebuilds) decide with the app's
+  // flags without `world.useAppFlags` (same install-once pattern).
+  setWorldBuilderFlags(qrFlags);
   // PRD-01 §15 Phase-6: install the fingerprinted static-node matrix cache on
   // the compiler seam. Flag-off leaves renderInput on verbatim calls (C-01).
   // PRD-01 §15 Phase 1 (C-06, 01-S2/T1.5): under the flag the cache composes
