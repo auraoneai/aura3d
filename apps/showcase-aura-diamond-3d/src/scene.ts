@@ -6,6 +6,7 @@
 import { camera, effects, game, instances, lights, looks, material, model, primitives, scene, sky, type AuraLookOverrides } from "@aura3d/engine";
 import { assets } from "./aura-assets.route";
 import { PARK_LOOKS, lookPlan, parkPracticals, type DiamondLookPlan, type DiamondLookVariant, type DiamondSkyMode, type DiamondTier } from "../art/look";
+import { turfTextures } from "./turfTextures";
 import {
   makeRng,
   MOUND_Z,
@@ -64,9 +65,16 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
   const nodes: any[] = [];
   const gu47 = ctx.variant === "gu47";
   const turf = PARK_LOOKS[park.id].turf;
-  const grass = material.pbr({ color: gu47 ? turf.grass : park.grass, roughness: 0.94 });
-  const grassAlt = material.pbr({ color: gu47 ? turf.stripe : park.grassAlt, roughness: 0.94 });
-  const dirt = material.pbr({ color: gu47 ? turf.clay : park.dirt, roughness: 0.96 });
+  // GU47 DIA-M1: one mown-turf plane (the mowing mask multiplied over the park's turf, grass blade normals at 2 m) and
+  // pebbled clay; without a DOM (unit tests) the same materials fall back to plain colour.
+  const tex = gu47 ? turfTextures() : null;
+  const grass = gu47
+    ? material.pbr({ color: tex ? turf.stripe : turf.grass, roughness: 0.94, ...(tex ? { texture: tex.mowMask as any, normal: tex.bladeNormal as any, normalScale: 0.6 } : {}) })
+    : material.pbr({ color: park.grass, roughness: 0.94 });
+  const grassAlt = material.pbr({ color: park.grassAlt, roughness: 0.94 });
+  const dirt = gu47
+    ? material.pbr({ color: turf.clay, roughness: 0.96, ...(tex ? { normal: tex.clayNormal as any, normalScale: 0.5 } : {}) })
+    : material.pbr({ color: park.dirt, roughness: 0.96 });
   const wallMat = material.pbr({ color: park.wall, roughness: 0.7 });
   const accent = PARK_LOOKS[park.id].accent;
   const wallTopMat = !gu47
@@ -77,14 +85,16 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
   const bagMat = material.pbr({ color: "#ece8d8", roughness: 0.65 });
   const chalk = () => chalkMat(park, ctx);
 
-  // Ground, mow stripes, infield dirt, home circle, mound
+  // Ground, mow stripes (4.6.2: nine planes; GU47: the mask on the one grass plane), infield dirt, home circle, mound
   nodes.push(
     primitives.plane({ name: "field-grass", size: [340, 340] as any, material: grass }).position(0, -0.02, -60),
-    ...Array.from({ length: 9 }, (_, i) =>
-      primitives
-        .plane({ name: `mow-${i}`, size: [340 / 9, 340] as any, material: i % 2 ? grass : grassAlt })
-        .position(-170 + (340 / 9) * (i + 0.5), -0.005 - 0.001 * i, -60)
-    ),
+    ...(gu47
+      ? []
+      : Array.from({ length: 9 }, (_, i) =>
+          primitives
+            .plane({ name: `mow-${i}`, size: [340 / 9, 340] as any, material: i % 2 ? grass : grassAlt })
+            .position(-170 + (340 / 9) * (i + 0.5), -0.005 - 0.001 * i, -60)
+        )),
     primitives.cylinder({ name: "infield-dirt", size: [26, 0.05, 26], material: dirt }).position(0, 0.012, -BASE_PATH - 1.5),
     primitives.cylinder({ name: "home-dirt", size: [7.4, 0.06, 7.4], material: dirt }).position(0, 0.018, 0.4),
     primitives.cylinder({ name: "mound", size: [5.6, MOUND_TOP, 5.6], material: dirt }).position(0, MOUND_TOP / 2 + 0.02, MOUND_Z),
@@ -156,6 +166,23 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
     instances.box({ name: "outfield-wall", size: [1, park.wallH, 0.5], material: wallMat, transforms: wallT }),
     instances.box({ name: "outfield-wall-cap", size: [1, 0.14, 0.56], material: wallTopMat, transforms: capT })
   );
+
+  // GU47 DIA-M1: a darker warning track (the park's track clay and roughness; wet and glossy in Midtown) in one instanced
+  // draw, a 4.5 m strip just inside the wall from pole to pole.
+  if (gu47) {
+    const trackT: { position: Vec3; rotation: Vec3; scale: Vec3 }[] = [];
+    for (let i = 0; i < segs; i++) {
+      const t0 = -FOUL_DEG + (2 * FOUL_DEG * i) / segs;
+      const t1 = -FOUL_DEG + (2 * FOUL_DEG * (i + 1)) / segs;
+      const p0 = fencePoint(park, t0, 0, -2.6);
+      const p1 = fencePoint(park, t1, 0, -2.6);
+      const pm = fencePoint(park, (t0 + t1) / 2, 0, -2.6);
+      const len = Math.hypot(p1[0] - p0[0], p1[2] - p0[2]) + 0.4;
+      const yaw = Math.atan2(p1[0] - p0[0], p1[2] - p0[2]);
+      trackT.push({ position: [pm[0], -0.008, pm[2]], rotation: [0, yaw + Math.PI / 2, 0], scale: [len, 1, 1] });
+    }
+    nodes.push(instances.box({ name: "warning-track", size: [1, 0.02, 4.5], material: material.pbr({ color: turf.track, roughness: turf.trackRoughness }), transforms: trackT }));
+  }
 
   // On-deck rings + side dugouts. Keep the circles as painted chalk outlines
   // (a filled disc read as an oversized white target in the foreground) and

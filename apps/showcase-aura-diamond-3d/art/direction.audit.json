@@ -480,42 +480,6 @@
         "practical": false
       },
       {
-        "node": "mow-0",
-        "practical": false
-      },
-      {
-        "node": "mow-1",
-        "practical": false
-      },
-      {
-        "node": "mow-2",
-        "practical": false
-      },
-      {
-        "node": "mow-3",
-        "practical": false
-      },
-      {
-        "node": "mow-4",
-        "practical": false
-      },
-      {
-        "node": "mow-5",
-        "practical": false
-      },
-      {
-        "node": "mow-6",
-        "practical": false
-      },
-      {
-        "node": "mow-7",
-        "practical": false
-      },
-      {
-        "node": "mow-8",
-        "practical": false
-      },
-      {
         "node": "infield-dirt",
         "practical": false
       },
@@ -609,6 +573,10 @@
       },
       {
         "node": "outfield-wall-cap",
+        "practical": false
+      },
+      {
+        "node": "warning-track",
         "practical": false
       },
       {
