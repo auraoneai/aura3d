@@ -8,9 +8,11 @@ import { clampNumber, resolveNativeBloomRadius } from "../compiler/observations.
 import { groups } from "../nodes/groups.js";
 import { mergeLookColorGrade } from "../looks/lookGrade.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
-import { QUALITY_TIERS, resolvePostAntiAlias, resolvePostTier, resolveVolumetricFog, postVelocityCoverage, type CollectedLight, type RendererPostProcessOptions } from "@aura3d/rendering";
+import { QUALITY_TIERS, postOnlyTierFor, resolvePostAntiAlias, resolvePostTier, resolveVolumetricFog, postVelocityCoverage, type CollectedLight, type RendererPostProcessOptions } from "@aura3d/rendering";
+import type { AuraQualityTier } from "@aura3d/rendering/contracts";
 import { lights } from "../nodes/lights.js";
 import {
+  applyRuntimePostOverrides,
   authoredPostContextFor,
   createRootPostPipeline,
   recordSubmittedPostprocess,
@@ -30,6 +32,19 @@ function toneMappingOperatorFor(op: string | undefined): RendererToneMappingOper
   return op as RendererToneMappingOperator;
 }
 
+/**
+ * The C-27 tier the post chain resolves with. An explicit
+ * `post.setQualityTier(tier)` (or a live tiers-lane change) wins; `auto` and
+ * "never set" answer High, except in GU47 E-G's `A3D_QR_TIERS` post-only mode
+ * (`tiers.post`): once the app has rendered a frame, its device's tier
+ * (capped at High, `resolvePostOnlyTier`), so phones stop paying for High
+ * post while the rest of the tiers lane stays off.
+ */
+export function resolvePostQualityTier(requested: AuraQualityTier | "auto" | null, canvas?: HTMLCanvasElement): AuraQualityTier {
+  if (requested && requested !== "auto") return requested;
+  return postOnlyTierFor(canvas) ?? "high";
+}
+
 export function createProductionRuntimePostprocess(
   snapshot: AuraSceneSnapshot,
   lights: readonly CollectedLight[] = [],
@@ -38,7 +53,11 @@ export function createProductionRuntimePostprocess(
   temporalSupported = true,
   attach?: { readonly canvas?: HTMLCanvasElement; readonly frameTime?: number }
 ): RendererPostProcessOptions {
-  const nodes = groups.flatten(snapshot.nodes);
+  // GU47 E-C handoff 1 (EC-5): this app's `app.post.setEffect` /
+  // `setEffectEnabled` overrides apply to the compiler bag too (bloom pass
+  // params, tone exposure, the legacy DOF/MB/SSR twins), keyed by the canvas
+  // so two apps on one page never share them. Idempotent with the bridge.
+  const nodes = applyRuntimePostOverrides(groups.flatten(snapshot.nodes), attach?.canvas);
   const authoredBloom = nodes.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "bloom");
   // A5: the DISTINCT volumetric-fog node submits the depth-aware inscatter
   // pass (renderer-owned depth attaches automatically); quality "off" (or no
@@ -100,7 +119,7 @@ export function createProductionRuntimePostprocess(
   // the resolution stays null.
   const authoredPostContext = authoredPostContextFor(attach?.canvas);
   const postFlagOn = authoredPostContext?.flags.post === true;
-  const resolvedTier = authoredPostContext?.qualityTier && authoredPostContext.qualityTier !== "auto" ? authoredPostContext.qualityTier : "high";
+  const resolvedTier = resolvePostQualityTier(authoredPostContext?.qualityTier ?? null, attach?.canvas);
   // `postAuthored` carries the authored/default split: a node whose list lacks
   // `mode` counts as `auto` (the factory's `mode ?? "fxaa"` fill is a default,
   // not an authored choice). Nodes serialized without `postAuthored` resolve
@@ -303,7 +322,7 @@ export function createProductionRuntimePostprocess(
       taaResolved: resolvedAa?.mode === "taa" || authoredAntiAlias?.mode === "taa",
       autoExposureAuthored: authoredPostContext?.output?.autoExposure !== undefined && authoredPostContext?.output?.autoExposure !== false
     });
-    const pipelineResult = createRootPostPipeline(snapshot, snapshot.camera, authoredPostContext?.output, tierSettings, lights, tierResolution);
+    const pipelineResult = createRootPostPipeline(snapshot, snapshot.camera, authoredPostContext?.output, tierSettings, lights, tierResolution, attach?.canvas);
     fieldDiagnostics.push(...pipelineResult.diagnostics);
     // The fields are readonly, so the v2 additions come in as a rebuilt
     // object — flag-off keeps the legacy bag untouched (byte-equal).

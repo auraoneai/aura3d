@@ -38,6 +38,42 @@ export interface AuraSkyNodeOptions {
   readonly affectsFog?: boolean;
 }
 
+/**
+ * GU47 E-G (WP-7): typed `stars` on `sky.preetham` / `sky.gradient`, resolved
+ * by `StarField.starFrame`. `count` is the number of stars visible above the
+ * horizon (clamped to a full dome); `brightness` multiplies their intensity
+ * (default 1). Stars fade out as the sun rises past 6 degrees.
+ */
+export interface AuraSkyStarsOptions {
+  readonly count: number;
+  readonly brightness?: number;
+}
+
+/**
+ * GU47 E-G (WP-7): typed `clouds` on `sky.preetham` / `sky.gradient`, resolved
+ * by `CloudLayer.cloudFrame`. `coverage` is 0..1 (0 = no cloud program
+ * variant); `speed` is a drift multiplier (1 = the default drift, 0 = still);
+ * `color` tints the lit clouds (hex, default white).
+ */
+export interface AuraSkyCloudsOptions {
+  readonly coverage: number;
+  readonly speed?: number;
+  readonly color?: string;
+}
+
+// GU47(E-B): `contracts/atmosphere.ts` (E-B) still types `stars` / `clouds`
+// as `unknown` and has no `clouds` on the gradient model; these fields mirror
+// PRD §3.1 E-G until E-B's typed declarations merge (then swap to them).
+interface AuraSkyTypedFields {
+  readonly stars?: AuraSkyStarsOptions;
+  readonly clouds?: AuraSkyCloudsOptions;
+}
+
+/** `sky.preetham` options. */
+export type AuraSkyPreethamOptions = Omit<Extract<AuraSkySpec, { model: "preetham" }>, "model" | "stars" | "clouds"> & AuraSkyTypedFields & AuraSkyNodeOptions;
+/** `sky.gradient` options (`clouds` is new on the gradient model). */
+export type AuraSkyGradientOptions = Omit<Extract<AuraSkySpec, { model: "gradient" }>, "model" | "stars"> & AuraSkyTypedFields & AuraSkyNodeOptions;
+
 function skyNode(name: string, spec: AuraSkySpec, options: AuraSkyNodeOptions): AuraNodeBuilder<AuraSceneNode> {
   const node: AuraSkyNode = {
     kind: "sky",
@@ -49,18 +85,16 @@ function skyNode(name: string, spec: AuraSkySpec, options: AuraSkyNodeOptions): 
   return new AuraNodeBuilder(node as unknown as AuraSceneNode);
 }
 
-function skyPreetham(
-  options: Omit<Extract<AuraSkySpec, { model: "preetham" }>, "model"> & AuraSkyNodeOptions
-): AuraNodeBuilder<AuraSceneNode> {
+function skyPreetham(options: AuraSkyPreethamOptions): AuraNodeBuilder<AuraSceneNode> {
   const { name, captureEnvironment, affectsFog, ...spec } = options;
   return skyNode(name ?? "sky", { ...spec, model: "preetham" }, { captureEnvironment, affectsFog });
 }
 
-function skyGradient(
-  options: Omit<Extract<AuraSkySpec, { model: "gradient" }>, "model"> & AuraSkyNodeOptions
-): AuraNodeBuilder<AuraSceneNode> {
+function skyGradient(options: AuraSkyGradientOptions): AuraNodeBuilder<AuraSceneNode> {
   const { name, captureEnvironment, affectsFog, ...spec } = options;
-  return skyNode(name ?? "sky", { ...spec, model: "gradient" }, { captureEnvironment, affectsFog });
+  // GU47(E-B): the gradient contract has no `clouds` yet; the spec carries it
+  // through to `skyFrame`, which reads `clouds` for every model.
+  return skyNode(name ?? "sky", { ...spec, model: "gradient" } as AuraSkySpec, { captureEnvironment, affectsFog });
 }
 
 function skyHdri(

@@ -212,6 +212,16 @@ export type {
   RacketVec3
 } from "../agent-api/index.js";
 
+// GU47 E-G (WP-7): the PRD-10 `world.*` builder namespace (terrain, water,
+// scatter/grass with a heightfield sampler, splines, kits, placement, wind,
+// biomes) and `world.useAppFlags` for builder-time flag reads.
+export { world } from "../agent-api/world/index.js";
+export type { AuraGrassBounds, AuraGrassInput, AuraGrassOptions, AuraHeightfieldSampler, AuraScatterAsset, AuraScatterLayer, AuraScatterOptions, AuraScatterResult, AuraTerrainHandle, AuraTerrainOptions, AuraWaterHandle, AuraWaterOptions, AuraWindOptions, AuraWorldBuilderFlagSource, AuraWorldShape } from "../agent-api/world/index.js";
+// GU47 E-G (WP-7): typed `stars` / `clouds` on `sky.preetham` / `sky.gradient`.
+export type { AuraSkyCloudsOptions, AuraSkyGradientOptions, AuraSkyNodeOptions, AuraSkyPreethamOptions, AuraSkyStarsOptions } from "../agent-api/nodes/sky.js";
+// GU47 E-G (WP-7): `instances.*` options (wind without WORLD, per-instance lights, instanceColorTarget).
+export type { AuraInstanceLightsOptions, AuraInstanceWind, AuraInstanceWindOption, AuraInstancedModelOptions, AuraInstancedPrimitiveOptions, AuraInstancesModelBuilder } from "../agent-api/nodes/instances.js";
+
 // threejs-parity ST-01 (lane L4): the `texture.*` namespace + live handle type.
 export { texture, TextureHandle } from "../agent-api/index.js";
 // threejs-parity SC-04: WebXR entry points.

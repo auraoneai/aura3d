@@ -44,6 +44,25 @@ export const QR_FLAG_STATES: Readonly<Partial<Record<QrFlagName, QrFlagState>>> 
   // 0b97a9305, PASS, mean LPIPS vs three.js 0.0368 -> 0.0367 over 19 scenes, 0 regressed.
   A3D_QR_COMPILER: "default-on",
   A3D_QR_STRICT: "dev",
+  // GU47 WP-7 (lane E-G) sub-flag promotions, one commit each so a flip can be
+  // reverted alone. Flag-on is a no-op for scenes without the feature
+  // (tests/unit/gu47/eg/flag-promotion-noop.test.ts); the phase-2 64-target
+  // before/after luma + LPIPS table (evidence/game-upgrades-47/flag-promotion/)
+  // decides whether each stays: revert the flip if a target that does not use
+  // the feature moves more than 2 mean luma. A promoted sub-flag stays off when
+  // a source turned its lane flag off (`none`, `-vfx`, ...).
+  A3D_QR_VFX_SKY: "default-on",
+  A3D_QR_VFX_FOG: "default-on",
+  // Alone: A3D_QR_WORLD stays `dev`; water draws through prd10.waterOnly.
+  A3D_QR_WORLD_WATER: "default-on",
+  // Selects only after a temporal frame prepared velocity (TAA / motion blur).
+  A3D_QR_POST_VELOCITY_MRT: "default-on",
+  // The prd06.deform depth variant selects skinned items only.
+  A3D_QR_ANIMATION_SKINNED_SHADOWS: "default-on",
+  // GU47 E-G addition: gates the label-selected prd10.wind deform and the
+  // instance-wind contributor (registered on the first `instances.*({ wind })`),
+  // so `instances.model({ wind })` sways without the WORLD lane.
+  A3D_QR_WORLD_WIND: "default-on",
   // threejs-parity lanes (docs/workflows/threejs-parity-gaps.md §5.0). Each new
   // node kind/material/texture/runtime surface compiles to a
   // "not yet implemented (A3D_PARITY_*)" validate error until its lane lands

@@ -123,6 +123,13 @@ export interface TerrainRecord {
   grid: TerrainHeightGrid | null;
   /** Bumped by `world.extrude` conformToTerrain edits so the runtime re-uploads heights. */
   gridVersion?: number;
+  /**
+   * GU47 E-G (WP-7): a sampling-only record (the height grid
+   * `world.grass({ heightAt, bounds })` bakes for its blades). Reachable by
+   * id through `terrainRecordFor`, never listed by `terrainRecordIds`, so the
+   * terrain pass never draws it and it never counts as a scene terrain.
+   */
+  samplingOnly?: boolean;
 }
 
 /** module-level registry keyed by node id — the C-36 handler fills `grid` for asset sources. */
@@ -130,8 +137,11 @@ const terrainRecords = new Map<string, TerrainRecord>();
 export function terrainRecordFor(id: string): TerrainRecord | undefined {
   return terrainRecords.get(id);
 }
+/** Ids of the drawable terrains (sampling-only records are skipped). */
 export function terrainRecordIds(): readonly string[] {
-  return [...terrainRecords.keys()];
+  const ids: string[] = [];
+  for (const [id, record] of terrainRecords) if (record.samplingOnly !== true) ids.push(id);
+  return ids;
 }
 
 // ------------------------------------------------------------ height fields --

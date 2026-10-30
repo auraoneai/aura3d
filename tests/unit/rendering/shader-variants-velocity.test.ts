@@ -56,7 +56,8 @@ describe("prd03.velocity — shader variants (PRD-03 Phase 4)", () => {
   );
 
   it("feature selects only forward passes under the opt-in A3D_QR_POST_VELOCITY_MRT sub-flag", () => {
-    const flags = (mrt: boolean) => resolveQrFlags({ options: { A3D_QR_POST: true, ...(mrt ? { A3D_QR_POST_VELOCITY_MRT: true } : {}) } });
+    // GU47 WP-7: A3D_QR_POST_VELOCITY_MRT is default-on, so the off case is explicit.
+    const flags = (mrt: boolean) => resolveQrFlags({ options: { A3D_QR_POST: true, A3D_QR_POST_VELOCITY_MRT: mrt } });
     const select = (f: ReturnType<typeof flags>, pass: string) =>
       velocityFeature.select({ item: {} as never, pass: pass as never, tier: QUALITY_TIERS.high, flags: f });
     expect(select(flags(true), "forward")).toBe("velocity");

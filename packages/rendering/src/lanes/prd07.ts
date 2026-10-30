@@ -13,7 +13,7 @@ import { registerPrd07Chunks, FOG_CHUNK_NAME, FOG_APPLY_CHUNK_NAME, WETNESS_CHUN
 import { registerPrd07VolumeChunk } from "../vfx/shaders/volume.glsl";
 import { prd07WetnessState } from "../atmosphere/shaders/wetness.glsl";
 import { prd07FogSelect, prd07WetnessSelect } from "../vfx/prd07FeaturePars";
-import { bindPrd07FogUniforms } from "../atmosphere/fogUniformStore";
+import { bindPrd07FogUniforms, prd07ForwardFog } from "../atmosphere/fogUniformStore";
 import { TextureBinding } from "../TextureBinding";
 
 // C-20 / C-21 provides — real implementations keyed by device.
@@ -37,7 +37,10 @@ try {
     id: "prd07.fog",
     owner: "prd07",
     flag: "A3D_QR_VFX_FOG",
-    select: (input) => prd07FogSelect(input),
+    // GU47 E-G (WP-7): only while a fog node is live (the prd07.fog collect
+    // published the store this frame), like prd07.wetness — so promoting
+    // A3D_QR_VFX_FOG leaves fog-free scenes on their current programs.
+    select: (input) => (prd07ForwardFog() === null ? undefined : prd07FogSelect(input)),
     // No FOG_VOLUMETRIC on forward programs: `#define FOG_VOLUMETRIC 0` is
     // still `defined()` and pulled in an undefined a3dSampleFroxel(); the
     // froxel volume is composited by VolumetricFogPass apply instead. The

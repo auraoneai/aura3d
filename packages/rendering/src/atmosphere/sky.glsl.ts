@@ -48,6 +48,7 @@ uniform float u_cloudCoverage;
 uniform float u_cloudDensity;
 uniform float u_cloudElevation;
 uniform vec2 u_cloudScaleSpeed;
+uniform vec3 u_cloudTint;        // GU47 E-G: linear RGB cloud tint (clouds.color), white by default
 uniform vec3 u_moonDirection;
 uniform vec3 u_moonColor;
 uniform float u_moonPhase;
@@ -204,9 +205,16 @@ void main() {
     cloudMask *= smoothstep(0.0, 0.1 + 0.2 * u_cloudElevation, direction.y);
     float sunInfluence = dot(direction, u_sunDirection) * 0.5 + 0.5;
     float daylight = max(0.0, u_sunDirection.y * 2.0);
+#if MODEL_GRADIENT
+    // GU47 E-G: a gradient sky has no sun irradiance (u_sunE = 0), which drew
+    // its clouds black; light them from the gradient itself instead.
+    vec3 cloudColor = mix(color, vec3(u_intensity), 0.6) * mix(0.55, 1.0, clamp(daylight, 0.0, 1.0));
+#else
     vec3 cloudColor = mix(vec3(0.3), vec3(1.0), daylight);
     cloudColor = mix(cloudColor, color + vec3(1.0), sunInfluence * 0.5);
     cloudColor *= u_sunE * 0.00002;
+#endif
+    cloudColor *= u_cloudTint;
     color = mix(color, cloudColor, cloudMask * u_cloudDensity);
   }
 #endif

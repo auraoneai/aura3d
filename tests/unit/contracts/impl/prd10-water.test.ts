@@ -174,13 +174,18 @@ describe("prd10 water node handler + water.surface emit (T4.6)", () => {
 
   it("water.surface emits the legacy fixture when the flag is off", () => {
     const prev = process.env.A3D_QR_WORLD;
+    const prevWater = process.env.A3D_QR_WORLD_WATER;
     delete process.env.A3D_QR_WORLD;
+    // GU47 WP-7: A3D_QR_WORLD_WATER is default-on (alone), so flag-off is explicit.
+    process.env.A3D_QR_WORLD_WATER = "0";
     try {
       const out = waterNodes.surface({ preset: "calm" });
       expect((out.nodes[0] as { kind: string }).kind).not.toBe("water");
       expect(out.bandCount).toBeGreaterThan(0);
     } finally {
       if (prev !== undefined) process.env.A3D_QR_WORLD = prev;
+      if (prevWater === undefined) delete process.env.A3D_QR_WORLD_WATER;
+      else process.env.A3D_QR_WORLD_WATER = prevWater;
     }
   });
 });

@@ -12,17 +12,25 @@
  * straddling a shared cell border may sit closer than `minDistance` — the
  * spec's correctness unit is the cell.
  */
-import type { AuraAssetRef, AuraColor } from "../index.js";
+import type { AuraAssetRef, AuraColor, AuraTransformSpec, AuraVec3 } from "../index.js";
 import type { AuraTierValue, AuraWorldNodeBase } from "./types.js";
 import {
   AuraWorldNodeBuilder,
   terrainRecordFor,
+  worldTerrain,
   type AuraTerrainHandle,
   type AuraWorldShape,
   type TerrainRecord
 } from "./terrain.js";
 
 // ------------------------------------------------------------ PRD §7.1.5 types
+
+/**
+ * GU47 E-G (WP-7): a game's own ground height in world metres at `(x, z)`
+ * (for example the course or track function the sim already uses). Accepted
+ * by `world.scatter({ heightAt })` and `world.grass({ heightAt, bounds })`.
+ */
+export type AuraHeightfieldSampler = (x: number, z: number) => number;
 
 export interface AuraScatterAsset {
   readonly asset: AuraAssetRef<"model">;
@@ -55,6 +63,14 @@ export interface AuraScatterOptions extends AuraWorldNodeBase {
   readonly shadows?: AuraTierValue<"none" | "near" | "all">;   // default { low: "none", medium: "near", high: "near", ultra: "all" }
   readonly budget?: AuraTierValue<number>;                     // enforced via planScatterInstances/enforceFrameBudget
   readonly collision?: "none" | "trunk-capsules";
+  /**
+   * GU47 E-G: when set, every placement takes its height (and its slope, by
+   * central differences) from this sampler instead of the surface, so an
+   * area surface follows the game's own ground instead of the flat `y`.
+   * Layer `height`/`slopeDeg` rules read the sampled values; terrain layer
+   * weights (`onLayers`) still come from a terrain surface.
+   */
+  readonly heightAt?: AuraHeightfieldSampler;
 }
 export interface AuraScatterPlacement {
   readonly asset: AuraAssetRef<"model">;
@@ -77,6 +93,19 @@ export interface AuraScatterResult {
   readonly instanceCount: number;
   readonly perAsset: Readonly<Record<string, number>>;
   readonly checksum: string;
+  /**
+   * GU47 E-G: the planned placements per asset id as `instances.model`
+   * transforms (position, Y rotation in radians, uniform scale), so a game can
+   * draw a scatter plan with `instances.model(asset, { transforms })` without
+   * turning the WORLD lane on. Same order as the checksum buffer.
+   */
+  readonly transforms: Readonly<Record<string, readonly AuraTransformSpec[]>>;
+}
+
+/** GU47 E-G: the grass area a heightfield sampler is baked over (world metres, x/z). */
+export interface AuraGrassBounds {
+  readonly min: readonly [number, number];
+  readonly max: readonly [number, number];
 }
 
 export interface AuraGrassOptions extends AuraWorldNodeBase {
@@ -97,6 +126,22 @@ export interface AuraGrassNode extends AuraWorldNodeBase {
   readonly id: string;
   readonly options: AuraGrassOptions;
 }
+
+/**
+ * GU47 E-G: `world.grass` input — a terrain handle (as before), or a
+ * heightfield sampler plus the x/z `bounds` it covers. The sampler is baked
+ * once into a hidden height grid (`resolution` samples per side, default 65)
+ * that the GPU blades sample; the grid's terrain node is never added to the
+ * scene, so nothing but the grass draws.
+ */
+export type AuraGrassInput =
+  | (AuraGrassOptions & { readonly heightAt?: undefined })
+  | (Omit<AuraGrassOptions, "terrain"> & {
+      readonly terrain?: undefined;
+      readonly heightAt: AuraHeightfieldSampler;
+      readonly bounds: AuraGrassBounds;
+      readonly resolution?: number;
+    });
 
 // ---------------------------------------------------------------- hash/rng --
 
@@ -197,6 +242,30 @@ function terrainSampler(handle: AuraTerrainHandle): SurfaceSampler | null {
   const record = terrainRecordFor(handle.id);
   if (!record || !record.grid) return null;
   return handle;
+}
+
+/** Central-difference step (metres) for the slope of a heightfield sampler. */
+const HEIGHTFIELD_SLOPE_STEP = 0.25;
+
+/**
+ * GU47 E-G: wrap a heightfield sampler — heights from the sampler, slope from
+ * its central differences, layer weights still from the surface.
+ */
+function heightfieldSurfaceSampler(heightAt: AuraHeightfieldSampler, base: SurfaceSampler = AREA_SAMPLER_BASE): SurfaceSampler {
+  const h = HEIGHTFIELD_SLOPE_STEP;
+  const sample = (x: number, z: number): number => {
+    const y = heightAt(x, z);
+    return Number.isFinite(y) ? y : 0;
+  };
+  return {
+    heightAt: sample,
+    slopeDegAt: (x, z) => {
+      const dx = (sample(x + h, z) - sample(x - h, z)) / (2 * h);
+      const dz = (sample(x, z + h) - sample(x, z - h)) / (2 * h);
+      return (Math.atan(Math.hypot(dx, dz)) * 180) / Math.PI;
+    },
+    layerWeightsAt: (x, z) => base.layerWeightsAt(x, z)
+  };
 }
 
 /**
@@ -307,10 +376,11 @@ function excludeInside(record: TerrainRecord | null, shape: AuraWorldShape, x: n
  */
 export function planScatterInstances(options: AuraScatterOptions): readonly ScatterInstance[] {
   const record = "kind" in options.surface ? null : terrainRecordFor(options.surface.id) ?? null;
-  const sampler: SurfaceSampler | null = "kind" in options.surface
+  const surfaceSampler: SurfaceSampler | null = "kind" in options.surface
     ? areaSampler(options.surface.y ?? 0)
     : terrainSampler(options.surface);
-  if (!sampler) return [];
+  if (!surfaceSampler) return [];
+  const sampler = options.heightAt ? heightfieldSurfaceSampler(options.heightAt, surfaceSampler) : surfaceSampler;
   const bounds = surfaceBounds(options, record);
   if (bounds.max[0] <= bounds.min[0] || bounds.max[1] <= bounds.min[1]) return [];
 
@@ -481,11 +551,13 @@ export function worldScatter(options: AuraScatterOptions): AuraScatterResult {
   const node: AuraScatterNode = { kind: "scatter", id, name: options.name ?? id, options };
   const instances = planScatterInstances(options);
   const perAsset: Record<string, number> = {};
+  const transforms: Record<string, AuraTransformSpec[]> = {};
   const allMatrices = new Float32Array(instances.length * 12);
   instances.forEach((p, i) => {
     const layer = options.layers[p.layerIndex]!;
     const asset = layer.assets[p.assetIndex]!;
     perAsset[asset.asset.id] = (perAsset[asset.asset.id] ?? 0) + 1;
+    (transforms[asset.asset.id] ??= []).push(scatterInstanceTransform(p));
     const packed = packScatterPlacement(asset.asset, [p]);
     allMatrices.set(packed.matrices, i * 12);
   });
@@ -493,13 +565,74 @@ export function worldScatter(options: AuraScatterOptions): AuraScatterResult {
     node,
     instanceCount: instances.length,
     perAsset,
-    checksum: scatterChecksum(allMatrices)
+    checksum: scatterChecksum(allMatrices),
+    transforms
   };
 }
 
-/** §7.1.5 `world.grass(options)` — node only; blades are generated on the GPU (§8.5). */
-export function worldGrass(options: AuraGrassOptions): AuraWorldNodeBuilder<AuraGrassNode> {
-  const id = options.id ?? `grass-${++grassSeq}`;
+/** GU47 E-G: one placement as an `instances.model` transform (same basis as `packScatterPlacement`). */
+export function scatterInstanceTransform(p: ScatterInstance): AuraTransformSpec {
+  const position: AuraVec3 = [p.x, p.y, p.z];
+  const rotation: AuraVec3 = [0, (p.yawDeg * Math.PI) / 180, 0];
+  return { position, rotation, scale: p.scale };
+}
+
+/** Default bake resolution (samples per side) for `world.grass({ heightAt })`. */
+const GRASS_HEIGHTFIELD_RESOLUTION = 65;
+
+/**
+ * GU47 E-G: bake a heightfield sampler over `bounds` into a sampling-only
+ * terrain record and return its handle. Heights are stored raw in metres with
+ * `heightScale` 1: the terrain handle and the grass shader both read
+ * `grid * heightScale` and ignore `origin[1]`, so a normalized grid offset by
+ * its minimum would float or sink every blade by that minimum.
+ */
+function bakeGrassHeightfield(id: string, heightAt: AuraHeightfieldSampler, bounds: AuraGrassBounds, resolution: number): AuraTerrainHandle {
+  const [x0, z0] = bounds.min;
+  const [x1, z1] = bounds.max;
+  if (!(x1 > x0) || !(z1 > z0)) throw new Error("world.grass: bounds.max must exceed bounds.min on x and z");
+  const n = Math.max(2, Math.min(513, Math.round(resolution)));
+  const heights = new Float32Array(n * n);
+  for (let row = 0; row < n; row += 1) {
+    const z = z0 + ((z1 - z0) * row) / (n - 1);
+    for (let col = 0; col < n; col += 1) {
+      const x = x0 + ((x1 - x0) * col) / (n - 1);
+      const y = heightAt(x, z);
+      heights[row * n + col] = Number.isFinite(y) ? y : 0;
+    }
+  }
+  const handle = worldTerrain({
+    id: `${id}.heightfield`,
+    name: `${id} heightfield`,
+    height: { kind: "array", columns: n, rows: n, heights },
+    size: [x1 - x0, z1 - z0],
+    heightScale: 1,
+    origin: [x0, 0, z0],
+    layers: [{ name: "grass-meadow", preset: "grass-meadow" }],
+    collider: false,
+    castShadow: false
+  }).handle;
+  // The terrain pass draws every listed record whether or not its node is in
+  // the scene; mark this one sampling-only so only the blades use it.
+  const record = terrainRecordFor(handle.id);
+  if (record) record.samplingOnly = true;
+  return handle;
+}
+
+/**
+ * §7.1.5 `world.grass(options)` — node only; blades are generated on the GPU (§8.5).
+ * GU47 E-G: pass `{ heightAt, bounds }` instead of `terrain` to grow grass on
+ * the game's own ground (see `AuraGrassInput`).
+ */
+export function worldGrass(input: AuraGrassInput): AuraWorldNodeBuilder<AuraGrassNode> {
+  const id = input.id ?? `grass-${++grassSeq}`;
+  let options: AuraGrassOptions;
+  if (input.heightAt !== undefined) {
+    const { heightAt, bounds, resolution, ...rest } = input;
+    options = { ...rest, terrain: bakeGrassHeightfield(id, heightAt, bounds, resolution ?? GRASS_HEIGHTFIELD_RESOLUTION) };
+  } else {
+    options = input;
+  }
   const node: AuraGrassNode = { kind: "grass", id, name: options.name ?? id, options };
   return new AuraWorldNodeBuilder<AuraGrassNode>({ ...node });
 }

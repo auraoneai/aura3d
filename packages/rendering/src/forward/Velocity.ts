@@ -113,6 +113,17 @@ export function postVelocityCoverage(): { readonly items: number; readonly withV
   return coverage;
 }
 
+/**
+ * GU47 E-G (WP-7): true once a temporal frame (TAA / motion blur) prepared
+ * the C-14 camera matrices (`VelocityHistory.prepare`) and until the history
+ * resets. The registered `prd03.velocity` feature selects only then, so with
+ * `A3D_QR_POST_VELOCITY_MRT` on a scene without temporal post keeps its
+ * programs: no velocity outputs, uniforms or MRT writes.
+ */
+export function velocityFramePrepared(): boolean {
+  return cameraMatrices !== undefined;
+}
+
 function matEqual(a: Float32Array, b: Float32Array | readonly number[]): boolean {
   if (b.length !== 16 || a.length !== 16) return false;
   for (let i = 0; i < 16; i += 1) if (a[i] !== b[i]) return false;

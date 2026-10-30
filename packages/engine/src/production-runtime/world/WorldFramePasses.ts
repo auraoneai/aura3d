@@ -11,7 +11,7 @@
  * `worldDrawPath`.
  */
 import { registerFrameContributor } from "@aura3d/rendering/contracts";
-import type { QrFlags } from "@aura3d/rendering/contracts";
+import type { FrameContributor, QrFlags } from "@aura3d/rendering/contracts";
 import { programCacheSlot } from "@aura3d/rendering/contracts";
 import { optInWorldFeatures, publishWorldFeatureState } from "./WorldFeatureState.js";
 import { noteWorldPhase, terrainAfterOpaquePass, terrainBackgroundPass } from "./TerrainRuntime.js";
@@ -45,8 +45,37 @@ export function worldDrawPath(_flags: QrFlags): "S" | "G" {
   return "S";
 }
 
+/**
+ * GU47 E-G (WP-7): `A3D_QR_WORLD_WATER` alone. The water handler compiles
+ * under the sub-flag, but its passes rode the `prd10.world` contributor
+ * (flag `A3D_QR_WORLD`), so water nodes compiled and never drew without the
+ * whole world lane. This contributor emits the same water passes when the
+ * world lane is off (it defers to `prd10.world` when it is on), and nothing
+ * when no water body exists, so promoting the sub-flag leaves water-free
+ * scenes without a pass. No `collect` phase: no per-frame item copy.
+ */
+export const WATER_ONLY_CONTRIBUTOR: FrameContributor = {
+  id: "prd10.waterOnly",
+  owner: "prd10",
+  flag: "A3D_QR_WORLD_WATER",
+  order: 10,
+  phases: ["background", "after-opaque", "transparent"],
+  passes(phase, ctx) {
+    if (ctx.flags.on("A3D_QR_WORLD") || worldDrawPath(ctx.flags) !== "S") return [];
+    if (allWaterStates().length === 0) return [];
+    if (phase === "background") {
+      ctx.blackboard.set(WORLD_BACKGROUND_PHASE_KEY, true);
+      return waterBackgroundPasses(ctx);
+    }
+    if (phase === "after-opaque") return waterAfterOpaquePasses(ctx);
+    if (phase === "transparent") return [waterTransparentPass(ctx)];
+    return [];
+  }
+};
+
 export function registerWorldFramePasses(): () => void {
-  return registerFrameContributor({
+  const releaseWaterOnly = registerFrameContributor(WATER_ONLY_CONTRIBUTOR);
+  const releaseWorld = registerFrameContributor({
     id: "prd10.world",
     owner: "prd10",
     flag: "A3D_QR_WORLD",
@@ -102,4 +131,8 @@ export function registerWorldFramePasses(): () => void {
       return [];
     }
   });
+  return () => {
+    releaseWorld();
+    releaseWaterOnly();
+  };
 }

@@ -12,6 +12,9 @@
  */
 
 import type { AuraQualityTier, AuraQualityTierSettings } from "../contracts/quality";
+import type { DeviceProbe } from "../contracts/device";
+import { registerFrameContributor, type FrameContributor } from "../contracts/frameGraph";
+import { TierResolver } from "../quality/TierResolver";
 
 export interface PostTierContext {
   /**
@@ -136,4 +139,85 @@ export function resolvePostTier(
     allowsChromaticAberration: tier !== "low",
     dither: true
   };
+}
+
+/* ------------------------------------------------------------------------- */
+/* GU47 E-G (WP-7): `A3D_QR_TIERS` post-only mode                             */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * The post-only sub-flag of `A3D_QR_TIERS` (list token `tiers.post`, env
+ * `A3D_QR_TIERS_POST=1`). With it on, an app whose post tier is `auto` (no
+ * `post.setQualityTier(tier)`) runs the post chain at its device's C-27 tier
+ * instead of always paying for High, while the rest of the tiers lane (the
+ * quality controller, governor, render scale, pools, forward and shadow
+ * tiers) stays off. Being a sub-flag, `flags.on("A3D_QR_TIERS")` stays false.
+ */
+export const POST_ONLY_TIER_FLAG = "A3D_QR_TIERS_POST" as const;
+
+const TIER_ORDER: readonly AuraQualityTier[] = ["low", "medium", "high", "ultra"];
+
+/**
+ * The post tier for a device in post-only mode: the C-27 `TierResolver`
+ * classification (hard floors, renderer class table, mobile CPU/RAM signal)
+ * capped at `cap`, so the mode only ever lowers post cost (default cap
+ * `high`, today's `auto` answer). No probe resolves to `cap`.
+ */
+export function resolvePostOnlyTier(probe: DeviceProbe | null | undefined, cap: AuraQualityTier = "high"): AuraQualityTier {
+  if (!probe) return cap;
+  const detected = new TierResolver().detect(probe).tier;
+  return TIER_ORDER.indexOf(detected) < TIER_ORDER.indexOf(cap) ? detected : cap;
+}
+
+/** Post-only tiers by canvas (the device's canvas is the app's canvas). */
+const postOnlyTiers = new WeakMap<object, AuraQualityTier>();
+
+/**
+ * The post-only tier recorded for `canvas`, or `undefined` when the app that
+ * owns it does not run `A3D_QR_TIERS_POST` (or has not rendered a frame yet:
+ * the first frame keeps the High answer).
+ */
+export function postOnlyTierFor(canvas: object | null | undefined): AuraQualityTier | undefined {
+  return canvas ? postOnlyTiers.get(canvas) : undefined;
+}
+
+/** Classify once per canvas; later frames reuse the answer. */
+export function recordPostOnlyTier(canvas: object, probe: DeviceProbe | null | undefined): AuraQualityTier {
+  let tier = postOnlyTiers.get(canvas);
+  if (tier === undefined) {
+    tier = resolvePostOnlyTier(probe);
+    postOnlyTiers.set(canvas, tier);
+  }
+  return tier;
+}
+
+/** Test hook: forget a canvas's recorded post-only tier. */
+export function clearPostOnlyTier(canvas: object): void {
+  postOnlyTiers.delete(canvas);
+}
+
+/**
+ * Collect-phase contributor, active only for apps whose flags have
+ * `A3D_QR_TIERS_POST` on (registry filter): records the device tier for the
+ * device's canvas and passes the items through untouched (no pass, no draw).
+ */
+export const POST_ONLY_TIER_CONTRIBUTOR: FrameContributor = {
+  id: "prd03.postOnlyTier",
+  owner: "prd03",
+  flag: POST_ONLY_TIER_FLAG,
+  phases: ["collect"],
+  order: -1000,
+  collect(items, ctx) {
+    const canvas = (ctx.device as { readonly canvas?: unknown }).canvas;
+    if (typeof canvas === "object" && canvas !== null) recordPostOnlyTier(canvas, ctx.device.probe);
+    return items;
+  }
+};
+
+let releasePostOnlyTierContributor: (() => void) | null = null;
+
+/** Lane barrel entry: registers the post-only tier contributor once (inactive unless the flag is on). */
+export function registerPostOnlyTierContributor(): void {
+  if (releasePostOnlyTierContributor) return;
+  releasePostOnlyTierContributor = registerFrameContributor(POST_ONLY_TIER_CONTRIBUTOR);
 }

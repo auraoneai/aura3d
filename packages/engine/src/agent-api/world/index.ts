@@ -25,8 +25,17 @@ import { worldPlaceAlong, worldPlaceGrid, worldPlacePoisson } from "./placement.
 import { worldRoom } from "./room.js";
 import { worldStreet } from "./street.js";
 import { worldBiome, worldBiomes, worldTimeOfDay, worldWind } from "./timeOfDay.js";
+import { setWorldBuilderFlags } from "./flags.js";
 
-/** §7.1 `world.*` builder namespace. */
+export { setWorldBuilderFlags, worldBuilderFlags, type AuraWorldBuilderFlagSource } from "./flags.js";
+
+/**
+ * §7.1 `world.*` builder namespace. GU47 E-G (WP-7): exported from the
+ * `@aura3d/engine` root. `world.scatter` / `world.grass` accept a heightfield
+ * sampler `heightAt: (x, z) => y`; `world.useAppFlags(qualityRebuild)` makes
+ * builder-time flag reads (`water.surface`, `environments.outdoor`, ...) use
+ * the app's `qualityRebuild.flags` — call it before building the scene.
+ */
 export const world = {
   terrain: worldTerrain,
   water: worldWater,
@@ -43,5 +52,6 @@ export const world = {
   biome: worldBiome,
   biomes: worldBiomes,
   timeOfDay: worldTimeOfDay,
-  wind: worldWind
+  wind: worldWind,
+  useAppFlags: setWorldBuilderFlags
 } as const;
