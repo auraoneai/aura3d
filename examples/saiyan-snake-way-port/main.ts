@@ -34,6 +34,8 @@ export const QA_HOOK_NAME = "serpentine-sky-run";
 const params = new URLSearchParams(location.search);
 const config = { autostart: params.get("autostart") === "1", manual: params.get("manual") === "1" };
 const look = lookParams(location.search);
+// GU47 SSR-16: the indigo lacquer HUD theme follows the colour script; `?look=original` keeps the old HUD
+if (look.mode === "script") document.documentElement.classList.add("serpent-hud");
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
