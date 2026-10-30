@@ -247,3 +247,33 @@ export function nearestLanterns(sorted: readonly { readonly s: number }[], s: nu
   for (let k = 0; k < Math.min(count, window.length); k++) out.push(window[k]!.i);
   return out;
 }
+
+/**
+ * NR-11 evening surfaces: clearcoat lacquer on the tiled roofs, hips and tower caps (the low sun and the lanterns catch
+ * a sharp highlight on top of the tile map), damp stones (lower roughness and a thin coat on the rocks, evening dew).
+ * Material patches only: the same instanced layers draw them (+0 draws). `?look=original` keeps the old specs.
+ */
+export const EVENING_SURFACES: Readonly<Record<string, { readonly roughness: number; readonly clearcoat: number; readonly clearcoatRoughness: number }>> = {
+  roofs: { roughness: 0.42, clearcoat: 0.7, clearcoatRoughness: 0.14 },
+  hips: { roughness: 0.42, clearcoat: 0.7, clearcoatRoughness: 0.14 },
+  capcones: { roughness: 0.42, clearcoat: 0.7, clearcoatRoughness: 0.14 },
+  rocks: { roughness: 0.62, clearcoat: 0.3, clearcoatRoughness: 0.35 }
+};
+
+/**
+ * NR-11 lantern emissive per district: the lantern layer splits into three static groups by where each lantern stands
+ * (+2 draws, the row's cap). Unlit paper glows faintly in the daylit village and rooftops, the lanterns come on at the
+ * river and burn brightest in the blue-hour forest and at the gate, matching the pooled lights (NR-03).
+ */
+export type LanternGlow = "day" | "dusk" | "night";
+export const LANTERN_GLOW: Readonly<Record<LanternGlow, { readonly emissive: string; readonly intensity: number }>> = {
+  day: { emissive: "#e09a5a", intensity: 0.45 },
+  dusk: { emissive: PALETTE.lanternAmber, intensity: 1.3 },
+  night: { emissive: PALETTE.lanternAmber, intensity: 2.2 }
+};
+
+/** Glow group of a lantern standing at course distance `s`. */
+export function lanternGlowAt(s: number): LanternGlow {
+  const d = districtIdAt(s);
+  return d === "village" || d === "rooftops" ? "day" : d === "river" ? "dusk" : "night";
+}

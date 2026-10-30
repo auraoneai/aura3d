@@ -21,7 +21,7 @@ import type { CameraShake } from "@aura3d/engine/game";
 import { TIER_FEEDBACK, pieceScale, spawnPieces, stepPieces, type Piece } from "./impact";
 import { TUNING, crosshairTarget, isEnemy, seededRandom, type RamTier, type Entity, type EnemyKind, type SimEvent, type SimState } from "./sim";
 import { CHARACTER_URLS, PROP_ASSETS, SLOT_MODEL, type CharacterId } from "./models";
-import { LANTERN_POOL, WOODBLOCK_POST, DISTRICT_LOOKS, linearToHex, lookAtDistance, nearestLanterns, type DistrictId, type LookMode } from "./districtLook";
+import { EVENING_SURFACES, LANTERN_GLOW, LANTERN_POOL, WOODBLOCK_POST, DISTRICT_LOOKS, lanternGlowAt, linearToHex, lookAtDistance, nearestLanterns, type DistrictId, type LanternGlow, type LookMode } from "./districtLook";
 import { lanternPoolSize, lightRig } from "./lighting";
 import { SCARF, registerNinjaVfx, type NinjaVfx, type NinjaVfxEvent } from "./vfx";
 
@@ -111,10 +111,15 @@ const layerSurface = (key: SurfaceKey, repeat: readonly [number, number]): Surfa
   }
 };
 
-const layerMaterial = (l: LayerSpec) => {
+/** A layer's material; the evening (GU47 NR-11) adds lacquer to the roofs and a damp coat to the rocks. */
+const layerMaterial = (l: LayerSpec, evening = false) => {
   if (l.emissive) return material.emissive({ color: "#ffffff", emissive: l.emissive });
-  if (l.map) return mapped(layerSurface(l.map, l.repeat ?? [1, 1]), "#ffffff", l.roughness, { metallic: l.metalness });
-  return material.pbr({ color: "#ffffff", roughness: l.roughness, metallic: l.metalness });
+  const coat = evening ? EVENING_SURFACES[l.id] : undefined;
+  const roughness = coat?.roughness ?? l.roughness;
+  const base = l.map
+    ? mapped(layerSurface(l.map, l.repeat ?? [1, 1]), "#ffffff", roughness, { metallic: l.metalness })
+    : material.pbr({ color: "#ffffff", roughness, metallic: l.metalness });
+  return coat ? { ...base, clearcoat: coat.clearcoat, clearcoatRoughness: coat.clearcoatRoughness } : base;
 };
 
 /** Column-major model matrix: uniform scale, yaw about +Y, translation. */
@@ -324,10 +329,22 @@ export function buildWorld(options: WorldOptions): World {
   for (const layer of buildScenery(modelSink)) {
     if (layer.id === "lanterns") for (const p of layer.placements) lanternSpots.push([p.matrix[12]!, p.matrix[13]!, p.matrix[14]!]);
     const spec = LAYERS.find((l) => l.id === layer.id)!;
-    const mesh = instances.mesh(defineShape(SHAPES[layer.shape]()), layerMaterial(spec), layer.placements.length);
-    layer.placements.forEach((p, i) => { mesh.setMatrixAt(i, p.matrix); mesh.setColorAt(i, [...hexLinear(p.color), 1]); });
-    mesh.computeBoundingSphere();
-    builder.add(spec.castShadow ? mesh : ({ ...mesh.toJSON(), castShadow: false } as ReturnType<typeof mesh.toJSON>));
+    // NR-11: in the evening the lantern layer splits into its three glow groups (day / dusk / night, +2 draws).
+    const groups: { material: ReturnType<typeof layerMaterial>; placements: typeof layer.placements }[] = [];
+    if (evening && layer.id === "lanterns") {
+      const glowOf = courseDistances(layer.placements.map((p) => [p.matrix[12]!, p.matrix[13]!, p.matrix[14]!] as Vec3)).map(lanternGlowAt);
+      for (const glow of Object.keys(LANTERN_GLOW) as LanternGlow[]) {
+        const placements = layer.placements.filter((_, i) => glowOf[i] === glow);
+        const g = LANTERN_GLOW[glow];
+        if (placements.length > 0) groups.push({ material: material.emissive({ color: "#ffffff", emissive: g.emissive, emissiveIntensity: g.intensity }), placements });
+      }
+    } else groups.push({ material: layerMaterial(spec, evening), placements: layer.placements });
+    for (const group of groups) {
+      const mesh = instances.mesh(defineShape(SHAPES[layer.shape]()), group.material, group.placements.length);
+      group.placements.forEach((p, i) => { mesh.setMatrixAt(i, p.matrix); mesh.setColorAt(i, [...hexLinear(p.color), 1]); });
+      mesh.computeBoundingSphere();
+      builder.add(spec.castShadow ? mesh : ({ ...mesh.toJSON(), castShadow: false } as ReturnType<typeof mesh.toJSON>));
+    }
   }
 
   for (const p of modelSink.lantern ?? []) lanternSpots.push([p.position[0], p.position[1] + p.scale[1] * 0.8, p.position[2]]);
@@ -419,16 +436,21 @@ const normalize = (v: Vec3): Vec3 => { const l = Math.hypot(v[0], v[1], v[2]) ||
 /** Lantern world positions with their course distance, sorted by distance (for the pooled lights, NR-03). */
 interface LanternSpot { readonly s: number; readonly position: Vec3 }
 
-/** Course distance of each lantern: the nearest route sample (every 2 m), then sorted along the route. */
-export function indexLanterns(spots: readonly Vec3[]): LanternSpot[] {
+/** Course distance of each point: the nearest route sample (every 2 m), in input order. */
+export function courseDistances(points: readonly Vec3[]): number[] {
   const samples: { s: number; x: number; z: number }[] = [];
   for (let d = 0; d <= COURSE_LENGTH; d += 2) { const f = groundFrame(d, 0, 0); samples.push({ s: d, x: f.x, z: f.z }); }
-  const out = spots.map((p) => {
+  return points.map((p) => {
     let best = 0, bestD = Infinity;
     for (const q of samples) { const d = (q.x - p[0]) ** 2 + (q.z - p[2]) ** 2; if (d < bestD) { bestD = d; best = q.s; } }
-    return { s: best, position: p };
+    return best;
   });
-  return out.sort((a, b) => a.s - b.s);
+}
+
+/** Course distance of each lantern, sorted along the route. */
+export function indexLanterns(spots: readonly Vec3[]): LanternSpot[] {
+  const s = courseDistances(spots);
+  return spots.map((position, i) => ({ s: s[i]!, position })).sort((a, b) => a.s - b.s);
 }
 
 /** NR-07: god rays from the low sun over Rooftop Run (from 470 m; the PRD's 1100 m start is the rooftops' far end) through the forest entry (to 1700 m), off at the river. */
