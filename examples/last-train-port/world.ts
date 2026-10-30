@@ -18,6 +18,7 @@ import { MESHY_ASSETS, MESHY_ENABLED, PAX_SCALE, TRAM } from "./models";
 import { applyMat3, axisRotation, matrixToEulerZYX, multiplyMat3, tramRotation, type V3 } from "./orient";
 import { cloudSpec, pointsSpec, rainSpec, skySpec } from "./materials";
 import { MeshData, boxAt, cylinderX, roofDome, gableRoof, groundDisc, makeTownTextures, pyramidRoof, stoneArch, wallBox, type TownTextures } from "./townkit";
+import { ShotDirector, type ShotKind } from "./shots";
 import { sampleRoute, type SimData, type SimState, type Temperament } from "./sim";
 
 type Scene = ReturnType<typeof scene>;
@@ -128,6 +129,10 @@ export interface WorldRuntime {
   readonly enrouteSwaps: number;
   /** LT-13: lanterns aloft now and released this session. */
   readonly lanterns: { readonly aloft: number; readonly released: number };
+  /** LT-16: the camera shot on screen and shots started this session (6 arrivals per circuit). */
+  readonly shots: { readonly active: ShotKind | null; readonly started: Readonly<Record<ShotKind, number>> };
+  /** LT-16: ends the current shot (any key or tap). */
+  skipShot(): void;
   /** Forces the band scene for the current state now (QA `setTimeOfDay`, `?band=`). */
   syncBand(sim: SimState): void;
 }
@@ -626,6 +631,8 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
   const riders = new RiderMotion();
   let flashUntil = -1, flashOn = false;
   let platformsWet = false;
+  /* GU47 LT-16: arrival rail, departure trackside, finale crane (band look only; ?shots=0 turns them off) */
+  const shots = new ShotDirector(look === "bands" && QUERY.get("shots") !== "0");
   /** Builds the next town's band scene off the frame (a timer) so the docked swap does not build it. */
   const prefetch = (band: BandId): void => {
     if (prefetched.has(band)) return;
@@ -795,8 +802,16 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
         node("sun-flare").setPosition(eye[0] + sd[0] * 3000, eye[1] + sd[1] * 3000, eye[2] + sd[2] * 3000);
       }
     }
-    const pose = chase.step({ wantEye: eye, wantLook: target, fovTarget: 56 - 4 * kd + Math.min(8, Math.abs(sim.speed) * 0.35) }, dt);
-    cam.setPose({ position: pose.eye, target: pose.look, up: [0, 1, 0], fov: pose.fov }, { cut: false });
+    let wantEye = eye, wantLook = target, fovTarget = 56 - 4 * kd + Math.min(8, Math.abs(sim.speed) * 0.35);
+    let shakeOffset: V3 | undefined, cut = false;
+    if (shownBand !== null && !options.orbit) {
+      shots.observe({ phase: sim.phase, complete: sim.attempt.status === "complete", catches: sim.attempt.catches }, seconds);
+      const shot = shots.frame({ eye, target, fov: fovTarget }, { here: [here.x, here.y, here.z], forward: f, side: sd }, seconds, still);
+      wantEye = shot.eye; wantLook = shot.target; fovTarget = shot.fov; shakeOffset = shot.shakeOffset; cut = shot.cut;
+      if (cut) chase.reset();
+    }
+    const pose = chase.step({ wantEye, wantLook, fovTarget, ...(shakeOffset ? { shakeOffset } : {}) }, dt);
+    cam.setPose({ position: pose.eye, target: pose.look, up: [0, 1, 0], fov: pose.fov }, { cut });
 
     /* rain (Monsoon Exchange, index 4) or snow (Drowned Observatory, index 3) near those towns */
     const weatherNow = weatherOf(data, sim);
@@ -854,6 +869,8 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
     camera: rig,
     get band() { return shownBand; },
     get enrouteSwaps() { return enrouteSwaps; },
+    get shots() { return { active: shots.active, started: { ...shots.started } }; },
+    skipShot() { shots.skip(); },
     get lanterns() { return { aloft: lanternSky.aloft(), released: lanternSky.released }; },
     syncBand(sim: SimState) { forceSwap = true; update(sim, lastSeconds); }
   };
