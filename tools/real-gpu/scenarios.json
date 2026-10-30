@@ -18,7 +18,8 @@
   "iron-crown": { "path": "/apps/showcase-iron-crown/", "settleMs": 8000, "steps": [
     { "click": "Quick Bout", "wait": 2500, "shot": "intro" }, { "burst": { "count": 4, "everyMs": 600, "label": "fight" } } ] },
   "roadster-rush": { "path": "/apps/showcase-roadster-rush/", "query": "?seed=42&capture=1", "settleMs": 10000, "steps": [
-    { "shot": "run" }, { "down": "ArrowUp" }, { "burst": { "count": 6, "everyMs": 400, "label": "drive" } }, { "up": "ArrowUp" } ] },
+    { "shot": "run" }, { "down": "ArrowUp" }, { "burst": { "count": 6, "everyMs": 400, "label": "drive" } }, { "up": "ArrowUp" },
+    { "wait": 15000, "shot": "settled", "evaluate": "({ draws: window.__AURA3D_SHOWCASE_ROADSTER_RUSH__?.app?.diagnostics()?.drawCalls ?? null, qa: window.__AURA_QA__?.apex ?? null })" } ] },
   "heatsink": { "path": "/apps/showcase-heatsink/", "settleMs": 8000, "steps": [
     { "press": "Enter", "wait": 3000, "shot": "grid" }, { "down": "ArrowUp" }, { "burst": { "count": 6, "everyMs": 400, "label": "race" } }, { "up": "ArrowUp" } ] },
   "pips-big-leap": { "path": "/apps/showcase-pips-big-leap/", "settleMs": 8000, "steps": [
@@ -49,7 +50,8 @@
   "last-train-port": { "path": "/apps/lamplight-line/", "settleMs": 10000, "steps": [
     { "shot": "title" }, { "click": "New service", "wait": 3000, "shot": "platform" }, { "burst": { "count": 5, "everyMs": 600, "label": "ride" } } ] },
   "roadster-hours-port": { "path": "/apps/saltwind-highway/", "query": "?level=0&autostart=1&autopilot=1", "settleMs": 12000, "steps": [
-    { "shot": "sunbreak" }, { "burst": { "count": 6, "everyMs": 500, "label": "drive" } } ] },
+    { "shot": "sunbreak" }, { "burst": { "count": 6, "everyMs": 500, "label": "drive" } },
+    { "wait": 10000, "shot": "settled", "evaluate": "({ fx: window.__AURA_ROADSTER_HOURS__?.fx?.() ?? null, texturesReady: window.__AURA_ROADSTER_HOURS__?.texturesReady?.() ?? null })" } ] },
   "where-the-wind-wanders-port": { "path": "/apps/the-bellkeepers-walk/", "settleMs": 10000, "steps": [
     { "shot": "title" }, { "click": "Begin the walk", "wait": 3000, "shot": "valley" }, { "down": "w" }, { "burst": { "count": 5, "everyMs": 400, "label": "walk" } }, { "up": "w" } ] },
   "silt-and-signal-port": { "path": "/apps/duneglide/", "query": "?chapter=0&start=1", "settleMs": 12000, "steps": [
@@ -64,5 +66,20 @@
     { "wait": 1500, "shot": "settled", "evaluate": "__AURA_VFX_DEBUG__()" } ] },
   "iron-crown-vfx": { "path": "/apps/showcase-iron-crown/", "query": "?vfx=on&vfxdebug=1", "settleMs": 8000, "steps": [
     { "click": "Quick Bout", "wait": 2500, "shot": "intro" }, { "burst": { "count": 6, "everyMs": 300, "label": "exchange" } },
-    { "wait": 1500, "shot": "settled", "evaluate": "__AURA_VFX_DEBUG__()" } ] }
+    { "wait": 1500, "shot": "settled", "evaluate": "__AURA_VFX_DEBUG__()" } ] },
+  "roadster-rush--dusk": {"path": "/apps/showcase-roadster-rush/", "query": "?seed=42&capture=1&tod=dusk", "settleMs": 25000, "steps": [{"shot": "t25"}, {"wait": 35000, "shot": "t60", "evaluate": "({ draws: window.__AURA3D_SHOWCASE_ROADSTER_RUSH__?.app?.diagnostics()?.drawCalls ?? null, qa: window.__AURA_QA__?.apex ?? null })"}]},
+  "roadster-rush--night": {"path": "/apps/showcase-roadster-rush/", "query": "?seed=42&capture=1&tod=night", "settleMs": 25000, "steps": [{"shot": "t25"}, {"wait": 35000, "shot": "t60", "evaluate": "({ draws: window.__AURA3D_SHOWCASE_ROADSTER_RUSH__?.app?.diagnostics()?.drawCalls ?? null, qa: window.__AURA_QA__?.apex ?? null })"}]},
+  "teleoperator--noon": {"path": "/apps/showcase-teleoperator/", "query": "?sky=noon&intro=0", "settleMs": 25000, "steps": [{"shot": "t25"}, {"wait": 35000, "shot": "t60"}]},
+  "teleoperator--fog": {"path": "/apps/showcase-teleoperator/", "query": "?sky=fog&intro=0", "settleMs": 25000, "steps": [{"shot": "t25"}, {"wait": 35000, "shot": "t60"}]},
+  "teleoperator--night": {"path": "/apps/showcase-teleoperator/", "query": "?sky=night&intro=0", "settleMs": 25000, "steps": [{"shot": "t25"}, {"wait": 35000, "shot": "t60"}]},
+  "cross-hop--theme4": {"path": "/apps/showcase-cross-hop/", "query": "?theme=4&autoplay=1", "settleMs": 25000, "steps": [{"shot": "t25"}, {"wait": 35000, "shot": "t60", "evaluate": "({ crops: window.__AURA_QA__?.crops ?? null, shadows: window.__AURA3D_CROSS_HOP__?.app?.diagnostics?.()?.lighting?.shadows ?? null })"}]},
+  "strange-orbit-port--autopilot": {"path": "/apps/craterline-gp/", "query": "?autostart=1&autopilot=1", "settleMs": 25000, "steps": [{"shot": "t25"}, {"wait": 35000, "shot": "t60"}]},
+  "drift-and-deliver-port--bluehour": {"path": "/apps/gridlock-courier/", "query": "?at=170&autostart=1", "settleMs": 25000, "steps": [{"shot": "bluehour"}, {"evaluate": "window.__AURA_DRIFT_AND_DELIVER__?.stepFrames(180, { w: true, d: true, space: true }) ?? null"}, {"wait": 500, "shot": "drift"}]},
+  "heatsink-port--autostart": {"path": "/apps/ion-circuit/", "query": "?autostart=1", "settleMs": 25000, "steps": [{"shot": "t25", "evaluate": "({ state: window.__AURA_HEATSINK__?.state?.() ?? null })"}]},
+  "heatsink-port--original": {"path": "/apps/ion-circuit/", "query": "?autostart=1&look=original", "settleMs": 25000, "steps": [{"shot": "t25", "evaluate": "({ state: window.__AURA_HEATSINK__?.state?.() ?? null })"}]},
+  "ninja-runner-port--forest": {"path": "/apps/shadowstep-gauntlet/", "query": "?at=1900", "settleMs": 25000, "steps": [{"shot": "t25"}, {"wait": 35000, "shot": "t60"}]},
+  "last-train-port--band-d": {"path": "/apps/lamplight-line/", "query": "?band=D&title=0&autopilot=1", "settleMs": 25000, "steps": [{"evaluate": "window.__AURA_LAST_TRAIN__?.runCircuit?.(0) ?? null"}, {"shot": "circuit"}]},
+  "where-the-wind-wanders-port--found3": {"path": "/apps/the-bellkeepers-walk/", "query": "?found=3", "settleMs": 25000, "steps": [{"shot": "t25", "evaluate": "({ shadows: window.__AURA_WIND__?.app?.()?.diagnostics()?.lighting?.shadows ?? null, daylight: window.__AURA_WIND__?.daylight ?? null })"}]},
+  "where-the-wind-wanders-port--epilogue": {"path": "/apps/the-bellkeepers-walk/", "query": "?found=epilogue", "settleMs": 25000, "steps": [{"shot": "t25", "evaluate": "({ shadows: window.__AURA_WIND__?.app?.()?.diagnostics()?.lighting?.shadows ?? null, daylight: window.__AURA_WIND__?.daylight ?? null })"}]},
+  "silt-and-signal-port--ch4": {"path": "/apps/duneglide/", "query": "?chapter=4&start=1", "settleMs": 12000, "steps": [{"shot": "ch4"}, {"burst": {"count": 6, "everyMs": 500, "label": "storm"}}]}
 }
