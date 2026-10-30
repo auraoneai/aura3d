@@ -5,7 +5,7 @@
  * - sodium pool (GC-L4): 5 points re-picked onto the nearest lamps every 0.5 s, faded in from sunset
  * - headlight spot (GC-L5): follows the car, on with the beams; brake light glow on the tail lamps
  * - beacon (GC-V2): courier-teal pillar strength per phase; delivery ring burst
- * - VFX (GC-V1): tyre smoke while drifting, nitro streak, 20 s skid ribbon (one draw)
+ * - VFX (GC-V1): tyre smoke while drifting, nitro streak, 20 s skid ribbon (one draw), speed lines at speed
  * - water time, cloud drift
  *
  * Presentation only: every input is a read of the sim or the shift; nothing is written back (PRD D8).
@@ -14,7 +14,7 @@ import { geometry, material, type AuraApp } from "@aura3d/engine";
 import { createDaylight, lookFrame, type Daylight } from "./daylight";
 import { facadeMaterial, type LookRig } from "./look";
 import { phaseAt, phaseIdAt, todSeconds, type PhaseId, type PhaseRow } from "./phases";
-import { COURIER_TEAL, FX_KINDS, SMOKE_RATE, SkidMarks, deliveryKind, fxScale, registerCourierFx, skidSpec } from "./fx";
+import { COURIER_TEAL, FX_KINDS, SMOKE_RATE, SPEED_LINES, SkidMarks, deliveryKind, fxScale, registerCourierFx, skidSpec, speedLineSpawn } from "./fx";
 import { HEADLIGHT, LAMP_HEAD_Y, REPICK_SECONDS, SODIUM_INTENSITY, SODIUM_POOL, nearestLamps } from "./lamps";
 
 type Handle = ReturnType<AuraApp["nodes"]["require"]>;
@@ -82,6 +82,8 @@ export function createShiftRuntime(app: AuraApp, look: LookRig, lamps: readonly 
   let pool: number[] = [];
   let smoke = 0;
   let nitro = 0;
+  let lines = 0;
+  let lineSeed = 0;
   let beaconShown = -1;
   let writes = 0;
   let wasDrifting = false;
@@ -147,6 +149,16 @@ export function createShiftRuntime(app: AuraApp, look: LookRig, lamps: readonly 
         if (nitro <= 0) {
           nitro = 0.08;
           burst(FX_KINDS.nitro, [rear[0], 0.55, rear[2]], 4);
+        }
+      }
+      // GC-V1 speed lines: streaks ahead of the car rushing back past the camera at speed (off under reduced motion)
+      lines -= dt;
+      if (dt > 0 && lines <= 0) {
+        const spawn = speedLineSpawn(car, lineSeed, opts.reducedMotion());
+        if (spawn) {
+          lines = SPEED_LINES.interval;
+          lineSeed++;
+          app.effects?.burst(FX_KINDS.speedLines, spawn.at, { normal: spawn.normal, camera: false });
         }
       }
     },

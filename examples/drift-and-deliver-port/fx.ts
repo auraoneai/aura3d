@@ -31,7 +31,8 @@ export const FX_KINDS = {
   coin: "courier-pickup-parcel",
   star: "courier-pickup-express",
   heart: "courier-pickup-care",
-  bump: "courier-traffic-bump"
+  bump: "courier-traffic-bump",
+  speedLines: "courier-speed-lines"
 } as const;
 
 export type FxKind = (typeof FX_KINDS)[keyof typeof FX_KINDS];
@@ -71,6 +72,10 @@ export function courierFxPresets(): Record<FxKind, FxSpec> {
     [FX_KINDS.coin]: { name: FX_KINDS.coin, layers: [{ type: "emitter", preset: "pickup-gold", count: 10, speed: 3, life: 0.6, color: "#ffc35c", additive: true }] },
     [FX_KINDS.star]: { name: FX_KINDS.star, layers: [{ type: "emitter", preset: "pickup-star", count: 14, speed: 4, life: 0.7, color: "#fff0a8", additive: true }] },
     [FX_KINDS.heart]: { name: FX_KINDS.heart, layers: [{ type: "emitter", preset: "pickup-heart", count: 10, speed: 3, life: 0.6, color: "#ff7aa0", additive: true }] },
+    [FX_KINDS.speedLines]: {
+      name: FX_KINDS.speedLines,
+      layers: [{ type: "emitter", preset: "streak", count: 3, speed: 26, life: 0.22, size: 0.12, spread: 0.15, color: "#e8f6f7", additive: true, maxScreen: 0.12 }]
+    },
     [FX_KINDS.bump]: {
       name: FX_KINDS.bump,
       layers: [
@@ -99,6 +104,22 @@ export const deliveryKind = (reducedMotion: boolean, reducedFlash: boolean): FxK
 
 /** Smoke puffs per second while drifting (one puff per rear wheel per emit). */
 export const SMOKE_RATE = 10;
+
+/** GC-V1 speed lines: from this speed (m/s, about 100 km/h) or while boosting, emitted this often (s). */
+export const SPEED_LINES = { minSpeed: 28, interval: 0.07, ahead: 7, ring: 2.6, y: 1.4 } as const;
+
+/**
+ * Where a batch of speed lines spawns: ahead of the car on a ring around its path, streaking back past the camera.
+ * Off under reduced motion (PRD §6.3). `seed` picks the ring angle deterministically.
+ */
+export function speedLineSpawn(car: { x: number; z: number; heading: number; speed: number; boosting: boolean }, seed: number, reducedMotion: boolean): { at: [number, number, number]; normal: [number, number, number] } | null {
+  if (reducedMotion || (Math.abs(car.speed) < SPEED_LINES.minSpeed && !car.boosting)) return null;
+  const s = Math.sin(car.heading), c = Math.cos(car.heading);
+  const a = (seed * 2.399963) % (Math.PI * 2);
+  const lat = Math.cos(a) * SPEED_LINES.ring;
+  const up = Math.max(0.3, SPEED_LINES.y + Math.sin(a) * SPEED_LINES.ring * 0.5);
+  return { at: [car.x + s * SPEED_LINES.ahead + c * lat, up, car.z + c * SPEED_LINES.ahead - s * lat], normal: [-s, 0, -c] };
+}
 
 /* ------------------------------------------------------------------ skid marks */
 
