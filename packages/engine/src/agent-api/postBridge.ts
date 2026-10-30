@@ -1280,7 +1280,8 @@ export function createRootPostPipeline(
         ...(godRayDensityOf(volumetricNode) !== undefined ? { density: godRayDensityOf(volumetricNode) } : {}),
         intensity: numberField(volumetricNode, "intensity", 0.7),
         color: rgbField(volumetricNode, "color", { r: 0.44, g: 0.52, b: 0.73 }),
-        lightWorld: Array.isArray(volumetricNode.lightPosition) ? volumetricNode.lightPosition.slice(0, 3) as unknown as readonly [number, number, number] : undefined,
+        // GU47 pass 4 (g08, g18): only a 3-number lightPosition is a world point; the UV pair is the forward anchor.
+        lightWorld: Array.isArray(volumetricNode.lightPosition) && volumetricNode.lightPosition.length === 3 ? volumetricNode.lightPosition.slice(0, 3) as unknown as readonly [number, number, number] : undefined,
         ...(godRayLightDirection ? { lightDirection: godRayLightDirection } : {})
       }
     } : {}),

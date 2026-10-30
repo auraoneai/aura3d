@@ -1025,8 +1025,12 @@ export interface AuraEffectNode extends AuraTransformSpec {
   readonly maxBlur?: number;
   /** Volumetric-fog quality (muse3jsparity-PRD A5): "off" keeps forward exp2 fog only, never submits the inscatter pass. */
   readonly volumetricQuality?: "off" | "balanced" | "quality" | "ultra";
-  /** Volumetric-fog radial anchor override in UV (muse3jsparity-PRD A5); defaults to the upper third. */
-  readonly lightPosition?: readonly [number, number];
+  /**
+   * Volumetric-fog light anchor. Two numbers: a radial anchor in UV for the forward inscatter (muse3jsparity-PRD A5;
+   * defaults to the upper third). Three numbers (GU47 pass 4): a world point the v2 god-ray stage projects each frame
+   * (default: the strongest directional key's direction). Each consumer ignores the other form.
+   */
+  readonly lightPosition?: readonly [number, number] | readonly [number, number, number];
   /** Volumetric height falloff (muse3jsparity-PRD A5); 0 disables the height gate. */
   readonly heightFalloff?: number;
   /** Volumetric height reference in world units (muse3jsparity-PRD A5). */

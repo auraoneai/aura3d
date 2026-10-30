@@ -69,7 +69,7 @@ export function createProductionRuntimePostprocess(
       {
         density: authoredVolumetricFog.density,
         intensity: authoredVolumetricFog.intensity,
-        ...(authoredVolumetricFog.lightPosition ? { lightPosition: authoredVolumetricFog.lightPosition } : {}),
+        ...(authoredVolumetricFog.lightPosition?.length === 2 ? { lightPosition: authoredVolumetricFog.lightPosition } : {}),
         ...(authoredVolumetricFog.heightFalloff !== undefined ? { heightFalloff: authoredVolumetricFog.heightFalloff } : {}),
         ...(authoredVolumetricFog.heightReference !== undefined ? { heightReference: authoredVolumetricFog.heightReference } : {}),
         ...(authoredVolumetricFog.volumetricQuality ? { quality: authoredVolumetricFog.volumetricQuality } : {})
