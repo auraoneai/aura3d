@@ -15,6 +15,7 @@ import type { Game } from "./game";
 import { ACTIVE, ballSpec, glowSpec, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, warnSpec } from "./materials";
 import { ACTIVE_LOOK, sunPosition, type CumulusLookRow } from "./art/look";
 import { launchFovKick, titleFlyover, traumaFor } from "./art/camera";
+import { CUMULUS_FLARE_ELEMENTS, CUMULUS_GOD_RAY_DENSITY, applyCumulusPostPlan, cumulusPostPlan } from "./art/post";
 import { CUMULUS_GLIDER_TRAIL, CUMULUS_VFX_EVENTS, registerCumulusVfx } from "./art/vfx";
 import { Mesh, box, cylinder, hex } from "./mesh";
 import { LEG_CLIPS } from "./legcycle";
@@ -51,6 +52,8 @@ export interface WorldRuntime {
   /** Grounded foot touchdowns while running (the footstep sound follows these, not distance). */
   readonly footsteps: number;
   /** CD-15 QA: whether the preset pack is registered, presets fired per kind, the glider trail and the engine live count. */
+  /** CD-09 QA: the post effects the tier plan switched. */
+  post(): Readonly<Record<string, boolean>>;
   vfx(): { registered: boolean; fired: Record<string, number>; trail: boolean; liveCount: number };
 }
 /** A merged scenery chunk hidden past `range` metres from the camera (small detail is sub-pixel or fogged there). */
@@ -110,6 +113,7 @@ export function buildLog(): Mesh {
  *   vignette and contact shadows next to the look's single AO node (CD-10).
  * - original (`?look=original`): today's nodes, value for value.
  */
+export const SUN_FLARE_ID = "sun-flare";
 export function lookNodes(row: CumulusLookRow): unknown[] {
   const out: unknown[] = [];
   if (row.authoredSunPos) {
@@ -146,6 +150,10 @@ export function lookNodes(row: CumulusLookRow): unknown[] {
   }));
   out.push(effects.vignette({ name: "vignette", intensity: row.vignette.intensity, smoothness: row.vignette.smoothness }));
   out.push(effects.contactShadows({ length: 0.3, thickness: 0.06, intensity: 0.9 }));
+  // CD-09: low god rays through the storm towers (High/Ultra only, switched by art/post.ts) and the sun's lens flare, which
+  // world.ts keeps on the sun direction from the camera every frame
+  out.push(effects.volumetricFog({ name: "god-rays", density: 0.002, color: row.sun.color, intensity: 0.4, godRayDensity: CUMULUS_GOD_RAY_DENSITY }));
+  out.push(lights.lensFlare({ name: SUN_FLARE_ID, position: sunPosition(row.scenery.sunDir, 2000) as V3, intensity: 0.28, edgeFade: 0.2, elements: CUMULUS_FLARE_ELEMENTS.map((e) => ({ ...e })), runtime: { id: SUN_FLARE_ID } }));
   return out;
 }
 function addLookNodes(b: { add(n: never): unknown }, row: CumulusLookRow): void { for (const n of lookNodes(row)) b.add(n as never); }
@@ -294,6 +302,15 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
   let vfxMotion: boolean | null = null;
   let gliderTrail: { stop(): void } | null = null;
   const vfxFired: Record<string, number> = {};
+  /* CD-09: god rays on High/Ultra only, never on a phone; re-applied when the quality tier changes */
+  const coarse = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+  let postStates: Readonly<Record<string, boolean>> = {};
+  const quality = (app as unknown as { quality?: { tier?: string; onChange?(cb: () => void): unknown } }).quality;
+  if (cinematic) {
+    const applyPost = (): void => { postStates = applyCumulusPostPlan(app.post, cumulusPostPlan({ tier: quality?.tier, coarsePointer: coarse })); };
+    applyPost();
+    quality?.onChange?.(applyPost);
+  }
   const cullShown = new Map<string, boolean>();
   let footsteps = 0;
   /* finale camera: the hut and its mound are solid, and the eye stays above the ground around the home frame */
@@ -389,6 +406,7 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
     camera: camPos,
     view,
     get footsteps() { return footsteps; },
+    post: () => ({ ...postStates }),
     vfx: () => ({ registered: vfxMotion !== null, fired: { ...vfxFired }, trail: gliderTrail !== null, liveCount: app.effects?.liveCount ?? 0 }),
     cutCamera() { eye = null; look = null; chase.reset(); finaleClear.reset(); },
     update(g, dt, aspect, events) {
@@ -713,6 +731,7 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
       view.culled = culled;
 
       sky.setPosition(shook[0], shook[1], shook[2]);
+      if (cinematic) { const d = ACTIVE_LOOK.scenery.sunDir; node(SUN_FLARE_ID).setPosition(shook[0] + d[0] * 2000, shook[1] + d[1] * 2000, shook[2] + d[2] * 2000); }
       sky.setUniform?.("cloudPhase", clock);
       valley.setPosition(shook[0], f.point[1] - 43, shook[2]);
       valley.setUniform?.("cloudPhase", clock);
