@@ -74,6 +74,7 @@ import { BALL_R, DRIB_SHOULDER_FALLBACK, dribbleCycleY } from "./dribble";
 import { createOnePress } from "./input";
 import { hoopMaterials } from "./hoopMaterials";
 import { SprayTags } from "./sprayTags";
+import { headLookAngles, headLookQuat, stepHeadLook, worldToActor, type HeadLookAngles } from "./headLook";
 import { SCOREBOARD_NODE_ID, courtNameNode, scoreboardNode, scoreboardText } from "./diegetic";
 import { projectCrops, type QaCropSubject } from "./qaCrops";
 import { MarkerPool, parkedTransforms, type MarkerSlot } from "./markerPools";
@@ -1012,6 +1013,10 @@ const lastSpeedByActor = new Map<string, number>();
 const dribblePoseOn = new Set<string>();
 const livePoseOn = new Set<string>();
 const overlayPoseOn = new Set<string>();
+/** H47-AN1: smoothed head look-at angles per athlete while the override is on. */
+const headLookOn = new Map<string, HeadLookAngles>();
+/** H47-AN1 acceptance counters: look-at frames, and those whose yaw error to the ball is <= 25 deg. */
+const headLookStats = { frames: 0, within25: 0 };
 /** Per-handler palm solve handed from syncAthlete's pose to the ball hold branch. */
 interface DribbleAim { palm: Vec3; /** the palm as rendered last frame (forearm bone), when the sockets are live */ actual?: Vec3; shoulderY: number; t: number; moving: boolean }
 const dribbleAims = new Map<string, DribbleAim>();
@@ -3131,6 +3136,7 @@ function syncAthlete(a: AthleteState, dt: number): void {
     dribblePoseOn.delete(a.nodeId);
     dribbleAims.delete(a.nodeId);
   }
+  syncHeadLook(a, anim, holdsBall, dt);
 
   // Ground rings & shadow
   r.shadow?.setPosition(a.x, 0.012, a.z).setScale([1 - a.y * 0.14, 1, 1 - a.y * 0.14]).setVisible(true);
@@ -3139,6 +3145,34 @@ function syncAthlete(a: AthleteState, dt: number): void {
   // Jam aura
   const auraOn = game_.jamFull && a.team === "home" && a.hasBall;
   r.aura?.setPosition(a.x, a.y + 0.95, a.z).setScale(auraOn ? [0.9, 1.9, 0.9] : HIDDEN).setVisible(auraOn); // fit-grounding: ok (a centre-based cylinder primitive)
+}
+
+/**
+ * H47-AN1 head look-at (new look only): an off-ball athlete that is not in a
+ * shot, dunk, jump, stumble or action clip turns its head toward the ball
+ * through the engine's last-in-order pose override. The ball handler keeps the
+ * dribble pose's head lean (it already looks down at the ball), and every
+ * other case clears the override so the clip owns the head again.
+ */
+function syncHeadLook(a: AthleteState, anim: any, holdsBall: boolean, dt: number): void {
+  const pose = anim?.pose;
+  if (typeof pose?.setLocalRotation !== "function") return;
+  const wants = !LOOK_ORIGINAL && !holdsBall && !a.shooting && a.dunkT <= 0 && a.jumpT <= 0 &&
+    a.stumble <= 0 && a.actionUntil <= 0;
+  const head = wants ? anim.socket?.("Head") : undefined;
+  const neck = wants ? anim.socket?.("Neck") : undefined;
+  const parent = neck?.valid === true ? neck : wants ? anim.socket?.("Chest") : undefined;
+  if (!wants || head?.valid !== true || parent?.valid !== true) {
+    if (headLookOn.delete(a.nodeId)) pose.clear?.("Head");
+    return;
+  }
+  const target = worldToActor([ball.x, ball.y, ball.z], a.x, a.y, a.z, a.yaw);
+  const goal = headLookAngles(mat4Translation(head.worldMatrix()), target, qFromMat4(parent.worldMatrix()));
+  const next = stepHeadLook(headLookOn.get(a.nodeId) ?? { yaw: 0, pitch: 0 }, goal, dt, reducedMotion);
+  headLookOn.set(a.nodeId, next);
+  headLookStats.frames++;
+  if (Math.abs(goal.yaw - next.yaw) <= (25 * Math.PI) / 180) headLookStats.within25++;
+  pose.setLocalRotation("Head", headLookQuat(next));
 }
 
 /* ------------------------------------------------------------------ *
@@ -3401,6 +3435,8 @@ function publishEvidence(force = false): void {
     framesRendered,
     frameErrors: frameBoundary.stats(),
     shotStats: { ...shotStats },
+    // H47-AN1: off-ball head look-at (frames, within25 = yaw error <= 25 deg; acceptance wants >= 80%)
+    headLook: { active: headLookOn.size, ...headLookStats },
     // H47-H1: the in-world board text (Rucker, new look) next to the DOM score it must equal
     inWorldScore: shownBoardScore ? { board: shownBoardScore, dom: currentBoardScore() } : null,
     footSlide: footEvidence(),
