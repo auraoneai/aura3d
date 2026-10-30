@@ -16,8 +16,15 @@
     <meta name="description" content="Bunker Zero: a six-floor retro corridor shooter with grid mazes, push-wall secrets, three enemy archetypes and the Iron Warden, rendered by the Aura3D engine." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <style>
+      /* GU47 BZ-17: DIN Pro (licensed library, sans/DIN-Pro, WOFF web cut self-hosted app-locally; E-J has no DIN Pro theme) */
+      @font-face { font-family: "DIN Pro"; src: url("/fonts/DINPro-Regular.woff") format("woff"); font-weight: 400; font-display: swap; }
+      @font-face { font-family: "DIN Pro"; src: url("/fonts/DINPro-Medium.woff") format("woff"); font-weight: 500 900; font-display: swap; }
       :root {
         --bz-amber: #ffb648;
+        /* BZ-17: the floor's lamp colour (main.ts applyFloorLook), hazard yellow and olive steel panels */
+        --bz-lamp: #ffad5c;
+        --bz-hazard: #e8b400;
+        --bz-olive: #4f5531;
         --bz-blood: #ff3b30;
         --bz-steel: #9fb4c8;
         --bz-bone: #f3ecd9;
@@ -27,7 +34,7 @@
         margin: 0; padding: 0;
         background: #05070a;
         color: var(--bz-bone);
-        font-family: "Whitney", "Graphik", sans-serif;
+        font-family: "DIN Pro", "Graphik", sans-serif;
         overscroll-behavior: none;
       }
       #app { position: fixed; inset: 0; }
@@ -55,7 +62,7 @@
       }
 
       /* ---- FPS HUD ---- */
-      #bz-hud { position: fixed; inset: 0; z-index: 30; pointer-events: none; font-family: "Monument Grotesk Mono", monospace; }
+      #bz-hud { position: fixed; inset: 0; z-index: 30; pointer-events: none; font-family: "DIN Pro", sans-serif; font-variant-numeric: tabular-nums; }
       #bz-hud.hidden { display: none; }
       #bz-crosshair {
         position: absolute; left: 50%; top: 50%; width: 18px; height: 18px;
@@ -78,18 +85,32 @@
       }
       .bz-stat { text-align: center; min-width: 56px; }
       .bz-stat .bz-label { display: block; font-size: 11px; letter-spacing: 0.16em; color: #8a94a2; text-transform: uppercase; }
-      .bz-stat .bz-value { display: block; font-size: 22px; font-weight: 700; color: var(--bz-bone); line-height: 1.15; }
+      .bz-stat .bz-value { display: block; font-size: 22px; font-weight: 500; color: var(--bz-bone); line-height: 1.15; }
       .bz-stat .bz-value.low { color: var(--bz-blood); }
       .bz-stat .bz-value.amber { color: var(--bz-amber); }
 
       #bz-floor-tag {
         position: absolute; top: calc(var(--a3d-bar-space) + 4px); left: 16px; z-index: 30;
-        font-family: "DIN Pro", sans-serif; font-weight: 700; font-size: 13px;
-        letter-spacing: 0.14em; text-transform: uppercase; color: var(--bz-amber);
-        background: rgba(8,10,14,0.72); border: 1px solid rgba(255,182,72,0.3);
-        padding: 5px 12px; border-radius: 6px;
+        font-family: "DIN Pro", sans-serif; font-weight: 500; font-size: 13px;
+        letter-spacing: 0.14em; text-transform: uppercase; color: var(--bz-lamp);
+        /* BZ-17: olive-steel stencil plate with a hazard yellow-black edge; accent = the floor's lamp colour */
+        background: linear-gradient(rgba(79,85,49,0.82), rgba(40,43,26,0.86));
+        border: 1px solid rgba(0,0,0,0.5); border-left: 6px solid transparent;
+        border-image: repeating-linear-gradient(135deg, var(--bz-hazard) 0 6px, #16150f 6px 12px) 0 0 0 6 / 0 0 0 6px stretch;
+        padding: 5px 12px; border-radius: 2px;
       }
-      #bz-floor-tag small { display: block; font-family: "Monument Grotesk Mono", monospace; font-weight: 400; font-size: 10px; letter-spacing: 0.08em; color: #9aa4b0; text-transform: none; margin-top: 2px; }
+      /* BZ-17: directional damage arc (main.ts rotates it toward the last attacker, within 45 deg) */
+      #bz-damage-arc {
+        position: absolute; left: 50%; top: 50%; width: 220px; height: 220px; margin: -110px 0 0 -110px;
+        border-radius: 50%; border-top: 6px solid rgba(255,59,48,0.85); opacity: 0; transition: opacity 0.35s;
+        pointer-events: none;
+      }
+      #bz-damage-arc.on { opacity: 1; transition: none; }
+      /* BZ-16: elevator descent bars between floors */
+      .bz-bars::before, .bz-bars::after { content: ""; position: fixed; left: 0; right: 0; height: 0; background: #000; z-index: 45; transition: height 0.4s; }
+      .bz-bars::before { top: 0; } .bz-bars::after { bottom: 0; }
+      body.bz-descending .bz-bars::before, body.bz-descending .bz-bars::after { height: 11vh; }
+      #bz-floor-tag small { display: block; font-family: "Monument Grotesk Mono", monospace; font-weight: 400; font-size: 11px; letter-spacing: 0.08em; color: #9aa4b0; text-transform: none; margin-top: 2px; }
 
       #bz-vignette {
         position: fixed; inset: 0; z-index: 28; pointer-events: none;
@@ -102,7 +123,7 @@
       #bz-banner {
         position: fixed; left: 50%; top: 34%; transform: translateX(-50%);
         z-index: 40; text-align: center; pointer-events: none;
-        font-family: "DIN Pro", sans-serif; font-weight: 700;
+        font-family: "DIN Pro", sans-serif; font-weight: 500;
         font-size: 30px; letter-spacing: 0.3em; text-transform: uppercase;
         color: var(--bz-bone); text-shadow: 0 2px 24px rgba(255,182,72,0.4), 0 1px 2px #000;
         opacity: 0; transition: opacity 0.4s;
@@ -147,7 +168,7 @@
       }
       .bz-floor-card:hover { border-color: rgba(255,182,72,0.5); }
       .bz-floor-card strong { display: block; font-size: 13px; }
-      .bz-floor-card small { color: #8a94a2; font-family: "Monument Grotesk Mono", monospace; font-size: 10px; letter-spacing: 0.06em; }
+      .bz-floor-card small { color: #8a94a2; font-family: "Monument Grotesk Mono", monospace; font-size: 11px; letter-spacing: 0.06em; }
       .bz-floor-card .medal { float: right; font-size: 14px; }
       .bz-swatchrow { display: flex; gap: 8px; }
       .bz-swatch { width: 34px; height: 34px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; }
@@ -164,7 +185,7 @@
       }
       .bz-overlay { position: fixed; inset: 0; z-index: 72; display: flex; align-items: center; justify-content: center; background: rgba(4, 6, 9, 0.7); backdrop-filter: blur(6px); }
       .bz-overlay[hidden] { display: none; }
-      .bz-btn { appearance: none; min-height: 44px; min-width: 120px; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-family: "DIN Pro", sans-serif; font-weight: 700; letter-spacing: 0.16em; font-size: 13px; color: #140d02; background: var(--bz-amber); border: 1px solid rgba(0,0,0,0.3); }
+      .bz-btn { appearance: none; min-height: 44px; min-width: 120px; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-family: "DIN Pro", sans-serif; font-weight: 500; letter-spacing: 0.16em; font-size: 13px; color: #140d02; background: var(--bz-amber); border: 1px solid rgba(0,0,0,0.3); }
       .bz-btn.ghost { color: var(--bz-bone); background: rgba(255,255,255,0.07); border-color: rgba(243,236,217,0.25); }
       .bz-actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
       .bz-results-table { width: 100%; border-collapse: collapse; font-family: "Monument Grotesk Mono", monospace; font-size: 12px; color: #c8ccd4; }
@@ -173,7 +194,7 @@
       #bz-results-total { font-family: "Monument Grotesk Mono", monospace; font-size: 12px; color: var(--bz-amber); margin-top: 12px; line-height: 1.6; }
       #bz-results-best { font-family: "Monument Grotesk Mono", monospace; font-size: 11px; color: #9aa4b0; margin-top: 4px; }
       .bz-intro-keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-family: "Monument Grotesk Mono", monospace; font-size: 12px; color: #c8ccd4; margin-top: 10px; }
-      .bz-intro-keys b { color: var(--bz-amber); font-weight: 700; }
+      .bz-intro-keys b { color: var(--bz-amber); font-weight: 500; }
       .bz-key { appearance: none; min-height: 32px; min-width: 96px; border-radius: 6px; cursor: pointer; background: rgba(255,255,255,0.06); border: 1px solid rgba(243,236,217,0.2); color: var(--bz-bone); font-family: "Monument Grotesk Mono", monospace; font-size: 11px; }
       .bz-hudscale { appearance: none; min-width: 44px; min-height: 36px; border-radius: 6px; cursor: pointer; background: rgba(255,255,255,0.06); border: 1px solid rgba(243,236,217,0.2); color: var(--bz-bone); font-family: "Monument Grotesk Mono", monospace; font-size: 12px; }
       .bz-hudscale.active { border-color: var(--bz-amber); color: var(--bz-amber); }
@@ -181,11 +202,11 @@
       .bz-floor-card .medal-gold { color: #ffd76a; } .bz-floor-card .medal-silver { color: #d6dde6; } .bz-floor-card .medal-bronze { color: #d58a4a; }
       #bz-vulnerable {
         position: fixed; left: 50%; top: calc(50% + 34px); transform: translateX(-50%); z-index: 31; pointer-events: none;
-        font-family: "DIN Pro", sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.32em; color: #ff8a4a;
+        font-family: "DIN Pro", sans-serif; font-weight: 500; font-size: 15px; letter-spacing: 0.32em; color: #ff8a4a;
         text-shadow: 0 0 12px rgba(255,90,26,0.8), 0 1px 2px #000;
       }
       #bz-vulnerable[hidden] { display: none; }
-      #bz-map { position: fixed; right: 16px; top: calc(var(--a3d-bar-space, 52px) + 8px); z-index: 33; border: 1px solid rgba(255,182,72,0.35); border-radius: 6px; image-rendering: pixelated; width: 198px; height: 144px; pointer-events: none; }
+      #bz-map { position: fixed; right: 16px; top: calc(var(--a3d-bar-space, 52px) + 8px); z-index: 33; border: 1px solid rgba(216,236,255,0.45); border-radius: 2px; box-shadow: 0 0 0 3px rgba(10,34,66,0.55); width: 198px; height: 144px; pointer-events: none; }
       #bz-map[hidden] { display: none; }
       /* ---- touch layer (shown on coarse pointers or after the first touch) ---- */
       #bz-touch { position: fixed; inset: 0; z-index: 34; pointer-events: none; touch-action: none; user-select: none; -webkit-user-select: none; }
@@ -215,7 +236,7 @@
         #bz-status { gap: 10px; padding: 6px 10px; bottom: 16px; max-width: calc(100vw - 20px); box-sizing: border-box; }
         .bz-stat { min-width: 44px; }
         .bz-stat .bz-value { font-size: 16px; }
-        .bz-stat .bz-label { font-size: 10px; letter-spacing: 0.08em; white-space: nowrap; max-width: 72px; overflow: hidden; text-overflow: ellipsis; }
+        .bz-stat .bz-label { font-size: 11px; letter-spacing: 0.08em; white-space: nowrap; max-width: 72px; overflow: hidden; text-overflow: ellipsis; }
         .bz-stat .bz-value { white-space: nowrap; }
         /* the feed sits above the touch stick and the status bar, never over HEALTH/ARMOR/weapon */
         #bz-feed { bottom: auto; top: calc(var(--a3d-bar-space, 52px) + 64px); left: 10px; max-width: 60vw; }
@@ -256,6 +277,8 @@
         <div class="bz-stat"><span class="bz-label">Time</span><span class="bz-value" id="bz-time">0:00</span></div>
       </div>
     </div>
+    <div id="bz-damage-arc" aria-hidden="true"></div>
+    <div class="bz-bars" aria-hidden="true"></div>
     <div id="bz-floor-tag">FLOOR 1 — STONE GATEHOUSE<small>find the brass key · reach the elevator</small></div>
     <div id="bz-vignette"></div>
     <div id="bz-banner"></div>

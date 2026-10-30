@@ -1,0 +1,11 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "bunker-zero",
+  "note": "GU47 WP-21 acceptance as bands (BZ-01, BZ-06, BZ-07). Practically lit: deep shadow between pools, so darkFrac is allowed up to 0.35 and the p95-p5 spread must open up. Steady-state captures are phase 2.",
+  "default": { "mean": [45, 70], "darkFrac": [0.08, 0.35], "clipFrac": [null, 0.02] },
+  "variants": {
+    "floor1": { "spread": [110, null], "note": "BZ-01: F1 p95-p5 >= 110 (72 on 4.6.1)" },
+    "floor2": { "crops": { "floor": { "p95": [150, null] } }, "note": "BZ-06: water crop darker but its highlights reach p95 >= 150" },
+    "floor6": { "darkFrac": [0.08, 0.3], "crops": { "centre": { "p95": [140, null] } }, "note": "BZ-07: the hatch shaft p95 >= 140, darkFrac <= 0.30" }
+  }
+}
