@@ -478,7 +478,7 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   b.add(primitives.cylinder({ name: "islands", size: [150, 6, 150], instances: islandTop, instanceColors: islandColors, material: pbr("#ffffff", 0.95), castShadow: false }));
   b.add(primitives.cylinder({ name: "island-rims", size: [146, 3.2, 146], instances: islandRim, material: pbr("#b59a78", 1), castShadow: false }));
   b.add(primitives.cone({ name: "island-rocks", size: [136, 108, 136], params: { radialSegments: 11 }, instances: islandRock, material: material.pbr({ color: "#d3c9c0", roughness: 1, emissive: "#8c8793", emissiveIntensity: row ? 0.08 : 0.55 }), castShadow: false }));
-  b.add(primitives.box({ name: "platforms", size: [4.4, 0.9, 30], instances: platformAt, material: pbr("#d9cfba", 0.82), castShadow: false }));
+  b.add(primitives.box({ name: "platforms", size: [4.4, 0.9, 30], instances: platformAt, material: pbr("#d9cfba", 0.82), castShadow: false }).runtime({ id: "platforms" }));
   b.add(primitives.box({ name: "platform-edges", size: [0.3, 0.06, 30], instances: platformEdgeAt, material: pbr("#e9c24a", 0.6), castShadow: false }));
   b.add(primitives.box({ name: "canopies", size: [5.4, 0.3, 24], instances: canopyBoxAt, instanceColors: canopyBoxColors, material: pbr("#ffffff", 0.6), castShadow: true }));
   b.add(primitives.box({ name: "canopy-trims", size: [5.6, 0.14, 24.4], instances: canopyTrimAt, material: pbr("#f4ead2", 0.6), castShadow: false }));
@@ -625,6 +625,7 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
   let pantographAt = -1;
   const riders = new RiderMotion();
   let flashUntil = -1, flashOn = false;
+  let platformsWet = false;
   /** Builds the next town's band scene off the frame (a timer) so the docked swap does not build it. */
   const prefetch = (band: BandId): void => {
     if (prefetched.has(band)) return;
@@ -799,6 +800,8 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
     /* rain (Monsoon Exchange, index 4) or snow (Drowned Observatory, index 3) near those towns */
     const weatherNow = weatherOf(data, sim);
     const raining = weatherNow === "rain", snowing = weatherNow === "snow";
+    /* GU47 LT-09: wet platforms in the Monsoon rain (roughness 0.82 -> 0.25), setMaterial only when the weather changes */
+    if (shownBand !== null && raining !== platformsWet) { platformsWet = raining; node("platforms").setMaterial(material.pbr({ color: raining ? "#b9b2a2" : "#d9cfba", roughness: raining ? 0.25 : 0.82 })); }
     const amount = raining || snowing ? 1 : 0;
     // In clear weather the rain and snow buffers are uploaded once with every fade at 0, then left alone (E-04).
     const weatherOn = amount > 0;
