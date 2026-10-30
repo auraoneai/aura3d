@@ -9,12 +9,12 @@
  */
 import "../../showcase-port-shared/quickbar.css";
 import {
-  camera, effects, game, gameFeel, lights, looks, material, model,
+  camera, effects, environments, game, gameFeel, lights, material, model,
   primitives, scene, type AuraNodeBuilder, type AuraSceneNode
 } from "@aura3d/engine";
 import { createGame, sfxUrl, type ForwardAxis } from "@aura3d/engine/game";
 import { assets } from "./aura-assets";
-import { CELL, WALL_H, SILO_H, FLOORS, KILL_HOUSE, type FloorDef } from "./maps";
+import { CELL, WALL_H, SILO_H, FLOORS, KILL_HOUSE, isSolid, type FloorDef } from "./maps";
 import {
   createSim, cellCenter, captureLoadout, defaultLoadout, drainEvents, ENEMIES, MAX_SUMMONS, WEAPONS,
   type Enemy, type Loadout, type Sim, type SimInput, type WeaponId
@@ -27,6 +27,11 @@ import {
 import { VIEWMODEL_ASSET, VIEWMODEL_YAW_OFFSET, weaponHudLabel } from "./weapons-view";
 import { ENEMY_FORWARD, enemyFacingError, nextEnemyYaw } from "./enemy-facing";
 import { installBlackFrameGuard } from "@aura3d/debug";
+import {
+  BZ_ENV_INTENSITY, BZ_HDRI, BZ_HDRI_URL, BZ_PALETTE, BZ_POST, BZ_VARIANTS, lookOfSlot, parseFloorParam
+} from "./art/look";
+import { buildLightRig, createLightRigDriver, type QualityTierName, type RigLightHandle } from "./art/lightRig";
+import { BZ_VFX_EVENTS, registerBunkerVfx, type BunkerVfxKind } from "./art/vfx";
 
 installBlackFrameGuard();
 
@@ -42,7 +47,12 @@ const bootParams = new URLSearchParams(location.search);
 const DEMO = bootParams.get("demo") === "1" || bootParams.has("demo");
 let autoPilot = bootParams.get("autoplay") === "1" || DEMO;
 let appReady = false;
-const LOOK_ID = "night-city" as const;
+/** GU47 WP-21: no look preset; the scene is lit by its own fixtures (art/look.ts, art/lightRig.ts). */
+const LOOK_ID = "bunker-practicals" as const;
+/** BZ-20: `?floor=1..6|kh` boots that floor at its fixed reference viewpoint with the sim held (capture variants). */
+const BOOT_FLOOR = parseFloorParam(bootParams);
+/** The floor slot the scene mounts posed for (the rig is re-aimed per floor at runtime). */
+const BOOT_SLOT = BOOT_FLOOR?.slot ?? 0;
 const EYE = 1.55;
 /**
  * World x-offset between floor slots. All floors share the origin now that only the active floor is visible (C18). (The black
@@ -92,22 +102,25 @@ function slotNode(slot: number, id: string, tags: string[], isStatic = false) {
 const staticNode = (slot: number, key: string) => slotNode(slot, `f${slot}-s-${key}`, ["floor-static"], true);
 
 function buildScene() {
-  const b = scene().add(looks.preset(LOOK_ID, { fogDensityScale: 0.28, exposureEv: 0.42 }));
+  // BZ-01: no look preset, ambient, hemisphere or directional fill. The light is the practical rig (one shadowed key
+  // spot per floor, its fill spot, the carried lamp at 1.2 and a pool of fixture points; the F6 moon through the
+  // hatch), the hangar_interior IBL at 0.35 that is never drawn as the background (BZ-05), and the gunfire transient
+  // lights of the effect pack (BZ-03).
+  const boot = lookOfSlot(BOOT_SLOT);
+  const b = scene();
   const nodes: AuraNodeBuilder<AuraSceneNode>[] = [
-    lights.ambient({ name: "bunker ambient", color: "#c2d6ee", intensity: 0.9 }),
-    lights.hemisphere({ name: "bunker hemi", skyColor: "#8fb8e6", groundColor: "#4a3a2e", intensity: 1.0, position: [0, 12, 0] }),
-    lights.directional({ name: "bunker key light", color: "#d9e8ff", intensity: 1.5, position: [18, 34, 14] }),
-    lights.directional({ name: "bunker warm bounce", color: "#ff9a5a", intensity: 0.55, position: [-14, 7, -10] }),
-    lights.point({ name: "player tactical light", color: "#fff4dc", intensity: 5.6, distance: 32, decay: 1.15, position: [4.5, EYE + 0.3, 4.5] })
-      .runtime(game.runtimeNode("player-light", { tags: ["vfx"] })),
-    lights.point({ name: "player ahead light", color: "#ffd89a", intensity: 4.0, distance: 26, decay: 1.2, position: [10.5, EYE + 0.5, 4.5] })
-      .runtime(game.runtimeNode("player-ahead-light", { tags: ["vfx"] }))
+    ...buildLightRig({ lights, runtimeNode: game.runtimeNode }, boot),
+    environments.hdri({
+      name: "bunker ibl", intensity: BZ_ENV_INTENSITY, background: false,
+      texture: { type: "texture", format: "hdr", url: BZ_HDRI_URL } as never
+    })
   ];
 
   for (const { def, slot } of ALL_FLOORS) {
     const rows = def.rows;
     const h = rows.length, w = rows[0].length;
     const wallH = SLOT_WALL_H[slot]!;
+    const look = lookOfSlot(slot);
     // the renderer multiplies material and instance colours; wallGain undoes the palette being applied twice (floors 2-6 drew black)
     const ref = FLOORS[0]!.palette;
     const wallK = wallGain(shade(def.palette.wall, 0.14), shade(def.palette.wall, 0.12), shade(ref.wall, 0.14), shade(ref.wall, 0.12));
@@ -165,10 +178,11 @@ function buildScene() {
       // slab floor + sealed ceiling: the ceiling now meets the wall tops so the
       // corridors read as enclosed rooms instead of an open-topped flat plane.
       primitives.box({ name: `f${slot} floor`, size: [w * CELL, 0.3, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, -0.15, h * CELL / 2], material: material.pbr({ color: shade(def.palette.floor, 0.1), roughness: 0.62, metalness: 0.12 }) }).runtime(staticNode(slot, "floor")),
-      primitives.box({ name: `f${slot} ceil`, size: [w * CELL, 0.24, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, wallH + 0.14, h * CELL / 2], material: material.emissive({ color: shade(def.palette.ceil, 0.14), emissive: def.palette.accent, emissiveIntensity: 0.12, roughness: 0.9 }) }).runtime(staticNode(slot, "ceil")),
+      primitives.box({ name: `f${slot} ceil`, size: [w * CELL, 0.24, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, wallH + 0.14, h * CELL / 2], material: material.pbr({ color: shade(def.palette.ceil, 0.1), roughness: 0.92, metalness: 0 }) }).runtime(staticNode(slot, "ceil")),
       primitives.box({
         name: `f${slot} wall-trim`,
-        material: material.emissive({ color: def.palette.accent, emissive: def.palette.accent, emissiveIntensity: 1.25, roughness: 0.32, metalness: 0.35 }),
+        // BZ-01: the glowing baseboard is gone; a painted hazard-yellow kick strip only reads where a lamp reaches it
+        material: material.pbr({ color: BZ_PALETTE.hazard, roughness: 0.58, metalness: 0.1 }),
         instances: stripInst,
         castShadow: false,
         receiveShadow: false
@@ -177,7 +191,8 @@ function buildScene() {
     if (ceilInst.length) {
       nodes.push(primitives.box({
         name: `f${slot} work-lights`,
-        material: material.emissive({ color: "#ffe6bc", emissive: def.palette.accent, emissiveIntensity: 0.85, roughness: 0.3 }),
+        // BZ-01/02: the fixtures glow in the floor's one lamp colour (a light only under the ones the rig's pool holds)
+        material: material.emissive({ color: look.lamp.color, emissive: look.lamp.color, emissiveIntensity: look.fixtures.height === "grate" ? 0.6 : 2.4, roughness: 0.3 }),
         instances: ceilInst,
         castShadow: false,
         receiveShadow: false
@@ -390,38 +405,19 @@ function buildScene() {
       name: "muzzle flash", material: material.emissive({ color: "#ffd27a", emissive: "#ff9a2a", emissiveIntensity: 2.2, roughness: 0.3 })
     }).position(0, -50, 0).scale(0.14)
       .runtime(game.runtimeNode("muzzle-flash", { tags: ["vfx"] })),
-    lights.point({ name: "muzzle light", color: "#ffb648", intensity: 0, distance: 6, decay: 2, position: [0, -50, 0] })
-      .runtime(game.runtimeNode("muzzle-light", { tags: ["vfx"] })),
-    lights.point({ name: "boom light", color: "#ff6a2a", intensity: 0, distance: 10, decay: 2, position: [0, -50, 0] })
-      .runtime(game.runtimeNode("boom-light", { tags: ["vfx"] })),
     // C27: the Iron Warden's vent glows while it is vulnerable
     lights.point({ name: "warden vent light", color: "#ff5a1a", intensity: 7, distance: 9, decay: 1.6, position: [0, -50, 0] })
       .runtime(game.runtimeNode("vent-light", { tags: ["vfx"] }))
   );
-  // C8: enemy gunshots get a muzzle flash and a tracer, misses included
+  // C8: enemy gunshots get a tracer, misses included; the muzzle flash at the shooter is the bz-enemy-muzzle preset (BZ-03)
   for (let i = 0; i < ENEMY_TRACERS; i++)
     nodes.push(
       primitives.sphere({
         name: `enemy tracer ${i}`, size: [1, 1, 1], position: [0, -50, 0], castShadow: false, receiveShadow: false,
         material: material.emissive({ color: "#ffe2a8", emissive: "#ff8a2a", emissiveIntensity: 7.5, roughness: 0.2 })
-      }).runtime(game.runtimeNode(`etracer-${i}`, { tags: ["vfx"] })),
-      primitives.sphere({
-        name: `enemy flash ${i}`, size: [0.3, 0.3, 0.3], position: [0, -50, 0], castShadow: false, receiveShadow: false,
-        material: material.emissive({ color: "#ffd27a", emissive: "#ff9a2a", emissiveIntensity: 6, roughness: 0.3 })
-      }).runtime(game.runtimeNode(`eflash-${i}`, { tags: ["vfx"] }))
+      }).runtime(game.runtimeNode(`etracer-${i}`, { tags: ["vfx"] }))
     );
-  for (let i = 0; i < 8; i++)
-    nodes.push(
-      model(assets.corridorMuzzleFlameBurstMeshy, { name: `spark ${i}`, material: material.emissive({ color: "#ffca7a", emissive: "#ff9a3a", emissiveIntensity: 6 }) })
-        .position(0, -50, 0).scale(0.14)
-        .runtime(game.runtimeNode(`spark-${i}`, { tags: ["vfx"] }))
-    );
-  for (let i = 0; i < 6; i++)
-    nodes.push(
-      model(assets.corridorMuzzleFlameBurstMeshy, { name: `boom ${i}`, material: material.emissive({ color: "#ff7a2a", emissive: "#ff5a1a", emissiveIntensity: 4 }) })
-        .position(0, -50, 0).scale(0.6)
-        .runtime(game.runtimeNode(`boom-${i}`, { tags: ["vfx"] }))
-    );
+  // BZ-03: impact sparks and explosion balls are the effect pack's bursts now (art/vfx.ts); no pooled flash nodes.
   for (let i = 0; i < MAX_ROCKETS; i++)
     nodes.push(
       model(assets.corridorFireAmmoBoltMeshy, { name: `rocket ${i}`, material: material.emissive({ color: "#ffd27a", emissive: "#ff7a1a", emissiveIntensity: 8.5 }) })
@@ -437,11 +433,18 @@ function buildScene() {
 
   // C24: no effects.contactShadows. The only shadow-casting light is the look's key above the sealed ceilings, so the mask
   // changed nothing on screen (remote A/B g11-after-7: mean luma 74.98 with it, 74.99 without) and cost 52 draw calls (217 vs 165).
+  // BZ-02: dust haze at 30% of the lamp value per floor (re-applied by applyFloorLook). BZ-08: AO, bloom, grade,
+  // vignette and grain at the WP's numbers; ACES comes from createGame's output.
   return b.addMany(nodes)
-    .add(effects.fog({ color: "#1a2230", density: 0.0095 }))
-    .add(effects.filmGrain({ intensity: 0.02 }))
-    .add(effects.vignette({ intensity: 0.2 }))
-    .add(effects.bloom({ threshold: 0.96, intensity: 0.3 }))
+    .add(effects.fog({ color: boot.fog.color, density: boot.fog.density }))
+    .add(effects.ambientOcclusion({ intensity: BZ_POST.ao.intensity, radius: BZ_POST.ao.radius }))
+    .add(effects.bloom({ threshold: BZ_POST.bloom.threshold, intensity: BZ_POST.bloom.intensity }))
+    .add(effects.colorGrade({
+      contrast: BZ_POST.grade.contrast, saturation: BZ_POST.grade.saturation,
+      temperature: boot.grade.temperature, tint: boot.grade.tint
+    }))
+    .add(effects.vignette({ intensity: BZ_POST.vignette }))
+    .add(effects.filmGrain({ intensity: BZ_POST.grain }))
     .camera(camera.perspective({ position: [4.5, EYE, 4.5], target: [12.5, EYE, 4.5], fov: 72 }));
 }
 
@@ -514,6 +517,8 @@ const mg = createGame({
     win: { punch: { fovDeg: 2.6, ms: 420 }, flash: { color: "#ffd76a", peak: 0.2, ms: 500 } }
   },
   qualityRebuild: { flags: ["game"] },
+  // BZ-08: ACES through the output, never a look preset
+  output: { toneMapping: "aces" },
   evidence: { schema: 1, sections: { bunkerZero: () => window.__gameEvidence ?? { status: "unbound" } } }
 });
 const app = mg.app;
@@ -549,18 +554,57 @@ function setEnemyClip(id: string, node: NodeHandle, clip: string, speed: number)
 }
 const vmNodes = { knife: req("vm-knife"), pistol: req("vm-pistol"), mg: req("vm-mg"), rocket: req("vm-rocket") };
 const muzzleFlash = req("muzzle-flash");
-const muzzleLight = req("muzzle-light");
-const boomLight = req("boom-light");
 const ventLight = req("vent-light");
-const playerLight = req("player-light");
-const playerAheadLight = req("player-ahead-light");
-const sparkNodes = Array.from({ length: 8 }, (_, i) => req(`spark-${i}`));
-const boomNodes = Array.from({ length: 6 }, (_, i) => req(`boom-${i}`));
 const rocketNodes = Array.from({ length: MAX_ROCKETS }, (_, i) => req(`rocket-${i}`));
 const tracerNodes = Array.from({ length: MAX_ROCKETS }, (_, i) => req(`tracer-${i}`));
 const enemyTracerNodes = Array.from({ length: ENEMY_TRACERS }, (_, i) => req(`etracer-${i}`));
-const enemyFlashNodes = Array.from({ length: ENEMY_TRACERS }, (_, i) => req(`eflash-${i}`));
 const fxRng = cosmeticRng(0xb2e0);
+
+// ---------------------------------------------------------------------------
+// GU47 WP-21 look: the practical light rig (BZ-01/02), per-floor fog, IBL and white balance, the effect pack (BZ-03)
+const qualityTier = (): QualityTierName => {
+  const t = (app as { quality?: { tier?: string } }).quality?.tier;
+  return t === "low" || t === "medium" || t === "ultra" ? t : "high";
+};
+const lightRig = createLightRigDriver((id) => opt(id) as RigLightHandle | null, {
+  tier: qualityTier,
+  reducedMotion: () => reducedMotion(),
+  isOpen: (cx, cz) => {
+    const st = sim?.state;
+    if (!st || cx < 0 || cz < 0 || cx >= st.w || cz >= st.h) return false;
+    return !isSolid(st.grid[cz * st.w + cx] ?? "#");
+  }
+});
+/** BZ-02 / BZ-05: one lamp colour, fog, IBL scale and white balance per floor (presentation only, PRD D8). */
+function applyFloorLook(slot: number, transitionSeconds = 0) {
+  const look = lookOfSlot(slot);
+  lightRig.applyFloor(slot);
+  try { app.atmosphere?.setFog({ color: look.fog.color, density: look.fog.density }, { transitionSeconds }); } catch { /* fog runtime not mounted */ }
+  try { app.lighting?.setEnvironmentIntensity(look.environmentIntensity / BZ_ENV_INTENSITY); } catch { /* lighting runtime not mounted */ }
+  try { app.post?.setEffect("colorGrade", { temperature: look.grade.temperature, tint: look.grade.tint }); } catch { /* post runtime not mounted */ }
+  document.documentElement.style.setProperty("--bz-lamp", look.lamp.color);
+}
+/** Reduced flash: the OS setting (prefers-reduced-motion covers flashing in most browsers) or `?reducedFlash=1`. */
+const reducedFlash = () => bootParams.get("reducedFlash") === "1" || reducedMotion();
+let vfxRegisteredFor = "";
+function ensureVfx() {
+  const key = `${reducedMotion() ? 1 : 0}${reducedFlash() ? 1 : 0}`;
+  if (key === vfxRegisteredFor || !app.effects) return;
+  vfxRegisteredFor = key;
+  registerBunkerVfx(app.effects, { reducedMotion: reducedMotion(), reducedFlash: reducedFlash() });
+}
+let vfxBursts = 0;
+/** BZ-03: one registered preset per gameplay event; every shot, impact and blast flashes a transient light. */
+function fireVfx(event: keyof typeof BZ_VFX_EVENTS, at: [number, number, number]) {
+  const kind: BunkerVfxKind | undefined = BZ_VFX_EVENTS[event];
+  if (!kind || !app.effects || !appReady) return;
+  ensureVfx();
+  try { app.effects.burst(kind, at, { camera: false }); vfxBursts++; } catch { /* effects runtime not mounted */ }
+}
+/** Sim records (shots, blasts, enemy shots) already given their burst: cosmetic bookkeeping, never fed back. */
+const seenFx = new WeakSet<object>();
+const firstSight = (o: object) => { if (seenFx.has(o)) return false; seenFx.add(o); return true; };
+let muzzleWasLit = false;
 
 const enemyYaw = new Map<string, number>();
 const forwardOverride: Partial<Record<string, ForwardAxis>> = {};
@@ -603,6 +647,7 @@ function startFloor(idx: number, m: "descent" | "killhouse", opts: StartOptions 
   eventSeq = 0;
   hideAllRuntime();
   bindFloor();
+  applyFloorLook(activeSlot());
   syncScenePose(NO_INPUT);
   setResultsVisible(false);
   lastHud = "";
@@ -885,8 +930,8 @@ function syncScenePose(inp: SimInput) {
     fov: 72
   });
   try { mg.sound?.setListener?.({ position: [p.x + ox, EYE, p.z], forward: [fx, 0, fz], up: [0, 1, 0] }); } catch { /* audio not ready */ }
-  playerLight.setPosition(p.x + ox, eyeY + 0.4, p.z);
-  playerAheadLight.setPosition(p.x + ox + fx * 6.5, eyeY + 0.6, p.z + fz * 6.5);
+  // BZ-01: the rig follows the camera (carried lamp, fixture pool, flicker, F6 beacon); cosmetic, never the sim's RNG
+  lightRig.update({ x: p.x + ox, y: eyeY, z: p.z, fx, fz }, sim.state.time);
 
   // ---- viewmodel (with crisp recoil kickback on fire)
   const bob = Math.sin(sim.state.time * 9) * 0.018 * moveMag * motion;
@@ -907,7 +952,7 @@ function syncScenePose(inp: SimInput) {
     } else node.setVisible(false);
   }
 
-  // ---- muzzle flash + light
+  // ---- muzzle flash; the room light of every shot is the bz-muzzle preset's transient light (BZ-03, fireVfx)
   if (sim.state.muzzle > 0) {
     const mx = p.x + ox + fx * 0.95 + rx * 0.22, my = EYE - 0.22, mz = p.z + fz * 0.95 + rz * 0.22;
     muzzleFlash.setPosition(mx, my, mz);
@@ -915,16 +960,12 @@ function syncScenePose(inp: SimInput) {
     // C17: cosmetic jitter comes from its own RNG, never the sim's seeded stream
     muzzleFlash.setScale(0.11 + fxRng() * 0.05);
     muzzleFlash.setVisible(true);
-    muzzleLight.setPosition(mx, my, mz);
-  } else if (sim.state.rockets.length > 0) {
-    const lead = sim.state.rockets[sim.state.rockets.length - 1]!;
-    muzzleFlash.setVisible(false);
-    muzzleFlash.setPosition(0, -50, 0);
-    muzzleLight.setPosition(lead.x + ox, lead.y ?? 1.18, lead.z);
+    if (!muzzleWasLit) fireVfx("player-fire", [mx, my, mz]);
+    muzzleWasLit = true;
   } else {
     muzzleFlash.setVisible(false);
     muzzleFlash.setPosition(0, -50, 0);
-    muzzleLight.setPosition(0, -50, 0);
+    muzzleWasLit = false;
   }
 
   // ---- enemies (skeletal animation + procedural stride cadence); nodes that do not exist are skipped (C1)
@@ -1062,31 +1103,17 @@ function syncScenePose(inp: SimInput) {
       enemyTracerNodes[i]!.setRotation(0, Math.atan2(dx, dz), 0);
       enemyTracerNodes[i]!.setScale([0.045, 0.045, Math.max(0.2, len * 0.6)]);
       enemyTracerNodes[i]!.setVisible(true);
-      enemyFlashNodes[i]!.setPosition(s.x0 + ox, s.y0, s.z0);
-      enemyFlashNodes[i]!.setVisible(s.t < 0.07);
+      if (firstSight(s)) fireVfx("enemy-fire", [s.x0 + ox, s.y0, s.z0]);
     } else {
       enemyTracerNodes[i]!.setVisible(false); enemyTracerNodes[i]!.setPosition(0, -50, 0);
-      enemyFlashNodes[i]!.setVisible(false); enemyFlashNodes[i]!.setPosition(0, -50, 0);
     }
   }
-  const exps = sim.state.explosions;
-  for (let i = 0; i < boomNodes.length; i++) {
-    if (i < exps.length && exps[i]!.t < 0.55) {
-      const e = exps[i]!;
-      boomNodes[i]!.setPosition(e.x + ox, 1.0, e.z);
-      boomNodes[i]!.setScale(0.5 + e.t * 6);
-      boomNodes[i]!.setVisible(true);
-      if (i === 0) boomLight.setPosition(e.x + ox, 1.4, e.z);
-    } else { boomNodes[i]!.setVisible(false); boomNodes[i]!.setPosition(0, -50, 0); }
-  }
-  if (exps.every((e) => e.t > 0.55)) boomLight.setPosition(0, -50, 0);
-  const shots = sim.state.shots;
-  for (let i = 0; i < sparkNodes.length; i++) {
-    if (i < shots.length && shots[i]!.t < 0.25) {
-      sparkNodes[i]!.setPosition(shots[i]!.x + ox, 1.18, shots[i]!.z);
-      sparkNodes[i]!.setScale(Math.max(0.18, 0.55 - shots[i]!.t * 2));
-      sparkNodes[i]!.setVisible(true);
-    } else { sparkNodes[i]!.setVisible(false); sparkNodes[i]!.setPosition(0, -50, 0); }
+  // ---- BZ-03: blasts and impacts are one burst each, fired the first frame the sim record is seen
+  for (const e of sim.state.explosions) if (e.t < 0.55 && firstSight(e)) fireVfx("rocket-or-barrel-blast", [e.x + ox, 1.0, e.z]);
+  for (const s of sim.state.shots) {
+    if (s.t >= 0.25 || !firstSight(s)) continue;
+    fireVfx("bullet-impact", [s.x + ox, 1.18, s.z]);
+    fireVfx("wall-chip", [s.x + ox, 1.18, s.z]);
   }
 }
 
@@ -1480,6 +1507,23 @@ function installQa() {
 }
 
 // ---------------------------------------------------------------------------
+/**
+ * QA crops for E-I's capture (normalised 0..1). First person: the camera carries the viewmodel, so the crops are fixed
+ * in screen space. `muzzle` is the weapon's mouth (BZ-03), `floor` the lower band under the reference view (BZ-04, F2
+ * water BZ-06), `ceiling` the top band (BZ-13), `centre` the middle band (F6 hatch shaft, BZ-07).
+ */
+const QA_CROPS = [
+  { name: "muzzle", x: 0.5, y: 0.52, w: 0.3, h: 0.34 },
+  { name: "floor", x: 0.2, y: 0.72, w: 0.6, h: 0.26 },
+  { name: "ceiling", x: 0.1, y: 0, w: 0.8, h: 0.2 },
+  { name: "centre", x: 0.33, y: 0.2, w: 0.34, h: 0.55 }
+] as const;
+function publishQaCrops() {
+  const w = window as unknown as { __AURA_QA__?: Record<string, unknown> };
+  w.__AURA_QA__ = { ...(w.__AURA_QA__ ?? {}), crops: QA_CROPS.map((c) => ({ ...c })), variant: BZ_VARIANTS[activeSlot()] };
+}
+
+// ---------------------------------------------------------------------------
 // evidence at 4 Hz (C25), with draw calls per floor (C18)
 let lastEvidenceAt = -1;
 const drawCallsByFloor: Record<string, number> = {};
@@ -1515,7 +1559,10 @@ function publishEvidence(force = false) {
     drawCalls, drawCallsByFloor: { ...drawCallsByFloor },
     run: { startFloor: runStartFloor + 1, floorsCleared: runResults.length },
     events: sim.state.events.slice(-12),
-    look: { id: LOOK_ID, category: looks.describe(LOOK_ID).category }
+    look: {
+      id: LOOK_ID, hdri: BZ_HDRI, variant: BZ_VARIANTS[activeSlot()], lamp: lookOfSlot(activeSlot()).lamp.color,
+      rigPool: lightRig.pool(), vfxBursts, vfxLive: app.effects?.liveCount ?? null
+    }
   };
   window.__gameEvidence = payload;
   const prevEv = (window.__AURA3D_GAME_EVIDENCE__ && typeof window.__AURA3D_GAME_EVIDENCE__ === "object")
@@ -1605,16 +1652,33 @@ $("bz-tour-stats").replaceChildren(...[
   ["ENEMIES", "guard · hound · gunner · IRON WARDEN"],
   ["SECRETS", "push-walls on every floor"],
   ["BEST RUN", (() => { const b = loadJson<{ score: number; time: number } | null>("bz-best-run", null); return b ? `${b.score} in ${fmtTime(b.time)}` : "not set"; })()],
-  ["ENGINE", "Aura3D · night-city look"]
+  ["ENGINE", "Aura3D · lit by its own fixtures"]
 ].map(([k, v]) => { const d = document.createElement("div"); d.className = "bz-kv"; const a = document.createElement("span"); a.textContent = k!; const c = document.createElement("span"); c.textContent = v!; d.append(a, c); return d; }));
 
 // onboarding card (C27): controls and the objective before floor 1, once per browser
 function dismissIntro() { elIntro.hidden = true; setPaused("intro", false); store.set("bz-intro-seen", "1"); }
 $("bz-intro-go").addEventListener("click", () => { dismissIntro(); if (!touchMode) requestLock(); void mg.sound?.unlock(); cue("ambience"); });
-if (!DEMO && !autoPilot && store.get("bz-intro-seen") !== "1") { elIntro.hidden = false; setPaused("intro", true); }
+if (!DEMO && !autoPilot && !BOOT_FLOOR && store.get("bz-intro-seen") !== "1") { elIntro.hidden = false; setPaused("intro", true); }
 
 // ---------------------------------------------------------------------------
-startFloor(0, "descent", { newRun: true });
+/**
+ * BZ-20: `?floor=` boots that floor at its look row's reference viewpoint and holds the sim there, so the capture
+ * variant `bunker-zero--<variant>` frames the same view every run. The player pose is set once at boot; with no
+ * `?floor=` the boot path is unchanged.
+ */
+function placeAtReference() {
+  if (!BOOT_FLOOR) return;
+  const ref = lookOfSlot(BOOT_FLOOR.slot).reference;
+  const p = sim.state.player;
+  p.x = cellCenter(ref.cell[0]); p.z = cellCenter(ref.cell[1]);
+  p.yaw = (ref.yawDeg * Math.PI) / 180;
+  p.pitch = (ref.pitchDeg * Math.PI) / 180;
+  qaFrozen = true;
+  syncScenePose(NO_INPUT);
+}
+if (BOOT_FLOOR) startFloor(BOOT_FLOOR.floorIdx, BOOT_FLOOR.mode, { newRun: true });
+else startFloor(0, "descent", { newRun: true });
+placeAtReference();
 updateHint();
 elHud.classList.remove("hidden");
 void mg.ready().then(() => {
@@ -1623,7 +1687,11 @@ void mg.ready().then(() => {
   // C18: visibility set before the renderer mounted does not stick, so hide the inactive floors again once it is up
   hideAllRuntime();
   bindFloor();
+  applyFloorLook(activeSlot());
+  ensureVfx();
   syncScenePose(NO_INPUT);
+  placeAtReference();
+  publishQaCrops();
   document.body.dataset.aura3dReady = "true";
   installQa();
   window.__AURA3D_ROUTE_READY__ = { ready: true };
