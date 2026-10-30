@@ -24,11 +24,12 @@ import { SteadyCamera, createSplatPresenter, drainPopups } from "./presentation"
 import { buildWorld, type WorldRuntime } from "./world";
 import { LOOKS, QA_CROPS, parseLook } from "./look";
 import { fireSplashes, registerPaintPresets, splashesFor } from "./vfx3d";
+import { HUD_CARNIVAL_CLASS, comboTubeFill } from "./hud";
 
 
 /* GT Walsheim Bold (licensed library, assets/GT-Walsheim-Bold.woff2): the heavy rounded face the HUD, popups and cards use */
 if (typeof FontFace !== "undefined" && typeof document !== "undefined") {
-  const face = new FontFace("Splat Display", `url(${new URL("./assets/GT-Walsheim-Bold.woff2", import.meta.url).href})`, { weight: "700" });
+  const face = new FontFace("Splat Display", `url(${new URL("./assets/GT-Walsheim-Bold.woff2", import.meta.url).href})`, { weight: "700", display: "block" });
   void face.load().then((f) => document.fonts.add(f)).catch(() => undefined);
 }
 const config = readQaParams({
@@ -50,6 +51,8 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
 const canvas = $<HTMLCanvasElement>("world");
 /* GU47 CR-00: one look per page load, read once */
 const look = LOOKS[parseLook(typeof location === "undefined" ? "" : location.search)];
+/* CR-H1: the paint-world HUD rules in index.html are scoped to this body class (carnival only) */
+if (look.id === "carnival") document.body.classList.add(HUD_CARNIVAL_CLASS);
 /** CR-V1 bursts fired since load (QA). */
 let splashesFired = 0;
 /** CR-V2 ball ribbon (E-F trail on the "ball" node), recreated when the ball colour changes; none on reduced motion. */
@@ -137,6 +140,16 @@ function updateHud(): void {
       combo.style.display = "block";
       combo.style.color = o.multiplier >= 4 ? "#f0433a" : o.multiplier === 3 ? "#b868e8" : o.multiplier === 2 ? "#5ecaf0" : "#f9c647";
     } else combo.style.display = "none";
+  }
+  if (look.id === "carnival") {
+    const swatch = o.isRainbowActive ? "linear-gradient(135deg, #f0433a, #f9c647, #5ecaf0, #b868e8)" : (COLORS[o.playerColorIndex] ?? "#f0433a");
+    if (changed("swatch", swatch)) $("hud-swatch").style.background = swatch;
+    const fill = `${Math.round(comboTubeFill(o.combo, o.multiplier) * 100)}%|${o.multiplier}`;
+    if (changed("tube", fill)) {
+      const el = $("hud-tube-fill");
+      el.style.width = fill.split("|")[0] as string;
+      el.style.background = o.multiplier >= 4 ? "#f0433a" : o.multiplier === 3 ? "#b868e8" : o.multiplier === 2 ? "#5ecaf0" : "#f9c647";
+    }
   }
   let pills = "";
   if (o.rainbowTimer > 0) pills += `<span class="pu pu-rainbow">🌈 ${Math.ceil(o.rainbowTimer)}s</span>`;
