@@ -1,0 +1,25 @@
+{
+  "schema": "aura3d.gu47-budget/1",
+  "slug": "where-the-wind-wanders-port",
+  "note": "before: newest committed evidence (evidence/where-the-wind-wanders-port/README.md, remote runs g23-before-10291933 / g23-after-10291946, SwiftShader software WebGL2, not GPU numbers). after: null until the phase-2 capture. Budget from PRD WP-33.",
+  "budget": {
+    "high": { "drawCalls": 54, "triangles": 450000, "glbBytes": 10000000, "routeJsGzipDeltaBytes": 15360 },
+    "low": { "drawCalls": 28, "shadows": false, "godRays": false, "particles": false, "paperPass": false }
+  },
+  "variants": {
+    "found0": { "before": { "drawCalls": 17, "drawCallsRange": [14, 24], "triangles": null, "textureBytes": null, "glbBytes": 8396392, "pageMB": null, "routeJsGzipDelta": 0, "runnerFps": null }, "after": null },
+    "found2": { "before": { "drawCalls": null, "triangles": null, "textureBytes": null, "glbBytes": 8396392, "pageMB": null, "routeJsGzipDelta": 0, "runnerFps": null }, "after": null },
+    "found3": { "before": { "drawCalls": null, "triangles": null, "textureBytes": null, "glbBytes": 8396392, "pageMB": null, "routeJsGzipDelta": 0, "runnerFps": null }, "after": null },
+    "epilogue": { "before": { "drawCalls": null, "triangles": null, "textureBytes": null, "glbBytes": 8396392, "pageMB": null, "routeJsGzipDelta": 0, "runnerFps": null }, "after": null }
+  },
+  "expectedDrawDelta": {
+    "WW47-L2 engine sun shadows (2 cascades; GLBs + merged props cast, foliage cards do not)": 22,
+    "WW47-L3 hemisphere + IBL": 0,
+    "WW47-L5 two point lights": 0,
+    "WW47-V1 petal stream (2 emitters)": 2,
+    "WW47-V2/V3 one-shot bursts (transient)": 1,
+    "WW47-P1/P2 post (bloom, grade, vignette, god rays)": 0,
+    "WW47-W1 dressing (WP-36 assets, not mounted yet)": 0,
+    "WW47-A1 kite (WP-36 asset, not mounted yet)": 0
+  }
+}
