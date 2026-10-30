@@ -13,8 +13,8 @@
 | LT-05 | B clouds sun side >= 1.3x; D top >= 25, no solid-void | phase 2 |
 | LT-06 | S4 in B only at High; sun side +5-15, far side < 3; flare only in A/B | done in code (god rays node in B only; flare node A/B); pixels phase 2 |
 | LT-07 | GTAO and both passes ran; clip <= 0.01; rows -25% variance; A R/B >= 1.15, D B/R >= 1.2 | done in code; pass receipts and pixels phase 2 |
-| LT-08 | 6 probes; B tram p99 >= 230 | not done |
-| LT-09 | wet platform p95 +20; roofs 1.4x; setMaterial only on weather change | partial: wet platforms with setMaterial on weather change; roofs, engine rain/snow not done |
+| LT-08 | 6 probes; B tram p99 >= 230 | partial: six `probes.reflection` box probes (update once, 128 px, ~6.3 MB) in every band scene; captures wait for the runtime probe face renderer (handoff E-B); clearcoat livery blocked (WP-36 tram retexture); p99 phase 2 |
+| LT-09 | wet platform p95 +20; roofs 1.4x; setMaterial only on weather change | partial: wet platforms with setMaterial on weather change; snow-dusted Observatory roofs (`roofs-snow`, colour 1.4x+ the roof tints, unit test); engine rain/snow kept as hand shaders (no verified runtime on/off for the weather volume: handoff E-F); puddle decals blocked (WP-36) |
 | LT-10 | no primitive canopies/pines/bushes/stones/puffs/rocks | blocked (WP-36) |
 | LT-11 | tram hash same; riders validate-animation | blocked (WP-36) |
 | LT-12 | +12 draws max; 6 text3D nodes match town names | done (+10 draws expected); silhouettes row blocked (WP-36 islands, gulls) |
@@ -23,7 +23,7 @@
 | LT-14 | liveCount > 0 on curves; 4 presets registered; <= 0.05 screen share | done (5 presets) |
 | LT-14 | storm lightning flash +15 for <= 200 ms | done in code (band C bounce flare <= 200 ms); pixels phase 2 |
 | LT-15 | lean 63% in 0.15-0.35 s; reduced motion <= 30% | done (unit test); sway clip past 0.22 blocked (WP-36 rigged riders) |
-| LT-16 | 6 arrival sequences per circuit | not done |
-| LT-17 | HUD <= 22%, text >= 12 px, contrast >= 4.5:1 | not done |
-| LT-18 | budgets, sibling judge | phase 2 (budget.json written) |
+| LT-16 | 6 arrival sequences per circuit; hitch < 1; service time identical | done (unit test: 6 arrivals, 1 finale, identical sim state with and without shots, < 1 m eye step per frame); hitch phase 2 |
+| LT-17 | HUD <= 22%, text >= 12 px, contrast >= 4.5:1 | done in code: enamel panels, brass spirit level, departure board; licensed National 2 Narrow + TT Commons Pro Mono; text >= 12 px (unit test); contrast 8.2-14:1 computed; HUD share at 390x844 phase 2 |
+| LT-18 | budgets, sibling judge | phase 2 (budget.json written; QA crops `sky-top`, `platform`, `headlamp` published on `__AURA_LAST_TRAIN__.crops`) |
 | LT-19 | audit passes; game-checks 0 errors | done |
