@@ -34,6 +34,7 @@ import { buildLightRig, createLightRigDriver, type QualityTierName, type RigLigh
 import { BZ_FLOOR_TEXTURES, bunkerTexture } from "./art/textures";
 import { damageArcDeg, deathFade, deathRoll, descentSeconds, doorOffset, reloadDip, viewmodelSway } from "./art/motion";
 import { BZ_VFX_EVENTS, atmosphereEmitters, registerBunkerVfx, type BunkerVfxKind } from "./art/vfx";
+import { BLUEPRINT, blueprintEdges, type Segment } from "./art/minimap";
 import { BZ_CA_PULSE, caPulseLevel, lutOfSlot, lutUrlOfSlot } from "./art/lut";
 import { HATCH_BACKDROP, HATCH_COLLAR, hatchBackdrop, hatchCeiling, hatchCollar, hatchShaftSpec, shaftOnSlot } from "./art/hatch";
 
@@ -959,22 +960,35 @@ window.addEventListener("touchstart", () => enableTouch(), { passive: true, capt
 let mapOpen = false;
 let mapDrawT = 0;
 function toggleMap(on = !mapOpen) { mapOpen = on; elMap.hidden = !on; if (on) drawMap(); }
+let mapEdges: { key: string; edges: Segment[] } = { key: "", edges: [] };
+/** BZ-17: the blueprint floor plan (art/minimap.ts): wall outlines on blueprint blue, doors hazard, exit and player in the lamp colour. */
 function drawMap() {
   const s = sim.state, p = s.player;
-  const px = 9;
+  const px = BLUEPRINT.px;
   if (elMap.width !== s.w * px) { elMap.width = s.w * px; elMap.height = s.h * px; }
   const ctx = elMap.getContext("2d");
   if (!ctx) return;
-  ctx.fillStyle = "rgba(6,8,11,0.88)"; ctx.fillRect(0, 0, elMap.width, elMap.height);
+  const lamp = lookOfSlot(activeSlot()).lamp.color;
+  const gridKey = s.grid.join(""); // push walls open in place, so the plan is keyed by content
+  if (mapEdges.key !== gridKey) mapEdges = { key: gridKey, edges: blueprintEdges(s.grid, s.w, s.h) };
+  ctx.fillStyle = BLUEPRINT.paper; ctx.fillRect(0, 0, elMap.width, elMap.height);
+  ctx.strokeStyle = BLUEPRINT.grid; ctx.lineWidth = 1; ctx.beginPath();
+  for (let x = 0; x <= s.w; x++) { ctx.moveTo(x * px + 0.5, 0); ctx.lineTo(x * px + 0.5, elMap.height); }
+  for (let z = 0; z <= s.h; z++) { ctx.moveTo(0, z * px + 0.5); ctx.lineTo(elMap.width, z * px + 0.5); }
+  ctx.stroke();
   for (let z = 0; z < s.h; z++) for (let x = 0; x < s.w; x++) {
     const ch = s.grid[z * s.w + x]!;
-    const col = ch === "#" || ch === " " ? "#4b4f57" : ch === "%" ? "#6a5a40" : ch === "P" ? "#4b4f57" : ch === "D" ? "#ffb648" : ch === "E" ? "#58e08a" : ch === "o" || ch === "b" || ch === "c" ? "#2a2e35" : "#14181e";
-    ctx.fillStyle = col; ctx.fillRect(x * px, z * px, px - 1, px - 1);
+    const fill = ch === "#" || ch === " " || ch === "%" || ch === "P" ? BLUEPRINT.wallFill : ch === "D" ? BLUEPRINT.door : ch === "E" ? lamp : null;
+    if (fill) { ctx.fillStyle = fill; ctx.fillRect(x * px + 1, z * px + 1, px - 2, px - 2); }
   }
-  for (const k of s.pickups) if (k.kind === "key" && !k.taken) { ctx.fillStyle = "#ffe066"; ctx.beginPath(); ctx.arc((k.cx + 0.5) * px, (k.cz + 0.5) * px, px * 0.38, 0, Math.PI * 2); ctx.fill(); }
+  ctx.strokeStyle = BLUEPRINT.wall; ctx.lineWidth = 1.5; ctx.beginPath();
+  for (const [x0, z0, x1, z1] of mapEdges.edges) { ctx.moveTo(x0 * px, z0 * px); ctx.lineTo(x1 * px, z1 * px); }
+  ctx.stroke();
+  for (const k of s.pickups) if (k.kind === "key" && !k.taken) { ctx.fillStyle = BLUEPRINT.key; ctx.beginPath(); ctx.arc((k.cx + 0.5) * px, (k.cz + 0.5) * px, px * 0.32, 0, Math.PI * 2); ctx.fill(); }
   const mx = (p.x / CELL) * px, mz = (p.z / CELL) * px;
   ctx.save(); ctx.translate(mx, mz); ctx.rotate(p.yaw);
-  ctx.fillStyle = "#7dfcff"; ctx.beginPath(); ctx.moveTo(0, -px * 0.7); ctx.lineTo(px * 0.45, px * 0.45); ctx.lineTo(-px * 0.45, px * 0.45); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = lamp; ctx.strokeStyle = "#0a2242"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, -px * 0.7); ctx.lineTo(px * 0.45, px * 0.45); ctx.lineTo(-px * 0.45, px * 0.45); ctx.closePath(); ctx.fill(); ctx.stroke();
   ctx.restore();
 }
 
