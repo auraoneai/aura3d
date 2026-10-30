@@ -805,6 +805,20 @@ function boot(): void {
     }
     shotDofOn = want;
   }
+  // DIA-P2: motion blur on the home-run track only (High, GU47), through the E-C runtime switch; the engine declares the
+  // stage when the scene authors none and keeps it off below High (postBridge S7 tier gate).
+  let shotBlurOn = false;
+  function applyShotBlur(on: boolean): void {
+    const want = on && sceneCtx.tier === "high" && sceneCtx.variant === "gu47";
+    if (want === shotBlurOn) return;
+    try {
+      if (want) (app as any).post?.setEffect?.("motion-blur", { shutter: 0.5, samples: 8 });
+      (app as any).post?.setEffectEnabled?.("motion-blur", want);
+    } catch {
+      /* post is presentation only */
+    }
+    shotBlurOn = want;
+  }
   const skipShot = (): void => {
     if (director.active) director.skip();
   };
@@ -3329,6 +3343,7 @@ function boot(): void {
     }
     applyCineBars(seq?.bars ?? 0);
     applyShotDof(seq?.dof ?? false, seq ? Math.hypot(eye[0] - target[0], eye[1] - target[1], eye[2] - target[2]) : 0);
+    applyShotBlur(seq?.motionBlur ?? false);
     // Reduced motion (PRD 6.3): entering or leaving a sequence is a cut, not an eased move.
     const cut = reducedMotion && (seq !== null) !== lastSeqActive;
     lastSeqActive = seq !== null;

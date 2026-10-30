@@ -86,4 +86,16 @@ describe("aura-diamond camera director (DIA-C1)", () => {
     expect(h1.pose).toEqual(h2.pose);
     expect(h1.bars).toBe(1);
   });
+
+  it("blurs motion on the home-run track only, and never under reduced motion (DIA-P2)", () => {
+    const live = new CameraDirector(false);
+    live.play(walkupShot(), 0);
+    expect(live.update(0.5, false)!.motionBlur).toBe(false);
+    live.play(homeRunShot(PARKS.sandlot, [10, 0, -120]), 1);
+    expect(live.update(1.5, false)!.motionBlur).toBe(true);
+    for (const shot of [introShot(PARKS.ivy), walkupShot(), halfInningShot()]) expect(shot.motionBlur ?? false).toBe(false);
+    const calm = new CameraDirector(true);
+    calm.play(homeRunShot(PARKS.sandlot, [10, 0, -120]), 0);
+    expect(calm.update(0.5, false)!.motionBlur).toBe(false);
+  });
 });

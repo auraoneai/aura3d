@@ -5,7 +5,7 @@
  * and any key or tap skips it. Pure math (no engine, no DOM) on wall-clock seconds; it never touches the sim.
  *
  * Reduced motion (PRD 6.3): the intro and the half-inning wide are skipped, the walk-up and the home run become a held
- * cut of their key framing.
+ * cut of their key framing, and the home run's motion blur is off.
  */
 import { fenceRadius, type ParkSpec, type Vec3 } from "../src/rules";
 
@@ -25,6 +25,8 @@ export interface Shot {
   readonly bars: boolean;
   /** Depth of field in this shot (DIA-P2: walk-up and home run, High tier). */
   readonly dof: boolean;
+  /** Motion blur in this shot (DIA-P2: the home-run track only, High tier; never under reduced motion). */
+  readonly motionBlur?: boolean;
   /** Key framings the pose is eased through (2 or 3). */
   readonly keys: readonly CamPose[];
 }
@@ -92,6 +94,7 @@ export function homeRunShot(park: ParkSpec, landPos: Vec3): Shot {
     duration: 3.2,
     bars: true,
     dof: true,
+    motionBlur: true,
     keys: [
       { eye: [dir[0] * -6, 13, 20], target: [dir[0] * wall * 0.6, 8, dir[2] * wall * 0.6], fov: 44 },
       { eye: [dir[0] * reach, 11, dir[2] * reach + 6], target: [dir[0] * wall, 7, dir[2] * wall], fov: 38 }
@@ -119,6 +122,8 @@ export interface DirectorFrame {
   /** Letterbox coverage 0..1 (eased in and out). */
   readonly bars: number;
   readonly dof: boolean;
+  /** The shot's motion blur; false under reduced motion (the held cut does not move). */
+  readonly motionBlur: boolean;
 }
 
 export class CameraDirector {
@@ -162,6 +167,6 @@ export class CameraDirector {
     const pose = this.held ?? shotPose(shot, u);
     const edge = 0.12;
     const bars = !shot.bars ? 0 : this.reducedMotion ? 1 : smooth(Math.min(u / edge, (1 - u) / edge, 1));
-    return { kind: shot.kind, pose, bars, dof: shot.dof };
+    return { kind: shot.kind, pose, bars, dof: shot.dof, motionBlur: shot.motionBlur === true && !this.reducedMotion };
   }
 }
