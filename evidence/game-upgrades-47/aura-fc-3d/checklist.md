@@ -23,7 +23,7 @@ Every acceptance line of WP-19 with its phase-1 status. "phase 2" = needs remote
 | FC47-P1 | 3x3 vectors differ >= 15 pairwise; distinctness gate passes | phase 2 |
 | FC47-P2 | pitch hue differs >= 8 deg Munich vs Kyoto | unit on the LUT maths (turf green); pixels: phase 2 |
 | FC47-P2 | LUT bound in receipt | phase 2 (bound on the look grade: unit) |
-| FC47-P3 | bank cell p95 >= 230, clip < 1% | not done (C row; crop `flood-bank` published) |
+| FC47-P3 | bank cell p95 >= 230, clip < 1% | flares in code on the two far banks at night (42425fcc6, unit `lens-flares.test.ts`); pixels on the `flood-bank` crop: phase 2 |
 | FC47-M1 | pitch stddev >= 6 | phase 2 (acg-grass005 tiled 24x16) |
 | FC47-M1 | validate --release | phase 2 |
 | FC47-M1 | draws unchanged | expected 0 delta (materials only) |
@@ -41,9 +41,9 @@ Every acceptance line of WP-19 with its phase-1 status. "phase 2" = needs remote
 | FC47-V2 | Glacier sky G-R >= 25 | phase 2 |
 | FC47-V2 | 3 fewer planes | done (unit: no `fc-aurora-<n>` planes, 3 ribbons) |
 | FC47-AN1 | crowd diff >= 3x baseline after a goal; motion report; crowd <= 16 draws | blocked (WP-36 rigged fans and clips) |
-| FC47-C1 | cutThisFrame on shot changes; replay >= 3 s; portrait fit test passes | not done |
+| FC47-C1 | cutThisFrame on shot changes; replay >= 3 s; portrait fit test passes | done in code (1b4600c18): `setPose(..., { cut: true })` on every shot change, replay playback 3.0 s, portrait fit >= 19.5 m at 390x844 (unit `broadcast-package.test.ts`); live cutThisFrame read: phase 2 |
 | FC47-H1 | lower third on goal | done in code (unit wiring); pixels: phase 2 |
-| FC47-H1 | in-world score matches state | not done (SDF score) |
+| FC47-H1 | in-world score matches state | done in code (947db1df5): SDF digit reel, evidence `inWorldScore` vs `score`, unit `scoreboard-text.test.ts` |
 | FC47-H1 | text >= 12 px | done (unit over hud.ts) |
 | FC47-H1 | no system-ui | done (unit) |
 | FC47-W1 | >= 8 prop keys within 10 m per venue; within PF1 | blocked (WP-36 steward, photographer) |
