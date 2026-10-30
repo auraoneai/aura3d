@@ -43,6 +43,7 @@ import {
   DASH_LINES_X,
   DASH_ROWS,
   DASH_STRIDE_Z,
+  GRID_DISPATCH_FLAGS,
   GRID_DISPATCH_RENDERER,
   HIDDEN_POS,
   HIDDEN_SCALE,
@@ -177,7 +178,7 @@ async function bootGridDispatch(): Promise<void> {
   let weather: WeatherPreset = "noon";
 
   await probeBuildingModels();
-  const auraApp = createAuraApp(canvas, { scene: buildGridDispatchScene(weather), renderer: GRID_DISPATCH_RENDERER, qualityRebuild: { flags: ["game"] } });
+  const auraApp = createAuraApp(canvas, { scene: buildGridDispatchScene(weather), renderer: GRID_DISPATCH_RENDERER, qualityRebuild: { flags: GRID_DISPATCH_FLAGS } });
   installSafetyNet({ safety: { selfHeal: false, panel: "query" }, app: auraApp });
   let N = bindNodes(auraApp);
 

@@ -134,6 +134,14 @@ export const WEATHER: Readonly<Record<WeatherPreset, WeatherLook>> = {
  */
 export const GRID_DISPATCH_RENDERER = { quality: { tier: "high" } } as const;
 
+/**
+ * GD-00: quality-rebuild flags in record form. A3D_QR_GAME stays on as before; the sky and fog node handlers
+ * (A3D_QR_VFX_SKY, A3D_QR_VFX_FOG) are named explicitly so the marine-layer sky and height fog never depend on a
+ * registry default. Both are default-on today, so the resolved flag set equals the old `["game"]` list
+ * (tests/unit/teleoperator/look.test.ts).
+ */
+export const GRID_DISPATCH_FLAGS = { A3D_QR_GAME: true, A3D_QR_VFX_SKY: true, A3D_QR_VFX_FOG: true } as const;
+
 const placed = (items: ReadonlyArray<readonly [number, number, number]>): AuraTransformSpec[] => items.map(([x, y, z]) => ({ position: [x, y, z] }));
 
 export function buildGridDispatchScene(weather: WeatherPreset): ReturnType<typeof scene> {
