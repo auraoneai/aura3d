@@ -28,7 +28,7 @@ const grain = (kind: SurfaceKind) => {
     case "acrylic": return material.proceduralTexture("plastic-micro-scratch", { scale: 36, strength: 0.18, contrast: 0.5 });
     case "turf": return material.proceduralTexture("fabric-normal", { scale: 72, strength: 0.32, contrast: 0.6 });
     case "clay": return material.proceduralTexture("fabric-normal", { scale: 96, strength: 0.2, contrast: 0.55 });
-    case "regolith": return material.proceduralTexture("rubber-roughness", { scale: 48, strength: 0.3, contrast: 0.7 });
+    case "regolith": return material.proceduralTexture("rubber-roughness", { scale: 48, strength: 0.12, contrast: 0.5 });
   }
 };
 

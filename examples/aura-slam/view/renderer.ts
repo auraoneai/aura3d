@@ -239,11 +239,15 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     syncCutDof();
   }
 
+  let lastDirectorMs = Number.NaN;
   /** TT-C2: advances the director; the pose is re-sent every frame of a cut and once when it ends. */
   function stepDirector(state: Readonly<MatchState>, dt: number | undefined): void {
     if (!director) return;
     const was = cutFrame;
-    cutFrame = director.step(state as never, Number.isFinite(dt) ? dt! : 1 / 60, reducedMotion());
+    const nowMs = typeof performance !== "undefined" ? performance.now() : Number.NaN;
+    const wallSeconds = Number.isFinite(lastDirectorMs) && Number.isFinite(nowMs) ? (nowMs - lastDirectorMs) / 1000 : undefined;
+    lastDirectorMs = nowMs;
+    cutFrame = director.step(state as never, Number.isFinite(dt) ? dt! : 1 / 60, reducedMotion(), wallSeconds);
     letterbox?.show(cutFrame !== null);
     if (cutFrame || was) pushCameraPose();
     syncCutDof();
