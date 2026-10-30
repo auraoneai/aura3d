@@ -3,6 +3,7 @@ import { stageAssets } from "./stage-assets";
 import { assets } from "../aura-assets";
 import { stageLook } from "./look";
 import { venueBackdrop } from "./backdrop";
+import { floorDetailFields } from "./surfaces";
 import { CROWD_IDS } from "./ambientMotion";
 
 /**
@@ -104,7 +105,8 @@ function buildArenaFloorDeck(id: StageId, palette: StagePalette): readonly AuraS
           roughness: finish.roughness,
           metallic: finish.metallic,
           clearcoat: finish.clearcoat,
-          clearcoatRoughness: 0.18
+          clearcoatRoughness: 0.18,
+          ...floorDetailFields(id)
         }),
         instances: planks(true),
         castShadow: false,
@@ -119,7 +121,8 @@ function buildArenaFloorDeck(id: StageId, palette: StagePalette): readonly AuraS
           roughness: Math.min(1, finish.roughness + 0.08),
           metallic: finish.metallic * 0.8,
           clearcoat: finish.clearcoat * 0.6,
-          clearcoatRoughness: 0.3
+          clearcoatRoughness: 0.3,
+          ...floorDetailFields(id)
         }),
         instances: planks(false),
         castShadow: false,
