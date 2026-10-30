@@ -1,0 +1,18 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "roadster-rush",
+  "note": "GU47 WP-12 acceptance bands (AO-L1, AO-L2, AO-E1, AO-P1). The default target (?seed=42&capture=1) is the sunset gameplay view; dusk and night are the ?tod= rows this lane hands to E-I (lane report). Cell 1 is top-centre (sky), cell 7 bottom-centre (road).",
+  "default": { "darkFrac": [null, 0.35], "clipFrac": [null, 0.015] },
+  "variants": {
+    "default": {
+      "mean": [60, 80],
+      "p95": [215, null],
+      "p5": [null, 14],
+      "darkFrac": [null, 0.06],
+      "cells": { "1": { "rb": [null, 0.9] } }
+    },
+    "sunset": { "mean": [70, 85], "darkFrac": [null, 0.06] },
+    "dusk": { "mean": [50, 65] },
+    "night": { "mean": [32, 48], "darkFrac": [null, 0.35], "cells": { "1": { "mean": [null, 30] }, "7": { "mean": [25, null], "std": [10, null] } } }
+  }
+}

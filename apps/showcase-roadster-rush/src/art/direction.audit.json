@@ -1,0 +1,509 @@
+{
+  "schema": "aura3d.art-direction-audit/1",
+  "source": "apps/showcase-roadster-rush/src/art/direction.ts",
+  "sourceSha256": "c523fcbe86a2b13714d35bb65e54cba49c1aca72249e99b23a6587ad59d51357",
+  "id": "showcase-roadster-rush",
+  "genre": "racing",
+  "signatureEffect": "Backlit skyway traffic above a haze floor: a low tangerine sun dead ahead rims every car while the city glows 25 m below the deck.",
+  "palette": {
+    "primary": [
+      "#22232a",
+      "#ff8a3d",
+      "#1f3fa8"
+    ],
+    "accent": "#4df0ff",
+    "reservedObjective": "#ff2a3c"
+  },
+  "environment": {
+    "hdri": "industrial_sunset_puresky",
+    "preset": "golden-hour",
+    "background": "sky"
+  },
+  "violations": [],
+  "snapshot": {
+    "lights": [
+      {
+        "type": "directional",
+        "shadow": true,
+        "intensity": 3.1
+      },
+      {
+        "type": "directional",
+        "shadow": false,
+        "intensity": 0.6
+      },
+      {
+        "type": "spot",
+        "shadow": false,
+        "intensity": 0
+      },
+      {
+        "type": "spot",
+        "shadow": false,
+        "intensity": 0
+      },
+      {
+        "type": "spot",
+        "shadow": false,
+        "intensity": 0
+      },
+      {
+        "type": "spot",
+        "shadow": false,
+        "intensity": 0
+      },
+      {
+        "type": "spot",
+        "shadow": false,
+        "intensity": 0
+      }
+    ],
+    "hasAmbient": false,
+    "environment": {
+      "kind": "hdri",
+      "background": false
+    },
+    "models": [
+      {
+        "assetKey": "hero",
+        "triangles": 0,
+        "textures": 4,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "roadsterRushSkyCar",
+        "triangles": 0,
+        "textures": 4,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "skycar-far",
+        "triangles": 0,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "sedan",
+        "triangles": 0,
+        "textures": 4,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hatch",
+        "triangles": 0,
+        "textures": 4,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "suv",
+        "triangles": 0,
+        "textures": 4,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "taxi",
+        "triangles": 0,
+        "textures": 4,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "van",
+        "triangles": 0,
+        "textures": 4,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pickup",
+        "triangles": 0,
+        "textures": 4,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "boxtruck",
+        "triangles": 0,
+        "textures": 4,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "bus",
+        "triangles": 0,
+        "textures": 4,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "carrier",
+        "triangles": 0,
+        "textures": 4,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "traffic-far-lod",
+        "triangles": 0,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
+    "materials": [
+      {
+        "node": "light-lamps",
+        "emissiveIntensity": 1.65,
+        "practical": true
+      },
+      {
+        "node": "traffic-brake-lights",
+        "emissiveIntensity": 2.1,
+        "lightSource": true
+      },
+      {
+        "node": "traffic-blinkers",
+        "emissiveIntensity": 2.2,
+        "lightSource": true
+      },
+      {
+        "node": "player-lightbar",
+        "emissiveIntensity": 1.85,
+        "lightSource": true
+      },
+      {
+        "node": "player-headlight-l",
+        "emissiveIntensity": 1.6,
+        "lightSource": true
+      },
+      {
+        "node": "player-headlight-r",
+        "emissiveIntensity": 1.6,
+        "lightSource": true
+      },
+      {
+        "node": "player-plumes",
+        "emissiveIntensity": 1.9,
+        "lightSource": true
+      },
+      {
+        "node": "sky-plumes",
+        "emissiveIntensity": 1.9,
+        "lightSource": true
+      },
+      {
+        "node": "sky-halos",
+        "emissiveIntensity": 1.65,
+        "lightSource": true
+      },
+      {
+        "node": "freeway-trims",
+        "emissiveIntensity": 1.1,
+        "practical": true
+      },
+      {
+        "node": "beacon-rings",
+        "emissiveIntensity": 1.4,
+        "practical": true
+      },
+      {
+        "node": "lane-dashes",
+        "emissiveIntensity": 0.1
+      },
+      {
+        "node": "pickups",
+        "emissiveIntensity": 1.45,
+        "practical": true
+      }
+    ],
+    "drawCalls": 0
+  },
+  "direction": {
+    "id": "showcase-roadster-rush",
+    "genre": "racing",
+    "fantasy": "Thread backlit sunset traffic on an elevated skyway above a hazed city, then take the sky lane between glass towers.",
+    "rebuildTier": "S-presentation",
+    "wave": 4,
+    "references": [
+      {
+        "file": "references/backlit-sunset-traffic.json",
+        "source": "shipped comparable: low-sun arcade racing (OutRun 2 coastal sunset stages / Burnout Paradise golden-hour freeways)",
+        "licence": "reference-only",
+        "why": "A low sun dead ahead backlights every car: rim-lit silhouettes, long shadows toward camera and a hot corona over the road"
+      },
+      {
+        "file": "references/elevated-skyway.json",
+        "source": "shipped comparable: elevated city highways above a haze layer (Ridge Racer Type 4 city flyovers / Need for Speed Heat bridges)",
+        "licence": "reference-only",
+        "why": "The deck reads as high above the city because the ground dissolves into lit haze with window specks far below the barriers"
+      },
+      {
+        "file": "references/blue-hour-tail-lights.json",
+        "source": "photographic genre: blue-hour long exposures of urban expressways (cobalt zenith, tangerine horizon, red tail-light rivers)",
+        "licence": "reference-only",
+        "why": "Cobalt-to-violet zenith over a thin tangerine band, sodium lamps and red tail-light rivers with no magenta at night"
+      }
+    ],
+    "palette": {
+      "primary": [
+        "#22232a",
+        "#ff8a3d",
+        "#1f3fa8"
+      ],
+      "accent": "#4df0ff",
+      "reservedObjective": "#ff2a3c"
+    },
+    "lighting": {
+      "key": {
+        "type": "directional",
+        "colorTemperatureK": 2400,
+        "shadow": true
+      },
+      "fill": "ibl",
+      "practicals": 6,
+      "environment": {
+        "hdri": "industrial_sunset_puresky",
+        "preset": "golden-hour",
+        "background": "sky"
+      },
+      "exposureEV": 0
+    },
+    "framing": {
+      "rig": "chase",
+      "subjectHeightFraction": [
+        0.1,
+        0.24
+      ],
+      "fovDeg": [
+        56,
+        66
+      ],
+      "mobile": "both"
+    },
+    "assets": [
+      {
+        "role": "hero",
+        "assetKey": "hero",
+        "maxTriangles": 60000,
+        "minTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "enemy",
+        "assetKey": "roadsterRushSkyCar",
+        "maxTriangles": 60000,
+        "minTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "skycar-far",
+        "maxTriangles": 8000,
+        "textureSet": "BC",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "sedan",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "hatch",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "suv",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "taxi",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "van",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "pickup",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "boxtruck",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "bus",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "carrier",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "traffic-far-lod",
+        "maxTriangles": 8000,
+        "textureSet": "BC",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "apex-glass-towers",
+        "maxTriangles": 2000,
+        "textureSet": "BC",
+        "maxTextureSize": 1024
+      }
+    ],
+    "vfx": [
+      {
+        "event": "crash",
+        "kind": "apex-crash"
+      },
+      {
+        "event": "bolt-pickup",
+        "kind": "apex-bolt"
+      },
+      {
+        "event": "landing",
+        "kind": "apex-land"
+      },
+      {
+        "event": "rocket-send",
+        "kind": "apex-rocket"
+      },
+      {
+        "event": "sky-dodge",
+        "kind": "apex-skykill"
+      },
+      {
+        "event": "player-wake",
+        "kind": "trail"
+      },
+      {
+        "event": "rival-wake",
+        "kind": "trail"
+      },
+      {
+        "event": "speed",
+        "kind": "speed-lines"
+      }
+    ],
+    "audio": [
+      {
+        "event": "engine",
+        "cue": "apex-engine-loop",
+        "variants": 1
+      },
+      {
+        "event": "crash",
+        "cue": "apex-crash",
+        "variants": 1
+      },
+      {
+        "event": "bolt-pickup",
+        "cue": "apex-bolt",
+        "variants": 1
+      },
+      {
+        "event": "near-miss",
+        "cue": "apex-whoosh",
+        "variants": 1
+      },
+      {
+        "event": "rocket-send",
+        "cue": "apex-rocket-music",
+        "variants": 1
+      }
+    ],
+    "signatureEffect": "Backlit skyway traffic above a haze floor: a low tangerine sun dead ahead rims every car while the city glows 25 m below the deck.",
+    "standIns": [
+      {
+        "feature": "glass tower kit (procedural curtain-wall towers until the Meshy kit lands)",
+        "file": "src/render/towers.ts",
+        "request": "R-14-07",
+        "removeWhen": "WP-36 apex glass tower kit admitted"
+      },
+      {
+        "feature": "deck pylons (instanced primitive pylons until the Meshy pylon lands)",
+        "file": "src/render/pylons.ts",
+        "request": "R-14-07",
+        "removeWhen": "WP-36 apex deck pylon admitted"
+      }
+    ],
+    "criticalCategories": [
+      "lighting",
+      "atmospheric_effects",
+      "environment_world",
+      "gameplay_readability"
+    ],
+    "tiers": {
+      "low": {
+        "particles": 48,
+        "shadowMap": 1024,
+        "cascades": 1,
+        "textureMax": 1024
+      },
+      "medium": {
+        "particles": 72,
+        "shadowMap": 2048,
+        "cascades": 2,
+        "textureMax": 2048
+      },
+      "high": {
+        "particles": 96,
+        "shadowMap": 2048,
+        "cascades": 3,
+        "textureMax": 2048
+      },
+      "ultra": {
+        "particles": 128,
+        "shadowMap": 4096,
+        "cascades": 3,
+        "textureMax": 2048
+      }
+    }
+  }
+}
