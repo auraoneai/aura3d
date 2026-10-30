@@ -23,6 +23,7 @@ import { assets } from "./aura-assets-v2";
 import { createSim, PITCH_HX, PITCH_HZ, PEN_X, BALL_R, BALL_VIS_R, SIM_DT } from "./game/sim";
 import { buildFcScene, resolveWorld, applyVenue, tickWorld, ATHLETE_IDS, VENUE_LOOKS, withoutLookAo, applyPostAccessibility } from "./game/scene";
 import { mountFcTouch } from "./game/touch";
+import { fireFcVfx, registerFcVfxPack, type FcVfxEvent } from "./game/vfx";
 import { fitCameraToAspect } from "./game/camera";
 import { loadSave } from "./game/save";
 import { resolveAthlete, applyAthleteKit, poseAthlete, skinFor, teamKitForId, type AthleteRig } from "./game/rig";
@@ -108,6 +109,13 @@ function boot(): void {
   // The cinematic-film preset contributes a depth-of-field stage; the broadcast frame stays sharp (goal DOF: FC47-P3).
   // Reduced motion also drops the presets' chromatic aberration and motion blur (PRD 6.3).
   applyPostAccessibility(app, reducedMotion);
+  // FC47-V1: the venue's runtime VFX pack (registerPreset), re-registered on every venue rebuild
+  const vfxOpts = { reducedMotion, reducedFlash };
+  registerFcVfxPack((app as any).effects, bootVenue, vfxOpts);
+  let vfxFired = 0;
+  const packFx = (event: FcVfxEvent, at: readonly [number, number, number]): void => {
+    vfxFired += fireFcVfx((app as any).effects, event, at, sceneVenue, vfxOpts).length;
+  };
   const canvas = app.canvas;
 
   /* -------------------------- handles -------------------------- */
@@ -120,6 +128,8 @@ function boot(): void {
     sceneVenue = venue;
     try {
       (app as any).setScene(sceneFor(venue));
+      applyPostAccessibility(app, reducedMotion);
+      registerFcVfxPack((app as any).effects, venue, vfxOpts);
       world = resolveWorld(app);
       for (const id of ATHLETE_IDS) rigs.set(id, resolveAthlete(app, id));
     } catch (e) {
@@ -450,6 +460,13 @@ function boot(): void {
       hud.ticker(ev);
       const pos = ev.position ?? [sim.state.ball.x, 0.4, sim.state.ball.z];
       switch (ev.type) {
+        case "shot": case "pass": case "tackle": case "goal": case "save": case "post": packFx(ev.type, pos as [number, number, number]); break;
+        case "pen-goal": packFx("goal", pos as [number, number, number]); break;
+        case "pen-save": packFx("save", pos as [number, number, number]); break;
+        case "crossbar": packFx("post", pos as [number, number, number]); break;
+        default: break;
+      }
+      switch (ev.type) {
         case "shot": juiceFire("shot", { position: pos }); break;
         case "pass": juiceFire("kick", { position: pos }); break;
         case "goal":
@@ -657,6 +674,7 @@ function boot(): void {
         ready: appReady,
         framesRendered,
         look: VENUE_LOOKS[sceneVenue].look,
+        vfxPackBursts: vfxFired,
         mode: modes.mode,
         phase: s.phase,
         half: s.half,
