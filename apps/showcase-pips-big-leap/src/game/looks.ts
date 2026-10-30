@@ -2,33 +2,28 @@
 //
 // One row per world. Each world is a closed miniature diorama with its own hour, seen
 // through a macro lens with Pip acorn-sized: never an open sky or a wide vista. A row
-// carries everything the presentation needs (PBL-L1 rig, E1 base and height fog, E2 sky,
-// E3 ambient emitter, P1 post, P2 depth of field, L2 practicals); `world.ts` lowers it.
-// Gameplay data stays in `worlds.ts`; nothing here feeds the simulation.
+// carries everything the presentation needs: the PBL-L1 rig (catalogue HDRI, one PCSS key,
+// cool rim, hemisphere, background), the PBL-E1 diorama base and height fog, the PBL-E2
+// sky, the PBL-E3 ambient emitter, the PBL-P1 post preset and grade, the PBL-L2
+// practicals and the PBL-P3 sun shafts. `diorama.ts` lowers it; gameplay data stays in
+// `worlds.ts` and nothing here feeds the simulation (PRD D8).
 //
-// The numbers are first-pass values on 4.6.x interim paths. Phase 2 tunes them into the
-// PRD WP-16 luma bands from remote steady-state captures (software WebGL2).
+// The numbers are first-pass values; phase 2 tunes them into the WP-16 luma bands from
+// remote steady-state captures (software WebGL2).
 
+import type { AuraHdriId, AuraHeightFogSpec, AuraLookId, AuraLookOverrides, AuraPostPresetId } from "@aura3d/engine";
 import type { Framing } from "./framing";
-import type { WorldId } from "./types";
+import type { WorldId, WorldSpec } from "./types";
 
 /** `?look=original` restores the pre-GU47 presentation (PRD section 8, reversibility). */
 export type PipLookMode = "diorama" | "original";
 
-/** PRD 3.1 E-A `AuraHdriId` members this game uses (served at `/hdri/<id>_1k.hdr`). */
-export type PipHdriId = "spruit_sunrise" | "belfast_sunset_puresky" | "hangar_interior" | "warm_bar" | "rooftop_night";
-
-/** Post presets per world (PBL-P1): daylight-outdoor x4, arena-fight, cinematic-film, space. */
-export type PipPostPreset = "daylight-outdoor" | "arena-fight" | "cinematic-film" | "space";
-
 export type PipAmbientKind = "petals" | "spores" | "motes" | "fluff" | "embers" | "dust" | "fireflies";
-
-/** Base engine look each world keeps until E-A's override keys and E-C's post land (PBL-L1). */
-export type PipBaseLook = "outdoor-day" | "golden-hour" | "alpine-snow" | "interior-industrial" | "interior-warm" | "polar-night";
 
 export type Vec3 = readonly [number, number, number];
 
 export interface PipPractical {
+  /** Scene node name and runtime id (the flicker drives it through `handle.setLight`). */
   readonly name: string;
   readonly type: "point" | "spot";
   readonly position: Vec3;
@@ -38,10 +33,8 @@ export interface PipPractical {
   readonly distance: number;
   readonly angle?: number;
   readonly penumbra?: number;
-  /** 0 = steady; otherwise the flicker depth (fraction of intensity) once E-B's setLight lands. */
+  /** 0 = steady; otherwise the flicker depth (fraction of intensity), driven with `setLight`. */
   readonly flicker: number;
-  /** PRD wants this one shadowed; it stays unshadowed until E-B ships multi-caster shadows. */
-  readonly wantsShadow?: boolean;
 }
 
 export type PipSkySpec =
@@ -52,27 +45,27 @@ export interface WorldLook {
   readonly id: WorldId;
   /** The world's hour, written into the identity sheet. */
   readonly hour: string;
-  readonly baseLook: PipBaseLook;
-  readonly hdri: { readonly id: PipHdriId; readonly intensity: number; readonly rotationDeg: number };
+  /** The engine look the overrides retune (it keeps the AO, bloom and grade children). */
+  readonly baseLook: AuraLookId;
+  readonly hdri: { readonly id: AuraHdriId; readonly intensity: number; readonly rotationDeg: number };
   /** One shadowed key per world (PCSS, 3 cascades at High; the tier table degrades it). */
   readonly key: { readonly elevationDeg: number; readonly azimuthDeg: number; readonly color: string; readonly intensity: number; readonly lightSize: number; readonly softness: number };
-  /** Cool rim, an unshadowed directional opposite the key. */
-  readonly rim: { readonly elevationDeg: number; readonly azimuthDeg: number; readonly color: string; readonly intensity: number };
+  /** Cool rim, an unshadowed directional opposite the key (E-A rim override). */
+  readonly rim: { readonly azimuthDeg: number; readonly color: string; readonly intensity: number };
   readonly hemisphere: { readonly skyColor: string; readonly groundColor: string; readonly intensity: number };
   /** The diorama backdrop colour (7 distinct values). */
   readonly background: string;
   readonly exposureEv: number;
-  /** Height fog pooled in the diorama base (PBL-E1); `heightReference` is the base top. */
+  /** Height fog pooled in the diorama base (PBL-E1); the reference height is the base top. */
   readonly fog: { readonly color: string; readonly density: number; readonly heightDensity: number; readonly heightFalloff: number; readonly maxOpacity: number };
-  /** Diorama base (PBL-E1): felt top, clay plinth, darker skirt; depth below the course floor in metres. */
-  readonly base: { readonly felt: string; readonly clay: string; readonly skirt: string; readonly mound: string; readonly depth: number };
-  /** Real sky (PBL-E2) behind `vfx.sky`; the HDRI stays the environment source. */
+  /** Diorama base (PBL-E1): felt top, clay plinth, darker skirt, felt mounds. */
+  readonly base: { readonly felt: string; readonly clay: string; readonly skirt: string; readonly mound: string };
+  /** Real sky (PBL-E2); the catalogue HDRI stays the environment source. */
   readonly sky?: PipSkySpec;
   readonly post: {
-    readonly preset: PipPostPreset;
+    readonly preset: AuraPostPresetId;
     readonly contrast: number;
     readonly saturation: number;
-    /** E-C grade writer: recorded now, reaches pixels once `u_whiteBalance` is written. */
     readonly temperature: number;
     readonly tint: number;
     readonly vignette: { readonly intensity: number; readonly color: string };
@@ -92,6 +85,8 @@ export interface WorldLook {
   readonly practicals: readonly PipPractical[];
   /** w2: a lens flare on the low sun (PBL-L2). */
   readonly lensFlare?: { readonly intensity: number };
+  /** PBL-P3 sun shafts (w1, w2, w5): S4 god rays with their own march density (E-C `godRayDensity`). */
+  readonly shafts?: { readonly density: number; readonly intensity: number; readonly color: string };
   /** Land-dust felt colour for the VFX pack (PBL-V1). */
   readonly dust: string;
 }
@@ -108,19 +103,54 @@ export const PIP_PALETTE = {
 export const MINIATURE_LENS = { fStop: 2.0, focalLength: 50, maxBlur: 4 } as const;
 
 /** Pip's body centre above his feet, for the focus distance (Pip is 1.25 m tall in world units). */
-const PIP_FOCUS_LIFT = 0.6;
+export const PIP_FOCUS_LIFT = 0.6;
+
+/** PBL-C2 miniature framing: the lens sits 1.7 m above Pip's feet (2.25 m in the original look). */
+export const MINIATURE_LIFT = 1.7;
+export const ORIGINAL_LIFT = 2.25;
+
+export interface MiniatureFraming extends Framing {
+  readonly lift: number;
+}
+
+const MINIATURE_DESKTOP = { fov: 46, boom: 4.5 } as const;
+const MINIATURE_PORTRAIT = { fov: 68, boom: 5.6 } as const;
+const PORTRAIT_ASPECT = 0.46;
+
+/**
+ * PBL-C2: desktop fov 46 (Pip 18-25% of the frame height), portrait keeps fov 68 so a
+ * 390x844 phone still sees at least 34 deg horizontally; the boom is today's.
+ */
+export function miniatureFramingFor(aspect: number): MiniatureFraming {
+  if (!(aspect > 0) || aspect >= 1) return { ...MINIATURE_DESKTOP, lift: MINIATURE_LIFT };
+  const k = Math.min(1, (1 - aspect) / (1 - PORTRAIT_ASPECT));
+  return {
+    fov: MINIATURE_DESKTOP.fov + (MINIATURE_PORTRAIT.fov - MINIATURE_DESKTOP.fov) * k,
+    boom: MINIATURE_DESKTOP.boom + (MINIATURE_PORTRAIT.boom - MINIATURE_DESKTOP.boom) * k,
+    lift: MINIATURE_LIFT
+  };
+}
 
 /**
  * Lens-to-Pip distance for a framing: the boom behind him and the camera lift above his
- * feet. With the miniature framing (lift 1.7) this is about 4.6 m on desktop and 5.7 m in
- * a 390x844 portrait, the PRD numbers.
+ * feet. With the miniature framing this is about 4.6 m on desktop and 5.7 m in a 390x844
+ * portrait, the PRD numbers.
  */
-export function focusDistanceFor(framing: Framing & { readonly lift?: number }): number {
-  const lift = framing.lift ?? 2.25;
-  return Math.hypot(framing.boom, lift - PIP_FOCUS_LIFT);
+export function focusDistanceFor(framing: Framing & { readonly lift?: number }, clearance = 1): number {
+  const lift = framing.lift ?? ORIGINAL_LIFT;
+  return Math.hypot(framing.boom * clearance, lift - PIP_FOCUS_LIFT);
 }
 
-const sunAzimuthOpposite = (az: number): number => (az + 180) % 360;
+/**
+ * PBL-E1: the diorama base top sits 3-6 m below the course floor, and at least 1.5 m above
+ * the world's fall line so a fall reads as dropping into the fogged base (read-only use of
+ * `lowerBound`; the fall line itself is unchanged).
+ */
+export function baseDepthFor(spec: Pick<WorldSpec, "lowerBound">): number {
+  return Math.min(6, Math.max(3, -spec.lowerBound - 1.5));
+}
+
+const opposite = (az: number): number => (az + 180) % 360;
 
 export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
   academy: {
@@ -129,12 +159,12 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     baseLook: "outdoor-day",
     hdri: { id: "spruit_sunrise", intensity: 0.85, rotationDeg: 120 },
     key: { elevationDeg: 42, azimuthDeg: 120, color: "#fff0d4", intensity: 2.5, lightSize: 0.9, softness: 0.55 },
-    rim: { elevationDeg: 24, azimuthDeg: sunAzimuthOpposite(120), color: "#b8d2ff", intensity: 0.55 },
+    rim: { azimuthDeg: opposite(120), color: "#b8d2ff", intensity: 0.55 },
     hemisphere: { skyColor: "#cfe0c4", groundColor: "#4a5a2e", intensity: 0.22 },
     background: "#8fa673",
     exposureEv: -0.2,
     fog: { color: "#a7b98c", density: 0.004, heightDensity: 0.09, heightFalloff: 0.42, maxOpacity: 0.78 },
-    base: { felt: "#5b7f3f", clay: "#7a5a3e", skirt: "#3e2c1e", mound: "#4f7a3a", depth: 4.5 },
+    base: { felt: "#5b7f3f", clay: "#7a5a3e", skirt: "#3e2c1e", mound: "#4f7a3a" },
     post: { preset: "daylight-outdoor", contrast: 1.06, saturation: 1.04, temperature: 0.06, tint: 0, vignette: { intensity: 0.34, color: "#1c140b" } },
     ambient: { kind: "petals", color: "#f4d4d8", maxParticles: 260, rate: 34, size: [0.035, 0.07], lifetime: [6, 9], speed: [0.1, 0.32], gravity: -0.05, drag: 0.4, additive: false },
     practicals: [],
@@ -146,15 +176,16 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     baseLook: "outdoor-day",
     hdri: { id: "spruit_sunrise", intensity: 0.7, rotationDeg: 80 },
     key: { elevationDeg: 18, azimuthDeg: 80, color: "#ffd9a8", intensity: 2.3, lightSize: 0.7, softness: 0.5 },
-    rim: { elevationDeg: 22, azimuthDeg: sunAzimuthOpposite(80), color: "#9fc2ff", intensity: 0.5 },
+    rim: { azimuthDeg: opposite(80), color: "#9fc2ff", intensity: 0.5 },
     hemisphere: { skyColor: "#a9c7a0", groundColor: "#2f3f1e", intensity: 0.2 },
     background: "#2f4a3a",
     exposureEv: -0.35,
     fog: { color: "#6f8a6c", density: 0.006, heightDensity: 0.12, heightFalloff: 0.38, maxOpacity: 0.82 },
-    base: { felt: "#3f6a31", clay: "#5c4129", skirt: "#2a1d12", mound: "#4f7a3a", depth: 5 },
+    base: { felt: "#3f6a31", clay: "#5c4129", skirt: "#2a1d12", mound: "#4f7a3a" },
     post: { preset: "daylight-outdoor", contrast: 1.08, saturation: 1.02, temperature: 0.12, tint: 0.02, vignette: { intensity: 0.38, color: "#120d07" } },
     ambient: { kind: "spores", color: "#e6eeb0", maxParticles: 320, rate: 40, size: [0.025, 0.05], lifetime: [7, 10], speed: [0.06, 0.2], gravity: 0.02, drag: 0.5, additive: true },
     practicals: [],
+    shafts: { density: 0.55, intensity: 0.45, color: "#ffe2b0" },
     dust: "#a08a62"
   },
   w2: {
@@ -163,17 +194,18 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     baseLook: "golden-hour",
     hdri: { id: "belfast_sunset_puresky", intensity: 0.8, rotationDeg: 250 },
     key: { elevationDeg: 10, azimuthDeg: 250, color: "#ffb36b", intensity: 2.4, lightSize: 0.8, softness: 0.5 },
-    rim: { elevationDeg: 20, azimuthDeg: sunAzimuthOpposite(250), color: "#a8c4ff", intensity: 0.5 },
+    rim: { azimuthDeg: opposite(250), color: "#a8c4ff", intensity: 0.5 },
     hemisphere: { skyColor: "#f0c49a", groundColor: "#4a3420", intensity: 0.2 },
     background: "#b9784a",
     exposureEv: -0.25,
     fog: { color: "#c8946a", density: 0.005, heightDensity: 0.1, heightFalloff: 0.4, maxOpacity: 0.8 },
-    base: { felt: "#6b7d3c", clay: "#8a5c38", skirt: "#3a2616", mound: "#5d7a38", depth: 4 },
+    base: { felt: "#6b7d3c", clay: "#8a5c38", skirt: "#3a2616", mound: "#5d7a38" },
     sky: { model: "preetham", turbidity: 6, rayleigh: 1.6, exposure: 0.45, groundColor: "#5a3e26" },
     post: { preset: "daylight-outdoor", contrast: 1.08, saturation: 1.06, temperature: 0.22, tint: 0.01, vignette: { intensity: 0.36, color: "#1e1208" } },
     ambient: { kind: "motes", color: "#f6cf8e", maxParticles: 280, rate: 34, size: [0.02, 0.045], lifetime: [6, 9], speed: [0.05, 0.18], gravity: 0.01, drag: 0.5, additive: true },
     practicals: [],
     lensFlare: { intensity: 0.55 },
+    shafts: { density: 0.4, intensity: 0.4, color: "#ffc98a" },
     dust: "#b99a6a"
   },
   w3: {
@@ -182,12 +214,12 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     baseLook: "alpine-snow",
     hdri: { id: "spruit_sunrise", intensity: 0.95, rotationDeg: 150 },
     key: { elevationDeg: 24, azimuthDeg: 150, color: "#ffe2c8", intensity: 2.8, lightSize: 0.6, softness: 0.4 },
-    rim: { elevationDeg: 26, azimuthDeg: sunAzimuthOpposite(150), color: "#c6b8ff", intensity: 0.6 },
+    rim: { azimuthDeg: opposite(150), color: "#c6b8ff", intensity: 0.6 },
     hemisphere: { skyColor: "#f2d6e2", groundColor: "#6a5a72", intensity: 0.24 },
     background: "#d4b6c6",
     exposureEv: -0.15,
     fog: { color: "#e2c6cf", density: 0.004, heightDensity: 0.08, heightFalloff: 0.36, maxOpacity: 0.75 },
-    base: { felt: "#c9b9a6", clay: "#9a7f86", skirt: "#4a3a4a", mound: "#d9cbb8", depth: 6 },
+    base: { felt: "#9a8a9a", clay: "#7a6476", skirt: "#3a2c3c", mound: "#b8a6b0" },
     sky: { model: "gradient", zenith: "#a99ad6", horizon: "#f6c8b0", ground: "#6a5470", exponent: 0.8, horizonGlow: 0.35 },
     post: { preset: "daylight-outdoor", contrast: 1.12, saturation: 0.98, temperature: 0.08, tint: 0.04, vignette: { intensity: 0.3, color: "#2a1c24" } },
     ambient: { kind: "fluff", color: "#fff4e4", maxParticles: 300, rate: 32, size: [0.04, 0.085], lifetime: [7, 10], speed: [0.12, 0.34], gravity: 0.03, drag: 0.45, additive: false },
@@ -200,19 +232,19 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     baseLook: "interior-industrial",
     hdri: { id: "hangar_interior", intensity: 0.2, rotationDeg: 30 },
     key: { elevationDeg: 55, azimuthDeg: 20, color: "#ffb48a", intensity: 0.15, lightSize: 1.2, softness: 0.7 },
-    rim: { elevationDeg: 18, azimuthDeg: 200, color: "#7d8fd8", intensity: 0.3 },
+    rim: { azimuthDeg: 200, color: "#7d8fd8", intensity: 0.3 },
     hemisphere: { skyColor: "#3a2a2a", groundColor: "#ff6a2a", intensity: 0.16 },
     background: "#1a0e0b",
     exposureEv: -0.1,
     fog: { color: "#3a1a10", density: 0.008, heightDensity: 0.14, heightFalloff: 0.32, maxOpacity: 0.85 },
-    base: { felt: "#2a1f1c", clay: "#3a2a24", skirt: "#120a08", mound: "#4a2a1e", depth: 3.5 },
+    base: { felt: "#2a1f1c", clay: "#3a2a24", skirt: "#120a08", mound: "#4a2a1e" },
     post: { preset: "arena-fight", contrast: 1.16, saturation: 1.08, temperature: 0.18, tint: -0.02, vignette: { intensity: 0.46, color: "#0a0503" } },
     ambient: { kind: "embers", color: "#ff8a3d", maxParticles: 300, rate: 44, size: [0.02, 0.045], lifetime: [2.5, 4.5], speed: [0.3, 0.8], gravity: 0.35, drag: 0.3, additive: true },
     practicals: [
-      { name: "lava glow a", type: "point", position: [-3.2, 1.9, -28.5], color: "#ff6a2a", intensity: 14, distance: 7, flicker: 0.25 },
-      { name: "lava glow b", type: "point", position: [3.2, 1.9, -28.5], color: "#ff7a32", intensity: 14, distance: 7, flicker: 0.25 },
-      { name: "lava glow c", type: "point", position: [-2.6, 1.7, -40], color: "#ff5a22", intensity: 12, distance: 7, flicker: 0.3 },
-      { name: "lava glow d", type: "point", position: [2.6, 1.7, -40], color: "#ff8a3a", intensity: 12, distance: 7, flicker: 0.3 }
+      { name: "pbl-lava-glow-a", type: "point", position: [-3.2, 1.9, -28.5], color: "#ff6a2a", intensity: 14, distance: 7, flicker: 0.25 },
+      { name: "pbl-lava-glow-b", type: "point", position: [3.2, 1.9, -28.5], color: "#ff7a32", intensity: 14, distance: 7, flicker: 0.25 },
+      { name: "pbl-lava-glow-c", type: "point", position: [-2.6, 1.7, -40], color: "#ff5a22", intensity: 12, distance: 7, flicker: 0.3 },
+      { name: "pbl-lava-glow-d", type: "point", position: [2.6, 1.7, -40], color: "#ff8a3a", intensity: 12, distance: 7, flicker: 0.3 }
     ],
     dust: "#5a4038"
   },
@@ -222,19 +254,20 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     baseLook: "interior-warm",
     hdri: { id: "warm_bar", intensity: 0.45, rotationDeg: 200 },
     key: { elevationDeg: 50, azimuthDeg: 25, color: "#ffd2a0", intensity: 0.25, lightSize: 1.0, softness: 0.65 },
-    rim: { elevationDeg: 20, azimuthDeg: 205, color: "#8fa8e8", intensity: 0.35 },
+    rim: { azimuthDeg: 205, color: "#8fa8e8", intensity: 0.35 },
     hemisphere: { skyColor: "#6a4a2a", groundColor: "#2a1a0e", intensity: 0.18 },
     background: "#33200f",
     exposureEv: -0.05,
     fog: { color: "#4a2e16", density: 0.007, heightDensity: 0.12, heightFalloff: 0.34, maxOpacity: 0.84 },
-    base: { felt: "#4a3218", clay: "#5a3a1e", skirt: "#1e1208", mound: "#6a4a24", depth: 4.5 },
+    base: { felt: "#4a3218", clay: "#5a3a1e", skirt: "#1e1208", mound: "#6a4a24" },
     post: { preset: "cinematic-film", contrast: 1.1, saturation: 1.04, temperature: 0.2, tint: 0.02, vignette: { intensity: 0.42, color: "#0e0804" } },
     ambient: { kind: "dust", color: "#ecc68a", maxParticles: 240, rate: 28, size: [0.015, 0.035], lifetime: [7, 10], speed: [0.04, 0.14], gravity: 0.005, drag: 0.6, additive: true },
     practicals: [
-      { name: "palace lantern left", type: "point", position: [-2.6, 4.2, -48], color: "#ffb45a", intensity: 10, distance: 8, flicker: 0.08 },
-      { name: "palace lantern right", type: "point", position: [2.6, 4.2, -48], color: "#ffb45a", intensity: 10, distance: 8, flicker: 0.08 },
-      { name: "throne spot", type: "spot", position: [0, 10.5, -64], target: [0, 2.6, -69], color: "#ffd49a", intensity: 60, distance: 16, angle: 0.5, penumbra: 0.45, flicker: 0, wantsShadow: true }
+      { name: "pbl-lantern-left", type: "point", position: [-2.6, 4.2, -48], color: "#ffb45a", intensity: 10, distance: 8, flicker: 0.08 },
+      { name: "pbl-lantern-right", type: "point", position: [2.6, 4.2, -48], color: "#ffb45a", intensity: 10, distance: 8, flicker: 0.08 },
+      { name: "pbl-throne-spot", type: "spot", position: [0, 10.5, -64], target: [0, 2.6, -69], color: "#ffd49a", intensity: 60, distance: 16, angle: 0.5, penumbra: 0.45, flicker: 0 }
     ],
+    shafts: { density: 0.35, intensity: 0.35, color: "#ffc47a" },
     dust: "#8a6a44"
   },
   w6: {
@@ -243,19 +276,19 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     baseLook: "polar-night",
     hdri: { id: "rooftop_night", intensity: 0.3, rotationDeg: 300 },
     key: { elevationDeg: 30, azimuthDeg: 300, color: "#b8ccff", intensity: 0.65, lightSize: 0.8, softness: 0.6 },
-    rim: { elevationDeg: 22, azimuthDeg: sunAzimuthOpposite(300), color: "#7fe8d8", intensity: 0.35 },
+    rim: { azimuthDeg: opposite(300), color: "#7fe8d8", intensity: 0.35 },
     hemisphere: { skyColor: "#2a3a6a", groundColor: "#141a2a", intensity: 0.18 },
     background: "#0b1230",
     exposureEv: 0,
     fog: { color: "#18224a", density: 0.006, heightDensity: 0.12, heightFalloff: 0.3, maxOpacity: 0.82 },
-    base: { felt: "#1e2a4a", clay: "#2a2a4a", skirt: "#0a0c1a", mound: "#24365a", depth: 5.5 },
+    base: { felt: "#1e2a4a", clay: "#2a2a4a", skirt: "#0a0c1a", mound: "#24365a" },
     sky: { model: "gradient", zenith: "#060a1e", horizon: "#1c2a5a", ground: "#0a0c1a", exponent: 1.2, horizonGlow: 0.2, stars: { count: 900, brightness: 1.2 } },
     post: { preset: "space", contrast: 1.1, saturation: 1.02, temperature: -0.12, tint: 0.02, vignette: { intensity: 0.4, color: "#03040a" } },
     ambient: { kind: "fireflies", color: "#d8ff7a", maxParticles: 160, rate: 18, size: [0.03, 0.06], lifetime: [4, 7], speed: [0.08, 0.26], gravity: 0, drag: 0.35, additive: true },
     practicals: [
-      { name: "crystal glow a", type: "point", position: [-3.4, 2.0, 0.5], color: "#6fe8ff", intensity: 8, distance: 6, flicker: 0.12 },
-      { name: "crystal glow b", type: "point", position: [-4.6, 3.3, -21], color: "#7af0ff", intensity: 8, distance: 6, flicker: 0.12 },
-      { name: "crystal glow c", type: "point", position: [4.6, 4.4, -42], color: "#5fd8ff", intensity: 8, distance: 6, flicker: 0.12 }
+      { name: "pbl-crystal-glow-a", type: "point", position: [-3.4, 2.0, 0.5], color: "#6fe8ff", intensity: 8, distance: 6, flicker: 0.12 },
+      { name: "pbl-crystal-glow-b", type: "point", position: [-4.6, 3.3, -21], color: "#7af0ff", intensity: 8, distance: 6, flicker: 0.12 },
+      { name: "pbl-crystal-glow-c", type: "point", position: [4.6, 4.4, -42], color: "#5fd8ff", intensity: 8, distance: 6, flicker: 0.12 }
     ],
     dust: "#5a6a9a"
   }
@@ -267,12 +300,50 @@ export function worldLook(id: WorldId): WorldLook {
   return WORLD_LOOKS[id];
 }
 
+/** PBL-E1 height fog for a world: pooled in the diorama base, thinning above the course. */
+export function heightFogFor(look: WorldLook, baseTop: number): AuraHeightFogSpec {
+  return {
+    mode: "height",
+    color: look.fog.color,
+    density: look.fog.density,
+    heightDensity: look.fog.heightDensity,
+    heightFalloff: look.fog.heightFalloff,
+    heightReference: baseTop,
+    maxOpacity: look.fog.maxOpacity
+  };
+}
+
+/**
+ * PBL-L1/E1/P1 as E-A look overrides: the world's catalogue HDRI (IBL only; the colour
+ * background keeps it out of the backdrop), the PCSS 3-cascade key at the world's sun
+ * angles, the cool rim, the base height fog, the per-world grade and the post preset.
+ */
+export function lookOverridesFor(look: WorldLook, baseTop: number): AuraLookOverrides {
+  return {
+    sun: { elevationDeg: look.key.elevationDeg, azimuthDeg: look.key.azimuthDeg },
+    exposureEv: look.exposureEv,
+    background: look.background,
+    hdri: look.hdri.id,
+    environmentIntensity: look.hdri.intensity,
+    environmentRotationDeg: look.hdri.rotationDeg,
+    key: {
+      color: look.key.color,
+      intensity: look.key.intensity,
+      shadow: { filter: "pcss", cascades: 3, lightSize: look.key.lightSize, softness: look.key.softness, mapSize: 2048 }
+    },
+    rim: { color: look.rim.color, intensity: look.rim.intensity, azimuthDeg: look.rim.azimuthDeg },
+    fog: { color: look.fog.color, height: heightFogFor(look, baseTop) },
+    grade: { contrast: look.post.contrast, saturation: look.post.saturation, temperature: look.post.temperature, tint: look.post.tint },
+    post: look.post.preset
+  };
+}
+
 /** `?look=original` restores today's presentation; anything else is the diorama look. */
 export function lookModeFromSearch(search: string): PipLookMode {
   return new URLSearchParams(search).get("look") === "original" ? "original" : "diorama";
 }
 
-/** `?world=<id>` boots straight into a world (capture variants for E-I). */
+/** `?world=<id>` boots straight into a world (capture convenience; the atlas cards stay the E-I path). */
 export function worldFromSearch(search: string): WorldId | null {
   const value = new URLSearchParams(search).get("world");
   return value !== null && (WORLD_IDS as readonly string[]).includes(value) ? (value as WorldId) : null;
@@ -287,4 +358,22 @@ export function sunPosition(elevationDeg: number, azimuthDeg: number, distance =
     Number((distance * Math.sin(el)).toFixed(3)),
     Number((distance * Math.cos(el) * Math.cos(az)).toFixed(3))
   ];
+}
+
+/**
+ * PRD 6.3/6.4 presentation scales: reduced motion halves particle emission and caps
+ * secondary motion at 30%; Low tier keeps the palette, sky, fog and vignette and drops
+ * the expensive post (the engine tier table drops DOF and god rays below High).
+ */
+export interface PresentationScale {
+  readonly emission: number;
+  readonly motion: number;
+  readonly flicker: boolean;
+  readonly cameraSequences: boolean;
+}
+
+export function presentationScale(reducedMotion: boolean): PresentationScale {
+  return reducedMotion
+    ? { emission: 0.5, motion: 0.3, flicker: false, cameraSequences: false }
+    : { emission: 1, motion: 1, flicker: true, cameraSequences: true };
 }
