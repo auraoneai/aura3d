@@ -1076,11 +1076,11 @@ export const assets = defineAuraAssets(definitions);
 export const HEATSINK_ASSET_KEYS = Object.keys(definitions) as readonly (keyof typeof definitions)[];
 
 // GU47 WP-13 HS-03: the three circuit skies, from the E-A HDRI catalogue (1k copies served at /hdri/<id>_1k.hdr;
-// licences in public/hdri/ATTRIBUTION.md). Kept apart from the 26 models so HEATSINK_ASSET_KEYS stays the model list.
+// licences in public/hdri/ATTRIBUTION.md; sha256 of the committed files). Kept apart from the 26 models so HEATSINK_ASSET_KEYS stays the model list.
 const hdriDefinitions = {
-  heatsinkHdriRooftopNight: { type: "texture", format: "hdr", url: "/hdri/rooftop_night_1k.hdr" },
-  heatsinkHdriIndustrialSunset: { type: "texture", format: "hdr", url: "/hdri/industrial_sunset_puresky_1k.hdr" },
-  heatsinkHdriSpruitSunrise: { type: "texture", format: "hdr", url: "/hdri/spruit_sunrise_1k.hdr" }
+  heatsinkHdriRooftopNight: { type: "texture", format: "hdr", url: "/hdri/rooftop_night_1k.hdr", hash: "sha256-4c8820e1517cc5fea7acaaa9b7ac1c043a4584f8b6042b6d6c72f8764abb255e", sizeBytes: 1629654 },
+  heatsinkHdriIndustrialSunset: { type: "texture", format: "hdr", url: "/hdri/industrial_sunset_puresky_1k.hdr", hash: "sha256-988320101df317784b2a869b40b0e23519726bf8827def4ed8eef806df2601cd", sizeBytes: 1180675 },
+  heatsinkHdriSpruitSunrise: { type: "texture", format: "hdr", url: "/hdri/spruit_sunrise_1k.hdr", hash: "sha256-3ac30651cde16d2a80521273ec917ba3feca172ea4b842335431201879f39593", sizeBytes: 1527279 }
 } satisfies Record<string, AuraAssetDefinition>;
 
 export const hdris = defineAuraAssets(hdriDefinitions);
@@ -1089,16 +1089,16 @@ export const hdris = defineAuraAssets(hdriDefinitions);
 // (WebP, textures/asphalt033/provenance.json; 157 KB of the 1.5 MB set budget). `new URL(..., import.meta.url)` lets Vite
 // fingerprint and ship the files with the route.
 const textureDefinitions = {
-  heatsinkAsphaltColor: { type: "texture", format: "webp", url: new URL("../textures/asphalt033/color-512.webp", import.meta.url).href, sizeBytes: 11724 },
-  heatsinkAsphaltNormal: { type: "texture", format: "webp", url: new URL("../textures/asphalt033/normal-gl-512.webp", import.meta.url).href, sizeBytes: 114358 },
-  heatsinkAsphaltRoughness: { type: "texture", format: "webp", url: new URL("../textures/asphalt033/roughness-512.webp", import.meta.url).href, sizeBytes: 31220 }
+  heatsinkAsphaltColor: { type: "texture", format: "webp", url: new URL("../textures/asphalt033/color-512.webp", import.meta.url).href, hash: "sha256-330c78ff0be2672746d6bd818ecff520424aa1b62f7d734d2251a00a2e3f3b53", sizeBytes: 11724 },
+  heatsinkAsphaltNormal: { type: "texture", format: "webp", url: new URL("../textures/asphalt033/normal-gl-512.webp", import.meta.url).href, hash: "sha256-3f8bf69f92abb855dab0b862e261ffc362b4f4a1af456eeefde422158b272d0e", sizeBytes: 114358 },
+  heatsinkAsphaltRoughness: { type: "texture", format: "webp", url: new URL("../textures/asphalt033/roughness-512.webp", import.meta.url).href, hash: "sha256-b19fc248b500b1d185b21b1a9bb2e76ce6a6e8a313976ebbf33a7051225526e1", sizeBytes: 31220 }
 } satisfies Record<string, AuraAssetDefinition>;
 
 export const textures = defineAuraAssets(textureDefinitions);
 
 // GU47 WP-13 HS-12: the authored display LUT (src/lut.ts generates it; 132 KB of text, gzip about 40 KB).
 const lutDefinitions = {
-  heatsinkFoundryLut: { type: "lut", format: "cube", url: new URL("../textures/luts/td-foundry.cube", import.meta.url).href, sizeBytes: 132859 }
+  heatsinkFoundryLut: { type: "lut", format: "cube", url: new URL("../textures/luts/td-foundry.cube", import.meta.url).href, hash: "sha256-8f423f10cd68cf396f5c54dc791a314d4d5cae3f570d71efead9d0faf8e094ee", sizeBytes: 132859 }
 } satisfies Record<string, AuraAssetDefinition>;
 
 export const luts = defineAuraAssets(lutDefinitions);

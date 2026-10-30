@@ -2,6 +2,7 @@
  * Thermal Drift HS-12 display LUT: the committed `.cube` is exactly what `foundryLutCube()` generates, passes the CLI
  * LUT admission rules, keeps coolant cyan cyan, and every circuit binds it in the colour grade.
  */
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -9,6 +10,7 @@ import { validateCubeLut } from "../../../packages/aura3d-cli/src/admission/cube
 import { CIRCUITS } from "../../../apps/showcase-heatsink/src/data";
 import { CIRCUIT_LOOKS, PALETTE } from "../../../apps/showcase-heatsink/src/look";
 import { FOUNDRY_LUT_SIZE, foundryGrade, foundryLutCube } from "../../../apps/showcase-heatsink/src/lut";
+import { luts } from "../../../apps/showcase-heatsink/src/aura-assets";
 import { buildThermalDriftScene } from "../../../apps/showcase-heatsink/src/scene";
 
 const CUBE = join(__dirname, "../../../apps/showcase-heatsink/textures/luts/td-foundry.cube");
@@ -17,6 +19,7 @@ describe("heatsink HS-12 foundry LUT", () => {
   it("the committed file is the generator output and passes LUT admission", () => {
     const text = readFileSync(CUBE, "utf8");
     expect(text).toBe(foundryLutCube());
+    expect((luts.heatsinkFoundryLut as unknown as { hash: string }).hash).toBe(`sha256-${createHash("sha256").update(text).digest("hex")}`);
     expect(validateCubeLut(text)).toMatchObject({ size: FOUNDRY_LUT_SIZE, rows: FOUNDRY_LUT_SIZE ** 3 });
   });
   it("keeps black and white near the ends and warms the highlights", () => {
