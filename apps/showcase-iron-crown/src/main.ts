@@ -84,6 +84,7 @@ import { createHud, type MenuId, type ModeId } from "./game/hud";
 import "./styles.css";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { fightCrops, type QaCrop } from "./game/qaCrops";
+import { KO_SCORCH_ID, SCORCH_PARKED, scorchAt } from "./game/flareScorch";
 
 installBlackFrameGuard();
 
@@ -694,6 +695,8 @@ async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<voi
     await fightingGame.setScene(buildArena(config).toJSON());
   }
   resetStageLights();
+  // IC47-V3: a re-bout on the mounted scene parks the last bout's scorch again.
+  (app.nodes.get(KO_SCORCH_ID) as AuraRuntimeNodeHandle | undefined)?.setPosition(SCORCH_PARKED[0], SCORCH_PARKED[1], SCORCH_PARKED[2]);
   P1 = makeFighter("p1", config.p1, PLAYER_START, config.p1Tint);
   CPU = makeFighter("cpu", config.cpu, RIVAL_START, config.cpuTint);
   P1.brain = createCpuBrain(config.p1, "scrapper", APP_SEED + 7);
@@ -1228,6 +1231,9 @@ function onKnockout(winner: "p1" | "cpu"): void {
   runtimeEffects.impactFlash([0, 1.2, -0.4], { intensity: 1.1, color: "#ffd76a" });
   const loser = winner === "p1" ? CPU : P1;
   fxBurst("ic-ko-shower", [loser.body.position[0], loser.body.position[1] + 1.0, 0]);
+  // IC47-V3: the scorch lands under the loser and stays for the rest of the scene.
+  const scorch = scorchAt(loser.body.position);
+  (app.nodes.get(KO_SCORCH_ID) as AuraRuntimeNodeHandle | undefined)?.setPosition(scorch[0], scorch[1], scorch[2]);
   fightingGame.juice.fire("ko");
   app.feel?.emit("ko", { strength: 1 });
 }

@@ -2804,6 +2804,93 @@
       ]
     },
     {
+      "id": "ironcrownKoScorch",
+      "type": "texture",
+      "format": "webp",
+      "source": "public/aura-assets/ironcrownKoScorch.57c0c330.webp",
+      "outputPath": "public/aura-assets/ironcrownKoScorch.57c0c330.webp",
+      "url": "/aura-assets/ironcrownKoScorch.57c0c330.webp",
+      "hash": "sha256-57c0c3300ffb16710673d7bdd8e8ce483c1f28c6c3ddf102ec431a484ad54692",
+      "sizeBytes": 38224,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownKoScorch.57c0c330.webp",
+        "checkedAt": "2026-10-30T14:18:08.489Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/aura-assets/ironcrownKoScorch.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown",
+      "warnings": []
+    },
+    {
       "id": "ironcrownLutAirbaseHaze",
       "type": "lut",
       "format": "cube",

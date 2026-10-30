@@ -6,6 +6,7 @@ type AuraGeneratedAssetDefinitions = {
   readonly "ironcrownCrown": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "ironcrownJinx": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "ironcrownKenji": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "ironcrownKoScorch": AuraAssetDefinition & { readonly type: "texture"; readonly format: "webp"; readonly url: string; readonly hash: string; };
   readonly "ironcrownLutAirbaseHaze": AuraAssetDefinition & { readonly type: "lut"; readonly format: "cube"; readonly url: string; readonly hash: string; };
   readonly "ironcrownLutColosseumOchre": AuraAssetDefinition & { readonly type: "lut"; readonly format: "cube"; readonly url: string; readonly hash: string; };
   readonly "ironcrownLutDockDusk": AuraAssetDefinition & { readonly type: "lut"; readonly format: "cube"; readonly url: string; readonly hash: string; };
@@ -2500,6 +2501,82 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "sha256": "sha256-5df2e35621017ca68572f5e7027bacaa7f54698d4386ee038e887ebf1d30e80e",
         "checkedAt": "2026-10-17T09:38:56.543Z"
       }
+    },
+  },
+  "ironcrownKoScorch": {
+    type: "texture",
+    format: "webp",
+    url: "/aura-assets/ironcrownKoScorch.57c0c330.webp",
+    hash: "sha256-57c0c3300ffb16710673d7bdd8e8ce483c1f28c6c3ddf102ec431a484ad54692",
+    bounds: [
+      0,
+      0,
+      0
+    ],
+    sizeBytes: 38224,
+    metadata: {
+      "materials": [],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "unknown",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 0,
+        "meshCount": 0,
+        "materialCount": 0,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [],
+        "maxDepth": 0,
+        "messages": [
+          "Scene hierarchy inspection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownKoScorch.57c0c330.webp",
+        "checkedAt": "2026-10-30T14:18:08.489Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownKoScorch.57c0c330.webp",
+      "outputPath": "public/aura-assets/ironcrownKoScorch.57c0c330.webp",
+      "materialMetadata": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "textures": [],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/ironcrownKoScorch.thumb.svg",
+      "quality": "ungraded",
+      "role": "unknown"
     },
   },
   "ironcrownLutAirbaseHaze": {
