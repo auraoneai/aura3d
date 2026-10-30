@@ -1,8 +1,42 @@
 import { describe, expect, it } from "vitest";
-import { APEX_LOOK, apexLookAt } from "../../../apps/showcase-roadster-rush/src/art/look";
+import { APEX_FOG_RANGE, APEX_LOOK, apexLookAt, parseTodParam } from "../../../apps/showcase-roadster-rush/src/art/look";
 import { skyLook, skySpec } from "../../../apps/showcase-roadster-rush/src/art/sky";
 
 const to255 = (c: readonly number[]): number[] => c.map((v) => Math.round(v * 255));
+
+describe("Apex Overdrive time-of-day light and fog (GU47 AO-L2, AO-E3)", () => {
+  it("dims key, fill and IBL from sunset through dusk to night (spread target >= 30 luma)", () => {
+    const [sunset, dusk, night] = [apexLookAt(0), apexLookAt(0.5), apexLookAt(1)];
+    expect([sunset.environmentIntensity, dusk.environmentIntensity, night.environmentIntensity]).toEqual([1, 0.55, 0.18]);
+    expect(sunset.sun.intensity).toBeGreaterThan(dusk.sun.intensity);
+    expect(dusk.sun.intensity).toBeGreaterThan(night.sun.intensity);
+    expect(sunset.fill.intensity).toBe(0.6);
+    expect(night.fill.intensity).toBeLessThan(dusk.fill.intensity);
+    // the key always points from the disc toward the camera side (+z): backlit traffic
+    for (const f of [sunset, dusk, night]) expect(-f.sunDir[2]).toBeGreaterThan(0.98);
+  });
+
+  it("keeps the 43/257 fog range and walks the fog colour with the sky", () => {
+    for (const tod of [0, 0.5, 1]) {
+      const f = apexLookAt(tod);
+      expect(f.fog.near).toBeCloseTo(APEX_FOG_RANGE.near, 6);
+      expect(f.fog.far).toBeCloseTo(APEX_FOG_RANGE.far, 6);
+    }
+    expect(apexLookAt(0).fog.color).toBe(APEX_LOOK[0].fog.color);
+    expect(apexLookAt(1).fog.color).toBe(APEX_LOOK[2].fog.color);
+  });
+
+  it("parses ?tod= into a presented time of day (presentation only)", () => {
+    expect(parseTodParam("sunset")).toBe(0);
+    expect(parseTodParam("Dusk")).toBe(0.5);
+    expect(parseTodParam("night")).toBe(1);
+    expect(parseTodParam("0.25")).toBe(0.25);
+    expect(parseTodParam("7")).toBe(1);
+    expect(parseTodParam("")).toBeNull();
+    expect(parseTodParam(null)).toBeNull();
+    expect(parseTodParam("noon")).toBeNull();
+  });
+});
 
 describe("Apex Overdrive blue-hour dome (GU47 AO-E1)", () => {
   it("keeps a cobalt zenith (B > R by >= 15) and a warm horizon (R > B) at every time of day", () => {

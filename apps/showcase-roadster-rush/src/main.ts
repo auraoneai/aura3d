@@ -20,7 +20,9 @@ import {
   APEX_IBL_ROTATION_DEG,
   APEX_LOOK,
   APEX_PALETTE,
-  APEX_SUN
+  APEX_SUN,
+  apexLookAt,
+  parseTodParam
 } from "./art/look";
 import { createNativeRoadster, findDrawCalls } from "./native";
 import { POWERUP_SECONDS } from "./native/constants";
@@ -72,6 +74,8 @@ const urlParams = new URLSearchParams(window.location.search);
 /** Start the run at once only for demos and captures; everyone else gets the title card (audit RR-10). */
 const AUTOSTART = ["autoplay", "demo", "capture"].some((k) => urlParams.get(k) === "1");
 const REDUCED_MOTION = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+/** `?tod=sunset|dusk|night|0..1` pins the presented time of day (capture variants); presentation only, like the quick bar. */
+const TOD_PARAM = parseTodParam(urlParams.get("tod"));
 
 /** Meshy model for a vehicle type when it is shipped and enabled (`?models=0` turns it off), else the original showcase asset. */
 const pickVehicleAsset = (key: string, fallback: AuraAssetRef<"model">): AuraAssetRef<"model"> =>
@@ -221,7 +225,9 @@ function apexLookNode(): AuraSceneNode {
       environmentIntensity: sunset.environmentIntensity,
       environmentRotationDeg: APEX_IBL_ROTATION_DEG,
       background: APEX_PALETTE.charcoal,
-      key: { color: sunset.sun.color, intensity: sunset.sun.intensity }
+      key: { color: sunset.sun.color, intensity: sunset.sun.intensity },
+      // AO-E3: the preset's 30/180 range under the 0.7 density scale = near 43 / far 257; colour follows the time of day
+      fog: { color: sunset.fog.color, near: 30, far: 180 }
     })
     .toJSON();
   const children = (look.children ?? []).map((child) =>
@@ -645,6 +651,11 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const neonTrimLeftHandle = req("freeway-neon-trim-left");
   const neonTrimRightHandle = req("freeway-neon-trim-right");
   const horizonWallHandle = req("horizon-sky-wall");
+  // Light handles for the time of day (AO-L2): `get`, not `require`, so a renderer without runtime lights still boots.
+  const keyLight = auraApp.nodes.get(KEY_LIGHT_ID);
+  const fillLight = auraApp.nodes.get(FILL_LIGHT_ID);
+  /** The look row the last time-of-day bucket resolved (practicals, emissive gains and the QA hook read it). */
+  let lookFrame = apexLookAt(0);
 
   const dashPool = pool("dashes", LANE_DIVIDER_X.length * DASH_COUNT_PER_DIVIDER);
   const gantrySteel = pool("gantry-steel", GANTRY_COUNT * 3);
@@ -683,7 +694,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   let autopilot = urlParams.get("autoplay") === "1" || urlParams.get("demo") === "1";
   let framesRendered = 0;
   let lastTodBucket = -1;
-  let manualTodOverride: number | null = null;
+  let manualTodOverride: number | null = TOD_PARAM;
   let lastLightbarHot = false;
   let lastAutopilotTickMs = 0;
   let lastAutopilotStuntMs = 0;
@@ -717,6 +728,17 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       ["nightAmount", look.nightAmount]
     ];
     for (const [name, value] of skyUniforms) horizonWallHandle.setUniform?.(name, value as never);
+
+    // GU47 AO-L2: the scene light follows the same row as the dome. The look's key keeps the disc's direction and takes the
+    // row's colour and intensity; the camera-side fill and the IBL (1.0 / 0.55 / 0.18) dim with it. AO-E3: fog colour too.
+    const frame = apexLookAt(tod);
+    const toward = frame.sunDir;
+    const blend = { transitionSeconds: 0.35 };
+    keyLight?.setLight?.({ color: frame.sun.color, intensity: frame.sun.intensity, direction: [-toward[0], -toward[1], -toward[2]] }, blend);
+    fillLight?.setLight?.({ color: frame.fill.color, intensity: frame.fill.intensity }, blend);
+    auraApp.lighting?.setEnvironmentIntensity?.(frame.environmentIntensity);
+    auraApp.atmosphere?.setFog?.({ color: frame.fog.color, near: frame.fog.near, far: frame.fog.far }, blend);
+    lookFrame = frame;
 
     let groundHex: string;
     if (tod <= 0.5) groundHex = lerpHexColor("#190f24", "#100d1e", tod * 2);

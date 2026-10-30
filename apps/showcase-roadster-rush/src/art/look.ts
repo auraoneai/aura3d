@@ -227,6 +227,15 @@ export function apexLookAt(todRaw: number): ApexLookFrame {
  */
 export const APEX_VARIANT_TOD: Readonly<Record<ApexVariant, number>> = { sunset: 0, dusk: 0.5, night: 1 };
 
+/** `?tod=` value to a presented time of day: a variant name or a number in [0, 1]; anything else is null (follow the run). */
+export function parseTodParam(raw: string | null | undefined): number | null {
+  if (raw === null || raw === undefined || raw.trim() === "") return null;
+  const key = raw.trim().toLowerCase();
+  if (key in APEX_VARIANT_TOD) return APEX_VARIANT_TOD[key as ApexVariant];
+  const n = Number(key);
+  return Number.isFinite(n) ? clamp01(n) : null;
+}
+
 /**
  * Practical lights the scene mounts besides the key (art direction `practicals`): the camera-side fill, three sodium spots
  * that ride the pole rows ahead, and the hero's two headlights. Six, the C-35 cap.
