@@ -323,6 +323,10 @@
         "practical": false
       },
       {
+        "node": "silt-decals",
+        "practical": false
+      },
+      {
         "node": "rocks-small",
         "practical": false
       },
