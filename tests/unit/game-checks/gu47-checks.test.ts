@@ -160,7 +160,7 @@ describe("borrowed-asset and prop-exclusivity checks", () => {
     expect(run(root, ["prop-exclusivity"], ["alpha-port", "beta-hoops"])).toEqual([]);
     put("apps/showcase-beta/src/main.ts", "const kit = { rifle: \"corridorPulseRifleMeshy\", rock: \"propBoulder\" };\n");
     const shared = run(root, ["prop-exclusivity"], ["alpha-port", "beta-hoops"]);
-    expect(shared.map((f) => [f.game, f.message.slice(0, 61)])).toEqual([
+    expect(shared.map((f) => [f.game, f.message.split(":")[0]])).toEqual([
       ["alpha-port", 'asset key "corridorPulseRifleMeshy" is also used by beta-hoops'],
       ["beta-hoops", 'asset key "corridorPulseRifleMeshy" is also used by alpha-port']
     ]);
