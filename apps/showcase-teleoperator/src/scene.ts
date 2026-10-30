@@ -158,6 +158,29 @@ export function skyNode(look: SkyLook) {
 }
 
 /**
+ * GD-05: the row's height fog (A3D_QR_VFX_FOG): slate-teal distance haze that keeps the near street clear and greys the
+ * bay and the skyline; it also fogs the sky (`affectsBackground`). The marine deck aloft is drawn by the sensor pass
+ * (`scanPulse.ts`), see `SkyLook.fog`.
+ */
+export function marineHaze(look: SkyLook) {
+  const f = look.fog;
+  return effects.fog({
+    name: "grid marine haze",
+    mode: "height",
+    color: f.color,
+    density: f.density,
+    heightDensity: f.heightDensity,
+    heightFalloff: f.heightFalloff,
+    heightReference: f.heightReference,
+    start: f.start,
+    maxOpacity: f.maxOpacity,
+    sunInscatter: f.sunInscatter,
+    anisotropy: 0.6,
+    affectsBackground: true
+  });
+}
+
+/**
  * Renderer options for the mount. The game is tuned and captured at the "high" tier on every device,
  * so it asks for that tier explicitly in object form: same tier as the old `quality: "high"` string,
  * without the engine's RENDERER_QUALITY_STRING diagnostic warning.
@@ -182,6 +205,7 @@ export function buildGridDispatchScene(weather: WeatherPreset): ReturnType<typeo
     .camera(camera.perspective({ fov: SCENE_CAM_FOV_DEG, near: 0.25, far: 620, position: SCENE_CAM_POS, target: SCENE_CAM_TARGET }))
     // No ambient light: the sky's HDRI fills the shadows, and an extra ambient blew out the white hero car (C14).
     .addMany([...skyRig(look)])
+    .add(marineHaze(look))
     .add(effects.bloom({ intensity: w.bloom, threshold: 0.78, radius: 0.45 }))
     .add(effects.vignette({ intensity: 0.16, smoothness: 0.65 }))
     .add(effects.colorGrade({ contrast: 1.06, saturation: 1.1 }));

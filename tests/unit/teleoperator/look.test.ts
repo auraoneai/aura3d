@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { resolveQrFlags } from "@aura3d/engine";
-import { BOOT_SKY, KEY_SHADOW, SKY_LOOKS, SKY_ORDER, hdriUrl, keyLightPosition, sunDirection } from "../../../apps/showcase-teleoperator/src/look";
+import { BOOT_SKY, KEY_SHADOW, SKY_LOOKS, SKY_ORDER, hazeAt, hdriUrl, keyLightPosition, sunDirection } from "../../../apps/showcase-teleoperator/src/look";
 import { GRID_DISPATCH_FLAGS, buildGridDispatchScene } from "../../../apps/showcase-teleoperator/src/scene";
 
 type Node = { kind?: string; light?: string; name?: string; environment?: string; texture?: { url?: string }; shadow?: unknown; position?: number[]; color?: string; intensity?: number; children?: Node[] };
@@ -120,5 +120,30 @@ describe("grid dispatch GD-04 real sky node per sky", () => {
     expect(spec("fog").model).toBe("gradient");
     expect(spec("night")).toMatchObject({ model: "gradient", zenith: "#060a14", stars: { count: 220 } });
     expect(spec("night").bands).toHaveLength(1);
+  });
+});
+
+describe("grid dispatch GD-05 marine haze (engine height fog)", () => {
+  type FogNode = Node & { effect?: string; mode?: string; heightReference?: number; affectsBackground?: boolean };
+  for (const sky of SKY_ORDER) {
+    it(`${sky}: one height-fog node in the row's colour that also fogs the sky`, () => {
+      const fogs = (flatNodes(sky) as FogNode[]).filter((n) => n.kind === "effect" && n.effect === "fog");
+      expect(fogs).toHaveLength(1);
+      expect(fogs[0]).toMatchObject({ mode: "height", color: SKY_LOOKS[sky].fog.color, heightReference: SKY_LOOKS[sky].fog.heightReference, affectsBackground: true });
+    });
+  }
+
+  it("marine fog keeps the lane lines at 40 m clear and swallows the bay at 250 m", () => {
+    expect(hazeAt(SKY_LOOKS.fog, 40)).toBeLessThan(0.3);
+    expect(hazeAt(SKY_LOOKS.fog, 250)).toBeGreaterThan(0.8);
+    expect(SKY_LOOKS.fog.fog.heightReference).toBe(12);
+    expect(SKY_LOOKS.golden.fog.heightReference).toBe(28);
+  });
+
+  it("dusk greys the skyline but not the near street; night is the thinnest haze after noon", () => {
+    expect(hazeAt(SKY_LOOKS.golden, 20)).toBeLessThan(0.06);
+    expect(hazeAt(SKY_LOOKS.golden, 250)).toBeGreaterThan(0.6);
+    expect(hazeAt(SKY_LOOKS.night, 250)).toBeLessThan(hazeAt(SKY_LOOKS.golden, 250));
+    expect(hazeAt(SKY_LOOKS.noon, 250)).toBeLessThan(hazeAt(SKY_LOOKS.night, 250));
   });
 });
