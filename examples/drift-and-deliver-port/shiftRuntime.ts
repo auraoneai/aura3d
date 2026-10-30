@@ -12,9 +12,10 @@
  */
 import { geometry, material, type AuraApp } from "@aura3d/engine";
 import { createDaylight, lookFrame, type Daylight } from "./daylight";
-import { facadeMaterial, type LookRig } from "./look";
+import { facadeMaterial, festoonMaterial, type LookRig } from "./look";
+import { festoonIntensity } from "./festoons";
 import { phaseAt, phaseIdAt, todSeconds, type PhaseId, type PhaseRow } from "./phases";
-import { COURIER_TEAL, FX_KINDS, SMOKE_RATE, SPEED_LINES, SkidMarks, deliveryKind, fxScale, registerCourierFx, skidSpec, speedLineSpawn } from "./fx";
+import { COURIER_TEAL, FX_KINDS, SMOKE_RATE, DRIZZLE, SPEED_LINES, SkidMarks, deliveryKind, drizzleAt, drizzleSpawn, fxScale, registerCourierFx, skidSpec, speedLineSpawn } from "./fx";
 import { HEADLIGHT, LAMP_HEAD_Y, REPICK_SECONDS, SODIUM_INTENSITY, SODIUM_POOL, nearestLamps } from "./lamps";
 
 type Handle = ReturnType<AuraApp["nodes"]["require"]>;
@@ -84,7 +85,10 @@ export function createShiftRuntime(app: AuraApp, look: LookRig, lamps: readonly 
   let nitro = 0;
   let lines = 0;
   let lineSeed = 0;
+  let drizzle = 0;
+  let drizzleSeed = 0;
   let beaconShown = -1;
+  let festoonShown = -1;
   let writes = 0;
   let wasDrifting = false;
   const burst = (kind: string, p: [number, number, number], count?: number) => {
@@ -106,6 +110,12 @@ export function createShiftRuntime(app: AuraApp, look: LookRig, lamps: readonly 
       if (b !== beaconShown) {
         beaconShown = b;
         node("dropoff-beacon")?.setMaterial(beaconMaterial(b));
+      }
+      // GC-V3 festoon bulbs, quantised (setMaterial only on a step change)
+      const fe = festoonIntensity(row.festoon);
+      if (fe !== festoonShown) {
+        festoonShown = fe;
+        node("festoons")?.setMaterial(festoonMaterial(row.festoon));
       }
       // GC-L4 sodium pool
       repick -= dt;
@@ -151,6 +161,13 @@ export function createShiftRuntime(app: AuraApp, look: LookRig, lamps: readonly 
           burst(FX_KINDS.nitro, [rear[0], 0.55, rear[2]], 4);
         }
       }
+      // GC-V3 intro drizzle: the shower ends at 0:20 of the shift (not shown when ?at= pins the clock)
+      const wet = opts.at === undefined ? drizzleAt(shift.elapsed) : 0;
+      drizzle -= dt;
+      if (dt > 0 && wet > 0 && drizzle <= 0) {
+        drizzle = DRIZZLE.interval / wet;
+        burst(FX_KINDS.drizzle, drizzleSpawn(car, drizzleSeed++), 14);
+      }
       // GC-V1 speed lines: streaks ahead of the car rushing back past the camera at speed (off under reduced motion)
       lines -= dt;
       if (dt > 0 && lines <= 0) {
@@ -177,6 +194,7 @@ export function createShiftRuntime(app: AuraApp, look: LookRig, lamps: readonly 
       h?.updateAttribute?.("uv", { array: skid.uvs });
       smoke = 0;
       nitro = 0;
+      drizzle = 0;
     },
     state() {
       return { phase: phaseIdAt(tod), tod, skidQuads: skid.written, skidLive: skid.liveCount(time), pool: [...pool], beacon: beaconShown, writes };

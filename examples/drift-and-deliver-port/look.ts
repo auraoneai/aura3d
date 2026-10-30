@@ -10,7 +10,7 @@ import { camera, defineAuraAssets, effects, environments, geometry, instances, l
 import { CAR_KINDS, buildCarShell, type CarKind, type CarShell } from "./vehicles";
 import { TRAFFIC_MODEL, carScale, trafficInstances } from "./models";
 import { planProps, propNodes, type PropPlan } from "./props";
-import { GROUND_HALF, WALLS, blockDecals, buildCity, buildFurniture, buildProps, facadeKey, farCity, roadPlane, type Furniture } from "./city";
+import { GROUND_HALF, SIDEWALK_MID, WALLS, blockDecals, buildCity, buildFurniture, buildProps, facadeKey, farCity, roadPlane, type Furniture } from "./city";
 import { farCitySpec, shiftFarSpec, shiftSkySpec, skySpec } from "./sky";
 import { HDRI_URL, environmentRotationFor, lightDir, type LookMode, type PhaseRow } from "./phases";
 import { KEY_DISTANCE, lookFrame } from "./daylight";
@@ -18,6 +18,7 @@ import { waterSpec } from "./water";
 import { paintWetRoughness, wetRoad } from "./wet";
 import { HALO_COLOR, haloCount } from "./brakes";
 import { heightField, heightToNormal } from "./facadeNormal";
+import { FESTOON, festoonBulbs, festoonIntensity } from "./festoons";
 import { HEADLIGHT, SODIUM_COLOR, SODIUM_POOL, SODIUM_RANGE } from "./lamps";
 import { PALETTE_SLOTS, Palette, bakePaletteUVs, createMesh, quad, toArrays, type MeshData } from "./mesh";
 import { paintFacade, paintPalette, paintPark, paintPlaza, paintRoadTile, paintShopfront, paintSky, type FacadeKind } from "./textures";
@@ -286,6 +287,9 @@ export function shiftShadow(quality: "high" | "low") {
     : { cascades: 1 as const, maxDistance: 110, mapSize: 1024 as const, filter: "pcf" as const };
 }
 
+/** GC-V3: festoon bulb material at a festoon strength 0..1 (quantised). */
+export const festoonMaterial = (strength: number) => material.emissive({ color: FESTOON.color, emissive: FESTOON.color, emissiveIntensity: festoonIntensity(strength) });
+
 /** GC-M2: facade material at a window emissive intensity (0.15 by day to 1.4 at blue hour in the shift look). */
 export function facadeMaterial(tex: Textures, key: string, windows: number) {
   const f = tex.facade[key]!;
@@ -444,6 +448,11 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
   // GC-AN1 / GC-L5 (shift look): brake-lamp halos in tail red, hidden until a car brakes (+1 draw)
   const tailHalos = shift ? instances.mesh("sphere", material.emissive({ color: HALO_COLOR, emissive: HALO_COLOR, emissiveIntensity: 2.4 }), haloCount(world.traffic.length)) : null;
   if (tailHalos) b.add(tailHalos);
+  // GC-V3 (shift look): festoon bulbs across the harbour-front streets, lit from sunset (+1 draw)
+  if (shift && row) {
+    const bulbs = festoonBulbs(furniture.lamps, SIDEWALK_MID);
+    if (bulbs.length) b.add(instances.sphere({ name: "festoons", size: [FESTOON.size, FESTOON.size, FESTOON.size], material: festoonMaterial(row.festoon), transforms: bulbs.map((p) => ({ position: [p.x, p.y, p.z] as [number, number, number] })), castShadow: false, receiveShadow: false }).runtime({ id: "festoons" }));
+  }
 
   return {
     builder: b,

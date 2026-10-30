@@ -32,7 +32,8 @@ export const FX_KINDS = {
   star: "courier-pickup-express",
   heart: "courier-pickup-care",
   bump: "courier-traffic-bump",
-  speedLines: "courier-speed-lines"
+  speedLines: "courier-speed-lines",
+  drizzle: "courier-drizzle"
 } as const;
 
 export type FxKind = (typeof FX_KINDS)[keyof typeof FX_KINDS];
@@ -75,6 +76,10 @@ export function courierFxPresets(): Record<FxKind, FxSpec> {
     [FX_KINDS.speedLines]: {
       name: FX_KINDS.speedLines,
       layers: [{ type: "emitter", preset: "streak", count: 3, speed: 26, life: 0.22, size: 0.12, spread: 0.15, color: "#e8f6f7", additive: true, maxScreen: 0.12 }]
+    },
+    [FX_KINDS.drizzle]: {
+      name: FX_KINDS.drizzle,
+      layers: [{ type: "emitter", preset: "streak", count: 14, speed: 9, life: 0.5, gravity: 9, size: 0.05, spread: 0.05, direction: [0.08, -1, 0.04], color: "#bcd0dc", additive: true, maxScreen: 0.06 }]
     },
     [FX_KINDS.bump]: {
       name: FX_KINDS.bump,
@@ -119,6 +124,23 @@ export function speedLineSpawn(car: { x: number; z: number; heading: number; spe
   const lat = Math.cos(a) * SPEED_LINES.ring;
   const up = Math.max(0.3, SPEED_LINES.y + Math.sin(a) * SPEED_LINES.ring * 0.5);
   return { at: [car.x + s * SPEED_LINES.ahead + c * lat, up, car.z + c * SPEED_LINES.ahead - s * lat], normal: [-s, 0, -c] };
+}
+
+/** GC-V3 intro drizzle: the post-rain shower ends at 0:20 of the shift (real shift clock; off when `?at=` pins). */
+export const DRIZZLE = { until: 20, fade: 6, interval: 0.1, box: 18, top: 9 } as const;
+
+/** Drizzle density 0..1 at a shift second (1 until 0:14, fading to 0 at 0:20). */
+export const drizzleAt = (elapsed: number): number => Math.max(0, Math.min(1, (DRIZZLE.until - elapsed) / DRIZZLE.fade));
+
+/** One drizzle batch position: above a point in a box around and ahead of the car (seeded). */
+export function drizzleSpawn(car: { x: number; z: number; heading: number }, seed: number): [number, number, number] {
+  const h = (k: number): number => {
+    const v = Math.sin(seed * 12.9898 + k * 78.233) * 43758.5453;
+    return v - Math.floor(v);
+  };
+  const s = Math.sin(car.heading), c = Math.cos(car.heading);
+  const ahead = 4 + h(1) * DRIZZLE.box, lat = (h(2) - 0.5) * DRIZZLE.box;
+  return [car.x + s * ahead + c * lat, DRIZZLE.top, car.z + c * ahead - s * lat];
 }
 
 /* ------------------------------------------------------------------ skid marks */
