@@ -4,7 +4,7 @@
  * fallback) with its aura shell, ki sparks and speed streaks, pooled multi-part props for the road's entities, the
  * chase camera and the post stack. The simulation (`sim.ts`) never imports this file.
  */
-import { attachRootRenderSource, camera, cloneSkinned, effects, environments, geometry, instances, lights, material, model, primitives, scene, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
+import { attachRootRenderSource, camera, cloneSkinned, effects, environments, geometry, instances, lights, material, model, primitives, scene, text3D, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
 import { gapAhead } from "./hud";
 import { HERO_PARTS, apply, mul, poseHero, rx, ry, rz, type HeroColor, type HeroPartSpec, type M3, type V3 as LV3 } from "./hero";
 import {
@@ -12,7 +12,7 @@ import {
 } from "./materials";
 import { PROFILE, buildRoadMesh, buildRoadSamples, frameAt, onRoad, type RoadFrame, type V3 } from "./road";
 import { advanceRunPhase, stepChaseRig, withSample, type ChaseRig, type PresentSample } from "./presentation";
-import { ROAD_LENGTH, entityHeight, entityLateral, type Entity, type RunState } from "./sim";
+import { ROAD_LENGTH, STAGES, entityHeight, entityLateral, type Entity, type RunState } from "./sim";
 import type { RunnerStyle } from "./styles";
 import { ENTITY_MODELS, ISLAND_COUNT, LANTERN_COUNT, MESHY } from "./models";
 import { STAGE_LOOK, lookAt, lookDistance, lookParams, type LookParams, type ResolvedLook } from "./art/colorScript";
@@ -100,6 +100,11 @@ export const ISLAND_BANDS = [
   { id: "islands-mid", count: 12, spacing: 120, lateral: [70, 130], up: [8, 40], radius: [9, 16], height: [22, 40], fog: 0.25 },
   { id: "islands-far", count: 18, spacing: 110, lateral: [180, 320], up: [20, 90], radius: [18, 34], height: [45, 90], fog: 0.55 }
 ] as const;
+/** GU47 SSR-11: SDF stage boards hung over the road at each stage boundary (shown within this many metres ahead). */
+export const BOARD_SHOW_AHEAD = 520;
+export const BOARD_HEIGHT = 9;
+/** Stage boards: every stage after the first, at its boundary (outbound distance). */
+export const STAGE_BOARDS: readonly { readonly id: string; readonly s: number; readonly text: string }[] = STAGES.slice(1).map((stage, i) => ({ id: `stage-board-${i + 1}`, s: stage.from, text: stage.name }));
 const FLAG_COLORS: readonly Rgb[] = [hexLinear(0xff7a6b), hexLinear(0xf2b33d), hexLinear(0x7fe0c4), hexLinear(0xf4eefa), hexLinear(0x6a5ad8)];
 
 /** Column-major mat4 (T·R·S) from a column-major M3 basis, a position and a uniform scale, written at `out[o..o+15]`. */
@@ -410,6 +415,17 @@ export function buildWorld(options: WorldOptions = {}): World {
   if (script) {
     const hidden = (n: number) => Array.from({ length: n }, () => ({ position: [0, -500, 0] as [number, number, number], scale: 1e-4 }));
     builder.add(instances.box({ name: "verge-flags", size: [1, 1, 1], transforms: hidden(VERGE_POSTS * FLAGS_PER_SPAN), colors: Array.from({ length: VERGE_POSTS * FLAGS_PER_SPAN }, () => "#ffffff"), material: material.custom(flagInstancedSpec()) }).runtime({ id: "verge-flags" }));
+    // SDF stage boards: an indigo lacquer board with gold-rimmed gold lettering, facing the oncoming runner
+    for (const board of STAGE_BOARDS) {
+      const bf = frameAt(samples, Math.min(board.s, ROAD_LENGTH));
+      const e = matrixEuler(frameBasis(bf));
+      const at = onRoad(bf, 0, BOARD_HEIGHT);
+      const width = Math.max(10, board.text.length * 1.05 + 3);
+      const face = onRoad(bf, 0, BOARD_HEIGHT - 0.55);
+      const faceAt: V3 = [face[0] - bf.F[0] * 0.2, face[1] - bf.F[1] * 0.2, face[2] - bf.F[2] * 0.2];
+      builder.add(primitives.box({ name: board.id, size: [width, 3.2, 0.3], material: material.custom(solidSpec(hexLinear(0x1c1640), hexLinear(0xf2b33d), 0.08)) }).position(at[0], at[1], at[2]).rotate(e[0], e[1], e[2]).runtime({ id: board.id }));
+      builder.add(text3D(board.text, { name: `${board.id}-text`, size: 1.5, depth: 0.05, letterSpacing: 0.06, backend: "sdf", material: material.emissive({ color: "#f2b33d", emissive: "#f2b33d", emissiveIntensity: 1.2 }) }).position(faceAt[0], faceAt[1], faceAt[2]).rotate(e[0], e[1], e[2]).runtime({ id: `${board.id}-text` }));
+    }
     for (const band of ISLAND_BANDS) {
       builder.add(instances.cone({ name: band.id, params: { radius: 1, height: 1, radialSegments: 7 }, transforms: hidden(band.count), colors: Array.from({ length: band.count }, () => "#ffffff"), material: material.custom(islandInstancedSpec()) }).runtime({ id: band.id }));
     }
@@ -753,6 +769,16 @@ export function buildWorld(options: WorldOptions = {}): World {
             if (lookShown) { flags.setUniform?.("flagSunColor", [...lookShown.sunColor]); flags.setUniform?.("flagFogColor", [...lookShown.fogColor]); }
           }
           (node("verge-lanterns") as Partial<ReturnType<typeof node>>).setInstanceMatrices?.(lampBuf, li);
+        }
+
+        /* GU47 SSR-11: stage boards only while within BOARD_SHOW_AHEAD m ahead (and 20 m behind) */
+        if (script) {
+          const sOut = lookDistance(S.s, S.leg);
+          for (const board of STAGE_BOARDS) {
+            const near = sOut > board.s - BOARD_SHOW_AHEAD && sOut < board.s + 20 && S.leg === "out";
+            show(board.id, near);
+            show(`${board.id}-text`, near);
+          }
         }
 
         /* GU47 SSR-11: mid and far island bands (inverted spires, slow bob), recycled ahead along the road */
