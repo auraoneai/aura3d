@@ -185,7 +185,7 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     grade: { contrast: 1.1, saturation: 1.08, temperature: 0.08, tint: 0 },
     vignette: 0.22,
     godRays: null,
-    street: { lampEmissive: 3.0, sodiumPoints: 4, sodiumPower: 1400, lightPools: 0.6, windowGlow: 1, headlights: 1.4, asphalt: { color: "#15191f", roughness: 0.22 }, ground: "#0b0f19", water: "#081c2e", drizzle: true },
+    street: { lampEmissive: 3.0, sodiumPoints: 3, sodiumPower: 1400, lightPools: 0.6, windowGlow: 1, headlights: 1.4, asphalt: { color: "#15191f", roughness: 0.22 }, ground: "#0b0f19", water: "#081c2e", drizzle: true },
     scanStrength: 1.25
   }
 };

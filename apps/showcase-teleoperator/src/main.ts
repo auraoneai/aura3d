@@ -1,4 +1,4 @@
-import { createAuraApp, createFixedStepLoop, installQaHooks, material, type AuraRuntimeNodeHandle, type AuraTransformSpec } from "@aura3d/engine";
+import { createAuraApp, createFixedStepLoop, installQaHooks, material, type AuraModelMaterialHandle, type AuraRuntimeNodeHandle, type AuraTransformSpec } from "@aura3d/engine";
 import { installBlackFrameGuard, installSafetyNet } from "@aura3d/debug";
 import { createCameraShake, createFixedStepPresenter, createHitStop, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
 import { createGridAudio } from "./audio";
@@ -59,8 +59,11 @@ import {
   buildingLayoutLeft,
   buildingLayoutRight,
   headlightPose,
+  nearestLamps,
   probeBuildingModels,
+  sodiumPointIds,
   tailLampMaterial,
+  windowGlowOverride,
   skyOutput
 } from "./scene";
 import { NO_INPUT, RIVALS, ROAD_USER_COUNT, TRAFFIC_COUNT, createSim, fareOf, roadUserFootprints, type DriveInput, type SimEvent } from "./sim";
@@ -142,7 +145,7 @@ function initSpeedometerDial(isIce: boolean): void {
 }
 
 /** Every runtime handle the presentation writes, looked up once per scene mount (weather changes remount the scene). */
-function bindNodes(app: ReturnType<typeof createAuraApp>) {
+function bindNodes(app: ReturnType<typeof createAuraApp>, sky: WeatherPreset) {
   const req = (id: string): AuraRuntimeNodeHandle => app.nodes.require(id);
   const nodes = {
     cars: Object.fromEntries(PLAYABLE_IDS.map((id) => [id, req(`player-car-${id}`)])) as Record<PlayableCarId, AuraRuntimeNodeHandle>,
@@ -159,6 +162,7 @@ function bindNodes(app: ReturnType<typeof createAuraApp>) {
     crowns: req("sf-tree-crowns"),
     ribbons: req("route-ribbons"),
     tailLamps: req("player-tail-lamps"),
+    sodium: sodiumPointIds(SKY_LOOKS[sky]).map((id) => app.nodes.require(id)),
     headlights: HEADLIGHT_IDS.map((id) => (app.nodes.has(id) ? app.nodes.require(id) : null)),
     buildings: Array.from({ length: BUILDING_PAIRS }, (_, i) => {
       const left = req(`sf-bldg-l-${i}`).setRotation(0, Math.PI / 2, 0);
@@ -191,7 +195,7 @@ async function bootGridDispatch(): Promise<void> {
   // takes the record form (QrFlagInput); drop the cast once the option type is widened (lane report handoff).
   const auraApp = createAuraApp(canvas, { scene: buildGridDispatchScene(weather), renderer: GRID_DISPATCH_RENDERER, qualityRebuild: { flags: GRID_DISPATCH_FLAGS as unknown as readonly string[] } });
   installSafetyNet({ safety: { selfHeal: false, panel: "query" }, app: auraApp });
-  let N = bindNodes(auraApp);
+  let N = bindNodes(auraApp, weather);
   // GD-05/GD-09: the sensor pass (marine deck aloft + LiDAR scan pulse); registered once, it survives sky remounts.
   const sensor = installSensorPass(auraApp, SKY_LOOKS[weather]);
   /** Low post tier (phones, E-G post-only tier): the scan ring runs at half strength. Read once the renderer is up. */
@@ -340,6 +344,26 @@ async function bootGridDispatch(): Promise<void> {
     N.users[TRAFFIC_COUNT + 1]?.setMaterial(material.pbr({ color: "#e8c27a", metalness: 0.65, roughness: 0.26 }));
   }
 
+  /**
+   * GD-02: warm facade glow per sky (interim for window maps, see scene.ts windowGlowOverride). Run after ready(): the
+   * material handle binds its actor on first read, so a read before the GLB loaded is dropped and rebuilt (the
+   * slingshot-siege pattern). Box fallbacks have no materials and are skipped.
+   */
+  function applyWindowGlow(): void {
+    const glow = windowGlowOverride(SKY_LOOKS[weather]);
+    for (let i = 0; i < BUILDING_PAIRS; i++) {
+      for (const id of [`sf-bldg-l-${i}`, `sf-bldg-r-${i}`]) {
+        let h = auraApp.nodes.get(id) as unknown as { materials?: AuraModelMaterialHandle } | undefined;
+        if (h?.materials && h.materials.inspectMaterials().length === 0) {
+          delete h.materials;
+          h = auraApp.nodes.get(id) as unknown as { materials?: AuraModelMaterialHandle } | undefined;
+        }
+        const m = h?.materials;
+        if (m && m.inspectMaterials().length > 0) m.setMaterialOverrides(glow.emissiveIntensity > 0 ? [glow] : []);
+      }
+    }
+  }
+
   let appliedCar: PlayableCarId | null = null;
   function applyCarVisibility(): void {
     for (const id of PLAYABLE_IDS) {
@@ -412,7 +436,7 @@ async function bootGridDispatch(): Promise<void> {
     $("skyChange")?.classList.add("on");
     auraApp.setScene(buildGridDispatchScene(next));
     applySkyOutput();
-    N = bindNodes(auraApp);
+    N = bindNodes(auraApp, next);
     applyMaterialOverrides();
     appliedCar = null;
     lastSignalPhase = -1;
@@ -420,7 +444,7 @@ async function bootGridDispatch(): Promise<void> {
     lastBrakeLamp = null;
     lastHeadlightX = Number.NaN;
     try {
-      await Promise.race([auraApp.ready().then(() => warmPrograms(auraApp)), new Promise((resolve) => setTimeout(resolve, 60_000))]);
+      await Promise.race([auraApp.ready().then(() => { applyWindowGlow(); return warmPrograms(auraApp); }), new Promise((resolve) => setTimeout(resolve, 60_000))]);
     } catch (error) {
       console.error("[grid-dispatch] sky change remount failed; continuing with what rendered", error);
     }
@@ -644,6 +668,8 @@ async function bootGridDispatch(): Promise<void> {
     const lz = Array.from({ length: LAMP_PAIRS }, (_, i) => rz(lampBaseZ - i * LAMP_STRIDE_Z));
     N.lampPoles.setInstances(lz.flatMap((z) => [pos(rx(-11.2), ry(3.1), z), pos(rx(11.2), ry(3.1), z)]));
     N.lampGlobes.setInstances(lz.flatMap((z) => [pos(rx(-10.8), ry(6.25), z), pos(rx(10.8), ry(6.25), z)]));
+    // GD-02: sodium points ride on the nearest lamp globes in front of the camera.
+    if (N.sodium.length) nearestLamps(lz, N.sodium.length).forEach(([x, z], i) => N.sodium[i]!.setLight?.({ position: [rx(x), ry(6.1), z] }));
     N.trunks.setInstances(lz.map((z) => pos(rx(12.2), ry(1.6), z - 14)));
     N.crowns.setInstances(lz.map((z) => pos(rx(12.2), ry(4.1), z - 14)));
 
@@ -987,6 +1013,7 @@ async function bootGridDispatch(): Promise<void> {
     qa.reportError(error);
     console.error("[grid-dispatch] scene assets failed to load; continuing with what rendered", error);
   }
+  applyWindowGlow();
   lowTier = (auraApp.diagnostics() as unknown as { post?: { tier?: string } }).post?.tier === "low";
   // Settle every shader program before the boot screen goes (a draw whose program is still compiling is skipped).
   // Place the street first so the settle pass draws what the first game frame shows.

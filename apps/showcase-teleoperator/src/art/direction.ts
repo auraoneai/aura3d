@@ -38,6 +38,7 @@ export default defineArtDirection({
   lighting: {
     key: { type: "directional", colorTemperatureK: 2600, shadow: true },
     fill: "ibl",
+    // Non-key lights, cap 6 (defineArtDirection): hemisphere + 2 headlight spots + up to 3 sodium points (night).
     practicals: 6,
     environment: { hdri: "belfast_sunset_puresky", background: "sky" },
     exposureEV: 0

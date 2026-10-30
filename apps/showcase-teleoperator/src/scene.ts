@@ -1,6 +1,6 @@
 import { camera, defineAuraAssets, effects, environments, game, instances, lights, material, model, primitives, scene, sky, type AuraTransformSpec } from "@aura3d/engine";
 import { assets, type GridAssetKey } from "./aura-assets";
-import { BRAKE_RED, KEY_SHADOW, SKY_LOOKS, hdriUrl, keyLightPosition, type HdriId, type SkyLook } from "./look";
+import { BRAKE_RED, KEY_SHADOW, SODIUM, SKY_LOOKS, hdriUrl, keyLightPosition, type HdriId, type SkyLook } from "./look";
 import { RIVALS, TRAFFIC_SPECS } from "./sim";
 import { CAR_DRAW_Z, CURB_BEACON_X, PLAYABLE_FLEET, PLAYABLE_IDS, SCENE_CAM_FOV_DEG, SCENE_CAM_POS, SCENE_CAM_TARGET, type PlayableCarId, type Vec3, type WeatherPreset } from "./rules";
 
@@ -238,6 +238,36 @@ export function headlightNodes(look: SkyLook) {
 }
 
 /**
+ * GD-02/GD-20: sodium point lights on the nearest street lamps. The art direction caps non-key lights at 6
+ * (defineArtDirection): hemisphere + 2 headlight spots leave 3 sodium points (night 3, dusk and fog 2).
+ */
+export const SODIUM_POINT_MAX = 3;
+export const SODIUM_RANGE_M = 18;
+export const sodiumPointIds = (look: SkyLook): string[] => Array.from({ length: Math.min(SODIUM_POINT_MAX, look.street.sodiumPoints) }, (_, i) => `sf-sodium-${i}`);
+export function sodiumPointNodes(look: SkyLook) {
+  return sodiumPointIds(look).map((id, i) =>
+    lights.point({ name: id, position: [i % 2 === 0 ? -10.8 : 10.8, 6.1, -20 - i * LAMP_STRIDE_Z], power: look.street.sodiumPower, distance: SODIUM_RANGE_M, decay: 2, color: SODIUM }).runtime(game.runtimeNode(id))
+  );
+}
+
+/**
+ * GD-02: the lamps a sodium point should sit on this frame: the nearest lamp globes in front of the camera (view z), both
+ * sides, nearest first. `lampZ` are the view z of the lamp rows, `x` the globe offset from the avenue centre.
+ */
+export function nearestLamps(lampZ: readonly number[], count: number, x = 10.8, maxZ = 6): [number, number][] {
+  const lamps = lampZ.filter((z) => z <= maxZ).flatMap((z) => [[-x, z], [x, z]] as [number, number][]);
+  return lamps.sort((a, b) => b[1] - a[1]).slice(0, count);
+}
+
+/**
+ * GD-02 window glow, interim: every facade GLB has one baked material and no window mask, so the glow is a warm emissive
+ * lift of the whole facade (`street.windowGlow`, 0 at noon). GU47(WP-36): an emissive window map on the 4 retextured
+ * facades replaces it.
+ */
+export const WINDOW_GLOW = { color: SODIUM, intensity: 0.16 } as const;
+export const windowGlowOverride = (look: SkyLook) => ({ emissive: WINDOW_GLOW.color, emissiveIntensity: WINDOW_GLOW.intensity * look.street.windowGlow }) as const;
+
+/**
  * Renderer options for the mount. The game is tuned and captured at the "high" tier on every device,
  * so it asks for that tier explicitly in object form: same tier as the old `quality: "high"` string,
  * without the engine's RENDERER_QUALITY_STRING diagnostic warning.
@@ -324,7 +354,8 @@ export function buildGridDispatchScene(weather: WeatherPreset): ReturnType<typeo
   const zebraMat = material.emissive({ color: "#f8fafc", emissive: "#e2e8f0", emissiveIntensity: 0.4 });
   const signalPoleMat = material.pbr({ color: "#334155", metalness: 0.72, roughness: 0.32 });
   const signalHeadMat = material.emissive({ color: "#43d17a", emissive: "#43d17a", emissiveIntensity: 2.1 });
-  const lampMat = material.emissive({ color: "#fef3c7", emissive: "#fbbf24", emissiveIntensity: weather === "night" ? 2.4 : 1.55 });
+  // GD-02: lamp globes from the look table (night 3.0, dusk 2.4, fog 1.6, noon unlit 0.25).
+  const lampMat = material.emissive({ color: "#fef3c7", emissive: SODIUM, emissiveIntensity: look.street.lampEmissive });
   const pool = (n: number): AuraTransformSpec[] => Array.from({ length: n }, (_, i) => ({ position: [0, -50, 200 + i] }));
   s.addMany([
     instances.box({ name: "sf-dashes", size: [0.14, 0.02, 4.2], material: dashMat, transforms: pool(DASH_ROWS * DASH_LINES_X.length) }).runtime(game.runtimeNode("sf-dashes")),
@@ -375,6 +406,7 @@ export function buildGridDispatchScene(weather: WeatherPreset): ReturnType<typeo
         .scale(i === 0 ? [1, 1, 1] : HIDDEN_SCALE)
         .runtime(game.runtimeNode(`player-car-${id}`, i === 0 ? { tags: ["primarySubject", "primaryVehicle", "player"] } : undefined))
     ),
+    ...sodiumPointNodes(look),
     instances.box({ name: "player-tail-lamps", size: TAIL_LAMP.size, material: tailLampMaterial(look, false), transforms: pool(2) }).runtime(game.runtimeNode("player-tail-lamps")),
     ...headlightNodes(look)
   ]);

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { resolveQrFlags } from "@aura3d/engine";
-import { BOOT_SKY, KEY_SHADOW, SKY_LOOKS, SKY_ORDER, hazeAt, hdriUrl, keyLightPosition, nextSky, skyFromParam, sunDirection } from "../../../apps/showcase-teleoperator/src/look";
-import { GRID_DISPATCH_FLAGS, WEATHER, buildGridDispatchScene, skyOutput, tailLampMaterial } from "../../../apps/showcase-teleoperator/src/scene";
+import { BOOT_SKY, KEY_SHADOW, SKY_LOOKS, SODIUM, SKY_ORDER, hazeAt, hdriUrl, keyLightPosition, nextSky, skyFromParam, sunDirection } from "../../../apps/showcase-teleoperator/src/look";
+import { GRID_DISPATCH_FLAGS, SODIUM_POINT_MAX, WEATHER, buildGridDispatchScene, nearestLamps, skyOutput, tailLampMaterial, windowGlowOverride } from "../../../apps/showcase-teleoperator/src/scene";
 
 type Node = { kind?: string; light?: string; name?: string; environment?: string; texture?: { url?: string }; shadow?: unknown; position?: number[]; color?: string; intensity?: number; children?: Node[] };
 const flatNodes = (sky: (typeof SKY_ORDER)[number]): Node[] => {
@@ -206,5 +206,28 @@ describe("grid dispatch GD-03 headlights and tail lamps", () => {
     const tail = tailLampMaterial(SKY_LOOKS.night, false) as { emissiveIntensity?: number };
     const brake = tailLampMaterial(SKY_LOOKS.night, true) as { emissiveIntensity?: number };
     expect(brake.emissiveIntensity!).toBeGreaterThan(tail.emissiveIntensity! * 2);
+  });
+});
+
+describe("grid dispatch GD-02 sodium night street", () => {
+  it("sodium points per sky from the look table, never above the cap of 3 (6 non-key lights); none at noon", () => {
+    for (const sky of SKY_ORDER) {
+      const points = flatNodes(sky).filter((n) => n.kind === "light" && n.light === "point");
+      expect(points.length, sky).toBe(SKY_LOOKS[sky].street.sodiumPoints);
+      expect(points.length).toBeLessThanOrEqual(SODIUM_POINT_MAX);
+      for (const p of points) expect(p.color).toBe(SODIUM);
+    }
+    expect(SKY_LOOKS.night.street.sodiumPoints).toBe(3);
+  });
+  it("night lamp globes emissive 3.0, hemisphere ground #3a2a1c", () => {
+    expect(SKY_LOOKS.night.street.lampEmissive).toBe(3);
+    expect(SKY_LOOKS.night.hemisphere.ground).toBe("#3a2a1c");
+  });
+  it("nearestLamps: the closest rows in front of the camera, both sides, nearest first", () => {
+    expect(nearestLamps([20, 2, -36, -74], 3)).toEqual([[-10.8, 2], [10.8, 2], [-10.8, -36]]);
+  });
+  it("window glow is off at noon and strongest at night", () => {
+    expect(windowGlowOverride(SKY_LOOKS.noon).emissiveIntensity).toBe(0);
+    expect(windowGlowOverride(SKY_LOOKS.night).emissiveIntensity).toBeGreaterThan(windowGlowOverride(SKY_LOOKS.golden).emissiveIntensity);
   });
 });
