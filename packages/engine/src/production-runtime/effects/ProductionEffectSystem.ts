@@ -69,6 +69,20 @@ interface TrailBinding {
   readonly node: EffectNodeLike;
 }
 
+/** GU47 E-F: what an attach target resolves through (runtime node handle, or a bone socket on its actor). */
+interface AttachHandleLike {
+  getWorldPosition?(): readonly number[];
+  readonly position?: readonly number[];
+  readonly animation?: { socket?(bone: string): { readonly valid: boolean; worldMatrix(out?: Float32Array): Float32Array } };
+}
+
+/** GU47 E-F: an emitter that follows a runtime node; `offset` is the node's authored `position`. */
+interface AttachBinding {
+  readonly target: unknown;
+  readonly offset: readonly [number, number, number];
+  missingNoted: boolean;
+}
+
 function hexToRgb(c: string): readonly [number, number, number] {
   if (c.startsWith("#") && c.length === 7) {
     return [parseInt(c.slice(1, 3), 16) / 255, parseInt(c.slice(3, 5), 16) / 255, parseInt(c.slice(5, 7), 16) / 255];
@@ -316,6 +330,9 @@ export class ProductionEffectSystem {
   private renderSincePrevFrame = false;
   /** GU47 E-F: atlas-sprite and texture-sheet textures, loaded on first use (1k page on low/medium tiers). */
   private readonly sprites: VfxSpriteTextures;
+  /** GU47 E-F: emitters that follow a runtime node (`attachTo`), keyed by emitter id. */
+  private readonly attachments = new Map<string, AttachBinding>();
+  private readonly socketScratch = new Float32Array(16);
 
   constructor(
     private readonly app: AppLike,
@@ -497,7 +514,7 @@ export class ProductionEffectSystem {
     const fogVolumes: EffectNodeLike[] = [];
     this.walkNodes((node, visible) => {
       if (!visible || node.kind !== "effect") return;
-      const lowered = lowerEffectNode(node);
+      const lowered = lowerEffectNode(this.placeAttached(node));
       this.diagnostics.track({
         nodeId: lowered.nodeId,
         effect: lowered.effect,
@@ -508,6 +525,7 @@ export class ProductionEffectSystem {
       });
       if (lowered.type === "emitter") {
         this.attachEmitter(lowered);
+        this.trackAttachment(lowered.nodeId, node);
       } else if (lowered.type === "volume") {
         this.attachVolume(lowered);
       } else {
@@ -699,10 +717,83 @@ export class ProductionEffectSystem {
     return this.runtimeEffectsUrl ?? this.runtimeEffectsApp;
   }
 
+  /**
+   * GU47 E-F: world position of an attach target: a runtime node id, `{ node, socket }` (the actor's bone
+   * socket when it resolves, else the node), or a node handle. Null when nothing resolves.
+   */
+  resolveTarget(target: unknown): [number, number, number] | null {
+    let handle: AttachHandleLike | undefined;
+    let socket: string | undefined;
+    if (typeof target === "string") {
+      handle = this.app.nodes?.get(target) as AttachHandleLike | undefined;
+    } else if (typeof target === "object" && target !== null) {
+      const ref = target as { readonly node?: unknown; readonly socket?: unknown };
+      if (typeof ref.node === "string") {
+        handle = this.app.nodes?.get(ref.node) as AttachHandleLike | undefined;
+        socket = typeof ref.socket === "string" ? ref.socket : undefined;
+      } else {
+        handle = target as AttachHandleLike;
+      }
+    }
+    if (!handle) return null;
+    if (socket !== undefined) {
+      const bone = handle.animation?.socket?.(socket);
+      if (bone?.valid) {
+        const m = bone.worldMatrix(this.socketScratch);
+        if (Number.isFinite(m[12]) && Number.isFinite(m[13]) && Number.isFinite(m[14])) return [m[12], m[13], m[14]];
+      }
+    }
+    const p = typeof handle.getWorldPosition === "function" ? handle.getWorldPosition() : handle.position;
+    if (!p || p.length < 3 || !Number.isFinite(p[0]) || !Number.isFinite(p[1]) || !Number.isFinite(p[2])) return null;
+    return [p[0], p[1], p[2]];
+  }
+
+  /** GU47 E-F: an `attachTo` node starts at its target (plus its `position` offset); others pass unchanged. */
+  private placeAttached(node: EffectNodeLike): EffectNodeLike {
+    if (node.attachTo === undefined) return node;
+    const at = this.resolveTarget(node.attachTo);
+    if (!at) return node;
+    const offset = node.position ?? [0, 0, 0];
+    return { ...node, position: [at[0] + offset[0], at[1] + offset[1], at[2] + offset[2]] };
+  }
+
+  private trackAttachment(emitterId: string, node: EffectNodeLike): void {
+    if (node.attachTo === undefined) {
+      this.attachments.delete(emitterId);
+      return;
+    }
+    const offset = node.position ?? [0, 0, 0];
+    this.attachments.set(emitterId, { target: node.attachTo, offset: [offset[0], offset[1], offset[2]], missingNoted: false });
+  }
+
+  /** GU47 E-F: move every attached emitter's origin to its target before the sim step spawns. */
+  private updateAttachments(): void {
+    for (const [emitterId, attachment] of this.attachments) {
+      const binding = this.emitters.get(emitterId);
+      if (!binding) {
+        this.attachments.delete(emitterId);
+        continue;
+      }
+      const at = this.resolveTarget(attachment.target);
+      if (!at) {
+        if (!attachment.missingNoted) {
+          attachment.missingNoted = true;
+          this.diagnostics.note("VFX_ATTACH_TARGET_MISSING", emitterId, "attachTo target does not resolve to a runtime node; the emitter keeps its last position");
+        }
+        continue;
+      }
+      const x = at[0] + attachment.offset[0];
+      const y = at[1] + attachment.offset[1];
+      const z = at[2] + attachment.offset[2];
+      const origin = binding.state.desc.origin;
+      if (origin[0] !== x || origin[1] !== y || origin[2] !== z) binding.state.desc = { ...binding.state.desc, origin: [x, y, z] };
+    }
+  }
+
   /** Add a transient effect-instance emitter (effects.burst/spawn). */
   addInstance(nodeId: string, node: EffectNodeLike): string {
     if (this.runtimeEffects === "off") return nodeId;
-    const lowered = lowerEffectNode(node);
+    const lowered = lowerEffectNode(this.placeAttached(node));
     this.diagnostics.track({
       nodeId,
       effect: lowered.effect,
@@ -713,6 +804,7 @@ export class ProductionEffectSystem {
     });
     if (lowered.type === "emitter") {
       this.attachEmitter({ ...lowered, nodeId });
+      this.trackAttachment(nodeId, node);
       this.transients.set(nodeId, { born: this.time, warned: false });
       this.lastTransientAt = this.time;
     } else if (lowered.type === "volume") {
@@ -726,6 +818,8 @@ export class ProductionEffectSystem {
   setInstanceOrigin(nodeId: string, origin: readonly number[]): void {
     const binding = this.emitters.get(nodeId);
     if (binding) {
+      // An explicit position wins over `attachTo`: the emitter stops following its node.
+      this.attachments.delete(nodeId);
       binding.state.desc = { ...binding.state.desc, origin: [origin[0] ?? 0, origin[1] ?? 0, origin[2] ?? 0] as never };
       return;
     }
@@ -735,6 +829,7 @@ export class ProductionEffectSystem {
 
   removeInstance(nodeId: string): void {
     this.transients.delete(nodeId);
+    this.attachments.delete(nodeId);
     const binding = this.emitters.get(nodeId);
     if (!binding) {
       this.volumes.delete(nodeId);
@@ -781,6 +876,7 @@ export class ProductionEffectSystem {
     // capped at 30 s of simulation per frame like createEmitter's prewarm.
     const substeps = dt > 0 ? Math.min(Math.ceil(dt * 60 - 1e-6), 1800) : 0;
     const h = substeps > 0 ? dt / substeps : 0;
+    if (this.attachments.size > 0) this.updateAttachments();
     for (const binding of this.emitters.values()) {
       for (let s = 0; s < substeps; s++) stepEmitter(binding.state, h);
       this.diagnostics.track({

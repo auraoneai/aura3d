@@ -109,6 +109,11 @@ export interface EffectNodeLike {
   readonly sprite?: string | { readonly atlas?: unknown; readonly frame?: number };
   /** GU47 E-F `effects.flipbook({ texture })`: sprite-sheet texture asset ref or URL. */
   readonly texture?: unknown;
+  /**
+   * GU47 E-F: follow a runtime node (id, `{ node, socket }` or a node handle); `position` becomes the offset
+   * from the target's world position. Resolved per frame by `ProductionEffectSystem`, never by lowering.
+   */
+  readonly attachTo?: unknown;
 }
 
 /**

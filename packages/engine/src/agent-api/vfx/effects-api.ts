@@ -160,7 +160,7 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
   const spawnEmitter = (
     kind: string,
     position: AuraVec3,
-    options: { count?: number; speed?: number; scale?: number; color?: AuraColor; seed?: number; intensity?: number; continuous?: boolean; camera?: boolean }
+    options: { count?: number; speed?: number; scale?: number; color?: AuraColor; seed?: number; intensity?: number; continuous?: boolean; camera?: boolean; attachTo?: unknown }
   ): AuraEffectInstanceHandle => {
     const id = `fx-${nextInstanceId++}`;
     const preset = BURST_PRESETS[kind] ?? BURST_PRESETS.spark;
@@ -207,7 +207,9 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
       maxScreen: PRESET_MAX_SCREEN[kind] ?? 0.05,
       emissionRate: options.continuous ? (options.count ?? 24) * 2 : 0,
       color,
-      seed: options.seed
+      seed: options.seed,
+      // GU47 E-F: follow a runtime node; `position` is then the offset from it.
+      ...(options.attachTo !== undefined ? { attachTo: options.attachTo } : {})
     });
     instances.set(id, { id, emitterId, alive: true });
     return {
@@ -236,12 +238,16 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
     burst(kind: AuraVfxKind, position: AuraVec3, options) {
       return spawnEmitter(kind, position, options ?? {});
     },
-    spawn(effect: AuraVfxEffectSpec | AuraVfxKind, at: AuraVec3 | { node: string }, options) {
+    spawn(effect: AuraVfxEffectSpec | AuraVfxKind, at: AuraVec3 | { node: string; socket?: string }, options) {
       const kind = typeof effect === "string" ? effect : effect.name;
+      // GU47 E-F: `{ node, socket }` (or the spec's own attachTo) makes the effect follow that node; the old
+      // code spawned it at the world origin.
+      const onNode = !Array.isArray(at) && typeof (at as { node?: unknown }).node === "string";
       const position: AuraVec3 = Array.isArray(at) ? (at as unknown as AuraVec3) : [0, 0, 0];
+      const attachTo = onNode ? at : typeof effect === "string" ? undefined : effect.attachTo;
       // A named preset is a one-shot impact: it bursts and dies with its particles. Only an authored
       // AuraVfxEffectSpec object is a looping effect that the caller stops.
-      return spawnEmitter(kind, position, { ...(options ?? {}), continuous: typeof effect !== "string" });
+      return spawnEmitter(kind, position, { ...(options ?? {}), continuous: typeof effect !== "string", ...(attachTo !== undefined ? { attachTo } : {}) });
     },
     trail(_target, options) {
       void options;

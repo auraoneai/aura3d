@@ -8,7 +8,15 @@ import type { AuraBlendMode } from "@aura3d/rendering/contracts";
 import type { AuraVfxBuiltinSequence } from "../agent-api/vfx/atlas";
 
 export type AuraVfxKind = "spark" | "dust" | "debris" | "ring" | "streak" | "pickup" | "explosion-small" | "muzzle" | "splash" | "bubble" | "impact-flash" | "super-flash" | "impact-decal" | "aura-burst";
-export interface AuraVfxEffectSpec { readonly name: string; readonly layers: readonly ({ readonly type: "emitter" | "mesh" | "ribbon" | "decal" | "light" | "camera"; readonly at?: number } & Readonly<Record<string, unknown>>)[]; }
+export interface AuraVfxEffectSpec {
+  readonly name: string;
+  readonly layers: readonly ({ readonly type: "emitter" | "mesh" | "ribbon" | "decal" | "light" | "camera"; readonly at?: number } & Readonly<Record<string, unknown>>)[];
+  /**
+   * GU47 E-F: the effect's emitters follow this runtime node (id, or `{ node, socket }` for a bone socket on
+   * its actor) every frame; spawn positions become offsets from it. `spawn(spec, { node, socket })` does the same.
+   */
+  readonly attachTo?: string | { readonly node: string; readonly socket?: string };
+}
 export interface AuraEffectInstanceHandle { readonly id: string; readonly alive: boolean; stop(o?: { immediate?: boolean }): void; setPosition(p: AuraVec3): void; setDirection?(n: AuraVec3): void; }
 export interface AuraDecalOptions { readonly kind?: string; readonly size?: number; readonly lifetime?: number; readonly color?: AuraColor; readonly opacity?: number; }
 export interface AuraAppEffects {
