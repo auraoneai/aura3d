@@ -1,0 +1,717 @@
+{
+  "schema": "aura3d.art-direction-audit/1",
+  "source": "examples/strange-orbit-port/art/direction.ts",
+  "sourceSha256": "363dd867dcbb8585c8555e74d6aa810eb458a6dec4ebe508a6dab86b1f80edcd",
+  "id": "strange-orbit-port",
+  "genre": "racing",
+  "signatureEffect": "Brush-textured moving gouache painting: impasto road relief raked by a low white sun into long shadows, under a ringed peach gas giant.",
+  "palette": {
+    "primary": [
+      "#d98464",
+      "#294e52",
+      "#f3ddaf",
+      "#5b3f86"
+    ],
+    "accent": "#ecb75f",
+    "reservedObjective": "#93ead5"
+  },
+  "environment": {
+    "preset": "capture:nebula-gas-giant",
+    "background": "sky"
+  },
+  "violations": [],
+  "snapshot": {
+    "lights": [
+      {
+        "type": "hemisphere",
+        "shadow": false,
+        "intensity": 1.1
+      },
+      {
+        "type": "directional",
+        "shadow": true,
+        "intensity": 2.6
+      },
+      {
+        "type": "directional",
+        "shadow": false,
+        "intensity": 1
+      }
+    ],
+    "hasAmbient": false,
+    "environment": {
+      "kind": "preset",
+      "background": true
+    },
+    "models": [
+      {
+        "assetKey": "pylon",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pylon",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pylon",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pylon",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pylon",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pylon",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pylon",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pylon",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pylon",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pylon",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "boulderA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "boulderB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "boulderA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "boulderA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "boulderB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "boulderA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "boulderA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "boulderB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "boulderA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "boulderA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "boulderB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "boulderA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "boulderA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "boulderB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "lander",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "observatory",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "observatory",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "moonRock",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "moonRock",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "moonRock",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "moonRock",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "moonRock",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "moonRock",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "moonRock",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "moonRock",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "bikeRider",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "rivalBike",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "bikeRider",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "rivalBike",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "bikeRider",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "rivalBike",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
+    "materials": [
+      {
+        "node": "track",
+        "practical": false
+      },
+      {
+        "node": "rails",
+        "practical": false
+      },
+      {
+        "node": "islands",
+        "practical": false
+      },
+      {
+        "node": "ramps",
+        "practical": false
+      },
+      {
+        "node": "sky-dome",
+        "practical": false
+      },
+      {
+        "node": "planet",
+        "practical": false
+      },
+      {
+        "node": "planet-atmosphere",
+        "practical": false
+      },
+      {
+        "node": "stars",
+        "practical": false
+      },
+      {
+        "node": "stars-bright",
+        "practical": false
+      },
+      {
+        "node": "gate-veil-0",
+        "practical": false
+      },
+      {
+        "node": "gate-0-lintel",
+        "practical": false
+      },
+      {
+        "node": "gate-veil-1",
+        "practical": false
+      },
+      {
+        "node": "gate-1-lintel",
+        "practical": false
+      },
+      {
+        "node": "gate-veil-2",
+        "practical": false
+      },
+      {
+        "node": "gate-2-lintel",
+        "practical": false
+      },
+      {
+        "node": "gate-veil-3",
+        "practical": false
+      },
+      {
+        "node": "gate-3-lintel",
+        "practical": false
+      },
+      {
+        "node": "gate-veil-4",
+        "practical": false
+      },
+      {
+        "node": "gate-4-lintel",
+        "practical": false
+      },
+      {
+        "node": "crystal-0-0",
+        "practical": false
+      },
+      {
+        "node": "crystal-0-1",
+        "practical": false
+      },
+      {
+        "node": "crystal-0-2",
+        "practical": false
+      },
+      {
+        "node": "crystal-1-0",
+        "practical": false
+      },
+      {
+        "node": "crystal-1-1",
+        "practical": false
+      },
+      {
+        "node": "crystal-1-2",
+        "practical": false
+      },
+      {
+        "node": "crystal-2-0",
+        "practical": false
+      },
+      {
+        "node": "crystal-2-1",
+        "practical": false
+      },
+      {
+        "node": "crystal-2-2",
+        "practical": false
+      },
+      {
+        "node": "crystal-3-0",
+        "practical": false
+      },
+      {
+        "node": "crystal-3-1",
+        "practical": false
+      },
+      {
+        "node": "crystal-3-2",
+        "practical": false
+      },
+      {
+        "node": "crystal-4-0",
+        "practical": false
+      },
+      {
+        "node": "crystal-4-1",
+        "practical": false
+      },
+      {
+        "node": "crystal-4-2",
+        "practical": false
+      },
+      {
+        "node": "crystal-5-0",
+        "practical": false
+      },
+      {
+        "node": "crystal-5-1",
+        "practical": false
+      },
+      {
+        "node": "crystal-5-2",
+        "practical": false
+      },
+      {
+        "node": "stardust",
+        "practical": false
+      },
+      {
+        "node": "exhaust",
+        "practical": false
+      },
+      {
+        "node": "gravity-halo",
+        "practical": false
+      }
+    ],
+    "drawCalls": 0
+  },
+  "direction": {
+    "id": "strange-orbit-port",
+    "genre": "racing",
+    "fantasy": "A moon race painted in thick gouache at permanent planet-rise, along a jagged crater rim under a low white sun.",
+    "rebuildTier": "S-presentation",
+    "wave": 4,
+    "references": [
+      {
+        "file": "../../../evidence/game-upgrades-47/strange-orbit-port/identity.md#references",
+        "source": "generic reference: thick gouache and oil impasto landscape painting with raking side light",
+        "licence": "reference-only",
+        "why": "Visible brush relief on the road that a low raking key picks out, with long cast shadows across the strokes"
+      },
+      {
+        "file": "../../../evidence/game-upgrades-47/strange-orbit-port/identity.md#references",
+        "source": "generic reference: retro space-age planetary illustration with a banded ringed gas giant on the horizon",
+        "licence": "reference-only",
+        "why": "A huge banded peach planet with a ring filling one side of the sky, painted rather than photographic"
+      },
+      {
+        "file": "../../../evidence/game-upgrades-47/strange-orbit-port/identity.md#references",
+        "source": "generic reference: lunar crater rim photography at low sun angle",
+        "licence": "reference-only",
+        "why": "A jagged, strata-banded crater wall silhouette on the horizon and dense mist pooling below the rim"
+      }
+    ],
+    "palette": {
+      "primary": [
+        "#d98464",
+        "#294e52",
+        "#f3ddaf",
+        "#5b3f86"
+      ],
+      "accent": "#ecb75f",
+      "reservedObjective": "#93ead5"
+    },
+    "lighting": {
+      "key": {
+        "type": "directional",
+        "colorTemperatureK": 5600,
+        "shadow": true
+      },
+      "fill": "ibl",
+      "practicals": 6,
+      "environment": {
+        "preset": "capture:nebula-gas-giant",
+        "background": "sky"
+      },
+      "exposureEV": 0
+    },
+    "framing": {
+      "rig": "chase",
+      "subjectHeightFraction": [
+        0.12,
+        0.3
+      ],
+      "fovDeg": [
+        60,
+        76
+      ],
+      "mobile": "both"
+    },
+    "assets": [
+      {
+        "role": "vehicle",
+        "assetKey": "bikeRider",
+        "maxTriangles": 120000,
+        "minTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "rivalBike",
+        "maxTriangles": 120000,
+        "minTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "skateRider",
+        "maxTriangles": 120000,
+        "minTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "prop",
+        "assetKey": "pylon",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "boulderA",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "boulderB",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "lander",
+        "maxTriangles": 80000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "observatory",
+        "maxTriangles": 80000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "prop",
+        "assetKey": "moonRock",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 2048
+      }
+    ],
+    "vfx": [
+      {
+        "event": "land",
+        "kind": "craterline-land-dust"
+      },
+      {
+        "event": "hit",
+        "kind": "craterline-hit-debris"
+      },
+      {
+        "event": "dust",
+        "kind": "craterline-dust-pickup"
+      },
+      {
+        "event": "gate",
+        "kind": "craterline-gate-ring"
+      },
+      {
+        "event": "sling",
+        "kind": "craterline-sling"
+      },
+      {
+        "event": "boost",
+        "kind": "trail"
+      }
+    ],
+    "audio": [
+      {
+        "event": "gate",
+        "cue": "gate",
+        "variants": 1
+      },
+      {
+        "event": "dust",
+        "cue": "dust",
+        "variants": 1
+      },
+      {
+        "event": "hit",
+        "cue": "hit",
+        "variants": 1
+      },
+      {
+        "event": "land",
+        "cue": "land",
+        "variants": 1
+      },
+      {
+        "event": "lap",
+        "cue": "lap",
+        "variants": 1
+      }
+    ],
+    "signatureEffect": "Brush-textured moving gouache painting: impasto road relief raked by a low white sun into long shadows, under a ringed peach gas giant.",
+    "criticalCategories": [
+      "lighting",
+      "shadows",
+      "texture_quality",
+      "atmospheric_effects",
+      "composition"
+    ],
+    "tiers": {
+      "low": {
+        "particles": 300,
+        "shadowMap": 1024,
+        "cascades": 1,
+        "textureMax": 1024
+      },
+      "medium": {
+        "particles": 600,
+        "shadowMap": 2048,
+        "cascades": 3,
+        "textureMax": 2048
+      },
+      "high": {
+        "particles": 1000,
+        "shadowMap": 2048,
+        "cascades": 3,
+        "textureMax": 2048
+      },
+      "ultra": {
+        "particles": 1600,
+        "shadowMap": 4096,
+        "cascades": 3,
+        "textureMax": 2048
+      }
+    }
+  }
+}

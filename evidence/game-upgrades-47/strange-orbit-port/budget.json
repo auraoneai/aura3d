@@ -1,0 +1,14 @@
+{
+  "schema": "gu47.budget/1",
+  "slug": "strange-orbit-port",
+  "budget": { "race": { "high": { "drawCalls": 150 }, "low": { "drawCalls": 120 } }, "lights": "1 spot + 5 points unshadowed (art direction caps practicals at 6: hemisphere, planetshine, headlight, 3 tail points)", "cascades": 3, "textureMax": 2048 },
+  "before": {
+    "source": "evidence/strange-orbit-port/audit-fix-2026-10-29/meta.jsonl (software WebGL2, remote runner, 4.6.1 build); PRD WP-25 'Today' line",
+    "rows": [
+      { "variant": "original", "shot": "menu", "drawCalls": 122, "meanLuma": 83.56, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": null, "runnerFps": null },
+      { "variant": "original", "shot": "race", "drawCalls": 99, "meanLuma": 39.25, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": null, "runnerFps": null },
+      { "variant": "original", "shot": "race (PRD Today)", "drawCalls": 115, "meanLuma": 42.6, "note": "PRD WP-25 figure; sky region 36.1, edgeDensity 0.020" }
+    ]
+  },
+  "after": null
+}
