@@ -38,6 +38,8 @@ const BRUTE_SLOTS = [10, 11] as const;
 const SOLDIER_SLOTS = [4, 5, 6, 7, 8, 9] as const;
 const BONES = { handR: "RightHand", foreR: "RightForeArm", handL: "LeftHand" } as const;
 const PARTICLES = 480;
+/** NR-17 cross-fade time between looping hero clips (s). */
+const LOCOMOTION_FADE = 0.15;
 const BARRIER_POOL = 8;
 const BEAM_POOL = 8;
 const PLANK_POOL = 32, STRAP_POOL = 12, BEAM_PIECE_POOL = 12;
@@ -504,6 +506,9 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
   let pieces: Piece[] = [];
   let threatShown: { target: number; from: number; to: number } | null = null;
   const cinematic = cinematicsOn((options.mode ?? "evening") === "evening", options.reducedMotion === true);
+  /** NR-17: the evening hero blends its looping clips (the original look keeps today's clip scrubbing). */
+  const blendHero = (options.mode ?? "evening") === "evening";
+  const mixerClip = new Array<string>(actors.length).fill("");
   let introBlend: number | null = null, wonAt = -1, lastX = 0, lastRoll = 0, barsShown = false, kicking = false, auroraShown = true;
   const shake = options.shake;
   const POOL_CAP: Record<Piece["kind"], number> = { plank: PLANK_POOL, strap: STRAP_POOL, beam: BEAM_PIECE_POOL };
@@ -640,8 +645,16 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
     const clip = has(anim.clip, slot);
     const length = clipLength(clip, slot);
     let t = anim.t;
-    if (t === undefined) { loopClock[slot] = (loopClock[slot]! + dt * (anim.rate ?? 1)) % length; t = loopClock[slot]!; }
-    actor.playClip(clip, Math.max(0, Math.min(length, t)) % (length + 1e-6));
+    if (blendHero && (slot === HERO || slot === SAGE) && t === undefined) {
+      // NR-17: looping hero clips (run, jump, slide, idle) cross-fade through the actor's mixer (inertialized) instead of
+      // snapping; scrubbed clips (attacks, hit, death) keep sampling the sim's time below.
+      if (mixerClip[slot] !== clip) { mixerClip[slot] = clip; actor.crossFadeTo(clip, LOCOMOTION_FADE, { speed: anim.rate ?? 1, transition: "inertialize" }); }
+      actor.advance(dt);
+    } else {
+      mixerClip[slot] = "";
+      if (t === undefined) { loopClock[slot] = (loopClock[slot]! + dt * (anim.rate ?? 1)) % length; t = loopClock[slot]!; }
+      actor.playClip(clip, Math.max(0, Math.min(length, t)) % (length + 1e-6));
+    }
     modelMatrixInto(mm[slot]!, f.x, f.y, f.z, Math.atan2(f.dx, f.dz) + MODEL_YAW_OFFSET + yawExtra, scale);
     (actor as TypedGLBActor & { __mm?: number[] }).__mm = mm[slot];
     const g = groundFrame(entity.s, entity.x, 0.1);
@@ -986,6 +999,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       slotEntity.clear();
       for (const p of pool) p.life = 0;
       scarfTrail?.clear();
+      mixerClip.fill("");
       lastLookS = -1e9;
       godRaysOn = null;
     },
