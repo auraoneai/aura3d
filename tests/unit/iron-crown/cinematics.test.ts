@@ -4,12 +4,14 @@
  */
 import { describe, expect, it } from "vitest";
 import {
+  cinematicPost,
   cinematicShot,
   createCinematicClock,
   FIGHT_LENS,
   INTRO_SECONDS,
   INTRO_SHOTS,
   letterboxWanted,
+  POST_PULSE,
   type CinematicInput
 } from "../../../apps/showcase-iron-crown/src/game/cinematics";
 
@@ -77,5 +79,33 @@ describe("iron-crown cinematics (GU47 IC47-C1)", () => {
     expect(FIGHT_LENS.fov).toBeLessThanOrEqual(45);
     expect(FIGHT_LENS.lift).toBeLessThan(0.82);
     expect(FIGHT_LENS.aim).toBeGreaterThan(0.72);
+  });
+});
+
+describe("iron-crown cinematic post (GU47 IC47-P3)", () => {
+  const shot = (name: "venue-dolly" | "p1-closeup" | "ko-orbit") =>
+    cinematicShot({ ...base, phase: name === "ko-orbit" ? "ko" : "intro", t: name === "p1-closeup" ? INTRO_SHOTS.p1 + 0.1 : 0 });
+
+  it("runs DOF only on the performed shots, focused on the subject", () => {
+    expect(cinematicPost(null, Infinity, 0.2, false).dof).toBeNull();
+    const close = cinematicPost(shot("p1-closeup"), Infinity, 0.2, false).dof!;
+    expect(close.fStop).toBe(2);
+    expect(close.focusDistance).toBeGreaterThan(2);
+    expect(cinematicPost(shot("ko-orbit"), Infinity, 0.2, false).dof!.fStop).toBe(4);
+  });
+
+  it("pulses CA and vignette after a special or K.O., decaying to the venue base", () => {
+    const at0 = cinematicPost(null, 0, 0.2, false);
+    expect(at0.chromaticAberration).toBeCloseTo(POST_PULSE.chromaticAberration);
+    expect(at0.vignette).toBeCloseTo(0.2 + POST_PULSE.vignette);
+    const after = cinematicPost(null, POST_PULSE.seconds + 0.01, 0.2, false);
+    expect(after.chromaticAberration).toBe(0);
+    expect(after.vignette).toBe(0.2);
+  });
+
+  it("never pulses on reduced motion", () => {
+    const cue = cinematicPost(null, 0, 0.2, true);
+    expect(cue.chromaticAberration).toBe(0);
+    expect(cue.vignette).toBe(0.2);
   });
 });

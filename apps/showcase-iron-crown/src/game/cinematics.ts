@@ -118,3 +118,39 @@ export function createCinematicClock() {
     }
   };
 }
+
+/** IC47-P3: the post cue for this frame (applied through `app.post.setEffect` / `setEffectEnabled`). */
+export interface CinematicPost {
+  /** Depth of field on the performed shots only, focused on the shot's subject; `null` = off (the neutral fight). */
+  readonly dof: { readonly focusDistance: number; readonly fStop: number } | null;
+  /** Chromatic aberration intensity (0 = off). */
+  readonly chromaticAberration: number;
+  /** Vignette intensity (the venue's base plus the pulse). */
+  readonly vignette: number;
+}
+
+/** Seconds a special or K.O. pulse lasts, and its peaks. */
+export const POST_PULSE = { seconds: 0.4, chromaticAberration: 0.6, vignette: 0.18 } as const;
+
+/**
+ * The post cue: DOF focused on the subject while a shot plays (f/2.0 close-ups, f/4 elsewhere), and a chromatic
+ * aberration plus vignette pulse that decays over POST_PULSE.seconds after a special or a K.O. (`pulseAge`: seconds
+ * since the last one, Infinity when none). Reduced motion: no pulse (DOF still frames the shot, it does not move).
+ */
+export function cinematicPost(shot: CinematicShot | null, pulseAge: number, baseVignette: number, reducedMotion: boolean): CinematicPost {
+  const dof = shot
+    ? {
+        focusDistance: Number(
+          Math.hypot(shot.position[0] - shot.target[0], shot.position[1] - shot.target[1], shot.position[2] - shot.target[2]).toFixed(2)
+        ),
+        fStop: shot.name === "p1-closeup" || shot.name === "p2-closeup" || shot.name === "win-hero" ? 2 : 4
+      }
+    : null;
+  const k = reducedMotion || !(pulseAge >= 0) || pulseAge >= POST_PULSE.seconds ? 0 : 1 - pulseAge / POST_PULSE.seconds;
+  const pulse = Math.round(k * k * 100) / 100; // quantised so the runtime override only changes on a visible step
+  return {
+    dof,
+    chromaticAberration: Number((pulse * POST_PULSE.chromaticAberration).toFixed(3)),
+    vignette: Number((baseVignette + pulse * POST_PULSE.vignette).toFixed(3))
+  };
+}

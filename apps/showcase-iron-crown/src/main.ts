@@ -66,7 +66,7 @@ import { mountControlsSheet } from "./game/controlsSheet";
 import { mountExtraTouchButtons } from "./game/touchExtras";
 import { DEFAULT_STAGE, stageById, type IronStage, type StageId } from "./game/stages";
 import { buildArenaScene } from "./game/arena";
-import { cinematicShot, createCinematicClock, FIGHT_LENS, letterboxWanted } from "./game/cinematics";
+import { cinematicPost, cinematicShot, createCinematicClock, FIGHT_LENS, letterboxWanted, type CinematicPost } from "./game/cinematics";
 import { backRimPose, FOLLOW_SPOT_ID, followSpotPose, LETTERBOX_BAR, poseDirection, RIM_IDS, stageLook, type SpotPose } from "./game/look";
 import { AMBIENT_EMITTERS, createAmbientVfx, installIronCrownVfx, type IronCrownVfxKind } from "./game/vfx";
 import { advanceLadder, createLadder, currentRung, type LadderState } from "./game/ladder";
@@ -373,6 +373,24 @@ const letterbox = (["top", "bottom"] as const).map((edge) => {
   return bar;
 });
 let letterboxOn = false;
+/** IC47-P3: real time of the last special or K.O. (the CA and vignette pulse); the last post cue sent. */
+let postPulseAt = Number.NEGATIVE_INFINITY;
+let postSent: { dof: string; ca: number; vignette: number } | null = null;
+function applyPostCue(cue: CinematicPost): void {
+  const post = app.post;
+  if (!post) return;
+  const dofKey = cue.dof ? `${cue.dof.focusDistance}/${cue.dof.fStop}` : "off";
+  if (postSent?.dof !== dofKey) {
+    if (cue.dof) post.setEffect("depthOfField", { focusDistance: cue.dof.focusDistance, fStop: cue.dof.fStop });
+    post.setEffectEnabled("depthOfField", cue.dof !== null);
+  }
+  if (postSent?.ca !== cue.chromaticAberration) {
+    if (cue.chromaticAberration > 0) post.setEffect("chromaticAberration", { intensity: cue.chromaticAberration });
+    post.setEffectEnabled("chromaticAberration", cue.chromaticAberration > 0);
+  }
+  if (postSent?.vignette !== cue.vignette) post.setEffect("vignette", { intensity: cue.vignette });
+  postSent = { dof: dofKey, ca: cue.chromaticAberration, vignette: cue.vignette };
+}
 function setLetterbox(on: boolean): void {
   if (on === letterboxOn) return;
   letterboxOn = on;
@@ -395,6 +413,7 @@ app.camera?.use({
         reducedMotion
       });
       setLetterbox(letterboxWanted(phase, winnerSide !== null));
+      applyPostCue(cinematicPost(shot, performance.now() / 1000 - postPulseAt, stageLook(state.config.stage.id).vignette, reducedMotion));
       if (shot) return { ...pose, position: shot.position, target: shot.target, fov: shot.fov };
     }
     const position: [number, number, number] = [pose.position[0], pose.position[1] + FIGHT_LENS.lift, pose.position[2] - 0.15];
@@ -946,6 +965,7 @@ function tryAttack(f: FighterRuntime, foe: FighterRuntime, kind: AttackKind): vo
     runtimeEffects.auraBurst([pos[0], pos[1] + 0.9, 0], { ownerId: f.nodeId, intensity: 0.85, color: f.def.special.color });
     runtimeEffects.ringShockwave([pos[0] + facingTo(f, foe) * 0.5, pos[1] + 0.9, 0], { ownerId: f.nodeId, intensity: 0.7, color: f.def.special.color });
     fxBurst("ic-special-burst", [pos[0], pos[1] + 0.9, 0], f.def.special.color);
+    postPulseAt = performance.now() / 1000;
     director.special([pos[0], pos[1] + 0.9, 0], 0.5);
     fightingGame.juice.fire("special");
     void fightingGame.sound?.cue("special");
@@ -1173,6 +1193,7 @@ function handleEvents(): void {
 }
 
 function onKnockout(winner: "p1" | "cpu"): void {
+  postPulseAt = performance.now() / 1000;
   if (state.phase !== "fight") return;
   state.phase = "ko";
   state.koTimer = 0;
