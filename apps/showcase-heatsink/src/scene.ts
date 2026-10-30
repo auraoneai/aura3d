@@ -7,13 +7,16 @@
  * HS-03: the circuit HDRI is the sky (background on) and the image-based fill; the backdrop wall and the two emissive
  *   horizon bands are gone. A circuit change remounts the scene (main.ts), so every per-circuit node is authored here.
  * HS-05: per-circuit exponential fog; DUSTFALL adds a volumetric inscatter with god rays from its 9-degree sun.
+ * HS-06: one weather system per circuit (rain, dust or embers), none on reduced motion.
  * HS-12: per-circuit post: warm bloom, grade (with the exposure), vignette, grain on MEGACITY only.
+ * HS-15: molten slag gutters and the lava pool (custom shader, one instanced draw); chevrons follow the core heat.
  * C13: about 150 repeated primitives become 9 instanced nodes; emissive decor casts no shadow.
  */
 import { AuraNodeBuilder, camera, effects, environments, instances, lights, material, model, primitives, scene, game, type AuraAssetRef, type AuraMaterialSpec, type AuraModelMaterialOverride, type AuraSceneNode } from "@aura3d/engine";
 import { ASPHALT_ROUGHNESS_MEAN, assets, HDRI_BY_ID, textures } from "./aura-assets";
 import { DRONE_ORDER, DRONE_SPECS, SCENERY_ANCHORS, type CircuitSpec } from "./data";
 import { CIRCUIT_LOOKS, rimPosition, sunPosition, type CircuitLook } from "./look";
+import { chevronHeatMaterial, moltenMaterial } from "./shaders";
 import { LASER_BOLTS } from "./sim";
 import { skylineNodes } from "./skyline";
 
@@ -45,6 +48,7 @@ export const IDS = {
   walls: "track-walls",
   chevA: "wall-chevrons-a",
   chevB: "wall-chevrons-b",
+  gutters: "slag-gutters",
   bolts: "laser-bolts",
   floor: "megacity-abyss-floor",
   ring: "player-shockwave-ring",
@@ -64,8 +68,23 @@ export const INSTANCE_COUNTS = {
   walls: WALL_SEGMENT_COUNT * 2,
   chevA: WALL_SEGMENT_COUNT,
   chevB: WALL_SEGMENT_COUNT,
+  // HS-15: one molten gutter per wall segment and side, plus the pool under the lava curtain (last slot).
+  gutters: WALL_SEGMENT_COUNT * 2 + 1,
   bolts: LASER_BOLTS
 } as const;
+
+/** HS-15 slag gutter: a molten strip on the deck along the foot of each wall (inside the drone's lateral limit + body). */
+export const GUTTER = { lateral: 10.25, y: 0.02, size: [0.9, 0.06, 12.4] as [number, number, number] } as const;
+/** HS-15 lava pool under the lava curtain (metres; drawn as the last gutter instance, scaled). */
+export const LAVA_POOL = { y: 0.05, size: [10, 0.3, 7] as [number, number, number] } as const;
+/** Per-axis scale of the gutter box that draws the lava pool. */
+export const LAVA_POOL_SCALE: readonly [number, number, number] = [
+  LAVA_POOL.size[0] / GUTTER.size[0],
+  LAVA_POOL.size[1] / GUTTER.size[1],
+  LAVA_POOL.size[2] / GUTTER.size[2]
+];
+/** Wall chevron emissive intensity (the old `chevronMaterial`), before the HS-15 heat gain. */
+export const CHEVRON_INTENSITY = 1.65;
 
 const asset = (key: string): AuraAssetRef<"model"> => {
   const ref = (assets as unknown as Record<string, AuraAssetRef<"model">>)[key];
@@ -79,7 +98,6 @@ const along = (count: number, x: number, y: number, spacing: number) =>
 
 export const emissive = (color: string, intensity: number) => material.emissive({ color, emissive: color, emissiveIntensity: intensity });
 export const spineMaterial = (color: string) => emissive(color, 1.45);
-export const chevronMaterial = (color: string) => emissive(color, 1.65);
 
 export interface SceneOptions {
   readonly circuit: CircuitSpec;
@@ -87,7 +105,7 @@ export interface SceneOptions {
   readonly exposureEv?: number;
   /** QA: drop the explicit ambient-occlusion pass (`?qaAo=off`) for the LIGHT-06 on/off pair. */
   readonly ambientOcclusion?: boolean;
-  /** `prefers-reduced-motion`: no weather system (HS-06). */
+  /** `prefers-reduced-motion`: no weather system (HS-06), molten flow at 30% and no chevron scan (HS-15). */
   readonly reducedMotion?: boolean;
 }
 
@@ -244,6 +262,7 @@ export function circuitPost(look: CircuitLook, options: { readonly exposureEv?: 
 export function buildThermalDriftScene(options: SceneOptions) {
   const circuit = options.circuit;
   const look = CIRCUIT_LOOKS[circuit.id];
+  const reducedMotion = options.reducedMotion === true;
   const s = scene()
     .background(look.fog.color)
     .camera(camera.perspective({ fov: 68, near: 0.25, far: 650, position: [0, 4.2, 9.5], target: [0, 1.8, -18] }))
@@ -254,7 +273,7 @@ export function buildThermalDriftScene(options: SceneOptions) {
       ...(options.ambientOcclusion === false ? { ambientOcclusion: false } : {})
     }))
     .addMany(circuitReflections(look))
-    .addMany(circuitWeather(look, options.reducedMotion === true));
+    .addMany(circuitWeather(look, reducedMotion));
 
   // Ground far below the elevated road (the HDRI is the sky; no backdrop wall or horizon bands).
   s.add(
@@ -281,10 +300,14 @@ export function buildThermalDriftScene(options: SceneOptions) {
       .runtime(game.runtimeNode(IDS.lanes)),
     instances.box({ name: IDS.walls, size: [0.95, 1.35, 12.8], material: material.pbr({ color: "#232936", roughness: 0.52, metalness: 0.45 }), transforms: along(INSTANCE_COUNTS.walls, 11.3, 0.55, WALL_SPACING / 2), frustumCulled: false })
       .runtime(game.runtimeNode(IDS.walls)),
-    instances.box({ name: IDS.chevA, size: [0.22, 0.36, 9.6], material: chevronMaterial(look.accents.primary), transforms: along(INSTANCE_COUNTS.chevA, 10.72, 0.72, WALL_SPACING), ...unshadowed })
+    // HS-15: the chevrons brighten with the core heat (u_heat, +25% at 90%); one custom program for both nodes.
+    instances.box({ name: IDS.chevA, size: [0.22, 0.36, 9.6], material: chevronHeatMaterial(look.accents.primary, CHEVRON_INTENSITY, reducedMotion), transforms: along(INSTANCE_COUNTS.chevA, 10.72, 0.72, WALL_SPACING), ...unshadowed })
       .runtime(game.runtimeNode(IDS.chevA)),
-    instances.box({ name: IDS.chevB, size: [0.22, 0.36, 9.6], material: chevronMaterial(look.accents.secondary), transforms: along(INSTANCE_COUNTS.chevB, -10.72, 0.72, WALL_SPACING), ...unshadowed })
+    instances.box({ name: IDS.chevB, size: [0.22, 0.36, 9.6], material: chevronHeatMaterial(look.accents.secondary, CHEVRON_INTENSITY, reducedMotion), transforms: along(INSTANCE_COUNTS.chevB, -10.72, 0.72, WALL_SPACING), ...unshadowed })
       .runtime(game.runtimeNode(IDS.chevB)),
+    // HS-15: molten slag gutters at the foot of both walls and the pool under the lava curtain, one instanced draw.
+    instances.box({ name: IDS.gutters, size: GUTTER.size, material: moltenMaterial({ ...look.molten, reducedMotion }), transforms: along(INSTANCE_COUNTS.gutters, GUTTER.lateral, GUTTER.y, WALL_SPACING / 2), ...unshadowed })
+      .runtime(game.runtimeNode(IDS.gutters)),
     instances.box({ name: IDS.bolts, size: [0.14, 0.14, 2.8], material: emissive("#ff4d1f", 2.6), transforms: along(INSTANCE_COUNTS.bolts, 0, 1.4, 20), ...unshadowed })
       .runtime(game.runtimeNode(IDS.bolts))
   ]);

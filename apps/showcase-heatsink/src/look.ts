@@ -71,6 +71,8 @@ export interface CircuitLook {
   readonly haze: { readonly strength: number; readonly ambient: number; readonly tint: string };
   /** Skyline silhouettes (HS-04): soot colour and window/seam glow. */
   readonly skyline: { readonly color: string; readonly glow: string };
+  /** HS-15 molten shader (slag gutters along the walls, the pool under the lava curtain): vein colour, crust, HDR glow. */
+  readonly molten: { readonly hot: string; readonly crust: string; readonly glow: number };
 }
 
 export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
@@ -95,7 +97,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     ground: "#120e0c",
     accents: { primary: PALETTE.moltenAmber, secondary: PALETTE.slagRed, lanes: "#d9a066" },
     haze: { strength: 1, ambient: 0.15, tint: "#ff9a3c" },
-    skyline: { color: "#17120f", glow: "#ff8a1f" }
+    skyline: { color: "#17120f", glow: "#ff8a1f" },
+    molten: { hot: PALETTE.moltenAmber, crust: "#241812", glow: 6 }
   },
   dustfall: {
     circuit: "dustfall",
@@ -119,7 +122,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     ground: "#4a3220",
     accents: { primary: PALETTE.moltenAmber, secondary: "#ffb347", lanes: "#e8c28a" },
     haze: { strength: 1.25, ambient: 0.35, tint: "#ffb060" },
-    skyline: { color: "#3a2a1c", glow: "#ff9a4a" }
+    skyline: { color: "#3a2a1c", glow: "#ff9a4a" },
+    molten: { hot: "#ff9a2a", crust: PALETTE.oxidisedIron, glow: 5 }
   },
   vesper: {
     circuit: "vesper",
@@ -143,7 +147,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     ground: "#16121f",
     accents: { primary: "#b9a4ff", secondary: PALETTE.moltenAmber, lanes: "#c9b8ff" },
     haze: { strength: 1, ambient: 0.2, tint: "#ff8a4a" },
-    skyline: { color: "#1a1626", glow: "#ff7a2e" }
+    skyline: { color: "#1a1626", glow: "#ff7a2e" },
+    molten: { hot: "#ff6a26", crust: "#1e1418", glow: 6.5 }
   }
 };
 

@@ -17,13 +17,17 @@ export class InstanceWriter {
   }
   begin(): void { this.cursor = 0; }
   push(x: number, y: number, z: number, yaw: number, scale: number): void {
+    this.pushScaled(x, y, z, yaw, scale, scale, scale);
+  }
+  /** T·Ry·S with a per-axis scale (HS-15: the lava pool is a scaled gutter instance). */
+  pushScaled(x: number, y: number, z: number, yaw: number, sx: number, sy: number, sz: number): void {
     if (this.cursor >= this.capacity) return;
     const o = this.cursor * 16;
-    const c = Math.cos(yaw) * scale, s = Math.sin(yaw) * scale;
+    const c = Math.cos(yaw), s = Math.sin(yaw);
     const m = this.matrices;
-    m[o] = c; m[o + 1] = 0; m[o + 2] = -s; m[o + 3] = 0;
-    m[o + 4] = 0; m[o + 5] = scale; m[o + 6] = 0; m[o + 7] = 0;
-    m[o + 8] = s; m[o + 9] = 0; m[o + 10] = c; m[o + 11] = 0;
+    m[o] = c * sx; m[o + 1] = 0; m[o + 2] = -s * sx; m[o + 3] = 0;
+    m[o + 4] = 0; m[o + 5] = sy; m[o + 6] = 0; m[o + 7] = 0;
+    m[o + 8] = s * sz; m[o + 9] = 0; m[o + 10] = c * sz; m[o + 11] = 0;
     m[o + 12] = x; m[o + 13] = y; m[o + 14] = z; m[o + 15] = 1;
     this.cursor += 1;
   }

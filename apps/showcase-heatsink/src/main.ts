@@ -24,14 +24,18 @@ import {
 } from "./vfx";
 import {
   buildThermalDriftScene,
+  GUTTER,
   IDS,
   INSTANCE_COUNTS,
+  LAVA_POOL,
+  LAVA_POOL_SCALE,
   MODEL_NODE_COUNT,
   ROAD_TILE_COUNT,
   ROAD_TILE_SPACING,
   WALL_SEGMENT_COUNT,
   WALL_SPACING
 } from "./scene";
+import { CHEVRON_HEAT_UNIFORM, quantisedHeat } from "./shaders";
 import {
   autopilot,
   collectedPass,
@@ -107,6 +111,7 @@ async function boot(): Promise<void> {
     walls: new InstanceWriter(req(IDS.walls), INSTANCE_COUNTS.walls),
     chevA: new InstanceWriter(req(IDS.chevA), INSTANCE_COUNTS.chevA),
     chevB: new InstanceWriter(req(IDS.chevB), INSTANCE_COUNTS.chevB),
+    gutters: new InstanceWriter(req(IDS.gutters), INSTANCE_COUNTS.gutters),
     bolts: new InstanceWriter(req(IDS.bolts), INSTANCE_COUNTS.bolts)
   });
   const makeScenery = () => SCENERY_ANCHORS.map((anchor) => ({ anchor, handle: req(anchor.id) }));
@@ -117,6 +122,9 @@ async function boot(): Promise<void> {
   let incomingHandle = req(IDS.incoming);
   let mineHandle = req(IDS.mine);
   let sceneryHandles = makeScenery();
+  // HS-15: the two chevron nodes share one custom program; `u_heat` is written when the quantised core heat changes.
+  let chevronHandles = [req(IDS.chevA), req(IDS.chevB)];
+  let chevronHeat = -1;
   function bindHandles(): void {
     droneHandles = makeDrones();
     writers = makeWriters();
@@ -125,6 +133,8 @@ async function boot(): Promise<void> {
     incomingHandle = req(IDS.incoming);
     mineHandle = req(IDS.mine);
     sceneryHandles = makeScenery();
+    chevronHandles = [req(IDS.chevA), req(IDS.chevB)];
+    chevronHeat = -1;
   }
 
   const track = new TrackView();
@@ -415,9 +425,10 @@ async function boot(): Promise<void> {
     }
     writers.deckEven.end(); writers.deckOdd.end(); writers.spineA.end(); writers.spineB.end(); writers.lanes.end();
 
-    // Walls and chevrons every 13.5 m.
+    // Walls, chevrons and the HS-15 slag gutters at the wall feet every 13.5 m (the gutter node ends after the scenery,
+    // which adds the lava pool).
     const firstWall = Math.floor((progress - 20) / WALL_SPACING);
-    writers.walls.begin(); writers.chevA.begin(); writers.chevB.begin();
+    writers.walls.begin(); writers.chevA.begin(); writers.chevB.begin(); writers.gutters.begin();
     for (let i = 0; i < WALL_SEGMENT_COUNT; i += 1) {
       const n = firstWall + i;
       const d = n * WALL_SPACING + WALL_SPACING / 2 - progress;
@@ -425,6 +436,7 @@ async function boot(): Promise<void> {
       for (const side of SIDES) {
         track.place(d, side * 11.3, 0.55, pose2); writers.walls.push(pose2.x, pose2.y, pose2.z, -pose2.heading, 1);
         track.place(d, side * 10.72, 0.72, pose2); chev.push(pose2.x, pose2.y, pose2.z, -pose2.heading, 1);
+        track.place(d, side * GUTTER.lateral, GUTTER.y, pose2); writers.gutters.push(pose2.x, pose2.y, pose2.z, -pose2.heading, 1);
       }
     }
     writers.walls.end(); writers.chevA.end(); writers.chevB.end();
@@ -444,8 +456,13 @@ async function boot(): Promise<void> {
         lavaVisible = true;
         lavaAt[0] = pose2.x; lavaAt[1] = pose2.y + anchor.maxDim * 0.35; lavaAt[2] = pose2.z;
       }
+      if (anchor.kind === "lava" && !collected) {
+        // HS-15: the molten pool the curtain pours into (the last gutter instance, scaled).
+        writers.gutters.pushScaled(pose2.x, pose2.y + LAVA_POOL.y, pose2.z, -pose2.heading + anchor.yaw, LAVA_POOL_SCALE[0], LAVA_POOL_SCALE[1], LAVA_POOL_SCALE[2]);
+      }
       handle.setRotation(0, -pose2.heading + anchor.yaw + (anchor.spinSpeed && !reduced ? race.time * anchor.spinSpeed : 0), 0);
     }
+    writers.gutters.end();
 
     // Mine: drawn at its track position while deployed, hidden otherwise (C8).
     const mine = race.mine;
@@ -534,6 +551,12 @@ async function boot(): Promise<void> {
 
     // HS-11 heat haze: project the heat sources through the presented camera and write the pass uniforms.
     const heat01 = Math.min(1, Math.max(0, p.heat / 100));
+    // HS-15: the chevrons follow the core heat (read-only sim value) through a uniform; no program change.
+    const heatQ = quantisedHeat(heat01);
+    if (heatQ !== chevronHeat) {
+      chevronHeat = heatQ;
+      for (const h of chevronHandles) h.setUniform?.(CHEVRON_HEAT_UNIFORM, heatQ);
+    }
     const hs = haze.sources;
     hs.begin();
     exhaustAt[0] = dronePos[0]; exhaustAt[1] = dronePos[1] + 0.15; exhaustAt[2] = dronePos[2] + 1.5;
