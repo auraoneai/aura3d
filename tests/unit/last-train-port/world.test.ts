@@ -59,7 +59,8 @@ describe("last-train-port rendering helpers", () => {
     const nightJson = JSON.stringify(world.nightScene.toJSON());
     expect(nightJson).toContain('"moon"');
     expect(nightJson).not.toContain('"sun"');
-    const names = [...json.matchAll(/"name":"([^"]+)"/g)].map((m) => m[1]!);
+    // probes.reflection echoes its name inside `options` (GU47 LT-08): count node names only
+    const names = [...json.matchAll(/(?<!"options":\{)"name":"([^"]+)"/g)].map((m) => m[1]!);
     expect(new Set(names).size).toBe(names.length);
   });
 });

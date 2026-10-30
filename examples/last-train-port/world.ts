@@ -13,7 +13,8 @@ import { BANDS, HDRI_URL, bandFor, lightningFlash, storminess, envRotationRad, k
 import { LanternSky } from "./lanterns";
 import { RiderMotion, tramBob } from "./riderMotion";
 import { registerLamplightVfx, vfxEvents, type VfxSimView } from "./vfx";
-import { BOUNCE_ID, HEADLAMP_COLOR, HEADLAMP_ID, PLATFORM_LIGHT_COLOR, PLATFORM_LIGHT_IDS, PLATFORM_LIGHT_RANGE, headlampPose, platformLightPositions, poolTown } from "./lights";
+import { BOUNCE_ID, HEADLAMP_COLOR, HEADLAMP_ID, PLATFORM_LIGHT_COLOR, PLATFORM_LIGHT_IDS, PLATFORM_LIGHT_RANGE, headlampPose, platformLightPositions, poolTown, stationProbes, STATION_PROBE_RESOLUTION } from "./lights";
+import { probes } from "@aura3d/engine/lanes";
 import { MESHY_ASSETS, MESHY_ENABLED, PAX_SCALE, TRAM } from "./models";
 import { applyMat3, axisRotation, matrixToEulerZYX, multiplyMat3, tramRotation, type V3 } from "./orient";
 import { cloudSpec, pointsSpec, rainSpec, skySpec } from "./materials";
@@ -223,6 +224,8 @@ function addBandLighting(b: Scene, data: SimData, band: BandId): void {
     // The art direction allows one shadowed light (the key, lesson R22), so the headlamp spot is unshadowed (LT-02 partial).
     b.add(lights.spot({ name: HEADLAMP_ID, position: pose.position, target: pose.target, angle: 0.42, penumbra: 0.55, distance: 70, decay: 2, intensity: row.practicals.headlamp, color: HEADLAMP_COLOR, shadow: false }).runtime({ id: HEADLAMP_ID }));
   }
+  // GU47 LT-08: six station box probes, captured once (inert until the runtime installs the probe face renderer: handoff E-B)
+  if (!FX.has("noprobes")) for (const p of stationProbes(data)) b.add(probes.reflection({ name: p.name, position: p.position, box: p.box, resolution: STATION_PROBE_RESOLUTION, update: "once", blendDistance: 2 }));
   if (!FX.has("nofog")) b.add(effects.fog({ name: "haze", color: row.fog.color, density: row.fog.density }));
   // GU47 LT-03: screen-space contact shadows from the key (riders, benches, tram skirts); the engine skips them on Low.
   if (!FX.has("nocontact")) b.add(effects.contactShadows({ length: 0.35, thickness: 0.06, intensity: 0.9, lights: "shadowed" }));
