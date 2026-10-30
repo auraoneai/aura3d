@@ -109,6 +109,26 @@ describe("aura-diamond GU47 scene (DIA-L1, E1, E2, E3, P1)", () => {
     expect(flat("sandlot", ORIGINAL).nodes.find((n) => n.name === "ball")?.material).toMatchObject({ color: "#f4f1e8" });
   });
 
+  it("lights the night parks with their DIA-L2 rigs and keeps the key the only shadow caster", () => {
+    const count = (park: ParkId, pred: (n: Node) => boolean, ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEXT) => flat(park, ctx).nodes.filter(pred).length;
+    const spot = (n: Node) => n.kind === "light" && n.light === "spot";
+    const rect = (n: Node) => n.kind === "light" && n.light === "rect";
+    const flare = (n: Node) => n.kind === "lensflare";
+    const cone = (n: Node) => n.kind === "effect" && String(n.name ?? "").endsWith("-cone");
+    expect([count("skyline", spot), count("skyline", flare), count("skyline", cone)]).toEqual([6, 2, 6]);
+    expect([count("dome", rect), count("dome", (n) => n.name === "dome-truss-panels")]).toEqual([4, 1]);
+    expect([count("lunar", spot), count("lunar", flare), count("lunar", cone)]).toEqual([4, 0, 4]);
+    for (const park of ["sandlot", "canyon", "ivy"] as const) expect(count(park, (n) => spot(n) || rect(n))).toBe(0);
+    // Ivy keeps its four light towers as dressing; the day has no lamps on.
+    expect(count("ivy", (n) => n.kind === "model" && /^flood-\d$/.test(String(n.name)))).toBe(4);
+    const low = { ...DEFAULT_SCENE_CONTEXT, tier: "low" as const };
+    expect([count("skyline", spot, low), count("skyline", flare, low)]).toEqual([4, 0]);
+    for (const park of PARK_ORDER) {
+      const casters = flat(park).nodes.filter((n) => n.kind === "light" && (n.shadow === true || (typeof n.shadow === "object" && n.shadow !== null)));
+      expect(casters.map((n) => n.name)).toEqual(["look key light"]);
+    }
+  });
+
   it("paints the ball, and only the ball, in the reserved #f5f1e4", () => {
     for (const park of PARK_ORDER) {
       const owners = flat(park).nodes.filter((n) => JSON.stringify((n as { material?: unknown }).material ?? {}).toLowerCase().includes("#f5f1e4"));

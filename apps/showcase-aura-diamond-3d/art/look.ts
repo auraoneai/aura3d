@@ -27,6 +27,8 @@ export interface ParkPractical {
   readonly target: Vec3;
   readonly color: string;
   readonly intensity: number;
+  /** Ground point of the tower that carries a spot (x, z); the lamp hangs a little inside it. */
+  readonly base?: readonly [number, number];
   readonly angle?: number;
   readonly penumbra?: number;
   readonly distance?: number;
@@ -340,7 +342,7 @@ export function parkPracticals(park: ParkSpec, tier: DiamondTier): readonly Park
       [c * 0.5, 14, "#d9ecff", false]
     ];
     towers.forEach(([x, z, color, flare], i) => {
-      rig.push({ name: `skyline-bank-${i}`, kind: "spot", position: [x * 0.92, 24, z * 0.92], target: [x * 0.12, 0, -14 + z * 0.08], color, intensity: 2.6, angle: 0.62, penumbra: 0.5, distance: 180, cone: true, flare });
+      rig.push({ name: `skyline-bank-${i}`, kind: "spot", position: [x * 0.92, 24, z * 0.92], target: [x * 0.12, 0, -14 + z * 0.08], color, intensity: 2.6, base: [x, z], angle: 0.62, penumbra: 0.5, distance: 180, cone: true, flare });
     });
   } else if (park.id === "dome") {
     for (let i = 0; i < 4; i++) {
@@ -351,7 +353,7 @@ export function parkPracticals(park: ParkSpec, tier: DiamondTier): readonly Park
   } else if (park.id === "lunar") {
     const spots: readonly [number, number][] = [[-c * 0.7, -c * 0.55 - 6], [c * 0.7, -c * 0.55 - 6], [-c * 0.48, 16], [c * 0.48, 16]];
     spots.forEach(([x, z], i) => {
-      rig.push({ name: `lunar-spot-${i}`, kind: "spot", position: [x * 0.9, 18, z * 0.9], target: [0, 0, -12], color: "#cfe2ff", intensity: 1.7, angle: 0.48, penumbra: 0.35, distance: 190, cone: true, flare: false });
+      rig.push({ name: `lunar-spot-${i}`, kind: "spot", position: [x * 0.9, 18, z * 0.9], target: [0, 0, -12], color: "#cfe2ff", intensity: 1.7, base: [x, z], angle: 0.48, penumbra: 0.35, distance: 190, cone: true, flare: false });
     });
   }
   return tier === "low" ? rig.slice(0, 4).map((p) => ({ ...p, flare: false })) : rig;

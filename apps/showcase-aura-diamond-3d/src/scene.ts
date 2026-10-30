@@ -5,7 +5,7 @@
  */
 import { camera, effects, game, instances, lights, looks, material, model, primitives, scene, sky, type AuraLookOverrides } from "@aura3d/engine";
 import { assets } from "./aura-assets.route";
-import { PARK_LOOKS, lookPlan, type DiamondLookPlan, type DiamondLookVariant, type DiamondSkyMode, type DiamondTier } from "../art/look";
+import { PARK_LOOKS, lookPlan, parkPracticals, type DiamondLookPlan, type DiamondLookVariant, type DiamondSkyMode, type DiamondTier } from "../art/look";
 import {
   makeRng,
   MOUND_Z,
@@ -178,7 +178,7 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
   return nodes;
 }
 
-export function buildStandsNodes(park: ParkSpec): any[] {
+export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEXT): any[] {
   const nodes: any[] = [];
   const rng = makeRng(0xbeef);
 
@@ -247,7 +247,9 @@ export function buildStandsNodes(park: ParkSpec): any[] {
     primitives.box({ name: "scoreboard-screen", size: [10.5, 3.4, 0.4], material: material.emissive({ color: "#0d2436", emissive: "#1b4a66", emissiveIntensity: 0.9 }) }).position(sb.screen[0], sb.screen[1], sb.screen[2]).runtime(game.runtimeNode("scoreboard-screen"))
   );
 
-  if (park.flood) {
+  if (ctx.variant === "gu47") {
+    nodes.push(...practicalNodes(park, ctx.tier));
+  } else if (park.flood) {
     const towers: Vec3[] = [
       [-park.fenceCorner * 0.72, 0, -park.fenceCorner * 0.55 - 6],
       [park.fenceCorner * 0.72, 0, -park.fenceCorner * 0.55 - 6],
@@ -263,6 +265,65 @@ export function buildStandsNodes(park: ParkSpec): any[] {
     });
   }
 
+  return nodes;
+}
+
+const unitDir = (from: Vec3, to: Vec3): Vec3 => {
+  const d: Vec3 = [to[0] - from[0], to[1] - from[1], to[2] - from[2]];
+  const l = Math.hypot(d[0], d[1], d[2]) || 1;
+  return [d[0] / l, d[1] / l, d[2] / l];
+};
+
+/**
+ * DIA-L2 night and indoor rigs (art/look.ts `parkPracticals`): Midtown's six tower banks in sodium and LED (light cones,
+ * lens flares on the two outfield towers), the Dome's four truss panels (rect lights plus one instanced fixture draw),
+ * the Moon's four cold spots. Lamps are unshadowed (the key is the scene's one caster). Day parks light nothing; Ivy
+ * keeps its four towers as unlit dressing. Low: four lamps, no flares (PRD 6.4).
+ */
+export function practicalNodes(park: ParkSpec, tier: DiamondTier): any[] {
+  const nodes: any[] = [];
+  const rig = parkPracticals(park, tier);
+  if (rig.length === 0) {
+    if (park.flood) {
+      const towers: readonly [number, number][] = [
+        [-park.fenceCorner * 0.72, -park.fenceCorner * 0.55 - 6],
+        [park.fenceCorner * 0.72, -park.fenceCorner * 0.55 - 6],
+        [-park.fenceCorner * 0.5, 14],
+        [park.fenceCorner * 0.5, 14]
+      ];
+      towers.forEach(([tx, tz], i) => {
+        nodes.push(model(assets.diamondFloodlight, { name: `flood-${i}`, targetHeight: 16, role: "setDressing", scaleMode: "fit" }).position(tx, 0, tz).rotate(0, Math.atan2(-tx, 10 - tz) + Math.PI, 0));
+      });
+    }
+    return nodes;
+  }
+  for (const lamp of rig) {
+    if (lamp.kind === "spot") {
+      const [x, y, z] = lamp.position;
+      const [bx, bz] = lamp.base ?? [x, z];
+      nodes.push(
+        model(assets.diamondFloodlight, { name: `${lamp.name}-tower`, targetHeight: y, role: "setDressing", scaleMode: "fit" }).position(bx, 0, bz).rotate(0, Math.atan2(-bx, 10 - bz) + Math.PI, 0),
+        lights.spot({ name: lamp.name, position: lamp.position, target: lamp.target, angle: lamp.angle, penumbra: lamp.penumbra, intensity: lamp.intensity, color: lamp.color, distance: lamp.distance })
+      );
+      if (lamp.cone) {
+        nodes.push(effects.lightCone({ name: `${lamp.name}-cone`, position: [x, y - 0.4, z], direction: unitDir(lamp.position, lamp.target), color: lamp.color, intensity: 0.2, length: 18, coneAngle: (lamp.angle ?? 0.5) * 0.8, softness: 0.6 } as any));
+      }
+      if (lamp.flare) nodes.push(lights.lensFlare({ name: `${lamp.name}-flare`, light: lamp.name, intensity: 0.8, edgeFade: 0.2 }));
+    } else {
+      nodes.push(lights.rect({ name: lamp.name, position: lamp.position, target: lamp.target, color: lamp.color, intensity: lamp.intensity, width: lamp.width, height: lamp.height }));
+    }
+  }
+  const panels = rig.filter((lamp) => lamp.kind === "rect");
+  if (panels.length > 0) {
+    nodes.push(
+      instances.box({
+        name: "dome-truss-panels",
+        size: [1, 0.3, 1],
+        material: material.emissive({ color: panels[0]!.color, emissive: panels[0]!.color, emissiveIntensity: 1.4 }),
+        transforms: panels.map((p) => ({ position: [p.position[0], p.position[1] + 0.3, p.position[2]] as Vec3, scale: [p.width ?? 8, 1, p.height ?? 2] as Vec3 }))
+      })
+    );
+  }
   return nodes;
 }
 
@@ -566,7 +627,7 @@ export function buildParkScene(park: ParkSpec, ctx: DiamondSceneContext = DEFAUL
   return sc
     .camera(camera.perspective({ fov: 42, near: 0.2, far: 700, position: [0, 26, 42], target: [0, 0, -14] }))
     .addMany(buildFieldNodes(park, ctx))
-    .addMany(buildStandsNodes(park))
+    .addMany(buildStandsNodes(park, ctx))
     .addMany(buildParkExtras(park))
     .addMany(buildActorsNodes(ctx, park.id));
 }
