@@ -73,6 +73,7 @@ import { advanceShotBall, aimError, createHoopWorld, crossedRimDownward, solveLa
 import { BALL_R, DRIB_SHOULDER_FALLBACK, dribbleCycleY } from "./dribble";
 import { createOnePress } from "./input";
 import { hoopMaterials } from "./hoopMaterials";
+import { SprayTags } from "./sprayTags";
 import { projectCrops, type QaCropSubject } from "./qaCrops";
 import { MarkerPool, parkedTransforms, type MarkerSlot } from "./markerPools";
 import { LIVE_CAM, MAKE_FOV_KICK, ReplayRing, createBroadcast, createLetterbox, railPose, replayPose, replaySourceTime, type V3 as BroadcastV3 } from "./broadcast";
@@ -492,6 +493,8 @@ let replayClip: ReplayRing | null = null;
 let jamDunkPending = false;
 let letterbox: { show(on: boolean): void } | null = null;
 let broadcastPostOn = false;
+/** H47-V3: the Jam-dunk spray tags (new look). */
+const sprayTags = new SprayTags();
 const BOOT_REDUCED_MOTION = initialParams.has("reducedMotion") || (typeof window !== "undefined" && (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false));
 
 const game_ = {
@@ -1802,6 +1805,7 @@ function startMatch(mode: ModeId): void {
   game_.mode = mode;
   jamDunkPending = false;
   replayRing.clear();
+  sprayTags.clear();
   broadcast.startIntro(venue.id);
   game_.scoreHome = 0;
   game_.scoreAway = 0;
@@ -2028,6 +2032,9 @@ function finishDunk(a: AthleteState): void {
   juiceFire("dunk", { position: [RIM[0], RIM[1], RIM[2]] });
   if (jamDunkPending) {
     jamDunkPending = false;
+    if (!LOOK_ORIGINAL) {
+      try { sprayTags.stamp((auraApp as any).effects, COURT_RIGS[venue.id].sprayTag, [RIM[0], RIM[1], RIM[2]], game_.time); } catch { /* fx best-effort */ }
+    }
     if (replayRing.size > 1 && broadcast.startReplay()) replayClip = replayRing.snapshot();
   }
   netPulse = 1;
@@ -3436,6 +3443,7 @@ function frame(dtRaw: number): void {
   if (jamFlashT > 0) { jamFlashT = Math.max(0, jamFlashT - dt * 2.4); if (jamFlash) jamFlash.style.opacity = jamFlashT.toFixed(2); }
   if (netPulse > 0) netPulse -= dt * 3;
   rimShake = decayRimShake(rimShake, dt);
+  if (!LOOK_ORIGINAL) sprayTags.prune(game_.time);
   if (crowdLevel > 1) {
     crowdLevel = Math.max(1, crowdLevel - dt * 0.6);
     if (framesRendered % 12 === 0 || crowdLevel === 1) { try { (audio as any)?.setCueLevel?.("crowd", { volume: crowdLevel }, 200); } catch { /* best-effort */ } }
@@ -3840,6 +3848,7 @@ function setVenue(vId: VenueId, silent = false): void {
   document.querySelectorAll<HTMLButtonElement>("[data-court-menu]").forEach((b) => b.classList.toggle("active", b.dataset.courtMenu === vId));
   if (changed) {
     try {
+      sprayTags.clear();
       auraApp.setScene(buildScene(venue));
       resolveHandles();
       mountCourtFx();
