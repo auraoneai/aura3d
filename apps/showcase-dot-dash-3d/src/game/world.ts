@@ -19,7 +19,10 @@ import {
   PRACTICALS, focusDistance, type BoardLookRow
 } from "./look.js";
 import { TraceField } from "./traces.js";
-import { CLEAR_LAMP_DIM, stepCourierPose, waveLevel, WAVE_SECONDS, type CourierPose } from "./motion.js";
+import {
+  CLEAR_LAMP_DIM, cinematicsAllowed, clearOrbitShot, introShots, stepCourierPose, waveLevel, WAVE_SECONDS,
+  type CourierPose, type ShotPlan
+} from "./motion.js";
 import { boxReflectionProbe } from "./engineCompat.js";
 
 /** The E-A catalogue HDRI (CC0, Poly Haven "vintage_measuring_lab", public/hdri/ATTRIBUTION.md): IBL fill only. */
@@ -487,6 +490,37 @@ function syncPracticals(pp: { x: number; y: number }): void {
 }
 const litPool: string[] = Array.from({ length: PRACTICALS.pooled }, () => "");
 
+/**
+ * DD47-C1: a two-shot macro intro at the first READY of a run and a 2 s orbit at CLEAR, through `app.camera.play`.
+ * The game's per-frame setPose pauses while one runs; skipped on reduced motion and captures.
+ */
+let cinematic = false;
+let cinematicMode = "";
+let fovKicked = false;
+function maybePlayCinematic(rig: CameraPose): void {
+  const mode = st.mode;
+  if (mode === cinematicMode) return;
+  cinematicMode = mode;
+  const cam = app?.camera;
+  if (!cam || typeof cam.play !== "function" || cinematic) return;
+  const allowed = typeof window !== "undefined" && cinematicsAllowed(calmMotion, window.location.search, typeof navigator !== "undefined" && navigator.webdriver === true);
+  if (!allowed) return;
+  let plans: readonly ShotPlan[] | null = null;
+  // only the run's first READY (respawns after a catch also pass through READY: no intro there)
+  if (mode === "ready" && st.boardsCleared === 0 && st.score === 0 && st.dotsEaten === 0) {
+    plans = introShots([wx(st.maze.spawn.x), 0, wz(st.maze.spawn.y)], rig);
+  } else if (mode === "cleared") {
+    plans = [clearOrbitShot(rig)];
+  }
+  if (!plans) return;
+  try {
+    const shots = plans.map((p) => ({ rig: camera.rigs.rail({ points: p.points.map((v) => [...v] as [number, number, number]), lookAt: [...p.lookAt] as [number, number, number], duration: p.duration, ease: "inOutSine" }), duration: p.duration, blendIn: 0.15 }));
+    const playback = cam.play({ id: `dot-dash-${mode}`, shots, onEnd: "return" });
+    cinematic = true;
+    void playback.done.finally(() => { cinematic = false; });
+  } catch { cinematic = false; }
+}
+
 /** Normalised 0..1 screen box around a world point, `half` world units each side (for E-I's crop capture). */
 function cropAround(x: number, z: number, half: number, aspect: number): { x: number; y: number; w: number; h: number } | null {
   const a = projectNdc(lastPose, aspect, [x - half, 0.3, z - half]);
@@ -695,7 +729,14 @@ export function syncVisuals(dt: number): void {
       fov: CAMERA_RIG.fov
     };
   }
-  app.camera?.setPose({ position: lastPose.position, target: lastPose.target, fov: lastPose.fov });
+  maybePlayCinematic(rig);
+  // DD47-C1 dash fovKick +3 deg while dashing (layer eases it back)
+  const dashing = st.player.dashT > 0 && !calmMotion;
+  if (dashing !== fovKicked) {
+    fovKicked = dashing;
+    try { app.camera?.fovKick?.set("dash", dashing ? 3 : 0, 0.08); } catch { /* camera layer optional */ }
+  }
+  if (!cinematic) app.camera?.setPose({ position: lastPose.position, target: lastPose.target, fov: lastPose.fov });
   syncFocus(lastPose);
   syncPracticals(pp2);
   publishCrops(pp2, aspect);

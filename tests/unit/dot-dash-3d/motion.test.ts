@@ -38,3 +38,25 @@ describe("dot-dash-3d courier motion", () => {
     expect(waveLevel(2, t, max, true)).toBe(waveLevel(18, t, max, true));
   });
 });
+
+import { cinematicsAllowed, clearOrbitShot, introShots } from "../../../apps/showcase-dot-dash-3d/src/game/motion";
+
+describe("dot-dash-3d camera sequences (DD47-C1)", () => {
+  const rig = { position: [0, 17.2, 13.8] as const, target: [0, 0, 0] as const };
+  it("intro lands on the play rig and the clear orbit keeps its height and distance over 2 s", () => {
+    const shots = introShots([0, 0, 5], rig);
+    expect(shots).toHaveLength(2);
+    expect(shots.reduce((t, s) => t + s.duration, 0)).toBeLessThanOrEqual(1.5);
+    expect(shots[1]!.points.at(-1)).toEqual([0, 17.2, 13.8]);
+    const orbit = clearOrbitShot(rig);
+    expect(orbit.duration).toBe(2);
+    for (const p of orbit.points) expect(Math.hypot(p[0], p[2])).toBeCloseTo(13.8, 6);
+  });
+  it("skips sequences on reduced motion and on captures", () => {
+    expect(cinematicsAllowed(false, "?maze=spiral", false)).toBe(true);
+    expect(cinematicsAllowed(true, "", false)).toBe(false);
+    expect(cinematicsAllowed(false, "", true)).toBe(false);
+    expect(cinematicsAllowed(false, "?freeze=4000", false)).toBe(false);
+    expect(cinematicsAllowed(false, "?autoplay=1", false)).toBe(false);
+  });
+});

@@ -42,3 +42,39 @@ export function waveLevel(distance: number, t: number, maxDistance: number, redu
   const front = u * (maxDistance + 2);
   return Math.max(0, Math.min(1, (front - distance) / 2));
 }
+
+type V3 = readonly [number, number, number];
+
+/** A camera shot as rail points (world space) and a look-at, before the engine rig is built. */
+export interface ShotPlan { readonly points: readonly V3[]; readonly lookAt: V3; readonly duration: number }
+
+/**
+ * DD47-C1 board intro (1.5 s READY): a low macro pass over the courier's spawn, then a rise into the play rig.
+ * `rig` is the fitted play pose so the second shot lands exactly where the game camera takes over.
+ */
+export function introShots(spawn: V3, rig: { position: V3; target: V3 }): readonly ShotPlan[] {
+  const [sx, , sz] = spawn;
+  return [
+    { points: [[sx - 3.2, 1.6, sz + 3.4], [sx + 1.2, 1.3, sz + 2.6]], lookAt: [sx, 0.3, sz], duration: 0.7 },
+    { points: [[sx + 1.2, 1.3, sz + 2.6], [rig.position[0] * 0.5, rig.position[1] * 0.55, rig.position[2] * 0.7], [...rig.position]], lookAt: rig.target, duration: 0.8 }
+  ];
+}
+
+/** DD47-C1 clear orbit: 2 s, a quarter turn around the board centre at the play rig's height and distance. */
+export function clearOrbitShot(rig: { position: V3; target: V3 }, steps = 6): ShotPlan {
+  const [px, py, pz] = rig.position;
+  const r = Math.hypot(px, pz), a0 = Math.atan2(px, pz);
+  const points: V3[] = [];
+  for (let i = 0; i <= steps; i++) {
+    const a = a0 + (i / steps) * (Math.PI / 2);
+    points.push([Math.sin(a) * r, py, Math.cos(a) * r]);
+  }
+  return { points, lookAt: rig.target, duration: 2 };
+}
+
+/** Sequences are skipped on reduced motion and on captures (autoplay, freeze or a webdriver), so stills stay still. */
+export function cinematicsAllowed(reducedMotion: boolean, search: string, webdriver: boolean): boolean {
+  if (reducedMotion || webdriver) return false;
+  const p = new URLSearchParams(search);
+  return !(p.has("freeze") || p.get("autoplay") === "1" || p.get("demo") === "1" || p.get("cinematics") === "0");
+}
