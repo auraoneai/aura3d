@@ -34,6 +34,13 @@ export interface CinematicShot {
   readonly fov: number;
 }
 
+/**
+ * IC47-C2: the fight lens. fov 40 (the tight end of 40-45, so the pair stays large) with the lens lowered (lift 0.6 m above the rig, was 0.82) and aimed a
+ * little higher (0.78 m, was 0.72), so the pair reads taller in frame. The FOV kick on dash and special is the feel
+ * preset's punch (main.ts feel table: dash 1.1 deg, special 2.6 deg). Bounding-box share is measured in phase 2.
+ */
+export const FIGHT_LENS = { fov: 40, lift: 0.6, aim: 0.78 } as const;
+
 /** Shot starts inside the 1.35 s intro (seconds). */
 export const INTRO_SHOTS = { dolly: 0, p1: 0.55, p2: 0.95 } as const;
 /** The intro's length today (main.ts phase machine); C1's acceptance caps it at 4.0 s. */

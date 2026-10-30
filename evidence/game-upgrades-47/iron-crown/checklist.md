@@ -20,12 +20,12 @@ Status per row: done / done-interim / partial / blocked (E-x | WP-36) / phase 2.
 | IC47-A2 | M | Dock <= 300, Monastery <= 300, Neo-Tokyo <= 350 | done-interim (static mesh consolidation per material); remeshes blocked (WP-36); measured phase 2 |
 | IC47-A3 | S | no stand-in clips; 2 fighters <= 9 MB | blocked (WP-36) |
 | IC47-V1 | M | liveCount 0 within 1.2 s; hit crop >= 300 amber px in 80 ms; block hue 180-210 | done (code, runtime VFX on, pack unit-tested); real-GPU run phase 2 |
-| IC47-V2 | S | idle bg diff >= 2; <= 2,000 particles | partial (presets for embers, motes, dust, confetti in the pack; ambient emitters not wired) |
+| IC47-V2 | S | idle bg diff >= 2; <= 2,000 particles | partial (ambient embers, motes, dust and win confetti wired, budget unit-tested; Airstrip shimmer pass not in the engine) |
 | IC47-V3 | C | decal visible 10 s; flare within 2 | not done |
 | IC47-AN1 | M | feet <= 0.03 m while hands >= 0.10 m; hit frame within 1 frame | done (layering default, forwarded speed); measurement phase 2 |
 | IC47-AN2 | S | >= 3 bg cells diff >= 2; crowd stddev +10% after K.O. | not done |
 | IC47-C1 | M | 3 intro + 1 K.O. shot with bars; report passes; intro <= 4.0 s | done (camera only, inside the 1.35 s intro); motion report phase 2 |
-| IC47-C2 | S | bbox share 22-30% at 1280, >= 18% at 390 | not done |
+| IC47-C2 | S | bbox share 22-30% at 1280, >= 18% at 390 | partial (fov 40, lowered lens, FOV kick via feel punch); bbox share phase 2 |
 | IC47-H1 | S | HUD <= 14% / 22%; licensed fonts; ui_hud >= 7 | not done |
 | IC47-W1 | M | top-row stddev >= 8; <= 60 draws | done-interim (instanced primitive backdrops, 2-4 draws per venue; WP-36 assets later) |
 | IC47-W2 | S | primitives -80%; crowd <= 12 draws | blocked (WP-36: spectators, truss, dais) |

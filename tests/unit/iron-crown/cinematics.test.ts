@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import {
   cinematicShot,
   createCinematicClock,
+  FIGHT_LENS,
   INTRO_SECONDS,
   INTRO_SHOTS,
   letterboxWanted,
@@ -69,5 +70,12 @@ describe("iron-crown cinematics (GU47 IC47-C1)", () => {
     expect(clock.tick("intro", 0.1)).toBe(0);
     expect(clock.tick("intro", 0.1)).toBeCloseTo(0.1);
     expect(clock.tick("fight", 0.1)).toBe(0);
+  });
+
+  it("IC47-C2: the fight lens sits at fov 40-45, lowered and aimed at the torsos", () => {
+    expect(FIGHT_LENS.fov).toBeGreaterThanOrEqual(40);
+    expect(FIGHT_LENS.fov).toBeLessThanOrEqual(45);
+    expect(FIGHT_LENS.lift).toBeLessThan(0.82);
+    expect(FIGHT_LENS.aim).toBeGreaterThan(0.72);
   });
 });

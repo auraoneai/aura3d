@@ -65,7 +65,7 @@ import { mountControlsSheet } from "./game/controlsSheet";
 import { mountExtraTouchButtons } from "./game/touchExtras";
 import { DEFAULT_STAGE, stageById, type IronStage, type StageId } from "./game/stages";
 import { buildArenaScene } from "./game/arena";
-import { cinematicShot, createCinematicClock, letterboxWanted } from "./game/cinematics";
+import { cinematicShot, createCinematicClock, FIGHT_LENS, letterboxWanted } from "./game/cinematics";
 import { backRimPose, FOLLOW_SPOT_ID, followSpotPose, LETTERBOX_BAR, poseDirection, RIM_IDS, stageLook, type SpotPose } from "./game/look";
 import { AMBIENT_EMITTERS, createAmbientVfx, installIronCrownVfx, type IronCrownVfxKind } from "./game/vfx";
 import { advanceLadder, createLadder, currentRung, type LadderState } from "./game/ladder";
@@ -358,7 +358,7 @@ const baseFightingRig = camera.rigs.fighting({
   fighters: ["player", "rival"],
   minDistance: 4.9,
   maxDistance: 7.0,
-  fov: 40
+  fov: FIGHT_LENS.fov
 });
 // IC47-C1: letterboxed intro, K.O. and win shots (camera only; the phase windows are unchanged). The bars are two DOM
 // strips over the canvas, LETTERBOX_BAR of the viewport each.
@@ -396,8 +396,8 @@ app.camera?.use({
       setLetterbox(letterboxWanted(phase, winnerSide !== null));
       if (shot) return { ...pose, position: shot.position, target: shot.target, fov: shot.fov };
     }
-    const position: [number, number, number] = [pose.position[0], pose.position[1] + 0.82, pose.position[2] - 0.15];
-    const target: [number, number, number] = [pose.target[0], pose.target[1] + 0.72, pose.target[2]];
+    const position: [number, number, number] = [pose.position[0], pose.position[1] + FIGHT_LENS.lift, pose.position[2] - 0.15];
+    const target: [number, number, number] = [pose.target[0], pose.target[1] + FIGHT_LENS.aim, pose.target[2]];
     // Portrait phones: the rig frames by vertical FOV, so at 390x844 the fighters' start marks (x ±2.2) sat outside the
     // frame. Pull the camera back along its view line until both fighters plus a margin fit the horizontal FOV.
     const aspect = window.innerWidth / Math.max(1, window.innerHeight);
