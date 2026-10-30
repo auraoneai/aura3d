@@ -2,8 +2,8 @@
  * GLSL for the port's `material.custom` surfaces. The original patched three's
  * MeshStandardMaterial through `onBeforeCompile` and sampled a remote
  * `impasto.png`; here the same pigment mixing runs in a self-contained shader
- * with a procedural impasto texture, and the original's hemisphere + two
- * directional lights are evaluated inline (custom materials are unlit).
+ * with a procedural impasto texture, lit by the scene's own lights through the
+ * engine author chunks (`a3d_lights`, `a3d_scene`; GU47 SO47-L1).
  * Sources use GLSL 300 es varyings and GLSL1 `attribute` for author attributes.
  */
 
@@ -25,24 +25,42 @@ float fbm(vec2 p) {
 }
 `;
 
-/** The original's hemisphere (1.65) + key (2.15) + fill (0.95) lights, then exposure 1.2. */
-const LIGHTING = /* glsl */ `
-float gKey = 1.0; // key-light shadow factor, set per fragment by a3dSunShadowAuto in specs with receiveShadow: true
-vec3 shade(vec3 albedo, vec3 N, vec3 emissive) {
-  vec3 key = normalize(vec3(150.0, 280.0, -150.0));
-  vec3 fill = normalize(vec3(-140.0, 80.0, 210.0));
-  vec3 skyC = vec3(0.973, 0.831, 0.627);
-  vec3 groundC = vec3(0.184, 0.223, 0.343);
-  vec3 hemi = mix(groundC, skyC, N.y * 0.5 + 0.5) * 1.65;
-  vec3 keyC = vec3(1.0, 0.815, 0.604) * 2.15 * max(dot(N, key), 0.0) * gKey;
-  vec3 fillC = vec3(0.508, 0.584, 0.737) * 0.95 * max(dot(N, fill), 0.0);
-  return albedo * (hemi + keyC + fillC) * (1.2 / 3.14159265) + emissive;
+/**
+ * GU47 SO47-L1: the custom surfaces read the scene's own lights through the engine author chunks, so the GLB riders and
+ * the painted track are lit by the same key, planetshine, headlight and tail lights (no light literal in this file).
+ * `a3dDirect` sums every direct light (the shadowed key is darkened by its PCSS cascades), `a3dHemiLight` is the authored
+ * hemisphere pair. The gains keep the 4.6.1 exposure: the original rig was hemisphere 1.65 + key 2.15 + fill 0.95 times
+ * exposure 1.2 over pi; the engine key carries 2.6 (= 2.15 * 1.2) and the hemisphere 1.1 (x 1.8 = 1.65 * 1.2).
+ * `gouache` adds the split tone (SO47-P1) and the height mist (SO47-E3); 0 keeps `?look=original`.
+ */
+const HEMI_GAIN = 1.8;
+
+const lighting = (gouache: boolean): string => /* glsl */ `
+#include <a3d_lights>
+const float HEMI_GAIN = ${HEMI_GAIN.toFixed(2)};
+/** SO47-P1 painterly split tone: teal-violet darks, warm highlights (darkest 5% B-R up, brightest R-B up). */
+vec3 splitTone(vec3 c) {${gouache ? `
+  float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
+  float w = smoothstep(0.04, 0.55, l);
+  c *= mix(vec3(0.84, 0.93, 1.22), vec3(1.10, 1.0, 0.84), w);` : ""}
+  return c;
 }
-/** Aerial perspective toward the cold nebula-blue of the original's far field. */
+vec3 shade(vec3 albedo, vec3 N, vec3 emissive, vec3 world) {
+  vec3 V = normalize(cameraPosition - world);
+  vec3 direct = a3dDirect(N, V, albedo, 0.9, world);
+  vec3 hemi = albedo * a3dHemiLight(N) * (HEMI_GAIN / 3.14159265);
+  return splitTone(direct + hemi) + emissive;
+}
+/** Aerial perspective from the scene fog (exp2, the same colour and density the engine fogs the GLBs with). */
 vec3 haze(vec3 c, vec3 world) {
   float d = length(world - cameraPosition);
-  float f = 1.0 - exp(-pow(d / 2300.0, 1.6));
-  return mix(c, vec3(0.10, 0.12, 0.22), clamp(f, 0.0, 0.82));
+  float x = max(u_a3dFogDensity, 0.0) * d;
+  float f = 1.0 - exp(-x * x);${gouache ? `
+  // SO47-E3 height term: dense mist pools below the crater rim (world y < 0) and thins above it.
+  float below = clamp(-world.y / 28.0, 0.0, 1.0);
+  f = max(f, below * 0.6 * (1.0 - exp(-d / 140.0)));
+  return mix(c, u_a3dFogColor, clamp(f, 0.0, 0.78));` : `
+  return mix(c, u_a3dFogColor, clamp(f, 0.0, 0.82));`}
 }
 `;
 
@@ -73,7 +91,8 @@ void main() {
 /** Domain-warp strength of the track's paint marks (was 4.0, shared with the veins). */
 export const TRACK_MARK_WARP = 2.5;
 
-export const TRACK_FRAGMENT = /* glsl */ `
+/** Track fragment; `gouache` adds the split tone, height mist and a deeper impasto relief (the signature brush texture). */
+export const trackFragment = (gouache: boolean): string => /* glsl */ `
 #define TRACK_MARK_WARP ${TRACK_MARK_WARP.toFixed(1)}
 in vec3 vWorld;
 in vec3 vNormal;
@@ -84,7 +103,7 @@ in vec3 vChalk;
 in float vOriginal;
 out vec4 outColor;
 ${NOISE}
-${LIGHTING}
+${lighting(gouache)}
 float paintNoise(vec2 p) { return fbm(p + vec2(fbm(p * 0.35) * 4.0, 0.0)); }
 // The surface marks use a gentler domain warp than the veins (2.5 instead of 4.0): the stronger warp smeared each mark
 // into a long streak along one world axis (audit SO-E5).
@@ -125,11 +144,11 @@ void main() {
   vec3 dpx = dFdx(vWorld), dpy = dFdy(vWorld);
   vec3 r1 = cross(dpy, N), r2 = cross(N, dpx);
   float det = dot(dpx, r1);
-  N = normalize(abs(det) * N - 0.05 * sign(det) * (dFdx(h) * r1 + dFdy(h) * r2));
+  N = normalize(abs(det) * N - ${gouache ? "0.09" : "0.05"} * sign(det) * (dFdx(h) * r1 + dFdy(h) * r2));
   vec3 emissive = albedo * 0.1 + vec3(0.18, 0.72, 0.66) * (1.0 - across) * 0.3;
-  gKey = a3dSunShadowAuto(vWorld, N);
-  outColor = vec4(haze(shade(albedo, N, emissive), vWorld), 1.0);
+  outColor = vec4(haze(shade(albedo, N, emissive, vWorld), vWorld), 1.0);
 }`;
+export const TRACK_FRAGMENT = trackFragment(true);
 
 /** Opal / mineral surfaces: strata banding with an iridescent tint (the original's `Mf`). */
 export const MINERAL_VERTEX = /* glsl */ `
@@ -143,12 +162,12 @@ void main() {
   gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
 }`;
 
-export const MINERAL_FRAGMENT = /* glsl */ `
+export const mineralFragment = (gouache: boolean): string => /* glsl */ `
 in vec3 vObject;
 in vec3 vNormal;
 in vec3 vWorld;
 out vec4 outColor;
-${LIGHTING}
+${lighting(gouache)}
 void main() {
   float strata = sin(vObject.y * 3.6 + sin(vObject.z * 1.8) * 1.1 + sin(vObject.x * 2.1));
   float fine = sin(vObject.y * 37.0 + sin(vObject.z * 11.0) * 1.6);
@@ -157,9 +176,9 @@ void main() {
   vec3 N = normalize(vNormal);
   if (dot(N, cameraPosition - vWorld) < 0.0) N = -N;
   float glow = opal > 0.5 ? 0.17 : 0.025;
-  gKey = a3dSunShadowAuto(vWorld, N);
-  outColor = vec4(haze(shade(albedo, N, albedo * glow), vWorld), 1.0);
+  outColor = vec4(haze(shade(albedo, N, albedo * glow, vWorld), vWorld), 1.0);
 }`;
+export const MINERAL_FRAGMENT = mineralFragment(true);
 
 /** Flat or lit solid colour (riders, rocks, pillars, planet bands). */
 export const SOLID_VERTEX = /* glsl */ `
@@ -173,13 +192,13 @@ void main() {
   gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
 }`;
 
-export const SOLID_FRAGMENT = /* glsl */ `
+export const solidFragment = (gouache: boolean): string => /* glsl */ `
 in vec3 vNormal;
 in vec3 vObject;
 in vec3 vWorld;
 out vec4 outColor;
 ${NOISE}
-${LIGHTING}
+${lighting(gouache)}
 void main() {
   vec3 albedo = baseColor;
   if (banding > 0.0) {
@@ -190,15 +209,17 @@ void main() {
   if (dot(N, cameraPosition - vWorld) < 0.0) N = -N;
   vec3 emissive = glowColor * glow * (banding > 0.0 ? 0.0 : 1.0);
   vec3 V = normalize(cameraPosition - vWorld);
-  vec3 keyDir = normalize(vec3(150.0, 280.0, -150.0));
+  vec3 keyDir = normalize(u_a3dSunDirection);
   float fres = pow(1.0 - max(dot(N, V), 0.0), 3.0);
   float spec = pow(max(dot(N, normalize(keyDir + V)), 0.0), 36.0);
-  gKey = a3dSunShadowAuto(vWorld, N);
-  vec3 lit = shade(albedo, N, emissive);
+  float gKey = a3dSunShadowAuto(vWorld, N);
+  vec3 lit = shade(albedo, N, emissive, vWorld);
   lit += vec3(0.42, 0.58, 0.95) * fres * 0.34 * (banding > 0.0 ? 0.0 : 1.0);
-  lit += vec3(1.0, 0.86, 0.66) * spec * 0.28 * gKey * (banding > 0.0 ? 0.0 : 1.0);
-  outColor = vec4(haze(lit, vWorld), 1.0);
+  lit += normalize(u_a3dSunColor + 1e-4) * 1.6 * spec * 0.28 * gKey * (banding > 0.0 ? 0.0 : 1.0);
+  // Banded bodies (the gas giant) sit far out: they take a third of the haze so the planet stays a painted disc.
+  outColor = vec4(mix(lit, haze(lit, vWorld), banding > 0.0 ? 0.35 : 1.0), 1.0);
 }`;
+export const SOLID_FRAGMENT = solidFragment(true);
 
 /** Additive checkpoint veil (ported from the original gate `ShaderMaterial`; uv.y runs up the 13 m curtain). */
 export const VEIL_VERTEX = /* glsl */ `
@@ -295,7 +316,11 @@ void main() {
   col += vec3(0.20, 0.17, 0.30) * band * pow(c2, 1.7) * 0.5;
   float lane = smoothstep(0.52, 0.74, fbm3(d * 3.4 + vec3(5.5, 1.2, 7.7)));
   col *= 1.0 - 0.55 * lane * band;
-  outColor = vec4(col, 1.0);
+  // SO47-E2: the nebula hue turns with the painted sector (nebulaShift in turns; 0 keeps the authored colours).
+  float a = nebulaShift * 6.2831853;
+  vec3 k = vec3(0.57735);
+  col = col * cos(a) + cross(k, col) * sin(a) + k * dot(k, col) * (1.0 - cos(a));
+  outColor = vec4(max(col, vec3(0.0)), 1.0);
 }`;
 
 /** Additive Fresnel shell around the planet (limb glow, brighter on the sun side). */
@@ -309,6 +334,7 @@ void main() {
 }`;
 
 export const ATMOS_FRAGMENT = /* glsl */ `
+#include <a3d_scene>
 in vec3 vN;
 in vec3 vWorld;
 out vec4 outColor;
@@ -316,6 +342,6 @@ void main() {
   vec3 N = normalize(vN);
   vec3 V = normalize(cameraPosition - vWorld);
   float f = pow(1.0 - max(dot(N, V), 0.0), 2.4);
-  float sun = clamp(dot(N, normalize(vec3(150.0, 280.0, -150.0))) * 0.6 + 0.55, 0.0, 1.0);
+  float sun = clamp(dot(N, normalize(u_a3dSunDirection)) * 0.6 + 0.55, 0.0, 1.0);
   outColor = vec4(atmoColor * f * (0.4 + 1.5 * sun), f * 0.9);
 }`;

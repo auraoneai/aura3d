@@ -31,6 +31,7 @@ import type { GhostPose } from "./progress";
 import { atmosphereSpec, mineralSpec, pointsSpec, skySpec, solidSpec, trackSpec, veilSpec, type SolidExtra } from "./materials";
 import { mainFrame, routeFrame, surfaceNoise } from "./track";
 import { Vec3 } from "./vec3";
+import { LOOKS, type OrbitLook } from "./art/look";
 
 export { lehmer };
 
@@ -45,6 +46,8 @@ export interface WorldOptions {
   readonly ghost?: boolean;
   /** `prefers-reduced-motion`: damp the zero-G spin and bank (SO-E2). */
   readonly reducedMotion?: boolean;
+  /** GU47 look variant (`?look=original` keeps the 4.6.1 look); default gouache. */
+  readonly look?: OrbitLook;
 }
 
 /** Seconds and metres of the rebound after a zero-G crash, so the rider never rests inside the scenery it hit (SO-E5). */
@@ -86,9 +89,11 @@ function dynamicFrom(m: MeshData, withPigments: boolean) {
   });
 }
 
-const trackMaterial = () => material.custom(trackSpec());
-const solidMaterial = (base: Rgb, glow: Rgb = [0, 0, 0], glowAmount = 0, banding = 0, extra: SolidExtra = {}) => material.custom(solidSpec(base, glow, glowAmount, banding, extra));
-const mineralMaterial = (base: Rgb, opal: boolean) => material.custom(mineralSpec(base, opal));
+/** The look `buildWorld` is building (set once at its start; the material helpers below bake the matching shader variant). */
+let activeLook: OrbitLook = "gouache";
+const trackMaterial = () => material.custom(trackSpec(activeLook));
+const solidMaterial = (base: Rgb, glow: Rgb = [0, 0, 0], glowAmount = 0, banding = 0, extra: SolidExtra = {}) => material.custom(solidSpec(base, glow, glowAmount, banding, extra, activeLook));
+const mineralMaterial = (base: Rgb, opal: boolean) => material.custom(mineralSpec(base, opal, activeLook));
 const pointsMaterial = (additive: boolean) => material.custom(pointsSpec(additive));
 
 function hslToRgb(h: number, s: number, l: number): Rgb {
@@ -190,35 +195,63 @@ export interface World {
 /** Neutral-room environment intensity, calibrated on the remote runner against the 4.3.7 rider-region luma (docs/audits/lanes/g15.md). */
 export const ENVIRONMENT_INTENSITY = 0.9;
 
-function environmentIntensity(): number {
+function environmentIntensity(fallback: number = ENVIRONMENT_INTENSITY): number {
   const raw = typeof location !== "undefined" ? new URLSearchParams(location.search).get("env") : null;
   const parsed = raw === null ? Number.NaN : Number(raw);
-  return Number.isFinite(parsed) && parsed >= 0 && parsed <= 4 ? parsed : ENVIRONMENT_INTENSITY;
+  return Number.isFinite(parsed) && parsed >= 0 && parsed <= 4 ? parsed : fallback;
+}
+
+/** `?env=neutral` (SO47-E1): the neutral room instead of the captured nebula probe. */
+function neutralEnvironment(): boolean {
+  return typeof location !== "undefined" && new URLSearchParams(location.search).get("env") === "neutral";
 }
 
 export function buildWorld(options: WorldOptions): World {
   const { vehicle, rider } = options;
   const high = options.quality === "high";
+  const look: OrbitLook = options.look ?? "gouache";
+  activeLook = look;
   /** Debug switch: `?off=lights,bloom,grade,vignette,sky,atmo,stars2,rocks,lintel` disables individual look upgrades (bisecting a render problem). */
   const off = new Set((typeof location !== "undefined" ? new URLSearchParams(location.search).get("off") ?? "" : "").split(",").filter(Boolean));
   const builder: Scene = scene()
     .background("#05060d")
     .camera(camera.perspective({ position: [0, 40, 0], target: [0, 0, 0], fov: 72, near: 0.15, far: 2400 }));
-  // The original's rig (hemisphere + warm key + cool fill); custom materials evaluate it inline, the catalog rocks use it.
+  // GU47 SO47-L1/L2: the rig comes from the look table. The custom shaders read these same lights (a3d_lights/a3d_scene),
+  // so the GLBs and the painted surfaces share one key. Gouache: raking 18-degree white key from the left of the start
+  // grid with 3 PCSS cascades, warm unshadowed planetshine from the gas giant, cool hemisphere ground. `?look=original`
+  // keeps the 4.6.1 rig (53-degree warm key, 2 cascades, cool fill).
+  const row = LOOKS[look];
+  const shadowOff = typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0";
   if (!off.has("lights")) {
     builder
-      .add(lights.hemisphere({ name: "hemisphere", skyColor: "#f8d4a0", groundColor: "#2f3957", intensity: 1.1 }))
-      .add(lights.directional({ name: "key", position: [150, 280, -150], target: [0, 0, 0], intensity: 2.6, color: "#ffd09a", shadow: typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0" ? false : { cascades: 2, maxDistance: 160 } }))
-      .add(lights.directional({ name: "fill", position: [-140, 80, 210], target: [0, 0, 0], intensity: 1.0, color: "#8195bc", shadow: false }));
+      .add(lights.hemisphere({ name: "hemisphere", skyColor: row.hemisphere.sky, groundColor: row.hemisphere.ground, intensity: row.hemisphere.intensity }))
+      .add(lights.directional({
+        name: "key",
+        position: [...row.key.position],
+        target: [0, 0, 0],
+        intensity: row.key.intensity,
+        color: row.key.color,
+        shadow: shadowOff ? false : { cascades: high ? row.key.cascades : 1, maxDistance: row.key.maxDistance, filter: high ? row.key.filter : "pcf" }
+      }).runtime({ id: "key" }));
+    if (row.fill) builder.add(lights.directional({ name: "fill", position: [...row.fill.position], target: [0, 0, 0], intensity: row.fill.intensity, color: row.fill.color, shadow: false }));
+    if (row.planetshine) builder.add(lights.directional({ name: "planetshine", position: [...row.planetshine.position], target: [0, 0, 0], intensity: row.planetshine.intensity, color: row.planetshine.color, shadow: false }));
   }
-  // Image-based fill for the lit GLBs (riders, pylons, boulders, props). Since 4.5.0 a lights-only scene gets no implicit
-  // environment, so without this the models lose their diffuse and specular fill (LIGHT-01). The hemisphere above keeps
-  // contributing next to it and is evaluated per normal (LIGHT-05/08), so the intensity is calibrated with it on.
-  // `?env=<n>` overrides the intensity for calibration captures; `?off=env` removes it.
-  if (!off.has("env")) builder.add(environments.neutral({ name: "fill-environment", intensity: environmentIntensity(), background: false }));
-  if (!off.has("bloom")) builder.add(effects.bloom({ name: "bloom", intensity: 0.5, threshold: 0.78, radius: 0.55 }));
-  if (!off.has("grade")) builder.add(effects.colorGrade({ name: "grade", contrast: 1.06, saturation: 1.14 }));
-  if (!off.has("vignette")) builder.add(effects.vignette({ name: "vignette", intensity: 0.22, smoothness: 0.7 }));
+  // Image-based fill for the lit GLBs (riders, pylons, boulders, props) (LIGHT-01). Gouache (SO47-E1): the nebula dome,
+  // gas giant and track are captured once into a 128 px probe with no background, so the riders pick up the painted sky;
+  // `?env=neutral` keeps the neutral room. `?env=<n>` overrides the intensity for calibration captures; `?off=env` removes it.
+  if (!off.has("env")) {
+    builder.add(row.environment.kind === "capture" && !neutralEnvironment()
+      ? environments.capture({ name: "fill-environment", intensity: environmentIntensity(row.environment.intensity), background: false, resolution: 128, update: "once", include: "all", position: [0, 30, 0] })
+      : environments.neutral({ name: "fill-environment", intensity: environmentIntensity(look === "original" ? ENVIRONMENT_INTENSITY : row.environment.intensity), background: false }));
+  }
+  // Scene fog (SO47-E3): the custom shaders read its colour and density (u_a3dFogColor / u_a3dFogDensity) and add the
+  // height mist; the engine fogs the GLBs with the same values, so a rider and the island behind it match.
+  if (row.fog && !off.has("fog")) builder.add(effects.fog({ name: "haze", color: row.fog.color, density: row.fog.density, intensity: (row.fog.maxOpacity - 0.25) / 0.55 }).runtime({ id: "haze" }));
+  if (!off.has("bloom")) builder.add(effects.bloom({ name: "bloom", ...row.post.bloom }));
+  if (!off.has("grade")) builder.add(effects.colorGrade({ name: "grade", ...row.post.grade }));
+  if (!off.has("vignette")) builder.add(effects.vignette({ name: "vignette", ...row.post.vignette }));
+  // SO47-P1 grain on every tier but Low (PRD §6.4).
+  if (row.post.grain && high && !off.has("grain")) builder.add(effects.filmGrain({ name: "grain", intensity: row.post.grain.intensity, size: row.post.grain.size }));
 
   /* ---- track, rails, islands, ramps, loops ---- */
   const course = buildCourse(high ? 1.3 : 2.1);
@@ -229,19 +262,46 @@ export function buildWorld(options: WorldOptions): World {
   if (vehicle === "skate") builder.add(geometry.custom(dynamicFrom(buildLoops(SKATE_LOOPS), true), { name: "loops", material: trackMaterial() }));
 
   /* ---- sky: nebula dome, planet with atmosphere, star layers ---- */
-  if (!off.has("sky")) builder.add(primitives.sphere({ name: "sky-dome", size: 3700, material: material.custom(skySpec()) }));
+  if (!off.has("sky")) builder.add(primitives.sphere({ name: "sky-dome", size: 3700, material: material.custom(skySpec()) }).runtime({ id: "sky-dome" }));
+  // SO47-E2: gouache moves the gas giant out past the ring on -X (it fills the right of the sky at the start grid),
+  // 520 m across, with a banded ring and a small second moon; `?look=original` keeps the small overhead planet.
+  const planet = row.planet;
   builder.add(primitives.sphere({
     name: "planet",
-    position: [-17, 83, 48],
+    position: [...planet.position],
     rotation: [0.1, 0.4, 1.12],
-    size: 300,
-    material: solidMaterial(hexLinear("#f9ece3"), hexLinear("#c98a68"), 0, 0.045)
+    size: planet.size,
+    material: solidMaterial(hexLinear("#f9ece3"), hexLinear(look === "original" ? "#c98a68" : "#d9895f"), 0, look === "original" ? 0.045 : 0.026)
   }));
   if (!off.has("atmo")) builder.add(primitives.sphere({
     name: "planet-atmosphere",
-    position: [-17, 83, 48],
-    size: 318,
+    position: [...planet.position],
+    size: planet.size * 1.06,
     material: material.custom(atmosphereSpec(hexLinear("#ffb48c")))
+  }));
+  if (planet.ring) {
+    // Banded ring: an opaque painted band plus (High only) an additive outer edge (+1 draw each).
+    const ringRot: [number, number, number] = [1.2, 0.35, 0.18];
+    builder.add(primitives.ring({
+      name: "planet-ring",
+      position: [...planet.position],
+      rotation: ringRot,
+      params: { innerRadius: planet.size * 0.66, outerRadius: planet.size * 0.98, thetaSegments: 96 },
+      material: solidMaterial(hexLinear("#e8c7a4"), hexLinear("#a8705a"), 0, 0.05)
+    }));
+    if (high) builder.add(primitives.ring({
+      name: "planet-ring-edge",
+      position: [...planet.position],
+      rotation: ringRot,
+      params: { innerRadius: planet.size * 0.98, outerRadius: planet.size * 1.03, thetaSegments: 96 },
+      material: solidMaterial(hexLinear("#ffd9b4"), hexLinear("#ffcf9e"), 0.9, 0, { transparent: true, blending: "additive", depthWrite: false })
+    }));
+  }
+  if (planet.moon && high) builder.add(primitives.sphere({
+    name: "second-moon",
+    position: [planet.position[0] + 260, planet.position[1] + 250, planet.position[2] - 340],
+    size: 60,
+    material: solidMaterial(hexLinear("#c9c3d8"), hexLinear("#7f7898"), 0, 0.08)
   }));
   const rand = lehmer(77);
   const starCount = high ? 8000 : 3000;

@@ -25,17 +25,17 @@
       {
         "type": "hemisphere",
         "shadow": false,
-        "intensity": 1.1
+        "intensity": 0.75
       },
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 2.6
+        "intensity": 3
       },
       {
         "type": "directional",
         "shadow": false,
-        "intensity": 1
+        "intensity": 0.8
       }
     ],
     "hasAmbient": false,
@@ -359,6 +359,18 @@
       },
       {
         "node": "planet-atmosphere",
+        "practical": false
+      },
+      {
+        "node": "planet-ring",
+        "practical": false
+      },
+      {
+        "node": "planet-ring-edge",
+        "practical": false
+      },
+      {
+        "node": "second-moon",
         "practical": false
       },
       {

@@ -7,7 +7,8 @@
  * `difficulty=explorer|racer|expert`, `mode=cup|trial|free`, `quality=high|low`,
  * `laps=N` (test override), `autostart=1`, `autopilot=1`, `manual=1` (the sim only
  * advances through `__orbit.advance` / `__AURA_STRANGE_ORBIT__.stepFrames`), `touch=1` (show the touch
- * controls without waiting for a touch), `motion=reduced` (same as `prefers-reduced-motion: reduce`).
+ * controls without waiting for a touch), `motion=reduced` (same as `prefers-reduced-motion: reduce`),
+ * `look=original` (the 4.6.1 look; GU47), `env=neutral` (neutral room instead of the captured probe).
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { createCameraShake, createHitStop, createImpactFeedback, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
@@ -38,6 +39,7 @@ import { createOrbitPresenter, viewOf } from "./presentation";
 import { staticColliders } from "./obstacles";
 import { setActiveCourse } from "./track";
 import { buildWorld, type WorldRuntime } from "./world";
+import { lookFromSearch } from "./art/look";
 
 const params = new URLSearchParams(location.search);
 const num = (key: string, fallback: number): number => {
@@ -55,7 +57,9 @@ const config = {
   autopilot: params.get("autopilot") === "1",
   manual: params.get("manual") === "1",
   touch: params.get("touch") === "1",
-  reducedMotion: params.get("motion") === "reduced" || (typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches)
+  reducedMotion: params.get("motion") === "reduced" || (typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches),
+  /** GU47: `look=original` keeps the 4.6.1 look; default is the gouache look (WP-25). */
+  look: lookFromSearch(location.search)
 };
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
@@ -572,7 +576,7 @@ async function boot(): Promise<void> {
   $("rider-name").textContent = label;
   $("vehicle-name").textContent = config.vehicle === "skate" ? "Skate" : "Bike";
   sizeCanvas();
-  const world = buildWorld({ vehicle: config.vehicle, rider: config.rider, quality: config.quality, ghost: config.mode === "trial", reducedMotion: config.reducedMotion });
+  const world = buildWorld({ vehicle: config.vehicle, rider: config.rider, quality: config.quality, ghost: config.mode === "trial", reducedMotion: config.reducedMotion, look: config.look });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
