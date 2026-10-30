@@ -52,8 +52,13 @@ describe("aura-slam view: scene composition", () => {
   });
 
   it("static court furniture is merged: one node per material, no per-box line, net or bleacher nodes", () => {
-    for (const n of ["static-lines", "static-netMesh", "static-netTape", "static-bleachers", "static-wood", "static-chairFrame", "static-canopy", "static-sponsorBoard", "static-sponsorTrim"]) expect(names.has(n), n).toBe(true);
+    // GU47 TT-M2: the World Tour net is one textured strip (`net-mesh`); ?look=original keeps the merged 4.6.1 boxes.
+    for (const n of ["static-lines", "net-mesh", "static-netTape", "static-bleachers", "static-wood", "static-chairFrame", "static-canopy", "static-sponsorBoard", "static-sponsorTrim"]) expect(names.has(n), n).toBe(true);
+    expect(names.has("static-netMesh")).toBe(false);
     for (const n of names) expect(/^(line-|net-mesh-seg-|net-tape-seg-|bleacher-tier|sponsor-board|sponsor-trim|players-bench|umpire-chair|umpire-canopy)/.test(n), n).toBe(false);
+    const original = new Set(flatten((buildTennisScene(createPoseRig(), { look: "original" }).toJSON() as unknown as Doc).nodes));
+    expect(original.has("static-netMesh")).toBe(true);
+    expect(original.has("net-mesh")).toBe(false);
   });
 
   it("node names are unique so runtime handles resolve unambiguously", () => {

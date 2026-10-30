@@ -133,6 +133,10 @@
         "practical": true
       },
       {
+        "node": "net-mesh",
+        "practical": false
+      },
+      {
         "node": "umpire-torso",
         "practical": false
       },
@@ -169,10 +173,6 @@
       },
       {
         "node": "static-netTape",
-        "practical": false
-      },
-      {
-        "node": "static-netMesh",
         "practical": false
       },
       {

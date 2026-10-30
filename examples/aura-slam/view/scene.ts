@@ -14,6 +14,7 @@ import { VENUE_PALETTES, venueKey } from "./venues";
 import { createWorldTourCrowd, type WorldTourCrowd } from "./crowd";
 import { LINE_COLOR, buildGrassStripesNode, feltBallMaterial, surfaceMaterial } from "./surfaces";
 import { buildBoardNodes, standLineText } from "./boards";
+import { buildNetMeshNode } from "./net";
 
 export interface TennisSceneOptions {
   /** Boot venue: the authored environment, fog, key and grade are this venue's, so the first frame needs no swap. */
@@ -208,9 +209,11 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
     const segW = (t1 - t0) * netHalfSpan;
     const segX = tm * netHalfSpan;
     const topH = 0.914 + (1.07 - 0.914) * tm * tm;
-    statics.box("netMesh", netMeshMat, [segW + 0.01, topH - 0.05, 0.022], [segX, (topH - 0.05) * 0.5 + 0.02, 0], false);
+    // TT-M2: the World Tour net is one textured strip (view/net.ts); `?look=original` keeps the nine 4.6.1 boxes.
+    if (original) statics.box("netMesh", netMeshMat, [segW + 0.01, topH - 0.05, 0.022], [segX, (topH - 0.05) * 0.5 + 0.02, 0], false);
     statics.box("netTape", netTapeMat, [segW + 0.015, 0.062, 0.036], [segX, topH - 0.02, 0]);
   }
+  if (!original) s.add(buildNetMeshNode());
 
   const chairWood = material.pbr({ color: "#8c613c", roughness: 0.78 });
   const chairFrame = material.pbr({ color: "#223b35", roughness: 0.65 });
