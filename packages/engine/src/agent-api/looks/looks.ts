@@ -9,13 +9,19 @@
 import type { QrFlagName, QrFlags } from "@aura3d/rendering/contracts";
 import { environmentProbeFactorySlot } from "@aura3d/rendering/contracts";
 import type {
+  AuraAssetRef,
+  AuraColor,
   AuraCreateAppOptions,
   AuraGroupNode,
   AuraSceneNode,
-  AuraSceneSnapshot
+  AuraSceneSnapshot,
+  AuraVec3
 } from "../index.js";
 import { AuraNodeBuilder, defineAuraAssets, effects, environments, lights } from "../index.js";
-import type { AuraLookDiagnostics, AuraLookId, AuraLookNode, AuraLookOverrides } from "../../contracts/looks.js";
+import type { AuraHdriId, AuraLookDiagnostics, AuraLookId, AuraLookNode, AuraLookOverrides } from "../../contracts/looks.js";
+import type { AuraDirectionalShadowOptions } from "../../contracts/lighting.js";
+import type { AuraHeightFogSpec } from "../../contracts/atmosphere.js";
+import type { AuraPostPresetId } from "../../contracts/post.js";
 import { worldQueriesSlot } from "../../contracts/world.js";
 import { appExtensionsAll } from "../../contracts/app.js";
 import { resolveQrFlags } from "../../contracts/flags.js";
@@ -136,32 +142,121 @@ export function resolveLookExpansion(options?: AuraLookBuildOptions): ResolvedLo
 // Overrides (T1.3): clamped per C-34. sun.azimuthDeg wraps into [0,360),
 // elevationDeg clamps to [-90,90], exposureEv to [-2,2], fogDensityScale to
 // [0,3]. `accent`/`background` pass through unchanged.
+// GU47 E-A keys: environmentIntensity [0,4]; environmentRotationDeg and the
+// rim azimuth wrap into [0,360); key/rim intensity [0,20]; fog near/far
+// [0,100000]; grade contrast/saturation [0,3], temperature/tint [-1,1]; bloom
+// intensity [0,4], threshold [0,64], knee/scatter [0,1], clampLuminance [0,64].
+// A non-finite GU47 number is dropped (the preset value stays); an unknown
+// HDRI or post preset id throws (LOOK_HDRI_UNKNOWN / LOOK_POST_UNKNOWN).
 // ---------------------------------------------------------------------------
 
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, Number.isFinite(value) ? value : min));
 
+/** GU47 clamp: undefined for an unset or non-finite value, else clamped into [min, max]. */
+const clampFinite = (value: number | undefined, min: number, max: number): number | undefined =>
+  value !== undefined && Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : undefined;
+
+/** Degrees wrapped into [0, 360); non-finite → 0 (the C-34 azimuth rule). */
+const wrapDegrees = (value: number): number => {
+  const deg = Number.isFinite(value) ? value % 360 : 0;
+  return deg < 0 ? deg + 360 : deg;
+};
+
+/** Copy without the undefined fields, so clamped overrides carry only what was set. */
+function definedFields<T extends object>(value: T): T {
+  return Object.fromEntries(Object.entries(value).filter(([, field]) => field !== undefined)) as T;
+}
+
+type LookPostOverride = NonNullable<AuraLookOverrides["post"]>;
+type LookBloomOptions = Exclude<Exclude<LookPostOverride, string>["bloom"], false | undefined>;
+
+/** The C-13 post preset ids (`AuraPostPresetId`); `satisfies` keeps the table exhaustive. */
+const LOOK_POST_PRESET_IDS = {
+  "product-studio": true,
+  "daylight-outdoor": true,
+  "neon-night": true,
+  space: true,
+  underwater: true,
+  "arena-fight": true,
+  "cinematic-film": true
+} as const satisfies Record<AuraPostPresetId, true>;
+
+function clampLookBloom(bloom: LookBloomOptions): LookBloomOptions {
+  return definedFields({
+    intensity: clampFinite(bloom.intensity, 0, 4),
+    threshold: clampFinite(bloom.threshold, 0, 64),
+    knee: clampFinite(bloom.knee, 0, 1),
+    scatter: clampFinite(bloom.scatter, 0, 1),
+    color: bloom.color,
+    clampLuminance: clampFinite(bloom.clampLuminance, 0, 64)
+  });
+}
+
+function clampLookPost(post: LookPostOverride): LookPostOverride {
+  if (typeof post === "string") {
+    if (!Object.prototype.hasOwnProperty.call(LOOK_POST_PRESET_IDS, post)) throw new Error(`LOOK_POST_UNKNOWN:${post}`);
+    return post;
+  }
+  return definedFields({ bloom: post.bloom === false ? false : post.bloom ? clampLookBloom(post.bloom) : undefined });
+}
+
 export function clampLookOverrides(overrides: AuraLookOverrides | undefined): AuraLookOverrides | undefined {
   if (overrides === undefined) return undefined;
-  const out: {
-    sun?: { azimuthDeg?: number; elevationDeg?: number };
-    exposureEv?: number;
-    fogDensityScale?: number;
-    accent?: AuraLookOverrides["accent"];
-    background?: AuraLookOverrides["background"];
-  } = {};
+  const out: { -readonly [K in keyof AuraLookOverrides]: AuraLookOverrides[K] } = {};
   if (overrides.sun) {
-    out.sun = {};
-    if (overrides.sun.azimuthDeg !== undefined) {
-      const az = Number.isFinite(overrides.sun.azimuthDeg) ? overrides.sun.azimuthDeg % 360 : 0;
-      out.sun.azimuthDeg = az < 0 ? az + 360 : az;
-    }
-    if (overrides.sun.elevationDeg !== undefined) out.sun.elevationDeg = clamp(overrides.sun.elevationDeg, -90, 90);
+    const sun: { azimuthDeg?: number; elevationDeg?: number } = {};
+    if (overrides.sun.azimuthDeg !== undefined) sun.azimuthDeg = wrapDegrees(overrides.sun.azimuthDeg);
+    if (overrides.sun.elevationDeg !== undefined) sun.elevationDeg = clamp(overrides.sun.elevationDeg, -90, 90);
+    out.sun = sun;
   }
   if (overrides.exposureEv !== undefined) out.exposureEv = clamp(overrides.exposureEv, -2, 2);
   if (overrides.fogDensityScale !== undefined) out.fogDensityScale = clamp(overrides.fogDensityScale, 0, 3);
   if (overrides.accent !== undefined) out.accent = overrides.accent;
   if (overrides.background !== undefined) out.background = overrides.background;
+  // GU47 E-A keys.
+  if (overrides.hdri !== undefined) {
+    if (typeof overrides.hdri === "string" && !(lookHdriIds as readonly string[]).includes(overrides.hdri)) {
+      throw new Error(`LOOK_HDRI_UNKNOWN:${overrides.hdri}`);
+    }
+    out.hdri = overrides.hdri;
+  }
+  const environmentIntensity = clampFinite(overrides.environmentIntensity, 0, 4);
+  if (environmentIntensity !== undefined) out.environmentIntensity = environmentIntensity;
+  if (overrides.environmentRotationDeg !== undefined && Number.isFinite(overrides.environmentRotationDeg)) {
+    out.environmentRotationDeg = wrapDegrees(overrides.environmentRotationDeg);
+  }
+  if (overrides.key) {
+    out.key = definedFields({ color: overrides.key.color, intensity: clampFinite(overrides.key.intensity, 0, 20), shadow: overrides.key.shadow });
+  }
+  if (overrides.rim !== undefined) {
+    const rim = overrides.rim;
+    out.rim = rim === false
+      ? false
+      : definedFields({
+        color: rim.color,
+        intensity: clampFinite(rim.intensity, 0, 20),
+        azimuthDeg: rim.azimuthDeg !== undefined && Number.isFinite(rim.azimuthDeg) ? wrapDegrees(rim.azimuthDeg) : undefined
+      });
+  }
+  if (overrides.fog) {
+    out.fog = definedFields({
+      color: overrides.fog.color,
+      near: clampFinite(overrides.fog.near, 0, 100000),
+      far: clampFinite(overrides.fog.far, 0, 100000),
+      height: overrides.fog.height
+    });
+  }
+  if (overrides.grade) {
+    out.grade = definedFields({
+      contrast: clampFinite(overrides.grade.contrast, 0, 3),
+      saturation: clampFinite(overrides.grade.saturation, 0, 3),
+      temperature: clampFinite(overrides.grade.temperature, -1, 1),
+      tint: clampFinite(overrides.grade.tint, -1, 1),
+      lut: overrides.grade.lut
+    });
+  }
+  if (overrides.post !== undefined) out.post = clampLookPost(overrides.post);
   return out;
 }
 
@@ -202,6 +297,22 @@ function buildLookHdriAssets() {
     autumnFieldPuresky1k: { type: "texture", format: "hdr", url: "/hdri/autumn_field_puresky_1k.hdr" },
     kloppenheim06Puresky1k: { type: "texture", format: "hdr", url: "/hdri/kloppenheim_06_puresky_1k.hdr" },
     studioSmall081k: { type: "texture", format: "hdr", url: "/hdri/studio_small_08_1k.hdr" },
+    // GU47 E-A catalogue: 1k copies of the corpus and library HDRIs
+    // (`aura3d assets optimize --hdri 1k`; licences in public/hdri/ATTRIBUTION.md).
+    belfastSunsetPuresky1k: { type: "texture", format: "hdr", url: "/hdri/belfast_sunset_puresky_1k.hdr" },
+    industrialSunsetPuresky1k: { type: "texture", format: "hdr", url: "/hdri/industrial_sunset_puresky_1k.hdr" },
+    spruitSunrise1k: { type: "texture", format: "hdr", url: "/hdri/spruit_sunrise_1k.hdr" },
+    veniceSunset1k: { type: "texture", format: "hdr", url: "/hdri/venice_sunset_1k.hdr" },
+    rooftopNight1k: { type: "texture", format: "hdr", url: "/hdri/rooftop_night_1k.hdr" },
+    cobblestoneStreetNight1k: { type: "texture", format: "hdr", url: "/hdri/cobblestone_street_night_1k.hdr" },
+    hangarInterior1k: { type: "texture", format: "hdr", url: "/hdri/hangar_interior_1k.hdr" },
+    warmBar1k: { type: "texture", format: "hdr", url: "/hdri/warm_bar_1k.hdr" },
+    museumOfHistory1k: { type: "texture", format: "hdr", url: "/hdri/museum_of_history_1k.hdr" },
+    kloppenheim021k: { type: "texture", format: "hdr", url: "/hdri/kloppenheim_02_1k.hdr" },
+    deepSpaceStarfield1k: { type: "texture", format: "hdr", url: "/hdri/deep_space_starfield_1k.hdr" },
+    outdoorMidday1k: { type: "texture", format: "hdr", url: "/hdri/outdoor-midday_1k.hdr" },
+    sunsetDramatic1k: { type: "texture", format: "hdr", url: "/hdri/sunset-dramatic_1k.hdr" },
+    indoorWorkshop1k: { type: "texture", format: "hdr", url: "/hdri/indoor-workshop_1k.hdr" },
     // A3D_QR_LOOKS only: Poly Haven qwantani_night_puresky (CC0), the
     // aura.library.json `night-2k` entry.
     night2k: { type: "texture", format: "hdr", url: "/hdri/night-2k.hdr" }
@@ -215,8 +326,59 @@ const HDRI_ASSET = {
   get autumn_field_puresky_1k() { return lookHdriAssets().autumnFieldPuresky1k; },
   get kloppenheim_06_puresky_1k() { return lookHdriAssets().kloppenheim06Puresky1k; },
   get studio_small_08_1k() { return lookHdriAssets().studioSmall081k; },
+  get belfast_sunset_puresky_1k() { return lookHdriAssets().belfastSunsetPuresky1k; },
+  get industrial_sunset_puresky_1k() { return lookHdriAssets().industrialSunsetPuresky1k; },
+  get spruit_sunrise_1k() { return lookHdriAssets().spruitSunrise1k; },
+  get venice_sunset_1k() { return lookHdriAssets().veniceSunset1k; },
+  get rooftop_night_1k() { return lookHdriAssets().rooftopNight1k; },
+  get cobblestone_street_night_1k() { return lookHdriAssets().cobblestoneStreetNight1k; },
+  get hangar_interior_1k() { return lookHdriAssets().hangarInterior1k; },
+  get warm_bar_1k() { return lookHdriAssets().warmBar1k; },
+  get museum_of_history_1k() { return lookHdriAssets().museumOfHistory1k; },
+  get kloppenheim_02_1k() { return lookHdriAssets().kloppenheim021k; },
+  get deep_space_starfield_1k() { return lookHdriAssets().deepSpaceStarfield1k; },
+  get "outdoor-midday_1k"() { return lookHdriAssets().outdoorMidday1k; },
+  get "sunset-dramatic_1k"() { return lookHdriAssets().sunsetDramatic1k; },
+  get "indoor-workshop_1k"() { return lookHdriAssets().indoorWorkshop1k; },
   get "night-2k"() { return lookHdriAssets().night2k; }
 } as const;
+
+/**
+ * GU47 E-A: every `AuraHdriId`, in catalogue order. Each ships as `public/hdri/<id>_1k.hdr` (served at
+ * `/hdri/<id>_1k.hdr`); the `satisfies` table keeps this list and the union in step.
+ */
+const LOOK_HDRI_ID_TABLE = {
+  autumn_field_puresky: true,
+  kloppenheim_06_puresky: true,
+  studio_small_08: true,
+  belfast_sunset_puresky: true,
+  industrial_sunset_puresky: true,
+  spruit_sunrise: true,
+  venice_sunset: true,
+  rooftop_night: true,
+  cobblestone_street_night: true,
+  hangar_interior: true,
+  warm_bar: true,
+  museum_of_history: true,
+  kloppenheim_02: true,
+  deep_space_starfield: true,
+  "outdoor-midday": true,
+  "sunset-dramatic": true,
+  "indoor-workshop": true
+} as const satisfies Record<AuraHdriId, true>;
+export const lookHdriIds = Object.keys(LOOK_HDRI_ID_TABLE) as readonly AuraHdriId[];
+export type { AuraHdriId } from "../../contracts/looks.js";
+
+/** The served URL of a catalogue HDRI (`/hdri/<id>_1k.hdr`). */
+export function lookHdriUrl(id: AuraHdriId): string {
+  return `/hdri/${id}_1k.hdr`;
+}
+
+/** The look's HDRI texture for an override: a catalogue id resolves to its typed 1k ref; a ref passes through. */
+function resolveLookHdri(hdri: AuraHdriId | AuraAssetRef<"texture">): { readonly texture: AuraAssetRef<"texture">; readonly label: string } {
+  if (typeof hdri === "string") return { texture: HDRI_ASSET[`${hdri}_1k`], label: `${hdri}_1k` };
+  return { texture: hdri, label: hdri.id };
+}
 
 /**
  * A3D_QR_LOOKS (flag on) upgrades to the v0 expansion. Flag off keeps the
