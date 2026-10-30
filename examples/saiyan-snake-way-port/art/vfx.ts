@@ -19,10 +19,15 @@ export type SerpentVfxKind =
   | "serpent-surge"
   | "serpent-hit"
   | "serpent-soul"
-  | "serpent-lightning";
+  | "serpent-lightning"
+  | "serpent-wisp"
+  | "serpent-petals"
+  | "serpent-embers"
+  | "serpent-rain";
 
 export const SERPENT_VFX_KINDS: readonly SerpentVfxKind[] = [
-  "serpent-orb", "serpent-power", "serpent-pearl-chips", "serpent-cloud-puff", "serpent-surge", "serpent-hit", "serpent-soul", "serpent-lightning"
+  "serpent-orb", "serpent-power", "serpent-pearl-chips", "serpent-cloud-puff", "serpent-surge", "serpent-hit", "serpent-soul", "serpent-lightning",
+  "serpent-wisp", "serpent-petals", "serpent-embers", "serpent-rain"
 ];
 
 /** Pack colours (sRGB hex). */
@@ -33,7 +38,11 @@ export const SERPENT_VFX_COLORS = {
   coral: SERPENT_PALETTE.coral,
   whiteGold: "#fff2c4",
   soul: "#bfe8ff",
-  storm: "#dce4ff"
+  storm: "#dce4ff",
+  wisp: "#fff4ec",
+  petal: "#ffb4c0",
+  ember: "#ffa040",
+  rain: "#c8d4f0"
 } as const;
 
 /** Live-particle ceiling for a dense moment on High (art direction tiers.high.particles). */
@@ -42,6 +51,18 @@ export const SERPENT_VFX_LIVE_CAP = 96;
 export interface SerpentVfxOptions {
   readonly reducedMotion?: boolean;
   readonly reducedFlash?: boolean;
+  /** SSR-13: world direction the rain falls along (default straight down); re-registered as the gust moves. */
+  readonly rainDirection?: readonly [number, number, number];
+}
+
+/** SSR-13: the rain burst (one of 8 per 0.08 s around the camera; fast thin streaks along `direction`). */
+export function serpentRainPreset(direction: readonly [number, number, number] = [0, -1, 0], reducedMotion = false): AuraVfxEffectSpec {
+  return {
+    name: "serpent-rain",
+    layers: [
+      { type: "emitter", preset: "rain", count: reducedMotion ? 3 : 6, speed: [20, 26], life: [0.45, 0.6], size: [0.02, 0.035], color: SERPENT_VFX_COLORS.rain, intensity: 1.2, sprite: "rain-streak", additive: true, direction: [...direction], spread: 0.06, maxScreen: 0.08 }
+    ]
+  };
 }
 
 /** The pack, keyed by the registered kind (each spec's `name` equals its key). */
@@ -103,7 +124,26 @@ export function serpentVfxPresets(options: SerpentVfxOptions = {}): Readonly<Rec
         { type: "emitter", preset: "spark-electric", count: n(6), speed: [0, 1], life: [0.08, 0.16], size: [2.5, 4], color: c.storm, intensity: 4, sprite: "electric", additive: true, maxScreen: 0.3 },
         ...light(8, 400, 0.12, c.storm)
       ]
-    }
+    },
+    "serpent-wisp": {
+      name: "serpent-wisp",
+      layers: [
+        { type: "emitter", preset: "dust", count: n(2), speed: [0.2, 0.6], life: [0.7, 1.1], size: [0.9, 1.6], color: c.wisp, intensity: 0.8, sprite: "smoke-b", additive: false, drag: 1.5, maxScreen: 0.1 }
+      ]
+    },
+    "serpent-petals": {
+      name: "serpent-petals",
+      layers: [
+        { type: "emitter", preset: "dust", count: n(3), speed: [0.4, 1.2], life: [2.4, 3.6], gravity: -0.6, size: [0.08, 0.14], color: c.petal, sprite: "dust-mote", additive: false, drag: 0.8, maxScreen: 0.02 }
+      ]
+    },
+    "serpent-embers": {
+      name: "serpent-embers",
+      layers: [
+        { type: "emitter", preset: "spark-fire", count: n(3), speed: [0.6, 1.6], life: [1.4, 2.2], gravity: 1.2, size: [0.04, 0.08], color: c.ember, intensity: 2.2, sprite: "soft-dot", additive: true, direction: [0, 1, 0], spread: 0.5, maxScreen: 0.02 }
+      ]
+    },
+    "serpent-rain": serpentRainPreset(options.rainDirection, options.reducedMotion)
   };
 }
 

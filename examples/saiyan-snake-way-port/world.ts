@@ -17,7 +17,8 @@ import type { RunnerStyle } from "./styles";
 import { ENTITY_MODELS, ISLAND_COUNT, LANTERN_COUNT, MESHY } from "./models";
 import { STAGE_LOOK, lookAt, lookDistance, lookParams, type LookParams, type ResolvedLook } from "./art/colorScript";
 import { createLookDriver, type LookAppLike, type LookNodeHandle } from "./art/lookRuntime";
-import { SERPENT_RUNNER_TRAIL, registerSerpentVfx } from "./art/vfx";
+import { SERPENT_RUNNER_TRAIL, registerSerpentVfx, serpentRainPreset } from "./art/vfx";
+import { createAmbientFx } from "./art/ambientFx";
 import { createVfxEventTracker } from "./art/vfxEvents";
 import { createCinePostDriver, type CinePostState } from "./art/cinePost";
 import { createShotDirector, type Shot } from "./art/shots";
@@ -185,6 +186,8 @@ export interface WorldRuntime {
   readonly cinePost: CinePostState | null;
   /** GU47 SSR-15: the camera shot the last frame drew (null under `?look=original`). */
   readonly shot: Shot | null;
+  /** GU47 SSR-13: lightning strikes so far (QA hook). */
+  readonly strikes: number;
   /** GU47 SSR-12: runtime effect bursts fired so far (QA hook). */
   readonly vfxFired: number;
 }
@@ -346,7 +349,8 @@ export function buildWorld(options: WorldOptions = {}): World {
   // GU47 SSR-12: under the colour script the engine's runtime effects (art/vfx.ts) replace the spark and burst pools
   if (!script) for (let i = 0; i < SPARKS; i++) builder.add(primitives.sphere({ name: `spark-${i}`, size: 0.3, material: material.custom(flatSpec(hexLinear(PALETTE.auraLit), 0.85)) }).position(0, -500, 0).runtime({ id: `spark-${i}` }));
   if (!script) for (let i = 0; i < BURSTS; i++) builder.add(primitives.sphere({ name: `burst-${i}`, size: 0.34, material: material.custom(flatSpec(hexLinear(0xfff0b0), 0.9)) }).position(0, -500, 0).runtime({ id: `burst-${i}` }));
-  for (let i = 0; i < STREAKS; i++) builder.add(primitives.box({ name: `streak-${i}`, size: [0.04, 0.04, 6], material: material.custom(flatSpec(hexLinear(0xfff0f6), 0.2)) }).position(0, -500, 0).runtime({ id: `streak-${i}` }));
+  // GU47 SSR-13: under the colour script runtime cloud wisps (art/ambientFx.ts) replace the box streaks
+  if (!script) for (let i = 0; i < STREAKS; i++) builder.add(primitives.box({ name: `streak-${i}`, size: [0.04, 0.04, 6], material: material.custom(flatSpec(hexLinear(0xfff0f6), 0.2)) }).position(0, -500, 0).runtime({ id: `streak-${i}` }));
 
   /* GU47 SSR-18/SSR-09: orbs, souls and power-ups as instanced glow nodes (HDR cores, fresnel shells) */
   const instancedMaterials: Readonly<Record<string, CustomSpec>> = {
@@ -458,6 +462,10 @@ export function buildWorld(options: WorldOptions = {}): World {
       const registerVfx = (): void => { try { registerSerpentVfx(fx, { reducedMotion, reducedFlash: reducedFlash || reducedMotion }); } catch (error) { console.warn("serpentine-sky-run: VFX presets unavailable", error); } };
       registerVfx();
       let trail: { stop(o?: { immediate?: boolean }): void } | null = null;
+      /* GU47 SSR-13: wisps, petals, embers, rain and lightning (script mode only) */
+      const ambient = script ? createAmbientFx() : null;
+      let rainKey = "";
+      let exposureBoost = 0;
       let vfxFired = 0;
       /* GU47 SSR-11: verge buffers */
       const flagBuf = script ? { data: new Float32Array(VERGE_POSTS * FLAGS_PER_SPAN * 16), rgba: new Float32Array(VERGE_POSTS * FLAGS_PER_SPAN * 4) } : null;
@@ -630,7 +638,24 @@ export function buildWorld(options: WorldOptions = {}): World {
 
         /* speed streaks fixed to the road so they sweep past the camera */
         const fast = surge > 0.3 || flying;
-        for (let i = 0; i < STREAKS; i++) {
+        if (ambient && fx) {
+          const air = ambient.step({ S, look: lookShown ?? { stageIndex: 0, storm: 0 }, time, dt, fast, reducedMotion, reducedFlash });
+          exposureBoost = air.exposureBoost;
+          if (air.raining) {
+            // rain falls along the road's down axis, slanted across the road by the sim's gust; re-registered on change
+            const d: V3 = [-frame.U[0] + frame.R[0] * air.rainSlant, -frame.U[1] + frame.R[1] * air.rainSlant, -frame.U[2] + frame.R[2] * air.rainSlant];
+            const dl = Math.hypot(d[0], d[1], d[2]) || 1;
+            const q: [number, number, number] = [Math.round((d[0] / dl) * 10) / 10, Math.round((d[1] / dl) * 10) / 10, Math.round((d[2] / dl) * 10) / 10];
+            const key = q.join(",");
+            if (key !== rainKey) { try { fx.registerPreset("serpent-rain", serpentRainPreset(q, reducedMotion)); } catch { /* registry missing */ } rainKey = key; }
+          }
+          for (const spawn of air.spawns) {
+            const sf = frameAt(samples, Math.min(Math.max(S.s + spawn.rel, -40), ROAD_LENGTH));
+            const at = onRoad(sf, S.laneX * (spawn.kind === "serpent-rain" ? 1 : 0) + spawn.lateral, spawn.up);
+            try { fx.burst(spawn.kind, at); vfxFired++; } catch { /* preset missing on this build: skip */ }
+          }
+        }
+        for (let i = 0; i < (script ? 0 : STREAKS); i++) {
           if (!fast) { hide(`streak-${i}`); continue; }
           const h = show(`streak-${i}`, true);
           const rel = mod(i * 37.7 - S.s, 90) - 12;
@@ -775,7 +800,7 @@ export function buildWorld(options: WorldOptions = {}): World {
         /* GU47 SSR-01: stage colour script, read-only from the run's distance */
         if (lookDriver) {
           lookShown = lookAt(lookDistance(S.s, S.leg), lookConfig);
-          lookDriver.apply(lookShown, { forward: rig.f, time, eye, reducedMotion });
+          lookDriver.apply(exposureBoost ? { ...lookShown, exposure: lookShown.exposure + exposureBoost } : lookShown, { forward: rig.f, time, eye, reducedMotion });
         }
         cinePost?.step({ S, dt, reducedMotion, reducedFlash });
       };
@@ -783,7 +808,7 @@ export function buildWorld(options: WorldOptions = {}): World {
       return {
         update,
         resetCamera() { rig = null; prevS = null; },
-        setReducedMotion(on: boolean) { const changed = reducedMotion !== on; reducedMotion = on; if (changed && fx) registerVfx(); },
+        setReducedMotion(on: boolean) { const changed = reducedMotion !== on; reducedMotion = on; if (changed && fx) { registerVfx(); rainKey = ""; } },
         get visibilityWrites() { return visibilityWrites; },
         setRunnerStyle(style: RunnerStyle) {
           const colorOf: Record<HeroColor, number> = { gi: style.gi, giDark: style.giDark, skin: style.skin, hair: style.hair, teal: style.belt, boot: style.boot, sash: style.sash };
@@ -804,6 +829,7 @@ export function buildWorld(options: WorldOptions = {}): World {
         get nodeCount() { return handles.size; },
         get entityNodes() { return alive; },
         get vfxFired() { return vfxFired; },
+        get strikes() { return ambient?.strikes ?? 0; },
         get cinePost() { return cinePost?.state ?? null; },
         get shot() { return lastShot; },
         get look(): WorldLookState {

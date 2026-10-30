@@ -61,6 +61,10 @@ export default defineArtDirection({
     { event: "stumble", kind: "serpent-hit" },
     { event: "soul-pass", kind: "serpent-soul" },
     { event: "storm-strike", kind: "serpent-lightning" },
+    { event: "speed-wisps", kind: "serpent-wisp" },
+    { event: "petal-drift", kind: "serpent-petals" },
+    { event: "ember-drift", kind: "serpent-embers" },
+    { event: "storm-rain", kind: "serpent-rain" },
     { event: "surge-and-flight", kind: "trail" }
   ],
   audio: [
