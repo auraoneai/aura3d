@@ -292,7 +292,10 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
 
   /* HP-19: no deprecated `radius`; threshold at HDR white and intensity under the noise-risk line */
   b.add(effects.bloom({ name: "bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold }));
-  b.add(effects.colorGrade({ name: "grade", exposure: look.grade.exposure, contrast: look.grade.contrast, saturation: look.grade.saturation }));
+  /* IC-09: the twilight row adds the E-C split tone; the original row authors exactly today's three fields */
+  const g = look.grade;
+  const split = g.temperature !== 0 || g.tint !== 0 || g.shadows !== 1 || g.highlights !== 1;
+  b.add(effects.colorGrade({ name: "grade", exposure: g.exposure, contrast: g.contrast, saturation: g.saturation, ...(split ? { temperature: g.temperature, tint: g.tint, shadows: [...(typeof g.shadows === "number" ? [g.shadows, g.shadows, g.shadows] : g.shadows)] as [number, number, number], highlights: [...(typeof g.highlights === "number" ? [g.highlights, g.highlights, g.highlights] : g.highlights)] as [number, number, number] } : {}) }));
   /* IC-08 / IC-07: the twilight post stack; Low drops AO, motion blur, god rays, grain and CA (lowTier); original mounts none */
   if (look.post.vignette !== null) b.add(effects.vignette({ name: "vignette", intensity: look.post.vignette }));
   else b.add(effects.vignette({ name: "vignette" }));

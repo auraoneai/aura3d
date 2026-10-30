@@ -139,4 +139,14 @@ describe("heatsink-port spores (IC-20)", () => {
     expect(nodes("").some((n) => n.name === "spores")).toBe(true);
     expect(nodes("?look=original").some((n) => n.name === "spores")).toBe(false);
   });
+
+  it("IC-09 split tone: twilight grade carries teal shadows and amber highlights; original authors only today's fields", () => {
+    const grade = (q: string) => nodes(q).find((n) => n.kind === "effect" && n.effect === "color-grade") as unknown as Record<string, unknown>;
+    const tw = grade("");
+    expect((tw.shadows as number[])[2]).toBeGreaterThan((tw.shadows as number[])[0]!);
+    expect((tw.highlights as number[])[0]).toBeGreaterThan((tw.highlights as number[])[2]!);
+    const og = grade("?look=original");
+    expect(og.shadows).toBeUndefined();
+    expect(og.temperature).toBeUndefined();
+  });
 });

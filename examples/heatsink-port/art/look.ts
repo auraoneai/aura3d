@@ -62,7 +62,8 @@ export interface HeatsinkLookRow {
   /** obsidian-glass causeway (IC-10): 0 = today's asphalt */
   readonly causeway: { readonly glass: number; readonly veinHdr: number; readonly seams: number };
   readonly bloom: { readonly intensity: number; readonly threshold: number };
-  readonly grade: { readonly exposure: number; readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly tint: number; readonly shadows: number; readonly highlights: number };
+  /** IC-09: `shadows` / `highlights` are the E-C grade multipliers (1 = neutral; an rgb triple split-tones) */
+  readonly grade: { readonly exposure: number; readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly tint: number; readonly shadows: number | Rgb; readonly highlights: number | Rgb };
   /** IC-08 post stack; `null` fields are not mounted (today's look mounts none of them) */
   readonly post: {
     readonly ao: boolean;
@@ -108,7 +109,8 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     fog: { color: [0.06, 0.19, 0.21], districtMix: 0.3, districtMetres: 120 },
     causeway: { glass: 1, veinHdr: 1.7, seams: 1 },
     bloom: { intensity: 0.6, threshold: 1.0 },
-    grade: { exposure: 1.05, contrast: 1.08, saturation: 1.08, temperature: 0, tint: 0, shadows: 1, highlights: 1 },
+    /* IC-09 split tone: teal shadows, amber highlights, a touch cooler overall so the warm band stays the only warm field */
+    grade: { exposure: 1.05, contrast: 1.08, saturation: 1.08, temperature: -0.04, tint: 0.02, shadows: [0.92, 1.03, 1.06], highlights: [1.06, 1.0, 0.9] },
     post: { ao: true, motionBlur: 0.35, chromaticAberration: 0.0012, grain: 0.025, vignette: 0.28, godRays: 0.35 },
     wake: { enabled: true, seconds: 1.2, segments: 60, cruise: linearOf(PALETTE.ionCyan), cruiseTail: linearOf(PALETTE.violet), afterburner: linearOf(PALETTE.amber), width: 0.9 },
     camera: { rollDeg: 6, countdownSweep: true },
