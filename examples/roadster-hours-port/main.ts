@@ -11,7 +11,7 @@ import { DEFAULT_PARAMS, autopilot } from "./autopilot";
 import { RoadsterSound, type AudioFrame, type GameSound } from "./audio";
 import { LEVELS } from "./data";
 import { ACTIONS, ACTION_LABELS, InputState, TOUCH_BUTTONS, keyLabel, loadBindings, promptText, rebind, runInput, saveBindings, touchCode, type Action } from "./input";
-import { bestLine, coachLine, createHudWriter, loadResults, nitroLabel, saveResults } from "./hud";
+import { bestLine, coachLine, createHudWriter, loadResults, nitroLabel, saveResults, speedoArc } from "./hud";
 import { SIM_STEP, createRun, defaultCareer, stepRun, type Career, type MedalResult, type Run, type RunEvent, type RunInput } from "./sim";
 import { createRoadsterPresenter, viewOf } from "./presentation";
 import { loadMeshy } from "./meshy";
@@ -217,6 +217,7 @@ async function nextRoute(): Promise<void> {
 const fmt = (t: number): string => `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, "0")}`;
 const hud = createHudWriter((id) => $(id));
 let nitroWindowShown = false;
+let speedoNitroShown = false;
 function buildMenu(): void {
   const level = LEVELS[levelIndex]!;
   $("level-name").textContent = level.name;
@@ -296,6 +297,9 @@ function panels(): void {
 function updateHud(): void {
   hud.text("timer", fmt(run.time));
   hud.text("speed", String(Math.round(run.v * 3.6)));
+  const arc = speedoArc(run.v * 3.6, run.boosting || run.nitro > 0);
+  hud.style("speedo-fill", "stroke-dasharray", arc.dash);
+  if (arc.nitro !== speedoNitroShown) { speedoNitroShown = arc.nitro; $("speedo").classList.toggle("nitro", arc.nitro); }
   hud.text("score", Math.round(run.score).toLocaleString());
   hud.text("gate", `Relay ${Math.min(run.nextGate + 1, run.level.gates.length)} / ${run.level.gates.length}`);
   hud.text("act", run.act);
