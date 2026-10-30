@@ -29,7 +29,10 @@
     "RH47-06 Halo city carpet replaces the water plane": 0,
     "RH47-07 one road shaderPass per route (fullscreen, not a scene draw)": 0,
     "RH47-12 crosswind spray (one points draw)": 1,
-    "RH47-13 preset pack (runtime VFX batches, about 2-4 while bursts live)": 4
+    "RH47-13 preset pack (runtime VFX batches, about 2-4 while bursts live)": 4,
+    "RH47-06 shoreline foam (same flank draw, new uniforms)": 0,
+    "RH47-10 detail maps on road and terrain (same draws; 3 textures, 584 KB)": 0,
+    "RH47-17 SDF relay sign (only the next gate's is visible)": 1
   },
   "expectedPrograms": "+4 custom programs (blob, spray, city on Halo only, the road pass); phase 2 measures diagnostics().programs against the 12 cap"
 }
