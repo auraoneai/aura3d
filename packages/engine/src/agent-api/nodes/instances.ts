@@ -214,6 +214,10 @@ export const instances = lazyNamespace(() => ({
    * P2 instanced GLB models (muse3jsparity-PRD): one draw class for repeated
    * static models. Skinned actors fall back with a D1 warning at mount (E1
    * owns rigs); explicitly unaware materials warn at build.
+   *
+   * Skinned GLBs do not instance (each draws once). For skinned crowds use the
+   * crowd kit instead: `loadCrowdPoses(asset, ...)` + `createCrowd(...)`, one
+   * draw per baked pose (GU47 E-H). No option here can carry the async bake.
    */
   model: instancedModel
 } as const));

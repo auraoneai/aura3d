@@ -244,7 +244,11 @@ export function glbResourceCacheKey(options: {
 const identityTokens = new WeakMap<object, number>();
 let nextIdentityToken = 1;
 
-function valueToken(value: unknown): string {
+/**
+ * Cache-key token for a decode option: primitives and plain data by value (so a fresh `decoders: {}` per mount still
+ * matches), anything else (decoder instances, functions) by identity. Shared with `actor/ModelTextureShare.ts`.
+ */
+export function valueToken(value: unknown): string {
   if (value === undefined || value === null) return "-";
   if (typeof value !== "object" && typeof value !== "function") return String(value);
   if (typeof value === "object" && isPlainData(value)) return JSON.stringify(sortKeys(value));

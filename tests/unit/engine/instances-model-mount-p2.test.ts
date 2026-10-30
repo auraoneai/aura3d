@@ -98,6 +98,8 @@ describe("P2 instances.model mount proof", () => {
     expect(items).toHaveLength(1);
     expect(items[0]!.instanceTransforms).toBeUndefined();
     expect([...warnings].some((w) => w.includes("skinned-palette-overflow-cpu-fallback"))).toBe(true);
+    // GU47 eint EH-4: the warning points at the crowd kit.
+    expect([...warnings].some((w) => w.includes("skinned-palette-overflow-cpu-fallback") && w.includes("loadCrowdPoses + createCrowd"))).toBe(true);
   });
 
   it("the build-time D1 fallback diagnostic is surfaced in runtimeWarnings", () => {

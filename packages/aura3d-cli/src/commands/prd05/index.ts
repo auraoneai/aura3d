@@ -121,7 +121,7 @@ registerCliCommand({
   name: "assets optimize",
   owner: "prd05",
   summary: "Optimize assets through the §6.3 step pipeline (tools/asset-optimize).",
-  usage: "aura3d assets optimize --file in.glb --out out.glb [--role hero|vehicle|character|prop|background] [--max-verts N] [--tex N] [--no-simplify] [--meshopt] [--json] | aura3d assets optimize <id...> [--profile <id>] [--geometry meshopt|draco|none] [--dry-run] [--allow-local-small] [--ktx <path>] [--report <file>] [--out-dir <dir>] [--no-manifest]",
+  usage: "aura3d assets optimize --file in.glb --out out.glb [--role hero|vehicle|character|prop|background] [--max-verts N] [--tex N] [--no-simplify] [--meshopt] [--json] | aura3d assets optimize --file in.hdr --out out_1k.hdr --hdri 1k|2k [--rgb9e5-cube] [--json] | aura3d assets optimize <id...> [--profile <id>] [--geometry meshopt|draco|none] [--dry-run] [--allow-local-small] [--ktx <path>] [--report <file>] [--out-dir <dir>] [--no-manifest]",
   run: async (argv, io) => {
     // Direct-file mode: `assets optimize --file in.glb --out out.glb [--role ...]` (no manifest, no admission pipeline).
     if (readFlag(argv, "--file") !== undefined) return optimizeFileVerb(argv, io);

@@ -49,7 +49,8 @@ export type AuraVec3 = readonly [number, number, number];
 
 export type AuraColor = `#${string}` | string;
 
-export type AuraAssetType = "model" | "texture" | "environment" | "audio" | "navigation";
+/** GU47 E-C: `"lut"` = a `.cube` colour LUT (`aura3d assets add <file.cube> --type lut`, `colorGrade({ lut })`). */
+export type AuraAssetType = "model" | "texture" | "environment" | "audio" | "navigation" | "lut";
 
 export type AuraModelFormat = "glb" | "gltf";
 

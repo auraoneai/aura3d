@@ -2,7 +2,7 @@
 
 import type { AuraLabelNode, AuraSceneSnapshot, AuraFrameInfo, AuraRuntimeNodeRegistry, AuraCreateAppOptions, WebGLRenderController } from "../nodes/types.js";
 import { createParentFit } from "./parentFit.js";
-import { bindLazyFrameDiagnostics, rethrowShaderFailure, type MutableDiagnostics } from "../diagnostics.js";
+import { bindLazyFrameDiagnostics, deviceFrameCounters, rethrowShaderFailure, type MutableDiagnostics } from "../diagnostics.js";
 import { AuraRuntimeError } from "./errors.js";
 import { DeferredFrameResources, getRootPerformanceBaseSize, getRootPerformanceQuality, hasRootRenderableContent, resolveRootRenderTime, setRootPerformanceQuality } from "../RootRuntimeSupport.js";
 import { animation } from "../nodes/animation.js";
@@ -155,7 +155,9 @@ export async function startProductionRender(
   const lazyFrameDiagnostics = bindLazyFrameDiagnostics(diagnosticsState, {
     renderer: () => renderer.diagnostics,
     evidence: () => collectAuraSceneEvidence(snapshot),
-    busy: () => pendingFrames > 0
+    busy: () => pendingFrames > 0,
+    // GU47 E-D (ED-7): the lane Renderer's device counters (the same triangle counter as `app.info.render.triangles`).
+    deviceCounters: () => deviceFrameCounters(renderer.auraRenderer)
   });
   const baseBackingSize = getRootPerformanceBaseSize(canvas);
   let syncedWidth = canvas.width;
