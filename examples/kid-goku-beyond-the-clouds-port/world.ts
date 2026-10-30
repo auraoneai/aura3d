@@ -14,6 +14,7 @@ import { Fx } from "./fx";
 import type { Game } from "./game";
 import { ACTIVE, ballSpec, glowSpec, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, warnSpec } from "./materials";
 import { ACTIVE_LOOK, sunPosition, type CumulusLookRow } from "./art/look";
+import { launchFovKick, titleFlyover, traumaFor } from "./art/camera";
 import { Mesh, box, cylinder, hex } from "./mesh";
 import { LEG_CLIPS } from "./legcycle";
 import { CLIP_FOOT_SPEED, MAX_RATE, touchdowns } from "./locomotion";
@@ -42,7 +43,7 @@ export interface WorldStats { drawNodes: number; chunks: number; triangles: numb
 /** What the legs are doing this frame: the clip, its phase in cycles, cadence, stride gain and the share of ground speed the planted feet still slide. */
 export interface GaitReport { clip: string; phase: number; groundSpeed: number; rate: number; /** Share of the legs driven by the planted-foot IK gait (0 = clip only, 1 = fully planted). */ weight: number; /** Steps per second. */ cadence: number; /** Seconds a foot stays planted. */ stance: number; /** Forward lean of the hips (rad). */ lean: number; overspeed: boolean }
 /** What the camera frames this frame: eye, target, vertical fov (deg) and the subjects' world positions (QA framing checks). */
-export interface WorldView { eye: V3; target: V3; fov: number; aspect: number; hero: V3; log: V3 | null; hut: V3 | null; culled: number }
+export interface WorldView { eye: V3; target: V3; fov: number; aspect: number; hero: V3; log: V3 | null; hut: V3 | null; culled: number; /** Letterbox bar share 0..1 (CD-18 title flyover and finale). */ bars: number; /** Seconds into the title (the flyover runs for the first 7). */ titleT: number }
 export interface WorldRuntime {
   update(game: Game, dt: number, aspect: number, events: readonly string[]): void; cutCamera(): void;
   readonly stats: WorldStats; readonly gait: GaitReport; readonly camera: { eye: V3; target: V3 }; readonly view: WorldView;
@@ -281,7 +282,10 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
   let animClip = "", animT = 0, wispT = 0, clock = 0;
   let rexS = 0, rexInit = false;
   const camPos: { eye: V3; target: V3 } = { eye: [0, 0, 0], target: [0, 0, 0] };
-  const view: WorldView = { eye: [0, 0, 0], target: [0, 0, 0], fov: 55, aspect: 1, hero: [0, 0, 0], log: null, hut: null, culled: 0 };
+  const view: WorldView = { eye: [0, 0, 0], target: [0, 0, 0], fov: 55, aspect: 1, hero: [0, 0, 0], log: null, hut: null, culled: 0, bars: 0, titleT: 0 };
+  /* CD-18 (storm-washed row): title flyover clock, trauma from impact rises, launch FOV kick */
+  const cinematic = ACTIVE_LOOK.id === "storm-washed";
+  let titleT = 0, lastPhase = "", lastImpact = 0, sinceLaunch = Infinity;
   const cullShown = new Map<string, boolean>();
   let footsteps = 0;
   /* finale camera: the hut and its mound are solid, and the eye stays above the ground around the home frame */
@@ -371,6 +375,9 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
       const s = g.state, f = frameAt(s.s, s.lane), phase = g.phase;
       const n = s.glider, riding = n.active || n.call > 0;
       emitEvents(g, events);
+      if (phase !== lastPhase) { if (phase === "menu") titleT = 0; lastPhase = phase; }
+      else if (phase === "menu") titleT += dt;
+      if (events.includes("launch") || events.includes("power-launch")) sinceLaunch = 0; else sinceLaunch += dt;
 
       /* ---- hero pose ---- */
       const logLift = ch.log ? 1.9 * (1 - smooth(ch.log - 0.3, ch.log, s.s)) : 0;
@@ -609,7 +616,13 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
       let wantEye: V3, wantLook: V3, fov = aspect < 1 ? 62 : 55 + s.speed * 0.2;
       let cut = false;
       const hp = pos;
-      if (phase === "menu") {
+      const fly = phase === "menu" && cinematic ? titleFlyover(titleT, pos, ACTIVE_LOOK.sky.sunDir, g.reducedMotion) : null;
+      view.bars = fly ? fly.bars : phase === "finale" ? 1 : 0;
+      view.titleT = titleT;
+      if (fly) {
+        wantEye = [fly.eye[0], fly.eye[1], fly.eye[2]]; wantLook = [fly.look[0], fly.look[1], fly.look[2]];
+        fov = fly.fov; cut = !eye || titleT === 0;
+      } else if (phase === "menu") {
         const a = clock * 0.18 + 0.2;
         wantEye = at(s.s + 7.2 * Math.cos(a) + 2.5, 5.0 * Math.sin(a) - 3.6, s.jump + logLift + 2.4);
         wantLook = at(s.s + 0.2, s.lane, s.jump + logLift + 1.2);
@@ -647,7 +660,14 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         if (g.chase) fov += 3;
         fov += g.danger * 3;
       }
-      const shake = g.reducedMotion ? 0 : g.impact * 0.28;
+      // CD-18: the storm row feeds impacts to the controller's trauma layer and kicks the FOV on a launch; the original keeps its sine shake
+      const shake = g.reducedMotion || cinematic ? 0 : g.impact * 0.28;
+      if (cinematic) {
+        const trauma = traumaFor(lastImpact, g.impact, g.reducedMotion);
+        if (trauma > 0) cam.shake?.add(trauma);
+        cam.fovKick?.set("launch", launchFovKick(sinceLaunch, g.reducedMotion), sinceLaunch < 0.4 ? 0.06 : 0.3);
+      }
+      lastImpact = g.impact;
       const pose = chase.step({
         wantEye, wantLook, fovTarget: fov, cut,
         lag: { eye: phase === "playing" ? 14 : 5, look: phase === "playing" ? 14 : 5 },

@@ -161,7 +161,7 @@ export class Ui {
     menu.innerHTML = `<div class="title"><h1><span>Sky ridge run</span>Cumulus Dash</h1><p>Seven sky pearls. One long run home along the ridge.</p></div>
       <div class="menu"><button class="primary" data-a="play">Play  ▸</button><div class="row"><button class="ghost" data-a="sound">Sound on</button><button class="ghost" data-a="motion">Motion: full</button><button class="ghost" data-a="difficulty">Normal</button><button class="ghost" data-a="how">How to play</button></div><div class="best" data-q="best"></div></div>
       <div class="keys"><span><kbd>←</kbd><kbd>→</kbd>steer</span><span><kbd>Space</kbd><kbd>W</kbd>jump</span><span><kbd>E</kbd><kbd>K</kbd>staff</span><span><kbd>Q</kbd>sky cloud</span><span><kbd>↓</kbd>brake</span><span><kbd>P</kbd>pause</span><span><kbd>M</kbd>sound</span></div>
-      <div class="credit">Built with Aura3D</div>`;
+      <div class="credit">Built with Aura3D</div><div class="bars t" data-q="mt"></div><div class="bars b" data-q="mb"></div>`;
     const hud = el("div", "scr");
     hud.innerHTML = `<div class="danger" data-q="danger"></div><div class="flash" data-q="flash"></div>
       <div class="hud-top"><div class="left"><button class="pausebtn" data-a="pause" aria-label="Pause">❚❚</button><div class="stack"><div class="hearts" data-q="hearts"></div><div class="orbs" data-q="orbs"></div></div></div>
@@ -235,6 +235,12 @@ export class Ui {
   private say(text: string): void { const t = this.q.toast!; t.textContent = text; t.classList.add("on"); setTimeout(() => t.classList.remove("on"), 3600); }
   ready(): void { if (this.failed) return; const l = this.q.loading!.firstElementChild as HTMLElement; l.style.opacity = "0"; setTimeout(() => this.q.loading!.classList.remove("on"), 520); }
   private set(key: string, value: string | number, apply: () => void): void { if (this.last[key] !== value) { this.last[key] = value; apply(); } }
+
+  /** CD-18: letterbox bars over the title while the flyover runs (share 0..1 from the world view). */
+  titleBars(share: number): void {
+    const on = share > 0.5;
+    this.set("titlebars", on ? 1 : 0, () => { this.q.mt?.classList.toggle("on", on); this.q.mb?.classList.toggle("on", on); });
+  }
 
   update(g: Game): void {
     const s = g.state, ph = g.phase;

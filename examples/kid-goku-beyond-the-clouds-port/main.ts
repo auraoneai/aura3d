@@ -112,6 +112,7 @@ function render(dt = STEP): void {
     throw error;
   }
   ui?.update(game);
+  if (game.phase === "menu") ui?.titleBars(runtime.view.bars);
 }
 
 function consume(events: readonly string[]): void {
