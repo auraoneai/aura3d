@@ -55,6 +55,7 @@ import {
   LIGHTNING_NODE_ID,
   LIGHTNING_PEAK,
   courtAtmosphereNodes,
+  courtWaterNodes,
   courtLampNodes,
   courtLensFlareNodes,
   courtLightningNodes,
@@ -774,7 +775,7 @@ function buildVenueDressing(v: VenueSpec): any[] {
         model(assets.hoopsTower, { name: "tower-east", targetHeight: 34, castShadow: false }).position(26, 0, -18),
         model(assets.hoopsTower, { name: "tower-west", targetHeight: 26, castShadow: false }).position(-26, 0, -14)
       );
-      nodes.push(
+      if (LOOK_ORIGINAL) nodes.push(
         primitives.plane({ name: "river-strip", size: [80, 1, 12], material: material.pbr({ color: "#0a1826", roughness: 0.2, metalness: 0.6, emissive: "#0d2438", emissiveIntensity: 0.25 }) }).position(0, -0.05, 20)
       );
     }
@@ -783,7 +784,7 @@ function buildVenueDressing(v: VenueSpec): any[] {
   if (v.id === "venice") {
     nodes.push(
       primitives.plane({ name: "sand-surround", size: [90, 1, 46], material: material.pbr({ color: "#c9ad72", roughness: 0.95 }) }).position(0, -0.04, 6),
-      primitives.plane({ name: "ocean-glint", size: [90, 1, 10], material: material.pbr({ color: "#2e8fa8", roughness: 0.3, metalness: 0.4, emissive: "#ff9a3d", emissiveIntensity: 0.12 }) }).position(0, -0.03, -22)
+      ...(LOOK_ORIGINAL ? [primitives.plane({ name: "ocean-glint", size: [90, 1, 10], material: material.pbr({ color: "#2e8fa8", roughness: 0.3, metalness: 0.4, emissive: "#ff9a3d", emissiveIntensity: 0.12 }) }).position(0, -0.03, -22)] : [])
     );
     for (const [x, z, s] of [[-12, -8, 1], [12.5, -10, 1.2], [-14, 12, 0.9], [14, 14, 1.05], [-9, 16, 0.8]] as const) {
       nodes.push(model(assets.hoopsPalm, { name: `palm-${x}-${z}`, targetHeight: 6.4 * s, castShadow: true }).position(x, 0, z).rotate(0, vrng() * Math.PI * 2, 0));
@@ -906,6 +907,8 @@ function buildScene(v: VenueSpec): any {
     s.addMany(courtLensFlareNodes(rig)).addMany(courtSkyNodes(rig)).addMany(courtWeatherNodes(rig, BOOT_REDUCED_MOTION)).addMany(courtLightningNodes(rig));
     // H47-V2: Rucker flood cones and haze, Manila roof-gap god rays and dust motes.
     s.addMany(courtAtmosphereNodes(rig, BOOT_REDUCED_MOTION));
+    // H47-E3: Venice surf and the Shanghai river as real water (replacing the 4.6 planes).
+    s.addMany(courtWaterNodes(rig, BOOT_REDUCED_MOTION));
   }
   s
     .add(effects.contactShadows({ intensity: 0.7, length: 0.28 }))

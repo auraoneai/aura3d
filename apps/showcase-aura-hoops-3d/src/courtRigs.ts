@@ -19,6 +19,7 @@ import {
   material,
   sky,
   weather,
+  world,
   type AuraColor,
   type AuraHdriId,
   type AuraLookId,
@@ -491,6 +492,30 @@ export function courtAtmosphereNodes(rig: CourtRig, reducedMotion: boolean): Aur
     }) as unknown as AuraNodeBuilder<AuraSceneNode>);
   }
   return out;
+}
+
+/**
+ * H47-E3: real water. Venice: ocean surf on a 90 x 10 m band behind the court (the 4.6 "ocean-glint" plane);
+ * Shanghai: a calm river with flowing normals on the 80 x 12 m strip in front of the court (the 4.6 "river-strip").
+ * `world.water` draws through E-G's water-only contributor without the WORLD lane (no game proved it yet: phase 2).
+ * Reduced motion stills the waves to the calm preset. Draws: +1 water each, -1 plane each in main.ts = 0.
+ */
+export function courtWaterNodes(rig: CourtRig, reducedMotion: boolean): AuraNodeBuilder<AuraSceneNode>[] {
+  const rect = (x0: number, z0: number, x1: number, z1: number) =>
+    ({ kind: "polygon" as const, points: [[x0, z0], [x1, z0], [x1, z1], [x0, z1]] as [number, number][] });
+  if (rig.water === "ocean") {
+    return [world.water({
+      id: "venice-surf", name: "venice-surf", kind: "ocean", shape: rect(-45, -27, 45, -17), height: -0.03,
+      shallowColor: "#3fa6b8", deepColor: "#0e3f5c", waves: reducedMotion ? "calm" : "moderate", foam: { shoreDepth: 0.6, crest: 0.5 }
+    }) as unknown as AuraNodeBuilder<AuraSceneNode>];
+  }
+  if (rig.water === "river") {
+    return [world.water({
+      id: "shanghai-river", name: "shanghai-river", kind: "river", shape: rect(-40, 14, 40, 26), height: -0.05,
+      shallowColor: "#12304a", deepColor: "#050d18", waves: "calm", flowDirectionDeg: 90, normalSpeed: reducedMotion ? 0 : 0.6
+    }) as unknown as AuraNodeBuilder<AuraSceneNode>];
+  }
+  return [];
 }
 
 /** Runtime id of the storm court's lightning light (H47-E2; driven per frame by `lightningFlash`). */
