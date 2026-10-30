@@ -251,6 +251,8 @@ const qa = installQaHooks("cumulus-dash", {
       return btoa(bin);
     },
     stats: () => runtime?.stats ?? null,
+    /** CD-15: preset pack registration, fired presets, glider trail and the engine's live particle count. */
+    vfx: () => runtime?.vfx() ?? null,
     /** Camera eye, target and fov plus the hero, ride-log and hut positions this frame (framing checks project these). */
     view: () => (runtime ? JSON.parse(JSON.stringify(runtime.view)) as typeof runtime.view : null),
     /** The program warm-up result from boot (null until it ran). */

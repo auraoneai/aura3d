@@ -15,6 +15,7 @@ import type { Game } from "./game";
 import { ACTIVE, ballSpec, glowSpec, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, warnSpec } from "./materials";
 import { ACTIVE_LOOK, sunPosition, type CumulusLookRow } from "./art/look";
 import { launchFovKick, titleFlyover, traumaFor } from "./art/camera";
+import { CUMULUS_GLIDER_TRAIL, CUMULUS_VFX_EVENTS, registerCumulusVfx } from "./art/vfx";
 import { Mesh, box, cylinder, hex } from "./mesh";
 import { LEG_CLIPS } from "./legcycle";
 import { CLIP_FOOT_SPEED, MAX_RATE, touchdowns } from "./locomotion";
@@ -49,6 +50,8 @@ export interface WorldRuntime {
   readonly stats: WorldStats; readonly gait: GaitReport; readonly camera: { eye: V3; target: V3 }; readonly view: WorldView;
   /** Grounded foot touchdowns while running (the footstep sound follows these, not distance). */
   readonly footsteps: number;
+  /** CD-15 QA: whether the preset pack is registered, presets fired per kind, the glider trail and the engine live count. */
+  vfx(): { registered: boolean; fired: Record<string, number>; trail: boolean; liveCount: number };
 }
 /** A merged scenery chunk hidden past `range` metres from the camera (small detail is sub-pixel or fogged there). */
 interface Cullable { id: string; centre: V3; radius: number; range: number }
@@ -286,6 +289,11 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
   /* CD-18 (storm-washed row): title flyover clock, trauma from impact rises, launch FOV kick */
   const cinematic = ACTIVE_LOOK.id === "storm-washed";
   let titleT = 0, lastPhase = "", lastImpact = 0, sinceLaunch = Infinity;
+  /* CD-15 (storm-washed row): the preset pack is registered with the game's reduced-motion setting (re-registered on a
+     toggle); events fire their preset through app.effects; the cloud mount trails a silver ribbon while ridden */
+  let vfxMotion: boolean | null = null;
+  let gliderTrail: { stop(): void } | null = null;
+  const vfxFired: Record<string, number> = {};
   const cullShown = new Map<string, boolean>();
   let footsteps = 0;
   /* finale camera: the hut and its mound are solid, and the eye stays above the ground around the home frame */
@@ -338,8 +346,20 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
     }
   };
 
+  function emitPresets(g: Game, events: readonly string[], p: V3): void {
+    if (!cinematic) return;
+    if (vfxMotion !== g.reducedMotion) { vfxMotion = g.reducedMotion; registerCumulusVfx(app.effects, g.reducedMotion); }
+    for (const e of events) {
+      const kind = CUMULUS_VFX_EVENTS[e];
+      if (!kind) continue;
+      if (e === "land" && !ch.waters.some((w) => g.state.s >= w.start - 2 && g.state.s <= w.end + 2)) continue; // puddle splash only on the wet stretch
+      try { app.effects?.burst(kind, [p[0], p[1] + 0.2, p[2]], { camera: false }); vfxFired[kind] = (vfxFired[kind] ?? 0) + 1; } catch { /* effects runtime unavailable */ }
+    }
+  }
+
   function emitEvents(g: Game, events: readonly string[]): void {
     const s = g.state, f = frameAt(s.s, s.lane), p = foot(g), up = f.up;
+    emitPresets(g, events, p);
     const chest: V3 = [p[0] + up[0] * 1.3, p[1] + up[1] * 1.3, p[2] + up[2] * 1.3];
     for (const e of events) {
       if (e === "jump" || e === "land") fx.dust(p, up, e === "land" ? 7 : 5, "#e8d4a8", 0.9);
@@ -369,6 +389,7 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
     camera: camPos,
     view,
     get footsteps() { return footsteps; },
+    vfx: () => ({ registered: vfxMotion !== null, fired: { ...vfxFired }, trail: gliderTrail !== null, liveCount: app.effects?.liveCount ?? 0 }),
     cutCamera() { eye = null; look = null; chase.reset(); finaleClear.reset(); },
     update(g, dt, aspect, events) {
       clock += dt;
@@ -448,6 +469,8 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
 
       /* ---- sky cloud ---- */
       cloud.setVisible(riding || (phase === "menu" && false));
+      if (cinematic && riding && !gliderTrail) { try { gliderTrail = app.effects?.trail("sky-cloud", CUMULUS_GLIDER_TRAIL) ?? null; } catch { gliderTrail = null; } }
+      else if (gliderTrail && !riding) { gliderTrail.stop(); gliderTrail = null; }
       if (riding) {
         const base = at(s.s, s.lane, Math.max(0, s.jump - 0.55));
         cloud.setPosition(base[0] + f.forward[0] * 1.1, base[1] + 0.12, base[2] + f.forward[2] * 1.1); /* the generated cloud's mass sits behind its origin */
