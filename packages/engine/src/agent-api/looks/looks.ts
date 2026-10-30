@@ -529,11 +529,17 @@ function applyOverrides(preset: AuraLookPreset, overrides: AuraLookOverrides | u
     color: overrides?.key?.color ?? v0.key.color,
     shadow: overrides?.key?.shadow ?? true
   };
-  const background = overrides?.background !== undefined && overrides.background !== "look" ? overrides.background : v0.background;
+  const colourBackground = overrides?.background !== undefined && overrides.background !== "look" ? overrides.background : undefined;
+  const background = colourBackground ?? v0.background;
   const post = overrides?.post;
   const grade = overrides?.grade;
+  const environment = overrideEnvironment(preset, overrides, flags);
+  const tint = grade?.tint ?? v0.grade.tint;
   return {
-    ...overrideEnvironment(preset, overrides, flags),
+    ...environment,
+    // GU47 E-A: a colour background replaces the look's sky, so the look HDRI lights the scene without being drawn
+    // behind it (the FC studio-HDRI-as-sky defect).
+    ...(colourBackground !== undefined && environment.hdri !== null ? { hdri: { ...environment.hdri, background: false } } : {}),
     ...(overrides?.environmentRotationDeg !== undefined ? { environmentRotation: (overrides.environmentRotationDeg * Math.PI) / 180 } : {}),
     ...(v0.fill !== undefined ? { fill: v0.fill } : {}),
     key,
@@ -544,12 +550,14 @@ function applyOverrides(preset: AuraLookPreset, overrides: AuraLookOverrides | u
     grade: {
       contrast: grade?.contrast ?? v0.grade.contrast,
       saturation: grade?.saturation ?? v0.grade.saturation,
-      ...(grade?.temperature !== undefined ? { temperature: grade.temperature } : {}),
-      ...(grade?.tint !== undefined ? { tint: grade.tint } : {}),
+      // GU47 E-A: the preset's declared white balance is emitted (it reaches pixels through E-C's v2 grade writer).
+      temperature: grade?.temperature ?? v0.grade.temperature,
+      ...(tint !== undefined ? { tint } : {}),
       ...(grade?.lut !== undefined ? { lut: grade.lut } : {})
     },
     ...(post !== undefined && typeof post !== "string" && post.bloom !== undefined ? { bloom: post.bloom } : {}),
-    ...(typeof post === "string" ? { outputPreset: post } : {})
+    // GU47 E-A: the preset's declared post preset rides as the `output.preset` child; a `post` id override replaces it.
+    outputPreset: typeof post === "string" ? post : preset.post
   };
 }
 
