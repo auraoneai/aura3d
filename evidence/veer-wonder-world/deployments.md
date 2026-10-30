@@ -11,7 +11,44 @@ The unlisted preview of `apps/<app>/DEPLOYMENT.md` §3 is the Vercel project `au
 
 ## Deployments (newest first)
 
-### `dpl_2WbTkXTiPBrR6vS867ZnFXB3Xwzw`: current
+### `dpl_8GyNJtcfikawYF7BbCLaQ7dYYpM7`: current
+
+- **Commit:** `b4bef89bb`, main after #1400 merged, deployed with `deploy-preview.sh --prod origin/main`.
+- **Deployed:** 2026-10-30 00:26 UTC.
+- **Change:** the same app on main's engine sources. Main had moved to Aura3D 4.6.0 and the audit-fix lanes while #1400 was open. #1400 merged main in (`b5d5158f8`, whose tree is main's), so the app now builds against the 4.6.0 workspace engine.
+- **Gates on the deploy host:** content lint OK. `check-dist` OK: 1002 files, 26 text files, 0 source maps, 1 welcome literal, 0 host variables, 0 class static blocks, noindex kept.
+- **Before deploying:** the full remote suite ran on that tree (fan-out `20261029T233812Z`, 21 runs) and every run passed:
+  - start-screen 13 at 13 sizes;
+  - first-frame build 4;
+  - touch-and-layout 3;
+  - playback-episodes 3, playback-episodes-2 2, playback-activities 4;
+  - no-speech-required 2, no-speech-required-2 2;
+  - low-motion and low-motion-2;
+  - look, stills, stills-2, stills-3 and stills-4;
+  - characters, characters-2 and characters-3;
+  - audio-and-pausing, parent-panel and consumer-smoke.
+
+  Locally the tree passes:
+  - both typechecks (published 4.5.0 types and workspace sources);
+  - 549 of 549 unit tests;
+  - the content lint, the generated-file check and the game checks (21).
+- **The captures against the earlier ones:**
+  - **Overall.** The 92 frames this suite shares with the records here differ from them by a median of 0.14/255 per pixel.
+  - **`first-frame-diag`.** The `?diag=1` panel now shows the measured frame rate; before, it showed a constant 60.
+  - **`low-motion-idle`.** Momo is drawn as its stand-in because `wonder-world-low-motion.spec.ts` opens a third browser context at `1024x768` and does not call `waitForLateModels`. A standalone rerun (`wonder-low-motion-20261030T002634Z`) passed with the same idle stillness (`maxJump: 1.764`, `meanAbsLumaDiff: 0.024`, `changedRatio: 0`), and a diagnostic check (`wonder-diag-models-20261030T005705Z`) confirmed that at `640x480` both Momo and Sheru are `model`-ready at first mount under `?reducedMotion=1`, matching the first-frame record of the suite (where every model is ready at first mount and none is late).
+- **Engine changes that reach the app** (a review of 851238973..7d61bcc63, each finding re-checked):
+  - On a lost and restored WebGL context, the stage now skips frames and then mounts the story again. Before, it stopped drawing until the next story.
+  - Instanced shadow receivers may now pick a farther sun cascade, for example the station's sleepers. That could soften their contact shadows, but no capture shows a difference.
+  - The diagnostics panel's frame rate is real.
+- **Live check:** run `wonder-live-20261030T002732Z` passed against this deployment. The spec ran from `b5d5158f8`, whose tree is main's.
+  - Start label 7.37:1.
+  - 32 cards and 32 portraits.
+  - E17 on stage and speaking, with the JPEG-normal-map Momo and Sheru.
+  - 0 console errors, 0 page errors, 0 bad responses and 0 failed requests.
+  - 49 requests, all same-origin. Nothing stored.
+  - Hosting rules: 0 problems.
+
+### `dpl_2WbTkXTiPBrR6vS867ZnFXB3Xwzw`: replaced
 
 - **Commit:** `a71c82708`.
 - **Deployed:** 2026-10-29 22:45 UTC.

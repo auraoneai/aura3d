@@ -1355,7 +1355,11 @@ export function silhouetteContrast(image: DecodedImage, box: Box): SilhouetteRep
   };
 }
 
-/** Longer than the app's 120 s download cap (src/runtime/asset-preloader.ts), so every model download has settled by then. */
+/**
+ * How long a late model may keep downloading before the story is mounted again. The app's own cap on a download is 15
+ * minutes (src/runtime/asset-preloader.ts, raised from 120 s on 2026-10-29); on the runner every model has settled well
+ * within this wait, and one still pending after it fails the spec here, with the wait's name.
+ */
 export const DOWNLOADS_SETTLED_MS = 150_000;
 
 /**
