@@ -33,7 +33,8 @@ import {
   model,
   primitives,
   scene,
-  text3D
+  text3D,
+  world
 } from "@aura3d/engine";
 import {
   createJuice,
@@ -98,6 +99,7 @@ import { linksQaCrops } from "./game/qaCrops";
 import { discOnTerrain, ribbonAlongPath, terrainToMeshSpec, type SurfaceUvMode } from "./game/terrainMesh";
 import { MASK_COLOR_LIFT, TURF_SURFACES, type LinksSurfaceSlot } from "./game/turf";
 import { turfTexture } from "./game/turfTextures";
+import { lavaSpec, pondWaterOptions, reflectivePonds } from "./game/water";
 import { holeCardTransition, holeCardVisible, holeMap, holeMapSvg, holeSubtitle, holeTitle, shotStatsLabel } from "./game/holeCard";
 import { clubForShot, planShot, puttRange, type ShotPlan } from "./game/autopilot";
 import {
@@ -814,8 +816,23 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   });
 
   // --- Water (dark wet bank, shadow rim, then a reflective pond surface) ---
+  // LINKS-17 (GU47): the two largest ponds of a hole reflect (E-G world.water lake, planar on High; game/water.ts), the
+  // rest keep the 4.6.2 water; Cinder Rim's pools are scrolling emissive lava on every tier.
+  const reflecting = reflectivePonds(terrain, hole, course.dressing.theme, { tier: presentationTier, look: lookMode });
+  const lava = lookMode !== "original" && theme4(course) === "volcanic" ? material.custom(lavaSpec(state.reducedMotion) as any) : null;
   lay.water.forEach((w, i) => {
     const { surfaceY: y, pondDiameter, rimDiameter } = pondGeometry(terrain, w);
+    const pond = reflecting.find((p) => p.index === i);
+    if (pond) {
+      // the bank and the dark rim (the pond floor seen through the water) stay; the lake replaces the water cylinder
+      const bank = discOnTerrain(terrain, w.center[0], w.center[1], w.radius + 1.5, 0.02, 32, w.radius * 0.94);
+      nodes.push(
+        geometry.custom(bank, { name: `pond-bank-${i}`, material: material.pbr({ color: shade(pal.rough, 0.55), roughness: 0.96 }) }),
+        primitives.cylinder({ name: `pond-rim-${i}`, size: [rimDiameter, 0.05, rimDiameter], material: material.pbr({ color: shade(pal.water, 0.5), roughness: 0.34, metalness: 0.2 }) }).position(w.center[0], y - 0.03, w.center[1]),
+        world.water(pondWaterOptions(pond, pal.water, state.reducedMotion) as any) as any
+      );
+      return;
+    }
     const bank = discOnTerrain(terrain, w.center[0], w.center[1], w.radius + 1.5, 0.02, 32, w.radius * 0.94);
     const waterMat = material.pbr({
       color: shade(pal.water, 1.22),
@@ -827,7 +844,7 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
     nodes.push(
       geometry.custom(bank, { name: `pond-bank-${i}`, material: material.pbr({ color: shade(pal.rough, 0.55), roughness: 0.96 }) }),
       primitives.cylinder({ name: `pond-rim-${i}`, size: [rimDiameter, 0.05, rimDiameter], material: material.pbr({ color: shade(pal.water, 0.5), roughness: 0.34, metalness: 0.2 }) }).position(w.center[0], y - 0.03, w.center[1]),
-      primitives.cylinder({ name: `pond-${i}`, size: [pondDiameter, 0.06, pondDiameter], material: waterMat }).position(w.center[0], y, w.center[1])
+      primitives.cylinder({ name: `pond-${i}`, size: [pondDiameter, 0.06, pondDiameter], material: lava ?? waterMat, ...(lava ? { castShadow: false } : {}) }).position(w.center[0], y, w.center[1])
     );
   });
 
