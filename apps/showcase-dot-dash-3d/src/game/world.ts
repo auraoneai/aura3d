@@ -19,6 +19,7 @@ import {
   PRACTICALS, focusDistance, type BoardLookRow
 } from "./look.js";
 import { TraceField } from "./traces.js";
+import { CLEAR_LAMP_DIM, stepCourierPose, waveLevel, WAVE_SECONDS, type CourierPose } from "./motion.js";
 import { boxReflectionProbe } from "./engineCompat.js";
 
 /** The E-A catalogue HDRI (CC0, Poly Haven "vintage_measuring_lab", public/hdri/ATTRIBUTION.md): IBL fill only. */
@@ -404,12 +405,51 @@ function syncTraces(): void {
   field.prune(st.time);
   const [r, g, b] = hexToRgb(look.traceGlow);
   const prefs = { reducedMotion: calmMotion, reducedFlash: calmFlash };
+  const board = boardWave();
   for (const e of field.edges) {
-    const k = field.edgeGlow(e, st.time, prefs);
+    const wave = board ? board.level(Math.hypot(e.x - board.x, e.y - board.y)) : 0;
+    const k = Math.max(field.edgeGlow(e, st.time, prefs), wave);
     if (k < 0.02) continue;
     instRgb("traceLit", wx(e.x), 0.0115, wz(e.y), e.horizontal ? 1.02 : 0.13, 0.012, e.horizontal ? 0.13 : 1.02, r * k, g * k, b * k);
   }
 }
+
+/**
+ * DD47-AN2: the board powers up from the spawn at READY (a front across the traces, held, then let go) and sweeps
+ * from the courier at CLEAR while the lamp dims to 40%. Reduced motion: a uniform fade instead of a moving front.
+ */
+let waveMode: "" | "ready" | "cleared" = "";
+let waveStart = 0;
+let waveOrigin = { x: 0, y: 0 };
+let lampDimmed = false;
+const WAVE_HOLD = 0.8, WAVE_RELEASE = 0.8;
+function boardWave(): { x: number; y: number; level(d: number): number } | null {
+  const m = st.maze;
+  const mode = st.mode === "ready" || st.mode === "cleared" ? st.mode : "";
+  if (mode && mode !== waveMode) {
+    waveStart = st.time;
+    waveOrigin = mode === "ready" ? { x: m.spawn.x, y: m.spawn.y } : normPos(m);
+  }
+  if (mode) waveMode = mode;
+  setLampDim(st.mode === "cleared");
+  if (!waveMode) return null;
+  const t = st.time - waveStart;
+  if (waveMode === "ready" && !mode && t > WAVE_SECONDS + WAVE_HOLD + WAVE_RELEASE) { waveMode = ""; return null; }
+  if (waveMode === "cleared" && !mode) { waveMode = ""; return null; }
+  const reach = Math.hypot(m.width, m.height);
+  const release = waveMode === "ready" ? Math.max(0, Math.min(1, (t - WAVE_SECONDS - WAVE_HOLD) / WAVE_RELEASE)) : 0;
+  const scale = (calmFlash ? 0.6 : 1) * (1 - release);
+  return { ...waveOrigin, level: (d) => waveLevel(d, t, reach, calmMotion) * scale };
+}
+function setLampDim(dim: boolean): void {
+  if (dim === lampDimmed) return;
+  const lamp = app?.nodes?.get("lamp");
+  if (!lamp?.setLight) return;
+  const look = BOARD_LOOKS[st.maze.def.id as MazeId];
+  lamp.setLight({ intensity: look.lamp.intensity * (dim ? CLEAR_LAMP_DIM : 1) }, { transitionSeconds: 0.5 });
+  lampDimmed = dim;
+}
+let courierPose: CourierPose = { yaw: Math.PI, roll: 0 };
 
 /** DD47-L2: the courier's point follows it; the pooled points sit on live surge cells, or on sentries during a surge. */
 function syncPracticals(pp: { x: number; y: number }): void {
@@ -447,6 +487,42 @@ function syncPracticals(pp: { x: number; y: number }): void {
 }
 const litPool: string[] = Array.from({ length: PRACTICALS.pooled }, () => "");
 
+/** Normalised 0..1 screen box around a world point, `half` world units each side (for E-I's crop capture). */
+function cropAround(x: number, z: number, half: number, aspect: number): { x: number; y: number; w: number; h: number } | null {
+  const a = projectNdc(lastPose, aspect, [x - half, 0.3, z - half]);
+  const b = projectNdc(lastPose, aspect, [x + half, 0.3, z + half]);
+  if (!a || !b) return null;
+  const x0 = Math.max(0, Math.min(a[0], b[0]) * 0.5 + 0.5), x1 = Math.min(1, Math.max(a[0], b[0]) * 0.5 + 0.5);
+  const y0 = Math.max(0, 0.5 - Math.max(a[1], b[1]) * 0.5), y1 = Math.min(1, 0.5 - Math.min(a[1], b[1]) * 0.5);
+  return x1 > x0 && y1 > y0 ? { x: x0, y: y0, w: x1 - x0, h: y1 - y0 } : null;
+}
+
+/**
+ * QA crops (window.__AURA_QA__.crops, normalised, refreshed as the camera moves): the courier's 3x3 tiles and an empty
+ * corridor (DD47-L2), the board centre and a bench corner (DD47-P1), the lamp and far thirds (DD47-L1).
+ */
+function publishCrops(pp: { x: number; y: number }, aspect: number): void {
+  if (typeof window === "undefined") return;
+  const crops: { name: string; x: number; y: number; w: number; h: number }[] = [];
+  const add = (name: string, c: { x: number; y: number; w: number; h: number } | null): void => { if (c) crops.push({ name, ...c }); };
+  add("courier", cropAround(wx(pp.x), wz(pp.y), 1.5, aspect));
+  const m = st.maze;
+  // the walkable tile farthest from the courier stands in for an empty corridor
+  let best = -1, bx = 0, by = 0;
+  for (let i = 0; i < m.walkable.length; i++) {
+    if (!m.walkable[i] || st.dots[i] || st.orbs[i]) continue;
+    const tx = i % m.width, ty = (i / m.width) | 0;
+    const d = Math.hypot(tx - pp.x, ty - pp.y);
+    if (d > best) { best = d; bx = tx; by = ty; }
+  }
+  if (best >= 0) add("corridor", cropAround(wx(bx), wz(by), 0.5, aspect));
+  add("board-centre", cropAround(0, 0, 2, aspect));
+  crops.push({ name: "bench-corner", x: 0, y: 0, w: 0.12, h: 0.12 });
+  crops.push({ name: "lamp-third", x: 0, y: 0, w: 1 / 3, h: 1 }, { name: "far-third", x: 2 / 3, y: 0, w: 1 / 3, h: 1 });
+  const w = window as unknown as { __AURA_QA__?: Record<string, unknown> };
+  w.__AURA_QA__ = { ...(w.__AURA_QA__ ?? {}), crops };
+}
+
 /** DD47-P1: macro focus on the point the camera looks at (follows the aspect pull-back and the follow camera). */
 let focusSent = BASE_FOCUS_DISTANCE;
 function syncFocus(pose: CameraPose): void {
@@ -459,7 +535,7 @@ function syncFocus(pose: CameraPose): void {
 // ---------------------------------------------------------------------------
 // Per-frame visual sync
 // ---------------------------------------------------------------------------
-export function syncVisuals(_dt: number): void {
+export function syncVisuals(dt: number): void {
   if (!app) return;
   const nodes = app.nodes;
   const m = st.maze;
@@ -512,7 +588,9 @@ export function syncVisuals(_dt: number): void {
     const dead = st.mode === "dying";
     const byte = nodes.require("byte");
     byte.setPosition(wx(pp.x), 0.36 + (dead ? 0 : bob), wz(pp.y));
-    byte.setRotation(dead ? 0 : pitch, yawOf(st.player.dir) + Math.PI, dead && !calmMotion ? Math.sin(st.time * 20) * 0.5 : 0);
+    // DD47-AN1: the drawn yaw eases toward the travel direction (90 ms) and the courier banks into the turn
+    courierPose = stepCourierPose(courierPose, yawOf(st.player.dir) + Math.PI, dt, calmMotion);
+    byte.setRotation(dead ? 0 : pitch, courierPose.yaw, dead && !calmMotion ? Math.sin(st.time * 20) * 0.5 : courierPose.roll);
     if (dead) {
       byte.setScale(Math.max(0.05, (st.deathT / 1.6) * 0.76)); // a steady shrink; the flicker below is skipped when calm
     } else if (st.player.dashT > 0) {
@@ -531,7 +609,7 @@ export function syncVisuals(_dt: number): void {
     if (ex) {
       echo.setVisible(!dead);
       echo.setPosition(wx(ex.x), 0.36 + bob, wz(ex.y));
-      echo.setRotation(dead ? 0 : pitch, yawOf(st.player.dir) + Math.PI, 0);
+      echo.setRotation(dead ? 0 : pitch, courierPose.yaw, courierPose.roll);
       echo.setScale(0.76);
     } else echo.setVisible(false);
 
@@ -620,6 +698,7 @@ export function syncVisuals(_dt: number): void {
   app.camera?.setPose({ position: lastPose.position, target: lastPose.target, fov: lastPose.fov });
   syncFocus(lastPose);
   syncPracticals(pp2);
+  publishCrops(pp2, aspect);
   app.output?.setOutputOverlay(
     st.mode === "dying" && !calmFlash ? { fade: [0.4, 0.02, 0.1, 0.45] }
     : st.fright > 0 && st.fright < 1.8 ? { vignette: [0.05, 0.05, 0.35, 0.5] }
