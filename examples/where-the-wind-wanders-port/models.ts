@@ -31,6 +31,24 @@ export function bellModelPose(tower: { x: number; y: number; z: number; h?: numb
   };
 }
 
+type MaterialOverrides = NonNullable<Parameters<typeof model>[1]>["materialOverrides"];
+
+/**
+ * WW47-M1: painted-look overrides on the GLBs' own materials (textures kept: `replaceTextures` is never set, so the
+ * audit's `asset-texture-override` rule stays clean). Matte plaster and stone, a polished brass bell with a warm rim,
+ * a waxy letter, and a dry fabric-and-timber boat. Only the GU47 look applies them; `?look=original` mounts the GLBs as
+ * in 4.6. Every GLB has one material, so the overrides target all of it.
+ */
+export const PAINTED_OVERRIDES: Readonly<Record<string, MaterialOverrides>> = {
+  cottage: [{ roughness: 0.94, metallic: 0, envMapIntensity: 0.7 }],
+  belltower: [{ roughness: 0.9, metallic: 0, envMapIntensity: 0.7 }],
+  bell: [{ color: "#ffe2a6", colorMode: "multiply", metallic: 0.9, roughness: 0.3, envMapIntensity: 1.4, rim: { color: "#ffd38a", power: 3, intensity: 0.6 } }],
+  letter: [{ roughness: 0.62, metallic: 0, rim: { color: "#fff0d8", power: 2.5, intensity: 0.35 } }],
+  boat: [{ roughness: 0.9, metallic: 0, envMapIntensity: 0.75 }],
+  stones: [{ roughness: 0.96, metallic: 0, envMapIntensity: 0.6 }],
+  hero: [{ roughness: 0.85, rim: { color: "#ffd9b0", power: 3, intensity: 0.4 } }]
+};
+
 export function availableModels(): ModelSet {
   return {
     letter: hasModel("letter"),
@@ -54,30 +72,32 @@ const xf = (p: ModelPlacement, scale: number, yawOffset = 0, lift = 0) => ({ pos
  * receives the engine sun's shadow; without it (Low, `?look=original`) nothing does, as in 4.6. Trees cast from their
  * own mesh (the GLBs are 0.5k-1.3k triangles, so a shadow LOD buys nothing); foliage cards never cast (PF1).
  */
-export function addStaticModels(builder: Scene, sc: Scenery, set: ModelSet, shadows = false): void {
+export function addStaticModels(builder: Scene, sc: Scenery, set: ModelSet, shadows = false, painted = false): void {
   const castShadow = shadows, receiveShadow = shadows;
+  const mo = (key: string) => (painted && PAINTED_OVERRIDES[key] ? { materialOverrides: PAINTED_OVERRIDES[key] } : {});
   if (set.cottage) {
-    sc.placements.cottages.forEach((p, i) => builder.add(model(MODEL_ASSETS.cottage, { name: `cottage-${i}`, targetHeight: p.h ?? 8, position: [p.x, p.y, p.z], rotation: [0, p.yaw, 0], castShadow, receiveShadow, collider: false })));
+    sc.placements.cottages.forEach((p, i) => builder.add(model(MODEL_ASSETS.cottage, { ...mo("cottage"), name: `cottage-${i}`, targetHeight: p.h ?? 8, position: [p.x, p.y, p.z], rotation: [0, p.yaw, 0], castShadow, receiveShadow, collider: false })));
   }
-  if (set.bell) sc.placements.bell.forEach((p) => builder.add(model(MODEL_ASSETS.belltower, { name: "belltower", targetHeight: p.h ?? BELLTOWER_HEIGHT, position: [p.x, p.y, p.z], rotation: [0, 0, 0], castShadow, receiveShadow, collider: false })));
+  if (set.bell) sc.placements.bell.forEach((p) => builder.add(model(MODEL_ASSETS.belltower, { ...mo("belltower"), name: "belltower", targetHeight: p.h ?? BELLTOWER_HEIGHT, position: [p.x, p.y, p.z], rotation: [0, 0, 0], castShadow, receiveShadow, collider: false })));
   if (set.bellModel) sc.placements.bell.slice(0, 1).forEach((p) => {
     const pose = bellModelPose(p);
-    builder.add(model(MODEL_ASSETS.bell, { name: "belltower-bell", scaleMode: "world", scale: [pose.scale, pose.scale, pose.scale], position: pose.position, castShadow, receiveShadow, collider: false }).runtime({ id: "bell-model" }));
+    builder.add(model(MODEL_ASSETS.bell, { ...mo("bell"), name: "belltower-bell", scaleMode: "world", scale: [pose.scale, pose.scale, pose.scale], position: pose.position, castShadow, receiveShadow, collider: false }).runtime({ id: "bell-model" }));
   });
   if (set.trees) {
     if (sc.placements.pines.length > 0) builder.add(instances.model(MODEL_ASSETS.pine, { name: "pines", targetHeight: 6, transforms: sc.placements.pines.map((p) => xf(p, (p.h ?? 6) / 6)), castShadow, receiveShadow, collider: false }));
     if (sc.placements.oaks.length > 0) builder.add(instances.model(MODEL_ASSETS.oak, { name: "oaks", targetHeight: 6, transforms: sc.placements.oaks.map((p) => xf(p, (p.h ?? 6) / 6)), castShadow, receiveShadow, collider: false }));
   }
   if (set.shrubs && sc.placements.shrubs.length > 0) builder.add(instances.model(MODEL_ASSETS.shrub, { name: "shrubs", targetHeight: 1.2, transforms: sc.placements.shrubs.map((p) => xf(p, p.s)), castShadow, receiveShadow, collider: false }));
-  if (set.stones && sc.placements.stones.length > 0) sc.placements.stones.forEach((p, i) => builder.add(model(MODEL_ASSETS.stones, { name: `stones-${i}`, targetHeight: 3.2 * p.s, position: [p.x, p.y, p.z], rotation: [0, p.yaw, 0], castShadow, receiveShadow, collider: false })));
+  if (set.stones && sc.placements.stones.length > 0) sc.placements.stones.forEach((p, i) => builder.add(model(MODEL_ASSETS.stones, { ...mo("stones"), name: `stones-${i}`, targetHeight: 3.2 * p.s, position: [p.x, p.y, p.z], rotation: [0, p.yaw, 0], castShadow, receiveShadow, collider: false })));
 }
 
-export function addAnimatedModels(builder: Scene, set: ModelSet, letterCount: number, shadows = false): void {
+export function addAnimatedModels(builder: Scene, set: ModelSet, letterCount: number, shadows = false, painted = false): void {
   const castShadow = shadows, receiveShadow = shadows;
-  if (set.letter) for (let i = 0; i < letterCount; i++) builder.add(model(MODEL_ASSETS.letter, { name: `letter-${i}`, targetMaxDimension: 0.95, castShadow: false, receiveShadow, collider: false }).runtime({ id: `letter-${i}` }));
-  if (set.hero) builder.add(model(MODEL_ASSETS.hero, { name: "hero", targetHeight: 2.9, castShadow, receiveShadow, collider: false }).runtime({ id: "hero" }));
+  const mo = (key: string) => (painted && PAINTED_OVERRIDES[key] ? { materialOverrides: PAINTED_OVERRIDES[key] } : {});
+  if (set.letter) for (let i = 0; i < letterCount; i++) builder.add(model(MODEL_ASSETS.letter, { ...mo("letter"), name: `letter-${i}`, targetMaxDimension: 0.95, castShadow: false, receiveShadow, collider: false }).runtime({ id: `letter-${i}` }));
+  if (set.hero) builder.add(model(MODEL_ASSETS.hero, { ...mo("hero"), name: "hero", targetHeight: 2.9, castShadow, receiveShadow, collider: false }).runtime({ id: "hero" }));
   if (set.wisp) builder.add(model(MODEL_ASSETS.wisp, { name: "wisp", targetHeight: 0.9, castShadow: false, receiveShadow: false, collider: false }).runtime({ id: "wisp" }));
-  if (set.boat) builder.add(model(MODEL_ASSETS.boat, { name: "boat", targetLength: 5.4, castShadow, receiveShadow, collider: false }).runtime({ id: "boat" }));
+  if (set.boat) builder.add(model(MODEL_ASSETS.boat, { ...mo("boat"), name: "boat", targetLength: 5.4, castShadow, receiveShadow, collider: false }).runtime({ id: "boat" }));
 }
 
 export interface HeroDrive { x: number; z: number; airborne: boolean; onBoat: boolean; time: number }

@@ -446,7 +446,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
   builder.add(geometry.custom(dynamic(sc.sails), { name: "windmill-sails", material: material.custom(propSpec(shadows)) }).runtime({ id: lit("sails") }));
   builder.add(geometry.custom(dynamic(sc.bellMesh), { name: "bell", material: material.custom(propSpec()) }).runtime({ id: lit("bell") }));
   if (!set.boat) builder.add(geometry.custom(dynamic(sc.boat), { name: "boat", material: material.custom(propSpec()) }).runtime({ id: lit("boat") }));
-  addStaticModels(builder, sc, set, shadows);
+  addStaticModels(builder, sc, set, shadows, !original);
   LETTERS.forEach((_, i) => {
     if (!set.letter) builder.add(geometry.custom(dynamic(sc.envelope), { name: `letter-${i}`, material: material.custom(propSpec()) }).runtime({ id: lit(`letter-${i}`) }));
     builder.add(geometry.custom(geometry.dynamic(quad(1.5)), { name: `letter-glow-${i}`, material: material.custom(glowSpec(lin("#ffe9a0"), 1.5, i * 2.1)) }).runtime({ id: lit(`letter-glow-${i}`) }));
@@ -461,7 +461,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
   if (!set.hero) builder.add(geometry.custom(dynamic(sc.traveller, true), { name: "traveller", material: material.custom(travellerSpec()) }).runtime({ id: lit("traveller") }));
   builder.add(geometry.custom(geometry.dynamic(ground(0.8)), { name: "traveller-shadow", material: material.custom(blobSpec()) }).runtime({ id: "shadow" }));
   if (!set.wisp) builder.add(geometry.custom(dynamic(sc.wisp), { name: "wisp", material: material.custom(propSpec()) }).runtime({ id: lit("wisp") }));
-  addAnimatedModels(builder, set, LETTERS.length, shadows);
+  addAnimatedModels(builder, set, LETTERS.length, shadows, !original);
   builder.add(geometry.custom(geometry.dynamic(quad(1.1)), { name: "wisp-glow", material: material.custom(glowSpec(lin("#b78cff"), 1.1, 2.7)) }).runtime({ id: lit("wisp-glow") }));
 
   /* ---- floating pollen ---- */

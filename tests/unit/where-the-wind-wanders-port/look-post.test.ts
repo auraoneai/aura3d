@@ -10,6 +10,22 @@ const effectsOf = (options: Parameters<typeof buildWorld>[0]): Node[] => {
   return out;
 };
 
+const modelsOf = (options: Parameters<typeof buildWorld>[0]): { name?: string; materialOverrides?: readonly { replaceTextures?: boolean; metallic?: number }[] }[] => {
+  const out: { name?: string; materialOverrides?: readonly { replaceTextures?: boolean; metallic?: number }[] }[] = [];
+  const walk = (n: Node & { name?: string }): void => { if (n.kind === "model") out.push(n as never); (n.children ?? []).forEach(walk); };
+  (buildWorld(options).scene.toJSON() as unknown as { nodes: readonly Node[] }).nodes.forEach(walk);
+  return out;
+};
+
+describe("where-the-wind-wanders-port painted GLB materials (WW47-M1)", () => {
+  it("the bell is brass and no override replaces a GLB's textures", () => {
+    const models = modelsOf({});
+    expect(models.find((m) => m.name === "belltower-bell")?.materialOverrides?.[0]?.metallic).toBe(0.9);
+    for (const m of models) for (const o of m.materialOverrides ?? []) expect(o.replaceTextures).not.toBe(true);
+    expect(modelsOf({ look: "original" }).every((m) => m.materialOverrides === undefined)).toBe(true);
+  });
+});
+
 describe("where-the-wind-wanders-port post (WW47-P1..P3)", () => {
   it("GU47 grade is the softer gouache palette; bloom authors no radius", () => {
     const fx = effectsOf({});
