@@ -5,7 +5,7 @@
 // to a `scatter` node under `A3D_QR_WORLD`; flag off consumes the model node
 // exactly as before.
 
-import type { AuraAssetRef, AuraColor, AuraMaterialSpec, AuraModelNode, AuraModelOptions, AuraPrimitiveNode, AuraPrimitiveOptions, AuraTransformSpec, AuraVec3 } from "../nodes/types.js";
+import type { AuraAssetRef, AuraColor, AuraGroupNode, AuraMaterialSpec, AuraModelNode, AuraModelOptions, AuraPrimitiveNode, AuraPrimitiveOptions, AuraSceneNode, AuraTransformSpec, AuraVec3 } from "../nodes/types.js";
 import { AuraNodeBuilder } from "../nodes/builder.js";
 import { colorToRgba } from "../colorUtils.js";
 import { geometry } from "../nodes/geometry.js";
@@ -14,29 +14,86 @@ import { INSTANCED_PRIMITIVE_OPTION_KEYS, primitive } from "../nodes/primitives.
 import { createInstancedModelNode, type InstancedModelVec3 } from "../../instances-model/InstancedModel.js";
 import { defineAuraCustomGeometry, type AuraCustomGeometrySpec } from "../RootGeometry.js";
 import { material } from "./material.js";
+import { lights } from "./lights.js";
 import { instancedMeshFactory } from "./batchedState.js";
 import { lazyNamespace } from "../lazyNamespace.js";
 
+/**
+ * GU47 E-G (WP-7): what an instance colour multiplies — `"base"` (base
+ * colour, today's behaviour), `"emissive"` (emissive only) or `"both"`.
+ * Stamped on the node for the renderer (E-D reads it).
+ * GU47(E-D): E-D declares `AuraInstanceColorTarget` and the node fields
+ * `AuraPrimitiveNode.instanceColorTarget` / `AuraModelNode.instanceColorTarget`
+ * in nodes/types.ts; swap this local alias and the structural stamps below to
+ * them once E-D merges.
+ */
+type InstanceColorTarget = "base" | "emissive" | "both";
+
+/** The options every `instances.<primitive>` builder takes. */
+export type AuraInstancedPrimitiveOptions = AuraPrimitiveOptions & {
+  readonly transforms: readonly AuraTransformSpec[];
+  readonly colors?: readonly AuraColor[];
+  /** GU47 E-G: what the instance `colors` tint (default `"base"`). */
+  readonly instanceColorTarget?: InstanceColorTarget;
+};
+
+/**
+ * GU47 E-G (WP-7): one clustered point light per instance of
+ * `instances.model` (lamp posts, lanterns). `offset` is in the instance's
+ * local frame (it rotates and scales with the instance); `power` is in watts
+ * and `distance` is the light range in metres (`lights.point`).
+ */
+export interface AuraInstanceLightsOptions {
+  readonly offset: AuraVec3;
+  readonly color: string;
+  readonly power: number;
+  readonly distance: number;
+}
+
+/** `instances.model` options. */
+export type AuraInstancedModelOptions = AuraModelOptions & {
+  readonly transforms: readonly AuraTransformSpec[];
+  readonly colors?: readonly AuraColor[];
+  readonly lod?: { readonly levels: readonly { readonly maxDistance: number }[]; readonly hysteresis?: number };
+  readonly instancingAware?: boolean;
+  readonly maxInstancesPerDraw?: number;
+  // PRD-10 §4.1 world options — any set marks the node for scatter promotion.
+  readonly static?: boolean;
+  readonly chunkSize?: number;
+  readonly shadowLod?: "none" | "lod1" | "impostor";
+  readonly wind?: boolean;
+  readonly impostor?: AuraAssetRef<"texture"> | "none";
+  /** GU47 E-G: what the instance `colors` tint (default `"base"`). */
+  readonly instanceColorTarget?: InstanceColorTarget;
+  /** GU47 E-G: one point light per instance; the builder then returns a group (model + lights). */
+  readonly lights?: AuraInstanceLightsOptions;
+};
+
+/** `instances.model`: a group (model + per-instance point lights) when `lights` is set, else the model node. */
+export interface AuraInstancesModelBuilder {
+  <TAsset extends AuraAssetRef<"model">>(asset: TAsset, options: AuraInstancedModelOptions & { readonly lights: AuraInstanceLightsOptions }): AuraNodeBuilder<AuraGroupNode>;
+  <TAsset extends AuraAssetRef<"model">>(asset: TAsset, options: AuraInstancedModelOptions): AuraNodeBuilder<AuraModelNode>;
+}
 
 export const instances = lazyNamespace(() => ({
-  box: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("box", options),
-  sphere: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("sphere", options),
-  plane: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("plane", options),
-  cylinder: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("cylinder", options),
-  capsule: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("capsule", options),
-  torus: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("torus", options),
+  box: (options: AuraInstancedPrimitiveOptions) => instancedPrimitive("box", options),
+  sphere: (options: AuraInstancedPrimitiveOptions) => instancedPrimitive("sphere", options),
+  plane: (options: AuraInstancedPrimitiveOptions) => instancedPrimitive("plane", options),
+  cylinder: (options: AuraInstancedPrimitiveOptions) => instancedPrimitive("cylinder", options),
+  capsule: (options: AuraInstancedPrimitiveOptions) => instancedPrimitive("capsule", options),
+  torus: (options: AuraInstancedPrimitiveOptions) => instancedPrimitive("torus", options),
   // ── threejs-parity L2-01 (SG-03): instanced widened kinds share the params
   // block with their `primitives.*` siblings.
-  cone: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("cone", options),
-  circle: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("circle", options),
-  ring: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("ring", options),
-  tube: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("tube", options),
-  lathe: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("lathe", options),
-  extrude: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("extrude", options),
-  shape: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("shape", options),
-  torusKnot: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("torusKnot", options),
-  polyhedron: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("polyhedron", options),
-  roundedBox: (options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }) => instancedPrimitive("roundedBox", options),
+  cone: (options: AuraInstancedPrimitiveOptions) => instancedPrimitive("cone", options),
+  circle: (options: AuraInstancedPrimitiveOptions) => instancedPrimitive("circle", options),
+  ring: (options: AuraInstancedPrimitiveOptions) => instancedPrimitive("ring", options),
+  tube: (options: AuraInstancedPrimitiveOptions) => instancedPrimitive("tube", options),
+  lathe: (options: AuraInstancedPrimitiveOptions) => instancedPrimitive("lathe", options),
+  extrude: (options: AuraInstancedPrimitiveOptions) => instancedPrimitive("extrude", options),
+  shape: (options: AuraInstancedPrimitiveOptions) => instancedPrimitive("shape", options),
+  torusKnot: (options: AuraInstancedPrimitiveOptions) => instancedPrimitive("torusKnot", options),
+  polyhedron: (options: AuraInstancedPrimitiveOptions) => instancedPrimitive("polyhedron", options),
+  roundedBox: (options: AuraInstancedPrimitiveOptions) => instancedPrimitive("roundedBox", options),
   /**
    * SG-01 (parity-L5): `instances.mesh(geometry, material, count)` — three.js
    * `InstancedMesh` parity on the dense instance store (per-instance
@@ -51,32 +108,63 @@ export const instances = lazyNamespace(() => ({
   ) => instancedMeshFactory()(geometry, material, count),
   custom: (
     spec: AuraCustomGeometrySpec,
-    options: Omit<AuraPrimitiveOptions, "geometry"> & {
-      readonly transforms: readonly AuraTransformSpec[];
-      readonly colors?: readonly AuraColor[];
-    }
+    options: Omit<AuraInstancedPrimitiveOptions, "geometry">
   ) => instancedPrimitive("custom", { ...options, geometry: defineAuraCustomGeometry(spec) }),
   /**
    * P2 instanced GLB models (muse3jsparity-PRD): one draw class for repeated
    * static models. Skinned actors fall back with a D1 warning at mount (E1
    * owns rigs); explicitly unaware materials warn at build.
    */
-  model: <TAsset extends AuraAssetRef<"model">>(
-    asset: TAsset,
-    options: AuraModelOptions & {
-      readonly transforms: readonly AuraTransformSpec[];
-      readonly colors?: readonly AuraColor[];
-      readonly lod?: { readonly levels: readonly { readonly maxDistance: number }[]; readonly hysteresis?: number };
-      readonly instancingAware?: boolean;
-      readonly maxInstancesPerDraw?: number;
-      // PRD-10 §4.1 world options — any set marks the node for scatter promotion.
-      readonly static?: boolean;
-      readonly chunkSize?: number;
-      readonly shadowLod?: "none" | "lod1" | "impostor";
-      readonly wind?: boolean;
-      readonly impostor?: AuraAssetRef<"texture"> | "none";
-    }
-  ): AuraNodeBuilder<AuraModelNode> => {
+  model: instancedModel
+} as const));
+
+function instancedModel<TAsset extends AuraAssetRef<"model">>(asset: TAsset, options: AuraInstancedModelOptions & { readonly lights: AuraInstanceLightsOptions }): AuraNodeBuilder<AuraGroupNode>;
+function instancedModel<TAsset extends AuraAssetRef<"model">>(asset: TAsset, options: AuraInstancedModelOptions): AuraNodeBuilder<AuraModelNode>;
+function instancedModel<TAsset extends AuraAssetRef<"model">>(asset: TAsset, options: AuraInstancedModelOptions): AuraNodeBuilder<AuraModelNode> | AuraNodeBuilder<AuraGroupNode> {
+  const model = instancedModelNode(asset, options);
+  if (!options.lights) return model;
+  const node = model.toJSON();
+  const group: AuraGroupNode = {
+    kind: "group",
+    name: `${node.name ?? "instances.model"} with lights`,
+    children: [node, ...instanceLightNodes(node.name ?? "instances.model", options.transforms, options.lights)]
+  };
+  return new AuraNodeBuilder<AuraGroupNode>(group);
+}
+
+/** Rotate `v` by Euler XYZ radians — the same basis as `packScatterPlacements` (three.js XYZ order). */
+function rotateEulerXYZ(v: readonly [number, number, number], r: readonly [number, number, number]): [number, number, number] {
+  const cx = Math.cos(r[0]), sx = Math.sin(r[0]);
+  const cy = Math.cos(r[1]), sy = Math.sin(r[1]);
+  const cz = Math.cos(r[2]), sz = Math.sin(r[2]);
+  const m00 = cy * cz, m01 = -cy * sz, m02 = sy;
+  const m10 = cz * sx * sy + cx * sz, m11 = cx * cz - sx * sy * sz, m12 = -cy * sx;
+  const m20 = sx * sz - cx * cz * sy, m21 = cx * sy * sz + cz * sx, m22 = cx * cy;
+  return [m00 * v[0] + m01 * v[1] + m02 * v[2], m10 * v[0] + m11 * v[1] + m12 * v[2], m20 * v[0] + m21 * v[1] + m22 * v[2]];
+}
+
+/**
+ * GU47 E-G (WP-7): one `lights.point` per instance at
+ * `position + R(rotation) * (scale * offset)`, in the model node's space.
+ * Many point lights take the renderer's clustered-light path.
+ */
+export function instanceLightNodes(name: string, transforms: readonly AuraTransformSpec[], spec: AuraInstanceLightsOptions): AuraSceneNode[] {
+  return transforms.map((t, i) => {
+    const p = t.position ?? [0, 0, 0];
+    const s = t.scale === undefined ? [1, 1, 1] : typeof t.scale === "number" ? [t.scale, t.scale, t.scale] : t.scale;
+    const local: [number, number, number] = [spec.offset[0] * s[0]!, spec.offset[1] * s[1]!, spec.offset[2] * s[2]!];
+    const o = rotateEulerXYZ(local, t.rotation ?? [0, 0, 0]);
+    return lights.point({
+      name: `${name} light ${i}`,
+      position: [p[0] + o[0], p[1] + o[1], p[2] + o[2]],
+      color: spec.color,
+      power: spec.power,
+      distance: spec.distance
+    }).toJSON() as AuraSceneNode;
+  });
+}
+
+function instancedModelNode<TAsset extends AuraAssetRef<"model">>(asset: TAsset, options: AuraInstancedModelOptions): AuraNodeBuilder<AuraModelNode> {
     const built = createInstancedModelNode({
       asset,
       ...(options.name !== undefined ? { name: options.name } : {}),
@@ -99,9 +187,10 @@ export const instances = lazyNamespace(() => ({
     // the C-36 world handler under A3D_QR_WORLD — see compiler/world.ts).
     const worldOpted = options.static !== undefined || options.chunkSize !== undefined || options.shadowLod !== undefined || options.wind !== undefined || options.impostor !== undefined;
     const placements = worldOpted ? packScatterPlacements(asset, options.transforms, options.colors, options) : undefined;
-    const node: AuraModelNode & { readonly placements?: AuraScatterPlacement } = {
+    const node: AuraModelNode & { readonly placements?: AuraScatterPlacement; readonly instanceColorTarget?: InstanceColorTarget } = {
       ...base,
       ...(placements ? { placements } : {}),
+      ...(options.instanceColorTarget !== undefined ? { instanceColorTarget: options.instanceColorTarget } : {}),
       instances: built.node.instances.map((transform) => ({
         ...(transform.position ? { position: [...transform.position] as AuraVec3 } : {}),
         ...(transform.rotation ? { rotation: [...transform.rotation] as AuraVec3 } : {}),
@@ -119,15 +208,19 @@ export const instances = lazyNamespace(() => ({
       ...(built.diagnostics.fallbackWarning ? { instancedModelWarning: built.diagnostics.fallbackWarning.diagnostic } : {})
     };
     return new AuraNodeBuilder<AuraModelNode>(node);
-  }
-} as const));
+}
 
 /** `instances.model` reads the `model()` options plus these (anim-phys-06). */
 const INSTANCED_MODEL_OPTION_KEYS: readonly string[] = [
   ...MODEL_OPTION_KEYS,
   "transforms", "colors", "lod", "instancingAware", "maxInstancesPerDraw",
-  "static", "chunkSize", "shadowLod", "wind", "impostor"
+  "static", "chunkSize", "shadowLod", "wind", "impostor",
+  // GU47 E-G (WP-7)
+  "instanceColorTarget", "lights"
 ];
+
+/** `instances.<primitive>` / `instances.custom` read the primitive options plus these. */
+const INSTANCED_PRIMITIVE_BUILDER_KEYS: readonly string[] = [...INSTANCED_PRIMITIVE_OPTION_KEYS, "instanceColorTarget"];
 
 /** §7.1.5 scatter placements block carried on a model node pending promotion. */
 export interface AuraScatterPlacement {
@@ -183,14 +276,18 @@ function packScatterPlacements(
   };
 }
 
-export function instancedPrimitive(primitiveName: AuraPrimitiveNode["primitive"], options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }): AuraNodeBuilder<AuraPrimitiveNode> {
+export function instancedPrimitive(primitiveName: AuraPrimitiveNode["primitive"], options: AuraInstancedPrimitiveOptions): AuraNodeBuilder<AuraPrimitiveNode> {
   // Zero transforms is valid (a pool that is empty this frame): the compiler skips the node with INSTANCES_EMPTY.
   if (options.colors && options.colors.length !== options.transforms.length) throw new Error("Aura3D instance color count must match transform count.");
-  const { transforms, colors, ...primitiveOptions } = options;
+  const { transforms, colors, instanceColorTarget, ...primitiveOptions } = options;
   // The OPTION_IGNORED note names `instances.<kind>` and accepts `transforms` / `colors` (anim-phys-07).
-  return primitive(primitiveName, { ...primitiveOptions, instances: transforms, instanceColors: colors }, {
+  const built = primitive(primitiveName, { ...primitiveOptions, instances: transforms, instanceColors: colors }, {
     builder: `instances.${primitiveName}`,
-    validKeys: INSTANCED_PRIMITIVE_OPTION_KEYS,
+    validKeys: INSTANCED_PRIMITIVE_BUILDER_KEYS,
     options
   });
+  if (instanceColorTarget === undefined) return built;
+  // GU47 E-G (WP-7): stamp the colour target for the renderer (GU47(E-D) node field).
+  const node: AuraPrimitiveNode & { readonly instanceColorTarget: InstanceColorTarget } = { ...built.toJSON(), instanceColorTarget };
+  return new AuraNodeBuilder<AuraPrimitiveNode>(node);
 }
