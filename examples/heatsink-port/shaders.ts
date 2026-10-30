@@ -371,3 +371,36 @@ void main() {
   float a = clamp(core * vAlpha * wakeGain, 0.0, 4.0);
   outColor = vec4(vColor * a, min(a, 1.0));
 }`;
+
+/** GU47 IC-24 lane beacons: a dark post whose upper half glows in its district colour (per-vertex `beaconColor`) */
+export const BEACON_VERTEX = /* glsl */ `
+attribute vec3 beaconColor;
+out vec3 vWorld;
+out vec3 vNormal;
+out vec3 vBeacon;
+out vec2 vUv;
+void main() {
+  vec4 world = modelMatrix * vec4(position, 1.0);
+  vWorld = world.xyz;
+  vNormal = normalize(normalMatrix * normal);
+  vBeacon = beaconColor;
+  vUv = uv;
+  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
+}`;
+
+export const BEACON_FRAGMENT = /* glsl */ `
+in vec3 vWorld;
+in vec3 vNormal;
+in vec3 vBeacon;
+in vec2 vUv;
+out vec4 outColor;
+${COMMON}
+void main() {
+  vec3 N = normalize(vNormal);
+  gSun = 1.0;
+  gWorld = vWorld;
+  vec3 color = lit(vec3(0.08, 0.09, 0.12), N);
+  float band = smoothstep(0.62, 0.7, vUv.y);
+  color += vBeacon * band * beaconGlow * (0.8 + 0.2 * sin(u_time * 3.0 + vWorld.x * 0.05));
+  outColor = vec4(applyFog(color, vWorld), 1.0);
+}`;

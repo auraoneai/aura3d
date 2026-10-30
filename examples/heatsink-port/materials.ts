@@ -5,7 +5,7 @@
 import type { material } from "@aura3d/engine";
 import { LOOKS, type HeatsinkLookRow } from "./art/look";
 import { VESPER } from "./map";
-import { BLOB_FRAGMENT, BLOB_VERTEX, POINTS_FRAGMENT, POINTS_VERTEX, ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX, STREAK_FRAGMENT, STREAK_VERTEX, TERRAIN_FRAGMENT, VEIL_FRAGMENT, VEIL_VERTEX, WAKE_FRAGMENT, WAKE_VERTEX } from "./shaders";
+import { BLOB_FRAGMENT, BLOB_VERTEX, POINTS_FRAGMENT, POINTS_VERTEX, ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX, STREAK_FRAGMENT, STREAK_VERTEX, BEACON_FRAGMENT, BEACON_VERTEX, TERRAIN_FRAGMENT, VEIL_FRAGMENT, VEIL_VERTEX, WAKE_FRAGMENT, WAKE_VERTEX } from "./shaders";
 
 export type CustomSpec = Parameters<typeof material.custom>[0];
 export type Rgb = readonly [number, number, number];
@@ -168,6 +168,13 @@ export const wakeSpec = (): CustomSpec => ({
   side: "double"
 });
 
+/** GU47 IC-24 lane beacons (HDR glow above the bloom threshold) */
+export const beaconSpec = (): CustomSpec => ({
+  glsl: { vertex: BEACON_VERTEX, fragment: BEACON_FRAGMENT },
+  uniforms: { ...lightUniforms(), beaconGlow: { type: "f32", value: 1.8 } },
+  side: "double"
+});
+
 export const allProgramSpecs = (): readonly { readonly name: string; readonly spec: CustomSpec }[] => [
   ...withShading(LOOKS.twilight, () => [{ name: "road-twilight", spec: roadSpec() }, { name: "sky-twilight", spec: skySpec() }, { name: "terrain-twilight", spec: terrainSpec(80) }]),
   { name: "road", spec: roadSpec() },
@@ -181,7 +188,8 @@ export const allProgramSpecs = (): readonly { readonly name: string; readonly sp
   { name: "streak", spec: streakSpec() },
   { name: "points", spec: pointsSpec() },
   { name: "blob", spec: blobSpec() },
-  { name: "wake", spec: wakeSpec() }
+  { name: "wake", spec: wakeSpec() },
+  ...withShading(LOOKS.twilight, () => [{ name: "beacon-twilight", spec: beaconSpec() }])
 ];
 
 /** builds specs under one look row and restores the previous one (tests bake both looks) */

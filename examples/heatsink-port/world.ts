@@ -8,10 +8,11 @@ import { createCameraShake } from "@aura3d/engine/game";
 import { camera, cameras, effects, environments, geometry, lights, material, primitives, scene, type AuraApp } from "@aura3d/engine";
 import { CFG } from "./config";
 import { buildArches, buildDividers, buildProps, buildRails, buildRoad, buildShards, buildShoulders, groundQuad, hexLinear, padQuad, veilQuad, type MeshData } from "./meshes";
-import { blobSpec, pointsSpec, roadSpec, setShading, skySpec, solidSpec, streakSpec, terrainSpec, veilSpec, wakeSpec, type Rgb } from "./materials";
+import { beaconSpec, blobSpec, pointsSpec, roadSpec, setShading, skySpec, solidSpec, streakSpec, terrainSpec, veilSpec, wakeSpec, type Rgb } from "./materials";
 import { bankRoll, createIonWake, createSporeField, sporeField } from "./art/wake";
 import { districtFog, fogApproach } from "./art/look";
 import { afterburnerKick, directCamera, HEAT_STEPS, heatStep, VIGNETTE_PULSE, vignettePulse } from "./art/director";
+import { buildBeacons } from "./art/beacons";
 import { createPoolUniforms, glowEmitters, nearestPools } from "./art/pools";
 import { HEATSINK_VFX, registerHeatsinkVfx, vfxScale } from "./art/vfx";
 import { axisRotation, droneEuler, matrixToEulerZYX, multiplyMat3 } from "./orient";
@@ -149,6 +150,8 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   b.add(geometry.custom(dynamicFrom(arches.neon), { name: "arch-neon", material: material.custom(solidSpec(hexLinear("#bff8ff"), hexLinear("#80f4ff"), 2.2)) }).runtime({ id: fogTracked("arch-neon", "arch-neon") }));
   b.add(geometry.custom(dynamicFrom(buildShards(track)), { name: "shards", material: material.custom(solidSpec(hexLinear("#1a1c26"), hexLinear("#241a3a"), 0.12)) }).runtime({ id: fogTracked("shards", "shards") }));
   b.add(geometry.custom(dynamicFrom(props.crystals), { name: "crystals", material: material.custom(solidSpec(hexLinear("#3ad8c8"), hexLinear("#4ff0e0"), 0.9)) }).runtime({ id: fogTracked("crystals", "crystals") }));
+  /* IC-24 lane beacons every 44 m on both edges, district-coloured, one merged draw (+1); twilight only */
+  if (look.dressing.beacons) b.add(geometry.custom(dynamicFrom(buildBeacons(track)), { name: "beacons", material: material.custom(beaconSpec()), castShadow: false }).runtime({ id: fogTracked("beacons", "beacons") }));
   b.add(geometry.custom(dynamicFrom(groundQuad(5000, minY - 90)), { name: "abyss", material: material.custom(solidSpec(hexLinear("#2a3a40"), hexLinear("#0b1a26"), 0.05)) }).runtime({ id: fogTracked("abyss", "abyss") }));
   /* the earlier black sky was the draw-skip on unused declared uniforms (fixed in 4.0.7); the dome is back-culled again */
   b.add(primitives.sphere({ name: "sky", size: 3000, material: material.custom(skySpec()) }).runtime({ id: "sky" }));
@@ -615,6 +618,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       for (let c = 0; c < 3; c++) fogNow[c] = fogNow[c]! + (target[c]! - fogNow[c]!) * k;
       fogValue[0] = fogNow[0]; fogValue[1] = fogNow[1]; fogValue[2] = fogNow[2];
       for (const id of DISTRICT_FOG_NODES) node(id).setUniform?.("fogColor", fogValue);
+      if (row.dressing.beacons) node("beacons").setUniform?.("fogColor", fogValue);
       const hud = hexLinear(fr.sec.hud.color);
       for (let c = 0; c < 3; c++) glowNow[c] = glowNow[c]! + ((0.5 * hud[c]! + 0.5 * [0.376, 0.957, 1][c]!) - glowNow[c]!) * k;
       node("rail-posts").setUniform?.("glowColor", glowNow);
@@ -634,6 +638,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       const pulseGain = motion.reduced ? 0.5 : 1;
       nearestPools(emitters, p.position.x, p.position.z, pools, row.glow.pools, (kind, i) => (kind === "pad" ? padPulse[i]! : gatePulse[i]!) * pulseGain);
       for (const id of DISTRICT_FOG_NODES) { const h = node(id); h.setUniform?.("poolPos", pools.pos); h.setUniform?.("poolCol", pools.col); }
+      if (row.dressing.beacons) { const h = node("beacons"); h.setUniform?.("poolPos", pools.pos); h.setUniform?.("poolCol", pools.col); }
       if (row.glow.points > 0) {
         const dg = node("drone-glow");
         dg.setVisible(!p.crashed);
