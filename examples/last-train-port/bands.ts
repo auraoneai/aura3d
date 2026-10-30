@@ -272,3 +272,8 @@ export function postPlan(band: BandId, tier: "low" | "medium" | "high" | "ultra"
 export function lightningFlash(reducedFlash: boolean): { readonly peak: number; readonly seconds: number } {
   return reducedFlash ? { peak: 0.3, seconds: 0.15 } : { peak: 0.6, seconds: 0.18 };
 }
+
+/** LT-14: deterministic strike times, one 0.25 s window every 13 s (storm dusk only); true while a strike window is open. */
+export function storminess(seconds: number): boolean {
+  return seconds % 13 < 0.25 && seconds > 5;
+}

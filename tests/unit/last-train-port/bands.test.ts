@@ -145,3 +145,14 @@ describe("Lamplight Line effect pack (LT-14)", () => {
     expect(vfxEvents(base, { ...base, speed: 10, roll: 0.25 }, "clear")).toEqual(["lamplight-pantograph"]);
   });
 });
+
+describe("storm lightning (LT-14)", () => {
+  it("opens one short strike window every 13 s after the first 5 s", async () => {
+    const { storminess } = await import("../../../examples/last-train-port/bands");
+    let open = 0;
+    for (let t = 0; t < 60; t += 0.05) if (storminess(t)) open += 0.05;
+    expect(open).toBeGreaterThan(0.5);
+    expect(open).toBeLessThan(1.5);
+    expect(storminess(2)).toBe(false);
+  });
+});

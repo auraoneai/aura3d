@@ -9,7 +9,7 @@
  * and the output exposure. Everything the original fetched remotely is re-created or replaced with licensed assets.
  */
 import { camera, cameras, defineAuraAssets, effects, environments, geometry, lights, material, model, instances, primitives, scene, text3D, type AuraApp, type AuraAssetRef } from "@aura3d/engine";
-import { BANDS, HDRI_URL, bandFor, envRotationRad, keyPosition, parseBand, parseLook, rgb, shouldSwapBand, skySunDirection, townSky, type BandId, type LamplightHdri } from "./bands";
+import { BANDS, HDRI_URL, bandFor, lightningFlash, storminess, envRotationRad, keyPosition, parseBand, parseLook, rgb, shouldSwapBand, skySunDirection, townSky, type BandId, type LamplightHdri } from "./bands";
 import { LanternSky } from "./lanterns";
 import { RiderMotion, tramBob } from "./riderMotion";
 import { registerLamplightVfx, vfxEvents, type VfxSimView } from "./vfx";
@@ -210,7 +210,7 @@ function addBandLighting(b: Scene, data: SimData, band: BandId): void {
   const row = BANDS[band];
   b.add(FX.has("nohdri") ? environments.neutral({ intensity: row.envIntensity }) : environments.hdri({ name: "env-sky", texture: BAND_HDRI[row.hdri], intensity: row.envIntensity, rotation: envRotationRad(row), background: false }));
   b.add(lights.directional({ name: row.key.name, position: keyPosition(row), target: [0, 0, 0], intensity: row.key.intensity, color: row.key.color, shadow: FX.has("noshadow") ? false : { cascades: 3, maxDistance: 190, blend: 0.12, filter: "pcss" } }));
-  b.add(lights.hemisphere({ name: BOUNCE_ID, skyColor: row.hemisphere.sky, groundColor: row.hemisphere.ground, intensity: row.hemisphere.intensity }));
+  b.add(lights.hemisphere({ name: BOUNCE_ID, skyColor: row.hemisphere.sky, groundColor: row.hemisphere.ground, intensity: row.hemisphere.intensity }).runtime({ id: BOUNCE_ID }));
   if (row.practicals.platformPoint > 0) {
     const at = platformLightPositions(data, 0);
     PLATFORM_LIGHT_IDS.forEach((id, i) => b.add(lights.point({ name: id, position: at[i]!, intensity: row.practicals.platformPoint, distance: PLATFORM_LIGHT_RANGE, decay: 2, color: PLATFORM_LIGHT_COLOR, shadow: false }).runtime({ id })));
@@ -622,6 +622,7 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
   let prevVfx: VfxSimView | null = null;
   let pantographAt = -1;
   const riders = new RiderMotion();
+  let flashUntil = -1, flashOn = false;
   /** Builds the next town's band scene off the frame (a timer) so the docked swap does not build it. */
   const prefetch = (band: BandId): void => {
     if (prefetched.has(band)) return;
@@ -763,6 +764,13 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
         }
       }
       prevVfx = view;
+    }
+
+    /* GU47 LT-14: storm lightning in band C: the hemisphere bounce flares for <= 200 ms (peak 0.3 under reduced motion / flash) */
+    if (shownBand === "C") {
+      const fl = lightningFlash(rm);
+      if (!flashOn && storminess(seconds) && seconds > flashUntil + 1) { flashOn = true; flashUntil = seconds + fl.seconds; node(BOUNCE_ID).setLight?.({ intensity: BANDS.C.hemisphere.intensity * (1 + fl.peak * 6) }); }
+      else if (flashOn && seconds >= flashUntil) { flashOn = false; node(BOUNCE_ID).setLight?.({ intensity: BANDS.C.hemisphere.intensity }); }
     }
 
     /* GU47 LT-02: move the practical pool (platform points to the nearest town, the headlamp with the tram); LT-06 flare follows the sky sun */
