@@ -195,10 +195,7 @@ export async function createProductionRuntimeSceneRenderer(
     // casters (low 0 / medium 1 / high 2 / ultra 4); auto/unset keeps the
     // shadow config's own resolution (medium on a coarse pointer, else high).
     const mountShadowTier = explicitMountQualityTier(rendererOptions);
-    const productionRuntimeLights = createProductionRuntimeCollectedLights(snapshot, flags, {
-      hemisphereAsEnvironment: true,
-      ...(mountShadowTier ? { shadowTier: mountShadowTier } : {})
-    });
+    const productionRuntimeLights = createProductionRuntimeCollectedLights(snapshot, flags, { hemisphereAsEnvironment: true, ...(mountShadowTier ? { shadowTier: mountShadowTier } : {}) });
     // threejs-parity L7/SG-10: `scene().background({ texture | cube })` —
     // async decode like the C1/B3 upgrades; feeds `source.environmentBackground`
     // without ever touching `environmentLighting` (no implicit IBL).
