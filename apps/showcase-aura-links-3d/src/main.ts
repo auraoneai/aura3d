@@ -93,6 +93,7 @@ import { commitStroke } from "./game/strokeCommit";
 import { COURSE_LOOKS, contactShadowIntensity, courseFill, flagFlutterAmplitude, type LinksTier } from "./game/lighting";
 import { buildCourseRig } from "./game/lookRig";
 import { landingVfxFor, registerLinksVfx, type LinksVfxId } from "./game/vfx";
+import { IMPACT_FOV_KICK_DEG, cupCamPose, flyoverAllowed, flyoverShots, tracerCamPose, wantsCupCam, wantsTracerCam } from "./game/broadcast";
 import { clubForShot, planShot, puttRange, type ShotPlan } from "./game/autopilot";
 import {
   bracketRows,
@@ -971,6 +972,11 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   // ambient particles (game/lookRig.ts). `?look=original` restores the 4.6.2 rig (PRD §8 reversibility).
   if (lookMode === "original") return buildOriginalLookScene(course, terrain, nodes);
   const rig = buildCourseRig(course, hole, terrain, { tier: presentationTier, reducedMotion: state.reducedMotion });
+  // LINKS-12: the broadcast depth of field, High only (the engine drops DOF below High); toggled at run time so it is on
+  // only in the flyover and the cup cam (setBroadcastDof)
+  if (presentationTier === "high") {
+    nodes.push(effects.depthOfField({ name: "broadcast depth of field", focusDistance: 70, fStop: 4, maxBlur: 3 }));
+  }
   return scene()
     .addMany(rig.before)
     .add(rig.look)
@@ -1081,6 +1087,8 @@ function resolveHoleHandles(): void {
   trailHandles = Array.from({ length: TRAIL_COUNT }, (_, i) => req(`ball-trail-${i}`));
   readArrowHandles = Array.from({ length: 12 }, (_, i) => req(`read-arrow-${i}`));
   rangeRingHandles = Array.from({ length: 4 }, (_, i) => tryReq(`range-ring-${i}`)).filter(Boolean);
+  // a new hole scene re-creates its depth-of-field node: keep it off outside the flyover and the cup cam (LINKS-12)
+  if (!flyover && broadcastCam?.kind !== "cup") setBroadcastDof(false);
 }
 
 /* ------------------------------------------------------------------ *
@@ -1204,10 +1212,80 @@ function camApply(): void {
   (auraApp as any)?.camera?.setPose?.({ position: cam.eye, target: cam.target, fov: cam.fov });
 }
 
+/* ------------------------------------------------------------------ *
+ *  Broadcast camera language (GU47 LINKS-12, the signature effect)    *
+ * ------------------------------------------------------------------ */
+
+const broadcastOn = lookMode !== "original";
+/** the running hole flyover (an `app.camera.play()` sequence of E-H rail rigs under letterbox bars) */
+let flyover: { skip(): void; readonly done: Promise<void> } | null = null;
+/** a flyover is due once the hole's scene is mounted (startHole sets it) */
+let pendingFlyover = false;
+/** tracer cam (drives) or cup cam (short putts) for the shot in the air */
+let broadcastCam: { readonly kind: "tracer" | "cup"; readonly launch: Vec3; readonly yaw: number } | null = null;
+
+/** Depth of field only in the flyover and the cup cam (E-C runtime post toggle; the node is High-only). */
+function setBroadcastDof(on: boolean, focusDistance?: number): void {
+  if (!broadcastOn || presentationTier !== "high") return;
+  const post = (auraApp as any)?.post;
+  try {
+    post?.setEffectEnabled?.("depthOfField", on);
+    if (on && focusDistance !== undefined) post?.setEffect?.("depthOfField", { focusDistance });
+  } catch { /* a post surface without runtime control keeps the node's state */ }
+}
+
+function startFlyover(): void {
+  pendingFlyover = false;
+  const t = state.terrain;
+  const director = (auraApp as any)?.camera;
+  const allowed = flyoverAllowed({
+    reducedMotion: state.reducedMotion,
+    qa: bootUrlParams.get("qa") === "1",
+    still: isStillMode,
+    disabled: bootUrlParams.get("flyover") === "0"
+  });
+  // reduced motion, labs and capture modes get the cut to the address cam instead (PRD §6.3)
+  if (!broadcastOn || !allowed || !t || state.lab || state.phase !== "address") return;
+  if (typeof director?.play !== "function" || typeof director?.rigs?.rail !== "function") return;
+  try {
+    const shots = flyoverShots(t, state.hole).map((s) => ({
+      rig: director.rigs.rail({ points: s.points, lookAt: s.lookAt, fov: s.fov, duration: s.duration, ease: "inOutSine" }),
+      duration: s.duration,
+      blendIn: 0,
+      bars: true
+    }));
+    // `use` clears the per-frame setPose overrides, so the rails (not the address cam) drive the camera
+    director.use?.(director.rig);
+    const playback = director.play({ id: `links-flyover-${state.hole.number}`, shots, onEnd: "return" });
+    flyover = playback;
+    setBroadcastDof(true, 70);
+    void playback.done.then(() => {
+      if (flyover === playback) {
+        flyover = null;
+        setBroadcastDof(false);
+      }
+    });
+  } catch {
+    flyover = null;
+  }
+}
+
+/** Skip within one frame: any key, tap, or the swing. */
+function skipFlyover(): void {
+  const running = flyover;
+  if (!running) return;
+  flyover = null;
+  try { running.skip(); } catch { /* already done */ }
+  setBroadcastDof(false);
+  camApply();
+}
+
 function updateCamera(dt: number): void {
   const t = state.terrain;
   const r = state.round;
   cam.t += dt;
+  // the flyover sequence owns the camera until it ends or is skipped
+  if (flyover) return;
   if (qaPondView) {
     // ?qa=1 pond check: straight down over the hazard, the zone radius filling about 70% of the frame height
     const p = qaPondView;
@@ -1245,7 +1323,18 @@ function updateCamera(dt: number): void {
   const strikeHold = state.phase === "flight" && inFlight && simTime - impactAt < 0.55;
 
   const mode = cameraModeFor({ phase: state.phase, ballMoving: Boolean(inFlight), strikeHold: Boolean(strikeHold), lie: r.lie });
-  if (mode === "flight" && ball) {
+  const shotCam = mode === "flight" && ball && broadcastCam
+    ? broadcastCam.kind === "cup"
+      ? cupCamPose(t, ball.pos)
+      : ball.status === "flight" ? tracerCamPose(t, broadcastCam.launch, broadcastCam.yaw, ball.pos) : null
+    : null;
+  if (shotCam) {
+    // GU47 LINKS-12: the cup cam on short putts, the locked-off tracer cam on drives (until the first bounce)
+    cam.mode = "flight";
+    cam.eye = [shotCam.position[0], shotCam.position[1], shotCam.position[2]];
+    cam.target = [shotCam.target[0], shotCam.target[1], shotCam.target[2]];
+    cam.fov = shotCam.fov;
+  } else if (mode === "flight" && ball) {
     cam.mode = "flight";
     // chase cam: behind the ball along its velocity, ahead low
     const v = ball.vel;
@@ -1522,6 +1611,10 @@ function beginAddress(): void {
   pendingCommit = null;
   heroCelebrate = false;
   autoPlan = null;
+  if (broadcastCam) {
+    broadcastCam = null;
+    setBroadcastDof(false);
+  }
   cam.mode = "aim";
   setPrompt("SPACE — SWING · A/D AIM (SHIFT FINE) · P PIN · Q/E CLUB");
   $("swing-meter")?.classList.remove("show");
@@ -1535,6 +1628,7 @@ function beginAddress(): void {
 }
 
 function startSwing(): void {
+  skipFlyover();
   state.phase = "swing";
   // the difficulty sets the pure strip of the accuracy needle (amateur wide, legend narrow)
   state.swing.setDeadZone(pureStrip(state.difficulty));
@@ -1610,6 +1704,16 @@ function fireImpact(): void {
   if (lookMode !== "original") {
     if (!commit.club.putter) linksBurst(state.courseId === "mareCourse" ? "links-lowg-dust" : "links-strike", r.ballPos);
     startTracer();
+    // LINKS-12: cup cam on short putts (with depth of field on the ball), tracer cam on drives
+    skipFlyover();
+    const putter = commit.club.putter === true;
+    const launchAt: Vec3 = [r.ballPos[0], r.ballPos[1], r.ballPos[2]];
+    broadcastCam = wantsCupCam({ putter, distanceToCup: t.cupDistance(r.ballPos[0], r.ballPos[2]) })
+      ? { kind: "cup", launch: launchAt, yaw: commit.aimYaw }
+      : wantsTracerCam({ putter, carry: commit.club.carry * commit.power })
+        ? { kind: "tracer", launch: launchAt, yaw: commit.aimYaw }
+        : null;
+    if (broadcastCam?.kind === "cup") setBroadcastDof(true, 1.7 + t.cupDistance(r.ballPos[0], r.ballPos[2]) * 0.5);
   }
   void audio?.cue(commit.club.putter ? "putt" : "drive");
   updateCardHud();
@@ -1711,7 +1815,12 @@ function onHoled(): void {
     window.setTimeout(() => { flash.style.opacity = "0"; }, 220);
   }
   juiceFire("holed", { position: state.terrain!.cup });
-  if (lookMode !== "original") linksBurst("links-holeout-ring", state.terrain!.cup);
+  if (lookMode !== "original") {
+    linksBurst("links-holeout-ring", state.terrain!.cup);
+    // the hole-out orbit takes over (no depth of field outside the flyover and the cup cam)
+    broadcastCam = null;
+    setBroadcastDof(false);
+  }
   heroCelebrate = true;
   if (state.mode === "puttinglab") {
     state.lab = scorePuttingLab(state.lab!, true);
@@ -1895,6 +2004,9 @@ function startHole(idx: number): void {
   }
   pushEvent("hole", `hole ${hole.number}: ${hole.name} · par ${hole.par}`, "info");
   beginAddress();
+  // LINKS-12: the hole flyover plays once this hole's scene is mounted (frame() starts it)
+  skipFlyover();
+  pendingFlyover = broadcastOn;
 }
 
 function advanceHole(): void {
@@ -2093,7 +2205,11 @@ const JUICE_EVENTS_462: Record<string, any> = {
  */
 const JUICE_EVENTS: Record<string, any> = lookMode === "original"
   ? JUICE_EVENTS_462
-  : Object.fromEntries(Object.entries(JUICE_EVENTS_462).map(([k, { fx: _fx, ...rest }]) => [k, rest]));
+  : Object.fromEntries(Object.entries(JUICE_EVENTS_462).map(([k, { fx: _fx, ...rest }]) => [
+      k,
+      // LINKS-12: the 2-degree FOV kick at impact (the juice scales punches down under reduced motion)
+      k === "hit" ? { ...rest, punch: { fovDeg: IMPACT_FOV_KICK_DEG, ms: 140 } } : rest
+    ]));
 
 function spawnTurfPuff(pos: Vec3, zone: LieKind): void {
   const color = zone === "sand" ? "#e8d8a0" : zone === "green" || zone === "fringe" ? "#9be84e" : zone === "rough" ? "#4a6a3f" : "#7ab85a";
@@ -2177,6 +2293,11 @@ function frame(dt: number): void {
 
   if (bannerTimer && now > bannerTimer) { $("banner")?.classList.remove("show"); bannerTimer = 0; }
   if (msgTimer && now > msgTimer) { $("msg")?.classList.remove("show"); msgTimer = 0; }
+
+  // --- broadcast flyover (LINKS-12): any key skips it this frame (the key still does its usual job); a due flyover
+  // starts once the hole's scene is mounted ---
+  if (flyover && justPressed.size > 0) skipFlyover();
+  if (pendingFlyover && !pendingHoleScene) startFlyover();
 
   // --- input edges ---
   if (state.phase !== "menu") {
@@ -2716,6 +2837,8 @@ function publishEvidence(): void {
     phase: state.phase,
     cameraMode: cam.mode,
     cameraEye: [...cam.eye],
+    // GU47 LINKS-12 broadcast camera (flyover running, tracer/cup cam of the shot in the air) and the look variant
+    broadcast: { flyover: Boolean(flyover), shotCam: broadcastCam?.kind ?? null, look: lookMode, tier: presentationTier },
     flagRotation,
     course: state.courseId,
     hole: state.hole.number,
@@ -2894,6 +3017,9 @@ function boot(): void {
   // GU47 LINKS-11: runtime VFX are on again (E-F root-caused and fixed the floating dots in the engine; `?vfx=off` still
   // turns them off). The Links preset pack registers on the app's effects surface.
   registerLinksVfx((auraApp as any).effects, { reducedMotion: state.reducedMotion, reducedFlash: state.reducedFlash });
+  // LINKS-12: the broadcast depth of field starts off (only the flyover and the cup cam turn it on); a tap skips the flyover
+  setBroadcastDof(false);
+  window.addEventListener("pointerdown", () => skipFlyover());
 
   bootStage("audio");
   setupAudio();
