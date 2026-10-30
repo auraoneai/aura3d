@@ -1,13 +1,13 @@
-// Aura FC 3D — world scene: pitch, goals, stadium bowl, venue dressing.
+// Aura FC 3D — world scene: pitch, goals, stadium bowl, venue dressing, venue look and weather.
 //
-// One `scene()` graph is built once; venue switches only re-tint materials
-// and toggle dressing visibility (cage walls, mow stripes, dome, aurora
-// ribbons) — the same trick Top Tennis v2 uses, applied to a football pitch.
-// Look preset is the sports/table recipe: `interior-industrial` (indoor
-// haze, arena-fight post, turf green, white lines, dark crowd, accent ball).
+// The scene is rebuilt per venue (main.ts calls app.setScene when the venue changes, FC-21), so every venue gets its
+// own look row (look.ts, GU47 WP-19): look preset with the E-A overrides, night IBL or drawn sky, the main-stand flood
+// as the one shadowed key on night venues, a light-pool batch for the other towers, haze shafts, weather and the
+// venue's post nodes. applyVenue still re-tints and toggles the dressing handles (null-safe) after a rebuild.
 
 import {
-  camera, decals, effects, game, instances, lights, looks, material, model, primitives, scene
+  camera, decals, effects, game, instances, lights, looks, material, model, primitives, scene, sky, surfaces as engineSurfaces,
+  type AuraAssetRef, type AuraLookOverrides
 } from "@aura3d/engine";
 import { assets } from "../aura-assets-v2";
 import { VENUES, type VenueSpec } from "./content";
@@ -18,28 +18,276 @@ import {
 } from "./dims";
 import { athleteNodes } from "./rig";
 import { refereePatrol } from "./locomotion";
+import { MAIN_FLOOD_TOWER, VENUE_LOOKS, type FcVenueLook } from "./look";
+import { scoreboardTextNodes } from "./scoreboard3d";
+
+export { VENUE_LOOKS } from "./look";
 
 /** Referee height (m); also the model scale for the foot-locked walk phase. */
 export const REFEREE_TARGET_HEIGHT = 1.84;
 
-export const LOOK_ID = "interior-industrial" as const;
+/** Presentation options for one scene build (main.ts passes the page's accessibility and tier state). */
+export interface FcSceneOptions {
+  /** prefers-reduced-motion / ?reducedMotion: weather emission halves, no motion blur, no chromatic aberration. */
+  readonly reducedMotion?: boolean;
+}
+
+const HIDDEN = 0.0001;
+
+/** `?mirror=off` drops the Uyuni mirror (QA fallback, FC47-M3); always on outside a browser. */
+export function mirrorEnabled(search: string = typeof location === "undefined" ? "" : location.search): boolean {
+  return new URLSearchParams(search).get("mirror") !== "off";
+}
+
+/** Floodlight tower bases (corners of the bowl); index MAIN_FLOOD_TOWER is the main-stand flood. */
+export const FLOOD_TOWERS: readonly (readonly [number, number])[] = [
+  [-PITCH_HX - 6, -PITCH_HZ - 6], [PITCH_HX + 6, -PITCH_HZ - 6],
+  [-PITCH_HX - 6, PITCH_HZ + 6.5], [PITCH_HX + 6, PITCH_HZ + 6.5]
+];
+/** Lamp-head height of the flood banks (m). */
+const FLOOD_HEAD_Y = 12;
+/** The main-stand flood's lamp position: its spot, its cone and the haze-shaft light position share it. */
+export function mainFloodPosition(): [number, number, number] {
+  const [x, z] = FLOOD_TOWERS[MAIN_FLOOD_TOWER];
+  return [x * 0.94, FLOOD_HEAD_Y, z * 0.94];
+}
 
 /**
- * Per-venue look (FC-21): the night venues keep the floodlit `interior-industrial` recipe; the sunset beach and the
- * daytime salt flat get the matching outdoor looks, their own sky colour and a softer flood. The look is part of the
- * scene graph, so main.ts rebuilds the scene (app.setScene) when the venue changes between matches.
+ * The venue's look node (FC47-L1/L2/L3, S1). The E-A `background` override carries the venue sky colour, so the look
+ * HDRI (night IBL) lights the scene with `background: false` instead of painting itself as the sky (the old
+ * interior-industrial studio-HDRI-as-sky defect); day venues with a drawn sky pass `background: "look"`. Night venues
+ * turn the look key into a 0.4 unshadowed front fill (the main-stand flood is the one shadowed key); day venues keep a
+ * cascaded sun.
  */
-// fog and bloom are per venue: on the bright sand (Lagos) and salt (Uyuni) pitches the night settings (fog 0.5,
-// bloom 0.22 over 0.82) washed the frame out (remote run g09cap-after4: Lagos p5 164, Uyuni p5 182, no darks at all)
-export const VENUE_LOOKS: Readonly<Record<VenueId, { readonly look: "interior-industrial" | "golden-hour" | "outdoor-day"; readonly background: string; readonly exposureEv: number; readonly flood: number; readonly fog: number; readonly bloom: { readonly intensity: number; readonly threshold: number } }>> = {
-  favela: { look: "interior-industrial", background: "#140f0b", exposureEv: 0.08, flood: 2.3, fog: 0.5, bloom: { intensity: 0.22, threshold: 0.82 } },
-  munich: { look: "interior-industrial", background: "#0d1a24", exposureEv: 0.08, flood: 2.3, fog: 0.5, bloom: { intensity: 0.22, threshold: 0.82 } },
-  lagos: { look: "golden-hour", background: "#c98a5a", exposureEv: -0.35, flood: 0.9, fog: 0.15, bloom: { intensity: 0.08, threshold: 0.96 } },
-  kyoto: { look: "interior-industrial", background: "#0b0d1c", exposureEv: 0.08, flood: 2.3, fog: 0.5, bloom: { intensity: 0.22, threshold: 0.82 } },
-  uyuni: { look: "outdoor-day", background: "#9db8cf", exposureEv: -0.5, flood: 0.5, fog: 0.15, bloom: { intensity: 0.06, threshold: 0.97 } },
-  glacier: { look: "interior-industrial", background: "#08121c", exposureEv: 0.08, flood: 2.3, fog: 0.5, bloom: { intensity: 0.22, threshold: 0.82 } }
+/** FC47-P2: display LUT asset per venue. */
+export const VENUE_LUT_ASSETS: Readonly<Record<VenueId, AuraAssetRef<"lut">>> = {
+  munich: assets.fcLutMunich, kyoto: assets.fcLutKyoto, favela: assets.fcLutFavela,
+  lagos: assets.fcLutLagos, uyuni: assets.fcLutUyuni, glacier: assets.fcLutGlacier
 };
-const HIDDEN = 0.0001;
+
+function venueIdOf(vl: FcVenueLook): VenueId {
+  return (Object.keys(VENUE_LOOKS) as VenueId[]).find((id) => VENUE_LOOKS[id] === vl) ?? "munich";
+}
+
+export function venueLookOverrides(vl: FcVenueLook): AuraLookOverrides {
+  const drawSky = vl.skyHdri !== undefined || vl.look === "golden-hour";
+  const ibl = vl.nightIbl;
+  return {
+    background: drawSky ? "look" : vl.background,
+    exposureEv: vl.exposureEv,
+    fogDensityScale: vl.fog,
+    fog: { color: vl.fogColor },
+    sun: { elevationDeg: vl.sun.elevationDeg, azimuthDeg: vl.sun.azimuthDeg },
+    key: {
+      color: vl.key.color,
+      intensity: vl.key.intensity,
+      ...(vl.key.shadowed ? { shadow: { cascades: 3, mapSize: 2048, filter: "pcf" } } : {})
+    },
+    ...(vl.rim ? { rim: { color: vl.rim.color, intensity: vl.rim.intensity, azimuthDeg: vl.rim.azimuthDeg } } : {}),
+    // FC47-P2: the venue's split-tone display LUT rides on the look grade (E-C binds it in the display grade)
+    grade: { contrast: vl.grade.contrast, saturation: vl.grade.saturation, temperature: vl.grade.temperature, tint: vl.grade.tint, lut: VENUE_LUT_ASSETS[venueIdOf(vl)] },
+    post: vl.post,
+    ...(vl.skyHdri !== undefined ? { hdri: vl.skyHdri } : {}),
+    ...(ibl ? {
+      hdri: ibl.source === "night-2k" ? assets.fcNightIblHdri : ibl.source,
+      environmentIntensity: ibl.intensity,
+      environmentRotationDeg: ibl.rotationDeg
+    } : {})
+  };
+}
+
+export function venueLookNode(venue: VenueId): any {
+  const vl = VENUE_LOOKS[venue];
+  const group = looks.preset(vl.look, venueLookOverrides(vl)).toJSON() as any;
+  if (vl.key.shadowed) return group;
+  // The look key always requests a shadow; on night venues it is the unshadowed front fill (FC47-L2).
+  return {
+    ...group,
+    children: (group.children ?? []).map((n: any) => (n?.name === "look key light" ? { ...n, shadow: false } : n))
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Floodlights (FC47-L2, S2)                                          */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Soft additive light pool on an instanced plane: the three towers that hold no light (one shadowed flood is the
+ * art-direction key, and the Low tier caps lights per pixel) leave a radial pool on the turf instead. One draw for
+ * all three. The vertex stage reads `instanceMatrix` / `instanceColor` (identity / white on a plain draw).
+ */
+export const LIGHT_POOL_VERTEX_GLSL = `out vec2 vPoolUv;
+out vec3 vPoolTint;
+void main() {
+  vPoolUv = uv;
+  vPoolTint = instanceColor.rgb;
+  gl_Position = projectionMatrix * viewMatrix * (modelMatrix * instanceMatrix * vec4(position, 1.0));
+}`;
+export const LIGHT_POOL_FRAGMENT_GLSL = `in vec2 vPoolUv;
+in vec3 vPoolTint;
+out vec4 outColor;
+void main() {
+  vec2 d = vPoolUv * 2.0 - 1.0;
+  float r2 = dot(d, d);
+  float glow = poolStrength * exp(-3.0 * r2) * (1.0 - smoothstep(0.55, 1.0, r2));
+  outColor = vec4(vPoolTint * glow, glow);
+}`;
+
+function lightPoolMaterial(strength: number) {
+  return material.custom({
+    glsl: { vertex: LIGHT_POOL_VERTEX_GLSL, fragment: LIGHT_POOL_FRAGMENT_GLSL },
+    uniforms: { poolStrength: { type: "f32", value: strength } },
+    transparent: true,
+    depthWrite: false,
+    blending: "additive",
+    side: "double"
+  });
+}
+
+/** Pool transform for tower i: centred 45% of the way from the tower base to the centre spot, stretched along the aim. */
+export function lightPoolTransform(i: number): { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] } {
+  const [x, z] = FLOOD_TOWERS[i];
+  return { position: [x * 0.55, 0.025, z * 0.55], rotation: [0, Math.atan2(-x, -z), 0], scale: [18, 1, 28] };
+}
+
+/** FC47-P3: the two far banks the broadcast camera faces (the main-stand flood and its partner across the halfway line). */
+export const FLARE_TOWERS: readonly number[] = [MAIN_FLOOD_TOWER, 0];
+/**
+ * FC47-P3 lens flares on the two main banks at night (lights.lensFlare, frustum occlusion: no on-screen occluder test,
+ * so a flare also shows through a stand roof; edge fade 0.2). Three elements each (glow on the lamp head, two small
+ * ghosts) in the venue's flood colour; day venues get none. Expected cost: 6 additive sprites on the sprite path.
+ */
+export function floodFlareNodes(venue: VenueId): any[] {
+  const vl = VENUE_LOOKS[venue];
+  if (!vl.floodShadow) return [];
+  return FLARE_TOWERS.map((i) => {
+    const [x, z] = FLOOD_TOWERS[i]!;
+    return lights.lensFlare({
+      name: `fc-flood-flare-${i}`,
+      position: [x * 0.94, FLOOD_HEAD_Y, z * 0.94],
+      elements: [
+        { size: 260, distance: 0, color: vl.floodColor },
+        { size: 46, distance: 0.55, color: vl.floodColor },
+        { size: 90, distance: 0.9, color: vl.floodColor }
+      ],
+      occlusion: "frustum", edgeFade: 0.2, intensity: i === MAIN_FLOOD_TOWER ? 0.9 : 0.6
+    });
+  });
+}
+
+function floodNodes(v: VenueSpec): any[] {
+  const vl = VENUE_LOOKS[v.id];
+  const nodes: any[] = [];
+  FLOOD_TOWERS.forEach(([x, z], i) => {
+    nodes.push(
+      model(assets.fcFloodlightPylonMeshy, { name: `flood-${i}`, targetHeight: 12.5 })
+        .position(x, 0, z)
+        .rotate(0, Math.atan2(-x, -z), 0)
+    );
+    if (vl.cones > 0) {
+      nodes.push(
+        effects.lightCone({ name: `flood-cone-${i}`, position: [x * 0.94, FLOOD_HEAD_Y - 0.4, z * 0.94], direction: [-x * 0.05, -1, -z * 0.05], color: vl.floodColor, intensity: vl.cones, length: 13, coneAngle: 0.4, softness: 0.6 } as any)
+          .runtime(gameRuntime(`flood-cone-${i}`))
+      );
+    }
+  });
+  if (vl.flood > 0) {
+    // The main-stand flood: the night key (PCSS 2048, the scene's one production shadow), aimed past the centre spot so
+    // the far half of the pitch still reads; on the sunset venue an unshadowed bank under the cascaded sun.
+    nodes.push(
+      lights.spot({
+        name: "fc-main-flood", position: mainFloodPosition(), target: [-6, 0, 4], angle: 0.62, penumbra: 0.55,
+        intensity: vl.flood, color: vl.floodColor, distance: 120,
+        ...(vl.floodShadow ? { shadow: { filter: "pcss", mapSize: 2048, softness: 1.2 } } : {})
+      } as any)
+    );
+  }
+  if (vl.floodShadow) {
+    const others = FLOOD_TOWERS.map((_, i) => i).filter((i) => i !== MAIN_FLOOD_TOWER);
+    nodes.push(
+      (instances as any).plane({
+        name: "fc-flood-pools", size: [1, 1, 1],
+        transforms: others.map(lightPoolTransform),
+        colors: others.map(() => vl.floodColor),
+        material: lightPoolMaterial(Math.min(0.32, vl.flood * 0.05))
+      }).runtime(gameRuntime("fc-flood-pools"))
+    );
+  }
+  return nodes;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Sky, weather, haze shafts and venue post (FC47-S1/S2/S3, P1)       */
+/* ------------------------------------------------------------------ */
+
+/** Particle counts of the weather volumes (reduced motion halves emission, PRD 6.3). */
+export function weatherParticleCount(weather: FcVenueLook["weather"], reducedMotion = false): number {
+  const base = weather === "rain" ? 3200 : weather === "drizzle" ? 1600 : weather === "snow" ? 2400 : weather === "dust" ? 900 : 0;
+  return reducedMotion ? Math.round(base / 2) : base;
+}
+
+function weatherNodes(vl: FcVenueLook, reducedMotion: boolean): any[] {
+  const particleCount = weatherParticleCount(vl.weather, reducedMotion);
+  switch (vl.weather) {
+    case "rain":
+      // storm rain slanting across the main-stand flood (wind pushes it toward the camera-left)
+      return [effects.rain({ name: "fc-rain", intensity: 0.75, density: 0.85, color: "#c8d8ec", speed: 1.15, wind: [-1.2, -6.5, 0.45], particleCount, splashes: true, mist: true })];
+    case "drizzle":
+      return [effects.rain({ name: "fc-drizzle", intensity: 0.3, density: 0.45, color: "#ecd2de", speed: 0.7, wind: [0.5, -4, -0.3], particleCount, splashes: false, mist: true })];
+    case "snow":
+      return [effects.snow({ name: "fc-snow", intensity: 0.55, density: 0.7, color: "#eef6ff", speed: 0.8, wind: [-0.9, -1.0, -0.3], particleCount })];
+    case "dust":
+      // dust motes: the snow volume at a crawl, warm and small (FC47-S3)
+      return [effects.snow({ name: "fc-dust-motes", intensity: 0.2, density: 0.3, color: "#d9a066", speed: 0.08, wind: [0.35, 0.05, 0.1], size: 0.03, particleCount, mist: false } as any)];
+    default:
+      return [];
+  }
+}
+
+/**
+ * FC47-V2: three animated aurora curtains over the far stand (effects.auroraRibbon, beam pass) replace the three flat
+ * emissive planes. Reduced motion keeps the curtains but cuts sway and shimmer to 30% (PRD 6.3).
+ */
+export function auroraNodes(reducedMotion = false): any[] {
+  const motion = reducedMotion ? 0.3 : 1;
+  const bands = [
+    { x: -20, y: 21, z: -(PITCH_HZ + 26), color: "#54f0a8", top: "#3fd0c8", width: 46 },
+    { x: 4, y: 24, z: -(PITCH_HZ + 32), color: "#7fe8c9", top: "#7a5cff", width: 54 },
+    { x: 26, y: 20, z: -(PITCH_HZ + 24), color: "#5ef0b0", top: "#b06cff", width: 40 }
+  ];
+  return bands.map((b, i) =>
+    effects.auroraRibbon({
+      name: `fc-aurora-ribbon-${i}`, position: [b.x, b.y, b.z], color: b.color, colorTop: b.top,
+      intensity: 1.2, width: b.width, height: 11, segments: 96, sway: 0.9 * motion, shimmer: 0.6 * motion
+    } as any).runtime(gameRuntime(`fc-aurora-ribbon-${i}`))
+  );
+}
+
+export function atmosphereNodes(venue: VenueId, opts: FcSceneOptions = {}): any[] {
+  const vl = VENUE_LOOKS[venue];
+  const reducedMotion = opts.reducedMotion === true;
+  const nodes: any[] = [];
+  if (vl.starSky) {
+    // FC47-S1: the polar-night star sky (sky node only; dayNight's legacy spheres and its extra moon light stay out)
+    const night = sky.dayNight({ hour: vl.starSky.hour, starLimit: vl.starSky.starLimit });
+    const skyNode = night.nodes.find((n: any) => n.kind === "sky");
+    if (skyNode) nodes.push({ ...skyNode, name: "fc-polar-sky" });
+  }
+  nodes.push(...weatherNodes(vl, reducedMotion));
+  if (VENUES[venue].aurora) nodes.push(...auroraNodes(reducedMotion));
+  if (vl.shafts > 0) {
+    // FC47-S2: haze shafts from the main-stand flood (S4 god rays; off below Medium, the cones are the Low cue)
+    nodes.push(effects.volumetricFog({
+      name: "fc-flood-haze", density: 0.12, color: vl.floodColor, intensity: 0.6,
+      lightPosition: mainFloodPosition(), godRayDensity: vl.shafts, heightFalloff: 0.08, heightReference: 0
+    } as any));
+  }
+  // FC47-P1: the venue's display post on top of its output preset
+  nodes.push(effects.vignette({ name: "fc-vignette", intensity: vl.vignette }));
+  if (vl.grain > 0) nodes.push(effects.filmGrain({ name: "fc-grain", intensity: vl.grain }));
+  if (vl.chromaticAberration > 0 && !reducedMotion) nodes.push(effects.chromaticAberration({ name: "fc-ca", intensity: vl.chromaticAberration }));
+  return nodes;
+}
 
 const rng = (() => {
   let s = 0xa1f3c9;
@@ -93,23 +341,97 @@ export function stripeInstances(v: VenueSpec): { transforms: any[]; colors: stri
   return { transforms, colors };
 }
 
+/**
+ * Ground, apron and pitch materials of a venue (shared by the scene build and applyVenue, so a re-tint never undoes
+ * the venue's turf). FC47-M1: the pitch roughness comes from the look row (0.35 wet on Munich and Kyoto).
+ */
+export function surfaceMaterials(v: VenueSpec) {
+  const vl = VENUE_LOOKS[v.id];
+  return {
+    ground: material.pbr({ color: v.ground, roughness: 0.96 }),
+    apron: material.pbr({ color: v.apron, roughness: Math.min(0.9, vl.turfRoughness + 0.1) }),
+    pitch: pitchMaterial(v)
+  };
+}
+
+/** Turf tiling over the pitch plane (FC47-M1: 24 x 16 tiles, about 2.5 x 2.25 m each). */
+export const TURF_TILES: readonly [number, number] = [24, 16];
+
+/** Mix a hex colour toward white (0 = unchanged, 1 = white): the texture already carries the grass colour. */
+export function lightenHex(hex: string, t: number): string {
+  const n = parseInt(hex.replace("#", ""), 16);
+  const ch = (shift: number) => Math.round(((n >> shift) & 255) + (255 - ((n >> shift) & 255)) * t);
+  return `#${[16, 8, 0].map((sh) => ch(sh).toString(16).padStart(2, "0")).join("")}`;
+}
+
+/**
+ * FC47-M1 pitch surface per venue: real turf (acg-grass005 colour, normal and roughness, tiled 24x16; the venue colour
+ * is a light tint over the texture) on the grass venues with the wet roughness of the look row; clearcoat ice on
+ * Glacier; flat colour on the dirt, sand and salt venues (Uyuni's mirror is FC47-M3).
+ */
+export function pitchMaterial(v: VenueSpec) {
+  const vl = VENUE_LOOKS[v.id];
+  if (vl.surface === "grass") {
+    const tile = { scale: TURF_TILES };
+    return material.pbr({
+      color: lightenHex(v.pitch, 0.5), roughness: vl.turfRoughness,
+      texture: assets.fcTurfColor, normal: assets.fcTurfNormal, roughnessMap: assets.fcTurfRough, normalScale: 0.8,
+      texTransforms: { baseColor: tile, normal: tile, metallicRoughness: tile }
+    });
+  }
+  if (vl.surface === "ice") {
+    return material.pbr({ color: v.pitch, roughness: vl.turfRoughness, clearcoat: 1, clearcoatRoughness: 0.08 });
+  }
+  return material.pbr({ color: v.pitch, roughness: vl.turfRoughness });
+}
+
+/** Mow stripes over textured turf: a 30% tint so the grass texture reads underneath (FC47-M1). */
+export const STRIPE_OPACITY = 0.3;
+export function stripeMaterial(v: VenueSpec) {
+  const vl = VENUE_LOOKS[v.id];
+  return vl.surface === "grass"
+    ? material.pbr({ color: "#ffffff", roughness: vl.turfRoughness, opacity: STRIPE_OPACITY, depthWrite: false })
+    : material.pbr({ color: "#ffffff", roughness: 0.85 });
+}
+
+/** Favela cage walls: the acg-concrete034 set (FC47-M1), tinted with the venue wall colour. */
+export function cageWallMaterial(v: VenueSpec) {
+  return material.pbr({
+    color: lightenHex(v.wallColor, 0.35), roughness: 0.9,
+    texture: assets.fcConcreteColor, normal: assets.fcConcreteNormal, roughnessMap: assets.fcConcreteRough, normalScale: 0.7
+  });
+}
+
+/** Pitch-line paint: lit by the floods, a faint self-glow only (<= 0.1, the art-direction emissive-fill limit). */
+export function lineMaterial(v: VenueSpec) {
+  return material.pbr({ color: v.line, roughness: 0.6, emissive: v.line, emissiveIntensity: 0.08 });
+}
+
 function pitchNodes(v: VenueSpec): any[] {
-  const lineMat = material.pbr({ color: v.line, roughness: 0.6, emissive: v.line, emissiveIntensity: 0.14 });
+  const lineMat = lineMaterial(v);
+  const surfaces = surfaceMaterials(v);
 
   // Horizontal XZ planes use size: [widthX, 1, depthZ]
   const nodes: any[] = [
-    primitives.plane({ name: "fc-ground", size: [110, 1, 90], material: material.pbr({ color: v.ground, roughness: 0.96 }) })
+    primitives.plane({ name: "fc-ground", size: [110, 1, 90], material: surfaces.ground })
       .position(0, -0.03, 0).runtime(gameRuntime("fc-ground")),
-    primitives.plane({ name: "fc-apron", size: [PITCH_HX * 2 + 7, 1, PITCH_HZ * 2 + 7], material: material.pbr({ color: v.apron, roughness: 0.9 }) })
+    primitives.plane({ name: "fc-apron", size: [PITCH_HX * 2 + 7, 1, PITCH_HZ * 2 + 7], material: surfaces.apron })
       .position(0, -0.012, 0).runtime(gameRuntime("fc-apron")),
-    primitives.plane({ name: "fc-pitch", size: [PITCH_HX * 2, 1, PITCH_HZ * 2], material: material.pbr({ color: v.pitch, roughness: 0.85 }) })
+    primitives.plane({ name: "fc-pitch", size: [PITCH_HX * 2, 1, PITCH_HZ * 2], material: surfaces.pitch })
       .position(0, 0.002, 0).runtime(gameRuntime("fc-pitch"))
   ];
+  // FC47-M3: Uyuni's mirror flat: a planar reflection over the pitch (thin water film tint), under the lines (y 0.014)
+  // and above the pitch plane. Doubles the scene draws in its capture: `?mirror=off` is the QA fallback (phase 2
+  // measures it against the 480-draw Uyuni budget and picks the probe fallback if it is over).
+  const mirror = VENUE_LOOKS[v.id].mirror;
+  if (mirror && mirrorEnabled()) {
+    nodes.push(engineSurfaces.mirror({ name: "fc-mirror", size: [PITCH_HX * 2, PITCH_HZ * 2], resolution: mirror.resolution, tint: mirror.tint, position: [0, 0.006, 0] }));
+  }
 
   // 10 mow stripes across the length of the pitch (one instanced batch; hidden on venues without stripes)
   if (v.stripes) {
     const st = stripeInstances(v);
-    nodes.push((instances as any).plane({ name: "fc-stripes", size: [1, 1, 1], transforms: st.transforms, colors: st.colors, material: material.pbr({ color: "#ffffff", roughness: 0.85 }) })
+    nodes.push((instances as any).plane({ name: "fc-stripes", size: [1, 1, 1], transforms: st.transforms, colors: st.colors, material: stripeMaterial(v) })
       .runtime(gameRuntime("fc-stripes")));
   }
 
@@ -147,8 +469,9 @@ function pitchNodes(v: VenueSpec): any[] {
 
 function goalNodes(sx: -1 | 1): any[] {
   const gx = sx * PITCH_HX;
-  const postMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.45, roughness: 0.2, metalness: 0.1 });
-  const netMat = material.pbr({ color: "#ffffff", emissive: "#e2e8f0", emissiveIntensity: 0.22, roughness: 0.85, opacity: 0.42 });
+  // Painted posts and the net catch the floods; a faint self-glow only (<= 0.1, the art-direction emissive-fill limit).
+  const postMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.08, roughness: 0.2, metalness: 0.1 });
+  const netMat = material.pbr({ color: "#ffffff", emissive: "#e2e8f0", emissiveIntensity: 0.08, roughness: 0.85, opacity: 0.42 });
   const backX = gx + sx * GOAL_DEPTH;
   const goalScaleX = (GOAL_HALF_W * 2) / 1.897;
   const goalScaleY = GOAL_H / 1.282;
@@ -197,11 +520,44 @@ const CAGE_GAP_HALF = CAGE_GOAL_GAP;
 export const GOAL_NET_GLB_MAX = 1.897;
 const CAGE_TAGS = ["w-n", "w-s", "e-n", "e-s", "n", "s"] as const;
 
+/** Sponsor hoarding ring transforms (FC47-PF1 batch). */
+export function hoardingTransforms(): { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] {
+  const hz = PITCH_HZ + 2.4;
+  const hx = PITCH_HX + 2.4;
+  return ([
+    [0, -hz, hx * 2, 0], [0, hz, hx * 2, 0],
+    [-hx, 0, hz * 2, Math.PI / 2], [hx, 0, hz * 2, Math.PI / 2]
+  ] as const).map(([x, z, w, rot]) => ({ position: [x, 0.4, z], rotation: [0, rot, 0], scale: [w, 0.8, 0.16] }));
+}
+
+/** Bleacher tier transforms for a venue: far and both end stands per tier < standCount, near stand tiers 0-1 at 3+. */
+export function standTransforms(v: VenueSpec): { position: [number, number, number]; scale: [number, number, number] }[] {
+  const out: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+  for (let tier = 0; tier < 4; tier++) {
+    if (v.standCount <= tier) continue;
+    const y = 0.9 + tier * 1.3;
+    const wFar = PITCH_HX * 2 + 8 + tier * 3.4;
+    const lEnd = PITCH_HZ * 2 + 6 + tier * 2;
+    out.push(
+      { position: [0, y, -(PITCH_HZ + 4.6 + tier * 2.2)], scale: [wFar, 0.55, 2.0] },
+      { position: [-(PITCH_HX + 4.6 + tier * 2.2), y, 0], scale: [2.0, 0.55, lEnd] },
+      { position: [PITCH_HX + 4.6 + tier * 2.2, y, 0], scale: [2.0, 0.55, lEnd] }
+    );
+  }
+  if (v.standCount >= 3) {
+    for (let tier = 0; tier < 2; tier++) {
+      const y = 0.9 + tier * 1.3;
+      out.push({ position: [0, y * 0.85, PITCH_HZ + 5.2 + tier * 2.0], scale: [PITCH_HX * 2 + 8 + tier * 3.4, 0.55, 1.8] });
+    }
+  }
+  return out;
+}
+
 function stadiumNodes(v: VenueSpec): any[] {
   const nodes: any[] = [];
 
   /* ---- Favela cage walls (ball bounces off these) ---- */
-  const wallMat = material.pbr({ color: v.wallColor, roughness: 0.85 });
+  const wallMat = cageWallMaterial(v);
   const railMat = material.emissive({ color: v.accent, emissive: v.accent, emissiveIntensity: 0.5 });
   // End walls stop at the posts (FC-10): each goal line has two wall pieces, from the corner to GOAL_HALF_W + 0.2,
   // so the goal mouth stays open; sim.ts exempts the same gap from the cage bounce.
@@ -224,45 +580,21 @@ function stadiumNodes(v: VenueSpec): any[] {
     );
   }
 
-  /* ---- Sponsor hoarding ring ---- */
-  const hoardMat = material.emissive({ color: v.hoarding, emissive: v.accent, emissiveIntensity: 0.38 });
-  const hz = PITCH_HZ + 2.4;
-  const hx = PITCH_HX + 2.4;
-  for (const [x, z, w, rot] of [
-    [0, -hz, hx * 2, 0], [0, hz, hx * 2, 0],
-    [-hx, 0, hz * 2, Math.PI / 2], [hx, 0, hz * 2, Math.PI / 2]
-  ] as const) {
-    nodes.push(
-      primitives.box({ name: `hoard-${Math.round(x)}-${Math.round(z)}`, size: [w, 0.8, 0.16], material: hoardMat })
-        .position(x, 0.4, z).rotate(0, rot, 0)
-        .runtime(gameRuntime(`hoard-${Math.round(x)}-${Math.round(z)}`))
-    );
-  }
+  /* ---- Sponsor hoarding ring: one instanced box batch (FC47-PF1, was 4 boxes) ---- */
+  nodes.push(
+    (instances as any).box({ name: "fc-hoardings", size: [1, 1, 1], transforms: hoardingTransforms(), material: material.emissive({ color: v.hoarding, emissive: v.accent, emissiveIntensity: 0.38 }) })
+      .runtime(gameRuntime("fc-hoardings"))
+  );
 
-  /* ---- Bleacher bowl (runtime handles — hidden on cage/flat venues) ---- */
-  const seatMat = material.pbr({ color: "#18202c", roughness: 0.9 });
+  /* ---- Bleacher bowl: the venue's tiers as one instanced box batch (FC47-PF1, was 14 boxes; the scene is rebuilt
+     per venue, so only the tiers this venue shows are in the batch) ---- */
   const MAX_TIERS = 4;
-  for (let tier = 0; tier < MAX_TIERS; tier++) {
-    const y = 0.9 + tier * 1.3;
-    const wFar = PITCH_HX * 2 + 8 + tier * 3.4;
+  const standT = standTransforms(v);
+  if (standT.length > 0) {
     nodes.push(
-      primitives.box({ name: `stand-far-${tier}`, size: [wFar, 0.55, 2.0], material: seatMat })
-        .position(0, y, -(PITCH_HZ + 4.6 + tier * 2.2))
-        .runtime(gameRuntime(`stand-far-${tier}`)),
-      primitives.box({ name: `stand-end-w-${tier}`, size: [2.0, 0.55, PITCH_HZ * 2 + 6 + tier * 2], material: seatMat })
-        .position(-(PITCH_HX + 4.6 + tier * 2.2), y, 0)
-        .runtime(gameRuntime(`stand-end-w-${tier}`)),
-      primitives.box({ name: `stand-end-e-${tier}`, size: [2.0, 0.55, PITCH_HZ * 2 + 6 + tier * 2], material: seatMat })
-        .position(PITCH_HX + 4.6 + tier * 2.2, y, 0)
-        .runtime(gameRuntime(`stand-end-e-${tier}`))
+      (instances as any).box({ name: "fc-stands", size: [1, 1, 1], transforms: standT, material: material.pbr({ color: "#18202c", roughness: 0.9 }) })
+        .runtime(gameRuntime("fc-stands"))
     );
-    if (tier < 2) {
-      nodes.push(
-        primitives.box({ name: `stand-near-${tier}`, size: [wFar, 0.55, 1.8], material: seatMat })
-          .position(0, y * 0.85, PITCH_HZ + 5.2 + tier * 2.0)
-          .runtime(gameRuntime(`stand-near-${tier}`))
-      );
-    }
   }
 
   /* ---- Crowd — instanced capsules over the bowl ---- */
@@ -304,21 +636,9 @@ function stadiumNodes(v: VenueSpec): any[] {
     }).runtime(gameRuntime("fc-wavers")));
   }
 
-  /* ---- Floodlight towers + cones + real spots ---- */
-  const towers: [number, number][] = [
-    [-PITCH_HX - 6, -PITCH_HZ - 6], [PITCH_HX + 6, -PITCH_HZ - 6],
-    [-PITCH_HX - 6, PITCH_HZ + 6.5], [PITCH_HX + 6, PITCH_HZ + 6.5]
-  ];
-  towers.forEach(([x, z], i) => {
-    nodes.push(
-      model(assets.fcFloodlightPylonMeshy, { name: `flood-${i}`, targetHeight: 12.5 })
-        .position(x, 0, z)
-        .rotate(0, Math.atan2(-x, -z), 0),
-      lights.spot({ name: `flood-spot-${i}`, position: [x * 0.94, 12, z * 0.94], target: [0, 0, 0], angle: 0.52, penumbra: 0.5, intensity: VENUE_LOOKS[v.id].flood, color: v.floodColor, distance: 90 }),
-      effects.lightCone({ name: `flood-cone-${i}`, position: [x * 0.94, 11.6, z * 0.94], direction: [-x * 0.05, -1, -z * 0.05], color: v.floodColor, intensity: 0.3, length: 13, coneAngle: 0.4, softness: 0.6 } as any)
-        .runtime(gameRuntime(`flood-cone-${i}`))
-    );
-  });
+  /* ---- Floodlight towers: one real flood, a light-pool batch for the rest, cones (FC47-L2, S2) ---- */
+  nodes.push(...floodNodes(v));
+  nodes.push(...floodFlareNodes(v.id));
 
   /* ---- Scoreboard gantry + emissive screen ---- */
   nodes.push(
@@ -328,6 +648,8 @@ function stadiumNodes(v: VenueSpec): any[] {
       .position(0, 7.2, -(PITCH_HZ + 9.2))
       .runtime(gameRuntime("fc-scoreboard-screen"))
   );
+  // FC47-H1: SDF in-world score on the screen (a digit reel toggled by main.ts; text3D has no runtime setText)
+  nodes.push(...scoreboardTextNodes("#f3f0dc"));
 
   /* ---- Glacier dome + aurora ribbons (dome lowered to y=-6.5 when active so floor stays below turf) ---- */
   nodes.push(
@@ -336,14 +658,6 @@ function stadiumNodes(v: VenueSpec): any[] {
       .scale([HIDDEN, HIDDEN, HIDDEN])
       .runtime(gameRuntime("fc-dome"))
   );
-  for (let i = 0; i < 3; i++) {
-    nodes.push(
-      primitives.plane({ name: `fc-aurora-${i}`, size: [60, 7, 1], material: material.emissive({ color: "#7fe8c9", emissive: i === 1 ? "#7dfcff" : "#7fe8c9", emissiveIntensity: 0.55, opacity: 0.22 }) })
-        .position(-10 + i * 10, 19 + i * 2.2, -6 + i * 5)
-        .rotate(-0.5 - i * 0.12, 0.25 * i, 0)
-        .runtime(gameRuntime(`fc-aurora-${i}`))
-    );
-  }
 
   /* ---- 3D Meshy dugouts, stadium bowl, ball cart & touchline referee ---- */
   // Dugouts used to sit between the camera and the near touchline, filling
@@ -439,25 +753,45 @@ export const ATHLETE_IDS = [
   "a-gk", "a-df0", "a-df1", "a-mf", "a-fw"
 ] as const;
 
-/** Full scene graph — look preset first (per look-recipes), then world. */
-export function buildFcScene(venue: VenueId = "munich") {
+/** Full scene graph — the venue look first (per look-recipes), then world, atmosphere and post. */
+export function buildFcScene(venue: VenueId = "munich", opts: FcSceneOptions = {}) {
   const v = VENUES[venue];
   const vl = VENUE_LOOKS[venue];
   const s = scene()
-    // The night looks open the roof onto a dark sky tone; Lagos gets a sunset sky and Uyuni daylight.
+    // The night venues show their storm / lantern / dust / polar sky colour; Lagos and Uyuni draw their sky HDRI.
     .background(vl.background)
-    .add(looks.preset(vl.look, { fogDensityScale: vl.fog, exposureEv: vl.exposureEv }))
+    .add(venueLookNode(venue))
     .addMany(pitchNodes(v))
     .addMany(goalNodes(-1))
     .addMany(goalNodes(1))
     .addMany(stadiumNodes(v))
     .addMany(ballNodes());
   for (const id of ATHLETE_IDS) s.addMany(athleteNodes(id));
+  s.addMany(atmosphereNodes(venue, opts))
+    .add(effects.contactShadows({ intensity: 0.85, length: 0.32 }));
+  // PRD 6.3: no motion blur under reduced motion
+  if (opts.reducedMotion !== true) s.add(effects.motionBlur({ intensity: 0.1 }));
   return s
-    .add(effects.contactShadows({ intensity: 0.85, length: 0.32 }))
-    .add(effects.motionBlur({ intensity: 0.1 }))
     .add(effects.bloom({ intensity: vl.bloom.intensity, threshold: vl.bloom.threshold }))
     .camera(camera.perspective({ position: [0, 11.5, 23.5], target: [0, 0.9, -1], fov: 40 }));
+}
+
+/** The slice of `app.post` (E-C runtime post) the venue switches use. */
+export interface FcPostSwitches {
+  readonly post?: { setEffectEnabled?(name: string, enabled: boolean): void };
+}
+
+/**
+ * Runtime post switches for the page (FC47-P1/P3, PRD 6.3): the depth-of-field stage the cinematic-film preset
+ * contributes stays off during play (the goal-replay DOF turns it on and off again); reduced motion also drops the
+ * presets' chromatic aberration and motion blur. Returns the switches applied, for the evidence and the unit test.
+ */
+export function applyPostAccessibility(app: FcPostSwitches, reducedMotion: boolean): readonly string[] {
+  const off = ["depthOfField", ...(reducedMotion ? ["chromaticAberration", "motionBlur"] : [])];
+  for (const name of off) {
+    try { app.post?.setEffectEnabled?.(name, false); } catch { /* stub post surface */ }
+  }
+  return off;
 }
 
 /**
@@ -477,7 +811,8 @@ export interface WorldHandles {
   stripes: any;
   cages: any[]; cageRails: any[];
   hoardings: any[];
-  stands: any[];
+  /** FC47-PF1: the venue's stand tiers as one instanced batch (null when the venue has no bowl). */
+  stands: any;
   crowd: any;
   scoreboard: any;
   nets: any[];
@@ -502,20 +837,14 @@ export function resolveWorld(app: any): WorldHandles {
     stripes: tryReq(app, "fc-stripes"),
     cages: CAGE_TAGS.map((t) => tryReq(app, `cage-${t}`)),
     cageRails: CAGE_TAGS.map((t) => tryReq(app, `cage-rail-${t}`)),
-    hoardings: [[0, -(PITCH_HZ + 2.4)], [0, PITCH_HZ + 2.4], [-(PITCH_HX + 2.4), 0], [PITCH_HX + 2.4, 0]]
-      .map(([x, z]) => tryReq(app, `hoard-${Math.round(x as number)}-${Math.round(z as number)}`)),
-    stands: [
-      ...Array.from({ length: 4 }, (_, i) => `stand-far-${i}`),
-      ...Array.from({ length: 4 }, (_, i) => `stand-end-w-${i}`),
-      ...Array.from({ length: 4 }, (_, i) => `stand-end-e-${i}`),
-      "stand-near-0", "stand-near-1"
-    ].map((n) => tryReq(app, n)),
+    hoardings: [tryReq(app, "fc-hoardings")],
+    stands: tryReq(app, "fc-stands"),
     crowd: tryReq(app, "fc-crowd"),
     scoreboard: tryReq(app, "fc-scoreboard-screen"),
     nets: ["net-back--1", "net-roof--1", "net-n--1", "net-s--1", "net-back-1", "net-roof-1", "net-n-1", "net-s-1"].map((n) => tryReq(app, n)),
     dome: tryReq(app, "fc-dome"),
     referee: tryReq(app, "fc-referee"),
-    auroras: [0, 1, 2].map((i) => tryReq(app, `fc-aurora-${i}`)),
+    auroras: [0, 1, 2].map((i) => tryReq(app, `fc-aurora-ribbon-${i}`)),
     wavers: tryReq(app, "fc-wavers"),
     confetti: tryReq(app, "fc-confetti"),
     goalMeshes: [tryReq(app, "fc-goal-mesh--1"), tryReq(app, "fc-goal-mesh-1")],
@@ -529,9 +858,10 @@ export function resolveWorld(app: any): WorldHandles {
 
 /** Re-tint every venue-dependent surface. Called when state.venue changes. */
 export function applyVenue(h: WorldHandles, v: VenueSpec): void {
-  h.ground?.setMaterial(material.pbr({ color: v.ground, roughness: 0.96 }));
-  h.apron?.setMaterial(material.pbr({ color: v.apron, roughness: 0.9 }));
-  h.pitch?.setMaterial(material.pbr({ color: v.pitch, roughness: 0.85 }));
+  const surfaces = surfaceMaterials(v);
+  h.ground?.setMaterial(surfaces.ground);
+  h.apron?.setMaterial(surfaces.apron);
+  h.pitch?.setMaterial(surfaces.pitch);
   h.scoreboard?.setMaterial(material.emissive({ color: v.hoarding, emissive: v.accent, emissiveIntensity: 0.4 }));
   for (const hd of h.hoardings) hd?.setMaterial(material.emissive({ color: v.hoarding, emissive: v.accent, emissiveIntensity: 0.38 }));
   if (h.stripes) {
@@ -539,14 +869,13 @@ export function applyVenue(h: WorldHandles, v: VenueSpec): void {
     h.stripes.setInstances?.(st.transforms, st.colors);
     h.stripes.setVisible(v.stripes);
   }
-  for (const c of h.cages) c?.setMaterial(material.pbr({ color: v.wallColor, roughness: 0.85 })).setScale(v.walled ? [1, 1, 1] : [HIDDEN, HIDDEN, HIDDEN]).setVisible(v.walled);
+  for (const c of h.cages) c?.setMaterial(cageWallMaterial(v)).setScale(v.walled ? [1, 1, 1] : [HIDDEN, HIDDEN, HIDDEN]).setVisible(v.walled);
   for (const c of h.cageRails) c?.setMaterial(material.emissive({ color: v.accent, emissive: v.accent, emissiveIntensity: 0.5 })).setScale(v.walled ? [1, 1, 1] : [HIDDEN, HIDDEN, HIDDEN]).setVisible(v.walled);
-  h.stands.forEach((s, i) => {
-    const isNear = i >= 12;
-    const tier = i % 4;
-    const vis = isNear ? v.standCount >= 3 && tier < 2 : v.standCount > tier;
-    s?.setScale(vis ? [1, 1, 1] : [HIDDEN, HIDDEN, HIDDEN]).setVisible(vis);
-  });
+  if (h.stands) {
+    const st = standTransforms(v);
+    if (st.length > 0) h.stands.setInstances?.(st);
+    h.stands.setVisible(st.length > 0);
+  }
   h.crowd?.setVisible(v.standCount > 0);
   h.wavers?.setVisible(v.standCount > 0);
   // Lower dome floor to y=-6.5 when active so its bottom never occludes the turf
@@ -568,9 +897,7 @@ export function tickWorld(h: WorldHandles, t: number, opts: { cheering: boolean;
   h.referee?.setAnimation?.({ clip: ref.clip, loop: true, duration: ref.duration, startTime: t - ref.phase, crossFade: false });
 
   h.wavers?.setInstances?.(waverTransforms(t, cheer));
-  for (let i = 0; i < h.auroras.length; i++) {
-    h.auroras[i]?.setRotation(-0.5 - i * 0.12, 0.25 * i + Math.sin(t * 0.22 + i * 2) * 0.08, 0);
-  }
+  // FC47-V2: the aurora ribbons animate themselves (sway, shimmer); nothing to drive per frame
   if (opts.ripple > 0) {
     const k = 1 + Math.sin(opts.ripple * 22) * 0.06 * Math.min(1, opts.ripple);
     for (const n of h.nets) n?.setScale([k, 1, 1]);

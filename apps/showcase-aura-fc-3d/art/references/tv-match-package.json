@@ -1,0 +1,15 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-aura-fc-3d",
+  "file": "references/tv-match-package.json",
+  "source": "generic reference: a broadcast football graphics package (score bug, venue ident, goal lower third, replay stinger)",
+  "licence": "reference-only (description, no image)",
+  "why": "One compact score bug top-left, a lower third on goals and a replay stinger, set in one licensed sans family",
+  "match": [
+    "score bug: club tags, score and clock in one strip, top-left, never over the ball or the players",
+    "venue ident on kickoff and a goal lower third (scorer, minute) for about two seconds",
+    "a REPLAY stinger opens and closes the goal replay; text never smaller than 12 px on a 390x844 phone",
+    "one licensed face for all chrome (no system-ui fallback as the face)"
+  ],
+  "used_by": ["FC47-H1", "FC47-C1"]
+}

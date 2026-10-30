@@ -55,7 +55,7 @@ const panelCss = `
 .fc-panel { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
   z-index: 50; pointer-events: auto;
   background: radial-gradient(90% 70% at 50% 30%, rgba(10,26,32,.55), rgba(4,10,14,.82));
-  backdrop-filter: blur(3px); font-family: "Whitney","Graphik",system-ui,sans-serif; color: #f3f0dc; }
+  backdrop-filter: blur(3px); font-family: "A3G Calibre","Whitney","Graphik",sans-serif; color: #f3f0dc; }
 .fc-card { width: min(680px, 92vw); max-height: 84vh; overflow: auto; border-radius: 18px;
   background: linear-gradient(180deg, rgba(10,22,30,.96), rgba(6,12,17,.96));
   border: 1px solid rgba(216,255,62,.32); padding: 26px 30px;

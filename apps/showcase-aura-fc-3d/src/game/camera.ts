@@ -30,3 +30,67 @@ export function horizontalCoverage(eye: Vec3, target: Vec3, fovDeg: number, aspe
   const d = Math.hypot(eye[0] - target[0], eye[1] - target[1], eye[2] - target[2]);
   return 2 * d * Math.tan((fovDeg * Math.PI) / 360) * aspect;
 }
+
+/* ---------------- FC47-C1 broadcast package (GU47 WP-19, lane g09): pure shot poses, unit-tested ---------------- */
+
+/** Main gantry camera: eye 14 m above the turf, looking down 30 degrees at the play. */
+export const BROADCAST_HEIGHT = 14;
+export const BROADCAST_PITCH_DEG = 30;
+/** Vertical FOV that keeps the old rig's ~28 m of landscape coverage from the higher, farther gantry. */
+export const BROADCAST_FOV = 32;
+/** Tunnel-to-gantry rail intro length (seconds) with letterbox bars. */
+export const INTRO_RAIL_S = 4;
+
+export interface ShotPose { eye: Vec3; target: Vec3; fov: number }
+
+/** Gantry shot over the play: `followX` is the eased ball x, `ballZ` the ball's z (the eye eases toward near-side play). */
+export function broadcastPose(followX: number, ballX: number, ballZ: number): ShotPose {
+  const clampN = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+  const target: Vec3 = [ballX, 0.9, -1 + clampN(ballZ * 0.3, -4, 4)];
+  const back = (BROADCAST_HEIGHT - target[1]) / Math.tan((BROADCAST_PITCH_DEG * Math.PI) / 180);
+  return { eye: [followX, BROADCAST_HEIGHT, target[2] + back + clampN(ballZ * 0.25, -2.5, 2.5)], target, fov: BROADCAST_FOV };
+}
+
+/** Rail control points (eye) from the players' tunnel mouth on the near touchline up to the gantry over the centre spot. */
+export const INTRO_RAIL: readonly Vec3[] = [[-3, 1.7, 20.5], [-9, 4.5, 23], [-6, 10, 25], [0, BROADCAST_HEIGHT, -1 + (BROADCAST_HEIGHT - 0.9) / Math.tan((BROADCAST_PITCH_DEG * Math.PI) / 180)]];
+const INTRO_LOOK: readonly Vec3[] = [[-1, 1.4, 14], [0, 1.2, 4], [0, 0.9, -1]];
+
+function catmull(points: readonly Vec3[], u: number): Vec3 {
+  const n = points.length - 1;
+  const f = Math.min(n - 1e-9, Math.max(0, u) * n);
+  const i = Math.floor(f), t = f - i;
+  const p0 = points[Math.max(0, i - 1)]!, p1 = points[i]!, p2 = points[Math.min(n, i + 1)]!, p3 = points[Math.min(n, i + 2)]!;
+  const t2 = t * t, t3 = t2 * t;
+  return [0, 1, 2].map((k) => 0.5 * (2 * p1[k]! + (-p0[k]! + p2[k]!) * t + (2 * p0[k]! - 5 * p1[k]! + 4 * p2[k]! - p3[k]!) * t2 + (-p0[k]! + 3 * p1[k]! - 3 * p2[k]! + p3[k]!) * t3)) as Vec3;
+}
+function lerp3(points: readonly Vec3[], u: number): Vec3 {
+  const n = points.length - 1;
+  const f = Math.min(n, Math.max(0, u) * n);
+  const i = Math.min(n - 1, Math.floor(f)), t = f - i;
+  const a = points[i]!, b = points[i + 1]!;
+  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+}
+
+/** Intro rail at `elapsed` seconds: smoothstep along a Catmull-Rom through INTRO_RAIL; ends on the centred gantry shot. */
+export function introRailPose(elapsed: number): ShotPose {
+  const x = Math.min(1, Math.max(0, elapsed / INTRO_RAIL_S));
+  const u = x * x * (3 - 2 * x);
+  return { eye: catmull(INTRO_RAIL, u), target: lerp3(INTRO_LOOK, u), fov: 44 + (BROADCAST_FOV - 44) * u };
+}
+
+/**
+ * Goal replay shot: low behind the scoring corner flag side, framing the replayed ball and the goal mouth it entered.
+ * `side` is the goal's x sign. Reduced motion holds the start framing (no tracking sweep).
+ */
+export function replayPose(side: number, ballX: number, ballZ: number, reducedMotion: boolean, goalX: number): ShotPose {
+  const gx = side * goalX;
+  const target: Vec3 = reducedMotion ? [gx - side * 6, 1.2, 0] : [ballX * 0.6 + gx * 0.4, 1.1, ballZ * 0.7];
+  return { eye: [gx - side * 15, 3.4, 12.5], target, fov: 34 };
+}
+
+/** Full-time orbit: a slow rising orbit of the whole bowl. Reduced motion holds one wide frame. */
+export function fullTimeOrbitPose(elapsed: number, reducedMotion: boolean): ShotPose {
+  const a = reducedMotion ? 0.6 : 0.6 + elapsed * 0.09;
+  const rise = reducedMotion ? 0 : Math.min(1, elapsed / 12);
+  return { eye: [Math.sin(a) * 36, 14 + rise * 6, Math.cos(a) * 36], target: [0, 1, 0], fov: 46 };
+}

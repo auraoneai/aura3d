@@ -1,0 +1,136 @@
+{
+  "schema": "gu47.budget/1",
+  "slug": "aura-fc-3d",
+  "app": "apps/showcase-aura-fc-3d",
+  "wp": "WP-19",
+  "note": "before: WP-38 base captures (evidence/game-upgrades-47/before/aura-fc-3d/luma-before.json on gu47/wp38, 1280x720 software WebGL2, settle-60s). Lagos is already over the 360 limit before GU47 (444): FC47-PF1 (instanced/merged stands, crowd) has to pay for it. expectedDrawDeltaPhase1 is the phase-1 estimate from the scene graph; after: phase 2 (remote captures).",
+  "limits": {
+    "drawCalls": {
+      "favela": 360,
+      "munich": 360,
+      "lagos": 360,
+      "kyoto": 360,
+      "glacier": 360,
+      "uyuni": 480
+    },
+    "crowdDraws": 16,
+    "routeJsGzipDeltaKBMax": 40,
+    "shadowedLights": "1 (main-stand flood PCSS 2048 on night venues, cascaded sun on Lagos/Uyuni)",
+    "particles": {
+      "low": 600,
+      "medium": 1600,
+      "high": 3200,
+      "ultra": 4800
+    }
+  },
+  "variants": {
+    "favela": {
+      "before": {
+        "source": "gu47-before-aura-fc-3d settle-60s (gu47/wp38 c6b71095d)",
+        "drawCalls": 310,
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": null,
+        "routeJsGzipDeltaKB": 0,
+        "runnerFps": null,
+        "mean": 135.86,
+        "p5": 92,
+        "p95": 234,
+        "darkFrac": 0,
+        "clipFrac": 0
+      },
+      "expectedDrawDeltaPhase1": "+2 (light-pool batch, dust motes)",
+      "after": null
+    },
+    "munich": {
+      "before": {
+        "source": "gu47-before-aura-fc-3d settle-60s (gu47/wp38 c6b71095d)",
+        "drawCalls": 351,
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": null,
+        "routeJsGzipDeltaKB": 0,
+        "runnerFps": null,
+        "mean": 104.73,
+        "p5": 45,
+        "p95": 229,
+        "darkFrac": 0,
+        "clipFrac": 0
+      },
+      "expectedDrawDeltaPhase1": "+2 (light-pool batch, rain; haze shafts are a post stage)",
+      "after": null
+    },
+    "lagos": {
+      "before": {
+        "source": "gu47-before-aura-fc-3d settle-60s (gu47/wp38 c6b71095d)",
+        "drawCalls": 444,
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": null,
+        "routeJsGzipDeltaKB": 0,
+        "runnerFps": null,
+        "mean": 172,
+        "p5": 110,
+        "p95": 210,
+        "darkFrac": 0,
+        "clipFrac": 0
+      },
+      "expectedDrawDeltaPhase1": "+0 (cones removed -4, no weather)",
+      "after": null
+    },
+    "kyoto": {
+      "before": {
+        "source": "gu47-before-aura-fc-3d settle-60s (gu47/wp38 c6b71095d)",
+        "drawCalls": 344,
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": null,
+        "routeJsGzipDeltaKB": 0,
+        "runnerFps": null,
+        "mean": 69.42,
+        "p5": 40,
+        "p95": 231,
+        "darkFrac": 0,
+        "clipFrac": 0
+      },
+      "expectedDrawDeltaPhase1": "+2 (light-pool batch, drizzle)",
+      "after": null
+    },
+    "uyuni": {
+      "before": {
+        "source": "gu47-before-aura-fc-3d settle-60s (gu47/wp38 c6b71095d)",
+        "drawCalls": 312,
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": null,
+        "routeJsGzipDeltaKB": 0,
+        "runnerFps": null,
+        "mean": 227.68,
+        "p5": 170,
+        "p95": 243,
+        "darkFrac": 0,
+        "clipFrac": 0
+      },
+      "expectedDrawDeltaPhase1": "-4 (cones removed)",
+      "after": null
+    },
+    "glacier": {
+      "before": {
+        "source": "gu47-before-aura-fc-3d settle-60s (gu47/wp38 c6b71095d)",
+        "drawCalls": 384,
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": null,
+        "routeJsGzipDeltaKB": 0,
+        "runnerFps": null,
+        "mean": 95.42,
+        "p5": 47,
+        "p95": 228,
+        "darkFrac": 0,
+        "clipFrac": 0
+      },
+      "expectedDrawDeltaPhase1": "+3 (light-pool batch, snow, star sky)",
+      "after": null
+    }
+  }
+}

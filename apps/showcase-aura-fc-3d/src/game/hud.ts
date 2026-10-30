@@ -40,11 +40,45 @@ export interface Hud {
   setVisible(on: boolean): void;
   /** Persistent pause panel (stays until play resumes). */
   setPaused(on: boolean): void;
+  /** FC47-H1 TV package: venue ident card (venue name and local time of day), top centre. */
+  ident(venue: string, timeOfDay: string, ms?: number): void;
+  /** FC47-H1 TV package: goal lower third (scoring club and match minute) from the last update's clubs. */
+  goalLowerThird(team: 0 | 1, state: MatchState, ms?: number): void;
+  /** FC47-C1: letterbox bars while the intro rail plays. */
+  bars(on: boolean): void;
+  /** FC47-C1 / H1: the REPLAY stinger while a goal replay plays. */
+  replayTag(on: boolean): void;
+}
+
+/**
+ * FC47-H1: the HUD face is the E-J `sports-broadcast` theme face, Calibre (Klim, licensed web cut copied unmodified
+ * from packages/game/src/fonts into public/fc-fonts/, NOTICE.txt beside it). Registered with the FontFace API under
+ * the E-J family name; no generic system UI stack.
+ */
+export const FC_HUD_FONT = "A3G Calibre";
+export const FC_HUD_FONT_FACES = [
+  { file: "calibre-400.woff2", weight: "400" },
+  { file: "calibre-600.woff2", weight: "600 900" }
+] as const;
+let fontsRegistered = false;
+export function registerFcHudFonts(baseUrl = "/fc-fonts/", doc: Document | undefined = typeof document === "undefined" ? undefined : document): number {
+  if (fontsRegistered || !doc || typeof FontFace === "undefined") return 0;
+  fontsRegistered = true;
+  let n = 0;
+  for (const f of FC_HUD_FONT_FACES) {
+    try {
+      const face = new FontFace(FC_HUD_FONT, `url(${baseUrl}${f.file}) format("woff2")`, { weight: f.weight, display: "swap" });
+      (doc.fonts as unknown as { add(face: FontFace): void }).add(face);
+      void face.load().catch(() => undefined);
+      n++;
+    } catch { /* FontFace unsupported: the named fallbacks apply */ }
+  }
+  return n;
 }
 
 const css = `
 .fc-hud { position: fixed; inset: 0; pointer-events: none; z-index: 30;
-  font-family: "Whitney", "Graphik", system-ui, sans-serif; color: #f3f0dc; }
+  font-family: "A3G Calibre", "Whitney", "Graphik", sans-serif; color: #f3f0dc; }
 .fc-hud * { box-sizing: border-box; }
 .fc-bug { position: absolute; top: calc(var(--a3d-bar-space, 44px) + 8px); left: 18px; display: flex; align-items: stretch;
   background: linear-gradient(180deg, rgba(8,18,24,.92), rgba(5,12,16,.92));
@@ -88,7 +122,7 @@ const css = `
 .fc-tick-warn { border-left-color: #ff3b30; color: #ffb3ac; }
 .fc-tick-success { border-left-color: #d8ff3e; color: #e8f5c0; }
 .fc-banner { position: absolute; top: 34%; left: 50%; transform: translate(-50%,-50%) scale(.9);
-  font-family: "DIN Pro", sans-serif; font-weight: 800; font-size: 54px;
+  font-family: "A3G Calibre", "DIN Pro", sans-serif; font-weight: 800; font-size: 54px;
   letter-spacing: .12em; text-transform: uppercase; color: #f3f0dc; text-align: center;
   text-shadow: 0 4px 30px rgba(0,0,0,.7), 0 0 60px rgba(216,255,62,.3);
   opacity: 0; transition: opacity .2s, transform .3s cubic-bezier(.2,.9,.3,1.4); pointer-events: none; }
@@ -115,14 +149,37 @@ const css = `
 .fc-lab .sub { font-size: 12px; opacity: .7; letter-spacing: .1em; }
 .fc-hidden { display: none !important; }
 .fc-prompt { position: absolute; left: 50%; top: 58%; transform: translateX(-50%); padding: 8px 18px; border-radius: 10px;
-  font: 700 14px "Whitney", sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #0b1f1c;
+  font: 700 14px "A3G Calibre", "Whitney", sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #0b1f1c;
   background: linear-gradient(135deg,#d8ff3e,#9be84e); box-shadow: 0 8px 26px rgba(0,0,0,.4); white-space: nowrap; }
 .fc-pause { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none;
   background: rgba(4,10,14,.45); }
 .fc-pause > div { padding: 18px 34px; border-radius: 14px; text-align: center; background: rgba(7,16,22,.92);
   border: 1px solid rgba(216,255,62,.4); }
-.fc-pause b { display: block; font-family: "DIN Pro", sans-serif; font-size: 40px; letter-spacing: .16em; color: #f3f0dc; }
+.fc-pause b { display: block; font-family: "A3G Calibre", "DIN Pro", sans-serif; font-size: 40px; letter-spacing: .16em; color: #f3f0dc; }
 .fc-pause span { display: block; margin-top: 6px; font-size: 13px; letter-spacing: .1em; opacity: .8; }
+.fc-ident { position: absolute; top: calc(var(--a3d-bar-space, 44px) + 10px); left: 50%; transform: translate(-50%, -6px);
+  display: flex; align-items: stretch; background: rgba(7,16,22,.9); border-top: 3px solid #d8ff3e; opacity: 0;
+  transition: opacity .25s, transform .25s; }
+.fc-ident b { padding: 6px 12px; font-size: 15px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: #f3f0dc; }
+.fc-ident span { padding: 6px 12px; font-size: 13px; letter-spacing: .08em; color: #0b1f1c; background: #d8ff3e; font-weight: 600; }
+.fc-ident.show { opacity: 1; transform: translate(-50%, 0); }
+.fc-l3 { position: absolute; left: 18px; bottom: 96px; display: flex; flex-direction: column; min-width: 240px; opacity: 0;
+  transform: translateX(-16px); transition: opacity .25s, transform .3s; }
+.fc-l3 b { padding: 6px 14px; background: #d8ff3e; color: #0b1f1c; font-size: 22px; font-weight: 600; letter-spacing: .14em; }
+.fc-l3 span { padding: 5px 14px; background: rgba(7,16,22,.92); color: #f3f0dc; font-size: 14px; letter-spacing: .06em; }
+.fc-l3.show { opacity: 1; transform: translateX(0); }
+.fc-bars { position: absolute; inset: 0; pointer-events: none; }
+.fc-bars::before, .fc-bars::after { content: ""; position: absolute; left: 0; right: 0; height: 0; background: #000; transition: height .35s; }
+.fc-bars::before { top: 0; } .fc-bars::after { bottom: 0; }
+.fc-bars.show::before, .fc-bars.show::after { height: 10vh; }
+.fc-replay { position: absolute; top: calc(var(--a3d-bar-space, 44px) + 12px); right: 18px; display: flex; align-items: center; gap: 8px;
+  padding: 5px 14px; background: rgba(7,16,22,.92); border-left: 4px solid #d8ff3e; color: #f3f0dc; font-size: 18px; font-weight: 600;
+  letter-spacing: .22em; opacity: 0; transform: translateX(12px); transition: opacity .2s, transform .25s; }
+.fc-replay i { width: 9px; height: 9px; border-radius: 50%; background: #d8ff3e; font-style: normal; }
+.fc-replay.show { opacity: 1; transform: translateX(0); }
+@media (prefers-reduced-motion: reduce) { .fc-bars::before, .fc-bars::after, .fc-replay { transition: none; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .fc-ident, .fc-l3, .fc-banner { transition: opacity .15s; transform: none !important; } .fc-ident { transform: translateX(-50%) !important; } }
+@media (max-width: 760px) { .fc-l3 { bottom: 150px; min-width: 0; } .fc-l3 b { font-size: 18px; } }
 @media (max-width: 760px) { .fc-ticker { bottom: 110px; max-width: 220px; } .fc-bug { top: calc(var(--a3d-bar-space, 44px) + 4px); } .fc-banner { font-size: 30px; white-space: nowrap; } .fc-banner.goal { font-size: 44px; } }
 @media (prefers-reduced-motion: reduce) { .fc-banner, .fc-tick { transition: none; } }
 `;
@@ -160,6 +217,7 @@ export function createHud(host: HTMLElement): Hud {
   style.textContent = css;
   document.head.appendChild(style);
 
+  registerFcHudFonts();
   const root = el("div", "fc-hud") as HTMLElement;
   host.appendChild(root);
 
@@ -223,6 +281,22 @@ export function createHud(host: HTMLElement): Hud {
   const labBig = el("div", "big", lab);
   const labSub = el("div", "sub", lab);
 
+  // FC47-H1: venue ident and goal lower third
+  const identEl = el("div", "fc-ident", root);
+  const identVenue = el("b", "", identEl);
+  const identTime = el("span", "", identEl);
+  const l3 = el("div", "fc-l3", root);
+  const l3Title = el("b", "", l3);
+  const l3Sub = el("span", "", l3);
+  // FC47-C1: intro letterbox and the REPLAY stinger
+  const barsEl = el("div", "fc-bars", root);
+  const replayEl = el("div", "fc-replay", root);
+  el("i", "", replayEl);
+  el("span", "", replayEl).textContent = "REPLAY";
+  let identTimer = 0;
+  let l3Timer = 0;
+  let lastClubs: { home: ClubSpec; away: ClubSpec } | null = null;
+
   let bannerTimer = 0;
   let ledgerKey = "";
 
@@ -256,7 +330,25 @@ export function createHud(host: HTMLElement): Hud {
       while (ticker.children.length > 4) ticker.lastElementChild?.remove();
       window.setTimeout(() => { item.classList.remove("show"); window.setTimeout(() => item.remove(), 300); }, 7000);
     },
+    ident(venue, timeOfDay, ms = 3200) {
+      identVenue.textContent = venue;
+      identTime.textContent = timeOfDay;
+      identEl.classList.add("show");
+      window.clearTimeout(identTimer);
+      identTimer = window.setTimeout(() => identEl.classList.remove("show"), ms);
+    },
+    bars(on) { barsEl.classList.toggle("show", on); },
+    replayTag(on) { replayEl.classList.toggle("show", on); },
+    goalLowerThird(team, state, ms = 4000) {
+      const club = lastClubs ? (team === 0 ? lastClubs.home : lastClubs.away) : null;
+      l3Title.textContent = "GOAL";
+      l3Sub.textContent = `${club?.name ?? (team === 0 ? "Home" : "Away")}  ·  ${fmtClock(state)}  ·  ${state.score[0]} – ${state.score[1]}`;
+      l3.classList.add("show");
+      window.clearTimeout(l3Timer);
+      l3Timer = window.setTimeout(() => l3.classList.remove("show"), ms);
+    },
     update(state, ctx) {
+      lastClubs = { home: ctx.home, away: ctx.away };
       homeName.textContent = ctx.home.short;
       awayName.textContent = ctx.away.short;
       homeKit.style.background = HUD_KIT_COLORS[0];

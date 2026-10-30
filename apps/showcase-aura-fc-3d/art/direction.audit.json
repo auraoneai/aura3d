@@ -1,0 +1,1141 @@
+{
+  "schema": "aura3d.art-direction-audit/1",
+  "source": "apps/showcase-aura-fc-3d/art/direction.ts",
+  "sourceSha256": "54480bf9f1dd119baf42d5ac49f12b35d79a2452d483cbcf7c98cbbf3c97c41c",
+  "id": "showcase-aura-fc-3d",
+  "genre": "basketball",
+  "signatureEffect": "Rain slanting through steel floodlight shafts onto wet turf that throws back specular streaks, under a storm-navy night sky.",
+  "palette": {
+    "primary": [
+      "#14223a",
+      "#1e5c40",
+      "#e6eef6",
+      "#34465c"
+    ],
+    "accent": "#d8ff3e",
+    "reservedObjective": "#fdfdf6"
+  },
+  "environment": {
+    "hdri": "night-2k",
+    "background": "sky"
+  },
+  "violations": [],
+  "snapshot": {
+    "lights": [
+      {
+        "type": "directional",
+        "shadow": false,
+        "intensity": 0.4
+      },
+      {
+        "type": "directional",
+        "shadow": false,
+        "intensity": 1.1
+      },
+      {
+        "type": "spot",
+        "shadow": true,
+        "intensity": 3.8
+      }
+    ],
+    "hasAmbient": false,
+    "environment": {
+      "kind": "hdri",
+      "background": true
+    },
+    "models": [
+      {
+        "assetKey": "fcSoccerGoalNetMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcSoccerGoalNetMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcFloodlightPylonMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcFloodlightPylonMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcFloodlightPylonMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcFloodlightPylonMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcScoreboardGantryMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcGlacierDomeMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondDugout",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondDugout",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hoopsBallCart",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "diamondStadium",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcSoccerStrikerMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcHeroTrophyMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcMatchBallMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcMatchBallMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcGoalkeeperMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcSoccerStrikerMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcSoccerStrikerMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcSoccerStrikerMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcSoccerStrikerMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcGoalkeeperMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcSoccerStrikerMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcSoccerStrikerMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcSoccerStrikerMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "fcSoccerStrikerMeshy",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
+    "materials": [
+      {
+        "node": "fc-ground",
+        "practical": false
+      },
+      {
+        "node": "fc-apron",
+        "practical": false
+      },
+      {
+        "node": "fc-pitch",
+        "practical": false
+      },
+      {
+        "node": "fc-stripes",
+        "practical": false
+      },
+      {
+        "node": "fc-lines",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "line-circle",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "line-spot-c",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "pen-spot--1",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "pen-spot-1",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "flag--1--1",
+        "practical": false
+      },
+      {
+        "node": "flagtip--1--1",
+        "emissiveIntensity": 0.9,
+        "practical": true
+      },
+      {
+        "node": "flag--1-1",
+        "practical": false
+      },
+      {
+        "node": "flagtip--1-1",
+        "emissiveIntensity": 0.9,
+        "practical": true
+      },
+      {
+        "node": "flag-1--1",
+        "practical": false
+      },
+      {
+        "node": "flagtip-1--1",
+        "emissiveIntensity": 0.9,
+        "practical": true
+      },
+      {
+        "node": "flag-1-1",
+        "practical": false
+      },
+      {
+        "node": "flagtip-1-1",
+        "emissiveIntensity": 0.9,
+        "practical": true
+      },
+      {
+        "node": "post--1-n",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "post--1-s",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "bar--1",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "stay--1-n",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "stay--1-s",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "base-back--1",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "net-back--1",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "net-roof--1",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "net-n--1",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "net-s--1",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "post-1-n",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "post-1-s",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "bar-1",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "stay-1-n",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "stay-1-s",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "base-back-1",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "net-back-1",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "net-roof-1",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "net-n-1",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "net-s-1",
+        "emissiveIntensity": 0.08,
+        "practical": false
+      },
+      {
+        "node": "cage-w-n",
+        "practical": false
+      },
+      {
+        "node": "cage-rail-w-n",
+        "emissiveIntensity": 0.5,
+        "practical": true
+      },
+      {
+        "node": "cage-w-s",
+        "practical": false
+      },
+      {
+        "node": "cage-rail-w-s",
+        "emissiveIntensity": 0.5,
+        "practical": true
+      },
+      {
+        "node": "cage-e-n",
+        "practical": false
+      },
+      {
+        "node": "cage-rail-e-n",
+        "emissiveIntensity": 0.5,
+        "practical": true
+      },
+      {
+        "node": "cage-e-s",
+        "practical": false
+      },
+      {
+        "node": "cage-rail-e-s",
+        "emissiveIntensity": 0.5,
+        "practical": true
+      },
+      {
+        "node": "cage-n",
+        "practical": false
+      },
+      {
+        "node": "cage-rail-n",
+        "emissiveIntensity": 0.5,
+        "practical": true
+      },
+      {
+        "node": "cage-s",
+        "practical": false
+      },
+      {
+        "node": "cage-rail-s",
+        "emissiveIntensity": 0.5,
+        "practical": true
+      },
+      {
+        "node": "fc-hoardings",
+        "emissiveIntensity": 0.38,
+        "practical": true
+      },
+      {
+        "node": "fc-stands",
+        "practical": false
+      },
+      {
+        "node": "fc-crowd",
+        "practical": false
+      },
+      {
+        "node": "fc-wavers",
+        "practical": false
+      },
+      {
+        "node": "fc-flood-pools",
+        "practical": false
+      },
+      {
+        "node": "fc-scoreboard-screen",
+        "emissiveIntensity": 0.35,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-dash",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h1-1",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h1-2",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h1-3",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h1-4",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h1-5",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h1-6",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h1-7",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h1-8",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h1-9",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h0-0",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h0-1",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h0-2",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h0-3",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h0-4",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h0-5",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h0-6",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h0-7",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h0-8",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-h0-9",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a1-1",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a1-2",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a1-3",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a1-4",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a1-5",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a1-6",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a1-7",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a1-8",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a1-9",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a0-0",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a0-1",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a0-2",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a0-3",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a0-4",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a0-5",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a0-6",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a0-7",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a0-8",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "name": "fc score digits",
+        "node": "fc-score-a0-9",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "node": "fc-trophy-plinth",
+        "practical": false
+      },
+      {
+        "node": "fc-scuff--19--3",
+        "practical": false
+      },
+      {
+        "node": "fc-scuff-19.2-2.4",
+        "practical": false
+      },
+      {
+        "node": "fc-scuff--0.5-0.4",
+        "practical": false
+      },
+      {
+        "node": "fc-scuff-8--6",
+        "practical": false
+      },
+      {
+        "node": "fc-scuff--9-5.4",
+        "practical": false
+      },
+      {
+        "node": "fc-scuff-23--5",
+        "practical": false
+      },
+      {
+        "node": "fc-ball-shadow",
+        "practical": false
+      },
+      {
+        "node": "fc-aim-ring",
+        "emissiveIntensity": 1.3,
+        "practical": true
+      },
+      {
+        "node": "fc-goal-ring",
+        "emissiveIntensity": 1.6,
+        "practical": true
+      },
+      {
+        "node": "fc-lab-ring",
+        "emissiveIntensity": 1.15,
+        "practical": true
+      },
+      {
+        "node": "h-gk-shadow",
+        "practical": false
+      },
+      {
+        "node": "h-gk-ring",
+        "emissiveIntensity": 1.1,
+        "practical": true
+      },
+      {
+        "node": "h-df0-shadow",
+        "practical": false
+      },
+      {
+        "node": "h-df0-ring",
+        "emissiveIntensity": 1.1,
+        "practical": true
+      },
+      {
+        "node": "h-df1-shadow",
+        "practical": false
+      },
+      {
+        "node": "h-df1-ring",
+        "emissiveIntensity": 1.1,
+        "practical": true
+      },
+      {
+        "node": "h-mf-shadow",
+        "practical": false
+      },
+      {
+        "node": "h-mf-ring",
+        "emissiveIntensity": 1.1,
+        "practical": true
+      },
+      {
+        "node": "h-fw-shadow",
+        "practical": false
+      },
+      {
+        "node": "h-fw-ring",
+        "emissiveIntensity": 1.1,
+        "practical": true
+      },
+      {
+        "node": "a-gk-shadow",
+        "practical": false
+      },
+      {
+        "node": "a-gk-ring",
+        "emissiveIntensity": 1.1,
+        "practical": true
+      },
+      {
+        "node": "a-df0-shadow",
+        "practical": false
+      },
+      {
+        "node": "a-df0-ring",
+        "emissiveIntensity": 1.1,
+        "practical": true
+      },
+      {
+        "node": "a-df1-shadow",
+        "practical": false
+      },
+      {
+        "node": "a-df1-ring",
+        "emissiveIntensity": 1.1,
+        "practical": true
+      },
+      {
+        "node": "a-mf-shadow",
+        "practical": false
+      },
+      {
+        "node": "a-mf-ring",
+        "emissiveIntensity": 1.1,
+        "practical": true
+      },
+      {
+        "node": "a-fw-shadow",
+        "practical": false
+      },
+      {
+        "node": "a-fw-ring",
+        "emissiveIntensity": 1.1,
+        "practical": true
+      }
+    ],
+    "drawCalls": 0
+  },
+  "direction": {
+    "id": "showcase-aura-fc-3d",
+    "genre": "basketball",
+    "fantasy": "European broadcast night football: rain slants through steel floodlight banks onto wet turf, six venues in weather.",
+    "rebuildTier": "S-presentation",
+    "wave": 2,
+    "references": [
+      {
+        "file": "references/night-match-in-rain.json",
+        "source": "generic reference: a televised European night match in heavy rain under four steel floodlight banks",
+        "licence": "reference-only (description, no image)",
+        "why": "Rain streaks are only visible where they cross a floodlight shaft, back-lit toward the camera against a dark sky"
+      },
+      {
+        "file": "references/wet-turf-specular.json",
+        "source": "generic reference: a mown pitch soaked by rain, photographed from the main-stand gantry",
+        "licence": "reference-only (description, no image)",
+        "why": "Wet turf throws long specular streaks from each flood bank while the mow stripes stay readable underneath"
+      },
+      {
+        "file": "references/tv-match-package.json",
+        "source": "generic reference: a broadcast football graphics package (score bug, venue ident, goal lower third, replay stinger)",
+        "licence": "reference-only (description, no image)",
+        "why": "One compact score bug top-left, a lower third on goals and a replay stinger, set in one licensed sans family"
+      }
+    ],
+    "palette": {
+      "primary": [
+        "#14223a",
+        "#1e5c40",
+        "#e6eef6",
+        "#34465c"
+      ],
+      "accent": "#d8ff3e",
+      "reservedObjective": "#fdfdf6"
+    },
+    "lighting": {
+      "key": {
+        "type": "spot",
+        "colorTemperatureK": 5600,
+        "shadow": true
+      },
+      "fill": "ibl",
+      "practicals": 2,
+      "environment": {
+        "hdri": "night-2k",
+        "background": "sky"
+      },
+      "exposureEV": 0.15
+    },
+    "framing": {
+      "rig": "follow2d",
+      "subjectHeightFraction": [
+        0.08,
+        0.3
+      ],
+      "fovDeg": [
+        34,
+        54
+      ],
+      "mobile": "both"
+    },
+    "assets": [
+      {
+        "role": "character",
+        "assetKey": "fcSoccerStrikerMeshy",
+        "maxTriangles": 30000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 2048,
+        "animated": {
+          "clips": [
+            "Ready",
+            "Walk_Loop",
+            "Run",
+            "Sprint_Loop"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "assetKey": "fcGoalkeeperMeshy",
+        "maxTriangles": 30000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 2048,
+        "animated": {
+          "clips": [
+            "Ready",
+            "Run",
+            "Sprint_Loop"
+          ]
+        }
+      },
+      {
+        "role": "hero",
+        "assetKey": "fcMatchBallMeshy",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "fcSoccerGoalNetMeshy",
+        "maxTriangles": 10000,
+        "textureSet": "BC+N+ORM+E",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "fcFloodlightPylonMeshy",
+        "maxTriangles": 12000,
+        "textureSet": "BC",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "fcScoreboardGantryMeshy",
+        "maxTriangles": 12000,
+        "textureSet": "BC",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "fcGlacierDomeMeshy",
+        "maxTriangles": 14000,
+        "textureSet": "BC",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "fcHeroTrophyMeshy",
+        "maxTriangles": 30000,
+        "textureSet": "BC",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "diamondStadium",
+        "maxTriangles": 16000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "diamondDugout",
+        "maxTriangles": 16000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "hoopsBallCart",
+        "maxTriangles": 14000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      }
+    ],
+    "vfx": [
+      {
+        "event": "kick",
+        "kind": "fc-turf-divot"
+      },
+      {
+        "event": "tackle",
+        "kind": "fc-turf-divot"
+      },
+      {
+        "event": "wet-touch",
+        "kind": "fc-wet-splash"
+      },
+      {
+        "event": "goal-net",
+        "kind": "fc-net-spark"
+      },
+      {
+        "event": "goal",
+        "kind": "fc-goal-pyro"
+      },
+      {
+        "event": "save",
+        "kind": "fc-net-spark"
+      },
+      {
+        "event": "storm",
+        "kind": "fc-lightning"
+      },
+      {
+        "event": "ball-flight",
+        "kind": "trail"
+      },
+      {
+        "event": "weather",
+        "kind": "rain"
+      }
+    ],
+    "audio": [
+      {
+        "event": "kick",
+        "cue": "fc-kick",
+        "variants": 1
+      },
+      {
+        "event": "goal-net",
+        "cue": "fc-net",
+        "variants": 1
+      },
+      {
+        "event": "woodwork",
+        "cue": "fc-post",
+        "variants": 1
+      },
+      {
+        "event": "whistle",
+        "cue": "referee-whistle",
+        "variants": 1
+      },
+      {
+        "event": "crowd",
+        "cue": "stadium-crowd-bed",
+        "variants": 1
+      }
+    ],
+    "signatureEffect": "Rain slanting through steel floodlight shafts onto wet turf that throws back specular streaks, under a storm-navy night sky.",
+    "standIns": [
+      {
+        "feature": "box stands, capsule crowd, borrowed dugout / stadium / ball cart",
+        "file": "src/game/scene.ts",
+        "request": "R-14-07",
+        "removeWhen": "WP-36 football kit (stand module, rigged fans, dugout, ball cart) admitted"
+      },
+      {
+        "feature": "colour-only athlete kit materials and a base-colour-only match ball",
+        "file": "src/game/rig.ts",
+        "request": "R-14-07",
+        "removeWhen": "WP-36 textured kits (BC+N, number sheet) and a BC+N ball admitted"
+      },
+      {
+        "feature": "instanced light pools for the three unshadowed towers",
+        "file": "src/game/scene.ts",
+        "request": "R-14-13",
+        "removeWhen": "a per-tier multi-caster budget allows four shadowed floods"
+      }
+    ],
+    "criticalCategories": [
+      "lighting",
+      "atmospheric_effects",
+      "vfx",
+      "material_quality",
+      "camera"
+    ],
+    "tiers": {
+      "low": {
+        "particles": 600,
+        "shadowMap": 1024,
+        "cascades": 1,
+        "textureMax": 1024
+      },
+      "medium": {
+        "particles": 1600,
+        "shadowMap": 2048,
+        "cascades": 2,
+        "textureMax": 2048
+      },
+      "high": {
+        "particles": 3200,
+        "shadowMap": 2048,
+        "cascades": 3,
+        "textureMax": 2048
+      },
+      "ultra": {
+        "particles": 4800,
+        "shadowMap": 4096,
+        "cascades": 4,
+        "textureMax": 4096
+      }
+    }
+  }
+}
