@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { buildWorld, bellLightIntensity } from "../../../examples/where-the-wind-wanders-port/world";
 import { PAPER_GLSL, paperPass } from "../../../examples/where-the-wind-wanders-port/paper-pass";
+import { paintSpec, propSpec } from "../../../examples/where-the-wind-wanders-port/world";
+import { PAINT_FRAGMENT, PROP_FRAGMENT } from "../../../examples/where-the-wind-wanders-port/shaders";
 
 interface Node { readonly kind?: string; readonly effect?: string; readonly saturation?: number; readonly contrast?: number; readonly intensity?: number; readonly postAuthored?: readonly string[]; readonly children?: readonly Node[] }
 const effectsOf = (options: Parameters<typeof buildWorld>[0]): Node[] => {
@@ -23,6 +25,16 @@ describe("where-the-wind-wanders-port painted GLB materials (WW47-M1)", () => {
     expect(models.find((m) => m.name === "belltower-bell")?.materialOverrides?.[0]?.metallic).toBe(0.9);
     for (const m of models) for (const o of m.materialOverrides ?? []) expect(o.replaceTextures).not.toBe(true);
     expect(modelsOf({ look: "original" }).every((m) => m.materialOverrides === undefined)).toBe(true);
+  });
+});
+
+describe("where-the-wind-wanders-port painted detail (WW47-M2)", () => {
+  it("paintAmt defaults to 0 (the 4.6 surfaces) and gates the wind-aligned strokes, ochre path and prop grain", () => {
+    expect(paintSpec().uniforms?.paintAmt).toEqual({ type: "f32", value: 0 });
+    expect(propSpec().uniforms?.paintAmt).toEqual({ type: "f32", value: 0 });
+    expect(PAINT_FRAGMENT).toMatch(/dot\(p, WIND_DIR\)/);
+    expect(PAINT_FRAGMENT).toMatch(/pathEdge \* 0\.42 \* paintAmt/);
+    expect(PROP_FRAGMENT).toMatch(/paintAmt > 0\.0 && k != 7 && k != 8/);
   });
 });
 

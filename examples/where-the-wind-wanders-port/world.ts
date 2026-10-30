@@ -39,7 +39,9 @@ export const daylightUniforms = (): NonNullable<CustomSpec["uniforms"]> => ({
   fogCol: { type: "vec3", value: [...ORIGINAL.fogColor] },
   fogDensity: { type: "f32", value: ORIGINAL.fogDensity },
   fogHeight: { type: "f32", value: 0 },
-  cloudShadowAmt: { type: "f32", value: 0 }
+  cloudShadowAmt: { type: "f32", value: 0 },
+  /** WW47-M2: the GU47 painted detail (wind-aligned strokes, ochre path, prop grain); 0 keeps the 4.6 surfaces. */
+  paintAmt: { type: "f32", value: 0 }
 });
 /** Writes one daylight frame into a COMMON-based program's uniforms. */
 export function writeDaylightUniforms(handle: { setUniform?(name: string, value: number | readonly number[]): unknown }, f: DaylightFrame): void {
@@ -535,7 +537,11 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       // WW47-L1: one daylight state for every painted program, eased over 6 s between story keys
       const daylight = createDaylightDriver({ original });
       daylight.snap(options.daylightKey ?? 0);
-      if (!original) { node("sky").setUniform?.("skyPainted", 1); node("foliage").setUniform?.("gustAmt", 1); }
+      if (!original) {
+        node("sky").setUniform?.("skyPainted", 1);
+        node("foliage").setUniform?.("gustAmt", 1);
+        for (const id of daylightIds) node(id).setUniform?.("paintAmt", 1);
+      }
       // WW47-V1..V3: the wind's particles and the event bursts (none on Low or under ?look=original)
       const vfx = original ? null : createWindVfx(app, { low: options.quality === "low", reducedMotion: () => motion() < 1, reducedFlash: () => motion() < 1 });
       const sequencer = createCameraSequencer({ reducedMotion: () => original || options.sequences !== true || motion() < 1 });

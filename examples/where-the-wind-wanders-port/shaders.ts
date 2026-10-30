@@ -288,6 +288,16 @@ void main() {
   float dot1 = step(0.9, h) * (1.0 - smoothstep(0.06, 0.1, length(local - (vec2(hash21(cell + 4.0), hash21(cell + 9.0)) - 0.5) * 0.6)));
   vec3 fc = h > 0.97 ? vec3(0.9, 0.82, 0.28) : h > 0.94 ? vec3(0.9, 0.9, 0.85) : vec3(0.62, 0.7, 0.95);
   albedo = mix(albedo, fc * 0.85, dot1 * grassy * 0.85);
+  // WW47-M2 (GU47 only, paintAmt 0 on ?look=original): brush strokes laid along the wind, long downwind and narrow
+  // across it, and an ochre band down the worn path with brush-broken edges. Mean factor ~1, so the key stays the key.
+  vec2 wq = vec2(dot(p, WIND_DIR), dot(p, vec2(-WIND_DIR.y, WIND_DIR.x)));
+  float lay = vnoise(vec2(wq.x * 0.9, wq.y * 7.0) + broad * 2.5);
+  float bristle = vnoise(vec2(wq.x * 2.6, wq.y * 31.0));
+  albedo *= mix(1.0, 0.82 + 0.3 * lay + 0.12 * (bristle - 0.5), paintAmt);
+  float pathD = p.y - (3.5 + 1.7 * sin(0.082 * p.x));
+  float pathBand = exp(-(pathD * pathD) / 0.55) * step(-52.0, p.x) * step(p.x, 58.0);
+  float pathEdge = smoothstep(0.25, 0.75, pathBand + (lay - 0.5) * 0.5);
+  albedo = mix(albedo, vec3(0.6, 0.4, 0.15) * (0.9 + 0.2 * bristle), pathEdge * 0.42 * paintAmt);
   // a little relief from the brush field so slopes catch the sun
   float e = 0.12;
   float h0 = vnoise(p * 2.4);
@@ -520,6 +530,17 @@ void main() {
   } else if (k == 10) {
     albedo = vTint;
     wrap = 0.5; sss = 0.3;
+  }
+  // WW47-M2 (GU47 only): triplanar brush grain on the painted props (not the glass, k 7, or the brass, k 8), strokes
+  // stretched along one axis of each plane so plaster, wood and stone read as gouache rather than flat fills
+  if (paintAmt > 0.0 && k != 7 && k != 8) {
+    vec3 bw = pow(abs(n), vec3(4.0));
+    bw /= bw.x + bw.y + bw.z + 1e-4;
+    float gx = vnoise(vec2(wp.z * 9.0, wp.y * 2.2));
+    float gy = vnoise(vec2(dot(wp.xz, WIND_DIR) * 2.2, dot(wp.xz, vec2(-WIND_DIR.y, WIND_DIR.x)) * 9.0));
+    float gz = vnoise(vec2(wp.x * 9.0, wp.y * 2.2));
+    float grain = gx * bw.x + gy * bw.y + gz * bw.z;
+    albedo *= mix(1.0, 0.88 + 0.24 * grain, paintAmt);
   }
   vec3 lit = lightSurface(albedo, n, ao, wrap, sss, view, wp);
   if (spec > 0.0) {
