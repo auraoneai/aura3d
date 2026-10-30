@@ -9,7 +9,10 @@ import {
 } from "@aura3d/assets/gltf-runtime";
 
 import type { GLTFImageDecoder, GLTFMaterialRenderStateOverride } from "@aura3d/assets";
+import { createBoneMask } from "@aura3d/animation/lanes";
+import type { AuraPlayLayerOptions } from "../contracts/animation";
 import type { AuraAssetDecodersOption, AuraModelLodOption } from "../contracts/assets";
+import { boneMaskSkeletonFor, toPoseBoneMaskSpec } from "../agent-api/animationMask.js";
 import type { AuraResolvedMaterialInfo } from "../contracts/materials";
 import {
   applyMaterialOverrides,
@@ -164,6 +167,18 @@ export interface TypedGLBActorEvidence {
   };
 }
 
+/** GU47 E-H — `TypedGLBActor.crossFadeTo` options. */
+export interface TypedGLBActorCrossFadeOptions {
+  /** Playback rate of the new clip (1 = authored, 0 = frozen). */
+  readonly speed?: number;
+  /** `false` plays the clip once and holds its last frame (default: loop). */
+  readonly loop?: boolean;
+  /** Warp the outgoing and incoming time scales over the fade (`node.play` semantics). */
+  readonly warp?: boolean;
+  /** `"inertialize"` blends from the captured pose offset instead of a weight cross-fade. */
+  readonly transition?: "crossfade" | "inertialize";
+}
+
 export interface TypedGLBActorMorphApplyResult {
   readonly requestedTargets: readonly string[];
   readonly appliedTargets: readonly string[];
@@ -206,6 +221,25 @@ export interface TypedGLBActor {
    */
   playRetargetedClip(pose: GLTFScenePose, time?: number): GLTFSceneAnimationApplyResult;
   applyMorphTargets(weights: Readonly<Record<string, number>>, options?: TypedGLBActorMorphApplyOptions): TypedGLBActorMorphApplyResult;
+  /**
+   * GU47 E-H — mixer playback for actors the app drives itself (root render sources, clones):
+   * fade the base clip to `clip` over `seconds` (0 = cut). Once `crossFadeTo` / `playLayer` is
+   * used, call {@link advance} once per frame instead of `playClip`.
+   */
+  crossFadeTo(clip: string, seconds: number, options?: TypedGLBActorCrossFadeOptions): TypedGLBActor;
+  /**
+   * GU47 E-H — blend `clip` over the base clip on a named layer (`weight`, `fadeIn`, `mask`,
+   * `blendMode`, `speed`, the same options as `node.animation.playLayer`). A second clip on the
+   * same layer replaces the first (fading it out over `fadeIn`).
+   */
+  playLayer(layer: string, clip: string, options?: AuraPlayLayerOptions): TypedGLBActor;
+  /** GU47 E-H — fade a layer out over `fadeOut` seconds (default 0: stop now). */
+  stopLayer(layer: string, fadeOut?: number): TypedGLBActor;
+  /**
+   * GU47 E-H — step the actor's mixer by `dt` seconds and write the blended pose (base cross-fade,
+   * layers, pose constraints) onto the GLB scene and skinning palettes.
+   */
+  advance(dt: number): GLTFSceneAnimationApplyResult;
   collectRenderItems(options?: TypedGLBActorTransformOptions): RenderItem[];
   snapshot(): GLTFSceneAnimationRuntimeSnapshot;
   /**
@@ -356,6 +390,9 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
   const staticConsolidation = options.consolidateStaticMeshes
     ? createTypedGLBActorStaticConsolidation(pipeline, options.id)
     : undefined;
+  // GU47 E-H: the evidence reports whichever driver applied last (playClip or the mixer).
+  let mixerDriven = false;
+  let lastMixerApply: GLTFSceneAnimationApplyResult | null = null;
 
   const actor: TypedGLBActor = {
     kind: "aura-typed-glb-actor",
@@ -374,10 +411,51 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
       }
     } : {}),
     get evidence() {
-      return createTypedGLBActorEvidence(actor, animationTrack.lastApply, animationTrack.lastMorphApply);
+      return createTypedGLBActorEvidence(actor, mixerDriven ? lastMixerApply : animationTrack.lastApply, animationTrack.lastMorphApply);
     },
     playClip(name, time) {
+      mixerDriven = false;
       return animationTrack.playClip(name, time);
+    },
+    crossFadeTo(clip, seconds, fadeOptions = {}) {
+      const action = animation.mixer().crossFadeTo(clip, Math.max(0, seconds), {
+        ...(fadeOptions.warp !== undefined ? { warp: fadeOptions.warp } : {}),
+        ...(fadeOptions.transition !== undefined ? { transition: fadeOptions.transition } : {})
+      });
+      if (fadeOptions.speed !== undefined) action.setEffectiveTimeScale(finiteRate(fadeOptions.speed));
+      if (fadeOptions.loop === false) {
+        action.setLoop("once", 1);
+        action.clampWhenFinished = true;
+      }
+      return actor;
+    },
+    playLayer(layer, clip, layerOptions = {}) {
+      const mixer = animation.mixer();
+      const maskSkeleton = layerOptions.mask !== undefined ? boneMaskSkeletonFor(animation) : undefined;
+      const mask = layerOptions.mask !== undefined && maskSkeleton !== undefined
+        ? createBoneMask(toPoseBoneMaskSpec(layerOptions.mask), maskSkeleton)
+        : undefined;
+      const additive = layerOptions.blendMode === "additive";
+      const fadeIn = layerOptions.fadeIn !== undefined && layerOptions.fadeIn > 0 ? layerOptions.fadeIn : 0;
+      const action = mixer.playLayer(layer, additive ? animation.ensureAdditiveClip(clip) : clip, {
+        ...(layerOptions.weight !== undefined ? { weight: layerOptions.weight } : {}),
+        ...(layerOptions.blendMode !== undefined ? { blendMode: layerOptions.blendMode } : {}),
+        additive,
+        ...(mask !== undefined ? { mask } : {}),
+        ...(layerOptions.speed !== undefined ? { timeScale: finiteRate(layerOptions.speed) } : {}),
+        ...(fadeIn > 0 ? { fadeOutPrevious: fadeIn } : {})
+      });
+      if (fadeIn > 0) action.fadeIn(fadeIn);
+      return actor;
+    },
+    stopLayer(layer, fadeOut = 0) {
+      animation.mixer().stopLayer(layer, Math.max(0, fadeOut));
+      return actor;
+    },
+    advance(dt) {
+      mixerDriven = true;
+      lastMixerApply = animation.applyPoseMixer(Number.isFinite(dt) ? Math.max(0, dt) : 0, { label: options.id });
+      return lastMixerApply;
     },
     playRootMotionClip(name, motionOptions) {
       return animationTrack.playRootMotionClip(name, motionOptions);
@@ -532,6 +610,11 @@ function createTypedGLBActorStaticConsolidation(
 function resolveTypedGLBActorModelMatrix(nodeMatrix: Mat4, rootMatrix?: Mat4 | readonly number[]): Mat4 {
   if (!rootMatrix) return nodeMatrix;
   return multiplyMat4(toTypedGLBActorMat4(rootMatrix), nodeMatrix);
+}
+
+/** GU47 E-H: a playback rate the mixer clock can take (a non-finite rate reads as 1). */
+function finiteRate(rate: number): number {
+  return Number.isFinite(rate) ? rate : 1;
 }
 
 function toTypedGLBActorMat4(value: Mat4 | readonly number[]): Mat4 {
