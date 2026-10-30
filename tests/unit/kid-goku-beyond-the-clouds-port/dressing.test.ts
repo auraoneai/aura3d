@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { CUMULUS_RIDGE as CH } from "../../../examples/kid-goku-beyond-the-clouds-port/chapter";
 import { CUMULUS_LOOK } from "../../../examples/kid-goku-beyond-the-clouds-port/art/look";
-import { buildWaymarks, waymarkPlacements } from "../../../examples/kid-goku-beyond-the-clouds-port/waymarks";
-import { ROAD_HALF } from "../../../examples/kid-goku-beyond-the-clouds-port/terrain";
+import { HOLLOW_CAP, HOLLOW_DEPTH, HOLLOW_SPACING, buildWaymarks, hollowPlacements, waymarkPlacements } from "../../../examples/kid-goku-beyond-the-clouds-port/waymarks";
+import { ROAD_HALF, groundHeight } from "../../../examples/kid-goku-beyond-the-clouds-port/terrain";
 
 describe("CD-20 waymarks", () => {
   const marks = waymarkPlacements(CH);
@@ -18,6 +18,25 @@ describe("CD-20 waymarks", () => {
     expect(a.indices.length).toBeGreaterThan(0);
     expect(Array.from(a.positions)).toEqual(Array.from(b.positions));
     expect(a.colors.length).toBe(a.vertexCount * 4);
+  });
+});
+
+describe("CD-20 moss and flowers in hollows", () => {
+  const hollows = hollowPlacements(CH);
+  it("sit in real shoulder dips, spaced, capped, off the road, the stream and the gorges", () => {
+    expect(hollows.length).toBeGreaterThanOrEqual(12);
+    expect(hollows.length).toBeLessThanOrEqual(HOLLOW_CAP);
+    hollows.forEach((h, i) => {
+      expect(Math.abs(h.lane)).toBeGreaterThan(ROAD_HALF + 2);
+      const around = (groundHeight(CH, h.s - 3, h.lane) + groundHeight(CH, h.s + 3, h.lane) + groundHeight(CH, h.s, h.lane - 3) + groundHeight(CH, h.s, h.lane + 3)) / 4;
+      expect(around - groundHeight(CH, h.s, h.lane)).toBeGreaterThanOrEqual(HOLLOW_DEPTH);
+      if (i > 0) expect(h.s - hollows[i - 1]!.s).toBeGreaterThanOrEqual(HOLLOW_SPACING);
+      expect(CH.waters.some((w) => h.s > w.start - 6 && h.s < w.end + 6)).toBe(false);
+    });
+  });
+  it("ride in the waymarks draw and add under 8k triangles", () => {
+    const all = buildWaymarks(CH), without = buildWaymarks(CH, waymarkPlacements(CH).filter((w) => w.kind !== "hollow"));
+    expect((all.indices.length - without.indices.length) / 3).toBeLessThan(8000);
   });
 });
 

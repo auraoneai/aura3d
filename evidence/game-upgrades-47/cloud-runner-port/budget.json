@@ -21,7 +21,7 @@
       "S6 depth of field",
       "S7 motion blur"
     ],
-    "note": "Budgets are never raised to pass (PRD D7). Low tier is 80% of the High budget (PRD \u00a76.4)."
+    "note": "Budgets are never raised to pass (PRD D7). Low tier is 80% of the High budget (PRD §6.4)."
   },
   "source": "evidence/kid-goku-beyond-the-clouds-port/audit-2026-10-29/README.md (after-budget run g25-budget-after-194950, 960x540; after-hd run g25-hd-after-194659, 1280x720; software WebGL2)",
   "before": {
@@ -82,6 +82,9 @@
     "net scene draws (expected)": "+3 before CD-21 culling; about -1 to -5 after",
     "note": "Expected deltas from the authored node list; measured numbers are phase 2 (diagnostics().drawCalls in the remote capture).",
     "CD-12 rain puddles (one merged mesh)": 1,
-    "CD-21 earlier culling (flowers 110, bushes 190, rocks 200, trees 360 m): fewer far chunks at s=60/520": "-4 to -8 (measured phase 2)"
+    "CD-21 earlier culling (flowers 110, bushes 190, rocks 200, trees 360 m): fewer far chunks at s=60/520": "-4 to -8 (measured phase 2)",
+    "CD-11 title/finale DOF and glider motion blur (post passes, High/Ultra only; no scene draws)": 0,
+    "CD-15 speed-lines and landing-dust presets (same pooled emitter batches)": 0,
+    "CD-20 cairns, cord poles and hollow moss/flowers (one merged waymarks mesh; hollows add about 5.2k tris)": 1
   }
 }
