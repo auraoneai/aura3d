@@ -389,8 +389,9 @@ export const LOOK_BLOOM_NODE = "look bloom";
  */
 export function courtLookNodes(rig: CourtRig, options: { readonly ao?: boolean } = {}): AuraNodeBuilder<AuraSceneNode>[] {
   const nodes = looks.nodes(rig.look, courtLookOverrides(rig)).filter((node) => {
-    const name = (node.toJSON() as { name?: string }).name;
-    return name !== LOOK_AO_NODE && name !== LOOK_BLOOM_NODE;
+    // effects.bloom does not keep its `name`, so the look's bloom is matched by effect kind (the court adds its own).
+    const json = node.toJSON() as { name?: string; effect?: string };
+    return json.name !== LOOK_AO_NODE && json.name !== LOOK_BLOOM_NODE && json.effect !== "bloom";
   }) as AuraNodeBuilder<AuraSceneNode>[];
   if (options.ao !== false) nodes.push(effects.ambientOcclusion({ name: "court ambient occlusion", intensity: 0.85, radius: 0.55 }) as AuraNodeBuilder<AuraSceneNode>);
   nodes.push(effects.bloom({ name: "court bloom", intensity: rig.bloom.intensity, threshold: rig.bloom.threshold }) as AuraNodeBuilder<AuraSceneNode>);
@@ -450,6 +451,17 @@ export function courtSkyNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
   return [sky.preetham({ name: `${rig.id}-preetham-sky`, sun: { elevationDeg: rig.sun.elevationDeg, azimuthDeg: rig.sun.azimuthDeg }, turbidity: rig.id === "venice" ? 6 : 2.4, rayleigh: rig.id === "venice" ? 2.2 : 1.1, captureEnvironment: false, affectsFog: true }) as unknown as AuraNodeBuilder<AuraSceneNode>];
 }
 
+/** Runtime id of the storm court's lightning light (H47-E2; driven per frame by `lightningFlash`). */
+export const LIGHTNING_NODE_ID = "court-lightning";
+/** Peak intensity of the lightning light (reduced flash never reaches it: `lightningFlash` returns 0 there). */
+export const LIGHTNING_PEAK = 9;
+
+/** H47-E2: one cold point light high over the storm court, dark until `lightningFlash` drives it. */
+export function courtLightningNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
+  if (rig.weather.lightningEverySeconds <= 0) return [];
+  return [lights.point({ name: LIGHTNING_NODE_ID, position: [6, 26, -18], intensity: 0, color: "#cfdcff", distance: 90 }).runtime({ id: LIGHTNING_NODE_ID }) as unknown as AuraNodeBuilder<AuraSceneNode>];
+}
+
 /** Lightning cadence on the storm court: one flash every `lightningEverySeconds`, 0.18 s long, skipped under reduced flash. */
 export function lightningFlash(rig: CourtRig, timeSeconds: number, reducedFlash: boolean): number {
   const every = rig.weather.lightningEverySeconds;
@@ -461,6 +473,11 @@ export function lightningFlash(rig: CourtRig, timeSeconds: number, reducedFlash:
   return 0;
 }
 
+/** Drops the `prd07.legacyWeather` primitives the weather helpers emit beside their effect nodes. */
+function withoutLegacyWeather(nodes: readonly AuraSceneNode[]): AuraSceneNode[] {
+  return nodes.filter((node) => !((node as { runtime?: { tags?: readonly string[] } }).runtime?.tags ?? []).includes("prd07.legacyWeather"));
+}
+
 /**
  * H47-E2: rain and wet ground. Shanghai: the camera rain volume with streaks capped by the row (<= 160) and a wetness
  * node; Manila: two rain curtains beyond the open sides of the canopy (box emitters at |x| >= 17), none over the court.
@@ -469,7 +486,12 @@ export function courtWeatherNodes(rig: CourtRig, reducedMotion: boolean): AuraSc
   const out: AuraSceneNode[] = [];
   if (rig.weather.rain === "court") {
     const streaks = Math.min(160, reducedMotion ? Math.round(rig.weather.streaks / 2) : rig.weather.streaks);
-    out.push(...weather.precipitation({ type: "rain", streakLimit: streaks, seed: 0x5a1e }).nodes);
+    // Only the rain volume node: the helper's legacy streak boxes (tagged prd07.legacyWeather, all sharing ids with the
+    // wet-ground slab) would add ~60 draws and are hidden under A3D_QR_VFX anyway. The streak budget scales density.
+    for (const node of withoutLegacyWeather(weather.precipitation({ type: "rain", streakLimit: streaks, seed: 0x5a1e }).nodes)) {
+      const effect = node as AuraSceneNode & { effect?: string; density?: number; intensity?: number };
+      out.push(effect.effect === "rain" ? { ...effect, density: Number(((effect.density ?? 0.72) * (streaks / 160)).toFixed(4)) } as AuraSceneNode : node);
+    }
   } else if (rig.weather.rain === "outside") {
     for (const side of [-1, 1] as const) {
       // A tall box spanning the open side from the gutter to the ground: streaks spawn through it and fall fast.
@@ -494,7 +516,8 @@ export function courtWeatherNodes(rig: CourtRig, reducedMotion: boolean): AuraSc
     }
   }
   if (rig.weather.wetGround) {
-    out.push(...weather.wetGround({ type: "rain", dryColor: rig.surface.floor, dryRoughness: 0.9, size: 14, seed: 0x5a1e }).nodes);
+    // The wetness node only (the slab and puddle discs are legacy primitives; the court floor carries the wet look).
+    out.push(...withoutLegacyWeather(weather.wetGround({ type: "rain", dryColor: rig.surface.floor, dryRoughness: 0.9, size: 14, seed: 0x5a1e }).nodes));
   }
   return out;
 }

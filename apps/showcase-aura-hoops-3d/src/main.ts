@@ -50,7 +50,20 @@ import {
   handBounceOverlayAngles
 } from "@aura3d/engine/game";
 import { assets } from "./aura-assets.route";
-import { COURT_RIGS, courtLampNodes, courtLookNodes, courtPracticalNodes } from "./courtRigs";
+import {
+  COURT_RIGS,
+  LIGHTNING_NODE_ID,
+  LIGHTNING_PEAK,
+  courtLampNodes,
+  courtLensFlareNodes,
+  courtLightningNodes,
+  courtLookNodes,
+  courtPracticalNodes,
+  courtSkyNodes,
+  courtWeatherNodes,
+  lightningFlash
+} from "./courtRigs";
+import { JUICE_FX, ballTrailOptions, hoopsBurstOptions, hoopsFxKindFor, registerHoopsFx, type HoopsFxKind } from "./fxPack";
 import "../../showcase-port-shared/quickbar.css";
 import { createFrameErrorBoundary, installBlackFrameGuard } from "@aura3d/debug";
 import { pickLocomotion } from "./locomotionRates";
@@ -456,6 +469,11 @@ const QA_AO = initialParams.get("diag") === "1" ? initialParams.get("qaAo") : nu
 const QA_TARGET = initialParams.get("diag") === "1" ? Number(initialParams.get("qaTarget")) || 0 : 0;
 /** ?look=original: the 4.6 look (presets, fog off, today's practicals and dressing) for GU47 before/after pairs. */
 const LOOK_ORIGINAL = initialParams.get("look") === "original";
+/**
+ * Reduced motion / flash as the boot scene sees them (`buildScene` runs before `setupSystems` sets the live flags):
+ * the same URL params and media queries, read once.
+ */
+const BOOT_REDUCED_MOTION = initialParams.has("reducedMotion") || (typeof window !== "undefined" && (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false));
 
 const game_ = {
   mode: "quick" as ModeId,
@@ -623,7 +641,8 @@ function buildBallNodes(): any[] {
       .runtime(game.runtimeNode("ball-live")),
     primitives.cylinder({ name: "ball-shadow", size: [0.34, 0.008, 0.34], material: material.pbr({ color: "#000000", opacity: 0.28, roughness: 1 }) }).position(0, 0.012, CHECK_SPOT[2]).runtime(game.runtimeNode("ball-shadow"))
   ];
-  for (let i = 0; i < TRAIL_COUNT; i++) {
+  // H47-V1 / H47-PF1: the 14 emissive trail spheres stay only on ?look=original; the new look draws one ribbon trail.
+  for (let i = 0; i < (LOOK_ORIGINAL ? TRAIL_COUNT : 0); i++) {
     nodes.push(
       primitives.sphere({ name: `ball-trail-${i}`, size: [0.1, 0.1, 0.1], material: material.emissive({ color: "#ff9a3d", emissive: "#ff9a3d", emissiveIntensity: 0.4 }) })
         .scale(HIDDEN)
@@ -842,6 +861,9 @@ function buildScene(v: VenueSpec): any {
     // H47-L2 / H47-L3: the court's practicals (sodium spots, tungsten bulb clusters, sign and rib rect lights) and the
     // emissive lamp heads they belong to (one instanced draw per court, two at Manila).
     s.addMany(courtPracticalNodes(rig)).addMany(courtLampNodes(rig));
+    // H47-L4 lens flares (Venice sun, Rucker floods), H47-E4 Preetham sky (Venice, Athens), H47-E2 rain, wet ground and
+    // the storm court's lightning light (reduced motion halves the rain; reduced flash keeps the lightning dark).
+    s.addMany(courtLensFlareNodes(rig)).addMany(courtSkyNodes(rig)).addMany(courtWeatherNodes(rig, BOOT_REDUCED_MOTION)).addMany(courtLightningNodes(rig));
   }
   s
     .add(effects.contactShadows({ intensity: 0.7, length: 0.28 }))
@@ -905,6 +927,9 @@ let netSkirt: AnyHandle;
 let scoreboardGlow: AnyHandle;
 let planetEarth: AnyHandle;
 let trailNodes: AnyHandle[] = [];
+/** H47-E2: the storm court's lightning light (absent on other courts and on ?look=original) and its last level. */
+let lightningNode: AnyHandle;
+let lightningLevel = 0;
 let coneNodes: AnyHandle[] = [];
 let coneRingNodes: AnyHandle[] = [];
 let waverNodes: AnyHandle[] = [];
@@ -1066,7 +1091,9 @@ function resolveHandles(): void {
   netSkirt = req("net-skirt");
   scoreboardGlow = req("scoreboard-glow");
   planetEarth = req("planet-earth");
-  trailNodes = Array.from({ length: TRAIL_COUNT }, (_, i) => req(`ball-trail-${i}`));
+  lightningNode = LOOK_ORIGINAL ? undefined : auraApp.nodes.get(LIGHTNING_NODE_ID) as AnyHandle;
+  lightningLevel = 0;
+  trailNodes = LOOK_ORIGINAL ? Array.from({ length: TRAIL_COUNT }, (_, i) => req(`ball-trail-${i}`)) : [];
   coneNodes = Array.from({ length: CONE_COUNT }, (_, i) => req(`cone-${i}`));
   coneRingNodes = Array.from({ length: CONE_COUNT }, (_, i) => req(`cone-ring-${i}`));
   waverNodes = Array.from({ length: CROWD_WAVERS }, (_, i) => req(`waver-${i}`));
@@ -1188,6 +1215,44 @@ const FX_KIND_MAP: Record<string, string> = {
   aura: "aura-burst", flash: "super-flash"
 };
 
+/**
+ * H47-V1: the juice table of the new look. Every event that draws bursts exactly one registered hoops kind (fxPack.ts
+ * `JUICE_FX`); counts and colours come from the preset, so only the kind changes here. ?look=original keeps the table
+ * above with the bound 4.6 kinds.
+ */
+const HOOPS_JUICE_EVENTS: typeof JUICE_EVENTS = Object.fromEntries(
+  Object.entries(JUICE_EVENTS).map(([ev, preset]) => {
+    const kind = JUICE_FX[ev];
+    return [ev, kind ? { ...preset, fx: { kind } } : { ...preset, fx: undefined }];
+  })
+);
+const HOOPS_KIND_SET: ReadonlySet<string> = new Set<string>(Object.values(JUICE_FX));
+
+/** Registers the hoops preset pack and (re)starts the ball ribbon on the mounted scene (after every setScene). */
+let ballTrail: { stop(o?: { immediate?: boolean }): void } | null = null;
+let ballTrailFire = false;
+function mountCourtFx(): void {
+  if (LOOK_ORIGINAL || !auraApp) return;
+  try { registerHoopsFx((auraApp as any).effects, { reducedFlash }); } catch { /* fx best-effort */ }
+  restartBallTrail(game_.jamFull);
+}
+function restartBallTrail(fire: boolean): void {
+  if (LOOK_ORIGINAL || !auraApp) return;
+  try {
+    ballTrail?.stop({ immediate: true });
+    ballTrail = (auraApp as any).effects?.trail?.("ball-live", ballTrailOptions(fire)) ?? null;
+    ballTrailFire = fire;
+  } catch { ballTrail = null; }
+}
+/** Burst one hoops kind at a juice position (wet courts swap ground dust for splashes; reduced motion halves it). */
+function hoopsBurst(kind: HoopsFxKind, position: Vec3, strength = 1): void {
+  try {
+    const k = hoopsFxKindFor(kind, COURT_RIGS[venue.id].weather.wetGround);
+    const opts = hoopsBurstOptions(k, { reducedMotion });
+    (auraApp as any).effects?.burst?.(k, position, strength === 1 ? opts : { ...opts, count: Math.max(1, Math.round((opts.count ?? 1) * strength)) });
+  } catch { /* fx best-effort */ }
+}
+
 function juiceFire(ev: string, at?: Record<string, unknown>): void {
   try { (juice as any)?.fire?.(ev, at); } catch { /* juice is best-effort */ }
 }
@@ -1214,8 +1279,10 @@ function setupSystems(): void {
   try {
     fxCtl = (game as any).effects({ app: auraApp, reducedMotion, reducedFlash });
   } catch { fxCtl = null; }
+  mountCourtFx();
   const fx = createFxParticlePass({
     burst: (kind: string, position: any, o: any) => {
+      if (HOOPS_KIND_SET.has(kind)) { hoopsBurst(kind as HoopsFxKind, position as Vec3); return; }
       fxSpawn(kind, position as Vec3, Math.max(0.2, (o?.count ?? 10) / 24), o?.color);
     },
     trail: () => {},
@@ -1251,7 +1318,7 @@ function setupSystems(): void {
   window.addEventListener("keydown", unlock, { once: true });
 
   juice = createJuice({
-    events: JUICE_EVENTS as any,
+    events: (LOOK_ORIGINAL ? JUICE_EVENTS : HOOPS_JUICE_EVENTS) as any,
     camera: (auraApp as any)?.camera as any,
     session: {
       reducedMotion,
@@ -1464,6 +1531,7 @@ function rebuildScene(): void {
   try {
     auraApp.setScene(buildScene(venue));
     resolveHandles();
+    mountCourtFx();
   } catch (e) {
     console.warn("[hoops] scene rebuild failed", e);
   }
@@ -3438,7 +3506,17 @@ function frame(dtRaw: number): void {
   }
   placeBall(ball.x, ball.y, ball.z);
   ballShadow?.setScale([clamp(1.1 - ball.y * 0.12, 0.3, 1.05), 1, clamp(1.1 - ball.y * 0.12, 0.3, 1.05)]).setVisible(true);
-  for (let i = 0; i < TRAIL_COUNT; i++) {
+  // H47-E2: Shanghai lightning, a double strike every ~40 s of game time (reduced flash keeps it dark).
+  if (lightningNode) {
+    const level = lightningFlash(COURT_RIGS[venue.id], game_.time, reducedFlash);
+    if (level !== lightningLevel) {
+      lightningLevel = level;
+      try { (lightningNode as any).setLight?.({ intensity: level * LIGHTNING_PEAK }); } catch { /* lighting flag off */ }
+    }
+  }
+  // H47-V1: the ribbon turns fire-coloured at a full Jam Meter (a trail's options are fixed, so it restarts).
+  if (!LOOK_ORIGINAL && ballTrailFire !== game_.jamFull) restartBallTrail(game_.jamFull);
+  for (let i = 0; i < trailNodes.length; i++) {
     const h = trailNodes[i];
     const pt = trailHist[trailHist.length - 1 - i];
     if (h && pt && (ball.state === "flight" || ball.state === "pass") && !frozen) {
@@ -3596,6 +3674,7 @@ function setVenue(vId: VenueId, silent = false): void {
     try {
       auraApp.setScene(buildScene(venue));
       resolveHandles();
+      mountCourtFx();
     } catch (e) {
       console.warn("[hoops] venue swap failed", e);
     }
