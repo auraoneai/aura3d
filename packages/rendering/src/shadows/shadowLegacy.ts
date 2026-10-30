@@ -5,8 +5,9 @@
  * oversize-caster skip, and drew large instanced casters through a per-instance attribute buffer. Those were proven on software
  * WebGL2 only. Real GPUs rendered Aura Slam dark with dense stripes, so the 4.2.0 behaviour is the default again.
  *
- * `globalThis.__A3D_SHADOW_FIT__ = "current"` (or `?shadowfit=current`) opts a game into the 4.3.0 behaviour; Shadowstep Gauntlet's
- * 4000 m sky dome needs it. `"legacy"` (the default) is exactly 4.2.0.
+ * `globalThis.__A3D_SHADOW_FIT__ = "current"` (or `?shadowfit=current`) opts a game into the 4.3.0 behaviour. Shadowstep Gauntlet
+ * needs it: its instanced scenery spans the whole course, and the 4.2.0 fit widens every cascade to all casters (measured about
+ * 6 luma darker, no shadow shapes). `"legacy"` (the default) is exactly 4.2.0.
  */
 export type ShadowFitMode = "legacy" | "current";
 
