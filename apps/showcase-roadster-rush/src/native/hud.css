@@ -23,7 +23,7 @@
 .rr-pu { display: flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px; background: rgba(11, 12, 20, 0.72); border: 1px solid rgba(255, 255, 255, 0.16); font-size: 12px; }
 .rr-pu div { flex: 1; height: 4px; background: rgba(255, 255, 255, 0.12); border-radius: 2px; overflow: hidden; }
 .rr-pu i { display: block; height: 100%; background: #5fe6ff; transform-origin: left; }
-.rr-pu-rocket i { background: #ff6a3d; } .rr-pu-shield i { background: #5fe6ff; } .rr-pu-magnet i { background: #c06bff; } .rr-pu-multiplier i { background: #ffd24d; }
+.rr-pu-rocket i { background: #ff6a3d; } .rr-pu-shield i { background: #5fe6ff; } .rr-pu-magnet i { background: #c8d2e0; } .rr-pu-multiplier i { background: #ffd24d; }
 .rr-right { position: absolute; top: 64px; right: 16px; display: flex; gap: 8px; align-items: center; pointer-events: auto; }
 .rr-icon-btn { width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(244, 246, 251, 0.25); background: rgba(11, 12, 20, 0.72); color: #f4f6fb; font-size: 13px; cursor: pointer; }
 .rr-icon-btn.rr-off { opacity: 0.55; }

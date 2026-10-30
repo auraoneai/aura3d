@@ -38,6 +38,7 @@ import { assets } from "./assets";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { SHIELD_SIZE, shieldSpec } from "./art/shield";
 import { HAZE_FLOOR_Y, groundSpec } from "./art/ground";
+import { asphaltMaterial, concreteMaterial } from "./art/surfaces";
 import { PYLON_KIT, PYLON_ROWS, pylonLayout } from "./render/pylons";
 import { TOWER_CAPACITY_PER_VARIANT, TOWER_VARIANTS, towerGlassSpec, towerLayout, type TowerVariant } from "./render/towers";
 import { meshyFarVehicles, meshyVehicles } from "./meshy-vehicles";
@@ -145,7 +146,7 @@ const POWERUP_LOOK: Record<PowerupKind, { color: string; shape: "capsule" | "con
   air: { color: "#2f7dff", shape: "capsule", size: [0.62, 1.15, 0.62] },
   rocket: { color: "#ff6a3d", shape: "cone", size: [0.8, 1.2, 0.8] },
   shield: { color: "#5fe6ff", shape: "sphere", size: [1.0, 1.0, 1.0] },
-  magnet: { color: "#c06bff", shape: "torus", size: [1.0, 1.0, 0.34] },
+  magnet: { color: "#c8d2e0", shape: "torus", size: [1.0, 1.0, 0.34] },
   multiplier: { color: "#ffd24d", shape: "box", size: [0.78, 0.78, 0.78] }
 };
 
@@ -336,7 +337,8 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .box({
         name: "freeway-asphalt-deck",
         size: [24, 0.12, 380],
-        material: material.pbr({ color: "#1c1f28", roughness: 0.84, metalness: 0.08 }), castShadow: false })
+        // AO-M2: CC0 asphalt, roughness 0.55, so the low sun lays a glare streak down the centre lanes
+        material: asphaltMaterial(), castShadow: false })
       .position(0, -0.06, -150)
       .runtime(game.runtimeNode("freeway-asphalt-deck")),
     primitives
@@ -357,7 +359,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .box({
         name: "freeway-barrier-left",
         size: [0.65, 1.05, 380],
-        material: material.pbr({ color: "#393e4a", roughness: 0.78 })
+        material: concreteMaterial()
       })
       .position(-10.6, 0.52, -150)
       .runtime(game.runtimeNode("freeway-barrier-left")),
@@ -365,7 +367,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .box({
         name: "freeway-barrier-right",
         size: [0.65, 1.05, 380],
-        material: material.pbr({ color: "#393e4a", roughness: 0.78 })
+        material: concreteMaterial()
       })
       .position(10.6, 0.52, -150)
       .runtime(game.runtimeNode("freeway-barrier-right")),
@@ -393,14 +395,15 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .box({
         name: "freeway-neon-trim-left",
         size: [0.12, 0.14, 380],
-        material: material.emissive({ color: "#38bdf8", emissive: "#38bdf8", emissiveIntensity: 1.35 }), castShadow: false })
+        // AO-M2: LED trims on the barrier tops: cyan on the sky-lane side, amber on the other; no magenta anywhere
+        material: material.emissive({ color: APEX_PALETTE.cyan, emissive: APEX_PALETTE.cyan, emissiveIntensity: 1.1 }), castShadow: false })
       .position(-TRIM_X, TRIM_Y, -150)
       .runtime(game.runtimeNode("freeway-neon-trim-left")),
     primitives
       .box({
         name: "freeway-neon-trim-right",
         size: [0.12, 0.14, 380],
-        material: material.emissive({ color: "#ff2a6d", emissive: "#ff2a6d", emissiveIntensity: 1.35 }), castShadow: false })
+        material: material.emissive({ color: APEX_PALETTE.sodium, emissive: APEX_PALETTE.sodium, emissiveIntensity: 1.1 }), castShadow: false })
       .position(TRIM_X, TRIM_Y, -150)
       .runtime(game.runtimeNode("freeway-neon-trim-right")),
     // Sunset / Dusk / Night sky dome: gradient, lit clouds, sun disc and corona, haze, city glow and stars (art/sky.ts)
@@ -419,7 +422,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
   // 2. Lane dashes, light poles, gantries and skyline: one instanced node each (audit RR-E1: these were 150+ separate nodes)
   s.addMany([
     instances
-      .box({ name: "lane-dashes", size: [0.14, 0.02, 4.2], material: material.emissive({ color: "#f8fafc", emissive: "#e2e8f0", emissiveIntensity: 0.45 }), castShadow: false, transforms: parked(LANE_DIVIDER_X.length * DASH_COUNT_PER_DIVIDER) })
+      .box({ name: "lane-dashes", size: [0.14, 0.02, 4.2], material: material.emissive({ color: "#f8fafc", emissive: "#e2e8f0", emissiveIntensity: 0.1 }), castShadow: false, transforms: parked(LANE_DIVIDER_X.length * DASH_COUNT_PER_DIVIDER) })
       .runtime(game.runtimeNode(poolId("dashes"))),
     instances
       .box({ name: "gantry-steel", size: [1, 1, 1], material: material.pbr({ color: "#64748b", metalness: 0.65, roughness: 0.38 }), transforms: parked(GANTRY_COUNT * 3) })
@@ -544,7 +547,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .torus({
         name: "player-power-magnet",
         size: [1.65, 1.65, 0.08],
-        material: material.emissive({ color: "#a855f7", emissive: "#c084fc", emissiveIntensity: 1.5 }), castShadow: false })
+        material: material.emissive({ color: "#c8d2e0", emissive: "#dfe7f2", emissiveIntensity: 1.5 }), castShadow: false })
       .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("player-power-magnet")),
 

@@ -72,3 +72,44 @@ describe("Apex Overdrive blue-hour dome (GU47 AO-E1)", () => {
     expect(spec.glsl.fragment).not.toMatch(/smoothstep\(0\.0,\s*-/); // no reversed smoothstep edges (undefined in GLSL)
   });
 });
+
+describe("Apex Overdrive materials palette (GU47 AO-M2)", () => {
+  it("authors no magenta colour in main.ts or the HUD css", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { resolve } = await import("node:path");
+    const magenta = (hex: string): boolean => {
+      const n = parseInt(hex.slice(1), 16);
+      const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+      return r > 150 && b > 120 && g < 0.6 * Math.min(r, b);
+    };
+    for (const file of ["apps/showcase-roadster-rush/src/main.ts", "apps/showcase-roadster-rush/src/native/hud.css"]) {
+      const source = readFileSync(resolve(__dirname, "../../..", file), "utf8");
+      const hexes = source.match(/#[0-9a-fA-F]{6}\b/g) ?? [];
+      expect(hexes.filter(magenta), file).toEqual([]);
+    }
+  });
+
+  it("keeps every deck texture within the 2048 px budget (512 px CC0 JPEGs with provenance)", async () => {
+    const { readFileSync, readdirSync } = await import("node:fs");
+    const { resolve } = await import("node:path");
+    const dir = resolve(__dirname, "../../../apps/showcase-roadster-rush/src/assets/textures");
+    const files = readdirSync(dir).filter((f) => f.endsWith(".jpg"));
+    expect(files.length).toBe(5);
+    const provenance = readFileSync(resolve(dir, "PROVENANCE.md"), "utf8");
+    for (const f of files) {
+      expect(provenance).toContain(f);
+      // JPEG SOF0/SOF2 frame header: height and width are big-endian u16 after the marker, length and precision
+      const bytes = readFileSync(resolve(dir, f));
+      let i = 2;
+      let size: [number, number] | null = null;
+      while (i < bytes.length - 9) {
+        if (bytes[i] !== 0xff) { i++; continue; }
+        const marker = bytes[i + 1]!;
+        if (marker === 0xc0 || marker === 0xc2) { size = [bytes.readUInt16BE(i + 7), bytes.readUInt16BE(i + 5)]; break; }
+        i += 2 + bytes.readUInt16BE(i + 2);
+      }
+      expect(size, f).not.toBeNull();
+      expect(Math.max(...size!), f).toBeLessThanOrEqual(2048);
+    }
+  });
+});
