@@ -9,7 +9,7 @@
 // (PRD D8): it reads the player state and never writes it. `?look=original` builds none
 // of it.
 
-import { camera, type AuraApp, type AuraCameraSequencePlayback, type AuraVec3 } from "@aura3d/engine";
+import { camera, type AuraApp, type AuraCustomPostPass, type AuraCameraSequencePlayback, type AuraVec3 } from "@aura3d/engine";
 import { focusDistanceFor, heightFogFor, miniatureFramingFor, presentationScale, type PipLookMode, type PresentationScale } from "./looks.js";
 import { heatShimmerPass } from "./diorama.js";
 import { createPipVfx, registerPipVfx, type PipEffectsLike, type PipVfxController } from "./vfx.js";
@@ -168,17 +168,28 @@ export function flyoverRail(built: BuiltWorld): { readonly points: readonly Aura
 }
 
 interface AppSlice {
-  readonly effects?: AuraApp["effects"];
-  readonly post?: Partial<Pick<NonNullable<AuraApp["post"]>, "setEffect" | "addPostPass">>;
-  readonly atmosphere?: AuraApp["atmosphere"];
-  readonly camera?: AuraApp["camera"];
-  setOutput?: AuraApp["setOutput"];
+  /** The live effects surface; read through the `PipEffectsLike` slice the VFX pack uses. */
+  readonly effects?: unknown;
+  readonly post?: {
+    setEffect?(name: string, patch: Parameters<NonNullable<AuraApp["post"]>["setEffect"]>[1]): void;
+    addPostPass?(pass: AuraCustomPostPass): () => void;
+  };
+  readonly atmosphere?: { setFog(spec: Parameters<NonNullable<AuraApp["atmosphere"]>["setFog"]>[0], opts?: Parameters<NonNullable<AuraApp["atmosphere"]>["setFog"]>[1]): unknown };
+  readonly camera?: {
+    play?(sequence: CameraSequenceArg): AuraCameraSequencePlayback;
+    readonly fovKick?: { set?(channel: string, offsetDeg: number, seconds?: number): unknown };
+    readonly shake?: { add?(amount: number): unknown };
+    evidence?(): { readonly viewProjection?: readonly number[] };
+  };
+  setOutput?(options: Parameters<NonNullable<AuraApp["setOutput"]>>[0]): unknown;
 }
+
+type CameraSequenceArg = Parameters<NonNullable<AuraApp["camera"]>["play"]>[0];
 
 export function createDioramaPresentation(app: AppSlice, options: PresentationOptions): DioramaPresentation {
   const diorama = options.mode === "diorama";
   const scale = presentationScale(options.reducedMotion);
-  const fx = app.effects as unknown as PipEffectsLike | undefined;
+  const fx = app.effects as PipEffectsLike | undefined;
   let vfx: PipVfxController | null = null;
   let registered = false;
   let playback: AuraCameraSequencePlayback | null = null;
@@ -203,7 +214,7 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
     return vfx;
   };
 
-  const play = (id: string, shots: Parameters<NonNullable<AuraApp["camera"]>["play"]>[0]["shots"]): void => {
+  const play = (id: string, shots: CameraSequenceArg["shots"]): void => {
     const cam = app.camera;
     if (!scale.cameraSequences || !cam || typeof cam.play !== "function") return;
     playback?.skip();
@@ -275,7 +286,7 @@ export function createDioramaPresentation(app: AppSlice, options: PresentationOp
           squashAmp = SQUASH.land * scale.motion;
           squashT = 0;
           // PBL-C2 pound shake; off under reduced motion (PRD 6.3), like the pack's camera layers.
-          if (e.kind === "pound-land" && !options.reducedMotion) app.camera?.shake?.add(0.3);
+          if (e.kind === "pound-land" && !options.reducedMotion) app.camera?.shake?.add?.(0.3);
           break;
         case "jump":
         case "double-jump":

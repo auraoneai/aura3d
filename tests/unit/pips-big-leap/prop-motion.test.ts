@@ -29,7 +29,7 @@ function recorder() {
   return { writes, lookup };
 }
 
-const frame = (time: number): PresentationFrame => ({ dt: 1 / 60, time, state: "idle", grounded: true, position: [0, 0, 0], aspect: 16 / 9, clearance: 1, gateUnlocked: false });
+const frame = (time: number): PresentationFrame => ({ dt: 1 / 60, time, state: "grounded", grounded: true, position: [0, 0, 0], aspect: 16 / 9, clearance: 1, gateUnlocked: false });
 
 describe("pips-big-leap prop motion (PBL-AN1)", () => {
   it("gives every banner and fan its own runtime node at today's fitted size, and only in the diorama", () => {
