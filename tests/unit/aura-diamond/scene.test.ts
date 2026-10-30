@@ -142,6 +142,18 @@ describe("aura-diamond GU47 scene (DIA-L1, E1, E2, E3, P1)", () => {
     expect(flat("lunar").nodes.find((n) => n.name === "lunar-earth")?.runtime).toBeDefined();
   });
 
+  it("instances the field's repeated pieces and the stadium shells in both looks (DIA-W2)", () => {
+    for (const ctx of [DEFAULT_SCENE_CONTEXT, ORIGINAL]) {
+      const nodes = flat("sandlot", ctx).nodes;
+      const names = nodes.map((n) => String(n.name));
+      for (const old of ["infield-dirt", "home-dirt", "mound", "mound-rubber", "home-plate", "dugout-l", "dugout-r", "stadium-shell-c"]) expect(names).not.toContain(old);
+      expect(names.filter((n) => /^(base-dirt|base-bag|foul-line|foul-pole|foul-pole-glow|basepath)-[-\d]/.test(n))).toHaveLength(0);
+      for (const merged of ["field-clay", "field-basepaths", "base-bags", "field-plates", "field-chalk", "foul-poles", "foul-pole-glows", "dugouts", "stadium-shells"]) {
+        expect(names.filter((n) => n === merged)).toHaveLength(1);
+      }
+    }
+  });
+
   it("drizzles over Midtown only (DIA-E4), lighter on Low and under reduced motion", () => {
     const rain = (park: ParkId, ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEXT) => flat(park, ctx).nodes.filter((n) => n.effect === "rain");
     for (const park of PARK_ORDER) expect(rain(park)).toHaveLength(park === "skyline" ? 1 : 0);

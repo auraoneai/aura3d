@@ -62,10 +62,9 @@ describe("aura-diamond GU47 field (DIA-M1)", () => {
       const track = nodes.filter((n) => n.name === "warning-track");
       expect(track).toHaveLength(1);
       expect(track[0]?.material).toMatchObject({ color: PARK_LOOKS[park].turf.track, roughness: PARK_LOOKS[park].turf.trackRoughness });
-      for (const line of nodes.filter((n) => String(n.name).startsWith("foul-line") || String(n.name).includes("box"))) {
-        expect(line.material?.emissiveIntensity).toBe(0.05);
-      }
-      expect(nodes.find((n) => n.name === "infield-dirt")?.material?.color).toBe(PARK_LOOKS[park].turf.clay);
+      // DIA-W2: the batter's, catcher's and foul lines are one instanced chalk draw, the clay circles and mound another.
+      expect(nodes.find((n) => n.name === "field-chalk")?.material?.emissiveIntensity).toBe(0.05);
+      expect(nodes.find((n) => n.name === "field-clay")?.material?.color).toBe(PARK_LOOKS[park].turf.clay);
     }
   });
 
@@ -73,6 +72,6 @@ describe("aura-diamond GU47 field (DIA-M1)", () => {
     const nodes = field("sandlot", "original");
     expect(nodes.filter((n) => String(n.name).startsWith("mow-"))).toHaveLength(9);
     expect(nodes.some((n) => n.name === "warning-track")).toBe(false);
-    expect(nodes.find((n) => n.name === "foul-line--1")?.material?.emissiveIntensity).toBe(0.18);
+    expect(nodes.find((n) => n.name === "field-chalk")?.material?.emissiveIntensity).toBe(0.18);
   });
 });

@@ -91,7 +91,11 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
   const bagMat = material.pbr({ color: "#ece8d8", roughness: 0.65 });
   const chalk = () => chalkMat(park, ctx);
 
-  // Ground, mow stripes (4.6.2: nine planes; GU47: the mask on the one grass plane), infield dirt, home circle, mound
+  // GU47 DIA-W2 / DIA-A1: the field's repeated pieces are instanced, one draw per shape and material, in both looks (the
+  // same meshes, transforms and materials as the 4.6.2 nodes, so `?look=original` keeps its look): the clay circles and
+  // the mound (6 -> 1), the base paths (4 -> 1), the chalk (6 -> 1), the plate and the rubber (2 -> 1), the base bags
+  // (3 -> 1), the foul poles and their glow (4 -> 2), the dugouts (2 -> 1): -17 draws before shadow passes.
+  const t = fieldInstanceTransforms(park);
   nodes.push(
     primitives.plane({ name: "field-grass", size: [340, 340] as any, material: grass }).position(0, -0.02, -60),
     ...(gu47
@@ -101,55 +105,21 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
             .plane({ name: `mow-${i}`, size: [340 / 9, 340] as any, material: i % 2 ? grass : grassAlt })
             .position(-170 + (340 / 9) * (i + 0.5), -0.005 - 0.001 * i, -60)
         )),
-    primitives.cylinder({ name: "infield-dirt", size: [26, 0.05, 26], material: dirt }).position(0, 0.012, -BASE_PATH - 1.5),
-    primitives.cylinder({ name: "home-dirt", size: [7.4, 0.06, 7.4], material: dirt }).position(0, 0.018, 0.4),
-    primitives.cylinder({ name: "mound", size: [5.6, MOUND_TOP, 5.6], material: dirt }).position(0, MOUND_TOP / 2 + 0.02, MOUND_Z),
-    primitives.box({ name: "mound-rubber", size: [0.6, 0.03, 0.16], material: bagMat }).position(0, MOUND_TOP + 0.045, MOUND_Z - 0.35)
+    // Infield, home circle, the three base circles and the mound, then the four base paths.
+    instances.cylinder({ name: "field-clay", size: [1, 1, 1], material: dirt, transforms: t.clay }),
+    instances.box({ name: "field-basepaths", size: [2.4, 0.04, 1], material: dirt, transforms: t.basepaths }),
+    instances.model(assets.diamondBase, { name: "base-bags", targetHeight: 0.16, scaleMode: "fit", transforms: t.bags }),
+    instances.box({ name: "field-plates", size: [1, 0.03, 1], material: bagMat, transforms: t.plates }),
+    // Batter's and catcher's boxes, then the two foul lines.
+    instances.box({ name: "field-chalk", size: [1, 0.02, 1], material: chalk(), transforms: t.chalk }),
+    instances.cylinder({
+      name: "foul-pole-glows",
+      size: [0.14, 11, 0.14],
+      material: material.emissive({ color: "#ffd76a", emissive: "#ffd76a", emissiveIntensity: park.night ? 0.9 : 0.25 }),
+      transforms: t.poles.map((p) => ({ position: [p.position[0], 5.5, p.position[2]] as Vec3 }))
+    }),
+    instances.model(assets.diamondFoulPole, { name: "foul-poles", targetHeight: 11, role: "setDressing", scaleMode: "fit", transforms: t.poles })
   );
-
-  // Base paths — thin dirt strips between the bases
-  for (const [x0, z0, x1, z1] of [
-    [0.9, -0.9, BASE_PATH - 0.4, -BASE_PATH + 0.4],
-    [BASE_PATH - 0.4, -BASE_PATH - 0.4, 0.9, -BASE_PATH * 2 + 0.9],
-    [-0.9, -BASE_PATH * 2 + 0.9, -BASE_PATH + 0.4, -BASE_PATH - 0.4],
-    [-BASE_PATH + 0.4, -BASE_PATH + 0.4, -0.9, -0.9]
-  ] as const) {
-    const mx = (x0 + x1) / 2;
-    const mz = (z0 + z1) / 2;
-    const len = Math.hypot(x1 - x0, z1 - z0);
-    const yaw = Math.atan2(x1 - x0, z1 - z0);
-    nodes.push(primitives.box({ name: `basepath-${mx.toFixed(1)}-${mz.toFixed(1)}`, size: [2.4, 0.04, len], material: dirt }).position(mx, 0.025, mz).rotate(0, yaw, 0));
-  }
-
-  // Base dirt circles + bags + home plate + boxes
-  for (let i = 0; i < 3; i++) {
-    const [bx, , bz] = BASES[i]!;
-    nodes.push(
-      primitives.cylinder({ name: `base-dirt-${i}`, size: [4.6, 0.05, 4.6], material: dirt }).position(bx, 0.02, bz),
-      model(assets.diamondBase, { name: `base-bag-${i}`, targetHeight: 0.16, scaleMode: "fit" }).position(bx, 0.06, bz)
-    );
-  }
-  nodes.push(
-    primitives.box({ name: "home-plate", size: [0.44, 0.03, 0.44], material: bagMat }).position(0, 0.045, 0).rotate(0, Math.PI / 4, 0),
-    primitives.box({ name: "batters-box-l", size: [0.06, 0.02, 1.7], material: chalk() }).position(-1.15, 0.05, 0.35),
-    primitives.box({ name: "batters-box-r", size: [0.06, 0.02, 1.7], material: chalk() }).position(1.15, 0.05, 0.35),
-    primitives.box({ name: "batters-box-back", size: [2.3, 0.02, 0.06], material: chalk() }).position(0, 0.05, 1.2),
-    primitives.box({ name: "catchers-box-back", size: [1.4, 0.02, 0.06], material: chalk() }).position(0, 0.05, 2.1)
-  );
-
-  // Foul lines + poles
-  for (const side of [-1, 1]) {
-    const len = park.fenceCorner * 1.02;
-    const fx = Math.sin((side * FOUL_DEG * Math.PI) / 180);
-    const fz = -Math.cos((side * FOUL_DEG * Math.PI) / 180);
-    nodes.push(
-      primitives.box({ name: `foul-line-${side}`, size: [0.09, 0.02, len], material: chalk() }).position((fx * len) / 2, 0.05, (fz * len) / 2).rotate(0, (side * FOUL_DEG * Math.PI) / 180, 0),
-      primitives
-        .cylinder({ name: `foul-pole-glow-${side}`, size: [0.14, 11, 0.14], material: material.emissive({ color: "#ffd76a", emissive: "#ffd76a", emissiveIntensity: park.night ? 0.9 : 0.25 }) })
-        .position(fx * park.fenceCorner, 5.5, fz * park.fenceCorner),
-      model(assets.diamondFoulPole, { name: `foul-pole-${side}`, targetHeight: 11, role: "setDressing", scaleMode: "fit" }).position(fx * park.fenceCorner, 0, fz * park.fenceCorner)
-    );
-  }
 
   // Outfield wall — segmented arc from foul pole to foul pole
   // One instanced draw for the wall and one for its cap (C12); each segment is a unit-length box scaled to its chord.
@@ -198,17 +168,73 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
   nodes.push(
     primitives.torus({ name: "ondeck-l", size: [1.5, 1.5, 0.26], material: ondeckMat }).position(-7.1, 0.028, 2.2).rotate(Math.PI / 2, 0, 0),
     primitives.torus({ name: "ondeck-r", size: [1.5, 1.5, 0.26], material: ondeckMat }).position(7.1, 0.028, 2.2).rotate(Math.PI / 2, 0, 0),
-    model(assets.diamondDugout, {
-      name: "dugout-l", targetHeight: 2.0, role: "setDressing", scaleMode: "fit",
-      materialOverrides: [{ color: "#4b5259", colorMode: "replace", replaceTextures: true, roughness: 0.82, metallic: 0.08 }]
-    }).position(-28, 0, -6).rotate(0, Math.PI / 2, 0),
-    model(assets.diamondDugout, {
-      name: "dugout-r", targetHeight: 2.0, role: "setDressing", scaleMode: "fit",
-      materialOverrides: [{ color: "#4b5259", colorMode: "replace", replaceTextures: true, roughness: 0.82, metallic: 0.08 }]
-    }).position(28, 0, -6).rotate(0, -Math.PI / 2, 0)
+    instances.model(assets.diamondDugout, {
+      name: "dugouts", targetHeight: 2.0, role: "setDressing", scaleMode: "fit",
+      materialOverrides: [{ color: "#4b5259", colorMode: "replace", replaceTextures: true, roughness: 0.82, metallic: 0.08 }],
+      transforms: t.dugouts
+    })
   );
 
   return nodes;
+}
+
+type FieldTransform = { readonly position: Vec3; readonly rotation?: Vec3; readonly scale?: Vec3 };
+
+/**
+ * Instance transforms of the field's repeated pieces (DIA-W2), each the transform of the 4.6.2 node it replaces with the
+ * old `size` folded into the scale (instanced primitives are unit shapes scaled per instance).
+ */
+export function fieldInstanceTransforms(park: ParkSpec): {
+  readonly clay: readonly FieldTransform[];
+  readonly basepaths: readonly FieldTransform[];
+  readonly bags: readonly FieldTransform[];
+  readonly plates: readonly FieldTransform[];
+  readonly chalk: readonly FieldTransform[];
+  readonly poles: readonly FieldTransform[];
+  readonly dugouts: readonly FieldTransform[];
+} {
+  const clay: FieldTransform[] = [
+    { position: [0, 0.012, -BASE_PATH - 1.5], scale: [26, 0.05, 26] },
+    { position: [0, 0.018, 0.4], scale: [7.4, 0.06, 7.4] },
+    ...BASES.map(([bx, , bz]): FieldTransform => ({ position: [bx, 0.02, bz], scale: [4.6, 0.05, 4.6] })),
+    { position: [0, MOUND_TOP / 2 + 0.02, MOUND_Z], scale: [5.6, MOUND_TOP, 5.6] }
+  ];
+  const basepaths = ([
+    [0.9, -0.9, BASE_PATH - 0.4, -BASE_PATH + 0.4],
+    [BASE_PATH - 0.4, -BASE_PATH - 0.4, 0.9, -BASE_PATH * 2 + 0.9],
+    [-0.9, -BASE_PATH * 2 + 0.9, -BASE_PATH + 0.4, -BASE_PATH - 0.4],
+    [-BASE_PATH + 0.4, -BASE_PATH + 0.4, -0.9, -0.9]
+  ] as const).map(([x0, z0, x1, z1]): FieldTransform => ({
+    position: [(x0 + x1) / 2, 0.025, (z0 + z1) / 2],
+    rotation: [0, Math.atan2(x1 - x0, z1 - z0), 0],
+    scale: [1, 1, Math.hypot(x1 - x0, z1 - z0)]
+  }));
+  const len = park.fenceCorner * 1.02;
+  const sides = [-1, 1].map((side) => {
+    const rad = (side * FOUL_DEG * Math.PI) / 180;
+    return { rad, fx: Math.sin(rad), fz: -Math.cos(rad) };
+  });
+  return {
+    clay,
+    basepaths,
+    bags: BASES.map(([bx, , bz]): FieldTransform => ({ position: [bx, 0.06, bz] })),
+    plates: [
+      { position: [0, 0.045, 0], rotation: [0, Math.PI / 4, 0], scale: [0.44, 1, 0.44] },
+      { position: [0, MOUND_TOP + 0.045, MOUND_Z - 0.35], scale: [0.6, 1, 0.16] }
+    ],
+    chalk: [
+      { position: [-1.15, 0.05, 0.35], scale: [0.06, 1, 1.7] },
+      { position: [1.15, 0.05, 0.35], scale: [0.06, 1, 1.7] },
+      { position: [0, 0.05, 1.2], scale: [2.3, 1, 0.06] },
+      { position: [0, 0.05, 2.1], scale: [1.4, 1, 0.06] },
+      ...sides.map(({ rad, fx, fz }): FieldTransform => ({ position: [(fx * len) / 2, 0.05, (fz * len) / 2], rotation: [0, rad, 0], scale: [0.09, 1, len] }))
+    ],
+    poles: sides.map(({ fx, fz }): FieldTransform => ({ position: [fx * park.fenceCorner, 0, fz * park.fenceCorner] })),
+    dugouts: [
+      { position: [-28, 0, -6], rotation: [0, Math.PI / 2, 0] },
+      { position: [28, 0, -6], rotation: [0, -Math.PI / 2, 0] }
+    ]
+  };
 }
 
 export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEXT): any[] {
@@ -216,12 +242,18 @@ export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFA
   const rng = makeRng(0xbeef);
 
   // Grandstand stadium shells framing the outer ballpark skyline, placed behind each park's own fence (rules.ts shellPlacements).
+  // DIA-W2: one instanced draw for the three shells (-2); the centre shell's 30 m fit is the 28 m fit scaled by 30/28.
   nodes.push(
-    ...shellPlacements(park).map((sh) =>
-      model(assets.diamondStadium, { name: sh.name, targetMaxDimension: sh.name.endsWith("-c") ? 30 : 28, role: "setDressing", scaleMode: "fit" })
-        .position(sh.x, 0, sh.z)
-        .rotate(0, sh.yaw, 0)
-    ),
+    instances.model(assets.diamondStadium, {
+      name: "stadium-shells",
+      targetMaxDimension: 28,
+      role: "setDressing",
+      scaleMode: "fit",
+      transforms: shellPlacements(park).map((sh) => {
+        const k = sh.name.endsWith("-c") ? 30 / 28 : 1;
+        return { position: [sh.x, 0, sh.z] as Vec3, rotation: [0, sh.yaw, 0] as Vec3, scale: [k, k, k] as Vec3 };
+      })
+    }),
     // Hidden dugout seat asset reference so route asset validation sees showcaseStadiumSeats
     model(assets.showcaseStadiumSeats, {
       name: "dugout-seat-ref",
