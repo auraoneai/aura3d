@@ -207,6 +207,25 @@ function weatherNodes(vl: FcVenueLook, reducedMotion: boolean): any[] {
   }
 }
 
+/**
+ * FC47-V2: three animated aurora curtains over the far stand (effects.auroraRibbon, beam pass) replace the three flat
+ * emissive planes. Reduced motion keeps the curtains but cuts sway and shimmer to 30% (PRD 6.3).
+ */
+export function auroraNodes(reducedMotion = false): any[] {
+  const motion = reducedMotion ? 0.3 : 1;
+  const bands = [
+    { x: -20, y: 21, z: -(PITCH_HZ + 26), color: "#54f0a8", top: "#3fd0c8", width: 46 },
+    { x: 4, y: 24, z: -(PITCH_HZ + 32), color: "#7fe8c9", top: "#7a5cff", width: 54 },
+    { x: 26, y: 20, z: -(PITCH_HZ + 24), color: "#5ef0b0", top: "#b06cff", width: 40 }
+  ];
+  return bands.map((b, i) =>
+    effects.auroraRibbon({
+      name: `fc-aurora-ribbon-${i}`, position: [b.x, b.y, b.z], color: b.color, colorTop: b.top,
+      intensity: 1.2, width: b.width, height: 11, segments: 96, sway: 0.9 * motion, shimmer: 0.6 * motion
+    } as any).runtime(gameRuntime(`fc-aurora-ribbon-${i}`))
+  );
+}
+
 export function atmosphereNodes(venue: VenueId, opts: FcSceneOptions = {}): any[] {
   const vl = VENUE_LOOKS[venue];
   const reducedMotion = opts.reducedMotion === true;
@@ -218,6 +237,7 @@ export function atmosphereNodes(venue: VenueId, opts: FcSceneOptions = {}): any[
     if (skyNode) nodes.push({ ...skyNode, name: "fc-polar-sky" });
   }
   nodes.push(...weatherNodes(vl, reducedMotion));
+  if (VENUES[venue].aurora) nodes.push(...auroraNodes(reducedMotion));
   if (vl.shafts > 0) {
     // FC47-S2: haze shafts from the main-stand flood (S4 god rays; off below Medium, the cones are the Low cue)
     nodes.push(effects.volumetricFog({
@@ -598,14 +618,6 @@ function stadiumNodes(v: VenueSpec): any[] {
       .scale([HIDDEN, HIDDEN, HIDDEN])
       .runtime(gameRuntime("fc-dome"))
   );
-  for (let i = 0; i < 3; i++) {
-    nodes.push(
-      primitives.plane({ name: `fc-aurora-${i}`, size: [60, 7, 1], material: material.emissive({ color: "#7fe8c9", emissive: i === 1 ? "#7dfcff" : "#7fe8c9", emissiveIntensity: 0.55, opacity: 0.22 }) })
-        .position(-10 + i * 10, 19 + i * 2.2, -6 + i * 5)
-        .rotate(-0.5 - i * 0.12, 0.25 * i, 0)
-        .runtime(gameRuntime(`fc-aurora-${i}`))
-    );
-  }
 
   /* ---- 3D Meshy dugouts, stadium bowl, ball cart & touchline referee ---- */
   // Dugouts used to sit between the camera and the near touchline, filling
@@ -792,7 +804,7 @@ export function resolveWorld(app: any): WorldHandles {
     nets: ["net-back--1", "net-roof--1", "net-n--1", "net-s--1", "net-back-1", "net-roof-1", "net-n-1", "net-s-1"].map((n) => tryReq(app, n)),
     dome: tryReq(app, "fc-dome"),
     referee: tryReq(app, "fc-referee"),
-    auroras: [0, 1, 2].map((i) => tryReq(app, `fc-aurora-${i}`)),
+    auroras: [0, 1, 2].map((i) => tryReq(app, `fc-aurora-ribbon-${i}`)),
     wavers: tryReq(app, "fc-wavers"),
     confetti: tryReq(app, "fc-confetti"),
     goalMeshes: [tryReq(app, "fc-goal-mesh--1"), tryReq(app, "fc-goal-mesh-1")],
@@ -845,9 +857,7 @@ export function tickWorld(h: WorldHandles, t: number, opts: { cheering: boolean;
   h.referee?.setAnimation?.({ clip: ref.clip, loop: true, duration: ref.duration, startTime: t - ref.phase, crossFade: false });
 
   h.wavers?.setInstances?.(waverTransforms(t, cheer));
-  for (let i = 0; i < h.auroras.length; i++) {
-    h.auroras[i]?.setRotation(-0.5 - i * 0.12, 0.25 * i + Math.sin(t * 0.22 + i * 2) * 0.08, 0);
-  }
+  // FC47-V2: the aurora ribbons animate themselves (sway, shimmer); nothing to drive per frame
   if (opts.ripple > 0) {
     const k = 1 + Math.sin(opts.ripple * 22) * 0.06 * Math.min(1, opts.ripple);
     for (const n of h.nets) n?.setScale([k, 1, 1]);

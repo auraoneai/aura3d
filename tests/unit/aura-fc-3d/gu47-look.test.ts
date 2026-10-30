@@ -186,3 +186,21 @@ describe("aura-fc-3d GU47 Uyuni mirror (FC47-M3)", () => {
     }
   });
 });
+
+describe("aura-fc-3d GU47 aurora ribbons (FC47-V2)", () => {
+  it("Glacier draws 3 aurora ribbons and no flat aurora planes; other venues none", () => {
+    for (const v of VENUE_ORDER) {
+      const nodes = sceneNodes(v);
+      expect(nodes.filter((n) => /^fc-aurora-\d$/.test(n.name ?? ""))).toEqual([]);
+      const ribbons = nodes.filter((n) => n.effect === "auroraRibbon");
+      expect({ v, n: ribbons.length }).toEqual({ v, n: v === "glacier" ? 3 : 0 });
+    }
+  });
+
+  it("reduced motion cuts ribbon sway and shimmer to 30%", () => {
+    const full = sceneNodes("glacier").find((n) => n.effect === "auroraRibbon") as Node & { sway: number; shimmer: number };
+    const rm = sceneNodes("glacier", true).find((n) => n.effect === "auroraRibbon") as Node & { sway: number; shimmer: number };
+    expect(rm.sway).toBeCloseTo(full.sway * 0.3, 6);
+    expect(rm.shimmer).toBeCloseTo(full.shimmer * 0.3, 6);
+  });
+});

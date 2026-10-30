@@ -486,21 +486,6 @@
         "practical": true
       },
       {
-        "node": "fc-aurora-0",
-        "emissiveIntensity": 0.55,
-        "practical": true
-      },
-      {
-        "node": "fc-aurora-1",
-        "emissiveIntensity": 0.55,
-        "practical": true
-      },
-      {
-        "node": "fc-aurora-2",
-        "emissiveIntensity": 0.55,
-        "practical": true
-      },
-      {
         "node": "fc-trophy-plinth",
         "practical": false
       },
