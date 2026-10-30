@@ -24,9 +24,9 @@ describe("heatsink scene", () => {
     expect(skies("dustfall").map((e) => [e.intensity, e.texture.url])).toEqual([[0.9, "/hdri/industrial_sunset_puresky_1k.hdr"]]);
     expect(skies("vesper").map((e) => [e.intensity, e.texture.url])).toEqual([[0.7, "/hdri/spruit_sunrise_1k.hdr"]]);
   });
-  it("has no backdrop wall, no horizon bands and no point lights (HS-01, HS-03)", () => {
+  it("has no backdrop wall, no horizon bands, and no point lights besides the HS-02 sodium lamps (HS-01, HS-03)", () => {
     for (const name of ["sky-backdrop", "horizon-band-a", "horizon-band-b"]) expect(nodes.find((n) => n.name === name), name).toBeUndefined();
-    expect(lightsOf("point")).toHaveLength(0);
+    expect(lightsOf("point").map((n) => n.name)).toEqual(["td-sodium-gantry-l", "td-sodium-gantry-r"]);
     expect(lightsOf("ambient")).toHaveLength(0);
   });
   it("has one shadowed key (PCSS, 3 cascades), an unshadowed cyan rim, and the up-fill only on VESPER (HS-01)", () => {

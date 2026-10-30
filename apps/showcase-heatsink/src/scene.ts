@@ -7,6 +7,7 @@
  * HS-03: the circuit HDRI is the sky (background on) and the image-based fill; the backdrop wall and the two emissive
  *   horizon bands are gone. A circuit change remounts the scene (main.ts), so every per-circuit node is authored here.
  * HS-05: per-circuit exponential fog; DUSTFALL adds a volumetric inscatter with god rays from its 9-degree sun.
+ * HS-02: drone headlight spot, 2 sodium points on the start gantry (1 on VESPER), 2 tunnel strip lights (unshadowed).
  * HS-06: one weather system per circuit (rain, dust or embers), none on reduced motion.
  * HS-12: per-circuit post: warm bloom, grade (with the exposure), vignette, grain on MEGACITY only.
  * HS-15: molten slag gutters and the lava pool (custom shader, one instanced draw); chevrons follow the core heat.
@@ -34,6 +35,48 @@ export const RIG_IDS = {
   upFill: "td-vent-up-fill",
   sky: "td-sky"
 } as const;
+
+/**
+ * HS-02 local lights, all unshadowed (the key is the only caster). The art-direction contract caps the non-key lights at
+ * 6 (`packages/game/src/art/define.ts`), and the coolant rim (plus VESPER's up-fill) count against it, so the set is: the
+ * headlight spot, two sodium lamps on the start gantry (one centre lamp on VESPER, whose up-fill takes the sixth slot) and
+ * one strip light in each tunnel ceiling: 5 local lights (4 on VESPER), 6 non-key lights per circuit. Each anchored
+ * light rides with its anchor (main.ts `setPosition` at the anchor's track distance, the E-B light handle path); `offset`
+ * is [lateral, height] in metres from the anchor's lateral and base.
+ */
+export interface LocalLightSpec {
+  readonly id: string;
+  readonly kind: "sodium" | "strip";
+  readonly anchorId: string;
+  readonly offset: readonly [number, number];
+}
+const SODIUM_PAIR: readonly LocalLightSpec[] = [
+  { id: "td-sodium-gantry-l", kind: "sodium", anchorId: "prop-gantry-start", offset: [-8, 7.5] },
+  { id: "td-sodium-gantry-r", kind: "sodium", anchorId: "prop-gantry-start", offset: [8, 7.5] }
+];
+const SODIUM_CENTRE: readonly LocalLightSpec[] = [
+  { id: "td-sodium-gantry", kind: "sodium", anchorId: "prop-gantry-start", offset: [0, 7.5] }
+];
+const TUNNEL_STRIPS: readonly LocalLightSpec[] = [
+  { id: "td-strip-tunnel-a", kind: "strip", anchorId: "prop-tunnel-a", offset: [0, 13] },
+  { id: "td-strip-tunnel-b", kind: "strip", anchorId: "prop-tunnel-b", offset: [0, 13] }
+];
+/** The anchored local lights of a circuit (scene.ts mounts them, main.ts moves them). */
+export function localLightSpecs(look: CircuitLook): readonly LocalLightSpec[] {
+  return [...(look.upFill ? SODIUM_CENTRE : SODIUM_PAIR), ...TUNNEL_STRIPS];
+}
+export const HEADLIGHT_ID = "td-drone-headlight";
+/** Headlight: offset from the player drone (metres, view space; the drone always faces -Z) and its aim point. */
+export const HEADLIGHT = { offset: [0, 0.35, -1.4] as [number, number, number], target: [0, 0, -34] as [number, number, number], angle: 0.42, distance: 46 } as const;
+/** Sodium lamp reach and the tunnel strip size (metres). */
+export const SODIUM_DISTANCE = 22;
+export const STRIP_SIZE = { width: 2.2, height: 14 } as const;
+/** Unit headlight direction (offset towards the aim point); set once per mount so the moving spot never re-aims. */
+export const HEADLIGHT_DIRECTION: readonly [number, number, number] = (() => {
+  const v = [HEADLIGHT.target[0] - HEADLIGHT.offset[0], HEADLIGHT.target[1] - HEADLIGHT.offset[1], HEADLIGHT.target[2] - HEADLIGHT.offset[2]] as const;
+  const len = Math.hypot(v[0], v[1], v[2]);
+  return [v[0] / len, v[1] / len, v[2] / len];
+})();
 /** Where the key light aims: the road about 20 m ahead of the drone (the drone stays near the origin). */
 export const KEY_TARGET: [number, number, number] = [0, 0, -20];
 /** HS-01: PCSS soft shadows over three cascades (the engine drops to 1 cascade PCF on the Low tier). */
@@ -136,6 +179,21 @@ export function circuitLights(look: CircuitLook): AuraNodeBuilder<AuraSceneNode>
     // Vents below the causeway: a warm light travelling upwards, so undersides and arches glow from beneath.
     out.push(lights.directional({ name: "td vent up-fill", position: [0, -40, -12], target: KEY_TARGET, color: look.upFill.color, intensity: look.upFill.intensity, shadow: false })
       .runtime(game.runtimeNode(RIG_IDS.upFill)));
+  }
+  return out;
+}
+
+/** HS-02 local lights for a circuit (positions are rewritten every frame by main.ts). */
+export function circuitLocalLights(look: CircuitLook): AuraNodeBuilder<AuraSceneNode>[] {
+  const out: AuraNodeBuilder<AuraSceneNode>[] = [
+    lights.spot({ name: "td drone headlight", position: HEADLIGHT.offset, target: HEADLIGHT.target, angle: HEADLIGHT.angle, penumbra: 0.55, distance: HEADLIGHT.distance, color: look.local.headlight.color, intensity: look.local.headlight.intensity, shadow: false })
+      .runtime(game.runtimeNode(HEADLIGHT_ID))
+  ];
+  for (const l of localLightSpecs(look)) {
+    const base: [number, number, number] = [l.offset[0], l.offset[1], -60];
+    out.push(l.kind === "sodium"
+      ? lights.point({ name: l.id, position: base, distance: SODIUM_DISTANCE, color: look.local.sodium.color, intensity: look.local.sodium.intensity, shadow: false }).runtime(game.runtimeNode(l.id))
+      : lights.rect({ name: l.id, position: base, target: [base[0], 0, base[2]], width: STRIP_SIZE.width, height: STRIP_SIZE.height, color: look.local.strip.color, intensity: look.local.strip.intensity }).runtime(game.runtimeNode(l.id)));
   }
   return out;
 }
@@ -275,6 +333,7 @@ export function buildThermalDriftScene(options: SceneOptions) {
       ...(options.exposureEv !== undefined ? { exposureEv: options.exposureEv } : {}),
       ...(options.ambientOcclusion === false ? { ambientOcclusion: false } : {})
     }))
+    .addMany(circuitLocalLights(look))
     .addMany(circuitReflections(look))
     .addMany(circuitWeather(look, reducedMotion));
 

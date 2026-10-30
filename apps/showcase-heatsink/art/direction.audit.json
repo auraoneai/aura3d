@@ -31,6 +31,31 @@
         "type": "directional",
         "shadow": false,
         "intensity": 0.35
+      },
+      {
+        "type": "spot",
+        "shadow": false,
+        "intensity": 60
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 34
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 34
+      },
+      {
+        "type": "rect",
+        "shadow": false,
+        "intensity": 6
+      },
+      {
+        "type": "rect",
+        "shadow": false,
+        "intensity": 6
       }
     ],
     "hasAmbient": false,
@@ -311,18 +336,15 @@
       },
       {
         "node": "wall-chevrons-a",
-        "emissiveIntensity": 1.65,
-        "practical": true
+        "practical": false
       },
       {
         "node": "wall-chevrons-b",
-        "emissiveIntensity": 1.65,
-        "practical": true
+        "practical": false
       },
       {
-        "node": "rain-streaks",
-        "emissiveIntensity": 0.55,
-        "practical": true
+        "node": "slag-gutters",
+        "practical": false
       },
       {
         "node": "laser-bolts",

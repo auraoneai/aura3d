@@ -25,10 +25,14 @@ import {
 import {
   buildThermalDriftScene,
   GUTTER,
+  HEADLIGHT,
+  HEADLIGHT_DIRECTION,
+  HEADLIGHT_ID,
   IDS,
   INSTANCE_COUNTS,
   LAVA_POOL,
   LAVA_POOL_SCALE,
+  localLightSpecs,
   MODEL_NODE_COUNT,
   ROAD_TILE_COUNT,
   ROAD_TILE_SPACING,
@@ -125,7 +129,22 @@ async function boot(): Promise<void> {
   // HS-15: the two chevron nodes share one custom program; `u_heat` is written when the quantised core heat changes.
   let chevronHandles = [req(IDS.chevA), req(IDS.chevB)];
   let chevronHeat = -1;
-  function bindHandles(): void {
+  // HS-02: the headlight and the anchored local lights carry a fixed direction (E-B: an explicit direction stays fixed
+  // while the light moves), so moving them never re-aims them at their authored mount-time target.
+  const anchorById = new Map(SCENERY_ANCHORS.map((anchor) => [anchor.id, anchor] as const));
+  const bindLocalLights = (circuit: CircuitId) => {
+    const head = req(HEADLIGHT_ID);
+    head.setLight?.({ direction: [...HEADLIGHT_DIRECTION] });
+    const anchored = localLightSpecs(CIRCUIT_LOOKS[circuit]).map((spec) => {
+      const handle = req(spec.id);
+      if (spec.kind === "strip") handle.setLight?.({ direction: [0, -1, 0] });
+      return { spec, handle };
+    });
+    return { head, anchored };
+  };
+  let localLights = bindLocalLights(selectedCircuit);
+  const anchorDistance: Record<string, number> = {};
+  function bindHandles(circuit: CircuitId): void {
     droneHandles = makeDrones();
     writers = makeWriters();
     ringHandle = req(IDS.ring);
@@ -135,6 +154,7 @@ async function boot(): Promise<void> {
     sceneryHandles = makeScenery();
     chevronHandles = [req(IDS.chevA), req(IDS.chevB)];
     chevronHeat = -1;
+    localLights = bindLocalLights(circuit);
   }
 
   const track = new TrackView();
@@ -212,7 +232,7 @@ async function boot(): Promise<void> {
   function remountCircuit(id: CircuitId): void {
     syncBoostBlur(false);
     auraApp.setScene(buildThermalDriftScene(sceneOptions(id)));
-    bindHandles();
+    bindHandles(id);
     registerThermalDriftVfx(auraApp.effects);
     missileTrail?.stop({ immediate: true });
     incomingTrail?.stop({ immediate: true });
@@ -449,6 +469,7 @@ async function boot(): Promise<void> {
       const k = Math.ceil((progress - behind - anchor.s) / anchor.period);
       const d = anchor.s + k * anchor.period - progress;
       track.place(d, anchor.lateralX, anchor.baseY, pose2);
+      anchorDistance[anchor.id] = d;
       const collected = anchor.kind !== "decor" && collectedPass(race, anchor.id) === k;
       handle.setPosition(pose2.x, pose2.y, pose2.z).setVisible(!collected);
       if (anchor.kind === "lava" && d > 0) {
@@ -463,6 +484,14 @@ async function boot(): Promise<void> {
       handle.setRotation(0, -pose2.heading + anchor.yaw + (anchor.spinSpeed && !reduced ? race.time * anchor.spinSpeed : 0), 0);
     }
     writers.gutters.end();
+
+    // HS-02 local lights: the headlight rides with the player, sodium lamps and tunnel strips with their anchors.
+    localLights.head.setPosition(dronePos[0] + HEADLIGHT.offset[0], dronePos[1] + HEADLIGHT.offset[1], dronePos[2] + HEADLIGHT.offset[2]).setVisible(p.respawn <= 0);
+    for (const { spec, handle } of localLights.anchored) {
+      const anchor = anchorById.get(spec.anchorId)!;
+      track.place(anchorDistance[spec.anchorId] ?? 0, anchor.lateralX + spec.offset[0], anchor.baseY + spec.offset[1], pose2);
+      handle.setPosition(pose2.x, pose2.y, pose2.z);
+    }
 
     // Mine: drawn at its track position while deployed, hidden otherwise (C8).
     const mine = race.mine;

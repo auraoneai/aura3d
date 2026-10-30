@@ -75,6 +75,15 @@ export interface CircuitLook {
   readonly skyline: { readonly color: string; readonly glow: string };
   /** HS-15 molten shader (slag gutters along the walls, the pool under the lava curtain): vein colour, crust, HDR glow. */
   readonly molten: { readonly hot: string; readonly crust: string; readonly glow: number };
+  /**
+   * HS-02 local lights (unshadowed): the player drone's headlight spot, the sodium lamps on the start gantry, the two strip
+   * lights in the tunnel ceilings (scene.ts `localLightSpecs`). `power`-free intensities (engine units per light kind).
+   */
+  readonly local: {
+    readonly headlight: { readonly color: string; readonly intensity: number };
+    readonly sodium: { readonly color: string; readonly intensity: number };
+    readonly strip: { readonly color: string; readonly intensity: number };
+  };
 }
 
 export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
@@ -101,7 +110,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     accents: { primary: PALETTE.moltenAmber, secondary: PALETTE.slagRed, lanes: "#d9a066" },
     haze: { strength: 1, ambient: 0.15, tint: "#ff9a3c" },
     skyline: { color: "#17120f", glow: "#ff8a1f" },
-    molten: { hot: PALETTE.moltenAmber, crust: "#241812", glow: 6 }
+    molten: { hot: PALETTE.moltenAmber, crust: "#241812", glow: 6 },
+    local: { headlight: { color: "#ffe2b8", intensity: 60 }, sodium: { color: "#ffa640", intensity: 34 }, strip: { color: "#ffb870", intensity: 6 } }
   },
   dustfall: {
     circuit: "dustfall",
@@ -127,7 +137,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     accents: { primary: PALETTE.moltenAmber, secondary: "#ffb347", lanes: "#e8c28a" },
     haze: { strength: 1.25, ambient: 0.35, tint: "#ffb060" },
     skyline: { color: "#3a2a1c", glow: "#ff9a4a" },
-    molten: { hot: "#ff9a2a", crust: PALETTE.oxidisedIron, glow: 5 }
+    molten: { hot: "#ff9a2a", crust: PALETTE.oxidisedIron, glow: 5 },
+    local: { headlight: { color: "#fff0d8", intensity: 40 }, sodium: { color: "#ffb25a", intensity: 18 }, strip: { color: "#ffc890", intensity: 4 } }
   },
   vesper: {
     circuit: "vesper",
@@ -153,7 +164,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     accents: { primary: "#b9a4ff", secondary: PALETTE.moltenAmber, lanes: "#c9b8ff" },
     haze: { strength: 1, ambient: 0.2, tint: "#ff8a4a" },
     skyline: { color: "#1a1626", glow: "#ff7a2e" },
-    molten: { hot: "#ff6a26", crust: "#1e1418", glow: 6.5 }
+    molten: { hot: "#ff6a26", crust: "#1e1418", glow: 6.5 },
+    local: { headlight: { color: "#f2e6ff", intensity: 55 }, sodium: { color: "#ff9a52", intensity: 30 }, strip: { color: "#d8c4ff", intensity: 5 } }
   }
 };
 
