@@ -327,6 +327,21 @@ export interface AuraMaterialRimSpec {
 }
 
 /**
+ * GU47 E-D (PRD §3.1): `material.toon(opts)`. Cel-shaded surface lit by every scene light (sun shadow included),
+ * banded into `steps` (1..8, default 3) between `shadowColor` and `color`, plus a soft hemisphere fill and the optional
+ * fresnel `rim`. `ramp` (a texture asset, a 1D gradient read left = unlit to right = fully lit) replaces the bands: the
+ * colour is `color * ramp(light)`. Scene fog applies; it casts shadows with its own vertex stage and works on
+ * instanced nodes. `color` defaults to "#d7dee8", `shadowColor` to `color` at 35%.
+ */
+export interface AuraToonMaterialOptions {
+  readonly color?: AuraColor;
+  readonly steps?: number;
+  readonly ramp?: AuraAssetRef<"texture">;
+  readonly shadowColor?: AuraColor;
+  readonly rim?: AuraMaterialSpec["rim"];
+}
+
+/**
  * GU47 E-D: what a per-instance colour (`instances.*({ colors })`) multiplies. `"base"` (default, today's behaviour):
  * the base colour. `"emissive"`: the emissive term only (the base keeps the material colour), so each instance glows its
  * own colour. `"both"`: base and emissive. The option lives on `instances.*` (lane E-G); the shader side is E-D's.
