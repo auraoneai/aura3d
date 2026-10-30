@@ -46,20 +46,6 @@
         },
         "models": [
           {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsSunseed",
             "triangles": 0,
             "textures": 1,
@@ -147,13 +133,6 @@
             "assetKey": "fpsEnergyCorePickupMeshy",
             "triangles": 0,
             "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -172,13 +151,6 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsCheckpointFlag",
             "triangles": 0,
             "textures": 1,
@@ -186,23 +158,9 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsCheckpointFlag",
             "triangles": 0,
             "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -221,9 +179,16 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "propConifer",
+            "assetKey": "skylineCrystalShardMeshy",
             "triangles": 0,
-            "textures": 1,
+            "textures": 3,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
+            "assetKey": "galleryShiftPedestal",
+            "triangles": 0,
+            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -430,27 +395,6 @@
         },
         "models": [
           {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsSunseed",
             "triangles": 0,
             "textures": 1,
@@ -552,13 +496,6 @@
             "assetKey": "fpsEnergyCorePickupMeshy",
             "triangles": 0,
             "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -577,13 +514,6 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsCheckpointFlag",
             "triangles": 0,
             "textures": 1,
@@ -591,23 +521,9 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsCheckpointFlag",
             "triangles": 0,
             "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -626,44 +542,16 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "propConifer",
+            "assetKey": "skylineCrystalShardMeshy",
             "triangles": 0,
-            "textures": 1,
+            "textures": 3,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "propConifer",
+            "assetKey": "galleryShiftPedestal",
             "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "propConifer",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "propConifer",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "propConifer",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "propConifer",
-            "triangles": 0,
-            "textures": 1,
+            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -696,41 +584,6 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "heatsinkDroneNighthawk",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsSunseed",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsSunseed",
             "triangles": 0,
             "textures": 1,
@@ -739,13 +592,6 @@
           },
           {
             "assetKey": "propBoulder",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
             "triangles": 0,
             "textures": 1,
             "unlit": false,
@@ -914,20 +760,6 @@
         },
         "models": [
           {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsSunseed",
             "triangles": 0,
             "textures": 1,
@@ -1029,13 +861,6 @@
             "assetKey": "fpsEnergyCorePickupMeshy",
             "triangles": 0,
             "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -1054,13 +879,6 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsCheckpointFlag",
             "triangles": 0,
             "textures": 1,
@@ -1068,23 +886,9 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsCheckpointFlag",
             "triangles": 0,
             "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -1103,9 +907,16 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "gullsiegeWindmillMeshy",
+            "assetKey": "skylineCrystalShardMeshy",
             "triangles": 0,
             "textures": 3,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
+            "assetKey": "galleryShiftPedestal",
+            "triangles": 0,
+            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -1125,20 +936,6 @@
           },
           {
             "assetKey": "gullsiegeCrateMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "gullsiegeCrateMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "gullsiegeBarrelMeshy",
             "triangles": 0,
             "textures": 3,
             "unlit": false,
@@ -1326,20 +1123,6 @@
         },
         "models": [
           {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsSunseed",
             "triangles": 0,
             "textures": 1,
@@ -1441,13 +1224,6 @@
             "assetKey": "fpsEnergyCorePickupMeshy",
             "triangles": 0,
             "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -1466,13 +1242,6 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsCheckpointFlag",
             "triangles": 0,
             "textures": 1,
@@ -1480,23 +1249,9 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsCheckpointFlag",
             "triangles": 0,
             "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -1515,35 +1270,21 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "propRockB",
+            "assetKey": "skylineCrystalShardMeshy",
             "triangles": 0,
             "textures": 3,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "propRockB",
+            "assetKey": "galleryShiftPedestal",
             "triangles": 0,
-            "textures": 3,
+            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
           {
             "assetKey": "propRockB",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "propRockB",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "reactorFusionTurbineMeshy",
             "triangles": 0,
             "textures": 3,
             "unlit": false,
@@ -1753,34 +1494,6 @@
         },
         "models": [
           {
-            "assetKey": "auraClashCornerBrazierPylonMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "auraClashCornerBrazierPylonMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsSunseed",
             "triangles": 0,
             "textures": 1,
@@ -1882,13 +1595,6 @@
             "assetKey": "fpsEnergyCorePickupMeshy",
             "triangles": 0,
             "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -1907,13 +1613,6 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsCheckpointFlag",
             "triangles": 0,
             "textures": 1,
@@ -1921,23 +1620,9 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsCheckpointFlag",
             "triangles": 0,
             "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -1956,23 +1641,23 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "blockfallReactorContainmentPylonMeshy",
+            "assetKey": "auraClashCornerBrazierPylonMeshy",
             "triangles": 0,
             "textures": 3,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "blockfallReactorContainmentPylonMeshy",
+            "assetKey": "skylineCrystalShardMeshy",
             "triangles": 0,
             "textures": 3,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "blockfallReactorContainmentPylonMeshy",
+            "assetKey": "galleryShiftPedestal",
             "triangles": 0,
-            "textures": 3,
+            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -1987,27 +1672,6 @@
             "assetKey": "heatsinkArch",
             "triangles": 0,
             "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "auraClashCornerBrazierPylonMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "auraClashCornerBrazierPylonMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "neonStreetLampProp",
-            "triangles": 0,
-            "textures": 9,
             "unlit": false,
             "overridesTextures": false
           },
@@ -2212,27 +1876,6 @@
         },
         "models": [
           {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsSunseed",
             "triangles": 0,
             "textures": 1,
@@ -2334,13 +1977,6 @@
             "assetKey": "fpsEnergyCorePickupMeshy",
             "triangles": 0,
             "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -2359,13 +1995,6 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsCheckpointFlag",
             "triangles": 0,
             "textures": 1,
@@ -2373,23 +2002,9 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsCheckpointFlag",
             "triangles": 0,
             "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -2408,37 +2023,16 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "blockfallReactorContainmentPylonMeshy",
+            "assetKey": "skylineCrystalShardMeshy",
             "triangles": 0,
             "textures": 3,
             "unlit": false,
             "overridesTextures": false
           },
           {
-            "assetKey": "blockfallReactorContainmentPylonMeshy",
+            "assetKey": "galleryShiftPedestal",
             "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "blockfallReactorContainmentPylonMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "blockfallReactorContainmentPylonMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "blockfallReactorContainmentPylonMeshy",
-            "triangles": 0,
-            "textures": 3,
+            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -2457,30 +2051,9 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "heatsinkArch",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsCheckpointFlag",
             "triangles": 0,
             "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "pipsCheckpointFlag",
-            "triangles": 0,
-            "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "neonStreetLampProp",
-            "triangles": 0,
-            "textures": 9,
             "unlit": false,
             "overridesTextures": false
           },
@@ -2702,20 +2275,6 @@
         },
         "models": [
           {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsSunseed",
             "triangles": 0,
             "textures": 1,
@@ -2821,13 +2380,6 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "heatsinkBoostPad",
             "triangles": 0,
             "textures": 0,
@@ -2842,13 +2394,6 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsCheckpointFlag",
             "triangles": 0,
             "textures": 1,
@@ -2856,23 +2401,9 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
             "assetKey": "pipsCheckpointFlag",
             "triangles": 0,
             "textures": 1,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "galleryShiftPedestal",
-            "triangles": 0,
-            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
@@ -2898,37 +2429,9 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "skylineCrystalShardMeshy",
+            "assetKey": "galleryShiftPedestal",
             "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "skylineCrystalShardMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "fpsEnergyCorePickupMeshy",
-            "triangles": 0,
-            "textures": 3,
-            "unlit": false,
-            "overridesTextures": false
-          },
-          {
-            "assetKey": "fpsEnergyCorePickupMeshy",
-            "triangles": 0,
-            "textures": 3,
+            "textures": 0,
             "unlit": false,
             "overridesTextures": false
           },
