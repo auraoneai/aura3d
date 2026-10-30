@@ -1,0 +1,7 @@
+{
+  "id": "letterbox-fight-cinematics",
+  "kind": "generic-reference",
+  "subject": "letterboxed round intros and knockout replays of arcade versus fighters (genre convention, no specific work)",
+  "matched": ["venue dolly then fighter close-ups", "black bars during cinematics only", "K.O. orbit and a winner hero shot", "cut instead of move on reduced motion"],
+  "licence": "reference-only (no image vendored)"
+}
