@@ -90,7 +90,8 @@ import { defaultAimYaw, pinArrowDegrees, stepAimOffset, wrapAngle, yawToward } f
 import { applyGolferFit, buildGolferNodes, golferTelemetry, poseGolfer, resolveGolferRig, type GolferPhase } from "./game/rig";
 import { sweptClubContact, type ClubContact } from "./game/contact";
 import { commitStroke } from "./game/strokeCommit";
-import { contactShadowIntensity, courseFill } from "./game/lighting";
+import { COURSE_LOOKS, contactShadowIntensity, courseFill, flagFlutterAmplitude, type LinksTier } from "./game/lighting";
+import { buildCourseRig } from "./game/lookRig";
 import { clubForShot, planShot, puttRange, type ShotPlan } from "./game/autopilot";
 import {
   bracketRows,
@@ -138,6 +139,21 @@ const BALL_R = 0.05;
 const CUP_R = 0.1;
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
+
+/* ------------------------------------------------------------------ *
+ *  Presentation mode (GU47 WP-20)                                     *
+ * ------------------------------------------------------------------ */
+
+const presentationParams = new URLSearchParams(window.location.search);
+/** `?look=original` mounts the 4.6.2 light, atmosphere and post rig (PRD §8 reversibility); default: the GU47 course look */
+const lookMode: "gu47" | "original" = presentationParams.get("look") === "original" ? "original" : "gu47";
+/**
+ * Presentation tier (PRD §6.4): `?aura3d-quality=low` (the engine's own tier override) or `?tier=low` builds the Low
+ * variant: 1 cascade PCF key, no grain, god rays, sun flare or ambient particles. The engine gates its post stages by
+ * its own resolved tier on top of this.
+ */
+const presentationTier: LinksTier =
+  presentationParams.get("aura3d-quality") === "low" || presentationParams.get("tier") === "low" ? "low" : "high";
 
 /* ------------------------------------------------------------------ *
  *  Game state                                                         *
@@ -732,14 +748,17 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
           .rotate(0, Math.PI, 0)
       );
     });
-    // floodlight pylons around the green
+    // floodlight pylons around the green. The GU47 look lights the two behind the green as its mast spots
+    // (game/lookRig.ts neonMastPositions, LINKS-16); `?look=original` keeps the 4.6.2 four lamp spots.
     for (const [lx, lz] of [[-18, -8], [18, -8], [-18, 18], [18, 18]] as const) {
       const x = cx + lx, z = cz + lz;
       nodes.push(
         model(assets.neonStreetLampProp, { name: `lamp-${lx}-${lz}`, targetHeight: 7.5, role: "setDressing", scaleMode: "fit" })
-          .position(x, terrain.height(x, z), z),
-        lights.spot({ name: `lamp-spot-${lx}-${lz}`, position: [x, terrain.height(x, z) + 7.2, z], target: [cx, terrain.cup[1], cz], angle: 0.7, penumbra: 0.6, intensity: 1.6, color: "#bfe8ff", distance: 70 })
+          .position(x, terrain.height(x, z), z)
       );
+      if (lookMode === "original") {
+        nodes.push(lights.spot({ name: `lamp-spot-${lx}-${lz}`, position: [x, terrain.height(x, z) + 7.2, z], target: [cx, terrain.cup[1], cz], angle: 0.7, penumbra: 0.6, intensity: 1.6, color: "#bfe8ff", distance: 70 }));
+      }
     }
   } else if (theme === "lunar") {
     nodes.push(
@@ -940,12 +959,13 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   // --- Course dressing ---
   nodes.push(...buildDressingNodes(course, hole, terrain, rng));
 
-  // --- Course look (GU47 LINKS-01..04, 16): the course's own sun, key, environment, fills, practicals, atmosphere
-  // and post from its look-table row (game/lighting.ts), built by game/lookRig.ts through art/engineCompat.ts.
-  // `?look=original` restores the 4.6.2 rig (PRD §8 reversibility).
+  // --- Course look (GU47 LINKS-01..04, 16, 18): the course's own HDRI, sun, shadowed key, rim, fog, grade and post
+  // from its look-table row (game/lighting.ts) as E-A look overrides, plus its practicals, god rays, flare and
+  // ambient particles (game/lookRig.ts). `?look=original` restores the 4.6.2 rig (PRD §8 reversibility).
   if (lookMode === "original") return buildOriginalLookScene(course, terrain, nodes);
-  const rig = buildCourseRig(course, hole, terrain, { tier: presentationTier, hdriMode });
+  const rig = buildCourseRig(course, hole, terrain, { tier: presentationTier, reducedMotion: state.reducedMotion });
   return scene()
+    .addMany(rig.before)
     .add(rig.look)
     .addMany(nodes)
     .addMany(rig.nodes)
@@ -969,7 +989,7 @@ function holeOpeningCamera(terrain: HoleTerrain) {
  */
 function buildOriginalLookScene(course: CourseSpec, terrain: HoleTerrain, nodes: any[]): any {
   const isNight = course.look === "night-city" || course.look === "space";
-  const fill = originalCourseFill(course);
+  const fill = courseFill(course);
   nodes.push(lights.ambient({ name: "course ambient fill", color: fill.ambient, intensity: fill.ambientI }));
   if (fill.hemiI > 0) {
     nodes.push(lights.hemisphere({ name: "course sky-ground fill", skyColor: fill.sky, groundColor: fill.ground, intensity: fill.hemiI, position: [0, 30, 0] }));
@@ -2323,8 +2343,10 @@ function frame(dt: number): void {
       checkClubContact(dt, g.yaw);
     }
 
-    // flag flutter (held still under reduced motion)
-    flagRotation = state.reducedMotion ? [0, 0, 0] : [0, Math.sin(now / 900) * 0.05, Math.sin(now / 700) * 0.03];
+    // flag flutter (held still under reduced motion). GU47 LINKS-13: the amplitude follows the hole's wind and the
+    // course's air (stiff on airless Mare); `?look=original` keeps the 4.6.2 fixed flutter.
+    const flutter = lookMode === "original" ? (state.reducedMotion ? 0 : 1) : flagFlutterAmplitude(COURSE_LOOKS[state.courseId], state.wind.speed, state.reducedMotion);
+    flagRotation = flutter === 0 ? [0, 0, 0] : [0, Math.sin(now / 900) * 0.05 * flutter, Math.sin(now / 700) * 0.03 * flutter];
     flagstickHandle?.setRotation?.(flagRotation[0], flagRotation[1], flagRotation[2]);
   }
 
