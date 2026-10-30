@@ -1084,6 +1084,19 @@ const hdriDefinitions = {
 } satisfies Record<string, AuraAssetDefinition>;
 
 export const hdris = defineAuraAssets(hdriDefinitions);
+
+// GU47 WP-13 HS-07: worn asphalt, ambientCG Asphalt033 (CC0) from the repo library, downsized to 512 px into this app
+// (WebP, textures/asphalt033/provenance.json; 157 KB of the 1.5 MB set budget). `new URL(..., import.meta.url)` lets Vite
+// fingerprint and ship the files with the route.
+const textureDefinitions = {
+  heatsinkAsphaltColor: { type: "texture", format: "webp", url: new URL("../textures/asphalt033/color-512.webp", import.meta.url).href, sizeBytes: 11724 },
+  heatsinkAsphaltNormal: { type: "texture", format: "webp", url: new URL("../textures/asphalt033/normal-gl-512.webp", import.meta.url).href, sizeBytes: 114358 },
+  heatsinkAsphaltRoughness: { type: "texture", format: "webp", url: new URL("../textures/asphalt033/roughness-512.webp", import.meta.url).href, sizeBytes: 31220 }
+} satisfies Record<string, AuraAssetDefinition>;
+
+export const textures = defineAuraAssets(textureDefinitions);
+/** Mean of the asphalt roughness map (provenance.json): a material roughness factor of `target / mean` lands on `target`. */
+export const ASPHALT_ROUGHNESS_MEAN = 0.745;
 /** Circuit sky texture by catalogue id (src/look.ts `CircuitLook.hdri`). */
 export const HDRI_BY_ID: Readonly<Record<"rooftop_night" | "industrial_sunset_puresky" | "spruit_sunrise", AuraAssetRef<"texture">>> = {
   rooftop_night: hdris.heatsinkHdriRooftopNight,

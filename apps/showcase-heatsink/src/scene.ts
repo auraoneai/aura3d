@@ -10,8 +10,8 @@
  * HS-12: per-circuit post: warm bloom, grade (with the exposure), vignette, grain on MEGACITY only.
  * C13: about 150 repeated primitives become 9 instanced nodes; emissive decor casts no shadow.
  */
-import { camera, effects, environments, instances, lights, material, model, primitives, scene, game, type AuraAssetRef, type AuraNodeBuilder, type AuraSceneNode } from "@aura3d/engine";
-import { assets, HDRI_BY_ID } from "./aura-assets";
+import { AuraNodeBuilder, camera, effects, environments, instances, lights, material, model, primitives, scene, game, type AuraAssetRef, type AuraMaterialSpec, type AuraSceneNode } from "@aura3d/engine";
+import { ASPHALT_ROUGHNESS_MEAN, assets, HDRI_BY_ID, textures } from "./aura-assets";
 import { DRONE_ORDER, DRONE_SPECS, SCENERY_ANCHORS, type CircuitSpec } from "./data";
 import { CIRCUIT_LOOKS, rimPosition, sunPosition, type CircuitLook } from "./look";
 import { LASER_BOLTS } from "./sim";
@@ -134,6 +134,47 @@ export function circuitSky(look: CircuitLook): AuraNodeBuilder<AuraSceneNode> {
   }).runtime(game.runtimeNode(RIG_IDS.sky));
 }
 
+/** Texture repeats across one road tile (22.4 x 13.1 m): about 5.6 m of asphalt per repeat. */
+export const ROAD_TEXTURE_REPEAT: readonly [number, number] = [4, 2.4];
+
+/** HS-07 road deck: the asphalt set at the circuit's effective roughness (the factor scales the map's 0.745 mean). */
+export function roadMaterial(look: CircuitLook, tint: string): AuraMaterialSpec {
+  const repeat = { scale: ROAD_TEXTURE_REPEAT };
+  return material.pbr({
+    color: tint,
+    roughness: Math.min(1, look.road.roughness / ASPHALT_ROUGHNESS_MEAN),
+    metalness: look.road.metalness,
+    texture: textures.heatsinkAsphaltColor,
+    normal: textures.heatsinkAsphaltNormal,
+    normalScale: 0.8,
+    roughnessMap: textures.heatsinkAsphaltRoughness,
+    texTransforms: { baseColor: repeat, normal: repeat, metallicRoughness: repeat }
+  });
+}
+
+/**
+ * The C-10 reflection-probe node `probes.reflection` emits (same fields and defaults). GU47(E-G): `probes` is not
+ * exported from the `@aura3d/engine` root yet (lane report handoff); swap to `probes.reflection(...)` when it is.
+ */
+function reflectionProbe(options: { readonly name: string; readonly position: readonly [number, number, number]; readonly box: { readonly min: readonly [number, number, number]; readonly max: readonly [number, number, number] }; readonly resolution: 64 | 128 | 256; readonly everyNFrames: number }): AuraNodeBuilder<AuraSceneNode> {
+  return new AuraNodeBuilder<AuraSceneNode>({
+    kind: "probe",
+    probe: "reflection",
+    name: options.name,
+    options: { name: options.name, position: options.position, box: options.box, resolution: options.resolution, update: { everyNFrames: options.everyNFrames }, blendDistance: 1, priority: 0, intensity: 1 }
+  } as unknown as AuraSceneNode);
+}
+
+/** HS-07 reflections: a road probe refreshed 1 frame in 6 and SSR on the wet circuits (E-C). */
+export function circuitReflections(look: CircuitLook): AuraNodeBuilder<AuraSceneNode>[] {
+  const out: AuraNodeBuilder<AuraSceneNode>[] = [];
+  if (look.reflections.probe) {
+    out.push(reflectionProbe({ name: "td road probe", position: [0, 2.5, -14], box: { min: [-14, -1, -70], max: [14, 24, 12] }, resolution: 64, everyNFrames: 6 }));
+  }
+  if (look.reflections.ssr > 0) out.push(effects.screenSpaceReflections({ name: "td wet road ssr", intensity: look.reflections.ssr }));
+  return out;
+}
+
 /** HS-05 atmosphere and HS-12 post for a circuit (AO is HS-01's explicit pass). */
 export function circuitPost(look: CircuitLook, options: { readonly exposureEv?: number; readonly ambientOcclusion?: boolean } = {}): AuraNodeBuilder<AuraSceneNode>[] {
   const out: AuraNodeBuilder<AuraSceneNode>[] = [
@@ -170,7 +211,8 @@ export function buildThermalDriftScene(options: SceneOptions) {
     .addMany(circuitPost(look, {
       ...(options.exposureEv !== undefined ? { exposureEv: options.exposureEv } : {}),
       ...(options.ambientOcclusion === false ? { ambientOcclusion: false } : {})
-    }));
+    }))
+    .addMany(circuitReflections(look));
 
   // Ground far below the elevated road (the HDRI is the sky; no backdrop wall or horizon bands).
   s.add(
@@ -183,9 +225,10 @@ export function buildThermalDriftScene(options: SceneOptions) {
   // Road, lanes, walls and chevrons: one instanced node per material.
   const unshadowed = { castShadow: false, frustumCulled: false } as const;
   s.addMany([
-    instances.box({ name: IDS.deckEven, size: [22.4, 0.36, ROAD_TILE_LENGTH], material: material.pbr({ color: "#171c26", roughness: 0.34, metalness: 0.42 }), transforms: along(INSTANCE_COUNTS.deckEven, 0, -0.18, ROAD_TILE_SPACING * 2), frustumCulled: false })
+    // HS-07: CC0 worn asphalt per circuit (wet MEGACITY/VESPER, dusty ochre DUSTFALL).
+    instances.box({ name: IDS.deckEven, size: [22.4, 0.36, ROAD_TILE_LENGTH], material: roadMaterial(look, look.road.color), transforms: along(INSTANCE_COUNTS.deckEven, 0, -0.18, ROAD_TILE_SPACING * 2), frustumCulled: false })
       .runtime(game.runtimeNode(IDS.deckEven)),
-    instances.box({ name: IDS.deckOdd, size: [22.4, 0.36, ROAD_TILE_LENGTH], material: material.pbr({ color: "#141922", roughness: 0.38, metalness: 0.36 }), transforms: along(INSTANCE_COUNTS.deckOdd, 0, -0.186, ROAD_TILE_SPACING * 2), frustumCulled: false })
+    instances.box({ name: IDS.deckOdd, size: [22.4, 0.36, ROAD_TILE_LENGTH], material: roadMaterial(look, look.road.colorAlt), transforms: along(INSTANCE_COUNTS.deckOdd, 0, -0.186, ROAD_TILE_SPACING * 2), frustumCulled: false })
       .runtime(game.runtimeNode(IDS.deckOdd)),
     // Warm foundry accents per circuit (look.ts); coolant cyan stays off the road.
     instances.box({ name: IDS.spineA, size: [0.42, 0.05, ROAD_TILE_SPACING * 0.58], material: spineMaterial(look.accents.secondary), transforms: along(INSTANCE_COUNTS.spineA, 0, 0.03, ROAD_TILE_SPACING * 3), ...unshadowed })

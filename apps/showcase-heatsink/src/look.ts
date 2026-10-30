@@ -56,8 +56,13 @@ export interface CircuitLook {
   readonly boostMotionBlur: number;
   /** One weather system per circuit (HS-06). */
   readonly weather: WeatherKind;
-  /** Road deck material (HS-07): wet asphalt or ochre dust. */
+  /**
+   * Road deck material (HS-07): the CC0 asphalt set tinted by `color`/`colorAlt` (multipliers of the map), at an
+   * effective `roughness` (wet 0.15-0.25, DUSTFALL dusty 0.7).
+   */
   readonly road: { readonly color: string; readonly colorAlt: string; readonly roughness: number; readonly metalness: number };
+  /** HS-07: a road reflection probe refreshed 1 frame in 6, and SSR strength (0 = no SSR node; E-C). */
+  readonly reflections: { readonly probe: boolean; readonly ssr: number };
   /** Ground plane under the elevated road. */
   readonly ground: string;
   /** Road spine, wall chevrons and lane marks (warm; never coolant cyan). */
@@ -85,7 +90,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     grain: 0.05,
     boostMotionBlur: 0.35,
     weather: "rain",
-    road: { color: "#1b1714", colorAlt: "#181411", roughness: 0.2, metalness: 0.08 },
+    road: { color: "#8a7a6c", colorAlt: "#7e7064", roughness: 0.2, metalness: 0.08 },
+    reflections: { probe: true, ssr: 0.6 },
     ground: "#120e0c",
     accents: { primary: PALETTE.moltenAmber, secondary: PALETTE.slagRed, lanes: "#d9a066" },
     haze: { strength: 1, ambient: 0.15, tint: "#ff9a3c" },
@@ -108,7 +114,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     grain: 0,
     boostMotionBlur: 0.35,
     weather: "dust",
-    road: { color: "#6b4a2a", colorAlt: "#634427", roughness: 0.7, metalness: 0.02 },
+    road: { color: "#ffd08a", colorAlt: "#f2c27e", roughness: 0.7, metalness: 0.02 },
+    reflections: { probe: false, ssr: 0 },
     ground: "#4a3220",
     accents: { primary: PALETTE.moltenAmber, secondary: "#ffb347", lanes: "#e8c28a" },
     haze: { strength: 1.25, ambient: 0.35, tint: "#ffb060" },
@@ -131,7 +138,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     grain: 0,
     boostMotionBlur: 0.35,
     weather: "embers",
-    road: { color: "#1d1a26", colorAlt: "#1a1722", roughness: 0.24, metalness: 0.1 },
+    road: { color: "#8a8098", colorAlt: "#7e7590", roughness: 0.24, metalness: 0.1 },
+    reflections: { probe: true, ssr: 0.4 },
     ground: "#16121f",
     accents: { primary: "#b9a4ff", secondary: PALETTE.moltenAmber, lanes: "#c9b8ff" },
     haze: { strength: 1, ambient: 0.2, tint: "#ff8a4a" },

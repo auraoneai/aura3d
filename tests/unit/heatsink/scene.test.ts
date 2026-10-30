@@ -1,10 +1,11 @@
 /**
  * Thermal Drift scene (C12 look and lights, C13 instancing, RH-06 per-app manifest, route budget).
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { buildThermalDriftScene, INSTANCE_COUNTS, MODEL_NODE_COUNT } from "../../../apps/showcase-heatsink/src/scene";
 import { CIRCUITS } from "../../../apps/showcase-heatsink/src/data";
+import { CIRCUIT_LOOKS } from "../../../apps/showcase-heatsink/src/look";
 import { assets, HEATSINK_ASSET_KEYS } from "../../../apps/showcase-heatsink/src/aura-assets";
 
 type Node = { kind: string; name?: string; light?: string; type?: string; effect?: string; shadow?: unknown; castShadow?: boolean; instances?: unknown[]; children?: Node[]; nodes?: Node[] };
@@ -60,6 +61,22 @@ describe("heatsink scene", () => {
       expect(effectsOf(id, "bloom")[0], id).toMatchObject({ intensity: 0.55, threshold: 0.8 });
       expect(effectsOf(id, "vignette")[0], id).toMatchObject({ intensity: 0.28 });
     }
+  });
+  it("paves the road with the CC0 asphalt set at the circuit roughness, probes it 1 frame in 6 and adds SSR when wet (HS-07)", () => {
+    for (const id of ["grand", "dustfall", "vesper"] as const) {
+      const all = sceneOf(id);
+      const deck = all.find((n) => n.name === "road-deck-even") as unknown as { material: { texture?: { url: string }; normal?: { url: string }; roughnessMap?: { url: string }; roughness: number } };
+      expect(deck.material.texture?.url, id).toMatch(/asphalt033\/color-512\.webp$/);
+      expect(deck.material.normal?.url, id).toMatch(/asphalt033\/normal-gl-512\.webp$/);
+      expect(deck.material.roughnessMap?.url, id).toMatch(/asphalt033\/roughness-512\.webp$/);
+      expect(deck.material.roughness * 0.745, id).toBeCloseTo(CIRCUIT_LOOKS[id].road.roughness, 3);
+      const probesOf = all.filter((n) => n.kind === "probe") as unknown as { options: { update: unknown } }[];
+      expect(probesOf.length, id).toBe(id === "dustfall" ? 0 : 1);
+      for (const p of probesOf) expect(p.options.update).toEqual({ everyNFrames: 6 });
+      expect(all.some((n) => n.kind === "effect" && n.effect === "screen-space-reflections"), id).toBe(id !== "dustfall");
+    }
+    const bytes = ["color-512.webp", "normal-gl-512.webp", "roughness-512.webp"].reduce((sum, f) => sum + statSync(`apps/showcase-heatsink/textures/asphalt033/${f}`).size, 0);
+    expect(bytes).toBeLessThanOrEqual(1.5 * 1024 * 1024);
   });
   it("draws the road, walls, rain and bolts as instanced nodes; emissive decor casts no shadow", () => {
     const instanced = nodes.filter((n) => Array.isArray(n.instances) && n.instances.length > 0 && !String(n.name).startsWith("td skyline"));
