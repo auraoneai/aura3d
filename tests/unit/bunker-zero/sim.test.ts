@@ -41,7 +41,9 @@ describe("bunker zero sim", () => {
     // authored enemies keep their spawn-cell stems
     expect(enemyNodeStem(boss)).toEqual({ body: `en-${boss.sx}-${boss.sz}`, eye: `eye-${boss.sx}-${boss.sz}` });
     // main.ts builds MAX_SUMMONS summon guards (and eyes) on every floor that has a boss, and per-frame code never throws on a missing node
-    expect(MAIN).toMatch(/for \(let i = 0; i < MAX_SUMMONS; i\+\+\)[\s\S]{0,400}`f\$\{slot\}-summon-\$\{i\}`[\s\S]{0,600}`f\$\{slot\}-summon-eye-\$\{i\}`/);
+    expect(MAIN).toMatch(/for \(let i = 0; i < MAX_SUMMONS; i\+\+\)[\s\S]{0,400}`f\$\{slot\}-summon-\$\{i\}`/);
+    // GU47 BZ-14: enemies read by light, not glow: no eye-sphere nodes (main.ts skips the missing eye ids)
+    expect(MAIN).not.toMatch(/-eye-\$\{/);
     const pose = MAIN.slice(MAIN.indexOf("function syncScenePose"), MAIN.indexOf("// per-frame: read input"));
     expect(pose).not.toMatch(/\breq\(/);
     expect(pose).not.toMatch(/nodes\.require/);

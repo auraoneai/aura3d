@@ -123,3 +123,54 @@ export function registerBunkerVfx(effects: BunkerPresetRegistry | undefined, opt
   for (const kind of BZ_VFX_KINDS) effects.registerPreset(kind, presets[kind]);
   return BZ_VFX_KINDS;
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// BZ-09: per-floor atmosphere (looping authored specs spawned on the active floor only; stopped on a floor change)
+
+/** One looping atmosphere emitter: where it sits (cell centre, height) and its spec. */
+export interface BunkerAtmosphereEmitter {
+  readonly cell: readonly [number, number];
+  readonly y: number;
+  readonly spec: AuraVfxEffectSpec;
+}
+
+/** Live-particle cap of one atmosphere emitter per tier (Low gets one emitter at half size). */
+export const BZ_ATMOSPHERE_MAX = { low: 40, medium: 70, high: 90, ultra: 90 } as const;
+
+type AtmosphereKind = "dust" | "embers" | "drips" | "sparks";
+function atmosphereSpec(kind: AtmosphereKind, lamp: string, max: number, reducedMotion: boolean): AuraVfxEffectSpec {
+  const cap = Math.max(8, Math.round(reducedMotion ? max / 2 : max));
+  const base = { type: "emitter" as const, loop: true, maxParticles: cap, shape: "box" as const, additive: false };
+  switch (kind) {
+    case "dust":
+      return { name: "bz-atmo-dust", layers: [{ ...base, rate: cap / 6, shapeSize: [4, 2.2, 4], lifetime: [5, 7], speed: [0.02, 0.08], size: [0.02, 0.05], gravity: -0.02, drag: 0.6, color: lamp, intensity: 0.9, sprite: "dust-mote", maxScreen: 0.01 }] };
+    case "embers":
+      return { name: "bz-atmo-embers", layers: [{ ...base, rate: cap / 2.5, shapeSize: [3, 0.2, 3], lifetime: [1.6, 2.6], speed: [0.4, 1.2], size: [0.015, 0.035], gravity: 0.6, color: "#ff8a3a", intensity: 3, sprite: "glow", additive: true, maxScreen: 0.008 }] };
+    case "drips":
+      return { name: "bz-atmo-drips", layers: [{ ...base, rate: cap / 1.2, shapeSize: [3, 0.05, 3], lifetime: [0.7, 0.9], speed: [0, 0.1], size: [0.01, 0.02], gravity: -9.8, color: "#b8d8d0", intensity: 0.8, sprite: "spark-streak", maxScreen: 0.006 }] };
+    case "sparks":
+      return { name: "bz-atmo-sparks", layers: [{ ...base, rate: cap / 3, shapeSize: [1.2, 0.05, 1.2], lifetime: [0.5, 0.9], speed: [0.5, 1.5], size: [0.01, 0.025], gravity: -9.8, color: "#dff1ff", intensity: 3, sprite: "spark-streak", additive: true, maxScreen: 0.008 }] };
+  }
+}
+
+/** The floor's emitters: dust in the key and fill cones everywhere, plus F2 drips, F3 embers and F5 falling sparks. */
+export function atmosphereEmitters(
+  look: { readonly slot: number; readonly lamp: { readonly color: string }; readonly key: { readonly target: readonly [number, number] }; readonly fill: { readonly target: readonly [number, number] } },
+  wallHeight: number,
+  options: { readonly tier?: keyof typeof BZ_ATMOSPHERE_MAX; readonly reducedMotion?: boolean } = {}
+): readonly BunkerAtmosphereEmitter[] {
+  const tier = options.tier ?? "high";
+  const max = BZ_ATMOSPHERE_MAX[tier];
+  const rm = Boolean(options.reducedMotion);
+  const out: BunkerAtmosphereEmitter[] = [{ cell: look.key.target, y: wallHeight * 0.55, spec: atmosphereSpec("dust", look.lamp.color, max, rm) }];
+  if (tier === "low") return out;
+  const extra: AtmosphereKind | null = look.slot === 1 ? "drips" : look.slot === 2 ? "embers" : look.slot === 4 ? "sparks" : null;
+  if (extra) out.push({ cell: look.fill.target, y: extra === "embers" ? 0.3 : wallHeight - 0.1, spec: atmosphereSpec(extra, look.lamp.color, max, rm) });
+  out.push({ cell: look.fill.target, y: wallHeight * 0.55, spec: atmosphereSpec("dust", look.lamp.color, max, rm) });
+  return out;
+}
+
+/** Upper bound of live atmosphere particles on a floor (sum of the emitters' caps). */
+export function atmosphereParticleCap(emitters: readonly BunkerAtmosphereEmitter[]): number {
+  return emitters.reduce((sum, e) => sum + e.spec.layers.reduce((s, l) => s + Number((l as { maxParticles?: number }).maxParticles ?? 0), 0), 0);
+}

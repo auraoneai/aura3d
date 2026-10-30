@@ -16,7 +16,7 @@ import {
   gridLineOfSight, moonDirection, rankFixtures, visibleRigLights, type QualityTierName
 } from "../../../apps/showcase-bunker-zero/src/art/lightRig";
 import {
-  BZ_PARTICLE_BUDGET, BZ_VFX_EVENTS, BZ_VFX_KINDS, bunkerVfxPresets, presetParticleCount, registerBunkerVfx
+  BZ_PARTICLE_BUDGET, BZ_VFX_EVENTS, BZ_VFX_KINDS, atmosphereEmitters, atmosphereParticleCap, bunkerVfxPresets, presetParticleCount, registerBunkerVfx
 } from "../../../apps/showcase-bunker-zero/src/art/vfx";
 import { VIEWMODEL_ASSET } from "../../../apps/showcase-bunker-zero/src/weapons-view";
 import { isSolid } from "../../../apps/showcase-bunker-zero/src/maps";
@@ -251,5 +251,30 @@ describe("Bunker Zero effect pack (BZ-03, BZ-09 concrete-chip)", () => {
     const presets = bunkerVfxPresets();
     const total = BZ_VFX_KINDS.reduce((sum, kind) => sum + presetParticleCount(presets[kind]), 0);
     expect(total).toBeLessThanOrEqual(BZ_PARTICLE_BUDGET / 3);
+  });
+});
+
+describe("Bunker Zero atmosphere (BZ-09)", () => {
+  it("spawns 2-3 emitters per floor on Medium and up, one on Low, all inside the 600-particle budget with a burst of every preset", () => {
+    const burst = BZ_VFX_KINDS.reduce((sum, kind) => sum + presetParticleCount(bunkerVfxPresets()[kind]), 0);
+    for (const look of BZ_LOOK) {
+      const high = atmosphereEmitters(look, 3);
+      expect(high.length, look.variant).toBeGreaterThanOrEqual(2);
+      expect(high.length, look.variant).toBeLessThanOrEqual(3);
+      expect(atmosphereParticleCap(high) + burst, look.variant).toBeLessThanOrEqual(BZ_PARTICLE_BUDGET);
+      expect(atmosphereEmitters(look, 3, { tier: "low" })).toHaveLength(1);
+      expect(high.every((e) => e.spec.layers.every((l) => l.type === "emitter" && l.loop === true))).toBe(true);
+    }
+    expect(atmosphereEmitters(lookOfSlot(2), 3).some((e) => e.spec.name === "bz-atmo-embers")).toBe(true);
+    expect(atmosphereEmitters(lookOfSlot(1), 3).some((e) => e.spec.name === "bz-atmo-drips")).toBe(true);
+    expect(atmosphereEmitters(lookOfSlot(4), 3).some((e) => e.spec.name === "bz-atmo-sparks")).toBe(true);
+  });
+
+  it("halves every atmosphere cap under reduced motion (PRD §6.3)", () => {
+    for (const look of BZ_LOOK) {
+      const full = atmosphereParticleCap(atmosphereEmitters(look, 3));
+      const reduced = atmosphereParticleCap(atmosphereEmitters(look, 3, { reducedMotion: true }));
+      expect(reduced, look.variant).toBeLessThanOrEqual(Math.ceil(full / 2) + 3);
+    }
   });
 });

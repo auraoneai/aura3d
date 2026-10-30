@@ -32,7 +32,7 @@ import {
 } from "./art/look";
 import { buildLightRig, createLightRigDriver, type QualityTierName, type RigLightHandle } from "./art/lightRig";
 import { BZ_FLOOR_TEXTURES, bunkerTexture } from "./art/textures";
-import { BZ_VFX_EVENTS, registerBunkerVfx, type BunkerVfxKind } from "./art/vfx";
+import { BZ_VFX_EVENTS, atmosphereEmitters, registerBunkerVfx, type BunkerVfxKind } from "./art/vfx";
 
 installBlackFrameGuard();
 
@@ -80,10 +80,10 @@ const hash2 = (x: number, z: number) => {
   return ((h ^ (h >>> 16)) >>> 0) / 4294967295;
 };
 
-// Hostiles are cool-lit and faintly self-lit so their silhouettes separate
-// from the warm brown corridors at 1440x900.
+// BZ-14: hostiles read by light, not glow: no emissive lift and no eye spheres; a faint cool rim (E-D) separates the
+// silhouette from the walls between the lamp pools.
 const HOSTILE_OVERRIDES = [
-  { color: "#f2f7fb", colorMode: "multiply" as const, roughness: 0.62, metallic: 0.1, emissive: "#2b5f73", emissiveIntensity: 0.08 }
+  { color: "#f2f7fb", colorMode: "multiply" as const, roughness: 0.66, metallic: 0.08, rim: { color: "#9fb4c8", power: 3.2, intensity: 0.35 } }
 ];
 
 // Pickups keep their baked textures: a multiply tint plus a faint emissive lift reads as "item" without flattening it.
@@ -334,10 +334,7 @@ function buildScene() {
             model(assets.bzGuardMeshy, { name: `f${slot} guard ${eI}`, targetHeight: 1.9, materialOverrides: HOSTILE_OVERRIDES })
               .position(wx, 0, wz)
               .animate({ clip: "Walk_Loop", loop: true, speed: 1.05 })
-              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "guard"])),
-            primitives.sphere({ name: `f${slot} guard eyes ${eI}`, material: material.emissive({ color: "#ffe09a", emissive: "#ff9a2a", emissiveIntensity: 2.6, roughness: 0.22 }), castShadow: false, receiveShadow: false })
-              .position(wx, 1.66, wz).scale([0.16, 0.055, 0.16])
-              .runtime(slotNode(slot, `f${slot}-eye-${x}-${z}`, ["enemy", "marker"]))
+              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "guard"]))
           );
           eI++;
           break;
@@ -348,10 +345,7 @@ function buildScene() {
             })
               .position(wx, 0, wz)
               .animate({ clip: "Walk_Loop", loop: true, speed: 1.35 })
-              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "dog"])),
-            primitives.sphere({ name: `f${slot} hound eyes ${eI}`, material: material.emissive({ color: "#ffcf7a", emissive: "#ff8a2a", emissiveIntensity: 2.8, roughness: 0.22 }), castShadow: false, receiveShadow: false })
-              .position(wx, 0.8, wz).scale([0.13, 0.045, 0.13])
-              .runtime(slotNode(slot, `f${slot}-eye-${x}-${z}`, ["enemy", "marker"]))
+              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "dog"]))
           );
           eI++;
           break;
@@ -362,10 +356,7 @@ function buildScene() {
             })
               .position(wx, 0, wz)
               .animate({ clip: "Walk_Loop", loop: true, speed: 1.0 })
-              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "gunner"])),
-            primitives.sphere({ name: `f${slot} gunner eyes ${eI}`, material: material.emissive({ color: "#ffd36a", emissive: "#ff7a1a", emissiveIntensity: 2.6, roughness: 0.22 }), castShadow: false, receiveShadow: false })
-              .position(wx, 1.76, wz).scale([0.17, 0.058, 0.17])
-              .runtime(slotNode(slot, `f${slot}-eye-${x}-${z}`, ["enemy", "marker"]))
+              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "gunner"]))
           );
           eI++;
           break;
@@ -376,10 +367,7 @@ function buildScene() {
             })
               .position(wx, 0, wz)
               .animate({ clip: "Idle_Loop", loop: true, speed: 0.95 })
-              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "boss"])),
-            primitives.sphere({ name: `f${slot} boss eyes ${eI}`, material: material.emissive({ color: "#ffb648", emissive: "#ff5a1a", emissiveIntensity: 3.2, roughness: 0.22 }), castShadow: false, receiveShadow: false })
-              .position(wx, 2.62, wz).scale([0.26, 0.075, 0.26])
-              .runtime(slotNode(slot, `f${slot}-eye-${x}-${z}`, ["enemy", "marker"]))
+              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "boss"]))
           );
           eI++;
           break;
@@ -392,10 +380,7 @@ function buildScene() {
           model(assets.bzGuardMeshy, { name: `f${slot} summon ${i}`, targetHeight: 1.9, materialOverrides: HOSTILE_OVERRIDES })
             .position(slot * FLOOR_SPAN, -50, 0)
             .animate({ clip: "Run", loop: true, speed: 1.3 })
-            .runtime(slotNode(slot, `f${slot}-summon-${i}`, ["enemy", "guard", "summon"])),
-          primitives.sphere({ name: `f${slot} summon eyes ${i}`, material: material.emissive({ color: "#ffe09a", emissive: "#ff9a2a", emissiveIntensity: 2.6, roughness: 0.22 }), castShadow: false, receiveShadow: false })
-            .position(slot * FLOOR_SPAN, -50, 0).scale([0.16, 0.055, 0.16])
-            .runtime(slotNode(slot, `f${slot}-summon-eye-${i}`, ["enemy", "marker"]))
+            .runtime(slotNode(slot, `f${slot}-summon-${i}`, ["enemy", "guard", "summon"]))
         );
       }
     }
@@ -598,6 +583,20 @@ function applyFloorLook(slot: number, transitionSeconds = 0) {
   try { app.atmosphere?.setWetness(BZ_WETNESS[slot] ?? 0, { transitionSeconds }); } catch { /* wetness not mounted */ }
   try { app.post?.setEffect("colorGrade", { temperature: look.grade.temperature, tint: look.grade.tint }); } catch { /* post runtime not mounted */ }
   document.documentElement.style.setProperty("--bz-lamp", look.lamp.color);
+  startAtmosphere(slot);
+}
+/** BZ-09: 2-3 looping emitters on the active floor, none on the hidden ones (stopped and respawned per floor). */
+let atmosphere: { stop(o?: { immediate?: boolean }): void }[] = [];
+let atmosphereSlot = -1;
+function startAtmosphere(slot: number) {
+  if (!appReady || !app.effects || slot === atmosphereSlot) return;
+  for (const h of atmosphere) { try { h.stop({ immediate: true }); } catch { /* already gone */ } }
+  atmosphere = [];
+  atmosphereSlot = slot;
+  const look = lookOfSlot(slot);
+  for (const e of atmosphereEmitters(look, SLOT_WALL_H[slot]!, { tier: qualityTier(), reducedMotion: reducedMotion() })) {
+    try { atmosphere.push(app.effects.spawn(e.spec, [cellCenter(e.cell[0]), e.y, cellCenter(e.cell[1])])); } catch { /* effects runtime not mounted */ }
+  }
 }
 /** Reduced flash: the OS setting (prefers-reduced-motion covers flashing in most browsers) or `?reducedFlash=1`. */
 const reducedFlash = () => bootParams.get("reducedFlash") === "1" || reducedMotion();
