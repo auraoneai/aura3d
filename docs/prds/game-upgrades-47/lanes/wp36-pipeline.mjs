@@ -819,6 +819,23 @@ async function runPipeline() {
     }
     if (active.size === 0) {
       const waiting = queue.filter((r) => !runInfo.skip.has(r.key) && !["done", "blocked", "failed"].includes(loadState(r.key)?.status) && (runInfo.retryAt.get(r.key) ?? 0) > Date.now());
+      if (waiting.length === 0 && has("--wait-for-credits") && !STOP_ALL && !(limit && started >= limit)) {
+        // opt-in: everything left is blocked by the pool, so sleep and resume when a key can pay again (monthly resets)
+        const blocked = queue.filter((r) => !["done", "blocked", "failed"].includes(loadState(r.key)?.status) && (needsNewUnpinned(r, loadState(r.key)) || loadState(r.key)?.status === "deferred"));
+        if (blocked.length > 0) {
+          log("==", `${blocked.length} rows wait for credits; next pool check in 30 min`);
+          await sleep(30 * 60e3);
+          const p = await poolSnapshot("wait for credits");
+          if (p && maxUsable(p) >= 30) {
+            poolMax = maxUsable(p);
+            STOP_NEW = false;
+            refusalStreak = 0;
+            for (const r of blocked) if (loadState(r.key)?.status === "deferred") { runInfo.skip.delete(r.key); runInfo.transient.delete(r.key); }
+            log("==", `pool can pay again (largest usable key ${poolMax}); resuming`);
+          }
+          continue;
+        }
+      }
       if (waiting.length === 0 || (limit && started >= limit) || STOP_ALL) break;
       await sleep(Math.min(...waiting.map((r) => runInfo.retryAt.get(r.key))) - Date.now() + 1000);
       continue;
@@ -953,9 +970,14 @@ async function ledgerMarkdown() {
     const raw = await poolRaw();
     const pool = L.parsePrismPool(raw);
     const rec = L.reconcileWithPrism(pool);
-    lines.push(`- Baseline (pipeline start, ${base?.at ?? rec.baselineAt}): pool ${base?.poolRemaining ?? "?"} credits (sum of key balances; Prism totals ${base?.poolTotalsRemaining ?? "?"}).`);
-    lines.push(`- Now (${iso()}): pool ${pool.remaining} credits (Prism totals ${raw.totals?.remaining_credits ?? "?"}).`);
-    lines.push(`- Prism spent since the baseline (keys whose balance fell): ${rec.prismSpent}; ledger spend since the baseline (all tags): ${rec.ledgerSpent}; GU47 tags: ${total}; delta (Prism minus ledger): ${rec.delta}.`);
+    const baseKeys = [...L.readMeshyLedger()].reverse().find((r) => r.kind === "baseline")?.pool_keys ?? {};
+    const okDrop = (raw.keys ?? []).filter((k) => k.state === "ok" && baseKeys[k.id] !== undefined).reduce((s, k) => s + Math.max(0, baseKeys[k.id] - k.remaining), 0);
+    const parked = (raw.keys ?? []).filter((k) => k.state !== "ok" && baseKeys[k.id] !== undefined && baseKeys[k.id] > k.remaining).map((k) => `${k.id} ${baseKeys[k.id]} -> ${k.remaining}`);
+    lines.push(`- Baseline (pipeline start, ${base?.at ?? rec.baselineAt}): pool ${base?.poolRemaining ?? "?"} credits (sum of key balances; Prism usable total ${base?.poolTotalsRemaining ?? "?"}).`);
+    lines.push(`- Now (${iso()}): pool ${pool.remaining} credits (sum of key balances); usable (keys in state ok, Prism totals): **${raw.totals?.remaining_credits ?? "?"}**.`);
+    lines.push(`- Ledger \`reconcile\` since the baseline: Prism ${rec.prismSpent}, ledger ${rec.ledgerSpent} (GU47 tags ${total}), delta ${rec.delta}.`);
+    lines.push(`- Balance drop on keys that are still usable: ${okDrop} credits vs GU47 ledger ${total} (difference ${okDrop - total}; reserved/in-flight tasks count in the ledger before Meshy charges them).`);
+    lines.push(`- Keys parked by Prism after answering HTTP 402 although they report a balance (Prism sets their local balance to 0; not a Meshy charge, they return at their reset): ${parked.length ? parked.join(", ") : "none"}.`);
     lines.push(`- Keys topped up or reset since the baseline (excluded, never negative spend): ${rec.keysToppedUp.length ? rec.keysToppedUp.join(", ") : "none"}; unconfirmed reservations: ${rec.unconfirmedRids.length}.`);
     lines.push("- The pool is shared, so other consumers, monthly resets and top-ups move the Prism number; a positive delta means Prism charged more than the ledger counted.");
   } catch (e) {
