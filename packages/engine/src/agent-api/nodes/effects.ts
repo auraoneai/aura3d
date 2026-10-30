@@ -310,8 +310,11 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
   /**
    * P2-T5 §6.2.9 trail ribbon: the node carries the ring options; lowering
    * maps it to a `RibbonTrail` on the prd07 RibbonBatch. `target` is a runtime
-   * node id, `handle.socket(bone)` (C-19), or a callback — resolved by the
-   * production system, never by the builder.
+   * node id or `{ node, socket }` — resolved by the production system every
+   * frame (GU47 E-F), never by the builder. Optional `life` (seconds) fades
+   * and drops old points (absent: a ring of `maxPoints`); optional
+   * `widthOverSpeed: [min, max]` (m/s) ramps the width by the target's speed.
+   * For a trail started from game code use `app.effects.trail(target, opts)`.
    */
   trail: (options: VfxNodeOptions = {}) =>
     new AuraNodeBuilder<AuraEffectNode>(withEmitterOptions({

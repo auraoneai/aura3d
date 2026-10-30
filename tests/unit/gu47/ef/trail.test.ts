@@ -5,6 +5,8 @@ import { describe, expect, it } from "vitest";
 import { RIBBON_VERTEX_FLOATS } from "../../../../packages/rendering/src/vfx/RibbonBatch";
 import { ProductionEffectSystem, trailWidthScale, type AppLike } from "../../../../packages/engine/src/production-runtime/effects/ProductionEffectSystem";
 import { createAppEffects } from "../../../../packages/engine/src/agent-api/vfx/effects-api";
+import { effects } from "../../../../packages/engine/src";
+import type { EffectNodeLike } from "../../../../packages/engine/src/production-runtime/effects/EffectNodeLowering";
 
 interface Mover { position: [number, number, number]; getWorldPosition(): readonly number[] }
 
@@ -105,6 +107,28 @@ describe("GU47 E-F item 5: real trail", () => {
     drive(h, 10, 0.3);
     expect(off.alive).toBe(false);
     expect(off.length).toBe(0);
+  });
+
+  it("a scene effects.trail({ target }) node follows its runtime node (ring of maxPoints; life fades when set)", () => {
+    const callbacks: ((frame: { dt: number }) => void)[] = [];
+    const ball: Mover = { position: [0, 0.2, 0], getWorldPosition: () => ball.position };
+    const ringNode = effects.trail({ name: "ball-ribbon", target: "ball", width: 0.1, maxPoints: 40, color: "#f5f1e4" }).toJSON() as EffectNodeLike;
+    const fadingNode = effects.trail({ name: "ball-fade", target: "ball", width: 0.1, maxPoints: 40, life: 0.25 }).toJSON() as EffectNodeLike;
+    const pathNode = effects.trail({ name: "static", target: "ball", path: [[0, 0, 0], [1, 0, 0]] }).toJSON() as EffectNodeLike;
+    const appLike: AppLike = {
+      scene: { nodes: [ringNode, fadingNode, pathNode] },
+      onFrame: (cb) => { callbacks.push(cb); return () => undefined; },
+      nodes: { get: (id: string) => (id === "ball" ? ball : undefined) as never }
+    };
+    const system = new ProductionEffectSystem(appLike, { tier: "high" });
+    for (let i = 0; i < 90; i++) {
+      ball.position = [ball.position[0] + 0.2, 0.2, 0];
+      for (const cb of callbacks) cb({ dt: 1 / 60 });
+    }
+    expect(system.trailInfo("ball-ribbon")!.pointCount).toBe(40);
+    expect(system.trailInfo("ball-fade")!.pointCount).toBeLessThanOrEqual(17);
+    expect(system.trailInfo("static")!.pointCount).toBe(2); // a static path never follows
+    system.dispose();
   });
 
   it("low tier caps the ribbon ring", () => {

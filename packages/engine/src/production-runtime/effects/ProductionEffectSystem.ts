@@ -89,6 +89,24 @@ interface TrailFollow {
   missingNoted: boolean;
 }
 
+/** GU47 E-F: follow state of a scene `effects.trail({ target })` node (ring of maxPoints, optional life fade). */
+function sceneTrailFollow(node: EffectNodeLike, color: readonly [number, number, number, number]): TrailFollow {
+  const ramp = node.widthOverSpeed;
+  return {
+    target: node.target,
+    life: typeof node.life === "number" && node.life > 0 ? node.life : Number.POSITIVE_INFINITY,
+    width: typeof node.width === "number" && node.width > 0 ? node.width : 0.3,
+    color,
+    ...(ramp && ramp.length >= 2 && Number.isFinite(ramp[0]) && Number.isFinite(ramp[1]) ? { widthOverSpeed: [ramp[0], ramp[1]] as const } : {}),
+    maxPoints: Math.max(2, Math.round(node.maxPoints ?? 48)),
+    minVertexDistance: typeof node.minVertexDistance === "number" && node.minVertexDistance >= 0 ? node.minVertexDistance : 0.05,
+    points: [],
+    following: true,
+    last: null,
+    missingNoted: false
+  };
+}
+
 /** Width multiplier for a point sampled at `speed` m/s under `widthOverSpeed` [min, max]. */
 export function trailWidthScale(speed: number, ramp: readonly [number, number] | undefined): number {
   if (!ramp) return 1;
@@ -592,7 +610,12 @@ export class ProductionEffectSystem {
         const step = points.length > 1 ? 0.02 : 0;
         points.forEach((p, i) => trail.push([p[0] ?? 0, p[1] ?? 0, p[2] ?? 0], i * step));
       }
-      this.trails.set(lowered.nodeId, { trail, node });
+      // GU47 E-F: a scene trail with a `target` (and no static `path`) follows that runtime node every frame;
+      // `life` fades and drops old points (absent: a ring of maxPoints). Follow state survives scene rebuilds.
+      const follow = node.target !== undefined && !Array.isArray(node.path)
+        ? this.trails.get(lowered.nodeId)?.follow ?? sceneTrailFollow(node, color)
+        : undefined;
+      this.trails.set(lowered.nodeId, { trail, node, ...(follow ? { follow } : {}) });
     } else if (lowered.consumer === "mesh-pass") {
       this.meshBatches.set(lowered.nodeId, seedMeshBatch(node));
     } else if (lowered.consumer === "decal-pass") {
