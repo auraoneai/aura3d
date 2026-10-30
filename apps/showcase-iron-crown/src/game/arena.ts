@@ -17,6 +17,7 @@ import {
   type AuraColor,
   type AuraSceneNode
 } from "@aura3d/engine";
+import { prayerFlagNodes } from "./ambientMotion";
 import { createFighterNode, type FighterDef, type FighterPalette, type TypedFighterAssets } from "./fighters";
 import { stageLightNodes, stageLook, stageLookNode, streakLimitFor, weatherParticlesFor, type StageLookRow } from "./look";
 import type { IronStage } from "./stages";
@@ -147,6 +148,7 @@ export function buildArenaScene(o: ArenaOptions) {
       ...stageLightNodes(row, rims, { p1: o.playerStart[0], p2: o.rivalStart[0] }),
       ...arenaShaftNodes(row),
       ...arenaWeatherNodes(row, o.reducedMotion, o.lowTier === true),
+      ...prayerFlagNodes(s.id, o.reducedMotion),
       ...arenaPostNodes(row, o.contactShadows)
     ])
     .camera(camera.perspective({ position: [0, 1.6, 5.6], target: [0, 0.82, 0], fov: 40 }));

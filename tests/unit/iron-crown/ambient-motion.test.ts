@@ -4,7 +4,16 @@
  */
 import { describe, expect, it } from "vitest";
 import type { AuraSceneNode } from "@aura3d/engine";
-import { CROWD_CHEER, CROWD_IDLE, CROWD_IDS, crowdBob } from "../../../apps/showcase-iron-crown/src/game/ambientMotion";
+import {
+  CROWD_CHEER,
+  CROWD_IDLE,
+  CROWD_IDS,
+  crowdBob,
+  PRAYER_FLAG_COLORS,
+  prayerFlagNodes,
+  signFlicker
+} from "../../../apps/showcase-iron-crown/src/game/ambientMotion";
+import { panelLightId, stageLightNodes, STAGE_LOOKS } from "../../../apps/showcase-iron-crown/src/game/look";
 import { STAGE_MAP } from "../../../apps/showcase-iron-crown/src/game/stages";
 
 const sample = (koAge: (t: number) => number, seconds = 2) => {
@@ -41,5 +50,45 @@ describe("iron-crown crowd bob (GU47 IC47-AN2)", () => {
     const ids = nodes.map((n) => n.runtime?.id);
     expect(ids).toContain(CROWD_IDS.bodies);
     expect(ids).toContain(CROWD_IDS.heads);
+  });
+});
+
+describe("IRON CROWN neon stutter (IC47-AN2)", () => {
+  it("dips at most twice per cycle, under 3 dips a second, and holds steady when reduced", () => {
+    for (const index of [0, 1]) {
+      let dips = 0;
+      let last = 1;
+      for (let t = 0; t < 10; t += 1 / 120) {
+        const g = signFlicker(t, index, false);
+        expect(g).toBeGreaterThan(0.3);
+        expect(g).toBeLessThanOrEqual(1);
+        if (g < 1 && last === 1) dips += 1;
+        last = g;
+        expect(signFlicker(t, index, true)).toBe(1);
+      }
+      expect(dips).toBeGreaterThanOrEqual(2);
+      expect(dips / 10).toBeLessThan(3);
+    }
+  });
+
+  it("gives Neo-Tokyo's rect panels runtime ids", () => {
+    const row = STAGE_LOOKS["neo-tokyo-rooftop"];
+    const nodes = stageLightNodes(row, { p1: "#ffffff", p2: "#ffffff" }, { p1: -2, p2: 2 }) as (AuraSceneNode & { runtime?: { id?: string } })[];
+    const ids = nodes.map((n) => n.runtime?.id);
+    row.panels.forEach((_, i) => expect(ids).toContain(panelLightId(i)));
+  });
+});
+
+describe("IRON CROWN prayer flags (IC47-AN2)", () => {
+  it("only on the Monastery: three draws, five lungta colours, wind off on reduced motion", () => {
+    expect(prayerFlagNodes("crown-arena", false)).toEqual([]);
+    const nodes = prayerFlagNodes("himalayan-monastery", false) as (AuraSceneNode & Record<string, unknown>)[];
+    expect(nodes).toHaveLength(3);
+    const flags = nodes[0]!;
+    expect(JSON.stringify(flags)).toContain("wind");
+    for (const color of PRAYER_FLAG_COLORS) expect(JSON.stringify(flags)).toContain(color);
+    const still = prayerFlagNodes("himalayan-monastery", true)[0] as AuraSceneNode & Record<string, unknown>;
+    expect(still.instanceWind ?? null).toBeNull();
+    expect(flags.instanceWind).toBeTruthy();
   });
 });

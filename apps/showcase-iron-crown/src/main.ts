@@ -65,10 +65,10 @@ import {
 import { mountControlsSheet } from "./game/controlsSheet";
 import { mountExtraTouchButtons } from "./game/touchExtras";
 import { DEFAULT_STAGE, stageById, type IronStage, type StageId } from "./game/stages";
-import { CROWD_IDS, crowdBob } from "./game/ambientMotion";
+import { CROWD_IDS, crowdBob, signFlicker } from "./game/ambientMotion";
 import { buildArenaScene } from "./game/arena";
 import { cinematicPost, cinematicShot, createCinematicClock, FIGHT_LENS, letterboxWanted, type CinematicPost } from "./game/cinematics";
-import { backRimPose, FOLLOW_SPOT_ID, followSpotPose, LETTERBOX_BAR, poseDirection, RIM_IDS, stageLook, type SpotPose } from "./game/look";
+import { backRimPose, FOLLOW_SPOT_ID, followSpotPose, LETTERBOX_BAR, panelLightId, poseDirection, RIM_IDS, stageLook, type SpotPose } from "./game/look";
 import { AMBIENT_EMITTERS, createAmbientVfx, installIronCrownVfx, type IronCrownVfxKind } from "./game/vfx";
 import { advanceLadder, createLadder, currentRung, type LadderState } from "./game/ladder";
 import { createHud, type MenuId, type ModeId } from "./game/hud";
@@ -1545,11 +1545,29 @@ function updateStageLights(dt: number): void {
   patchSpot(RIM_IDS.p2, backRimPose(row.backRim, lightFollow.p2, lightFollow.p2y));
 }
 
+/** IC47-AN2: Neo-Tokyo's neon panels stutter (`signFlicker`); held steady on reduced motion or reduced flash. */
+const panelGainSent = new Map<string, number>();
+function updatePanelFlicker(): void {
+  if (!state || reducedMotion || reducedFlash) return;
+  const row = stageLook(state.config.stage.id);
+  const now = performance.now() / 1000;
+  row.panels.forEach((panel, index) => {
+    const id = panelLightId(index);
+    const gain = signFlicker(now, index, false);
+    if (panelGainSent.get(id) === gain) return;
+    const node = app.nodes.get(id) as AuraRuntimeNodeHandle | undefined;
+    if (!node?.setLight) return;
+    node.setLight({ intensity: panel.intensity * gain });
+    panelGainSent.set(id, gain);
+  });
+}
+
 function resetStageLights(): void {
   lightFollow.mid = Number.NaN;
   lightFollow.p1 = Number.NaN;
   lightFollow.p2 = Number.NaN;
   lightPosesSent.clear();
+  panelGainSent.clear();
 }
 
 /** IC47-V1: one-shot bursts of the Iron Crown pack on read-only combat events (the caller owns the camera). */
@@ -1646,6 +1664,7 @@ app.onFrame(({ dt }) => {
     (app.nodes.get(CROWD_IDS.bodies) as AuraRuntimeNodeHandle | undefined)?.setPosition(0, crowdBob(now, now - crowdCheerAt, false), 0);
     (app.nodes.get(CROWD_IDS.heads) as AuraRuntimeNodeHandle | undefined)?.setPosition(0, crowdBob(now, now - crowdCheerAt, false, 0.06), 0);
   }
+  updatePanelFlicker();
   if (freezeMs !== null && elapsedMs >= freezeMs) {
     frozenByQuery = true;
     const pSnap = actorSnap("player");

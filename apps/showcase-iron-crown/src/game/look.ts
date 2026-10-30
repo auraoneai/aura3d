@@ -369,6 +369,8 @@ export function stageLookNode(row: StageLookRow): AuraSceneNode {
 /** Runtime ids of the presentation lights main.ts moves every frame (E-B `setLight`). */
 export const FOLLOW_SPOT_ID = "ic-follow-spot";
 export const RIM_IDS = { p1: "ic-rim-p1", p2: "ic-rim-p2" } as const;
+/** Runtime id of a row's rect panel (IC47-AN2: Neo-Tokyo's signs flicker through `setLight({ intensity })`). */
+export const panelLightId = (index: number): string => `ic-panel-${index}`;
 
 export interface SpotPose {
   readonly position: AuraVec3;
@@ -442,13 +444,14 @@ export function stageLightNodes(
         .toJSON()
     );
   }
-  for (const panel of row.panels) {
+  row.panels.forEach((panel, index) => {
     nodes.push(
       lights
         .rect({ name: panel.name, position: panel.position, target: panel.target, width: panel.width, height: panel.height, intensity: panel.intensity, color: panel.color })
+        .runtime({ id: panelLightId(index) })
         .toJSON()
     );
-  }
+  });
   return nodes;
 }
 
