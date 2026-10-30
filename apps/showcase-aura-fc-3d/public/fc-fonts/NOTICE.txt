@@ -1,0 +1,17 @@
+HUD theme fonts (packages/game/src/fonts) - licensed web cuts, not open source
+
+Every .woff2 file in this directory is an unmodified copy of a WOFF2 web cut
+from the AuraOne licensed font library (paths below are relative to that
+library). They are commercial fonts licensed for web self-hosting on
+AuraOne-served pages only:
+
+- Do not install them as desktop fonts, convert them to other formats, subset
+  or modify them, or redistribute them outside AuraOne-served game routes.
+- They are not part of the npm tarball: tools/finalize-dist copies no .woff2.
+- A game copies the files its theme needs into its own app folder and
+  registers them with registerGameFonts(baseUrl, document).
+- Build and run time never read the font library; these copies are the source.
+
+file | family (CSS weight) | foundry | library source | bytes | sha256
+calibre-400.woff2 | Calibre (400) | Klim Type Foundry | sans/Calibre/CalibreWeb-Regular.woff2 | 31791 | f65015d0080523261ac761aafece7ce3009ca16517b610478e7d3f03dc536109
+calibre-600.woff2 | Calibre (600) | Klim Type Foundry | sans/Calibre/CalibreWeb-Semibold.woff2 | 31664 | daa322d439e2c4b1acff57957799e4ac80da5b6b6042b1d6df0a8a1066a18a13

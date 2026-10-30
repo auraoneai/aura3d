@@ -472,6 +472,8 @@ function boot(): void {
         case "pass": juiceFire("kick", { position: pos }); break;
         case "goal":
           juiceFire("goal", { position: pos }); juiceFire("net"); hud.banner("GOAL!", 2400, "goal");
+          // FC47-H1 TV package: the goal lower third (scoring club, minute, score)
+          if (ev.team !== undefined) hud.goalLowerThird(ev.team, sim.state);
           // FC-E2 authored goal feedback: confetti over the net that was scored, plus the net bulge, ring and scoreboard
           // flash driven from tickWorld
           goalSide = sim.state.ball.x >= 0 ? 1 : -1;
@@ -551,7 +553,7 @@ function boot(): void {
         rebuildForVenue(s.venue);
         applyVenue(world, VENUES[s.venue]);
         refreshKits();
-        if (appReady) hud.banner(VENUES[s.venue].label, 2400);
+        if (appReady) { hud.banner(VENUES[s.venue].label, 2400); hud.ident(VENUES[s.venue].label, VENUE_LOOKS[s.venue].timeOfDay); }
       }
 
       /* ---- render athletes ---- */
