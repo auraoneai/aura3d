@@ -60,13 +60,15 @@ import {
   buildingLayoutRight,
   headlightPose,
   nearestLamps,
+  PLAYER_ASSET,
+  carMaterialOverrides,
   probeBuildingModels,
   sodiumPointIds,
   tailLampMaterial,
   windowGlowOverride,
   skyOutput
 } from "./scene";
-import { NO_INPUT, RIVALS, ROAD_USER_COUNT, TRAFFIC_COUNT, createSim, fareOf, roadUserFootprints, type DriveInput, type SimEvent } from "./sim";
+import { NO_INPUT, RIVALS, ROAD_USER_COUNT, TRAFFIC_COUNT, TRAFFIC_SPECS, createSim, fareOf, roadUserFootprints, type DriveInput, type SimEvent } from "./sim";
 import { BOOT_SKY, SKY_LOOKS, nextSky, skyFromParam } from "./look";
 import { installSensorPass, scanPulseAt } from "./scanPulse";
 import { createGridVfxQueue, installGridVfx, type GridVfxShot } from "./vfx";
@@ -338,10 +340,26 @@ async function bootGridDispatch(): Promise<void> {
     if (unitEl) unitEl.textContent = useMph ? "MPH" : "KM/H";
   }
 
-  /** Brushed-steel truck body and a champagne rival coupe (the generated paints read as plastic); reapplied after a remount. */
+  /** Material handle of a model node once its GLB has loaded (a read before that is dropped and rebuilt). */
+  function modelMaterials(id: string): AuraModelMaterialHandle | undefined {
+    let h = auraApp.nodes.get(id) as unknown as { materials?: AuraModelMaterialHandle } | undefined;
+    if (h?.materials && h.materials.inspectMaterials().length === 0) {
+      delete h.materials;
+      h = auraApp.nodes.get(id) as unknown as { materials?: AuraModelMaterialHandle } | undefined;
+    }
+    const m = h?.materials;
+    return m && m.inspectMaterials().length > 0 ? m : undefined;
+  }
+
+  /**
+   * GD-11: per-material overrides on every car (pearl clearcoat pod, dark glass, black trim; muted clearcoat traffic;
+   * steel truck, champagne coupe), replacing the old whole-model setMaterial. Run after ready(), after every remount.
+   */
   function applyMaterialOverrides(): void {
-    N.cars.truck.setMaterial(material.pbr({ color: "#cbd5e1", metalness: 0.8, roughness: 0.22 }));
-    N.users[TRAFFIC_COUNT + 1]?.setMaterial(material.pbr({ color: "#e8c27a", metalness: 0.65, roughness: 0.26 }));
+    const set = (id: string, o: ReturnType<typeof carMaterialOverrides>): void => { if (o) modelMaterials(id)?.setMaterialOverrides(o); };
+    for (const id of PLAYABLE_IDS) set(`player-car-${id}`, carMaterialOverrides(PLAYER_ASSET[id], "player"));
+    RIVALS.forEach((r, k) => set(`rival-car-${k}`, carMaterialOverrides(r.asset, "rival", k)));
+    TRAFFIC_SPECS.forEach((t, i) => set(`traffic-${i}`, carMaterialOverrides(t.asset, "traffic")));
   }
 
   /**
@@ -352,15 +370,7 @@ async function bootGridDispatch(): Promise<void> {
   function applyWindowGlow(): void {
     const glow = windowGlowOverride(SKY_LOOKS[weather]);
     for (let i = 0; i < BUILDING_PAIRS; i++) {
-      for (const id of [`sf-bldg-l-${i}`, `sf-bldg-r-${i}`]) {
-        let h = auraApp.nodes.get(id) as unknown as { materials?: AuraModelMaterialHandle } | undefined;
-        if (h?.materials && h.materials.inspectMaterials().length === 0) {
-          delete h.materials;
-          h = auraApp.nodes.get(id) as unknown as { materials?: AuraModelMaterialHandle } | undefined;
-        }
-        const m = h?.materials;
-        if (m && m.inspectMaterials().length > 0) m.setMaterialOverrides(glow.emissiveIntensity > 0 ? [glow] : []);
-      }
+      for (const id of [`sf-bldg-l-${i}`, `sf-bldg-r-${i}`]) modelMaterials(id)?.setMaterialOverrides(glow.emissiveIntensity > 0 ? [glow] : []);
     }
   }
 
@@ -437,14 +447,13 @@ async function bootGridDispatch(): Promise<void> {
     auraApp.setScene(buildGridDispatchScene(next));
     applySkyOutput();
     N = bindNodes(auraApp, next);
-    applyMaterialOverrides();
     appliedCar = null;
     lastSignalPhase = -1;
     lastBeaconMode = null;
     lastBrakeLamp = null;
     lastHeadlightX = Number.NaN;
     try {
-      await Promise.race([auraApp.ready().then(() => { applyWindowGlow(); return warmPrograms(auraApp); }), new Promise((resolve) => setTimeout(resolve, 60_000))]);
+      await Promise.race([auraApp.ready().then(() => { applyWindowGlow(); applyMaterialOverrides(); return warmPrograms(auraApp); }), new Promise((resolve) => setTimeout(resolve, 60_000))]);
     } catch (error) {
       console.error("[grid-dispatch] sky change remount failed; continuing with what rendered", error);
     }
@@ -1005,7 +1014,6 @@ async function bootGridDispatch(): Promise<void> {
   const careerEl = $("careerLine");
   if (careerEl) careerEl.textContent = hud.career(S.career);
   if (S.career.rides > 0) hud.toast("Welcome back", hud.career(S.career));
-  applyMaterialOverrides();
 
   try {
     await auraApp.ready();
@@ -1014,6 +1022,7 @@ async function bootGridDispatch(): Promise<void> {
     console.error("[grid-dispatch] scene assets failed to load; continuing with what rendered", error);
   }
   applyWindowGlow();
+  applyMaterialOverrides();
   lowTier = (auraApp.diagnostics() as unknown as { post?: { tier?: string } }).post?.tier === "low";
   // Settle every shader program before the boot screen goes (a draw whose program is still compiling is skipped).
   // Place the street first so the settle pass draws what the first game frame shows.

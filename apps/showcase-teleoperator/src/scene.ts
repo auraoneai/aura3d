@@ -1,4 +1,4 @@
-import { camera, defineAuraAssets, effects, environments, game, instances, lights, material, model, primitives, scene, sky, type AuraTransformSpec } from "@aura3d/engine";
+import { camera, defineAuraAssets, effects, environments, game, instances, lights, material, model, primitives, scene, sky, type AuraModelMaterialOverride, type AuraTransformSpec } from "@aura3d/engine";
 import { assets, type GridAssetKey } from "./aura-assets";
 import { BRAKE_RED, KEY_SHADOW, SODIUM, SKY_LOOKS, hdriUrl, keyLightPosition, type HdriId, type SkyLook } from "./look";
 import { RIVALS, TRAFFIC_SPECS } from "./sim";
@@ -266,6 +266,31 @@ export function nearestLamps(lampZ: readonly number[], count: number, x = 10.8, 
  */
 export const WINDOW_GLOW = { color: SODIUM, intensity: 0.16 } as const;
 export const windowGlowOverride = (look: SkyLook) => ({ emissive: WINDOW_GLOW.color, emissiveIntensity: WINDOW_GLOW.intensity * look.street.windowGlow }) as const;
+
+type CarOverrides = readonly AuraModelMaterialOverride[];
+/**
+ * GD-11 vehicle materials as per-material overrides (no whole-model `setMaterial`). The robotaxi pod (`veh-*` materials
+ * from `assets inspect`): pearl clearcoat body, dark glass, black trim and sensor dome; tyres and rims keep their paint.
+ * The baked single-material cars get a muted clearcoat; the truck is brushed steel and Kaya's coupe champagne (both used
+ * to be whole-model swaps). The fare-lit teal strip needs a strip material on the pod: GU47(WP-36) pod retexture.
+ */
+export const POD_MATERIALS: CarOverrides = [
+  { target: "veh-body", color: "#eef1f4", colorMode: "replace", roughness: 0.32, metallic: 0.12, clearcoat: 1, clearcoatRoughness: 0.08 },
+  { target: "veh-glass", color: "#0d1218", colorMode: "replace", roughness: 0.06, metallic: 0.1, clearcoat: 1, clearcoatRoughness: 0.02 },
+  { target: ["veh-trim", "veh-cabin"], color: "#14171c", colorMode: "replace", roughness: 0.38, metallic: 0.2 }
+];
+export const MUTED_CLEARCOAT: CarOverrides = [{ clearcoat: 0.45, clearcoatRoughness: 0.3, roughness: 0.48 }];
+export const TRUCK_STEEL: CarOverrides = [{ color: "#cbd5e1", colorMode: "multiply", metallic: 0.8, roughness: 0.22, clearcoat: 0.3, clearcoatRoughness: 0.2 }];
+export const RIVAL_CHAMPAGNE: CarOverrides = [{ color: "#e8c27a", colorMode: "multiply", metallic: 0.65, roughness: 0.26, clearcoat: 0.6, clearcoatRoughness: 0.12 }];
+
+/** GD-11: overrides for one model asset key (`undefined`: leave the GLB as authored, e.g. the cable car). */
+export function carMaterialOverrides(asset: GridAssetKey, role: "player" | "rival" | "traffic", rivalIndex = -1): CarOverrides | undefined {
+  if (asset === "gridCruiser" || asset === "gridRivalCruiser") return POD_MATERIALS;
+  if (asset === "gridTruck") return TRUCK_STEEL;
+  if (role === "rival" && rivalIndex === 1) return RIVAL_CHAMPAGNE;
+  if (asset === "gridCablecar") return undefined;
+  return MUTED_CLEARCOAT;
+}
 
 /**
  * Renderer options for the mount. The game is tuned and captured at the "high" tier on every device,
