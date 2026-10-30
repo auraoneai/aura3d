@@ -13,6 +13,7 @@ import { registerShaderChunk, registerShaderFeature } from "../contracts/program
 import { registerIndirectFractionShader } from "../post/chunks/indirectFraction.glsl.js";
 import { registerVelocityShader } from "../post/chunks/velocity.glsl.js";
 import { registerScreenFeelConsumer } from "../post/ScreenFeelPass.js";
+import { registerPostOnlyTierContributor } from "../post/PostQualityTiers.js";
 
 // C-13: v2 post graph (plans + validates the §6.1 chain; the GPU chain runs in
 // post/v2Stages.ts, including custom passes at all five anchors).
@@ -39,6 +40,11 @@ registerVelocityShader(registerShaderChunk, registerShaderFeature);
 // frames and the post-pass registry are unchanged.
 registerScreenFeelConsumer();
 
+// GU47 E-G (WP-7): `A3D_QR_TIERS` post-only mode. The collect contributor is
+// gated on the `A3D_QR_TIERS_POST` sub-flag, records the device tier per
+// canvas and passes items through, so apps without the flag are unchanged.
+registerPostOnlyTierContributor();
+
 export { postPipelineSlot, PostGraph, planPostGraph, resolvePostGraph, type PostGraphLike, type PostGraphFrame } from "../post/PostGraph.js";
 export { velocityHistorySlot, VelocityHistory, postVelocityCoverage, type VelocitySurface, type VelocityUniformBinder, bindVelocityUniforms } from "../forward/Velocity.js";
 export { PostTimer } from "../post/PostTimer.js";
@@ -51,7 +57,17 @@ export { applyToneOperator, POST_TONE_OPERATORS, acesFilmicToneMapping, agxToneM
 export { MSAA_PIXEL_GUARD, resolvePostAntiAlias, type PostAntiAliasAuthoredMode, type PostAntiAliasInput, type PostAntiAliasResolution } from "../post/PostAntiAlias.js";
 // Phase 5 (§6.8): C-27 → post tier mapping. Pure table data like
 // `resolvePostAntiAlias` — stays on the critical path.
-export { resolvePostTier, type PostTierContext, type PostTierResolution } from "../post/PostQualityTiers.js";
+export {
+  resolvePostTier,
+  POST_ONLY_TIER_FLAG,
+  POST_ONLY_TIER_CONTRIBUTOR,
+  resolvePostOnlyTier,
+  postOnlyTierFor,
+  recordPostOnlyTier,
+  clearPostOnlyTier,
+  type PostTierContext,
+  type PostTierResolution
+} from "../post/PostQualityTiers.js";
 // Phase 2: graph descriptors + concrete option types (the §6.1 table is the
 // contract real's own data — it stays on the critical path with PostGraph).
 export {

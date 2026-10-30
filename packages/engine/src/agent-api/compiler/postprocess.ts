@@ -8,7 +8,8 @@ import { clampNumber, resolveNativeBloomRadius } from "../compiler/observations.
 import { groups } from "../nodes/groups.js";
 import { mergeLookColorGrade } from "../looks/lookGrade.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
-import { QUALITY_TIERS, resolvePostAntiAlias, resolvePostTier, resolveVolumetricFog, postVelocityCoverage, type CollectedLight, type RendererPostProcessOptions } from "@aura3d/rendering";
+import { QUALITY_TIERS, postOnlyTierFor, resolvePostAntiAlias, resolvePostTier, resolveVolumetricFog, postVelocityCoverage, type CollectedLight, type RendererPostProcessOptions } from "@aura3d/rendering";
+import type { AuraQualityTier } from "@aura3d/rendering/contracts";
 import { lights } from "../nodes/lights.js";
 import {
   applyRuntimePostOverrides,
@@ -29,6 +30,19 @@ type RendererToneMappingOperator = "linear" | "reinhard" | "aces" | "agx" | "neu
 function toneMappingOperatorFor(op: string | undefined): RendererToneMappingOperator | undefined {
   if (op === undefined || op === "none") return undefined;
   return op as RendererToneMappingOperator;
+}
+
+/**
+ * The C-27 tier the post chain resolves with. An explicit
+ * `post.setQualityTier(tier)` (or a live tiers-lane change) wins; `auto` and
+ * "never set" answer High, except in GU47 E-G's `A3D_QR_TIERS` post-only mode
+ * (`tiers.post`): once the app has rendered a frame, its device's tier
+ * (capped at High, `resolvePostOnlyTier`), so phones stop paying for High
+ * post while the rest of the tiers lane stays off.
+ */
+export function resolvePostQualityTier(requested: AuraQualityTier | "auto" | null, canvas?: HTMLCanvasElement): AuraQualityTier {
+  if (requested && requested !== "auto") return requested;
+  return postOnlyTierFor(canvas) ?? "high";
 }
 
 export function createProductionRuntimePostprocess(
@@ -105,7 +119,7 @@ export function createProductionRuntimePostprocess(
   // the resolution stays null.
   const authoredPostContext = authoredPostContextFor(attach?.canvas);
   const postFlagOn = authoredPostContext?.flags.post === true;
-  const resolvedTier = authoredPostContext?.qualityTier && authoredPostContext.qualityTier !== "auto" ? authoredPostContext.qualityTier : "high";
+  const resolvedTier = resolvePostQualityTier(authoredPostContext?.qualityTier ?? null, attach?.canvas);
   // `postAuthored` carries the authored/default split: a node whose list lacks
   // `mode` counts as `auto` (the factory's `mode ?? "fxaa"` fill is a default,
   // not an authored choice). Nodes serialized without `postAuthored` resolve
