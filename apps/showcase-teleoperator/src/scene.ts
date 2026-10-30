@@ -6,7 +6,6 @@ import { CURB_BEACON_X, PLAYABLE_FLEET, PLAYABLE_IDS, SCENE_CAM_FOV_DEG, SCENE_C
 
 export const HIDDEN_SCALE: Vec3 = [0.0001, 0.0001, 0.0001];
 export const HIDDEN_POS: Vec3 = [0, -90, 140];
-export const IMPACT_SPARK_COUNT = 12;
 export const DASH_ROWS = 14;
 export const DASH_STRIDE_Z = 14;
 export const DASH_LINES_X = [-5.4, 5.4] as const;
@@ -334,15 +333,15 @@ export function buildGridDispatchScene(weather: WeatherPreset): ReturnType<typeo
     primitives.box({ name: "taxi-passenger-arm", size: [0.14, 0.58, 0.14], material: material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 1.2 }) }).position(11.05, 1.55, -38).runtime(game.runtimeNode("taxi-passenger-arm"))
   ]);
 
-  // 7. Five playable cars (one shown at a time) and the impact sparks
+  // 7. Five playable cars (one shown at a time). GD-14: the 12 instanced spark spheres are gone; collisions fire the
+  // `grid-impact` runtime VFX preset (vfx.ts) instead (-1 draw).
   s.addMany([
     ...PLAYABLE_IDS.map((id, i) =>
       model(assets[PLAYER_ASSET[id]], { name: `player-car-${id}`, role: "primaryVehicle", scaleMode: "fit", targetMaxDimension: PLAYABLE_FLEET[id].maxDim })
         .position(i === 0 ? 0 : HIDDEN_POS[0], i === 0 ? 0 : HIDDEN_POS[1], i === 0 ? -0.8 : HIDDEN_POS[2])
         .scale(i === 0 ? [1, 1, 1] : HIDDEN_SCALE)
         .runtime(game.runtimeNode(`player-car-${id}`, i === 0 ? { tags: ["primarySubject", "primaryVehicle", "player"] } : undefined))
-    ),
-    instances.sphere({ name: "impact-sparks", size: [0.16, 0.16, 0.16], material: material.emissive({ color: "#fff3c4", emissive: "#ffb347", emissiveIntensity: 3.2 }), transforms: pool(IMPACT_SPARK_COUNT) }).runtime(game.runtimeNode("impact-sparks"))
+    )
   ]);
 
   // 8. Five AI rivals and ten traffic cars

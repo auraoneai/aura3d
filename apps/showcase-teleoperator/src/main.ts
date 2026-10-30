@@ -47,7 +47,6 @@ import {
   GRID_DISPATCH_RENDERER,
   HIDDEN_POS,
   HIDDEN_SCALE,
-  IMPACT_SPARK_COUNT,
   INTERSECTION_COUNT,
   LAMP_PAIRS,
   LAMP_STRIDE_Z,
@@ -63,6 +62,7 @@ import {
 import { NO_INPUT, RIVALS, ROAD_USER_COUNT, TRAFFIC_COUNT, createSim, fareOf, roadUserFootprints, type DriveInput, type SimEvent } from "./sim";
 import { BOOT_SKY, SKY_LOOKS, nextSky, skyFromParam } from "./look";
 import { installSensorPass, scanPulseAt } from "./scanPulse";
+import { createGridVfxQueue, installGridVfx, type GridVfxShot } from "./vfx";
 import { mountTouchPads } from "./touch";
 
 export type { AutopilotLevel, PlayableCarId, WeatherPreset } from "./rules";
@@ -154,7 +154,6 @@ function bindNodes(app: ReturnType<typeof createAuraApp>) {
     trunks: req("sf-tree-trunks"),
     crowns: req("sf-tree-crowns"),
     ribbons: req("route-ribbons"),
-    sparks: req("impact-sparks"),
     buildings: Array.from({ length: BUILDING_PAIRS }, (_, i) => {
       const left = req(`sf-bldg-l-${i}`).setRotation(0, Math.PI / 2, 0);
       const right = req(`sf-bldg-r-${i}`).setRotation(0, -Math.PI / 2, 0);
@@ -207,8 +206,10 @@ async function bootGridDispatch(): Promise<void> {
   // ---------------------------------------------------------------- simulation
   const hitStop = createHitStop();
   const cameraShake = createCameraShake({ maxOffset: 0.4 });
-  const sparks = Array.from({ length: IMPACT_SPARK_COUNT }, () => ({ life: 0, p: [0, 0, 0] as Vec3, v: [0, 0, 0] as Vec3 }));
-  let sparkCursor = 0;
+  // GD-14: runtime VFX pack (E-F registerPreset). Sim callbacks queue world-space shots; present() fires them in view
+  // space, so a burst lands where the street is drawn this frame.
+  installGridVfx(auraApp.effects);
+  const vfx = createGridVfxQueue();
   let audio: ReturnType<typeof createGridAudio> | null = null;
   const contacts = createTrafficContacts(
     ROAD_USER_COUNT,
@@ -218,17 +219,7 @@ async function bootGridDispatch(): Promise<void> {
       shake: cameraShake,
       cue: (_name, gain) => audio?.play("collision", gain),
       cueName: "collision",
-      particles: (burst) => {
-        const n = Math.min(burst.count, IMPACT_SPARK_COUNT);
-        for (let k = 0; k < n; k++) {
-          const s = sparks[sparkCursor++ % IMPACT_SPARK_COUNT]!;
-          const a = (k / n) * Math.PI * 2;
-          const speed = 2 + burst.speed * 0.18;
-          s.life = 0.45;
-          s.p = [burst.point[0], 0.6 + 0.9 * ((k % 3) / 2), burst.point[2]];
-          s.v = [burst.normal[0] * speed + Math.cos(a) * speed * 0.6, 2.2 + (k % 4) * 0.9, burst.normal[2] * speed + Math.sin(a) * speed * 0.6];
-        }
-      },
+      particles: (burst) => vfx.impact(burst),
       fullSpeed: 20
     },
     { footprints: roadUserFootprints() }
@@ -313,7 +304,10 @@ async function bootGridDispatch(): Promise<void> {
   function applyEvents(events: readonly SimEvent[]): void {
     for (const e of events) {
       if (e.kind === "popup") hud.popup(e.title, e.detail, e.tone);
-      else if (e.kind === "cue") audio?.play(e.name, e.gain);
+      else if (e.kind === "cue") {
+        audio?.play(e.name, e.gain);
+        if (e.name === "pickup" || e.name === "dropoff") vfx.objective(CURB_BEACON_X, S.ride.beaconZ);
+      }
       else if (e.kind === "fare") {
         hud.showSummary(S.ride.fareIndex, e.style, e.outcome, S.ride.comfort, S.ride.multiplier);
         saveCareer(storage, S.career);
@@ -688,17 +682,12 @@ async function bootGridDispatch(): Promise<void> {
       N.users[i]!.setPosition(rx(u.laneX), ry(0), vz).setRotation(0, (u.direction === 1 ? 0 : Math.PI) + qaYawAdd, 0).setScale(visible ? [1, 1, 1] : HIDDEN_SCALE).setVisible(visible);
     });
 
-    // Impact sparks
-    N.sparks.setInstances(
-      sparks.map((s, i) => {
-        if (s.life <= 0) return { position: [0, -50, 200 + i], scale: 0.0001 } as AuraTransformSpec;
-        s.life -= frameSeconds;
-        s.v[1] -= 9.8 * frameSeconds;
-        s.p = [s.p[0] + s.v[0] * frameSeconds, Math.max(0.05, s.p[1] + s.v[1] * frameSeconds), s.p[2] + s.v[2] * frameSeconds];
-        const k = clamp(s.life / 0.45, 0.0001, 1);
-        return { position: [rx(s.p[0]), ry(s.p[1]), rz(s.p[2])], scale: k } as AuraTransformSpec;
-      })
-    );
+    // GD-14 runtime VFX: queued impact and objective shots, plus the night tyre spray behind the rear wheels.
+    vfx.tyres({ dt: frameSeconds, wet: skyLook.street.drizzle && S.phase === "driving", speed: S.player.speed, x: pose.px, z: pose.pz, width: size.width, length: size.length });
+    const fire = (shot: GridVfxShot): void => {
+      auraApp.effects?.burst(shot.kind, [rx(shot.at[0]), ry(shot.at[1]), rz(shot.at[2])], shot.options);
+    };
+    vfx.drain({ motionOk: motionOk(), lowTier }, fire);
 
     // Rival tags (C15): the two nearest rivals get a full tag, the rest a small chip; layout reads happen at 10 Hz only (C11).
     const vw = window.innerWidth || 1280;

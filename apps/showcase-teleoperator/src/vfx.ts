@@ -12,7 +12,7 @@
  *
  * Reduced motion and Low tier halve every particle count (PRD §6.3, §6.4); reduced flash drops the impact light.
  */
-import type { AuraVfxEffectSpec } from "@aura3d/engine";
+import type { AuraBurstOptions, AuraVec3, AuraVfxEffectSpec } from "@aura3d/engine";
 import { BRAKE_RED, OBJECTIVE_TEAL, SODIUM } from "./look";
 
 export type GridVfxKind = "grid-impact" | "grid-objective-ring" | "grid-tyre-splash" | "grid-manhole-steam";
@@ -71,4 +71,68 @@ export function installGridVfx(effects: EffectsLike | undefined): boolean {
   for (const [kind, spec] of Object.entries(GRID_VFX_PRESETS)) effects.registerPreset(kind, spec);
   effects.runtime = "on";
   return true;
+}
+
+/** One queued runtime burst, in sim world space (present() maps it into view space). */
+export interface GridVfxShot {
+  readonly kind: GridVfxKind;
+  readonly at: AuraVec3;
+  readonly options: AuraBurstOptions;
+}
+
+/** Seconds between two tyre-spray puffs per rear wheel (night only). */
+export const TYRE_SPLASH_INTERVAL_S = 0.14;
+/** Below this speed (m/s) the tyres throw no spray. */
+export const TYRE_SPLASH_MIN_SPEED = 4;
+
+/**
+ * GD-14 presentation queue. The sim's contact callback and the ride events push shots; `drain` scales them for reduced
+ * motion and the Low tier, and hands each one to the caller (`app.effects.burst`). Collision sparks pass `camera: false`
+ * (the game owns its shake). Nothing here reads or writes sim state.
+ */
+export function createGridVfxQueue() {
+  const queue: { kind: GridVfxKind; at: AuraVec3; count?: number; speed?: number; normal?: AuraVec3; seed: number }[] = [];
+  let seed = 1;
+  let tyreClock = 0;
+  return {
+    /** Collision burst from the contact model (`ParticleBurst`: point, normal, count, approach speed). */
+    impact(burst: { readonly point: readonly [number, number, number]; readonly normal: readonly [number, number, number]; readonly count: number; readonly speed: number }): void {
+      queue.push({ kind: "grid-impact", at: [burst.point[0], Math.max(0.4, burst.point[1]), burst.point[2]], count: burst.count, speed: 3 + burst.speed * 0.25, normal: [burst.normal[0], 0.35, burst.normal[2]], seed: seed++ });
+    },
+    /** Teal ring at the kerb beacon on a pickup or a drop-off. */
+    objective(x: number, z: number): void {
+      queue.push({ kind: "grid-objective-ring", at: [x, 0.12, z], seed: seed++ });
+    },
+    /** Night tyre spray: one puff per rear wheel every `TYRE_SPLASH_INTERVAL_S` above `TYRE_SPLASH_MIN_SPEED`. */
+    tyres(o: { readonly dt: number; readonly wet: boolean; readonly speed: number; readonly x: number; readonly z: number; readonly width: number; readonly length: number }): void {
+      if (!o.wet || o.speed < TYRE_SPLASH_MIN_SPEED) {
+        tyreClock = 0;
+        return;
+      }
+      tyreClock += o.dt;
+      if (tyreClock < TYRE_SPLASH_INTERVAL_S) return;
+      tyreClock = 0;
+      const rearZ = o.z + o.length * 0.36;
+      const spray = Math.min(10, 1.5 + o.speed * 0.25);
+      for (const side of [-1, 1]) queue.push({ kind: "grid-tyre-splash", at: [o.x + side * o.width * 0.38, 0.08, rearZ], speed: spray, normal: [side * 0.25, 0.55, 1], seed: seed++ });
+    },
+    /** Hands every queued shot to `fire`, scaled by `vfxCountScale`; empties the queue. */
+    drain(o: { readonly motionOk: boolean; readonly lowTier: boolean }, fire: (shot: GridVfxShot) => void): void {
+      const scale = vfxCountScale(o);
+      for (const q of queue.splice(0)) {
+        const base = q.kind === "grid-impact" ? impactCount(q.count ?? 12, 1) : GRID_VFX_PRESETS[q.kind].layers.reduce((n, l) => n + (l.type === "emitter" ? Number((l as { count?: number }).count ?? 0) : 0), 0);
+        const options: AuraBurstOptions = {
+          count: Math.max(2, Math.round(base * scale)),
+          seed: q.seed,
+          ...(q.speed !== undefined ? { speed: q.speed } : {}),
+          ...(q.normal !== undefined ? { normal: q.normal } : {}),
+          ...(q.kind === "grid-impact" ? { camera: false } : {})
+        };
+        fire({ kind: q.kind, at: q.at, options });
+      }
+    },
+    get pending(): number {
+      return queue.length;
+    }
+  };
 }

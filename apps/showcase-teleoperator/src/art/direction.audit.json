@@ -483,11 +483,6 @@
         "node": "taxi-passenger-arm",
         "emissiveIntensity": 1.2,
         "practical": true
-      },
-      {
-        "node": "impact-sparks",
-        "emissiveIntensity": 3.2,
-        "practical": true
       }
     ],
     "drawCalls": 0
