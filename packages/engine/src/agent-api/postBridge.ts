@@ -782,7 +782,9 @@ export const POST_EFFECT_FIELDS: Readonly<Record<string, readonly string[]>> = {
   "motion-blur": ["shutter", "maxBlur", "samples", "tileSize", "timeScale"],
   // GU47 E-C (EC-6): S3 roughness hint (cutoff 0.5) and hit thickness.
   "screen-space-reflections": ["maxDistance", "intensity", "roughness", "thickness"],
-  outline: ["color", "width", "threshold"]
+  // GU47 E-E (WP-5): `targets` names the nodes whose silhouettes get ink
+  // (compiled to renderer match keys by `nodes/outlineTargets.ts`).
+  outline: ["color", "width", "threshold", "targets"]
 };
 
 /**
