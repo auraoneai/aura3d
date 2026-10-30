@@ -273,15 +273,26 @@ export function buildThermalDriftScene(options: SceneOptions) {
     model(assets.heatsinkWeaponMine, { name: IDS.mine, role: "setDressing", scaleMode: "fit", targetMaxDimension: 1.45 })
       .position(0, 0.35, -28).runtime(game.runtimeNode(IDS.mine))
   );
-  // 9-30: track-side anchors, the shockwave pylon included.
+  // 9-30: track-side anchors, the shockwave pylon included. HS-20: far towers and emissive pieces cast no shadow (each
+  // caster is drawn once per cascade, three cascades since HS-01); arches, gantry, tunnels and overpass keep theirs.
   for (const anchor of SCENERY_ANCHORS) {
     s.add(
-      model(asset(anchor.assetKey), { name: anchor.id, role: "setDressing", scaleMode: "fit", targetMaxDimension: anchor.maxDim })
+      model(asset(anchor.assetKey), { name: anchor.id, role: "setDressing", scaleMode: "fit", targetMaxDimension: anchor.maxDim, ...(UNSHADOWED_ANCHOR_ASSETS.has(anchor.assetKey) ? { castShadow: false } : {}) })
         .position(anchor.lateralX, anchor.baseY, -anchor.s).rotate(0, anchor.yaw, 0).runtime(game.runtimeNode(anchor.id))
     );
   }
   return s;
 }
+
+/** HS-20: anchors drawn without a shadow caster (far side towers, emissive holo, checkpoint ring and lava curtain). */
+export const UNSHADOWED_ANCHOR_ASSETS: ReadonlySet<string> = new Set([
+  "heatsinkTowerL",
+  "heatsinkTowerT",
+  "heatsinkTowerX",
+  "heatsinkHoloBillboard",
+  "heatsinkCheckpointRing",
+  "heatsinkLavaFall"
+]);
 
 /** Model nodes in the scene (route-health budget: 32). */
 export const MODEL_NODE_COUNT = DRONE_ORDER.length + 1 + SCENERY_ANCHORS.length;

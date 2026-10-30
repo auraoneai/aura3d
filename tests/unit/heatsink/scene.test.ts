@@ -89,6 +89,12 @@ describe("heatsink scene", () => {
     const primitives = nodes.filter((n) => n.kind === "primitive" && !Array.isArray(n.instances));
     expect(primitives.length).toBeLessThan(10);
   });
+  it("drops the shadow casters of far towers and emissive pieces, keeps them on arches, tunnels and drones (HS-20)", () => {
+    const models = nodes.filter((n) => n.kind === "model") as unknown as { name: string; castShadow?: boolean }[];
+    const castOf = (name: string) => models.find((m) => m.name === name)?.castShadow;
+    for (const name of ["prop-tower-l-left", "prop-tower-t-left", "prop-tower-x-right", "prop-billboard-left", "prop-checkpoint-ring", "prop-lava-fall"]) expect(castOf(name), name).toBe(false);
+    for (const name of ["prop-arch-a", "prop-tunnel-a", "prop-overpass", "prop-gantry-start", "drone-orion"]) expect(castOf(name), name).not.toBe(false);
+  });
   it("stays inside the route budget of 32 model nodes", () => {
     expect(nodes.filter((n) => n.kind === "model")).toHaveLength(MODEL_NODE_COUNT);
     const budget = JSON.parse(readFileSync("apps/showcase-heatsink/route-health.json", "utf8")).budgets.maxModelNodes;
