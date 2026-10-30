@@ -6,6 +6,8 @@ import { describe, expect, it } from "vitest";
 import { validatePostEffectNode } from "../../../packages/engine/src/agent-api/postBridge";
 import { FAR_DUNE_RINGS, farDuneRings, farDunes } from "../../../examples/silt-and-signal-port/architecture";
 import { BOOST_BLUR, BOOST_FOV_KICK, GOD_RAY_DENSITY, MAST_BRONZE, RING_PUNCH, WET_ROAD, buildWorld, fovKickTarget, inkSkySpec, mastTint, sequencePost } from "../../../examples/silt-and-signal-port/world";
+import { FINISH_ORBIT, chaseEyeBlocked, finishOrbitPose } from "../../../examples/silt-and-signal-port/camera";
+import { createSim } from "../../../examples/silt-and-signal-port/sim";
 import { LIGHTNING, createLightning, flashEnvelope, lightningStrikes } from "../../../examples/silt-and-signal-port/storm";
 
 type Node = Record<string, any>;
@@ -162,5 +164,24 @@ describe("GU47 WP-34 DG-P4 sequence DOF and boost motion blur", () => {
     expect(sequencePost({ boosting: true, sequence: false, reducedMotion: false })).toEqual({ depthOfField: false, motionBlur: true });
     expect(sequencePost({ boosting: true, sequence: true, reducedMotion: false })).toEqual({ depthOfField: true, motionBlur: false });
     expect(sequencePost({ boosting: true, sequence: false, reducedMotion: true }).motionBlur).toBe(false);
+  });
+});
+
+describe("GU47 WP-34 DG-C3 finish orbit", () => {
+  it("3 s, the rider stays >= 15% of the frame height, every pose clear of colliders and above the ground", () => {
+    const sim = createSim(0, 0);
+    const blocked = chaseEyeBlocked(sim.world);
+    expect(FINISH_ORBIT.seconds).toBe(3);
+    for (let t = 0; t <= FINISH_ORBIT.seconds; t += 0.25) {
+      const pose = finishOrbitPose(sim, t);
+      const d = Math.hypot(pose.position[0] - pose.target[0], pose.position[1] - pose.target[1], pose.position[2] - pose.target[2]);
+      const frameHeight = 2 * d * Math.tan((pose.fov * Math.PI) / 360);
+      expect(2.1 / frameHeight, `t=${t}`).toBeGreaterThanOrEqual(0.15);
+      expect(blocked(...pose.position)).toBe(false);
+      expect(pose.position[1]).toBeGreaterThan(sim.world.floor(pose.position[0], pose.position[2], sim.state.y));
+    }
+    // it moves: the first and last eye differ by more than the radius
+    const a = finishOrbitPose(sim, 0).position, b = finishOrbitPose(sim, 3).position;
+    expect(Math.hypot(a[0] - b[0], a[2] - b[2])).toBeGreaterThan(FINISH_ORBIT.radius);
   });
 });

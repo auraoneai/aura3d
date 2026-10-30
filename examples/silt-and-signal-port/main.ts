@@ -18,7 +18,7 @@ import { CHAPTER_COPY, ENDING_COPY, OBJECTIVE_TITLES, SCENE_COPY } from "./copy"
 import { STEP, createSim, objectiveOf, stepSim, targetOf, type Input, type Sim, type SimEvent } from "./sim";
 import { buildWorld, type World, type WorldRuntime } from "./world";
 import { chapterLook, inkPassOptions, siltLookMode } from "./art/look";
-import { RAIL_SECONDS, railPose } from "./camera";
+import { FINISH_ORBIT, RAIL_SECONDS, finishOrbitPose, railPose } from "./camera";
 import { mountSiltHud } from "./hud-look";
 import { mergeInput, objectiveHint, pageFlags, type Device } from "./controls";
 import { clearJourney, journeyTotals, ratingOf, readJourney, recordOf, writeChapter } from "./journey";
@@ -93,6 +93,8 @@ const SCREENS: Record<Exclude<Mode, "play">, string> = { title: "title-screen", 
 /* GU47 DG-C1: a 4 s establishing rail with letterbox bars the first time a chapter enters play (inked look, player
  * mode only; reduced motion and QA modes skip it). Any key, pointer or pad button skips it on the next frame. */
 let railLeft = 0;
+/** DG-C3: seconds left in the finish orbit (null when none is running). */
+let finishLeft: number | null = null;
 let railArmed = config.look === "inked" && !qa && !reducedMotion;
 let bars: HTMLElement | null = null;
 function showBars(on: boolean): void {
@@ -113,6 +115,7 @@ function skipRail(): void {
 }
 
 function setMode(next: Mode): void {
+  if (next !== "play") finishLeft = null;
   if (next === "play" && railArmed) { railArmed = false; railLeft = RAIL_SECONDS; showBars(true); }
   if (next !== "play") skipRail();
   mode = next;
@@ -332,7 +335,12 @@ function render(dt: number): void {
     if (railLeft <= 0) showBars(false);
   }
   // DG-P4: sequence DOF only while the intro rail runs
-  runtime.setSequence(mode === "play" && railLeft > 0);
+  runtime.setSequence(mode === "play" && (railLeft > 0 || (finishLeft !== null && finishLeft > 0)));
+  if (!pose && mode === "play" && finishLeft !== null && finishLeft > 0) {
+    finishLeft = Math.max(0, finishLeft - dt);
+    const orbit = finishOrbitPose(sim, FINISH_ORBIT.seconds - finishLeft);
+    pose = { position: [...orbit.position], target: [...orbit.target], up: [0, 1, 0], fov: orbit.fov };
+  }
   if (pose) app.camera?.setPose(pose, { cut: true });
   app.step(0);
   frames++;
@@ -366,7 +374,9 @@ const loop = createFixedStepLoop({
     renderTime += dt;
     if (mode === "play") {
       if (!qa || skipTitle) {
-        if (sim.state.completed) openDone();
+        // DG-C3: the inked look flies a 3 s finish orbit (sequence DOF) before the results card; reduced motion cuts
+        if (sim.state.completed && finishLeft === null && config.look === "inked" && !reducedMotion) finishLeft = FINISH_ORBIT.seconds;
+        if (sim.state.completed && (finishLeft === null || finishLeft <= 0)) { finishLeft = null; openDone(); }
         else if (sim.state.scene) openScene();
       }
       audio.update(sim, dt);
