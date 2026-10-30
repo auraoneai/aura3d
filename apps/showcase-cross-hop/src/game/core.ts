@@ -1006,17 +1006,17 @@ function swapDioramaLook(ti: number): void {
   const L = THEME_LOOKS[ti]!;
   const th = THEMES[ti]!;
   const n0 = app.nodes as unknown as { remove(id: string): void; add(n: never): void; get(id: string): unknown; require(id: string): { setMaterial?(m: unknown): void } };
-  try {
-    n0.remove("look");
-    n0.add(buildDioramaLookGroup(ti) as never);
-    n0.remove("sky");
-    n0.add(buildSky(ti, st.playerRow) as never);
-    n0.remove("ambient");
-    const amb = ambientNode(ti);
-    if (amb) n0.add(amb as never);
-    const terrain = th.dress === "trees" || th.dress === "reeds" || th.dress === "candy" ? th.palette.dressingA : th.palette.dressingB;
-    n0.require("world-floor")?.setMaterial?.(material.pbr({ color: terrain, roughness: 0.96, metalness: 0 }));
-  } catch { /* look swap best-effort */ }
+  // Each step is best-effort on its own, so a missing node (no ambient emitter on Downtown) cannot skip the rest.
+  const attempt = (fn: () => void): void => { try { fn(); } catch { /* best-effort */ } };
+  attempt(() => n0.remove("look"));
+  attempt(() => n0.add(buildDioramaLookGroup(ti) as never));
+  attempt(() => n0.remove("sky"));
+  attempt(() => n0.add(buildSky(ti, st.playerRow) as never));
+  attempt(() => n0.remove("ambient"));
+  const amb = ambientNode(ti);
+  if (amb) attempt(() => n0.add(amb as never));
+  const terrain = th.dress === "trees" || th.dress === "reeds" || th.dress === "candy" ? th.palette.dressingA : th.palette.dressingB;
+  attempt(() => n0.require("world-floor")?.setMaterial?.(material.pbr({ color: terrain, roughness: 0.96, metalness: 0 })));
   // Only the HDRI and the post preset snap; the key blends (CH47-19).
   const key = keyAt(ti, null, st.playerRow);
   try {
