@@ -15,6 +15,8 @@ import { advanceRunPhase, stepChaseRig, withSample, type ChaseRig, type PresentS
 import { ROAD_LENGTH, entityHeight, entityLateral, type Entity, type RunState } from "./sim";
 import type { RunnerStyle } from "./styles";
 import { ENTITY_MODELS, ISLAND_COUNT, LANTERN_COUNT, MESHY } from "./models";
+import { STAGE_LOOK, lookAt, lookDistance, lookParams, type LookParams, type ResolvedLook } from "./art/colorScript";
+import { createLookDriver, type LookAppLike, type LookNodeHandle } from "./art/lookRuntime";
 
 type Scene = ReturnType<typeof scene>;
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
@@ -129,6 +131,17 @@ export async function loadRunner(canvas: HTMLCanvasElement): Promise<RunnerActor
 export interface WorldOptions {
   readonly canvas?: HTMLCanvasElement;
   readonly runner?: RunnerActor | null;
+  /** GU47 look mode and pinned stage (default: read from `location.search`, see art/colorScript.ts). */
+  readonly look?: LookParams;
+}
+
+/** GU47: the look the last frame drew (QA hook `meta().look`). */
+export interface WorldLookState {
+  readonly mode: LookParams["mode"];
+  readonly id: string;
+  readonly stageIndex: number;
+  readonly godRays: boolean;
+  readonly writes: number;
 }
 
 export interface WorldRuntime {
@@ -143,6 +156,7 @@ export interface WorldRuntime {
   readonly visibilityWrites: number;
   readonly nodeCount: number;
   readonly entityNodes: number;
+  readonly look: WorldLookState;
 }
 
 export interface World {
@@ -169,15 +183,30 @@ const STREAKS = 22;
 const SPARKS = 18;
 const BURSTS = 14;
 
+/** True when the page asks for `?shadow=0` (calibration captures). */
+const shadowOff = (): boolean => typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0";
+/** True when `?env=<n>` overrides the environment intensity (calibration captures). */
+const envOverride = (): boolean => typeof location !== "undefined" && new URLSearchParams(location.search).has("env");
+
 export function buildWorld(options: WorldOptions = {}): World {
   const samples = buildRoadSamples();
+  const lookConfig = options.look ?? lookParams();
+  const script = lookConfig.mode === "script";
+  const first = STAGE_LOOK[lookConfig.pinnedStage ?? 0]!;
   const builder: Scene = scene()
     .background("#f2c6de")
     .camera(camera.perspective({ position: [0, 6, 14], target: [0, 1, 0], fov: 62, near: 0.5, far: 6000 }))
-    // the custom materials are unlit; these light the rigged runner (hemisphere colours are the look spec's)
-    .add(lights.hemisphere({ name: "sky fill", skyColor: "#f6d0e6", groundColor: "#b98a2e", intensity: 1.1 }))
-    .add(environments.neutral({ intensity: environmentIntensity() }))
-    .add(lights.directional({ name: "sun", position: [-40, 60, -70], target: [0, 0, 0], intensity: 2.2, color: "#fff0dc", shadow: (typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0" ? false : { cascades: 1, maxDistance: 80 } as never) }));
+    // the custom materials are unlit; these light the rigged runner (hemisphere colours are the look spec's).
+    // GU47 SSR-02: under the colour script the hemisphere drops 1.1 -> 0.6 and the environment 0.9 -> ~0.6, and a violet
+    // camera-side fill (0.6, unshadowed) keeps the backlit runner readable; `?look=original` keeps today's rig.
+    .add(lights.hemisphere({ name: "sky fill", skyColor: script ? first.hemisphere.sky : "#f6d0e6", groundColor: script ? first.hemisphere.ground : "#b98a2e", intensity: script ? first.hemisphere.intensity : 1.1 }).runtime({ id: "sky fill" }))
+    .add(environments.neutral({ intensity: script && !envOverride() ? first.environmentIntensity : environmentIntensity() }))
+    // GU47 SSR-03: two cascades over 140 m with PCSS under the colour script (Low tier caps to 1 cascade, PCF).
+    .add(lights.directional({ name: "sun", position: [-40, 60, -70], target: [0, 0, 0], intensity: script ? first.sun.intensity : 2.2, color: script ? first.sun.color : "#fff0dc", shadow: (shadowOff() ? false : script ? { cascades: 2, maxDistance: 140, filter: "pcss", lightSize: 2 } : { cascades: 1, maxDistance: 80 }) as never }).runtime({ id: "sun" }));
+  if (script) {
+    builder.add(lights.directional({ name: "fill", position: [0, 4, 20], target: [0, 1, 0], intensity: first.fill.intensity, color: first.fill.color, shadow: false }).runtime({ id: "fill" }));
+    builder.add(effects.contactShadows({ length: 0.3, thickness: 0.06, intensity: 0.8, lights: "sun" }));
+  }
 
   /* road + sky */
   const mesh = buildRoadMesh(samples);
@@ -269,10 +298,21 @@ export function buildWorld(options: WorldOptions = {}): World {
     });
   }
 
-  /* post: the look spec records no composer, so only a faint bloom for the glows and FXAA for the primitive edges */
-  builder
-    .add(effects.bloom({ name: "bloom", intensity: 0.12, threshold: 0.95, radius: 0.4 }))
-    .add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
+  /* post: the original look records no composer, so only a faint bloom for the glows and FXAA for the primitive edges */
+  if (!script) {
+    builder
+      .add(effects.bloom({ name: "bloom", intensity: 0.12, threshold: 0.95, radius: 0.4 }))
+      .add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
+  } else {
+    // GU47 SSR-05/06: bloom 0.45 / 0.85, per-stage grade (written each frame by art/lookRuntime.ts), vignette 0.22, and
+    // the god-ray volumetric pass (enabled at runtime on High / Ultra tiers and low-sun stages only).
+    builder
+      .add(effects.bloom({ name: "bloom", intensity: first.bloom.intensity, threshold: first.bloom.threshold, radius: 0.5 }))
+      .add(effects.colorGrade({ name: "grade", temperature: first.grade.temperature, tint: first.grade.tint, saturation: first.grade.saturation, contrast: first.grade.contrast }))
+      .add(effects.vignette({ name: "vignette", intensity: 0.22 }))
+      .add(effects.volumetricFog({ name: "god rays", density: 0.02, intensity: 0.35, color: first.sun.color, godRayDensity: 0.35 }))
+      .add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
+  }
 
   return {
     scene: builder,
@@ -299,6 +339,9 @@ export function buildWorld(options: WorldOptions = {}): World {
       let prevPulse = 0;
       let burstT = 1;
       let reducedMotion = false;
+      /* GU47 SSR-01: the colour-script driver (script mode only; `?look=original` writes nothing) */
+      const lookDriver = script ? createLookDriver(app as unknown as LookAppLike, (id) => node(id) as unknown as LookNodeHandle) : null;
+      let lookShown: ResolvedLook | null = null;
       /* C8: the visible state each pooled node was last given, so a frame only writes the slots that change */
       const shown = new Map<string, boolean>();
       let visibilityWrites = 0;
@@ -522,6 +565,12 @@ export function buildWorld(options: WorldOptions = {}): World {
         const look: V3 = [pose[0] + rig.f[0] * ahead + rig.u[0] * aim, pose[1] + rig.f[1] * ahead + rig.u[1] * aim, pose[2] + rig.f[2] * ahead + rig.u[2] * aim];
         const fov = (aspect < 0.85 ? 74 : 62) + (reducedMotion ? 0 : Math.min(10, Math.max(0, S.speed - 60) * 0.06));
         cameraController.setPose({ position: eye, target: look, up: rig.u, fov }, { cut: false });
+
+        /* GU47 SSR-01: stage colour script, read-only from the run's distance */
+        if (lookDriver) {
+          lookShown = lookAt(lookDistance(S.s, S.leg), lookConfig);
+          lookDriver.apply(lookShown, { forward: rig.f, time, eye, reducedMotion });
+        }
       };
 
       return {
@@ -546,7 +595,10 @@ export function buildWorld(options: WorldOptions = {}): World {
           runner?.actor.setTint({ baseColor: [style.tint[0], style.tint[1], style.tint[2], 1], emissiveColor: [style.wash[0], style.wash[1], style.wash[2]], emissiveStrength: 0.12 });
         },
         get nodeCount() { return handles.size; },
-        get entityNodes() { return alive; }
+        get entityNodes() { return alive; },
+        get look(): WorldLookState {
+          return { mode: lookConfig.mode, id: lookShown?.id ?? "original", stageIndex: lookShown?.stageIndex ?? 0, godRays: lookDriver?.godRaysOn ?? false, writes: lookDriver?.writes ?? 0 };
+        }
       };
     }
   };

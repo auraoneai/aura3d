@@ -228,8 +228,10 @@ describe("C9: labels, reduced motion and mute", () => {
 });
 
 describe("C3 / LIGHT-01: neutral environment", () => {
-  it("the scene authors environments.neutral at the calibrated intensity", () => {
-    const nodes = (buildWorld().scene as unknown as { toJSON(): { nodes: { kind: string; environment?: string; intensity?: number }[] } }).toJSON().nodes;
+  it("the scene authors environments.neutral at the calibrated intensity (?look=original; GU47 SSR-02 lowers it to 0.6 under the colour script)", () => {
+    const script = (buildWorld({ look: { mode: "script", pinnedStage: null } }).scene as unknown as { toJSON(): { nodes: { kind: string; intensity?: number }[] } }).toJSON().nodes;
+    expect(script.find((n) => n.kind === "environment")!.intensity).toBe(0.6);
+    const nodes = (buildWorld({ look: { mode: "original", pinnedStage: null } }).scene as unknown as { toJSON(): { nodes: { kind: string; environment?: string; intensity?: number }[] } }).toJSON().nodes;
     const env = nodes.filter((n) => n.kind === "environment");
     expect(env).toHaveLength(1);
     expect(env[0]!.environment).toBe("neutral");

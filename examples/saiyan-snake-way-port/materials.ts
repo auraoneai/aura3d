@@ -3,10 +3,26 @@
  * and compile exactly what the app draws with.
  */
 import type { material } from "@aura3d/engine";
+import { ORIGINAL_SUN_DIR, STAGE_LOOK, linearOf } from "./art/colorScript";
 import {
   AURA_FRAGMENT, AURA_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX, FLAT_FRAGMENT, FLAT_VERTEX, GLOW_FRAGMENT, GLOW_VERTEX,
   ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX
 } from "./shaders";
+
+/**
+ * GU47 SSR-01: colour-script uniforms shared by the road and sky. The defaults are the pre-GU47 constants with
+ * `lookMode` 0, so a spec renders today's look until world.ts writes the stage look (`?look=original` keeps it).
+ */
+export const lookUniforms = () => ({
+  lookMode: { type: "f32" as const, value: 0 },
+  lookSunDir: { type: "vec3" as const, value: [...ORIGINAL_SUN_DIR] },
+  lookSunColor: { type: "color3" as const, value: [1, 0.82, 0.9] },
+  lookFogColor: { type: "color3" as const, value: [0.8, 0.62, 0.8] },
+  lookFogNear: { type: "f32" as const, value: 430 },
+  lookFogFar: { type: "f32" as const, value: 1010 },
+  lookHemiSky: { type: "color3" as const, value: [1, 0.93, 0.9] },
+  lookHemiGround: { type: "color3" as const, value: [0.62, 0.52, 0.5] }
+});
 
 /** World height of the cloud deck's base (the sky shader marches up to 55 m above it). */
 export const DECK_BASE = -115;
@@ -63,6 +79,13 @@ export const roadSpec = (): CustomSpec => ({
     /** Road distance `s` of the next missing plate and the 0..1 strength of its edge warning (hud.ts `gapAhead`). */
     gapAt: { type: "f32", value: -1e6 },
     gapWarn: { type: "f32", value: 0 },
+    ...lookUniforms(),
+    /** GU47 SSR-08 per-stage scale tints (rose row by default; used only when lookMode is 1) and the spine wave clock. */
+    roadPearl: { type: "color3", value: [...linearOf(STAGE_LOOK[0]!.road.pearl)] },
+    roadJade: { type: "color3", value: [...linearOf(STAGE_LOOK[0]!.road.jade)] },
+    roadSpine: { type: "color3", value: [...linearOf(STAGE_LOOK[0]!.road.spine)] },
+    roadBelly: { type: "color3", value: [...linearOf(STAGE_LOOK[0]!.road.belly)] },
+    roadTime: { type: "f32", value: 0 }
   },
   side: "double"
 });
@@ -111,7 +134,14 @@ export const skySpec = (): CustomSpec => ({
     cloudMid: { type: "color3", value: [...hexLinear(PALETTE.cloud)] },
     cloudDark: { type: "color3", value: [...hexLinear(PALETTE.cloudDark)] },
     deckBase: { type: "f32", value: DECK_BASE },
-    skyTime: { type: "f32", value: 0 }
+    skyTime: { type: "f32", value: 0 },
+    ...lookUniforms(),
+    /** GU47 SSR-04 (used only when lookMode is 1). */
+    skyBand: { type: "color3", value: [...linearOf(STAGE_LOOK[0]!.sky.band)] },
+    skySunDisc: { type: "color3", value: [...linearOf(STAGE_LOOK[0]!.sun.disc)] },
+    skyCorona: { type: "f32", value: STAGE_LOOK[0]!.sun.corona },
+    skyStars: { type: "f32", value: STAGE_LOOK[0]!.sky.stars },
+    skyMoon: { type: "f32", value: 0 }
   },
   side: "double",
   depthWrite: false

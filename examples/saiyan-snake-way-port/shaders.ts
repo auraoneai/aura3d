@@ -41,6 +41,17 @@ vec3 fogMix(vec3 c, float d){ return mix(c, FOG_COL, clamp((d - 430.0) / 580.0, 
 float fogAmount(float d){ return clamp((d - 430.0) / 580.0, 0.0, 1.0); }
 `;
 
+/**
+ * GU47 SSR-01: the same haze and sun, driven per frame by the stage colour script (art/colorScript.ts) through uniforms.
+ * Only the road and sky read it; `lookMode` 0 reproduces the pre-GU47 constants exactly (`?look=original`).
+ */
+const ATMOSPHERE_LIVE = /* glsl */ `
+#define FOG_COL lookFogColor
+#define SUN_DIR lookSunDir
+vec3 fogMix(vec3 c, float d){ return mix(c, lookFogColor, clamp((d - lookFogNear) / max(1.0, lookFogFar - lookFogNear), 0.0, 1.0)); }
+float fogAmount(float d){ return clamp((d - lookFogNear) / max(1.0, lookFogFar - lookFogNear), 0.0, 1.0); }
+`;
+
 /** The original's toon ramp (bands 0.92 / 0.97 / 1.0 under a sky/ground hemisphere tint). */
 const TOON = /* glsl */ `
 float gToonShadow = 1.0; // sun-shadow factor, set per fragment by a3dSunShadowAuto in specs with receiveShadow: true
@@ -61,6 +72,21 @@ vec3 toonFigure(vec3 albedo, vec3 N, vec3 V) {
   float rimLight = rim * (0.35 + 0.65 * max(dot(N, SUN_DIR) * 0.5 + 0.5, 0.0));
   float spec = pow(max(dot(N, normalize(normalize(L) + V)), 0.0), 36.0);
   return albedo * band * sky + vec3(1.0, 0.72, 0.62) * rimLight * 0.42 + vec3(1.0, 0.92, 0.85) * spec * 0.16;
+}
+`;
+
+/** The road's ramp under the colour script: original bands at lookMode 0; at 1 the key follows the low sun and the sky tint follows the hemisphere colours. */
+const TOON_LIVE = /* glsl */ `
+float gToonShadow = 1.0;
+vec3 toon(vec3 albedo, vec3 N) {
+  vec3 L0 = normalize(vec3(-0.45, 1.0, 0.6));
+  vec3 L = normalize(mix(L0, normalize(lookSunDir + vec3(0.0, 0.35, 0.0)), lookMode));
+  float d = min(dot(N, L) * 0.5 + 0.5, mix(0.30, 1.0, gToonShadow));
+  float band = d < 0.34 ? 0.92 : (d < 0.67 ? 0.97 : 1.0);
+  band = mix(band, mix(0.62, 1.0, smoothstep(0.2, 0.75, d)), lookMode);
+  vec3 sky0 = mix(vec3(0.62, 0.52, 0.5), vec3(1.0, 0.93, 0.9), N.y * 0.5 + 0.5);
+  vec3 sky1 = mix(lookHemiGround, lookHemiSky, N.y * 0.5 + 0.5) * 1.35;
+  return albedo * band * mix(sky0, sky1, lookMode);
 }
 `;
 
@@ -176,8 +202,8 @@ in vec2 vUv;
 in vec2 vCross;
 out vec4 outColor;
 ${NOISE}
-${ATMOSPHERE}
-${TOON}
+${ATMOSPHERE_LIVE}
+${TOON_LIVE}
 void main() {
   vec3 N = normalize(vNormal);
   vec3 V = normalize(cameraPosition - vWorld);
@@ -195,28 +221,54 @@ void main() {
   vec2 e = min(f, 1.0 - f);
   vec2 fw = fwidth(cell);
   float fwm = max(fw.x, fw.y);
-  float detail = 1.0 - smoothstep(0.16, 0.5, fwm);
+  // GU47 SSR-08: the scale detail fades out earlier under the colour script (road tile moire past 30 m)
+  float detail = 1.0 - smoothstep(mix(0.16, 0.07, lookMode), mix(0.5, 0.28, lookMode), fwm);
   float bevel = mix(0.92, smoothstep(0.0, max(0.16, fwm * 1.5), min(e.x, e.y * 0.8)), detail);
   float joint = mix(0.9, smoothstep(0.0, max(0.05, fwm * 1.4), min(e.x, e.y)), detail);
   float tint = mix(0.5, fbm(floor(g) * 0.7 + 3.1), detail);
-  vec3 plate = mix(roadDark, roadTop, 0.5 + 0.5 * tint);
-  plate *= mix(0.80, 1.04, bevel);
   float depth = clamp(-vCross.y / 16.0, 0.0, 1.0);
-  // flanks: lavender feather streaks running along the road, darker towards the belly
   float streak = n2(vec2(vCross.x * 1.9 + vCross.y * 0.7, s * 0.16));
-  vec3 body = mix(scaleColor * vec3(0.92, 0.86, 1.0), vec3(0.34, 0.24, 0.52), smoothstep(0.0, 0.9, depth));
-  body *= (0.80 + 0.32 * streak) * mix(0.9, 1.0, bevel);
-  vec3 albedo = mix(body, plate, top);
-  albedo = mix(jointColor * 0.9, albedo, joint);
-
-  // pearl sheen: a faint thin-film hue shift towards grazing angles
   float fres = pow(1.0 - max(dot(N, V), 0.0), 2.0);
-  vec3 film = 0.5 + 0.5 * cos(6.2831853 * (vec3(0.0, 0.33, 0.67) + fres * 0.9 + tint * 0.6));
-  albedo = mix(albedo, albedo * film * 1.08, 0.07 * top * detail);
+
+  vec3 albedo;
+  if (lookMode < 0.5) {
+    // pre-GU47 road (exact)
+    vec3 plate = mix(roadDark, roadTop, 0.5 + 0.5 * tint);
+    plate *= mix(0.80, 1.04, bevel);
+    vec3 body = mix(scaleColor * vec3(0.92, 0.86, 1.0), vec3(0.34, 0.24, 0.52), smoothstep(0.0, 0.9, depth));
+    body *= (0.80 + 0.32 * streak) * mix(0.9, 1.0, bevel);
+    albedo = mix(body, plate, top);
+    albedo = mix(jointColor * 0.9, albedo, joint);
+    vec3 film = 0.5 + 0.5 * cos(6.2831853 * (vec3(0.0, 0.33, 0.67) + fres * 0.9 + tint * 0.6));
+    albedo = mix(albedo, albedo * film * 1.08, 0.07 * top * detail);
+  } else {
+    // GU47 SSR-08: living serpent road. Overlapping scales (each plate darker toward its trailing edge), a pearl top
+    // over a jade flank ramp into indigo belly scales; per-stage tints come from the colour script.
+    float overlap = mix(1.0, 0.72 + 0.28 * smoothstep(0.0, 0.85, 1.0 - f.y), detail);
+    vec3 plate = mix(roadPearl * 0.86, roadPearl, 0.5 + 0.5 * tint) * mix(0.82, 1.04, bevel) * overlap;
+    float flank = smoothstep(0.0, 0.9, depth);
+    vec3 body = mix(roadJade, roadBelly, flank);
+    // belly scales: wide transverse plates under the body
+    float belly = smoothstep(0.55, 0.9, depth);
+    float bellyRow = fract(s / 1.1);
+    body *= mix(1.0, mix(0.7, 1.0, smoothstep(0.0, max(0.08, fwm * 2.0), min(bellyRow, 1.0 - bellyRow))), belly * detail);
+    body *= (0.84 + 0.26 * streak) * mix(0.88, 1.0, bevel) * overlap;
+    albedo = mix(body, plate, top);
+    albedo = mix(roadJade * 0.55, albedo, joint);
+    // view-angle pearl sheen: thin-film hue shift strongest at grazing angles on the plates
+    vec3 film = 0.5 + 0.5 * cos(6.2831853 * (vec3(0.0, 0.33, 0.67) + fres * 1.2 + tint * 0.8));
+    albedo = mix(albedo, albedo * film * 1.15, (0.12 + 0.3 * fres) * mix(0.5, 1.0, top) * detail);
+  }
 
   gToonShadow = a3dSunShadowAuto(vWorld, N);
   vec3 col = toon(albedo, N);
-  col += vec3(1.0, 0.82, 0.9) * pow(max(dot(N, SUN_DIR), 0.0), 3.0) * 0.07 * top;
+  col += mix(vec3(1.0, 0.82, 0.9), lookSunColor, lookMode) * pow(max(dot(N, SUN_DIR), 0.0), 3.0) * mix(0.07, 0.16, lookMode) * top;
+
+  // GU47 SSR-08: the gold spine down the road's centre line, with a wave pulsing forward along the body
+  float spineW = 0.22 + fwm * 0.4;
+  float spine = (1.0 - smoothstep(spineW * 0.5, spineW, abs(vCross.x))) * top * lookMode;
+  float wave = 0.55 + 0.45 * sin(s * 0.18 - roadTime * 5.0);
+  col = mix(col, roadSpine * (1.2 + 0.9 * wave), spine * 0.9);
 
   // gap telegraph: the edges of the 30 m of road before the next missing plate glow warm while gapWarn is up
   float ahead = gapAt - s;
@@ -303,7 +355,7 @@ export const SKY_FRAGMENT = /* glsl */ `
 in vec3 vWorld;
 out vec4 outColor;
 ${CLOUD_NOISE}
-${ATMOSPHERE}
+${ATMOSPHERE_LIVE}
 const float CLOUD_H = 55.0;
 float deckTop(vec2 xz){
   vec2 q = xz * 0.0026 + vec2(skyTime * 0.004, skyTime * 0.0013);
@@ -318,12 +370,29 @@ vec3 skyAt(float dy) {
   float b = mix(t, banded, 0.3);
   return b < 0.46 ? mix(skyLo, skyMid, smoothstep(0.02, 0.48, b)) : mix(skyMid, skyHi, smoothstep(0.46, 0.94, b));
 }
+/** GU47 SSR-04: smooth horizon -> upper -> zenith gradient, a hot band under the sun, sun disc with corona, moon. */
+vec3 scriptSky(vec3 dir, float sd) {
+  float dy = max(dir.y, 0.0);
+  vec3 col = mix(skyLo, skyMid, smoothstep(0.0, 0.28, dy));
+  col = mix(col, skyHi, smoothstep(0.18, 0.85, dy));
+  float bandW = exp(-dy * 9.0);
+  col = mix(col, skyBand, bandW * (0.35 + 0.65 * pow(sd, 3.0)));
+  float disc = smoothstep(0.99955, 0.99975, sd);
+  float corona = pow(sd, 90.0) * 0.9 + pow(sd, 12.0) * 0.25;
+  // moon: pale disc with soft maria; no corona, a cold halo
+  float maria = 0.82 + 0.18 * cn(dir.xy * 900.0);
+  vec3 sunCol = mix(skySunDisc * 3.0, skySunDisc * 1.6 * maria, skyMoon);
+  col += skySunDisc * corona * skyCorona * (1.0 - 0.7 * skyMoon);
+  col += skySunDisc * pow(sd, 400.0) * 0.6 * skyMoon;
+  col = mix(col, sunCol, disc);
+  return col;
+}
 void main() {
   vec3 dir = normalize(vWorld - cameraPosition);
   float sd = max(dot(dir, SUN_DIR), 0.0);
   vec3 col;
   if (dir.y >= 0.0) {
-    col = skyAt(dir.y);
+    col = lookMode < 0.5 ? skyAt(dir.y) : scriptSky(dir, sd);
     // star points: ~2 px squares scattered over the dome, thinning towards the horizon
     vec2 sp = vec2(atan(dir.z, dir.x) * 57.2958, dir.y * 180.0);
     vec2 cell = floor(sp);
@@ -331,14 +400,17 @@ void main() {
       vec2 centre = cell + 0.5 + (vec2(ch(cell + 3.1), ch(cell + 9.7)) - 0.5) * 0.5;
       vec2 px = (sp - centre) / max(fwidth(sp), vec2(1e-4));
       float star = (1.0 - smoothstep(0.7, 1.5, max(abs(px.x), abs(px.y)))) * smoothstep(0.03, 0.2, dir.y);
+      star *= mix(1.0, skyStars * smoothstep(0.08, 0.45, dir.y) * (0.6 + 0.4 * ch(cell + 41.0)), lookMode);
       col = mix(col, vec3(1.0), star * 0.9);
     }
-    col = mix(FOG_COL, col, smoothstep(0.0, 0.2, dir.y));
+    col = mix(FOG_COL, col, smoothstep(0.0, mix(0.2, 0.08, lookMode), dir.y));
   } else {
     vec3 ro = cameraPosition;
     float topY = deckBase + CLOUD_H;
     float tB = min((deckBase - 8.0 - ro.y) / dir.y, 3400.0);
     float tA = ro.y > topY ? (topY - ro.y) / dir.y : 0.0;
+    // GU47 SSR-04: under the colour script the under-deck keeps its own darker tint; lookMode 0 is the old multiply
+    vec3 under = mix(cloudDark * vec3(0.66, 0.58, 0.32), cloudDark * 0.8, lookMode);
     if (tB <= 0.0) {
       col = mix(cloudDark * vec3(0.62, 0.52, 0.80), FOG_COL, 0.5);
     } else {
@@ -361,8 +433,10 @@ void main() {
           float lit = (1.0 - occl) * (0.35 + 0.65 * smoothstep(0.0, 0.8, 1.0 - depth01));
           float fine = cn(p.xz * 0.05) * 0.6 + cn(p.xz * 0.15) * 0.4;
           lit *= 0.7 + 0.6 * fine;
-          vec3 sc = mix(cloudDark * vec3(0.66, 0.58, 0.32), cloudMid, 0.1 + 0.9 * clamp(lit, 0.0, 1.0));
-          sc = mix(sc, cloudLit, clamp(lit, 0.0, 1.0) * clamp(lit, 0.0, 1.0) * 0.55);
+          // lit cumulus tops glow hotter toward the sun (forward scatter) under the colour script
+          lit *= 1.0 + lookMode * 0.6 * pow(sd, 6.0);
+          vec3 sc = mix(under, cloudMid, 0.1 + 0.9 * clamp(lit, 0.0, 1.0));
+          sc = mix(sc, cloudLit, clamp(lit, 0.0, 1.0) * clamp(lit, 0.0, 1.0) * mix(0.55, 0.8, lookMode));
           acc += trans * a * sc;
           if (trans > 0.5 && trans * (1.0 - a) <= 0.5) tFirst = t;
           trans *= 1.0 - a;
@@ -370,7 +444,7 @@ void main() {
         }
         t += dt;
       }
-      vec3 floorCol = cloudDark * vec3(0.5, 0.4, 0.22);
+      vec3 floorCol = mix(cloudDark * vec3(0.5, 0.4, 0.22), cloudDark * 0.45, lookMode);
       col = acc + trans * floorCol;
       col *= 0.93 + 0.14 * ch(gl_FragCoord.xy);
       col = mix(col, FOG_COL, smoothstep(600.0, 3400.0, tFirst) * 0.9);
