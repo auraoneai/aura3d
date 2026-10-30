@@ -50,12 +50,35 @@ import {
   handBounceOverlayAngles
 } from "@aura3d/engine/game";
 import { assets } from "./aura-assets.route";
+import {
+  COURT_RIGS,
+  LIGHTNING_NODE_ID,
+  LIGHTNING_PEAK,
+  courtAtmosphereNodes,
+  courtWaterNodes,
+  courtLampNodes,
+  courtLensFlareNodes,
+  courtLightningNodes,
+  courtLookNodes,
+  courtPracticalNodes,
+  courtSkyNodes,
+  courtWeatherNodes,
+  lightningFlash
+} from "./courtRigs";
+import { JUICE_FX, ballTrailOptions, hoopsBurstOptions, hoopsFxKindFor, registerHoopsFx, type HoopsFxKind } from "./fxPack";
 import "../../showcase-port-shared/quickbar.css";
 import { createFrameErrorBoundary, installBlackFrameGuard } from "@aura3d/debug";
 import { pickLocomotion } from "./locomotionRates";
 import { advanceShotBall, aimError, createHoopWorld, crossedRimDownward, solveLaunch } from "./shotPhysics";
 import { BALL_R, DRIB_SHOULDER_FALLBACK, dribbleCycleY } from "./dribble";
 import { createOnePress } from "./input";
+import { hoopMaterials } from "./hoopMaterials";
+import { SprayTags } from "./sprayTags";
+import { headLookAngles, headLookQuat, stepHeadLook, worldToActor, type HeadLookAngles } from "./headLook";
+import { SCOREBOARD_NODE_ID, courtNameNode, scoreboardNode, scoreboardText } from "./diegetic";
+import { projectCrops, type QaCropSubject } from "./qaCrops";
+import { MarkerPool, parkedTransforms, type MarkerSlot } from "./markerPools";
+import { LIVE_CAM, MAKE_FOV_KICK, ReplayRing, createBroadcast, createLetterbox, railPose, replayPose, replaySourceTime, type V3 as BroadcastV3 } from "./broadcast";
 import {
   CHECK_SHOT_GUARD, CPU_DUNK_RATE, SIM_STEP, advanceMeter, blendPose, canBlockRelease, clearTarget, decayRimShake,
   deadBallPossession, dunkRejectChance, isCleared, isDeadBall, makeCosmeticRng, matchDifficulty, meterQuality,
@@ -453,6 +476,32 @@ const QA_LEAD = initialParams.get("diag") === "1" ? Number(initialParams.get("qa
 const QA_AO = initialParams.get("diag") === "1" ? initialParams.get("qaAo") : null;
 /** ?diag=1&qaTarget=N plays to N points so a run reaches the results card quickly (measurement only). */
 const QA_TARGET = initialParams.get("diag") === "1" ? Number(initialParams.get("qaTarget")) || 0 : 0;
+/** ?look=original: the 4.6 look (presets, fog off, today's practicals and dressing) for GU47 before/after pairs. */
+const LOOK_ORIGINAL = initialParams.get("look") === "original";
+/**
+ * Reduced motion / flash as the boot scene sees them (`buildScene` runs before `setupSystems` sets the live flags):
+ * the same URL params and media queries, read once.
+ */
+/* H47-C1 / H47-P2: broadcast intro rail and Jam-dunk replay (broadcast.ts). Off on ?look=original, under reduced motion,
+ * with ?intro=0 and on every measurement path (?diag=1, ?simsteps=N), so captures and probes keep their stepping. */
+const BROADCAST_OFF = initialParams.get("look") === "original" || initialParams.get("intro") === "0" || initialParams.get("diag") === "1" ||
+  Number(initialParams.get("simsteps")) > 0 || initialParams.has("reducedMotion") ||
+  (typeof window !== "undefined" && (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false));
+const broadcast = createBroadcast({ disabled: BROADCAST_OFF });
+/** Recorded presenter steps for the replay (1.2 s at the sim step; the replay shows the last 0.96 s). */
+const replayRing = new ReplayRing(Math.ceil(1.2 * 60));
+let replayClip: ReplayRing | null = null;
+/** Set when a Jam dunk takes off; finishDunk starts the replay (a read of the dunk branch, no sim change). */
+let jamDunkPending = false;
+let letterbox: { show(on: boolean): void } | null = null;
+let broadcastPostOn = false;
+/** H47-V3: the Jam-dunk spray tags (new look). */
+const sprayTags = new SprayTags();
+// H47-H1: the tour HUD skin (spray-stencil score bug, spray-can Jam meter) styles off body[data-look="tour"].
+if (typeof document !== "undefined" && initialParams.get("look") !== "original") document.body.dataset.look = "tour";
+/** H47-H1: the score text the in-world Rucker board shows (set at build, kept equal to the DOM score by syncHud). */
+let shownBoardScore = "";
+const BOOT_REDUCED_MOTION = initialParams.has("reducedMotion") || (typeof window !== "undefined" && (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false));
 
 const game_ = {
   mode: "quick" as ModeId,
@@ -571,15 +620,15 @@ function buildHoopNodes(): any[] {
     // carry AI-generated camo base-colour/MR maps; override them with clean,
     // venue-neutral hardware materials so the rim assembly reads as equipment
     // instead of an overexposed orange smear.
-    model(assets.hoopsHoopRig, {
+    // y 1.98 is the 4.6 placement, unchanged; the fit-grounding check only sees it now that the overrides moved to
+    // hoopMaterials.ts. Phase 2 checks the stanchion foot against the floor in a capture (lane report g07).
+    model(assets.hoopsHoopRig, { // fit-grounding: ok
       name: "hoop-rig",
       targetHeight: 3.95,
       scaleMode: "fit",
       castShadow: true,
       receiveShadow: true,
-      materialOverrides: [
-        { color: "#2f3439", colorMode: "replace", replaceTextures: true, roughness: 0.52, metallic: 0.58, envMapIntensity: 0.8 }
-      ]
+      materialOverrides: hoopMaterials(LOOK_ORIGINAL).rig
     })
       .position(0, 1.98, -1.08)
       .rotate(0, Math.PI, 0),
@@ -588,9 +637,7 @@ function buildHoopNodes(): any[] {
       scaleMode: "world",
       castShadow: true,
       receiveShadow: true,
-      materialOverrides: [
-        { color: "#eef3f7", colorMode: "replace", replaceTextures: true, roughness: 0.34, metallic: 0.02, clearcoat: 0.45, clearcoatRoughness: 0.22, envMapIntensity: 0.7 }
-      ]
+      materialOverrides: hoopMaterials(LOOK_ORIGINAL).backboard
     })
       .position(0, 3.35, BOARD_Z)
       .runtime(game.runtimeNode("backboard-assembly")),
@@ -598,9 +645,7 @@ function buildHoopNodes(): any[] {
       name: "hoop-rim",
       scaleMode: "world",
       castShadow: true,
-      materialOverrides: [
-        { color: "#c65a1e", colorMode: "replace", replaceTextures: true, roughness: 0.38, metallic: 0.42, envMapIntensity: 0.85 }
-      ]
+      materialOverrides: hoopMaterials(LOOK_ORIGINAL).rim
     })
       .position(RIM[0], RIM[1], RIM[2])
       .runtime(game.runtimeNode("rim-assembly")),
@@ -615,12 +660,13 @@ function buildHoopNodes(): any[] {
 
 function buildBallNodes(): any[] {
   const nodes: any[] = [
-    model(assets.hoopsBall, { name: "ball-live", scaleMode: "fit", targetMaxDimension: 0.26, castShadow: true })
+    model(assets.hoopsBall, { name: "ball-live", scaleMode: "fit", targetMaxDimension: 0.26, castShadow: true, ...(LOOK_ORIGINAL ? {} : { materialOverrides: hoopMaterials(false).ball }) })
       .position(0, 0.98, CHECK_SPOT[2])
       .runtime(game.runtimeNode("ball-live")),
     primitives.cylinder({ name: "ball-shadow", size: [0.34, 0.008, 0.34], material: material.pbr({ color: "#000000", opacity: 0.28, roughness: 1 }) }).position(0, 0.012, CHECK_SPOT[2]).runtime(game.runtimeNode("ball-shadow"))
   ];
-  for (let i = 0; i < TRAIL_COUNT; i++) {
+  // H47-V1 / H47-PF1: the 14 emissive trail spheres stay only on ?look=original; the new look draws one ribbon trail.
+  for (let i = 0; i < (LOOK_ORIGINAL ? TRAIL_COUNT : 0); i++) {
     nodes.push(
       primitives.sphere({ name: `ball-trail-${i}`, size: [0.1, 0.1, 0.1], material: material.emissive({ color: "#ff9a3d", emissive: "#ff9a3d", emissiveIntensity: 0.4 }) })
         .scale(HIDDEN)
@@ -663,6 +709,33 @@ function athleteOverrides(kit: Kit): any[] {
   return [flat(/-kit$/, kit.jersey, 0.68), flat(/-shorts$/, kit.shorts, 0.72)];
 }
 
+/* H47-PF1: on the new look the ground markers and drill cones are pooled instanced nodes (markerPools.ts): 10 shadow discs,
+ * 10 team rings, 10 Jam auras, 10 cones and 10 cone rings drew as 50 primitive nodes and now draw as at most 6 (one ring
+ * node per side keeps the round/square shape cue and the kit colour). ?look=original keeps the separate primitives. */
+const POOLED_MARKERS = !LOOK_ORIGINAL;
+const HOME_IDS: readonly string[] = ["p0", "p1", "p2", "p3", "p4"];
+const AWAY_IDS: readonly string[] = ["a0", "a1", "a2", "a3", "a4"];
+const MARKER_ATHLETES = HOME_IDS.length + AWAY_IDS.length;
+const RING_ROT_HOME: Vec3 = [Math.PI / 2, 0, 0];
+const RING_ROT_AWAY: Vec3 = [Math.PI / 2, 0, Math.PI / 4];
+const CONE_RING_ROT: Vec3 = [Math.PI / 2, 0, 0];
+
+function buildMarkerPoolNodes(): any[] {
+  if (!POOLED_MARKERS) return [];
+  const home = teamKit("home"), away = teamKit("away");
+  const ringMat = (k: Kit) => material.emissive({ color: k.jersey, emissive: k.jersey, emissiveIntensity: 0.45, opacity: 0.72 });
+  const pool = (kind: "cylinder" | "torus", name: string, capacity: number, opts: Record<string, unknown>) =>
+    (instances as any)[kind]({ name, transforms: parkedTransforms(capacity), castShadow: false, ...opts }).runtime(game.runtimeNode(name));
+  return [
+    pool("cylinder", "marker-shadows", MARKER_ATHLETES, { size: [0.58, 0.008, 0.58], material: material.pbr({ color: "#000000", opacity: 0.24, roughness: 1 }) }),
+    pool("torus", "marker-rings-home", HOME_IDS.length, { size: [0.82, 0.82, 0.34], material: ringMat(home) }),
+    pool("torus", "marker-rings-away", AWAY_IDS.length, { size: [0.86, 0.86, 0.34], params: { tubularSegments: 4 }, material: ringMat(away) }),
+    pool("cylinder", "marker-auras", MARKER_ATHLETES, { size: [0.9, 1.9, 0.9], material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 0.9, opacity: 0.16 }) }),
+    pool("cylinder", "marker-cones", CONE_COUNT, { size: [0.34, 0.5, 0.34], material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 0.5 }) }),
+    pool("torus", "marker-cone-rings", CONE_COUNT, { size: [0.68, 0.68, 0.5], material: material.emissive({ color: "#ffd257", emissive: "#ffd257", emissiveIntensity: 1.0 }) })
+  ];
+}
+
 function buildAthlete(id: string, team: TeamId): any[] {
   // Region-split copies of the palette athletes (tools/hoops-athlete-retexture/split-kit-materials.mjs): one material per
   // body region, so the kit, shorts and socks take the team colours.
@@ -673,7 +746,7 @@ function buildAthlete(id: string, team: TeamId): any[] {
       .position(0, 0, 6)
       .animate({ clip: "Crouch_Idle_Loop", loop: true, speed: 1.0 })
       .runtime(game.runtimeNode(id)),
-    ...buildAthleteAccessories(id, team, kit)
+    ...(POOLED_MARKERS ? [] : buildAthleteAccessories(id, team, kit))
   ];
 }
 
@@ -713,7 +786,7 @@ function buildVenueDressing(v: VenueSpec): any[] {
         model(assets.hoopsTower, { name: "tower-east", targetHeight: 34, castShadow: false }).position(26, 0, -18),
         model(assets.hoopsTower, { name: "tower-west", targetHeight: 26, castShadow: false }).position(-26, 0, -14)
       );
-      nodes.push(
+      if (LOOK_ORIGINAL) nodes.push(
         primitives.plane({ name: "river-strip", size: [80, 1, 12], material: material.pbr({ color: "#0a1826", roughness: 0.2, metalness: 0.6, emissive: "#0d2438", emissiveIntensity: 0.25 }) }).position(0, -0.05, 20)
       );
     }
@@ -722,7 +795,7 @@ function buildVenueDressing(v: VenueSpec): any[] {
   if (v.id === "venice") {
     nodes.push(
       primitives.plane({ name: "sand-surround", size: [90, 1, 46], material: material.pbr({ color: "#c9ad72", roughness: 0.95 }) }).position(0, -0.04, 6),
-      primitives.plane({ name: "ocean-glint", size: [90, 1, 10], material: material.pbr({ color: "#2e8fa8", roughness: 0.3, metalness: 0.4, emissive: "#ff9a3d", emissiveIntensity: 0.12 }) }).position(0, -0.03, -22)
+      ...(LOOK_ORIGINAL ? [primitives.plane({ name: "ocean-glint", size: [90, 1, 10], material: material.pbr({ color: "#2e8fa8", roughness: 0.3, metalness: 0.4, emissive: "#ff9a3d", emissiveIntensity: 0.12 }) }).position(0, -0.03, -22)] : [])
     );
     for (const [x, z, s] of [[-12, -8, 1], [12.5, -10, 1.2], [-14, 12, 0.9], [14, 14, 1.05], [-9, 16, 0.8]] as const) {
       nodes.push(model(assets.hoopsPalm, { name: `palm-${x}-${z}`, targetHeight: 6.4 * s, castShadow: true }).position(x, 0, z).rotate(0, vrng() * Math.PI * 2, 0));
@@ -733,11 +806,14 @@ function buildVenueDressing(v: VenueSpec): any[] {
     nodes.push(
       model(assets.hoopsCanopy, { name: "manila-canopy", targetMaxDimension: 36, scaleMode: "fit", castShadow: false, receiveShadow: true }).position(0, 9.2, 4)
     );
-    for (const [x, z] of [[-13, -4], [13, -4], [-13, 12], [13, 12]] as const) {
-      nodes.push(
-        model(assets.hoopsFloodlight, { name: `flood-${x}-${z}`, targetHeight: 8.6 }).position(x, 0, z).rotate(0, Math.atan2(-x, -z), 0),
-        lights.spot({ name: `flood-s-${x}-${z}`, position: [x * 0.9, 8.4, z * 0.9], target: [0, 0, 4], angle: 0.6, penumbra: 0.5, intensity: 2.2, color: "#ffd9a8", distance: 55 })
-      );
+    // H47-L2: under the roof the court is lit by 12 tungsten bulbs on two strings (courtRigs.ts), not floodlights.
+    if (LOOK_ORIGINAL) {
+      for (const [x, z] of [[-13, -4], [13, -4], [-13, 12], [13, 12]] as const) {
+        nodes.push(
+          model(assets.hoopsFloodlight, { name: `flood-${x}-${z}`, targetHeight: 8.6 }).position(x, 0, z).rotate(0, Math.atan2(-x, -z), 0),
+          lights.spot({ name: `flood-s-${x}-${z}`, position: [x * 0.9, 8.4, z * 0.9], target: [0, 0, 4], angle: 0.6, penumbra: 0.5, intensity: 2.2, color: "#ffd9a8", distance: 55 })
+        );
+      }
     }
   }
 
@@ -745,10 +821,13 @@ function buildVenueDressing(v: VenueSpec): any[] {
     for (const [x, z] of [[-9, -3.2], [9, -3.2], [-9, 11.5], [9, 11.5], [-12, 4], [12, 4]] as const) {
       nodes.push(model(assets.hoopsLamp, { name: `neon-lamp-${x}-${z}`, targetHeight: 4.6 }).position(x, 0, z).rotate(0, Math.atan2(-x, 4 - z), 0));
     }
-    nodes.push(
-      lights.point({ name: "neon-fill-a", position: [-8, 5, 4], color: "#39d7ff", intensity: 1.6, distance: 40 }),
-      lights.point({ name: "neon-fill-b", position: [8, 5, 4], color: "#e26bff", intensity: 1.3, distance: 40 })
-    );
+    // H47-L3: sign rect lights (courtRigs.ts) replace the two neon point fills.
+    if (LOOK_ORIGINAL) {
+      nodes.push(
+        lights.point({ name: "neon-fill-a", position: [-8, 5, 4], color: "#39d7ff", intensity: 1.6, distance: 40 }),
+        lights.point({ name: "neon-fill-b", position: [8, 5, 4], color: "#e26bff", intensity: 1.3, distance: 40 })
+      );
+    }
   }
 
   if (v.id === "orbit") {
@@ -766,25 +845,32 @@ function buildVenueDressing(v: VenueSpec): any[] {
       const r = 120 + vrng() * 60;
       starT.push({ position: [Math.cos(a) * Math.cos(ph) * r, 20 + Math.sin(ph) * r, Math.sin(a) * Math.cos(ph) * r], scale: [0.5 + vrng(), 0.5 + vrng(), 0.5 + vrng()] });
     }
-    nodes.push((instances as any).sphere({ name: "starfield", transforms: starT, material: material.emissive({ color: "#cfe8ff", emissive: "#cfe8ff", emissiveIntensity: 1.4 }) }));
-    nodes.push(
-      lights.point({ name: "orbit-fill", position: [0, 12, 4], color: "#7dfcff", intensity: 2.0, distance: 60 }),
-      effects.lightCone({ name: "orbit-cone", position: [0, 10, -6], direction: [0, -1, 0.2], color: "#7dfcff", intensity: 0.25, length: 12, coneAngle: 0.5, softness: 0.6 } as any)
-    );
+    // H47-L1: the starfield HDRI is the sky now; the 140 emissive star spheres stay only on ?look=original.
+    if (LOOK_ORIGINAL) nodes.push((instances as any).sphere({ name: "starfield", transforms: starT, material: material.emissive({ color: "#cfe8ff", emissive: "#cfe8ff", emissiveIntensity: 1.4 }) }));
+    // H47-L3: station rib rect lights (courtRigs.ts) replace the orbit point fill.
+    if (LOOK_ORIGINAL) nodes.push(lights.point({ name: "orbit-fill", position: [0, 12, 4], color: "#7dfcff", intensity: 2.0, distance: 60 }));
+    nodes.push(effects.lightCone({ name: "orbit-cone", position: [0, 10, -6], direction: [0, -1, 0.2], color: "#7dfcff", intensity: 0.25, length: 12, coneAngle: 0.5, softness: 0.6 } as any));
   }
 
   if (v.id === "rucker") {
     for (const [x, z] of [[-11, -7], [11, -7], [-11, 13], [11, 13]] as const) {
-      nodes.push(
-        model(assets.hoopsFloodlight, { name: `flood-${x}-${z}`, targetHeight: 9.2 }).position(x, 0, z).rotate(0, Math.atan2(-x, 4 - z), 0),
-        lights.spot({ name: `flood-s-${x}-${z}`, position: [x * 0.92, 9.0, z * 0.92], target: [0, 0, 4], angle: 0.55, penumbra: 0.5, intensity: 1.9, color: "#ffd9b0", distance: 55 })
-      );
+      nodes.push(model(assets.hoopsFloodlight, { name: `flood-${x}-${z}`, targetHeight: 9.2 }).position(x, 0, z).rotate(0, Math.atan2(-x, 4 - z), 0));
+      // H47-L2: four sodium spots, two shadowed, from courtRigs.ts; the 4.6 warm-white spots stay on ?look=original.
+      if (LOOK_ORIGINAL) nodes.push(lights.spot({ name: `flood-s-${x}-${z}`, position: [x * 0.92, 9.0, z * 0.92], target: [0, 0, 4], angle: 0.55, penumbra: 0.5, intensity: 1.9, color: "#ffd9b0", distance: 55 }));
     }
     nodes.push(
       model(assets.hoopsScoreboard, { name: "scoreboard-rig", targetHeight: 5.4, castShadow: false }).position(0, 4.2, -12.5),
       primitives.box({ name: "scoreboard-glow", size: [6.4, 2.2, 0.24], material: material.emissive({ color: "#1a0f04", emissive: "#ff7a1a", emissiveIntensity: 0.5 }) }).position(0, 5.4, -12.3).runtime(game.runtimeNode("scoreboard-glow"))
     );
+    // H47-H1: SDF score on the scoreboard rig, rebuilt by syncHud when the score changes.
+    if (!LOOK_ORIGINAL) {
+      shownBoardScore = currentBoardScore();
+      nodes.push(scoreboardNode(shownBoardScore));
+    }
   }
+
+  // H47-H1: the court name painted on the far apron in the court's tag colour.
+  if (!LOOK_ORIGINAL) nodes.push(courtNameNode(v.label, COURT_RIGS[v.id].sprayTag.color, COURT_Z1 + 1.3));
 
   // Courtside dressing shared by all courts: ball rack and trophy case (no static sideline athlete clones)
   nodes.push(
@@ -801,6 +887,7 @@ function buildVenueDressing(v: VenueSpec): any[] {
 
 function buildCones(): any[] {
   const nodes: any[] = [];
+  if (POOLED_MARKERS) return buildMarkerPoolNodes();
   for (let i = 0; i < CONE_COUNT; i++) {
     nodes.push(
       primitives.cylinder({ name: `cone-${i}`, size: [0.34, 0.5, 0.34], material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 0.5 }) })
@@ -816,12 +903,32 @@ function buildCones(): any[] {
 }
 
 function buildScene(v: VenueSpec): any {
-  const lookOverrides = { fogDensityScale: 0, exposureEv: 0.16 };
-  const s = scene().background(v.bg);
-  if (QA_AO === "0" || QA_AO === "1") {
-    s.addMany(looks.nodes(v.look, lookOverrides).filter((n) => QA_AO === "1" || (n.toJSON() as { name?: string }).name !== "look ambient occlusion"));
+  const s = scene();
+  shownBoardScore = "";
+  if (LOOK_ORIGINAL) {
+    // ?look=original: the 4.6 look (one preset per court, fog off) for before/after pairs.
+    const lookOverrides = { fogDensityScale: 0, exposureEv: 0.16 };
+    s.background(v.bg);
+    if (QA_AO === "0" || QA_AO === "1") {
+      s.addMany(looks.nodes(v.look, lookOverrides).filter((n) => QA_AO === "1" || (n.toJSON() as { name?: string }).name !== "look ambient occlusion"));
+    } else {
+      s.add(looks.preset(v.look, lookOverrides));
+    }
   } else {
-    s.add(looks.preset(v.look, lookOverrides));
+    // H47-L1: the court's own rig (courtRigs.ts): catalogue HDRI drawn as the sky, one PCSS key, fog to the horizon,
+    // explicit AO (dropped by ?diag=1&qaAo=0), the court's post preset, grade and day/night bloom.
+    const rig = COURT_RIGS[v.id];
+    s.background(rig.fog.color).addMany(courtLookNodes(rig, { ao: QA_AO !== "0" }));
+    // H47-L2 / H47-L3: the court's practicals (sodium spots, tungsten bulb clusters, sign and rib rect lights) and the
+    // emissive lamp heads they belong to (one instanced draw per court, two at Manila).
+    s.addMany(courtPracticalNodes(rig)).addMany(courtLampNodes(rig));
+    // H47-L4 lens flares (Venice sun, Rucker floods), H47-E4 Preetham sky (Venice, Athens), H47-E2 rain, wet ground and
+    // the storm court's lightning light (reduced motion halves the rain; reduced flash keeps the lightning dark).
+    s.addMany(courtLensFlareNodes(rig)).addMany(courtSkyNodes(rig)).addMany(courtWeatherNodes(rig, BOOT_REDUCED_MOTION)).addMany(courtLightningNodes(rig));
+    // H47-V2: Rucker flood cones and haze, Manila roof-gap god rays and dust motes.
+    s.addMany(courtAtmosphereNodes(rig, BOOT_REDUCED_MOTION));
+    // H47-E3: Venice surf and the Shanghai river as real water (replacing the 4.6 planes).
+    s.addMany(courtWaterNodes(rig, BOOT_REDUCED_MOTION));
   }
   s
     .add(effects.contactShadows({ intensity: 0.7, length: 0.28 }))
@@ -871,12 +978,14 @@ const req = (id: string): AnyHandle => {
 };
 
 interface Rig {
-  root: AnyHandle; shadow: AnyHandle; ring: AnyHandle; aura: AnyHandle;
+  root: AnyHandle; shadow: AnyHandle | MarkerSlot; ring: AnyHandle | MarkerSlot; aura: AnyHandle | MarkerSlot;
 }
 let rigs: Rig[] = [];
 let refereeNode: AnyHandle;
 let ballNode: AnyHandle;
 let ballShadow: AnyHandle;
+/** H47-AN1: the glass shakes with the rim after a dunk or a hard rim hit (new look; a sine of game time, no RNG draw). */
+let backboardNode: AnyHandle;
 let rimHalo: AnyHandle;
 let rimNode: AnyHandle;
 let netTop: AnyHandle;
@@ -885,8 +994,17 @@ let netSkirt: AnyHandle;
 let scoreboardGlow: AnyHandle;
 let planetEarth: AnyHandle;
 let trailNodes: AnyHandle[] = [];
-let coneNodes: AnyHandle[] = [];
-let coneRingNodes: AnyHandle[] = [];
+/** H47-E2: the storm court's lightning light (absent on other courts and on ?look=original) and its last level. */
+let lightningNode: AnyHandle;
+let lightningLevel = 0;
+let coneNodes: (AnyHandle | MarkerSlot)[] = [];
+let coneRingNodes: (AnyHandle | MarkerSlot)[] = [];
+let markerPools: Record<"shadows" | "ringsHome" | "ringsAway" | "auras" | "cones" | "coneRings", MarkerPool> | undefined;
+/** H47-PF1: submit the pooled marker transforms once per rendered frame. */
+function flushMarkerPools(): void {
+  if (!markerPools) return;
+  for (const p of Object.values(markerPools)) p.flush();
+}
 let waverNodes: AnyHandle[] = [];
 
 const ROSTER_IDS = ["p0", "p1", "p2", "p3", "p4", "a0", "a1", "a2", "a3", "a4"] as const;
@@ -895,6 +1013,10 @@ const lastSpeedByActor = new Map<string, number>();
 const dribblePoseOn = new Set<string>();
 const livePoseOn = new Set<string>();
 const overlayPoseOn = new Set<string>();
+/** H47-AN1: smoothed head look-at angles per athlete while the override is on. */
+const headLookOn = new Map<string, HeadLookAngles>();
+/** H47-AN1 acceptance counters: look-at frames, and those whose yaw error to the ball is <= 25 deg. */
+const headLookStats = { frames: 0, within25: 0 };
 /** Per-handler palm solve handed from syncAthlete's pose to the ball hold branch. */
 interface DribbleAim { palm: Vec3; /** the palm as rendered last frame (forearm bone), when the sockets are live */ actual?: Vec3; shoulderY: number; t: number; moving: boolean }
 const dribbleAims = new Map<string, DribbleAim>();
@@ -1030,25 +1152,37 @@ function resolveHandles(): void {
   heldRig.clear();
   poseKindOf.clear();
   armRigs.clear();
-  rigs = ROSTER_IDS.map((id) => ({
+  markerPools = POOLED_MARKERS ? {
+    shadows: new MarkerPool(req("marker-shadows"), ROSTER_IDS.length),
+    ringsHome: new MarkerPool(req("marker-rings-home"), HOME_IDS.length, RING_ROT_HOME),
+    ringsAway: new MarkerPool(req("marker-rings-away"), AWAY_IDS.length, RING_ROT_AWAY),
+    auras: new MarkerPool(req("marker-auras"), ROSTER_IDS.length, [0, 0, 0], HIDDEN),
+    cones: new MarkerPool(req("marker-cones"), CONE_COUNT, [0, 0, 0], HIDDEN, false),
+    coneRings: new MarkerPool(req("marker-cone-rings"), CONE_COUNT, CONE_RING_ROT, HIDDEN, false)
+  } : undefined;
+  const mp = markerPools;
+  rigs = ROSTER_IDS.map((id, i) => ({
     root: req(id),
-    shadow: req(`${id}-shadow`),
-    ring: req(`${id}-ring`),
-    aura: req(`${id}-aura`)
+    shadow: mp ? mp.shadows.slot(i) : req(`${id}-shadow`),
+    ring: mp ? (id.startsWith("p") ? mp.ringsHome.slot(HOME_IDS.indexOf(id)) : mp.ringsAway.slot(AWAY_IDS.indexOf(id))) : req(`${id}-ring`),
+    aura: mp ? mp.auras.slot(i) : req(`${id}-aura`)
   }));
   refereeNode = req("referee");
   ballNode = req("ball-live");
   ballShadow = req("ball-shadow");
   rimHalo = req("rim-halo");
   rimNode = req("rim-assembly");
+  backboardNode = LOOK_ORIGINAL ? undefined : req("backboard-assembly");
   netTop = req("net-top");
   netBottom = req("net-bottom");
   netSkirt = req("net-skirt");
   scoreboardGlow = req("scoreboard-glow");
   planetEarth = req("planet-earth");
-  trailNodes = Array.from({ length: TRAIL_COUNT }, (_, i) => req(`ball-trail-${i}`));
-  coneNodes = Array.from({ length: CONE_COUNT }, (_, i) => req(`cone-${i}`));
-  coneRingNodes = Array.from({ length: CONE_COUNT }, (_, i) => req(`cone-ring-${i}`));
+  lightningNode = LOOK_ORIGINAL ? undefined : auraApp.nodes.get(LIGHTNING_NODE_ID) as AnyHandle;
+  lightningLevel = 0;
+  trailNodes = LOOK_ORIGINAL ? Array.from({ length: TRAIL_COUNT }, (_, i) => req(`ball-trail-${i}`)) : [];
+  coneNodes = Array.from({ length: CONE_COUNT }, (_, i) => mp ? mp.cones.slot(i) : req(`cone-${i}`));
+  coneRingNodes = Array.from({ length: CONE_COUNT }, (_, i) => mp ? mp.coneRings.slot(i) : req(`cone-ring-${i}`));
   waverNodes = Array.from({ length: CROWD_WAVERS }, (_, i) => req(`waver-${i}`));
 }
 resolveHandles();
@@ -1168,6 +1302,44 @@ const FX_KIND_MAP: Record<string, string> = {
   aura: "aura-burst", flash: "super-flash"
 };
 
+/**
+ * H47-V1: the juice table of the new look. Every event that draws bursts exactly one registered hoops kind (fxPack.ts
+ * `JUICE_FX`); counts and colours come from the preset, so only the kind changes here. ?look=original keeps the table
+ * above with the bound 4.6 kinds.
+ */
+const HOOPS_JUICE_EVENTS: typeof JUICE_EVENTS = Object.fromEntries(
+  Object.entries(JUICE_EVENTS).map(([ev, preset]) => {
+    const kind = JUICE_FX[ev];
+    return [ev, kind ? { ...preset, fx: { kind } } : { ...preset, fx: undefined }];
+  })
+);
+const HOOPS_KIND_SET: ReadonlySet<string> = new Set<string>(Object.values(JUICE_FX));
+
+/** Registers the hoops preset pack and (re)starts the ball ribbon on the mounted scene (after every setScene). */
+let ballTrail: { stop(o?: { immediate?: boolean }): void } | null = null;
+let ballTrailFire = false;
+function mountCourtFx(): void {
+  if (LOOK_ORIGINAL || !auraApp) return;
+  try { registerHoopsFx((auraApp as any).effects, { reducedFlash }); } catch { /* fx best-effort */ }
+  restartBallTrail(game_.jamFull);
+}
+function restartBallTrail(fire: boolean): void {
+  if (LOOK_ORIGINAL || !auraApp) return;
+  try {
+    ballTrail?.stop({ immediate: true });
+    ballTrail = (auraApp as any).effects?.trail?.("ball-live", ballTrailOptions(fire)) ?? null;
+    ballTrailFire = fire;
+  } catch { ballTrail = null; }
+}
+/** Burst one hoops kind at a juice position (wet courts swap ground dust for splashes; reduced motion halves it). */
+function hoopsBurst(kind: HoopsFxKind, position: Vec3, strength = 1): void {
+  try {
+    const k = hoopsFxKindFor(kind, COURT_RIGS[venue.id].weather.wetGround);
+    const opts = hoopsBurstOptions(k, { reducedMotion });
+    (auraApp as any).effects?.burst?.(k, position, strength === 1 ? opts : { ...opts, count: Math.max(1, Math.round((opts.count ?? 1) * strength)) });
+  } catch { /* fx best-effort */ }
+}
+
 function juiceFire(ev: string, at?: Record<string, unknown>): void {
   try { (juice as any)?.fire?.(ev, at); } catch { /* juice is best-effort */ }
 }
@@ -1194,8 +1366,10 @@ function setupSystems(): void {
   try {
     fxCtl = (game as any).effects({ app: auraApp, reducedMotion, reducedFlash });
   } catch { fxCtl = null; }
+  mountCourtFx();
   const fx = createFxParticlePass({
     burst: (kind: string, position: any, o: any) => {
+      if (HOOPS_KIND_SET.has(kind)) { hoopsBurst(kind as HoopsFxKind, position as Vec3); return; }
       fxSpawn(kind, position as Vec3, Math.max(0.2, (o?.count ?? 10) / 24), o?.color);
     },
     trail: () => {},
@@ -1231,7 +1405,7 @@ function setupSystems(): void {
   window.addEventListener("keydown", unlock, { once: true });
 
   juice = createJuice({
-    events: JUICE_EVENTS as any,
+    events: (LOOK_ORIGINAL ? JUICE_EVENTS : HOOPS_JUICE_EVENTS) as any,
     camera: (auraApp as any)?.camera as any,
     session: {
       reducedMotion,
@@ -1444,6 +1618,7 @@ function rebuildScene(): void {
   try {
     auraApp.setScene(buildScene(venue));
     resolveHandles();
+    mountCourtFx();
   } catch (e) {
     console.warn("[hoops] scene rebuild failed", e);
   }
@@ -1602,6 +1777,8 @@ function awardPoints(team: TeamId, pts: number, label: string): void {
     return;
   }
   if (team === "home") game_.scoreHome += pts; else game_.scoreAway += pts;
+  // H47-C1: FOV kick on every make (camera only; reduced motion keeps the lens still).
+  if (!LOOK_ORIGINAL && !reducedMotion) cam.punch = Math.max(cam.punch, MAKE_FOV_KICK);
   pushEvent("score", `${label} — ${team === "home" ? game_.homeSquad.name : game_.awaySquad.name} +${pts}`, "success", pts);
   const target = game_.target;
   const score = team === "home" ? game_.scoreHome : game_.scoreAway;
@@ -1647,6 +1824,10 @@ function endGame(winner: TeamId): void {
 
 function startMatch(mode: ModeId): void {
   game_.mode = mode;
+  jamDunkPending = false;
+  replayRing.clear();
+  sprayTags.clear();
+  broadcast.startIntro(venue.id);
   game_.scoreHome = 0;
   game_.scoreAway = 0;
   game_.matchT = 0;
@@ -1836,6 +2017,7 @@ function startDunk(a: AthleteState, kind: string): void {
     jamWrap?.classList.remove("full");
     juiceFire("jam", { position: [a.x, 2, a.z] });
     cue("fireIgnite");
+    jamDunkPending = true;
   } else {
     juiceFire("dunk", { position: [a.x, 2, a.z] });
   }
@@ -1869,6 +2051,13 @@ function finishDunk(a: AthleteState): void {
   game_.stats[a.team].dunks += 1;
   game_.jam = clamp(game_.jam + 0.22, 0, 1);
   juiceFire("dunk", { position: [RIM[0], RIM[1], RIM[2]] });
+  if (jamDunkPending) {
+    jamDunkPending = false;
+    if (!LOOK_ORIGINAL) {
+      try { sprayTags.stamp((auraApp as any).effects, COURT_RIGS[venue.id].sprayTag, [RIM[0], RIM[1], RIM[2]], game_.time); } catch { /* fx best-effort */ }
+    }
+    if (replayRing.size > 1 && broadcast.startReplay()) replayClip = replayRing.snapshot();
+  }
   netPulse = 1;
   rimShake = 1;
   pushEvent("dunk", `${a.dunkKind || "dunk"} — ${a.team === "home" ? game_.homeSquad.name : game_.awaySquad.name}`, "success");
@@ -2947,6 +3136,7 @@ function syncAthlete(a: AthleteState, dt: number): void {
     dribblePoseOn.delete(a.nodeId);
     dribbleAims.delete(a.nodeId);
   }
+  syncHeadLook(a, anim, holdsBall, dt);
 
   // Ground rings & shadow
   r.shadow?.setPosition(a.x, 0.012, a.z).setScale([1 - a.y * 0.14, 1, 1 - a.y * 0.14]).setVisible(true);
@@ -2955,6 +3145,34 @@ function syncAthlete(a: AthleteState, dt: number): void {
   // Jam aura
   const auraOn = game_.jamFull && a.team === "home" && a.hasBall;
   r.aura?.setPosition(a.x, a.y + 0.95, a.z).setScale(auraOn ? [0.9, 1.9, 0.9] : HIDDEN).setVisible(auraOn); // fit-grounding: ok (a centre-based cylinder primitive)
+}
+
+/**
+ * H47-AN1 head look-at (new look only): an off-ball athlete that is not in a
+ * shot, dunk, jump, stumble or action clip turns its head toward the ball
+ * through the engine's last-in-order pose override. The ball handler keeps the
+ * dribble pose's head lean (it already looks down at the ball), and every
+ * other case clears the override so the clip owns the head again.
+ */
+function syncHeadLook(a: AthleteState, anim: any, holdsBall: boolean, dt: number): void {
+  const pose = anim?.pose;
+  if (typeof pose?.setLocalRotation !== "function") return;
+  const wants = !LOOK_ORIGINAL && !holdsBall && !a.shooting && a.dunkT <= 0 && a.jumpT <= 0 &&
+    a.stumble <= 0 && a.actionUntil <= 0;
+  const head = wants ? anim.socket?.("Head") : undefined;
+  const neck = wants ? anim.socket?.("Neck") : undefined;
+  const parent = neck?.valid === true ? neck : wants ? anim.socket?.("Chest") : undefined;
+  if (!wants || head?.valid !== true || parent?.valid !== true) {
+    if (headLookOn.delete(a.nodeId)) pose.clear?.("Head");
+    return;
+  }
+  const target = worldToActor([ball.x, ball.y, ball.z], a.x, a.y, a.z, a.yaw);
+  const goal = headLookAngles(mat4Translation(head.worldMatrix()), target, qFromMat4(parent.worldMatrix()));
+  const next = stepHeadLook(headLookOn.get(a.nodeId) ?? { yaw: 0, pitch: 0 }, goal, dt, reducedMotion);
+  headLookOn.set(a.nodeId, next);
+  headLookStats.frames++;
+  if (Math.abs(goal.yaw - next.yaw) <= (25 * Math.PI) / 180) headLookStats.within25++;
+  pose.setLocalRotation("Head", headLookQuat(next));
 }
 
 /* ------------------------------------------------------------------ *
@@ -2974,7 +3192,8 @@ function cameraObstacles(v: VenueSpec): readonly (readonly [number, number, numb
   switch (v.id) {
     // floodlights are fitted to 8.6-9.2 m tall, which makes the model about 3.2 m wide
     case "rucker": return [[-11, -7, 2.2], [11, -7, 2.2], [-11, 13, 2.2], [11, 13, 2.2]];
-    case "manila": return [[-13, -4, 2.2], [13, -4, 2.2], [-13, 12, 2.2], [13, 12, 2.2]];
+    // the Manila floodlights stand only on ?look=original (H47-L2 hangs bulb strings under the roof instead)
+    case "manila": return LOOK_ORIGINAL ? [[-13, -4, 2.2], [13, -4, 2.2], [-13, 12, 2.2], [13, 12, 2.2]] : [];
     case "shanghai": return [[-9, -3.2, 1.8], [9, -3.2, 1.8], [-9, 11.5, 1.8], [9, 11.5, 1.8], [-12, 4, 1.8], [12, 4, 1.8]];
     case "venice": return [[-12, -8, 2.2], [12.5, -10, 2.2], [-14, 12, 2.2], [14, 14, 2.2], [-9, 16, 2.2]];
     default: return [];
@@ -3033,10 +3252,12 @@ function updateCamera(dt: number): void {
     // framed instead of leaving the tighter view.
     const shotNow = game_.phase === "shot" || game_.phase === "score";
     if (shotNow) {
+      // H47-C1: long-lens shot cam on the new look (fov 34, 2 m lower, farther out); ?look=original keeps 4.6.
+      const so = LOOK_ORIGINAL ? [7.6, 4.9, 5.2] : LIVE_CAM.shot.offset;
       want = {
-        eye: [ball.x + 7.6, 4.9 + cam.punch * 0.2, ball.z + 5.2],
+        eye: [ball.x + so[0]!, so[1]! + cam.punch * 0.2, ball.z + so[2]!],
         target: [ball.x - 0.2, Math.max(1.5, ball.y), ball.z - 0.8],
-        fov: 44 + cam.punch
+        fov: (LOOK_ORIGINAL ? 44 : LIVE_CAM.shot.fov) + cam.punch
       };
     } else {
       const hx = holder?.x ?? ball.x;
@@ -3048,11 +3269,14 @@ function updateCamera(dt: number): void {
           const at = (lx: number, ly: number, lz: number): Vec3 => [holder.x + cy * lx + sn * lz, ly, holder.z - sn * lx + cy * lz];
           return { eye: at(-1.9, 1.8, 2.3), target: at(-0.05, 0.75, 0.2), fov: 40 };
         })()
-        : {
-          eye: [hx + 5.6, 3.0, hz + 4.2],
-          target: [hx - 0.2, 1.1, hz - 0.9],
-          fov: 38 + cam.punch
-        };
+        : LOOK_ORIGINAL
+          ? { eye: [hx + 5.6, 3.0, hz + 4.2], target: [hx - 0.2, 1.1, hz - 0.9], fov: 38 + cam.punch }
+          // H47-C1: long-lens chase (fov 32, eye 0.8 m lower and farther out)
+          : {
+            eye: [hx + LIVE_CAM.chase.offset[0], LIVE_CAM.chase.offset[1], hz + LIVE_CAM.chase.offset[2]],
+            target: [hx + LIVE_CAM.chase.targetOffset[0], LIVE_CAM.chase.targetOffset[1], hz + LIVE_CAM.chase.targetOffset[2]],
+            fov: LIVE_CAM.chase.fov + cam.punch
+          };
     }
   }
   // The low chase eye (handler + (5.6, 3.0, 4.2)) can look straight through a courtside pole: the Rucker floodlight at
@@ -3083,7 +3307,23 @@ function setStyle(node: HTMLElement | null | undefined, prop: "width" | "left" |
   node.style[prop] = value;
 }
 
+/** H47-H1: the score text the in-world board shows (equal to the DOM score bug). */
+function currentBoardScore(): string {
+  return scoreboardText(game_.scoreHome, game_.scoreAway, game_.mode === "dunklab" || game_.mode === "handleslab");
+}
+function syncBoardScore(): void {
+  if (LOOK_ORIGINAL || venue.id !== "rucker" || !auraApp) return;
+  const text = currentBoardScore();
+  if (text === shownBoardScore) return;
+  try {
+    const nodes = auraApp.nodes as unknown as { remove(id: string): boolean; add(node: unknown): unknown };
+    nodes.remove(SCOREBOARD_NODE_ID);
+    nodes.add(scoreboardNode(text));
+    shownBoardScore = text;
+  } catch { /* in-world score best-effort */ }
+}
 function syncHud(): void {
+  syncBoardScore();
   const lab = game_.mode === "dunklab" || game_.mode === "handleslab";
   setText(hudHomeName, game_.homeSquad.short);
   setText(hudAwayName, lab ? "LAB" : game_.awaySquad.short);
@@ -3164,11 +3404,29 @@ function handProbe(): Record<string, unknown> | null {
  */
 let lastPublishAt = -Infinity;
 let lastPublishedPhase = "";
+/** QA crops for E-I's luma capture: feet of the controlled athlete, the ball, the rim, the court floor and the lamp. */
+function publishQaCrops(): void {
+  const me = controlledAthlete() ?? athletes[0];
+  const subjects: QaCropSubject[] = [
+    { name: "floor", at: [0, 0, 4], half: [3, 2] },
+    { name: "rim", at: [RIM[0], RIM[1], RIM[2]], half: [0.9, 0.7] },
+    { name: "ball", at: [ball.x, ball.y, ball.z], half: [0.35, 0.35] }
+  ];
+  if (me) subjects.push({ name: "feet", at: [me.x, 0.15, me.z], half: [0.6, 0.25] });
+  const lamp = COURT_RIGS[venue.id].practicals[0];
+  if (lamp && !LOOK_ORIGINAL) subjects.push({ name: "lamp", at: lamp.position, half: [0.8, 0.6] });
+  const canvas = document.querySelector<HTMLCanvasElement>("#app canvas");
+  const aspect = canvas && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : 16 / 9;
+  const w = window as unknown as { __AURA_QA__?: Record<string, unknown> };
+  w.__AURA_QA__ = { ...(w.__AURA_QA__ ?? {}), crops: projectCrops(cam.eye, cam.target, cam.fov, aspect, subjects) };
+}
+
 function publishEvidence(force = false): void {
   const nowMs = performance.now();
   if (!force && framesRendered % 10 !== 0 && nowMs - lastPublishAt < 250 && game_.phase === lastPublishedPhase) return;
   lastPublishAt = nowMs;
   lastPublishedPhase = game_.phase;
+  try { publishQaCrops(); } catch { /* QA crops best-effort */ }
   const holder = holderAthlete();
   const evidence = {
     route: "showcase-aura-hoops-3d",
@@ -3177,6 +3435,10 @@ function publishEvidence(force = false): void {
     framesRendered,
     frameErrors: frameBoundary.stats(),
     shotStats: { ...shotStats },
+    // H47-AN1: off-ball head look-at (frames, within25 = yaw error <= 25 deg; acceptance wants >= 80%)
+    headLook: { active: headLookOn.size, ...headLookStats },
+    // H47-H1: the in-world board text (Rucker, new look) next to the DOM score it must equal
+    inWorldScore: shownBoardScore ? { board: shownBoardScore, dom: currentBoardScore() } : null,
     footSlide: footEvidence(),
     autopilot: game_.autopilot,
     look: venue.look,
@@ -3251,6 +3513,7 @@ function frame(dtRaw: number): void {
   if (jamFlashT > 0) { jamFlashT = Math.max(0, jamFlashT - dt * 2.4); if (jamFlash) jamFlash.style.opacity = jamFlashT.toFixed(2); }
   if (netPulse > 0) netPulse -= dt * 3;
   rimShake = decayRimShake(rimShake, dt);
+  if (!LOOK_ORIGINAL) sprayTags.prune(game_.time);
   if (crowdLevel > 1) {
     crowdLevel = Math.max(1, crowdLevel - dt * 0.6);
     if (framesRendered % 12 === 0 || crowdLevel === 1) { try { (audio as any)?.setCueLevel?.("crowd", { volume: crowdLevel }, 200); } catch { /* best-effort */ } }
@@ -3417,7 +3680,17 @@ function frame(dtRaw: number): void {
   }
   placeBall(ball.x, ball.y, ball.z);
   ballShadow?.setScale([clamp(1.1 - ball.y * 0.12, 0.3, 1.05), 1, clamp(1.1 - ball.y * 0.12, 0.3, 1.05)]).setVisible(true);
-  for (let i = 0; i < TRAIL_COUNT; i++) {
+  // H47-E2: Shanghai lightning, a double strike every ~40 s of game time (reduced flash keeps it dark).
+  if (lightningNode) {
+    const level = lightningFlash(COURT_RIGS[venue.id], game_.time, reducedFlash);
+    if (level !== lightningLevel) {
+      lightningLevel = level;
+      try { (lightningNode as any).setLight?.({ intensity: level * LIGHTNING_PEAK }); } catch { /* lighting flag off */ }
+    }
+  }
+  // H47-V1: the ribbon turns fire-coloured at a full Jam Meter (a trail's options are fixed, so it restarts).
+  if (!LOOK_ORIGINAL && ballTrailFire !== game_.jamFull) restartBallTrail(game_.jamFull);
+  for (let i = 0; i < trailNodes.length; i++) {
     const h = trailNodes[i];
     const pt = trailHist[trailHist.length - 1 - i];
     if (h && pt && (ball.state === "flight" || ball.state === "pass") && !frozen) {
@@ -3432,6 +3705,10 @@ function frame(dtRaw: number): void {
   netSkirt?.setScale([1 + netPulse * 0.3, 1 + netPulse * 0.55, 1 + netPulse * 0.3]);
   rimHalo?.setScale([1 + rimShake * 0.12, 1 + rimShake * 0.12, 1]);
   rimNode?.setPosition(RIM[0] + (fxRng() - 0.5) * rimShake * 0.03, RIM[1] + rimShake * 0.02, RIM[2]);
+  if (backboardNode) {
+    const shake = reducedMotion ? 0 : rimShake;
+    backboardNode.setPosition(Math.sin(game_.time * 61) * shake * 0.018, 3.35 + Math.sin(game_.time * 47) * shake * 0.012, BOARD_Z);
+  }
   planetEarth?.setRotation(0, game_.time * 0.02, 0);
 
   // Cones
@@ -3491,6 +3768,7 @@ function recordStep(): void {
     pushShown(sh, a.x, a.y, a.z, a.yaw);
   }
   pushShown(shownBall, ball.x, ball.y, ball.z, 0);
+  if (!BROADCAST_OFF) replayRing.push({ time: game_.time, athletes: athletes.map((a) => ({ x: a.x, y: a.y, z: a.z, yaw: a.yaw })), ball: [ball.x, ball.y, ball.z] });
   pushShown(shownEye, cam.eye[0], cam.eye[1], cam.eye[2], cam.fov);
   pushShown(shownTarget, cam.target[0], cam.target[1], cam.target[2], 0);
 }
@@ -3535,6 +3813,71 @@ const simLoop = createFixedStepLoop({
   cancel: () => undefined
 });
 
+/** Draw one replay frame: recorded athlete and ball poses, the low rim-side camera. */
+function drawReplayFrame(t: number): BroadcastV3 | null {
+  const f = replayClip?.at(replaySourceTime(t));
+  if (!f) return null;
+  f.athletes.forEach((p, i) => {
+    const r = rigs[i];
+    if (!r?.root) return;
+    r.root.setPosition(p.x, p.y, p.z).setRotation(0, p.yaw, 0);
+    r.shadow?.setPosition(p.x, 0.012, p.z);
+    r.ring?.setPosition(p.x, 0.018, p.z);
+    r.aura?.setPosition(p.x, p.y + 0.95, p.z); // fit-grounding: ok (a centre-based cylinder primitive)
+  });
+  placeBall(f.ball[0], f.ball[1], f.ball[2]);
+  return f.ball;
+}
+/** DOF (focused on the subject) and motion blur only while a broadcast shot runs (H47-P2, E-C runtime toggles). */
+function setBroadcastPost(on: boolean, eye?: BroadcastV3, focus?: BroadcastV3): void {
+  const post = (auraApp as any)?.post;
+  if (!post?.setEffectEnabled) return;
+  try {
+    const want = broadcast.post(eye, focus);
+    if (on && want.focusDistance !== undefined) post.setEffect("depthOfField", { focusDistance: want.focusDistance, aperture: 0.5, maxBlur: 4 });
+    if (on !== broadcastPostOn) {
+      post.setEffectEnabled("depthOfField", on && want.depthOfField);
+      post.setEffectEnabled("motionBlur", on && want.motionBlur);
+      broadcastPostOn = on;
+    }
+  } catch { /* post toggles best-effort */ }
+}
+/**
+ * H47-C1: run the intro rail or the Jam-dunk replay this frame. The sim is held (no steps) while a shot runs; returns false
+ * once nothing runs, and the live camera and sim resume on the same frame.
+ */
+let broadcastRan = false;
+function runBroadcast(dt: number): boolean {
+  if (!broadcast.active && !broadcastRan) return false;
+  const shot = broadcast.active ? broadcast.update(dt) : null;
+  broadcastRan = shot !== null;
+  if (!shot) {
+    letterbox?.show(false);
+    setBroadcastPost(false);
+    replayClip = null;
+    present(0.99);
+    simLoop.resetAccumulator();
+    return false;
+  }
+  letterbox ??= createLetterbox(document.getElementById("game-stage") ?? document.body);
+  letterbox.show(true);
+  let pose;
+  if (shot.kind === "intro") pose = railPose(shot.court, shot.t);
+  else {
+    const b = drawReplayFrame(shot.t) ?? [ball.x, ball.y, ball.z] as BroadcastV3;
+    pose = replayPose(shot.t, b, [RIM[0], RIM[1], RIM[2]]);
+  }
+  setBroadcastPost(true, pose.eye, shot.kind === "intro" ? pose.target : [ball.x, ball.y, ball.z]);
+  try { (auraApp as any).camera?.setPose?.({ position: pose.eye, target: pose.target, fov: pose.fov }); } catch { /* camera ext optional */ }
+  return true;
+}
+/** Any key or pointer skips the running intro or replay; the next frame is live. */
+if (typeof window !== "undefined") {
+  const skipBroadcast = () => { if (broadcast.active) broadcast.skip(); };
+  window.addEventListener("keydown", skipBroadcast, { capture: true });
+  window.addEventListener("pointerdown", skipBroadcast, { capture: true });
+}
+
 const frameBoundary = createFrameErrorBoundary({
   onFatal: () => { if (renderError) (renderError as HTMLElement).hidden = false; }
 });
@@ -3558,8 +3901,10 @@ auraApp.onFrame(({ dt }) => {
       frame(dt);
       return;
     }
+    if (runBroadcast(dt)) return;
     simLoop.tick(performance.now());
   });
+  frameBoundary.run(flushMarkerPools);
 });
 
 /* ------------------------------------------------------------------ *
@@ -3573,8 +3918,10 @@ function setVenue(vId: VenueId, silent = false): void {
   document.querySelectorAll<HTMLButtonElement>("[data-court-menu]").forEach((b) => b.classList.toggle("active", b.dataset.courtMenu === vId));
   if (changed) {
     try {
+      sprayTags.clear();
       auraApp.setScene(buildScene(venue));
       resolveHandles();
+      mountCourtFx();
     } catch (e) {
       console.warn("[hoops] venue swap failed", e);
     }

@@ -1,0 +1,18 @@
+{
+  "schema": "gu47.budget/1",
+  "slug": "aura-hoops-3d",
+  "budget": { "desktopHighDraws": 320, "desktopHighDrawsAim": 300, "mediumDraws": 240, "triangles": 1200000, "gpuTextureMB": 160 },
+  "before": {
+    "source": "evidence/aura-hoops-3d/audit-fix-2026-10-29/after-courts/meta.jsonl (commit 273a092e6, settle-60s, software WebGL2, 1280x720)",
+    "rows": [
+      { "court": "rucker", "drawCalls": 344, "mean": 80.98, "p95": 178, "darkFrac": 0.0003, "clipFrac": 0 },
+      { "court": "venice", "drawCalls": 347, "mean": 122.22, "p95": 180, "darkFrac": 0, "clipFrac": 0 },
+      { "court": "athens", "drawCalls": 328, "mean": 110.22, "p95": 178, "darkFrac": 0, "clipFrac": 0 },
+      { "court": "manila", "drawCalls": 280, "mean": 93.13, "p95": 173, "darkFrac": 0.0001, "clipFrac": 0 },
+      { "court": "shanghai", "drawCalls": 341, "mean": 54.29, "p95": 147, "darkFrac": 0.2193, "clipFrac": 0 },
+      { "court": "orbit", "drawCalls": 278, "mean": 113.26, "p95": 159, "darkFrac": 0.0112, "clipFrac": 0 }
+    ]
+  },
+  "expectedDelta": "see docs/prds/game-upgrades-47/lanes/g07.md (per-row draw deltas)",
+  "after": null
+}

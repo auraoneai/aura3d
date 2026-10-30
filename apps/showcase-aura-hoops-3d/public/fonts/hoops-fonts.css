@@ -1,0 +1,6 @@
+/* Aura Hoops 3D HUD faces (GU47 H47-H1), self-hosted licensed copies:
+ * Calibre 400/600 (Klim Type Foundry) from packages/game/src/fonts (E-J sports-broadcast theme; NOTICE.txt there);
+ * TT Commons Pro Mono 400 (TypeType) from public/fonts/tt-commons-mono. */
+@font-face { font-family: "Hoops Calibre"; src: url("/fonts/hoops-calibre-400.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Hoops Calibre"; src: url("/fonts/hoops-calibre-600.woff2") format("woff2"); font-weight: 600 900; font-style: normal; font-display: swap; }
+@font-face { font-family: "Hoops Mono"; src: url("/fonts/hoops-tt-commons-pro-mono-400.woff2") format("woff2"); font-weight: 400 700; font-style: normal; font-display: swap; }
