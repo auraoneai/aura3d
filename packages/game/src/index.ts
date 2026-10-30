@@ -150,6 +150,8 @@ export { createRumbleDriver } from "./juice/rumble.js";
 export type { RumbleDriverDeps } from "./juice/rumble.js";
 export { createFxParticlePass } from "./juice/fxParticlePass.js";
 export type { FxPassEffects, FxParticlePass } from "./juice/fxParticlePass.js";
+export { audioReactive } from "./juice/audioReactive.js";
+export type { AudioReactive, AudioReactiveOptions, AudioReactiveSource } from "./juice/audioReactive.js";
 export {
   FX_TIER_LIVE_CAP,
   FX_PRESETS,
@@ -172,7 +174,7 @@ export type { SfxId, SfxPack } from "./sfx";
 
 // PRD-09 Phase 4 — HUD surface (§7.7, §17).
 export { mountHud } from "./hud/HudKit.js";
-export { HUD_THEMES, HUD_FONT_FACES } from "./hud/themes.js";
+export { HUD_THEMES, HUD_FONT_FACES, hudThemeFontFaces } from "./hud/themes.js";
 export { screenFraction } from "./hud/screenFraction.js";
 export { compassBearing, compassRotationDeg, updateCompass } from "./hud/compass.js";
 export type { CompassPoint, CompassNeedle } from "./hud/compass.js";
@@ -187,7 +189,7 @@ export type {
   HudKitDeps,
   Vec3Like as HudVec3Like
 } from "./hud/HudKit.js";
-export type { HudThemePreset, HudThemeVars } from "./hud/themes.js";
+export type { HudThemePreset, HudThemeVars, HudFontFace } from "./hud/themes.js";
 export type {
   HudAnchor,
   HudWidgetBase,

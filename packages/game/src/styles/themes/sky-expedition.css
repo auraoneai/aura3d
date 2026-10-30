@@ -1,0 +1,15 @@
+/* §7.7 theme "sky-expedition" — mirror of HUD_THEMES["sky-expedition"] in hud/themes.ts (runtime source of truth). */
+.a3g-hud.a3g-theme-sky-expedition {
+  --a3g-font: "A3G Roobert","Roobert",Arial,sans-serif;
+  --a3g-font-display: "A3G Roobert","Roobert",Arial,sans-serif;
+  --a3g-fg: #13365e;
+  --a3g-fg-dim: #3f5f84;
+  --a3g-accent: #c45f0c;
+  --a3g-accent2: #2f6fb8;
+  --a3g-warn: #934307;
+  --a3g-danger: #a82c25;
+  --a3g-bg: rgba(244,249,255,0.9);
+  --a3g-edge: rgba(47,111,184,0.38);
+  --a3g-glow: 0 2px 6px rgba(19,54,94,0.35);
+  --a3g-radius: 12px;
+}

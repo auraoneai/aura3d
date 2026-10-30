@@ -1,6 +1,7 @@
 /* §7.7 theme "fighting" — mirror of HUD_THEMES["fighting"] in hud/themes.ts (runtime source of truth). */
 .a3g-hud.a3g-theme-fighting {
-  --a3g-font: "A3G Russo One","Russo One",sans-serif;
+  --a3g-font: "A3G Untitled Sans","Untitled Sans",Arial,sans-serif;
+  --a3g-font-display: "A3G Untitled Sans","Untitled Sans",Arial,sans-serif;
   --a3g-fg: #fff6e8;
   --a3g-fg-dim: #d9c9a8;
   --a3g-accent: #ffcc00;

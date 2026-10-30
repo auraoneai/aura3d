@@ -2,7 +2,9 @@
    --a3g-* custom properties the HUD themes fill in during phase 2. */
 
 :root {
-  --a3g-font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Licensed shell face (GU47 WP-10, PRD D9): the plain HUD theme's Graphik
+     stack (hud/themes.ts); Arial is only the metric fallback. */
+  --a3g-font: "A3G Graphik", "Graphik", "Graphik Web", Arial, sans-serif;
   --a3g-fg: #f4f6fb;
   --a3g-bg: #0b0d12;
   --a3g-accent: #54d1ff;
