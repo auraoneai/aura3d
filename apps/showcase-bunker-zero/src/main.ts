@@ -34,6 +34,7 @@ import { buildLightRig, createLightRigDriver, type QualityTierName, type RigLigh
 import { BZ_FLOOR_TEXTURES, bunkerTexture } from "./art/textures";
 import { damageArcDeg, deathFade, deathRoll, descentSeconds, doorOffset, reloadDip, viewmodelSway } from "./art/motion";
 import { BZ_VFX_EVENTS, atmosphereEmitters, registerBunkerVfx, type BunkerVfxKind } from "./art/vfx";
+import { BZ_CA_PULSE, caPulseLevel, lutOfSlot, lutUrlOfSlot } from "./art/lut";
 import { HATCH_BACKDROP, HATCH_COLLAR, hatchBackdrop, hatchCeiling, hatchCollar, hatchShaftSpec, shaftOnSlot } from "./art/hatch";
 
 installBlackFrameGuard();
@@ -56,6 +57,9 @@ const LOOK_ID = "bunker-practicals" as const;
 const BOOT_FLOOR = parseFloorParam(bootParams);
 /** The floor slot the scene mounts posed for (the rig is re-aimed per floor at runtime). */
 const BOOT_SLOT = BOOT_FLOOR?.slot ?? 0;
+/** BZ-18: `?lut=0` turns the per-floor LUT off (the LUT on/off A/B); cosmetic only. */
+const LUT_ON = bootParams.get("lut") !== "0";
+const floorLut = (slot: number) => (LUT_ON ? lutOfSlot(slot) : null);
 const EYE = 1.55;
 /**
  * World x-offset between floor slots. All floors share the origin now that only the active floor is visible (C18). (The black
@@ -455,8 +459,12 @@ function buildScene() {
     .add(effects.bloom({ threshold: BZ_POST.bloom.threshold, intensity: BZ_POST.bloom.intensity }))
     .add(effects.colorGrade({
       contrast: BZ_POST.grade.contrast, saturation: BZ_POST.grade.saturation,
-      temperature: boot.grade.temperature, tint: boot.grade.tint
+      temperature: boot.grade.temperature, tint: boot.grade.tint,
+      // BZ-18: the floor's split-tone LUT (swapped per floor by applyFloorLook)
+      ...(floorLut(BOOT_SLOT) ? { lut: floorLut(BOOT_SLOT)!, lutIntensity: 1 } : {})
     }))
+    // BZ-18: chromatic aberration at rest 0, pulsed on heavy hits (S10; the engine drops it on Low)
+    .add(effects.chromaticAberration({ intensity: 0 }))
     // BZ-07: the moon shaft through the F6 hatch (S4 god rays, Medium tier and up); disabled off F6 by applyFloorLook.
     .add(effects.volumetricFog(hatchShaftSpec(lookOfSlot(5).fog.density)))
     .add(effects.vignette({ intensity: BZ_POST.vignette }))
@@ -598,7 +606,8 @@ function applyFloorLook(slot: number, transitionSeconds = 0) {
   try { app.atmosphere?.setFog({ color: look.fog.color, density: look.fog.density }, { transitionSeconds }); } catch { /* fog runtime not mounted */ }
   try { app.lighting?.setEnvironmentIntensity(look.environmentIntensity / BZ_ENV_INTENSITY); } catch { /* lighting runtime not mounted */ }
   try { app.atmosphere?.setWetness(BZ_WETNESS[slot] ?? 0, { transitionSeconds }); } catch { /* wetness not mounted */ }
-  try { app.post?.setEffect("colorGrade", { temperature: look.grade.temperature, tint: look.grade.tint }); } catch { /* post runtime not mounted */ }
+  const lut = floorLut(slot);
+  try { app.post?.setEffect("colorGrade", { temperature: look.grade.temperature, tint: look.grade.tint, lut: lut ? lutUrlOfSlot(slot) : "", lutIntensity: lut ? 1 : 0 }); } catch { /* post runtime not mounted */ }
   try { app.post?.setEffectEnabled("volumetricFog", shaftOnSlot(slot)); } catch { /* post runtime not mounted */ }
   document.documentElement.style.setProperty("--bz-lamp", look.lamp.color);
   startAtmosphere(slot);
@@ -637,6 +646,15 @@ function fireVfx(event: keyof typeof BZ_VFX_EVENTS, at: [number, number, number]
 const seenFx = new WeakSet<object>();
 const firstSight = (o: object) => { if (seenFx.has(o)) return false; seenFx.add(o); return true; };
 let muzzleWasLit = false;
+/** BZ-18: wall time of the last heavy hit and the CA level last sent (only changes are pushed to the post surface). */
+let caHitAt = -1e9;
+let caSent = 0;
+function tickCaPulse(now: number) {
+  const level = caPulseLevel((now - caHitAt) / 1000, reducedFlash());
+  if (level === caSent) return;
+  caSent = level;
+  try { app.post?.setEffect("chromaticAberration", { intensity: level }); } catch { /* post runtime not mounted */ }
+}
 let deadAt = -1;
 let deathFadeLevel = 0;
 /** BZ-15: a door slides along x when its open neighbours are north/south (the frame spans x). */
@@ -1309,6 +1327,7 @@ app.onFrame(({ dt }) => {
   bannerT -= wallDt;
   if (bannerT <= 0) elBanner.classList.remove("show");
   if (mapOpen) { mapDrawT -= wallDt; if (mapDrawT <= 0) { mapDrawT = 0.2; drawMap(); } }
+  tickCaPulse(now);
 });
 
 // ---------------------------------------------------------------------------
@@ -1318,7 +1337,7 @@ function handleEvent(ev: string) {
     case "fire": cue(a === "pistol" ? "pistol" : a === "mg" ? "mg" : a === "rocket" ? "rocket" : a === "dry" ? "dry" : "knife"); mg.juice?.fire("fire"); break;
     case "hit": cue("hit"); elCross.classList.add("hit"); setTimeout(() => elCross.classList.remove("hit"), 90); break;
     case "kill": cue("kill"); mg.juice?.fire("kill"); feed(`kill confirmed — ${a}`); break;
-    case "hurt": cue("hurt"); mg.juice?.fire("hurt"); break;
+    case "hurt": cue("hurt"); mg.juice?.fire("hurt"); if (Number(a) >= BZ_CA_PULSE.minDamage) caHitAt = performance.now(); break;
     case "dog": cue("bite"); break;
     case "step": cue("step"); break;
     case "secret": cue("secret"); mg.juice?.fire("secret"); feed("push-wall revealed a secret"); eventVfx("push-wall"); break;
