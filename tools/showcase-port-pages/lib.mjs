@@ -43,7 +43,7 @@ const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
  *     and after the game mounts its controls, and
  *  2. fades out on the first key press or pointer press outside it, so it never covers play, and
  *  3. carries `no-steer`, so a press on it does not also steer or start the game (Chroma Roll reads that class).
- * pickCreditSpot is pure so tests can drive it; the page runs the same source (Function.prototype.toString).
+ * pickCreditSpot is pure so tests can drive it; the page runs the same source (read from this file).
  */
 export function pickCreditSpot(view, size, obstacles, margin) {
   var m = margin == null ? 8 : margin;
@@ -96,7 +96,15 @@ export function pickCreditSpot(view, size, obstacles, margin) {
 }
 
 const CREDIT_CONTROLS = "button,a[href],input,select,textarea,[role=button],[role=slider],.no-steer,[data-touch],[class*=touch],[class*=joystick],[class*=joy-],[class*=dpad],[id*=touch],[id*=joystick],[id$=-pad],[id$=-stick]";
-const creditScript = () => `(function(){var c=document.currentScript&&document.currentScript.parentElement;if(!c)return;var pick=${pickCreditSpot.toString()};` +
+// The page source is read from this file, not from Function.prototype.toString: test runners transform modules
+// (vitest adds semicolons), so toString() would make the composed page depend on who imported this file.
+const PICK_CREDIT_SPOT_SOURCE = (() => {
+  const text = readFileSync(fileURLToPath(import.meta.url), "utf8");
+  const start = text.indexOf("function pickCreditSpot(");
+  const end = text.indexOf("\n}\n", start);
+  return text.slice(start, end + 2);
+})();
+const creditScript = () => `(function(){var c=document.currentScript&&document.currentScript.parentElement;if(!c)return;var pick=${PICK_CREDIT_SPOT_SOURCE};` +
   `function obstacles(){var out=[],vw=innerWidth,vh=innerHeight;document.querySelectorAll("body *").forEach(function(el){if(c.contains(el)||el.contains(c)||el.tagName==="CANVAS"||el.tagName==="SCRIPT"||el.tagName==="STYLE")return;var s=getComputedStyle(el);var control=el.matches(${JSON.stringify(CREDIT_CONTROLS)});if(!control&&s.position!=="fixed"&&s.position!=="absolute"&&s.position!=="sticky")return;if(s.visibility==="hidden"||s.display==="none"||+s.opacity===0)return;var r=el.getBoundingClientRect();if(r.width<1||r.height<1||r.width*r.height>vw*vh*0.5)return;out.push({x:r.left,y:r.top,w:r.width,h:r.height});});return out;}` +
   `function place(){if(c.classList.contains("is-hidden"))return;var r=c.getBoundingClientRect(),p=pick({w:innerWidth,h:innerHeight},{w:r.width,h:r.height},obstacles(),8).spot;["left","right","top","bottom"].forEach(function(k){c.style[k]=p[k]==null?"auto":p[k]+"px";});c.dataset.spot=(p.top!=null?"top":"bottom")+"-"+(p.left!=null?"left":"right");}` +
   `function hide(e){if(e&&e.type==="keydown"&&(e.key==="Tab"||e.key==="Shift"))return;if(e&&e.target&&e.target.nodeType===1&&c.contains(e.target))return;c.classList.add("is-hidden");removeEventListener("keydown",hide,true);removeEventListener("pointerdown",hide,true);}` +
@@ -117,7 +125,9 @@ export function extractAppExtras(appHtml) {
   const noteStyle = (head.match(/<style>\.aura-(?:port-note|credit)[\s\S]*?<\/style>/) ?? [""])[0];
   const title = (head.match(/<title>[\s\S]*?<\/title>/) ?? [""])[0];
   const note = (appHtml.match(/<aside class="aura-(?:port-note|credit)[^"]*"[\s\S]*?<\/aside>/) ?? [""])[0];
-  return { metas, links, noteStyle, title, note };
+  // Page-only head styles the app adds on top of the example (Duneglide lifts its bottom HUD clear of the credit).
+  const styles = [...head.matchAll(/<style>[\s\S]*?<\/style>/g)].map((m) => m[0]).filter((tag) => tag !== noteStyle && !/^<style>\.aura-(?:port-note|credit)/.test(tag));
+  return { metas, links, noteStyle, title, note, styles };
 }
 
 /**
@@ -137,7 +147,8 @@ export function composePortPage({ exampleHtml, appHtml, labels = [] }) {
       const href = (tag.match(/href="([^"]+)"/) ?? [])[1];
       return !href || !hasHref(href);
     }),
-    extras.noteStyle
+    extras.noteStyle,
+    ...extras.styles.filter((tag) => !html.includes(tag))
   ].filter(Boolean).map((line) => `  ${line.trim()}`).join("\n");
 
   if (extras.title) html = html.replace(/<title>[\s\S]*?<\/title>/, extras.title.trim());
@@ -155,6 +166,14 @@ export function composePortPage({ exampleHtml, appHtml, labels = [] }) {
  */
 export function applyNeutralLabels(html, labels, caseAware = false) {
   if (labels.length === 0) return html;
+  // Inline scripts (the credit placement script) contain "<" comparisons that the tag split below would read as tags,
+  // so whole <script> and <style> elements are set aside first and restored untouched.
+  const kept = [];
+  const masked = html.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, (block) => `\u0000${kept.push(block) - 1}\u0000`);
+  return applyNeutralLabelsToMarkup(masked, labels, caseAware).replace(/\u0000(\d+)\u0000/g, (_m, i) => kept[Number(i)]);
+}
+
+function applyNeutralLabelsToMarkup(html, labels, caseAware) {
   const swap = (text) => labels.reduce((acc, [from, to]) => acc.replace(new RegExp(escapeRegExp(from), "gi"), (m) => (caseAware && /[A-Z]/.test(m) && m === m.toUpperCase() ? to.toUpperCase() : to)), text);
   let skip = null; // "style" | "script" while inside those elements
   return html.split(/(<[^>]*>)/g).map((chunk) => {

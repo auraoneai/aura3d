@@ -10,6 +10,6 @@ describe("the live wrapper page carries the example page's markup and CSS (audit
   it("has the phone HUD rules: the hint moves under the quest counter, and touch hides it", () => {
     expect(app).toMatch(/@media \(max-width: 560px\)[\s\S]*#hint \{ top: calc\(/);
     expect(app).toMatch(/@media \(pointer: coarse\) \{ #hint \{ display: none; \}/);
-    expect(app).toContain('class="aura-credit"');
+    expect(app).toMatch(/class="aura-credit[ "]/);
   });
 });
