@@ -60,8 +60,10 @@ export interface VenueGrade {
   readonly tint: number;
   readonly bloom: { readonly intensity: number; readonly threshold: number };
   readonly vignette: number;
-  /** TT-P3: an authored .cube per venue (`null` until the LUT asset exists; contrast/saturation carry the grade until then). */
+  /** TT-P3: the venue's authored `.cube` (a `slamLutAssets` key in view/assets.ts; `null` = no LUT). */
   readonly lut: string | null;
+  /** TT-P3: LUT blend, 0..1. */
+  readonly lutIntensity: number;
 }
 
 export type VenueBurstKind = "clay-puff" | "grass-flick" | "hard-skid" | "regolith-drift";
@@ -157,7 +159,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
     sun: null, nightKey: NIGHT_KEY,
     floodlights: FLOODLIGHTS,
     fog: { color: "#0b1426", density: 0.008, volumetricAtHigh: false, lightCones: 4 },
-    grade: { preset: "arena-fight", exposure: 1, contrast: 1.12, saturation: 1.04, temperature: -0.18, tint: 0, bloom: { intensity: 0.22, threshold: 0.92 }, vignette: 0.24, lut: null },
+    grade: { preset: "arena-fight", exposure: 1, contrast: 1.12, saturation: 1.04, temperature: -0.18, tint: 0, bloom: { intensity: 0.22, threshold: 0.92 }, vignette: 0.24, lut: "slam-hard", lutIntensity: 1 },
     signature: { burst: "hard-skid", burstColor: particle("hard"), markColor: "#c9d6e3", markOpacity: 0.42, markLifetime: 9 },
     crowd: true, wind: 0
   },
@@ -167,7 +169,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
     sun: { elevationDeg: 40, azimuthDeg: 120, color: "#fff1dc", intensity: 2.6, lightSize: 0.9, colorTemperatureK: 5600 },
     floodlights: [],
     fog: { color: "#cfdbe6", density: 0.005, volumetricAtHigh: false, lightCones: 0 },
-    grade: { preset: "daylight-outdoor", exposure: 1, contrast: 1.06, saturation: 1.06, temperature: 0.04, tint: -0.02, bloom: { intensity: 0.12, threshold: 0.95 }, vignette: 0.14, lut: null },
+    grade: { preset: "daylight-outdoor", exposure: 1, contrast: 1.06, saturation: 1.06, temperature: 0.04, tint: -0.02, bloom: { intensity: 0.12, threshold: 0.95 }, vignette: 0.14, lut: "slam-grass", lutIntensity: 1 },
     signature: { burst: "grass-flick", burstColor: particle("grass"), markColor: "#cfe0b4", markOpacity: 0.32, markLifetime: 12 },
     crowd: true, wind: 0.35
   },
@@ -177,7 +179,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
     sun: { elevationDeg: 18, azimuthDeg: 250, color: "#ffc27a", intensity: 3.1, lightSize: 0.6, colorTemperatureK: 3400 },
     floodlights: [],
     fog: { color: "#e3a46a", density: 0.008, volumetricAtHigh: false, lightCones: 0 },
-    grade: { preset: "cinematic-film", exposure: 1, contrast: 1.1, saturation: 1.12, temperature: 0.16, tint: 0.02, bloom: { intensity: 0.16, threshold: 0.9 }, vignette: 0.26, lut: null },
+    grade: { preset: "cinematic-film", exposure: 1, contrast: 1.1, saturation: 1.12, temperature: 0.16, tint: 0.02, bloom: { intensity: 0.16, threshold: 0.9 }, vignette: 0.26, lut: "slam-clay", lutIntensity: 1 },
     signature: { burst: "clay-puff", burstColor: particle("clay"), markColor: "#8e3e1f", markOpacity: 0.55, markLifetime: 900 },
     crowd: true, wind: 0.2
   },
@@ -187,7 +189,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
     sun: { elevationDeg: 72, azimuthDeg: 10, color: "#fffaf0", intensity: 4, lightSize: 0.4, colorTemperatureK: 6200 },
     floodlights: [],
     fog: { color: "#e8d2b0", density: 0.016, volumetricAtHigh: true, lightCones: 0 },
-    grade: { preset: "daylight-outdoor", exposure: 1.3, contrast: 1.04, saturation: 0.94, temperature: 0.08, tint: 0, bloom: { intensity: 0.18, threshold: 0.88 }, vignette: 0.12, lut: null },
+    grade: { preset: "daylight-outdoor", exposure: 1.3, contrast: 1.04, saturation: 0.94, temperature: 0.08, tint: 0, bloom: { intensity: 0.18, threshold: 0.88 }, vignette: 0.12, lut: "slam-desert", lutIntensity: 1 },
     signature: { burst: "hard-skid", burstColor: particle("desert"), markColor: "#d7c19c", markOpacity: 0.4, markLifetime: 9 },
     crowd: true, wind: 0.5
   },
@@ -197,7 +199,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
     sun: { elevationDeg: 8, azimuthDeg: 290, color: "#ff8f72", intensity: 2.4, lightSize: 0.8, colorTemperatureK: 2600 },
     floodlights: [],
     fog: { color: "#e09a86", density: 0.01, volumetricAtHigh: false, lightCones: 0 },
-    grade: { preset: "cinematic-film", exposure: 1, contrast: 1.08, saturation: 1.16, temperature: 0.1, tint: 0.12, bloom: { intensity: 0.2, threshold: 0.86 }, vignette: 0.28, lut: null },
+    grade: { preset: "cinematic-film", exposure: 1, contrast: 1.08, saturation: 1.16, temperature: 0.1, tint: 0.12, bloom: { intensity: 0.2, threshold: 0.86 }, vignette: 0.28, lut: "slam-beach", lutIntensity: 1 },
     signature: { burst: "hard-skid", burstColor: particle("beach"), markColor: "#b9e3df", markOpacity: 0.38, markLifetime: 9 },
     crowd: true, wind: 0.6
   },
@@ -207,7 +209,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
     sun: { elevationDeg: 25, azimuthDeg: 60, color: "#ffffff", intensity: 4.4, lightSize: 0.05, colorTemperatureK: 5800 },
     floodlights: [],
     fog: null,
-    grade: { preset: "space", exposure: 1, contrast: 1.16, saturation: 0.86, temperature: -0.04, tint: 0, bloom: { intensity: 0.1, threshold: 0.95 }, vignette: 0.2, lut: null },
+    grade: { preset: "space", exposure: 1, contrast: 1.16, saturation: 0.86, temperature: -0.04, tint: 0, bloom: { intensity: 0.1, threshold: 0.95 }, vignette: 0.2, lut: "slam-moon", lutIntensity: 1 },
     signature: { burst: "regolith-drift", burstColor: particle("moon"), markColor: "#6f747a", markOpacity: 0.5, markLifetime: 30 },
     crowd: false, wind: 0
   }

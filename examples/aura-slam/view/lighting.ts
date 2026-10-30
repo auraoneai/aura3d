@@ -1,4 +1,5 @@
 import { effects, game, lights } from "@aura3d/engine";
+import { venueLutUrl } from "./assets";
 import { FLOODLIGHTS, sunPosition, venueLook, type VenueLook, type VenueSun } from "./look";
 
 /**
@@ -100,6 +101,12 @@ export function sceneLights(venueId?: string | null) {
   ];
 }
 
+/** TT-P3: the grade's LUT fields: the served url and its blend, or blend 0 when the venue has no LUT. */
+export function lutFields(g: VenueLook["grade"]): { lut?: string; lutIntensity: number } {
+  const url = venueLutUrl(g.lut);
+  return url ? { lut: url, lutIntensity: g.lutIntensity } : { lutIntensity: 0 };
+}
+
 /** Runtime post effect names (E-C `app.post.setEffect`). */
 export const POST_EFFECT = { bloom: "bloom", grade: "colorGrade", vignette: "vignette", volumetricFog: "volumetricFog" } as const;
 
@@ -116,7 +123,8 @@ export function postEffects(venueId?: string | null) {
   return [
     effects.bloom({ intensity: g.bloom.intensity, threshold: g.bloom.threshold, radius: 0.45 }),
     effects.vignette({ intensity: g.vignette, smoothness: 0.65 }),
-    effects.colorGrade({ contrast: g.contrast, saturation: g.saturation, temperature: g.temperature, tint: g.tint }),
+    // TT-P3: the venue's authored .cube on top of the contrast / saturation / white-balance grade.
+    effects.colorGrade({ contrast: g.contrast, saturation: g.saturation, temperature: g.temperature, tint: g.tint, ...lutFields(g) }),
     effects.contactShadows({ length: 0.35, thickness: 0.06, intensity: 0.9, lights: "sun" })
   ];
 }

@@ -10,7 +10,7 @@
  */
 import { postPresets, type AuraAssetRef, type AuraRuntimeNodeHandle, type AuraToneMappingOperator, type AuraVec3 } from "@aura3d/engine";
 import { venueHdriAssets } from "./assets";
-import { POST_EFFECT, VENUE_LIGHT_IDS, venueKeyLight } from "./lighting";
+import { POST_EFFECT, VENUE_LIGHT_IDS, lutFields, venueKeyLight } from "./lighting";
 import { EARTH, FLOODLIGHTS, FLOOD_CONES, sunPosition, type VenueLook } from "./look";
 
 export interface VenueRuntimePlan {
@@ -27,7 +27,8 @@ export interface VenueRuntimePlan {
   readonly output: { readonly preset: VenueLook["grade"]["preset"]; readonly toneMapping: AuraToneMappingOperator; readonly exposure: number };
   readonly post: {
     readonly bloom: { readonly intensity: number; readonly threshold: number };
-    readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly tint: number };
+    /** TT-P3: `lut` (served .cube URL) and `lutIntensity`; a venue without a LUT sends `lutIntensity: 0`. */
+    readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly tint: number; readonly lut?: string; readonly lutIntensity: number };
     readonly vignette: { readonly intensity: number };
   };
 }
@@ -64,7 +65,7 @@ export function venueRuntimePlan(look: VenueLook, tier: string | null = "high"):
     },
     post: {
       bloom: { ...look.grade.bloom },
-      grade: { contrast: look.grade.contrast, saturation: look.grade.saturation, temperature: look.grade.temperature, tint: look.grade.tint },
+      grade: { contrast: look.grade.contrast, saturation: look.grade.saturation, temperature: look.grade.temperature, tint: look.grade.tint, ...lutFields(look.grade) },
       vignette: { intensity: look.grade.vignette }
     }
   };
