@@ -11,7 +11,12 @@ import { CAR_KINDS, buildCarShell, type CarKind, type CarShell } from "./vehicle
 import { TRAFFIC_MODEL, carScale, trafficInstances } from "./models";
 import { planProps, propNodes, type PropPlan } from "./props";
 import { GROUND_HALF, WALLS, blockDecals, buildCity, buildFurniture, buildProps, facadeKey, farCity, roadPlane, type Furniture } from "./city";
-import { farCitySpec, skySpec } from "./sky";
+import { farCitySpec, shiftFarSpec, shiftSkySpec, skySpec } from "./sky";
+import { HDRI_URL, environmentRotationFor, lightDir, type LookMode, type PhaseRow } from "./phases";
+import { KEY_DISTANCE, lookFrame } from "./daylight";
+import { waterSpec } from "./water";
+import { paintWetRoughness, wetRoad } from "./wet";
+import { HEADLIGHT, SODIUM_COLOR, SODIUM_POOL, SODIUM_RANGE } from "./lamps";
 import { PALETTE_SLOTS, Palette, bakePaletteUVs, createMesh, quad, toArrays, type MeshData } from "./mesh";
 import { paintFacade, paintPalette, paintPark, paintPlaza, paintRoadTile, paintShopfront, paintSky, type FacadeKind } from "./textures";
 import type { Block, Building, Pickup, TrafficCar } from "./world";
@@ -21,8 +26,21 @@ type TextureHandle = ReturnType<typeof texture.canvas>;
 type Matrix = number[];
 
 export const ASSETS = defineAuraAssets({
-  skyHdr: { type: "texture", format: "hdr", url: new URL("./assets/sky.hdr", import.meta.url).href, metadata: { license: "CC0 1.0, Poly Haven kloppenheim_06_puresky (1k)" } }
+  skyHdr: { type: "texture", format: "hdr", url: new URL("./assets/sky.hdr", import.meta.url).href, metadata: { license: "CC0 1.0, Poly Haven kloppenheim_06_puresky (1k)" } },
+  /** GU47 WP-28 GC-L1: the E-A catalogue copy (1.44 MB, 1024 x 512); only this game uses it as its environment. */
+  veniceHdr: { type: "texture", format: "hdr", url: HDRI_URL, metadata: { license: "CC0 1.0, Poly Haven venice_sunset (1k, E-A HDRI catalogue)" } }
 });
+
+/**
+ * GU47 WP-28 GC-M2: pastel stucco districts for the shift look (same variant counts as `WALLS`, so every facade key
+ * keeps its texture slot): downtown towers in pale sea-glass greys, old-town apartments in cream, mint and apricot,
+ * the harbour blocks in terracotta.
+ */
+export const SHIFT_WALLS: Record<FacadeKind, readonly string[]> = {
+  tower: ["#cfdcdf", "#b7cdd4", "#e4e8e2"],
+  apartment: ["#efe3cf", "#9fd8c4", "#f0c4a2"],
+  brick: ["#d9765f", "#e29b7c"]
+};
 
 export const FOG = { color: "#f0dcc0", density: 0.0024 } as const;
 
@@ -97,6 +115,8 @@ function repeating(t: TextureHandle): TextureHandle {
 
 export interface Textures {
   road: TextureHandle;
+  /** GC-M1 wet-road roughness (shift look only). */
+  roadRoughness: TextureHandle | null;
   park: TextureHandle;
   plaza: TextureHandle;
   sky: TextureHandle;
@@ -104,10 +124,18 @@ export interface Textures {
   shop: { albedo: TextureHandle; emissive: TextureHandle };
 }
 
-export function paintTextures(quality: "high" | "low"): Textures {
+export function paintTextures(quality: "high" | "low", look: LookMode = "original"): Textures {
   const roadPx = quality === "high" ? 2048 : 1024;
   const road = canvas(roadPx, roadPx);
   paintRoadTile(road.g, roadPx);
+  let roadRoughness: TextureHandle | null = null;
+  if (look === "shift") {
+    wetRoad(road.g, roadPx);
+    const rough = canvas(roadPx / 2, roadPx / 2);
+    paintWetRoughness(rough.g, roadPx / 2);
+    roadRoughness = repeating(texture.canvas({ canvas: rough.c, colorSpace: "linear" }));
+  }
+  const walls = look === "shift" ? SHIFT_WALLS : WALLS;
   const park = canvas(512, 512);
   paintPark(park.g, 512);
   const plaza = canvas(512, 512);
@@ -117,7 +145,7 @@ export function paintTextures(quality: "high" | "low"): Textures {
   const facadePx = quality === "high" ? 1024 : 512;
   const facade: Textures["facade"] = {};
   (["tower", "apartment", "brick"] as const).forEach((kind, k) => {
-    WALLS[kind].forEach((wall, v) => {
+    walls[kind].forEach((wall, v) => {
       const a = canvas(facadePx, facadePx);
       const e = canvas(facadePx, facadePx);
       paintFacade(kind, a.g, e.g, facadePx, k * 7 + v + 1, wall);
@@ -129,6 +157,7 @@ export function paintTextures(quality: "high" | "low"): Textures {
   paintShopfront(sa.g, se.g, 1024, 256);
   return {
     road: repeating(texture.canvas({ canvas: road.c, colorSpace: "srgb" })),
+    roadRoughness,
     park: texture.canvas({ canvas: park.c, colorSpace: "srgb" }),
     plaza: texture.canvas({ canvas: plaza.c, colorSpace: "srgb" }),
     sky: texture.canvas({ canvas: sky.c, colorSpace: "srgb" }),
@@ -170,6 +199,12 @@ export interface LookRig {
   furniture: Furniture;
   playerShell: CarShell;
   palette: TextureHandle;
+  /** GU47 WP-28: the painted textures (facade materials are rebuilt from them as the windows come on). */
+  textures: Textures;
+  /** Runtime ids and facade keys of the window-lit facade nodes (shift look; empty in the original look). */
+  facadeNodes: readonly { id: string; key: string }[];
+  /** True when the time-of-day shift look was built. */
+  shift: boolean;
   stats: { cityTriangles: number; chunks: number; awnings: number; tallest: number; lamps: number; trees: number; pedestrians: number; propTriangles: number };
 }
 
@@ -210,9 +245,45 @@ export function neutralFillIntensity(env: boolean, override?: number): number {
   return LIGHTS_ONLY_NEUTRAL;
 }
 
-export function buildLook(world: { blocks: readonly Block[]; buildings: readonly Building[]; traffic: readonly TrafficCar[]; pickups: readonly Pickup[] }, opts: { models: boolean; quality: "high" | "low"; ao: boolean; env: boolean; shadow: boolean; fog: boolean; post: boolean; aa?: boolean; sky: boolean; sun: number; skyFill?: number; neutral?: number; roadCells?: number; start: { x: number; z: number } }): LookRig {
+export interface LookOptions {
+  models: boolean;
+  quality: "high" | "low";
+  ao: boolean;
+  env: boolean;
+  shadow: boolean;
+  fog: boolean;
+  post: boolean;
+  aa?: boolean;
+  sky: boolean;
+  sun: number;
+  skyFill?: number;
+  neutral?: number;
+  roadCells?: number;
+  start: { x: number; z: number };
+  /** GU47 WP-28: "shift" (the time-of-day look, default) or "original" (the 4.6.1 look, `?look=original`). */
+  look?: LookMode;
+  /** Look-table row the shift look is built at (the first frame; `daylight.ts` drives it from there). */
+  row?: PhaseRow;
+}
+
+/** GU47 WP-28 GC-L2: the shift look's key shadow per tier (High: 3 cascades over 220 m, PCSS; Low: 1 cascade, PCF). */
+export function shiftShadow(quality: "high" | "low") {
+  return quality === "high"
+    ? { cascades: 3 as const, maxDistance: 220, blend: 0.12, mapSize: 2048 as const, filter: "pcss" as const, lightSize: 1.6 }
+    : { cascades: 1 as const, maxDistance: 110, mapSize: 1024 as const, filter: "pcf" as const };
+}
+
+/** GC-M2: facade material at a window emissive intensity (0.15 by day to 1.4 at blue hour in the shift look). */
+export function facadeMaterial(tex: Textures, key: string, windows: number) {
+  return material.pbr({ color: "#ffffff", roughness: 0.82, metallic: 0.02, texture: asRef(tex.facade[key]!.albedo), emissiveMap: tex.facade[key]!.emissive, emissive: "#ffffff", emissiveIntensity: windows, textureAnisotropy: 8 });
+}
+
+export function buildLook(world: { blocks: readonly Block[]; buildings: readonly Building[]; traffic: readonly TrafficCar[]; pickups: readonly Pickup[] }, opts: LookOptions): LookRig {
   const high = opts.quality === "high";
-  const tex = paintTextures(opts.quality);
+  const shift = (opts.look ?? "shift") === "shift" && opts.row !== undefined;
+  const row = opts.row;
+  const frame = shift && row ? lookFrame(row) : null;
+  const tex = paintTextures(opts.quality, shift ? "shift" : "original");
   const city = buildCity(world.blocks, world.buildings);
   const furniture = buildFurniture(world.blocks);
   // solid colours (awnings, roofs, trims, car glass and lamps) sample one palette strip, baked into the UVs
@@ -236,39 +307,87 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
     .camera(camera.perspective({ position: [opts.start.x, 4.3, opts.start.z - 10.6], target: [opts.start.x, 1.25, opts.start.z + 5], fov: 56, near: 0.4, far: 2400 }));
 
   // ---- light rig, atmosphere and post ----
-  if (opts.env) b.add(environments.hdri({ name: "env-sky", texture: ASSETS.skyHdr, intensity: 1.0, background: false, color: "#ffc890" }));
-  const neutral = neutralFillIntensity(opts.env, opts.neutral);
-  if (neutral > 0) b.add(environments.neutral({ name: "env-room", intensity: neutral }));
-  b.add(lights.directional({ name: "sun", position: [-88, 38, -50], target: [0, 0, 0], intensity: opts.sun, color: "#ffbf80", shadow: high && opts.shadow ? { cascades: 2, maxDistance: 150, blend: 0.12, mapSize: 2048 } : false }).runtime({ id: "sun" }));
-  b.add(lights.hemisphere({ name: "sky-fill", skyColor: "#ffe0b0", groundColor: "#c9a070", intensity: skyFillIntensity(opts.env, opts.skyFill) }));
-  if (opts.fog) b.add(effects.fog({ name: "haze", color: FOG.color, density: FOG.density }));
-  if (high && opts.ao) b.add(effects.ambientOcclusion({ name: "ao" }));
-  if (opts.post) {
-    b.add(effects.bloom({ name: "bloom", intensity: 0.35, threshold: 1.05, radius: 0.35 }));
-    b.add(effects.colorGrade({ name: "grade", contrast: 1.06, saturation: 1.38 }));
-    b.add(effects.vignette({ name: "vignette", intensity: 0.2, smoothness: 0.7 }));
-    if (opts.aa !== false) b.add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
+  if (frame && row) {
+    // GU47 WP-28 (GC-L1/L2/L6/S1/S3/P1): venice_sunset IBL (no tint), one shadowed key driven per frame, no
+    // hemisphere (the IBL is the fill; C-35 keeps the practical slots for the sodium pool and the headlight)
+    if (opts.env) b.add(environments.hdri({ name: "env-sky", texture: ASSETS.veniceHdr, intensity: row.environmentIntensity, background: false, rotation: environmentRotationFor(row.sun.azimuthDeg) }));
+    const neutral = neutralFillIntensity(opts.env, opts.neutral);
+    if (neutral > 0) b.add(environments.neutral({ name: "env-room", intensity: neutral }));
+    const toKey = lightDir(row.key);
+    const at = opts.start;
+    b.add(lights.directional({ name: "sun", position: [at.x + toKey[0] * KEY_DISTANCE, toKey[1] * KEY_DISTANCE, at.z + toKey[2] * KEY_DISTANCE], target: [at.x, 0, at.z], intensity: row.key.intensity * (opts.sun / 4.4), color: row.key.color, shadow: opts.shadow ? shiftShadow(opts.quality) : false }).runtime({ id: "sun" }));
+    if (!opts.env) b.add(lights.hemisphere({ name: "sky-fill", skyColor: row.hemisphere.sky, groundColor: row.hemisphere.ground, intensity: skyFillIntensity(false, opts.skyFill) }).runtime({ id: "sky-fill" }));
+    // GC-L4 sodium pool and GC-L5 headlight spot: placed by main.ts each frame, dark until sunset / headlights on
+    for (let i = 0; i < SODIUM_POOL; i++) b.add(lights.point({ name: `sodium-${i}`, position: [at.x, -40, at.z], color: SODIUM_COLOR, intensity: 0, distance: SODIUM_RANGE }).runtime({ id: `sodium-${i}` }));
+    b.add(lights.spot({ name: "headlight", position: [at.x, HEADLIGHT.y, at.z + HEADLIGHT.ahead], target: [at.x, 0, at.z + 20], color: HEADLIGHT.color, intensity: 0, distance: HEADLIGHT.distance, angle: (HEADLIGHT.angleDeg * Math.PI) / 180, penumbra: HEADLIGHT.penumbra }).runtime({ id: "headlight" }));
+    if (opts.fog) b.add(effects.fog({ name: "haze", color: row.fog.color, density: row.fog.density }));
+    if (high && opts.ao) b.add(effects.ambientOcclusion({ name: "ao" }));
+    // GC-L3: contact shadows under cars, posts and props (High only; PRD §6.4 drops them on Low)
+    if (high && opts.shadow) b.add(effects.contactShadows({ length: 0.35, thickness: 0.4, steps: 12, intensity: 0.8, lights: "sun" }));
+    if (opts.post) {
+      b.add(effects.bloom({ name: "bloom", intensity: row.bloom.intensity, threshold: row.bloom.threshold, radius: 0.35 }));
+      b.add(effects.colorGrade({ name: "grade", contrast: row.grade.contrast, saturation: row.grade.saturation, temperature: row.grade.temperature }));
+      b.add(effects.vignette({ name: "vignette", intensity: row.vignette, smoothness: 0.7 }));
+      if (high) {
+        // GC-M1 SSR on the wet streets, GC-P1 grain and motion blur: High only (Low keeps palette, sky and beacon)
+        b.add(effects.screenSpaceReflections({ name: "wet-ssr", maxDistance: 60, roughness: 0.35, thickness: 0.5 }));
+        b.add(effects.filmGrain({ name: "grain", intensity: row.grain }));
+        b.add(effects.motionBlur({ name: "motion-blur", intensity: 0.3 }));
+      }
+      if (opts.aa !== false) b.add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
+    }
+    if (opts.sky) b.add(primitives.sphere({ name: "sky-dome", size: 3600, material: material.custom(shiftSkySpec({ ...frame.sky, skyDrift: 0 })), castShadow: false, receiveShadow: false }).runtime({ id: "sky-dome" }));
+  } else {
+    if (opts.env) b.add(environments.hdri({ name: "env-sky", texture: ASSETS.skyHdr, intensity: 1.0, background: false, color: "#ffc890" }));
+    const neutral = neutralFillIntensity(opts.env, opts.neutral);
+    if (neutral > 0) b.add(environments.neutral({ name: "env-room", intensity: neutral }));
+    b.add(lights.directional({ name: "sun", position: [-88, 38, -50], target: [0, 0, 0], intensity: opts.sun, color: "#ffbf80", shadow: high && opts.shadow ? { cascades: 2, maxDistance: 150, blend: 0.12, mapSize: 2048 } : false }).runtime({ id: "sun" }));
+    b.add(lights.hemisphere({ name: "sky-fill", skyColor: "#ffe0b0", groundColor: "#c9a070", intensity: skyFillIntensity(opts.env, opts.skyFill) }));
+    if (opts.fog) b.add(effects.fog({ name: "haze", color: FOG.color, density: FOG.density }));
+    if (high && opts.ao) b.add(effects.ambientOcclusion({ name: "ao" }));
+    if (opts.post) {
+      b.add(effects.bloom({ name: "bloom", intensity: 0.35, threshold: 1.05, radius: 0.35 }));
+      b.add(effects.colorGrade({ name: "grade", contrast: 1.06, saturation: 1.38 }));
+      b.add(effects.vignette({ name: "vignette", intensity: 0.2, smoothness: 0.7 }));
+      if (opts.aa !== false) b.add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
+    }
+
+    if (opts.sky) b.add(primitives.sphere({ name: "sky-dome", size: 3600, material: material.custom(skySpec()), castShadow: false, receiveShadow: false }));
   }
 
-  if (opts.sky) b.add(primitives.sphere({ name: "sky-dome", size: 3600, material: material.custom(skySpec()), castShadow: false, receiveShadow: false }));
-
   // ---- ground, roads, parks, water ----
-  b.add(geometry.custom(geo(roadPlane(opts.roadCells), "road"), { name: "road-tiles", material: material.pbr({ color: "#ffffff", roughness: 0.88, texture: asRef(tex.road), textureAnisotropy: 8 }), castShadow: false, receiveShadow: true }));
+  // GC-M1: wet road in the shift look (darkened asphalt baked in the tile, puddles at roughness 0.04)
+  const roadMat = tex.roadRoughness
+    ? material.pbr({ color: "#ffffff", roughness: 1, metallic: 0, texture: asRef(tex.road), roughnessMap: asRef(tex.roadRoughness), envMapIntensity: 1.2, textureAnisotropy: 8 })
+    : material.pbr({ color: "#ffffff", roughness: 0.88, texture: asRef(tex.road), textureAnisotropy: 8 });
+  b.add(geometry.custom(geo(roadPlane(opts.roadCells), "road"), { name: "road-tiles", material: roadMat, castShadow: false, receiveShadow: true }));
   b.add(geometry.custom(geo(blockDecals(world.blocks, "park", 21.5), "parks"), { name: "parks", material: material.pbr({ color: "#ffffff", roughness: 0.95, texture: asRef(tex.park) }), castShadow: false, receiveShadow: true }));
   b.add(geometry.custom(geo(blockDecals(world.blocks, "plaza", 21.5), "plazas"), { name: "plazas", material: material.pbr({ color: "#ffffff", roughness: 0.9, texture: asRef(tex.plaza) }), castShadow: false, receiveShadow: true }));
   b.add(geometry.custom(geo(outerGround(), "outer"), { name: "outer-ground", material: material.pbr({ color: "#9a9468", roughness: 1 }), castShadow: false, receiveShadow: true }));
-  b.add(geometry.custom(geo(waterPlane(), "water"), { name: "harbour", material: material.pbr({ color: "#3f8fb0", roughness: 0.16, metallic: 0.05 }), castShadow: false, receiveShadow: false }));
-  if (opts.sky) b.add(geometry.custom(geo(far, "far-city"), { name: "far-city", material: material.custom(farCitySpec(paletteTex)), castShadow: false, receiveShadow: false }));
+  if (frame) {
+    // GC-S4 animated harbour water and GC-S2 skyline aerial perspective, both driven per frame by daylight.ts
+    b.add(geometry.custom(geo(waterPlane(), "water"), { name: "harbour", material: material.custom(waterSpec({ ...frame.water, waterTime: 0 })), castShadow: false, receiveShadow: false }).runtime({ id: "harbour" }));
+    if (opts.sky) b.add(geometry.custom(geo(far, "far-city"), { name: "far-city", material: material.custom(shiftFarSpec(paletteTex, frame.far)), castShadow: false, receiveShadow: false }).runtime({ id: "far-city" }));
+  } else {
+    b.add(geometry.custom(geo(waterPlane(), "water"), { name: "harbour", material: material.pbr({ color: "#3f8fb0", roughness: 0.16, metallic: 0.05 }), castShadow: false, receiveShadow: false }));
+    if (opts.sky) b.add(geometry.custom(geo(far, "far-city"), { name: "far-city", material: material.custom(farCitySpec(paletteTex)), castShadow: false, receiveShadow: false }));
+  }
 
   // ---- the city itself ----
-  const facadeMat = (key: string) => material.pbr({ color: "#ffffff", roughness: 0.82, metallic: 0.02, texture: asRef(tex.facade[key]!.albedo), emissiveMap: tex.facade[key]!.emissive, emissive: "#ffffff", emissiveIntensity: 0.6, textureAnisotropy: 8 });
+  const facadeMat = (key: string) => facadeMaterial(tex, key, row && shift ? row.windows : 0.6);
+  const facadeNodes: { id: string; key: string }[] = [];
   const shopMat = material.pbr({ color: "#ffffff", roughness: 0.7, texture: asRef(tex.shop.albedo), emissiveMap: tex.shop.emissive, emissive: "#ffffff", emissiveIntensity: 0.7, textureAnisotropy: 8 });
   const solidMat = material.pbr({ color: "#ffffff", roughness: 0.78, texture: asRef(paletteTex) });
   for (const chunk of city.chunks) {
     for (const [key, m] of Object.entries(chunk.meshes)) {
       if (!m.indices.length) continue;
       const mat = key === "shop" ? shopMat : key === "trim" ? solidMat : facadeMat(key);
-      b.add(geometry.custom(geo(m, key), { name: `city-${chunk.key}-${key.replace(":", "-")}`, material: mat, castShadow: true, receiveShadow: true }));
+      const name = `city-${chunk.key}-${key.replace(":", "-")}`;
+      const n = geometry.custom(geo(m, key), { name, material: mat, castShadow: true, receiveShadow: true });
+      if (shift && key !== "shop" && key !== "trim") {
+        facadeNodes.push({ id: name, key });
+        b.add(n.runtime({ id: name }));
+      } else b.add(n);
     }
   }
 
@@ -276,7 +395,8 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
   b.add(geometry.custom(geo(props, "props"), { name: "props", material: material.pbr({ color: "#ffffff", roughness: 0.82, texture: asRef(paletteTex) }), castShadow: false, receiveShadow: true }));
 
   // ---- generated prop models: near-field lamps, signals, trees, hydrants, shelters and the landmarks ----
-  if (propPlan) for (const n of propNodes(propPlan)) b.add(n);
+  // GC-L2: in the shift look the near-field lamps, signals, shelters and landmarks cast into the raking sun
+  if (propPlan) for (const n of propNodes(propPlan, shift)) b.add(n);
 
   // ---- traffic: paint + detail shells per kind, wheels and hubs ----
   const modelTraffic: TrafficGroup[] = [];
@@ -285,7 +405,7 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
       const cars = world.traffic.map((_, i) => i).filter((i) => CAR_KINDS[i % CAR_KINDS.length] === kind);
       const key = TRAFFIC_MODEL[kind];
       const id = `traffic-${kind}`;
-      b.add(trafficInstances(id, key, cars.map((i) => ({ position: [world.traffic[i]!.x, 0, world.traffic[i]!.z] as [number, number, number], rotation: [0, world.traffic[i]!.yaw, 0] as [number, number, number] }))));
+      b.add(trafficInstances(id, key, shift, cars.map((i) => ({ position: [world.traffic[i]!.x, 0, world.traffic[i]!.z] as [number, number, number], rotation: [0, world.traffic[i]!.yaw, 0] as [number, number, number] }))));
       modelTraffic.push({ id, cars, scale: carScale(key) });
     }
   }
@@ -322,6 +442,9 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
     furniture,
     playerShell,
     palette: paletteTex,
+    textures: tex,
+    facadeNodes,
+    shift,
     stats: { cityTriangles: city.stats.triangles, chunks: city.stats.chunks, awnings: city.stats.awnings, tallest: city.stats.tallest, lamps: furniture.lamps.length, trees: furniture.streetTrees.length + furniture.parkTrees.length, pedestrians: furniture.pedestrians.length, propTriangles: props.indices.length / 3 }
   };
 }

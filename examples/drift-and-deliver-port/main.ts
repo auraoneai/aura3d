@@ -22,7 +22,11 @@ import { furnitureSolids } from "./city";
 import { createShift, formatClock, recordBest, stepShift, type ShiftEvent } from "./shift";
 import { mountTouchControls } from "./touch";
 import { drivingKey, keyAction } from "./input";
-import { setReducedMotion } from "./chase";
+import { setChaseFraming, setReducedMotion } from "./chase";
+import { parseAt, parseLook, phaseAt, todSeconds } from "./phases";
+import { SkidMarks, COURIER_TEAL } from "./fx";
+import { beaconMaterial, createShiftRuntime, padMaterial, shiftSceneNodes, type ShiftRuntime } from "./shiftRuntime";
+import { shiftCrops } from "./qa";
 import { createAudio } from "./audio";
 import { createBlackFrameWatch, healParams, healStage, type BlackFrameWatch } from "@aura3d/debug";
 import { carModel } from "./models";
@@ -84,8 +88,17 @@ const config = {
   /** `shift=N`: shift length in seconds (default 180; probes shorten it to reach the results screen) */
   shiftSeconds: Math.max(5, Number(params.get("shift")) || 180),
   /** `props=0` leaves the street furniture without colliders (diagnostics) */
-  props: params.get("props") !== "0"
+  props: params.get("props") !== "0",
+  /** GU47 WP-28: `look=original` keeps the 4.6.1 look; default is the time-of-day shift look */
+  look: parseLook(params.get("look")),
+  /** GU47 WP-28: `at=N` pins the time-of-day clock at N seconds of 180 (visual only; golden 10, sunset 120, bluehour 170) */
+  at: parseAt(params.get("at")),
+  /** `flash=reduced` caps the delivery flash (PRD §6.3 reduced flash); reduced motion implies it */
+  reducedFlash: params.get("flash") === "reduced"
 };
+const shiftLook = config.look === "shift";
+const skid = new SkidMarks();
+let shiftRuntime: ShiftRuntime | null = null;
 const BEST_KEY = "gridlock-courier-best";
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
@@ -175,8 +188,11 @@ const shellGeometry = (m: LookRig["playerShell"]["paint"]) => {
 let look: LookRig;
 
 function buildScene() {
-  look = buildLook({ blocks, buildings, traffic, pickups }, { models: config.models, quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, skyFill: config.skyFill, neutral: config.neutral, roadCells: config.roadCells, start: { x: car.x, z: car.z } });
+  const row = phaseAt(todSeconds(shift.elapsed, shift.length, config.at));
+  look = buildLook({ blocks, buildings, traffic, pickups }, { models: config.models, quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, skyFill: config.skyFill, neutral: config.neutral, roadCells: config.roadCells, start: { x: car.x, z: car.z }, look: config.look, row });
+  setChaseFraming(look.shift ? "shift" : "original");
   const s = look.builder;
+  if (look.shift) for (const n of shiftSceneNodes(skid)) s.add(n);
   if (config.models) {
     s.add(carModel("car-rig", "courier", true));
   } else {
@@ -187,8 +203,10 @@ function buildScene() {
   }
   s.add(geometry.custom(geometry.dynamic({ positions: beam.positions, normals: beam.normals, uvs: beam.uvs, indices: beam.indices }), { name: "car-beams", material: material.custom(beamSpec(headlightAmount)) }).runtime({ id: "car-beams" }));
   // delivery drop-off: a glowing pad and a tall beacon you can see over the roofs (moved to each new job)
-  s.add(primitives.cylinder({ name: "dropoff-pad", size: [2 * DROP_PAD_RADIUS, 0.06, 2 * DROP_PAD_RADIUS], position: [car.x, -60, car.z], material: material.emissive({ color: "#5ce1ff", emissive: "#2fc9ff", emissiveIntensity: 1.4 }), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-pad" }));
-  s.add(primitives.cylinder({ name: "dropoff-beacon", size: [0.9, 70, 0.9], position: [car.x, -60, car.z], material: material.emissive({ color: "#9cefff", emissive: "#46d6ff", emissiveIntensity: 1.8 }), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-beacon" }));
+  // GU47 WP-28 GC-V2 (shift look): the pillar and pad in reserved courier teal, a 1.6 m pillar plus an objective ring
+  s.add(primitives.cylinder({ name: "dropoff-pad", size: [2 * DROP_PAD_RADIUS, 0.06, 2 * DROP_PAD_RADIUS], position: [car.x, -60, car.z], material: look.shift ? padMaterial() : material.emissive({ color: "#5ce1ff", emissive: "#2fc9ff", emissiveIntensity: 1.4 }), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-pad" }));
+  s.add(primitives.cylinder({ name: "dropoff-beacon", size: look.shift ? [1.6, 70, 1.6] : [0.9, 70, 0.9], position: [car.x, -60, car.z], material: look.shift ? beaconMaterial(row.beacon) : material.emissive({ color: "#9cefff", emissive: "#46d6ff", emissiveIntensity: 1.8 }), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-beacon" }));
+  if (look.shift) s.add(primitives.torus({ name: "dropoff-ring", size: [2 * DROP_PAD_RADIUS + 1.2, 0.5, 2 * DROP_PAD_RADIUS + 1.2], position: [car.x, -60, car.z], rotation: [Math.PI / 2, 0, 0], material: beaconMaterial(2.2), castShadow: false, receiveShadow: false }).runtime({ id: "dropoff-ring" }));
   if (config.props) {
     const extra = [...furnitureSolids(look.furniture), ...look.propSolids];
     for (const sol of extra) insert(playGrid, sol);
@@ -212,6 +230,9 @@ let renderFailed = false;
 /** Headlight beam strength 0..1 (the original ties it to night; `L` toggles it here). */
 let beamsUncullable = false;
 let headlightAmount = Math.max(0, Math.min(1, Number(new URLSearchParams(location.search).get("beams") ?? 0) || 0));
+/** GU47 WP-28 GC-L5: in the shift look the beams come on with the street lamps (from sunset); `L` still forces them on. */
+let headlightForced = params.has("beams");
+const beamAmount = (lampsOn: number): number => (shiftLook && !headlightForced ? Math.max(headlightAmount, Math.min(1, lampsOn * 1.4)) : headlightAmount);
 /** True once the full warm-up (environment HDRI and texture upgrades) has finished; `ready` only needs the programs. */
 let settled = false;
 const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
@@ -234,6 +255,10 @@ function simulateStep(input: Keys): void {
     if (struck) audio.thud();
     for (const e of picked) audio.chime(e.kind, ps.combo);
   }
+  if (shiftRuntime && !config.manual) {
+    if (struck) shiftRuntime.bump(car.x, car.z);
+    for (const e of picked) shiftRuntime.pickup(e.kind, pickups[e.index]!.x, pickups[e.index]!.z);
+  }
   for (const e of picked) popup(`+${e.score}${ps.combo > 1 ? `  x${ps.combo}` : ""}`, e.kind);
   game.collected = ps.collected;
   game.score = ps.score;
@@ -246,6 +271,7 @@ function simulateStep(input: Keys): void {
 
 function onShiftEvent(e: ShiftEvent): void {
   if (e.kind === "delivered") {
+    if (!config.manual) shiftRuntime?.delivered(e.job.x, e.job.z);
     game.score += e.score;
     popup(`DELIVERED  +${e.score}`, "job");
     audio?.chime("star", 4);
@@ -326,6 +352,9 @@ function placeTraffic(shown: Float64Array): void {
 const trafficTransforms = new Map<string, { position: [number, number, number]; rotation: [number, number, number]; scale: number }[]>();
 
 const HIDDEN = mat(0, -50, 0, 0, 0, 0, 0, 0);
+/** GC-C2 drift bank, radians. */
+const DRIFT_BANK = (3 * Math.PI) / 180;
+let bank = 0;
 const scratch = new Float32Array(16);
 function placePickups(): void {
   look.coins.forEach((p, i) => look.coinMesh.setMatrixAt(i, p.taken ? HIDDEN : coinMatInto(scratch, p.x, 1.15 + 0.18 * Math.sin(2.4 * renderTime + p.spin), p.z, p.spin + renderTime * 2.4, 0.95, 0.14)));
@@ -339,6 +368,7 @@ function placeDropoff(): void {
   const y = job ? 0.03 : -60;
   node("dropoff-pad").setPosition(job?.x ?? 0, y, job?.z ?? 0);
   node("dropoff-beacon").setPosition(job?.x ?? 0, job ? 35 : -60, job?.z ?? 0);
+  if (look.shift) node("dropoff-ring").setPosition(job?.x ?? 0, job ? 0.35 : -60, job?.z ?? 0);
 }
 
 function placeNodes(dt: number, shown: Presented): void {
@@ -365,21 +395,32 @@ function placeNodes(dt: number, shown: Presented): void {
     node("car-beams").frustumCulled = false;
     beamsUncullable = true;
   }
-  node("car-beams").setUniform?.("beamAmount", headlightAmount);
+  node("car-beams").setUniform?.("beamAmount", beamAmount(shiftRuntime?.row().lamps ?? 0));
   placeTraffic(shown.traffic);
   placePickups();
   stepChase(camState, { x: view.x, z: view.z, y: 0, heading: view.heading, speed: view.speed, boosting: car.boosting, shake: car.shake }, dt);
   // never put the eye inside a building at a corner (lesson M9)
   const eye = clearance.update(dt, { focus: [view.x, 1.4, view.z], eye: camState.eye, blocked: cameraBlocked });
   shownEye = eye;
-  app!.camera!.setPose({ position: eye, target: [...camState.look], up: [0, 1, 0], fov: camState.fov }, { cut: false });
+  // GU47 WP-28 GC-C2: a 3 deg bank into a drift (shift look; 0 under reduced motion)
+  const wantBank = look.shift && car.drifting && !document.body.classList.contains("reduced-motion") ? -Math.sign(view.steer) * DRIFT_BANK : 0;
+  bank += (wantBank - bank) * Math.min(1, dt * 4);
+  const hs = Math.sin(view.heading), hc = Math.cos(view.heading);
+  const up: [number, number, number] = [Math.sin(bank) * hc, Math.cos(bank), -Math.sin(bank) * hs];
+  app!.camera!.setPose({ position: eye, target: [...camState.look], up, fov: camState.fov }, { cut: false });
 }
 
 function render(dt: number, alpha = 1): void {
   if (!app || !ready || renderFailed) return;
   try {
     const live = !config.manual && game.phase === "playing";
-    placeNodes(dt, live && alpha < 1 ? presenter.sample(alpha) ?? presentedNow() : presentedNow());
+    const shown = live && alpha < 1 ? presenter.sample(alpha) ?? presentedNow() : presentedNow();
+    placeNodes(dt, shown);
+    if (shiftRuntime) {
+      // GU47 WP-28: time of day, sodium pool, headlight spot, beacon, VFX (presentation reads only)
+      const lampsOn = shiftRuntime.row().lamps;
+      shiftRuntime.frame(dt, shift, { x: shown.car.x, z: shown.car.z, heading: shown.car.heading, speed: shown.car.speed, drifting: car.drifting && live, boosting: car.boosting && live, braking: keys.s }, beamAmount(lampsOn));
+    }
     app.step(0);
     frames++;
     blackWatch?.sample(frames);
@@ -448,7 +489,7 @@ function updateHud(): void {
       { kind: "rect", rect: [-510, 506, 510, 510], fill: "rgba(70,160,205,.55)" },
       { kind: "points", points: minimapCoins, fill: "#ffd15c", size: 2.8 }
     ],
-    marker: { x: car.x, z: car.z, heading: car.heading, fill: "#ff9a2e" }
+    marker: { x: car.x, z: car.z, heading: car.heading, fill: shiftLook ? COURIER_TEAL : "#ff9a2e" }
   });
   // stars and hearts get their own shapes (a white diamond and a pink dot), the drop-off a cyan ring and an arrow
   const mx = (x: number): number => ((x - MINIMAP_BOUNDS[0]) / (MINIMAP_BOUNDS[2] - MINIMAP_BOUNDS[0])) * 240;
@@ -468,7 +509,7 @@ function updateHud(): void {
   }
   if (job) {
     const jx = mx(job.x), jy = mz(job.z), cx = mx(car.x), cy = mz(car.z);
-    ctx.strokeStyle = "#5ce1ff";
+    ctx.strokeStyle = shiftLook ? COURIER_TEAL : "#5ce1ff";
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.arc(jx, jy, 7, 0, Math.PI * 2);
@@ -477,7 +518,7 @@ function updateHud(): void {
     if (len > 22) {
       const ux = dx / len, uy = dy / len;
       const tipX = cx + ux * 20, tipY = cy + uy * 20;
-      ctx.fillStyle = "#5ce1ff";
+      ctx.fillStyle = shiftLook ? COURIER_TEAL : "#5ce1ff";
       ctx.beginPath();
       ctx.moveTo(tipX, tipY);
       ctx.lineTo(tipX - ux * 8 - uy * 5, tipY - uy * 8 + ux * 5);
@@ -494,7 +535,10 @@ const minimapCoins: [number, number][] = [];
 
 const onKey = (down: boolean) => (e: KeyboardEvent) => {
   const action = down ? keyAction(e) : undefined;
-  if (action === "headlights") headlightAmount = headlightAmount > 0 ? 0 : 1;
+  if (action === "headlights") {
+    headlightAmount = beamAmount(shiftRuntime?.row().lamps ?? 0) > 0 ? 0 : 1;
+    headlightForced = true;
+  }
   else if (action === "pause") togglePause();
   else if (action === "mute") toggleMute();
   else if (action === "restart" && game.phase === "results") restart();
@@ -579,6 +623,7 @@ function restart(): void {
   Object.assign(keys, NO_KEYS);
   Object.assign(camState, snapChase({ x: car.x, z: car.z, y: 0, heading: car.heading, speed: 0, boosting: false, shake: 0 }));
   clearance.reset();
+  shiftRuntime?.reset();
   presenter.reset(presentedNow());
   placeDropoff();
   $("results").classList.add("hidden");
@@ -638,6 +683,8 @@ function status() {
   syncQa();
   return {
     phase: game.phase, state: stateVector(car), score: game.score, collected: game.collected, total: pickups.length, combo: car.combo, boost: car.boost, speedKmh: kmh(), frames, ready, settled, warm: warmResult,
+    look: config.look,
+    daylight: shiftRuntime?.state() ?? null,
     shift: { timeLeft: shift.timeLeft, elapsed: shift.elapsed, deliveries: shift.deliveries, missed: shift.missed, job: shift.job ? { ...shift.job } : null, drift: shift.drift, bestStreak: shift.bestStreak, over: shift.over, reason: shift.reason },
     touch: touch.enabled,
     bootTimings: { ...bootTimings }
@@ -708,6 +755,8 @@ const hooks = installQaHooks("drift-and-deliver", {
     },
     /** the chase eye the rig wanted and the eye shown after the building clearance, and whether each is inside a building */
     camera: () => ({ wanted: [...camState.eye], shown: [...shownEye], wantedBlocked: cameraBlocked(...camState.eye), shownBlocked: cameraBlocked(...shownEye), factor: clearance.factor }),
+    /** GU47 WP-28: named QA crops (normalised, top-left) for E-I's capture; also published on window.__AURA_QA__ */
+    crops: () => qaCrops(),
     /** move the car onto the current drop-off (delivery probes) */
     toDropoff() {
       if (!shift.job) return status();
@@ -716,6 +765,12 @@ const hooks = installQaHooks("drift-and-deliver", {
     }
   }
 });
+
+function qaCrops() {
+  const aspect = canvas.clientWidth > 0 && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : 16 / 9;
+  return shiftCrops({ x: car.x, z: car.z, heading: car.heading }, { eye: shownEye, target: camState.look as [number, number, number], fovDeg: camState.fov, aspect }, shift.job ? { x: shift.job.x, z: shift.job.z } : null);
+}
+(window as unknown as { __AURA_QA__?: Record<string, unknown> }).__AURA_QA__ = { ...((window as unknown as { __AURA_QA__?: Record<string, unknown> }).__AURA_QA__ ?? {}), get crops() { return qaCrops(); } };
 
 /* ------------------------------------------------------------------ boot */
 
@@ -751,6 +806,7 @@ async function boot(): Promise<void> {
   if (config.warm) warmResult = await warmPrograms(app, { waitForEnvironment: false, waitForTextures: false });
   mark("programsSettled");
   clearInterval(progressTimer);
+  if (look.shift) shiftRuntime = createShiftRuntime(app, look, look.furniture.lamps, skid, { reducedMotion: () => document.body.classList.contains("reduced-motion"), reducedFlash: () => config.reducedFlash || document.body.classList.contains("reduced-motion"), ...(config.at !== undefined ? { at: config.at } : {}) });
   ready = true;
   blackWatch = createBlackFrameWatch(canvas, { enabled: config.heal, storageKey: HEAL_STORAGE_KEY, ...(config.healFrames ? { fastFrames: config.healFrames } : {}) });
   $("loading").classList.add("hidden");

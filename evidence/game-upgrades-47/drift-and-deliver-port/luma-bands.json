@@ -1,0 +1,18 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "drift-and-deliver-port",
+  "note": "GU47 WP-28 acceptance bands (GC-L1, GC-L2, GC-L6, GC-P1, GC-M1, GC-S1, GC-PF1). Crops come from the game's __AURA_QA__.crops (examples/drift-and-deliver-port/qa.ts). Software WebGL2 capture on the remote runner (phase 2).",
+  "default": { "darkFrac": [null, 0.5], "clipFrac": [null, 0.02] },
+  "variants": {
+    "golden": {
+      "mean": [105, 125], "darkFrac": [null, 0.1], "clipFrac": [null, 0.02], "p5": [null, 35], "p95": [205, null],
+      "crops": { "road-bottom": { "p5": [null, 35] } }
+    },
+    "sunset": {
+      "mean": [75, 95], "clipFrac": [null, 0.02],
+      "crops": { "road-bottom": { "spread": [120, null], "above200": [0.01, null] } }
+    },
+    "bluehour": { "mean": [45, 65], "darkFrac": [null, 0.5], "clipFrac": [null, 0.02] },
+    "default": { "darkFrac": [null, 0.1], "clipFrac": [null, 0.02] }
+  }
+}

@@ -101,11 +101,14 @@ export function planProps(f: Furniture, blocks: readonly Block[], buildings: rea
   };
 }
 
+/** Prop kinds that cast in the shift look (GU47 WP-28 GC-L2); trees and palms stay non-casting (leaf cards). */
+export const CASTING_PROPS: readonly PropKey[] = ["lamp", "signal", "shelter", "hydrant", "clocktower", "lighthouse", "watertank"];
+
 /** One instanced draw per prop kind. */
-export function propNodes(plan: PropPlan) {
+export function propNodes(plan: PropPlan, cast = false) {
   const nodes = [];
   for (const [key, transforms] of plan.placements) {
-    nodes.push(instances.model(MODEL_ASSETS[key], { name: `model-${key}`, transforms, castShadow: false, receiveShadow: false }));
+    nodes.push(instances.model(MODEL_ASSETS[key], { name: `model-${key}`, transforms, castShadow: cast && CASTING_PROPS.includes(key), receiveShadow: false }));
   }
   return nodes;
 }

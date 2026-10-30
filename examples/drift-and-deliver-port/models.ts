@@ -52,9 +52,10 @@ export const carScale = (key: CarKey): number => CAR_LENGTH[key] / GLB_LENGTH;
  * Traffic of one car kind as ONE instanced model (one draw per kind instead of one node per car). The app moves the cars
  * with `nodes.require(id).setInstances(transforms)` every frame; `start` holds the first transforms.
  */
-export function trafficInstances(id: string, key: Exclude<CarKey, "courier">, start: readonly { position: [number, number, number]; rotation: [number, number, number] }[]) {
+export function trafficInstances(id: string, key: Exclude<CarKey, "courier">, castShadow: boolean, start: readonly { position: [number, number, number]; rotation: [number, number, number] }[]) {
   const scale = carScale(key);
-  return instances.model(MODEL_ASSETS[key], { name: id, transforms: start.map((t) => ({ position: t.position, rotation: t.rotation, scale })), castShadow: false, receiveShadow: false }).runtime({ id });
+  // GU47 WP-28 GC-L2: traffic casts in the shift look (one instanced shadow draw per kind and cascade)
+  return instances.model(MODEL_ASSETS[key], { name: id, transforms: start.map((t) => ({ position: t.position, rotation: t.rotation, scale })), castShadow, receiveShadow: false }).runtime({ id });
 }
 
 /** Distance from each prop GLB's origin down to its lowest point (GLB units, longest side 1.9). */
