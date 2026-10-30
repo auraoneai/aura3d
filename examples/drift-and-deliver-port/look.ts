@@ -21,6 +21,7 @@ import { heightField, heightToNormal } from "./facadeNormal";
 import { FESTOON, festoonBulbs, festoonIntensity } from "./festoons";
 import { HEADLIGHT, SODIUM_COLOR, SODIUM_POOL, SODIUM_RANGE } from "./lamps";
 import { PALETTE_SLOTS, Palette, bakePaletteUVs, createMesh, quad, toArrays, type MeshData } from "./mesh";
+import { paintRoadMarkings } from "./roadPaint";
 import { paintFacade, paintPalette, paintPark, paintPlaza, paintRoadTile, paintShopfront, paintSky, type FacadeKind } from "./textures";
 import type { Block, Building, Pickup, TrafficCar } from "./world";
 import type { Solid } from "./sim";
@@ -134,6 +135,7 @@ export function paintTextures(quality: "high" | "low", look: LookMode = "origina
   paintRoadTile(road.g, roadPx);
   let roadRoughness: TextureHandle | null = null;
   if (look === "shift") {
+    paintRoadMarkings(road.g, roadPx);
     wetRoad(road.g, roadPx);
     const rough = canvas(roadPx / 2, roadPx / 2);
     paintWetRoughness(rough.g, roadPx / 2);
