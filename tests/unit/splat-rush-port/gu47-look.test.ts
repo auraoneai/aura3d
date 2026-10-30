@@ -5,7 +5,7 @@ import { PIECES, addBackdrop, backdropSway } from "../../../examples/splat-rush-
 import { GATE_COLORS, LOOKS, QA_CROPS, parseLook, sunDirection, timeOfDay, type SplatLook } from "../../../examples/splat-rush-port/look";
 import { IDLE, SplatRushSim } from "../../../examples/splat-rush-port/sim";
 import { PAINT_SPLASH, PAINT_SPLASH_RING, SPLASH_COUNT, fireSplashes, splashesFor } from "../../../examples/splat-rush-port/vfx3d";
-import { BUNTING_COLORS, DECK_DRIPS, DECK_EDGE_X, TITLE_RAIL_SECONDS, buildWorld, presentationPose, buntingMesh, cameraLayers, carnivalToonSpec, rolledUp } from "../../../examples/splat-rush-port/world";
+import { BUNTING_COLORS, DECK_DRIPS, spireRingMesh, DECK_EDGE_X, TITLE_RAIL_SECONDS, buildWorld, presentationPose, buntingMesh, cameraLayers, carnivalToonSpec, rolledUp } from "../../../examples/splat-rush-port/world";
 import { deltaE2000 } from "../../../tools/look-metrics/region-luma.mjs";
 
 const g = globalThis as { document?: unknown };
@@ -219,5 +219,29 @@ describe("GU47 CR-C2: title rail and results orbit", () => {
     const yaw = (q: typeof a) => Math.atan2((q?.x ?? 0) - ball.x, (q?.z ?? 0) - ball.z);
     expect(Math.abs(yaw(b) - yaw(a)) * 180 / Math.PI).toBeGreaterThanOrEqual(10);
     expect(b).toMatchObject({ lookX: ball.x, lookY: ball.y, lookZ: ball.z });
+  });
+});
+
+describe("GU47 CR-W2 horizon spires", () => {
+  it("one static ring node in carnival only, between the road and the sky dome, deterministic", () => {
+    const names = (look: SplatLook) => withDocument(() => (buildWorld({ sim: new SplatRushSim(1), aspect: 1.6, look }).scene.toJSON().nodes as unknown as { name?: string }[]).map((n) => n.name));
+    expect(names(LOOKS.carnival).filter((n) => n === "spires")).toHaveLength(1);
+    expect(names(LOOKS.original)).not.toContain("spires");
+    const row = LOOKS.carnival.spires!;
+    expect(row.count).toBeGreaterThanOrEqual(30);
+    const a = spireRingMesh(row), b = spireRingMesh(row);
+    expect(a.mesh.positions).toEqual(b.mesh.positions);
+    expect(a.tones.length).toBe(a.mesh.positions.length);
+    for (let i = 0; i < a.mesh.positions.length; i += 3) {
+      const r = Math.hypot(a.mesh.positions[i]!, a.mesh.positions[i + 2]!);
+      if (r < 1e-6) continue;
+      expect(r).toBeGreaterThan(80);
+      expect(Math.hypot(r, a.mesh.positions[i + 1]!)).toBeLessThan(120);
+    }
+  });
+
+  it("the spires take the time-of-day uniforms during a run", () => {
+    const run = runLook(LOOKS.carnival, 60);
+    expect(run.rec.uniforms.get("spires")?.has("crFogColor")).toBe(true);
   });
 });

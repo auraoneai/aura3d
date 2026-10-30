@@ -104,6 +104,8 @@ export interface SplatLook {
   /** CR-AN2 backdrop sway amplitude (degrees). */
   readonly sway: null | { readonly balloonDeg: number; readonly islandDeg: number };
   /** CR-M3 paint-drip gate arches and CR-AN1 drip wobble (world units at the bead, Hz) and match squash (seconds). */
+  /** CR-W2 horizon silhouette ring of crayon spires and towers, standing in the cloud sea (one static node). */
+  readonly spires: null | { readonly count: number; readonly radius: number; readonly baseY: number; readonly minHeight: number; readonly maxHeight: number; readonly colors: readonly string[] };
   readonly gates: null | { readonly drips: boolean; readonly wobble: number; readonly wobbleHz: number; readonly squashSeconds: number };
 }
 
@@ -127,6 +129,7 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
     camera: null,
     bunting: null,
     sway: null,
+    spires: null,
     gates: null
   },
   carnival: {
@@ -187,6 +190,7 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
     camera: { maxRollDeg: 3, speedFovDeg: 3 },
     bunting: { spacing: 26 },
     sway: { balloonDeg: 5, islandDeg: 2.5 },
+    spires: { count: 54, radius: 96, baseY: -24, minHeight: 12, maxHeight: 30, colors: ["#4a3f72", "#5a4a80", "#6a5a85"] },
     gates: { drips: true, wobble: 0.045, wobbleHz: 0.9, squashSeconds: 0.25 }
   }
 };

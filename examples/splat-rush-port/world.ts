@@ -10,7 +10,7 @@
  * with `sim.cloudDrift`. Only particles and streaks are rewritten per frame, and only the dirty vertex range uploads.
  */
 import { camera, effects, geometry, material, scene, texture, type AuraApp } from "@aura3d/engine";
-import { blobMesh, capsuleMesh, cylinderMesh, gateDripMesh, mergeMeshes, sphereMesh, transformMesh, type MeshData } from "./meshes";
+import { blobMesh, capsuleMesh, coneMesh, cylinderMesh, gateDripMesh, mergeMeshes, sphereMesh, transformMesh, type MeshData } from "./meshes";
 import { SYMBOL_FOR_COLOR, symbolMesh, type SymbolKind } from "./symbols";
 import { COLORS, CONFIG, POOL, curve, type Gate, type Segment, type SplatRushSim, type Splatter } from "./sim";
 import { gateSquash, gateMatched, type Shown } from "./presentation";
@@ -489,6 +489,38 @@ export function buntingMesh(): { mesh: MeshData; tones: number[] } {
   return { mesh, tones };
 }
 
+/**
+ * CR-W2 crayon spires and towers on a ring around the road (static: the world scrolls past the ball, the horizon does
+ * not). Positions come from a fixed integer hash, never from the sim's random stream. Each piece is a shaft plus a
+ * crayon-tip cone (or a flat-topped tower every third one), toned with the violet haze colours.
+ */
+export function spireRingMesh(row: NonNullable<SplatLook["spires"]>): { mesh: MeshData; tones: number[] } {
+  const hash = (i: number, k: number): number => {
+    let h = (i * 374761393 + k * 668265263) | 0;
+    h = Math.imul(h ^ (h >>> 13), 1274126177);
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+  };
+  const parts: MeshData[] = [];
+  const tones: number[] = [];
+  for (let i = 0; i < row.count; i++) {
+    const a = ((i + 0.6 * hash(i, 1)) / row.count) * Math.PI * 2;
+    const r = row.radius * (0.94 + 0.1 * hash(i, 2));
+    const h = row.minHeight + (row.maxHeight - row.minHeight) * hash(i, 3);
+    const w = 1.6 + 2.2 * hash(i, 4);
+    const x = Math.sin(a) * r, z = -Math.cos(a) * r;
+    const tower = i % 3 === 2;
+    const shaft = transformMesh(cylinderMesh(w * (tower ? 1.2 : 1), w * (tower ? 1.35 : 1), h, 6), { tx: x, ty: row.baseY + h / 2, tz: z });
+    const tip = tower
+      ? transformMesh(cylinderMesh(w * 1.5, w * 1.5, 1.2, 6), { tx: x, ty: row.baseY + h + 0.6, tz: z })
+      : transformMesh(coneMesh(w, w * 2.4, 6, 0), { tx: x, ty: row.baseY + h, tz: z });
+    const piece = mergeMeshes([shaft, tip]);
+    parts.push(piece);
+    const c = hexLinear(row.colors[i % row.colors.length] as string);
+    for (let v = 0; v < piece.positions.length / 3; v++) tones.push(...c);
+  }
+  return { mesh: mergeMeshes(parts), tones };
+}
+
 /* ---------------------------------------------------------------- build */
 
 export interface WorldOptions {
@@ -546,7 +578,7 @@ export let gateVertexCount = 0;
 /** Ids of the merged batch nodes. */
 export const BATCH_IDS = ["deck", "rails", "dashes", "gates", "gate-symbols", "splats", "particles", "clouds", "streaks"] as const;
 /** Carnival toon nodes whose light uniforms follow the time of day. */
-export const TOON_NODE_IDS = ["ball", "deck", "rails", "dashes", "gates", "splats", "particles", "bunting"] as const;
+export const TOON_NODE_IDS = ["ball", "deck", "rails", "dashes", "gates", "splats", "particles", "bunting", "spires"] as const;
 /** CR-M2 plum enamel rails (carnival). */
 export const RAIL_PLUM = "#6a3a6c";
 /** CR-S2 cloud-sea disc radius (inside the 120 m sky dome). */
@@ -640,6 +672,14 @@ export function buildWorld(options: WorldOptions): World {
   /* CR-S2 cloud sea under the road (+1 draw) */
   if (carnival && look.cloudSea) {
     add("cloud-sea", transformMesh(cylinderMesh(SEA_RADIUS, SEA_RADIUS, 0.1, 48), { ty: look.cloudSea.y }), carnivalSeaSpec(look));
+  }
+  /* CR-W2 horizon spires (carnival, +1 draw, existing carnival toon-tone program, hazed to the stage horizon) */
+  if (carnival && look.spires) {
+    const ring = spireRingMesh(look.spires);
+    builder.add(geometry.custom(geometry.dynamic({
+      positions: f32(ring.mesh.positions), normals: f32(ring.mesh.normals), uvs: f32(ring.mesh.uvs), indices: Uint32Array.from(ring.mesh.indices), bounds: OPEN_BOUNDS,
+      attributes: { tone: { itemSize: 3, data: f32(ring.tones) } }
+    }), { name: "spires", material: material.custom(toon([1, 1, 1], { tone: true })) }).runtime({ id: "spires" }));
   }
   addBackdrop(builder, look);
 
