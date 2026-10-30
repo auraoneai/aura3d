@@ -149,8 +149,8 @@ describe("slingshot-siege reduced motion (PRD §6.3)", () => {
     expect(calm[SIEGE_VFX.boarHit].layers.some((l) => l.type === "camera")).toBe(false);
     for (const spec of Object.values(calm)) {
       for (const layer of spec.layers.filter((l) => l.type === "light")) {
-        expect((layer as { intensity: number }).intensity).toBeLessThanOrEqual(0.3);
-        expect((layer as { duration: number }).duration).toBeLessThanOrEqual(0.2);
+        expect((layer as unknown as { intensity: number }).intensity).toBeLessThanOrEqual(0.3);
+        expect((layer as unknown as { duration: number }).duration).toBeLessThanOrEqual(0.2);
       }
     }
   });
