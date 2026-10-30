@@ -3,7 +3,7 @@ import { createAuraApp, createFixedStepLoop, type AuraRuntimeNodeHandle } from "
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { createFixedStepPresenter, installGameBeacon } from "@aura3d/engine/game";
 import { createThermalDriftAudio } from "./audio";
-import { ChaseCamera, projectToScreen, type ScreenPoint } from "./camera";
+import { ChaseCamera, projectToScreen, type CameraShot, type ScreenPoint } from "./camera";
 import { CIRCUITS, DRONE_ORDER, DRONE_SPECS, SCENERY_ANCHORS, TOTAL_LAPS, type CircuitId, type DroneId, type ModeId } from "./data";
 import { createInputs } from "./input";
 import { createHud } from "./hud";
@@ -388,6 +388,7 @@ async function boot(): Promise<void> {
   /** HUD timers (banners, messages, countdown digits) run on wall-clock time, so they clear on time even when the
    *  page draws a frame every few seconds; the camera smoothing keeps the clamped frame time. */
   let lastHudAt = performance.now();
+  let resultsSeconds = 0;
   function draw(frameSeconds: number): void {
     const now = performance.now();
     const hudSeconds = Math.min(1, Math.max(0, (now - lastHudAt) / 1000));
@@ -555,19 +556,27 @@ async function boot(): Promise<void> {
     // Camera
     track.place(18, shown.player[1]! * 0.4, 1.8, pose2);
     const aspect = (auraApp.canvas?.clientWidth || innerWidth) / Math.max(1, auraApp.canvas?.clientHeight || innerHeight);
+    // HS-17 shots: title pose, one countdown shot per digit, the results orbit (wall-clock seconds since results).
+    if (race.phase === "results") resultsSeconds += frameSeconds; else resultsSeconds = 0;
+    const shot: CameraShot = !started ? { kind: "title" }
+      : race.phase === "countdown" ? { kind: "countdown", digit: Math.ceil(race.countdown) }
+      : race.phase === "results" ? { kind: "results", seconds: resultsSeconds }
+      : { kind: "chase" };
     const cam = chase.update(frameSeconds, {
       drone: dronePos,
       lookAt: [pose2.x, pose2.y, pose2.z],
       boosting: race.phase === "racing" && p.boosting,
       hyper: p.hyper > 0,
       aspect,
-      reducedMotion: reduced
+      reducedMotion: reduced,
+      shot
     });
-    auraApp.camera?.setPose({ position: [...cam.position], target: [...cam.target], fov: cam.fov });
+    auraApp.camera?.setPose({ position: [...cam.position], target: [...cam.target], up: [...cam.up], roll: cam.roll, fov: cam.fov }, chase.cut ? { cut: true } : undefined);
 
     // Lock bracket through the real camera (C7).
     const presented = auraApp.camera?.presented?.();
-    const camPose = presented && presented.position ? presented : cam;
+    // The presented pose carries position, target and fov; the rolled up vector is the chase camera's (HS-17 bank).
+    const camPose = presented && presented.position ? { position: presented.position, target: presented.target, up: cam.up, fov: presented.fov } : cam;
     let lock: { x: number; y: number; offscreen: boolean; name: string; dist: number } | null = null;
     if (race.locked >= 0) {
       const lr = race.rivals[race.locked]!;
