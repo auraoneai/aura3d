@@ -10,9 +10,13 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  * (evidence/aura-slam/frames-reference.json, or a staged tests/browser/aura-slam-frames-reference.json) has a row for the venue, the parity thresholds:
  * luma/RGB histogram JSD <= 0.05, edge-density ratio 0.9..1.1, mean luma delta <= 4.
  * Remote run: SPECS="@headed-xvfb tests/browser/aura-slam-render.spec.ts" PUBLIC_ASSETS="showcaseStadiumSeats.afb44897.glb rooftopScoreboardRigMeshy.866123b7.glb rooftopFloodlightTowerMeshy.1bfcdd0b.glb" tools/remote-acr/run.sh
+ *
+ * GU47 WP-11 (TT-PF1): the default is the World Tour look, held to the WP budget (<= 150 draws at 1280 and 640, <= 170 at
+ * 390x844). The live-game parity thresholds only apply to today's look: `SLAMR_LOOK=original` renders `?look=original`.
  */
 const VENUES = ["hard", "grass", "clay", "desert", "beach", "moon"] as const;
-const SIZES = [{ width: 1280, height: 720 }, { width: 640, height: 360 }] as const;
+const SIZES = [{ width: 1280, height: 720, budget: 150 }, { width: 640, height: 360, budget: 150 }, { width: 390, height: 844, budget: 170 }] as const;
+const ORIGINAL_LOOK = process.env.SLAMR_LOOK === "original";
 const REFERENCE_PATH = ["evidence/aura-slam/frames-reference.json", "tests/browser/aura-slam-frames-reference.json"].find((f) => existsSync(f)) ?? "evidence/aura-slam/frames-reference.json";
 
 interface RefFrame { venue?: string; width?: number; height?: number; stats?: ImageStats; metrics?: ImageStats }
@@ -59,7 +63,7 @@ test.describe("aura-slam render parity (G3)", () => {
     for (const size of SIZES) {
       await page.setViewportSize(size);
       for (const venue of VENUES) {
-        await page.goto(`${server.origin}/examples/aura-slam/view/harness.html?venue=${venue}`, { waitUntil: "domcontentloaded" });
+        await page.goto(`${server.origin}/examples/aura-slam/view/harness.html?venue=${venue}${ORIGINAL_LOOK ? "&look=original" : ""}`, { waitUntil: "domcontentloaded" });
         await page.waitForFunction(() => (window as unknown as { __AURA_SLAM_RENDER__?: { ready(): boolean } }).__AURA_SLAM_RENDER__?.ready() === true, undefined, { timeout: 600_000 });
         await page.evaluate((v) => (window as unknown as { __AURA_SLAM_RENDER__: { show(v: string): Promise<void> } }).__AURA_SLAM_RENDER__.show(v), venue);
         await page.waitForFunction(() => ((window as unknown as { __AURA_SLAM_RENDER__: { drawCalls(): number | null } }).__AURA_SLAM_RENDER__.drawCalls() ?? 0) > 0, undefined, { timeout: 600_000, polling: 1000 });
@@ -70,7 +74,7 @@ test.describe("aura-slam render parity (G3)", () => {
         const img = await decode(page, png);
         const stats = imageStats(img);
         const row: Record<string, unknown> = { venue, width: size.width, height: size.height, drawCalls, lumaMean: stats.lumaMean, edgeDensity: stats.edgeDensity };
-        const ref = reference.find((r) => r.venue === venue && (r.width ?? size.width) === size.width && (r.stats ?? r.metrics));
+        const ref = ORIGINAL_LOOK ? reference.find((r) => r.venue === venue && (r.width ?? size.width) === size.width && (r.stats ?? r.metrics)) : undefined;
         if (ref) {
           const d = frameDistance((ref.stats ?? ref.metrics)!, stats);
           Object.assign(row, { lumaJsd: d.lumaJsd, rgbJsd: d.rgbJsd, edgeRatio: stats.edgeDensity / Math.max(1e-9, (ref.stats ?? ref.metrics)!.edgeDensity), lumaDelta: stats.lumaMean - (ref.stats ?? ref.metrics)!.lumaMean });
@@ -88,7 +92,7 @@ test.describe("aura-slam render parity (G3)", () => {
         expect(stats.lumaMean, `${venue} not blank`).toBeGreaterThan(8);
         expect(stats.lumaMean, `${venue} not blown out`).toBeLessThan(245);
         console.log(`SLAMR_DRAWCALLS ${venue} ${size.width} ${drawCalls}`);
-        expect(drawCalls ?? 0, `${venue} draw calls`).toBeLessThanOrEqual(150);
+        expect(drawCalls ?? 0, `${venue} draw calls at ${size.width}x${size.height}`).toBeLessThanOrEqual(size.budget);
       }
     }
     const matched = results.filter((r) => r.lumaJsd !== undefined).length;
