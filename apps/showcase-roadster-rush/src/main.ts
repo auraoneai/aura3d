@@ -25,6 +25,7 @@ import {
   APEX_LOOK,
   APEX_MOTION_BLUR,
   APEX_PALETTE,
+  APEX_PRACTICALS,
   APEX_SUN,
   apexLookAt,
   hexToUnit,
@@ -121,6 +122,10 @@ const VEHICLE_ASSET: Record<VehicleType, { maxDim: number; role: "primaryVehicle
 const MODEL_WIDTH_OVER_SPEC: Partial<Record<VehicleType, number>> = { boxtruck: 1.72, carrier: 3.0 };
 const MODEL_WIDTH_FIT = 1.25;
 const TRAFFIC_YAW = trafficYawOffset(meshyVehicles.enabled);
+
+/** AO-L3 practical intensities at full night (phase 2 calibrates against the night bottom-centre cell). */
+const SODIUM_INTENSITY = 26;
+const HEADLIGHT_INTENSITY = 18;
 
 const BRAKE_BAR_CAPACITY = 48;
 const BLINKER_CAPACITY = 24;
@@ -329,6 +334,23 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         ],
         runtime: { id: SUN_FLARE_ID }
       })
+    );
+  }
+
+  // AO-L3: night practicals (art direction: 6 = the fill above + these 5): three sodium spots that ride the pole rows ahead
+  // and the hero's two headlights. All start dark; the time of day scales them and the frame loop moves them.
+  for (let i = 0; i < APEX_PRACTICALS.sodiumSpots; i++) {
+    s.add(
+      lights
+        .spot({ name: `apex-sodium-${i}`, color: APEX_PALETTE.sodium, intensity: 0, position: [0, 7.4, -20 - i * 34], target: [0, 0, -20 - i * 34], angle: 0.85, penumbra: 0.55, distance: 34, decay: 2, shadow: false })
+        .runtime({ id: `apex-sodium-${i}` })
+    );
+  }
+  for (const side of ["l", "r"] as const) {
+    s.add(
+      lights
+        .spot({ name: `apex-headlight-${side}`, color: "#e8eeff", intensity: 0, position: [side === "l" ? -0.74 : 0.74, 0.56, -3.2], target: [side === "l" ? -1.2 : 1.2, 0, -30], angle: 0.42, penumbra: 0.5, distance: 60, decay: 2, shadow: false })
+        .runtime({ id: `apex-headlight-${side}` })
     );
   }
 
@@ -732,6 +754,11 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   /** The look row the last time-of-day bucket resolved (practicals, emissive gains and the QA hook read it). */
   let lookFrame = apexLookAt(0);
   const sunFlare = auraApp.nodes.get(SUN_FLARE_ID);
+  // AO-L3 practicals; an explicit direction keeps each beam fixed while the frame loop carries the light (E-B setLight)
+  const sodiumSpots = Array.from({ length: APEX_PRACTICALS.sodiumSpots }, (_, i) => auraApp.nodes.get(`apex-sodium-${i}`));
+  const headlights = (["l", "r"] as const).map((side) => auraApp.nodes.get(`apex-headlight-${side}`));
+  sodiumSpots.forEach((spot, i) => spot?.setLight?.({ direction: [i % 2 === 0 ? 0.32 : -0.32, -1, 0] }));
+  headlights.forEach((light) => light?.setLight?.({ direction: [0, -0.1, -1] }));
 
   // AO-P3 / AO-P4 / AO-PF1: High-only motion blur and god rays, no DOF; re-applied when the quality tier changes.
   let postStates: Readonly<Record<string, boolean>> = {};
@@ -918,6 +945,17 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     }
     lookFrame = frame;
     syncTodButtons(tod);
+    // AO-L3: sodium pool and headlights scale with the row (sodium 0 / 0.35 / 1, headlights on from dusk); dark lights hide
+    const sodium = frame.signature.sodium;
+    for (const spot of sodiumSpots) {
+      spot?.setLight?.({ intensity: round3(SODIUM_INTENSITY * sodium) }, blend);
+      spot?.setVisible(sodium > 0.02);
+    }
+    const beams = frame.signature.headlights;
+    for (const light of headlights) {
+      light?.setLight?.({ intensity: round3(HEADLIGHT_INTENSITY * beams) }, blend);
+      light?.setVisible(beams > 0.02);
+    }
 
     // AO-A1: the tower glass reflects the same dome row and lights its floors toward night
     for (const variant of TOWER_VARIANTS) {
@@ -1305,6 +1343,13 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     polePool.commit();
     armPool.commit();
     lampPool.commit();
+    // AO-L3: the sodium spots hang under the lamp heads of the next three pole rows, alternating sides
+    for (let k = 0; k < sodiumSpots.length; k++) {
+      const spot = sodiumSpots[k];
+      if (!spot) continue;
+      const side = k % 2 === 0 ? -1 : 1;
+      spot.setPosition(rx(side * 10.55), ry(7.3), rz(poleBaseZ - (k + 1) * POLE_STRIDE_Z));
+    }
 
     // AO-A1: glass towers, world-anchored rows from one behind the camera to ~560 m ahead (audit RR-8 recycling rule)
     for (const variant of TOWER_VARIANTS) towerPools[variant].begin();
@@ -1362,6 +1407,8 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       .setPosition(hlRightW[0], hlRightW[1], hlRightW[2])
       .setRotation(pitch, yaw, roll)
       .setVisible(true);
+    headlights[0]?.setPosition(hlLeftW[0], hlLeftW[1], hlLeftW[2] - 0.2);
+    headlights[1]?.setPosition(hlRightW[0], hlRightW[1], hlRightW[2] - 0.2);
 
     // Cold-Gas Thruster Plumes (no 8.8 Hz flicker under reduced motion, audit RR-E4)
     const rearPlumeLevel = clamp(
