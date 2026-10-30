@@ -118,6 +118,8 @@ in vec3 vWorld;
 in float vKind;
 in float vPhase;
 out vec4 outColor;
+#define WIND_SUN_SHADOW 1
+#include <a3d_shadow>
 ${COMMON}
 ${PLAYER_FADE}
 
@@ -259,6 +261,8 @@ in vec3 vTint;
 in vec3 vNormal;
 in vec3 vWorld;
 out vec4 outColor;
+#define WIND_SUN_SHADOW 1
+#include <a3d_shadow>
 ${COMMON}
 void main() {
   vec2 p = vWorld.xz;
@@ -418,6 +422,8 @@ in vec3 vWorld;
 in vec2 vUv;
 in float vKind;
 out vec4 outColor;
+#define WIND_SUN_SHADOW 1
+#include <a3d_shadow>
 ${COMMON}
 ${PLAYER_FADE}
 

@@ -50,32 +50,34 @@ const xf = (p: ModelPlacement, scale: number, yawOffset = 0, lift = 0) => ({ pos
 
 /**
  * Static dressing: cottages, the bell frame (and its swinging bell), trees, shrubs, stones. The animated pieces (hero,
- * wisp, boat) are added by `addAnimatedModels`. Nothing casts or receives engine shadows: the scene authors no lights
- * (the painted shaders carry their own key light and the GLBs take the engine's implicit fill), so there is no shadow
- * light, and the traveller's contact shadow is the scene's own blob.
+ * wisp, boat) are added by `addAnimatedModels`. GU47 WW47-L2: with `shadows` (High, GU47 look) every GLB casts and
+ * receives the engine sun's shadow; without it (Low, `?look=original`) nothing does, as in 4.6. Trees cast from their
+ * own mesh (the GLBs are 0.5k-1.3k triangles, so a shadow LOD buys nothing); foliage cards never cast (PF1).
  */
-export function addStaticModels(builder: Scene, sc: Scenery, set: ModelSet): void {
+export function addStaticModels(builder: Scene, sc: Scenery, set: ModelSet, shadows = false): void {
+  const castShadow = shadows, receiveShadow = shadows;
   if (set.cottage) {
-    sc.placements.cottages.forEach((p, i) => builder.add(model(MODEL_ASSETS.cottage, { name: `cottage-${i}`, targetHeight: p.h ?? 8, position: [p.x, p.y, p.z], rotation: [0, p.yaw, 0], castShadow: false, receiveShadow: false, collider: false })));
+    sc.placements.cottages.forEach((p, i) => builder.add(model(MODEL_ASSETS.cottage, { name: `cottage-${i}`, targetHeight: p.h ?? 8, position: [p.x, p.y, p.z], rotation: [0, p.yaw, 0], castShadow, receiveShadow, collider: false })));
   }
-  if (set.bell) sc.placements.bell.forEach((p) => builder.add(model(MODEL_ASSETS.belltower, { name: "belltower", targetHeight: p.h ?? BELLTOWER_HEIGHT, position: [p.x, p.y, p.z], rotation: [0, 0, 0], castShadow: false, receiveShadow: false, collider: false })));
+  if (set.bell) sc.placements.bell.forEach((p) => builder.add(model(MODEL_ASSETS.belltower, { name: "belltower", targetHeight: p.h ?? BELLTOWER_HEIGHT, position: [p.x, p.y, p.z], rotation: [0, 0, 0], castShadow, receiveShadow, collider: false })));
   if (set.bellModel) sc.placements.bell.slice(0, 1).forEach((p) => {
     const pose = bellModelPose(p);
-    builder.add(model(MODEL_ASSETS.bell, { name: "belltower-bell", scaleMode: "world", scale: [pose.scale, pose.scale, pose.scale], position: pose.position, castShadow: false, receiveShadow: false, collider: false }).runtime({ id: "bell-model" }));
+    builder.add(model(MODEL_ASSETS.bell, { name: "belltower-bell", scaleMode: "world", scale: [pose.scale, pose.scale, pose.scale], position: pose.position, castShadow, receiveShadow, collider: false }).runtime({ id: "bell-model" }));
   });
   if (set.trees) {
-    if (sc.placements.pines.length > 0) builder.add(instances.model(MODEL_ASSETS.pine, { name: "pines", targetHeight: 6, transforms: sc.placements.pines.map((p) => xf(p, (p.h ?? 6) / 6)), castShadow: false, receiveShadow: false, collider: false }));
-    if (sc.placements.oaks.length > 0) builder.add(instances.model(MODEL_ASSETS.oak, { name: "oaks", targetHeight: 6, transforms: sc.placements.oaks.map((p) => xf(p, (p.h ?? 6) / 6)), castShadow: false, receiveShadow: false, collider: false }));
+    if (sc.placements.pines.length > 0) builder.add(instances.model(MODEL_ASSETS.pine, { name: "pines", targetHeight: 6, transforms: sc.placements.pines.map((p) => xf(p, (p.h ?? 6) / 6)), castShadow, receiveShadow, collider: false }));
+    if (sc.placements.oaks.length > 0) builder.add(instances.model(MODEL_ASSETS.oak, { name: "oaks", targetHeight: 6, transforms: sc.placements.oaks.map((p) => xf(p, (p.h ?? 6) / 6)), castShadow, receiveShadow, collider: false }));
   }
-  if (set.shrubs && sc.placements.shrubs.length > 0) builder.add(instances.model(MODEL_ASSETS.shrub, { name: "shrubs", targetHeight: 1.2, transforms: sc.placements.shrubs.map((p) => xf(p, p.s)), castShadow: false, collider: false }));
-  if (set.stones && sc.placements.stones.length > 0) sc.placements.stones.forEach((p, i) => builder.add(model(MODEL_ASSETS.stones, { name: `stones-${i}`, targetHeight: 3.2 * p.s, position: [p.x, p.y, p.z], rotation: [0, p.yaw, 0], castShadow: false, collider: false })));
+  if (set.shrubs && sc.placements.shrubs.length > 0) builder.add(instances.model(MODEL_ASSETS.shrub, { name: "shrubs", targetHeight: 1.2, transforms: sc.placements.shrubs.map((p) => xf(p, p.s)), castShadow, receiveShadow, collider: false }));
+  if (set.stones && sc.placements.stones.length > 0) sc.placements.stones.forEach((p, i) => builder.add(model(MODEL_ASSETS.stones, { name: `stones-${i}`, targetHeight: 3.2 * p.s, position: [p.x, p.y, p.z], rotation: [0, p.yaw, 0], castShadow, receiveShadow, collider: false })));
 }
 
-export function addAnimatedModels(builder: Scene, set: ModelSet, letterCount: number): void {
-  if (set.letter) for (let i = 0; i < letterCount; i++) builder.add(model(MODEL_ASSETS.letter, { name: `letter-${i}`, targetMaxDimension: 0.95, castShadow: false, collider: false }).runtime({ id: `letter-${i}` }));
-  if (set.hero) builder.add(model(MODEL_ASSETS.hero, { name: "hero", targetHeight: 2.9, castShadow: false, receiveShadow: false, collider: false }).runtime({ id: "hero" }));
+export function addAnimatedModels(builder: Scene, set: ModelSet, letterCount: number, shadows = false): void {
+  const castShadow = shadows, receiveShadow = shadows;
+  if (set.letter) for (let i = 0; i < letterCount; i++) builder.add(model(MODEL_ASSETS.letter, { name: `letter-${i}`, targetMaxDimension: 0.95, castShadow: false, receiveShadow, collider: false }).runtime({ id: `letter-${i}` }));
+  if (set.hero) builder.add(model(MODEL_ASSETS.hero, { name: "hero", targetHeight: 2.9, castShadow, receiveShadow, collider: false }).runtime({ id: "hero" }));
   if (set.wisp) builder.add(model(MODEL_ASSETS.wisp, { name: "wisp", targetHeight: 0.9, castShadow: false, receiveShadow: false, collider: false }).runtime({ id: "wisp" }));
-  if (set.boat) builder.add(model(MODEL_ASSETS.boat, { name: "boat", targetLength: 5.4, castShadow: false, collider: false }).runtime({ id: "boat" }));
+  if (set.boat) builder.add(model(MODEL_ASSETS.boat, { name: "boat", targetLength: 5.4, castShadow, receiveShadow, collider: false }).runtime({ id: "boat" }));
 }
 
 export interface HeroDrive { x: number; z: number; airborne: boolean; onBoat: boolean; time: number }

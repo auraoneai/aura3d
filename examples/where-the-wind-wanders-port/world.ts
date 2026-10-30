@@ -7,10 +7,11 @@
  * a painted sky with clouds and light shafts, water with foam, an animated traveller, glowing
  * letters and a bell. Gameplay state comes from `sim.ts`; this module only draws it.
  */
-import { camera, effects, geometry, material, scene, type AuraApp } from "@aura3d/engine";
+import { camera, effects, environments, geometry, lights, material, scene, type AuraApp } from "@aura3d/engine";
+import { ENV_ASSETS, VALLEY_IBL_INTENSITY } from "./env-assets";
 import { BELL, CAMERA_OFFSET, LETTERS, START, type WindState } from "./sim";
 import { GLOW_FRAGMENT, GLOW_VERTEX, HAZE_FRAGMENT, HAZE_VERTEX, MOTE_FRAGMENT, MOTE_VERTEX, PAINT_FRAGMENT, PAINT_VERTEX, PROP_FRAGMENT, PROP_VERTEX, SEA_FRAGMENT, SHAFT_FRAGMENT, SKY_FRAGMENT, STREAM_FRAGMENT, SKY_VERTEX, TRAVELLER_VERTEX, WIND_FRAGMENT, WIND_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX } from "./shaders";
-import { ORIGINAL_KEY, createDaylightDriver, daylightKeyFor, frameOfKey, type DaylightFrame } from "./daylight";
+import { DAYLIGHT_KEYS, ORIGINAL_KEY, createDaylightDriver, daylightKeyFor, frameOfKey, linearToHex, type DaylightFrame } from "./daylight";
 import { lin, toGeometryInput, type Mesh, type Rgb } from "./meshkit";
 import { buildScenery } from "./scenery";
 import { addAnimatedModels, addStaticModels, availableModels, createHeroAnimator, type ModelSet } from "./models";
@@ -71,8 +72,9 @@ export const skySpec = (): CustomSpec => ({
   depthWrite: false,
   side: "double"
 });
-export const propSpec = (): CustomSpec => ({
+export const propSpec = (castShadow = false): CustomSpec => ({
   glsl: { vertex: PROP_VERTEX, fragment: PROP_FRAGMENT },
+  ...(castShadow ? { castShadow: true } : {}),
   uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 }, playerPos: { type: "vec3", value: [1e4, 0, 1e4] } },
   side: "double"
 });
@@ -201,6 +203,16 @@ export function bellSwing(time: number, complete: boolean, amplitude = 1, motion
 }
 /** The model bell's frame is about 0.5 file units wide around a 0.35-wide bell: about a third of the procedural swing fits. */
 export const MODEL_BELL_AMPLITUDE = 0.32;
+/** Engine sky-fill intensity (the painted programs carry their own hemisphere term at 0.92). */
+export const HEMI_INTENSITY = 0.6;
+/** Lantern point light: peak intensity at the key's full `lanterns` level, and range in metres (WW47-L5). */
+export const LANTERN_PEAK = 5;
+export const LANTERN_RANGE = 9;
+/** The brass point inside the bell: base level after the bell rings, plus a pulse with the swing. */
+export function bellLightIntensity(complete: boolean, swing: number, lanterns: number): number {
+  if (!complete) return 0;
+  return 1.5 * lanterns + 4 * Math.min(1, Math.abs(swing) / 0.32);
+}
 /** Epilogue camera height above its look target. */
 export const EPILOGUE_CAMERA_RISE = 6.4;
 
@@ -232,6 +244,8 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
   /** Every node drawn with a COMMON-based program: each gets the daylight uniforms every frame. */
   const daylightIds: string[] = [];
   const lit = (id: string): string => { daylightIds.push(id); return id; };
+  /** WW47-L2: the engine sun casts on High; Low and the original look draw no shadow rows (PRD §6.4). */
+  const shadows = !original && options.quality !== "low";
   /** Reduced motion: smaller bell swing, slower grass and leaf sway, a gentler voyage camera. */
   const motion = (): number => (options.reducedMotion?.() ? 0.3 : 1);
   const rand = lehmer(20261022);
@@ -241,6 +255,24 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
   const builder: Scene = scene()
     .background("#b8d0bd")
     .camera(camera.perspective({ position: [START.x + CAMERA_OFFSET.x, 6.7, 21], target: [START.x, 2.2, 0.5], fov: 43, near: 0.15, far: 900 }));
+
+  /* ---- GU47 WW47-L2/L3/L4/L5: one engine sun matching the daylight key, a matching sky fill and an IBL for the GLBs ---- */
+  if (!original) {
+    const k0 = frameOfKey(DAYLIGHT_KEYS[options.daylightKey ?? 0] ?? DAYLIGHT_KEYS[0]!);
+    const d = k0.sunDir;
+    builder.add(lights.directional({
+      name: "valley sun",
+      position: [START.x + d[0] * 60, d[1] * 60, START.z + d[2] * 60],
+      target: [START.x, 0, START.z],
+      color: linearToHex(k0.sunColor),
+      intensity: k0.engineSunIntensity,
+      shadow: shadows ? { cascades: 2, mapSize: 2048, filter: "pcss", maxDistance: 70 } : false
+    }).runtime({ id: "sun" }));
+    builder.add(lights.hemisphere({ name: "valley sky fill", skyColor: linearToHex(k0.hemiSky), groundColor: linearToHex(k0.hemiGround), intensity: HEMI_INTENSITY }).runtime({ id: "sky-fill" }));
+    builder.add(environments.hdri({ name: "valley ibl", texture: ENV_ASSETS.valleyIbl as never, intensity: VALLEY_IBL_INTENSITY, background: false }));
+    sc.lanterns.forEach((p, i) => builder.add(lights.point({ name: `lantern ${i}`, position: [p.x, p.y, p.z], color: "#ffbf66", intensity: 0, distance: LANTERN_RANGE }).runtime({ id: `lantern-light-${i}` })));
+    builder.add(lights.point({ name: "bell brass", position: [sc.bellHang.x, sc.bellHang.y - 0.45, sc.bellHang.z + 0.25], color: "#ffcf7a", intensity: 0, distance: 6 }).runtime({ id: "bell-light" }));
+  }
 
   /* ---- terrain with baked shadows ---- */
   const terrain = buildTerrain(0.8, sc.blobs);
@@ -399,11 +431,11 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
   }
 
   /* ---- merged scenery ---- */
-  builder.add(geometry.custom(dynamic(sc.props), { name: "scenery", material: material.custom(propSpec()) }).runtime({ id: lit("props") }));
-  builder.add(geometry.custom(dynamic(sc.sails), { name: "windmill-sails", material: material.custom(propSpec()) }).runtime({ id: lit("sails") }));
+  builder.add(geometry.custom(dynamic(sc.props), { name: "scenery", material: material.custom(propSpec(shadows)) }).runtime({ id: lit("props") }));
+  builder.add(geometry.custom(dynamic(sc.sails), { name: "windmill-sails", material: material.custom(propSpec(shadows)) }).runtime({ id: lit("sails") }));
   builder.add(geometry.custom(dynamic(sc.bellMesh), { name: "bell", material: material.custom(propSpec()) }).runtime({ id: lit("bell") }));
   if (!set.boat) builder.add(geometry.custom(dynamic(sc.boat), { name: "boat", material: material.custom(propSpec()) }).runtime({ id: lit("boat") }));
-  addStaticModels(builder, sc, set);
+  addStaticModels(builder, sc, set, shadows);
   LETTERS.forEach((_, i) => {
     if (!set.letter) builder.add(geometry.custom(dynamic(sc.envelope), { name: `letter-${i}`, material: material.custom(propSpec()) }).runtime({ id: lit(`letter-${i}`) }));
     builder.add(geometry.custom(geometry.dynamic(quad(1.5)), { name: `letter-glow-${i}`, material: material.custom(glowSpec(lin("#ffe9a0"), 1.5, i * 2.1)) }).runtime({ id: lit(`letter-glow-${i}`) }));
@@ -418,7 +450,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
   if (!set.hero) builder.add(geometry.custom(dynamic(sc.traveller, true), { name: "traveller", material: material.custom(travellerSpec()) }).runtime({ id: lit("traveller") }));
   builder.add(geometry.custom(geometry.dynamic(ground(0.8)), { name: "traveller-shadow", material: material.custom(blobSpec()) }).runtime({ id: "shadow" }));
   if (!set.wisp) builder.add(geometry.custom(dynamic(sc.wisp), { name: "wisp", material: material.custom(propSpec()) }).runtime({ id: lit("wisp") }));
-  addAnimatedModels(builder, set, LETTERS.length);
+  addAnimatedModels(builder, set, LETTERS.length, shadows);
   builder.add(geometry.custom(geometry.dynamic(quad(1.1)), { name: "wisp-glow", material: material.custom(glowSpec(lin("#b78cff"), 1.1, 2.7)) }).runtime({ id: lit("wisp-glow") }));
 
   /* ---- floating pollen ---- */
@@ -473,6 +505,16 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         if (f === shownDaylight) return;
         shownDaylight = f;
         for (const id of daylightIds) writeDaylightUniforms(node(id), f);
+        if (original) return;
+        // WW47-L4: the engine sun follows the day (E-B setLight); its direction is the uniform's, negated (light travel)
+        node("sun").setLight?.({ direction: [-f.sunDir[0], -f.sunDir[1], -f.sunDir[2]], color: linearToHex(f.sunColor), intensity: f.engineSunIntensity });
+        node("sky-fill").setLight?.({ color: linearToHex(f.hemiSky), intensity: HEMI_INTENSITY });
+        app.lighting?.setEnvironmentIntensity?.(f.envIntensity / VALLEY_IBL_INTENSITY);
+        sc.lanterns.forEach((_, i) => {
+          node(`lantern-light-${i}`).setLight?.({ intensity: LANTERN_PEAK * f.lanterns });
+          // the halo ramps with the light: 0.5 in daylight to 1.6 at dusk (WW47-L5 lantern crop >= 1.5x found 0)
+          node(`lantern-glow-${i}`).setUniform?.("glowAmount", 0.5 + 1.1 * f.lanterns);
+        });
       };
       return {
         foliageCards: cardCount,
@@ -554,6 +596,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
             bellAngle = bellSwing(time, complete, 1, motion());
             node("bell").setPosition(sc.bellHang.x, sc.bellHang.y, sc.bellHang.z).setRotation(0, 0, bellAngle);
           }
+          if (!original) node("bell-light").setLight?.({ intensity: bellLightIntensity(complete, bellAngle, daylight.frame.lanterns) });
           node("bell-glow").setPosition(sc.bellHang.x, sc.bellHang.y - 0.55, sc.bellHang.z + 0.2);
           const bg = node("bell-glow");
           bg.setUniform?.("windTime", time);

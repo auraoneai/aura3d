@@ -1,0 +1,370 @@
+{
+  "schema": "aura3d.art-direction-audit/1",
+  "source": "examples/where-the-wind-wanders-port/art/direction.ts",
+  "sourceSha256": "a2db469ee75f66ff6523bbd27dde928035f9ee464a2a590740521176723e5934",
+  "id": "where-the-wind-wanders-port",
+  "genre": "platformer",
+  "signatureEffect": "Visible wind over a gouache valley: cloud shadows and gust waves roll downwind across sage grass while one continuous day moves from afternoon to lilac dusk.",
+  "palette": {
+    "primary": [
+      "#8fae6a",
+      "#3f7f86",
+      "#ffc58a"
+    ],
+    "accent": "#d9a441",
+    "reservedObjective": "#b8432f"
+  },
+  "environment": {
+    "hdri": "kloppenheim_06_puresky",
+    "background": "sky"
+  },
+  "violations": [],
+  "snapshot": {
+    "lights": [
+      {
+        "type": "directional",
+        "shadow": true,
+        "intensity": 2.6
+      },
+      {
+        "type": "hemisphere",
+        "shadow": false,
+        "intensity": 0.6
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 0
+      },
+      {
+        "type": "point",
+        "shadow": false,
+        "intensity": 0
+      }
+    ],
+    "hasAmbient": false,
+    "environment": {
+      "kind": "hdri",
+      "background": false
+    },
+    "models": [
+      {
+        "assetKey": "cottage",
+        "triangles": 52686,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "belltower",
+        "triangles": 26014,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "bell",
+        "triangles": 1074,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "pine",
+        "triangles": 849,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "oak",
+        "triangles": 1324,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "shrub",
+        "triangles": 498,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "stones",
+        "triangles": 22516,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "letter",
+        "triangles": 22374,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hero",
+        "triangles": 12345,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "wisp",
+        "triangles": 21304,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "boat",
+        "triangles": 27958,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
+    "drawCalls": 0
+  },
+  "direction": {
+    "id": "where-the-wind-wanders-port",
+    "genre": "platformer",
+    "fantasy": "A storybook gouache valley where the wind is a character and the day moves on with every letter you find.",
+    "rebuildTier": "S-presentation",
+    "wave": 1,
+    "references": [
+      {
+        "file": "references/gouache-valley.md",
+        "source": "generic reference: children's picture-book gouache landscapes (flat painted surfaces, soft dry-brush edges)",
+        "licence": "reference-only",
+        "why": "Untextured painted surfaces with brush grain and soft value steps instead of photographic texture detail"
+      },
+      {
+        "file": "references/late-afternoon-light.md",
+        "source": "generic reference: late-afternoon to dusk plein-air colour studies of a coastal valley",
+        "licence": "reference-only",
+        "why": "A low apricot sun from the west-southwest with long shadows, warm grass and a slate-teal sea in cool shade"
+      },
+      {
+        "file": "references/visible-wind.md",
+        "source": "generic reference: wind-swept meadow footage, cloud shadows rolling over grassland",
+        "licence": "reference-only",
+        "why": "Gust bands travelling through tall grass and cloud shadows drifting downwind make the wind itself visible"
+      }
+    ],
+    "palette": {
+      "primary": [
+        "#8fae6a",
+        "#3f7f86",
+        "#ffc58a"
+      ],
+      "accent": "#d9a441",
+      "reservedObjective": "#b8432f"
+    },
+    "lighting": {
+      "key": {
+        "type": "directional",
+        "colorTemperatureK": 3600,
+        "shadow": true
+      },
+      "fill": "ibl+bounce",
+      "practicals": 4,
+      "environment": {
+        "hdri": "kloppenheim_06_puresky",
+        "background": "sky"
+      },
+      "exposureEV": 0.07
+    },
+    "framing": {
+      "rig": "chase",
+      "subjectHeightFraction": [
+        0.18,
+        0.22
+      ],
+      "fovDeg": [
+        40,
+        52
+      ],
+      "mobile": "both"
+    },
+    "assets": [
+      {
+        "role": "hero",
+        "assetKey": "hero",
+        "maxTriangles": 20000,
+        "minTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "Idle",
+            "Walk",
+            "Run"
+          ]
+        }
+      },
+      {
+        "role": "world",
+        "assetKey": "belltower",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "bell",
+        "maxTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "cottage",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "boat",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "letter",
+        "maxTriangles": 24000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "oak",
+        "maxTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "pine",
+        "maxTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "shrub",
+        "maxTriangles": 1000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "stones",
+        "maxTriangles": 24000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "wisp",
+        "maxTriangles": 22000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      }
+    ],
+    "vfx": [
+      {
+        "event": "wind-petals",
+        "kind": "wind-petals"
+      },
+      {
+        "event": "gust-streak",
+        "kind": "wind-gust-streak"
+      },
+      {
+        "event": "letter-found",
+        "kind": "wind-letter-flutter"
+      },
+      {
+        "event": "bell-ring",
+        "kind": "wind-bell-ring"
+      },
+      {
+        "event": "lantern-light",
+        "kind": "wind-lantern-flare"
+      },
+      {
+        "event": "hop-landing",
+        "kind": "wind-grass-flick"
+      },
+      {
+        "event": "water-step",
+        "kind": "wind-ripple"
+      }
+    ],
+    "audio": [
+      {
+        "event": "footstep",
+        "cue": "grass-footstep",
+        "variants": 4
+      },
+      {
+        "event": "hop",
+        "cue": "hop-swish",
+        "variants": 1
+      },
+      {
+        "event": "land",
+        "cue": "hop-land",
+        "variants": 1
+      },
+      {
+        "event": "letter-found",
+        "cue": "letter-chime",
+        "variants": 3
+      },
+      {
+        "event": "bell-ring",
+        "cue": "bell-toll",
+        "variants": 1
+      }
+    ],
+    "signatureEffect": "Visible wind over a gouache valley: cloud shadows and gust waves roll downwind across sage grass while one continuous day moves from afternoon to lilac dusk.",
+    "criticalCategories": [
+      "lighting",
+      "atmospheric_effects",
+      "environment_world",
+      "composition"
+    ],
+    "tiers": {
+      "low": {
+        "particles": 0,
+        "shadowMap": 1024,
+        "cascades": 1,
+        "textureMax": 1024
+      },
+      "medium": {
+        "particles": 220,
+        "shadowMap": 2048,
+        "cascades": 2,
+        "textureMax": 1024
+      },
+      "high": {
+        "particles": 300,
+        "shadowMap": 2048,
+        "cascades": 2,
+        "textureMax": 1024
+      },
+      "ultra": {
+        "particles": 300,
+        "shadowMap": 2048,
+        "cascades": 2,
+        "textureMax": 1024
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 // examples/where-the-wind-wanders-port/art/direction.ts — C-35 art direction (GU47 WP-33, PRD §3.2 and §6.1 row G23).
 // Fantasy: a storybook gouache valley where the wind is a character; the day moves on with every letter found.
 // Look table: ../daylight.ts (one key per letter, bell and epilogue). Wind model: ../wind.ts. VFX presets: ../vfx.ts.
-import { defineArtDirection } from "@aura3d/engine/game/art";
+import { defineArtDirection } from "@aura3d/game/art";
 
 export default defineArtDirection({
   id: "where-the-wind-wanders-port",
