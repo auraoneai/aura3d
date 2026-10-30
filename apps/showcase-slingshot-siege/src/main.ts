@@ -51,6 +51,8 @@ const START_LEVEL = Math.min(Math.max(0, Number(params.get("level")) || 0), LEVE
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches || params.get("still") === "1";
 /** `?ao=0`: evidence switch for the AO-on/off capture pair (LIGHT-06). */
 const AO = params.get("ao") !== "0";
+/** `?surfaces=0` evidence switch: flat island materials for the SS47-M2 before/after spread pair. */
+const SURFACES = params.get("surfaces") !== "0";
 
 // ---------------------------------------------------------- persistence --
 
@@ -88,7 +90,7 @@ const gameApp = createGameApp("#app", {
     touch: true
   },
   loop: { fixedDt: 1 / 60, maxSubSteps: 2 },
-  scene: buildScene(chapter, { reducedMotion: REDUCED, ambientOcclusion: AO })
+  scene: buildScene(chapter, { reducedMotion: REDUCED, ambientOcclusion: AO, surfaceMaps: SURFACES })
 });
 const app = gameApp.app;
 const input = gameApp.input;

@@ -31,6 +31,7 @@ import { MATERIALS, type SiegeMaterialId } from "./materials";
 import type { ChapterDef } from "./levels";
 import { chapterLook, sunDirection, type ChapterLook } from "./look";
 import { beachDressing } from "./dressing";
+import { islandSurface } from "../art/surfaces";
 
 // ----------------------------------------------------------------- pools --
 
@@ -172,6 +173,8 @@ export interface StageOptions {
   readonly reducedMotion: boolean;
   /** `?ao=0` evidence switch: removes the miniature ambient-occlusion pass for an AO-on/off capture pair. */
   readonly ambientOcclusion?: boolean;
+  /** SS47-M2 CC0 detail maps on turf, sand and the chalk/wet-rock lip (default on); `?surfaces=0` is the flat pair. */
+  readonly surfaceMaps?: boolean;
 }
 
 /** Name of the stage's one AO node (SS47-L2: a miniature-scale radius instead of the look's default). */
@@ -375,6 +378,9 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
   // ------------------------------------------------------------- terrain --
   // One island all day (bleached sand, sea-meadow turf, chalk cliffs, sea teal); light carries the time of day.
   const terrain = row.terrain;
+  // SS47-M2: CC0 grain/blade/rock detail maps on the three island discs (0 draws); the rock GLBs already drop their
+  // photoreal moss colour (replaceTextures) for flat palette tints.
+  const textured = options.surfaceMaps !== false;
   const groundColor = terrain.turf;
   const farColor = terrain.sand;
   const backdrop = row.horizon;
@@ -461,13 +467,13 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
   const headlandColors = headlandSpecs.map((_, i) => mixHex(hazeColor, backdrop, 0.25 + (i % 3) * 0.12));
 
   nodes.push(
-    primitives.cylinder({ name: "stage-ground", material: pbr(groundColor, { roughness: 0.78, metallic: 0.03 }), castShadow: false, receiveShadow: true })
+    primitives.cylinder({ name: "stage-ground", material: islandSurface("turf", groundColor, 0.78, textured), castShadow: false, receiveShadow: true })
       .position(1.5, -0.175, 0).scale([18, 0.35, 14]).runtime({ id: "stage-ground", tags: ["stage"] }),
     // Chalk cliff lip peeks above the turf at the island edge so the disc reads as a sea stack, not a decal.
-    primitives.cylinder({ name: "stage-ground-rim", material: pbr(rimColor, { roughness: 0.88, metallic: 0 }), castShadow: false, receiveShadow: true })
+    primitives.cylinder({ name: "stage-ground-rim", material: islandSurface("wetRock", rimColor, 0.88, textured), castShadow: false, receiveShadow: true })
       .position(1.5, -0.17, 0).scale([18.5, 0.36, 14.5]),
     // Bleached-sand beach ring above the waterline.
-    primitives.cylinder({ name: "stage-far-ground", material: pbr(farColor, { roughness: 0.92, metallic: 0 }), castShadow: false, receiveShadow: true })
+    primitives.cylinder({ name: "stage-far-ground", material: islandSurface("sand", farColor, 0.92, textured), castShadow: false, receiveShadow: true })
       .position(1.6, -0.26, -0.4).scale([19.6, 0.32, 15.2]).runtime({ id: "stage-far-ground", tags: ["stage"] }),
     // Shallows and seabed under the animated sea (SS47-E3); the seabed is also the sea when world water is off.
     primitives.cylinder({ name: "stage-shallows", material: pbr(shallowColor, { roughness: 0.2, metallic: 0.05 }), castShadow: false, receiveShadow: true })
