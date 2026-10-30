@@ -1,6 +1,6 @@
 # Showcase game build guide
 
-Version: 4.6.1
+Version: 4.6.2
 
 Use this when you add, edit or review a game on the public showcase (`apps/showcase-*`, the 15 cards on `https://aura3d.auraone.ai/apps/showcase-index/`, the Crayon ports in `examples/*-port`, and `examples/aura-slam`). Build the game with `docs/agents/build-a-game.md`; this page is what a showcase route adds on top: route-health, evidence, honest disclosure and the review gate.
 

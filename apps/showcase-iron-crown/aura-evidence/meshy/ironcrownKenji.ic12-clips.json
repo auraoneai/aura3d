@@ -1,0 +1,106 @@
+{
+  "schema": "aura3d.meshy-clip-addition/1.0",
+  "asset": "ironcrownKenji",
+  "audit": "IC-12",
+  "date": "2026-10-30",
+  "providerCli": "@meshy-ai/cli@0.2.0 via https://prism.auraone.ai proxy",
+  "derivedFrom": "public/aura-assets/ironcrownKenji.bd4d2025.glb",
+  "output": "public/aura-assets/ironcrownKenji.a4163647.glb",
+  "reason": "The original rig task (01a14929-324b-72d6-9518-82ef1a6b4547) expired, so Meshy animate could not target it. A fresh rig of the same remeshed mesh at the same height carries the new clips; they are retargeted onto the admitted skeleton through the bind pose.",
+  "rig": {
+    "operation": "rigging",
+    "taskId": "01a18a93-552b-71e6-aefa-61fcf5b0f32a",
+    "input": "remeshed GLB of remesh task 01a14925-6026-74f0-b470-3d569abd718e (the mesh the original rig used)",
+    "heightMeters": 1.8,
+    "consumedCredits": 5
+  },
+  "clips": [
+    {
+      "clip": "Combat_Stance",
+      "state": "idle",
+      "meshyActionId": 89,
+      "taskId": "01a18a94-d1d9-7115-afaa-f252adb063c9",
+      "consumedCredits": 3,
+      "sourceDuration": 1.7,
+      "window": [
+        0,
+        1.7
+      ],
+      "duration": 1.7
+    },
+    {
+      "clip": "CrouchLookAroundBow",
+      "state": "crouch",
+      "meshyActionId": 258,
+      "taskId": "01a18a94-ff18-70ca-9ffe-4d017c528ed0",
+      "consumedCredits": 3,
+      "sourceDuration": 5.867,
+      "window": [
+        0,
+        5.867
+      ],
+      "duration": 5.867
+    },
+    {
+      "clip": "Over_Shoulder_Throw",
+      "state": "throw",
+      "meshyActionId": 421,
+      "taskId": "01a18a95-096a-76ad-b0e2-49d41e5a683e",
+      "consumedCredits": 3,
+      "sourceDuration": 4.333,
+      "window": [
+        1.3,
+        3.8
+      ],
+      "duration": 2.5
+    },
+    {
+      "clip": "Victory_Fist_Pump",
+      "state": "win",
+      "meshyActionId": 403,
+      "taskId": "01a18a95-210e-704d-957c-8d525b0c72b4",
+      "consumedCredits": 3,
+      "sourceDuration": 1.533,
+      "window": [
+        0,
+        1.533
+      ],
+      "duration": 1.533
+    }
+  ],
+  "pipeline": [
+    "meshy rigging create --model-url <remeshed GLB> --height-meters 1.8",
+    "meshy animate create --rig-task-id 01a18a93-552b-71e6-aefa-61fcf5b0f32a --action-id <n> (one task per clip)",
+    "aura3d assets merge-clips --base <rig download> Combat_Stance=... CrouchLookAroundBow=... Over_Shoulder_Throw=... Victory_Fist_Pump=...",
+    "node tools/iron-crown-clips/retarget-clips.mjs <admitted GLB> <merged GLB> <out> Over_Shoulder_Throw=1.3:3.8"
+  ],
+  "checks": {
+    "positionsHashBefore": "afc90cbfe0e6a535",
+    "positionsHashAfter": "afc90cbfe0e6a535",
+    "texturesUnchanged": true,
+    "shippedClipsKept": true,
+    "bytesBefore": 3580244,
+    "bytesAfter": 3975084,
+    "skinStretchTrianglesBodyPrimitive": {
+      "Block1": 3371,
+      "Combat_Stance": 2864,
+      "CrouchLookAroundBow": 4211,
+      "Idle": 2564,
+      "Over_Shoulder_Throw": 5986,
+      "Regular_Jump": 5446,
+      "Triple_Combo_Attack": 5168,
+      "Victory_Fist_Pump": 2655
+    },
+    "skinStretchWorstRatio": {
+      "Block1": 9.6,
+      "Combat_Stance": 11.79,
+      "CrouchLookAroundBow": 12.66,
+      "Idle": 9.28,
+      "Over_Shoulder_Throw": 12.1,
+      "Regular_Jump": 13.15,
+      "Triple_Combo_Attack": 14.75,
+      "Victory_Fist_Pump": 9.16
+    }
+  },
+  "rightsEvidence": "aura-evidence/meshy/ironcrownKenji.rights.968cd708eaf2.json"
+}
