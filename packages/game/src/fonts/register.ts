@@ -5,6 +5,12 @@
  * copies the files it needs into its own app folder, e.g. `/fonts/`).
  * Pass `hudThemeFontFaces(theme)` as `faces` to load only the files of the
  * theme the game uses; the default loads every face in `HUD_FONT_FACES`.
+ *
+ * No synthetic bold (font library README): HudKit sets values in 700 and
+ * banners in 800, heavier than several families ship. The heaviest face of
+ * each family in `faces` therefore registers over the weight range
+ * `<weight> 900`, so heavier requests render that real cut; browsers only
+ * synthesise bold for faces whose declared range stays below 600.
  */
 import { HUD_FONT_FACES, type HudFontFace } from "../hud/themes.js";
 
@@ -24,11 +30,13 @@ export async function registerGameFonts(
 ): Promise<{ loaded: readonly string[]; failed: readonly string[] }> {
   const loaded: string[] = [];
   const failed: string[] = [];
+  const heaviest = new Map<string, number>();
+  for (const { family, weight } of faces) heaviest.set(family, Math.max(heaviest.get(family) ?? 0, weight));
   await Promise.all(
     faces.map(async ({ family, file, weight }) => {
       try {
         const face = new registry.FontFace(family, `url(${baseUrl}${file})`, {
-          weight: String(weight),
+          weight: weight === heaviest.get(family) && weight < 900 ? `${weight} 900` : String(weight),
           style: "normal",
           display: "swap"
         });

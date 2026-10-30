@@ -208,7 +208,7 @@ describe("GU47 WP-10 new presets mount and load their faces", () => {
     for (const [key, value] of Object.entries(HUD_THEMES[preset])) expect(hudEl.style[key], key).toBe(value);
   });
 
-  it("registerGameFonts loads only the faces passed in, at their README weights", async () => {
+  it("registerGameFonts loads only the faces passed in; each family's heaviest face spans up to 900", async () => {
     const created: { family: string; source: string; weight?: string; style?: string }[] = [];
     const added: unknown[] = [];
     const registry: FontRegistry = {
@@ -222,12 +222,29 @@ describe("GU47 WP-10 new presets mount and load their faces", () => {
     };
     const result = await registerGameFonts("/fonts/", registry, hudThemeFontFaces("ink-scroll"));
     expect(created).toEqual([
-      { family: "A3G Suisse Works Italic", source: "url(/fonts/suisse-works-italic-400.woff2)", weight: "400", style: "normal" },
-      { family: "A3G Domaine Display", source: "url(/fonts/domaine-display-700.woff2)", weight: "700", style: "normal" }
+      { family: "A3G Suisse Works Italic", source: "url(/fonts/suisse-works-italic-400.woff2)", weight: "400 900", style: "normal" },
+      { family: "A3G Domaine Display", source: "url(/fonts/domaine-display-700.woff2)", weight: "700 900", style: "normal" }
     ]);
     expect(added).toHaveLength(2);
     expect(result.failed).toEqual([]);
     expect([...result.loaded].sort()).toEqual(["A3G Domaine Display 700", "A3G Suisse Works Italic 400"]);
+
+    created.length = 0;
+    await registerGameFonts("/fonts/", registry, hudThemeFontFaces("plain"));
+    expect(created.map((c) => `${c.family}@${c.weight}`)).toEqual(["A3G Graphik@400", "A3G Graphik@500 900"]);
+  });
+
+  it("registerGameFonts reports faces that fail to load without throwing", async () => {
+    const registry: FontRegistry = {
+      fonts: { add: () => {} },
+      FontFace: class {
+        constructor(private readonly family: string) {}
+        load(): Promise<unknown> { return this.family === "A3G Canela" ? Promise.reject(new Error("404")) : Promise.resolve(this); }
+      }
+    };
+    const result = await registerGameFonts("/fonts/", registry, hudThemeFontFaces("storybook"));
+    expect(result.loaded).toEqual(["A3G GT Walsheim 400"]);
+    expect(result.failed).toEqual(["A3G Canela 400"]);
   });
 
   it("registerGameFonts still loads every face by default", async () => {
