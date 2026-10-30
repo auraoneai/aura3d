@@ -372,7 +372,7 @@ async function paidTask(st, row, name, { resource, op, args, pinned }) {
       log(row.key, `${name} submitted ${id}`);
     } else {
       // Prism refusing before any key accepted the call (pool/key exhausted, no valid key) is a confirmed no-charge outcome.
-      const refused = /quota_exhausted|all_keys_invalid|not_configured/.exec(r.err)?.[0];
+      const refused = /"detail":"(quota_exhausted|all_keys_invalid|not_configured|busy)"/.exec(r.err)?.[1];
       const outcome = refused ? { status: "failed", note: `Prism refused before a task existed: ${refused}` } : L.classifyMeshyOutcome({ exitCode: r.code, errorText: r.err });
       await settle(t.rid, outcome);
       st.history.push({ name, rid: t.rid, settled: outcome.status, exit: r.code, error: short(r.err, 300), at: iso() });
@@ -978,13 +978,13 @@ async function ledgerMarkdown() {
     const pool = L.parsePrismPool(raw);
     const rec = L.reconcileWithPrism(pool);
     const baseKeys = [...L.readMeshyLedger()].reverse().find((r) => r.kind === "baseline")?.pool_keys ?? {};
-    const okDrop = (raw.keys ?? []).filter((k) => k.state === "ok" && baseKeys[k.id] !== undefined).reduce((s, k) => s + Math.max(0, baseKeys[k.id] - k.remaining), 0);
-    const parked = (raw.keys ?? []).filter((k) => k.state !== "ok" && baseKeys[k.id] !== undefined && baseKeys[k.id] > k.remaining).map((k) => `${k.id} ${baseKeys[k.id]} -> ${k.remaining}`);
+    const changed = (raw.keys ?? []).filter((k) => baseKeys[k.id] !== undefined && baseKeys[k.id] !== k.remaining).map((k) => `${k.id} ${baseKeys[k.id]} -> ${k.remaining} (${k.state})`);
+    const refusing = (raw.keys ?? []).filter((k) => k.state !== "ok" && k.remaining >= 30);
     lines.push(`- Baseline (pipeline start, ${base?.at ?? rec.baselineAt}): pool ${base?.poolRemaining ?? "?"} credits (sum of key balances; Prism usable total ${base?.poolTotalsRemaining ?? "?"}).`);
     lines.push(`- Now (${iso()}): pool ${pool.remaining} credits (sum of key balances); usable (keys in state ok, Prism totals): **${raw.totals?.remaining_credits ?? "?"}**.`);
     lines.push(`- Ledger \`reconcile\` since the baseline: Prism ${rec.prismSpent}, ledger ${rec.ledgerSpent} (GU47 tags ${total}), delta ${rec.delta}.`);
-    lines.push(`- Balance drop on keys that are still usable: ${okDrop} credits vs GU47 ledger ${total} (difference ${okDrop - total}; reserved/in-flight tasks count in the ledger before Meshy charges them).`);
-    lines.push(`- Keys parked by Prism after answering HTTP 402 although they report a balance (Prism sets their local balance to 0; not a Meshy charge, they return at their reset): ${parked.length ? parked.join(", ") : "none"}.`);
+    lines.push(`- Key balances that changed since the baseline: ${changed.length ? changed.join(", ") : "none"}.`);
+    lines.push(`- Keys that still report a balance but are parked (they answered HTTP 402 to paid calls; Prism retries them only after their reset, next ${raw.totals?.next_reset_at ?? "?"}): ${refusing.length ? `${refusing.map((k) => `${k.id} (${k.remaining})`).join(", ")}; ${refusing.reduce((s, k) => s + k.remaining, 0)} credits not spendable now` : "none"}.`);
     lines.push(`- Keys topped up or reset since the baseline (excluded, never negative spend): ${rec.keysToppedUp.length ? rec.keysToppedUp.join(", ") : "none"}; unconfirmed reservations: ${rec.unconfirmedRids.length}.`);
     lines.push("- The pool is shared, so other consumers, monthly resets and top-ups move the Prism number; a positive delta means Prism charged more than the ledger counted.");
   } catch (e) {
