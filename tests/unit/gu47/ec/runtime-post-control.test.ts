@@ -29,9 +29,9 @@ const derive = (snapshot: never, target?: HTMLCanvasElement): LooseBag =>
 afterEach(() => resetRuntimePostOverrides());
 
 describe("app.post.setEffect (EC-5)", () => {
-  it("covers the seven PRD effects by factory name", () => {
+  it("covers the seven PRD effects by factory name (plus the GU47 E-E outline, eint EE-H4)", () => {
     expect(Object.keys(POST_RUNTIME_EFFECTS).sort()).toEqual(
-      ["bloom", "chromaticAberration", "colorGrade", "depthOfField", "motionBlur", "vignette", "volumetricFog"]
+      ["bloom", "chromaticAberration", "colorGrade", "depthOfField", "motionBlur", "outline", "vignette", "volumetricFog"]
     );
   });
 
