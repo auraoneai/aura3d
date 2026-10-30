@@ -75,6 +75,7 @@ export function collect() {
       const type = checker.getTypeOfSymbolAtLocation(resolved, decl ?? sf);
       if (type.getConstructSignatures().length > 0) kind = "class";
       else if (type.getCallSignatures().length > 0) kind = "function";
+      else if (checker.isArrayType?.(type) || checker.isTupleType?.(type)) kind = "constant";
       else if (!/^[A-Z0-9_]+$/.test(sym.name) && type.getProperties().length > 0 && (type.flags & ts.TypeFlags.Object)) {
         kind = "namespace";
         members = type.getProperties().map((p) => p.name);

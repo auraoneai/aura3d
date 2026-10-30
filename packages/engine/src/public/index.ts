@@ -217,10 +217,34 @@ export type {
 // biomes) and `world.useAppFlags` for builder-time flag reads.
 export { world } from "../agent-api/world/index.js";
 export type { AuraGrassBounds, AuraGrassInput, AuraGrassOptions, AuraHeightfieldSampler, AuraScatterAsset, AuraScatterLayer, AuraScatterOptions, AuraScatterResult, AuraTerrainHandle, AuraTerrainOptions, AuraWaterHandle, AuraWaterOptions, AuraWindOptions, AuraWorldBuilderFlagSource, AuraWorldShape } from "../agent-api/world/index.js";
-// GU47 E-G (WP-7): typed `stars` / `clouds` on `sky.preetham` / `sky.gradient`.
+// GU47 E-G (WP-7): typed `stars` / `clouds` on `sky.preetham` / `sky.gradient` (the E-B contract types).
 export type { AuraSkyCloudsOptions, AuraSkyGradientOptions, AuraSkyNodeOptions, AuraSkyPreethamOptions, AuraSkyStarsOptions } from "../agent-api/nodes/sky.js";
 // GU47 E-G (WP-7): `instances.*` options (wind without WORLD, per-instance lights, instanceColorTarget).
 export type { AuraInstanceLightsOptions, AuraInstanceWind, AuraInstanceWindOption, AuraInstancedModelOptions, AuraInstancedPrimitiveOptions, AuraInstancesModelBuilder } from "../agent-api/nodes/instances.js";
+// GU47 E-A (WP-1): the look HDRI catalogue (`looks.preset(id, { hdri })`) and the look's declared post preset.
+export { lookHdriIds, lookHdriUrl, lookOutputPreset } from "../agent-api/looks/looks.js";
+export type { AuraHdriId } from "../agent-api/index.js";
+// GU47 E-B (WP-2): runtime light, environment and fog control (`handle.setLight`,
+// `app.lighting.setEnvironment`, `app.atmosphere.setFog`).
+export type { AuraLightPatch, AuraLightTransitionOptions } from "../agent-api/nodes/types/runtime.js";
+export type { AuraEnvironmentSwapOptions, AuraSetFogOptions, AuraSetFogSpec } from "../agent-api/index.js";
+// GU47 E-C (WP-3): colour-grade options (white balance, lift/gamma/gain, `.cube` LUT).
+export type { AuraColorGradeOptions, AuraGradeRgb, AuraLutAssetRef } from "../agent-api/nodes/effects.post.js";
+// GU47 E-D (WP-4): material rim, `material.toon`, `material.custom` and instance colour targets.
+export type { AuraCustomMaterialSpec, AuraInstanceColorTarget, AuraMaterialRimSpec, AuraToonMaterialOptions } from "../agent-api/nodes/types.js";
+// GU47 E-F (WP-6): runtime VFX (atlas sprites, trails, burst options, genre variants) and the
+// effect-node option types (tilt-shift DOF, god-ray density, outline targets).
+export { AURA_VFX_GENRE_VARIANTS } from "../agent-api/vfx/effects-api.js";
+export type { AuraBurstOptions, AuraTrailHandle, AuraTrailOptions, AuraVfxBuiltinSequence, AuraVfxGenreVariant, AuraVfxSpriteSource } from "../agent-api/index.js";
+export type { AuraDepthOfFieldOptions, AuraDepthOfFieldTiltShift, AuraOutlineOptions, AuraVolumetricFogOptions } from "../agent-api/nodes/effects.js";
+// GU47 E-H (WP-8): layered animation speed, procedural bone overrides, typed GLB actor
+// cross-fades and named parts, the pose-baked crowd kit and the GLB resource cache.
+export type { AuraActorPoseApi, AuraPlayLayerOptions } from "../agent-api/index.js";
+export type { AuraRuntimeNodeHandleParts, TypedGLBActorCrossFadeOptions } from "../production-runtime/TypedGLBActor.js";
+export { bakeCrowdPoses, clearCrowdPoseCache, createCrowd, loadCrowdPoses, sampleCrowdPoseSet } from "../instances-model/CrowdKit.js";
+export type { AuraCrowd, AuraCrowdAsset, AuraCrowdBakeActor, AuraCrowdBakeOptions, AuraCrowdBakePoseFrame, AuraCrowdBakePrimitive, AuraCrowdDrawPlan, AuraCrowdLoadOptions, AuraCrowdNodeHandle, AuraCrowdOptions, AuraCrowdPoseSet, AuraCrowdSampleOptions, AuraCrowdSpectator, AuraCrowdTarget } from "../instances-model/CrowdKit.js";
+export { clearGlbResourceCache, configureGlbResourceCache, GLB_RESOURCE_CACHE_DEFAULTS, glbResourceCacheSnapshot } from "../production-runtime/GlbResourceCache.js";
+export type { GlbResourceCacheOptions, GlbResourceCacheSnapshot } from "../production-runtime/GlbResourceCache.js";
 
 // threejs-parity ST-01 (lane L4): the `texture.*` namespace + live handle type.
 export { texture, TextureHandle } from "../agent-api/index.js";
