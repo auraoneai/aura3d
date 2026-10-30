@@ -123,6 +123,22 @@ export const FLOODLIGHTS: readonly VenueFloodlight[] = [
   { name: "flood-near-right", position: [12.5, 15, 14.5], target: [3.2, 0, 4.5], color: FLOOD_COLOR, intensity: 230, angle: 0.62, penumbra: 0.55, distance: 52, shadow: false }
 ];
 
+/** TT-E2: one visible haze cone per floodlight (night court only), from the lamp toward its aim point. */
+export interface FloodCone { readonly id: string; readonly position: AuraVec3; readonly direction: AuraVec3; readonly length: number }
+export const FLOOD_CONES: readonly FloodCone[] = FLOODLIGHTS.map((f, i) => {
+  const d: AuraVec3 = [f.target[0] - f.position[0], f.target[1] - f.position[1], f.target[2] - f.position[2]];
+  const len = Math.hypot(d[0], d[1], d[2]) || 1;
+  return { id: `flood-cone-${i}`, position: f.position, direction: [d[0] / len, d[1] / len, d[2] / len], length: len * 0.92 };
+});
+
+/**
+ * TT-E3: the Earth beyond the lunar court (sphere + `material.atmosphere` shell), about 165 m from the broadcast eye. The
+ * fixed camera looks down 35 degrees, so the starfield shows only past the far edge of the ground, 12-21 degrees below
+ * the eye's horizontal on tall canvases: the Earth sits in that band (above the grandstand's top edge) and fills about
+ * 10% of a portrait frame's width. The landscape frame sees no sky with today's camera (TT-C1 camera v2 not done).
+ */
+export const EARTH = { position: [-20, -18, -125] as AuraVec3, radius: 3, atmosphere: 1.07, ids: { planet: "moon-earth", shell: "moon-earth-atmosphere" } } as const;
+
 /** The night court's shadowed key: the far floodlight bank, high and cold, casting short shadows toward the camera. */
 const NIGHT_KEY: VenueSun = { elevationDeg: 58, azimuthDeg: 180, color: FLOOD_COLOR, intensity: 1.2, lightSize: 1.4, colorTemperatureK: 6500 };
 

@@ -4,7 +4,7 @@ import { buildBallNodes } from "./ball";
 import { BASELINE_Z, DOUBLES_X, HIDDEN_SCALE, NET_POST_H, NET_POST_X, SERVICE_Z, SINGLES_X } from "./constants";
 import { cameraNode } from "./camera";
 import { originalPostEffects, originalSceneLights, postEffects, sceneLights } from "./lighting";
-import { venueLook } from "./look";
+import { EARTH, FLOOD_CONES, venueLook } from "./look";
 import { createStaticBoxes } from "./statics";
 import type { Vec3 } from "../contract/units";
 import type { AthleteRigPort } from "./rigPort";
@@ -69,6 +69,20 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
     }));
     // TT-E2: the venue's air (none on the Moon); changed at runtime with app.atmosphere.setFog.
     if (look.fog) s.add(effects.fog({ color: look.fog.color, density: look.fog.density }));
+    // TT-E2: a haze cone under each floodlight, shown on the night court only (venueRuntime.ts toggles them).
+    for (const cone of FLOOD_CONES) {
+      s.add(effects.lightCone({
+        name: cone.id, color: "#dfe8ff", intensity: 0.32, position: [...cone.position], direction: [...cone.direction],
+        length: cone.length, coneAngle: 0.5, softness: 0.65, visible: boot === "hard"
+      }).runtime(game.runtimeNode(cone.id)));
+    }
+    // TT-E3: the Earth over the lunar court (planet sphere inside an atmosphere shell), shown on the Moon only.
+    const earthShown = boot === "moon" ? ([1, 1, 1] as Vec3) : HIDDEN_SCALE;
+    s.add(primitives.sphere({ name: EARTH.ids.planet, size: [EARTH.radius * 2, EARTH.radius * 2, EARTH.radius * 2], castShadow: false, receiveShadow: false, material: material.pbr({ color: "#2f6db3", roughness: 0.62, metalness: 0 }) })
+      .position(...EARTH.position).scale(earthShown).runtime(game.runtimeNode(EARTH.ids.planet)));
+    const shell = EARTH.radius * 2 * EARTH.atmosphere;
+    s.add(primitives.sphere({ name: EARTH.ids.shell, size: [shell, shell, shell], castShadow: false, receiveShadow: false, material: material.atmosphere({ color: "#8cc4ff", opacity: 0.24, emissiveIntensity: 0.45 }) })
+      .position(...EARTH.position).scale(earthShown).runtime(game.runtimeNode(EARTH.ids.shell)));
   }
 
   // Outer stadium ground, apron, doubles court, and singles inner court

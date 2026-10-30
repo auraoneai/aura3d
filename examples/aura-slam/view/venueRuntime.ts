@@ -11,7 +11,7 @@
 import { postPresets, type AuraAssetRef, type AuraRuntimeNodeHandle, type AuraToneMappingOperator, type AuraVec3 } from "@aura3d/engine";
 import { venueHdriAssets } from "./assets";
 import { POST_EFFECT, VENUE_LIGHT_IDS, venueKeyLight } from "./lighting";
-import { FLOODLIGHTS, sunPosition, type VenueLook } from "./look";
+import { EARTH, FLOODLIGHTS, FLOOD_CONES, sunPosition, type VenueLook } from "./look";
 
 export interface VenueRuntimePlan {
   readonly venue: string;
@@ -20,6 +20,10 @@ export interface VenueRuntimePlan {
   readonly environment: { readonly hdri: string; readonly url: string; readonly intensity: number; readonly rotationDeg: number; readonly background: boolean };
   readonly fog: { readonly color: string; readonly density: number } | null;
   readonly volumetricFog: boolean;
+  /** TT-E2: the floodlight haze cones (night court). */
+  readonly cones: boolean;
+  /** TT-E3: the Earth over the lunar court. */
+  readonly earth: boolean;
   readonly output: { readonly preset: VenueLook["grade"]["preset"]; readonly toneMapping: AuraToneMappingOperator; readonly exposure: number };
   readonly post: {
     readonly bloom: { readonly intensity: number; readonly threshold: number };
@@ -51,6 +55,8 @@ export function venueRuntimePlan(look: VenueLook, tier: string | null = "high"):
     },
     fog: look.fog ? { color: look.fog.color, density: look.fog.density } : null,
     volumetricFog: Boolean(look.fog?.volumetricAtHigh) && isHighTier(tier),
+    cones: (look.fog?.lightCones ?? 0) > 0,
+    earth: look.id === "moon",
     output: {
       preset: look.grade.preset,
       toneMapping: preset?.output.toneMapping ?? "aces",
@@ -100,6 +106,14 @@ export function applyVenueRuntime(app: VenueRuntimeApp, plan: VenueRuntimePlan, 
   for (const flood of plan.floods) {
     const handle = optionalNode(app, flood.id);
     if (handle) call(() => handle.setVisible(flood.visible));
+  }
+  for (const cone of FLOOD_CONES) {
+    const handle = optionalNode(app, cone.id);
+    if (handle) call(() => handle.setVisible(plan.cones));
+  }
+  for (const id of [EARTH.ids.planet, EARTH.ids.shell]) {
+    const handle = optionalNode(app, id);
+    if (handle) call(() => handle.setScale(plan.earth ? [1, 1, 1] : [0.0001, 0.0001, 0.0001]).setVisible(plan.earth));
   }
   if (!options.initial) {
     const texture = venueHdriAssets[plan.environment.hdri as keyof typeof venueHdriAssets] as unknown as AuraAssetRef<"texture">;

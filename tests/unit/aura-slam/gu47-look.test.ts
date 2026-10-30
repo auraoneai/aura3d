@@ -141,6 +141,31 @@ describe("GU47 TT-E2 / TT-P1: the runtime venue plan", () => {
     expect(venueRuntimePlan(VENUE_LOOKS.grass).output.toneMapping).toBe("agx");
   });
 
+  it("TT-E2 / TT-E3: haze cones on the night court only, the Earth on the Moon only", () => {
+    for (const v of VENUE_LOOK_ORDER) {
+      const plan = venueRuntimePlan(VENUE_LOOKS[v]);
+      expect(plan.cones, v).toBe(v === "hard");
+      expect(plan.earth, v).toBe(v === "moon");
+    }
+    type Fx = Node & { visible?: boolean; scale?: number[]; runtime?: { id?: string } };
+    const hardCones = (sceneNodes("hard") as Fx[]).filter((n) => n.effect === "lightCone");
+    expect(hardCones).toHaveLength(4);
+    expect(hardCones.every((n) => n.visible !== false)).toBe(true);
+    expect((sceneNodes("grass") as Fx[]).filter((n) => n.effect === "lightCone").every((n) => n.visible === false)).toBe(true);
+    const earthOn = (sceneNodes("moon") as Fx[]).find((n) => n.name === "moon-earth");
+    const earthOff = (sceneNodes("clay") as Fx[]).find((n) => n.name === "moon-earth");
+    expect(earthOn?.scale).toEqual([1, 1, 1]);
+    expect(earthOff?.scale?.[0]).toBeLessThan(0.01);
+  });
+
+  it("TT-E3: the Earth fills >= 4% of a portrait frame's width (its angular size at the broadcast eye)", () => {
+    const eye = [0, 25.5, 37.1];
+    const d = Math.hypot(-20 - eye[0]!, -18 - eye[1]!, -125 - eye[2]!);
+    const angular = 2 * Math.atan(3 / d);
+    const portraitHalfH = Math.atan(0.19); // CAMERA_MIN_TAN_HALF_HFOV keeps the portrait horizontal coverage
+    expect(angular / (2 * portraitHalfH)).toBeGreaterThanOrEqual(0.04);
+  });
+
   it("only the night court shows the floodlights; the key is always visible", () => {
     for (const v of VENUE_LOOK_ORDER) {
       const plan = venueRuntimePlan(VENUE_LOOKS[v]);

@@ -85,6 +85,16 @@
     ],
     "materials": [
       {
+        "node": "moon-earth",
+        "practical": false
+      },
+      {
+        "name": "atmosphere",
+        "node": "moon-earth-atmosphere",
+        "emissiveIntensity": 0.45,
+        "practical": true
+      },
+      {
         "node": "stadium-outer-ground",
         "practical": false
       },

@@ -38,7 +38,8 @@ export function surfaceMaterial(venue: string | null | undefined, part: CourtPar
   const pal = VENUE_PALETTES[key]!;
   const kind = VENUE_SURFACE[key] ?? "acrylic";
   const color = part === "court" ? pal.court : part === "alley" ? pal.alley : part === "apron" ? pal.apron : pal.ground;
-  if (part === "ground") return material.pbr({ color, roughness: kind === "regolith" ? 0.98 : 0.94 });
+  // TT-E3: the lunar ground is the engine's moon planet material in the venue's regolith grey.
+  if (part === "ground") return kind === "regolith" ? material.planet("moon", { color, roughness: 0.98 }) : material.pbr({ color, roughness: 0.94 });
   switch (kind) {
     case "acrylic":
       return material.pbr({ color, roughness: part === "apron" ? 0.7 : 0.62, clearcoat: 0.35, clearcoatRoughness: 0.35, normal: grain(kind) });
