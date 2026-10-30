@@ -349,10 +349,14 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
 
   builder.add(primitives.sphere({ name: "sky", position: [0, 0, 0], size: 4200, material: material.custom(skySpec(chapter, inked ? "inked" : "original")) }).runtime({ id: "sky" }));
 
-  builder.add(geometry.custom(dynamicFrom({ ...terrainMesh, colors: terrainColors(terrainMesh.positions) }), {
+  builder.add(geometry.custom(dynamicFrom({ ...terrainMesh, colors: terrainColors(terrainMesh.positions, inked) }), {
     name: "terrain",
     receiveShadow: true,
-    material: pbr({ color: grassTint, texture: assets.grassColor, normal: assets.grassNormal, roughnessMap: assets.grassRough, normalScale: 0.9, roughness: 1 })
+    // GU47 DG-M1 (interim): the inked look trades the grass set for the gravel-sand ground set under warm sand vertex
+    // colours; the WP-36 rippled sand, scrub and sandstone sets replace it (asset need in the lane report)
+    material: inked
+      ? pbr({ color: look.night ? "#b7a48a" : "#f0dcc0", texture: assets.groundColor, normal: assets.groundNormal, roughnessMap: assets.groundRough, normalScale: 0.6, roughness: 1 })
+      : pbr({ color: grassTint, texture: assets.grassColor, normal: assets.grassNormal, roughnessMap: assets.grassRough, normalScale: 0.9, roughness: 1 })
   }).runtime({ id: "terrain" }));
   const plaza = terrain.plazaMesh();
   if (plaza.indices.length) {
@@ -384,7 +388,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       material: pbr({ color: "#efe2c8", texture: assets.bricksColor, normal: assets.bricksNormal, roughnessMap: assets.bricksRough, roughness: 1 })
     }).runtime({ id: "cistern-deck" }));
   }
-  const arch = buildArchitecture(props.walls);
+  const arch = buildArchitecture(props.walls, { inked });
   const white = "#ffffff";
   const archMeshes: readonly { name: string; mesh: ColoredMesh; spec: AuraMaterialSpec; cast: boolean }[] = [
     { name: "cliffs", mesh: arch.cliff, cast: true, spec: pbr({ color: white, texture: assets.rockColor, normal: assets.rockNormal, roughnessMap: assets.rockRough, roughness: 1 }) },

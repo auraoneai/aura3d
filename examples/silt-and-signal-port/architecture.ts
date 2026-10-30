@@ -96,6 +96,24 @@ function boxFaces(m: ColoredMesh, cx: number, cz: number, hx: number, hz: number
 
 const LIMESTONE: readonly Rgb[] = [[1.30, 1.16, 0.92], [1.22, 1.04, 0.78], [1.20, 0.96, 0.80], [1.12, 1.06, 0.92], [1.26, 1.08, 0.84]];
 const PLASTER: readonly Rgb[] = [[0.95, 0.84, 0.66], [0.90, 0.66, 0.50], [0.78, 0.82, 0.78], [0.93, 0.78, 0.55], [0.86, 0.60, 0.46]];
+/**
+ * GU47 DG-M2 inked-look wall hues (linear multipliers on PaintedPlaster017): rose sandstone, terracotta, pale umber,
+ * ochre and lime-wash at hues 2, 14, 26, 38 and 50 deg (12 deg apart).
+ */
+export const PLASTER_INKED: readonly Rgb[] = [[0.9, 0.535, 0.522], [0.88, 0.462, 0.334], [0.82, 0.611, 0.451], [0.94, 0.74, 0.395], [0.98, 0.959, 0.853]];
+/** Sand-stain colour at the foot of the inked walls. */
+const SAND_STAIN: Rgb = [0.86, 0.66, 0.42];
+
+/** DG-M2: baked base darkening, edge AO at the box corners and a sand-stain band up to 1.4 m (inked look only). */
+export function inkedPlaster(base: Rgb, wall: Wall, y: number, s: number, along: number, face: number): Rgb {
+  const rise = y - wall.bottom;
+  const stained = mix(base, SAND_STAIN, 0.55 * (1 - smooth(0, 1.4, rise)));
+  const ao = 0.72 + 0.28 * smooth(0, 0.18, Math.min(s, 1 - s));
+  const footAo = 0.6 + 0.4 * smooth(0, 2.2, rise);
+  const wash = 0.92 + 0.14 * fbm(along * 0.22 + face * 7 + wall.x * 0.013, y * 0.09 + wall.z * 0.011, 3);
+  return scale(stained, ao * footAo * wash);
+}
+
 const WINDOW_DARK: Rgb = [0.10, 0.085, 0.075];
 const FRAME: Rgb = [0.97, 0.92, 0.82];
 
@@ -158,9 +176,10 @@ const isAqueduct = (w: Wall): boolean => {
 
 export interface ArchitectureMeshes { readonly cliff: ColoredMesh; readonly stone: ColoredMesh; readonly plaster: readonly ColoredMesh[]; readonly roofs: ColoredMesh; readonly dark: ColoredMesh; readonly plasterHues: readonly Rgb[] }
 
-export function buildArchitecture(walls: readonly Wall[]): ArchitectureMeshes {
+export function buildArchitecture(walls: readonly Wall[], options: { readonly inked?: boolean } = {}): ArchitectureMeshes {
   const cliff = newMesh(), stone = newMesh(), roofs = newMesh(), dark = newMesh();
-  const plasterMeshes = PLASTER.map(() => newMesh());
+  const hues = options.inked ? PLASTER_INKED : PLASTER;
+  const plasterMeshes = hues.map(() => newMesh());
   let windows = 0;
   for (const w of walls) {
     const seed = Math.floor(w.x * 13 + w.z * 7);
@@ -184,14 +203,14 @@ export function buildArchitecture(walls: readonly Wall[]): ArchitectureMeshes {
       continue;
     }
     if (w.kind === "plaster") {
-      const hueIndex = Math.floor(hash01(w.x, w.z) * PLASTER.length);
-      const hue = PLASTER[hueIndex]!;
+      const hueIndex = Math.floor(hash01(w.x, w.z) * hues.length);
+      const hue = hues[hueIndex]!;
       const plaster = plasterMeshes[hueIndex]!;
       const eave = Math.min(1.9, h * 0.32);
       const bodyTop = w.top - eave;
       boxFaces(plaster, w.x, w.z, w.halfX, w.halfZ, w.bottom, bodyTop, {
         tile: 6, seg: 6, seed, top: null,
-        color: (face, s, y, p) => weather(hue, w, y, face % 2 ? p[0] : p[2], face)
+        color: (face, s, y, p) => options.inked ? inkedPlaster(hue, w, y, s, face % 2 ? p[0] : p[2], face) : weather(hue, w, y, face % 2 ? p[0] : p[2], face)
       });
       const roofColor: Rgb = mix([0.62, 0.30, 0.20], [0.74, 0.40, 0.26], hash01(w.z, w.x));
       const inset = 0.28;
@@ -279,11 +298,12 @@ export function buildArchitecture(walls: readonly Wall[]): ArchitectureMeshes {
       }
     }
   }
-  return { cliff, stone, plaster: plasterMeshes, roofs, dark, plasterHues: PLASTER };
+  return { cliff, stone, plaster: plasterMeshes, roofs, dark, plasterHues: hues };
 }
 
 /** Per-vertex multipliers on the grass texture: dry silt patches, darker damp hollows, soft noise. */
-export function terrainColors(positions: readonly number[]): number[] {
+export function terrainColors(positions: readonly number[], inked = false): number[] {
+  if (inked) return inkedTerrainColors(positions);
   const out: number[] = [];
   for (let i = 0; i < positions.length; i += 3) {
     const x = positions[i]!, y = positions[i + 1]!, z = positions[i + 2]!;
@@ -291,6 +311,24 @@ export function terrainColors(positions: readonly number[]): number[] {
     const fine = 0.92 + 0.16 * fbm(x * 0.05, z * 0.05, 3);
     const silt: Rgb = [2.05, 1.72, 1.2], green: Rgb = [1.0, 1.04, 0.9];
     const c = scale(mix(green, silt, dry * 0.8), fine * (0.9 + 0.1 * smooth(-1, 6, y)));
+    out.push(c[0], c[1], c[2], 1);
+  }
+  return out;
+}
+
+/**
+ * GU47 DG-M1 (interim until the WP-36 rippled sand set): warm sand multipliers on the gravel-sand ground texture, with
+ * darker umber scrub blended in on the low canal banks and pale wind-blown crests on high ground. No green.
+ */
+export function inkedTerrainColors(positions: readonly number[]): number[] {
+  const out: number[] = [];
+  const sand: Rgb = [1.62, 1.18, 0.74], crest: Rgb = [1.85, 1.5, 1.05], scrub: Rgb = [0.92, 0.7, 0.44];
+  for (let i = 0; i < positions.length; i += 3) {
+    const x = positions[i]!, y = positions[i + 1]!, z = positions[i + 2]!;
+    const ripple = 0.94 + 0.12 * Math.sin(x * 0.21 + z * 0.08 + fbm(x * 0.02, z * 0.02, 2) * 4);
+    const bank = (1 - smooth(-1, 5, y)) * smooth(0.4, 0.62, fbm(x * 0.03 + 4.2, z * 0.03 - 1.7, 3));
+    const high = smooth(10, 40, y);
+    const c = scale(mix(mix(sand, crest, high * 0.6), scrub, bank * 0.75), ripple);
     out.push(c[0], c[1], c[2], 1);
   }
   return out;

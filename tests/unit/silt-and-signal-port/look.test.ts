@@ -11,6 +11,7 @@ import { createSiltFx } from "../../../examples/silt-and-signal-port/fx";
 import { MAX_ROLL_DEG, allProgramSpecs, buildWorld, cameraRoll, overCanal, rolledUp } from "../../../examples/silt-and-signal-port/world";
 import { RAIL_CLEARANCE, RAIL_SECONDS, chaseEyeBlocked, railPose } from "../../../examples/silt-and-signal-port/camera";
 import { createSim } from "../../../examples/silt-and-signal-port/sim";
+import { PLASTER_INKED, inkedPlaster, inkedTerrainColors } from "../../../examples/silt-and-signal-port/architecture";
 
 type Node = Record<string, any>;
 const nodes = (chapter: number, options: Parameters<typeof buildWorld>[1] = {}): Node[] =>
@@ -185,5 +186,35 @@ describe("GU47 WP-34 camera (DG-C1, DG-C2) and reduced motion", () => {
       }
       expect(railPose(sim, RAIL_SECONDS, chase).position).toEqual(chase.position);
     }
+  });
+});
+
+describe("GU47 WP-34 materials (DG-M1 interim, DG-M2)", () => {
+  const hueDeg = ([r, g, b]: readonly number[]): number => {
+    const max = Math.max(r!, g!, b!), min = Math.min(r!, g!, b!), d = max - min;
+    if (d === 0) return 0;
+    const h = max === r ? ((g! - b!) / d) % 6 : max === g ? (b! - r!) / d + 2 : (r! - g!) / d + 4;
+    return (h * 60 + 360) % 360;
+  };
+  it("DG-M1: the inked terrain is warm sand (hue 22-45 deg on average), never green; ?look=original keeps the grass set", () => {
+    const positions: number[] = [];
+    for (let i = 0; i < 400; i++) positions.push((i * 37) % 900 - 450, (i * 13) % 50 - 5, (i * 71) % 1400 - 1300);
+    const c = inkedTerrainColors(positions);
+    let r = 0, g = 0, b = 0;
+    for (let i = 0; i < c.length; i += 4) { r += c[i]!; g += c[i + 1]!; b += c[i + 2]!; }
+    const hue = hueDeg([r, g, b]);
+    expect(hue).toBeGreaterThanOrEqual(22);
+    expect(hue).toBeLessThanOrEqual(45);
+    expect(nodes(0).find((n) => n.name === "terrain").material.texture.url).toMatch(/ground_Color\.jpg$/);
+    expect(nodes(0, { look: "original" }).find((n) => n.name === "terrain").material.texture.url).toMatch(/grass_Color\.jpg$/);
+  });
+  it("DG-M2: five wall hues at least 12 deg apart, plaster texture kept, base darkening and a sand-stain band", () => {
+    const hues = PLASTER_INKED.map(hueDeg).sort((a, b) => a - b);
+    expect(hues).toHaveLength(5);
+    for (let i = 1; i < hues.length; i++) expect(hues[i]! - hues[i - 1]!).toBeGreaterThanOrEqual(11.5);
+    const wall = { x: 0, z: 0, halfX: 6, halfZ: 4, bottom: 0, top: 9, kind: "plaster" } as unknown as Parameters<typeof inkedPlaster>[1];
+    const foot = inkedPlaster(PLASTER_INKED[2]!, wall, 0.2, 0.5, 0, 0), mid = inkedPlaster(PLASTER_INKED[2]!, wall, 5, 0.5, 0, 0), edge = inkedPlaster(PLASTER_INKED[2]!, wall, 5, 0.0, 0, 0);
+    expect(foot[2]! / foot[0]!).toBeLessThan(mid[2]! / mid[0]!);
+    expect(edge[1]!).toBeLessThan(mid[1]!);
   });
 });
