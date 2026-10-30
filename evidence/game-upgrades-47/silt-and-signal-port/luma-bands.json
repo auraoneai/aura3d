@@ -1,0 +1,15 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "silt-and-signal-port",
+  "note": "WP-34 acceptance bands (PRD DG-L2, DG-L4, DG-P2). ch1 noon uses DG-P2's 150-185 (more specific than DG-L2's day 95-150). Night chapters use DG-L4 (darkFrac < 0.35, p95 >= 190). Inked look only; ?look=original is today's look and is not banded.",
+  "default": { "darkFrac": [null, 0.6], "clipFrac": [null, 0.05] },
+  "variants": {
+    "silt-and-signal-port--ch0": { "mean": [95, 135], "darkFrac": [null, 0.05], "clipFrac": [null, 0.02] },
+    "silt-and-signal-port--ch1": { "mean": [150, 185], "darkFrac": [null, 0.05], "clipFrac": [null, 0.02] },
+    "silt-and-signal-port--ch2": { "darkFrac": [null, 0.35], "p95": [190, null] },
+    "silt-and-signal-port--ch3": { "mean": [95, 135], "darkFrac": [null, 0.05], "clipFrac": [null, 0.02] },
+    "silt-and-signal-port--ch4": { "mean": [95, 150], "darkFrac": [null, 0.05], "clipFrac": [null, 0.02] },
+    "silt-and-signal-port--ch5": { "darkFrac": [null, 0.35], "p95": [190, null] },
+    "silt-and-signal-port--ch6": { "mean": [95, 135], "darkFrac": [null, 0.05], "clipFrac": [null, 0.02] }
+  }
+}

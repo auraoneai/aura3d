@@ -331,6 +331,8 @@ function render(dt: number): void {
     pose = { position: [...rail.position], target: [...rail.target], up: [0, 1, 0], fov: canvas.clientHeight > canvas.clientWidth ? 78 : 62 };
     if (railLeft <= 0) showBars(false);
   }
+  // DG-P4: sequence DOF only while the intro rail runs
+  runtime.setSequence(mode === "play" && railLeft > 0);
   if (pose) app.camera?.setPose(pose, { cut: true });
   app.step(0);
   frames++;

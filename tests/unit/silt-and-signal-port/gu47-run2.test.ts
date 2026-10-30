@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 import { validatePostEffectNode } from "../../../packages/engine/src/agent-api/postBridge";
 import { FAR_DUNE_RINGS, farDuneRings, farDunes } from "../../../examples/silt-and-signal-port/architecture";
-import { BOOST_FOV_KICK, GOD_RAY_DENSITY, MAST_BRONZE, RING_PUNCH, WET_ROAD, buildWorld, fovKickTarget, inkSkySpec, mastTint } from "../../../examples/silt-and-signal-port/world";
+import { BOOST_BLUR, BOOST_FOV_KICK, GOD_RAY_DENSITY, MAST_BRONZE, RING_PUNCH, WET_ROAD, buildWorld, fovKickTarget, inkSkySpec, mastTint, sequencePost } from "../../../examples/silt-and-signal-port/world";
 import { LIGHTNING, createLightning, flashEnvelope, lightningStrikes } from "../../../examples/silt-and-signal-port/storm";
 
 type Node = Record<string, any>;
@@ -142,5 +142,25 @@ describe("GU47 WP-34 DG-L6 lens flare", () => {
     expect(flares(0)[0]!.runtime.id).toBe("silt-flare");
     expect(flares(0, { reducedMotion: true })[0]!.intensity).toBe(flares(0)[0]!.intensity / 2);
     expect(flares(0)[0]!.elements.map((e: { color: string }) => e.color)).not.toContain("#2fae86");
+  });
+});
+
+describe("GU47 WP-34 DG-P4 sequence DOF and boost motion blur", () => {
+  it("both nodes on High in the inked look, valid v2 fields; none on Low or in ?look=original; no blur on reduced motion", () => {
+    const of = (c: number, o: Parameters<typeof buildWorld>[1] = {}) => nodes(c, o).filter((n) => n.effect === "depth-of-field" || n.effect === "motion-blur");
+    const high = of(1);
+    expect(high.map((n) => n.effect).sort()).toEqual(["depth-of-field", "motion-blur"]);
+    for (const n of high) expect(validatePostEffectNode(n as never) ?? []).toEqual([]);
+    expect(high.find((n) => n.effect === "motion-blur")!.intensity).toBe(BOOST_BLUR);
+    expect(of(1, { low: true })).toEqual([]);
+    expect(of(1, { look: "original" })).toEqual([]);
+    expect(of(1, { reducedMotion: true }).map((n) => n.effect)).toEqual(["depth-of-field"]);
+  });
+
+  it("DOF only in sequences, blur only on boost outside sequences and never on reduced motion", () => {
+    expect(sequencePost({ boosting: false, sequence: false, reducedMotion: false })).toEqual({ depthOfField: false, motionBlur: false });
+    expect(sequencePost({ boosting: true, sequence: false, reducedMotion: false })).toEqual({ depthOfField: false, motionBlur: true });
+    expect(sequencePost({ boosting: true, sequence: true, reducedMotion: false })).toEqual({ depthOfField: true, motionBlur: false });
+    expect(sequencePost({ boosting: true, sequence: false, reducedMotion: true }).motionBlur).toBe(false);
   });
 });

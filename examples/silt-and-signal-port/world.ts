@@ -150,6 +150,10 @@ export interface WorldRuntime {
   readonly cameraFeel: () => { readonly fovKick: number; readonly rollDeg: number };
   /** GU47 DG-S5 QA: the storm flash level now and strikes so far (null outside the inked storm chapter). */
   readonly lightning: () => { readonly flash: number; readonly strikes: number } | null;
+  /** DG-P4: main.ts marks the intro rail (and any later sequence) so DOF runs only there. */
+  setSequence(on: boolean): void;
+  /** DG-P4 QA: the two toggled post effects as last set. */
+  readonly sequencePost: () => { readonly depthOfField: boolean; readonly motionBlur: boolean };
 }
 
 /** DG-C2 constants: boost FOV kick (deg), roll as a fraction of the board bank, roll cap (deg). */
@@ -312,6 +316,20 @@ function addInkedRig(builder: Scene, chapter: number, options: BuildOptions): vo
   }
   builder.add(effects.vignette({ intensity: 0.22 }));
   if (!options.low) builder.add(effects.filmGrain({ intensity: 0.03 }));
+  // DG-P4: DOF for the intro rail and motion blur for boost, both High-only and both start off; bind toggles them with
+  // `app.post.setEffectEnabled` (no rebuild). Reduced motion never turns motion blur on (PRD §6.3).
+  if (!options.low) {
+    builder.add(effects.depthOfField({ name: "silt sequence dof", focusDistance: SEQUENCE_DOF.focusDistance, fStop: SEQUENCE_DOF.fStop, maxBlur: SEQUENCE_DOF.maxBlur }));
+    if (!options.reducedMotion) builder.add(effects.motionBlur({ name: "silt boost blur", intensity: BOOST_BLUR }));
+  }
+}
+
+/** DG-P4: the sequence DOF focuses on the rider at the rail's distance; boost motion blur strength (PRD 0.35). */
+export const SEQUENCE_DOF = { focusDistance: 22, fStop: 2.8, maxBlur: 3 } as const;
+export const BOOST_BLUR = 0.35;
+/** DG-P4: which of the two toggled post effects should be on now. */
+export function sequencePost(state: { readonly boosting: boolean; readonly sequence: boolean; readonly reducedMotion: boolean }): { readonly depthOfField: boolean; readonly motionBlur: boolean } {
+  return { depthOfField: state.sequence, motionBlur: state.boosting && !state.sequence && !state.reducedMotion };
 }
 
 const FAR = [0, -400, 0] as const;
@@ -662,6 +680,17 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
         : undefined;
       let fovKick = 0, roll = 0, punchLeft = 0;
       const keyDir = keyDirection(look);
+      // DG-P4: both toggled effects start off (inked High only; the nodes are absent on Low and in the original look)
+      const toggles = inked && !buildOptions.low;
+      let sequence = false;
+      let postShown = { depthOfField: false, motionBlur: false };
+      const applyPost = (next: { depthOfField: boolean; motionBlur: boolean }, force = false): void => {
+        if (!toggles) return;
+        if (force || next.depthOfField !== postShown.depthOfField) app.post?.setEffectEnabled?.("depthOfField", next.depthOfField);
+        if (!buildOptions.reducedMotion && (force || next.motionBlur !== postShown.motionBlur)) app.post?.setEffectEnabled?.("motionBlur", next.motionBlur);
+        postShown = next;
+      };
+      applyPost(postShown, true);
       // DG-S5: lightning in the storm chapter (render time, never sim time), the sky deck and the key flash together
       const lightning = inked && look.rain ? createLightning({ reducedFlash: options.reducedMotion }) : undefined;
       let flashShown = 0, strikes = 0;
@@ -710,6 +739,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
           }
 
           lastRider = [state.x, state.y, state.z];
+          applyPost(sequencePost({ boosting: flight.boosting, sequence, reducedMotion: !!options.reducedMotion }));
           if (siltFx) {
             const ground = Math.max(sim.world.floor(state.x, state.z, state.y), overCanal(chapter, state.x, state.z) ? 0 : -Infinity);
             siltFx.update({ position: [state.x, state.y - BOARD_DROP, state.z], forward: [fx0(state.yaw), fz0(state.yaw)], speed: flight.speed, altitude: state.y - BOARD_DROP - ground, overCanal: overCanal(chapter, state.x, state.z) }, dt);
@@ -799,6 +829,8 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
         fxStats: () => siltFx?.stats() ?? null,
         cameraFeel: () => ({ fovKick, rollDeg: (roll * 180) / Math.PI }),
         lightning: () => (lightning ? { flash: flashShown, strikes } : null),
+        setSequence(on) { sequence = on; },
+        sequencePost: () => postShown,
         cameraEye: () => lastEye,
         riderAnimation: () => animation
       };
