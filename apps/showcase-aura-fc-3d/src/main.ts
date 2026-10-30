@@ -21,7 +21,7 @@ import {
 import "../../showcase-port-shared/quickbar.css";
 import { assets } from "./aura-assets-v2";
 import { createSim, PITCH_HX, PITCH_HZ, PEN_X, BALL_R, BALL_VIS_R, SIM_DT } from "./game/sim";
-import { buildFcScene, resolveWorld, applyVenue, tickWorld, ATHLETE_IDS, VENUE_LOOKS, withoutLookAo } from "./game/scene";
+import { buildFcScene, resolveWorld, applyVenue, tickWorld, ATHLETE_IDS, VENUE_LOOKS, withoutLookAo, applyPostAccessibility } from "./game/scene";
 import { mountFcTouch } from "./game/touch";
 import { fitCameraToAspect } from "./game/camera";
 import { loadSave } from "./game/save";
@@ -79,13 +79,22 @@ function boot(): void {
   })();
   let sceneVenue: VenueId = bootVenue;
   const noAo = bootParams.get("ao") === "0";
-  const sceneFor = (venue: VenueId) => (noAo ? withoutLookAo(buildFcScene(venue)) : buildFcScene(venue));
+  // PRD 6.3: read before the first scene build (weather emission, motion blur and chromatic aberration follow it)
+  const reducedMotion = bootParams.has("reducedMotion") || (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false);
+  const reducedFlash = bootParams.has("reducedFlash") || (window.matchMedia?.("(prefers-reduced-flash: reduce)")?.matches ?? false);
+  const sceneFor = (venue: VenueId) => {
+    const built = buildFcScene(venue, { reducedMotion });
+    return noAo ? withoutLookAo(built) : built;
+  };
 
   let app: ReturnType<typeof createAuraApp>;
   try {
     app = createAuraApp("#app", {
       scene: sceneFor(bootVenue),
       ...looks.appOptions(VENUE_LOOKS[bootVenue].look),
+      // FC47-P1: the boot venue's output preset (the look carries the same id as its output.preset child). A venue
+      // switched to at runtime keeps this operator: GU47(E-C) applying the look's output.preset child makes it per scene.
+      output: { preset: VENUE_LOOKS[bootVenue].post },
       qualityRebuild: { flags: ["game"] }
     } as any);
   } catch (e) {
@@ -93,8 +102,12 @@ function boot(): void {
     if (errEl) errEl.hidden = false;
     return;
   }
-  // Runtime-spawned effect clouds are off by default until the floating-dot report is root-caused; `?vfx=on` re-enables them for diagnosis.
-  (app as any).effects.runtime = "off";
+  // FC47-V1: runtime VFX are back on (E-F fixed the floating-dot cause in the engine); `?vfx=off` turns them off for
+  // diagnosis.
+  if (bootParams.get("vfx") === "off") (app as any).effects.runtime = "off";
+  // The cinematic-film preset contributes a depth-of-field stage; the broadcast frame stays sharp (goal DOF: FC47-P3).
+  // Reduced motion also drops the presets' chromatic aberration and motion blur (PRD 6.3).
+  applyPostAccessibility(app, reducedMotion);
   const canvas = app.canvas;
 
   /* -------------------------- handles -------------------------- */
@@ -153,9 +166,7 @@ function boot(): void {
   }, { passive: false });
 
   /* -------------------------- juice + audio -------------------------- */
-  const params = new URLSearchParams(window.location.search);
-  const reducedMotion = params.has("reducedMotion") || (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false);
-  const reducedFlash = params.has("reducedFlash") || (window.matchMedia?.("(prefers-reduced-flash: reduce)")?.matches ?? false);
+  const params = bootParams;
   const a11y = (game as any).accessibility?.settings?.([], { reducedMotion, reducedFlash, highContrast: params.has("highContrast") });
 
   let fxLayer = document.getElementById("fc-fx-layer");

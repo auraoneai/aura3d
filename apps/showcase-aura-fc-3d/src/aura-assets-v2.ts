@@ -8,6 +8,13 @@
 import { defineAuraAssets } from "@aura3d/engine";
 
 export const assets = defineAuraAssets({
+  // GU47 FC47-L1: the night venues' low-intensity IBL (Poly Haven qwantani_night_puresky, CC0; the aura.library.json
+  // `night-2k` entry, served from public/hdri/). Lights only: the look draws it with background false.
+  fcNightIblHdri: {
+    type: "texture",
+    format: "hdr",
+    url: "/hdri/night-2k.hdr"
+  },
   fcFloodlightPylonMeshy: {
     type: "model",
     format: "glb",
