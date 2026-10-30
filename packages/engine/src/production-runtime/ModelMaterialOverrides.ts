@@ -60,6 +60,10 @@ export interface TypedGLBActorMaterialOverride {
   readonly transmission?: number;
   /** GU47 E-D: `u_iridescenceFactor`, on materials that carry it. */
   readonly iridescence?: number;
+  /** GU47 pass 4: `u_sheenColorFactor` (linear, already scaled by `sheen`), on materials that carry it. */
+  readonly sheenColor?: readonly [number, number, number];
+  /** GU47 pass 4: `u_sheenRoughnessFactor`, on materials that carry it. */
+  readonly sheenRoughness?: number;
 }
 
 const clampRange = (value: number | undefined, fallback: number, min: number, max: number): number =>
@@ -306,7 +310,16 @@ export function applyMaterialOverrides(
     if (resolved.opacity !== undefined) writeToAuthoredKeys(["u_opacity", "u_alpha"], resolved.opacity);
     if (resolved.transmission !== undefined) writeToAuthoredKeys(["u_transmissionFactor"], clampRange(resolved.transmission, 0, 0, 1));
     if (resolved.iridescence !== undefined) writeToAuthoredKeys(["u_iridescenceFactor"], clampRange(resolved.iridescence, 0, 0, 1));
+    if (resolved.sheenColor) writeToAuthoredKeys(["u_sheenColorFactor"], [resolved.sheenColor[0], resolved.sheenColor[1], resolved.sheenColor[2]]);
+    if (resolved.sheenRoughness !== undefined) writeToAuthoredKeys(["u_sheenRoughnessFactor"], clampRange(resolved.sheenRoughness, 0, 0, 1));
   }
+}
+
+/** `sheen` (0..1, default 1) times `sheenColor` (default white), linear. */
+function lowerSheenColor(sheen: number | undefined, color: AuraModelMaterialOverride["sheenColor"]): [number, number, number] {
+  const scale = clampRange(sheen, 1, 0, 1);
+  const [r, g, b] = color !== undefined ? colorToVec4(color) : [1, 1, 1];
+  return [r! * scale, g! * scale, b! * scale];
 }
 
 function targetPredicate(
@@ -387,7 +400,9 @@ export function lowerModelMaterialOverrides(
       ...(override.opacity !== undefined ? { opacity: override.opacity } : {}),
       ...(override.rim !== undefined ? { rim: lowerMaterialRim(override.rim) } : {}),
       ...(override.transmission !== undefined ? { transmission: override.transmission } : {}),
-      ...(override.iridescence !== undefined ? { iridescence: override.iridescence } : {})
+      ...(override.iridescence !== undefined ? { iridescence: override.iridescence } : {}),
+      ...(override.sheen !== undefined || override.sheenColor !== undefined ? { sheenColor: lowerSheenColor(override.sheen, override.sheenColor) } : {}),
+      ...(override.sheenRoughness !== undefined ? { sheenRoughness: override.sheenRoughness } : {})
     });
   }
   return lowered;

@@ -32,6 +32,14 @@ export interface AuraModelMaterialOverride {
   readonly transmission?: number;
   /** KHR_materials_iridescence factor 0..1. */
   readonly iridescence?: number;
+  /**
+   * GU47 pass 4: KHR_materials_sheen (fabric, fur, felt). `sheen` 0..1 scales `sheenColor` (default white), so
+   * `{ sheen: 0.45 }` alone gives a white sheen at 0.45; `sheenRoughness` 0..1. Written to materials that carry the sheen
+   * parameters (the PBR programs do).
+   */
+  readonly sheen?: number;
+  readonly sheenColor?: AuraColor;
+  readonly sheenRoughness?: number;
 }
 // AuraModelOptions additions: materialOverrides?: readonly AuraModelMaterialOverride[]; variant?: string
 export interface AuraResolvedMaterialInfo { readonly name: string; readonly featureKey: string; readonly baseColorFactor: readonly [number, number, number, number]; readonly enabledMaps: readonly string[]; readonly extensions: readonly string[]; readonly lightsEvaluated: "uniform-16" | "clustered"; readonly warnings: readonly string[]; }
