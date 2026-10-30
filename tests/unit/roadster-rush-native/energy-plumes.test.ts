@@ -24,4 +24,11 @@ describe("Apex Overdrive energy plumes (GU47 AO-M4)", () => {
     expect(APEX_PLUMES.rocket.color).toBe("#ff8a3d");
     for (const p of Object.values(APEX_PLUMES)) expect(p.color.toLowerCase()).not.toMatch(/#ff00ff|#e879f9|#d946ef/);
   });
+
+  it("gives only Rocket Send a heat shimmer (AO-V2), none under reduced motion", () => {
+    expect(plumeSpec(APEX_PLUMES.rocket, false).uniforms?.plumeShimmer?.value).toBe(1);
+    expect(plumeSpec(APEX_PLUMES.rocket, true).uniforms?.plumeShimmer?.value).toBe(0);
+    expect(plumeSpec(APEX_PLUMES.rear, false).uniforms?.plumeShimmer?.value).toBe(0);
+    expect(plumeSpec(APEX_PLUMES.rocket, false).glsl.vertex).toContain("plumeShimmer");
+  });
 });
