@@ -204,6 +204,16 @@ export function groundingNodes() {
 }
 
 /**
+ * GD-07: a thin drizzle over Sodium night (`street.drizzle`) so the wet asphalt (roughness 0.22 from the look table)
+ * has a cause. Secondary on purpose: Lamplight Line owns rain. Reduced motion halves the particles (PRD 6.3).
+ */
+export const DRIZZLE = { intensity: 0.16, density: 0.22, particles: 900, color: "#c8d2dc" } as const;
+export function drizzleNodes(look: SkyLook, motionOk = true) {
+  if (!look.street.drizzle) return [];
+  return [effects.rain({ name: "grid drizzle", intensity: DRIZZLE.intensity, density: DRIZZLE.density, color: DRIZZLE.color, particleCount: Math.round(DRIZZLE.particles * (motionOk ? 1 : 0.5)), splashes: false, mist: false })];
+}
+
+/**
  * GD-08: the post stack of one row: bloom (noon threshold 0.95 keeps the white pod out of it, fog low, night 0.55), the
  * E-C linear grade (contrast, saturation, white balance) and a vignette. Tone mapping and exposure are output settings,
  * applied with `app.setOutput` after every `setScene` (`skyOutput`).
@@ -361,7 +371,7 @@ export const GRID_DISPATCH_FLAGS = { A3D_QR_GAME: true, A3D_QR_VFX_SKY: true, A3
 
 const placed = (items: ReadonlyArray<readonly [number, number, number]>): AuraTransformSpec[] => items.map(([x, y, z]) => ({ position: [x, y, z] }));
 
-export function buildGridDispatchScene(weather: WeatherPreset): ReturnType<typeof scene> {
+export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly motionOk?: boolean } = {}): ReturnType<typeof scene> {
   const w = WEATHER[weather];
   const look = SKY_LOOKS[weather];
   const s = scene()
@@ -371,6 +381,7 @@ export function buildGridDispatchScene(weather: WeatherPreset): ReturnType<typeo
     .addMany([...skyRig(look)])
     .add(marineHaze(look))
     .addMany([...godRayNodes(look)])
+    .addMany([...drizzleNodes(look, opts.motionOk ?? true)])
     .addMany([...groundingNodes()])
     .addMany([...skyPost(look)]);
 

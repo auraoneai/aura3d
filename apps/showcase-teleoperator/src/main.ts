@@ -198,7 +198,7 @@ async function bootGridDispatch(): Promise<void> {
   await probeBuildingModels();
   // GU47(E-D): `qualityRebuild.flags` is typed `readonly string[]` but createAuraApp hands it to resolveQrFlags, which
   // takes the record form (QrFlagInput); drop the cast once the option type is widened (lane report handoff).
-  const auraApp = createAuraApp(canvas, { scene: buildGridDispatchScene(weather), renderer: GRID_DISPATCH_RENDERER, qualityRebuild: { flags: GRID_DISPATCH_FLAGS as unknown as readonly string[] } });
+  const auraApp = createAuraApp(canvas, { scene: buildGridDispatchScene(weather, { motionOk: motionOk() }), renderer: GRID_DISPATCH_RENDERER, qualityRebuild: { flags: GRID_DISPATCH_FLAGS as unknown as readonly string[] } });
   installSafetyNet({ safety: { selfHeal: false, panel: "query" }, app: auraApp });
   let N = bindNodes(auraApp, weather);
   // GD-05/GD-09: the sensor pass (marine deck aloft + LiDAR scan pulse); registered once, it survives sky remounts.
@@ -447,7 +447,7 @@ async function bootGridDispatch(): Promise<void> {
     remounting = true;
     syncSkyDock(next);
     $("skyChange")?.classList.add("on");
-    auraApp.setScene(buildGridDispatchScene(next));
+    auraApp.setScene(buildGridDispatchScene(next, { motionOk: motionOk() }));
     applySkyOutput();
     N = bindNodes(auraApp, next);
     appliedCar = null;

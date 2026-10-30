@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { resolveQrFlags } from "@aura3d/engine";
 import { BOOT_SKY, KEY_SHADOW, SKY_LOOKS, SODIUM, SKY_ORDER, hazeAt, hdriUrl, keyLightPosition, nextSky, skyFromParam, sunDirection } from "../../../apps/showcase-teleoperator/src/look";
-import { GRID_DISPATCH_FLAGS, SODIUM_POINT_MAX, WEATHER, buildGridDispatchScene, nearestLamps, roadTileLayout, skyOutput, tailLampMaterial, windowGlowOverride } from "../../../apps/showcase-teleoperator/src/scene";
+import { DRIZZLE, GRID_DISPATCH_FLAGS, SODIUM_POINT_MAX, drizzleNodes, WEATHER, buildGridDispatchScene, nearestLamps, roadTileLayout, skyOutput, tailLampMaterial, windowGlowOverride } from "../../../apps/showcase-teleoperator/src/scene";
 
 type Node = { kind?: string; light?: string; name?: string; environment?: string; texture?: { url?: string }; shadow?: unknown; position?: number[]; color?: string; intensity?: number; children?: Node[] };
 const flatNodes = (sky: (typeof SKY_ORDER)[number]): Node[] => {
@@ -262,5 +262,20 @@ describe("grid dispatch GD-06 god rays and GD-10 grounding", () => {
       expect(fx(sky, "contact-shadows"), sky).toHaveLength(1);
       expect(fx(sky, "ambient-occlusion"), sky).toHaveLength(1);
     }
+  });
+});
+
+describe("grid dispatch GD-07 wet Sodium night", () => {
+  it("night asphalt roughness 0.22 and a thin drizzle; no rain on the other skies", () => {
+    expect(SKY_LOOKS.night.street.asphalt.roughness).toBe(0.22);
+    const rain = (sky: (typeof SKY_ORDER)[number]) => flatNodes(sky).filter((n) => n.kind === "effect" && (n as { effect?: string }).effect === "rain");
+    expect(rain("night")).toHaveLength(1);
+    for (const sky of ["golden", "noon", "fog"] as const) expect(rain(sky)).toHaveLength(0);
+  });
+  it("reduced motion halves the drizzle particles", () => {
+    const a = JSON.stringify(drizzleNodes(SKY_LOOKS.night, true));
+    const b = JSON.stringify(drizzleNodes(SKY_LOOKS.night, false));
+    expect(a).toContain(`"particleCount":${DRIZZLE.particles}`);
+    expect(b).toContain(`"particleCount":${DRIZZLE.particles / 2}`);
   });
 });
