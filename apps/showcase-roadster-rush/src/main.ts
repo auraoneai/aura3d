@@ -39,6 +39,7 @@ import { installBlackFrameGuard } from "@aura3d/debug";
 import { SHIELD_SIZE, shieldSpec } from "./art/shield";
 import { HAZE_FLOOR_Y, groundSpec } from "./art/ground";
 import { asphaltMaterial, concreteMaterial } from "./art/surfaces";
+import { apexHeroPaint, apexRivalPaint } from "./art/paint";
 import { PYLON_KIT, PYLON_ROWS, pylonLayout } from "./render/pylons";
 import { TOWER_CAPACITY_PER_VARIANT, TOWER_VARIANTS, towerGlassSpec, towerLayout, type TowerVariant } from "./render/towers";
 import { meshyFarVehicles, meshyVehicles } from "./meshy-vehicles";
@@ -480,7 +481,9 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       name: "player-roadster-car",
       role: "primaryVehicle",
       scaleMode: "fit",
-      targetMaxDimension: 4.35
+      targetMaxDimension: 4.35,
+      // AO-M1: cobalt metallic clearcoat (material.carPaint values) with a warm tangerine rim (E-D); same model, same bounds
+      materialOverrides: apexHeroPaint()
     })
       .position(0, 0, 0)
       .runtime(game.runtimeNode("player-roadster-car", { tags: ["primarySubject", "primaryVehicle", "player"] })),
@@ -629,7 +632,8 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
   // 5. Sky-lane traffic: lethal, so every sky car in the window gets a slot (audit RR-1)
   s.addMany([
     instances
-      .model(assets.roadsterRushSkyCar, { name: "sky-cars", role: "primaryVehicle", scaleMode: "fit", targetMaxDimension: 4.3, transforms: parked(POOL_CAPACITY.skyCar) })
+      // AO-A2 interim: graphite paint with the rival-red rim until the WP-36 interceptor (ducted fans, far LOD) replaces the asset
+      .model(assets.roadsterRushSkyCar, { name: "sky-cars", role: "primaryVehicle", scaleMode: "fit", targetMaxDimension: 4.3, materialOverrides: apexRivalPaint(), transforms: parked(POOL_CAPACITY.skyCar) })
       .runtime(game.runtimeNode(poolId("sky-cars"))),
     // sky cars beyond 90 m: the far LOD, no shadow
     instances
