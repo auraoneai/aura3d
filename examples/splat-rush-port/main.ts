@@ -52,6 +52,21 @@ const canvas = $<HTMLCanvasElement>("world");
 const look = LOOKS[parseLook(typeof location === "undefined" ? "" : location.search)];
 /** CR-V1 bursts fired since load (QA). */
 let splashesFired = 0;
+/** CR-V2 ball ribbon (E-F trail on the "ball" node), recreated when the ball colour changes; none on reduced motion. */
+let ribbon: { key: string; handle: { stop(o?: { immediate?: boolean }): void } } | null = null;
+function updateRibbon(): void {
+  const row = look.ribbon;
+  const fxApi = app?.effects;
+  const want = row && fxApi && !reducedMotion && !config.manual && sim.o.phase === "playing" && !sim.o.isRainbowActive;
+  const key = want ? `c${sim.o.playerColorIndex}` : "";
+  if (ribbon && ribbon.key === key) return;
+  ribbon?.handle.stop({ immediate: true });
+  ribbon = null;
+  if (!want || !row || !fxApi) return;
+  /* life covers the last ~12 ball positions at 60 Hz; width ramps in with road speed */
+  const handle = fxApi.trail("ball", { width: row.width, life: row.points / 60, color: COLORS[sim.o.playerColorIndex] ?? "#ffffff", widthOverSpeed: [2, 12] });
+  ribbon = { key, handle };
+}
 
 let sim = new SplatRushSim(config.seed);
 const presenter = createSplatPresenter(() => sim);
@@ -233,6 +248,7 @@ function render(live = false): void {
     runtime.update(sim, canvas.clientWidth / Math.max(1, canvas.clientHeight), {
       ...(shown ? { shown } : {}), ...(camera ? { camera } : {}), reducedMotion, symbols, guide: !guided, cameraLayers: !config.manual
     });
+    updateRibbon();
     app.step(0);
   } catch (error) {
     renderFailed = true;

@@ -23,7 +23,7 @@ Status per acceptance line. "unit" = covered by `tests/unit/splat-rush-port/gu47
 | CR-M3 | gate bounds pinned, one batch, >= 3 drip tips | not done |
 | CR-A1 / CR-A2 | 5 paint-world GLBs, gem retextures | blocked (WP-36) |
 | CR-V1 | liveCount > 0 within 3 frames; replay unchanged; vfx=off LPIPS 0.01; peak <= 48 draws | unit (planning, seeds, camera false, halving); live count: phase 2 |
-| CR-V2 | ball ribbon | not done |
+| CR-V2 | ball ribbon | done in code; pixels phase 2 |
 | CR-C1 | roll within ±3, layers off on reduced motion and manual=1 | unit |
 | CR-C2 | title rail, game-over orbit | not done |
 | CR-AN2 | deterministic poses; tilt within ±6 deg over 60 s | unit |
