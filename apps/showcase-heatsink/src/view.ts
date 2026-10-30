@@ -1,10 +1,9 @@
 /**
- * Draw helpers that keep the frame loop allocation-free (audit C20) and the per-circuit recolour (C12).
+ * Draw helpers that keep the frame loop allocation-free (audit C20). The per-circuit look is no longer a recolour of
+ * a few nodes: a circuit change remounts the scene with its own sky, rig and post (GU47 HS-03, main.ts).
  */
 import type { AuraRuntimeNodeHandle } from "@aura3d/engine";
-import type { CircuitSpec, DroneId } from "./data";
-import { chevronMaterial, emissive, spineMaterial } from "./scene";
-import { material } from "@aura3d/engine";
+import type { DroneId } from "./data";
 
 /**
  * Dense per-frame writer for one instanced node: column-major T·Ry·S matrices into a preallocated buffer, unused
@@ -18,13 +17,17 @@ export class InstanceWriter {
   }
   begin(): void { this.cursor = 0; }
   push(x: number, y: number, z: number, yaw: number, scale: number): void {
+    this.pushScaled(x, y, z, yaw, scale, scale, scale);
+  }
+  /** T·Ry·S with a per-axis scale (HS-15: the lava pool is a scaled gutter instance). */
+  pushScaled(x: number, y: number, z: number, yaw: number, sx: number, sy: number, sz: number): void {
     if (this.cursor >= this.capacity) return;
     const o = this.cursor * 16;
-    const c = Math.cos(yaw) * scale, s = Math.sin(yaw) * scale;
+    const c = Math.cos(yaw), s = Math.sin(yaw);
     const m = this.matrices;
-    m[o] = c; m[o + 1] = 0; m[o + 2] = -s; m[o + 3] = 0;
-    m[o + 4] = 0; m[o + 5] = scale; m[o + 6] = 0; m[o + 7] = 0;
-    m[o + 8] = s; m[o + 9] = 0; m[o + 10] = c; m[o + 11] = 0;
+    m[o] = c * sx; m[o + 1] = 0; m[o + 2] = -s * sx; m[o + 3] = 0;
+    m[o + 4] = 0; m[o + 5] = sy; m[o + 6] = 0; m[o + 7] = 0;
+    m[o + 8] = s * sz; m[o + 9] = 0; m[o + 10] = c * sz; m[o + 11] = 0;
     m[o + 12] = x; m[o + 13] = y; m[o + 14] = z; m[o + 15] = 1;
     this.cursor += 1;
   }
@@ -52,27 +55,4 @@ export function slotRivals(drawn: readonly number[], bySlot: Map<number, DroneId
     out.set(free, rival);
   }
   return out;
-}
-
-export interface LookHandles {
-  readonly backdrop: AuraRuntimeNodeHandle;
-  readonly floor: AuraRuntimeNodeHandle;
-  readonly bandA: AuraRuntimeNodeHandle;
-  readonly bandB: AuraRuntimeNodeHandle;
-  readonly spineA: AuraRuntimeNodeHandle;
-  readonly spineB: AuraRuntimeNodeHandle;
-  readonly chevA: AuraRuntimeNodeHandle;
-  readonly chevB: AuraRuntimeNodeHandle;
-}
-
-/** Recolour the sky, floor, horizon bands, road spine and wall chevrons for a circuit. */
-export function applyCircuitLook(h: LookHandles, circuit: CircuitSpec): void {
-  h.backdrop.setMaterial(emissive(circuit.skyColor, 0.6));
-  h.floor.setMaterial(material.pbr({ color: circuit.fogTint, roughness: 0.92, metalness: 0.12 }));
-  h.bandA.setMaterial(emissive(circuit.accentColor, 0.75));
-  h.bandB.setMaterial(emissive(circuit.horizonColor, 0.65));
-  h.spineA.setMaterial(spineMaterial(circuit.horizonColor));
-  h.spineB.setMaterial(spineMaterial(circuit.accentColor));
-  h.chevA.setMaterial(chevronMaterial(circuit.accentColor));
-  h.chevB.setMaterial(chevronMaterial(circuit.horizonColor));
 }

@@ -3,7 +3,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { runMotionGate, createFixedStepPresenter } from "../../../packages/game/src/index";
-import { projectToScreen, ChaseCamera } from "../../../apps/showcase-heatsink/src/camera";
+import { BANK, CHASE, ChaseCamera, COUNTDOWN_SHOTS, projectToScreen, shotPose, TITLE_OFFSET } from "../../../apps/showcase-heatsink/src/camera";
 import { CIRCUITS } from "../../../apps/showcase-heatsink/src/data";
 import { autopilot, createRace, stepRace } from "../../../apps/showcase-heatsink/src/sim";
 import { blendShown, createShown, writeShown, type Shown } from "../../../apps/showcase-heatsink/src/shown";
@@ -81,11 +81,61 @@ describe("heatsink lock bracket: real projection (C7)", () => {
     const cam = new ChaseCamera();
     cam.addTrauma(1);
     for (let i = 0; i < 60; i++) cam.update(1 / 60, { drone: [0, 1.55, -0.4], lookAt: [0, 1.8, -18], boosting: true, hyper: false, aspect: 16 / 9, reducedMotion: true });
-    expect(cam.pose.fov).toBeCloseTo(68, 6);
-    expect(cam.pose.position[1]).toBeCloseTo(4.2, 3);
+    expect(cam.pose.fov).toBeCloseTo(CHASE.fov, 6);
+    expect(cam.pose.position[1]).toBeCloseTo(CHASE.y, 3);
     const moving = new ChaseCamera();
     for (let i = 0; i < 60; i++) moving.update(1 / 60, { drone: [0, 1.55, -0.4], lookAt: [0, 1.8, -18], boosting: true, hyper: false, aspect: 16 / 9, reducedMotion: false });
-    expect(moving.pose.fov).toBeGreaterThan(70);
+    expect(moving.pose.fov).toBeGreaterThan(CHASE.fov + 2);
+  });
+});
+
+describe("heatsink HS-17 camera", () => {
+  const base = { lookAt: [0, 1.8, -18] as [number, number, number], boosting: false, hyper: false, aspect: 16 / 9 };
+  it("rests at fov 62, y 3.2, z 8.2", () => {
+    const cam = new ChaseCamera();
+    for (let i = 0; i < 120; i++) cam.update(1 / 60, { ...base, drone: [0, 1.55, -0.4], reducedMotion: false });
+    expect(cam.pose.fov).toBeCloseTo(62, 6);
+    expect(cam.pose.position[1]).toBeCloseTo(3.2, 3);
+    expect(cam.pose.position[2]).toBe(8.2);
+  });
+  it("banks with lateral speed, never past 6 degrees, and not at all on reduced motion", () => {
+    for (const reducedMotion of [false, true]) {
+      const cam = new ChaseCamera();
+      let peak = 0;
+      for (let i = 0; i < 240; i++) {
+        cam.update(1 / 60, { ...base, drone: [Math.sin(i / 12) * 9, 1.55, -0.4], reducedMotion });
+        peak = Math.max(peak, Math.abs(cam.pose.roll));
+      }
+      if (reducedMotion) expect(peak).toBe(0);
+      else {
+        expect(peak).toBeGreaterThan(0.02);
+        expect(peak).toBeLessThanOrEqual(BANK.max + 1e-12);
+      }
+      expect(Math.hypot(...cam.pose.up)).toBeCloseTo(1, 10);
+    }
+  });
+  it("cuts through three countdown shots, skipped on reduced motion", () => {
+    const drone: [number, number, number] = [0, 1.45, -0.4];
+    const poses = [3, 2, 1].map((digit) => shotPose({ kind: "countdown", digit }, drone, false)!);
+    expect(poses.every(Boolean)).toBe(true);
+    expect(new Set(poses.map((p) => p.position.join(","))).size).toBe(3);
+    expect(shotPose({ kind: "countdown", digit: 2 }, drone, true)).toBeNull();
+    expect(Object.keys(COUNTDOWN_SHOTS)).toEqual(["1", "2", "3"]);
+    const cam = new ChaseCamera();
+    cam.update(1 / 60, { ...base, drone, reducedMotion: false, shot: { kind: "countdown", digit: 3 } });
+    expect(cam.cut).toBe(true);
+    cam.update(1 / 60, { ...base, drone, reducedMotion: false, shot: { kind: "countdown", digit: 3 } });
+    expect(cam.cut).toBe(false);
+  });
+  it("orbits on results (still on reduced motion) and holds a title pose at least 4 m from the chase", () => {
+    const drone: [number, number, number] = [0, 1.45, -0.4];
+    const a = shotPose({ kind: "results", seconds: 0 }, drone, false)!;
+    const b = shotPose({ kind: "results", seconds: 2 }, drone, false)!;
+    expect(a.position).not.toEqual(b.position);
+    expect(shotPose({ kind: "results", seconds: 2 }, drone, true)!.position).toEqual(shotPose({ kind: "results", seconds: 0 }, drone, true)!.position);
+    const title = shotPose({ kind: "title" }, drone, false)!;
+    expect(title.position).toEqual([drone[0] + TITLE_OFFSET[0], drone[1] + TITLE_OFFSET[1], drone[2] + TITLE_OFFSET[2]]);
+    expect(Math.hypot(title.position[0], title.position[1] - CHASE.y, title.position[2] - CHASE.z)).toBeGreaterThanOrEqual(4);
   });
 });
 

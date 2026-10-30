@@ -104,8 +104,27 @@
         z-index: 8;
         opacity: 0;
         transition: opacity 0.12s ease-out;
-        background: radial-gradient(circle at 50% 50%, transparent 45%, rgba(255, 41, 82, 0.36) 100%);
+        /* HS-18 overheat: molten orange (#ff8a1f) closing in from the edges. */
+        background: radial-gradient(circle at 50% 50%, transparent 46%, rgba(255, 138, 31, 0.34) 100%);
       }
+
+      /* HS-18 damage: slag red (#d2361c), separate from the overheat glaze. */
+      .damage-glaze {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 9;
+        opacity: 0;
+        transition: opacity 0.12s ease-out;
+        background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(210, 54, 28, 0.42) 100%);
+      }
+
+      /* HS-18 title card: the race chrome hides behind the start card (card frame: scene + title only). */
+      body.td-card #hud,
+      body.td-card .touch-controls,
+      body.td-card .speed-lines,
+      body.td-card .heat-glaze,
+      body.td-card .damage-glaze { display: none; }
 
       /* The bar itself comes from apps/showcase-port-shared/quickbar.css; Thermal Drift sets accents. */
       :root {
@@ -551,9 +570,44 @@
         transition: width 0.06s linear;
       }
 
+      /* HS-18 thermal gauge: soot to molten amber to slag red; ticks at the 80% haze ramp and at overheat. */
       .hud-r6 .b-row .fill.heat {
-        background: linear-gradient(90deg, var(--cyan), var(--accent-2), var(--danger));
+        background: linear-gradient(90deg, #3a2a22, #ff8a1f 62%, #d2361c);
       }
+
+      .hud-r6 .b-row .bar.thermal { height: 8px; }
+
+      .hud-r6 .b-row .bar.thermal::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: calc(80% - 1px);
+        width: 2px;
+        background: rgba(244, 242, 236, 0.6);
+        z-index: 1;
+      }
+
+      .hud-r6 .r6-core {
+        display: flex;
+        align-items: baseline;
+        justify-content: flex-end;
+        gap: 5px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        color: var(--muted);
+      }
+
+      .hud-r6 .r6-core .v {
+        font-family: var(--font-display);
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        color: #ffb070;
+      }
+
+      .hud-r6 .r6-core .v.hot { color: #d2361c; }
 
       .hud-r6 .b-row .fill.shield {
         background: var(--cyan);
@@ -564,7 +618,7 @@
       }
 
       .hud-r6 .b-row .fill.overheat {
-        background: var(--danger);
+        background: #d2361c;
       }
 
       /* Center Combat Reticle & Lock Bracket */
@@ -893,6 +947,7 @@
       <div class="screen-fx"></div>
       <div id="speed-lines" class="speed-lines"></div>
       <div id="heat-glaze" class="heat-glaze"></div>
+      <div id="damage-glaze" class="damage-glaze"></div>
 
       <!-- Interactive Top Command Bar: Instant Drone Garage, Circuit & Mode Switcher -->
       <nav class="aura3d-top-bar" role="toolbar" aria-label="THERMAL DRIFT Garage, Circuit, and Mode Controls">
@@ -1007,8 +1062,9 @@
             <div class="u">KM/H</div>
           </div>
           <div class="r6-bars">
+            <div class="r6-core" aria-label="Core temperature"><span class="k">CORE</span><span class="v" id="h-core">300</span><span class="u">°C</span></div>
             <div class="b-row"><span class="k">AB</span><div class="bar"><div class="fill" id="h-ab"></div></div></div>
-            <div class="b-row"><span class="k">HEAT</span><div class="bar"><div class="fill heat" id="h-heat"></div></div></div>
+            <div class="b-row"><span class="k">HEAT</span><div class="bar thermal"><div class="fill heat" id="h-heat"></div></div></div>
             <div class="b-row"><span class="k">SHLD</span><div class="bar"><div class="fill shield" id="h-shield"></div></div></div>
             <div class="b-row"><span class="k">GUN</span><div class="bar"><div class="fill gun" id="h-gun"></div></div></div>
           </div>

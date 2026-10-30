@@ -2,6 +2,9 @@
  * HUD and menus. Every DOM write goes through a change check (audit C20); the beacon and minimap are throttled.
  * C1 results panel with Restart and Change drone, C3 position chip hidden in time trial, C7 lock bracket in pixels
  * with an edge arrow, C15 boot values from the race state, C21 text cues next to colour, A11Y1 boot overlay hidden.
+ * GU47 HS-18: a thermal instrument cluster (core temperature readout in degrees C over a soot-amber-slag heat gauge with
+ * the 80% haze-ramp and overheat ticks), separate slag-red damage and molten-orange overheat overlays, and the title
+ * card hides the race chrome (`body.td-card`). Reduced motion caps the damage overlay and never pulses it.
  */
 import { CIRCUITS, DRONE_SPECS, TOTAL_LAPS, type CircuitId, type DroneId, type ModeId } from "./data";
 import type { RaceResult, RaceState } from "./sim";
@@ -14,6 +17,22 @@ export function formatRaceTime(seconds: number | null): string {
   const secs = Math.floor(rem);
   const tenths = Math.floor((rem - secs) * 10);
   return `${mins}:${secs < 10 ? "0" : ""}${secs}.${tenths}`;
+}
+
+/** Core temperature shown by the thermal cluster: 300 C cold to 1200 C at 100% heat (display only). */
+export const CORE_TEMP = { coldC: 300, hotC: 1200 } as const;
+export function coreTemperatureC(heatPercent: number): number {
+  const h = Math.min(100, Math.max(0, heatPercent));
+  return Math.round(CORE_TEMP.coldC + ((CORE_TEMP.hotC - CORE_TEMP.coldC) * h) / 100);
+}
+
+/** Damage overlay peak (slag red), its reduced-motion cap, and the overheat overlay (molten orange). */
+export const OVERLAY = { damage: 0.7, damageReduced: 0.4, overheat: 0.8, warnFrom: 72, warnMax: 0.6 } as const;
+/** Opacities of the two HS-18 overlays (pure; unit-tested). */
+export function overlayOpacities(input: { readonly damageTimer: number; readonly overheated: boolean; readonly heat: number; readonly reducedMotion: boolean }): { damage: number; overheat: number } {
+  const damage = input.damageTimer > 0 ? (input.reducedMotion ? OVERLAY.damageReduced : OVERLAY.damage) : 0;
+  const overheat = input.overheated ? OVERLAY.overheat : Math.max(0, Math.min(OVERLAY.warnMax, (input.heat - OVERLAY.warnFrom) / 35));
+  return { damage, overheat };
 }
 
 export interface HudExtra {
@@ -46,7 +65,7 @@ export function createHud(doc: Document) {
     speed: $("h-speed"), ab: $("h-ab"), heat: $("h-heat"), shield: $("h-shield"), gun: $("h-gun"),
     lock: $("lock"), lockLabel: $("lock-label"), incoming: $("incoming"),
     msg: $("msg"), msgText: $("msg-text"), msgSub: $("msg-sub"), banner: $("banner"), hyper: $("hyper-status"),
-    autopilot: $("h-autopilot"), speedLines: $("speed-lines"), heatGlaze: $("heat-glaze"),
+    autopilot: $("h-autopilot"), speedLines: $("speed-lines"), heatGlaze: $("heat-glaze"), damageGlaze: $("damage-glaze"), core: $("h-core"),
     countdown: $("countdown"), results: $("results"), start: $("start"), boot: $("boot"),
     minimap: $<HTMLCanvasElement>("minimap"), app: $("app"), mute: doc.querySelector<HTMLElement>("[data-touch=mute]")
   };
@@ -192,11 +211,13 @@ export function createHud(doc: Document) {
       text($("start-how"), touch ? "TAP TO START · STEER ON THE LEFT PAD, FIRE ON THE RIGHT" : "PRESS ENTER OR CLICK TO START · WASD / ARROWS FLY · SPACE FIRE · SHIFT BOOST");
       el.start.hidden = false;
       showFor(el.start, true);
+      doc.body.classList.add("td-card");
     },
     hideStart(): void {
       if (!el.start) return;
       showFor(el.start, false);
       el.start.hidden = true;
+      doc.body.classList.remove("td-card");
     },
     showResults(result: RaceResult, race: RaceState): void {
       if (!el.results) return;
@@ -268,6 +289,8 @@ export function createHud(doc: Document) {
       style(el.ab, "width", pct(p.ab));
       style(el.heat, "width", pct(p.heat));
       toggle(el.heat, "overheat", p.overheated);
+      text(el.core, String(coreTemperatureC(p.heat)));
+      toggle(el.core, "hot", p.heat >= 80);
       style(el.shield, "width", pct(p.shield));
       style(el.gun, "width", pct(p.gun));
       text(el.item, p.item ?? "— NONE —");
@@ -296,8 +319,9 @@ export function createHud(doc: Document) {
       }
       const speedAlpha = extra.reducedMotion ? 0 : Math.max(0, Math.min(0.85, (p.speedKmh - 560) / 240));
       style(el.speedLines, "opacity", speedAlpha.toFixed(2));
-      const heatAlpha = damageTimer > 0 ? 0.7 : p.overheated ? 0.85 : Math.max(0, Math.min(0.65, (p.heat - 72) / 35));
-      style(el.heatGlaze, "opacity", heatAlpha.toFixed(2));
+      const overlays = overlayOpacities({ damageTimer, overheated: p.overheated, heat: p.heat, reducedMotion: extra.reducedMotion });
+      style(el.damageGlaze, "opacity", overlays.damage.toFixed(2));
+      style(el.heatGlaze, "opacity", overlays.overheat.toFixed(2));
 
       // Lock bracket: placed in pixels from the real projection; clamped to the edge with an arrow when off-screen.
       if (el.lock) {

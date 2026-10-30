@@ -1,0 +1,25 @@
+{
+  "schema": "aura3d.texture-provenance/1",
+  "set": "heatsinkAsphalt033",
+  "usedBy": "apps/showcase-heatsink/src/scene.ts road decks (GU47 WP-13 HS-07)",
+  "source": {
+    "provider": "ambientCG",
+    "asset": "Asphalt033",
+    "url": "https://ambientcg.com/view?id=Asphalt033",
+    "licence": "CC0 1.0 Universal (public domain dedication)",
+    "repoArchive": "assets/library/textures/tiling/acg-asphalt033.zip",
+    "files": {
+      "Asphalt033_1K-JPG_Color.jpg": "sha256:126edfd31019dcc0e108ce6966eb0c23f772f130a3abcc3be6daedc590cbb7f8",
+      "Asphalt033_1K-JPG_NormalGL.jpg": "sha256:34bf3e95a41a3856c291d2cb039dc75e5a72cc9499343248c6c7e9c1a91a9336",
+      "Asphalt033_1K-JPG_Roughness.jpg": "sha256:ab1dee12de196e7f1462fd01ebb629e0ae68af9de08c26d38abd2d11dfe2022a"
+    }
+  },
+  "transform": "cwebp: colour -q 82 -resize 512 512; normal (OpenGL convention) -q 92 -exact -resize 512 512; roughness ImageMagick -resize 512x512 -colorspace Gray then cwebp -q 85. WebP because the repo .gitignore excludes *.jpg/*.png outside listed paths.",
+  "outputs": {
+    "color-512.webp": { "bytes": 11724, "sha256": "330c78ff0be2672746d6bd818ecff520424aa1b62f7d734d2251a00a2e3f3b53", "colorSpace": "srgb" },
+    "normal-gl-512.webp": { "bytes": 114358, "sha256": "3f8bf69f92abb855dab0b862e261ffc362b4f4a1af456eeefde422158b272d0e", "colorSpace": "linear" },
+    "roughness-512.webp": { "bytes": 31220, "sha256": "b19fc248b500b1d185b21b1a9bb2e76ce6a6e8a313976ebbf33a7051225526e1", "colorSpace": "linear", "mean": 0.745 }
+  },
+  "totalBytes": 157302,
+  "budgetBytes": 1572864
+}
