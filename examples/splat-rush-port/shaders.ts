@@ -178,6 +178,30 @@ void main() {
   gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
 }`;
 
+/**
+ * CR-AN1 gate program: the tone vertex plus a wobble of the CR-M3 paint drips. `uv` = (phase, weight) on drip vertices and
+ * weight 0 on the posts and bar; `crWobble` = (time s, amplitude m, frequency Hz). Amplitude 0 (reduced motion) is the
+ * tone vertex exactly. The drips sway sideways and stretch a little as they swing down.
+ */
+export const CARNIVAL_GATE_VERTEX = /* glsl */ `
+in vec3 tone;
+out vec3 vNormal;
+out vec3 vWorld;
+out vec3 vLocal;
+out vec2 vUv;
+out vec3 vTone;
+void main() {
+  vUv = uv;
+  vTone = tone;
+  float w = uv.y * uv.y;
+  float s = sin(6.2831853 * (crWobble.z * crWobble.x + uv.x));
+  vec3 p = position + vec3(crWobble.y * w * s, -crWobble.y * w * (0.6 + 0.4 * s), 0.0);
+  vLocal = p;
+  vWorld = (modelMatrix * vec4(p, 1.0)).xyz;
+  vNormal = normalize(normalMatrix * normal);
+  gl_Position = modelViewProjectionMatrix * vec4(p, 1.0);
+}`;
+
 /** Anti-aliased step: the cel edge stays one pixel wide at any distance. */
 const BAND = /* glsl */ `
 float band(float d, float edge) {

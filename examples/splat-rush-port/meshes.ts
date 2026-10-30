@@ -177,3 +177,34 @@ export function blobMesh(scale: number, thickness: number): MeshData {
   for (let i = 0; i < outline.length; i++) m.indices.push(0, 1 + ((i + 1) % outline.length), 1 + i);
   return m;
 }
+
+/**
+ * GU47 CR-M3 paint drips hanging from the gate bar (gate space before the 0.32 group scale: bar centre y 4.92, radius
+ * 0.52, inner post faces at x +/-2.2). Each drip is a tapered run plus a bead at its tip; it starts inside the bar and
+ * stays inside the bar's x/z footprint. `uv` carries (phase, weight): weight 0 on the bar, 1 at the bead, read by the
+ * CR-AN1 wobble vertex shader. The posts and bar have uv.y 0 (capsuleMesh), so they never move.
+ */
+export const GATE_DRIPS: readonly { readonly x: number; readonly length: number; readonly radius: number }[] = [
+  { x: -1.7, length: 0.95, radius: 0.2 },
+  { x: -0.55, length: 0.6, radius: 0.16 },
+  { x: 0.5, length: 1.1, radius: 0.22 },
+  { x: 1.55, length: 0.7, radius: 0.17 }
+];
+const DRIP_TOP = 4.62;
+
+export function gateDripMesh(): MeshData {
+  const parts = GATE_DRIPS.map((d, i): MeshData => {
+    const run = transformMesh(cylinderMesh(d.radius, d.radius * 0.6, d.length, 10), { tx: d.x, ty: DRIP_TOP - d.length / 2 });
+    const bead = sphereMesh(d.radius * 0.95, 10, 8, d.x, DRIP_TOP - d.length, 0);
+    const m = mergeMeshes([run, bead]);
+    const reach = d.length + d.radius * 0.95;
+    const phase = (i * 0.37 + 0.11) % 1;
+    for (let v = 0; v < m.positions.length / 3; v++) {
+      const y = m.positions[v * 3 + 1] as number;
+      m.uvs[v * 2] = phase;
+      m.uvs[v * 2 + 1] = Math.min(1, Math.max(0, (DRIP_TOP - y) / reach));
+    }
+    return m;
+  });
+  return mergeMeshes(parts);
+}

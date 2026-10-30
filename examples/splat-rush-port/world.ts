@@ -10,13 +10,13 @@
  * with `sim.cloudDrift`. Only particles and streaks are rewritten per frame, and only the dirty vertex range uploads.
  */
 import { camera, effects, geometry, material, scene, texture, type AuraApp } from "@aura3d/engine";
-import { blobMesh, capsuleMesh, cylinderMesh, mergeMeshes, sphereMesh, transformMesh, type MeshData } from "./meshes";
+import { blobMesh, capsuleMesh, cylinderMesh, gateDripMesh, mergeMeshes, sphereMesh, transformMesh, type MeshData } from "./meshes";
 import { SYMBOL_FOR_COLOR, symbolMesh, type SymbolKind } from "./symbols";
 import { COLORS, CONFIG, POOL, curve, type Gate, type Segment, type SplatRushSim, type Splatter } from "./sim";
-import type { Shown } from "./presentation";
+import { gateSquash, gateMatched, type Shown } from "./presentation";
 import { BACKDROP_KEY_SCALE, addBackdrop, updateBackdrop } from "./backdrop";
 import { addPickups, hidePickups, pickupNodeIds, updatePickups } from "./pickups";
-import { CARNIVAL_CLOUD_FRAGMENT, CARNIVAL_SEA_FRAGMENT, CARNIVAL_SKY_FRAGMENT, CARNIVAL_TONE_VERTEX, CARNIVAL_VERTEX, FLAT_FRAGMENT, FLAT_TONE_FRAGMENT, FLAT_TONE_VERTEX, FLAT_VERTEX, SHADOW_FRAGMENT, SHADOW_VERTEX, SKY_FRAGMENT, SKY_VERTEX, TOON_TONE_VERTEX, TOON_VERTEX, carnivalToonFragment, toonFragment } from "./shaders";
+import { CARNIVAL_CLOUD_FRAGMENT, CARNIVAL_GATE_VERTEX, CARNIVAL_SEA_FRAGMENT, CARNIVAL_SKY_FRAGMENT, CARNIVAL_TONE_VERTEX, CARNIVAL_VERTEX, FLAT_FRAGMENT, FLAT_TONE_FRAGMENT, FLAT_TONE_VERTEX, FLAT_VERTEX, SHADOW_FRAGMENT, SHADOW_VERTEX, SKY_FRAGMENT, SKY_VERTEX, TOON_TONE_VERTEX, TOON_VERTEX, carnivalToonFragment, toonFragment } from "./shaders";
 import { LOOKS, hexToLinear, sunDirection, timeOfDay, timeOfDayKey, type SplatLook, type TimeOfDay } from "./look";
 
 type Rgb = readonly [number, number, number];
@@ -112,14 +112,17 @@ export interface CarnivalSurface {
   readonly drySeconds?: number;
   /** CR-M2 painted-canvas pattern (deck only). */
   readonly canvas?: readonly [number, number];
+  /** CR-AN1 drip wobble vertex (gates only; needs `tone`). */
+  readonly wobble?: boolean;
 }
 
 export const carnivalToonSpec = (look: SplatLook, base: Rgb, surface: CarnivalSurface = {}): CustomSpec => {
   const tod = timeOfDay(look, 0);
   if (!tod || !look.toon) throw new Error("splat-rush-port: carnivalToonSpec needs the carnival look");
-  const { map, emissive = [0, 0, 0], tone = false, gloss = 0, drySeconds = 0, canvas = [0, 0] } = surface;
+  const { map, emissive = [0, 0, 0], tone = false, gloss = 0, drySeconds = 0, canvas = [0, 0], wobble = false } = surface;
+  const vertex = wobble && tone ? CARNIVAL_GATE_VERTEX : tone ? CARNIVAL_TONE_VERTEX : CARNIVAL_VERTEX;
   return {
-    glsl: { vertex: tone ? CARNIVAL_TONE_VERTEX : CARNIVAL_VERTEX, fragment: carnivalToonFragment(map !== undefined, tone) },
+    glsl: { vertex, fragment: carnivalToonFragment(map !== undefined, tone) },
     uniforms: {
       baseColor: { type: "color3", value: [...base] },
       emissive: { type: "color3", value: [...emissive] },
@@ -129,7 +132,8 @@ export const carnivalToonSpec = (look: SplatLook, base: Rgb, surface: CarnivalSu
       crGloss: { type: "f32", value: gloss },
       crShininess: { type: "f32", value: look.toon.gloss.shininess },
       crDry: { type: "vec3", value: [0, 1, drySeconds] },
-      crCanvas: { type: "vec2", value: [canvas[0], canvas[1]] }
+      crCanvas: { type: "vec2", value: [canvas[0], canvas[1]] },
+      ...(wobble && tone ? { crWobble: { type: "vec3" as const, value: [0, 0, 0] } } : {})
     },
     side: "double"
   };
@@ -203,6 +207,7 @@ export const allProgramSpecs = (): readonly { readonly name: string; readonly sp
   { name: "shadow", spec: shadowSpec() },
   { name: "carnival-toon", spec: carnivalToonSpec(LOOKS.carnival, [0.5, 0.5, 0.5], { gloss: 0.5 }) },
   { name: "carnival-toon-tone", spec: carnivalToonSpec(LOOKS.carnival, [1, 1, 1], { tone: true, gloss: 0.7, drySeconds: 2 }) },
+  { name: "carnival-gate", spec: carnivalToonSpec(LOOKS.carnival, [1, 1, 1], { tone: true, gloss: 0.2, wobble: true }) },
   { name: "carnival-toon-map", spec: carnivalToonSpec(LOOKS.carnival, [0.5, 0.5, 0.5], { map: texture.data({ width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) }) as unknown as TextureHandle, canvas: [0.05, 0.06] }) },
   { name: "carnival-cloud", spec: carnivalCloudSpec(LOOKS.carnival) },
   { name: "carnival-sky", spec: carnivalSkySpec(LOOKS.carnival) },
@@ -519,6 +524,8 @@ const STREAKS = 50;
 export const GATE_SYMBOL_Y = 2.3;
 /** Vertices per splatter instance in the `splats` batch (tests). */
 export let splatVertexCount = 0;
+/** Vertices per gate instance in the `gates` batch (tests; CR-M3 adds the drips in carnival). */
+export let gateVertexCount = 0;
 /** Ids of the merged batch nodes. */
 export const BATCH_IDS = ["deck", "rails", "dashes", "gates", "gate-symbols", "splats", "particles", "clouds", "streaks"] as const;
 /** Carnival toon nodes whose light uniforms follow the time of day. */
@@ -636,12 +643,12 @@ export function buildWorld(options: WorldOptions): World {
   /* gates: two posts + bar, merged, scaled 0.32 like the original group; colour per gate in `tone` */
   const post = capsuleMesh(0.46, 4, 16, 6);
   const bar = capsuleMesh(0.52, 6.24, 16, 6);
-  const gateMesh = transformMesh(
-    mergeMeshes([transformMesh(post, { tx: -2.66, ty: 2 + 0.46 }), transformMesh(post, { tx: 2.2 + 0.46, ty: 2 + 0.46 }), transformMesh(bar, { rz: Math.PI / 2, ty: 4.92 })]),
-    { scale: 0.32 }
-  );
+  /* CR-M3: carnival gates carry paint drips under the bar, merged into the same mesh (same batch, same x/z footprint) */
+  const gateParts = [transformMesh(post, { tx: -2.66, ty: 2 + 0.46 }), transformMesh(post, { tx: 2.2 + 0.46, ty: 2 + 0.46 }), transformMesh(bar, { rz: Math.PI / 2, ty: 4.92 })];
+  const gateMesh = transformMesh(mergeMeshes(look.gates?.drips ? [...gateParts, gateDripMesh()] : gateParts), { scale: 0.32 });
+  gateVertexCount = gateMesh.positions.length / 3;
   const gates = new Batch(gateMesh, GATE_MAX, hexLinear(COLORS[0] as string));
-  addBatch("gates", gates, toon([1, 1, 1], { tone: true, gloss: carnival ? 0.2 : 0 }));
+  addBatch("gates", gates, toon([1, 1, 1], { tone: true, gloss: carnival ? 0.2 : 0, wobble: look.gates !== null }));
 
   /* C7 colour symbols: one per gate (same slots as the gates) plus one over the ball */
   const symbolMeshes = Object.fromEntries((["circle", "triangle", "square", "cross"] as const).map((k) => [k, symbolMesh(k)])) as Record<SymbolKind, ReturnType<typeof symbolMesh>>;
@@ -724,6 +731,10 @@ export function buildWorld(options: WorldOptions): World {
       const gateSlots = new Slots<Gate>(GATE_MAX);
       const splatSlots = new Slots<Splatter>(POOL.splatters);
       const gateColor: number[] = Array.from({ length: GATE_MAX }, () => -1);
+      /* CR-AN1: per gate slot, whether the sim had marked it passed, when its match squash started (NaN: none), and gone */
+      const gatePassed: boolean[] = Array.from({ length: GATE_MAX }, () => false);
+      const gateSquashAt: number[] = Array.from({ length: GATE_MAX }, () => Number.NaN);
+      const gateGone: boolean[] = Array.from({ length: GATE_MAX }, () => false);
       const splatColor: number[] = Array.from({ length: POOL.splatters }, () => -1);
       const splatScale: number[] = Array.from({ length: POOL.splatters }, () => -1);
       const particleColor: string[] = Array.from({ length: POOL.particles }, () => "");
@@ -828,11 +839,26 @@ export function buildWorld(options: WorldOptions): World {
         /* gates and their symbols */
         const wantSymbols = view.symbols === true;
         gateSlots.retain(simNow.gates, (slot) => { gates.collapse(slot); gateSymbols.collapse(slot); gateColor[slot] = -1; });
+        const squashSeconds = look.gates?.squashSeconds ?? 0;
         for (const g of simNow.gates) {
           const { slot, fresh } = gateSlots.use(g);
           if (slot < 0) continue;
           const r = g.z - scroll, x = g.laneX + curve(-o.distance + g.z);
-          if (fresh) gates.place(slot, x, 0, r, 0, 1, 1, 1);
+          if (fresh) {
+            gates.place(slot, x, 0, r, 0, 1, 1, 1);
+            gatePassed[slot] = g.passed; gateSquashAt[slot] = Number.NaN; gateGone[slot] = false;
+          }
+          if (squashSeconds > 0 && !gatePassed[slot] && g.passed) {
+            gatePassed[slot] = true;
+            /* reduced motion: the matched gate goes at once, without the squash */
+            if (gateMatched(o, g)) gateSquashAt[slot] = view.reducedMotion ? -Infinity : elapsed;
+          }
+          if (!gateGone[slot] && !Number.isNaN(gateSquashAt[slot])) {
+            const sq = gateSquash(elapsed - (gateSquashAt[slot] as number), squashSeconds);
+            if (sq) gates.place(slot, x, 0, r, 0, sq.sx, sq.sy, sq.sz);
+            else { gates.collapse(slot); gateSymbols.collapse(slot); gateGone[slot] = true; }
+          }
+          if (gateGone[slot]) { gateColor[slot] = g.colorIndex; continue; }
           if (fresh || gateColor[slot] !== g.colorIndex || (wantSymbols && !symbolsOn)) {
             if (gateColor[slot] !== g.colorIndex) gates.setTone(slot, hexLinear(COLORS[g.colorIndex] as string));
             gateColor[slot] = g.colorIndex;
@@ -933,6 +959,7 @@ export function buildWorld(options: WorldOptions): World {
         updateBackdrop(node, o.distance - back, elapsed, look);
         if (carnival) {
           /* CR-M1: splatters dry with their age, read from their distance behind the ball at the road speed */
+          if (look.gates) node("gates").setUniform?.("crWobble", [elapsed, view.reducedMotion ? 0 : look.gates.wobble, look.gates.wobbleHz]);
           node("splats").setUniform?.("crDry", [p.z, Math.max(1, o.speed), look.toon?.gloss.drySeconds ?? 0]);
           if (look.cloudSea) node("cloud-sea").setUniform?.("crScroll", -drift * 0.045 * look.cloudSea.scroll);
         }

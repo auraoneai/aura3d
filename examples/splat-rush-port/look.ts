@@ -103,6 +103,8 @@ export interface SplatLook {
   readonly bunting: null | { readonly spacing: number };
   /** CR-AN2 backdrop sway amplitude (degrees). */
   readonly sway: null | { readonly balloonDeg: number; readonly islandDeg: number };
+  /** CR-M3 paint-drip gate arches and CR-AN1 drip wobble (world units at the bead, Hz) and match squash (seconds). */
+  readonly gates: null | { readonly drips: boolean; readonly wobble: number; readonly wobbleHz: number; readonly squashSeconds: number };
 }
 
 /** Gate colours (sim `COLORS`): reserved as the most saturated things on screen. */
@@ -124,7 +126,8 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
     ribbon: null,
     camera: null,
     bunting: null,
-    sway: null
+    sway: null,
+    gates: null
   },
   carnival: {
     id: "carnival",
@@ -183,7 +186,8 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
     ribbon: { points: 12, width: 0.42, alpha: 0.55 },
     camera: { maxRollDeg: 3, speedFovDeg: 3 },
     bunting: { spacing: 26 },
-    sway: { balloonDeg: 5, islandDeg: 2.5 }
+    sway: { balloonDeg: 5, islandDeg: 2.5 },
+    gates: { drips: true, wobble: 0.045, wobbleHz: 0.9, squashSeconds: 0.25 }
   }
 };
 
