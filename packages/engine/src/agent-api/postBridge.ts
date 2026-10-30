@@ -520,7 +520,7 @@ export class Prd03PostSurface implements AuraPostSurface {
    * next frame's post derivation (`createRootPostPipeline`) applies it to the
    * effect node — no scene rebuild, no shader rebuild.
    */
-  setEffect(name: string, patch: Record<string, number | string | boolean | number[]>): void {
+  setEffect(name: string, patch: Record<string, number | string | boolean | number[] | readonly string[]>): void {
     writeRuntimePostEffect(this.runtimeOverrides, name, patch, undefined);
   }
 
@@ -585,11 +585,13 @@ export const POST_RUNTIME_EFFECTS: Readonly<Record<string, string>> = Object.fre
   motionBlur: "motion-blur",
   chromaticAberration: "chromatic-aberration",
   volumetricFog: "volumetric-fog",
-  vignette: "vignette"
+  vignette: "vignette",
+  // GU47 E-E handoff H4: retarget the outline at runtime (`setEffect("outline", { targets: [id] })`).
+  outline: "outline"
 });
 
 /** One `setEffect` patch value as stored: strings/numbers/booleans, number arrays, or a converted object (`tiltShift`). */
-type RuntimePostValue = number | string | boolean | readonly number[] | Readonly<Record<string, number>>;
+type RuntimePostValue = number | string | boolean | readonly number[] | readonly string[] | Readonly<Record<string, number>>;
 
 interface RuntimePostEffectState {
   /** `undefined` = follow the scene (present when authored or patched). */
@@ -637,16 +639,24 @@ function runtimeEffectId(name: string): string {
     `app.post: "${String(name)}" is not a runtime post effect (use ${Object.keys(POST_RUNTIME_EFFECTS).join(", ")}).`);
 }
 
-function runtimePatchValue(effectName: string, key: string, value: unknown): RuntimePostValue {
+function runtimePatchValue(effectName: string, key: string, value: unknown, effectId?: string): RuntimePostValue {
   const reject = (why: string): never => {
     throw new AuraRuntimeError("POST_FIELD_UNSUPPORTED", `app.post.setEffect(${effectName}, { ${key} }) ${why}`);
   };
+  // GU47 E-E handoff H4: outline `targets` is a list of node names / runtime ids (an empty list inks nothing).
+  if (key === "targets") {
+    if (!Array.isArray(value) || !value.every((entry) => typeof entry === "string" && entry.trim().length > 0)) {
+      reject("expects an array of node names");
+    }
+    return Object.freeze([...(value as string[])]);
+  }
   if (typeof value === "number") return Number.isFinite(value) ? value : reject("expects a finite number");
   if (typeof value === "boolean") return value;
   if (typeof value === "string") {
     if (!value.trim()) reject("expects a non-empty string");
-    // A CSS-style colour string becomes the RGB triple the bridge reads.
-    if (key === "color") {
+    // A CSS-style colour string becomes the RGB triple the bridge reads (the
+    // compiled outline parses the colour string itself).
+    if (key === "color" && effectId !== "outline") {
       const [r, g, b] = colorToRgba(value);
       return [r, g, b];
     }
@@ -670,7 +680,7 @@ function runtimePatchValue(effectName: string, key: string, value: unknown): Run
 function writeRuntimePostEffect(
   store: RuntimePostOverrides,
   name: string,
-  patch: Record<string, number | string | boolean | number[]> | undefined,
+  patch: Record<string, number | string | boolean | number[] | readonly string[]> | undefined,
   enabled: boolean | undefined
 ): void {
   const effectId = runtimeEffectId(name);
@@ -685,7 +695,7 @@ function writeRuntimePostEffect(
         throw new AuraRuntimeError("POST_FIELD_UNSUPPORTED",
           `app.post.setEffect(${name}): "${key}" is not a ${effectId} field (fields: intensity, ${allowed.join(", ")}).`);
       }
-      values.set(key, runtimePatchValue(name, key, value));
+      values.set(key, runtimePatchValue(name, key, value, effectId));
     }
   }
   let state = store.get(effectId);
