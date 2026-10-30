@@ -1300,6 +1300,10 @@
         "practical": false
       },
       {
+        "node": "roofs-snow",
+        "practical": false
+      },
+      {
         "node": "stonework",
         "practical": false
       },
