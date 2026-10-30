@@ -229,7 +229,6 @@ interface PlayerHandles {
   shieldSphere: AuraRuntimeNodeHandle;
   rocketCone: AuraRuntimeNodeHandle;
   magnetRing: AuraRuntimeNodeHandle;
-  contactShadow: AuraRuntimeNodeHandle;
 }
 
 /** Runtime node id of an instanced pool node. */
@@ -261,7 +260,8 @@ function apexLookNode(): AuraSceneNode {
       environmentIntensity: sunset.environmentIntensity,
       environmentRotationDeg: APEX_IBL_ROTATION_DEG,
       background: APEX_PALETTE.charcoal,
-      key: { color: sunset.sun.color, intensity: sunset.sun.intensity },
+      // AO-L4: 3 cascades to 140 m with PCSS soft shadows (the tier table drops to 1 cascade / PCF on Low)
+      key: { color: sunset.sun.color, intensity: sunset.sun.intensity, shadow: { cascades: 3, maxDistance: 140, filter: "pcss", mapSize: 2048 } },
       // AO-E3: the preset's 30/180 range under the 0.7 density scale = near 43 / far 257; colour follows the time of day
       fog: { color: sunset.fog.color, near: 30, far: 180 },
       // AO-P1: the game's own grade replaces the look's (one grade stage); the white balance follows the time of day
@@ -306,6 +306,8 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         .runtime({ id: FILL_LIGHT_ID })
     )
     .add(effects.vignette({ intensity: 0.2, smoothness: 0.65 }))
+    // AO-L4: screen-space contact shadows from the sun replace the black disc under the hero
+    .add(effects.contactShadows({ length: 0.3, thickness: 0.05, steps: 12, intensity: 0.9, lights: "sun" }))
     // AO-P3 / AO-P4: motion blur (S7) and god rays through the haze (S4). art/post.ts switches both per tier: High and Ultra
     // only, never on a phone, and motion blur never under reduced motion. The inscatter density stays tiny: the look fog owns
     // the haze, this node only feeds the shafts (godRayDensity is decoupled from fog density, E-C EC-8).
@@ -558,16 +560,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         size: [1.65, 1.65, 0.08],
         material: material.emissive({ color: "#c8d2e0", emissive: "#dfe7f2", emissiveIntensity: 1.5 }), castShadow: false })
       .scale(HIDDEN_SCALE)
-      .runtime(game.runtimeNode("player-power-magnet")),
-
-    // Ground Contact Shadow
-    primitives
-      .cylinder({
-        name: "player-contact-shadow",
-        size: [2.25, 0.012, 4.45],
-        material: material.pbr({ color: "#07090f", roughness: 0.96 }), castShadow: false })
-      .position(0, 0.03, 0)
-      .runtime(game.runtimeNode("player-contact-shadow"))
+      .runtime(game.runtimeNode("player-power-magnet"))
   ]);
 
   // 4 Ventral Down-Thruster Plumes
@@ -718,8 +711,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     sidePlumesR: Array.from({ length: 2 }, (_, i) => req(`player-plume-side-r-${i}`)),
     shieldSphere: req("player-power-shield"),
     rocketCone: req("player-power-rocket"),
-    magnetRing: req("player-power-magnet"),
-    contactShadow: req("player-contact-shadow")
+    magnetRing: req("player-power-magnet")
   };
 
   // Resolve Freeway & Environment Handles
@@ -1497,15 +1489,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       playerHandles.magnetRing.setScale(HIDDEN_SCALE).setVisible(false);
     }
 
-    // Ground Contact Shadow
-    const groundBelow = Number(p.groundBelow ?? 0);
-    const alt = Math.max(0, py - groundBelow);
-    const shadowScale = clamp(1 - alt * 0.045, 0.35, 1.05);
-    playerHandles.contactShadow
-      .setPosition(pRoot[0], ry(groundBelow + 0.035), pRoot[2])
-      .setRotation(0, yaw, 0)
-      .setScale([shadowScale, 1, shadowScale])
-      .setVisible(alt < 20);
+    // AO-L4: the hero's ground contact comes from the sun's cascades and the contact-shadow pass (the black disc is gone)
 
     // 4. Ground traffic: every vehicle in the window, in its own type's pool (audit RR-1), facing its travel direction (RR-3)
     const rawVehicles: any[] = Array.isArray(g.traffic?.vehicles) ? g.traffic.vehicles : [];
