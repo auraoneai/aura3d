@@ -1,0 +1,9 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-aura-diamond-3d",
+  "kind": "generic",
+  "licence": "reference-only",
+  "subject": "Slow-motion footage of a wooden bat meeting a pitched ball",
+  "matches": ["ash splinters leaving the barrel along the swing", "a short white contact flash", "the ball leaving with a thin tracer"],
+  "usedBy": ["DIA-V1"]
+}

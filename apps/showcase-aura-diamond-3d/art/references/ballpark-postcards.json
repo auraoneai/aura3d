@@ -1,0 +1,9 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-aura-diamond-3d",
+  "kind": "generic",
+  "licence": "reference-only",
+  "subject": "Mid-century travel postcards of ballparks at golden hour, at night and indoors",
+  "matches": ["one hour and one sky per venue", "a visible horizon behind the stands (sea, towers, mesas, rooftops, crater rim)", "one accent colour per park", "atmosphere that separates near and far"],
+  "usedBy": ["DIA-L1", "DIA-E1", "DIA-E2", "DIA-E3", "DIA-W1", "DIA-X1"]
+}

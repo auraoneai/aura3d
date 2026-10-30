@@ -2,8 +2,9 @@
  * Aura Diamond 3D look table (GU47 WP-18 "Six postcards of summer baseball").
  *
  * One row per ballpark: the hour, the HDRI, the sun, the air, the grade and the signature-effect parameters. The engine
- * look preset (`baseLook`) is only the skeleton the adapter in `engineCompat.ts` patches; the identity lives here.
- * Pure data and pure functions: no engine import, no DOM, so `tests/unit/aura-diamond/` can read every row.
+ * look preset (`baseLook`) is only the skeleton the E-A look overrides patch (`lookPlan` below turns a row into them);
+ * the identity lives here. Pure data and pure functions: no engine import, no DOM, so `tests/unit/aura-diamond/` can
+ * read every row.
  *
  * `?look=original` selects `ORIGINAL_LOOKS` (the 4.6.2 look, PRD section 8 reversibility). Every other value is GU47.
  */
@@ -54,14 +55,25 @@ export interface ParkLook {
     /** Background radiance multiplier (only the drawn sky, not the IBL). */
     readonly backgroundIntensity: number;
   };
-  /** Analytic sky drawn over the HDRI once lane E-G's sky opt-in lands (`?sky=analytic` with `?a3d-qr=vfx.sky` until then). */
+  /**
+   * Analytic sky (DIA-E2): when set it is the park's visible sky (E-G promoted `A3D_QR_VFX_SKY` to default-on) and the
+   * HDRI only lights the scene. `?sky=hdri` draws the HDRI instead (QA A/B pair).
+   */
   readonly sky?:
     | { readonly model: "preetham"; readonly turbidity: number; readonly rayleigh: number }
     | { readonly model: "gradient"; readonly zenith: string; readonly horizon: string; readonly ground: string; readonly stars?: number };
   readonly sun: { readonly elevationDeg: number; readonly azimuthDeg: number; readonly color: string; readonly intensity: number; readonly colorTemperatureK: number };
   readonly rim: false | { readonly color: string; readonly intensity: number; readonly elevationDeg: number; readonly azimuthDeg: number };
-  /** Exp2 scene fog: `density` per metre, `maxOpacity` caps the far field (engine intensity 0..1 maps to 0.25 + 0.55 i). */
-  readonly fog: false | { readonly color: string; readonly density: number; readonly intensity: number };
+  /**
+   * Scene fog (DIA-E3): exp2 with `density` per metre, or height fog when `height` is set (density is then the
+   * distance term). `intensity` 0..1 caps the far field at maxOpacity 0.25 + 0.55 i (the engine's legacy cap rule).
+   */
+  readonly fog: false | {
+    readonly color: string;
+    readonly density: number;
+    readonly intensity: number;
+    readonly height?: { readonly density: number; readonly falloff: number; readonly start: number };
+  };
   /** Volumetric inscatter (god rays); High tier only. */
   readonly godRays?: { readonly density: number; readonly intensity: number; readonly color: string; readonly lightPosition: Vec3 };
   readonly exposureEv: number;
@@ -169,7 +181,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     sky: { model: "gradient", zenith: "#5d8fc4", horizon: "#e4e6df", ground: "#c9b28e" },
     sun: { elevationDeg: 72, azimuthDeg: 20, color: "#fff6e6", intensity: 3.6, colorTemperatureK: 6000 },
     rim: false,
-    fog: { color: "#d7c4a6", density: 0.0026, intensity: 0.3 },
+    fog: { color: "#d7c4a6", density: 0.0012, intensity: 0.3, height: { density: 0.0025, falloff: 0.06, start: 20 } },
     exposureEv: -0.05,
     background: "#c7d3dc",
     accent: "#e3b448",
@@ -310,8 +322,10 @@ export const hdriUrl = (id: DiamondHdriId): string => `/hdri/${id}_1k.hdr`;
 
 /**
  * Night and indoor light rigs (DIA-L2): six tower banks at Midtown (sodium and LED), four truss panels in the Dome, four
- * cold spots on the Moon. Day parks have none. Every lamp stands behind the park's own fence. Lamps are unshadowed until
- * lane E-B ships multi-caster shadows; the low tier keeps four lamps (PRD 6.4: four lights per pixel).
+ * cold spots on the Moon. Day parks have none. Every lamp stands behind the park's own fence. Lamps stay unshadowed: E-B's
+ * local casters exist from 4.7.0, but `auditArtDirection` allows one shadowed light for this genre (the key), so the two
+ * shadowed Midtown banks wait on the audit handoff (lane report). The low tier keeps four lamps (PRD 6.4: four lights
+ * per pixel) and no flares.
  */
 export function parkPracticals(park: ParkSpec, tier: DiamondTier): readonly ParkPractical[] {
   const c = park.fenceCorner;
@@ -364,5 +378,162 @@ export function lookTableHexes(): readonly string[] {
       out.add(row.sky.ground);
     }
   }
+  for (const id of Object.keys(PARK_LOOKS) as ParkId[]) {
+    for (const p of parkPracticals({ id, fenceCorner: 80 } as ParkSpec, "high")) out.add(p.color);
+  }
   return [...out].map((h) => h.toLowerCase());
+}
+
+/* ------------------------------------------------------------------ *
+ *  Look plan: what main.ts mounts for one park                        *
+ * ------------------------------------------------------------------ */
+
+/** Fog spec carried in the E-A `fog.height` override (C-21 `AuraHeightFogSpec` fields). */
+export interface DiamondFogSpec {
+  readonly mode: "exp2" | "height";
+  readonly density: number;
+  readonly heightDensity?: number;
+  readonly heightFalloff?: number;
+  readonly heightReference?: number;
+  readonly start?: number;
+  readonly maxOpacity: number;
+  /** The sky (HDRI or analytic) keeps its own horizon haze; fog shades geometry only. */
+  readonly affectsBackground: false;
+}
+
+/** Plain-data mirror of the E-A `AuraLookOverrides` keys this game sets; main.ts hands it to `looks.preset`. */
+export interface DiamondLookOverrides {
+  readonly sun?: { readonly elevationDeg: number; readonly azimuthDeg: number };
+  readonly exposureEv: number;
+  readonly fogDensityScale?: number;
+  readonly accent?: string;
+  /** A colour here means "the HDRI lights but is not drawn" (E-A rule); set only when the analytic sky is the sky. */
+  readonly background?: string;
+  readonly hdri?: DiamondHdriId;
+  readonly environmentIntensity?: number;
+  readonly environmentRotationDeg?: number;
+  readonly key?: { readonly color: string; readonly intensity: number };
+  readonly rim?: false | { readonly color: string; readonly intensity: number; readonly azimuthDeg: number };
+  readonly fog?: { readonly color: string; readonly height: DiamondFogSpec };
+  readonly grade?: { readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly tint: number };
+  readonly post?: { readonly bloom: { readonly threshold: number; readonly intensity: number; readonly color: string } };
+}
+
+export type DiamondSkyMode = "analytic" | "hdri";
+
+/** The analytic sky node main.ts mounts (`sky.preetham` / `sky.gradient` options). */
+export type DiamondSkyPlan =
+  | { readonly model: "preetham"; readonly turbidity: number; readonly rayleigh: number; readonly sun: { readonly elevationDeg: number; readonly azimuthDeg: number } }
+  | {
+      readonly model: "gradient";
+      readonly zenith: string;
+      readonly horizon: string;
+      readonly ground: string;
+      readonly sun?: { readonly elevationDeg: number; readonly azimuthDeg: number; readonly color: string };
+      readonly stars?: { readonly count: number; readonly brightness: number };
+    };
+
+export interface DiamondLookPlan {
+  readonly park: ParkId;
+  readonly variant: DiamondLookVariant;
+  readonly baseLook: DiamondBaseLook;
+  readonly overrides: DiamondLookOverrides;
+  /** `scene().background(...)`: a hex, or "look" for the base look's own horizon colour (the 4.6.2 backdrop). */
+  readonly clearColor: string;
+  /** Analytic sky to mount; null means the HDRI (when the look has one) is the visible sky. */
+  readonly sky: DiamondSkyPlan | null;
+  /** Drawn-HDRI radiance multiplier; 1 leaves the HDRI node untouched. */
+  readonly hdriBackgroundIntensity: number;
+  /** `app.setOutput(...)` (C-05 output preset, operator, exposure); null keeps today's output (original look). */
+  readonly output: { readonly preset: DiamondPostPreset; readonly toneMapping: DiamondToneMapping; readonly exposure: number } | null;
+  /** Authored film grain (overrides the preset's, field by field); null: none (Low tier, original look). */
+  readonly grain: number | null;
+  readonly vignette: number;
+  /** Volumetric god rays (High tier only, PRD 6.2/6.4). */
+  readonly godRays: ParkLook["godRays"] | null;
+  readonly weather: ParkLook["weather"] | null;
+}
+
+const fogMaxOpacity = (intensity: number): number => Math.min(0.92, Math.max(0, 0.25 + 0.55 * intensity));
+
+/**
+ * One park's look as mounted (DIA-L1, E1, E2, E3, P1). GU47: the park's HDRI lights it (one 1k file per park); parks with
+ * an analytic sky draw that sky and keep the HDRI for light only; fog per park; the broadcast output preset per park.
+ * Low tier drops grain and god rays and halves the drizzle, keeping palette, sky and the signature effect (PRD 6.4).
+ */
+export function lookPlan(parkId: ParkId, variant: DiamondLookVariant, tier: DiamondTier, skyMode: DiamondSkyMode = "analytic"): DiamondLookPlan {
+  if (variant === "original") {
+    const o = ORIGINAL_LOOKS[parkId];
+    return {
+      park: parkId,
+      variant,
+      baseLook: o.baseLook,
+      overrides: { fogDensityScale: 0, exposureEv: o.exposureEv },
+      clearColor: "look",
+      sky: null,
+      hdriBackgroundIntensity: 1,
+      output: null,
+      grain: null,
+      vignette: 0.16,
+      godRays: null,
+      weather: null
+    };
+  }
+  const row = PARK_LOOKS[parkId];
+  const rowSky = skyMode === "analytic" ? row.sky : undefined;
+  let sky: DiamondSkyPlan | null = null;
+  if (rowSky?.model === "preetham") {
+    sky = { model: "preetham", turbidity: rowSky.turbidity, rayleigh: rowSky.rayleigh, sun: { elevationDeg: row.sun.elevationDeg, azimuthDeg: row.sun.azimuthDeg } };
+  } else if (rowSky?.model === "gradient") {
+    sky = {
+      model: "gradient",
+      zenith: rowSky.zenith,
+      horizon: rowSky.horizon,
+      ground: rowSky.ground,
+      // A sky with stars has no sun disc: a gradient sun above 6 degrees fades the stars (E-G sunfade rule).
+      ...(rowSky.stars ? { stars: { count: rowSky.stars, brightness: 1 } } : { sun: { elevationDeg: row.sun.elevationDeg, azimuthDeg: row.sun.azimuthDeg, color: row.sun.color } })
+    };
+  }
+  const fog: DiamondLookOverrides["fog"] = row.fog
+    ? {
+        color: row.fog.color,
+        height: row.fog.height
+          ? { mode: "height", density: row.fog.density, heightDensity: row.fog.height.density, heightFalloff: row.fog.height.falloff, heightReference: 0, start: row.fog.height.start, maxOpacity: fogMaxOpacity(row.fog.intensity), affectsBackground: false }
+          : { mode: "exp2", density: row.fog.density, maxOpacity: fogMaxOpacity(row.fog.intensity), affectsBackground: false }
+      }
+    : undefined;
+  const overrides: DiamondLookOverrides = {
+    sun: { elevationDeg: row.sun.elevationDeg, azimuthDeg: row.sun.azimuthDeg },
+    exposureEv: row.exposureEv,
+    accent: row.accent,
+    ...(sky ? { background: row.background } : {}),
+    hdri: row.hdri.id,
+    environmentIntensity: row.hdri.intensity,
+    ...(row.hdri.rotationDeg !== 0 ? { environmentRotationDeg: row.hdri.rotationDeg } : {}),
+    key: { color: row.sun.color, intensity: row.sun.intensity },
+    rim: row.rim ? { color: row.rim.color, intensity: row.rim.intensity, azimuthDeg: row.rim.azimuthDeg } : false,
+    // No fog row (Lunar, no atmosphere): the base look's fog goes too.
+    ...(fog ? { fog } : { fogDensityScale: 0 }),
+    grade: { ...row.post.grade },
+    post: { bloom: { threshold: row.post.bloom.threshold, intensity: row.post.bloom.intensity, color: "#ffffff" } }
+  };
+  return {
+    park: parkId,
+    variant,
+    baseLook: row.baseLook,
+    overrides,
+    clearColor: row.background,
+    sky,
+    hdriBackgroundIntensity: sky ? 1 : row.hdri.backgroundIntensity,
+    output: { preset: row.post.preset, toneMapping: row.post.toneMapping, exposure: row.post.exposure },
+    grain: tier === "low" ? null : row.post.grain,
+    vignette: row.post.vignette,
+    godRays: tier === "high" && row.godRays ? row.godRays : null,
+    weather: row.weather ? (tier === "low" ? { ...row.weather, density: row.weather.density * 0.5 } : row.weather) : null
+  };
+}
+
+/** `?sky=hdri` draws each park's HDRI instead of its analytic sky (QA A/B pair for DIA-E2). */
+export function resolveSkyMode(search: string): DiamondSkyMode {
+  return new URLSearchParams(search).get("sky") === "hdri" ? "hdri" : "analytic";
 }

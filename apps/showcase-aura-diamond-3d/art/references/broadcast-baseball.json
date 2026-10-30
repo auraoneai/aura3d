@@ -1,0 +1,9 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-aura-diamond-3d",
+  "kind": "generic",
+  "licence": "reference-only",
+  "subject": "Centre-field broadcast camera of a professional ballgame (any league, any season)",
+  "matches": ["mown turf stripes in two greens", "terracotta infield clay and a darker warning track", "chalk lines with no glow", "warm broadcast film grade under one hard key", "full stands in section colours"],
+  "usedBy": ["DIA-M1", "DIA-P1", "DIA-A2", "DIA-H1"]
+}
