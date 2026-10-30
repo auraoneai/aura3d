@@ -6,7 +6,7 @@
 
 // ── Contract surface (intended "." members per PRD-15 T5.1; not deprecated) ──
 export { StubActorAnimationApi } from "../contracts/animation.js";
-export type { AuraActorAnimationApi, AuraActorAnimationStateSnapshot, AuraAnimationDiagnostics, AuraBoneAttachSpec, AuraBoneMaskSpec, AuraBoneSocket, AuraCreateAppAnimationOptions, AuraResolvedClipInfo, AuraRootMotionSpec } from "../contracts/animation.js";
+export type { AuraActorAnimationApi, AuraActorAnimationStateSnapshot, AuraActorPoseApi, AuraAnimationDiagnostics, AuraBoneAttachSpec, AuraBoneMaskSpec, AuraBoneSocket, AuraCreateAppAnimationOptions, AuraPlayLayerOptions, AuraResolvedClipInfo, AuraRootMotionSpec } from "../contracts/animation.js";
 export { appExtensionsAll, registerAppExtension } from "../contracts/app.js";
 export type { AppExtension, AuraAppExtensionMap } from "../contracts/app.js";
 export { auditArtDirection } from "../contracts/art.js";
@@ -308,8 +308,11 @@ export { collectAtmosphereSection, collectEffectsSection } from "./vfx/diagnosti
 export { createAppEffects, createEffectsExtension, prd07SystemFor, registerPrd07System } from "./vfx/effects-api.js";
 export { registerPrd07LookLintRules } from "./vfx/lookLint.js";
 // Contract-surface names that grew in contracts/ after T1.4.
-export type { AuraSkyBand } from "../contracts/atmosphere.js";
-export type { AuraColorRamp, AuraCurve, AuraLegacyParticleFields, AuraParticleEmitterOptions, AuraRange, AuraVfxShading, AuraVfxSpriteSource } from "../contracts/effects.js";
+export type { AuraSetFogOptions, AuraSetFogSpec, AuraSkyBand, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions } from "../contracts/atmosphere.js";
+export type { AuraBurstOptions, AuraColorRamp, AuraCurve, AuraLegacyParticleFields, AuraParticleEmitterOptions, AuraRange, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, AuraVfxShading, AuraVfxSpriteSource } from "../contracts/effects.js";
+// GU47 (4.7.0): runtime environment swap options (E-B) and the look HDRI catalogue id (E-A).
+export type { AuraEnvironmentSwapOptions } from "../contracts/lighting.js";
+export type { AuraHdriId } from "../contracts/looks.js";
 export { qrFlagsWithAnimationMixer } from "../contracts/flags.js";
 export type { GameJuice } from "../contracts/game.js";
 export { lookLintRegisteredCodes, registerLookLintDefaults, setLookLintDefaultsProvider } from "../contracts/looks.js";
@@ -328,7 +331,8 @@ export { collectPrd04MaterialDiagnostics, registerPrd04MaterialDiagnostics } fro
 export type { GameAudioListenerPose } from "../game/GameAudio.js";
 // Names declared in the lane barrels themselves (CONTRACTS.md §3.8 leaves).
 export { readAura3dTonemapQuery } from "../lanes/prd01/outputSurface.js";
-export { Prd02LightingRuntime } from "../lanes/prd02.js";
+export { Prd02LightingRuntime, RUNTIME_ENVIRONMENT_NODE_ID } from "../lanes/prd02.js";
+export type { Prd02LightingApp } from "../lanes/prd02.js";
 export { PRD05_DEBUG_VIEW_CHANNELS, applyPrd05DebugViewToMaterialLibrary, attachAppAssetDecoders, getAppAssetDecoders, setPrd05DebugView } from "../lanes/prd05.js";
 export type { Prd05DebugViewName } from "../lanes/prd05.js";
 export { installPrd06ShaderWarmup, prd06RenderingLaneReady } from "../lanes/prd06.js";

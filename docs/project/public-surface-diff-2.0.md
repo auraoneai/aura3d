@@ -3,8 +3,8 @@
 Generated from `v1.5.2` and the current source tree. This audit covers every non-private package manifest, export subpath, recursively re-exported runtime/type symbol, CLI binary/command detected in source, and scaffold template name.
 
 - Baseline packages: **26**; current packages: **24**
-- Baseline export subpaths: **68**; current export subpaths: **74**
-- Baseline symbols: **13007**; current symbols: **12998**
+- Baseline export subpaths: **68**; current export subpaths: **75**
+- Baseline symbols: **13007**; current symbols: **13244**
 - Classified removals: **2129**; unclassified removals: **0**
 - Incompatible retained-symbol declaration changes: **0**
 - Compatible retained-symbol declaration additions: **0**
@@ -2188,6 +2188,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/assets:type:KTX2BasisTargetFormat` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/assets:type:KTX2BasisTextureTranscoderOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/assets:type:ProductionGLTFRenderPipelineOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/assets:type:SkinWeightNormalizationStats` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/assets/browser:runtime:GLTFSceneAnimationMixerBinding` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/assets/browser:runtime:GLTFSceneAnimationRuntime` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/assets/browser:runtime:LoadContext` — reviewed-2.0-public-declaration-contract-change
@@ -2200,6 +2201,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/assets/browser:type:GLTFSceneAnimationMixerOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/assets/browser:type:GLTFSceneAnimationRuntimeOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/assets/browser:type:ProductionGLTFRenderPipelineOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/assets/browser:type:SkinWeightNormalizationStats` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/audio:runtime:AudioBus` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/audio:runtime:AudioFileManager` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/audio:runtime:AudioListener` — reviewed-2.0-public-declaration-contract-change
@@ -2219,6 +2221,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/cli:type:AuraCliAssetRole` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/cli:type:AuraCliAssetType` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/cli:type:AuraCliResolveCandidateProvenance` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/cli:type:CertifyGameGeometryOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/controls:runtime:DragControls` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/controls:runtime:FlyControls` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/controls:runtime:InteractionControls` — reviewed-2.0-public-declaration-contract-change
@@ -2328,6 +2331,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/assets:type:KTX2BasisTargetFormat` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/assets:type:KTX2BasisTextureTranscoderOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/assets:type:ProductionGLTFRenderPipelineOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/assets:type:SkinWeightNormalizationStats` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/assets/browser:runtime:GLTFSceneAnimationMixerBinding` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/assets/browser:runtime:GLTFSceneAnimationRuntime` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/assets/browser:runtime:LoadContext` — reviewed-2.0-public-declaration-contract-change
@@ -2340,6 +2344,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/assets/browser:type:GLTFSceneAnimationMixerOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/assets/browser:type:GLTFSceneAnimationRuntimeOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/assets/browser:type:ProductionGLTFRenderPipelineOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/assets/browser:type:SkinWeightNormalizationStats` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/audio:runtime:AudioBus` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/audio:runtime:AudioFileManager` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/audio:runtime:AudioListener` — reviewed-2.0-public-declaration-contract-change

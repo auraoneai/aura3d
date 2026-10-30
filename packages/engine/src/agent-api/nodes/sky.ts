@@ -13,9 +13,20 @@ import type { AuraSceneNode } from "./types.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { primitives } from "./primitives.js";
 import { createDayNightSky, type DayNightSkyOptions } from "@aura3d/rendering";
-import type { AuraSkyNode, AuraSkySpec, AuraSkySunSpec } from "../../contracts/atmosphere";
+import type { AuraSkyCloudsOptions, AuraSkyNode, AuraSkySpec, AuraSkyStarsOptions, AuraSkySunSpec } from "../../contracts/atmosphere";
 import { lights } from "./lights.js";
 import { material } from "./material.js";
+
+/**
+ * GU47 (WP-7 / E-B): typed `stars` / `clouds` on `sky.preetham` /
+ * `sky.gradient` are the E-B contract types (`contracts/atmosphere.ts`).
+ * `stars.count` is the number of stars visible above the horizon (clamped to
+ * a full dome; `brightness` multiplies their intensity, default 1; stars fade
+ * out as the sun rises past 6 degrees). `clouds.coverage` is 0..1 (0 = no
+ * cloud program variant); `speed` is a drift multiplier (1 = the default
+ * drift, 0 = still); `color` tints the lit clouds (hex, default white).
+ */
+export type { AuraSkyCloudsOptions, AuraSkyStarsOptions } from "../../contracts/atmosphere";
 
 function deg(rad: number): number {
   return (rad * 180) / Math.PI;
@@ -38,32 +49,8 @@ export interface AuraSkyNodeOptions {
   readonly affectsFog?: boolean;
 }
 
-/**
- * GU47 E-G (WP-7): typed `stars` on `sky.preetham` / `sky.gradient`, resolved
- * by `StarField.starFrame`. `count` is the number of stars visible above the
- * horizon (clamped to a full dome); `brightness` multiplies their intensity
- * (default 1). Stars fade out as the sun rises past 6 degrees.
- */
-export interface AuraSkyStarsOptions {
-  readonly count: number;
-  readonly brightness?: number;
-}
-
-/**
- * GU47 E-G (WP-7): typed `clouds` on `sky.preetham` / `sky.gradient`, resolved
- * by `CloudLayer.cloudFrame`. `coverage` is 0..1 (0 = no cloud program
- * variant); `speed` is a drift multiplier (1 = the default drift, 0 = still);
- * `color` tints the lit clouds (hex, default white).
- */
-export interface AuraSkyCloudsOptions {
-  readonly coverage: number;
-  readonly speed?: number;
-  readonly color?: string;
-}
-
-// GU47(E-B): `contracts/atmosphere.ts` (E-B) still types `stars` / `clouds`
-// as `unknown` and has no `clouds` on the gradient model; these fields mirror
-// PRD §3.1 E-G until E-B's typed declarations merge (then swap to them).
+// The builders take only the typed forms (the contract also admits the legacy
+// `{ density, intensity }` stars spec that `sky.dayNight` emits).
 interface AuraSkyTypedFields {
   readonly stars?: AuraSkyStarsOptions;
   readonly clouds?: AuraSkyCloudsOptions;
@@ -92,8 +79,8 @@ function skyPreetham(options: AuraSkyPreethamOptions): AuraNodeBuilder<AuraScene
 
 function skyGradient(options: AuraSkyGradientOptions): AuraNodeBuilder<AuraSceneNode> {
   const { name, captureEnvironment, affectsFog, ...spec } = options;
-  // GU47(E-B): the gradient contract has no `clouds` yet; the spec carries it
-  // through to `skyFrame`, which reads `clouds` for every model.
+  // `clouds` on the gradient model is carried through to `skyFrame`, which
+  // reads `clouds` for every model.
   return skyNode(name ?? "sky", { ...spec, model: "gradient" } as AuraSkySpec, { captureEnvironment, affectsFog });
 }
 
