@@ -253,6 +253,9 @@ void main() {
   col += vec3(1.0, 0.82, 0.5) * fres * 0.9;
   col += vec3(1.0, 0.95, 0.8) * pow(max(dot(reflect(-normalize(vV), n), normalize(vec3(0.4, 0.8, 0.5))), 0.0), 40.0) * 0.8;
   col *= ballGlow;
+  /* emissive amber core and a fresnel halo that only the brightened rows (ballGlow > 1) add */
+  float boost = max(ballGlow - 1.0, 0.0);
+  col += vec3(1.0, 0.7, 0.28) * boost * (0.35 + 0.65 * pow(1.0 - fres, 3.0)) * (1.0 - stars) + vec3(1.0, 0.85, 0.55) * fres * boost * 0.8;
   outColor = vec4(col, 1.0);
 }`;
 

@@ -76,6 +76,9 @@ export interface CumulusLookRow {
   readonly bloom: { readonly intensity: number; readonly threshold: number };
   readonly vignette: { readonly intensity: number; readonly smoothness: number };
   readonly signature: { readonly rainbowDeg: readonly [number, number]; readonly towerCount: number; readonly silverLining: number };
+  /** CD-14: sky-pearl brightness multiplier (HDR, above the bloom threshold) and the hero's PBR rim (CD-03, E-D). */
+  readonly pearlGlow: number;
+  readonly heroRim: { readonly color: string; readonly power: number; readonly intensity: number } | null;
 }
 
 const lin = (r: number, g: number, b: number): Rgb => [Math.pow(r, 2.2), Math.pow(g, 2.2), Math.pow(b, 2.2)];
@@ -106,7 +109,9 @@ export const CUMULUS_LOOK: readonly [CumulusLookRow, CumulusLookRow] = [
     grade: { exposure: 1.0, contrast: 1.08, saturation: 1.12, temperature: 0.08, tint: 0, lift: [-0.004, 0.0, 0.012], gain: [1.03, 1.0, 0.97] },
     bloom: { intensity: 0.32, threshold: 0.9 },
     vignette: { intensity: 0.2, smoothness: 0.7 },
-    signature: { rainbowDeg: [40, 42], towerCount: 3, silverLining: 1 }
+    signature: { rainbowDeg: [40, 42], towerCount: 3, silverLining: 1 },
+    pearlGlow: 1.55,
+    heroRim: { color: CUMULUS_PALETTE.rim, power: 3, intensity: 0.6 }
   },
   {
     id: "original",
@@ -129,7 +134,9 @@ export const CUMULUS_LOOK: readonly [CumulusLookRow, CumulusLookRow] = [
     grade: { exposure: 1.02, contrast: 1.07, saturation: 1.16 },
     bloom: { intensity: 0.38, threshold: 0.88 },
     vignette: { intensity: 0.2, smoothness: 0.7 },
-    signature: { rainbowDeg: [0, 0], towerCount: 0, silverLining: 0 }
+    signature: { rainbowDeg: [0, 0], towerCount: 0, silverLining: 0 },
+    pearlGlow: 1,
+    heroRim: null
   }
 ];
 

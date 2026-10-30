@@ -63,9 +63,10 @@ export const waterSpec = (row: CumulusLookRow = ACTIVE_LOOK): CustomSpec => ({
   depthWrite: false
 });
 
-export const ballSpec = (stars: number): CustomSpec => ({
+/** Sky pearl. `ballGlow` is the row's `pearlGlow` (CD-14: the pearls are the brightest objects, above the bloom threshold). */
+export const ballSpec = (stars: number, row: CumulusLookRow = ACTIVE_LOOK): CustomSpec => ({
   glsl: { vertex: BALL_VERTEX, fragment: BALL_FRAGMENT },
-  uniforms: { ballStars: { type: "f32", value: stars }, ballGlow: { type: "f32", value: 1 } }
+  uniforms: { ballStars: { type: "f32", value: stars }, ballGlow: { type: "f32", value: row.pearlGlow } }
 });
 
 const glowUniforms = { pixelRatio: { type: "f32" as const, value: 1 }, pointScale: { type: "f32" as const, value: 420 }, pointCap: { type: "f32" as const, value: 120 }, sparkle: { type: "f32" as const, value: 1 } };

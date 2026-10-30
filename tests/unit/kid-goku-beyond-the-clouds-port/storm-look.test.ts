@@ -104,3 +104,17 @@ describe("?look=original keeps today's nodes", () => {
     expect(skySpec(CUMULUS_LOOK[0]).glsl).toMatchObject({ fragment: STORM_SKY_FRAGMENT });
   });
 });
+
+describe("CD-14 sky pearls are the brightest objects; CD-03 hero PBR rim", () => {
+  it("storm pearls glow above 1 (HDR, over the 0.9 bloom threshold); the original stays at 1", async () => {
+    const { ballSpec } = await import("../../../examples/kid-goku-beyond-the-clouds-port/materials");
+    const glow = (row: typeof CUMULUS_LOOK[number]) => (ballSpec(4, row).uniforms as Record<string, { value: number }>).ballGlow!.value;
+    expect(glow(CUMULUS_LOOK[0])).toBeGreaterThan(1.4);
+    expect(glow(CUMULUS_LOOK[1])).toBe(1);
+    expect(CUMULUS_LOOK[0].bloom.threshold).toBeLessThan(1);
+  });
+  it("the hero rim is the cool back-rim colour on the storm row only", () => {
+    expect(CUMULUS_LOOK[0].heroRim).toMatchObject({ color: "#9fc8ff" });
+    expect(CUMULUS_LOOK[1].heroRim).toBeNull();
+  });
+});
