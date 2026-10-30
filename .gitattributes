@@ -33,3 +33,20 @@ benchmarks/quality-rebuild/refs/**/*.png filter=lfs diff=lfs merge=lfs -text
 # Pinned HDRI corpus payloads must stay in LFS, including the 8k starfield.
 fixtures/environment-corpus/hdri/*.hdr filter=lfs diff=lfs merge=lfs -text
 apps/showcase-*-v2/public/aura-assets/*.glb -filter -diff -merge binary
+
+# GU47 E-A HDRI catalogue: 1k copies written by `aura3d assets optimize --hdri 1k` (public/hdri/ATTRIBUTION.md).
+# Explicit paths so the older public/hdri files (autumn_field_puresky_1k, kloppenheim_06_puresky_1k,
+# studio_small_08_1k, night-2k) and outdoor-midday_1k (a byte copy of kloppenheim_06_puresky_1k) stay regular blobs.
+public/hdri/belfast_sunset_puresky_1k.hdr filter=lfs diff=lfs merge=lfs -text
+public/hdri/industrial_sunset_puresky_1k.hdr filter=lfs diff=lfs merge=lfs -text
+public/hdri/spruit_sunrise_1k.hdr filter=lfs diff=lfs merge=lfs -text
+public/hdri/venice_sunset_1k.hdr filter=lfs diff=lfs merge=lfs -text
+public/hdri/rooftop_night_1k.hdr filter=lfs diff=lfs merge=lfs -text
+public/hdri/cobblestone_street_night_1k.hdr filter=lfs diff=lfs merge=lfs -text
+public/hdri/hangar_interior_1k.hdr filter=lfs diff=lfs merge=lfs -text
+public/hdri/warm_bar_1k.hdr filter=lfs diff=lfs merge=lfs -text
+public/hdri/museum_of_history_1k.hdr filter=lfs diff=lfs merge=lfs -text
+public/hdri/kloppenheim_02_1k.hdr filter=lfs diff=lfs merge=lfs -text
+public/hdri/deep_space_starfield_1k.hdr filter=lfs diff=lfs merge=lfs -text
+public/hdri/sunset-dramatic_1k.hdr filter=lfs diff=lfs merge=lfs -text
+public/hdri/indoor-workshop_1k.hdr filter=lfs diff=lfs merge=lfs -text

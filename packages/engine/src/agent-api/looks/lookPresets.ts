@@ -31,7 +31,8 @@ export interface AuraLookV0Expansion {
   /** Horizon-matched; never below luma 0.06 unless backgroundException. */
   readonly background: AuraColor;
   readonly effects: readonly ("colorGrade" | "ambientOcclusion" | "bloom" | "antiAlias-msaa")[];
-  readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number };
+  /** temperature/tint are white balance in [-1, 1]; tint is optional (0 when absent). */
+  readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly tint?: number };
   readonly renderer: { readonly qualityProfile: "production"; readonly pixelRatio: "min-dpr-2" };
 }
 
