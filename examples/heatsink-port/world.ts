@@ -11,6 +11,7 @@ import { buildArches, buildDividers, buildProps, buildRails, buildRoad, buildSha
 import { blobSpec, pointsSpec, roadSpec, setShading, skySpec, solidSpec, streakSpec, terrainSpec, veilSpec, wakeSpec, type Rgb } from "./materials";
 import { bankRoll, createIonWake, createSporeField, sporeField } from "./art/wake";
 import { districtFog, fogApproach } from "./art/look";
+import { createPoolUniforms, glowEmitters, nearestPools } from "./art/pools";
 import { HEATSINK_VFX, registerHeatsinkVfx, vfxScale } from "./art/vfx";
 import { axisRotation, droneEuler, matrixToEulerZYX, multiplyMat3 } from "./orient";
 import type { Race } from "./race";
@@ -170,6 +171,9 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
    */
   const shadowOff = typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0";
   b.add(lights.directional({ name: "key", position: [...look.key.position], target: [0, 0, 0], intensity: look.key.intensity, color: look.key.color, shadow: (shadowOff ? false : { cascades: look.key.cascades, maxDistance: look.key.maxDistance }) as never }));
+  /* IC-02: moving points for the lit GLBs (twilight only, 1 on Low): the drone's exhaust glow and the nearest pad / gate pool */
+  if (look.glow.points > 0) b.add(lights.point({ name: "drone-glow", position: [0, -500, 0], intensity: 6, distance: 14, color: "#40e0ff" }).runtime({ id: "drone-glow" }));
+  if (look.glow.points > 1) b.add(lights.point({ name: "pool-glow", position: [0, -500, 0], intensity: 7, distance: 20, color: "#ffb02e" }).runtime({ id: "pool-glow" }));
   for (const n of sceneryNodes(track, undefined, models)) b.add(n);
 
   /* checkpoint gates: veil across the road + two pylons */
@@ -298,6 +302,12 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   return { scene: b, track, look, bind: (app) => bindRuntime(app, track, POINTS, look) };
 }
 
+/** linear rgb to an sRGB hex string (for `setLight`) */
+function rgbHex(c: readonly [number, number, number]): string {
+  const enc = (v: number): number => Math.round(255 * Math.max(0, Math.min(1, v <= 0.0031308 ? v * 12.92 : 1.055 * Math.pow(v, 1 / 2.4) - 0.055)));
+  return `#${((1 << 24) | (enc(c[0]) << 16) | (enc(c[1]) << 8) | enc(c[2])).toString(16).slice(1)}`;
+}
+
 function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLookRow): WorldRuntime {
   const twilight = row.wake.enabled;
   if (twilight) { try { if (app.effects) registerHeatsinkVfx(app as { effects: NonNullable<AuraApp["effects"]> }); } catch { /* effects runtime unavailable: the game's own points still burst */ } }
@@ -307,6 +317,11 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
   let fogReady = false;
   const glowNow: [number, number, number] = [0.376, 0.957, 1];
   const fogValue = [0, 0, 0];
+  /* IC-02 glow pools: the 4 emitters nearest the drone, written into every lit() node's poolPos / poolCol */
+  const emitters = row.glow.pools > 0 ? glowEmitters(track) : [];
+  const pools = createPoolUniforms();
+  let poolSlot0 = -2;
+  let droneGlowHot = -1;
   const engineBurst = (kind: string, x: number, y: number, z: number, scale = 1): void => {
     if (!twilight) return;
     try { app.effects?.burst(kind, [x, y, z], { camera: false, scale: scale * vfxScale(motion.reduced) }); } catch { /* runtime effects off */ }
@@ -588,6 +603,30 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       node("road").setUniform?.("ionSpeed", motion.reduced ? 0 : p.v);
     }
 
+    /* IC-02 glow pools (+0 draws) and the two moving points */
+    if (emitters.length > 0) {
+      const pulseGain = motion.reduced ? 0.5 : 1;
+      nearestPools(emitters, p.position.x, p.position.z, pools, row.glow.pools, (kind, i) => (kind === "pad" ? padPulse[i]! : gatePulse[i]!) * pulseGain);
+      for (const id of DISTRICT_FOG_NODES) { const h = node(id); h.setUniform?.("poolPos", pools.pos); h.setUniform?.("poolCol", pools.col); }
+      if (row.glow.points > 0) {
+        const dg = node("drone-glow");
+        dg.setVisible(!p.crashed);
+        dg.setPosition(p.position.x - fx * 2.6, p.position.y - 0.2, p.position.z - fz * 2.6);
+        const hot = p.abActive || p.burstT > 0 ? 1 : 0;
+        if (hot !== droneGlowHot) { droneGlowHot = hot; dg.setLight?.({ color: hot ? "#ffb02e" : "#40e0ff", intensity: hot ? 9 : 6 }); }
+      }
+      if (row.glow.points > 1) {
+        const first = pools.slot[0]!;
+        if (first !== poolSlot0) {
+          poolSlot0 = first;
+          const e = first >= 0 ? emitters[first]! : null;
+          const pg = node("pool-glow");
+          pg.setVisible(e !== null);
+          if (e) { pg.setPosition(e.x, e.y + 1.5, e.z); pg.setLight?.({ color: rgbHex(e.color) }); }
+        }
+      }
+    }
+
     /* IC-18 ion wake: cyan to violet at cruise, amber under the afterburner (and the drift burst) */
     if (wake) {
       if (!p.crashed) wake.push({ t: time, x: p.position.x - fx * 2.2, y: p.position.y + 0.15, z: p.position.z - fz * 2.2 });
@@ -651,6 +690,8 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     rigReady = false;
     rollNow = 0;
     fogReady = false;
+    poolSlot0 = -2;
+    droneGlowHot = -1;
     wake?.clear();
     if (spores) spores.tinted = false;
     seen = 0;

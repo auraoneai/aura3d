@@ -41,7 +41,10 @@ export const lightUniforms = (fog: Rgb = shading.fog.color): NonNullable<CustomS
   sunDir: { type: "vec3", value: [...SUN_DIR] },
   sunColor: { type: "color3", value: [...SUN_COLOR] },
   skyAmbient: { type: "color3", value: [...SKY_AMBIENT] },
-  groundAmbient: { type: "color3", value: [...GROUND_AMBIENT] }
+  groundAmbient: { type: "color3", value: [...GROUND_AMBIENT] },
+  /* IC-02 glow pools: explicit zeros (the mat4 default is identity, which would light one pool) */
+  poolPos: { type: "mat4", value: new Array<number>(16).fill(0) },
+  poolCol: { type: "mat4", value: new Array<number>(16).fill(0) }
 });
 
 export const roadSpec = (): CustomSpec => ({

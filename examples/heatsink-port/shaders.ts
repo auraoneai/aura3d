@@ -34,6 +34,21 @@ vec3 applyFog(vec3 color, vec3 world) {
   return a3dFogHeight(color, fogColor, length(world - cameraPosition), world.y, 0.0004, 0.0022, 18.0, 0.031, 0.96);
 }
 float gSun = 1.0; // sun-shadow factor, set per fragment by a3dSunShadowAuto in specs with receiveShadow: true
+vec3 gWorld = vec3(0.0); // fragment world position, set next to gSun (IC-02 glow pools)
+// GU47 IC-02: the 4 nearest pad / gate glow pools (poolPos column = xyz + radius, poolCol column = rgb + intensity).
+// All-zero under ?look=original, so the term adds exactly 0 there.
+vec3 glowPools(vec3 albedo, vec3 N) {
+  vec3 sum = vec3(0.0);
+  for (int i = 0; i < 4; i++) {
+    vec4 p = poolPos[i];
+    vec4 c = poolCol[i];
+    vec3 d = p.xyz - gWorld;
+    float f = clamp(1.0 - length(d) / max(p.w, 1e-3), 0.0, 1.0);
+    float facing = 0.35 + 0.65 * max(dot(N, normalize(d + vec3(0.0, 1e-3, 0.0))), 0.0);
+    sum += c.rgb * (c.a * f * f * facing);
+  }
+  return sum * (albedo * 2.0 + 0.04);
+}
 // GU47 IC-01: twilight terms. bounceColor is the warm sunset light thrown back off the horizon on the sun side,
 // topFill the violet sky above; both are zero and litScale is 0.26 under ?look=original (today's lit()).
 vec3 lit(vec3 albedo, vec3 N) {
@@ -42,7 +57,7 @@ vec3 lit(vec3 albedo, vec3 N) {
   vec3 sunFlat = normalize(vec3(sunDir.x, 0.0, sunDir.z) + vec3(1e-4, 0.0, 0.0));
   float bounceW = max(dot(N, sunFlat), 0.0) * (1.0 - abs(N.y)) + 0.25 * max(-N.y, 0.0);
   float topW = max(N.y, 0.0);
-  return albedo * (hemi + sunColor * ndl * gSun + bounceColor * bounceW + topFill * topW) * litScale;
+  return albedo * (hemi + sunColor * ndl * gSun + bounceColor * bounceW + topFill * topW) * litScale + glowPools(albedo, N);
 }
 `;
 
@@ -89,6 +104,7 @@ void main() {
   float curb = smoothstep(0.93, 0.985, abs(u));
   vec3 neon = mix(vRoad, vec3(0.80, 0.95, 1.0), 0.7);
   gSun = a3dSunShadowAuto(vWorld, N);
+  gWorld = vWorld;
   vec3 color = lit(asphalt, N) * 1.55;
   // GU47 IC-10 obsidian glass (glass = 0 under ?look=original): darker base, fresnel reflection of the twilight sky,
   // lit hex seams and an ion pulse running along the veins at the drone's speed
@@ -131,6 +147,7 @@ void main() {
   float rim = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 3.0);
   vec3 hot = vec3(1.0, 0.42, 0.08);
   gSun = a3dSunShadowAuto(vWorld, N);
+  gWorld = vWorld;
   vec3 color = lit(mix(baseColor, hot * 0.8, heat * 0.55), N);
   color += glowColor * glow * (0.85 + 0.15 * sin(u_time * 5.0));
   color += hot * heat * (0.35 + rim * 1.4);
@@ -265,6 +282,7 @@ void main() {
   albedo *= 0.9 + 0.1 * strata * (1.0 - N0.y);
   float cavity = smoothstep(0.35, 0.75, h0);
   gSun = a3dSunShadowAuto(vWorld, N);
+  gWorld = vWorld;
   vec3 color = lit(albedo, N) * 1.25 * (0.75 + 0.35 * cavity);
   color += vec3(0.04, 0.16, 0.18) * pow(1.0 - clamp(N0.y, 0.0, 1.0), 2.0);
   outColor = vec4(applyFog(color, vWorld), 1.0);

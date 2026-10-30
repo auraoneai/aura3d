@@ -76,6 +76,8 @@ export interface HeatsinkLookRow {
   readonly wake: { readonly enabled: boolean; readonly seconds: number; readonly segments: number; readonly cruise: Rgb; readonly cruiseTail: Rgb; readonly afterburner: Rgb; readonly width: number };
   /** camera feel (IC-22): bank roll cap in degrees, countdown sweep on/off */
   readonly camera: { readonly rollDeg: number; readonly countdownSweep: boolean };
+  /** IC-02: glow-pool gain in the custom shaders (0 = none) and moving point lights for the lit GLBs (0..2) */
+  readonly glow: { readonly pools: number; readonly points: number };
   /** IC-20 spores, IC-24 lane beacons, IC-21 arch chase */
   readonly dressing: { readonly spores: number; readonly beacons: boolean; readonly archChase: boolean; readonly lichen: number };
 }
@@ -110,6 +112,7 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     post: { ao: true, motionBlur: 0.35, chromaticAberration: 0.0012, grain: 0.025, vignette: 0.28, godRays: 0.35 },
     wake: { enabled: true, seconds: 1.2, segments: 60, cruise: linearOf(PALETTE.ionCyan), cruiseTail: linearOf(PALETTE.violet), afterburner: linearOf(PALETTE.amber), width: 0.9 },
     camera: { rollDeg: 6, countdownSweep: true },
+    glow: { pools: 1, points: 2 },
     dressing: { spores: 300, beacons: true, archChase: true, lichen: 1 }
   },
   original: {
@@ -127,6 +130,7 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     post: { ao: false, motionBlur: null, chromaticAberration: null, grain: null, vignette: null, godRays: null },
     wake: { enabled: false, seconds: 1.2, segments: 60, cruise: [0, 0, 0], cruiseTail: [0, 0, 0], afterburner: [0, 0, 0], width: 0 },
     camera: { rollDeg: 0, countdownSweep: false },
+    glow: { pools: 0, points: 0 },
     dressing: { spores: 0, beacons: false, archChase: false, lichen: 0 }
   }
 };
@@ -146,6 +150,7 @@ export function lowTier(row: HeatsinkLookRow): HeatsinkLookRow {
     ...row,
     key: { ...row.key, cascades: 1, maxDistance: Math.min(row.key.maxDistance, 140) },
     post: { ...row.post, ao: false, motionBlur: null, godRays: null, grain: null, chromaticAberration: null },
+    glow: { ...row.glow, points: Math.min(row.glow.points, 1) },
     dressing: { ...row.dressing, spores: Math.min(row.dressing.spores, 120) }
   };
 }
