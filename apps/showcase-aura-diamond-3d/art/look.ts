@@ -179,7 +179,7 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     turf: { grass: "#2f5a36", stripe: "#376640", clay: "#7a4b37", track: "#3a2c26", trackRoughness: 0.28, chalk: "#e6e1d2" },
     crowd: ["#4fc3e8", "#e6e1d2", "#f0b450", "#2d3e66", "#c7476a", "#58b68a", "#8f9bb3"],
     weather: { kind: "drizzle", intensity: 0.22, density: 0.35, color: "#a9c4e4" },
-    signature: { splinter: "#cdb48f", flash: "#e8f2ff", flashIntensity: 1.25, gravityScale: 1 },
+    signature: { splinter: "#cdb48f", flash: "#eaf0f8", flashIntensity: 1.25, gravityScale: 1 },
     landingFx: "diamond-clay-puff",
     celebration: "diamond-hr-firework"
   },
