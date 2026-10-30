@@ -36,6 +36,23 @@ export interface PackedLightUniforms {
   readonly diagnostics: DirectLightSelectionDiagnostics;
 }
 
+/**
+ * GU47 eint (E-B handoff EB-3): a collected light as the forward pass packs it on a PRD-02 bridge frame
+ * (`forwardShadedLights`). `localShadowSlot` is the first PRD-02 atlas tile of a shadowed spot / point light.
+ */
+export interface LocalShadowedLight extends CollectedLight {
+  readonly localShadowSlot?: number;
+}
+
+/**
+ * The value packed into the otherwise unused `right.w` (`u_lightData[i * 6 + 4].w`): the light's first local
+ * shadow tile + 1, or 0 when it has none (every light outside a bridge frame), so existing data is unchanged.
+ */
+export function packedLocalShadowSlot(light: CollectedLight): number {
+  const slot = (light as LocalShadowedLight).localShadowSlot;
+  return slot !== undefined && Number.isInteger(slot) && slot >= 0 ? slot + 1 : 0;
+}
+
 export class LightUniforms {
   static readonly floatsPerLight = 24;
   static readonly vec4sPerLight = LightUniforms.floatsPerLight / 4;
@@ -72,7 +89,7 @@ export class LightUniforms {
         forwardShadowSupported && light.kind !== "rect-area" ? 1 : 0,
         light.layerMask
       ], offset + 12);
-      data.set([...(light.right ?? [1, 0, 0]), 0], offset + 16);
+      data.set([...(light.right ?? [1, 0, 0]), packedLocalShadowSlot(light)], offset + 16);
       data.set([...(light.up ?? [0, 1, 0]), 0], offset + 20);
     });
     const selectedEntries = selected.map(selectionEntry);

@@ -1,6 +1,6 @@
 import { Geometry } from "./Geometry";
 import { type CollectedLight } from "./LightCollector";
-import { LightUniforms } from "./LightUniforms";
+import { LightUniforms, type LocalShadowedLight } from "./LightUniforms";
 import { Material, type RenderState } from "./Material";
 import { MaterialBinding, MaterialBindingError } from "./MaterialBinding";
 import { MaterialInstance } from "./MaterialInstance";
@@ -44,7 +44,7 @@ import { dfgLutBinding, dfgLutTexture } from "./program/DFGLut";
 // PR 0b-2 re-imports for moved carve-out modules (CONTRACTS.md §3.3).
 import { SkinningPaletteUploadManager, applyGpuMorphUniforms, resolveRenderGeometry } from "./forward/Deform.js";
 import type { ContactShadowMaskScope } from "./forward/contactShadowMaskStore.js";
-import { FORWARD_DIRECT_LIGHT_CAPACITY, applyClusteredLightingUniforms, applyForwardShadowMapUniforms, resolveForwardClusteredLighting, selectForwardShadowMap } from "./forward/Lighting.js";
+import { FORWARD_DIRECT_LIGHT_CAPACITY, applyClusteredLightingUniforms, applyForwardLocalShadowUniforms, applyForwardShadowMapUniforms, resolveForwardClusteredLighting, selectForwardShadowMap } from "./forward/Lighting.js";
 import { flushMultiDrawQueue, submitDraw } from "./forward/DrawSubmit.js";
 import { bindVelocityUniforms } from "./forward/Velocity.js";
 import { A3D_INSTANCE_EMISSIVE_ATTRIBUTE, materialInstanceColorTarget, registerInstanceColorTargetFeature } from "./shaders/chunks/instance_color_target.glsl";
@@ -303,6 +303,62 @@ export interface ForwardShadowMapOptions {
    */
   readonly spotLight?: ForwardSpotShadowMapOptions;
   readonly cascades?: readonly ForwardShadowCascadeOptions[];
+  /**
+   * GU47 eint (E-B handoff EB-3): set on every PRD-02 bridge frame (`shadows/Prd02ShadowBridge.ts`). The map above
+   * is then the sun's, so spot / point casters never sample it; casters that got PRD-02 atlas tiles sample those
+   * in the generated forward program, the others render unshadowed (`forwardShadedLights`).
+   */
+  readonly localShadows?: ForwardLocalShadowOptions;
+}
+
+/** Most PRD-02 local-light atlas tiles a frame binds (`shadows/ShadowSystem.ts` MAX_LOCAL_TILES). */
+export const MAX_FORWARD_LOCAL_SHADOW_TILES = 6;
+
+/** PRD-02 local-light shadow tiles for the forward pass (GU47 eint EB-3). */
+export interface ForwardLocalShadowOptions {
+  /**
+   * First atlas tile of each shadowed spot / point light, keyed by the frame's collected light. A point light owns
+   * six consecutive tiles (faces +X, -X, +Y, -Y, +Z, -Z). Empty when no local tile was rendered this frame.
+   */
+  readonly slots: ReadonlyMap<CollectedLight, number>;
+  /** The local-light depth atlas with a compare sampler; set whenever `slots` is not empty. */
+  readonly texture?: TextureBinding;
+  /** Atlas edge in px. */
+  readonly atlasSize: number;
+  /** MAX_FORWARD_LOCAL_SHADOW_TILES column-major mat4: world -> tile [0,1]^3 (the tiles' sampling view-projections). */
+  readonly matrices: Float32Array;
+  /** MAX_FORWARD_LOCAL_SHADOW_TILES vec4: tile rect in the atlas (u0, v0, du, dv). */
+  readonly rects: Float32Array;
+  /** 8 floats (2 vec4, tile i at [i]): world size of one tile texel per unit of tile-axis depth, 2 tan(fov / 2) / tile px. */
+  readonly texelScale: Float32Array;
+  readonly strength: number;
+  /** Receiver depth bias toward the light, in tile texels: `biasTexels + slopeBiasTexels * tan(incidence)`. */
+  readonly biasTexels: number;
+  readonly slopeBiasTexels: number;
+  /** Receiver offset along its normal before the lookup, in tile texels. */
+  readonly normalBiasTexels: number;
+}
+
+/**
+ * GU47 eint (EB-3): the lights as the forward programs see them. On a PRD-02 bridge frame (`localShadows` set) a
+ * shadow-casting spot / point light keeps lighting but drops its `castsShadow` gate (the bound forward map is the
+ * sun's), and carries `localShadowSlot` when it got atlas tiles. Any other frame returns `lights` itself.
+ */
+export function forwardShadedLights(
+  lights: readonly CollectedLight[] | undefined,
+  localShadows: ForwardLocalShadowOptions | undefined
+): readonly CollectedLight[] {
+  if (!lights) return [];
+  if (!localShadows) return lights;
+  let changed = false;
+  const shaded = lights.map((light): CollectedLight => {
+    if (!light.castsShadow || (light.kind !== "spot" && light.kind !== "point")) return light;
+    changed = true;
+    const slot = localShadows.slots.get(light);
+    const out: LocalShadowedLight = { ...light, castsShadow: false, ...(slot === undefined ? {} : { localShadowSlot: slot }) };
+    return out;
+  });
+  return changed ? shaded : lights;
 }
 
 export interface ForwardShadowCascadeOptions {
@@ -387,18 +443,25 @@ export class ForwardPass extends BaseRenderPass {
    */
   private customFrame: { lights?: ReturnType<typeof LightUniforms.pack>; inverseViewProjection?: Float32Array } = {};
   private readonly customFrameCache: CustomShaderFrameCache = {
-    lights: () => (this.customFrame.lights ??= LightUniforms.pack(this.options.lights ?? [])),
+    lights: () => (this.customFrame.lights ??= LightUniforms.pack(this.shadedLights())),
     inverseViewProjection: () => (this.customFrame.inverseViewProjection ??= customShaderInverseViewProjection(this.options))
   };
 
+  /** GU47 eint (EB-3): `forwardShadedLights` of this pass, computed once per execute (packed per draw). */
+  private shadedLightsMemo: readonly CollectedLight[] | undefined;
+  private shadedLights(): readonly CollectedLight[] {
+    return (this.shadedLightsMemo ??= forwardShadedLights(this.options.lights, this.options.shadowMap?.localShadows));
+  }
+
   execute(context: RenderPassContext): void {
     this.customFrame = {};
+    this.shadedLightsMemo = undefined;
     this.skinningPaletteUploads.beginFrame();
     this.frameWidth = context.width;
     this.frameHeight = context.height;
     this.contactMaskScope = { device: context.device, width: context.width, height: context.height, cameraPosition: this.options.cameraPosition };
     this.beginFramePools(context.device);
-    this.clusteredLighting = resolveForwardClusteredLighting(this.options.lights, context.width, context.height, this.options.cameraViewProjectionMatrix);
+    this.clusteredLighting = resolveForwardClusteredLighting(this.shadedLights(), context.width, context.height, this.options.cameraViewProjectionMatrix);
     const flags = rendererQrFlags(context.device);
     if (qrGeneratedProgramsOn(flags)) {
       const auraFrame = rendererAuraFrame(context.device, flags);
@@ -558,6 +621,8 @@ export class ForwardPass extends BaseRenderPass {
       uniforms,
       this.contactMaskScope
     );
+    // GU47 eint (EB-3): PRD-02 local-light tiles, bound only to programs that declare them (generated, localShadows > 0).
+    applyForwardLocalShadowUniforms(this.options.shadowMap?.localShadows, item, shader, uniforms);
     applyOutputColorSpaceUniform(this.options.outputColorSpace ?? "srgb", item, shader, uniforms);
     applyCameraUniforms(this.options.cameraPosition, item, shader, uniforms);
     applyAlphaCutoffUniform(item, shader, uniforms);
@@ -694,7 +759,7 @@ export class ForwardPass extends BaseRenderPass {
     if (!baseMaterial.requiredUniforms.includes("u_lightCount") || !baseMaterial.requiredUniforms.includes("u_lightData")) {
       return;
     }
-    const packed = LightUniforms.pack(this.options.lights ?? []);
+    const packed = LightUniforms.pack(this.shadedLights());
     if (material instanceof MaterialInstance) {
       material.setOverride("u_lightCount", packed.lightCount);
       material.setOverride("u_lightData", packed.data);
@@ -1077,7 +1142,13 @@ export function forwardPassFeatureAxes(
       hemisphere: env?.proceduralMap !== undefined
     },
     shadows: options.shadowMap
-      ? { cascades: Math.max(1, Math.min(4, options.shadowMap.cascades?.length ?? 1)) as 0 | 1 | 2 | 3 | 4, pcfTaps: 4, localShadows: 0, contact: false }
+      ? {
+          cascades: Math.max(1, Math.min(4, options.shadowMap.cascades?.length ?? 1)) as 0 | 1 | 2 | 3 | 4,
+          pcfTaps: 4,
+          // GU47 eint (EB-3): one variant for any tile count, so lights entering / leaving do not recompile.
+          localShadows: (options.shadowMap.localShadows?.slots.size ?? 0) > 0 ? MAX_FORWARD_LOCAL_SHADOW_TILES : 0,
+          contact: false
+        }
       : { cascades: 0, pcfTaps: 4, localShadows: 0, contact: false },
     environment:
       // #1140: the generated env chunk samples exactly the texture it was

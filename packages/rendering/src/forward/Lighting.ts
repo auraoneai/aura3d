@@ -1,8 +1,8 @@
 // PR 0b-2 carve-out (CONTRACTS.md §3.3) — verbatim move from ForwardPass.ts; 0 changed logic lines.
 
-import type { ForwardPointShadowMapOptions, ForwardShadowMapOptions } from "../ForwardPass.js";
+import type { ForwardLocalShadowOptions, ForwardPointShadowMapOptions, ForwardShadowMapOptions } from "../ForwardPass.js";
 import { applyShadowPcfTapTier, type ShadowPcfTapTier } from "../shadows/ShadowFilterTier.js";
-import { MAX_FORWARD_SHADOW_PCF_SAMPLES, identityMatrix, isFiniteArrayLike, toMat4Uniform } from "../ForwardPass.js";
+import { MAX_FORWARD_LOCAL_SHADOW_TILES, MAX_FORWARD_SHADOW_PCF_SAMPLES, identityMatrix, isFiniteArrayLike, toMat4Uniform } from "../ForwardPass.js";
 import { createClusteredForwardLighting, type ClusteredForwardLightingResources } from "../ClusteredForwardLighting.js";
 import { MAX_DIRECT_LIGHTS, recordAuraLightsCounters } from "../LightUniforms.js";
 import type { CollectedLight } from "../LightCollector.js";
@@ -265,6 +265,34 @@ export function applyForwardShadowMapUniforms(
   uniforms.set("u_shadowMapTexelSize", texelSize);
   uniforms.set("u_shadowPcfSampleCount", filterKernel.samples.length);
   uniforms.set("u_shadowPcfSamples", pcfSamples);
+}
+
+/**
+ * GU47 eint (E-B handoff EB-3): binds the PRD-02 local-light atlas for the generated program's `shadow_local`
+ * chunk. Only programs that declare `u_localShadowAtlas` (generated, `localShadows > 0`) are touched. A draw with
+ * `receiveShadow: false` binds strength 0.
+ */
+export function applyForwardLocalShadowUniforms(
+  localShadows: ForwardLocalShadowOptions | undefined,
+  item: RenderItem,
+  shader: RenderShaderProgram,
+  uniforms: Map<string, UniformValue>
+): void {
+  if (!shader.reflection.uniforms.has("u_localShadowAtlas")) return;
+  const bound = localShadows?.texture !== undefined && localShadows.slots.size > 0;
+  uniforms.set("u_localShadowAtlas", bound ? localShadows!.texture! : new TextureBinding({ name: "u_localShadowAtlas", required: false }));
+  uniforms.set("u_localShadowMatrices", bound ? localShadows!.matrices : new Float32Array(MAX_FORWARD_LOCAL_SHADOW_TILES * 16));
+  uniforms.set("u_localShadowRects", bound ? localShadows!.rects : new Float32Array(MAX_FORWARD_LOCAL_SHADOW_TILES * 4));
+  uniforms.set("u_localShadowTexelScale", bound ? localShadows!.texelScale : new Float32Array(8));
+  const strength = bound && !receiveShadowDisabled(item) ? Math.min(1, Math.max(0, localShadows!.strength)) : 0;
+  uniforms.set("u_localShadowParams", [
+    strength,
+    bound ? localShadows!.biasTexels : 0,
+    bound ? localShadows!.slopeBiasTexels : 0,
+    bound ? localShadows!.normalBiasTexels : 0
+  ]);
+  const texel = 1 / Math.max(1, bound ? localShadows!.atlasSize : 1);
+  uniforms.set("u_localShadowAtlasTexel", [texel, texel]);
 }
 
 export function applyForwardPointShadowMapUniforms(

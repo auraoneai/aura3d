@@ -16,10 +16,16 @@
  * (compiler/shadows.ts) for the config and `source.collectedLights` for the
  * sun, falling back to the scene graph only when the source carries neither.
  * Flag off never reaches this module (ShadowOrchestration legacy path).
+ *
+ * GU47 eint (E-B handoff EB-3): the shadowed spot / point lights of
+ * `source.collectedLights` (E-B's multi-caster selection) render into the
+ * PRD-02 local atlas in the same update and reach the forward pass as
+ * `ForwardShadowMapOptions.localShadows`, which the generated forward program
+ * samples per light (`program/chunks/shadow_forward.glsl.ts` `shadow_local`).
  */
 
 import type { Camera } from "@aura3d/scene";
-import type { ForwardShadowMapOptions } from "../ForwardPass";
+import type { ForwardLocalShadowOptions, ForwardShadowMapOptions } from "../ForwardPass";
 import type { CollectedLight } from "../LightCollector";
 import type { RenderDevice } from "../RenderDevice";
 import { Sampler } from "../Sampler";
@@ -33,7 +39,7 @@ import type { RenderItem } from "../contracts/renderItem";
 import type { RenderSource } from "../contracts/renderSource";
 import { prd02SubFlagOff, readPrd02KillSwitches, SUB_FLAG_CSM } from "../passes/Prd02SubFlags";
 import { sceneFromSource } from "../renderer/RenderShared";
-import { Prd02ShadowSystem, type Prd02ShadowFrameUniforms, type ShadowSystemConfigInput } from "./ShadowSystem";
+import { Prd02ShadowSystem, type Prd02ShadowFrameUniforms, type ShadowSystemConfigInput, type ShadowSystemLocalLight } from "./ShadowSystem";
 import { clipRangeFromViewProjection } from "./DirectionalCascadeFitter";
 
 /** Uniform the `a3d_prd02_shadow_lookup` chunk declares (C-11); marks a lookup consumer. */
@@ -118,6 +124,40 @@ export function prd02ShadowConfig(
     normalBias: compiled?.normalBias ?? DEFAULT_NORMAL_BIAS_TEXELS,
     ...(isShadowPcfTapTier(compiled?.pcfTapTier) ? { pcfTapTier: compiled.pcfTapTier } : {})
   };
+}
+
+/** A shadow-casting spot / point light of the compiled source and its PRD-02 shadow-system input. */
+export interface Prd02LocalShadowLight {
+  readonly input: ShadowSystemLocalLight;
+  readonly light: CollectedLight;
+}
+
+/**
+ * Visible shadow-casting spot / point lights of `source.collectedLights`, in collected order (`shadowIndex` 0, 1, ...).
+ * Engine scenes mark them with E-B's multi-caster selection (`resolveProductionShadowCasterIndices`, capped by the
+ * tier's `localShadowLights`). Empty for sources without collected lights and with `?a3dLighting=atlas=off`.
+ */
+export function prd02LocalShadowLights(source: SourceLike): readonly Prd02LocalShadowLight[] {
+  if (!source || typeof source !== "object" || Symbol.iterator in (source as object)) return [];
+  const collected = (source as { collectedLights?: Iterable<CollectedLight> }).collectedLights;
+  if (collected === undefined || !readPrd02KillSwitches(source).atlas) return [];
+  const out: Prd02LocalShadowLight[] = [];
+  for (const light of collected) {
+    if (!light.castsShadow || light.source?.visible === false) continue;
+    if (light.kind !== "spot" && light.kind !== "point") continue;
+    out.push({
+      light,
+      input: {
+        shadowIndex: out.length,
+        kind: light.kind,
+        position: light.position,
+        direction: light.kind === "spot" ? light.direction : [0, -1, 0],
+        range: light.range,
+        ...(light.kind === "spot" ? { outerAngleRadians: light.spotAngle } : {})
+      }
+    });
+  }
+  return out;
 }
 
 /** Normalized direction of the first visible shadow-casting sun. */
@@ -299,8 +339,13 @@ export function shadowFrameCamera(
  * Renders the prd02 sun cascades now and returns them as legacy
  * `ForwardShadowMapOptions` (T0-26 bridge). Returns undefined — and allocates
  * nothing — when shadows are off/killed, a lookup-chunk consumer exists (the
- * contributor owns that path), or there is no sun, caster, camera or depth
- * texture support.
+ * contributor owns that path), or there is no sun or local caster, no caster
+ * item, camera or depth texture support.
+ *
+ * GU47 eint (E-B handoff EB-3): the explicitly shadowed spot / point lights of
+ * the compiled source (`prd02LocalShadowLights`) get PRD-02 atlas tiles in the
+ * same update, handed to the forward pass as `localShadows`; a scene whose only
+ * casters are local lights binds a strength-0 sun map plus its tiles.
  */
 export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardShadowMapOptions | undefined {
   bridgedFrames.delete(input.device);
@@ -319,7 +364,8 @@ export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardSh
   const camera = concrete?.viewProjectionMatrix ? concrete : observed?.camera ?? input.frameCamera;
   if (!camera?.viewProjectionMatrix) return bail("no-camera");
   const sun = prd02SunDirection(input.source);
-  if (!sun) return bail("no-sun");
+  const localLights = prd02LocalShadowLights(input.source);
+  if (!sun && localLights.length === 0) return bail("no-sun");
   const tier = input.tier ?? QUALITY_TIERS.high;
   const config = prd02ShadowConfig(input.source, input.flags, tier, camera.far);
   if (!config.enabled) return bail("config-disabled");
@@ -337,14 +383,20 @@ export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardSh
   // camera's real clip range; `config.maxDistance` caps the cascade splits.
   const uniforms = system.update({
     camera: { viewProjectionMatrix: camera.viewProjectionMatrix, near, far: camera.far ?? 200 },
-    sun: { direction: sun },
+    sun: sun ? { direction: sun } : null,
     casters: input.items,
-    // Local (spot/point) prd02 tiles need the lookup chunk; the bridge is sun-only.
-    localLights: [],
+    // GU47 eint (EB-3): local (spot / point) tiles render here too; the forward pass samples them.
+    localLights: localLights.map((light) => light.input),
     flags: input.flags,
     tier,
     ...(cascadeUse ? { cascadeUse } : {})
   });
+  const localShadows = bridgeLocalShadows(uniforms, localLights, config);
+  if (!sun) {
+    if (!localShadows.texture) return bail("no-local-tiles");
+    bridgedFrames.set(input.device, { uniforms, config, system });
+    return localOnlyShadowMap(localShadows);
+  }
   const fits = system.cascadeFits();
   const maps = fits.map((fit) => {
     const texture = uniforms.cascadeTextures[fit.index] ?? null;
@@ -354,7 +406,7 @@ export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardSh
   bridgedFrames.set(input.device, { uniforms, config, system });
   const resolved = maps as { fit: (typeof fits)[number]; map: Omit<ForwardShadowMapOptions, "cascades"> }[];
   const first = resolved[0]!.map;
-  if (resolved.length === 1) return first;
+  if (resolved.length === 1) return { ...first, localShadows };
   let previousFar = 0;
   return {
     ...first,
@@ -362,7 +414,92 @@ export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardSh
       const cascade = { index: fit.index, near: previousFar, far: fit.splitFar, shadowMap: map };
       previousFar = fit.splitFar;
       return cascade;
-    })
+    }),
+    localShadows
+  };
+}
+
+/** Local-tile receiver biases in tile texels (GU47 eint EB-3; tuned by the phase-2 local-shadow frames). */
+const LOCAL_DEPTH_BIAS_TEXELS = 1;
+const LOCAL_NORMAL_BIAS_TEXELS = 1;
+/** `shadows/ShadowSystem.ts` ATLAS_SIZE, for a mock atlas texture without a width. */
+const LOCAL_ATLAS_FALLBACK_SIZE = 1024;
+
+const LOCAL_COMPARE = new Sampler({
+  minFilter: "linear",
+  magFilter: "linear",
+  addressU: "clamp-to-edge",
+  addressV: "clamp-to-edge",
+  compare: "less-equal"
+});
+
+const IDENTITY = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+
+/** The spot tile's field of view (`ShadowAtlas.spotClip`). */
+function spotTileFov(outerAngleRadians: number | undefined): number {
+  return Math.min(Math.PI - 1e-3, Math.max(1e-3, (outerAngleRadians ?? Math.PI / 4) * 2));
+}
+
+/**
+ * GU47 eint (EB-3): this frame's atlas tiles as `ForwardShadowMapOptions.localShadows`. A light gets a slot only when
+ * all its tiles were kept, in face order (a spot 1, a point 6 consecutive); `slots` is empty (and `texture` unset)
+ * when no light did, which still tells the forward pass the bridged map is the sun's.
+ */
+function bridgeLocalShadows(
+  uniforms: Prd02ShadowFrameUniforms,
+  lights: readonly Prd02LocalShadowLight[],
+  config: ShadowSystemConfigInput
+): ForwardLocalShadowOptions {
+  const tilesByLight = new Map<number, number[]>();
+  const pairs = uniforms.perLightShadowIndex;
+  for (let i = 0; i + 1 < pairs.length; i += 2) {
+    const tiles = tilesByLight.get(pairs[i]!) ?? [];
+    tiles.push(pairs[i + 1]!);
+    tilesByLight.set(pairs[i]!, tiles);
+  }
+  const atlas = uniforms.atlasTexture;
+  const atlasSize = atlas && atlas.width > 0 ? atlas.width : LOCAL_ATLAS_FALLBACK_SIZE;
+  const texelScale = new Float32Array(8);
+  const slots = new Map<CollectedLight, number>();
+  for (const { input, light } of atlas ? lights : []) {
+    const tiles = tilesByLight.get(input.shadowIndex) ?? [];
+    if (tiles.length !== (input.kind === "point" ? 6 : 1) || tiles.some((tile, face) => tile !== tiles[0]! + face)) continue;
+    const tanHalfFov = input.kind === "point" ? 1 : Math.tan(spotTileFov(input.outerAngleRadians) / 2);
+    for (const tile of tiles) {
+      texelScale[tile] = (2 * tanHalfFov) / Math.max(1, (uniforms.localShadowData[tile * 4 + 2] ?? 0) * atlasSize);
+    }
+    slots.set(light, tiles[0]!);
+  }
+  return {
+    slots,
+    ...(atlas && slots.size > 0 ? { texture: new TextureBinding({ name: "u_localShadowAtlas", texture: atlas, sampler: LOCAL_COMPARE, required: true }) } : {}),
+    atlasSize,
+    matrices: uniforms.localShadowMatrices,
+    rects: uniforms.localShadowData,
+    texelScale,
+    strength: config.strength,
+    biasTexels: LOCAL_DEPTH_BIAS_TEXELS,
+    slopeBiasTexels: BRIDGE_SLOPE_BIAS,
+    normalBiasTexels: LOCAL_NORMAL_BIAS_TEXELS
+  };
+}
+
+/**
+ * A frame whose only casters are local lights: the forward programs still declare the sun map, so it is bound to the
+ * atlas at strength 0 (no light is gated onto it: `forwardShadedLights` clears every local caster's gate).
+ */
+function localOnlyShadowMap(localShadows: ForwardLocalShadowOptions): ForwardShadowMapOptions {
+  const texel = 1 / localShadows.atlasSize;
+  return {
+    texture: new TextureBinding({ name: "u_shadowMapTexture", texture: localShadows.texture!.texture, sampler: NEAREST_CLAMP, required: true }),
+    lightMatrix: IDENTITY,
+    strength: 0,
+    bias: BRIDGE_AUTO_DEPTH_BIAS,
+    slopeBias: BRIDGE_SLOPE_BIAS,
+    normalBias: 0,
+    texelSize: [texel, texel],
+    filterKernel: createShadowFilterKernel({ filter: "none" }),
+    localShadows
   };
 }
 
