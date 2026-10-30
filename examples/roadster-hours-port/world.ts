@@ -19,7 +19,7 @@ import { levelLayout, roadProfile, trafficPiece, pieceSpec, type Level } from ".
 import { CAR_GROUPS, CAR_FOR_PIECE, carGroup, carNativeSize, type CarGroup, type CarKey } from "./cars";
 import { LEVELS } from "./data";
 import { hexLinear, lookFor, type Look } from "./look";
-import { beamSpec, blobFadeFor, blobSpec, citySpec, plumeSpec, spraySpec, rampSpec, roadSpec, skySpec, solidSpec, terrainSpec, towerSpec, townSpec, waterSpec, type FogLook } from "./materials";
+import { beamSpec, blobFadeFor, blobSpec, citySpec, plumeSpec, spraySpec, rampSpec, roadSpec, skySpec, solidSpec, surfAmount, surfSpeedFor, terrainSpec, towerSpec, townSpec, waterSpec, type FogLook } from "./materials";
 import { hasMeshy, meshyGeometry, meshyMaterial, meshySize } from "./meshy";
 import type { Run, RunEvent as SimEvent } from "./sim";
 
@@ -578,7 +578,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
 
   /* ---- terrain, guardrails, towers ---- */
   const seaKind = look.style === "canyon" ? "cliff" : "sea";
-  builder.add(geometry.custom(dyn(flank(level, look, look.seaSide, seaKind, seed)), { name: "flank-sea", material: material.custom(terrainSpec(look)) }));
+  builder.add(geometry.custom(dyn(flank(level, look, look.seaSide, seaKind, seed)), { name: "flank-sea", material: material.custom(terrainSpec(look)) }).runtime({ id: "flank-sea" }));
   if (look.style !== "skyway") builder.add(geometry.custom(dyn(flank(level, look, (look.seaSide * -1) as -1 | 1, look.style === "coast" ? "hills" : "cliff", seed + 101)), { name: "flank-cliff", material: material.custom(terrainSpec(look)) }));
   else builder.add(geometry.custom(dyn(flank(level, look, (look.seaSide * -1) as -1 | 1, "sea", seed + 101)), { name: "flank-far", material: material.custom(terrainSpec(look)) }));
   builder.add(geometry.custom(dyn(guardrails(level)), { name: "guardrails", material: material.custom(solidSpec(look, [0.72, 0.74, 0.77], [0, 0, 0], 0, 0.32, 0.9, look.row ? 1 : 0)) }));
@@ -1006,6 +1006,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
           director.setReducedMotion(on);
           shots?.setReducedMotion(on);
           fxKinds = registerSaltwindFx(vfx, row, { reducedMotion: on, reducedFlash: on });
+          if (row && surfAmount(look) > 0) node("flank-sea").setUniform?.("surfSpeed", surfSpeedFor(on));
           if (sprayNode && row) { sprayNode.setUniform?.("spAmount", sprayAmount(row.spray, { reducedMotion: on })); sprayNode.setUniform?.("spWind", sprayWind(row.spray, on)); }
         },
         probeBatchedDraws() {

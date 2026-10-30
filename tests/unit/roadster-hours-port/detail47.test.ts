@@ -61,3 +61,15 @@ describe("Saltwind Highway galvanised guardrails (RH47-10)", () => {
     expect(rails("original")).toBe(0);
   });
 });
+
+describe("Saltwind Highway shoreline foam (RH47-06)", () => {
+  it("foam follows the route's whitecaps, is off on Halo's city carpet and the original look, and slows on reduced motion", async () => {
+    const { surfAmount, surfSpeedFor } = await import("../../../examples/roadster-hours-port/materials");
+    expect(surfAmount(lookFromRow(SALTWIND_LOOK.sunbreak))).toBeCloseTo(SALTWIND_LOOK.sunbreak.surfaces.whitecaps, 6);
+    expect(surfAmount(lookFromRow(SALTWIND_LOOK.redline))).toBeGreaterThan(0);
+    expect(surfAmount(lookFromRow(SALTWIND_LOOK.halo))).toBe(0);
+    for (const look of Object.values(ORIGINAL_LOOKS)) expect(surfAmount(look)).toBe(0);
+    expect(surfSpeedFor(true)).toBeLessThan(surfSpeedFor(false));
+    expect(TERRAIN_FRAGMENT).toContain("surfAmt > 0.0");
+  });
+});

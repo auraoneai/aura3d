@@ -66,12 +66,18 @@ export const skySpec = (look: Look): CustomSpec => ({
   depthWrite: false
 });
 
+/** RH47-06: shoreline foam strength (the route's whitecaps; 0 on Halo's city carpet and on `?look=original`). */
+export const surfAmount = (look: Look): number => (look.row && !look.cityCarpet ? look.whitecaps : 0);
+/** RH47-06: foam surge speed; reduced motion slows the wash to 30%. */
+export const surfSpeedFor = (reducedMotion: boolean): number => (reducedMotion ? 0.3 : 1);
+
 export const terrainSpec = (look: Look): CustomSpec => ({
   receiveShadow: true,
   glsl: { vertex: TERRAIN_VERTEX, fragment: TERRAIN_FRAGMENT },
   uniforms: {
     rockA: c3(look.rockA), rockB: c3(look.rockB), grass: c3(look.grass), sand: c3(look.sand),
     rockDetail: { type: "texture2d" as const, value: DETAIL_ASSETS[rockDetailKey(look)] }, detailAmt: f32(detailAmount(look)), detailTiles: v2(DETAIL_TILES.rock),
+    surfAmt: f32(surfAmount(look)), surfSpeed: f32(surfSpeedFor(false)),
     ...atmosphereUniforms(look)
   },
   side: "double"

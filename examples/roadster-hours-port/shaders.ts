@@ -381,9 +381,21 @@ void main() {
   vec3 albedo = mix(rock, turf, flat_ * high * 0.85);
   albedo = mix(albedo, sand, flat_ * (1.0 - high) * 0.9);
   albedo *= 1.0 + dAlb * 0.9;
+  // GU47 RH47-06: shoreline foam where the rock meets the sea (water plane at y = 0): a wash band that surges up the rock
+  // with the swell, broken by wind-driven froth; low-frequency terms only, the froth fades by the pixel footprint.
+  float foam = 0.0;
+  if (surfAmt > 0.0) {
+    float tt = u_time * surfSpeed;
+    float surge = 0.35 + 0.3 * sin(tt * 0.9 + vWorld.x * 0.045 + vWorld.z * 0.037) + 0.15 * sin(tt * 1.7 + vWorld.x * 0.11);
+    float band = smoothstep(-0.6, -0.05, vWorld.y) * (1.0 - smoothstep(0.1, 0.25 + surge, vWorld.y));
+    float froth = rhNoise(vWorld.xz * 0.9 + vec2(tt * 0.35, -tt * 0.2)) * 0.6 + rhNoise(vWorld.xz * 2.7 - tt * 0.5) * 0.4;
+    froth = mix(0.6, smoothstep(0.3, 0.7, froth), 1.0 - smoothstep(0.4, 2.0, foot));
+    foam = clamp(band * froth * surfAmt, 0.0, 1.0);
+  }
+  albedo = mix(albedo, vec3(0.86, 0.9, 0.88), foam);
   float ao = mix(0.62, 1.0, smoothstep(-2.0, 14.0, vWorld.y)) * (0.8 + 0.2 * blotch);
   gSunShadow = a3dSunShadowAuto(vWorld, N);
-  vec3 lit = lightSurface(albedo * ao, N, V, 0.9, 0.0, vec3(0.0));
+  vec3 lit = lightSurface(albedo * mix(ao, 1.0, foam), N, V, mix(0.9, 0.6, foam), 0.0, vec3(0.0));
   outColor = vec4(finish(fogIt(lit, vWorld)), 1.0);
 }`;
 
