@@ -1,0 +1,25 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-pips-big-leap",
+  "note": "Described references only: no image is committed and nothing here is copied from another game's frames.",
+  "entries": [
+    {
+      "file": "references/macro-diorama-photography.json",
+      "source": "genre comparable: macro photography of hand-built model dioramas (shallow depth of field at f/2, focus on a small figure)",
+      "licence": "reference-only",
+      "why": "The shallow-focus miniature lens: one sharp acorn-sized hero, the set melting into soft bokeh in the foreground and background"
+    },
+    {
+      "file": "references/felt-and-clay-sets.json",
+      "source": "genre comparable: stop-motion puppet sets built from wool felt, modelling clay and painted wood",
+      "licence": "reference-only",
+      "why": "Felt nap sheen on moss and toadstool caps, matte clay bodies with soft rounded edges, nothing glossy except lacquered caps"
+    },
+    {
+      "file": "references/forest-floor-macro.json",
+      "source": "nature comparable: forest-floor macro photography at dawn, golden hour and night (moss, toadstools, dandelion fluff, fireflies)",
+      "licence": "reference-only",
+      "why": "Each world's hour as one light colour: low dawn shafts, golden hour, lava glow in a cellar, amber lantern light, cold moonlight"
+    }
+  ]
+}
