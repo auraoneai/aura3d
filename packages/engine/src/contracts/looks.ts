@@ -44,8 +44,8 @@ export interface AuraLookOverrides {
   readonly rim?: false | { readonly color?: AuraColor; readonly intensity?: number /* [0,20] */; readonly azimuthDeg?: number /* wraps into [0,360) */ };
   /** near/far [0,100000] replace the look's fog range; `height` makes the look fog a C-21 height fog. */
   readonly fog?: { readonly color?: AuraColor; readonly near?: number; readonly far?: number; readonly height?: AuraHeightFogSpec };
-  /** contrast/saturation [0,3], temperature/tint [-1,1]. GU47(E-C): `lut` narrows to `AuraAssetRef<"lut">` once E-C adds the lut asset type. */
-  readonly grade?: { readonly contrast?: number; readonly saturation?: number; readonly temperature?: number; readonly tint?: number; readonly lut?: AuraAssetRef };
+  /** contrast/saturation [0,3], temperature/tint [-1,1]; `lut` a typed `.cube` asset (`AuraAssetRef<"lut">`, PRD §3.1). */
+  readonly grade?: { readonly contrast?: number; readonly saturation?: number; readonly temperature?: number; readonly tint?: number; readonly lut?: AuraAssetRef<"lut"> };
   /** A preset id replaces the look's declared `output.preset`; `{ bloom }` drops (`false`) or retunes the look's bloom node. */
   readonly post?: AuraPostPresetId | { readonly bloom?: false | AuraBloomOptions };
 }

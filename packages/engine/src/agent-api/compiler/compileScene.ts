@@ -33,7 +33,7 @@ import type {
 import { groups } from "../nodes/groups.js";
 import { mountedRootOf } from "./mountedRoots.js";
 import { ignoredOptionMessages } from "../nodes/optionDiagnostics.js";
-import { isRenderableModelNode } from "./observations.js";
+import { createRuntimeAddedCollectedLights, isRenderableModelNode } from "./observations.js";
 import { createAssetProvenance } from "../diagnostics.js";
 import { applyModelTintBridge } from "./modelMaterials.js";
 import { createProductionRuntimePrimitiveEntries } from "./primitives.js";
@@ -61,7 +61,11 @@ export interface MountSceneCompileContext extends SceneCompileContext {
    * plus runtime adds) lets the mount recompute the environment knob when its environment or light nodes change.
    */
   environmentLighting(liveSnapshot?: AuraSceneSnapshot): EnvironmentLightingOptions;
-  readonly collectedLights: readonly CollectedLight[];
+  /**
+   * The frame's collected lights (renderer input, shadow options, the light handler's per-frame update). GU47 eint
+   * EB-4: `CompiledSceneImpl` replaces the list (a new array) when runtime-added light nodes join or leave.
+   */
+  collectedLights: readonly CollectedLight[];
   readonly runtimeWarnings: Set<string>;
   /** The registry the mount was created with (t=0 source build only). */
   readonly runtimeNodes?: AuraRuntimeNodeRegistry;
@@ -196,6 +200,10 @@ export class CompiledSceneImpl implements CompiledScene {
   environmentProbeStatus: "pending" | "ready" | "fallback" | undefined;
   private disposed = false;
   private readonly rawSceneNodes: readonly AuraSceneNode[];
+  /** GU47 eint EB-4: the mount's collected lights, before any runtime-added light joined `mountCtx.collectedLights`. */
+  private readonly mountLights: readonly CollectedLight[];
+  /** GU47 eint EB-4: collected lights of light nodes added through `addSubtree`, per flattened node. */
+  private readonly runtimeLights = new Map<AuraSceneNode, readonly CollectedLight[]>();
 
   constructor(
     readonly snapshotVersion: number,
@@ -218,6 +226,7 @@ export class CompiledSceneImpl implements CompiledScene {
     this.handledNodes = handledNodes;
     this.rawSceneNodes = sceneNodes;
     this.liveNodes = flatNodes;
+    this.mountLights = mountCtx.collectedLights;
     if (mountedFlat) for (const [id, nodes] of mountedFlat) this.dynamicFlat.set(id, nodes.slice());
     bindRuntimeCompiled(this as unknown as import("../../contracts/compiler.js").CompiledScene, this as unknown as RuntimeCompiledSceneInternals);
   }
@@ -292,7 +301,22 @@ export class CompiledSceneImpl implements CompiledScene {
         void handler.compile(flatNode, ctx, out);
       }
     }
+    // GU47 E-B handoff (eint EB-4): the PRD-02 light handler adds no light (T0-09: the mount collects every authored
+    // light), so a light added at runtime gets its collected light here; it joins the frame's light list and leaves
+    // with its subtree. Runtime-added lights never cast shadows (the mount selected the casters).
+    const addedLights = createRuntimeAddedCollectedLights(flatNodes, ctx.flags, { hemisphereAsEnvironment: true });
+    if (addedLights.length > 0) {
+      for (const { node: lightNode, lights } of addedLights) this.runtimeLights.set(lightNode, lights);
+      this.syncRuntimeLights();
+    }
     this.itemCache.clear();
+  }
+
+  /** Republishes `mountCtx.collectedLights` as the mount lights plus every live runtime-added light (a new array, so per-list light indexes rebuild). */
+  private syncRuntimeLights(): void {
+    const lights = [...this.mountLights];
+    for (const list of this.runtimeLights.values()) lights.push(...list);
+    this.mountCtx.collectedLights = lights;
   }
 
   /** C-37 subtree dispose (no remount). */
@@ -330,6 +354,9 @@ export class CompiledSceneImpl implements CompiledScene {
       return false;
     });
     this.dropCompileContributions(targets);
+    let lightsRemoved = false;
+    for (const node of targets) lightsRemoved = this.runtimeLights.delete(node) || lightsRemoved;
+    if (lightsRemoved) this.syncRuntimeLights();
     this.itemCache.clear();
     return true;
   }
