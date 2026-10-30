@@ -78,9 +78,7 @@ const chapter = CHAPTERS[levelById(START_LEVEL).chapter]!;
 const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   renderer: { qualityProfile: "production" },
-  // GU47 phase 2 fallback: the promoted A3D_QR_VFX_SKY path uploads a zero-length u_bandParams for skies without
-  // bands (WP-38 receipts defect 2) and nothing draws. Keep the pre-promotion sky until the engine padding fix lands.
-  qualityRebuild: { flags: ["game", "-vfx.sky"] },
+  qualityRebuild: { flags: ["game"] },
   input: {
     actions: {
       ability: ["Space", "KeyQ", "Enter"],
