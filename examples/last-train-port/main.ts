@@ -5,6 +5,7 @@
  * Query parameters (all optional): `autopilot=1` (drive the tram with the capture's controller),
  * `night=1`, `manual=1` (the sim only advances through `__AURA_LAST_TRAIN__.stepFrames`; skips the title screen), `speed=N` (sim steps per frame),
  * `title=0` (skip the title screen), `legs=2` (short service), `dpr=N` (pixel ratio override; default min(devicePixelRatio, 1.5)).
+ * GU47: `band=A..E` pins a time band (LT-01), `look=original` keeps the 4.6 day / night look, `shots=0` turns the LT-16 camera shots off.
  *
  * Input: keyboard, or on touch screens the hold-button bar (`#touch`, shown on `(pointer: coarse)`), which feeds the same
  * `keys` set through `press` / `release`.
@@ -17,7 +18,11 @@ import {
 } from "./sim";
 import { createTramPresenter, viewOf } from "./presentation";
 import { TrainSound, diffCues, type AudioState } from "./audio";
-import { TEMPERAMENT_COLORS, buildWorld, weatherOf, type WorldRuntime } from "./world";
+import { LOOK, TEMPERAMENT_COLORS, buildWorld, weatherOf, type WorldRuntime } from "./world";
+import "./enamel.css";
+
+/* GU47 LT-17: the railway-enamel HUD (enamel.css) dresses the band look; ?look=original keeps today's HUD. */
+if (LOOK === "bands") document.documentElement.classList.add("enamel");
 
 /** Loaded at boot with `fetch`: the example dev server serves `.json` as application/json, which module imports reject. */
 let data: SimData;
@@ -328,6 +333,7 @@ const loop = createFixedStepLoop({
 /** One press of a game key, from the keyboard or a touch button. */
 function press(code: string, repeat = false): void {
   void sound.unlock();
+  if (code === "KeyC" || code === "Escape") runtime?.skipShot(); // GU47 LT-16: C / Esc (or a tap on the view) skips a camera shot
   if (code !== "KeyR") abandonFrames = 0;
   if (code === "Enter") keepRiding();
   if (code === "KeyM") { sound.setMuted(!sound.muted); writeStore(MUTE_KEY, sound.muted ? "1" : "0"); toast(sound.muted ? "Sound off" : "Sound on", 1200); }
@@ -352,6 +358,7 @@ document.getElementById("res-short")?.addEventListener("click", () => requestNew
 document.getElementById("res-keep")?.addEventListener("click", () => keepRiding());
 addEventListener("pointerdown", (e) => {
   void sound.unlock();
+  if (e.target === canvas) runtime?.skipShot();
   if (titleMode && !(e.target instanceof Element && e.target.closest("button"))) startPlay();
 });
 addEventListener("keydown", (e) => {
@@ -472,7 +479,9 @@ const qa = installQaHooks("last-train", {
   depart: () => { actionDepart(sim); },
   setAutopilot: (on: boolean) => { autopilot = on; },
   /** Switching swaps the whole lighting rig (a scene swap), so this renders once and waits for the renderer to settle. */
-  setTimeOfDay: async (v: "day" | "night") => { actionTimeOfDay(sim, v); render(); await app?.ready(); render(); },
+  setTimeOfDay: async (v: "day" | "night") => { actionTimeOfDay(sim, v); runtime?.syncBand(sim); render(); await app?.ready(); render(); },
+  /** GU47 LT-01: the band on screen (null under ?look=original) and scene swaps that happened en route (must stay 0). */
+  band: () => ({ band: runtime?.band ?? null, enrouteSwaps: runtime?.enrouteSwaps ?? 0, lanterns: runtime?.lanterns ?? null, shots: runtime?.shots ?? null }),
   newService: () => { actionNewService(sim); presenter.reset(); },
   /** Plays a key press through the same path as the keyboard and the touch bar. */
   press: (code: string) => press(code),
@@ -484,6 +493,8 @@ const qa = installQaHooks("last-train", {
   runLeg: (renderEvery = 0) => runLeg(renderEvery),
   finishStop: (renderEvery = 0) => finishStop(renderEvery),
   runCircuit: (renderEvery = 0) => runCircuit(renderEvery),
+  /** GU47 E-I crops (sky-top, platform, headlamp), normalised to the canvas and recomputed per capture as the camera moves. */
+  crops: () => runtime?.qaCrops(canvas.width / Math.max(1, canvas.height)) ?? [],
   routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SH-02", "SH-01", "SG-05", "R-23", "SR-02"] }) : null)
   }
 });
@@ -513,7 +524,8 @@ async function boot(): Promise<void> {
   app = createAuraApp(canvas, {
     autoStart: false, resize: false, pixelRatio: DPR,
     quality: "auto",
-    output: { toneMapping: (params.get("tm") as "aces" | "neutral" | "none" | "linear" | "agx" | null) ?? "none", exposure: Number(params.get("ev") ?? 1), dither: false },
+    // GU47 LT-07: the band look renders through agx with dither (per-band exposure is on the grade node); ?look=original keeps none.
+    output: { toneMapping: (params.get("tm") as "aces" | "neutral" | "none" | "linear" | "agx" | null) ?? (world.look === "bands" ? "agx" : "none"), exposure: Number(params.get("ev") ?? 1), dither: world.look === "bands" },
     scene: sim.timeOfDay === "night" ? world.nightScene : world.scene
   });
   mark("app created");

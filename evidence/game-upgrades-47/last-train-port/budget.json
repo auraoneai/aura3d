@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.gu47-budget/1",
+  "slug": "last-train-port",
+  "game": "Lamplight Line",
+  "wp": "WP-31",
+  "budget": {
+    "bandDDrawCalls": 190,
+    "lowTierDrawCalls": 152,
+    "gpuMB": 320,
+    "modelsMBDelta": 8,
+    "hdriMBAt1k": 3.6,
+    "routeJsGzipKBDelta": 40,
+    "postHighOnly": [
+      "S4 god rays (band B)",
+      "S6 tilt-shift DOF"
+    ],
+    "note": "Budgets are never raised to pass (PRD D7). Low is 80% of the band D budget (PRD \u00a76.4). Punctual lights add 0 draws."
+  },
+  "source": "evidence/last-train-port/audit-fix-g21-wave3/after2-meta.json (4.6.x, software WebGL2) and the PRD WP-31 Today line",
+  "before": {
+    "day": {
+      "viewport": "1280x720",
+      "settle25s": {
+        "drawCalls": 152,
+        "mean": 86.47,
+        "p5": 40,
+        "p95": 146,
+        "darkFrac": 0
+      },
+      "settle60s": {
+        "drawCalls": 134,
+        "mean": 84.97,
+        "p5": 34,
+        "p95": 152,
+        "darkFrac": 0
+      },
+      "triangles": null,
+      "textureBytes": null,
+      "pageMB": null,
+      "gpuMB": "272-285 (PRD Today)",
+      "routeJsGzipDelta": null,
+      "runnerFps": null
+    },
+    "night": {
+      "viewport": "1280x720",
+      "drawCalls": 164,
+      "mean": "about 30 (PRD Today)",
+      "triangles": null,
+      "textureBytes": null,
+      "pageMB": null,
+      "routeJsGzipDelta": null,
+      "runnerFps": null
+    },
+    "note": "4.6 has only day and night; bands A-E have no before row. WP-38's before run on 4.6.0 shows the day look for every ?band= target."
+  },
+  "after": null,
+  "expectedDrawDelta": {
+    "LT-01 one scene per band (same node list; swap only while docked)": 0,
+    "LT-02 4 platform points + headlamp spot (lights, no draws)": 0,
+    "LT-03 hemisphere bounce (light, no draw)": 0,
+    "LT-06 sun flare in A/B (one sprite node, 5 elements)": 1,
+    "LT-07 GTAO, grain, tilt-shift (post stages, no scene draws)": 0,
+    "LT-13 earned lanterns (one instanced node)": 1,
+    "LT-14 preset pack (pooled emitters, live only on events)": 2,
+    "LT-08 six station reflection probes (captures once, no scene draws)": 0,
+    "LT-09 snow-dusted Observatory roofs (one merged mesh)": 1,
+    "LT-12 catenary 1, signal posts + heads 2, festoon bulbs 1, six SDF nameboards 6": 10,
+    "LT-16 camera shots (camera only)": 0,
+    "LT-17 enamel HUD (DOM only)": 0,
+    "net scene draws (expected)": 15,
+    "note": "Expected from the authored node list; measured numbers are phase 2."
+  },
+  "expectedGpuMBDelta": {
+    "LT-08 probes: 6 cubes x 6 faces x 128^2 RGBA16F with mips (row cap +12 MB)": 6.3
+  }
+}

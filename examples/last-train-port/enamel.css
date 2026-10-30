@@ -1,0 +1,78 @@
+/*
+ * GU47 WP-31 LT-17: railway-enamel HUD for the band look (html.enamel; ?look=original keeps today's HUD).
+ * Enamel sign panels (deep navy, cream ring), station names in National 2 Narrow, a brass spirit-level lean meter and a
+ * departure-board results card in TT Commons Pro Mono. Lamplight amber #ffc77a is the only accent; cherry red stays
+ * the reserved objective colour (the red end of the lean level). Licensed fonts only (fonts/NOTICE.txt).
+ * Contrast: cream #f6efe1 on #16213a is 14.0:1, amber #ffc77a on #0f1422 is 12.0:1 (10.3:1 on the flap #1a2236), muted #cfc6b4 on #1e2c4a is 8.2:1.
+ */
+@font-face { font-family: "Lamplight Narrow"; src: url("./fonts/national-2-narrow-400.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Lamplight Narrow"; src: url("./fonts/national-2-narrow-700.woff2") format("woff2"); font-weight: 700 900; font-style: normal; font-display: swap; }
+
+html.enamel {
+  --enamel: #16213a;
+  --enamel-ring: #e9dfc8;
+  --brass-hi: #f1d38b;
+  --brass: #b98a3e;
+  --brass-lo: #6f4f1f;
+  --lamp: #ffc77a;
+  --board: #0f1422;
+  --muted: #cfc6b4;
+  --warm: #ffc77a;
+}
+html.enamel .panel {
+  background: linear-gradient(180deg, rgba(30, 44, 74, 0.94), rgba(22, 33, 58, 0.94));
+  border: 2px solid var(--enamel-ring);
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 3px var(--enamel), inset 0 0 0 4px rgba(233, 223, 200, 0.35), 0 4px 14px rgba(0, 0, 0, 0.35);
+  backdrop-filter: none;
+}
+html.enamel #top h1, html.enamel #title h2, html.enamel #results .meta:first-child, html.enamel #prompt {
+  font-family: "Lamplight Narrow", "Graphik Web", sans-serif;
+}
+html.enamel #top h1 { font-weight: 700; font-size: 17px; letter-spacing: 0.06em; text-transform: uppercase; }
+html.enamel #stats .big { font-family: "Lamplight Narrow", "Graphik Web", sans-serif; font-weight: 700; color: var(--lamp); }
+html.enamel #prompt { border-color: var(--lamp); letter-spacing: 0.02em; }
+html.enamel #title h2 { font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--enamel-ring); }
+html.enamel kbd { border-color: rgba(233, 223, 200, 0.45); }
+html.enamel #lanterns { color: var(--lamp); }
+
+/* brass spirit level: the coloured lean bands sit under a glass tube in a brass case; the marker is the bubble */
+html.enamel #lean {
+  width: 132px; height: 14px; border-radius: 7px; opacity: 1;
+  border: 2px solid var(--brass);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0) 45%, rgba(0, 0, 0, 0.18)),
+    repeating-linear-gradient(90deg, transparent 0 calc(12.5% - 1px), rgba(20, 16, 8, 0.55) calc(12.5% - 1px) 12.5%),
+    linear-gradient(90deg, #c9362a 0 15%, #e2a94a 15% 27%, #b7d68a 27% 37%, #cfe8a8 37% 63%, #b7d68a 63% 73%, #e2a94a 73% 85%, #c9362a 85% 100%);
+  box-shadow: 0 0 0 1px var(--brass-lo), inset 0 1px 2px rgba(0, 0, 0, 0.35), 0 0 0 3px rgba(241, 211, 139, 0.25);
+}
+html.enamel #lean-dot {
+  top: 1px; width: 14px; height: 8px; margin-left: -7px; border-radius: 50%;
+  background: radial-gradient(ellipse at 40% 35%, #ffffff 0 25%, rgba(240, 248, 236, 0.85) 45%, rgba(170, 196, 160, 0.7) 100%);
+  box-shadow: 0 0 0 1px rgba(60, 54, 30, 0.6);
+}
+html.enamel #lean-crit { bottom: -6px; background: #c9362a; }
+html.enamel #lean[data-band="red"] { outline: 2px solid #c9362a; outline-offset: 2px; }
+
+/* departure-board results: amber split-flap rows on a dark board */
+html.enamel #results > div {
+  background: var(--board); border: 2px solid var(--brass); border-radius: 8px; padding: 18px 22px 14px;
+  box-shadow: inset 0 0 0 1px var(--brass-lo), 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+html.enamel #results .meta:first-child { font-weight: 700; font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--lamp); }
+html.enamel #results .grade, html.enamel #results .grid, html.enamel #res-score {
+  font-family: "TT Commons Pro Mono", ui-monospace, monospace; color: var(--lamp); text-transform: uppercase;
+}
+html.enamel #results .grade { font-size: 52px; letter-spacing: 0.08em; }
+html.enamel #results .grid { gap: 3px 0; grid-template-columns: minmax(150px, auto) minmax(72px, auto); }
+html.enamel #results .grid span {
+  padding: 3px 8px; background: linear-gradient(180deg, #1a2236 0 49%, #0b0f1a 49% 51%, #161d2f 51% 100%);
+  border-bottom: 1px solid #05070c; letter-spacing: 0.08em;
+}
+html.enamel #results .grid span:nth-child(even) { text-align: right; }
+html.enamel #results .row-btns button { border-color: var(--brass); }
+@media (max-width: 560px) {
+  html.enamel #lean { width: 112px; }
+  html.enamel #results .grade { font-size: 42px; }
+  html.enamel #results > div { padding: 14px 12px 10px; }
+}
