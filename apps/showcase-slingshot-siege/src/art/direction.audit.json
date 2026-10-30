@@ -1726,6 +1726,38 @@
         "practical": false
       },
       {
+        "node": "siege-level-sign-board",
+        "practical": false
+      },
+      {
+        "node": "siege-level-sign-post",
+        "practical": false
+      },
+      {
+        "node": "siege-level-sign-0",
+        "practical": false
+      },
+      {
+        "node": "siege-level-sign-1",
+        "practical": false
+      },
+      {
+        "node": "siege-level-sign-2",
+        "practical": false
+      },
+      {
+        "node": "siege-level-sign-3",
+        "practical": false
+      },
+      {
+        "node": "siege-level-sign-4",
+        "practical": false
+      },
+      {
+        "node": "siege-level-sign-5",
+        "practical": false
+      },
+      {
         "node": "sling-fork-l",
         "practical": false
       },
