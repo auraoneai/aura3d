@@ -11,6 +11,7 @@ import { resolveCameraClipping } from "../RootRuntimeSupport.js";
 import { QUALITY_TIERS, postOnlyTierFor, resolvePostAntiAlias, resolvePostTier, resolveVolumetricFog, postVelocityCoverage, type CollectedLight, type RendererPostProcessOptions } from "@aura3d/rendering";
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
 import { lights } from "../nodes/lights.js";
+import { outlineTargetsField } from "../nodes/outlineTargets.js";
 import {
   applyRuntimePostOverrides,
   authoredPostContextFor,
@@ -243,7 +244,10 @@ export function createProductionRuntimePostprocess(
         ] as const,
         width: Math.max(1, Math.min(6, Math.round(authoredOutline.width ?? 3))),
         threshold: clampNumber(authoredOutline.threshold ?? 0.12, 0, 4),
-        opacity: clampNumber(authoredOutline.intensity ?? 0.9, 0, 1)
+        opacity: clampNumber(authoredOutline.intensity ?? 0.9, 0, 1),
+        // GU47 E-E (WP-5): `outline({ targets })` names become the renderer's
+        // label match keys; an outline without targets adds nothing.
+        ...outlineTargetsField(authoredOutline, nodes)
       }
     } : {}),
     // Flag-on: the resolved mode carries the forward-target sample count and

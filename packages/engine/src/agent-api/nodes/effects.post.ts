@@ -27,9 +27,9 @@ export type AuraGradeRgb = number | readonly [number, number, number] | { readon
 /**
  * GU47 E-C (PRD §3.1): `colorGrade({ lut })` takes a typed `.cube` asset
  * (`aura3d assets add <file.cube> --type lut` → `assets.<name>`), i.e.
- * `AuraAssetRef<"lut">`. `AuraAssetType` gains `"lut"` in `nodes/types.ts`
- * (lane E-D handoff); until that merges this structural local type stands in
- * for it, and a plain served URL string (`"/luts/venue.cube"`) is accepted too.
+ * `AuraAssetRef<"lut">` (`AuraAssetType` includes `"lut"`). This structural
+ * type accepts that typed ref as well as hand-built refs, and a plain served
+ * URL string (`"/luts/venue.cube"`) is accepted too.
  */
 export interface AuraLutAssetRef {
   readonly kind: "aura-asset-ref";
@@ -72,8 +72,15 @@ const COLOR_GRADE_PASS_THROUGH = ["temperature", "tint", "vibrance", "lift", "ga
 import { effects } from "../nodes/effects.composite.js";
 import { shadows } from "./shadows.js";
 
+/**
+ * `effects.bloom` options: the node fields plus the v2 bright-pass `knee`
+ * (0..1) and `clampLuminance` (0..64), copied onto the node when authored so
+ * the v2 bridge (`mapBloomOptionsV2`) reads them (GU47 E-A handoff).
+ */
+type BloomBuilderOptions = Omit<AuraEffectNode, "kind" | "effect"> & { readonly knee?: number; readonly clampLuminance?: number };
+
 export const postEffectBuilders = {
-  bloom: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) => {
+  bloom: (options: BloomBuilderOptions = {}) => {
     const antiBlowout = options.antiBlowout ?? true;
     const maxIntensity = options.maxIntensity ?? 0.92;
     const authoredIntensity = options.intensity ?? 0.35;
@@ -98,7 +105,9 @@ export const postEffectBuilders = {
       ...(options.quality !== undefined ? { quality: options.quality } : {}),
       ...(options.softKnee !== undefined ? { softKnee: options.softKnee } : {}),
       ...(options.shoulder !== undefined ? { shoulder: options.shoulder } : {}),
-      ...(options.scatter !== undefined ? { scatter: options.scatter } : {})
+      ...(options.scatter !== undefined ? { scatter: options.scatter } : {}),
+      ...(options.knee !== undefined ? { knee: options.knee } : {}),
+      ...(options.clampLuminance !== undefined ? { clampLuminance: options.clampLuminance } : {})
     });
   },
   neonBloom: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>

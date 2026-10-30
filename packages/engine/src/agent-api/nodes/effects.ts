@@ -56,6 +56,15 @@ export interface AuraDepthOfFieldTiltShift {
 export type AuraDepthOfFieldOptions = Omit<AuraEffectNode, "kind" | "effect"> & { readonly tiltShift?: AuraDepthOfFieldTiltShift };
 /** GU47 E-C: `effects.volumetricFog` options (adds `godRayDensity`, decoupled from scene-fog density; behaviour in E-C). */
 export type AuraVolumetricFogOptions = Omit<AuraEffectNode, "kind" | "effect"> & { readonly godRayDensity?: number };
+/**
+ * GU47 E-C (EC-6): `effects.screenSpaceReflections` options. `maxDistance` (world units, default 18), `roughness`
+ * (reflections fade out above it; S3 cutoff 0.5) and `thickness` (hit thickness, default 0.25) reach the v2 S3 stage.
+ */
+export type AuraScreenSpaceReflectionsOptions = Omit<AuraEffectNode, "kind" | "effect"> & {
+  readonly maxDistance?: number;
+  readonly roughness?: number;
+  readonly thickness?: number;
+};
 /** GU47 E-E: `effects.outline` options (adds `targets`: node names written to the outline ID mask; behaviour in E-E). */
 export type AuraOutlineOptions = Omit<AuraEffectNode, "kind" | "effect"> & { readonly targets?: readonly string[] };
 
@@ -145,13 +154,17 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
    * Root screen-space reflections node (muse3jsparity-PRD A3): submits the
    * native SSR pass against renderer-owned depth where available.
    */
-  screenSpaceReflections: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
+  screenSpaceReflections: (options: AuraScreenSpaceReflectionsOptions = {}) =>
     new AuraNodeBuilder<AuraEffectNode>({
       kind: "effect",
       effect: "screen-space-reflections",
       name: options.name ?? "screen space reflections",
-      intensity: options.intensity ?? 0.9
-    }),
+      intensity: options.intensity ?? 0.9,
+      // GU47 E-C handoff (eint EC-2): the S3 fields the v2 bridge reads, only when authored.
+      ...(options.maxDistance !== undefined ? { maxDistance: options.maxDistance } : {}),
+      ...(options.roughness !== undefined ? { roughness: options.roughness } : {}),
+      ...(options.thickness !== undefined ? { thickness: options.thickness } : {})
+    } as AuraEffectNode),
   /**
    * Root depth-of-field node (muse3jsparity-PRD A3). focus is a
    * linear-distance fraction (0 = near plane, 1 = far plane); aperture widens
