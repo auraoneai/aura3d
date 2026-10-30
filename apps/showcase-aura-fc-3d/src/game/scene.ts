@@ -149,6 +149,31 @@ export function lightPoolTransform(i: number): { position: [number, number, numb
   return { position: [x * 0.55, 0.025, z * 0.55], rotation: [0, Math.atan2(-x, -z), 0], scale: [18, 1, 28] };
 }
 
+/** FC47-P3: the two far banks the broadcast camera faces (the main-stand flood and its partner across the halfway line). */
+export const FLARE_TOWERS: readonly number[] = [MAIN_FLOOD_TOWER, 0];
+/**
+ * FC47-P3 lens flares on the two main banks at night (lights.lensFlare, frustum occlusion: no on-screen occluder test,
+ * so a flare also shows through a stand roof; edge fade 0.2). Three elements each (glow on the lamp head, two small
+ * ghosts) in the venue's flood colour; day venues get none. Expected cost: 6 additive sprites on the sprite path.
+ */
+export function floodFlareNodes(venue: VenueId): any[] {
+  const vl = VENUE_LOOKS[venue];
+  if (!vl.floodShadow) return [];
+  return FLARE_TOWERS.map((i) => {
+    const [x, z] = FLOOD_TOWERS[i]!;
+    return lights.lensFlare({
+      name: `fc-flood-flare-${i}`,
+      position: [x * 0.94, FLOOD_HEAD_Y, z * 0.94],
+      elements: [
+        { size: 260, distance: 0, color: vl.floodColor },
+        { size: 46, distance: 0.55, color: vl.floodColor },
+        { size: 90, distance: 0.9, color: vl.floodColor }
+      ],
+      occlusion: "frustum", edgeFade: 0.2, intensity: i === MAIN_FLOOD_TOWER ? 0.9 : 0.6
+    });
+  });
+}
+
 function floodNodes(v: VenueSpec): any[] {
   const vl = VENUE_LOOKS[v.id];
   const nodes: any[] = [];
@@ -612,6 +637,7 @@ function stadiumNodes(v: VenueSpec): any[] {
 
   /* ---- Floodlight towers: one real flood, a light-pool batch for the rest, cones (FC47-L2, S2) ---- */
   nodes.push(...floodNodes(v));
+  nodes.push(...floodFlareNodes(v.id));
 
   /* ---- Scoreboard gantry + emissive screen ---- */
   nodes.push(
