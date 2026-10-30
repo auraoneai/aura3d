@@ -9,19 +9,19 @@ judges) are phase 2 on the remote runner (software WebGL2). Row status and commi
 | GD-01 | cascadeCount 3 on all skies | code done (KEY_SHADOW cascades 3, unit test); diagnostics read: phase 2 |
 | GD-01 | dusk mean 75-100, p95 >= 210, clip <= 0.01; noon 95-120; dusk p5 >= 10 below golden today | phase 2 |
 | GD-01 | lighting check passes without escape | one shadowed key, no ambient, audit clean (unit test) |
-| GD-02 | night mean 40-65, p95 >= 180, darkFrac <= 0.35; road row >= 2x today; facade cells >= 35; <= 560 draws | phase 2 |
-| GD-03 | headlight pool bottom-centre >= 1.6x sides; brake shot +6; inspectMaterials shows emissive lamp | phase 2 (rear-lamp material: WP-36) |
+| GD-02 | night mean 40-65, p95 >= 180, darkFrac <= 0.35; road row >= 2x today; facade cells >= 35; <= 560 draws | code done-interim (3 sodium points, lamp 3.0, facade glow); pixels phase 2 |
+| GD-03 | headlight pool bottom-centre >= 1.6x sides; brake shot +6; inspectMaterials shows emissive lamp | code done-interim (brake flag, 2 spots, lamp pair; unit tests); pixels phase 2; rear-lamp material WP-36 |
 | GD-04 | dusk top row >= 25 below middle; noon top 120-200, no 255 cell; draws not up; no box edge | box sky and sun sphere deleted (unit test); pixels: phase 2 |
 | GD-05 | fog: bottom row spans >= 20, top row spans <= 8; fog mean 105-135; dusk towers fade, street darker by >= 15 | phase 2 |
-| GD-06 | sun-side top cell +4, bottom cells within 1; S4 in stagesRan; +2 draws max | phase 2 |
-| GD-07 | night p95 >= 190, clip <= 0.01; <= 560 draws (<= 650 with mirror) | phase 2 |
-| GD-08 | noon car p95 <= 235, clip <= 0.005; 4 sky means differ >= 10 pairwise | phase 2 |
+| GD-06 | sun-side top cell +4, bottom cells within 1; S4 in stagesRan; +2 draws max | code done (unit test); pixels phase 2 |
+| GD-07 | night p95 >= 190, clip <= 0.01; <= 560 draws (<= 650 with mirror) | partial (roughness 0.22, drizzle; no probe/mirror); pixels phase 2 |
+| GD-08 | noon car p95 <= 235, clip <= 0.005; 4 sky means differ >= 10 pairwise | code done (unit test); pixels phase 2 |
 | GD-09 | 0.6 s pair: bottom row differs >= 2, top <= 0.5; reduced motion matches; +1 draw | reduced-motion path unit-tested; pair: phase 2 |
-| GD-10 | passExecuted noon and dusk; no weak-key warning; noon p5 -6 | phase 2 |
-| GD-11 | car crop p95-p5 >= 175, clip <= 0.01, mean 120-150 | phase 2 |
+| GD-10 | passExecuted noon and dusk; no weak-key warning; noon p5 -6 | code done (unit test); passExecuted phase 2 |
+| GD-11 | car crop p95-p5 >= 175, clip <= 0.01, mean 120-150 | code done-interim (per-material overrides); teal strip WP-36; pixels phase 2 |
 | GD-12 | 0 game-check errors; `primitives.` lines 19 -> <= 7; no instanced spheres for trees/lamps/signals | see lane report (Meshy part: WP-36) |
 | GD-13 | gate passes; two 1 s noon shots differ >= 1.5 on the road cell; +4 draws max | see lane report |
-| GD-14 | liveCount > 0 on collision; p95 +10; -1 +2 draws | phase 2 (liveCount read) |
+| GD-14 | liveCount > 0 on collision; p95 +10; -1 +2 draws | partial (impact, ring, spray; trails: E-F handoff); liveCount phase 2 |
 | GD-15 | emitters within tier budget; 2 fewer primitives; night <= 560 | see lane report |
 | GD-16 | validate-animation passes; foot slide <= 0.05 m; clip order idle, wave, walk | blocked (WP-36 rigged humanoids) |
 | GD-17 | presented fov >= 61 at max speed; skip within 2 frames; reduced motion fov 56, no intro | see lane report |
