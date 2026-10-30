@@ -231,6 +231,38 @@ export function bellLightIntensity(complete: boolean, swing: number, lanterns: n
   if (!complete) return 0;
   return 1.5 * lanterns + 4 * Math.min(1, Math.abs(swing) / 0.32);
 }
+/**
+ * WW47-P2 per key: the golden shafts follow the daylight `godRays` value (0.12 at 15:30 rising to 0.24 at golden hour,
+ * 0 on the moonlit voyage, where the stage is switched off). `null` = disabled. The authored strength stays low and fixed;
+ * only the shaft density (`godRayDensity`, clamped to the engine's 0.05..1) moves with the sun.
+ */
+export const SHAFT_INTENSITY = 0.22;
+export function shaftPatch(godRays: number): { intensity: number; godRayDensity: number } | null {
+  if (!(godRays > 0.02)) return null;
+  return { intensity: SHAFT_INTENSITY, godRayDensity: Math.round(Math.min(1, Math.max(0.05, godRays)) * 1000) / 1000 };
+}
+/**
+ * WW47-C2 storybook composition (presentation only). The sim's CAMERA_OFFSET defines the input axes (D8), so its xz is
+ * kept and only the drawn camera changes: 0.9 m lower (y 4.5 -> 3.6) and a lead of up to 1.2 m in the walk direction.
+ */
+export const STORYBOOK_CAMERA_Y = 3.6;
+export const STORYBOOK_LEAD = 1.2;
+export function storybookOffset(): { x: number; y: number; z: number } {
+  return { x: CAMERA_OFFSET.x, y: STORYBOOK_CAMERA_Y, z: CAMERA_OFFSET.z };
+}
+/** Eases `lead` toward STORYBOOK_LEAD along the traveller's last step (to 0 when standing); reduced motion eases about 3x slower. */
+export function storybookLead(lead: { x: number; z: number; px: number; pz: number }, x: number, z: number, dt: number, motion = 1): void {
+  const dx = x - lead.px, dz = z - lead.pz;
+  lead.px = x; lead.pz = z;
+  const step = Math.hypot(dx, dz);
+  // a step longer than 1 m in one frame is a reset or snap, not a walk: drop the lead
+  if (step > 1) { lead.x = 0; lead.z = 0; return; }
+  const moving = dt > 0 && step / dt > 0.3;
+  const gx = moving ? (dx / step) * STORYBOOK_LEAD : 0, gz = moving ? (dz / step) * STORYBOOK_LEAD : 0;
+  const k = 1 - Math.exp(-1.2 * motion * dt);
+  lead.x += (gx - lead.x) * k;
+  lead.z += (gz - lead.z) * k;
+}
 /** Epilogue camera height above its look target. */
 export const EPILOGUE_CAMERA_RISE = 6.4;
 
@@ -506,7 +538,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       // no lightPosition: the stage takes the shadowed key; the WSW sun sits behind the follow camera, so the shafts read
       // mostly in the dusk finale and the voyage, where the camera turns toward the valley (lanes/g23.md)
       builder
-        .add(effects.volumetricFog({ name: "golden shafts", density: 0.05, intensity: 0.22, color: "#ffd9a8", godRayDensity: 0.2 }))
+        .add(effects.volumetricFog({ name: "golden shafts", density: 0.05, intensity: SHAFT_INTENSITY, color: "#ffd9a8", godRayDensity: shaftPatch(frameOfKey(DAYLIGHT_KEYS[options.daylightKey ?? 0] ?? DAYLIGHT_KEYS[0]!).godRays)?.godRayDensity ?? 0.05 }))
         .add(effects.filmGrain({ name: "paper grain", intensity: 0.02 }));
     }
   }
@@ -527,6 +559,8 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       const cam = app.camera;
       if (!cam) throw new Error("where-the-wind-wanders-port: the app exposes no camera controller");
       const look = { x: START.x + 2, y: 2.2, z: START.z - 3.5 };
+      // WW47-C2: the eased walk lead (world xz) and the previous traveller position it is measured from
+      const lead = { x: 0, z: 0, px: START.x, pz: START.z };
       let lastFound = -1;
       let yaw = 0, gait = 0, walkAmt = 0, lastX = START.x, lastZ = START.z, lastStep = -1, lastStepTime = -1;
       let epilogue: number | null = null;
@@ -548,6 +582,9 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       let seqComplete = false;
       let vfxFound = 0, vfxComplete = false, vfxHop = "idle", vfxTime = -1, vfxLantern = 1, sailAngle = 0;
       let shownDaylight: DaylightFrame | null = null;
+      // WW47-P2: the shaft patch last sent (only on High; written when the density moves, not every eased frame)
+      const shafts = !original && options.quality !== "low";
+      let shownShaft: string | null = null;
       const applyDaylight = (f: DaylightFrame): void => {
         if (f === shownDaylight) return;
         shownDaylight = f;
@@ -563,6 +600,17 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         node("sun").setLight?.({ direction: [-f.sunDir[0], -f.sunDir[1], -f.sunDir[2]], color: linearToHex(f.sunColor), intensity: f.engineSunIntensity });
         node("sky-fill").setLight?.({ color: linearToHex(f.hemiSky), intensity: HEMI_INTENSITY });
         app.lighting?.setEnvironmentIntensity?.(f.envIntensity / VALLEY_IBL_INTENSITY);
+        if (shafts) {
+          const patch = shaftPatch(f.godRays);
+          const token = patch ? patch.godRayDensity.toFixed(2) : "off";
+          if (token !== shownShaft) {
+            if (patch) {
+              if (shownShaft === "off") app.post?.setEffectEnabled?.("volumetricFog", true);
+              app.post?.setEffect?.("volumetricFog", patch);
+            } else app.post?.setEffectEnabled?.("volumetricFog", false);
+            shownShaft = token;
+          }
+        }
         sc.lanterns.forEach((_, i) => {
           node(`lantern-light-${i}`).setLight?.({ intensity: LANTERN_PEAK * f.lanterns });
           // the halo ramps with the light: 0.5 in daylight to 1.6 at dusk (WW47-L5 lantern crop >= 1.5x found 0)
@@ -575,7 +623,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         get nodeCount() { return handles.size; },
         get bellAngle() { return bellAngle; },
         setEpilogue(seconds) { epilogue = seconds; },
-        snap(state) { sequencer.skip(); heroAnim?.reset(state.pos.x, state.pos.z); look.x = state.pos.x + 2; look.y = terrainHeight(state.pos.x, state.pos.z) + 1.8; look.z = state.pos.z - 3.5; epilogue = null; },
+        snap(state) { sequencer.skip(); heroAnim?.reset(state.pos.x, state.pos.z); look.x = state.pos.x + 2; look.y = terrainHeight(state.pos.x, state.pos.z) + 1.8; look.z = state.pos.z - 3.5; lead.x = 0; lead.z = 0; lead.px = state.pos.x; lead.pz = state.pos.z; epilogue = null; },
         get daylight() { return daylight.frame; },
         get sequence() { return sequencer.active; },
         playSequence(id) { sequencer.start(id); },
@@ -719,12 +767,16 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
             return;
           }
           // camera follow: the look target eases toward the traveller (original: lerp 1 - exp(-2.5 dt))
-          const tx = x + 2, ty = y + hop + 1.8, tz = z - 3.5;
+          // WW47-C2: on the GU47 look the target leads the walk by up to STORYBOOK_LEAD and the camera sits lower
+          // (storybookOffset), so the horizon settles near the upper third; ?look=original keeps the 4.6 follow
+          if (!original) storybookLead(lead, x, z, dt, motion());
+          const tx = x + 2 + lead.x, ty = y + hop + 1.8, tz = z - 3.5 + lead.z;
           const k = 1 - Math.exp(-2.5 * dt);
           look.x += (tx - look.x) * k;
           look.y += (ty - look.y) * k;
           look.z += (tz - look.z) * k;
-          const cp: [number, number, number] = [look.x + CAMERA_OFFSET.x, look.y + CAMERA_OFFSET.y, look.z + CAMERA_OFFSET.z];
+          const off = original ? CAMERA_OFFSET : storybookOffset();
+          const cp: [number, number, number] = [look.x + off.x, look.y + off.y, look.z + off.z];
           // WW47-C1: the bell's finale orbit starts when it rings; a running sequence overrides the follow pose
           if (state.complete && !seqComplete) sequencer.start("finale");
           seqComplete = state.complete;

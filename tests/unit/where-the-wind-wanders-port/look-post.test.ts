@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { buildWorld, bellLightIntensity } from "../../../examples/where-the-wind-wanders-port/world";
 import { PAPER_GLSL, paperPass } from "../../../examples/where-the-wind-wanders-port/paper-pass";
-import { paintSpec, propSpec } from "../../../examples/where-the-wind-wanders-port/world";
+import { paintSpec, propSpec, shaftPatch, SHAFT_INTENSITY } from "../../../examples/where-the-wind-wanders-port/world";
 import { PAINT_FRAGMENT, PROP_FRAGMENT } from "../../../examples/where-the-wind-wanders-port/shaders";
+import { DAYLIGHT_KEYS } from "../../../examples/where-the-wind-wanders-port/daylight";
 
 interface Node { readonly kind?: string; readonly effect?: string; readonly saturation?: number; readonly contrast?: number; readonly intensity?: number; readonly postAuthored?: readonly string[]; readonly children?: readonly Node[] }
 const effectsOf = (options: Parameters<typeof buildWorld>[0]): Node[] => {
@@ -35,6 +36,18 @@ describe("where-the-wind-wanders-port painted detail (WW47-M2)", () => {
     expect(PAINT_FRAGMENT).toMatch(/dot\(p, WIND_DIR\)/);
     expect(PAINT_FRAGMENT).toMatch(/pathEdge \* 0\.42 \* paintAmt/);
     expect(PROP_FRAGMENT).toMatch(/paintAmt > 0\.0 && k != 7 && k != 8/);
+  });
+});
+
+describe("where-the-wind-wanders-port golden shafts per key (WW47-P2)", () => {
+  it("density rises toward golden hour at a fixed low strength and the stage is off on the moonlit voyage", () => {
+    const by = Object.fromEntries(DAYLIGHT_KEYS.map((k) => [k.id, shaftPatch(k.godRays)]));
+    expect(by.found0).toEqual({ intensity: SHAFT_INTENSITY, godRayDensity: 0.12 });
+    expect(by.found3!.godRayDensity).toBeGreaterThan(by.found0!.godRayDensity);
+    expect(by.bell!.godRayDensity).toBeLessThan(by.found3!.godRayDensity);
+    expect(by.epilogue).toBeNull();
+    expect(shaftPatch(0.01)).toBeNull();
+    expect(shaftPatch(0.03)!.godRayDensity).toBe(0.05);
   });
 });
 

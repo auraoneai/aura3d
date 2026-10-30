@@ -50,3 +50,34 @@ describe("where-the-wind-wanders-port camera sequences (WW47-C1)", () => {
     expect(reduced.update(1 / 60, follow)).toBeNull();
   });
 });
+
+describe("where-the-wind-wanders-port storybook follow (WW47-C2)", () => {
+  it("keeps the sim's xz offset (input axes) and only lowers the drawn camera", async () => {
+    const { CAMERA_OFFSET } = await import("../../../examples/where-the-wind-wanders-port/sim");
+    const { storybookOffset, STORYBOOK_CAMERA_Y } = await import("../../../examples/where-the-wind-wanders-port/world");
+    const off = storybookOffset();
+    expect(off.x).toBe(CAMERA_OFFSET.x);
+    expect(off.z).toBe(CAMERA_OFFSET.z);
+    expect(off.y).toBe(STORYBOOK_CAMERA_Y);
+    expect(off.y).toBeLessThan(CAMERA_OFFSET.y);
+  });
+
+  it("leads up to 1.2 m along the walk, drops it on a snap, and eases slower under reduced motion", async () => {
+    const { storybookLead, STORYBOOK_LEAD } = await import("../../../examples/where-the-wind-wanders-port/world");
+    const walk = (motion: number, frames: number) => {
+      const lead = { x: 0, z: 0, px: 0, pz: 0 };
+      for (let i = 1; i <= frames; i++) storybookLead(lead, i * 0.05, 0, 1 / 60, motion);
+      return lead;
+    };
+    const long = walk(1, 1200);
+    expect(long.x).toBeCloseTo(STORYBOOK_LEAD, 3);
+    expect(Math.abs(long.z)).toBeLessThan(1e-9);
+    expect(walk(0.3, 60).x).toBeLessThan(walk(1, 60).x);
+    storybookLead(long, 40, 0, 1 / 60);
+    expect(long.x).toBe(0);
+    // standing still eases the lead back toward 0
+    const stand = { x: 1.2, z: 0, px: 5, pz: 5 };
+    for (let i = 0; i < 600; i++) storybookLead(stand, 5, 5, 1 / 60);
+    expect(stand.x).toBeLessThan(0.01);
+  });
+});
