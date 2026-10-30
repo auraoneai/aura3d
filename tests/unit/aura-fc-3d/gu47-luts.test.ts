@@ -30,7 +30,7 @@ describe("aura-fc-3d GU47 venue LUTs (FC47-P2)", () => {
 
   it("the look grade of every venue binds that venue's LUT", () => {
     for (const venue of VENUE_ORDER) {
-      const nodes = (buildFcScene(venue).toJSON() as { nodes: { name?: string; children?: { name?: string; lut?: { url?: string } }[] }[] }).nodes;
+      const nodes = (buildFcScene(venue).toJSON() as unknown as { nodes: { name?: string; children?: { name?: string; lut?: { url?: string } }[] }[] }).nodes;
       const grade = nodes.flatMap((n) => [n, ...(n.children ?? [])]).find((n) => n.name === "look color grade") as { lut?: { url?: string } } | undefined;
       expect(grade?.lut?.url).toBe(VENUE_LUT_ASSETS[venue].url);
     }

@@ -11,7 +11,7 @@ function flat(nodes: readonly Node[]): Node[] {
   return nodes.flatMap((n) => [n, ...flat(n.children ?? [])]);
 }
 function sceneNodes(venue: VenueId, reducedMotion = false): Node[] {
-  return flat((buildFcScene(venue, { reducedMotion }).toJSON() as { nodes: Node[] }).nodes);
+  return flat((buildFcScene(venue, { reducedMotion }).toJSON() as unknown as { nodes: Node[] }).nodes);
 }
 const effectsOf = (nodes: Node[]) => nodes.filter((n) => n.kind === "effect").map((n) => n.effect);
 
@@ -86,8 +86,8 @@ describe("aura-fc-3d GU47 reduced motion (PRD 6.3)", () => {
   });
 
   it("halves VFX pack particle counts", () => {
-    const full = fcVfxPack("munich")["fc-goal-pyro"]!.layers[0] as { count: number };
-    const reduced = fcVfxPack("munich", { reducedMotion: true })["fc-goal-pyro"]!.layers[0] as { count: number };
+    const full = fcVfxPack("munich")["fc-goal-pyro"]!.layers[0] as unknown as { count: number };
+    const reduced = fcVfxPack("munich", { reducedMotion: true })["fc-goal-pyro"]!.layers[0] as unknown as { count: number };
     expect(reduced.count).toBe(Math.round(full.count / 2));
   });
 });

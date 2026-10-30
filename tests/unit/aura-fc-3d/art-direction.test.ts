@@ -13,7 +13,7 @@ import type { VenueId } from "../../../apps/showcase-aura-fc-3d/src/game/types";
  * game-checks (docs/prds/game-upgrades-47/lanes/ei.md). Draw calls are a phase-2 measurement (0 here: no renderer).
  */
 function venueSnapshot(venue: VenueId): ArtDirectionSnapshot {
-  const nodes = (buildFcScene(venue).toJSON() as { nodes: unknown[] }).nodes;
+  const nodes = (buildFcScene(venue).toJSON() as unknown as { nodes: unknown[] }).nodes;
   return snapshotForAudit({ scene: { nodes } } as never, { assets: {} });
 }
 
