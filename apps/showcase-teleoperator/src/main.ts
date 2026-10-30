@@ -75,6 +75,7 @@ import { installSensorPass, scanPulseAt } from "./scanPulse";
 import { createGridVfxQueue, installGridVfx, type GridVfxShot } from "./vfx";
 import { mountTouchPads } from "./touch";
 import { STATIC_CROPS, carCrop, type QaCrop } from "./qaCrops";
+import { FOV_KICK_HALFLIFE_S, FOV_KICK_MAX_DEG, ROLL_HALFLIFE_S, cameraFeel } from "./cameraFeel";
 
 export type { AutopilotLevel, PlayableCarId, WeatherPreset } from "./rules";
 
@@ -90,7 +91,7 @@ const STEP = 1 / 60;
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T | null => document.getElementById(id) as T | null;
 
 /** Project a view-space point to viewport pixels (the scene camera is fixed; see rules.ts). */
-function projectViewPointToScreen(pt: Vec3, vw: number, vh: number): { x: number; y: number; visible: boolean } {
+function projectViewPointToScreen(pt: Vec3, vw: number, vh: number, fovDeg = SCENE_CAM_FOV_DEG): { x: number; y: number; visible: boolean } {
   const f = [SCENE_CAM_TARGET[0] - SCENE_CAM_POS[0], SCENE_CAM_TARGET[1] - SCENE_CAM_POS[1], SCENE_CAM_TARGET[2] - SCENE_CAM_POS[2]];
   const fl = Math.hypot(f[0]!, f[1]!, f[2]!) || 1;
   const fwd = [f[0]! / fl, f[1]! / fl, f[2]! / fl];
@@ -102,7 +103,7 @@ function projectViewPointToScreen(pt: Vec3, vw: number, vh: number): { x: number
   const cy = d[0]! * up[0]! + d[1]! * up[1]! + d[2]! * up[2]!;
   const cz = d[0]! * fwd[0]! + d[1]! * fwd[1]! + d[2]! * fwd[2]!;
   if (cz <= 1.2 || cz > 240) return { x: -999, y: -999, visible: false };
-  const t = Math.tan((SCENE_CAM_FOV_DEG * 0.5 * Math.PI) / 180);
+  const t = Math.tan((fovDeg * 0.5 * Math.PI) / 180);
   const ndcX = cx / (cz * t * (Math.max(1, vw) / Math.max(1, vh)));
   const ndcY = cy / (cz * t);
   if (Math.abs(ndcX) > 1.12 || Math.abs(ndcY) > 1.12) return { x: -999, y: -999, visible: false };
@@ -590,6 +591,10 @@ async function bootGridDispatch(): Promise<void> {
   const rivalAccents = RIVALS.map((r) => r.accent);
   const carSizes = Object.fromEntries(PLAYABLE_IDS.map((id) => [id, fittedSize(PLAYABLE_FLEET[id].bounds, PLAYABLE_FLEET[id].maxDim)])) as Record<PlayableCarId, ReturnType<typeof fittedSize>>;
   let shakeNow = { x: 0, y: 0 };
+  /** GD-17: last FOV kick and roll handed to the camera controller (re-set only on change); presented FOV for projections. */
+  let lastFovKick = 0;
+  let lastRoll = 0;
+  let presentedFov = SCENE_CAM_FOV_DEG;
   /** View-space box of the player car this frame, for the QA car crop. */
   let carView = { x: 0, y: 0, z: CAR_DRAW_Z, width: 2, height: 1.5, length: 4.6 };
   /** QA review only: extra yaw on the player car and every road user so each side of a model can be framed. */
@@ -643,6 +648,18 @@ async function bootGridDispatch(): Promise<void> {
     const pos = (x: number, y: number, z: number): AuraTransformSpec => ({ position: [x, y, z] });
 
     N.cars[S.car].setPosition(rx(pose.px), ry(0), CAR_DRAW_Z + camOff.z).setRotation(pose.pitch, pose.yaw + qaYawAdd, pose.roll);
+    // GD-17: speed FOV kick and lane roll on the fixed scene camera; off on reduced motion.
+    const feel = cameraFeel({ speed: S.player.speed, maxSpeed: PLAYABLE_FLEET[S.car].maxSpeedMps, steer: S.player.steer, motionOk: motionOk() });
+    try {
+      if (feel.fovKickDeg !== lastFovKick) { lastFovKick = feel.fovKickDeg; auraApp.camera?.fovKick.set("speed", feel.fovKickDeg, FOV_KICK_HALFLIFE_S); }
+      if (feel.roll !== lastRoll) { lastRoll = feel.roll; auraApp.camera?.setRoll(feel.roll, { halflife: ROLL_HALFLIFE_S }); }
+      // An unarmed controller presents its default pose; trust only a FOV inside the kick range.
+      const fov = auraApp.camera?.presented().fov ?? SCENE_CAM_FOV_DEG;
+      presentedFov = fov >= SCENE_CAM_FOV_DEG - 0.5 && fov <= SCENE_CAM_FOV_DEG + FOV_KICK_MAX_DEG + 0.5 ? fov : SCENE_CAM_FOV_DEG;
+    } catch {
+      /* camera controller not mounted: the scene camera stays at 56 deg */
+      presentedFov = SCENE_CAM_FOV_DEG;
+    }
     // Sensor pass: the deck follows the eye height (roof and bumper cameras), the ring leaves the car (presentation clock).
     presentClock += frameSeconds;
     const skyLook = SKY_LOOKS[weather];
@@ -650,7 +667,7 @@ async function bootGridDispatch(): Promise<void> {
       look: skyLook,
       pulse: scanPulseAt({ t: presentClock, motionOk: motionOk(), roofCam: camMode === 2, lowTier, skyStrength: skyLook.scanStrength }),
       eyeHeight: SCENE_CAM_POS[1] - ry(0),
-      fovDeg: SCENE_CAM_FOV_DEG,
+      fovDeg: presentedFov,
       carX: rx(pose.px),
       carZ: CAR_DRAW_Z + camOff.z
     });
@@ -777,7 +794,7 @@ async function bootGridDispatch(): Promise<void> {
     rivalUsers.forEach((u, k) => {
       const tag = tagEls[k]!;
       const vz = rz(pose.uz[TRAFFIC_COUNT + k] ?? u.z);
-      const proj = projectViewPointToScreen([rx(u.laneX), ry(RIVALS[k]!.isCableCar ? 3.9 : 2.3), vz], vw, vh);
+      const proj = projectViewPointToScreen([rx(u.laneX), ry(RIVALS[k]!.isCableCar ? 3.9 : 2.3), vz], vw, vh, presentedFov);
       if (!proj.visible || S.phase !== "driving") {
         if (tag.shown) { tag.el.style.display = "none"; tag.shown = false; }
         return;
@@ -972,7 +989,7 @@ async function bootGridDispatch(): Promise<void> {
     crops: (): QaCrop[] => {
       const vw = window.innerWidth || 1280;
       const vh = window.innerHeight || 720;
-      const car = carCrop((p) => projectViewPointToScreen([p[0], p[1], p[2]], vw, vh), vw, vh, carView);
+      const car = carCrop((p) => projectViewPointToScreen([p[0], p[1], p[2]], vw, vh, presentedFov), vw, vh, carView);
       return car ? [car, ...STATIC_CROPS] : [...STATIC_CROPS];
     }
   };
