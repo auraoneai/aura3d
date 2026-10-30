@@ -587,7 +587,10 @@ export const POST_RUNTIME_EFFECTS: Readonly<Record<string, string>> = Object.fre
   volumetricFog: "volumetric-fog",
   vignette: "vignette",
   // GU47 E-E handoff H4: retarget the outline at runtime (`setEffect("outline", { targets: [id] })`).
-  outline: "outline"
+  outline: "outline",
+  // GU47 pass 4 (g19): an fps governor drops GTAO and grain at runtime (`setEffectEnabled("ambientOcclusion", false)`).
+  ambientOcclusion: "ambient-occlusion",
+  filmGrain: "film-grain"
 });
 
 /** One `setEffect` patch value as stored: strings/numbers/booleans, number arrays, or a converted object (`tiltShift`). */
