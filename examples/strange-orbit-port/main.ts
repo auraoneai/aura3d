@@ -7,7 +7,8 @@
  * `difficulty=explorer|racer|expert`, `mode=cup|trial|free`, `quality=high|low`,
  * `laps=N` (test override), `autostart=1`, `autopilot=1`, `manual=1` (the sim only
  * advances through `__orbit.advance` / `__AURA_STRANGE_ORBIT__.stepFrames`), `touch=1` (show the touch
- * controls without waiting for a touch), `motion=reduced` (same as `prefers-reduced-motion: reduce`).
+ * controls without waiting for a touch), `motion=reduced` (same as `prefers-reduced-motion: reduce`),
+ * `look=original` (the 4.6.1 look; GU47), `env=neutral` (neutral room instead of the captured probe).
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { createCameraShake, createHitStop, createImpactFeedback, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
@@ -37,7 +38,10 @@ import {
 import { createOrbitPresenter, viewOf } from "./presentation";
 import { staticColliders } from "./obstacles";
 import { setActiveCourse } from "./track";
-import { buildWorld, type WorldRuntime } from "./world";
+import { GOUACHE_LIVERIES, buildWorld, type WorldRuntime } from "./world";
+import { lookFromSearch } from "./art/look";
+import { barsWanted } from "./art/director";
+import { mountOrbitHud } from "./art/hud";
 
 const params = new URLSearchParams(location.search);
 const num = (key: string, fallback: number): number => {
@@ -55,7 +59,9 @@ const config = {
   autopilot: params.get("autopilot") === "1",
   manual: params.get("manual") === "1",
   touch: params.get("touch") === "1",
-  reducedMotion: params.get("motion") === "reduced" || (typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches)
+  reducedMotion: params.get("motion") === "reduced" || (typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches),
+  /** GU47: `look=original` keeps the 4.6.1 look; default is the gouache look (WP-25). */
+  look: lookFromSearch(location.search)
 };
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
@@ -215,6 +221,7 @@ function handleEvents(events: readonly RaceEvent[]): void {
       if (race.mode === "free" && checkpointOrder.length > FREE_MODE_HISTORY * 5) checkpointOrder.splice(0, checkpointOrder.length - FREE_MODE_HISTORY * 5);
     }
     if (ev.text) { notice = touchWanted ? touchText(ev) : ev.text; noticeTime = 3; }
+    runtime?.event(ev);
     if (ev.impact !== undefined) {
       if (ev.normal) runtime?.impact(ev.normal);
       impactFeedback.handle({ colliderId: ev.colliderId ?? "", tag: undefined, point: ev.point ?? [0, 0, 0], normal: ev.normal ?? [0, 1, 0], speed: ev.impact, impulse: ev.impact });
@@ -306,7 +313,22 @@ function updateHud(dt: number): void {
     ? raceOrder(race).map((r) => `<li class="${r.id === 0 ? "you" : ""}"><span>${r.place}</span><span>${r.name === "YOU" ? "You" : r.name[0] + r.name.slice(1).toLowerCase()}</span><span>${r.gap}</span></li>`).join("")
     : "";
   if (rows !== shownOrder) { hud.order.innerHTML = rows; shownOrder = rows; }
+  if (gouacheHud) {
+    const order = race.rivals.length ? raceOrder(race) : [];
+    const mine = order.findIndex((r) => r.id === 0);
+    const ahead = mine > 0 ? order[mine - 1] : undefined;
+    gouacheHud.update({
+      s: race.s,
+      speedKmh: race.speed * 3.6,
+      energy: race.energy,
+      gapAhead: ahead ? Math.max(0, ahead.s - race.s) : null,
+      riders: [{ s: race.s, color: RIDERS[config.rider]!.color, you: true }, ...(race.mode === "trial" ? [] : race.rivals.map((r, i) => ({ s: r.s, color: GOUACHE_LIVERIES[i]!, you: false })))]
+    });
+  }
 }
+
+/** SO47-H1: the gouache HUD additions (arc, sector chip, gap, orbit minimap); not mounted on `?look=original`. */
+const gouacheHud = config.look === "gouache" ? mountOrbitHud(panels.hud) : null;
 
 let shownNotice = "";
 let shownOrder = "";
@@ -316,6 +338,31 @@ function showBest(): void {
   const best = readBest(store, pbKey);
   if (el) el.textContent = best ? `Personal best here: ${formatTime(best.time)}${config.mode === "trial" && best.ghost ? " · your ghost rides with you" : ""}` : "";
 }
+
+/* ------------------------------------------------------------------ cinematic bars (SO47-C2) */
+
+/** Letterbox bars for the countdown sequence and the results orbit; DOM writes only when the state flips. */
+const bars = (() => {
+  if (config.look !== "gouache") return { sync: (): void => undefined };
+  const make = (edge: "top" | "bottom"): HTMLDivElement => {
+    const el = document.createElement("div");
+    el.className = `cine-bar cine-bar-${edge}`;
+    el.setAttribute("aria-hidden", "true");
+    Object.assign(el.style, { position: "fixed", left: "0", right: "0", [edge]: "0", height: "0", background: "#0b0a14", transition: "height 0.35s ease", pointerEvents: "none", zIndex: "2" });
+    document.body.appendChild(el);
+    return el;
+  };
+  const top = make("top"), bottom = make("bottom");
+  let shown = false;
+  return {
+    sync(): void {
+      const want = barsWanted(race.phase, race.countdown, config.reducedMotion);
+      if (want === shown) return;
+      shown = want;
+      top.style.height = bottom.style.height = want ? "9vh" : "0";
+    }
+  };
+})();
 
 /* ------------------------------------------------------------------ frame */
 
@@ -328,6 +375,7 @@ function render(dt: number, live = false): void {
     const shown = live ? viewOf(race, presenter.present(loop, true)) : race;
     const ghostPose = ghost.length && race.mode === "trial" && race.phase !== "menu" ? ghostAt(ghost, race.time) : null;
     runtime.update(shown, dt, renderTime, view, canvas.clientWidth / Math.max(1, canvas.clientHeight), shake.update(dt), ghostPose);
+    bars.sync();
     app.step(0);
     frames++;
   } catch (error) {
@@ -572,7 +620,7 @@ async function boot(): Promise<void> {
   $("rider-name").textContent = label;
   $("vehicle-name").textContent = config.vehicle === "skate" ? "Skate" : "Bike";
   sizeCanvas();
-  const world = buildWorld({ vehicle: config.vehicle, rider: config.rider, quality: config.quality, ghost: config.mode === "trial", reducedMotion: config.reducedMotion });
+  const world = buildWorld({ vehicle: config.vehicle, rider: config.rider, quality: config.quality, ghost: config.mode === "trial", reducedMotion: config.reducedMotion, look: config.look });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,

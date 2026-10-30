@@ -4,14 +4,21 @@
  */
 import type { material } from "@aura3d/engine";
 import {
-  ATMOS_FRAGMENT, ATMOS_VERTEX, MINERAL_FRAGMENT, MINERAL_VERTEX, NEBULA_FRAGMENT, NEBULA_VERTEX, POINTS_FRAGMENT, POINTS_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX,
-  TRACK_FRAGMENT, TRACK_VERTEX, VEIL_FRAGMENT, VEIL_VERTEX
+  ATMOS_FRAGMENT, ATMOS_VERTEX, MINERAL_VERTEX, NEBULA_FRAGMENT, NEBULA_VERTEX, POINTS_FRAGMENT, POINTS_VERTEX, SOLID_VERTEX,
+  TRACK_VERTEX, VEIL_FRAGMENT, VEIL_VERTEX, mineralFragment, solidFragment, trackFragment
 } from "./shaders";
+import type { OrbitLook } from "./art/look";
 
 export type CustomSpec = Parameters<typeof material.custom>[0];
 type Rgb = readonly [number, number, number];
 
-export const trackSpec = (): CustomSpec => ({ receiveShadow: true, glsl: { vertex: TRACK_VERTEX, fragment: TRACK_FRAGMENT }, side: "double" });
+/** Fragment sources per look, built once (the program cache keys on the source). */
+const FRAGMENTS = {
+  gouache: { track: trackFragment(true), mineral: mineralFragment(true), solid: solidFragment(true) },
+  original: { track: trackFragment(false), mineral: mineralFragment(false), solid: solidFragment(false) }
+} as const;
+
+export const trackSpec = (look: OrbitLook = "gouache"): CustomSpec => ({ receiveShadow: true, glsl: { vertex: TRACK_VERTEX, fragment: FRAGMENTS[look].track }, side: "double" });
 
 export interface SolidExtra {
   readonly transparent?: boolean;
@@ -19,9 +26,9 @@ export interface SolidExtra {
   readonly depthWrite?: boolean;
 }
 
-export const solidSpec = (base: Rgb, glow: Rgb = [0, 0, 0], glowAmount = 0, banding = 0, extra: SolidExtra = {}): CustomSpec => ({
+export const solidSpec = (base: Rgb, glow: Rgb = [0, 0, 0], glowAmount = 0, banding = 0, extra: SolidExtra = {}, look: OrbitLook = "gouache"): CustomSpec => ({
   receiveShadow: true,
-  glsl: { vertex: SOLID_VERTEX, fragment: SOLID_FRAGMENT },
+  glsl: { vertex: SOLID_VERTEX, fragment: FRAGMENTS[look].solid },
   uniforms: {
     baseColor: { type: "color3", value: [...base] },
     glowColor: { type: "color3", value: [...glow] },
@@ -32,9 +39,9 @@ export const solidSpec = (base: Rgb, glow: Rgb = [0, 0, 0], glowAmount = 0, band
   ...extra
 });
 
-export const mineralSpec = (base: Rgb, opal: boolean): CustomSpec => ({
+export const mineralSpec = (base: Rgb, opal: boolean, look: OrbitLook = "gouache"): CustomSpec => ({
   receiveShadow: true,
-  glsl: { vertex: MINERAL_VERTEX, fragment: MINERAL_FRAGMENT },
+  glsl: { vertex: MINERAL_VERTEX, fragment: FRAGMENTS[look].mineral },
   uniforms: { baseColor: { type: "color3", value: [...base] }, opal: { type: "f32", value: opal ? 1 : 0 } },
   side: "double"
 });
@@ -57,8 +64,9 @@ export const veilSpec = (): CustomSpec => ({
   blending: "additive"
 });
 
-export const skySpec = (): CustomSpec => ({
+export const skySpec = (nebulaShift = 0): CustomSpec => ({
   glsl: { vertex: NEBULA_VERTEX, fragment: NEBULA_FRAGMENT },
+  uniforms: { nebulaShift: { type: "f32", value: nebulaShift } },
   side: "double",
   depthWrite: false
 });
@@ -72,8 +80,11 @@ export const atmosphereSpec = (color: Rgb): CustomSpec => ({
   blending: "additive"
 });
 
-/** One of each distinct program the scene uses (solid/mineral/points have two variants each). */
+/** One of each distinct program the scene uses (solid/mineral/points have two variants each; lit ones also per look). */
 export const allProgramSpecs = (): readonly { readonly name: string; readonly spec: CustomSpec }[] => [
+  { name: "track-original", spec: trackSpec("original") },
+  { name: "solid-original", spec: solidSpec([0.5, 0.5, 0.5], [1, 0.8, 0.4], 1.4, 0, {}, "original") },
+  { name: "mineral-original", spec: mineralSpec([0.5, 0.6, 0.8], true, "original") },
   { name: "track", spec: trackSpec() },
   { name: "solid", spec: solidSpec([0.5, 0.5, 0.5]) },
   { name: "solid-glow", spec: solidSpec([0.5, 0.5, 0.5], [1, 0.8, 0.4], 1.4) },
