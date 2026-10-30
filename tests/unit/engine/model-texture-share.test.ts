@@ -65,7 +65,16 @@ describe("ModelTextureShareRegistry (ref counting)", () => {
     expect(modelTextureShareKey({ asset: { ...base.asset, sha256: "t" } })).not.toBe(key);
     const decoders = {};
     expect(modelTextureShareKey({ ...base, decoders })).toBe(modelTextureShareKey({ ...base, decoders }));
-    expect(modelTextureShareKey({ ...base, decoders })).not.toBe(modelTextureShareKey({ ...base, decoders: {} }));
+    // GU47 eint EH-5: plain-data decode options key by value (a fresh `decoders: {}` per mount still shares),
+    // decoder instances (anything with behaviour) by identity, as `glbResourceCacheKey` does.
+    expect(modelTextureShareKey({ ...base, decoders })).toBe(modelTextureShareKey({ ...base, decoders: {} }));
+    expect(modelTextureShareKey({ ...base, compressedTextureCapabilities: { astc: true, bc7: false } }))
+      .toBe(modelTextureShareKey({ ...base, compressedTextureCapabilities: { bc7: false, astc: true } }));
+    expect(modelTextureShareKey({ ...base, compressedTextureCapabilities: { astc: true } }))
+      .not.toBe(modelTextureShareKey({ ...base, compressedTextureCapabilities: { astc: false } }));
+    const withInstance = { draco: { decode: () => undefined } };
+    expect(modelTextureShareKey({ ...base, decoders: withInstance })).toBe(modelTextureShareKey({ ...base, decoders: withInstance }));
+    expect(modelTextureShareKey({ ...base, decoders: withInstance })).not.toBe(modelTextureShareKey({ ...base, decoders: { draco: { decode: () => undefined } } }));
   });
 });
 
