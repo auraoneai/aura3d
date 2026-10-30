@@ -322,6 +322,13 @@ function beamCone(apex: Vec3, dir: Vec3, length: number, endRadius: number, segm
 /* ------------------------------------------------------------------ vehicles */
 
 const CAR_COLOURS = ["#d9dde6", "#1f2a3d", "#b3202a", "#e0b13a", "#2f6f4a", "#4a6b8a", "#f0f0f0", "#7d8896", "#c46a2b", "#3b3f48"];
+/**
+ * GU47 RH47-09: salt-faded traffic. Paint colours for the baked CC0 cars (no signal red: it is the objective accent), and
+ * pale per-instance tints that multiply the generated models' base colour so a lineup reads as sun-bleached coastal
+ * traffic in at least four hue families (sand, sea glass, slate, clay, sage).
+ */
+export const SALT_FADED_PAINT = ["#e9e4d6", "#9fb7b5", "#c9a25e", "#8a9aa6", "#b9786a", "#5f6f6a", "#d8d2c2", "#3e4a4f", "#a8b59a", "#7f8f9c"];
+export const SALT_FADED_TINTS = ["#f4efe4", "#dbe9e6", "#efe0c8", "#e0e4e8", "#f0dcd4", "#e3e6d2"];
 const RIG_COLOURS: Record<string, string> = { box_truck: "#e8e8e8", bus: "#e6b020", semi_tractor: "#2f3e55", tanker: "#c9ced6", semi: "#b9c0cc", car_carrier: "#7d8896" };
 
 const unionBox = (boxes: readonly LocalBox[]): LocalBox => {
@@ -705,7 +712,8 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
     const idx = defs.length;
     const meshy = meshyFor(piece, idx);
     const car = meshy ? null : carFor(piece, idx);
-    defs.push({ piece, variant, car, meshy, colour: car ? CAR_COLOURS[(idx * 7 + piece.length) % CAR_COLOURS.length]! : (RIG_COLOURS[piece] ?? "#cccccc") });
+    const paint = row ? SALT_FADED_PAINT : CAR_COLOURS;
+    defs.push({ piece, variant, car, meshy, colour: car ? paint[(idx * 7 + piece.length) % paint.length]! : meshy && row ? SALT_FADED_TINTS[(idx * 5 + piece.length) % SALT_FADED_TINTS.length]! : (RIG_COLOURS[piece] ?? "#cccccc") });
     return idx;
   };
   const lineupDefs = layout.vehicles.map((v) => addDef(v.piece, v.v));
@@ -774,7 +782,9 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
     const slots: Slot[] = [];
     if (def.meshy) {
       const handle = meshyBatches.get(def.meshy)!;
-      slots.push({ mesh: handle.mesh, slot: handle.mesh.addInstance(handle.geo), box: unionBox(pieceSpec(def.piece, def.variant)!.boxes), size: [0, 0, 0] });
+      const slot = handle.mesh.addInstance(handle.geo);
+      if (row) handle.mesh.setColorAt(slot, def.colour);
+      slots.push({ mesh: handle.mesh, slot, box: unionBox(pieceSpec(def.piece, def.variant)!.boxes), size: [0, 0, 0] });
     } else if (def.car) {
       const box = unionBox(pieceSpec(def.piece, def.variant)!.boxes);
       for (const g of CAR_GROUPS) {

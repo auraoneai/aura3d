@@ -3,7 +3,7 @@ import { SALTWIND_LOOK, SALTWIND_PALETTE, SALTWIND_VARIANTS, directionFromAngles
 import { outputFor } from "../../../examples/roadster-hours-port/art/output";
 import { LOOKS, ORIGINAL_LOOKS, hexLinear, lookFor } from "../../../examples/roadster-hours-port/look";
 import { blobFadeFor } from "../../../examples/roadster-hours-port/materials";
-import { buildWorld, routeIblName } from "../../../examples/roadster-hours-port/world";
+import { SALT_FADED_PAINT, SALT_FADED_TINTS, buildWorld, routeIblName } from "../../../examples/roadster-hours-port/world";
 
 type Json = Record<string, unknown>;
 function nodes(scene: { toJSON(): unknown }): Json[] {
@@ -118,5 +118,20 @@ describe("Saltwind Highway GU47 look table (WP-32)", () => {
     expect(blobFadeFor(2)).toBeLessThan(1);
     expect(blobFadeFor(4)).toBe(0);
     expect(blobFadeFor(9)).toBe(0);
+  });
+
+  it("salt-faded traffic spans >= 4 hue buckets and never uses the signal red accent (RH47-09)", () => {
+    const hue = (hex: string): number => {
+      const n = parseInt(hex.slice(1), 16);
+      const r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+      if (d < 0.04) return -1; // neutral
+      const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+      return Math.floor(((h * 60 + 360) % 360) / 45);
+    };
+    for (const list of [SALT_FADED_PAINT, SALT_FADED_TINTS]) {
+      expect(new Set(list.map(hue)).size).toBeGreaterThanOrEqual(4);
+      expect(list).not.toContain(SALTWIND_PALETTE.signalRed);
+    }
   });
 });
