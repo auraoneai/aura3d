@@ -565,6 +565,32 @@ export function rolledUp(position: readonly number[], target: readonly number[],
   return [ux * ca + rx * sa, uy * ca, uz * ca + rz * sa];
 }
 
+/** CR-C2 title rail length (s) and game-over orbit rate (rad/s). */
+export const TITLE_RAIL_SECONDS = 3;
+export const RESULTS_ORBIT_RATE = 0.22;
+
+type Pose = { readonly x: number; readonly y: number; readonly z: number; readonly lookX: number; readonly lookY: number; readonly lookZ: number };
+
+/**
+ * CR-C2 presentation camera, a pure function of the phase clock: on the title the camera rides a rail from high and wide
+ * over the islands down onto the sim's own splash pose in 3 s (eased, then holds); on game over it orbits the ball's last
+ * position. `null` while playing (the sim camera is used unchanged).
+ */
+export function presentationPose(phase: string, phaseSeconds: number, sim: Pose, ball: { readonly x: number; readonly y: number; readonly z: number }): Pose | null {
+  if (phase === "splash") {
+    const t = Math.min(1, Math.max(0, phaseSeconds / TITLE_RAIL_SECONDS));
+    const e = 1 - Math.pow(1 - t, 3);
+    const from = { x: sim.x - 14, y: sim.y + 16, z: sim.z + 26 };
+    return { x: from.x + (sim.x - from.x) * e, y: from.y + (sim.y - from.y) * e, z: from.z + (sim.z - from.z) * e, lookX: sim.lookX, lookY: sim.lookY, lookZ: sim.lookZ };
+  }
+  if (phase === "gameOver") {
+    const dx = sim.x - ball.x, dz = sim.z - ball.z;
+    const r = Math.max(6, Math.hypot(dx, dz)), a0 = Math.atan2(dx, dz), a = a0 + RESULTS_ORBIT_RATE * phaseSeconds;
+    return { x: ball.x + r * Math.sin(a), y: sim.y, z: ball.z + r * Math.cos(a), lookX: ball.x, lookY: ball.y, lookZ: ball.z };
+  }
+  return null;
+}
+
 export function buildWorld(options: WorldOptions): World {
   const { sim } = options;
   const look = options.look ?? LOOKS.original;
@@ -707,6 +733,8 @@ export function buildWorld(options: WorldOptions): World {
       let ballSymbolKind: SymbolKind | "" = "";
       let symbolsOn = false;
       let todKey = -1;
+      let phaseName = "";
+      let phaseStart = 0;
 
       /** GU47: rewrite the time-of-day uniforms (and the GLB key light) when the stage moved by a visible step. */
       function applyTimeOfDay(tod: TimeOfDay): void {
@@ -909,7 +937,11 @@ export function buildWorld(options: WorldOptions): World {
           if (look.cloudSea) node("cloud-sea").setUniform?.("crScroll", -drift * 0.045 * look.cloudSea.scroll);
         }
         /* camera */
-        const c = view.camera ?? shown?.camera ?? simNow.camera;
+        if (o.phase !== phaseName) { phaseName = o.phase; phaseStart = elapsed; }
+        const simCam = view.camera ?? shown?.camera ?? simNow.camera;
+        /* CR-C2: title rail and results orbit (carnival, not on reduced motion or manual QA stepping) */
+        const rig = carnival && view.cameraLayers === true && !view.reducedMotion ? presentationPose(o.phase, elapsed - phaseStart, simCam, p) : null;
+        const c = rig ?? simCam;
         const baseFov = aspect >= 1 ? 55 : 55 + 25 * Math.min(1, (1 - aspect) / 0.5);
         const layers = view.cameraLayers === true && !view.reducedMotion && look.camera !== null && o.phase === "playing";
         const cam = layers && look.camera ? cameraLayers(look.camera, roadYaw(-(o.distance - back)), simNow.speedRatio) : { rollDeg: 0, fovDeg: 0 };

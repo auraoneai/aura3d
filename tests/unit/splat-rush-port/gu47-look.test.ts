@@ -5,7 +5,7 @@ import { PIECES, addBackdrop, backdropSway } from "../../../examples/splat-rush-
 import { GATE_COLORS, LOOKS, QA_CROPS, parseLook, sunDirection, timeOfDay, type SplatLook } from "../../../examples/splat-rush-port/look";
 import { IDLE, SplatRushSim } from "../../../examples/splat-rush-port/sim";
 import { PAINT_SPLASH, PAINT_SPLASH_RING, SPLASH_COUNT, fireSplashes, splashesFor } from "../../../examples/splat-rush-port/vfx3d";
-import { BUNTING_COLORS, buildWorld, buntingMesh, cameraLayers, carnivalToonSpec, rolledUp } from "../../../examples/splat-rush-port/world";
+import { BUNTING_COLORS, TITLE_RAIL_SECONDS, buildWorld, presentationPose, buntingMesh, cameraLayers, carnivalToonSpec, rolledUp } from "../../../examples/splat-rush-port/world";
 import { deltaE2000 } from "../../../tools/look-metrics/region-luma.mjs";
 
 const g = globalThis as { document?: unknown };
@@ -189,5 +189,23 @@ describe("GU47 CR-W1: festival bunting", () => {
   it("bunting poles appear on both sides during a run", () => {
     const run = runLook(LOOKS.carnival, 240);
     expect(run.rec.uniforms.get("bunting")?.has("crSunDir")).toBe(true);
+  });
+});
+
+describe("GU47 CR-C2: title rail and results orbit", () => {
+  const cam = { x: 0, y: 15, z: 18, lookX: 0, lookY: 0, lookZ: 0 };
+  const ball = { x: 0, y: 0.55, z: 0 };
+  it("the rail starts high and wide and lands on the sim splash pose after 3 s; nothing while playing", () => {
+    const start = presentationPose("splash", 0, cam, ball);
+    expect((start?.y ?? 0) - cam.y).toBeGreaterThan(10);
+    const end = presentationPose("splash", TITLE_RAIL_SECONDS + 1, cam, ball);
+    expect(end).toMatchObject(cam);
+    expect(presentationPose("playing", 5, cam, ball)).toBeNull();
+  });
+  it("the results orbit yaws >= 10 deg over 2 s around the ball", () => {
+    const a = presentationPose("gameOver", 0, cam, ball), b = presentationPose("gameOver", 2, cam, ball);
+    const yaw = (q: typeof a) => Math.atan2((q?.x ?? 0) - ball.x, (q?.z ?? 0) - ball.z);
+    expect(Math.abs(yaw(b) - yaw(a)) * 180 / Math.PI).toBeGreaterThanOrEqual(10);
+    expect(b).toMatchObject({ lookX: ball.x, lookY: ball.y, lookZ: ball.z });
   });
 });

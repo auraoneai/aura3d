@@ -25,7 +25,7 @@ Status per acceptance line. "unit" = covered by `tests/unit/splat-rush-port/gu47
 | CR-V1 | liveCount > 0 within 3 frames; replay unchanged; vfx=off LPIPS 0.01; peak <= 48 draws | unit (planning, seeds, camera false, halving); live count: phase 2 |
 | CR-V2 | ball ribbon | done in code; pixels phase 2 |
 | CR-C1 | roll within ±3, layers off on reduced motion and manual=1 | unit |
-| CR-C2 | title rail, game-over orbit | not done |
+| CR-C2 | title rail, game-over orbit | unit (poses); bars not done |
 | CR-AN2 | deterministic poses; tilt within ±6 deg over 60 s | unit |
 | CR-H1 / CR-W1 / CR-W2 / CR-AN1 / CR-P3 / CR-V3 / CR-V4 | | not done (see lane report) |
 | CR-PF1 | <= 48 draws, <= 45 MB, no compiles after warm, frame <= 1.3x, sibling judge | phase 2 (new programs added to `allProgramSpecs`; warm path unchanged) |
