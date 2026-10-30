@@ -1,12 +1,13 @@
 ---
 name: aura3d-game-art
-description: Produces 2D game art that a real Aura3D consumer uses: flipbook VFX sprite sheets for `effects.flipbook` (the `flipbook-sprite` effect with `spriteColumns` / `spriteRows`) and HUD icons or UI sprites for DOM overlays, each admitted as a typed texture asset. Use when a game template (`mini-game`, `racing-starter`, `falling-blocks-starter`, `fighting-game`) needs explosion, muzzle-flash, or hit VFX sheets, HUD icons, score or health sprites, or a style-consistent batch of UI art.
+description: Produces 2D game art that a real Aura3D consumer uses: flipbook VFX sprite sheets for `effects.flipbook({ texture })` (the `flipbook-sprite` effect with `spriteColumns` / `spriteRows`) or particle `sprite` sheets, and HUD icons or UI sprites for DOM overlays, each admitted as a typed texture asset; also names the built-in atlas sprites, registered presets and trails that need no art. Use when a game template (`mini-game`, `racing-starter`, `falling-blocks-starter`, `fighting-game`) needs explosion, muzzle-flash, or hit VFX sheets, HUD icons, score or health sprites, or a style-consistent batch of UI art.
 ---
 
 # Aura3D game art (flipbook VFX and HUD sprites)
 
-Only two consumers exist, so only two kinds of art are produced: flipbook
-sheets for the `flipbook-sprite` effect and icons for the DOM HUD. Tilesets
+Only two kinds of consumer exist, so only two kinds of art are produced:
+sprite sheets (the `flipbook-sprite` effect, or a particle `sprite` sheet) and
+icons for the DOM HUD. Tilesets
 are out of scope: no 2D tile runtime consumes them, so 3D levels come from
 `aura3d-browser-game` and `aura3d-assets`. Shared rules (claim labels, typed
 assets, CSS/DOM is UI only, benchmark mode) are in
@@ -28,12 +29,13 @@ texture viewer hides.
 2. Read `src/aura-assets.ts` and `aura.assets.json`, and find the consumer
    first: the `effects.flipbook(...)` call, or the HUD element in `src/main.ts`
    (the `mini-game` HUD is a DOM `aside`). No consumer means no art.
-3. Know the flipbook state. `effects.flipbook` records validated sheet
-   geometry (`spriteColumns`, `spriteRows`, `frameRate`) but the root renderer
-   has no sprite-sheet sampler yet and submits no flipbook pass.
-   `renderer.diagnostics(scene)` reports the warning "flipbook-sprite is
-   recorded but withheld". Any route relying on it is `prototype` for that
-   effect.
+3. Know the flipbook state. `effects.flipbook({ texture: assets.sheet,
+   spriteColumns, spriteRows, frameRate })` draws through the particle pass
+   (A3D_QR_VFX, on by default): it samples the typed sheet on that grid.
+   Without `texture` it draws the built-in fireball sheet; `sprite:
+   "flame-loop"` uses a built-in atlas sequence instead. A sheet draws the
+   soft-dot until it has loaded, and a failed load is named
+   `VFX_SPRITE_UNAVAILABLE` in `app.diagnostics()`.
 4. Benchmark mode: `npm install && npm run build`, then stop.
 
 ## Procedure
@@ -65,11 +67,31 @@ Flipbook VFX sheets:
    npx @aura3d/cli@latest assets typegen
    ```
 
-5. Declare the effect with the same grid:
-   `effects.flipbook({ spriteColumns: 8, spriteRows: 4, frameRate: 24 })`.
-   Mismatched or non-integer values throw a `RangeError` (fail loud); never
-   catch and ignore it. The effect has no texture slot today, so the sheet is
-   ready for the sampler but not yet drawn.
+5. Declare the effect with the same grid and the typed asset:
+   `effects.flipbook({ texture: assets.explosionSheet, spriteColumns: 8,
+   spriteRows: 4, frameRate: 24 })`. Mismatched or non-integer values throw a
+   `RangeError` (fail loud); never catch and ignore it. Author sheets with
+   straight alpha; frame 0 is the top-left cell.
+
+Particles, presets and trails (when the game needs runtime VFX, not a sheet):
+
+- Built-in atlas sprites need no art: `effects.particles({ sprite:
+  "smoke-a" })` or `app.effects.burst("dust", at, { sprite: "dust-mote" })`.
+  Names: soft-dot, glow, flare, spark-streak, ring, ring-thin, dust-mote,
+  bubble, rain-streak, snowflake, smoke-a, smoke-b, fireball, flame-loop,
+  muzzle, splash, electric, debris-chips. A sheet works on emitters too:
+  `sprite: { atlas: assets.sparkSheet, frame: 3 }` with `spriteColumns` and
+  `spriteRows`.
+- A game's own pack: `app.effects.registerPreset("chalk-puff", { name:
+  "chalk-puff", layers: [{ type: "emitter", preset: "dust", color: "#f2efe6",
+  count: 18, sprite: "dust-mote" }, { type: "light", intensity: 4 }] })`, then
+  `app.effects.burst("chalk-puff", at)`. Registered names win over built-ins;
+  layers may be emitter, light, camera or decal, with an `at` delay in
+  seconds. Genre-coloured built-ins exist for spark, dust and pickup (for
+  example `spark-electric`, `dust-sand`, `pickup-gold`).
+- Ribbons: `app.effects.trail(nodeId, { width: 0.4, life: 0.8, color:
+  "#ffcc66", widthOverSpeed: [2, 12] })` follows the node; the head is opaque,
+  the tail fades over `life`, and stopping its handle lets it fade out.
 
 HUD icons and UI sprites:
 
@@ -100,9 +122,9 @@ Style-consistent batches:
 
 - The sheet fails `sheet-check.mjs`, or frames bleed across cells: fix the
   sheet; do not change the grid in code to paper over it.
-- The route's VFX depends on flipbook pixels: label that effect `prototype`
-  and quote the withheld warning. Do not fake it with CSS, a DOM overlay, or
-  an animated `<img>` on top of the canvas.
+- The sheet does not draw (`VFX_SPRITE_UNAVAILABLE`, or only soft dots in the
+  frame): label that effect `prototype` and quote the diagnostic. Do not fake
+  it with CSS, a DOM overlay, or an animated `<img>` on top of the canvas.
 - Someone asks for a tileset: decline it and route level work to
   `aura3d-browser-game`.
 - A file has no license or author: do not admit it.
