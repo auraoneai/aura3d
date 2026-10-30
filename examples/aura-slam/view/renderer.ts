@@ -4,6 +4,7 @@ import type { AthletePose, SceneRenderer } from "../contract/modules";
 import type { ActorState, BallState, MatchState } from "../contract/sim";
 import type { Vec3 } from "../contract/units";
 import { resolveBallHandles, updateBall, type BallHandles } from "./ball";
+import { slamQaCrops, type QaCrop } from "./qaCrops";
 import { createBroadcastDirector, createLetterbox, introParam, type BroadcastDirector, type DirectorFrame, type Letterbox } from "./intro";
 import { BROADCAST_DOF, CAMERA_FAR, CAMERA_NEAR, CUT_DOF_FSTOP, acePunchOffset, nextPunchT, cameraFovForAspect, cameraRigFor, dampPan, panGoal, panLimitFor, panPose, projectWorldPoint, type CameraPose } from "./camera";
 import { COURT_X, COURT_Y, COURT_Z, HIDDEN_SCALE, SERVICE_Z, SINGLES_X, SPECTATOR_COUNT, clamp } from "./constants";
@@ -269,6 +270,21 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     if (Math.abs(offset - punchSent) > 1e-4) { punchSent = offset; pushCameraPose(); }
   }
 
+  let lastCrops: QaCrop[] = [];
+  /** GU47 (E-I crop contract): projects the probe boxes through the live pose and publishes them. */
+  function publishQaCrops(state: Readonly<MatchState>): void {
+    const fov = drawnFov();
+    lastCrops = slamQaCrops({
+      width: viewportWidth, height: viewportHeight,
+      project: (x, y, z) => projectWorldPoint(viewportWidth, viewportHeight, x, y, z, fov, cameraPose),
+      player: { x: Number(state.player?.x ?? 0), y: Number(state.player?.y ?? 0) },
+      rival: { x: Number(state.ai?.x ?? 0), y: Number(state.ai?.y ?? 0) },
+      ball: lastBallWorld
+    });
+    const host = globalThis as { __AURA_QA__?: Record<string, unknown> };
+    if (typeof window !== "undefined") host.__AURA_QA__ = { ...(host.__AURA_QA__ ?? {}), crops: lastCrops };
+  }
+
   /** Pushes the live pose (rig + pan) and FOV to the camera controller. */
   function pushCameraPose(): void {
     cameraPose = cutFrame ? cutFrame.pose : panPose(cameraRig, pan);
@@ -477,6 +493,9 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
         try { app.camera?.shake.add(Math.min(1, shake * SHAKE_TRAUMA_PER_UNIT)); } catch { /* optional */ }
       }
       lastShake = shake;
+
+      // GU47: named QA crops for the remote luma capture (window.__AURA_QA__.crops), refreshed every 6 frames.
+      if (worldTour && frames % 6 === 0) publishQaCrops(state);
 
       const pPose = options.pose.pose(state.player, state);
       const aiPose = options.pose.pose(state.ai, state);
