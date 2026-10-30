@@ -460,79 +460,12 @@
         "practical": true
       },
       {
-        "node": "hoard-0--20",
+        "node": "fc-hoardings",
         "emissiveIntensity": 0.38,
         "practical": true
       },
       {
-        "node": "hoard-0-20",
-        "emissiveIntensity": 0.38,
-        "practical": true
-      },
-      {
-        "node": "hoard--32-0",
-        "emissiveIntensity": 0.38,
-        "practical": true
-      },
-      {
-        "node": "hoard-32-0",
-        "emissiveIntensity": 0.38,
-        "practical": true
-      },
-      {
-        "node": "stand-far-0",
-        "practical": false
-      },
-      {
-        "node": "stand-end-w-0",
-        "practical": false
-      },
-      {
-        "node": "stand-end-e-0",
-        "practical": false
-      },
-      {
-        "node": "stand-near-0",
-        "practical": false
-      },
-      {
-        "node": "stand-far-1",
-        "practical": false
-      },
-      {
-        "node": "stand-end-w-1",
-        "practical": false
-      },
-      {
-        "node": "stand-end-e-1",
-        "practical": false
-      },
-      {
-        "node": "stand-near-1",
-        "practical": false
-      },
-      {
-        "node": "stand-far-2",
-        "practical": false
-      },
-      {
-        "node": "stand-end-w-2",
-        "practical": false
-      },
-      {
-        "node": "stand-end-e-2",
-        "practical": false
-      },
-      {
-        "node": "stand-far-3",
-        "practical": false
-      },
-      {
-        "node": "stand-end-w-3",
-        "practical": false
-      },
-      {
-        "node": "stand-end-e-3",
+        "node": "fc-stands",
         "practical": false
       },
       {

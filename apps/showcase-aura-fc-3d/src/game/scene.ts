@@ -6,7 +6,7 @@
 // venue's post nodes. applyVenue still re-tints and toggles the dressing handles (null-safe) after a rebuild.
 
 import {
-  camera, decals, effects, game, instances, lights, looks, material, model, primitives, scene, sky,
+  camera, decals, effects, game, instances, lights, looks, material, model, primitives, scene, sky, surfaces as engineSurfaces,
   type AuraLookOverrides
 } from "@aura3d/engine";
 import { assets } from "../aura-assets-v2";
@@ -32,6 +32,11 @@ export interface FcSceneOptions {
 }
 
 const HIDDEN = 0.0001;
+
+/** `?mirror=off` drops the Uyuni mirror (QA fallback, FC47-M3); always on outside a browser. */
+export function mirrorEnabled(search: string = typeof location === "undefined" ? "" : location.search): boolean {
+  return new URLSearchParams(search).get("mirror") !== "off";
+}
 
 /** Floodlight tower bases (corners of the bowl); index MAIN_FLOOD_TOWER is the main-stand flood. */
 export const FLOOD_TOWERS: readonly (readonly [number, number])[] = [
@@ -358,6 +363,13 @@ function pitchNodes(v: VenueSpec): any[] {
     primitives.plane({ name: "fc-pitch", size: [PITCH_HX * 2, 1, PITCH_HZ * 2], material: surfaces.pitch })
       .position(0, 0.002, 0).runtime(gameRuntime("fc-pitch"))
   ];
+  // FC47-M3: Uyuni's mirror flat: a planar reflection over the pitch (thin water film tint), under the lines (y 0.014)
+  // and above the pitch plane. Doubles the scene draws in its capture: `?mirror=off` is the QA fallback (phase 2
+  // measures it against the 480-draw Uyuni budget and picks the probe fallback if it is over).
+  const mirror = VENUE_LOOKS[v.id].mirror;
+  if (mirror && mirrorEnabled()) {
+    nodes.push(engineSurfaces.mirror({ name: "fc-mirror", size: [PITCH_HX * 2, PITCH_HZ * 2], resolution: mirror.resolution, tint: mirror.tint, position: [0, 0.006, 0] }));
+  }
 
   // 10 mow stripes across the length of the pitch (one instanced batch; hidden on venues without stripes)
   if (v.stripes) {

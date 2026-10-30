@@ -172,3 +172,17 @@ describe("aura-fc-3d GU47 draw budget (FC47-PF1)", () => {
     }
   });
 });
+
+describe("aura-fc-3d GU47 Uyuni mirror (FC47-M3)", () => {
+  it("only Uyuni mounts the pitch mirror, at resolution 256, between the pitch and the lines", () => {
+    for (const v of VENUE_ORDER) {
+      const m = sceneNodes(v).filter((n) => n.kind === "surface") as (Node & { resolution?: number; position?: number[]; size?: number[] })[];
+      if (v !== "uyuni") { expect({ v, m: m.length }).toEqual({ v, m: 0 }); continue; }
+      expect(m).toHaveLength(1);
+      expect(m[0].resolution).toBe(256);
+      expect(m[0].size).toEqual([60, 36]);
+      expect(m[0].position![1]).toBeGreaterThan(0.002);
+      expect(m[0].position![1]).toBeLessThan(0.014);
+    }
+  });
+});
