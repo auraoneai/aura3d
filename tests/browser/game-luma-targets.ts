@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import type { GameLumaCrop } from "./game-luma-stats";
 
 /**
  * Steady-state luma targets: every live game in docs/workflows/game-inventory.json, and every lighting variant a player
@@ -17,6 +18,10 @@ export interface GameLumaTarget {
    *  /bin/sh and times out at 3600 s, so a grep must be shell-safe (no parentheses or pipes) and a group must fit the hour. */
   readonly group: string;
   prepare?(page: Page): Promise<void>;
+  /** Static named crops, normalised 0..1 to the main canvas (the game's QA hook crops win on a name clash). */
+  readonly crops?: readonly GameLumaCrop[];
+  /** GL_PAIR_MS only: runs between the two screenshots of a pair (for example step a manual-mode sim). */
+  pairAdvance?(page: Page): Promise<void>;
 }
 
 /** Click an element by selector through `element.click()`, so a title overlay cannot intercept the pointer. */
