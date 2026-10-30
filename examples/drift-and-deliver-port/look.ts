@@ -17,6 +17,7 @@ import { KEY_DISTANCE, lookFrame } from "./daylight";
 import { waterSpec } from "./water";
 import { paintWetRoughness, wetRoad } from "./wet";
 import { HALO_COLOR, haloCount } from "./brakes";
+import { heightField, heightToNormal } from "./facadeNormal";
 import { HEADLIGHT, SODIUM_COLOR, SODIUM_POOL, SODIUM_RANGE } from "./lamps";
 import { PALETTE_SLOTS, Palette, bakePaletteUVs, createMesh, quad, toArrays, type MeshData } from "./mesh";
 import { paintFacade, paintPalette, paintPark, paintPlaza, paintRoadTile, paintShopfront, paintSky, type FacadeKind } from "./textures";
@@ -121,7 +122,8 @@ export interface Textures {
   park: TextureHandle;
   plaza: TextureHandle;
   sky: TextureHandle;
-  facade: Record<string, { albedo: TextureHandle; emissive: TextureHandle }>;
+  /** `normal` (GU47 WP-28 GC-M2): the relief map derived from the albedo, shift look only. */
+  facade: Record<string, { albedo: TextureHandle; emissive: TextureHandle; normal?: TextureHandle }>;
   shop: { albedo: TextureHandle; emissive: TextureHandle };
 }
 
@@ -150,7 +152,7 @@ export function paintTextures(quality: "high" | "low", look: LookMode = "origina
       const a = canvas(facadePx, facadePx);
       const e = canvas(facadePx, facadePx);
       paintFacade(kind, a.g, e.g, facadePx, k * 7 + v + 1, wall);
-      facade[facadeKey(kind, v)] = { albedo: repeating(texture.canvas({ canvas: a.c, colorSpace: "srgb" })), emissive: repeating(texture.canvas({ canvas: e.c, colorSpace: "srgb" })) };
+      facade[facadeKey(kind, v)] = { albedo: repeating(texture.canvas({ canvas: a.c, colorSpace: "srgb" })), emissive: repeating(texture.canvas({ canvas: e.c, colorSpace: "srgb" })), ...(look === "shift" ? { normal: facadeNormal(a.g, facadePx) } : {}) };
     });
   });
   const sa = canvas(1024, 256);
@@ -165,6 +167,14 @@ export function paintTextures(quality: "high" | "low", look: LookMode = "origina
     facade,
     shop: { albedo: repeating(texture.canvas({ canvas: sa.c, colorSpace: "srgb" })), emissive: repeating(texture.canvas({ canvas: se.c, colorSpace: "srgb" })) }
   };
+}
+
+/** GC-M2: the facade relief normal map at half the albedo size (linear, repeating). */
+function facadeNormal(albedo: CanvasRenderingContext2D, px: number): TextureHandle {
+  const field = heightField(albedo.getImageData(0, 0, px, px).data, px, px, 2);
+  const n = canvas(field.w, field.h);
+  n.g.putImageData(new ImageData(heightToNormal(field), field.w, field.h), 0, 0);
+  return repeating(texture.canvas({ canvas: n.c, colorSpace: "linear" }));
 }
 
 /* ------------------------------------------------------------------ build */
@@ -278,7 +288,8 @@ export function shiftShadow(quality: "high" | "low") {
 
 /** GC-M2: facade material at a window emissive intensity (0.15 by day to 1.4 at blue hour in the shift look). */
 export function facadeMaterial(tex: Textures, key: string, windows: number) {
-  return material.pbr({ color: "#ffffff", roughness: 0.82, metallic: 0.02, texture: asRef(tex.facade[key]!.albedo), emissiveMap: tex.facade[key]!.emissive, emissive: "#ffffff", emissiveIntensity: windows, textureAnisotropy: 8 });
+  const f = tex.facade[key]!;
+  return material.pbr({ color: "#ffffff", roughness: 0.82, metallic: 0.02, texture: asRef(f.albedo), emissiveMap: f.emissive, emissive: "#ffffff", emissiveIntensity: windows, textureAnisotropy: 8, ...(f.normal ? { normal: asRef(f.normal), normalScale: 1 } : {}) });
 }
 
 export function buildLook(world: { blocks: readonly Block[]; buildings: readonly Building[]; traffic: readonly TrafficCar[]; pickups: readonly Pickup[] }, opts: LookOptions): LookRig {
