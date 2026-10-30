@@ -27,9 +27,9 @@ export type AuraGradeRgb = number | readonly [number, number, number] | { readon
 /**
  * GU47 E-C (PRD §3.1): `colorGrade({ lut })` takes a typed `.cube` asset
  * (`aura3d assets add <file.cube> --type lut` → `assets.<name>`), i.e.
- * `AuraAssetRef<"lut">`. `AuraAssetType` gains `"lut"` in `nodes/types.ts`
- * (lane E-D handoff); until that merges this structural local type stands in
- * for it, and a plain served URL string (`"/luts/venue.cube"`) is accepted too.
+ * `AuraAssetRef<"lut">` (`AuraAssetType` includes `"lut"`). This structural
+ * type accepts that typed ref as well as hand-built refs, and a plain served
+ * URL string (`"/luts/venue.cube"`) is accepted too.
  */
 export interface AuraLutAssetRef {
   readonly kind: "aura-asset-ref";
