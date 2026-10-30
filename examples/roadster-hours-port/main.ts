@@ -16,6 +16,8 @@ import { SIM_STEP, createRun, defaultCareer, stepRun, type Career, type MedalRes
 import { createRoadsterPresenter, viewOf } from "./presentation";
 import { loadMeshy } from "./meshy";
 import { buildWorld, type World, type WorldRuntime } from "./world";
+import { lookModeFrom } from "./art/look";
+import { outputFor } from "./art/output";
 
 const params = new URLSearchParams(location.search);
 let levelIndex = Math.max(0, Math.min(LEVELS.length - 1, Number(params.get("level") ?? 0) | 0));
@@ -350,8 +352,12 @@ function render(dt: number, time: number, live = false): void {
   frames++;
 }
 
+/** GU47 look (default) or today's (`?look=original`): output, device resolution, look rows. */
+const lookMode = lookModeFrom(location.search);
+const output = outputFor(lookMode);
+
 function sizeCanvas(): void {
-  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+  const dpr = Math.min(window.devicePixelRatio || 1, output.maxDpr);
   canvas.width = Math.max(2, Math.round(canvas.clientWidth * dpr));
   canvas.height = Math.max(2, Math.round(canvas.clientHeight * dpr));
 }
@@ -455,6 +461,9 @@ const hooks = {
   appInfo: () => app?.info ?? null,
   /** Texture upgrade status per node: textures upload one material at a time after mount, so an early frame shows white models until these read `textured`. */
   textures: () => summarizeTextureUpgrade(app?.diagnostics()),
+  /** RH47-01: true once every textured material has uploaded (`textured === total`, 58 on Sunbreak with the generated models); judged shots wait for it. */
+  texturesReady: () => { const t = summarizeTextureUpgrade(app?.diagnostics()); return t.total > 0 && t.textured === t.total; },
+  lookMode: () => lookMode,
   /** Cues played on recent frames (QA: proves the finish fanfare and the event cues fire). */
   cues: () => cueLog.map((c) => ({ ...c, sounds: [...c.sounds] })),
   /** Switch to the next route in place (no reload). */
@@ -490,10 +499,10 @@ async function boot(): Promise<void> {
   world = buildWorld(levelIndex);
   buildMenu();
   app = createAuraApp(canvas, {
-    autoStart: false, resize: false, pixelRatio: 1,
+    autoStart: false, resize: false, pixelRatio: output.pixelRatio,
     // 4.5.0 pipeline on purpose (bloom pass fusion); measured against `production` in evidence/roadster-hours-port/audit-fix.
     quality: "auto",
-    output: { toneMapping: "aces", dither: false },
+    output: output.output,
     scene: world.scene
   });
   await app.ready();
