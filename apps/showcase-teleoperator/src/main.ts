@@ -74,6 +74,7 @@ import { BOOT_SKY, SKY_LOOKS, nextSky, skyFromParam } from "./look";
 import { installSensorPass, scanPulseAt } from "./scanPulse";
 import { createGridVfxQueue, headlightMotesSpec, installGridVfx, manholeLayout, motesAnchor, type GridVfxShot } from "./vfx";
 import { mountTouchPads } from "./touch";
+import { bezelState } from "./bezel";
 import { STATIC_CROPS, carCrop, type QaCrop } from "./qaCrops";
 import { FOV_KICK_HALFLIFE_S, FOV_KICK_MAX_DEG, ROLL_HALFLIFE_S, cameraFeel } from "./cameraFeel";
 
@@ -618,7 +619,7 @@ async function bootGridDispatch(): Promise<void> {
   /** Read phase of the nameplate layout: panel rectangles, refreshed with the 10 Hz HUD tick (no reads in the write loop). */
   function readAvoidRects(): void {
     avoidRects = [];
-    for (const id of ["taxiCard", "taxiTrip", "taxiPen", "taxiHint", "topRightCluster", "where", "taxiSum", "wrongWay"]) {
+    for (const id of ["taxiCard", "taxiTrip", "taxiPen", "taxiHint", "topRightCluster", "where", "taxiSum", "wrongWay", "bzStrip"]) {
       const el = $(id);
       if (!el) continue;
       const cs = getComputedStyle(el);
@@ -869,6 +870,13 @@ async function bootGridDispatch(): Promise<void> {
       } else if (r.state === "boarding") hint = `Boarding ${fareOf(S).passenger}…`;
       else if (r.state === "alighting") hint = `Dropping off ${fareOf(S).passenger}…`;
       hud.update(S, drives, hint);
+      // GD-18: operator-console bezel (camera label, feed clock, link bars, REC dot).
+      const bz = bezelState({ camMode, sky: weather, simSeconds: S.time, motionOk: motionOk() });
+      setText("bzCam", bz.cam);
+      setText("bzClock", bz.clock);
+      $("bzRec")?.classList.toggle("off", !bz.rec);
+      const bars = $("bzBars");
+      if (bars && bars.dataset.bars !== String(bz.bars)) bars.dataset.bars = String(bz.bars);
       readAvoidRects();
       const distIdx = Math.abs(Math.floor(-p.z / 160)) % DISTRICTS.length;
       const di = DISTRICTS[distIdx]!;
