@@ -88,6 +88,7 @@ let pendingEvents: SimEvent[] = [];
 let notice: { title: string; small: string; until: number } | null = null;
 let renderFailed = false;
 let countdown = 0;
+const COUNTDOWN_SECONDS = 2.2;
 let recorded = false;
 let stepClock = 0, lastS = 0;
 const hinted = new Set<EnemyKind>();
@@ -195,7 +196,7 @@ function startWithCountdown(): void {
   $("pause").classList.add("hidden");
   showHud(false);
   $("countdown").classList.remove("hidden");
-  countdown = 2.2;
+  countdown = COUNTDOWN_SECONDS;
 }
 
 /** Pause or resume a running run. Pausing also holds the audio (wind bed and score); Resume releases it. */
@@ -344,6 +345,8 @@ const loop = createFixedStepLoop({
     footsteps();
     charges();
     if (ready && z.phase === "intro" && countdown <= 0) watchFrameTime(dt);
+    // NR-18: the title shot holds on the card and blends onto the chase through the 3-2-1 (null once running).
+    runtime?.setIntro(countdown > 0 ? 1 - countdown / COUNTDOWN_SECONDS : z.phase === "intro" ? 0 : null);
     render(dt, !config.manual && z.phase === "running");
     updateHud();
   }

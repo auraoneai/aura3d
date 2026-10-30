@@ -134,6 +134,10 @@
       .ink-scroll .overlay { background: radial-gradient(ellipse at center, rgba(27, 34, 54, 0.25), rgba(27, 34, 54, 0.7)); }
       .ink-scroll .keys dt { color: var(--warm); }
       .ink-scroll #intro-card a { color: var(--indigo); }
+      /* NR-18 shot bars on the title-to-chase blend and the win shots (set by world.ts; never with reduced motion) */
+      html::before, html::after { content: ""; position: fixed; left: 0; right: 0; height: 0; background: #0d1328; z-index: 1; pointer-events: none; transition: height 0.5s ease; }
+      html::before { top: 0; } html::after { bottom: 0; }
+      html.shot-bars::before, html.shot-bars::after { height: 9vh; }
       @media (max-width: 760px) {
         /* the bottom HUD on phones is the single ability row (<= 90 px); pause and mute move up under the scroll */
         .ink-scroll #controls { bottom: auto; top: calc(204px + env(safe-area-inset-top)); }

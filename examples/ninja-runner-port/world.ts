@@ -24,6 +24,7 @@ import { CHARACTER_URLS, PROP_ASSETS, SLOT_MODEL, type CharacterId } from "./mod
 import { EVENING_SURFACES, LANTERN_GLOW, LANTERN_POOL, WOODBLOCK_POST, DISTRICT_LOOKS, lanternGlowAt, linearToHex, lookAtDistance, nearestLanterns, type DistrictId, type LanternGlow, type LookMode } from "./districtLook";
 import { lanternPoolSize, lightRig } from "./lighting";
 import { SCARF, registerNinjaVfx, type NinjaVfx, type NinjaVfxEvent } from "./vfx";
+import { ROLL_HALFLIFE, blendIntro, cinematicsOn, laneRoll, winPose, type ShotPose } from "./cinematics";
 
 /** The rig faces +Z; characters are turned so +Z points along the route (or back at the runner). */
 const MODEL_YAW_OFFSET = 0;
@@ -237,6 +238,8 @@ export interface WorldOptions {
 export interface WorldRuntime {
   update(state: SimState, dt: number, time: number, events: readonly SimEvent[]): void;
   resetCamera(): void;
+  /** GU47 NR-18 intro: 0 on the title card, rising to 1 at the end of the countdown; null once the run is live. */
+  setIntro(k: number | null): void;
   /** A new run starts: every spirit flame is back, debris and enemy slots clear. */
   resetRun(): void;
   /** World translation of `joint` on every actor after posing each at a staggered clip phase (independence probe). */
@@ -488,6 +491,8 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
   let lastDamage = -10, lostAt = -1, lastFormShift = -10, dustClock = 0, auraClock = 0;
   let pieces: Piece[] = [];
   let threatShown: { target: number; from: number; to: number } | null = null;
+  const cinematic = cinematicsOn((options.mode ?? "evening") === "evening", options.reducedMotion === true);
+  let introBlend: number | null = null, wonAt = -1, lastX = 0, lastRoll = 0, barsShown = false;
   const shake = options.shake;
   const POOL_CAP: Record<Piece["kind"], number> = { plank: PLANK_POOL, strap: STRAP_POOL, beam: BEAM_PIECE_POOL };
   const addPieces = (list: Piece[]): void => { pieces = pieces.concat(list); for (const k of ["plank", "strap", "beam"] as const) { let over = pieces.filter((q) => q.kind === k).length - POOL_CAP[k]; if (over > 0) pieces = pieces.filter((q) => (q.kind === k && over > 0 ? (over--, false) : true)); } };
@@ -936,8 +941,25 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
         fovTarget: 57 + (state.dash > 0 ? 5 : 0),
         shakeOffset: [jolt.x, jolt.y, jolt.x * 0.4]
       }, dt);
-      cameraController.setPose({ position: pose.eye, target: pose.look, fov: pose.fov }, { cut: false });
+      // NR-18: title shot over the roofs blending into the chase through the 3-2-1, three win shots at the gate, and a
+      // lane-change roll (<= 3 deg). Reduced motion and ?look=original keep today's chase with no roll.
+      let shot: ShotPose = { eye: pose.eye as Vec3, look: pose.look as Vec3, fov: pose.fov };
+      let roll = 0;
+      if (cinematic) {
+        if (state.phase === "won") { if (wonAt < 0) wonAt = time; shot = winPose(s, state.x, time - wonAt); }
+        else {
+          wonAt = -1;
+          if (introBlend !== null) shot = blendIntro(shot, s, time, introBlend);
+          else if (state.phase === "running" && dt > 0) roll = laneRoll((state.x - lastX) / dt);
+        }
+      }
+      lastX = state.x;
+      const bars = state.phase === "won" || (introBlend !== null && introBlend < 1);
+      if (cinematic && bars !== barsShown) { barsShown = bars; document.documentElement.classList.toggle("shot-bars", bars); }
+      cameraController.setPose({ position: shot.eye, target: shot.look, fov: shot.fov }, { cut: false });
+      if (cinematic && roll !== lastRoll) { lastRoll = roll; cameraController.setRoll(roll, { halflife: ROLL_HALFLIFE }); }
     },
+    setIntro(k) { introBlend = k === null ? null : Math.max(0, Math.min(1, k)); },
     resetCamera() { chase.reset(); },
     resetRun() {
       aliveFlags.fill(1);
