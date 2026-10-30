@@ -1,6 +1,6 @@
 /* §7.7 theme "arcade-neon" — mirror of HUD_THEMES["arcade-neon"] in hud/themes.ts (runtime source of truth). */
 .a3g-hud.a3g-theme-arcade-neon {
-  --a3g-font: "A3G Orbitron","Orbitron",system-ui,sans-serif;
+  --a3g-font: "A3G Aeonik Fono","Aeonik Fono",Arial,sans-serif;
   --a3g-fg: #e8fbff;
   --a3g-fg-dim: #9ad9e6;
   --a3g-accent: #39f5ff;

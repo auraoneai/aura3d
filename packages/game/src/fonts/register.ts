@@ -1,8 +1,8 @@
 /**
- * §17 fonts: OFL woff2 Latin subsets (≤ 40 KB each) loaded through `FontFace`
- * before the title screen shows. `baseUrl` points at the package's `src/fonts`
- * asset directory as served by the app bundler (e.g.
- * `new URL("./fonts/", import.meta.url)` in the shell).
+ * §17 fonts: licensed WOFF2 web cuts (≤ 40 KiB each, provenance in
+ * `NOTICE.txt`) loaded through `FontFace` before the title screen shows.
+ * `baseUrl` points at the directory the app serves its copies from (a game
+ * copies the files it needs into its own app folder, e.g. `/fonts/`).
  */
 import { HUD_FONT_FACES } from "../hud/themes.js";
 

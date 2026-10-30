@@ -1,6 +1,6 @@
 /* §7.7 theme "tabletop" — mirror of HUD_THEMES["tabletop"] in hud/themes.ts (runtime source of truth). */
 .a3g-hud.a3g-theme-tabletop {
-  --a3g-font: "A3G Barlow Condensed","Barlow Condensed","Arial Narrow",sans-serif;
+  --a3g-font: "A3G Suisse Works","Suisse Works",Georgia,serif;
   --a3g-fg: #f2ead9;
   --a3g-fg-dim: #b9ab8d;
   --a3g-accent: #7ce8ff;

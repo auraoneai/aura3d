@@ -1,8 +1,13 @@
 /**
- * §7.7/§17 theme registry: the seven presets as `--a3g-*` custom-property
+ * §7.7/§17 theme registry: the presets as `--a3g-*` custom-property
  * records. `styles/themes/<preset>.css` carries the same values for static
  * bundlers; this map is the runtime source of truth so tests and fake-DOM
  * hosts can assert applied vars.
+ *
+ * Fonts (GU47 WP-10, PRD D9): every `--a3g-font` stack starts with a licensed
+ * face registered from the WOFF2 web cuts in `../fonts/` (provenance in
+ * `../fonts/NOTICE.txt`). The names after it are fallbacks only: the same
+ * family declared by the page, then a plain generic. No system UI stack.
  */
 export type HudThemePreset =
   | "arcade-neon"
@@ -15,16 +20,34 @@ export type HudThemePreset =
 
 export type HudThemeVars = Readonly<Record<`--a3g-${string}`, string>>;
 
-const FONT_ORBITRON = '"A3G Orbitron", "Orbitron", system-ui, sans-serif';
-const FONT_BARLOW = '"A3G Barlow Condensed", "Barlow Condensed", "Arial Narrow", sans-serif';
-const FONT_PLEX = '"A3G IBM Plex Mono", "IBM Plex Mono", ui-monospace, monospace';
-const FONT_RUSSO = '"A3G Russo One", "Russo One", sans-serif';
-const FONT_TEKTUR = '"A3G Tektur", "Tektur", monospace, sans-serif';
-const FONT_PLAIN = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+/** One licensed WOFF2 web cut the theme system ships in `packages/game/src/fonts/`. */
+export interface HudFontFace {
+  /** `FontFace` family the theme stacks name first ("A3G <family>"). */
+  readonly family: string;
+  /** File name inside `packages/game/src/fonts/`. */
+  readonly file: string;
+  /** CSS weight the face registers at (font library README weights, not file metadata). */
+  readonly weight: number;
+}
+
+// Technical geometric sans; tabular figures. Replaces Orbitron.
+const FONT_AEONIK_FONO = '"A3G Aeonik Fono", "Aeonik Fono", Arial, sans-serif';
+// Narrow timing-tower grotesk; tabular figures. Replaces Barlow Condensed.
+const FONT_NATIONAL_2_NARROW = '"A3G National 2 Narrow", "National 2 Narrow", "Arial Narrow", Arial, sans-serif';
+// Compact broadcast grotesk; tabular figures. Replaces Barlow Condensed.
+const FONT_CALIBRE = '"A3G Calibre", "Calibre", Arial, sans-serif';
+// Swiss instrument-readout text face; tabular figures. Replaces IBM Plex Mono.
+const FONT_NEUE_HAAS_TEXT = '"A3G Neue Haas Grotesk Text", "Neue Haas Grotesk Text", Arial, sans-serif';
+// Blunt grotesk with a real Bold; tabular figures. Replaces Russo One.
+const FONT_UNTITLED_SANS = '"A3G Untitled Sans", "Untitled Sans", Arial, sans-serif';
+// Printed-card book serif; tabular figures. Replaces Barlow Condensed.
+const FONT_SUISSE_WORKS = '"A3G Suisse Works", "Suisse Works", Georgia, serif';
+// Neutral licensed UI face (the repo shell face). Replaces the Roboto system stack.
+const FONT_GRAPHIK = '"A3G Graphik", "Graphik", "Graphik Web", Arial, sans-serif';
 
 export const HUD_THEMES: Readonly<Record<HudThemePreset, HudThemeVars>> = Object.freeze({
   "arcade-neon": {
-    "--a3g-font": FONT_ORBITRON,
+    "--a3g-font": FONT_AEONIK_FONO,
     "--a3g-fg": "#e8fbff",
     "--a3g-fg-dim": "#9ad9e6",
     "--a3g-accent": "#39f5ff",
@@ -37,7 +60,7 @@ export const HUD_THEMES: Readonly<Record<HudThemePreset, HudThemeVars>> = Object
     "--a3g-radius": "4px"
   },
   motorsport: {
-    "--a3g-font": FONT_BARLOW,
+    "--a3g-font": FONT_NATIONAL_2_NARROW,
     "--a3g-fg": "#f5f7fa",
     "--a3g-fg-dim": "#aab4c0",
     "--a3g-accent": "#ffcf3f",
@@ -50,7 +73,7 @@ export const HUD_THEMES: Readonly<Record<HudThemePreset, HudThemeVars>> = Object
     "--a3g-radius": "2px"
   },
   "sports-broadcast": {
-    "--a3g-font": FONT_BARLOW,
+    "--a3g-font": FONT_CALIBRE,
     "--a3g-fg": "#ffffff",
     "--a3g-fg-dim": "#cfd8e3",
     "--a3g-accent": "#00e06d",
@@ -63,7 +86,7 @@ export const HUD_THEMES: Readonly<Record<HudThemePreset, HudThemeVars>> = Object
     "--a3g-radius": "6px"
   },
   "sci-fi-telemetry": {
-    "--a3g-font": FONT_PLEX,
+    "--a3g-font": FONT_NEUE_HAAS_TEXT,
     "--a3g-fg": "#c9ffe8",
     "--a3g-fg-dim": "#6fbf9d",
     "--a3g-accent": "#00ff9f",
@@ -76,7 +99,7 @@ export const HUD_THEMES: Readonly<Record<HudThemePreset, HudThemeVars>> = Object
     "--a3g-radius": "0px"
   },
   fighting: {
-    "--a3g-font": FONT_RUSSO,
+    "--a3g-font": FONT_UNTITLED_SANS,
     "--a3g-fg": "#fff6e8",
     "--a3g-fg-dim": "#d9c9a8",
     "--a3g-accent": "#ffcc00",
@@ -89,7 +112,7 @@ export const HUD_THEMES: Readonly<Record<HudThemePreset, HudThemeVars>> = Object
     "--a3g-radius": "3px"
   },
   tabletop: {
-    "--a3g-font": FONT_BARLOW,
+    "--a3g-font": FONT_SUISSE_WORKS,
     "--a3g-fg": "#f2ead9",
     "--a3g-fg-dim": "#b9ab8d",
     "--a3g-accent": "#7ce8ff",
@@ -102,7 +125,7 @@ export const HUD_THEMES: Readonly<Record<HudThemePreset, HudThemeVars>> = Object
     "--a3g-radius": "8px"
   },
   plain: {
-    "--a3g-font": FONT_PLAIN,
+    "--a3g-font": FONT_GRAPHIK,
     "--a3g-fg": "#e6e6e6",
     "--a3g-fg-dim": "#9aa0a8",
     "--a3g-accent": "#8ab4ff",
@@ -116,12 +139,22 @@ export const HUD_THEMES: Readonly<Record<HudThemePreset, HudThemeVars>> = Object
   }
 });
 
-/** woff2 faces the shell loads before the title screen (§17 ≤ 40 KB each). */
-export const HUD_FONT_FACES: readonly { family: string; file: string; weight: number }[] = [
-  { family: "A3G Orbitron", file: "orbitron-600.woff2", weight: 600 },
-  { family: "A3G Orbitron", file: "orbitron-800.woff2", weight: 800 },
-  { family: "A3G Barlow Condensed", file: "barlow-condensed-600.woff2", weight: 600 },
-  { family: "A3G IBM Plex Mono", file: "ibm-plex-mono-500.woff2", weight: 500 },
-  { family: "A3G Russo One", file: "russo-one-400.woff2", weight: 400 },
-  { family: "A3G Tektur", file: "tektur-600.woff2", weight: 600 }
-];
+/**
+ * Licensed WOFF2 faces the shell loads before the title screen (§17 ≤ 40 KiB
+ * each). Each family ships only the weights its theme uses.
+ */
+export const HUD_FONT_FACES: readonly HudFontFace[] = Object.freeze([
+  { family: "A3G Aeonik Fono", file: "aeonik-fono-400.woff2", weight: 400 },
+  { family: "A3G Aeonik Fono", file: "aeonik-fono-700.woff2", weight: 700 },
+  { family: "A3G National 2 Narrow", file: "national-2-narrow-400.woff2", weight: 400 },
+  { family: "A3G National 2 Narrow", file: "national-2-narrow-700.woff2", weight: 700 },
+  { family: "A3G Calibre", file: "calibre-400.woff2", weight: 400 },
+  { family: "A3G Calibre", file: "calibre-600.woff2", weight: 600 },
+  { family: "A3G Neue Haas Grotesk Text", file: "neue-haas-grotesk-text-400.woff2", weight: 400 },
+  { family: "A3G Neue Haas Grotesk Text", file: "neue-haas-grotesk-text-500.woff2", weight: 500 },
+  { family: "A3G Untitled Sans", file: "untitled-sans-400.woff2", weight: 400 },
+  { family: "A3G Untitled Sans", file: "untitled-sans-700.woff2", weight: 700 },
+  { family: "A3G Suisse Works", file: "suisse-works-400.woff2", weight: 400 },
+  { family: "A3G Graphik", file: "graphik-400.woff2", weight: 400 },
+  { family: "A3G Graphik", file: "graphik-500.woff2", weight: 500 }
+]);
