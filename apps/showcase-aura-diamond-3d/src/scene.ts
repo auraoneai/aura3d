@@ -3,7 +3,7 @@
  * Moved out of main.ts unchanged (GU47 WP-18) so unit tests can build and audit the real scene without booting the game.
  * Presentation only: the sim in main.ts reads the field constants exported here (BASES, FIELDER_SPOTS) unchanged.
  */
-import { camera, effects, game, instances, lights, looks, material, model, primitives, scene, sky, world, type AuraLookOverrides } from "@aura3d/engine";
+import { camera, effects, game, instances, lights, looks, material, model, primitives, scene, sky, text3D, world, type AuraLookOverrides } from "@aura3d/engine";
 import { assets } from "./aura-assets.route";
 import { PARK_LOOKS, lookPlan, parkPracticals, type DiamondLookPlan, type DiamondLookVariant, type DiamondSkyMode, type DiamondTier } from "../art/look";
 import { turfTextures } from "./turfTextures";
@@ -18,6 +18,7 @@ import {
   ZONE_CY,
   FOUL_DEG,
   fencePoint,
+  fenceRadius,
   crowdPlacements,
   bleacherPlacements,
   shellPlacements,
@@ -145,6 +146,9 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
     instances.box({ name: "outfield-wall", size: [1, park.wallH, 0.5], material: wallMat, transforms: wallT }),
     instances.box({ name: "outfield-wall-cap", size: [1, 0.14, 0.56], material: wallTopMat, transforms: capT })
   );
+
+  // GU47 DIA-V2: the park's name in SDF letters on the left-centre wall (+1 draw).
+  if (gu47) nodes.push(wallNameNode(park));
 
   // GU47 DIA-M1: a darker warning track (the park's track clay and roughness; wet and glossy in Midtown) in one instanced
   // draw, a 4.5 m strip just inside the wall from pole to pole.
@@ -567,6 +571,41 @@ export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
     if (band) nodes.push(horizonNode(horizonForTier(band, ctx.tier === "low")));
   }
   return nodes;
+}
+
+/** DIA-V2: field angle (deg) of the painted park name: the left-centre power alley, between Ivy's vines (-36, -24). */
+export const WALL_NAME_THETA = -30;
+
+/**
+ * DIA-V2: the park name painted on the outfield wall face in SDF letters (`text3D`, backend "sdf"), centred on the wall
+ * height at WALL_NAME_THETA, facing home plate, 0.32 m proud of the wall's centre line (the wall is 0.5 m thick). Letter
+ * height half the wall (at most 0.9 m, smaller when the name would overrun its wall segment); park chalk, lifted a little
+ * so it reads at night without glowing.
+ */
+export function wallNameNode(park: ParkSpec): any {
+  const chalk = PARK_LOOKS[park.id].turf.chalk;
+  const build = (size: number) =>
+    text3D(park.name, {
+      name: "wall-park-name",
+      size,
+      depth: 0.04,
+      backend: "sdf",
+      material: material.emissive({ color: chalk, emissive: chalk, emissiveIntensity: NIGHT_LOOK[park.id] ? 0.3 : 0.12 })
+    });
+  // The glyph mesh starts at the origin (bottom-left) and scales with size; measure it at size 1.
+  const widthOf = (node: ReturnType<typeof build>): number =>
+    (((node.toJSON() as any).geometry?.positions ?? []) as readonly (readonly number[])[]).reduce((m, q) => Math.max(m, q[0] ?? 0), 0);
+  const segDeg = (2 * FOUL_DEG) / park.fenceSegments;
+  const segLen = 2 * fenceRadius(park, WALL_NAME_THETA) * Math.tan((segDeg * Math.PI) / 360);
+  const size = Math.min(0.9, park.wallH * 0.5, (segLen - 0.8) / Math.max(widthOf(build(1)), 1e-6));
+  const node = build(size);
+  const width = widthOf(node);
+  const rad = (WALL_NAME_THETA * Math.PI) / 180;
+  const face = fencePoint(park, WALL_NAME_THETA, 0, -0.32);
+  const yaw = -rad; // +z (the glyphs' front) turned to face home plate
+  return node
+    .position(face[0] - (width / 2) * Math.cos(yaw), (park.wallH - size) / 2, face[2] + (width / 2) * Math.sin(yaw))
+    .rotate(0, yaw, 0);
 }
 
 /**

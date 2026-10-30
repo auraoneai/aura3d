@@ -468,6 +468,11 @@
         "practical": false
       },
       {
+        "node": "wall-park-name",
+        "emissiveIntensity": 0.12,
+        "practical": true
+      },
+      {
         "node": "warning-track",
         "practical": false
       },
