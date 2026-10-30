@@ -389,6 +389,35 @@ export const SAFE_POW_GLSL = [
 
 const safePowLines = (userSource: string): string[] => (usesToken(userSource, "pow") ? [SAFE_POW_GLSL] : []);
 
+/**
+ * GU47 E-D: per-instance inputs for `material.custom` on instanced nodes (`instances.*`, `primitives.*({ instances })`).
+ * A vertex stage that reads `instanceMatrix` gets the node's per-instance transform (three.js order:
+ * `modelMatrix * instanceMatrix * position`) and `instanceColor` its per-instance colour (white when the node has no
+ * colours). The forward pass then draws every instance in one call from the engine's per-instance attribute buffer and
+ * sets `u_a3dInstancing` (`supportsAuthorInstancing`); on a non-instanced draw they read identity / white. A stage that
+ * reads neither keeps today's path (one draw per instance with the instance folded into `modelMatrix`).
+ */
+function instanceInputLines(userSource: string): string[] {
+  const wantMatrix = usesToken(userSource, "instanceMatrix") && !declaresIdentifier(userSource, "instanceMatrix");
+  const wantColor = usesToken(userSource, "instanceColor") && !declaresIdentifier(userSource, "instanceColor");
+  if (!wantMatrix && !wantColor) return [];
+  const lines = [
+    "uniform float u_a3dInstancing;",
+    "in vec4 a_instanceMatrix0;",
+    "in vec4 a_instanceMatrix1;",
+    "in vec4 a_instanceMatrix2;",
+    "in vec4 a_instanceMatrix3;"
+  ];
+  if (wantMatrix) {
+    lines.push("#define instanceMatrix (u_a3dInstancing > 0.5 ? mat4(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3) : mat4(1.0))");
+  }
+  if (wantColor) {
+    lines.push("uniform float u_a3dInstanceColors;", "in vec4 a_instanceColor;");
+    lines.push("#define instanceColor (u_a3dInstancing > 0.5 && u_a3dInstanceColors > 0.5 ? a_instanceColor : vec4(1.0))");
+  }
+  return lines;
+}
+
 function vertexPreamble(uniforms: readonly LoweredUniform[], userSource: string): string {
   const lines: string[] = [...BUILTIN_DECLS];
   if (!declaresIdentifier(userSource, "a_position")) lines.push("in vec3 a_position;");
@@ -396,6 +425,7 @@ function vertexPreamble(uniforms: readonly LoweredUniform[], userSource: string)
   const wantUv = usesToken(userSource, "uv") && !declaresIdentifier(userSource, "uv");
   if (wantNormal && !declaresIdentifier(userSource, "a_normal")) lines.push("in vec3 a_normal;");
   if (wantUv && !declaresIdentifier(userSource, "a_uv")) lines.push("in vec2 a_uv;");
+  lines.push(...instanceInputLines(userSource));
   lines.push(...uniformDeclLines(uniforms));
   lines.push(...aliasLines(uniforms, userSource));
   if (usesToken(userSource, "position") && !declaresIdentifier(userSource, "position")) lines.push("#define position a_position");
@@ -670,6 +700,11 @@ function adapterLibraryFor(_name: string): ShaderLibrary {
 export class AuraCustomShaderMaterial extends PortableShaderMaterial {
   /** `fog: true` on a fragment stage the fog wrapper could not wrap (no `void main()` or no `out vec4`). */
   private readonly fogUnapplied: boolean;
+  /**
+   * GU47 E-D (`castShadow: true`): shader-library key of the depth program (this material's baked vertex stage with a
+   * depth-only fragment). `DepthPass` draws shadow casters with it, so vertex displacement moves the shadow too.
+   */
+  readonly customDepthShaderKey: string | undefined;
   private readonly unusedUniformNames: readonly string[];
   /** The author's own GLSL per stage, so a compile error in the assembled program can be mapped back to the author's line (best effort: exact when no `#include` expands before the error line). Read by the renderer's shader-failure diagnostics. */
   readonly shaderAuthoredSource: { readonly vertex: string; readonly fragment: string };
@@ -714,6 +749,7 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
       requiredAttributes: ["a_position", ...customAttributes]
     });
     this.fogUnapplied = spec.fog === true && !fogged.applied;
+    this.customDepthShaderKey = spec.castShadow === true ? acquireCustomDepthSource(this.shaderKey, glslVertex) : undefined;
     this.shaderAuthoredSource = { vertex: vertexSource, fragment: spec.glsl.fragment };
     const authoredSource = `${spec.glsl.vertex ?? ""}\n${spec.glsl.fragment}`;
     this.unusedUniformNames = uniforms
@@ -733,13 +769,8 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
   override dispose(): void {
     if (this.disposed) return;
     super.dispose();
-    const refs = (globalSourceRefs.get(this.shaderKey) ?? 1) - 1;
-    if (refs <= 0) {
-      globalSourceRefs.delete(this.shaderKey);
-      unregisterGlobalShaderSource(this.shaderKey);
-    } else {
-      globalSourceRefs.set(this.shaderKey, refs);
-    }
+    releaseGlobalSource(this.shaderKey);
+    if (this.customDepthShaderKey) releaseGlobalSource(this.customDepthShaderKey);
   }
 
   /**
@@ -763,6 +794,38 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
     }
     return out;
   }
+}
+
+function releaseGlobalSource(key: string): void {
+  const refs = (globalSourceRefs.get(key) ?? 1) - 1;
+  if (refs <= 0) {
+    globalSourceRefs.delete(key);
+    unregisterGlobalShaderSource(key);
+  } else {
+    globalSourceRefs.set(key, refs);
+  }
+}
+
+/** Depth-only fragment of a `castShadow` custom material: the shadow map stores depth; colour is never read. */
+export const CUSTOM_DEPTH_FRAGMENT_GLSL = "#version 300 es\nprecision highp float;\nout vec4 a3dDepthColor;\nvoid main() {\n  a3dDepthColor = vec4(1.0);\n}\n";
+
+/** Same marker placement as `PortableShaderMaterial` (after `#version`): the device requires the marker in both stages. */
+function withSourceMarker(source: string, marker: string): string {
+  const version = source.match(/^(\s*#version[^\n]*\n)/);
+  return version ? `${version[1]}// ${marker}\n${source.slice(version[1].length)}` : `// ${marker}\n${source}`;
+}
+
+/**
+ * GU47 E-D: publishes the depth program of a `castShadow: true` material (the material's baked vertex stage, so author
+ * displacement, uniforms and `instanceMatrix` work in the shadow pass, plus `CUSTOM_DEPTH_FRAGMENT_GLSL`) under
+ * `<shaderKey>/depth`, ref-counted like the colour program. Returns the key `DepthPass` resolves.
+ */
+function acquireCustomDepthSource(shaderKey: string, glslVertex: string): string {
+  const name = `${shaderKey}/depth`;
+  const marker = `@aura3d-portable:${name}`;
+  registerGlobalShaderSource({ name, marker, vertex: withSourceMarker(glslVertex, marker), fragment: withSourceMarker(CUSTOM_DEPTH_FRAGMENT_GLSL, marker) });
+  globalSourceRefs.set(name, (globalSourceRefs.get(name) ?? 0) + 1);
+  return name;
 }
 
 /** Compile an `AuraCustomMaterialSpec` into a renderer-integrated portable material. */
