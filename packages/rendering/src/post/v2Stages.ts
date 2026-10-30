@@ -293,6 +293,22 @@ export function godRayColor(color: unknown): [number, number, number] {
   return [0, 1, 2].map((i) => (typeof rgb![i] === "number" && Number.isFinite(rgb![i]) ? (rgb![i] as number) : fallback[i]!)) as [number, number, number];
 }
 
+/** GU47 E-C (EC-8): S4 `u_density` — the authored god-ray density clamped to [0.05, 1]; omitted or invalid = 1 (full march). */
+export function godRayDensity(density: unknown): number {
+  return typeof density === "number" && Number.isFinite(density) ? Math.min(1, Math.max(0.05, density)) : 1;
+}
+
+/**
+ * GU47 E-C (EC-8): S6 `u_tiltShift` = [bandCenter, bandWidth, angle (rad), 1]
+ * for a valid band (centre and width clamped to [0, 1]), else all zeros
+ * (the thin-lens CoC).
+ */
+export function dofTiltShiftUniform(tilt: DofOptions["tiltShift"] | undefined): [number, number, number, number] {
+  if (!tilt || !Number.isFinite(tilt.bandCenter) || !Number.isFinite(tilt.bandWidth)) return [0, 0, 0, 0];
+  const angle = typeof tilt.angleDeg === "number" && Number.isFinite(tilt.angleDeg) ? tilt.angleDeg : 0;
+  return [Math.min(1, Math.max(0, tilt.bandCenter)), Math.min(1, Math.max(0, tilt.bandWidth)), angle * Math.PI / 180, 1];
+}
+
 /**
  * Inserts `#define` lines after the `#version` directive. GLSL ES 3.00
  * requires `#version 300 es` to be the first line, so prepending defines (as
@@ -989,6 +1005,8 @@ export function runV2HdrStages(
       g.uniform1f(g.getUniformLocation(godProg, "u_weight"), god.weight ?? god.intensity ?? 0.7);
       g.uniform1f(g.getUniformLocation(godProg, "u_diskOuter"), 0.08);
       g.uniform1f(g.getUniformLocation(godProg, "u_diskInner"), 0.02);
+      // GU47 E-C (EC-8): `godRayDensity`; omitted keeps the full march (1).
+      g.uniform1f(g.getUniformLocation(godProg, "u_density"), godRayDensity(god.density));
     });
     // Additive blend onto the working HDR target.
     const blended = state.pool.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
@@ -1109,7 +1127,9 @@ export function runV2HdrStages(
     const dw = Math.max(1, Math.round(w / 2)), dh = Math.max(1, Math.round(h / 2));
     const prefilter = state.pool.acquire({ width: dw, height: dh, format: "rgba16f", samples: 1, depth: false });
     const prefilterProg = program(state, gl, "dof-prefilter", DOF_PREFILTER_GLSL);
-    recordPostStage(`S6:dof-rings${rings}`);
+    // GU47 E-C (EC-8): the tilt-shift band replaces the thin-lens CoC.
+    const tilt = dofTiltShiftUniform(dof.tiltShift);
+    recordPostStage(tilt[3] > 0 ? `S6:dof-tilt-shift-rings${rings}` : `S6:dof-rings${rings}`);
     draw(host, state, prefilterProg, asGlTarget(prefilter), [asGlTarget(hdr).colorHandle, asGlTarget(linZFull).colorHandle], (g) => {
       g.uniform1i(g.getUniformLocation(prefilterProg, "u_color"), 0);
       g.uniform1i(g.getUniformLocation(prefilterProg, "u_linearDepth"), 1);
@@ -1119,6 +1139,7 @@ export function runV2HdrStages(
       g.uniform1f(g.getUniformLocation(prefilterProg, "u_sensorHeightMm"), dof.sensorHeightMm ?? 24);
       g.uniform1f(g.getUniformLocation(prefilterProg, "u_frameHeightPx"), h);
       g.uniform1f(g.getUniformLocation(prefilterProg, "u_maxBlurPx"), maxBlur);
+      g.uniform4f(g.getUniformLocation(prefilterProg, "u_tiltShift"), tilt[0], tilt[1], tilt[2], tilt[3]);
     });
     const tileW = Math.max(1, Math.ceil(dw / 8)), tileH = Math.max(1, Math.ceil(dh / 8));
     const nearTile = state.pool.acquire({ width: tileW, height: tileH, format: "rgba16f", samples: 1, depth: false });

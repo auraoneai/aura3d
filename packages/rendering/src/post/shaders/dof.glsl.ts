@@ -17,6 +17,16 @@
  *     background taps scatter by their own CoC, near-field taps by the
  *     tile-dilated near CoC.
  *   DOF_COMPOSITE_GLSL — full-res `smoothstep(|coc|, 1, 2)` blend.
+ *
+ * GU47 E-C (EC-8) tilt-shift band mode (`u_tiltShift.w = 1`): the CoC comes
+ * from the screen position instead of depth. `t` is the distance across the
+ * band (frame-height units, 0 = top edge, 1 = bottom edge, rotated by
+ * `angle` about the frame centre); pixels within `bandWidth / 2` of
+ * `bandCenter` stay sharp and the blur ramps linearly to `maxBlurPx` over
+ * `max(0.05, (1 − bandWidth) / 2)`. Band-mode CoC is far-field (positive)
+ * on both sides, so no near-field dilation bleeds over the sharp band, and
+ * the sky blurs like everything else. `u_tiltShift.w = 0` is the thin-lens
+ * path above, unchanged.
  */
 
 import { POST_COMMON_GLSL } from "./common.glsl.js";
@@ -34,9 +44,20 @@ uniform float u_fStop;
 uniform float u_sensorHeightMm;
 uniform float u_frameHeightPx;  // full-res height
 uniform float u_maxBlurPx;
+uniform vec4 u_tiltShift;       // GU47: x band centre (0 top, 1 bottom), y band width, z angle (rad), w 1 = band mode
 out vec4 o_color;
 
 ${POST_COMMON_GLSL}
+
+float tiltShiftCocPx(ivec2 base, ivec2 fullSize) {
+  vec2 uv = (vec2(base) + 1.0) / vec2(fullSize);
+  float aspect = float(fullSize.x) / float(max(fullSize.y, 1));
+  vec2 p = vec2((uv.x - 0.5) * aspect, (1.0 - uv.y) - 0.5);
+  float t = dot(p, vec2(-sin(u_tiltShift.z), cos(u_tiltShift.z))) + 0.5;
+  float halfBand = 0.5 * clamp(u_tiltShift.y, 0.0, 1.0);
+  float ramp = max(0.05, 0.5 - halfBand);
+  return clamp((abs(t - u_tiltShift.x) - halfBand) / ramp, 0.0, 1.0) * u_maxBlurPx;
+}
 
 void main() {
   ivec2 pixel = ivec2(gl_FragCoord.xy);
@@ -58,6 +79,7 @@ void main() {
   float cocPx = clamp(cocMm * (u_frameHeightPx / u_sensorHeightMm), -u_maxBlurPx, u_maxBlurPx);
   // Sky (linear Z at far) never blurs.
   cocPx = zMm >= 9.9e5 ? 0.0 : cocPx;
+  if (u_tiltShift.w > 0.5) cocPx = tiltShiftCocPx(base, fullMax + 1);
   o_color = vec4(color, cocPx);
 }
 `;

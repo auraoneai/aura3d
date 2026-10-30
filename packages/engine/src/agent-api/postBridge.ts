@@ -774,8 +774,10 @@ export const POST_EFFECT_FIELDS: Readonly<Record<string, readonly string[]>> = {
   "film-grain": ["intensity", "size", "luminanceResponse"],
   "chromatic-aberration": ["intensity"],
   // Lane-07 factories route through this bridge on the v2 chain (§6.9).
-  "volumetric-fog": ["density", "color", "volumetricQuality", "lightPosition", "heightFalloff", "heightReference"],
-  "depth-of-field": ["focusDistance", "fStop", "focalLength", "maxBlur"],
+  // GU47 E-C (EC-8): `godRayDensity` (S4 shaft density, decoupled from the fog
+  // `density`) and the DOF `tiltShift` band; E-F adds the factory option types.
+  "volumetric-fog": ["density", "color", "volumetricQuality", "lightPosition", "heightFalloff", "heightReference", "godRayDensity"],
+  "depth-of-field": ["focusDistance", "fStop", "focalLength", "maxBlur", "tiltShift"],
   "motion-blur": ["shutter", "maxBlur", "samples", "tileSize", "timeScale"],
   "screen-space-reflections": ["maxDistance", "intensity"],
   outline: ["color", "width", "threshold"]
@@ -889,6 +891,32 @@ function gradeRgbField(node: AuraEffectNode, field: string, fallback: RgbLike): 
 
 /** Temperature / tint are normalised white-balance offsets in [-1, 1] (0 = neutral). */
 const clampUnit = (value: number): number => Math.min(1, Math.max(-1, value));
+
+/**
+ * GU47 E-C (EC-8): local stand-ins for the option fields lane E-F adds to
+ * `nodes/effects.ts` (PRD §3.1): DOF `tiltShift` and volumetricFog
+ * `godRayDensity`. Read structurally until that merges.
+ */
+interface AuraDofTiltShiftLocal { readonly bandCenter: number; readonly bandWidth: number; readonly angleDeg?: number }
+
+/** The DOF node's tilt-shift band, centre/width clamped to [0, 1]; `undefined` when absent or malformed. */
+function dofTiltShiftOf(node: AuraEffectNode): AuraDofTiltShiftLocal | undefined {
+  const tilt = (node as unknown as { readonly tiltShift?: Partial<AuraDofTiltShiftLocal> }).tiltShift;
+  if (!tilt || typeof tilt !== "object") return undefined;
+  const { bandCenter, bandWidth, angleDeg } = tilt;
+  if (typeof bandCenter !== "number" || !Number.isFinite(bandCenter) || typeof bandWidth !== "number" || !Number.isFinite(bandWidth)) return undefined;
+  return {
+    bandCenter: Math.min(1, Math.max(0, bandCenter)),
+    bandWidth: Math.min(1, Math.max(0, bandWidth)),
+    ...(typeof angleDeg === "number" && Number.isFinite(angleDeg) ? { angleDeg } : {})
+  };
+}
+
+/** volumetricFog `godRayDensity` (S4 march fraction) clamped to [0.05, 1]; `undefined` when not authored. */
+function godRayDensityOf(node: AuraEffectNode): number | undefined {
+  const value = (node as unknown as { readonly godRayDensity?: unknown }).godRayDensity;
+  return typeof value === "number" && Number.isFinite(value) ? Math.min(1, Math.max(0.05, value)) : undefined;
+}
 
 /* ------------------------------------------------------------------------- */
 /* GU47 E-C (EC-2): `.cube` LUT delivery for `effects.colorGrade({ lut })`     */
@@ -1202,7 +1230,10 @@ export function createRootPostPipeline(
         samples: (tierResolution?.godRays.enabled === true ? tierResolution.godRays.samples : 32) as 32 | 48 | 64,
         decay: 0.94,
         weight: numberField(volumetricNode, "intensity", 0.7),
-        density: numberField(volumetricNode, "density", 0.18),
+        // GU47 E-C (EC-8): S4 shaft density comes from `godRayDensity` only;
+        // the fog `density` no longer rides along (S4 never read it), and an
+        // omitted value keeps the full march.
+        ...(godRayDensityOf(volumetricNode) !== undefined ? { density: godRayDensityOf(volumetricNode) } : {}),
         intensity: numberField(volumetricNode, "intensity", 0.7),
         color: rgbField(volumetricNode, "color", { r: 0.44, g: 0.52, b: 0.73 }),
         lightWorld: Array.isArray(volumetricNode.lightPosition) ? volumetricNode.lightPosition.slice(0, 3) as unknown as readonly [number, number, number] : undefined,
@@ -1220,7 +1251,9 @@ export function createRootPostPipeline(
         focalLengthMm: numberField(dofNode, "focalLength", 50),
         maxBlurPx: numberField(dofNode, "maxBlur", 12),
         halfRes: tierResolution?.dof.enabled === true ? tierResolution.dof.halfRes : true,
-        sensorHeightMm: 24
+        sensorHeightMm: 24,
+        // GU47 E-C (EC-8): screen-space band mode replaces the thin-lens CoC.
+        ...(dofTiltShiftOf(dofNode) ? { tiltShift: dofTiltShiftOf(dofNode) } : {})
       }
     } : {}),
     ...(mbNode && mbEnabled ? {

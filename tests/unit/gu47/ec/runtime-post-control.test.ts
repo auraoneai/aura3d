@@ -61,7 +61,7 @@ describe("app.post.setEffect (EC-5)", () => {
     post.setEffect("depthOfField", { focusDistance: 9, fStop: 1.4 });
     post.setEffect("motionBlur", { shutter: 0.25 });
     post.setEffect("chromaticAberration", { intensity: 0.004 });
-    post.setEffect("volumetricFog", { density: 0.3, color: "#ff8000" });
+    post.setEffect("volumetricFog", { godRayDensity: 0.3, color: "#ff8000" });
     post.setEffect("vignette", { intensity: 0.55 });
     const options = derive(snapshot);
     expect(options.grade?.temperature).toBeCloseTo(0.2, 6);

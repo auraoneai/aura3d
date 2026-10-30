@@ -101,6 +101,12 @@ export interface DofOptions {
   readonly sensorHeightMm: number;
   readonly maxBlurPx: number;
   readonly halfRes: boolean;
+  /**
+   * GU47 E-C: screen-space tilt-shift band (miniature look) instead of the
+   * thin-lens CoC. `bandCenter` 0 = top edge .. 1 = bottom edge, `bandWidth`
+   * the sharp fraction of the frame height, `angleDeg` rotates the band.
+   */
+  readonly tiltShift?: { readonly bandCenter: number; readonly bandWidth: number; readonly angleDeg?: number };
 }
 
 export interface MotionBlurOptions {
@@ -119,6 +125,8 @@ export interface GodRayOptions {
   readonly lightWorld?: readonly [number, number, number];
   /** World-space direction TOWARD the strongest directional light (bridge). */
   readonly lightDirection?: readonly [number, number, number];
+  /** GU47 E-C: shaft density, the march fraction toward the light in (0, 1] (volumetricFog `godRayDensity`); omitted = 1. */
+  readonly density?: number;
 }
 
 /** §6.7 composite (linear) grade options. */
