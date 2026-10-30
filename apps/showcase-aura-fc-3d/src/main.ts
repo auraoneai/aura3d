@@ -27,6 +27,7 @@ import { fireFcVfx, registerFcVfxPack, type FcVfxEvent } from "./game/vfx";
 import { fcQaCrops } from "./game/qaCrops";
 import { fitCameraToAspect, broadcastPose, introRailPose, replayPose, fullTimeOrbitPose, INTRO_RAIL_S } from "./game/camera";
 import { createReplayBuffer, type ReplayFrame, type ReplayPlayback } from "./game/replay";
+import { bindScoreboardText, shownScore } from "./game/scoreboard3d";
 import { loadSave } from "./game/save";
 import { resolveAthlete, applyAthleteKit, poseAthlete, skinFor, teamKitForId, type AthleteRig } from "./game/rig";
 import { createHud, clubFor } from "./game/hud";
@@ -120,6 +121,9 @@ function boot(): void {
 
   /* -------------------------- handles -------------------------- */
   let world = resolveWorld(app);
+  // FC47-H1: the gantry screen's SDF score reel (re-bound after each venue rebuild)
+  let scoreReel = bindScoreboardText(app);
+  let reelShown: ReadonlySet<string> = new Set();
   const rigs = new Map<string, AthleteRig>();
   for (const id of ATHLETE_IDS) rigs.set(id, resolveAthlete(app, id));
   /** FC-21: the look is part of the scene graph, so a venue change rebuilds the scene and re-resolves every handle. */
@@ -131,6 +135,7 @@ function boot(): void {
       applyPostAccessibility(app, reducedMotion);
       registerFcVfxPack((app as any).effects, venue, vfxOpts);
       world = resolveWorld(app);
+      scoreReel = bindScoreboardText(app);
       for (const id of ATHLETE_IDS) rigs.set(id, resolveAthlete(app, id));
     } catch (e) {
       console.warn("[fc3d] venue rebuild failed", e);
@@ -665,6 +670,7 @@ function boot(): void {
 
       /* ---- camera ---- */
       updateCamera(dt);
+      reelShown = scoreReel(s.score);
 
 
       /* ---- HUD ---- */
@@ -743,6 +749,7 @@ function boot(): void {
         shootout: s.shootout ? { stage: s.shootout.stage, scores: [...s.shootout.scores], taken: [...s.shootout.taken], round: s.shootout.round } : null,
         winner: s.winner,
         cameraMode: cam.mode,
+        inWorldScore: shownScore(reelShown),
         broadcast: { introPlayed, cuts: camCuts, replay: replay ? { from: replay.plan.from, to: replay.plan.to, duration: replay.plan.duration, elapsed: replay.elapsed } : null, replayBufferSpan: replayBuf.span() },
         camera: { position: [...cam.shownEye], target: [...cam.target], fov: cam.shownFov, authoredFov: cam.fov },
         goalpostsInView: {

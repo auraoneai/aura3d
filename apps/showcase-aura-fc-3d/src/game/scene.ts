@@ -19,6 +19,7 @@ import {
 import { athleteNodes } from "./rig";
 import { refereePatrol } from "./locomotion";
 import { MAIN_FLOOD_TOWER, VENUE_LOOKS, type FcVenueLook } from "./look";
+import { scoreboardTextNodes } from "./scoreboard3d";
 
 export { VENUE_LOOKS } from "./look";
 
@@ -647,6 +648,8 @@ function stadiumNodes(v: VenueSpec): any[] {
       .position(0, 7.2, -(PITCH_HZ + 9.2))
       .runtime(gameRuntime("fc-scoreboard-screen"))
   );
+  // FC47-H1: SDF in-world score on the screen (a digit reel toggled by main.ts; text3D has no runtime setText)
+  nodes.push(...scoreboardTextNodes("#f3f0dc"));
 
   /* ---- Glacier dome + aurora ribbons (dome lowered to y=-6.5 when active so floor stays below turf) ---- */
   nodes.push(
