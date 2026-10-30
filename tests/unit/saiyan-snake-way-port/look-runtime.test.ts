@@ -129,7 +129,7 @@ describe("serpentine-sky-run QA crops (E-I crop contract)", () => {
 
 import { createVfxEventTracker } from "../../../examples/saiyan-snake-way-port/art/vfxEvents";
 import { createRun } from "../../../examples/saiyan-snake-way-port/sim";
-import { buildWorld } from "../../../examples/saiyan-snake-way-port/world";
+import { VERGE_POSTS, VERGE_SPACING, buildWorld } from "../../../examples/saiyan-snake-way-port/world";
 
 describe("serpentine-sky-run VFX events (SSR-12)", () => {
   it("fires one event per scripted state change and never writes the run state", () => {
@@ -177,5 +177,26 @@ describe("serpentine-sky-run instanced pickups (SSR-18)", () => {
     const original = nodesOf("original");
     expect(original.filter((n) => /^ent-(orb|soul|power)-/.test(n.name ?? "")).length).toBe(150 + 40 * 2 + 10 * 2);
     expect(original.some((n) => /^inst-/.test(n.name ?? ""))).toBe(false);
+  });
+});
+
+describe("serpentine-sky-run verge dressing (SSR-11)", () => {
+  it("strings flags and hangs lanterns every 18 m on both verges as 2 instanced nodes, all in the frustum band ahead", () => {
+    const world = buildWorld({ look: { mode: "script", pinnedStage: null } });
+    const counts = new Map<string, number>();
+    const handle = (id: string) => {
+      const h: Record<string, unknown> = {};
+      const self = () => h;
+      Object.assign(h, { setPosition: self, setRotation: self, setScale: self, setUniform: self, setVisible: self, setLight: () => undefined,
+        setInstanceMatrices: (_m: Float32Array, n: number) => { counts.set(id, n); return h; } });
+      return h;
+    };
+    const app = { camera: { setPose: () => undefined }, nodes: { require: (id: string) => handle(id) } };
+    const runtime = world.bind(app as never);
+    runtime.update(createRun(), 1 / 60, 1, 16 / 9);
+    expect(counts.get("verge-lanterns")).toBe(VERGE_POSTS);
+    expect(counts.get("verge-flags")).toBe(VERGE_POSTS * 4);
+    expect(VERGE_SPACING).toBe(18);
+    expect(VERGE_POSTS).toBeGreaterThanOrEqual(12);
   });
 });

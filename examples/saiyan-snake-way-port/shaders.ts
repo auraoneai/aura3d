@@ -176,6 +176,41 @@ void main() {
   outColor = vec4(col, a);
 }`;
 
+/**
+ * GU47 SSR-11: prayer-flag cloth on an instanced box (one draw for both verges). The vertex flutters the cloth along its
+ * length with `flagTime` (world.ts slows it on reduced motion); the colour is the instance colour, half-lit by the low
+ * sun from behind (translucent cloth glows when backlit) and fogged like the road.
+ */
+export const FLAG_INSTANCED_VERTEX = /* glsl */ `
+out vec3 vWorld;
+out vec3 vNormal;
+out vec3 vTint;
+void main() {
+  vec3 p = position;
+  float along = p.x + 0.5;
+  p.z += sin(flagTime * 6.0 + along * 5.0 + instanceMatrix[3].x * 0.37) * 0.12 * along;
+  vec4 wp = modelMatrix * instanceMatrix * vec4(p, 1.0);
+  vWorld = wp.xyz;
+  vNormal = normalize(mat3(modelMatrix) * mat3(instanceMatrix) * normal);
+  vTint = instanceColor.rgb;
+  gl_Position = projectionMatrix * viewMatrix * wp;
+}`;
+
+export const FLAG_INSTANCED_FRAGMENT = /* glsl */ `
+in vec3 vWorld;
+in vec3 vNormal;
+in vec3 vTint;
+out vec4 outColor;
+${ATMOSPHERE}
+void main() {
+  vec3 V = normalize(cameraPosition - vWorld);
+  vec3 N = normalize(vNormal);
+  if (dot(N, V) < 0.0) N = -N;
+  float back = pow(max(dot(-V, normalize(flagSunDir)), 0.0), 2.0);
+  vec3 col = vTint * (0.45 + 0.35 * max(N.y, 0.0)) + vTint * flagSunColor * back * 1.4;
+  outColor = vec4(mix(col, flagFogColor, fogAmount(length(cameraPosition - vWorld))), 1.0);
+}`;
+
 /** Flat additive colour for speed streaks and ki sparks. */
 export const FLAT_VERTEX = /* glsl */ `
 out vec3 vWorld;

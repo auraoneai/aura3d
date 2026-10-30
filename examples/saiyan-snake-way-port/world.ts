@@ -8,7 +8,7 @@ import { attachRootRenderSource, camera, cloneSkinned, effects, environments, ge
 import { gapAhead } from "./hud";
 import { HERO_PARTS, apply, mul, poseHero, rx, ry, rz, type HeroColor, type HeroPartSpec, type M3, type V3 as LV3 } from "./hero";
 import {
-  PALETTE, auraSpec, blobSpec, flatSpec, glowInstancedSpec, glowSpec, hexLinear, roadSpec, skySpec, solidSpec, type CustomSpec, type Rgb
+  PALETTE, auraSpec, blobSpec, flagInstancedSpec, flatSpec, glowInstancedSpec, glowSpec, hexLinear, roadSpec, skySpec, solidSpec, type CustomSpec, type Rgb
 } from "./materials";
 import { PROFILE, buildRoadMesh, buildRoadSamples, frameAt, onRoad, type RoadFrame, type V3 } from "./road";
 import { advanceRunPhase, stepChaseRig, withSample, type ChaseRig, type PresentSample } from "./presentation";
@@ -80,6 +80,14 @@ const ENTITY_PARTS: Readonly<Record<string, readonly PartSpec[]>> = {
 
 /** GU47 SSR-18: entity types drawn as one instanced node per part under the colour script (one draw each). */
 export const INSTANCED_TYPES: ReadonlySet<string> = new Set(["orb", "soul", "power"]);
+
+/** GU47 SSR-11: verge dressing spacing (m), how far ahead / behind it is kept, and flags per post span. */
+export const VERGE_SPACING = 18;
+const VERGE_AHEAD = 324;
+const VERGE_BEHIND = 18;
+const FLAGS_PER_SPAN = 4;
+export const VERGE_POSTS = 2 * Math.ceil((VERGE_AHEAD + VERGE_BEHIND) / VERGE_SPACING);
+const FLAG_COLORS: readonly Rgb[] = [hexLinear(0xff7a6b), hexLinear(0xf2b33d), hexLinear(0x7fe0c4), hexLinear(0xf4eefa), hexLinear(0x6a5ad8)];
 
 /** Column-major mat4 (T·R·S) from a column-major M3 basis, a position and a uniform scale, written at `out[o..o+15]`. */
 function writeMatrix(out: Float32Array, o: number, m: M3, p: V3, k: number): void {
@@ -325,6 +333,13 @@ export function buildWorld(options: WorldOptions = {}): World {
     }
   }
 
+  /* GU47 SSR-11: prayer-flag lines and hanging lanterns every 18 m along both verges (2 instanced draws) */
+  if (script) {
+    const hidden = (n: number) => Array.from({ length: n }, () => ({ position: [0, -500, 0] as [number, number, number], scale: 1e-4 }));
+    builder.add(instances.box({ name: "verge-flags", size: [1, 1, 1], transforms: hidden(VERGE_POSTS * FLAGS_PER_SPAN), colors: Array.from({ length: VERGE_POSTS * FLAGS_PER_SPAN }, () => "#ffffff"), material: material.custom(flagInstancedSpec()) }).runtime({ id: "verge-flags" }));
+    builder.add(instances.sphere({ name: "verge-lanterns", size: 0.55, transforms: hidden(VERGE_POSTS), material: material.custom(glowInstancedSpec(hexLinear(0xfff0c8), hexLinear(0xf2b33d), 0.9, 0, 0, 1.8)) }).runtime({ id: "verge-lanterns" }));
+  }
+
   /* entity pools: every slot is a small multi-part prop */
   for (const [type, count] of Object.entries(POOLS)) {
     if (script && INSTANCED_TYPES.has(type)) continue;
@@ -391,6 +406,9 @@ export function buildWorld(options: WorldOptions = {}): World {
       registerVfx();
       let trail: { stop(o?: { immediate?: boolean }): void } | null = null;
       let vfxFired = 0;
+      /* GU47 SSR-11: verge buffers */
+      const flagBuf = script ? { data: new Float32Array(VERGE_POSTS * FLAGS_PER_SPAN * 16), rgba: new Float32Array(VERGE_POSTS * FLAGS_PER_SPAN * 4) } : null;
+      const lampBuf = script ? new Float32Array(VERGE_POSTS * 16) : null;
       /* GU47 SSR-18: per-frame instance buffers (allocated once; `count` instances written each frame) */
       const instBuffers = new Map<string, { data: Float32Array; rgba: Float32Array; count: number }>();
       if (script) for (const type of INSTANCED_TYPES) (ENTITY_PARTS[type] ?? []).forEach((_part, j) => {
@@ -577,6 +595,41 @@ export function buildWorld(options: WorldOptions = {}): World {
           const ip = onRoad(sf, side * (34 + ((i * 23) % 26)), 16 + ((i * 7) % 18) + Math.sin(time * 0.4 + i * 1.7) * 1.4);
           const ie = matrixEuler(frameBasis(sf, time * 0.05 + i));
           h.setPosition(ip[0], ip[1], ip[2]).setRotation(ie[0], ie[1], ie[2]).setScale(1 + (i % 3) * 0.35);
+        }
+
+        /* GU47 SSR-11: flag lines strung between verge posts every 18 m, a lantern hanging at each post */
+        if (flagBuf && lampBuf) {
+          let fi = 0, li = 0;
+          const first = Math.floor((S.s - VERGE_BEHIND) / VERGE_SPACING);
+          for (let k = 0; k < VERGE_POSTS / 2; k++) {
+            const s0 = (first + k) * VERGE_SPACING;
+            for (const side of [-1, 1]) {
+              const lf = frameAt(samples, Math.min(Math.max(s0, 0), ROAD_LENGTH));
+              const lampAt = onRoad(lf, side * 9.6, 3.2);
+              writeMatrix(lampBuf, li++ * 16, frameBasis(lf), lampAt, 1);
+              for (let q = 0; q < FLAGS_PER_SPAN; q++) {
+                const sq = s0 + ((q + 0.5) / FLAGS_PER_SPAN) * VERGE_SPACING;
+                const ff = frameAt(samples, Math.min(Math.max(sq, 0), ROAD_LENGTH));
+                const sag = Math.sin(((q + 0.5) / FLAGS_PER_SPAN) * Math.PI) * 0.7;
+                const at = onRoad(ff, side * 9.6, 3.6 - sag);
+                // cloth: 1.1 m long along the road, 0.7 m tall, 0.02 m thick; its local x runs along the road
+                const B = frameBasis(ff, Math.PI / 2);
+                const m: M3 = [B[0] * 1.1, B[1] * 1.1, B[2] * 1.1, B[3] * 0.7, B[4] * 0.7, B[5] * 0.7, B[6] * 0.02, B[7] * 0.02, B[8] * 0.02];
+                writeMatrix(flagBuf.data, fi * 16, m, at, 1);
+                const c = FLAG_COLORS[mod(first + k + q + (side > 0 ? 2 : 0), FLAG_COLORS.length)]!;
+                flagBuf.rgba[fi * 4] = c[0]; flagBuf.rgba[fi * 4 + 1] = c[1]; flagBuf.rgba[fi * 4 + 2] = c[2]; flagBuf.rgba[fi * 4 + 3] = 1;
+                fi++;
+              }
+            }
+          }
+          const flags = node("verge-flags") as Partial<ReturnType<typeof node>>;
+          flags.setInstanceMatrices?.(flagBuf.data, fi, flagBuf.rgba);
+          flags.setUniform?.("flagTime", reducedMotion ? time * 0.3 : time);
+          if (lookDriver) {
+            flags.setUniform?.("flagSunDir", [...lookDriver.sunDir]);
+            if (lookShown) { flags.setUniform?.("flagSunColor", [...lookShown.sunColor]); flags.setUniform?.("flagFogColor", [...lookShown.fogColor]); }
+          }
+          (node("verge-lanterns") as Partial<ReturnType<typeof node>>).setInstanceMatrices?.(lampBuf, li);
         }
 
         /* entities: assign the nearest alive ones to the pooled slots, hide the rest */

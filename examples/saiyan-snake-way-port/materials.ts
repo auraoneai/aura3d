@@ -5,7 +5,7 @@
 import type { material } from "@aura3d/engine";
 import { ORIGINAL_SUN_DIR, STAGE_LOOK, linearOf } from "./art/colorScript";
 import {
-  AURA_FRAGMENT, AURA_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX, FLAT_FRAGMENT, FLAT_VERTEX, GLOW_FRAGMENT, GLOW_INSTANCED_FRAGMENT, GLOW_INSTANCED_VERTEX, GLOW_VERTEX,
+  AURA_FRAGMENT, AURA_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX, FLAG_INSTANCED_FRAGMENT, FLAG_INSTANCED_VERTEX, FLAT_FRAGMENT, FLAT_VERTEX, GLOW_FRAGMENT, GLOW_INSTANCED_FRAGMENT, GLOW_INSTANCED_VERTEX, GLOW_VERTEX,
   ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX
 } from "./shaders";
 
@@ -79,6 +79,18 @@ export const glowInstancedSpec = (core: Rgb, shell: Rgb, alpha = 1, hollow = 0, 
   transparent: true,
   depthWrite: false,
   blending: "additive"
+});
+
+/** GU47 SSR-11: instanced prayer-flag cloth (colour per instance). */
+export const flagInstancedSpec = (): CustomSpec => ({
+  glsl: { vertex: FLAG_INSTANCED_VERTEX, fragment: FLAG_INSTANCED_FRAGMENT },
+  uniforms: {
+    flagTime: { type: "f32", value: 0 },
+    flagSunDir: { type: "vec3", value: [...ORIGINAL_SUN_DIR] },
+    flagSunColor: { type: "color3", value: [1, 0.8, 0.6] },
+    flagFogColor: { type: "color3", value: [0.8, 0.62, 0.8] }
+  },
+  side: "double"
 });
 
 export const roadSpec = (): CustomSpec => ({
@@ -167,6 +179,7 @@ export function allProgramSpecs(): { name: string; spec: CustomSpec }[] {
     { name: "road", spec: roadSpec() },
     { name: "solid", spec: solidSpec(c(PALETTE.gi), c(PALETTE.auraLit), 0.2) },
     { name: "glow", spec: glowSpec(c(PALETTE.kiCore), c(PALETTE.ki)) },
+    { name: "flag-instanced", spec: flagInstancedSpec() },
     { name: "glow-instanced", spec: glowInstancedSpec(c(PALETTE.kiCore), c(PALETTE.ki), 1, 0, 1) },
     { name: "aura", spec: auraSpec(c(PALETTE.auraCore), c(PALETTE.auraLit), c(PALETTE.aura), 0.8) },
     { name: "sky", spec: skySpec() },
