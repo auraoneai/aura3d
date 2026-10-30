@@ -4,7 +4,7 @@ import type { AthletePose, SceneRenderer } from "../contract/modules";
 import type { ActorState, BallState, MatchState } from "../contract/sim";
 import type { Vec3 } from "../contract/units";
 import { resolveBallHandles, updateBall, type BallHandles } from "./ball";
-import { CAMERA_EYE, CAMERA_FAR, CAMERA_FOV_DEG, CAMERA_NEAR, CAMERA_TARGET, cameraFovForAspect, projectWorldPoint } from "./camera";
+import { CAMERA_FAR, CAMERA_NEAR, cameraFovForAspect, cameraRigFor, dampPan, panGoal, panLimitFor, panPose, projectWorldPoint, type CameraPose } from "./camera";
 import { COURT_X, COURT_Y, COURT_Z, HIDDEN_SCALE, SERVICE_Z, SINGLES_X, SPECTATOR_COUNT, clamp } from "./constants";
 import { QUALITY_REBUILD } from "./lighting";
 import { resolveAppearance } from "./appearance";
@@ -121,7 +121,13 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
   const reducedMotionQuery = options.reducedMotion ? null : cachedMediaQuery("(prefers-reduced-motion: reduce)");
   const reducedMotion = options.reducedMotion ?? (() => reducedMotionQuery!.matches());
   let audienceVisible = true;
-  let cameraFov = CAMERA_FOV_DEG;
+  // TT-C1: the broadcast camera (v2 in the World Tour look; `?cam=classic` / `?look=original` keep the 4.6.1 camera) and its
+  // damped sideways pan (eye and aim move together, at most CAMERA_PAN_LIMIT; none under reduced motion).
+  const cameraRig = cameraRigFor(options.search ?? (typeof location !== "undefined" ? location.search : ""));
+  let cameraFov = cameraRig.fovDeg;
+  let pan = 0;
+  let posedPan = 0;
+  let cameraPose: CameraPose = panPose(cameraRig, 0);
   let lastShake = 0;
   let particlesDrawn = 0;
   let resizeObserver: ResizeObserver | null = null;
@@ -204,14 +210,28 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     if (ready) applyCameraFov();
   }
 
+  /** Pushes the live pose (rig + pan) and FOV to the camera controller. */
+  function pushCameraPose(): void {
+    cameraPose = panPose(cameraRig, pan);
+    posedPan = pan;
+    try {
+      app?.camera?.setPose({ position: [...cameraPose.eye], target: [...cameraPose.target], fov: cameraFov }, { cut: true });
+    } catch { /* camera controller is optional */ }
+  }
+
   /** C2: aspect-aware FOV, pushed to the live camera whenever the canvas aspect changes. */
   function applyCameraFov(): void {
-    const fov = cameraFovForAspect(viewportWidth / Math.max(1, viewportHeight));
+    const fov = cameraFovForAspect(viewportWidth / Math.max(1, viewportHeight), cameraRig);
     if (Math.abs(fov - cameraFov) < 1e-6) return;
     cameraFov = fov;
-    try {
-      app?.camera?.setPose({ position: [...CAMERA_EYE], target: [...CAMERA_TARGET], fov }, { cut: true });
-    } catch { /* camera controller is optional */ }
+    pushCameraPose();
+  }
+
+  /** TT-C1: the damped pan toward play; the pose is re-sent only when it moved by more than a millimetre. */
+  function stepCameraPan(ballX: number, dt: number | undefined): void {
+    if (cameraRig.id !== "v2") return;
+    pan = dampPan(pan, panGoal(ballX, panLimitFor(viewportWidth / Math.max(1, viewportHeight), cameraRig)), Number.isFinite(dt) ? dt! : 1 / 60, reducedMotion());
+    if (Math.abs(pan - posedPan) > 1e-3) pushCameraPose();
   }
 
   const self: SceneRendererHandle = {
@@ -225,7 +245,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     async mount(target: HTMLCanvasElement): Promise<void> {
       canvas = target;
       app = createAuraApp(target, {
-        scene: buildTennisScene(rig, { venue: bootVenue, look, ...(crowd ? { crowd } : {}) }),
+        scene: buildTennisScene(rig, { venue: bootVenue, look, camera: cameraRig, ...(crowd ? { crowd } : {}) }),
         // C11: a governed tier ("auto") instead of the old string, which resolveMountQuality ignored; coarse-pointer devices get "medium".
         renderer: { quality: { tier: "auto" } },
         qualityRebuild: QUALITY_REBUILD,
@@ -301,7 +321,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
         resizeObserver = new ResizeObserver(() => syncBacking());
         resizeObserver.observe(target);
       }
-      cameraFov = CAMERA_FOV_DEG;
+      cameraFov = cameraRig.fovDeg;
       applyCameraFov();
     },
 
@@ -323,6 +343,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       lastBallWorld = updateBall(ball, state, { shadowDisc: !worldTour });
       const [bx, by, bz] = lastBallWorld;
       const b = state.ball;
+      stepCameraPan(bx, dt);
 
       const isPlayerServing = state.mode === "playing" && state.server === "player" && (state.phase === "serve" || state.phase === "serveToss");
       const serveAim = state.serveAttempt?.lockedAim || state.serveAttempt?.aim;
@@ -398,7 +419,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     },
 
     project(world: Vec3): { x: number; y: number; visible: boolean } {
-      const p = projectWorldPoint(viewportWidth, viewportHeight, world[0] * COURT_X, Math.max(0.04, world[2] * COURT_Y), world[1] * COURT_Z, cameraFov);
+      const p = projectWorldPoint(viewportWidth, viewportHeight, world[0] * COURT_X, Math.max(0.04, world[2] * COURT_Y), world[1] * COURT_Z, cameraFov, cameraPose);
       return { x: p.x, y: p.y, visible: p.visible };
     },
 
@@ -429,7 +450,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
         engine: "@aura3d/engine",
         playerStyle: "3d",
         displayBall: [...lastBallWorld],
-        camera: { position: [...CAMERA_EYE], target: [...CAMERA_TARGET], fov: cameraFov, near: CAMERA_NEAR, far: CAMERA_FAR, aspect: viewportWidth / Math.max(1, viewportHeight) },
+        camera: { rig: cameraRig.id, position: [...cameraPose.eye], target: [...cameraPose.target], pan, fov: cameraFov, near: CAMERA_NEAR, far: CAMERA_FAR, aspect: viewportWidth / Math.max(1, viewportHeight) },
         viewport: { width: viewportWidth, height: viewportHeight, bottom: 0, pixelRatio },
         audience: {
           visible: spectators ? spectators.visible !== false : audienceVisible,

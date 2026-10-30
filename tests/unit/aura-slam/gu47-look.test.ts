@@ -7,7 +7,8 @@ import { describe, expect, it } from "vitest";
 import { VENUES } from "../../../examples/aura-slam/contract/venues";
 import { venueHdriAssets } from "../../../examples/aura-slam/view/assets";
 import { SUN_SHADOW_FIT, SUN_SHADOW_MAP_SIZE, VENUE_LIGHT_IDS, sceneLights } from "../../../examples/aura-slam/view/lighting";
-import { FLOODLIGHTS, VENUE_LOOKS, VENUE_LOOK_ORDER, lookMode, sunPosition, venueLook } from "../../../examples/aura-slam/view/look";
+import { EARTH, FLOODLIGHTS, VENUE_LOOKS, VENUE_LOOK_ORDER, lookMode, sunPosition, venueLook } from "../../../examples/aura-slam/view/look";
+import { CAMERA_V2, cameraFovForAspect, projectWorldPoint } from "../../../examples/aura-slam/view/camera";
 import { createPoseRig } from "../../../examples/aura-slam/view/poseRig";
 import { VENUE_ENVIRONMENT_NAME, buildTennisScene } from "../../../examples/aura-slam/view/scene";
 import { applyVenueRuntime, isHighTier, venueRuntimePlan } from "../../../examples/aura-slam/view/venueRuntime";
@@ -158,12 +159,30 @@ describe("GU47 TT-E2 / TT-P1: the runtime venue plan", () => {
     expect(earthOff?.scale?.[0]).toBeLessThan(0.01);
   });
 
-  it("TT-E3: the Earth fills >= 4% of a portrait frame's width (its angular size at the broadcast eye)", () => {
-    const eye = [0, 25.5, 37.1];
-    const d = Math.hypot(-20 - eye[0]!, -18 - eye[1]!, -125 - eye[2]!);
-    const angular = 2 * Math.atan(3 / d);
-    const portraitHalfH = Math.atan(0.19); // CAMERA_MIN_TAN_HALF_HFOV keeps the portrait horizontal coverage
-    expect(angular / (2 * portraitHalfH)).toBeGreaterThanOrEqual(0.04);
+  it("TT-E3: the Earth sits 150 m from the v2 eye, inside the 1280x720 and 390x844 frames, >= 4% of their width", () => {
+    const rig = CAMERA_V2;
+    const d = Math.hypot(EARTH.position[0] - rig.eye[0], EARTH.position[1] - rig.eye[1], EARTH.position[2] - rig.eye[2]);
+    expect(d).toBeGreaterThan(145);
+    expect(d).toBeLessThan(155);
+    for (const [w, h] of [[1280, 720], [390, 844]] as const) {
+      const fov = cameraFovForAspect(w / h, rig);
+      const c = projectWorldPoint(w, h, ...EARTH.position, fov, rig);
+      expect(c.visible, `${w}x${h}`).toBe(true);
+      // Its edge (radius 3 m) stays inside the frame too, and the disc is >= 4% of the frame width.
+      const left = projectWorldPoint(w, h, EARTH.position[0] - EARTH.radius, EARTH.position[1], EARTH.position[2], fov, rig);
+      const right = projectWorldPoint(w, h, EARTH.position[0] + EARTH.radius, EARTH.position[1], EARTH.position[2], fov, rig);
+      expect(left.x, `${w}x${h}`).toBeGreaterThan(0);
+      expect(right.x, `${w}x${h}`).toBeLessThan(w);
+      expect(c.y - (right.x - left.x) / 2, `${w}x${h}`).toBeGreaterThan(0);
+      expect((right.x - left.x) / w, `${w}x${h}`).toBeGreaterThanOrEqual(0.04);
+    }
+    // The line of sight to the Earth's lowest point clears the far edge of the ground (z -29) and the scoreboard gantry.
+    const low = [EARTH.position[0], EARTH.position[1] - EARTH.radius, EARTH.position[2]] as const;
+    const t = rig.eye[1] / (rig.eye[1] - low[1]); // where the ray meets y = 0
+    expect(rig.eye[2] + (low[2] - rig.eye[2]) * t).toBeLessThan(-29);
+    expect(Math.abs(Math.atan2(EARTH.position[0], rig.eye[2] - EARTH.position[2]) * 180 / Math.PI)).toBeGreaterThan(4 + 1.2);
+    // The classic camera's position is kept for `?cam=classic` (tall canvases only).
+    expect(EARTH.classicPosition).toEqual([-20, -18, -125]);
   });
 
   it("only the night court shows the floodlights; the key is always visible", () => {

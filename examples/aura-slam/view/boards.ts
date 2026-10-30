@@ -15,13 +15,17 @@ import type { NodeInput } from "./rigPort";
 
 export const BOARD_IDS = { left: "board-aura-slam", right: "board-world-tour", stand: "board-venue-score" } as const;
 export const BOARD_TEXTS = { left: "AURA SLAM", right: "WORLD TOUR" } as const;
-/** Cap height of the sponsor-board text (metres): above the 0.18 m LED ribbon on the 0.78 m board. */
-export const BOARD_TEXT_SIZE = 0.22;
+/**
+ * Cap height of the sponsor-board text (metres). TT-C1's v2 camera (26 degrees) shows the boards smaller than the
+ * 15-degree classic one, so the lettering is 0.325 m (>= 10 px at 1280 x 720 under both cameras) and fills the board face
+ * under the 0.18 m LED ribbon (ribbon 0.33-0.51 m on the 0.78 m board): no taller board hides the stand line behind it.
+ */
+export const BOARD_TEXT_SIZE = 0.325;
 /** Cap height of the stand line (metres): clear of the sponsor boards in the broadcast camera's line of sight. */
 export const STAND_TEXT_SIZE = 0.34;
-/** Sponsor boards (view/scene.ts statics): x +-4.3, front face z -10.68; the text sits in front of the ribbon. */
+/** Sponsor boards (view/scene.ts statics): x +-4.3, front face z -10.68; the text sits on the face under the ribbon. */
 const BOARD_Z = -10.64;
-const BOARD_Y = 0.535;
+export const BOARD_Y = 0.003;
 const BOARD_X = 4.3;
 /** Rear stand tier 1 (view/spectators.ts): front face z -11.7. */
 const STAND_Z = -11.665;

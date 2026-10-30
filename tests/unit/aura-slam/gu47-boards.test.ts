@@ -4,12 +4,14 @@
 import { describe, expect, it } from "vitest";
 import { createAuraText3DGeometry } from "@aura3d/engine";
 import {
-  BOARD_IDS, BOARD_TEXTS, BOARD_TEXT_SIZE, LED_PULSE_SECONDS, STAND_TEXT_SIZE, buildBoardNodes, createBoardsController, pointsText, standLineText, textWidth
+  BOARD_IDS, BOARD_TEXTS, BOARD_TEXT_SIZE, BOARD_Y, LED_PULSE_SECONDS, STAND_TEXT_SIZE, buildBoardNodes, createBoardsController, pointsText, standLineText, textWidth
 } from "../../../examples/aura-slam/view/boards";
-import { projectWorldPoint } from "../../../examples/aura-slam/view/camera";
+import { CAMERA_CLASSIC, CAMERA_V2, cameraFovForAspect, projectWorldPoint } from "../../../examples/aura-slam/view/camera";
 import { createPoseRig } from "../../../examples/aura-slam/view/poseRig";
 import { buildTennisScene } from "../../../examples/aura-slam/view/scene";
 
+/** Sponsor board centre x (view/boards.ts). */
+const BOARD_X = 4.3;
 type Node = { name?: string; text3D?: { text?: string; backend?: string }; children?: Node[] };
 const flat = (nodes: Node[] = []): Node[] => nodes.flatMap((n) => [n, ...flat(n.children)]);
 
@@ -22,10 +24,23 @@ describe("GU47 TT-H2: rear boards", () => {
     expect(flat((buildTennisScene(createPoseRig(), { look: "original" }).toJSON() as unknown as { nodes: Node[] }).nodes).some((n) => n.text3D)).toBe(false);
   });
 
-  it("cap height >= 10 px at 1280x720 for the board and the stand line", () => {
-    const px = (y0: number, y1: number, z: number) => Math.abs(projectWorldPoint(1280, 720, 0, y0, z).y - projectWorldPoint(1280, 720, 0, y1, z).y);
-    expect(px(0.535, 0.535 + BOARD_TEXT_SIZE, -10.64)).toBeGreaterThanOrEqual(10);
-    expect(px(0.5, 0.5 + STAND_TEXT_SIZE, -11.665)).toBeGreaterThanOrEqual(10);
+  it("cap height >= 10 px at 1280x720 for the board and the stand line, under the classic and the TT-C1 v2 camera", () => {
+    for (const rig of [CAMERA_CLASSIC, CAMERA_V2]) {
+      const fov = cameraFovForAspect(1280 / 720, rig);
+      const px = (y0: number, y1: number, z: number) => Math.abs(projectWorldPoint(1280, 720, BOARD_X, y0, z, fov, rig).y - projectWorldPoint(1280, 720, BOARD_X, y1, z, fov, rig).y);
+      expect(px(BOARD_Y, BOARD_Y + BOARD_TEXT_SIZE, -10.64), rig.id).toBeGreaterThanOrEqual(10);
+      expect(px(0.5, 0.5 + STAND_TEXT_SIZE, -11.665), rig.id).toBeGreaterThanOrEqual(10);
+    }
+    // The lettering fits the board face under the LED ribbon (0.33-0.51 m) and inside the 3.2 m board.
+    expect(BOARD_Y + BOARD_TEXT_SIZE).toBeLessThanOrEqual(0.33);
+    for (const text of Object.values(BOARD_TEXTS)) expect(textWidth(text, BOARD_TEXT_SIZE)).toBeLessThan(3.2);
+  });
+
+  it("the sponsor boards (0.78 m) never hide the stand line from the v2 eye", () => {
+    // Ray from the v2 eye to the stand line's bottom edge, at the boards' front face (z -10.68).
+    const [, ey, ez] = CAMERA_V2.eye;
+    const atBoard = 0.5 + ((ey - 0.5) / (ez + 11.665)) * (11.665 - 10.68);
+    expect(atBoard).toBeGreaterThan(0.78);
   });
 
   it("the layout width matches the text mesh", () => {

@@ -6,6 +6,7 @@ import { buildTennisScene, SCENE_NODE_IDS } from "../../../examples/aura-slam/vi
 import { createPoseRig } from "../../../examples/aura-slam/view/poseRig";
 import { QUALITY_REBUILD, originalPostEffects, originalSceneLights, postEffects, sceneLights } from "../../../examples/aura-slam/view/lighting";
 import { MARK_COUNT, TRAIL_COUNT } from "../../../examples/aura-slam/view/constants";
+import { CAMERA_CLASSIC } from "../../../examples/aura-slam/view/camera";
 
 type Doc = { nodes?: Array<{ name?: string; id?: string; kind?: string; children?: unknown[] }>; camera?: { fov?: number; position?: number[]; target?: number[] }; background?: unknown };
 
@@ -19,10 +20,17 @@ describe("aura-slam view: scene composition", () => {
   const doc = buildTennisScene(createPoseRig()).toJSON() as unknown as Doc;
   const names = new Set(flatten(doc.nodes));
 
-  it("declares the fixed court camera", () => {
-    expect(doc.camera?.fov).toBe(15);
-    expect(doc.camera?.position).toEqual([0, 25.5, 37.1]);
-    expect(doc.camera?.target).toEqual([0, 0, 0.7]);
+  it("declares the court camera: TT-C1 v2 in the World Tour look, the 4.6.1 camera with ?look=original or ?cam=classic", () => {
+    // GU47 TT-C1: broadcast camera v2.
+    expect(doc.camera?.fov).toBe(26);
+    expect(doc.camera?.position).toEqual([0, 15.5, 33.5]);
+    expect(doc.camera?.target).toEqual([0, 0, -1.5]);
+    for (const classic of [buildTennisScene(createPoseRig(), { look: "original" }), buildTennisScene(createPoseRig(), { camera: CAMERA_CLASSIC })]) {
+      const cam = (classic.toJSON() as unknown as Doc).camera;
+      expect(cam?.fov).toBe(15);
+      expect(cam?.position).toEqual([0, 25.5, 37.1]);
+      expect(cam?.target).toEqual([0, 0, 0.7]);
+    }
   });
 
   it("contains every node the renderer resolves at runtime", () => {

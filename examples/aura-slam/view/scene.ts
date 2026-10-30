@@ -2,7 +2,7 @@ import { effects, environments, game, material, model, primitives, scene, type A
 import { stadiumAssets as assets, venueHdriAssets } from "./assets";
 import { buildBallNodes } from "./ball";
 import { BASELINE_Z, DOUBLES_X, HIDDEN_SCALE, NET_POST_H, NET_POST_X, SERVICE_Z, SINGLES_X } from "./constants";
-import { cameraNode } from "./camera";
+import { CAMERA_CLASSIC, CAMERA_V2, cameraNode, type BroadcastCameraRig } from "./camera";
 import { originalPostEffects, originalSceneLights, postEffects, sceneLights } from "./lighting";
 import { EARTH, FLOOD_CONES, venueLook } from "./look";
 import { createStaticBoxes } from "./statics";
@@ -23,6 +23,8 @@ export interface TennisSceneOptions {
   readonly look?: "world-tour" | "original";
   /** TT-AN1: the World Tour crowd whose nodes the scene mounts (the renderer keeps it to drive the head follow). */
   readonly crowd?: WorldTourCrowd;
+  /** TT-C1: the broadcast camera (default: v2 in the World Tour look, classic with `?look=original` or `?cam=classic`). */
+  readonly camera?: BroadcastCameraRig;
 }
 
 /** GU47 TT-E1: the venue environment node (its HDRI is swapped at runtime with `app.lighting.setEnvironment`). */
@@ -52,7 +54,8 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
   const netMeshMat = material.pbr({ color: "#1c2a26", roughness: 0.88, opacity: 0.42, alphaMode: "blend", depthWrite: false, doubleSided: true });
   const netTapeMat = material.pbr({ color: "#faf8ee", roughness: 0.46 });
 
-  const s = scene().background(VENUE_PALETTES[original ? "hard" : boot]!.background).camera(cameraNode());
+  const camRig = original ? CAMERA_CLASSIC : options.camera ?? CAMERA_V2;
+  const s = scene().background(VENUE_PALETTES[original ? "hard" : boot]!.background).camera(cameraNode(camRig));
   if (original) {
     for (const light of originalSceneLights()) s.add(light);
     for (const effect of originalPostEffects()) s.add(effect);
@@ -79,11 +82,12 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
     }
     // TT-E3: the Earth over the lunar court (planet sphere inside an atmosphere shell), shown on the Moon only.
     const earthShown = boot === "moon" ? ([1, 1, 1] as Vec3) : HIDDEN_SCALE;
+    const earthAt = camRig.id === "v2" ? EARTH.position : EARTH.classicPosition;
     s.add(primitives.sphere({ name: EARTH.ids.planet, size: [EARTH.radius * 2, EARTH.radius * 2, EARTH.radius * 2], castShadow: false, receiveShadow: false, material: material.pbr({ color: "#2f6db3", roughness: 0.62, metalness: 0 }) })
-      .position(...EARTH.position).scale(earthShown).runtime(game.runtimeNode(EARTH.ids.planet)));
+      .position(...earthAt).scale(earthShown).runtime(game.runtimeNode(EARTH.ids.planet)));
     const shell = EARTH.radius * 2 * EARTH.atmosphere;
     s.add(primitives.sphere({ name: EARTH.ids.shell, size: [shell, shell, shell], castShadow: false, receiveShadow: false, material: material.atmosphere({ color: "#8cc4ff", opacity: 0.24, emissiveIntensity: 0.45 }) })
-      .position(...EARTH.position).scale(earthShown).runtime(game.runtimeNode(EARTH.ids.shell)));
+      .position(...earthAt).scale(earthShown).runtime(game.runtimeNode(EARTH.ids.shell)));
   }
 
   // Outer stadium ground, apron, doubles court, and singles inner court
