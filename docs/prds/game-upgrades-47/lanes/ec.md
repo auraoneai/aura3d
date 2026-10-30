@@ -13,15 +13,20 @@
 | EC-2 LUT + `--type lut` | M | done | 8cbd585d7 | `colorGrade({ lut })` takes `AuraLutAssetRef` (local stand-in for `AuraAssetRef<"lut">`) or a URL; `pipeline.lut` → `parseCubeLut` → `DisplayLutCache` (LRU) → `u_hasLut = 1` in S10b and the fused FXAA finalize. CLI `assets add <file.cube> --type lut` (`admission/cubeLut.ts`), help lists `lut` and E-A's `--hdri` line. `tests/unit/gu47/ec/lut.test.ts` (15 pass). |
 | EC-3 AgX/neutral degrade removal | M | done (phase-2 capture confirms) | ea03b77fb | Own commit (default change; revert alone if the phase-2 capture does not show AgX). `presetCapabilityDegraded` kept, always false, `@deprecated`. The v2 OUT stage takes its operator from `pipeline.toneMapping` (`LegacyPost.createLegacyOutputPass`), so presets now render agx/neutral. `prd03-post-presets.test.ts` (14 pass). |
 | EC-4 stage trace | M | done | 42fa9a48d | `recordPostStage` for S1, S4, CA, S6, S7, S8, S9, S10, S10b, S11, S12 in `v2Stages.ts` (same test file as EC-1). |
-| EC-5 runtime post control | M | in progress | | |
+| EC-5 runtime post control | M | done-interim (E-G) | e3fefb2ae | `app.post.setEffect` / `setEffectEnabled` for the 7 PRD effects; per-app store applied by `createRootPostPipeline` every frame (no rebuild). v2-bag stages (grade, LUT, exposure, S4, S6, S7, CA, vignette, grain) work now; bloom pass params and dropping the legacy-bag twins of bloom/DOF/MB need E-G's one-line compiler hook (handoff). `tests/unit/gu47/ec/runtime-post-control.test.ts` (12 pass). |
 | EC-6 S3 SSR | M | pending | | |
 | EC-7 selective bloom | M | pending | | |
-| EC-8 tilt-shift DOF, godRayDensity | M | pending | | |
+| EC-8 tilt-shift DOF, godRayDensity | M | done-interim (E-F) | a9bcb27a5 | S6 band CoC (`u_tiltShift`), S4 `u_density`; bridge + allowlist + runtime patch. Factory forwarding of the two options is E-F's (handoff); `setEffect` drives both today. `tests/unit/gu47/ec/tilt-shift-god-ray-density.test.ts` (13 pass, incl. glslang compile). |
 | EC-9 tests, receipt specs, bundle delta | M | pending | | |
 
 ## Handoffs
 
-(filled as the rows land)
+| to lane | file:symbol | change | why |
+|---|---|---|---|
+| E-G | `packages/engine/src/agent-api/compiler/postprocess.ts:createProductionRuntimePostprocess` | line 41 `const nodes = groups.flatten(snapshot.nodes);` → `const nodes = applyRuntimePostOverrides(groups.flatten(snapshot.nodes), attach?.canvas);` (import from `../postBridge.js`), and pass `attach?.canvas` as the 7th argument of `createRootPostPipeline(...)` at line 306 | EC-5: the bloom pass params (threshold/intensity/spread), the tone exposure and the legacy DOF/motion-blur/SSR twins come from this bag; without the hook `setEffect("bloom", …)` and `setEffectEnabled(<bloom/DOF/MB>, false)` do not reach pixels, and two apps on one page share overrides. Idempotent with the bridge's own application. |
+| E-F | `packages/engine/src/agent-api/nodes/effects.ts:depthOfField` / `volumetricFog` | forward the new options into the node bag: `...(options.tiltShift !== undefined ? { tiltShift: options.tiltShift } : {})` and `...(options.godRayDensity !== undefined ? { godRayDensity: options.godRayDensity } : {})` | EC-8: the factories copy fields explicitly; the bridge, allowlist and shaders already read both fields. |
+| E-D | `packages/engine/src/agent-api/nodes/types.ts:AuraAssetType` | add `"lut"` so `AuraAssetRef<"lut">` exists; then `effects.post.ts` can alias `AuraLutAssetRef` to it | EC-2: `colorGrade({ lut })` uses a structural local type until then. |
+| E-G | `packages/engine/src/public/index.ts` | export `POST_RUNTIME_EFFECTS`, `applyRuntimePostOverrides`, `preloadPostLut`, `postLutsSettled` if E-G wants them public (games use `app.post.*` and `colorGrade({ lut })`, which need no export) | optional |
 
 ## Verification
 
