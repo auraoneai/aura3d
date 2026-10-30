@@ -93,6 +93,8 @@ const TOD_PARAM = parseTodParam(urlParams.get("tod"));
 /** Reduced flash (PRD §6.3): reduced motion or `?flash=0` skips the output-overlay flashes. */
 const REDUCED_FLASH = REDUCED_MOTION || urlParams.get("flash") === "0";
 const COARSE_POINTER = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+/** AO-H1: the Showcase chip (scenario and time-of-day buttons) exists only for developers and captures. */
+const SHOWCASE_CHIP = urlParams.get("dev") === "1" || urlParams.get("capture") === "1";
 
 /** Meshy model for a vehicle type when it is shipped and enabled (`?models=0` turns it off), else the original showcase asset. */
 const pickVehicleAsset = (key: string, fallback: AuraAssetRef<"model">): AuraAssetRef<"model"> =>
@@ -882,6 +884,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       /* post surface without runtime overrides */
     }
     lookFrame = frame;
+    syncTodButtons(tod);
 
     // AO-A1: the tower glass reflects the same dome row and lights its floors toward night
     for (const variant of TOWER_VARIANTS) {
@@ -1721,15 +1724,36 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     }
   }
 
+  /** Time-of-day buttons (AO-H1): the active one is always the variant the presented time of day shows (the beacon's
+   *  `timeOfDay`), so no button sticks; `aria-pressed` marks a pinned time of day. */
+  const todButtons = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-aura-tod]"));
+  function syncTodButtons(presentedTod: number): void {
+    const variant = apexLookAt(presentedTod).variant;
+    for (const b of todButtons) {
+      const value = parseFloat(b.dataset.auraTod ?? "0");
+      b.classList.toggle("active", apexLookAt(value).variant === variant);
+      b.setAttribute("aria-pressed", String(manualTodOverride !== null && Math.abs(manualTodOverride - value) < 1e-6));
+    }
+  }
+
   function bindToolbar(): void {
+    const bar = document.querySelector<HTMLElement>(".aura3d-top-bar");
+    const chip = document.getElementById("aura-showcase-chip");
+    const panel = document.getElementById("aura-showcase-panel");
+    // AO-H1: one Showcase chip, only for ?dev=1 or ?capture=1; players see the HUD alone
+    if (bar) bar.hidden = !SHOWCASE_CHIP;
+    chip?.addEventListener("click", () => {
+      if (!panel) return;
+      panel.hidden = !panel.hidden;
+      chip.setAttribute("aria-expanded", String(!panel.hidden));
+      (chip as HTMLButtonElement).blur();
+    });
     const btnFreeway = document.getElementById("aura-btn-freeway");
     const btnSky = document.getElementById("aura-btn-sky");
     const btnRamp = document.getElementById("aura-btn-ramp");
     const btnRoll = document.getElementById("aura-btn-roll");
     const btnRocket = document.getElementById("aura-btn-rocket");
     const btnAuto = document.getElementById("aura-btn-auto") as HTMLButtonElement | null;
-    const modeBtns = [btnFreeway, btnSky, btnRamp];
-    const todBtns = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-aura-tod]"));
 
     if (btnAuto) {
       btnAuto.classList.toggle("active", autopilot);
@@ -1743,12 +1767,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       });
     }
 
-    const setActiveBtn = (target: HTMLElement | null) => {
-      for (const b of modeBtns) {
-        b?.classList.toggle("active", b === target);
-      }
-    };
-    /** One-shot actions flash briefly and drop focus, so they never look held on (audit RR-14). */
+    /** Scenario actions flash briefly and drop focus, so none looks held on (audit RR-14, AO-H1). */
     const momentary = (btn: HTMLElement | null, run: () => void) => {
       btn?.addEventListener("click", () => {
         run();
@@ -1757,35 +1776,24 @@ async function bootRoadsterRushAura3D(): Promise<void> {
         (btn as HTMLButtonElement).blur();
       });
     };
-
-    btnFreeway?.addEventListener("click", () => {
-      setActiveBtn(btnFreeway);
-      triggerScenario("freeway");
-      btnFreeway.blur();
-    });
-    btnSky?.addEventListener("click", () => {
-      setActiveBtn(btnSky);
-      triggerScenario("sky");
-      btnSky.blur();
-    });
-    btnRamp?.addEventListener("click", () => {
-      setActiveBtn(btnRamp);
-      triggerScenario("ramp");
-      btnRamp.blur();
-    });
+    momentary(btnFreeway, () => triggerScenario("freeway"));
+    momentary(btnSky, () => triggerScenario("sky"));
+    momentary(btnRamp, () => triggerScenario("ramp"));
     momentary(btnRoll, () => triggerScenario("roll"));
     momentary(btnRocket, () => triggerScenario("rocket"));
 
-    for (const btn of todBtns) {
+    for (const btn of todButtons) {
       btn.addEventListener("click", () => {
-        for (const b of todBtns) b.classList.toggle("active", b === btn);
         const todVal = parseFloat(btn.dataset.auraTod ?? "0");
-        manualTodOverride = Number.isFinite(todVal) ? todVal : 0;
-        const g = (window as any).__GAME__?.game;
-        g?.world?.setTimeOfDay?.(manualTodOverride);
+        const value = Number.isFinite(todVal) ? todVal : 0;
+        // pressing the pinned time of day again releases it: the sky follows the run again (presentation only)
+        manualTodOverride = manualTodOverride !== null && Math.abs(manualTodOverride - value) < 1e-6 ? null : value;
+        lastTodBucket = -1;
+        syncTodButtons(manualTodOverride ?? Number((window as any).__GAME__?.game?.world?.timeOfDay ?? 0));
         btn.blur();
       });
     }
+    syncTodButtons(manualTodOverride ?? 0);
   }
 
   bindToolbar();

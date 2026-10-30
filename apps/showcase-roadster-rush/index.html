@@ -30,28 +30,47 @@
         font-family: "Whitney", "Graphik", sans-serif;
         overflow: hidden;
       }
+      /* GU47 AO-H1: the quick bar is one "Showcase" chip in the top-left corner (clear of the sun disc, top-centre), shown
+         only with ?dev=1 or ?capture=1; it opens a panel with the scenario and time-of-day buttons. */
       .aura3d-top-bar {
         position: fixed;
-        top: 12px;
-        left: 50%;
-        transform: translateX(-50%);
+        top: max(10px, env(safe-area-inset-top));
+        left: max(12px, env(safe-area-inset-left));
         z-index: 60;
         display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: center;
+        flex-direction: column;
+        align-items: flex-start;
         gap: 6px;
-        padding: 5px 10px;
-        border-radius: 999px;
-        background: rgba(11, 12, 20, 0.84);
-        border: 1px solid rgba(95, 230, 255, 0.32);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
         font-family: "Whitney", sans-serif;
         font-size: 12px;
         color: #f4f6fb;
+        max-width: min(420px, calc(100vw - 24px));
+      }
+      .aura3d-top-bar[hidden], .aura-showcase-panel[hidden] { display: none; }
+      .aura3d-top-bar .aura-chip {
+        appearance: none;
+        height: 30px;
+        padding: 0 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(77, 240, 255, 0.4);
+        background: rgba(34, 35, 42, 0.86);
+        color: #4df0ff;
+        font-family: "DIN Pro", sans-serif;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        font-size: 11px;
+        cursor: pointer;
+      }
+      .aura-showcase-panel {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        padding: 8px;
+        border-radius: 12px;
+        background: rgba(34, 35, 42, 0.9);
+        border: 1px solid rgba(244, 246, 251, 0.16);
         box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
-        max-width: calc(100vw - 440px);
       }
       .aura3d-top-bar .aura-badge {
         font-family: "DIN Pro", sans-serif;
@@ -92,15 +111,16 @@
         color: #ffffff;
       }
       .aura3d-top-bar button.active {
-        background: #ff2a3a;
-        border-color: #ff5260;
-        color: #ffffff;
+        background: #ff8a3d;
+        border-color: #ffb066;
+        color: #22232a;
       }
       .aura3d-top-bar button[data-aura-tod].active {
-        background: #5fe6ff;
-        border-color: #5fe6ff;
+        background: #4df0ff;
+        border-color: #4df0ff;
         color: #091018;
       }
+      .aura3d-top-bar button[data-aura-tod][aria-pressed="true"] { box-shadow: 0 0 0 2px #ffb04a; }
       .aura3d-controls-hint {
         position: fixed;
         bottom: 12px;
@@ -120,28 +140,12 @@
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
       }
       canvas#game { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
-      @media (max-width: 1100px) {
-        .aura3d-top-bar {
-          top: max(8px, env(safe-area-inset-top));
-          bottom: auto;
-          flex-wrap: nowrap;
-          justify-content: flex-start;
-          overflow-x: auto;
-          scrollbar-width: none;
-          box-sizing: border-box;
-          max-width: calc(100vw - 16px);
-          border-radius: 12px;
-        }
-        .aura3d-top-bar::-webkit-scrollbar { display: none; }
-        .aura3d-top-bar > * { flex: none; }
-      }
       @media (max-width: 760px) {
         .aura3d-controls-hint { display: none; }
       }
       /* 44 px touch targets on touch screens (checklist U1); the HUD moves down to clear the taller bar. */
       @media (pointer: coarse) {
-        .aura3d-top-bar button { height: 44px; padding: 0 14px; }
-        .rr-left, .rr-right { top: 72px !important; }
+        .aura3d-top-bar button, .aura3d-top-bar .aura-chip { height: 44px; padding: 0 14px; }
       }
       .boot-error { display: grid; gap: 8px; justify-items: center; max-width: 320px; text-align: center; font-size: 13px; color: #cdd8e4; }
       .boot-error p { margin: 0; }
@@ -150,19 +154,19 @@
     </style>
   </head>
   <body>
-    <div class="aura3d-top-bar" role="toolbar" aria-label="Aura3D Apex Overdrive Quick Switcher" data-ui="true">
-      <span class="aura-badge">APEX OVERDRIVE</span>
-      <button type="button" id="aura-btn-freeway" class="active" title="Live Sunset Freeway Run (Interactive + Smart Autopilot)">Live Freeway</button>
-      <button type="button" id="aura-btn-sky" title="Launch into Sky-Lane Dogfight at y=14m with Oncoming Interceptors">Sky Dogfight</button>
-      <button type="button" id="aura-btn-ramp" title="Stage Heavy Carrier Ramp Launch & Roof-Runner Chain Ahead">Carrier Ramp</button>
-      <button type="button" id="aura-btn-roll" title="Execute Cold-Gas Thruster Barrel Roll">Barrel Roll</button>
-      <button type="button" id="aura-btn-rocket" title="Activate Rocket Overdrive Powerup">Rocket Send</button>
-      <span class="aura-sep" aria-hidden="true"></span>
-      <button type="button" id="aura-btn-auto" title="Toggle AI Autopilot">Auto</button>
-      <span class="aura-sep" aria-hidden="true"></span>
-      <button type="button" data-aura-tod="0" class="active" title="Golden Sunset Lighting">Sunset</button>
-      <button type="button" data-aura-tod="0.5" title="Twilight Dusk Lighting">Dusk</button>
-      <button type="button" data-aura-tod="1" title="Neon Night Freeway Lighting">Night</button>
+    <div class="aura3d-top-bar" role="toolbar" aria-label="Apex Overdrive showcase controls" data-ui="true" hidden>
+      <button type="button" id="aura-showcase-chip" class="aura-chip" aria-expanded="false" aria-controls="aura-showcase-panel">SHOWCASE</button>
+      <div id="aura-showcase-panel" class="aura-showcase-panel" hidden>
+        <button type="button" id="aura-btn-freeway" title="Refill air and keep driving">Live Freeway</button>
+        <button type="button" id="aura-btn-sky" title="Launch into the sky lane at 14 m with oncoming interceptors">Sky Dogfight</button>
+        <button type="button" id="aura-btn-ramp" title="Stage a carrier ramp launch and roof-runner chain ahead">Carrier Ramp</button>
+        <button type="button" id="aura-btn-roll" title="Cold-gas barrel roll">Barrel Roll</button>
+        <button type="button" id="aura-btn-rocket" title="Rocket Send power-up">Rocket Send</button>
+        <button type="button" id="aura-btn-auto" title="Toggle autopilot">Auto</button>
+        <button type="button" data-aura-tod="0" title="Pin sunset (press again to follow the run)">Sunset</button>
+        <button type="button" data-aura-tod="0.5" title="Pin dusk (press again to follow the run)">Dusk</button>
+        <button type="button" data-aura-tod="1" title="Pin night (press again to follow the run)">Night</button>
+      </div>
     </div>
     <div class="aura3d-controls-hint" id="aura-controls-hint">
       STEER: A/D or ARROWS · HOP / FLY: SPACE or W (HOLD) · BARREL ROLL: Q / E · BOOST: SHIFT · DIVE: S · PAUSE: P

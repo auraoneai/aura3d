@@ -29,7 +29,7 @@
 .rr-icon-btn.rr-off { opacity: 0.55; }
 .rr-bolts { padding: 6px 12px; display: flex; gap: 8px; align-items: baseline; }
 .rr-bolts b { font-family: var(--font-display, "DIN Pro", sans-serif); font-size: 18px; font-weight: 500; color: #ffd24d; font-variant-numeric: tabular-nums; }
-.rr-popups { position: absolute; top: 24%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.rr-popups { position: absolute; top: 31%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .rr-popup { display: flex; gap: 10px; align-items: baseline; padding: 6px 14px; border-radius: 999px; background: rgba(11, 12, 20, 0.72); border: 1px solid rgba(95, 230, 255, 0.3); animation: rr-pop 1.8s ease-out forwards; font-size: 15px; }
 .rr-popup b { font-family: var(--font-display, "DIN Pro", sans-serif); font-weight: 500; }
 .rr-popup span { color: #ffd24d; font-variant-numeric: tabular-nums; }
