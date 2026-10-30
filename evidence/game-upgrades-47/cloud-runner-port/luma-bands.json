@@ -1,0 +1,15 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "cloud-runner-port",
+  "note": "GU47 WP-35 acceptance bands (CD-05 sky, CD-08 grade, CD-12 track, CD-22 portrait). The default target is the storm-washed gameplay view; ?look=original keeps the 4.6 look and has no band. Cell 1 is top-centre (sky), cell 7 bottom-centre (track).",
+  "default": { "darkFrac": [null, 0.1], "clipFrac": [null, 0.02] },
+  "variants": {
+    "default": {
+      "mean": [105, 125],
+      "p5": [25, null],
+      "p95": [null, 235],
+      "clipFrac": [null, 0.02],
+      "cells": { "1": { "mean": [95, 150] }, "7": { "mean": [null, 175] } }
+    }
+  }
+}

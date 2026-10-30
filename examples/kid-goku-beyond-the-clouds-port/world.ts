@@ -12,7 +12,11 @@ import { meatChunk } from "./creatures";
 import { createCameraClearance, createLocomotion } from "@aura3d/engine/game";
 import { Fx } from "./fx";
 import type { Game } from "./game";
-import { ballSpec, glowSpec, LOOK, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, warnSpec } from "./materials";
+import { ACTIVE, ballSpec, puddleSpec, glowSpec, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, waterfallSpec, warnSpec } from "./materials";
+import { ACTIVE_LOOK, sunPosition, type CumulusLookRow } from "./art/look";
+import { launchFovKick, titleFlyover, traumaFor } from "./art/camera";
+import { CUMULUS_DOF, CUMULUS_FLARE_ELEMENTS, CUMULUS_GOD_RAY_DENSITY, CUMULUS_MOTION_BLUR, applyCumulusPostPlan, cumulusFocusDistance, cumulusPostPlan, needsRefocus, type CumulusMoment } from "./art/post";
+import { CUMULUS_GLIDER_TRAIL, FALLS_SPRAY_PERIOD, FALLS_SPRAY_RANGE, cumulusVfxFor, registerCumulusVfx } from "./art/vfx";
 import { Mesh, box, cylinder, hex } from "./mesh";
 import { LEG_CLIPS } from "./legcycle";
 import { CLIP_FOOT_SPEED, MAX_RATE, touchdowns } from "./locomotion";
@@ -20,6 +24,9 @@ import { CLIP_TOUCHDOWN_LEFT, advanceGaitPhase, gaitParams, gaitTouchdowns, gait
 import { MESHY } from "./models";
 import { buildBridges, buildClouds, buildGorgePosts, buildHut, buildMesas, buildObstacles, yawOf } from "./props";
 import { smooth } from "./sim";
+import { buildPuddles } from "./puddles";
+import { buildWaterfall, waterfallLip, waterfallPath } from "./waterfall";
+import { buildWaymarks } from "./waymarks";
 import { ROAD_HALF, buildGround, buildScatter, buildValleyForest, groundHeight } from "./terrain";
 
 const LICENSE_ACG = "CC0 1.0, ambientCG";
@@ -41,17 +48,24 @@ export interface WorldStats { drawNodes: number; chunks: number; triangles: numb
 /** What the legs are doing this frame: the clip, its phase in cycles, cadence, stride gain and the share of ground speed the planted feet still slide. */
 export interface GaitReport { clip: string; phase: number; groundSpeed: number; rate: number; /** Share of the legs driven by the planted-foot IK gait (0 = clip only, 1 = fully planted). */ weight: number; /** Steps per second. */ cadence: number; /** Seconds a foot stays planted. */ stance: number; /** Forward lean of the hips (rad). */ lean: number; overspeed: boolean }
 /** What the camera frames this frame: eye, target, vertical fov (deg) and the subjects' world positions (QA framing checks). */
-export interface WorldView { eye: V3; target: V3; fov: number; aspect: number; hero: V3; log: V3 | null; hut: V3 | null; culled: number }
+export interface WorldView { eye: V3; target: V3; fov: number; aspect: number; hero: V3; log: V3 | null; hut: V3 | null; culled: number; /** Letterbox bar share 0..1 (CD-18 title flyover and finale). */ bars: number; /** Seconds into the title (the flyover runs for the first 7). */ titleT: number }
 export interface WorldRuntime {
   update(game: Game, dt: number, aspect: number, events: readonly string[]): void; cutCamera(): void;
   readonly stats: WorldStats; readonly gait: GaitReport; readonly camera: { eye: V3; target: V3 }; readonly view: WorldView;
   /** Grounded foot touchdowns while running (the footstep sound follows these, not distance). */
   readonly footsteps: number;
+  /** CD-15 QA: whether the preset pack is registered, presets fired per kind, the glider trail and the engine live count. */
+  /** CD-09 QA: the post effects the tier plan switched. */
+  post(): Readonly<Record<string, boolean>>;
+  vfx(): { registered: boolean; fired: Record<string, number>; trail: boolean; liveCount: number };
 }
 /** A merged scenery chunk hidden past `range` metres from the camera (small detail is sub-pixel or fogged there). */
 interface Cullable { id: string; centre: V3; radius: number; range: number }
 /** Hide distances per scenery group (metres from the eye to the chunk's bounding sphere). */
 export const CULL_RANGE = { flowers: 150, bushes: 240, rocks: 240, trees: 400 } as const;
+/** CD-21: the storm row culls small scenery earlier (the 0.0032 haze hides it sooner) to pay for the flare, puddles and VFX. */
+export const STORM_CULL_RANGE = { flowers: 110, bushes: 190, rocks: 200, trees: 360 } as const;
+const CULL = ACTIVE_LOOK.id === "storm-washed" ? STORM_CULL_RANGE : CULL_RANGE;
 /** Look sun angles that point the outdoor-day key light along `SUN_POS`, the authored shadow sun (one light direction for shading and shadows). */
 export function sunAnglesOf(p: V3): { azimuthDeg: number; elevationDeg: number } {
   return { azimuthDeg: (Math.atan2(p[0], p[2]) * 180) / Math.PI, elevationDeg: (Math.atan2(p[1], Math.hypot(p[0], p[2])) * 180) / Math.PI };
@@ -96,6 +110,62 @@ export function buildLog(): Mesh {
   logMesh.append(raw, [0, 0, 0], 1, Math.PI / 2, Math.PI / 2);
   return logMesh;
 }
+/**
+ * GU47 WP-35 look nodes for one look-table row (art/look.ts).
+ * - storm-washed: one look key carries the sun and its 4-cascade PCSS shadow to 160 m (CD-01, CD-02; the authored shadow sun
+ *   and the sky-fill hemisphere are gone, so there is no ambient fill), a cool unshadowed back rim (CD-03), spruit_sunrise IBL
+ *   at 0.8 behind the custom dome (CD-04, background off), haze #9fb8cf 0.0032 with height fog pooling in the gorges (CD-07),
+ *   one grade node (the authored grade folds into the look's, CD-08) with warm gain and cool lift, the look bloom, a 0.2
+ *   vignette and contact shadows next to the look's single AO node (CD-10).
+ * - original (`?look=original`): today's nodes, value for value.
+ */
+export const SUN_FLARE_ID = "sun-flare";
+export function lookNodes(row: CumulusLookRow): unknown[] {
+  const out: unknown[] = [];
+  if (row.authoredSunPos) {
+    out.push(looks.preset(row.preset, { sun: sunAnglesOf(row.authoredSunPos as V3), fogDensityScale: row.fog.lookScale }));
+    out.push(lights.directional({ name: "sun", position: row.authoredSunPos as V3, target: [0, 0, 0], intensity: row.sun.intensity, color: row.sun.color, shadow: { cascades: row.sun.cascades, maxDistance: row.sun.maxDistance, blend: 0.14 } }));
+    if (row.hemisphere) out.push(lights.hemisphere({ name: "sky-fill", skyColor: row.hemisphere.sky, groundColor: row.hemisphere.ground, intensity: row.hemisphere.intensity }));
+    out.push(effects.fog({ name: "haze", color: row.fog.color, density: row.fog.density }));
+    out.push(effects.bloom({ name: "bloom", intensity: row.bloom.intensity, threshold: row.bloom.threshold }));
+    out.push(effects.colorGrade({ name: "grade", exposure: row.grade.exposure, contrast: row.grade.contrast, saturation: row.grade.saturation }));
+    // The vignette renders through the post-v2 bridge (postBridge.ts) even though the effects diagnostics list it with
+    // consumer "none". Removing it lifted mean luma from 131 to 199 with clipping (remote A/B run g25-abvig), so it stays.
+    out.push(effects.vignette({ name: "vignette", intensity: row.vignette.intensity, smoothness: row.vignette.smoothness }));
+    return out;
+  }
+  const gorge = row.fog.gorgeHeight;
+  out.push(looks.preset(row.preset, {
+    sun: { elevationDeg: row.sun.elevationDeg, azimuthDeg: row.sun.azimuthDeg },
+    ...(row.hdri ? { hdri: row.hdri } : {}),
+    ...(row.environmentIntensity !== null ? { environmentIntensity: row.environmentIntensity } : {}),
+    ...(row.environmentRotationDeg !== null ? { environmentRotationDeg: row.environmentRotationDeg } : {}),
+    background: row.fog.color,
+    key: { color: row.sun.color, intensity: row.sun.intensity, shadow: { cascades: row.sun.cascades, maxDistance: row.sun.maxDistance, filter: row.sun.filter, blend: 0.14 } },
+    rim: row.rim ? { color: row.rim.color, intensity: row.rim.intensity, azimuthDeg: row.rim.azimuthDeg } : false,
+    fogDensityScale: row.fog.lookScale,
+    fog: { color: row.fog.color, ...(gorge ? { height: { mode: "height", density: row.fog.density, ...gorge } } : {}) },
+    post: { bloom: { intensity: row.bloom.intensity, threshold: row.bloom.threshold } }
+  }));
+  out.push(effects.colorGrade({
+    name: "grade", exposure: row.grade.exposure, contrast: row.grade.contrast, saturation: row.grade.saturation,
+    ...(row.grade.temperature !== undefined ? { temperature: row.grade.temperature } : {}),
+    ...(row.grade.tint !== undefined ? { tint: row.grade.tint } : {}),
+    ...(row.grade.lift ? { lift: [...row.grade.lift] as [number, number, number] } : {}),
+    ...(row.grade.gain ? { gain: [...row.grade.gain] as [number, number, number] } : {})
+  }));
+  out.push(effects.vignette({ name: "vignette", intensity: row.vignette.intensity, smoothness: row.vignette.smoothness }));
+  out.push(effects.contactShadows({ length: 0.3, thickness: 0.06, intensity: 0.9 }));
+  // CD-09: low god rays through the storm towers (High/Ultra only, switched by art/post.ts) and the sun's lens flare, which
+  // world.ts keeps on the sun direction from the camera every frame
+  out.push(effects.volumetricFog({ name: "god-rays", density: 0.002, color: row.sun.color, intensity: 0.4, godRayDensity: CUMULUS_GOD_RAY_DENSITY }));
+  // CD-11: title/finale depth of field and glider motion blur; both start disabled at bind and art/post.ts switches them
+  out.push(effects.depthOfField({ name: "title-dof", ...CUMULUS_DOF }));
+  out.push(effects.motionBlur({ name: "glider-blur", ...CUMULUS_MOTION_BLUR }));
+  out.push(lights.lensFlare({ name: SUN_FLARE_ID, position: sunPosition(row.scenery.sunDir, 2000) as V3, intensity: 0.28, edgeFade: 0.2, elements: CUMULUS_FLARE_ELEMENTS.map((e) => ({ ...e })), runtime: { id: SUN_FLARE_ID } }));
+  return out;
+}
+function addLookNodes(b: { add(n: never): unknown }, row: CumulusLookRow): void { for (const n of lookNodes(row)) b.add(n as never); }
 export interface World { readonly scene: ReturnType<typeof scene>; bind(app: AuraApp): WorldRuntime }
 
 /* dev toggle for A/B frames: ?heroset=0 drops the instanced hero trees, rocks and mesas */
@@ -105,25 +175,14 @@ const ORB_CAP = 72;
 const HERO_HOLD: Readonly<Record<string, { end: number; at?: number }>> = { jump: { end: 2.0 }, hit: { end: 1.5 }, dead: { end: 2.95 }, sit: { end: 8.3, at: 7.6 } };
 /* Meshy models face +Z in their own space; the port's creature rig faced -Z, so the yaw is offset by this many half turns */
 const REX_FACING = 1;
-const SUN_POS: V3 = [48, 78, 38];
+/** The one sun (CD-01): the look key, its cascaded shadow, the scenery shader light and the sky disc all point along this. */
+export const SUN_POS: V3 = (ACTIVE_LOOK.authoredSunPos ?? sunPosition(ACTIVE_LOOK.scenery.sunDir, 100)) as V3;
 const lerp3 = (a: V3, b: V3, k: number): V3 => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
 const mix = (a: number, b: number, k: number): number => a + (b - a) * k;
 
 export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): World {
-  const b = scene().background(LOOK.fogHex).camera(camera.perspective({ position: [0, 74, 8], target: [0, 70, -20], fov: 55, near: 0.2, far: 4200 }));
-  // The look's key light points along SUN_POS, the same direction as the authored shadow sun and the custom scenery shader's
-  // `LOOK.sunLight`, so shading and shadows agree (they were about 18 degrees apart). The authored sun stays: it carries the
-  // tuned cascades. The sky-fill hemisphere is kept: the engine fix (lane E2) makes it contribute again (+1.0% mean luma).
-  b.add(looks.preset("outdoor-day", { sun: sunAnglesOf(SUN_POS), fogDensityScale: 0 }));
-  b.add(lights.directional({ name: "sun", position: SUN_POS, target: [0, 0, 0], intensity: 3.2, color: LOOK.sunHex, shadow: { cascades: 3, maxDistance: 120, blend: 0.14 } }));
-  b.add(lights.hemisphere({ name: "sky-fill", skyColor: "#bcd6f2", groundColor: "#8a7448", intensity: 0.7 }));
-  b.add(effects.fog({ name: "haze", color: LOOK.fogHex, density: LOOK.fogDensity }));
-  b.add(effects.bloom({ name: "bloom", intensity: 0.38, threshold: 0.88 }));
-  b.add(effects.colorGrade({ name: "grade", exposure: 1.02, contrast: 1.07, saturation: 1.16 }));
-  // The vignette renders through the post-v2 bridge (postBridge.ts) even though the effects diagnostics list it with
-  // consumer "none". Removing it lifted mean luma from 131 to 199 with clipping (remote A/B run g25-abvig), so it stays.
-  b.add(effects.vignette({ name: "vignette", intensity: 0.2, smoothness: 0.7 }));
-
+  const b = scene().background(ACTIVE.fogHex).camera(camera.perspective({ position: [0, 74, 8], target: [0, 70, -20], fov: 55, near: 0.2, far: 4200 }));
+  addLookNodes(b, ACTIVE_LOOK);
   let triangles = 0, chunks = 0, drawNodes = 0;
   const cullables: Cullable[] = [];
   /* only the cliff walls cast sun shadows: every caster is drawn once per cascade, and merged foliage, flowers, mesas and cloud banks are far or tiny */
@@ -145,22 +204,25 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   /* ground: textured PBR track and grass, banded sandstone and foliage-covered banks */
   const ground = buildGround(ch);
   const sampling = { wrap: "repeat" as const, anisotropy: 8 };
-  ground.road.forEach((m, i) => { b.add(geometry.custom(plainGeometry(m), { name: `road-${i}`, castShadow: false, material: material.pbr({ color: "#ffffff", roughness: 1, metallic: 0, specularIntensity: 0.12, texture: ASSETS.pathColor, normal: ASSETS.pathNormal, normalScale: 0.9, sampling }), side: "double" } as never)); triangles += m.indices.length / 3; chunks++; });
+  ground.road.forEach((m, i) => { b.add(geometry.custom(plainGeometry(m), { name: `road-${i}`, castShadow: false, material: material.pbr({ color: ACTIVE_LOOK.road.color, roughness: ACTIVE_LOOK.road.roughness, metallic: 0, specularIntensity: 0.12, texture: ASSETS.pathColor, normal: ASSETS.pathNormal, normalScale: 0.9, sampling }), side: "double" } as never)); triangles += m.indices.length / 3; chunks++; });
   ground.grass.forEach((m, i) => addMesh(m, `grass-${i}`, scenerySpec({ map: grassMap, mapMix: 0.7, mapScale: 0.9, rim: 0.12, sun: 1.2 })));
   ground.slope.forEach((m, i) => addMesh(m, `slope-${i}`, scenerySpec({ map: rockMap, mapMix: 0.55, mapScale: 0.5, rim: 0.22 }), undefined, true));
   const scatter = buildScatter(ch);
-  scatter.trees.forEach((m, i) => addMesh(m, `trees-${i}`, scenerySpec({ rim: 0.34 }), undefined, false, CULL_RANGE.trees));
-  scatter.bushes.forEach((m, i) => addMesh(m, `bushes-${i}`, scenerySpec({ rim: 0.3 }), undefined, false, CULL_RANGE.bushes));
-  scatter.rocks.forEach((m, i) => addMesh(m, `rocks-${i}`, scenerySpec({ map: rockMap, mapMix: 0.5, mapScale: 1.2 }), undefined, false, CULL_RANGE.rocks));
-  scatter.flowers.forEach((m, i) => addMesh(m, `flowers-${i}`, scenerySpec({ sun: 1.6, rim: 0.1 }), undefined, false, CULL_RANGE.flowers));
+  scatter.trees.forEach((m, i) => addMesh(m, `trees-${i}`, scenerySpec({ rim: 0.34 }), undefined, false, CULL.trees));
+  scatter.bushes.forEach((m, i) => addMesh(m, `bushes-${i}`, scenerySpec({ rim: 0.3 }), undefined, false, CULL.bushes));
+  scatter.rocks.forEach((m, i) => addMesh(m, `rocks-${i}`, scenerySpec({ map: rockMap, mapMix: 0.5, mapScale: 1.2 }), undefined, false, CULL.rocks));
+  scatter.flowers.forEach((m, i) => addMesh(m, `flowers-${i}`, scenerySpec({ sun: 1.6, rim: 0.1 }), undefined, false, CULL.flowers));
   buildValleyForest(ch).forEach((m, i) => addMesh(m, `valley-forest-${i}`, scenerySpec({ rim: 0.2, sun: 1.0 })));
   const mesas = buildMesas(ch);
   mesas.meshes.forEach((m, i) => addMesh(m, `mesas-${i}`, scenerySpec({ map: rockMap, mapMix: 0.35, mapScale: 0.18, rim: 0.3 })));
   /* generated hero set pieces along the road: instanced, one draw each */
   const place = (list: readonly { pos: V3; scale: number; yaw: number }[]) => list.map((p) => ({ position: p.pos, rotation: [0, p.yaw, 0] as V3, scale: p.scale }));
   const heroSet = { targetHeight: 1, castShadow: true, receiveShadow: false, instancingAware: true } as const;
-  if (HERO_SET && scatter.roundTrees.length) b.add(instances.model(MESHY.treeRound, { name: "hero-trees-round", ...heroSet, transforms: place(scatter.roundTrees) }));
-  if (HERO_SET && scatter.pineTrees.length) b.add(instances.model(MESHY.treePine, { name: "hero-trees-pine", ...heroSet, transforms: place(scatter.pineTrees) }));
+  /* CD-17: the storm row sways the instanced hero trees in the post-squall breeze (E-G instance wind;
+     the row sets the strength) */
+  const treeWind = ACTIVE_LOOK.wind ? { wind: { strength: ACTIVE_LOOK.wind.strength, gustStrength: ACTIVE_LOOK.wind.gustStrength, directionDeg: ACTIVE_LOOK.wind.directionDeg } } : {};
+  if (HERO_SET && scatter.roundTrees.length) b.add(instances.model(MESHY.treeRound, { name: "hero-trees-round", ...heroSet, ...treeWind, transforms: place(scatter.roundTrees) }));
+  if (HERO_SET && scatter.pineTrees.length) b.add(instances.model(MESHY.treePine, { name: "hero-trees-pine", ...heroSet, ...treeWind, transforms: place(scatter.pineTrees) }));
   if (HERO_SET && scatter.boulders.length) b.add(instances.model(MESHY.boulder, { name: "hero-rocks", ...heroSet, castShadow: false, transforms: place(scatter.boulders) }));
   if (HERO_SET && mesas.placements.length) b.add(instances.model(MESHY.mesa, { name: "hero-mesas", targetHeight: 1, castShadow: false, receiveShadow: false, instancingAware: true, transforms: mesas.placements.map((m) => ({ position: m.pos, rotation: [0, m.yaw, 0] as V3, scale: [m.width / 0.55, m.height, m.width / 0.55] as V3 })) }));
   buildClouds(ch).forEach((m, i) => addMesh(m, `clouds-${i}`, scenerySpec({ sun: 0.85, rim: 0.5 })));
@@ -170,6 +232,22 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   const hut = buildHut(ch);
   if (hut) addMesh(hut, "home", scenerySpec({ rim: 0.2 }));
   addMesh(buildCheckpointFlags(ch), "checkpoint-flags", scenerySpec({ rim: 0.3, sun: 1.3 }));
+  /* CD-20: cairns and cloth-strip cord poles at the gorges, one merged draw (storm-washed row) */
+  if (ACTIVE_LOOK.id === "storm-washed") addMesh(buildWaymarks(ch), "waymarks", scenerySpec({ rim: 0.25 }));
+
+  /* CD-12: rain puddles on the wet track, one merged mesh (storm-washed row) */
+  if (ACTIVE_LOOK.road.puddles) {
+    const puddles = buildPuddles(ch);
+    b.add(geometry.custom(plainGeometry(puddles), { name: "puddles", castShadow: false, material: material.custom(puddleSpec()) }).runtime({ id: "puddles" }));
+    triangles += puddles.indices.length / 3; chunks++; drawNodes++;
+  }
+
+  /* CD-16: a waterfall off the sun-side drop into the cloud sea, one ribbon (storm-washed row) */
+  if (ACTIVE_LOOK.id === "storm-washed") {
+    const falls = buildWaterfall(ch), path = waterfallPath(ch);
+    b.add(geometry.custom(plainGeometry(falls), { name: "waterfall", castShadow: false, material: material.custom(waterfallSpec(path[path.length - 1]!.v)) }).runtime({ id: "waterfall" }));
+    triangles += falls.indices.length / 3; chunks++; drawNodes++;
+  }
 
   /* water: a shallow stream across the track */
   ch.waters.forEach((w, i) => {
@@ -185,11 +263,14 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   });
 
   /* characters and set pieces */
-  b.add(model(MESHY.hero, { name: "hero", targetHeight: 1.5, castShadow: true, receiveShadow: false }).runtime({ id: "hero" }));
+  /* CD-03: a cool PBR rim on the hero on rows that set one (E-D materialOverrides rim; maps untouched) */
+  const heroRim = ACTIVE_LOOK.heroRim;
+  b.add(model(MESHY.hero, { name: "hero", targetHeight: 1.5, castShadow: true, receiveShadow: false, ...(heroRim ? { materialOverrides: [{ rim: { color: heroRim.color, power: heroRim.power, intensity: heroRim.intensity } }] } : {}) }).runtime({ id: "hero" }));
   if (ch.log) b.add(geometry.custom(meshGeometry(buildLog()), { name: "ride-log", material: material.custom(scenerySpec({ rim: 0.3 })) }).runtime({ id: "ride-log" }));
   const shadowQuad = new Mesh();
   shadowQuad.vertex([-0.5, 0, -0.5], [0, 1, 0], [0, 0], [1, 1, 1]); shadowQuad.vertex([0.5, 0, -0.5], [0, 1, 0], [1, 0], [1, 1, 1]); shadowQuad.vertex([0.5, 0, 0.5], [0, 1, 0], [1, 1], [1, 1, 1]); shadowQuad.vertex([-0.5, 0, 0.5], [0, 1, 0], [0, 1], [1, 1, 1]); shadowQuad.quad(0, 1, 2, 3);
-  b.add(geometry.custom(plainGeometry(shadowQuad), { name: "hero-shadow", castShadow: false, material: material.custom(shadowSpec()) }).runtime({ id: "hero-shadow" }));
+  /* CD-02: the fake contact quad only on rows whose scenery does not receive the sun shadow (the original look) */
+  if (!ACTIVE_LOOK.scenery.receiveShadow) b.add(geometry.custom(plainGeometry(shadowQuad), { name: "hero-shadow", castShadow: false, material: material.custom(shadowSpec()) }).runtime({ id: "hero-shadow" }));
   b.add(model(MESHY.cloud, { name: "sky-cloud", targetHeight: 0.8, castShadow: false, receiveShadow: false }).runtime({ id: "sky-cloud" }));
   const staff = cylinder(10, 0.13, 0.13, 1, hex("#b53a2a"), hex("#b53a2a"));
   staff.append(cylinder(10, 0.2, 0.2, 0.06, hex("#f0c04a"), hex("#f0c04a")), [0, 0, 0]);
@@ -240,7 +321,24 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
   let animClip = "", animT = 0, wispT = 0, clock = 0;
   let rexS = 0, rexInit = false;
   const camPos: { eye: V3; target: V3 } = { eye: [0, 0, 0], target: [0, 0, 0] };
-  const view: WorldView = { eye: [0, 0, 0], target: [0, 0, 0], fov: 55, aspect: 1, hero: [0, 0, 0], log: null, hut: null, culled: 0 };
+  const view: WorldView = { eye: [0, 0, 0], target: [0, 0, 0], fov: 55, aspect: 1, hero: [0, 0, 0], log: null, hut: null, culled: 0, bars: 0, titleT: 0 };
+  /* CD-18 (storm-washed row): title flyover clock, trauma from impact rises, launch FOV kick */
+  const cinematic = ACTIVE_LOOK.id === "storm-washed";
+  let titleT = 0, lastPhase = "", lastImpact = 0, sinceLaunch = Infinity;
+  /* CD-15 (storm-washed row): the preset pack is registered with the game's reduced-motion setting (re-registered on a
+     toggle); events fire their preset through app.effects; the cloud mount trails a silver ribbon while ridden */
+  let vfxMotion: boolean | null = null;
+  let gliderTrail: { stop(): void } | null = null;
+  const vfxFired: Record<string, number> = {};
+  const fallsLip = waterfallLip(ch);
+  let sprayT = 0;
+  /* CD-09 / CD-11: god rays, DOF and glider motion blur on High/Ultra only, never on a phone; the plan is re-evaluated every
+     frame (moment, riding, tier, reduced motion) and only changed states are written */
+  const coarse = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+  let postStates: Readonly<Record<string, boolean>> = {};
+  let dofFocus: number | null = null;
+  const quality = (app as unknown as { quality?: { tier?: string; onChange?(cb: () => void): unknown } }).quality;
+  if (cinematic) postStates = applyCumulusPostPlan(app.post, cumulusPostPlan({ tier: quality?.tier, coarsePointer: coarse }));
   const cullShown = new Map<string, boolean>();
   let footsteps = 0;
   /* finale camera: the hut and its mound are solid, and the eye stays above the ground around the home frame */
@@ -293,8 +391,20 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
     }
   };
 
+  function emitPresets(g: Game, events: readonly string[], p: V3): void {
+    if (!cinematic) return;
+    if (vfxMotion !== g.reducedMotion) { vfxMotion = g.reducedMotion; registerCumulusVfx(app.effects, g.reducedMotion); }
+    for (const e of events) {
+      const wet = e === "land" && ch.waters.some((w) => g.state.s >= w.start - 2 && g.state.s <= w.end + 2);
+      for (const kind of cumulusVfxFor(e, wet)) {
+        try { app.effects?.burst(kind, [p[0], p[1] + 0.2, p[2]], { camera: false }); vfxFired[kind] = (vfxFired[kind] ?? 0) + 1; } catch { /* effects runtime unavailable */ }
+      }
+    }
+  }
+
   function emitEvents(g: Game, events: readonly string[]): void {
     const s = g.state, f = frameAt(s.s, s.lane), p = foot(g), up = f.up;
+    emitPresets(g, events, p);
     const chest: V3 = [p[0] + up[0] * 1.3, p[1] + up[1] * 1.3, p[2] + up[2] * 1.3];
     for (const e of events) {
       if (e === "jump" || e === "land") fx.dust(p, up, e === "land" ? 7 : 5, "#e8d4a8", 0.9);
@@ -324,12 +434,17 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
     camera: camPos,
     view,
     get footsteps() { return footsteps; },
+    post: () => ({ ...postStates }),
+    vfx: () => ({ registered: vfxMotion !== null, fired: { ...vfxFired }, trail: gliderTrail !== null, liveCount: app.effects?.liveCount ?? 0 }),
     cutCamera() { eye = null; look = null; chase.reset(); finaleClear.reset(); },
     update(g, dt, aspect, events) {
       clock += dt;
       const s = g.state, f = frameAt(s.s, s.lane), phase = g.phase;
       const n = s.glider, riding = n.active || n.call > 0;
       emitEvents(g, events);
+      if (phase !== lastPhase) { if (phase === "menu") titleT = 0; lastPhase = phase; }
+      else if (phase === "menu") titleT += dt;
+      if (events.includes("launch") || events.includes("power-launch")) sinceLaunch = 0; else sinceLaunch += dt;
 
       /* ---- hero pose ---- */
       const logLift = ch.log ? 1.9 * (1 - smooth(ch.log - 0.3, ch.log, s.s)) : 0;
@@ -387,17 +502,21 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         else view.log = null;
       }
 
-      const hs = node("hero-shadow");
-      const gp = at(s.s, s.lane, 0.07 + (ch.log && s.s < ch.log ? 0 : 0));
-      hs.setVisible(phase !== "falling" && phase !== "finale");
-      hs.setPosition(gp[0], gp[1], gp[2]);
-      hs.setRotation(0, yawOf(f.forward), 0);
-      const hk = Math.max(0.35, 1.5 - s.jump * 0.12);
-      hs.setScale([hk * 1.6, 1, hk * 1.6]);
-      hs.setUniform?.("shadowAlpha", Math.max(0.12, 0.42 - s.jump * 0.05));
+      if (!ACTIVE_LOOK.scenery.receiveShadow) {
+        const hs = node("hero-shadow");
+        const gp = at(s.s, s.lane, 0.07 + (ch.log && s.s < ch.log ? 0 : 0));
+        hs.setVisible(phase !== "falling" && phase !== "finale");
+        hs.setPosition(gp[0], gp[1], gp[2]);
+        hs.setRotation(0, yawOf(f.forward), 0);
+        const hk = Math.max(0.35, 1.5 - s.jump * 0.12);
+        hs.setScale([hk * 1.6, 1, hk * 1.6]);
+        hs.setUniform?.("shadowAlpha", Math.max(0.12, 0.42 - s.jump * 0.05));
+      }
 
       /* ---- sky cloud ---- */
       cloud.setVisible(riding || (phase === "menu" && false));
+      if (cinematic && riding && !gliderTrail) { try { gliderTrail = app.effects?.trail("sky-cloud", CUMULUS_GLIDER_TRAIL) ?? null; } catch { gliderTrail = null; } }
+      else if (gliderTrail && !riding) { gliderTrail.stop(); gliderTrail = null; }
       if (riding) {
         const base = at(s.s, s.lane, Math.max(0, s.jump - 0.55));
         cloud.setPosition(base[0] + f.forward[0] * 1.1, base[1] + 0.12, base[2] + f.forward[2] * 1.1); /* the generated cloud's mass sits behind its origin */
@@ -561,12 +680,28 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
 
       /* ---- water, sky and valley follow (footstep dust is emitted on foot touchdowns in play()) ---- */
       for (const id of riverIds) node(id).setUniform?.("tClock", clock);
+      if (ACTIVE_LOOK.road.puddles) node("puddles").setUniform?.("tClock", g.reducedMotion ? 0 : clock);
+      if (cinematic) {
+        // CD-16: the fall keeps running at 35% on reduced motion; the lip spray fires on a timer while the camera is near
+        node("waterfall").setUniform?.("tClock", clock * (g.reducedMotion ? 0.35 : 1));
+        sprayT += dt;
+        if (sprayT >= FALLS_SPRAY_PERIOD && eye && Math.hypot(fallsLip[0] - eye[0], fallsLip[1] - eye[1], fallsLip[2] - eye[2]) < FALLS_SPRAY_RANGE) {
+          sprayT = 0;
+          try { app.effects?.burst("falls-spray", fallsLip, { camera: false }); vfxFired["falls-spray"] = (vfxFired["falls-spray"] ?? 0) + 1; } catch { /* effects runtime unavailable */ }
+        }
+      }
 
       /* ---- camera ---- */
       let wantEye: V3, wantLook: V3, fov = aspect < 1 ? 62 : 55 + s.speed * 0.2;
       let cut = false;
       const hp = pos;
-      if (phase === "menu") {
+      const fly = phase === "menu" && cinematic ? titleFlyover(titleT, pos, ACTIVE_LOOK.sky.sunDir, g.reducedMotion) : null;
+      view.bars = fly ? fly.bars : phase === "finale" ? 1 : 0;
+      view.titleT = titleT;
+      if (fly) {
+        wantEye = [fly.eye[0], fly.eye[1], fly.eye[2]]; wantLook = [fly.look[0], fly.look[1], fly.look[2]];
+        fov = fly.fov; cut = !eye || titleT === 0;
+      } else if (phase === "menu") {
         const a = clock * 0.18 + 0.2;
         wantEye = at(s.s + 7.2 * Math.cos(a) + 2.5, 5.0 * Math.sin(a) - 3.6, s.jump + logLift + 2.4);
         wantLook = at(s.s + 0.2, s.lane, s.jump + logLift + 1.2);
@@ -604,7 +739,14 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         if (g.chase) fov += 3;
         fov += g.danger * 3;
       }
-      const shake = g.reducedMotion ? 0 : g.impact * 0.28;
+      // CD-18: the storm row feeds impacts to the controller's trauma layer and kicks the FOV on a launch; the original keeps its sine shake
+      const shake = g.reducedMotion || cinematic ? 0 : g.impact * 0.28;
+      if (cinematic) {
+        const trauma = traumaFor(lastImpact, g.impact, g.reducedMotion);
+        if (trauma > 0) cam.shake?.add(trauma);
+        cam.fovKick?.set("launch", launchFovKick(sinceLaunch, g.reducedMotion), sinceLaunch < 0.4 ? 0.06 : 0.3);
+      }
+      lastImpact = g.impact;
       const pose = chase.step({
         wantEye, wantLook, fovTarget: fov, cut,
         lag: { eye: phase === "playing" ? 14 : 5, look: phase === "playing" ? 14 : 5 },
@@ -616,6 +758,15 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
       cam.setPose({ position: [shook[0], shook[1], shook[2]], target: [look[0], look[1], look[2]], up: [0, 1, 0], fov: pose.fov }, { cut: pose.cut });
       camPos.eye = shook; camPos.target = look;
       view.eye = shook; view.target = look; view.fov = pose.fov; view.aspect = aspect; view.hero = pos; view.hut = hutCentre;
+      if (cinematic) {
+        const moment: CumulusMoment = fly ? "title" : phase === "finale" ? "finale" : "play";
+        const plan = cumulusPostPlan({ tier: quality?.tier, coarsePointer: coarse, moment, riding, reducedMotion: g.reducedMotion });
+        postStates = applyCumulusPostPlan(app.post, plan, postStates);
+        if (plan.dof) {
+          const focus = cumulusFocusDistance(shook, look);
+          if (needsRefocus(dofFocus, focus)) { dofFocus = focus; try { app.post?.setEffect("depthOfField", { focusDistance: focus }); } catch { /* not patchable on this chain */ } }
+        } else dofFocus = null;
+      }
 
       /* distance culling of the small merged scenery (frustum culling alone keeps every chunk ahead on the winding course) */
       let culled = 0;
@@ -627,9 +778,12 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
       view.culled = culled;
 
       sky.setPosition(shook[0], shook[1], shook[2]);
-      sky.setUniform?.("cloudPhase", clock);
+      if (cinematic) { const d = ACTIVE_LOOK.scenery.sunDir; node(SUN_FLARE_ID).setPosition(shook[0] + d[0] * 2000, shook[1] + d[1] * 2000, shook[2] + d[2] * 2000); }
+      // CD-17: two drift speeds (sky dome vs the cloud sea below); reduced motion slows both to 30%
+      const drift = cinematic && g.reducedMotion ? 0.3 : 1;
+      sky.setUniform?.("cloudPhase", clock * ACTIVE_LOOK.cloudDrift.sky * drift);
       valley.setPosition(shook[0], f.point[1] - 43, shook[2]);
-      valley.setUniform?.("cloudPhase", clock);
+      valley.setUniform?.("cloudPhase", clock * ACTIVE_LOOK.cloudDrift.sea * drift);
 
       fx.update(dt, app);
     }

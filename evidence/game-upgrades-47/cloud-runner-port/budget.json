@@ -1,0 +1,91 @@
+{
+  "schema": "aura3d.gu47-budget/1",
+  "slug": "cloud-runner-port",
+  "game": "Cumulus Dash",
+  "wp": "WP-35",
+  "budget": {
+    "drawCalls": {
+      "s60": 160,
+      "s520": 140
+    },
+    "lowTierDrawCalls": {
+      "s60": 128,
+      "s520": 112
+    },
+    "trianglesMax": 560000,
+    "cloudTrianglesMax": 70000,
+    "deviceTextureBytesMax": 209715200,
+    "frameTimeDeltaMax": "+10%",
+    "postHighOnly": [
+      "S4 god rays",
+      "S6 depth of field",
+      "S7 motion blur"
+    ],
+    "note": "Budgets are never raised to pass (PRD D7). Low tier is 80% of the High budget (PRD §6.4)."
+  },
+  "source": "evidence/kid-goku-beyond-the-clouds-port/audit-2026-10-29/README.md (after-budget run g25-budget-after-194950, 960x540; after-hd run g25-hd-after-194659, 1280x720; software WebGL2)",
+  "before": {
+    "storm-washed": null,
+    "original": {
+      "s60": {
+        "viewport": "960x540",
+        "drawCalls": 149,
+        "textureBytes": 176915968,
+        "meanLuma1280": 130.68
+      },
+      "s520": {
+        "viewport": "960x540",
+        "drawCalls": 130,
+        "textureBytes": 176915968,
+        "meanLuma1280": 129.67
+      },
+      "s1100": {
+        "viewport": "960x540",
+        "drawCalls": 113,
+        "textureBytes": 189498880
+      },
+      "s1420": {
+        "viewport": "960x540",
+        "drawCalls": 78,
+        "textureBytes": 189498880,
+        "meanLuma1280": 126.38
+      },
+      "s1700": {
+        "viewport": "960x540",
+        "drawCalls": 69,
+        "textureBytes": 189498880
+      },
+      "triangles": 647000,
+      "portrait": {
+        "viewport": "390x844",
+        "meanLuma": 176,
+        "saturation": 0.07
+      },
+      "pageMB": null,
+      "routeJsGzipDelta": null,
+      "runnerFps": null
+    },
+    "note": "Before = the 4.6.1 look, which ?look=original keeps. No storm-washed before exists (it is new)."
+  },
+  "after": null,
+  "expectedDrawDelta": {
+    "CD-01 one sun (the authored shadow sun folds into the look key; lights, no draws)": 0,
+    "CD-02 scenery receives shadows; hero-shadow quad deleted; 4 cascades (each caster drawn once more)": -1,
+    "CD-02 shadow casters: cliff walls, hero, models over a 4th cascade (depth draws, not counted as scene draws on the colour pass)": 0,
+    "CD-03 look rim light (light, no draw)": 0,
+    "CD-04 spruit_sunrise IBL, background off (no draw)": 0,
+    "CD-05 rainbow, storm towers and rain curtains in the existing sky sphere": 0,
+    "CD-07 height fog (fog node, no draw)": 0,
+    "CD-08 one grade node (post, no draw)": 0,
+    "CD-09 sun lens flare (one sprite pass while the sun is in view)": 1,
+    "CD-15 preset pack (pooled engine emitters, one draw per live emitter batch) + glider trail ribbon": 2,
+    "net scene draws (expected)": "+3 before CD-21 culling; about -1 to -5 after",
+    "note": "Expected deltas from the authored node list; measured numbers are phase 2 (diagnostics().drawCalls in the remote capture).",
+    "CD-12 rain puddles (one merged mesh)": 1,
+    "CD-21 earlier culling (flowers 110, bushes 190, rocks 200, trees 360 m): fewer far chunks at s=60/520": "-4 to -8 (measured phase 2)",
+    "CD-11 title/finale DOF and glider motion blur (post passes, High/Ultra only; no scene draws)": 0,
+    "CD-15 speed-lines and landing-dust presets (same pooled emitter batches)": 0,
+    "CD-20 cairns, cord poles and hollow moss/flowers (one merged waymarks mesh; hollows add about 5.2k tris)": 1,
+    "CD-16 waterfall ribbon (one transparent draw, under 200 tris) + lip spray (pooled emitter batch)": 1
+  }
+}

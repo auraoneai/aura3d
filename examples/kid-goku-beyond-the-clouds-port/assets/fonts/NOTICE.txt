@@ -1,0 +1,6 @@
+Licensed HUD faces for Cumulus Dash (GU47 WP-35 CD-19, E-J theme "sky-expedition").
+Copied unchanged from packages/game/src/fonts/ (provenance in packages/game/src/fonts/NOTICE.txt); licensed faces from the
+owner's font library, self-hosted WOFF2 web cuts, never a system or Google font.
+
+roobert-400.woff2 | Roobert (400) | Displaay Type Foundry | sans/Roobert/roobert-regular.woff2 | 28784 | 896c62dfc1bca14aa76c1b535aac1b7638e71c91a3dd96f3bd2b5593e41a4e8a
+roobert-700.woff2 | Roobert (700) | Displaay Type Foundry | sans/Roobert/roobert-bold.woff2 | 28640 | 4acdec158e34073fcca412cf3428e8327eef9a8c581b462540189895e8667061

@@ -17,7 +17,7 @@ export interface UiHandlers {
 }
 
 /** Menu and result options the UI shows; `main.ts` owns the values and persists them. */
-export interface UiOptions { soundOn: boolean; reducedMotion: boolean; difficulty: Difficulty; best: number; bestTime: number; bestPearls: number }
+export interface UiOptions { soundOn: boolean; reducedMotion: boolean; difficulty: Difficulty; best: number; bestTime: number; bestPearls: number; /** CD-19: parchment-and-sandstone HUD in the licensed sky-expedition face (storm-washed look). */ storm?: boolean }
 
 /**
  * Prompt, hint and toast text for the current input mode. The sim and encounter layers write keyboard text; on a touch
@@ -115,6 +115,15 @@ const CSS = `
 #cr-ui .panel .orbs{justify-content:center;background:none;border:0;padding:0}
 #cr-ui .badge{display:inline-block;margin:4px 0 0;padding:2px 10px;border-radius:999px;background:#ffd75e;color:#4a2a05;font-size:12px;font-weight:500}
 #cr-ui .caption{position:absolute;left:0;right:0;bottom:14%;text-align:center;font-size:clamp(18px,2.6vw,28px);font-weight:500;text-shadow:0 2px 12px rgba(0,0,0,.7);opacity:0;transition:opacity .6s}
+#cr-ui.storm{font-family:"A3G Roobert","Roobert",Arial,sans-serif}
+#cr-ui.storm kbd{font-family:"A3G Roobert","Roobert",Arial,sans-serif}
+#cr-ui.storm .glass{background:rgba(92,48,28,.6);border-color:rgba(255,236,204,.32)}
+#cr-ui.storm button.primary{background:linear-gradient(#ffc56e,#ffb347)}
+#cr-ui.storm .title h1 span,#cr-ui.storm .combo{color:#ffb347}
+#cr-ui.storm .title h1{text-shadow:0 3px 0 #b5643c,0 6px 18px rgba(0,0,0,.35)}
+#cr-ui.storm .orb.got{background:radial-gradient(circle at 35% 30%,#ffe2b8,#ffb347 70%);border-color:#ffe2b8;color:#6a3010;box-shadow:0 0 8px rgba(255,179,71,.85)}
+#cr-ui.storm .prog .fill,#cr-ui.storm .gauge .gfill{background:linear-gradient(90deg,#ffe2b8,#ffb347)}
+#cr-ui.storm .prog .me{border-color:#ffb347}
 #cr-ui .caption.on{opacity:1}
 #cr-ui .bars{position:absolute;left:0;right:0;height:9vh;background:#000;transition:transform .6s}
 #cr-ui .bars.t{top:0;transform:translateY(-100%)}#cr-ui .bars.b{bottom:0;transform:translateY(100%)}
@@ -153,6 +162,7 @@ export class Ui {
     this.reducedMotion = opts.reducedMotion;
     this.difficulty = opts.difficulty;
     this.root.id = "cr-ui";
+    if (opts.storm) this.root.classList.add("storm");
     this.touchMode = matchMedia("(pointer: coarse)").matches;
     if (this.touchMode) this.root.classList.add("coarse");
     const style = el("style"); style.textContent = CSS; this.root.appendChild(style);
@@ -161,7 +171,7 @@ export class Ui {
     menu.innerHTML = `<div class="title"><h1><span>Sky ridge run</span>Cumulus Dash</h1><p>Seven sky pearls. One long run home along the ridge.</p></div>
       <div class="menu"><button class="primary" data-a="play">Play  ▸</button><div class="row"><button class="ghost" data-a="sound">Sound on</button><button class="ghost" data-a="motion">Motion: full</button><button class="ghost" data-a="difficulty">Normal</button><button class="ghost" data-a="how">How to play</button></div><div class="best" data-q="best"></div></div>
       <div class="keys"><span><kbd>←</kbd><kbd>→</kbd>steer</span><span><kbd>Space</kbd><kbd>W</kbd>jump</span><span><kbd>E</kbd><kbd>K</kbd>staff</span><span><kbd>Q</kbd>sky cloud</span><span><kbd>↓</kbd>brake</span><span><kbd>P</kbd>pause</span><span><kbd>M</kbd>sound</span></div>
-      <div class="credit">Built with Aura3D</div>`;
+      <div class="credit">Built with Aura3D</div><div class="bars t" data-q="mt"></div><div class="bars b" data-q="mb"></div>`;
     const hud = el("div", "scr");
     hud.innerHTML = `<div class="danger" data-q="danger"></div><div class="flash" data-q="flash"></div>
       <div class="hud-top"><div class="left"><button class="pausebtn" data-a="pause" aria-label="Pause">❚❚</button><div class="stack"><div class="hearts" data-q="hearts"></div><div class="orbs" data-q="orbs"></div></div></div>
@@ -235,6 +245,12 @@ export class Ui {
   private say(text: string): void { const t = this.q.toast!; t.textContent = text; t.classList.add("on"); setTimeout(() => t.classList.remove("on"), 3600); }
   ready(): void { if (this.failed) return; const l = this.q.loading!.firstElementChild as HTMLElement; l.style.opacity = "0"; setTimeout(() => this.q.loading!.classList.remove("on"), 520); }
   private set(key: string, value: string | number, apply: () => void): void { if (this.last[key] !== value) { this.last[key] = value; apply(); } }
+
+  /** CD-18: letterbox bars over the title while the flyover runs (share 0..1 from the world view). */
+  titleBars(share: number): void {
+    const on = share > 0.5;
+    this.set("titlebars", on ? 1 : 0, () => { this.q.mt?.classList.toggle("on", on); this.q.mb?.classList.toggle("on", on); });
+  }
 
   update(g: Game): void {
     const s = g.state, ph = g.phase;

@@ -1,56 +1,94 @@
 /** `material.custom` specs and the look constants (sky, haze, light) for the Cloud Runner. */
 import type { material } from "@aura3d/engine";
-import { BALL_FRAGMENT, BALL_VERTEX, SCENERY_FRAGMENT, SCENERY_VERTEX, WARN_FRAGMENT, WARN_VERTEX, SHADOW_FRAGMENT, GLOW_FRAGMENT, GLOW_VERTEX, PUFF_FRAGMENT, SKY_FRAGMENT, SKY_VERTEX, VALLEY_FRAGMENT, VALLEY_VERTEX, WATER_FRAGMENT, WATER_VERTEX } from "./shaders";
+import { ACTIVE_LOOK, lookRow, type CumulusLookRow } from "./art/look";
+import { BALL_FRAGMENT, BALL_VERTEX, SCENERY_FRAGMENT, SCENERY_SHADOWED_FRAGMENT, SCENERY_VERTEX, WARN_FRAGMENT, WARN_VERTEX, SHADOW_FRAGMENT, GLOW_FRAGMENT, GLOW_VERTEX, PUFF_FRAGMENT, PUDDLE_FRAGMENT, PUDDLE_VERTEX, SKY_FRAGMENT, SKY_VERTEX, STORM_SKY_FRAGMENT, VALLEY_FRAGMENT, VALLEY_VERTEX, WATER_FRAGMENT, WATER_VERTEX, WATERFALL_FRAGMENT, WATERFALL_VERTEX } from "./shaders";
 
 export type CustomSpec = Parameters<typeof material.custom>[0];
 type Rgb = readonly [number, number, number];
 
+/** The shader-side constants of one look-table row (art/look.ts): sky, haze, the sky's sun disc and the scenery sun. */
+export function lookConstants(row: CumulusLookRow) {
+  return {
+    haze: row.fog.haze,
+    fogHex: row.fog.color,
+    fogDensity: row.fog.density,
+    /** Sun disc direction in the sky dome. */
+    sunDir: row.sky.sunDir as Rgb,
+    /** Scenery shader light direction (toward the sun). */
+    sunLight: row.scenery.sunDir as Rgb,
+    sunHex: row.sun.color,
+    skyTop: row.sky.top,
+    skyMid: row.sky.mid,
+    skyHorizon: row.sky.horizon,
+    cloudLight: row.sky.cloudLight,
+    cloudShade: row.sky.cloudShade,
+    sunTint: row.sky.sunTint
+  };
+}
+/** Today's (4.6) look constants, value for value: the `?look=original` row. */
+export const LOOK = lookConstants(lookRow("original"));
+/** The constants of the row this page boots with (storm-washed unless `?look=original`). */
+export const ACTIVE = lookConstants(ACTIVE_LOOK);
 const lin = (r: number, g: number, b: number): Rgb => [Math.pow(r, 2.2), Math.pow(g, 2.2), Math.pow(b, 2.2)];
-/** Authored as display (sRGB-ish) colours and converted to the linear values custom shaders return. */
-export const LOOK = {
-  haze: lin(0.66, 0.79, 0.91),
-  fogHex: "#a8c9e8",
-  fogDensity: 0.0026,
-  sunDir: [0.5, 0.42, -0.76] as Rgb,
-  sunLight: [0.46, 0.8, 0.4] as Rgb,
-  sunHex: "#fff0cf",
-  skyTop: lin(0.12, 0.38, 0.8),
-  skyMid: lin(0.3, 0.6, 0.92),
-  skyHorizon: lin(0.78, 0.89, 0.96),
-  cloudLight: lin(1.0, 0.98, 0.94),
-  cloudShade: lin(0.62, 0.68, 0.84),
-  sunTint: [0.9, 0.55, 0.22] as Rgb
-};
+void lin;
 
-export const skySpec = (): CustomSpec => ({
-  glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT },
+/** The sky dome. Rows with `sky.rainbow/towers/rain` > 0 get the post-storm fragment (CD-05); the original row keeps its own. */
+export const skySpec = (row: CumulusLookRow = ACTIVE_LOOK): CustomSpec => {
+  const k = lookConstants(row), storm = row.sky.rainbow > 0 || row.sky.towers > 0 || row.sky.rain > 0;
+  return {
+  glsl: { vertex: SKY_VERTEX, fragment: storm ? STORM_SKY_FRAGMENT : SKY_FRAGMENT },
   uniforms: {
-    skyTop: { type: "vec3", value: [...LOOK.skyTop] }, skyMid: { type: "vec3", value: [...LOOK.skyMid] }, skyHorizon: { type: "vec3", value: [...LOOK.skyHorizon] },
-    cloudLight: { type: "vec3", value: [...LOOK.cloudLight] }, cloudShade: { type: "vec3", value: [...LOOK.cloudShade] },
-    sunDir: { type: "vec3", value: [...LOOK.sunDir] }, sunTint: { type: "vec3", value: [...LOOK.sunTint] },
-    hazeColor: { type: "vec3", value: [...LOOK.haze] }, cloudPhase: { type: "f32", value: 0 }
+    skyTop: { type: "vec3", value: [...k.skyTop] }, skyMid: { type: "vec3", value: [...k.skyMid] }, skyHorizon: { type: "vec3", value: [...k.skyHorizon] },
+    cloudLight: { type: "vec3", value: [...k.cloudLight] }, cloudShade: { type: "vec3", value: [...k.cloudShade] },
+    sunDir: { type: "vec3", value: [...k.sunDir] }, sunTint: { type: "vec3", value: [...k.sunTint] },
+    hazeColor: { type: "vec3", value: [...k.haze] }, cloudPhase: { type: "f32", value: 0 },
+    ...(storm ? { rainbowStrength: { type: "f32" as const, value: row.sky.rainbow }, towerStrength: { type: "f32" as const, value: row.sky.towers }, rainStrength: { type: "f32" as const, value: row.sky.rain } } : {})
   },
   side: "double",
   depthWrite: false
-});
+  };
+};
 
-export const valleySpec = (): CustomSpec => ({
+export const valleySpec = (row: CumulusLookRow = ACTIVE_LOOK): CustomSpec => ({
   glsl: { vertex: VALLEY_VERTEX, fragment: VALLEY_FRAGMENT },
-  uniforms: { hazeColor: { type: "vec3", value: [...LOOK.haze] }, fogDensity: { type: "f32", value: 0.0011 }, cloudPhase: { type: "f32", value: 0 } },
+  uniforms: { hazeColor: { type: "vec3", value: [...row.fog.haze] }, fogDensity: { type: "f32", value: 0.0011 }, cloudPhase: { type: "f32", value: 0 } },
   side: "double"
 });
 
-export const waterSpec = (): CustomSpec => ({
+export const waterSpec = (row: CumulusLookRow = ACTIVE_LOOK): CustomSpec => ({
   glsl: { vertex: WATER_VERTEX, fragment: WATER_FRAGMENT },
-  uniforms: { hazeColor: { type: "vec3", value: [...LOOK.haze] }, fogDensity: { type: "f32", value: LOOK.fogDensity }, tClock: { type: "f32", value: 0 } },
+  uniforms: { hazeColor: { type: "vec3", value: [...row.fog.haze] }, fogDensity: { type: "f32", value: row.fog.density }, tClock: { type: "f32", value: 0 } },
   side: "double",
   transparent: true,
   depthWrite: false
 });
 
-export const ballSpec = (stars: number): CustomSpec => ({
+/** CD-16 waterfall ribbon off the sun-side drop (storm-washed row); `fallLength` is the path length in metres. */
+export const waterfallSpec = (fallLength = 60, row: CumulusLookRow = ACTIVE_LOOK): CustomSpec => ({
+  glsl: { vertex: WATERFALL_VERTEX, fragment: WATERFALL_FRAGMENT },
+  uniforms: { hazeColor: { type: "vec3", value: [...row.fog.haze] }, fogDensity: { type: "f32", value: row.fog.density }, tClock: { type: "f32", value: 0 }, fallLength: { type: "f32", value: fallLength } },
+  side: "double",
+  transparent: true,
+  depthWrite: false
+});
+
+/** Sky pearl. `ballGlow` is the row's `pearlGlow` (CD-14: the pearls are the brightest objects, above the bloom threshold). */
+/** CD-12 rain puddles on the track (storm-washed row). */
+export const puddleSpec = (row: CumulusLookRow = ACTIVE_LOOK): CustomSpec => ({
+  glsl: { vertex: PUDDLE_VERTEX, fragment: PUDDLE_FRAGMENT },
+  uniforms: {
+    skyTop: { type: "vec3", value: [...row.sky.top] }, skyHorizon: { type: "vec3", value: [...row.sky.horizon] },
+    sunDir: { type: "vec3", value: [...row.sky.sunDir] }, hazeColor: { type: "vec3", value: [...row.fog.haze] },
+    fogDensity: { type: "f32", value: row.fog.density }, tClock: { type: "f32", value: 0 }
+  },
+  side: "double",
+  transparent: true,
+  depthWrite: false
+});
+
+export const ballSpec = (stars: number, row: CumulusLookRow = ACTIVE_LOOK): CustomSpec => ({
   glsl: { vertex: BALL_VERTEX, fragment: BALL_FRAGMENT },
-  uniforms: { ballStars: { type: "f32", value: stars }, ballGlow: { type: "f32", value: 1 } }
+  uniforms: { ballStars: { type: "f32", value: stars }, ballGlow: { type: "f32", value: row.pearlGlow } }
 });
 
 const glowUniforms = { pixelRatio: { type: "f32" as const, value: 1 }, pointScale: { type: "f32" as const, value: 420 }, pointCap: { type: "f32" as const, value: 120 }, sparkle: { type: "f32" as const, value: 1 } };
@@ -69,20 +107,25 @@ export const puffSpec = (): CustomSpec => ({
 });
 
 export interface SceneryOptions { map?: unknown; mapMix?: number; mapScale?: number; opacity?: number; rim?: number; sun?: number; transparent?: boolean }
-const SUN_W = (() => { const d = LOOK.sunLight; const l = Math.hypot(d[0], d[1], d[2]); return [d[0] / l, d[1] / l, d[2] / l]; })();
-/** Lit scenery driven by a per-vertex `tone` attribute (the geometry must supply it). */
-export const scenerySpec = (o: SceneryOptions = {}): CustomSpec => ({
-  glsl: { vertex: SCENERY_VERTEX, fragment: SCENERY_FRAGMENT },
+const unit = (d: Rgb): number[] => { const l = Math.hypot(d[0], d[1], d[2]) || 1; return [d[0] / l, d[1] / l, d[2] / l]; };
+/**
+ * Lit scenery driven by a per-vertex `tone` attribute (the geometry must supply it). On rows with `scenery.receiveShadow`
+ * (storm-washed, CD-02) the program receives the look key's cascaded sun shadow through `a3d_shadow`; the light direction is
+ * the same one the key, the sky disc and the shadow use (CD-01).
+ */
+export const scenerySpec = (o: SceneryOptions = {}, row: CumulusLookRow = ACTIVE_LOOK): CustomSpec => ({
+  glsl: { vertex: SCENERY_VERTEX, fragment: row.scenery.receiveShadow ? SCENERY_SHADOWED_FRAGMENT : SCENERY_FRAGMENT },
   uniforms: {
-    sunDirW: { type: "vec3", value: SUN_W }, sunColor: { type: "vec3", value: [1.0, 0.82, 0.58] }, sunStrength: { type: "f32", value: o.sun ?? 1.15 },
-    skyFill: { type: "vec3", value: lin(0.5, 0.64, 0.84) as unknown as number[] }, groundFill: { type: "vec3", value: lin(0.5, 0.42, 0.3) as unknown as number[] },
-    rimColor: { type: "vec3", value: [1.0, 0.86, 0.6] }, rimStrength: { type: "f32", value: o.rim ?? 0.28 },
-    hazeColor: { type: "vec3", value: [...LOOK.haze] }, fogDensity: { type: "f32", value: LOOK.fogDensity },
+    sunDirW: { type: "vec3", value: unit(row.scenery.sunDir) }, sunColor: { type: "vec3", value: [...row.scenery.sunColor] }, sunStrength: { type: "f32", value: o.sun ?? 1.15 },
+    skyFill: { type: "vec3", value: [...row.scenery.skyFill] }, groundFill: { type: "vec3", value: [...row.scenery.groundFill] },
+    rimColor: { type: "vec3", value: [...row.scenery.rimColor] }, rimStrength: { type: "f32", value: o.rim ?? 0.28 },
+    hazeColor: { type: "vec3", value: [...row.fog.haze] }, fogDensity: { type: "f32", value: row.fog.density },
     mapMix: { type: "f32", value: o.map ? o.mapMix ?? 0.75 : 0 }, mapScale: { type: "f32", value: o.mapScale ?? 1 },
     opacity: { type: "f32", value: o.opacity ?? 1 },
     surfaceMap: { type: "texture2d" as const, ...(o.map ? { value: o.map as never } : {}) }
   },
   side: "double",
+  ...(row.scenery.receiveShadow ? { receiveShadow: true } : {}),
   ...(o.transparent ? { transparent: true, depthWrite: false } : {})
 });
 
@@ -103,6 +146,6 @@ export const shadowSpec = (): CustomSpec => ({
 });
 
 export const allProgramSpecs = (): readonly { readonly name: string; readonly spec: CustomSpec }[] => [
-  { name: "sky", spec: skySpec() }, { name: "valley", spec: valleySpec() }, { name: "water", spec: waterSpec() },
-  { name: "ball", spec: ballSpec(4) }, { name: "scenery", spec: scenerySpec() }, { name: "warn", spec: warnSpec(false) }, { name: "shadow", spec: shadowSpec() }, { name: "glow", spec: glowSpec() }, { name: "puff", spec: puffSpec() }
+  { name: "sky", spec: skySpec(lookRow("storm-washed")) }, { name: "sky-original", spec: skySpec(lookRow("original")) }, { name: "valley", spec: valleySpec() }, { name: "puddle", spec: puddleSpec() }, { name: "water", spec: waterSpec() }, { name: "waterfall", spec: waterfallSpec() },
+  { name: "ball", spec: ballSpec(4) }, { name: "scenery", spec: scenerySpec({}, lookRow("storm-washed")) }, { name: "scenery-original", spec: scenerySpec({}, lookRow("original")) }, { name: "warn", spec: warnSpec(false) }, { name: "shadow", spec: shadowSpec() }, { name: "glow", spec: glowSpec() }, { name: "puff", spec: puffSpec() }
 ];
