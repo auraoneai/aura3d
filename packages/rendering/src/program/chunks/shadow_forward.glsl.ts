@@ -76,3 +76,61 @@ float a3dForwardLightShadow(float kind, float castsShadow, vec3 worldPosition, v
   return a3dForwardShadowFactor(offsetPosition, normal, lightDirection) * a3dContactShadowMaskFactor(kind);
 }
 `;
+
+/**
+ * GU47 eint (E-B handoff EB-3): `shadow_local` chunk — PRD-02 local-light (spot / point) shadow tiles on the default
+ * forward path. Emitted after `shadow_forward` only when the draw binds local tiles (`features.shadows.localShadows > 0`,
+ * `ForwardShadowMapOptions.localShadows`). The forward pass packs each tiled light's first tile + 1 into the unused
+ * `right.w` (`u_lightData[i * 6 + 4].w`) and clears its `castsShadow` gate, so `a3dForwardLightShadow` (the sun's
+ * map) skips it and `a3dLocalLightShadow` samples its tile instead.
+ *
+ * The atlas holds the tiles' perspective depth (`shadows/ShadowAtlas.ts`; sampling matrices map world -> tile
+ * [0,1]^3, clip w = depth along the tile axis). Biases are in tile texels at the receiver's depth: the receiver moves
+ * along its normal, then toward the light (same tile UV, nearer depth) before the hardware 2x2 compare.
+ */
+export const SHADOW_LOCAL_CHUNK_GLSL = /* glsl */ `
+uniform highp sampler2DShadow u_localShadowAtlas;
+uniform mat4 u_localShadowMatrices[6];
+uniform vec4 u_localShadowRects[6];
+uniform vec4 u_localShadowTexelScale[2];
+// x strength, y constant bias, z slope bias, w normal offset (bias terms in tile texels)
+uniform vec4 u_localShadowParams;
+uniform vec2 u_localShadowAtlasTexel;
+
+float a3dLocalShadowTile(int tile, vec3 worldPosition, vec3 normal, vec3 toLight) {
+  vec3 n = normalize(normal);
+  vec4 axis = u_localShadowMatrices[tile] * vec4(worldPosition, 1.0);
+  if (axis.w <= 0.0) return 1.0;
+  int scaleRow = tile / 4;
+  float texelWorld = axis.w * u_localShadowTexelScale[scaleRow][tile - scaleRow * 4];
+  float nDotL = clamp(abs(dot(n, toLight)), 0.0, 1.0);
+  float slope = min(sqrt(max(1.0 - nDotL * nDotL, 0.0)) / max(nDotL, 0.05), 8.0);
+  vec3 receiver = worldPosition + n * (texelWorld * u_localShadowParams.w);
+  vec4 tilePosition = u_localShadowMatrices[tile] * vec4(receiver, 1.0);
+  if (tilePosition.w <= 0.0) return 1.0;
+  vec3 projected = tilePosition.xyz / tilePosition.w;
+  if (projected.x < 0.0 || projected.x > 1.0 || projected.y < 0.0 || projected.y > 1.0 || projected.z > 1.0) return 1.0;
+  vec3 biased = receiver + toLight * (texelWorld * (u_localShadowParams.y + u_localShadowParams.z * slope));
+  vec4 biasedPosition = u_localShadowMatrices[tile] * vec4(biased, 1.0);
+  float reference = clamp(biasedPosition.z / max(biasedPosition.w, 0.0001), 0.0, 1.0);
+  vec4 rect = u_localShadowRects[tile];
+  vec2 halfTexel = 0.5 * u_localShadowAtlasTexel;
+  vec2 uv = clamp(rect.xy + projected.xy * rect.zw, rect.xy + halfTexel, rect.xy + rect.zw - halfTexel);
+  float lit = texture(u_localShadowAtlas, vec3(uv, reference));
+  return mix(1.0, lit, clamp(u_localShadowParams.x, 0.0, 1.0));
+}
+
+// slot = u_lightData[i * 6 + 4].w: 0 = no tile, k + 1 = the light's first tile k (a point light owns k .. k + 5,
+// faces +X -X +Y -Y +Z -Z, the order ShadowAtlas plans them).
+float a3dLocalLightShadow(float kind, float slot, vec3 lightPosition, vec3 worldPosition, vec3 normal, vec3 toLight) {
+  if (slot < 0.5 || kind < 0.5 || kind > 2.5) return 1.0;
+  int tile = int(slot + 0.5) - 1;
+  if (kind < 1.5) {
+    vec3 fromLight = worldPosition - lightPosition;
+    vec3 a = abs(fromLight);
+    tile += a.x >= a.y && a.x >= a.z ? (fromLight.x >= 0.0 ? 0 : 1) : (a.y >= a.z ? (fromLight.y >= 0.0 ? 2 : 3) : (fromLight.z >= 0.0 ? 4 : 5));
+  }
+  if (tile < 0 || tile > 5) return 1.0;
+  return a3dLocalShadowTile(tile, worldPosition, normal, toLight);
+}
+`;

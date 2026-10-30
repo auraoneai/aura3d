@@ -22,6 +22,7 @@ import { bindShadowFrameUniforms, shadowBindingMaterial } from "./ShadowFrameBin
 import { readPrd02KillSwitches } from "../passes/Prd02SubFlags";
 import { prd02ShadowCasterEligible } from "./Prd02DepthShaderLibrary";
 import {
+  prd02LocalShadowLights,
   prd02LookupConsumerExists,
   prd02ShadowConfig,
   prd02SunDirection,
@@ -70,19 +71,8 @@ export function collectShadowSystemLights(ctx: FrameContributorContext): {
   const localLights: ShadowSystemLocalLight[] = [];
   let slot = 0;
   if (collected !== undefined) {
-    for (const light of collected) {
-      if (!light.castsShadow || light.source?.visible === false) continue;
-      if (light.kind !== "spot" && light.kind !== "point") continue;
-      localLights.push({
-        shadowIndex: slot,
-        kind: light.kind,
-        position: light.position,
-        direction: light.kind === "spot" ? light.direction : [0, -1, 0],
-        range: light.range,
-        ...(light.kind === "spot" ? { outerAngleRadians: light.spotAngle } : {})
-      });
-      slot += 1;
-    }
+    // GU47 eint (EB-3): the same selection the bridge renders local tiles from.
+    for (const entry of prd02LocalShadowLights(ctx.source)) localLights.push(entry.input);
   } else {
     const scene = sceneFromSource(ctx.source);
     const lights = scene?.collectLights().filter((light) => light.visible && light.castsShadow) ?? [];
