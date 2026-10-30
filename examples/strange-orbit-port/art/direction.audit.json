@@ -454,6 +454,15 @@
         "practical": false
       },
       {
+        "node": "beacon-posts",
+        "practical": false
+      },
+      {
+        "node": "beacon-lamps",
+        "emissiveIntensity": 2.2,
+        "practical": true
+      },
+      {
         "node": "crystal-0-0",
         "practical": false
       },

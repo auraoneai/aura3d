@@ -130,6 +130,9 @@ export const RIVAL_COLORS: readonly (readonly [string, string])[] = [
 /** SO47-L4: tail points on the nearest rivals (the art direction caps practicals at 6). */
 export const TAIL_LIGHTS = 3;
 
+/** SO47-W2: metres between amber beacon posts. */
+export const BEACON_SPACING = 40;
+
 export const GOUACHE_LIVERIES: readonly string[] = ["#3f78c0", "#c4503c", "#8a62cc", "#e2d6bb", "#2f7464"];
 
 const IDENTITY: Mat3 = [1, 0, 0, 0, 1, 0, 0, 0, 1];
@@ -433,6 +436,32 @@ export function buildWorld(options: WorldOptions): World {
       material: material.pbr({ color: "#ffffff", roughness: 0.9, metallic: 0 })
     }));
   }
+  /* ---- GU47 SO47-W2 (part): amber beacon posts every 40 m along the outer edge (2 instanced draws) ---- */
+  if (look === "gouache" && !off.has("beacons")) {
+    const posts: { position: [number, number, number]; rotation: [number, number, number] }[] = [];
+    const lamps: { position: [number, number, number] }[] = [];
+    for (let s = 20; s < COURSE_LENGTH; s += BEACON_SPACING) {
+      const f = mainFrame(s);
+      const side = (Math.floor(s / BEACON_SPACING) % 2 === 0 ? 1 : -1) * 13.5;
+      const p = f.p.clone().addScaledVector(f.side, side).addScaledVector(f.up, 1.1);
+      posts.push({ position: [p.x, p.y, p.z], rotation: euler(basisMatrix(f.tangent, f.up, f.side)) });
+      lamps.push({ position: [p.x + f.up.x * 1.2, p.y + f.up.y * 1.2, p.z + f.up.z * 1.2] });
+    }
+    builder.add(instances.cylinder({
+      name: "beacon-posts",
+      size: [0.22, 2.2, 0.22],
+      transforms: posts,
+      castShadow: false,
+      material: material.pbr({ color: "#e2d6bb", roughness: 0.8, metallic: 0 })
+    }));
+    builder.add(instances.sphere({
+      name: "beacon-lamps",
+      size: 0.42,
+      transforms: lamps,
+      castShadow: false,
+      material: material.pbr({ color: "#ecb75f", emissive: "#ecb75f", emissiveIntensity: 2.2, roughness: 0.5, metallic: 0, practical: true })
+    }).runtime({ id: "beacon-lamps" }));
+  }
   // SO47-P3: sun lens flare on the key (High gouache); frustum occlusion drops it when the sun is off screen.
   if (look === "gouache" && high && !off.has("flare")) builder.add(lights.lensFlare({ name: "sun-flare", light: "key", position: [...row.key.position], intensity: 0.55, occlusion: "frustum" }));
 
@@ -657,6 +686,16 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
   let lastPost = "";
   let lastShift = Number.NaN;
   if (input.look === "gouache") registerOrbitVfx(app.effects ?? { registerPreset: () => undefined });
+  // SO47-V2: amber player ribbon (jade while the gravity grip is on) and livery-coloured rival trails (High), widening
+  // with speed so they show on boost. One ribbon per rider; the engine batches them.
+  const trailColor = { amber: "#ecb75f", jade: "#93ead5" } as const;
+  let playerTrailColor: keyof typeof trailColor = "amber";
+  const riderNode = (i: number): string => input.riders[i]!.parts[0]!.id;
+  const makePlayerTrail = () => app.effects?.trail(riderNode(0), { width: 0.35, life: 0.5, color: trailColor[playerTrailColor], widthOverSpeed: [18, 34] });
+  let playerTrail = input.look === "gouache" ? makePlayerTrail() : undefined;
+  if (input.look === "gouache" && input.high) {
+    for (let i = 1; i < 6; i++) app.effects?.trail(riderNode(i), { width: 0.22, life: 0.35, color: GOUACHE_LIVERIES[i - 1]!, widthOverSpeed: [20, 34] });
+  }
   /** QA crops for E-I's capture (normalised 0..1, updated as the camera moves): rider, sky band, planet. */
   const publishCrops = (aspect: number): void => {
     const qa = (globalThis as { __AURA_QA__?: { crops?: unknown } }).__AURA_QA__;
@@ -940,6 +979,12 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     if (Math.abs(sector.nebulaShift - lastShift) > 0.002 || Number.isNaN(lastShift)) {
       skyDome?.setUniform?.("nebulaShift", sector.nebulaShift);
       lastShift = sector.nebulaShift;
+    }
+    const wantTrail: keyof typeof trailColor = state.gravityTime > 0 || state.flight?.mode === "sling" ? "jade" : "amber";
+    if (playerTrail && wantTrail !== playerTrailColor) {
+      playerTrail.stop({ immediate: false });
+      playerTrailColor = wantTrail;
+      playerTrail = makePlayerTrail();
     }
     applyPost(postDirector.update(dt, { boosting: Boolean(state.boosting), zeroG: Boolean(state.flight), phase: state.phase }));
     publishCrops(aspect);
