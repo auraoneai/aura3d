@@ -57,6 +57,65 @@ describe("game luma capture targets (audit LIGHT-02)", () => {
   });
 });
 
+describe("GU47 variant targets (WP-9 E-I)", () => {
+  const src = (p: string) => readFileSync(resolve(root, p), "utf8");
+  const groupNo = (t: { group: string }) => Number(t.group.slice(1));
+
+  // 68 on the GU47 base (4.6.1; the PRD's "64" predates the teleoperator, Saltwind, noenv and gauntlet-run rows).
+  it("keeps the 68 pre-GU47 targets in @g1..@g8 and appends the variant rows in groups of their own", async () => {
+    const { GU47_FIRST_GROUP } = await import("../browser/game-luma-targets");
+    expect(GU47_FIRST_GROUP).toBe(9);
+    const before = GAME_LUMA_TARGETS.filter((t) => groupNo(t) < GU47_FIRST_GROUP);
+    expect(before).toHaveLength(68);
+    expect(GAME_LUMA_TARGETS.slice(0, 68)).toEqual(before);
+    expect(before.slice(0, 3).map((t) => t.name)).toEqual(["top-tennis--default", "roadster-rush--default", "heatsink--default"]);
+    expect(before.at(-1)!.name).toBe("cloud-runner-port--default");
+    expect(GAME_LUMA_TARGETS.length - before.length).toBeGreaterThanOrEqual(45);
+  });
+
+  it("drives every GU47 row through the game's declared variant param", async () => {
+    const { GU47_FIRST_GROUP, VARIANT_PARAMS } = await import("../browser/game-luma-targets");
+    const params = VARIANT_PARAMS as Record<string, string>;
+    const rows = GAME_LUMA_TARGETS.filter((t) => groupNo(t) >= GU47_FIRST_GROUP);
+    for (const t of rows) {
+      const param = params[t.slug];
+      expect(param, t.name).toBeDefined();
+      const query = new URLSearchParams(t.url.slice(t.url.indexOf("?") + 1));
+      expect(query.get(param!), t.name).toBeTruthy();
+      expect(t.prepare, t.name).toBeUndefined();
+    }
+    // one row per distinct param value per game: no two rows of a game load the same URL
+    const urls = rows.map((t) => t.url);
+    expect(new Set(urls).size).toBe(urls.length);
+    const perGame = (slug: string) => rows.filter((t) => t.slug === slug).map((t) => t.variant);
+    expect(perGame("bunker-zero")).toEqual(["floor1", "floor2", "floor3", "floor4", "floor5", "floor6", "killhouse"]);
+    expect(perGame("last-train-port")).toEqual(["band-a", "band-b", "band-c", "band-d", "band-e"]);
+    expect(rows.filter((t) => t.slug === "drift-and-deliver-port").map((t) => t.url)).toEqual(
+      [10, 120, 170].map((s) => `/apps/showcase-drift-and-deliver-port/?at=${s}`));
+    expect(rows.filter((t) => t.slug === "slingshot-siege").map((t) => t.url.split("?")[1])).toEqual(
+      ["level=0", "level=5", "level=10", "level=15", "level=20", "level=25"]);
+  });
+
+  it("matches the variant ids the game sources declare", async () => {
+    const m = await import("../browser/game-luma-targets");
+    const union = (text: string, typeName: string) =>
+      [...(text.match(new RegExp(`type ${typeName} =([^;]+);`))?.[1] ?? "").matchAll(/"([^"]+)"/g)].map((x) => x[1]!);
+    expect([...m.TENNIS_VENUES]).toEqual(union(src("examples/aura-slam/contract/venues.ts"), "VenueId").filter((v) => v !== "hard"));
+    expect([...m.HEATSINK_CIRCUITS]).toEqual(union(src("apps/showcase-heatsink/src/data.ts"), "CircuitId").filter((c) => c !== "grand"));
+    const mazes = src("apps/showcase-dot-dash-3d/src/game/mazes.ts").match(/MAZE_ORDER = \[([^\]]+)\]/)?.[1] ?? "";
+    expect([...m.DOT_DASH_MAZES]).toEqual([...mazes.matchAll(/"([^"]+)"/g)].map((x) => x[1]!));
+    const sim = src("examples/saiyan-snake-way-port/sim.ts");
+    const stages = sim.slice(sim.indexOf("export const STAGES"), sim.indexOf("];", sim.indexOf("export const STAGES")));
+    expect(m.SERPENTINE_STAGES).toHaveLength([...stages.matchAll(/^ {2}\{ from: /gm)].length);
+    expect(m.SLINGSHOT_CHAPTERS).toHaveLength([...src("apps/showcase-slingshot-siege/src/game/levels.ts").matchAll(/^\s+id: \d+, name: "/gm)].length);
+    expect(m.SILT_CHAPTERS).toHaveLength([...src("examples/silt-and-signal-port/chapters-data.ts").matchAll(/^ {2}"id": "/gm)].length);
+    expect(src("examples/silt-and-signal-port/main.ts")).toMatch(/intParam\("chapter", 0, 0, 6\)/);
+    expect(src("examples/aura-slam/shell/boot.ts")).toMatch(/params\.get\("venue"\)/);
+    expect(src("apps/showcase-slingshot-siege/src/main.ts")).toMatch(/params\.get\("level"\)/);
+    expect(src("apps/showcase-dot-dash-3d/src/main.ts")).toMatch(/params\.get\("maze"\)/);
+  });
+});
+
 describe("game luma capture run groups", () => {
   it("splits targets into shell-safe groups of at most nine", async () => {
     const { GROUP_SIZE } = await import("../browser/game-luma-targets");
