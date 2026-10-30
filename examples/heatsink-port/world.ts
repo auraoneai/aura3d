@@ -381,6 +381,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
   let finishedFor = 0;
   let vigEnv = 0;
   let heatShown = 0;
+  let chaseShown = -1;
   let vigShown = -1;
 
   function burst(x: number, y: number, z: number, count: number, r: number, g: number, bl: number, speed: number): void {
@@ -521,6 +522,8 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       const w = track.toWorld(pk.s, pk.x, track.frame(pk.s, scratchFrame).y + 1.6 + Math.sin(time * 2 + i) * 0.25, scratchWorld);
       h.setPosition(w.x, w.y, w.z);
       h.setRotation(0, time * 1.6 + i, 0);
+      /* IC-21 pickup pulse (twilight, full motion) */
+      if (row.dressing.archChase && !motion.reduced) h.setScale(1 + 0.08 * Math.sin(time * 4 + i));
     }
     for (let i = 0; i < race.barrels.length; i++) {
       const bar = race.barrels[i]!;
@@ -626,6 +629,12 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       node("road").setUniform?.("ionSpeed", motion.reduced ? 0 : p.v);
     }
 
+    /* IC-21 arch light chase (twilight, off on reduced motion): written only when it changes */
+    if (row.dressing.archChase) {
+      const ch = motion.reduced ? 0 : 1;
+      if (ch !== chaseShown) { chaseShown = ch; node("arch-neon").setUniform?.("chase", ch); }
+    }
+
     /* IC-08 afterburner vignette pulse (none on reduced motion or ?look=original); written only when it changes */
     if (row.post.vignette !== null) {
       vigEnv = vignettePulse(row, motion.reduced, p.abActive && !p.crashed, vigEnv, dt);
@@ -724,6 +733,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
     vigEnv = 0;
     vigShown = -1;
     heatShown = -1;
+    chaseShown = -1;
     fogReady = false;
     poolSlot0 = -2;
     droneGlowHot = -1;

@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { BEACON, beaconSlots, buildBeacons } from "../../../examples/heatsink-port/art/beacons";
 import { buildWorld } from "../../../examples/heatsink-port/world";
 import { Track } from "../../../examples/heatsink-port/track";
+import { solidSpec } from "../../../examples/heatsink-port/materials";
+import { LOOKS, reducedMotionLook } from "../../../examples/heatsink-port/art/look";
 
 describe("heatsink-port IC-24 lane beacons", () => {
   const track = new Track();
@@ -17,5 +19,11 @@ describe("heatsink-port IC-24 lane beacons", () => {
     const names = (q: string) => (buildWorld(track, "high", q).scene.toJSON() as unknown as { nodes: { name?: string }[] }).nodes.map((n) => n.name);
     expect(names("").filter((n) => n === "beacons")).toHaveLength(1);
     expect(names("?look=original")).not.toContain("beacons");
+  });
+
+  it("IC-21 arch chase defaults off in every solid program (the runtime turns it on, twilight full motion only)", () => {
+    expect((solidSpec([0.5, 0.5, 0.5]).uniforms as Record<string, { value: number }>).chase!.value).toBe(0);
+    expect(LOOKS.original.dressing.archChase).toBe(false);
+    expect(reducedMotionLook(LOOKS.twilight).dressing.archChase).toBe(true);
   });
 });

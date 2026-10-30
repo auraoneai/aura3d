@@ -149,7 +149,9 @@ void main() {
   gSun = a3dSunShadowAuto(vWorld, N);
   gWorld = vWorld;
   vec3 color = lit(mix(baseColor, hot * 0.8, heat * 0.55), N);
-  color += glowColor * glow * (0.85 + 0.15 * sin(u_time * 5.0));
+  // GU47 IC-21 arch light chase: a travelling bright band through the glow (chase = 0 keeps today's flicker)
+  float chaseWave = 0.55 + 0.9 * pow(0.5 + 0.5 * sin(length(vWorld.xz) * 0.35 - u_time * 6.0), 3.0);
+  color += glowColor * glow * (0.85 + 0.15 * sin(u_time * 5.0)) * mix(1.0, chaseWave, chase);
   color += hot * heat * (0.35 + rim * 1.4);
   color += vec3(1.0, 0.9, 0.7) * flash;
   outColor = vec4(applyFog(color, vWorld), 1.0);

@@ -76,7 +76,8 @@ export const solidSpec = (base: Rgb, glowColor: Rgb = [0, 0, 0], glowAmount = 0,
     glowColor: { type: "color3", value: [...glowColor] },
     glow: { type: "f32", value: glowAmount },
     heat: { type: "f32", value: 0 },
-    flash: { type: "f32", value: 0 }
+    flash: { type: "f32", value: 0 },
+    chase: { type: "f32", value: 0 }
   },
   side: "double",
   ...extra
