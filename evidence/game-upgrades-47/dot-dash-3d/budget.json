@@ -1,0 +1,25 @@
+{
+  "schema": "aura3d.gu47-budget/1",
+  "slug": "dot-dash-3d",
+  "lane": "g13",
+  "wp": "WP-23",
+  "budget": {
+    "drawCalls": { "high": 110, "medium": 90, "low": 70 },
+    "lights": "1 shadowed spot (PCSS) + 1 unshadowed bounce + <= 5 points (PRD cap: <= 9 points)",
+    "residentMaps": "the active board's 4 maps only",
+    "routeJsGzipDeltaKB": 20,
+    "fpsWithinPercent": 15
+  },
+  "notes": "before: newest committed evidence (evidence/dot-dash-3d/audit-fix/wave3/final-metrics.jsonl, remote software WebGL2, 1280x720, board 1). Triangles, texture bytes, page MB and route JS gzip were not recorded there (null); textureBytes is 0 because the app ships no textures (aura.assets.json is empty). The audit measured about 0.3 presented fps on the software-GL runner, so runner fps compares like for like only. after: null until the phase-2 captures.",
+  "variants": {
+    "classic": {
+      "before": { "drawCalls": 39, "triangles": null, "textureBytes": 0, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null, "meanLuma": 25.45, "p95": 99, "darkBelow12": 0.1729, "source": "final-metrics.jsonl g13-desktop settle-45s" },
+      "after": null
+    },
+    "spiral": { "before": { "drawCalls": 39, "triangles": null, "textureBytes": 0, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null, "meanLuma": 25.28, "source": "docs/audits/lanes/g13.md DD-E1 (g13w3-final)" }, "after": null },
+    "twin": { "before": { "drawCalls": 39, "triangles": null, "textureBytes": 0, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null, "meanLuma": 26.93, "source": "docs/audits/lanes/g13.md DD-E1 (g13w3-final)" }, "after": null },
+    "garden": { "before": { "drawCalls": 39, "triangles": null, "textureBytes": 0, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null, "meanLuma": 27.62, "source": "docs/audits/lanes/g13.md DD-E1 (g13w3-final)" }, "after": null },
+    "foundry": { "before": { "drawCalls": 39, "triangles": null, "textureBytes": 0, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null, "meanLuma": 24.85, "source": "docs/audits/lanes/g13.md DD-E1 (g13w3-final)" }, "after": null },
+    "zerocore": { "before": { "drawCalls": 39, "triangles": null, "textureBytes": 0, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null, "meanLuma": 27.57, "source": "docs/audits/lanes/g13.md DD-E1 (g13w3-final)" }, "after": null }
+  }
+}
