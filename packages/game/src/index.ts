@@ -150,6 +150,8 @@ export { createRumbleDriver } from "./juice/rumble.js";
 export type { RumbleDriverDeps } from "./juice/rumble.js";
 export { createFxParticlePass } from "./juice/fxParticlePass.js";
 export type { FxPassEffects, FxParticlePass } from "./juice/fxParticlePass.js";
+export { audioReactive } from "./juice/audioReactive.js";
+export type { AudioReactive, AudioReactiveOptions, AudioReactiveSource } from "./juice/audioReactive.js";
 export {
   FX_TIER_LIVE_CAP,
   FX_PRESETS,
