@@ -34,7 +34,8 @@
  *     white fallback and is named in `customDiagnostics`
  *     (`CUSTOM_TEXTURE_UNBOUND`). The handle's `repeat/offset/rotation` are not
  *     applied: a custom shader receives raw UVs and owns its own transform.
- *   - `fog` is recorded in `customDiagnostics`, never silently applied.
+ *   - GU47 E-D: `fog: true` wraps the author's `main` and applies the scene fog to its `out vec4` (see `withSceneFog`);
+ *     a stage it cannot wrap is named in `customDiagnostics` (`CUSTOM_FOG_UNAPPLIED`).
  */
 
 import {
@@ -388,6 +389,35 @@ export const SAFE_POW_GLSL = [
 
 const safePowLines = (userSource: string): string[] => (usesToken(userSource, "pow") ? [SAFE_POW_GLSL] : []);
 
+/**
+ * GU47 E-D: per-instance inputs for `material.custom` on instanced nodes (`instances.*`, `primitives.*({ instances })`).
+ * A vertex stage that reads `instanceMatrix` gets the node's per-instance transform (three.js order:
+ * `modelMatrix * instanceMatrix * position`) and `instanceColor` its per-instance colour (white when the node has no
+ * colours). The forward pass then draws every instance in one call from the engine's per-instance attribute buffer and
+ * sets `u_a3dInstancing` (`supportsAuthorInstancing`); on a non-instanced draw they read identity / white. A stage that
+ * reads neither keeps today's path (one draw per instance with the instance folded into `modelMatrix`).
+ */
+function instanceInputLines(userSource: string): string[] {
+  const wantMatrix = usesToken(userSource, "instanceMatrix") && !declaresIdentifier(userSource, "instanceMatrix");
+  const wantColor = usesToken(userSource, "instanceColor") && !declaresIdentifier(userSource, "instanceColor");
+  if (!wantMatrix && !wantColor) return [];
+  const lines = [
+    "uniform float u_a3dInstancing;",
+    "in vec4 a_instanceMatrix0;",
+    "in vec4 a_instanceMatrix1;",
+    "in vec4 a_instanceMatrix2;",
+    "in vec4 a_instanceMatrix3;"
+  ];
+  if (wantMatrix) {
+    lines.push("#define instanceMatrix (u_a3dInstancing > 0.5 ? mat4(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3) : mat4(1.0))");
+  }
+  if (wantColor) {
+    lines.push("uniform float u_a3dInstanceColors;", "in vec4 a_instanceColor;");
+    lines.push("#define instanceColor (u_a3dInstancing > 0.5 && u_a3dInstanceColors > 0.5 ? a_instanceColor : vec4(1.0))");
+  }
+  return lines;
+}
+
 function vertexPreamble(uniforms: readonly LoweredUniform[], userSource: string): string {
   const lines: string[] = [...BUILTIN_DECLS];
   if (!declaresIdentifier(userSource, "a_position")) lines.push("in vec3 a_position;");
@@ -395,6 +425,7 @@ function vertexPreamble(uniforms: readonly LoweredUniform[], userSource: string)
   const wantUv = usesToken(userSource, "uv") && !declaresIdentifier(userSource, "uv");
   if (wantNormal && !declaresIdentifier(userSource, "a_normal")) lines.push("in vec3 a_normal;");
   if (wantUv && !declaresIdentifier(userSource, "a_uv")) lines.push("in vec2 a_uv;");
+  lines.push(...instanceInputLines(userSource));
   lines.push(...uniformDeclLines(uniforms));
   lines.push(...aliasLines(uniforms, userSource));
   if (usesToken(userSource, "position") && !declaresIdentifier(userSource, "position")) lines.push("#define position a_position");
@@ -466,7 +497,7 @@ function injectPreamble(source: string, preamble: string, stage: "vertex" | "fra
   return `${head}${preamble}\n${body}`;
 }
 
-/** Include map for the adapter bake: built-ins < author chunks (`#include <a3d_math>`, `<a3d_noise>`, `<a3d_sky>`, `<a3d_fog>`, `<a3d_triplanar>`, `<a3d_toon>`, `<colorspace_decode>`, `<colorspace_encode>`) < global `registerShaderChunk` < `patch`. */
+/** Include map for the adapter bake: built-ins < author chunks (`#include <a3d_math>`, `<a3d_noise>`, `<a3d_sky>`, `<a3d_fog>`, `<a3d_triplanar>`, `<a3d_toon>`, `<a3d_scene>`, `<a3d_shadow>`, `<a3d_lights>`, `<a3d_ibl>`, `<a3d_rim>`, `<colorspace_decode>`, `<colorspace_encode>`) < global `registerShaderChunk` < `patch`. */
 function bakeIncludes(patch: Readonly<Record<string, string>> | undefined): Map<string, string> {
   const includes = new Map<string, string>();
   for (const chunk of SHADER_CHUNKS) includes.set(chunk.name, chunk.source);
@@ -474,6 +505,74 @@ function bakeIncludes(patch: Readonly<Record<string, string>> | undefined): Map<
   for (const [name, source] of globalShaderChunkEntries()) includes.set(name, source);
   for (const [name, source] of Object.entries(patch ?? {})) includes.set(name, source);
   return includes;
+}
+
+const AUTHOR_CHUNK_NAMES: ReadonlySet<string> = new Set(A3D_AUTHOR_GLSL_CHUNKS.map((chunk) => chunk.name));
+
+/**
+ * GU47 E-D: one stage's include map. An author chunk expands at most once per stage (later `#include`s of it expand to
+ * nothing), so chunks may include each other (`a3d_lights` -> `a3d_shadow` -> `a3d_scene`) and an author may include
+ * any combination. A stage that includes each chunk once bakes exactly as before.
+ */
+class AuthorIncludeOnceMap extends Map<string, string> {
+  private readonly expanded = new Set<string>();
+
+  override get(name: string): string | undefined {
+    const source = super.get(name);
+    if (source === undefined || !AUTHOR_CHUNK_NAMES.has(name)) return source;
+    if (this.expanded.has(name)) return "";
+    this.expanded.add(name);
+    return source;
+  }
+}
+
+/** The uniforms `environment_fog_common` reads; ForwardPass `applyEnvironmentFogUniforms` binds them when all are declared. */
+const SCENE_FOG_UNIFORM_DECLS: readonly string[] = [
+  "uniform float u_environmentFogEnabled;",
+  "uniform float u_environmentFogMode;",
+  "uniform vec3 u_environmentFogColor;",
+  "uniform float u_environmentFogNear;",
+  "uniform float u_environmentFogFar;",
+  "uniform float u_environmentFogDensity;",
+  "uniform float u_environmentFogHeightFalloff;",
+  "uniform float u_environmentFogHeightReference;",
+  "uniform float u_environmentFogMaxOpacity;",
+  "uniform float u_volumetricIntensity;",
+  "uniform vec3 u_volumetricLightDirection;",
+  "uniform vec3 u_volumetricLightColor;"
+];
+
+const AUTHOR_MAIN_PATTERN = /\bvoid\s+main\s*\(\s*(?:void\s*)?\)/;
+
+/** The author's colour output (`out vec4 name;`, optionally `layout(location = 0)`), the first one declared. */
+export function customFragmentOutputName(source: string): string | undefined {
+  return /(?:layout\s*\([^)]*\)\s*)?\bout\s+(?:(?:lowp|mediump|highp)\s+)?vec4\s+([A-Za-z_]\w*)\s*;/.exec(source)?.[1];
+}
+
+/**
+ * GU47 E-D: `fog: true` applies the scene fog. The author's `main` is renamed `a3dAuthorMain` and a wrapper `main` runs it,
+ * then mixes the fog the built-in lit programs apply (`environment_fog_common`: linear / exp / exp2 by distance, height
+ * falloff, max opacity, volumetric inscatter; bound per draw by the forward pass, off when the scene has no fog or the
+ * material sets `fog: false`) into the author's colour output, at the fragment's reconstructed world position. Returns
+ * the source unchanged (and `applied: false`) when the stage has no `void main()` or no `out vec4` to fog.
+ */
+function withSceneFog(spec: AuraCustomMaterialSpec, source: string): { readonly source: string; readonly applied: boolean } {
+  if (spec.fog !== true) return { source, applied: false };
+  const output = customFragmentOutputName(source);
+  if (!output || !AUTHOR_MAIN_PATTERN.test(source)) return { source, applied: false };
+  return {
+    applied: true,
+    source: [
+      source.replace(AUTHOR_MAIN_PATTERN, "void a3dAuthorMain()"),
+      "#include <a3d_shadow>",
+      ...SCENE_FOG_UNIFORM_DECLS,
+      "#include <environment_fog_common>",
+      "void main() {",
+      "  a3dAuthorMain();",
+      `  ${output}.rgb = a3dApplyEnvironmentFog(${output}.rgb, a3dFragWorldPosition());`,
+      "}"
+    ].join("\n")
+  };
 }
 
 /** WGSL `#include <name>` expansion — `patch` wins, else the registered wgsl half (or shared GLSL). */
@@ -599,7 +698,13 @@ function adapterLibraryFor(_name: string): ShaderLibrary {
  * WebGL2-only and the WebGPU device fails closed with `WGSL_PROGRAM_MISSING`.
  */
 export class AuraCustomShaderMaterial extends PortableShaderMaterial {
-  private readonly fogRequested: boolean;
+  /** `fog: true` on a fragment stage the fog wrapper could not wrap (no `void main()` or no `out vec4`). */
+  private readonly fogUnapplied: boolean;
+  /**
+   * GU47 E-D (`castShadow: true`): shader-library key of the depth program (this material's baked vertex stage with a
+   * depth-only fragment). `DepthPass` draws shadow casters with it, so vertex displacement moves the shadow too.
+   */
+  readonly customDepthShaderKey: string | undefined;
   private readonly unusedUniformNames: readonly string[];
   /** The author's own GLSL per stage, so a compile error in the assembled program can be mapped back to the author's line (best effort: exact when no `#include` expands before the error line). Read by the renderer's shader-failure diagnostics. */
   readonly shaderAuthoredSource: { readonly vertex: string; readonly fragment: string };
@@ -613,13 +718,14 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
     const vertexSource = modernizeVertexAttributes(spec.glsl.vertex ?? DEFAULT_GLSL_VERTEX);
     const customAttributes = declaredCustomAttributes(vertexSource);
     const glslVertex = injectPreamble(
-      adapterPreprocessor.preprocess(vertexSource, { defines: spec.defines ?? {}, includes }).source,
+      adapterPreprocessor.preprocess(vertexSource, { defines: spec.defines ?? {}, includes: new AuthorIncludeOnceMap(includes) }).source,
       vertexPreamble(uniforms, vertexSource),
       "vertex"
     );
-    const fragmentSource = withShadowInclude(spec);
+    const fogged = withSceneFog(spec, withShadowInclude(spec));
+    const fragmentSource = fogged.source;
     const glslFragment = injectPreamble(
-      adapterPreprocessor.preprocess(fragmentSource, { defines: spec.defines ?? {}, includes }).source,
+      adapterPreprocessor.preprocess(fragmentSource, { defines: spec.defines ?? {}, includes: new AuthorIncludeOnceMap(includes) }).source,
       fragmentPreamble(uniforms, fragmentSource),
       "fragment"
     );
@@ -642,7 +748,8 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
       renderState: customRenderState(spec),
       requiredAttributes: ["a_position", ...customAttributes]
     });
-    this.fogRequested = spec.fog === true;
+    this.fogUnapplied = spec.fog === true && !fogged.applied;
+    this.customDepthShaderKey = spec.castShadow === true ? acquireCustomDepthSource(this.shaderKey, glslVertex) : undefined;
     this.shaderAuthoredSource = { vertex: vertexSource, fragment: spec.glsl.fragment };
     const authoredSource = `${spec.glsl.vertex ?? ""}\n${spec.glsl.fragment}`;
     this.unusedUniformNames = uniforms
@@ -662,23 +769,20 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
   override dispose(): void {
     if (this.disposed) return;
     super.dispose();
-    const refs = (globalSourceRefs.get(this.shaderKey) ?? 1) - 1;
-    if (refs <= 0) {
-      globalSourceRefs.delete(this.shaderKey);
-      unregisterGlobalShaderSource(this.shaderKey);
-    } else {
-      globalSourceRefs.set(this.shaderKey, refs);
-    }
+    releaseGlobalSource(this.shaderKey);
+    if (this.customDepthShaderKey) releaseGlobalSource(this.customDepthShaderKey);
   }
 
   /**
-   * Diagnostics authored-side: `fog` is recorded here, never silently applied,
-   * and a texture2d uniform with no texture is named (`CUSTOM_TEXTURE_UNBOUND`)
-   * because the shader then samples the renderer's white fallback.
+   * Diagnostics authored-side: a `fog: true` the adapter could not apply is named (`CUSTOM_FOG_UNAPPLIED`), and a
+   * texture2d uniform with no texture is named (`CUSTOM_TEXTURE_UNBOUND`) because the shader then samples the
+   * renderer's white fallback.
    */
   get customDiagnostics(): readonly string[] {
     const out: string[] = [];
-    if (this.fogRequested) out.push("material.custom: fog is not wired to custom shaders — the field is recorded, not applied");
+    if (this.fogUnapplied) {
+      out.push("[CUSTOM_FOG_UNAPPLIED] material.custom: fog: true needs a fragment stage with `void main()` and an `out vec4` colour output; scene fog was not applied");
+    }
     for (const publicName of this.unusedUniformNames) {
       out.push(`[CUSTOM_UNIFORM_UNUSED] material.custom: uniform "${publicName}" is declared but never read by the shader; it is not uploaded and the draw is not skipped`);
     }
@@ -690,6 +794,38 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
     }
     return out;
   }
+}
+
+function releaseGlobalSource(key: string): void {
+  const refs = (globalSourceRefs.get(key) ?? 1) - 1;
+  if (refs <= 0) {
+    globalSourceRefs.delete(key);
+    unregisterGlobalShaderSource(key);
+  } else {
+    globalSourceRefs.set(key, refs);
+  }
+}
+
+/** Depth-only fragment of a `castShadow` custom material: the shadow map stores depth; colour is never read. */
+export const CUSTOM_DEPTH_FRAGMENT_GLSL = "#version 300 es\nprecision highp float;\nout vec4 a3dDepthColor;\nvoid main() {\n  a3dDepthColor = vec4(1.0);\n}\n";
+
+/** Same marker placement as `PortableShaderMaterial` (after `#version`): the device requires the marker in both stages. */
+function withSourceMarker(source: string, marker: string): string {
+  const version = source.match(/^(\s*#version[^\n]*\n)/);
+  return version ? `${version[1]}// ${marker}\n${source.slice(version[1].length)}` : `// ${marker}\n${source}`;
+}
+
+/**
+ * GU47 E-D: publishes the depth program of a `castShadow: true` material (the material's baked vertex stage, so author
+ * displacement, uniforms and `instanceMatrix` work in the shadow pass, plus `CUSTOM_DEPTH_FRAGMENT_GLSL`) under
+ * `<shaderKey>/depth`, ref-counted like the colour program. Returns the key `DepthPass` resolves.
+ */
+function acquireCustomDepthSource(shaderKey: string, glslVertex: string): string {
+  const name = `${shaderKey}/depth`;
+  const marker = `@aura3d-portable:${name}`;
+  registerGlobalShaderSource({ name, marker, vertex: withSourceMarker(glslVertex, marker), fragment: withSourceMarker(CUSTOM_DEPTH_FRAGMENT_GLSL, marker) });
+  globalSourceRefs.set(name, (globalSourceRefs.get(name) ?? 0) + 1);
+  return name;
 }
 
 /** Compile an `AuraCustomMaterialSpec` into a renderer-integrated portable material. */

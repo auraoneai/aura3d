@@ -1,11 +1,14 @@
 import { A3D_FOG_GLSL } from "./fog.glsl";
+import { A3D_IBL_GLSL } from "./ibl.glsl";
+import { A3D_LIGHTS_GLSL } from "./lights.glsl";
 import { A3D_MATH_GLSL } from "./math.glsl";
 import { A3D_NOISE_GLSL } from "./noise.glsl";
 import { A3D_SKY_GLSL } from "./sky.glsl";
-import { A3D_SHADOW_GLSL } from "./shadow.glsl";
+import { A3D_SCENE_GLSL, A3D_SHADOW_GLSL } from "./shadow.glsl";
 import { A3D_TOON_GLSL } from "./toon.glsl";
 import { A3D_TRIPLANAR_GLSL } from "./triplanar.glsl";
 import { COLORSPACE_DECODE_GLSL, COLORSPACE_ENCODE_GLSL } from "./colorspace.glsl";
+import { A3D_RIM_FUNCTION_GLSL } from "../rim.glsl";
 
 export interface A3dAuthorGlslChunk {
   /** `#include <name>` */
@@ -19,7 +22,9 @@ export interface A3dAuthorGlslChunk {
 
 /**
  * Author-facing GLSL ES 3.00 chunks for `material.custom({ glsl })`. Names are prefixed `a3d` so they never collide with
- * author helpers. None of them calls `pow`, so they compose with the automatic safe-`pow` define.
+ * author helpers. None of them calls `pow`, so they compose with the automatic safe-`pow` define. A chunk may
+ * `#include` another; the adapter expands each author chunk at most once per stage (GU47 E-D), so `a3d_shadow`,
+ * `a3d_lights` and `a3d_ibl` can be included together and share `a3d_scene`.
  */
 export const A3D_AUTHOR_GLSL_CHUNKS: readonly A3dAuthorGlslChunk[] = [
   {
@@ -73,10 +78,40 @@ export const A3D_AUTHOR_GLSL_CHUNKS: readonly A3dAuthorGlslChunk[] = [
     provides: ["float a3dToonRamp(x, steps, soft)", "float a3dToonLight(n, lightDir, steps)", "float a3dToonRim(n, viewDir, width)", "float a3dToonStep(x, edge, soft)"]
   },
   {
+    name: "a3d_scene",
+    source: A3D_SCENE_GLSL,
+    stages: ["vertex", "fragment"],
+    provides: [
+      "vec3 a3dSunRadiance()", "vec3 a3dHemiLight(n)", "vec3 a3dSceneFog(color, viewDistance)",
+      "uniforms u_a3dSunDirection, u_a3dSunColor, u_a3dSunIntensity, u_a3dHemiSky, u_a3dHemiGround, u_a3dFogColor, u_a3dFogDensity"
+    ]
+  },
+  {
     name: "a3d_shadow",
     source: A3D_SHADOW_GLSL,
     stages: ["fragment"],
-    provides: ["float a3dSunShadow(worldPos, normal, toLight)", "float a3dSunShadowAuto(worldPos, normal)"]
+    provides: ["float a3dSunShadow(worldPos, normal, toLight)", "float a3dSunShadowAuto(worldPos, normal)", "vec3 a3dFragWorldPosition()"]
+  },
+  {
+    name: "a3d_lights",
+    source: A3D_LIGHTS_GLSL,
+    stages: ["fragment"],
+    provides: [
+      "vec3 a3dDirect(N, V, albedo, roughness)", "vec3 a3dDirect(N, V, albedo, roughness, worldPos)",
+      "vec3 a3dDirectLight(N, V, L, radiance, albedo, roughness)"
+    ]
+  },
+  {
+    name: "a3d_ibl",
+    source: A3D_IBL_GLSL,
+    stages: ["fragment"],
+    provides: ["vec3 a3dEnvDiffuse(N)", "vec3 a3dEnvSpecular(R, roughness)"]
+  },
+  {
+    name: "a3d_rim",
+    source: A3D_RIM_FUNCTION_GLSL,
+    stages: ["vertex", "fragment"],
+    provides: ["vec3 a3dRim(n, v, color, power, intensity)"]
   },
   {
     name: "colorspace_decode",

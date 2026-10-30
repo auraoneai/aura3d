@@ -14,12 +14,32 @@
  * No /joint/i heuristic, no 0.28 constants, no emissive=baseColor fallback.
  * 4.0 Live Fix E2: this lowering is the ONLY model-material path — the
  * former flag-off legacy tint object (applyMaterialTint) was deleted.
+ *
+ * GU47 E-D: `rim` (any generated-program PBR material; removed again by an override list without it), `transmission`
+ * and `iridescence` (authored keys only), `applyMaterialEmissive` (`AuraModelMaterialHandle.setEmissive`: a live write,
+ * no snapshot re-apply) and `applyNodeMaterialExtras` (primitive nodes: spec `rim` and the node's
+ * `instanceColorTarget` onto the draw's material).
  */
 
-import type { Material, UniformValue } from "@aura3d/rendering";
+import { PortableShaderMaterial, type Material, type UniformValue } from "@aura3d/rendering";
 import type { AuraColor, AuraMaterialSpec } from "../agent-api/index";
+import type { AuraInstanceColorTarget, AuraMaterialRimSpec } from "../agent-api/nodes/types";
 import type { AuraModelMaterialOverride } from "../contracts/materials";
 import { parseAuraColor } from "../contracts/sceneGraph";
+
+/** GU47 E-D: a lowered `rim` (linear rgb). Same parameter names as `packages/rendering/src/shaders/chunks/rim.glsl.ts`. */
+export interface LoweredMaterialRim {
+  readonly color: readonly [number, number, number];
+  readonly power: number;
+  readonly intensity: number;
+}
+
+/** The PRD-04 `prd04.rim` forward feature's parameters (it selects iff the strength is > 0). */
+export const MATERIAL_RIM_COLOR_PARAM = "u_prd04RimColor";
+export const MATERIAL_RIM_POWER_PARAM = "u_prd04RimPower";
+export const MATERIAL_RIM_INTENSITY_PARAM = "u_prd04RimStrength";
+/** Same name and codes as `packages/rendering/src/shaders/chunks/instance_color_target.glsl.ts` (0 base, 1 emissive, 2 both). */
+export const MATERIAL_INSTANCE_COLOR_TARGET_PARAM = "u_a3dInstanceColorTarget";
 
 export interface TypedGLBActorMaterialOverride {
   readonly target?: (materialName: string) => boolean;
@@ -34,6 +54,119 @@ export interface TypedGLBActorMaterialOverride {
   readonly clearcoatRoughness?: number;
   readonly envMapIntensity?: number;
   readonly opacity?: number;
+  /** GU47 E-D: fresnel rim (written even when the authored snapshot lacks it; cleared when no override carries one). */
+  readonly rim?: LoweredMaterialRim;
+  /** GU47 E-D: `u_transmissionFactor`, on materials that carry it. */
+  readonly transmission?: number;
+  /** GU47 E-D: `u_iridescenceFactor`, on materials that carry it. */
+  readonly iridescence?: number;
+}
+
+const clampRange = (value: number | undefined, fallback: number, min: number, max: number): number =>
+  typeof value === "number" && Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : fallback;
+
+const loweredRims = new WeakMap<AuraMaterialRimSpec, LoweredMaterialRim>();
+
+/** `rim: { color, power?, intensity? }` → linear colour, power 0.1..16 (default 3), intensity 0..16 (default 1). */
+export function lowerMaterialRim(rim: AuraMaterialRimSpec | undefined): LoweredMaterialRim | undefined {
+  if (!rim) return undefined;
+  const cached = loweredRims.get(rim);
+  if (cached) return cached;
+  const [r, g, b] = parseAuraColor(rim.color);
+  const lowered: LoweredMaterialRim = { color: [r, g, b], power: clampRange(rim.power, 3, 0.1, 16), intensity: clampRange(rim.intensity, 1, 0, 16) };
+  loweredRims.set(rim, lowered);
+  return lowered;
+}
+
+/** Custom shaders own their whole program (`PortableShaderMaterial.setParameter` rejects undeclared names). */
+const acceptsPbrExtras = (material: Material): boolean => !material.disposed && !(material instanceof PortableShaderMaterial);
+
+const sameVec3 = (value: UniformValue | undefined, expected: readonly number[]): boolean =>
+  value !== undefined && typeof value !== "number" && "length" in value && value.length === 3
+  && (value as ArrayLike<number>)[0] === expected[0] && (value as ArrayLike<number>)[1] === expected[1] && (value as ArrayLike<number>)[2] === expected[2];
+
+/**
+ * Writes the rim parameters (or clears them: intensity 0, so the `prd04.rim` feature stops selecting and the program is
+ * the no-rim one again). Writes only on change, so calling it every frame does not bump the material revision. Returns
+ * true when it wrote.
+ */
+export function setMaterialRimParameters(material: Material, rim: LoweredMaterialRim | undefined): boolean {
+  if (!acceptsPbrExtras(material)) return false;
+  const current = material.getParameter(MATERIAL_RIM_INTENSITY_PARAM);
+  if (!rim) {
+    if (typeof current !== "number" || current === 0) return false;
+    material.setParameter(MATERIAL_RIM_INTENSITY_PARAM, 0);
+    return true;
+  }
+  let wrote = false;
+  if (!sameVec3(material.getParameter(MATERIAL_RIM_COLOR_PARAM), rim.color)) {
+    material.setParameter(MATERIAL_RIM_COLOR_PARAM, [rim.color[0], rim.color[1], rim.color[2]]);
+    wrote = true;
+  }
+  if (material.getParameter(MATERIAL_RIM_POWER_PARAM) !== rim.power) {
+    material.setParameter(MATERIAL_RIM_POWER_PARAM, rim.power);
+    wrote = true;
+  }
+  if (current !== rim.intensity) {
+    material.setParameter(MATERIAL_RIM_INTENSITY_PARAM, rim.intensity);
+    wrote = true;
+  }
+  return wrote;
+}
+
+const INSTANCE_COLOR_TARGET_CODES: Readonly<Record<AuraInstanceColorTarget, number>> = { base: 0, emissive: 1, both: 2 };
+
+/** Writes `u_a3dInstanceColorTarget` (only on change; "base"/absent clears a previous target). */
+export function setMaterialInstanceColorTarget(material: Material, target: AuraInstanceColorTarget | undefined): boolean {
+  if (!acceptsPbrExtras(material)) return false;
+  const code = INSTANCE_COLOR_TARGET_CODES[target ?? "base"] ?? 0;
+  const current = material.getParameter(MATERIAL_INSTANCE_COLOR_TARGET_PARAM);
+  if (current === code || (current === undefined && code === 0)) return false;
+  material.setParameter(MATERIAL_INSTANCE_COLOR_TARGET_PARAM, code);
+  return true;
+}
+
+/**
+ * Per-frame glue for primitive nodes (`compiler/renderInput.ts`): the spec's `rim` and the node's `instanceColorTarget`
+ * onto the material the draw uses (plain, textured or LOD level). Two map lookups when neither is set; writes only on
+ * change. Custom-shader materials are left alone.
+ */
+export function applyNodeMaterialExtras(
+  material: Material | undefined,
+  spec: AuraMaterialSpec | undefined,
+  instanceColorTarget: AuraInstanceColorTarget | undefined
+): void {
+  if (!material || !acceptsPbrExtras(material)) return;
+  setMaterialRimParameters(material, lowerMaterialRim(spec?.rim));
+  setMaterialInstanceColorTarget(material, instanceColorTarget);
+}
+
+/**
+ * `AuraModelMaterialHandle.setEmissive(target, color, intensity)`: writes the emissive colour and strength on every
+ * material named `target` (`"*"`: every material), on the parameters each material carries. A live write: no snapshot
+ * restore, no override re-apply, so it is cheap enough to call every frame (brake lights, blinking signs). A later
+ * `setMaterialOverrides` re-applies from the authored snapshot and replaces it. Returns the number of materials written.
+ */
+export function applyMaterialEmissive(materials: Iterable<Material>, target: string, color: AuraColor, intensity: number): number {
+  const [r, g, b] = parseAuraColor(color);
+  const strength = Number.isFinite(intensity) ? Math.max(0, intensity) : 0;
+  let written = 0;
+  for (const material of materials) {
+    if (material.disposed || (target !== "*" && material.name !== target)) continue;
+    const params = material.getParameters();
+    let touched = false;
+    for (const name of ["u_emissiveColor", "u_emissiveFactor"]) {
+      if (!params.has(name)) continue;
+      if (!sameVec3(params.get(name), [r, g, b])) material.setParameter(name, [r, g, b]);
+      touched = true;
+    }
+    if (params.has("u_emissiveStrength")) {
+      if (params.get("u_emissiveStrength") !== strength) material.setParameter("u_emissiveStrength", strength);
+      touched = true;
+    }
+    if (touched) written += 1;
+  }
+  return written;
 }
 
 export type AuthoredMaterialSnapshot = ReadonlyMap<string, Readonly<Record<string, unknown>>>;
@@ -120,6 +253,9 @@ export function applyMaterialOverrides(
       material.setParameter(name, value as never);
     }
     const resolved = mergeOverride(material.name ?? "", overrides);
+    // GU47 E-D: rim is the one field written outside the authored key set, so it is also cleared explicitly
+    // (intensity 0: the rim feature stops selecting) when no override for this material carries it.
+    setMaterialRimParameters(material, resolved?.rim);
     if (!resolved) continue;
 
     // P2-1: writes are filtered to the parameters the authored snapshot actually captured.
@@ -168,6 +304,8 @@ export function applyMaterialOverrides(
       writeToAuthoredKeys(["u_environmentIntensity", "u_envMapIntensity"], resolved.envMapIntensity);
     }
     if (resolved.opacity !== undefined) writeToAuthoredKeys(["u_opacity", "u_alpha"], resolved.opacity);
+    if (resolved.transmission !== undefined) writeToAuthoredKeys(["u_transmissionFactor"], clampRange(resolved.transmission, 0, 0, 1));
+    if (resolved.iridescence !== undefined) writeToAuthoredKeys(["u_iridescenceFactor"], clampRange(resolved.iridescence, 0, 0, 1));
   }
 }
 
@@ -223,6 +361,9 @@ export function lowerModelMaterialOverrides(
       : {})
   };
   if (Object.keys(surface).length > 0) lowered.push(surface);
+  // GU47 E-D: `model(asset, { material: { rim } })`.
+  const specRim = authored("rim") ? lowerMaterialRim(spec?.rim) : undefined;
+  if (specRim) lowered.push({ rim: specRim });
   for (const override of overrides ?? []) {
     lowered.push({
       ...(override.target !== undefined ? { target: targetPredicate(override.target) } : {}),
@@ -243,7 +384,10 @@ export function lowerModelMaterialOverrides(
         ? { clearcoatRoughness: override.clearcoatRoughness }
         : {}),
       ...(override.envMapIntensity !== undefined ? { envMapIntensity: override.envMapIntensity } : {}),
-      ...(override.opacity !== undefined ? { opacity: override.opacity } : {})
+      ...(override.opacity !== undefined ? { opacity: override.opacity } : {}),
+      ...(override.rim !== undefined ? { rim: lowerMaterialRim(override.rim) } : {}),
+      ...(override.transmission !== undefined ? { transmission: override.transmission } : {}),
+      ...(override.iridescence !== undefined ? { iridescence: override.iridescence } : {})
     });
   }
   return lowered;

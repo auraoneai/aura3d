@@ -1,8 +1,9 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 // PRD-04 P2-10 (R15): presets record their defaulted fields via AURA_PRESET_DEFAULTS.
 
-import type { AuraCustomMaterialSpec, AuraEditableMaterialParameters, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraMaterialInspectorPanel, AuraMaterialSpec, AuraMaterialVisualQAResult, AuraProceduralTextureSpec, AuraSceneNode } from "../nodes/types.js";
+import type { AuraCustomMaterialSpec, AuraCustomUniformSpec, AuraEditableMaterialParameters, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraMaterialInspectorPanel, AuraMaterialSpec, AuraMaterialVisualQAResult, AuraProceduralTextureSpec, AuraSceneNode, AuraToonMaterialOptions } from "../nodes/types.js";
 import { assertAuraCustomMaterialSpec } from "../compiler/customMaterial.js";
+import { parseAuraColor } from "../../contracts/sceneGraph.js";
 import { materialNode } from "./tsl/index.js";
 import { PHYSICAL_SPEC_KEYS, createMaterialCapabilityDiagnostics, createMaterialInspector, proceduralTexture } from "../nodes/materialTools.js";
 import { neon } from "../nodes/neon.js";
@@ -48,6 +49,88 @@ function presetFrom(defaults: AuraMaterialSpec, options: AuraMaterialSpec, base:
   return spec;
 }
 
+/**
+ * GU47 E-D `material.toon`: the vertex stage reads `instanceMatrix` (identity on a plain draw) so the material works on
+ * instanced nodes and in the `castShadow` depth pass.
+ */
+const TOON_VERTEX_GLSL = `out vec3 vToonWorld;
+out vec3 vToonNormal;
+void main() {
+  vec4 world = modelMatrix * instanceMatrix * vec4(position, 1.0);
+  vToonWorld = world.xyz;
+  vToonNormal = normalMatrix * (mat3(instanceMatrix) * normal);
+  gl_Position = projectionMatrix * viewMatrix * world;
+}`;
+
+/**
+ * Light level = luminance of every scene light's white-albedo radiance (`a3dDirect`, sun shadow included) times pi, so
+ * 1 is a surface facing a unit-intensity light. Bands with `a3dToonRamp` (or the ramp texture), mixes `shadowColor` to
+ * `color`, adds a hemisphere fill and the rim.
+ */
+const TOON_FRAGMENT_GLSL = `#include <a3d_lights>
+#include <a3d_toon>
+#ifdef A3D_TOON_RIM
+#include <a3d_rim>
+#endif
+in vec3 vToonWorld;
+in vec3 vToonNormal;
+out vec4 outColor;
+void main() {
+  vec3 N = normalize(vToonNormal) * (gl_FrontFacing ? 1.0 : -1.0);
+  vec3 V = normalize(cameraPosition - vToonWorld);
+  vec3 direct = a3dDirect(N, V, vec3(1.0), 1.0, vToonWorld);
+  float light = clamp(dot(direct, vec3(0.2126, 0.7152, 0.0722)) * 3.14159265, 0.0, 1.0);
+#ifdef A3D_TOON_RAMP
+  vec3 color = toonColor * texture(toonRamp, vec2(light, 0.5)).rgb;
+#else
+  vec3 color = mix(toonShadowColor, toonColor, a3dToonRamp(light, toonSteps, 0.08));
+#endif
+  color += toonColor * a3dHemiLight(N) * 0.25;
+#ifdef A3D_TOON_RIM
+  color += a3dRim(N, V, toonRimColor, toonRimPower, toonRimIntensity);
+#endif
+  outColor = vec4(color, 1.0);
+}`;
+
+const linearRgb = (color: string): readonly [number, number, number] => {
+  const [r, g, b] = parseAuraColor(color);
+  return [r, g, b];
+};
+
+const clampFinite = (value: number | undefined, fallback: number, min: number, max: number): number =>
+  typeof value === "number" && Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : fallback;
+
+/** GU47 E-D (PRD §3.1): `material.toon(opts)` lowers to a `material.custom` spec over the `a3d_lights` / `a3d_toon` / `a3d_rim` chunks. */
+export function toonMaterial(options: AuraToonMaterialOptions = {}): AuraMaterialSpec {
+  const color = linearRgb(options.color ?? "#d7dee8");
+  const shadow = options.shadowColor !== undefined ? linearRgb(options.shadowColor) : [color[0] * 0.35, color[1] * 0.35, color[2] * 0.35] as const;
+  const uniforms: Record<string, AuraCustomUniformSpec> = {
+    toonColor: { type: "vec3", value: [...color] },
+    toonShadowColor: { type: "vec3", value: [...shadow] },
+    toonSteps: { type: "f32", value: Math.round(clampFinite(options.steps, 3, 1, 8)) }
+  };
+  const defines: Record<string, boolean> = {};
+  if (options.ramp) {
+    uniforms.toonRamp = { type: "texture2d", value: options.ramp };
+    defines.A3D_TOON_RAMP = true;
+  }
+  if (options.rim) {
+    uniforms.toonRimColor = { type: "vec3", value: [...linearRgb(options.rim.color)] };
+    uniforms.toonRimPower = { type: "f32", value: clampFinite(options.rim.power, 3, 0.1, 16) };
+    uniforms.toonRimIntensity = { type: "f32", value: clampFinite(options.rim.intensity, 1, 0, 16) };
+    defines.A3D_TOON_RIM = true;
+  }
+  const custom: AuraCustomMaterialSpec = {
+    glsl: { vertex: TOON_VERTEX_GLSL, fragment: TOON_FRAGMENT_GLSL },
+    uniforms,
+    ...(Object.keys(defines).length > 0 ? { defines } : {}),
+    fog: true,
+    castShadow: true
+  };
+  assertAuraCustomMaterialSpec(custom, "material.toon");
+  return { kind: "custom", custom };
+}
+
 export const material = lazyNamespace(() => ({
   /**
    * threejs-parity SH-02 (L1): three-style custom shader material. `spec.glsl`
@@ -60,6 +143,11 @@ export const material = lazyNamespace(() => ({
     assertAuraCustomMaterialSpec(spec);
     return { kind: "custom", custom: spec };
   },
+  /**
+   * GU47 E-D: cel-shaded material (`AuraToonMaterialOptions`): every scene light banded into `steps` between
+   * `shadowColor` and `color` (or through a `ramp` texture), hemisphere fill, optional `rim`, scene fog, shadows.
+   */
+  toon: (options: AuraToonMaterialOptions = {}): AuraMaterialSpec => toonMaterial(options),
   /**
    * SH-01 (L1-11): TSL-subset node material — `colorNode/emissiveNode/opacityNode/positionNode`
    * graphs built with `tsl.*` lower to a GLSL `material.custom` spec. GLSL only; see `tsl`.
