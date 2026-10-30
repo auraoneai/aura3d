@@ -193,6 +193,20 @@
         "overridesTextures": false
       },
       {
+        "assetKey": "gridSedan",
+        "triangles": 17656,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridHatch",
+        "triangles": 17237,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
         "assetKey": "gridCruiser",
         "triangles": 29543,
         "textures": 0,
@@ -440,6 +454,10 @@
         "practical": false
       },
       {
+        "node": "sf-manholes",
+        "practical": false
+      },
+      {
         "node": "sf-crosswalks",
         "emissiveIntensity": 0.4,
         "practical": true
@@ -473,6 +491,78 @@
       {
         "node": "sf-tree-crowns",
         "practical": false
+      },
+      {
+        "node": "sf-catenary-wires",
+        "practical": false
+      },
+      {
+        "node": "sf-catenary-spans",
+        "practical": false
+      },
+      {
+        "node": "sf-sign-plates",
+        "practical": false
+      },
+      {
+        "node": "sf-sign-0-0",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-0-1",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-1-0",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-1-1",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-2-0",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-2-1",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-3-0",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-3-1",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-4-0",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-4-1",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-5-0",
+        "emissiveIntensity": 0.6,
+        "practical": true
+      },
+      {
+        "node": "sf-sign-5-1",
+        "emissiveIntensity": 0.6,
+        "practical": true
       },
       {
         "node": "route-ribbons",
