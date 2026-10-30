@@ -138,129 +138,25 @@
         "practical": false
       },
       {
-        "node": "crown-arena-obsidian-subfloor",
+        "node": "crown-arena-subfloor",
         "practical": false
       },
       {
-        "node": "crown-arena-stone-plank-0",
+        "node": "crown-arena-floor-planks-a",
         "practical": false
       },
       {
-        "node": "crown-arena-stone-plank-1",
+        "node": "crown-arena-floor-planks-b",
         "practical": false
       },
       {
-        "node": "crown-arena-stone-plank-2",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-stone-plank-3",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-stone-plank-4",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-stone-plank-5",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-stone-plank-6",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-stone-plank-7",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-stone-plank-8",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-stone-plank-9",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-stone-plank-10",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-stone-plank-11",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-stone-plank-12",
-        "practical": false
-      },
-      {
-        "node": "crown-arena-gold-trim-z-0",
-        "emissiveIntensity": 0.18,
+        "node": "crown-arena-inlay-combat-edge",
+        "emissiveIntensity": 0.46,
         "practical": true
       },
       {
-        "node": "crown-arena-gold-trim-z-1",
-        "emissiveIntensity": 0.18,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-gold-trim-z-2",
-        "emissiveIntensity": 0.18,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-gold-trim-z-3",
-        "emissiveIntensity": 0.18,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-gold-trim-z-4",
-        "emissiveIntensity": 0.18,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-gold-trim-z-5",
-        "emissiveIntensity": 0.42,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-gold-trim-z-6",
-        "emissiveIntensity": 0.42,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-gold-trim-z-7",
-        "emissiveIntensity": 0.18,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-gold-trim-z-8",
-        "emissiveIntensity": 0.18,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-gold-trim-z-9",
-        "emissiveIntensity": 0.18,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-gold-trim-z-10",
-        "emissiveIntensity": 0.18,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-gold-trim-z-11",
-        "emissiveIntensity": 0.18,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-ring-border-x-l",
-        "emissiveIntensity": 0.25,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-ring-border-x-r",
-        "emissiveIntensity": 0.25,
+        "node": "crown-arena-inlay-courses",
+        "emissiveIntensity": 0.17600000000000002,
         "practical": true
       },
       {
@@ -301,12 +197,7 @@
         "practical": true
       },
       {
-        "node": "crown-arena-approach-rail-l",
-        "emissiveIntensity": 0.2,
-        "practical": true
-      },
-      {
-        "node": "crown-arena-approach-rail-r",
+        "node": "crown-arena-approach-rails",
         "emissiveIntensity": 0.2,
         "practical": true
       },
