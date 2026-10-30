@@ -140,7 +140,10 @@ export function createShiftRuntime(app: AuraApp, look: LookRig, lamps: readonly 
       const rays = godRayStrength(row.sun.elevationDeg);
       if (rays !== raysShown) {
         raysShown = rays;
-        app.post?.setEffect("volumetricFog", { enabled: rays > 0, intensity: GOD_RAYS.intensity * rays });
+        // `enabled` is not a setEffect field (the engine throws POST_FIELD_UNSUPPORTED): the shafts go on and off
+        // with setEffectEnabled, so away from sunset the warm inscatter leaves the chain instead of hazing the frame
+        app.post?.setEffectEnabled("volumetricFog", rays > 0);
+        if (rays > 0) app.post?.setEffect("volumetricFog", { intensity: GOD_RAYS.intensity * rays, density: GOD_RAYS.density * rays });
       }
       // GC-L4 sodium pool
       repick -= dt;
@@ -207,7 +210,7 @@ export function createShiftRuntime(app: AuraApp, look: LookRig, lamps: readonly 
     menu(on) {
       if (on === menuShown) return;
       menuShown = on;
-      app.post?.setEffect("depthOfField", { enabled: on });
+      app.post?.setEffectEnabled("depthOfField", on);
     },
     delivered(x, z) {
       burst(deliveryKind(opts.reducedMotion(), opts.reducedFlash()), [x, 0.4, z]);
