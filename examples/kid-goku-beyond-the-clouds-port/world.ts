@@ -12,7 +12,8 @@ import { meatChunk } from "./creatures";
 import { createCameraClearance, createLocomotion } from "@aura3d/engine/game";
 import { Fx } from "./fx";
 import type { Game } from "./game";
-import { ballSpec, glowSpec, LOOK, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, warnSpec } from "./materials";
+import { ACTIVE, ballSpec, glowSpec, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, warnSpec } from "./materials";
+import { ACTIVE_LOOK, sunPosition, type CumulusLookRow } from "./art/look";
 import { Mesh, box, cylinder, hex } from "./mesh";
 import { LEG_CLIPS } from "./legcycle";
 import { CLIP_FOOT_SPEED, MAX_RATE, touchdowns } from "./locomotion";
@@ -96,6 +97,54 @@ export function buildLog(): Mesh {
   logMesh.append(raw, [0, 0, 0], 1, Math.PI / 2, Math.PI / 2);
   return logMesh;
 }
+/**
+ * GU47 WP-35 look nodes for one look-table row (art/look.ts).
+ * - storm-washed: one look key carries the sun and its 4-cascade PCSS shadow to 160 m (CD-01, CD-02; the authored shadow sun
+ *   and the sky-fill hemisphere are gone, so there is no ambient fill), a cool unshadowed back rim (CD-03), spruit_sunrise IBL
+ *   at 0.8 behind the custom dome (CD-04, background off), haze #9fb8cf 0.0032 with height fog pooling in the gorges (CD-07),
+ *   one grade node (the authored grade folds into the look's, CD-08) with warm gain and cool lift, the look bloom, a 0.2
+ *   vignette and contact shadows next to the look's single AO node (CD-10).
+ * - original (`?look=original`): today's nodes, value for value.
+ */
+export function lookNodes(row: CumulusLookRow): unknown[] {
+  const out: unknown[] = [];
+  if (row.authoredSunPos) {
+    out.push(looks.preset(row.preset, { sun: sunAnglesOf(row.authoredSunPos as V3), fogDensityScale: row.fog.lookScale }));
+    out.push(lights.directional({ name: "sun", position: row.authoredSunPos as V3, target: [0, 0, 0], intensity: row.sun.intensity, color: row.sun.color, shadow: { cascades: row.sun.cascades, maxDistance: row.sun.maxDistance, blend: 0.14 } }));
+    if (row.hemisphere) out.push(lights.hemisphere({ name: "sky-fill", skyColor: row.hemisphere.sky, groundColor: row.hemisphere.ground, intensity: row.hemisphere.intensity }));
+    out.push(effects.fog({ name: "haze", color: row.fog.color, density: row.fog.density }));
+    out.push(effects.bloom({ name: "bloom", intensity: row.bloom.intensity, threshold: row.bloom.threshold }));
+    out.push(effects.colorGrade({ name: "grade", exposure: row.grade.exposure, contrast: row.grade.contrast, saturation: row.grade.saturation }));
+    // The vignette renders through the post-v2 bridge (postBridge.ts) even though the effects diagnostics list it with
+    // consumer "none". Removing it lifted mean luma from 131 to 199 with clipping (remote A/B run g25-abvig), so it stays.
+    out.push(effects.vignette({ name: "vignette", intensity: row.vignette.intensity, smoothness: row.vignette.smoothness }));
+    return out;
+  }
+  const gorge = row.fog.gorgeHeight;
+  out.push(looks.preset(row.preset, {
+    sun: { elevationDeg: row.sun.elevationDeg, azimuthDeg: row.sun.azimuthDeg },
+    ...(row.hdri ? { hdri: row.hdri } : {}),
+    ...(row.environmentIntensity !== null ? { environmentIntensity: row.environmentIntensity } : {}),
+    ...(row.environmentRotationDeg !== null ? { environmentRotationDeg: row.environmentRotationDeg } : {}),
+    background: row.fog.color,
+    key: { color: row.sun.color, intensity: row.sun.intensity, shadow: { cascades: row.sun.cascades, maxDistance: row.sun.maxDistance, filter: row.sun.filter, blend: 0.14 } },
+    rim: row.rim ? { color: row.rim.color, intensity: row.rim.intensity, azimuthDeg: row.rim.azimuthDeg } : false,
+    fogDensityScale: row.fog.lookScale,
+    fog: { color: row.fog.color, ...(gorge ? { height: { mode: "height", density: row.fog.density, ...gorge } } : {}) },
+    post: { bloom: { intensity: row.bloom.intensity, threshold: row.bloom.threshold } }
+  }));
+  out.push(effects.colorGrade({
+    name: "grade", exposure: row.grade.exposure, contrast: row.grade.contrast, saturation: row.grade.saturation,
+    ...(row.grade.temperature !== undefined ? { temperature: row.grade.temperature } : {}),
+    ...(row.grade.tint !== undefined ? { tint: row.grade.tint } : {}),
+    ...(row.grade.lift ? { lift: [...row.grade.lift] as [number, number, number] } : {}),
+    ...(row.grade.gain ? { gain: [...row.grade.gain] as [number, number, number] } : {})
+  }));
+  out.push(effects.vignette({ name: "vignette", intensity: row.vignette.intensity, smoothness: row.vignette.smoothness }));
+  out.push(effects.contactShadows({ length: 0.3, thickness: 0.06, intensity: 0.9 }));
+  return out;
+}
+function addLookNodes(b: { add(n: never): unknown }, row: CumulusLookRow): void { for (const n of lookNodes(row)) b.add(n as never); }
 export interface World { readonly scene: ReturnType<typeof scene>; bind(app: AuraApp): WorldRuntime }
 
 /* dev toggle for A/B frames: ?heroset=0 drops the instanced hero trees, rocks and mesas */
@@ -105,25 +154,14 @@ const ORB_CAP = 72;
 const HERO_HOLD: Readonly<Record<string, { end: number; at?: number }>> = { jump: { end: 2.0 }, hit: { end: 1.5 }, dead: { end: 2.95 }, sit: { end: 8.3, at: 7.6 } };
 /* Meshy models face +Z in their own space; the port's creature rig faced -Z, so the yaw is offset by this many half turns */
 const REX_FACING = 1;
-const SUN_POS: V3 = [48, 78, 38];
+/** The one sun (CD-01): the look key, its cascaded shadow, the scenery shader light and the sky disc all point along this. */
+export const SUN_POS: V3 = (ACTIVE_LOOK.authoredSunPos ?? sunPosition(ACTIVE_LOOK.scenery.sunDir, 100)) as V3;
 const lerp3 = (a: V3, b: V3, k: number): V3 => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
 const mix = (a: number, b: number, k: number): number => a + (b - a) * k;
 
 export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): World {
-  const b = scene().background(LOOK.fogHex).camera(camera.perspective({ position: [0, 74, 8], target: [0, 70, -20], fov: 55, near: 0.2, far: 4200 }));
-  // The look's key light points along SUN_POS, the same direction as the authored shadow sun and the custom scenery shader's
-  // `LOOK.sunLight`, so shading and shadows agree (they were about 18 degrees apart). The authored sun stays: it carries the
-  // tuned cascades. The sky-fill hemisphere is kept: the engine fix (lane E2) makes it contribute again (+1.0% mean luma).
-  b.add(looks.preset("outdoor-day", { sun: sunAnglesOf(SUN_POS), fogDensityScale: 0 }));
-  b.add(lights.directional({ name: "sun", position: SUN_POS, target: [0, 0, 0], intensity: 3.2, color: LOOK.sunHex, shadow: { cascades: 3, maxDistance: 120, blend: 0.14 } }));
-  b.add(lights.hemisphere({ name: "sky-fill", skyColor: "#bcd6f2", groundColor: "#8a7448", intensity: 0.7 }));
-  b.add(effects.fog({ name: "haze", color: LOOK.fogHex, density: LOOK.fogDensity }));
-  b.add(effects.bloom({ name: "bloom", intensity: 0.38, threshold: 0.88 }));
-  b.add(effects.colorGrade({ name: "grade", exposure: 1.02, contrast: 1.07, saturation: 1.16 }));
-  // The vignette renders through the post-v2 bridge (postBridge.ts) even though the effects diagnostics list it with
-  // consumer "none". Removing it lifted mean luma from 131 to 199 with clipping (remote A/B run g25-abvig), so it stays.
-  b.add(effects.vignette({ name: "vignette", intensity: 0.2, smoothness: 0.7 }));
-
+  const b = scene().background(ACTIVE.fogHex).camera(camera.perspective({ position: [0, 74, 8], target: [0, 70, -20], fov: 55, near: 0.2, far: 4200 }));
+  addLookNodes(b, ACTIVE_LOOK);
   let triangles = 0, chunks = 0, drawNodes = 0;
   const cullables: Cullable[] = [];
   /* only the cliff walls cast sun shadows: every caster is drawn once per cascade, and merged foliage, flowers, mesas and cloud banks are far or tiny */
@@ -189,7 +227,8 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   if (ch.log) b.add(geometry.custom(meshGeometry(buildLog()), { name: "ride-log", material: material.custom(scenerySpec({ rim: 0.3 })) }).runtime({ id: "ride-log" }));
   const shadowQuad = new Mesh();
   shadowQuad.vertex([-0.5, 0, -0.5], [0, 1, 0], [0, 0], [1, 1, 1]); shadowQuad.vertex([0.5, 0, -0.5], [0, 1, 0], [1, 0], [1, 1, 1]); shadowQuad.vertex([0.5, 0, 0.5], [0, 1, 0], [1, 1], [1, 1, 1]); shadowQuad.vertex([-0.5, 0, 0.5], [0, 1, 0], [0, 1], [1, 1, 1]); shadowQuad.quad(0, 1, 2, 3);
-  b.add(geometry.custom(plainGeometry(shadowQuad), { name: "hero-shadow", castShadow: false, material: material.custom(shadowSpec()) }).runtime({ id: "hero-shadow" }));
+  /* CD-02: the fake contact quad only on rows whose scenery does not receive the sun shadow (the original look) */
+  if (!ACTIVE_LOOK.scenery.receiveShadow) b.add(geometry.custom(plainGeometry(shadowQuad), { name: "hero-shadow", castShadow: false, material: material.custom(shadowSpec()) }).runtime({ id: "hero-shadow" }));
   b.add(model(MESHY.cloud, { name: "sky-cloud", targetHeight: 0.8, castShadow: false, receiveShadow: false }).runtime({ id: "sky-cloud" }));
   const staff = cylinder(10, 0.13, 0.13, 1, hex("#b53a2a"), hex("#b53a2a"));
   staff.append(cylinder(10, 0.2, 0.2, 0.06, hex("#f0c04a"), hex("#f0c04a")), [0, 0, 0]);
@@ -387,14 +426,16 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         else view.log = null;
       }
 
-      const hs = node("hero-shadow");
-      const gp = at(s.s, s.lane, 0.07 + (ch.log && s.s < ch.log ? 0 : 0));
-      hs.setVisible(phase !== "falling" && phase !== "finale");
-      hs.setPosition(gp[0], gp[1], gp[2]);
-      hs.setRotation(0, yawOf(f.forward), 0);
-      const hk = Math.max(0.35, 1.5 - s.jump * 0.12);
-      hs.setScale([hk * 1.6, 1, hk * 1.6]);
-      hs.setUniform?.("shadowAlpha", Math.max(0.12, 0.42 - s.jump * 0.05));
+      if (!ACTIVE_LOOK.scenery.receiveShadow) {
+        const hs = node("hero-shadow");
+        const gp = at(s.s, s.lane, 0.07 + (ch.log && s.s < ch.log ? 0 : 0));
+        hs.setVisible(phase !== "falling" && phase !== "finale");
+        hs.setPosition(gp[0], gp[1], gp[2]);
+        hs.setRotation(0, yawOf(f.forward), 0);
+        const hk = Math.max(0.35, 1.5 - s.jump * 0.12);
+        hs.setScale([hk * 1.6, 1, hk * 1.6]);
+        hs.setUniform?.("shadowAlpha", Math.max(0.12, 0.42 - s.jump * 0.05));
+      }
 
       /* ---- sky cloud ---- */
       cloud.setVisible(riding || (phase === "menu" && false));
