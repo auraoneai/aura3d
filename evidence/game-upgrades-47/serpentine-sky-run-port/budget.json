@@ -1,0 +1,28 @@
+{
+  "schema": "aura3d.gu47-budget/1",
+  "slug": "serpentine-sky-run-port",
+  "game": "Serpentine Sky Run",
+  "wp": "WP-27",
+  "budget": {
+    "captureDrawCalls": 95,
+    "worstStageDrawCallsHigh": 140,
+    "worstStageDrawCallsMedium": 110,
+    "lowTierDrawCalls": 88,
+    "triangles": 450000,
+    "gpuTextureMB": 80,
+    "gpuTextureMBCapture": 70,
+    "newGlbMB": 6,
+    "postHighOnly": ["god rays", "lens flare", "motion blur", "second shadow cascade"],
+    "frameTimeIncreaseMax": 0.2,
+    "routeJsGzipDeltaKB": 25,
+    "note": "Budgets are never raised to pass (PRD D7). Low is 80% of the Medium worst stage (PRD 6.4). Measured numbers are phase 2 (software WebGL2)."
+  },
+  "source": "docs/prds/game-upgrades-47/GameUpgrades47-PRD.md WP-27 Today line and docs/audits/lanes/g17.md (remote software WebGL2 captures, 1280x720, 360 idle steps, 50 s shot)",
+  "before": {
+    "default": {
+      "in-run": { "viewport": "1280x720", "drawCalls": 115, "instancedBatches": 0, "triangles": null, "textureMB": 105.8, "meanLuma": 191.3, "runnerCropLuma": 193.4, "verge": 206.0, "pageMB": null, "routeJsGzipKB": null, "fps": null }
+    },
+    "stage1": null, "stage2": null, "stage3": null, "stage4": null, "stage5": null, "stage6": null, "stage7": null, "stage8": null
+  },
+  "after": null
+}
