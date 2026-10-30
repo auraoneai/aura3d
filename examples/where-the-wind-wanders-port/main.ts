@@ -2,7 +2,7 @@
  * Where the Wind Wanders on Aura3D: boot, fixed-step loop, input, HUD and capture hooks.
  * The simulation lives in `sim.ts` (pure); `world.ts` draws it through the public engine surface.
  *
- * Query parameters: `manual=1` (the sim only advances through `__AURA_WIND__.stepFrames`; no title
+ * Query parameters (GU47 adds `look=original` for the 4.6 look and `found=0..3|epilogue` to pin the daylight key): `manual=1` (the sim only advances through `__AURA_WIND__.stepFrames`; no title
  * card, no sound), `start=1` (skip the title card), `quality=low`. The hooks mirror the capture harness: `applyInput(keys, act)` then
  * `stepFrames(n)`, or `runScript(segments)` to replay a recorded key script; `realtime(seconds)` advances the game clock
  * (captions, the bell-to-epilogue wait, the voyage) without drawing a frame per tick.
@@ -19,10 +19,15 @@ import { buildWorld, type WorldRuntime } from "./world";
 import { createAudio } from "./audio";
 import { STORY, createUi } from "./ui";
 import { MODEL_ASSETS } from "./model-assets";
+import { parseFoundParam } from "./daylight";
+import { paperPass } from "./paper-pass";
 
 const params = new URLSearchParams(location.search);
 const manual = params.get("manual") === "1";
 const lowQuality = params.get("quality") === "low";
+/** `?look=original` is the 4.6 look; `?found=0..3|epilogue` pins the daylight key for captures (presentation only, the sim is untouched). */
+const originalLook = params.get("look") === "original";
+const daylightKey = parseFoundParam(params.get("found"));
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
   if (!el) throw new Error(`where-the-wind-wanders-port: #${id} is missing`);
@@ -113,6 +118,17 @@ function beginWalk(): void {
   audio.resume();
   ui.setSound(audio.muted, audio.started);
   captions.play(STORY.intro.map((text, i) => ({ text, at: INTRO_CUES[i] ?? i * 5.6, seconds: 5 })));
+  runtime?.playSequence("intro");
+}
+
+/** WW47-C1: letterbox bars while a camera sequence runs (DOM, so they never touch the frame's pixels or post). */
+const bars = document.createElement("div");
+bars.setAttribute("aria-hidden", "true");
+bars.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:5;transition:box-shadow .6s ease";
+document.body.appendChild(bars);
+function updateBars(): void {
+  const on = runtime?.sequence != null;
+  bars.style.boxShadow = on ? "inset 0 9vh 0 0 #1b140e, inset 0 -9vh 0 0 #1b140e" : "inset 0 0 0 0 #1b140e";
 }
 
 function startEpilogue(): void {
@@ -200,6 +216,7 @@ function advance(frame: FrameInput, dtMs = VIRTUAL_STEP_MS, tickTime = true): vo
 function render(dtMs: number, live = false): void {
   if (!app || !runtime) return;
   runtime.update(live ? viewOf(state, presenter.present(loop, true)) : state, dtMs / 1000, renderTime, canvas.clientWidth / Math.max(1, canvas.clientHeight));
+  updateBars();
   app.step(0);
   frames++;
 }
@@ -219,6 +236,8 @@ const loop = createFixedStepLoop({
 
 window.addEventListener("keydown", (e) => {
   audio.resume();
+  // any key skips a running camera sequence; the next frame shows the follow camera
+  if (runtime?.sequence && !ui.titleVisible) runtime.skipSequence();
   // arrows and Space walk and hop: they must not scroll a page that hosts the game
   if (e.code in KEY_LETTER || e.code === "Space") e.preventDefault();
   if (e.repeat) return;
@@ -239,6 +258,7 @@ window.addEventListener("keydown", (e) => {
 window.addEventListener("keyup", (e) => { held.delete(e.code); });
 window.addEventListener("blur", () => held.clear());
 window.addEventListener("pointerdown", () => audio.resume(), { once: true });
+window.addEventListener("pointerdown", () => { if (runtime?.sequence && !ui.titleVisible) runtime.skipSequence(); });
 ui.onBegin(beginWalk);
 ui.onContinue(leaveEpilogue);
 ui.onWalkAgain(walkAgain);
@@ -280,6 +300,16 @@ installQaHooks("wind", {
   app: () => app,
   routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: PARITY_IDS }) : null),
   extras: {
+    /** GU47 E-I crop contract (normalised to the canvas): fixed regions of the follow framing used by the WP-33 acceptance. */
+    crops: () => [
+      { name: "sky", x: 0, y: 0, w: 1, h: 0.3 },
+      { name: "meadow", x: 0.1, y: 0.55, w: 0.8, h: 0.35 },
+      { name: "traveller", x: 0.38, y: 0.4, w: 0.24, h: 0.4 },
+      { name: "horizon", x: 0, y: 0.25, w: 1, h: 0.2 }
+    ],
+    /** The daylight key on screen (WW47-L1) and the running camera sequence (WW47-C1). */
+    get daylight() { const d = runtime?.daylight; return d ? { key: d.key, blend: d.blend, sunDir: d.sunDir } : null; },
+    get sequence() { return runtime?.sequence ?? null; },
     /** The hero's current animation command and the render clock (null without the hero model); motion specs derive foot slide from it. */
     heroRig(): { renderTime: number; animation: unknown } | null {
       const hero = app?.nodes.get?.("hero");
@@ -402,17 +432,20 @@ function watchModelLoads(): () => void {
 async function boot(): Promise<void> {
   sizeCanvas();
   const stopWatching = watchModelLoads();
-  const world = buildWorld({ density: lowQuality ? 0.5 : 1, reducedMotion: () => reducedMotion.matches });
+  const world = buildWorld({ density: lowQuality ? 0.5 : 1, reducedMotion: () => reducedMotion.matches, look: originalLook ? "original" : "gu47", daylightKey, quality: lowQuality ? "low" : "high", sequences: !started });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
     pixelRatio: 1,
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
-    output: { toneMapping: "aces", exposure: 1.25, dither: false },
+    // WW47-P1: renderer.quality replaces the deprecated qualityProfile (?look=original keeps the 4.6 options)
+    renderer: originalLook ? { mode: "production", qualityProfile: "production", fallback: "safe-basic" } : { mode: "production", quality: lowQuality ? "low" : "high", fallback: "safe-basic" },
+    output: { toneMapping: "aces", exposure: originalLook ? 1.25 : 1.18, dither: false },
     scene: world.scene
   });
   await app.ready();
   runtime = world.bind(app);
+  // WW47-P3: the gouache paper pass (High only, not on the original look)
+  if (!originalLook && !lowQuality) app.post?.addPostPass?.(paperPass(canvas.width, canvas.height));
   stopWatching();
   ready = true;
   $("loading").classList.add("hidden");

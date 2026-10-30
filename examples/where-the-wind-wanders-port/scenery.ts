@@ -34,6 +34,8 @@ export interface Scenery {
   boatMoor: { x: number; y: number; z: number };
   jettyEnd: { x: number; y: number; z: number };
   lanterns: { x: number; y: number; z: number }[];
+  /** WW47-V4: top of the main cottage's chimney (procedural cottage; the GLB cottage uses the same footprint offset). */
+  chimney: { x: number; y: number; z: number } | null;
   treeCount: number;
 }
 
@@ -55,6 +57,7 @@ export function buildScenery(seed = 4242, replace: ReplacedByModels = {}): Scene
   const blobs: ShadowBlob[] = [];
   const keepClear: { x: number; z: number; r: number }[] = [];
   const lanterns: { x: number; y: number; z: number }[] = [];
+  let chimney: Scenery["chimney"] = null;
   let treeCount = 0;
 
   const blocked = (x: number, z: number, pad = 0): boolean => {
@@ -67,6 +70,10 @@ export function buildScenery(seed = 4242, replace: ReplacedByModels = {}): Scene
   const cottage = (x: number, z: number, s: number, yaw: number, roof: Rgb, wall: Rgb): void => {
     const y = terrainHeight(x, z) - 0.15;
     const w = 7.2 * s, d = 5.4 * s, h = 3.6 * s;
+    if (!chimney) {
+      const [rx, rz] = rotate(w * 0.28, -d * 0.1, yaw);
+      chimney = { x: x + rx, y: y + 0.6 * s + h + 3.9 * s, z: z + rz };
+    }
     if (replace.cottage) {
       placements.cottages.push({ x, y, z, s, yaw, w, d, h: 0.6 * s + h + 3.0 * s });
       blobs.push({ x: x + SUN_SHADOW.x * 4.2, z: z + SUN_SHADOW.z * 3.2, rx: w * 0.78, rz: d * 0.78, strength: 0.5 });
@@ -443,7 +450,7 @@ export function buildScenery(seed = 4242, replace: ReplacedByModels = {}): Scene
   addBlob(wisp, { x: 0, y: -0.28, z: 0, rx: 0.1, ry: 0.2, rz: 0.1, rings: 3, seg: 6, bump: 0, kind: KIND.skin, color: lin("#7a4fd8"), colorTop: lin("#9b6cf0") });
   const traveller = buildTraveller();
 
-  return { placements, props, sails, boat, traveller, bellMesh, envelope, wisp, blobs, keepClear, windmillHub, bellHang, boatMoor, jettyEnd, lanterns, treeCount };
+  return { placements, props, sails, boat, traveller, bellMesh, envelope, wisp, blobs, keepClear, windmillHub, bellHang, boatMoor, jettyEnd, lanterns, chimney, treeCount };
 }
 
 /** The walker: limb ids drive the vertex-shader gait (1/2 legs, 3/4 arms, 5 cloak). Feet at y = 0, facing +z. */

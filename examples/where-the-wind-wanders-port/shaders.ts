@@ -16,6 +16,8 @@
  *   BLOB_*      the traveller's contact shadow
  */
 
+import { CLOUD_GLSL, WIND_GLSL } from "./wind";
+
 const PLAYER_FADE = /* glsl */ `
 bool playerFade(vec3 world) {
   float t = smoothstep(0.9, 3.4, distance(world.xz, playerPos.xz));
@@ -24,15 +26,16 @@ bool playerFade(vec3 world) {
 }
 `;
 
+/**
+ * GU47 WW47-L1: the light is no longer hard-coded. `sunDir`, `sunCol`, `sunGain`, `skyCol`, `gndCol`, `fogCol`,
+ * `fogDensity`, `fogHeight` and `cloudShadowAmt` are spec uniforms (`daylightUniforms()` in world.ts) written every
+ * frame from the daylight driver (daylight.ts), so the painted surfaces and the engine sun share one key.
+ * A fragment that defines `WIND_SUN_SHADOW` and includes `<a3d_shadow>` before COMMON receives the engine sun's shadow.
+ */
 export const COMMON = /* glsl */ `
-const vec3 SUN_DIR = vec3(-0.468, 0.802, 0.374);
-const vec3 SUN_COL = vec3(1.0, 0.831, 0.429);
-const vec3 SKY_COL = vec3(0.78, 0.89, 0.62);
-const vec3 GND_COL = vec3(0.04, 0.095, 0.03);
-const vec3 FOG_COL = vec3(0.46, 0.66, 0.62);
-const float FOG_DENSITY = 0.0030;
-
+#include <a3d_fog>
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+
 float vnoise(vec2 p) {
   vec2 i = floor(p), f = fract(p);
   f = f * f * (3.0 - 2.0 * f);
@@ -44,13 +47,26 @@ float fbm(vec2 p) {
   return s / 0.9375;
 }
 
-vec3 lightSurface(vec3 albedo, vec3 n, float ao, float wrap, float sss, vec3 view) {
-  float ndl = dot(n, SUN_DIR);
+${WIND_GLSL}
+${CLOUD_GLSL}
+/** The share of the sun reaching a ground point: the engine sun shadow (when received) times the drifting cloud shadow. */
+float sunVisibility(vec3 world, vec3 n) {
+  float clouds = 1.0 - cloudShadowAmt * cloudCover(world.xz, windTime);
+#ifdef WIND_SUN_SHADOW
+  return clouds * a3dSunShadowAuto(world, n);
+#else
+  return clouds;
+#endif
+}
+
+vec3 lightSurface(vec3 albedo, vec3 n, float ao, float wrap, float sss, vec3 view, vec3 world) {
+  float ndl = dot(n, sunDir);
   float lam = clamp((ndl + wrap) / (1.0 + wrap), 0.0, 1.0);
-  vec3 hemi = mix(GND_COL, SKY_COL, n.y * 0.5 + 0.5) * 0.92;
-  vec3 sun = SUN_COL * 1.3 * lam;
-  float back = sss * pow(clamp(dot(-view, SUN_DIR), 0.0, 1.0), 2.0) * 0.8;
-  return albedo * (hemi * ao + sun * mix(1.0, ao, 0.7) + SUN_COL * back);
+  vec3 hemi = mix(gndCol, skyCol, n.y * 0.5 + 0.5) * 0.92;
+  float vis = sunVisibility(world, n);
+  vec3 sun = sunCol * sunGain * lam * vis;
+  float back = sss * pow(clamp(dot(-view, sunDir), 0.0, 1.0), 2.0) * 0.8 * vis;
+  return albedo * (hemi * ao + sun * mix(1.0, ao, 0.7) + sunCol * back);
 }
 
 bool nearFade(vec3 world, float d0, float d1) {
@@ -61,8 +77,10 @@ bool nearFade(vec3 world, float d0, float d1) {
 
 vec3 applyFog(vec3 c, vec3 world, float scale) {
   float d = distance(cameraPosition, world);
-  float f = 1.0 - exp(-pow(FOG_DENSITY * scale * d, 2.0));
-  return mix(c, FOG_COL, clamp(f, 0.0, 1.0));
+  float f = 1.0 - exp(-pow(fogDensity * scale * d, 2.0));
+  c = mix(c, fogCol, clamp(f, 0.0, 1.0));
+  // WW47-S3: low fog pooling over the sea and the stream (sea level -0.55) at golden hour and dusk; 0 at midday
+  return a3dFogHeight(c, mix(fogCol, sunCol, 0.18), d, world.y, 0.0, 0.016 * fogHeight * scale, -0.55, 0.9, 0.6 * fogHeight);
 }
 `;
 
@@ -78,6 +96,8 @@ out vec2 vUv;
 out vec3 vWorld;
 out float vKind;
 out float vPhase;
+out float vGust;
+${WIND_GLSL}
 void main() {
   vTint = tint;
   vUv = uv;
@@ -85,6 +105,10 @@ void main() {
   vPhase = phase;
   vec3 p = position;
   float gust = 0.55 + 0.45 * sin(windTime * 0.31 + position.x * 0.045 + position.z * 0.03);
+  // WW47-S2: the signature gust band rolls downwind (wind.ts); gustAmt 0 keeps the 4.6 sway (?look=original)
+  float band = windGustBand(position.xz, windTime);
+  vGust = band * gustAmt;
+  gust = mix(gust, gust * (0.55 + 0.45 * windGust(position.xz, windTime)), gustAmt);
   float w = windTime * 1.7 + phase + position.x * 0.12;
   float bend = uv.y * uv.y;
   p.x += (sin(w) * 0.7 + sin(w * 2.3 + phase) * 0.3) * sway * bend * windStrength * gust * 1.3;
@@ -99,7 +123,10 @@ in vec2 vUv;
 in vec3 vWorld;
 in float vKind;
 in float vPhase;
+in float vGust;
 out vec4 outColor;
+#define WIND_SUN_SHADOW 1
+#include <a3d_shadow>
 ${COMMON}
 ${PLAYER_FADE}
 
@@ -218,7 +245,9 @@ void main() {
   if (cover < 0.5) discard;
   vec3 view = normalize(cameraPosition - vWorld);
   vec3 n = normalize(vec3(0.0, 1.0, 0.0) + vec3((uv.x - 0.5) * 0.5, 0.0, 0.0));
-  vec3 lit = lightSurface(col, n, 0.55 + 0.45 * uv.y, 0.6, 0.55, view);
+  // a passing gust bends the blades over and shows their paler undersides: a light sheen that travels downwind
+  col = mix(col, col * vec3(1.18, 1.16, 1.02) + vec3(0.03, 0.035, 0.015), vGust * uv.y * 0.85);
+  vec3 lit = lightSurface(col, n, 0.55 + 0.45 * uv.y, 0.6, 0.55, view, vWorld);
   outColor = vec4(applyFog(lit, vWorld, 1.0), 1.0);
 }`;
 
@@ -241,6 +270,8 @@ in vec3 vTint;
 in vec3 vNormal;
 in vec3 vWorld;
 out vec4 outColor;
+#define WIND_SUN_SHADOW 1
+#include <a3d_shadow>
 ${COMMON}
 void main() {
   vec2 p = vWorld.xz;
@@ -257,12 +288,22 @@ void main() {
   float dot1 = step(0.9, h) * (1.0 - smoothstep(0.06, 0.1, length(local - (vec2(hash21(cell + 4.0), hash21(cell + 9.0)) - 0.5) * 0.6)));
   vec3 fc = h > 0.97 ? vec3(0.9, 0.82, 0.28) : h > 0.94 ? vec3(0.9, 0.9, 0.85) : vec3(0.62, 0.7, 0.95);
   albedo = mix(albedo, fc * 0.85, dot1 * grassy * 0.85);
+  // WW47-M2 (GU47 only, paintAmt 0 on ?look=original): brush strokes laid along the wind, long downwind and narrow
+  // across it, and an ochre band down the worn path with brush-broken edges. Mean factor ~1, so the key stays the key.
+  vec2 wq = vec2(dot(p, WIND_DIR), dot(p, vec2(-WIND_DIR.y, WIND_DIR.x)));
+  float lay = vnoise(vec2(wq.x * 0.9, wq.y * 7.0) + broad * 2.5);
+  float bristle = vnoise(vec2(wq.x * 2.6, wq.y * 31.0));
+  albedo *= mix(1.0, 0.82 + 0.3 * lay + 0.12 * (bristle - 0.5), paintAmt);
+  float pathD = p.y - (3.5 + 1.7 * sin(0.082 * p.x));
+  float pathBand = exp(-(pathD * pathD) / 0.55) * step(-52.0, p.x) * step(p.x, 58.0);
+  float pathEdge = smoothstep(0.25, 0.75, pathBand + (lay - 0.5) * 0.5);
+  albedo = mix(albedo, vec3(0.6, 0.4, 0.15) * (0.9 + 0.2 * bristle), pathEdge * 0.42 * paintAmt);
   // a little relief from the brush field so slopes catch the sun
   float e = 0.12;
   float h0 = vnoise(p * 2.4);
   vec3 n = normalize(vNormal + vec3((vnoise(p * 2.4 + vec2(e, 0.0)) - h0), 0.0, (vnoise(p * 2.4 + vec2(0.0, e)) - h0)) * 0.9);
   vec3 view = normalize(cameraPosition - vWorld);
-  vec3 lit = lightSurface(albedo, n, 0.9 + 0.1 * brush, 0.35, 0.0, view);
+  vec3 lit = lightSurface(albedo, n, 0.9 + 0.1 * brush, 0.35, 0.0, view, vWorld);
   outColor = vec4(applyFog(lit, vWorld, 1.0), 1.0);
 }`;
 
@@ -296,9 +337,9 @@ void main() {
   vec3 refl = reflect(-view, n);
   vec3 skyc = mix(vec3(0.6, 0.8, 0.86), vec3(0.14, 0.4, 0.82), clamp(refl.y * 1.6, 0.0, 1.0));
   col = mix(col, skyc, fres * 0.55);
-  float glint = pow(max(dot(refl, SUN_DIR), 0.0), 140.0) * 5.0;
+  float glint = pow(max(dot(refl, sunDir), 0.0), 140.0) * 5.0;
   float tw = smoothstep(0.78, 0.98, vnoise(p * vec2(5.0, 9.0) + vec2(t * 0.6, t * 0.4)));
-  col += SUN_COL * (glint + tw * 0.18 * (1.0 - depth * 0.5));
+  col += sunCol * (glint + tw * 0.18 * (1.0 - depth * 0.5));
   // foam breathes along the shore
   float breathe = 0.5 + 0.5 * sin(t * 1.1 + off * 1.6 + a0 * 6.0);
   float foam = (1.0 - smoothstep(0.0, 2.4, off + 0.6 * breathe)) * step(-0.8, off) * (0.35 + 0.65 * breathe) * smoothstep(0.35, 0.7, vnoise(p * 1.6 + t * 0.2));
@@ -343,24 +384,34 @@ export const SKY_FRAGMENT = /* glsl */ `
 in vec3 vWorld;
 out vec4 outColor;
 ${COMMON}
+#include <a3d_sky>
 void main() {
   vec3 dir = normalize(vWorld - cameraPosition);
   float up = clamp(dir.y, 0.0, 1.0);
-  vec3 horizon = vec3(0.60, 0.80, 0.86);
-  vec3 mid = vec3(0.17, 0.46, 0.88);
-  vec3 zenith = vec3(0.045, 0.20, 0.72);
+  // WW47-S1: the gradient comes from the daylight key (the 4.6 colours under ?look=original)
+  vec3 horizon = skyHorizon;
+  vec3 mid = skyMid;
+  vec3 zenith = skyZenith;
   vec3 sky = mix(horizon, mid, smoothstep(0.0, 0.3, up));
   sky = mix(sky, zenith, smoothstep(0.22, 0.85, up));
-  float sunAmt = max(dot(dir, SUN_DIR), 0.0);
-  sky += SUN_COL * (pow(sunAmt, 6.0) * 0.16 + pow(sunAmt, 90.0) * 0.7 + pow(sunAmt, 2000.0) * 8.0);
+  float sunAmt = max(dot(dir, sunDir), 0.0);
+  vec3 sunLegacy = sunCol * (pow(sunAmt, 6.0) * 0.16 + pow(sunAmt, 90.0) * 0.7 + pow(sunAmt, 2000.0) * 8.0);
+  // painted sun: a soft disc (0.6 deg radius) inside a wide warm glow, plus warm haze along the horizon
+  vec3 sunPainted = sunCol * (a3dSunGlow(dir, sunDir, 9.0) * 0.22 + a3dSunGlow(dir, sunDir, 160.0) * 0.6 + a3dSunDisc(dir, sunDir, 0.0105) * 6.0)
+    + a3dHorizonHaze(dir, mix(horizon, sunCol, 0.35) * 0.18, 0.16);
+  sky += mix(sunLegacy, sunPainted, skyPainted);
   vec2 cp = dir.xz / max(dir.y + 0.09, 0.035) * 0.62 + vec2(windTime * 0.011, windTime * 0.004);
+  // the painted clouds drift with the prevailing wind (wind.ts) instead of the fixed 4.6 drift
+  cp += skyPainted * WIND_DIR * windTime * 0.006;
   float c = fbm(cp * 1.15);
-  float cs = fbm((cp + SUN_DIR.xz * 0.16) * 1.15);
+  float cs = fbm((cp + sunDir.xz * 0.16) * 1.15);
   float cov = smoothstep(0.6, 0.76, c + 0.08 * fbm(cp * 4.0));
   cov *= smoothstep(0.0, 0.2, dir.y);
   float lit = clamp(0.55 + (c - cs) * 5.5, 0.0, 1.0);
-  vec3 cloud = mix(vec3(0.55, 0.64, 0.78), vec3(1.25, 1.17, 1.02), lit);
+  vec3 cloud = mix(vec3(0.55, 0.64, 0.78), vec3(1.25, 1.17, 1.02), lit) * cloudTint;
   cloud = mix(cloud, horizon * 1.05, smoothstep(0.1, 0.0, dir.y) * 0.8);
+  // stars after the bell: the a3d_sky hash field, faded under clouds and toward the horizon
+  sky += vec3(0.9, 0.92, 1.0) * a3dStars(dir, 0.012 * starAmt) * starAmt * 1.6 * (1.0 - cov);
   sky = mix(sky, cloud, cov * 0.92);
   sky = mix(horizon, sky, smoothstep(-0.12, 0.0, dir.y));
   outColor = vec4(sky, 1.0);
@@ -400,6 +451,8 @@ in vec3 vWorld;
 in vec2 vUv;
 in float vKind;
 out vec4 outColor;
+#define WIND_SUN_SHADOW 1
+#include <a3d_shadow>
 ${COMMON}
 ${PLAYER_FADE}
 
@@ -478,15 +531,26 @@ void main() {
     albedo = vTint;
     wrap = 0.5; sss = 0.3;
   }
-  vec3 lit = lightSurface(albedo, n, ao, wrap, sss, view);
+  // WW47-M2 (GU47 only): triplanar brush grain on the painted props (not the glass, k 7, or the brass, k 8), strokes
+  // stretched along one axis of each plane so plaster, wood and stone read as gouache rather than flat fills
+  if (paintAmt > 0.0 && k != 7 && k != 8) {
+    vec3 bw = pow(abs(n), vec3(4.0));
+    bw /= bw.x + bw.y + bw.z + 1e-4;
+    float gx = vnoise(vec2(wp.z * 9.0, wp.y * 2.2));
+    float gy = vnoise(vec2(dot(wp.xz, WIND_DIR) * 2.2, dot(wp.xz, vec2(-WIND_DIR.y, WIND_DIR.x)) * 9.0));
+    float gz = vnoise(vec2(wp.x * 9.0, wp.y * 2.2));
+    float grain = gx * bw.x + gy * bw.y + gz * bw.z;
+    albedo *= mix(1.0, 0.88 + 0.24 * grain, paintAmt);
+  }
+  vec3 lit = lightSurface(albedo, n, ao, wrap, sss, view, wp);
   if (spec > 0.0) {
-    vec3 h = normalize(SUN_DIR + view);
-    lit += SUN_COL * pow(max(dot(n, h), 0.0), 36.0) * spec * 0.9;
+    vec3 h = normalize(sunDir + view);
+    lit += sunCol * pow(max(dot(n, h), 0.0), 36.0) * spec * 0.9;
   }
   lit += albedo * vec3(1.0, 0.75, 0.4) * emissive;
   // sky-coloured rim keeps silhouettes from going muddy against the haze
   float rim = pow(1.0 - max(dot(n, view), 0.0), 3.0);
-  lit += SKY_COL * albedo * rim * 0.1;
+  lit += skyCol * albedo * rim * 0.1;
   outColor = vec4(applyFog(lit, wp, 1.0), 1.0);
 }`;
 
@@ -625,7 +689,7 @@ void main() {
   float edge = smoothstep(0.0, 0.08, vUv.x) * (1.0 - smoothstep(0.92, 1.0, vUv.x));
   float height = smoothstep(0.0, 0.16, vUv.y) * (1.0 - smoothstep(0.40, 1.0, vUv.y));
   float a = edge * height * (0.3 + n * 0.7) * hazeOpacity;
-  vec3 col = mix(FOG_COL * 1.35, vec3(1.0, 0.96, 0.82), 0.35);
+  vec3 col = mix(fogCol * 1.35, vec3(1.0, 0.96, 0.82), 0.35);
   outColor = vec4(col, a);
 }`;
 
@@ -640,7 +704,7 @@ void main() {
   float along = smoothstep(0.0, 0.18, vUv.y) * (1.0 - smoothstep(0.55, 1.0, vUv.y));
   float flicker = 0.7 + 0.3 * vnoise(vec2(vUv.x * 6.0 + shaftSeed, windTime * 0.12 + shaftSeed));
   float a = across * along * flicker * shaftOpacity;
-  outColor = vec4(SUN_COL * 1.0 + vec3(0.1), a);
+  outColor = vec4(sunCol * 1.0 + vec3(0.1), a);
 }`;
 
 export const BLOB_VERTEX = /* glsl */ `
