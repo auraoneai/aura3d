@@ -6,9 +6,9 @@ import { describe, expect, it, vi } from "vitest";
 import { effects } from "@aura3d/engine";
 import type { AuraEffectNode } from "../../../../packages/engine/src/agent-api/nodes/types";
 import { outlineTargetKeys, outlineTargetsField, outlineTargetsOfNode } from "../../../../packages/engine/src/agent-api/nodes/outlineTargets";
-import { outlineTargetLabelMatches, outlineTargetsOf } from "../../../../packages/rendering/src/renderer/OutlineTargets";
-import { RendererPostprocessPipeline } from "../../../../packages/rendering/src/renderer/PostprocessExecution";
-import { MockRenderDevice } from "../../../../packages/rendering/src";
+import { lastOutlineTargetRecord, outlineTargetLabelMatches, outlineTargetsOf, resetOutlineTargetRecord } from "../../../../packages/rendering/src/renderer/OutlineTargets";
+import { RendererPostprocessPipeline, postSkippedReasons, resetPostSkipped } from "../../../../packages/rendering/src/renderer/PostprocessExecution";
+import { Geometry, MockRenderDevice } from "../../../../packages/rendering/src";
 
 const node = (options: Parameters<typeof effects.outline>[0] = {}) => effects.outline(options).toJSON() as unknown as AuraEffectNode;
 
@@ -76,5 +76,47 @@ describe("GU47 E-E outline targets: post chain wiring", () => {
     expect(chained.bloom).toEqual({ intensity: 0.4 });
     expect(ink).toHaveBeenCalledTimes(1);
     expect(ink.mock.calls[0]![1]).toEqual(["rider"]);
+  });
+
+  it("the target ink step draws from the frame context, and records a skip without one", () => {
+    resetPostSkipped();
+    resetOutlineTargetRecord();
+    const device = new MockRenderDevice();
+    const pipeline = new RendererPostprocessPipeline({ device, width: 16, height: 16 } as never) as never as {
+      executeOutlineTargets(postprocess: unknown, targets: readonly string[], forward: unknown, output: unknown): void;
+    };
+    const identity = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+    const items = [
+      { geometry: Geometry.triangle(), modelMatrix: identity, label: "primitive-0:sphere-1:rider" },
+      { geometry: Geometry.triangle(), modelMatrix: identity, label: "primitive-1:box-2:crate" }
+    ];
+    const outline = { color: [27, 34, 54, 255], width: 1, opacity: 0.5, targets: ["rider"] };
+    device.beginFrame(16, 16);
+    pipeline.executeOutlineTargets({ outline }, ["rider"], undefined, undefined);
+    expect(postSkippedReasons()).toContain("OUTLINE_TARGETS_FRAME_CONTEXT_MISSING");
+    expect(device.drawCommands).toHaveLength(0);
+    pipeline.executeOutlineTargets({
+      outline,
+      cameraFrame: { viewProjectionMatrix: identity },
+      postFrameContext: { source: null, items, sceneDepth: { texture: null, available: false, linearize: { near: 0.1, far: 100, orthographic: false } } }
+    }, ["rider"], undefined, undefined);
+    device.endFrame();
+    expect(device.drawCommands.map((command) => command.label)).toEqual(["primitive-0:sphere-1:rider:0", "gu47-outline-targets-ink"]);
+    expect(lastOutlineTargetRecord()).toMatchObject({ inked: true, occlusion: "none", radius: 1, maskItems: ["primitive-0:sphere-1:rider"] });
+    const color = device.drawCommands.at(-1)!.uniforms!.get("u_outlineColor") as readonly number[];
+    expect(color[3]).toBeCloseTo(0.5, 6);
+  });
+
+  it("the async present splits the same way", async () => {
+    const { device, pipeline, ink } = pipelineWithSpies();
+    const chain = vi.spyOn(pipeline as never as { executePostprocessChainAsync: (...args: unknown[]) => Promise<void> }, "executePostprocessChainAsync").mockImplementation(async () => {});
+    const target = device.createRenderTarget({ width: 16, height: 16 });
+    const plain = { outline: { width: 3 } };
+    await pipeline.executePostprocessAsync(plain, [target]);
+    expect(chain.mock.calls[0]![0]).toBe(plain);
+    expect(ink).not.toHaveBeenCalled();
+    await pipeline.executePostprocessAsync({ outline: { width: 3, targets: ["hero"] } } as never, [target]);
+    expect("outline" in (chain.mock.calls[1]![0] as Record<string, unknown>)).toBe(false);
+    expect(ink.mock.calls[0]![1]).toEqual(["hero"]);
   });
 });

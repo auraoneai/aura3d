@@ -573,8 +573,11 @@ export class RendererPostprocessPipeline {
 
   async executePostprocessAsync(postprocess: RendererPostProcessOptions, ownedTargets: RenderTarget[], outputTarget?: RenderTarget): Promise<void> {
     const pooled = qrTiersOn() ? [] as RenderTarget[] : null;
+    // GU47 E-E: same targeted-outline split as `executePostprocess`.
+    const outlineTargets = outlineTargetsOf(postprocess.outline);
     try {
-      await this.executePostprocessChainAsync(postprocess, ownedTargets, outputTarget, pooled);
+      await this.executePostprocessChainAsync(outlineTargets ? withoutOutline(postprocess) : postprocess, ownedTargets, outputTarget, pooled);
+      if (outlineTargets && !this.host.device.disposed) this.executeOutlineTargets(postprocess, outlineTargets, ownedTargets[0], outputTarget);
     } finally {
       this.releaseChainTargets(pooled);
     }
