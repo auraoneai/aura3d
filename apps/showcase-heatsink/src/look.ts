@@ -47,6 +47,8 @@ export interface CircuitLook {
   readonly exposureEv: number;
   /** Colour grade (HS-12). temperature/tint are [-1, 1]. */
   readonly grade: { readonly contrast: number; readonly saturation: number; readonly temperature: number; readonly tint: number };
+  /** Strength (0..1) of the shared foundry display LUT (HS-12, `src/lut.ts`). */
+  readonly lutIntensity: number;
   /** Warm bloom (HS-12). */
   readonly bloom: { readonly intensity: number; readonly threshold: number; readonly color: string };
   readonly vignette: number;
@@ -87,6 +89,7 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     fog: { color: "#2a1d14", density: 0.011 },
     exposureEv: 0.35,
     grade: { contrast: 1.12, saturation: 1.06, temperature: 0.18, tint: -0.03 },
+    lutIntensity: 0.6,
     bloom: { intensity: 0.55, threshold: 0.8, color: "#ffb070" },
     vignette: 0.28,
     grain: 0.05,
@@ -112,6 +115,7 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     volumetricFog: { color: "#b97a3e", density: 0.16, intensity: 0.65, godRayDensity: 0.45 },
     exposureEv: 0,
     grade: { contrast: 1.06, saturation: 0.9, temperature: 0.32, tint: 0.03 },
+    lutIntensity: 0.4,
     bloom: { intensity: 0.55, threshold: 0.8, color: "#ff9a4a" },
     vignette: 0.28,
     grain: 0,
@@ -137,6 +141,7 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     fog: { color: "#2a2348", density: 0.008 },
     exposureEv: 0.25,
     grade: { contrast: 1.1, saturation: 1.08, temperature: -0.12, tint: 0.12 },
+    lutIntensity: 0.5,
     bloom: { intensity: 0.55, threshold: 0.8, color: "#ff9a5a" },
     vignette: 0.28,
     grain: 0,

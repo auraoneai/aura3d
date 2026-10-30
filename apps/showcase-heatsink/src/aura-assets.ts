@@ -1095,6 +1095,13 @@ const textureDefinitions = {
 } satisfies Record<string, AuraAssetDefinition>;
 
 export const textures = defineAuraAssets(textureDefinitions);
+
+// GU47 WP-13 HS-12: the authored display LUT (src/lut.ts generates it; 132 KB of text, gzip about 40 KB).
+const lutDefinitions = {
+  heatsinkFoundryLut: { type: "lut", format: "cube", url: new URL("../textures/luts/td-foundry.cube", import.meta.url).href, sizeBytes: 132859 }
+} satisfies Record<string, AuraAssetDefinition>;
+
+export const luts = defineAuraAssets(lutDefinitions);
 /** Mean of the asphalt roughness map (provenance.json): a material roughness factor of `target / mean` lands on `target`. */
 export const ASPHALT_ROUGHNESS_MEAN = 0.745;
 /** Circuit sky texture by catalogue id (src/look.ts `CircuitLook.hdri`). */

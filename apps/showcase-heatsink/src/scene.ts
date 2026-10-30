@@ -12,8 +12,8 @@
  * HS-15: molten slag gutters and the lava pool (custom shader, one instanced draw); chevrons follow the core heat.
  * C13: about 150 repeated primitives become 9 instanced nodes; emissive decor casts no shadow.
  */
-import { AuraNodeBuilder, camera, effects, environments, instances, lights, material, model, primitives, scene, game, type AuraAssetRef, type AuraMaterialSpec, type AuraModelMaterialOverride, type AuraSceneNode } from "@aura3d/engine";
-import { ASPHALT_ROUGHNESS_MEAN, assets, HDRI_BY_ID, textures } from "./aura-assets";
+import { AuraNodeBuilder, camera, effects, environments, instances, lights, material, model, primitives, scene, game, type AuraAssetRef, type AuraLutAssetRef, type AuraMaterialSpec, type AuraModelMaterialOverride, type AuraSceneNode } from "@aura3d/engine";
+import { ASPHALT_ROUGHNESS_MEAN, assets, HDRI_BY_ID, luts, textures } from "./aura-assets";
 import { DRONE_ORDER, DRONE_SPECS, SCENERY_ANCHORS, type CircuitSpec } from "./data";
 import { CIRCUIT_LOOKS, rimPosition, sunPosition, type CircuitLook } from "./look";
 import { chevronHeatMaterial, moltenMaterial } from "./shaders";
@@ -244,7 +244,10 @@ export function circuitPost(look: CircuitLook, options: { readonly exposureEv?: 
       contrast: look.grade.contrast,
       saturation: look.grade.saturation,
       temperature: look.grade.temperature,
-      tint: look.grade.tint
+      tint: look.grade.tint,
+      // HS-12: the authored foundry LUT (S10b display grade) at the circuit's strength.
+      lut: luts.heatsinkFoundryLut as unknown as AuraLutAssetRef,
+      lutIntensity: look.lutIntensity
     }),
     effects.bloom({ name: "td warm bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold, color: look.bloom.color }),
     effects.vignette({ name: "td vignette", intensity: look.vignette, smoothness: 0.65 })
