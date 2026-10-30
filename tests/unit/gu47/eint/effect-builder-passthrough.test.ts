@@ -26,3 +26,11 @@ describe("effect builder pass-through (pass 4)", () => {
     }
   });
 });
+
+describe("effects.particles option type (pass 4, g13)", () => {
+  it("takes a speed range and keeps it on the node; a number or no speed is unchanged", () => {
+    expect(json(effects.particles({ speed: [1, 2.5] })).speed).toEqual([1, 2.5]);
+    expect(json(effects.particles({ speed: 3 })).speed).toBe(3);
+    expect(json(effects.particles()).speed).toBe(1);
+  });
+});
