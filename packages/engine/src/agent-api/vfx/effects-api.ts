@@ -3,7 +3,7 @@
 // the A3D_QR_VFX flag is off so flag-off behaviour is byte-identical.
 
 import type { AuraApp, AuraVec3, AuraColor, AuraCreateAppOptions } from "../index";
-import type { AuraVfxKind, AuraVfxEffectSpec, AuraEffectInstanceHandle, AuraBurstOptions, AuraDecalOptions, AuraTrailHandle } from "../../contracts/effects";
+import type { AuraVfxKind, AuraVfxEffectSpec, AuraEffectInstanceHandle, AuraBurstOptions, AuraDecalOptions, AuraTrailHandle, AuraVfxGenreVariant } from "../../contracts/effects";
 import type { QrFlags, AuraQualityTier } from "@aura3d/rendering/contracts";
 import { StubAppEffects } from "../../contracts/effects";
 import { ProductionEffectSystem, type AppLike } from "../../production-runtime/effects/ProductionEffectSystem";
@@ -54,6 +54,36 @@ const BURST_PRESETS: Record<string, BurstPreset> = {
   "impact-decal": { speed: [0, 0], life: [2, 3], gravity: 0, color: [0.15, 0.12, 0.1], size: [0.2, 0.35], spread: 0.05, additive: false },
   "aura-burst": { speed: [2, 4], life: [0.5, 1.1], gravity: 0, color: [1.5, 2.5, 6], size: [0.08, 0.2], spread: 1, additive: true, light: { intensity: 10, range: 8, duration: 0.6 } }
 };
+
+/**
+ * GU47 E-F genre-coloured variants of `spark`, `dust` and `pickup`: the base row's motion, life and size with
+ * a genre palette, so two games firing "the same" hit or pickup stop looking identical. Additive rows keep an
+ * HDR colour of the base's energy; dust rows stay LDR.
+ */
+const GENRE_VARIANT_COLORS: Readonly<Record<AuraVfxGenreVariant, readonly [base: "spark" | "dust" | "pickup", color: [number, number, number]]>> = {
+  "spark-fire": ["spark", [4.5, 1.4, 0.35]],
+  "spark-electric": ["spark", [1.2, 2.8, 4.6]],
+  "spark-gold": ["spark", [4.2, 3, 0.9]],
+  "spark-magic": ["spark", [3.4, 1, 4.2]],
+  "spark-ice": ["spark", [2.2, 3.4, 4.4]],
+  "dust-sand": ["dust", [0.76, 0.62, 0.42]],
+  "dust-turf": ["dust", [0.36, 0.42, 0.24]],
+  "dust-snow": ["dust", [0.9, 0.93, 0.98]],
+  "dust-ash": ["dust", [0.28, 0.27, 0.27]],
+  "dust-clay": ["dust", [0.66, 0.38, 0.26]],
+  "pickup-gold": ["pickup", [4.4, 3.2, 0.8]],
+  "pickup-gem": ["pickup", [0.9, 2.8, 4.6]],
+  "pickup-power": ["pickup", [3.8, 1, 4]],
+  "pickup-star": ["pickup", [4.4, 4, 2.8]],
+  "pickup-heart": ["pickup", [4.4, 1, 1.6]]
+};
+
+/** GU47 E-F: the genre variant names, in table order. */
+export const AURA_VFX_GENRE_VARIANTS = Object.keys(GENRE_VARIANT_COLORS) as readonly AuraVfxGenreVariant[];
+
+for (const [name, [base, color]] of Object.entries(GENRE_VARIANT_COLORS)) {
+  BURST_PRESETS[name] = { ...BURST_PRESETS[base], color };
+}
 
 /** super-flash C-05 overlay flash: LDR warm white, 0.3 peak, 180 ms decay. */
 const SUPER_FLASH = { color: [1, 0.9, 0.72] as const, peak: 0.3, ms: 180 };
@@ -478,10 +508,10 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
     set runtime(mode: "on" | "off") {
       system.setRuntimeEffects(mode);
     },
-    burst(kind: AuraVfxKind | (string & {}), position: AuraVec3, options?: AuraBurstOptions) {
+    burst(kind: AuraVfxKind | AuraVfxGenreVariant | (string & {}), position: AuraVec3, options?: AuraBurstOptions) {
       return spawnEmitter(kind, position, options ?? {});
     },
-    spawn(effect: AuraVfxEffectSpec | AuraVfxKind | (string & {}), at: AuraVec3 | { node: string; socket?: string }, options) {
+    spawn(effect: AuraVfxEffectSpec | AuraVfxKind | AuraVfxGenreVariant | (string & {}), at: AuraVec3 | { node: string; socket?: string }, options) {
       // GU47 E-F: `{ node, socket }` (or the spec's own attachTo) makes the effect follow that node; the old
       // code spawned it at the world origin.
       const onNode = !Array.isArray(at) && typeof (at as { node?: unknown }).node === "string";

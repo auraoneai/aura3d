@@ -8,6 +8,11 @@ import type { AuraBlendMode } from "@aura3d/rendering/contracts";
 import type { AuraVfxBuiltinSequence } from "../agent-api/vfx/atlas";
 
 export type AuraVfxKind = "spark" | "dust" | "debris" | "ring" | "streak" | "pickup" | "explosion-small" | "muzzle" | "splash" | "bubble" | "impact-flash" | "super-flash" | "impact-decal" | "aura-burst";
+/** GU47 E-F: genre-coloured variants of `spark`, `dust` and `pickup` (same motion and life, genre palette). */
+export type AuraVfxGenreVariant =
+  | "spark-fire" | "spark-electric" | "spark-gold" | "spark-magic" | "spark-ice"
+  | "dust-sand" | "dust-turf" | "dust-snow" | "dust-ash" | "dust-clay"
+  | "pickup-gold" | "pickup-gem" | "pickup-power" | "pickup-star" | "pickup-heart";
 export interface AuraVfxEffectSpec {
   readonly name: string;
   readonly layers: readonly ({ readonly type: "emitter" | "mesh" | "ribbon" | "decal" | "light" | "camera"; readonly at?: number } & Readonly<Record<string, unknown>>)[];
@@ -58,9 +63,9 @@ export interface AuraAppEffects {
    * One-shot effect at `position`. GU47 E-F: `kind` resolves a `registerPreset` name first (every layer of the
    * registered spec fires), then a built-in kind or genre variant; an unknown name falls back to `spark`.
    */
-  burst(kind: AuraVfxKind | (string & {}), position: AuraVec3, options?: AuraBurstOptions): AuraEffectInstanceHandle;
+  burst(kind: AuraVfxKind | AuraVfxGenreVariant | (string & {}), position: AuraVec3, options?: AuraBurstOptions): AuraEffectInstanceHandle;
   /** A named preset (registered first) is one-shot; an authored spec object loops until its handle stops. */
-  spawn(effect: AuraVfxEffectSpec | AuraVfxKind | (string & {}), at: AuraVec3 | { node: string; socket?: string }, options?: { seed?: number; scale?: number; color?: AuraColor; sprite?: AuraVfxSpriteSource }): AuraEffectInstanceHandle;
+  spawn(effect: AuraVfxEffectSpec | AuraVfxKind | AuraVfxGenreVariant | (string & {}), at: AuraVec3 | { node: string; socket?: string }, options?: { seed?: number; scale?: number; color?: AuraColor; sprite?: AuraVfxSpriteSource }): AuraEffectInstanceHandle;
   /**
    * GU47 E-F: a camera-facing ribbon that follows `target` (runtime node id, node handle, or `{ node, socket }`).
    * Points live `life` seconds, so the ribbon is as long as the distance the target covered in that time;
@@ -95,7 +100,7 @@ export class StubAppEffects implements AuraAppEffects {
 
   constructor(private readonly addNode: (kind: "sphere" | "quad" | "line", at: AuraVec3, options?: { color?: AuraColor; scale?: number }) => AuraRuntimeNodeHandle | null) {}
 
-  burst(kind: AuraVfxKind | (string & {}), position: AuraVec3, options?: AuraBurstOptions): AuraEffectInstanceHandle {
+  burst(kind: AuraVfxKind | AuraVfxGenreVariant | (string & {}), position: AuraVec3, options?: AuraBurstOptions): AuraEffectInstanceHandle {
     const id = `fx-${this.nextId++}`;
     if (this.runtime === "off") return this.makeHandle(id);
     const count = options?.count ?? 8;
@@ -106,7 +111,7 @@ export class StubAppEffects implements AuraAppEffects {
     return this.makeHandle(id);
   }
 
-  spawn(effect: AuraVfxEffectSpec | AuraVfxKind | (string & {}), at: AuraVec3 | { node: string; socket?: string }, options?: { seed?: number; scale?: number; color?: AuraColor }): AuraEffectInstanceHandle {
+  spawn(effect: AuraVfxEffectSpec | AuraVfxKind | AuraVfxGenreVariant | (string & {}), at: AuraVec3 | { node: string; socket?: string }, options?: { seed?: number; scale?: number; color?: AuraColor }): AuraEffectInstanceHandle {
     const id = `fx-${this.nextId++}`;
     const kind = typeof effect === "string" ? effect : effect.name;
     const position: AuraVec3 = Array.isArray(at) ? (at as AuraVec3) : ([0, 0, 0] as AuraVec3);
