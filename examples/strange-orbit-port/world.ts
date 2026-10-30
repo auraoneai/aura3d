@@ -130,6 +130,11 @@ export const RIVAL_COLORS: readonly (readonly [string, string])[] = [
 /** SO47-L4: tail points on the nearest rivals (the art direction caps practicals at 6). */
 export const TAIL_LIGHTS = 3;
 
+/** SO47-N1: drawn-lean gain (0.24 rad sim lean -> ~25 degrees), landing squash depth, planet spin in rad/s. */
+export const LEAN_GAIN = 1.8;
+export const LANDING_SQUASH = 0.09;
+const PLANET_SPIN = 0.01;
+
 /** SO47-W2: metres between amber beacon posts. */
 export const BEACON_SPACING = 40;
 
@@ -299,7 +304,7 @@ export function buildWorld(options: WorldOptions): World {
     rotation: [0.1, 0.4, 1.12],
     size: planet.size,
     material: solidMaterial(hexLinear("#f9ece3"), hexLinear(look === "original" ? "#c98a68" : "#d9895f"), 0, look === "original" ? 0.045 : 0.026)
-  }));
+  }).runtime({ id: "planet" }));
   if (!off.has("atmo")) builder.add(primitives.sphere({
     name: "planet-atmosphere",
     position: [...planet.position],
@@ -676,6 +681,11 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
   const riderFwd: Vec3[] = Array.from({ length: 7 }, () => new Vec3(1, 0, 0));
   const riderUp: Vec3[] = Array.from({ length: 7 }, () => new Vec3(0, 1, 0));
   const riderShown: boolean[] = Array.from({ length: 6 }, () => true);
+  /** SO47-N1 landing squash (vertical scale drop, decays in ~0.3 s; 30% amplitude on reduced motion). */
+  let squash = 0;
+  /** SO47-E4 meteor streaks: next streak time and a presentation-only RNG (the sim RNG is untouched). */
+  const skyRng = lehmer(5309);
+  let nextMeteor = 4 + skyRng() * 4;
   /* GU47 WP-25 presentation directors (read-only race values; art/director.ts). */
   const row = LOOKS[input.look];
   const feel = createCameraFeel(input.look, input.reducedMotion);
@@ -683,6 +693,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
   const postDirector = createPostDirector(row, input.high, input.reducedMotion);
   const keyLight = app.nodes.get("key");
   const skyDome = app.nodes.get("sky-dome");
+  const planetNode = app.nodes.get("planet");
   let lastPost = "";
   let lastShift = Number.NaN;
   if (input.look === "gouache") registerOrbitVfx(app.effects ?? { registerPreset: () => undefined });
@@ -763,7 +774,8 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       const h = node(part.id);
       h.setPosition(p.x, p.y, p.z);
       h.setRotation(e[0], e[1], e[2]);
-      h.setScale(scale);
+      if (index === 0 && squash > 0.001) h.setScale([scale * (1 + squash * 0.5), scale * (1 - squash), scale * (1 + squash * 0.5)]);
+      else h.setScale(scale);
     }
   };
 
@@ -807,7 +819,8 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       playerPose = loopFramePose(state);
     } else {
       const ground = menu ? 0 : state.air?.height ?? ((groundHeight(state.s, state.lane, state.route, state.vehicle) ?? 0) + (state.route === "main" ? rampHeightAt(state.s, state.lane, state.vehicle) : 0));
-      playerPose = poseAt(sForPlayer, menu ? 0 : state.lane, menu ? "main" : state.route, ground, menu ? 0 : state.heading || 0, menu ? 0 : state.lean);
+      // SO47-N1 (gouache): the drawn rider leans up to ~25 degrees (1.8x the sim's 0.24 rad lean; presentation only).
+      playerPose = poseAt(sForPlayer, menu ? 0 : state.lane, menu ? "main" : state.route, ground, menu ? 0 : state.heading || 0, menu ? 0 : state.lean * (input.look === "gouache" ? LEAN_GAIN : 1));
     }
     let pitch = 0, roll = 0;
     if (!state.flight && !state.loop && !menu) {
@@ -988,6 +1001,15 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       halo.setRotation(e[0], e[1], e[2]);
     }
 
+    squash *= Math.exp(-dt * 10);
+    if (input.look === "gouache" && input.high && !menu && time >= nextMeteor && app.effects) {
+      // SO47-E4 meteor streak high in the sky every 4-8 s (High only; +0 authored draws, runtime particles).
+      nextMeteor = time + 4 + skyRng() * 4;
+      const a = skyRng() * Math.PI * 2;
+      app.effects.burst("streak", [Math.cos(a) * 700, 260 + skyRng() * 200, Math.sin(a) * 700], { count: 6, speed: 60, scale: 6, color: "#ffe6c4", camera: false });
+    }
+    if (input.look === "gouache") planetNode?.setRotation(0.1, 0.4 + time * PLANET_SPIN, 1.12);
+
     /* GU47 SO47-L3 / E2: sector key tint, haze and nebula hue; SO47-P2 / P3 boost and menu post */
     const sector = sectors.update(sForPlayer, dt);
     if (sector.changed) {
@@ -1046,7 +1068,15 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       return p ? projectPoint(p, aspect) : null;
     },
     event(ev) {
-      if (ev.type === "land" || ev.type === "stunt") feel.landing(ev.type === "stunt");
+      if (ev.type === "land" || ev.type === "stunt") {
+        feel.landing(ev.type === "stunt");
+        if (input.look === "gouache") {
+          squash = LANDING_SQUASH * (input.reducedMotion ? 0.3 : 1);
+          // SO47-V3: a tyre scuff on the road under the rider, fading over 6 s.
+          const p0 = riderAt[0]!, u0 = riderUp[0]!;
+          app.effects?.decal({ position: [p0.x - u0.x * 0.78, p0.y - u0.y * 0.78, p0.z - u0.z * 0.78], normal: [u0.x, u0.y, u0.z] }, { kind: "scuff", size: 1.4, lifetime: 6, color: "#3a2626", opacity: 0.55 });
+        }
+      }
       if (input.look !== "gouache" || !app.effects) return;
       const vfx = orbitVfxFor(ev.type, input.reducedMotion);
       if (!vfx) return;
