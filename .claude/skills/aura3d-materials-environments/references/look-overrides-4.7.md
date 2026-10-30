@@ -66,9 +66,10 @@ app.atmosphere.setFog({ color: "#7d8fa6", near: 20, far: 260 }, { transitionSeco
 - `setLight` patches `color`, `intensity`, `power`, `distance`, `direction`
   and `position`; light nodes follow `setPosition` and `setVisible` every frame
   (a hidden light drops its shadow map too).
-- `app.diagnostics().lighting` reports `punctualLights` and
-  `localShadowLights`. Local lights cast shadows up to the tier's limit (0, 1,
-  2 or 4) besides the sun; read the count on a capture before claiming one.
+- `app.diagnostics().lighting` reports `shadows`, `punctualLights` and
+  `localShadowLights`. Local lights cast shadows besides the sun up to the
+  quality tier's cap (low 0, medium 1, high 2, ultra 4); read the count on a
+  capture before claiming a second shadow.
 
 ## Runtime post
 
