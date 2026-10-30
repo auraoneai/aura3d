@@ -6,12 +6,13 @@
  * fallback when a generated model is unavailable (`meshy.ts`, `PORTING-NOTES.md`).
  */
 import {
-  batched, camera, cameras, defineAuraAssets, effects, environments, geometry, instances, lights, lookHdriUrl, material, primitives, scene, type AuraApp
+  batched, camera, cameras, defineAuraAssets, effects, environments, geometry, instances, lights, lookHdriUrl, material, primitives, scene, text3D, type AuraApp
 } from "@aura3d/engine";
-import { SALTWIND_LOOK, directionFromAngles, lookModeFrom, type SaltwindLookRow } from "./art/look";
+import { SALTWIND_LOOK, SALTWIND_PALETTE, directionFromAngles, lookModeFrom, type SaltwindLookRow } from "./art/look";
 import { SPRAY_POINTS, sprayAmount, sprayWind } from "./art/spray";
 import { ROTOR_BLADES, landmarkPlacements, rotorAngle, type LandmarkKind, type LandmarkPlacement } from "./art/landmarks";
 import { createBodyLean } from "./art/lean";
+import { SIGN_DEPTH, SIGN_DROP, SIGN_LETTER_SPACING, SIGN_SIZE, signOrigin, signSpan, signText } from "./art/signs";
 import { SALTWIND_LUT_INTENSITY } from "./art/lut";
 import { createShotDirector, orbitEye, type ShotFrame } from "./art/shots";
 import { NITRO_TRAIL, SKID_INTERVAL, fxForEvents, registerSaltwindFx, type SaltwindFxKind } from "./art/fx";
@@ -749,6 +750,16 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       builder.add(primitives.box({ name: `gate-post-${i}-${side}`, position: p, rotation: [0, psi, 0], size: [0.7, 12, 0.7], material: gateMat(), castShadow: false }));
     }
     builder.add(primitives.box({ name: `gate-bar-${i}`, position: [base[0], base[1] + 12, base[2]], rotation: [0, psi, 0], size: [width * 2, 0.6, 0.6], material: gateMat(), castShadow: false }));
+    // RH47-17: the relay's name in SDF text under the bar (salt white, signal-red glow), only the next gate's sign shows.
+    if (row) {
+      const text = signText(g.name);
+      builder.add(text3D(text, {
+        name: `gate-sign-${i}`, size: SIGN_SIZE, depth: SIGN_DEPTH, letterSpacing: SIGN_LETTER_SPACING, backend: "sdf",
+        sdfStyle: { glowRadiusEm: 0.12 }, position: signOrigin([base[0], base[1] + 12 - SIGN_DROP, base[2]], psi, signSpan(text)), rotation: [0, psi, 0],
+        material: material.emissive({ color: SALTWIND_PALETTE.saltWhite, emissive: SALTWIND_PALETTE.saltWhite, emissiveIntensity: 0.8 }),
+        castShadow: false
+      }).runtime({ id: `gate-sign-${i}` }));
+    }
   });
   // RH47-02 (Halo): cool gantry points ride with the next relay gate (two lights, unshadowed; moved in the runtime).
   const gantryPoints = row?.gantryPoints ?? null;
@@ -971,6 +982,9 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       const lean = row ? createBodyLean() : null;
       const gantryLights = gantryPoints ? Array.from({ length: gantryPoints.count }, (_v, k) => node(`gantry-light-${k}`)) : [];
       let gantryGate = -1;
+      const gateSigns = row ? level.gates.map((_g, i) => node(`gate-sign-${i}`)) : [];
+      let signGate = 0;
+      gateSigns.forEach((sign, k) => sign.setVisible(k === 0));
       let dustAmount = 0, sparkAmount = 0;
       for (const part of parts) part.setScale(scaleVec);
 
@@ -994,7 +1008,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       const offCentre = 0;
       return {
         vehicleInstances: allSlots.length,
-        reset: () => { placeLineup(); director.cut(); chase.reset(); shots?.play(); lean?.reset(); },
+        reset: () => { placeLineup(); director.cut(); chase.reset(); shots?.play(); lean?.reset(); signGate = 0; gateSigns.forEach((sign, k) => sign.setVisible(k === 0)); },
         startIntro: () => shots?.startIntro(),
         skipIntro: () => shots?.skipIntro(),
         startFinish: () => shots?.startFinish(),
@@ -1073,6 +1087,10 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
             else if (!nitroOn && nitroTrail) { nitroTrail.stop(); nitroTrail = null; }
           }
           for (let i = 0; i < cells.length; i++) cells[i]!.setVisible(!run.cells.has(i));
+          if (gateSigns.length && run.nextGate !== signGate) {
+            signGate = run.nextGate;
+            gateSigns.forEach((sign, k) => sign.setVisible(k === signGate));
+          }
           if (gantryLights.length && run.nextGate !== gantryGate) {
             gantryGate = run.nextGate;
             gantryLights.forEach((light, k) => { const p = gantryLightAt(gantryGate, k); light.setPosition(p[0], p[1], p[2]); });
