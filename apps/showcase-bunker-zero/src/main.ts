@@ -22,7 +22,7 @@ import {
 import { autopilotInput, createAutopilot } from "./autopilot";
 import {
   betterMedal, cosmeticRng, DEFAULT_BINDINGS, enemyNodeStem, floorOutcome, floorResult, hudKey, keyLabel, MEDAL_MARK,
-  outcomeView, parseBindings, REMAPPABLE, rebind, runTotals, scaleHex, wallGain, type BindAction, type Bindings, type FloorOutcome, type FloorResult
+  outcomeView, parseBindings, REMAPPABLE, rebind, runTotals, scaleHex, type BindAction, type Bindings, type FloorOutcome, type FloorResult
 } from "./flow";
 import { VIEWMODEL_ASSET, VIEWMODEL_YAW_OFFSET, weaponHudLabel } from "./weapons-view";
 import { ENEMY_FORWARD, enemyFacingError, nextEnemyYaw } from "./enemy-facing";
@@ -31,6 +31,7 @@ import {
   BZ_ENV_INTENSITY, BZ_HDRI, BZ_HDRI_URL, BZ_PALETTE, BZ_POST, BZ_VARIANTS, lookOfSlot, parseFloorParam
 } from "./art/look";
 import { buildLightRig, createLightRigDriver, type QualityTierName, type RigLightHandle } from "./art/lightRig";
+import { BZ_FLOOR_TEXTURES, bunkerTexture } from "./art/textures";
 import { BZ_VFX_EVENTS, registerBunkerVfx, type BunkerVfxKind } from "./art/vfx";
 
 installBlackFrameGuard();
@@ -63,6 +64,8 @@ const MAX_ROCKETS = 18;
 const ENEMY_TRACERS = 8;
 /** BZ-06: F2 standing water, and the wet-ground amount per floor slot (F2 flooded cellars, F6 the hatch rain). */
 const BZ_WATER = { color: "#0b1714", roughness: 0.06 } as const;
+/** BZ-04: base colour under the texture sets (slightly warm white; the lamps carry each floor's colour). */
+const BZ_SURFACE_WHITE = "#ece8df";
 const BZ_WETNESS = [0, 0.7, 0, 0, 0, 0.45, 0] as const;
 const ALL_FLOORS: { def: FloorDef; slot: number }[] = [
   ...FLOORS.map((def, i) => ({ def, slot: i })),
@@ -124,12 +127,14 @@ function buildScene() {
     const h = rows.length, w = rows[0].length;
     const wallH = SLOT_WALL_H[slot]!;
     const look = lookOfSlot(slot);
-    // the renderer multiplies material and instance colours; wallGain undoes the palette being applied twice (floors 2-6 drew black)
-    const ref = FLOORS[0]!.palette;
-    const wallK = wallGain(shade(def.palette.wall, 0.14), shade(def.palette.wall, 0.12), shade(ref.wall, 0.14), shade(ref.wall, 0.12));
-    const altK = wallGain(shade(def.palette.wallAlt, 0.16), shade(def.palette.wallAlt, 0.14), shade(ref.wallAlt, 0.16), shade(ref.wallAlt, 0.14));
-    const wallMat = material.pbr({ color: scaleHex(shade(def.palette.wall, 0.14), wallK), roughness: 0.68, metalness: 0.12 });
-    const altMat = material.pbr({ color: scaleHex(shade(def.palette.wallAlt, 0.16), altK), roughness: 0.62, metalness: 0.18 });
+    // BZ-04: each floor's own ambientCG set, one repeat per 3 m cell (box faces are 0..1 per face). The renderer multiplies
+    // material and instance colours, so the material is near white and the instance colour is only a +-6% jitter.
+    const tex = BZ_FLOOR_TEXTURES[slot]!;
+    const wallTex = bunkerTexture(tex.wall), altTex = bunkerTexture(tex.accent), floorTex = bunkerTexture(tex.floor);
+    const metalWall = tex.wall.startsWith("metal");
+    const wallMat = material.pbr({ color: BZ_SURFACE_WHITE, texture: wallTex.color, normal: wallTex.normal, normalScale: 0.9, roughness: metalWall ? 0.55 : 0.88, metalness: metalWall ? 0.45 : 0 });
+    const altMat = material.pbr({ color: BZ_SURFACE_WHITE, texture: altTex.color, normal: altTex.normal, normalScale: 0.9, roughness: 0.8, metalness: tex.accent.startsWith("metal") ? 0.45 : 0 });
+    const jitter = (x: number, z: number) => scaleHex(BZ_SURFACE_WHITE, 1 + (hash2(x, z) - 0.5) * 0.12);
     const wallInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const wallCol: string[] = [];
     const altInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
@@ -143,12 +148,11 @@ function buildScene() {
       const wx = cellX(slot, x), wz = cellCenter(z);
       if (ch === "#" || ch === " " || ch === "P") {
         if (ch === "P") continue; // push-walls are runtime nodes
-        const j = (hash2(x, z) - 0.5) * 0.14;
         wallInst.push({ position: [wx, wallH / 2, wz], scale: [CELL, wallH, CELL] });
-        wallCol.push(scaleHex(shade(def.palette.wall, 0.12 + j), wallK));
+        wallCol.push(jitter(x, z));
       } else if (ch === "%") {
         altInst.push({ position: [wx, wallH / 2, wz], scale: [CELL, wallH, CELL] });
-        altCol.push(scaleHex(shade(def.palette.wallAlt, 0.14 + (hash2(x, z) - 0.5) * 0.1), altK));
+        altCol.push(jitter(x, z));
       } else if (ch === ",") {
         faltInst.push({ position: [wx, 0.04, wz], scale: [CELL, 0.08, CELL] });
       }
@@ -180,7 +184,10 @@ function buildScene() {
       primitives.box({ name: `f${slot} accent`, material: altMat, instances: altInst, instanceColors: altCol }).runtime(staticNode(slot, "accent")),
       // slab floor + sealed ceiling: the ceiling now meets the wall tops so the
       // corridors read as enclosed rooms instead of an open-topped flat plane.
-      primitives.box({ name: `f${slot} floor`, size: [w * CELL, 0.3, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, -0.15, h * CELL / 2], material: material.pbr({ color: shade(def.palette.floor, 0.1), roughness: 0.62, metalness: 0.12 }) }).runtime(staticNode(slot, "floor")),
+      primitives.box({ name: `f${slot} floor`, size: [w * CELL, 0.3, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, -0.15, h * CELL / 2], material: material.pbr({
+        color: BZ_SURFACE_WHITE, texture: floorTex.color, normal: floorTex.normal, normalScale: 0.8, roughness: 0.82, metalness: tex.floor.startsWith("metal") ? 0.4 : 0,
+        texTransforms: { baseColor: { scale: [w, h] }, normal: { scale: [w, h] } }
+      }) }).runtime(staticNode(slot, "floor")),
       primitives.box({ name: `f${slot} ceil`, size: [w * CELL, 0.24, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, wallH + 0.14, h * CELL / 2], material: material.pbr({ color: shade(def.palette.ceil, 0.1), roughness: 0.92, metalness: 0 }) }).runtime(staticNode(slot, "ceil")),
       primitives.box({
         name: `f${slot} wall-trim`,
@@ -207,7 +214,7 @@ function buildScene() {
         // BZ-06: only the F3 forge grates glow. F2's flood is dark standing water (a near-black, glossy tint that the
         // lamps and the IBL catch as highlights) instead of the cyan emissive slab.
         material: slot === 2 && def.palette.floorEmissive
-          ? material.emissive({ color: def.palette.floorAlt, emissive: def.palette.floorEmissive, emissiveIntensity: 1.6, roughness: 0.4 })
+          ? material.emissive({ color: def.palette.floorAlt, emissive: def.palette.floorEmissive, emissiveIntensity: 1.6, roughness: 0.4, ...(tex.floorAlt ? { texture: bunkerTexture(tex.floorAlt).color } : {}) })
           : slot === 1
             ? material.pbr({ color: BZ_WATER.color, roughness: BZ_WATER.roughness, metalness: 0 })
             : material.pbr({ color: def.palette.floorAlt, roughness: 0.75 })
