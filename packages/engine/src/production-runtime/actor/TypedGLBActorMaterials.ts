@@ -16,7 +16,7 @@ import {
   type AuraModelMaterialOverride,
   type AuraResolvedMaterialInfo
 } from "../../contracts/materials";
-import { lowerModelMaterialOverrides, type TypedGLBActorMaterialOverride } from "../ModelMaterialOverrides";
+import { applyMaterialEmissive, lowerModelMaterialOverrides, type TypedGLBActorMaterialOverride } from "../ModelMaterialOverrides";
 
 const actorsByNodeId = new Map<string, TypedGLBActor>();
 
@@ -79,6 +79,15 @@ class TypedGLBActorMaterialHandle implements AuraModelMaterialHandle {
 
   inspectMaterials(): readonly AuraResolvedMaterialInfo[] {
     return this.materialsOn ? (this.actor?.inspectMaterials() ?? []) : this.stub().inspectMaterials();
+  }
+
+  /** GU47 E-D: live emissive write on the actor's runtime materials (no snapshot re-apply). */
+  setEmissive(target: string, color: string, intensity: number): void {
+    if (!this.materialsOn) {
+      this.stub().setEmissive(target, color, intensity);
+      return;
+    }
+    if (this.actor) applyMaterialEmissive(this.actor.pipeline.resources.materialLibrary.values(), target, color, intensity);
   }
 }
 

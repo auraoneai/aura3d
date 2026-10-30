@@ -41,6 +41,13 @@ export interface AuraModelMaterialHandle {
   setMaterialVariant(name: string | null): void;
   setMaterialOverrides(o: readonly AuraModelMaterialOverride[]): void;   // idempotent, re-applied from the authored snapshot
   inspectMaterials(): readonly AuraResolvedMaterialInfo[];
+  /**
+   * GU47 E-D: set the emissive colour and intensity of the materials named `target` (`"*"`: every material of the
+   * model), on the parameters each material carries. A live write with no snapshot re-apply, cheap enough to call every
+   * frame (brake lights, blinking signs, a charging glow). A later `setMaterialOverrides` / `setMaterialVariant`
+   * re-applies from the authored snapshot and replaces it. Flag-off (`A3D_QR_MATERIALS` off) it is recorded only.
+   */
+  setEmissive(target: string, color: string, intensity: number): void;
 }
 // AuraRuntimeNodeHandle.materials?: AuraModelMaterialHandle   (via C-37 extension, model nodes only)
 export interface AuraRendererMaterialOptions { readonly materialStrictness?: "warn" | "strict"; readonly materialModel?: "legacy" | "physical-r185"; readonly transmission?: "auto" | "env" | "off"; readonly alphaToCoverage?: boolean; readonly debugView?: "baseColor" | "normal" | "roughness" | "metallic" | "clearcoat" | "clearcoatRoughness" | "clearcoatRoughnessEffective" | "sheen" | "F0" | "tangent" | "anisotropyDirection"; }
@@ -61,6 +68,9 @@ export class StubModelMaterialHandle implements AuraModelMaterialHandle {
   materialVariants(): readonly string[] { return []; }
   setMaterialVariant(name: string | null): void { this.variant = name; }
   setMaterialOverrides(o: readonly AuraModelMaterialOverride[]): void { this.overrides = o; }
+  /** GU47 E-D: recorded only on the stub (reported as `STUB_MATERIAL_HANDLE` by `inspectMaterials`). */
+  setEmissive(target: string, color: string, intensity: number): void { this.emissive = { target, color, intensity }; }
+  private emissive: { readonly target: string; readonly color: string; readonly intensity: number } | null = null;
   inspectMaterials(): readonly AuraResolvedMaterialInfo[] {
     return this.names.map((name) => ({
       name,
@@ -69,7 +79,7 @@ export class StubModelMaterialHandle implements AuraModelMaterialHandle {
       enabledMaps: [],
       extensions: [],
       lightsEvaluated: "uniform-16" as const,
-      warnings: this.overrides.length > 0 || this.variant !== null ? ["STUB_MATERIAL_HANDLE"] : []
+      warnings: this.overrides.length > 0 || this.variant !== null || this.emissive !== null ? ["STUB_MATERIAL_HANDLE"] : []
     }));
   }
 }
