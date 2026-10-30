@@ -940,60 +940,57 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   // --- Course dressing ---
   nodes.push(...buildDressingNodes(course, hole, terrain, rng));
 
-  // --- Theme-aware fill: sky/ground bounce + a cool rim so shadow sides keep form ---
-  const fill = courseFill(course);
+  // --- Course look (GU47 LINKS-01..04, 16): the course's own sun, key, environment, fills, practicals, atmosphere
+  // and post from its look-table row (game/lighting.ts), built by game/lookRig.ts through art/engineCompat.ts.
+  // `?look=original` restores the 4.6.2 rig (PRD §8 reversibility).
+  if (lookMode === "original") return buildOriginalLookScene(course, terrain, nodes);
+  const rig = buildCourseRig(course, hole, terrain, { tier: presentationTier, hdriMode });
+  return scene()
+    .add(rig.look)
+    .addMany(nodes)
+    .addMany(rig.nodes)
+    .camera(holeOpeningCamera(terrain))
+    .background(rig.background);
+}
+
+/** The hole's opening camera (the address cam takes over on the first frame). */
+function holeOpeningCamera(terrain: HoleTerrain) {
+  return camera.perspective({
+    position: [terrain.tee[0] - 2.0, terrain.tee[1] + 5.8, terrain.tee[2] - 8.6],
+    target: [terrain.tee[0] + Math.sin(terrain.lineYaw) * 40, terrain.tee[1] + 0.5, terrain.tee[2] + Math.cos(terrain.lineYaw) * 40],
+    fov: 40
+  });
+}
+
+/**
+ * `?look=original`: the 4.6.2 light, atmosphere and post rig, byte for byte (PRD §8 reversibility): the shared look
+ * preset with the course's 4.6.2 overrides, ambient + rim (+ hemisphere and floodlight at night), one gentle haze
+ * node in the look's fog colour and the blanket vignette.
+ */
+function buildOriginalLookScene(course: CourseSpec, terrain: HoleTerrain, nodes: any[]): any {
+  const isNight = course.look === "night-city" || course.look === "space";
+  const fill = originalCourseFill(course);
   nodes.push(lights.ambient({ name: "course ambient fill", color: fill.ambient, intensity: fill.ambientI }));
-  // The hemisphere only lights the no-HDRI looks (Neon Bay, Mare): next to an HDRI environment the engine drops
-  // it (audit LIGHT-05), so it is not authored there and an engine fix cannot silently brighten those courses.
   if (fill.hemiI > 0) {
     nodes.push(lights.hemisphere({ name: "course sky-ground fill", skyColor: fill.sky, groundColor: fill.ground, intensity: fill.hemiI, position: [0, 30, 0] }));
   }
   nodes.push(lights.directional({ name: "course rim fill", color: fill.rim, intensity: fill.rimI, position: fill.rimPos }));
-  // Neon Bay's floodlight key (no shadow: the look's moon keeps the shadow and the contact-shadow mask)
   if (fill.flood) {
     nodes.push(lights.directional({ name: "course floodlight key", color: fill.flood.color, intensity: fill.flood.intensity, position: fill.flood.position }));
   }
-
-  // --- Atmosphere + grounding ---
-  // Keep authored haze gentle: far fairways and tree belts recede toward the
-  // look's own fog colour without dimming the play corridor. The look preset's
-  // own fog is disabled above; this is the single fog node in the scene.
   const lookV0 = looks.describe(course.look).v0;
   const lookBg = lookV0.background;
-  const hazeColor = lookV0.fog?.color ?? lookBg;
   nodes.push(
-    effects.fog({
-      name: "course depth haze",
-      color: hazeColor,
-      density: isNight ? 0.0016 : 0.003,
-      intensity: isNight ? 0.16 : 0.22
-    }),
+    effects.fog({ name: "course depth haze", color: lookV0.fog?.color ?? lookBg, density: isNight ? 0.0016 : 0.003, intensity: isNight ? 0.16 : 0.22 }),
     effects.contactShadows({ intensity: contactShadowIntensity(course), length: 0.32, steps: 12, lights: "sun" }),
     effects.vignette({ name: "course vignette", intensity: 0.15, smoothness: 0.72, roundness: 0.92, color: "#061019" })
   );
-
-  // --- Look: preset sky/IBL, with a hair more downward framing for 16:10 ---
-  const lookOpts = {
-    exposureEv: -0.06,
-    ...(course.lookOverrides ?? {}),
-    fogDensityScale: 0
-  };
-  let s = scene()
+  const lookOpts = { exposureEv: -0.06, ...(course.lookOverrides ?? {}), fogDensityScale: 0 };
+  return scene()
     .add(looks.preset(course.look, lookOpts))
     .addMany(nodes)
-    .camera(
-      camera.perspective({
-        position: [terrain.tee[0] - 2.0, terrain.tee[1] + 5.8, terrain.tee[2] - 8.6],
-        target: [
-          terrain.tee[0] + Math.sin(terrain.lineYaw) * 40,
-          terrain.tee[1] + 0.5,
-          terrain.tee[2] + Math.cos(terrain.lineYaw) * 40
-        ],
-        fov: 40
-      })
-    );
-  s = s.background(lookBg);
-  return s;
+    .camera(holeOpeningCamera(terrain))
+    .background(lookBg);
 }
 
 function theme4(course: CourseSpec): string {
