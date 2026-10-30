@@ -1,0 +1,17 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "ninja-runner-port",
+  "note": "GU47 WP-30 NR-01 / NR-22 district stops (PRD lines 1150, 1163); software WebGL2 steady-state shots only",
+  "default": { "darkFrac": [null, 0.35], "clipFrac": [null, 0.03], "spread": [150, null] },
+  "variants": {
+    "village": { "mean": [115, 130] },
+    "rooftops": { "mean": [95, 115] },
+    "river": { "mean": [75, 95], "cells": { "bottom": { "mean": [25, null] } } },
+    "forest": { "mean": [50, 70], "p95": [210, null] },
+    "gate": { "mean": [40, 60], "p95": [210, null], "cells": { "top": { "mean": [null, 45] } } }
+  },
+  "exceptions": {
+    "default": "pre-GU47 boot view (midday, mean 121.2); judged against the village row by eye",
+    "gauntlet-run": "scripted mid-run capture across districts; covered by the five district rows"
+  }
+}
