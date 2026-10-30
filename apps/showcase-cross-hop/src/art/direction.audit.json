@@ -1,0 +1,674 @@
+{
+  "schema": "aura3d.art-direction-audit/1",
+  "source": "apps/showcase-cross-hop/src/art/direction.ts",
+  "sourceSha256": "3b8021ab32efa1f09d98eff4061b6d70208ab0655792afe6bc55ab0491088131",
+  "id": "cross-hop",
+  "genre": "platformer",
+  "signatureEffect": "tilt-shift diorama + day clock: tilt-shift blur bands on the player row and a sun that moves with progress",
+  "palette": {
+    "primary": [
+      "#a8dcc4",
+      "#f4dc8a",
+      "#c8693f",
+      "#4f5d6b"
+    ],
+    "accent": "#ffc531",
+    "reservedObjective": "#ffc531"
+  },
+  "environment": {
+    "hdri": "spruit_sunrise",
+    "background": "sky"
+  },
+  "violations": [],
+  "snapshot": {
+    "lights": [
+      {
+        "type": "hemisphere",
+        "shadow": false,
+        "intensity": 0.35
+      },
+      {
+        "type": "directional",
+        "shadow": true,
+        "intensity": 2.6
+      }
+    ],
+    "hasAmbient": false,
+    "environment": {
+      "kind": "hdri",
+      "background": true
+    },
+    "models": [
+      {
+        "assetKey": "trafficSedan",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "trafficHatch",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "trafficSuv",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "trafficTaxi",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "trafficVan",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "trafficPickup",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "trafficBoxtruck",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "tramCar",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "trainCar",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "trafficSkyCar",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hop",
+        "triangles": 0,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hawk",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "rescuePod",
+        "triangles": 0,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      }
+    ],
+    "materials": [
+      {
+        "node": "world-floor",
+        "practical": false
+      },
+      {
+        "node": "lane-ground",
+        "practical": false
+      },
+      {
+        "node": "lane-detail",
+        "practical": false
+      },
+      {
+        "node": "lane-glow",
+        "emissiveIntensity": 0.85,
+        "practical": true
+      },
+      {
+        "node": "scenery-glow",
+        "emissiveIntensity": 0.85,
+        "practical": true
+      },
+      {
+        "node": "m-logs",
+        "practical": false
+      },
+      {
+        "node": "m-log-ends",
+        "practical": false
+      },
+      {
+        "node": "m-pads",
+        "practical": false
+      },
+      {
+        "node": "m-stones",
+        "practical": false
+      },
+      {
+        "node": "m-coins",
+        "emissiveIntensity": 0.32,
+        "practical": true
+      },
+      {
+        "node": "d-trunks",
+        "practical": false
+      },
+      {
+        "node": "d-canopy",
+        "practical": false
+      },
+      {
+        "node": "d-b",
+        "practical": false
+      },
+      {
+        "name": "felt",
+        "node": "s-felt",
+        "practical": false
+      },
+      {
+        "node": "s-asphalt",
+        "practical": false
+      },
+      {
+        "node": "s-water",
+        "practical": false
+      },
+      {
+        "node": "s-gravel",
+        "practical": false
+      },
+      {
+        "node": "s-lava",
+        "emissiveIntensity": 2.6,
+        "practical": true
+      }
+    ],
+    "drawCalls": 0
+  },
+  "direction": {
+    "id": "cross-hop",
+    "genre": "platformer",
+    "fantasy": "A handmade tabletop toy diorama through a tilt-shift lens: felt meadows, clay critters, lacquered toy cars, one low sun.",
+    "rebuildTier": "S-presentation",
+    "wave": 4,
+    "references": [
+      {
+        "file": "evidence/game-upgrades-47/cross-hop/identity.md#references",
+        "source": "generic reference: tilt-shift photography of real towns and model railways (miniature-faking lens blur)",
+        "licence": "reference-only",
+        "why": "A sharp horizontal focus band on the player row with blur ramping to the top and bottom of the frame"
+      },
+      {
+        "file": "evidence/game-upgrades-47/cross-hop/identity.md#references",
+        "source": "generic reference: handmade felt-and-clay stop-motion tabletop sets lit by one low practical sun",
+        "licence": "reference-only",
+        "why": "Felt and gravel ground with soft sheen, clay critters and painted wood props under one shadowed low key"
+      },
+      {
+        "file": "evidence/game-upgrades-47/cross-hop/identity.md#references",
+        "source": "generic reference: lacquered wooden toy cars and trains on bevelled play tiles",
+        "licence": "reference-only",
+        "why": "Glossy clearcoat vehicles and water against matte felt so surfaces separate by roughness, not by hue alone"
+      }
+    ],
+    "palette": {
+      "primary": [
+        "#a8dcc4",
+        "#f4dc8a",
+        "#c8693f",
+        "#4f5d6b"
+      ],
+      "accent": "#ffc531",
+      "reservedObjective": "#ffc531"
+    },
+    "lighting": {
+      "key": {
+        "type": "directional",
+        "colorTemperatureK": 4300,
+        "shadow": true
+      },
+      "fill": "ibl",
+      "practicals": 6,
+      "environment": {
+        "hdri": "spruit_sunrise",
+        "background": "sky"
+      },
+      "exposureEV": 0
+    },
+    "framing": {
+      "rig": "follow2d",
+      "subjectHeightFraction": [
+        0.15,
+        0.2
+      ],
+      "fovDeg": [
+        32,
+        35
+      ],
+      "mobile": "both"
+    },
+    "assets": [
+      {
+        "role": "hero",
+        "assetKey": "hop",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "Idle",
+            "Regular_Jump"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "assetKey": "chick",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "Idle",
+            "Regular_Jump"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "assetKey": "turtle",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "Idle",
+            "Regular_Jump"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "assetKey": "bun",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "Idle",
+            "Regular_Jump"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "assetKey": "axolotl",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "Idle",
+            "Regular_Jump"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "assetKey": "ducky",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "Idle",
+            "Regular_Jump"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "assetKey": "roboFrog",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "Idle",
+            "Regular_Jump"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "assetKey": "toastCat",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "Idle",
+            "Regular_Jump"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "assetKey": "mushroomKid",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "Idle",
+            "Regular_Jump"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "assetKey": "knightToad",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "Idle",
+            "Regular_Jump"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "assetKey": "astroFrog",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "Idle",
+            "Regular_Jump"
+          ]
+        }
+      },
+      {
+        "role": "character",
+        "assetKey": "goldenHop",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "Idle",
+            "Regular_Jump"
+          ]
+        }
+      },
+      {
+        "role": "enemy",
+        "assetKey": "hawk",
+        "maxTriangles": 60000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "rescuePod",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "prop",
+        "assetKey": "coin",
+        "maxTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "trafficSedan",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "trafficHatch",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "trafficSuv",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "trafficTaxi",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "trafficVan",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "trafficPickup",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "trafficBoxtruck",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "tramCar",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "trainCar",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "vehicle",
+        "assetKey": "trafficSkyCar",
+        "maxTriangles": 40000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      }
+    ],
+    "vfx": [
+      {
+        "event": "hop-land",
+        "kind": "crosshop-land-dust"
+      },
+      {
+        "event": "log-land",
+        "kind": "crosshop-log-splash"
+      },
+      {
+        "event": "pad-land",
+        "kind": "crosshop-log-ring"
+      },
+      {
+        "event": "stone-land",
+        "kind": "crosshop-lava-sparks"
+      },
+      {
+        "event": "coin-pickup",
+        "kind": "crosshop-coin-pickup"
+      },
+      {
+        "event": "coin-combo",
+        "kind": "trail"
+      },
+      {
+        "event": "rescue-pod",
+        "kind": "crosshop-rescue-pop"
+      },
+      {
+        "event": "death-squashed",
+        "kind": "crosshop-death-squashed"
+      },
+      {
+        "event": "death-flattened",
+        "kind": "crosshop-death-flattened"
+      },
+      {
+        "event": "death-drowned",
+        "kind": "crosshop-death-drowned"
+      },
+      {
+        "event": "death-burned",
+        "kind": "crosshop-death-burned"
+      },
+      {
+        "event": "death-snatched",
+        "kind": "crosshop-death-snatched"
+      }
+    ],
+    "audio": [
+      {
+        "event": "hop",
+        "cue": "whoosh.swing-light",
+        "variants": 1
+      },
+      {
+        "event": "land",
+        "cue": "footsteps.grass",
+        "variants": 1
+      },
+      {
+        "event": "coin",
+        "cue": "pickup.coin",
+        "variants": 1
+      },
+      {
+        "event": "death",
+        "cue": "impact.plastic.medium",
+        "variants": 1
+      },
+      {
+        "event": "theme",
+        "cue": "stinger.level-start",
+        "variants": 1
+      }
+    ],
+    "signatureEffect": "tilt-shift diorama + day clock: tilt-shift blur bands on the player row and a sun that moves with progress",
+    "standIns": [
+      {
+        "feature": "verge dressing kits, gate arches, lamp model, lane furniture (primitive pools)",
+        "file": "src/game/core.ts",
+        "request": "R-14-07",
+        "removeWhen": "WP-36 cross-hop kit GLBs admitted"
+      },
+      {
+        "feature": "coin, logs, lily pad, basalt stone (primitive pools)",
+        "file": "src/game/core.ts",
+        "request": "R-14-07",
+        "removeWhen": "WP-36 cross-hop prop GLBs admitted"
+      }
+    ],
+    "criticalCategories": [
+      "postprocessing",
+      "lighting",
+      "camera",
+      "environment_world"
+    ],
+    "tiers": {
+      "low": {
+        "particles": 600,
+        "shadowMap": 1024,
+        "cascades": 1,
+        "textureMax": 1024
+      },
+      "medium": {
+        "particles": 1200,
+        "shadowMap": 2048,
+        "cascades": 2,
+        "textureMax": 1024
+      },
+      "high": {
+        "particles": 2000,
+        "shadowMap": 2048,
+        "cascades": 2,
+        "textureMax": 1024
+      },
+      "ultra": {
+        "particles": 2000,
+        "shadowMap": 4096,
+        "cascades": 2,
+        "textureMax": 2048
+      }
+    }
+  }
+}

@@ -1,7 +1,8 @@
 /** Cross Hop — endless lane-hopper showcase (PRD: docs/prd/cross-hop.md). */
 import { game, createFixedStepLoop } from "@aura3d/engine";
 import { createGame, sfxUrl } from "@aura3d/engine/game";
-import { buildScene, probeScene, bindApp, step, syncVisuals, st, startRun, evidenceExtra, setPaused, setReducedMotion, SIM_STEP } from "./game/core";
+import { buildScene, probeScene, bindApp, step, syncVisuals, st, startRun, evidenceExtra, setPaused, setReducedMotion, setLookMode, getLookMode, deathEffect, dioramaView, mountSpectators, SIM_STEP } from "./game/core";
+import { qaCrops } from "./game/qa";
 import { mountUI, tickUI, setUiSound } from "./game/ui";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
@@ -30,6 +31,10 @@ const PROBE = params.get("probe") ? parseInt(params.get("probe")!, 10) : 0;
 const REDUCED_MOTION = params.get("reducedMotion") === "1" ||
   (typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches);
 setReducedMotion(REDUCED_MOTION);
+/** GU47 WP-24: `?look=original` keeps the 4.6 look for before/after captures; the default is the tabletop diorama. */
+setLookMode(params.get("look") === "original" ? "original" : "diorama");
+const DIORAMA = getLookMode() === "diorama";
+if (DIORAMA) document.body.classList.add("ch-diorama");
 
 type JuiceSpec = { hitStop?: number; shake?: number; punch?: unknown; flash?: unknown; rumble?: unknown };
 const JUICE: Record<string, JuiceSpec> = {
@@ -58,7 +63,8 @@ const g = createGame({
   diagnostics: { overlay: false, performancePanel: false },
   scene: PROBE > 0 ? () => probeScene(PROBE) : buildScene,
   input: inputOptions,
-  hud: { theme: "arcade-neon", widgets: [] },
+  // CH47-17: the tabletop HUD theme (Suisse Works, E-J) in the diorama look.
+  hud: { theme: DIORAMA ? "tabletop" : "arcade-neon", widgets: [] },
   touch: {
     preset: "lane-swipe",
     bindings: { "swipe-up": "up", "swipe-down": "down", "swipe-left": "left", "swipe-right": "right", tap: "up" }
@@ -124,6 +130,7 @@ if (AUTOSTART) {
 
 void g.ready().then(() => {
   appReady = true;
+  mountSpectators();
   syncVisuals(1);
   document.body.dataset.aura3dReady = "true";
 });
@@ -150,7 +157,7 @@ function fireTransitions(): void {
     const c = cueMap[st.dead.kind];
     g.sound?.cue(c);
     g.juice.fire(c);
-    app.effects?.burst("debris", [st.playerCol, 0.6, -st.playerRow * 1.15], { count: 26, speed: 4, scale: 0.7 });
+    deathEffect(st.dead.kind, [st.playerCol, 0.6, -st.playerRow * 1.15]);
     eventLog.push({ type: "death", label: `${st.dead.label} @${st.score}` });
   }
   prevDead = !!st.dead;
@@ -187,4 +194,7 @@ app.onFrame(() => {
     look: { id: extra.state ? (extra.state as Record<string, unknown>).theme : "title" }
   };
   (window as unknown as Record<string, unknown>).__gameEvidence = (window as unknown as Record<string, unknown>).__AURA3D_CROSS_HOP__;
+  // GU47 QA crops for E-I's capture (normalised 0..1, follow the camera): player, river, sky band, bottom band.
+  const qa = ((window as unknown as Record<string, unknown>).__AURA_QA__ ??= {}) as Record<string, unknown>;
+  qa.crops = qaCrops(DIORAMA ? dioramaView.bandCenter : 0.62, DIORAMA);
 });

@@ -1,0 +1,23 @@
+{
+  "schema": "aura3d.gu47-budget/1",
+  "slug": "cross-hop",
+  "note": "before: PRD WP-24 'Today' line (4.6 build: 145-165 draws, textureBytes 284.8 MB); no newer committed measurement exists. after: phase 2 (remote capture on software WebGL2). Budget: <= 200 draws desktop High, Low <= 160 (80%), textureBytes <= 170 MB with no growth over 20 restarts, <= 2,000 particles.",
+  "budget": { "drawCalls": { "high": 200, "low": 160 }, "textureBytesMB": 170, "particles": 2000 },
+  "variants": {
+    "theme0": { "before": { "drawCalls": [145, 165], "triangles": null, "textureBytesMB": 284.8, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null },
+    "theme1": { "before": { "drawCalls": [145, 165], "triangles": null, "textureBytesMB": 284.8, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null },
+    "theme2": { "before": { "drawCalls": [145, 165], "triangles": null, "textureBytesMB": 284.8, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null },
+    "theme3": { "before": { "drawCalls": [145, 165], "triangles": null, "textureBytesMB": 284.8, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null },
+    "theme4": { "before": { "drawCalls": [145, 165], "triangles": null, "textureBytesMB": 284.8, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null },
+    "theme5": { "before": { "drawCalls": [145, 165], "triangles": null, "textureBytesMB": 284.8, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null }
+  },
+  "expectedDrawDelta": {
+    "CH47-01": "-3 (ambient and rim removed: no draws; sky boxes and sun sphere removed: -3; one sun with 2 cascades adds shadow passes for casters already drawn)",
+    "CH47-03": "+1 sky node, +0 HDRI (IBL only)",
+    "CH47-05": "+1 post pass (S6 DOF), absent below High",
+    "CH47-07": "+5 surface pools",
+    "CH47-14": "+1 emitter batch per theme with an ambient emitter",
+    "CH47-15": "+0 (existing trunk/canopy/dressB pools, larger caps)",
+    "total": "about 150-170 + 5, inside 200"
+  }
+}
