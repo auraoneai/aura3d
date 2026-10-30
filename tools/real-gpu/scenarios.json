@@ -16,5 +16,53 @@
     { "click": "Quick Play", "wait": 3000, "shot": "kickoff" },
     { "down": "d" }, { "burst": { "count": 6, "everyMs": 500, "label": "run" } }, { "up": "d" }, { "press": "Space" }, { "burst": { "count": 6, "everyMs": 400, "label": "kick" } } ] },
   "iron-crown": { "path": "/apps/showcase-iron-crown/", "settleMs": 8000, "steps": [
-    { "click": "Quick Bout", "wait": 2500, "shot": "intro" }, { "burst": { "count": 4, "everyMs": 600, "label": "fight" } } ] }
+    { "click": "Quick Bout", "wait": 2500, "shot": "intro" }, { "burst": { "count": 4, "everyMs": 600, "label": "fight" } } ] },
+  "roadster-rush": { "path": "/apps/showcase-roadster-rush/", "query": "?seed=42&capture=1", "settleMs": 10000, "steps": [
+    { "shot": "run" }, { "down": "ArrowUp" }, { "burst": { "count": 6, "everyMs": 400, "label": "drive" } }, { "up": "ArrowUp" } ] },
+  "heatsink": { "path": "/apps/showcase-heatsink/", "settleMs": 8000, "steps": [
+    { "press": "Enter", "wait": 3000, "shot": "grid" }, { "down": "ArrowUp" }, { "burst": { "count": 6, "everyMs": 400, "label": "race" } }, { "up": "ArrowUp" } ] },
+  "pips-big-leap": { "path": "/apps/showcase-pips-big-leap/", "settleMs": 8000, "steps": [
+    { "click": "Quick Play", "wait": 2500, "shot": "start" }, { "down": "d" }, { "burst": { "count": 4, "everyMs": 300, "label": "run" } }, { "up": "d" },
+    { "press": "Space" }, { "burst": { "count": 4, "everyMs": 150, "label": "jump" } } ] },
+  "bunker-zero": { "path": "/apps/showcase-bunker-zero/", "settleMs": 10000, "steps": [
+    { "click": "Quick Play", "wait": 3000, "shot": "floor1" }, { "down": "w" }, { "burst": { "count": 5, "everyMs": 400, "label": "walk" } }, { "up": "w" } ] },
+  "slingshot-siege": { "path": "/apps/showcase-slingshot-siege/", "settleMs": 8000, "steps": [
+    { "shot": "aim" }, { "wait": 4000, "shot": "settled" }, { "burst": { "count": 3, "everyMs": 500, "label": "idle" } } ] },
+  "dot-dash-3d": { "path": "/apps/showcase-dot-dash-3d/", "settleMs": 8000, "steps": [
+    { "click": "Quick Play", "wait": 2500, "shot": "board" }, { "down": "ArrowLeft" }, { "burst": { "count": 5, "everyMs": 300, "label": "run" } }, { "up": "ArrowLeft" } ] },
+  "cross-hop": { "path": "/apps/showcase-cross-hop/", "settleMs": 8000, "steps": [
+    { "click": "Quick Play", "wait": 2500, "shot": "start" }, { "press": "ArrowUp", "wait": 400, "shot": "hop1" }, { "press": "ArrowUp", "wait": 400, "shot": "hop2" },
+    { "press": "ArrowUp", "wait": 400, "shot": "hop3" } ] },
+  "strange-orbit-port": { "path": "/apps/craterline-gp/", "settleMs": 10000, "steps": [
+    { "shot": "menu" }, { "click": "Start race", "wait": 3000, "shot": "grid" }, { "down": "ArrowUp" }, { "burst": { "count": 6, "everyMs": 400, "label": "race" } }, { "up": "ArrowUp" } ] },
+  "splat-rush-port": { "path": "/apps/chroma-roll/", "settleMs": 8000, "steps": [
+    { "click": "PLAY NOW", "wait": 2500, "shot": "start" }, { "down": "ArrowLeft" }, { "burst": { "count": 5, "everyMs": 300, "label": "roll" } }, { "up": "ArrowLeft" } ] },
+  "serpentine-sky-run-port": { "path": "/apps/serpentine-sky-run/", "settleMs": 8000, "steps": [
+    { "click": "Start the run", "wait": 2500, "shot": "start" }, { "burst": { "count": 6, "everyMs": 500, "label": "run" } } ] },
+  "drift-and-deliver-port": { "path": "/apps/gridlock-courier/", "settleMs": 10000, "steps": [
+    { "click": "Start", "wait": 3000, "shot": "shift" }, { "down": "ArrowUp" }, { "burst": { "count": 6, "everyMs": 400, "label": "drive" } }, { "up": "ArrowUp" } ] },
+  "heatsink-port": { "path": "/apps/ion-circuit/", "settleMs": 10000, "steps": [
+    { "click": "Start", "wait": 3000, "shot": "start" }, { "down": "ArrowUp" }, { "burst": { "count": 6, "everyMs": 400, "label": "race" } }, { "up": "ArrowUp" } ] },
+  "ninja-runner-port": { "path": "/apps/shadowstep-gauntlet/", "settleMs": 10000, "steps": [
+    { "click": "Run the Village", "wait": 3000, "shot": "village" }, { "burst": { "count": 4, "everyMs": 400, "label": "run" } }, { "press": "Space" },
+    { "burst": { "count": 4, "everyMs": 150, "label": "jump" } } ] },
+  "last-train-port": { "path": "/apps/lamplight-line/", "settleMs": 10000, "steps": [
+    { "shot": "title" }, { "click": "New service", "wait": 3000, "shot": "platform" }, { "burst": { "count": 5, "everyMs": 600, "label": "ride" } } ] },
+  "roadster-hours-port": { "path": "/apps/saltwind-highway/", "query": "?level=0&autostart=1&autopilot=1", "settleMs": 12000, "steps": [
+    { "shot": "sunbreak" }, { "burst": { "count": 6, "everyMs": 500, "label": "drive" } } ] },
+  "where-the-wind-wanders-port": { "path": "/apps/the-bellkeepers-walk/", "settleMs": 10000, "steps": [
+    { "shot": "title" }, { "click": "Begin the walk", "wait": 3000, "shot": "valley" }, { "down": "w" }, { "burst": { "count": 5, "everyMs": 400, "label": "walk" } }, { "up": "w" } ] },
+  "silt-and-signal-port": { "path": "/apps/duneglide/", "query": "?chapter=0&start=1", "settleMs": 12000, "steps": [
+    { "shot": "ch0" }, { "burst": { "count": 6, "everyMs": 500, "label": "glide" } } ] },
+  "cloud-runner-port": { "path": "/apps/cumulus-dash/", "settleMs": 10000, "steps": [
+    { "shot": "title" }, { "press": "Space", "wait": 2500, "shot": "launch" }, { "burst": { "count": 6, "everyMs": 400, "label": "fly" } } ] },
+  "fc-vfx": { "path": "/apps/showcase-aura-fc-3d/", "query": "?vfx=on&vfxdebug=1", "settleMs": 8000, "steps": [
+    { "click": "Quick Play", "wait": 3000, "shot": "kickoff" }, { "down": "d" }, { "burst": { "count": 4, "everyMs": 500, "label": "run" } }, { "up": "d" },
+    { "press": "Space" }, { "burst": { "count": 8, "everyMs": 150, "label": "kick" } }, { "wait": 1500, "shot": "settled", "evaluate": "__AURA_VFX_DEBUG__()" } ] },
+  "links-vfx": { "path": "/apps/showcase-aura-links-3d/", "query": "?vfx=on&vfxdebug=1", "settleMs": 8000, "steps": [
+    { "shot": "tee" }, { "press": "Space" }, { "wait": 700, "shot": "swing-a" }, { "press": "Space" }, { "wait": 6000, "shot": "after-shot" },
+    { "wait": 1500, "shot": "settled", "evaluate": "__AURA_VFX_DEBUG__()" } ] },
+  "iron-crown-vfx": { "path": "/apps/showcase-iron-crown/", "query": "?vfx=on&vfxdebug=1", "settleMs": 8000, "steps": [
+    { "click": "Quick Bout", "wait": 2500, "shot": "intro" }, { "burst": { "count": 6, "everyMs": 300, "label": "exchange" } },
+    { "wait": 1500, "shot": "settled", "evaluate": "__AURA_VFX_DEBUG__()" } ] }
 }
