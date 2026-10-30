@@ -1,0 +1,17 @@
+{
+  "schema": "gu47.budget/1",
+  "slug": "splat-rush-port",
+  "budget": { "drawCallsInPlay": 48, "textureBytesMax": 47185920, "frameTimeVs460": 1.3, "programCompilesAfterWarm": 0 },
+  "note": "before: evidence/splat-rush-port/screens/final/capture-log.txt (4.6.0 desk captures, software WebGL2) and the PRD WP-26 'Today' line; after: phase 2 (remote capture).",
+  "variants": {
+    "original": {
+      "before": { "drawCalls": [21, 25], "triangles": null, "textureBytes": [33292288, 36071014], "pageMB": null, "routeJsGzipDelta": 0, "runnerFps": null, "programs": 34, "meanLuma": 192.6, "clippedFraction": 0.2583 },
+      "after": null
+    },
+    "carnival": {
+      "before": null,
+      "expected": { "drawCallsInPlay": 38, "draws": "+1 cloud sea, +1 bloom, +1 grade/vignette composite, +1 outline mask pass, +1 shadow cascade over 8 island casters (+8 shadow draws), runtime paint-splash particles (pooled, 1-2 batches)", "textureBytes": "unchanged plus the 1k kloppenheim_06 IBL (about 6 MB as a prefiltered cube)" },
+      "after": null
+    }
+  }
+}

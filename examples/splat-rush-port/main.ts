@@ -10,6 +10,9 @@
  *
  * Settings (stored in localStorage): sound (M), colour symbols on gates and ball (C), reduced motion (follows
  * `prefers-reduced-motion` until changed). P or Esc pauses; hiding the tab pauses a run and suspends the audio.
+ *
+ * GU47 WP-26: `look=original|carnival` (default carnival, `look.ts`) is presentation only; the sim, its random stream,
+ * replays and traces are identical across looks.
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
 import { warmPrograms } from "@aura3d/engine/game";
@@ -19,6 +22,8 @@ import { ScreenFx, flashFor, flashStrength } from "./fx";
 import { COLORS, IDLE, PHASE_CODE, SplatRushSim, TRACE_COLUMNS, expandScript, parseScript, replay, type Input } from "./sim";
 import { SteadyCamera, createSplatPresenter, drainPopups } from "./presentation";
 import { buildWorld, type WorldRuntime } from "./world";
+import { LOOKS, QA_CROPS, parseLook } from "./look";
+import { fireSplashes, registerPaintPresets, splashesFor } from "./vfx3d";
 
 
 /* GT Walsheim Bold (licensed library, assets/GT-Walsheim-Bold.woff2): the heavy rounded face the HUD, popups and cards use */
@@ -43,6 +48,10 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   return el as T;
 };
 const canvas = $<HTMLCanvasElement>("world");
+/* GU47 CR-00: one look per page load, read once */
+const look = LOOKS[parseLook(typeof location === "undefined" ? "" : location.search)];
+/** CR-V1 bursts fired since load (QA). */
+let splashesFired = 0;
 
 let sim = new SplatRushSim(config.seed);
 const presenter = createSplatPresenter(() => sim);
@@ -180,7 +189,10 @@ function reactToFrame(perfect: boolean): void {
     rainbowTimer: o.rainbowTimer, scoreX2Timer: o.scoreX2Timer, playerColorIndex: o.playerColorIndex, milestone: o.milestone, perfect
   };
   const own = COLORS[o.playerColorIndex] ?? "#ffffff";
-  for (const event of diffSounds(prevFrame, frame)) {
+  const events = diffSounds(prevFrame, frame);
+  /* CR-V1: gate-coloured paint splashes at the ball, seeded from the sim step (presentation only) */
+  if (look.vfx) splashesFired += fireSplashes(app?.effects, splashesFor(events, [sim.player.x, sim.player.y, sim.player.z], o.playerColorIndex, sim.n, reducedMotion));
+  for (const event of events) {
     sound.play(event.sound, event.level);
     if (config.manual) continue;
     const flash = flashFor(event, o.playerColorIndex);
@@ -219,7 +231,7 @@ function render(live = false): void {
     const shown = live ? presenter.present(loop, true) : undefined;
     const camera = reducedMotion ? steady.at(live ? loop.alpha : 1) : undefined;
     runtime.update(sim, canvas.clientWidth / Math.max(1, canvas.clientHeight), {
-      ...(shown ? { shown } : {}), ...(camera ? { camera } : {}), reducedMotion, symbols, guide: !guided
+      ...(shown ? { shown } : {}), ...(camera ? { camera } : {}), reducedMotion, symbols, guide: !guided, cameraLayers: !config.manual
     });
     app.step(0);
   } catch (error) {
@@ -282,7 +294,7 @@ function sampleQuality(frameSeconds: number): void {
 }
 
 async function boot(): Promise<void> {
-  const world = buildWorld({ sim, aspect: canvas.clientWidth / Math.max(1, canvas.clientHeight) });
+  const world = buildWorld({ sim, aspect: canvas.clientWidth / Math.max(1, canvas.clientHeight), look });
   app = createAuraApp(canvas, {
     autoStart: false,
     /* the engine owns the backing size (lessons-learned R1: never assign canvas size after ready) */
@@ -293,6 +305,7 @@ async function boot(): Promise<void> {
     scene: world.scene
   });
   await app.ready();
+  if (look.vfx && app.effects) registerPaintPresets(app.effects);
   runtime = world.bind(app);
   /* C14: compile every program, the pooled pickups and overlays included, before the first frame is shown */
   runtime.update(sim, canvas.clientWidth / Math.max(1, canvas.clientHeight), { symbols: true });
@@ -552,7 +565,7 @@ const qa = installQaHooks("splat-rush", {
     },
     /** Presentation counters: popups shown and created, batch vertex uploads, pixel ratio, warm-up result. */
     presentation() {
-      return { popupsShown, popupSeq: sim.popupSeq, nextPopupSeq, uploadedVertices: runtime?.uploadedVertices ?? 0, pixelRatio, paused, reducedMotion, symbols, guided, warm: warmResult };
+      return { popupsShown, popupSeq: sim.popupSeq, nextPopupSeq, uploadedVertices: runtime?.uploadedVertices ?? 0, pixelRatio, paused, reducedMotion, symbols, guided, warm: warmResult, look: look.id, timeOfDayKey: runtime?.timeOfDayKey ?? -1, splashesFired, vfxLive: app?.effects?.liveCount ?? 0 };
     },
     /** Change a setting without the UI (captures): `symbols`, `motion` or `guide`. */
     setting(which: "symbols" | "motion" | "guide", on: boolean) {
@@ -569,6 +582,12 @@ const qa = installQaHooks("splat-rush", {
     }
   }
 });
+
+/* GU47 E-I capture crops (normalised; the chase camera keeps the ball, deck and sky in the same screen bands) */
+{
+  const qaGlobal = (globalThis as { __AURA_QA__?: Record<string, unknown> }).__AURA_QA__;
+  if (qaGlobal) qaGlobal.crops = QA_CROPS[look.id];
+}
 
 function reportError(error: unknown): void {
   qa.reportError(error);
