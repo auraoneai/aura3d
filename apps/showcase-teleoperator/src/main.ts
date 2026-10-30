@@ -57,7 +57,8 @@ import {
   buildGridDispatchScene,
   buildingLayoutLeft,
   buildingLayoutRight,
-  probeBuildingModels
+  probeBuildingModels,
+  skyOutput
 } from "./scene";
 import { NO_INPUT, RIVALS, ROAD_USER_COUNT, TRAFFIC_COUNT, createSim, fareOf, roadUserFootprints, type DriveInput, type SimEvent } from "./sim";
 import { SKY_LOOKS } from "./look";
@@ -190,6 +191,17 @@ async function bootGridDispatch(): Promise<void> {
   /** Low post tier (phones, E-G post-only tier): the scan ring runs at half strength. Read once the renderer is up. */
   let lowTier = false;
   let presentClock = 0;
+  /**
+   * GD-08: tone mapping and exposure per sky, set after every setScene (AgX on Marine dusk). AgX is in the renderer's
+   * operator set; where setOutput cannot reach the output pass (direct render path) the default ACES applies: that is
+   * the fallback. The engine's A/B query (`?aura3d-tonemap=` / `?tm=`) keeps its operator: only the exposure is set then.
+   */
+  const tonemapQuery = params.has("aura3d-tonemap") || params.has("tm");
+  const applySkyOutput = (): void => {
+    const out = skyOutput(SKY_LOOKS[weather]);
+    auraApp.setOutput?.(tonemapQuery ? { exposure: out.exposure } : out);
+  };
+  applySkyOutput();
 
   // ---------------------------------------------------------------- simulation
   const hitStop = createHitStop();
@@ -394,6 +406,7 @@ async function bootGridDispatch(): Promise<void> {
     });
     $("skyChange")?.classList.add("on");
     auraApp.setScene(buildGridDispatchScene(next));
+    applySkyOutput();
     N = bindNodes(auraApp);
     applyMaterialOverrides();
     appliedCar = null;

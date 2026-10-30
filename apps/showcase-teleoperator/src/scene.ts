@@ -89,19 +89,18 @@ export const PLAYER_ASSET: Readonly<Record<PlayableCarId, GridAssetKey>> = {
 interface WeatherLook {
   /** Clear colour behind the sky node (shown only if the sky node does not draw). */
   readonly sky: string;
-  readonly bloom: number;
   readonly label: string;
 }
 
 /**
- * Clear colour and bloom per sky. GU47 GD-01/GD-04: the lights (IBL, key, hemisphere) and the sky come from the look
- * table (`SKY_LOOKS` in look.ts), not from a `looks.preset`, a box sky or a sun sphere.
+ * Clear colour per sky. GU47 GD-01/GD-04/GD-08: the lights (IBL, key, hemisphere), the sky and the post stack come from
+ * the look table (`SKY_LOOKS` in look.ts), not from a `looks.preset`, a box sky or a sun sphere.
  */
 export const WEATHER: Readonly<Record<WeatherPreset, WeatherLook>> = {
-  noon: { sky: "#69abe0", bloom: 0.24, label: "Sunny noon" },
-  golden: { sky: "#c98a5a", bloom: 0.3, label: "Golden hour" },
-  fog: { sky: "#94a3b8", bloom: 0.18, label: "Marine fog" },
-  night: { sky: "#0d1424", bloom: 0.42, label: "Neon night" }
+  noon: { sky: "#69abe0", label: "Sunny noon" },
+  golden: { sky: "#c98a5a", label: "Golden hour" },
+  fog: { sky: "#94a3b8", label: "Marine fog" },
+  night: { sky: "#0d1424", label: "Neon night" }
 };
 
 /** Image-based fill per sky (E-A catalogue HDRIs, `/hdri/<id>_1k.hdr`); never the visible background (GD-01). */
@@ -183,6 +182,30 @@ export function marineHaze(look: SkyLook) {
 }
 
 /**
+ * GD-08: the post stack of one row: bloom (noon threshold 0.95 keeps the white pod out of it, fog low, night 0.55), the
+ * E-C linear grade (contrast, saturation, white balance) and a vignette. Tone mapping and exposure are output settings,
+ * applied with `app.setOutput` after every `setScene` (`skyOutput`).
+ */
+export function skyPost(look: SkyLook) {
+  const g = look.grade;
+  return [
+    effects.bloom({ name: "grid bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold, radius: look.bloom.radius }),
+    effects.colorGrade({ name: "grid grade", contrast: g.contrast, saturation: g.saturation, temperature: g.temperature, tint: g.tint }),
+    effects.vignette({ name: "grid vignette", intensity: look.vignette, smoothness: 0.65 })
+  ] as const;
+}
+
+/**
+ * GD-08: output settings of one row for `app.setOutput`. `supported` lists the operators the renderer reported; Marine
+ * dusk asks for AgX and falls back to ACES where AgX is not available.
+ */
+export function skyOutput(look: SkyLook, supported?: readonly string[]): { readonly toneMapping: "agx" | "aces"; readonly exposure: number } {
+  const wanted = look.output.toneMapping;
+  const toneMapping = supported === undefined || supported.includes(wanted) ? wanted : look.output.fallback;
+  return { toneMapping, exposure: look.output.exposure };
+}
+
+/**
  * Renderer options for the mount. The game is tuned and captured at the "high" tier on every device,
  * so it asks for that tier explicitly in object form: same tier as the old `quality: "high"` string,
  * without the engine's RENDERER_QUALITY_STRING diagnostic warning.
@@ -208,9 +231,7 @@ export function buildGridDispatchScene(weather: WeatherPreset): ReturnType<typeo
     // No ambient light: the sky's HDRI fills the shadows, and an extra ambient blew out the white hero car (C14).
     .addMany([...skyRig(look)])
     .add(marineHaze(look))
-    .add(effects.bloom({ intensity: w.bloom, threshold: 0.78, radius: 0.45 }))
-    .add(effects.vignette({ intensity: 0.16, smoothness: 0.65 }))
-    .add(effects.colorGrade({ contrast: 1.06, saturation: 1.1 }));
+    .addMany([...skyPost(look)]);
 
   // 1. Ground, bay, avenue asphalt, centre line, cable-car rails, kerbs and pavements
   const brassRailMat = material.pbr({ color: "#b59449", metalness: 0.82, roughness: 0.28 });

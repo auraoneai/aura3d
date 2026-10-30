@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { resolveQrFlags } from "@aura3d/engine";
 import { BOOT_SKY, KEY_SHADOW, SKY_LOOKS, SKY_ORDER, hazeAt, hdriUrl, keyLightPosition, sunDirection } from "../../../apps/showcase-teleoperator/src/look";
-import { GRID_DISPATCH_FLAGS, buildGridDispatchScene } from "../../../apps/showcase-teleoperator/src/scene";
+import { GRID_DISPATCH_FLAGS, buildGridDispatchScene, skyOutput } from "../../../apps/showcase-teleoperator/src/scene";
 
 type Node = { kind?: string; light?: string; name?: string; environment?: string; texture?: { url?: string }; shadow?: unknown; position?: number[]; color?: string; intensity?: number; children?: Node[] };
 const flatNodes = (sky: (typeof SKY_ORDER)[number]): Node[] => {
@@ -145,5 +145,30 @@ describe("grid dispatch GD-05 marine haze (engine height fog)", () => {
     expect(hazeAt(SKY_LOOKS.golden, 250)).toBeGreaterThan(0.6);
     expect(hazeAt(SKY_LOOKS.night, 250)).toBeLessThan(hazeAt(SKY_LOOKS.golden, 250));
     expect(hazeAt(SKY_LOOKS.noon, 250)).toBeLessThan(hazeAt(SKY_LOOKS.night, 250));
+  });
+});
+
+describe("grid dispatch GD-08 tone mapping and post per sky", () => {
+  type PostNode = Node & { effect?: string; threshold?: number; contrast?: number; saturation?: number; temperature?: number };
+  const post = (sky: (typeof SKY_ORDER)[number], effect: string) => (flatNodes(sky) as PostNode[]).find((n) => n.kind === "effect" && n.effect === effect);
+
+  it("Marine dusk asks for AgX with an ACES fallback; the other skies use ACES", () => {
+    expect(skyOutput(SKY_LOOKS.golden)).toEqual({ toneMapping: "agx", exposure: SKY_LOOKS.golden.output.exposure });
+    expect(skyOutput(SKY_LOOKS.golden, ["aces", "reinhard"]).toneMapping).toBe("aces");
+    for (const sky of ["noon", "fog", "night"] as const) expect(skyOutput(SKY_LOOKS[sky]).toneMapping).toBe("aces");
+  });
+
+  it("noon bloom threshold 0.95 (no white-pod halo), fog low bloom, night bloom 0.55", () => {
+    expect(post("noon", "bloom")).toMatchObject({ threshold: 0.95 });
+    expect(post("night", "bloom")!.intensity).toBe(0.55);
+    expect(post("fog", "bloom")!.intensity).toBeLessThan(post("golden", "bloom")!.intensity!);
+    expect(post("fog", "bloom")!.intensity).toBeLessThan(post("noon", "bloom")!.intensity!);
+  });
+
+  it("every sky carries its own E-C grade (white balance) and vignette, and the four grades differ", () => {
+    const grades = SKY_ORDER.map((sky) => post(sky, "color-grade")!);
+    for (const [i, sky] of SKY_ORDER.entries()) expect(grades[i]).toMatchObject({ contrast: SKY_LOOKS[sky].grade.contrast, saturation: SKY_LOOKS[sky].grade.saturation, temperature: SKY_LOOKS[sky].grade.temperature });
+    expect(new Set(grades.map((g) => JSON.stringify([g.contrast, g.saturation, g.temperature]))).size).toBe(4);
+    for (const sky of SKY_ORDER) expect(post(sky, "vignette")).toBeDefined();
   });
 });
