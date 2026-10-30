@@ -55,7 +55,11 @@ void main() {
   float haze = exp(-max(d.y, 0.0) * 7.0);
   col = mix(col, mix(skyHorizon, vec3(0.06, 0.09, 0.2), nightMix), haze * 0.55);
   float star = step(0.9962, hash31(floor(d * 420.0)));
-  col += vec3(star) * nightMix * smoothstep(0.08, 0.45, d.y) * (1.0 - cl * 0.8);
+  col += vec3(star) * max(nightMix, starMix) * smoothstep(0.08, 0.45, d.y) * (1.0 - cl * 0.8);
+  // GU47 LT-05: afterglow, a warm band along the horizon under the sun's azimuth (0 = off, the 4.6 look)
+  vec2 sh = normalize(sunDir.xz + vec2(1e-5)), dh = normalize(d.xz + vec2(1e-5));
+  float az = max(dot(sh, dh), 0.0);
+  col += vec3(1.0, 0.55, 0.32) * afterglow * pow(az, 3.0) * exp(-abs(d.y) * 9.0) * 0.6;
   if (d.y < 0.0) col = mix(skyHorizon, vec3(0.06, 0.09, 0.2), nightMix);
   outColor = vec4(a3dSrgbToLinear(col), 1.0);
 }`;
@@ -86,6 +90,11 @@ void main() {
   vec3 nightLo = vec3(0.04, 0.06, 0.15), nightHi = vec3(0.2, 0.25, 0.44);
   vec3 lo = mix(dayLo, nightLo, nightMix), hi = mix(dayHi, nightHi, nightMix);
   vec3 col = mix(lo, hi, smoothstep(0.25, 0.75, n * 0.75 + lit * 0.45));
+  // GU47 LT-05: band look, tops lit toward the sun and lilac valleys (bandMix 0 = the 4.6 look)
+  vec2 toSun = normalize(sunDir.xz + vec2(1e-5));
+  float sunSide = 0.5 + 0.5 * dot(normalize(vXZ - cameraPosition.xz + vec2(1e-5)), toSun);
+  vec3 band = mix(cloudValley, cloudLit * mix(1.0, sunGain, sunSide), smoothstep(0.25, 0.75, n * 0.75 + lit * 0.45));
+  col = mix(col, band, bandMix);
   float dist = length(vXZ - cameraPosition.xz);
   col = mix(col, hazeColor, smoothstep(500.0, 3000.0, dist));
   outColor = vec4(a3dSrgbToLinear(col), 1.0);

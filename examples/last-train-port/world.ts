@@ -688,6 +688,14 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
     if (FX.has("skyflat")) { sky.setUniform?.("skyTop", [0.26, 0.66, 0.93]); sky.setUniform?.("skyHorizon", [0.26, 0.66, 0.93]); } else { sky.setUniform?.("skyTop", top); sky.setUniform?.("skyHorizon", hor); } sky.setUniform?.("nightMix", nightLevel);
     sky.setUniform?.("sunDir", [dir[0] / dl, dir[1] / dl, dir[2] / dl]);
     sky.setPosition(here.x, here.y, here.z);
+    if (shownBand !== null) {
+      // GU47 LT-05: band afterglow and stars on the dome; the cloud sea lit toward the sun with lilac valleys
+      const br = BANDS[shownBand];
+      sky.setUniform?.("afterglow", br.sky.afterglow); sky.setUniform?.("starMix", br.sky.stars);
+      clouds.setUniform?.("sunDir", [dir[0]! / dl, dir[1]! / dl, dir[2]! / dl]);
+      clouds.setUniform?.("cloudLit", rgb(br.clouds.lit)); clouds.setUniform?.("cloudValley", rgb(br.clouds.valley));
+      clouds.setUniform?.("sunGain", br.clouds.sunGain); clouds.setUniform?.("bandMix", 1);
+    }
     clouds.setUniform?.("cloudPhase", seconds); clouds.setUniform?.("nightMix", nightLevel);
     clouds.setUniform?.("hazeColor", mixRgb(hor, [0.05, 0.07, 0.16], nightLevel));
     clouds.setPosition(here.x, 0, here.z);
