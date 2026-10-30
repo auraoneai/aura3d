@@ -1,0 +1,41 @@
+HUD theme fonts (packages/game/src/fonts) - licensed web cuts, not open source
+
+Every .woff2 file in this directory is an unmodified copy of a WOFF2 web cut
+from the AuraOne licensed font library (paths below are relative to that
+library). They are commercial fonts licensed for web self-hosting on
+AuraOne-served pages only:
+
+- Do not install them as desktop fonts, convert them to other formats, subset
+  or modify them, or redistribute them outside AuraOne-served game routes.
+- They are not part of the npm tarball: tools/finalize-dist copies no .woff2.
+- A game copies the files its theme needs into its own app folder and
+  registers them with registerGameFonts(baseUrl, document).
+- Build and run time never read the font library; these copies are the source.
+
+file | family (CSS weight) | foundry | library source | bytes | sha256
+aeonik-fono-400.woff2 | Aeonik Fono (400) | CoType Foundry | sans/Aeonik/AeonikFono-Regular.woff2 | 24364 | d0ff0a7c17a0d353dbf5d6cbc175a2822001698a7328899770ba24379ac5f713
+aeonik-fono-700.woff2 | Aeonik Fono (700) | CoType Foundry | sans/Aeonik/AeonikFono-Bold.woff2 | 24912 | 71c855551ac505269b9b993f8e0b83cb48f2fff3bb21f0ba4c2a552056fe2606
+calibre-400.woff2 | Calibre (400) | Klim Type Foundry | sans/Calibre/CalibreWeb-Regular.woff2 | 31791 | f65015d0080523261ac761aafece7ce3009ca16517b610478e7d3f03dc536109
+calibre-600.woff2 | Calibre (600) | Klim Type Foundry | sans/Calibre/CalibreWeb-Semibold.woff2 | 31664 | daa322d439e2c4b1acff57957799e4ac80da5b6b6042b1d6df0a8a1066a18a13
+graphik-400.woff2 | Graphik (400) | Commercial Type | sans/Graphik/Graphik-Regular-Web.woff2 | 30241 | 947ae2b8a636e253482576c885f64cf159ab9a260380a22e52e7eac5626fc5aa
+graphik-500.woff2 | Graphik (500) | Commercial Type | sans/Graphik/Graphik-Medium-Web.woff2 | 35624 | 427e77de0bb244a4d352e89aa99c36f47799aec47fe1a256fd387a68b2fc0065
+national-2-narrow-400.woff2 | National 2 Narrow (400) | Klim Type Foundry | sans/National-2/National2NarrowWeb-Regular.woff2 | 37963 | 81f0e58f1c5a671a372690db671191408e989ce223446a0b24ec176e6cb3b09f
+national-2-narrow-700.woff2 | National 2 Narrow (700) | Klim Type Foundry | sans/National-2/National2NarrowWeb-Bold.woff2 | 39488 | 79330976e2b662903d820ae0879af81902867e4b82b6459f674399d6a0255b8e
+neue-haas-grotesk-text-400.woff2 | Neue Haas Grotesk Text (400) | Linotype (Monotype) | sans/Neue-Haas-Grotesk/NeueHaasText55Roman.woff2 | 26288 | 3e7c26a5dad330f54dc691b8e4c09f967bd83699f4c3bf6876c478eed22cac37
+neue-haas-grotesk-text-500.woff2 | Neue Haas Grotesk Text (500) | Linotype (Monotype) | sans/Neue-Haas-Grotesk/NeueHaasText65Medium.woff2 | 28620 | 92591045d5fd21032f679a71a8d2ea76351da08108c64b59189ae1cb42e0837f
+suisse-works-400.woff2 | Suisse Works (400) | Swiss Typefaces | serif/Suisse-Works/SuisseWorks.woff2 | 31228 | f9ac1fffba6406fea3b28b1851ef4f990217b5b366a5a6c7ac57d5d9da8f372d
+untitled-sans-400.woff2 | Untitled Sans (400) | Klim Type Foundry | sans/Untitled-Sans/UntitledSansWeb-Regular.woff2 | 34774 | efead66f84e3f9c14283eb68bfa5106d9bd6bd2d27fe08a15e6d5f4d7bfaae08
+untitled-sans-700.woff2 | Untitled Sans (700) | Klim Type Foundry | sans/Untitled-Sans/UntitledSansWeb-Bold.woff2 | 35394 | 585f25bfc44819261be778ce0390a52a3595c3319c28feff05627984cff1f2e4
+gt-walsheim-400.woff2 | GT Walsheim (400) | Grilli Type | sans/GT-Walsheim/GT-Walsheim-Regular.woff2 | 40000 | d5833892a75ef71b7fad7d1ca40d9ab88651fd8c80023476718dfd5d6fbbbeff
+canela-400.woff2 | Canela (400) | Commercial Type | display/Canela/Canela-Regular.woff2 | 31756 | c5db098e47f0113d6d8b75bdb3b216ad36918fc7156848754e4e2cf8b5fd847a
+suisse-works-italic-400.woff2 | Suisse Works Italic (400) | Swiss Typefaces | serif/Suisse-Works/SuisseWorks-Italic.woff2 | 32912 | f592f23c5527ffb35c6f2712126c9706fa6d0a72b3ccb427f6f30e87f07e45ff
+domaine-display-700.woff2 | Domaine Display (700) | Klim Type Foundry | display/Domaine/domaine-display-web-bold.woff2 | 40621 | c6d9dfb72b6e472ebeb203dd417881111857efcf360c8c782cccce0689434ada
+roobert-400.woff2 | Roobert (400) | Displaay Type Foundry | sans/Roobert/roobert-regular.woff2 | 28784 | 896c62dfc1bca14aa76c1b535aac1b7638e71c91a3dd96f3bd2b5593e41a4e8a
+roobert-700.woff2 | Roobert (700) | Displaay Type Foundry | sans/Roobert/roobert-bold.woff2 | 28640 | 4acdec158e34073fcca412cf3428e8327eef9a8c581b462540189895e8667061
+
+Notes:
+- suisse-works-italic-400.woff2 is the italic design registered as its own
+  family ("A3G Suisse Works Italic", style normal) so the ink-scroll theme can
+  set it without the HUD requesting font-style: italic.
+- domaine-display-700.woff2 carries the foundry's "Not Licensed for Desktop
+  Use" web marker: web self-hosting only, as above.

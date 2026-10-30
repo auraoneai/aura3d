@@ -48,7 +48,7 @@ export type GameVisualCategory = (typeof GAME_VISUAL_CATEGORY_LIST)[number];
 export const GAME_GENRES = [
   "fighting", "falling-blocks", "platformer", "racing", "golf-physics", "lander", "twin-stick",
   "orbital-puzzle", "vehicle-delivery", "rhythm-runner", "mech-fighting", "pinball", "basketball",
-  "stealth", "underwater-salvage", "flight", "billiards", "arena-shooter"
+  "stealth", "underwater-salvage", "flight", "billiards", "arena-shooter", "maze-arcade"
 ] as const;
 
 export const REBUILD_TIERS = ["S-presentation", "S-world", "F"] as const;

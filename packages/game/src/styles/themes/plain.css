@@ -1,6 +1,7 @@
 /* §7.7 theme "plain" — mirror of HUD_THEMES["plain"] in hud/themes.ts (runtime source of truth). */
 .a3g-hud.a3g-theme-plain {
-  --a3g-font: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --a3g-font: "A3G Graphik","Graphik","Graphik Web",Arial,sans-serif;
+  --a3g-font-display: "A3G Graphik","Graphik","Graphik Web",Arial,sans-serif;
   --a3g-fg: #e6e6e6;
   --a3g-fg-dim: #9aa0a8;
   --a3g-accent: #8ab4ff;

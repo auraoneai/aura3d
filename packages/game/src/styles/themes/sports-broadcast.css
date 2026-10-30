@@ -1,6 +1,7 @@
 /* §7.7 theme "sports-broadcast" — mirror of HUD_THEMES["sports-broadcast"] in hud/themes.ts (runtime source of truth). */
 .a3g-hud.a3g-theme-sports-broadcast {
-  --a3g-font: "A3G Barlow Condensed","Barlow Condensed","Arial Narrow",sans-serif;
+  --a3g-font: "A3G Calibre","Calibre",Arial,sans-serif;
+  --a3g-font-display: "A3G Calibre","Calibre",Arial,sans-serif;
   --a3g-fg: #ffffff;
   --a3g-fg-dim: #cfd8e3;
   --a3g-accent: #00e06d;

@@ -1,6 +1,7 @@
 /* §7.7 theme "motorsport" — mirror of HUD_THEMES["motorsport"] in hud/themes.ts (runtime source of truth). */
 .a3g-hud.a3g-theme-motorsport {
-  --a3g-font: "A3G Barlow Condensed","Barlow Condensed","Arial Narrow",sans-serif;
+  --a3g-font: "A3G National 2 Narrow","National 2 Narrow","Arial Narrow",Arial,sans-serif;
+  --a3g-font-display: "A3G National 2 Narrow","National 2 Narrow","Arial Narrow",Arial,sans-serif;
   --a3g-fg: #f5f7fa;
   --a3g-fg-dim: #aab4c0;
   --a3g-accent: #ffcf3f;
