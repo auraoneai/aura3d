@@ -62,7 +62,7 @@ describe("heatsink scene", () => {
     }
   });
   it("draws the road, walls, rain and bolts as instanced nodes; emissive decor casts no shadow", () => {
-    const instanced = nodes.filter((n) => Array.isArray(n.instances) && n.instances.length > 0);
+    const instanced = nodes.filter((n) => Array.isArray(n.instances) && n.instances.length > 0 && !String(n.name).startsWith("td skyline"));
     const total = instanced.reduce((sum, n) => sum + n.instances!.length, 0);
     expect(instanced.length).toBe(Object.keys(INSTANCE_COUNTS).length);
     expect(total).toBe(Object.values(INSTANCE_COUNTS).reduce((a, b) => a + b, 0));

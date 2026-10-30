@@ -15,6 +15,7 @@ import { assets, HDRI_BY_ID } from "./aura-assets";
 import { DRONE_ORDER, DRONE_SPECS, SCENERY_ANCHORS, type CircuitSpec } from "./data";
 import { CIRCUIT_LOOKS, rimPosition, sunPosition, type CircuitLook } from "./look";
 import { LASER_BOLTS } from "./sim";
+import { skylineNodes } from "./skyline";
 
 export const ROAD_TILE_COUNT = 16;
 export const ROAD_TILE_SPACING = 12;
@@ -176,6 +177,8 @@ export function buildThermalDriftScene(options: SceneOptions) {
     primitives.box({ name: IDS.floor, size: [520, 0.5, 460], material: material.pbr({ color: look.ground, roughness: 0.92, metalness: 0.12 }), castShadow: false })
       .position(0, -8.5, -150).runtime(game.runtimeNode(IDS.floor))
   );
+  // HS-04: three parallax skyline layers (6 instanced draws, unshadowed).
+  s.addMany(skylineNodes(circuit, look));
 
   // Road, lanes, walls and chevrons: one instanced node per material.
   const unshadowed = { castShadow: false, frustumCulled: false } as const;

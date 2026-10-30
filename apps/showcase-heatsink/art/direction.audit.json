@@ -256,6 +256,33 @@
         "practical": false
       },
       {
+        "node": "td skyline 0 bodies",
+        "practical": false
+      },
+      {
+        "node": "td skyline 0 seams",
+        "emissiveIntensity": 1.3,
+        "practical": true
+      },
+      {
+        "node": "td skyline 1 bodies",
+        "practical": false
+      },
+      {
+        "node": "td skyline 1 seams",
+        "emissiveIntensity": 1.05,
+        "practical": true
+      },
+      {
+        "node": "td skyline 2 bodies",
+        "practical": false
+      },
+      {
+        "node": "td skyline 2 seams",
+        "emissiveIntensity": 0.8,
+        "practical": true
+      },
+      {
         "node": "road-deck-even",
         "practical": false
       },

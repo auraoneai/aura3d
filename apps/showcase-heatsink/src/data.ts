@@ -28,11 +28,32 @@ export interface CircuitSector {
   readonly pitchSlope: number;
 }
 
+/**
+ * One parallax skyline layer (GU47 HS-04): silhouettes on an arc around the road ahead, drawn as instanced pieces.
+ * Presentation only; the simulation never reads it.
+ */
+export interface SkylineLayerSpec {
+  /** Distance from the drone, metres (180 / 300 / 450). */
+  readonly distance: number;
+  readonly count: number;
+  /** Silhouette height range, metres. */
+  readonly height: readonly [number, number];
+  /** Footprint width range, metres. */
+  readonly width: readonly [number, number];
+  /** Fraction of thin, tall pieces (smokestacks, spires). */
+  readonly spires: number;
+  /** Half arc in degrees around the road ahead. */
+  readonly arcDeg: number;
+  readonly seed: number;
+}
+
 export interface CircuitSpec {
   readonly id: CircuitId;
   readonly name: string;
   readonly shortName: string;
   readonly length: number;
+  /** GU47 HS-04: three parallax skyline layers (presentation only). */
+  readonly skyline: readonly SkylineLayerSpec[];
   /** Backdrop behind the horizon bands. */
   readonly skyColor: string;
   /** Abyss floor under the road and the lower backdrop band. */
@@ -66,6 +87,12 @@ export const CIRCUITS: Readonly<Record<CircuitId, CircuitSpec>> = {
     name: "GRAND CIRCUIT · MEGACITY",
     shortName: "MEGACITY",
     length: 2400,
+    // Dense foundry towers.
+    skyline: [
+      { distance: 180, count: 16, height: [40, 150], width: [14, 30], spires: 0.2, arcDeg: 80, seed: 11 },
+      { distance: 300, count: 20, height: [60, 190], width: [18, 40], spires: 0.15, arcDeg: 85, seed: 23 },
+      { distance: 450, count: 24, height: [70, 220], width: [24, 55], spires: 0.1, arcDeg: 90, seed: 37 }
+    ],
     skyColor: "#141b2b",
     fogTint: "#1a2230",
     accentColor: "#ff4d1f",
@@ -83,6 +110,12 @@ export const CIRCUITS: Readonly<Record<CircuitId, CircuitSpec>> = {
     name: "DUSTFALL FOREST",
     shortName: "DUSTFALL",
     length: 2650,
+    // Smokestacks and squat cooling blocks on the dust plain.
+    skyline: [
+      { distance: 180, count: 10, height: [25, 110], width: [16, 40], spires: 0.45, arcDeg: 80, seed: 13 },
+      { distance: 300, count: 12, height: [20, 90], width: [30, 70], spires: 0.35, arcDeg: 85, seed: 29 },
+      { distance: 450, count: 14, height: [15, 60], width: [40, 90], spires: 0.2, arcDeg: 90, seed: 41 }
+    ],
     skyColor: "#2a1d14",
     fogTint: "#2b1f16",
     accentColor: "#ffb800",
@@ -101,6 +134,12 @@ export const CIRCUITS: Readonly<Record<CircuitId, CircuitSpec>> = {
     name: "VESPER HEIGHTS",
     shortName: "VESPER",
     length: 2800,
+    // Thin spires and broken ruins on the heights.
+    skyline: [
+      { distance: 180, count: 12, height: [30, 130], width: [8, 22], spires: 0.6, arcDeg: 80, seed: 17 },
+      { distance: 300, count: 14, height: [40, 160], width: [10, 26], spires: 0.5, arcDeg: 85, seed: 31 },
+      { distance: 450, count: 16, height: [30, 120], width: [16, 40], spires: 0.3, arcDeg: 90, seed: 43 }
+    ],
     skyColor: "#101a33",
     fogTint: "#151f38",
     accentColor: "#35d6ff",
