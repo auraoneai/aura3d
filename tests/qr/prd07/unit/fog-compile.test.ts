@@ -36,7 +36,8 @@ describe("P4-T4 carved compiler/fog.ts", () => {
     // Even with a prd07 runtime bound, flag-off flags keep the legacy body.
     const atmosphere = new LiveAtmosphere();
     atmosphere.setFog({ mode: "height", heightDensity: 0.9 });
-    bindPrd07FogRuntime({ flags: resolveQrFlags({ options: {} }), atmosphere });
+    // GU47 WP-7: A3D_QR_VFX_FOG is default-on, so flag-off is explicit.
+    bindPrd07FogRuntime({ flags: resolveQrFlags({ options: { A3D_QR_VFX_FOG: false } }), atmosphere });
     try {
       const out = createProductionRuntimeEnvironmentFog(snapshotWithFog({ density: 0.12 }), [], 1280, 720);
       const fog = out as { mode: string; density: number };
