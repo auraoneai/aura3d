@@ -210,6 +210,18 @@ export interface BuildOptions {
   readonly reducedMotion?: boolean;
 }
 
+/** DG-L6: the flare source sits this far out along the key vector from the rider. */
+export const FLARE_DISTANCE = 1800;
+/** DG-L6: a warm poster flare in the key's colour (no jade: the signal accent stays the rings', board's and HUD's). */
+export function lensFlareElements(keyColor: string) {
+  return [
+    { size: 320, distance: 0, color: keyColor },
+    { size: 46, distance: 0.55, color: SILT_PALETTE.bone },
+    { size: 84, distance: 0.8, color: SILT_PALETTE.sandstone },
+    { size: 38, distance: 1, color: SILT_PALETTE.terracotta }
+  ];
+}
+
 /** DG-M4: brushed bronze for the masts in the inked look; instance tints add verdigris. */
 export const MAST_BRONZE = { color: "#a07a48", roughness: 0.55, metallic: 0.8 } as const;
 const MAST_TINTS = ["#ffffff", "#d8e6dc", "#b4cec0", "#9cbfb0"] as const;
@@ -396,6 +408,10 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       .add(effects.colorGrade({ contrast: 1.06, saturation: 1.08, exposure: rig.night ? 1.05 : 1 }));
   }
 
+  // DG-L6: a low-sun lens flare in ch0 and ch6 (inked, not on Low), kept on the key vector 1800 m out from the rider in
+  // bind; frustum occlusion (the engine has no depth readback for flares). Reduced flash halves it. +4 sprite draws.
+  const flare = inked && look.lensFlare && !buildOptions.low;
+  if (flare) builder.add(lights.lensFlare({ name: "silt flare", position: [...FAR], elements: lensFlareElements(look.key.color), intensity: buildOptions.reducedMotion ? 0.3 : 0.6, runtime: { id: "silt-flare" } }));
   builder.add(primitives.sphere({ name: "sky", position: [0, 0, 0], size: 4200, material: material.custom(skySpec(chapter, inked ? "inked" : "original")) }).runtime({ id: "sky" }));
 
   builder.add(geometry.custom(dynamicFrom({ ...terrainMesh, colors: terrainColors(terrainMesh.positions, inked) }), {
@@ -645,6 +661,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
         ? createSiltFx(app.effects, { chapter, reducedMotion: options.reducedMotion, low: buildOptions.low, trailNodes: ["thruster-l", "thruster-r"], motesNode: "rider" })
         : undefined;
       let fovKick = 0, roll = 0, punchLeft = 0;
+      const keyDir = keyDirection(look);
       // DG-S5: lightning in the storm chapter (render time, never sim time), the sky deck and the key flash together
       const lightning = inked && look.rain ? createLightning({ reducedFlash: options.reducedMotion }) : undefined;
       let flashShown = 0, strikes = 0;
@@ -680,6 +697,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
             t.setScale([1, 0.8 + (options.reducedMotion ? 0 : 0.25 * Math.sin(time * 24 + ox * 5)) + Math.min(0.8, Math.abs(flight.speed) * 0.012), 1]);
           }
           node("sky").setPosition(state.x, state.y, state.z);
+          if (flare) node("silt-flare").setPosition(state.x + keyDir[0] * FLARE_DISTANCE, state.y + keyDir[1] * FLARE_DISTANCE, state.z + keyDir[2] * FLARE_DISTANCE);
           node("canal").setUniform?.("siltTime", time);
           if (lightning) {
             const { flash, began } = lightning.step(time);

@@ -132,3 +132,15 @@ describe("GU47 WP-34 DG-C2 ring-pass punch and DG-M4 bronze masts", () => {
     if (original) expect(original.material.roughness).toBe(0.38);
   });
 });
+
+describe("GU47 WP-34 DG-L6 lens flare", () => {
+  it("flare only in ch0 and ch6, inked, not on Low; halved on reduced flash; no jade element", () => {
+    const flares = (c: number, o: Parameters<typeof buildWorld>[1] = {}) => nodes(c, o).filter((n) => n.kind === "lensflare");
+    for (let c = 0; c < 7; c++) expect(flares(c).length, `ch${c}`).toBe(c === 0 || c === 6 ? 1 : 0);
+    expect(flares(0, { low: true }).length).toBe(0);
+    expect(flares(6, { look: "original" }).length).toBe(0);
+    expect(flares(0)[0]!.runtime.id).toBe("silt-flare");
+    expect(flares(0, { reducedMotion: true })[0]!.intensity).toBe(flares(0)[0]!.intensity / 2);
+    expect(flares(0)[0]!.elements.map((e: { color: string }) => e.color)).not.toContain("#2fae86");
+  });
+});
