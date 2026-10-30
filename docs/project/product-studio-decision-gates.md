@@ -1,6 +1,6 @@
 # Decision Gates
 
-Version: 4.6.0
+Version: 4.6.1
 
 This file is retained because docs verification tooling still reads `docs/project/product-studio-decision-gates.md`. It now records the current documentation gate boundary rather than a historical product-studio roadmap.
 

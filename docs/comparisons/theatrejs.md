@@ -1,6 +1,6 @@
 # Aura3D And Theatre.js
 
-Version: 4.6.0
+Version: 4.6.1
 
 ## What you get with Aura3D
 

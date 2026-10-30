@@ -1,7 +1,7 @@
 # Aura3D Current State
 
 Date: 2026-10-15
-Status: Aura3D 4.6.0 is the current release across the unified `@aura3d/engine` public surface and workspace packages.
+Status: Aura3D 4.6.1 is the current release across the unified `@aura3d/engine` public surface and workspace packages.
 
 Aura3D is a developer SDK, asset workflow, template system, diagnostics surface,
 and agent-readable documentation set for browser 3D apps. AI coding agents write

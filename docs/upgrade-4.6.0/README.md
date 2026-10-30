@@ -28,3 +28,14 @@ Scenes that light only with their own lights and no environment are still lit by
 - `node tools/game-checks/run.mjs` gains warnings for keyboard-only gameplay input, lighting rules, the shared asset catalogue, brand identifiers, stale screens and open upgrade-guide items.
 
 The full list, with the per-game fixes, is in the 4.6.0 entry of `CHANGELOG.md`.
+
+## 4.6.1
+
+4.6.1 is a patch on 4.6.0 with no API removed or renamed. Three engine changes can matter to your code:
+
+- `setScene` called from inside an `onFrame` callback no longer sends that frame to the renderer it just disposed, so a scene swap at the end of a level is safe there.
+- With `resize: false`, the engine keeps the page's CSS size on the canvas instead of writing the measured size inline. A canvas that grows after load now fills its new size.
+- A colour grade the scene authors next to a look now wins over the look's grade, field by field. A scene that set its own grade beside a look and saw no change will now see it.
+
+`effects.bloom` also accepts `scatter` (the replacement for the deprecated `radius`, with the same value).
+

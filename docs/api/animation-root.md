@@ -1,6 +1,6 @@
 # Animation On The Root: Layers, Root Motion, Retargeting, Two-Bone IK
 
-Status: Aura3D 4.6.0 root receipts. Every example below is typechecked against the real root declarations in
+Status: Aura3D 4.6.1 root receipts. Every example below is typechecked against the real root declarations in
 `tests/unit/agent-api/animation-root-examples.ts`, and each capability has a remote pixel receipt under
 `evidence/receipts/<capability>/<version>.json` written by `tests/browser/animation-root-receipts.spec.ts`.
 

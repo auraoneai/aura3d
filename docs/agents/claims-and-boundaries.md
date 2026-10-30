@@ -1,6 +1,6 @@
 # Claims and Boundaries
 
-Version: 4.6.0
+Version: 4.6.1
 
 The one rulebook for agent-authored Aura3D work: what you may build, what you may say, and what evidence a claim needs. It absorbs the former anti-hallucination and no-hackjob lists (`anti-hallucination-rules.md` and `no-hackjob-rules.md` now redirect here). Read it after `llms.txt`, before writing examples, routes, templates, README copy or release notes.
 
