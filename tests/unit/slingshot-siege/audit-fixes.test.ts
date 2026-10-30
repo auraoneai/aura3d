@@ -136,13 +136,15 @@ describe("slingshot-siege stage build (RH-04 OPTION_IGNORED, LIGHT-06 switch, SS
     }
   });
 
-  it("?ao=0 drops only the look AO node; reduced motion keeps FXAA and drops the vignette", () => {
+  it("?ao=0 drops only the AO node; reduced motion keeps FXAA and drops the vignette", () => {
     const chapter = CHAPTERS[0]!;
     const names = (opts: { reducedMotion: boolean; ambientOcclusion?: boolean }) => walk(buildStage(chapter, opts).nodes).map((n) => n.name ?? n.kind ?? "");
     const on = names({ reducedMotion: false });
     const off = names({ reducedMotion: false, ambientOcclusion: false });
-    expect(on).toContain("look ambient occlusion");
-    expect(off).not.toContain("look ambient occlusion");
+    // GU47 SS47-L2: the stage's miniature-radius AO replaces the look's default AO node.
+    expect(on).toContain("siege miniature ambient occlusion");
+    expect(off).not.toContain("siege miniature ambient occlusion");
+    expect(on).not.toContain("look ambient occlusion");
     expect(on.length - off.length).toBe(1);
     const fx = (opts: { reducedMotion: boolean }) => JSON.stringify(walk(buildStage(chapter, opts).nodes).filter((n) => n.kind === "effect"));
     expect(fx({ reducedMotion: true })).toContain("fxaa");

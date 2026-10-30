@@ -12,7 +12,9 @@ import {
   type AuraModelMaterialHandle,
   type AuraModelMaterialOverride,
   type AuraRuntimeNodeHandle,
-  type AuraSceneSnapshot
+  type AuraSceneSnapshot,
+  type AuraTrailHandle,
+  type AuraVec3
 } from "@aura3d/engine";
 import { AMMO, type AmmoId } from "./game/ammo";
 import { siegeAudio } from "./game/audio";
@@ -23,9 +25,10 @@ import { SiegeSim, type VisualUpdate } from "./game/sim";
 import {
   blockLook, blockNodeId, bladeNodeId, buildScene, debrisLook, debrisNodeId, dotNodeId,
   gullPartId, millHubNodeId, millPoleNodeId, crateNodeId, barrelNodeId, plankNodeId, projectileNodeId,
-  pooledNodeIds, puffMaterial, puffNodeId, PROP_IDS, POOL, SLING_IDS
+  pooledNodeIds, PROP_IDS, POOL, SEA_LEVEL, SLING_IDS
 } from "./game/stage";
 import { sanitizeRenderParams } from "./game/urlGuard";
+import { AMMO_TRAIL_COLOR, SIEGE_VFX, abilityPreset, breakPreset, registerSiegeVfx } from "./game/vfx";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { installGameBeacon } from "@aura3d/engine/game";
 
@@ -85,6 +88,8 @@ const gameApp = createGameApp("#app", {
 const app = gameApp.app;
 const input = gameApp.input;
 const audio = siegeAudio();
+// GU47 SS47-V1/V2: the runtime VFX preset pack (material breaks, boar hits, sea splashes, launch dust, abilities).
+registerSiegeVfx(app.effects, { reducedMotion: REDUCED, reducedFlash: REDUCED });
 const stageEl = document.getElementById("app")!;
 const IS_TOUCH = matchMedia("(pointer: coarse)").matches;
 
@@ -242,6 +247,7 @@ function loadLevel(id: number, opts: { announce?: boolean } = {}): void {
   resultOpen = false;
   settledSinceEmpty = 0;
   clearedSinceSettle = 0;
+  clearRuntimeVfx();
   assignPieceVisuals();
   hud.setCoach(showCoach());
   hud.hideResult();
@@ -859,18 +865,60 @@ function syncVisuals(): void {
   }
   for (let g = 0; g < gullVisualCount; g += 1) syncGull(g);
   for (let m = 0; m < sim.windmillList().length; m += 1) syncWindmill(m);
-  // puffs
-  for (let i = 0; i < sim.puffList().length; i += 1) {
-    const state = sim.puffState(i);
-    const h = node(puffNodeId(i));
-    if (!h) continue;
-    if (!state) { h.setVisible(false); continue; }
-    const p = sim.puffList()[i]!;
-    h.setMaterial(puffMaterial(state.kind));
-    h.setPosition(p.at[0], p.at[1] + p.t * 0.6, p.at[2]);
-    h.setScale(state.scale * state.fade);
-    h.setVisible(true);
-  }
+  // SS47-V1: the sim's puff records are no longer drawn as spheres; consumeEvents fires the runtime VFX pack.
+}
+
+// --------------------------------------------------------------- vfx -----
+
+/** Runtime VFX (GU47 E-F): presets registered by registerSiegeVfx; a missing effects surface is a no-op. */
+function burst(kind: string, at: readonly number[], scale = 1): void {
+  try {
+    app.effects?.burst(kind, [at[0] ?? 0, at[1] ?? 0, at[2] ?? 0], scale === 1 ? undefined : { scale });
+  } catch { /* effects are presentation only */ }
+}
+
+/** SS47-V2: ammo-tinted ribbon behind the shot in flight; stopped (and left to fade) when the shot dies. */
+let shotTrail: AuraTrailHandle | null = null;
+function startShotTrail(ammo: AmmoId): void {
+  stopShotTrail();
+  let last: string | null = null;
+  for (const u of sim.forEachVisual()) if (u.id.startsWith("projectile-") && u.visible) last = u.id;
+  if (!last || !app.effects) return;
+  try {
+    shotTrail = app.effects.trail(projectileNodeId(Number(last.slice(11)) % POOL.projectiles), {
+      width: REDUCED ? 0.08 : 0.14, life: REDUCED ? 0.25 : 0.45, color: AMMO_TRAIL_COLOR[ammo], widthOverSpeed: [1, 9]
+    });
+  } catch { shotTrail = null; }
+}
+function stopShotTrail(): void {
+  try { shotTrail?.stop(); } catch { /* already gone */ }
+  shotTrail = null;
+}
+
+/** Island footprint (beach ring) in x/z: a body crossing the sea surface outside it splashes (SS47-V1). */
+function overSea(x: number, z: number): boolean {
+  return ((x - 1.6) / 9.8) ** 2 + ((z + 0.4) / 7.6) ** 2 > 1;
+}
+const lastHeights = new Map<string | number, number>();
+/** Read-only watcher over the sim's live shot and debris: a downward crossing of the sea surface splashes once. */
+function watchSplashes(): void {
+  const check = (id: string | number, p: AuraVec3, scale: number): void => {
+    const prev = lastHeights.get(id);
+    lastHeights.set(id, p[1]);
+    if (prev !== undefined && prev > SEA_LEVEL + 0.05 && p[1] <= SEA_LEVEL + 0.05 && p[1] > SEA_LEVEL - 2 && overSea(p[0], p[2])) {
+      burst(SIEGE_VFX.seaSplash, [p[0], SEA_LEVEL, p[2]], scale);
+    }
+  };
+  const proj = sim.activeProjectile();
+  if (proj && !proj.dead) check(proj.body.id, proj.body.position as AuraVec3, 1);
+  for (const d of sim.debrisList()) if (d.active) check(d.body.id, d.body.position as AuraVec3, 0.5);
+}
+
+/** Level loads start clean: no live particles, trails or scorch decals (SS47-V2). */
+function clearRuntimeVfx(): void {
+  stopShotTrail();
+  lastHeights.clear();
+  try { app.effects?.clear(); } catch { /* presentation only */ }
 }
 
 // ------------------------------------------------------------------ hud --
@@ -962,6 +1010,7 @@ function consumeEvents(): void {
       case "piece-broke": {
         levelScore += ev.points;
         pulseNeighbours(ev.at);
+        burst(breakPreset(ev.material), ev.at);
         trauma = Math.min(1.4, trauma + 0.28);
         const sp = projectWorld(ev.at);
         hud.scorePopup(`+${ev.points}`, (sp.x / stageEl.clientWidth) * 100, (sp.y / stageEl.clientHeight) * 100);
@@ -974,6 +1023,7 @@ function consumeEvents(): void {
       }
       case "gull-squashed": {
         levelScore += ev.points;
+        burst(SIEGE_VFX.boarHit, ev.at);
         trauma = Math.min(1.6, trauma + 0.5);
         const sp = projectWorld(ev.at);
         hud.scorePopup(`+${ev.points} SQUASHED!`, (sp.x / stageEl.clientWidth) * 100, (sp.y / stageEl.clientHeight) * 100, true);
@@ -988,21 +1038,26 @@ function consumeEvents(): void {
       }
       case "shot-fired": {
         hud.toast(`${AMMO[ev.ammo].name} away!`);
+        burst(SIEGE_VFX.launchDust, [SLING_REST[0], 0.62, 0]);
+        startShotTrail(ev.ammo);
         break;
       }
       case "ability": {
+        burst(abilityPreset(ev.ammo), ev.at);
         const sp = projectWorld(ev.at);
         hud.scorePopup(AMMO[ev.ammo].abilityName.toUpperCase() + "!", (sp.x / stageEl.clientWidth) * 100, (sp.y / stageEl.clientHeight) * 100, true);
         break;
       }
       case "windmill-smashed": {
         levelScore += ev.points;
+        burst(SIEGE_VFX.windmillSmash, ev.at);
         trauma = Math.min(1.6, trauma + 0.45);
         audio.cue("windmill-snap");
         hud.toast("WINDMILL SMASHED +150");
         break;
       }
       case "shot-settled": {
+        stopShotTrail();
         onShotSettled();
         break;
       }
@@ -1300,6 +1355,9 @@ gameApp.onFrame(({ dt }) => {
     if (!paused) {
       sim.update(dt);
       consumeEvents();
+      // Visual-only reads of the sim: end the shot ribbon before its node parks below the stage, splash the sea.
+      if (shotTrail && !sim.activeProjectile()) stopShotTrail();
+      watchSplashes();
       // out-of-ammo + settled watchdog for levels that end without a fresh shot
       if (!sim.isShotActive() && !resultOpen && shotsUsed >= level.ammo.length) {
         settledSinceEmpty += dt;

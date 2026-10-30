@@ -1,0 +1,35 @@
+{
+  "schema": "aura3d.gu47-budget/1",
+  "slug": "slingshot-siege",
+  "wp": "WP-22",
+  "lane": "g12",
+  "units": "software WebGL2 (SwiftShader) unless a row says otherwise",
+  "budget": {
+    "drawCalls": { "level1": 200, "gullKeep": 260, "dressing": 12, "water": 3 },
+    "lowTierDrawCalls": "<= 80% of the High budget (PRD 6.4)",
+    "routeJsGzipDeltaKb": 40
+  },
+  "expectedDrawDelta": {
+    "note": "phase-1 estimate per row from the authored nodes; measured in phase 2",
+    "SS47-L1": "-5 lights (ambient, hemisphere, 3 directionals), 0 draws; shadow casters unchanged (one sun)",
+    "SS47-L2": "+1 contact-shadow pass; AO replaces the look AO (0 net)",
+    "SS47-L3": "+2 point lights ch4, +4 lights ch5, +1 lens-flare sprite batch ch3/ch4",
+    "SS47-E1": "+1 fog (forward term, 0 draws)",
+    "SS47-E2": "+1 sky draw",
+    "SS47-E3": "+1 world-water draw, -1 instanced foam-box draw (0 net); seabed kept as the fallback sea",
+    "SS47-P1": "+1 post stage (S6 tilt-shift), 0 scene draws",
+    "SS47-V1": "-14 pooled puff nodes (hidden, 0 visible draws); runtime particles batched by the effect system",
+    "SS47-V2": "+1 ribbon draw while a shot flies"
+  },
+  "before": {
+    "source": "evidence/audit-fix/e2/after/meta.jsonl target s2-slingshot-siege settle-30s (4.6.0 build, before the SS-17 pool-hiding fix; the after-fix count was never recorded)",
+    "default": { "drawCalls": 395, "triangles": null, "textureBytes": null, "pageMb": null, "routeJsGzipDeltaKb": 0, "runnerFps": null, "luma": { "mean": 112.46, "p5": 26, "p50": 122, "p95": 184, "darkFrac": 0.0125 } },
+    "ch0": null,
+    "ch1": null,
+    "ch2": null,
+    "ch3": null,
+    "ch4": null,
+    "ch5": null
+  },
+  "after": null
+}
