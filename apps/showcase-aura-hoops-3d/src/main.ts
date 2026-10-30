@@ -71,6 +71,7 @@ import { pickLocomotion } from "./locomotionRates";
 import { advanceShotBall, aimError, createHoopWorld, crossedRimDownward, solveLaunch } from "./shotPhysics";
 import { BALL_R, DRIB_SHOULDER_FALLBACK, dribbleCycleY } from "./dribble";
 import { createOnePress } from "./input";
+import { MarkerPool, parkedTransforms, type MarkerSlot } from "./markerPools";
 import {
   CHECK_SHOT_GUARD, CPU_DUNK_RATE, SIM_STEP, advanceMeter, blendPose, canBlockRelease, clearTarget, decayRimShake,
   deadBallPossession, dunkRejectChance, isCleared, isDeadBall, makeCosmeticRng, matchDifficulty, meterQuality,
@@ -686,6 +687,33 @@ function athleteOverrides(kit: Kit): any[] {
   return [flat(/-kit$/, kit.jersey, 0.68), flat(/-shorts$/, kit.shorts, 0.72)];
 }
 
+/* H47-PF1: on the new look the ground markers and drill cones are pooled instanced nodes (markerPools.ts): 10 shadow discs,
+ * 10 team rings, 10 Jam auras, 10 cones and 10 cone rings drew as 50 primitive nodes and now draw as at most 6 (one ring
+ * node per side keeps the round/square shape cue and the kit colour). ?look=original keeps the separate primitives. */
+const POOLED_MARKERS = !LOOK_ORIGINAL;
+const HOME_IDS: readonly string[] = ["p0", "p1", "p2", "p3", "p4"];
+const AWAY_IDS: readonly string[] = ["a0", "a1", "a2", "a3", "a4"];
+const MARKER_ATHLETES = HOME_IDS.length + AWAY_IDS.length;
+const RING_ROT_HOME: Vec3 = [Math.PI / 2, 0, 0];
+const RING_ROT_AWAY: Vec3 = [Math.PI / 2, 0, Math.PI / 4];
+const CONE_RING_ROT: Vec3 = [Math.PI / 2, 0, 0];
+
+function buildMarkerPoolNodes(): any[] {
+  if (!POOLED_MARKERS) return [];
+  const home = teamKit("home"), away = teamKit("away");
+  const ringMat = (k: Kit) => material.emissive({ color: k.jersey, emissive: k.jersey, emissiveIntensity: 0.45, opacity: 0.72 });
+  const pool = (kind: "cylinder" | "torus", name: string, capacity: number, opts: Record<string, unknown>) =>
+    (instances as any)[kind]({ name, transforms: parkedTransforms(capacity), castShadow: false, ...opts }).runtime(game.runtimeNode(name));
+  return [
+    pool("cylinder", "marker-shadows", MARKER_ATHLETES, { size: [0.58, 0.008, 0.58], material: material.pbr({ color: "#000000", opacity: 0.24, roughness: 1 }) }),
+    pool("torus", "marker-rings-home", HOME_IDS.length, { size: [0.82, 0.82, 0.34], material: ringMat(home) }),
+    pool("torus", "marker-rings-away", AWAY_IDS.length, { size: [0.86, 0.86, 0.34], params: { tubularSegments: 4 }, material: ringMat(away) }),
+    pool("cylinder", "marker-auras", MARKER_ATHLETES, { size: [0.9, 1.9, 0.9], material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 0.9, opacity: 0.16 }) }),
+    pool("cylinder", "marker-cones", CONE_COUNT, { size: [0.34, 0.5, 0.34], material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 0.5 }) }),
+    pool("torus", "marker-cone-rings", CONE_COUNT, { size: [0.68, 0.68, 0.5], material: material.emissive({ color: "#ffd257", emissive: "#ffd257", emissiveIntensity: 1.0 }) })
+  ];
+}
+
 function buildAthlete(id: string, team: TeamId): any[] {
   // Region-split copies of the palette athletes (tools/hoops-athlete-retexture/split-kit-materials.mjs): one material per
   // body region, so the kit, shorts and socks take the team colours.
@@ -696,7 +724,7 @@ function buildAthlete(id: string, team: TeamId): any[] {
       .position(0, 0, 6)
       .animate({ clip: "Crouch_Idle_Loop", loop: true, speed: 1.0 })
       .runtime(game.runtimeNode(id)),
-    ...buildAthleteAccessories(id, team, kit)
+    ...(POOLED_MARKERS ? [] : buildAthleteAccessories(id, team, kit))
   ];
 }
 
@@ -829,6 +857,7 @@ function buildVenueDressing(v: VenueSpec): any[] {
 
 function buildCones(): any[] {
   const nodes: any[] = [];
+  if (POOLED_MARKERS) return buildMarkerPoolNodes();
   for (let i = 0; i < CONE_COUNT; i++) {
     nodes.push(
       primitives.cylinder({ name: `cone-${i}`, size: [0.34, 0.5, 0.34], material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 0.5 }) })
@@ -916,7 +945,7 @@ const req = (id: string): AnyHandle => {
 };
 
 interface Rig {
-  root: AnyHandle; shadow: AnyHandle; ring: AnyHandle; aura: AnyHandle;
+  root: AnyHandle; shadow: AnyHandle | MarkerSlot; ring: AnyHandle | MarkerSlot; aura: AnyHandle | MarkerSlot;
 }
 let rigs: Rig[] = [];
 let refereeNode: AnyHandle;
@@ -933,8 +962,14 @@ let trailNodes: AnyHandle[] = [];
 /** H47-E2: the storm court's lightning light (absent on other courts and on ?look=original) and its last level. */
 let lightningNode: AnyHandle;
 let lightningLevel = 0;
-let coneNodes: AnyHandle[] = [];
-let coneRingNodes: AnyHandle[] = [];
+let coneNodes: (AnyHandle | MarkerSlot)[] = [];
+let coneRingNodes: (AnyHandle | MarkerSlot)[] = [];
+let markerPools: Record<"shadows" | "ringsHome" | "ringsAway" | "auras" | "cones" | "coneRings", MarkerPool> | undefined;
+/** H47-PF1: submit the pooled marker transforms once per rendered frame. */
+function flushMarkerPools(): void {
+  if (!markerPools) return;
+  for (const p of Object.values(markerPools)) p.flush();
+}
 let waverNodes: AnyHandle[] = [];
 
 const ROSTER_IDS = ["p0", "p1", "p2", "p3", "p4", "a0", "a1", "a2", "a3", "a4"] as const;
@@ -1078,11 +1113,20 @@ function resolveHandles(): void {
   heldRig.clear();
   poseKindOf.clear();
   armRigs.clear();
-  rigs = ROSTER_IDS.map((id) => ({
+  markerPools = POOLED_MARKERS ? {
+    shadows: new MarkerPool(req("marker-shadows"), ROSTER_IDS.length),
+    ringsHome: new MarkerPool(req("marker-rings-home"), HOME_IDS.length, RING_ROT_HOME),
+    ringsAway: new MarkerPool(req("marker-rings-away"), AWAY_IDS.length, RING_ROT_AWAY),
+    auras: new MarkerPool(req("marker-auras"), ROSTER_IDS.length, [0, 0, 0], HIDDEN),
+    cones: new MarkerPool(req("marker-cones"), CONE_COUNT, [0, 0, 0], HIDDEN, false),
+    coneRings: new MarkerPool(req("marker-cone-rings"), CONE_COUNT, CONE_RING_ROT, HIDDEN, false)
+  } : undefined;
+  const mp = markerPools;
+  rigs = ROSTER_IDS.map((id, i) => ({
     root: req(id),
-    shadow: req(`${id}-shadow`),
-    ring: req(`${id}-ring`),
-    aura: req(`${id}-aura`)
+    shadow: mp ? mp.shadows.slot(i) : req(`${id}-shadow`),
+    ring: mp ? (id.startsWith("p") ? mp.ringsHome.slot(HOME_IDS.indexOf(id)) : mp.ringsAway.slot(AWAY_IDS.indexOf(id))) : req(`${id}-ring`),
+    aura: mp ? mp.auras.slot(i) : req(`${id}-aura`)
   }));
   refereeNode = req("referee");
   ballNode = req("ball-live");
@@ -1097,8 +1141,8 @@ function resolveHandles(): void {
   lightningNode = LOOK_ORIGINAL ? undefined : auraApp.nodes.get(LIGHTNING_NODE_ID) as AnyHandle;
   lightningLevel = 0;
   trailNodes = LOOK_ORIGINAL ? Array.from({ length: TRAIL_COUNT }, (_, i) => req(`ball-trail-${i}`)) : [];
-  coneNodes = Array.from({ length: CONE_COUNT }, (_, i) => req(`cone-${i}`));
-  coneRingNodes = Array.from({ length: CONE_COUNT }, (_, i) => req(`cone-ring-${i}`));
+  coneNodes = Array.from({ length: CONE_COUNT }, (_, i) => mp ? mp.cones.slot(i) : req(`cone-${i}`));
+  coneRingNodes = Array.from({ length: CONE_COUNT }, (_, i) => mp ? mp.coneRings.slot(i) : req(`cone-ring-${i}`));
   waverNodes = Array.from({ length: CROWD_WAVERS }, (_, i) => req(`waver-${i}`));
 }
 resolveHandles();
@@ -3662,6 +3706,7 @@ auraApp.onFrame(({ dt }) => {
     }
     simLoop.tick(performance.now());
   });
+  frameBoundary.run(flushMarkerPools);
 });
 
 /* ------------------------------------------------------------------ *
