@@ -7,6 +7,7 @@ import { camera, effects, game, instances, lights, looks, material, model, primi
 import { assets } from "./aura-assets.route";
 import { PARK_LOOKS, lookPlan, parkPracticals, type DiamondLookPlan, type DiamondLookVariant, type DiamondSkyMode, type DiamondTier } from "../art/look";
 import { turfTextures } from "./turfTextures";
+import { boardTexture } from "./boardTexture";
 import { FAN_BODY, FAN_HEAD, fanColors, fanSeats } from "../art/crowd";
 import {
   makeRng,
@@ -237,6 +238,16 @@ export function fieldInstanceTransforms(park: ParkSpec): {
   };
 }
 
+/**
+ * DIA-V2: in GU47 the screen shows the live linescore canvas (main.ts repaints it, at most 4 times a second) as its
+ * emissive map; no new draw. `?look=original` and DOM-less builds keep the 4.6.2 flat screen.
+ */
+function scoreboardScreenMaterial(ctx: DiamondSceneContext): ReturnType<typeof material.emissive> {
+  const board = ctx.variant === "gu47" ? boardTexture() : null;
+  if (!board) return material.emissive({ color: "#0d2436", emissive: "#1b4a66", emissiveIntensity: 0.9 });
+  return material.emissive({ color: "#0a1410", emissive: "#ffffff", emissiveMap: board.handle as any, emissiveIntensity: 1.1, roughness: 0.6 });
+}
+
 export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEXT): any[] {
   const nodes: any[] = [];
   const rng = makeRng(0xbeef);
@@ -334,7 +345,7 @@ export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFA
   const sb = scoreboardPlacement(park);
   nodes.push(
     model(assets.diamondScoreboard, { name: "scoreboard-rig", targetHeight: 11, role: "setDressing", scaleMode: "fit" }).position(sb.rig[0], sb.rig[1], sb.rig[2]).rotate(0, Math.PI, 0).runtime(game.runtimeNode("scoreboard-rig")),
-    primitives.box({ name: "scoreboard-screen", size: [10.5, 3.4, 0.4], material: material.emissive({ color: "#0d2436", emissive: "#1b4a66", emissiveIntensity: 0.9 }) }).position(sb.screen[0], sb.screen[1], sb.screen[2]).runtime(game.runtimeNode("scoreboard-screen"))
+    primitives.box({ name: "scoreboard-screen", size: [10.5, 3.4, 0.4], material: scoreboardScreenMaterial(ctx) }).position(sb.screen[0], sb.screen[1], sb.screen[2]).runtime(game.runtimeNode("scoreboard-screen"))
   );
 
   if (ctx.variant === "gu47") {

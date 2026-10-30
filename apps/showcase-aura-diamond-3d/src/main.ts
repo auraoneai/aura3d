@@ -149,7 +149,9 @@ import {
   buildParkScene,
   type DiamondSceneContext
 } from "./scene";
-import { lookPlan, resolveDiamondTier, resolveLookVariant, resolveSkyMode } from "../art/look";
+import { PARK_LOOKS, lookPlan, resolveDiamondTier, resolveLookVariant, resolveSkyMode } from "../art/look";
+import { BoardThrottle, boardModel, homeRunPhase } from "../art/board";
+import { boardTexture } from "./boardTexture";
 import { isDiamondVfxKind, juiceFxKind, landingFxKind, registerDiamondVfx, type DiamondVfxKind } from "../art/vfx";
 import { CameraDirector, halfInningShot, homeRunShot, introShot, walkupShot, type Shot } from "../art/cameraDirector";
 import { diamondCrops } from "../art/qaCrops";
@@ -638,6 +640,8 @@ function boot(): void {
     document.body.appendChild(fxLayer);
   }
   let hitStopUntil = 0;
+  /** GU47 DIA-V2: time of the last home run, for the board's 2 s HOME RUN card. */
+  let boardHrAt = -Infinity;
   const fxCtl = (game as any).effects({ app, reducedMotion, reducedFlash });
   const FX_KIND: Record<string, string> = {
     spark: "hit-spark",
@@ -1396,6 +1400,7 @@ function boot(): void {
    * at the plate stays for `?look=original`.
    */
   function fireHrBurst(landPos?: Vec3): void {
+    boardHrAt = performance.now() / 1000;
     if (gu47Fx && landPos) {
       const kind = juiceFxKind("homer", G.park);
       const at: Vec3 =
@@ -3345,7 +3350,35 @@ function boot(): void {
     elRef.textContent = v;
   };
 
+  /* ---------- GU47 DIA-V2 outfield board ---------- */
+  // The live linescore canvas on the scoreboard screen (read-only game values), repainted only on change and at most
+  // 4 times a second, with a 2 s HOME RUN card (steady under reduced flash). Never on ?look=original.
+  const boardThrottle = new BoardThrottle();
+  function updateBoard(now: number): void {
+    if (sceneCtx.variant !== "gu47") return;
+    const board = boardTexture();
+    if (!board) return;
+    const model = boardModel({
+      parkName: park().name,
+      teams: { away: clubAbbr("player"), home: clubAbbr("cpu") },
+      linescore: { away: G.linescore.player, home: G.linescore.cpu },
+      runs: { away: G.score.player, home: G.score.cpu },
+      hits: { away: G.hits.player, home: G.hits.cpu },
+      inning: G.inning,
+      inningsTotal: G.inningsTotal,
+      half: G.half,
+      balls: G.balls,
+      strikes: G.strikes,
+      outs: G.outs
+    });
+    const hr = homeRunPhase(now - boardHrAt, reducedFlash);
+    if (!boardThrottle.due(now, model.key, hr)) return;
+    board.paint(model, { accent: PARK_LOOKS[G.park].accent, font: '"DIN Pro", "Whitney", sans-serif' }, hr);
+    boardThrottle.painted(now, model.key, hr);
+  }
+
   function updateHud(dt: number): void {
+    updateBoard(performance.now() / 1000);
     const inGame = G.phase !== "menu" && !G.over;
     el.hud?.classList.toggle("on", inGame);
     renderLinescore();
