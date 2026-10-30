@@ -44,3 +44,23 @@ describe("Saltwind Highway landmarks (RH47-11, RH47-15)", () => {
     expect(b[14]).toBeCloseTo(11, 6); // a quarter turn later it points along +z
   });
 });
+
+describe("Saltwind Highway body lean (RH47-15)", () => {
+  it("leans out of lane changes on the ground, not in the air, 30% on reduced motion", async () => {
+    const { createBodyLean, MAX_LEAN_ROLL } = await import("../../../examples/roadster-hours-port/art/lean");
+    const lean = createBodyLean();
+    let f = lean.step({ l: 0, v: 50, grounded: true }, 1 / 60);
+    for (let i = 1; i < 30; i++) f = lean.step({ l: i * 0.15, v: 50, grounded: true }, 1 / 60);
+    expect(f.roll).toBeLessThan(0);
+    expect(Math.abs(f.roll)).toBeLessThanOrEqual(MAX_LEAN_ROLL);
+    const air = createBodyLean();
+    let g = air.step({ l: 0, v: 50, grounded: false }, 1 / 60);
+    for (let i = 1; i < 30; i++) g = air.step({ l: i * 0.15, v: 50, grounded: false }, 1 / 60);
+    expect(g.roll).toBe(0);
+    const calm = createBodyLean();
+    calm.setReducedMotion(true);
+    let h = calm.step({ l: 0, v: 50, grounded: true }, 1 / 60);
+    for (let i = 1; i < 30; i++) h = calm.step({ l: i * 0.15, v: 50, grounded: true }, 1 / 60);
+    expect(h.roll).toBeCloseTo(f.roll * 0.3, 9);
+  });
+});

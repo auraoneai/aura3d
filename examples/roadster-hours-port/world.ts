@@ -11,6 +11,7 @@ import {
 import { SALTWIND_LOOK, directionFromAngles, lookModeFrom, type SaltwindLookRow } from "./art/look";
 import { SPRAY_POINTS, sprayAmount, sprayWind } from "./art/spray";
 import { ROTOR_BLADES, landmarkPlacements, rotorAngle, type LandmarkKind, type LandmarkPlacement } from "./art/landmarks";
+import { createBodyLean } from "./art/lean";
 import { createShotDirector, orbitEye, type ShotFrame } from "./art/shots";
 import { NITRO_TRAIL, SKID_INTERVAL, fxForEvents, registerSaltwindFx, type SaltwindFxKind } from "./art/fx";
 import { levelLayout, roadProfile, trafficPiece, pieceSpec, type Level } from "./course";
@@ -622,7 +623,9 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
     if (!data || !items.length) return;
     texturedScenery++;
     builder.add(instances.custom(geometry.dynamic({ positions: data.positions, normals: data.normals, uvs: data.uvs, indices: data.indices }) as never, {
-      name, material: meshyMaterial(key, options), transforms: items.map((item) => ({ position: item.p, rotation: [0, item.yaw, 0] as Vec3, scale: item.size }))
+      name, material: meshyMaterial(key, options), transforms: items.map((item) => ({ position: item.p, rotation: [0, item.yaw, 0] as Vec3, scale: item.size })),
+      // RH47-15: palms and pines sway in the route wind (E-G instance wind; weaker on Halo, none on ?look=original)
+      ...(row && (key === "palm" || key === "pine") ? { wind: { strength: row.id === "halo" ? 0.3 : 0.6, directionDeg: (Math.atan2(row.wind[0], row.wind[1]) * 180) / Math.PI, assetHeight: 1 } } : {})
     } as never));
   };
   if (look.style === "coast" && hasMeshy("lighthouse")) {
@@ -957,6 +960,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       const shots = row ? createShotDirector({ seaSide: look.seaSide }) : null;
       let lastShot: ShotFrame | null = null;
       let reducedMotionOn = false;
+      const lean = row ? createBodyLean() : null;
       const gantryLights = gantryPoints ? Array.from({ length: gantryPoints.count }, (_v, k) => node(`gantry-light-${k}`)) : [];
       let gantryGate = -1;
       let dustAmount = 0, sparkAmount = 0;
@@ -982,7 +986,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       const offCentre = 0;
       return {
         vehicleInstances: allSlots.length,
-        reset: () => { placeLineup(); director.cut(); chase.reset(); shots?.play(); },
+        reset: () => { placeLineup(); director.cut(); chase.reset(); shots?.play(); lean?.reset(); },
         startIntro: () => shots?.startIntro(),
         skipIntro: () => shots?.skipIntro(),
         startFinish: () => shots?.startFinish(),
@@ -990,6 +994,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
         fx: () => ({ kinds: fxKinds, fired: fxFired, last: fxLast }),
         setReducedMotion: (on: boolean) => {
           reducedMotionOn = on;
+          lean?.setReducedMotion(on);
           director.setReducedMotion(on);
           shots?.setReducedMotion(on);
           fxKinds = registerSaltwindFx(vfx, row, { reducedMotion: on, reducedFlash: on });
@@ -1011,7 +1016,8 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
           const pitch = run.flip;
           const carP = roadPoint(level, run.s, run.l, run.h + playerHeight / 2 + 0.03);
           const rollAngle = run.roll + prof.bank;
-          for (const part of parts) { part.setPosition(carP[0], carP[1], carP[2]); part.setRotation(pitch, psi, rollAngle); }
+          const body = lean ? lean.step(run, dt) : { roll: 0, pitch: 0 };
+          for (const part of parts) { part.setPosition(carP[0], carP[1], carP[2]); part.setRotation(pitch + body.pitch, psi, rollAngle + body.roll); }
           const racing = run.phase === "running" || run.phase === "countdown";
           for (const beam of beams) { beam.setPosition(carP[0], carP[1], carP[2]); beam.setRotation(pitch, psi, rollAngle); beam.setVisible(racing); }
           if (rotors) {
