@@ -1,0 +1,20 @@
+{
+  "schema": "aura3d.gu47-budget/1",
+  "slug": "pips-big-leap",
+  "units": { "drawCalls": "draws per frame, desktop 1280x720, software WebGL2", "glbBytes": "bytes", "pageMB": "MB transferred to playable", "routeJsGzipDeltaKB": "KB vs base", "runnerFps": "frames per second on the remote runner" },
+  "budget": { "drawCallsDesktop": 420, "drawCallsPhone": 300, "ambientParticles": 600, "punctualLights": 6, "shadowedLights": 2, "glbBytesPerWorld": 9437184, "tileTriangles": 8000, "floraTriangles": 1500 },
+  "beforeSource": "evidence/pips-big-leap/audit-2026-10-29/after2-A/meta.jsonl (w1: drawCalls 782, 26 GLBs, 6237432 bytes) and PRD WP-16 'Today' (draws 460-784 across worlds; mean luma academy 171.7 to w6 109.1). Per-world draw counts for the other worlds are not in committed evidence.",
+  "expectedDelta": {
+    "note": "Phase-1 estimate per world, desktop, before measurement. Scene: static platforms 2 draws per platform -> 2 instanced draws per platform kind (about -20 to -26), diorama base +4 (receive-only), flora +5 (no shadow casting), sky +1 (w2, w3, w6), ambient emitter +1. Shadow casting: tiny props (spring pedestals and pads, checkpoint pads, crates, barrels, banners, star cores) stop casting (about -5 to -10 casters x 3 cascades), instanced platform bodies cast once per kind per cascade. Post: S6 DOF and S4 sun shafts (w1, w2, w5 only) are passes, not scene draws; the vignette rides the S10b display grade.",
+    "academy": -38, "w1": -46, "w2": -52, "w3": -40, "w4": -44, "w5": -48, "w6": -42
+  },
+  "variants": {
+    "academy": { "before": { "drawCalls": null, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null, "meanLuma": 171.7 }, "after": null },
+    "w1": { "before": { "drawCalls": 782, "triangles": null, "textureBytes": null, "glbBytes": 6237432, "glbCount": 26, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null },
+    "w2": { "before": { "drawCalls": null, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null },
+    "w3": { "before": { "drawCalls": null, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null, "p5Luma": 156 }, "after": null },
+    "w4": { "before": { "drawCalls": null, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null },
+    "w5": { "before": { "drawCalls": null, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null }, "after": null },
+    "w6": { "before": { "drawCalls": null, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null, "meanLuma": 109.1 }, "after": null }
+  }
+}

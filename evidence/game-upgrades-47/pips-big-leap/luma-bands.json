@@ -1,0 +1,15 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "pips-big-leap",
+  "note": "WP-16 PBL-L1 / PBL-E1 / PBL-E2 acceptance bands (software WebGL2, steady-state 25 s and 60 s shots). Difference metrics the band schema cannot express (w3 row 0 minus row 5 >= 15; w4 cell 7 >= 25 over the top corners; w5 throne crop >= 1.3x lanterns-off) are checked from the same capture in the phase-2 report.",
+  "default": { "darkFrac": [null, 0.6], "clipFrac": [null, 0.05], "crops": { "bottom-band": { "std": [20, null] } } },
+  "variants": {
+    "academy": { "mean": [140, 160], "std": [45, null] },
+    "w1": { "mean": [115, 140], "std": [45, null] },
+    "w2": { "mean": [125, 150], "std": [45, null] },
+    "w3": { "mean": [150, 175], "p5": [null, 70], "std": [45, null] },
+    "w4": { "mean": [60, 90], "p95": [235, null], "std": [45, null] },
+    "w5": { "mean": [85, 115], "std": [45, null] },
+    "w6": { "mean": [55, 80], "std": [45, null], "cells": { "top": { "mean": [25, 50] } } }
+  }
+}
