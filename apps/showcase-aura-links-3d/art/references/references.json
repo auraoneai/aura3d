@@ -1,0 +1,28 @@
+{
+  "schema": "aura3d-art-references/1.0",
+  "appId": "showcase-aura-links-3d",
+  "note": "Generic, described references only (no third-party images are stored). Each entry names the property the GU47 WP-20 look copies.",
+  "entries": [
+    {
+      "id": "broadcast-camera",
+      "file": "references/references.json#broadcast-camera",
+      "source": "generic reference: televised golf coverage camera language (hole flyover, live ball tracer, low cup camera)",
+      "licence": "reference-only",
+      "why": "The broadcast shot grammar the signature effect copies: a flyover before the tee shot, a tracer on drives, a cup cam on putts"
+    },
+    {
+      "id": "postcard-light",
+      "file": "references/references.json#postcard-light",
+      "source": "generic reference: landscape postcard photography of coastal links at sunrise and parkland at golden hour",
+      "licence": "reference-only",
+      "why": "One low warm key per course with long turf shadows, sea haar or warm haze for depth, and a sky that names the hour"
+    },
+    {
+      "id": "hard-light",
+      "file": "references/references.json#hard-light",
+      "source": "generic reference: public-domain lunar surface photography and floodlit night stadium photography",
+      "licence": "reference-only",
+      "why": "The two non-daylight courses: airless black-sky hard shadows under an earthrise, and floodlight cones in a wet navy night"
+    }
+  ]
+}

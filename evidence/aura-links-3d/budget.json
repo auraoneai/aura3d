@@ -1,0 +1,41 @@
+{
+  "schema": "aura3d.links-budget/1",
+  "slug": "aura-links-3d",
+  "row": "LINKS-15 (GU47 WP-20)",
+  "renderer": "software WebGL2 (remote runner); measured numbers are phase 2",
+  "limits": {
+    "drawCalls": { "desktopHigh": 220, "phone": 150, "low": 176 },
+    "triangles": 1200000,
+    "particles": { "high": 2000, "low": 0 },
+    "mirrorsPerHole": 2,
+    "shadowedLights": 1
+  },
+  "measuredBefore": {
+    "source": "evidence/aura-links-3d/audit-fix/after/*.jsonl settle-75s",
+    "desktopDrawCalls": { "stAuroras": 143, "mapleHollow": 139, "cinderRim": 106, "cloudTerrace": 218, "neonBay": 127, "mareCourse": 115 },
+    "phoneDrawCalls": { "stAuroras": 103, "neonBay": 78, "mareCourse": 76 }
+  },
+  "heavyAssets": {
+    "note": "GLB primitive and triangle counts read from the committed files (per instance or per node). Draws per GLB depend on the engine's static batching; triangles do not.",
+    "propPineTree": { "primitives": 23, "triangles": 44884, "use": "Cloud Terrace corridor pines, instanced (about 50 per hole): about 2.2M triangles before LOD, over the 1.2M budget on its own" },
+    "neonStreetLampProp": { "primitives": 27, "triangles": 272036, "use": "Neon Bay lamp pylons x4: about 1.09M triangles" },
+    "showcaseModernOfficeBuilding": { "primitives": 226, "triangles": 219831, "use": "Neon Bay skyline tower" },
+    "siegeGolfBall": { "primitives": 1, "triangles": 76800, "use": "the 10 cm ball" },
+    "linksGolferAthleteMeshy": { "primitives": 1, "triangles": 31758, "use": "player, caddy and six gallery copies (8 skinned actors)" }
+  },
+  "gu47Deltas": {
+    "lookRig": "lights, fog, grade, bloom, vignette, grain, god rays: 0 scene draws (post stages); key cascades 4 -> 3 on High (one fewer cascade of caster draws), 1 on Low",
+    "ambientParticles": "+1 instanced batch per course on High (0 on Low, Mare none)",
+    "sunFlare": "+1 sprite batch on St. Auroras and Cinder Rim (High)",
+    "neonCones": "+2 additive cone draws on Neon Bay",
+    "tracer": "+1 ribbon in flight; -16 trail-dot spheres (the GU47 look hides them)",
+    "runtimeVfx": "1-3 transient particle batches and 1 decal batch around a landing"
+  },
+  "enforcement": [
+    "Order (PRD LINKS-15): the budget is checked before dressing is added; Cloud Terrace pines first.",
+    "Cloud Terrace: 218 + 1 (spindrift) - one shadow cascade of pine casters; phase 2 measures. If it reads > 220, drop the spindrift batch on Cloud first, then castShadow on the outer pine row (lat2 > fairway + 10.5 m), then `instances.model` `lod: { levels: [{ maxDistance: 140 }] }` on the pines.",
+    "Triangles: the pine (44.9k per tree) and the lamp (272k) need WP-36 replacements with LODs (mountain pine, floodlight mast) or an impostor (`instances.model` `impostor` / `shadowLod: \"impostor\"`, needs an impostor texture asset).",
+    "Phone: drawCalls <= 150 on all six courses; phone halves the ground-cover instances when LINKS-9 lands."
+  ],
+  "after": null
+}

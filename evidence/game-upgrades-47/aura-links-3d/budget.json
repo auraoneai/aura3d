@@ -1,0 +1,70 @@
+{
+  "slug": "aura-links-3d",
+  "wp": "WP-20",
+  "renderer": "software WebGL2 (remote runner)",
+  "budget": {
+    "drawCalls": { "desktopHigh": 220, "phone": 150 },
+    "triangles": 1200000,
+    "textureBytesPerCourseDeltaMax": 50331648,
+    "textureBytesTotalMax": 167772160,
+    "hdriDistBytesMax": 12582912,
+    "mirrorsPerHoleMax": 2,
+    "mirrorSizePx": 256,
+    "shadowedSpotsMax": 2,
+    "animatedGalleryActorsMax": 10,
+    "particlesMax": 2000,
+    "fpsTolerance": 0.1
+  },
+  "beforeSource": "evidence/aura-links-3d/audit-fix/after/meta.jsonl, g10w3-after__meta.jsonl, g10j-phone__meta.jsonl (4.6.x branch build, settle-75s shots; the newest committed per-course rows). Triangles, texture bytes, page MB, route JS gzip and fps were not recorded there (null).",
+  "variants": {
+    "stAuroras": {
+      "before": {
+        "desktop": { "drawCalls": 143, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": null, "fps": null, "meanLuma": 135.46, "darkFrac": 0.0015, "p95": 194 },
+        "phone": { "drawCalls": 103, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": null, "fps": null, "meanLuma": 146.13, "darkFrac": 0.0005, "p95": 204 }
+      },
+      "after": null,
+      "expectedDrawDelta": "+1 ambient wisps batch and +1 sun-flare batch on High; 0 on Low"
+    },
+    "mapleHollow": {
+      "before": {
+        "desktop": { "drawCalls": 139, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": null, "fps": null, "meanLuma": 141.42, "darkFrac": 0.0015, "p95": 191 },
+        "phone": null
+      },
+      "after": null,
+      "expectedDrawDelta": "+1 ambient leaves batch on High (film grain is a post stage, no draw)"
+    },
+    "cinderRim": {
+      "before": {
+        "desktop": { "drawCalls": 106, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": null, "fps": null, "meanLuma": 128.05, "darkFrac": 0, "p95": 203 },
+        "phone": null
+      },
+      "after": null,
+      "expectedDrawDelta": "+1 embers batch, +1 sun-flare batch on High; god rays are the S4 post stage (no scene draw); lava glow points add no draws"
+    },
+    "cloudTerrace": {
+      "before": {
+        "desktop": { "drawCalls": 218, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": null, "fps": null, "meanLuma": 151.53, "darkFrac": 0, "p95": 192 },
+        "phone": null
+      },
+      "after": null,
+      "expectedDrawDelta": "+1 spindrift batch on High; key cascades 4 -> 3 removes one cascade of shadow-caster draws (the 23-primitive pine casts in each). Budget risk: 218 today against 220 (see evidence/aura-links-3d/budget.json)"
+    },
+    "neonBay": {
+      "before": {
+        "desktop": { "drawCalls": 127, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": null, "fps": null, "meanLuma": 27.59, "darkFrac": 0.4352, "p95": 60 },
+        "phone": { "drawCalls": 78, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": null, "fps": null, "meanLuma": 27.29, "darkFrac": 0.4893, "p95": 58 }
+      },
+      "after": null,
+      "expectedDrawDelta": "+2 light cones, +1 moths batch on High; the four 4.6.2 lamp spots become two mast spots (lights, no draws)"
+    },
+    "mareCourse": {
+      "before": {
+        "desktop": { "drawCalls": 115, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": null, "fps": null, "meanLuma": 46.38, "darkFrac": 0.5008, "p95": 119 },
+        "phone": { "drawCalls": 76, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": null, "fps": null, "meanLuma": 49.91, "darkFrac": 0.5082, "p95": 124 }
+      },
+      "after": null,
+      "expectedDrawDelta": "0 (no ambient particles, no flare on the airless course)"
+    }
+  },
+  "sharedDeltas": "In flight: +1 tracer ribbon, -16 trail-dot spheres (hidden in the GU47 look). Runtime bursts: 1-3 transient particle batches (merged by blend/atlas key) and 1 decal batch. HDRI dist bytes: six 1k catalogue files = 8,435,469 B (spruit 1,527,279 + autumn field 1,092,974 + industrial sunset 1,180,675 + outdoor-midday 1,173,154 + rooftop night 1,629,654 + starfield 1,831,733) <= 12 MB; they ship once in public/hdri/ for every game."
+}
