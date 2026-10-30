@@ -46,6 +46,8 @@ export interface LookRow {
   };
   readonly camera: { readonly baseFov: number; readonly boostKick: number; readonly landingKick: number; readonly leanRollDeg: number };
   readonly planet: { readonly position: Vec3; readonly size: number; readonly ring: boolean; readonly moon: boolean };
+  /** Output exposure in EV (pre-tone-map `output.exposure = 2^ev`); 0 keeps the 4.6.1 exposure. */
+  readonly exposureEV: number;
   /** Signature-effect parameters: gouache brush scale and split-tone strength in the custom shaders (0 = off). */
   readonly signature: { readonly brush: number; readonly splitTone: number };
 }
@@ -73,7 +75,7 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
     key: { elevationDeg: 18, azimuthDeg: 0, position: lightPosition(18, 0), color: "#fff3e4", intensity: 3.0, cascades: 3, filter: "pcss", maxDistance: 200 },
     fill: null,
     planetshine: { position: [GIANT_POSITION[0], GIANT_POSITION[1] + 60, GIANT_POSITION[2]], color: "#ffb48c", intensity: 0.8 },
-    hemisphere: { sky: "#d8c2d6", ground: "#24395a", intensity: 0.75 },
+    hemisphere: { sky: "#d8c2d6", ground: "#24395a", intensity: 0.95 },
     environment: { kind: "capture", intensity: 0.85 },
     fog: { color: "#2a2a4d", density: 0.0011, maxOpacity: 0.78, heightMist: 1 },
     post: {
@@ -84,6 +86,9 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
     },
     camera: { baseFov: 64, boostKick: 9, landingKick: 5, leanRollDeg: 2 },
     planet: { position: GIANT_POSITION, size: 520, ring: true, moon: true },
+    // Phase 2 (software WebGL2 capture): the 18-degree raking key lands at about a third of the original key's N.L on the
+    // road, so the frame read mean 32 against the 60-110 band. +1.75 EV keeps the rig ratios (art direction) and lifts it.
+    exposureEV: 1.75,
     signature: { brush: 1, splitTone: 1 }
   },
   original: {
@@ -104,9 +109,15 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
     },
     camera: { baseFov: 72, boostKick: 0, landingKick: 0, leanRollDeg: 0 },
     planet: { position: [-17, 83, 48], size: 300, ring: false, moon: false },
+    exposureEV: 0,
     signature: { brush: 0, splitTone: 0 }
   }
 };
+
+/** Linear output exposure multiplier for a look (`output.exposure`). */
+export function lookExposure(look: OrbitLook): number {
+  return 2 ** LOOKS[look].exposureEV;
+}
 
 export interface SectorRow {
   readonly id: SectorId;
