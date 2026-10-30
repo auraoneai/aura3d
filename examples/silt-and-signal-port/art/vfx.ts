@@ -8,8 +8,8 @@
  * - `silt-motes-<kind>` (DG-V4): the chapter's ambient emitter (sand, fireflies, lantern motes, pollen, embers).
  * - `SILT_TRAIL` (DG-V2): twin jade ribbons from the board, widening on boost.
  *
- * Budget (WP-34): <= 600 particles and <= 96 effects. A dense moment is wake 48 live + motes 60 + signal 26 + impact 22 =
- * 156 particles; reduced motion halves every emission (PRD §6.3) and Low halves the wake and the motes again.
+ * Budget (WP-34): <= 600 particles and <= 96 effects. A dense moment is
+ * about 434 particles (15 wake bursts of 20 alive at once, 60 motes, two signals of 26, one impact of 22); reduced motion halves every emission (PRD §6.3) and Low halves the wake and the motes again.
  */
 import type { AuraTrailOptions, AuraVfxEffectSpec } from "@aura3d/engine";
 import { SILT_PALETTE, chapterLook, type AmbientMotes } from "./look";
@@ -50,8 +50,8 @@ export function siltVfxPresets(options: SiltVfxOptions): Readonly<Record<SiltVfx
     "silt-sand-wake": {
       name: "silt-sand-wake",
       layers: [
-        { type: "emitter", preset: "dust-sand", count: n(32, scale), speed: [2, 6], life: [0.6, 1.2], size: [0.25, 0.7], color: look.wake.color, intensity: 1, sprite: "smoke-a", additive: false, direction: [0, 0.6, 1], spread: 0.8, gravity: -2.5, drag: 1.2, maxScreen: 0.08 },
-        { type: "emitter", preset: "dust-sand", count: n(16, scale), speed: [4, 9], life: [0.3, 0.6], size: [0.04, 0.09], color: SILT_PALETTE.sandstone, intensity: 1, sprite: "dust-mote", additive: false, direction: [0, 0.8, 1], spread: 0.6, gravity: -9, maxScreen: 0.02 }
+        { type: "emitter", preset: "dust-sand", count: n(14, scale), speed: [2, 6], life: [0.6, 1.2], size: [0.25, 0.7], color: look.wake.color, intensity: 1, sprite: "smoke-a", additive: false, direction: [0, 0.6, 1], spread: 0.8, gravity: -2.5, drag: 1.2, maxScreen: 0.08 },
+        { type: "emitter", preset: "dust-sand", count: n(6, scale), speed: [4, 9], life: [0.3, 0.6], size: [0.04, 0.09], color: SILT_PALETTE.sandstone, intensity: 1, sprite: "dust-mote", additive: false, direction: [0, 0.8, 1], spread: 0.6, gravity: -9, maxScreen: 0.02 }
       ]
     },
     "silt-canal-spray": {

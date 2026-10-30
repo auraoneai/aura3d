@@ -18,6 +18,8 @@ import { CHAPTER_COPY, ENDING_COPY, OBJECTIVE_TITLES, SCENE_COPY } from "./copy"
 import { STEP, createSim, objectiveOf, stepSim, targetOf, type Input, type Sim, type SimEvent } from "./sim";
 import { buildWorld, type World, type WorldRuntime } from "./world";
 import { chapterLook, inkPassOptions, siltLookMode } from "./art/look";
+import { RAIL_SECONDS, railPose } from "./camera";
+import { mountSiltHud } from "./hud-look";
 import { mergeInput, objectiveHint, pageFlags, type Device } from "./controls";
 import { clearJourney, journeyTotals, ratingOf, readJourney, recordOf, writeChapter } from "./journey";
 
@@ -88,7 +90,31 @@ const objectiveTitle = (id: string, fallback: string): string => OBJECTIVE_TITLE
 
 const SCREENS: Record<Exclude<Mode, "play">, string> = { title: "title-screen", paused: "pause-screen", scene: "scene-screen", done: "done-screen" };
 
+/* GU47 DG-C1: a 4 s establishing rail with letterbox bars the first time a chapter enters play (inked look, player
+ * mode only; reduced motion and QA modes skip it). Any key, pointer or pad button skips it on the next frame. */
+let railLeft = 0;
+let railArmed = config.look === "inked" && !qa && !reducedMotion;
+let bars: HTMLElement | null = null;
+function showBars(on: boolean): void {
+  if (!bars) {
+    if (!on) return;
+    bars = document.createElement("div");
+    bars.id = "silt-bars";
+    bars.setAttribute("aria-hidden", "true");
+    bars.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:4;transition:opacity .35s;box-shadow:inset 0 9vh 0 #0d0b10,inset 0 -9vh 0 #0d0b10";
+    document.body.appendChild(bars);
+  }
+  bars.style.opacity = on ? "1" : "0";
+}
+function skipRail(): void {
+  if (railLeft <= 0) return;
+  railLeft = 0;
+  showBars(false);
+}
+
 function setMode(next: Mode): void {
+  if (next === "play" && railArmed) { railArmed = false; railLeft = RAIL_SECONDS; showBars(true); }
+  if (next !== "play") skipRail();
   mode = next;
   for (const id of Object.values(SCREENS)) $(id).classList.toggle("hidden", SCREENS[next as Exclude<Mode, "play">] !== id);
   $("hud").classList.toggle("hidden", next === "title");
@@ -176,6 +202,7 @@ function beginPlay(): void {
 const KEYS = ["KeyW", "KeyS", "KeyA", "KeyD", "KeyE", "KeyQ", "KeyB", "ShiftLeft", "ShiftRight", "Space", "KeyF", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
 addEventListener("keydown", (e) => {
   device = "keys";
+  skipRail();
   // the first key press is a user gesture: start audio (chapter reloads land straight in play, with no Begin click)
   if (mode !== "title" && !audio.running && !qa) audio.resume();
   if (mode === "title" && (e.code === "Enter" || e.code === "Space")) { e.preventDefault(); beginPlay(); return; }
@@ -192,6 +219,7 @@ const held = (...codes: string[]): boolean => codes.some((c) => down.has(c));
 interface Pointer { startX: number; startY: number; x: number; y: number }
 const pointers = new Map<number, Pointer>();
 canvas.addEventListener("pointerdown", (e) => {
+  skipRail();
   if (e.pointerType === "touch") showTouch();
   if (mode !== "play") return;
   audio.resume();
@@ -247,7 +275,7 @@ function readPad(): Partial<Input> {
   if (start && !padStartHeld && !qa) setMode(mode === "play" ? "paused" : mode === "paused" ? "play" : mode);
   padStartHeld = start;
   const any = pad.buttons.some((b) => b.pressed);
-  if (any && !padAnyHeld) { device = "pad"; if (!qa) audio.resume(); }
+  if (any && !padAnyHeld) { device = "pad"; skipRail(); if (!qa) audio.resume(); }
   padAnyHeld = any;
   const rt = pad.buttons[7]?.value ?? 0;
   return {
@@ -293,7 +321,16 @@ function render(dt: number): void {
   if (!app || !runtime) return;
   const live = mode === "play" && !config.manual && !drawLatest;
   runtime.update(live ? viewOf(sim, presenter.present(loop, true)) : sim, dt, renderTime, canvas.clientWidth / Math.max(1, canvas.clientHeight), drawLatest);
-  const pose = overridePose ?? (mode === "title" ? titlePose() : null);
+  let pose = overridePose ?? (mode === "title" ? titlePose() : null);
+  if (!pose && mode === "play" && railLeft > 0) {
+    railLeft = Math.max(0, railLeft - dt);
+    const eye = runtime.cameraEye()?.eye ?? [sim.state.x, sim.state.y + 5, sim.state.z + 13];
+    const { x, y, z, yaw } = sim.state;
+    const chase = { position: [eye[0], eye[1], eye[2]] as [number, number, number], target: [x - Math.sin(yaw) * 14, y + 1.2, z - Math.cos(yaw) * 14] as [number, number, number] };
+    const rail = railPose(sim, RAIL_SECONDS - railLeft, chase);
+    pose = { position: [...rail.position], target: [...rail.target], up: [0, 1, 0], fov: canvas.clientHeight > canvas.clientWidth ? 78 : 62 };
+    if (railLeft <= 0) showBars(false);
+  }
   if (pose) app.camera?.setPose(pose, { cut: true });
   app.step(0);
   frames++;
@@ -432,9 +469,30 @@ function installHooks(): void {
       pose(next: Pose | null) { overridePose = next; },
       setMode(next: Mode) { if (next === "done") openDone(); else setMode(next); },
       mode: () => mode,
-      info: () => ({ frames, nodeCount: runtime?.nodeCount ?? 0, diagnostics: app?.diagnostics() ?? null, routeHealth, world: world?.stats ?? null, rider: runtime?.riderAnimation() ?? null, audio: { muted: audio.muted, running: audio.running } })
+      info: () => ({ frames, nodeCount: runtime?.nodeCount ?? 0, diagnostics: app?.diagnostics() ?? null, routeHealth, world: world?.stats ?? null, rider: runtime?.riderAnimation() ?? null, audio: { muted: audio.muted, running: audio.running } }),
+      /** GU47: the look in use, runtime VFX stats (wake strength, bursts fired, trails) and the camera feel (FOV kick, roll) */
+      look: () => ({ mode: config.look, chapter: config.chapter, fx: runtime?.fxStats() ?? null, camera: runtime?.cameraFeel() ?? null }),
+      /** GU47 E-I steady-state crops (normalised to the canvas, read at every shot) */
+      crops: qaCrops
     }
   });
+  (window as unknown as { __AURA_QA__?: { crops: typeof qaCrops } }).__AURA_QA__ = { crops: qaCrops };
+}
+
+/**
+ * GU47 crops for the E-I capture. The chase camera keeps the rider near the frame centre, slightly low, so its box is
+ * fixed; ring/board/hud are where the jade accent may appear (DG-M4), sky and bottom rows feed DG-S1 and DG-P1.
+ */
+function qaCrops(): readonly { name: string; x: number; y: number; w: number; h: number }[] {
+  const portrait = canvas.clientHeight > canvas.clientWidth;
+  return [
+    { name: "rider", x: portrait ? 0.36 : 0.43, y: 0.5, w: portrait ? 0.28 : 0.14, h: 0.22 },
+    { name: "board", x: portrait ? 0.34 : 0.42, y: 0.66, w: portrait ? 0.32 : 0.16, h: 0.08 },
+    { name: "ring", x: 0.3, y: 0.18, w: 0.4, h: 0.34 },
+    { name: "sky", x: 0, y: 0, w: 1, h: 0.18 },
+    { name: "bottom", x: 0, y: 0.8, w: 1, h: 0.2 },
+    { name: "hud", x: 0, y: 0, w: 1, h: 0.12 }
+  ];
 }
 
 function wireScreens(): void {
@@ -492,6 +550,10 @@ async function boot(): Promise<void> {
   size();
   addEventListener("resize", size);
   wireScreens();
+  // GU47 DG-H1: the poster HUD (fonts load in the background; the fallback stack shows until they arrive)
+  let hudFonts: readonly string[] = [];
+  if (config.look === "inked") void mountSiltHud().then((loaded) => { hudFonts = loaded; });
+  (window as unknown as { __SILT_HUD_FONTS__?: () => readonly string[] }).__SILT_HUD_FONTS__ = () => hudFonts;
   // phones and tablets get a 2048 sun shadow map (a quarter of the 4096 texels; the heaviest pass on a phone GPU)
   world = buildWorld(config.chapter, { shadowMapSize: coarse ? 2048 : 4096, look: config.look, low: coarse });
   const look = chapterLook(config.chapter);

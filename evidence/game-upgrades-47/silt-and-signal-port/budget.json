@@ -1,0 +1,23 @@
+{
+  "schema": "aura3d.gu47-budget/1",
+  "slug": "silt-and-signal-port",
+  "lane": "g24",
+  "budget": { "drawCallsHigh": 140, "drawCallsCoarse": 110, "programs": 18, "compileMs": 4000, "visibleTriangles": 1200000, "particles": 600, "effects": 96, "decals": 32, "pointsPerChapter": 8, "hdriBytesPerChapter": 1500000 },
+  "beforeSource": "evidence/silt-and-signal-port/after-info.json (4.6.x captures, software WebGL2, 1280x720; chase shot at objective 0)",
+  "before": {
+    "title": { "drawCalls": 199, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": 0, "runnerFps": null },
+    "ch0": { "drawCalls": 199, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": 0, "runnerFps": null },
+    "ch1": { "drawCalls": 144, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": 0, "runnerFps": null },
+    "ch2": { "drawCalls": 144, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": 0, "runnerFps": null },
+    "ch3": { "drawCalls": 140, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": 0, "runnerFps": null },
+    "ch4": { "drawCalls": 150, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": 0, "runnerFps": null },
+    "ch5": { "drawCalls": 144, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": 0, "runnerFps": null },
+    "ch6": { "drawCalls": 140, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDelta": 0, "runnerFps": null }
+  },
+  "expectedDrawDelta": {
+    "note": "phase-1 estimate per row; measured in phase 2",
+    "DG-L1..L4": 0, "DG-S1": 0, "DG-S3": 0, "DG-P1": 0, "DG-P2": 0, "DG-P3": 0,
+    "DG-A3 thruster strips": 0, "DG-V1 wake + motes": 2, "DG-V2 twin trails": 2, "DG-V3 bursts": 1, "DG-C1 bars": 0
+  },
+  "after": null
+}
