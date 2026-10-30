@@ -25,7 +25,8 @@ import { buildFcScene, resolveWorld, applyVenue, tickWorld, ATHLETE_IDS, VENUE_L
 import { mountFcTouch } from "./game/touch";
 import { fireFcVfx, registerFcVfxPack, type FcVfxEvent } from "./game/vfx";
 import { fcQaCrops } from "./game/qaCrops";
-import { fitCameraToAspect } from "./game/camera";
+import { fitCameraToAspect, broadcastPose, introRailPose, replayPose, fullTimeOrbitPose, INTRO_RAIL_S } from "./game/camera";
+import { createReplayBuffer, type ReplayFrame, type ReplayPlayback } from "./game/replay";
 import { loadSave } from "./game/save";
 import { resolveAthlete, applyAthleteKit, poseAthlete, skinFor, teamKitForId, type AthleteRig } from "./game/rig";
 import { createHud, clubFor } from "./game/hud";
@@ -45,8 +46,6 @@ installBlackFrameGuard();
 type Vec3 = [number, number, number];
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-const smooth = (t: number) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
-const mix3 = (a: Vec3, b: Vec3, t: number): Vec3 => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
 
 /** FC-23: the values published in `__AURA3D_GAME_EVIDENCE__.hud` (read from the appState passed each frame). */
 const hudBinding = (binding: string, id: string, label: string, valuePath: string, format: string, extra: Record<string, unknown> = {}) => ({
@@ -289,7 +288,7 @@ function boot(): void {
   const eventLog = game.eventLog({ label: "aura-fc-3d events", maxEvents: 48 });
 
   /* -------------------------- camera director -------------------------- */
-  type CamMode = "menu" | "intro" | "broadcast" | "goal" | "penalty" | "lab" | "celebrate";
+  type CamMode = "menu" | "intro" | "broadcast" | "goal" | "replay" | "penalty" | "lab" | "celebrate";
   const cam = {
     mode: "menu" as CamMode,
     eye: [0, 22.5, 38.5] as Vec3,
@@ -303,6 +302,15 @@ function boot(): void {
     shownFov: 54
   };
   let prevModeTag = "";
+  // FC47-C1 broadcast package: tunnel-to-gantry intro once per match (`?intro=off`; reduced motion cuts straight to the
+  // gantry), goal replay from the render-side ring buffer (`?replay=off`), full-time orbit, a hard cut on shot changes.
+  const introOff = bootParams.get("intro") === "off" || reducedMotion;
+  const replayOff = bootParams.get("replay") === "off";
+  let introPlayed = false;
+  let shownMode: CamMode = cam.mode;
+  let camCuts = 0;
+  const replayBuf = createReplayBuffer();
+  let replay: { plan: ReplayPlayback; elapsed: number; side: number; frame: ReplayFrame | null } | null = null;
 
   function updateCamera(dt: number): void {
     const s = sim.state;
@@ -314,11 +322,15 @@ function boot(): void {
       prevModeTag = tag;
       cam.modeT = 0;
       if (s.phase === "kickoff" || s.phase === "live") cam.mode = "broadcast";
+      // FC47-C1: the first kickoff of a match opens on the 4 s tunnel-to-gantry rail
+      if (s.phase === "kickoff" && s.half === 1 && s.clock === 0 && !introPlayed && !introOff
+        && (modes.mode === "quick" || modes.mode === "circuit" || modes.mode === "demo")) { cam.mode = "intro"; introPlayed = true; }
       if (s.phase === "shootout") cam.mode = "penalty";
-      if (modes.mode === "menu" || modes.mode === "studio" || modes.mode === "circuit") cam.mode = "menu";
+      if (modes.mode === "menu" || modes.mode === "studio" || modes.mode === "circuit") { cam.mode = "menu"; if (modes.mode !== "circuit") introPlayed = false; }
       if (modes.mode === "touch") cam.mode = "lab";
     }
-    if (s.phase === "goal") cam.mode = "goal";
+    if (cam.mode === "intro" && hasUserInput()) cam.mode = "broadcast";   // any input skips the rail
+    if (s.phase === "goal") cam.mode = replay ? "replay" : "goal";
     if (s.phase === "ended" && (modes.mode === "quick" || modes.mode === "circuit" || modes.mode === "demo")) cam.mode = "celebrate";
     if (modes.mode === "demo" && s.phase === "live" && cam.mode === "menu") cam.mode = "broadcast";
 
@@ -333,11 +345,13 @@ function boot(): void {
       cam.target = [0, 1.1, 0];
       cam.fov = 46;
     } else if (cam.mode === "intro") {
-      const t = smooth(clamp(cam.modeT / 2.2, 0, 1));
-      cam.eye = mix3([-24, 19, 34], [0, 22.5, 38.5], t);
-      cam.target = mix3([0, 2.0, -2], [0, 0.8, -1.5], t);
-      cam.fov = lerp(48, 54, t);
-      if (cam.modeT > 2.2) cam.mode = "broadcast";
+      const shot = introRailPose(cam.modeT);
+      cam.eye = shot.eye; cam.target = shot.target; cam.fov = shot.fov;
+      if (cam.modeT >= INTRO_RAIL_S) cam.mode = "broadcast";
+    } else if (cam.mode === "replay" && replay) {
+      const rb = replay.frame?.ball ?? b;
+      const shot = replayPose(replay.side, rb.x, rb.z, reducedMotion, PITCH_HX);
+      cam.eye = shot.eye; cam.target = shot.target; cam.fov = shot.fov;
     } else if (cam.mode === "goal") {
       // push toward the celebrating scorer / the net that billowed
       const scorer = s.players.find((p) => p.id === s.lastScorer);
@@ -361,6 +375,10 @@ function boot(): void {
         cam.target = [me.x + 1.2, 0.6, me.z];
       }
       cam.fov = 38;
+    } else if (cam.mode === "celebrate" && cam.modeT > 3) {
+      // FC47-C1 full-time orbit: after 3 s on the scorer, a slow rising orbit of the bowl
+      const shot = fullTimeOrbitPose(cam.modeT - 3, reducedMotion);
+      cam.eye = shot.eye; cam.target = shot.target; cam.fov = shot.fov;
     } else if (cam.mode === "celebrate") {
       const scorer = s.players.find((p) => p.id === s.lastScorer) ?? s.players[0];
       const cx = scorer?.x ?? 0, cz = scorer?.z ?? 0;
@@ -373,9 +391,9 @@ function boot(): void {
       // ball so dribbles, tackles and shots read at gameplay scale. The eye
       // also eases toward the ball across the touchline so near-side play
       // stays inside the frame instead of falling off the bottom edge.
-      cam.eye = [cam.followX, 9.5, 20 + clamp(b.z * 0.55, -5.5, 5.5)];
-      cam.target = [b.x, 0.9, -1 + clamp(b.z * 0.3, -4, 4)];
-      cam.fov = 38;
+      // FC47-C1: the main cam is the gantry, 14 m up looking down 30 degrees (was 9.5 m, about 22 degrees).
+      const shot = broadcastPose(cam.followX, b.x, b.z);
+      cam.eye = shot.eye; cam.target = shot.target; cam.fov = shot.fov;
     }
     const qaP = qaFocus && qaKickerId ? (s.players as PlayerState[]).find((p) => p.id === qaKickerId) : undefined;
     if (qaP) {
@@ -388,7 +406,14 @@ function boot(): void {
     const aspect = canvas && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : window.innerWidth / Math.max(1, window.innerHeight);
     const fit = fitCameraToAspect(cam.eye, cam.target, cam.fov, aspect);
     cam.shownEye = fit.eye; cam.shownFov = fit.fov;
-    (app as any).camera?.setPose?.({ position: fit.eye, target: cam.target, fov: fit.fov });
+    // FC47-C1: a shot change is a hard cut (the camera evidence reports cutThisFrame; temporal history resets), except
+    // the rail's own landing on the gantry, which is continuous.
+    const cut = cam.mode !== shownMode && !(shownMode === "intro" && cam.mode === "broadcast" && cam.modeT >= INTRO_RAIL_S);
+    if (cam.mode !== shownMode) { if (cut) camCuts++; shownMode = cam.mode; hud.bars(cam.mode === "intro"); hud.replayTag(cam.mode === "replay"); }
+    (app as any).camera?.setPose?.({ position: fit.eye, target: cam.target, fov: fit.fov }, cut ? { cut: true } : undefined);
+  }
+  function hasUserInput(): boolean {
+    return inputFrame.move[0] !== 0 || inputFrame.move[1] !== 0 || inputFrame.passShort || inputFrame.passDriven || inputFrame.shootHeld || inputFrame.switchPlayer;
   }
 
   /* -------------------------- kits -------------------------- */
@@ -477,6 +502,11 @@ function boot(): void {
           // FC-E2 authored goal feedback: confetti over the net that was scored, plus the net bulge, ring and scoreboard
           // flash driven from tickWorld
           goalSide = sim.state.ball.x >= 0 ? 1 : -1;
+          // FC47-C1: replay the run-up and strike while the sim holds its 3 s goal phase
+          if (!replayOff && sim.state.phase === "goal") {
+            const plan = replayBuf.plan();
+            if (plan) replay = { plan, elapsed: 0, side: goalSide, frame: replayBuf.sample(plan, 0) };
+          }
           world.confetti?.setPosition(goalSide * (PITCH_HX - 2), 4.2, 0).setVisible(true);
           window.setTimeout(() => world.confetti?.setVisible(false), 2600);
           syncCrowd();
@@ -538,9 +568,23 @@ function boot(): void {
           clearEdges();
         }
       }
+      // FC47-C1 replay buffer (render side, read-only): record open play and the goal frame itself; a kickoff empties it
+      {
+        const st = sim.state;
+        if (st.phase === "live" || st.phase === "restart" || events.some((e) => e.type === "goal")) replayBuf.record(st);
+        else if (st.phase === "kickoff") replayBuf.clear();
+      }
       consumeEvents(events);
 
       const s = sim.state;
+      if (replay) {
+        if (!frozen) replay.elapsed += dt;
+        if (s.phase !== "goal" || replay.elapsed >= replay.plan.duration) replay = null;
+        else replay.frame = replayBuf.sample(replay.plan, replay.elapsed);
+      }
+      // what the renderer shows: the replayed snapshot during a goal replay, the live sim otherwise
+      const shownPlayers = (replay?.frame?.players ?? s.players) as PlayerState[];
+      const shownBall = replay?.frame?.ball ?? s.ball;
       if (qaTargetFrac !== null && !qaFrozen) {
         const kicker = (s.players as PlayerState[]).find((p) => p.kickT > 0.02 && p.kickDur > 0.05);
         if (kicker && 1 - kicker.kickT / kicker.kickDur >= qaTargetFrac) { qaFrozen = true; qaTargetFrac = null; qaKickerId = kicker.id; }
@@ -559,7 +603,7 @@ function boot(): void {
       /* ---- render athletes ---- */
       const t = now;
       const seen = new Set<string>();
-      for (const p of s.players as PlayerState[]) {
+      for (const p of shownPlayers) {
         const rig = rigs.get(p.id);
         if (!rig) continue;
         seen.add(p.id);
@@ -576,19 +620,20 @@ function boot(): void {
       }
 
       /* ---- ball: one admitted GLB at regulation size ---- */
-      const b = s.ball;
-      const by = Math.max(BALL_VIS_R, b.y + (BALL_VIS_R - BALL_R));
-      const rx = b.rotX ?? 0;
-      const ry = b.rotY ?? 0;
-      const rz = b.rotZ ?? 0;
+      // evidence below reads the sim ball `b`; the node shows `vb` (the replayed ball during a goal replay)
+      const b = s.ball, vb = shownBall;
+      const by = Math.max(BALL_VIS_R, vb.y + (BALL_VIS_R - BALL_R));
+      const rx = vb.rotX ?? 0;
+      const ry = vb.rotY ?? 0;
+      const rz = vb.rotZ ?? 0;
       // The ball GLB is fitted (origin = its lowest point, rotation pivots there): place the node so the CENTRE lands on (b.x, by, b.z).
       const cxr = Math.cos(rx), sxr = Math.sin(rx), cyr = Math.cos(ry), syr = Math.sin(ry), czr = Math.cos(rz), szr = Math.sin(rz);
       const ux = syr * sxr, uy = cxr, uz = cyr * sxr;
       world.ballMesh
-        ?.setPosition(b.x - (czr * ux - szr * uy) * BALL_VIS_R, by - (szr * ux + czr * uy) * BALL_VIS_R, b.z - uz * BALL_VIS_R)
+        ?.setPosition(vb.x - (czr * ux - szr * uy) * BALL_VIS_R, by - (szr * ux + czr * uy) * BALL_VIS_R, vb.z - uz * BALL_VIS_R)
         .setRotation(rx, ry, rz).setScale([1, 1, 1]).setVisible(true);
       const shScale = clamp(1 - (by - BALL_VIS_R) * 0.12, 0.35, 1.08);
-      world.ballShadow?.setPosition(b.x, 0.015, b.z).setScale([shScale, 1, shScale]).setVisible(true);
+      world.ballShadow?.setPosition(vb.x, 0.015, vb.z).setScale([shScale, 1, shScale]).setVisible(true);
 
       /* ---- aim ring (shootout) + lab ring (touch lab) ---- */
       if (s.phase === "shootout" && s.shootout && s.shootout.takerTeam === s.userTeam && s.shootout.stage === "aim") {
@@ -684,7 +729,7 @@ function boot(): void {
         clock: Math.round(s.clock * 10) / 10,
         venue: s.venue,
         score: [...s.score],
-        ball: { position: [b.x, by, b.z], radius: BALL_VIS_R, rotX: rx, rotY: ry, rotZ: rz, mode: b.mode, lastShot: b.lastShot, freeT: Math.round(b.freeT * 100) / 100 },
+        ball: { position: [vb.x, by, vb.z], radius: BALL_VIS_R, rotX: rx, rotY: ry, rotZ: rz, mode: b.mode, lastShot: b.lastShot, freeT: Math.round(b.freeT * 100) / 100 },
         ballPhysics,
         possessionTeam: s.possessionTeam,
         possession: [Math.round(s.possession[0] * 10) / 10, Math.round(s.possession[1] * 10) / 10],
@@ -698,6 +743,7 @@ function boot(): void {
         shootout: s.shootout ? { stage: s.shootout.stage, scores: [...s.shootout.scores], taken: [...s.shootout.taken], round: s.shootout.round } : null,
         winner: s.winner,
         cameraMode: cam.mode,
+        broadcast: { introPlayed, cuts: camCuts, replay: replay ? { from: replay.plan.from, to: replay.plan.to, duration: replay.plan.duration, elapsed: replay.elapsed } : null, replayBufferSpan: replayBuf.span() },
         camera: { position: [...cam.shownEye], target: [...cam.target], fov: cam.shownFov, authoredFov: cam.fov },
         goalpostsInView: {
           leftGoalWorld: [-PITCH_HX, 0, 0],

@@ -44,6 +44,10 @@ export interface Hud {
   ident(venue: string, timeOfDay: string, ms?: number): void;
   /** FC47-H1 TV package: goal lower third (scoring club and match minute) from the last update's clubs. */
   goalLowerThird(team: 0 | 1, state: MatchState, ms?: number): void;
+  /** FC47-C1: letterbox bars while the intro rail plays. */
+  bars(on: boolean): void;
+  /** FC47-C1 / H1: the REPLAY stinger while a goal replay plays. */
+  replayTag(on: boolean): void;
 }
 
 /**
@@ -164,6 +168,16 @@ const css = `
 .fc-l3 b { padding: 6px 14px; background: #d8ff3e; color: #0b1f1c; font-size: 22px; font-weight: 600; letter-spacing: .14em; }
 .fc-l3 span { padding: 5px 14px; background: rgba(7,16,22,.92); color: #f3f0dc; font-size: 14px; letter-spacing: .06em; }
 .fc-l3.show { opacity: 1; transform: translateX(0); }
+.fc-bars { position: absolute; inset: 0; pointer-events: none; }
+.fc-bars::before, .fc-bars::after { content: ""; position: absolute; left: 0; right: 0; height: 0; background: #000; transition: height .35s; }
+.fc-bars::before { top: 0; } .fc-bars::after { bottom: 0; }
+.fc-bars.show::before, .fc-bars.show::after { height: 10vh; }
+.fc-replay { position: absolute; top: calc(var(--a3d-bar-space, 44px) + 12px); right: 18px; display: flex; align-items: center; gap: 8px;
+  padding: 5px 14px; background: rgba(7,16,22,.92); border-left: 4px solid #d8ff3e; color: #f3f0dc; font-size: 18px; font-weight: 600;
+  letter-spacing: .22em; opacity: 0; transform: translateX(12px); transition: opacity .2s, transform .25s; }
+.fc-replay i { width: 9px; height: 9px; border-radius: 50%; background: #d8ff3e; font-style: normal; }
+.fc-replay.show { opacity: 1; transform: translateX(0); }
+@media (prefers-reduced-motion: reduce) { .fc-bars::before, .fc-bars::after, .fc-replay { transition: none; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .fc-ident, .fc-l3, .fc-banner { transition: opacity .15s; transform: none !important; } .fc-ident { transform: translateX(-50%) !important; } }
 @media (max-width: 760px) { .fc-l3 { bottom: 150px; min-width: 0; } .fc-l3 b { font-size: 18px; } }
 @media (max-width: 760px) { .fc-ticker { bottom: 110px; max-width: 220px; } .fc-bug { top: calc(var(--a3d-bar-space, 44px) + 4px); } .fc-banner { font-size: 30px; white-space: nowrap; } .fc-banner.goal { font-size: 44px; } }
@@ -274,6 +288,11 @@ export function createHud(host: HTMLElement): Hud {
   const l3 = el("div", "fc-l3", root);
   const l3Title = el("b", "", l3);
   const l3Sub = el("span", "", l3);
+  // FC47-C1: intro letterbox and the REPLAY stinger
+  const barsEl = el("div", "fc-bars", root);
+  const replayEl = el("div", "fc-replay", root);
+  el("i", "", replayEl);
+  el("span", "", replayEl).textContent = "REPLAY";
   let identTimer = 0;
   let l3Timer = 0;
   let lastClubs: { home: ClubSpec; away: ClubSpec } | null = null;
@@ -318,6 +337,8 @@ export function createHud(host: HTMLElement): Hud {
       window.clearTimeout(identTimer);
       identTimer = window.setTimeout(() => identEl.classList.remove("show"), ms);
     },
+    bars(on) { barsEl.classList.toggle("show", on); },
+    replayTag(on) { replayEl.classList.toggle("show", on); },
     goalLowerThird(team, state, ms = 4000) {
       const club = lastClubs ? (team === 0 ? lastClubs.home : lastClubs.away) : null;
       l3Title.textContent = "GOAL";
