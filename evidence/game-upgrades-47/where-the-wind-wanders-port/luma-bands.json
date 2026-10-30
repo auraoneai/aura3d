@@ -1,0 +1,11 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "where-the-wind-wanders-port",
+  "note": "WP-33 WW47-P1: mean 120-145, clip <= 2%, dark <= 5% in daylight; p5 >= 18 on the meadow crop. The epilogue is a moonlit night (exception to the daylight mean). Crops come from the wind QA hook.",
+  "default": { "mean": [120, 145], "clipFrac": [null, 0.02], "darkFrac": [null, 0.05], "crops": { "meadow": { "p5": [18, null] } } },
+  "variants": {
+    "where-the-wind-wanders-port--found3": { "note": "golden hour: warm, lower sun", "crops": { "meadow": { "rb": [1.15, null] } } },
+    "where-the-wind-wanders-port--epilogue": { "note": "moonlit voyage", "mean": [40, 95], "darkFrac": [null, 0.4], "clipFrac": [null, 0.02] }
+  },
+  "exceptions": { "epilogue": "night key: the daylight default mean does not apply" }
+}
