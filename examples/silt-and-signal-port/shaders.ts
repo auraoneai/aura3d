@@ -86,6 +86,8 @@ void main() {
   vec2 starP = vec2(atan(dir.x, dir.z), asin(dir.y)) * 800.0;
   float sparkle = pow(max(0.0, 1.0 - length(fract(starP) - 0.5) * 2.0), 12.0) * step(0.996, hash(floor(starP)));
   c += vec3(0.5, 0.56, 0.7) * sparkle * smoothstep(0.04, 0.3, dir.y) * skyStars;
+  // DG-S5 lightning: the storm deck lights up from above for < 200 ms (0 outside the storm chapter)
+  c += vec3(0.82, 0.86, 1.0) * skyFlash * (0.35 + 0.65 * smoothstep(-0.05, 0.45, dir.y));
   outColor = vec4(c, 1.0);
 }`;
 

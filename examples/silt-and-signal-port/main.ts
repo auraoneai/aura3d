@@ -471,7 +471,7 @@ function installHooks(): void {
       mode: () => mode,
       info: () => ({ frames, nodeCount: runtime?.nodeCount ?? 0, diagnostics: app?.diagnostics() ?? null, routeHealth, world: world?.stats ?? null, rider: runtime?.riderAnimation() ?? null, audio: { muted: audio.muted, running: audio.running } }),
       /** GU47: the look in use, runtime VFX stats (wake strength, bursts fired, trails) and the camera feel (FOV kick, roll) */
-      look: () => ({ mode: config.look, chapter: config.chapter, fx: runtime?.fxStats() ?? null, camera: runtime?.cameraFeel() ?? null }),
+      look: () => ({ mode: config.look, chapter: config.chapter, fx: runtime?.fxStats() ?? null, camera: runtime?.cameraFeel() ?? null, lightning: runtime?.lightning() ?? null }),
       /** GU47 E-I steady-state crops (normalised to the canvas, read at every shot) */
       crops: qaCrops
     }
@@ -577,7 +577,7 @@ async function boot(): Promise<void> {
       : effects.toon({ name: "silt-cel", bands: 5, bandMix: 0.75, outline: 0.75, size: [canvas.width, canvas.height] }));
     addEventListener("resize", () => app?.post?.setPassUniform?.("silt-cel", "u_texel", texel()));
   }
-  runtime = world.bind(app, { animate: !config.norig, clearCamera: config.camClear, reducedMotion });
+  runtime = world.bind(app, { animate: !config.norig, clearCamera: config.camClear, reducedMotion, onThunder: (delay, strength) => audio.thunder(delay, strength) });
   ready = true;
   setMode(mode);
   installHooks();

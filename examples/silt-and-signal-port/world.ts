@@ -16,6 +16,7 @@ import { chaseEyeBlocked, clearChaseEye, createChaseClearance, sceneryColumns, w
 import { gateOpen, objectiveOf, type Sim } from "./sim";
 import { RING_FRAGMENT, RING_VERTEX, SKY_FRAGMENT, SKY_INK_FRAGMENT, SKY_VERTEX, WATER_FRAGMENT, WATER_VERTEX } from "./shaders";
 import { createSiltFx, type SiltFx } from "./fx";
+import { createLightning } from "./storm";
 import { dressingFor } from "./dressing";
 import { SILT_PALETTE, chapterHdri, chapterLook, keyDirection, linearOf, type SiltLookMode } from "./art/look";
 import { buildArchitecture, farDuneRings, farDunes, terrainColors, type ColoredMesh } from "./architecture";
@@ -74,7 +75,8 @@ export const inkSkySpec = (chapter: number): CustomSpec => {
       skyCirrus: { type: "f32", value: look.sky.cirrus },
       skyDust: { type: "f32", value: look.sky.dust },
       skyStorm: { type: "f32", value: look.sky.storm },
-      skyStars: { type: "f32", value: look.sky.stars }
+      skyStars: { type: "f32", value: look.sky.stars },
+      skyFlash: { type: "f32", value: 0 }
     },
     side: "back",
     depthWrite: false
@@ -146,6 +148,8 @@ export interface WorldRuntime {
   /** GU47 QA: runtime VFX stats (null under `?look=original`) and the C2 camera feel. */
   readonly fxStats: () => ReturnType<SiltFx["stats"]> | null;
   readonly cameraFeel: () => { readonly fovKick: number; readonly rollDeg: number };
+  /** GU47 DG-S5 QA: the storm flash level now and strikes so far (null outside the inked storm chapter). */
+  readonly lightning: () => { readonly flash: number; readonly strikes: number } | null;
 }
 
 /** DG-C2 constants: boost FOV kick (deg), roll as a fraction of the board bank, roll cap (deg). */
@@ -175,8 +179,10 @@ export function overCanal(chapter: number, x: number, z: number): boolean {
 export interface BindOptions {
   readonly animate?: boolean;
   readonly clearCamera?: boolean;
-  /** `prefers-reduced-motion`: no boost FOV kick, no thruster flicker, no impact shake */
+  /** `prefers-reduced-motion`: no boost FOV kick, no thruster flicker, no impact shake; lightning capped at 0.3 */
   readonly reducedMotion?: boolean;
+  /** DG-S5: called at each lightning onset with the thunder delay (s) and strength (0..1), for the audio */
+  readonly onThunder?: (delaySeconds: number, strength: number) => void;
 }
 
 export interface World {
@@ -196,6 +202,12 @@ export interface BuildOptions {
   /** PRD §6.3: halves the storm rain volume. */
   readonly reducedMotion?: boolean;
 }
+
+/** DG-S5: wet paving in the storm chapter (inked look). */
+export const WET_ROAD = { color: "#8d8a84", roughness: 0.42, envMapIntensity: 1 } as const;
+
+/** DG-S5: the key light's intensity rises by this fraction at full lightning flash. */
+export const LIGHTNING_KEY_BOOST = 1.5;
 
 /** DG-S4 shaft march fraction (E-C clamps it to 0.05..1). */
 export const GOD_RAY_DENSITY = 0.6;
@@ -237,7 +249,7 @@ function addInkedRig(builder: Scene, chapter: number, options: BuildOptions): vo
     intensity: look.key.intensity,
     color: look.key.color,
     shadow: { mapSize: options.shadowMapSize ?? 4096, cascades: options.low ? 1 : 3, maxDistance: 360, bias: -0.0004, ...(pcss ? { filter: "pcss" as const, lightSize: 2.5 } : {}) }
-  }));
+  }).runtime({ id: "silt-key" }));
   // DG-L3: the rim sits opposite the key (mirrored azimuth, 25 deg up), never shadowed, always below the key
   builder.add(lights.directional({
     name: "silt rim",
@@ -264,8 +276,8 @@ function addInkedRig(builder: Scene, chapter: number, options: BuildOptions): vo
   builder.add(effects.bloom({ intensity: look.bloom.intensity, threshold: look.bloom.threshold }));
   // exposure lives on the output (ACES, main.ts); the grade keeps 1 so the two never stack
   builder.add(effects.colorGrade({ contrast: look.grade.contrast, saturation: look.grade.saturation, exposure: 1, temperature: look.grade.temperature }));
-  // DG-S5 (part): rain only in the storm chapter, an explicit volume count (Low and reduced motion halve it); lightning
-  // timed to audio and the wet road are phase-2 work (see the lane report)
+  // DG-S5: rain only in the storm chapter, an explicit volume count (Low and reduced motion halve it); lightning (storm.ts)
+  // and the wet road are in buildWorld and bind
   if (look.rain) {
     const count = Math.round(500 * (options.low ? 0.5 : 1) * (options.reducedMotion ? 0.5 : 1));
     builder.add({ ...effects.rain({ intensity: 0.6, color: "#b9c3d0" }).toJSON(), name: "silt storm rain", particleCount: count } as unknown as Parameters<Scene["add"]>[0]);
@@ -345,6 +357,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   const terrainMesh = terrain.terrainMesh();
   const inked = buildOptions.look !== "original";
   const look = chapterLook(chapter);
+  const wet = inked && look.rain;
   const builder: Scene = scene()
     .background(inked ? look.sky.horizon : rig.background)
     .camera(camera.perspective({ position: [0, 14, 60], target: [0, 8, 0], fov: 62, near: 0.3, far: 2700 }));
@@ -383,13 +396,18 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
     builder.add(geometry.custom(dynamicFrom(plaza), {
       name: "plaza",
       receiveShadow: true,
-      material: pbr({ color: "#e9d2a8", texture: assets.pavingColor, normal: assets.pavingNormal, roughnessMap: assets.pavingRough, roughness: 1 })
+      material: wet
+        ? pbr({ color: WET_ROAD.color, texture: assets.pavingColor, normal: assets.pavingNormal, roughnessMap: assets.pavingRough, roughness: WET_ROAD.roughness, envMapIntensity: WET_ROAD.envMapIntensity })
+        : pbr({ color: "#e9d2a8", texture: assets.pavingColor, normal: assets.pavingNormal, roughnessMap: assets.pavingRough, roughness: 1 })
     }).runtime({ id: "plaza" }));
   }
   builder.add(geometry.custom(dynamicFrom(terrain.roadMesh()), {
     name: "road",
     receiveShadow: true,
-    material: pbr({ color: usesOriginalTerrain(chapter) ? "#d8c08e" : stoneTint, texture: assets.pavingColor, normal: assets.pavingNormal, roughnessMap: assets.pavingRough, roughness: 1 })
+    // DG-S5: the storm chapter's road is wet in the inked look (darker, glossier paving)
+    material: wet
+      ? pbr({ color: WET_ROAD.color, texture: assets.pavingColor, normal: assets.pavingNormal, roughnessMap: assets.pavingRough, roughness: WET_ROAD.roughness, envMapIntensity: WET_ROAD.envMapIntensity })
+      : pbr({ color: usesOriginalTerrain(chapter) ? "#d8c08e" : stoneTint, texture: assets.pavingColor, normal: assets.pavingNormal, roughnessMap: assets.pavingRough, roughness: 1 })
   }).runtime({ id: "road" }));
   const bank = terrain.bankMesh();
   if (bank.indices.length) {
@@ -606,6 +624,9 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
         ? createSiltFx(app.effects, { chapter, reducedMotion: options.reducedMotion, low: buildOptions.low, trailNodes: ["thruster-l", "thruster-r"], motesNode: "rider" })
         : undefined;
       let fovKick = 0, roll = 0;
+      // DG-S5: lightning in the storm chapter (render time, never sim time), the sky deck and the key flash together
+      const lightning = inked && look.rain ? createLightning({ reducedFlash: options.reducedMotion }) : undefined;
+      let flashShown = 0, strikes = 0;
       let lastRider: AuraVec3 = [0, 0, 0];
       return {
         celebrate() { oneShot = 0.9; playClip("walk"); },
@@ -639,6 +660,15 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
           }
           node("sky").setPosition(state.x, state.y, state.z);
           node("canal").setUniform?.("siltTime", time);
+          if (lightning) {
+            const { flash, began } = lightning.step(time);
+            for (const strike of began) { strikes++; options.onThunder?.(strike.thunderDelay, strike.peak); }
+            if (flash !== flashShown) {
+              flashShown = flash;
+              node("sky").setUniform?.("skyFlash", flash);
+              node("silt-key").setLight?.({ intensity: look.key.intensity * (1 + LIGHTNING_KEY_BOOST * flash) });
+            }
+          }
 
           lastRider = [state.x, state.y, state.z];
           if (siltFx) {
@@ -726,6 +756,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
         get nodeCount() { return handles.size; },
         fxStats: () => siltFx?.stats() ?? null,
         cameraFeel: () => ({ fovKick, rollDeg: (roll * 180) / Math.PI }),
+        lightning: () => (lightning ? { flash: flashShown, strikes } : null),
         cameraEye: () => lastEye,
         riderAnimation: () => animation
       };

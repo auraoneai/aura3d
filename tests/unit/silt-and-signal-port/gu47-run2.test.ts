@@ -5,7 +5,8 @@
 import { describe, expect, it } from "vitest";
 import { validatePostEffectNode } from "../../../packages/engine/src/agent-api/postBridge";
 import { FAR_DUNE_RINGS, farDuneRings, farDunes } from "../../../examples/silt-and-signal-port/architecture";
-import { GOD_RAY_DENSITY, buildWorld } from "../../../examples/silt-and-signal-port/world";
+import { GOD_RAY_DENSITY, WET_ROAD, buildWorld, inkSkySpec } from "../../../examples/silt-and-signal-port/world";
+import { LIGHTNING, createLightning, flashEnvelope, lightningStrikes } from "../../../examples/silt-and-signal-port/storm";
 
 type Node = Record<string, any>;
 const nodes = (chapter: number, options: Parameters<typeof buildWorld>[1] = {}): Node[] =>
@@ -58,5 +59,47 @@ describe("GU47 WP-34 DG-S4 god rays and DG-L5 contact shadows", () => {
     for (let c = 0; c < 7; c++) expect(cs(c)).toBe(1);
     expect(cs(3, { low: true })).toBe(0);
     expect(cs(3, { look: "original" })).toBe(0);
+  });
+});
+
+describe("GU47 WP-34 DG-S5 lightning and wet road", () => {
+  it("the schedule is seeded, spaced 7-15 s, and thunder always follows the flash", () => {
+    const a = lightningStrikes(300), b = lightningStrikes(300);
+    expect(a).toEqual(b);
+    expect(a.length).toBeGreaterThan(15);
+    for (let i = 1; i < a.length; i++) {
+      const gap = a[i]!.at - a[i - 1]!.at;
+      expect(gap).toBeGreaterThanOrEqual(LIGHTNING.minGap);
+      expect(gap).toBeLessThanOrEqual(LIGHTNING.maxGap);
+    }
+    for (const s of a) expect(s.thunderDelay).toBeGreaterThan(0.4);
+  });
+
+  it("each flash is over in < 200 ms and peaks at 1", () => {
+    let peak = 0, lastLit = 0;
+    for (let t = 0; t < 0.4; t += 0.001) { const f = flashEnvelope(t); peak = Math.max(peak, f); if (f > 0) lastLit = t; }
+    expect(peak).toBeCloseTo(1, 2);
+    expect(lastLit).toBeLessThan(0.2);
+  });
+
+  it("reduced flash caps the peak at 0.3 (PRD §6.3); strikes are reported once", () => {
+    for (const reducedFlash of [false, true]) {
+      const player = createLightning({ reducedFlash });
+      let peak = 0, began = 0;
+      for (let t = 0; t < 60; t += 1 / 120) { const s = player.step(t); peak = Math.max(peak, s.flash); began += s.began.length; }
+      expect(began).toBe(lightningStrikes(60).length);
+      if (reducedFlash) expect(peak).toBeLessThanOrEqual(LIGHTNING.reducedPeak);
+      else expect(peak).toBeGreaterThan(0.6);
+    }
+  });
+
+  it("the inked sky carries the flash uniform at 0; the storm chapter's road is wet and the key has a runtime id", () => {
+    expect((inkSkySpec(4).uniforms as Record<string, { value: unknown }>).skyFlash!.value).toBe(0);
+    const road = (c: number, o: Parameters<typeof buildWorld>[1] = {}) => nodes(c, o).find((n) => n.name === "road")!;
+    expect(road(4).material.roughness).toBe(WET_ROAD.roughness);
+    expect(road(1).material.roughness).toBe(1);
+    expect(road(4, { look: "original" }).material.roughness).toBe(1);
+    const key = nodes(4).find((n) => n.name === "silt key")!;
+    expect(key.runtime?.id).toBe("silt-key");
   });
 });
