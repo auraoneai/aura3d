@@ -96,7 +96,7 @@ export class SiegeHud {
   private build(): void {
     // ---------------- topbar: shared shell contract ------------------------
     const topbar = el("div", "ss-topbar");
-    const brand = el("div", "ss-brand", `<span class="ss-brand-mark">☄</span> Slingshot Siege`);
+    const brand = el("div", "ss-brand", `<span class="ss-brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M3 1v14" stroke="currentColor" stroke-width="1.6"/><path d="M4 2h9l-3 3 3 3H4z" fill="currentColor"/></svg></span> Slingshot Siege`);
     const tabs = el("div", "ss-tabs");
     const tabDefs: readonly [ModeId, string][] = [["siege", "Siege"], ["map", "Siege Map"], ["studio", "Player Studio"], ["range", "Trajectory Range"]];
     for (const [id, label] of tabDefs) {

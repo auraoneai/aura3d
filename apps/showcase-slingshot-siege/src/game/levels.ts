@@ -46,22 +46,12 @@ export interface WindmillSpec {
   readonly motorSpeed: number;
 }
 
+/** A chapter's name and map chip. Its look (sky, sun, fog, grade, island palette) is the GU47 look table in look.ts. */
 export interface ChapterDef {
   readonly id: number;
   readonly name: string;
   readonly tagline: string;
   readonly chipColor: string;
-  /** Look preset overrides for the chapter variant. */
-  readonly look: {
-    readonly exposureEv?: number;
-    readonly fogDensityScale?: number;
-    readonly sun?: { readonly azimuthDeg?: number; readonly elevationDeg?: number };
-    readonly accent?: string;
-    readonly background?: string;
-  };
-  /** Terrain palette. */
-  readonly ground: string;
-  readonly farGround: string;
 }
 
 export interface LevelSpec {
@@ -183,39 +173,27 @@ function keep(cx: number, cz: number, height: number, mat: SiegeMaterialId, out:
 export const CHAPTERS: readonly ChapterDef[] = [
   {
     id: 0, name: "Driftwood Cove", tagline: "Splinter the driftwood forts",
-    chipColor: "#ffb35c",
-    look: { exposureEv: -0.08, fogDensityScale: 0, sun: { azimuthDeg: 118, elevationDeg: 52 }, accent: "#ffd9a0", background: "#2b6cb0" },
-    ground: "#3d8c40", farGround: "#2d6e32"
+    chipColor: "#ffb35c"
   },
   {
     id: 1, name: "Quarry Rise", tagline: "Crack the quarry stacks",
-    chipColor: "#9fb2c8",
-    look: { exposureEv: -0.08, fogDensityScale: 0, sun: { azimuthDeg: 140, elevationDeg: 58 }, accent: "#ffe2b8", background: "#245d9c" },
-    ground: "#8c7a5b", farGround: "#6e5e44"
+    chipColor: "#9fb2c8"
   },
   {
     id: 2, name: "Greenhouse Perch", tagline: "Shatter the glass roosts",
-    chipColor: "#8fe0b0",
-    look: { exposureEv: -0.08, fogDensityScale: 0, sun: { azimuthDeg: 100, elevationDeg: 54 }, accent: "#c8ffd8", background: "#2b6cb0" },
-    ground: "#3b8a44", farGround: "#2b6b33"
+    chipColor: "#8fe0b0"
   },
   {
     id: 3, name: "Windmill Gap", tagline: "Dodge the turning blades",
-    chipColor: "#ffd166",
-    look: { exposureEv: -0.08, fogDensityScale: 0, sun: { azimuthDeg: 215, elevationDeg: 42 }, accent: "#ffb35c", background: "#1e4e8c" },
-    ground: "#4d8c3a", farGround: "#386b28"
+    chipColor: "#ffd166"
   },
   {
     id: 4, name: "Gull Keep", tagline: "Siege the gull king's castle",
-    chipColor: "#ff8c69",
-    look: { exposureEv: -0.08, fogDensityScale: 0, sun: { azimuthDeg: 235, elevationDeg: 38 }, accent: "#ff9a5c", background: "#1e4e8c" },
-    ground: "#3d8c40", farGround: "#2d6e32"
+    chipColor: "#ff8c69"
   },
   {
     id: 5, name: "Moon Roost", tagline: "Low-gravity lunar siege",
-    chipColor: "#b0a8ff",
-    look: { exposureEv: -0.08, fogDensityScale: 0, sun: { azimuthDeg: 280, elevationDeg: 32 }, accent: "#8090ff", background: "#121838" },
-    ground: "#484d75", farGround: "#343859"
+    chipColor: "#b0a8ff"
   }
 ];
 

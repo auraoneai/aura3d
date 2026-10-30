@@ -12,7 +12,9 @@ import {
   type AuraModelMaterialHandle,
   type AuraModelMaterialOverride,
   type AuraRuntimeNodeHandle,
-  type AuraSceneSnapshot
+  type AuraSceneSnapshot,
+  type AuraTrailHandle,
+  type AuraVec3
 } from "@aura3d/engine";
 import { AMMO, type AmmoId } from "./game/ammo";
 import { siegeAudio } from "./game/audio";
@@ -23,9 +25,16 @@ import { SiegeSim, type VisualUpdate } from "./game/sim";
 import {
   blockLook, blockNodeId, bladeNodeId, buildScene, debrisLook, debrisNodeId, dotNodeId,
   gullPartId, millHubNodeId, millPoleNodeId, crateNodeId, barrelNodeId, plankNodeId, projectileNodeId,
-  pooledNodeIds, puffMaterial, puffNodeId, PROP_IDS, POOL, SLING_IDS
+  pooledNodeIds, PROP_IDS, POOL, SEA_LEVEL, SLING_IDS
 } from "./game/stage";
 import { sanitizeRenderParams } from "./game/urlGuard";
+import { AMMO_TRAIL_COLOR, SIEGE_VFX, abilityPreset, breakPreset, registerSiegeVfx } from "./game/vfx";
+import { chapterLook } from "./game/look";
+import { SIGN_PARK, signTextNodeId, signTextPlacement } from "./game/sign";
+import {
+  INTRO_SECONDS, QA_WORLD_BOXES, bandChanged, boxCorners, introEnabled, introShot, releaseKick, screenCrop, tiltShiftBand,
+  type QaCrop, type TiltShiftBand
+} from "./game/presentation";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { installGameBeacon } from "@aura3d/engine/game";
 
@@ -43,6 +52,8 @@ const START_LEVEL = Math.min(Math.max(0, Number(params.get("level")) || 0), LEVE
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches || params.get("still") === "1";
 /** `?ao=0`: evidence switch for the AO-on/off capture pair (LIGHT-06). */
 const AO = params.get("ao") !== "0";
+/** `?surfaces=0` evidence switch: flat island materials for the SS47-M2 before/after spread pair. */
+const SURFACES = params.get("surfaces") !== "0";
 
 // ---------------------------------------------------------- persistence --
 
@@ -80,11 +91,13 @@ const gameApp = createGameApp("#app", {
     touch: true
   },
   loop: { fixedDt: 1 / 60, maxSubSteps: 2 },
-  scene: buildScene(chapter, { reducedMotion: REDUCED, ambientOcclusion: AO })
+  scene: buildScene(chapter, { reducedMotion: REDUCED, ambientOcclusion: AO, surfaceMaps: SURFACES })
 });
 const app = gameApp.app;
 const input = gameApp.input;
 const audio = siegeAudio();
+// GU47 SS47-V1/V2: the runtime VFX preset pack (material breaks, boar hits, sea splashes, launch dust, abilities).
+registerSiegeVfx(app.effects, { reducedMotion: REDUCED, reducedFlash: REDUCED });
 const stageEl = document.getElementById("app")!;
 const IS_TOUCH = matchMedia("(pointer: coarse)").matches;
 
@@ -233,6 +246,16 @@ function assignPieceVisuals(): void {
   }
 }
 
+/** SS47-H1: the wooden sign shows the current chapter's name; the other chapter texts stay parked under the island. */
+function showLevelSign(chapterId: number): void {
+  for (const ch of CHAPTERS) {
+    const h = node(signTextNodeId(ch.id));
+    if (!h) continue;
+    if (ch.id === chapterId) h.setPosition(...signTextPlacement(ch.name.toUpperCase()).position).setVisible(true);
+    else h.setPosition(...SIGN_PARK).setVisible(false);
+  }
+}
+
 function loadLevel(id: number, opts: { announce?: boolean } = {}): void {
   // The Trajectory Range sandbox (id 99) is not a campaign level: levelById would clamp it to level 30.
   level = id === SANDBOX_LEVEL.id ? SANDBOX_LEVEL : levelById(id);
@@ -242,11 +265,13 @@ function loadLevel(id: number, opts: { announce?: boolean } = {}): void {
   resultOpen = false;
   settledSinceEmpty = 0;
   clearedSinceSettle = 0;
+  clearRuntimeVfx();
   assignPieceVisuals();
   hud.setCoach(showCoach());
   hud.hideResult();
   hud.setPaused(false);
   paused = false;
+  showLevelSign(level.chapter);
   if (opts.announce !== false) {
     const ch = CHAPTERS[level.chapter]!;
     hud.showBanner(`${ch.name}`, `Level ${level.slot + 1} — ${level.name}`);
@@ -273,6 +298,20 @@ let camPos: [number, number, number] = [-2.5, 4.0, 15.5];
 let camTgt: [number, number, number] = [-0.5, 1.5, 0];
 let trauma = 0;
 let orbitT = 0;
+/** SS47-C1: the 3 s opening move (fort wide, cut to the sling); any key or pointer skips it. Camera only. */
+const intro = { t: 0, done: !introEnabled({ reducedMotion: REDUCED, demo: DEMO || autoPlay, param: params.get("intro") }), skipped: false, shot: "aim" as string };
+/** The next camera update cuts instead of easing (after the intro). */
+let cutNext = false;
+function finishIntro(skipped: boolean): void {
+  if (intro.done) return;
+  intro.done = true;
+  intro.skipped = skipped;
+  intro.shot = "aim";
+  cutNext = true;
+}
+/** SS47-C1 release kick (FOV degrees, pull-back metres), decayed every frame; zero on reduced motion. */
+const KICK = releaseKick(REDUCED);
+let kick = 0;
 
 const CAM: Record<CamState, { pos: [number, number, number]; tgt: [number, number, number] }> = {
   orbit: { pos: [-2.6, 4.1, 15.4], tgt: [-0.5, 1.5, 0] },
@@ -282,6 +321,24 @@ const CAM: Record<CamState, { pos: [number, number, number]; tgt: [number, numbe
 };
 
 function updateCamera(dt: number, elapsed: number): void {
+  if (!intro.done) {
+    intro.t += dt;
+    if (intro.t >= INTRO_SECONDS || camState !== "aim") {
+      finishIntro(false);
+    } else {
+      const shot = introShot(intro.t);
+      intro.shot = shot.shot;
+      camPos = shot.pos;
+      camTgt = shot.tgt;
+      app.camera?.setPose({ position: camPos, target: camTgt, fov: shot.fov });
+      const live = app.scene.camera as unknown as Record<string, unknown>;
+      live.mode = "perspective";
+      live.position = camPos;
+      live.target = camTgt;
+      live.fov = shot.fov;
+      return;
+    }
+  }
   const spec = CAM[camState === "follow" ? "follow" : camState];
   let dp = spec.pos;
   let dtg = spec.tgt;
@@ -323,7 +380,8 @@ function updateCamera(dt: number, elapsed: number): void {
   }
   if (Math.abs(orbitYaw) > 1e-4 || Math.abs(orbitPitch) > 1e-4) dp = orbitAround(dp, dtg, orbitYaw, orbitPitch);
 
-  const k = 1 - Math.exp(-dt * (camState === "follow" ? 7 : 3.2));
+  const k = cutNext ? 1 : 1 - Math.exp(-dt * (camState === "follow" ? 7 : 3.2));
+  cutNext = false;
   camPos = [camPos[0] + (dp[0] - camPos[0]) * k, camPos[1] + (dp[1] - camPos[1]) * k, camPos[2] + (dp[2] - camPos[2]) * k];
   camTgt = [camTgt[0] + (dtg[0] - camTgt[0]) * k, camTgt[1] + (dtg[1] - camTgt[1]) * k, camTgt[2] + (dtg[2] - camTgt[2]) * k];
 
@@ -336,10 +394,16 @@ function updateCamera(dt: number, elapsed: number): void {
     h ^= h >>> 13;
     return (h >>> 0) / 4294967296 - 0.5;
   };
-  const px = camPos[0] + n(0) * sh;
-  const py = camPos[1] + n(1) * sh;
-  const pz = camPos[2] + n(2) * sh;
-  const fov = camState === "follow" ? 50 : 55;
+  // Release punch: pull back along the view ray while the kick decays.
+  kick = Math.max(0, kick - dt * 2.8);
+  const kk = kick * kick;
+  const vx = camPos[0] - camTgt[0], vy = camPos[1] - camTgt[1], vz = camPos[2] - camTgt[2];
+  const vl = Math.hypot(vx, vy, vz) || 1;
+  const pb = (KICK.punch * kk) / vl;
+  const px = camPos[0] + n(0) * sh + vx * pb;
+  const py = camPos[1] + n(1) * sh + vy * pb;
+  const pz = camPos[2] + n(2) * sh + vz * pb;
+  const fov = (camState === "follow" ? 50 : 55) + KICK.fovDeg * kk;
 
   app.camera?.setPose({ position: [px, py, pz], target: camTgt, fov });
   /*
@@ -534,6 +598,7 @@ function projectWorld(p: readonly [number, number, number]): { x: number; y: num
 
 stageEl.addEventListener("pointerdown", (ev) => {
   autoPlay = false;
+  finishIntro(true);
   void audio.unlock();
   refreshVp();
   const rect = stageEl.getBoundingClientRect();
@@ -569,6 +634,7 @@ const heldKeys = new Set<string>();
 const justPressedKeys = new Set<string>();
 window.addEventListener("keydown", (ev) => {
   autoPlay = false;
+  finishIntro(true);
   // A key press is a user gesture too: keyboard-only players get sound (and the wind loop).
   void audio.unlock();
   // Space launches; keep it from scrolling the page. Tab is left alone so keyboard focus still moves.
@@ -859,18 +925,119 @@ function syncVisuals(): void {
   }
   for (let g = 0; g < gullVisualCount; g += 1) syncGull(g);
   for (let m = 0; m < sim.windmillList().length; m += 1) syncWindmill(m);
-  // puffs
-  for (let i = 0; i < sim.puffList().length; i += 1) {
-    const state = sim.puffState(i);
-    const h = node(puffNodeId(i));
-    if (!h) continue;
-    if (!state) { h.setVisible(false); continue; }
-    const p = sim.puffList()[i]!;
-    h.setMaterial(puffMaterial(state.kind));
-    h.setPosition(p.at[0], p.at[1] + p.t * 0.6, p.at[2]);
-    h.setScale(state.scale * state.fade);
-    h.setVisible(true);
+  // SS47-V1: the sim's puff records are no longer drawn as spheres; consumeEvents fires the runtime VFX pack.
+}
+
+// --------------------------------------------------------------- vfx -----
+
+/** Runtime VFX (GU47 E-F): presets registered by registerSiegeVfx; a missing effects surface is a no-op. */
+function burst(kind: string, at: readonly number[], scale = 1): void {
+  try {
+    app.effects?.burst(kind, [at[0] ?? 0, at[1] ?? 0, at[2] ?? 0], scale === 1 ? undefined : { scale });
+  } catch { /* effects are presentation only */ }
+}
+
+/** SS47-V2: ammo-tinted ribbon behind the shot in flight; stopped (and left to fade) when the shot dies. */
+let shotTrail: AuraTrailHandle | null = null;
+function startShotTrail(ammo: AmmoId): void {
+  stopShotTrail();
+  let last: string | null = null;
+  for (const u of sim.forEachVisual()) if (u.id.startsWith("projectile-") && u.visible) last = u.id;
+  if (!last || !app.effects) return;
+  try {
+    shotTrail = app.effects.trail(projectileNodeId(Number(last.slice(11)) % POOL.projectiles), {
+      width: REDUCED ? 0.08 : 0.14, life: REDUCED ? 0.25 : 0.45, color: AMMO_TRAIL_COLOR[ammo], widthOverSpeed: [1, 9]
+    });
+  } catch { shotTrail = null; }
+}
+function stopShotTrail(): void {
+  try { shotTrail?.stop(); } catch { /* already gone */ }
+  shotTrail = null;
+}
+
+/** Island footprint (beach ring) in x/z: a body crossing the sea surface outside it splashes (SS47-V1). */
+function overSea(x: number, z: number): boolean {
+  return ((x - 1.6) / 9.8) ** 2 + ((z + 0.4) / 7.6) ** 2 > 1;
+}
+const lastHeights = new Map<string | number, number>();
+/** Read-only watcher over the sim's live shot and debris: a downward crossing of the sea surface splashes once. */
+function watchSplashes(): void {
+  const check = (id: string | number, p: AuraVec3, scale: number): void => {
+    const prev = lastHeights.get(id);
+    lastHeights.set(id, p[1]);
+    if (prev !== undefined && prev > SEA_LEVEL + 0.05 && p[1] <= SEA_LEVEL + 0.05 && p[1] > SEA_LEVEL - 2 && overSea(p[0], p[2])) {
+      burst(SIEGE_VFX.seaSplash, [p[0], SEA_LEVEL, p[2]], scale);
+    }
+  };
+  const proj = sim.activeProjectile();
+  if (proj && !proj.dead) check(proj.body.id, proj.body.position as AuraVec3, 1);
+  for (const d of sim.debrisList()) if (d.active) check(d.body.id, d.body.position as AuraVec3, 0.5);
+}
+
+/** Level loads start clean: no live particles, trails or scorch decals (SS47-V2). */
+function clearRuntimeVfx(): void {
+  stopShotTrail();
+  lastHeights.clear();
+  try { app.effects?.clear(); } catch { /* presentation only */ }
+}
+
+// --------------------------------------------------- miniature focus ----
+
+/** The chapter row the scene was built from (the look is chosen at boot from `?level=`). */
+const LOOK_ROW = chapterLook(chapter.id);
+let lastBand: TiltShiftBand | null = null;
+let qaCrops: readonly QaCrop[] = [];
+
+/** World box around the standing fort pieces (read-only over the sim), padded for block size. */
+function fortBox(): { min: [number, number, number]; max: [number, number, number] } | null {
+  let x0 = Infinity, y0 = Infinity, z0 = Infinity, x1 = -Infinity, y1 = -Infinity, z1 = -Infinity;
+  for (const p of sim.pieceList()) {
+    if (!p.alive) continue;
+    const q = p.body.position;
+    x0 = Math.min(x0, q[0]); y0 = Math.min(y0, q[1]); z0 = Math.min(z0, q[2]);
+    x1 = Math.max(x1, q[0]); y1 = Math.max(y1, q[1]); z1 = Math.max(z1, q[2]);
   }
+  if (!Number.isFinite(x0)) return null;
+  const pad = 0.4;
+  return { min: [x0 - pad, Math.max(0, y0 - pad), z0 - pad], max: [x1 + pad, y1 + pad, z1 + pad] };
+}
+
+/**
+ * SS47-P1: retarget the signature tilt-shift band to hold the fort, the sling and the live shot, and publish the
+ * E-I QA crops (fort, sling, far headland, sand, sea) for the capture. Runs after the camera moved this frame.
+ */
+function updateMiniatureFocus(): void {
+  const w = stageEl.clientWidth || 1;
+  const h = stageEl.clientHeight || 1;
+  const project = (pts: readonly (readonly [number, number, number])[]) => pts.map((q) => projectWorld(q as [number, number, number]));
+  const fort = fortBox();
+  const fortPts = fort ? project(boxCorners(fort.min, fort.max)) : [];
+  const slingPts = project(boxCorners([SLING_REST[0] - 0.6, 0, -0.5], [SLING_REST[0] + 0.6, SLING_REST[1] + 0.4, 0.5]));
+  const ys: number[] = [];
+  for (const q of [...fortPts, ...slingPts]) if (!q.behind) ys.push(q.y / h);
+  const proj = sim.activeProjectile();
+  if (proj && !proj.dead) {
+    const q = projectWorld(proj.body.position as [number, number, number]);
+    if (!q.behind) ys.push(q.y / h);
+  }
+  const band = tiltShiftBand(ys, LOOK_ROW.dof.bandWidth);
+  if (bandChanged(lastBand, band)) {
+    lastBand = band;
+    try { app.post?.setEffect("depthOfField", { tiltShift: [band.bandCenter, band.bandWidth, 0] }); } catch { /* post is presentation only */ }
+  }
+  const crops: QaCrop[] = [];
+  const add = (c: QaCrop | null): void => { if (c) crops.push(c); };
+  add(screenCrop("fort", fortPts, w, h));
+  add(screenCrop("sling", slingPts, w, h));
+  add(screenCrop("far-headland", project(boxCorners(QA_WORLD_BOXES.farHeadland.min, QA_WORLD_BOXES.farHeadland.max)), w, h, 0));
+  add(screenCrop("sand", project(boxCorners(QA_WORLD_BOXES.sand.min, QA_WORLD_BOXES.sand.max)), w, h, 0));
+  add(screenCrop("sea", project(boxCorners(QA_WORLD_BOXES.sea.min, QA_WORLD_BOXES.sea.max)), w, h, 0));
+  qaCrops = crops;
+  const qaHost = window as unknown as { __AURA_QA__?: Record<string, unknown> };
+  const qa = (qaHost.__AURA_QA__ ??= {});
+  qa.crops = qaCrops;
+  qa.tiltShift = band;
+  qa.chapterLook = LOOK_ROW.chapter;
 }
 
 // ------------------------------------------------------------------ hud --
@@ -962,6 +1129,7 @@ function consumeEvents(): void {
       case "piece-broke": {
         levelScore += ev.points;
         pulseNeighbours(ev.at);
+        burst(breakPreset(ev.material), ev.at);
         trauma = Math.min(1.4, trauma + 0.28);
         const sp = projectWorld(ev.at);
         hud.scorePopup(`+${ev.points}`, (sp.x / stageEl.clientWidth) * 100, (sp.y / stageEl.clientHeight) * 100);
@@ -974,6 +1142,7 @@ function consumeEvents(): void {
       }
       case "gull-squashed": {
         levelScore += ev.points;
+        burst(SIEGE_VFX.boarHit, ev.at);
         trauma = Math.min(1.6, trauma + 0.5);
         const sp = projectWorld(ev.at);
         hud.scorePopup(`+${ev.points} SQUASHED!`, (sp.x / stageEl.clientWidth) * 100, (sp.y / stageEl.clientHeight) * 100, true);
@@ -988,21 +1157,27 @@ function consumeEvents(): void {
       }
       case "shot-fired": {
         hud.toast(`${AMMO[ev.ammo].name} away!`);
+        burst(SIEGE_VFX.launchDust, [SLING_REST[0], 0.62, 0]);
+        kick = 1;
+        startShotTrail(ev.ammo);
         break;
       }
       case "ability": {
+        burst(abilityPreset(ev.ammo), ev.at);
         const sp = projectWorld(ev.at);
         hud.scorePopup(AMMO[ev.ammo].abilityName.toUpperCase() + "!", (sp.x / stageEl.clientWidth) * 100, (sp.y / stageEl.clientHeight) * 100, true);
         break;
       }
       case "windmill-smashed": {
         levelScore += ev.points;
+        burst(SIEGE_VFX.windmillSmash, ev.at);
         trauma = Math.min(1.6, trauma + 0.45);
         audio.cue("windmill-snap");
         hud.toast("WINDMILL SMASHED +150");
         break;
       }
       case "shot-settled": {
+        stopShotTrail();
         onShotSettled();
         break;
       }
@@ -1154,6 +1329,8 @@ function evidence(): Record<string, unknown> {
     seed: SEED,
     level: { id: level.id, chapter: level.chapter, name: level.name, sandbox: mode === "range" },
     cameraState: camState,
+    intro: { done: intro.done, skipped: intro.skipped, shot: intro.shot, t: Math.round(intro.t * 100) / 100 },
+    fortFraction: qaCrops.find((c) => c.name === "fort")?.h ?? null,
     score: Math.round(levelScore),
     starsEarned: starRating(levelScore, level.stars),
     shotsUsed,
@@ -1300,6 +1477,9 @@ gameApp.onFrame(({ dt }) => {
     if (!paused) {
       sim.update(dt);
       consumeEvents();
+      // Visual-only reads of the sim: end the shot ribbon before its node parks below the stage, splash the sea.
+      if (shotTrail && !sim.activeProjectile()) stopShotTrail();
+      watchSplashes();
       // out-of-ammo + settled watchdog for levels that end without a fresh shot
       if (!sim.isShotActive() && !resultOpen && shotsUsed >= level.ammo.length) {
         settledSinceEmpty += dt;
@@ -1324,6 +1504,7 @@ gameApp.onFrame(({ dt }) => {
     syncSling(dt);
     updateCamera(dt, elapsed);
     refreshVp();
+    if (frames % 2 === 0) updateMiniatureFocus();
     if (frames % 4 === 0) refreshHud();
     if (frames % 10 === 0) publishEvidence();
   } catch (err) {

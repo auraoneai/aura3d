@@ -13,10 +13,14 @@ import {
   lights,
   looks,
   material,
+  instances,
   model,
   primitives,
   scene,
+  sky,
+  world,
   type AuraColor,
+  type AuraDirectionalShadowOptions,
   type AuraMaterialSpec,
   type AuraModelMaterialOverride,
   type AuraNodeBuilder,
@@ -25,6 +29,10 @@ import {
 import { assets } from "../aura-assets.route";
 import { MATERIALS, type SiegeMaterialId } from "./materials";
 import type { ChapterDef } from "./levels";
+import { chapterLook, sunDirection, type ChapterLook } from "./look";
+import { beachDressing } from "./dressing";
+import { islandSurface } from "../art/surfaces";
+import { levelSignNodes } from "./sign";
 
 // ----------------------------------------------------------------- pools --
 
@@ -42,7 +50,6 @@ export const POOL = {
   gullRigs: 8,
   projectiles: 10,
   debris: 30,
-  puffs: 14,
   dots: 16,
   windmillBlades: 4,
   windmills: 3
@@ -55,7 +62,6 @@ export function plankNodeId(i: number): string { return `v-plank-${i}`; }
 export function gullPartId(g: number, part: "body" | "head" | "beak" | "wingL" | "wingR" | "tail"): string { return `v-gull-${g}-${part}`; }
 export function projectileNodeId(i: number): string { return `v-proj-${i}`; }
 export function debrisNodeId(i: number): string { return `v-debris-${i}`; }
-export function puffNodeId(i: number): string { return `v-puff-${i}`; }
 export function dotNodeId(i: number): string { return `v-dot-${i}`; }
 export function bladeNodeId(mill: number, blade: number): string { return `v-mill-${mill}-blade-${blade}`; }
 export function millHubNodeId(mill: number): string { return `v-mill-${mill}-hub`; }
@@ -74,7 +80,6 @@ export function pooledNodeIds(): string[] {
   for (let i = 0; i < POOL.planks; i += 1) ids.push(plankNodeId(i));
   for (let i = 0; i < POOL.projectiles; i += 1) ids.push(projectileNodeId(i));
   for (let i = 0; i < POOL.debris; i += 1) ids.push(debrisNodeId(i));
-  for (let i = 0; i < POOL.puffs; i += 1) ids.push(puffNodeId(i));
   for (let i = 0; i < POOL.dots; i += 1) ids.push(dotNodeId(i));
   return ids;
 }
@@ -102,36 +107,39 @@ export const PROP_IDS = {
 // ------------------------------------------------------------- materials --
 
 /**
- * GLB material overrides for a pooled piece node. Model nodes take their look
- * through the actor's override list (applied on every level load, so a pooled
- * node never keeps the previous level's material). Wood and stone keep the
- * authored GLB textures; glass and ice get a flat pale tint with their
- * opacity; obsidian a dark multiply.
+ * GLB material overrides for a pooled piece node (GU47 SS47-M1: five readable block families). Model nodes take
+ * their look through the actor's override list (applied on every level load, so a pooled node never keeps the
+ * previous level's material). Painted wood and chalky stone keep the authored GLB texture under a multiply tint;
+ * glass is a clear clearcoat pane at 0.55 opacity with transmission (drawn when `A3D_QR_MATERIALS_TRANSMISSION`
+ * is on; the opacity reads without it) and a pale rim; ice is pale and faintly emissive; obsidian is glossy black
+ * glass with a violet rim. Gameplay never reads these: the sim's material table (materials.ts) is unchanged.
  */
+export const BLOCK_LOOKS: Readonly<Record<SiegeMaterialId, readonly AuraModelMaterialOverride[]>> = {
+  wood: [{ color: "#efc996", colorMode: "multiply", roughness: 0.78, metallic: 0 }],
+  stone: [{ color: "#c9c4b8", colorMode: "multiply", roughness: 0.95, metallic: 0 }],
+  glass: [{
+    color: "#c4ecf6", colorMode: "replace", replaceTextures: true, roughness: 0.06, metallic: 0, opacity: 0.55,
+    clearcoat: 1, clearcoatRoughness: 0.05, transmission: 0.6, envMapIntensity: 1.4,
+    rim: { color: "#e8fbff", power: 3, intensity: 0.6 }
+  }],
+  ice: [{
+    color: "#d6f0ff", colorMode: "replace", replaceTextures: true, roughness: 0.22, metallic: 0, opacity: 0.82,
+    emissive: "#bfe6ff", emissiveIntensity: 0.35, rim: { color: "#f0fbff", power: 2.5, intensity: 0.5 }
+  }],
+  obsidian: [{
+    color: "#221d30", colorMode: "replace", replaceTextures: true, roughness: 0.1, metallic: 0.15,
+    clearcoat: 1, clearcoatRoughness: 0.04, rim: { color: "#a874ff", power: 4, intensity: 0.35 }
+  }]
+};
+
 export function blockLook(id: SiegeMaterialId): readonly AuraModelMaterialOverride[] {
-  const m = MATERIALS[id];
-  if (id === "glass" || id === "ice") {
-    return [{ color: m.color, colorMode: "replace", replaceTextures: true, roughness: 0.16, metallic: 0.05, opacity: m.opacity ?? 0.85 }];
-  }
-  if (id === "obsidian") return [{ color: m.color, colorMode: "multiply", roughness: 0.35, metallic: 0.35 }];
-  if (id === "stone") return [{ color: "#d6dde6", colorMode: "multiply" }];
-  return [];
+  return BLOCK_LOOKS[id] ?? BLOCK_LOOKS.wood;
 }
 
 /** Debris chips take the colour of the material they broke off. */
 export function debrisLook(matId: string): readonly AuraModelMaterialOverride[] {
   const key = (matId in MATERIALS ? matId : "wood") as SiegeMaterialId;
   return [{ color: MATERIALS[key].debrisColor, colorMode: "replace", replaceTextures: true, roughness: 0.6 }];
-}
-
-export function puffMaterial(kind: "dust" | "glass" | "fire" | "poof"): AuraMaterialSpec {
-  const map = {
-    dust: "#e8d9b8",
-    glass: "#d8f4ff",
-    fire: "#ffb066",
-    poof: "#ffffff"
-  } as const;
-  return material.pbr({ color: map[kind], roughness: 1, opacity: 0.75 });
 }
 
 function pbr(color: AuraColor, opts: { roughness?: number; metallic?: number; opacity?: number } = {}): AuraMaterialSpec {
@@ -162,53 +170,231 @@ export interface StageNodes {
 type StageNode = AuraSceneNode | AuraNodeBuilder<AuraSceneNode>;
 
 export interface StageOptions {
-  /** prefers-reduced-motion or `?still=1`: drops the vignette (FXAA stays on). */
+  /** prefers-reduced-motion or `?still=1`: drops the vignette (FXAA stays on), calms the sea and the weather. */
   readonly reducedMotion: boolean;
-  /** `?ao=0` evidence switch: removes the look's ambient-occlusion pass for an AO-on/off capture pair. */
+  /** `?ao=0` evidence switch: removes the miniature ambient-occlusion pass for an AO-on/off capture pair. */
   readonly ambientOcclusion?: boolean;
+  /** SS47-M2 CC0 detail maps on turf, sand and the chalk/wet-rock lip (default on); `?surfaces=0` is the flat pair. */
+  readonly surfaceMaps?: boolean;
+}
+
+/** Name of the stage's one AO node (SS47-L2: a miniature-scale radius instead of the look's default). */
+export const SIEGE_AO_NODE = "siege miniature ambient occlusion";
+/** Name of the signature tilt-shift depth-of-field node (SS47-P1); main.ts retargets its band every frame. */
+export const SIEGE_DOF_NODE = "siege miniature tilt-shift";
+/** Island centre and radius the sun's two shadow cascades are fitted to (SS47-L1). */
+export const ISLAND_SHADOW_FIT = { center: [1.5, 0.8, -0.4] as [number, number, number], extent: 13.5, depth: 48 };
+
+/** The one shadowed sun: PCSS, two cascades fitted to the island (Low tier falls back to its own 1 cascade + PCF). */
+export function sunShadow(row: Pick<ChapterLook, "shadowSoftness">): AuraDirectionalShadowOptions {
+  return {
+    filter: "pcss",
+    cascades: 2,
+    mapSize: 2048,
+    lightSize: row.shadowSoftness,
+    maxDistance: 42,
+    fit: { center: ISLAND_SHADOW_FIT.center, extent: ISLAND_SHADOW_FIT.extent, depth: ISLAND_SHADOW_FIT.depth }
+  };
+}
+
+/**
+ * The chapter's look group (SS47-E1/P2): its own preset, catalogue HDRI for image lighting, one shadowed sun and no
+ * rim, fog back on, the output preset and grade. The look's default AO and bloom children are replaced by the
+ * stage's own miniature AO (SS47-L2) and day/night bloom (SS47-P3).
+ */
+export function chapterLookNode(row: ChapterLook): StageNode {
+  const look = looks.preset(row.preset, {
+    ...(row.hdri !== undefined ? { hdri: row.hdri } : {}),
+    environmentIntensity: row.environmentIntensity,
+    environmentRotationDeg: row.environmentRotationDeg,
+    exposureEv: row.exposureEv,
+    sun: { elevationDeg: row.sun.elevationDeg, azimuthDeg: row.sun.azimuthDeg },
+    key: { color: row.sun.color, intensity: row.sun.intensity, shadow: sunShadow(row) },
+    rim: false,
+    fog: { color: row.fog.color, near: row.fog.near, far: row.fog.far },
+    accent: row.accent,
+    background: row.horizon,
+    grade: { contrast: row.grade.contrast, saturation: row.grade.saturation, temperature: row.grade.temperature, tint: row.grade.tint },
+    post: row.post
+  }) as unknown as { toJSON?: () => AuraSceneNode };
+  // A v1 `look` node (every look contract provided) has no children to retune: keep it whole.
+  if (typeof look.toJSON !== "function") return look as unknown as AuraSceneNode;
+  const group = look.toJSON() as AuraSceneNode & { readonly children?: readonly AuraSceneNode[] };
+  const replaced = new Set(["look ambient occlusion", "look bloom"]);
+  return { ...group, children: (group.children ?? []).filter((c) => !replaced.has((c as { name?: string }).name ?? "")) } as AuraSceneNode;
+}
+
+/** The chapter's visible sky (SS47-E2): gradient by day, Preetham at golden hour and sunset, stars at night. */
+export function chapterSkyNode(row: ChapterLook): StageNode {
+  const { model: skyModel, ...spec } = row.sky as { model: string } & Record<string, unknown>;
+  const options = { name: `siege sky ch${row.chapter}`, captureEnvironment: false, affectsFog: true, ...spec };
+  return skyModel === "preetham"
+    ? sky.preetham(options as unknown as Parameters<typeof sky.preetham>[0])
+    : sky.gradient(options as unknown as Parameters<typeof sky.gradient>[0]);
+}
+
+/**
+ * Chapter practicals (SS47-L3): warm window points in the gatehouse and watchtower (ch4-5), the far lighthouse
+ * spot (ch5), harbour lanterns by the fort (ch5) and the sun flare (ch3-4). None casts a shadow; the sun stays the
+ * one shadowed light.
+ */
+export function chapterPracticals(row: ChapterLook): StageNode[] {
+  const out: StageNode[] = [];
+  const amber = row.accent;
+  if (row.practicals.windows) {
+    out.push(
+      lights.point({ name: "siege window gatehouse", position: [9.6, 1.5, -2.0], color: "#ffb35c", intensity: 2.2, distance: 6, decay: 2 }),
+      lights.point({ name: "siege window watchtower", position: [-12.2, 2.6, 4.0], color: "#ffb35c", intensity: 1.8, distance: 6, decay: 2 })
+    );
+  }
+  if (row.practicals.lighthouse) {
+    out.push(lights.spot({ name: "siege lighthouse", position: [-17, 6, -24], target: [2, 0.5, -2], angle: 0.32, penumbra: 0.6, distance: 60, decay: 1, color: "#fff1c8", intensity: 6 }));
+  }
+  if (row.practicals.lanterns) {
+    out.push(lights.point({ name: "siege harbour lantern", position: [5.6, 1.4, 1.8], color: amber, intensity: 2.4, distance: 7, decay: 2 }));
+  }
+  if (row.flare) {
+    const d = sunDirection(row.sun);
+    out.push(lights.lensFlare({
+      name: "siege sun flare",
+      position: [d[0] * 320, d[1] * 320, d[2] * 320],
+      intensity: 0.55,
+      edgeFade: 0.2,
+      elements: [
+        { size: 420, distance: 0, color: row.sun.color },
+        { size: 54, distance: 0.55, color: "#ffd9b0" },
+        { size: 90, distance: 0.8, color: "#ffe9c4" },
+        { size: 60, distance: 1, color: "#c4d8ff" }
+      ]
+    }));
+  }
+  return out;
+}
+
+/**
+ * Miniature post (SS47-P1/L2/P3): the signature tilt-shift band (High tier and up; the engine drops DOF below High),
+ * contact shadows from the sun and a small AO radius for toy scale, day/night bloom and vignette. FXAA stays on for
+ * reduced motion; only the vignette goes, as before.
+ */
+export function chapterPost(row: ChapterLook, options: StageOptions): StageNode[] {
+  const out: StageNode[] = [
+    effects.depthOfField({ name: SIEGE_DOF_NODE, maxBlur: row.dof.maxBlur, tiltShift: { bandCenter: 0.52, bandWidth: row.dof.bandWidth, angleDeg: 0 } }),
+    effects.contactShadows({ length: 0.18, thickness: 0.035, steps: 12, intensity: 0.85, lights: "sun" }),
+    // effects.bloom drops `name`; stamp it so the runtime and the tests can find the day/night bloom node.
+    { ...effects.bloom({ threshold: row.bloom.threshold, intensity: row.bloom.intensity, color: "#fff4e6" }).toJSON(), name: "siege bloom" }
+  ];
+  if (options.ambientOcclusion !== false) out.push(effects.ambientOcclusion({ name: SIEGE_AO_NODE, radius: 0.3, intensity: 0.5, density: 0.62 }));
+  if (!options.reducedMotion) out.push(effects.vignette({ intensity: row.vignette }));
+  out.push(effects.antiAlias({ mode: "fxaa" }));
+  return out;
+}
+
+/** Rest height of the sea: just under the beach ring top (-0.10), 3 cm over the shallows disc. */
+export const SEA_LEVEL = -0.26;
+
+/**
+ * The sea to the horizon (SS47-E2/E3): one world-water ocean (E-G, drawn with only `A3D_QR_WORLD_WATER`, default
+ * on) with calm Gerstner waves and shoreline foam where it meets the island; the waves slow to 30% on reduced
+ * motion. Replaces the 34 instanced foam boxes. The seabed cylinders stay underneath, so a build without world
+ * water still shows today's flat sea.
+ */
+export function seaNode(row: ChapterLook, options: StageOptions): StageNode {
+  const water = world.water({
+    id: "siege-sea",
+    name: "siege sea",
+    kind: "ocean",
+    shape: { kind: "infinite", radius: 360 },
+    height: SEA_LEVEL,
+    shallowColor: row.terrain.shallows,
+    deepColor: mixHex(row.terrain.sea, "#0b2a38", 0.35),
+    waves: "calm",
+    normalSpeed: options.reducedMotion ? 0.3 : 1,
+    foam: { shoreDepth: 0.35, crest: 0.2 },
+    reflection: "ibl",
+    refraction: { low: false, medium: false, high: true, ultra: true }
+  });
+  return water.toJSON() as unknown as AuraSceneNode;
+}
+
+/**
+ * SS47-E4 chapter weather: drizzle (ch4), drifting dust motes (ch1) and a low sea mist (ch2); nothing on the other
+ * chapters. Reduced motion drops the moving layers (no rain streaks, no motes); the mist stays because it is still.
+ */
+export function chapterWeather(row: ChapterLook, options: StageOptions): StageNode[] {
+  if (row.weather === "drizzle") {
+    return options.reducedMotion ? [] : [{ ...effects.rain({ intensity: 0.22, density: 0.35, color: "#c9d6e6", speed: 0.8, wind: [-0.9, -5, -0.2], splashes: true, mist: false }).toJSON(), name: "siege drizzle" }];
+  }
+  if (row.weather === "dust") {
+    return options.reducedMotion ? [] : [effects.particles({
+      name: "siege dust motes", emitter: "ambient", shape: "box", shapeSize: [22, 2.4, 16], position: [1.5, 1.2, 0],
+      rate: 18, maxParticles: 120, lifetime: [4, 7], speed: 0.12, size: [0.03, 0.07], gravity: 0, wind: [0.25, 0.02, 0],
+      color: "#efe2c2", intensity: 0.5, particleCount: 120, materialMode: "soft-alpha", seed: 1414
+    })];
+  }
+  if (row.weather === "mist") {
+    return [effects.fog({ name: "siege sea mist", density: 0.035, color: row.fog.color, height: 1.2, falloff: 0.9 })];
+  }
+  return [];
+}
+
+/** SS47-W1: one instanced draw per dressing kind; the grass sways in the wind except on reduced motion. */
+export function beachDressingNodes(row: ChapterLook, options: StageOptions): StageNode[] {
+  const d = beachDressing();
+  const t = row.terrain;
+  const tone = (base: string, n: number, mix: string, amt: number): string[] =>
+    Array.from({ length: n }, (_, i) => mixHex(base, mix, (i % 3) * amt));
+  return [
+    instances.cone({
+      name: "dressing-sea-grass", material: pbr("#ffffff", { roughness: 0.9 }), transforms: d.grass,
+      colors: tone(mixHex(t.turf, "#c8c27a", 0.25), d.grass.length, "#556b34", 0.18),
+      castShadow: false, receiveShadow: true, ...(options.reducedMotion ? {} : { wind: { assetHeight: 0.5 } })
+    }),
+    instances.sphere({
+      name: "dressing-shells", material: pbr("#ffffff", { roughness: 0.55 }), transforms: d.shell,
+      colors: tone("#f4e7d6", d.shell.length, "#e9b9a0", 0.2), castShadow: false, receiveShadow: true
+    }),
+    instances.cylinder({
+      name: "dressing-driftwood", material: pbr(t.driftwood, { roughness: 0.92 }), transforms: d.driftwood,
+      colors: tone(t.driftwood, d.driftwood.length, "#d8cbb2", 0.2), castShadow: true, receiveShadow: true
+    }),
+    instances.cylinder({
+      name: "dressing-rope-posts", material: pbr("#7c6248", { roughness: 0.88 }), transforms: d.ropePost,
+      castShadow: true, receiveShadow: true
+    }),
+    instances.box({
+      name: "dressing-lobster-pots", material: pbr("#8f6b45", { roughness: 0.85 }), transforms: d.lobsterPot,
+      colors: tone("#8f6b45", d.lobsterPot.length, row.accent, 0.12), castShadow: true, receiveShadow: true
+    })
+  ];
 }
 
 export function buildStage(chapter: ChapterDef, options: StageOptions): StageNodes {
   const nodes: StageNode[] = [];
+  const row = chapterLook(chapter.id);
 
-  // Chapter look preset — outdoor-day with zero fog and balanced studio exposure.
-  const look = looks.preset("outdoor-day", {
-    fogDensityScale: 0,
-    exposureEv: -0.08,
-    sun: chapter.look.sun,
-    ...(chapter.look.accent ? { accent: chapter.look.accent as AuraColor } : {}),
-    background: (chapter.look.background ?? "#2b6cb0") as AuraColor
-  });
-  if (options.ambientOcclusion === false) {
-    const group = look.toJSON() as AuraSceneNode & { readonly children?: readonly AuraSceneNode[] };
-    nodes.push({ ...group, children: (group.children ?? []).filter((c) => (c as { name?: string }).name !== "look ambient occlusion") } as AuraSceneNode);
-  } else {
-    nodes.push(look);
-  }
-  nodes.push(
-    lights.ambient({ name: "siege-ambient", color: "#dce8f8", intensity: 0.2 }),
-    lights.hemisphere({ name: "siege-hemi", skyColor: "#68a8e8", groundColor: "#3a5a34", intensity: 0.4, position: [0, 18, 0] }),
-    lights.directional({ name: "siege-sun", color: "#ffe6bd", intensity: 0.85, position: [-10, 24, 16] }),
-    // Cool rim from behind separates the fort, rocks, and trees from the water band.
-    lights.directional({ name: "siege-rim", color: "#bfe0ff", intensity: 0.5, position: [12, 9, -16] }),
-    lights.directional({ name: "siege-warm-bounce", color: "#ffd9a0", intensity: 0.28, position: [2, 6, 18] })
-  );
+  // Chapter look (SS47-E1/L1/P2), the real sky (SS47-E2) and the chapter practicals (SS47-L3): no ambient, no
+  // hemisphere, no fill directionals; the look's key is the one shadowed sun.
+  nodes.push(chapterLookNode(row), chapterSkyNode(row), ...chapterPracticals(row));
 
   // ------------------------------------------------------------- terrain --
-  // Palette-derived tones keep all six chapters coherent (green cove, quarry,
-  // greenhouse, moon roost) without new textures or assets.
-  const groundColor = chapter.ground ?? "#3d8c40";
-  const farColor = chapter.farGround ?? "#2d6e32";
-  const backdrop = chapter.look.background ?? "#2b6cb0";
-  const accentColor = chapter.look.accent ?? "#ffd9a0";
+  // One island all day (bleached sand, sea-meadow turf, chalk cliffs, sea teal); light carries the time of day.
+  const terrain = row.terrain;
+  // SS47-M2: CC0 grain/blade/rock detail maps on the three island discs (0 draws); the rock GLBs already drop their
+  // photoreal moss colour (replaceTextures) for flat palette tints.
+  const textured = options.surfaceMaps !== false;
+  const groundColor = terrain.turf;
+  const farColor = terrain.sand;
+  const backdrop = row.horizon;
+  const accentColor = row.accent;
   const grassLight = mixHex(groundColor, "#dceab0", 0.2);
   const grassDark = mixHex(groundColor, "#1b3520", 0.34);
-  const dirtColor = mixHex(groundColor, "#8a6a44", 0.6);
-  const rimColor = mixHex(groundColor, "#20281c", 0.55);
-  const shallowColor = mixHex(backdrop, "#4aa8b4", 0.42);
-  const hazeColor = mixHex(farColor, backdrop, 0.62);
-  const rockTint = mixHex(farColor, "#8b8c82", 0.56);
-  const rockTintSmall = mixHex(farColor, "#a09a88", 0.62);
+  // Sandy footpath and chalk cliff lip (the old dark earth lip read as a green disc on a plate).
+  const dirtColor = mixHex(terrain.sand, groundColor, 0.22);
+  const rimColor = terrain.chalk;
+  const shallowColor = terrain.shallows;
+  const hazeColor = mixHex(terrain.chalk, row.fog.color, 0.45);
+  const rockTint = mixHex(terrain.wetRock, terrain.chalk, 0.35);
+  const rockTintSmall = mixHex(terrain.wetRock, terrain.sand, 0.4);
   const rockOverrides = [
     { color: rockTint, colorMode: "replace" as const, replaceTextures: true, roughness: 0.9, metallic: 0.02 }
   ];
@@ -271,22 +457,6 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
     { position: [4.2, 0.05, 6.2], rotation: [0, 1.5, 0], scale: [0.5, 0.15, 0.36] as [number, number, number] }
   ];
 
-  const foamInst: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
-  const foamColors: string[] = [];
-  for (let i = 0; i < 34; i += 1) {
-    const a = Math.PI + ((i + 0.5) / 34) * Math.PI;
-    const cx = 1.6 + Math.cos(a) * 10.15;
-    const cz = -0.4 + Math.sin(a) * 8.0;
-    const tx = -10.15 * Math.sin(a);
-    const tz = 8.0 * Math.cos(a);
-    foamInst.push({
-      position: [cx, -0.27, cz],
-      rotation: [0, -Math.atan2(tz, tx), 0],
-      scale: [0.72 + (i % 4) * 0.1, 0.018, 0.16]
-    });
-    foamColors.push(i % 3 === 0 ? "#d7eee9" : "#eef8f2");
-  }
-
   const headlandSpecs: readonly { position: readonly [number, number, number]; scale: readonly [number, number, number] }[] = [
     { position: [-19, 0.2, -23], scale: [9, 2.4, 3.6] },
     { position: [-7, 0.1, -27], scale: [7, 1.8, 3.0] },
@@ -298,18 +468,20 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
   const headlandColors = headlandSpecs.map((_, i) => mixHex(hazeColor, backdrop, 0.25 + (i % 3) * 0.12));
 
   nodes.push(
-    primitives.cylinder({ name: "stage-ground", material: pbr(groundColor, { roughness: 0.78, metallic: 0.03 }), castShadow: false, receiveShadow: true })
+    primitives.cylinder({ name: "stage-ground", material: islandSurface("turf", groundColor, 0.78, textured), castShadow: false, receiveShadow: true })
       .position(1.5, -0.175, 0).scale([18, 0.35, 14]).runtime({ id: "stage-ground", tags: ["stage"] }),
-    // Dark earth lip peeks above the grass at the island edge so the disc reads as terrain, not a decal.
-    primitives.cylinder({ name: "stage-ground-rim", material: pbr(rimColor, { roughness: 0.9, metallic: 0.02 }), castShadow: false, receiveShadow: true })
+    // Chalk cliff lip peeks above the turf at the island edge so the disc reads as a sea stack, not a decal.
+    primitives.cylinder({ name: "stage-ground-rim", material: islandSurface("wetRock", rimColor, 0.88, textured), castShadow: false, receiveShadow: true })
       .position(1.5, -0.17, 0).scale([18.5, 0.36, 14.5]),
-    primitives.cylinder({ name: "stage-far-ground", material: pbr(mixHex(farColor, grassDark, 0.18), { roughness: 0.84, metallic: 0.02 }), castShadow: false, receiveShadow: true })
+    // Bleached-sand beach ring above the waterline.
+    primitives.cylinder({ name: "stage-far-ground", material: islandSurface("sand", farColor, 0.92, textured), castShadow: false, receiveShadow: true })
       .position(1.6, -0.26, -0.4).scale([19.6, 0.32, 15.2]).runtime({ id: "stage-far-ground", tags: ["stage"] }),
-    primitives.cylinder({ name: "stage-shallows", material: pbr(shallowColor, { roughness: 0.18, metallic: 0.15 }), castShadow: false, receiveShadow: true })
+    // Shallows and seabed under the animated sea (SS47-E3); the seabed is also the sea when world water is off.
+    primitives.cylinder({ name: "stage-shallows", material: pbr(shallowColor, { roughness: 0.2, metallic: 0.05 }), castShadow: false, receiveShadow: true })
       .position(1.5, -0.315, -0.4).scale([22, 0.05, 17]),
-    primitives.cylinder({ name: "stage-ocean", material: pbr(mixHex(backdrop, "#0d2f4e", 0.55), { roughness: 0.22, metallic: 0.24 }), castShadow: false, receiveShadow: true })
+    primitives.cylinder({ name: "stage-ocean", material: pbr(mixHex(terrain.sea, "#0b2a38", 0.45), { roughness: 0.22, metallic: 0.1 }), castShadow: false, receiveShadow: true })
       .position(1.5, -0.45, -2.0).scale([64, 0.24, 52]).runtime({ id: "stage-ocean", tags: ["stage"] }),
-    primitives.box({ name: "shore-foam", material: pbr("#ffffff", { roughness: 0.55 }), instances: foamInst, instanceColors: foamColors, castShadow: false, receiveShadow: false }),
+    seaNode(row, options),
     primitives.sphere({ name: "terrain-mounds", material: pbr("#ffffff", { roughness: 0.92, metallic: 0.02 }), instances: moundInst, instanceColors: moundSpecs.map((_, i) => moundColors[i % moundColors.length]!), castShadow: false, receiveShadow: true }),
     primitives.sphere({ name: "grass-patches", material: pbr("#ffffff", { roughness: 0.95 }), instances: patchSpecs.map((p) => ({ ...p, rotation: [0, 0, 0] as [number, number, number] })), instanceColors: patchColors, castShadow: false, receiveShadow: true }),
     primitives.box({ name: "dirt-path", material: pbr(dirtColor, { roughness: 0.96, metallic: 0 }), instances: pathInst, instanceColors: pathInst.map((_, i) => (i % 2 === 0 ? dirtColor : mixHex(dirtColor, groundColor, 0.28))), castShadow: false, receiveShadow: true }),
@@ -318,9 +490,18 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
     primitives.sphere({ name: "distant-headlands", material: pbr("#ffffff", { roughness: 1, metallic: 0 }), instances: headlandInst, instanceColors: headlandColors, castShadow: false, receiveShadow: false }),
     model(assets.gullsiegeBridgeMeshy, { name: "launch-knoll", position: [-7.4, -0.1, 0], rotation: [0, 0, 0] })
       .scale([2.2, 1.1, 2.2]).runtime({ id: "launch-knoll", tags: ["stage"] }),
-    model(assets.gullsiegeBridgeMeshy, { name: "fortress-pad", position: [7.2, -0.22, 0], rotation: [0, 0, 0] })
+    model(assets.gullsiegeBridgeMeshy, {
+      name: "fortress-pad", position: [7.2, -0.22, 0], rotation: [0, 0, 0],
+      // SS47-E4: the drizzle chapter wets the fort pad (darker, glossier); a tint only, the pad stays above 70 luma.
+      ...(row.weather === "drizzle" ? { materialOverrides: [{ color: "#b9b3a8", colorMode: "multiply" as const, roughness: 0.28, clearcoat: 0.6, clearcoatRoughness: 0.15 }] } : {})
+    })
       .scale([4.2, 0.55, 3.8]).runtime({ id: "fortress-pad", tags: ["stage"] })
   );
+
+  // SS47-W1: seeded instanced beach dressing (5 draws), clear of the flight lane; wind bends the sea grass.
+  nodes.push(...beachDressingNodes(row, options), ...chapterWeather(row, options));
+  // SS47-H1: the wooden level sign with the chapter name in SDF text (+3 draws).
+  nodes.push(...levelSignNodes(chapter.id));
 
   // Stylized chapter rocks: the photoreal GLBs keep their silhouettes but get
   // flat palette-derived materials so they read as the same art style as the fort.
@@ -443,10 +624,7 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
     nodes.push(model(assets.gullsiegePlanksMeshy, { name: debrisNodeId(i), position: [0, -120, 0] })
       .scale(0.18).runtime({ id: debrisNodeId(i), tags: ["debris"] }));
   }
-  for (let i = 0; i < POOL.puffs; i += 1) {
-    nodes.push(primitives.sphere({ name: puffNodeId(i), material: puffMaterial("dust"), castShadow: false, receiveShadow: false })
-      .position(0, -120, 0).scale(0.3).runtime({ id: puffNodeId(i), tags: ["puff"] }));
-  }
+  // SS47-V1: the 14 sphere puffs are gone; breaks, hits and abilities fire the runtime VFX pack (vfx.ts).
   for (let i = 0; i < POOL.dots; i += 1) {
     nodes.push(primitives.sphere({ name: dotNodeId(i), material: glow("#fff7d8", 1.8), castShadow: false, receiveShadow: false })
       .position(0, -120, 0).scale(0.07).runtime({ id: dotNodeId(i), tags: ["trajectory"] }));
@@ -526,10 +704,9 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
       .position(7.62, 4.82, -0.605).scale([0.78, 0.075, 0.02])
   );
 
-  // --------------------------------------------------------- lights + fx ----
+  // --------------------------------------------------------------- post ----
   // FXAA is an image-quality pass, not motion: it stays on for reduced-motion players. Only the vignette is dropped.
-  if (!options.reducedMotion) nodes.push(effects.vignette({ intensity: 0.18 }));
-  nodes.push(effects.antiAlias({ mode: "fxaa" }));
+  nodes.push(...chapterPost(row, options));
 
   // ---------------------------------------------------------- camera spec ---
   const cameraSpec = camera.perspective({
@@ -543,7 +720,8 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
 
 export function buildScene(chapter: ChapterDef, options: StageOptions): ReturnType<typeof scene> {
   const { nodes, cameraSpec } = buildStage(chapter, options);
-  let s = scene().background(chapter.look.background ?? "#2b6cb0", { toneMapped: false });
+  // The horizon colour sits behind the sky node, so the sea edge and any frame before the sky binds stay on palette.
+  let s = scene().background(chapterLook(chapter.id).horizon, { toneMapped: false });
   for (const node of nodes) s = s.add(node);
   s = s.camera(cameraSpec);
   return s;
