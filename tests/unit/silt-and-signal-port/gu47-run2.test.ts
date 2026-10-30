@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 import { validatePostEffectNode } from "../../../packages/engine/src/agent-api/postBridge";
 import { FAR_DUNE_RINGS, farDuneRings, farDunes } from "../../../examples/silt-and-signal-port/architecture";
-import { GOD_RAY_DENSITY, WET_ROAD, buildWorld, inkSkySpec } from "../../../examples/silt-and-signal-port/world";
+import { BOOST_FOV_KICK, GOD_RAY_DENSITY, MAST_BRONZE, RING_PUNCH, WET_ROAD, buildWorld, fovKickTarget, inkSkySpec, mastTint } from "../../../examples/silt-and-signal-port/world";
 import { LIGHTNING, createLightning, flashEnvelope, lightningStrikes } from "../../../examples/silt-and-signal-port/storm";
 
 type Node = Record<string, any>;
@@ -101,5 +101,34 @@ describe("GU47 WP-34 DG-S5 lightning and wet road", () => {
     expect(road(4, { look: "original" }).material.roughness).toBe(1);
     const key = nodes(4).find((n) => n.name === "silt key")!;
     expect(key.runtime?.id).toBe("silt-key");
+  });
+});
+
+describe("GU47 WP-34 DG-C2 ring-pass punch and DG-M4 bronze masts", () => {
+  it("the punch adds to the boost kick for 0.35 s and is 0 on reduced motion", () => {
+    expect(fovKickTarget(false, 0, false)).toBe(0);
+    expect(fovKickTarget(true, 0, false)).toBe(BOOST_FOV_KICK);
+    expect(fovKickTarget(false, 0.1, false)).toBe(RING_PUNCH.deg);
+    expect(fovKickTarget(true, 0.1, false)).toBe(BOOST_FOV_KICK + RING_PUNCH.deg);
+    expect(fovKickTarget(true, 0.1, true)).toBe(0);
+  });
+
+  it("inked masts are bronze with seeded low-saturation verdigris tints, one node; the original keeps brass", () => {
+    for (let c = 0; c < 7; c++) {
+      const masts = nodes(c).filter((n) => n.name === "masts");
+      if (!masts.length) continue;
+      expect(masts.length).toBe(1);
+      expect(masts[0]!.material.roughness).toBe(MAST_BRONZE.roughness);
+    }
+    const tints = Array.from({ length: 40 }, (_, i) => mastTint(i));
+    expect(tints).toEqual(Array.from({ length: 40 }, (_, i) => mastTint(i)));
+    expect(new Set(tints).size).toBeGreaterThan(2);
+    for (const hex of tints) {
+      const n = Number.parseInt(hex.slice(1), 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+      // saturation (max-min)/max stays under 0.25: never a jade cluster
+      expect((Math.max(r, g, b) - Math.min(r, g, b)) / Math.max(r, g, b)).toBeLessThan(0.25);
+    }
+    const original = nodes(0, { look: "original" }).find((n) => n.name === "masts");
+    if (original) expect(original.material.roughness).toBe(0.38);
   });
 });

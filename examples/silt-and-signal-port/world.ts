@@ -156,6 +156,13 @@ export interface WorldRuntime {
 export const BOOST_FOV_KICK = 8;
 export const ROLL_OF_BANK = 0.4;
 export const MAX_ROLL_DEG = 6;
+/** DG-C2 ring-pass punch: a short extra FOV kick (deg) for this many seconds after a ring is passed. */
+export const RING_PUNCH = { deg: 3, seconds: 0.35 } as const;
+/** DG-C2: the FOV kick the camera eases toward (boost plus the ring-pass punch); 0 on reduced motion. */
+export function fovKickTarget(boosting: boolean, punchLeft: number, reducedMotion: boolean): number {
+  if (reducedMotion) return 0;
+  return (boosting ? BOOST_FOV_KICK : 0) + (punchLeft > 0 ? RING_PUNCH.deg : 0);
+}
 /** Camera roll in radians for a board bank (radians): 0.4x, capped at 6 deg. */
 export function cameraRoll(bank: number): number {
   const cap = (MAX_ROLL_DEG * Math.PI) / 180;
@@ -201,6 +208,15 @@ export interface BuildOptions {
   readonly low?: boolean;
   /** PRD §6.3: halves the storm rain volume. */
   readonly reducedMotion?: boolean;
+}
+
+/** DG-M4: brushed bronze for the masts in the inked look; instance tints add verdigris. */
+export const MAST_BRONZE = { color: "#a07a48", roughness: 0.55, metallic: 0.8 } as const;
+const MAST_TINTS = ["#ffffff", "#d8e6dc", "#b4cec0", "#9cbfb0"] as const;
+/** Seeded per-mast verdigris tint (multiplies the bronze): clean to heavy patina, never saturated. */
+export function mastTint(index: number): string {
+  const h = Math.abs(Math.sin(index * 12.9898 + 4.1) * 43758.5453) % 1;
+  return MAST_TINTS[Math.floor(h * MAST_TINTS.length)]!;
 }
 
 /** DG-S5: wet paving in the storm chapter (inked look). */
@@ -519,7 +535,12 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       size: [1, 1, 1],
       transforms: columnTransforms(props.brass),
       castShadow: true,
-      material: pbr({ color: "#b99455", roughness: 0.38, metallic: 0.85, envMapIntensity: 1.1 })
+      // GU47 DG-M4 (inked): brushed bronze, every mast with its own seeded verdigris tint (low-saturation grey-green, so
+      // jade stays the signal's alone); same 1 draw. `?look=original` keeps the polished brass.
+      ...(inked ? { colors: props.brass.map((_, i) => mastTint(i)) } : {}),
+      material: inked
+        ? pbr({ color: MAST_BRONZE.color, roughness: MAST_BRONZE.roughness, metallic: MAST_BRONZE.metallic, envMapIntensity: 0.9 })
+        : pbr({ color: "#b99455", roughness: 0.38, metallic: 0.85, envMapIntensity: 1.1 })
     }));
   }
 
@@ -623,7 +644,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       const siltFx: SiltFx | undefined = inked
         ? createSiltFx(app.effects, { chapter, reducedMotion: options.reducedMotion, low: buildOptions.low, trailNodes: ["thruster-l", "thruster-r"], motesNode: "rider" })
         : undefined;
-      let fovKick = 0, roll = 0;
+      let fovKick = 0, roll = 0, punchLeft = 0;
       // DG-S5: lightning in the storm chapter (render time, never sim time), the sky deck and the key flash together
       const lightning = inked && look.rain ? createLightning({ reducedFlash: options.reducedMotion }) : undefined;
       let flashShown = 0, strikes = 0;
@@ -679,6 +700,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
             if (siltFx && lastPoint >= 0 && state.objective === lastObjective && state.point > lastPoint) {
               const passed = objectiveOf(state).points[lastPoint];
               if (passed) siltFx.ringPassed([passed.x, passed.y, passed.z]);
+              punchLeft = RING_PUNCH.seconds;
             }
             if (lastPoint >= 0 && (state.point > lastPoint || state.objective !== lastObjective)) { oneShot = 0.9; playClip("walk"); }
             lastPoint = state.point; lastObjective = state.objective;
@@ -734,7 +756,9 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
           if (inked) {
             // DG-C2: boost FOV kick +8 deg eased at no more than 2 deg per frame; roll 0.4x the board bank, max 6 deg;
             // both 0 on reduced motion (PRD §6.3)
-            const want = flight.boosting && !options.reducedMotion ? BOOST_FOV_KICK : 0;
+            // DG-C2: the ring-pass punch adds RING_PUNCH.deg for 0.35 s through the same 2 deg/frame ease
+            const want = fovKickTarget(flight.boosting, punchLeft, !!options.reducedMotion);
+            punchLeft = Math.max(0, punchLeft - dt);
             fovKick += Math.max(-2, Math.min(2, (want - fovKick) * Math.min(1, dt * 6)));
             if (cut) fovKick = want;
             kick = fovKick;
