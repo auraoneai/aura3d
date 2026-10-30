@@ -496,6 +496,8 @@ let letterbox: { show(on: boolean): void } | null = null;
 let broadcastPostOn = false;
 /** H47-V3: the Jam-dunk spray tags (new look). */
 const sprayTags = new SprayTags();
+// H47-H1: the tour HUD skin (spray-stencil score bug, spray-can Jam meter) styles off body[data-look="tour"].
+if (typeof document !== "undefined" && initialParams.get("look") !== "original") document.body.dataset.look = "tour";
 /** H47-H1: the score text the in-world Rucker board shows (set at build, kept equal to the DOM score by syncHud). */
 let shownBoardScore = "";
 const BOOT_REDUCED_MOTION = initialParams.has("reducedMotion") || (typeof window !== "undefined" && (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false));

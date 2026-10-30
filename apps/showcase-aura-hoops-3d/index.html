@@ -302,6 +302,68 @@
         display: inline;
       }
 
+      /* H47-H1: Blacktop World Tour HUD (new look; ?look=original keeps the 4.6 HUD). Spray-stencil score bug: charcoal
+         board, stencil-cut numbers with a soft overspray halo, sodium tape edge. Spray-can Jam meter: a can cap and nozzle
+         drawn in CSS, the fill as a sprayed stroke with an overspray fringe. No new font files, no images. */
+      body[data-look="tour"] .scoreboard {
+        background: rgba(35, 38, 43, 0.86);
+        border: 0;
+        border-top: 3px solid #ffb347;
+        backdrop-filter: none;
+        transform: rotate(-0.6deg);
+      }
+      body[data-look="tour"] .sb-team .sb-score {
+        font-size: 36px;
+        letter-spacing: 0.04em;
+        text-shadow: 0 0 6px currentColor, 0 0 1px currentColor;
+        -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 9px, transparent 9px 10.5px);
+        mask-image: repeating-linear-gradient(90deg, #000 0 9px, transparent 9px 10.5px);
+      }
+      body[data-look="tour"] .sb-mid {
+        border-left: 1px dashed rgba(138, 145, 153, 0.55);
+        border-right: 1px dashed rgba(138, 145, 153, 0.55);
+      }
+      body[data-look="tour"] .jam-meter-wrap {
+        background: rgba(35, 38, 43, 0.82);
+        border: 0;
+        border-left: 3px solid #ffb347;
+        backdrop-filter: none;
+      }
+      body[data-look="tour"] .jam-meter-wrap .k {
+        position: relative;
+        width: 14px;
+        height: 22px;
+        font-size: 0;
+        border-radius: 3px 3px 2px 2px;
+        background: linear-gradient(180deg, #8a9199 0 22%, #ffb347 22% 100%);
+      }
+      body[data-look="tour"] .jam-meter-wrap .k::before {
+        content: "";
+        position: absolute;
+        left: 4px;
+        top: -5px;
+        width: 6px;
+        height: 5px;
+        border-radius: 2px 2px 0 0;
+        background: #8a9199;
+      }
+      body[data-look="tour"] .jam-meter-wrap .bar {
+        height: 9px;
+        background: rgba(138, 145, 153, 0.16);
+        border-radius: 5px;
+      }
+      body[data-look="tour"] .jam-meter-wrap .fill {
+        border-radius: 5px;
+        background: #ffb347;
+        box-shadow: 0 0 6px 2px rgba(255, 179, 71, 0.55);
+      }
+      body[data-look="tour"] .jam-meter-wrap.full .fill {
+        background: linear-gradient(90deg, #ffb347, #ff5d2a);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        body[data-look="tour"] .jam-meter-wrap.full .fill { animation: none; }
+      }
+
       @keyframes jamPulse {
         from { filter: brightness(1); }
         to { filter: brightness(1.7); }
@@ -967,7 +1029,7 @@
               <span class="sb-poss" id="h-away-poss"></span>
             </div>
           </div>
-          <div class="jam-meter-wrap" id="h-jam-wrap">
+          <div class="jam-meter-wrap" id="h-jam-wrap" role="group" aria-label="Jam meter">
             <span class="k">JAM</span>
             <div class="bar"><div class="fill" id="h-jam"></div></div>
             <span class="ready" id="h-jam-ready">JAM READY · ATTACK THE RIM</span>

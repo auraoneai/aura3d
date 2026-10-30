@@ -24,3 +24,14 @@ describe("Aura Hoops in-world score and court name (H47-H1)", () => {
     expect(MAIN).toMatch(/inWorldScore: shownBoardScore \? \{ board: shownBoardScore, dom: currentBoardScore\(\) \}/);
   });
 });
+
+describe("Aura Hoops tour HUD skin (H47-H1)", () => {
+  const HTML = readFileSync(path.resolve(__dirname, "../../../apps/showcase-aura-hoops-3d/index.html"), "utf8");
+  it("skins the score bug and Jam meter only on the new look, with no system font stacks", () => {
+    expect(MAIN).toMatch(/initialParams\.get\("look"\) !== "original"\) document\.body\.dataset\.look = "tour"/);
+    expect(HTML).toContain('body[data-look="tour"] .scoreboard');
+    expect(HTML).toContain('body[data-look="tour"] .jam-meter-wrap .k::before');
+    expect(HTML).not.toMatch(/system-ui|-apple-system|Helvetica|Arial|Roboto|Inter\b/);
+    expect(HTML).toContain('aria-label="Jam meter"');
+  });
+});
