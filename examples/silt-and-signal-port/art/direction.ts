@@ -69,7 +69,7 @@ export default defineArtDirection({
     { event: "boost", kind: "trail" },
     { event: "ambient-sand", kind: "silt-motes-sand" },
     { event: "ambient-fireflies", kind: "silt-motes-fireflies" },
-    { event: "ambient-lantern-motes", kind: "silt-motes-lantern-motes" },
+    { event: "ambient-wick-glow", kind: "silt-motes-wick-glow" },
     { event: "ambient-pollen", kind: "silt-motes-pollen" },
     { event: "ambient-embers", kind: "silt-motes-embers" }
   ],

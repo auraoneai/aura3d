@@ -555,7 +555,7 @@ async function boot(): Promise<void> {
   if (config.look === "inked") void mountSiltHud().then((loaded) => { hudFonts = loaded; });
   (window as unknown as { __SILT_HUD_FONTS__?: () => readonly string[] }).__SILT_HUD_FONTS__ = () => hudFonts;
   // phones and tablets get a 2048 sun shadow map (a quarter of the 4096 texels; the heaviest pass on a phone GPU)
-  world = buildWorld(config.chapter, { shadowMapSize: coarse ? 2048 : 4096, look: config.look, low: coarse });
+  world = buildWorld(config.chapter, { shadowMapSize: coarse ? 2048 : 4096, look: config.look, low: coarse, reducedMotion });
   const look = chapterLook(config.chapter);
   const inked = config.look === "inked";
   app = createAuraApp(canvas, {

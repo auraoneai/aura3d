@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/silt-and-signal-port/art/direction.ts",
-  "sourceSha256": "04d03d2d1caf51d1632348bd9e143dc815ee4dc687a9932877e9e31cbddd232d",
+  "sourceSha256": "ddd12590e66827228d7e47f505b3497a41e7e5a69471eec5fdcc9700e94ae18b",
   "id": "showcase-silt-and-signal-port",
   "genre": "flight",
   "signatureEffect": "Sand wake thrown up under the hoverboard at speed and low altitude, inside a hand-inked frame whose umber ink fades to nothing by 600 m.",
@@ -39,6 +39,20 @@
       "background": true
     },
     "models": [
+      {
+        "assetKey": "pillar",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "canyonrocks",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
       {
         "assetKey": "tree",
         "triangles": 0,
@@ -583,8 +597,8 @@
         "kind": "silt-motes-fireflies"
       },
       {
-        "event": "ambient-lantern-motes",
-        "kind": "silt-motes-lantern-motes"
+        "event": "ambient-wick-glow",
+        "kind": "silt-motes-wick-glow"
       },
       {
         "event": "ambient-pollen",

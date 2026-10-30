@@ -16,7 +16,7 @@ import { SILT_PALETTE, chapterLook, type AmbientMotes } from "./look";
 
 export type SiltVfxKind = "silt-sand-wake" | "silt-canal-spray" | "silt-signal" | "silt-impact" | `silt-motes-${AmbientMotes}`;
 
-const MOTES: readonly AmbientMotes[] = ["sand", "fireflies", "lantern-motes", "pollen", "embers"];
+const MOTES: readonly AmbientMotes[] = ["sand", "fireflies", "wick-glow", "pollen", "embers"];
 export const SILT_VFX_KINDS: readonly SiltVfxKind[] = ["silt-sand-wake", "silt-canal-spray", "silt-signal", "silt-impact", ...MOTES.map((m) => `silt-motes-${m}` as const)];
 
 /** WP-34 budget: live particles and live effects. */
@@ -35,7 +35,7 @@ export function siltVfxPresets(options: SiltVfxOptions): Readonly<Record<SiltVfx
   const scale = (options.reducedMotion ? 0.5 : 1) * (options.low ? 0.5 : 1);
   const n = (count: number, s = options.reducedMotion ? 0.5 : 1): number => Math.max(1, Math.round(count * s));
   const motes = (kind: AmbientMotes): AuraVfxEffectSpec => {
-    const bright = kind === "fireflies" || kind === "lantern-motes" || kind === "embers";
+    const bright = kind === "fireflies" || kind === "wick-glow" || kind === "embers";
     return {
       name: `silt-motes-${kind}`,
       layers: [{

@@ -11,6 +11,9 @@ import { createSiltFx } from "../../../examples/silt-and-signal-port/fx";
 import { MAX_ROLL_DEG, allProgramSpecs, buildWorld, cameraRoll, overCanal, rolledUp } from "../../../examples/silt-and-signal-port/world";
 import { RAIL_CLEARANCE, RAIL_SECONDS, chaseEyeBlocked, railPose } from "../../../examples/silt-and-signal-port/camera";
 import { createSim } from "../../../examples/silt-and-signal-port/sim";
+import { DRESSING_RING_CLEARANCE, dressingFor } from "../../../examples/silt-and-signal-port/dressing";
+import { createTerrain } from "../../../examples/silt-and-signal-port/terrain";
+import { CHAPTERS } from "../../../examples/silt-and-signal-port/chapters-data";
 import { PLASTER_INKED, inkedPlaster, inkedTerrainColors } from "../../../examples/silt-and-signal-port/architecture";
 
 type Node = Record<string, any>;
@@ -216,5 +219,24 @@ describe("GU47 WP-34 materials (DG-M1 interim, DG-M2)", () => {
     const foot = inkedPlaster(PLASTER_INKED[2]!, wall, 0.2, 0.5, 0, 0), mid = inkedPlaster(PLASTER_INKED[2]!, wall, 5, 0.5, 0, 0), edge = inkedPlaster(PLASTER_INKED[2]!, wall, 5, 0.0, 0, 0);
     expect(foot[2]! / foot[0]!).toBeLessThan(mid[2]! / mid[0]!);
     expect(edge[1]!).toBeLessThan(mid[1]!);
+  });
+});
+
+describe("GU47 WP-34 dressing (DG-W1)", () => {
+  it("is seeded, stays 40 m clear of every ring and outside wall footprints, and adds two instanced nodes", () => {
+    for (let chapter = 0; chapter <= 6; chapter++) {
+      const terrain = createTerrain(chapter);
+      const walls = terrain.props().walls;
+      const a = dressingFor(chapter, terrain, walls), b = dressingFor(chapter, terrain, walls);
+      expect(a).toEqual(b);
+      expect(a.length).toBeGreaterThanOrEqual(25);
+      const rings = CHAPTERS[chapter]!.objectives.flatMap((o) => o.points);
+      for (const d of a) {
+        for (const p of rings) expect(Math.hypot(p.x - d.x, p.z - d.z)).toBeGreaterThanOrEqual(DRESSING_RING_CLEARANCE);
+      }
+    }
+    const inked = nodes(1), original = nodes(1, { look: "original" });
+    expect(inked.filter((n) => /^dressing-/.test(n.name ?? "")).length).toBe(2);
+    expect(original.filter((n) => /^dressing-/.test(n.name ?? "")).length).toBe(0);
   });
 });

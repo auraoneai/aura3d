@@ -16,6 +16,7 @@ import { chaseEyeBlocked, clearChaseEye, createChaseClearance, sceneryColumns, w
 import { gateOpen, objectiveOf, type Sim } from "./sim";
 import { RING_FRAGMENT, RING_VERTEX, SKY_FRAGMENT, SKY_INK_FRAGMENT, SKY_VERTEX, WATER_FRAGMENT, WATER_VERTEX } from "./shaders";
 import { createSiltFx, type SiltFx } from "./fx";
+import { dressingFor } from "./dressing";
 import { SILT_PALETTE, chapterHdri, chapterLook, keyDirection, linearOf, type SiltLookMode } from "./art/look";
 import { buildArchitecture, farDunes, terrainColors, type ColoredMesh } from "./architecture";
 import { createTerrain, usesOriginalTerrain, type Column, type MeshData, type Placement, type Terrain } from "./terrain";
@@ -192,6 +193,8 @@ export interface BuildOptions {
   readonly look?: SiltLookMode;
   /** PRD §6.4 Low tier (coarse pointers): PCF instead of PCSS, no god rays, no lens flare. */
   readonly low?: boolean;
+  /** PRD §6.3: halves the storm rain volume. */
+  readonly reducedMotion?: boolean;
 }
 
 /** Amber practical colour for the night chapters' ring route (DG-L4). */
@@ -250,6 +253,12 @@ function addInkedRig(builder: Scene, chapter: number, options: BuildOptions): vo
   builder.add(effects.bloom({ intensity: look.bloom.intensity, threshold: look.bloom.threshold }));
   // exposure lives on the output (ACES, main.ts); the grade keeps 1 so the two never stack
   builder.add(effects.colorGrade({ contrast: look.grade.contrast, saturation: look.grade.saturation, exposure: 1, temperature: look.grade.temperature }));
+  // DG-S5 (part): rain only in the storm chapter, an explicit volume count (Low and reduced motion halve it); lightning
+  // timed to audio and the wet road are phase-2 work (see the lane report)
+  if (look.rain) {
+    const count = Math.round(500 * (options.low ? 0.5 : 1) * (options.reducedMotion ? 0.5 : 1));
+    builder.add({ ...effects.rain({ intensity: 0.6, color: "#b9c3d0" }).toJSON(), name: "silt storm rain", particleCount: count } as unknown as Parameters<Scene["add"]>[0]);
+  }
   builder.add(effects.vignette({ intensity: 0.22 }));
   if (!options.low) builder.add(effects.filmGrain({ intensity: 0.03 }));
 }
@@ -415,6 +424,14 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
     }).runtime({ id: "far-dunes" }));
   }
 
+  // GU47 DG-W1 (inked look): seeded column drums and broken ruins off the ring route, two instanced nodes (+2 draws)
+  if (inked) {
+    const dressing = dressingFor(chapter, terrain, props.walls);
+    const drums = dressing.filter((d) => d.kind === "drum"), ruins = dressing.filter((d) => d.kind === "ruin");
+    // pillar.glb is 1.9 m tall with its origin at the centre: squat drums, sunk a little
+    if (drums.length) builder.add(instances.model(assets.pillar, { name: "dressing-drums", castShadow: true, receiveShadow: true, transforms: drums.map((d) => ({ position: [d.x, d.y + 0.35 * d.scale, d.z] as [number, number, number], rotation: [0, d.yaw, 0] as [number, number, number], scale: [d.scale, d.scale * 0.45, d.scale] as [number, number, number] })) }));
+    if (ruins.length) builder.add(instances.model(assets.canyonrocks, { name: "dressing-ruins", castShadow: false, receiveShadow: true, transforms: ruins.map((d) => ({ position: [d.x, d.y + 0.3 * d.scale, d.z] as [number, number, number], rotation: [0, d.yaw, 0] as [number, number, number], scale: [d.scale, d.scale * 0.7, d.scale] as [number, number, number] })) }));
+  }
   if (props.trees.length) builder.add(instances.model(assets.tree, { name: "trees", transforms: placements(props.trees), castShadow: true, receiveShadow: true }));
   // boulders: Meshy canyon-rock cluster (1.9 m wide, origin at its centre), sunk slightly so it sits on the ground
   if (props.rocks.length) {

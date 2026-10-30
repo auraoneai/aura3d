@@ -19,7 +19,7 @@ export function siltLookMode(search: string | URLSearchParams | undefined): Silt
   return params?.get("look") === "original" ? "original" : "inked";
 }
 
-export type AmbientMotes = "sand" | "fireflies" | "lantern-motes" | "pollen" | "embers";
+export type AmbientMotes = "sand" | "fireflies" | "wick-glow" | "pollen" | "embers";
 
 export interface ChapterLook {
   readonly chapter: number;
@@ -121,7 +121,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     fog: { color: "#3f7d82", density: 0.0012, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.85 },
     grade: { exposure: 1.05, contrast: 1.06, saturation: 1.1, temperature: -0.04 },
     bloom: { intensity: 0.45, threshold: 1 }, ink: DAY_INK,
-    wake: { color: "#cfa57a", rate: 130 }, motes: { kind: "lantern-motes", color: "#ffbf6a" },
+    wake: { color: "#cfa57a", rate: 130 }, motes: { kind: "wick-glow", color: "#ffbf6a" },
     rain: false, godRays: false, lensFlare: false
   },
   {
