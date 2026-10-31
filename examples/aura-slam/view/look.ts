@@ -42,7 +42,10 @@ export interface VenueFog {
   readonly color: AuraColor;
   /** exp2 density (per metre; a bare density fog compiles to exp2). The broadcast camera sits about 45 m from the court centre. */
   readonly density: number;
-  /** Volumetric fog stage at High and above only (TT-E2: desert). */
+  /**
+   * Volumetric fog stage at High and above only (TT-E2). Phase 2: off on every venue; on software WebGL2 the stage only
+   * added extinction (no shafts) and washed the desert court and players out.
+   */
   readonly volumetricAtHigh: boolean;
   /** Visible floodlight cones (TT-E2: hard court, 4). */
   readonly lightCones: number;
@@ -158,7 +161,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
     hdri: "rooftop_night", hdriSize: "1k", environmentIntensity: 0.35, environmentRotationDeg: 0, background: "hdri",
     sun: null, nightKey: NIGHT_KEY,
     floodlights: FLOODLIGHTS,
-    fog: { color: "#0b1426", density: 0.008, volumetricAtHigh: false, lightCones: 4 },
+    fog: { color: "#0b1426", density: 0.006, volumetricAtHigh: false, lightCones: 4 },
     grade: { preset: "arena-fight", exposure: 1.2, contrast: 1.12, saturation: 1.04, temperature: -0.18, tint: 0, bloom: { intensity: 0.22, threshold: 0.92 }, vignette: 0.24, lut: "slam-hard", lutIntensity: 1 },
     signature: { burst: "hard-skid", burstColor: particle("hard"), markColor: "#c9d6e3", markOpacity: 0.42, markLifetime: 9 },
     crowd: true, wind: 0
@@ -168,7 +171,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
     hdri: "kloppenheim_02", hdriSize: "1k", environmentIntensity: 0.9, environmentRotationDeg: 0, background: "hdri",
     sun: { elevationDeg: 40, azimuthDeg: 120, color: "#fff1dc", intensity: 2.6, lightSize: 0.9, colorTemperatureK: 5600 },
     floodlights: [],
-    fog: { color: "#cfdbe6", density: 0.005, volumetricAtHigh: false, lightCones: 0 },
+    fog: { color: "#cfdbe6", density: 0.003, volumetricAtHigh: false, lightCones: 0 },
     grade: { preset: "daylight-outdoor", exposure: 1, contrast: 1.06, saturation: 1.06, temperature: 0.04, tint: -0.02, bloom: { intensity: 0.12, threshold: 0.95 }, vignette: 0.14, lut: "slam-grass", lutIntensity: 1 },
     signature: { burst: "grass-flick", burstColor: particle("grass"), markColor: "#cfe0b4", markOpacity: 0.32, markLifetime: 12 },
     crowd: true, wind: 0.35
@@ -178,7 +181,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
     hdri: "venice_sunset", hdriSize: "1k", environmentIntensity: 0.8, environmentRotationDeg: 0, background: "hdri",
     sun: { elevationDeg: 18, azimuthDeg: 250, color: "#ffc27a", intensity: 3.8, lightSize: 0.6, colorTemperatureK: 3400 },
     floodlights: [],
-    fog: { color: "#e3a46a", density: 0.008, volumetricAtHigh: false, lightCones: 0 },
+    fog: { color: "#e3a46a", density: 0.005, volumetricAtHigh: false, lightCones: 0 },
     grade: { preset: "cinematic-film", exposure: 1.35, contrast: 1.2, saturation: 1.12, temperature: 0.16, tint: 0.02, bloom: { intensity: 0.16, threshold: 0.9 }, vignette: 0.26, lut: "slam-clay", lutIntensity: 1 },
     signature: { burst: "clay-puff", burstColor: particle("clay"), markColor: "#8e3e1f", markOpacity: 0.55, markLifetime: 900 },
     crowd: true, wind: 0.2
@@ -188,8 +191,8 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
     hdri: "outdoor-midday", hdriSize: "2k", environmentIntensity: 0.75, environmentRotationDeg: 0, background: "hdri",
     sun: { elevationDeg: 72, azimuthDeg: 10, color: "#fffaf0", intensity: 4.6, lightSize: 0.4, colorTemperatureK: 6200 },
     floodlights: [],
-    fog: { color: "#e8d2b0", density: 0.011, volumetricAtHigh: true, lightCones: 0 },
-    grade: { preset: "daylight-outdoor", exposure: 1.3, contrast: 1.28, saturation: 0.94, temperature: 0.08, tint: 0, bloom: { intensity: 0.18, threshold: 0.88 }, vignette: 0.12, lut: "slam-desert", lutIntensity: 1 },
+    fog: { color: "#e8d2b0", density: 0.006, volumetricAtHigh: false, lightCones: 0 },
+    grade: { preset: "daylight-outdoor", exposure: 1.1, contrast: 1.2, saturation: 1.06, temperature: 0.08, tint: 0, bloom: { intensity: 0.1, threshold: 0.95 }, vignette: 0.12, lut: "slam-desert", lutIntensity: 1 },
     signature: { burst: "hard-skid", burstColor: particle("desert"), markColor: "#d7c19c", markOpacity: 0.4, markLifetime: 9 },
     crowd: true, wind: 0.5
   },
@@ -198,8 +201,8 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
     hdri: "sunset-dramatic", hdriSize: "2k", environmentIntensity: 0.85, environmentRotationDeg: 0, background: "hdri",
     sun: { elevationDeg: 8, azimuthDeg: 290, color: "#ff8f72", intensity: 2.4, lightSize: 0.8, colorTemperatureK: 2600 },
     floodlights: [],
-    fog: { color: "#e09a86", density: 0.01, volumetricAtHigh: false, lightCones: 0 },
-    grade: { preset: "cinematic-film", exposure: 1.25, contrast: 1.14, saturation: 1.16, temperature: 0.1, tint: 0.12, bloom: { intensity: 0.2, threshold: 0.86 }, vignette: 0.28, lut: "slam-beach", lutIntensity: 1 },
+    fog: { color: "#e09a86", density: 0.005, volumetricAtHigh: false, lightCones: 0 },
+    grade: { preset: "cinematic-film", exposure: 1.12, contrast: 1.14, saturation: 1.16, temperature: 0.1, tint: 0.12, bloom: { intensity: 0.2, threshold: 0.86 }, vignette: 0.28, lut: "slam-beach", lutIntensity: 1 },
     signature: { burst: "hard-skid", burstColor: particle("beach"), markColor: "#b9e3df", markOpacity: 0.38, markLifetime: 9 },
     crowd: true, wind: 0.6
   },

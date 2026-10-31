@@ -253,7 +253,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     syncCutDof();
   }
 
-  /** TT-P2: cut-aways open the lens to f/2 focused on the shot's target; the broadcast DOF returns when the cut ends. */
+  /** TT-P2: cut-aways focus at CUT_DOF_FSTOP on the shot's target; the broadcast DOF returns when the cut ends. */
   let dofShot: string | null = null;
   function syncCutDof(): void {
     const shot = cutFrame?.shot ?? null;
