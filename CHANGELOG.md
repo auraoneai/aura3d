@@ -1,8 +1,53 @@
 # Changelog
 
-Version: 4.7.0
+Version: 4.7.1
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 4.7.1 (2026-10-31)
+
+GameUpgrades47 phase 3 (`docs/prds/game-upgrades-47/GameUpgrades47-PRD.md`; lane reports in `docs/prds/game-upgrades-47/lanes/`, "Phase 3 (4.7.1)" sections). Every view that still opened in its 4.6.2 look in 4.7.0 was reworked, and a view switched to the new look only after a blind panel of three independent model judges preferred it to the 4.6.2 frame of the same view (software WebGL2 captures on the remote runner). No game opens entirely in its 4.6.2 look any more. Gameplay, rules and determinism are unchanged. The reference replays still match sample for sample.
+
+### Engine
+
+- **A scene's sky leaves with the scene (engine).** `setScene` to a scene without a sky node kept drawing the previous scene's sky: the effect system only ever set the sky from a sky node and never cleared it. The sky a scene node supplied is now dropped when the next scene has none; a sky set at runtime through `app.atmosphere.setSky` stays. Seen on Aura Hoops 3D court changes.
+
+### Games
+
+Views that now open in the new look (blind panel, new/old/same tally):
+
+| Game | Now opens in the new look | Still opens in the 4.6.2 look |
+|---|---|---|
+| Thermal Drift | all three circuits (3/0/0) | none |
+| Pip's Big Leap | academy and all six worlds (3/0/0, w4 2/1/0) | none |
+| Ion Circuit | default, the twilight look (3/0/0) | none |
+| Shadowstep Gauntlet | default, village, rooftops, river, forest (3/0/0) | gate |
+| Cross Hop | Downtown, Riverbend, Emberline, Neon | Meadow (Quick Play's start), Critter Core |
+| Aura Slam 3D | moon (3/0/0); every other venue re-judged 3/0/0 | none |
+| Aura Hoops 3D | Rucker, Orbit and Athens (3/0/0) | none |
+| Aura Diamond 3D | Lunar (3/0/0); all six parks re-judged 3/0/0 | none |
+| Iron Crown | Colosseum Ruins, Crown Arena, Desert Airbase, Himalayan Monastery (3/0) | none |
+| Slingshot Siege | default and chapters 0-4 (3/0/0) | none |
+| Gridlock Courier | default, golden hour, sunset (3/0/0) | none |
+| The Bellkeeper's Walk | default and the found-bell daytime views | none |
+| Duneglide | the bare entry and chapter 4 (3/0/0) | chapters 1 and 6 |
+
+The other twelve games already opened in the new look everywhere. Their phase-3 work retook the final screens, cards and posters, cleared warnings and retuned lights and post where a blind panel confirmed it: Apex Overdrive, Grid Dispatch, Aura FC 3D, Aura Links 3D, Bunker Zero, Glint Courier, Craterline GP, Chroma Roll (0 game-check warnings), Serpentine Sky Run, Lamplight Line, Saltwind Highway and Cumulus Dash.
+
+### Fixes
+
+- **Apex Overdrive: a boost held past empty air no longer shakes the car and buzzes.** With Shift held at 0 air, regeneration re-armed the boost every other frame, so the boost sound, a camera shake pulse and an engine pitch jump restarted each time. The sound, shake, engine pitch and speed lines now follow a presentation flag that bridges those gaps. The simulation and its recorded replays are unchanged.
+- **Aura Slam 3D: the serve aim ring reads on the service box.** The pale cream ring disappeared on the lime service-box highlight. It is now a thicker hot-red ring.
+- **Aura Slam 3D: no 404 on the court.** A bundler-inlined 64x64 net texture lost its `data:` scheme in the production build and was requested as a relative path.
+- **Ion Circuit:** before a race the drone sat at the world origin under a gantry instead of on its grid slot. The twilight look now draws it on the grid slot, and the simulation is untouched.
+
+### Known limits
+
+- **Rubric below the PRD bar.** No game scores 7 or more in all 12 rubric categories yet (model judge on software WebGL2 frames). The lowest categories are mostly reflections, shadows, materials and models, from 2.5 to 6 depending on the game. Materials and models wait on the WP-36 Meshy assets (pipeline resumes when the credit pool resets) and are planned for 4.7.2.
+- **Distinctness.** Several same-genre pairs are still under the 0.8 confidence bar, among them Thermal Drift vs Ion Circuit, Serpentine Sky Run vs Cumulus Dash and Shadowstep Gauntlet, and Aura Diamond 3D vs two sports neighbours. Several of these share models (crowd, trees, a tram) that the WP-36 assets replace.
+- **Game-check warnings** stay at warn level; most remaining warnings are `luma-band` rows written for the older looks (no band was widened) and `borrowed-asset` rows waiting on WP-36.
+- **Serpentine Sky Run** draws 120 calls against its 95 budget.
+- **No real-GPU run.** Every visual number is software WebGL2 on the remote runner; real-GPU runs are owner-only (PRD D5).
 
 ## 4.7.0 (2026-10-31)
 

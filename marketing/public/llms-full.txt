@@ -8,7 +8,7 @@ Typed lighting looks, licensed and hashed GLB assets, a game kit and deploy chec
 
 - Product: AI-native TypeScript 3D SDK for browser 3D apps, interactive websites, and prompt-to-code scene kits
 - Website: https://aura3d.auraone.ai
-- Current release: Aura3D 4.7.0 (per the repo manifest — the same source the build's version guard uses)
+- Current release: Aura3D 4.7.1 (per the repo manifest — the same source the build's version guard uses)
 - Docs: https://aura3d.auraone.ai/docs/api.html
 - Showcase game: https://aura3d.auraone.ai/showcase/aura-clash/
 - Sitemap: https://aura3d.auraone.ai/sitemap.xml
@@ -31,7 +31,7 @@ Typed lighting looks, licensed and hashed GLB assets, a game kit and deploy chec
 - [Aura3D Guide for Claude-Assisted 3D Apps](https://aura3d.auraone.ai/docs/claude.html): Use Claude with Aura3D to generate TypeScript browser 3D scenes from scene kits, primitives, typed GLB/glTF assets, and Vite templates.
 - [Aura3D Guide for Cursor AI 3D Development](https://aura3d.auraone.ai/docs/cursor.html): Use Cursor with Aura3D projects to edit TypeScript browser 3D scenes, Vite templates, typed GLB/glTF assets, scene kits, and prompt-to-3D workflows.
 - [Aura3D Evidence and Release Gates](https://aura3d.auraone.ai/docs/evidence.html): How Aura3D binds public package, asset, browser, game, visual, and deployment claims to retained evidence.
-- [Aura3D Claims, Limits, and Release Scope](https://aura3d.auraone.ai/docs/claims.html): Current Aura3D 4.7.0 claim boundaries for the root API, game presentations, assets, rendering, WebGPU, and diagnostics.
+- [Aura3D Claims, Limits, and Release Scope](https://aura3d.auraone.ai/docs/claims.html): Current Aura3D 4.7.1 claim boundaries for the root API, game presentations, assets, rendering, WebGPU, and diagnostics.
 - [Why Aura3D over three.js: everything three.js leaves to you, built in](https://aura3d.auraone.ai/docs/aura3d-vs-threejs.html): Aura3D builds in what three.js leaves to you: studio lighting, typed and licensed assets, a game kit and deploy checks. A lit 3D product in 10 lines.
 - [Aura Clash: Aura3D Browser Fighting-Game Runtime Proof](https://aura3d.auraone.ai/docs/aura-clash-showcase.html): Aura Clash Arena is the Aura3D browser fighting-game development showcase: typed GLB runtime evidence, arena visuals, gameplay UI, accessibility controls, evidence routes, and release gates.
 
