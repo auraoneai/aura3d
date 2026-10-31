@@ -72,16 +72,20 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
     id: "gouache",
     timeOfDay: "permanent planet-rise, low white sun",
     sky: "nebula dome (violet-teal) + banded peach gas giant with a ring + small moon, captured into the environment probe",
-    key: { elevationDeg: 18, azimuthDeg: 0, position: lightPosition(18, 0), color: "#fff3e4", intensity: 3.0, cascades: 3, filter: "pcss", maxDistance: 200 },
+    key: { elevationDeg: 18, azimuthDeg: 0, position: lightPosition(18, 0), color: "#fff3e4", intensity: 3.5, cascades: 3, filter: "pcss", maxDistance: 200 },
     fill: null,
     planetshine: { position: [GIANT_POSITION[0], GIANT_POSITION[1] + 60, GIANT_POSITION[2]], color: "#ffb48c", intensity: 0.8 },
-    hemisphere: { sky: "#d8c2d6", ground: "#24395a", intensity: 0.95 },
-    environment: { kind: "capture", intensity: 0.85 },
-    fog: { color: "#2a2a4d", density: 0.0011, maxOpacity: 0.78, heightMist: 1 },
+    // GU47 phase 3 (rubric lighting 5 / shadows 3: "flat, even"): key 3.0 -> 3.5 and hemisphere fill 0.95 -> 0.75, so the
+    // low key models the riders and its shadow side reads.
+    hemisphere: { sky: "#d8c2d6", ground: "#24395a", intensity: 0.75 },
+    environment: { kind: "capture", intensity: 1.0 },
+    // GU47 phase 3 (rubric atmosphere 4.5: "barely any depth haze"): exp2 density 0.0011 hazed 3% at 150 m; 0.002 hazes
+    // about 9% at 150 m and 30% at 300 m in a lighter violet, so the far course and the rim recede.
+    fog: { color: "#3b3460", density: 0.002, maxOpacity: 0.78, heightMist: 1 },
     post: {
       bloom: { intensity: 0.3, threshold: 0.78, radius: 0.5 },
       grade: { contrast: 1.1, saturation: 1.2 },
-      vignette: { intensity: 0.24, smoothness: 0.7 },
+      vignette: { intensity: 0.34, smoothness: 0.62 },
       grain: { intensity: 0.035, size: 1.6 }
     },
     camera: { baseFov: 64, boostKick: 9, landingKick: 5, leanRollDeg: 2 },
@@ -133,10 +137,10 @@ export interface SectorRow {
 
 /** SO47-L3: key tint and haze per painted sector (warm, violet, jade, opal). */
 export const SECTORS: Readonly<Record<SectorId, SectorRow>> = {
-  warm: { id: "warm", keyColor: "#fff1df", keyIntensity: 3.0, fogColor: "#3a2a44", fogDensity: 0.0011, nebulaShift: 0 },
-  violet: { id: "violet", keyColor: "#e9dcff", keyIntensity: 2.7, fogColor: "#2b2458", fogDensity: 0.0013, nebulaShift: 0.08 },
-  jade: { id: "jade", keyColor: "#e2fff3", keyIntensity: 2.8, fogColor: "#173f48", fogDensity: 0.0012, nebulaShift: -0.12 },
-  opal: { id: "opal", keyColor: "#fff0f6", keyIntensity: 2.9, fogColor: "#3d3550", fogDensity: 0.001, nebulaShift: 0.18 }
+  warm: { id: "warm", keyColor: "#fff1df", keyIntensity: 3.5, fogColor: "#4a3654", fogDensity: 0.002, nebulaShift: 0 },
+  violet: { id: "violet", keyColor: "#e9dcff", keyIntensity: 3.2, fogColor: "#3a3170", fogDensity: 0.0023, nebulaShift: 0.08 },
+  jade: { id: "jade", keyColor: "#e2fff3", keyIntensity: 3.3, fogColor: "#22525c", fogDensity: 0.0021, nebulaShift: -0.12 },
+  opal: { id: "opal", keyColor: "#fff0f6", keyIntensity: 3.4, fogColor: "#4d4466", fogDensity: 0.0019, nebulaShift: 0.18 }
 };
 
 /** Seconds the key and haze take to move to a new sector (SO47-L3). */

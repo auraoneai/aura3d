@@ -830,6 +830,8 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
 
   function update(state: RaceState, dt: number, time: number, view: "chase" | "wide", aspect: number, shake?: { readonly x: number; readonly y: number; readonly roll: number }, ghost?: GhostPose | null): void {
     const menu = state.phase === "menu";
+    // GU47 phase 3 (gouache): the parked grid idles on its hover pads (a few cm, none on reduced motion; presentation only).
+    const menuHover = (i: number): number => (input.look === "gouache" && !input.reducedMotion ? 0.07 * (1 + Math.sin(time * 2.1 + i * 1.7)) : 0);
     const sForPlayer = menu ? 35 : state.s;
     const scale = menu ? 1.3 : 1.15;
 
@@ -841,7 +843,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     } else if (state.loop) {
       playerPose = loopFramePose(state);
     } else {
-      const ground = menu ? 0 : state.air?.height ?? ((groundHeight(state.s, state.lane, state.route, state.vehicle) ?? 0) + (state.route === "main" ? rampHeightAt(state.s, state.lane, state.vehicle) : 0));
+      const ground = menu ? menuHover(0) : state.air?.height ?? ((groundHeight(state.s, state.lane, state.route, state.vehicle) ?? 0) + (state.route === "main" ? rampHeightAt(state.s, state.lane, state.vehicle) : 0));
       // SO47-N1 (gouache): the drawn rider leans up to ~25 degrees (1.8x the sim's 0.24 rad lean; presentation only).
       playerPose = poseAt(sForPlayer, menu ? 0 : state.lane, menu ? "main" : state.route, ground, menu ? 0 : state.heading || 0, menu ? 0 : state.lean * (input.look === "gouache" ? LEAN_GAIN : 1));
     }
@@ -893,7 +895,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       showRider(i + 1);
       const s = menu ? 35 + 10 + i * 5 : rival.s;
       const lane = menu ? (i % 3 - 1) * 3 : rival.lane;
-      const ground = menu ? 0 : rival.air?.height ?? (islandHeight(rival.s, rival.route) ?? 0);
+      const ground = menu ? menuHover(i + 1) : rival.air?.height ?? (islandHeight(rival.s, rival.route) ?? 0);
       placeRider(i + 1, poseAt(s, lane, menu ? "main" : rival.route, ground, 0, menu ? 0 : rival.lean ?? 0), scale);
     }
 
@@ -923,6 +925,14 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       // Portrait (SO-5): the menu panel takes the top of the screen, so the camera stands further back and aims above
       // the riders, which puts them in the lower third.
       const m = menuPortraitCamera(aspect);
+      eye = frame.p.clone().addScaledVector(fwd, m.forward).addScaledVector(frame.side, m.side).addScaledVector(frame.up, m.height);
+      look = frame.p.clone().addScaledVector(fwd, m.lookForward).addScaledVector(frame.side, m.lookSide).addScaledVector(frame.up, m.lookHeight);
+      fov = m.fov;
+    } else if (menu && input.look === "gouache") {
+      // GU47 phase 3 (rubric composition/camera): a lower, slowly drifting grid shot. The eye sits nearer the road so the
+      // crater rim, the planet and the course fill the top half instead of empty road; the drift (none under reduced
+      // motion) keeps the menu a moving painting.
+      const m = menuLandscapeCamera(time, input.reducedMotion);
       eye = frame.p.clone().addScaledVector(fwd, m.forward).addScaledVector(frame.side, m.side).addScaledVector(frame.up, m.height);
       look = frame.p.clone().addScaledVector(fwd, m.lookForward).addScaledVector(frame.side, m.lookSide).addScaledVector(frame.up, m.lookHeight);
       fov = m.fov;
@@ -1121,6 +1131,17 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     },
     get nodeCount() { return handles.size; }
   };
+}
+
+/**
+ * GU47 phase 3: gouache menu camera for landscape screens, in the menu frame's axes (metres along the track, across it
+ * and up from it). The 4.6.1 shot (4.5 / -7 / 2.7 looking at 0 / 3.8 / 1.1, fov 48) spent the lower half on bare road;
+ * this one is lower and a little wider and drifts +-0.6 m sideways and +-0.15 m up over ~21 s (still on reduced motion).
+ */
+export function menuLandscapeCamera(time: number, reducedMotion: boolean): { forward: number; side: number; height: number; lookForward: number; lookSide: number; lookHeight: number; fov: number } {
+  const drift = reducedMotion ? 0 : Math.sin(time * 0.3);
+  const bob = reducedMotion ? 0 : Math.sin(time * 0.47 + 1.1);
+  return { forward: 4.2 + drift * 0.5, side: -6.6 + drift * 0.6, height: 1.75 + bob * 0.15, lookForward: 0.6, lookSide: 3.8, lookHeight: 1.45, fov: 50 };
 }
 
 /**

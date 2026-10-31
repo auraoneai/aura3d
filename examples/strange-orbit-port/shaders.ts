@@ -161,7 +161,7 @@ void main() {
   vec3 r1 = cross(dpy, N), r2 = cross(N, dpx);
   float det = dot(dpx, r1);
   N = normalize(abs(det) * N - ${gouache ? "0.09" : "0.05"} * sign(det) * (dFdx(h) * r1 + dFdy(h) * r2));
-  vec3 emissive = albedo * 0.1 + vec3(0.18, 0.72, 0.66) * (1.0 - across) * 0.3;${gouache ? `
+  vec3 emissive = albedo * ${gouache ? "0.06" : "0.1"} + vec3(0.18, 0.72, 0.66) * (1.0 - across) * 0.3;${gouache ? `
   // GU47 phase 3: soft contact shadow under each rider (the cascades miss the hover gap at software-GL resolution).
   float occ = contactOcclusion(vWorld);
   albedo *= occ;
