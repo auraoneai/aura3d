@@ -524,8 +524,10 @@ async function boot(): Promise<void> {
   app = createAuraApp(canvas, {
     autoStart: false, resize: false, pixelRatio: DPR,
     quality: "auto",
-    // GU47 LT-07: the band look renders through agx with dither (per-band exposure is on the grade node); ?look=original keeps none.
-    output: { toneMapping: (params.get("tm") as "aces" | "neutral" | "none" | "linear" | "agx" | null) ?? (world.look === "bands" ? "agx" : "none"), exposure: Number(params.get("ev") ?? 1), dither: world.look === "bands" },
+    // GU47 LT-07: the band look renders with dither (per-band exposure is on the grade node). Phase 2: tone mapping is none on
+    // both paths: agx rendered band A at mean luma 31 against 105 with none and 86 for the 4.6.2 frame (software WebGL2,
+    // A/B capture g21p2a), so `?tm=agx` is opt-in only.
+    output: { toneMapping: (params.get("tm") as "aces" | "neutral" | "none" | "linear" | "agx" | null) ?? "none", exposure: Number(params.get("ev") ?? 1), dither: world.look === "bands" },
     scene: sim.timeOfDay === "night" ? world.nightScene : world.scene
   });
   mark("app created");
