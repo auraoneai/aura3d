@@ -113,17 +113,21 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     id: "golden",
     label: "Marine dusk",
     timeOfDay: "dusk, sun 9 deg above the bay",
-    hdri: { id: "belfast_sunset_puresky", intensity: 0.6, rotationDeg: 160 },
-    sky: { model: "gradient", zenith: "#2b3a55", horizon: "#f2a65e", ground: "#1d222b", exponent: 1.6, horizonGlow: 0.55 },
-    sun: { elevationDeg: 9, azimuthDeg: 160, color: "#ffb070", intensity: 1.2, discSize: 0.035 },
+    hdri: { id: "belfast_sunset_puresky", intensity: 0.8, rotationDeg: 145 },
+    sky: { model: "gradient", zenith: "#2b3a55", horizon: "#f2a65e", ground: "#1d222b", exponent: 1.6, horizonGlow: 0.85 },
+    // GU47 phase 3 round 2: azimuth 160 -> 145 puts the low sun right of the avenue so the west facades catch the warm key
+    // (r1 rubric: the dusk read came only from the haze tint, not from warm light on surfaces).
+    sun: { elevationDeg: 9, azimuthDeg: 145, color: "#ffb070", intensity: 1.2, discSize: 0.035 },
     key: { color: "#ffb070", intensity: 2.2 },
-    hemisphere: { sky: "#5a6f86", ground: "#2c2420", intensity: 0.32 },
+    hemisphere: { sky: "#6a7488", ground: "#3a2c22", intensity: 0.42 },
     // GU47 phase 3: the orange murk started metres from the camera (rubric atmosphere 5): later start, less sun inscatter and weaker god rays.
     fog: { color: MARINE_FOG, density: 0.0025, heightDensity: 0.002, heightFalloff: 0, heightReference: 28, start: 14, maxOpacity: 0.82, sunInscatter: 0.15 },
     marine: { base: 30, top: 48, color: "#4d6672", opacity: 0.88, reach: 240 },
-    output: { toneMapping: "agx", fallback: "aces", exposure: 1.0 },
+    // GU47 phase 3 round 2: r1 (murk removed) measured mean 60 / p95 134 (band 75-100, p95 >= 210): exposure 1.0 -> 1.3,
+    // IBL 0.6 -> 0.8, warmer hemisphere and grade, brighter horizon glow.
+    output: { toneMapping: "agx", fallback: "aces", exposure: 1.3 },
     bloom: { intensity: 0.32, threshold: 0.82, radius: 0.5 },
-    grade: { contrast: 1.08, saturation: 1.05, temperature: 0.12, tint: -0.02 },
+    grade: { contrast: 1.1, saturation: 1.1, temperature: 0.2, tint: -0.02 },
     vignette: 0.26,
     godRays: { density: 0.08, color: "#ffb878", intensity: 0.14 },
     grain: 0.04,
@@ -151,7 +155,8 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     vignette: 0.2,
     godRays: null,
     grain: 0.03,
-    street: { lampEmissive: 0.25, sodiumPoints: 0, sodiumPower: 0, lightPools: 0, windowGlow: 0, headlights: 0, asphalt: { color: "#252a32", roughness: 0.82 }, ground: "#1e293b", water: "#0c4a6e", drizzle: false },
+    // GU47 phase 3 round 2: noon asphalt #252a32 -> #3a4049: the road is half the frame (r1 mean 86, band 95-120) and the key shadows need a lighter ground to read.
+    street: { lampEmissive: 0.25, sodiumPoints: 0, sodiumPower: 0, lightPools: 0, windowGlow: 0, headlights: 0, asphalt: { color: "#3a4049", roughness: 0.82 }, ground: "#1e293b", water: "#0c4a6e", drizzle: false },
     scanStrength: 0.75
   },
   fog: {
@@ -163,13 +168,15 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     sun: { elevationDeg: 38, azimuthDeg: 170, color: "#dfe8ee", intensity: 0, discSize: 0.03 },
     key: { color: "#dfe8ee", intensity: 0.8 },
     hemisphere: { sky: "#b8c6ce", ground: "#4a565d", intensity: 0.55 },
-    fog: { color: MARINE_FOG, density: 0.0048, heightDensity: 0.002, heightFalloff: 0, heightReference: 12, start: 12, maxOpacity: 0.94, sunInscatter: 0.1 },
+    // GU47 phase 3 round 2: r1 (god rays 0.16, fog 0.0048) lost the fog (mean 72, band 105-135): the engine fog carries
+    // the bank now (0.0075, start 8; still < 0.3 at 40 m), god rays 0.24, exposure 1.05 -> 1.25.
+    fog: { color: MARINE_FOG, density: 0.0075, heightDensity: 0.0025, heightFalloff: 0, heightReference: 12, start: 8, maxOpacity: 0.96, sunInscatter: 0.1 },
     marine: { base: 12, top: 26, color: "#6c8794", opacity: 0.97, reach: 160 },
-    output: { toneMapping: "aces", fallback: "aces", exposure: 1.05 },
+    output: { toneMapping: "aces", fallback: "aces", exposure: 1.25 },
     bloom: { intensity: 0.12, threshold: 0.9, radius: 0.4 },
     grade: { contrast: 0.96, saturation: 0.82, temperature: -0.06, tint: 0 },
     vignette: 0.22,
-    godRays: { density: 0.08, color: "#dfe8ee", intensity: 0.16 },
+    godRays: { density: 0.08, color: "#dfe8ee", intensity: 0.24 },
     grain: 0.05,
     street: { lampEmissive: 1.6, sodiumPoints: 2, sodiumPower: 600, lightPools: 0.2, windowGlow: 0.35, headlights: 1, asphalt: { color: "#272c33", roughness: 0.7 }, ground: "#334155", water: "#3b5266", drizzle: false },
     scanStrength: 0.9
@@ -178,7 +185,9 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     id: "night",
     label: "Sodium night",
     timeOfDay: "night, moon behind a thin marine layer lit sodium from below",
-    hdri: { id: "cobblestone_street_night", intensity: 0.45, rotationDeg: 210 },
+    // GU47 phase 3 round 2: r1 night facades still read sodium-orange from the warm night HDRI (mean 44, p95 132, band p95
+    // >= 180): IBL 0.45 -> 0.3 darkens the blocks; headlights 1.4 -> 1.8 carry the highlights (lamp 3.0 and bloom 0.55 stay the PRD GD-02/GD-08 values).
+    hdri: { id: "cobblestone_street_night", intensity: 0.3, rotationDeg: 210 },
     sky: {
       model: "gradient", zenith: "#060a14", horizon: "#1b2638", ground: "#0b0e14", exponent: 1.8, horizonGlow: 0.2,
       bands: [{ elevationDeg: 2, widthDeg: 6, color: SODIUM, intensity: 0.35 }],
@@ -197,7 +206,7 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     godRays: null,
     grain: 0.06,
     // GU47 phase 3: windowGlow 1 -> 0.45: the whole-facade lift washed every block orange-beige (no window mask until WP-36).
-    street: { lampEmissive: 3.0, sodiumPoints: 3, sodiumPower: 1400, lightPools: 0.6, windowGlow: 0.45, headlights: 1.4, asphalt: { color: "#15191f", roughness: 0.22 }, ground: "#0b0f19", water: "#081c2e", drizzle: true },
+    street: { lampEmissive: 3.0, sodiumPoints: 3, sodiumPower: 1400, lightPools: 0.6, windowGlow: 0.45, headlights: 1.8, asphalt: { color: "#15191f", roughness: 0.22 }, ground: "#0b0f19", water: "#081c2e", drizzle: true },
     scanStrength: 1.25
   }
 };
