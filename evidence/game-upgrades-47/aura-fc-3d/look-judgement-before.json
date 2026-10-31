@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/fix3/aura-fc-3d/frames/g09v2r1-fc-1/aura-fc-3d--munich-hybrid--settle-60s.jpg",
+      "sha256": "d546a0b4f865cd5c830f5d5497fd2d4ae252137a47d264bc0546ba33aebb7be4"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/fix4/aura-fc-3d/frames/g09v2r2-fc-1/aura-fc-3d--lagos-hybrid--settle-60s.jpg",
+      "sha256": "47f38420bd1b9c886a3a9892cc46814a1415b3636420be6d050ec277f7ea5b64"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/fix4/aura-fc-3d/frames/g09v2r2-fc-3/aura-fc-3d--glacier--settle-60s.jpg",
+      "sha256": "3991a8b79e113ad70018abc40029801c61425f15cbf2a7f0c271aac0e8348dc1"
+    },
+    {
+      "path": "evidence/aura-fc-3d/screens/final/1280x720/03-action-03-route-showcase-aura-fc-3d-state-play.jpg",
+      "sha256": "e39916b92dad9df793b70f680ec52157c1c75fd64d063bb43bee7cd843d5fffe"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 5,
+    "ibl_reflections": 3.5,
+    "environment_world": 5,
+    "atmospheric_effects": 5,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 5,
+    "camera": 5.5,
+    "postprocessing": 5,
+    "animation_quality": 5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 1 night stadium is flat and evenly lit with no flood falloff. Frame 2 desert is a monochrome orange wash with the key nearly overhead. Frame 4 Munich has a decent bright flood but low contrast on the stands."
+    },
+    {
+      "category": "shadows",
+      "seen": "Player shadows are mostly soft blob decals. Frame 2 has long directional streaks, but frame 1 has none. Rectangular dark patches float on the pitch in frames 2 and 3, which look like stray shadow or decal artifacts."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "There are no visible reflections or specular response on the turf, ball, kits or goal frame. Frame 3's ice gets only a single bloom hotspot rather than an environment reflection."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The crowd is made of capsule billboards in flat tiers. The scoreboard and truss textures in frames 1 and 3 look noisy and grey like placeholders. Frame 4 has decent stands, a floodlight mast and a goal."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 3 snow particles are uniform blurry dots concentrated near the top of the frame. There is no indoor haze or light shafts from the floods in any frame."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Frame 1 turf uses a noisy blue-green procedural texture that reads as water. Frames 2 and 3 have flat untextured ground. Kits are unshaded flat colour."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Players are low-poly and stylized with readable silhouettes but stiff proportions. The ball is simple. The goal net in frame 4 is acceptable."
+    },
+    {
+      "category": "composition",
+      "seen": "Kickoff frames are a static side-on line-up with large empty lower halves. Subjects are tiny, well under the 25–40% target. Frame 4 is better framed around the box."
+    },
+    {
+      "category": "camera",
+      "seen": "The kickoff camera is low-angle and nearly flat, not the 70° broadcast pitch. Frame 4's elevated perspective works but cuts off players at the left edge."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Vignette is visible. Frame 2's orange grade crushes all separation. Frame 3's bloom hotspot is unmotivated. No tonemapping polish is apparent."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Kickoff poses are identical rigid idles. Frame 4 shows running poses that are plausible but stiff, with tiny foot-speed lines."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The scoreboard pill and controls bar are clean. However, the 'POSSESSION' label overlaps and is cut off under the score panel, and the top nav bar crowds the play view."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

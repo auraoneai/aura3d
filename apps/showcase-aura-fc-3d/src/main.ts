@@ -26,7 +26,7 @@ import { ORIGINAL_LOOKS, fcLookMode, usesOriginalBase } from "./game/look";
 import { mountFcTouch } from "./game/touch";
 import { fireFcVfx, registerFcVfxPack, type FcVfxEvent } from "./game/vfx";
 import { fcQaCrops } from "./game/qaCrops";
-import { fitCameraToAspect, broadcastPose, originalBroadcastPose, introRailPose, replayPose, fullTimeOrbitPose, INTRO_RAIL_S } from "./game/camera";
+import { fitCameraToAspect, broadcastPose, originalBroadcastPose, hybridBroadcastPose, introRailPose, replayPose, fullTimeOrbitPose, INTRO_RAIL_S } from "./game/camera";
 import { createReplayBuffer, type ReplayFrame, type ReplayPlayback } from "./game/replay";
 import { bindScoreboardText, shownScore } from "./game/scoreboard3d";
 import { loadSave } from "./game/save";
@@ -408,7 +408,9 @@ function boot(): void {
       // also eases toward the ball across the touchline so near-side play
       // stays inside the frame instead of falling off the bottom edge.
       // FC47-C1: the main cam is the gantry, 14 m up looking down 30 degrees (was 9.5 m, about 22 degrees).
-      const shot = usesOriginalBase(fcLookMode(sceneVenue)) ? originalBroadcastPose(cam.followX, b.x, b.z) : broadcastPose(cam.followX, b.x, b.z);
+      const lookMode = fcLookMode(sceneVenue);
+      const shot = lookMode === "hybrid" ? hybridBroadcastPose(cam.followX, b.x, b.z)
+        : usesOriginalBase(lookMode) ? originalBroadcastPose(cam.followX, b.x, b.z) : broadcastPose(cam.followX, b.x, b.z);
       cam.eye = shot.eye; cam.target = shot.target; cam.fov = shot.fov;
     }
     const qaP = qaFocus && qaKickerId ? (s.players as PlayerState[]).find((p) => p.id === qaKickerId) : undefined;

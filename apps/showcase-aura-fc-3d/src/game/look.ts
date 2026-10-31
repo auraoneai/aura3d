@@ -226,8 +226,14 @@ export interface FcHybridLayer {
   readonly rim: { readonly color: string; readonly intensity: number; readonly azimuthDeg: number } | null;
   readonly flares: boolean;
   readonly weather: FcWeather;
-  readonly surface: "grass" | "ice" | "plain";
+  readonly surface: "grass" | "ice" | "plain" | "dirt";
   readonly turfRoughness: number;
+  /** Phase 3: pitch colour on this path only (the venue colour stays for the 4.6.2 path); undefined = the venue's. */
+  readonly pitchColor?: string;
+  /** Phase 3: additive flood-pool strength on the turf under all four towers (0 = none), for flood falloff at night. */
+  readonly pools: number;
+  /** Phase 3: flood light-cone intensity (4.6.2: 0.3), the haze shafts under the lamp heads at night. */
+  readonly coneIntensity: number;
   readonly mirror: { readonly resolution: number; readonly tint: string } | null;
   readonly bloom: { readonly intensity: number; readonly threshold: number };
   readonly vignette: number;
@@ -243,47 +249,49 @@ export interface FcHybridLayer {
 export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   munich: {
     background: "#0a1422", exposureEv: 0.08, floodScale: 1.3,
-    grade: { contrast: 1.12, saturation: 1.0, temperature: -0.12, tint: 0 },
+    grade: { contrast: 1.12, saturation: 1.0, temperature: -0.06, tint: 0 },
     rim: { color: "#8fc8ff", intensity: 0.6, azimuthDeg: 200 }, flares: true, weather: "rain",
-    surface: "grass", turfRoughness: 0.75, mirror: null,
+    surface: "grass", turfRoughness: 0.5, pools: 0.16, coneIntensity: 0.55, mirror: null,
     bloom: { intensity: 0.3, threshold: 0.8 }, vignette: 0.28, grain: 0, chromaticAberration: 0
   },
   kyoto: {
     background: "#120814", exposureEv: 0.08, floodScale: 1.3,
     grade: { contrast: 1.08, saturation: 1.1, temperature: 0.05, tint: 0.12 },
     rim: { color: "#ff8fbd", intensity: 0.45, azimuthDeg: 160 }, flares: true, weather: "drizzle",
-    surface: "grass", turfRoughness: 0.85, mirror: null,
+    surface: "grass", turfRoughness: 0.62, pools: 0.14, coneIntensity: 0.5, mirror: null,
     bloom: { intensity: 0.32, threshold: 0.78 }, vignette: 0.28, grain: 0, chromaticAberration: 0.0015
   },
   favela: {
     background: "#140d07", exposureEv: 0.08, floodScale: 1.3,
     grade: { contrast: 1.1, saturation: 1.05, temperature: 0.25, tint: -0.05 },
     rim: { color: "#ffc27a", intensity: 0.7, azimuthDeg: 190 }, flares: true, weather: "dust",
-    surface: "plain", turfRoughness: 0.9, mirror: null,
+    surface: "dirt", turfRoughness: 0.9, pools: 0.16, coneIntensity: 0.55, mirror: null,
     bloom: { intensity: 0.28, threshold: 0.8 }, vignette: 0.28, grain: 0.05, chromaticAberration: 0
   },
   lagos: {
     background: "#d08a55", exposureEv: -0.45, floodScale: 1,
-    grade: { contrast: 1.18, saturation: 1.25, temperature: 0.35, tint: 0 },
+    grade: { contrast: 1.2, saturation: 1.12, temperature: 0.24, tint: 0 },
     rim: null, flares: false, weather: "none",
-    surface: "plain", turfRoughness: 0.95, mirror: null,
+    surface: "plain", turfRoughness: 0.95, pools: 0, coneIntensity: 0.3, mirror: null,
     bloom: { intensity: 0.1, threshold: 0.94 }, vignette: 0.25, grain: 0, chromaticAberration: 0
   },
   // Round 1: the 1024 mirror drew a broken reflection (upside-down gantry, an oversized player at the wrong place, the
   // lower half of the frame only), so the hybrid Uyuni is a pale-dawn grade on the salt instead.
   uyuni: {
-    background: "#d9c4c0", exposureEv: -0.9, floodScale: 1,
-    grade: { contrast: 1.12, saturation: 1.1, temperature: 0.18, tint: 0.03 },
+    background: "#d9b8b8", exposureEv: -1.1, floodScale: 1,
+    grade: { contrast: 1.18, saturation: 1.15, temperature: 0.16, tint: 0.04 },
     rim: null, flares: false, weather: "none",
-    surface: "plain", turfRoughness: 0.3, mirror: null,
+    // phase 3: a glazed salt crust (clearcoat over a cool lilac-grey) so the dawn sky reflects in the flat, and the
+    // dark pitch lines read; the 4.6.2 white flat measured mean 227
+    surface: "ice", turfRoughness: 0.35, pitchColor: "#b9bcc8", pools: 0, coneIntensity: 0.3, mirror: null,
     bloom: { intensity: 0.08, threshold: 0.95 }, vignette: 0.3, grain: 0, chromaticAberration: 0
   },
   glacier: {
     background: "#050b14", exposureEv: 0.08, floodScale: 1.3,
     grade: { contrast: 1.06, saturation: 0.98, temperature: -0.18, tint: -0.03 },
     rim: { color: "#7fe8c9", intensity: 0.8, azimuthDeg: 170 }, flares: true, weather: "snow",
-    surface: "ice", turfRoughness: 0.3, mirror: null,
-    bloom: { intensity: 0.3, threshold: 0.78 }, vignette: 0.28, grain: 0, chromaticAberration: 0,
+    surface: "ice", turfRoughness: 0.3, pools: 0.14, coneIntensity: 0.55, mirror: null,
+    bloom: { intensity: 0.22, threshold: 0.82 }, vignette: 0.28, grain: 0, chromaticAberration: 0,
     hideDome: true
   }
 };
