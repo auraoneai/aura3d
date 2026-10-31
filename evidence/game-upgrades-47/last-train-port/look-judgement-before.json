@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/last-train-port/fix/last-train-port/frames/g21p2b-1/last-train-port--default--settle-60s.jpg",
+      "sha256": "b27a55067233984d155af3421e80e763ce5c425748c6e17c2a4e2c036dabc59b"
+    },
+    {
+      "path": "evidence/game-upgrades-47/last-train-port/fix/last-train-port/frames/g21p2b-2/last-train-port--band-b--settle-60s.jpg",
+      "sha256": "53890e1a77d6183a7ce3f91049848ff2087f4392fccf0a262dbb2128beeced4f"
+    },
+    {
+      "path": "evidence/game-upgrades-47/last-train-port/fix/last-train-port/frames/g21p2b-3/last-train-port--band-c--settle-60s.jpg",
+      "sha256": "632f64407a80d215033fe4579487ae87224ee0827b66e413d8f73be40508219f"
+    },
+    {
+      "path": "evidence/game-upgrades-47/last-train-port/fix/last-train-port/frames/g21p2b-5/last-train-port--band-e--settle-60s.jpg",
+      "sha256": "08bdaaaeccfbf740496fbce474a0e071d44f602135a0d3ac8cc997ba00c76921"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 2,
+    "ibl_reflections": 3,
+    "environment_world": 4,
+    "atmospheric_effects": 3,
+    "material_quality": 3.5,
+    "modeling_assets": 3.5,
+    "composition": 4.5,
+    "camera": 4,
+    "postprocessing": 5,
+    "ui_hud": 1
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The sky gradient sells golden hour, then dusk, then night, but the scene is lit almost flatly by ambient. There is no readable low-sun key: the building facades and cobbles show no warm side-light or rim. The night frame works best, with emissive lit windows and small platform lamp points, but nothing pools light onto the ground."
+    },
+    {
+      "category": "shadows",
+      "seen": "Cast shadows are essentially absent. The tram, capsule figures, benches, boxes and platform canopy all float without contact or directional shadows on the cobblestones. Only faint darkening appears under the canopy edge."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The tram's red roof shows a soft specular sheen. Everything else, including windows, metal poles and the wet-looking cobbles, has no environment reflection, so it reads matte and unlit by the sky."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Textured townhouse facades, some photo-scanned and painterly, sit beside untextured primitives: cone and lollipop trees, flat orange and blue boxes, green spheres. Wooden rail ties are scattered across the plaza with no actual rails. A bridge arch and sea sit on the horizon. The town reads as a blockout mixed with finished assets."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "No distance fog or aerial perspective is visible. Background buildings and the bridge stay as saturated as the foreground. Haze exists only in the painted sky gradient, and there is no volumetric glow around the lamps at night."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The cobblestone texture is a uniform repeating tile with no roughness variation or grime. The platform, canopy and benches are flat-color untextured surfaces. The tram has decent painted detail, and the barrel and crates have wood textures."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "A detailed vintage tram, and a few rigged human figures in red coats or with backpacks, sit alongside placeholder capsule 'pawn' people in solid colors. Trees are cones and spheres, and furniture is primitive boxes. Fidelity is badly mismatched across assets."
+    },
+    {
+      "category": "composition",
+      "seen": "The tram is centered and fills roughly 15–20% of the frame, which is within the subject target. However, the frame is cluttered with scattered primitives and placeholder pawns. The horizon and bridge are cut off at the right edge, and there is no leading line toward a goal."
+    },
+    {
+      "category": "camera",
+      "seen": "The view is a high, elevated three-quarter overview looking down on a stationary tram, not a low chase camera behind the vehicle. It reads as an editor or diorama view rather than a racing perspective."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Strong tilt-shift depth of field blurs the top and bottom bands, giving a miniature or diorama feel rather than cinematic film. There is a mild vignette, a warm grade in the first frames and a cool desaturated grade at dusk. No film grain, bloom on emissives or halation is visible."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "No HUD appears in any frame: no speed, lap, position or timer, and no minimap. The only on-screen text is an in-world station sign reading 'TANGO TIDE'."
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}
