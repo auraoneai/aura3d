@@ -1,3 +1,4 @@
+import { groundFrame } from "../../../examples/ninja-runner-port/course";
 import { describe, expect, it } from "vitest";
 import { instances, scene } from "../../../packages/engine/src";
 import { auditArtDirection, snapshotForAudit } from "../../../packages/game/src/art/index";
@@ -52,8 +53,14 @@ describe("ninja-runner-port district look table (NR-01, NR-02, NR-05, NR-06, NR-
   it("sinks the sun 32 -> 10 degrees over the camera's shoulder while the sky fill rises (GU47 phase 3)", () => {
     expect(DISTRICT_LOOKS.map((r) => r.environmentIntensity)).toEqual([1, 1.1, 1.2, 1.3, 1.35]);
     expect(DISTRICT_LOOKS.map((r) => [r.key.kind, r.key.elevationDeg])).toEqual([["sun", 32], ["sun", 24], ["sun", 18], ["sun", 14], ["sun", 10]]);
-    // Behind the chase camera: the course heads about 160-180 degrees (towards -Z), the sun sits at -40 to -65.
-    for (const row of DISTRICT_LOOKS) expect(row.key.azimuthDeg).toBeLessThanOrEqual(-40);
+    // About 110 degrees off the course heading at each stop (behind the camera's left shoulder): side light, no backlight.
+    for (const row of DISTRICT_LOOKS) {
+      const f = groundFrame(row.at, 0, 0);
+      const heading = (Math.atan2(f.dx, f.dz) * 180) / Math.PI;
+      const off = Math.abs((((row.key.azimuthDeg - heading) % 360) + 540) % 360 - 180);
+      expect(off).toBeGreaterThanOrEqual(95);
+      expect(off).toBeLessThanOrEqual(125);
+    }
     for (const row of DISTRICT_LOOKS) expect(lookAtDistance(row.at).environmentIntensity).toBeCloseTo(row.environmentIntensity, 9);
   });
 

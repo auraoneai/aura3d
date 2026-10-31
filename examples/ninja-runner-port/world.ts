@@ -285,7 +285,9 @@ export function buildWorld(options: WorldOptions): World {
   // the pre-GU47 rig (see lighting.ts). The sky dome and the glow effects opt out of casting.
   for (const node of lightRig({ mode: evening ? "evening" : "original", quality: high ? "high" : "low", shadow: SUN_SHADOW, originalHdri: IBL_HDRI, lanterns: options.lanterns !== false })) builder.add(node);
   builder.add(effects.fog({ name: "haze", color: evening ? village.fog.color : "#b5c8c4", density: evening ? village.fog.density : 0.0028 }));
-  if (high) builder.add(effects.ambientOcclusion({ name: "ao" }));
+  // Screen-space AO stays on the 4.6.2 look only: in the evening the low sun's cascaded shadow carries the contact
+  // shading, and AO was the largest single post cost of a ~40 s software-WebGL2 frame (GU47 phase 3).
+  if (high && !evening) builder.add(effects.ambientOcclusion({ name: "ao" }));
   if (evening) {
     // GU47 NR-08 woodblock grade (agx is set on the app output in main.ts) and NR-09 indigo ink line (full frame:
     // the hero is a root render source, not a scene node, so per-target outline has no node name to match yet).

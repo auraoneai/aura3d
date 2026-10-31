@@ -47,48 +47,49 @@ export const PALETTE = {
 } as const;
 
 export const DISTRICT_LOOKS: readonly DistrictLookRow[] = [
-  // GU47 phase 3: the evening now runs golden afternoon -> sunset afterglow, and the sun stays behind the camera's
-  // shoulder (azimuth -40 to -65 against a course heading of about 160-180 degrees), so the runner and the street are
-  // side-lit with long shadows across the road instead of backlit into a glow (phase-2 frames: g20p2r3, g20p2r4). As
-  // the sun sinks the sky-and-IBL fill rises, so the play space stays as readable as the 4.6.2 midday frame.
+  // GU47 phase 3: the evening now runs golden afternoon -> sunset afterglow. The sun stays about 110 degrees off the
+  // chase camera's heading at every stop (behind the left shoulder), so the runner and the street are side-lit and the
+  // shadows fall across the road instead of the frame being backlit into a glow (phase-2 frames g20p2r3, g20p2r4). As
+  // the sun sinks the sky-and-IBL fill rises, so the play space stays as readable as the 4.6.2 midday frame. Light fog
+  // in the horizon's colour (g20p3-r2 read hazy at 0.0021 with a near-white fog).
   {
     id: "village", at: 100, timeOfDay: "golden afternoon",
-    key: { kind: "sun", elevationDeg: 32, azimuthDeg: -40, color: "#ffcf96", intensity: 2.9 },
+    key: { kind: "sun", elevationDeg: 32, azimuthDeg: -70, color: "#ffcf96", intensity: 2.9 },
     environmentIntensity: 1.0,
-    fog: { color: "#d2d8d0", density: 0.0021 },
-    sky: { zenith: "#3a78bf", horizon: "#e2e4d8", glow: "#ffe2b0", cloud: "#fcf6ea", stars: 0, moon: 0 },
+    fog: { color: "#d8cfb4", density: 0.0015 },
+    sky: { zenith: "#2f6cc0", horizon: "#ecd6ac", glow: "#ffe0a8", cloud: "#fff2dc", stars: 0, moon: 0 },
     lanterns: 0, ink: 0.85
   },
   {
     id: "rooftops", at: 700, timeOfDay: "late afternoon, warm",
-    key: { kind: "sun", elevationDeg: 24, azimuthDeg: -50, color: "#ffc285", intensity: 3.1 },
+    key: { kind: "sun", elevationDeg: 24, azimuthDeg: -29, color: "#ffc285", intensity: 3.1 },
     environmentIntensity: 1.1,
-    fog: { color: "#e0cfbc", density: 0.0022 },
-    sky: { zenith: "#3f6db4", horizon: "#f0d4b0", glow: "#ffcc90", cloud: "#fbeadb", stars: 0, moon: 0 },
+    fog: { color: "#dcc4a6", density: 0.0016 },
+    sky: { zenith: "#3466b8", horizon: "#f2cc9c", glow: "#ffcc90", cloud: "#ffe8cc", stars: 0, moon: 0 },
     lanterns: 0, ink: 0.9
   },
   {
     id: "river", at: 1300, timeOfDay: "golden hour",
-    key: { kind: "sun", elevationDeg: 18, azimuthDeg: -55, color: "#ffb470", intensity: 3.2 },
+    key: { kind: "sun", elevationDeg: 18, azimuthDeg: -62, color: "#ffb470", intensity: 3.2 },
     environmentIntensity: 1.2,
-    fog: { color: "#e2c4ac", density: 0.0023 },
-    sky: { zenith: "#4565aa", horizon: "#f5c6a0", glow: "#ffb070", cloud: "#fcdcc4", stars: 0, moon: 0 },
+    fog: { color: "#dcb898", density: 0.0017 },
+    sky: { zenith: "#3a5fae", horizon: "#f6c08e", glow: "#ffb070", cloud: "#ffdcbc", stars: 0, moon: 0 },
     lanterns: 0.4, ink: 0.95
   },
   {
     id: "forest", at: 1900, timeOfDay: "sunset",
-    key: { kind: "sun", elevationDeg: 14, azimuthDeg: -60, color: "#ffa462", intensity: 3.1 },
+    key: { kind: "sun", elevationDeg: 14, azimuthDeg: -98, color: "#ffa462", intensity: 3.1 },
     environmentIntensity: 1.3,
-    fog: { color: "#d4b0a8", density: 0.0025 },
-    sky: { zenith: "#475a9e", horizon: "#f3b292", glow: "#ff9c62", cloud: "#f9cab4", stars: 0, moon: 0 },
+    fog: { color: "#c9a294", density: 0.0019 },
+    sky: { zenith: "#40559f", horizon: "#f4ac86", glow: "#ff9c62", cloud: "#fbcab0", stars: 0, moon: 0 },
     lanterns: 0.8, ink: 1
   },
   {
     id: "gate", at: 2500, timeOfDay: "sunset afterglow",
-    key: { kind: "sun", elevationDeg: 10, azimuthDeg: -65, color: "#ff9656", intensity: 3.0 },
+    key: { kind: "sun", elevationDeg: 10, azimuthDeg: -90, color: "#ff9656", intensity: 3.0 },
     environmentIntensity: 1.35,
-    fog: { color: "#c4a4b0", density: 0.0024 },
-    sky: { zenith: "#3c4b8e", horizon: "#f0a08a", glow: "#ff8c5a", cloud: "#f4baa8", stars: 0.12, moon: 0 },
+    fog: { color: "#b897a0", density: 0.0018 },
+    sky: { zenith: "#39478c", horizon: "#f09a80", glow: "#ff8c5a", cloud: "#f6b8a4", stars: 0.12, moon: 0 },
     lanterns: 1, ink: 1
   }
 ];
