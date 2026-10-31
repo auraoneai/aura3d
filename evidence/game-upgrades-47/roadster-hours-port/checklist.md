@@ -37,3 +37,16 @@ Status per acceptance line of PRD WP-32. "code" = implemented and unit-tested in
 | RH47-18 | audit passes | code (0 violations, audit record committed) |
 | RH47-18 | same_game false >= 0.8 in >= 5 of 6 per pair; every category >= 7 | phase 2 |
 | RH47-19 | <= 170 draws everywhere; <= 900k tris; <= 12 MB; <= 12 programs; bundle delta recorded | phase 2 (expected deltas in `budget.json`); LOD/impostors not done |
+
+## Phase 3 (4.7.1, 2026-10-31; software WebGL2 captures g22p3-r2)
+
+| Line | Status |
+|---|---|
+| RH47-02 bands | sunbreak 101/99 (100-125: 60 s just under); redline 58/59 (60-85: under); halo 59/62 above 32-48, road cell 40/54 (60 s met). Bands not widened |
+| RH47-03 under-car / shadows | rubric shadows 4: no readable car contact shadow yet; open for 4.7.2 |
+| RH47-17 sign cap height / HUD | rubric ui_hud 7; final screens retaken (results frame still 4.5.0) |
+| RH47-18 every category >= 7 | not met: min 4 (shadows), see `look-judgement.json`; material_quality 5 and modeling_assets 6 blocked on WP-36 Meshy assets |
+| RH47-18 sibling same_game false >= 0.8 | roadster-rush 0.772 different (fail), heatsink-port 0.564 same (fail); was 0.642 / 0.598 same |
+| RH47-19 budget | 206 / 176 / 140 draws, 4.96 M / 2.1 M / 1.2 M triangles: over budget, unchanged by phase 3 (WP-36 LOD/impostors) |
+| Game-checks | 0 errors, 7 warnings (luma-band only) |
+| Poster pair | card + index posters rebuilt from the phase-3 card frame |
