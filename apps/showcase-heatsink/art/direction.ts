@@ -41,7 +41,7 @@ export default defineArtDirection({
     fill: "ibl",
     // Unshadowed: cyan counter-rim, drone headlight, gantry sodium points (VESPER trades one for the vent up-fill).
     practicals: 6,
-    environment: { hdri: "rooftop_night", background: "hdri" },
+    environment: { hdri: "cobblestone_street_night", background: "hdri" },
     exposureEV: 0.4
   },
   framing: { rig: "chase", subjectHeightFraction: [0.15, 0.25], fovDeg: [62, 84], mobile: "both" },

@@ -20,7 +20,7 @@ describe("heatsink scene", () => {
     expect(JSON.stringify(snapshot.nodes)).not.toContain("night-city");
     expect(JSON.stringify(snapshot.nodes)).not.toContain("aura-look:");
     const skies = (id: keyof typeof CIRCUITS) => sceneOf(id).filter((n) => n.kind === "environment") as unknown as { environment: string; background: boolean; intensity: number; texture: { url: string } }[];
-    expect(skies("grand").map((e) => [e.environment, e.background, e.intensity, e.texture.url])).toEqual([["hdri", true, 0.55, "/hdri/rooftop_night_1k.hdr"]]);
+    expect(skies("grand").map((e) => [e.environment, e.background, e.intensity, e.texture.url])).toEqual([["hdri", true, 0.55, "/hdri/cobblestone_street_night_1k.hdr"]]);
     expect(skies("dustfall").map((e) => [e.intensity, e.texture.url])).toEqual([[0.9, "/hdri/industrial_sunset_puresky_1k.hdr"]]);
     expect(skies("vesper").map((e) => [e.intensity, e.texture.url])).toEqual([[0.7, "/hdri/spruit_sunrise_1k.hdr"]]);
   });

@@ -10,7 +10,7 @@ describe("heatsink look table", () => {
   it("has exactly one row per circuit, each with a catalogue HDRI and a distinct time of day", () => {
     expect(Object.keys(CIRCUIT_LOOKS).sort()).toEqual([...CIRCUIT_ORDER].sort());
     const hdris = CIRCUIT_ORDER.map((id) => CIRCUIT_LOOKS[id].hdri);
-    expect(hdris).toEqual(["rooftop_night", "industrial_sunset_puresky", "spruit_sunrise"]);
+    expect(hdris).toEqual(["cobblestone_street_night", "industrial_sunset_puresky", "spruit_sunrise"]);
     for (const id of hdris) expect(lookHdriIds).toContain(id);
     expect(new Set(CIRCUIT_ORDER.map((id) => CIRCUIT_LOOKS[id].timeOfDay)).size).toBe(3);
   });

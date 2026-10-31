@@ -18,7 +18,7 @@ export const PALETTE = {
 
 export type WeatherKind = "rain" | "dust" | "embers";
 /** The three E-A catalogue skies this game uses (aura-assets.ts `HDRI_BY_ID`). */
-export type CircuitHdriId = Extract<AuraHdriId, "rooftop_night" | "industrial_sunset_puresky" | "spruit_sunrise">;
+export type CircuitHdriId = Extract<AuraHdriId, "cobblestone_street_night" | "industrial_sunset_puresky" | "spruit_sunrise">;
 
 export interface KeyLightRow {
   readonly color: string;
@@ -90,7 +90,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
   grand: {
     circuit: "grand",
     timeOfDay: "rain-wet sodium night",
-    hdri: "rooftop_night",
+    // GU47 phase 3: a night street of its own (`rooftop_night` is top-tennis's primary sky, look-identity PRD 6.1).
+    hdri: "cobblestone_street_night",
     environmentIntensity: 0.55,
     environmentRotationDeg: 0,
     key: { color: "#ffb070", elevationDeg: 28, azimuthDeg: 120, intensity: 1.6 },
