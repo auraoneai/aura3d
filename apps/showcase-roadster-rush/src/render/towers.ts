@@ -147,8 +147,8 @@ void main() {
   col = mix(col, haze, floorHaze * 0.85);
   // aerial perspective: far towers fade toward the haze/horizon mix, so the rows separate in depth
   float dist = length(cameraPosition - vW);
-  vec3 air = mix(haze, a3dSrgbToLinear(glassHorizon), 0.35);
-  col = mix(col, air, (1.0 - exp(-max(dist - 45.0, 0.0) / 260.0)) * 0.7);
+  vec3 air = mix(haze, a3dSrgbToLinear(glassHorizon), 0.18);
+  col = mix(col, air, (1.0 - exp(-max(dist - 40.0, 0.0) / 240.0)) * 0.62);
   outColor = vec4(a3dFinite(col), 1.0);
 }`;
 
@@ -173,6 +173,8 @@ export function towerGlassSpec(variant: TowerVariant): CustomSpec {
       crownColor: { type: "vec3", value: [1, 0.54, 0.24] },
       crownGain: { type: "f32", value: 0.6 }
     },
-    fog: true
+    // GU47 phase 3: the warm scene fog (sunset #c98a6a from 43 m) turned the 40-150 m towers into brick-brown walls; the
+    // facade does its own cooler aerial perspective toward the row's haze colour instead
+    fog: false
   };
 }

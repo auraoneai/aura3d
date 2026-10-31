@@ -31,10 +31,12 @@ describe("Apex Overdrive glass tower skyline (GU47 AO-A1)", () => {
     expect(towerHash(3, 4)).not.toBe(towerHash(4, 3));
   });
 
-  it("shades instanced glass with the scene fog and no reversed smoothstep edges", () => {
+  it("shades instanced glass with its own cool aerial perspective (not the warm scene fog) and no reversed smoothstep edges", () => {
     for (const variant of TOWER_VARIANTS) {
       const spec = towerGlassSpec(variant);
-      expect(spec.fog).toBe(true);
+      // GU47 phase 3: the warm scene fog browned the towers; the facade fades toward the row's haze colour itself
+      expect(spec.fog).toBe(false);
+      expect(spec.glsl.fragment).toMatch(/aerial perspective/);
       expect(spec.glsl.vertex).toContain("instanceMatrix");
       expect(spec.glsl.fragment).not.toMatch(/smoothstep\(1\.0,/);
     }
