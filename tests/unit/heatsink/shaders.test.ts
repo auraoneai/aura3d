@@ -25,7 +25,8 @@ import {
   moltenMaterial,
   quantisedHeat,
   REDUCED_MOTION_FLOW_SHARE,
-  skylineFacadeMaterial
+  skylineFacadeMaterial,
+  contactShadowMaterial
 } from "../../../apps/showcase-heatsink/src/shaders";
 
 type Uniform = { type: string; value: unknown };
@@ -104,6 +105,7 @@ describe.skipIf(!available)("heatsink HS-15 GLSL compiles under #version 300 es"
   const specs: [string, AuraCustomMaterialSpec][] = [
     ["molten", (moltenMaterial({ hot: "#ff8a1f", crust: "#241812", glow: 6 }) as unknown as { custom: AuraCustomMaterialSpec }).custom],
     ["chevron", (chevronHeatMaterial("#ff8a1f", 1.65) as unknown as { custom: AuraCustomMaterialSpec }).custom],
+    ["contact shadow", (contactShadowMaterial(0.6, 1.7) as unknown as { custom: AuraCustomMaterialSpec }).custom],
     ["skyline facade", (skylineFacadeMaterial({ body: "#2a2630", foot: "#5a2a10", window: "#ffb46a", window2: "#ffe2b8", cell: [3.2, 3.6], lit: 0.3, glow: 3 }) as unknown as { custom: AuraCustomMaterialSpec }).custom]
   ];
   for (const [name, spec] of specs) {

@@ -24,6 +24,7 @@ import {
 } from "./vfx";
 import {
   buildThermalDriftScene,
+  CONTACT_SHADOW,
   GUTTER,
   HEADLIGHT,
   HEADLIGHT_DIRECTION,
@@ -119,7 +120,8 @@ async function boot(): Promise<void> {
     chevA: new InstanceWriter(req(IDS.chevA), INSTANCE_COUNTS.chevA),
     chevB: new InstanceWriter(req(IDS.chevB), INSTANCE_COUNTS.chevB),
     gutters: new InstanceWriter(req(IDS.gutters), INSTANCE_COUNTS.gutters),
-    bolts: new InstanceWriter(req(IDS.bolts), INSTANCE_COUNTS.bolts)
+    bolts: new InstanceWriter(req(IDS.bolts), INSTANCE_COUNTS.bolts),
+    shadows: new InstanceWriter(req(IDS.shadows), INSTANCE_COUNTS.shadows)
   });
   const makeScenery = () => SCENERY_ANCHORS.map((anchor) => ({ anchor, handle: req(anchor.id) }));
   let droneHandles = makeDrones();
@@ -430,6 +432,12 @@ async function boot(): Promise<void> {
     playerHandle.setPosition(pose.x, pose.y + droneBob(now / 1000, reduced), pose.z).setVisible(p.respawn <= 0 && !blink);
     droneRotation(playerHandle, pose.heading, shown.player[4]! + boostPitch, shown.player[5]!, shown.player[3]! + (reduced ? 0 : rollAngle(race)));
     const dronePos: [number, number, number] = [pose.x, pose.y, pose.z];
+    // GU47 phase 3: a soft contact shadow on the deck under every drawn drone (presentation only).
+    writers.shadows.begin();
+    if (p.respawn <= 0) {
+      track.place(0.4, shown.player[1]!, CONTACT_SHADOW.y, pose2);
+      writers.shadows.push(pose2.x, pose2.y, pose2.z, -pose2.heading, 1);
+    }
 
     // Rivals: drawn set onto the six other drone models; a rival keeps its model while it stays drawn.
     const slots = slotRivals(race.drawn, rivalSlots, rivalModelsFor[race.drone], slotOut);
@@ -449,7 +457,10 @@ async function boot(): Promise<void> {
         hot[0] = pose2.x; hot[1] = pose2.y + 0.1; hot[2] = pose2.z + 1.5;
       }
       droneRotation(h, pose2.heading, -0.04, 0, Math.max(-0.45, Math.min(0.45, (r.x - r.targetX) * 0.22)));
+      track.place(d + 0.4, shown.rivals[base + 1]!, CONTACT_SHADOW.y, pose2);
+      writers.shadows.push(pose2.x, pose2.y, pose2.z, -pose2.heading, 1);
     }
+    writers.shadows.end();
 
     // Road tiles: fixed world positions every 12 m; colour by absolute tile index so nothing flips while scrolling.
     const progress = shown.player[0]!;
