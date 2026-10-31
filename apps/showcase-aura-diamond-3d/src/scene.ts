@@ -843,6 +843,10 @@ function lookGroupNode(plan: DiamondLookPlan): any {
   const group = looks.preset(plan.baseLook, plan.overrides as AuraLookOverrides).toJSON() as any;
   let children: any[] = group.children ?? [];
   if (QA_FLAGS.noAo) children = children.filter((c: any) => c.effect !== "ambient-occlusion");
+  const keyShadow = plan.keyShadow;
+  if (keyShadow) {
+    children = children.map((c: any) => (c.kind === "light" && c.name === "look key light" && c.shadow ? { ...c, shadow: { bias: keyShadow.bias, normalBias: keyShadow.normalBias } } : c));
+  }
   if (plan.hdriBackgroundIntensity !== 1) {
     children = children.map((c: any) =>
       c.kind === "environment" && c.background !== false ? { ...c, background: { visible: true, intensity: plan.hdriBackgroundIntensity } } : c

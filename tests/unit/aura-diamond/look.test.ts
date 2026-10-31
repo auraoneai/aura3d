@@ -77,7 +77,8 @@ describe("aura-diamond look table (GU47 WP-18)", () => {
     expect(lunar.sky?.model).toBe("gradient");
     for (const hex of [lunar.turf.grass, lunar.turf.clay]) {
       const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
-      expect(Math.max(r, g, b) - Math.min(r, g, b)).toBeLessThan(16);
+      // Phase 3: a warm grey-tan infield (the panel called the neutral grey frame washed out), still a regolith grey.
+      expect(Math.max(r, g, b) - Math.min(r, g, b)).toBeLessThan(32);
     }
   });
 
@@ -153,8 +154,9 @@ describe("aura-diamond look plan", () => {
   });
 
   it("plays Lunar Park in its 4.6.2 look and every other park in the GU47 look, unless ?look= names one", () => {
-    for (const id of PARK_ORDER) expect(parkLookVariant(id, "")).toBe(id === "lunar" ? "original" : "gu47");
-    expect(parkLookVariant("lunar", "?park=lunar")).toBe("original");
+    for (const id of PARK_ORDER) expect(parkLookVariant(id, "")).toBe("gu47");
+    expect(parkLookVariant("lunar", "?park=lunar")).toBe("gu47");
+    expect(parkLookVariant("lunar", "?look=original")).toBe("original");
     expect(parkLookVariant("lunar", "?look=gu47")).toBe("gu47");
     expect(parkLookVariant("sandlot", "?look=original")).toBe("original");
     expect(parkLookVariant("canyon", "?look=bogus")).toBe("gu47");

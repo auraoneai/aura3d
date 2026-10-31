@@ -64,7 +64,15 @@ export interface ParkLook {
   readonly sky?:
     | { readonly model: "preetham"; readonly turbidity: number; readonly rayleigh: number }
     | { readonly model: "gradient"; readonly zenith: string; readonly horizon: string; readonly ground: string; readonly stars?: number };
-  readonly sun: { readonly elevationDeg: number; readonly azimuthDeg: number; readonly color: string; readonly intensity: number; readonly colorTemperatureK: number };
+  readonly sun: {
+    readonly elevationDeg: number;
+    readonly azimuthDeg: number;
+    readonly color: string;
+    readonly intensity: number;
+    readonly colorTemperatureK: number;
+    /** Key shadow depth/normal bias when the engine's auto bias stripes a flat, untextured receiver (Lunar). */
+    readonly shadow?: { readonly bias: number; readonly normalBias: number };
+  };
   readonly rim: false | { readonly color: string; readonly intensity: number; readonly elevationDeg: number; readonly azimuthDeg: number };
   /**
    * Scene fog (DIA-E3): exp2 with `density` per metre, or height fog when `height` is set (density is then the
@@ -281,12 +289,14 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     postcard: "Lunar Park under a black sky with Earth rising",
     timeOfDay: "lunar day, black sky, Earth above the rim",
     baseLook: "space",
-    hdri: { id: "deep_space_starfield", intensity: 0.6, rotationDeg: 0, background: true, backgroundIntensity: 1 },
+    hdri: { id: "deep_space_starfield", intensity: 0.75, rotationDeg: 0, background: true, backgroundIntensity: 1 },
     sky: { model: "gradient", zenith: "#010102", horizon: "#020305", ground: "#050607", stars: 1800 },
-    sun: { elevationDeg: 42, azimuthDeg: 300, color: "#f4f1ea", intensity: 3.4, colorTemperatureK: 5800 },
-    rim: { color: "#6f8fb8", intensity: 1.0, elevationDeg: 35, azimuthDeg: 160 },
+    // GU47 phase 3: round 1's 42 degree key striped the flat infield with shadow acne under the engine's auto bias; an
+    // explicit depth and normal bias keeps the players' shadows and drops the stripes.
+    sun: { elevationDeg: 42, azimuthDeg: 300, color: "#fbf3e4", intensity: 3.0, colorTemperatureK: 5600, shadow: { bias: 0.002, normalBias: 3 } },
+    rim: { color: "#6f8fb8", intensity: 1.1, elevationDeg: 35, azimuthDeg: 160 },
     fog: false,
-    exposureEv: 0.45,
+    exposureEv: 0.6,
     background: "#020305",
     accent: "#c3cbd8",
     post: {
@@ -295,11 +305,13 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
       exposure: 1.0,
       bloom: { threshold: 0.65, intensity: 0.3 },
       grain: 0.03,
-      vignette: 0.2,
-      grade: { contrast: 1.14, saturation: 0.82, temperature: -0.12, tint: 0 },
+      vignette: 0.22,
+      // Phase 3: the panel called the grey-on-grey frame washed out and desaturated. Warm sunlit regolith against cool
+      // blue rim shadow, a tan infield on a dark outfield, and more contrast between them.
+      grade: { contrast: 1.16, saturation: 1.0, temperature: -0.02, tint: 0 },
       lut: "diamond-lunar-regolith.cube"
     },
-    turf: { grass: "#5c5a56", stripe: "#62605b", clay: "#7a766d", track: "#4a4844", trackRoughness: 0.98, chalk: "#e6e2d6", normalScale: { grass: 0, clay: 0 } },
+    turf: { grass: "#46443f", stripe: "#4d4a44", clay: "#968a78", track: "#36342f", trackRoughness: 0.98, chalk: "#f2eee2", normalScale: { grass: 0, clay: 0 } },
     crowd: ["#c3cbd8", "#e9e6dc", "#d98a3a", "#3c4a66", "#9aa3b5", "#5e6878", "#b8a27a"],
     signature: { splinter: "#cbbf9f", flash: "#ffffff", flashIntensity: 1.1, gravityScale: 0.17 },
     landingFx: "diamond-regolith-arc",
@@ -324,7 +336,7 @@ export const ORIGINAL_LOOKS: Readonly<Record<ParkId, { readonly baseLook: Diamon
  * GU47 phase 2 (lunar blind panel): parks that play in their 4.6.2 look unless `?look=` names a look. The blind panel
  * judged the new Lunar Park worse than 4.6.2, so the Moon keeps the old look in normal play; every other park is GU47.
  */
-export const ORIGINAL_LOOK_PARKS: ReadonlySet<ParkId> = new Set<ParkId>(["lunar"]);
+export const ORIGINAL_LOOK_PARKS: ReadonlySet<ParkId> = new Set<ParkId>([]);
 
 /** The look variant a park plays in: an explicit `?look=original|gu47` wins, otherwise the park's own default. */
 export function parkLookVariant(park: ParkId, search: string): DiamondLookVariant {
@@ -483,6 +495,8 @@ export interface DiamondLookPlan {
   /** Volumetric god rays (High tier only, PRD 6.2/6.4). */
   readonly godRays: ParkLook["godRays"] | null;
   readonly weather: ParkLook["weather"] | null;
+  /** Explicit key-light shadow bias (null: the engine's auto bias). */
+  readonly keyShadow: ParkLook["sun"]["shadow"] | null;
 }
 
 const fogMaxOpacity = (intensity: number): number => Math.min(0.92, Math.max(0, 0.25 + 0.55 * intensity));
@@ -507,7 +521,8 @@ export function lookPlan(parkId: ParkId, variant: DiamondLookVariant, tier: Diam
       grain: null,
       vignette: 0.16,
       godRays: null,
-      weather: null
+      weather: null,
+      keyShadow: null
     };
   }
   const row = PARK_LOOKS[parkId];
@@ -560,7 +575,8 @@ export function lookPlan(parkId: ParkId, variant: DiamondLookVariant, tier: Diam
     grain: tier === "low" ? null : row.post.grain,
     vignette: row.post.vignette,
     godRays: tier === "high" && row.godRays ? row.godRays : null,
-    weather: row.weather ? (tier === "low" ? { ...row.weather, density: row.weather.density * 0.5 } : row.weather) : null
+    weather: row.weather ? (tier === "low" ? { ...row.weather, density: row.weather.density * 0.5 } : row.weather) : null,
+    keyShadow: row.sun.shadow ?? null
   };
 }
 
