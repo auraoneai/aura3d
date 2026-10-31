@@ -612,13 +612,16 @@ function poolNodes(diorama: boolean) {
   const out = [
     // A wide meadow/ground plane beneath the lane strips so the course reads
     // as one landscape rather than separate floating bands. Theme re-tints it.
+    // primitives.plane already lies in XZ: the original look keeps its 4.6 transform (rotated upright into a 1 m
+    // strip, so the sky colour showed below the lanes); the diorama lays it flat as the felt tabletop that fills the
+    // frame bottom behind the start row (GU47 phase 2).
     primitives.plane({
       name: "world-floor",
       size: [1, 1, 1],
       material: material.pbr({ color: th0.palette.dressingA, roughness: 0.96, metalness: 0 }),
       castShadow: false,
       receiveShadow: true
-    }).position(0, -0.16, -20).rotate(-Math.PI / 2, 0, 0).scale([220, 220, 1]).runtime(game.runtimeNode("world-floor")),
+    }).position(0, -0.16, -20).rotate(diorama ? 0 : -Math.PI / 2, 0, 0).scale(diorama ? [220, 1, 220] : [220, 220, 1]).runtime(game.runtimeNode("world-floor")),
     instances.box({ name: "lane-ground", size: [1, 1, 1], material: groundMat, transforms: pad(CAP.ground), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-ground")),
     instances.box({ name: "lane-detail", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.detail), castShadow: false, receiveShadow: true }).runtime(game.runtimeNode("pool-detail")),
     instances.box({ name: "lane-glow", size: [1, 1, 1], material: glowMat, transforms: pad(CAP.glow), castShadow: false }).runtime(game.runtimeNode("pool-glow")),
