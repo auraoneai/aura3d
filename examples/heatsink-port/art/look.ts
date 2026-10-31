@@ -89,7 +89,7 @@ export interface HeatsinkLookRow {
   /** signature effect: the ion wake (IC-18) */
   readonly wake: { readonly enabled: boolean; readonly seconds: number; readonly segments: number; readonly cruise: Rgb; readonly cruiseTail: Rgb; readonly afterburner: Rgb; readonly width: number };
   /** camera feel (IC-22): bank roll cap in degrees, countdown sweep on/off */
-  readonly camera: { readonly rollDeg: number; readonly countdownSweep: boolean };
+  readonly camera: { readonly rollDeg: number; readonly countdownSweep: boolean; /** GU47 phase 4: the menu backdrop holds a low rear-three-quarter hero pose (false = the chase pose) */ readonly menuHero?: boolean };
   /** IC-02: glow-pool gain in the custom shaders (0 = none) and moving point lights for the lit GLBs (0..2) */
   readonly glow: { readonly pools: number; readonly points: number };
   /** IC-20 spores, IC-24 lane beacons, IC-21 arch chase */
@@ -138,7 +138,7 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     /* GU47 phase 2: godRays was 0.35 (effects.volumetricFog, density 0.08, #ffb7a0). On software WebGL2 it drew no shafts, only a
      * peach extinction that flattened the drone and the causeway to one tone at chase distance; off until the god-ray stage draws shafts. */
     wake: { enabled: true, seconds: 1.2, segments: 60, cruise: linearOf(PALETTE.ionCyan), cruiseTail: linearOf(PALETTE.violet), afterburner: linearOf(PALETTE.amber), width: 0.9 },
-    camera: { rollDeg: 6, countdownSweep: true },
+    camera: { rollDeg: 6, countdownSweep: true, menuHero: true },
     glow: { pools: 1, points: 2 },
     dressing: { spores: 300, beacons: true, archChase: true, lichen: 1 }
   },

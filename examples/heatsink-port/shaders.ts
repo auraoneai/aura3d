@@ -144,7 +144,8 @@ void main() {
   float beaconRefl = exp(-bs * bs / 18.0) * exp(-pow((abs(u) - 0.88) / 0.05, 2.0));
   float curbRefl = exp(-pow((abs(u) - 0.88) / 0.06, 2.0)) * (0.55 + 0.45 * fres);
   color += (vRoad * beaconRefl * 0.9 + neon * curbRefl * 0.10) * neonReflect;
-  color += vRoad * seam * 0.12 * seams;
+  // GU47 phase 4: twilight seams glow ion blue-violet, not the district colour (the orange grid was a sibling tell: "orange accents in road markings")
+  color += mix(vRoad, vec3(0.22, 0.5, 0.95), 0.85 * glass) * seam * 0.12 * seams;
   color += mix(vec3(0.10, 0.85, 0.80), vRoad, 0.25) * clamp(vein, 0.0, 1.0) * veinHdr * (0.6 + 0.6 * pulse) * glass; // cyan veins (were half the district colour: white squiggles)
   color += vec3(0.10, 0.85, 0.80) * clamp(vein, 0.0, 1.0) * 0.20;
   color += vec3(0.78, 0.88, 0.95) * edgeLine * 0.55;

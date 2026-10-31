@@ -12,6 +12,12 @@ export type Vec3Out = [number, number, number];
 export const SWEEP = { startAngle: (150 * Math.PI) / 180, startRadius: 13, startHeight: 4.2, seconds: 3.2 } as const;
 /** the finish orbit: radius, height, angular speed and blend-in time */
 export const ORBIT = { radius: 11, height: 3.4, speed: 0.32, blendSeconds: 1.4 } as const;
+/**
+ * GU47 phase 4: the menu backdrop's hero pose: 38 degrees round from behind, a little closer and lower than the chase,
+ * looking mostly at the drone. The centred rear chase on a railed causeway read as Roadster Hours / Apex Overdrive to the
+ * sibling judge; this frames the drone off-centre against the canyon and the ringed planet.
+ */
+export const MENU_HERO = { angle: (38 * Math.PI) / 180, radius: 9.5, height: 2.4, lookToDrone: 0.7 } as const;
 /** afterburner FOV kick in degrees (twilight); world.ts caps the total kick at 6 under reduced motion */
 export const AFTERBURNER_KICK = 5;
 
@@ -45,7 +51,14 @@ export function directCamera(row: HeatsinkLookRow, enabled: boolean, inp: Direct
   const baseRadius = Math.hypot(ox, oz) || 1;
   const baseHeight = inp.eye[1] - ty;
   let w = 0, angle = baseAngle, radius = baseRadius, height = baseHeight;
-  if (inp.state === "countdown") {
+  let lookW = -1;
+  if (inp.state === "menu" && row.camera.menuHero) {
+    w = 1;
+    angle = baseAngle + MENU_HERO.angle;
+    radius = MENU_HERO.radius;
+    height = MENU_HERO.height;
+    lookW = MENU_HERO.lookToDrone;
+  } else if (inp.state === "countdown") {
     const t = smooth(1 - Math.max(0, inp.countdown) / SWEEP.seconds);
     w = 1 - t;
     angle = baseAngle + SWEEP.startAngle * w;
@@ -60,7 +73,8 @@ export function directCamera(row: HeatsinkLookRow, enabled: boolean, inp: Direct
   if (w <= 0) return 0;
   eye[0] = tx + Math.cos(angle) * radius; eye[1] = ty + height; eye[2] = tz + Math.sin(angle) * radius;
   /* look blends from the chase look-ahead to the drone itself (a hero framing) */
-  look[0] = inp.look[0] + (tx - inp.look[0]) * w; look[1] = inp.look[1] + (ty + 0.6 - inp.look[1]) * w; look[2] = inp.look[2] + (tz - inp.look[2]) * w;
+  const lw = lookW >= 0 ? lookW : w;
+  look[0] = inp.look[0] + (tx - inp.look[0]) * lw; look[1] = inp.look[1] + (ty + 0.6 - inp.look[1]) * lw; look[2] = inp.look[2] + (tz - inp.look[2]) * lw;
   return w;
 }
 

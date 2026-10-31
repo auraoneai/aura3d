@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { afterburnerKick, AFTERBURNER_KICK, directCamera, SWEEP, vignettePulse, HEAT_STEPS, heatStep } from "../../../examples/heatsink-port/art/director";
+import { afterburnerKick, AFTERBURNER_KICK, directCamera, MENU_HERO, SWEEP, vignettePulse, HEAT_STEPS, heatStep } from "../../../examples/heatsink-port/art/director";
 import { LOOKS } from "../../../examples/heatsink-port/art/look";
 
 const base = { target: [0, 1, 0] as const, eye: [-7.6, 3, 0] as const, look: [20, 1.8, 0] as const, finishedFor: 0 };
@@ -15,6 +15,19 @@ describe("heatsink-port IC-22 camera direction", () => {
       expect(r.w).toBe(0);
       expect(r.eye).toEqual([...base.eye]);
       expect(r.look).toEqual([...base.look]);
+    }
+  });
+
+  it("GU47 phase 4: the twilight menu holds the rear-three-quarter hero pose; original and disabled keep the chase pose", () => {
+    const hero = run(LOOKS.twilight, true, { state: "menu" });
+    expect(hero.w).toBe(1);
+    const ang = Math.atan2(hero.eye[2] - base.target[2], hero.eye[0] - base.target[0]) - Math.atan2(base.eye[2] - base.target[2], base.eye[0] - base.target[0]);
+    expect(Math.cos(ang)).toBeCloseTo(Math.cos(MENU_HERO.angle), 5);
+    expect(Math.sin(ang)).toBeCloseTo(Math.sin(MENU_HERO.angle), 5);
+    expect(Math.hypot(hero.eye[0], hero.eye[2])).toBeCloseTo(MENU_HERO.radius, 5);
+    for (const r of [run(LOOKS.original, true, { state: "menu" }), run(LOOKS.twilight, false, { state: "menu" })]) {
+      expect(r.w).toBe(0);
+      expect(r.eye).toEqual([...base.eye]);
     }
   });
 
