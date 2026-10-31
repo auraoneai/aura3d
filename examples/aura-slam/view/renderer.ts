@@ -205,7 +205,9 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     spectators?.setVisible(audienceVisible);
     spectatorHeads?.setVisible(audienceVisible);
     standText?.setVisible(audienceVisible);
-    h.grandstand?.setVisible(audienceVisible);
+    // Phase 2: the World Tour's lower broadcast eye frames the rear seats GLB (fitted to 24 m, each seat reads about 5 m tall)
+    // as giant chairs floating over the far stand, so it shows only in `?look=original`, whose top-down eye never frames it.
+    h.grandstand?.setVisible(audienceVisible && !worldTour);
     h.bleachers?.setVisible(audienceVisible);
   }
 
