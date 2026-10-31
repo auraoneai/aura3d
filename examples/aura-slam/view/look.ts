@@ -162,7 +162,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
     sun: null, nightKey: NIGHT_KEY,
     floodlights: FLOODLIGHTS,
     fog: { color: "#0b1426", density: 0.006, volumetricAtHigh: false, lightCones: 4 },
-    grade: { preset: "arena-fight", exposure: 1.3, contrast: 1.24, saturation: 1.1, temperature: -0.06, tint: 0, bloom: { intensity: 0.32, threshold: 0.85 }, vignette: 0.26, lut: "slam-hard", lutIntensity: 0.7 },
+    grade: { preset: "arena-fight", exposure: 1.3, contrast: 1.24, saturation: 1.1, temperature: -0.06, tint: 0, bloom: { intensity: 0.24, threshold: 0.93 }, vignette: 0.26, lut: "slam-hard", lutIntensity: 0.7 },
     signature: { burst: "hard-skid", burstColor: particle("hard"), markColor: "#c9d6e3", markOpacity: 0.42, markLifetime: 9 },
     crowd: true, wind: 0
   },
