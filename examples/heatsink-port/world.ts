@@ -392,6 +392,8 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
   const look = [0, 0, 0] as [number, number, number];
   const chaseIn = { wantEye: eye, wantLook: look, fovTarget: 0 };
   const blobGeo = new Float32Array(12);
+  const contactVec: [number, number, number, number] = [0, -1e4, 0, 0];
+  const contactDir: [number, number, number] = [0, 0, 1];
   let motion: MotionSettings = { reduced: false };
   let rollNow = 0;
   let finishedFor = 0;
@@ -664,6 +666,15 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       node("rail-posts").setUniform?.("glowColor", glowNow);
       /* IC-10: the causeway's ion pulse runs at the drone's speed */
       node("road").setUniform?.("ionSpeed", motion.reduced ? 0 : p.v);
+      /* GU47 phase 4: contact shadow in the road shader under the drone (fainter the higher it hovers) */
+      if (row.shade.contact > 0) {
+        const ground = fr.y + track.latY(p.s, p.x);
+        const fadeC = p.crashed ? 0 : Math.max(0, Math.min(1, 1 - (p.position.y - ground - CFG.vehicle.hover) / 14));
+        contactVec[0] = p.position.x; contactVec[1] = ground; contactVec[2] = p.position.z; contactVec[3] = row.shade.contact * fadeC;
+        contactDir[0] = rig[0]!; contactDir[2] = rig[1]!;
+        node("road").setUniform?.("contact", contactVec);
+        node("road").setUniform?.("contactDir", contactDir);
+      }
     }
 
     /* IC-21 arch light chase (twilight, off on reduced motion): written only when it changes */

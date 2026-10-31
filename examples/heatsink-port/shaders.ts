@@ -133,6 +133,12 @@ void main() {
   color = mix(color, color * 0.32 + mirror * (0.095 + 0.42 * fres) + vec3(0.9, 0.42, 0.12) * glint * 0.4, glass);
   // GU47 phase 4: engine cast shadows (gantries, rocks, the drone) cut the glass sheen too (glassShadow = 0 under ?look=original)
   color *= 1.0 - glassShadow * (1.0 - gSun) * glass;
+  // GU47 phase 4: the drone's contact shadow in the road itself (contact.w = 0 under ?look=original): an ellipse along the
+  // heading under the hull, so the hover reads grounded on every frame
+  vec3 dc = vWorld - contact.xyz;
+  vec2 t2 = normalize(contactDir.xz + vec2(1e-4, 0.0));
+  float cr = length(vec2(dot(dc.xz, t2) / 3.6, dot(dc.xz, vec2(-t2.y, t2.x)) / 2.7));
+  color *= 1.0 - contact.w * pow(1.0 - smoothstep(0.0, 1.0, cr), 1.5) * step(abs(dc.y), 3.0);
   // GU47 phase 4: the glass reflects the curb neon and the beacons (every 44 m at the edges) as soft streaks toward the viewer
   float bs = s - (floor((s - 22.0) / 44.0 + 0.5) * 44.0 + 22.0);
   float beaconRefl = exp(-bs * bs / 18.0) * exp(-pow((abs(u) - 0.88) / 0.05, 2.0));

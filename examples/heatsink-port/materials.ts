@@ -61,6 +61,8 @@ export const roadSpec = (): CustomSpec => ({
     seams: { type: "f32", value: shading.causeway.seams },
     glassShadow: { type: "f32", value: shading.shade.glassShadow },
     neonReflect: { type: "f32", value: shading.shade.neonReflect },
+    contact: { type: "vec4", value: [0, -1e4, 0, 0] },
+    contactDir: { type: "vec3", value: [0, 0, 1] },
     ionSpeed: { type: "f32", value: 0 }
   },
   side: "double"

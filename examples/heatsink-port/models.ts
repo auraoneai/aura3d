@@ -57,7 +57,7 @@ export const droneHull = (set: ModelSet = MODELS, casts = false): NodeB =>
 
 /** GU47 WP-36 IC-13: the Meshy sentry drone as a strike target's core (twilight; presentation only, the hit radius is unchanged) */
 export const sentryModel = (id: number, size: number, set: ModelSet = MODELS): NodeB =>
-  model(set.ionSentryDrone, { name: `target-${id}`, targetMaxDimension: size, castShadow: true, receiveShadow: false });
+  model(set.ionSentryDrone, { name: `target-${id}`, targetMaxDimension: size, castShadow: false, receiveShadow: false });
 
 export const barrelModel = (i: number, set: ModelSet = MODELS): NodeB =>
   model(set.barrel, { name: `barrel-${i}`, targetHeight: 2.2, castShadow: false, receiveShadow: false });

@@ -65,7 +65,7 @@ export interface HeatsinkLookRow {
    * occluded; `hazeSun` warms the fog toward the sun azimuth; `blob` is the contact-shadow peak and `blobCore` its tighter
    * core. 1 / 1 / 0 / 0 / 0.6 / 0 under `original` (today's value for value).
    */
-  readonly shade: { readonly sunGain: number; readonly ambientGain: number; readonly glassShadow: number; readonly hazeSun: Rgb; readonly blob: number; readonly blobCore: number; readonly neonReflect: number };
+  readonly shade: { readonly sunGain: number; readonly ambientGain: number; readonly glassShadow: number; readonly hazeSun: Rgb; readonly blob: number; readonly blobCore: number; readonly neonReflect: number; /** contact shadow drawn inside the road shader under the drone (0 = none) */ readonly contact: number };
   /** WP-36 Meshy assets swapped in (presentation only; collision unchanged) */
   readonly assets: { readonly sentryModel: boolean };
   /** fog: the base haze colour and how far each district's HUD colour pulls it (IC-06) */
@@ -106,6 +106,12 @@ export const linearOf = (hex: string): Rgb => {
 export const SHADER_SUN_DIR: Vec3 = [0.55, 0.23, -0.62];
 /** IC-03: the engine key along the shader sun, ~400 m out */
 export const TWILIGHT_KEY_POSITION: Vec3 = [220, 92, -248];
+/**
+ * GU47 phase 4: the engine key (shadow caster and GLB key) at the same azimuth but ~35 degrees up. At the shader sun's
+ * 15 degrees the canyon walls shadowed the whole causeway (round g19p4-r1: bottom cells 25 against the floor of 40), so
+ * cast shadows read as a flat darkening instead of shapes. The custom shaders keep the 15-degree shading sun.
+ */
+export const TWILIGHT_SHADOW_KEY_POSITION: Vec3 = [218, 229, -245];
 /** sun azimuth (degrees, atan2(z, x)) the HDRI is rotated to */
 export const SUN_AZIMUTH_DEG = (Math.atan2(SHADER_SUN_DIR[2], SHADER_SUN_DIR[0]) * 180) / Math.PI;
 
@@ -114,13 +120,13 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     id: "twilight",
     timeOfDay: "alien blue hour, sun 15 degrees up behind a magenta-to-amber band",
     sky: { kind: "aurora-dome", twilight: 1, planetScale: 1.6, aurora: 1.35, bandLow: linearOf(PALETTE.amber), bandHigh: linearOf(PALETTE.magenta) },
-    key: { position: TWILIGHT_KEY_POSITION, color: "#ffe0dc", intensity: 2.9, cascades: 3, maxDistance: 220, droneCasts: true, mapSize: 2048 },
+    key: { position: TWILIGHT_SHADOW_KEY_POSITION, color: "#ffe0dc", intensity: 2.9, cascades: 3, maxDistance: 220, droneCasts: true, mapSize: 2048 },
     hemisphere: { sky: "#8a7cd8", ground: "#3a2418", intensity: 0.8 },
     environment: { kind: "hdri", hdri: "sunset-dramatic", intensity: 0.9, rotationDeg: SUN_AZIMUTH_DEG },
     /* GU47 phase 3 (twilight shards glow violet in world.ts: the panel read the dark ones as stray diamonds): at scale 0.45 the bounce and the amber district haze washed the rocks to grey-beige (round g19p3-r1); a darker teal rock albedo keeps them reading as teal basalt against the violet sky */
     lit: { scale: 0.45, bounce: [0.26, 0.10, 0.04], topFill: [0.09, 0.08, 0.24], roadAlbedo: 0.34, rockTint: [0.54, 0.74, 0.8] },
     /* GU47 phase 4: the judge read "flat even ambient, no cast shadow, uniform haze"; a stronger low sun over less ambient, shadows that cut the glass, warm sun-side haze */
-    shade: { sunGain: 1.7, ambientGain: 0.74, glassShadow: 0.5, hazeSun: [0.22, 0.07, 0.07], blob: 0.9, blobCore: 1, neonReflect: 1 },
+    shade: { sunGain: 1.7, ambientGain: 0.82, glassShadow: 0.4, hazeSun: [0.22, 0.07, 0.07], blob: 0.9, blobCore: 1, neonReflect: 0.6, contact: 0.72 },
     assets: { sentryModel: true },
     /* the haze stays the map's `atmosphere.low` (linear; sRGB ~#457b7f) so the distance does not go dark; #0f3a40 is the deep haze below the horizon in the dome */
     fog: { color: [0.06, 0.19, 0.21], districtMix: 0.2, districtMetres: 120 },
@@ -144,7 +150,7 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     hemisphere: { sky: "#6fa8d8", ground: "#2a1a10", intensity: 1.1 },
     environment: { kind: "neutral", intensity: 1.0 },
     lit: { scale: 0.26, bounce: [0, 0, 0], topFill: [0, 0, 0], roadAlbedo: 0.23, rockTint: [1, 1, 1] },
-    shade: { sunGain: 1, ambientGain: 1, glassShadow: 0, hazeSun: [0, 0, 0], blob: 0.6, blobCore: 0, neonReflect: 0 },
+    shade: { sunGain: 1, ambientGain: 1, glassShadow: 0, hazeSun: [0, 0, 0], blob: 0.6, blobCore: 0, neonReflect: 0, contact: 0 },
     assets: { sentryModel: false },
     fog: { color: [0.06, 0.19, 0.21], districtMix: 0, districtMetres: 120 },
     causeway: { glass: 0, veinHdr: 0, seams: 0 },
