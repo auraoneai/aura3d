@@ -77,6 +77,8 @@ const ENEMY_TRACERS = 8;
 const BZ_WATER = { color: "#0b1714", roughness: 0.06 } as const;
 /** BZ-04: base colour under the texture sets (slightly warm white; the lamps carry each floor's colour). */
 const BZ_SURFACE_WHITE = "#ece8df";
+/** GU47 phase 2: lift of the floor palette tones used as wall and floor base colours (shade(), +amt*255 per channel). */
+const BZ_WALL_LIFT = 0.1, BZ_FLOOR_LIFT = 0.08;
 const BZ_WETNESS = [0, 0.7, 0, 0, 0, 0.45, 0] as const;
 const ALL_FLOORS: { def: FloorDef; slot: number }[] = [
   ...FLOORS.map((def, i) => ({ def, slot: i })),
@@ -144,8 +146,12 @@ function buildScene() {
     const tex = BZ_FLOOR_TEXTURES[slot]!;
     const wallTex = bunkerTexture(tex.wall), altTex = bunkerTexture(tex.accent), floorTex = bunkerTexture(tex.floor);
     const metalWall = tex.wall.startsWith("metal");
-    const wallMat = material.pbr({ color: BZ_SURFACE_WHITE, texture: wallTex.color, normal: wallTex.normal, normalScale: 0.9, roughness: metalWall ? 0.55 : 0.88, metalness: metalWall ? 0.45 : 0 });
-    const altMat = material.pbr({ color: BZ_SURFACE_WHITE, texture: altTex.color, normal: altTex.normal, normalScale: 0.9, roughness: 0.8, metalness: tex.accent.startsWith("metal") ? 0.45 : 0 });
+    // GU47 phase 2: base colours from the floor palette (the 4.6.2 tones) instead of near white. The CC0 colour maps do not
+    // show in the software WebGL2 capture (fix run g11fix1: flat walls), so the #ece8df base read as white plaster lit
+    // evenly by the rig: luma ~145-200 on every wall and floor. The palette keeps each floor dark and its own hue.
+    const wallBase = shade(def.palette.wall, BZ_WALL_LIFT), altBase = shade(def.palette.wallAlt, BZ_WALL_LIFT), floorBase = shade(def.palette.floor, BZ_FLOOR_LIFT);
+    const wallMat = material.pbr({ color: wallBase, texture: wallTex.color, normal: wallTex.normal, normalScale: 0.9, roughness: metalWall ? 0.55 : 0.88, metalness: metalWall ? 0.45 : 0 });
+    const altMat = material.pbr({ color: altBase, texture: altTex.color, normal: altTex.normal, normalScale: 0.9, roughness: 0.8, metalness: tex.accent.startsWith("metal") ? 0.45 : 0 });
     const jitter = (x: number, z: number) => scaleHex(BZ_SURFACE_WHITE, 1 + (hash2(x, z) - 0.5) * 0.12);
     const wallInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const wallCol: string[] = [];
@@ -197,7 +203,7 @@ function buildScene() {
       // slab floor + sealed ceiling: the ceiling now meets the wall tops so the
       // corridors read as enclosed rooms instead of an open-topped flat plane.
       primitives.box({ name: `f${slot} floor`, size: [w * CELL, 0.3, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, -0.15, h * CELL / 2], material: material.pbr({
-        color: BZ_SURFACE_WHITE, texture: floorTex.color, normal: floorTex.normal, normalScale: 0.8, roughness: 0.82, metalness: tex.floor.startsWith("metal") ? 0.4 : 0,
+        color: floorBase, texture: floorTex.color, normal: floorTex.normal, normalScale: 0.8, roughness: 0.82, metalness: tex.floor.startsWith("metal") ? 0.4 : 0,
         texTransforms: { baseColor: { scale: [w, h] }, normal: { scale: [w, h] } }
       }) }).runtime(staticNode(slot, "floor")),
       // BZ-07: F6's ceiling is four slabs around the 3x3 hatch (one instanced draw); every other floor stays sealed.
