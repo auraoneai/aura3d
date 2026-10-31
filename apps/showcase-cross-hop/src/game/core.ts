@@ -10,8 +10,8 @@ import {
 } from "./themes";
 import { laneFor, laneZ, laneMovers, moverHalf, railWarning, MOVER_LENGTH, TRAIN_CARS, TRAIN_CAR_LENGTH, type Lane } from "./world";
 import { loadProfile, saveProfile, type Profile } from "./persistence";
-import { THEME_LOOKS, keyAt, sunVector, sunDirection, type ThemeLook } from "./look";
-import { CAM_DIORAMA, ambientEmitter, damp, dioramaPose, hopScale, HOP_YAW, kitLod, kitSlots, lampSlots, screenY, turnToward } from "./diorama";
+import { THEME_LOOKS, keyAt, mixHex, sunVector, sunDirection, type ThemeLook } from "./look";
+import { BACKDROP_WIDTH, CAM_DIORAMA, ambientEmitter, backdropFlat, damp, dioramaPose, hopScale, HOP_YAW, kitLod, kitSlots, lampSlots, screenY, turnToward } from "./diorama";
 import { CROSS_HOP_VFX, DEATH_COLORS, DEATH_VFX, landingVfx, registerCrossHopVfx } from "./vfx";
 import { critterOverrides, VEHICLE_OVERRIDES } from "./critterLook";
 
@@ -554,8 +554,26 @@ function buildDioramaScene(): unknown {
   }
   const amb = ambientNode(0);
   if (amb) s.add(amb);
+  const flat = backdropFlat(pose.position, pose.target, pose.fov, FLOOR_Y);
+  backdropColors(0).forEach((c, i) => {
+    const b = flat.bands[i]!;
+    s.add(primitives.plane({ name: `cross-hop backdrop ${i}`, size: [1, 1, 1], material: backdropMaterial(c), castShadow: false, receiveShadow: false })
+      .position(flat.x, b.y, flat.z).scale([BACKDROP_WIDTH, b.height, 1]).runtime(game.runtimeNode(`backdrop-${i}`)));
+  });
   s.addMany(poolNodes(true) as never[]);
   return s.toJSON();
+}
+
+/** Backdrop flat colours, bottom to top: distant hills, horizon glow, mid sky, zenith (CH47-11 horizon). */
+function backdropColors(ti: number): string[] {
+  const k = THEME_LOOKS[ti]!.sky;
+  return [k.ground, k.horizon, mixHex(k.horizon, k.zenith, 0.5), k.zenith];
+}
+
+/** The backdrop is a lit painted flat (a practical, like a theatre cyclorama): self-lit so the low sun does not shade
+ *  it, and kept under the bloom threshold. */
+function backdropMaterial(color: string) {
+  return material.pbr({ color, emissive: color, emissiveIntensity: 0.55, roughness: 0.96, metalness: 0, practical: true });
 }
 
 /** GU47 CH47-14: the theme's ambient particle emitter, following the player through the `ambient` runtime node. */
@@ -1017,6 +1035,7 @@ function swapDioramaLook(ti: number): void {
   if (amb) attempt(() => n0.add(amb as never));
   const terrain = th.dress === "trees" || th.dress === "reeds" || th.dress === "candy" ? th.palette.dressingA : th.palette.dressingB;
   attempt(() => n0.require("world-floor")?.setMaterial?.(material.pbr({ color: terrain, roughness: 0.96, metalness: 0 })));
+  backdropColors(ti).forEach((c, i) => attempt(() => n0.require(`backdrop-${i}`)?.setMaterial?.(backdropMaterial(c))));
   // Only the HDRI and the post preset snap; the key blends (CH47-19).
   const key = keyAt(ti, null, st.playerRow);
   try {
@@ -1194,6 +1213,13 @@ function syncDioramaCamera(px: number, pz: number, py: number, warn: number): vo
   const fov = p.fov + (reducedMotion ? 0 : warn * 3);
   app.camera?.setPose({ position: p.position, target: p.target, fov });
   dioramaView.position = p.position; dioramaView.target = p.target; dioramaView.fov = fov;
+  const flat = backdropFlat(p.position, p.target, fov, FLOOR_Y);
+  for (let i = 0; i < flat.bands.length; i++) {
+    const h = app.nodes?.get(`backdrop-${i}`);
+    if (!h) continue;
+    h.setPosition(flat.x, flat.bands[i]!.y, flat.z);
+    h.setScale([BACKDROP_WIDTH, flat.bands[i]!.height, 1]);
+  }
   if (reducedMotion) return;
   const band = screenY([px, py + 0.4, pz], p.position, p.target, fov);
   if (band === null || Math.abs(band - lastBand) < 0.004) return;
