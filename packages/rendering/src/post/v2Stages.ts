@@ -1474,6 +1474,12 @@ export function runV2LdrTail(
   const bindLut = (g: WebGL2RenderingContext, prog: WebGLProgram): void => {
     g.activeTexture(g.TEXTURE1);
     g.bindTexture(g.TEXTURE_3D, lut?.texture ?? state.identityLut);
+    // GU47 phase 2 (receipt effects-lut, LUT frame all black): the forward pass
+    // leaves material sampler objects bound on low units (webgl2/Samplers.ts);
+    // a mipmapped one overrides the LUT's LINEAR filter, the mip-less
+    // TEXTURE_3D is then incomplete and every fetch returns black. The
+    // identity LUT is never fetched (u_hasLut 0), so only LUT frames change.
+    g.bindSampler(1, null);
     g.uniform1i(g.getUniformLocation(prog, "u_lut3d"), 1);
     g.uniform1i(g.getUniformLocation(prog, "u_hasLut"), lut ? 1 : 0);
     g.uniform1i(g.getUniformLocation(prog, "u_lutLattice"), lut ? 1 : 0);

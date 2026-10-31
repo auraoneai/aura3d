@@ -155,6 +155,21 @@ describe("renderer: S10b binds the uploaded LUT", () => {
     expect(postStagesRan()).toContain("S10b:display-grade:lut:fused-fxaa");
   });
 
+  it("the LUT draws clear the forward pass's sampler object on the LUT unit (receipt effects-lut: a bound mipmapped material sampler left the mip-less TEXTURE_3D incomplete and every fetch black)", () => {
+    for (const antiAliasing of ["off", "fxaa"] as const) {
+      const rec = recordingGl();
+      const host = fakeHost(rec.gl);
+      runV2HdrStages(host, fakeTarget(), BASE, CAMERA);
+      // The forward pass leaves material samplers bound (webgl2/Samplers.ts) on low units.
+      rec.gl.bindSampler(0, { materialSampler: 0 } as never);
+      rec.gl.bindSampler(1, { materialSampler: 1 } as never);
+      runV2LdrTail(host, fakeTarget("rgba8"), { ...BASE, antiAliasing, lut: lutBag } as never, undefined);
+      const lutDraw = rec.draws.find((d) => d.uniforms.u_hasLut?.[0] === 1)!;
+      expect(lutDraw, antiAliasing).toBeDefined();
+      expect(lutDraw.samplersOn3dUnits[1], antiAliasing).toBeNull();
+    }
+  });
+
   it("a pending or failed bag binds the identity LUT and records why", () => {
     const rec = recordingGl();
     const host = fakeHost(rec.gl);
