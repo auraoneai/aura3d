@@ -196,7 +196,7 @@ describe("serpentine-sky-run verge dressing (SSR-11)", () => {
     const runtime = world.bind(app as never);
     runtime.update(createRun(), 1 / 60, 1, 16 / 9);
     expect(counts.get("verge-lanterns")).toBe(VERGE_POSTS);
-    expect(counts.get("verge-flags")).toBe(VERGE_POSTS * 4);
+    expect(counts.get("verge-flags")).toBe(VERGE_POSTS * 9); // GU47 phase 3: 4 flags + 1 post + 4 cord segments per post
     expect(VERGE_SPACING).toBe(18);
     expect(VERGE_POSTS).toBeGreaterThanOrEqual(12);
   });

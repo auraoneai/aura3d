@@ -84,12 +84,13 @@ export const STAGE_LOOK: readonly StageLook[] = [
   {
     // GU47 phase 2: exposure 1.06 -> 1.4 and sun 2.2 -> 2.6 (after capture mean 109.6, band 140-170). The lifted haze, horizon
     // and cloud sea of the first tune were reverted: they read as fog over the track.
+    // GU47 phase 3: upper sky, horizon, cloud sea and fog lifted one step (still dusty copper; capture mean 130, band 140-170).
     id: "copper", stage: "TRAFFIC", timeOfDay: "sun 5 deg, dusty copper haze",
     sun: { elevationDeg: 5, azimuthDeg: -6, color: "#ea8c54", intensity: 2.6, disc: "#ffd8b0", corona: 1.1 },
     fill: { color: "#6a5ab8", intensity: 0.6 }, hemisphere: { sky: "#c89070", ground: "#5a3424", intensity: 0.6 }, environmentIntensity: 0.55,
-    sky: { zenith: "#2c3a5c", upper: "#7a6a6c", horizon: "#c87a52", band: "#eaa272", stars: 0.05, moon: 0 },
-    cloud: { lit: "#eab284", mid: "#b87a52", dark: "#94603e" },
-    fog: { color: "#b8826a", near: 380, far: 1400 },
+    sky: { zenith: "#2c3a5c", upper: "#8e7470", horizon: "#d4865a", band: "#eeac7a", stars: 0.05, moon: 0 },
+    cloud: { lit: "#f2bc8c", mid: "#c6865a", dark: "#a06a44" },
+    fog: { color: "#c48c70", near: 380, far: 1400 },
     road: { pearl: "#efe2d8", jade: "#78c8b0", spine: "#e89a40", belly: "#4a3048" },
     exposure: 1.4, bloom: { intensity: 0.45, threshold: 0.85 }, grade: { temperature: 0.14, tint: -0.02, saturation: 1.02, contrast: 1.08 },
     godRays: true, weather: "clear"
