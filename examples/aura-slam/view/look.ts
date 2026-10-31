@@ -158,11 +158,11 @@ const NIGHT_KEY: VenueSun = { elevationDeg: 58, azimuthDeg: 180, color: FLOOD_CO
 export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
   hard: {
     id: "hard", city: "New York", timeOfDay: "floodlit night (21:30), cold-white floods on navy acrylic",
-    hdri: "cobblestone_street_night", hdriSize: "1k", environmentIntensity: 0.28, environmentRotationDeg: 0, background: "hdri",
+    hdri: "cobblestone_street_night", hdriSize: "1k", environmentIntensity: 0.5, environmentRotationDeg: 0, background: "hdri",
     sun: null, nightKey: NIGHT_KEY,
     floodlights: FLOODLIGHTS,
     fog: { color: "#0b1426", density: 0.006, volumetricAtHigh: false, lightCones: 4 },
-    grade: { preset: "arena-fight", exposure: 1.3, contrast: 1.18, saturation: 1.06, temperature: -0.06, tint: 0, bloom: { intensity: 0.22, threshold: 0.92 }, vignette: 0.2, lut: "slam-hard", lutIntensity: 0.7 },
+    grade: { preset: "arena-fight", exposure: 1.3, contrast: 1.24, saturation: 1.1, temperature: -0.06, tint: 0, bloom: { intensity: 0.32, threshold: 0.85 }, vignette: 0.26, lut: "slam-hard", lutIntensity: 0.7 },
     signature: { burst: "hard-skid", burstColor: particle("hard"), markColor: "#c9d6e3", markOpacity: 0.42, markLifetime: 9 },
     crowd: true, wind: 0
   },
@@ -208,7 +208,7 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
   },
   moon: {
     id: "moon", city: "The Moon", timeOfDay: "lunar day, one hard sun on grey regolith, Earth in view",
-    hdri: "deep_space_starfield", hdriSize: "2k", environmentIntensity: 0.14, environmentRotationDeg: 0, background: "hdri",
+    hdri: "deep_space_starfield", hdriSize: "2k", environmentIntensity: 0.22, environmentRotationDeg: 0, background: "hdri",
     sun: { elevationDeg: 25, azimuthDeg: 60, color: "#fff6e8", intensity: 7, lightSize: 0.05, colorTemperatureK: 5600 },
     floodlights: [],
     fog: null,

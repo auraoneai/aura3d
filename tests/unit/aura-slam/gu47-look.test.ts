@@ -213,7 +213,7 @@ describe("GU47 TT-E2 / TT-P1: the runtime venue plan", () => {
     expect(log).toContain("output cinematic-film agx");
     log.length = 0;
     applyVenueRuntime(app, venueRuntimePlan(VENUE_LOOKS.moon));
-    expect(log).toContain("env /hdri/deep_space_starfield_1k.hdr 0.14");
+    expect(log).toContain("env /hdri/deep_space_starfield_1k.hdr 0.22");
     expect(log).toContain("fog none");
     log.length = 0;
     applyVenueRuntime(app, venueRuntimePlan(VENUE_LOOKS.hard));

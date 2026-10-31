@@ -14,11 +14,11 @@ const flat = (nodes: Node[] = []): Node[] => nodes.flatMap((n) => [n, ...flat(n.
 const nodesOf = (venue: string, look?: "original") => flat((buildTennisScene(createPoseRig(), { venue, look }).toJSON() as unknown as { nodes: Node[] }).nodes);
 
 describe("GU47 TT-M1: hero court surfaces", () => {
-  it("acrylic courts (hard, desert, beach) carry a 0.35 clearcoat and a grain normal", () => {
+  it("acrylic courts (hard, desert, beach) carry a clearcoat (0.35; the floodlit hard court 0.6, phase 3) and a grain normal", () => {
     for (const venue of ["hard", "desert", "beach"]) {
       expect(VENUE_SURFACE[venue]).toBe("acrylic");
       const court = surfaceMaterial(venue, "court");
-      expect(court.clearcoat, venue).toBe(0.35);
+      expect(court.clearcoat, venue).toBe(venue === "hard" ? 0.6 : 0.35);
       expect(court.normal).toBeDefined();
       expect(court.color).toBe(VENUE_PALETTES[venue]!.court);
     }

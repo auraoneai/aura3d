@@ -44,7 +44,7 @@ const grain = (kind: SurfaceKind) => {
  * court is a cobalt acrylic inside a pale regolith apron on a darker charcoal plain: three clear value steps.
  */
 export const WORLD_TOUR_PALETTE: Readonly<Record<string, Partial<Record<CourtPart, string>>>> = {
-  moon: { court: "#2c5f96", alley: "#244e7c", apron: "#9a9ea3", ground: "#2f3237" }
+  moon: { court: "#2c5f96", alley: "#244e7c", apron: "#9fa3a8", ground: "#44484e" }
 };
 
 /** The material of one court part at a venue (colours from the venue palette, properties from its surface family). */
@@ -59,7 +59,11 @@ export function surfaceMaterial(venue: string | null | undefined, part: CourtPar
   if (part === "ground") return kind === "regolith" ? material.pbr({ color, roughness: 0.98, normal: grain(kind) }) : material.pbr({ color, roughness: 0.94 });
   switch (kind) {
     case "acrylic":
-      return material.pbr({ color, roughness: part === "apron" ? 0.7 : 0.62, clearcoat: 0.35, clearcoatRoughness: 0.35, normal: grain(kind) });
+      // GU47 phase 3 (rubric: no environment reflections): the floodlit New York acrylic gets a glossier clearcoat so the floods
+      // and the night sky glint on the court; the day venues keep the panel-verified 0.35 / 0.35.
+      return key === "hard"
+        ? material.pbr({ color, roughness: part === "apron" ? 0.66 : 0.56, clearcoat: 0.6, clearcoatRoughness: 0.16, normal: grain(kind) })
+        : material.pbr({ color, roughness: part === "apron" ? 0.7 : 0.62, clearcoat: 0.35, clearcoatRoughness: 0.35, normal: grain(kind) });
     case "turf":
       return material.pbr({ color, roughness: 0.9, sheen: 0.6, sheenRoughness: 0.65, sheenColor: "#c9e6a8", normal: grain(kind) });
     case "clay":
