@@ -105,7 +105,7 @@ export function buildGolferNodes(fit: GolferFit): any[] {
       .cylinder({
         name: "golfer-shadow",
         size: [1, 0.01, 1],
-        material: material.pbr({ color: "#000000", roughness: 1, opacity: 0.4 })
+        material: material.pbr({ color: "#02040a", roughness: 1, opacity: 0.22 })
       })
       .runtime(rt("golfer-shadow")),
     primitives
@@ -408,7 +408,7 @@ export function poseGolfer(
     // GU47 phase 3: +0.07 m clears the tee deck (+0.03..0.032) and the green disc (+0.065); at +0.015 the blob sat inside
     // the tee box and the golfer had no contact shadow on the tee (rubric: "characters float on the tee box")
     .setPosition(shadowW[0], stanceGround + 0.07, shadowW[2])
-    .setScale([0.9, 1, 0.8])
+    .setScale([0.72, 1, 0.6])
     .setVisible(true);
   const atAddress = phase === "address" || phase === "idle" || phase === "putt" || phase === "putt-address";
   rig.ring
