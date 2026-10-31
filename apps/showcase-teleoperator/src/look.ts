@@ -185,7 +185,7 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     fog: { color: "#3c4a54", density: 0.0018, heightDensity: 0.0012, heightFalloff: 0, heightReference: 36, start: 10, maxOpacity: 0.6, sunInscatter: 0 },
     marine: { base: 36, top: 60, color: "#3d3833", opacity: 0.55, reach: 220 },
     output: { toneMapping: "aces", fallback: "aces", exposure: 1.3 },
-    bloom: { intensity: 0.55, threshold: 0.72, radius: 0.55 },
+    bloom: { intensity: 0.7, threshold: 0.72, radius: 0.55 },
     grade: { contrast: 1.25, saturation: 1.08, temperature: 0.08, tint: 0 },
     vignette: 0.22,
     godRays: null,
