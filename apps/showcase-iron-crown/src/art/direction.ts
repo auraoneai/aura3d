@@ -52,7 +52,8 @@ export default defineArtDirection({
     fill: "ibl",
     // Two back rims in the fighters' colours, plus Neo-Tokyo's two rect panels.
     practicals: 4,
-    environment: { hdri: "warm_bar", background: "enclosed" },
+    // Phase 3: the Crown lights with the neutral studio HDRI (warm_bar turned the cyan gi green under the blind panel).
+    environment: { hdri: "studio_small_08", background: "enclosed" },
     exposureEV: 0
   },
   framing: { rig: "fighting", subjectHeightFraction: [0.2, 0.3], fovDeg: [40, 45], mobile: "both" },
