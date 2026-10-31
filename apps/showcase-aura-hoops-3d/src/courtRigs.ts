@@ -780,7 +780,7 @@ export function courtRibNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
  * GU47 phase 4 (rubric environment_world / composition): the city around the street courts. Rucker's identity row is
  * "brick walk-ups behind a 4 m chain-link fence" and Athens sits among pale apartment blocks, but both drew a flat
  * HDRI sky over the top third of every chase frame (the 26 m skyline GLB at -56 m never showed in a capture). A ring of
- * walk-up blocks 46-60 m out from the court centre (one instanced draw) and their windows (one instanced draw: lit
+ * walk-up blocks 72-94 m out from the court centre (one instanced draw) and their windows (one instanced draw: lit
  * tungsten at Rucker's blue hour, dark glass reflecting the noon sky at Athens). Presentation only: nothing collides.
  */
 export const COURT_BACKDROP: Partial<Readonly<Record<CourtId, { readonly wall: AuraColor; readonly window: AuraColor; readonly lit: boolean; readonly litFraction: number; readonly seed: number }>>> = {
@@ -804,27 +804,31 @@ export function courtBackdropLayout(id: CourtId): { readonly blocks: BackdropTra
   const cz = 4;
   let angle = 0;
   while (angle < Math.PI * 2 - 0.05) {
-    const radius = 46 + rnd() * 14;
-    const width = 11 + rnd() * 6;
-    const floors = 4 + Math.floor(rnd() * 3);
+    // GU47 phase 4 round 3: 72-94 m out (at 46-60 m in g07p4-r2 the blocks filled the whole top of the chase frame and
+    // read as a walled yard), 4-9 storeys so the roofline steps and sky shows between, 1.5-5 m gaps, a cornice per block.
+    const radius = 72 + rnd() * 22;
+    const width = 12 + rnd() * 8;
+    const floors = 4 + Math.floor(rnd() * 6);
     const height = floors * 3.2 + 1.2;
-    const depth = 12;
-    const step = (width + 0.6) / radius;
+    const depth = 14;
+    const gap = 1.5 + rnd() * 3.5;
+    const step = (width + gap) / radius;
     const a = angle + step / 2;
     // the block's front face points at the court centre
     const dx = Math.sin(a), dz = Math.cos(a);
     const yaw = a;
     const cx = dx * (radius + depth / 2), czz = cz + dz * (radius + depth / 2);
     blocks.push({ position: [cx, height / 2, czz], rotation: [0, yaw, 0], scale: [width, height, depth] });
-    const cols = Math.max(2, Math.floor((width - 2) / 2.4));
+    blocks.push({ position: [dx * (radius + depth / 2 - 0.35), height + 0.3, cz + dz * (radius + depth / 2 - 0.35)], rotation: [0, yaw, 0], scale: [width + 0.7, 0.6, depth + 0.7] });
+    const cols = Math.max(3, Math.floor((width - 1.6) / 2));
     for (let f = 0; f < floors; f++) {
       for (let c = 0; c < cols; c++) {
         if (rnd() > spec.litFraction) continue;
-        const u = (c - (cols - 1) / 2) * 2.4;
+        const u = (c - (cols - 1) / 2) * 2;
         // along the face: the tangent is (cos a, -sin a)
         const fx = dx * (radius - 0.06) + Math.cos(a) * u;
         const fz = cz + dz * (radius - 0.06) - Math.sin(a) * u;
-        windows.push({ position: [fx, 2.2 + f * 3.2, fz], rotation: [0, yaw, 0], scale: [1.1, 1.6, 0.1] });
+        windows.push({ position: [fx, 2.2 + f * 3.2, fz], rotation: [0, yaw, 0], scale: [0.95, 1.45, 0.1] });
       }
     }
     angle += step;
