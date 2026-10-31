@@ -190,7 +190,7 @@ export function marineHaze(look: SkyLook) {
 export function godRayNodes(look: SkyLook) {
   if (!look.godRays) return [];
   return [
-    effects.volumetricFog({ name: "grid god rays", density: look.godRays.density, color: look.godRays.color, intensity: 0.35, godRayDensity: look.godRays.density })
+    effects.volumetricFog({ name: "grid god rays", density: look.godRays.density, color: look.godRays.color, intensity: look.godRays.intensity, godRayDensity: look.godRays.density })
   ];
 }
 
@@ -200,8 +200,9 @@ export function godRayNodes(look: SkyLook) {
  */
 export function groundingNodes() {
   return [
-    effects.contactShadows({ length: 0.3, thickness: 0.06, steps: 12, intensity: 0.85, lights: "shadowed" }),
-    effects.ambientOcclusion({ name: "grid ao", intensity: 0.45, radius: 0.8, density: 0.6, color: "#05080d" })
+    // GU47 phase 3 round 3: longer, darker contact shadows and stronger AO (rubric: cars sit on the road without contact shadow).
+    effects.contactShadows({ length: 0.55, thickness: 0.08, steps: 12, intensity: 1, lights: "shadowed" }),
+    effects.ambientOcclusion({ name: "grid ao", intensity: 0.75, radius: 0.8, density: 0.6, color: "#05080d" })
   ];
 }
 
@@ -237,7 +238,9 @@ export function skyPost(look: SkyLook) {
   return [
     effects.bloom({ name: "grid bloom", intensity: look.bloom.intensity, threshold: look.bloom.threshold, radius: look.bloom.radius }),
     effects.colorGrade({ name: "grid grade", contrast: g.contrast, saturation: g.saturation, temperature: g.temperature, tint: g.tint }),
-    effects.vignette({ name: "grid vignette", intensity: look.vignette, smoothness: 0.65 })
+    effects.vignette({ name: "grid vignette", intensity: look.vignette, smoothness: 0.65 }),
+    // GU47 phase 3: sensor-feed grain (the operator watches a remote camera); the post tiers drop it below High.
+    effects.filmGrain({ name: "grid feed grain", intensity: look.grain, size: 1.4 })
   ] as const;
 }
 
@@ -322,7 +325,8 @@ type CarOverrides = readonly AuraModelMaterialOverride[];
  * to be whole-model swaps). The fare-lit teal strip needs a strip material on the pod: GU47(WP-36) pod retexture.
  */
 export const POD_MATERIALS: CarOverrides = [
-  { target: "veh-body", color: "#eef1f4", colorMode: "replace", roughness: 0.32, metallic: 0.12, clearcoat: 1, clearcoatRoughness: 0.08 },
+  // GU47 phase 3 round 3: glossier pearl (roughness 0.32 -> 0.2, metallic 0.12 -> 0.28, a hair darker) so the IBL reads on the body (rubric: "matte clay").
+  { target: "veh-body", color: "#e4e8ec", colorMode: "replace", roughness: 0.2, metallic: 0.28, clearcoat: 1, clearcoatRoughness: 0.06 },
   { target: "veh-glass", color: "#0d1218", colorMode: "replace", roughness: 0.06, metallic: 0.1, clearcoat: 1, clearcoatRoughness: 0.02 },
   { target: ["veh-trim", "veh-cabin"], color: "#14171c", colorMode: "replace", roughness: 0.38, metallic: 0.2 }
 ];
@@ -431,14 +435,15 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
 
   // 2. Skyline landmarks: a white pyramid tower, a glass obelisk and two suspension-bridge towers on the bay
   const pyramidMat = material.pbr({ color: "#f1f5f9", roughness: 0.42, metalness: 0.18 });
-  const glassMat = material.pbr({ color: "#38bdf8", roughness: 0.18, metalness: 0.72 });
+  // GU47 phase 3: slate bay glass (the saturated #38bdf8 read as a glowing glitch at the vanishing point; rubric environment).
+  const glassMat = material.pbr({ color: "#5b7d90", roughness: 0.22, metalness: 0.6 });
   const bridgeMat = material.pbr({ color: "#c0362c", roughness: 0.48, metalness: 0.35 });
   s.addMany([
     primitives.cylinder({ name: "sf-pyramid-spire", size: [22, 145, 22], material: pyramidMat }).position(44, 72, -210),
     primitives.box({ name: "sf-pyramid-wing", size: [28, 78, 8], material: pyramidMat }).position(44, 39, -210),
     primitives.sphere({ name: "sf-pyramid-crown", size: [3.2, 5.5, 3.2], material: material.emissive({ color: "#e0f2fe", emissive: "#3fd6c6", emissiveIntensity: 2.2 }) }).position(44, 145, -210),
     primitives.cylinder({ name: "sf-glass-obelisk", size: [22, 158, 22], material: glassMat }).position(-48, 79, -235),
-    primitives.cylinder({ name: "sf-glass-obelisk-crown", size: [18.5, 16, 18.5], material: material.emissive({ color: "#7dd3fc", emissive: "#38bdf8", emissiveIntensity: 1.65 }) }).position(-48, 162, -235),
+    primitives.cylinder({ name: "sf-glass-obelisk-crown", size: [18.5, 16, 18.5], material: material.emissive({ color: "#9fb8c6", emissive: "#7fa6bb", emissiveIntensity: 0.55 }) }).position(-48, 162, -235),
     instances.box({ name: "sf-bridge-towers", size: [3.5, 118, 3.5], material: bridgeMat, transforms: placed([[-96, 59, -315], [-78, 59, -315], [78, 59, -315], [96, 59, -315]]) }),
     instances.box({ name: "sf-bridge-struts", size: [21, 3.2, 3.8], material: bridgeMat, transforms: placed([[-87, 108, -315], [-87, 78, -315], [87, 108, -315]]) }),
     primitives.box({ name: "sf-bridge-deck", size: [260, 2.2, 12], material: bridgeMat }).position(0, 36, -315)

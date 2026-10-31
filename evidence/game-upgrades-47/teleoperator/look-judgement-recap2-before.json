@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/recap2/teleoperator/frames/gu47-recap2-teleoperator-1/teleoperator--golden--settle-60s.jpg",
+      "sha256": "2c053f6e37a840ea3dbb4b1bc0762aada84cd267b3653136e8c2f14e0a317716"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/recap2/teleoperator/frames/gu47-recap2-teleoperator-1/teleoperator--noon--settle-60s.jpg",
+      "sha256": "2a6b2984638c35eb8feea0af251901b2c8c6c93a8ece46222d021321e398ba6c"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/recap2/teleoperator/frames/gu47-recap2-teleoperator-2/teleoperator--fog--settle-60s.jpg",
+      "sha256": "897fa4bab2e3c413fe41a60f2255ae14dd4b54fa5a9a2530a16795c9000a1335"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/recap2/teleoperator/frames/gu47-recap2-teleoperator-2/teleoperator--night--settle-60s.jpg",
+      "sha256": "1a6635691dc50f8283a5b7454a00a53f01e80f6ee4ea36f9156855c8aa0a2e7f"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 3,
+    "ibl_reflections": 3.5,
+    "environment_world": 5,
+    "atmospheric_effects": 5,
+    "material_quality": 3.5,
+    "modeling_assets": 4.5,
+    "composition": 6,
+    "camera": 6.5,
+    "postprocessing": 4.5,
+    "ui_hud": 4
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The clear daytime frame is flat and evenly lit, with no readable low-sun key direction. The golden-hour look comes only from orange fog tint, not from directional warm light on surfaces. Building facades have almost no light falloff."
+    },
+    {
+      "category": "shadows",
+      "seen": "The clear frame shows no visible shadows cast by buildings, lamp posts, trees or vehicles. There are only faint dark patches on the road, so the white pod looks pasted onto the asphalt with weak contact grounding."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The pod and truck bodies show matte, diffuse-looking shading with little visible environment reflection. In the night frame the wet road shows only a couple of blurry light pools rather than streetlight or building reflections."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The city corridor of brick and stone buildings with overhead wires is coherent. However, the trees are lollipop spheres on sticks, a glowing blue tower glitches against the sky, and the streets beyond the first block are sparse."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "The orange dust and grey fog frames start the fog only meters from the camera, far denser than the 30–180 m target. The sky above stays dark grey or teal and unfogged, leaving a hard band where the fog stops at the building tops."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Building textures are low-resolution, smeared and stretched across facades, with visible triangulated distortion on the right-hand buildings. The pod is plain untextured white, and the asphalt is a uniform flat color."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The player pod is a simple low-poly capsule with plain red tail-light strips. The truck is the most detailed asset, while the trees and lamp posts are primitive. Background cars are basic."
+    },
+    {
+      "category": "composition",
+      "seen": "The pod is centered and fills roughly 20% of the frame, which fits the recipe. The truck awkwardly crops into the right edge, and the vanishing point is cluttered by the glowing tower."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits close behind and slightly above the pod with an FOV of about 60. Framing is consistent but static across frames."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "The night frame has headlight bloom and some warm grading. There is no visible film grain, vignette or cinematic tonemapping, and the day frame looks ungraded and washed."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The only HUD element is a circular minimap at bottom-left. There is no speed, position, timer or dispatch info, and the minimap lacks styling that matches the game's look."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

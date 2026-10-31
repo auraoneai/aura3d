@@ -81,7 +81,9 @@ export interface SkyLook {
   readonly grade: SkyRgbGrade;
   readonly vignette: number;
   /** GD-06: god rays down the avenue (dusk and fog only; High tier). */
-  readonly godRays: { readonly density: number; readonly color: string } | null;
+  readonly godRays: { readonly density: number; readonly color: string; readonly intensity: number } | null;
+  /** GU47 phase 3: sensor-feed grain (film-grain post stage), the feed noise of a remote camera. */
+  readonly grain: number;
   /** Street practicals: lamp globe emissive, sodium point lights on the nearest lamps, window glow, headlights. */
   readonly street: {
     readonly lampEmissive: number;
@@ -111,39 +113,52 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     id: "golden",
     label: "Marine dusk",
     timeOfDay: "dusk, sun 9 deg above the bay",
-    hdri: { id: "belfast_sunset_puresky", intensity: 0.6, rotationDeg: 160 },
-    sky: { model: "gradient", zenith: "#2b3a55", horizon: "#f2a65e", ground: "#1d222b", exponent: 1.6, horizonGlow: 0.55 },
-    sun: { elevationDeg: 9, azimuthDeg: 160, color: "#ffb070", intensity: 1.2, discSize: 0.035 },
+    hdri: { id: "belfast_sunset_puresky", intensity: 0.8, rotationDeg: 145 },
+    sky: { model: "gradient", zenith: "#2b3a55", horizon: "#f2a65e", ground: "#1d222b", exponent: 1.6, horizonGlow: 0.85 },
+    // GU47 phase 3 round 2: azimuth 160 -> 145 puts the low sun right of the avenue so the west facades catch the warm key
+    // (r1 rubric: the dusk read came only from the haze tint, not from warm light on surfaces).
+    sun: { elevationDeg: 9, azimuthDeg: 145, color: "#ffb070", intensity: 1.2, discSize: 0.035 },
     key: { color: "#ffb070", intensity: 2.2 },
-    hemisphere: { sky: "#5a6f86", ground: "#2c2420", intensity: 0.32 },
-    fog: { color: MARINE_FOG, density: 0.0025, heightDensity: 0.002, heightFalloff: 0, heightReference: 28, start: 8, maxOpacity: 0.82, sunInscatter: 0.35 },
+    hemisphere: { sky: "#6a7488", ground: "#3a2c22", intensity: 0.42 },
+    // GU47 phase 3: the orange murk started metres from the camera (rubric atmosphere 5): later start, less sun inscatter and weaker god rays.
+    fog: { color: MARINE_FOG, density: 0.0025, heightDensity: 0.002, heightFalloff: 0, heightReference: 28, start: 14, maxOpacity: 0.82, sunInscatter: 0.15 },
     marine: { base: 30, top: 48, color: "#4d6672", opacity: 0.88, reach: 240 },
-    output: { toneMapping: "agx", fallback: "aces", exposure: 1.0 },
+    // GU47 phase 3 round 2: r1 (murk removed) measured mean 60 / p95 134 (band 75-100, p95 >= 210): exposure 1.0 -> 1.3,
+    // IBL 0.6 -> 0.8, warmer hemisphere and grade, brighter horizon glow.
+    // GU47 phase 3 round 3: r2 still mean 67 / p95 144 at exposure 1.3: 1.3 -> 1.55.
+    output: { toneMapping: "agx", fallback: "aces", exposure: 1.55 },
     bloom: { intensity: 0.32, threshold: 0.82, radius: 0.5 },
-    grade: { contrast: 1.08, saturation: 1.05, temperature: 0.12, tint: -0.02 },
-    vignette: 0.18,
-    godRays: { density: 0.08, color: "#ffb878" },
-    street: { lampEmissive: 2.4, sodiumPoints: 2, sodiumPower: 900, lightPools: 0.35, windowGlow: 0.7, headlights: 1, asphalt: { color: "#1f242c", roughness: 0.78 }, ground: "#231d22", water: "#1e3a5f", drizzle: false },
+    grade: { contrast: 1.1, saturation: 1.1, temperature: 0.2, tint: -0.02 },
+    vignette: 0.26,
+    godRays: { density: 0.08, color: "#ffb878", intensity: 0.14 },
+    grain: 0.04,
+    street: { lampEmissive: 2.4, sodiumPoints: 2, sodiumPower: 900, lightPools: 0.35, windowGlow: 0.3, headlights: 1, asphalt: { color: "#1f242c", roughness: 0.78 }, ground: "#231d22", water: "#1e3a5f", drizzle: false },
     scanStrength: 1
   },
   noon: {
     id: "noon",
     label: "Sunny noon",
-    timeOfDay: "noon, sun 62 deg, marine layer burnt off to a high haze",
-    hdri: { id: "outdoor-midday", intensity: 0.85, rotationDeg: 200 },
+    timeOfDay: "noon, sun 62 deg over the west side, marine layer burnt off to a high haze",
+    hdri: { id: "outdoor-midday", intensity: 1.0, rotationDeg: 215 },
     sky: { model: "preetham", turbidity: 3, rayleigh: 1.2, mieCoefficient: 0.005, mieDirectionalG: 0.8, groundColor: "#3a4654" },
-    sun: { elevationDeg: 62, azimuthDeg: 200, color: "#fff4e2", intensity: 1, discSize: 0.03 },
+    // GU47 phase 3: azimuth 200 -> 215 (sun from the west side, not down the avenue) so the west blocks throw shadow bands
+    // across the street and the pod's shadow reads beside it (rubric shadows 3); elevation stays the PRD 62 deg.
+    sun: { elevationDeg: 62, azimuthDeg: 215, color: "#fff4e2", intensity: 1, discSize: 0.03 },
     key: { color: "#fff4e2", intensity: 3.0 },
     hemisphere: { sky: "#9cc8ec", ground: "#3a3f46", intensity: 0.45 },
     fog: { color: "#a9c3d6", density: 0.001, heightDensity: 0.0008, heightFalloff: 0, heightReference: 70, start: 30, maxOpacity: 0.45, sunInscatter: 0.1 },
     marine: { base: 70, top: 110, color: "#c4d3dc", opacity: 0.3, reach: 320 },
-    output: { toneMapping: "aces", fallback: "aces", exposure: 1.0 },
+    // GU47 phase 3: recap2 noon mean 84 (band 95-120): exposure 1.0 -> 1.12, IBL 0.85 -> 1.0.
+    // GU47 phase 3 round 3: r2 noon mean 92 at 1.12 -> 1.2.
+    output: { toneMapping: "aces", fallback: "aces", exposure: 1.2 },
     // GD-08: threshold 0.95 keeps the white pod out of the bloom (no halo).
     bloom: { intensity: 0.18, threshold: 0.95, radius: 0.35 },
-    grade: { contrast: 1.05, saturation: 1.06, temperature: 0.02, tint: 0 },
-    vignette: 0.14,
+    grade: { contrast: 1.12, saturation: 1.06, temperature: 0.02, tint: 0 },
+    vignette: 0.2,
     godRays: null,
-    street: { lampEmissive: 0.25, sodiumPoints: 0, sodiumPower: 0, lightPools: 0, windowGlow: 0, headlights: 0, asphalt: { color: "#252a32", roughness: 0.82 }, ground: "#1e293b", water: "#0c4a6e", drizzle: false },
+    grain: 0.03,
+    // GU47 phase 3 round 2: noon asphalt #252a32 -> #3a4049: the road is half the frame (r1 mean 86, band 95-120) and the key shadows need a lighter ground to read.
+    street: { lampEmissive: 0.25, sodiumPoints: 0, sodiumPower: 0, lightPools: 0, windowGlow: 0, headlights: 0, asphalt: { color: "#3a4049", roughness: 0.82 }, ground: "#1e293b", water: "#0c4a6e", drizzle: false },
     scanStrength: 0.75
   },
   fog: {
@@ -155,13 +170,18 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     sun: { elevationDeg: 38, azimuthDeg: 170, color: "#dfe8ee", intensity: 0, discSize: 0.03 },
     key: { color: "#dfe8ee", intensity: 0.8 },
     hemisphere: { sky: "#b8c6ce", ground: "#4a565d", intensity: 0.55 },
-    fog: { color: MARINE_FOG, density: 0.006, heightDensity: 0.0025, heightFalloff: 0, heightReference: 12, start: 6, maxOpacity: 0.96, sunInscatter: 0.1 },
+    // GU47 phase 3 round 4: the panel frames (recap2) predate the 4.7.0 engine fix 16e85748f/b2edb52ed, after which a
+    // volumetric-fog node no longer acts as a pale exp2 scene fog; the bank they showed came from that node. Every 4.7.0
+    // build (r1-r3) measured mean 72 (band 105-135) with the slate #5f7f8c engine fog, which darkens instead of whitening.
+    // The engine fog now carries the bank in a pale marine grey: 0.0075 from 8 m (still < 0.3 at 40 m), exposure 1.15.
+    fog: { color: "#a7b7bf", density: 0.0075, heightDensity: 0.0025, heightFalloff: 0, heightReference: 12, start: 8, maxOpacity: 0.96, sunInscatter: 0.1 },
     marine: { base: 12, top: 26, color: "#6c8794", opacity: 0.97, reach: 160 },
-    output: { toneMapping: "aces", fallback: "aces", exposure: 1.05 },
+    output: { toneMapping: "aces", fallback: "aces", exposure: 1.15 },
     bloom: { intensity: 0.12, threshold: 0.9, radius: 0.4 },
     grade: { contrast: 0.96, saturation: 0.82, temperature: -0.06, tint: 0 },
-    vignette: 0.16,
-    godRays: { density: 0.08, color: "#dfe8ee" },
+    vignette: 0.22,
+    godRays: { density: 0.08, color: "#dfe8ee", intensity: 0.35 },
+    grain: 0.05,
     street: { lampEmissive: 1.6, sodiumPoints: 2, sodiumPower: 600, lightPools: 0.2, windowGlow: 0.35, headlights: 1, asphalt: { color: "#272c33", roughness: 0.7 }, ground: "#334155", water: "#3b5266", drizzle: false },
     scanStrength: 0.9
   },
@@ -169,6 +189,9 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     id: "night",
     label: "Sodium night",
     timeOfDay: "night, moon behind a thin marine layer lit sodium from below",
+    // GU47 phase 3 round 3: r1/r2 cut the facade glow and the IBL; the blocks stayed sodium-orange (the sodium points light
+    // them) and the frame fell under its band (r2 mean 38, p95 118), so IBL 0.45, window glow 1 and vignette 0.22 are back
+    // (panel-verified); kept: exposure/contrast 1.18, headlights 1.4 -> 1.8 (lamp 3.0 and bloom 0.55 stay the PRD values).
     hdri: { id: "cobblestone_street_night", intensity: 0.45, rotationDeg: 210 },
     sky: {
       model: "gradient", zenith: "#060a14", horizon: "#1b2638", ground: "#0b0e14", exponent: 1.8, horizonGlow: 0.2,
@@ -180,12 +203,14 @@ export const SKY_LOOKS: Readonly<Record<SkyId, SkyLook>> = {
     hemisphere: { sky: "#22324a", ground: "#3a2a1c", intensity: 0.3 },
     fog: { color: "#3c4a54", density: 0.0018, heightDensity: 0.0012, heightFalloff: 0, heightReference: 36, start: 10, maxOpacity: 0.6, sunInscatter: 0 },
     marine: { base: 36, top: 60, color: "#3d3833", opacity: 0.55, reach: 220 },
-    output: { toneMapping: "aces", fallback: "aces", exposure: 1.1 },
+    // GU47 phase 3: recap2 night p95 141 (band >= 180): exposure 1.1 -> 1.18, contrast 1.1 -> 1.18 lift the lamp highlights.
+    output: { toneMapping: "aces", fallback: "aces", exposure: 1.18 },
     bloom: { intensity: 0.55, threshold: 0.72, radius: 0.55 },
-    grade: { contrast: 1.1, saturation: 1.08, temperature: 0.08, tint: 0 },
+    grade: { contrast: 1.18, saturation: 1.08, temperature: 0.08, tint: 0 },
     vignette: 0.22,
     godRays: null,
-    street: { lampEmissive: 3.0, sodiumPoints: 3, sodiumPower: 1400, lightPools: 0.6, windowGlow: 1, headlights: 1.4, asphalt: { color: "#15191f", roughness: 0.22 }, ground: "#0b0f19", water: "#081c2e", drizzle: true },
+    grain: 0.06,
+    street: { lampEmissive: 3.0, sodiumPoints: 3, sodiumPower: 1400, lightPools: 0.6, windowGlow: 1, headlights: 1.8, asphalt: { color: "#15191f", roughness: 0.22 }, ground: "#0b0f19", water: "#081c2e", drizzle: true },
     scanStrength: 1.25
   }
 };
@@ -220,7 +245,8 @@ export function hazeAt(look: SkyLook, distance: number): number {
 }
 
 /** GD-01: one shadowed key on every sky, 2048 map, 3 cascades, PCSS. */
-export const KEY_SHADOW = { mapSize: 2048, cascades: 3, filter: "pcss", maxDistance: 120, softness: 1 } as const;
+/** GU47 phase 3 round 3: softness 1 -> 0.6 (crisper building shadow edges on the street). */
+export const KEY_SHADOW = { mapSize: 2048, cascades: 3, filter: "pcss", maxDistance: 120, softness: 0.6 } as const;
 
 /** Next sky in the `T` key cycle. */
 export const nextSky = (sky: SkyId): SkyId => SKY_ORDER[(SKY_ORDER.indexOf(sky) + 1) % SKY_ORDER.length]!;

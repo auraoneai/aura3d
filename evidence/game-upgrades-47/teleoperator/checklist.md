@@ -29,3 +29,19 @@ judges) are phase 2 on the remote runner (software WebGL2). Row status and commi
 | GD-19 | side cells change >= 6 at noon; sign text equals HUD; within GD-20 | partial: sign text = HUD cross street (unit test), parked cars, catenary; Meshy street furniture WP-36; side cells phase 2 |
 | GD-20 | chase <= 480 (night <= 560); textureBytes <= 64 MB; JS +25 KB max | phase 2 (measured); caps in code |
 | GD-21 | dusk 75-100, noon 95-120, fog 105-135, night 40-65; clip <= 0.01; every category >= 7; same_game false >= 0.8 vs all 7 racers; 0 warnings | boot sky done; targets: E-I handoff; captures and judges: phase 2 |
+
+## Phase 3 (4.7.1), 2026-10-31
+
+Measured on the remote runner (software WebGL2). Steady rows are in `luma-after.json`, and the rubric is in `look-judgement.json`. Details: lane report "Phase 3 (4.7.1)".
+
+| Row | Phase-3 status |
+|---|---|
+| GD-01 | dusk mean 70, p95 145 (band 75-100 and >= 210: **not met**); noon mean 92.7 (band 95-120: **not met**, 2-3 short); clip 0 on every sky |
+| GD-02 | night mean 58, darkFrac 0.21 (**met**); p95 141 (>= 180: **not met**; PRD lamp 3.0 and bloom 0.55 kept) |
+| GD-05 | fog mean 75 (band 105-135: **not met**). The 4.7.0 engine stopped turning the god-ray node into scene fog, and the bank is now a pale engine fog that stays < 0.3 at 40 m |
+| GD-08 | noon car crop p95 212, clip 0 (**met**); the four sky means differ pairwise by >= 10 (70 / 93 / 75 / 58: dusk vs fog 5, **not met**) |
+| GD-10 | contact shadows 0.55 m at intensity 1, AO 0.75, key softness 0.6; draws 456-467 (<= 480 chase / 560 night) |
+| GD-11 | car crop: noon mean 122, spread 193 (**met**); pearl pod roughness 0.2, metallic 0.28 |
+| GD-21 | every category >= 7: **not met** (minimum 4; ui_hud 7.5; material and modeling blocked on WP-36). same_game false >= 0.8: heatsink-port 0.728 and last-train-port 0.791 (**not met**; the tram livery is a WP-36 retexture) |
+| screens | final screens and card frames retaken (runs g04p3-r3-3/-4/-5); `screens-fresh` cleared |
+| game-checks | 0 errors; 8 warnings, all luma-band, bands not widened |
