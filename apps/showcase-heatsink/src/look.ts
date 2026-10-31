@@ -179,8 +179,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     fog: { color: "#4a4670", density: 0.014 },
     // GU47 phase 2: the after capture measured mean 73.3 (band 45-70, software WebGL2), mostly the bright pre-dawn sky.
     // GU47 phase 3: round 1 measured mean 98 at -0.25 (software WebGL2, sun glare in the old backward title pose).
-    // Round 2: mean 45.5 at -0.7 and 35 at -1.2 (60 s, software WebGL2), against the 45-70 band.
-    exposureEv: -0.45,
+    // Round 2: mean 45.5 at -0.7 and 35 at -1.2; round 9 (denser violet fog) 44.7 at -0.45 (60 s, software WebGL2), band 45-70.
+    exposureEv: -0.3,
     grade: { contrast: 1.1, saturation: 1.08, temperature: -0.12, tint: 0.12 },
     lutIntensity: 0.5,
     bloom: { intensity: 0.55, threshold: 0.8, color: "#ff9a5a" },
