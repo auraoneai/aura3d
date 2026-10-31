@@ -21,7 +21,7 @@ const WATER_VERT_GLSL = /* glsl */ `#version 300 es
 precision highp float;
 // prd10.water — marker for the RenderDevice shader contract.
 in vec3 a_position;       // unit quad grid, xz = metres, y = 0
-in float a_shore;         // baked shore distance (metres) — Low path only
+in float a_shore;         // baked signed shore distance (metres): Low path depth; < 0 = outside the shape
 uniform mat4 u_viewProjection;
 uniform vec3 u_worldOffset;   // grid origin in world space
 uniform float u_waterHeight;  // rest surface Y
@@ -59,6 +59,7 @@ out vec4 o_color;
 ${a3d_prd10_world_light_fallback.glsl}
 ${a3d_prd10_water.glsl}
 void main() {
+  if (v_shore < 0.0) discard; // outside the polygon / circle shape (the grid is the shape's bounding square)
   vec3 n = a3dWaterNormal(v_waveNormal, v_xz, u_time);
   vec3 V = normalize(u_cameraPosition - v_worldPosition);
   float F = a3dWaterFresnel(n, V);
@@ -119,6 +120,7 @@ ${a3d_prd10_water.glsl}
 uniform vec3 u_surfaceColor;   // gradient top (#2a8fb0)
 uniform vec3 u_deepGradient;   // gradient bottom (#021018)
 void main() {
+  if (v_shore < 0.0) discard; // outside the polygon / circle shape (the grid is the shape's bounding square)
   vec3 n = a3dWaterNormal(v_waveNormal, v_xz, u_time);
   vec3 V = normalize(v_worldPosition - u_cameraPosition); // view ray upward
   float cosI = clamp(dot(-V, -n), 0.0, 1.0);
