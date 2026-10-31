@@ -1,5 +1,13 @@
 # Thermal Drift: final screenshots
 
+**Retaken 2026-10-31 (GU47 phase 3, lane g03, 4.7.1)** on the GU47 foundry look (now the default; `?look=original` is the
+4.6.2 look). Remote Azure ACR Task, headless Chromium, **software WebGL2**. Tool: `tests/browser/audit-fix/heatsink.spec.ts`,
+decoded with `evidence/thermal-drift/audit-fix/decode.mjs`. 1280 set from run `g03p3-r9-4`, 390 set from run `g03p3-r6-6`
+(same look; r9 adds only denser MEGACITY/VESPER fog and grain), card from run `g03p3-r8-1` shot `card-2x-b` (2.5 s after
+the default card moment, where the chase camera sat inside a span over the road), `card-1x` resized from it. The older
+notes below describe the 2026-10-29 set.
+
+
 Retaken on 2026-10-29 for audit row RH-05 (lane G03) from the rebuilt game on branch `audit-fix/g03`, which runs on the
 4.5.0 engine. Same file names and sizes as the 2026-10-25 set they replace.
 

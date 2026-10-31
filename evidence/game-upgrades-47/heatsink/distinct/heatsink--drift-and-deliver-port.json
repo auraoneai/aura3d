@@ -1,0 +1,50 @@
+{
+ "schema": "a3d-evidence-judge/1",
+ "mode": "sibling",
+ "generatedAt": "2026-10-31T16:59:43.514Z",
+ "kind": "MODEL judgement, not a human one",
+ "judge": {
+  "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+  "model": "claude-sonnet-5.5",
+  "seed": 20261023,
+  "trials": 48,
+  "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+  "framesA": [
+   "heatsink--default",
+   "heatsink--dustfall",
+   "heatsink--vesper"
+  ],
+  "framesB": [
+   "drift-and-deliver-port--bluehour",
+   "drift-and-deliver-port--default",
+   "drift-and-deliver-port--golden",
+   "drift-and-deliver-port--sunset"
+  ]
+ },
+ "prompt": {
+  "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+  "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+ },
+ "acceptance": {
+  "same_game": false,
+  "same_game_confidence_min": 0.8
+ },
+ "same_game": false,
+ "same_game_confidence": 0.9,
+ "summary": {
+  "trials": 48,
+  "valid": 48,
+  "differentGame": 48,
+  "sameGameYes": 0,
+  "differentRate": 1,
+  "ci95": [
+   0.9258973488472576,
+   0.9999999999999999
+  ],
+  "confidentDifferent": 48,
+  "confidentDifferentRate": 1,
+  "same_game": false,
+  "same_game_confidence": 0.9,
+  "passes": true
+ }
+}

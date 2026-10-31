@@ -337,6 +337,13 @@ test.describe("heatsink audit-fix capture", () => {
     await advance(page, 30);
     await page.waitForTimeout(40_000);
     await grab(page, "card", "card-2x");
+    // GU47 phase 3: two later candidates (the 30 s moment can put the chase camera inside a span over the road); the
+    // committed poster names the shot it used (evidence/thermal-drift/screens/final/README.md).
+    for (const shot of ["card-2x-b", "card-2x-c"]) {
+      await advance(page, 2.5);
+      await page.waitForTimeout(20_000);
+      await grab(page, "card", shot);
+    }
     await ctx.close();
   });
 

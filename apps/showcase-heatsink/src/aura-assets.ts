@@ -1078,7 +1078,7 @@ export const HEATSINK_ASSET_KEYS = Object.keys(definitions) as readonly (keyof t
 // GU47 WP-13 HS-03: the three circuit skies, from the E-A HDRI catalogue (1k copies served at /hdri/<id>_1k.hdr;
 // licences in public/hdri/ATTRIBUTION.md; sha256 of the committed files). Kept apart from the 26 models so HEATSINK_ASSET_KEYS stays the model list.
 const hdriDefinitions = {
-  heatsinkHdriRooftopNight: { type: "texture", format: "hdr", url: "/hdri/rooftop_night_1k.hdr", hash: "sha256-4c8820e1517cc5fea7acaaa9b7ac1c043a4584f8b6042b6d6c72f8764abb255e", sizeBytes: 1629654 },
+  heatsinkHdriKloppenheim02: { type: "texture", format: "hdr", url: "/hdri/kloppenheim_02_1k.hdr", hash: "sha256-c122eb29c259d8c2ef0093c20130faa67ea216f5a1407c409ee4fc97cd5ba002", sizeBytes: 1744238 },
   heatsinkHdriIndustrialSunset: { type: "texture", format: "hdr", url: "/hdri/industrial_sunset_puresky_1k.hdr", hash: "sha256-988320101df317784b2a869b40b0e23519726bf8827def4ed8eef806df2601cd", sizeBytes: 1180675 },
   heatsinkHdriSpruitSunrise: { type: "texture", format: "hdr", url: "/hdri/spruit_sunrise_1k.hdr", hash: "sha256-3ac30651cde16d2a80521273ec917ba3feca172ea4b842335431201879f39593", sizeBytes: 1527279 }
 } satisfies Record<string, AuraAssetDefinition>;
@@ -1105,8 +1105,8 @@ export const luts = defineAuraAssets(lutDefinitions);
 /** Mean of the asphalt roughness map (provenance.json): a material roughness factor of `target / mean` lands on `target`. */
 export const ASPHALT_ROUGHNESS_MEAN = 0.745;
 /** Circuit sky texture by catalogue id (src/look.ts `CircuitLook.hdri`). */
-export const HDRI_BY_ID: Readonly<Record<"rooftop_night" | "industrial_sunset_puresky" | "spruit_sunrise", AuraAssetRef<"texture">>> = {
-  rooftop_night: hdris.heatsinkHdriRooftopNight,
+export const HDRI_BY_ID: Readonly<Record<"kloppenheim_02" | "industrial_sunset_puresky" | "spruit_sunrise", AuraAssetRef<"texture">>> = {
+  kloppenheim_02: hdris.heatsinkHdriKloppenheim02,
   industrial_sunset_puresky: hdris.heatsinkHdriIndustrialSunset,
   spruit_sunrise: hdris.heatsinkHdriSpruitSunrise
 };

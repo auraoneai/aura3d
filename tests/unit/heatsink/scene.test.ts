@@ -20,8 +20,8 @@ describe("heatsink scene", () => {
     expect(JSON.stringify(snapshot.nodes)).not.toContain("night-city");
     expect(JSON.stringify(snapshot.nodes)).not.toContain("aura-look:");
     const skies = (id: keyof typeof CIRCUITS) => sceneOf(id).filter((n) => n.kind === "environment") as unknown as { environment: string; background: boolean; intensity: number; texture: { url: string } }[];
-    expect(skies("grand").map((e) => [e.environment, e.background, e.intensity, e.texture.url])).toEqual([["hdri", true, 0.55, "/hdri/rooftop_night_1k.hdr"]]);
-    expect(skies("dustfall").map((e) => [e.intensity, e.texture.url])).toEqual([[0.9, "/hdri/industrial_sunset_puresky_1k.hdr"]]);
+    expect(skies("grand").map((e) => [e.environment, e.background, e.intensity, e.texture.url])).toEqual([["hdri", true, 0.8, "/hdri/kloppenheim_02_1k.hdr"]]);
+    expect(skies("dustfall").map((e) => [e.intensity, e.texture.url])).toEqual([[1.1, "/hdri/industrial_sunset_puresky_1k.hdr"]]);
     expect(skies("vesper").map((e) => [e.intensity, e.texture.url])).toEqual([[0.7, "/hdri/spruit_sunrise_1k.hdr"]]);
   });
   it("has no backdrop wall, no horizon bands, and no point lights besides the HS-02 sodium lamps (HS-01, HS-03)", () => {
@@ -49,14 +49,14 @@ describe("heatsink scene", () => {
     expect(nodes.filter((n) => n.kind === "effect" && n.effect === "fog")).toHaveLength(1);
     expect(nodes.filter((n) => n.kind === "effect" && n.effect === "ambient-occlusion")).toHaveLength(1);
   });
-  it("authors the per-circuit fog, volumetric god rays on DUSTFALL only, and grain on MEGACITY only (HS-05, HS-12)", () => {
+  it("authors the per-circuit fog, volumetric god rays on DUSTFALL only, and grain on every circuit (HS-05, HS-12, GU47 phase 3)", () => {
     const effectsOf = (id: keyof typeof CIRCUITS, effect: string) => sceneOf(id).filter((n) => n.kind === "effect" && n.effect === effect) as unknown as Record<string, unknown>[];
-    expect(effectsOf("grand", "fog")[0]).toMatchObject({ color: "#2a1d14", density: 0.011 });
+    expect(effectsOf("grand", "fog")[0]).toMatchObject({ color: "#4a3a30", density: 0.016 });
     expect(effectsOf("dustfall", "fog")[0]).toMatchObject({ color: "#8a5a2e", density: 0.02 });
-    expect(effectsOf("vesper", "fog")[0]).toMatchObject({ color: "#2a2348", density: 0.008 });
+    expect(effectsOf("vesper", "fog")[0]).toMatchObject({ color: "#4a4670", density: 0.014 });
     expect((["grand", "dustfall", "vesper"] as const).map((id) => effectsOf(id, "volumetric-fog").length)).toEqual([0, 1, 0]);
     expect(effectsOf("dustfall", "volumetric-fog")[0]).toHaveProperty("godRayDensity");
-    expect((["grand", "dustfall", "vesper"] as const).map((id) => effectsOf(id, "film-grain").length)).toEqual([1, 0, 0]);
+    expect((["grand", "dustfall", "vesper"] as const).map((id) => effectsOf(id, "film-grain").length)).toEqual([1, 1, 1]);
     for (const id of ["grand", "dustfall", "vesper"] as const) {
       expect(effectsOf(id, "bloom")[0], id).toMatchObject({ intensity: 0.55, threshold: 0.8 });
       expect(effectsOf(id, "vignette")[0], id).toMatchObject({ intensity: 0.28 });

@@ -1,0 +1,84 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../g03/evidence/game-upgrades-47/heatsink/p3-r2/heatsink/frames/g03p3-r2-1/heatsink--foundry--settle-60s.jpg",
+      "sha256": "ab4490e11a3a1b85905806098f2962712e6ce3140cc5f0de52f965ce5ead696e"
+    },
+    {
+      "path": "../g03/evidence/game-upgrades-47/heatsink/p3-r2/heatsink/frames/g03p3-r2-2/heatsink--foundry-dustfall--settle-60s.jpg",
+      "sha256": "001fa6b11adc6b921256317447b82f7dfb24740e3cd8ae081bc65840e82c6ea7"
+    },
+    {
+      "path": "../g03/evidence/game-upgrades-47/heatsink/p3-r2/heatsink/frames/g03p3-r2-3/heatsink--foundry-vesper--settle-60s.jpg",
+      "sha256": "ad9a69f7d9ba3fd8ef954d40db92e65a8fd29b7a765fbe47c0cfdaa038396f44"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4.5,
+    "ibl_reflections": 5.5,
+    "environment_world": 5,
+    "atmospheric_effects": 6,
+    "material_quality": 5,
+    "modeling_assets": 6,
+    "composition": 5.5,
+    "camera": 5.5,
+    "postprocessing": 6,
+    "ui_hud": 4
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 1 has the strongest golden-hour mood: a warm haze and a bright backlit sky. Frame 2 is a flat overcast dusk where the buildings read as uniform burnt-orange slabs with no directional modeling. Frame 3 shifts to a cool blue hour, so the three presets are inconsistent with the warm recipe. No low 12° sun direction is legible on the vehicles."
+    },
+    {
+      "category": "shadows",
+      "seen": "The vehicles and the cylindrical pylon have almost no grounding contact shadows. The drones appear to float over the asphalt with no darkening beneath them, and the arch and towers cast no readable shadows across the road."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Wet-road reflections appear in frames 1 and 3, but they are noisy and smeared and only loosely match the objects above them. Frame 2 has a dry, matte road with no environment response. The vehicle bodies show little specular or env-map reflection."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The skyline is made of box towers with a repeated emissive window texture. Frame 3 adds very thin needle towers that look like stretched placeholders, plus a blurry billboard-like tree backdrop. The billboard screen is blank or low-detail, and the track borders are simple flat walls."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 1's haze washes out the distance nicely but almost to the point of fog-out. Frame 3 has a soft background blur and haze. Frame 2 has little depth fog, so the buildings sit flat against the sky. A few floating ember or bokeh particles appear in the foreground."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Surfaces are mostly flat albedo with little roughness variation. The red car, blue drone and pylon read as plastic. The window texture is a low-resolution repeating pattern, and the asphalt lacks grain or wear detail apart from the wet sheen."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The low-poly vehicles are chunky but stylistically coherent: a quad drone, a blue walker-drone and a red hover-car with glowing thrusters. Bevels are minimal, and the arch is built from simple blocky segments."
+    },
+    {
+      "category": "composition",
+      "seen": "The red car crowds the right third and the green drone and pylon crowd the left. The opponents are clustered in the center, so no clear hero subject sits at the recipe's 15–25% of frame. The arch does frame the vanishing point well."
+    },
+    {
+      "category": "camera",
+      "seen": "The low grid-level viewpoint with a moderate FOV reads as a start-line view, but the player vehicle is not visible as a chase subject. The horizon framing is identical across all three frames, so no dynamic chase offset is shown."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Vignetting, bloom on the thrusters and window lights, depth-of-field blur on the background in frames 1 and 3, and a slight grade are all present. Frame 2's grade is muddy and low-contrast. The cinematic-film intent is partially met."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The only HUD element is a translucent minimap in the top right on a dark panel that merges with a building edge. There is no speed, lap, position or countdown display at the start grid."
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}

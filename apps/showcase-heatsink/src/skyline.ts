@@ -11,6 +11,10 @@
 import { game, instances, material, type AuraNodeBuilder, type AuraSceneNode, type AuraTransformSpec } from "@aura3d/engine";
 import type { CircuitSpec, SkylineLayerSpec } from "./data";
 import type { CircuitLook } from "./look";
+import { skylineFacadeMaterial } from "./shaders";
+
+/** Window bay size per layer (metres; wider far away so a bay stays a few pixels wide). */
+export const SKYLINE_WINDOW_CELLS: readonly (readonly [number, number])[] = [[3.2, 3.6], [4.6, 5.2], [6.4, 7.2]];
 
 /** Ground level of the plain below the elevated road (the abyss floor's top). */
 export const SKYLINE_BASE_Y = -8.5;
@@ -52,7 +56,8 @@ export function skylineLayout(layer: SkylineLayerSpec, nearest: boolean): Skylin
     const [hMin, hMax] = layer.height;
     const [wMin, wMax] = layer.width;
     const height = spire ? hMin + (hMax - hMin) * (0.6 + 0.4 * next()) : hMin + (hMax - hMin) * next() * 0.85;
-    const width = spire ? Math.max(3, wMin * (0.25 + 0.2 * next())) : wMin + (wMax - wMin) * next();
+    // GU47 phase 3: spires at least 7 m wide (the panel read 3 m spires at 180-450 m as stray poles and broken slivers).
+    const width = spire ? Math.max(7, wMin * (0.4 + 0.25 * next())) : wMin + (wMax - wMin) * next();
     const distance = layer.distance * (0.94 + 0.12 * next());
     const rad = (angle * Math.PI) / 180;
     out.push({ x: Math.sin(rad) * distance, z: -Math.cos(rad) * distance, yaw: -rad, width, height, depth: spire ? width : width * (0.6 + 0.5 * next()), spire });
@@ -90,7 +95,7 @@ export function skylineNodes(circuit: CircuitSpec, look: CircuitLook): AuraNodeB
     const { bodies, seams } = skylineTransforms(skylineLayout(layer, index === 0));
     const flat = { castShadow: false, receiveShadow: false, frustumCulled: false } as const;
     out.push(
-      instances.box({ name: `td skyline ${index} bodies`, size: [1, 1, 1], material: material.pbr({ color: look.skyline.color, roughness: 0.95, metalness: 0.05 }), transforms: bodies, ...flat })
+      instances.box({ name: `td skyline ${index} bodies`, size: [1, 1, 1], material: skylineFacadeMaterial({ body: look.skyline.color, foot: look.skyline.foot, window: look.skyline.windows[0], window2: look.skyline.windows[1], cell: SKYLINE_WINDOW_CELLS[Math.min(index, SKYLINE_WINDOW_CELLS.length - 1)]!, lit: look.skyline.lit, glow: look.skyline.windowGlow - index * 0.5 }), transforms: bodies, ...flat })
         .runtime(game.runtimeNode(`td-skyline-${index}-bodies`)),
       instances.box({ name: `td skyline ${index} seams`, size: [1, 1, 1], material: material.emissive({ color: look.skyline.glow, emissive: look.skyline.glow, emissiveIntensity: 1.3 - index * 0.25 }), transforms: seams, ...flat })
         .runtime(game.runtimeNode(`td-skyline-${index}-seams`))

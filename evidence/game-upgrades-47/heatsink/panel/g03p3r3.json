@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "heatsink",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Player craft sits far off-centre at the right edge and fills a lot of the frame, partly crowding out the track; the bright sun bloom is a little blown out; the lower foreground is dark and grainy",
+     "Player craft is very large and crowds the right edge, partly clipped by the frame; sun hotspot blows out near the vehicle; sky is a slightly hazy flat grey; road grain is a bit noisy. Otherwise rich skyline, wet road reflections, warm rim light and good depth.",
+     "Large player craft sits off to the right and close to the camera, so it partly crowds the frame edge. The sun bloom near the horizon washes out the middle-right area a little. Road reflections are slightly noisy and grainy."
+    ]
+   },
+   {
+    "variant": "dustfall",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Orange tint is heavy and slightly muddy; the arch and stacks look like flat unshaded silhouettes; the road surface is dark and low in detail; player craft sits off-centre at the right edge",
+     "Heavy monochrome orange-brown wash makes the arch and towers read as flat unlit silhouettes; fairly muddy, low-contrast midground; player crowds and is clipped at the right edge; dark foreground road with little detail.",
+     "Strong orange-brown monochrome cast makes the image muddy and low in contrast. The arch and towers read as flat orange silhouettes, the foreground road is very dark, and the player craft crowds the right edge."
+    ]
+   },
+   {
+    "variant": "vesper",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Player craft is off-centre and cropped toward the right edge; there is a blurry, out-of-place green/brown backdrop behind the skyline on the right; the minimap has a dark smudge behind it",
+     "Player is oversized and clipped at the right edge; a blurry photographic green-field background shows through on the right and clashes with the stylised city; a dark smudge sits behind the minimap; slight bloom on the gate. Otherwise strong blue-hour palette, wet reflective road and good depth.",
+     "A blurry photographic-looking landscape backdrop shows between the towers on the right, which clashes with the stylized city. A dark smudge sits behind the minimap. The player craft is large and off to the right."
+    ]
+   }
+  ]
+ }
+]

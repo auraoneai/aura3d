@@ -1,0 +1,84 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/check3/heatsink/frames/gu47-check3-heatsink-1/heatsink--default--settle-60s.jpg",
+      "sha256": "5f516c34f7184348c5d209675e79be97535fedd0fab75d72add3c6179bebd719"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/check3/heatsink/frames/gu47-check3-heatsink-1/heatsink--dustfall--settle-60s.jpg",
+      "sha256": "02cc1e4c8eb78ca95fffaf2b7c55f25cf72a94cfb6d39cdb8241046b6239b378"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/check3/heatsink/frames/gu47-check3-heatsink-1/heatsink--vesper--settle-60s.jpg",
+      "sha256": "9a53a0b01ca6eef4f72c597b7457bb7b83f95c97bdf4b2cf0677c834a9720742"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4,
+    "shadows": 3,
+    "ibl_reflections": 2.5,
+    "environment_world": 4.5,
+    "atmospheric_effects": 4,
+    "material_quality": 3.5,
+    "modeling_assets": 5,
+    "composition": 5.5,
+    "camera": 6,
+    "postprocessing": 4,
+    "ui_hud": 3.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Flat, near-uniform night lighting with no directional key. The pillars and gate are lit evenly grey, and the golden-hour low sun the recipe expects is absent. Only the emissive barrier strips and the craft's twin headlights add contrast."
+    },
+    {
+      "category": "shadows",
+      "seen": "No contact shadow is visible under the orange hover craft or the opponent racers. The pillars cast no shadows on the road, so the vehicles look pasted onto the asphalt."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The rainy asphalt shows no wet reflections of the neon strips or headlights. Metal parts on the craft have no environment reflections and read as matte plastic."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Blocky gate arch, a tower cluster and a billboard against a void-black sky with a faint red horizon band. The world is sparse and grey-boxed, and there is no skybox detail beyond the night gradient."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Sparse rain streaks and light ground mist near the camera are visible. Distance fog is weak and does not layer depth, so the background towers are about as crisp as the midground."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Surfaces are untextured flat-shaded greys on the pillars, road and arch. Lane paint is a solid color, and the asphalt has no roughness variation or wetness despite the rain."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The quadrotor racers are readable and stylized, with the orange player craft, a blue twin-pod opponent and a yellow rival visible. The environment props are simple low-poly blocks."
+    },
+    {
+      "category": "composition",
+      "seen": "Centered symmetric framing through the pillar gate leads the eye to the arch, and the player craft occupies roughly 10% of the frame, below the 15–25% target. The dark upper half is empty."
+    },
+    {
+      "category": "camera",
+      "seen": "Low chase camera directly behind the craft at a moderate FOV, consistent across all three frames. The pose is static and gives no sense of speed."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Mild bloom appears on the emissive strips and headlights. There is no color grading toward the cinematic-film look, no vignette or grain, and the image reads as a raw render."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The only HUD element is a small track minimap in the top-right with a position dot and checkpoint markers. Speed, lap, position and timer readouts are missing."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

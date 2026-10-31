@@ -25,7 +25,7 @@ describe("heatsink art direction", () => {
     expect(direction.palette.primary).toEqual(["#14110f", "#3a2a22", "#ff8a1f", "#d2361c"]);
     expect(direction.palette.accent).toBe("#35d6ff");
     expect(direction.signatureEffect).toMatch(/heat haze/i);
-    expect(direction.lighting.environment).toEqual({ hdri: "rooftop_night", background: "hdri" });
+    expect(direction.lighting.environment).toEqual({ hdri: "kloppenheim_02", background: "hdri" });
     expect(direction.lighting.fill).not.toBe("ambient");
   });
 

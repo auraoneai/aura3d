@@ -17,7 +17,7 @@ import { AuraNodeBuilder, camera, effects, environments, instances, lights, mate
 import { ASPHALT_ROUGHNESS_MEAN, assets, HDRI_BY_ID, luts, textures } from "./aura-assets";
 import { DRONE_ORDER, DRONE_SPECS, SCENERY_ANCHORS, type CircuitSpec } from "./data";
 import { CIRCUIT_LOOKS, rimPosition, sunPosition, type CircuitLook } from "./look";
-import { chevronHeatMaterial, moltenMaterial } from "./shaders";
+import { chevronHeatMaterial, contactShadowMaterial, moltenMaterial } from "./shaders";
 import { LASER_BOLTS } from "./sim";
 import { skylineNodes } from "./skyline";
 
@@ -97,7 +97,8 @@ export const IDS = {
   ring: "player-shockwave-ring",
   missile: "homing-missile-active",
   incoming: "incoming-missile",
-  mine: "weapon-mine-active"
+  mine: "weapon-mine-active",
+  shadows: "drone-contact-shadows"
 } as const;
 
 /** Instance counts per instanced node. */
@@ -113,8 +114,13 @@ export const INSTANCE_COUNTS = {
   chevB: WALL_SEGMENT_COUNT,
   // HS-15: one molten gutter per wall segment and side, plus the pool under the lava curtain (last slot).
   gutters: WALL_SEGMENT_COUNT * 2 + 1,
-  bolts: LASER_BOLTS
+  bolts: LASER_BOLTS,
+  // GU47 phase 3: one soft contact shadow per drone model (the player and up to six drawn rivals).
+  shadows: DRONE_ORDER.length
 } as const;
+
+/** GU47 phase 3 contact shadow under each drone: a soft disc on the deck (metres; height above the deck). */
+export const CONTACT_SHADOW = { y: 0.035, size: 3.4, opacity: 0.62 } as const;
 
 /** HS-15 slag gutter: a molten strip on the deck along the foot of each wall (inside the drone's lateral limit + body). */
 export const GUTTER = { lateral: 10.25, y: 0.02, size: [0.9, 0.06, 12.4] as [number, number, number] } as const;
@@ -370,6 +376,9 @@ export function buildThermalDriftScene(options: SceneOptions) {
     // HS-15: molten slag gutters at the foot of both walls and the pool under the lava curtain, one instanced draw.
     instances.box({ name: IDS.gutters, size: GUTTER.size, material: moltenMaterial({ ...look.molten, reducedMotion }), transforms: along(INSTANCE_COUNTS.gutters, GUTTER.lateral, GUTTER.y, WALL_SPACING / 2), ...unshadowed })
       .runtime(game.runtimeNode(IDS.gutters)),
+    // GU47 phase 3: soft contact shadows ground the hovering drones (the PCSS key alone left them floating).
+    instances.box({ name: IDS.shadows, size: [CONTACT_SHADOW.size, 0.01, CONTACT_SHADOW.size], material: contactShadowMaterial(CONTACT_SHADOW.opacity, CONTACT_SHADOW.size / 2), transforms: along(INSTANCE_COUNTS.shadows, 0, -60, 4), ...unshadowed })
+      .runtime(game.runtimeNode(IDS.shadows)),
     instances.box({ name: IDS.bolts, size: [0.14, 0.14, 2.8], material: emissive("#ff4d1f", 2.6), transforms: along(INSTANCE_COUNTS.bolts, 0, 1.4, 20), ...unshadowed })
       .runtime(game.runtimeNode(IDS.bolts))
   ]);

@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "heatsink",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "foundry",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Busy, cluttered composition: the low camera puts the player craft at the right edge and partly cropped, and a large drone and pylon crowd the left foreground. Bright haze behind the buildings in the upper middle washes out part of the skyline, and the image is somewhat soft overall. Still, the warm lighting, wet-road reflections, lit windows and depth make it rich and atmospheric.",
+     "The player craft sits awkwardly at the right edge, close to the camera and slightly cropped; the foreground pillar on the left blocks part of the view; the bright warm wash behind the towers flattens the background a little; the frame is busy. Still a much richer frame: wet reflective road, a warm sodium mood, lit window textures and good depth.",
+     "Player craft sits at the right edge, oversized and partly cropped; it overlaps the rival drones, so the composition feels crowded. The background buildings are washed into a flat beige haze. The right-hand skyscraper and sky go bright and low-contrast. The minimap panel shows a visible dark rectangle."
+    ]
+   },
+   {
+    "variant": "foundry-dustfall",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Muddy, low-contrast brown palette, and the dark foreground road takes up a lot of the frame. Dusty haze flattens the background silhouettes. The player sits off to the right and is partly cropped at the frame edge, and the left foreground is cluttered. It is still more atmospheric, with more detail and a stronger sense of place than the default.",
+     "Muted, somewhat muddy brown palette with low contrast in the road and buildings; the arch is a flat rust silhouette; the player is off-centre at the right edge with an awkward close camera; the left pillar takes up foreground space; there are few highlights. Still better than the default: the overcast sky, distant city and dust particles give it atmosphere and depth.",
+     "Muddy brown monochrome palette with low contrast. The road and foreground are dark and murky, and the arch and structures merge into one rust tone. The player craft is cropped at the right edge and crowds the frame. The background towers look like flat cut-outs, and the minimap panel has a hard-edged dark rectangle."
+    ]
+   },
+   {
+    "variant": "foundry-vesper",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Cluttered foreground: the player is pushed to the right edge and partly cropped, and a large drone and pylon dominate the left. The tall, thin skyscraper columns look somewhat repetitive. Otherwise it has a strong dusk mood, good colour contrast between blue and orange, wet-road reflections and good depth.",
+     "The player sits off-centre at the right edge with a tight camera; the left pillar crowds the foreground; the bottom third of the road is fairly dark; some of the tall thin towers look repetitive. Strong blue-hour mood, wet reflections, warm and cool contrast and good depth.",
+     "Player craft is oversized and cropped at the right edge, and the composition is crowded. Thin bright vertical tower slivers look like stretched or broken geometry. The background trees and haze are slightly blurry, and the minimap panel has a dark rectangle. Otherwise the blue-hour lighting with orange accents and wet-road reflections is strong."
+    ]
+   }
+  ]
+ }
+]

@@ -92,6 +92,7 @@ export const VARIANT_PARAMS = {
  */
 export const EXTRA_VARIANT_PARAMS: Readonly<Record<string, readonly string[]>> = {
   "cross-hop": ["look"], // G14 CH47-05
+  heatsink: ["look"], // G03 phase 3 (`look=original`, the 4.6.2 before row)
   "strange-orbit-port": ["look", "env"], // G15 SO47-X1 / E1 (`env=neutral`)
   "drift-and-deliver-port": ["look"], // G18
   "heatsink-port": ["look"], // G19 (`?at=` districts wait for a param in the game)
@@ -205,6 +206,8 @@ const GU47_DRAFTS: readonly Draft[] = [
   t("strange-orbit-port", "neutral-env", "/apps/showcase-strange-orbit-port/?env=neutral"),
   t("drift-and-deliver-port", "original", "/apps/showcase-drift-and-deliver-port/?look=original"),
   t("heatsink-port", "original", "/apps/showcase-heatsink-port/?look=original"),
+  // G03 phase 3: the default is the GU47 foundry look (blind panel g03p3r2); `?look=original` is the 4.6.2 before row.
+  t("heatsink", "original", "/apps/showcase-heatsink/?look=original"),
   t("ninja-runner-port", "original", "/apps/showcase-ninja-runner-port/?look=original"),
   t("ninja-runner-port", "village-lanterns-off", "/apps/showcase-ninja-runner-port/?at=100&lanterns=0"),
   t("ninja-runner-port", "gate-cones-off", "/apps/showcase-ninja-runner-port/?at=2500&cones=0"),

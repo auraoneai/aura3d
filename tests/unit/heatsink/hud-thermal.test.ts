@@ -23,11 +23,12 @@ describe("heatsink HS-18 thermal HUD", () => {
     expect(overlayOpacities({ damageTimer: 0, overheated: true, heat: 100, reducedMotion: false })).toEqual({ damage: 0, overheat: OVERLAY.overheat });
     expect(overlayOpacities({ damageTimer: 0, overheated: false, heat: 90, reducedMotion: false }).overheat).toBeGreaterThan(0.4);
   });
-  it("colours the overlays slag red and molten orange and hides the chrome on the card", () => {
+  it("colours the overlays slag red and molten orange and hides the glazes on the card but keeps the HUD and minimap (GU47 phase 3)", () => {
     expect(html).toContain('id="damage-glaze"');
     expect(html).toContain("rgba(210, 54, 28,");
     expect(html).toContain("rgba(255, 138, 31,");
-    expect(html).toMatch(/body\.td-card #hud/);
+    expect(html).toMatch(/body\.td-card \.damage-glaze/);
+    expect(html).not.toMatch(/body\.td-card #hud/);
     expect(html).toContain('id="h-core"');
   });
   it("sets no font size under 12 px and loads the licensed site fonts", () => {
