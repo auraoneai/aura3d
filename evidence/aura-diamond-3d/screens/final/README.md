@@ -1,4 +1,7 @@
-# Aura Diamond 3D: final screenshots (retaken 2026-10-29 on 4.5.0)
+# Aura Diamond 3D: final screenshots (retaken 2026-10-31 for 4.7.1, GU47 phase 3)
+
+- **4.7.1 retake:** branch `gu47/g08`, runs `g08p3-screens2` (viewports, image `g08p3r2`) and `g08p3-card2` (card, `tests/browser/shotsa-aura-diamond-3d-card.spec.ts`, shot after the park intro). Software WebGL2 (SwiftShader). The notes below are from the 2026-10-29 set.
+
 
 - **Build:** branch `audit-fix/g08` at `454f97c46` (the lane's audit fixes on top of `audit-fix/integration`, engine 4.5.0 from the workspace). Same file names and sizes as the 2026-10-25 set (RH-05).
 - **Runner:** remote ACR task (`tools/remote-acr/run.sh`), RUN_ID `g08-w2-after-shotsa`. Headless Chromium on **software WebGL2 (SwiftShader), not real-GPU frames**. A frame costs several seconds there, so game time runs slow.
