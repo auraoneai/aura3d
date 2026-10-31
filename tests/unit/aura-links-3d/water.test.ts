@@ -56,7 +56,9 @@ describe("LINKS-17 reflecting water", () => {
     expect(live.reflection.ultra).toBe("planar");
     expect(live.reflection.low).toBe("ibl");
     expect(Object.values(live.refraction).every((v) => v === false)).toBe(true);
-    expect(live.waves).toBe("calm");
+    // a pond ripples (about 2 cm), it does not swell: every wave amplitude stays under 3 cm
+    expect(Array.isArray(live.waves) && live.waves.length > 0).toBe(true);
+    for (const w of live.waves as readonly { wavelength: number; steepness: number }[]) expect((w.steepness * w.wavelength) / (2 * Math.PI)).toBeLessThan(0.03);
     expect(live.normalSpeed).toBeGreaterThan(0);
     const still = pondWaterOptions(pond, "#154c79", true);
     expect(still.waves).toEqual([]);

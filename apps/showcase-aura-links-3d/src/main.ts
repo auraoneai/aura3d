@@ -879,7 +879,9 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
       const bank = discOnTerrain(terrain, w.center[0], w.center[1], w.radius + 1.5, 0.02, 32, w.radius * 0.94);
       nodes.push(
         geometry.custom(bank, { name: `pond-bank-${i}`, material: material.pbr({ color: shade(pal.rough, 0.55), roughness: 0.96 }) }),
-        primitives.cylinder({ name: `pond-rim-${i}`, size: [rimDiameter, 0.05, rimDiameter], material: material.pbr({ color: shade(pal.water, 0.5), roughness: 0.34, metalness: 0.2 }) }).position(w.center[0], y - 0.03, w.center[1]),
+        // GU47 phase 3: the floor sits 0.3 m down (the engine "calm" swell dipped below it at y - 0.03 and its glossy top
+        // showed through as pale wavy bands, run g10p3-r5-2; the ponds now ripple about 2 cm, game/water.ts)
+        primitives.cylinder({ name: `pond-rim-${i}`, size: [rimDiameter, 0.05, rimDiameter], material: material.pbr({ color: shade(pal.water, 0.5), roughness: 0.34, metalness: 0.2 }) }).position(w.center[0], y - 0.3, w.center[1]),
         world.water(pondWaterOptions(pond, pal.water, state.reducedMotion) as any) as any
       );
       return;
