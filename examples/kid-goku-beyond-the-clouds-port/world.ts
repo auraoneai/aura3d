@@ -324,7 +324,7 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
   const view: WorldView = { eye: [0, 0, 0], target: [0, 0, 0], fov: 55, aspect: 1, hero: [0, 0, 0], log: null, hut: null, culled: 0, bars: 0, titleT: 0 };
   /* CD-18 (storm-washed row): title flyover clock, trauma from impact rises, launch FOV kick */
   const cinematic = ACTIVE_LOOK.id === "storm-washed";
-  let titleT = 0, lastPhase = "", lastImpact = 0, sinceLaunch = Infinity;
+  let titleT = 0, titleWall0 = 0, lastPhase = "", lastImpact = 0, sinceLaunch = Infinity;
   /* CD-15 (storm-washed row): the preset pack is registered with the game's reduced-motion setting (re-registered on a
      toggle); events fire their preset through app.effects; the cloud mount trails a silver ribbon while ridden */
   let vfxMotion: boolean | null = null;
@@ -442,8 +442,11 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
       const s = g.state, f = frameAt(s.s, s.lane), phase = g.phase;
       const n = s.glider, riding = n.active || n.call > 0;
       emitEvents(g, events);
-      if (phase !== lastPhase) { if (phase === "menu") titleT = 0; lastPhase = phase; }
-      else if (phase === "menu") titleT += dt;
+      // the title flyover runs on wall-clock time: frame dt is clamped to 0.1 s, so on a slow device (software WebGL2 draws
+      // about one frame a second) a dt-summed clock never reached 7 s and the camera stayed parked at the opening pose
+      const wall = typeof performance !== "undefined" ? performance.now() / 1000 : 0;
+      if (phase !== lastPhase) { if (phase === "menu") { titleT = 0; titleWall0 = wall; } lastPhase = phase; }
+      else if (phase === "menu") titleT = Math.max(titleT + dt, wall - titleWall0);
       if (events.includes("launch") || events.includes("power-launch")) sinceLaunch = 0; else sinceLaunch += dt;
 
       /* ---- hero pose ---- */
