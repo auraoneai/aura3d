@@ -477,7 +477,16 @@ const QA_AO = initialParams.get("diag") === "1" ? initialParams.get("qaAo") : nu
 /** ?diag=1&qaTarget=N plays to N points so a run reaches the results card quickly (measurement only). */
 const QA_TARGET = initialParams.get("diag") === "1" ? Number(initialParams.get("qaTarget")) || 0 : 0;
 /** ?look=original: the 4.6 look (presets, fog off, today's practicals and dressing) for GU47 before/after pairs. */
-const LOOK_ORIGINAL = initialParams.get("look") === "original";
+/**
+ * GU47 phase 2 (PRD D11, no regression ships): courts whose new look still lost to the 4.6.2 frame after the two phase-2
+ * capture rounds boot on the original look; `?look=new` opts back in. Rucker: flood haze, cones and flare veil the left
+ * half of the chase frame. Orbit: the chase eye sits inside the station dressing, darker than 4.6.2. The boot court
+ * decides (the default court is Rucker); a court picked later from the menu keeps the boot look.
+ */
+const ORIGINAL_LOOK_COURTS: ReadonlySet<string> = new Set(["rucker", "orbit"]);
+const BOOT_COURT = initialParams.get("court") ?? "rucker";
+const LOOK_ORIGINAL = initialParams.get("look") === "original" ||
+  (initialParams.get("look") !== "new" && ORIGINAL_LOOK_COURTS.has(BOOT_COURT));
 /**
  * GU47 phase 2 fallback: `world.water` fails the renderer mount on this route ("Oblique clip projection is degenerate",
  * RENDERER_MOUNT_FAILED: Venice and Shanghai drew nothing in the after-capture). Until the engine water fix lands the
@@ -490,7 +499,7 @@ const REAL_WATER = !LOOK_ORIGINAL && initialParams.get("water") === "real";
  */
 /* H47-C1 / H47-P2: broadcast intro rail and Jam-dunk replay (broadcast.ts). Off on ?look=original, under reduced motion,
  * with ?intro=0 and on every measurement path (?diag=1, ?simsteps=N), so captures and probes keep their stepping. */
-const BROADCAST_OFF = initialParams.get("look") === "original" || initialParams.get("intro") === "0" || initialParams.get("diag") === "1" ||
+const BROADCAST_OFF = LOOK_ORIGINAL || initialParams.get("intro") === "0" || initialParams.get("diag") === "1" ||
   Number(initialParams.get("simsteps")) > 0 || initialParams.has("reducedMotion") ||
   (typeof window !== "undefined" && (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false));
 const broadcast = createBroadcast({ disabled: BROADCAST_OFF });
@@ -504,7 +513,7 @@ let broadcastPostOn = false;
 /** H47-V3: the Jam-dunk spray tags (new look). */
 const sprayTags = new SprayTags();
 // H47-H1: the tour HUD skin (spray-stencil score bug, spray-can Jam meter) styles off body[data-look="tour"].
-if (typeof document !== "undefined" && initialParams.get("look") !== "original") document.body.dataset.look = "tour";
+if (typeof document !== "undefined" && !LOOK_ORIGINAL) document.body.dataset.look = "tour";
 /** H47-H1: the score text the in-world Rucker board shows (set at build, kept equal to the DOM score by syncHud). */
 let shownBoardScore = "";
 const BOOT_REDUCED_MOTION = initialParams.has("reducedMotion") || (typeof window !== "undefined" && (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false));
