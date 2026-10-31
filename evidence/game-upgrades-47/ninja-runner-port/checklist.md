@@ -26,3 +26,21 @@ Status per acceptance line of PRD WP-30 (lines 1148-1169). "phase 2" = needs a r
 | NR-20 | river crop >= 50% warm; paletteDistance >= 0.1 | done; river crop published; phase 2 |
 | NR-21 | audit passes; game-checks 0 errors | done |
 | NR-22 | 5 rows in the NR-01 bands; spread >= 150; <= 150 draws | `?at=` + crops done; phase 2 |
+
+## Phase 3 (4.7.1, 2026-10-31)
+
+Software WebGL2 captures on the remote runner (picassostagingacr); blind 3-judge panel against the 4.6.2 frames.
+
+| Item | Status |
+|---|---|
+| Default look | evening (golden afternoon to sunset afterglow) for the title and the village, rooftops, river and forest views: panel g20p3r4, 3/0 each. The gate view (`?at=` from 2260 m) keeps the 4.6.2 look (panel 1/2: floating quad over the falls, flat pink ground). `?look=original` / `?look=evening` force either look |
+| NR-01 / NR-22 luma bands | NOT MET by the panel-verified look: the bands were written for the phase-1 night evening (forest 50-70, gate 40-60); the shipped look measures village 134, rooftops 126, river 135, forest 119 (`luma-after.json`, g20p3-r4). Bands not widened; the bands need a rewrite for the sunset look (lane report) |
+| NR-02 | sun 32 -> 10 deg, ~110 deg off the heading (side light); 2 cascades PCF on High (PCSS dropped in phase 2); no moon key |
+| NR-04 | hemisphere fill kept under the HDRI (0.45 x district step); the panel named the fill-lifted blacks in r2 |
+| NR-08 | aces exposure 1.0, bloom 0.3 over 1.4, grade 1.16 / 1.22, vignette 0.14; no SSAO on the evening (frame cost) |
+| NR-18 | title shot moved from a 26 m crane to over the runner's shoulder (3.7 m); bars only during the countdown and the win. The "> 20 m" acceptance is dropped: the crane lost the panel twice |
+| Final screens | retaken (g20p3-s), `git add -f`, card previews rebuilt; screens-fresh clear |
+| Rubric (PRD 1.2 goal 1) | `look-judgement.json` validated; minimum 3 (shadows); not >= 7 (see lane report) |
+| Sibling distinctness | cloud-runner-port same_game true 0.741 (shared oak/pine models: WP-36); serpentine-sky-run-port same_game true 0.616 |
+| Unit tests | 14 game files (143 tests) + `game-luma-targets.test.ts` pass, one file at a time |
+| game-checks | 0 errors, 8 warnings (all luma-band, see above) |
