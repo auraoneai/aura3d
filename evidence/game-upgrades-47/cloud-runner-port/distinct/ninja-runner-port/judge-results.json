@@ -1,0 +1,721 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-10-31T20:24:10.882Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "default-play-0060",
+      "default-play-0520",
+      "default-title"
+    ],
+    "framesB": [
+      "ninja-runner-port--default"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.828,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.828,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "default-title",
+      "b": "ninja-runner-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a village scene with cobblestone road and stone houses; Image B is a canyon ridge with dirt path and rocks",
+        "Different art styles: A has painterly, flat green grass and a ninja character; B has low-poly trees, cracked boulders and a curly-haired character in green",
+        "Image B has a 'Cumulus Dash' title screen and HUD, while A has no matching UI"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "default-play-0520",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a HUD with hearts, progress bar and stylized low-poly trees and cliffs; Image B has no HUD",
+        "Different character models: teal-clad curly-haired boy vs orange-hooded ninja-like figure",
+        "Different environments and art style: canyon run with cracked boulders vs medieval village with cobblestone road and a torii-style gate"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "default-play-0060",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and a score, while B has none",
+        "A is a stylized endless-runner on a dirt path with cliffs and a rolling log; B is a medieval village with a cobblestone road",
+        "Different characters and rendering: A has a teal-clad character with rich saturated lighting, B has a dark-clothed character with an orange hood in flatter lighting"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 1,
+      "a": "default-play-0060",
+      "b": "ninja-runner-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Different art style: A is a muted medieval village with a cobblestone road, B is a vivid stylized canyon with a dirt path",
+        "Different characters: A has a small ninja-like figure in dark clothes, B has a teal-suited character with dark hair",
+        "B has a runner-game HUD (hearts, progress bar, score, prompts) while A has none"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 1,
+      "a": "default-play-0520",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a stylized low-poly cliff canyon with a heavy HUD (hearts, progress bar, timer), while Image B has no HUD",
+        "Different characters: a teal-clad curly-haired kid vs. an orange-hooded ninja-like figure",
+        "Different environments and materials: smooth beige path with glossy trees vs. cobblestone road in a medieval village with a red gate"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 1,
+      "a": "default-title",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a title screen for 'Sky Ridge Run: Cumulus Dash' with a distinct HUD, absent in B",
+        "Different settings: rocky ridge with boulders and a dirt path vs. a cobblestone village with houses and a gate",
+        "Different characters and palettes: green-clad curly-haired child vs. hooded orange-haired figure; hazy muted tones vs. bright saturated sky"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 2,
+      "a": "default-title",
+      "b": "ninja-runner-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a village scene with a cobblestone road, stone houses and a red gate",
+        "Image B has a dirt ridge path, low-poly trees, cracked boulders and a title-screen UI",
+        "The characters differ: a dark-clad ninja with an orange hood in A, a green-clad curly-haired kid in B"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 2,
+      "a": "default-play-0520",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a stylized low-poly canyon with a game HUD (hearts, progress bar, 'Cliff Run' text)",
+        "Image B shows a medieval village with a cobblestone road and no HUD",
+        "Different character models and rendering: A is saturated and glowy, B is flatter and more muted"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 2,
+      "a": "default-play-0060",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and score, while Image B has none",
+        "A: stylized runner with a teal-suited character, orange cliffs and a dirt path; B: medieval village with a cobblestone road",
+        "Different rendering: A has richer lighting and low-poly bushes, B has flatter lighting and textured round shrubs"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 3,
+      "a": "default-title",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a title screen for 'Cumulus Dash' on a dirt ridge path, while Image B shows a stone-paved village street",
+        "Different environments: cracked boulders, low-poly trees and a cliff versus medieval houses and a red gate",
+        "Different characters and HUD: green-clad curly-haired kid with menu buttons versus a dark-clothed orange-hooded figure with no HUD"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 3,
+      "a": "default-play-0520",
+      "b": "ninja-runner-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: village with a cobblestone road, flat green terrain and muted, more realistic textures",
+        "Image B: low-poly faceted trees and rocks in a cliff canyon, with saturated warm lighting and a stylized HUD",
+        "Different character models and camera setups (small orange-hooded figure vs. curly-haired runner), plus a full game HUD only in B"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 3,
+      "a": "default-play-0060",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and a score, while Image B has none",
+        "Different settings: A is a canyon dirt path with a rolling log, B is a medieval village with a cobblestone road",
+        "Different characters and lighting: A has a teal-clad character with warm saturated light, B has an orange-hooded character in a flatter, hazy scene"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 4,
+      "a": "default-play-0520",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has stylized low-poly trees, cracked boulders and a HUD with hearts, a progress bar and prompts; Image B has no HUD",
+        "Image A uses a smooth beige path in a canyon with warm cliffs; Image B uses a cobblestone road through a medieval village",
+        "The characters differ: a teal-clothed curly-haired runner in A, an orange-hooded ninja-like figure in B, with different rendering and lighting"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 4,
+      "a": "default-title",
+      "b": "ninja-runner-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different environments: a medieval village with a cobblestone road versus a dirt ridge path with cliffs and boulders",
+        "Different character models and art style: an orange-hooded ninja versus a curly-haired kid in green",
+        "Different lighting and palette: bright, saturated cartoon look versus a hazy, muted painterly look with a title-screen UI"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 4,
+      "a": "default-play-0060",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and score; Image B has no HUD",
+        "Image A has a dirt path, orange cliffs and a rolling-log runner; Image B has a cobblestone village street with a gate",
+        "Different character models and rendering: A is stylized and warm, B is flatter with a hazy green field"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 5,
+      "a": "default-play-0060",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a HUD with hearts, progress bar and a rolling log runner mechanic; Image B has no HUD",
+        "Different art styles: A uses stylized low-poly shrubs with orange cliffs and a dirt path, B uses a cobblestone road with medieval houses",
+        "Different characters: A a teal-clad curly-haired kid, B an orange-hooded ninja-like figure"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 5,
+      "a": "default-title",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a title screen reading 'Cumulus Dash' with a dirt ridge path, cracked boulders and a cliff; Image B shows a cobblestone village street with houses and a gate",
+        "Different characters: A has a curly-haired kid in green, B has an orange-hooded figure in dark clothes",
+        "Different scenery and lighting: A is hazy and painterly, B is a bright blue sky with flat green meadows"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 5,
+      "a": "default-play-0520",
+      "b": "ninja-runner-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a village with cobblestone road, flat green grass and a hooded character; Image B has low-poly cliffs and trees",
+        "Image B shows a stylized game HUD with hearts, a progress bar and a 'Cliff Run' prompt, while A shows no HUD",
+        "Different lighting and materials: A is muted with soft textured stone, B is saturated with faceted low-poly shading"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 6,
+      "a": "default-play-0520",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a HUD (hearts, progress bar, 'Cliff Run' banner); Image B has none",
+        "A uses stylized low-poly trees, cracked boulders and canyon cliffs; B is a medieval village with stone houses and a cobblestone road",
+        "Different characters and lighting: A has a teal-clad boy with a warm, saturated look; B has an orange-hooded ninja under a flatter, hazier sky"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 6,
+      "a": "default-play-0060",
+      "b": "ninja-runner-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: muted medieval village with a cobblestone road and flat green terrain",
+        "Image B: saturated stylized runner with a sand path, orange cliffs and a HUD with hearts and a score",
+        "Different character models and art styles (dark-clothed figure with orange hood vs teal-suited curly-haired runner)"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 6,
+      "a": "default-title",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a title screen for 'Sky Ridge Run: Cumulus Dash' with a UI and a hazy ridge landscape; Image B is a village scene with no matching HUD",
+        "different environments: dirt path, cracked boulders and orange cliff versus cobblestone road, stone houses and a red gate",
+        "different characters: a green-clothed curly-haired kid versus a dark-clad figure with an orange hood"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 7,
+      "a": "default-play-0060",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and a score; Image B has no HUD",
+        "Image A has a teal-clad character on a dirt path with a rolling log and orange cliffs; Image B has an orange-hooded character on a cobblestone village road",
+        "Different art styles: A has stylized low-poly foliage and lush lighting; B has flatter, hazier lighting with medieval stone houses and a gate"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 7,
+      "a": "default-title",
+      "b": "ninja-runner-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a village scene with stone houses and a cobblestone road; Image B is a dirt ridge path with cracked boulders and a cliff",
+        "Different character models: a dark-clothed hooded figure in A, a green-clad curly-haired kid in B",
+        "Different rendering styles: A has flat, bright, cartoonish lighting, while B has a hazy, painterly look with a title overlay and HUD"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 7,
+      "a": "default-play-0520",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Different HUD: A has hearts, progress bar, and objective text; B has no HUD",
+        "Different art style: A uses low-poly stylized trees, cracked boulders, and canyon cliffs; B has a medieval village with a cobblestone road",
+        "Different characters and lighting: A has a teal-clad boy with saturated warm lighting; B has an orange-hooded ninja under hazy, muted light"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 8,
+      "a": "default-play-0060",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and a score, while Image B has none",
+        "Different scenery: A shows orange cliffs and a dirt path with a rolling log, B shows a cobblestone village street with a gate",
+        "Different characters and rendering: A has a teal-clad runner with richer, more realistic lighting, B has a dark-clad character with an orange hood in flatter, simpler shading"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 8,
+      "a": "default-title",
+      "b": "ninja-runner-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: medieval village with a cobblestone road and a bright, flat-shaded look",
+        "Image B: rocky ridge with cracked boulders, dirt path and a hazy, painterly sky",
+        "Different characters and HUD: A has no HUD, B has a 'Cumulus Dash' title menu"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 8,
+      "a": "default-play-0520",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a stylized low-poly look with cliffs, boulders and a game HUD (hearts, progress bar, 'CLIFF RUN' text)",
+        "Image B shows a medieval village with a cobblestone path and a wooden gate, with no HUD",
+        "The characters differ: a curly-haired boy in teal in A, an orange-hooded ninja-like figure in B, and the lighting and material rendering also differ"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 9,
+      "a": "default-title",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a title screen for 'Cumulus Dash' with a dirt ridge path, cracked boulders and low-poly trees, while Image B shows a cobblestone village street with houses and a gate",
+        "Different characters: a green-clad curly-haired kid versus a dark-clad figure with an orange hood",
+        "Different environment and lighting: hazy, muted sky with orange cliffs versus bright blue sky with flat green meadows"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 9,
+      "a": "default-play-0520",
+      "b": "ninja-runner-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a village with a cobblestone road, a muted palette and soft lighting",
+        "Image B has a stylized low-poly cliff canyon with saturated colors and a game HUD (hearts, progress bar)",
+        "The characters differ: an orange-hooded figure in A, a curly-haired figure in teal in B, with different rendering styles"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 9,
+      "a": "default-play-0060",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and a score, while Image B has no HUD",
+        "A is a stylized endless-runner on a dirt path with a rolling log and orange cliffs, while B is a medieval village with a cobblestone road",
+        "Different characters (teal-clad runner vs. orange-hooded figure) and different lighting and texture quality"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 10,
+      "a": "default-title",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a title screen reading 'Cumulus Dash' on a dirt path with cracked boulders and a rock cliff; Image B is a village with a cobblestone road",
+        "Different characters: green-clad curly-haired kid vs. dark-clothed figure with an orange hood",
+        "Different palette and lighting: hazy muted sky in A vs. bright blue sky with clouds and flat green meadow in B, and B shows no HUD"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 10,
+      "a": "default-play-0520",
+      "b": "ninja-runner-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: stylized village with a textured cobblestone road and a flat grassy field",
+        "Image B: low-poly cliff canyon with faceted trees, plus a HUD with hearts, progress bar and checkpoint prompt",
+        "Different character models, lighting and rendering styles (muted hazy realism vs saturated low-poly)"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 10,
+      "a": "default-play-0060",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and a score, while Image B has none",
+        "Different environments: sandstone cliffs and a dirt path versus a stone village with a cobblestone road",
+        "Different characters and rendering: a teal-clad runner with a rolling log versus an orange-hooded ninja, with flatter lighting and a hazy sky in B"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 11,
+      "a": "default-play-0060",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a HUD with hearts, progress bar and score, while B has none",
+        "A is a stylized endless-runner with a rolling log and orange cliffs; B is a medieval village with a cobblestone road",
+        "Different characters and rendering: A has a teal-suited character with rich lighting, B has an orange-hooded character in flatter, hazier lighting"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 11,
+      "a": "default-play-0520",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a stylized low-poly look with a game HUD (hearts, progress bar, 'Cliff Run' banner) that Image B lacks",
+        "Different environments: canyon cliffs and cracked boulders versus a medieval village with a cobblestone road",
+        "Different characters and rendering: a curly-haired boy in teal versus a hooded ninja-like figure, with different lighting and textures"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 11,
+      "a": "default-title",
+      "b": "ninja-runner-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a medieval village with a cobblestone road and stylized cartoon houses; Image B is a rocky ridge with a dirt path and low-poly trees",
+        "Different characters: A has an orange-hooded dark-clothed figure, B has a curly-haired child in green",
+        "Image B has a title-screen UI ('Cumulus Dash') with its own button style; Image A has no HUD and a brighter, flatter palette"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 12,
+      "a": "default-play-0060",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and a score, while Image B has no HUD",
+        "A shows a stylized endless-runner with a rolling log, orange cliffs and pine trees, while B shows a medieval village with a cobblestone road",
+        "The characters, lighting and palette differ: A is saturated and warm, B is flatter and hazier"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 12,
+      "a": "default-title",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a title screen reading 'Cumulus Dash' on a dirt ridge path with cracked boulders and a cliff; Image B is a cobblestone village street with houses",
+        "The characters differ: a green-clad curly-haired kid in A, a dark-clothed figure with an orange hood in B",
+        "The palettes and lighting differ: hazy, muted, warm in A versus bright blue sky and saturated green grass in B"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 12,
+      "a": "default-play-0520",
+      "b": "ninja-runner-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a medieval village with a cobblestone road and flat green terrain, while Image B has a canyon with faceted low-poly trees and cliffs",
+        "Different character models and rendering styles: A's hooded ninja is realistic-toned, B's curly-haired kid is stylized",
+        "Image B shows a game HUD (hearts, progress bar, prompts) in a distinct UI style; Image A has no HUD"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 13,
+      "a": "default-play-0060",
+      "b": "ninja-runner-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different art styles: A has muted medieval village with stone cobblestone road, B has stylized runner with saturated low-poly terrain",
+        "Different characters: A has a dark-clothed orange-hooded figure, B has a teal-suited curly-haired runner",
+        "B has a HUD with hearts, score, progress bar and prompts, while A has none and a different lighting palette"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 13,
+      "a": "default-play-0520",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a stylized low-poly look with a HUD (hearts, progress bar, timer), while B has no HUD",
+        "Different environments: canyon with cracked boulders vs medieval village with a cobblestone road",
+        "Different characters and rendering: A has a teal-clad kid with a soft glow, B has an orange-hooded ninja with flatter lighting"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 13,
+      "a": "default-title",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a title screen reading 'Cumulus Dash' with a dirt ridge path, cracked boulders and a cliff; Image B is a cobblestone village street",
+        "Different characters: a green-clad curly-haired kid versus a dark-clad figure with an orange hood",
+        "Different palettes: hazy, muted sky and soft light versus bright blue sky with flat green meadows and medieval houses"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 14,
+      "a": "default-title",
+      "b": "ninja-runner-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: village with stone cobbled road and a red gate, flat green ground and bright blue sky",
+        "Image B: rocky ridge with a dirt path, cracked boulders, low-poly trees and a hazy, muted sky",
+        "Image B has a 'Cumulus Dash' title screen with a different character design and a different UI style"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 14,
+      "a": "default-play-0520",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a stylized low-poly canyon with a HUD showing hearts, a progress bar and a 'Cliff Run' banner; Image B has no HUD",
+        "Image A uses a smooth beige path and saturated, dramatic lighting; Image B uses a cobblestone road with muted, flatter lighting",
+        "The characters differ: a teal-clad boy with curly hair in A and an orange-hooded ninja-like figure in B, within different environments (canyon vs medieval village)"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 14,
+      "a": "default-play-0060",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and a score, while Image B has none",
+        "Image A is a stylized endless-runner on a dirt path with a rolling log and orange cliffs; Image B is a medieval village with a cobblestone road and a gate",
+        "Different characters and rendering: A has a teal-clad character with soft, painterly lighting, B has a dark-clothed ninja with flat, bright lighting"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 15,
+      "a": "default-title",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A shows a title screen for 'Cumulus Dash' with a dirt path and a rocky cliff, while Image B shows a cobblestone village road with houses and a gate",
+        "Different characters: a green-clothed kid with curly hair versus a figure with an orange hood and dark clothes",
+        "Different palettes and lighting: hazy, muted sky and low-poly trees in A versus a bright blue sky and stone buildings in B"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 15,
+      "a": "default-play-0060",
+      "b": "ninja-runner-port--default",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different art styles: A has a medieval village with a stone-brick path and a muted, hazy palette; B has a stylized canyon with a dirt path and saturated colors",
+        "Different characters: A's ninja-like figure with an orange hood versus B's teal-suited curly-haired runner",
+        "B has a runner-game HUD (hearts, progress bar, score, prompts) and A shows none"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 15,
+      "a": "default-play-0520",
+      "b": "ninja-runner-port--default",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A has a stylized low-poly look with a heavy HUD (hearts, progress bar, objective text); Image B has no HUD",
+        "Different environments: canyon cliffs with a smooth dirt path vs a medieval village with a cobblestone road and a gate",
+        "Different characters and rendering: a teal-clad curly-haired boy with strong saturated lighting vs an orange-hooded ninja-like figure in flat, softer lighting"
+      ]
+    }
+  ]
+}
