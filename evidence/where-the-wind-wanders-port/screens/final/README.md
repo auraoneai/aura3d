@@ -1,5 +1,7 @@
 # The Bellkeeper's Walk: final screenshots (after the UI and render fixes)
 
+**Retaken 2026-10-31 (GU47 phase 3, lane g23):** every frame below was taken again on the GU47 phase-3 round-2 build (`0006e4f08`: the panel-approved GU47 daylight look is the default boot), remote run `g23p3-r2-5` (crmmeprodacr, image `g23p3r2`), spec `tests/browser/audit-fix/where-the-wind-wanders-port.spec.ts --grep=screens`, same file names and sizes. Software WebGL2 (SwiftShader), not a GPU. `metrics.jsonl` holds the spec's `WW_META` lines for this run.
+
 **Retaken 2026-10-29 (audit lane G23, RH-05):** every frame below was taken again from `audit-fix/g23` at 1bde718d4 (4.5.0 render path `hdr-msaa`, quality `auto`, fused bloom), remote run `g23-after3-10292046`, spec `tests/browser/audit-fix/where-the-wind-wanders-port.spec.ts`, same file names and sizes. `results.1280x720` is now the epilogue reached by play (the original's recorded run rings the bell, then the game clock runs 9.5 + 6 s), not forced. Per-frame numbers: `evidence/where-the-wind-wanders-port/audit-fix/after/g23-after3-10292046/metrics.jsonl`. The notes below describe the earlier set from 2026-10-25.
 
 - **Build:** `origin/game-rework` at `0d965903c` (examples dev server, QA hooks). Capture: `tests/browser/finc-lib.ts` + `finc-games.ts` (`WIND`), decoder `tools/shots/decode-finc.mjs`; numbers in `metrics.jsonl`.

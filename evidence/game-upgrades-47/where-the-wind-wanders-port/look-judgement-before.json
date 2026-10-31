@@ -1,0 +1,81 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../../../../../tmp/g23-old/key-walk.1280x720.jpg",
+      "sha256": "4091645d68a35e1bf072f08cc2c45c7bded9ad6021ff76d197cc460f6f64c778"
+    },
+    {
+      "path": "../../../../../tmp/g23-old/mid-walk.1280x720.jpg",
+      "sha256": "7b603930fb225a246487aa77f8af14446c1e655d6e1b83ecec8548eac73ceefe"
+    },
+    {
+      "path": "../g23/evidence/game-upgrades-47/where-the-wind-wanders-port/bp/where-the-wind-wanders-port/frames/g23bp2-where-the-wind-wanders-port-2/where-the-wind-wanders-port--found3--settle-60s.jpg",
+      "sha256": "cdf1f43386ae88539954b7dbc34745baf88720a9c41674b5c0308980dc73df63"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/verify2/where-the-wind-wanders-port/frames/gu47-verify2-where-the-wind-wanders-port-3/where-the-wind-wanders-port--bell--settle-60s.jpg",
+      "sha256": "6e1e8b1971a61e18de0ee50b8b93fad0f0c82ae75fbf2e27820daf272c38ba59"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6.5,
+    "shadows": 5,
+    "ibl_reflections": 5,
+    "environment_world": 8,
+    "atmospheric_effects": 6,
+    "material_quality": 6.5,
+    "modeling_assets": 7,
+    "composition": 6.5,
+    "camera": 6,
+    "postprocessing": 6.5,
+    "animation_quality": 6,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Daylight frames are bright and evenly lit but flat. There is little directional key-light modelling on the cottage or the character, and the sun direction is hard to read. The fourth frame shifts to a dusky pink grade that muddies the greens."
+    },
+    {
+      "category": "shadows",
+      "seen": "Ground contact shadows under the character and trees are weak or absent. The cottage casts no clear shadow onto the grass, and the dithered patches around the player read as stipple artifacts rather than soft shadow."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The lake is a flat pale-blue band with no visible sky or object reflections. The windmill and wood show no specular response, and the materials read as unlit or diffuse."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distant trees are slightly desaturated, giving mild aerial perspective, and the third frame has sparse floating motes. Fog is barely perceptible. In the dusk frame the background pines turn grey and ghostly, which looks more like low LOD than atmosphere."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Painted textures on the cottage roof, the wood windmill and the foliage are charming. However, the grass blades and bushes show dithered, noisy alpha, and the pink-dotted shrubs repeat a single texture."
+    },
+    {
+      "category": "composition",
+      "seen": "The subject is small, roughly 8–10% of the frame instead of the 18–25% target. Large foreground shrubs dominate the lower half, and in two frames tree canopies intrude at the top-left corner."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera sits high and behind in third person rather than side-on follow, and it is pushed too far back. The framing shifts between frames, cropping the windmill heavily."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is a soft bloom glow around the pink companion and some colour grading. Alpha dithering and aliasing are visible in the grass, and the dusk grade crushes saturation."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The character poses suggest a walk cycle, and the companion floats with a glow trail. Stillness limits judgement, but the character reads stiffly against the dense grass."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}
