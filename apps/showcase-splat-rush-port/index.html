@@ -80,6 +80,8 @@
       #hud-tube { position: relative; width: 120px; height: 18px; background: #fdf0e0; border: 3px solid #3b1f3f; border-radius: 4px 10px 10px 4px; box-shadow: 2px 3px 0 #3b1f3f; overflow: hidden; }
       #hud-tube::after { content: ""; position: absolute; right: -9px; top: 3px; width: 6px; height: 6px; background: #3b1f3f; }
       #hud-tube-fill { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 0 9px 9px 0; transition: width 0.18s ease-out; }
+      /* GU47 phase 3: on a phone the combo chip ran over the paint tube (390 px: tube to ~205 px, chip from ~140 px); a shorter tube and a smaller chip keep a gap */
+      @media (max-width: 520px) { #hud-tube { width: 72px; } .look-carnival #hud-combo { font-size: 18px !important; padding: 3px 10px 4px; } }
       #bars-top, #bars-bottom { position: fixed; left: 0; right: 0; height: 9vh; background: #2a1530; z-index: 4; pointer-events: none; transform: scaleY(0); }
       #bars-top { top: 0; transform-origin: top; }
       #bars-bottom { bottom: 0; transform-origin: bottom; }
