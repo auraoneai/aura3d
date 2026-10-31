@@ -229,7 +229,8 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     hdri: "belfast_sunset_puresky",
     environmentIntensity: 2.2,
     environmentRotationDeg: 215,
-    exposureEv: 0.05,
+    // GU47 phase 2: -0.35 EV and a softer bloom; at +0.05 EV the island and sea washed out white (mean 128, p95 218).
+    exposureEv: -0.35,
     sun: { elevationDeg: 8, azimuthDeg: 215, color: "#ff7c4c", intensity: 2.4 },
     shadowSoftness: 2.0,
     fog: { color: "#b56c5e", near: 70, far: 1000 },
@@ -246,7 +247,7 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     },
     post: "cinematic-film",
     grade: { contrast: 1.12, saturation: 1.1, temperature: 0.35, tint: 0.05 },
-    bloom: { threshold: 0.8, intensity: 0.34 },
+    bloom: { threshold: 0.9, intensity: 0.2 },
     vignette: 0.26,
     dof: { maxBlur: 6, bandWidth: 0.3 },
     accent: SIEGE_PALETTE.pennantRed,
