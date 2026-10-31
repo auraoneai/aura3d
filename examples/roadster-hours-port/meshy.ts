@@ -61,7 +61,7 @@ export const meshyTriangles = (key: MeshyKey): number => MESHY_MODELS[key]?.tria
 
 type TextureKey = keyof typeof MESHY_ASSETS;
 /** Textured PBR material for one baked model (`tint` multiplies the texture per mesh; per-instance colours also multiply). */
-export function meshyMaterial(key: MeshyKey, options: { roughness?: number; metallic?: number; doubleSided?: boolean; specular?: number } = {}) {
+export function meshyMaterial(key: MeshyKey, options: { roughness?: number; metallic?: number; doubleSided?: boolean; specular?: number; clearcoat?: number; clearcoatRoughness?: number } = {}) {
   const texture = MESHY_ASSETS[key as TextureKey];
-  return material.pbr({ color: "#ffffff", roughness: options.roughness ?? 0.55, metallic: options.metallic ?? 0.1, texture, ...(options.specular !== undefined ? { specularIntensity: options.specular } : {}), ...(options.doubleSided ? { side: "double" } : {}) } as never);
+  return material.pbr({ color: "#ffffff", roughness: options.roughness ?? 0.55, metallic: options.metallic ?? 0.1, texture, ...(options.specular !== undefined ? { specularIntensity: options.specular } : {}), ...(options.clearcoat ? { clearcoat: options.clearcoat, clearcoatRoughness: options.clearcoatRoughness ?? 0.1 } : {}), ...(options.doubleSided ? { side: "double" } : {}) } as never);
 }

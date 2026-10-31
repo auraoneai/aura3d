@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/roadster-hours-port/art/direction.ts",
-  "sourceSha256": "b08d90334594c85c285386c8c0ef89e7ce4d68a89b7b231f8417d2211d8b7c94",
+  "sourceSha256": "ec61a03bd1b7477b6c10d5d6e127660b4649ceac09cb049e6c7bf90b05d983de",
   "id": "roadster-hours-port",
   "genre": "racing",
   "signatureEffect": "Crosswind salt spray: sheets of salt, sand or mist lift off the sea-side cliff base and blow across the highway with the route wind.",
@@ -24,22 +24,22 @@
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 0.6
+        "intensity": 0.8
       },
       {
         "type": "hemisphere",
         "shadow": false,
-        "intensity": 0.45
+        "intensity": 0.8
       },
       {
         "type": "point",
         "shadow": false,
-        "intensity": 6
+        "intensity": 8
       },
       {
         "type": "point",
         "shadow": false,
-        "intensity": 6
+        "intensity": 8
       }
     ],
     "hasAmbient": false,
@@ -200,7 +200,7 @@
         "file": "evidence/game-upgrades-47/roadster-hours-port/identity.md#references",
         "source": "generic reference: desert canyon highway at last light with heat shimmer over the asphalt",
         "licence": "reference-only",
-        "why": "A 7-degree orange sun with a violet rim on the far side, heat shimmer beyond 40 m and blown sand crossing the road"
+        "why": "A low 15-degree orange sun with a violet rim on the far side, heat shimmer beyond 40 m and blown sand crossing the road"
       },
       {
         "file": "evidence/game-upgrades-47/roadster-hours-port/identity.md#references",

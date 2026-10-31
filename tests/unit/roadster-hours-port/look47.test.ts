@@ -25,9 +25,11 @@ const deg = (rad: number): number => (rad * 180) / Math.PI;
 describe("Saltwind Highway GU47 look table (WP-32)", () => {
   it("has one row per route with the WP's sun numbers (RH47-02)", () => {
     expect(SALTWIND_VARIANTS).toEqual(["sunbreak", "redline", "halo"]);
-    expect(SALTWIND_LOOK.sunbreak.sun).toMatchObject({ elevationDeg: 20, color: "#ffe2b0", intensity: 3.4 });
-    expect(SALTWIND_LOOK.redline.sun).toMatchObject({ elevationDeg: 7, color: "#ff9a5a", intensity: 3.8 });
-    expect(SALTWIND_LOOK.halo.sun.intensity).toBe(0.6);
+    // phase 3 (4.7.1 rubric pass): sunbreak's side sun swings behind the left shoulder, Redline's last light rises to 15 deg so
+    // the sunlit wall rakes into shade, Halo's moon key rises to 0.8 (WP-32 started at 20 deg / 7 deg / 0.6)
+    expect(SALTWIND_LOOK.sunbreak.sun).toMatchObject({ elevationDeg: 22, azimuthDeg: -112, color: "#ffdcaa", intensity: 3.8 });
+    expect(SALTWIND_LOOK.redline.sun).toMatchObject({ elevationDeg: 15, azimuthDeg: -58, color: "#ff9e5e", intensity: 4.2 });
+    expect(SALTWIND_LOOK.halo.sun.intensity).toBe(0.8);
     expect(SALTWIND_LOOK.sunbreak.fill.kind).toBe("sea-bounce");
     expect(SALTWIND_LOOK.redline.fill.kind).toBe("violet-rim");
     expect(SALTWIND_LOOK.halo.fill.kind).toBe("city-glow");

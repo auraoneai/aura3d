@@ -563,7 +563,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
 
   /* ---- road, kickers, roofline shortcuts ---- */
   const road = strip(level, 0, level.length + 80, 3, laterals, () => 0, (mid) => !inGap(level, mid), width);
-  builder.add(geometry.custom(dyn(road), { name: "road", material: material.custom(roadSpec(look, [0.92, 0.9, 0.82], glow)) }).runtime({ id: "road" }));
+  builder.add(geometry.custom(dyn(road), { name: "road", material: material.custom(roadSpec(look, [0.92, 0.9, 0.82], look.row ? [0.8, 0.77, 0.69] : glow)) }).runtime({ id: "road" }));
   level.lineups.forEach((lineup, i) => {
     const k = lineup.kicker;
     const wedge = strip(level, k.s, k.s + k.len, 1.5, [-k.w, -k.w / 2, 0, k.w / 2, k.w], (s) => {
@@ -621,7 +621,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
     const data = meshyGeometry("roadster")!;
     builder.add(geometry.custom(
       geometry.dynamic({ positions: data.positions, normals: data.normals, uvs: data.uvs, indices: data.indices }),
-      { name: "car-body", material: meshyMaterial("roadster", { roughness: 0.42, metallic: 0.18 }) }
+      { name: "car-body", castShadow: true, material: meshyMaterial("roadster", row ? { roughness: 0.34, metallic: 0.22, clearcoat: 0.7, clearcoatRoughness: 0.08 } : { roughness: 0.42, metallic: 0.18 }) }
     ).runtime({ id: "car-body" }));
   }
 
@@ -929,7 +929,10 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
   const dustColour = DUST_COLOUR[look.style] ?? [0.78, 0.76, 0.72];
   builder.add(geometry.custom(plumeGeometry(260, 1), {
     name: "plume-dust",
-    material: material.custom(plumeSpec({ color: dustColour, alpha: 1, life: [0.9, 1.9], size: [1.4, 6.5], width: 2.0, spread: 2.0, lift: 1.1, trail: 0.85, glow: 0, additive: false }))
+    // GU47 phase 3: a thinner, smaller dust plume (the 6.5 m puffs hid the road behind the car in the mid-drive screen)
+    material: material.custom(plumeSpec(row
+      ? { color: dustColour, alpha: 0.5, life: [0.7, 1.4], size: [0.8, 3.2], width: 1.6, spread: 1.6, lift: 0.8, trail: 0.85, glow: 0, additive: false }
+      : { color: dustColour, alpha: 1, life: [0.9, 1.9], size: [1.4, 6.5], width: 2.0, spread: 2.0, lift: 1.1, trail: 0.85, glow: 0, additive: false }))
   }).runtime({ id: "plume-dust" }));
   builder.add(geometry.custom(plumeGeometry(160, 2), {
     name: "plume-sparks",
@@ -1005,7 +1008,10 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       placeLineup();
 
       const allSlots = [...lineupSlots.flat(), ...trafficSlots.flat()];
-      const offCentre = 0;
+      // GU47 phase 3 (rubric composition/camera): a lower, closer chase eye a metre toward the sea side, so the car is bigger,
+      // the horizon sits higher and the frame is no longer dead-symmetric; ?look=original keeps today's rig.
+      const offCentre = row ? 0.9 * look.seaSide : 0;
+      const chaseBack = row ? 7.4 : 8.5, eyeDrop = row ? 0.55 : 0, lookLift = row ? 0.25 : 0;
       return {
         vehicleInstances: allSlots.length,
         reset: () => { placeLineup(); director.cut(); chase.reset(); shots?.play(); lean?.reset(); signGate = 0; gateSigns.forEach((sign, k) => sign.setVisible(k === 0)); },
@@ -1104,10 +1110,10 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
           roadNode.setUniform?.("carDir", [-Math.sin(psi), -Math.cos(psi)]);
           // chase camera: the arc position follows exactly; lateral offset, height and fov are smoothed on the road frame
           const cam = director.step(run, events, dt);
-          const back = 8.5 + (run.v / 74) * 1.6;
+          const back = chaseBack + (run.v / 74) * 1.6;
           const eyeS = run.s - back;
-          const eye = roadPoint(level, eyeS, cam.eyeL + offCentre, cam.eyeH);
-          const look2 = roadPoint(level, run.s + 12 + (run.v / 74) * 5, cam.lookL, cam.lookH);
+          const eye = roadPoint(level, eyeS, cam.eyeL + offCentre, cam.eyeH - eyeDrop);
+          const look2 = roadPoint(level, run.s + 12 + (run.v / 74) * 5, cam.lookL, cam.lookH + lookLift);
           void time;
           // shake offset along the road's lateral axis at the eye (the same axis `roadPoint` uses) and world up
           const dx = roadProfile(level, eyeS).dx, inv = 1 / Math.sqrt(1 + dx * dx);

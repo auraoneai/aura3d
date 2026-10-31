@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p3-r2/screens/mid-drive-settle1.1280x720.jpg",
+      "sha256": "7be65b0f6dba687f366cc0b888fd2b79d848df635c9871294d8ba75aff7338ed"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p3-r2/screens/title.1280x720.jpg",
+      "sha256": "53c174232354a8321ec6d31fc326ef50a9547e74c6f22c8bedca29b63ea00ad8"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p3-r2/roadster-hours-port/frames/g22p3-r2-3/roadster-hours-port--redline--settle-60s.jpg",
+      "sha256": "4beb270fbc36a96488147761240ee371013cb107790821296862fce1eda72f27"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-hours-port/p3-r2/roadster-hours-port/frames/g22p3-r2-4/roadster-hours-port--halo--settle-60s.jpg",
+      "sha256": "7dd1287fde9787533db72507d94803976a10d80c43e4518c1000108bf1cf34c0"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 4,
+    "ibl_reflections": 4.5,
+    "environment_world": 6,
+    "atmospheric_effects": 6.5,
+    "material_quality": 5,
+    "modeling_assets": 6,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 5.5,
+    "animation_quality": 6,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The coast frame is overcast grey-blue with flat key light, so the recipe's golden-hour low sun never appears. The canyon has a warm sunset tint, but the walls are evenly lit with no rim or directional falloff."
+    },
+    {
+      "category": "shadows",
+      "seen": "There are no clear car contact shadows on the asphalt in any frame. Only a faint dark smudge sits under the car. Trees, rocks and canyon walls cast no readable shadows."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The Cobra body has some specular sheen, but the road shows no wet or sky reflection despite its glossy dark tone. The night skyway shows no streetlight reflections on the road."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The three biomes are distinct: coast with wind turbines and houses, red canyon, and night city. However, the canyon walls are bare smooth slopes, the city towers are simple striped boxes, and the road edges are sparse."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze is present on the coast and canyon horizons, and floating particles appear in the night and canyon frames. The coast fog is heavy and greys out the whole scene rather than adding depth."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The asphalt is a uniform noisy texture with no wear or roughness variation. The grass hill is a flat green with speckles. The canyon rock has broad banding but no surface detail."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The car model is decent, with roll bars and stripes. The low-poly orange rocks and trees are stylistically mismatched with the semi-realistic car. The city buildings are primitive extruded boxes."
+    },
+    {
+      "category": "composition",
+      "seen": "The car sits centered, taking roughly 8–12% of the frame, below the 15–25% target. The vanishing point is strongly centered with the relay gate on axis, which reads clearly but statically."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits low behind the car with an FOV that looks near 60. In the gameplay frame, the exhaust smoke covers the lower center and partly obscures the car."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is a mild bloom on the moon and a vignette in the night frame. Color grading is weak: the coast frame is washed-out grey and lacks the cinematic contrast and warm palette the recipe calls for."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Motion can only be inferred from stills. Thrust smoke and the CLEAN LANDING callout suggest trick feedback, but the smoke puffs are opaque, flat sprites."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD is clean, with a speedometer arc, thrust and heat bars, timer, relay count, score and progress bar. The red combo text is low contrast and hard to read, and the CLEAN LANDING text overlaps the gate sign."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

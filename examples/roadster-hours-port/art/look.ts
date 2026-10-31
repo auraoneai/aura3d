@@ -76,6 +76,11 @@ export interface SaltwindLookRow {
     /** Whitecap and surf-line amount on the water (0..1). */
     readonly whitecaps: number;
     readonly beam: number;
+    /** Red tail-lamp pool on the road behind the car; 0 on every GU47 route since phase 3 (the pool read as a red slab to the frame
+     * edge in every capture; the roadster's own lamps stay lit). `?look=original` keeps today's 7 m pool. */
+    readonly tail: number;
+    /** GU47 phase 3: street-lamp pools and city-glow wash on the asphalt (Halo only). */
+    readonly lampPool: number;
     /** RH47-10: CC0 detail maps (asphalt plus one rock set) and their strength on the custom road and terrain surfaces. */
     readonly detail: { readonly rock: "limestone" | "sandstone"; readonly amount: number };
   };
@@ -104,75 +109,81 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
     id: "sunbreak",
     timeOfDay: "4 pm side sun through salt haze",
     hdri: "belfast_sunset_puresky",
-    environmentIntensity: 0.55,
+    environmentIntensity: 0.8,
     environmentRotationDeg: 300,
-    sun: { elevationDeg: 20, azimuthDeg: -62, color: "#ffe2b0", intensity: 3.4 },
+    // phase 3: the side sun swings behind the left shoulder (over the sea), so the car, the cliffs and the turbines face it
+    // and every caster throws its shadow forward-right across the road in view (rubric lighting/shadows 4.5/3).
+    sun: { elevationDeg: 22, azimuthDeg: -112, color: "#ffdcaa", intensity: 3.8 },
     fill: { kind: "sea-bounce", color: "#8fc6c4", intensity: 0.55, elevationDeg: 8, azimuthDeg: -110 },
     gantryPoints: null,
-    sky: { zenith: "#4f87b5", horizon: "#dfe2d8", band: "#e9e4d6", bandAmount: 0.55, clouds: [0.45, 0.6], night: 0 },
-    ambient: { sky: "#86b2cf", skyGain: 0.5, ground: "#c9b48a", groundGain: 0.24 },
-    fog: { color: "#dfe2d8", near: 150, far: 1900, density: 0.00042 },
+    sky: { zenith: "#3b7cbd", horizon: "#e2e4da", band: "#e9e4d6", bandAmount: 0.45, clouds: [0.4, 0.32], night: 0 },
+    ambient: { sky: "#8bb6d4", skyGain: 0.56, ground: "#c9b48a", groundGain: 0.28 },
+    fog: { color: "#dde3de", near: 280, far: 3200, density: 0.00022 },
     surfaces: {
-      asphalt: [0.05, 0.056, 0.07], roadGloss: 0.45,
+      asphalt: [0.085, 0.087, 0.092], roadGloss: 0.5,
       rockA: "#e3d9c0", rockB: "#c9a25e", grass: "#b49c5a", sand: "#e9e4d6",
-      deepWater: "#0d4b58", shallowWater: "#1f8c8c", whitecaps: 0.75, beam: 0.3,
+      deepWater: "#0d4b58", shallowWater: "#1f8c8c", whitecaps: 0.75, beam: 0.3, tail: 0, lampPool: 0,
       detail: { rock: "limestone", amount: 1 }
     },
     gantry: { frame: "#e9e4d6", glow: "#c8321f", glowAmount: 0.6 },
-    post: { bloom: { intensity: 0.3, threshold: 1.1, scatter: 0.55 }, flare: 0.5, grain: 0, heat: { amount: 0, startMetres: 40 }, autoExposure: false, vignette: 0.18 },
-    grade: { exposure: 1.0, contrast: 1.06, saturation: 1.04, temperature: 0.06, tint: 0 },
+    post: { bloom: { intensity: 0.3, threshold: 1.1, scatter: 0.55 }, flare: 0.5, grain: 0.025, heat: { amount: 0, startMetres: 40 }, autoExposure: false, vignette: 0.18 },
+    grade: { exposure: 1.24, contrast: 1.1, saturation: 1.08, temperature: 0.06, tint: 0 },
     shadow: SHADOW,
-    spray: { kind: "salt", color: "#eef1ee", alpha: 0.3, density: 0.85, windSpeed: 9, size: [0.12, 0.55], height: [0.2, 6] },
+    spray: { kind: "salt", color: "#eef1ee", alpha: 0.38, density: 0.85, windSpeed: 9, size: [0.12, 0.55], height: [0.2, 6] },
     wind: [6, -1.5]
   },
   redline: {
     id: "redline",
-    timeOfDay: "last light, 7 deg sun, heat shimmer",
+    timeOfDay: "last light, 15 deg sun, heat shimmer",
     hdri: "industrial_sunset_puresky",
-    environmentIntensity: 0.5,
+    environmentIntensity: 0.7,
     environmentRotationDeg: 330,
-    sun: { elevationDeg: 7, azimuthDeg: -30, color: "#ff9a5a", intensity: 3.8 },
+    // phase 3: 7 deg down the canyon left both walls in the far wall's shadow (mean 28, rubric lighting 4.5); at 15 deg from
+    // the left the sunlit right wall rakes from its lit rim down into shade and the road catches the last light.
+    sun: { elevationDeg: 15, azimuthDeg: -58, color: "#ff9e5e", intensity: 4.2 },
     fill: { kind: "violet-rim", color: "#8a72c8", intensity: 0.85, elevationDeg: 18, azimuthDeg: 150 },
     gantryPoints: null,
     sky: { zenith: "#3b4f86", horizon: "#f2a66e", band: "#e9b98c", bandAmount: 0.4, clouds: [0.35, 0.25], night: 0 },
-    ambient: { sky: "#8d97c4", skyGain: 0.44, ground: "#b8744a", groundGain: 0.3 },
+    ambient: { sky: "#9aa2cc", skyGain: 0.95, ground: "#c47c4e", groundGain: 0.7 },
     fog: { color: "#ecb488", near: 120, far: 1700, density: 0.00055 },
     surfaces: {
-      asphalt: [0.09, 0.07, 0.065], roadGloss: 0.65,
+      asphalt: [0.14, 0.115, 0.104], roadGloss: 0.6,
       rockA: "#c97a4c", rockB: "#8a4128", grass: "#9a8344", sand: "#d8a46e",
-      deepWater: "#12606e", shallowWater: "#3a9a9c", whitecaps: 0.3, beam: 0.45,
+      deepWater: "#12606e", shallowWater: "#3a9a9c", whitecaps: 0.3, beam: 0.45, tail: 0, lampPool: 0,
       detail: { rock: "sandstone", amount: 1 }
     },
     gantry: { frame: "#2b2a2e", glow: "#c8321f", glowAmount: 0.9 },
     post: { bloom: { intensity: 0.45, threshold: 1.0, scatter: 0.6 }, flare: 0.75, grain: 0.06, heat: { amount: 1, startMetres: 40 }, autoExposure: false, vignette: 0.24 },
-    grade: { exposure: 1.0, contrast: 1.1, saturation: 1.08, temperature: 0.14, tint: 0.03 },
+    grade: { exposure: 1.5, contrast: 1.06, saturation: 1.06, temperature: 0.12, tint: 0.03 },
     shadow: SHADOW,
-    spray: { kind: "sand", color: "#e2b88a", alpha: 0.24, density: 0.6, windSpeed: 7, size: [0.1, 0.45], height: [0.1, 4] },
+    spray: { kind: "sand", color: "#e2b88a", alpha: 0.3, density: 0.6, windSpeed: 7, size: [0.1, 0.45], height: [0.1, 4] },
     wind: [5, 0.5]
   },
   halo: {
     id: "halo",
     timeOfDay: "blue hour over a mercury-white city carpet",
     hdri: "rooftop_night",
-    environmentIntensity: 0.4,
+    environmentIntensity: 0.85,
     environmentRotationDeg: 40,
-    sun: { elevationDeg: 24, azimuthDeg: 25, color: "#a9bce8", intensity: 0.6 },
-    fill: { kind: "city-glow", color: "#bfd8e0", intensity: 0.45, elevationDeg: -60, azimuthDeg: 0 },
-    gantryPoints: { count: 2, color: "#cfe6ff", intensity: 6, distance: 34 },
+    // phase 3: the moon stays ahead in the sky; the roadster (a black silhouette in phase 2, rubric lighting) now reads
+    // from the stronger city-glow hemisphere and route IBL below.
+    sun: { elevationDeg: 24, azimuthDeg: 25, color: "#b4c6ee", intensity: 0.8 },
+    fill: { kind: "city-glow", color: "#bfd8e0", intensity: 0.8, elevationDeg: -60, azimuthDeg: 0 },
+    gantryPoints: { count: 2, color: "#cfe6ff", intensity: 8, distance: 40 },
     sky: { zenith: "#1b2550", horizon: "#4e6496", band: "#a9c6cf", bandAmount: 0.6, clouds: [0.2, 0], night: 0.75 },
-    ambient: { sky: "#5a74b0", skyGain: 0.36, ground: "#8fb3bd", groundGain: 0.34 },
+    ambient: { sky: "#6680bc", skyGain: 0.46, ground: "#8fb3bd", groundGain: 0.42 },
     fog: { color: "#3c5084", near: 110, far: 1500, density: 0.0006 },
     surfaces: {
-      asphalt: [0.05, 0.056, 0.075], roadGloss: 0.5,
+      asphalt: [0.1, 0.106, 0.124], roadGloss: 0.42,
       rockA: "#3a4560", rockB: "#262e44", grass: "#26343a", sand: "#46506a",
-      deepWater: "#0c2236", shallowWater: "#1b4a5c", whitecaps: 0, beam: 1.3,
+      deepWater: "#0c2236", shallowWater: "#1b4a5c", whitecaps: 0, beam: 1.4, tail: 0, lampPool: 0.9,
       detail: { rock: "limestone", amount: 0.7 }
     },
     gantry: { frame: "#cfd8de", glow: "#c8321f", glowAmount: 1.2 },
-    post: { bloom: { intensity: 0.45, threshold: 1.05, scatter: 0.6 }, flare: 0, grain: 0, heat: { amount: 0, startMetres: 40 }, autoExposure: true, vignette: 0.26 },
-    grade: { exposure: 1.05, contrast: 1.08, saturation: 1.0, temperature: -0.08, tint: 0 },
+    post: { bloom: { intensity: 0.45, threshold: 1.05, scatter: 0.6 }, flare: 0, grain: 0.03, heat: { amount: 0, startMetres: 40 }, autoExposure: true, vignette: 0.22 },
+    grade: { exposure: 1.02, contrast: 1.08, saturation: 1.0, temperature: -0.08, tint: 0 },
     shadow: SHADOW,
-    spray: { kind: "mist", color: "#c9dbe6", alpha: 0.16, density: 0.5, windSpeed: 5, size: [0.15, 0.6], height: [0.5, 8] },
+    spray: { kind: "mist", color: "#c9dbe6", alpha: 0.12, density: 0.5, windSpeed: 5, size: [0.15, 0.6], height: [0.5, 8] },
     wind: [3.5, -0.5]
   }
 };
