@@ -193,7 +193,7 @@ export const ORIGINAL_LOOKS: Readonly<Record<VenueId, FcOriginalLook>> = {
 
 /** Default look path per venue (phase-2 verdict from the remote captures; see the g09 lane report). */
 export const DEFAULT_LOOK_MODE: Readonly<Record<VenueId, FcLookMode>> = {
-  munich: "original", kyoto: "original", favela: "original", lagos: "original", uyuni: "original", glacier: "original"
+  munich: "hybrid", kyoto: "hybrid", favela: "hybrid", lagos: "original", uyuni: "original", glacier: "hybrid"
 };
 
 /** `?look=original` / `?look=gu47` / `?look=hybrid` override the venue default. */
@@ -214,8 +214,7 @@ export function usesOriginalBase(mode: FcLookMode): boolean {
  * four unshadowed tower spots, the 9.5 m broadcast camera, the stands and bowl) and layers the GU47 upgrades that
  * survived the phase-2 captures on top: a real night sky instead of the studio HDRI painted as the sky (the HDRI still
  * lights the bowl), the venue grade, a rim on the night venues, textured turf, weather, lens flares on the far banks,
- * the venue vignette / grain / chromatic aberration, Uyuni's mirror flat at 1024 and a Glacier dome that encloses the
- * bowl instead of cutting through the far touchline.
+ * the venue vignette / grain / chromatic aberration, and no Glacier dome cutting through the far touchline.
  */
 export interface FcHybridLayer {
   /** Sky colour that replaces the look's drawn HDRI sky (the HDRI keeps lighting the scene); undefined = the look sky. */
@@ -234,8 +233,11 @@ export interface FcHybridLayer {
   readonly vignette: number;
   readonly grain: number;
   readonly chromaticAberration: number;
-  /** Glacier dome scale [x, y, z] (4.6.2: [1.22, 1, 1.22], which cut through the far touchline); undefined = 4.6.2. */
-  readonly domeScale?: readonly [number, number, number];
+  /**
+   * Glacier dome: true hides it. The 4.6.2 scale cut through the far touchline; a 2.4x enclosing dome (round 1)
+   * filled the space above the stands with jagged ice facets, so the hybrid frame drops it for the night sky.
+   */
+  readonly hideDome?: boolean;
 }
 
 export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
@@ -267,12 +269,14 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
     surface: "plain", turfRoughness: 0.95, mirror: null,
     bloom: { intensity: 0.1, threshold: 0.94 }, vignette: 0.25, grain: 0, chromaticAberration: 0
   },
+  // Round 1: the 1024 mirror drew a broken reflection (upside-down gantry, an oversized player at the wrong place, the
+  // lower half of the frame only), so the hybrid Uyuni is a pale-dawn grade on the salt instead.
   uyuni: {
-    exposureEv: -0.6, floodScale: 1,
-    grade: { contrast: 1.06, saturation: 1.0, temperature: 0.08, tint: 0 },
+    background: "#d9c4c0", exposureEv: -0.9, floodScale: 1,
+    grade: { contrast: 1.12, saturation: 1.1, temperature: 0.18, tint: 0.03 },
     rim: null, flares: false, weather: "none",
-    surface: "plain", turfRoughness: 0.3, mirror: { resolution: 1024, tint: "#eef3f8" },
-    bloom: { intensity: 0.08, threshold: 0.95 }, vignette: 0.2, grain: 0, chromaticAberration: 0
+    surface: "plain", turfRoughness: 0.3, mirror: null,
+    bloom: { intensity: 0.08, threshold: 0.95 }, vignette: 0.3, grain: 0, chromaticAberration: 0
   },
   glacier: {
     background: "#050b14", exposureEv: 0.08, floodScale: 1.3,
@@ -280,6 +284,6 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
     rim: { color: "#7fe8c9", intensity: 0.8, azimuthDeg: 170 }, flares: true, weather: "snow",
     surface: "ice", turfRoughness: 0.3, mirror: null,
     bloom: { intensity: 0.3, threshold: 0.78 }, vignette: 0.28, grain: 0, chromaticAberration: 0,
-    domeScale: [2.4, 1.6, 2.4]
+    hideDome: true
   }
 };

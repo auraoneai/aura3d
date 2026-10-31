@@ -67,7 +67,7 @@ export function fcEngineGates(search: string = typeof location === "undefined" ?
 
 const HIDDEN = 0.0001;
 
-/** `?dome=off` hides the Glacier dome (QA A/B for the hybrid enclosing dome). */
+/** `?dome=off` hides the Glacier dome on any look path (QA A/B). */
 function domeOn(search: string = typeof location === "undefined" ? "" : location.search): boolean {
   return new URLSearchParams(search).get("dome") !== "off";
 }
@@ -1008,10 +1008,10 @@ export function applyVenue(h: WorldHandles, v: VenueSpec, mode: FcLookMode = fcL
   h.crowd?.setVisible(v.standCount > 0);
   h.wavers?.setVisible(v.standCount > 0);
   // Lower dome floor to y=-6.5 when active so its bottom never occludes the turf
-  // hybrid: the dome encloses the bowl and the camera (the 4.6.2 scale cut through the far touchline); `?dome=off` hides it
-  const domeScale = mode === "hybrid" ? HYBRID_LAYERS[v.id].domeScale : undefined;
-  if (v.dome && domeOn()) {
-    h.dome?.setPosition(0, -6.5, 0).setScale(domeScale ? [...domeScale] : [1.22, 1, 1.22]).setVisible(true);
+  // hybrid Glacier drops the dome (look.ts hideDome); `?dome=off` hides it on any path
+  const hideDome = mode === "hybrid" && HYBRID_LAYERS[v.id].hideDome === true;
+  if (v.dome && domeOn() && !hideDome) {
+    h.dome?.setPosition(0, -6.5, 0).setScale([1.22, 1, 1.22]).setVisible(true);
   } else {
     h.dome?.setPosition(0, -90, 0).setScale([HIDDEN, HIDDEN, HIDDEN]).setVisible(false);
   }
