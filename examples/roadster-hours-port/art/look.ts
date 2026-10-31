@@ -76,7 +76,8 @@ export interface SaltwindLookRow {
     /** Whitecap and surf-line amount on the water (0..1). */
     readonly whitecaps: number;
     readonly beam: number;
-    /** GU47 phase 3: red tail-lamp glow on the road behind the car (soft, about 2 m long); `?look=original` keeps today's 7 m pool. */
+    /** Red tail-lamp pool on the road behind the car; 0 on every GU47 route since phase 3 (the pool read as a red slab to the frame
+     * edge in every capture; the roadster's own lamps stay lit). `?look=original` keeps today's 7 m pool. */
     readonly tail: number;
     /** GU47 phase 3: street-lamp pools and city-glow wash on the asphalt (Halo only). */
     readonly lampPool: number;
@@ -117,11 +118,11 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
     gantryPoints: null,
     sky: { zenith: "#3b7cbd", horizon: "#e2e4da", band: "#e9e4d6", bandAmount: 0.45, clouds: [0.4, 0.32], night: 0 },
     ambient: { sky: "#8bb6d4", skyGain: 0.56, ground: "#c9b48a", groundGain: 0.28 },
-    fog: { color: "#dde3de", near: 190, far: 2300, density: 0.00034 },
+    fog: { color: "#dde3de", near: 280, far: 3200, density: 0.00022 },
     surfaces: {
       asphalt: [0.085, 0.087, 0.092], roadGloss: 0.5,
       rockA: "#e3d9c0", rockB: "#c9a25e", grass: "#b49c5a", sand: "#e9e4d6",
-      deepWater: "#0d4b58", shallowWater: "#1f8c8c", whitecaps: 0.75, beam: 0.3, tail: 0.12, lampPool: 0,
+      deepWater: "#0d4b58", shallowWater: "#1f8c8c", whitecaps: 0.75, beam: 0.3, tail: 0, lampPool: 0,
       detail: { rock: "limestone", amount: 1 }
     },
     gantry: { frame: "#e9e4d6", glow: "#c8321f", glowAmount: 0.6 },
@@ -148,7 +149,7 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
     surfaces: {
       asphalt: [0.14, 0.115, 0.104], roadGloss: 0.6,
       rockA: "#c97a4c", rockB: "#8a4128", grass: "#9a8344", sand: "#d8a46e",
-      deepWater: "#12606e", shallowWater: "#3a9a9c", whitecaps: 0.3, beam: 0.45, tail: 0.14, lampPool: 0,
+      deepWater: "#12606e", shallowWater: "#3a9a9c", whitecaps: 0.3, beam: 0.45, tail: 0, lampPool: 0,
       detail: { rock: "sandstone", amount: 1 }
     },
     gantry: { frame: "#2b2a2e", glow: "#c8321f", glowAmount: 0.9 },
@@ -175,7 +176,7 @@ export const SALTWIND_LOOK: Readonly<Record<SaltwindVariant, SaltwindLookRow>> =
     surfaces: {
       asphalt: [0.1, 0.106, 0.124], roadGloss: 0.42,
       rockA: "#3a4560", rockB: "#262e44", grass: "#26343a", sand: "#46506a",
-      deepWater: "#0c2236", shallowWater: "#1b4a5c", whitecaps: 0, beam: 1.4, tail: 0.3, lampPool: 0.9,
+      deepWater: "#0c2236", shallowWater: "#1b4a5c", whitecaps: 0, beam: 1.4, tail: 0, lampPool: 0.9,
       detail: { rock: "limestone", amount: 0.7 }
     },
     gantry: { frame: "#cfd8de", glow: "#c8321f", glowAmount: 1.2 },
