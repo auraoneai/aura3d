@@ -272,14 +272,14 @@ export function practicalPositions(chapter: number, count: number): [number, num
  * GU47 phase 4: the inked key's shadow. QA only, `?siltshadow=<mapSize>,<cascades>,<maxDistance>` overrides it so one
  * remote probe can compare shadow setups (software WebGL2); without the param the defaults below apply.
  */
-function keyShadow(options: BuildOptions): { mapSize: 512 | 1024 | 2048 | 4096; cascades: number; maxDistance: number; bias: number } {
-  const base = { mapSize: options.shadowMapSize ?? 4096, cascades: options.low ? 1 : 3, maxDistance: 360, bias: -0.0004 };
+function keyShadow(options: BuildOptions): { mapSize: 512 | 1024 | 2048 | 4096; cascades: 1 | 2 | 3 | 4; maxDistance: number; bias: number } {
+  const base = { mapSize: options.shadowMapSize ?? 4096, cascades: (options.low ? 1 : 3) as 1 | 2 | 3 | 4, maxDistance: 360, bias: -0.0004 };
   const raw = typeof location !== "undefined" ? new URLSearchParams(location.search).get("siltshadow") : null;
   if (!raw) return base;
   const [size, cascades, distance] = raw.split(",").map(Number);
   return {
     mapSize: ([512, 1024, 2048, 4096] as const).find((v) => v === size) ?? base.mapSize,
-    cascades: cascades && cascades >= 1 && cascades <= 4 ? Math.trunc(cascades) : base.cascades,
+    cascades: cascades && cascades >= 1 && cascades <= 4 ? (Math.trunc(cascades) as 1 | 2 | 3 | 4) : base.cascades,
     maxDistance: distance && distance > 10 ? distance : base.maxDistance,
     bias: base.bias
   };
