@@ -12,7 +12,7 @@ import {
 } from "@aura3d/engine";
 import { assets } from "./assets";
 import { CHAPTERS } from "./chapters-data";
-import { chaseEyeBlocked, clearChaseEye, createChaseClearance, sceneryColumns, wantedChaseEye } from "./camera";
+import { INKED_CHASE, ORIGINAL_CHASE, chaseEyeBlocked, clearChaseEye, createChaseClearance, sceneryColumns, wantedChaseEye } from "./camera";
 import { gateOpen, objectiveOf, type Sim } from "./sim";
 import { RING_FRAGMENT, RING_VERTEX, SKY_FRAGMENT, SKY_INK_FRAGMENT, SKY_VERTEX, WATER_FRAGMENT, WATER_VERTEX } from "./shaders";
 import { createSiltFx, type SiltFx } from "./fx";
@@ -819,7 +819,8 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
             node("tow-glow").setPosition(...FAR);
           }
           towing = state.towing;
-          const tx = state.x + fx * 14, ty = state.y + 1.2, tz = state.z + fz * 14;
+          const framing = inked ? INKED_CHASE : ORIGINAL_CHASE;
+          const tx = state.x + fx * framing.lookAhead, ty = state.y + framing.lookLift, tz = state.z + fz * framing.lookAhead;
           if (!init || cut) { lookX = tx; lookY = ty; lookZ = tz; init = true; clearance.reset(); }
           const k = 1 - Math.exp(-dt * 5);
           lookX += (tx - lookX) * k; lookY += (ty - lookY) * k; lookZ += (tz - lookZ) * k;
@@ -839,7 +840,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
             if (cut) roll = wantRoll;
             up = rolledUp(fx0(state.yaw), fz0(state.yaw), roll);
           }
-          const eye = options.clearCamera === false ? wantedChaseEye(sim) : clearChaseEye(sim, clearance, dt, scenery);
+          const eye = options.clearCamera === false ? wantedChaseEye(sim, framing) : clearChaseEye(sim, clearance, dt, scenery, framing);
           lastEye = { eye, blocked: chaseEyeBlocked(sim.world, scenery)(eye[0], eye[1], eye[2]) };
           let shown: [number, number, number] = [eye[0], eye[1], eye[2]];
           if (shakeLeft > 0) {

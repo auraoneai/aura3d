@@ -10,12 +10,22 @@ export const CAMERA_MIN_DISTANCE = 2.5;
 
 type Eye = [number, number, number];
 
+/** Chase framing: distance behind the rider, extra distance per unit of speed (capped) and height above the board. */
+export interface ChaseFraming { readonly back: number; readonly perSpeed: number; readonly maxExtra: number; readonly height: number; readonly lookAhead: number; readonly lookLift: number }
+/** Today's chase (the original look). */
+export const ORIGINAL_CHASE: ChaseFraming = { back: 13, perSpeed: 0.08, maxExtra: 8, height: 5.2, lookAhead: 14, lookLift: 1.2 };
+/**
+ * GU47 phase 3 (inked look): a closer, lower chase so the rider fills about 12-18% of the frame height instead of a
+ * 5% speck (rubric composition and camera; blind panel "the player is tiny").
+ */
+export const INKED_CHASE: ChaseFraming = { back: 8.5, perSpeed: 0.06, maxExtra: 6, height: 3.4, lookAhead: 11, lookLift: 1.7 };
+
 /** The chase eye the camera wants: behind the rider along the heading, above the board, further back at speed. */
-export function wantedChaseEye(sim: Pick<Sim, "state" | "flight">): Eye {
+export function wantedChaseEye(sim: Pick<Sim, "state" | "flight">, framing: ChaseFraming = ORIGINAL_CHASE): Eye {
   const { state, flight } = sim;
   const fx = -Math.sin(state.yaw), fz = -Math.cos(state.yaw);
-  const back = 13 + Math.min(8, Math.abs(flight.speed) * 0.08);
-  return [state.x - fx * back, state.y + 5.2 + Math.abs(flight.vertical) * 0.05, state.z - fz * back];
+  const back = framing.back + Math.min(framing.maxExtra, Math.abs(flight.speed) * framing.perSpeed);
+  return [state.x - fx * back, state.y + framing.height + Math.abs(flight.vertical) * 0.05, state.z - fz * back];
 }
 
 /** Native sizes of the tree model (0.927 x 1.684 x 0.883) and the rock models (about 1 unit) scaled by the placement. */
@@ -51,10 +61,10 @@ export function createChaseClearance(): CameraClearance {
 }
 
 /** The eye the camera should use this frame: the wanted chase eye, pulled in toward the rider before it reaches scenery. */
-export function clearChaseEye(sim: Pick<Sim, "state" | "flight" | "world">, clearance: CameraClearance, dt: number, scenery: readonly Column[] = []): Eye {
+export function clearChaseEye(sim: Pick<Sim, "state" | "flight" | "world">, clearance: CameraClearance, dt: number, scenery: readonly Column[] = [], framing: ChaseFraming = ORIGINAL_CHASE): Eye {
   return clearance.update(dt, {
     focus: [sim.state.x, sim.state.y + 2.2, sim.state.z],
-    eye: wantedChaseEye(sim),
+    eye: wantedChaseEye(sim, framing),
     minDistance: CAMERA_MIN_DISTANCE,
     blocked: chaseEyeBlocked(sim.world, scenery)
   });

@@ -154,9 +154,9 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     chapter: 4, hour: "slate storm in the orchard (15:00)", night: false,
     // phase 3: storm light, a warm sun breaking under the slate deck onto rain-green orchard grass, the deck lifting
     // into a bright horizon gap behind dark ridges (no pale plateau band, no grey wash)
-    key: { elevationDeg: 24, azimuthDeg: 205, color: "#ffdcaa", intensity: 2.3 },
+    key: { elevationDeg: 40, azimuthDeg: 200, color: "#ffdcaa", intensity: 2.3 },
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.4 },
-    hdri: "kloppenheim_02", environmentIntensity: 0.75, environmentRotationDeg: 205, practicals: 0, pcss: false,
+    hdri: "kloppenheim_02", environmentIntensity: 0.75, environmentRotationDeg: 200, practicals: 0, pcss: false,
     sky: { top: "#26324a", horizon: "#d9c8a4", discSize: 0.022, glow: 0.45, cirrus: 0.2, dust: 0.15, storm: 1, stars: 0 },
     fog: { color: "#7c8aa0", density: 0.00042, heightFalloff: 0.05, heightReference: 0, maxOpacity: 0.3 },
     grade: { exposure: 1.08, contrast: 1.2, saturation: 1.18, temperature: 0.03 },
