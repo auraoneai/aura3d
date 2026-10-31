@@ -217,10 +217,12 @@ void main() {
   float sunAz = cos(az - atan(sd.z, sd.x)) * 0.5 + 0.5;
   float bandW = pow(sunAz, 2.2) * (1.0 - smoothstep(0.0, 0.32, h)) * smoothstep(-0.06, 0.02, h);
   vec3 band = mix(bandLow, bandHigh, smoothstep(0.0, 0.2, h));
-  vec3 twSky = mix(vec3(0.05, 0.16, 0.18), mix(vec3(0.09, 0.07, 0.26), vec3(0.03, 0.02, 0.10), smoothstep(0.25, 0.9, h)), smoothstep(-0.02, 0.18, h));
+  // GU47 phase 3: the teal-to-violet turn was smoothstep(-0.02, 0.18, h); the teal-fogged cliffs then stood as pale ghosts on
+  // violet (round g19p3-r1). The sky now stays teal behind the canyon walls and turns violet above them
+  vec3 twSky = mix(vec3(0.05, 0.16, 0.18), mix(vec3(0.09, 0.07, 0.26), vec3(0.03, 0.02, 0.10), smoothstep(0.35, 0.95, h)), smoothstep(0.08, 0.42, h));
   // GU47 phase 3: the lavender lift was vec3(0.10, 0.08, 0.22) over |h| < 0.5 and washed the planet into the sky; it now
   // hugs the horizon (|h| < 0.22) so the violet upper sky stays deep and the planet and aurora read against it
-  twSky += band * bandW * 0.95 + vec3(0.07, 0.05, 0.15) * (1.0 - smoothstep(0.0, 0.22, abs(h)));
+  twSky += band * bandW * 0.95 + vec3(0.04, 0.06, 0.10) * (1.0 - smoothstep(0.0, 0.22, abs(h)));
   sky = mix(sky, twSky, twilight);
   // cloud layer hugging the horizon
   float cl = fbm(vec2(az * 2.4 + u_time * 0.008, h * 6.0));
