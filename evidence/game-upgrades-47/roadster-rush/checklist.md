@@ -31,3 +31,21 @@ Status per acceptance line: `code` (implemented, verifiable statically or by uni
 | AO-W1 | rings in frustum in >= 4 of 5 states; <= 12 draws; no-three and visible-strings pass | code + unit test (rings every 30 m, <= 12 draws, plain labels); frustum count phase 2 |
 | AO-W2 | <= 32 live; no decal-budget overrun | code + unit test (procedural skid/oil/arrow, one instanced plane, capacity 32, no engine decals used); pixels phase 2 |
 | AO-PF1 | desktop dense <= 230, phone <= 190; no S4/S7 on phone; same_game false vs the 3 racers | budget written (budget.json); S4/S7 High-only, never on phones (unit test); measured draws and sibling judge phase 2 |
+
+## Phase 3 (4.7.1), 2026-10-31
+
+Remote run `g02p3-r5-1034` (software WebGL2). Details are in `docs/prds/game-upgrades-47/lanes/g02.md` § Phase 3.
+
+| Item | Status |
+|---|---|
+| 142b0dc87 (instant fog write) | reverted (b7cb803ba); engine a7759f470 fixed the blend; all phase-3 targets boot |
+| Final screens 1280x720 / 390x844, card 2x/1x, card previews | retaken and committed (`git add -f`); `screens-fresh` clean |
+| Steady-state capture, every variant (default, dusk, night; 25 s and 60 s) | committed `luma-after.json`; 6 luma-band misses reported, no band widened (the 4.7.0 panel build misses the same 6 shots) |
+| Rubric round (`look-judgement.json`, validated) | min 4 (shadows), max 7.5 (ui_hud); 7-in-every-category not met. Environment, materials, modeling and reflections are blocked on WP-36 |
+| Sibling vs heatsink-port | pass (same_game false, 0.826) |
+| Sibling vs roadster-hours-port | fail (same_game false, 0.75 < 0.8) |
+| Budget after | desktop 176 / 230, phone 161 / 190 draws |
+| AO-L4 / shadows | contact occlusion under the hero (no new draw) and near traffic (+1 draw) |
+| AO-P3 | motion blur shutter 0.35 -> 0.22, max 14 px |
+| AO-H2 / fonts | licensed Whitney, DIN Pro and Monument Grotesk Mono now load (they were declared nowhere before) |
+| Game checks | 0 errors, 6 warnings (luma-band only) |

@@ -1,0 +1,84 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../../../../../tmp/gu47-distinct/baseline/roadster-rush/roadster-rush--default.jpg",
+      "sha256": "295db980d0c3b55facfd183420f091789c0f661066b3e2153deb2181f06fdae4"
+    },
+    {
+      "path": "../../../../../tmp/gu47-distinct/baseline/roadster-rush/roadster-rush--dusk.jpg",
+      "sha256": "2f0c446715afaaba8472160c5403fb1443b209ed4029f428ece146ede1fbc827"
+    },
+    {
+      "path": "../../../../../tmp/gu47-distinct/baseline/roadster-rush/roadster-rush--night.jpg",
+      "sha256": "29492518da2bbe03356ed409b1e3dc9619205d0189a940c1edc0feaf2844dc93"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4.5,
+    "ibl_reflections": 6,
+    "environment_world": 5,
+    "atmospheric_effects": 5,
+    "material_quality": 5.5,
+    "modeling_assets": 5,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 6,
+    "ui_hud": 1
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A low sun sits at the vanishing point and casts a warm specular streak down the asphalt in frames 1 and 2, which reads as golden hour. Frame 3 turns to blue dusk and the whole scene goes murky. The car is lit mostly by a purple/blue ambient with little warm rim light from the sun behind it."
+    },
+    {
+      "category": "shadows",
+      "seen": "In frame 1 the overhead gantry casts a dark band across the road. The car has almost no grounded contact shadow and seems to float over the motion-blurred asphalt. The buildings show no cast shadows onto the street."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The car body shows a chrome-like purple sheen that picks up the sky. The road reflects the sun as a bright streak. The reflections look like a generic environment map rather than the actual street and buildings, and there are no visible reflections of the city on the car."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The buildings are plain extruded boxes with a tiled, procedural window texture that repeats identically. Floating ring decorations hang in the air with no clear purpose. Signage ('SKYWAY 9 CENTRAL', 'EXIT 4B HARBOUR'), streetlights and distant traffic add some context, but the world is sparse and blocky."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "There is mild warm haze toward the horizon and a bloom glow around the sun. No volumetric light shafts or particulates are visible. The fog does not visibly separate mid-distance buildings in depth; they sit at near-full contrast."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The asphalt is mostly smeared by motion blur, with a coarse noise texture where visible. The barriers and shoulders are flat and untextured. The building facades are flat color tiles with no roughness variation. The car paint is the only material with some specular character."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The hero car is a reasonable open-wheel/hypercar hybrid with wheels, diffuser and rear wing. The rear wing is a flat salmon bar that looks placeholder. Traffic vehicles are tiny low-detail blocks, and the overhead gantries are simple frames."
+    },
+    {
+      "category": "composition",
+      "seen": "The layout is centered and symmetric, with strong vanishing-point lane lines leading to the sun. The car covers roughly 4–5% of the frame by area (about 15% of the width), below the 15–25% target. The gantry sign crops awkwardly at the top in frame 2."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase cam sits low behind the car at a field of view close to 60°. The framing stays locked and identical across all three frames, with no visible lean or dynamic offset."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Strong radial/directional motion blur on the road gives a sense of speed, and there is bloom on the sun and the cyan exhaust trails. The color grade skews purple instead of the expected burnt-orange/charcoal. Frame 3 crushes the blacks heavily, and there is no clear film grain or filmic tonemap character."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "No HUD is visible in any frame: no speedometer, position, lap, timer or minimap."
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}

@@ -13,7 +13,7 @@
     ],
     "textureMaxPx": 2048,
     "routeJsGzipDelta": "reported (tools/bundle-report/report.mjs), phase 2",
-    "note": "Budgets are never raised to pass (PRD D7). Low tier is 80% of the High desktop budget (PRD \u00a76.4)."
+    "note": "Budgets are never raised to pass (PRD D7). Low tier is 80% of the High desktop budget (PRD §6.4)."
   },
   "source": "evidence/apex-overdrive/audit-2026-10-29/summary.tsv (after rows: the instanced build on 4.6.x, software WebGL2)",
   "before": {
@@ -82,7 +82,120 @@
     "night": null,
     "note": "No committed before capture pins dusk or night (the quick bar had no URL param); WP-38's before run on 4.6.0 shows sunset for ?tod= rows. Time-of-day spread 22.65 (PRD WP-12 Today line)."
   },
-  "after": null,
+  "after": {
+    "source": "GU47 phase 3 remote run g02p3-r5-1034 (build e0fd6dc0b; software WebGL2): final-screens spec meta.jsonl and steady-state luma JSON under evidence/game-upgrades-47/roadster-rush/p3-r5/",
+    "maxDesktopDrawCalls": 176,
+    "maxPhoneDrawCalls": 161,
+    "rows": {
+      "1280x720/title": {
+        "drawCalls": 87,
+        "meanLuma": 69.41,
+        "darkFrac": 0.0053
+      },
+      "1280x720/gameplay-early": {
+        "drawCalls": 149,
+        "meanLuma": 63.75,
+        "darkFrac": 0.0009
+      },
+      "1280x720/key-ramp": {
+        "drawCalls": 161,
+        "meanLuma": 63.75,
+        "darkFrac": 0.0006
+      },
+      "1280x720/mid-drive": {
+        "drawCalls": 172,
+        "meanLuma": 55.92,
+        "darkFrac": 0.0071
+      },
+      "1280x720/results": {
+        "drawCalls": 176,
+        "meanLuma": 53.98,
+        "darkFrac": 0.0163
+      },
+      "390x844/title": {
+        "drawCalls": 87,
+        "meanLuma": 111.43,
+        "darkFrac": 0.0005
+      },
+      "390x844/gameplay-early": {
+        "drawCalls": 149,
+        "meanLuma": 100.97,
+        "darkFrac": 0.0019
+      },
+      "390x844/key-ramp": {
+        "drawCalls": 161,
+        "meanLuma": 103.18,
+        "darkFrac": 0.0013
+      },
+      "390x844/results": {
+        "drawCalls": 159,
+        "meanLuma": 85.72,
+        "darkFrac": 0.0142
+      },
+      "tod-1280x720/sunset": {
+        "drawCalls": 150,
+        "meanLuma": 62.84,
+        "darkFrac": 0.0031
+      },
+      "tod-1280x720/dusk": {
+        "drawCalls": 150,
+        "meanLuma": 43.53,
+        "darkFrac": 0.1216
+      },
+      "tod-1280x720/night": {
+        "drawCalls": 134,
+        "meanLuma": 26.11,
+        "darkFrac": 0.6215
+      },
+      "1440x900/card.2x": {
+        "drawCalls": 164,
+        "meanLuma": 71.84,
+        "darkFrac": 0.0012
+      },
+      "roadster-rush--default/settle-25s": {
+        "drawCalls": 147,
+        "triangles": 2001309,
+        "textureBytes": 224798720,
+        "meanLuma": 79.35,
+        "darkFrac": 0.0068
+      },
+      "roadster-rush--default/settle-60s": {
+        "drawCalls": 141,
+        "triangles": 1375241,
+        "textureBytes": 225847296,
+        "meanLuma": 58.13,
+        "darkFrac": 0.0336
+      },
+      "roadster-rush--dusk/settle-25s": {
+        "drawCalls": 144,
+        "triangles": 1735097,
+        "textureBytes": 224798720,
+        "meanLuma": 49.3,
+        "darkFrac": 0.0841
+      },
+      "roadster-rush--dusk/settle-60s": {
+        "drawCalls": 141,
+        "triangles": 1384319,
+        "textureBytes": 225847296,
+        "meanLuma": 43.32,
+        "darkFrac": 0.0344
+      },
+      "roadster-rush--night/settle-25s": {
+        "drawCalls": 136,
+        "triangles": 2139143,
+        "textureBytes": 224798720,
+        "meanLuma": 37.92,
+        "darkFrac": 0.1727
+      },
+      "roadster-rush--night/settle-60s": {
+        "drawCalls": 125,
+        "triangles": 1374185,
+        "textureBytes": 225847296,
+        "meanLuma": 23.81,
+        "darkFrac": 0.5924
+      }
+    }
+  },
   "expectedDrawDelta": {
     "AO-A1 glass towers replace showcaseModernBuildingOne (75 meshes)": -72,
     "AO-E2 deck pylons (one instanced node; cap rings share it)": 1,
