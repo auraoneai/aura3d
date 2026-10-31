@@ -324,6 +324,14 @@ export class LiveAtmosphere {
     this.emit();
   }
 
+  /** Drops the sky (a scene whose sky node left with `setScene`); listeners fire as for `setSky`. */
+  clearSky(): void {
+    if (this.sky === null) return;
+    this.sky = null;
+    for (const listener of this.skyListeners) listener();
+    this.emit();
+  }
+
   /** P3-T6 — fires only when the sky spec changes (probe re-capture hook). */
   onSkyChanged(listener: () => void): () => void {
     this.skyListeners.add(listener);

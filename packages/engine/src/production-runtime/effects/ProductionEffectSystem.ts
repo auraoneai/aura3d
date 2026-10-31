@@ -460,14 +460,25 @@ export class ProductionEffectSystem {
     this.lastHook?.setLowResEnabled?.(on);
   }
 
+  /** The sky spec the current scene's sky node put on LiveAtmosphere (null: the scene has none). */
+  private sceneSky: object | null = null;
+
   /** P3-T4 — sky nodes land on LiveAtmosphere (consumed by prd07.sky flag-on). */
   private rebuildSkyFromScene(): void {
+    let found: object | null = null;
     // Grouped-effects walk: sky nodes inside visible groups count too.
     this.walkNodes((node, visible) => {
       if (!visible || (node as { kind?: string }).kind !== "sky") return;
       const spec = (node as { spec?: unknown }).spec;
-      if (spec && typeof spec === "object") this.atmosphere.setSky(spec as Parameters<LiveAtmosphere["setSky"]>[0]);
+      if (spec && typeof spec === "object") {
+        found = spec;
+        this.atmosphere.setSky(spec as Parameters<LiveAtmosphere["setSky"]>[0]);
+      }
     });
+    // A sky that came from the previous scene's sky node leaves with it (setScene to a scene without one); a sky set
+    // at runtime through app.atmosphere.setSky stays. Before this the old sky kept drawing over the next scene.
+    if (found === null && this.sceneSky !== null && this.atmosphere.state().sky === this.sceneSky) this.atmosphere.clearSky();
+    this.sceneSky = found;
     this.applyLegacySkyVisibility();
   }
 
