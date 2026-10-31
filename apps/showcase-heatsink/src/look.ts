@@ -107,7 +107,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     environmentRotationDeg: 0,
     key: { color: "#ffb070", elevationDeg: 28, azimuthDeg: 120, intensity: 1.6 },
     rim: { color: PALETTE.coolantCyan, intensity: 0.35 },
-    fog: { color: "#2a1d14", density: 0.011 },
+    // GU47 phase 3 rubric (atmospheric_effects 5: "depth fog weak, distant towers keep full contrast"): denser, horizon-toned.
+    fog: { color: "#4a3a30", density: 0.016 },
     // GU47 phase 3 (forward title pose, cobblestone night sky): round 1 measured mean 41 at +0.35 and 50 at +0.8 (band 45-70, software WebGL2).
     // Round 2: mean 55 at +0.6 and 64 at +1.0 under cobblestone_street_night; round 3 (kloppenheim_02, +0.8) 66.4, near
     // the 70 ceiling (60 s, software WebGL2).
@@ -152,7 +153,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     lutIntensity: 0.4,
     bloom: { intensity: 0.55, threshold: 0.8, color: "#ff9a4a" },
     vignette: 0.28,
-    grain: 0,
+    // GU47 phase 3 rubric (postprocessing: "no film grain or consistent cinematic look"): a light grain on every circuit.
+    grain: 0.035,
     boostMotionBlur: 0.35,
     weather: "dust",
     road: { color: "#e8ba80", colorAlt: "#dcae76", roughness: 0.7, metalness: 0.02 },
@@ -173,7 +175,8 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     key: { color: "#b9a4ff", elevationDeg: 18, azimuthDeg: 300, intensity: 1 },
     rim: { color: PALETTE.coolantCyan, intensity: 0.35 },
     upFill: { color: "#ff7a2e", intensity: 0.45 },
-    fog: { color: "#2a2348", density: 0.008 },
+    // GU47 phase 3 rubric: denser violet aerial perspective (also veils the HDRI tree line behind the skyline).
+    fog: { color: "#4a4670", density: 0.014 },
     // GU47 phase 2: the after capture measured mean 73.3 (band 45-70, software WebGL2), mostly the bright pre-dawn sky.
     // GU47 phase 3: round 1 measured mean 98 at -0.25 (software WebGL2, sun glare in the old backward title pose).
     // Round 2: mean 45.5 at -0.7 and 35 at -1.2 (60 s, software WebGL2), against the 45-70 band.
@@ -182,7 +185,7 @@ export const CIRCUIT_LOOKS: Readonly<Record<CircuitId, CircuitLook>> = {
     lutIntensity: 0.5,
     bloom: { intensity: 0.55, threshold: 0.8, color: "#ff9a5a" },
     vignette: 0.28,
-    grain: 0,
+    grain: 0.035,
     boostMotionBlur: 0.35,
     weather: "embers",
     road: { color: "#8a8098", colorAlt: "#7e7590", roughness: 0.24, metalness: 0.1 },
