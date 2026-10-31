@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../aura3d-gu47/g12/evidence/slingshot-siege/screens/final/1280x720/03-action-01-state-aiming-backend-webgl2-backgrou.jpg",
+      "sha256": "d57c5eceebcb14637ddc2ced12a7aa4492836a32a654bae5d5ea70f5b065a56a"
+    },
+    {
+      "path": "../aura3d-gu47/g12/evidence/game-upgrades-47/slingshot-siege/bp5/slingshot-siege/frames/g12bp5-slingshot-siege-1/slingshot-siege--default--settle-60s.jpg",
+      "sha256": "700dd16505492915543983543ef3f331a7071dd41d10f575e2c277891e9e2f53"
+    },
+    {
+      "path": "../aura3d-gu47/g12/evidence/game-upgrades-47/slingshot-siege/bp5/slingshot-siege/frames/g12bp5-slingshot-siege-3/slingshot-siege--ch3--settle-60s.jpg",
+      "sha256": "3d31f9656334780dcae25c9be006bd35a186a213e45c5f7a1f099f56df44ba8a"
+    },
+    {
+      "path": "../aura3d-gu47/integration/evidence/game-upgrades-47/verify2/slingshot-siege/frames/gu47-verify2-slingshot-siege-4/slingshot-siege--ch5--settle-60s.jpg",
+      "sha256": "c8e75584f86c35b3c88c47beb5fe151614b2cbb8436e72df0f8f9a72c5fb8839"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 4,
+    "ibl_reflections": 3,
+    "environment_world": 5,
+    "atmospheric_effects": 3.5,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 5,
+    "camera": 4.5,
+    "postprocessing": 4,
+    "animation_quality": 5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Flat ambient-heavy daylight with a single soft key. There is no rim separation on the slingshot, windmill, or fortress. The night frame darkens the rocks to near-black silhouettes, and the ground stays uniformly bright green."
+    },
+    {
+      "category": "shadows",
+      "seen": "Daytime frames show almost no contact shadows under crates, barrel, arch, or windmill, so objects float on the turf. The night frame adds hard black crater shadows, but there is no soft contact grounding."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "There are no visible environment reflections on the stone, wood, or water. The ocean is a flat blue plane with one specular hotspot in frame 1. The night frame's white horizon band reads as an unlit sky fill, not a reflection."
+    },
+    {
+      "category": "environment_world",
+      "seen": "A disc island sits on a flat ocean, framed by large photoscanned rocks. The turf is a flat untextured green with sparse stick-like grass blades, square dark patches, and shallow craters. It contrasts strongly with the high-detail rocks."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 1 has slight distance haze. The night frame adds a star field. There is no fog depth, volumetrics, or particles beyond a small debris burst on the fortress in frame 3."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The photogrammetry rocks are richly detailed, but the ground, sea, and island rim use flat, near-unshaded materials. Wood and stone props carry baked textures but show little roughness variation. The flag reads as a flat salmon color."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The asset mix is inconsistent: scanned boulders sit beside stylized windmill, arch, slingshot and crates, plus primitive cone trees and stick grass. The cone trees are visible in the night frame."
+    },
+    {
+      "category": "composition",
+      "seen": "The slingshot at left and the fortress at right are both small and pushed to the edges. The empty green foreground takes about 40% of the frame, while the rocks dominate the top half. The fortress target is hard to read."
+    },
+    {
+      "category": "camera",
+      "seen": "Low perspective three-quarter view, roughly 15°, rather than a top-down orthographic arena camera. The near field wastes space and the far targets are partially occluded by rocks."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is no visible tone mapping character, bloom, or color grade in the day frames. The skies are saturated flat blue and the greens look slightly clipped. The night frame shows a faint vignette but no grade cohesion."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Frames 2 and 3 show the fortress blocks breaking into a debris spray with a small windmill effect. The rest of the scene appears static across frames."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Navy pill nav, score card with stars, level title chip, ammo egg slots with highlighted selection, and a controls bar. The layout is clean but has low contrast in places, such as the grayed 'Yolk Drop' button, and small type at the bottom."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

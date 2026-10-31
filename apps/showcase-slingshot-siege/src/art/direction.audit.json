@@ -26,7 +26,7 @@
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 3.2
+        "intensity": 3
       }
     ],
     "hasAmbient": false,
@@ -184,566 +184,6 @@
       },
       {
         "assetKey": "gullsiegeHeroGullMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBridgeMeshy",
         "triangles": 0,
         "textures": 3,
         "unlit": false,
@@ -1775,6 +1215,326 @@
       },
       {
         "node": "sling-band-r",
+        "practical": false
+      },
+      {
+        "node": "v-block-0",
+        "practical": false
+      },
+      {
+        "node": "v-block-1",
+        "practical": false
+      },
+      {
+        "node": "v-block-2",
+        "practical": false
+      },
+      {
+        "node": "v-block-3",
+        "practical": false
+      },
+      {
+        "node": "v-block-4",
+        "practical": false
+      },
+      {
+        "node": "v-block-5",
+        "practical": false
+      },
+      {
+        "node": "v-block-6",
+        "practical": false
+      },
+      {
+        "node": "v-block-7",
+        "practical": false
+      },
+      {
+        "node": "v-block-8",
+        "practical": false
+      },
+      {
+        "node": "v-block-9",
+        "practical": false
+      },
+      {
+        "node": "v-block-10",
+        "practical": false
+      },
+      {
+        "node": "v-block-11",
+        "practical": false
+      },
+      {
+        "node": "v-block-12",
+        "practical": false
+      },
+      {
+        "node": "v-block-13",
+        "practical": false
+      },
+      {
+        "node": "v-block-14",
+        "practical": false
+      },
+      {
+        "node": "v-block-15",
+        "practical": false
+      },
+      {
+        "node": "v-block-16",
+        "practical": false
+      },
+      {
+        "node": "v-block-17",
+        "practical": false
+      },
+      {
+        "node": "v-block-18",
+        "practical": false
+      },
+      {
+        "node": "v-block-19",
+        "practical": false
+      },
+      {
+        "node": "v-block-20",
+        "practical": false
+      },
+      {
+        "node": "v-block-21",
+        "practical": false
+      },
+      {
+        "node": "v-block-22",
+        "practical": false
+      },
+      {
+        "node": "v-block-23",
+        "practical": false
+      },
+      {
+        "node": "v-block-24",
+        "practical": false
+      },
+      {
+        "node": "v-block-25",
+        "practical": false
+      },
+      {
+        "node": "v-block-26",
+        "practical": false
+      },
+      {
+        "node": "v-block-27",
+        "practical": false
+      },
+      {
+        "node": "v-block-28",
+        "practical": false
+      },
+      {
+        "node": "v-block-29",
+        "practical": false
+      },
+      {
+        "node": "v-block-30",
+        "practical": false
+      },
+      {
+        "node": "v-block-31",
+        "practical": false
+      },
+      {
+        "node": "v-block-32",
+        "practical": false
+      },
+      {
+        "node": "v-block-33",
+        "practical": false
+      },
+      {
+        "node": "v-block-34",
+        "practical": false
+      },
+      {
+        "node": "v-block-35",
+        "practical": false
+      },
+      {
+        "node": "v-block-36",
+        "practical": false
+      },
+      {
+        "node": "v-block-37",
+        "practical": false
+      },
+      {
+        "node": "v-block-38",
+        "practical": false
+      },
+      {
+        "node": "v-block-39",
+        "practical": false
+      },
+      {
+        "node": "v-block-40",
+        "practical": false
+      },
+      {
+        "node": "v-block-41",
+        "practical": false
+      },
+      {
+        "node": "v-block-42",
+        "practical": false
+      },
+      {
+        "node": "v-block-43",
+        "practical": false
+      },
+      {
+        "node": "v-block-44",
+        "practical": false
+      },
+      {
+        "node": "v-block-45",
+        "practical": false
+      },
+      {
+        "node": "v-block-46",
+        "practical": false
+      },
+      {
+        "node": "v-block-47",
+        "practical": false
+      },
+      {
+        "node": "v-block-48",
+        "practical": false
+      },
+      {
+        "node": "v-block-49",
+        "practical": false
+      },
+      {
+        "node": "v-block-50",
+        "practical": false
+      },
+      {
+        "node": "v-block-51",
+        "practical": false
+      },
+      {
+        "node": "v-block-52",
+        "practical": false
+      },
+      {
+        "node": "v-block-53",
+        "practical": false
+      },
+      {
+        "node": "v-block-54",
+        "practical": false
+      },
+      {
+        "node": "v-block-55",
+        "practical": false
+      },
+      {
+        "node": "v-block-56",
+        "practical": false
+      },
+      {
+        "node": "v-block-57",
+        "practical": false
+      },
+      {
+        "node": "v-block-58",
+        "practical": false
+      },
+      {
+        "node": "v-block-59",
+        "practical": false
+      },
+      {
+        "node": "v-block-60",
+        "practical": false
+      },
+      {
+        "node": "v-block-61",
+        "practical": false
+      },
+      {
+        "node": "v-block-62",
+        "practical": false
+      },
+      {
+        "node": "v-block-63",
+        "practical": false
+      },
+      {
+        "node": "v-block-64",
+        "practical": false
+      },
+      {
+        "node": "v-block-65",
+        "practical": false
+      },
+      {
+        "node": "v-block-66",
+        "practical": false
+      },
+      {
+        "node": "v-block-67",
+        "practical": false
+      },
+      {
+        "node": "v-block-68",
+        "practical": false
+      },
+      {
+        "node": "v-block-69",
+        "practical": false
+      },
+      {
+        "node": "v-block-70",
+        "practical": false
+      },
+      {
+        "node": "v-block-71",
+        "practical": false
+      },
+      {
+        "node": "v-block-72",
+        "practical": false
+      },
+      {
+        "node": "v-block-73",
+        "practical": false
+      },
+      {
+        "node": "v-block-74",
+        "practical": false
+      },
+      {
+        "node": "v-block-75",
+        "practical": false
+      },
+      {
+        "node": "v-block-76",
+        "practical": false
+      },
+      {
+        "node": "v-block-77",
+        "practical": false
+      },
+      {
+        "node": "v-block-78",
+        "practical": false
+      },
+      {
+        "node": "v-block-79",
         "practical": false
       },
       {

@@ -3,7 +3,7 @@
 import { describe, expect, it } from "vitest";
 import { CHAPTERS } from "../../../apps/showcase-slingshot-siege/src/game/levels";
 import { CHAPTER_LOOKS, SIEGE_PALETTE, chapterLook, sunDirection } from "../../../apps/showcase-slingshot-siege/src/game/look";
-import { SIEGE_AO_NODE, SIEGE_DOF_NODE, buildStage } from "../../../apps/showcase-slingshot-siege/src/game/stage";
+import { SIEGE_AO_NODE, SIEGE_DOF_NODE, SOLID_BLOCK_MATERIALS, buildStage } from "../../../apps/showcase-slingshot-siege/src/game/stage";
 import { AMMO_TRAIL_COLOR, SIEGE_VFX, abilityPreset, breakPreset, siegeVfxPresets } from "../../../apps/showcase-slingshot-siege/src/game/vfx";
 
 type Node = { kind?: string; name?: string; light?: string; effect?: string; shadow?: unknown; spec?: { model?: string }; children?: readonly Node[]; [key: string]: unknown };
@@ -20,20 +20,20 @@ describe("slingshot-siege look table (SS47-E1, L1, P2, P3)", () => {
     expect(chapterLook(-3).chapter).toBe(0);
   });
 
-  it("walks the sun through one day: elevations 35/62/48/14/8/30", () => {
-    expect(CHAPTER_LOOKS.map((r) => r.sun.elevationDeg)).toEqual([35, 62, 48, 14, 8, 30]);
+  it("walks the sun through one day: elevations 38/62/48/22/16/30", () => {
+    expect(CHAPTER_LOOKS.map((r) => r.sun.elevationDeg)).toEqual([38, 62, 48, 22, 16, 30]);
     const d = sunDirection({ elevationDeg: 90, azimuthDeg: 0 });
     expect(d[1]).toBeCloseTo(1, 6);
   });
 
   it("names its own preset and environment per chapter, with at least 4 distinct environment sources", () => {
-    expect(CHAPTER_LOOKS.map((r) => r.preset)).toEqual(["outdoor-day", "outdoor-day", "overcast", "golden-hour", "golden-hour", "polar-night"]);
+    expect(CHAPTER_LOOKS.map((r) => r.preset)).toEqual(["outdoor-day", "outdoor-day", "outdoor-day", "golden-hour", "golden-hour", "polar-night"]);
     expect(CHAPTER_LOOKS.map((r) => r.hdri ?? `${r.preset} default`)).toEqual([
-      "spruit_sunrise", "outdoor-midday", "overcast default", "kloppenheim_06_puresky", "belfast_sunset_puresky", "deep_space_starfield"
+      "kloppenheim_06_puresky", "outdoor-midday", "outdoor-midday", "kloppenheim_06_puresky", "belfast_sunset_puresky", "deep_space_starfield"
     ]);
     expect(new Set(CHAPTER_LOOKS.map((r) => r.hdri ?? r.preset)).size).toBeGreaterThanOrEqual(4);
-    expect(CHAPTER_LOOKS[2]!.environmentIntensity).toBe(1.6);
-    expect(CHAPTER_LOOKS[4]!.environmentIntensity).toBe(2.2);
+    expect(CHAPTER_LOOKS[2]!.environmentIntensity).toBe(1.0);
+    expect(CHAPTER_LOOKS[5]!.environmentIntensity).toBe(1.8);
   });
 
   it("neighbouring chapters differ in sky model or colour, sun, fog and grade", () => {
@@ -54,9 +54,9 @@ describe("slingshot-siege look table (SS47-E1, L1, P2, P3)", () => {
     expect(CHAPTER_LOOKS[5]!.grade.temperature).toBeLessThan(-0.1);
   });
 
-  it("bloom threshold ~0.9 by day and 0.6 at night; vignette 0.18 by day and 0.3 at night", () => {
-    expect(CHAPTER_LOOKS[0]!.bloom.threshold).toBe(0.9);
-    expect(CHAPTER_LOOKS[1]!.bloom.threshold).toBe(0.9);
+  it("bloom threshold 0.95 by day and 0.6 at night; vignette 0.18 by day and 0.3 at night", () => {
+    expect(CHAPTER_LOOKS[0]!.bloom.threshold).toBe(0.95);
+    expect(CHAPTER_LOOKS[1]!.bloom.threshold).toBe(0.95);
     expect(CHAPTER_LOOKS[5]!.bloom.threshold).toBe(0.6);
     expect(CHAPTER_LOOKS[0]!.vignette).toBe(0.18);
     expect(CHAPTER_LOOKS[5]!.vignette).toBe(0.3);
@@ -66,6 +66,20 @@ describe("slingshot-siege look table (SS47-E1, L1, P2, P3)", () => {
     expect(CHAPTER_LOOKS.slice(0, 5).every((r) => r.accent === SIEGE_PALETTE.pennantRed)).toBe(true);
     expect(CHAPTER_LOOKS[5]!.accent).toBe(SIEGE_PALETTE.lanternAmber);
     expect(CHAPTER_LOOKS.every((r) => r.terrain.sand === "#e9d6a8" && r.terrain.sea === "#2f8f9d")).toBe(true);
+  });
+
+  it("GU47 phase 3: every day sun is on the camera side (lights the cliff faces, never in frame); fog is past the horizon", () => {
+    for (const r of CHAPTER_LOOKS.slice(0, 5)) {
+      const d = sunDirection(r.sun);
+      expect(d[2], `ch${r.chapter} sun z`).toBeGreaterThan(0.25);
+      expect(r.fog.near, `ch${r.chapter} fog near`).toBeGreaterThanOrEqual(300);
+      expect(r.flare).toBe(false);
+      expect(r.weather === "mist" || r.weather === "drizzle").toBe(false);
+      expect(r.worldWater && r.rockTexture && r.solidBlocks).toBe(false);
+      expect(r.rockTexture && r.solidBlocks && !r.worldWater && !r.skyFog).toBe(true);
+    }
+    const night = CHAPTER_LOOKS[5]!;
+    expect([night.worldWater, night.rockTexture, night.solidBlocks, night.skyFog]).toEqual([true, false, false, true]);
   });
 });
 
@@ -101,13 +115,18 @@ describe("slingshot-siege stage per chapter (SS47-L1, L2, L3, E1, E2, E3, P1)", 
 
   it("a real sky per chapter: gradient by day, Preetham at golden hour and sunset, stars at night", () => {
     const models = CHAPTERS.map((c) => stage(c.id).find((n) => n.kind === "sky")?.spec?.model);
-    expect(models).toEqual(["gradient", "gradient", "gradient", "preetham", "preetham", "gradient"]);
+    expect(models).toEqual(["gradient", "gradient", "gradient", "gradient", "gradient", "gradient"]);
     const night = stage(5).find((n) => n.kind === "sky")!.spec as unknown as { stars?: { count: number } };
     expect(night.stars?.count).toBeGreaterThan(500);
   });
 
-  it("the sea is one world-water ocean to the horizon with shoreline foam (the foam boxes are gone)", () => {
-    const nodes = stage(0);
+  it("the night sea is one world-water ocean with shoreline foam; the day chapters show the flat seabed sea", () => {
+    for (let c = 0; c <= 4; c += 1) {
+      const day = stage(c);
+      expect(day.some((n) => n.kind === "water"), `ch${c}`).toBe(false);
+      expect(day.some((n) => n.name === "stage-ocean"), `ch${c}`).toBe(true);
+    }
+    const nodes = stage(5);
     const sea = nodes.filter((n) => n.kind === "water");
     expect(sea).toHaveLength(1);
     expect(sea[0]!.options).toMatchObject({ kind: "ocean", shape: { kind: "infinite" }, waves: "calm", foam: { shoreDepth: 0.35 } });
@@ -123,7 +142,7 @@ describe("slingshot-siege stage per chapter (SS47-L1, L2, L3, E1, E2, E3, P1)", 
     expect(ao.radius as number).toBeLessThan(0.74);
     expect(nodes.some((n) => n.effect === "contact-shadows")).toBe(true);
     expect(nodes.some((n) => n.name === "look ambient occlusion" || n.name === "look bloom")).toBe(false);
-    expect(nodes.find((n) => n.name === "siege bloom")!.threshold).toBe(0.9);
+    expect(nodes.find((n) => n.name === "siege bloom")!.threshold).toBe(0.95);
     expect(stage(5).find((n) => n.name === "siege bloom")!.threshold).toBe(0.6);
   });
 });
@@ -136,8 +155,9 @@ describe("slingshot-siege reduced motion (PRD §6.3)", () => {
     expect(full.some((n) => n.effect === "vignette")).toBe(true);
     expect(calm.some((n) => n.effect === "anti-alias")).toBe(true);
     expect(calm.some((n) => n.name === SIEGE_DOF_NODE)).toBe(true);
+    const night = { calm: stage(5, true), full: stage(5, false) };
     const speed = (nodes: Node[]) => (nodes.find((n) => n.kind === "water")!.options as { normalSpeed: number }).normalSpeed;
-    expect(speed(calm)).toBeCloseTo(speed(full) * 0.3, 6);
+    expect(speed(night.calm)).toBeCloseTo(speed(night.full) * 0.3, 6);
   });
 
   it("halves particle counts and drops camera layers; reduced flash caps light layers at 0.3 for 200 ms", () => {
@@ -191,16 +211,25 @@ describe("slingshot-siege block families (SS47-M1)", () => {
 
 describe("slingshot-siege chapter weather (SS47-E4)", () => {
   const names = (c: number, rm = false) => stage(c, rm).map((n) => n.name ?? "");
-  it("drizzle only on ch4, dust only on ch1, mist only on ch2", () => {
+  // GU47 phase 3: the ch2 sea mist and the ch4 drizzle are off (the blind panel read them as haze over the play area).
+  it("dust only on ch1; no drizzle and no mist on any chapter", () => {
     for (let c = 0; c < 6; c += 1) {
-      expect(names(c).includes("siege drizzle")).toBe(c === 4);
+      expect(names(c).includes("siege drizzle")).toBe(false);
       expect(names(c).includes("siege dust motes")).toBe(c === 1);
-      expect(names(c).includes("siege sea mist")).toBe(c === 2);
+      expect(names(c).includes("siege sea mist")).toBe(false);
     }
   });
-  it("reduced motion drops the drizzle streaks and the motes; the still mist stays", () => {
-    expect(names(4, true)).not.toContain("siege drizzle");
+  it("reduced motion drops the motes", () => {
     expect(names(1, true)).not.toContain("siege dust motes");
-    expect(names(2, true)).toContain("siege sea mist");
+  });
+});
+
+describe("slingshot-siege solid blocks (GU47 phase 3)", () => {
+  it("day chapters pool rounded solid blocks; the night keeps the stone-bridge GLB pool", () => {
+    const blocks = (c: number) => stage(c).filter((n) => n.name === "v-block-0");
+    expect(blocks(0)[0]!.primitive).toBe("roundedBox");
+    expect(blocks(5)[0]!.kind).toBe("model");
+    for (const id of ["wood", "stone", "glass", "ice", "obsidian"] as const) expect(SOLID_BLOCK_MATERIALS[id].color).toBeTruthy();
+    expect(SOLID_BLOCK_MATERIALS.glass.opacity).toBeLessThan(1);
   });
 });

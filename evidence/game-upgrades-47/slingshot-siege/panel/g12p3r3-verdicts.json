@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "slingshot-siege",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "ch0",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat grey overcast sky reads slightly hazy and lifeless; the orange rock blob behind the arch looks odd, like a lumpy food-coloured mass; no clear focal emphasis on the slingshot.",
+     "Flat overcast grey sky lacks mood and slightly washes out the horizon; sign partly covers the slingshot base; cone-shaped bushes look a bit primitive",
+     "Flat overcast grey sky with slight haze at the horizon; the cone-shaped grass looks toy-like and too even; the orange blob above the arch reads as odd geometry"
+    ]
+   },
+   {
+    "variant": "ch1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Grey hazy sky is flat; the orange blob rock looks odd; the grey block tower on the right is plain and untextured.",
+     "Plain grey sky with mild haze; grey block tower on the right looks untextured; conical bushes look simple",
+     "Flat grey sky lacks mood; the grass cones look repetitive; the orange blob above the arch looks odd"
+    ]
+   },
+   {
+    "variant": "ch2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Washed-out grey sky with mild haze; the orange blob rock looks odd; the white block stack on the right is bland.",
+     "Flat pale-grey sky, slightly hazy horizon; grey pedestal block on the right is plain; sign overlaps the slingshot area",
+     "Washed-out pale grey sky with mild haze; the grass cones are repetitive; the orange blob looks odd"
+    ]
+   },
+   {
+    "variant": "ch3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Warm sunset haze slightly flattens the sky and horizon; the orange blob rock looks odd; the red crate tower is a bit saturated.",
+     "Warm sky is a bit flat and slightly hazy at the horizon; the orange crate tower is plain; a small windmill prop sits awkwardly on top of the crate",
+     "Warm sunset haze slightly flattens the background; the grass cones are repetitive"
+    ]
+   },
+   {
+    "variant": "ch4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A heavy orange sunset tint pushes the whole frame toward monochrome orange; the orange planks atop the right pillars look like they might be floating; the right-side structures are cluttered.",
+     "Strong orange cast tints everything, including the white stonework; right-side tower blocks and orange planks look sparse and a little stuck on; one plank stack looks like it floats; the flag is washed out",
+     "The strong orange cast tints everything slightly monochrome; the target tower blocks look a bit floaty and sparse"
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat grey overcast sky is slightly hazy; the orange blob rock looks odd; generic composition.",
+     "Overcast flat grey sky with mild horizon haze; conical bushes look simple; otherwise vivid, readable and well dressed (beach, dock posts, sign)",
+     "Flat grey overcast sky with mild haze; the grass cones are repetitive; the orange blob above the arch looks odd"
+    ]
+   }
+  ]
+ }
+]

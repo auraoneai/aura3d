@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "slingshot-siege",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "ch0",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat grey overcast sky with no gradient. The horizon is a little washed out. The ground is a saturated cartoon green that clashes slightly with the photoreal rocks.",
+     "Flat grey overcast sky is a little dull and slightly hazy at the horizon. Small cone trees look simplistic. Otherwise richer: warm rock texture, bright greens, level sign, sand shore with posts, clearer play area.",
+     "Flat overcast grey sky with little mood and slightly hazy horizon; stylized cone-grass looks toy-like; the boulder behind the arch is an odd orange blob."
+    ]
+   },
+   {
+    "variant": "ch1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat grey hazy sky. The grey block tower on the right blends into the rocks. Otherwise clear and well detailed.",
+     "Grey sky is plain and slightly washed out. Grey stone block fort on the right is fairly plain. Otherwise readable, colourful and detailed, with a level sign and a clear target structure.",
+     "Flat grey overcast sky; the grey block tower at right looks untextured and plain; the enemy figure is small."
+    ]
+   },
+   {
+    "variant": "ch2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat grey sky. The pale block tower on the right is low in contrast. Otherwise readable.",
+     "Grey sky is a bit dull. Pale ice-like block on the right is low-contrast against the grey background. Overall brighter and better detailed.",
+     "Flat grey sky; the pale ice-like block tower looks washed out against the light background; the enemy is small."
+    ]
+   },
+   {
+    "variant": "ch3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The warm sepia sky is a little hazy and flat, but the mood is good and the warm palette is cohesive.",
+     "Warm sunset tint makes the sky slightly hazy. Otherwise strong mood, warm lighting on the rocks, readable red target tower and good colour harmony.",
+     "Warm dusk sky is a slightly flat beige gradient; the tower at right is cluttered against the rock."
+    ]
+   },
+   {
+    "variant": "ch4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The orange sunset sky is fairly flat and the rocks take on a strong orange cast. The tower blocks on the right are slightly cluttered. Still atmospheric and readable.",
+     "Orange sky is heavy and slightly hazy at the horizon. A small debris piece seems to float against the right rock. Otherwise strong sunset atmosphere and a clear target structure with pillars.",
+     "Strong orange cast tints the rocks and sky so they blend together somewhat; small enemies are hard to read against the rock; a pillar at the far right edge is cut off."
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat grey overcast sky with slight haze at the horizon.",
+     "Flat grey overcast sky is dull and slightly washed out near the horizon. Cone trees look simplistic. Otherwise richer materials, brighter field, signage, sand shoreline and better readability.",
+     "Grey overcast sky is dull and slightly hazy at the horizon; cone grass is simplistic."
+    ]
+   }
+  ]
+ }
+]
