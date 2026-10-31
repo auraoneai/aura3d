@@ -305,7 +305,7 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   uyuni: {
     // phase 4
     key: { elevationDeg: 26, azimuthDeg: 115, intensity: 3.2, softness: 1 }, ssr: { intensity: 0.8, roughness: 0.25, maxDistance: 30 },
-    background: "#d9b8b8", exposureEv: -0.8, floodScale: 1,
+    background: "#d9b8b8", exposureEv: -0.72, floodScale: 1,
     grade: { contrast: 1.3, saturation: 1.15, temperature: 0.16, tint: 0.04 },
     rim: null, flares: false, weather: "none",
     // phase 3: a glazed salt crust (clearcoat over a cool lilac-grey) so the dawn sky reflects in the flat, and the
