@@ -68,7 +68,7 @@ Every acceptance line of PRD WP-11 with its phase-1 status. `unit` = asserted by
 | Live 4.7.0 404 (`image/png;base64` without `data:`) | fixed: `emittedAssetUrl` in view/assets.ts + unit test; confirm on the live smoke after deploy |
 | Rubric every category >= 7 (PRD 1.2 goal 1) | not met: min 2.5 (ibl_reflections), ui_hud 7; material_quality / modeling_assets blocked on WP-36 (`look-judgement.json`) |
 | Sibling distinctness vs aura-diamond-3d >= 0.8 | not met: 0.794 (was 0.766); crowd and athlete models are the tells (WP-36) |
-| game-checks 0 errors | done |
+| game-checks 0 errors | done: 0 errors, 15 warnings (was 16) |
 | page-parity, look-identity, screens-fresh | fixed |
 | borrowed-asset (3) | waiting on WP-36 Meshy assets |
 | luma-band | round-3 rows; bands not widened (see lane report: default band predates the panel-verified HDRI swap) |
