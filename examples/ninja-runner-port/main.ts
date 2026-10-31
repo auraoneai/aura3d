@@ -23,7 +23,7 @@ import {
   type Action, type EnemyKind, type Form, type SimEvent, type SimState
 } from "./sim";
 import { createNinjaPresenter, viewOf } from "./presentation";
-import { lookMode } from "./districtLook";
+import { EVENING_EXPOSURE, lookMode } from "./districtLook";
 import { atDistance, qaCrops } from "./qa";
 import { ACTOR_COUNT, buildWorld, loadActors, type ActorAssets, type WorldRuntime } from "./world";
 
@@ -594,7 +594,7 @@ async function boot(): Promise<void> {
     pixelRatio: 1,
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
     // GU47 NR-08: the woodblock grade tone-maps with agx; `?look=original` keeps aces.
-    output: { toneMapping: config.look === "evening" ? "agx" : "aces", dither: false },
+    output: { toneMapping: config.look === "evening" ? "agx" : "aces", ...(config.look === "evening" ? { exposure: EVENING_EXPOSURE } : {}), dither: false },
     scene: world.scene
   });
   await app.ready();

@@ -21,7 +21,7 @@ import type { CameraShake } from "@aura3d/engine/game";
 import { TIER_FEEDBACK, pieceScale, spawnPieces, stepPieces, type Piece } from "./impact";
 import { TUNING, crosshairTarget, isEnemy, seededRandom, type RamTier, type Entity, type EnemyKind, type SimEvent, type SimState } from "./sim";
 import { CHARACTER_URLS, PROP_ASSETS, SLOT_MODEL, type CharacterId } from "./models";
-import { EVENING_SURFACES, LANTERN_GLOW, LANTERN_POOL, WOODBLOCK_POST, DISTRICT_LOOKS, lanternGlowAt, linearToHex, lookAtDistance, nearestLanterns, type DistrictId, type LanternGlow, type LookMode } from "./districtLook";
+import { ENVIRONMENT_GAIN, EVENING_SURFACES, LANTERN_GLOW, LANTERN_POOL, WOODBLOCK_POST, DISTRICT_LOOKS, lanternGlowAt, linearToHex, lookAtDistance, nearestLanterns, type DistrictId, type LanternGlow, type LookMode } from "./districtLook";
 import { lanternPoolSize, lightRig } from "./lighting";
 import { SCARF, registerNinjaVfx, type NinjaVfx, type NinjaVfxEvent } from "./vfx";
 import { DASH_KICK_DEG, DASH_KICK_HALFLIFE, ROLL_HALFLIFE, blendIntro, cinematicsOn, gateConeLanterns, laneRoll, winPose, type ShotPose } from "./cinematics";
@@ -562,7 +562,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
     if (Math.abs(s - lastLookS) >= 3) {
       lastLookS = s;
       node("sun").setLight?.({ color: linearToHex(look.keyColor), intensity: look.keyIntensity, direction: [-look.toKey[0], -look.toKey[1], -look.toKey[2]] }, { transitionSeconds: 0.3 });
-      app.lighting?.setEnvironmentIntensity(look.environmentIntensity);
+      app.lighting?.setEnvironmentIntensity(look.environmentIntensity * ENVIRONMENT_GAIN);
       app.atmosphere?.setFog({ color: linearToHex(look.fogColor), density: look.fogDensity }, { transitionSeconds: 0.5 });
       const rays = godRaysAuthored && godRaysAt(s);
       if (godRaysAuthored && rays !== godRaysOn) { godRaysOn = rays; app.post?.setEffectEnabled("volumetricFog", rays); }
