@@ -31,3 +31,13 @@ Status per row: done / done-interim / partial / blocked (E-x | WP-36) / phase 2.
 | IC47-W2 | S | primitives -80%; crowd <= 12 draws | blocked (WP-36: spectators, truss, dais) |
 | IC47-PF1 | M | <= 300 desktop, <= 220 phone; <= 1.5M tris; JS +5% | partial (floor deck 38 -> 14 draws, static consolidation); measured phase 2 |
 | IC47-PF2 | C | 0 new GLB fetches on repeat; switch <= 50% | done by the engine (E-H cache on by default; no game call needed); measurement phase 2 |
+
+## Phase 3 (4.7.1)
+
+- [x] Colosseum, Crown Arena, Airstrip and Monastery: the refined look beat the 4.6.2 frame in the blind panel (3/0/0 each: g05p3r2, g05p3r3c, g05p3r3m) and is the default; `?look=original|gu47` work both ways.
+- [x] Neo-Tokyo and the Dock keep the GU47 look (3/0/0 in g05p3r1).
+- [ ] Rubric every category >= 7: not met. The minimum went from 1.5 to 3.5 (shadows, atmospheric_effects) in `look-judgement.json`. material_quality and modeling_assets are blocked on WP-36.
+- [x] screens-fresh: final screens, card and posters retaken on the phase-3 build.
+- [ ] luma-band: 8 warnings. Crown p95, Neo-Tokyo darkFrac, Dock and Monastery spread; bands not widened, see the lane report.
+- [ ] borrowed-asset (25) and prop-exclusivity (1): WP-36.
+- [x] Gates: typecheck-delta NEW_ERRORS 0, eslint clean, iron-crown vitest green, game-checks 0 errors (34 warnings).
