@@ -55,11 +55,11 @@ describe("where-the-wind-wanders-port post (WW47-P1..P3)", () => {
   it("GU47 grade is the softer gouache palette; bloom authors no radius", () => {
     const fx = effectsOf({});
     const grade = fx.find((e) => e.effect === "color-grade")!;
-    expect(grade.saturation).toBe(1.05);
-    expect(grade.contrast).toBe(1.06);
+    expect(grade.saturation).toBe(1.14);
+    expect(grade.contrast).toBe(1.1);
     expect(fx.find((e) => e.effect === "bloom")!.postAuthored).not.toContain("radius");
-    expect(fx.find((e) => e.effect === "vignette")!.intensity).toBe(0.22);
-    expect(fx.some((e) => e.effect === "volumetric-fog")).toBe(true);
+    expect(fx.find((e) => e.effect === "vignette")!.intensity).toBe(0.16);
+    expect(fx.some((e) => e.effect === "volumetric-fog")).toBe(false); // phase 2: the stage turned the GLBs cream
     expect(fx.some((e) => e.effect === "film-grain")).toBe(true);
   });
 
