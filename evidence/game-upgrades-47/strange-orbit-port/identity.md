@@ -4,7 +4,7 @@ Lane g15. Art direction: `examples/strange-orbit-port/art/direction.ts`; look ta
 
 ## Fantasy
 
-A moon race painted in thick gouache at permanent planet-rise: a terracotta impasto road along a jagged crater wall under a low white sun from the left, a huge banded peach gas giant with a ring filling the right of the sky, and a violet-teal nebula. The only off-world racer of the 25 games.
+A moon race painted in thick gouache at permanent planet-rise: a terracotta impasto road along a jagged crater wall under a low white sun from the left, a huge banded peach gas giant filling the right of the sky, and a violet-teal nebula. The only off-world racer of the 25 games.
 
 ## Palette
 
@@ -24,7 +24,7 @@ Avoids Ion Circuit's (G19) cyan/magenta; G19 also captures a dome but its signat
 
 | Variant | URL | Time of day | Sky / environment |
 |---|---|---|---|
-| gouache (default) | `/apps/showcase-strange-orbit-port/` (production `/apps/craterline-gp/`) | permanent planet-rise, key 18 deg elevation from the left of the start grid | custom nebula dome + gas giant with ring + moon; `environments.capture` (res 128, once, background off) |
+| gouache (default) | `/apps/showcase-strange-orbit-port/` (production `/apps/craterline-gp/`) | permanent planet-rise, key 18 deg elevation from the left of the start grid | custom nebula dome + banded gas giant + moon (ring dropped in GU47 phase 3 for distinctness vs Thermal Drift); `environments.capture` (res 128, once, background off) |
 | original | `?look=original` | 4.6.1 look: 53 deg warm key, cool fill | nebula dome, small overhead planet, `environments.neutral` 0.9 |
 | sector warm / violet / jade / opal | follows the rider (PALETTE_STOPS) | same sun, key tint and haze lerp in 1.5 s | nebula hue shift per sector |
 
@@ -32,11 +32,11 @@ No HDRI is the primary visible environment (`background: "sky"`), so the `look-i
 
 ## Signature effect
 
-"Brush-textured moving gouache painting: impasto road relief raked by a low white sun into long shadows, under a ringed peach gas giant." The impasto relief and split tone live in the custom shaders, so they survive the Low tier (Low drops grain, motion blur, CA, DOF and the moon/ring edge only).
+"Brush-textured moving gouache painting: impasto road relief raked by a low white sun into long shadows, under a banded peach gas giant." The impasto relief and split tone live in the custom shaders, so they survive the Low tier (Low drops grain, motion blur, CA, DOF and the moon only).
 
 ## References
 
-Generic references only (no copyrighted frames are stored): thick gouache/oil impasto landscape painting with raking side light; retro space-age planetary illustration with a banded ringed gas giant; lunar crater rim photography at low sun angle.
+Generic references only (no copyrighted frames are stored): thick gouache/oil impasto landscape painting with raking side light; retro space-age planetary illustration with a banded gas giant; lunar crater rim photography at low sun angle.
 
 ## Budget row
 

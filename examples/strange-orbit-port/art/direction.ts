@@ -19,9 +19,9 @@ export default defineArtDirection({
     },
     {
       file: `${SHEET}#references`,
-      source: "generic reference: retro space-age planetary illustration with a banded ringed gas giant on the horizon",
+      source: "generic reference: retro space-age planetary illustration with a banded gas giant on the horizon",
       licence: "reference-only",
-      why: "A huge banded peach planet with a ring filling one side of the sky, painted rather than photographic"
+      why: "A huge banded peach planet filling one side of the sky, painted rather than photographic"
     },
     {
       file: `${SHEET}#references`,
@@ -71,7 +71,7 @@ export default defineArtDirection({
     { event: "land", cue: "land", variants: 1 },
     { event: "lap", cue: "lap", variants: 1 }
   ],
-  signatureEffect: "Brush-textured moving gouache painting: impasto road relief raked by a low white sun into long shadows, under a ringed peach gas giant.",
+  signatureEffect: "Brush-textured moving gouache painting: impasto road relief raked by a low white sun into long shadows, under a banded peach gas giant.",
   criticalCategories: ["lighting", "shadows", "texture_quality", "atmospheric_effects", "composition"],
   tiers: {
     low: { particles: 300, shadowMap: 1024, cascades: 1, textureMax: 1024 },

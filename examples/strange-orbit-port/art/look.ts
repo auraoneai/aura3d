@@ -71,7 +71,7 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
   gouache: {
     id: "gouache",
     timeOfDay: "permanent planet-rise, low white sun",
-    sky: "nebula dome (violet-teal) + banded peach gas giant with a ring + small moon, captured into the environment probe",
+    sky: "nebula dome (violet-teal) + banded peach gas giant + small moon, captured into the environment probe",
     key: { elevationDeg: 18, azimuthDeg: 0, position: lightPosition(18, 0), color: "#fff3e4", intensity: 3.5, cascades: 3, filter: "pcss", maxDistance: 200 },
     fill: null,
     planetshine: { position: [GIANT_POSITION[0], GIANT_POSITION[1] + 60, GIANT_POSITION[2]], color: "#ffb48c", intensity: 0.8 },
@@ -91,7 +91,9 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
       grain: { intensity: 0.035, size: 1.6 }
     },
     camera: { baseFov: 64, boostKick: 9, landingKick: 5, leanRollDeg: 2 },
-    planet: { position: GIANT_POSITION, size: 520, ring: true, moon: true },
+    // GU47 phase 3: no ring. The sibling judge matched Thermal Drift on "ringed planet in sky in both" (24 of 46
+    // trials different at best); the gouache giant is a banded peach disc with a moon instead (PRD 6.1 row G15: gas giant).
+    planet: { position: GIANT_POSITION, size: 520, ring: false, moon: true },
     // Phase 2 (software WebGL2 capture): the freeze frame read mean 32 (engine light-uniform and frame-camera bugs, fixed on
     // integration 22c1283c0). With those fixed, +1.75 EV washed the rider out (crop mean 160 vs 95-125, saturation 0.17), so
     // +0.7 EV with less bloom and more saturation (+1.0 EV still read rider 135): rider and crater keep their colour, the

@@ -312,7 +312,7 @@ export function buildWorld(options: WorldOptions): World {
     position: [...planet.position],
     rotation: [0.1, 0.4, 1.12],
     size: planet.size,
-    material: solidMaterial(hexLinear("#f9ece3"), hexLinear(look === "original" ? "#c98a68" : "#d9895f"), 0, look === "original" ? 0.045 : 0.026)
+    material: solidMaterial(hexLinear("#f9ece3"), hexLinear(look === "original" ? "#c98a68" : "#c8683f"), 0, look === "original" ? 0.045 : 0.034)
   }).runtime({ id: "planet" }));
   if (!off.has("atmo")) builder.add(primitives.sphere({
     name: "planet-atmosphere",
