@@ -107,7 +107,7 @@ export interface VenueLook {
   readonly fog: VenueFog | null;
   readonly grade: VenueGrade;
   readonly signature: VenueSignature;
-  /** Seated crowd present (none on the Moon). */
+  /** Seated crowd present (GU47 phase 3: the Moon seats a lunar crowd too; `?look=original` keeps it empty). */
   readonly crowd: boolean;
   /** Wind on palms and planters (TT-AN2); 0 on the Moon. */
   readonly wind: number;
@@ -147,7 +147,7 @@ export const FLOOD_CONES: readonly FloodCone[] = FLOODLIGHTS.map((f, i) => {
 export const EARTH = {
   position: [-22.9, -16.5, -111.3] as AuraVec3,
   classicPosition: [-20, -18, -125] as AuraVec3,
-  radius: 3,
+  radius: 3.5,
   atmosphere: 1.07,
   ids: { planet: "moon-earth", shell: "moon-earth-atmosphere" }
 } as const;
@@ -158,7 +158,7 @@ const NIGHT_KEY: VenueSun = { elevationDeg: 58, azimuthDeg: 180, color: FLOOD_CO
 export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
   hard: {
     id: "hard", city: "New York", timeOfDay: "floodlit night (21:30), cold-white floods on navy acrylic",
-    hdri: "rooftop_night", hdriSize: "1k", environmentIntensity: 0.28, environmentRotationDeg: 0, background: "hdri",
+    hdri: "cobblestone_street_night", hdriSize: "1k", environmentIntensity: 0.28, environmentRotationDeg: 0, background: "hdri",
     sun: null, nightKey: NIGHT_KEY,
     floodlights: FLOODLIGHTS,
     fog: { color: "#0b1426", density: 0.006, volumetricAtHigh: false, lightCones: 4 },
@@ -208,13 +208,15 @@ export const VENUE_LOOKS: Readonly<Record<VenueId, VenueLook>> = {
   },
   moon: {
     id: "moon", city: "The Moon", timeOfDay: "lunar day, one hard sun on grey regolith, Earth in view",
-    hdri: "deep_space_starfield", hdriSize: "2k", environmentIntensity: 0.05, environmentRotationDeg: 0, background: "hdri",
-    sun: { elevationDeg: 25, azimuthDeg: 60, color: "#ffffff", intensity: 7, lightSize: 0.05, colorTemperatureK: 5800 },
+    hdri: "deep_space_starfield", hdriSize: "2k", environmentIntensity: 0.14, environmentRotationDeg: 0, background: "hdri",
+    sun: { elevationDeg: 25, azimuthDeg: 60, color: "#fff6e8", intensity: 7, lightSize: 0.05, colorTemperatureK: 5600 },
     floodlights: [],
     fog: null,
-    grade: { preset: "space", exposure: 1.25, contrast: 1.16, saturation: 0.86, temperature: -0.04, tint: 0, bloom: { intensity: 0.1, threshold: 0.95 }, vignette: 0.2, lut: "slam-moon", lutIntensity: 1 },
+    // GU47 phase 3 (blind panel: grey, desaturated, muddy): a cleaner grade with the LUT at 0.55 so the cobalt court, the
+    // crowd and the Earth keep their colour against the neutral regolith; contrast carries the hard lunar light.
+    grade: { preset: "space", exposure: 1.2, contrast: 1.24, saturation: 1.04, temperature: -0.02, tint: 0, bloom: { intensity: 0.12, threshold: 0.92 }, vignette: 0.22, lut: "slam-moon", lutIntensity: 0.55 },
     signature: { burst: "regolith-drift", burstColor: particle("moon"), markColor: "#6f747a", markOpacity: 0.5, markLifetime: 30 },
-    crowd: false, wind: 0
+    crowd: true, wind: 0
   }
 };
 

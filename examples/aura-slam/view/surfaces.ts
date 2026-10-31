@@ -38,12 +38,21 @@ const grain = (kind: SurfaceKind) => {
   }
 };
 
+/**
+ * GU47 phase 3: World Tour colour overrides on top of the venue palette (the 4.6.2 `?look=original` keeps the palette). The
+ * blind panel found the World Tour Moon grey, muddy and low in contrast (mid-grey court on a mid-grey plane), so the lunar
+ * court is a cobalt acrylic inside a pale regolith apron on a darker charcoal plain: three clear value steps.
+ */
+export const WORLD_TOUR_PALETTE: Readonly<Record<string, Partial<Record<CourtPart, string>>>> = {
+  moon: { court: "#2c5f96", alley: "#244e7c", apron: "#a3a7ab", ground: "#383c42" }
+};
+
 /** The material of one court part at a venue (colours from the venue palette, properties from its surface family). */
 export function surfaceMaterial(venue: string | null | undefined, part: CourtPart): AuraMaterialSpec {
   const key = venueKey(venue);
-  const pal = VENUE_PALETTES[key]!;
+  const pal = { ...VENUE_PALETTES[key]!, ...WORLD_TOUR_PALETTE[key] };
   const kind = VENUE_SURFACE[key] ?? "acrylic";
-  const color = part === "court" ? pal.court : part === "alley" ? pal.alley : part === "apron" ? pal.apron : pal.ground;
+  const color = (part === "court" ? pal.court : part === "alley" ? pal.alley : part === "apron" ? pal.apron : pal.ground);
   // TT-E3: the lunar ground is the engine's moon planet material in the venue's regolith grey.
   if (part === "ground") return kind === "regolith" ? material.planet("moon", { color, roughness: 0.98 }) : material.pbr({ color, roughness: 0.94 });
   switch (kind) {
