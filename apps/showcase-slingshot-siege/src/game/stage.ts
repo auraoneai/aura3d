@@ -136,6 +136,32 @@ export function blockLook(id: SiegeMaterialId): readonly AuraModelMaterialOverri
   return BLOCK_LOOKS[id] ?? BLOCK_LOOKS.wood;
 }
 
+/**
+ * GU47 phase 3 (look rows with `solidBlocks`): the five block families as materials on a rounded solid block that is
+ * exactly the sim's box (scale = 2 x half extents). Painted wood, chalky stone, clear glass, pale ice, glossy obsidian.
+ * Presentation only: the sim's material table (materials.ts) is unchanged.
+ */
+export const SOLID_BLOCK_MATERIALS: Readonly<Record<SiegeMaterialId, AuraMaterialSpec>> = {
+  wood: material.pbr({ color: "#c98f55", roughness: 0.74, metallic: 0, rim: { color: "#ffe2b8", power: 3, intensity: 0.18 } }),
+  stone: material.pbr({ color: "#bdb6a8", roughness: 0.9, metallic: 0, rim: { color: "#fff6e6", power: 3, intensity: 0.15 } }),
+  glass: material.physical({
+    color: "#bfe9f5", roughness: 0.06, metallic: 0, opacity: 0.55, clearcoat: 1, clearcoatRoughness: 0.05, transmission: 0.6,
+    envMapIntensity: 1.4, rim: { color: "#e8fbff", power: 3, intensity: 0.6 }
+  }),
+  ice: material.pbr({
+    color: "#d6f0ff", roughness: 0.22, metallic: 0, opacity: 0.85, emissive: "#bfe6ff", emissiveIntensity: 0.3,
+    rim: { color: "#f0fbff", power: 2.5, intensity: 0.5 }
+  }),
+  obsidian: material.physical({
+    color: "#2a2338", roughness: 0.12, metallic: 0.15, clearcoat: 1, clearcoatRoughness: 0.04,
+    rim: { color: "#a874ff", power: 4, intensity: 0.35 }
+  })
+};
+
+export function solidBlockMaterial(id: SiegeMaterialId): AuraMaterialSpec {
+  return SOLID_BLOCK_MATERIALS[id] ?? SOLID_BLOCK_MATERIALS.stone;
+}
+
 /** Debris chips take the colour of the material they broke off. */
 export function debrisLook(matId: string): readonly AuraModelMaterialOverride[] {
   const key = (matId in MATERIALS ? matId : "wood") as SiegeMaterialId;
@@ -393,17 +419,19 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
   const grassDark = mixHex(groundColor, "#1b3520", 0.34);
   // Sandy footpath and chalk cliff lip (the old dark earth lip read as a green disc on a plate).
   const dirtColor = mixHex(terrain.sand, groundColor, 0.22);
-  const rimColor = terrain.chalk;
+  const rimColor = terrain.lip;
   const shallowColor = terrain.shallows;
   const hazeColor = mixHex(terrain.chalk, row.fog.color, 0.45);
   const rockTint = mixHex(terrain.wetRock, terrain.chalk, 0.35);
   const rockTintSmall = mixHex(terrain.wetRock, terrain.sand, 0.4);
-  const rockOverrides = [
-    { color: rockTint, colorMode: "replace" as const, replaceTextures: true, roughness: 0.9, metallic: 0.02 }
-  ];
-  const boulderOverrides = [
-    { color: rockTintSmall, colorMode: "replace" as const, replaceTextures: true, roughness: 0.94, metallic: 0 }
-  ];
+  // GU47 phase 3: the day chapters keep the authored rock texture under a light multiply tint (the flat replacement
+  // colour lost every surface detail on the cliffs); the night keeps the flat chalk/wet-rock colours.
+  const rockOverrides = row.rockTexture
+    ? [{ color: row.rockTint ?? "#ffffff", colorMode: "multiply" as const, roughness: 0.9, metallic: 0.02 }]
+    : [{ color: rockTint, colorMode: "replace" as const, replaceTextures: true, roughness: 0.9, metallic: 0.02 }];
+  const boulderOverrides = row.rockTexture
+    ? [{ color: row.rockTint ?? "#ffffff", colorMode: "multiply" as const, roughness: 0.94, metallic: 0 }]
+    : [{ color: rockTintSmall, colorMode: "replace" as const, replaceTextures: true, roughness: 0.94, metallic: 0 }];
 
   const moundSpecs: readonly { position: readonly [number, number, number]; scale: readonly [number, number, number] }[] = [
     { position: [-6.8, -0.42, -4.6], scale: [4.4, 1.3, 3.2] },
@@ -485,7 +513,7 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
       .position(1.5, -0.315, -0.4).scale([22, 0.05, 17]),
     primitives.cylinder({ name: "stage-ocean", material: pbr(mixHex(terrain.sea, "#0b2a38", 0.45), { roughness: 0.22, metallic: 0.1 }), castShadow: false, receiveShadow: true })
       .position(1.5, -0.45, -2.0).scale([64, 0.24, 52]).runtime({ id: "stage-ocean", tags: ["stage"] }),
-    seaNode(row, options),
+    ...(row.worldWater ? [seaNode(row, options)] : []),
     primitives.sphere({ name: "terrain-mounds", material: pbr("#ffffff", { roughness: 0.92, metallic: 0.02 }), instances: moundInst, instanceColors: moundSpecs.map((_, i) => moundColors[i % moundColors.length]!), castShadow: false, receiveShadow: true }),
     primitives.sphere({ name: "grass-patches", material: pbr("#ffffff", { roughness: 0.95 }), instances: patchSpecs.map((p) => ({ ...p, rotation: [0, 0, 0] as [number, number, number] })), instanceColors: patchColors, castShadow: false, receiveShadow: true }),
     primitives.box({ name: "dirt-path", material: pbr(dirtColor, { roughness: 0.96, metallic: 0 }), instances: pathInst, instanceColors: pathInst.map((_, i) => (i % 2 === 0 ? dirtColor : mixHex(dirtColor, groundColor, 0.28))), castShadow: false, receiveShadow: true }),
@@ -590,8 +618,11 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
   // Every fortress piece is a real 3D Meshy GLB model (crates, barrels, planks, stone bridge blocks).
   // Block pool = the stone-bridge GLB (stone, glass, ice, obsidian); wood blocks use the crate/plank pools below.
   for (let i = 0; i < POOL.blocks; i += 1) {
-    nodes.push(model(assets.gullsiegeBridgeMeshy, { name: blockNodeId(i), position: [0, -120, 0] })
-      .scale(0.45).runtime({ id: blockNodeId(i), tags: ["piece"] }));
+    nodes.push(row.solidBlocks
+      ? primitives.roundedBox({ name: blockNodeId(i), params: { radius: 0.07, widthSegments: 2 }, material: SOLID_BLOCK_MATERIALS.stone, castShadow: true, receiveShadow: true })
+        .position(0, -120, 0).scale(0.45).runtime({ id: blockNodeId(i), tags: ["piece"] })
+      : model(assets.gullsiegeBridgeMeshy, { name: blockNodeId(i), position: [0, -120, 0] })
+        .scale(0.45).runtime({ id: blockNodeId(i), tags: ["piece"] }));
   }
   for (let i = 0; i < POOL.crates; i += 1) {
     nodes.push(model(assets.gullsiegeCrateMeshy, { name: crateNodeId(i), position: [0, -120, 0] })

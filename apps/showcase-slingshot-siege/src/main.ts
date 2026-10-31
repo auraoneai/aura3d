@@ -23,7 +23,7 @@ import { assignPoolSlots, fitHalfWidth, orbitAround, quatToEulerZYX, rotQ, type 
 import { CHAPTERS, isLevelUnlocked, levelById, LEVELS, type LevelSpec } from "./game/levels";
 import { SiegeSim, type VisualUpdate } from "./game/sim";
 import {
-  blockLook, blockNodeId, bladeNodeId, buildScene, debrisLook, debrisNodeId, dotNodeId,
+  blockLook, blockNodeId, solidBlockMaterial, bladeNodeId, buildScene, debrisLook, debrisNodeId, dotNodeId,
   gullPartId, millHubNodeId, millPoleNodeId, crateNodeId, barrelNodeId, plankNodeId, projectileNodeId,
   pooledNodeIds, PROP_IDS, POOL, SEA_LEVEL, SLING_IDS
 } from "./game/stage";
@@ -78,6 +78,8 @@ function persist(): void {
 const chapter = CHAPTERS[levelById(START_LEVEL).chapter]!;
 /** GU47 blind-panel fix pass: the 4.6.2 look on chapters the panel did not judge better (`?look=original|gu47`). */
 const ORIGINAL_LOOK = useOriginalLook(chapter.id, params.get("look"));
+/** GU47 phase 3: block pieces are rounded solid blocks (the sim's exact box) on look rows with `solidBlocks`. */
+const SOLID_BLOCKS = !ORIGINAL_LOOK && chapterLook(chapter.id).solidBlocks;
 const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   renderer: { qualityProfile: "production" },
@@ -221,11 +223,19 @@ function assignPieceVisuals(): void {
     if (visual === "crate") scale = 0.38;
     else if (visual === "barrel") scale = 0.42;
     else if (visual === "plank") scale = [Math.max(0.4, p.spec.hx * 1.1), Math.max(0.4, p.spec.hy * 2.4), Math.max(0.35, p.spec.hz * 0.9)];
+    else if (SOLID_BLOCKS) scale = [p.spec.hx * 2, p.spec.hy * 2, p.spec.hz * 2];
     else scale = [Math.max(0.28, p.spec.hx * 1.15), Math.max(0.28, p.spec.hy * 1.45), Math.max(0.28, p.spec.hz * 1.25)];
     pieceVisuals.set(i, { nodeId: id, scale, pulse: 0 });
     // Every assignment sets the look, so a pooled node never keeps the last level's material.
     const mat = visual === "block" ? p.spec.material : "authored";
-    applyLook(id, `piece:${mat}`, visual === "block" ? blockLook(p.spec.material) : []);
+    if (SOLID_BLOCKS && visual === "block") {
+      if (lookKeys.get(id) !== `solid:${mat}`) {
+        lookKeys.set(id, `solid:${mat}`);
+        node(id)?.setMaterial(solidBlockMaterial(p.spec.material));
+      }
+    } else {
+      applyLook(id, `piece:${mat}`, visual === "block" ? blockLook(p.spec.material) : []);
+    }
     node(id)?.setScale(scale).setVisible(true);
   });
   // gulls

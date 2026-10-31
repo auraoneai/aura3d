@@ -35,6 +35,8 @@ export interface ChapterTerrain {
   readonly shallows: string;
   readonly sea: string;
   readonly driftwood: string;
+  /** The island's side wall under the turf (the lip the camera sees along the front edge). */
+  readonly lip: string;
 }
 
 export interface ChapterLook {
@@ -68,6 +70,23 @@ export interface ChapterLook {
   readonly flare: boolean;
   readonly weather: ChapterWeather;
   readonly terrain: ChapterTerrain;
+  /**
+   * GU47 phase 3 (4.7.1): the animated world-water ocean. Off on the day chapters: on software WebGL2 its waves and
+   * foam drew through the island near the arch and the windmill (blind panel p2b); the flat seabed sea shows instead.
+   */
+  readonly worldWater: boolean;
+  /**
+   * GU47 phase 3: the rock GLBs keep their authored rock texture under a multiply tint (true) instead of a flat
+   * replacement colour (false). The flat colour lost every surface detail on the cliffs (blind panel p2b).
+   */
+  readonly rockTexture: boolean;
+  /** Rock tint: the multiply colour when `rockTexture`, else the flat replacement colour (undefined: wet rock/chalk). */
+  readonly rockTint?: AuraColor;
+  /**
+   * GU47 phase 3: fortress "block" pieces draw as rounded solid blocks with the per-material look (exactly the sim's
+   * box half extents) instead of the scaled stone-bridge GLB, whose open arches read as floating domes.
+   */
+  readonly solidBlocks: boolean;
 }
 
 /** Brand palette (PRD WP-22 identity). */
@@ -87,176 +106,206 @@ const ISLAND: ChapterTerrain = {
   wetRock: "#5f5b52",
   shallows: "#5fb3ae",
   sea: SIEGE_PALETTE.seaTeal,
-  driftwood: SIEGE_PALETTE.driftwood
+  driftwood: SIEGE_PALETTE.driftwood,
+  lip: SIEGE_PALETTE.chalk
 };
 
-/** Six chapters, one day: crisp morning to a starry night. */
+/**
+ * The day island after the GU47 phase-3 relight: richer turf and an earth-brown lip (the chalk lip read as a white
+ * rim under a front sun).
+ */
+const DAY_ISLAND: ChapterTerrain = { ...ISLAND, turf: "#4c8c3c", lip: "#6b5a44" };
+
+/**
+ * Six chapters, one day: a crisp morning to a starry night.
+ *
+ * GU47 phase 3 (4.7.1): chapters 0-4 are relit after the blind panel p2b picked the 4.6.2 frame 0/3 on each (cliffs
+ * crushed to black by a sun behind the island, a flat grey-beige sky, sun glare beside the windmill and behind the
+ * arch, green fog over the right half, orange haze over the sling, the sea through the island). Every day sun now
+ * sits on the camera side (azimuth 295-340, so it lights the cliff faces and never enters the frame), fog is pushed
+ * past the horizon, every sky is a blue gradient with clouds whose horizon carries the time of day, the image light
+ * is the fill, the rocks keep their texture, and the world-water sea is off. Chapter 5 is unchanged (panel: better).
+ */
 export const CHAPTER_LOOKS: readonly ChapterLook[] = [
   {
     chapter: 0,
     timeOfDay: "crisp morning",
     preset: "outdoor-day",
     hdri: "spruit_sunrise",
-    environmentIntensity: 1.0,
-    environmentRotationDeg: 118,
-    exposureEv: -0.05,
-    sun: { elevationDeg: 35, azimuthDeg: 118, color: "#ffe2c2", intensity: 3.2 },
+    environmentIntensity: 1.25,
+    environmentRotationDeg: 330,
+    exposureEv: -0.1,
+    sun: { elevationDeg: 38, azimuthDeg: 325, color: "#ffe6c8", intensity: 3.0 },
     shadowSoftness: 1.2,
-    fog: { color: "#e6dccd", near: 90, far: 1500 },
-    horizon: "#efdcc4",
+    fog: { color: "#d8e6f0", near: 400, far: 4000 },
+    horizon: "#cfe2f0",
     sky: {
       model: "gradient",
-      zenith: "#4a8fd0",
-      horizon: "#f2dcc2",
+      zenith: "#3f82cf",
+      horizon: "#d6e8f4",
       ground: SIEGE_PALETTE.seaTeal,
-      exponent: 0.55,
-      horizonGlow: 0.35,
-      sun: { elevationDeg: 35, azimuthDeg: 118, intensity: 1.2, color: "#fff1dc", discSize: 0.02 },
-      clouds: { coverage: 0.22, speed: 0.6, color: "#fff6ec" }
+      exponent: 0.6,
+      horizonGlow: 0.15,
+      clouds: { coverage: 0.38, speed: 0.6, color: "#ffffff" }
     },
     post: "daylight-outdoor",
-    grade: { contrast: 1.06, saturation: 1.05, temperature: 0.04, tint: 0 },
-    bloom: { threshold: 0.9, intensity: 0.22 },
+    grade: { contrast: 1.08, saturation: 1.06, temperature: 0.04, tint: 0 },
+    bloom: { threshold: 0.95, intensity: 0.12 },
     vignette: 0.18,
-    dof: { maxBlur: 5, bandWidth: 0.34 },
+    dof: { maxBlur: 2.5, bandWidth: 0.5 },
     accent: SIEGE_PALETTE.pennantRed,
     practicals: { windows: false, lighthouse: false, lanterns: false },
     flare: false,
     weather: "none",
-    terrain: ISLAND
+    terrain: DAY_ISLAND,
+    worldWater: false,
+    rockTexture: true,
+    rockTint: "#e8e2d4",
+    solidBlocks: true
   },
   {
     chapter: 1,
-    timeOfDay: "dusty noon",
+    timeOfDay: "bright noon",
     preset: "outdoor-day",
     hdri: "outdoor-midday",
-    environmentIntensity: 1.0,
-    environmentRotationDeg: 160,
+    environmentIntensity: 1.2,
+    environmentRotationDeg: 340,
     exposureEv: -0.15,
-    sun: { elevationDeg: 62, azimuthDeg: 160, color: "#fff5e4", intensity: 3.6 },
+    sun: { elevationDeg: 62, azimuthDeg: 340, color: "#fff6e6", intensity: 3.2 },
     shadowSoftness: 0.9,
-    fog: { color: "#dcd3bd", near: 80, far: 1300 },
-    horizon: "#dcd8c8",
+    fog: { color: "#d4e2ee", near: 400, far: 4000 },
+    horizon: "#c8def0",
     sky: {
       model: "gradient",
-      zenith: "#2e6fb8",
-      horizon: "#dcd8c6",
+      zenith: "#2a68b6",
+      horizon: "#c9e0f2",
       ground: SIEGE_PALETTE.seaTeal,
       exponent: 0.8,
-      horizonGlow: 0.2,
-      sun: { elevationDeg: 62, azimuthDeg: 160, intensity: 1.4, color: "#fffaf0", discSize: 0.018 },
-      clouds: { coverage: 0.12, speed: 0.4, color: "#f5eee0" }
+      horizonGlow: 0.1,
+      clouds: { coverage: 0.26, speed: 0.4, color: "#fbfaf6" }
     },
     post: "daylight-outdoor",
-    grade: { contrast: 1.1, saturation: 0.95, temperature: 0.08, tint: 0.02 },
-    bloom: { threshold: 0.9, intensity: 0.2 },
+    grade: { contrast: 1.1, saturation: 1.08, temperature: 0.07, tint: 0.01 },
+    bloom: { threshold: 0.95, intensity: 0.12 },
     vignette: 0.18,
-    dof: { maxBlur: 4.5, bandWidth: 0.36 },
+    dof: { maxBlur: 2.5, bandWidth: 0.5 },
     accent: SIEGE_PALETTE.pennantRed,
     practicals: { windows: false, lighthouse: false, lanterns: false },
     flare: false,
     weather: "dust",
-    terrain: { ...ISLAND, turf: "#6a9446" }
+    terrain: { ...DAY_ISLAND, turf: "#5b9140" },
+    worldWater: false,
+    rockTexture: true,
+    rockTint: "#efe4cc",
+    solidBlocks: true
   },
   {
     chapter: 2,
-    timeOfDay: "misty overcast",
-    preset: "overcast",
-    environmentIntensity: 1.6,
-    environmentRotationDeg: 40,
-    exposureEv: 0.1,
-    sun: { elevationDeg: 48, azimuthDeg: 100, color: "#e4eaf0", intensity: 1.5 },
-    shadowSoftness: 3.2,
-    fog: { color: "#c8cfd2", near: 50, far: 800 },
-    horizon: "#cbd1d4",
+    timeOfDay: "breezy late morning after rain",
+    preset: "outdoor-day",
+    hdri: "spruit_sunrise",
+    environmentIntensity: 1.3,
+    environmentRotationDeg: 315,
+    exposureEv: -0.05,
+    sun: { elevationDeg: 48, azimuthDeg: 315, color: "#f4f6ff", intensity: 2.8 },
+    shadowSoftness: 2.0,
+    fog: { color: "#d2e2ec", near: 400, far: 4000 },
+    horizon: "#d4e6ef",
     sky: {
       model: "gradient",
-      zenith: "#97a3ac",
-      horizon: "#ced4d7",
-      ground: "#55807f",
-      exponent: 1.0,
-      horizonGlow: 0.1,
-      clouds: { coverage: 0.9, speed: 0.3, color: "#dadfe2" }
+      zenith: "#4a8bd2",
+      horizon: "#dceaf2",
+      ground: "#3f8a90",
+      exponent: 0.7,
+      horizonGlow: 0.08,
+      clouds: { coverage: 0.58, speed: 0.9, color: "#ffffff" }
     },
     post: "daylight-outdoor",
-    grade: { contrast: 0.97, saturation: 0.86, temperature: -0.06, tint: 0 },
-    bloom: { threshold: 0.9, intensity: 0.16 },
-    vignette: 0.2,
-    dof: { maxBlur: 5, bandWidth: 0.32 },
+    grade: { contrast: 1.08, saturation: 1.04, temperature: -0.04, tint: 0 },
+    bloom: { threshold: 0.95, intensity: 0.12 },
+    vignette: 0.18,
+    dof: { maxBlur: 2.5, bandWidth: 0.5 },
     accent: SIEGE_PALETTE.pennantRed,
     practicals: { windows: false, lighthouse: false, lanterns: false },
     flare: false,
-    weather: "mist",
-    terrain: ISLAND
+    weather: "none",
+    terrain: { ...DAY_ISLAND, turf: "#438a45" },
+    worldWater: false,
+    rockTexture: true,
+    rockTint: "#e2e4dc",
+    solidBlocks: true
   },
   {
     chapter: 3,
     timeOfDay: "golden hour",
     preset: "golden-hour",
     hdri: "kloppenheim_06_puresky",
-    environmentIntensity: 1.0,
-    environmentRotationDeg: 145,
-    exposureEv: 0,
-    sun: { elevationDeg: 14, azimuthDeg: 145, color: "#ffb26a", intensity: 2.8 },
+    environmentIntensity: 1.2,
+    environmentRotationDeg: 300,
+    exposureEv: -0.05,
+    sun: { elevationDeg: 22, azimuthDeg: 300, color: "#ffc183", intensity: 3.0 },
     shadowSoftness: 1.4,
-    fog: { color: "#e2aa7c", near: 80, far: 1300 },
-    horizon: "#eab487",
+    fog: { color: "#f0c9a2", near: 400, far: 4000 },
+    horizon: "#f3c79a",
     sky: {
-      model: "preetham",
-      sun: { elevationDeg: 14, azimuthDeg: 145, intensity: 1.2, color: "#ffcf96" },
-      turbidity: 4.5,
-      rayleigh: 1.6,
-      mieCoefficient: 0.006,
-      mieDirectionalG: 0.85,
-      clouds: { coverage: 0.3, speed: 0.5, color: "#ffd3a2" },
-      groundColor: "#4c6f6c"
+      model: "gradient",
+      zenith: "#4f77b8",
+      horizon: "#f6c99a",
+      ground: "#3f7c80",
+      exponent: 0.55,
+      horizonGlow: 0.25,
+      clouds: { coverage: 0.34, speed: 0.5, color: "#ffdcb4" }
     },
     post: "cinematic-film",
-    grade: { contrast: 1.08, saturation: 1.08, temperature: 0.28, tint: 0.02 },
-    bloom: { threshold: 0.85, intensity: 0.3 },
-    vignette: 0.22,
-    dof: { maxBlur: 5.5, bandWidth: 0.32 },
+    grade: { contrast: 1.1, saturation: 1.08, temperature: 0.24, tint: 0.02 },
+    bloom: { threshold: 0.95, intensity: 0.14 },
+    vignette: 0.2,
+    dof: { maxBlur: 2.5, bandWidth: 0.5 },
     accent: SIEGE_PALETTE.pennantRed,
     practicals: { windows: false, lighthouse: false, lanterns: false },
-    // GU47 phase 2: off; on software WebGL2 the sun flare drew a screen-wide glow blob over the fort or the sling.
     flare: false,
     weather: "none",
-    terrain: ISLAND
+    terrain: DAY_ISLAND,
+    worldWater: false,
+    rockTexture: true,
+    rockTint: "#f2dcc0",
+    solidBlocks: true
   },
   {
     chapter: 4,
-    timeOfDay: "stormy red sunset with drizzle",
+    timeOfDay: "red sunset",
     preset: "golden-hour",
     hdri: "belfast_sunset_puresky",
-    environmentIntensity: 2.2,
-    environmentRotationDeg: 215,
-    // GU47 phase 2: -0.35 EV and a softer bloom; at +0.05 EV the island and sea washed out white (mean 128, p95 218).
-    exposureEv: -0.35,
-    sun: { elevationDeg: 8, azimuthDeg: 215, color: "#ff7c4c", intensity: 2.4 },
-    shadowSoftness: 2.0,
-    fog: { color: "#b56c5e", near: 70, far: 1000 },
-    horizon: "#c27a62",
+    environmentIntensity: 1.3,
+    environmentRotationDeg: 295,
+    exposureEv: -0.1,
+    sun: { elevationDeg: 16, azimuthDeg: 295, color: "#ff9a62", intensity: 3.0 },
+    shadowSoftness: 1.6,
+    fog: { color: "#d99a86", near: 400, far: 4000 },
+    horizon: "#f0a27c",
     sky: {
-      model: "preetham",
-      sun: { elevationDeg: 8, azimuthDeg: 215, intensity: 1.1, color: "#ff9a6a" },
-      turbidity: 9,
-      rayleigh: 3,
-      mieCoefficient: 0.012,
-      mieDirectionalG: 0.9,
-      clouds: { coverage: 0.65, speed: 1.4, color: "#9c5a52" },
-      groundColor: "#3a4a4e"
+      model: "gradient",
+      zenith: "#2e4a8a",
+      horizon: "#f2a07a",
+      ground: "#33606a",
+      exponent: 0.5,
+      horizonGlow: 0.3,
+      clouds: { coverage: 0.42, speed: 0.8, color: "#f3b39a" }
     },
     post: "cinematic-film",
-    grade: { contrast: 1.12, saturation: 1.1, temperature: 0.35, tint: 0.05 },
-    bloom: { threshold: 0.9, intensity: 0.2 },
-    vignette: 0.26,
-    dof: { maxBlur: 6, bandWidth: 0.3 },
+    grade: { contrast: 1.12, saturation: 1.1, temperature: 0.3, tint: 0.04 },
+    bloom: { threshold: 0.95, intensity: 0.14 },
+    vignette: 0.22,
+    dof: { maxBlur: 2.5, bandWidth: 0.5 },
     accent: SIEGE_PALETTE.pennantRed,
     practicals: { windows: true, lighthouse: false, lanterns: false },
-    // GU47 phase 2: off; on software WebGL2 the sun flare drew a screen-wide glow blob over the fort or the sling.
     flare: false,
-    weather: "drizzle",
-    terrain: ISLAND
+    weather: "none",
+    terrain: DAY_ISLAND,
+    worldWater: false,
+    rockTexture: true,
+    rockTint: "#f0d2bc",
+    solidBlocks: true
   },
   {
     chapter: 5,
@@ -289,7 +338,10 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     practicals: { windows: true, lighthouse: true, lanterns: true },
     flare: false,
     weather: "none",
-    terrain: ISLAND
+    terrain: ISLAND,
+    worldWater: true,
+    rockTexture: false,
+    solidBlocks: false
   }
 ];
 
@@ -306,10 +358,11 @@ export function sunDirection(sun: Pick<ChapterSun, "elevationDeg" | "azimuthDeg"
 }
 
 /**
- * GU47 blind-panel fix pass: chapters whose default is the 4.6.2 look. Three blind judges picked the 4.6.2 frame
- * over the GU47 look on default and chapters 0-4 (0/3 each); only the starry night (ch5) was judged better.
+ * Chapters whose default is the 4.6.2 look. GU47 blind-panel fix pass: default and chapters 0-4 lost 0/3 to the
+ * 4.6.2 frame (round p2b) and went back to the 4.6.2 look. GU47 phase 3 (4.7.1): the relit rows above are the
+ * candidate look; a chapter leaves this set only after a blind panel picks its new frame (at least 2 of 3 judges).
  */
-export const ORIGINAL_LOOK_CHAPTERS: ReadonlySet<number> = new Set([0, 1, 2, 3, 4]);
+export const ORIGINAL_LOOK_CHAPTERS: ReadonlySet<number> = new Set([]);
 
 /** `?look=original` forces the 4.6.2 look, `?look=gu47` the look table; otherwise the per-chapter default. */
 export function useOriginalLook(chapter: number, param: string | null): boolean {
