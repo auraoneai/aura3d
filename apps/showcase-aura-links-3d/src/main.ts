@@ -1165,7 +1165,7 @@ function updateCardHud(): void {
 
 function updateModeChips(): void {
   const course = state.course;
-  $("h-course-chip")!.innerHTML = `${course.name}<span class="sub" id="h-look-chip">${course.shortName} · ${course.look.toUpperCase()} LOOK</span>`;
+  $("h-course-chip")!.innerHTML = `${course.name}<span class="sub" id="h-look-chip">${course.shortName} · ${turfOn ? COURSE_LOOKS[course.id].timeOfDay.split(/,| in | under /)[0]!.toUpperCase() : `${course.look.toUpperCase()} LOOK`}</span>`;
   $("h-mode")!.textContent =
     state.mode === "quick" ? "QUICK PLAY" :
     state.mode === "rangelab" ? "RANGE LAB" :
