@@ -1,0 +1,26 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "heatsink-port",
+  "source": "PRD WP-29 (G19) acceptance: identity target mean 62-75; IC-01 p50 >= 50, darkFrac <= 0.02, clip <= 0.01, bottom cells >= 40; IC-05 darkest top cell >= 65; IC-08 p95 <= 235. The bands hold for the twilight look (the default when the blind panel calls it better); ?look=original is the 4.6.2 look and keeps the PRD section 1.5 default band only.",
+  "default": {
+    "darkFrac": [null, 0.6],
+    "clipFrac": [null, 0.05]
+  },
+  "variants": {
+    "default": {
+      "mean": [62, 75],
+      "p50": [50, null],
+      "p95": [null, 235],
+      "darkFrac": [null, 0.02],
+      "clipFrac": [null, 0.01],
+      "cells": {
+        "0": { "mean": [65, null] },
+        "1": { "mean": [65, null] },
+        "2": { "mean": [65, null] },
+        "6": { "mean": [40, null] },
+        "7": { "mean": [40, null] },
+        "8": { "mean": [40, null] }
+      }
+    }
+  }
+}

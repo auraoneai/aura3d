@@ -124,8 +124,9 @@ void main() {
   // causeway into a flat lavender sheet (software WebGL2 frames); obsidian now stays dark with a dimmer grazing sky sheen
   // GU47 phase 3: darker obsidian (0.34 / 0.10 + 0.5 fres) and a warm grazing glint of the sunset band along the sun azimuth
   float glint = pow(max(dot(Rv, normalize(sunDir)), 0.0), 18.0);
-  // round g19p3-r1 (panel 3/0/0 better, but a touch pastel at chase height where fres is high): about 60% of that sheen
-  color = mix(color, color * 0.32 + mirror * (0.07 + 0.42 * fres) + vec3(0.9, 0.42, 0.12) * glint * 0.4, glass);
+  // round g19p3-r1 (panel 3/0/0 better, but a touch pastel at chase height where fres is high): about 60% of that sheen;
+  // round g19p3-r3 lifts the near floor a little (r2 bottom corner cells 39.5 vs the IC-01 floor of 40)
+  color = mix(color, color * 0.32 + mirror * (0.095 + 0.42 * fres) + vec3(0.9, 0.42, 0.12) * glint * 0.4, glass);
   color += vRoad * seam * 0.12 * seams;
   color += mix(vec3(0.10, 0.85, 0.80), vRoad, 0.25) * clamp(vein, 0.0, 1.0) * veinHdr * (0.6 + 0.6 * pulse) * glass; // cyan veins (were half the district colour: white squiggles)
   color += vec3(0.10, 0.85, 0.80) * clamp(vein, 0.0, 1.0) * 0.20;
