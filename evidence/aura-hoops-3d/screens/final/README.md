@@ -1,5 +1,16 @@
 # Aura Hoops 3D: final screenshots
 
+## Retake 2026-10-31 (4.7.1 candidate, GU47 phase 3 lane g07)
+
+Every frame in `1280x720/`, `390x844/` and `card/` was replaced with the same file name and pixel size from remote run
+`g07p3-f-scr` (`gu47/g07` at 897c7fe0c, `tests/browser/audit-fix/aura-hoops-3d.spec.ts` `@screens`; software WebGL2,
+not real-GPU frames). The boot court (Rucker) now draws the GU47 new look (blind panel 3/0/0 vs 4.6.2): grounded
+court-coloured bleachers, ground to the horizon, sodium-lit dusk, tour HUD skin, in-world court name. Per-frame numbers:
+`evidence/game-upgrades-47/aura-hoops-3d/screens-meta-g07p3f.jsonl`.
+Seen: `card/card-2x.jpg` (HUD, court, players clear), `1280x720/01-title.jpg`, `1280x720/03-action-03` (HUD legible).
+Problem: `390x844/04-mid.jpg` catches the portrait chase camera looking at the west bleachers with no player in view.
+
+
 ## Retake 2026-10-29 (4.5.0 render, audit-fix lane G07)
 
 Every frame in `1280x720/`, `390x844/` and `card/` was replaced with the same file name and pixel size from remote run
