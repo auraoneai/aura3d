@@ -141,10 +141,12 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
   }
 };
 
-/** `?look=original|twilight`; anything else (or no param) is the default `twilight` */
+/** `?look=original|twilight`; anything else (or no param) is the default `original` (the 4.6.2 look) */
 export function lookFromSearch(search: string | null | undefined): HeatsinkLookRow {
   const id = new URLSearchParams(search ?? "").get("look");
-  return id === "original" ? LOOKS.original : LOOKS.twilight;
+  /* GU47 phase 2 (PRD D11): after two remote rounds the twilight frame (software WebGL2) still read flatter than 4.6.2
+   * (pastel causeway, hazy rocks, planet lost), so the 4.6.2 look is the default again and twilight is opt-in via ?look=twilight */
+  return id === "twilight" ? LOOKS.twilight : LOOKS.original;
 }
 
 /**

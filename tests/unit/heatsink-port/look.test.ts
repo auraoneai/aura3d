@@ -18,9 +18,10 @@ const hueDeg = (c: readonly number[]): number => {
 
 describe("heatsink-port look table (GU47 WP-29)", () => {
   it("boots twilight by default and keeps ?look=original", () => {
-    expect(lookFromSearch("").id).toBe("twilight");
+    expect(lookFromSearch("").id).toBe("original");
+    expect(lookFromSearch("?look=twilight").id).toBe("twilight");
     expect(lookFromSearch("?look=original").id).toBe("original");
-    expect(lookFromSearch("?look=nope").id).toBe("twilight");
+    expect(lookFromSearch("?look=nope").id).toBe("original");
   });
 
   it("IC-01: twilight lit() scale 0.45 and road albedo in 0.30-0.38; original keeps 0.26 and no new terms", () => {
@@ -34,7 +35,7 @@ describe("heatsink-port look table (GU47 WP-29)", () => {
     const orig = nodes("?look=original");
     expect(orig.some((n) => n.name === "ion-wake")).toBe(false);
     expect(orig.filter((n) => n.kind === "effect").map((n) => n.effect).sort()).toEqual(["bloom", "color-grade", "vignette"]);
-    const tw = nodes("");
+    const tw = nodes("?look=twilight");
     expect(tw.some((n) => n.name === "ion-wake")).toBe(true);
     for (const e of ["ambient-occlusion", "motion-blur", "chromatic-aberration", "film-grain"]) expect(tw.some((n) => n.effect === e), e).toBe(true);
     /* GU47 phase 2: the god-ray volumetric fog only added a peach extinction on software WebGL2, so twilight mounts none */
@@ -47,10 +48,10 @@ describe("heatsink-port look table (GU47 WP-29)", () => {
     expect(low.key.cascades).toBe(1);
     expect(low.wake.enabled).toBe(true);
     expect(low.sky).toEqual(LOOKS.twilight.sky);
-    const effects = nodes("", "low").filter((n) => n.kind === "effect").map((n) => n.effect);
+    const effects = nodes("?look=twilight", "low").filter((n) => n.kind === "effect").map((n) => n.effect);
     expect(effects).not.toContain("motion-blur");
     expect(effects).not.toContain("ambient-occlusion");
-    expect(nodes("", "low").some((n) => n.name === "ion-wake")).toBe(true);
+    expect(nodes("?look=twilight", "low").some((n) => n.name === "ion-wake")).toBe(true);
   });
 
   it("reduced motion: no roll, no countdown sweep, no motion blur or CA, half the spores and half the VFX", () => {
@@ -138,13 +139,13 @@ describe("heatsink-port spores (IC-20)", () => {
     expect(Array.from(a.fade).filter((v) => v > 0).length).toBeGreaterThanOrEqual(40);
     sporeField(a, 3.5, [0, 0, 0], 150);
     expect(Array.from(a.fade).slice(150).every((v) => v === 0)).toBe(true);
-    expect(nodes("").some((n) => n.name === "spores")).toBe(true);
+    expect(nodes("?look=twilight").some((n) => n.name === "spores")).toBe(true);
     expect(nodes("?look=original").some((n) => n.name === "spores")).toBe(false);
   });
 
   it("IC-09 split tone: twilight grade carries teal shadows and amber highlights; original authors only today's fields", () => {
     const grade = (q: string) => nodes(q).find((n) => n.kind === "effect" && n.effect === "color-grade") as unknown as Record<string, unknown>;
-    const tw = grade("");
+    const tw = grade("?look=twilight");
     expect((tw.shadows as number[])[2]).toBeGreaterThan((tw.shadows as number[])[0]!);
     expect((tw.highlights as number[])[0]).toBeGreaterThan((tw.highlights as number[])[2]!);
     const og = grade("?look=original");
@@ -154,8 +155,9 @@ describe("heatsink-port spores (IC-20)", () => {
 
   it("IC-07 sun flare on twilight High only", () => {
     const has = (q: string, quality: "high" | "low" = "high") => nodes(q, quality).some((n) => n.name === "sun-flare");
-    expect(has("")).toBe(true);
-    expect(has("", "low")).toBe(false);
+    expect(has("?look=twilight")).toBe(true);
+    expect(has("")).toBe(false);
+    expect(has("?look=twilight", "low")).toBe(false);
     expect(has("?look=original")).toBe(false);
   });
 });
