@@ -477,7 +477,7 @@ function lampShaft(): ReturnType<typeof primitives.cone>[] {
   const sh = LAMP_HAZE.shaft;
   const mid: [number, number, number] = [LAMP.position[0] + a[0] * sh.length / 2, LAMP.position[1] + a[1] * sh.length / 2, LAMP.position[2] + a[2] * sh.length / 2];
   return sh.shells.map((shell, i) => {
-    const r = Math.tan(LAMP.angle * 0.62) * sh.length * shell.fraction;
+    const r = Math.tan(sh.halfAngle) * sh.length * shell.fraction;
     return primitives.cone({
       name: `lamp shaft ${i}`,
       size: [2 * r, sh.length, 2 * r],
@@ -861,10 +861,11 @@ export function syncVisuals(dt: number): void {
       const shell = dead ? Math.max(0.05, (st.deathT / 1.6) * COURIER_POD.shell) : st.player.dashT > 0 ? COURIER_POD.shell * 1.2 : COURIER_POD.shell;
       if (flickerOn) {
         inst("hero", hpos[0], hpos[1], hpos[2], shell, shell * 1.15, shell, st.profile.orbColor, st.time * (st.player.dashT > 0 ? 7 : 2.4));
-        inst("halo", hpos[0], hpos[1], hpos[2], shell * 1.6, shell * 1.6, shell * 1.6, "#ffb23e", yawOf(st.player.dir) + st.time * 3.2);
+        const hk = dead ? Math.max(0.05, st.deathT / 1.6) : 1;
+        inst("halo", hpos[0], COURIER_POD.haloHeight + (dead ? 0 : bob * 0.5), hpos[2], COURIER_POD.halo * hk, COURIER_POD.halo * hk, COURIER_POD.halo * hk, "#ffb23e", yawOf(st.player.dir) + st.time * 3.2);
         if (ex) {
           inst("hero", wx(ex.x), coreY + bob, wz(ex.y), shell, shell * 1.15, shell, st.profile.orbColor, st.time * 2.4);
-          inst("halo", wx(ex.x), coreY + bob, wz(ex.y), shell * 1.6, shell * 1.6, shell * 1.6, "#ffb23e", yawOf(st.player.dir) + st.time * 3.2);
+          inst("halo", wx(ex.x), COURIER_POD.haloHeight + bob * 0.5, wz(ex.y), COURIER_POD.halo, COURIER_POD.halo, COURIER_POD.halo, "#ffb23e", yawOf(st.player.dir) + st.time * 3.2);
         }
       }
     }

@@ -87,11 +87,14 @@ export const BOARD_PROBE = {
 export const COURIER_POD = {
   scale: 0.484,
   lift: -0.02 + 0.951 * 0.484,
-  coreHeight: 1.08,
-  shell: 0.4,
-  rim: { color: "#8ff8ff", power: 1.8, intensity: 1.5 },
+  coreHeight: 1.04,
+  shell: 0.34,
+  /** Round 3: the amber halo rings the pod's waist (marker around the body) instead of the hovering core. */
+  haloHeight: 0.48,
+  halo: 0.9,
+  rim: { color: "#8ff8ff", power: 2, intensity: 1.2 },
   emissive: "#2fc8d8",
-  emissiveIntensity: 0.35
+  emissiveIntensity: 0.22
 } as const;
 
 /** Signature macro DOF (DD47-P1): metric lens; the focus distance follows the camera to the board centre. */
@@ -109,7 +112,9 @@ export const LAMP_HAZE = {
    * three nested open additive cone meshes (depth write off) run from the lamp head toward the board; nested radii
    * give a soft edge. `fraction` is each shell's radius as a share of the lamp cone's.
    */
-  shaft: { color: "#ffcf95", length: 19, shells: [{ fraction: 0.95, opacity: 0.035 }, { fraction: 0.7, opacity: 0.04 }, { fraction: 0.45, opacity: 0.05 }] }
+  // Round 3: round 2's three shells (half-angle ~0.5 rad, 0.035-0.05) washed the whole frame and showed hard edges;
+  // now five thin shells inside a 0.3 rad half-angle, 0.01 each, so the core of the beam is densest.
+  shaft: { color: "#ffcf95", length: 19, halfAngle: 0.3, shells: [1, 0.8, 0.6, 0.4, 0.2].map((fraction) => ({ fraction, opacity: 0.01 })) }
 } as const;
 
 /**
