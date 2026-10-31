@@ -109,13 +109,13 @@ export interface ResolvedLook {
   readonly ink: number;
 }
 
-/** `?look=original` keeps the 4.6.2 midday look; everything else is the evening. */
+/** The 4.6.2 midday look is the default (also `?look=original`); `?look=evening` opts in to the GU47 evening. */
 export function lookMode(search: string | URLSearchParams): LookMode {
   const params = typeof search === "string" ? new URLSearchParams(search) : search;
-  // GU47 phase 2, second pass: the evening is the default again. The first pass made it opt-in (PRD D11) because in
-  // software WebGL2 it never produced a frame in 25 min; the frame cost is now cut to the 4.6.2 level (pooled lantern
-  // points and grain opt-in, see main.ts) and the village fill raised (hemisphere, IBL gain, exposure).
-  return params.get("look") === "original" ? "original" : "evening";
+  // GU47 phase 2 (PRD D11, no regression ships): the default stays the 4.6.2 look. The second pass cut the evening frame
+  // cost to the 4.6.2 level in software WebGL2 (pooled lantern points, grain and ink opt-in) but its title frame still
+  // lost to 4.6.2: first ~2 EV dark with the ink line dotting the grass (agx), then a white bloom wash (aces 1.8, g20p2r4).
+  return params.get("look") === "evening" ? "evening" : "original";
 }
 
 /** District band a distance belongs to (the five stops; the Backstreets share the village row). */
@@ -220,12 +220,13 @@ export const ENVIRONMENT_GAIN = 2.2;
 /** GU47 phase 2 (second pass): hemisphere fill under the HDRI, times the district's environment intensity. */
 export const EVENING_FILL = { sky: "#c8cce0", ground: "#7a6650", intensity: 0.6 } as const;
 /** GU47 phase 2: output exposure of the evening look (aces); `?look=original` keeps 1. */
-export const EVENING_EXPOSURE = 1.8;
+export const EVENING_EXPOSURE = 1.5;
 
 /** Post settings of the woodblock grade (NR-08); Low drops grain (PRD §6.4). */
 export const WOODBLOCK_POST = {
   toneMapping: "aces" as const,
-  bloom: { intensity: 0.55, threshold: 0.85, radius: 0.4 },
+  // Phase-2 second pass: the 4.6.2 bloom; 0.55 over 0.85 washed the brighter village white (g20p2r4).
+  bloom: { intensity: 0.35, threshold: 1.0, radius: 0.4 },
   grade: { contrast: 1.14, saturation: 1.04 },
   vignette: { intensity: 0.3, smoothness: 0.65 },
   grain: { intensity: 0.025 },

@@ -86,7 +86,7 @@ describe("ninja-runner-port district look table (NR-01, NR-02, NR-05, NR-06, NR-
 
   it("reads ?look=original and round-trips hex", () => {
     expect(lookMode("?look=original")).toBe("original");
-    expect(lookMode("?at=700")).toBe("evening");
+    expect(lookMode("?at=700")).toBe("original");
     expect(lookMode("?look=evening&at=700")).toBe("evening");
     expect(linearToHex([1, 0, 0])).toBe("#ff0000");
   });

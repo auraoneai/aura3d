@@ -208,12 +208,6 @@ const GU47_DRAFTS: readonly Draft[] = [
   t("ninja-runner-port", "original", "/apps/showcase-ninja-runner-port/?look=original"),
   t("ninja-runner-port", "village-lanterns-off", "/apps/showcase-ninja-runner-port/?at=100&lanterns=0"),
   t("ninja-runner-port", "gate-cones-off", "/apps/showcase-ninja-runner-port/?at=2500&cones=0"),
-  // G20 phase 2 (second pass): frame-cost probes (examples/ninja-runner-port/perfProbe.ts logs NR_PERF / NR_PROG lines).
-  t("ninja-runner-port", "perf-evening", "/apps/showcase-ninja-runner-port/?look=evening&perf=1"),
-  t("ninja-runner-port", "perf-original", "/apps/showcase-ninja-runner-port/?look=original&perf=1"),
-  t("ninja-runner-port", "perf-novfx", "/apps/showcase-ninja-runner-port/?look=evening&vfx=0&perf=1"),
-  t("ninja-runner-port", "perf-nopost", "/apps/showcase-ninja-runner-port/?look=evening&ink=0&grain=0&lanterns=0&cones=0&perf=1"),
-  t("ninja-runner-port", "perf-low", "/apps/showcase-ninja-runner-port/?look=evening&quality=low&perf=1"),
   ...SALTWIND_LEVELS.map((id, i) => ({ ...t("roadster-hours-port", `${id}-original`, `/apps/showcase-roadster-hours-port/?level=${i}&autostart=1&autopilot=1&look=original`, saltwindReady), crops: SALTWIND_CROPS })),
   t("where-the-wind-wanders-port", "bell", "/apps/showcase-where-the-wind-wanders-port/?found=bell"),
   ...SILT_CHAPTERS.map((c) => t("silt-and-signal-port", `ch${c}-original`, `/apps/showcase-silt-and-signal-port/?chapter=${c}&start=1&look=original`))
