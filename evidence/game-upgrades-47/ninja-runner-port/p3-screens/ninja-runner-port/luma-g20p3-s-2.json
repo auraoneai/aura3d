@@ -1,0 +1,227 @@
+[
+ {
+  "target": "desktop",
+  "shot": "gate-hit-1280",
+  "driveErr": "none",
+  "w": 1280,
+  "h": 720,
+  "mean": 129.8,
+  "lowerMean": 122.45,
+  "centreMean": 148.31,
+  "p5": 34,
+  "p50": 141,
+  "p95": 199,
+  "darkFrac": 0.0039,
+  "clipFrac": 0,
+  "engine": {
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "droppedFeatures": null,
+   "drawCalls": 100,
+   "shadows": "{\"shadows\":[{\"light\":\"sun\",\"filter\":\"pcf\",\"casterVariants\":[\"sk0|ah\",\"sk0|ah|ds\",\"sk0|i|b|ds|prd02.depthInstanceAttr=1,prd02.depthInstancing=1\",\"sk0|i|b|ds|prd02.depthInstancing=1\",\"sk0|i|b|prd02.depthInstancing=1\",\"sk4|ds|prd02.depthSkinning=4\"],\"sampled\":true,\"cascadeCount\":2,\"skippedCascades\":[]}],\"droppedFeatures\":[],\"contactShadows\":{\"passExecuted\":false,\"depthSource\":\"none\"}}",
+   "warnings": [
+    "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes."
+   ],
+   "environment": "{\"model\":\"physical\",\"environment\":{\"source\":\"prd02\",\"faceSize\":0,\"mipCount\":0,\"format\":\"rgba16f\",\"shBound\":false,\"backgroundDrawn\":false,\"pmremGpuMs\":null},\"lightsEvaluated\":1,\"lightsCulledByRange\":null,\"lightsDroppedByCap\":0,\"lights\":null,\"timings\":{\"pmrem\":null,\"shadowCascade\":[],\"shadowLocal\":nul",
+   "threat": null,
+   "phase": "running",
+   "distance": 404.3644253169775,
+   "form": "base",
+   "kills": 0
+  },
+  "hud": {
+   "stats": [
+    1099,
+    14,
+    167,
+    154
+   ],
+   "vitals": [
+    14,
+    14,
+    210,
+    154
+   ],
+   "forms": [
+    14,
+    640,
+    340,
+    66
+   ],
+   "abilities": [
+    986,
+    586,
+    280,
+    120
+   ],
+   "progress": [
+    360,
+    12,
+    560,
+    10
+   ],
+   "mute": [
+    1008,
+    6,
+    85,
+    44
+   ],
+   "pause-btn": [
+    936,
+    6,
+    66,
+    44
+   ]
+  }
+ },
+ {
+  "target": "desktop",
+  "shot": "mid-action-1280",
+  "driveErr": "none",
+  "w": 1280,
+  "h": 720,
+  "mean": 130.66,
+  "lowerMean": 125.51,
+  "centreMean": 131.55,
+  "p5": 48,
+  "p50": 138,
+  "p95": 192,
+  "darkFrac": 0.001,
+  "clipFrac": 0,
+  "engine": {
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "droppedFeatures": null,
+   "drawCalls": 113,
+   "shadows": "{\"shadows\":[{\"light\":\"sun\",\"filter\":\"pcf\",\"casterVariants\":[\"sk0|ah\",\"sk0|ah|ds\",\"sk0|i|b|ds|prd02.depthInstanceAttr=1,prd02.depthInstancing=1\",\"sk0|i|b|ds|prd02.depthInstancing=1\",\"sk0|i|b|prd02.depthInstancing=1\",\"sk4|ds|prd02.depthSkinning=4\"],\"sampled\":true,\"cascadeCount\":2,\"skippedCascades\":[]}],\"droppedFeatures\":[],\"contactShadows\":{\"passExecuted\":false,\"depthSource\":\"none\"}}",
+   "warnings": [
+    "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes."
+   ],
+   "environment": "{\"model\":\"physical\",\"environment\":{\"source\":\"prd02\",\"faceSize\":0,\"mipCount\":0,\"format\":\"rgba16f\",\"shBound\":false,\"backgroundDrawn\":false,\"pmremGpuMs\":null},\"lightsEvaluated\":2,\"lightsCulledByRange\":null,\"lightsDroppedByCap\":0,\"lights\":null,\"timings\":{\"pmrem\":null,\"shadowCascade\":[],\"shadowLocal\":nul",
+   "threat": null,
+   "phase": "running",
+   "distance": 311.90117000000043,
+   "form": "base",
+   "kills": 7
+  },
+  "hud": {
+   "stats": [
+    1111,
+    14,
+    155,
+    157
+   ],
+   "vitals": [
+    14,
+    14,
+    210,
+    154
+   ],
+   "forms": [
+    14,
+    640,
+    340,
+    66
+   ],
+   "abilities": [
+    986,
+    586,
+    280,
+    120
+   ],
+   "progress": [
+    360,
+    12,
+    560,
+    10
+   ],
+   "mute": [
+    1008,
+    6,
+    85,
+    44
+   ],
+   "pause-btn": [
+    936,
+    6,
+    66,
+    44
+   ]
+  }
+ },
+ {
+  "target": "desktop",
+  "shot": "results-1280",
+  "driveErr": "none",
+  "w": 1280,
+  "h": 720,
+  "mean": 116.77,
+  "lowerMean": 121.23,
+  "centreMean": 165.65,
+  "p5": 19,
+  "p50": 130,
+  "p95": 191,
+  "darkFrac": 0,
+  "clipFrac": 0.0001,
+  "engine": {
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "droppedFeatures": null,
+   "drawCalls": 62,
+   "shadows": "{\"shadows\":[{\"light\":\"sun\",\"filter\":\"pcf\",\"casterVariants\":[\"sk0|ah\",\"sk0|ah|ds\",\"sk0|i|b|ds|prd02.depthInstanceAttr=1,prd02.depthInstancing=1\",\"sk0|i|b|ds|prd02.depthInstancing=1\",\"sk0|i|b|prd02.depthInstancing=1\",\"sk4|ds|prd02.depthSkinning=4\"],\"sampled\":true,\"cascadeCount\":2,\"skippedCascades\":[]}],\"droppedFeatures\":[],\"contactShadows\":{\"passExecuted\":false,\"depthSource\":\"none\"}}",
+   "warnings": [
+    "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes."
+   ],
+   "environment": "{\"model\":\"physical\",\"environment\":{\"source\":\"prd02\",\"faceSize\":0,\"mipCount\":0,\"format\":\"rgba16f\",\"shBound\":false,\"backgroundDrawn\":false,\"pmremGpuMs\":null},\"lightsEvaluated\":5,\"lightsCulledByRange\":null,\"lightsDroppedByCap\":0,\"lights\":null,\"timings\":{\"pmrem\":null,\"shadowCascade\":[],\"shadowLocal\":nul",
+   "threat": null,
+   "phase": "won",
+   "distance": 2640,
+   "form": "beast",
+   "kills": 102
+  },
+  "hud": {
+   "stats": [
+    1086,
+    14,
+    180,
+    157
+   ],
+   "vitals": [
+    14,
+    14,
+    210,
+    154
+   ],
+   "forms": [
+    14,
+    640,
+    340,
+    66
+   ],
+   "abilities": [
+    986,
+    586,
+    280,
+    120
+   ],
+   "progress": [
+    360,
+    12,
+    560,
+    10
+   ],
+   "mute": [
+    1008,
+    6,
+    85,
+    44
+   ],
+   "pause-btn": [
+    936,
+    6,
+    66,
+    44
+   ]
+  }
+ }
+]
