@@ -42,3 +42,19 @@ export const PROP_ASSETS = defineModelAssets({
   ridge: entry("ridge"),
   fenceRail: entry("fenceRail")
 }, { license: LICENSE, queryParam: null }).refs;
+
+/**
+ * GU47 WP-36 dusk retextures (NR-12), admitted with `aura3d assets import-meshy --into examples/ninja-runner-port/assets
+ * --prefix ninja` (GLBs in assets/models/, rights and task metadata in assets/provenance/ninja_*.json). The evening look
+ * draws them in place of the 4.6.2 prop; `?look=original` keeps the 4.6.2 GLB. Each swap is the same mesh layout re-scaled
+ * by Meshy, so `scale` maps it back onto the original prop's bounds (placements, sizes and collision are unchanged).
+ */
+const DUSK_LICENSE = "Meshy generated asset (paid API, AuraOne account plan terms at generation time), retextured from the game's own mesh with an own text style prompt, GU47 WP-36 2026-10-30";
+const dusk = (file: string, sha256: string) => ({ url: new URL(`./assets/models/${file}.glb`, import.meta.url).pathname, sha256 });
+export const DUSK_PROP_ASSETS = defineModelAssets({
+  houseA: dusk("ninja_houseADusk", "b4c9348054f98be49092dc87749e7326b18cb3132158e6d8f4c058500e9caf80")
+}, { license: DUSK_LICENSE, queryParam: null }).refs;
+/** Uniform scale that maps each dusk GLB onto the 4.6.2 prop's bounds (houseA: 2.0 x 1.679 x 1.04 m vs 1.9 x 1.595 x 0.988 m). */
+export const DUSK_PROP_SCALE: Readonly<Partial<Record<keyof typeof DUSK_PROP_ASSETS, number>>> = { houseA: 1.9 / 2.0 };
+/** WP-36 plan keys of the swaps (lane report and checklist). */
+export const DUSK_PROP_KEYS: Readonly<Record<keyof typeof DUSK_PROP_ASSETS, string>> = { houseA: "ninjaHouseADusk" };

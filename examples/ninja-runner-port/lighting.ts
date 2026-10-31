@@ -8,7 +8,7 @@
  * `?look=original` returns the pre-GU47 rig unchanged (neutral-room IBL, hemisphere sky fill, cool rim, 2 cascades).
  */
 import { defineAuraAssets, environments, lights } from "@aura3d/engine";
-import { DISTRICT_LOOKS, ENVIRONMENT_GAIN, EVENING_FILL, EVENING_HDRI, LANTERN_POOL, directionFromAngles, type LookMode } from "./districtLook";
+import { DISTRICT_LOOKS, ENVIRONMENT_GAIN, EVENING_FILL, EVENING_HDRI, KEY_GAIN, LANTERN_POOL, directionFromAngles, type LookMode } from "./districtLook";
 
 const HDRI_LICENSE = "CC0 1.0, Poly Haven";
 export const SKY_ASSETS = defineAuraAssets({
@@ -25,6 +25,19 @@ export interface RigOptions {
   readonly originalHdri?: boolean;
   /** `?lanterns=0` drops the lantern pool (NR-03 comparison captures). */
   readonly lanterns?: boolean;
+  /** GU47 phase 4 A/B switches for the evening key's shadow (`?shnb=`, `?shbias=`, `?shfilter=`, `?shmax=`, `?shcasc=`, `?shmap=`). */
+  readonly shadowTune?: Readonly<Record<string, number | string>>;
+}
+
+/** Reads the `?sh*=` shadow A/B switches from a query string (empty when none are set). */
+export function shadowTuneFromSearch(search: string): Record<string, number | string> {
+  const p = new URLSearchParams(search);
+  const out: Record<string, number | string> = {};
+  const n = (k: string, key: string) => { const v = Number(p.get(k)); if (p.has(k) && Number.isFinite(v)) out[key] = v; };
+  n("shnb", "normalBias"); n("shbias", "bias"); n("shmax", "maxDistance"); n("shcasc", "cascades"); n("shmap", "mapSize"); n("shsoft", "softness");
+  const f = p.get("shfilter");
+  if (f === "hard" || f === "pcf" || f === "pcss") out.filter = f;
+  return out;
 }
 
 /** Pool sizes for a tier (0 when `?lanterns=0` or the original look). */
@@ -55,13 +68,14 @@ export function lightRig(o: RigOptions) {
   const shadow = o.shadow
     ? (o.quality === "low" ? { cascades: 1, maxDistance: 70, filter: "pcf" } : { cascades: 2, maxDistance: 90 })
     : false;
+  const tuned = shadow && o.shadowTune ? { ...shadow, ...o.shadowTune } : shadow;
   const pool = lanternPoolSize(o);
   const rig = [
     environments.hdri({ name: "evening ibl", intensity: village.environmentIntensity * ENVIRONMENT_GAIN, background: false, texture: SKY_ASSETS.evening as never }),
     // GU47 phase 2 (second pass): a sky/ground fill under the HDRI. The sunset pure-sky HDRI alone left the village ~5 EV
     // under the 4.6.2 frame (software WebGL2); the hemisphere is the 4.6.2 rig's fill, scaled per district by world.ts.
     lights.hemisphere({ name: "evening fill", skyColor: EVENING_FILL.sky, groundColor: EVENING_FILL.ground, intensity: EVENING_FILL.intensity * village.environmentIntensity }).runtime({ id: "evening fill" }),
-    lights.directional({ name: "sun", position: initialKeyPosition(), target: [0, 0, 0], intensity: village.key.intensity, color: village.key.color, shadow: shadow as never }).runtime({ id: "sun" })
+    lights.directional({ name: "sun", position: initialKeyPosition(), target: [0, 0, 0], intensity: village.key.intensity * KEY_GAIN, color: village.key.color, shadow: tuned as never }).runtime({ id: "sun" })
   ];
   // Pooled points start parked below the course at zero intensity; `world.ts` places them each frame (+0 draws).
   for (let i = 0; i < pool.amber; i++) rig.push(lights.point({ name: `lantern-light-${i}`, position: [0, -500, 0], intensity: 0, distance: LANTERN_POOL.range, color: LANTERN_POOL.amberColor }).runtime({ id: `lantern-light-${i}` }));
