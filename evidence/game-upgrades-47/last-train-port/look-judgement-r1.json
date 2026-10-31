@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../../../../../tmp/g21p3/scr/last-train-port/screens/final/gameplay-early.1280x720.jpg",
+      "sha256": "0abc21269d48f115250cae24d13b8d81c04f275f99e3070f19f39afa60ee54bb"
+    },
+    {
+      "path": "../../../../../tmp/g21p3/scr/last-train-port/screens/final/key-depart.1280x720.jpg",
+      "sha256": "cf5f60fc9a416e079e58cd67b4d6956f1de0c83220a0f6072e8d128aa4673cd4"
+    },
+    {
+      "path": "../../../../../tmp/g21p3/scr/last-train-port/screens/final/mid-leg.1280x720.jpg",
+      "sha256": "cbe8209460b6f70c1d34c8a9a0cd71ae7b1f95006f105a3fcc863fe26275be1c"
+    },
+    {
+      "path": "evidence/game-upgrades-47/last-train-port/p3-r1/last-train-port/frames/g21p3-r1-2/last-train-port--default--settle-60s.jpg",
+      "sha256": "773c8b3f62420ea05994375329c0d6dc60cd458befc55be64c23a3104d904ba2"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 4,
+    "ibl_reflections": 3,
+    "environment_world": 6,
+    "atmospheric_effects": 5.5,
+    "material_quality": 5,
+    "modeling_assets": 5,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 5.5,
+    "animation_quality": 5,
+    "ui_hud": 7.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The sky shows a warm sunset gradient, but the scene is lit flat and evenly. Building facades and cobbles have almost no directional warm key or rim light, so the golden-hour sun reads only in the backdrop."
+    },
+    {
+      "category": "shadows",
+      "seen": "Contact shadows are very weak. The tram casts only a faint soft patch on the tracks. Pill-shaped pedestrians, barrels and benches barely ground on the cobblestones, and buildings throw no long low-sun shadows."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The tram's red lacquered roof and glass windows show no environment reflections or sky highlights. The rails have a flat grey sheen with no specular response to the sunset."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The European townhouse blocks, clock tower, stone arch and suspended rail over a cloud sea are charming. However, buildings repeat identical window grids, planters and benches are primitive boxes, and the plaza is sparse."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "The cloud-sea frame has nice haze toward the sun and a distant village. In town, distance fog is minimal and buildings stay full contrast at range. There are no light shafts or dust."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The tram has a detailed painted-wood look. Buildings use photo/painted textures that look smeared and low-res up close, especially the clock tower. Cobble texture tiling is visible, and plastic-looking pill NPCs clash with the textured humans."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "There is a stylistic mismatch: the detailed tram and realistic human figures sit next to capsule placeholder passengers, cone and sphere trees, and box benches and planters. The pantograph on the tram roof looks crude."
+    },
+    {
+      "category": "composition",
+      "seen": "The chase shots center the tram at roughly 15–20% of the frame with the rail leading the eye into the sunset, which is good. The station shots are cluttered, and the top-down overview leaves large empty cobble areas."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase cam has a sensible FOV and height. The cinematic overview uses a tilt-shift-like blur at the edges. The first frame's angle is high and static."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is mild vignette and depth-of-field blur on the edges of the overview and cloud frames. There is no visible bloom on the sun or lamps and no film grade, so colors are slightly washed and grey."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Stills cannot show much motion. Passengers stand in rigid T-ish poses, including on the tram roof in the last frame, which suggests clipping or placeholder posing."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The navy panels with cream borders are consistent and legible, with clear lean meter, passenger list and control hints. The HUD is somewhat dense, with four panels plus the bottom bar competing at once."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

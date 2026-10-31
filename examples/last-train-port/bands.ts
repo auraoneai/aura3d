@@ -47,8 +47,11 @@ export interface BandRow {
   readonly key: { readonly elevationDeg: number; readonly azimuthDeg: number; readonly color: string; readonly intensity: number; readonly name: "sun" | "moon" };
   /** Where the sky shader draws the sun disc (D puts it below the horizon; the key then comes from the bright western sky). */
   readonly skySunElevationDeg: number;
-  /** LT-03: hemisphere bounce, the lit cloud sea under the islands. */
+  /** LT-03: hemisphere bounce, the lit cloud sea under the islands. Phase 3 (4.7.1): A-C trade 25-35% of the HDRI and bounce
+   * fill for a 20-25% stronger key, so the low sun models the facades and the shadows read (rubric lighting 4.5, shadows 2). */
   readonly hemisphere: { readonly sky: string; readonly ground: string; readonly intensity: number };
+  /** exp2 fog. Phase 3 (4.7.1): 1.6e-3..2.6e-3, so the plaza stays clear (< 3% at 100 m) and the far towns and island rocks
+   * take the band's air (A: ~46% at 400 m); 1.2e-4..2.2e-4 drew no aerial perspective at all (rubric atmospheric_effects 3). */
   readonly fog: { readonly color: string; readonly density: number };
   /** LT-07: exposure on the grade node (linear multiplier; output tone mapping is none since phase 2). */
   readonly exposure: number;
@@ -74,14 +77,15 @@ const WINDOW_NIGHT = 1.8 * 1.33;
 
 export const BANDS: Readonly<Record<BandId, BandRow>> = {
   A: {
-    id: "A", name: "Late afternoon", timeOfDay: "late afternoon, sun 28 deg", hdri: "belfast_sunset_puresky", envIntensity: 0.8,
-    key: { name: "sun", elevationDeg: 28, azimuthDeg: 32, color: "#ffe3b8", intensity: 3.0 },
+    id: "A", name: "Late afternoon", timeOfDay: "late afternoon, sun 28 deg", hdri: "belfast_sunset_puresky", envIntensity: 0.62,
+    key: { name: "sun", elevationDeg: 28, azimuthDeg: 32, color: "#ffe3b8", intensity: 3.7 },
     skySunElevationDeg: 28,
-    hemisphere: { sky: "#cfdcf2", ground: "#efd3cc", intensity: 0.35 },
-    fog: { color: "#f2dccb", density: 0.00012 },
-    exposure: 1.0,
-    bloom: { intensity: 0.42, threshold: 0.9 },
-    grade: { contrast: 1.06, saturation: 1.08, temperature: 0.12, tint: 0.02 },
+    hemisphere: { sky: "#cfdcf2", ground: "#efd3cc", intensity: 0.24 },
+    fog: { color: "#f2dccb", density: 0.0016 },
+    // phase 3 (4.7.1, software WebGL2): 1.0 read mean luma 99.6 under the 100..125 band once the fill dropped (capture g21p3-r1)
+    exposure: 1.08,
+    bloom: { intensity: 0.5, threshold: 0.8 },
+    grade: { contrast: 1.12, saturation: 1.16, temperature: 0.14, tint: 0.02 },
     vignette: 0.2,
     sky: { top: "#7cbce6", horizon: "#ffd9b4", afterglow: 0.15, stars: 0 },
     clouds: { lit: "#fff4e4", valley: "#bdb3dc", sunGain: 1.25 },
@@ -89,14 +93,14 @@ export const BANDS: Readonly<Record<BandId, BandRow>> = {
     godRays: false, flare: true, lanternGlow: 1.6
   },
   B: {
-    id: "B", name: "Golden hour", timeOfDay: "golden hour, sun 12 deg", hdri: "belfast_sunset_puresky", envIntensity: 0.65,
-    key: { name: "sun", elevationDeg: 12, azimuthDeg: 38, color: "#ffc489", intensity: 2.6 },
+    id: "B", name: "Golden hour", timeOfDay: "golden hour, sun 12 deg", hdri: "belfast_sunset_puresky", envIntensity: 0.5,
+    key: { name: "sun", elevationDeg: 12, azimuthDeg: 38, color: "#ffc489", intensity: 3.2 },
     skySunElevationDeg: 12,
-    hemisphere: { sky: "#c3c4ea", ground: "#f2c6b4", intensity: 0.32 },
-    fog: { color: "#f6c9a6", density: 0.00014 },
+    hemisphere: { sky: "#c3c4ea", ground: "#f2c6b4", intensity: 0.22 },
+    fog: { color: "#f6c9a6", density: 0.0018 },
     exposure: 1.0,
-    bloom: { intensity: 0.5, threshold: 0.85 },
-    grade: { contrast: 1.08, saturation: 1.1, temperature: 0.2, tint: 0.04 },
+    bloom: { intensity: 0.55, threshold: 0.78 },
+    grade: { contrast: 1.12, saturation: 1.16, temperature: 0.2, tint: 0.04 },
     vignette: 0.22,
     sky: { top: "#8e9fd8", horizon: "#ffb57e", afterglow: 0.45, stars: 0 },
     clouds: { lit: "#ffe2bf", valley: "#ad9fd4", sunGain: 1.45 },
@@ -104,12 +108,12 @@ export const BANDS: Readonly<Record<BandId, BandRow>> = {
     godRays: true, flare: true, lanternGlow: 2.0
   },
   C: {
-    id: "C", name: "Storm dusk", timeOfDay: "storm dusk, sun 6 deg under cloud", hdri: "industrial_sunset_puresky", envIntensity: 0.5,
-    key: { name: "sun", elevationDeg: 6, azimuthDeg: 44, color: "#f2a476", intensity: 1.5 },
+    id: "C", name: "Storm dusk", timeOfDay: "storm dusk, sun 6 deg under cloud", hdri: "industrial_sunset_puresky", envIntensity: 0.42,
+    key: { name: "sun", elevationDeg: 6, azimuthDeg: 44, color: "#f2a476", intensity: 1.8 },
     skySunElevationDeg: 6,
-    hemisphere: { sky: "#7f7fa6", ground: "#b98c86", intensity: 0.3 },
-    fog: { color: "#a597b0", density: 0.00022 },
-    exposure: 1.05,
+    hemisphere: { sky: "#7f7fa6", ground: "#b98c86", intensity: 0.24 },
+    fog: { color: "#a597b0", density: 0.0026 },
+    exposure: 1.1,
     bloom: { intensity: 0.65, threshold: 0.75 },
     grade: { contrast: 1.1, saturation: 0.96, temperature: 0.02, tint: 0.06 },
     vignette: 0.26,
@@ -123,7 +127,7 @@ export const BANDS: Readonly<Record<BandId, BandRow>> = {
     key: { name: "sun", elevationDeg: 18, azimuthDeg: 50, color: "#9fb2ff", intensity: 0.55 },
     skySunElevationDeg: -4,
     hemisphere: { sky: "#4b5aa0", ground: "#8a6a7c", intensity: 0.28 },
-    fog: { color: "#2f3a6e", density: 0.00018 },
+    fog: { color: "#2f3a6e", density: 0.0022 },
     // phase 2 (tone mapping none, software WebGL2): 1.1 read mean luma 40.4, 2.42 read 61 and lost the blue hour
     exposure: 1.6,
     bloom: { intensity: 0.85, threshold: 0.62 },
@@ -139,7 +143,7 @@ export const BANDS: Readonly<Record<BandId, BandRow>> = {
     key: { name: "moon", elevationDeg: 38, azimuthDeg: 214, color: "#b4c4ff", intensity: 1.2 },
     skySunElevationDeg: 38,
     hemisphere: { sky: "#29336a", ground: "#3d3550", intensity: 0.22 },
-    fog: { color: "#161d3e", density: 0.00018 },
+    fog: { color: "#161d3e", density: 0.002 },
     // phase 2 (tone mapping none, software WebGL2): 1.0 read mean luma 23.9 (under the 28..40 band), 3.0 read 44.5; 2.0 ~35
     exposure: 2.0,
     bloom: { intensity: 0.85, threshold: 0.6 },

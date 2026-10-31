@@ -4,7 +4,7 @@
 |---|---|---|
 | LT-01 | means A 100-125, B 85-110, C 60-85, D 40-60, E 28-40; dark < 0.35, clip < 0.01; p95/p5 >= 3.5 in A/B | phase 2 (bands in luma-bands.json) |
 | LT-01 | never setScene en route | done: `shouldSwapBand`, QA `band().enrouteSwaps` (0 expected) |
-| LT-01 | pcss, 3 cascades | done (authored key `filter: "pcss"`, `cascades: 3`) |
+| LT-01 | pcss, 3 cascades | changed in phase 3: 3 cascades, PCF by default (PCSS drew no readable shadow in software WebGL2; `?fx=pcss` keeps it) |
 | LT-02 | >= 26 point/spot nodes, 1 shadowed spot | partial: a 6-light pool (4 platform points + headlamp spot + bounce) moves with the tram; the C-35 contract caps 6 practicals and 1 shadowed light, so the headlamp is unshadowed |
 | LT-02 | platform >= 1.8x corners; +2 draws max | phase 2 (0 draws added) |
 | LT-03 | no weak key in A/B; pass executed; under-tram -10 | done in code (hemisphere + contact shadows); pixels phase 2 |
@@ -27,3 +27,15 @@
 | LT-17 | HUD <= 22%, text >= 12 px, contrast >= 4.5:1 | done in code: enamel panels, brass spirit level, departure board; licensed National 2 Narrow + TT Commons Pro Mono; text >= 12 px (unit test); contrast 8.2-14:1 computed; HUD share at 390x844 phase 2 |
 | LT-18 | budgets, sibling judge | phase 2 (budget.json written; QA crops `sky-top`, `platform`, `headlamp` published on `__AURA_LAST_TRAIN__.crops`) |
 | LT-19 | audit passes; game-checks 0 errors | done |
+
+## Phase 3 (4.7.1)
+
+| Item | Status |
+|---|---|
+| every view on the panel-won band look | done: default, A-E (no fallback to `?look=original`) |
+| luma bands (luma-after.json) | done: default 104.0, A 103.8, B 89.9, C 65.2, D 54.4 (r1 build), E 35.1; all inside their bands, none widened (software WebGL2) |
+| rubric >= 7 per category | partial: min 1 -> 4; ui_hud 7.5; the rest 4-6.5 (see lane report; WP-36 and engine shadow/probe items open for 4.7.2) |
+| track bed and rails drawn | done (`trackMesh`, `evenAlongRoute`, band look only) |
+| sibling judge vs teleoperator | pass: 0.831 (was 0.795) |
+| screens-fresh | done: card and desktop retaken on 642d72e64; mobile open for 4.7.2 |
+| game-checks | 0 errors; warnings 4 -> 2 (borrowed-asset x2, WP-36) |

@@ -185,6 +185,62 @@ function tramGroups(): TramGroup[] {
   ];
 }
 
+/**
+ * Phase 3 (4.7.1, band look): instances at an even arc-length `step` along every leg, interpolated between route samples.
+ * `alongRoute` drops one instance per route sample once `step` is passed, so with samples ~4-5 m apart its 2.1 m sleepers came out
+ * 4-5 m apart and read as loose planks on the plaza (rubric environment_world).
+ */
+export function evenAlongRoute(data: SimData, step: number, lift: number): { position: V3; rotation: V3 }[] {
+  const out: { position: V3; rotation: V3 }[] = [];
+  for (const leg of data.route.legs) {
+    const pts = leg.position, n = pts.length / 3;
+    let next = step / 2, run = 0;
+    for (let i = 1; i < n; i++) {
+      const ax = pts[(i - 1) * 3]!, ay = pts[(i - 1) * 3 + 1]!, az = pts[(i - 1) * 3 + 2]!;
+      const dx = pts[i * 3]! - ax, dy = pts[i * 3 + 1]! - ay, dz = pts[i * 3 + 2]! - az;
+      const flat = Math.hypot(dx, dz) || 1, seg = Math.hypot(dx, dy, dz);
+      const yaw = Math.atan2(dx / flat, dz / flat), pitch = -Math.atan2(dy, flat);
+      while (next <= run + seg) {
+        const t = seg > 0 ? (next - run) / seg : 0;
+        out.push({ position: [ax + dx * t, ay + dy * t + lift, az + dz * t], rotation: [pitch, yaw, 0] });
+        next += step;
+      }
+      run += seg;
+    }
+  }
+  return out;
+}
+
+/**
+ * Phase 3 (4.7.1, band look): the track bed and the two rails as closed, outward-facing MeshData. The shared `ribbon` winds its
+ * quads downward, so the engine's back-face cull drops the bed and rails from every camera above them: only the sleepers drew
+ * (rubric: "rail ties with no actual rails"). `?look=original` keeps the ribbons exactly.
+ */
+export function trackMesh(legs: readonly (readonly number[])[]): { bed: MeshData; rails: MeshData } {
+  const bed = new MeshData(), rails = new MeshData();
+  const UP: V3 = [0, 1, 0];
+  for (const pts of legs) {
+    const n = pts.length / 3;
+    const side = (i: number): V3 => {
+      const a = Math.max(0, i - 1), c = Math.min(n - 1, i + 1);
+      const fx = pts[c * 3]! - pts[a * 3]!, fz = pts[c * 3 + 2]! - pts[a * 3 + 2]!, l = Math.hypot(fx, fz) || 1;
+      return [fz / l, 0, -fx / l];
+    };
+    const at = (i: number, lat: number, up: number): V3 => { const sd = side(i); return [pts[i * 3]! + sd[0] * lat, pts[i * 3 + 1]! + up, pts[i * 3 + 2]! + sd[2] * lat]; };
+    for (let i = 0; i < n - 1; i++) {
+      const v0 = i / 4, v1 = (i + 1) / 4;
+      bed.face([at(i, -1.95, 0.06), at(i, 1.95, 0.06), at(i + 1, 1.95, 0.06), at(i + 1, -1.95, 0.06)], UP, [[0, v0], [1, v0], [1, v1], [0, v1]]);
+      for (const c of [-0.72, 0.72]) {
+        const h = 0.07, lo = 0.1, hi = 0.27, sd = side(i);
+        rails.face([at(i, c - h, hi), at(i, c + h, hi), at(i + 1, c + h, hi), at(i + 1, c - h, hi)], UP, [[0, v0], [1, v0], [1, v1], [0, v1]]);
+        rails.face([at(i, c + h, lo), at(i, c + h, hi), at(i + 1, c + h, hi), at(i + 1, c + h, lo)], sd, [[0, v0], [1, v0], [1, v1], [0, v1]]);
+        rails.face([at(i, c - h, lo), at(i, c - h, hi), at(i + 1, c - h, hi), at(i + 1, c - h, lo)], [-sd[0], 0, -sd[2]], [[0, v0], [1, v0], [1, v1], [0, v1]]);
+      }
+    }
+  }
+  return { bed, rails };
+}
+
 /** Instances of one primitive along every route leg: positions at `step` spacing, yawed to the local forward direction. */
 function alongRoute(data: SimData, step: number, offset: number, lift: number): { position: V3; rotation: V3 }[] {
   const out: { position: V3; rotation: V3 }[] = [];
@@ -220,11 +276,11 @@ export const GRAIN = 0.03;
 /** GU47 LT-06, phase 2: the band-B god-ray extinction. 0.12 filled the golden-hour frame with an orange haze (recap2, software WebGL2). */
 export const GOD_RAY_DENSITY = 0.015;
 
-/** GU47 bands A-E (bands.ts): band HDRI, PCSS key, hemisphere bounce, the practical pool (C/D/E), fog and the band's post. */
+/** GU47 bands A-E (bands.ts): band HDRI, PCF key (phase 3: PCSS drew no readable shadow in software WebGL2), hemisphere bounce, the practical pool (C/D/E), fog and the band's post. */
 function addBandLighting(b: Scene, data: SimData, band: BandId): void {
   const row = BANDS[band];
   b.add(FX.has("nohdri") ? environments.neutral({ intensity: row.envIntensity }) : environments.hdri({ name: "env-sky", texture: BAND_HDRI[row.hdri], intensity: row.envIntensity, rotation: envRotationRad(row), background: false }));
-  b.add(lights.directional({ name: row.key.name, position: keyPosition(row), target: [0, 0, 0], intensity: row.key.intensity, color: row.key.color, shadow: FX.has("noshadow") ? false : { cascades: 3, maxDistance: 190, blend: 0.12, filter: "pcss" } }));
+  b.add(lights.directional({ name: row.key.name, position: keyPosition(row), target: [0, 0, 0], intensity: row.key.intensity, color: row.key.color, shadow: FX.has("noshadow") ? false : { cascades: 3, maxDistance: 130, blend: 0.12, filter: FX.has("pcss") ? "pcss" : "pcf", intensity: 1 } }));
   b.add(lights.hemisphere({ name: BOUNCE_ID, skyColor: row.hemisphere.sky, groundColor: row.hemisphere.ground, intensity: row.hemisphere.intensity }).runtime({ id: BOUNCE_ID }));
   if (row.practicals.platformPoint > 0) {
     const at = platformLightPositions(data, 0);
@@ -237,7 +293,7 @@ function addBandLighting(b: Scene, data: SimData, band: BandId): void {
   if (!FX.has("noprobes")) for (const p of stationProbes(data)) b.add(probes.reflection({ name: p.name, position: p.position, box: p.box, resolution: STATION_PROBE_RESOLUTION, update: "once", blendDistance: 2 }));
   if (!FX.has("nofog")) b.add(effects.fog({ name: "haze", color: row.fog.color, density: row.fog.density }));
   // GU47 LT-03: screen-space contact shadows from the key (riders, benches, tram skirts); the engine skips them on Low.
-  if (!FX.has("nocontact")) b.add(effects.contactShadows({ length: 0.35, thickness: 0.06, intensity: 0.9, lights: "shadowed" }));
+  if (!FX.has("nocontact")) b.add(effects.contactShadows({ length: 0.5, thickness: 0.08, intensity: 1, lights: "shadowed" }));
   // GU47 LT-07: GTAO default-on in the band look (`?fx=noao` drops it); the engine drops it on the Low tier.
   if (!FX.has("noao")) b.add(effects.ambientOcclusion({ name: "ao" }));
   if (!FX.has("nobloom")) b.add(effects.bloom({ name: "bloom", intensity: row.bloom.intensity, threshold: row.bloom.threshold }));
@@ -295,11 +351,21 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
     return m;
   };
   const legPts = data.route.legs.map((l) => l.position);
+  /** Phase 3 (4.7.1): station props cast the key's shadow in the band look (rubric shadows 2: "everything floats"); original unchanged. */
+  const cast = row !== null;
+  if (row) {
+    // Phase 3 (4.7.1): outward-facing bed and rails (see trackMesh), sleepers every 1.1 m, all casting the key's shadow
+    const track = trackMesh(legPts);
+    b.add(geometry.custom(track.bed.toGeometry(), { name: "track-bed", material: pbr("#7d705f", 0.95), castShadow: false, receiveShadow: true }));
+    b.add(geometry.custom(track.rails.toGeometry(), { name: "track-rails", material: pbr("#cfd4da", 0.16, 1), castShadow: true, receiveShadow: true }));
+    b.add(primitives.box({ name: "sleepers", size: [2.7, 0.14, 0.3], instances: evenAlongRoute(data, 1.1, 0.13), material: pbr("#5a4533", 0.9), castShadow: true }));
+  } else {
   b.add(geometry.custom(dyn(mergeRibbons(legPts.map((pts) => ribbon(pts, 1.95, 0.02)))), { name: "track-bed", material: pbr("#8d8171", 0.95), castShadow: false }));
   b.add(geometry.custom(dyn(mergeRibbons(legPts.flatMap((pts) => [ribbon(pts, 0.09, 0.2, -0.72), ribbon(pts, 0.09, 0.2, 0.72)]))), { name: "track-rails", material: pbr("#9aa3ad", 0.28, 0.9), castShadow: false }));
   b.add(primitives.box({ name: "sleepers", size: [3.3, 0.14, 0.42], instances: alongRoute(data, 2.1, 0, 0.12), material: pbr("#5a4533", 0.9), castShadow: false }));
+  }
   b.add(primitives.cylinder({ name: "pylons", size: [1.0, 150, 1.0], instances: alongRoute(data, 26, 0, -75.6).map((t) => ({ position: t.position, rotation: [0, t.rotation[1], 0] as V3 })), material: pbr("#8f8780", 0.8), castShadow: false }));
-  b.add(primitives.box({ name: "pylon-beams", size: [5.6, 0.7, 1.1], instances: alongRoute(data, 26, 0, -0.6), material: pbr("#5d5750", 0.85), castShadow: false }));
+  b.add(primitives.box({ name: "pylon-beams", size: [5.6, 0.7, 1.1], instances: alongRoute(data, 26, 0, -0.6), material: pbr("#5d5750", 0.85), castShadow: cast }));
   b.add(primitives.cylinder({ name: "masts", size: [0.26, 7.4, 0.26], instances: alongRoute(data, 42, 2.9, 3.6).map((t) => ({ position: t.position, rotation: [0, 0, 0] as V3 })), material: pbr("#3d4047", 0.5, 0.5), castShadow: false }));
   b.add(primitives.box({ name: "mast-arms", size: [2.9, 0.12, 0.12], instances: alongRoute(data, 42, 1.5, 7.0).map((t) => ({ position: t.position, rotation: [0, t.rotation[1], 0] as V3 })), material: pbr("#3d4047", 0.5, 0.5), castShadow: false }));
 
@@ -348,7 +414,7 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
     canopyBoxAt.push({ position: [s0.x + sx * 5.6, s0.y + 4.9, s0.z + sz * 5.6], rotation: [0, yaw, 0] }); canopyBoxColors.push(mixHex(town.color, "#b4523d", 0.55));
     canopyTrimAt.push({ position: [s0.x + sx * 5.6, s0.y + 4.68, s0.z + sz * 5.6], rotation: [0, yaw, 0] });
     for (const k of [-9, 9]) {
-      if (MESHY_ENABLED) b.add(model(MESHY_ASSETS.lamp, { name: `lamp-post-${i}-${k}`, position: [s0.x + sx * 6.8 + fx * k, s0.y + 2.85, s0.z + sz * 6.8 + fz * k], scaleMode: "world", scale: 2.5, castShadow: false, receiveShadow: false }).runtime({ id: `lamp-post-${i}-${k}` }));
+      if (MESHY_ENABLED) b.add(model(MESHY_ASSETS.lamp, { name: `lamp-post-${i}-${k}`, position: [s0.x + sx * 6.8 + fx * k, s0.y + 2.85, s0.z + sz * 6.8 + fz * k], scaleMode: "world", scale: 2.5, castShadow: cast, receiveShadow: false }).runtime({ id: `lamp-post-${i}-${k}` }));
       else postAt.push({ position: [s0.x + sx * 6.8 + fx * k, s0.y + 2.7, s0.z + sz * 6.8 + fz * k] });
       lampAt.push({ position: [s0.x + sx * 6.8 + fx * k, s0.y + 4.35, s0.z + sz * 6.8 + fz * k] });
     }
@@ -444,7 +510,7 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
       if (MESHY_ENABLED && onPlatform && folkModels < 5) {
         const kinds = [MESHY_ASSETS.paxEasy, MESHY_ASSETS.paxSightseer, MESHY_ASSETS.paxRushed, MESHY_ASSETS.paxSleeper] as const;
         const fs = 0.85 + rand() * 0.2;
-        b.add(model(kinds[(folkModels + i) % 4]!, { name: `folk-${i}-${folkModels}`, position: [fxp, s0.y + 0.75 + 0.951 * fs, fzp], rotation: [0, rand() * Math.PI * 2, 0], scaleMode: "world", scale: fs, castShadow: false, receiveShadow: false }).runtime({ id: `folk-${i}-${folkModels}` }));
+        b.add(model(kinds[(folkModels + i) % 4]!, { name: `folk-${i}-${folkModels}`, position: [fxp, s0.y + 0.75 + 0.951 * fs, fzp], rotation: [0, rand() * Math.PI * 2, 0], scaleMode: "world", scale: fs, castShadow: cast, receiveShadow: false }).runtime({ id: `folk-${i}-${folkModels}` }));
         folkModels++;
         continue;
       }
@@ -462,7 +528,7 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
     if (MESHY_ENABLED) {
       for (const [k, al] of [[0, 12.5], [1, -12.5]] as const) {
         const [cx, cz] = at(4.6, al);
-        b.add(model(MESHY_ASSETS.crates, { name: `crates-${i}-${k}`, position: [cx, s0.y + 0.75 + 0.85, cz], rotation: [0, yaw + k * 1.9, 0], scaleMode: "world", scale: 0.9, castShadow: false, receiveShadow: true }).runtime({ id: `crates-${i}-${k}` }));
+        b.add(model(MESHY_ASSETS.crates, { name: `crates-${i}-${k}`, position: [cx, s0.y + 0.75 + 0.85, cz], rotation: [0, yaw + k * 1.9, 0], scaleMode: "world", scale: 0.9, castShadow: cast, receiveShadow: true }).runtime({ id: `crates-${i}-${k}` }));
       }
       if (i % 3 === 1) {
         const [lx2, lz2] = at(-40, 44), ls = 20;
@@ -498,23 +564,23 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   b.add(primitives.cylinder({ name: "islands", size: [150, 6, 150], instances: islandTop, instanceColors: islandColors, material: pbr("#ffffff", 0.95), castShadow: false }));
   b.add(primitives.cylinder({ name: "island-rims", size: [146, 3.2, 146], instances: islandRim, material: pbr("#b59a78", 1), castShadow: false }));
   b.add(primitives.cone({ name: "island-rocks", size: [136, 108, 136], params: { radialSegments: 11 }, instances: islandRock, material: material.pbr({ color: "#d3c9c0", roughness: 1, emissive: "#8c8793", emissiveIntensity: row ? 0.08 : 0.55 }), castShadow: false }));
-  b.add(primitives.box({ name: "platforms", size: [4.4, 0.9, 30], instances: platformAt, material: pbr("#d9cfba", 0.82), castShadow: false }).runtime({ id: "platforms" }));
+  b.add(primitives.box({ name: "platforms", size: [4.4, 0.9, 30], instances: platformAt, material: pbr("#d9cfba", 0.82), castShadow: cast }).runtime({ id: "platforms" }));
   b.add(primitives.box({ name: "platform-edges", size: [0.3, 0.06, 30], instances: platformEdgeAt, material: pbr("#e9c24a", 0.6), castShadow: false }));
   b.add(primitives.box({ name: "canopies", size: [5.4, 0.3, 24], instances: canopyBoxAt, instanceColors: canopyBoxColors, material: pbr("#ffffff", 0.6), castShadow: true }));
-  b.add(primitives.box({ name: "canopy-trims", size: [5.6, 0.14, 24.4], instances: canopyTrimAt, material: pbr("#f4ead2", 0.6), castShadow: false }));
-  if (postAt.length > 0) b.add(primitives.cylinder({ name: "posts", size: [0.3, 4.4, 0.3], instances: postAt, material: pbr("#3b3d46", 0.5, 0.5), castShadow: false }));
+  b.add(primitives.box({ name: "canopy-trims", size: [5.6, 0.14, 24.4], instances: canopyTrimAt, material: pbr("#f4ead2", 0.6), castShadow: cast }));
+  if (postAt.length > 0) b.add(primitives.cylinder({ name: "posts", size: [0.3, 4.4, 0.3], instances: postAt, material: pbr("#3b3d46", 0.5, 0.5), castShadow: cast }));
   b.add(primitives.sphere({ name: "lamps", size: 0.7, instances: lampAt, material: glow("#ffd89a", row ? row.practicals.lampEmissive : night ? 3 : 0.5), castShadow: false }).runtime({ id: "lamps" }));
-  b.add(primitives.box({ name: "benches", size: [0.6, 0.12, 2.0], instances: benchAt, material: pbr("#8a5a35", 0.8), castShadow: false }));
+  b.add(primitives.box({ name: "benches", size: [0.6, 0.12, 2.0], instances: benchAt, material: pbr("#8a5a35", 0.8), castShadow: cast }));
   if (row) {
     // GU47 LT-12: merged catenary wire over every leg (1 draw), signal posts and heads (2), festoon bulbs (1)
-    b.add(geometry.custom(dyn(mergeRibbons(legPts.map((pts) => ribbon(pts, 0.035, 6.9)))), { name: "catenary", material: pbr("#2b2e35", 0.5, 0.6), castShadow: false }));
-    b.add(primitives.cylinder({ name: "signal-posts", size: [0.18, 4.4, 0.18], instances: signalAt, material: pbr("#3d4047", 0.5, 0.5), castShadow: false }));
+    b.add(geometry.custom(dyn(mergeRibbons(legPts.map((pts) => ribbon(pts, 0.012, 6.9)))), { name: "catenary", material: pbr("#2b2e35", 0.5, 0.6), castShadow: false }));
+    b.add(primitives.cylinder({ name: "signal-posts", size: [0.18, 4.4, 0.18], instances: signalAt, material: pbr("#3d4047", 0.5, 0.5), castShadow: cast }));
     b.add(instances.sphere({ name: "signal-heads", size: 0.32, transforms: signalHeadAt, colors: signalColors, instanceColorTarget: "both", material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 2.2 }), castShadow: false }));
     b.add(primitives.sphere({ name: "festoon-bulbs", size: 0.16, instances: festoonAt, material: glow("#ffc77a", row.practicals.platformPoint > 0 ? 2.4 : 0.3), castShadow: false }));
   }
-  b.add(primitives.box({ name: "signboards", size: [0.2, 1.0, 3.2], instances: signAt, material: pbr("#23423a", 0.6), castShadow: false }));
+  b.add(primitives.box({ name: "signboards", size: [0.2, 1.0, 3.2], instances: signAt, material: pbr("#23423a", 0.6), castShadow: cast }));
   b.add(primitives.sphere({ name: "flowers", size: 0.9, instances: flowerAt, instanceColors: flowerColors, material: pbr("#ffffff", 0.7), castShadow: false }));
-  b.add(primitives.sphere({ name: "bushes", size: [2.4, 1.8, 2.4], instances: bushAt, instanceColors: bushColors, material: pbr("#ffffff", 0.95), castShadow: false }));
+  b.add(primitives.sphere({ name: "bushes", size: [2.4, 1.8, 2.4], instances: bushAt, instanceColors: bushColors, material: pbr("#ffffff", 0.95), castShadow: cast }));
   b.add(primitives.sphere({ name: "cloud-puffs", size: [2.2, 1.0, 2.2], instances: puffs, material: material.pbr({ color: "#fbfaf6", roughness: 1, emissive: "#e8ecf6", emissiveIntensity: row ? 0.06 : 0.28 }), castShadow: false }));
   const asRef = (t: unknown): never => t as never;
   const facadeMat = (tint: string, glowK: number) => tex
@@ -527,22 +593,22 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   b.add(geometry.custom(stoneMesh.toGeometry(), { name: "stonework", material: texMat(tex?.stone, "#ffffff", 0.9), castShadow: true, receiveShadow: true }));
   b.add(geometry.custom(cobbleMesh.toGeometry(), { name: "plaza-cobbles", material: texMat(tex?.cobble, "#ffffff", 0.92), castShadow: false, receiveShadow: true }));
   if (!MESHY_ENABLED) b.add(geometry.custom(clockMesh.toGeometry(), { name: "clock-faces", material: texMat(tex?.clock, "#ffffff", 0.55), castShadow: false, receiveShadow: false }));
-  b.add(primitives.box({ name: "planters", size: [2.4, 0.9, 1.0], instances: planterAt, material: pbr("#cdbfa4", 0.9), castShadow: false }));
-  b.add(primitives.box({ name: "stalls", size: [3, 1.4, 1.6], instances: stallAt, material: pbr("#8a5a35", 0.8), castShadow: false }));
-  b.add(primitives.box({ name: "awnings", size: [3.6, 0.14, 2.4], instances: awningAt, instanceColors: awningColors, material: pbr("#ffffff", 0.7), castShadow: false }));
-  b.add(primitives.capsule({ name: "folk-bodies", size: [0.7, 1.5, 0.7], instances: folkBodyAt, instanceColors: folkColors, material: pbr("#ffffff", 0.75), castShadow: false }));
-  b.add(primitives.sphere({ name: "folk-heads", size: 0.55, instances: folkHeadAt, material: pbr("#f0c9a4", 0.6), castShadow: false }));
-  b.add(primitives.cylinder({ name: "tree-trunks", size: [0.7, 3.2, 0.7], instances: trunkAt, material: pbr("#6b4a32", 0.95), castShadow: false }));
+  b.add(primitives.box({ name: "planters", size: [2.4, 0.9, 1.0], instances: planterAt, material: pbr("#cdbfa4", 0.9), castShadow: cast }));
+  b.add(primitives.box({ name: "stalls", size: [3, 1.4, 1.6], instances: stallAt, material: pbr("#8a5a35", 0.8), castShadow: cast }));
+  b.add(primitives.box({ name: "awnings", size: [3.6, 0.14, 2.4], instances: awningAt, instanceColors: awningColors, material: pbr("#ffffff", 0.7), castShadow: cast }));
+  b.add(primitives.capsule({ name: "folk-bodies", size: [0.7, 1.5, 0.7], instances: folkBodyAt, instanceColors: folkColors, material: pbr("#ffffff", 0.75), castShadow: cast }));
+  b.add(primitives.sphere({ name: "folk-heads", size: 0.55, instances: folkHeadAt, material: pbr("#f0c9a4", 0.6), castShadow: cast }));
+  b.add(primitives.cylinder({ name: "tree-trunks", size: [0.7, 3.2, 0.7], instances: trunkAt, material: pbr("#6b4a32", 0.95), castShadow: cast }));
   b.add(primitives.sphere({ name: "tree-canopies", size: [5.2, 4.6, 5.2], instances: canopyAt, instanceColors: canopyColors, material: pbr("#ffffff", 0.9), castShadow: true }));
   b.add(primitives.cone({ name: "tree-pines", size: [3.6, 6.6, 3.6], params: { radialSegments: 8 }, instances: pineAt, instanceColors: pineColors, material: pbr("#ffffff", 0.9), castShadow: true }));
-  b.add(primitives.sphere({ name: "stones", size: [3.2, 2.2, 2.8], instances: stoneAt, material: pbr("#8a867f", 0.95), castShadow: false }));
+  b.add(primitives.sphere({ name: "stones", size: [3.2, 2.2, 2.8], instances: stoneAt, material: pbr("#8a867f", 0.95), castShadow: cast }));
 
   /* ---- tram and passengers (flat top-level nodes, moved from the runtime) ---- */
   if (MESHY_ENABLED) b.add(model(MESHY_ASSETS.tram, { name: "tram-body", scaleMode: "world", scale: [...TRAM.scale] as [number, number, number], castShadow: true, receiveShadow: true }).runtime({ id: "tram-body" }));
   else for (const gp of tramGroups()) b.add(geometry.custom(gp.mesh.toGeometry(), { name: gp.id, material: gp.mat, castShadow: gp.cast, receiveShadow: false }).runtime({ id: gp.id }));
   SEATS.forEach((_, i) => {
     if (MESHY_ENABLED) {
-      for (const t of TEMPERAMENTS) b.add(model(PAX_ASSET[t], { name: `pax-${i}-${t}`, scaleMode: "world", scale: PAX_SCALE, castShadow: false, receiveShadow: false }).runtime({ id: `pax-${i}-${t}` }));
+      for (const t of TEMPERAMENTS) b.add(model(PAX_ASSET[t], { name: `pax-${i}-${t}`, scaleMode: "world", scale: PAX_SCALE, castShadow: cast, receiveShadow: false }).runtime({ id: `pax-${i}-${t}` }));
       return;
     }
     b.add(primitives.sphere({ name: `head-${i}`, size: 0.42, material: pbr("#f0c9a4", 0.6), castShadow: false }).runtime({ id: `head-${i}` }));
@@ -767,11 +833,14 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
     const chaseEye: V3 = [here.x - f[0] * 17, here.y + 6.2 - f[1] * 17, here.z - f[2] * 17];
     const chaseTarget: V3 = [here.x + f[0] * 12, here.y + 2.2 + f[1] * 12, here.z + f[2] * 12];
     const sway = still ? 0 : Math.sin(seconds * 0.45) * 0.5;
-    const dockEye: V3 = [here.x - sd[0] * (13 + sway) - f[0] * 8, here.y + 7.4 + (still ? 0 : Math.sin(seconds * 0.31) * 0.3), here.z - sd[2] * (13 + sway) - f[2] * 8];
-    const dockAim: V3 = [here.x + f[0] * 4 + sd[0] * 3, here.y + 2.6, here.z + f[2] * 4 + sd[2] * 3];
+    // Phase 3 (4.7.1, band look): the docked view drops from 7.4 m to 5.2 m and stands 1 m further out, so the platform keeps
+    // its passengers in view under a horizon instead of a top-down plaza (rubric camera 4: "an editor or diorama view").
+    const band = shownBand !== null, dockLat = band ? 14 : 13, dockUp = band ? 5.2 : 7.4, aimUp = band ? 2.9 : 2.6;
+    const dockEye: V3 = [here.x - sd[0] * (dockLat + sway) - f[0] * 8, here.y + dockUp + (still ? 0 : Math.sin(seconds * 0.31) * 0.3), here.z - sd[2] * (dockLat + sway) - f[2] * 8];
+    const dockAim: V3 = [here.x + f[0] * 4 + sd[0] * 3, here.y + aimUp, here.z + f[2] * 4 + sd[2] * 3];
     const mix3 = (a: V3, c: V3, t: number): V3 => [a[0] + (c[0] - a[0]) * t, a[1] + (c[1] - a[1]) * t, a[2] + (c[2] - a[2]) * t];
     const eye: V3 = options.orbit
-      ? [here.x + Math.sin(orbit + 0.6) * 22, here.y + 7.5 + (still ? 0 : Math.sin(seconds * 0.23) * 1.2), here.z + Math.cos(orbit + 0.6) * 22]
+      ? [here.x + Math.sin(orbit + 0.6) * 22, here.y + (band ? 5.6 : 7.5) + (still ? 0 : Math.sin(seconds * 0.23) * 1.2), here.z + Math.cos(orbit + 0.6) * 22]
       : mix3(chaseEye, dockEye, kd);
     const target: V3 = options.orbit ? [here.x, here.y + 2.6, here.z] : mix3(chaseTarget, dockAim, kd);
     rig.eye = eye; rig.target = target;
