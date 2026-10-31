@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-iron-crown/src/art/direction.ts",
-  "sourceSha256": "8c611d9b69156160cbdb85d7bfe6b69c58302ee976ddb09bd87130b023f7f447",
+  "sourceSha256": "8fe9b675804d5ff9bf4326d66927a3580b55b29fa4d6772b120a502127cb0fb8",
   "id": "showcase-iron-crown",
   "genre": "fighting",
   "signatureEffect": "Single follow-spot chiaroscuro: one hard overhead spot through forge smoke holds the pair on black iron, with letterboxed intro and K.O. cinematics.",
@@ -15,7 +15,7 @@
     "reservedObjective": "#ffe08a"
   },
   "environment": {
-    "hdri": "studio_small_08",
+    "hdri": "warm_bar",
     "background": "enclosed"
   },
   "violations": [],
@@ -24,7 +24,7 @@
       {
         "type": "spot",
         "shadow": true,
-        "intensity": 22
+        "intensity": 30
       },
       {
         "type": "spot",
@@ -39,7 +39,7 @@
       {
         "type": "spot",
         "shadow": false,
-        "intensity": 9
+        "intensity": 8
       },
       {
         "type": "spot",
@@ -514,7 +514,7 @@
       "fill": "ibl",
       "practicals": 4,
       "environment": {
-        "hdri": "studio_small_08",
+        "hdri": "warm_bar",
         "background": "enclosed"
       },
       "exposureEV": 0
