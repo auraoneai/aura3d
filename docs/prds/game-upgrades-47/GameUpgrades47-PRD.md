@@ -8,6 +8,82 @@ Aura3D is a standalone engine. Nothing in this PRD, its commits, release notes o
 
 ---
 
+## 0. Execution status and handoff (updated 2026-10-30 03:40 PDT; see 0.0 for the later state)
+
+### 0.0 Update 2026-10-30 (afternoon PDT): CODE_COMPLETE_GO
+
+- **Frozen:** tag `gu47-code-complete-go` on `gu47/integration` at `5050f3cbc` (all 10 engine lanes, `eint` passes 1-4 incl. EB-3 multi-caster local shadows `2d07ee6e9` and 48 applied game-lane handoffs, all 25 game lanes). Gates at the tag: root typecheck and all 25 `--app` typechecks `NEW_ERRORS 0`; all 27 game unit-test folders pass; `game-checks --all` 0 errors, 155 warnings (nearly all phase-2 capture/screens items).
+- **Game rows (lane self-reports):** 411 done, 111 partial, 79 blocked (almost all on WP-36 assets), 29 phase 2, 0 phase-1 rows left. Code completion about 85%.
+- **Merge fixes at integration:** 14 CC0 detail textures the `*.jpg` ignore rule had kept out of lane commits (`298e27a0a`); Diamond flash hex collided with the new Hoops spark (`#eaf0f8`); one root-typecheck cast in a Splat Rush test.
+- **WP-36:** pipeline routes follow-ups by model URL (Prism `84ff65c`, wp36 `a333a26ab`); still idle because the 23 funded Meshy accounts answer HTTP 402 on new tasks (owner: check their API access). Admitting WP-36 assets is a separate pass after phase 2; the games ship on today's models meanwhile.
+- **Phase 2 in flight:** lane `wp38` runs the remote after-captures (148 targets), receipts and budget rows; then per-game tuning into bands, judging, final screens, posters, CHANGELOG. Release steps that publish (`git push`, npm publish, production deploy) wait for the owner.
+
+**Progress (code-completion, PRD D10 denominator):** about **20%** of the ~640 code items. Engine WP-1 to WP-10: **100%, merged**. Game WP-11 to WP-35: **52 rows done + 20 partial of ~570**; 13 games started, 12 not started. Counting assets and acceptance as well, the whole goal is about **15%** done. Nothing of phase 2 (after-captures, tuning, judging, posters, release) has started except the before-captures.
+
+### 0.1 Where everything lives
+
+- **Integration branch** `gu47/integration`, worktree `/Users/gurbakshchahal/platforms/aura3d-gu47/integration`, head `50eee4ba2` = `main` 4.6.1 + `release/4.6.2` (IC-12) + swarm docs + all ten engine lanes (E-A ... E-J) + lane `eint` part 1 (public exports). Gates at `50eee4ba2`: `tsc -p tsconfig.check.json` 58 errors = baseline (0 new); all 25 game apps typecheck with 0 errors; every engine test file added or touched passes (one pre-existing failure, `tests/unit/engine/phase2-root-bridge.test.ts` spot intensity 8 vs 30, fails on the base too). `main` itself is untouched (this file is the only edit, uncommitted).
+- **Lane worktrees:** `/Users/gurbakshchahal/platforms/aura3d-gu47/<lane>`, branch `gu47/<lane>`, lanes `ea ... ej` (merged, done), `eint`, `g01 ... g25`, `wp36`, `wp38`. Lane reports: `docs/prds/game-upgrades-47/lanes/<lane>.md` inside each worktree (engine ones also in integration).
+- **Rules:** `docs/prds/game-upgrades-47/EXECUTION.md` on `gu47/integration` (ownership, phases, hard rules, gates, report format).
+- **Briefs and tools (outside the repo):** `/Users/gurbakshchahal/platforms/aura3d-gu47/briefs/` — `game-lane.md` (game lane operating brief), `lane-params.md` (per-lane parameters, every game), `engine-api-digest.md` (every NEW engine API as shipped, with limits; regenerate with `node /Users/gurbakshchahal/platforms/aura3d-gu47/bin/api-digest.mjs` after each engine merge), `engine-lane.md` + `scope-*.md`, `scope-eint.md`, `scope-wp36.md`. Open handoffs: `/Users/gurbakshchahal/platforms/aura3d-gu47/handoffs-pending.md`. Parent notes: `STATE.md`, `agents.tsv`. Gate: `node /Users/gurbakshchahal/platforms/aura3d-gu47/bin/typecheck-delta.mjs [--app apps/<appFolder>]` (prints `NEW_ERRORS <n>`; baselines in `baseline/`). `node_modules/.bin/vitest` in every worktree is a guard (adds `--maxWorkers=2`, at most 12 concurrent runs).
+
+### 0.2 Done
+
+- **WP-1 ... WP-10** merged. Known limits (details in each report's "API as shipped"): 6 of the 14 catalogue HDRIs are 1.63-1.83 MB (lossless 1k floor; PRD target 1.5 MB); SSR roughness is one value per frame; multi-caster shadows draw the sun only on the default path until the `eint` Prd02ShadowBridge item; `outline({ targets })` fails at start (`POST_FIELD_UNSUPPORTED`) until `eint`'s postBridge/postprocess fix is merged; six capture-gated flag flips are the last commits of E-G (`ed36bac2d`...`bf5aa8468`, each revertible); GLB cache default-on is its own commit (`f32365df1`); scene trails with a target now draw (`99900dc51`); AgX/neutral degrade removal is `ea03b77fb`.
+- **eint** (engine integration handoffs): 55 commits on `gu47/eint`, **32 not yet merged** into integration (outline-target validation, lookOutputPreset, bloom knee/clamp and more; see its report).
+- **WP-38 before-captures:** `gu47/wp38` `c6b71095d` — 67 of 68 luma targets at 25 s and 60 s on the base build, `evidence/game-upgrades-47/before/table.md` (missing: `ninja-runner-port--gauntlet-run`); scheduler `evidence/game-upgrades-47/before/run-shards.mjs`, table builder `build-table.mjs`.
+- **WP-36:** plan (697 rows: P1 496, P2 186, P3 15) and resumable pipeline on `gu47/wp36` `a9fe46f8d`; 28 rows generated (14 text-to-3D, 10 retextures, 4 rigs), 543 credits. The pipeline process (`wp36-pipeline.mjs run --wait-for-credits`, log `wp36/artifacts/gu47-meshy/_logs/pipeline.log`) waits for credits. **Owner action:** the Prism Meshy pool has 0 usable credits; 22 keys report 9,200 credits but answer HTTP 402; P1 alone needs about 12,700.
+
+### 0.3 Game lanes (commits on `gu47/gNN` since `50eee4ba2` | rows done/partial in the lane report | uncommitted files | head)
+
+| Lane | Game | Commits | Rows done/partial | Uncommitted | Head | Note |
+|---|---|---:|---|---:|---|---|
+| g01 | top-tennis | 11 | 6/7 | 4 | ff64e00c1 | |
+| g02 | roadster-rush | 26 | 16/6 | 0 | 067e12b86 | furthest along |
+| g03 | heatsink | 11 | 8/3 | 6 | 4a8407b9c | |
+| g04 | teleoperator | 7 | 1/0 | 3 | 253db8bfb | |
+| g05 | iron-crown | 3 | 0/0 | 0 | 545ea47c7 | |
+| g06 | pips-big-leap | 9 | 15/4 | 2 | 73964817b | |
+| g07 | aura-hoops-3d | 2 | 0/0 | 3 | 52cbe983a | |
+| g08 | aura-diamond-3d | 13 | 6/0 | 1 | 4eb6e11a7 | uncommitted `scene.ts` DIA-W2 batching: update `turf.test.ts` to `field-clay` / `field-chalk`, test, commit |
+| g09 | aura-fc-3d | 2 | 0/0 | 4 | 5ff757ec1 | |
+| g10 | aura-links-3d | 8 | 0/0 (stale report) | 5 | 8f1205d55 | uncommitted LINKS-14 HUD: run its test, typecheck, eslint, commit; report LINKS-12 `11e3604f3`, LINKS-19 `45eb73973` |
+| g11 | bunker-zero | 1 | 0/0 | 2 | 2e8e416d2 | |
+| g12 | slingshot-siege | 1 | 0/0 | 10 | f73c92672 | |
+| g13 | dot-dash-3d | 1 | 0/0 | 4 | 0641a380c | |
+| g14-g25 | the rest | 0 | - | 0 | 50eee4ba2 | not started |
+
+Report row counts lag the commits. Agents of the previous session may still be finishing in g01-g13; before you work in a worktree, check that its last commit and file changes are more than 10 minutes old.
+
+### 0.4 What is left, in order
+
+1. Merge `gu47/eint` into `gu47/integration`; gates (typecheck-delta, all 25 `--app` typechecks, the test files the merge touched); regenerate `briefs/engine-api-digest.md`; bring every game worktree up to date (`git -C <worktree> merge gu47/integration`; games never touch engine files, so no conflicts are expected).
+2. Finish g01-g13 and run g14-g25, one agent per game, with the prompt in 0.6. G16, G20, G24 need step 1 first (outline targets, depth ink).
+3. When Meshy credits return, the WP-36 pipeline resumes by itself; game lanes then admit their assets from `docs/prds/game-upgrades-47/lanes/wp36-catalogue.md` on `gu47/wp36` (`aura3d assets import-meshy --into <app folder> --prefix <game>`), and replace borrowed keys.
+4. Merge each finished game lane into integration, one at a time, with gates after each: `--app` typecheck, the game's unit tests, `node tools/game-checks/run.mjs <slug>`; at the end `node tools/game-checks/run.mjs --all` and the root typecheck.
+5. Freeze: tag `gu47-code-complete-go` on `gu47/integration`.
+6. Phase 2 (remote only, `tools/remote-acr/run.sh`): after-captures of all targets in `tests/browser/game-luma-targets.ts` (127 now; reuse `run-shards.mjs` with a new shards file and image tag); compare with `build-table.mjs` / `evidence/audit-fix/e5/compare-luma.mjs`; tune every game into its WP bands; run the receipt specs under `tests/browser/gu47/`; budgets into `evidence/game-upgrades-47/<slug>/budget.json`; `aura3d look judge --judge prism` per game; `aura3d evidence judge --mode sibling --trials 48` across the §6.1 genre groups; WP-38 primary-HDRI de-duplication; final screens (`tests/browser/audit-fix/<game>.spec.ts`), posters (`tools/site/build-card-images.mjs`, WP-37); flip the GU47 checks to error (`GU47_CHECK_SEVERITY`); CHANGELOG 4.7.0 from every lane report's "CHANGELOG text"; release, deploy, live smoke. Real-GPU runs stay owner-only.
+
+### 0.5 Lessons from this run
+
+- The agent usage quota was exhausted four times. Launching 38, 11 and 27 agents at once burned it within 5-60 minutes, before most agents committed anything (each spends about 15 minutes reading first). Run at most about 8-14 agents, each committing after every row.
+- A new user message can drop running background subagents; relaunch them, they resume from their commits.
+- `exec` calls that outlive the tool timeout can leave vitest runs frozen: run long tests detached (`nohup ... > log 2>&1 &`) and read the log.
+- Never run all of `tests/unit`, local Playwright or Docker. Stage explicit paths; never stage `fixtures/asset-corpus/{avocado,damaged-helmet}.glb` or `fixtures/environment-corpus/hdri/*_1k.hdr`.
+
+### 0.6 Handoff prompt (paste this to the next agent)
+
+```
+You are taking over execution of docs/prds/game-upgrades-47/GameUpgrades47-PRD.md (GU47, Aura3D 4.7.0) in /Users/gurbakshchahal/platforms/aura3d. Read section 0 of that PRD first (status, locations, what is left, lessons), then /Users/gurbakshchahal/platforms/aura3d-gu47/integration/docs/prds/game-upgrades-47/EXECUTION.md (binding rules) and /Users/gurbakshchahal/platforms/aura3d-gu47/STATE.md.
+
+Work in the existing worktrees under /Users/gurbakshchahal/platforms/aura3d-gu47/ (never on main until release). Do, in order:
+1. Merge gu47/eint into gu47/integration in the integration worktree; run node /Users/gurbakshchahal/platforms/aura3d-gu47/bin/typecheck-delta.mjs (must print NEW_ERRORS 0), the same with --app apps/<appFolder> for all 25 live games (docs/workflows/game-inventory.json), and the test files the merge touched; regenerate the API digest with node /Users/gurbakshchahal/platforms/aura3d-gu47/bin/api-digest.mjs; merge gu47/integration into every game worktree.
+2. Run the game lanes: for each of g01..g25 not finished, start one background subagent with this prompt: "You are GU47 game lane gNN in the Aura3D monorepo. Read /Users/gurbakshchahal/platforms/aura3d-gu47/briefs/game-lane.md in full (your operating brief), then the sections '## gNN' and '## Note for every relaunched lane' in /Users/gurbakshchahal/platforms/aura3d-gu47/briefs/lane-params.md, and execute the brief with them. Worktree /Users/gurbakshchahal/platforms/aura3d-gu47/gNN (branch gu47/gNN). You are autonomous; you cannot ask questions." Keep at most 8-14 running; start the next when one finishes; relaunch any that are dropped (they resume from commits).
+3. As each game lane finishes, merge gu47/gNN into gu47/integration and gate it (--app typecheck, its unit tests, node tools/game-checks/run.mjs <slug>).
+4. When all 25 are merged and gated: tag gu47-code-complete-go, then do phase 2 exactly as section 0.4 step 6 says, remote only (tools/remote-acr/run.sh).
+Machine policy: no local Docker, no local Playwright or browsers, no GitHub Actions, no git push unless the owner asks, licensed fonts only, never describe Aura3D as built on three.js, every visual number labelled software WebGL2, no Meshy spend until the owner restores credits (the WP-36 pipeline resumes by itself). Report progress as code-completion % = (engine items done + game rows done + half of partial rows) / ~640.
+```
+
 ## 1. Executive summary and autonomous decisions
 
 ### 1.1 Problem
