@@ -75,10 +75,10 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
     key: { elevationDeg: 18, azimuthDeg: 0, position: lightPosition(18, 0), color: "#fff3e4", intensity: 3.5, cascades: 3, filter: "pcss", maxDistance: 200 },
     fill: null,
     planetshine: { position: [GIANT_POSITION[0], GIANT_POSITION[1] + 60, GIANT_POSITION[2]], color: "#ffb48c", intensity: 0.8 },
-    // GU47 phase 3 (rubric lighting 5 / shadows 3: "flat, even"): key 3.0 -> 3.5 and hemisphere fill 0.95 -> 0.9 (0.75 dropped
-    // the software-WebGL2 frame mean from 62.6 to 38.4, capture g15p3-r2), so the
+    // GU47 phase 3 (rubric lighting 5 / shadows 3: "flat, even"): key 3.0 -> 3.5 with the hemisphere fill kept at 0.95 (0.75
+    // dropped the software-WebGL2 frame mean from 62.6 to 38.4 in g15p3-r2; 0.9 at +0.9 EV still read 53.9 in g15p3-r5), so the
     // low key models the riders and its shadow side reads.
-    hemisphere: { sky: "#d8c2d6", ground: "#24395a", intensity: 0.9 },
+    hemisphere: { sky: "#d8c2d6", ground: "#24395a", intensity: 0.95 },
     environment: { kind: "capture", intensity: 1.0 },
     // GU47 phase 3 (rubric atmosphere 4.5: "barely any depth haze"): exp2 density 0.0011 hazed 3% at 150 m; 0.0017 hazes
     // about 6% at 150 m and 23% at 300 m in a lighter violet, so the far course and the rim recede.
@@ -96,7 +96,7 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
     // integration 22c1283c0). With those fixed, +1.75 EV washed the rider out (crop mean 160 vs 95-125, saturation 0.17), so
     // +0.7 EV with less bloom and more saturation (+1.0 EV still read rider 135): rider and crater keep their colour, the
     // frame stays inside 60-110.
-    exposureEV: 0.9,
+    exposureEV: 1.15,
     signature: { brush: 1, splitTone: 1 }
   },
   original: {

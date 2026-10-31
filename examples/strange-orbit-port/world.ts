@@ -28,8 +28,7 @@ import { dressingPlan, lehmer } from "./obstacles";
 import { hexLinear } from "./palette";
 import { loopFrame, type RaceState } from "./race";
 import type { GhostPose } from "./progress";
-import { atmosphereSpec, mineralSpec, pointsSpec, skySpec, solidSpec, trackSpec, veilSpec, type SolidExtra } from "./materials";
-import { CONTACT_STRENGTH, CONTACT_UNIFORMS } from "./shaders";
+import { atmosphereSpec, mineralSpec, pointsSpec, riderShadowSpec, skySpec, solidSpec, trackSpec, veilSpec, type SolidExtra } from "./materials";
 import { mainFrame, routeFrame, surfaceNoise } from "./track";
 import { Vec3 } from "./vec3";
 import { LOOKS, SECTOR_LERP_SECONDS, type OrbitLook } from "./art/look";
@@ -96,6 +95,10 @@ function dynamicFrom(m: MeshData, withPigments: boolean) {
 /** The look `buildWorld` is building (set once at its start; the material helpers below bake the matching shader variant). */
 let activeLook: OrbitLook = "gouache";
 const trackMaterial = () => material.custom(trackSpec(activeLook));
+/** GU47 phase 3: rider shadow quads (player + 5 rivals), length and width in metres at scale 1. */
+const RIDER_SHADOWS = 6;
+const SHADOW_LENGTH = 4.2;
+const SHADOW_WIDTH = 1.5;
 const solidMaterial = (base: Rgb, glow: Rgb = [0, 0, 0], glowAmount = 0, banding = 0, extra: SolidExtra = {}) => material.custom(solidSpec(base, glow, glowAmount, banding, extra, activeLook));
 const mineralMaterial = (base: Rgb, opal: boolean) => material.custom(mineralSpec(base, opal, activeLook));
 const pointsMaterial = (additive: boolean) => material.custom(pointsSpec(additive));
@@ -626,6 +629,19 @@ export function buildWorld(options: WorldOptions): World {
       : primitives.capsule({ name: "ghost-rider", size: [0.5, 1.5, 0.5], material: solidMaterial(hexLinear("#9fe8ff"), hexLinear("#5fd8ff"), 0.8, 0, { transparent: true, blending: "additive", depthWrite: false }) }).runtime({ id: "ghost-rider" }));
   }
 
+  /* ---- GU47 phase 3 (gouache): soft rider shadow quads (+6 draws; unit quad in local xz, scaled per frame) ---- */
+  const riderShadows = look === "gouache" && !off.has("shadows");
+  if (riderShadows) {
+    for (let i = 0; i < RIDER_SHADOWS; i++) {
+      builder.add(geometry.custom(geometry.dynamic({
+        positions: f32([-0.5, 0, -0.5, 0.5, 0, -0.5, 0.5, 0, 0.5, -0.5, 0, 0.5]),
+        normals: f32([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]),
+        uvs: f32([0, 0, 1, 0, 1, 1, 0, 1]),
+        indices: Uint32Array.from([0, 2, 1, 0, 3, 2])
+      }), { name: `rider-shadow-${i}`, position: [0, -500, 0], material: material.custom(riderShadowSpec(i === 0 ? 0.72 : 0.6)) }).runtime({ id: `rider-shadow-${i}` }));
+    }
+  }
+
   /* ---- gravity halo ---- */
   builder.add(primitives.ring({
     name: "gravity-halo",
@@ -636,7 +652,7 @@ export function buildWorld(options: WorldOptions): World {
   return {
     scene: builder,
     bind(app: AuraApp): WorldRuntime {
-      return bindRuntime(app, { vehicle, riders, meteors, dustBase, dustUp, dustItems, exhaust: EXHAUST, ghost: Boolean(options.ghost), reducedMotion: Boolean(options.reducedMotion), look, high, headlight: look === "gouache" && !off.has("headlight") && !off.has("lights") });
+      return bindRuntime(app, { vehicle, riders, meteors, dustBase, dustUp, dustItems, exhaust: EXHAUST, ghost: Boolean(options.ghost), reducedMotion: Boolean(options.reducedMotion), look, high, headlight: look === "gouache" && !off.has("headlight") && !off.has("lights"), riderShadows });
     }
   };
 }
@@ -654,6 +670,7 @@ interface BindInput {
   readonly look: OrbitLook;
   readonly high: boolean;
   readonly headlight: boolean;
+  readonly riderShadows: boolean;
 }
 
 interface Pose { position: Vec3; forward: Vec3; up: Vec3 }
@@ -799,18 +816,35 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     riderShown[index] = true;
     for (const part of input.riders[index]!.parts) node(part.id).setVisible(true);
   };
-  /** GU47 phase 3 (gouache): soft contact shadow under each shown rider on the road and the ramps (presentation only). */
-  const contactSurfaces = input.look === "gouache" ? [app.nodes.get("track"), app.nodes.get("ramps")].filter((h) => h !== undefined && h !== null) : [];
-  const contactLast = CONTACT_UNIFORMS.map(() => "");
-  const updateContactShadows = (): void => {
-    if (contactSurfaces.length === 0) return;
-    for (let i = 0; i < CONTACT_UNIFORMS.length; i++) {
-      const p = riderAt[i]!;
-      const value: [number, number, number, number] = [p.x, p.y, p.z, riderShown[i] ? CONTACT_STRENGTH : 0];
-      const key = value.map((v) => v.toFixed(2)).join(",");
-      if (key === contactLast[i]) continue;
-      contactLast[i] = key;
-      for (const h of contactSurfaces) h.setUniform?.(CONTACT_UNIFORMS[i]!, value);
+  /**
+   * GU47 phase 3 (gouache): a soft shadow quad under each shown rider, its long axis laid away from the key along the
+   * road (presentation only; the quads never touch the sim).
+   */
+  const sunDir = new Vec3(...row.key.position).normalize();
+  const shadowShown: boolean[] = Array.from({ length: RIDER_SHADOWS }, () => true);
+  /** Riders on the road this frame (airborne, zero-G and loop riders drop their shadow quad). */
+  const riderGrounded: boolean[] = Array.from({ length: RIDER_SHADOWS }, () => true);
+  const updateRiderShadows = (scale: number): void => {
+    if (!input.riderShadows) return;
+    for (let i = 0; i < RIDER_SHADOWS; i++) {
+      const h = node(`rider-shadow-${i}`);
+      const show = riderShown[i]! && riderGrounded[i]!;
+      if (show !== shadowShown[i]) { h.setVisible(show); shadowShown[i] = show; }
+      if (!show) continue;
+      const up = riderUp[i]!;
+      const ground = riderAt[i]!.clone().addScaledVector(up, -0.8 * scale);
+      const away = sunDir.clone().multiplyScalar(-1);
+      away.addScaledVector(up, -away.dot(up));
+      if (away.lengthSq() < 1e-6) away.copy(riderFwd[i]!);
+      away.normalize();
+      const across = new Vec3().crossVectors(away, up).normalize();
+      const len = SHADOW_LENGTH * scale;
+      // uv.x 0.3 (the blob) sits under the bike: the quad starts 0.3 of its length behind the ground point.
+      const centre = ground.addScaledVector(away, len * 0.2).addScaledVector(up, 0.045);
+      const e = euler(basisMatrix(away, up, across));
+      h.setPosition(centre.x, centre.y, centre.z);
+      h.setRotation(e[0], e[1], e[2]);
+      h.setScale([len, 1, SHADOW_WIDTH * scale]);
     }
   };
   /** SO47-L4: headlight 0.6 m ahead aimed 6 m down the road; tail points behind the nearest visible rivals. */
@@ -874,6 +908,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       rebound.t = Math.max(0, rebound.t - dt);
     }
     placeRider(0, playerPose, scale, pitch, roll);
+    riderGrounded[0] = !state.flight && !state.loop && !state.air;
 
     /* time-trial ghost */
     if (input.ghost) {
@@ -900,10 +935,11 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       const lane = menu ? (i % 3 - 1) * 3 : rival.lane;
       const ground = menu ? menuHover(i + 1) : rival.air?.height ?? (islandHeight(rival.s, rival.route) ?? 0);
       placeRider(i + 1, poseAt(s, lane, menu ? "main" : rival.route, ground, 0, menu ? 0 : rival.lean ?? 0), scale);
+      riderGrounded[i + 1] = menu || !rival.air;
     }
 
     updateRiderLights(menu);
-    updateContactShadows();
+    updateRiderShadows(scale);
 
     /* camera */
     const frame = routeFrame(sForPlayer, menu ? "main" : state.route);

@@ -88,15 +88,6 @@ void main() {
   gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
 }`;
 
-/** Squared falloff radius (m^2) of the riders' soft contact shadow on the road (gouache only). */
-export const CONTACT_RADIUS2 = 2.4;
-/** Peak darkening of the contact shadow right under a rider (0..1). */
-export const CONTACT_STRENGTH = 0.85;
-/** Length (m) of the cast streak each rider lays away from the key. */
-export const CONTACT_STREAK = 3.4;
-/** Uniform names of the six rider contact shadows (player, then rivals 1..5). */
-export const CONTACT_UNIFORMS = ["riderContact0", "riderContact1", "riderContact2", "riderContact3", "riderContact4", "riderContact5"] as const;
-
 /** Domain-warp strength of the track's paint marks (was 4.0, shared with the veins). */
 export const TRACK_MARK_WARP = 2.5;
 
@@ -116,23 +107,7 @@ ${lighting(gouache)}
 float paintNoise(vec2 p) { return fbm(p + vec2(fbm(p * 0.35) * 4.0, 0.0)); }
 // The surface marks use a gentler domain warp than the veins (2.5 instead of 4.0): the stronger warp smeared each mark
 // into a long streak along one world axis (audit SO-E5).
-float markNoise(vec2 p) { return fbm(p + vec2(fbm(p * 0.35) * TRACK_MARK_WARP, 0.0)); }${gouache ? `
-/** Contact shadow: riderContact0..5 hold each rider's centre (xyz, about 1 m above the road) and strength (w, 0 = hidden). */
-float contactTerm(vec3 p, vec4 c) {
-  vec3 d = p - c.xyz;
-  float blob = exp(-dot(d, d) / ${CONTACT_RADIUS2.toFixed(2)});
-  // Cast streak: distance to the segment from the rider centre away from the key, ${CONTACT_STREAK.toFixed(1)} m long (a low
-  // 18-degree key lays the rider's shadow about 3 m across the road).
-  vec3 away = -normalize(u_a3dSunDirection);
-  float t = clamp(dot(d, away), 0.0, ${CONTACT_STREAK.toFixed(1)});
-  vec3 e = d - away * t;
-  float streak = exp(-dot(e, e) / 0.45) * (1.0 - 0.5 * t / ${CONTACT_STREAK.toFixed(1)});
-  return 1.0 - c.w * max(blob * 0.75, streak * 0.8);
-}
-float contactOcclusion(vec3 p) {
-  return contactTerm(p, riderContact0) * contactTerm(p, riderContact1) * contactTerm(p, riderContact2)
-    * contactTerm(p, riderContact3) * contactTerm(p, riderContact4) * contactTerm(p, riderContact5);
-}` : ""}
+float markNoise(vec2 p) { return fbm(p + vec2(fbm(p * 0.35) * TRACK_MARK_WARP, 0.0)); }
 void main() {
   // Procedural stand-in for impasto.png: warm paint marks. World-space triplanar noise, so the marks keep the same size in
   // every direction (UV-mapped streaks stretched along the whole length of the track).
@@ -170,11 +145,7 @@ void main() {
   vec3 r1 = cross(dpy, N), r2 = cross(N, dpx);
   float det = dot(dpx, r1);
   N = normalize(abs(det) * N - ${gouache ? "0.09" : "0.05"} * sign(det) * (dFdx(h) * r1 + dFdy(h) * r2));
-  vec3 emissive = albedo * ${gouache ? "0.09" : "0.1"} + ${gouache ? "vec3(0.82, 0.52, 0.22)" : "vec3(0.18, 0.72, 0.66)"} * (1.0 - across) * 0.3;${gouache ? `
-  // GU47 phase 3: soft contact shadow under each rider (the cascades miss the hover gap at software-GL resolution).
-  float occ = contactOcclusion(vWorld);
-  albedo *= occ;
-  emissive *= occ;` : ""}
+  vec3 emissive = albedo * ${gouache ? "0.09" : "0.1"} + ${gouache ? "vec3(0.82, 0.52, 0.22)" : "vec3(0.18, 0.72, 0.66)"} * (1.0 - across) * 0.3;
   outColor = vec4(haze(shade(albedo, N, emissive, vWorld), vWorld), 1.0);
 }`;
 export const TRACK_FRAGMENT = trackFragment(true);
@@ -376,4 +347,29 @@ void main() {
   float f = pow(1.0 - max(dot(N, V), 0.0), 2.4);
   float sun = clamp(dot(N, normalize(u_a3dSunDirection)) * 0.6 + 0.55, 0.0, 1.0);
   outColor = vec4(atmoColor * f * (0.4 + 1.5 * sun), f * 0.9);
+}`;
+
+/**
+ * GU47 phase 3 (gouache): soft rider shadow on the road. A flat quad (local x along the cast direction away from the key,
+ * z across, uv 0..1) laid under each rider by world.ts: a dense blob under the bike tapering into a long streak, as a low
+ * 18-degree key throws it. The cascades alone left no readable shadow at software-WebGL2 resolution (rubric shadows 3).
+ */
+export const RIDER_SHADOW_VERTEX = /* glsl */ `
+out vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
+}`;
+
+export const RIDER_SHADOW_FRAGMENT = /* glsl */ `
+in vec2 vUv;
+out vec4 outColor;
+void main() {
+  // x: 0 = behind the bike, 0.3 = under it, 1 = streak tip; y across.
+  float x = vUv.x, y = vUv.y * 2.0 - 1.0;
+  float blob = exp(-pow((x - 0.3) / 0.16, 2.0) - pow(y / 0.62, 2.0));
+  float width = mix(0.5, 0.22, smoothstep(0.3, 1.0, x));
+  float streak = smoothstep(0.12, 0.3, x) * (1.0 - smoothstep(0.65, 1.0, x)) * exp(-pow(y / width, 2.0));
+  float a = max(blob, streak * 0.75) * shadowStrength;
+  outColor = vec4(0.07, 0.04, 0.10, a);
 }`;
