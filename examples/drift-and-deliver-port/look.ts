@@ -41,9 +41,10 @@ export const ASSETS = defineAuraAssets({
  * the harbour blocks in terracotta.
  */
 export const SHIFT_WALLS: Record<FacadeKind, readonly string[]> = {
-  tower: ["#cfdcdf", "#b7cdd4", "#e4e8e2"],
-  apartment: ["#efe3cf", "#9fd8c4", "#f0c4a2"],
-  brick: ["#d9765f", "#e29b7c"]
+  // GU47 phase 3: warmer, more saturated stucco (the pale sea-glass greys read washed out under the warm grade)
+  tower: ["#ecd3ac", "#9ccbd6", "#f2dfc2"],
+  apartment: ["#f3d39c", "#86d2b6", "#f4ae86"],
+  brick: ["#d8644a", "#e2875f"]
 };
 
 export const FOG = { color: "#f0dcc0", density: 0.0024 } as const;
