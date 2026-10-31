@@ -185,8 +185,8 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     rim: { color: "#b8d2e6", intensity: 0.24, azimuthDeg: 275 },
     exposureEv: 0.2,
     background: "#b9c7d0",
-    // phase 2: a thinner haar (0.62 / 0.05 greyed the whole fairway out)
-    fog: { color: "#c4cfd6", mode: "height", density: 0.003, maxOpacity: 0.38, heightDensity: 0.018, heightFalloff: 0.16, heightReference: 0 },
+    // phase 2: a thin haar (0.62 / 0.05 greyed the whole fairway out; 0.38 / 0.018 still flattened the trees and sky)
+    fog: { color: "#bccbd6", mode: "height", density: 0.0018, maxOpacity: 0.24, heightDensity: 0.009, heightFalloff: 0.16, heightReference: 0 },
     godRays: null,
     grade: { contrast: 0.97, saturation: 0.86, temperature: -0.12, tint: 0.02 },
     bloom: { intensity: 0.3, threshold: 0.8, scatter: 0.6 },
