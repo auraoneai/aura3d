@@ -200,7 +200,6 @@ export function createShiftRuntime(app: AuraApp, look: LookRig, lamps: readonly 
     menu(on) {
       if (on === menuShown) return;
       menuShown = on;
-      app.post?.setEffectEnabled("depthOfField", on);
     },
     delivered(x, z) {
       burst(deliveryKind(opts.reducedMotion(), opts.reducedFlash()), [x, 0.4, z]);

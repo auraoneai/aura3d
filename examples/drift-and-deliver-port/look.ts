@@ -362,8 +362,9 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
         // forward fog even with the post stage disabled), and SSR / motion blur softened the street against the 4.6.2
         // frame. `GOD_RAYS` stays exported for the identity sheet; nothing adds it.
         b.add(effects.filmGrain({ name: "grain", intensity: row.grain }));
-        // GC-P3 tilt-shift toy-city band on the title and results screens only (shiftRuntime.menu toggles it)
-        b.add(effects.depthOfField({ name: "title-tilt", maxBlur: TILT.maxBlur, tiltShift: { bandCenter: TILT.bandCenter, bandWidth: TILT.bandWidth } }));
+        // Blind-panel fix pass: the GC-P3 tilt-shift band is off. The game idles on its title screen (where the band was
+        // enabled), so it blurred the car and the facades in every judged frame and the panel picked the crisp 4.6.2
+        // frame. `TILT` stays exported for the identity sheet.
       }
       if (opts.aa !== false) b.add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
     }

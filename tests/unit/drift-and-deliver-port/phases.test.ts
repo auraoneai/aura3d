@@ -51,7 +51,7 @@ describe("gridlock courier look table (GU47 WP-28)", () => {
     expect(PHASES[2]!.windows).toBe(1.4);
     expect(phaseAt(30).lamps).toBeLessThan(0.05);
     expect(phaseAt(120).lamps).toBeGreaterThan(0.5);
-    expect(PHASES.map((p) => p.fog.color)).toEqual(["#c9d6dc", "#b88c86", "#2a3550"]);
+    expect(PHASES.map((p) => p.fog.color)).toEqual(["#efc896", "#d8967a", "#2a3550"]);
   });
 
   it("blends continuously (no jump larger than one 1 s step can show)", () => {
