@@ -84,6 +84,19 @@ describe("GU47 CR-00: ?look=original|carnival", () => {
   });
 });
 
+describe("GU47 phase 3: sky reflection and deck contact (presentation uniforms)", () => {
+  it("contact darkening is off unless a surface asks for it (the deck never does); the sky reflection comes from the look row", () => {
+    const u = (surface: Parameters<typeof carnivalToonSpec>[2]) =>
+      withDocument(() => carnivalToonSpec(LOOKS.carnival, [1, 1, 1], surface)).uniforms as Record<string, { value: number | number[] }>;
+    expect(u({ canvas: [0.05, 0.06] }).crContact?.value).toEqual([1, 0]);
+    const toon = LOOKS.carnival.toon!;
+    expect(u({ contact: true }).crContact?.value).toEqual([toon.contact.height, toon.contact.strength]);
+    expect(u({}).crSkyReflect?.value).toBe(toon.skyReflect);
+    expect(LOOKS.original.streaks).toEqual({ color: "#ffffff", alpha: 0.4 });
+    expect(LOOKS.original.camera).toBeNull();
+  });
+});
+
 describe("GU47 CR-L1 / CR-L3: one sun for toon shaders and GLBs", () => {
   it("the toon sun equals the backdrop key direction; the IBL is kloppenheim_06 with the background off", () => {
     const spec = withDocument(() => carnivalToonSpec(LOOKS.carnival, [1, 1, 1]));
