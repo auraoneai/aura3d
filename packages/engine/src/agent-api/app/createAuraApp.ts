@@ -998,11 +998,16 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
    * (before any addPostPass call could run). On a direct-path canvas, keep the canvas off the direct path while the pass is
    * registered and remount, carrying over nodes added at runtime, so the pass runs.
    */
+  // GU47 phase 2: the vetoes live as long as the pass or the app, whichever ends first (a disposed app's veto kept a later
+  // app on the same canvas off the direct path for a pass that no longer existed).
+  const liveVetoReleases = new Set<() => void>();
   if (postSurface?.addPostPass && canvas) {
     const addPostPass = postSurface.addPostPass.bind(postSurface);
     postSurface.addPostPass = (pass) => {
       const release = addPostPass(pass);
-      const releaseVeto = vetoDirectPath(canvas, `custom post pass "${pass.name}"`);
+      const vetoRelease = vetoDirectPath(canvas, `custom post pass "${pass.name}"`);
+      const releaseVeto = (): void => { liveVetoReleases.delete(releaseVeto); vetoRelease(); };
+      liveVetoReleases.add(releaseVeto);
       if (isDirectRenderPath(canvas) && !disposed) {
         const remount = (): void => {
           if (disposed) return;
@@ -1026,6 +1031,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   const baseDispose = app.dispose;
   app.dispose = () => {
     for (const disposeExt of extensionDisposers.splice(0)) disposeExt();
+    for (const releaseVeto of [...liveVetoReleases]) releaseVeto();
     baseDispose();
   };
   registerAuraApp(app);
