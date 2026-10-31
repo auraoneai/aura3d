@@ -266,7 +266,9 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   /* CD-03: a cool PBR rim on the hero on rows that set one (E-D materialOverrides rim; maps untouched) */
   const heroRim = ACTIVE_LOOK.heroRim;
   b.add(model(MESHY.hero, { name: "hero", targetHeight: 1.5, castShadow: true, receiveShadow: false, ...(heroRim ? { materialOverrides: [{ rim: { color: heroRim.color, power: heroRim.power, intensity: heroRim.intensity } }] } : {}) }).runtime({ id: "hero" }));
-  if (ch.log) b.add(geometry.custom(meshGeometry(buildLog()), { name: "ride-log", material: material.custom(scenerySpec({ rim: 0.3 })) }).runtime({ id: "ride-log" }));
+  // storm-washed has no ambient fill and a low side sun, so the ride log's camera-facing side crushed to near black in the
+  // title orbit (p5 17); a 2.4x hemisphere fill on the log alone brings back the bark (GU47 phase 2)
+  if (ch.log) b.add(geometry.custom(meshGeometry(buildLog()), { name: "ride-log", material: material.custom(scenerySpec({ rim: 0.3, fill: ACTIVE_LOOK.id === "storm-washed" ? 2.4 : 1 })) }).runtime({ id: "ride-log" }));
   const shadowQuad = new Mesh();
   shadowQuad.vertex([-0.5, 0, -0.5], [0, 1, 0], [0, 0], [1, 1, 1]); shadowQuad.vertex([0.5, 0, -0.5], [0, 1, 0], [1, 0], [1, 1, 1]); shadowQuad.vertex([0.5, 0, 0.5], [0, 1, 0], [1, 1], [1, 1, 1]); shadowQuad.vertex([-0.5, 0, 0.5], [0, 1, 0], [0, 1], [1, 1, 1]); shadowQuad.quad(0, 1, 2, 3);
   /* CD-02: the fake contact quad only on rows whose scenery does not receive the sun shadow (the original look) */
