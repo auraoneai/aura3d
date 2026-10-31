@@ -12,9 +12,10 @@ import { camera, createAuraApp, effects, lights, material, primitives, scene } f
  * - `toon-depth-flat`: `toon-depth` with `outline: 0`, the same luma banding without ink. Toon banding recolours every
  *   pixel (the sky too), so the depth-ink checks compare `toon-depth-flat` → `toon-depth`: the only difference is the ink.
  *   The sky/geometry split always comes from the `plain` frame.
+ * - `toon-depth-near`: `toon-depth` with `fadeDistance: 4` (ink zero past 4 m; the rider is about 7 m out): the fade.
  */
 
-export type OutlineVariant = "mask" | "plain" | "targets" | "full" | "toon-color" | "toon-depth" | "toon-depth-flat";
+export type OutlineVariant = "mask" | "plain" | "targets" | "full" | "toon-color" | "toon-depth" | "toon-depth-flat" | "toon-depth-near";
 
 export interface OutlineFrame {
   readonly key: OutlineVariant;
@@ -24,6 +25,8 @@ export interface OutlineFrame {
   readonly drawCalls: number;
   readonly errors: readonly string[];
   readonly postSkipped: readonly string[];
+  /** C-31 stage trace of the last frame (`diagnostics().post.stagesRan`). */
+  readonly stagesRan: readonly string[];
   /** Mean sRGB of the whole frame and of its top quarter (sky): diagnostics for the receipt log. */
   readonly meanRgb: readonly [number, number, number];
   readonly skyRgb: readonly [number, number, number];
@@ -32,6 +35,13 @@ export interface OutlineFrame {
 export interface OutlineComparison {
   /** Fraction of the rider's outer silhouette ring (1..2 px outside the mask) whose colour moved toward the ink. */
   readonly riderPerimeterInked: number;
+  /**
+   * Fraction of the rider's silhouette positions (its 1 px outer ring) where the pixel itself or an adjacent rider pixel
+   * moved toward the ink. The depth ink is a 1 px line on each side of a depth step (an inverse-depth Laplacian), so the
+   * 2 px ring `riderPerimeterInked` reads (made for `outline({ width: 2 })`) caps it near 50% by construction; this
+   * reads whether the silhouette carries a line at all, on either side of the edge.
+   */
+  readonly riderSilhouetteInked: number;
   /** Same for the crate (a non-target; must stay near 0 for `targets`). */
   readonly cratePerimeterInked: number;
   /** Fraction of sky pixels (top quarter, no geometry in the mask) that changed by more than 24 (sum of |dRGB|). */
@@ -102,11 +112,14 @@ async function render(id: OutlineVariant): Promise<OutlineFrame> {
   const app = createAuraApp(stage(), { pixelRatio: 1, resize: false, renderer: { qualityProfile: "production" }, scene: outlineScene(id) });
   try {
     await waitForDraw(app, id);
-    if (id === "toon-color") app.post?.addPostPass?.(effects.toon({ name: "receipt-toon", size: [480, 270] }));
-    if (id === "toon-depth" || id === "toon-depth-flat") {
+    // One pass name per variant: the stage trace is page-global, so a disposed app's pass must not satisfy waitForPass.
+    const pass = `receipt-${id}`;
+    if (id === "toon-color") app.post?.addPostPass?.(effects.toon({ name: pass, size: [480, 270] }));
+    if (id === "toon-depth" || id === "toon-depth-flat" || id === "toon-depth-near") {
       // GU47 E-E: depth is bound at the HDR anchors today; `after-tonemap` needs the E-C LDR-tail depth handoff.
-      app.post?.addPostPass?.(effects.toon({ name: "receipt-toon", size: [480, 270], inkSource: "depth", fadeDistance: 40, inkColor: INK, order: "before-tonemap", ...(id === "toon-depth-flat" ? { outline: 0 } : {}) }));
+      app.post?.addPostPass?.(effects.toon({ name: pass, size: [480, 270], inkSource: "depth", fadeDistance: id === "toon-depth-near" ? 4 : 40, inkColor: INK, order: "before-tonemap", ...(id === "toon-depth-flat" ? { outline: 0 } : {}) }));
     }
+    if (id.startsWith("toon-")) await waitForPass(app, pass);
     await settle(app, 3);
     return await capture(app, id);
   } finally {
@@ -136,6 +149,7 @@ async function capture(app: AuraApp, key: OutlineVariant): Promise<OutlineFrame>
     drawCalls: diagnostics.drawCalls,
     errors: [...diagnostics.errors],
     postSkipped: [...(diagnostics.output?.postSkipped ?? [])],
+    stagesRan: [...((diagnostics as unknown as { readonly post?: { readonly stagesRan?: readonly string[] } }).post?.stagesRan ?? [])],
     meanRgb: meanRgb(data, canvas.width, 0, canvas.height),
     skyRgb: meanRgb(data, canvas.width, 0, Math.floor(canvas.height / 4))
   };
@@ -197,6 +211,7 @@ function compare(base: OutlineVariant, inked: OutlineVariant): OutlineComparison
   };
   const changed = (i: number) => Math.abs(a.data[i * 4]! - b.data[i * 4]!) + Math.abs(a.data[i * 4 + 1]! - b.data[i * 4 + 1]!) + Math.abs(a.data[i * 4 + 2]! - b.data[i * 4 + 2]!) > 24;
   const riderRing = ring(rider, width, height, 2);
+  const riderRing1 = ring(rider, width, height, 1);
   // The crate's silhouette: geometry that is neither the rider nor the ground band below the horizon, right half.
   const crate = new Uint8Array(width * height);
   for (let y = 0; y < height; y += 1) for (let x = Math.floor(width * 0.55); x < width; x += 1) {
@@ -205,12 +220,18 @@ function compare(base: OutlineVariant, inked: OutlineVariant): OutlineComparison
     crate[i] = g > r && g > bl && !rider[i] ? 1 : 0; // the green box
   }
   const crateRing = ring(crate, width, height, 2);
+  let silhouetteTotal = 0, silhouetteInked = 0;
+  const innerInked = (x: number, y: number) => ([[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, 1], [1, -1], [-1, -1]] as const).some(([dx, dy]) => {
+    const nx = x + dx, ny = y + dy;
+    return nx >= 0 && ny >= 0 && nx < width && ny < height && rider[ny * width + nx] === 1 && towardInk(ny * width + nx);
+  });
   let riderTotal = 0, riderInked = 0, crateTotal = 0, crateInked = 0, skyTotal = 0, skyEdges = 0, top = 0, topTotal = 0, bottom = 0, bottomTotal = 0;
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
       const i = y * width + x;
       if (riderRing[i] && !geometry[i]) { riderTotal += 1; if (towardInk(i)) riderInked += 1; }
       if (riderRing[i] && geometry[i] && !rider[i]) { riderTotal += 1; if (towardInk(i)) riderInked += 1; }
+      if (riderRing1[i] && !rider[i]) { silhouetteTotal += 1; if (towardInk(i) || innerInked(x, y)) silhouetteInked += 1; }
       if (crateRing[i]) { crateTotal += 1; if (towardInk(i)) crateInked += 1; }
       // Canvas rows run top-down: y < height / 4 is the top quarter.
       if (y < height / 4) { topTotal += 1; if (changed(i)) top += 1; if (!geometry[i]) { skyTotal += 1; if (changed(i)) skyEdges += 1; } }
@@ -219,6 +240,7 @@ function compare(base: OutlineVariant, inked: OutlineVariant): OutlineComparison
   }
   return {
     riderPerimeterInked: riderInked / Math.max(1, riderTotal),
+    riderSilhouetteInked: silhouetteInked / Math.max(1, silhouetteTotal),
     cratePerimeterInked: crateInked / Math.max(1, crateTotal),
     skyEdgeFraction: skyEdges / Math.max(1, skyTotal),
     bottomChanged: bottom / Math.max(1, bottomTotal),
@@ -235,6 +257,23 @@ async function waitForDraw(app: AuraApp, id: string): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
   throw new Error(`${id}: no draw within 60 s`);
+}
+
+/**
+ * `addPostPass` on a direct-path canvas remounts the scene (RP-03) asynchronously, and the old mount already drew, so
+ * `waitForDraw` cannot tell the frames apart: a capture right after it read the canvas mid-remount (all black, at random).
+ * Wait until a frame's stage trace shows this pass ran.
+ */
+async function waitForPass(app: AuraApp, name: string): Promise<void> {
+  const started = performance.now();
+  const ran = `custom:prd03.custom.${name}@`;
+  while (performance.now() - started < 60_000) {
+    const diagnostics = app.diagnostics() as ReturnType<AuraApp["diagnostics"]> & { readonly post?: { readonly stagesRan?: readonly string[] } };
+    if (diagnostics.errors.length > 0) throw new Error(`${name}: ${diagnostics.errors.join("\n")}`);
+    if (diagnostics.post?.stagesRan?.some((stage) => stage.startsWith(ran))) return;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  throw new Error(`${name}: the pass did not run within 60 s`);
 }
 
 async function settle(app: AuraApp, steps: number): Promise<void> {

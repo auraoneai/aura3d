@@ -9,7 +9,8 @@ import type { OutlineComparison, OutlineFrame, OutlineVariant } from "./outline-
  * Phase 2 only (remote runner, software WebGL2; never a local browser; not run in phase 1). Acceptance (PRD WP-5):
  * an outlined target shows ink on >= 60% of its silhouette perimeter and < 0.5% edge pixels in the sky. Also checked:
  * the non-target crate stays un-inked under `targets`, today's full-frame outline still runs without `targets`, and the
- * depth toon ink (fadeDistance 40) inks the near ground more than the sky. The receipt is written only when every
+ * depth toon ink (fadeDistance 40) inks the rider's silhouette (a 1 px line each side of the depth step) but not the sky
+ * or the flat ground, and fades out past `fadeDistance`. The receipt is written only when every
  * check passes.
  */
 
@@ -105,23 +106,34 @@ test.describe("GU47 outline-targets receipt", () => {
     writeReceipt(receipt);
   });
 
-  test("toon({ inkSource: 'depth', fadeDistance }) inks the near ground and the rider, not the sky", async () => {
+  test("toon({ inkSource: 'depth', fadeDistance }) inks the rider's silhouette, not the sky or flat ground, and fades with distance", async () => {
     await render("mask");
     const plain = await render("plain");
     const toonColor = await render("toon-color");
     const toonDepth = await render("toon-depth");
     const toonDepthFlat = await render("toon-depth-flat");
+    const toonDepthNear = await render("toon-depth-near");
     // Banding recolours every pixel, the sky included: the ink is isolated against the same toon with outline 0.
     const depth = await compare("toon-depth-flat", "toon-depth");
+    const faded = await compare("toon-depth-flat", "toon-depth-near");
     const color = await compare("plain", "toon-color");
-    const frameStats = (f: OutlineFrame) => ({ meanRgb: f.meanRgb, skyRgb: f.skyRgb, postSkipped: f.postSkipped });
-    logMetrics("outline-targets-toon", { plain: plain.drawCalls, depth, color, frames: { plain: frameStats(plain), toonColor: frameStats(toonColor), toonDepth: frameStats(toonDepth), toonDepthFlat: frameStats(toonDepthFlat) } });
+    const frameStats = (f: OutlineFrame) => ({ meanRgb: f.meanRgb, skyRgb: f.skyRgb, postSkipped: f.postSkipped, stagesRan: f.stagesRan });
+    logMetrics("outline-targets-toon", { plain: plain.drawCalls, depth, faded, color, frames: { plain: frameStats(plain), toonColor: frameStats(toonColor), toonDepth: frameStats(toonDepth), toonDepthFlat: frameStats(toonDepthFlat), toonDepthNear: frameStats(toonDepthNear) } });
+    const version = engineVersion();
+    for (const [key, frame] of [["toon-depth", toonDepth], ["toon-depth-flat", toonDepthFlat], ["toon-depth-near", toonDepthNear], ["toon-color", toonColor]] as const) {
+      saveFrame({ pngBase64: frame.pngBase64, metrics: {} } as never, `evidence/receipts/outline-targets/${version}/${key}.png`, key);
+    }
     expect(toonColor.errors).toEqual([]);
     expect(toonDepth.errors).toEqual([]);
     expect(toonDepthFlat.errors).toEqual([]);
-    expect(depth.riderPerimeterInked, "rider perimeter inked by depth").toBeGreaterThanOrEqual(0.6);
+    expect(toonDepthNear.errors).toEqual([]);
+    // The depth ink is a 1 px line on each side of a depth step: >= 60% of the silhouette carries it (either side).
+    expect(depth.riderSilhouetteInked, "rider silhouette inked by depth").toBeGreaterThanOrEqual(0.6);
     expect(depth.skyEdgeFraction, "sky edges").toBeLessThan(0.005);
-    expect(depth.bottomChanged, "near ground changes more than the sky").toBeGreaterThan(depth.topChanged);
+    // The inverse-depth Laplacian is zero on any plane: the bottom quarter (flat ground only) stays clean.
+    expect(depth.bottomChanged, "flat near ground stays clean").toBeLessThan(0.005);
+    // fadeDistance 4 m: the rider (about 7 m out) loses its ink.
+    expect(faded.riderSilhouetteInked, "ink fades past fadeDistance").toBeLessThan(0.1);
   });
 
   test("no page errors or console errors during the receipt run", () => {
