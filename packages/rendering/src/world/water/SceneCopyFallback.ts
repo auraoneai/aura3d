@@ -121,6 +121,10 @@ export function sceneCopyFallbackPass(ctx: FrameContributorContext): RenderPass 
     writes: [SCENE_COPY_COLOR_KEY, SCENE_COPY_DEPTH_KEY],
     execute(rp: RenderPassContext) {
       const device = rp.device;
+      // GU47 phase 2: restore the target bound on entry (the scene HDR target), never the default framebuffer: the
+      // render graph rejects a pass that changes the bound target, and without dev asserts the rest of the frame drew
+      // to the wrong target (aura-hoops-3d shanghai/venice and slingshot-siege mounted nothing).
+      const previousTarget = device.getRenderTarget?.() ?? null;
       // Another contributor's shared copies win — nothing to do.
       if (ctx.blackboard.get(FRAME_RESOURCES.sceneColorCopy) && ctx.blackboard.get(FRAME_RESOURCES.sceneDepthCopy)) return;
       const depthSrc = ctx.sceneDepth.available ? ctx.sceneDepth.texture : null;
@@ -163,7 +167,7 @@ export function sceneCopyFallbackPass(ctx: FrameContributorContext): RenderPass 
           shader: s.programColor,
           uniforms: new Map<string, UniformValue>([["u_src", new TextureBinding({ name: "u_src", texture: colorSrc, sampler: COPY_SAMPLER })]])
         });
-        device.setRenderTarget(null);
+        device.setRenderTarget(previousTarget);
         ctx.blackboard.set(SCENE_COPY_COLOR_KEY, s.colorTarget.colorTexture);
       }
       if (depthSrc && s.depthTarget) {
@@ -180,7 +184,7 @@ export function sceneCopyFallbackPass(ctx: FrameContributorContext): RenderPass 
             ["u_depthUnpack", new Float32Array([ctx.sceneDepth.linearize.near, ctx.sceneDepth.linearize.far])]
           ])
         });
-        device.setRenderTarget(null);
+        device.setRenderTarget(previousTarget);
         ctx.blackboard.set(SCENE_COPY_DEPTH_KEY, s.depthTarget.colorTexture);
       }
     }

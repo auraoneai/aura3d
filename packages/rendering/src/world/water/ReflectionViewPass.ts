@@ -112,6 +112,8 @@ export function reflectionViewPass(
     writes: [PLANAR_REFLECTION_KEY],
     execute(rp: RenderPassContext) {
       const device = rp.device;
+      // GU47 phase 2: put back the target bound on entry (see SceneCopyFallback), not the default framebuffer.
+      const previousTarget = device.getRenderTarget?.() ?? null;
       const plan = planReflection(ctx, request);
       if (!plan || !plan.run) {
         ctx.blackboard.delete(PLANAR_REFLECTION_KEY);
@@ -136,7 +138,7 @@ export function reflectionViewPass(
       device.setRenderTarget(target);
       device.clear([0, 0, 0, 1]);
       renderWorld(device, plan.mirrorViewProjection, plan.mirrorEye);
-      device.setRenderTarget(null);
+      device.setRenderTarget(previousTarget);
       ctx.blackboard.set(PLANAR_REFLECTION_KEY, target.colorTexture as Texture);
     }
   };
