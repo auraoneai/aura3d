@@ -383,14 +383,6 @@ export function atmosphereNodes(venue: VenueId, opts: FcSceneOptions = {}): any[
     const hl = HYBRID_LAYERS[venue];
     nodes.push(...weatherNodes(hl.weather, reducedMotion, false));
     if (VENUES[venue].aurora) nodes.push(...auroraNodes(reducedMotion));
-    if ((hl.haze ?? 0) > 0) {
-      // phase 3: thin flood haze in the rain with god rays from the main-stand flood (the GU47 path ran 0.12 with no key
-      // and read murky; over the 4.6.2 key a 0.04-0.05 haze only lifts the air under the floods)
-      nodes.push(effects.volumetricFog({
-        name: "fc-flood-haze", density: hl.haze, color: VENUES[venue].floodColor, intensity: 0.5,
-        lightPosition: mainFloodPosition(), godRayDensity: 0.25, heightFalloff: 0.1, heightReference: 0
-      } as any));
-    }
     nodes.push(effects.vignette({ name: "fc-vignette", intensity: hl.vignette }));
     if (hl.grain > 0) nodes.push(effects.filmGrain({ name: "fc-grain", intensity: hl.grain }));
     if (hl.chromaticAberration > 0 && !reducedMotion) nodes.push(effects.chromaticAberration({ name: "fc-ca", intensity: hl.chromaticAberration }));
