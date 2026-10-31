@@ -289,7 +289,9 @@ void main() {
     float k = t / blobCast;
     float castA = (1.0 - smoothstep(0.55, 1.0, r)) * mix(1.0, 0.45, k * k);
     float feet = 1.0 - smoothstep(0.0, 0.55, length(v) / blobRadius);
-    a = max(castA, feet) * blobAlpha;
+    // GU47 phase 4 (rubric: contact shadows): a tight dark core right under the feet grounds the runner
+    float core = 1.0 - smoothstep(0.0, 0.2, length(v) / blobRadius);
+    a = min(1.0, max(castA, feet) * blobAlpha + core * 0.35);
   }
   if (a < 0.01) discard;
   outColor = vec4(blobShade, a);
@@ -387,8 +389,14 @@ void main() {
   float rs = max(dot(Rv, SUN_DIR), 0.0);
   vec3 skyRefl = mix(lookFogColor, lookSunColor, pow(rs, 4.0));
   float plateMask = top * mix(0.35, 1.0, joint) * lookMode;
-  col = mix(col, skyRefl, (0.06 + 0.3 * fres) * plateMask);
+  col = mix(col, skyRefl, (0.1 + 0.38 * fres) * plateMask);
   col += lookSunColor * (pow(rs, 40.0) * 0.6 + pow(rs, 8.0) * 0.12) * plateMask;
+  // GU47 phase 4 (rubric: reflections): the jade flanks are glossy lacquer too: a fresnel sky mirror, a sun streak and a
+  // horizon line from the hemisphere sky colour, fading into the matte belly; shadowed fragments keep only the sky term.
+  float bodyMask = (1.0 - top) * (1.0 - smoothstep(0.45, 0.85, depth)) * lookMode;
+  vec3 bodyRefl = mix(mix(lookHemiSky, lookFogColor, 0.5), lookSunColor, pow(rs, 3.0));
+  col = mix(col, bodyRefl, (0.08 + 0.5 * fres) * bodyMask);
+  col += lookSunColor * (pow(rs, 24.0) * 0.55 + pow(rs, 6.0) * 0.1) * bodyMask * mix(0.25, 1.0, gToonShadow);
 
   // GU47 SSR-08: the gold spine down the road's centre line, with a wave pulsing forward along the body
   float spineW = 0.22 + fwm * 0.4;

@@ -95,6 +95,8 @@ export const islandInstancedSpec = (): CustomSpec => ({
 
 /** GU47 SSR-11: instanced prayer-flag cloth (colour per instance). */
 export const flagInstancedSpec = (): CustomSpec => ({
+  /** GU47 phase 4: the depth pass runs the instanced vertex stage, so flags, posts and the pilgrim gates cast the sun shadow. */
+  castShadow: true,
   glsl: { vertex: FLAG_INSTANCED_VERTEX, fragment: FLAG_INSTANCED_FRAGMENT },
   uniforms: {
     flagTime: { type: "f32", value: 0 },

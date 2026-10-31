@@ -99,6 +99,27 @@ const POST_TINT: V3 = [0.16, 0.025, 0.03];
 const CORD_TINT: V3 = [0.09, 0.05, 0.06];
 export const VERGE_POSTS = 2 * Math.ceil((VERGE_AHEAD + VERGE_BEHIND) / VERGE_SPACING);
 /**
+ * GU47 phase 4 (rubric: shadows): pilgrim gates (two lacquer posts, a gold tie beam and a lintel) span the road every
+ * `GATE_EVERY` verge spans, drawn as extra instances of the flag draw (0 new draws). The flag draw casts the sun shadow, so
+ * the gates lay shadow bands across the plates. They stand outside the road top (posts at +-GATE_HALF_SPAN m) and their beams
+ * clear 7.6 m, above every grounded runner pose; presentation only (no collision). None within GATE_BOARD_CLEAR m of a board.
+ */
+export const GATE_EVERY = 3;
+export const GATE_HALF_SPAN = 5.6;
+const GATE_PIECES = 4;
+const GATE_BOARD_CLEAR = 30;
+export const GATE_SLOTS = Math.ceil(VERGE_POSTS / 2 / GATE_EVERY) + 1;
+const GATE_POST_TINT: V3 = [0.32, 0.03, 0.03];
+const GATE_LINTEL_TINT: V3 = [0.46, 0.05, 0.04];
+const GATE_TIE_TINT: V3 = [0.78, 0.46, 0.1];
+/** Flag-draw capacity: verge pieces plus the gate pieces. */
+export const FLAG_DRAW_SLOTS = VERGE_POSTS * VERGE_PIECES + GATE_SLOTS * GATE_PIECES;
+/**
+ * GU47 phase 4 (WP-36 `serpSerpentHead`): the colossal serpent head rising out of the cloud sea beside the road, one model
+ * recycled every SERPENT_HEAD.cycle m, alternating sides, entering from the fog far ahead.
+ */
+export const SERPENT_HEAD = { cycle: 1400, ahead: 1050, lateral: 150, height: 130, rise: -12, yawDeg: 45 } as const;
+/**
  * GU47 SSR-11: island parallax bands beyond the six near Meshy islands. Each band is one instanced draw of inverted spire
  * cones recycled along the road: `count` islands every `spacing` m, `lateral` m out, `up` m above the road, `fog` the
  * minimum fog (far band reads as a silhouette layer).
@@ -317,7 +338,11 @@ export function buildWorld(options: WorldOptions = {}): World {
     // GU47 SSR-02: under the colour script the hemisphere drops 1.1 -> 0.6 and the environment 0.9 -> ~0.6, and a violet
     // camera-side fill (0.6, unshadowed) keeps the backlit runner readable; `?look=original` keeps today's rig.
     .add(lights.hemisphere({ name: "sky fill", skyColor: script ? first.hemisphere.sky : "#f6d0e6", groundColor: script ? first.hemisphere.ground : "#b98a2e", intensity: script ? first.hemisphere.intensity : 1.1 }).runtime({ id: "sky fill" }))
-    .add(environments.neutral({ intensity: script && !envOverride() ? first.environmentIntensity : environmentIntensity() }))
+    // GU47 phase 4 (rubric: ibl_reflections): under the colour script the runner and props reflect a sunset sky probe
+    // (background off; the custom sky stays the visible sky) instead of the neutral room; `?look=original` keeps the room.
+    .add(script && !envOverride()
+      ? environments.preset("sunset", { name: "dusk sky probe", intensity: first.environmentIntensity, background: false })
+      : environments.neutral({ intensity: script && !envOverride() ? first.environmentIntensity : environmentIntensity() }))
     // GU47 SSR-03 / SSR-19: two cascades over 140 m with PCSS under the colour script on High; the second cascade drops on
     // the Medium / Low tiers (an explicit cascade count is never capped by the tier, so it is chosen here).
     .add(lights.directional({ name: "sun", position: [-40, 60, -70], target: [0, 0, 0], intensity: script ? first.sun.intensity : 2.2, color: script ? first.sun.color : "#fff0dc", shadow: (shadowOff() ? false : script ? { cascades: sunCascades(options.tier ?? autoTier()), maxDistance: 140, filter: "pcss", lightSize: 2 } : { cascades: 1, maxDistance: 80 }) as never }).runtime({ id: "sun" }));
@@ -392,6 +417,7 @@ export function buildWorld(options: WorldOptions = {}): World {
   /* Meshy roadside lanterns and floating islands, recycled along the road */
   for (let i = 0; i < LANTERN_COUNT; i++) builder.add(model(MESHY.lantern, { name: `lantern-${i}`, targetHeight: 3.6 }).position(0, -500, 0).runtime({ id: `lantern-${i}` }));
   for (let i = 0; i < ISLAND_COUNT; i++) builder.add(model(MESHY.island, { name: `island-${i}`, targetHeight: 15 }).position(0, -500, 0).runtime({ id: `island-${i}` }));
+  if (script) builder.add(model(MESHY.serpentHead, { name: "serpent-head", targetHeight: SERPENT_HEAD.height, castShadow: false, receiveShadow: false }).position(0, -500, 0).runtime({ id: "serpent-head" }));
 
   /* the runner and the aura shell */
   for (const part of HERO_PARTS as readonly HeroPartSpec[]) {
@@ -434,7 +460,7 @@ export function buildWorld(options: WorldOptions = {}): World {
   /* GU47 SSR-11: prayer-flag lines and hanging lanterns every 18 m along both verges (2 instanced draws) */
   if (script) {
     const hidden = (n: number) => Array.from({ length: n }, () => ({ position: [0, -500, 0] as [number, number, number], scale: 1e-4 }));
-    builder.add(instances.box({ name: "verge-flags", size: [1, 1, 1], transforms: hidden(VERGE_POSTS * VERGE_PIECES), colors: Array.from({ length: VERGE_POSTS * VERGE_PIECES }, () => "#ffffff"), material: material.custom(flagInstancedSpec()) }).runtime({ id: "verge-flags" }));
+    builder.add(instances.box({ name: "verge-flags", size: [1, 1, 1], transforms: hidden(FLAG_DRAW_SLOTS), colors: Array.from({ length: FLAG_DRAW_SLOTS }, () => "#ffffff"), material: material.custom(flagInstancedSpec()) }).runtime({ id: "verge-flags" }));
     // SDF stage boards: an indigo lacquer board with gold-rimmed gold lettering, facing the oncoming runner
     for (const board of STAGE_BOARDS) {
       const bf = frameAt(samples, Math.min(board.s, ROAD_LENGTH));
@@ -539,7 +565,7 @@ export function buildWorld(options: WorldOptions = {}): World {
       let exposureBoost = 0;
       let vfxFired = 0;
       /* GU47 SSR-11: verge buffers */
-      const flagBuf = script ? { data: new Float32Array(VERGE_POSTS * VERGE_PIECES * 16), rgba: new Float32Array(VERGE_POSTS * VERGE_PIECES * 4) } : null;
+      const flagBuf = script ? { data: new Float32Array(FLAG_DRAW_SLOTS * 16), rgba: new Float32Array(FLAG_DRAW_SLOTS * 4) } : null;
       const lampBuf = script ? new Float32Array(VERGE_POSTS * 16) : null;
       const soulBuf = script ? new Float32Array(SOUL_COLUMN.count * 16) : null;
       const islandBufs = script && SPIRE_BANDS_SHOWN ? ISLAND_BANDS.map((b) => ({ band: b, data: new Float32Array(b.count * 16), rgba: new Float32Array(b.count * 4) })) : [];
@@ -771,6 +797,17 @@ export function buildWorld(options: WorldOptions = {}): World {
           h.setPosition(ip[0], ip[1], ip[2]).setRotation(ie[0], ie[1], ie[2]).setScale(1 + (i % 3) * 0.35);
         }
 
+        /* GU47 phase 4 (WP-36 serpSerpentHead): the colossal serpent rising out of the cloud sea, alternating sides */
+        if (script) {
+          const lap = Math.floor((S.s + SERPENT_HEAD.cycle - SERPENT_HEAD.ahead) / SERPENT_HEAD.cycle);
+          const rel = mod(SERPENT_HEAD.ahead - S.s, SERPENT_HEAD.cycle) - (SERPENT_HEAD.cycle - SERPENT_HEAD.ahead);
+          const side = lap % 2 ? -1 : 1;
+          const hf = frameAt(samples, Math.min(Math.max(S.s + rel, -40), ROAD_LENGTH));
+          const hp = onRoad(hf, side * SERPENT_HEAD.lateral, SERPENT_HEAD.rise + (reducedMotion ? 0 : Math.sin(time * 0.25) * 2));
+          const he = matrixEuler(frameBasis(hf, (-side * SERPENT_HEAD.yawDeg * Math.PI) / 180));
+          show("serpent-head", true).setPosition(hp[0], hp[1], hp[2]).setRotation(he[0], he[1], he[2]);
+        }
+
         /* GU47 SSR-11: flag lines strung between verge posts every 18 m, a lantern hanging at each post */
         if (flagBuf && lampBuf) {
           let fi = 0, li = 0;
@@ -808,6 +845,22 @@ export function buildWorld(options: WorldOptions = {}): World {
                 fi++;
               }
             }
+          }
+          // GU47 phase 4: pilgrim gates across the road on every GATE_EVERY-th span (shadow casters, same draw)
+          for (let k = 0; k < VERGE_POSTS / 2; k++) {
+            if (mod(first + k, GATE_EVERY) !== 0) continue;
+            const s0 = (first + k) * VERGE_SPACING;
+            if (s0 < 0 || s0 > ROAD_LENGTH || STAGE_BOARDS.some((b) => Math.abs(b.s - s0) < GATE_BOARD_CLEAR)) continue;
+            const gf = frameAt(samples, s0);
+            const gb = frameBasis(gf);
+            const box = (at: V3, sx: number, sy: number, sz: number, tint: V3): void => {
+              writeMatrix(flagBuf.data, fi * 16, [gb[0] * sx, gb[1] * sx, gb[2] * sx, gb[3] * sy, gb[4] * sy, gb[5] * sy, gb[6] * sz, gb[7] * sz, gb[8] * sz], at, 1);
+              flagBuf.rgba.set([...tint, 1], fi * 4); fi++;
+            };
+            box(onRoad(gf, -GATE_HALF_SPAN, 4.5), 0.55, 9.6, 0.55, GATE_POST_TINT);
+            box(onRoad(gf, GATE_HALF_SPAN, 4.5), 0.55, 9.6, 0.55, GATE_POST_TINT);
+            box(onRoad(gf, 0, 7.9), GATE_HALF_SPAN * 2 + 0.2, 0.35, 0.45, GATE_TIE_TINT);
+            box(onRoad(gf, 0, 9.45), GATE_HALF_SPAN * 2 + 3, 0.6, 0.85, GATE_LINTEL_TINT);
           }
           const flags = node("verge-flags") as Partial<ReturnType<typeof node>>;
           flags.setInstanceMatrices?.(flagBuf.data, fi, flagBuf.rgba);

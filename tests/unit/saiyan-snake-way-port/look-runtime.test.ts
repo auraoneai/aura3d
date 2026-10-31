@@ -130,7 +130,7 @@ describe("serpentine-sky-run QA crops (E-I crop contract)", () => {
 
 import { createVfxEventTracker } from "../../../examples/saiyan-snake-way-port/art/vfxEvents";
 import { createRun } from "../../../examples/saiyan-snake-way-port/sim";
-import { VERGE_POSTS, VERGE_SPACING, buildWorld } from "../../../examples/saiyan-snake-way-port/world";
+import { FLAG_DRAW_SLOTS, VERGE_POSTS, VERGE_SPACING, buildWorld } from "../../../examples/saiyan-snake-way-port/world";
 
 describe("serpentine-sky-run VFX events (SSR-12)", () => {
   it("fires one event per scripted state change and never writes the run state", () => {
@@ -196,7 +196,9 @@ describe("serpentine-sky-run verge dressing (SSR-11)", () => {
     const runtime = world.bind(app as never);
     runtime.update(createRun(), 1 / 60, 1, 16 / 9);
     expect(counts.get("verge-lanterns")).toBe(VERGE_POSTS);
-    expect(counts.get("verge-flags")).toBe(VERGE_POSTS * 9); // GU47 phase 3: 4 flags + 1 post + 4 cord segments per post
+    // GU47 phase 3: 4 flags + 1 post + 4 cord segments per post; phase 4: plus 4 pieces per pilgrim gate (every GATE_EVERY-th span)
+    expect(counts.get("verge-flags")).toBeGreaterThan(VERGE_POSTS * 9);
+    expect(counts.get("verge-flags")).toBeLessThanOrEqual(FLAG_DRAW_SLOTS);
     expect(VERGE_SPACING).toBe(18);
     expect(VERGE_POSTS).toBeGreaterThanOrEqual(12);
   });

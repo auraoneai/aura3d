@@ -12,7 +12,9 @@ export const MESHY = defineModelAssets({
   island: glb("island.glb", "sha256-605edc6b1c487fe3d8d9c649bd29e13dd6a57f394fdfc3ba4aacf386d79bd7bb"),
   cart: glb("cart.glb", "sha256-b524d3694dfebc51538817c72e23d90c2b0d86800706ea0ef1e0d5bb1b2c3366"),
   feast: glb("feast.glb", "sha256-ef57f499e2352bb73b9098a73190f88412b86aa54a1b9b711d7f69b2e856bac7"),
-  lantern: glb("lantern.glb", "sha256-e7455a1ef72d8e5fe0e9a460f8cd68e7ba6ef85292b823979a22d7df7d3f730b")
+  lantern: glb("lantern.glb", "sha256-e7455a1ef72d8e5fe0e9a460f8cd68e7ba6ef85292b823979a22d7df7d3f730b"),
+  /** GU47 WP-36 `serpSerpentHead` (admitted 2026-10-31, provenance/serpentHead.*): the colossal serpent landmark (SSR-10/17). */
+  serpentHead: glb("serpentHead.glb", "sha256-8376edc24e11fc99cebd4b5ab2fcda24afa3ba56c34f2cedb073c47cfa1afe34")
 }, { license: LICENSE, queryParam: null }).refs;
 
 export type MeshyKey = keyof typeof MESHY;
