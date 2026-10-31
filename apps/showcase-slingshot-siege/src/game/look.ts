@@ -218,7 +218,8 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     dof: { maxBlur: 5.5, bandWidth: 0.32 },
     accent: SIEGE_PALETTE.pennantRed,
     practicals: { windows: false, lighthouse: false, lanterns: false },
-    flare: true,
+    // GU47 phase 2: off; on software WebGL2 the sun flare drew a screen-wide glow blob over the fort or the sling.
+    flare: false,
     weather: "none",
     terrain: ISLAND
   },
@@ -252,7 +253,8 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     dof: { maxBlur: 6, bandWidth: 0.3 },
     accent: SIEGE_PALETTE.pennantRed,
     practicals: { windows: true, lighthouse: false, lanterns: false },
-    flare: true,
+    // GU47 phase 2: off; on software WebGL2 the sun flare drew a screen-wide glow blob over the fort or the sling.
+    flare: false,
     weather: "drizzle",
     terrain: ISLAND
   },
