@@ -67,7 +67,7 @@ export const paintSpec = (): CustomSpec => ({
 });
 export const seaSpec = (): CustomSpec => ({
   glsl: { vertex: PAINT_VERTEX, fragment: SEA_FRAGMENT },
-  uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 } },
+  uniforms: { ...daylightUniforms(), windTime: { type: "f32", value: 0 }, seaSparkle: { type: "f32", value: 0 } },
   transparent: true,
   depthWrite: false
 });
@@ -271,9 +271,11 @@ export function storybookLead(lead: { x: number; z: number; px: number; pz: numb
  * the 4.6 follow height and lens (the lower camera put the canopy and a signboard into the top corners). `amount` 0..1
  * eases between them over about 3 s, so the bell does not cut the camera.
  */
+/** Phase 3 round 3: the daylight lens. 36 deg (4.6: 43) frames the traveller about 1.2x larger and crops the near oak canopy and the windmill sails out of the top corners. */
+export const DAY_FOV = 36;
 export function followFraming(amount: number, aspect: number): { y: number; fov: number; lead: number } {
   const a = Math.max(0, Math.min(1, amount));
-  return { y: CAMERA_OFFSET.y + (STORYBOOK_CAMERA_Y - CAMERA_OFFSET.y) * a, fov: aspect < 1 ? 50 : 43 + (40 - 43) * a, lead: a };
+  return { y: CAMERA_OFFSET.y + (STORYBOOK_CAMERA_Y - CAMERA_OFFSET.y) * a, fov: aspect < 1 ? 50 : DAY_FOV + (40 - DAY_FOV) * a, lead: a };
 }
 /** Applies one look post (DAY_POST / DUSK_POST) through the runtime post surface. */
 function applyLookPost(app: AuraApp, post: LookPost, high: boolean): void {
@@ -622,7 +624,10 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         sky.setUniform?.("skyZenith", f.skyZenith);
         sky.setUniform?.("cloudTint", f.cloudTint);
         sky.setUniform?.("starAmt", f.stars);
-        if (!original) sky.setUniform?.("clearSky", f.clearSky);
+        if (!original) {
+          sky.setUniform?.("clearSky", f.clearSky);
+          node("sea").setUniform?.("seaSparkle", f.clearSky);
+        }
         if (original) return;
         // WW47-L4: the engine sun follows the day (E-B setLight); its direction is the uniform's, negated (light travel)
         node("sun").setLight?.({ direction: [-f.sunDir[0], -f.sunDir[1], -f.sunDir[2]], color: linearToHex(f.sunColor), intensity: f.engineSunIntensity });

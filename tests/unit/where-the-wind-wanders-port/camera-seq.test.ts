@@ -62,10 +62,11 @@ describe("where-the-wind-wanders-port storybook follow (WW47-C2)", () => {
     expect(off.y).toBeLessThan(CAMERA_OFFSET.y);
   });
 
-  it("phase 3: daylight uses the 4.6 height and lens with no lead; dusk and night the storybook framing", async () => {
+  it("phase 3: daylight uses the 4.6 height, a tighter lens and no lead; dusk and night the storybook framing", async () => {
     const { CAMERA_OFFSET } = await import("../../../examples/where-the-wind-wanders-port/sim");
-    const { followFraming, STORYBOOK_CAMERA_Y } = await import("../../../examples/where-the-wind-wanders-port/world");
-    expect(followFraming(0, 16 / 9)).toEqual({ y: CAMERA_OFFSET.y, fov: 43, lead: 0 });
+    const { followFraming, STORYBOOK_CAMERA_Y, DAY_FOV } = await import("../../../examples/where-the-wind-wanders-port/world");
+    expect(DAY_FOV).toBeLessThan(43);
+    expect(followFraming(0, 16 / 9)).toEqual({ y: CAMERA_OFFSET.y, fov: DAY_FOV, lead: 0 });
     expect(followFraming(1, 16 / 9)).toEqual({ y: STORYBOOK_CAMERA_Y, fov: 40, lead: 1 });
     expect(followFraming(0.5, 0.5).fov).toBe(50);
   });
