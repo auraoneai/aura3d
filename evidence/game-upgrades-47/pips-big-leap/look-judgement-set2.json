@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/pips-big-leap/p3-r3/pips-big-leap/frames/g06p3-r3-8/c1440--card-2x.jpg",
+      "sha256": "d56ccbc6a4e9c38d4c4a738b9af07bbd413207224007cd6f9aa9d2baad31e3cd"
+    },
+    {
+      "path": "evidence/game-upgrades-47/pips-big-leap/p3-r3/pips-big-leap/frames/g06p3-r3-4/pips-big-leap--w3--settle-60s.jpg",
+      "sha256": "5bbdfa85c82b06c7de81715d9881aafae43a93ff46aafe330357de3f6ef1db3b"
+    },
+    {
+      "path": "evidence/game-upgrades-47/pips-big-leap/p3-r3/pips-big-leap/frames/g06p3-r3-6/pips-big-leap--w5--settle-60s.jpg",
+      "sha256": "e5df8e79951942adf2a9fe0faaa091cbe15e19525cbe63f0cb8ca2a9d0752edb"
+    },
+    {
+      "path": "evidence/game-upgrades-47/pips-big-leap/p3-r3/pips-big-leap/frames/g06p3-r3-7/pips-big-leap--w6--settle-60s.jpg",
+      "sha256": "615c5d83b0d0dd951a41d492da963e5cc7316b2a7b7e275ce20d7a06cd8ddedd"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 5.5,
+    "ibl_reflections": 5,
+    "environment_world": 6,
+    "atmospheric_effects": 4.5,
+    "material_quality": 5.5,
+    "modeling_assets": 5.5,
+    "composition": 5.5,
+    "camera": 6,
+    "postprocessing": 5,
+    "animation_quality": 5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The Forest frame has a readable warm key with soft fill. The Clouds frame is washed out: the lavender floor and sky blow out to near-white with little directional modeling. The Ember frame is a flat brown monotone where the character barely separates from the floor."
+    },
+    {
+      "category": "shadows",
+      "seen": "Only soft blob-like contact shadows appear under Pip and the blocky NPC. The tall forest trees and the Ember towers cast no visible shadows on the ground, so objects float."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The chrome portal rings in Starfall pick up some environment highlights. Floors in Clouds and Starfall have a glossy sheen but no coherent reflections. Elsewhere materials look evenly lit with weak image-based contribution."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Each world is a linear strip of floating slab platforms toward a gate. Forest dressing is good, with low-poly pines and dead trees. Clouds and Ember are sparse void backdrops with a few rocks or towers, and the slabs are reused across every world."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Faint floating particles appear in Clouds and Starfall, and Forest has slight distance haze. Ember has no fog depth at all; its dark brown backdrop is flat. There are no god rays or volumetrics."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Pip's acorn cap has decent glossy shading. The platform slabs use plain beige or lavender albedo with no texture detail. The Ember towers have good metal and wood texturing but clash stylistically."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Three asset styles are mixed: a stylized Pip, a Minecraft-like blocky NPC, and photoreal-ish kitbash towers, portals and drones. The art direction is inconsistent, and the platforms are simple extruded boxes."
+    },
+    {
+      "category": "composition",
+      "seen": "The subject sits at center, roughly 15–20% of frame height, with the goal gate on the centerline, which reads well. The NPC block crowds the right third, and the huge Ember towers and Starfall portals crop awkwardly at the frame edges."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a behind-the-back chase rather than the expected side-on follow. Framing is consistent with a moderate FOV, but the camera sits low enough that the floor plane dominates the bottom half."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is visible bloom and glow on the Starfall platform. Clouds has a heavy low-contrast milky grade, and Ember has a muddy monochrome grade. Neither tone-maps toward the saturated daylight-outdoor palette."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Static frames show the same neutral idle or walk pose on Pip in all four shots. The NPC stands in a rigid T-like stance, with no secondary motion visible."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The Forest HUD is a clean set of pill badges for hearts, world, seeds, acorns and time, plus an objective card and a controls bar. It is legible but the top tab bar is dev-like, and the other three frames show no HUD."
+    }
+  ],
+  "nextChange": {
+    "category": "atmospheric_effects",
+    "change": "add the recipe row's atmosphere (fog scale, haze, shafts) at the look's intensity",
+    "api": "looks.preset(id, { fogDensityScale })"
+  },
+  "judge": "prism"
+}

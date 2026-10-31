@@ -1,4 +1,16 @@
-# Pip's Big Leap: final screens (4.5.0 engine, audit fixes, 2026-10-29)
+# Pip's Big Leap: final screens (4.7.1 candidate, GU47 phase 3, 2026-10-31)
+
+Retaken on the phase-3 build (branch `gu47/g06`, 88891ddb2: per-world look switch, every world in the panel-verified
+felt-and-clay diorama) with `tests/browser/audit-fix/pips-big-leap.spec.ts` on the remote ACR runner (crmmeprodacr, headless
+Chromium, software WebGL2), runs `g06p3-r3-8` (grpA: 1280 title/early/action/modes and the 1440x900 card) and `g06p3-r3-9`
+(grpB: 1280 mid, 390x844 title/early/action/mid/modes). Raw frames: `evidence/game-upgrades-47/pips-big-leap/p3-r3/pips-big-leap/frames/`.
+Both runs hit the ACR step's 3600 s limit after their last needed frame except the results screens, so `1280-06-results.jpg` and
+`390-06-results.jpg` are still the 2026-10-29 (4.5.0, 4.6.2 look) frames below. `card-1x.jpg` is a `sips` downscale of `card-2x.jpg`;
+the index posters were rebuilt with `node tools/site/build-card-images.mjs`. This shows layout, content and look on software GL,
+not real-GPU look or frame rate.
+
+## Previous set (2026-10-29)
+
 
 Route: `apps/showcase-pips-big-leap`. Built from branch `audit-fix/g06` at ed0eea745 (all lane G06 fixes) on the 4.5.0 engine. Replaces the 2026-10-25 set (RH-05); same file names and pixel sizes, plus `1280-06-results.jpg` and `390-06-results.jpg`, which the old set never reached.
 
