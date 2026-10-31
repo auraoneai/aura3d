@@ -117,6 +117,8 @@ export interface SplatLook {
   /** CR-M3 paint-drip gate arches and CR-AN1 drip wobble (world units at the bead, Hz) and match squash (seconds). */
   /** CR-W2 horizon silhouette ring of crayon spires and towers, standing in the cloud sea (one static node). */
   readonly spires: null | { readonly count: number; readonly radius: number; readonly baseY: number; readonly minHeight: number; readonly maxHeight: number; readonly colors: readonly string[] };
+  /** GU47 phase 3 soft cel shadows of the gate posts and bar on the deck, cast away from the low sun (length m, opacity). */
+  readonly gateShadow: null | { readonly length: number; readonly alpha: number };
   readonly gates: null | { readonly drips: boolean; readonly wobble: number; readonly wobbleHz: number; readonly squashSeconds: number };
 }
 
@@ -142,6 +144,7 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
     bunting: null,
     sway: null,
     spires: null,
+    gateShadow: null,
     gates: null
   },
   carnival: {
@@ -158,7 +161,7 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
       fogDensity: 0.0062,
       gloss: { ball: 0.55, fresh: 0.7, drySeconds: 2, shininess: 48 },
       canvas: { weave: 0.05, streak: 0.06 },
-      skyReflect: 0.55,
+      skyReflect: 0.8,
       contact: { height: 0.6, strength: 0.42 }
     },
     sky: {
@@ -195,7 +198,7 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
     environment: { kind: "hdri", id: "kloppenheim_06_puresky", intensity: 0.65, rotationDeg: 145, fallback: "sunset" },
     backdropLights: "from-toon",
     post: {
-      bloom: { intensity: 0.6, threshold: 0.85, scatter: 0.55 },
+      bloom: { intensity: 0.7, threshold: 0.8, scatter: 0.6 },
       vignette: { intensity: 0.22, color: "#3a2440" },
       grade: { contrast: 1.1, saturation: 1.14, temperature: 0.06, gain: 1.4 },
       outline: { color: "#3b1f3f", width: 2, targets: ["ball", "gates", "rails"] },
@@ -210,6 +213,7 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
     bunting: { spacing: 26 },
     sway: { balloonDeg: 5, islandDeg: 2.5 },
     spires: { count: 54, radius: 96, baseY: -24, minHeight: 12, maxHeight: 30, colors: ["#4a3f72", "#5a4a80", "#6a5a85"] },
+    gateShadow: { length: 1.7, alpha: 0.34 },
     gates: { drips: true, wobble: 0.045, wobbleHz: 0.9, squashSeconds: 0.25 }
   }
 };

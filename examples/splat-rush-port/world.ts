@@ -588,6 +588,27 @@ export let splatVertexCount = 0;
 /** Vertices per gate instance in the `gates` batch (tests; CR-M3 adds the drips in carnival). */
 export let gateVertexCount = 0;
 /** Ids of the merged batch nodes. */
+/**
+ * GU47 phase 3: soft cel shadow of one gate on the deck (local gate frame, y 0): two post strips and the bar strip, cast
+ * `length` metres towards the camera (+z) and sheared sideways by `skew` (away from the sun azimuth). Each strip is one quad
+ * with 0..1 uvs, so the shadow program's radial falloff makes it a soft ellipse. Footprint matches the gate posts (x +-0.85).
+ */
+export function gateShadowMesh(length: number, skew: number): MeshData {
+  const out: MeshData = { positions: [], normals: [], uvs: [], indices: [] };
+  const quad = (x0: number, x1: number, z0: number, z1: number): void => {
+    const b = out.positions.length / 3;
+    for (const [x, z, u, v] of [[x0 + skew * z0, z0, 0, 0], [x1 + skew * z0, z0, 1, 0], [x1 + skew * z1, z1, 1, 1], [x0 + skew * z1, z1, 0, 1]] as const) {
+      out.positions.push(x, 0, z); out.normals.push(0, 1, 0); out.uvs.push(u, v);
+    }
+    out.indices.push(b, b + 2, b + 1, b, b + 3, b + 2);
+  };
+  const postX = 0.85, w = 0.2;
+  quad(-postX - w, -postX + w, -0.15, length);
+  quad(postX - w, postX + w, -0.15, length);
+  quad(-postX - w, postX + w, length * 0.82, length * 1.12);
+  return out;
+}
+
 export const BATCH_IDS = ["deck", "rails", "dashes", "gates", "gate-symbols", "splats", "particles", "clouds", "streaks"] as const;
 /** Carnival toon nodes whose light uniforms follow the time of day. */
 export const TOON_NODE_IDS = ["ball", "deck", "rails", "dashes", "gates", "splats", "particles", "bunting", "spires"] as const;
@@ -717,7 +738,12 @@ export function buildWorld(options: WorldOptions): World {
   const gateMesh = transformMesh(mergeMeshes(look.gates?.drips ? [...gateParts, gateDripMesh()] : gateParts), { scale: 0.32 });
   gateVertexCount = gateMesh.positions.length / 3;
   const gates = new Batch(gateMesh, GATE_MAX, hexLinear(COLORS[0] as string));
-  addBatch("gates", gates, toon([1, 1, 1], { tone: true, gloss: carnival ? 0.35 : 0, wobble: look.gates !== null, contact: true }));
+  addBatch("gates", gates, toon([1, 1, 1], { tone: true, gloss: carnival ? 0.25 : 0, wobble: look.gates !== null, contact: true }));
+  /* GU47 phase 3: gate cel shadows on the deck (carnival only, +1 draw, same slots as the gates) */
+  const gateShadows = look.gateShadow && look.toon
+    ? new Batch(gateShadowMesh(look.gateShadow.length, -Math.tan((look.toon.sunAzimuthDeg * Math.PI) / 180)), GATE_MAX)
+    : null;
+  if (gateShadows && look.gateShadow) addBatch("gate-shadows", gateShadows, { ...shadowSpec(), uniforms: { baseColor: { type: "color3", value: [0.16, 0.06, 0.2] }, alpha: { type: "f32", value: look.gateShadow.alpha } } });
 
   /* C7 colour symbols: one per gate (same slots as the gates) plus one over the ball */
   const symbolMeshes = Object.fromEntries((["circle", "triangle", "square", "cross"] as const).map((k) => [k, symbolMesh(k)])) as Record<SymbolKind, ReturnType<typeof symbolMesh>>;
@@ -911,7 +937,7 @@ export function buildWorld(options: WorldOptions): World {
 
         /* gates and their symbols */
         const wantSymbols = view.symbols === true;
-        gateSlots.retain(simNow.gates, (slot) => { gates.collapse(slot); gateSymbols.collapse(slot); gateColor[slot] = -1; });
+        gateSlots.retain(simNow.gates, (slot) => { gates.collapse(slot); gateSymbols.collapse(slot); gateShadows?.collapse(slot); gateColor[slot] = -1; });
         const squashSeconds = look.gates?.squashSeconds ?? 0;
         for (const g of simNow.gates) {
           const { slot, fresh } = gateSlots.use(g);
@@ -919,6 +945,7 @@ export function buildWorld(options: WorldOptions): World {
           const r = g.z - scroll, x = g.laneX + curve(-o.distance + g.z);
           if (fresh) {
             gates.place(slot, x, 0, r, 0, 1, 1, 1);
+            gateShadows?.place(slot, x, 0.012, r, 0, 1, 1, 1);
             gatePassed[slot] = g.passed; gateSquashAt[slot] = Number.NaN; gateGone[slot] = false;
           }
           if (squashSeconds > 0 && !gatePassed[slot] && g.passed) {
@@ -929,7 +956,7 @@ export function buildWorld(options: WorldOptions): World {
           if (!gateGone[slot] && !Number.isNaN(gateSquashAt[slot])) {
             const sq = gateSquash(elapsed - (gateSquashAt[slot] as number), squashSeconds);
             if (sq) gates.place(slot, x, 0, r, 0, sq.sx, sq.sy, sq.sz);
-            else { gates.collapse(slot); gateSymbols.collapse(slot); gateGone[slot] = true; }
+            else { gates.collapse(slot); gateSymbols.collapse(slot); gateShadows?.collapse(slot); gateGone[slot] = true; }
           }
           if (gateGone[slot]) { gateColor[slot] = g.colorIndex; continue; }
           if (fresh || gateColor[slot] !== g.colorIndex || (wantSymbols && !symbolsOn)) {
@@ -1022,6 +1049,7 @@ export function buildWorld(options: WorldOptions): World {
         dashes.flush(node("dashes"));
         if (bunting) bunting.flush(node("bunting"));
         gates.flush(node("gates"));
+        if (gateShadows) { node("gate-shadows").setPosition(0, 0, roadZ); gateShadows.flush(node("gate-shadows"), false); }
         gateSymbols.flush(node("gate-symbols"), false);
         ballSymbol.flush(node("ball-symbol"), false);
         splats.flush(node("splats"));
@@ -1056,7 +1084,7 @@ export function buildWorld(options: WorldOptions): World {
           if (title && focus !== dofLast) { app.post?.setEffect?.(TITLE_DOF, { focusDistance: focus }); dofLast = focus; }
         }
       }
-      const batches = [deck, rails, dashes, gates, gateSymbols, ballSymbol, splats, particles, clouds, streaks];
+      const batches = [deck, rails, dashes, gates, ...(gateShadows ? [gateShadows] : []), gateSymbols, ballSymbol, splats, particles, clouds, streaks];
       const parked = [...pickupNodeIds(), "shield", "guide", "ball-symbol"];
       function warm(on: boolean): void {
         for (const id of parked) {

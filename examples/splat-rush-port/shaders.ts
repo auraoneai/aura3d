@@ -221,8 +221,8 @@ vec3 haze(vec3 c, vec3 world) {
  * with the splatter's age, CR-M2 painted-canvas weave and brush streaks, CR-S3 haze).
  * `crDry` = (ball z, road speed m/s, dry seconds); dry seconds 0 means "always wet" (the ball).
  * `crCanvas` = (weave, streak) amplitudes; 0 on every surface but the deck.
- * GU47 phase 3: `crSkyReflect` adds a stepped sky reflection (horizon colour below the reflected horizon, sky fill above),
- * scaled by `crGloss`; `crContact` = (fade height m, strength) darkens props where they meet the deck (strength 0 = off).
+ * GU47 phase 3: `crSkyReflect` adds a stepped sky reflection, hue-neutral so gate colours keep reading: a pale sky
+ * window where the reflected ray points up and a thin horizon-colour line at grazing angles, scaled by `crGloss`; `crContact` = (fade height m, strength) darkens props where they meet the deck (strength 0 = off).
  */
 export const carnivalToonFragment = (withMap: boolean, withTone = false): string => /* glsl */ `
 in vec3 vNormal;
@@ -260,8 +260,9 @@ ${withMap ? "  base *= srgbToLinear(texture(map, vUv).rgb);" : ""}
   float spec = band(pow(max(dot(N, H), 0.0), crShininess), 0.45);
   c += crSunColor * spec * crGloss * wet * 1.6;
   vec3 R = reflect(-V, N);
-  vec3 skyCol = mix(crFogColor, crSkyFill * 1.6, band(R.y, 0.18));
-  c += skyCol * (0.25 + 0.75 * fres) * crGloss * crSkyReflect * wet;
+  float skyWin = band(R.y, 0.42) * (1.0 - band(fres, 0.7));
+  float horizonLine = (band(R.y, -0.04) - band(R.y, 0.05)) * band(fres, 0.35);
+  c += (vec3(0.82, 0.86, 1.0) * 0.55 * skyWin + crFogColor * 0.9 * horizonLine) * crGloss * crSkyReflect * wet;
   c *= 1.0 - crContact.y * (1.0 - smoothstep(0.0, crContact.x, vWorld.y));
   outColor = vec4(haze(shoulder(c), vWorld) + emissive, alpha);
 }`;
