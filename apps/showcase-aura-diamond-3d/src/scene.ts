@@ -93,7 +93,7 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
     : NIGHT_LOOK[park.id]
       ? material.emissive({ color: accent, emissive: accent, emissiveIntensity: 0.6 })
       : material.pbr({ color: accent, roughness: 0.55 });
-  const bagMat = material.pbr({ color: "#ece8d8", roughness: 0.65 });
+  const bagMat = material.pbr({ color: "#ece8d8", roughness: 0.42 });
   const chalk = () => chalkMat(park, ctx);
 
   // GU47 DIA-W2 / DIA-A1: the field's repeated pieces are instanced, one draw per shape and material, in both looks (the
@@ -286,7 +286,8 @@ export function buildStandsNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFA
 
   // Grounded tiered stadium bleachers wrapping the outfield arc
   const deckMat = material.pbr({ color: "#1c2638", roughness: 0.78, metalness: 0.22 });
-  const benchMat = material.pbr({ color: "#2d3e5a", roughness: 0.62, metalness: 0.28 });
+  // GU47 phase 4: galvanised aluminium benches that pick up the sky (rubric ibl_reflections).
+  const benchMat = material.pbr({ color: "#6b7a8e", roughness: 0.32, metalness: 0.8 });
   // Each section starts a fixed distance behind the fence at its own angle, so no row stands inside the wall (C3).
   // Instanced risers and benches: two draws instead of 42 (C12).
   const bleachers = bleacherPlacements(park);
@@ -704,6 +705,9 @@ export function buildAthleteNodes(id: string, asset: any, initialClip = "Ready")
   ];
 }
 
+/** GU47 phase 4: lacquered helmets and caps catch the sky (rubric ibl_reflections); main.ts tints them per team. */
+export const CAP_ROUGHNESS = 0.22;
+
 export const FIELDER_IDS = ["f-c", "f-1b", "f-2b", "f-ss", "f-3b", "f-lf", "f-cf", "f-rf"] as const;
 /** Everyone who wears a glove except the catcher (his mitt has its own node and calibrated offsets). */
 export const GLOVE_OWNERS = ["pitcher", "f-1b", "f-2b", "f-ss", "f-3b", "f-lf", "f-cf", "f-rf"] as const;
@@ -772,7 +776,7 @@ export function buildActorsNodes(ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEX
   // team colour through setMaterial in applyUniforms. The athlete GLB has one mesh and one material, so a tint would recolour skin too.
   for (const id of KIT_OWNERS) {
     nodes.push(
-      primitives.sphere({ name: `${id}-cap`, size: [0.205, 0.11, 0.225], material: material.pbr({ color: "#f2eee3", roughness: 0.6 }) }).position(0, -80, 0).runtime(game.runtimeNode(`${id}-cap`)),
+      primitives.sphere({ name: `${id}-cap`, size: [0.205, 0.11, 0.225], material: material.pbr({ color: "#f2eee3", roughness: CAP_ROUGHNESS }) }).position(0, -80, 0).runtime(game.runtimeNode(`${id}-cap`)),
       primitives.cylinder({ name: `${id}-belt`, size: [0.33, 0.05, 0.25], material: material.pbr({ color: "#f2eee3", roughness: 0.6 }) }).position(0, -80, 0).runtime(game.runtimeNode(`${id}-belt`))
     );
   }
@@ -845,7 +849,7 @@ function lookGroupNode(plan: DiamondLookPlan): any {
   if (QA_FLAGS.noAo) children = children.filter((c: any) => c.effect !== "ambient-occlusion");
   const keyShadow = plan.keyShadow;
   if (keyShadow) {
-    children = children.map((c: any) => (c.kind === "light" && c.name === "look key light" && c.shadow ? { ...c, shadow: { bias: keyShadow.bias, normalBias: keyShadow.normalBias } } : c));
+    children = children.map((c: any) => (c.kind === "light" && c.name === "look key light" && c.shadow ? { ...c, shadow: { ...keyShadow } } : c));
   }
   if (plan.hdriBackgroundIntensity !== 1) {
     children = children.map((c: any) =>
@@ -899,6 +903,8 @@ export function buildParkScene(park: ParkSpec, ctx: DiamondSceneContext = DEFAUL
   // QA-only switches for the AO and contact-shadow on/off capture pairs (LIGHT-06, C17): `?qa-ao=0`, `?qa-contact=0`.
   // GU47 phase 3 (rubric: "the batter and catcher look like they float"): denser, longer contact shadows in the new look.
   if (!QA_FLAGS.noContact) sc.add(effects.contactShadows(ctx.variant === "gu47" ? { intensity: 1.0, length: 0.45 } : { intensity: 0.75, length: 0.3 }));
+  // GU47 phase 4: the wet track, the sealed Dome infield and the harbour mirror the park (rubric ibl_reflections).
+  if (plan.ssr !== null && ctx.tier !== "low") sc.add(effects.screenSpaceReflections({ name: "diamond ssr", intensity: plan.ssr, maxDistance: 40, roughness: 0.5 }));
   sc.add(effects.vignette({ intensity: plan.vignette, smoothness: 0.7 }));
   if (plan.grain !== null) sc.add(effects.filmGrain({ intensity: plan.grain }));
   // DIA-E4: the rain-wet blue hour over Midtown (the wet warning track is its glossy track roughness, DIA-M1).
