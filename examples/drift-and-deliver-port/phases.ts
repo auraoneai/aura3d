@@ -122,7 +122,8 @@ export const PHASES: readonly PhaseRow[] = [
     environmentIntensity: 0.8,
     // blind-panel fix pass: same treatment as golden (thinner haze, more contrast and saturation, no grain)
     fog: { color: "#d8967a", density: 0.0013 },
-    sky: { horizon: "#ff9a5c", mid: "#e07a62", top: "#9c5a70", glow: "#ffb070", clouds: 0.5, stars: 0 },
+    // phase 3: glow and horizon a step down (the panel read the sunset vanishing point as slightly blown out)
+    sky: { horizon: "#f28a52", mid: "#e07a62", top: "#9c5a70", glow: "#f59a5e", clouds: 0.5, stars: 0 },
     grade: { contrast: 1.22, saturation: 1.3, temperature: 0.16 },
     bloom: { intensity: 0.5, threshold: 0.95 },
     vignette: 0.24,
