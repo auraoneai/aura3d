@@ -1,0 +1,32 @@
+{
+  "capability": "effects-ssr",
+  "version": "4.6.2",
+  "gitSha": "abddd22f1",
+  "renderer": "swiftshader",
+  "scene": "tests/browser/gu47/post-receipts.ts body(): grey floor (glossy for SSR), emissive white wall (left), warm emissive lamp sphere (right), grey crate (runtime id mover), one shadow-casting sun, camera (0, 2.2, 5.2) -> (0, 0.8, 0), 480x270; glossy floor, screenSpaceReflections absent vs intensity 1",
+  "frames": [
+    {
+      "file": "evidence/receipts/effects-ssr/ssr-off.png",
+      "sha256": "2160346bfa9d5e7fc8f12992f67a9cee3c8d707517d6fc69eb95bf83dd19eadf",
+      "meanLuma": 53.63570693749999,
+      "nonBlackRatio": 1,
+      "label": "ssr-off"
+    },
+    {
+      "file": "evidence/receipts/effects-ssr/ssr-on.png",
+      "sha256": "48b5f373803a12ac1249ef2318a079c74e77923cc081edcf8f6915e76d0b4c29",
+      "meanLuma": 59.991710491406245,
+      "nonBlackRatio": 1,
+      "label": "ssr-on"
+    }
+  ],
+  "tests": [
+    "tests/unit/gu47/ec/ssr.test.ts"
+  ],
+  "date": "2026-10-31T06:48:36.690Z",
+  "checks": {
+    "floorMeanAbsDeltaRgb": 17.191791310541745,
+    "floorDeltaAtLeast": 1,
+    "changedFraction": 0.08731640625
+  }
+}
