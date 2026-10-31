@@ -240,6 +240,8 @@ let blackWatch: BlackFrameWatch | undefined;
 let manualInput: Keys | null = null;
 let hudTimer = 0;
 let renderFailed = false;
+/** GU47 phase 2: shift-look scale of the additive beam cone (presentation only; the spot light keeps full strength). */
+const SHIFT_BEAM_VOLUME = 0.35;
 /** Headlight beam strength 0..1 (the original ties it to night; `L` toggles it here). */
 let beamsUncullable = false;
 let headlightAmount = Math.max(0, Math.min(1, Number(new URLSearchParams(location.search).get("beams") ?? 0) || 0));
@@ -424,7 +426,9 @@ function placeNodes(dt: number, shown: Presented): void {
     node("car-beams").frustumCulled = false;
     beamsUncullable = true;
   }
-  node("car-beams").setUniform?.("beamAmount", beamAmount(shiftRuntime?.row().lamps ?? 0));
+  // GU47 phase 2: in the shift look the additive cone runs at SHIFT_BEAM_VOLUME (at full strength the HDR grade and
+  // bloom clipped it to a white dome over the courier's roof at sunset and blue hour); the headlight spot stays full
+  node("car-beams").setUniform?.("beamAmount", beamAmount(shiftRuntime?.row().lamps ?? 0) * (shiftLook && !headlightForced ? SHIFT_BEAM_VOLUME : 1));
   placeTraffic(shown.traffic);
   placePickups();
   if (look.tailHalos) {
