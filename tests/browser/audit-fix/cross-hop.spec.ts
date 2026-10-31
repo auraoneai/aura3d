@@ -223,6 +223,55 @@ test.describe("cross hop audit capture", () => {
     }
     log(`CH_DONE ${name}`);
   });
+  // GU47 phase 4: why no cast shadow shows in the software-WebGL2 captures. Logs the engine's shadow and lighting
+  // diagnostics (CH_STATE step `shadow-diag`) for the vivid Downtown view, then grabs the frame with the shipped sun
+  // and with a steeper, brighter test sun set through the public `setLight` handle (probe only, nothing ships).
+  test("se-shadow-probe", async ({ page }) => {
+    const name = "se-shadow-probe";
+    const loaded = await open(page, name, "?seed=7&theme=1", 1280, 720);
+    await settle(page, loaded, 30);
+    const diag = await page.evaluate(() => {
+      const app = (globalThis as unknown as { __AURA3D_LIVE_APPS__?: { all(): any[] } }).__AURA3D_LIVE_APPS__?.all()[0];
+      const dg = app?.diagnostics?.() ?? {};
+      const prune = (o: unknown, depth = 0): unknown => {
+        if (depth > 4 || o === null || typeof o !== "object") return typeof o === "string" ? o.slice(0, 160) : o;
+        if (Array.isArray(o)) return o.slice(0, 6).map((v) => prune(v, depth + 1));
+        return Object.fromEntries(Object.entries(o as Record<string, unknown>).slice(0, 40).map(([k, v]) => [k, prune(v, depth + 1)]));
+      };
+      return {
+        keys: Object.keys(dg),
+        shadow: prune(dg?.renderer?.runtime?.shadow),
+        lighting: prune(dg?.lighting),
+        quality: prune(dg?.quality ?? dg?.renderer?.quality),
+        warnings: prune(dg?.warnings)
+      };
+    });
+    log(`CH_STATE ${JSON.stringify({ target: name, step: "shadow-diag", ...diag }).slice(0, 15000)}`);
+    await grab(page, name, "shipped-sun");
+    await page.evaluate(() => {
+      const app = (globalThis as unknown as { __AURA3D_LIVE_APPS__?: { all(): any[] } }).__AURA3D_LIVE_APPS__?.all()[0];
+      const el = (55 * Math.PI) / 180, az = (-40 * Math.PI) / 180;
+      app?.nodes?.get?.("sun-key")?.setLight?.({ intensity: 3.2, direction: [-Math.cos(el) * Math.sin(az), -Math.sin(el), -Math.cos(el) * Math.cos(az)] });
+    });
+    await page.waitForTimeout(20_000);
+    await grab(page, name, "test-sun");
+    log(`CH_DONE ${name}`);
+  });
+  test("se-shadow-fill", async ({ page }) => {
+    const name = "se-shadow-fill";
+    const loaded = await open(page, name, "?seed=7&theme=1", 1280, 720);
+    await settle(page, loaded, 30);
+    await grab(page, name, "f-shipped");
+    // Drop the look group (IBL, hemisphere fill, grade) and raise the sun: do cast shadows show without fill?
+    await page.evaluate(() => {
+      const app = (globalThis as unknown as { __AURA3D_LIVE_APPS__?: { all(): any[] } }).__AURA3D_LIVE_APPS__?.all()[0];
+      try { app?.nodes?.remove?.("look"); } catch { /* probe */ }
+      try { app?.nodes?.get?.("sun-key")?.setLight?.({ intensity: 4 }); } catch { /* probe */ }
+    });
+    await page.waitForTimeout(25_000);
+    await grab(page, name, "f-nofill");
+    log(`CH_DONE ${name}`);
+  });
   test("sc-screens-card", async ({ page }) => {
     const name = "sc-screens-card";
     const loaded = await open(page, name, "?seed=7&autoplay=1", 1440, 900);

@@ -10,7 +10,7 @@ import {
 } from "./themes";
 import { laneFor, laneZ, laneMovers, moverHalf, railWarning, MOVER_LENGTH, TRAIN_CARS, TRAIN_CAR_LENGTH, type Lane } from "./world";
 import { loadProfile, saveProfile, type Profile } from "./persistence";
-import { CROSS_HOP_PALETTE, THEME_LOOKS, VIVID_LOOKS, keyAt, mixHex, sunVector, sunDirection, type ThemeLook } from "./look";
+import { CROSS_HOP_PALETTE, ORIGINAL_SUN, THEME_LOOKS, VIVID_LOOKS, keyAt, sunShadowFootprint, mixHex, sunVector, sunDirection, type ThemeLook } from "./look";
 import { BACKDROP_WIDTH, CAM_DIORAMA, ambientEmitter, backdropFlat, damp, dioramaPose, hopScale, HOP_YAW, kitLod, kitSlots, lampSlots, screenY, turnToward } from "./diorama";
 import { CROSS_HOP_VFX, DEATH_COLORS, DEATH_VFX, landingVfx, registerCrossHopVfx } from "./vfx";
 import { critterOverrides, VEHICLE_OVERRIDES } from "./critterLook";
@@ -23,7 +23,9 @@ const CAP = {
   log: 48, logEnd: 96, pad: 48, stone: 48, coin: 26,
   trunk: 320, canopy: 260, dressB: 220,
   // GU47 CH47-07: one instanced pool per ground surface (diorama look; empty under ?look=original).
-  felt: 40, asphalt: 40, water: 30, gravel: 24, lava: 24
+  felt: 40, asphalt: 40, water: 30, gravel: 24, lava: 24,
+  // GU47 phase 4: sun-cast shadow decals (vivid and 4.6 looks; empty in the diorama).
+  shade: 200
 } as const;
 
 /**
@@ -183,7 +185,6 @@ const CAM = {
 
 /** One upright gold disc per coin, about half a column wide, so one drawn coin is one pickup (CH-13). */
 const COIN_DIAMETER = 0.5;
-const COIN_THICK = 0.08;
 const COIN_LIFT = 0.36;
 /** Top of the world floor plane that lies under and beyond the lane strips. */
 const FLOOR_Y = -0.16;
@@ -739,7 +740,9 @@ function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
     instances.cylinder({ name: "m-log-ends", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.8 }), transforms: pad(CAP.logEnd), castShadow: false, receiveShadow: true }).runtime(game.runtimeNode("pool-logEnd")),
     instances.cylinder({ name: "m-pads", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.8 }), transforms: pad(CAP.pad), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-pad")),
     instances.cylinder({ name: "m-stones", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.85 }), transforms: pad(CAP.stone), castShadow: true, receiveShadow: true }).runtime(game.runtimeNode("pool-stone")),
-    instances.cylinder({ name: "m-coins", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", metalness: 0.55, roughness: 0.3, emissive: "#ffb21f", emissiveIntensity: 0.32, ...practical }), transforms: pad(CAP.coin), castShadow: true }).runtime(game.runtimeNode("pool-coin")),
+    // GU47 phase 4 (WP-36 CH47-09): the game's own Meshy toy coin (key xhopCoin), upright, its face in the XY plane;
+    // the pickup rule and its column are unchanged (presentation only).
+    instances.model(assets.xhopCoin, { name: "m-coins", transforms: pad(CAP.coin), targetMaxDimension: COIN_DIAMETER, castShadow: true }).runtime(game.runtimeNode("pool-coin")),
     instances.cylinder({ name: "d-trunks", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.trunk) }).runtime(game.runtimeNode("pool-trunk")),
     instances.sphere({ name: "d-canopy", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.canopy), ...(diorama ? { wind: true } : {}) }).runtime(game.runtimeNode("pool-canopy")),
     instances.box({ name: "d-b", size: [1, 1, 1], material: detailMat, transforms: pad(CAP.dressB) }).runtime(game.runtimeNode("pool-dressb")),
@@ -763,6 +766,18 @@ function poolNodes(diorama: boolean, flatFloor = diorama, floorColor?: string) {
         .runtime(game.runtimeNode(`spectator-${idx}`))
     )
   ];
+  if (!diorama) {
+    // GU47 phase 4: soft sun-cast shadow decals under every mover, the critter and the coin (see `sunShadowFootprint`).
+    out.push(instances.plane({ name: "sun-shade", size: [1, 1, 1], material: shadeMaterial(), transforms: pad(CAP.shade), castShadow: false, receiveShadow: false }).runtime(game.runtimeNode("pool-shade")));
+  }
+  if (!diorama && lookMode === "vivid") {
+    // GU47 phase 4: the vivid look's reflective surfaces (ibl_reflections): glassy clearcoat river water and a
+    // satin-lacquered toy road that pick up the sky IBL, one instanced pool each (+2 draws; ground pool -2 kinds).
+    out.push(
+      instances.box({ name: "v-water", size: [1, 1, 1], material: material.clearcoat({ color: "#ffffff", roughness: 0.12, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 1.25 }), transforms: pad(CAP.water), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-water")),
+      instances.box({ name: "v-asphalt", size: [1, 1, 1], material: material.clearcoat({ color: "#ffffff", roughness: 0.5, metalness: 0, clearcoat: 0.6, clearcoatRoughness: 0.22, envMapIntensity: 0.9 }), transforms: pad(CAP.asphalt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-asphalt"))
+    );
+  }
   if (diorama) {
     const L0 = THEME_LOOKS[0]!;
     out.push(
@@ -800,6 +815,43 @@ export function mountSpectators(): void {
 function critterMaterial(key: string, diorama: boolean): { material?: typeof CRITTER_MAT; materialOverrides?: ReturnType<typeof critterOverrides> } {
   return diorama ? { materialOverrides: critterOverrides(key) } : { material: CRITTER_MAT };
 }
+const SHADE_VERTEX_GLSL = `out vec2 vShade;
+void main() {
+  // Unit plane in instance space: the decal shape follows the instance's own footprint.
+  vShade = position.xz * 2.0;
+  gl_Position = projectionMatrix * viewMatrix * (modelMatrix * instanceMatrix * vec4(position, 1.0));
+}`;
+const SHADE_FRAGMENT_GLSL = `in vec2 vShade;
+out vec4 outColor;
+void main() {
+  vec2 q = abs(vShade);
+  float r = pow(pow(q.x, 4.0) + pow(q.y, 4.0), 0.25);
+  outColor = vec4(0.03, 0.04, 0.08, u_opacity * (1.0 - smoothstep(0.45, 1.0, r)));
+}`;
+/** Soft rounded-rectangle shadow decal (transparent, no depth write). */
+function shadeMaterial() {
+  return material.custom({
+    glsl: { vertex: SHADE_VERTEX_GLSL, fragment: SHADE_FRAGMENT_GLSL },
+    uniforms: { u_opacity: { type: "f32", value: 0.42 } },
+    transparent: true,
+    depthWrite: false
+  });
+}
+
+/** Drawn heights and depths (metres) of the movers, for their shadow decals. */
+const SHADE_SIZE: Record<string, readonly [number, number]> = {
+  car: [0.72, 0.92], hatch: [0.72, 0.9], taxi: [0.75, 0.92], suv: [0.9, 0.98], van: [0.95, 0.98], pickup: [0.85, 0.98],
+  truck: [1.35, 1.02], tram: [1.45, 1.08], train: [1.4, 1.08], hover: [0.75, 0.95]
+};
+
+/** Queue one sun-cast shadow decal (vivid and 4.6 looks only). */
+function shade(x: number, groundY: number, z: number, len: number, dep: number, height: number): void {
+  if (lookMode === "diorama") return;
+  const sun = lookMode === "vivid" ? VIVID_LOOKS[appliedLook]!.sun : ORIGINAL_SUN;
+  const f = sunShadowFootprint(x, z, len, dep, height, sun);
+  inst("shade", f.x, groundY + 0.008, f.z, f.len, 1, f.dep, "#000000");
+}
+
 function vehicleMaterial(diorama: boolean): { materialOverrides?: typeof VEHICLE_OVERRIDES } {
   return diorama ? { materialOverrides: VEHICLE_OVERRIDES } : {};
 }
@@ -1359,6 +1411,7 @@ export function syncVisuals(alpha = 1): void {
         // Vivid look: lacquered terracotta toy logs with butter-yellow ends (the PRD G14 palette), not bark brown.
         const vivid = lookMode === "vivid";
         inst("log", x, 0.22 - 0.3, z, 0.6, MOVER_LENGTH.log, 0.6, vivid ? CROSS_HOP_PALETTE.terracotta : "#7a4a24", 0, Math.PI / 2);
+        shade(x, 0.0, z, MOVER_LENGTH.log * 0.96, 0.5, 0.22);
         for (const e of [-1, 1]) inst("logEnd", x + e * (MOVER_LENGTH.log / 2 + 0.01), 0.22 - 0.3, z, 0.5, 0.03, 0.5, vivid ? CROSS_HOP_PALETTE.butterYellow : "#e2c08a", 0, Math.PI / 2);
       }
       // Lilypads: top surface at PAD_TOP, the critter's base height on pad lanes (CH-16).
@@ -1378,7 +1431,14 @@ export function syncVisuals(alpha = 1): void {
             const cx = x + (c - (TRAIN_CARS - 1) / 2) * TRAIN_CAR_LENGTH;
             inst("train", cx, roadTopY, z, 1, 1, 1, tint, ry);
           }
-        } else inst(pool, x, roadTopY + lift, z, 1, 1, 1, tint, ry);
+          const [th, td] = SHADE_SIZE.train!;
+          shade(x, roadTopY, z, TRAIN_CARS * TRAIN_CAR_LENGTH * 0.98, td, th);
+        } else {
+          inst(pool, x, roadTopY + lift, z, 1, 1, 1, tint, ry);
+          const [sh, sd] = SHADE_SIZE[pool] ?? [0.8, 0.95];
+          const lengths = MOVER_LENGTH as Record<string, number>;
+          shade(x, roadTopY, z, (lengths[pool] ?? lengths[kind] ?? 2) * 0.96, sd, sh + lift);
+        }
       }
     }
   }
@@ -1388,12 +1448,15 @@ export function syncVisuals(alpha = 1): void {
     const l = lane(r);
     if (l.hasCoin && !st.coinTaken.has(r)) {
       const coinBase = surfaceTopY(l) + COIN_LIFT;
-      inst("coin", l.coinCol * COL_W, coinBase + Math.sin(tr * 3 + r) * 0.035, laneZ(r), COIN_DIAMETER, COIN_THICK, COIN_DIAMETER, COLORS.coin, tr * 1.6, Math.PI / 2);
+      // The fitted coin model stands on its lowest point: drop it by its radius so its centre stays at coinBase.
+      inst("coin", l.coinCol * COL_W, coinBase - COIN_DIAMETER / 2 + Math.sin(tr * 3 + r) * 0.035, laneZ(r), 1, 1, 1, "#ffffff", tr * 1.6);
+      shade(l.coinCol * COL_W, surfaceTopY(l), laneZ(r), 0.32, 0.22, coinBase + COIN_DIAMETER / 2 - surfaceTopY(l));
     }
   }
 
   // player — grounded on the exact top surface of the current lane or platform
   const px = pose.x, pz = pose.z;
+  if (!st.dead) shade(px, surfaceTopY(lane(st.playerRow)), pz, 0.62, 0.55, 0.95);
   const squash = st.dead && (st.dead.kind === "squashed" || st.dead.kind === "flattened") ? 0.18 : 1;
   try {
     const h = nodes.require("player");
@@ -1527,6 +1590,12 @@ export function syncVisuals(alpha = 1): void {
 
 /** CH47-07: one pool per ground surface in the diorama look, felt tiles slightly inset so the bevels read. */
 function paintDioramaGround(l: Lane, z: number): boolean {
+  if (lookMode === "vivid") {
+    const pal = THEMES[l.theme].palette;
+    if (l.type === "river") { inst("water", 0, -0.08, z, STRIP_W, 0.16, LANE_D, pal.water); return true; }
+    if (l.type === "road") { inst("asphalt", 0, 0, z, STRIP_W, 0.24, LANE_D, pal.road); return true; }
+    return false;
+  }
   if (lookMode !== "diorama") return false;
   const S = THEME_LOOKS[l.theme]!.surfaces;
   switch (l.type) {

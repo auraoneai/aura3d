@@ -1,0 +1,42 @@
+// GU47 phase 4 (4.7.2): sun-cast shadow decals, glossy vivid surfaces and the Meshy coin (presentation only).
+import { describe, expect, it } from "vitest";
+import { ORIGINAL_SUN, SHADOW_REACH_MAX, VIVID_LOOKS, sunShadowFootprint } from "../../../apps/showcase-cross-hop/src/game/look";
+import { buildScene, setLookMode } from "../../../apps/showcase-cross-hop/src/game/core";
+
+type Node = { kind?: string; name?: string; asset?: unknown; children?: Node[] };
+const flat = (nodes: Node[]): Node[] => nodes.flatMap((n) => [n, ...flat(n.children ?? [])]);
+const names = (mode: "vivid" | "original" | "diorama"): string[] => {
+  setLookMode(mode);
+  return flat((buildScene() as { nodes: Node[] }).nodes).map((n) => n.name ?? "");
+};
+
+describe("cross-hop shadow decals (GU47 phase 4)", () => {
+  it("falls away from the sun and grows with caster height", () => {
+    const sun = VIVID_LOOKS[1]!.sun; // azimuth -62: sun on the camera's left, shadows fall right
+    const f = sunShadowFootprint(0, 0, 2, 1, 1, sun);
+    expect(f.x).toBeGreaterThan(0);
+    expect(f.len).toBeGreaterThan(2);
+    expect(f.dep).toBeGreaterThan(1);
+    const tall = sunShadowFootprint(0, 0, 2, 1, 2, sun);
+    expect(tall.len).toBeGreaterThan(f.len);
+  });
+
+  it("caps the reach for low suns and keeps a zero-height caster at its footprint", () => {
+    const low = sunShadowFootprint(0, 0, 1, 1, 1, { elevationDeg: 6, azimuthDeg: 90 });
+    expect(Math.hypot(low.x, low.z)).toBeLessThanOrEqual(SHADOW_REACH_MAX * 0.5 + 1e-9);
+    expect(sunShadowFootprint(3, 4, 1, 1, 0, ORIGINAL_SUN)).toEqual({ x: 3, z: 4, len: 1, dep: 1 });
+  });
+
+  it("mounts the decal pool in the vivid and 4.6 looks, not in the diorama", () => {
+    expect(names("vivid")).toContain("sun-shade");
+    expect(names("original")).toContain("sun-shade");
+    expect(names("diorama")).not.toContain("sun-shade");
+  });
+
+  it("gives the vivid look glossy water and road pools", () => {
+    const v = names("vivid");
+    expect(v).toContain("v-water");
+    expect(v).toContain("v-asphalt");
+    expect(names("original")).not.toContain("v-water");
+  });
+});

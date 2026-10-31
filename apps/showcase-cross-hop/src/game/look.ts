@@ -352,3 +352,25 @@ export function defaultLookFor(lookParam: string | null, theme: number | null): 
   if (lookParam === "diorama" || lookParam === "original" || lookParam === "vivid") return lookParam;
   return VIVID_DEFAULT_THEMES.includes(theme ?? 0) ? "vivid" : "original";
 }
+
+/** Sun of the 4.6 look (`?look=original`): its key light sits at [-9, 10, 9] looking at the origin. */
+export const ORIGINAL_SUN = { elevationDeg: 38.2, azimuthDeg: -45 } as const;
+/** Longest shadow reach per metre of caster height (keeps low suns from smearing shadows across a lane). */
+export const SHADOW_REACH_MAX = 1.0;
+
+/**
+ * GU47 phase 4: footprint of a sun-cast shadow decal on the ground (vivid and 4.6 looks). The software-WebGL2
+ * captures draw no shadow-map shadow on this scene (probes g14p4-a/b/c: map rendered and sampled, nothing visible), so
+ * every caster gets a soft decal: its footprint (`len` along x, `dep` along z) stretched away from the sun by
+ * `height / tan(elevation)` (capped at `SHADOW_REACH_MAX * height`) and shifted half that way. Pure, for tests.
+ */
+export function sunShadowFootprint(
+  x: number, z: number, len: number, dep: number, height: number,
+  sun: { readonly elevationDeg: number; readonly azimuthDeg: number }
+): { x: number; z: number; len: number; dep: number } {
+  const v = sunVector(Math.max(5, sun.elevationDeg), sun.azimuthDeg);
+  const horiz = Math.hypot(v[0], v[2]) || 1;
+  const dx = -v[0] / horiz, dz = -v[2] / horiz;
+  const reach = Math.min(SHADOW_REACH_MAX, horiz / v[1]) * height;
+  return { x: x + dx * reach * 0.5, z: z + dz * reach * 0.5, len: len + Math.abs(dx) * reach, dep: dep + Math.abs(dz) * reach };
+}
