@@ -169,7 +169,7 @@ describe("GU47 E-B a 4-spot stadium at High", () => {
       runtimeNodes: registry
     };
     const compiled = await compileScene(snapshot, ctx);
-    const frame = (t: number) => [...((updateCompiledScene(compiled, snapshot, registry, t) as { collectedLights?: Iterable<CollectedLight> }).collectedLights ?? [])];
+    const frame = (t: number) => [...((updateCompiledScene(compiled, snapshot, registry, t * 1000) as { collectedLights?: Iterable<CollectedLight> }).collectedLights ?? [])];
     const runtime = new Prd02LightingRuntime(FLAGS, registry);
     expect(shadowRows(frame(0)).map((row) => row.light)).toEqual(["sun", "local-0", "local-1"]);
     expect(runtime.diagnostics().localShadowLights).toBe(2);
