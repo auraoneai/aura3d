@@ -133,6 +133,26 @@
     ],
     "materials": [
       {
+        "node": "cross-hop backdrop 0",
+        "emissiveIntensity": 0.55,
+        "practical": true
+      },
+      {
+        "node": "cross-hop backdrop 1",
+        "emissiveIntensity": 0.55,
+        "practical": true
+      },
+      {
+        "node": "cross-hop backdrop 2",
+        "emissiveIntensity": 0.55,
+        "practical": true
+      },
+      {
+        "node": "cross-hop backdrop 3",
+        "emissiveIntensity": 0.55,
+        "practical": true
+      },
+      {
         "node": "world-floor",
         "practical": false
       },
