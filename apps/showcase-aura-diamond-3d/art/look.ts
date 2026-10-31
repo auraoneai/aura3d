@@ -103,6 +103,8 @@ export interface ParkLook {
     readonly track: string;
     readonly trackRoughness: number;
     readonly chalk: string;
+    /** Normal-map strength of the mown turf and the clay (defaults 0.6 and 0.5); Lunar's grazing sun needs them low. */
+    readonly normalScale?: { readonly grass: number; readonly clay: number };
   };
   /** Shirt colours of the instanced stands, one per section (7 sections). */
   readonly crowd: readonly string[];
@@ -159,11 +161,11 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     postcard: "Midtown Skyline in rain-wet blue hour under sodium and LED towers",
     timeOfDay: "blue hour after rain",
     baseLook: "night-city",
-    hdri: { id: "rooftop_night", intensity: 1.0, rotationDeg: 0, background: true, backgroundIntensity: 2.2 },
-    sun: { elevationDeg: 52, azimuthDeg: 150, color: "#9fc2ff", intensity: 1.3, colorTemperatureK: 9000 },
+    hdri: { id: "rooftop_night", intensity: 1.6, rotationDeg: 0, background: true, backgroundIntensity: 2.2 },
+    sun: { elevationDeg: 52, azimuthDeg: 150, color: "#9fc2ff", intensity: 2.4, colorTemperatureK: 9000 },
     rim: false,
     fog: { color: "#1c2c44", density: 0.0045, intensity: 0.38 },
-    exposureEv: 0.5,
+    exposureEv: 1.4,
     background: "#0b1422",
     accent: "#4fc3e8",
     post: {
@@ -274,12 +276,12 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     postcard: "Lunar Park under a black sky with Earth rising",
     timeOfDay: "lunar day, black sky, Earth above the rim",
     baseLook: "space",
-    hdri: { id: "deep_space_starfield", intensity: 0.15, rotationDeg: 0, background: true, backgroundIntensity: 1 },
+    hdri: { id: "deep_space_starfield", intensity: 0.6, rotationDeg: 0, background: true, backgroundIntensity: 1 },
     sky: { model: "gradient", zenith: "#010102", horizon: "#020305", ground: "#050607", stars: 1800 },
-    sun: { elevationDeg: 18, azimuthDeg: 300, color: "#f4f1ea", intensity: 3.4, colorTemperatureK: 5800 },
-    rim: { color: "#6f8fb8", intensity: 0.3, elevationDeg: 35, azimuthDeg: 160 },
+    sun: { elevationDeg: 18, azimuthDeg: 300, color: "#f4f1ea", intensity: 6.0, colorTemperatureK: 5800 },
+    rim: { color: "#6f8fb8", intensity: 1.0, elevationDeg: 35, azimuthDeg: 160 },
     fog: false,
-    exposureEv: 0.0,
+    exposureEv: 1.0,
     background: "#020305",
     accent: "#c3cbd8",
     post: {
@@ -289,10 +291,10 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
       bloom: { threshold: 0.65, intensity: 0.3 },
       grain: 0.03,
       vignette: 0.2,
-      grade: { contrast: 1.18, saturation: 0.82, temperature: -0.12, tint: 0 },
+      grade: { contrast: 1.08, saturation: 0.82, temperature: -0.12, tint: 0 },
       lut: "diamond-lunar-regolith.cube"
     },
-    turf: { grass: "#6b6a66", stripe: "#75736e", clay: "#8a8780", track: "#55534f", trackRoughness: 0.98, chalk: "#d9d6cc" },
+    turf: { grass: "#8e8c87", stripe: "#9a9892", clay: "#aaa79f", track: "#6f6d68", trackRoughness: 0.98, chalk: "#d9d6cc", normalScale: { grass: 0.25, clay: 0.2 } },
     crowd: ["#c3cbd8", "#e9e6dc", "#d98a3a", "#3c4a66", "#9aa3b5", "#5e6878", "#b8a27a"],
     signature: { splinter: "#cbbf9f", flash: "#ffffff", flashIntensity: 1.1, gravityScale: 0.17 },
     landingFx: "diamond-regolith-arc",
@@ -351,7 +353,7 @@ export function parkPracticals(park: ParkSpec, tier: DiamondTier): readonly Park
       [c * 0.5, 14, "#d9ecff", false]
     ];
     towers.forEach(([x, z, color, flare], i) => {
-      rig.push({ name: `skyline-bank-${i}`, kind: "spot", position: [x * 0.92, 24, z * 0.92], target: [x * 0.12, 0, -14 + z * 0.08], color, intensity: 2.6, base: [x, z], angle: 0.62, penumbra: 0.5, distance: 180, cone: true, flare });
+      rig.push({ name: `skyline-bank-${i}`, kind: "spot", position: [x * 0.92, 24, z * 0.92], target: [x * 0.12, 0, -14 + z * 0.08], color, intensity: 4.0, base: [x, z], angle: 0.62, penumbra: 0.5, distance: 180, cone: true, flare });
     });
   } else if (park.id === "dome") {
     for (let i = 0; i < 4; i++) {
@@ -362,7 +364,7 @@ export function parkPracticals(park: ParkSpec, tier: DiamondTier): readonly Park
   } else if (park.id === "lunar") {
     const spots: readonly [number, number][] = [[-c * 0.7, -c * 0.55 - 6], [c * 0.7, -c * 0.55 - 6], [-c * 0.48, 16], [c * 0.48, 16]];
     spots.forEach(([x, z], i) => {
-      rig.push({ name: `lunar-spot-${i}`, kind: "spot", position: [x * 0.9, 18, z * 0.9], target: [0, 0, -12], color: "#cfe2ff", intensity: 1.7, base: [x, z], angle: 0.48, penumbra: 0.35, distance: 190, cone: true, flare: false });
+      rig.push({ name: `lunar-spot-${i}`, kind: "spot", position: [x * 0.9, 18, z * 0.9], target: [0, 0, -12], color: "#cfe2ff", intensity: 3.2, base: [x, z], angle: 0.56, penumbra: 0.35, distance: 190, cone: true, flare: false });
     });
   }
   return tier === "low" ? rig.slice(0, 4).map((p) => ({ ...p, flare: false })) : rig;

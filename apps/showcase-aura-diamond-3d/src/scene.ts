@@ -80,11 +80,11 @@ export function buildFieldNodes(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
   // pebbled clay; without a DOM (unit tests) the same materials fall back to plain colour.
   const tex = gu47 ? turfTextures() : null;
   const grass = gu47
-    ? material.pbr({ color: tex ? turf.stripe : turf.grass, roughness: 0.94, ...(tex ? { texture: tex.mowMask as any, normal: tex.bladeNormal as any, normalScale: 0.6 } : {}) })
+    ? material.pbr({ color: tex ? turf.stripe : turf.grass, roughness: 0.94, ...(tex ? { texture: tex.mowMask as any, normal: tex.bladeNormal as any, normalScale: turf.normalScale?.grass ?? 0.6 } : {}) })
     : material.pbr({ color: park.grass, roughness: 0.94 });
   const grassAlt = material.pbr({ color: park.grassAlt, roughness: 0.94 });
   const dirt = gu47
-    ? material.pbr({ color: turf.clay, roughness: turf.clayRoughness ?? 0.96, ...(tex ? { normal: tex.clayNormal as any, normalScale: 0.5 } : {}) })
+    ? material.pbr({ color: turf.clay, roughness: turf.clayRoughness ?? 0.96, ...(tex ? { normal: tex.clayNormal as any, normalScale: turf.normalScale?.clay ?? 0.5 } : {}) })
     : material.pbr({ color: park.dirt, roughness: 0.96 });
   const wallMat = material.pbr({ color: park.wall, roughness: 0.7 });
   const accent = PARK_LOOKS[park.id].accent;
