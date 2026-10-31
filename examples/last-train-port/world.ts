@@ -276,11 +276,11 @@ export const GRAIN = 0.03;
 /** GU47 LT-06, phase 2: the band-B god-ray extinction. 0.12 filled the golden-hour frame with an orange haze (recap2, software WebGL2). */
 export const GOD_RAY_DENSITY = 0.015;
 
-/** GU47 bands A-E (bands.ts): band HDRI, PCSS key, hemisphere bounce, the practical pool (C/D/E), fog and the band's post. */
+/** GU47 bands A-E (bands.ts): band HDRI, PCF key (phase 3: PCSS drew no readable shadow in software WebGL2), hemisphere bounce, the practical pool (C/D/E), fog and the band's post. */
 function addBandLighting(b: Scene, data: SimData, band: BandId): void {
   const row = BANDS[band];
   b.add(FX.has("nohdri") ? environments.neutral({ intensity: row.envIntensity }) : environments.hdri({ name: "env-sky", texture: BAND_HDRI[row.hdri], intensity: row.envIntensity, rotation: envRotationRad(row), background: false }));
-  b.add(lights.directional({ name: row.key.name, position: keyPosition(row), target: [0, 0, 0], intensity: row.key.intensity, color: row.key.color, shadow: FX.has("noshadow") ? false : { cascades: 3, maxDistance: 190, blend: 0.12, filter: "pcss" } }));
+  b.add(lights.directional({ name: row.key.name, position: keyPosition(row), target: [0, 0, 0], intensity: row.key.intensity, color: row.key.color, shadow: FX.has("noshadow") ? false : { cascades: 3, maxDistance: 130, blend: 0.12, filter: FX.has("pcss") ? "pcss" : "pcf", intensity: 1 } }));
   b.add(lights.hemisphere({ name: BOUNCE_ID, skyColor: row.hemisphere.sky, groundColor: row.hemisphere.ground, intensity: row.hemisphere.intensity }).runtime({ id: BOUNCE_ID }));
   if (row.practicals.platformPoint > 0) {
     const at = platformLightPositions(data, 0);
@@ -293,7 +293,7 @@ function addBandLighting(b: Scene, data: SimData, band: BandId): void {
   if (!FX.has("noprobes")) for (const p of stationProbes(data)) b.add(probes.reflection({ name: p.name, position: p.position, box: p.box, resolution: STATION_PROBE_RESOLUTION, update: "once", blendDistance: 2 }));
   if (!FX.has("nofog")) b.add(effects.fog({ name: "haze", color: row.fog.color, density: row.fog.density }));
   // GU47 LT-03: screen-space contact shadows from the key (riders, benches, tram skirts); the engine skips them on Low.
-  if (!FX.has("nocontact")) b.add(effects.contactShadows({ length: 0.35, thickness: 0.06, intensity: 0.9, lights: "shadowed" }));
+  if (!FX.has("nocontact")) b.add(effects.contactShadows({ length: 0.5, thickness: 0.08, intensity: 1, lights: "shadowed" }));
   // GU47 LT-07: GTAO default-on in the band look (`?fx=noao` drops it); the engine drops it on the Low tier.
   if (!FX.has("noao")) b.add(effects.ambientOcclusion({ name: "ao" }));
   if (!FX.has("nobloom")) b.add(effects.bloom({ name: "bloom", intensity: row.bloom.intensity, threshold: row.bloom.threshold }));
@@ -357,7 +357,7 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
     // Phase 3 (4.7.1): outward-facing bed and rails (see trackMesh), sleepers every 1.1 m, all casting the key's shadow
     const track = trackMesh(legPts);
     b.add(geometry.custom(track.bed.toGeometry(), { name: "track-bed", material: pbr("#7d705f", 0.95), castShadow: false, receiveShadow: true }));
-    b.add(geometry.custom(track.rails.toGeometry(), { name: "track-rails", material: pbr("#c3c8cf", 0.3, 0.9), castShadow: true, receiveShadow: true }));
+    b.add(geometry.custom(track.rails.toGeometry(), { name: "track-rails", material: pbr("#cfd4da", 0.16, 1), castShadow: true, receiveShadow: true }));
     b.add(primitives.box({ name: "sleepers", size: [2.7, 0.14, 0.3], instances: evenAlongRoute(data, 1.1, 0.13), material: pbr("#5a4533", 0.9), castShadow: true }));
   } else {
   b.add(geometry.custom(dyn(mergeRibbons(legPts.map((pts) => ribbon(pts, 1.95, 0.02)))), { name: "track-bed", material: pbr("#8d8171", 0.95), castShadow: false }));
@@ -573,7 +573,7 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   b.add(primitives.box({ name: "benches", size: [0.6, 0.12, 2.0], instances: benchAt, material: pbr("#8a5a35", 0.8), castShadow: cast }));
   if (row) {
     // GU47 LT-12: merged catenary wire over every leg (1 draw), signal posts and heads (2), festoon bulbs (1)
-    b.add(geometry.custom(dyn(mergeRibbons(legPts.map((pts) => ribbon(pts, 0.035, 6.9)))), { name: "catenary", material: pbr("#2b2e35", 0.5, 0.6), castShadow: false }));
+    b.add(geometry.custom(dyn(mergeRibbons(legPts.map((pts) => ribbon(pts, 0.012, 6.9)))), { name: "catenary", material: pbr("#2b2e35", 0.5, 0.6), castShadow: false }));
     b.add(primitives.cylinder({ name: "signal-posts", size: [0.18, 4.4, 0.18], instances: signalAt, material: pbr("#3d4047", 0.5, 0.5), castShadow: cast }));
     b.add(instances.sphere({ name: "signal-heads", size: 0.32, transforms: signalHeadAt, colors: signalColors, instanceColorTarget: "both", material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 2.2 }), castShadow: false }));
     b.add(primitives.sphere({ name: "festoon-bulbs", size: 0.16, instances: festoonAt, material: glow("#ffc77a", row.practicals.platformPoint > 0 ? 2.4 : 0.3), castShadow: false }));
@@ -840,7 +840,7 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
     const dockAim: V3 = [here.x + f[0] * 4 + sd[0] * 3, here.y + aimUp, here.z + f[2] * 4 + sd[2] * 3];
     const mix3 = (a: V3, c: V3, t: number): V3 => [a[0] + (c[0] - a[0]) * t, a[1] + (c[1] - a[1]) * t, a[2] + (c[2] - a[2]) * t];
     const eye: V3 = options.orbit
-      ? [here.x + Math.sin(orbit + 0.6) * 22, here.y + 7.5 + (still ? 0 : Math.sin(seconds * 0.23) * 1.2), here.z + Math.cos(orbit + 0.6) * 22]
+      ? [here.x + Math.sin(orbit + 0.6) * 22, here.y + (band ? 5.6 : 7.5) + (still ? 0 : Math.sin(seconds * 0.23) * 1.2), here.z + Math.cos(orbit + 0.6) * 22]
       : mix3(chaseEye, dockEye, kd);
     const target: V3 = options.orbit ? [here.x, here.y + 2.6, here.z] : mix3(chaseTarget, dockAim, kd);
     rig.eye = eye; rig.target = target;
