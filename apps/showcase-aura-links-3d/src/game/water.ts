@@ -65,9 +65,13 @@ export function pondWaterOptions(pond: ReflectivePond, water: string, reducedMot
     height: pond.y,
     ...pondColors(water),
     waves: reducedMotion ? [] : ("calm" as const),
-    normalScale: 0.35,
+    normalScale: 0.15,
     normalSpeed: reducedMotion ? 0 : 0.6,
-    reflection: { low: "ibl", medium: "ibl", high: "planar", ultra: "planar" } as const,
+    // GU47 phase 3: on High the planar capture drew black speckle bands and white shore-foam rings across the pond
+    // (software WebGL2, run g10p3-r3-1 swing-5); High reflects the IBL sky, Ultra keeps the planar mirror; no foam on a
+    // still pond
+    reflection: { low: "ibl", medium: "ibl", high: "ibl", ultra: "planar" } as const,
+    foam: { shoreDepth: 0, crest: 0 },
     refraction: { low: false, medium: false, high: false, ultra: false } as const
   };
 }

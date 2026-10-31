@@ -52,7 +52,8 @@ describe("LINKS-17 reflecting water", () => {
     const live = pondWaterOptions(pond, "#154c79", false);
     expect(live.shape).toEqual({ kind: "circle", center: [1, 2], radius: 9 });
     expect(live.height).toBe(0.4);
-    expect(live.reflection.high).toBe("planar");
+    expect(live.reflection.high).toBe("ibl");
+    expect(live.reflection.ultra).toBe("planar");
     expect(live.reflection.low).toBe("ibl");
     expect(Object.values(live.refraction).every((v) => v === false)).toBe(true);
     expect(live.waves).toBe("calm");
