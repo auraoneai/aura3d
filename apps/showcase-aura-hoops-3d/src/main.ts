@@ -481,14 +481,14 @@ const QA_AO = initialParams.get("diag") === "1" ? initialParams.get("qaAo") : nu
 const QA_TARGET = initialParams.get("diag") === "1" ? Number(initialParams.get("qaTarget")) || 0 : 0;
 /** ?look=original: the 4.6 look (presets, fog off, today's practicals and dressing) for GU47 before/after pairs. */
 /**
- * GU47 phase 2 (PRD D11, no regression ships): courts whose new look lost to the 4.6.2 frame draw the original look;
- * `?look=new` opts back in, `?look=original` forces the 4.6 look everywhere. Rucker: flood haze, cones and flare veil
- * the left half of the chase frame. Orbit: the chase eye sits inside the station dressing, darker than 4.6.2.
- * GU47 blind-panel pass: the look follows the court (`setVenue` re-reads it before the scene rebuild), so a normal launch
- * on Rucker still shows Manila, Shanghai and Venice in the new look once play moves there. Athens (panel 0/3, fog white-out)
- * draws the 4.6.2 look until a capture shows its fog-off rig beating the 4.6.2 frame.
+ * GU47 phase 2 (PRD D11, no regression ships): courts whose new look loses to the 4.6.2 frame draw the original look;
+ * `?look=new` opts back in, `?look=original` forces the 4.6 look everywhere. The look follows the court (`setVenue`
+ * re-reads it before the scene rebuild).
+ * GU47 phase 3 (4.7.1): Rucker, Athens and Orbit were reworked (grounded surround and bleachers, Rucker haze off, lower
+ * bloom, Orbit without the dome GLB) and the blind panel picked all three over the 4.6.2 frame 3/0/0 (round g07p3r1),
+ * so every court now defaults to the new look. Add a court id here to send it back to the 4.6.2 look.
  */
-const ORIGINAL_LOOK_COURTS: ReadonlySet<string> = new Set([]);
+const ORIGINAL_LOOK_COURTS: ReadonlySet<string> = new Set<string>([]);
 const LOOK_PARAM = initialParams.get("look");
 const BOOT_COURT_PARAM = initialParams.get("court");
 const BOOT_COURT = BOOT_COURT_PARAM && BOOT_COURT_PARAM in VENUES ? BOOT_COURT_PARAM : "rucker";
