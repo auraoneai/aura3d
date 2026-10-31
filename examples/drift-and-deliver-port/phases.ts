@@ -90,12 +90,14 @@ export const PHASES: readonly PhaseRow[] = [
     key: { azimuthDeg: SUN_AZ, elevationDeg: 14, color: "#ffc27a", intensity: 4.4 },
     hemisphere: { sky: "#cfe0ea", ground: "#6a5a52", intensity: 0.3 },
     environmentIntensity: 1.0,
-    fog: { color: "#c9d6dc", density: 0.0019 },
+    // blind-panel fix pass: thinner warm haze, stronger contrast, saturation and warmth, softer bloom, no grain
+    // (the panel read the cool #c9d6dc haze at 0.0019 as muddy, low-contrast and barely golden next to 4.6.2)
+    fog: { color: "#efc896", density: 0.0011 },
     sky: { horizon: "#ffd9a8", mid: "#f4b98e", top: "#d9956f", glow: "#ffd08a", clouds: 0.55, stars: 0 },
-    grade: { contrast: 1.14, saturation: 1.12, temperature: 0.04 },
-    bloom: { intensity: 0.55, threshold: 0.9 },
-    vignette: 0.28,
-    grain: 0.025,
+    grade: { contrast: 1.22, saturation: 1.34, temperature: 0.16 },
+    bloom: { intensity: 0.4, threshold: 1.0 },
+    vignette: 0.22,
+    grain: 0,
     windows: 0.15,
     litFraction: 0.06,
     lamps: 0,
@@ -112,12 +114,13 @@ export const PHASES: readonly PhaseRow[] = [
     key: { azimuthDeg: SUN_AZ - 4, elevationDeg: 12, color: "#ff9a52", intensity: 3.3 },
     hemisphere: { sky: "#b8a6c4", ground: "#5a4446", intensity: 0.28 },
     environmentIntensity: 0.8,
-    fog: { color: "#b88c86", density: 0.0022 },
+    // blind-panel fix pass: same treatment as golden (thinner haze, more contrast and saturation, no grain)
+    fog: { color: "#d8967a", density: 0.0013 },
     sky: { horizon: "#ff9a5c", mid: "#e07a62", top: "#9c5a70", glow: "#ffb070", clouds: 0.5, stars: 0 },
-    grade: { contrast: 1.14, saturation: 1.16, temperature: 0.1 },
-    bloom: { intensity: 0.6, threshold: 0.9 },
-    vignette: 0.28,
-    grain: 0.025,
+    grade: { contrast: 1.22, saturation: 1.3, temperature: 0.16 },
+    bloom: { intensity: 0.5, threshold: 0.95 },
+    vignette: 0.24,
+    grain: 0,
     windows: 0.55,
     litFraction: 0.18,
     lamps: 0.6,
@@ -195,8 +198,13 @@ export function parseAt(raw: string | null | undefined): number | undefined {
  * because the shift look without its HDRI glared the wet road white ahead of the courier by the 60 s frame (two
  * capture rounds, worse than 4.6.2); `?look=shift` still forces it.
  */
-export const parseLook = (raw: string | null | undefined, env = true): LookMode =>
-  raw === "original" ? "original" : raw === "shift" || env ? "shift" : "original";
+/**
+ * Blind-panel fix pass: only the blue-hour pin (`?at=` at or past `SHIFT_LOOK_FROM`) was judged better than 4.6.2, so
+ * the default run, golden (`at=10`) and sunset (`at=120`) fall back to the 4.6.2 look; `?look=shift` still forces it.
+ */
+export const SHIFT_LOOK_FROM = 150;
+export const parseLook = (raw: string | null | undefined, env = true, at?: number): LookMode =>
+  raw === "original" ? "original" : raw === "shift" || (env && at !== undefined && at >= SHIFT_LOOK_FROM) ? "shift" : "original";
 
 /* ------------------------------------------------------------------ blending */
 
