@@ -22,14 +22,14 @@
   "snapshot": {
     "lights": [
       {
+        "type": "hemisphere",
+        "shadow": false,
+        "intensity": 0.6
+      },
+      {
         "type": "directional",
         "shadow": true,
         "intensity": 2.7
-      },
-      {
-        "type": "point",
-        "shadow": false,
-        "intensity": 0
       },
       {
         "type": "point",
