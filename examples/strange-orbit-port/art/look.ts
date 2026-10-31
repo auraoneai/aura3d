@@ -88,8 +88,9 @@ export const LOOKS: Readonly<Record<OrbitLook, LookRow>> = {
     planet: { position: GIANT_POSITION, size: 520, ring: true, moon: true },
     // Phase 2 (software WebGL2 capture): the freeze frame read mean 32 (engine light-uniform and frame-camera bugs, fixed on
     // integration 22c1283c0). With those fixed, +1.75 EV washed the rider out (crop mean 160 vs 95-125, saturation 0.17), so
-    // +1.0 EV with less bloom and more saturation: rider and crater keep their colour, the frame stays inside 60-110.
-    exposureEV: 1.0,
+    // +0.7 EV with less bloom and more saturation (+1.0 EV still read rider 135): rider and crater keep their colour, the
+    // frame stays inside 60-110.
+    exposureEV: 0.7,
     signature: { brush: 1, splitTone: 1 }
   },
   original: {
