@@ -82,8 +82,9 @@ export function horizonRing(terrain: HoleTerrain, spec: HorizonSpec, segments = 
     uvs.push([u * 24, 0], [u * 24, 1], [u * 24, 0]);
     if (i > 0) {
       const b = (i - 1) * 3, c = i * 3;
-      indices.push(b, c, b + 1, c, c + 1, b + 1);
-      indices.push(b + 1, c + 1, b + 2, c + 1, c + 2, b + 2);
+      // counter-clockwise seen from the hole (front faces inward; the back slope faces outward)
+      indices.push(b, b + 1, c, c, b + 1, c + 1);
+      indices.push(b + 1, b + 2, c + 1, c + 1, b + 2, c + 2);
     }
   }
   return { kind: "aura-custom-geometry", positions, normals, uvs, indices };
