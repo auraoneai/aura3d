@@ -10,6 +10,8 @@
 import {
   camera,
   effects,
+  lights,
+  looks,
   material,
   primitives,
   scene,
@@ -21,6 +23,7 @@ import { prayerFlagNodes } from "./ambientMotion";
 import { koScorchNode, stageFlareNodes } from "./flareScorch";
 import { createFighterNode, type FighterDef, type FighterPalette, type TypedFighterAssets } from "./fighters";
 import { stageLightNodes, stageLook, stageLookNode, streakLimitFor, weatherParticlesFor, type StageLookRow } from "./look";
+import { ORIGINAL_LOOKS, ORIGINAL_VIGNETTE, type VenueLookMode } from "./originalLook";
 import type { IronStage } from "./stages";
 
 export type Vec3 = readonly [number, number, number];
@@ -40,6 +43,8 @@ export interface ArenaOptions {
   readonly reducedMotion: boolean;
   /** PRD §6.4 (`?tier=low`): weather particles halve again. */
   readonly lowTier?: boolean;
+  /** The venue's look (originalLook.ts `venueLookMode`); default the GU47 look. */
+  readonly lookMode?: VenueLookMode;
 }
 
 /** The fighting kit's debug-style markers (camera safe-zone posts, centre aura beam): dropped from a finished arena. */
@@ -135,7 +140,36 @@ export function arenaWeatherNodes(row: StageLookRow, reducedMotion: boolean, low
   return [{ ...volume, name: `${row.stage} ${row.weather.type}`, particleCount: weatherParticlesFor(row, reducedMotion, lowTier), color: row.weather.color } as AuraSceneNode, ...streaks];
 }
 
+/**
+ * The 4.6.2 venue scene (GU47 blind-panel fix pass): the 4.6.2 biome look preset and overrides, the 4.6.2 floor deck and
+ * dressing (no far backdrop), the 4.6.2 fighters (no IC47-M2 rim), rim light, key/fill spots and light cones, and the
+ * 4.6.2 contact shadows, vignette and bloom. Main.ts's follow-spot, back-rim and panel patches find no node and skip.
+ */
+export function buildOriginalArenaScene(o: ArenaOptions) {
+  const s = o.stage;
+  const look = ORIGINAL_LOOKS[s.id];
+  const accent = s.palette.aura;
+  return scene()
+    .add(looks.preset(look.lookId, look.overrides))
+    .addMany(arenaFloorNodes(s, o.playerStart[0], o.rivalStart[0]))
+    .addMany(s.originalDressing)
+    .add(createFighterNode("player", o.p1, `${o.p1.name} (P1)`, o.playerStart, 1, o.typedFighterAssets, o.p1Tint, false))
+    .add(createFighterNode("rival", o.cpu, `${o.cpu.name} (CPU)`, o.rivalStart, -1, o.typedFighterAssets, o.cpuTint, false))
+    .addMany([
+      ...(o.contactShadows ? [effects.contactShadows({ intensity: 0.75, length: 0.3 })] : []),
+      effects.vignette({ intensity: ORIGINAL_VIGNETTE, smoothness: 0.65 }),
+      effects.bloom({ intensity: 0.24, threshold: 0.86 }),
+      effects.lightCone({ name: "crown key cone left", position: [-6.3, 4.8, -5.5], direction: [0.65, -0.42, 0.63], color: s.palette.warning, intensity: 0.24, length: 8.5, coneAngle: 0.34, softness: 0.6 }),
+      effects.lightCone({ name: "crown key cone right", position: [6.3, 4.8, -5.5], direction: [-0.65, -0.42, 0.63], color: accent, intensity: 0.2, length: 8.5, coneAngle: 0.32, softness: 0.6 }),
+      lights.directional({ name: "iron crown rim", color: accent, intensity: 0.75 }).position(0, 4.2, 3),
+      lights.spot({ name: "crown ring key", position: [-3.9, 5.4, 1.6], target: [0, 0.5, 0], angle: 0.46, penumbra: 0.85, distance: 15, decay: 1.3, intensity: 12, color: s.palette.warning }),
+      lights.spot({ name: "crown ring fill", position: [3.9, 5.4, 1.6], target: [0, 0.5, 0], angle: 0.46, penumbra: 0.85, distance: 15, decay: 1.3, intensity: 9, color: accent })
+    ])
+    .camera(camera.perspective({ position: [0, 1.6, 5.6], target: [0, 0.82, 0], fov: 40 }));
+}
+
 export function buildArenaScene(o: ArenaOptions) {
+  if (o.lookMode === "original") return buildOriginalArenaScene(o);
   const s = o.stage;
   const row = stageLook(s.id);
   const rims = { p1: rimColorOf(o.p1, o.p1Tint), p2: rimColorOf(o.cpu, o.cpuTint) };
