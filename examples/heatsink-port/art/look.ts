@@ -106,11 +106,11 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     key: { position: TWILIGHT_KEY_POSITION, color: "#ffe0dc", intensity: 2.9, cascades: 3, maxDistance: 220, droneCasts: true },
     hemisphere: { sky: "#8a7cd8", ground: "#3a2418", intensity: 0.8 },
     environment: { kind: "hdri", hdri: "sunset-dramatic", intensity: 0.7, rotationDeg: SUN_AZIMUTH_DEG },
-    /* GU47 phase 3: at scale 0.45 the bounce and the amber district haze washed the rocks to grey-beige (round g19p3-r1); a darker teal rock albedo keeps them reading as teal basalt against the violet sky */
+    /* GU47 phase 3 (twilight shards glow violet in world.ts: the panel read the dark ones as stray diamonds): at scale 0.45 the bounce and the amber district haze washed the rocks to grey-beige (round g19p3-r1); a darker teal rock albedo keeps them reading as teal basalt against the violet sky */
     lit: { scale: 0.45, bounce: [0.26, 0.10, 0.04], topFill: [0.09, 0.08, 0.24], roadAlbedo: 0.34, rockTint: [0.6, 0.8, 0.86] },
     /* the haze stays the map's `atmosphere.low` (linear; sRGB ~#457b7f) so the distance does not go dark; #0f3a40 is the deep haze below the horizon in the dome */
     fog: { color: [0.06, 0.19, 0.21], districtMix: 0.2, districtMetres: 120 },
-    causeway: { glass: 1, veinHdr: 1.7, seams: 0.35 },
+    causeway: { glass: 1, veinHdr: 1.7, seams: 0.6 },
     bloom: { intensity: 0.6, threshold: 1.0 },
     /* IC-09 split tone: teal shadows, amber highlights, a touch cooler overall so the warm band stays the only warm field */
     grade: { exposure: 1.05, contrast: 1.08, saturation: 1.08, temperature: -0.04, tint: 0.02, shadows: [0.92, 1.03, 1.06], highlights: [1.06, 1.0, 0.9] },
