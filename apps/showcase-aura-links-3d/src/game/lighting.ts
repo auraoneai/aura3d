@@ -214,7 +214,8 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     background: "#d7b48c",
     fog: { color: "#d9b48a", mode: "exp2", density: 0.0034, maxOpacity: 0.4 },
     godRays: null,
-    grade: { contrast: 1.06, saturation: 1.1, temperature: 0.18, tint: 0 },
+    // GU47 phase 3: the 4.7.0 frame read as a cool noon; warmer late-afternoon grade
+    grade: { contrast: 1.08, saturation: 1.14, temperature: 0.3, tint: 0.02 },
     bloom: { intensity: 0.36, threshold: 0.74, scatter: 0.62 },
     vignette: { intensity: 0.14, color: "#1d1208" },
     grain: { intensity: 0.045, size: 1.4 },
@@ -238,7 +239,8 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     background: "#5a3a35",
     fog: { color: "#6b5348", mode: "height", density: 0.005, maxOpacity: 0.55, heightDensity: 0.03, heightFalloff: 0.12, heightReference: 0 },
     godRays: { density: 0.6, intensity: 0.5, color: "#ffb27a" },
-    grade: { contrast: 1.12, saturation: 1.04, temperature: 0.25, tint: 0 },
+    // GU47 phase 3: the 4.7.0 frame read as a grey overcast over brown ground, not a dusk crater; warmer and richer grade
+    grade: { contrast: 1.14, saturation: 1.16, temperature: 0.4, tint: 0.03 },
     bloom: { intensity: 0.5, threshold: 0.68, scatter: 0.66 },
     vignette: { intensity: 0.18, color: "#140806" },
     grain: null,
@@ -257,11 +259,14 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     sun: { azimuthDeg: 160, elevationDeg: 62 },
     key: { color: "#fffaf0", intensity: 3.3, colorTemperatureK: 5800 },
     rim: { color: "#d6e8ff", intensity: 0.18, azimuthDeg: 340 },
-    exposureEv: -0.1,
+    // GU47 phase 3: -0.1 EV gave mean luma 198 and a washed white sky and mint tee (PRD LINKS-03 band: mean 145-175,
+    // clip <= 0.02); thinner haze and more saturation bring back the cobalt noon; -0.5 EV still gave 183.5 (run
+    // g10p3-r3-2), so -0.95 EV
+    exposureEv: -0.95,
     background: "#4f86d9",
-    fog: { color: "#bcd6f2", mode: "exp2", density: 0.0012, maxOpacity: 0.3 },
+    fog: { color: "#bcd6f2", mode: "exp2", density: 0.0006, maxOpacity: 0.18 },
     godRays: null,
-    grade: { contrast: 1.12, saturation: 1.06, temperature: -0.04, tint: 0 },
+    grade: { contrast: 1.14, saturation: 1.16, temperature: -0.04, tint: 0 },
     bloom: { intensity: 0.24, threshold: 0.86, scatter: 0.55 },
     vignette: null,
     grain: null,
@@ -282,10 +287,12 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     // the floodlight bank behind the tee becomes the shadowed key (the 4.6.2 flood stood at azimuth 151, elevation 52,
     // 11 deg from Cloud Terrace's noon sun; swung to 120/45 it keeps >= 25 deg from every course's sun); the moon is the rim
     sun: { azimuthDeg: 120, elevationDeg: 45 },
-    key: { color: "#fff1dc", intensity: NEON_FLOOD_INTENSITY, colorTemperatureK: 4800 },
-    rim: { color: "#7f9dff", intensity: 0.5, azimuthDeg: 300 },
-    exposureEv: 0.08,
-    background: "#0a1430",
+    // GU47 phase 3: a floodlit venue reads bright on the grass (4.7.0: mean 35.6, p95 69, darkFrac 0.32 against the PRD
+    // LINKS-16 band mean 35-70, p95 >= 170, darkFrac <= 0.25): a stronger flood bank, a lifted navy sky
+    key: { color: "#fff1dc", intensity: NEON_FLOOD_INTENSITY * 1.5, colorTemperatureK: 4800 },
+    rim: { color: "#7f9dff", intensity: 0.7, azimuthDeg: 300 },
+    exposureEv: 0.3,
+    background: "#14244f",
     fog: { color: "#0b1532", mode: "exp2", density: 0.004, maxOpacity: 0.5 },
     godRays: null,
     grade: { contrast: 1.14, saturation: 1.18, temperature: -0.08, tint: 0.06 },
@@ -303,11 +310,16 @@ export const COURSE_LOOKS: Readonly<Record<CourseId, CourseLookRow>> = {
     place: "the regolith of a lunar mare",
     timeOfDay: "airless black-sky day under an earthrise",
     base: "space",
-    hdri: { id: "deep_space_starfield", intensity: 0.25, drawn: true, sunAzimuthInHdriDeg: null, want2k: true },
+    // GU47 phase 3: the starfield at 0.25 drew a flat black sky (darkFrac 0.39 vs the PRD LINKS-16 <= 0.35) and 0.6 still
+    // did (0.386, run g10p3-r4-2): the 1k file's median texel is 2e-4 and its 70th percentile 7e-3 linear, so the star
+    // field only reaches the frame at about 4x; its IBL stays a faint fill (mean texel about 0.01 x 4)
+    hdri: { id: "deep_space_starfield", intensity: 4, drawn: true, sunAzimuthInHdriDeg: null, want2k: true },
     sun: { azimuthDeg: 40, elevationDeg: 25 },
     key: { color: "#ffffff", intensity: 3.6, colorTemperatureK: 5900 },
     // earthshine: a faint blue fill from the Earth's side, no shadow (LINKS-16)
-    rim: { color: "#7fa6ff", intensity: 0.25, azimuthDeg: 220 },
+    // GU47 phase 3: 0.25 left the golfer a black silhouette against the lit regolith; 0.75 models the figure from the
+    // Earth's side
+    rim: { color: "#7fa6ff", intensity: 0.75, azimuthDeg: 220 },
     exposureEv: 0.15,
     background: "#000000",
     fog: null,
@@ -339,6 +351,16 @@ export type LinksTier = "low" | "high";
 /** Key-light shadow per presentation tier (LINKS-01: PCSS with 3 cascades; PRD §6.4 Low: 1 cascade, PCF). */
 export function keyShadowFor(tier: LinksTier): { readonly filter: "pcss" | "pcf"; readonly cascades: 1 | 3; readonly mapSize: 1024 | 2048 } {
   return tier === "low" ? { filter: "pcf", cascades: 1, mapSize: 1024 } : { filter: "pcss", cascades: 3, mapSize: 2048 };
+}
+
+/**
+ * GU47 phase 3: the floodlit and lunar tees showed parallel shadow-acne bands across the flat tee deck and turf (Neon Bay
+ * key 45 deg over 3 cascades to the camera far plane; Mare 25 deg; runs g10p3-r4-2 and g10p3-r8-2, software WebGL2).
+ * Those two rows pull the cascades in to 140 m and double the normal offset (engine default 1.5 texels); the day courses
+ * showed no acne and keep the engine defaults.
+ */
+export function keyShadowTuning(course: CourseId): { readonly normalBias?: number; readonly maxDistance?: number } {
+  return course === "neonBay" || course === "mareCourse" ? { normalBias: 3, maxDistance: 140 } : {};
 }
 
 /** Light position from elevation/azimuth (same basis as the engine looks: azimuth clockwise from +Z, Y up). */

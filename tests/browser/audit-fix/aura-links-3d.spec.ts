@@ -34,9 +34,9 @@ interface Target {
   run?(page: Page, name: string): Promise<void>;
 }
 
-async function lumaStats(page: Page, png: Buffer) {
-  return page.evaluate(async (b64) => {
-    const blob = await (await fetch(`data:image/png;base64,${b64}`)).blob();
+async function lumaStats(page: Page, png: Buffer, mime = "image/png") {
+  return page.evaluate(async ([b64, type]) => {
+    const blob = await (await fetch(`data:${type};base64,${b64}`)).blob();
     const bmp = await createImageBitmap(blob);
     const c = document.createElement("canvas");
     c.width = bmp.width; c.height = bmp.height;
@@ -54,7 +54,7 @@ async function lumaStats(page: Page, png: Buffer) {
     }
     const pct = (p: number) => { let acc = 0; for (let v = 0; v < 256; v++) { acc += hist[v]!; if (acc >= p * n) return v; } return 255; };
     return { w: c.width, h: c.height, mean: +(sum / n).toFixed(2), p5: pct(0.05), p50: pct(0.5), p95: pct(0.95), darkFrac: +(dark / n).toFixed(4), clipFrac: +(clip / n).toFixed(4) };
-  }, png.toString("base64"));
+  }, [png.toString("base64"), mime] as const);
 }
 
 async function gameInfo(page: Page) {
@@ -74,10 +74,11 @@ async function gameInfo(page: Page) {
 async function grab(page: Page, target: string, id: string, extra: Record<string, unknown> = {}, withHud = false): Promise<void> {
   const handle = withHud ? null : await page.addStyleTag({ content: CANVAS_ONLY });
   await page.waitForTimeout(250);
-  const png = await page.screenshot({ type: "png" });
+  // one screenshot per shot (a software-GL screenshot costs minutes; the PNG + JPEG pair ran the 11-shot screens target
+  // past the 50 min test timeout, run g10p3-r1-1): luma stats come from the JPEG itself
   const jpg = await page.screenshot({ type: "jpeg", quality: 70 });
   await handle?.evaluate((el) => el.remove());
-  const stats = await lumaStats(page, png);
+  const stats = await lumaStats(page, jpg, "image/jpeg");
   log(`GL_META ${JSON.stringify({ target, id, hud: withHud, ...extra, ...stats, info: await gameInfo(page) })}`);
   const b64 = jpg.toString("base64");
   const n = Math.ceil(b64.length / CHUNK);
@@ -189,9 +190,12 @@ const roundOut = async (page: Page, name: string): Promise<void> => {
  * RH-05: retake of evidence/aura-links-3d/screens/final with the same file names and sizes. The player drives the
  * three-press swing with Space; logic advances through the ?qa=1 hook so each shot shows the state it is named for.
  */
-const screensRun = async (page: Page, name: string): Promise<void> => {
+const screensRun = async (page: Page, name: string, fromShot = 0): Promise<void> => {
   if (!(await hasQa(page))) { log(`GL_SKIP ${name} no __AURA_LINKS_QA__ (pre-fix build)`); return; }
-  const snap = async (id: string, ms = 12_000) => { await settleFrames(page, ms); await grab(page, name, id, {}, true); };
+  // `fromShot`: the tail targets replay the same held sequence but only settle and grab from shot `fromShot` on (the
+  // 11-shot sequence runs past the 50 min test timeout on software GL, run g10p3-r3-1)
+  let shot = 0;
+  const snap = async (id: string, ms = 12_000) => { if (shot++ < fromShot) return; await settleFrames(page, ms); await grab(page, name, id, {}, true); };
   await qa(page, "advance", 0.5);
   await snap("02-early", 20_000);
   await advanceUntil(page, "e.phase === 'address'", 10, 0.25);
@@ -281,6 +285,8 @@ const TARGETS: readonly Target[] = [
   { name: "links-shots-play-1280x720", url: `${APP}?course=stAuroras&qa=1`, viewport: DESKTOP, run: screensRun, tag: "@shots @final" },
   { name: "links-shots-title-390x844", url: `${APP}?menu=1`, viewport: PHONE, phone: true, run: titleRun, tag: "@shots @final" },
   { name: "links-shots-play-390x844", url: `${APP}?course=stAuroras&qa=1`, viewport: PHONE, phone: true, run: screensRun, tag: "@shots @final" },
+  { name: "links-tail-play-1280x720", url: `${APP}?course=stAuroras&qa=1`, viewport: DESKTOP, run: (page, name) => screensRun(page, name, 7), tag: "@shotstail" },
+  { name: "links-tail-play-390x844", url: `${APP}?course=stAuroras&qa=1`, viewport: PHONE, phone: true, run: (page, name) => screensRun(page, name, 7), tag: "@shotstail" },
   { name: "links-shots-card-1x", url: `${APP}?course=stAuroras`, viewport: { width: 720, height: 450 }, run: cardRun, tag: "@shots @final" },
   { name: "links-figures-neonBay", url: `${APP}?course=neonBay&qa=1`, viewport: DESKTOP, run: figuresRun, tag: "@final" },
   { name: "links-diag-stAuroras", url: `${APP}?course=stAuroras`, viewport: DESKTOP, run: diagRun, tag: "@diag" },

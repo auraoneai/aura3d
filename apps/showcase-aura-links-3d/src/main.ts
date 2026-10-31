@@ -96,7 +96,7 @@ import { buildCourseRig } from "./game/lookRig";
 import { landingVfxFor, registerLinksVfx, type LinksVfxId } from "./game/vfx";
 import { IMPACT_FOV_KICK_DEG, cupCamPose, flyoverAllowed, flyoverShots, tracerCamPose, wantsCupCam, wantsTracerCam } from "./game/broadcast";
 import { linksQaCrops } from "./game/qaCrops";
-import { discOnTerrain, ribbonAlongPath, terrainToMeshSpec, type SurfaceUvMode } from "./game/terrainMesh";
+import { discOnTerrain, flatPad, ribbonAlongPath, terrainToMeshSpec, type SurfaceUvMode } from "./game/terrainMesh";
 import { MASK_COLOR_LIFT, TURF_SURFACES, type LinksSurfaceSlot } from "./game/turf";
 import { turfTexture } from "./game/turfTextures";
 import { coverWind, groundCover } from "./game/groundCover";
@@ -249,6 +249,16 @@ function surfaceMaterial(course: CourseSpec, slot: LinksSurfaceSlot, color: stri
   });
 }
 
+/**
+ * The aim line. GU47 phase 3: the 4.6.2 white bar at emissive 1.35 crossed the bloom threshold on every course and read
+ * as a glowing light-sabre over the fairway (Neon Bay worst); on the GU47 look it is a softer broadcast guide line.
+ */
+function aimLineMaterial() {
+  return turfOn
+    ? material.emissive({ color: "#f4f7fa", emissive: "#f4f7fa", emissiveIntensity: 0.62, opacity: 0.72 })
+    : material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.35, opacity: 0.88 });
+}
+
 /* ------------------------------------------------------------------ *
  *  Course dressing                                                    *
  * ------------------------------------------------------------------ */
@@ -301,9 +311,19 @@ function buildConiferNodes(
   const lowColors: string[] = [];
   const midColors: string[] = [];
   const topColors: string[] = [];
-  const tones = theme === "dunes"
-    ? ["#4f7549", "#5a7f4e", "#446742"]
-    : ["#336b3d", "#3b7442", "#2b5f36"];
+  // GU47 phase 3 (until the WP-36 maple/marram/palm models land): each course paints its own canopy, Maple Hollow in
+  // autumn reds, oranges and golds, the dunes a wind-dark sea green, the harbour a deep teal; tiers shade dark to light
+  // so the stacks read as lit volumes. `?look=original` keeps the 4.6.2 greens.
+  const tones = turfOn && theme === "parkland"
+    ? ["#b8452c", "#d0702a", "#c9962e", "#8f3a22", "#5f7a3a"]
+    : turfOn && theme === "dunes"
+      ? ["#3f6450", "#4a6f55", "#36584a"]
+      : turfOn && theme === "nightCity"
+        ? ["#1e5a50", "#24685a", "#174a44"]
+        : theme === "dunes"
+          ? ["#4f7549", "#5a7f4e", "#446742"]
+          : ["#336b3d", "#3b7442", "#2b5f36"];
+  const tier = (tone: string, k: number) => (turfOn ? shade(tone, k) : tone);
   trees.forEach((tr, i) => {
     const s = tr.h / 6.2;
     const y = terrain.height(tr.x, tr.z) - 0.12;
@@ -312,9 +332,9 @@ function buildConiferNodes(
     mid.push({ position: [tr.x, y + 3.65 * s, tr.z], rotation: [0, tr.yaw, 0], scale: [s * 0.78, s * 0.9, s * 0.78] });
     top.push({ position: [tr.x, y + 4.8 * s, tr.z], rotation: [0, tr.yaw, 0], scale: [s * 0.54, s * 0.74, s * 0.54] });
     const tone = tones[i % tones.length]!;
-    lowColors.push(tone);
+    lowColors.push(tier(tone, 0.82));
     midColors.push(tone);
-    topColors.push(tone);
+    topColors.push(tier(tone, 1.14));
   });
   const bark = material.pbr({ color: "#5a4634", roughness: 0.94 });
   const bough = material.pbr({ color: "#ffffff", roughness: 0.88 });
@@ -829,6 +849,13 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
     primitives.box({ name: "tee-marker-l", size: [0.3, 0.1, 0.12], material: markMat }).position(terrain.tee[0] - 3.2, terrain.tee[1] + 0.05, terrain.tee[2]),
     primitives.box({ name: "tee-marker-r", size: [0.3, 0.1, 0.12], material: markMat }).position(terrain.tee[0] + 3.2, terrain.tee[1] + 0.05, terrain.tee[2])
   );
+  // GU47 phase 3 (rubric: the tee deck filled a third of every address frame as one flat colour): the deck carries the
+  // course's tight-cut surface (mottle mask, blade normals; the fairway mow bands read as shadow-map striping at night)
+  // on a quad just above the box top; `?look=original`
+  // keeps the 4.6.2 slab.
+  if (turfOn) {
+    nodes.push(geometry.custom(flatPad(terrain.tee[0], terrain.tee[1] + 0.032, terrain.tee[2], 8.3, 6.3), { name: "tee-deck", material: surfaceMaterial(course, "firstCut", pal.teeBox, 0.82) }));
+  }
 
   // --- Bunkers (bright sand bowls + dark, crisp grass lip) ---
   lay.bunkers.forEach((b, i) => {
@@ -853,7 +880,9 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
       const bank = discOnTerrain(terrain, w.center[0], w.center[1], w.radius + 1.5, 0.02, 32, w.radius * 0.94);
       nodes.push(
         geometry.custom(bank, { name: `pond-bank-${i}`, material: material.pbr({ color: shade(pal.rough, 0.55), roughness: 0.96 }) }),
-        primitives.cylinder({ name: `pond-rim-${i}`, size: [rimDiameter, 0.05, rimDiameter], material: material.pbr({ color: shade(pal.water, 0.5), roughness: 0.34, metalness: 0.2 }) }).position(w.center[0], y - 0.03, w.center[1]),
+        // GU47 phase 3: the floor sits 0.3 m down (the engine "calm" swell dipped below it at y - 0.03 and its glossy top
+        // showed through as pale wavy bands, run g10p3-r5-2; the ponds now ripple about 2 cm, game/water.ts)
+        primitives.cylinder({ name: `pond-rim-${i}`, size: [rimDiameter, 0.05, rimDiameter], material: material.pbr({ color: shade(pal.water, 0.5), roughness: 0.34, metalness: 0.2 }) }).position(w.center[0], y - 0.3, w.center[1]),
         world.water(pondWaterOptions(pond, pal.water, state.reducedMotion) as any) as any
       );
       return;
@@ -893,7 +922,7 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
     // ground ring that marks the ball when the camera is far from it (the ball itself is near real size)
     primitives.torus({ name: "ball-marker", size: [0.5, 0.025, 0.025], material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.1, opacity: 0.8 }) }).scale(HIDDEN_SCALE).runtime(game.runtimeNode("ball-marker")),
     // Crisp white aim line + predicted landing ring (aim phase only)
-    primitives.box({ name: "aim-line", size: [0.14, 0.03, 28], material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.35, opacity: 0.88 }) }).runtime(game.runtimeNode("aim-line")),
+    primitives.box({ name: "aim-line", size: [0.14, 0.03, 28], material: aimLineMaterial() }).runtime(game.runtimeNode("aim-line")),
     primitives.torus({ name: "landing-ring", size: [1.5, 0.06, 0.06], material: material.emissive({ color: "#63e2ff", emissive: "#63e2ff", emissiveIntensity: 1.25 }) }).runtime(game.runtimeNode("landing-ring")),
     // putt-aim helper
     primitives.torus({ name: "cup-pulse", size: [0.36, 0.035, 0.035], material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 1.35 }) }).runtime(game.runtimeNode("cup-pulse"))
@@ -1139,7 +1168,7 @@ function updateCardHud(): void {
 
 function updateModeChips(): void {
   const course = state.course;
-  $("h-course-chip")!.innerHTML = `${course.name}<span class="sub" id="h-look-chip">${course.shortName} · ${course.look.toUpperCase()} LOOK</span>`;
+  $("h-course-chip")!.innerHTML = `${course.name}<span class="sub" id="h-look-chip">${course.shortName} · ${turfOn ? COURSE_LOOKS[course.id].timeOfDay.split(/,| in | under /)[0]!.toUpperCase() : `${course.look.toUpperCase()} LOOK`}</span>`;
   $("h-mode")!.textContent =
     state.mode === "quick" ? "QUICK PLAY" :
     state.mode === "rangelab" ? "RANGE LAB" :
@@ -2008,6 +2037,21 @@ function startHole(idx: number): void {
   cam.eye = [initEx, t.height(initEx, initEz) + 5.3, initEz];
   cam.target = [initTx, t.height(initTx, initTz) - 2.4, initTz];
   cam.fov = 40;
+  if (turfOn) {
+    // GU47 phase 3 (rubric composition): start on the aim-cam pose the camera eases into (same formula as the aim branch
+    // of the camera update, zoom 1), not 8 m back and 5 m up with the golfer on the left edge; slow first frames (and
+    // the poster and steady-state captures) then show the address framing
+    const aspect = (window.innerWidth || 16) / (window.innerHeight || 9);
+    const side = clamp(aspect / 1.6, 0.3, 1);
+    const portrait = clamp((1.15 - aspect) / 0.6, 0, 1);
+    const back = 5.4 + 1.9 * portrait, aimSide = 2.7 * side * (1 - 0.9 * portrait);
+    const ex = t.tee[0] - Math.sin(t.lineYaw) * back - Math.cos(t.lineYaw) * aimSide;
+    const ez = t.tee[2] - Math.cos(t.lineYaw) * back + Math.sin(t.lineYaw) * aimSide;
+    const ax = t.tee[0] + Math.sin(t.lineYaw) * 34, az = t.tee[2] + Math.cos(t.lineYaw) * 34;
+    cam.eye = [ex, t.height(ex, ez) + 2.2, ez];
+    cam.target = [ax, t.height(ax, az) - 2.2, az];
+    cam.fov = 42 + 16 * portrait;
+  }
   if (framesRendered > 0 || idx > 0) {
     showMsg(`HOLE ${hole.number} — ${hole.name.toUpperCase()}`, `PAR ${hole.par} · ${hole.lengthM}M`, 2100);
   }

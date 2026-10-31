@@ -54,6 +54,16 @@ export function pondColors(water: string): { readonly shallowColor: string; read
 }
 
 /**
+ * GU47 phase 3: a still pond's own ripple set, about 2 cm high (amplitude = steepness x wavelength / 2pi). The engine's
+ * "calm" preset is sea swell for a pond (about 0.4 m summed): its troughs fell below the pond floor and the bank, which
+ * showed through as pale wavy bands (run g10p3-r5-2).
+ */
+export const POND_RIPPLES = [
+  { directionDeg: 20, wavelength: 3.2, steepness: 0.035, speed: 0.6 },
+  { directionDeg: 115, wavelength: 1.7, steepness: 0.03, speed: 0.6 }
+] as const;
+
+/**
  * The `world.water` options of one reflecting pond. Reduced motion (PRD §6.3): no waves and still detail normals, so
  * the surface holds still and only the reflection moves with the camera.
  */
@@ -64,10 +74,14 @@ export function pondWaterOptions(pond: ReflectivePond, water: string, reducedMot
     shape: { kind: "circle" as const, center: pond.center, radius: pond.radius },
     height: pond.y,
     ...pondColors(water),
-    waves: reducedMotion ? [] : ("calm" as const),
-    normalScale: 0.35,
+    waves: reducedMotion ? [] : POND_RIPPLES,
+    normalScale: 0.15,
     normalSpeed: reducedMotion ? 0 : 0.6,
-    reflection: { low: "ibl", medium: "ibl", high: "planar", ultra: "planar" } as const,
+    // GU47 phase 3: on High the planar capture drew black speckle bands and white shore-foam rings across the pond
+    // (software WebGL2, run g10p3-r3-1 swing-5); High reflects the IBL sky, Ultra keeps the planar mirror; no foam on a
+    // still pond
+    reflection: { low: "ibl", medium: "ibl", high: "ibl", ultra: "planar" } as const,
+    foam: { shoreDepth: 0, crest: 0 },
     refraction: { low: false, medium: false, high: false, ultra: false } as const
   };
 }

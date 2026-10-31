@@ -1,0 +1,11 @@
+{
+  "schema": "aura3d.luma-bands/1",
+  "slug": "aura-links-3d",
+  "note": "GU47 WP-20 acceptance bands, copied from PRD rows LINKS-03 (Cloud Terrace mean 145-175, clip <= 0.02) and LINKS-16 (Neon Bay darkFrac <= 0.25, mean 35-70, p95 >= 170; Mare darkFrac <= 0.35). Rules a single GL_META row cannot check (St Auroras top-bottom +15 with fog on, Cinder 0.5-3% of pixels >= 230, lava mean >= 180, course hue spacing) are read in the lane report. Software WebGL2 captures.",
+  "default": { "darkFrac": [null, 0.6], "clipFrac": [null, 0.05] },
+  "variants": {
+    "cloudTerrace": { "mean": [145, 175], "clipFrac": [null, 0.02] },
+    "neonBay": { "mean": [35, 70], "p95": [170, null], "darkFrac": [null, 0.25] },
+    "mareCourse": { "darkFrac": [null, 0.35] }
+  }
+}

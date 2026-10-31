@@ -1,0 +1,729 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-10-31T20:25:59.682Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "aura-links-3d--cinderRim",
+      "aura-links-3d--cloudTerrace",
+      "aura-links-3d--mapleHollow",
+      "aura-links-3d--mareCourse",
+      "aura-links-3d--neonBay",
+      "aura-links-3d--stAuroras"
+    ],
+    "framesB": [
+      "aura-diamond-3d--canyon",
+      "aura-diamond-3d--dome",
+      "aura-diamond-3d--ivy",
+      "aura-diamond-3d--lunar",
+      "aura-diamond-3d--sandlot",
+      "aura-diamond-3d--skyline"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.79,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 46,
+    "sameGameYes": 2,
+    "differentRate": 0.9583333333333334,
+    "ci95": [
+      0.8602408885222853,
+      0.9884983479210344
+    ],
+    "confidentDifferent": 38,
+    "confidentDifferentRate": 0.7916666666666666,
+    "same_game": false,
+    "same_game_confidence": 0.79,
+    "passes": false
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "aura-links-3d--cinderRim",
+      "b": "aura-diamond-3d--skyline",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Different sports: golf vs baseball",
+        "A is a barren brown terrain with an overcast sky; B is a teal stadium with a city skyline at night",
+        "Character models are similar low-poly white-clad figures, but the scene styles and palettes differ"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "aura-links-3d--mareCourse",
+      "b": "aura-diamond-3d--canyon",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a bright daytime baseball field with orange rocks and green grass",
+        "Image B is a dark lunar or moon-like scene with a black sky and a golfer",
+        "Different characters, lighting and palette: stylized white-uniform players vs. a dark realistic blue-shirted golfer"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "aura-links-3d--stAuroras",
+      "b": "aura-diamond-3d--lunar",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night baseball stadium with a desaturated blue palette; Image B is a bright daytime golf course with saturated greens",
+        "Different sports and scenery: baseball field with fielders and a scoreboard vs. golf tee box with low-poly trees",
+        "Character models differ: A's white-uniform players with blue caps vs. B's blue-shirt golfers with white caps; the rendering styles also differ"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "aura-links-3d--neonBay",
+      "b": "aura-diamond-3d--lunar",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with a desaturated blue-gray palette and a stadium",
+        "Image B is a golf course with saturated green grass, stylized round trees and a navy sky",
+        "Character models differ: white-uniformed baseball players versus a golfer in a gray shirt and cap"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "aura-links-3d--cinderRim",
+      "b": "aura-diamond-3d--ivy",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with a green grass outfield, while Image B is a golf scene on barren brown terrain",
+        "Character models differ: A has pale, near-featureless figures, B has a cap-wearing figure with a gray shirt and brown pants",
+        "Different atmosphere: A has dark stormy sky and saturated orange dirt, B has overcast pale sky with floating ember particles"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "aura-links-3d--stAuroras",
+      "b": "aura-diamond-3d--canyon",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with an orange dirt diamond and red rock formations; Image B is a golf tee box with stylized round trees",
+        "Different lighting and palette: A has a flat, muted gray-blue sky and warm orange tones; B has a cloudy, soft purple-pink sky and saturated greens",
+        "Different character styles and cameras: A has small white-uniformed players seen from a high behind-the-plate view; B has a close, low third-person view of a golfer in a blue shirt"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "aura-links-3d--stAuroras",
+      "b": "aura-diamond-3d--skyline",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a golf course with stylized rounded trees and a daytime cloudy sky; Image B is a night baseball stadium with a city skyline",
+        "Different character models: A has a golfer with a white cap and blue shirt, B has uniformed baseball players in white with blue helmets",
+        "Different rendering style: A has clean green turf and soft lighting, B has a teal field, pink textured dirt and a heavy purple tint"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "aura-links-3d--neonBay",
+      "b": "aura-diamond-3d--dome",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A is a night golf scene with stylized round trees and a dark navy sky; Image B is a baseball stadium interior",
+        "Image B has realistic blurred backgrounds and a gray dirt infield, while A uses flat teal stripe-mowed grass",
+        "Character models differ: A has detailed golfers in caps and tees; B has simple white-uniformed players with blue helmets"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "aura-links-3d--cloudTerrace",
+      "b": "aura-diamond-3d--ivy",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is golf and Image B is baseball, with different sports and scenery",
+        "The character models differ: A has a cap, blue shirt and a smoother low-poly look, while B has white-uniformed players",
+        "The lighting differs: A has a bright pale sky with snowy pines, while B has a dark stormy sky and orange dirt"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "aura-links-3d--cinderRim",
+      "b": "aura-diamond-3d--canyon",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A is a golf scene on a barren brown plain with a moody overcast sky and floating ember particles",
+        "Image B is a baseball field with green grass, orange dirt, stadium stands and large rock formations under a clear blue-grey sky",
+        "The character models are similar low-poly white-clad figures, but the lighting, palette and environment differ strongly"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "aura-links-3d--mareCourse",
+      "b": "aura-diamond-3d--ivy",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A is a baseball field with a bright green and orange palette and a stadium backdrop",
+        "Image B is a dark lunar-like setting with a black sky and grey textured ground, and the player holds a golf-style club",
+        "The character models, lighting and art style differ between the two frames"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "aura-links-3d--stAuroras",
+      "b": "aura-diamond-3d--sandlot",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a baseball field with a stadium and scoreboard, Image B is a golf tee area with trees",
+        "Different art styles: A has flat, low-detail figures and a hazy palette, B has stylized round trees and a dramatic cloudy sky",
+        "Different cameras and lighting: A uses a high elevated view with warm orange dirt, B uses a low third-person view with cool green turf"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "aura-links-3d--stAuroras",
+      "b": "aura-diamond-3d--dome",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is an outdoor golf course with stylized rounded trees; Image B is an indoor baseball dome ('Typhoon Dome')",
+        "Different character models, with a golfer in a cap versus uniformed baseball players with a blue helmet and glove",
+        "Different lighting and palette: soft cloudy sky versus dim, blurred indoor stadium with a gray dirt infield"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "aura-links-3d--neonBay",
+      "b": "aura-diamond-3d--ivy",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a stylized night golf scene with dark navy sky and low-poly rounded trees",
+        "Image B is a realistic baseball stadium with cloudy dusk sky, textured ivy walls and orange dirt",
+        "Character models and lighting differ: smooth flat-shaded golfer vs. pale blocky fielders under warm directional light"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "aura-links-3d--mapleHollow",
+      "b": "aura-diamond-3d--lunar",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night baseball stadium with a desaturated blue palette; Image B is a bright daytime golf course",
+        "Different sports and scenery: baseball players and diamond vs golfer, tee box and autumn trees",
+        "Different lighting and atmosphere: dark sky and flat blue lighting vs blue-gradient daylight sky with saturated greens"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "aura-links-3d--mareCourse",
+      "b": "aura-diamond-3d--lunar",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "both have a black sky and a cool blue-gray night palette",
+        "similar low-poly human characters with blue caps",
+        "sports theme with bat or club, golf in A and baseball in B"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "aura-links-3d--mareCourse",
+      "b": "aura-diamond-3d--skyline",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "dark lunar terrain with black sky vs colorful stadium",
+        "different palette and lighting style",
+        "similar blue-cap character models but different sport/setting"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "aura-links-3d--neonBay",
+      "b": "aura-diamond-3d--canyon",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a daytime baseball field with red rock formations; Image B is a night golf tee with stylized trees",
+        "Different character models and proportions (white-uniformed baseball players vs. a golfer in a cap and grey shirt)",
+        "Different lighting and palette: warm, hazy daylight vs. dark navy sky and teal-green ground"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "aura-links-3d--mapleHollow",
+      "b": "aura-diamond-3d--dome",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball stadium with an indoor dome and a dark, muted palette",
+        "Image B is a golf course outdoors with a bright blue sky and stylized autumn trees",
+        "Different character models and camera setups, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "aura-links-3d--mapleHollow",
+      "b": "aura-diamond-3d--skyline",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a bright daytime golf scene with stylized autumn trees and a clean blue sky",
+        "Image B is a dim night baseball stadium with a teal field, city skyline and stands",
+        "Character models and rendering differ: A has a textured grass look with a low-poly golfer, B has a darker, desaturated look with uniformed players"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "aura-links-3d--cloudTerrace",
+      "b": "aura-diamond-3d--lunar",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night baseball field with a dark sky and a bluish monochrome palette",
+        "Image B is a bright daytime golf course with a cloudy sky, pine trees and striped grass",
+        "The character models differ in style: A has blocky white-uniformed players, B has a more detailed golfer with a cap and blue shirt"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "aura-links-3d--cloudTerrace",
+      "b": "aura-diamond-3d--sandlot",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with an orange dirt diamond and a stadium; Image B is a golf course with pine trees",
+        "Different lighting and sky: A has a hazy gray sky, B has a blue sky with clouds",
+        "Different character models and ground textures, with different HUD elements (target ring vs red marker)"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "aura-links-3d--cloudTerrace",
+      "b": "aura-diamond-3d--dome",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a golf game on a striped fairway with snowy pine trees; Image B is a baseball stadium inside a dome",
+        "Image A has an outdoor cloudy sky and a bright saturated green palette; Image B has a dim indoor look with muted lighting and a blurred background",
+        "The character models and camera differ: a close third-person golfer in a cap versus distant white-uniformed baseball players seen from above"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "aura-links-3d--cinderRim",
+      "b": "aura-diamond-3d--lunar",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Both use similar low-poly human figures with caps and gray/white clothing",
+        "Different settings: golf on a brown, barren plain vs. a night baseball stadium",
+        "Different palettes and lighting: warm dusk with orange particles vs. cold blue-white night"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "aura-links-3d--mapleHollow",
+      "b": "aura-diamond-3d--canyon",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A is golf with stylized round trees; Image B is baseball with large rock formations and stands",
+        "Both use similar low-poly white-clad human figures and soft lighting, which suggests the same engine or studio",
+        "Different ground textures and sky: A has bright striped turf and a blue gradient sky, B has orange dirt and a gray sky"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "aura-links-3d--neonBay",
+      "b": "aura-diamond-3d--skyline",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball stadium; Image B is a golf course",
+        "Different art styles: A has pinkish textured dirt and a city skyline, B has smooth teal grass and stylized round trees",
+        "Different lighting and sky: A is an enclosed stadium, B has a flat dark navy night sky"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "aura-links-3d--mareCourse",
+      "b": "aura-diamond-3d--sandlot",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: dark moonlit lunar terrain with a black sky and a realistic textured look",
+        "Image B: bright stylized baseball field with an orange dirt infield, green grass and a daylight sky",
+        "Different character styles: A has detailed dark figures in blue caps with a golf club, B has simple low-poly white-uniformed players"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "aura-links-3d--mapleHollow",
+      "b": "aura-diamond-3d--ivy",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a golf scene with a bright blue sky and stylized rounded trees; Image B is a baseball stadium under a dark stormy sky",
+        "Image A has flat, clean, cartoon lighting; Image B has dramatic, warm, high-contrast lighting with a textured dirt infield",
+        "The human figures are rendered differently: Image A has detailed, clothed golfers, while Image B has simple white blocky players"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "aura-links-3d--cloudTerrace",
+      "b": "aura-diamond-3d--skyline",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a golf game with snowy pine trees and a bright daytime sky; Image B is a baseball stadium at night",
+        "Different palettes: light green turf against teal and pink dirt with dark city skyline",
+        "Character styling differs: golfers in blue shirts and white caps against baseball players in white uniforms and blue helmets"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "aura-links-3d--cloudTerrace",
+      "b": "aura-diamond-3d--canyon",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a baseball field with canyon rocks and fielders; Image B is a golf course with snowy pines",
+        "Different environments and palettes: orange dirt with a hazy grey sky vs. striped green fairway with a cloudy blue sky",
+        "Different character models and camera: high-angle behind the batter vs. low third-person golfer with a club"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "aura-links-3d--mareCourse",
+      "b": "aura-diamond-3d--dome",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a dark lunar-like terrain with a black sky and a golfer in a blue cap",
+        "Image B is a bright green baseball field inside a stadium dome with white-uniformed players",
+        "Different character models and lighting: harsh dim moonlight versus soft indoor stadium light"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "aura-links-3d--mapleHollow",
+      "b": "aura-diamond-3d--sandlot",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball stadium with a hazy gray sky and an orange dirt infield",
+        "Image B is a golf tee box with blue gradient sky and stylized round autumn trees",
+        "Different character models, camera framing and lighting palettes"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "aura-links-3d--cinderRim",
+      "b": "aura-diamond-3d--dome",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "similar low-poly human figures with caps",
+        "shared sports theme with white ground lines",
+        "similar soft lighting and rendering"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "aura-links-3d--stAuroras",
+      "b": "aura-diamond-3d--ivy",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a baseball field with a scoreboard and an 'IVY CLASSIC' wall; Image B is a golf tee box",
+        "Different art style: A has dramatic dark stormy lighting and orange dirt; B has low-poly rounded trees and a soft pastel sky",
+        "Different camera and characters: A is an elevated view of the field with white-clad players; B is a low third-person view of a golfer in a blue shirt"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "aura-links-3d--neonBay",
+      "b": "aura-diamond-3d--sandlot",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a baseball field in daylight with a hazy gray sky; Image B is a golf scene at night with a deep navy sky",
+        "Different character styles: A has small, simple low-poly players, B has more detailed, realistic golfer models",
+        "Different environments and lighting: A has orange dirt, stands and a scoreboard; B has stylized round trees and striped teal grass"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "aura-links-3d--cinderRim",
+      "b": "aura-diamond-3d--sandlot",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball stadium with a green field and crowds; Image B is a golf tee on a barren brown plain",
+        "Different sky treatment: flat gray haze in A versus dramatic cloudy sky in B",
+        "Character models differ: white-uniformed low-poly players in A versus a grey-shirted golfer with a cap and more detailed shading in B"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 1,
+      "a": "aura-links-3d--cinderRim",
+      "b": "aura-diamond-3d--ivy",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with green grass and an orange dirt infield; Image B is a golf scene on brown cobbled terrain",
+        "Different character models: A has white-uniformed players with blocky shapes, B has a golfer in a gray shirt and white cap with a more detailed look",
+        "Different sky and mood: A has dark, stormy, warm-toned lighting; B has a pale overcast sky with floating ember particles"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 1,
+      "a": "aura-links-3d--stAuroras",
+      "b": "aura-diamond-3d--lunar",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night baseball field with a monochrome blue palette; Image B is a bright daytime golf course with green grass",
+        "Different sports and gameplay: baseball batter and fielders vs. golfer on a tee",
+        "Different character models and scenery: white-uniformed low-poly players vs. blue-shirted golfer with stylized round trees and a cloudy sky"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 1,
+      "a": "aura-links-3d--mapleHollow",
+      "b": "aura-diamond-3d--sandlot",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a golf scene with bright blue sky and stylized rounded autumn trees, while Image B is a baseball stadium with a hazy gray sky",
+        "Different character rendering: A has more detailed, realistic-proportioned golfers, B has simple white-uniformed figures",
+        "Different environment and lighting: A has an open grass field with a soft saturated palette, B has a dirt infield with stands, scoreboard and a muted tone"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 1,
+      "a": "aura-links-3d--cinderRim",
+      "b": "aura-diamond-3d--sandlot",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Different sports: golf vs baseball",
+        "Image A has a barren brown terrain with a dusky overcast sky, while Image B has a green field with orange dirt",
+        "The character models look similar (white cap, grey shirt, low-poly), which hints at a shared engine or asset style"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 1,
+      "a": "aura-links-3d--mareCourse",
+      "b": "aura-diamond-3d--dome",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a stadium baseball scene with green turf and a lit crowd; Image B is a dark lunar-style golf scene under a black sky",
+        "Different character models: A has low-poly white-uniformed players, B has darker, more realistic figures in blue caps",
+        "Different lighting and palette: A is bright, saturated and daylit; B is monochrome, moody and night-like"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 1,
+      "a": "aura-links-3d--mareCourse",
+      "b": "aura-diamond-3d--sandlot",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a dark lunar-style scene with black sky, while Image B is a bright baseball stadium with a daytime sky",
+        "Different character models: A has dark blue figures with caps and a putter, B has low-poly white-uniform players",
+        "Different art and lighting: A uses realistic textured ground and moody lighting, B uses flat stylized colors"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 1,
+      "a": "aura-links-3d--neonBay",
+      "b": "aura-diamond-3d--dome",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball stadium with a dome and scoreboard; Image B is a golf course at night",
+        "Different character models: Image A has small white-uniformed players, Image B has a more detailed golfer in a cap",
+        "Different lighting and palette: Image A is muted indoor haze, Image B is a dark navy sky with stylized round trees"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 1,
+      "a": "aura-links-3d--stAuroras",
+      "b": "aura-diamond-3d--sandlot",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a baseball field with a stadium and scoreboard; Image B is a golf course",
+        "Different art styles: A has flat, simple figures and a hazy palette, B has stylized round trees and a cloudy sky",
+        "Different cameras and HUD: A is a high behind-the-batter view with a ring reticle, B is a low third-person view with a tee marker"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 1,
+      "a": "aura-links-3d--mareCourse",
+      "b": "aura-diamond-3d--lunar",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Both frames show a black sky and a dim blue-grey night palette",
+        "A shows a golfer on rough moon-like textured terrain, B shows a baseball field with a stadium",
+        "Both have similar blue-capped, low-poly human characters, but the scenes and gameplay differ"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 1,
+      "a": "aura-links-3d--stAuroras",
+      "b": "aura-diamond-3d--dome",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball stadium in an indoor dome, while Image B is a golf course outdoors",
+        "Different sports, scenery and lighting: dark gray infield and blurry backdrop vs. bright green fairway with stylized trees and sky",
+        "Character models and camera differ: small distant players on a field vs. a close third-person golfer"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 1,
+      "a": "aura-links-3d--cloudTerrace",
+      "b": "aura-diamond-3d--lunar",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "golf vs baseball setting",
+        "daytime bright green course vs dark night stadium with blue monochrome palette",
+        "similar low-poly white-clothed humanoid figures with caps, possibly same engine or asset style"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 1,
+      "a": "aura-links-3d--mapleHollow",
+      "b": "aura-diamond-3d--canyon",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a golf tee box with stylized autumn trees; Image B is a baseball field with giant boulders and stands",
+        "Character models differ: A has grey-trousered golfers with caps, B has uniformed white baseball players with blue caps",
+        "Different environments and palettes: bright green fairway with pale blue sky vs. orange dirt infield, red rock, and a grey sky"
+      ]
+    }
+  ]
+}

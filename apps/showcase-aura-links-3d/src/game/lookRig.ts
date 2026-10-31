@@ -23,6 +23,7 @@ import {
   keyDirection,
   keyShadowFor,
   NEON_MAST_SPOTS,
+  keyShadowTuning,
   type CourseLookRow,
   type LinksTier
 } from "./lighting";
@@ -59,7 +60,7 @@ export function lookOverridesFor(row: CourseLookRow, tier: LinksTier): AuraLookO
     hdri: row.hdri.id,
     environmentIntensity: row.hdri.intensity,
     environmentRotationDeg: hdriRotationDeg(row),
-    key: { color: row.key.color, intensity: row.key.intensity, shadow: keyShadowFor(tier) },
+    key: { color: row.key.color, intensity: row.key.intensity, shadow: { ...keyShadowFor(tier), ...keyShadowTuning(row.course) } },
     rim: row.rim ? { color: row.rim.color, intensity: row.rim.intensity, azimuthDeg: row.rim.azimuthDeg } : false,
     ...(row.fog ? { fog: { color: row.fog.color, height: { ...row.fog } } } : {}),
     grade: { contrast: row.grade.contrast, saturation: row.grade.saturation, temperature: row.grade.temperature, tint: row.grade.tint },
