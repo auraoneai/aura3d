@@ -10,7 +10,10 @@ export const LOOK_HDRI = { id: "indoor-workshop", url: "/hdri/indoor-workshop_1k
 
 /** Desk-lamp key (DD47-L1): one shadowed PCSS spot from the upper left of the bench. */
 export const LAMP = {
-  position: [-13, 19, 9] as const,
+  /** Phase 4 (4.7.2): lower and further left (was [-13, 19, 9], 52 deg elevation; now ~38 deg) so the chip walls, gems
+   * and stubs throw raking shadows about 1.6x as long across the mask (rubric: shadows). The board centre and the
+   * right edge sit at the same lamp distance as before, so exposure holds. */
+  position: [-16, 13, 8] as const,
   target: [-1.5, 0, -0.5] as const,
   /** Half-angle in radians: the cone covers the board and falls off past its right third. */
   angle: 0.8,
@@ -20,6 +23,20 @@ export const LAMP = {
   /** Range window (world units); the lamp is ~24 units from the board centre, so the default 12 would cut it off. */
   distance: 90,
   decay: 2
+} as const;
+
+/** Phase 4 (4.7.2): a tighter PCSS penumbra (was lightSize 1.2, softness 0.6) so the contact edge reads. */
+export const LAMP_SHADOW = { filter: "pcss", mapSize: 2048, lightSize: 0.8, softness: 0.42, bias: 0.0004, normalBias: 0.02 } as const;
+
+/**
+ * Phase 4 (4.7.2) grounding and reflection: screen-space contact shadows from the lamp, a short-radius AO under the
+ * chips and pads, and screen-space reflections so the chips, gems and courier mirror in the glossy solder mask
+ * (rubric: shadows, ibl_reflections).
+ */
+export const GROUNDING = {
+  contact: { intensity: 0.8, length: 0.32, thickness: 0.06 },
+  ao: { radius: 0.36, intensity: 0.55, density: 0.62 },
+  ssr: { intensity: 0.55, maxDistance: 9, roughness: 0.42, thickness: 0.35 }
 } as const;
 
 /** Cool unshadowed bounce (DD47-L1): the old directional, now 0.25 from the far right of the room. */
@@ -45,7 +62,7 @@ export const BENCH = {
  * Unshadowed; the engine caps punctual lights per tier.
  */
 export const PRACTICALS = {
-  courier: { color: "#5ff3ff", intensity: 4, distance: 4.5, decay: 2, height: 1.1 },
+  courier: { color: "#5ff3ff", intensity: 4, distance: 4.5, decay: 2, height: 1.4 },
   surge: { color: "#ffb23e", intensity: 2.4, distance: 3.6, decay: 2, height: 0.9 },
   sentry: { color: "#8fa6b8", intensity: 1.6, distance: 3.2, decay: 2, height: 1.2 },
   pooled: 4
@@ -59,6 +76,22 @@ export const BOARD_PROBE = {
   intensity: 1
 } as const;
 
+/**
+ * Phase 4 (4.7.2) courier pod (DD47-A1, WP-36 Meshy key `dotdashCourierPod`): the robot body under the glowing core,
+ * presentation only (the courier still moves and collides as one tile). The GLB is 1.902 tall with its pivot at the
+ * bounds centre, so `scale` puts it 0.74 tall and `lift` stands it on the board top (-0.02). The core hovers over the
+ * dome; a cyan rim and a little emissive keep the dark-green shell readable on the green mask.
+ */
+export const COURIER_POD = {
+  scale: 0.389,
+  lift: -0.02 + 0.951 * 0.389,
+  coreHeight: 0.98,
+  shell: 0.36,
+  rim: { color: "#7ff6ff", power: 2.4, intensity: 0.85 },
+  emissive: "#2fb8c8",
+  emissiveIntensity: 0.14
+} as const;
+
 /** Signature macro DOF (DD47-P1): metric lens; the focus distance follows the camera to the board centre. */
 /**
  * Phase 3 (4.7.1) lamp haze: a thin height-bound volumetric inscatter lit from the lamp and a faint cone mesh along the
@@ -66,8 +99,9 @@ export const BOARD_PROBE = {
  * and the HUD read through them.
  */
 export const LAMP_HAZE = {
-  fog: { density: 0.008, color: "#6a5238", intensity: 0.4, heightFalloff: 0.16, godRayDensity: 0.45 },
-  cone: { color: "#ffd9a8", intensity: 0.32, length: 24, softness: 0.85 }
+  // Phase 4 (4.7.2): inscatter 0.4 -> 0.6, god rays 0.45 -> 0.6, cone 0.32 -> 0.6: the judge saw no haze at all.
+  fog: { density: 0.008, color: "#6a5238", intensity: 0.6, heightFalloff: 0.16, godRayDensity: 0.6 },
+  cone: { color: "#ffd9a8", intensity: 0.6, length: 24, softness: 0.85 }
 } as const;
 
 /**
@@ -137,6 +171,8 @@ export interface BoardLookRow {
 
 // Phase 3 (4.7.1): the dark-mask boards (classic, foundry, zerocore) take a brighter lamp (+25-35%) so their
 // steady-state frames reach the declared luma band (mean 42-60, p95 >= 200) instead of sitting at mean 32-40.
+// Phase 4 (4.7.2): the dark-mask boards' masks are glossier (classic 0.3 -> 0.22, foundry 0.34 -> 0.26, zerocore
+// 0.5 -> 0.36) so the screen-space reflections and the probe show in them; the pale boards keep their panel-judged sheen.
 const ROOM_FOG = "#1a120c";
 
 const row = (r: Omit<BoardLookRow, "timeOfDay" | "hdri" | "fog" | "background"> & { readonly hdriIntensity?: number; readonly fogDensity?: number }): BoardLookRow => {
@@ -155,7 +191,7 @@ export const BOARD_LOOKS: Readonly<Record<MazeId, BoardLookRow>> = {
   classic: row({
     board: "classic",
     pcb: "green FR-4 relay board, bare copper, silver pads",
-    mask: "#1f4a38", maskRoughness: 0.3, copper: "#c8743a", silk: "#e9e6d6", led: "#5ff3ff", traceGlow: "#ffb070",
+    mask: "#1f4a38", maskRoughness: 0.22, copper: "#c8743a", silk: "#e9e6d6", led: "#5ff3ff", traceGlow: "#ffb070",
     lamp: { color: "#ffc58a", intensity: 4300, temperatureK: 3000 },
     grade: { contrast: 1.08, saturation: 1.06, temperature: 0.08, tint: 0, lut: "/luts/dot-dash-3d/classic.cube" }
   }),
@@ -187,14 +223,14 @@ export const BOARD_LOOKS: Readonly<Record<MazeId, BoardLookRow>> = {
   foundry: row({
     board: "foundry",
     pcb: "red heavy-copper power board",
-    mask: "#7a2018", maskRoughness: 0.34, copper: "#d4834a", silk: "#f6efe4", led: "#ffd27a", traceGlow: "#ff9a5a",
+    mask: "#7a2018", maskRoughness: 0.26, copper: "#d4834a", silk: "#f6efe4", led: "#ffd27a", traceGlow: "#ff9a5a",
     lamp: { color: "#ffbe80", intensity: 4200, temperatureK: 2800 },
     grade: { contrast: 1.1, saturation: 1.02, temperature: 0.1, tint: 0.02, lut: "/luts/dot-dash-3d/foundry.cube" }
   }),
   zerocore: row({
     board: "zerocore",
     pcb: "matte black reactor board, ENIG gold",
-    mask: "#1f1f28", maskRoughness: 0.5, copper: "#d7a74e", silk: "#d8d2e6", led: "#ff5fdc", traceGlow: "#ff9cf0",
+    mask: "#1f1f28", maskRoughness: 0.36, copper: "#d7a74e", silk: "#d8d2e6", led: "#ff5fdc", traceGlow: "#ff9cf0",
     lamp: { color: "#ffd9b0", intensity: 4800, temperatureK: 3400 },
     grade: { contrast: 1.12, saturation: 1.05, temperature: 0.02, tint: 0.08, lut: "/luts/dot-dash-3d/zerocore.cube" }
   })

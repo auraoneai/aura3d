@@ -47,8 +47,8 @@ describe("dot-dash-3d lighting: desk-lamp key (DD47-L1) and workshop IBL (DD47-E
     expect(shadowed).toHaveLength(1);
     const lamp = shadowed[0]!;
     expect(lamp.light).toBe("spot");
-    expect(lamp.position).toEqual([-13, 19, 9]);
-    expect(LAMP.position).toEqual([-13, 19, 9]);
+    expect(lamp.position).toEqual([-16, 13, 8]);
+    expect(LAMP.position).toEqual([-16, 13, 8]);
     expect((lamp.shadow as { filter?: string }).filter).toBe("pcss");
     expect(lamp.color).toBe(BOARD_LOOKS.classic.lamp.color);
   });
