@@ -36,3 +36,15 @@ Status per acceptance line. "code" = implemented in phase 1, the number is measu
 | GC-AN2 | <= 16 skinned draws; >= 3 walkers; slide < 5 cm | blocked (WP-36) |
 | GC-PF1 | <= 130 draws; <= 1.3M tris; <= 22 MB; fps -15% max | budget.json written; phase 2 |
 | GC-PF2 | sibling judge same_game false >= 0.8; categories >= 7/8 | phase 2 |
+
+## Phase 3 (4.7.1), 2026-10-31
+
+Software WebGL2 (remote ACR). Detail: lane report "Phase 3 (4.7.1)".
+
+| Line | Status |
+|---|---|
+| Views beat 4.6.2 (blind 3-judge panel) | default, golden, sunset, bluehour: better 3/0/0 on the shipped build (g18p3r3b); all four default to the shift look; noenv and `?look=original` stay on the 4.6.2 look |
+| Dial clear of the courier | done: desktop right of the nitro bar, touch above the pads (both index.html copies) |
+| Rubric >= 7 per category (PRD 1.2) | not reached: final minimum 3.5 (ibl_reflections), max 6.5 (`look-judgement.json`); material_quality 4.5 and modeling_assets 5.5 blocked on WP-36; shadows 4.5 / ibl 3.5 open for 4.7.2 |
+| Game-checks 0 errors | yes (warnings: luma-band, which I judge to be wrong for the panel-verified look and do not widen, plus screens-fresh if the card retake did not land) |
+| GC-L2 road in shadow / GC-L3 | key moved behind the camera (az -150) at 15 deg; the canyon falls into building shadow, cast shadows read on cross streets (card frame) only; open |
