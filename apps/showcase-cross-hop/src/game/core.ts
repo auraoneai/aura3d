@@ -547,7 +547,7 @@ function buildDioramaScene(): unknown {
     .add(buildSunKey(0))
     .add(effects.contactShadows({ intensity: 0.55, length: 0.3 }))
     .add(effects.bloom({ intensity: L0.bloom.intensity, threshold: L0.bloom.threshold, radius: 0.3 }))
-    .add(effects.vignette({ intensity: 0.22, smoothness: 0.6 }))
+    .add(effects.vignette({ intensity: 0.14, smoothness: 0.6 }))
     .camera(camera.perspective({ position: pose.position, target: pose.target, fov: pose.fov }));
   if (!reducedMotion) {
     s.add(effects.depthOfField({ name: "cross-hop tilt-shift", maxBlur: L0.tiltShift.maxBlur, tiltShift: { bandCenter: TILT_CENTER0, bandWidth: L0.tiltShift.bandWidth } }));
@@ -651,9 +651,9 @@ function poolNodes(diorama: boolean) {
     out.push(
       // CH47-07: felt meadow, matte asphalt (lacquer dashes ride the detail pool), glossy clearcoat water,
       // gravel railbed and emissive lava, each one instanced pool (+5 draws).
-      instances.roundedBox({ name: "s-felt", size: [1, 1, 1], material: material.felt({ color: "#ffffff", sheenColor: "#ffffff" }), transforms: pad(CAP.felt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-felt")),
+      instances.roundedBox({ name: "s-felt", size: [1, 1, 1], material: material.felt({ color: "#ffffff", sheen: 0.06, envMapIntensity: 0.3 }), transforms: pad(CAP.felt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-felt")),
       instances.box({ name: "s-asphalt", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.92, metalness: 0 }), transforms: pad(CAP.asphalt), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-asphalt")),
-      instances.box({ name: "s-water", size: [1, 1, 1], material: material.clearcoat({ color: "#ffffff", roughness: 0.18, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 1.3 }), transforms: pad(CAP.water), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-water")),
+      instances.box({ name: "s-water", size: [1, 1, 1], material: material.clearcoat({ color: "#ffffff", roughness: 0.3, clearcoat: 0.5, clearcoatRoughness: 0.08, envMapIntensity: 0.55 }), transforms: pad(CAP.water), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-water")),
       instances.box({ name: "s-gravel", size: [1, 1, 1], material: material.pbr({ color: "#ffffff", roughness: 0.97, metalness: 0 }), transforms: pad(CAP.gravel), receiveShadow: true, castShadow: false }).runtime(game.runtimeNode("pool-gravel")),
       instances.box({ name: "s-lava", size: [1, 1, 1], material: material.emissive({ color: "#ffffff", emissive: "#ff6a2a", emissiveIntensity: L0.surfaces.lavaEmissive, roughness: 0.6 }), transforms: pad(CAP.lava), receiveShadow: false, castShadow: false, instanceColorTarget: "both" }).runtime(game.runtimeNode("pool-lava"))
     );
@@ -1134,7 +1134,7 @@ function swapLook(ti: number): void {
 const TRUCK_TINTS = ["#d8e0ea", "#e2dad0", "#d4e0e6"] as const;
 
 /** Pools whose content depends only on the visible rows, their themes and the run: rebuilt when that key changes (CH-E3). */
-const STATIC_POOLS: readonly (keyof typeof CAP)[] = ["ground", "detail", "glowS", "trunk", "canopy", "dressB"];
+const STATIC_POOLS: readonly (keyof typeof CAP)[] = ["ground", "detail", "glowS", "trunk", "canopy", "dressB", "felt", "asphalt", "water", "gravel", "lava"];
 const DYNAMIC_POOLS = (Object.keys(CAP) as (keyof typeof CAP)[]).filter((k) => !STATIC_POOLS.includes(k));
 let staticKey = "";
 /** Pools submitted while empty and already hidden; they need no upload until they hold something again. */
