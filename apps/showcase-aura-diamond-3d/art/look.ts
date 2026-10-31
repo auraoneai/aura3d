@@ -283,10 +283,10 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
     baseLook: "space",
     hdri: { id: "deep_space_starfield", intensity: 0.6, rotationDeg: 0, background: true, backgroundIntensity: 1 },
     sky: { model: "gradient", zenith: "#010102", horizon: "#020305", ground: "#050607", stars: 1800 },
-    sun: { elevationDeg: 18, azimuthDeg: 300, color: "#f4f1ea", intensity: 6.0, colorTemperatureK: 5800 },
+    sun: { elevationDeg: 42, azimuthDeg: 300, color: "#f4f1ea", intensity: 3.4, colorTemperatureK: 5800 },
     rim: { color: "#6f8fb8", intensity: 1.0, elevationDeg: 35, azimuthDeg: 160 },
     fog: false,
-    exposureEv: 1.0,
+    exposureEv: 0.45,
     background: "#020305",
     accent: "#c3cbd8",
     post: {
@@ -296,10 +296,10 @@ export const PARK_LOOKS: Readonly<Record<ParkId, ParkLook>> = {
       bloom: { threshold: 0.65, intensity: 0.3 },
       grain: 0.03,
       vignette: 0.2,
-      grade: { contrast: 1.08, saturation: 0.82, temperature: -0.12, tint: 0 },
+      grade: { contrast: 1.14, saturation: 0.82, temperature: -0.12, tint: 0 },
       lut: "diamond-lunar-regolith.cube"
     },
-    turf: { grass: "#8e8c87", stripe: "#9a9892", clay: "#aaa79f", track: "#6f6d68", trackRoughness: 0.98, chalk: "#d9d6cc", normalScale: { grass: 0.25, clay: 0.2 } },
+    turf: { grass: "#5c5a56", stripe: "#62605b", clay: "#7a766d", track: "#4a4844", trackRoughness: 0.98, chalk: "#e6e2d6", normalScale: { grass: 0, clay: 0 } },
     crowd: ["#c3cbd8", "#e9e6dc", "#d98a3a", "#3c4a66", "#9aa3b5", "#5e6878", "#b8a27a"],
     signature: { splinter: "#cbbf9f", flash: "#ffffff", flashIntensity: 1.1, gravityScale: 0.17 },
     landingFx: "diamond-regolith-arc",
@@ -319,6 +319,19 @@ export const ORIGINAL_LOOKS: Readonly<Record<ParkId, { readonly baseLook: Diamon
   dome: { baseLook: "interior-industrial", exposureEv: 0.14 },
   lunar: { baseLook: "polar-night", exposureEv: 0.16 }
 };
+
+/**
+ * GU47 phase 2 (lunar blind panel): parks that play in their 4.6.2 look unless `?look=` names a look. The blind panel
+ * judged the new Lunar Park worse than 4.6.2, so the Moon keeps the old look in normal play; every other park is GU47.
+ */
+export const ORIGINAL_LOOK_PARKS: ReadonlySet<ParkId> = new Set<ParkId>(["lunar"]);
+
+/** The look variant a park plays in: an explicit `?look=original|gu47` wins, otherwise the park's own default. */
+export function parkLookVariant(park: ParkId, search: string): DiamondLookVariant {
+  const look = new URLSearchParams(search).get("look");
+  if (look === "original" || look === "gu47") return look;
+  return ORIGINAL_LOOK_PARKS.has(park) ? "original" : "gu47";
+}
 
 /** `?look=original` restores the 4.6.2 look; anything else (or nothing) is the GU47 look. */
 export function resolveLookVariant(search: string): DiamondLookVariant {
