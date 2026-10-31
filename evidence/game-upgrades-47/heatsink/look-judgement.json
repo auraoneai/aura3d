@@ -1,0 +1,81 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../g03/evidence/game-upgrades-47/heatsink/p3-r9/screens/1280-04-mid.jpg",
+      "sha256": "43fa4146774b9f6047e1c1e69a27a1bd49df081deafbaa5f5aab860e12766015"
+    },
+    {
+      "path": "../g03/evidence/game-upgrades-47/heatsink/p3-r9/heatsink/frames/g03p3-r9-1/heatsink--default--settle-60s.jpg",
+      "sha256": "fc64bc88d59b3434198f26f2a22770e0307e1005323ef8d24661f639ddeba678"
+    },
+    {
+      "path": "../g03/evidence/game-upgrades-47/heatsink/p3-r9/heatsink/frames/g03p3-r9-2/heatsink--dustfall--settle-60s.jpg",
+      "sha256": "7e4df1da7893bd1aa1070a5aa33d7a3921ac624a567763793ca9bd6b9ee6dc45"
+    },
+    {
+      "path": "../g03/evidence/game-upgrades-47/heatsink/p3-r9/heatsink/frames/g03p3-r9-3/heatsink--vesper--settle-60s.jpg",
+      "sha256": "2d0b22df358c6d4992a2042ed6348d59b99df016d03f6cbd39e788a22e27dd3f"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 7,
+    "shadows": 5.5,
+    "ibl_reflections": 6.5,
+    "environment_world": 6.5,
+    "atmospheric_effects": 5.5,
+    "material_quality": 6,
+    "modeling_assets": 6.5,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 7,
+    "animation_quality": 6,
+    "ui_hud": 8
+  },
+  "observations": [
+    {
+      "category": "shadows",
+      "seen": "Drones cast only soft blob-like contact shadows on the asphalt. Barriers and buildings show little defined cast shadow, and the third frame's flat overcast lighting loses grounding almost entirely."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance fog is light and inconsistent. The skyline reads crisp and flat in frames 2–4, with little aerial perspective in the 30–180 m band. Frame 1 has some haze around the tunnel, and the sun bloom in frame 2 is the strongest atmospheric moment."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The wet asphalt has convincing glossy sparkle in frames 1, 2 and 4, but the drones use flat matte plastic with uniform roughness. Buildings are emissive window textures on boxes, and frame 3's road is dull and untextured."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Drones are chunky low-poly kitbash shapes with readable silhouettes, but there are no rotor blades in motion. The arch gate and buildings are simple extruded boxes, and the city towers repeat the same window-tile texture."
+    },
+    {
+      "category": "composition",
+      "seen": "In frames 2–4 the player drone sits large and right-heavy at about 30% of the frame, crowding out the road ahead. Frame 1 has better framing, with the subject at about 10–15% and centered under the gate."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits low and close, and the FOV looks near 60. However, frames 2–4 place the subject too close, so it occludes the racing line, and there is no evident speed FOV kick despite 762 km/h."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The megacity skyline, gantry tunnel, barriers and billboard give a sense of place. Still, the skyline is a flat repeated backdrop with sparse roadside detail and empty mid-ground."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The wet road picks up warm and blue reflections of lights and buildings in frames 1 and 4. The drone metals show little environment reflection."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Static frames show exhaust particle trails and motion-free rotors. Rivals are frozen in formation across frames 2–4, with no visible banking or tilt."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

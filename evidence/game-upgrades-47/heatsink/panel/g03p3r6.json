@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "heatsink",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Camera sits very close, so the player craft fills most of the right half and hides the track ahead. Its rear lights and the sun flare blow out the centre-right. The rival drone on the left is slightly cut off.",
+     "The camera sits very close, so the player craft fills the right third of the frame and covers part of the track. The sun flare and bloom behind the craft slightly blow out the area around it. The overcast grey sky is a little flat, and the frame is busy on the left with a near drone and props. Still, it has strong mood: lit window grids on the city, a wet reflective road, warm and cool contrast, and good depth.",
+     "The chase camera sits very close, so the player craft fills the lower right and hides part of the road ahead. The sun flare washes out the area behind the craft. The minimap backdrop is a dark translucent box."
+    ]
+   },
+   {
+    "variant": "dustfall",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The arch and towers read as flat orange silhouettes with little shading. The road foreground is dark and slightly muddy. The player craft is large and blocks part of the right lane.",
+     "The arch and towers are lit a fairly uniform flat orange-brown, so they read as silhouettes with little material variation. The lower road is quite dark and muddy. The craft is very close and large on the right. The cloudy dusk sky and warm palette still give it atmosphere and depth.",
+     "The arch and towers are flat, monochrome orange-brown silhouettes with little shading, and the overall image is somewhat muddy. The camera is close and the player craft covers the right side of the frame. The lower foreground is dark."
+    ]
+   },
+   {
+    "variant": "vesper",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The player craft is large and blocks the right side of the view. The background behind the billboard is blurry and smeared. The minimap backdrop blends into the buildings.",
+     "The craft is very close and covers part of the right side of the track. Background trees and terrain on the right look blurry and smeared. The sky is a fairly flat blue gradient. It still has good dusk colour contrast, a reflective blue wet road, a lit city and clear depth.",
+     "There is an odd blurry green and grey smear on the horizon behind the billboard, and the minimap area is blurred. The camera is close, so the player craft covers the right side of the frame. Otherwise it has a strong blue dusk mood and wet road reflections."
+    ]
+   }
+  ]
+ }
+]

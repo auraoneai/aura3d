@@ -1,0 +1,50 @@
+[
+ {
+  "slug": "heatsink",
+  "judges": 2,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Camera sits very close and the player ship dominates and crops the right side of the frame; the sun flare blows out the area behind the player; the ship overlaps nearby drones; slightly busy, but it has rich city backdrop detail, a wet reflective road and strong warm mood",
+     "Camera is very close, so the player craft and the nearby rival fill the right half of the frame and crowd the view of the track ahead. The sun bloom washes out the centre-right. The wet road highlights are slightly noisy."
+    ]
+   },
+   {
+    "variant": "dustfall",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Brown-orange cast makes the image somewhat muddy, and the arch and towers read as flat silhouettes; the road is dark and low in detail; the camera is very close, so the player crowds the right half and overlaps other drones; still has a cloudy sky, depth and mood",
+     "Dust haze flattens the arch and towers into same-tone orange silhouettes with little detail. The road is a muddy, low-contrast brown with no texture. The player craft is very close and occludes the right side of the frame. The bottom of the frame is dark and murky."
+    ]
+   },
+   {
+    "variant": "vesper",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Camera very close, so the player is oversized and crowds the right side and overlaps drones; the distant right background is slightly blurry and smeared; otherwise a strong dusk blue/orange contrast, reflective wet road and a detailed lit skyline",
+     "A blurry, low-resolution green/brown backdrop shows between the towers on the right. The player is close-cropped and covers part of the track. The lower foreground is quite dark. Otherwise the dusk palette is strong and the reflective road works well."
+    ]
+   }
+  ]
+ }
+]
