@@ -58,6 +58,10 @@ export interface ToonLightRow {
   readonly gloss: { readonly ball: number; readonly fresh: number; readonly drySeconds: number; readonly shininess: number };
   /** CR-M2 painted-canvas deck (weave and brush-streak amplitudes, 0..1). */
   readonly canvas: { readonly weave: number; readonly streak: number };
+  /** GU47 phase 3: stepped sky reflection on glossy paint (ball, gates, rails, fresh splatters), scaled by each surface's gloss. */
+  readonly skyReflect: number;
+  /** GU47 phase 3: painted contact darkening on props near the deck (gates, rails, ball, bunting): world height of the fade, strength. */
+  readonly contact: { readonly height: number; readonly strength: number };
 }
 
 export interface SplatLook {
@@ -103,7 +107,9 @@ export interface SplatLook {
   /** CR-V2 ball ribbon (last 12 positions). */
   readonly ribbon: null | { readonly points: number; readonly width: number; readonly alpha: number };
   /** CR-C1 presentation camera layers. */
-  readonly camera: null | { readonly maxRollDeg: number; readonly speedFovDeg: number };
+  readonly camera: null | { readonly maxRollDeg: number; readonly speedFovDeg: number; readonly fovOffsetDeg: number };
+  /** Speed-streak tint and opacity (the 4.6.0 streaks are white at 0.4). */
+  readonly streaks: { readonly color: string; readonly alpha: number };
   /** CR-W1 festival bunting. */
   readonly bunting: null | { readonly spacing: number };
   /** CR-AN2 backdrop sway amplitude (degrees). */
@@ -111,6 +117,8 @@ export interface SplatLook {
   /** CR-M3 paint-drip gate arches and CR-AN1 drip wobble (world units at the bead, Hz) and match squash (seconds). */
   /** CR-W2 horizon silhouette ring of crayon spires and towers, standing in the cloud sea (one static node). */
   readonly spires: null | { readonly count: number; readonly radius: number; readonly baseY: number; readonly minHeight: number; readonly maxHeight: number; readonly colors: readonly string[] };
+  /** GU47 phase 3 soft cel shadows of the gate posts and bar on the deck, cast away from the low sun (length m, opacity). */
+  readonly gateShadow: null | { readonly length: number; readonly alpha: number };
   readonly gates: null | { readonly drips: boolean; readonly wobble: number; readonly wobbleHz: number; readonly squashSeconds: number };
 }
 
@@ -132,9 +140,11 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
     vfx: false,
     ribbon: null,
     camera: null,
+    streaks: { color: "#ffffff", alpha: 0.4 },
     bunting: null,
     sway: null,
     spires: null,
+    gateShadow: null,
     gates: null
   },
   carnival: {
@@ -144,13 +154,15 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
     toon: {
       sunAzimuthDeg: -35,
       ground: "#5b4a6e",
-      fillIntensity: 0.42,
-      bounceIntensity: 0.22,
+      fillIntensity: 0.38,
+      bounceIntensity: 0.42,
       bounceDirection: [0.2, -0.35, 1],
       rim: { color: "#ffb27a", intensity: 0.55, threshold: 0.62 },
-      fogDensity: 0.0042,
+      fogDensity: 0.0055,
       gloss: { ball: 0.55, fresh: 0.7, drySeconds: 2, shininess: 48 },
-      canvas: { weave: 0.05, streak: 0.06 }
+      canvas: { weave: 0.05, streak: 0.06 },
+      skyReflect: 1.1,
+      contact: { height: 0.8, strength: 0.5 }
     },
     sky: {
       /* GU47 phase 2: the cloud-sea disc's far edge sits about 13 deg below the chase camera's eye line (y -22, r 112, seen
@@ -166,7 +178,7 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
         {
           name: "golden", at: 500,
           zenith: "#33607e", upper: "#6f82a0", rose: "#e8798a", horizon: "#f3a96b", sea: "#a99bc9",
-          sunColor: "#ffc58a", sunIntensity: 0.75, sunElevationDeg: 16, skyFill: "#6f8fb8", bounce: "#e8798a",
+          sunColor: "#ffc58a", sunIntensity: 0.85, sunElevationDeg: 16, skyFill: "#6f8fb8", bounce: "#e8798a",
           cloudTop: "#f6c79a", cloudShadow: "#9f8fc0", stars: 0
         },
         {
@@ -186,9 +198,9 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
     environment: { kind: "hdri", id: "kloppenheim_06_puresky", intensity: 0.65, rotationDeg: 145, fallback: "sunset" },
     backdropLights: "from-toon",
     post: {
-      bloom: { intensity: 0.45, threshold: 0.92, scatter: 0.5 },
+      bloom: { intensity: 0.6, threshold: 0.88, scatter: 0.6 },
       vignette: { intensity: 0.22, color: "#3a2440" },
-      grade: { contrast: 1.06, saturation: 1.08, temperature: 0.06, gain: 1.4 },
+      grade: { contrast: 1.14, saturation: 1.14, temperature: 0.06, gain: 1.4 },
       outline: { color: "#3b1f3f", width: 2, targets: ["ball", "gates", "rails"] },
       dof: { fStop: 2, focalLength: 50, maxBlur: 6 }
     },
@@ -196,10 +208,12 @@ export const LOOKS: Readonly<Record<LookId, SplatLook>> = {
     cloudSea: { y: -22, color: "#a99bc9", scroll: 0.35 },
     vfx: true,
     ribbon: { points: 12, width: 0.42, alpha: 0.55 },
-    camera: { maxRollDeg: 3, speedFovDeg: 3 },
+    camera: { maxRollDeg: 3, speedFovDeg: 3, fovOffsetDeg: -6 },
+    streaks: { color: "#ffe2c6", alpha: 0.24 },
     bunting: { spacing: 26 },
     sway: { balloonDeg: 5, islandDeg: 2.5 },
     spires: { count: 54, radius: 96, baseY: -24, minHeight: 12, maxHeight: 30, colors: ["#4a3f72", "#5a4a80", "#6a5a85"] },
+    gateShadow: { length: 1.8, alpha: 0.5 },
     gates: { drips: true, wobble: 0.045, wobbleHz: 0.9, squashSeconds: 0.25 }
   }
 };

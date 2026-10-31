@@ -1,0 +1,85 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/fix/splat-rush-port/frames/g16fix3-splat-rush-port-1/splat-rush-port--default--settle-60s.jpg",
+      "sha256": "358c1d9d08a068a50c942301e8cb68379ca9fa76d2f40a1cb4d8f3043d055a5a"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/fix/splat-rush-port/frames/g16fix3-splat-rush-port-1/splat-rush-port--default--settle-25s.jpg",
+      "sha256": "a53e3a82631409f58e90a4b754593bb14265a1e26c4819eea37c5707f1a6bd1c"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4.5,
+    "ibl_reflections": 4,
+    "environment_world": 6.5,
+    "atmospheric_effects": 6,
+    "material_quality": 5,
+    "modeling_assets": 5.5,
+    "composition": 4.5,
+    "camera": 4.5,
+    "postprocessing": 5,
+    "animation_quality": 5,
+    "ui_hud": 3
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Warm sunset key from the low left sun gives a pleasing pink/orange mood, but it departs from the expected daylight look. The ground clouds and pillars are lit flatly, with little directional modeling on the ball."
+    },
+    {
+      "category": "shadows",
+      "seen": "The ball casts only a soft blob shadow on the cloud floor in frame 1 and barely any in frame 2. The pillars, floating islands and cloud mounds show no visible cast shadows, so objects feel ungrounded."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The red ball has a baked-looking highlight and dark rim but no sky or environment reflection. The other surfaces show no reflective response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "A ring of brown wooden pillars, floating grass islands with castle towers, and hot-air balloons make a charming backdrop. However, the playfield is an empty purple cloud plane with lumpy mounds, and no readable platforms, coins or goals are visible."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "The sunset sky gradient and distant soft clouds add depth. White streak lines suggest wind or speed but read as rendering artifacts, crossing objects at inconsistent angles."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The cloud floor uses a soft noise texture. Cloud mounds have harsh two-tone yellow/purple banding that looks like a broken toon ramp. The pillars are untextured flat brown."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Islands, balloons and castle towers are decent stylized assets. Pillars are simple extruded boxes with pointed caps, and the cloud mounds are low-poly blobs with faceted silhouettes."
+    },
+    {
+      "category": "composition",
+      "seen": "The ball occupies roughly 1% of the frame in frame 2 and about 3% in frame 1, far below the 18–25% target. The frame center is empty cloud floor with no gameplay focal point."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a high behind-the-ball chase view with a wide FOV that visibly bends the pillar ring, not a side-on follow at FOV 50. The ball sits at different distances between the two frames."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "No visible bloom on the sun or tone shaping beyond the sky gradient. The image is mildly washed into purple, and nothing suggests a daylight-outdoor grade."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "No HUD is visible in either frame: no score, coin counter, lives or objective."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Streak lines imply motion and the ball sits on a mound in frame 2. Their random directions undercut readable motion feedback."
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}

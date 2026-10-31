@@ -1,0 +1,81 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r7/splat-rush-port/frames/g16p3-r7-1/desk--roll-settled.jpg",
+      "sha256": "cd0ec0927abf1a55c7d854ba667fba1137598f357c75a954a132c20de1bd4f8a"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r7/splat-rush-port/frames/g16p3-r7-1/desk--mid-action-settled.jpg",
+      "sha256": "56d2dd47361b2bc84c2f92ac228deecf1c31e0d67370583f35bbb95b3c4a6a64"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r7/splat-rush-port/frames/g16p3-r7-1/desk--title-settled.jpg",
+      "sha256": "17242086bf5214f1823ca6e5c6a59365ff90fdcc9f83eed7c15b3564c94512a7"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r7/splat-rush-port/frames/g16p3-r7-1/desk--early-settled.jpg",
+      "sha256": "74410aedbb4017884500daec3938685510253535be7989806fdf99940a9d2437"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6.5,
+    "shadows": 6.5,
+    "ibl_reflections": 6,
+    "environment_world": 7.5,
+    "atmospheric_effects": 7,
+    "material_quality": 6.5,
+    "modeling_assets": 7,
+    "composition": 7,
+    "camera": 6.5,
+    "postprocessing": 6.5,
+    "animation_quality": 6.5,
+    "ui_hud": 8
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Warm low sunset key from behind the track gives a pleasant pink/gold mood, but the track surface reads flat and evenly lit. A blown yellow hotspot sits mid-track. This is a dusk look, not the recipe's outdoor-day 3/4 front sun."
+    },
+    {
+      "category": "shadows",
+      "seen": "Gates cast soft, readable shadows across the track, and the ball has a contact shadow. Distant wooden spires and floating islands show little self-shadowing, and the rail beads cast no visible ground shadow."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The red ball relies on a painted-style white highlight and rim rather than reflecting the sky. The rail beads carry a generic specular dot. There is no visible environment reflection of the pink sky on glossy surfaces."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The dripping paint gates and glossy ball read well. The track wood texture is low-contrast and washed out. The spires are flat-shaded brown, and the clouds are flat cutout-like shapes with simple two-tone shading."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a low chase cam directly behind the ball, not the recipe's side-on follow. In frames 1 and 2 the ball fills roughly 20% of the frame and occludes the gate it is about to pass. In frame 4 it is small and centered, so framing is inconsistent."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Bloom is pushed hard where the track meets the horizon, creating a yellow glare band that flattens detail. White speed-line streaks scratched across the sky look like artifacts rather than motion blur."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Only motion cues are visible: the paint splatter trail behind the ball, flying droplets at the gate, and speed streaks. Rolling or squash motion cannot be confirmed from stills."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The world is cohesive: floating grass islands with towers, hot-air balloons, bunting flags, tall wooden spires and a cloud sea. The palette is pink/purple dusk instead of the saturated greens and sky blue the recipe calls for."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze fades the far spires and curving track into pink. The fog density is reasonable, though the sky gradient dominates the haze color."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

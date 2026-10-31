@@ -221,6 +221,8 @@ vec3 haze(vec3 c, vec3 world) {
  * with the splatter's age, CR-M2 painted-canvas weave and brush streaks, CR-S3 haze).
  * `crDry` = (ball z, road speed m/s, dry seconds); dry seconds 0 means "always wet" (the ball).
  * `crCanvas` = (weave, streak) amplitudes; 0 on every surface but the deck.
+ * GU47 phase 3: `crSkyReflect` adds a stepped sky reflection, hue-neutral so gate colours keep reading: a pale sky
+ * window where the reflected ray points up and a thin horizon-colour line at grazing angles, scaled by `crGloss`; `crContact` = (fade height m, strength) darkens props where they meet the deck (strength 0 = off).
  */
 export const carnivalToonFragment = (withMap: boolean, withTone = false): string => /* glsl */ `
 in vec3 vNormal;
@@ -244,6 +246,10 @@ ${withMap ? "  base *= srgbToLinear(texture(map, vUv).rgb);" : ""}
     float weave = sin(vLocal.x * 31.0) * sin(vLocal.z * 29.0);
     float streak = sin(vLocal.x * 2.3 + sin(vLocal.z * 0.61) * 2.4 + vLocal.z * 0.17);
     base *= 1.0 + crCanvas.x * weave + crCanvas.y * streak;
+    /* GU47 phase 3: painted rail shadows on the deck top (u runs across the deck): a wide band inside the left rail, whose
+     * shadow the low sun (azimuth -35, ahead-left) throws onto the deck, and a thin contact band inside the right rail. */
+    float railShade = max(1.0 - band(vUv.x, 0.085), band(vUv.x, 0.972)) * step(0.5, N.y);
+    base *= 1.0 - 0.3 * railShade;
   }
   float d = dot(N, crSunDir);
   float lit = band(d, 0.04) * 0.8 + band(d, 0.5) * 0.2;
@@ -257,6 +263,12 @@ ${withMap ? "  base *= srgbToLinear(texture(map, vUv).rgb);" : ""}
   vec3 H = normalize(crSunDir + V);
   float spec = band(pow(max(dot(N, H), 0.0), crShininess), 0.45);
   c += crSunColor * spec * crGloss * wet * 1.6;
+  vec3 R = reflect(-V, N);
+  float skyWin = band(R.y, 0.3) * (1.0 - band(fres, 0.78));
+  float horizonLine = (band(R.y, -0.04) - band(R.y, 0.05)) * band(fres, 0.35);
+  vec3 skyRefl = mix(crFogColor * 0.7, vec3(0.78, 0.84, 1.0) * 0.7, band(R.y, 0.45));
+  c += (skyRefl * skyWin + crFogColor * 0.9 * horizonLine) * crGloss * crSkyReflect * wet;
+  c *= 1.0 - crContact.y * (1.0 - smoothstep(0.0, crContact.x, vWorld.y));
   outColor = vec4(haze(shoulder(c), vWorld) + emissive, alpha);
 }`;
 

@@ -1,0 +1,89 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r4/splat-rush-port/frames/g16p3-r4-1/desk--roll-settled.jpg",
+      "sha256": "c9e99b79a738a0b36e57d927266cb47a7812029dc9831ca4ba76876087a27a91"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r4/splat-rush-port/frames/g16p3-r4-1/desk--mid-action-settled.jpg",
+      "sha256": "e28ff08a0d1de9dc54c2fc0d132a85a3eb4030c1a3e948a480698f6460ec555c"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r4/splat-rush-port/frames/g16p3-r4-1/desk--title-settled.jpg",
+      "sha256": "94f5ac1ab21270325870454d2df0ce27dfa4fb01bb4c8f5ba0503acac0979f19"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r4/splat-rush-port/frames/g16p3-r4-3/card--roll-60s.jpg",
+      "sha256": "07e5261ea6333bbb20aafda51704ba899069c2ce7155cbafd877f0a36d630427"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 7,
+    "shadows": 6.5,
+    "ibl_reflections": 6.5,
+    "environment_world": 7.5,
+    "atmospheric_effects": 7,
+    "material_quality": 7,
+    "modeling_assets": 7,
+    "composition": 6.5,
+    "camera": 6,
+    "postprocessing": 6.5,
+    "animation_quality": 6.5,
+    "ui_hud": 7.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Warm sunset key from behind and down the track gives a strong backlit glow on the path. The front of the ball and the gates is fairly flat and evenly lit, not the recipe's 3/4 front sun."
+    },
+    {
+      "category": "shadows",
+      "seen": "Gate legs cast long soft shadows toward camera and the ball has a contact shadow. The shadow on the ball is a soft blob with little definition, and the far gates show little grounding."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The red ball has a glossy specular highlight and a faint sky reflection. The purple rail spheres share a single generic highlight, and the gates and track show almost no environment response."
+    },
+    {
+      "category": "composition",
+      "seen": "The ball fills roughly 20–25% of the frame, centered low, with strong leading lines from the track. Foreground gates overlap the ball and crowd the lower center, and the colorful skybox clutter competes with the focal area."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a chase cam directly behind the ball, not the side-on follow the genre recipe asks for. It sits low enough that near gates occlude the path ahead."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "A heavy pink/violet haze and grade wash over the entire scene and desaturate the greens. There is a mild bloom on the track, but contrast is lifted and blacks are muddy. The menu frame is greyed out by a strong blur and dim."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Speed lines in the sky, a splash trail behind the ball, and drip particles on the gates suggest motion. Static frames can't confirm easing, and the splash particles look like small flat discs."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Floating islands with towers, hot-air balloons, wooden spires, a cloud sea, and bunting form a cohesive whimsical world. The snaking track gives a clear sense of route."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance fog fades the far track and spires into the sky, and the cloud layer adds depth. The purple fog tint is stronger than the recipe's light daylight fog."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The gates have a glossy candy-paint look with drip modeling. The track's wood-plank texture reads, but it is washed out under the bloom."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The hearts, color meter, score and combo pills, and 2x timer badge are clean and on-theme. The menu card has readable typography plus accessibility toggles."
+    }
+  ],
+  "nextChange": {
+    "category": "camera",
+    "change": "switch to the recipe row's rig and fov",
+    "api": "camera.follow / camera.orbit / camera.dolly"
+  },
+  "judge": "prism"
+}

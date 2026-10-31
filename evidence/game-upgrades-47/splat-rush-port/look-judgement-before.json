@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r1/splat-rush-port/frames/g16p3-r1-1/desk--roll-settled.jpg",
+      "sha256": "cdd42f610178382e51ef3908283ecd16562624d4cd7cc061685be372f892de44"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r1/splat-rush-port/frames/g16p3-r1-1/desk--mid-action-settled.jpg",
+      "sha256": "31ef6599fbeec5e15c6670b4e5f3667795c756551ad4d36752e48c53c31665d0"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r1/splat-rush-port/frames/g16p3-r1-1/desk--title-settled.jpg",
+      "sha256": "8343e62e7410c0dec397a2d6bc54d17299d466d6931e25da49b4c774dadd6599"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r1/splat-rush-port/frames/g16p3-r1-2/splat-rush-port--default--settle-60s.jpg",
+      "sha256": "701c91420f09526c1bc1f7110f9ac11d9ada0f2ebc8df74f18a50146b0a2662e"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6.5,
+    "shadows": 5.5,
+    "ibl_reflections": 5,
+    "environment_world": 7.5,
+    "atmospheric_effects": 6.5,
+    "material_quality": 6,
+    "modeling_assets": 6.5,
+    "composition": 6.5,
+    "camera": 6,
+    "postprocessing": 6,
+    "animation_quality": 6,
+    "ui_hud": 7.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Warm sunset key with a pink/orange sky gradient instead of the recipe's midday outdoor sun. The track reads as flat cream with little directional modelling, and the gates are lit almost uniformly."
+    },
+    {
+      "category": "shadows",
+      "seen": "The ball casts a soft blob-like shadow offset to the left. The gates and track-edge spheres show no visible contact shadows, so objects float slightly on the track."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The red ball has a single baked-looking specular highlight and rim. There is no environment reflection of the sky on the ball or the glossy gate paint."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The backdrop is rich: floating grassy islands with towers and flags, hot-air balloons, wooden pillars and a cloud sea. In the fourth frame the track is missing entirely and the ball sits on the cloud floor, which is an empty-world state."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "White speed lines streak across the sky and soft clouds fill the scene. Distance haze is weak: far pillars and islands keep near-full contrast, and the speed streaks overlay the islands awkwardly."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Gates use a nice dripping-paint toon look. The track surface is a pale, low-detail texture with faint color streaks, and the dark track-edge spheres are flat purple-brown blobs."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The gates have good drip silhouettes and the islands are charming. The pillars are plain boxes with spikes, and the track is a simple ribbon lined with repeated spheres."
+    },
+    {
+      "category": "composition",
+      "seen": "The ball sits low-center at roughly 10% of the frame, below the 18–25% target. Paint splatter and the lower gate cluster crowd the bottom, while the busy sky competes with the track for attention."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a behind-the-ball chase view rather than the recipe's side-on follow. Converging track lines give good depth, but the near-ground camera lets a splat decal fill the lower frame."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is a mild outline/toon pass on objects. There is no visible bloom on the coin or sky and little color grading beyond the sunset tint; the menu frame uses a heavy desaturating dim overlay."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Paint droplets spray from gate impacts and splash decals stay on the track, which gives readable feedback. In the stills the ball shows no squash or motion blur."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Cohesive cream pill panels for score and combo, heart lives, a color meter, a power-up timer chip ('2x 5s') and a clear title card with accessibility toggles. The HUD has consistent typography and good contrast."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

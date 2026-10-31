@@ -5,7 +5,7 @@ import { PIECES, addBackdrop, backdropSway } from "../../../examples/splat-rush-
 import { GATE_COLORS, LOOKS, QA_CROPS, parseLook, sunDirection, timeOfDay, type SplatLook } from "../../../examples/splat-rush-port/look";
 import { IDLE, SplatRushSim } from "../../../examples/splat-rush-port/sim";
 import { MOTE_COLORS, MOTE_EVERY, PAINT_MOTE, PAINT_MOTE_SPEC, PAINT_SPLASH, PAINT_SPLASH_RING, SPLASH_COUNT, fireMote, fireSplashes, moteFor, splashesFor } from "../../../examples/splat-rush-port/vfx3d";
-import { BUNTING_COLORS, DECK_DRIPS, TITLE_DOF, dofFocus, spireRingMesh, DECK_EDGE_X, TITLE_RAIL_SECONDS, buildWorld, presentationPose, buntingMesh, cameraLayers, carnivalToonSpec, rolledUp } from "../../../examples/splat-rush-port/world";
+import { BUNTING_COLORS, DECK_DRIPS, TITLE_DOF, dofFocus, spireRingMesh, DECK_EDGE_X, TITLE_RAIL_SECONDS, buildWorld, gateShadowMesh, presentationPose, buntingMesh, cameraLayers, carnivalToonSpec, rolledUp } from "../../../examples/splat-rush-port/world";
 import { deltaE2000 } from "../../../tools/look-metrics/region-luma.mjs";
 
 const g = globalThis as { document?: unknown };
@@ -81,6 +81,31 @@ describe("GU47 CR-00: ?look=original|carnival", () => {
       expect(c.x + c.w).toBeLessThanOrEqual(1); expect(c.y + c.h).toBeLessThanOrEqual(1);
     }
     expect(QA_CROPS.carnival.map((c) => c.name)).toContain("sun");
+  });
+});
+
+describe("GU47 phase 3: sky reflection and deck contact (presentation uniforms)", () => {
+  it("contact darkening is off unless a surface asks for it (the deck never does); the sky reflection comes from the look row", () => {
+    const u = (surface: Parameters<typeof carnivalToonSpec>[2]) =>
+      withDocument(() => carnivalToonSpec(LOOKS.carnival, [1, 1, 1], surface)).uniforms as Record<string, { value: number | number[] }>;
+    expect(u({ canvas: [0.05, 0.06] }).crContact?.value).toEqual([1, 0]);
+    const toon = LOOKS.carnival.toon!;
+    expect(u({ contact: true }).crContact?.value).toEqual([toon.contact.height, toon.contact.strength]);
+    expect(u({}).crSkyReflect?.value).toBe(toon.skyReflect);
+    expect(u({ reflect: false }).crSkyReflect?.value).toBe(0);
+    expect(LOOKS.original.streaks).toEqual({ color: "#ffffff", alpha: 0.4 });
+    expect(LOOKS.original.camera).toBeNull();
+  });
+
+  it("gate shadows: carnival only; three soft strips on the deck plane, starting at the gate posts and cast towards the camera", () => {
+    expect(LOOKS.original.gateShadow).toBeNull();
+    const m = gateShadowMesh(1.7, 0.7);
+    expect(m.positions.length / 3).toBe(12);
+    expect(m.indices.length).toBe(18);
+    for (let i = 1; i < m.positions.length; i += 3) expect(m.positions[i]).toBe(0);
+    const zs = m.positions.filter((_, i) => i % 3 === 2);
+    expect(Math.min(...zs)).toBeCloseTo(-0.15, 6);
+    expect(Math.max(...zs)).toBeGreaterThan(1.7);
   });
 });
 

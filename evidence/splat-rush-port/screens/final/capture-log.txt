@@ -1,14 +1,15 @@
-@@G16 desk title-settled 1280x720 luma=189.97 white%=0.67 drawCalls=21 path=hdr-msaa state={"phase": "splash", "frameCount": 0, "score": 0, "distance": 0, "lives": 3, "combo": 0}
-@@G16 desk early-settled 1280x720 luma=199.08 white%=0.2 drawCalls=22 path=hdr-msaa state={"phase": "playing", "frameCount": 46, "score": 12.341416666666685, "distance": 12.341416666666685, "lives": 3, "combo": 0}
-@@G16 desk roll-settled 1280x720 luma=189.45 white%=0.1 drawCalls=23 path=hdr-msaa state={"phase": "playing", "frameCount": 466, "score": 1839.4457388888898, "distance": 141.15158333333346, "lives": 3, "combo": 7}
-@@G16 desk mid-action-settled 1280x720 luma=190.19 white%=0.3 drawCalls=25 path=hdr-msaa state={"phase": "playing", "frameCount": 1166, "score": 17177.874188888803, "distance": 450.45043333332706, "lives": 2, "combo": 1}
-@@G16 desk results-settled 1280x720 luma=150.81 white%=0 drawCalls=19 path=hdr-msaa state={"phase": "gameOver", "frameCount": 301, "score": 184.6899999999998, "distance": 84.68999999999993, "lives": 0, "combo": 0}
-@@G16 phone title-settled 390x844 luma=191.35 white%=1.86 drawCalls=18 path=hdr-msaa state={"phase": "splash", "frameCount": 0, "score": 0, "distance": 0, "lives": 3, "combo": 0}
-@@G16 phone early-settled 390x844 luma=186.66 white%=0.03 drawCalls=20 path=hdr-msaa state={"phase": "playing", "frameCount": 46, "score": 12.341416666666685, "distance": 12.341416666666685, "lives": 3, "combo": 0}
-@@G16 phone roll-settled 390x844 luma=171.88 white%=0.02 drawCalls=20 path=hdr-msaa state={"phase": "playing", "frameCount": 466, "score": 1839.4457388888898, "distance": 141.15158333333346, "lives": 3, "combo": 7}
-@@G16 phone mid-action-settled 390x844 luma=182.32 white%=0.04 drawCalls=24 path=hdr-msaa state={"phase": "playing", "frameCount": 1166, "score": 17177.874188888803, "distance": 450.45043333332706, "lives": 2, "combo": 1}
-@@G16 phone results-settled 390x844 luma=162.37 white%=0 drawCalls=15 path=hdr-msaa state={"phase": "gameOver", "frameCount": 301, "score": 184.6899999999998, "distance": 84.68999999999993, "lives": 0, "combo": 0}
-@@G16 card roll-60s 1440x900 luma=190.59 white%=0.07 drawCalls=22 path=hdr-msaa state={"phase": "playing", "frameCount": 466, "score": 1839.4457388888898, "distance": 141.15158333333346, "lives": 3, "combo": 7}
-@@G16 card symbols-settled 1440x900 luma=190.41 white%=1.06 drawCalls=24 path=hdr-msaa state={"phase": "playing", "frameCount": 466, "score": 1839.4457388888898, "distance": 141.15158333333346, "lives": 3, "combo": 7}
-@@G16 card reduced-settled 1440x900 luma=192.83 white%=0.14 drawCalls=22 path=hdr-msaa state={"phase": "playing", "frameCount": 467, "score": 1840.5042055555564, "distance": 141.50440555555568, "lives": 3, "combo": 7}
-@@G16 errors [] (no GL_ERR or GL_CONSOLE lines in run g16w3-final3)
+@@G16 desk title-settled 1280x720 luma=153.62 white%=0.67 drawCalls=50 path=hdr-msaa state={"phase": "splash", "frameCount": 0, "score": 0, "distance": 0, "lives": 3, "combo": 0}
+@@G16 desk early-settled 1280x720 luma=141.25 white%=0 drawCalls=53 path=hdr-msaa state={"phase": "playing", "frameCount": 46, "score": 12.341416666666685, "distance": 12.341416666666685, "lives": 3, "combo": 0}
+@@G16 desk roll-settled 1280x720 luma=133.27 white%=0 drawCalls=54 path=hdr-msaa state={"phase": "playing", "frameCount": 466, "score": 1839.4457388888898, "distance": 141.15158333333346, "lives": 3, "combo": 7}
+@@G16 desk mid-action-settled 1280x720 luma=133.71 white%=0 drawCalls=59 path=hdr-msaa state={"phase": "playing", "frameCount": 1166, "score": 17177.874188888803, "distance": 450.45043333332706, "lives": 2, "combo": 1}
+@@G16 desk results-settled 1280x720 luma=100.67 white%=0 drawCalls=47 path=hdr-msaa state={"phase": "gameOver", "frameCount": 301, "score": 184.6899999999998, "distance": 84.68999999999993, "lives": 0, "combo": 0}
+@@G16 phone title-settled 390x844 luma=174.91 white%=1.86 drawCalls=48 path=hdr-msaa state={"phase": "splash", "frameCount": 0, "score": 0, "distance": 0, "lives": 3, "combo": 0}
+@@G16 phone early-settled 390x844 luma=149.37 white%=0 drawCalls=50 path=hdr-msaa state={"phase": "playing", "frameCount": 46, "score": 12.341416666666685, "distance": 12.341416666666685, "lives": 3, "combo": 0}
+@@G16 phone roll-settled 390x844 luma=135.93 white%=0 drawCalls=52 path=hdr-msaa state={"phase": "playing", "frameCount": 466, "score": 1839.4457388888898, "distance": 141.15158333333346, "lives": 3, "combo": 7}
+@@G16 phone mid-action-settled 390x844 luma=140.75 white%=0.01 drawCalls=58 path=hdr-msaa state={"phase": "playing", "frameCount": 1166, "score": 17177.874188888803, "distance": 450.45043333332706, "lives": 2, "combo": 1}
+@@G16 phone results-settled 390x844 luma=132.64 white%=0 drawCalls=43 path=hdr-msaa state={"phase": "gameOver", "frameCount": 301, "score": 184.6899999999998, "distance": 84.68999999999993, "lives": 0, "combo": 0}
+@@G16 card roll-60s 1440x900 luma=136.8 white%=0 drawCalls=53 path=hdr-msaa state={"phase": "playing", "frameCount": 466, "score": 1839.4457388888898, "distance": 141.15158333333346, "lives": 3, "combo": 7}
+@@G16 card symbols-settled 1440x900 luma=136.64 white%=0 drawCalls=58 path=hdr-msaa state={"phase": "playing", "frameCount": 466, "score": 1839.4457388888898, "distance": 141.15158333333346, "lives": 3, "combo": 7}
+@@G16 card reduced-settled 1440x900 luma=137.15 white%=0 drawCalls=54 path=hdr-msaa state={"phase": "playing", "frameCount": 467, "score": 1840.5042055555564, "distance": 141.50440555555568, "lives": 3, "combo": 7}
+@@G16 card paused 1440x900 luma=91.47 white%=0.47 drawCalls=54 path=hdr-msaa state={"phase": "playing", "frameCount": 468, "score": 1841.5628888888896, "distance": 141.85730000000012, "lives": 3, "combo": 7}
+@@G16 errors [] (no GL_ERR or GL_CONSOLE lines in runs g16p3-r7-1, g16p3-r7-3, g16p3-r7-4)

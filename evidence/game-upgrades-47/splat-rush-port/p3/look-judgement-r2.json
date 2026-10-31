@@ -1,0 +1,89 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r2/splat-rush-port/frames/g16p3-r2-1/desk--roll-settled.jpg",
+      "sha256": "2e74d6eca2a2fb49f958de8f7be06e3bcc576b90a47bb18feb1ba79f188a8b83"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r2/splat-rush-port/frames/g16p3-r2-1/desk--mid-action-settled.jpg",
+      "sha256": "4dd3cef1471fe1091b8671ca049942df26d41f47547723ec9b0fa46c7737597e"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r2/splat-rush-port/frames/g16p3-r2-1/desk--title-settled.jpg",
+      "sha256": "657f056b8ad9e5ab737dbadbc1b8244cf072c61c04a697350c5926604e83eb2b"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p3-r1/splat-rush-port/frames/g16p3-r1-2/splat-rush-port--default--settle-60s.jpg",
+      "sha256": "701c91420f09526c1bc1f7110f9ac11d9ada0f2ebc8df74f18a50146b0a2662e"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6.5,
+    "shadows": 5.5,
+    "ibl_reflections": 5,
+    "environment_world": 7.5,
+    "atmospheric_effects": 6.5,
+    "material_quality": 7,
+    "modeling_assets": 7,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 6,
+    "animation_quality": 6.5,
+    "ui_hud": 7.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Warm pink-orange sunset key with toon-style flat shading. It reads coherently, but the track and gates get little directional modeling. This diverges from the recipe's 48°/35° daylight sun; the scene reads as dusk, not outdoor-day."
+    },
+    {
+      "category": "shadows",
+      "seen": "Only a soft blob/contact shadow sits under the ball. The jelly gates, pillars and floating islands cast no visible shadows onto the track. In frame 4 the ball's shadow on the cloud floor is a faint smudge."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The ball has a glossy specular highlight and a dark inner band, but it does not reflect the sky or track. The jelly gates show rim highlights only. There is no sense of environment lighting on the materials."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The world is rich and cohesive: floating grassy islands with towers and flags, hot-air balloons, angled wooden posts and a cloud sea. The track is bordered by purple bead rails and winds into the distance. Frame 4, however, shows the ball alone on a flat cloud plane with no track, which looks like a fall or empty state."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "White speed streaks radiate from the vanishing point, and distant cloud and pillar layers recede softly. Distance haze is mild. Fog does little depth separation on the track horizon, which gets bright and flat."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The dripping translucent jelly gates in color-coded hues and the glossy ball are appealing. Red paint splatter decals on the track sell the impacts. The track surface texture is a fairly flat painted plank pattern."
+    },
+    {
+      "category": "composition",
+      "seen": "Frames 1 and 2 frame the ball well at roughly 20% of the frame, with gates leading the eye. Frame 4 puts a tiny ball (about 6% of the frame) in a large empty lavender foreground with nothing to read."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a chase cam behind the ball, not the recipe's side-on follow, with a slightly wide-feeling FOV. It works for a lane runner. Frame 4's low framing over the void is disorienting."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Outline/toon edges are present, and the menu has a background blur. There is little bloom on the bright horizon or pickups, no visible color grading beyond the sunset tint, and no depth of field during play."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Stills imply motion through speed lines, splatter particles flying off the ball, and the 2x 5s buff tag. Frame 4 suggests a fall or reset state with no visible transition effect."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD is clean and stylized: heart lives, a power meter, a score pill and a combo x3 pill. The 2x buff timer sits under the ball. The title card has accessibility toggles (colour symbols, reduced motion) and clear control hints. Font and outline styling are consistent."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

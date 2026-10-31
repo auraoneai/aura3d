@@ -114,12 +114,16 @@ export interface CarnivalSurface {
   readonly canvas?: readonly [number, number];
   /** CR-AN1 drip wobble vertex (gates only; needs `tone`). */
   readonly wobble?: boolean;
+  /** GU47 phase 3 contact darkening where the prop meets the deck (ball, rails, gates, bunting). */
+  readonly contact?: boolean;
+  /** GU47 phase 3 sky reflection on (default); off on flat splatters, whose reflected ray hits the warm band and shifts the player colour. */
+  readonly reflect?: boolean;
 }
 
 export const carnivalToonSpec = (look: SplatLook, base: Rgb, surface: CarnivalSurface = {}): CustomSpec => {
   const tod = timeOfDay(look, 0);
   if (!tod || !look.toon) throw new Error("splat-rush-port: carnivalToonSpec needs the carnival look");
-  const { map, emissive = [0, 0, 0], tone = false, gloss = 0, drySeconds = 0, canvas = [0, 0], wobble = false } = surface;
+  const { map, emissive = [0, 0, 0], tone = false, gloss = 0, drySeconds = 0, canvas = [0, 0], wobble = false, contact = false, reflect = true } = surface;
   const vertex = wobble && tone ? CARNIVAL_GATE_VERTEX : tone ? CARNIVAL_TONE_VERTEX : CARNIVAL_VERTEX;
   return {
     glsl: { vertex, fragment: carnivalToonFragment(map !== undefined, tone) },
@@ -133,6 +137,8 @@ export const carnivalToonSpec = (look: SplatLook, base: Rgb, surface: CarnivalSu
       crShininess: { type: "f32", value: look.toon.gloss.shininess },
       crDry: { type: "vec3", value: [0, 1, drySeconds] },
       crCanvas: { type: "vec2", value: [canvas[0], canvas[1]] },
+      crSkyReflect: { type: "f32", value: reflect ? look.toon.skyReflect : 0 },
+      crContact: { type: "vec2", value: contact ? [look.toon.contact.height, look.toon.contact.strength] : [1, 0] },
       ...(wobble && tone ? { crWobble: { type: "vec3" as const, value: [0, 0, 0] } } : {})
     },
     side: "double"
@@ -584,11 +590,32 @@ export let splatVertexCount = 0;
 /** Vertices per gate instance in the `gates` batch (tests; CR-M3 adds the drips in carnival). */
 export let gateVertexCount = 0;
 /** Ids of the merged batch nodes. */
+/**
+ * GU47 phase 3: soft cel shadow of one gate on the deck (local gate frame, y 0): two post strips and the bar strip, cast
+ * `length` metres towards the camera (+z) and sheared sideways by `skew` (away from the sun azimuth). Each strip is one quad
+ * with 0..1 uvs, so the shadow program's radial falloff makes it a soft ellipse. Footprint matches the gate posts (x +-0.85).
+ */
+export function gateShadowMesh(length: number, skew: number): MeshData {
+  const out: MeshData = { positions: [], normals: [], uvs: [], indices: [] };
+  const quad = (x0: number, x1: number, z0: number, z1: number): void => {
+    const b = out.positions.length / 3;
+    for (const [x, z, u, v] of [[x0 + skew * z0, z0, 0, 0], [x1 + skew * z0, z0, 1, 0], [x1 + skew * z1, z1, 1, 1], [x0 + skew * z1, z1, 0, 1]] as const) {
+      out.positions.push(x, 0, z); out.normals.push(0, 1, 0); out.uvs.push(u, v);
+    }
+    out.indices.push(b, b + 2, b + 1, b, b + 3, b + 2);
+  };
+  const postX = 0.85, w = 0.2;
+  quad(-postX - w, -postX + w, -0.15, length);
+  quad(postX - w, postX + w, -0.15, length);
+  quad(-postX - w, postX + w, length * 0.82, length * 1.12);
+  return out;
+}
+
 export const BATCH_IDS = ["deck", "rails", "dashes", "gates", "gate-symbols", "splats", "particles", "clouds", "streaks"] as const;
 /** Carnival toon nodes whose light uniforms follow the time of day. */
 export const TOON_NODE_IDS = ["ball", "deck", "rails", "dashes", "gates", "splats", "particles", "bunting", "spires"] as const;
 /** CR-M2 plum enamel rails (carnival). */
-export const RAIL_PLUM = "#6a3a6c";
+export const RAIL_PLUM = "#8a5592";
 /** CR-S2 cloud-sea disc radius (inside the 120 m sky dome). */
 const SEA_RADIUS = 112;
 
@@ -692,7 +719,7 @@ export function buildWorld(options: WorldOptions): World {
   addBackdrop(builder, look);
 
   /* player ball: sphere r 0.55, painted map x player colour */
-  add("ball", sphereMesh(CONFIG.BALL_RADIUS, 32, 32), toon(hexLinear(COLORS[0] as string), { map: ballTex, gloss: look.toon?.gloss.ball ?? 0 }));
+  add("ball", sphereMesh(CONFIG.BALL_RADIUS, 32, 32), toon(hexLinear(COLORS[0] as string), { map: ballTex, gloss: look.toon?.gloss.ball ?? 0, contact: true }));
 
   /* soft contact shadow under the ball */
   add("ball-shadow", boxMesh(2, 0.002, 2), shadowSpec());
@@ -702,7 +729,7 @@ export function buildWorld(options: WorldOptions): World {
   const rails = new Batch(sphereMesh(1, 8, 6), MAX_SEG * 2);
   const dashes = new Batch(boxMesh(0.15, 0.02, 1.2), DASH_MAX);
   addBatch("deck", deck, toon([1, 1, 1], { map: rampTex, ...(look.toon ? { canvas: [look.toon.canvas.weave, look.toon.canvas.streak] as const } : {}) }));
-  addBatch("rails", rails, toon(hexLinear(carnival ? RAIL_PLUM : "#c3b1f0"), { gloss: carnival ? 0.35 : 0 }));
+  addBatch("rails", rails, toon(hexLinear(carnival ? RAIL_PLUM : "#c3b1f0"), { gloss: carnival ? 0.4 : 0, contact: true }));
   addBatch("dashes", dashes, toon(carnival ? hexLinear("#fff1dc") : [1, 1, 1]));
 
   /* gates: two posts + bar, merged, scaled 0.32 like the original group; colour per gate in `tone` */
@@ -713,7 +740,12 @@ export function buildWorld(options: WorldOptions): World {
   const gateMesh = transformMesh(mergeMeshes(look.gates?.drips ? [...gateParts, gateDripMesh()] : gateParts), { scale: 0.32 });
   gateVertexCount = gateMesh.positions.length / 3;
   const gates = new Batch(gateMesh, GATE_MAX, hexLinear(COLORS[0] as string));
-  addBatch("gates", gates, toon([1, 1, 1], { tone: true, gloss: carnival ? 0.2 : 0, wobble: look.gates !== null }));
+  addBatch("gates", gates, toon([1, 1, 1], { tone: true, gloss: carnival ? 0.25 : 0, wobble: look.gates !== null, contact: true }));
+  /* GU47 phase 3: gate cel shadows on the deck (carnival only, +1 draw, same slots as the gates) */
+  const gateShadows = look.gateShadow && look.toon
+    ? new Batch(gateShadowMesh(look.gateShadow.length, -Math.tan((look.toon.sunAzimuthDeg * Math.PI) / 180)), GATE_MAX)
+    : null;
+  if (gateShadows && look.gateShadow) addBatch("gate-shadows", gateShadows, { ...shadowSpec(), uniforms: { baseColor: { type: "color3", value: [0.12, 0.04, 0.16] }, alpha: { type: "f32", value: look.gateShadow.alpha } } });
 
   /* C7 colour symbols: one per gate (same slots as the gates) plus one over the ball */
   const symbolMeshes = Object.fromEntries((["circle", "triangle", "square", "cross"] as const).map((k) => [k, symbolMesh(k)])) as Record<SymbolKind, ReturnType<typeof symbolMesh>>;
@@ -727,7 +759,7 @@ export function buildWorld(options: WorldOptions): World {
 
   /* CR-W1 bunting poles every `spacing` segments on both deck edges (carnival only, +1 draw) */
   const bunting = carnival && look.bunting ? (() => { const b = buntingMesh(); return new Batch(b.mesh, BUNTING_MAX, b.tones); })() : null;
-  if (bunting) addBatch("bunting", bunting, toon([1, 1, 1], { tone: true }));
+  if (bunting) addBatch("bunting", bunting, toon([1, 1, 1], { tone: true, contact: true }));
 
   /* power-ups: Meshy toy models, one pool per type (pickups.ts) */
   addPickups(builder);
@@ -740,7 +772,7 @@ export function buildWorld(options: WorldOptions): World {
   ]);
   const splats = new Batch(splatMesh, POOL.splatters, hexLinear(COLORS[0] as string));
   splatVertexCount = splats.vertsPer;
-  addBatch("splats", splats, toon([1, 1, 1], { tone: true, gloss: look.toon?.gloss.fresh ?? 0, drySeconds: look.toon?.gloss.drySeconds ?? 0 }));
+  addBatch("splats", splats, toon([1, 1, 1], { tone: true, gloss: look.toon?.gloss.fresh ?? 0, drySeconds: look.toon?.gloss.drySeconds ?? 0, reflect: false }));
 
   /* particles (world space, rewritten while any is alive), clouds (drift frame), streaks (rewritten per frame), shield */
   const particles = new Batch(sphereMesh(0.13, 6, 6), POOL.particles, [1, 1, 1]);
@@ -756,7 +788,7 @@ export function buildWorld(options: WorldOptions): World {
   for (let i = 30; i < CLOUDS; i++) clouds.setTone(i, lowCloud);
   addBatch("clouds", clouds, carnival ? carnivalCloudSpec(look) : toonSpec([1, 1, 1], undefined, [0, 0, 0], true));
   const streaks = new Batch(boxMesh(0.08, 0.08, 4), STREAKS);
-  addBatch("streaks", streaks, flatSpec([1, 1, 1], 0.4));
+  addBatch("streaks", streaks, flatSpec(hexLinear(look.streaks.color), look.streaks.alpha));
   add("shield", sphereMesh(1, 24, 16), flatSpec(hexLinear("#8fe3ff"), 0.28));
 
   /* CR-P1 / CR-P2 post: bloom on the sun, gems and flashes (threshold above the shouldered surfaces), warm vignette,
@@ -866,8 +898,10 @@ export function buildWorld(options: WorldOptions): World {
         }
         const lift = Math.max(0, p.y - CONFIG.BALL_RADIUS * p.scale);
         const shadow = node("ball-shadow");
-        shadow.setVisible(p.visible).setPosition(p.x - 0.5 * p.y, 0.05, p.z - 0.5 * p.y).setScale(p.scale * 0.66 / (1 + 0.12 * lift));
-        shadow.setUniform?.("alpha", 0.3 / (1 + 0.25 * lift));
+        /* GU47 phase 3: in carnival the blob falls away from the low sun (towards the camera and right, like the gate shadows) */
+        const sh = look.gateShadow ? { dx: 0.45, dz: 0.65, alpha: 0.42 } : { dx: -0.5, dz: -0.5, alpha: 0.3 };
+        shadow.setVisible(p.visible).setPosition(p.x + sh.dx * p.y, 0.05, p.z + sh.dz * p.y).setScale(p.scale * 0.66 / (1 + 0.12 * lift));
+        shadow.setUniform?.("alpha", sh.alpha / (1 + 0.25 * lift));
         /* shield bubble */
         const shield = node("shield");
         shield.setVisible(o.shieldActive && p.visible);
@@ -907,7 +941,7 @@ export function buildWorld(options: WorldOptions): World {
 
         /* gates and their symbols */
         const wantSymbols = view.symbols === true;
-        gateSlots.retain(simNow.gates, (slot) => { gates.collapse(slot); gateSymbols.collapse(slot); gateColor[slot] = -1; });
+        gateSlots.retain(simNow.gates, (slot) => { gates.collapse(slot); gateSymbols.collapse(slot); gateShadows?.collapse(slot); gateColor[slot] = -1; });
         const squashSeconds = look.gates?.squashSeconds ?? 0;
         for (const g of simNow.gates) {
           const { slot, fresh } = gateSlots.use(g);
@@ -915,6 +949,7 @@ export function buildWorld(options: WorldOptions): World {
           const r = g.z - scroll, x = g.laneX + curve(-o.distance + g.z);
           if (fresh) {
             gates.place(slot, x, 0, r, 0, 1, 1, 1);
+            gateShadows?.place(slot, x, 0.012, r, 0, 1, 1, 1);
             gatePassed[slot] = g.passed; gateSquashAt[slot] = Number.NaN; gateGone[slot] = false;
           }
           if (squashSeconds > 0 && !gatePassed[slot] && g.passed) {
@@ -925,7 +960,7 @@ export function buildWorld(options: WorldOptions): World {
           if (!gateGone[slot] && !Number.isNaN(gateSquashAt[slot])) {
             const sq = gateSquash(elapsed - (gateSquashAt[slot] as number), squashSeconds);
             if (sq) gates.place(slot, x, 0, r, 0, sq.sx, sq.sy, sq.sz);
-            else { gates.collapse(slot); gateSymbols.collapse(slot); gateGone[slot] = true; }
+            else { gates.collapse(slot); gateSymbols.collapse(slot); gateShadows?.collapse(slot); gateGone[slot] = true; }
           }
           if (gateGone[slot]) { gateColor[slot] = g.colorIndex; continue; }
           if (fresh || gateColor[slot] !== g.colorIndex || (wantSymbols && !symbolsOn)) {
@@ -1018,6 +1053,7 @@ export function buildWorld(options: WorldOptions): World {
         dashes.flush(node("dashes"));
         if (bunting) bunting.flush(node("bunting"));
         gates.flush(node("gates"));
+        if (gateShadows) { node("gate-shadows").setPosition(0, 0, roadZ); gateShadows.flush(node("gate-shadows"), false); }
         gateSymbols.flush(node("gate-symbols"), false);
         ballSymbol.flush(node("ball-symbol"), false);
         splats.flush(node("splats"));
@@ -1041,7 +1077,7 @@ export function buildWorld(options: WorldOptions): World {
         const baseFov = aspect >= 1 ? 55 : 55 + 25 * Math.min(1, (1 - aspect) / 0.5);
         const layers = view.cameraLayers === true && !view.reducedMotion && look.camera !== null && o.phase === "playing";
         const cam = layers && look.camera ? cameraLayers(look.camera, roadYaw(-(o.distance - back)), simNow.speedRatio) : { rollDeg: 0, fovDeg: 0 };
-        const fov = baseFov + (view.reducedMotion ? 0 : o._fovApplied) + cam.fovDeg;
+        const fov = baseFov + (look.camera?.fovOffsetDeg ?? 0) + (view.reducedMotion ? 0 : o._fovApplied) + cam.fovDeg;
         const up = cam.rollDeg === 0 ? [0, 1, 0] as const : rolledUp([c.x, c.y, c.z], [c.lookX, c.lookY, c.lookZ], cam.rollDeg);
         controller.setPose({ position: [c.x, c.y, c.z], target: [c.lookX, c.lookY, c.lookZ], up: [...up], fov }, { cut: false });
         /* CR-P3: depth of field only on the title, focused on the ball; the play frames never run it */
@@ -1052,7 +1088,7 @@ export function buildWorld(options: WorldOptions): World {
           if (title && focus !== dofLast) { app.post?.setEffect?.(TITLE_DOF, { focusDistance: focus }); dofLast = focus; }
         }
       }
-      const batches = [deck, rails, dashes, gates, gateSymbols, ballSymbol, splats, particles, clouds, streaks];
+      const batches = [deck, rails, dashes, gates, ...(gateShadows ? [gateShadows] : []), gateSymbols, ballSymbol, splats, particles, clouds, streaks];
       const parked = [...pickupNodeIds(), "shield", "guide", "ball-symbol"];
       function warm(on: boolean): void {
         for (const id of parked) {
