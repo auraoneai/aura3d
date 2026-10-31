@@ -29,7 +29,8 @@ import {
 } from "./game/stage";
 import { sanitizeRenderParams } from "./game/urlGuard";
 import { AMMO_TRAIL_COLOR, SIEGE_VFX, abilityPreset, breakPreset, registerSiegeVfx } from "./game/vfx";
-import { chapterLook } from "./game/look";
+import { chapterLook, useOriginalLook } from "./game/look";
+import { buildSceneOriginal } from "./game/stageOriginal";
 import { SIGN_PARK, signTextNodeId, signTextPlacement } from "./game/sign";
 import {
   INTRO_SECONDS, QA_WORLD_BOXES, bandChanged, boxCorners, introEnabled, introShot, releaseKick, screenCrop, tiltShiftBand,
@@ -75,6 +76,8 @@ function persist(): void {
 // ------------------------------------------------------------------- app --
 
 const chapter = CHAPTERS[levelById(START_LEVEL).chapter]!;
+/** GU47 blind-panel fix pass: the 4.6.2 look on chapters the panel did not judge better (`?look=original|gu47`). */
+const ORIGINAL_LOOK = useOriginalLook(chapter.id, params.get("look"));
 const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   renderer: { qualityProfile: "production" },
@@ -91,7 +94,9 @@ const gameApp = createGameApp("#app", {
     touch: true
   },
   loop: { fixedDt: 1 / 60, maxSubSteps: 2 },
-  scene: buildScene(chapter, { reducedMotion: REDUCED, ambientOcclusion: AO, surfaceMaps: SURFACES })
+  scene: ORIGINAL_LOOK
+    ? buildSceneOriginal(chapter.id, { reducedMotion: REDUCED, ambientOcclusion: AO })
+    : buildScene(chapter, { reducedMotion: REDUCED, ambientOcclusion: AO, surfaceMaps: SURFACES })
 });
 const app = gameApp.app;
 const input = gameApp.input;
@@ -1028,7 +1033,8 @@ function updateMiniatureFocus(): void {
     if (!q.behind) ys.push(q.y / h);
   }
   const band = tiltShiftBand(ys, LOOK_ROW.dof.bandWidth);
-  if (bandChanged(lastBand, band)) {
+  // The 4.6.2 look has no tilt-shift node: never add one.
+  if (!ORIGINAL_LOOK && bandChanged(lastBand, band)) {
     lastBand = band;
     try { app.post?.setEffect("depthOfField", { tiltShift: [band.bandCenter, band.bandWidth, 0] }); } catch { /* post is presentation only */ }
   }
@@ -1045,6 +1051,7 @@ function updateMiniatureFocus(): void {
   qa.crops = qaCrops;
   qa.tiltShift = band;
   qa.chapterLook = LOOK_ROW.chapter;
+  qa.look = ORIGINAL_LOOK ? "4.6.2" : "gu47";
 }
 
 // ------------------------------------------------------------------ hud --
