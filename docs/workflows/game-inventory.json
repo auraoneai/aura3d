@@ -99,7 +99,7 @@
         "set": "final",
         "dir": "evidence/iron-crown/screens/final",
         "card": "card-2x.jpg",
-        "frameCount": 12
+        "frameCount": 14
       }
     },
     {
@@ -167,7 +167,7 @@
         "set": "final",
         "dir": "evidence/aura-fc-3d/screens/final",
         "card": "card/card-2x.jpg",
-        "frameCount": 25
+        "frameCount": 24
       }
     },
     {
@@ -218,7 +218,7 @@
         "set": "final",
         "dir": "evidence/slingshot-siege/screens/final",
         "card": "card/card-2x.jpg",
-        "frameCount": 12
+        "frameCount": 14
       }
     },
     {

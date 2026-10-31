@@ -180,8 +180,8 @@ describe("GU47 pass-4 game-lane handoff targets", () => {
     expect(src("examples/silt-and-signal-port/art/look.ts")).toMatch(/const look = params\?\.get\("look"\);\s+if \(look === "original"\) return "original";/);
     expect(src("examples/last-train-port/main.ts")).toMatch(/params\.get\("title"\) !== "0"/);
     expect(src("examples/where-the-wind-wanders-port/daylight.ts")).toMatch(/value === "bell"/);
-    // Cross Hop (G14, PRD D11): the 4.6 look is the default and `?look=diorama` opts in; `?look=original` still names it.
-    expect(src("apps/showcase-cross-hop/src/main.ts")).toMatch(/params\.get\("look"\) === "diorama" \? "diorama" : "original"/);
+    // Cross Hop (G14 phase 3): `?look=` and `?theme=` pick the look per theme (defaultLookFor); `?look=original` still names 4.6.
+    expect(src("apps/showcase-cross-hop/src/main.ts")).toMatch(/defaultLookFor\(params\.get\("look"\)/);
   });
 });
 
