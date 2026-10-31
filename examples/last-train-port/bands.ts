@@ -140,8 +140,8 @@ export const BANDS: Readonly<Record<BandId, BandRow>> = {
     skySunElevationDeg: 38,
     hemisphere: { sky: "#29336a", ground: "#3d3550", intensity: 0.22 },
     fog: { color: "#161d3e", density: 0.00018 },
-    // phase 2 (tone mapping none, software WebGL2): 1.0 read mean luma 23.9, under the 28..40 band
-    exposure: 1.6,
+    // phase 2 (tone mapping none, software WebGL2): 1.0 read mean luma 23.9 (under the 28..40 band), 3.0 read 44.5; 2.0 ~35
+    exposure: 2.0,
     bloom: { intensity: 0.85, threshold: 0.6 },
     grade: { contrast: 1.1, saturation: 0.95, temperature: -0.22, tint: 0.0 },
     vignette: 0.34,
