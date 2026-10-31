@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-links-3d/p3-r1/aura-links-3d/frames/g10p3-r1-1/links-shots-play-1280x720--03-action-02-power.jpg",
+      "sha256": "75ac90cd2b73765d7115d7cb48e5e50eb91b6eab238ef910d646bd267be1a35d"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-links-3d/p3-r1/aura-links-3d/frames/g10p3-r1-2/aura-links-3d--mapleHollow--settle-60s.jpg",
+      "sha256": "6942896097e243e4c86ef3f8ac87ee5aa81573d795b6da69f1c4f6efe712f958"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-links-3d/p3-r1/aura-links-3d/frames/g10p3-r1-3/aura-links-3d--cinderRim--settle-60s.jpg",
+      "sha256": "6c7fc3496c98a41e955392e0c18deedf57a2345fd1c35bcb9453c1574de6eab7"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-links-3d/p3-r1/aura-links-3d/frames/recap4-neonBay--settle-60s.jpg",
+      "sha256": "e5acb4c8fa511ddaf9ffd22dc0a3056be5366586bd3cb0cf302d496bc11b5846"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 3.5,
+    "ibl_reflections": 3,
+    "environment_world": 4,
+    "atmospheric_effects": 4.5,
+    "material_quality": 4,
+    "modeling_assets": 4.5,
+    "composition": 4.5,
+    "camera": 5,
+    "postprocessing": 4.5,
+    "animation_quality": 4,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 1 has a soft overcast key with some form on the golfer and trees. Frames 2–4 are flat and evenly lit. The night frame has a uniform teal ambient with no motivated light sources."
+    },
+    {
+      "category": "shadows",
+      "seen": "There are almost no contact shadows under the golfers' feet, the cart, or the tee markers. The trees cast barely visible ground shadows. Characters look like they float on the tee box."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The cart is a washed-out white with no reflections. The club shaft shows a faint sheen. The ground and characters show no environment response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Frames 2–4 show an endless flat plane to the horizon with a few lollipop trees or scattered cones. There is no pin, green, bunkers, or hazard detail. Frame 1 has only a distant sand strip and rocks."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Light distance haze shows near the horizon. Floating orange particle motes in the desert frame read as noise rather than atmosphere. There is no indoor haze."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The turf is a tiled noise texture that repeats visibly in frame 4 as concentric bands. The tee box is a flat untextured slab. The cart is overexposed to near-white."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The golfer and caddie are decent low-poly rigs. The trees are stacked-sphere primitives. The tee markers are plain red boxes. The ball is barely visible."
+    },
+    {
+      "category": "composition",
+      "seen": "The golfer is jammed into the left edge in frames 2–4. Large empty ground and sky dominate. The ball sits near the bottom edge. The aim line is the strongest visual element."
+    },
+    {
+      "category": "camera",
+      "seen": "A behind-the-golfer, third-person perspective. It is readable, but the subject is offset and the low angle wastes the frame on empty ground."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is mild bloom on the aim line and a slight vignette. There is no tonemapping cohesion across courses: the night frame looks crushed, the day frame looks washed."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The address pose is held across frames with no visible weight shift. The caddie stands stiffly in an idle pose."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Frame 1 has a clean, legible HUD with a scorecard, wind/pin/club strip, power meter, and controls bar. Frames 2–4 show no HUD at all."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}
