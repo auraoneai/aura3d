@@ -234,7 +234,7 @@ export interface WorldOptions {
   /** prefers-reduced-motion: VFX emission halves (PRD §6.3). */ readonly reducedMotion?: boolean;
   /** `?lanterns=0`: no pooled lantern lights (NR-03 comparison). */ readonly lanterns?: boolean;
   /** `?scarf=0`: no scarf ribbon (NR-15 comparison). */ readonly scarf?: boolean;
-  /** `?godrays=0`: no god rays (NR-07 comparison). */ readonly godRays?: boolean;
+  /** `?godrays=1`: volumetric god rays (NR-07; off by default since GU47 phase 2, see main.ts). */ readonly godRays?: boolean;
   /** `?cones=0`: no gate light cones (NR-16 comparison). */ readonly cones?: boolean;
 }
 
@@ -295,7 +295,7 @@ export function buildWorld(options: WorldOptions): World {
     // Low drops the grain (PRD §6.4); the ink line, palette, sky and scarf stay.
     if (high) builder.add(effects.filmGrain({ name: "grain", intensity: post.grain.intensity }));
     // NR-07: god rays only in Rooftop Run and the forest entry (switched by distance at runtime); High only (§6.4).
-    if (high && options.godRays !== false) builder.add(effects.volumetricFog({ name: "god rays", density: 0.08, color: "#ffb48a", intensity: 0.45, godRayDensity: 0.35 }));
+    if (high && options.godRays === true) builder.add(effects.volumetricFog({ name: "god rays", density: 0.08, color: "#ffb48a", intensity: 0.45, godRayDensity: 0.35 }));
     builder.add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
   } else {
     builder
@@ -526,7 +526,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
   const poolShown = new Array<string>(lightPool.amber + lightPool.cyan).fill("");
   const moonDir = (() => { const g = DISTRICT_LOOKS[DISTRICT_LOOKS.length - 1]!.key; const e = (g.elevationDeg * Math.PI) / 180, a = (g.azimuthDeg * Math.PI) / 180; return [Math.cos(e) * Math.sin(a), Math.sin(e), Math.cos(e) * Math.cos(a)]; })();
   let lastLookS = -1e9, ambientClock = 0;
-  const godRaysAuthored = evening && quality === "high" && options.godRays !== false;
+  const godRaysAuthored = evening && quality === "high" && options.godRays === true;
   let godRaysOn: boolean | null = null;
   let district: DistrictId | null = null;
   if (vfx) node(SCARF.anchor).setVisible(false);
