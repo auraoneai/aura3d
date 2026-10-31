@@ -405,10 +405,11 @@ void main() {
   cp += skyPainted * WIND_DIR * windTime * 0.006;
   float c = fbm(cp * 1.15);
   float cs = fbm((cp + sunDir.xz * 0.16) * 1.15);
-  float cov = smoothstep(0.6, 0.76, c + 0.08 * fbm(cp * 4.0));
+  // phase 3: a fair-weather sky by day (clearSky): fewer clouds with brighter undersides; 0 keeps the dusk and night deck
+  float cov = smoothstep(0.6 + 0.07 * clearSky, 0.76 + 0.05 * clearSky, c + 0.08 * fbm(cp * 4.0));
   cov *= smoothstep(0.0, 0.2, dir.y);
   float lit = clamp(0.55 + (c - cs) * 5.5, 0.0, 1.0);
-  vec3 cloud = mix(vec3(0.55, 0.64, 0.78), vec3(1.25, 1.17, 1.02), lit) * cloudTint;
+  vec3 cloud = mix(mix(vec3(0.55, 0.64, 0.78), vec3(0.8, 0.87, 0.96), 0.55 * clearSky), vec3(1.25, 1.17, 1.02), lit) * cloudTint;
   cloud = mix(cloud, horizon * 1.05, smoothstep(0.1, 0.0, dir.y) * 0.8);
   // stars after the bell: the a3d_sky hash field, faded under clouds and toward the horizon
   sky += vec3(0.9, 0.92, 1.0) * a3dStars(dir, 0.012 * starAmt) * starAmt * 1.6 * (1.0 - cov);

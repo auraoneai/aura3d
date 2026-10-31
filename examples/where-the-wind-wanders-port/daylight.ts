@@ -51,25 +51,30 @@ export interface DaylightKey {
   readonly envIntensity: number;
   /** Golden-hour light-shaft strength (WW47-P2, High only). */
   readonly godRays: number;
+  /** 0..1 fair-weather sky (phase 3): fewer, brighter clouds by day; 0 keeps the dusk and night cloud deck. */
+  readonly clearSky: number;
 }
 
 /** Seconds the look takes to move from one key to the next. */
 export const DAYLIGHT_EASE_SECONDS = 6;
 
 export const DAYLIGHT_KEYS: readonly DaylightKey[] = [
-  { id: "found0", clock: "15:30", label: "warm afternoon", elevationDeg: 34, azimuthDeg: 62, sun: "#ffe4bf", sunIntensity: 1.22, engineSunIntensity: 2.6, hemiSky: "#c9dcc0", hemiGround: "#3c4a26", fog: "#bccdb6", fogDensity: 0.0032, fogHeight: 0, skyHorizon: "#e6e2c8", skyMid: "#9ec2d2", skyZenith: "#5a8db8", cloudTint: "#fff4e2", cloudShadow: 0.3, stars: 0, lanterns: 0, envIntensity: 0.55, godRays: 0.12 },
-  { id: "found1", clock: "16:30", label: "late afternoon", elevationDeg: 28, azimuthDeg: 64, sun: "#ffd9a8", sunIntensity: 1.2, engineSunIntensity: 2.5, hemiSky: "#c6d6bb", hemiGround: "#3f4826", fog: "#c4cdb2", fogDensity: 0.0033, fogHeight: 0.15, skyHorizon: "#ecdcbc", skyMid: "#a4c0cc", skyZenith: "#5b88b0", cloudTint: "#ffeccf", cloudShadow: 0.32, stars: 0, lanterns: 0, envIntensity: 0.52, godRays: 0.16 },
-  { id: "found2", clock: "17:30", label: "apricot light", elevationDeg: 22, azimuthDeg: 66, sun: "#ffc58a", sunIntensity: 1.16, engineSunIntensity: 2.3, hemiSky: "#c3ccb0", hemiGround: "#433f24", fog: "#cec6a6", fogDensity: 0.0035, fogHeight: 0.35, skyHorizon: "#f2cfa2", skyMid: "#aab8c0", skyZenith: "#5a7fa6", cloudTint: "#ffe0b8", cloudShadow: 0.34, stars: 0, lanterns: 0.25, envIntensity: 0.48, godRays: 0.2 },
-  { id: "found3", clock: "18:30", label: "golden hour", elevationDeg: 16, azimuthDeg: 68, sun: "#ffb26a", sunIntensity: 1.1, engineSunIntensity: 2.1, hemiSky: "#bdbfa4", hemiGround: "#47391f", fog: "#d4bb94", fogDensity: 0.0037, fogHeight: 0.6, skyHorizon: "#f6be86", skyMid: "#b0a8b0", skyZenith: "#55709a", cloudTint: "#ffcf98", cloudShadow: 0.35, stars: 0, lanterns: 0.6, envIntensity: 0.42, godRays: 0.24 },
-  { id: "bell", clock: "19:40", label: "lilac dusk", elevationDeg: 6, azimuthDeg: 70, sun: "#ff9c74", sunIntensity: 0.72, engineSunIntensity: 1.2, hemiSky: "#9c98b4", hemiGround: "#2e2a26", fog: "#a89cb0", fogDensity: 0.0042, fogHeight: 0.85, skyHorizon: "#e8a888", skyMid: "#9c8cb0", skyZenith: "#3e4c7c", cloudTint: "#e6a8a0", cloudShadow: 0.2, stars: 0.35, lanterns: 1, envIntensity: 0.3, godRays: 0.1 },
-  { id: "epilogue", clock: "21:30", label: "moonlit voyage", elevationDeg: 38, azimuthDeg: -40, sun: "#b4c4ff", sunIntensity: 0.34, engineSunIntensity: 0.55, hemiSky: "#56628c", hemiGround: "#1a1c24", fog: "#4a5470", fogDensity: 0.004, fogHeight: 0.7, skyHorizon: "#4c5680", skyMid: "#283460", skyZenith: "#101838", cloudTint: "#7c88b0", cloudShadow: 0.12, stars: 1, lanterns: 1, envIntensity: 0.16, godRays: 0 }
+  // GU47 phase 3 (blind panel p3: the daytime keys read as a flat grey overcast sky over hazy water): the daytime skies are
+  // clear painted blues again (the horizon a pale aqua, cream only near the sun at golden hour), the fog is the 4.6
+  // teal-blue and thinner, the height fog stays off until golden hour, and the GLBs get more sky fill.
+  { id: "found0", clock: "15:30", label: "warm afternoon", elevationDeg: 34, azimuthDeg: 62, sun: "#ffe6c2", sunIntensity: 1.26, engineSunIntensity: 2.6, hemiSky: "#e0eecb", hemiGround: "#3a5230", fog: "#b0d2cc", fogDensity: 0.0027, fogHeight: 0, skyHorizon: "#b6daf0", skyMid: "#66a4ea", skyZenith: "#3470d2", cloudTint: "#fffaf0", cloudShadow: 0.3, stars: 0, lanterns: 0, envIntensity: 0.7, godRays: 0.12, clearSky: 1 },
+  { id: "found1", clock: "16:30", label: "late afternoon", elevationDeg: 28, azimuthDeg: 64, sun: "#ffdcae", sunIntensity: 1.24, engineSunIntensity: 2.5, hemiSky: "#dce8c4", hemiGround: "#3c4c2a", fog: "#b8d0c4", fogDensity: 0.0028, fogHeight: 0, skyHorizon: "#c4dcea", skyMid: "#6ea6e4", skyZenith: "#346cc8", cloudTint: "#fff2dc", cloudShadow: 0.32, stars: 0, lanterns: 0, envIntensity: 0.66, godRays: 0.16, clearSky: 1 },
+  { id: "found2", clock: "17:30", label: "apricot light", elevationDeg: 22, azimuthDeg: 66, sun: "#ffca92", sunIntensity: 1.22, engineSunIntensity: 2.4, hemiSky: "#d8dfbc", hemiGround: "#40442a", fog: "#c2d0c0", fogDensity: 0.0029, fogHeight: 0.12, skyHorizon: "#ead8bc", skyMid: "#76a6de", skyZenith: "#3c6abc", cloudTint: "#ffe8c8", cloudShadow: 0.34, stars: 0, lanterns: 0.25, envIntensity: 0.62, godRays: 0.2, clearSky: 0.85 },
+  { id: "found3", clock: "18:30", label: "golden hour", elevationDeg: 16, azimuthDeg: 68, sun: "#ffbc7a", sunIntensity: 1.2, engineSunIntensity: 2.3, hemiSky: "#d0d2b4", hemiGround: "#443c22", fog: "#cccab0", fogDensity: 0.003, fogHeight: 0.25, skyHorizon: "#f2c898", skyMid: "#80a2d8", skyZenith: "#3a5ca8", cloudTint: "#ffdcae", cloudShadow: 0.35, stars: 0, lanterns: 0.6, envIntensity: 0.56, godRays: 0.24, clearSky: 0.7 },
+  { id: "bell", clock: "19:40", label: "lilac dusk", elevationDeg: 6, azimuthDeg: 70, sun: "#ff9c74", sunIntensity: 0.72, engineSunIntensity: 1.2, hemiSky: "#9c98b4", hemiGround: "#2e2a26", fog: "#a89cb0", fogDensity: 0.0042, fogHeight: 0.85, skyHorizon: "#e8a888", skyMid: "#9c8cb0", skyZenith: "#3e4c7c", cloudTint: "#e6a8a0", cloudShadow: 0.2, stars: 0.35, lanterns: 1, envIntensity: 0.3, godRays: 0.1, clearSky: 0 },
+  { id: "epilogue", clock: "21:30", label: "moonlit voyage", elevationDeg: 38, azimuthDeg: -40, sun: "#b4c4ff", sunIntensity: 0.34, engineSunIntensity: 0.55, hemiSky: "#56628c", hemiGround: "#1a1c24", fog: "#4a5470", fogDensity: 0.004, fogHeight: 0.7, skyHorizon: "#4c5680", skyMid: "#283460", skyZenith: "#101838", cloudTint: "#7c88b0", cloudShadow: 0.12, stars: 1, lanterns: 1, envIntensity: 0.16, godRays: 0, clearSky: 0 }
 ];
 
 /** `?look=original`: the 4.6 constants (SUN_DIR (-0.468, 0.802, 0.374), linear SUN_COL (1, 0.831, 0.429), ...). */
 export const ORIGINAL_KEY: DaylightKey = {
   id: "original", clock: "12:00", label: "4.6 midday", elevationDeg: 53.32, azimuthDeg: 51.37, sun: "#ffedae", sunIntensity: 1.3, engineSunIntensity: 0,
   hemiSky: "#e5f2cf", hemiGround: "#395730", fog: "#b4d4cf", fogDensity: 0.003, fogHeight: 0, skyHorizon: "#cbe7ef", skyMid: "#7bb4f1", skyZenith: "#3c7cdc",
-  cloudTint: "#ffffff", cloudShadow: 0, stars: 0, lanterns: 0, envIntensity: 0, godRays: 0
+  cloudTint: "#ffffff", cloudShadow: 0, stars: 0, lanterns: 0, envIntensity: 0, godRays: 0, clearSky: 0
 };
 
 /** The 4.6 linear constants the original row reproduces exactly (the hex above is only its label). */
@@ -109,6 +114,7 @@ export interface DaylightFrame {
   readonly lanterns: number;
   readonly envIntensity: number;
   readonly godRays: number;
+  readonly clearSky: number;
 }
 
 export function srgbToLinear(hex: string): Rgb {
@@ -158,7 +164,8 @@ export function frameOfKey(key: DaylightKey): DaylightFrame {
     stars: key.stars,
     lanterns: key.lanterns,
     envIntensity: key.envIntensity,
-    godRays: key.godRays
+    godRays: key.godRays,
+    clearSky: key.clearSky
   };
 }
 
@@ -179,16 +186,56 @@ export function parseFoundParam(value: string | null): number | null {
 }
 
 /**
- * GU47 blind-panel fallback: the panel judged the GU47 look better only at the bell (lilac dusk) and the epilogue
- * (moonlit voyage); every daylight beat (found0..3, the default boot) read worse than 4.6.2. So the game boots the 4.6
- * look unless `?look=gu47` asks for the new one, and a capture pinned to the bell or the epilogue (`?found=bell|epilogue`)
- * keeps the GU47 look. `?look=original` always wins.
+ * GU47 look resolution. Phase 3 (4.7.1): the daytime keys were rebuilt after the blind panel (clear painted skies, 4.6
+ * teal fog, the 4.6 follow framing in daylight, a daytime post, a traveller fill light), so the GU47 look is the default
+ * for every view whose rebuilt frame the panel judged better than 4.6.2 (`GU47_DEFAULT_VIEWS`). A view outside that set
+ * still opens in the 4.6 look (`?look=original` path). `?look=gu47` forces the new look anywhere; `?look=original` always wins.
  */
+export const GU47_DEFAULT_VIEWS: ReadonlySet<number> = new Set([0, 1, 2, 3, 4, 5]);
 export function resolveLook(lookParam: string | null, foundKey: number | null): "original" | "gu47" {
   if (lookParam === "original") return "original";
   if (lookParam === "gu47") return "gu47";
-  return foundKey !== null && foundKey >= 4 ? "gu47" : "original";
+  return GU47_DEFAULT_VIEWS.has(foundKey ?? 0) ? "gu47" : "original";
 }
+
+/** The dusk and night keys (the bell, the voyage): the storybook camera and the softer gouache post the panel chose. */
+export function isDuskKey(keyIndex: number): boolean {
+  return keyIndex >= 4;
+}
+
+export interface LookPost {
+  /** Gouache paper pass strength (WW47-P3) and film grain: lighter by day, where the judges read them as a dull overcast. */
+  readonly paper: number;
+  readonly grain: number;
+  readonly bloom: { readonly intensity: number; readonly threshold: number; readonly scatter: number; readonly color: string };
+  readonly grade: { readonly contrast: number; readonly saturation: number; readonly exposure: number };
+  readonly vignette: { readonly intensity: number; readonly smoothness: number; readonly color: string };
+}
+/**
+ * WW47-P1 per light: the dusk and night keys keep the gouache post (warm bloom on the lanterns and the moon glow, umber
+ * vignette). Daylight gets a clean post (phase 3): a high bloom threshold so the bright sky and water do not bloom into
+ * haze, a neutral bloom tint, a crisper grade and a lighter vignette.
+ */
+export const DAY_POST: LookPost = {
+  paper: 0.015,
+  grain: 0.008,
+  bloom: { intensity: 0.3, threshold: 1.05, scatter: 0.55, color: "#fff6ea" },
+  grade: { contrast: 1.14, saturation: 1.22, exposure: 1.07 },
+  vignette: { intensity: 0.12, smoothness: 0.8, color: "#2a2418" }
+};
+export const DUSK_POST: LookPost = {
+  paper: 0.04,
+  grain: 0.02,
+  bloom: { intensity: 0.42, threshold: 0.92, scatter: 0.55, color: "#ffe2b8" },
+  grade: { contrast: 1.1, saturation: 1.14, exposure: 1.05 },
+  vignette: { intensity: 0.16, smoothness: 0.75, color: "#3a2a1c" }
+};
+export function lookPostFor(keyIndex: number): LookPost {
+  return isDuskKey(keyIndex) ? DUSK_POST : DAY_POST;
+}
+
+/** Traveller fill (phase 3, GU47 daylight only): a soft warm point light above and in front of the traveller, so the dark cloak reads against the meadow. */
+export const TRAVELLER_FILL = { intensity: 9, distance: 6, color: "#fff0dc", up: 2.4, toward: 1.8 } as const;
 
 const mix = (a: number, b: number, t: number): number => a + (b - a) * t;
 const mix3 = (a: Rgb, b: Rgb, t: number): Rgb => [mix(a[0], b[0], t), mix(a[1], b[1], t), mix(a[2], b[2], t)];
@@ -219,7 +266,8 @@ export function blendFrames(a: DaylightFrame, b: DaylightFrame, t: number): Dayl
     stars: mix(a.stars, b.stars, s),
     lanterns: mix(a.lanterns, b.lanterns, s),
     envIntensity: mix(a.envIntensity, b.envIntensity, s),
-    godRays: mix(a.godRays, b.godRays, s)
+    godRays: mix(a.godRays, b.godRays, s),
+    clearSky: mix(a.clearSky, b.clearSky, s)
   };
 }
 

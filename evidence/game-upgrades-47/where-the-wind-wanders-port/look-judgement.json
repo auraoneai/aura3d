@@ -1,0 +1,89 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../g23/evidence/where-the-wind-wanders-port/screens/final/key-walk.1280x720.jpg",
+      "sha256": "3985a2f72cbe123364b2a8469028dc06cffeb503ee8a707a824f5043d026bacb"
+    },
+    {
+      "path": "../g23/evidence/where-the-wind-wanders-port/screens/final/mid-walk.1280x720.jpg",
+      "sha256": "e894084e40a3e4994347c061bf84942579d5bf0d00d0e04f3a5cd42120c179d7"
+    },
+    {
+      "path": "../g23/evidence/game-upgrades-47/where-the-wind-wanders-port/p3-r2/where-the-wind-wanders-port/frames/g23p3-r2-4/where-the-wind-wanders-port--found3--settle-60s.jpg",
+      "sha256": "65402db0f0747ffdcd0620bf6f8f6c05f930b097cadb86d1c810a6a4345bdf45"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/verify2/where-the-wind-wanders-port/frames/gu47-verify2-where-the-wind-wanders-port-3/where-the-wind-wanders-port--bell--settle-60s.jpg",
+      "sha256": "6e1e8b1971a61e18de0ee50b8b93fad0f0c82ae75fbf2e27820daf272c38ba59"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4.5,
+    "ibl_reflections": 4.5,
+    "environment_world": 7.5,
+    "atmospheric_effects": 6.5,
+    "material_quality": 6,
+    "modeling_assets": 6.5,
+    "composition": 5.5,
+    "camera": 5.5,
+    "postprocessing": 6,
+    "animation_quality": 5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Flat, even daylight in frames 1-2 with little directional modeling. The character and house have weak key/fill separation. Frames 3-4 shift to a pink dusk grade that mutes the greens rather than adding a warm rim."
+    },
+    {
+      "category": "shadows",
+      "seen": "Contact shadows are barely visible: the character has no clear ground shadow in the grass. Trees and the windmill cast no readable shadow onto the meadow, so objects feel pasted on."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The lake is a flat pale blue plane with no sky reflection, specular glints or shoreline variation. The windmill's metal and wood show no environment response."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze on the far shore and treeline works in frame 4. A god-ray shaft by the windmill and faint floating motes appear. Fog in frames 1-2 is subtle but present."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Bush leaves use repeating polka-dot pink spots that read as a tiled texture. The grass has dithered, noisy alpha edges around the character. The roof tiles and the stone base of the windmill read well."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The low-poly faceted trees and cottage are charming. The character model is detailed and realistic, which clashes with the stylized world. The pink ghost-cat companion fits the style."
+    },
+    {
+      "category": "composition",
+      "seen": "The character is small, about 8-10% of frame height, rather than the expected 18-25%. The character is buried in tall foliage at center. A large tree trunk crops the left edge awkwardly in frames 3-4."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a high third-person chase view, not side-on. Foreground grass occludes the character's legs. The framing drifts between shots, with the windmill cut off at the right."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Frames 3-4 have a heavy pink/desaturated grade that dulls the palette. Visible dithering/noise patterns appear around the character. There is no obvious bloom except on the companion glow."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The poses show a mid-stride crouch that looks stiff. Grass shows no visible bending around the player."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Clean rounded pill UI for the counter, controls hint, and Journal/Sound buttons. It is legible but generic. The HUD disappears in frames 3-4, and there is no gold coin accent."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

@@ -39,6 +39,11 @@
       {
         "type": "point",
         "shadow": false,
+        "intensity": 9
+      },
+      {
+        "type": "point",
+        "shadow": false,
         "intensity": 0
       }
     ],

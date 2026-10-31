@@ -14,7 +14,7 @@ import { createCameraSequencer, type SequenceId } from "./camera-seq";
 import { gustAt } from "./wind";
 import { BELL, CAMERA_OFFSET, LETTERS, START, type WindState } from "./sim";
 import { GLOW_FRAGMENT, GLOW_VERTEX, HAZE_FRAGMENT, HAZE_VERTEX, MOTE_FRAGMENT, MOTE_VERTEX, PAINT_FRAGMENT, PAINT_VERTEX, PROP_FRAGMENT, PROP_VERTEX, SEA_FRAGMENT, SHAFT_FRAGMENT, SKY_FRAGMENT, STREAM_FRAGMENT, SKY_VERTEX, TRAVELLER_VERTEX, WIND_FRAGMENT, WIND_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX } from "./shaders";
-import { DAYLIGHT_KEYS, ORIGINAL_KEY, createDaylightDriver, daylightKeyFor, frameOfKey, linearToHex, type DaylightFrame } from "./daylight";
+import { DAYLIGHT_KEYS, ORIGINAL_KEY, TRAVELLER_FILL, createDaylightDriver, daylightKeyFor, frameOfKey, isDuskKey, linearToHex, lookPostFor, type DaylightFrame, type LookPost } from "./daylight";
 import { lin, toGeometryInput, type Mesh, type Rgb } from "./meshkit";
 import { buildScenery } from "./scenery";
 import { addAnimatedModels, addStaticModels, availableModels, createHeroAnimator, type ModelSet } from "./models";
@@ -81,6 +81,7 @@ export const skySpec = (): CustomSpec => ({
     skyZenith: { type: "vec3", value: [...ORIGINAL.skyZenith] },
     cloudTint: { type: "vec3", value: [1, 1, 1] },
     starAmt: { type: "f32", value: 0 },
+    clearSky: { type: "f32", value: 0 },
     skyPainted: { type: "f32", value: 0 }
   },
   depthWrite: false,
@@ -265,6 +266,25 @@ export function storybookLead(lead: { x: number; z: number; px: number; pz: numb
   lead.x += (gx - lead.x) * k;
   lead.z += (gz - lead.z) * k;
 }
+/**
+ * GU47 phase 3: the storybook framing is kept for the dusk and night keys (the views the blind panel chose); daylight uses
+ * the 4.6 follow height and lens (the lower camera put the canopy and a signboard into the top corners). `amount` 0..1
+ * eases between them over about 3 s, so the bell does not cut the camera.
+ */
+export function followFraming(amount: number, aspect: number): { y: number; fov: number; lead: number } {
+  const a = Math.max(0, Math.min(1, amount));
+  return { y: CAMERA_OFFSET.y + (STORYBOOK_CAMERA_Y - CAMERA_OFFSET.y) * a, fov: aspect < 1 ? 50 : 43 + (40 - 43) * a, lead: a };
+}
+/** Applies one look post (DAY_POST / DUSK_POST) through the runtime post surface. */
+function applyLookPost(app: AuraApp, post: LookPost, high: boolean): void {
+  app.post?.setEffect?.("bloom", { ...post.bloom });
+  app.post?.setEffect?.("colorGrade", { ...post.grade });
+  app.post?.setEffect?.("vignette", { ...post.vignette });
+  // grain and the paper pass exist on High only; patching grain on Low would add the effect
+  if (!high) return;
+  app.post?.setEffect?.("filmGrain", { intensity: post.grain });
+  app.post?.setPassUniform?.("wind-gouache-paper", "u_paper", post.paper);
+}
 /** Epilogue camera height above its look target. */
 export const EPILOGUE_CAMERA_RISE = 6.4;
 
@@ -325,6 +345,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
     builder.add(lights.hemisphere({ name: "valley sky fill", skyColor: linearToHex(k0.hemiSky), groundColor: linearToHex(k0.hemiGround), intensity: HEMI_INTENSITY }).runtime({ id: "sky-fill" }));
     builder.add(environments.hdri({ name: "valley ibl", texture: ENV_ASSETS.valleyIbl as never, intensity: VALLEY_IBL_INTENSITY, background: false }));
     sc.lanterns.forEach((p, i) => builder.add(lights.point({ name: `lantern ${i}`, position: [p.x, p.y, p.z], color: "#ffbf66", intensity: 0, distance: LANTERN_RANGE }).runtime({ id: `lantern-light-${i}` })));
+    builder.add(lights.point({ name: "traveller fill", position: [START.x, 2.3, START.z + TRAVELLER_FILL.toward], color: TRAVELLER_FILL.color, intensity: isDuskKey(options.daylightKey ?? 0) ? 0 : TRAVELLER_FILL.intensity, distance: TRAVELLER_FILL.distance }).runtime({ id: "traveller-fill" }));
     builder.add(lights.point({ name: "bell brass", position: [sc.bellHang.x, sc.bellHang.y - 0.45, sc.bellHang.z + 0.25], color: "#ffcf7a", intensity: 0, distance: 6 }).runtime({ id: "bell-light" }));
   }
 
@@ -530,17 +551,19 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       .add(effects.colorGrade({ name: "grade", contrast: 1.12, saturation: 1.28 }))
       .add(effects.vignette({ name: "vignette", intensity: 0.1, smoothness: 0.8 }));
   } else {
-    // WW47-P1: a softer gouache palette, a warm bloom on the glows and the sun, an umber vignette
+    // WW47-P1: dusk and night keep the softer gouache palette (warm bloom on the glows, umber vignette); phase 3 gives
+    // daylight a clean post (lookPostFor). The scene authors the boot key's post; `bind` patches it when the light crosses.
+    const post = lookPostFor(options.daylightKey ?? 0);
     builder
-      .add(effects.bloom({ name: "bloom", intensity: 0.42, threshold: 0.92, scatter: 0.55, color: "#ffe2b8" }))
-      .add(effects.colorGrade({ name: "grade", contrast: 1.1, saturation: 1.14, exposure: 1.05 }))
-      .add(effects.vignette({ name: "vignette", intensity: 0.16, smoothness: 0.75, color: "#3a2a1c" }));
+      .add(effects.bloom({ name: "bloom", ...post.bloom }))
+      .add(effects.colorGrade({ name: "grade", ...post.grade }))
+      .add(effects.vignette({ name: "vignette", ...post.vignette }));
     if (options.quality !== "low") {
       // WW47-P3: grain 0.02 under the paper pass. WW47-P2 (volumetricFog golden shafts) is off: on the GU47 engine its stage
       // painted every GLB (cottage, trees, traveller) as a flat cream silhouette while the custom-shader meadow stayed
       // clean (phase-2 A/B capture g23ab1, found0 = fog off only); the sun sits behind the follow camera, so no shafts
       // were visible either. `shaftPatch` stays as the per-key table for when the stage is re-enabled.
-      builder.add(effects.filmGrain({ name: "paper grain", intensity: 0.02 }));
+      builder.add(effects.filmGrain({ name: "paper grain", intensity: post.grain }));
     }
   }
 
@@ -583,6 +606,9 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
       let seqComplete = false;
       let vfxFound = 0, vfxComplete = false, vfxHop = "idle", vfxTime = -1, vfxLantern = 1, sailAngle = 0;
       let shownDaylight: DaylightFrame | null = null;
+      // phase 3: dusk-ness of the shown light (post table and storybook framing), and the eased framing amount
+      let shownDusk = isDuskKey(options.daylightKey ?? 0);
+      let story = shownDusk ? 1 : 0;
       // WW47-P2: the shaft patch last sent (only on High; written when the density moves, not every eased frame)
       const shafts = SHAFTS_ENABLED && !original && options.quality !== "low";
       let shownShaft: string | null = null;
@@ -596,11 +622,18 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
         sky.setUniform?.("skyZenith", f.skyZenith);
         sky.setUniform?.("cloudTint", f.cloudTint);
         sky.setUniform?.("starAmt", f.stars);
+        if (!original) sky.setUniform?.("clearSky", f.clearSky);
         if (original) return;
         // WW47-L4: the engine sun follows the day (E-B setLight); its direction is the uniform's, negated (light travel)
         node("sun").setLight?.({ direction: [-f.sunDir[0], -f.sunDir[1], -f.sunDir[2]], color: linearToHex(f.sunColor), intensity: f.engineSunIntensity });
         node("sky-fill").setLight?.({ color: linearToHex(f.hemiSky), intensity: HEMI_INTENSITY });
         app.lighting?.setEnvironmentIntensity?.(f.envIntensity / VALLEY_IBL_INTENSITY);
+        const dusk = isDuskKey(daylight.target);
+        if (dusk !== shownDusk) {
+          shownDusk = dusk;
+          applyLookPost(app, lookPostFor(daylight.target), options.quality !== "low");
+          node("traveller-fill").setLight?.({ intensity: dusk ? 0 : TRAVELLER_FILL.intensity });
+        }
         if (shafts) {
           const patch = shaftPatch(f.godRays);
           const token = patch ? patch.godRayDensity.toFixed(2) : "off";
@@ -669,6 +702,7 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           } else {
             tr.setPosition(x, y + hop, z).setRotation(0, yaw, 0);
             node("shadow").setPosition(x, y + 0.06, z).setScale(1 - 0.35 * Math.min(1, hop / 1.2));
+            if (!original) node("traveller-fill").setPosition(x, y + hop + TRAVELLER_FILL.up, z + TRAVELLER_FILL.toward);
           }
           if (heroAnim) {
             heroAnim.update({ x, z, airborne: state.hop.phase !== "idle", onBoat, time });
@@ -771,18 +805,21 @@ export function buildWorld(options: BuildWorldOptions = {}): World {
           // WW47-C2: on the GU47 look the target leads the walk by up to STORYBOOK_LEAD and the camera sits lower
           // (storybookOffset), so the horizon settles near the upper third; ?look=original keeps the 4.6 follow
           if (!original) storybookLead(lead, x, z, dt, motion());
-          const tx = x + 2 + lead.x, ty = y + hop + 1.8, tz = z - 3.5 + lead.z;
+          story += ((shownDusk ? 1 : 0) - story) * (1 - Math.exp(-dt / 1.2));
+          const framing = original ? null : followFraming(story, aspect);
+          const leadAmt = framing ? framing.lead : 0;
+          const tx = x + 2 + lead.x * leadAmt, ty = y + hop + 1.8, tz = z - 3.5 + lead.z * leadAmt;
           const k = 1 - Math.exp(-2.5 * dt);
           look.x += (tx - look.x) * k;
           look.y += (ty - look.y) * k;
           look.z += (tz - look.z) * k;
-          const off = original ? CAMERA_OFFSET : storybookOffset();
+          const off = framing ? { x: CAMERA_OFFSET.x, y: framing.y, z: CAMERA_OFFSET.z } : CAMERA_OFFSET;
           const cp: [number, number, number] = [look.x + off.x, look.y + off.y, look.z + off.z];
           // WW47-C1: the bell's finale orbit starts when it rings; a running sequence overrides the follow pose
           if (state.complete && !seqComplete) sequencer.start("finale");
           seqComplete = state.complete;
           // WW47-C2 (part): a storybook 40-degree lens on landscape; portrait keeps 50 so the traveller stays in frame
-          const follow = { position: cp, target: [look.x, look.y, look.z] as [number, number, number], fov: aspect < 1 ? 50 : original ? 43 : 40 };
+          const follow = { position: cp, target: [look.x, look.y, look.z] as [number, number, number], fov: framing ? framing.fov : aspect < 1 ? 50 : 43 };
           const shown = sequencer.update(dt, follow) ?? follow;
           node("sky").setPosition(shown.position[0], shown.position[1], shown.position[2]);
           cam.setPose({
