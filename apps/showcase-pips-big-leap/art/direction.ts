@@ -47,7 +47,9 @@ const direction: GameArtDirection = {
     fill: "ibl",
     // Hemisphere + cool rim in every world, plus up to four practicals (w4 lava, w5 lanterns and throne spot, w6 crystals).
     practicals: 6,
-    environment: { hdri: "spruit_sunrise", background: "enclosed" },
+    // GU47 phase 3: the daylight worlds (academy, w1, w3) draw autumn_field_puresky as their visible
+    // sky (w2 draws industrial_sunset_puresky; w4-w6 keep enclosed colour or star backdrops).
+    environment: { hdri: "autumn_field_puresky", background: "hdri" },
     exposureEV: -0.2
   },
   framing: { rig: "shoulder", subjectHeightFraction: [0.18, 0.25], fovDeg: [46, 68], mobile: "both" },

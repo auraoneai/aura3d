@@ -221,7 +221,7 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
     id: "w2",
     hour: "millpond golden hour",
     baseLook: "golden-hour",
-    hdri: { id: "kloppenheim_06_puresky", intensity: 0.95, rotationDeg: 250 },
+    hdri: { id: "industrial_sunset_puresky", intensity: 0.95, rotationDeg: 250 },
     key: { elevationDeg: 24, azimuthDeg: 320, color: "#ffc489", intensity: 2.8, lightSize: 0.8, softness: 0.5 },
     rim: { azimuthDeg: opposite(320), color: "#a8c4ff", intensity: 0.45 },
     hemisphere: { skyColor: "#f4d6b4", groundColor: "#4a3a20", intensity: 0.3 },

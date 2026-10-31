@@ -50,7 +50,7 @@ describe("pips-big-leap look table (PBL-L1)", () => {
     expect(WORLD_LOOKS.academy.hdri.id).toBe("autumn_field_puresky");
     expect(WORLD_LOOKS.w1.hdri.id).toBe("autumn_field_puresky");
     expect(WORLD_LOOKS.w3.hdri.id).toBe("autumn_field_puresky");
-    expect(WORLD_LOOKS.w2.hdri.id).toBe("kloppenheim_06_puresky");
+    expect(WORLD_LOOKS.w2.hdri.id).toBe("industrial_sunset_puresky");
     expect(WORLD_LOOKS.w4.hdri).toMatchObject({ id: "hangar_interior", intensity: 0.6 });
     expect(WORLD_LOOKS.w5.hdri).toMatchObject({ id: "warm_bar", intensity: 0.6 });
     expect(WORLD_LOOKS.w6.hdri).toMatchObject({ id: "rooftop_night", intensity: 0.55 });
