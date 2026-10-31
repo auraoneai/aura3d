@@ -362,7 +362,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     // AO-P3 / AO-P4: motion blur (S7) and god rays through the haze (S4). art/post.ts switches both per tier: High and Ultra
     // only, never on a phone, and motion blur never under reduced motion. The inscatter density stays tiny: the look fog owns
     // the haze, this node only feeds the shafts (godRayDensity is decoupled from fog density, E-C EC-8).
-    .add(effects.motionBlur({ shutter: APEX_MOTION_BLUR, maxBlur: 14 }))
+    .add(effects.motionBlur({ shutter: APEX_MOTION_BLUR, maxBlur: 8 }))
     .add(effects.volumetricFog({ density: 0.004, color: APEX_LOOK[0].dome.sun, intensity: 0.45, godRayDensity: APEX_GOD_RAY_DENSITY }));
   // AO-P3: the low sun's lens flare in the identity palette; skipped under reduced motion, hidden at night.
   if (!REDUCED_MOTION) {

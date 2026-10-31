@@ -32,7 +32,7 @@ function paintOverride(tint: string | null, rim: { color: string; power: number;
  * `?models=0` (the grey showcase car) still gets the multiply tint.
  */
 export function apexHeroPaint(retextured = true): readonly AuraModelMaterialOverride[] {
-  return [paintOverride(retextured ? null : APEX_HERO_TINT, { color: APEX_PALETTE.tangerine, power: 3.5, intensity: 0.9 })];
+  return [paintOverride(retextured ? null : APEX_HERO_TINT, { color: APEX_PALETTE.tangerine, power: 3.5, intensity: 0.6 })];
 }
 
 /** Sky-lane rival: graphite with the reserved rival red on the rim (AO-A2 interim). */
