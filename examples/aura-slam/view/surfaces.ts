@@ -44,7 +44,7 @@ const grain = (kind: SurfaceKind) => {
  * court is a cobalt acrylic inside a pale regolith apron on a darker charcoal plain: three clear value steps.
  */
 export const WORLD_TOUR_PALETTE: Readonly<Record<string, Partial<Record<CourtPart, string>>>> = {
-  moon: { court: "#2c5f96", alley: "#244e7c", apron: "#9fa3a8", ground: "#44484e" }
+  moon: { court: "#2c5f96", alley: "#244e7c", apron: "#8e9297", ground: "#24272b" }
 };
 
 /** The material of one court part at a venue (colours from the venue palette, properties from its surface family). */

@@ -14,7 +14,7 @@ import { createPoseRig } from "./poseRig";
 import type { AthleteRigPort } from "./rigPort";
 import { cachedMediaQuery } from "../ui/dom";
 import { createParticleUpdater } from "./particles";
-import { STATIC_RUNTIME_IDS, buildTennisScene } from "./scene";
+import { GANTRY_POSITION, STATIC_RUNTIME_IDS, buildTennisScene } from "./scene";
 import { createSpectatorUpdater } from "./spectators";
 import { VENUE_PALETTES, isMoonVenue, venueKey } from "./venues";
 import { lookMode, venueLook } from "./look";
@@ -204,7 +204,9 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
     h.sponsorTrim?.setMaterial(material.pbr({ color: pal.trim, roughness: 0.55 }));
     audienceVisible = worldTour || !isMoonVenue(key);
     // GU47 phase 3: the scoreboard gantry read as a tower floating in the black lunar sky; the Moon hides it (Earth stays clear).
-    h.gantry?.setVisible(!(worldTour && isMoonVenue(key)));
+    // setVisible alone left the loaded GLB drawing (round-2 capture), so the Moon also drops it 60 m below the plain.
+    const gantryShown = !(worldTour && isMoonVenue(key));
+    h.gantry?.setVisible(gantryShown).setPosition(GANTRY_POSITION[0], gantryShown ? GANTRY_POSITION[1] : -60, GANTRY_POSITION[2]);
     spectators?.setVisible(audienceVisible);
     spectatorHeads?.setVisible(audienceVisible);
     standText?.setVisible(audienceVisible);
