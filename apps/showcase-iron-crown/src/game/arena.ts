@@ -22,8 +22,9 @@ import {
 import { prayerFlagNodes } from "./ambientMotion";
 import { koScorchNode, stageFlareNodes } from "./flareScorch";
 import { createFighterNode, type FighterDef, type FighterPalette, type TypedFighterAssets } from "./fighters";
-import { stageLightNodes, stageLook, stageLookNode, streakLimitFor, weatherParticlesFor, type StageLookRow } from "./look";
+import { backRimPose, FOLLOW_SPOT_ID, followSpotPose, RIM_IDS, stageLightNodes, stageLook, stageLookNode, streakLimitFor, weatherParticlesFor, type StageLookRow } from "./look";
 import { ORIGINAL_LOOKS, ORIGINAL_VIGNETTE, type VenueLookMode } from "./originalLook";
+import { groundDressing, markDeckPracticals, refinedLook, refinedLookOverrides, type RefinedVenueLook } from "./refinedLook";
 import type { IronStage } from "./stages";
 
 export type Vec3 = readonly [number, number, number];
@@ -168,8 +169,86 @@ export function buildOriginalArenaScene(o: ArenaOptions) {
     .camera(camera.perspective({ position: [0, 1.6, 5.6], target: [0, 0.82, 0], fov: 40 }));
 }
 
+/** The refined look group; under a follow-spot the look's sun is dropped (the spot is the one shadowed key). */
+function refinedLookNode(look: RefinedVenueLook, dropSun: boolean): AuraSceneNode {
+  const group = looks.preset(look.lookId, refinedLookOverrides(look)).toJSON();
+  if (!dropSun) return group;
+  return { ...group, children: group.children.filter((child) => !(child.kind === "light" && child.name === "look key light")) };
+}
+
+/**
+ * The refined venue scene (GU47 phase 3, refinedLook.ts): the 4.6.2 floor deck, dressing and fighter surface the panel
+ * preferred, under a drawn HDRI sky with less haze, one shadowed sun key, neutral back rims (the Crown: a neutral
+ * follow-spot and a mirror floor), neutral ring spots, a neutral grade and the airstrip jet set down on the deck.
+ */
+export function buildRefinedArenaScene(o: ArenaOptions, look: RefinedVenueLook) {
+  const s = o.stage;
+  const row = stageLook(s.id);
+  const lightNodes: AuraSceneNode[] = [];
+  if (look.followSpot && row.key.kind === "follow-spot") {
+    const key = row.key;
+    const pose = followSpotPose(key, (o.playerStart[0] + o.rivalStart[0]) / 2);
+    lightNodes.push(
+      lights
+        .spot({ name: "crown follow-spot", position: pose.position, target: pose.target, angle: key.angle, penumbra: key.penumbra, distance: key.distance, decay: key.decay, intensity: look.followSpot.intensity, color: look.followSpot.color, shadow: key.shadow })
+        .runtime({ id: FOLLOW_SPOT_ID })
+        .toJSON()
+    );
+  }
+  for (const side of ["p1", "p2"] as const) {
+    const pose = backRimPose(row.backRim, side === "p1" ? o.playerStart[0] : o.rivalStart[0]);
+    lightNodes.push(
+      lights
+        .spot({ name: `fighter back rim ${side}`, position: pose.position, target: pose.target, angle: row.backRim.angle, penumbra: row.backRim.penumbra, distance: row.backRim.distance, decay: 1.3, intensity: look.rim.intensity, color: look.rim.color })
+        .runtime({ id: RIM_IDS[side] })
+        .toJSON()
+    );
+  }
+  const weatherNodes: AuraSceneNode[] = [];
+  if (look.weather) {
+    const streakLimit = o.reducedMotion ? Math.floor(look.weather.streakLimit / 2) : look.weather.streakLimit;
+    const [volume, ...streaks] = weather.precipitation({ type: look.weather.type, seed: 0x1c47, streakLimit }).nodes;
+    const particles = Math.round(look.weather.particles * (o.reducedMotion ? 0.5 : 1) * (o.lowTier ? 0.5 : 1));
+    if (volume) weatherNodes.push({ ...volume, name: `${s.id} ${look.weather.type}`, particleCount: particles, color: look.weather.color } as AuraSceneNode);
+    weatherNodes.push(...streaks);
+  }
+  return scene()
+    .add(refinedLookNode(look, row.key.kind === "follow-spot" && look.followSpot !== undefined))
+    .addMany(arenaFloorNodes(s, o.playerStart[0], o.rivalStart[0]))
+    .addMany(markDeckPracticals(groundDressing(s.originalDressing)))
+    .add(createFighterNode("player", o.p1, `${o.p1.name} (P1)`, o.playerStart, 1, o.typedFighterAssets, o.p1Tint, false))
+    .add(createFighterNode("rival", o.cpu, `${o.cpu.name} (CPU)`, o.rivalStart, -1, o.typedFighterAssets, o.cpuTint, false))
+    .addMany([
+      ...lightNodes,
+      ...weatherNodes,
+      ...(look.prayerFlags ? prayerFlagNodes(s.id, o.reducedMotion) : []),
+      koScorchNode(),
+      ...(o.contactShadows ? [effects.contactShadows({ intensity: 0.8, length: 0.3 }).toJSON()] : []),
+      effects.vignette({ name: "iron crown vignette", intensity: look.vignette, smoothness: 0.65 }).toJSON(),
+      effects.bloom({ intensity: look.bloom.intensity, threshold: look.bloom.threshold }).toJSON(),
+      ...(look.mirror ? [{ ...ssrNode(), intensity: look.mirror } as AuraSceneNode] : []),
+      ...(look.cones
+        ? [
+            effects.lightCone({ name: "crown key cone left", position: [-6.3, 4.8, -5.5], direction: [0.65, -0.42, 0.63], color: look.ringKey.color, intensity: 0.2, length: 8.5, coneAngle: 0.34, softness: 0.6 }).toJSON(),
+            effects.lightCone({ name: "crown key cone right", position: [6.3, 4.8, -5.5], direction: [-0.65, -0.42, 0.63], color: look.ringFill.color, intensity: 0.16, length: 8.5, coneAngle: 0.32, softness: 0.6 }).toJSON()
+          ]
+        : []),
+      lights.spot({ name: "crown ring key", position: [-3.9, 5.4, 1.6], target: [0, 0.5, 0], angle: 0.46, penumbra: 0.85, distance: 15, decay: 1.3, intensity: look.ringKey.intensity, color: look.ringKey.color }).toJSON(),
+      lights.spot({ name: "crown ring fill", position: [3.9, 5.4, 1.6], target: [0, 0.5, 0], angle: 0.46, penumbra: 0.85, distance: 15, decay: 1.3, intensity: look.ringFill.intensity, color: look.ringFill.color }).toJSON()
+    ])
+    .camera(camera.perspective({ position: [0, 1.6, 5.6], target: [0, 0.82, 0], fov: 40 }));
+}
+
+/** The venue's base vignette for the cinematic post cue (4.6.2, refined or GU47 look). */
+export function venueVignette(id: IronStage["id"], mode: VenueLookMode): number {
+  if (mode === "original") return ORIGINAL_VIGNETTE;
+  return refinedLook(id)?.vignette ?? stageLook(id).vignette;
+}
+
 export function buildArenaScene(o: ArenaOptions) {
   if (o.lookMode === "original") return buildOriginalArenaScene(o);
+  const refined = refinedLook(o.stage.id);
+  if (refined) return buildRefinedArenaScene(o, refined);
   const s = o.stage;
   const row = stageLook(s.id);
   const rims = { p1: rimColorOf(o.p1, o.p1Tint), p2: rimColorOf(o.cpu, o.cpuTint) };

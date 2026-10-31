@@ -66,7 +66,7 @@ import { mountControlsSheet } from "./game/controlsSheet";
 import { mountExtraTouchButtons } from "./game/touchExtras";
 import { DEFAULT_STAGE, stageById, type IronStage, type StageId } from "./game/stages";
 import { CROWD_IDS, crowdBob, signFlicker } from "./game/ambientMotion";
-import { buildArenaScene } from "./game/arena";
+import { buildArenaScene, venueVignette } from "./game/arena";
 import {
   cinematicPost,
   cinematicShot,
@@ -79,7 +79,7 @@ import {
 } from "./game/cinematics";
 import { backRimPose, FOLLOW_SPOT_ID, followSpotPose, LETTERBOX_BAR, panelLightId, poseDirection, RIM_IDS, stageLook, type SpotPose } from "./game/look";
 import { AMBIENT_EMITTERS, createAmbientVfx, installIronCrownVfx, type IronCrownVfxKind } from "./game/vfx";
-import { ORIGINAL_VIGNETTE, venueLookMode } from "./game/originalLook";
+import { venueLookMode } from "./game/originalLook";
 import { advanceLadder, createLadder, currentRung, type LadderState } from "./game/ladder";
 import { createHud, type MenuId, type ModeId } from "./game/hud";
 import "./styles.css";
@@ -438,7 +438,7 @@ app.camera?.use({
       const slam = hudSlamFor(lastShotName, shot?.name ?? null);
       lastShotName = shot?.name ?? null;
       if (slam) hud.slam(slam);
-      applyPostCue(cinematicPost(shot, performance.now() / 1000 - postPulseAt, (venueLookMode(state.config.stage.id, params) === "original" ? ORIGINAL_VIGNETTE : stageLook(state.config.stage.id).vignette), reducedMotion));
+      applyPostCue(cinematicPost(shot, performance.now() / 1000 - postPulseAt, venueVignette(state.config.stage.id, venueLookMode(state.config.stage.id, params)), reducedMotion));
       if (shot) return { ...pose, position: shot.position, target: shot.target, fov: shot.fov };
     }
     const position: [number, number, number] = [pose.position[0], pose.position[1] + FIGHT_LENS.lift, pose.position[2] - 0.15];
