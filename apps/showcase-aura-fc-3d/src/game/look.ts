@@ -234,6 +234,8 @@ export interface FcHybridLayer {
   readonly pools: number;
   /** Phase 3: flood light-cone intensity (4.6.2: 0.3), the haze shafts under the lamp heads at night. */
   readonly coneIntensity: number;
+  /** Phase 3: low flood haze with god rays from the main-stand flood (volumetric fog density), 0 = none. */
+  readonly haze?: number;
   readonly mirror: { readonly resolution: number; readonly tint: string } | null;
   readonly bloom: { readonly intensity: number; readonly threshold: number };
   readonly vignette: number;
@@ -251,14 +253,14 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
     background: "#0a1422", exposureEv: 0.08, floodScale: 1.3,
     grade: { contrast: 1.12, saturation: 1.0, temperature: -0.02, tint: 0 },
     rim: { color: "#8fc8ff", intensity: 0.35, azimuthDeg: 200 }, flares: true, weather: "rain",
-    surface: "grass", turfRoughness: 0.4, pools: 0.16, coneIntensity: 0.55, mirror: null,
+    surface: "grass", turfRoughness: 0.4, pools: 0.16, coneIntensity: 0.55, haze: 0.05, mirror: null,
     bloom: { intensity: 0.3, threshold: 0.8 }, vignette: 0.28, grain: 0, chromaticAberration: 0
   },
   kyoto: {
     background: "#120814", exposureEv: 0.08, floodScale: 1.3,
     grade: { contrast: 1.08, saturation: 1.1, temperature: 0.05, tint: 0.12 },
     rim: { color: "#ff8fbd", intensity: 0.3, azimuthDeg: 160 }, flares: true, weather: "drizzle",
-    surface: "grass", turfRoughness: 0.62, pools: 0.14, coneIntensity: 0.5, mirror: null,
+    surface: "grass", turfRoughness: 0.62, pools: 0.14, coneIntensity: 0.5, haze: 0.04, mirror: null,
     bloom: { intensity: 0.32, threshold: 0.78 }, vignette: 0.28, grain: 0, chromaticAberration: 0.0015
   },
   favela: {
@@ -270,7 +272,7 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   },
   lagos: {
     background: "#d08a55", exposureEv: -0.45, floodScale: 1,
-    grade: { contrast: 1.2, saturation: 1.12, temperature: 0.24, tint: 0 },
+    grade: { contrast: 1.26, saturation: 1.06, temperature: 0.12, tint: 0 },
     rim: null, flares: false, weather: "none",
     surface: "plain", turfRoughness: 0.95, pools: 0, coneIntensity: 0.3, mirror: null,
     bloom: { intensity: 0.1, threshold: 0.94 }, vignette: 0.25, grain: 0, chromaticAberration: 0
@@ -279,7 +281,7 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   // lower half of the frame only), so the hybrid Uyuni is a pale-dawn grade on the salt instead.
   uyuni: {
     background: "#d9b8b8", exposureEv: -0.8, floodScale: 1,
-    grade: { contrast: 1.18, saturation: 1.15, temperature: 0.16, tint: 0.04 },
+    grade: { contrast: 1.3, saturation: 1.15, temperature: 0.16, tint: 0.04 },
     rim: null, flares: false, weather: "none",
     // phase 3: a glazed salt crust (clearcoat over a cool lilac-grey) so the dawn sky reflects in the flat, and the
     // dark pitch lines read; the 4.6.2 white flat measured mean 227
