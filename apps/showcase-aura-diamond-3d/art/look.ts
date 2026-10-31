@@ -520,7 +520,7 @@ export interface DiamondKeyShadow {
   readonly mapSize?: 1024 | 2048 | 4096;
   readonly filter?: "hard" | "pcf" | "pcss";
   readonly intensity?: number;
-  readonly fit?: { readonly center: Vec3; readonly extent: number; readonly depth?: number };
+  readonly fit?: { readonly center: readonly [number, number, number]; readonly extent: number; readonly depth?: number };
 }
 
 /**
