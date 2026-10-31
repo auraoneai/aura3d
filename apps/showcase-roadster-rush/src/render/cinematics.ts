@@ -16,7 +16,7 @@ export interface ApexShotPose {
 }
 
 /** The authored chase camera (main.ts): the intro returns here. */
-export const APEX_CHASE_POSE = { position: [0, 3.6, 5.2] as V3, target: [0, 0.9, -6.0] as V3, fov: 55, near: 0.25, far: 550 } as const;
+export const APEX_CHASE_POSE = { position: [0, 3.6, 5.2] as V3, target: [0, 0.6, -6.0] as V3, fov: 55, near: 0.25, far: 550 } as const;
 
 /**
  * Hero at about [0, 0.6, -1.15] in camera space, the sun dead ahead (-z). Shot 1: low front three-quarter, the car backlit by

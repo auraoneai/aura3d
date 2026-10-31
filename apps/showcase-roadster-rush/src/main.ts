@@ -333,7 +333,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         near: 0.25,
         far: 550,
         position: [0, 3.6, 5.2],
-        target: [0, 0.9, -6.0]
+        target: [0, 0.6, -6.0]
       })
     )
     // Camera-side fill: the sun is dead ahead, so the faces the chase camera sees are lit by this unshadowed 0.6 fill from
@@ -1363,7 +1363,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       }
     }
 
-    // Camera-anchored relative transform: the @aura3d/engine camera sits at [0, 3.6, 5.2] looking at [0, 0.9, -6.0].
+    // Camera-anchored relative transform: the @aura3d/engine camera sits at [0, 3.6, 5.2] looking at [0, 0.6, -6.0].
     // World coordinates are shifted by the chase anchor, so the player car stays in front of the camera while the freeway,
     // traffic, sky cars and bolts move past. The anchor lags lane changes a little, rises with altitude and carries the shake.
     const targetX = px * 0.65;

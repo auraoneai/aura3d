@@ -1,0 +1,12 @@
+/* Apex Overdrive HUD faces (GU47 phase 3, PRD D9): licensed copies from the owner's font library, self-hosted.
+   The page named Whitney, DIN Pro and Monument Grotesk Mono but declared none of them (only /fonts/local.css, which declares
+   "Graphik Web" and "TT Commons Pro Mono"), so every label fell back to the platform sans.
+   whitney-book.woff2 = sans/Whitney/24bda95d153a319704c33329f3ab84bb.woff2 (Book, 400),
+   whitney-medium.woff2 = sans/Whitney/cf4a8a10bbdf9b775fad41e0b9921c84.woff2 (Medium, 500),
+   monument-grotesk-mono.ttf = display/Monument-Grotesk/MonumentGrotesk-Mono.ttf (400);
+   DIN Pro Medium/Bold come from the site's shared /fonts/din-pro/ (sans/DIN-Pro). */
+@font-face { font-family: "Whitney"; src: url("./whitney-book.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Whitney"; src: url("./whitney-medium.woff2") format("woff2"); font-weight: 500 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "DIN Pro"; src: url("/fonts/din-pro/DINPro-Medium.woff") format("woff"); font-weight: 400 500; font-style: normal; font-display: swap; }
+@font-face { font-family: "DIN Pro"; src: url("/fonts/din-pro/DINPro-Bold.woff") format("woff"); font-weight: 600 800; font-style: normal; font-display: swap; }
+@font-face { font-family: "Monument Grotesk Mono"; src: url("./monument-grotesk-mono.ttf") format("truetype"); font-weight: 400; font-style: normal; font-display: swap; }

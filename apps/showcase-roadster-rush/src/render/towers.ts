@@ -120,8 +120,9 @@ void main() {
   float h = a3dHash31(vec3(cell, floor(vFacade.y / 40.0) + 7.0));
   vec3 tilt = vec3((h - 0.5) * 0.08, (fract(h * 13.7) - 0.5) * 0.12, 0.0);
   vec3 r = reflect(-v, normalize(n + tilt));
-  vec3 sky = mix(a3dSrgbToLinear(glassHorizon), a3dSrgbToLinear(glassSky), smoothstep(-0.08, 0.5, r.y));
-  float fres = 0.1 + 0.62 * pow(1.0 - a3dSaturate(dot(n, v)), 5.0);
+  // most panes see the cobalt upper dome; only the lowest reflections pick up the tangerine band
+  vec3 sky = mix(a3dSrgbToLinear(glassHorizon), a3dSrgbToLinear(glassSky), smoothstep(-0.12, 0.18, r.y + (h - 0.5) * 0.2));
+  float fres = 0.12 + 0.5 * pow(1.0 - a3dSaturate(dot(n, v)), 5.0);
   vec3 body = a3dSrgbToLinear(glassBody);
   vec3 glass = mix(body, sky, fres);
   float glint = pow(a3dSaturate(dot(r, normalize(sunDirection))), 64.0) * sunGlint;
@@ -132,7 +133,7 @@ void main() {
   float lit = step(1.0 - litFrac, win) * (1.0 - frame);
   glass += mix(vec3(1.0, 0.7, 0.36), vec3(0.72, 0.8, 1.0), step(0.8, fract(win * 7.3))) * lit * (0.04 + 0.75 * windowsLit);
   // spandrels and mullions: dark anodised metal catching a little of the sky
-  vec3 metal = body * 0.45 + sky * 0.06;
+  vec3 metal = body * 0.32 + sky * 0.04;
   vec3 col = mix(glass, metal, frame * (1.0 - roof));
   // roof: dark parapet top, a 1.6 m parapet band, a tangerine LED crown line that comes up toward dusk
   col = mix(col, body * 0.35, roof);
@@ -154,9 +155,9 @@ void main() {
 /** Curtain-wall glass for one variant (body tint differs per variant so the three read as a kit, not clones). */
 export function towerGlassSpec(variant: TowerVariant): CustomSpec {
   const body: Record<TowerVariant, [number, number, number]> = {
-    slab: [0.13, 0.15, 0.2],
-    stepped: [0.16, 0.15, 0.17],
-    blade: [0.1, 0.13, 0.2]
+    slab: [0.16, 0.2, 0.27],
+    stepped: [0.2, 0.21, 0.24],
+    blade: [0.13, 0.18, 0.28]
   };
   return {
     glsl: { vertex: VERTEX, fragment: FRAGMENT },
