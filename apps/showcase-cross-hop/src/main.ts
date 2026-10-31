@@ -36,7 +36,12 @@ setReducedMotion(REDUCED_MOTION);
  * over the tabletop diorama for all seven variants (steep top-down camera, no horizon, haze band, muddy palettes), so
  * the diorama is opt-in through `?look=diorama`; `?look=original` still names the 4.6 look explicitly.
  */
-setLookMode(params.get("look") === "diorama" ? "diorama" : "original");
+/**
+ * GU47 phase 3 (4.7.1): the vivid look (the 4.6 chase camera with a shadowed sun, gradient sky, distance haze, flat
+ * floor and per-theme grade) is the default; `?look=original` boots the 4.6 look and `?look=diorama` the tabletop.
+ */
+const LOOK_PARAM = params.get("look");
+setLookMode(LOOK_PARAM === "diorama" ? "diorama" : LOOK_PARAM === "original" ? "original" : "vivid");
 const DIORAMA = getLookMode() === "diorama";
 if (DIORAMA) document.body.classList.add("ch-diorama");
 
