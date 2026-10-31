@@ -1,0 +1,92 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../g18/evidence/game-upgrades-47/drift-and-deliver-port/p3-r2/drift-and-deliver-port/frames/g18p3-r2-1/drift-and-deliver-port--default--settle-60s.jpg",
+      "sha256": "3c1013b28a921702afab8be6ecc5446e8015e75c1319c6d4fa74ba5c8145d7af"
+    },
+    {
+      "path": "../g18/evidence/game-upgrades-47/drift-and-deliver-port/p3-r2/drift-and-deliver-port/frames/g18p3-r2-3/drift-and-deliver-port--sunset--settle-60s.jpg",
+      "sha256": "83d3ef92ae618ce760bf3ec7749478e733b43c5bba0b89ebcd686c57811d91d9"
+    },
+    {
+      "path": "../g18/evidence/game-upgrades-47/drift-and-deliver-port/p3-r2/drift-and-deliver-port/frames/g18p3-r2-4/drift-and-deliver-port--bluehour--settle-60s.jpg",
+      "sha256": "1b7a9baa35773794af9f1dca4dfe16462044a0155727b3aac312c48b7b6d6c83"
+    },
+    {
+      "path": "../g18/evidence/game-upgrades-47/drift-and-deliver-port/p3-r2/drift-and-deliver-port/frames/g18p3-r2-2/drift-and-deliver-port--golden--settle-25s.jpg",
+      "sha256": "39b1263f0abe64e948716ec31a3e878b1fc56587287ab59d18f18769a7595fc0"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 2.5,
+    "ibl_reflections": 3,
+    "environment_world": 5.5,
+    "atmospheric_effects": 4,
+    "material_quality": 3.5,
+    "modeling_assets": 4.5,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 4,
+    "ui_hud": 4.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The golden-hour frames (1, 2, 4) show a warm sky gradient. The facades are nearly uniformly lit, with no low-sun raking light, warm rim or directional falloff. In the night frame the building faces are flat grey-blue, and the street lamps cast no visible pools of light on the sidewalk."
+    },
+    {
+      "category": "lighting",
+      "seen": "In frames 2 and 3 the headlight appears as an opaque white slab sitting on and above the car roof, not as an amber cone on the road. It reads as a misplaced or unclipped light volume."
+    },
+    {
+      "category": "shadows",
+      "seen": "The tall buildings cast no shadows onto the street despite a supposed low sun. The car has only a faint, soft darkening under the bumper with no defined contact shadow. Lamp posts and traffic lights cast no shadows."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The car body and rear glass show no environment reflection of the warm sky or the buildings. Window panes on the towers are flat, unlit color blocks with no specular response. The asphalt has no sheen toward the sun."
+    },
+    {
+      "category": "environment_world",
+      "seen": "There is a long symmetrical canyon of stylized towers with storefronts, awnings, lamp posts, traffic signals, a hydrant, a blocky pedestrian and road arrows. It is coherent but repetitive. There is no traffic and the street is empty."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "A slight haze appears only at the far vanishing point. Mid-distance buildings 50–150 m away keep full contrast, so there is no aerial-perspective fog band. Night frame 3 shows a speckled noise patch at the vanishing point instead of fog."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The car uses a blotchy, photoscan-like texture with smeared white patches and a muddy license plate. The towers are untextured flat-shaded boxes. The asphalt is a uniform dark grey with no grain or wear, and the two styles clash."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The car mesh has a lumpy, uneven silhouette around the bumper and hatch. The buildings are simple extruded boxes with decal windows. The pedestrian is a crude voxel-like figure. The props (lamps, signals) are acceptable."
+    },
+    {
+      "category": "composition",
+      "seen": "The car is centered and occupies roughly 15–18% of the frame, with a strong central vanishing point and symmetric building walls. The composition is static and has no foreground or depth interest."
+    },
+    {
+      "category": "camera",
+      "seen": "This is a chase camera behind and slightly above the car with an FOV of roughly 60°. Framing is nearly identical across all frames, with no lean, offset or speed-driven FOV change visible."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is no visible bloom on the lit lamp heads or the bright sky. Frame 2 has a slight orange color grade. Frame 3 shows dithering or noise at the horizon. There is no film grain, vignette, or cinematic tone curve."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The speedometer is a thin amber arc with a needle and no numeric readout. The minimap in the bottom right is a dense grid of tiny colored dots and diamonds that is illegible at this size, with no route or player marker clearly readable."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

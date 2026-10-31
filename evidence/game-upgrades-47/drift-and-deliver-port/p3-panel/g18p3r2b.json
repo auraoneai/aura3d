@@ -1,0 +1,64 @@
+[
+ {
+  "slug": "drift-and-deliver-port",
+  "judges": 2,
+  "variants": [
+   {
+    "variant": "bluehour",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The headlight cone shows up as a bright white slab above the car roof that reads like a glitch. The left sidewalk and building bases are dark and somewhat muddy. Otherwise the blue-hour mood is strong: lit windows, a deep blue sky and the car stays readable.",
+     "Bright white slab of light sits on and above the car roof and looks like a headlight-cone or light-volume artifact. The scene is dark overall and the near road is murky, but lit windows, streetlamps and the blue sky give it a strong night mood."
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Small dark lens or puddle blobs on the road at left look a little odd. The right side is slightly over-warm. Otherwise it has good contrast, a dark road, warm sunlight and a clear car.",
+     "The car's rear plate and bumper textures look blotchy and the foreground road is fairly dark. Otherwise contrast, warm grading and depth are good."
+    ]
+   },
+   {
+    "variant": "golden",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Odd small dark blobs on the road at left. Apart from that the golden light gives good contrast, a rich sky gradient and strong shading on the buildings.",
+     "Car texture is slightly blotchy and the golden tone is subtle. Otherwise contrast is good, the warm sky gradient reads well and the scene has depth."
+    ]
+   },
+   {
+    "variant": "sunset",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A faint headlight-beam strip on the road ahead is slightly visible, and there are small dark blobs on the road at left. Otherwise the orange sunset sky, warm rim lighting and good depth all work well.",
+     "A pale light strip in front of the car looks slightly like a stray light volume. The car texture is a bit blotchy. Otherwise the orange sky, warm rim light and contrast make a strong mood."
+    ]
+   }
+  ]
+ }
+]
