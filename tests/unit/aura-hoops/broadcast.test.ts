@@ -89,6 +89,17 @@ describe("Aura Hoops broadcast camera (H47-C1 / H47-P2)", () => {
     expect(b.update(0.016)).toBeNull();
   });
 
+  it("the intro runs on wall-clock time at 1-2 fps (software WebGL2), capped at 1 s a frame", () => {
+    const b = createBroadcast({ disabled: false });
+    b.startIntro("orbit");
+    for (let i = 0; i < 11; i++) b.update(0.5);
+    expect(b.active).toBe(true);
+    expect(b.update(0.5)).toBeNull();
+    b.startIntro("orbit");
+    for (let i = 0; i < 5; i++) b.update(30);
+    expect(b.active).toBe(true);
+  });
+
   it("reduced motion and the measurement paths disable intros and replays", () => {
     const off = createBroadcast({ disabled: true });
     expect(off.startIntro("orbit")).toBe(false);

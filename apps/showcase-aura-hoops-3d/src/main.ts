@@ -477,14 +477,29 @@ const QA_AO = initialParams.get("diag") === "1" ? initialParams.get("qaAo") : nu
 /** ?diag=1&qaTarget=N plays to N points so a run reaches the results card quickly (measurement only). */
 const QA_TARGET = initialParams.get("diag") === "1" ? Number(initialParams.get("qaTarget")) || 0 : 0;
 /** ?look=original: the 4.6 look (presets, fog off, today's practicals and dressing) for GU47 before/after pairs. */
-const LOOK_ORIGINAL = initialParams.get("look") === "original";
+/**
+ * GU47 phase 2 (PRD D11, no regression ships): courts whose new look still lost to the 4.6.2 frame after the two phase-2
+ * capture rounds boot on the original look; `?look=new` opts back in. Rucker: flood haze, cones and flare veil the left
+ * half of the chase frame. Orbit: the chase eye sits inside the station dressing, darker than 4.6.2. The boot court
+ * decides (the default court is Rucker); a court picked later from the menu keeps the boot look.
+ */
+const ORIGINAL_LOOK_COURTS: ReadonlySet<string> = new Set(["rucker", "orbit"]);
+const BOOT_COURT = initialParams.get("court") ?? "rucker";
+const LOOK_ORIGINAL = initialParams.get("look") === "original" ||
+  (initialParams.get("look") !== "new" && ORIGINAL_LOOK_COURTS.has(BOOT_COURT));
+/**
+ * GU47 phase 2 fallback: `world.water` fails the renderer mount on this route ("Oblique clip projection is degenerate",
+ * RENDERER_MOUNT_FAILED: Venice and Shanghai drew nothing in the after-capture). Until the engine water fix lands the
+ * 4.6 ocean and river planes draw by default and `?water=real` opts in to the H47-E3 water nodes.
+ */
+const REAL_WATER = !LOOK_ORIGINAL && initialParams.get("water") === "real";
 /**
  * Reduced motion / flash as the boot scene sees them (`buildScene` runs before `setupSystems` sets the live flags):
  * the same URL params and media queries, read once.
  */
 /* H47-C1 / H47-P2: broadcast intro rail and Jam-dunk replay (broadcast.ts). Off on ?look=original, under reduced motion,
  * with ?intro=0 and on every measurement path (?diag=1, ?simsteps=N), so captures and probes keep their stepping. */
-const BROADCAST_OFF = initialParams.get("look") === "original" || initialParams.get("intro") === "0" || initialParams.get("diag") === "1" ||
+const BROADCAST_OFF = LOOK_ORIGINAL || initialParams.get("intro") === "0" || initialParams.get("diag") === "1" ||
   Number(initialParams.get("simsteps")) > 0 || initialParams.has("reducedMotion") ||
   (typeof window !== "undefined" && (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false));
 const broadcast = createBroadcast({ disabled: BROADCAST_OFF });
@@ -498,7 +513,7 @@ let broadcastPostOn = false;
 /** H47-V3: the Jam-dunk spray tags (new look). */
 const sprayTags = new SprayTags();
 // H47-H1: the tour HUD skin (spray-stencil score bug, spray-can Jam meter) styles off body[data-look="tour"].
-if (typeof document !== "undefined" && initialParams.get("look") !== "original") document.body.dataset.look = "tour";
+if (typeof document !== "undefined" && !LOOK_ORIGINAL) document.body.dataset.look = "tour";
 /** H47-H1: the score text the in-world Rucker board shows (set at build, kept equal to the DOM score by syncHud). */
 let shownBoardScore = "";
 const BOOT_REDUCED_MOTION = initialParams.has("reducedMotion") || (typeof window !== "undefined" && (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false));
@@ -786,7 +801,7 @@ function buildVenueDressing(v: VenueSpec): any[] {
         model(assets.hoopsTower, { name: "tower-east", targetHeight: 34, castShadow: false }).position(26, 0, -18),
         model(assets.hoopsTower, { name: "tower-west", targetHeight: 26, castShadow: false }).position(-26, 0, -14)
       );
-      if (LOOK_ORIGINAL) nodes.push(
+      if (!REAL_WATER) nodes.push(
         primitives.plane({ name: "river-strip", size: [80, 1, 12], material: material.pbr({ color: "#0a1826", roughness: 0.2, metalness: 0.6, emissive: "#0d2438", emissiveIntensity: 0.25 }) }).position(0, -0.05, 20)
       );
     }
@@ -795,7 +810,7 @@ function buildVenueDressing(v: VenueSpec): any[] {
   if (v.id === "venice") {
     nodes.push(
       primitives.plane({ name: "sand-surround", size: [90, 1, 46], material: material.pbr({ color: "#c9ad72", roughness: 0.95 }) }).position(0, -0.04, 6),
-      ...(LOOK_ORIGINAL ? [primitives.plane({ name: "ocean-glint", size: [90, 1, 10], material: material.pbr({ color: "#2e8fa8", roughness: 0.3, metalness: 0.4, emissive: "#ff9a3d", emissiveIntensity: 0.12 }) }).position(0, -0.03, -22)] : [])
+      ...(!REAL_WATER ? [primitives.plane({ name: "ocean-glint", size: [90, 1, 10], material: material.pbr({ color: "#2e8fa8", roughness: 0.3, metalness: 0.4, emissive: "#ff9a3d", emissiveIntensity: 0.12 }) }).position(0, -0.03, -22)] : [])
     );
     for (const [x, z, s] of [[-12, -8, 1], [12.5, -10, 1.2], [-14, 12, 0.9], [14, 14, 1.05], [-9, 16, 0.8]] as const) {
       nodes.push(model(assets.hoopsPalm, { name: `palm-${x}-${z}`, targetHeight: 6.4 * s, castShadow: true }).position(x, 0, z).rotate(0, vrng() * Math.PI * 2, 0));
@@ -928,7 +943,7 @@ function buildScene(v: VenueSpec): any {
     // H47-V2: Rucker flood cones and haze, Manila roof-gap god rays and dust motes.
     s.addMany(courtAtmosphereNodes(rig, BOOT_REDUCED_MOTION));
     // H47-E3: Venice surf and the Shanghai river as real water (replacing the 4.6 planes).
-    s.addMany(courtWaterNodes(rig, BOOT_REDUCED_MOTION));
+    if (REAL_WATER) s.addMany(courtWaterNodes(rig, BOOT_REDUCED_MOTION));
   }
   s
     .add(effects.contactShadows({ intensity: 0.7, length: 0.28 }))
@@ -3288,7 +3303,7 @@ function updateCamera(dt: number): void {
   cam.target = [lerp(cam.target[0], want.target[0], k), lerp(cam.target[1], want.target[1], k), lerp(cam.target[2], want.target[2], k)];
   cam.fov = lerp(cam.fov, want.fov, k);
   cam.punch = lerp(cam.punch, 0, 1 - Math.pow(0.05, dt));
-  try { (auraApp as any).camera?.setPose?.({ position: cam.eye, target: cam.target, fov: cam.fov }); } catch { /* camera ext optional */ }
+  drawCameraPose(cam.eye, cam.target, cam.fov);
 }
 
 /** DOM writes only when the value changes (the HUD used to rewrite every node every frame). */
@@ -3404,6 +3419,15 @@ function handProbe(): Record<string, unknown> | null {
  */
 let lastPublishAt = -Infinity;
 let lastPublishedPhase = "";
+/**
+ * The pose the renderer was last handed (live chase, sub-step blend, broadcast intro rail or replay). QA crops project
+ * from it: `cam` keeps the live chase pose while an intro or replay draws, so crops from `cam` missed the frame.
+ */
+const drawnPose: { eye: Vec3; target: Vec3; fov: number } = { eye: [...cam.eye] as Vec3, target: [...cam.target] as Vec3, fov: cam.fov };
+function drawCameraPose(eye: readonly number[], target: readonly number[], fov: number): void {
+  drawnPose.eye = [eye[0]!, eye[1]!, eye[2]!]; drawnPose.target = [target[0]!, target[1]!, target[2]!]; drawnPose.fov = fov;
+  try { (auraApp as any).camera?.setPose?.({ position: eye, target, fov }); } catch { /* camera ext optional */ }
+}
 /** QA crops for E-I's luma capture: feet of the controlled athlete, the ball, the rim, the court floor and the lamp. */
 function publishQaCrops(): void {
   const me = controlledAthlete() ?? athletes[0];
@@ -3413,12 +3437,19 @@ function publishQaCrops(): void {
     { name: "ball", at: [ball.x, ball.y, ball.z], half: [0.35, 0.35] }
   ];
   if (me) subjects.push({ name: "feet", at: [me.x, 0.15, me.z], half: [0.6, 0.25] });
-  const lamp = COURT_RIGS[venue.id].practicals[0];
-  if (lamp && !LOOK_ORIGINAL) subjects.push({ name: "lamp", at: lamp.position, half: [0.8, 0.6] });
   const canvas = document.querySelector<HTMLCanvasElement>("#app canvas");
   const aspect = canvas && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : 16 / 9;
+  // The lamp crop is the nearest practical on screen (practicals[0] stands behind the broadcast eye at Rucker, so its
+  // crop was never published); the rect hugs the lamp head itself.
+  if (!LOOK_ORIGINAL) {
+    const lamp = COURT_RIGS[venue.id].practicals
+      .map((p) => ({ name: "lamp", at: p.position, half: [0.8, 0.3] as const }))
+      .filter((sub) => projectCrops(drawnPose.eye, drawnPose.target, drawnPose.fov, aspect, [sub]).length > 0)
+      .sort((a, b) => Math.hypot(a.at[0] - drawnPose.eye[0], a.at[1] - drawnPose.eye[1], a.at[2] - drawnPose.eye[2]) - Math.hypot(b.at[0] - drawnPose.eye[0], b.at[1] - drawnPose.eye[1], b.at[2] - drawnPose.eye[2]))[0];
+    if (lamp) subjects.push(lamp);
+  }
   const w = window as unknown as { __AURA_QA__?: Record<string, unknown> };
-  w.__AURA_QA__ = { ...(w.__AURA_QA__ ?? {}), crops: projectCrops(cam.eye, cam.target, cam.fov, aspect, subjects) };
+  w.__AURA_QA__ = { ...(w.__AURA_QA__ ?? {}), crops: projectCrops(drawnPose.eye, drawnPose.target, drawnPose.fov, aspect, subjects) };
 }
 
 function publishEvidence(force = false): void {
@@ -3799,7 +3830,7 @@ function present(alpha: number): void {
   if (shownEye.has) {
     // the camera eases toward its target every step; draw it between steps too, or the whole frame stalls at 120/144 Hz
     const e = camLerp(shownEye, alpha), t = camLerp(shownTarget, alpha);
-    try { (auraApp as any).camera?.setPose?.({ position: [e.x, e.y, e.z], target: [t.x, t.y, t.z], fov: e.yaw }); } catch { /* camera ext optional */ }
+    drawCameraPose([e.x, e.y, e.z], [t.x, t.y, t.z], e.yaw);
   }
 }
 const simLoop = createFixedStepLoop({
@@ -3847,6 +3878,7 @@ function setBroadcastPost(on: boolean, eye?: BroadcastV3, focus?: BroadcastV3): 
  * once nothing runs, and the live camera and sim resume on the same frame.
  */
 let broadcastRan = false;
+let broadcastWallMs = 0;
 function runBroadcast(dt: number): boolean {
   if (!broadcast.active && !broadcastRan) return false;
   const shot = broadcast.active ? broadcast.update(dt) : null;
@@ -3868,7 +3900,7 @@ function runBroadcast(dt: number): boolean {
     pose = replayPose(shot.t, b, [RIM[0], RIM[1], RIM[2]]);
   }
   setBroadcastPost(true, pose.eye, shot.kind === "intro" ? pose.target : [ball.x, ball.y, ball.z]);
-  try { (auraApp as any).camera?.setPose?.({ position: pose.eye, target: pose.target, fov: pose.fov }); } catch { /* camera ext optional */ }
+  drawCameraPose(pose.eye, pose.target, pose.fov);
   return true;
 }
 /** Any key or pointer skips the running intro or replay; the next frame is live. */
@@ -3901,7 +3933,12 @@ auraApp.onFrame(({ dt }) => {
       frame(dt);
       return;
     }
-    if (runBroadcast(dt)) return;
+    // GU47 phase 2: broadcast shots run on wall-clock time (capped at 1 s a frame). The engine dt is clamped, so at the
+    // 1-3 fps of software WebGL2 the 6 s intro rail ran for minutes and settle-60s frames caught the fly-in mid-rail.
+    const nowMs = performance.now();
+    const wallDt = broadcastWallMs > 0 ? Math.min(1, Math.max(0, (nowMs - broadcastWallMs) / 1000)) : dt;
+    broadcastWallMs = nowMs;
+    if (runBroadcast(wallDt)) return;
     simLoop.tick(performance.now());
   });
   frameBoundary.run(flushMarkerPools);
