@@ -1278,6 +1278,8 @@ export function createRootPostPipeline(
         // the fog `density` no longer rides along (S4 never read it), and an
         // omitted value keeps the full march.
         ...(godRayDensityOf(volumetricNode) !== undefined ? { density: godRayDensityOf(volumetricNode) } : {}),
+        // GU47 phase 2: the fog `density` is the shaft medium (distance scaling), never the march density.
+        medium: numberField(volumetricNode, "density", 0.18),
         intensity: numberField(volumetricNode, "intensity", 0.7),
         color: rgbField(volumetricNode, "color", { r: 0.44, g: 0.52, b: 0.73 }),
         // GU47 pass 4 (g08, g18): only a 3-number lightPosition is a world point; the UV pair is the forward anchor.

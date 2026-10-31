@@ -324,6 +324,11 @@ export function godRayDensity(density: unknown): number {
   return typeof density === "number" && Number.isFinite(density) ? Math.min(1, Math.max(0.05, density)) : 1;
 }
 
+/** GU47 phase 2: S4 `u_medium` — the shaft medium per metre clamped to [0, 1]; omitted or invalid = 0 (no depth scaling). */
+export function godRayMedium(medium: unknown): number {
+  return typeof medium === "number" && Number.isFinite(medium) ? Math.min(1, Math.max(0, medium)) : 0;
+}
+
 /**
  * GU47 E-C (EC-8): S6 `u_tiltShift` = [bandCenter, bandWidth, angle (rad), 1]
  * for a valid band (centre and width clamped to [0, 1]), else all zeros
@@ -1072,6 +1077,8 @@ export function runV2HdrStages(
       g.uniform1f(g.getUniformLocation(godProg, "u_diskInner"), 0.02);
       // GU47 E-C (EC-8): `godRayDensity`; omitted keeps the full march (1).
       g.uniform1f(g.getUniformLocation(godProg, "u_density"), godRayDensity(god.density));
+      // GU47 phase 2: distance-scaled shaft medium; omitted (0) keeps the unscaled shaft.
+      g.uniform1f(g.getUniformLocation(godProg, "u_medium"), godRayMedium(god.medium));
     });
     // Additive blend onto the working HDR target.
     const blended = state.pool.acquire({ width: w, height: h, format: "rgba16f", samples: 1, depth: false });
