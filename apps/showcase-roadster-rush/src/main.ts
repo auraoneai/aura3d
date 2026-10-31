@@ -1307,7 +1307,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       else fireVfx(kind, carAt);
     }
     vfxPrev = frame;
-    const lines = real.mode === "playing" ? apexSpeedLines(Number(p.speed ?? 0), Boolean(p.boosting), frame.rocketActive, REDUCED_MOTION) : 0;
+    const lines = real.mode === "playing" ? apexSpeedLines(Number(p.speed ?? 0), Boolean(p.boostVisual ?? p.boosting), frame.rocketActive, REDUCED_MOTION) : 0;
     if (lines > 0 && nowMs - lastSpeedLinesMs > 240) {
       lastSpeedLinesMs = nowMs;
       try {
@@ -1545,7 +1545,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       .setRotation(pitch, yaw, roll)
       .setVisible(true);
 
-    const isHotTail = Boolean((p._brake ?? 0) > 0.15 || p.boosting || (p.rocketTimer ?? 0) > 0);
+    const isHotTail = Boolean((p._brake ?? 0) > 0.15 || (p.boostVisual ?? p.boosting) || (p.rocketTimer ?? 0) > 0);
     if (isHotTail !== lastLightbarHot) {
       lastLightbarHot = isHotTail;
       playerHandles.lightbar.setMaterial(
@@ -1574,7 +1574,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     const rearPlumeLevel = clamp(
       Math.max(
         Number(p._rearPlume ?? 0),
-        p.boosting ? 1.0 : 0,
+        (p.boostVisual ?? p.boosting) ? 1.0 : 0,
         (p.rocketTimer ?? 0) > 0 ? 1.35 : 0,
         g.mode === "playing" ? 0.28 : 0
       ),
@@ -1879,7 +1879,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     ep.air = Number(p.air ?? 100);
     ep.grounded = Boolean(p.grounded);
     ep.rolling = Boolean(p.rolling);
-    ep.boosting = Boolean(p.boosting);
+    ep.boosting = Boolean(p.boostVisual ?? p.boosting);
     ev.visiblePools.groundVehicles = groundDrawn;
     ev.visiblePools.skyCars = skySlots.length;
     ev.visiblePools.bolts = pickupSlots.bolts.length;

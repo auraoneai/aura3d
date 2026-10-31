@@ -60,6 +60,8 @@ export const SOFT_GRAVITY_FACTOR = 0.72;
 export const AIR_REGEN = 7;
 export const BOOST_SPEED_MULT = 1.35;
 export const BOOST_AIR_DRAIN = 26;
+/** Boost must have been off this long before its sound and shake fire again (presentation only; see Player.boostVisual). */
+export const BOOST_FX_REARM_S = 0.35;
 export const ROCKET_SPEED_MULT = 1.5;
 export const ROCKET_SECONDS = 6;
 export const ROCKET_ALTITUDE = 14;

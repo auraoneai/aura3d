@@ -6,6 +6,7 @@ import {
   BASE_SPEED_MAX,
   BASE_SPEED_START,
   BOOST_AIR_DRAIN,
+  BOOST_FX_REARM_S,
   BOOST_SPEED_MULT,
   CEILING,
   CRASH_X_LIMIT,
@@ -112,6 +113,9 @@ export class Player {
   _rollQueued = 0;
   _rollIframe = 0;
   _airLowFired = false;
+  /** Boost as the player sees and hears it: on while boosting and for BOOST_FX_REARM_S after (presentation only). */
+  boostVisual = false;
+  _boostOffFor = Number.POSITIVE_INFINITY;
   _prevSupport = 0;
   _climbRate = 0;
   _climbTime = 0;
@@ -175,6 +179,8 @@ export class Player {
     this._laneVel = 0;
     this._groundHold = 0;
     this._airLowFired = false;
+    this.boostVisual = false;
+    this._boostOffFor = Number.POSITIVE_INFINITY;
     this._prevSupport = 0;
     this._climbRate = 0;
     this._climbTime = 0;
@@ -255,10 +261,16 @@ export class Player {
     const difficultySpeed = 26 + 38 * clamp(difficulty, 0, 1);
     const cruise = Math.max(this.baseSpeed, difficultySpeed);
     const boostNow = !!inp.boost && this.air > 0 && !rocket;
-    if (boostNow && !this.boosting) {
+    // Presentation only (the sim's boost state machine and every replayed value stay as recorded): with Shift held at
+    // 0 air, regen re-arms boost every other frame. The boost sound, the shake pulse, the engine pitch and the speed
+    // lines follow `boostVisual`, which bridges those gaps, so they no longer restart each frame (owner report
+    // 2026-10-31: the car shook and the engine buzzed instead of staying in overdrive).
+    if (boostNow && !this.boosting && this._boostOffFor >= BOOST_FX_REARM_S) {
       this.emit("boost");
       this.shakePulse = Math.max(this.shakePulse, 0.15);
     }
+    this._boostOffFor = boostNow ? 0 : this._boostOffFor + dt;
+    this.boostVisual = boostNow || this._boostOffFor < BOOST_FX_REARM_S;
     this.boosting = boostNow;
     if (this.boosting) this.air = Math.max(0, this.air - BOOST_AIR_DRAIN * dt);
     let speedMult = rocket ? ROCKET_SPEED_MULT : this.boosting ? BOOST_SPEED_MULT : 1;

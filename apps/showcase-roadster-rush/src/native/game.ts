@@ -408,7 +408,7 @@ export class RoadsterGame {
     const thrusting = p.thrusting == null ? !p.grounded && input.thrust && p.air > 0 : p.thrusting;
     const rocket = (p.rocketTimer || 0) > 0;
     const thrustLevel = rocket || thrusting ? 1 : !p.grounded ? 0.15 : 0;
-    this.audio?.setEngine?.(clamp01((p.speed || 0) / 64) + 0.05, thrustLevel, !!p.boosting || rocket);
+    this.audio?.setEngine?.(clamp01((p.speed || 0) / 64) + 0.05, thrustLevel, !!(p.boostVisual ?? p.boosting) || rocket);
   }
 
   private updateMult(): void {
@@ -631,7 +631,7 @@ export class RoadsterGame {
         rolling: !!p.rolling,
         alive: p.alive !== false,
         invulnerable: !!p.invulnerable,
-        boosting: !!p.boosting,
+        boosting: !!(p.boostVisual ?? p.boosting),
         rocketTimer: p.rocketTimer || 0
       },
       traffic: this.traffic.stats(),
