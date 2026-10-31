@@ -49,12 +49,21 @@ const hdriDefinitions = {
 export type VenueHdriKey = keyof typeof hdriDefinitions;
 export const venueHdriAssets: AuraAssetMap<typeof hdriDefinitions> = defineAuraAssets(hdriDefinitions as never) as AuraAssetMap<typeof hdriDefinitions>;
 
+/**
+ * The URL an emitted asset is fetched from. The bundler inlines small files (the 191-byte net tile) as a `data:` URI, whose
+ * `pathname` drops the scheme ("image/png;base64,..."): the page then requested it as a relative path, got a 404 and the net
+ * drew without its alpha tile (an opaque band). Keep the whole href for `data:` and `blob:` URLs, the path otherwise.
+ */
+export function emittedAssetUrl(url: URL): string {
+  return url.protocol === "data:" || url.protocol === "blob:" ? url.href : url.pathname;
+}
+
 type TextureAsset = AuraAssetDefinition & { readonly type: "texture"; readonly format: "png"; readonly url: string; readonly hash: string };
 
 /** `url` is a literal `new URL(..., import.meta.url)` at the call site so the bundler emits the file with the route. */
 const authoredTexture = (url: URL, file: string, sha256: string, sizeBytes: number): TextureAsset =>
   ({
-    type: "texture", format: "png", url: url.pathname, hash: `sha256-${sha256}`, sizeBytes,
+    type: "texture", format: "png", url: emittedAssetUrl(url), hash: `sha256-${sha256}`, sizeBytes,
     metadata: { license: "CC0-1.0", provenance: { sourcePath: `examples/aura-slam/assets/textures/${file}`, origin: "authored: examples/aura-slam/tools/gen-textures.mjs", sha256 } }
   }) as unknown as TextureAsset;
 
@@ -70,7 +79,7 @@ type LutAsset = AuraAssetDefinition & { readonly type: "lut"; readonly format: "
 /** `url` is a literal `new URL(..., import.meta.url)` at the call site so the bundler emits the file with the route. */
 const authoredLut = (url: URL, file: string, sha256: string, sizeBytes: number): LutAsset =>
   ({
-    type: "lut", format: "cube", url: url.pathname, hash: `sha256-${sha256}`, sizeBytes,
+    type: "lut", format: "cube", url: emittedAssetUrl(url), hash: `sha256-${sha256}`, sizeBytes,
     metadata: { license: "CC0-1.0", provenance: { sourcePath: `examples/aura-slam/assets/luts/${file}`, origin: "authored: examples/aura-slam/tools/gen-luts.mjs", sha256 } }
   }) as unknown as LutAsset;
 
