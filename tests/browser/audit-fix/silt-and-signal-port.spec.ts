@@ -257,7 +257,9 @@ test.describe("g24 duneglide", () => {
     if (ok) {
       await silt(page, "api.render();");
       await settle(page, "card");
-      await silt(page, "api.stepFrames(120, arg); api.render(); api.render();", FLYB);
+      // GU47 phase 3: the card is the start-of-objective frame (rider, beacon and arch in view). After 120 boost frames
+      // the closer inked chase sits against a plaster wall with the rider behind the HUD, a poor index poster.
+      await silt(page, "api.render(); api.render();");
       await grab(page, "card.2x.1440x900");
       const png = await page.screenshot({ type: "png" });
       const jpegB64 = await page.evaluate(async (b64) => {
