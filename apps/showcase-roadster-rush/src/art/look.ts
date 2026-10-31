@@ -49,7 +49,7 @@ export const APEX_GRADE = { contrast: 1.12, saturation: 1.08 } as const;
 /** Racer bloom (AO-P2): intensity / threshold / scatter for the corona, brake bars, plumes and lamps. */
 export const APEX_BLOOM = { intensity: 0.55, threshold: 0.85, scatter: 0.5 } as const;
 /** High-tier post (AO-P3, AO-P4): motion blur strength and god-ray density; both off on reduced motion or below High. */
-export const APEX_MOTION_BLUR = 0.35;
+export const APEX_MOTION_BLUR = 0.22;
 export const APEX_GOD_RAY_DENSITY = 0.06;
 /** Output-overlay flashes (AO-P4): crash warm, rocket cyan; peak never above 0.3 (PRD §6.3 reduced flash). */
 export const APEX_FLASH_PEAK = 0.3;
@@ -126,7 +126,7 @@ export const APEX_LOOK: readonly [ApexLookRow, ApexLookRow, ApexLookRow] = [
     hdri: APEX_IBL_HDRI,
     environmentIntensity: 0.18,
     sun: { elevationDeg: 3.5, azimuthDeg: 175, color: "#8ea4d8", intensity: 0.35 },
-    fill: { color: "#4a5aa0", intensity: 0.25 },
+    fill: { color: "#4a5aa0", intensity: 0.42 },
     fog: { color: "#151a2c", ...APEX_FOG_RANGE },
     post: "cinematic-film",
     grade: { ...APEX_GRADE, temperature: -0.06, tint: 0 },

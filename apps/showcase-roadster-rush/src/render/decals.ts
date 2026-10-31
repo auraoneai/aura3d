@@ -32,6 +32,21 @@ export const DECAL_CAPACITY = 32;
 /** Sits 1 cm over the deck top (y 0); the lane dashes are 2.5 cm tall. */
 export const DECAL_Y = 0.01;
 export const DECAL_FADE: readonly [number, number] = [90, 160];
+/**
+ * GU47 phase 3 (rubric "shadows": the hero floated over the sunlit deck). The last slot of the same instanced plane draws a
+ * soft contact-occlusion ellipse under the hero (no new node, no new draw; the sun is dead ahead, so its cascade shadow
+ * falls behind the car where the chase camera barely sees it). Code 4 in the instance y scale; the fractional part
+ * (0..0.45) carries the strength, which fades with the hero's height above the deck.
+ */
+export const CONTACT_KIND_CODE = 4;
+export const CONTACT_SIZE: readonly [number, number] = [2.7, 5.4];
+/** Road decals stop one short of the capacity, so the contact slot always fits. */
+export const ROAD_DECAL_CAP = DECAL_CAPACITY - 1;
+/** Instance y scale for the contact ellipse of a hero `height` metres above the deck (fully gone by 4 m). */
+export function contactScaleY(height: number): number {
+  const k = Math.min(1, Math.max(0, 1 - Math.max(0, height) / 4));
+  return CONTACT_KIND_CODE + 0.45 * k;
+}
 
 export interface DecalInstance {
   readonly kind: DecalKind;
@@ -52,10 +67,10 @@ function decalHash(row: number, slot: number): number {
 export function decalLayout(pz: number): DecalInstance[] {
   const base = Math.floor(pz / DECAL_ROW_STRIDE_Z) * DECAL_ROW_STRIDE_Z;
   const out: DecalInstance[] = [];
-  for (let r = -1; r < DECAL_ROWS - 1 && out.length < DECAL_CAPACITY; r++) {
+  for (let r = -1; r < DECAL_ROWS - 1 && out.length < ROAD_DECAL_CAP; r++) {
     const rowZ = base - r * DECAL_ROW_STRIDE_Z;
     const row = Math.round(rowZ / DECAL_ROW_STRIDE_Z);
-    for (let slot = 0; slot < 2 && out.length < DECAL_CAPACITY; slot++) {
+    for (let slot = 0; slot < 2 && out.length < ROAD_DECAL_CAP; slot++) {
       const h0 = decalHash(row, slot);
       if (h0 > 0.62) continue;
       const h1 = decalHash(row, slot + 37);
@@ -77,10 +92,13 @@ export function decalLayout(pz: number): DecalInstance[] {
 const VERTEX = /* glsl */ `
 out vec2 vUv;
 out float vKind;
+out float vAmt;
 out vec3 vW;
 void main() {
   mat4 m = modelMatrix * instanceMatrix;
-  vKind = floor(length(instanceMatrix[1].xyz) + 0.5);
+  float ys = length(instanceMatrix[1].xyz);
+  vKind = floor(ys + 0.5);
+  vAmt = clamp((ys - 4.0) / 0.45, 0.0, 1.0);
   vec4 w = m * vec4(position.x, 0.0, position.z, 1.0);
   vW = w.xyz;
   vUv = position.xz + 0.5;
@@ -92,6 +110,7 @@ const FRAGMENT = /* glsl */ `
 #include <a3d_scene>
 in vec2 vUv;
 in float vKind;
+in float vAmt;
 in vec3 vW;
 out vec4 outColor;
 float dHash(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 15731.743); }
@@ -110,6 +129,11 @@ void main() {
     float r = length(p * vec2(1.0, 1.15)) + 0.12 * sin(atan(p.y, p.x) * 5.0);
     a = a3dSaturate((1.0 - smoothstep(0.55, 0.9, r)) * (0.55 + 0.25 * smoothstep(0.4, 0.8, r))) * 0.7;
     albedo = vec3(0.012, 0.012, 0.016);
+  } else if (vKind > 3.5) {
+    // contact occlusion under the hero: a soft ellipse, darkest under the floor pan, unlit (it is the missing light)
+    float r = length(p);
+    a = (1.0 - smoothstep(0.15, 1.0, r)) * 0.78 * vAmt;
+    albedo = vec3(0.0);
   } else {
     // painted lane arrow (pointing -z, forward): shaft plus head, worn paint
     // tip at p.y -0.95 (forward), head widens to the base at -0.1, shaft from there back to 0.95

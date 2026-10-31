@@ -1,4 +1,8 @@
-# Apex Overdrive: final screenshots (retaken after the 2026-10-29 audit fixes)
+# Apex Overdrive: final screenshots
+
+**Retaken 2026-10-31 for GU47 phase 3 (4.7.1):** branch `gu47/g02` at e0fd6dc0b (the build of remote runs `g02p3-r5-1` desktop, `g02p3-r5-6` phone and `g02p3-r5c-1` card, image `g02p3-r5-1034`), same spec, states and file names as below. Software WebGL2 (SwiftShader), not a GPU. Decoded frames and meta lines are in `evidence/game-upgrades-47/roadster-rush/p3-r5/screens-*`. Changes since the set described below: blue-hour glass towers, tangerine lane dashes and trims, a closer chase camera, contact shadows, and the licensed HUD faces actually loading. The Start/Retry buttons in these frames still use the fallback face (fixed in 19655724b, after this build).
+
+Earlier set (2026-10-29 audit fixes):
 
 - **Build:** `audit-fix/g02` (4.5.0 engine), served by the examples dev server with `apps/showcase-roadster-rush` and the game's two `public/aura-assets` models staged. Capture: `tests/browser/audit-fix/roadster-rush.spec.ts`, decoder `evidence/apex-overdrive/audit-2026-10-29/decode.mjs`; numbers in `metrics.jsonl`. Remote runs `g02c-20261029T140227Z-dm` (desktop), `-pm` (phone), `-x` (card).
 - **Runner:** serverless ACR Chromium, **software WebGL2 (SwiftShader), not a GPU**. These frames are not real-GPU evidence.

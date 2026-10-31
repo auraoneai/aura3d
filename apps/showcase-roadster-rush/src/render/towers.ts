@@ -80,15 +80,22 @@ const VERTEX = /* glsl */ `
 out vec3 vW;
 out vec3 vN;
 out vec3 vFacade;
+out float vTop;
 void main() {
   vec4 w = modelMatrix * instanceMatrix * vec4(position, 1.0);
   vW = w.xyz;
   vN = normalize(mat3(modelMatrix) * (mat3(instanceMatrix) * normal));
   vec3 s = vec3(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz), length(instanceMatrix[2].xyz));
   vFacade = position * s;
+  // metres below the roof line
+  vTop = (0.5 - position.y) * s.y;
   gl_Position = projectionMatrix * viewMatrix * w;
 }`;
 
+// GU47 phase 3 (rubric environment / materials / atmosphere): the 4.7.0 facade read as a coarse checkerboard of lit and dark
+// 2.4 x 3.6 m tiles. Now a ribbon curtain wall: per 3.6 m floor a 2.5 m glass band over a 1.1 m spandrel, thin mullions every
+// 1.5 m, each pane slightly tilted (so the reflected dome breaks into panes), a dark roof parapet with a tangerine crown line
+// toward dusk, few lit panes by day, and aerial perspective toward the haze colour with distance.
 const FRAGMENT = /* glsl */ `
 #include <a3d_math>
 #include <a3d_noise>
@@ -96,42 +103,62 @@ const FRAGMENT = /* glsl */ `
 in vec3 vW;
 in vec3 vN;
 in vec3 vFacade;
+in float vTop;
 out vec4 outColor;
 void main() {
   vec3 n = normalize(vN);
   vec3 v = normalize(cameraPosition - vW);
-  // facade coordinates in metres: across the face and up (mullions every 2.4 m, floors every 3.6 m)
+  float roof = step(0.5, n.y);
   float across = abs(n.x) > 0.5 ? vFacade.z : vFacade.x;
-  vec2 grid = vec2(across / 2.4, vFacade.y / 3.6);
+  vec2 grid = vec2(across / 1.5, vFacade.y / 3.6);
+  vec2 cell = floor(grid);
   vec2 f = fract(grid);
-  float inX = smoothstep(0.0, 0.06, f.x) * (1.0 - smoothstep(0.94, 1.0, f.x));
-  float inY = smoothstep(0.0, 0.1, f.y) * (1.0 - smoothstep(0.9, 1.0, f.y));
-  float mullion = 1.0 - inX * inY;
-  // glass: reflects the dome (horizon low, zenith high), a fresnel lift, and the low sun grazing the faces turned toward it
-  vec3 r = reflect(-v, n);
-  vec3 sky = mix(a3dSrgbToLinear(glassHorizon), a3dSrgbToLinear(glassSky), smoothstep(-0.05, 0.6, r.y));
-  float fres = 0.18 + 0.82 * pow(1.0 - a3dSaturate(dot(n, v)), 4.0);
+  float mullionX = 1.0 - smoothstep(0.0, 0.05, f.x) * (1.0 - smoothstep(0.95, 1.0, f.x));
+  float spandrel = 1.0 - step(0.3, f.y) * (1.0 - step(0.97, f.y));
+  float frame = max(mullionX, spandrel);
+  // pane tilt: each pane reflects a slightly different part of the dome
+  float h = a3dHash31(vec3(cell, floor(vFacade.y / 40.0) + 7.0));
+  vec3 tilt = vec3((h - 0.5) * 0.08, (fract(h * 13.7) - 0.5) * 0.12, 0.0);
+  vec3 r = reflect(-v, normalize(n + tilt));
+  // most panes see the cobalt upper dome; only the lowest reflections pick up the tangerine band
+  vec3 sky = mix(a3dSrgbToLinear(glassHorizon), a3dSrgbToLinear(glassSky), smoothstep(-0.12, 0.18, r.y + (h - 0.5) * 0.2));
+  float fres = 0.12 + 0.5 * pow(1.0 - a3dSaturate(dot(n, v)), 5.0);
   vec3 body = a3dSrgbToLinear(glassBody);
-  vec3 col = mix(body, sky, fres);
-  float glint = pow(a3dSaturate(dot(r, normalize(sunDirection))), 48.0) * sunGlint;
-  col += a3dSrgbToLinear(sunTint) * glint;
-  // lit floors toward night (hash per window, warm and cool), never on mullions
-  float win = a3dHash31(vec3(floor(grid), floor(vFacade.y / 40.0) + 3.0));
-  float lit = step(1.0 - (0.1 + 0.45 * windowsLit), win) * (1.0 - mullion);
-  col += mix(vec3(1.0, 0.72, 0.38), vec3(0.7, 0.8, 1.0), step(0.75, fract(win * 7.3))) * lit * (0.08 + 0.9 * windowsLit);
-  col = mix(col, body * 0.6, mullion * 0.85);
+  vec3 glass = mix(body, sky, fres);
+  float glint = pow(a3dSaturate(dot(r, normalize(sunDirection))), 64.0) * sunGlint;
+  glass += a3dSrgbToLinear(sunTint) * glint;
+  // lit panes: a few by day, most of the floors toward night
+  float win = fract(h * 91.7);
+  float litFrac = 0.015 + 0.55 * windowsLit * windowsLit;
+  float lit = step(1.0 - litFrac, win) * (1.0 - frame);
+  glass += mix(vec3(1.0, 0.7, 0.36), vec3(0.72, 0.8, 1.0), step(0.8, fract(win * 7.3))) * lit * (0.04 + 0.75 * windowsLit);
+  // spandrels and mullions: dark anodised metal catching a little of the sky
+  vec3 metal = body * 0.32 + sky * 0.04;
+  vec3 col = mix(glass, metal, frame * (1.0 - roof));
+  // roof: dark parapet top, a 1.6 m parapet band, a tangerine LED crown line that comes up toward dusk
+  col = mix(col, body * 0.35, roof);
+  float parapet = (1.0 - roof) * (1.0 - step(1.6, vTop));
+  col = mix(col, metal * 0.8, parapet);
+  float crown = (1.0 - roof) * (1.0 - smoothstep(0.0, 0.35, abs(vTop - 2.0)));
+  col += a3dSrgbToLinear(crownColor) * crown * crownGain;
   // the bases sink into the haze below the deck
-  float haze = 1.0 - smoothstep(-28.0, -6.0, vW.y);
-  col = mix(col, a3dSrgbToLinear(hazeColor), haze * 0.85);
+  vec3 haze = a3dSrgbToLinear(hazeColor);
+  float floorHaze = 1.0 - smoothstep(-28.0, -6.0, vW.y);
+  col = mix(col, haze, floorHaze * 0.85);
+  // aerial perspective: far towers fade toward the haze/horizon mix, so the rows separate in depth
+  float dist = length(cameraPosition - vW);
+  // cool air: the row's haze leaning to the dome's upper colour (the warm horizon mix browned the dark glass)
+  vec3 air = mix(haze, a3dSrgbToLinear(glassSky), 0.4);
+  col = mix(col, air, (1.0 - exp(-max(dist - 40.0, 0.0) / 240.0)) * 0.62);
   outColor = vec4(a3dFinite(col), 1.0);
 }`;
 
 /** Curtain-wall glass for one variant (body tint differs per variant so the three read as a kit, not clones). */
 export function towerGlassSpec(variant: TowerVariant): CustomSpec {
   const body: Record<TowerVariant, [number, number, number]> = {
-    slab: [0.13, 0.15, 0.2],
-    stepped: [0.16, 0.15, 0.17],
-    blade: [0.1, 0.13, 0.2]
+    slab: [0.24, 0.31, 0.42],
+    stepped: [0.29, 0.31, 0.36],
+    blade: [0.2, 0.28, 0.42]
   };
   return {
     glsl: { vertex: VERTEX, fragment: FRAGMENT },
@@ -143,8 +170,12 @@ export function towerGlassSpec(variant: TowerVariant): CustomSpec {
       sunTint: { type: "vec3", value: [1, 0.6, 0.31] },
       sunGlint: { type: "f32", value: 1.2 },
       windowsLit: { type: "f32", value: 0.25 },
-      hazeColor: { type: "vec3", value: [0.44, 0.42, 0.53] }
+      hazeColor: { type: "vec3", value: [0.44, 0.42, 0.53] },
+      crownColor: { type: "vec3", value: [1, 0.54, 0.24] },
+      crownGain: { type: "f32", value: 0.6 }
     },
-    fog: true
+    // GU47 phase 3: the warm scene fog (sunset #c98a6a from 43 m) turned the 40-150 m towers into brick-brown walls; the
+    // facade does its own cooler aerial perspective toward the row's haze colour instead
+    fog: false
   };
 }

@@ -1,0 +1,89 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/roadster-rush/p3-r5/screens-desktop/1280x720/gameplay-early.b.jpg",
+      "sha256": "6c90266f6d1f6a88a3bc2e4a76fdeabfa1f7352ccc7b567907c15981aef7d55e"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-rush/p3-r5/screens-desktop/1280x720/mid-drive.b.jpg",
+      "sha256": "d86b2f487f9a81fe9638c24a96f9be60a656fb246f2aae3f70f7c35611781aa1"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-rush/p3-r5/roadster-rush/frames/g02p3-r5-4/roadster-rush--dusk--settle-60s.jpg",
+      "sha256": "2c711d05470013176feb032cffa89396ffb7cf913223f39640f049409b45006c"
+    },
+    {
+      "path": "evidence/game-upgrades-47/roadster-rush/p3-r5/screens-tod/tod-1280x720/night.b.jpg",
+      "sha256": "e54a1599479a3d71bd54a46501f42ae1be7186c9c8a1ea8ddbc4d66354f3eda5"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4,
+    "ibl_reflections": 5,
+    "environment_world": 5,
+    "atmospheric_effects": 4.5,
+    "material_quality": 5,
+    "modeling_assets": 5.5,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 5.5,
+    "animation_quality": 6,
+    "ui_hud": 7.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A low sun sits on the horizon and lays a strong warm specular streak down the asphalt, so the golden-hour intent reads. The player car is lit flat and purple-blue, which clashes with the warm key. Frame 4 shifts to a night palette with no matching light sources."
+    },
+    {
+      "category": "shadows",
+      "seen": "Traffic vehicles cast only faint, soft contact shadows that barely ground them. There are no long low-sun shadows from the trucks, buildings or overhead gantries, despite the sun being at the horizon."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The road sun glint is convincing. The car body shows only a generic glossy sheen with no readable reflection of the sky or city. The building windows look emissive or flat rather than reflective."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The city is built from repeated box towers with tiled window textures and few silhouette variations. Overhead signs such as 'SKYWAY 9 CENTRAL' and 'EXIT 4B HARBOUR' add some identity. Floating gold rings in the sky look arbitrary."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze is minimal; the far traffic and gantries are only slightly desaturated. There is no visible fog depth in the 30–180 m range and no heat shimmer or dust. The skyline sits sharply against the sky gradient."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The asphalt has noisy, smeared normal or detail texture that becomes blotchy under motion blur. The truck and van textures look low-resolution and scan-like, and the white van appears washed out. The car paint lacks clearcoat depth."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The hero car silhouette is a decent hypercar shape with open wheels and a rear wing. Traffic vehicles mix detailed scanned models with simple boxes. The yellow flatbed ramp is very blocky."
+    },
+    {
+      "category": "composition",
+      "seen": "The car is centered and takes about 15–20% of the frame with the road vanishing to the sun, which gives strong leading lines. The HUD panel blocks the upper-left buildings."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase cam sits low and centered with an appropriate FOV and speed blur on the road edges. Framing stays static across frames with little lean or dynamism."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Radial motion blur is heavy and smears the road into a noisy pattern. Bloom on the sun is soft. Grading is a purple/orange split, but blacks crush in the night frame. No film grain or lens character supports a cinematic-film look."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Static frames only show cyan exhaust trails and implied speed blur. Boost glow intensity changes between frames."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

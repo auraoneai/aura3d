@@ -1,4 +1,4 @@
-/* Apex Overdrive HUD. Uses the licensed display and body faces loaded by /fonts/local.css. */
+/* Apex Overdrive HUD. Uses the licensed display and body faces declared in public/rr-fonts/rr-fonts.css (served at /rr-fonts/). */
 .rr-hud { position: fixed; inset: 0; pointer-events: none; z-index: 40; font-family: var(--font, "Whitney", "Graphik", sans-serif); color: #f4f6fb; }
 .rr-hud.rr-idle .rr-run, .rr-hud.rr-idle .rr-right { opacity: 0; }
 .rr-hud .rr-hidden { display: none !important; }
@@ -122,3 +122,5 @@
   .rr-rung { width: 22px; height: 4px; }
   .rr-mile { margin-top: 4px; gap: 2px 6px; }
 }
+/* GU47 phase 3: form controls do not inherit the page face by default; the Start / Retry buttons fell back to the platform sans. */
+.rr-hud button, .aura3d-top-bar button { font-family: inherit; }
