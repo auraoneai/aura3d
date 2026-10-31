@@ -80,8 +80,9 @@ function buildStageOriginal(chapter: OriginalChapterLook, options: StageOptions)
     fogDensityScale: 0,
     exposureEv: -0.08,
     sun: { ...chapter.look.sun },
-    ...(chapter.look.accent ? { accent: chapter.look.accent as AuraColor } : {}),
-    background: (chapter.look.background ?? "#2b6cb0") as AuraColor
+    ...(chapter.look.accent ? { accent: chapter.look.accent as AuraColor } : {})
+    // No `background` override: since GU47 E-A (9001eb1f8) a colour background hides the look's HDRI, and that HDRI is
+    // the gradient sky with clouds 4.6.2 drew (the override turned it into a flat blue wall).
   });
   if (options.ambientOcclusion === false) {
     const group = look.toJSON() as AuraSceneNode & { readonly children?: readonly AuraSceneNode[] };

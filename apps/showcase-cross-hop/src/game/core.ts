@@ -415,8 +415,9 @@ function buildOriginalLookGroup(th: (typeof THEMES)[number]) {
   const lookId = th.look as Parameters<typeof looks.preset>[0];
   const group = looks.preset(lookId, {
     fogDensityScale: 0,
-    exposureEv: th.exposureEv,
-    background: th.palette.sky
+    exposureEv: th.exposureEv
+    // No `background` override: since GU47 E-A (9001eb1f8) a colour background hides the look's HDRI, and that HDRI is
+    // the sky 4.6.2 drew behind every theme (the override would turn it into a flat colour wall).
   }).runtime(game.runtimeNode("look")).toJSON();
   const tunedChildren = group.children
     .filter((child) => !(child.kind === "effect" && (child.effect === "bloom" || child.effect === "fog")))
