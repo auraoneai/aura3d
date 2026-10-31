@@ -142,8 +142,9 @@ export function blockLook(id: SiegeMaterialId): readonly AuraModelMaterialOverri
  * Presentation only: the sim's material table (materials.ts) is unchanged.
  */
 export const SOLID_BLOCK_MATERIALS: Readonly<Record<SiegeMaterialId, AuraMaterialSpec>> = {
-  wood: material.pbr({ color: "#c98f55", roughness: 0.74, metallic: 0, rim: { color: "#ffe2b8", power: 3, intensity: 0.18 } }),
-  stone: material.pbr({ color: "#bdb6a8", roughness: 0.9, metallic: 0, rim: { color: "#fff6e6", power: 3, intensity: 0.15 } }),
+  // Mid-value wood and stone: at #bdb6a8 the stone pillars blew out to blank white under the warm sunset sun (g12p3r1).
+  wood: material.pbr({ color: "#a8703f", roughness: 0.74, metallic: 0, rim: { color: "#ffe2b8", power: 3, intensity: 0.1 } }),
+  stone: material.pbr({ color: "#8f897e", roughness: 0.86, metallic: 0, rim: { color: "#fff6e6", power: 3, intensity: 0.08 } }),
   glass: material.physical({
     color: "#bfe9f5", roughness: 0.06, metallic: 0, opacity: 0.55, clearcoat: 1, clearcoatRoughness: 0.05, transmission: 0.6,
     envMapIntensity: 1.4, rim: { color: "#e8fbff", power: 3, intensity: 0.6 }
