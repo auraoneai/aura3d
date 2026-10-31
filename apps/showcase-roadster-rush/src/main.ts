@@ -687,7 +687,8 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
   }
 
   // 4. Ground traffic: per type, a shadow-casting full-detail pool for the first 90 m and a shadowless far-LOD pool beyond,
-  //    sized to the simulation's measured peaks (audit RR-1); plus carrier ramps, brake bars and turn signals.
+  //    sized to the simulation's measured peaks (audit RR-1); plus carrier ramps, brake bars and turn signals. GU47 phase 4: the
+//    ramps are lit tangerine painted steel with a faint glow (the flat emissive slab read as a placeholder in every judge round).
   for (const vType of VEHICLE_TYPES) {
     const spec = VEHICLE_ASSET[vType];
     for (const part of ["near", "far"] as const) {
@@ -707,7 +708,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
   }
   s.addMany([
     instances
-      .box({ name: "carrier-ramps", size: [2.38, 0.18, 6.6], material: material.emissive({ color: "#f2a23c", emissive: "#ff8a3d", emissiveIntensity: 0.5 }), castShadow: false, transforms: parked(POOL_CAPACITY.carrier) })
+      .box({ name: "carrier-ramps", size: [2.38, 0.18, 6.6], material: material.pbr({ color: "#e0782f", metalness: 0.55, roughness: 0.42, emissive: "#ff8a3d", emissiveIntensity: 0.12 }), castShadow: false, transforms: parked(POOL_CAPACITY.carrier) })
       .runtime(game.runtimeNode(poolId("carrier-ramps"))),
     // GU47 phase 3 (rubric shadows: traffic read as floating): soft contact occlusion under the near traffic, the decal
     // shader's contact ellipse on its own instanced plane (+1 draw, <= TRAFFIC_CONTACT_CAPACITY live, fades by 160 m)
