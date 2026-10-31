@@ -45,3 +45,13 @@ Status per acceptance line. "phase 2" = needs a remote capture, measurement or j
 | WW47-W1 | dressing fit-grounding | blocked (WP-36 props) |
 | WW47-PF1 | High <= 54 draws, Low <= 28 no shadow rows | done in code (foliage never casts; Low no shadows, particles, god rays, paper); measured phase 2 |
 | WW47-PF2 | sibling judge, cards, sweep | phase 2 |
+
+## Phase 3 (4.7.1)
+
+| Row | Acceptance | Status |
+|---|---|---|
+| PRD 6.5 / G23 | each daytime view beats its 4.6.2 frame in a blind 3-judge panel, then defaults to the new look | done: default 2/0/1, found0 2/0/1, found2 3/0/0, found3 3/0/0 (panel g23p3r2b); bell and epilogue from phase 2; `resolveLook` boots GU47 for all six; `?look=original` / `?look=gu47` work both ways |
+| PRD 1.2 goal 1 | every rubric category >= 7 | not met: min 4.5 (shadows, ibl_reflections); `look-judgement.json`, before in `look-judgement-before.json`; the round-3 fix for the weakest categories lost the panel (g23p3r3a 0/3/0) and was reverted; material_quality and modeling_assets wait on WP-36 |
+| PRD 7.2 | game-checks 0 errors | done: 0 errors, 6 warnings (all luma-band: default/found0 mean ~149-150 vs band 120-145, the 4.6.2 frames read 165; bell is a dusk key with no declared band) |
+| PRD 7.2 | final screens and card retaken | done (run g23p3-r2-5; card previews rebuilt) |
+| PRD 7.2 | page-parity | done (stale duplicate `<style>` removed) |
