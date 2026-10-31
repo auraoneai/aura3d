@@ -87,7 +87,8 @@ export function buildLightRig(factories: RigFactories, look: BunkerLookRow = loo
       name: "bunker key spot", position: key.position, target: key.target, color: look.lamp.color,
       intensity: look.key.intensity, distance: look.key.distance, decay: 2,
       angle: (look.key.angleDeg * Math.PI) / 180, penumbra: look.key.penumbra,
-      shadow: { filter: "pcss", mapSize: 1024, lightSize: 0.35, bias: 0.0006, normalBias: 0.02 }
+      // GU47 phase 4: PCF (PCSS drew no readable shadow on software WebGL2, see last-train-port 642d72e64)
+      shadow: { filter: "pcf", mapSize: 1024, bias: 0.0006, normalBias: 0.02 }
     }).runtime(game.runtimeNode(RIG_IDS.key, { tags: ["light"] })),
     // GU47(E-J): one shadowed light per floor until the audit admits shadowed practicals: then `shadow: { filter: "pcss", mapSize: 1024 }` here.
     lights.spot({

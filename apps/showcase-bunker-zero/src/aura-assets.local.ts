@@ -10,6 +10,7 @@ type AuraGeneratedAssetDefinitions = {
   readonly "bzArmorMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "bzCrateMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "bzBarrelMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "bzBlastDoor": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
 };
 
 export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAssets({
@@ -1057,6 +1058,137 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "thumbnailUrl": "/aura-assets/bzBarrelMeshy.thumb.svg",
       "quality": "candidate",
       "role": "prop"
+    },
+  },
+  "bzBlastDoor": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/bzBlastDoor.5649d3f7.glb",
+    hash: "sha256-5649d3f779f0fa245cc9b3cd1b1eabd84fdf5a383ca09c48b427b2f76056e301",
+    bounds: [
+      1.901,
+      1.902,
+      0.721
+    ],
+    sizeBytes: 1333108,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/bzBlastDoor.5649d3f7.glb",
+        "license": "Meshy-generated",
+        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "author": "Aura3D Meshy pipeline (GU47 WP-36)",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-30T08:57:10.012Z",
+        "evidence": [
+          "aura-evidence/meshy/bzBlastDoor.rights.json",
+          "aura-evidence/meshy/bzBlastDoor.metadata.json"
+        ],
+        "checkedAt": "2026-10-30T08:57:10.012Z"
+      },
+      "sourcePath": "public/aura-assets/bzBlastDoor.5649d3f7.glb",
+      "outputPath": "public/aura-assets/bzBlastDoor.5649d3f7.glb",
+      "license": "Meshy-generated",
+      "author": "Aura3D Meshy pipeline (GU47 WP-36)",
+      "boundsMetadata": {
+        "min": [
+          -0.951,
+          -0.951,
+          -0.372
+        ],
+        "max": [
+          0.95,
+          0.951,
+          0.349
+        ],
+        "size": [
+          1.901,
+          1.902,
+          0.721
+        ],
+        "center": [
+          -0.001,
+          0,
+          -0.011
+        ],
+        "maxDimension": 1.902,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/bzBlastDoor.thumb.svg",
+      "quality": "candidate",
+      "role": "environment",
+      "suitabilityReason": "bunker blast door (WP-36 bzBlastDoor, BZ-12)"
     },
   },
 } as const);

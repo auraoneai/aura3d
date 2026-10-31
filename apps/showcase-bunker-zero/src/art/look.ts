@@ -146,11 +146,13 @@ function row(r: Omit<BunkerLookRow, "fog" | "muzzle"> & { readonly fogDensity: n
 }
 
 /** The table: one row per variant, BZ_VARIANTS order. */
+// GU47 phase 4: on F1-F5 the shadowed key sits just ahead of the reference view and rakes 5 cells down the corridor at a
+// 30 degree cone, so props and hostiles throw long PCF shadows away from the camera (an overhead pool threw none; rubric 3).
 export const BZ_LOOK: readonly BunkerLookRow[] = [
   row({
     variant: "floor1", floorParam: "1", slot: 0, fixture: "caged-tungsten",
     lamp: { color: "#ffad5c", temperatureK: 2700 },
-    key: { cell: [3, 2], target: [4, 3], drop: 0.25, intensity: 70, distance: 14, angleDeg: 38, penumbra: 0.55 },
+    key: { cell: [3, 2], target: [8, 2], drop: 0.25, intensity: 84, distance: 18, angleDeg: 30, penumbra: 0.4 },
     fill: { cell: [18, 14], target: [19, 14], drop: 0.25, intensity: 34, distance: 11, angleDeg: 42, penumbra: 0.6 },
     fixtures: { intensity: 9, distance: 8, height: "ceiling", flicker: 0 },
     fogDensity: 0.04, environmentIntensity: 0.07, exposure: 1.0, grade: { temperature: 0.12, tint: 0 },
@@ -159,7 +161,7 @@ export const BZ_LOOK: readonly BunkerLookRow[] = [
   row({
     variant: "floor2", floorParam: "2", slot: 1, fixture: "mercury-vapour",
     lamp: { color: "#6fe3c0", temperatureK: 5200 },
-    key: { cell: [12, 2], target: [13, 2], drop: 0.25, intensity: 64, distance: 14, angleDeg: 40, penumbra: 0.5 },
+    key: { cell: [11, 2], target: [16, 2], drop: 0.25, intensity: 76, distance: 18, angleDeg: 30, penumbra: 0.4 },
     fill: { cell: [18, 14], target: [19, 14], drop: 0.25, intensity: 30, distance: 11, angleDeg: 42, penumbra: 0.6 },
     fixtures: { intensity: 8, distance: 8, height: "ceiling", flicker: 0 },
     fogDensity: 0.05, environmentIntensity: 0.09, exposure: 1.0, grade: { temperature: -0.08, tint: -0.04 },
@@ -168,7 +170,7 @@ export const BZ_LOOK: readonly BunkerLookRow[] = [
   row({
     variant: "floor3", floorParam: "3", slot: 2, fixture: "forge-grate",
     lamp: { color: "#ff6a24", temperatureK: 1900 },
-    key: { cell: [3, 2], target: [4, 2], drop: 0.25, intensity: 66, distance: 14, angleDeg: 40, penumbra: 0.5 },
+    key: { cell: [3, 2], target: [8, 2], drop: 0.25, intensity: 78, distance: 18, angleDeg: 30, penumbra: 0.4 },
     fill: { cell: [17, 14], target: [17, 13], drop: 0.25, intensity: 30, distance: 11, angleDeg: 42, penumbra: 0.6 },
     fixtures: { intensity: 10, distance: 8, height: "grate", flicker: 0.12 },
     fogDensity: 0.045, environmentIntensity: 0.05, exposure: 1.0, grade: { temperature: 0.18, tint: 0.02 },
@@ -177,7 +179,7 @@ export const BZ_LOOK: readonly BunkerLookRow[] = [
   row({
     variant: "floor4", floorParam: "4", slot: 3, fixture: "brass-sconce",
     lamp: { color: "#e9cf62", temperatureK: 3200 },
-    key: { cell: [3, 1], target: [4, 2], drop: 0.25, intensity: 62, distance: 13, angleDeg: 38, penumbra: 0.55 },
+    key: { cell: [3, 1], target: [8, 2], drop: 0.25, intensity: 74, distance: 17, angleDeg: 30, penumbra: 0.4 },
     fill: { cell: [17, 14], target: [18, 14], drop: 0.25, intensity: 30, distance: 11, angleDeg: 42, penumbra: 0.6 },
     fixtures: { intensity: 8, distance: 8, height: "ceiling", flicker: 0 },
     fogDensity: 0.035, environmentIntensity: 0.08, exposure: 1.0, grade: { temperature: 0.1, tint: 0.03 },
@@ -186,7 +188,7 @@ export const BZ_LOOK: readonly BunkerLookRow[] = [
   row({
     variant: "floor5", floorParam: "5", slot: 4, fixture: "fluorescent-tube",
     lamp: { color: "#cfe8ff", temperatureK: 6500 },
-    key: { cell: [3, 2], target: [4, 2], drop: 0.25, intensity: 58, distance: 13, angleDeg: 40, penumbra: 0.5 },
+    key: { cell: [3, 2], target: [8, 2], drop: 0.25, intensity: 70, distance: 17, angleDeg: 30, penumbra: 0.4 },
     fill: { cell: [17, 14], target: [17, 13], drop: 0.1, intensity: 26, distance: 10, angleDeg: 42, penumbra: 0.6 },
     fixtures: { intensity: 8, distance: 8, height: "ceiling", flicker: 0.35 },
     fogDensity: 0.04, environmentIntensity: 0.1, exposure: 1.0, grade: { temperature: -0.16, tint: 0 },

@@ -80,7 +80,7 @@ const MAX_ROCKETS = 18;
 const ENEMY_TRACERS = 8;
 /** BZ-06: F2 standing water, and the wet-ground amount per floor slot (F2 flooded cellars, F6 the hatch rain). */
 // GU47 phase 3: #0b1714 read as a black hole in the floor (rubric round p3-r3); a lifted teal-grey keeps it wet and dark but a surface.
-const BZ_WATER = { color: "#1f3a36", roughness: 0.1 } as const;
+const BZ_WATER = { color: "#22403b", roughness: 0.05 } as const;
 /** BZ-04: base colour under the texture sets (slightly warm white; the lamps carry each floor's colour). */
 const BZ_SURFACE_WHITE = "#ece8df";
 /** GU47 phase 2: lift of the floor palette tones used as wall and floor base colours (shade(), +amt*255 per channel). */
@@ -90,6 +90,15 @@ const BZ_SURFACE_GAIN = { wall: 0.85, floor: 0.85, ceiling: 1.4 } as const;
 /** GU47 phase 3: the ceiling slab's map on every sealed ceiling. */
 const BZ_CEIL_TEXTURE = "concrete034" as const;
 const BZ_WETNESS = [0, 0.7, 0, 0, 0, 0.45, 0] as const;
+/** GU47 phase 4: baked contact shade at the wall foot (the key's cast shadow alone did not ground the walls; rubric 3). */
+const BZ_WALL_AO = { near: 0.22, far: 0.6, y: 0.006, nearOpacity: 0.16, farOpacity: 0.12 } as const;
+/** GU47 phase 4: two service pipes under the ceiling on each corridor face (olive enamel over steel; F3 rust-brown). */
+const BZ_PIPES = [{ d: 0.16, off: 0.14, drop: 0.3 }, { d: 0.09, off: 0.1, drop: 0.52 }] as const;
+const BZ_PIPE_COLOR = "#4b5136";
+/** GU47 phase 4: floor gloss per slot so the screen-space reflections catch the lamps (cutoff 0.5), wetter on F2 / F6. */
+const BZ_FLOOR_ROUGHNESS = (slot: number) => 0.34 - (BZ_WETNESS[slot] ?? 0) * 0.16;
+const BZ_BLOB = { y: 0.008, opacity: 0.22, rings: [{ scale: 1 }, { scale: 0.62 }, { scale: 0.34 }] } as const;
+const BZ_SSR = { intensity: 0.85, maxDistance: 16, roughness: 0.5, thickness: 0.35 } as const;
 const ALL_FLOORS: { def: FloorDef; slot: number }[] = [
   ...FLOORS.map((def, i) => ({ def, slot: i })),
   { def: KILL_HOUSE, slot: 6 }
@@ -180,6 +189,9 @@ function buildScene() {
     const faltInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const stripInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
     const ceilInst: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+    const aoNear: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+    const aoFar: { position: [number, number, number]; scale: [number, number, number] }[] = [];
+    const pipeInst: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
 
     for (let z = 0; z < h; z++) for (let x = 0; x < w; x++) {
       const ch = rows[z][x];
@@ -214,6 +226,22 @@ function buildScene() {
           position: [wx + dx * (CELL / 2 + 0.012), 0.14, wz + dz * (CELL / 2 + 0.012)],
           scale: dx !== 0 ? [0.045, 0.07, 2.15] : [2.15, 0.07, 0.045]
         });
+        // GU47 phase 4: baked contact shade on the floor along the wall foot (two stacked bands, darker at the wall) and
+        // the service pipes under the ceiling on every corridor face (one instanced draw each; presentation only).
+        for (const [band, wide] of [[aoNear, BZ_WALL_AO.near], [aoFar, BZ_WALL_AO.far]] as const) {
+          band.push({
+            position: [wx + dx * (CELL / 2 + wide / 2), BZ_WALL_AO.y, wz + dz * (CELL / 2 + wide / 2)],
+            scale: dx !== 0 ? [wide, 0.004, CELL] : [CELL, 0.004, wide]
+          });
+        }
+        if (slot !== 5) for (const pipe of BZ_PIPES) {
+          const off = CELL / 2 + pipe.off;
+          pipeInst.push({
+            position: [wx + dx * off, wallH - pipe.drop, wz + dz * off],
+            rotation: dx !== 0 ? [Math.PI / 2, 0, 0] : [0, 0, Math.PI / 2],
+            scale: [pipe.d, CELL, pipe.d]
+          });
+        }
       }
     }
     nodes.push(
@@ -223,7 +251,7 @@ function buildScene() {
       // slab floor + sealed ceiling: the ceiling now meets the wall tops so the
       // corridors read as enclosed rooms instead of an open-topped flat plane.
       primitives.box({ name: `f${slot} floor`, size: [w * CELL, 0.3, h * CELL], position: [slot * FLOOR_SPAN + w * CELL / 2, -0.15, h * CELL / 2], material: material.pbr({
-        color: floorBase, texture: floorTex.color, normal: floorTex.normal, normalScale: 0.8, textureAnisotropy: 8, roughness: 0.62, metalness: tex.floor.startsWith("metal") ? 0.4 : 0,
+        color: floorBase, texture: floorTex.color, normal: floorTex.normal, normalScale: 0.8, textureAnisotropy: 8, roughness: BZ_FLOOR_ROUGHNESS(slot), metalness: tex.floor.startsWith("metal") ? 0.4 : 0,
         // GU47 phase 3: two repeats per 3 m cell and anisotropic filtering (rubric: the floor smeared like a stretched noise map)
         texTransforms: { baseColor: { scale: [w * 2, h * 2] }, normal: { scale: [w * 2, h * 2] } }
       }) }).runtime(staticNode(slot, "floor")),
@@ -242,8 +270,22 @@ function buildScene() {
         instances: stripInst,
         castShadow: false,
         receiveShadow: false
-      }).runtime(staticNode(slot, "trim"))
+      }).runtime(staticNode(slot, "trim")),
+      primitives.box({
+        name: `f${slot} wall-foot shade`, instances: aoNear, castShadow: false, receiveShadow: false,
+        material: material.pbr({ color: "#000000", roughness: 1, metalness: 0, opacity: BZ_WALL_AO.nearOpacity })
+      }).runtime(staticNode(slot, "ao-near")),
+      primitives.box({
+        name: `f${slot} wall-foot shade wide`, instances: aoFar, castShadow: false, receiveShadow: false,
+        material: material.pbr({ color: "#000000", roughness: 1, metalness: 0, opacity: BZ_WALL_AO.farOpacity })
+      }).runtime(staticNode(slot, "ao-far"))
     );
+    if (pipeInst.length) {
+      nodes.push(primitives.cylinder({
+        name: `f${slot} service pipes`, instances: pipeInst, receiveShadow: true,
+        material: material.pbr({ color: def.id === 2 ? "#5a3a26" : BZ_PIPE_COLOR, roughness: 0.38, metalness: 0.75 })
+      }).runtime(staticNode(slot, "pipes")));
+    }
     // BZ-10: the floor's stencilled name on the floor ahead of the spawn (SDF text, +1 draw on its floor)
     const stencil = floorStencil(def, def.id === 90 ? "KILL HOUSE" : `B-${def.id + 1} ${def.name}`);
     if (stencil) {
@@ -294,9 +336,15 @@ function buildScene() {
       switch (ch) {
         case "D":
           nodes.push(
-            model(assets.pulseNeonGateArchMeshy, { name: `f${slot} door ${dI}`, targetHeight: wallH * 0.96 })
-              .position(wx, 0, wz)
-              .runtime(slotNode(slot, `f${slot}-door-${x}-${z}`, ["door"]))
+            // GU47 phase 4 (WP-36 bzBlastDoor): the game's own round blast door, hung on an olive steel leaf that fills the
+            // square opening; both ride the same slide (collision is the sim's door cell, unchanged)
+            model(assets.bzBlastDoor, { name: `f${slot} door ${dI}`, targetHeight: wallH * 0.9 })
+              .position(wx, 0, wz).rotate(0, doorFacesZ(rows, x, z) ? 0 : Math.PI / 2, 0)
+              .runtime(slotNode(slot, `f${slot}-door-${x}-${z}`, ["door"])),
+            primitives.box({
+              name: `f${slot} door leaf ${dI}`, size: doorFacesZ(rows, x, z) ? [CELL * 0.98, wallH, 0.22] : [0.22, wallH, CELL * 0.98],
+              position: [wx, wallH / 2, wz], material: material.pbr({ color: "#3d4230", roughness: 0.5, metalness: 0.6 })
+            }).runtime(slotNode(slot, `f${slot}-doorleaf-${x}-${z}`, ["door"]))
           );
           dI++;
           break;
@@ -379,14 +427,16 @@ function buildScene() {
           nodes.push(
             model(assets.bzBarrelMeshy, { name: `f${slot} barrel ${x}-${z}`, materialOverrides: pickupGlow("#ffc4a8", "#c44a22", 0.14, { roughness: 0.55 }) })
               .position(wx, 0, wz).scale(0.88)
-              .runtime(slotNode(slot, `f${slot}-prop-${x}-${z}`, ["prop", "barrel"]))
+              .runtime(slotNode(slot, `f${slot}-prop-${x}-${z}`, ["prop", "barrel"])),
+            contactBlob(`f${slot} barrel blob ${x}-${z}`, wx, wz, 0.62).runtime(slotNode(slot, `f${slot}-prop-${x}-${z}-blob`, ["prop", "blob"]))
           );
           break;
         case "c":
           nodes.push(
             model(assets.bzCrateMeshy, { name: `f${slot} crate ${x}-${z}` })
               .position(wx, 0, wz).scale(0.72)
-              .runtime(slotNode(slot, `f${slot}-prop-${x}-${z}`, ["prop", "crate"]))
+              .runtime(slotNode(slot, `f${slot}-prop-${x}-${z}`, ["prop", "crate"])),
+            contactBlob(`f${slot} crate blob ${x}-${z}`, wx, wz, 0.78).runtime(slotNode(slot, `f${slot}-prop-${x}-${z}-blob`, ["prop", "blob"]))
           );
           break;
         case "o":
@@ -400,7 +450,8 @@ function buildScene() {
             model(assets.bzGuardMeshy, { name: `f${slot} guard ${eI}`, targetHeight: 1.9, materialOverrides: HOSTILE_OVERRIDES })
               .position(wx, 0, wz)
               .animate({ clip: "Walk_Loop", loop: true, speed: 1.05 })
-              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "guard"]))
+              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "guard"])),
+            contactBlob(`f${slot} guard blob ${eI}`, wx, wz, 0.5).runtime(slotNode(slot, `f${slot}-en-${x}-${z}-blob`, ["enemy", "blob"]))
           );
           eI++;
           break;
@@ -411,7 +462,8 @@ function buildScene() {
             })
               .position(wx, 0, wz)
               .animate({ clip: "Walk_Loop", loop: true, speed: 1.35 })
-              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "dog"]))
+              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "dog"])),
+            contactBlob(`f${slot} dog blob ${eI}`, wx, wz, 0.45).runtime(slotNode(slot, `f${slot}-en-${x}-${z}-blob`, ["enemy", "blob"]))
           );
           eI++;
           break;
@@ -422,7 +474,8 @@ function buildScene() {
             })
               .position(wx, 0, wz)
               .animate({ clip: "Walk_Loop", loop: true, speed: 1.0 })
-              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "gunner"]))
+              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "gunner"])),
+            contactBlob(`f${slot} gunner blob ${eI}`, wx, wz, 0.55).runtime(slotNode(slot, `f${slot}-en-${x}-${z}-blob`, ["enemy", "blob"]))
           );
           eI++;
           break;
@@ -433,7 +486,8 @@ function buildScene() {
             })
               .position(wx, 0, wz)
               .animate({ clip: "Idle_Loop", loop: true, speed: 0.95 })
-              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "boss"]))
+              .runtime(slotNode(slot, `f${slot}-en-${x}-${z}`, ["enemy", "boss"])),
+            contactBlob(`f${slot} boss blob ${eI}`, wx, wz, 0.85).runtime(slotNode(slot, `f${slot}-en-${x}-${z}-blob`, ["enemy", "blob"]))
           );
           eI++;
           break;
@@ -446,7 +500,9 @@ function buildScene() {
           model(assets.bzGuardMeshy, { name: `f${slot} summon ${i}`, targetHeight: 1.9, materialOverrides: HOSTILE_OVERRIDES })
             .position(slot * FLOOR_SPAN, -50, 0)
             .animate({ clip: "Run", loop: true, speed: 1.3 })
-            .runtime(slotNode(slot, `f${slot}-summon-${i}`, ["enemy", "guard", "summon"]))
+            .runtime(slotNode(slot, `f${slot}-summon-${i}`, ["enemy", "guard", "summon"])),
+          contactBlob(`f${slot} summon blob ${i}`, slot * FLOOR_SPAN, 0, 0.5).position(slot * FLOOR_SPAN, -50, 0)
+            .runtime(slotNode(slot, `f${slot}-summon-${i}-blob`, ["enemy", "blob"]))
         );
       }
     }
@@ -475,7 +531,7 @@ function buildScene() {
       .runtime(game.runtimeNode("vent-light", { tags: ["vfx"] }))
   );
   // BZ-10: one shared pool of 12 floor decals (moved to the active floor by placeFloorDecals) and a ring of 12 bullet holes
-  const decalTex = (kind: DecalKind) => ({ type: "texture", format: "png", url: decalUrl(kind) }) as unknown as Parameters<typeof decals.project>[0]["texture"];
+  const decalTex = (kind: DecalKind) => ({ kind: "aura-asset-ref", type: "texture", format: "png", url: decalUrl(kind) }) as unknown as Parameters<typeof decals.project>[0]["texture"];
   const bootDecals = floorDecals(floorDefOf(BOOT_SLOT));
   for (let i = 0; i < BZ_FLOOR_DECAL_COUNT; i++) {
     const kind = floorDecalKind(i), pose = bootDecals[i];
@@ -541,11 +597,26 @@ function buildScene() {
     // adds the dominant spot's inscatter on every floor (setEffectEnabled only drops the post pass), which washed F1-F5
     // and the Kill House in pale lamp-coloured haze (recap2 frames). Off every other floor, the per-floor dark haze rules.
     .addMany(BOOT_SLOT === 5 && BZ_GOD_RAYS ? [effects.volumetricFog(hatchShaftSpec(lookOfSlot(5).fog.density))] : [])
+    // GU47 phase 4: the glossy floors and the F2 flood reflect the corridor (rubric ibl_reflections 3)
+    .add(effects.screenSpaceReflections({ intensity: BZ_SSR.intensity, maxDistance: BZ_SSR.maxDistance, roughness: BZ_SSR.roughness, thickness: BZ_SSR.thickness }))
     .add(effects.vignette({ intensity: BZ_POST.vignette }))
     .add(effects.filmGrain({ intensity: BZ_POST.grain }))
     .camera(camera.perspective({ position: [4.5, EYE, 4.5], target: [12.5, EYE, 4.5], fov: BZ_FOV }));
 }
 
+/** GU47 phase 4: a soft contact blob under a prop or hostile (two stacked discs, darker at the centre). +1 draw while shown. */
+function contactBlob(name: string, x: number, z: number, radius: number) {
+  return primitives.cylinder({
+    name, castShadow: false, receiveShadow: false,
+    instances: BZ_BLOB.rings.map((r, i) => ({ position: [0, BZ_BLOB.y + i * 0.002, 0] as [number, number, number], scale: [radius * 2 * r.scale, 0.002, radius * 2 * r.scale] as [number, number, number] })),
+    material: material.pbr({ color: "#000000", roughness: 1, metalness: 0, opacity: BZ_BLOB.opacity })
+  }).position(x, 0, z);
+}
+/** GU47 phase 4: a door whose slide runs along X (walls left and right of it) faces +-Z; same rule as doorAlongX on the rows. */
+function doorFacesZ(rows: readonly string[], x: number, z: number): boolean {
+  const solid = (x2: number, z2: number) => isSolid(rows[z2]?.[x2] ?? "#");
+  return solid(x - 1, z) || solid(x + 1, z) ? !(solid(x, z - 1) && solid(x, z + 1)) : false;
+}
 // crack cue faces the first open neighbor
 function pushFace(rows: readonly string[], x: number, z: number): [number, number] {
   const at = (x2: number, z2: number) => rows[z2]?.[x2] ?? " ";
@@ -1176,9 +1247,11 @@ function syncScenePose(inp: SimInput) {
     const ids = enemyIds(slot, e);
     const node = opt(ids.body);
     const eye = opt(ids.eye);
+    const blob = opt(`${ids.body}-blob`);
     if (!node) continue;
     if (e.state === "dead") {
       eye?.setVisible(false);
+      blob?.setVisible(false);
       if (e.deathT < 4) {
         setEnemyClip(ids.body, node, "Idle_Loop", 0.2);
         node.setPosition(e.x + ox, Math.max(-0.6, -e.deathT * 0.2), e.z);
@@ -1211,6 +1284,8 @@ function syncScenePose(inp: SimInput) {
     }
     setEnemyClip(ids.body, node, clip, speed);
     node.setPosition(e.x + ox, strideBob, e.z);
+    blob?.setPosition(e.x + ox, 0, e.z);
+    blob?.setVisible(true);
     const yaw = nextEnemyYaw(enemyYaw.get(ids.body) ?? nextEnemyYaw(0, e.kind, e.facing, 1, enemyForward(e.kind)), e.kind, e.facing, poseDt, enemyForward(e.kind));
     enemyYaw.set(ids.body, yaw);
     node.setRotation(0, yaw, strideRoll);
@@ -1250,6 +1325,9 @@ function syncScenePose(inp: SimInput) {
     const [offX, offZ] = doorOffset(d.open, alongX, CELL);
     node.setPosition(cellX(slot, d.cx) + offX, 0, cellCenter(d.cz) + offZ);
     node.setVisible(true);
+    const leaf = opt(`f${slot}-doorleaf-${d.cx}-${d.cz}`);
+    leaf?.setPosition(cellX(slot, d.cx) + offX, SLOT_WALL_H[slot]! / 2, cellCenter(d.cz) + offZ);
+    leaf?.setVisible(true);
   }
 
   // ---- push-walls (block + crack cue slide together)
@@ -1270,6 +1348,7 @@ function syncScenePose(inp: SimInput) {
   for (const pr of sim.state.props) {
     if (pr.kind === "column") continue;
     opt(`f${slot}-prop-${pr.cx}-${pr.cz}`)?.setVisible(pr.alive);
+    opt(`f${slot}-prop-${pr.cx}-${pr.cz}-blob`)?.setVisible(pr.alive);
   }
 
   // ---- 3D ammo projectiles (rockets + plasma/bullet bolts + glowing tracer cores)

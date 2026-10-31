@@ -172,7 +172,7 @@ describe("Bunker Zero light rig (BZ-01, BZ-02, BZ-07)", () => {
     expect(nodes.every((n) => n.kind === "light")).toBe(true);
     expect(nodes.some((n) => n.light === "ambient" || n.light === "hemisphere")).toBe(false);
     expect(nodes.filter((n) => n.shadow).map((n) => n.runtime?.id).sort()).toEqual([RIG_IDS.key, RIG_IDS.moon].sort());
-    expect(nodes.find((n) => n.runtime?.id === RIG_IDS.key)?.shadow).toMatchObject({ filter: "pcss", mapSize: 1024 });
+    expect(nodes.find((n) => n.runtime?.id === RIG_IDS.key)?.shadow).toMatchObject({ filter: "pcf", mapSize: 1024 });
     expect(nodes.find((n) => n.runtime?.id === RIG_IDS.player)?.intensity).toBe(1.2);
     expect(nodes.filter((n) => n.runtime?.id?.startsWith("bz-fixture-light-"))).toHaveLength(FIXTURE_POOL_SIZE);
     expect(fixtureLightId(2)).toBe("bz-fixture-light-2");
