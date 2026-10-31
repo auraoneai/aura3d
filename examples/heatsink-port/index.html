@@ -98,6 +98,20 @@
         #binds { grid-template-columns: 1fr; }
       }
       @media (max-width: 500px) { #district-banner { top: 172px; } } /* the objective wraps to two lines at 390 px */
+      /* GU47 phase 4: on a short landscape view (640x360) the twilight HUD is one slim row and compact meters (the judge read the panels as covering ~30% of the frame) */
+      @media (max-width: 900px) and (max-height: 420px) {
+        body.ion-telemetry #hud .top { flex-wrap: nowrap; gap: 4px; }
+        body.ion-telemetry #hud .block { flex: 1 1 0; padding: 2px 6px; }
+        body.ion-telemetry #hud .value { font-size: 13px; }
+        body.ion-telemetry #hud .block .meta, body.ion-telemetry #hud .sub { font-size: 9px; }
+        body.ion-telemetry #district { top: 46px; }
+        body.ion-telemetry #objective { top: 52px; font-size: 11px; }
+        body.ion-telemetry #district-banner { top: 74px; font-size: 11px; padding: 3px 10px; }
+        body.ion-telemetry #hud .bottom { width: 176px; gap: 1px; padding: 4px 8px; }
+        body.ion-telemetry .meter { grid-template-columns: 60px 1fr 28px; gap: 6px; font-size: 10px; }
+        body.ion-telemetry #speedo { padding: 3px 8px; }
+        body.ion-telemetry #speedo .value { font-size: 17px; }
+      }
     </style>
   </head>
   <body>

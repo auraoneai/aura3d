@@ -49,8 +49,8 @@ export default defineArtDirection({
   framing: { rig: "chase", subjectHeightFraction: [0.08, 0.16], fovDeg: [62, 84], mobile: "both" },
   assets: [
     { role: "vehicle", assetKey: "drone", maxTriangles: 60000, minTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "enemy", assetKey: "heatsinkSentry", maxTriangles: 15000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "enemy", assetKey: "heatsinkHeavy", maxTriangles: 15000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "enemy", assetKey: "ionSentryDrone", maxTriangles: 15000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "enemy", assetKey: "ionHeavyDrone", maxTriangles: 15000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "prop", assetKey: "barrel", maxTriangles: 16000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "prop", assetKey: "pickupShield", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "prop", assetKey: "pickupRepair", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
@@ -79,7 +79,7 @@ export default defineArtDirection({
   ],
   signatureEffect: "ion-wake: a 60-segment cyan-to-violet ribbon trailing the drone's last 1.2 s, turning amber under the afterburner.",
   standIns: [
-    { feature: "sentry and heavy targets (primitive cores and rings)", file: "examples/heatsink-port/world.ts", request: "R-14-07", removeWhen: "WP-36 heatsinkSentry and heatsinkHeavy GLBs admitted" },
+    { feature: "heavy targets (primitive cube core and rings; sentries use the WP-36 ionSentryDrone GLB since GU47 phase 4)", file: "examples/heatsink-port/world.ts", request: "R-14-07", removeWhen: "WP-36 ionHeavyDrone GLB admitted" },
     { feature: "crystal clusters, ribcage arch, cliff dwellings and needle spires", file: "examples/heatsink-port/world.ts", request: "R-14-07", removeWhen: "WP-36 crystal, arch, dwelling and spire GLBs admitted" },
     { feature: "procedural basalt and lichen in the terrain shader", file: "examples/heatsink-port/shaders.ts", request: "R-14-13", removeWhen: "CC0 basalt set and lichen mask admitted" }
   ],

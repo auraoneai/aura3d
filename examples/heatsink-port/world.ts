@@ -17,7 +17,7 @@ import { createPoolUniforms, glowEmitters, nearestPools } from "./art/pools";
 import { HEATSINK_VFX, registerHeatsinkVfx, vfxScale } from "./art/vfx";
 import { axisRotation, droneEuler, matrixToEulerZYX, multiplyMat3 } from "./orient";
 import type { Race } from "./race";
-import { barrelModel, droneHull, gatePylonNodes, modelSet, sceneryNodes, pickupModel } from "./models";
+import { barrelModel, droneHull, gatePylonNodes, modelSet, sceneryNodes, pickupModel, sentryModel } from "./models";
 import { Operation, STRIKE } from "./operation";
 import { seededRandom } from "./rng";
 import { Track, type Frame } from "./track";
@@ -176,7 +176,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
    * cascades off. Low tier: 1 cascade.
    */
   const shadowOff = typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0";
-  b.add(lights.directional({ name: "key", position: [...look.key.position], target: [0, 0, 0], intensity: look.key.intensity, color: look.key.color, shadow: (shadowOff ? false : { cascades: look.key.cascades, maxDistance: look.key.maxDistance }) as never }));
+  b.add(lights.directional({ name: "key", position: [...look.key.position], target: [0, 0, 0], intensity: look.key.intensity, color: look.key.color, shadow: (shadowOff ? false : { cascades: look.key.cascades, maxDistance: look.key.maxDistance, ...(look.key.mapSize ? { mapSize: look.key.mapSize } : {}) }) as never }));
   /* IC-02: moving points for the lit GLBs (twilight only, 1 on Low): the drone's exhaust glow and the nearest pad / gate pool */
   if (look.glow.points > 0) b.add(lights.point({ name: "drone-glow", position: [0, -500, 0], intensity: 6, distance: 14, color: "#40e0ff" }).runtime({ id: "drone-glow" }));
   if (look.glow.points > 1) b.add(lights.point({ name: "pool-glow", position: [0, -500, 0], intensity: 7, distance: 20, color: "#ffb02e" }).runtime({ id: "pool-glow" }));
@@ -217,7 +217,9 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
     const core = material.custom(solidSpec(hexLinear(heavy ? "#5a1414" : "#c82828"), hexLinear("#ff5a3a"), heavy ? 1.6 : 2.2));
     b.add((heavy
       ? primitives.box({ name: `target-${t.id}`, size: [r * 1.35, r * 1.35, r * 1.35], material: core, castShadow: false })
-      : primitives.sphere({ name: `target-${t.id}`, size: r * 2.1, material: core, castShadow: false })).runtime({ id: `target-${t.id}` }));
+      : look.assets.sentryModel
+        ? sentryModel(t.id, r * 2.1, models)
+        : primitives.sphere({ name: `target-${t.id}`, size: r * 2.1, material: core, castShadow: false })).runtime({ id: `target-${t.id}` }));
     b.add(primitives.torus({ name: `target-ring-${t.id}`, size: [r * 1.9, 0.22, 0.22], material: material.custom(solidSpec(hexLinear("#2a1010"), hexLinear(heavy ? "#ff7a3a" : "#ffb347"), 2.6)), castShadow: false }).runtime({ id: `target-ring-${t.id}` }));
     if (heavy) b.add(primitives.torus({ name: `target-ring2-${t.id}`, size: [r * 1.75, 0.3, 0.3], material: material.custom(solidSpec(hexLinear("#2a1010"), hexLinear("#ff7a3a"), 2.6)), castShadow: false }).runtime({ id: `target-ring2-${t.id}` }));
     b.add(primitives.torus({ name: `target-hp-${t.id}`, size: [r * 1.3, 0.12, 0.12], material: material.custom(solidSpec(hexLinear("#0e2a16"), hexLinear("#6dffb0"), 2.4)), castShadow: false }).runtime({ id: `target-hp-${t.id}` }));
@@ -585,7 +587,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
           blobGeo[o++] = cx; blobGeo[o++] = fr.y + track.latY(p.s, lat) + 0.12; blobGeo[o++] = cz;
         }
         blob.updateAttribute?.("position", { array: blobGeo, offset: 0 });
-        blob.setUniform?.("blobAlpha", 0.6 * (0.25 + 0.75 * fade));
+        blob.setUniform?.("blobAlpha", row.shade.blob * (0.25 + 0.75 * fade));
       }
     }
 
@@ -613,8 +615,10 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
         if (!t.alive) continue;
         const bob = Math.sin(time * 1.7 + t.id) * 0.35;
         core.setPosition(t.world.x, t.world.y + bob, t.world.z);
-        core.setUniform?.("flash", targetFlash[t.id] ?? 0);
+        if (t.kind === "heavy" || !row.assets.sentryModel) core.setUniform?.("flash", targetFlash[t.id] ?? 0);
         if (t.kind === "heavy") core.setRotation(time * 0.7 + t.id, Math.PI / 4 + time * 0.5, Math.PI / 4);
+        /* WP-36 sentry model: faces back down the track toward the oncoming drone, with a slow scan sway */
+        else if (row.assets.sentryModel) { const tf = track.frame(t.s, scratchFrame); core.setRotation(0, Math.atan2(-tf.tx, -tf.tz) + Math.sin(time * 0.9 + t.id) * 0.35, 0); }
         ring.setPosition(t.world.x, t.world.y + bob, t.world.z);
         ring.setRotation(Math.PI / 2 + Math.sin(time + t.id) * 0.3, time * 2.2 + t.id, 0);
         if (ring2) {
