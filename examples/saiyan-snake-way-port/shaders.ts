@@ -419,8 +419,13 @@ void main() {
   // horizon line from the hemisphere sky colour, fading into the matte belly; shadowed fragments keep only the sky term.
   float bodyMask = (1.0 - top) * (1.0 - smoothstep(0.45, 0.85, depth)) * lookMode;
   vec3 bodyRefl = mix(mix(lookHemiSky, lookFogColor, 0.5), lookSunColor, pow(rs, 3.0)) * mix(vec3(1.0), roadJade * 1.8, 0.45);
-  col = mix(col, bodyRefl, (0.03 + 0.26 * fres) * bodyMask);
+  col = mix(col, bodyRefl, (0.02 + 0.16 * fres) * bodyMask);
   col += lookSunColor * (pow(rs, 24.0) * 0.55 + pow(rs, 6.0) * 0.1) * bodyMask * mix(0.25, 1.0, gToonShadow);
+  // GU47 phase 4 (rubric: shadows): under a low sun the toon band only drops ~0.58 -> 0.40 in shadow and the fresnel sky
+  // mirror above repaints it, so the sun shadow (shadow map plus gate traces) also shades the finished colour, cool and
+  // violet like the stage hemisphere, including the reflections a shadowed surface would not show.
+  vec3 shadeTint = mix(lookHemiSky * 0.55, vec3(0.30, 0.26, 0.46), 0.5);
+  col = mix(col, col * shadeTint, (1.0 - gToonShadow) * 0.62 * lookMode);
 
   // GU47 SSR-08: the gold spine down the road's centre line, with a wave pulsing forward along the body
   float spineW = 0.22 + fwm * 0.4;
