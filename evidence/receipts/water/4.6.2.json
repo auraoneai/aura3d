@@ -1,0 +1,34 @@
+{
+  "capability": "water",
+  "version": "4.6.2",
+  "gitSha": "87bd0c7d4",
+  "renderer": "swiftshader",
+  "scene": "tests/browser/gu47/world-receipts.ts body(): ground strip 40x60 m, columns at 4/12/28 m, one shadow-casting sun, camera (0, 2, 6) -> (0, 1.4, -10), fov 55, 480x270; world.water lake (circle r 7 m at z -8, calm) vs none, flags world.water only",
+  "frames": [
+    {
+      "file": "evidence/receipts/water/water-off.png",
+      "sha256": "91ff8491b7b50c4b69ef667452c02ce69abb69eafac74092730de9b29e819094",
+      "meanLuma": 61.085621359375,
+      "nonBlackRatio": 0.99975,
+      "label": "water-off"
+    },
+    {
+      "file": "evidence/receipts/water/water-lake.png",
+      "sha256": "be011d7504decdbfd2fd2da760dd167c6554bc4e2693b0605cd73d38d2f78b27",
+      "meanLuma": 64.99175810390625,
+      "nonBlackRatio": 0.99975,
+      "label": "water-lake"
+    }
+  ],
+  "tests": [
+    "tests/unit/gu47/eg/flag-promotion-noop.test.ts",
+    "tests/unit/contracts/impl/prd10-water.test.ts"
+  ],
+  "date": "2026-10-31T07:44:03.804Z",
+  "checks": {
+    "lakeMeanAbsDeltaRgb": 24.77340625000039,
+    "lakeDeltaAtLeast": 10,
+    "drawCallsOff": 4,
+    "drawCallsOn": 5
+  }
+}
