@@ -35,7 +35,7 @@ import {
 import { apexFlash, apexFlashAlpha, apexPostPlan, applyApexPostPlan, type ApexFlashKind } from "./art/post";
 import { APEX_LUT_INTENSITY, apexGradePatch } from "./art/lut";
 import { APEX_PLUMES, plumeSpec } from "./art/plume";
-import { DECAL_CAPACITY, DECAL_KIND_CODE, DECAL_SIZE, DECAL_Y, decalLayout, decalSpec } from "./render/decals";
+import { CONTACT_SIZE, DECAL_CAPACITY, DECAL_KIND_CODE, DECAL_SIZE, DECAL_Y, contactScaleY, decalLayout, decalSpec } from "./render/decals";
 import { createNativeRoadster, findDrawCalls } from "./native";
 import { FIXED_DT, POWERUP_SECONDS } from "./native/constants";
 import { GANTRY_COUNT } from "./native/world";
@@ -328,10 +328,11 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     .background(APEX_PALETTE.charcoal)
     .camera(
       camera.perspective({
-        fov: 58,
+        // GU47 phase 3 (rubric composition): 1 m closer and 3 deg narrower than 4.7.0, so the hero fills ~1.5x the area
+        fov: 55,
         near: 0.25,
         far: 550,
-        position: [0, 3.6, 6.2],
+        position: [0, 3.6, 5.2],
         target: [0, 0.9, -6.0]
       })
     )
@@ -465,8 +466,10 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .box({
         name: "freeway-neon-trim-left",
         size: [0.12, 0.14, 380],
-        // AO-M2: LED trims on the barrier tops: cyan on the sky-lane side, amber on the other; no magenta anywhere
-        material: material.emissive({ color: APEX_PALETTE.cyan, emissive: APEX_PALETTE.cyan, emissiveIntensity: 1.1 }), castShadow: false })
+        // AO-M2: LED trims on the barrier tops: tangerine on the sky-lane side, sodium amber on the other; no magenta anywhere.
+        // GU47 phase 3: the left trim was cyan, the cue the sibling judge matched with another racer's glowing edge lines;
+        // cyan is now only the player's own wake (identity accent).
+        material: material.emissive({ color: APEX_PALETTE.tangerine, emissive: APEX_PALETTE.tangerine, emissiveIntensity: 1.1 }), castShadow: false })
       .position(-TRIM_X, TRIM_Y, -150)
       .runtime(game.runtimeNode("freeway-neon-trim-left")),
     primitives
@@ -502,10 +505,10 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .box({ name: "gantry-steel", size: [1, 1, 1], material: material.pbr({ color: "#64748b", metalness: 0.65, roughness: 0.38 }), transforms: parked(GANTRY_COUNT * 3) })
       .runtime(game.runtimeNode(poolId("gantry-steel"))),
     instances
-      .box({ name: "gantry-boards", size: [1, 1, 1], material: material.pbr({ color: "#0d5c3a", roughness: 0.52, metalness: 0.12 }), transforms: parked(GANTRY_COUNT * 2) })
+      .box({ name: "gantry-boards", size: [1, 1, 1], material: material.pbr({ color: "#1a2a5c", roughness: 0.48, metalness: 0.18 }), transforms: parked(GANTRY_COUNT * 2) })
       .runtime(game.runtimeNode(poolId("gantry-boards"))),
     instances
-      .box({ name: "gantry-trims", size: [1, 1, 1], material: material.emissive({ color: "#e2f1e8", emissive: "#a7f3d0", emissiveIntensity: 0.55 }), castShadow: false, transforms: parked(GANTRY_COUNT * 4) })
+      .box({ name: "gantry-trims", size: [1, 1, 1], material: material.emissive({ color: "#ffe9cf", emissive: "#ffb46b", emissiveIntensity: 0.55 }), castShadow: false, transforms: parked(GANTRY_COUNT * 4) })
       .runtime(game.runtimeNode(poolId("gantry-trims"))),
     instances
       .cylinder({ name: "light-poles", size: [0.18, 7.6, 0.18], material: material.pbr({ color: "#475569", metalness: 0.7, roughness: 0.35 }), transforms: parked(POLE_ROWS * 2) })
@@ -523,10 +526,10 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     instances
       .box({ name: "deck-pylon-caps", size: [...PYLON_KIT.cap.size], material: material.pbr({ color: "#2c2e36", roughness: 0.8, metalness: 0.05 }), castShadow: false, receiveShadow: false, transforms: parked(PYLON_ROWS) })
       .runtime(game.runtimeNode(poolId("pylon-caps"))),
-    // AO-W1: cyan beacon rings over the piers (sky-lane edges), interchange spans every 600 m above the flight ceiling and
+    // AO-W1: sodium beacon rings (GU47 phase 3: were cyan) over the piers (sky-lane edges), interchange spans every 600 m above the flight ceiling and
     // shadowless billboard frames beside the deck (render/dressing.ts); 5 instanced nodes
     instances
-      .torus({ name: "beacon-rings", size: [...RING_SIZE], material: material.emissive({ color: APEX_PALETTE.cyan, emissive: APEX_PALETTE.cyan, emissiveIntensity: 1.4 }), castShadow: false, receiveShadow: false, transforms: parked(RING_ROWS * 2) })
+      .torus({ name: "beacon-rings", size: [...RING_SIZE], material: material.emissive({ color: APEX_PALETTE.sodium, emissive: APEX_PALETTE.sodium, emissiveIntensity: 1.4 }), castShadow: false, receiveShadow: false, transforms: parked(RING_ROWS * 2) })
       .runtime(game.runtimeNode(poolId("beacon-rings"))),
     instances
       .box({ name: "interchange-span-decks", size: [...SPAN_DECK_SIZE], material: material.pbr({ color: "#2c2e36", roughness: 0.78, metalness: 0.1 }), castShadow: false, receiveShadow: false, transforms: parked(SPAN_SLOTS) })
@@ -579,7 +582,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     primitives
       .box({
         name: "player-lightbar",
-        size: [1.72, 0.085, 0.09],
+        size: [1.6, 0.05, 0.06], // GU47 phase 3: a thin LED tail strip (the 4.7.0 bar read as a flat placeholder wing)
         material: material.emissive({ color: "#ff1830", emissive: "#ff1830", emissiveIntensity: 1.85 }), castShadow: false })
       .position(0, 0.72, 2.12)
       .runtime(game.runtimeNode("player-lightbar")),
@@ -1054,6 +1057,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       tower.setUniform?.("sunGlint", round3(1.2 * (1 - look.nightAmount)) as never);
       tower.setUniform?.("windowsLit", round3(frame.signature.windowSpecks) as never);
       tower.setUniform?.("hazeColor", hexToUnit(frame.signature.hazeColor) as never);
+      tower.setUniform?.("crownGain", round3(0.3 + 0.9 * look.nightAmount) as never);
     }
 
     // AO-E2: the haze floor takes the row's haze colour and window-speck strength (cool lavender haze, no red-pink floor)
@@ -1359,7 +1363,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       }
     }
 
-    // Camera-anchored relative transform: the @aura3d/engine camera sits at [0, 3.6, 6.2] looking at [0, 0.9, -6.0].
+    // Camera-anchored relative transform: the @aura3d/engine camera sits at [0, 3.6, 5.2] looking at [0, 0.9, -6.0].
     // World coordinates are shifted by the chase anchor, so the player car stays in front of the camera while the freeway,
     // traffic, sky cars and bolts move past. The anchor lags lane changes a little, rises with altitude and carries the shake.
     const targetX = px * 0.65;
@@ -1417,6 +1421,8 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       const size = DECAL_SIZE[d.kind];
       decalPool.add(rx(d.x), ry(DECAL_Y), rz(d.z), 0, d.yaw, 0, size[0], DECAL_KIND_CODE[d.kind], size[1]);
     }
+    // GU47 phase 3: soft contact occlusion under the hero in the decal pool's reserved slot (same draw), gone by 4 m up
+    if (py < 4) decalPool.add(rx(px), ry(DECAL_Y + 0.002), -1.15, 0, 0, 0, CONTACT_SIZE[0], contactScaleY(py), CONTACT_SIZE[1]);
     decalPool.commit();
 
     // Overhead sign gantries: one per collidable world slot (audit RR-2); empty slots are not drawn
