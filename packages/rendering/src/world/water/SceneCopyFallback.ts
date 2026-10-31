@@ -25,7 +25,10 @@ export const SCENE_COPY_DEPTH_KEY = "prd10.scene.depth.copy";
 const COPY_FORMAT = new VertexFormat([{ semantic: "position", components: 2, offset: 0, shaderName: "a_pos" }]);
 const COPY_SAMPLER = new Sampler({ minFilter: "nearest", magFilter: "nearest", addressU: "clamp-to-edge", addressV: "clamp-to-edge" });
 
+// GU47 phase 2: the device requires the marker in BOTH stages; without it here the program threw
+// SHADER_MARKER_MISSING and every refracting-water frame drew nothing (aura-diamond-3d, slingshot-siege).
 const COPY_VERT = /* glsl */ `#version 300 es
+// prd10.sceneCopy — RenderDevice shader marker.
 in vec2 a_pos;
 out vec2 v_uv;
 void main() {
